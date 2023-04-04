@@ -1,0 +1,187 @@
+{
+    "folders": [
+        {
+            "name": "RawrBOX",
+            "path": "."
+        }
+    ],
+    "settings": {
+        "githubIssues.queries": [
+            {
+                "label": "Issues",
+                "query": "state:open repo:${owner}/${repository}"
+            }
+        ],
+        "githubPullRequests.queries": [
+            {
+                "label": "Pull-Requests",
+                "query": "is:open"
+            }
+        ],
+        "terminal.integrated.persistentSessionReviveProcess": "never",
+        "editor.bracketPairColorization.enabled": true,
+        "terminal.integrated.gpuAcceleration": "on",
+        "output.smartScroll.enabled": false,
+        "files.eol": "\n",
+        "editor.formatOnSave": true,
+        "[cpp]": {
+            "editor.formatOnSave": false
+        },
+        "trailing-spaces.trimOnSave": true,
+        "editor.stickyScroll.enabled": true,
+        "C_Cpp.default.compilerArgs": ["-fexceptions"],
+        "markdown.validate.enabled": true,
+
+        "[json]": {
+            "editor.defaultFormatter": null
+        },
+
+        "cmake.configureOnOpen": false,
+        "cmake.autoSelectActiveFolder": false,
+        "cmake.generator": "Ninja",
+        "cmake.configureArgs": ["-Wno-dev"],
+        "cmake.configureSettings": {
+            "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+            "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${workspaceFolder}/conan_provider.cmake",
+            "RAWRBOX_OUTPUT_BIN": "bin"
+        },
+        "C_Cpp.vcFormat.newLine.beforeCatch": false,
+        "C_Cpp.vcFormat.newLine.beforeElse": false,
+        "C_Cpp.codeAnalysis.clangTidy.enabled": false,
+        "workbench.editor.pinnedTabSizing": "shrink",
+        "workbench.editor.wrapTabs": true,
+        "editor.detectIndentation": false,
+        "editor.insertSpaces": false,
+        "files.insertFinalNewline": true,
+        "files.associations": {
+            "xstring": "cpp",
+            "functional": "cpp",
+            "map": "cpp",
+            "memory": "cpp",
+            "system_error": "cpp",
+            "type_traits": "cpp",
+            "variant": "cpp",
+            "vector": "cpp",
+            "xmemory": "cpp",
+            "xstddef": "cpp",
+            "algorithm": "cpp",
+            "any": "cpp",
+            "array": "cpp",
+            "atomic": "cpp",
+            "bitset": "cpp",
+            "cctype": "cpp",
+            "chrono": "cpp",
+            "cinttypes": "cpp",
+            "clocale": "cpp",
+            "cmath": "cpp",
+            "codecvt": "cpp",
+            "compare": "cpp",
+            "complex": "cpp",
+            "concepts": "cpp",
+            "condition_variable": "cpp",
+            "csignal": "cpp",
+            "cstdarg": "cpp",
+            "cstddef": "cpp",
+            "cstdint": "cpp",
+            "cstdio": "cpp",
+            "cstdlib": "cpp",
+            "cstring": "cpp",
+            "ctime": "cpp",
+            "cwchar": "cpp",
+            "cwctype": "cpp",
+            "deque": "cpp",
+            "exception": "cpp",
+            "filesystem": "cpp",
+            "forward_list": "cpp",
+            "fstream": "cpp",
+            "initializer_list": "cpp",
+            "iomanip": "cpp",
+            "ios": "cpp",
+            "iosfwd": "cpp",
+            "iostream": "cpp",
+            "istream": "cpp",
+            "iterator": "cpp",
+            "limits": "cpp",
+            "list": "cpp",
+            "locale": "cpp",
+            "mutex": "cpp",
+            "new": "cpp",
+            "numeric": "cpp",
+            "optional": "cpp",
+            "ostream": "cpp",
+            "queue": "cpp",
+            "ratio": "cpp",
+            "set": "cpp",
+            "sstream": "cpp",
+            "stdexcept": "cpp",
+            "streambuf": "cpp",
+            "string": "cpp",
+            "thread": "cpp",
+            "tuple": "cpp",
+            "typeinfo": "cpp",
+            "unordered_map": "cpp",
+            "unordered_set": "cpp",
+            "utility": "cpp",
+            "valarray": "cpp",
+            "xfacet": "cpp",
+            "xhash": "cpp",
+            "xiosbase": "cpp",
+            "xlocale": "cpp",
+            "xlocbuf": "cpp",
+            "xlocinfo": "cpp",
+            "xlocmes": "cpp",
+            "xlocmon": "cpp",
+            "xlocnum": "cpp",
+            "xloctime": "cpp",
+            "xtr1common": "cpp",
+            "xtree": "cpp",
+            "xutility": "cpp",
+            "stack": "cpp",
+            "bit": "cpp",
+            "stop_token": "cpp",
+            "string_view": "cpp",
+            "xmemory0": "cpp",
+            "future": "cpp",
+            "random": "cpp",
+            "regex": "cpp",
+            "charconv": "cpp",
+            "format": "cpp",
+            "xxatomic": "cpp",
+            "xthread": "cpp",
+            "hash_map": "cpp",
+            "hash_set": "cpp",
+            "ranges": "cpp",
+            "span": "cpp",
+            "cfenv": "cpp"
+        },
+        "editor.semanticTokenColorCustomizations": {
+            "rules": {
+                "variable.global": "#ff60bf"
+            }
+        },
+        "debug.terminal.clearBeforeReusing": true,
+        "terminal.integrated.enablePersistentSessions": false
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-vscode.cpptools",
+            "twxs.cmake",
+            "ms-vscode.cmake-tools",
+            "ibm.output-colorizer",
+            "geekidos.vdf",
+            "shardulm94.trailing-spaces"
+        ]
+    },
+    "launch": {
+        "compounds": [
+            {
+                "name": "Test",
+                "configurations": [
+                    {
+                        "name": "Launch (Debug)"
+                    }
+                ]
+            }
+        ]
+    }
+}
