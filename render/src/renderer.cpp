@@ -32,14 +32,9 @@
 
 #define GLFWHANDLE reinterpret_cast<GLFWwindow*>(_handle)
 
-namespace rawrbox::render {
-	#ifdef WIN32
-		void __stdcall glfw_debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
-	#else
-		void glfw_debugCallback(unsigned int source, unsigned int type, unsigned int id, unsigned int severity, int length, const char* message, const void* userParam) {
-	#endif
-		if (severity != GL_DEBUG_SEVERITY_HIGH) return;
-		printf("OPENGL DEBUG OUTPUT: source 0x%x, type 0x%x, id %d, severity 0x%x, message %s\n", source, type, id, severity, message);
+namespace rawrBOX {
+	static Renderer& glfwHandleToRenderer(GLFWwindow* ptr) {
+		return *static_cast<Renderer*>(glfwGetWindowUserPointer(ptr));
 	}
 
 	static void glfw_errorCallback(int error, const char *description) {
@@ -86,37 +81,43 @@ namespace rawrbox::render {
 	#	endif // BX_PLATFORM_*
 	}
 
-	void Renderer::initialize(int width, int height, uint32_t flags) {
-		glfwSetErrorCallback(glfw_errorCallback);
-		glDebugMessageCallback(glfw_debugCallback, nullptr);
+	void Renderer::initialize(bgfx::ViewId id, int width, int height, uint32_t flags) {
+		this->_kClearView = id;
 
+		glfwSetErrorCallback(glfw_errorCallback);
 		if (!glfwInit()) throw std::runtime_error("[RawrBOX-Render] Failed to initialize glfw");
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // Disable opengl
 		this->_handle = glfwCreateWindow(width, height, this->_title.c_str(), nullptr, nullptr);
 		if (this->_handle == nullptr) throw std::runtime_error(fmt::format("[RawrBOX-Render] Failed to initialize window [{} - {}x{}]", this->_title, width, height));
 
+		if((flags & RenderFlags::Features::MULTI_THREADED) == 0) bgfx::renderFrame();
+
 		bgfx::Init init;
 		init.type = this->_renderType;
 		init.resolution.width = static_cast<uint32_t>(width);
 		init.resolution.height = static_cast<uint32_t>(height);
 
-		auto flags = BGFX_RESET_NONE;
-		if(flags & RenderFlags::Features::VSYNC) flags |= BGFX_RESET_VSYNC;
-		if(flags & RenderFlags::Features::ANTI_ALIAS) flags |= BGFX_RESET_MAXANISOTROPY;
+		auto resetFlags = BGFX_RESET_NONE;
+		if((flags & RenderFlags::Features::VSYNC) > 0) resetFlags |= BGFX_RESET_VSYNC;
+		if((flags & RenderFlags::Features::ANTI_ALIAS) > 0) resetFlags |= BGFX_RESET_MAXANISOTROPY;
 
-		init.resolution.reset = flags;
+		init.resolution.reset = resetFlags;
 		init.platformData.nwh = glfwNativeWindowHandle(GLFWHANDLE);
 		init.platformData.ndt = getNativeDisplayHandle();
 
 		if (!bgfx::init(init)) throw std::runtime_error("[RawrBOX-Render] Failed to initialize bgfx");
 
 		auto debugFlags = BGFX_DEBUG_NONE;
-		if((debugFlags & RenderFlags::Debug::WIREFRAME) > 0) debugFlags |= BGFX_DEBUG_WIREFRAME;
-		if((debugFlags & RenderFlags::Debug::STATS) > 0) debugFlags |= BGFX_DEBUG_STATS;
+		if((flags & RenderFlags::Debug::WIREFRAME) > 0) debugFlags |= BGFX_DEBUG_WIREFRAME;
+		if((flags & RenderFlags::Debug::STATS) > 0) debugFlags |= BGFX_DEBUG_STATS;
+
+		bgfx::setViewClear(this->_kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
+		bgfx::setViewRect(this->_kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 
 		bgfx::setDebug(debugFlags);
 
+		glfwSetWindowUserPointer(GLFWHANDLE, this);
 		glfwSetKeyCallback(GLFWHANDLE, callbacks_key);
 		glfwSetCharCallback(GLFWHANDLE, callbacks_char);
 		glfwSetScrollCallback(GLFWHANDLE, callbacks_scroll);
@@ -124,6 +125,7 @@ namespace rawrbox::render {
 		glfwSetWindowFocusCallback(GLFWHANDLE, callbacks_focus);
 		glfwSetCursorPosCallback(GLFWHANDLE, callbacks_mouseMove);
 		glfwSetMouseButtonCallback(GLFWHANDLE, callbacks_mouseKey);
+		glfwSetWindowCloseCallback(GLFWHANDLE, callbacks_windowClose);
 	}
 
 	void Renderer::setMonitor(int monitor) {
@@ -144,11 +146,13 @@ namespace rawrbox::render {
 	}
 
 	void Renderer::swapBuffer() const {
-		if (this->_handle == nullptr || this->kClearView == 0) return;
-
-		bgfx::setViewClear(this->_kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL, this->_clearColor, 1.0f, 0);
-		bgfx::setViewRect(this->_kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+		if (this->_handle == nullptr) return;
 		bgfx::touch(this->_kClearView); // This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0.
+	}
+
+	void Renderer::render() const {
+		if (this->_handle == nullptr) return;
+		bgfx::frame();
 	}
 
 	void Renderer::shutdown() {
@@ -162,6 +166,12 @@ namespace rawrbox::render {
 	}
 
 	#pragma region UTILS
+	void Renderer::close() {
+		if (this->_handle == nullptr) return;
+		glfwDestroyWindow(GLFWHANDLE);
+		this->_handle = nullptr;
+	}
+
 	bool Renderer::isRendererSupported(bgfx::RendererType::Enum render) {
 		bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
 		uint8_t num = bgfx::getSupportedRenderers(BX_COUNTOF(supportedRenderers), supportedRenderers);
@@ -172,20 +182,20 @@ namespace rawrbox::render {
 		return false;
 	}
 
-	math::Vector2i Renderer::getSize() const {
+	Vector2i Renderer::getSize() const {
 		if (this->_handle == nullptr) throw std::runtime_error("[RawrBOX-Render] Renderer not initialized, handle not found");
-		math::Vector2i ret;
-
+		Vector2i ret;
 		glfwGetWindowSize(GLFWHANDLE, &ret.x, &ret.y);
+
 		return ret;
 	}
 
-	math::Vector2i Renderer::getMousePos() const {
+	Vector2i Renderer::getMousePos() const {
 		if (this->_handle == nullptr) throw std::runtime_error("[RawrBOX-Render] Renderer not initialized, handle not found");
 		double x, y;
 
 		glfwGetCursorPos(GLFWHANDLE, &x, &y);
-		return math::Vector2i(static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y)));
+		return Vector2i(static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y)));
 	}
 
 	bool Renderer::getShouldClose() const {
@@ -194,21 +204,22 @@ namespace rawrbox::render {
 	}
 
 	void Renderer::setShouldClose(bool close) const {
-		if (this->_handle == nullptr) return false;
+		if (this->_handle == nullptr) return;
 		glfwSetWindowShouldClose(GLFWHANDLE, close ? 1 : 0);
 	}
 	#pragma endregion
 
 	#pragma region EVENTS
-	Renderer& glfwHandleToRenderer(GLFWwindow* ptr) {
-		return *static_cast<Renderer*>(glfwGetWindowUserPointer(ptr));
+	void Renderer::callbacks_windowClose(GLFWwindow* whandle) {
+		auto& renderer = glfwHandleToRenderer(whandle);
+		renderer.onWindowClose(renderer);
 	}
 
 	void Renderer::callbacks_resize(GLFWwindow* whandle, int width, int height) {
 		auto& renderer = glfwHandleToRenderer(whandle);
 
 		bgfx::reset(static_cast<uint32_t>(width), static_cast<uint32_t>(height), BGFX_RESET_VSYNC);
-		bgfx::setViewRect(this->_kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+		bgfx::setViewRect(renderer._kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 
 		renderer.onResize(renderer, {width, height});
 	}
@@ -271,4 +282,6 @@ namespace rawrbox::render {
 		renderer.onFocus(renderer, focus);
 	}
 	#pragma endregion
+
+	Renderer::~Renderer() { this->close(); }
 }

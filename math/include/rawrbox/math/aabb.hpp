@@ -1,8 +1,8 @@
 #pragma once
 
-#include <rawrbox/math/vector2.h>
+#include <rawrbox/math/vector2.hpp>
 
-namespace rawrbox::math {
+namespace rawrBOX {
 	template <class NumberType>
 	class AABB_t {
 	private:

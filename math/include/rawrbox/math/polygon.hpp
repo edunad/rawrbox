@@ -1,11 +1,11 @@
 ﻿#pragma once
 
-#include <rawrbox/math/vector2.h>
-#include <rawrbox/math/vector3.h>
+#include <rawrbox/math/vector2.hpp>
+#include <rawrbox/math/vector3.hpp>
 
 #include <vector>
 
-namespace rawrbox::math {
+namespace rawrBOX {
 	template <class VerticeType>
 	class Polygon_t {
 	private:

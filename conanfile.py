@@ -2,7 +2,7 @@ from conan import ConanFile
 
 class Recipe(ConanFile):
 	settings = "os", "compiler", "build_type", "arch"
-	requires = "fmt/9.1.0", "glm/cci.20230113", "nlohmann_json/3.11.2", "utfcpp/3.2.3", "stb/cci.20220909"
+	requires = "fmt/9.1.0", "nlohmann_json/3.11.2", "utfcpp/3.2.3", "stb/cci.20220909"
 	generators = "CMakeDeps", "CMakeToolchain"
 
 	def requirements(self):

@@ -1,9 +1,10 @@
 ﻿#pragma once
 
+#include <algorithm>
 #include <type_traits>
 #include <cmath>
 
-namespace rawrbox::math {
+namespace rawrBOX {
 	template <class NumberType>
 	class Vector2_t {
 	private:
