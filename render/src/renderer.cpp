@@ -32,7 +32,7 @@
 
 #define GLFWHANDLE reinterpret_cast<GLFWwindow*>(_handle)
 
-namespace rawrBOX {
+namespace rawrBox {
 	static Renderer& glfwHandleToRenderer(GLFWwindow* ptr) {
 		return *static_cast<Renderer*>(glfwGetWindowUserPointer(ptr));
 	}
@@ -114,6 +114,7 @@ namespace rawrBOX {
 
 		bgfx::setViewClear(this->_kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
 		bgfx::setViewRect(this->_kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+		bgfx::setViewMode(this->_kClearView, bgfx::ViewMode::Default);
 
 		bgfx::setDebug(debugFlags);
 

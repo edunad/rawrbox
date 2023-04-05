@@ -3,7 +3,7 @@
 #include <string>
 #include <chrono>
 
-namespace rawrBOX {
+namespace rawrBox {
 	class Engine {
 		private:
 			bool _shouldShutdown = false;

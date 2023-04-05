@@ -10,7 +10,7 @@ using namespace std::literals;
 
 using Clock = std::chrono::steady_clock;
 
-namespace rawrBOX {
+namespace rawrBox {
 	void Engine::init() { throw std::runtime_error("[RawrBOX-Engine] Method 'init' not implemented"); }
 
 	void Engine::pollEvents() {}

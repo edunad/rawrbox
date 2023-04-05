@@ -8,16 +8,16 @@
 #include <memory>
 
 namespace cube {
-	class Game : public rawrBOX::Engine {
+	class Game : public rawrBox::Engine {
 		bgfx::ViewId _id = 0;
 
-		std::unique_ptr<rawrBOX::Renderer> _render;
-		std::unique_ptr<rawrBOX::Stencil> _stencil;
-		std::shared_ptr<rawrBOX::Texture> _texture;
-
+		std::unique_ptr<rawrBox::Renderer> _render;
+		std::unique_ptr<rawrBox::Stencil> _stencil;
+		std::shared_ptr<rawrBox::Texture> _texture;
 
 		float _view[16];
 		float _proj[16];
+
 	public:
 		virtual void init() override;
 		virtual void shutdown() override;

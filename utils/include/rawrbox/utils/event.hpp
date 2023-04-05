@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <functional>
 
-namespace rawrBOX {
+namespace rawrBox {
 	template<typename... CallbackArgs>
 	class Event {
 	public:

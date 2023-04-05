@@ -4,7 +4,7 @@
 #endif
 
 #include <cube/game.h>
-using namespace rawrBOX;
+using namespace rawrBox;
 
 int main(int argc, char* argv[]) {
 	#ifdef _WIN32

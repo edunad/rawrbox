@@ -7,7 +7,7 @@
 
 #include<bgfx/bgfx.h>
 
-namespace rawrBOX {
+namespace rawrBox {
 	struct PosUVColorVertexData {
 		float x = 0;
 		float y = 0;
@@ -29,34 +29,39 @@ namespace rawrBOX {
 
 		bgfx::ProgramHandle _stencilProgram = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle _2dprogram = BGFX_INVALID_HANDLE;
+		bgfx::TextureHandle _textureHandle = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 
 		bgfx::VertexBufferHandle _vbh = BGFX_INVALID_HANDLE;
 		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;
 
-		rawrBOX::Vector2 _windowSize;
+		std::shared_ptr<rawrBox::Texture> _pixelTexture;
+
+		rawrBox::Vector2 _windowSize;
 
 		std::vector<PosUVColorVertexData> _vertices;
 		std::vector<unsigned int> _indices;
 
 #pragma region RENDERING
-		void pushVertice(const rawrBOX::Vector2& pos, const rawrBOX::Vector2& uv, const rawrBOX::Color& col);
+		void pushVertice(const rawrBox::Vector2& pos, const rawrBox::Vector2& uv, const rawrBox::Color& col);
 		void pushIndices(unsigned int a, unsigned int b, unsigned int c);
 #pragma endregion
 
 	public:
-		Stencil(bgfx::ViewId, const rawrBOX::Vector2& size);
+		Stencil(bgfx::ViewId id, const rawrBox::Vector2& size);
 		~Stencil();
 
 		void initialize();
 
 #pragma region UTILS
-		void drawTriangle(const rawrBOX::Vector2& a, const rawrBOX::Vector2& aUV, const rawrBOX::Color& colA, const rawrBOX::Vector2& b, const rawrBOX::Vector2& bUV, const rawrBOX::Color& colB, const rawrBOX::Vector2& c, const rawrBOX::Vector2& cUV, const rawrBOX::Color& colC);
-		void drawBox(const rawrBOX::Vector2& pos, const rawrBOX::Vector2& size);
-		void drawTexture(rawrBOX::Vector2 pos, rawrBOX::Vector2 size, std::shared_ptr<rawrBOX::Texture> tex, rawrBOX::Color col = rawrBOX::Colors::White, rawrBOX::Vector2 uvStart = {0, 0}, rawrBOX::Vector2 uvEnd = {1, 1}, float rotation = 0.f, const rawrBOX::Vector2& origin = {0, 0});
+		void drawTriangle(const rawrBox::Vector2& a, const rawrBox::Vector2& aUV, const rawrBox::Color& colA, const rawrBox::Vector2& b, const rawrBox::Vector2& bUV, const rawrBox::Color& colB, const rawrBox::Vector2& c, const rawrBox::Vector2& cUV, const rawrBox::Color& colC);
+		void drawBox(const rawrBox::Vector2& pos, const rawrBox::Vector2& size, rawrBox::Color col = rawrBox::Colors::White);
+		void drawTexture(rawrBox::Vector2 pos, rawrBox::Vector2 size, std::shared_ptr<rawrBox::Texture> tex, rawrBox::Color col = rawrBox::Colors::White, rawrBox::Vector2 uvStart = {0, 0}, rawrBox::Vector2 uvEnd = {1, 1}, float rotation = 0.f, const rawrBox::Vector2& origin = {std::nanf(""), std::nanf("")});
 #pragma endregion
 
 #pragma region RENDERING
-		void setShaderProgram(bgfx::ProgramHandle handle);
+		void setTexture(const bgfx::TextureHandle& tex);
+		void setShaderProgram(const bgfx::ProgramHandle& handle);
 		void draw();
 #pragma endregion
 	};

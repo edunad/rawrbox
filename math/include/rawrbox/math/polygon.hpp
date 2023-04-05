@@ -5,7 +5,7 @@
 
 #include <vector>
 
-namespace rawrBOX {
+namespace rawrBox {
 	template <class VerticeType>
 	class Polygon_t {
 	private:

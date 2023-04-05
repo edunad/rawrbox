@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <complex>
 
-namespace rawrBOX {
+namespace rawrBox {
 	template <class NumberType>
 	class Color_t {
 	private:

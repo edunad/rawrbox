@@ -5,7 +5,7 @@
 
 #include <algorithm>
 
-namespace rawrBOX {
+namespace rawrBox {
 	template <class NumberType>
 	class Quaternion_t {
 	private:

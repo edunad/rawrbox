@@ -8,150 +8,122 @@
 
 #include <fmt/format.h>
 
-namespace rawrBOX {
+namespace rawrBox {
 	Texture::~Texture() {
 		bgfx::destroy(this->_handle);
-		bgfx::destroy(this->_texColor);
 	}
 
-	Texture::Texture(const rawrBOX::Vector2i& initsize, const rawrBOX::Color& bgcol) {
-		this->_pixels.resize(initsize.y * initsize.x);
+	Texture::Texture(const rawrBox::Vector2i& initsize, const rawrBox::Color& bgcol) {
+		this->_pixels = bgfx::alloc(static_cast<uint32_t>(initsize.y * initsize.x) * this->_channels);
 		this->_size = initsize;
 		this->_originalSize = initsize;
 
-		for (auto& elm : this->_pixels) elm = bgcol;
+		for (size_t i = 0; i < this->_pixels->size; i+=4) {
+			this->_pixels->data[i] = static_cast<uint8_t>(bgcol.r * 255) ;
+			this->_pixels->data[i + 1] = static_cast<uint8_t>(bgcol.g * 255);
+			this->_pixels->data[i + 2] = static_cast<uint8_t>(bgcol.b * 255);
+			this->_pixels->data[i + 3] = static_cast<uint8_t>(bgcol.a * 255);
+		}
 	}
 
 	Texture::Texture(const std::string& fileName) {
 		int w;
 		int h;
-		int channels;
 
-		stbi_uc *image = stbi_load(fileName.c_str(), &w, &h, &channels, 4);
+		stbi_uc *image = stbi_load(fileName.c_str(), &w, &h, &this->_channels, 4); // force it to produce RGBA8
 		if(image == NULL) throw std::runtime_error(fmt::format("[Texture] Error loading image: {}", stbi_failure_reason()));
 
-		this->_size = {
-			static_cast<int>(w),
-			static_cast<int>(h)
-		};
-
-		this->_originalSize = this->_size;
-		this->_pixels.resize(h * w);
-
-		for (unsigned int y = 0; y < static_cast<unsigned int>(h); y++) {
-			for (unsigned int x = 0; x < static_cast<unsigned int>(w); x++) {
-				int offset = y * w * 4 + x * 4;
-
-				auto& p = this->getPixel(x, y);
-				float r = static_cast<float>(image[offset++]) / 255;
-				float g = static_cast<float>(image[offset++]) / 255;
-				float b = static_cast<float>(image[offset++]) / 255;
-				float a = static_cast<float>(image[offset++]) / 255;
-
-				p.r = r * a;
-				p.g = g * a;
-				p.b = b * a;
-				p.a = a;
-			}
-		}
+		this->_size = {w, h};
+		this->_pixels = bgfx::copy(image, static_cast<uint32_t>(w * h) * this->_channels);
 
 		stbi_image_free(image);
 	}
 
 #pragma region PIXEL-UTILS
-	rawrBOX::Color& Texture::getPixel(unsigned int x, unsigned int y) {
-		if (this->_pixels.empty() && this->_size != 0) {
-			throw std::runtime_error("[Texture] Trying to access pixels, but got empty");
+	rawrBox::Color Texture::getPixel(unsigned int x, unsigned int y) {
+		if (this->_pixels->size == 0 && this->_size != 0) {
+			throw std::runtime_error("[Texture] Trying to access pixels, but memory is not set");
 		}
 
-		return this->_pixels[y * this->_size.x + x];
+		size_t index = y * this->_size.x + x;
+
+		rawrBox::Color cl;
+		cl.r = this->_pixels->data[index++];
+		cl.g = this->_pixels->data[index++];
+		cl.b = this->_pixels->data[index++];
+		cl.a = this->_pixels->data[index++];
+
+		return cl;
 	}
 
-	const rawrBOX::Color& Texture::getPixel(unsigned int x, unsigned int y) const {
-		if (this->_pixels.empty() && this->_size != 0) {
-			throw std::runtime_error("[Texture] Trying to access pixels, but got empty");
-		}
-
-		return this->_pixels[y * this->_size.x + x];
-	}
-
-	const rawrBOX::Color& Texture::getPixel(const rawrBOX::Vector2i& pos) const {
+	rawrBox::Color Texture::getPixel(const rawrBox::Vector2i& pos) {
 		return this->getPixel(pos.x, pos.y);
 	}
 
-	rawrBOX::Color& Texture::getPixel(const rawrBOX::Vector2i& pos) {
-		return this->getPixel(pos.x, pos.y);
+	void Texture::setPixel(unsigned int x, unsigned int y, const rawrBox::Color& col) {
+		if (this->_pixels->size == 0 && this->_size != 0) {
+			throw std::runtime_error("[Texture] Trying to access pixels, but memory is not set");
+		}
+
+		size_t index = y * this->_size.x + x;
+		this->_pixels->data[index++] = static_cast<uint8_t>(col.r * 255);
+		this->_pixels->data[index++] = static_cast<uint8_t>(col.g * 255);
+		this->_pixels->data[index++] = static_cast<uint8_t>(col.b * 255);
+		this->_pixels->data[index++] = static_cast<uint8_t>(col.a * 255);
 	}
 
-	void Texture::setPixel(const rawrBOX::Vector2i& pos, const rawrBOX::Color& col) {
-		this->getPixel(pos) = col;
+	void Texture::setPixel(const rawrBox::Vector2i& pos, const rawrBox::Color& col) {
+		this->setPixel(pos.x, pos.y, col);
 	}
 
-	void Texture::setPixels(const rawrBOX::Vector2i& size_, const std::vector<rawrBOX::Color>& data) {
-		this->_pixels = data;
-		this->_size = size_;
-	}
+	void Texture::resize(const rawrBox::Vector2i& newsize) {
+		throw std::runtime_error("TODO");
+		/*const bgfx::Memory* newpixels = bgfx::alloc(static_cast<uint32_t>(newsize.y * newsize.x) * this->_channels);
 
-	void Texture::resize(const rawrBOX::Vector2i& newsize) {
-		std::vector<Color> newpixels;
-		newpixels.resize(newsize.y * newsize.x);
+		const int x_ratio = (int)((this->_size.x << 16) / newsize.x);
+    	const int y_ratio = (int)((this->_size.y << 16) / newsize.y);
 
-		if (!this->_pixels.empty() && this->_size.x > 0 && this->_size.y > 0) {
-			auto percentage = newsize.cast<float>() / this->_size.cast<float>();
+		int x_ratio_with_color = x_ratio;
 
-			for (int cy = 0; cy < newsize.y; cy++) {
-				for (int cx = 0; cx < newsize.x; cx++) {
-					int pixel = cy * newsize.x + cx;
-					int nearestMatch = static_cast<int>(cy / percentage.y) * this->_size.x + static_cast<int>(cx / percentage.x);
+		for (int y = 0; y < newsize.y; y++) {
+			int y2_xsource = ((y * y_ratio) >> 16) * this->_size.x;
+			int i_xdest = y * newsize.x;
 
-					newpixels[pixel] = this->_pixels[nearestMatch];
-				}
+			int source_x_offset = 0;
+			int startingOffset = y2_xsource;
+			auto inputLine = this->_pixels->data[startingOffset];
+
+			for (int x = 0; x < newsize.x; x++) {
+				i_xdest += 1;
+				source_x_offset += x_ratio_with_color;
+				int sourceOffset = source_x_offset >> 16;
+
+				newpixels->data[i_xdest] = this->_pixels->data[sourceOffset];
 			}
 		}
 
-		this->_size = newsize;
+		//delete this->_pixels;
 		this->_pixels = newpixels;
+		this->_size = newsize;*/
 	}
 	#pragma endregion
 
-	void Texture::bind(int index) {
+	void Texture::upload(int index) {
 		if(bgfx::isValid(this->_handle)) return; // Already bound
 
-		// textures must be power of 2
-		rawrBOX::Vector2i pow = this->_size;
-		if (pow.x != 0 && (pow.x & (pow.x - 1)) != 0) {
-			pow.x--;
-			pow.x |= pow.x >> 1;
-			pow.x |= pow.x >> 2;
-			pow.x |= pow.x >> 4;
-			pow.x |= pow.x >> 8;
-			pow.x |= pow.x >> 16;
-			pow.x++;
-		}
-
-		if (pow.y != 0 && (pow.y & (pow.y - 1)) != 0) {
-			pow.y--;
-			pow.y |= pow.y >> 1;
-			pow.y |= pow.y >> 2;
-			pow.y |= pow.y >> 4;
-			pow.y |= pow.y >> 8;
-			pow.y |= pow.y >> 16;
-			pow.y++;
-		}
-
-		if (pow != this->_size) resize(pow);
-		// --------------------------------------------
-
-		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), 1 < 0, 1, bgfx::TextureFormat::RGBA32I); // TODO: ADD FLAGS
-		if(!bgfx::isValid(this->_handle)) throw std::runtime_error("[Texture] Failed to bind texture");
-
-		bgfx::setName(this->_handle, fmt::format("RAWR-TEXTURE-{}", this->_index).c_str());
-		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 		this->_index = index;
+		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 0, bgfx::TextureFormat::RGBA8,
+              BGFX_SAMPLER_U_CLAMP
+            | BGFX_SAMPLER_V_CLAMP
+            | BGFX_SAMPLER_MIN_POINT
+            | BGFX_SAMPLER_MAG_POINT
+		, this->_pixels);
+
+		if(!bgfx::isValid(this->_handle)) throw std::runtime_error("[Texture] Failed to bind texture");
+		bgfx::setName(this->_handle, fmt::format("RAWR-TEXTURE-{}-{}", this->_index, this->_handle.idx).c_str());
 	}
 
-	void Texture::use() {
-		if(!bgfx::isValid(this->_handle)) return;
-		bgfx::setTexture(this->_index, this->_texColor, this->_handle);
+	bgfx::TextureHandle& Texture::getHandle() {
+		return this->_handle;
 	}
 }

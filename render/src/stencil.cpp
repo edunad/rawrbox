@@ -15,8 +15,8 @@ static const bgfx::EmbeddedShader shaders[] =
 	BGFX_EMBEDDED_SHADER_END()
 };
 
-namespace rawrBOX {
-	Stencil::Stencil(bgfx::ViewId id, const rawrBOX::Vector2& size) {
+namespace rawrBox {
+	Stencil::Stencil(bgfx::ViewId id, const rawrBox::Vector2& size) {
 		this->_windowSize = size;
 		this->_viewId = id;
 
@@ -37,6 +37,10 @@ namespace rawrBOX {
 		bgfx::destroy(this->_ibh);
 		bgfx::destroy(this->_vbh);
 		bgfx::destroy(this->_2dprogram);
+		bgfx::destroy(this->_textureHandle);
+		bgfx::destroy(this->_texColor);
+
+		this->_pixelTexture = nullptr;
 	}
 
 	void Stencil::initialize() {
@@ -46,10 +50,15 @@ namespace rawrBOX {
 
 		this->_2dprogram = bgfx::createProgram(vsh, fsh, true);
 		if(this->_2dprogram.idx == 0) throw std::runtime_error("[RawrBOX-Stencil] Failed to initialize shader program");
+
+		this->_pixelTexture = std::make_shared<rawrBox::Texture>(rawrBox::Vector2i(1, 1), Colors::Yellow);
+		this->_pixelTexture->upload();
+
+		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 	}
 
 #pragma region RENDERING
-	void Stencil::pushVertice(const rawrBOX::Vector2& pos, const rawrBOX::Vector2& uv, const rawrBOX::Color& col) {
+	void Stencil::pushVertice(const rawrBox::Vector2& pos, const rawrBox::Vector2& uv, const rawrBox::Color& col) {
 		this->_vertices.emplace_back(
 			// pos
 			pos.x / this->_windowSize.x * 2 - 1,
@@ -61,7 +70,8 @@ namespace rawrBOX {
 			static_cast<int16_t>(uv.y),
 
 			// color
-			0xFFFFFFFF//rawrBOX::Color::toBuffer(col)
+			0xFFFFFFFF
+			//rawrBox::Color::toBuffer(col)
 		);
 	}
 
@@ -75,56 +85,68 @@ namespace rawrBOX {
 #pragma endregion
 
 #pragma region UTILS
-	void Stencil::drawTriangle(const rawrBOX::Vector2& a, const rawrBOX::Vector2& aUV, const rawrBOX::Color& colA, const rawrBOX::Vector2& b, const rawrBOX::Vector2& bUV, const rawrBOX::Color& colB, const rawrBOX::Vector2& c, const rawrBOX::Vector2& cUV, const rawrBOX::Color& colC) {
+	void Stencil::drawTriangle(const rawrBox::Vector2& a, const rawrBox::Vector2& aUV, const rawrBox::Color& colA, const rawrBox::Vector2& b, const rawrBox::Vector2& bUV, const rawrBox::Color& colB, const rawrBox::Vector2& c, const rawrBox::Vector2& cUV, const rawrBox::Color& colC) {
 		if (colA.isTransparent() && colB.isTransparent() && colC.isTransparent()) return;
 
-		/*setTexture(getPixelTexture());
-		if(shaderOverride) setShader(shader2D);
+		this->setTexture(this->_pixelTexture->getHandle());
+		this->setShaderProgram(this->_2dprogram);
 
-		pushVertice(a + offset, aUV, colA);
+		/*pushVertice(a + offset, aUV, colA);
 		pushVertice(b + offset, bUV, colB);
 		pushVertice(c + offset, cUV, colC);*/
 
-		pushVertice(a, aUV, colA);
-		pushVertice(b, bUV, colB);
-		pushVertice(c, cUV, colC);
-		pushIndices(3, 2, 1);
+		this->pushVertice(a, aUV, colA);
+		this->pushVertice(b, bUV, colB);
+		this->pushVertice(c, cUV, colC);
+		this->pushIndices(3, 2, 1);
 	}
 
-	void Stencil::drawBox(const rawrBOX::Vector2& pos, const rawrBOX::Vector2& size) {
-
+	void Stencil::drawBox(const rawrBox::Vector2& pos, const rawrBox::Vector2& size, rawrBox::Color col) {
+		this->drawTexture(pos, size, this->_pixelTexture, col);
 	}
 
-	void Stencil::drawTexture(rawrBOX::Vector2 pos, rawrBOX::Vector2 size, std::shared_ptr<rawrBOX::Texture> tex, rawrBOX::Color col, rawrBOX::Vector2 uvStart, rawrBOX::Vector2 uvEnd, float rotation, const rawrBOX::Vector2& origin) {
+	void Stencil::drawTexture(rawrBox::Vector2 pos, rawrBox::Vector2 size, std::shared_ptr<rawrBox::Texture> tex, rawrBox::Color col, rawrBox::Vector2 uvStart, rawrBox::Vector2 uvEnd, float rotation, const rawrBox::Vector2& origin) {
 
 		// Texture setup -----
 		if(tex == nullptr) throw std::runtime_error("[RawrBOX-Stencil] Invalid texture, cannot draw");
 
-		tex->use();
+		this->setTexture(tex->getHandle());
 		this->setShaderProgram(this->_2dprogram);
 		// ------
 
 		// Primitives -----
-		rawrBOX::Vector2 b = pos;
-		rawrBOX::Vector2 c = pos;
+		rawrBox::Vector2 b = pos;
+		rawrBox::Vector2 c = pos;
 
 		b.x += size.x;
 		c.y += size.y;
 
 		auto rotOrigin = origin.isNaN() ? pos + size / 2 : pos + origin;
 
-		auto vertA = pos.rotateAroundOrigin(rotation, rotOrigin);
+		/*auto vertA = pos.rotateAroundOrigin(rotation, rotOrigin);
 		auto vertB = b.rotateAroundOrigin(rotation, rotOrigin);
 		auto vertC = c.rotateAroundOrigin(rotation, rotOrigin);
 		auto vertD = (pos + size).rotateAroundOrigin(rotation, rotOrigin);
 
-		pushVertice(vertA, uvStart, col);
-		pushVertice(b.rotateAroundOrigin(rotation, rotOrigin), {uvEnd.x, uvStart.y}, col);
-		pushVertice(c.rotateAroundOrigin(rotation, rotOrigin), {uvStart.x, uvEnd.y}, col);
-		pushVertice((pos + size).rotateAroundOrigin(rotation, rotOrigin), uvEnd, col);
+		this->pushVertice(vertA, uvStart, col);
+		this->pushVertice(b.rotateAroundOrigin(rotation, rotOrigin), {uvEnd.x, uvStart.y}, col);
+		this->pushVertice(c.rotateAroundOrigin(rotation, rotOrigin), {uvStart.x, uvEnd.y}, col);
+		this->pushVertice((pos + size).rotateAroundOrigin(rotation, rotOrigin), uvEnd, col);*/
 
-		pushIndices(4, 3, 2);
-		pushIndices(3, 2, 1);
+		this->pushVertice(0, 0, col); // 0
+		this->pushVertice({100, 0}, {uvEnd.x, uvStart.y}, col); // 1
+		this->pushVertice({0, 100}, {uvStart.x, uvEnd.y}, col); // 2
+		this->pushVertice({100, 100}, uvEnd, col); // 3
+
+
+		/*
+		0 -- 1
+
+		2 -- 3
+		*/
+
+		this->pushIndices(0, 1, 2);
+		this->pushIndices(1, 3, 2);
 		// ------------------
 	}
 
@@ -133,7 +155,12 @@ namespace rawrBOX {
 
 
 #pragma region RENDERING
-	void Stencil::setShaderProgram(bgfx::ProgramHandle handle) {
+	void Stencil::setTexture(const bgfx::TextureHandle& tex) {
+		if (this->_textureHandle.idx != tex.idx) draw();
+		this->_textureHandle = tex;
+	}
+
+	void Stencil::setShaderProgram(const bgfx::ProgramHandle& handle) {
 		if (this->_stencilProgram.idx != handle.idx) draw();
 		this->_stencilProgram = handle;
 	}
@@ -141,10 +168,12 @@ namespace rawrBOX {
 	void Stencil::draw() {
 		if (this->_vertices.empty() || this->_indices.empty()) return;
 
-        bgfx::setVertexBuffer(0, this->_vbh);
-        bgfx::setIndexBuffer(this->_ibh);
+		bgfx::setTexture(0, this->_texColor, this->_textureHandle);
 
-		bgfx::setState(this->_viewId | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS);
+        bgfx::setIndexBuffer(this->_ibh);
+        bgfx::setVertexBuffer(0, this->_vbh);
+
+		bgfx::setState(0 | BGFX_STATE_DEFAULT);
         bgfx::submit(this->_viewId, this->_stencilProgram);
 
 		this->_vertices.clear();

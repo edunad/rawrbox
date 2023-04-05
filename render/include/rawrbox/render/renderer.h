@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 struct GLFWwindow;
-namespace rawrBOX {
+namespace rawrBox {
 #pragma region FLAGS
 	namespace RenderFlags {
 		const uint32_t NONE = 0;

@@ -2,7 +2,7 @@
 
 #include <rawrbox/math/vector2.hpp>
 
-namespace rawrBOX {
+namespace rawrBox {
 	template <class NumberType>
 	class Vector3_t {
 	private:

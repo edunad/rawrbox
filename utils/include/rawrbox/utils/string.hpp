@@ -5,7 +5,7 @@
 #include <vector>
 #include <sstream>
 
-namespace rawrBOX {
+namespace rawrBox {
 	class StrUtils {
 		public:
 			static std::string toLower(std::string str) {

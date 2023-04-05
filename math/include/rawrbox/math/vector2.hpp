@@ -4,7 +4,7 @@
 #include <type_traits>
 #include <cmath>
 
-namespace rawrBOX {
+namespace rawrBox {
 	template <class NumberType>
 	class Vector2_t {
 	private:
