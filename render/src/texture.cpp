@@ -4,6 +4,9 @@
 
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_PNG
+#define STBI_ONLY_JPEG
+#define STBI_ONLY_BMP
 #include <stb_image.h>
 
 #include <fmt/format.h>
@@ -16,7 +19,6 @@ namespace rawrBox {
 	Texture::Texture(const rawrBox::Vector2i& initsize, const rawrBox::Color& bgcol) {
 		this->_pixels = bgfx::alloc(static_cast<uint32_t>(initsize.y * initsize.x) * this->_channels);
 		this->_size = initsize;
-		this->_originalSize = initsize;
 
 		for (size_t i = 0; i < this->_pixels->size; i+=4) {
 			this->_pixels->data[i] = static_cast<uint8_t>(bgcol.r * 255) ;
@@ -78,33 +80,6 @@ namespace rawrBox {
 
 	void Texture::resize(const rawrBox::Vector2i& newsize) {
 		throw std::runtime_error("TODO");
-		/*const bgfx::Memory* newpixels = bgfx::alloc(static_cast<uint32_t>(newsize.y * newsize.x) * this->_channels);
-
-		const int x_ratio = (int)((this->_size.x << 16) / newsize.x);
-    	const int y_ratio = (int)((this->_size.y << 16) / newsize.y);
-
-		int x_ratio_with_color = x_ratio;
-
-		for (int y = 0; y < newsize.y; y++) {
-			int y2_xsource = ((y * y_ratio) >> 16) * this->_size.x;
-			int i_xdest = y * newsize.x;
-
-			int source_x_offset = 0;
-			int startingOffset = y2_xsource;
-			auto inputLine = this->_pixels->data[startingOffset];
-
-			for (int x = 0; x < newsize.x; x++) {
-				i_xdest += 1;
-				source_x_offset += x_ratio_with_color;
-				int sourceOffset = source_x_offset >> 16;
-
-				newpixels->data[i_xdest] = this->_pixels->data[sourceOffset];
-			}
-		}
-
-		//delete this->_pixels;
-		this->_pixels = newpixels;
-		this->_size = newsize;*/
 	}
 	#pragma endregion
 

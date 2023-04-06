@@ -63,12 +63,22 @@ namespace rawrBox {
 			if((*this) == other) return other;
 			QuaternionType ret;
 
-			ret.x = static_cast<NumberType>(static_cast<float>(x) + static_cast<float>(other.x - x) * timestep);
-			ret.y = static_cast<NumberType>(static_cast<float>(y) + static_cast<float>(other.y - y) * timestep);
-			ret.z = static_cast<NumberType>(static_cast<float>(z) + static_cast<float>(other.z - z) * timestep);
-			ret.w = static_cast<NumberType>(static_cast<float>(w) + static_cast<float>(other.w - w) * timestep);
+			float dot = w * other.w + x * other.x + y * other.y + z * other.z;
+			float blend = 1.f - timestep;
 
-			return ret;
+			if(dot < 0.f) {
+				ret.w = blend * w + blend * -other.w;
+				ret.x = blend * x + blend * -other.x;
+				ret.y = blend * y + blend * -other.y;
+				ret.z = blend * z + blend * -other.z;
+			} else {
+				ret.w = blend * w + blend * other.w;
+				ret.x = blend * x + blend * other.x;
+				ret.y = blend * y + blend * other.y;
+				ret.z = blend * z + blend * other.z;
+			}
+
+			return ret.normalized();
 		}
 
 		QuaternionType& operator-= (const QuaternionType& other) {

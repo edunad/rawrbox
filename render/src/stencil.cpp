@@ -8,6 +8,14 @@
 // Compiled shaders
 #include <generated/shaders/render/all.h>
 
+#define BGFX_STATE_DEFAULT_2D (0 \
+		| BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA) \
+		| BGFX_STATE_WRITE_RGB \
+		| BGFX_STATE_WRITE_A \
+		| BGFX_STATE_CULL_CW \
+		)
+
+
 static const bgfx::EmbeddedShader shaders[] =
 {
 	BGFX_EMBEDDED_SHADER(vs_stencil),
@@ -23,19 +31,13 @@ namespace rawrBox {
 		// Shader layout
 		this->_vLayout.begin()
 			.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-			.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Int16, true, true)
+			.add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 			.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 		.end();
-
-		// Create buffers
-		this->_vbh = bgfx::createVertexBuffer(bgfx::makeRef(this->_vertices.data(), sizeof(this->_vertices)), this->_vLayout);
-    	this->_ibh = bgfx::createIndexBuffer(bgfx::makeRef(this->_indices.data(), sizeof(this->_indices)));
 	}
 
 	Stencil::~Stencil() {
 		// CLEANUP BUFFERS & PROGRAMS
-		bgfx::destroy(this->_ibh);
-		bgfx::destroy(this->_vbh);
 		bgfx::destroy(this->_2dprogram);
 		bgfx::destroy(this->_textureHandle);
 		bgfx::destroy(this->_texColor);
@@ -51,36 +53,37 @@ namespace rawrBox {
 		this->_2dprogram = bgfx::createProgram(vsh, fsh, true);
 		if(this->_2dprogram.idx == 0) throw std::runtime_error("[RawrBOX-Stencil] Failed to initialize shader program");
 
-		this->_pixelTexture = std::make_shared<rawrBox::Texture>(rawrBox::Vector2i(1, 1), Colors::Yellow);
+		this->_pixelTexture = std::make_shared<rawrBox::Texture>(rawrBox::Vector2i(1, 1), Colors::White);
 		this->_pixelTexture->upload();
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+	}
+
+	void Stencil::resize(const rawrBox::Vector2i& size) {
+		this->_windowSize = size;
 	}
 
 #pragma region RENDERING
 	void Stencil::pushVertice(const rawrBox::Vector2& pos, const rawrBox::Vector2& uv, const rawrBox::Color& col) {
 		this->_vertices.emplace_back(
 			// pos
-			pos.x / this->_windowSize.x * 2 - 1,
-			(pos.y  / this->_windowSize.y * 2 - 1) * -1,
+			(pos.x / _windowSize.x * 2 - 1),
+			(pos.y / _windowSize.y * 2 - 1) * -1,
 			0.0f,
 
 			// uv
-			static_cast<int16_t>(uv.x),
-			static_cast<int16_t>(uv.y),
+			uv.x,
+			uv.y,
 
 			// color
-			0xFFFFFFFF
-			//rawrBox::Color::toBuffer(col)
+			rawrBox::Color::pack(col)
 		);
 	}
 
-	void Stencil::pushIndices(unsigned int a, unsigned int b, unsigned int c) {
-		auto pos = static_cast<unsigned int>(this->_vertices.size());
-
-		this->_indices.push_back(pos - a);
-		this->_indices.push_back(pos - b);
-		this->_indices.push_back(pos - c);
+	void Stencil::pushIndices(uint16_t a, uint16_t b, uint16_t c) {
+		this->_indices.push_back(a);
+		this->_indices.push_back(b);
+		this->_indices.push_back(c);
 	}
 #pragma endregion
 
@@ -90,64 +93,41 @@ namespace rawrBox {
 
 		this->setTexture(this->_pixelTexture->getHandle());
 		this->setShaderProgram(this->_2dprogram);
-
-		/*pushVertice(a + offset, aUV, colA);
+		// ----
+/*
+		pushVertice(a + offset, aUV, colA);
 		pushVertice(b + offset, bUV, colB);
-		pushVertice(c + offset, cUV, colC);*/
+		pushVertice(c + offset, cUV, colC);
 
 		this->pushVertice(a, aUV, colA);
 		this->pushVertice(b, bUV, colB);
 		this->pushVertice(c, cUV, colC);
-		this->pushIndices(3, 2, 1);
+		this->pushIndices(3, 2, 1);*/
 	}
 
 	void Stencil::drawBox(const rawrBox::Vector2& pos, const rawrBox::Vector2& size, rawrBox::Color col) {
 		this->drawTexture(pos, size, this->_pixelTexture, col);
 	}
 
-	void Stencil::drawTexture(rawrBox::Vector2 pos, rawrBox::Vector2 size, std::shared_ptr<rawrBox::Texture> tex, rawrBox::Color col, rawrBox::Vector2 uvStart, rawrBox::Vector2 uvEnd, float rotation, const rawrBox::Vector2& origin) {
-
+	void Stencil::drawTexture(rawrBox::Vector2 pos, rawrBox::Vector2 size, const bgfx::TextureHandle& handle, rawrBox::Color col, rawrBox::Vector2 uvStart, rawrBox::Vector2 uvEnd, float rotation, const rawrBox::Vector2& origin) {
 		// Texture setup -----
-		if(tex == nullptr) throw std::runtime_error("[RawrBOX-Stencil] Invalid texture, cannot draw");
-
-		this->setTexture(tex->getHandle());
+		this->setTexture(handle);
 		this->setShaderProgram(this->_2dprogram);
 		// ------
 
-		// Primitives -----
-		rawrBox::Vector2 b = pos;
-		rawrBox::Vector2 c = pos;
-
-		b.x += size.x;
-		c.y += size.y;
-
-		auto rotOrigin = origin.isNaN() ? pos + size / 2 : pos + origin;
-
-		/*auto vertA = pos.rotateAroundOrigin(rotation, rotOrigin);
-		auto vertB = b.rotateAroundOrigin(rotation, rotOrigin);
-		auto vertC = c.rotateAroundOrigin(rotation, rotOrigin);
-		auto vertD = (pos + size).rotateAroundOrigin(rotation, rotOrigin);
-
-		this->pushVertice(vertA, uvStart, col);
-		this->pushVertice(b.rotateAroundOrigin(rotation, rotOrigin), {uvEnd.x, uvStart.y}, col);
-		this->pushVertice(c.rotateAroundOrigin(rotation, rotOrigin), {uvStart.x, uvEnd.y}, col);
-		this->pushVertice((pos + size).rotateAroundOrigin(rotation, rotOrigin), uvEnd, col);*/
-
-		this->pushVertice(0, 0, col); // 0
-		this->pushVertice({100, 0}, {uvEnd.x, uvStart.y}, col); // 1
-		this->pushVertice({0, 100}, {uvStart.x, uvEnd.y}, col); // 2
-		this->pushVertice({100, 100}, uvEnd, col); // 3
-
-
-		/*
-		0 -- 1
-
-		2 -- 3
-		*/
+		this->pushVertice(pos + rawrBox::Vector2(-size.x, -size.y), uvStart, col);
+		this->pushVertice(pos + rawrBox::Vector2(-size.x,  size.y), {uvStart.x, uvEnd.y}, col);
+		this->pushVertice(pos + rawrBox::Vector2(size.x, -size.y), {uvEnd.x, uvStart.y}, col);
+		this->pushVertice(pos + rawrBox::Vector2(size.x,  size.y), uvEnd, col);
 
 		this->pushIndices(0, 1, 2);
 		this->pushIndices(1, 3, 2);
-		// ------------------
+	}
+
+	void Stencil::drawTexture(rawrBox::Vector2 pos, rawrBox::Vector2 size, std::shared_ptr<rawrBox::Texture> tex, rawrBox::Color col, rawrBox::Vector2 uvStart, rawrBox::Vector2 uvEnd, float rotation, const rawrBox::Vector2& origin) {
+		// Texture setup -----
+		if(tex == nullptr) throw std::runtime_error("[RawrBOX-Stencil] Invalid texture, cannot draw");
+		this->drawTexture(pos, size, tex->getHandle(), col, uvStart, uvEnd, rotation, origin);
 	}
 
 #pragma endregion
@@ -167,13 +147,31 @@ namespace rawrBox {
 
 	void Stencil::draw() {
 		if (this->_vertices.empty() || this->_indices.empty()) return;
-
 		bgfx::setTexture(0, this->_texColor, this->_textureHandle);
 
-        bgfx::setIndexBuffer(this->_ibh);
-        bgfx::setVertexBuffer(0, this->_vbh);
+		// Setup buffer (Transient are destroyed every frame, made for things that change a lot) ----
+		/*
+		It's special buffer type for index/vertex buffers that are changing every frame. It's there as convenience as fire&forget, so you don't have to manually manage buffers that are changing all the time. Also, as we know what's life-time of these buffers, it allows some internal optimizations.
 
-		bgfx::setState(0 | BGFX_STATE_DEFAULT);
+		Transient - changes every frame
+		Dynamic - changes sometimes (if you don't pass data on creation, buffer/texture is dynamic)
+		Static - never changes (if you pass data to any creation function, it's assumed that buffer/texture is immutable)
+		*/
+
+		bgfx::TransientVertexBuffer vbh;
+		bgfx::TransientIndexBuffer ibh;
+
+		bgfx::allocTransientVertexBuffer(&vbh, static_cast<uint32_t>(this->_vertices.size()), this->_vLayout);
+		bx::memCopy(vbh.data, this->_vertices.data(), this->_vertices.size() * this->_vLayout.m_stride);
+
+		bgfx::allocTransientIndexBuffer(&ibh, static_cast<uint32_t>(this->_indices.size()));
+		bx::memCopy(ibh.data, this->_indices.data(),  this->_indices.size() * sizeof(uint16_t));
+
+		bgfx::setVertexBuffer(0, &vbh, 0, static_cast<uint32_t>(this->_vertices.size()));
+		bgfx::setIndexBuffer(&ibh, 0, static_cast<uint32_t>(this->_indices.size()));
+		// ----------------------
+
+		bgfx::setState(BGFX_STATE_DEFAULT_2D, 0);
         bgfx::submit(this->_viewId, this->_stencilProgram);
 
 		this->_vertices.clear();

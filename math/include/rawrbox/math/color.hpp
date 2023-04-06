@@ -47,18 +47,9 @@ namespace rawrBox {
 			}
 		}
 
-		static uint32_t toBuffer(Color_t<NumberType> c) {
-			if constexpr(std::is_same<NumberType, int>::value) {
-				return ((static_cast<int>(c.a) >> 24) << 24) |       // Alpha
-					((static_cast<int>(c.r) >> 16) & 0xFF) |         // Blue
-					((static_cast<int>(c.g) >> 8) & 0xFF) << 8 |     // Green
-					((static_cast<int>(c.b)) & 0xFF) << 16;          // Red
-			} else {
-				return ((static_cast<int>(c.a * 255.0f) >> 24) << 24) |       // Alpha
-					((static_cast<int>(c.r * 255.0f) >> 16) & 0xFF) |         // Blue
-					((static_cast<int>(c.g * 255.0f) >> 8) & 0xFF) << 8 |     // Green
-					((static_cast<int>(c.b * 255.0f)) & 0xFF) << 16;          // Red
-			}
+		static uint32_t pack(Color_t<NumberType> c) {
+				Color_t<int> cc = c.cast<int>();
+				return static_cast<uint32_t>(cc.r | (cc.g << 8) | (cc.b << 16) | (cc.a << 24));
 		}
 
 		template<class ReturnType>
@@ -264,7 +255,7 @@ namespace rawrBox {
 		inline const static ColorType Blue = ColorType(0.2f, 0.67f, 0.87f);
 		inline const static ColorType Orange = ColorType(1, 0.47f, 0.24f);
 		inline const static ColorType Yellow = ColorType(1, 0.69f, 0.25f);
-		inline const static ColorType Purple = ColorType(0.43f, 0.43f, 0.82f);
+		inline const static ColorType Purple = ColorType(1.f, 0.f, 1.f);
 
 		inline const static ColorType Transparent = ColorType(0, 0, 0, 0);
 	};

@@ -11,7 +11,6 @@ namespace rawrBox {
 		const bgfx::Memory* _pixels;
 		bgfx::TextureHandle _handle = BGFX_INVALID_HANDLE;
 
-		rawrBox::Vector2i _originalSize;
 		rawrBox::Vector2i _size;
 
 		int _index;
