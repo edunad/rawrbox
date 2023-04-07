@@ -3,20 +3,21 @@
 #include <rawrbox/render/engine.h>
 #include <rawrbox/render/window.h>
 #include <rawrbox/render/renderer.h>
-#include <rawrbox/render/texture.h>
-#include <rawrbox/render/animated_texture.h>
+
+#include <rawrbox/render/texture/image.h>
+#include <rawrbox/render/texture/gif.h>
+
 #include <rawrbox/render/stencil.h>
 
 #include <memory>
 
 namespace cube {
 	class Game : public rawrBox::Engine {
-		std::shared_ptr<rawrBox::Texture> _texture;
-		std::shared_ptr<rawrBox::Texture> _texture2;
-		std::shared_ptr<rawrBox::AnimatedTexture> _texture3;
-		std::shared_ptr<rawrBox::AnimatedTexture> _texture4;
+		std::shared_ptr<rawrBox::TextureImage> _texture;
+		std::shared_ptr<rawrBox::TextureImage> _texture2;
+		std::shared_ptr<rawrBox::TextureGIF> _texture3;
 
-		std::unique_ptr<rawrBox::Renderer> _render;
+		std::shared_ptr<rawrBox::Renderer> _render;
 		std::unique_ptr<rawrBox::Window> _window;
 
 		float _view[16];

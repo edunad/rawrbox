@@ -152,7 +152,11 @@
             "hash_set": "cpp",
             "ranges": "cpp",
             "span": "cpp",
-            "cfenv": "cpp"
+            "cfenv": "cpp",
+            "*.sh": "cpp",
+            "*.hpp11": "cpp",
+            "*.inc": "cpp",
+            "coroutine": "cpp"
         },
         "editor.semanticTokenColorCustomizations": {
             "rules": {

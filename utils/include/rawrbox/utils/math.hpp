@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rawrbox/math/pi.hpp>
+
 namespace rawrBox {
 	class MathUtils {
 	public:
@@ -10,19 +12,16 @@ namespace rawrBox {
 
 		template<typename T = int>
 		static inline T repeat(T val, T min, T max) {
-			if(val < min) val = max;
-			if(val > max) val = min;
-
-			return clamp<T>(val, min, max);
+			return ((val - min) % max) + min;
 		}
 
 		static inline float toRad(float val) {
-			return val * static_cast<float>(3.14159265358979323846L) / 180.f;
+			return val * rawrBox::pi<float> / 180.f;
 		}
 
 
 		static inline float toDeg(float val) {
-			return val * 180.f / static_cast<float>(3.14159265358979323846L);
+			return val * 180.f / rawrBox::pi<float>;
 		}
 
 		static inline float lerp(float a, float b, float lerpFactor) {
@@ -56,7 +55,7 @@ namespace rawrBox {
 		static inline float angleRadLerp(float a, float b, float lerpFactor) {
 			if(a == b) return b;
 
-			float PI = static_cast<float>(3.14159265358979323846L);
+			float PI = rawrBox::pi<float>;
 			float PI_TIMES_TWO = PI * 2;
 
 			float result = 0.f;

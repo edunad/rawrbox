@@ -1,5 +1,5 @@
 # Grab source files
-file(GLOB RAWRBOX_UI_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp" )
+file(GLOB_RECURSE RAWRBOX_UI_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp" )
 
 # Project setup
 set(output_target rawrBox::UI)

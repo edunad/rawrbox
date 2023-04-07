@@ -10,34 +10,31 @@ namespace cube {
 		this->_window = std::make_unique<rawrBox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("CUBE");
-		this->_window->setRenderer(bgfx::RendererType::Vulkan);
+		this->_window->setRenderer(bgfx::RendererType::Count);
 		this->_window->onResize += [this](auto& w, auto& size) {
 			if(this->_render == nullptr) return;
-			this->_render->resizeView({}, size);
+			this->_render->resizeView(size);
 		};
 		this->_window->onWindowClose += [this](auto& w) {
 			this->shutdown();
 		};
 
-		this->_window->initialize(width, height, rawrBox::WindowFlags::Features::VSYNC | rawrBox::WindowFlags::Features::RESIZABLE |  rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Window::WINDOWED);
+		this->_window->initialize(width, height, rawrBox::WindowFlags::Features::VSYNC | rawrBox::WindowFlags::Features::RESIZABLE | rawrBox::WindowFlags::Features::MULTI_THREADED | rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Debug::STATS | rawrBox::WindowFlags::Window::WINDOWED);
 
-		this->_render = std::make_unique<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
+		this->_render = std::make_shared<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
 		this->_render->setClearColor(0x443355FF);
 		this->_render->initialize();
 
 		// Load content
-		this->_texture = std::make_shared<rawrBox::Texture>("./content/textures/screem.png");
+		this->_texture = std::make_shared<rawrBox::TextureImage>("./content/textures/screem.png");
 		this->_texture->upload();
 
-		this->_texture2 = std::make_shared<rawrBox::Texture>("./content/textures/cat_nya.png");
+		this->_texture2 = std::make_shared<rawrBox::TextureImage>("./content/textures/cat_nya.png");
 		this->_texture2->upload();
 
-		this->_texture3 = std::make_shared<rawrBox::AnimatedTexture>("./content/textures/meow3.gif");
+		this->_texture3 = std::make_shared<rawrBox::TextureGIF>("./content/textures/meow3.gif");
+		this->_texture3->setSpeed(0.5f);
 		this->_texture3->upload();
-
-		this->_texture4 = std::make_shared<rawrBox::AnimatedTexture>("./content/textures/no_loop.gif");
-		this->_texture4->setLoop(false);
-		this->_texture4->upload();
 		// -----
 
 		// Setup camera
@@ -67,33 +64,25 @@ namespace cube {
 	float counter = 0;
 	void Game::draw(const double alpha) {
 		if(this->_render == nullptr) return;
-		auto stencil = this->_render->getStencil();
 
 		this->_render->swapBuffer(); // Clean up and set renderer
-
-			// 2D Drawing
 			bgfx::setViewTransform(this->_render->getID(), NULL, this->_proj);
+			bgfx::dbgTextPrintf(0, 4, 0x0f, "CLEAR ME SENPAI");
 
-			//bgfx::setViewTransform(this->_render->getID(), NULL, this->_proj);
-			//stencil->drawBox({0, 0}, {100, 100}, rawrBox::Color::debug(static_cast<int>(counter)));
-			stencil->drawTexture({100, 100}, {100, 100}, this->_texture);
-			stencil->drawTexture({400, 100}, {100, 100}, this->_texture2);
+			auto& stencil = this->_render->getStencil();
 
-			stencil->drawTexture({400, 300}, {100, 100}, this->_texture3->getHandle());
-			this->_texture3->step();
-
-			stencil->drawTexture({400, 600}, {200, 100}, this->_texture4->getHandle());
-			this->_texture4->step();
-
-			stencil->draw();
-			// ----------------
-
-			// 3D Drawing
-			bgfx::setViewTransform(this->_render->getID(), this->_view, this->_proj);
-			// ----------------
+			stencil.begin();
+				stencil.drawBox({400 +std::cos(counter * 0.5f) * 200.f, 400 + std::sin(counter * 0.5f) * 200.f}, {100, 100}, rawrBox::Color::debug(static_cast<int>(counter)));
+				stencil.drawTexture({100 + std::cos(counter * 1.5f) * 5.f, 100 + std::sin(counter * 1.5f) * 5.f}, {100, 100}, this->_texture);
+				stencil.drawTexture({400, 100}, {100, 100}, this->_texture2);
+				stencil.drawTexture({400, 300}, {100, 100}, this->_texture3);
+				this->_texture3->step();
+			stencil.end();
 
 			bgfx::dbgTextPrintf(0, 1, 0x0f, "Color can be changed with ANSI \x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.");
+			bgfx::setViewTransform(this->_render->getID(), this->_view, this->_proj);
 		this->_render->render(); // Commit primitives
+
 		counter++;
 	}
 }

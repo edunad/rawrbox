@@ -1,7 +1,7 @@
 ﻿project("CUBE_SAVIOR_OF_THE_POLYVERSE")
 
 # Grab source files
-file(GLOB RAWRBOX_SAMPLE_SOURCES "include/*.h" "include/*.hpp" "src/*.cpp" "src/*.c" )
+file(GLOB_RECURSE RAWRBOX_SAMPLE_SOURCES "include/*.h" "include/*.hpp" "src/*.cpp" "src/*.c" )
 
 # Project setup
 set(output_target CUBE_SAVIOR_OF_THE_POLYVERSE)

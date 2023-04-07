@@ -223,7 +223,7 @@ namespace rawrBox {
 		glfwPollEvents();
 	}
 
-	#pragma region UTILS
+	// ------UTILS
 	void Window::close() {
 		if (this->_handle == nullptr) return;
 		glfwDestroyWindow(GLFWHANDLE);
@@ -231,6 +231,8 @@ namespace rawrBox {
 	}
 
 	bool Window::isRendererSupported(bgfx::RendererType::Enum render) {
+		if(render == bgfx::RendererType::Count) return true;
+
 		bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
 		uint8_t num = bgfx::getSupportedRenderers(BX_COUNTOF(supportedRenderers), supportedRenderers);
 		for (uint8_t i = 0; i < num; ++i) {
@@ -265,9 +267,9 @@ namespace rawrBox {
 		if (this->_handle == nullptr) return;
 		glfwSetWindowShouldClose(GLFWHANDLE, close ? 1 : 0);
 	}
-	#pragma endregion
+	// --------------------
 
-	#pragma region EVENTS
+	// ------EVENTS
 	void Window::callbacks_windowClose(GLFWwindow* whandle) {
 		auto& window = glfwHandleToRenderer(whandle);
 		window.onWindowClose(window);
@@ -337,7 +339,7 @@ namespace rawrBox {
 		window.hasFocus = focus == 1;
 		window.onFocus(window, focus);
 	}
-	#pragma endregion
+	// --------------------
 
 	Window::~Window() { this->close(); }
 }

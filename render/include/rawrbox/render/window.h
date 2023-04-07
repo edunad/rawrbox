@@ -11,7 +11,7 @@
 
 struct GLFWwindow;
 namespace rawrBox {
-#pragma region FLAGS
+// ------FLAGS
 	namespace WindowFlags {
 		const uint32_t NONE = 0;
 
@@ -34,10 +34,10 @@ namespace rawrBox {
 			const uint32_t TEXT = 1 << 10;
 		};
 	};
-#pragma endregion
+// --------------------
 
 	class Window;
-#pragma region EVENTS
+// ------EVENTS
 	using OnFocusCallback = Event<Window&, bool>;
 	using OnCharCallback = Event<Window&, unsigned int>;
 	using OnResizeCallback = Event<Window&, const Vector2i&>;
@@ -46,7 +46,7 @@ namespace rawrBox {
 	using OnKeyCallback = Event<Window&, unsigned int, unsigned int, unsigned int, unsigned int>;
 	using OnMouseKeyCallback = Event<Window&, const Vector2i&, unsigned int, unsigned int, unsigned int>;
 	using OnWindowClose = Event<Window&>;
-#pragma endregion
+// --------------------
 
 	class Window {
 		private:
@@ -58,7 +58,7 @@ namespace rawrBox {
 			int _monitor = -1;
 			// -----
 
-			#pragma region CALLBACKS
+			// ------CALLBACKS
 			static void callbacks_focus(GLFWwindow* whandle, int focus);
 			static void callbacks_char(GLFWwindow* whandle, unsigned int ch);
 			static void callbacks_scroll(GLFWwindow* whandle, double x, double y);
@@ -67,14 +67,14 @@ namespace rawrBox {
 			static void callbacks_mouseKey(GLFWwindow* whandle, int button, int action, int mods);
 			static void callbacks_key(GLFWwindow* whandle, int key, int scancode, int action, int mods);
 			static void callbacks_windowClose(GLFWwindow* whandle);
-			#pragma endregion
+			// --------------------
 		public:
 
 			std::unordered_map<unsigned int, unsigned char> keysIn;
 			std::unordered_map<unsigned int, unsigned char> mouseIn;
 			bool hasFocus = false;
 
-			#pragma region CALLBACKS
+			// ------CALLBACKS
 			OnKeyCallback onKey;
 			OnCharCallback onChar;
 			OnFocusCallback onFocus;
@@ -83,7 +83,7 @@ namespace rawrBox {
 			OnMouseKeyCallback onMouseKey;
 			OnMouseMoveCallback onMouseMove;
 			OnWindowClose onWindowClose;
-			#pragma endregion
+			// --------------------
 
 			void initialize(int width, int height, uint32_t flags = WindowFlags::NONE);
 
@@ -92,12 +92,12 @@ namespace rawrBox {
 			void setClearColor(uint32_t clearColor);
 			void setTitle(const std::string& title);
 
-			#pragma region RENDERING
+			// ------RENDERING
 			void shutdown();
 			void pollEvents();
-			#pragma endregion
+			// --------------------
 
-			#pragma region UTILS
+			// ------UTILS
 			void close();
 			bool getShouldClose() const;
 			void setShouldClose(bool close) const;
@@ -106,7 +106,7 @@ namespace rawrBox {
 
 			Vector2i getSize() const;
 			Vector2i getMousePos() const;
-			#pragma endregion
+			// --------------------
 
 			~Window();
 	};

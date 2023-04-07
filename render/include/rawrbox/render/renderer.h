@@ -13,24 +13,26 @@ namespace rawrBox {
 			bgfx::ViewId _id = 0;
 			// -----
 
-			std::shared_ptr<rawrBox::Stencil> _stencil;
+			rawrBox::Vector2i _size = {};
+			std::unique_ptr<rawrBox::Stencil> _stencil;
 		public:
 			~Renderer();
 			Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size);
 
 			void initialize();
 			void setClearColor(uint32_t clearColor);
-			void resizeView(const rawrBox::Vector2i& pos, const rawrBox::Vector2i& size);
+			void resizeView(const rawrBox::Vector2i& size);
 			void clear();
 
-			#pragma region RENDERING
+			// ------RENDERING
 			void swapBuffer() const;
 			void render() const;
-			#pragma endregion
+			// --------------------
 
-			#pragma region UTILS
-			bgfx::ViewId getID() const;
-			std::shared_ptr<rawrBox::Stencil> getStencil() const;
-			#pragma endregion
+			// ------UTILS
+			bgfx::ViewId& getID();
+			rawrBox::Vector2i& getSize();
+			rawrBox::Stencil& getStencil() const;
+			// --------------------
 	};
 }

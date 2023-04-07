@@ -34,7 +34,7 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
         list(APPEND PROFILES metal)
     endif()
 
-    file(GLOB VERTEX_SHADER_FILES CONFIGURE_DEPENDS FOLLOW_SYMLINKS "${SHADERS_DIR}/vs_*[!.def].sc")
+    file(GLOB_RECURSE VERTEX_SHADER_FILES CONFIGURE_DEPENDS FOLLOW_SYMLINKS "${SHADERS_DIR}/vs_*[!.def].sc")
     bgfx_compile_shader_to_header(
             TYPE VERTEX
             SHADERS ${VERTEX_SHADER_FILES}
@@ -45,7 +45,7 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
             INCLUDE_DIRS "${SHADERS_DIR}" "${BGFX_DIR}/src"
     )
 
-    file(GLOB FRAGMENT_SHADER_FILES CONFIGURE_DEPENDS FOLLOW_SYMLINKS "${SHADERS_DIR}/fs_*[!.def].sc")
+    file(GLOB_RECURSE FRAGMENT_SHADER_FILES CONFIGURE_DEPENDS FOLLOW_SYMLINKS "${SHADERS_DIR}/fs_*[!.def].sc")
     bgfx_compile_shader_to_header(
             TYPE FRAGMENT
             SHADERS ${FRAGMENT_SHADER_FILES}

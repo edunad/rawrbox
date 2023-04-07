@@ -1,10 +1,12 @@
 #pragma once
 
-#include <rawrbox/render/texture.h>
+#include <rawrbox/render/texture/flat.h>
+#include <rawrbox/render/texture/render.h>
 
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/math/aabb.hpp>
 
 #include<bgfx/bgfx.h>
 
@@ -33,37 +35,63 @@ namespace rawrBox {
 		bgfx::TextureHandle _textureHandle = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 
-		std::shared_ptr<rawrBox::Texture> _pixelTexture;
+		std::shared_ptr<rawrBox::TextureFlat> _pixelTexture;
+		std::shared_ptr<rawrBox::TextureRender> _renderTexture;
 
 		rawrBox::Vector2 _windowSize;
+
+		// Offset handling ----
+		rawrBox::Vector2 _offset;
+		rawrBox::Vector2 _oldOffset;
+		std::vector<rawrBox::Vector2> _offsets;
+		std::vector<rawrBox::AABB> _clips;
+		// ----------
 
 		std::vector<PosUVColorVertexData> _vertices;
 		std::vector<uint16_t> _indices;
 
-#pragma region RENDERING
+		bool _recording = false;
+
+		// ------ UTILS
 		void pushVertice(const rawrBox::Vector2& pos, const rawrBox::Vector2& uv, const rawrBox::Color& col);
 		void pushIndices(uint16_t a, uint16_t b, uint16_t c);
-#pragma endregion
+		// --------------------
 
+		// ------ RENDERING
+		void internalDraw(const bgfx::ViewId& id);
+		void drawRecording();
+		// --------------------
 	public:
-		Stencil(bgfx::ViewId id, const rawrBox::Vector2& size);
+		Stencil(bgfx::ViewId& id, const rawrBox::Vector2& size);
 		~Stencil();
 
 		void initialize();
 		void resize(const rawrBox::Vector2i& size);
 
-#pragma region UTILS
+		// ------ UTILS
 		void drawTriangle(const rawrBox::Vector2& a, const rawrBox::Vector2& aUV, const rawrBox::Color& colA, const rawrBox::Vector2& b, const rawrBox::Vector2& bUV, const rawrBox::Color& colB, const rawrBox::Vector2& c, const rawrBox::Vector2& cUV, const rawrBox::Color& colC);
 		void drawBox(const rawrBox::Vector2& pos, const rawrBox::Vector2& size, rawrBox::Color col = rawrBox::Colors::White);
+		void drawTexture(rawrBox::Vector2 pos, rawrBox::Vector2 size, std::shared_ptr<rawrBox::TextureBase> tex, rawrBox::Color col = rawrBox::Colors::White, rawrBox::Vector2 uvStart = {0, 0}, rawrBox::Vector2 uvEnd = {1, 1}, float rotation = 0.f, const rawrBox::Vector2& origin = {std::nanf(""), std::nanf("")});
+		// --------------------
 
-		void drawTexture(rawrBox::Vector2 pos, rawrBox::Vector2 size, const bgfx::TextureHandle& handle, rawrBox::Color col = rawrBox::Colors::White, rawrBox::Vector2 uvStart = {0, 0}, rawrBox::Vector2 uvEnd = {1, 1}, float rotation = 0.f, const rawrBox::Vector2& origin = {std::nanf(""), std::nanf("")});
-		void drawTexture(rawrBox::Vector2 pos, rawrBox::Vector2 size, std::shared_ptr<rawrBox::Texture> tex, rawrBox::Color col = rawrBox::Colors::White, rawrBox::Vector2 uvStart = {0, 0}, rawrBox::Vector2 uvEnd = {1, 1}, float rotation = 0.f, const rawrBox::Vector2& origin = {std::nanf(""), std::nanf("")});
-#pragma endregion
-
-#pragma region RENDERING
+		// ------ RENDERING
 		void setTexture(const bgfx::TextureHandle& tex);
 		void setShaderProgram(const bgfx::ProgramHandle& handle);
-		void draw();
-#pragma endregion
+
+		void begin();
+		void end();
+		// --------------------
+
+		// ------ LOCATION
+		void pushOffset(const rawrBox::Vector2& offset);
+		void popOffset();
+		void pushLocalOffset();
+		void popLocalOffset();
+		// --------------------
+
+		// ------ CLIPPING
+		void pushClipping(const rawrBox::AABB& rect);
+		void popClipping();
+		// --------------------
 	};
 }
