@@ -31,6 +31,17 @@
 #include <stdexcept>
 #include <map>
 
+// Fix BGFX defines for linux
+#define BGFX_PLATFORM_SUPPORTS_DX9BC (0 \
+	|| BX_PLATFORM_WINDOWS              \
+	)
+#define BGFX_PLATFORM_SUPPORTS_DXBC (0  \
+	|| BX_PLATFORM_WINDOWS              \
+	|| BX_PLATFORM_WINRT                \
+	|| BX_PLATFORM_XBOXONE              \
+	)
+// ----------------
+
 #define GLFWHANDLE reinterpret_cast<GLFWwindow*>(_handle)
 
 namespace rawrBox {
