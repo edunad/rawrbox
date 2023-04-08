@@ -2,8 +2,6 @@
 #include <rawrbox/render/texture/render.h>
 #include <fmt/format.h>
 
-#include <bgfx/embedded_shader.h>
-
 // Compiled shaders
 #include <generated/shaders/render/all.h>
 

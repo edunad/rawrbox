@@ -1,6 +1,6 @@
 
 #include <rawrbox/render/stencil.h>
-#include <bgfx/embedded_shader.h>
+#include <rawrbox/render/shader_defines.h>
 
 // Compiled shaders
 #include <generated/shaders/render/all.h>
@@ -12,8 +12,7 @@
 		| BGFX_STATE_CULL_CW \
 		)
 
-static const bgfx::EmbeddedShader shaders[] =
-{
+static const bgfx::EmbeddedShader shaders[] = {
 	BGFX_EMBEDDED_SHADER(vs_stencil),
 	BGFX_EMBEDDED_SHADER(fs_stencil),
 	BGFX_EMBEDDED_SHADER_END()
