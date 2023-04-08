@@ -8,7 +8,8 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/aabb.hpp>
 
-#include<bgfx/bgfx.h>
+#include <bgfx/bgfx.h>
+#include <memory>
 
 namespace rawrBox {
 	struct PosUVColorVertexData {
@@ -71,7 +72,7 @@ namespace rawrBox {
 		// ------ UTILS
 		void drawTriangle(const rawrBox::Vector2& a, const rawrBox::Vector2& aUV, const rawrBox::Color& colA, const rawrBox::Vector2& b, const rawrBox::Vector2& bUV, const rawrBox::Color& colB, const rawrBox::Vector2& c, const rawrBox::Vector2& cUV, const rawrBox::Color& colC);
 		void drawBox(const rawrBox::Vector2& pos, const rawrBox::Vector2& size, rawrBox::Color col = rawrBox::Colors::White);
-		void drawTexture(rawrBox::Vector2 pos, rawrBox::Vector2 size, std::shared_ptr<rawrBox::TextureBase> tex, rawrBox::Color col = rawrBox::Colors::White, rawrBox::Vector2 uvStart = {0, 0}, rawrBox::Vector2 uvEnd = {1, 1}, float rotation = 0.f, const rawrBox::Vector2& origin = {std::nanf(""), std::nanf("")});
+		void drawTexture(const rawrBox::Vector2& pos, const rawrBox::Vector2& size, std::shared_ptr<rawrBox::TextureBase> tex, rawrBox::Color col = rawrBox::Colors::White, rawrBox::Vector2 uvStart = {0, 0}, rawrBox::Vector2 uvEnd = {1, 1}, float rotation = 0.f, rawrBox::Vector2 origin = {std::nanf(""), std::nanf("")});
 		// --------------------
 
 		// ------ RENDERING

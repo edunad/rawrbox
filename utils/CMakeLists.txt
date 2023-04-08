@@ -1,7 +1,6 @@
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_UTILS_IMPORTS "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp" )
-message(${RAWRBOX_UTILS_IMPORTS})
 
 if(NOT RAWRBOX_BUILD_UTIL_QHULL)
 	list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "include/rawrbox/utils/qhull.hpp")

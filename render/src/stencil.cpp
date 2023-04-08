@@ -1,7 +1,5 @@
-#pragma once
 
-#include <rawrBOX/render/stencil.h>
-
+#include <rawrbox/render/stencil.h>
 #include <bgfx/embedded_shader.h>
 
 // Compiled shaders
@@ -13,7 +11,6 @@
 		| BGFX_STATE_WRITE_A \
 		| BGFX_STATE_CULL_CW \
 		)
-
 
 static const bgfx::EmbeddedShader shaders[] =
 {
@@ -106,7 +103,7 @@ namespace rawrBox {
 		this->drawTexture(pos, size, this->_pixelTexture, col);
 	}
 
-	void Stencil::drawTexture(rawrBox::Vector2 pos, rawrBox::Vector2 size, std::shared_ptr<rawrBox::TextureBase> tex, rawrBox::Color col, rawrBox::Vector2 uvStart, rawrBox::Vector2 uvEnd, float rotation, const rawrBox::Vector2& origin) {
+	void Stencil::drawTexture(const rawrBox::Vector2& pos, const rawrBox::Vector2& size, std::shared_ptr<rawrBox::TextureBase> tex, rawrBox::Color col, rawrBox::Vector2 uvStart, rawrBox::Vector2 uvEnd, float rotation, rawrBox::Vector2 origin) {
 		// TextureImage setup -----
 		if(tex == nullptr) throw std::runtime_error("[RawrBOX-Stencil] Invalid texture, cannot draw");
 

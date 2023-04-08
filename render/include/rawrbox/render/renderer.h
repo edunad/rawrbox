@@ -4,6 +4,7 @@
 #include <rawrbox/render/stencil.h>
 
 #include <bgfx/bgfx.h>
+#include <memory>
 
 namespace rawrBox {
 	class Renderer {
@@ -14,10 +15,10 @@ namespace rawrBox {
 			// -----
 
 			rawrBox::Vector2i _size = {};
-			std::unique_ptr<rawrBox::Stencil> _stencil;
+			std::unique_ptr<rawrBox::Stencil> _stencil = nullptr;
 		public:
 			~Renderer();
-			Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size);
+			Renderer(const bgfx::ViewId& id, const rawrBox::Vector2i& size);
 
 			void initialize();
 			void setClearColor(uint32_t clearColor);
