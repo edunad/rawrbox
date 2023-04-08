@@ -22,19 +22,14 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
     set(SHADERS_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/include/generated/shaders/${NAMESPACE}")
 
     file(MAKE_DIRECTORY "${SHADERS_OUT_DIR}")
-
-    # 120|300_es|spirv|metal|s_3_0|s_4_0|s_5_0
-    set(PROFILES 120 300_es spirv s_3_0 s_4_0 s_5_0 metal)
-	message("[Shader] Generating with selected profiles ${PROFILES}")
-
     file(GLOB_RECURSE VERTEX_SHADER_FILES CONFIGURE_DEPENDS FOLLOW_SYMLINKS "${SHADERS_DIR}/vs_*[!.def].sc")
+
     bgfx_compile_shader_to_header(
             TYPE VERTEX
             SHADERS ${VERTEX_SHADER_FILES}
             VARYING_DEF "${VARYING_DEF_LOCATION}"
             OUTPUT_DIR "${SHADERS_OUT_DIR}"
             OUT_FILES_VAR VERTEX_OUTPUT_FILES
-            PROFILES ${PROFILES}
             INCLUDE_DIRS "${SHADERS_DIR}" "${BGFX_DIR}/src"
     )
 
