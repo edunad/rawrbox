@@ -59,11 +59,11 @@ namespace rawrBox {
 		// --------------------
 
 		// ------ RENDERING
-		void internalDraw(const bgfx::ViewId& id);
+		void internalDraw(bgfx::ViewId id);
 		void drawRecording();
 		// --------------------
 	public:
-		Stencil(bgfx::ViewId& id, const rawrBox::Vector2& size);
+		Stencil(bgfx::ViewId id, const rawrBox::Vector2& size);
 		~Stencil();
 
 		void initialize();

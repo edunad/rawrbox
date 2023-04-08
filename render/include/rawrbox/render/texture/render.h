@@ -17,7 +17,7 @@ namespace rawrBox {
 		bgfx::ViewId _renderId;
 
 	public:
-		TextureRender(const bgfx::ViewId& viewId, const rawrBox::Vector2i& size);
+		TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size);
 
 		// ------RENDER
 		virtual void startRecord();
@@ -26,6 +26,6 @@ namespace rawrBox {
 		virtual void upload() override;
 		// --------------------
 
-		virtual const bgfx::ViewId& id();
+		virtual const bgfx::ViewId id();
 	};
 }

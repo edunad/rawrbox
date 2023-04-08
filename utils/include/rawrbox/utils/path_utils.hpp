@@ -1,3 +1,4 @@
+#pragma once
 #include <filesystem>
 
 namespace rawrBox {

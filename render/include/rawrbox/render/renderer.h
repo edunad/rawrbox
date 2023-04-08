@@ -18,7 +18,7 @@ namespace rawrBox {
 			std::unique_ptr<rawrBox::Stencil> _stencil = nullptr;
 		public:
 			~Renderer();
-			Renderer(const bgfx::ViewId& id, const rawrBox::Vector2i& size);
+			Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size);
 
 			void initialize();
 			void setClearColor(uint32_t clearColor);
@@ -31,7 +31,7 @@ namespace rawrBox {
 			// --------------------
 
 			// ------UTILS
-			bgfx::ViewId& getID();
+			bgfx::ViewId getID() const;
 			rawrBox::Vector2i& getSize();
 			rawrBox::Stencil& getStencil() const;
 			// --------------------

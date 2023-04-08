@@ -10,7 +10,7 @@
 namespace rawrBox {
 	uint32_t TextureRender::renderID = 5; // 5 > render textures
 
-	TextureRender::TextureRender(const bgfx::ViewId& viewId, const rawrBox::Vector2i& size) {
+	TextureRender::TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size) {
 		this->_size = size;
 		this->_viewId = viewId;
 		this->_renderId = ++TextureRender::renderID;
@@ -42,5 +42,5 @@ namespace rawrBox {
 	}
 
 	void TextureRender::upload() { throw std::runtime_error("Not required"); }
-	const bgfx::ViewId& TextureRender::id() { return this->_renderId; }
+	const bgfx::ViewId TextureRender::id() { return this->_renderId; }
 }

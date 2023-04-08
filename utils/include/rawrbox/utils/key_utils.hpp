@@ -1,3 +1,4 @@
+#pragma once
 
 #include <rawrbox/utils/string.hpp>
 #include <rawrbox/utils/keys.hpp>
@@ -253,5 +254,5 @@ namespace rawrBox {
 
 			else return 0;
 		}
-	}
+	};
 }

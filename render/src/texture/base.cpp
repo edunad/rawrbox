@@ -1,4 +1,3 @@
-#pragma once
 #include <rawrbox/render/texture/base.h>
 
 namespace rawrBox {

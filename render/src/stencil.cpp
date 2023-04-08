@@ -20,7 +20,7 @@ static const bgfx::EmbeddedShader shaders[] =
 };
 
 namespace rawrBox {
-	Stencil::Stencil(bgfx::ViewId& id, const rawrBox::Vector2& size) {
+	Stencil::Stencil(bgfx::ViewId id, const rawrBox::Vector2& size) {
 		this->_windowSize = size;
 		this->_viewId = id;
 
@@ -133,7 +133,7 @@ namespace rawrBox {
 		this->_stencilProgram = handle;
 	}
 
-	void Stencil::internalDraw(const bgfx::ViewId& id) {
+	void Stencil::internalDraw(bgfx::ViewId id) {
 		if (this->_vertices.empty() || this->_indices.empty()) return;
 		bgfx::setTexture(0, this->_texColor, this->_textureHandle);
 

@@ -24,15 +24,8 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
     file(MAKE_DIRECTORY "${SHADERS_OUT_DIR}")
 
     # 120|300_es|spirv|metal|s_3_0|s_4_0|s_5_0
-    set(PROFILES 120 300_es spirv)
-
-	if(WIN32)
-		list(APPEND PROFILES s_3_0 s_4_0 s_5_0)
-	endif()
-
-    if(APPLE)
-        list(APPEND PROFILES metal)
-    endif()
+    set(PROFILES 120 300_es spirv s_3_0 s_4_0 s_5_0 metal)
+	message("[Shader] Generating with selected profiles ${PROFILES}")
 
     file(GLOB_RECURSE VERTEX_SHADER_FILES CONFIGURE_DEPENDS FOLLOW_SYMLINKS "${SHADERS_DIR}/vs_*[!.def].sc")
     bgfx_compile_shader_to_header(
@@ -70,6 +63,7 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
         get_filename_component(OUTPUT_FILENAME "${OUTPUT_FILE}" NAME)
         string(APPEND INCLUDE_ALL_HEADER "#include <generated/shaders/${NAMESPACE}/${OUTPUT_FILENAME}>\n")
     endforeach()
+
     file(WRITE "${SHADERS_OUT_DIR}/all.h" "${INCLUDE_ALL_HEADER}")
     list(APPEND OUTPUT_FILES "${SHADERS_OUT_DIR}/all.h")
 

@@ -19,7 +19,7 @@ namespace cube {
 			this->shutdown();
 		};
 
-		this->_window->initialize(width, height, rawrBox::WindowFlags::Features::VSYNC | rawrBox::WindowFlags::Features::RESIZABLE | rawrBox::WindowFlags::Features::MULTI_THREADED | rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Debug::STATS | rawrBox::WindowFlags::Window::WINDOWED);
+		this->_window->initialize(width, height, rawrBox::WindowFlags::Features::VSYNC | rawrBox::WindowFlags::Features::RESIZABLE | rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Debug::STATS | rawrBox::WindowFlags::Window::WINDOWED);
 
 		this->_render = std::make_shared<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
 		this->_render->setClearColor(0x443355FF);

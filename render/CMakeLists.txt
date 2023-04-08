@@ -14,9 +14,8 @@ endif()
 FetchContent_GetProperties(bgfx)
 if(NOT bgfx_POPULATED)
 	FetchContent_Declare(bgfx
-		GIT_REPOSITORY "https://github.com/bkaradzic/bgfx.cmake.git"
-		GIT_TAG "v1.118.8417-420"
-		PATCH_COMMAND git reset --hard && git apply --ignore-space-change --ignore-whitespace "${CMAKE_CURRENT_SOURCE_DIR}/patches/bgfx-cmake.patch" && git submodule foreach git pull origin master
+		GIT_REPOSITORY "https://github.com/edunad/bgfx.cmake.git"
+		GIT_TAG "origin/master"
 		GIT_PROGRESS TRUE
 	)
 

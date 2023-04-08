@@ -3,7 +3,7 @@
 
 namespace rawrBox {
 	Renderer::~Renderer(){ this->_stencil = nullptr; }
-	Renderer::Renderer(const bgfx::ViewId& id, const rawrBox::Vector2i& size) {
+	Renderer::Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size) {
 		this->_id = id;
 		this->_size = size;
 		this->_stencil = std::make_unique<rawrBox::Stencil>(id, size);
@@ -40,11 +40,11 @@ namespace rawrBox {
 	// --------------------
 
 	// ------UTILS
-	bgfx::ViewId& Renderer::getID() {
+	bgfx::ViewId Renderer::getID() const {
 		return this->_id;
 	}
 
-	rawrBox::Vector2i& Renderer::getSize() {
+	rawrBox::Vector2i& Renderer::getSize()  {
 		return this->_size;
 	}
 
