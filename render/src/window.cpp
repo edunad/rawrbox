@@ -82,8 +82,6 @@ namespace rawrBox {
 	#	endif // BX_PLATFORM_*
 	}
 
-
-
 	void Window::initialize(int width, int height, uint32_t flags) {
 
 		glfwSetErrorCallback(glfw_errorCallback);

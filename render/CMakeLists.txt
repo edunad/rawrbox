@@ -38,6 +38,7 @@ set(BGFX_BUILD_TOOLS_BIN2C OFF CACHE INTERNAL "")
 
 # Packages ----
 find_package(stb REQUIRED)
+find_package(glm REQUIRED)
 #--------------
 
 add_shaders_directory(${RAWRBOX_CONTENT_FOLDER}/shaders RAWRBOX_SHADERS_TARGET_NAME)
@@ -49,7 +50,7 @@ file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "in
 # Project setup
 set(output_target RAWRBOX.RENDER)
 add_library(${output_target} ${RAWRBOX_RENDER_SOURCES})
-
+target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS GLM_FORCE_LEFT_HANDED NOMINMAX)
 target_include_directories(${output_target} PUBLIC "include" )
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PRIVATE "${RAWRBOX_SHADERS_TARGET_NAME}" PUBLIC
@@ -59,6 +60,7 @@ target_link_libraries(${output_target} PRIVATE "${RAWRBOX_SHADERS_TARGET_NAME}" 
 	stb::stb
 	fmt::fmt
 	glfw
+	glm::glm
 
 	bgfx
 	bx
