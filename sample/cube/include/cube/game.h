@@ -14,8 +14,7 @@
 namespace cube {
 	class Game : public rawrBox::Engine {
 		std::shared_ptr<rawrBox::TextureImage> _texture;
-		std::shared_ptr<rawrBox::TextureImage> _texture2;
-		std::shared_ptr<rawrBox::TextureGIF> _texture3;
+		std::shared_ptr<rawrBox::TextureGIF> _texture2;
 
 		std::shared_ptr<rawrBox::Renderer> _render;
 		std::unique_ptr<rawrBox::Window> _window;

@@ -22,7 +22,11 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
     set(SHADERS_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/include/generated/shaders/${NAMESPACE}")
 
     file(MAKE_DIRECTORY "${SHADERS_OUT_DIR}")
-    file(GLOB_RECURSE VERTEX_SHADER_FILES CONFIGURE_DEPENDS FOLLOW_SYMLINKS "${SHADERS_DIR}/vs_*[!.def].sc")
+    file(GLOB_RECURSE VERTEX_SHADER_FILES CONFIGURE_DEPENDS FOLLOW_SYMLINKS "${SHADERS_DIR}/vs_*.sc")
+    file(GLOB_RECURSE FRAGMENT_SHADER_FILES CONFIGURE_DEPENDS FOLLOW_SYMLINKS "${SHADERS_DIR}/fs_*.sc")
+
+	message("VERTEX (${SHADERS_DIR}) ->\n: ${VERTEX_SHADER_FILES}")
+	message("FRAGMENT (${SHADERS_DIR}) ->\n: ${FRAGMENT_SHADER_FILES}")
 
     bgfx_compile_shader_to_header(
             TYPE VERTEX
@@ -33,7 +37,6 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
             INCLUDE_DIRS "${SHADERS_DIR}" "${BGFX_DIR}/src"
     )
 
-    file(GLOB_RECURSE FRAGMENT_SHADER_FILES CONFIGURE_DEPENDS FOLLOW_SYMLINKS "${SHADERS_DIR}/fs_*[!.def].sc")
     bgfx_compile_shader_to_header(
             TYPE FRAGMENT
             SHADERS ${FRAGMENT_SHADER_FILES}
@@ -48,12 +51,15 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
     list(APPEND OUTPUT_FILES ${VERTEX_OUTPUT_FILES})
     list(APPEND OUTPUT_FILES ${FRAGMENT_OUTPUT_FILES})
 
+	message("OUTPUT ->\n     VERTEX ->\n    ${VERTEX_OUTPUT_FILES}")
+	message("     FRAGMENT ->\n     ${FRAGMENT_OUTPUT_FILES}")
+
     list(LENGTH OUTPUT_FILES SHADER_COUNT)
     if(SHADER_COUNT EQUAL 0)
         return()
     endif()
 
-    set(INCLUDE_ALL_HEADER "")
+    set(INCLUDE_ALL_HEADER "#pragma once\n")
     foreach(OUTPUT_FILE IN LISTS OUTPUT_FILES)
         get_filename_component(OUTPUT_FILENAME "${OUTPUT_FILE}" NAME)
         string(APPEND INCLUDE_ALL_HEADER "#include <generated/shaders/${NAMESPACE}/${OUTPUT_FILENAME}>\n")

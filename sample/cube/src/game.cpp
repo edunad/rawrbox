@@ -2,6 +2,8 @@
 #include <cube/game.h>
 #include <bx/math.h>
 
+#include <vector>
+
 namespace cube {
 	void Game::init() {
 		int width = 1024;
@@ -29,12 +31,8 @@ namespace cube {
 		this->_texture = std::make_shared<rawrBox::TextureImage>("./content/textures/screem.png");
 		this->_texture->upload();
 
-		this->_texture2 = std::make_shared<rawrBox::TextureImage>("./content/textures/cat_nya.png");
+		this->_texture2 = std::make_shared<rawrBox::TextureGIF>("./content/textures/meow3.gif");
 		this->_texture2->upload();
-
-		this->_texture3 = std::make_shared<rawrBox::TextureGIF>("./content/textures/meow3.gif");
-		this->_texture3->setSpeed(0.5f);
-		this->_texture3->upload();
 		// -----
 
 		// Setup camera
@@ -67,35 +65,80 @@ namespace cube {
 
 		this->_render->swapBuffer(); // Clean up and set renderer
 			bgfx::setViewTransform(this->_render->getID(), NULL, this->_proj);
-			bgfx::dbgTextPrintf(0, 4, 0x0f, "CLEAR ME SENPAI");
 
 			auto& stencil = this->_render->getStencil();
+			bgfx::dbgTextPrintf(1, 1, 0x0f, "STENCIL TESTS ---------------------------------------------------------------------------------------------------------------------------------");
+			bgfx::dbgTextPrintf(1, 11, 0x0f, "TEXT TESTS -----------------------------------------------------------------------------------------------------------------------------------");
 
 			stencil.begin();
-				stencil.pushRotation({counter * 50.5f, {50, 50}});
-					stencil.drawBox({0, 0}, {100, 100}, rawrBox::Colors::Green);
-				stencil.popRotation();
+				stencil.pushOffset({20, 50});
+					stencil.pushRotation({counter * 50.5f, {50, 50}});
+						stencil.drawBox({0, 0}, {100, 100}, rawrBox::Colors::Green);
+					stencil.popRotation();
 
-				stencil.pushOffset({100, 100});
-					stencil.drawBox({0, 0}, {100, 100}, rawrBox::Colors::Red);
+					stencil.pushOffset({100, 0});
+						stencil.drawBox({0, 0}, {100, 100}, rawrBox::Colors::Red);
+					stencil.popOffset();
+
+					stencil.pushOffset({200, 0});
+						stencil.pushOutline({1.f, 2.f});
+							stencil.drawBox({0, 0}, {100, 100}, rawrBox::Colors::Purple);
+						stencil.popOutline();
+
+						stencil.pushOutline({2.f});
+							stencil.drawBox({25, 25}, {50, 50}, rawrBox::Colors::Purple);
+						stencil.popOutline();
+					stencil.popOffset();
+
+					stencil.pushOffset({300, 0});
+						stencil.drawTriangle({0, 0}, {0, 0}, rawrBox::Colors::Blue, {0, 100}, {0, 1}, rawrBox::Colors::Blue, {100, 0}, {0, 1}, rawrBox::Colors::Blue);
+					stencil.popOffset();
+
+					stencil.pushOffset({400, 0});
+						stencil.pushOutline({2.f});
+							stencil.drawTriangle({15, 15}, {0, 0}, rawrBox::Colors::Blue, {15, 65}, {0, 1}, rawrBox::Colors::Blue, {65, 15}, {0, 1}, rawrBox::Colors::Blue);
+						stencil.popOutline();
+
+						stencil.pushOutline({1.f, 1.f});
+							stencil.drawTriangle({0, 0}, {0, 0}, rawrBox::Colors::Blue, {0, 100}, {0, 1}, rawrBox::Colors::Blue, {100, 0}, {0, 1}, rawrBox::Colors::Blue);
+						stencil.popOutline();
+					stencil.popOffset();
+
+					stencil.pushOffset({500, 0});
+						stencil.drawCircle({0, 0}, {100, 100}, rawrBox::Colors::Orange, 16, 0, std::fmod(counter * 50.5f, 360.f));
+					stencil.popOffset();
+
+					stencil.pushOffset({600, 0});
+						stencil.pushOutline({1.f, 0.25f});
+							stencil.drawCircle({0, 0}, {100, 100}, rawrBox::Colors::Red, 16, 0.f, std::fmod(counter * 50.5f, 360.f));
+						stencil.popOutline();
+
+						stencil.pushOutline({2.f});
+							stencil.drawCircle({25, 25}, {50, 50}, rawrBox::Colors::Red, 16, 0.f, std::fmod(counter * 50.5f, 360.f));
+						stencil.popOutline();
+					stencil.popOffset();
+
+					stencil.pushOffset({700, 0});
+						stencil.drawLine({0, 0}, {100, 100}, rawrBox::Colors::Red);
+						stencil.drawLine({100, 0}, {0, 100}, rawrBox::Colors::Blue, 1.f, 2.f);
+						stencil.drawLine({50, 0}, {50, 100}, rawrBox::Colors::Purple, 3.f, 2.f);
+					stencil.popOffset();
+
+					stencil.pushOffset({800, 0});
+						stencil.drawTexture({0, 0}, {100, 100}, this->_texture);
+					stencil.popOffset();
+
+					stencil.pushOffset({900, 0});
+						stencil.drawTexture({0, 0}, {100, 100}, this->_texture2);
+						this->_texture2->step();
+					stencil.popOffset();
 				stencil.popOffset();
 
-				/*stencil.pushClipping({100, 100, 200, 200});
-					stencil.drawBox({400 + std::cos(counter * 0.5f) * 200.f, 400 + std::sin(counter * 0.5f) * 200.f}, {100, 100}, rawrBox::Color::debug(static_cast<int>(counter)));
-				stencil.popClipping();
 
-				stencil.drawTexture({100 + std::cos(counter * 1.5f) * 5.f, 100 + std::sin(counter * 1.5f) * 5.f}, {100, 100}, this->_texture);
-
-				stencil.pushRotation(counter*50.5f);
-					stencil.drawTexture({400, 500}, {100, 100}, this->_texture2);
-				stencil.popRotation();
-
-				stencil.drawTexture({600, 500}, {100, 100}, this->_texture3);
-				this->_texture3->step();*/
 			stencil.end();
 
-			bgfx::dbgTextPrintf(0, 1, 0x0f, "Color can be changed with ANSI \x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.");
 			bgfx::setViewTransform(this->_render->getID(), this->_view, this->_proj);
+
 		this->_render->render(); // Commit primitives
 
 		counter+=0.1f;
