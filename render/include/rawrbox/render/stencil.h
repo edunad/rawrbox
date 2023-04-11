@@ -158,7 +158,7 @@ namespace rawrBox {
 		void drawBox(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col = rawrBox::Colors::White);
 		void drawTexture(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, std::shared_ptr<rawrBox::TextureBase> tex, const rawrBox::Color& col = rawrBox::Colors::White, const rawrBox::Vector2f& uvStart = {0, 0}, const rawrBox::Vector2f& uvEnd = {1, 1});
 		void drawCircle(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col = rawrBox::Colors::White, size_t roundness = 32, float angleStart = 0.f, float angleEnd = 360.f);
-		void drawLine(const rawrBox::Vector2& from, const rawrBox::Vector2& to, const rawrBox::Color& col = rawrBox::Colors::White, float thickness = 1.f, float stipple = 0.f);
+		void drawLine(const rawrBox::Vector2& from, const rawrBox::Vector2& to, const rawrBox::Color& col = rawrBox::Colors::White);
 
 		void drawPolygon(const std::vector<rawrBox::Vector2f>& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col = rawrBox::Colors::White); // TODO
 		// --------------------

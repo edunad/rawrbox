@@ -129,9 +129,9 @@ namespace rawrBox {
 			float thick = this->_outline.thickness;
 			float st = this->_outline.stipple;
 
-			this->drawLine({a.x, a.y - thick}, {b.x, b.y + thick / 2.f}, colA, thick, st);
-			this->drawLine(b, c, colB, thick, st);
-			this->drawLine({c.x + thick / 2.f, c.y}, a, colC, thick, st);
+			this->drawLine({a.x, a.y - thick}, {b.x, b.y + thick / 2.f}, colA);
+			this->drawLine(b, c, colB);
+			this->drawLine({c.x + thick / 2.f, c.y}, a, colC);
 		} else {
 			// Setup --------
 			this->setTexture(this->_pixelTexture->getHandle());
@@ -152,10 +152,10 @@ namespace rawrBox {
 			float thick = this->_outline.thickness;
 			float st = this->_outline.stipple;
 
-			this->drawLine({pos.x - thick, pos.y}, {pos.x + size.x, pos.y}, col, thick, st);
-			this->drawLine({pos.x + size.x, pos.y - thick}, {pos.x + size.x, pos.y + size.y}, col, thick, st);
-			this->drawLine({pos.x + size.x + (thick > 1.f ? thick : 0.f), pos.y + size.y}, {pos.x - thick, pos.y + size.y}, col, thick, st);
-			this->drawLine({pos.x, pos.y + size.y}, {pos.x, pos.y}, col, thick, st);
+			this->drawLine({pos.x - thick, pos.y}, {pos.x + size.x, pos.y}, col);
+			this->drawLine({pos.x + size.x, pos.y - thick}, {pos.x + size.x, pos.y + size.y}, col);
+			this->drawLine({pos.x + size.x + (thick > 1.f ? thick : 0.f), pos.y + size.y}, {pos.x - thick, pos.y + size.y}, col);
+			this->drawLine({pos.x, pos.y + size.y}, {pos.x, pos.y}, col);
 		} else {
 			this->drawTexture(pos, size, this->_pixelTexture, col);
 		}
@@ -209,7 +209,7 @@ namespace rawrBox {
 			rawrBox::Vector2 c = targetPos + rawrBox::Vector2::cosSin(ang + space) * radius;
 
 			if(this->_outline.isSet()) {
-				this->drawLine(b, c, col, this->_outline.thickness, this->_outline.stipple);
+				this->drawLine(b, c, col);
 			} else {
 				this->drawTriangle(
 					b, {}, col,
@@ -219,31 +219,36 @@ namespace rawrBox {
 		}
 	}
 
-	void Stencil::drawLine(const rawrBox::Vector2& from, const rawrBox::Vector2& to, const rawrBox::Color& col, float thickness, float stipple) {
-		if (col.isTransparent() || thickness <= 0.f) return;
-		bool usePTLines = thickness == 1.f;
+	void Stencil::drawLine(const rawrBox::Vector2& from, const rawrBox::Vector2& to, const rawrBox::Color& col) {
+		if (col.isTransparent()) return;
+
+		rawrBox::StencilOutline outline = {1.f, 0.f};
+		if (this->_outline.isSet()) outline = this->_outline;
+		if (outline.thickness <= 0.f) return;
+
+		bool usePTLines = outline.thickness == 1.f;
 
 		// Setup --------
-		this->setShaderProgram((usePTLines || stipple > 0.f) ? this->_lineprogram : this->_2dprogram);
+		this->setShaderProgram((usePTLines || outline.stipple > 0.f) ? this->_lineprogram : this->_2dprogram);
 		this->setTexture(this->_pixelTexture->getHandle());
 		this->setDrawMode(usePTLines ? BGFX_STATE_PT_LINES : 0); // Reset
 		// ----
 
 		if(usePTLines) {
 			this->pushVertice(from, 0, col);
-			this->pushVertice(to, stipple, col);
+			this->pushVertice(to, outline.stipple, col);
 
 			auto pos = static_cast<unsigned int>(this->_vertices.size());
 			this->_indices.push_back(pos - 1);
 			this->_indices.push_back(pos - 2);
 		} else {
 			float angle = from.angle(to);
-			float uvEnd = stipple <= 0.f ? 1.f : stipple;
+			float uvEnd = outline.stipple <= 0.f ? 1.f : outline.stipple;
 
-			auto vertA = from + rawrBox::Vector2::cosSin(angle) * thickness;
-			auto vertB = from + rawrBox::Vector2::cosSin(angle) * -thickness;
-			auto vertC = to + rawrBox::Vector2::cosSin(angle) * thickness;
-			auto vertD = to + rawrBox::Vector2::cosSin(angle) * -thickness;
+			auto vertA = from + rawrBox::Vector2::cosSin(angle) * outline.thickness;
+			auto vertB = from + rawrBox::Vector2::cosSin(angle) * -outline.thickness;
+			auto vertC = to + rawrBox::Vector2::cosSin(angle) * outline.thickness;
+			auto vertD = to + rawrBox::Vector2::cosSin(angle) * -outline.thickness;
 
 			this->pushVertice(vertA, 0, col);
 			this->pushVertice(vertC, {uvEnd, 0}, col);

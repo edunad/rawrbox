@@ -120,8 +120,14 @@ namespace cube {
 
 					stencil.pushOffset({700, 0});
 						stencil.drawLine({0, 0}, {100, 100}, rawrBox::Colors::Red);
-						stencil.drawLine({100, 0}, {0, 100}, rawrBox::Colors::Blue, 1.f, 2.f);
-						stencil.drawLine({50, 0}, {50, 100}, rawrBox::Colors::Purple, 3.f, 2.f);
+
+						stencil.pushOutline({1.f, 2.f});
+							stencil.drawLine({100, 0}, {0, 100}, rawrBox::Colors::Blue);
+						stencil.popOutline();
+
+						stencil.pushOutline({3.f, 2.f});
+							stencil.drawLine({50, 0}, {50, 100}, rawrBox::Colors::Purple);
+						stencil.popOutline();
 					stencil.popOffset();
 
 					stencil.pushOffset({800, 0});
