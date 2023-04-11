@@ -329,12 +329,11 @@ namespace rawrBox {
 		// -----
 
 		rawrBox::Vector2i size = this->_windowSize;
-		rawrBox::Vector2f pos = {};
 
-		this->pushVertice({pos.x, pos.y}, 0, rawrBox::Colors::White);
-		this->pushVertice({pos.x, pos.y + size.y}, {0, 1}, rawrBox::Colors::White);
-		this->pushVertice({pos.x + size.x, pos.y}, {1, 0}, rawrBox::Colors::White);
-		this->pushVertice({pos.x + size.x, pos.y + size.y}, 1, rawrBox::Colors::White);
+		this->pushVertice(0, 0, rawrBox::Colors::White);
+		this->pushVertice({0, size.y}, {0, 1}, rawrBox::Colors::White);
+		this->pushVertice({size.x, 0}, {1, 0}, rawrBox::Colors::White);
+		this->pushVertice({size.x, size.y}, 1, rawrBox::Colors::White);
 
 		this->pushIndices(4, 3, 2);
 		this->pushIndices(3, 1, 2);
