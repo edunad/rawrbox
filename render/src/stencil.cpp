@@ -355,6 +355,12 @@ namespace rawrBox {
 
 	void Stencil::end() {
 		if(!this->_recording) throw std::runtime_error("[RawrBOX-Stencil] Not drawing");
+
+		if(!this->_offsets.empty()) throw std::runtime_error("[RawrBOX-Stencil] Missing 'popOffset', cannot draw");
+		if(!this->_rotations.empty()) throw std::runtime_error("[RawrBOX-Stencil] Missing 'popRotation', cannot draw");
+		if(!this->_outlines.empty()) throw std::runtime_error("[RawrBOX-Stencil] Missing 'popOutline', cannot draw");
+		if(!this->_clips.empty()) throw std::runtime_error("[RawrBOX-Stencil] Missing 'popClipping', cannot draw");
+
 		this->internalDraw(this->_renderTexture->id()); // Draw remaining primitives
 
 		this->_renderTexture->stopRecord();

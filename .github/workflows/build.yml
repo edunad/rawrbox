@@ -33,12 +33,12 @@ jobs:
               id: github-cache-conan-restore
               uses: actions/cache/restore@v3
               with:
-                  path: /home/runner/.conan2
+                  path: ./build
                   key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
 
             - name: Install Conan dependencies
               run: |
-                  mkdir build
+                  mkdir -p build
                   conan install . --output-folder=build --build=missing
 
             - name: Build
@@ -53,5 +53,5 @@ jobs:
               env:
                   cache-name: cache-conan-modules
               with:
-                  path: /home/runner/.conan2
+                  path: ./build
                   key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
