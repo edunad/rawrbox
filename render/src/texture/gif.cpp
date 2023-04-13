@@ -1,5 +1,3 @@
-#pragma once
-
 #include <rawrbox/render/texture/gif.h>
 #include <rawrbox/utils/math.hpp>
 #include <rawrbox/utils/time.h>

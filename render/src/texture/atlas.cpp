@@ -1,4 +1,3 @@
-#pragma once
 #include <rawrbox/render/texture/atlas.h>
 #include <fmt/format.h>
 

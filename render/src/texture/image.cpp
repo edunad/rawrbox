@@ -1,5 +1,3 @@
-#pragma once
-
 #include <rawrbox/render/texture/image.h>
 
 #define STB_IMAGE_STATIC
