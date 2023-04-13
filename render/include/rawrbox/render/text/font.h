@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrBox/math/vector2.hpp>
+#include <rawrbox/math/vector2.hpp>
 
 #include <bgfx/bgfx.h>
 
