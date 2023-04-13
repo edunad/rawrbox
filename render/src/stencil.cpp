@@ -4,11 +4,7 @@
 
 // Compiled shaders
 #include <generated/shaders/render/all.h>
-
 #include <bx/math.h>
-
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
 
 #include <utf8.h>
 
@@ -121,16 +117,28 @@ namespace rawrBox {
 	void Stencil::applyRotation(rawrBox::Vector2f& vert) {
 		if(this->_rotation.rotation == 0) return;
 
-		const glm::vec3 origin = {_rotation.origin.x, _rotation.origin.y, 0};
-		const glm::mat4 translationMatrix = glm::translate(glm::identity<glm::mat4>(), -origin);
-		const glm::mat4 rotationMatrix = glm::rotate(glm::identity<glm::mat4>(), glm::radians(_rotation.rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-		const glm::mat4 reverseTranslationMatrix = glm::translate(glm::identity<glm::mat4>(), origin);
+		float translationMatrix[16];
+		bx::mtxIdentity(translationMatrix);
+		bx::mtxTranslate(translationMatrix, -_rotation.origin.x, -_rotation.origin.y, 0);
 
-		glm::vec3 v = {vert.x, vert.y, 0};
-		v = glm::vec3(reverseTranslationMatrix * rotationMatrix * translationMatrix * glm::vec4(v, 1.0f));
+		float rotationMatrix[16];
+		bx::mtxIdentity(rotationMatrix);
+		bx::mtxRotateZ(rotationMatrix, bx::toRad(_rotation.rotation));
 
-		vert.x = v.x;
-		vert.y = v.y;
+		float reverseTranslationMatrix[16];
+		bx::mtxIdentity(reverseTranslationMatrix);
+		bx::mtxTranslate(reverseTranslationMatrix, _rotation.origin.x, _rotation.origin.y, 0);
+
+		float mul[16];
+	    bx::mtxMul(mul, reverseTranslationMatrix, rotationMatrix);
+		bx::mtxMul(mul, mul, translationMatrix);
+
+		float vv[4] = {vert.x, vert.y, 0, -1.0f};
+		float v[4];
+		bx::vec4MulMtx(v, vv, mul);
+
+		vert.x = v[0];
+		vert.y = v[1];
 	}
 	// --------------------
 
@@ -209,8 +217,8 @@ namespace rawrBox {
 		auto radius = size / 2;
 		auto targetPos = pos + radius;
 
-		float angStartRad = glm::radians(angleStart);
-		float angEndRad = glm::radians(angleEnd);
+		float angStartRad = bx::toRad(angleStart);
+		float angEndRad = bx::toRad(angleEnd);
 
 		float space = rawrBox::pi<float> / roundness * 2;
 
