@@ -90,6 +90,7 @@ namespace rawrBox {
 	}
 
 	void Stencil::pushVertice(rawrBox::Vector2f pos, const rawrBox::Vector2f& uv, const rawrBox::Color& col) {
+		this->applyScale(pos);
 		this->applyRotation(pos);
 		this->_vertices.emplace_back(
 			// pos
@@ -124,6 +125,33 @@ namespace rawrBox {
 		float rotationMatrix[16];
 		bx::mtxIdentity(rotationMatrix);
 		bx::mtxRotateZ(rotationMatrix, bx::toRad(_rotation.rotation));
+
+		float reverseTranslationMatrix[16];
+		bx::mtxIdentity(reverseTranslationMatrix);
+		bx::mtxTranslate(reverseTranslationMatrix, _rotation.origin.x, _rotation.origin.y, 0);
+
+		float mul[16];
+	    bx::mtxMul(mul, reverseTranslationMatrix, rotationMatrix);
+		bx::mtxMul(mul, mul, translationMatrix);
+
+		float vv[4] = {vert.x, vert.y, 0, -1.0f};
+		float v[4];
+		bx::vec4MulMtx(v, vv, mul);
+
+		vert.x = v[0];
+		vert.y = v[1];
+	}
+
+	void Stencil::applyScale(rawrBox::Vector2f& vert) {
+		if(this->_scale == 0) return;
+
+		float translationMatrix[16];
+		bx::mtxIdentity(translationMatrix);
+		bx::mtxTranslate(translationMatrix, -_rotation.origin.x, -_rotation.origin.y, 0);
+
+		float rotationMatrix[16];
+		bx::mtxIdentity(rotationMatrix);
+		bx::mtxScale(rotationMatrix, this->_scale.x, this->_scale.y, 1.f);
 
 		float reverseTranslationMatrix[16];
 		bx::mtxIdentity(reverseTranslationMatrix);
@@ -441,19 +469,20 @@ namespace rawrBox {
 	}
 
 	void Stencil::begin() {
-		if(this->_recording) throw std::runtime_error("[RawrBox-Stencil] Already drawing");
+		if(this->_recording) throw std::runtime_error("[RawrBox-Stencil] Already drawing, call 'end()' first");
 
 		this->_renderTexture->startRecord();
 		this->_recording = true;
 	}
 
 	void Stencil::end() {
-		if(!this->_recording) throw std::runtime_error("[RawrBox-Stencil] Not drawing");
+		if(!this->_recording) throw std::runtime_error("[RawrBox-Stencil] Not drawing, call 'begin()' first");
 
 		if(!this->_offsets.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popOffset', cannot draw");
 		if(!this->_rotations.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popRotation', cannot draw");
 		if(!this->_outlines.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popOutline', cannot draw");
 		if(!this->_clips.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popClipping', cannot draw");
+		if(!this->_scales.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popScale', cannot draw");
 
 		this->internalDraw(this->_renderTexture->id()); // Draw remaining primitives
 
@@ -526,6 +555,21 @@ namespace rawrBox {
 
 		this->internalDraw(this->_renderTexture->id());
 		this->_clips.pop_back();
+	}
+	// --------------------
+
+
+	// ------ SCALE
+	void Stencil::pushScale(const rawrBox::Vector2f& scale) {
+		this->_scales.push_back(scale);
+		this->_scale += scale;
+	}
+
+	void Stencil::popScale() {
+		if(this->_scales.empty()) throw std::runtime_error("[RawrBox-Stencil] Scale is empty, failed to pop");
+
+		this->_scale -= this->_scales.back();
+		this->_scales.pop_back();
 	}
 	// --------------------
 }

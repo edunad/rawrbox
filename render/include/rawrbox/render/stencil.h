@@ -138,6 +138,11 @@ namespace rawrBox {
 		StencilRotation _rotation;
 		// ----------
 
+		// Scale handling ----
+		std::vector<rawrBox::Vector2f> _scales;
+		rawrBox::Vector2f _scale;
+		// ----------
+
 		std::vector<PosUVColorVertexData> _vertices;
 		std::vector<uint16_t> _indices;
 
@@ -148,6 +153,7 @@ namespace rawrBox {
 		void pushIndices(uint16_t a, uint16_t b, uint16_t c);
 
 		void applyRotation(rawrBox::Vector2f& vert);
+		void applyScale(rawrBox::Vector2f& vert);
 		// --------------------
 
 		// ------ RENDERING
@@ -201,6 +207,11 @@ namespace rawrBox {
 		// ------ CLIPPING
 		void pushClipping(const rawrBox::AABB& rect);
 		void popClipping();
+		// --------------------
+
+		// ------ SCALE
+		void pushScale(const rawrBox::Vector2f& scale);
+		void popScale();
 		// --------------------
 	};
 }

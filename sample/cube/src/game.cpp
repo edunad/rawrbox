@@ -86,7 +86,9 @@ namespace cube {
 					stencil.popRotation();
 
 					stencil.pushOffset({100, 0});
-						stencil.drawBox({0, 0}, {100, 100}, rawrBox::Colors::Red);
+						stencil.pushScale({std::sin(counter * 0.5f), std::cos(counter * 0.5f)});
+							stencil.drawBox({0, 0}, {100, 100}, rawrBox::Colors::Red);
+						stencil.popScale();
 					stencil.popOffset();
 
 					stencil.pushOffset({200, 0});
