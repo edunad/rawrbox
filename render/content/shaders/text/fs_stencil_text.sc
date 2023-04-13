@@ -5,16 +5,11 @@ $input v_color0, v_texcoord0
 SAMPLER2D(s_texColor, 0);
 
 void main() {
-	float thickness = 0.5;
-	float softness = 0.1;
+	float thickness = 0.75;
+	float softness = 0.85;
 
-	vec4 outline_color = vec4(1., 1., 1., 1.);
-	float outline_thickness = 0.0;
-	float outline_softness = 0.1;
+    vec2 texCol = texture2D(s_texColor, v_texcoord0.xy).rg;
+	texCol.r = smoothstep(1.0 - thickness - softness, 1.0 - thickness + softness, texCol.r);
 
-    float a = texture2D(s_texColor, v_texcoord0.xy).r;
-	float outline = smoothstep(outline_thickness - outline_softness, outline_thickness + outline_softness, a);
-	a = smoothstep(1.0 - thickness - softness, 1.0 - thickness + softness, a);
-
-	gl_FragColor = vec4(mix(outline_color.rgb, v_color0.rgb, outline), a);
+	gl_FragColor = vec4(v_color0.rgb, texCol.r);
 }

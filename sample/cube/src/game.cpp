@@ -29,7 +29,7 @@ namespace cube {
 
 		this->_textEngine = std::make_unique<rawrBox::TextEngine>();
 
-		this->_font = &this->_textEngine->load("./content/fonts/droidsans.ttf", 18);
+		this->_font = &this->_textEngine->load("./content/fonts/droidsans.ttf", 28);
 		this->_font2 = &this->_textEngine->load("./content/fonts/visitor1.ttf", 18);
 
 		// Load content
@@ -77,6 +77,7 @@ namespace cube {
 			auto& stencil = this->_render->getStencil();
 			bgfx::dbgTextPrintf(1, 1, 0x0f, "STENCIL TESTS ----------------------------------------------------------------------------------------------------------------");
 			bgfx::dbgTextPrintf(1, 11, 0x0f, "TEXT TESTS ------------------------------------------------------------------------------------------------------------------");
+			bgfx::dbgTextPrintf(1, 18, 0x0f, "MODEL TESTS -----------------------------------------------------------------------------------------------------------------");
 
 			stencil.begin();
 				stencil.pushOffset({20, 50});
@@ -149,8 +150,13 @@ namespace cube {
 				stencil.popOffset();
 
 				stencil.pushOffset({20, 200});
-					stencil.drawText(this->_font, "Cat ipsum dolor sit amet, steal raw zucchini off kitchen counter for put toy mouse in food bowl.", {});
-					stencil.drawText(this->_font2, "Cat ipsum dolor sit amet, steal raw zucchini off kitchen counter for put toy mouse in food bowl.", {0, 30});
+					stencil.drawText(this->_font, "Cat ipsum dolor sit amet, steal raw zucchini off kitchen counter. $£%&", {});
+
+					auto size = this->_font2->getStringSize("Cat!!");
+					stencil.pushRotation({counter * 50.5f, (size / 2.f) + rawrBox::Vector2f(0, 40)});
+						stencil.drawText(this->_font2, "Cat!!", {0, 40});
+					stencil.popRotation();
+
 				stencil.popOffset();
 			stencil.end();
 

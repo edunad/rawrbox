@@ -27,6 +27,41 @@ namespace rawrBox {
 		return node;
 	}
 
+	bool TextureAtlas::canInsertNode(int width, int height) {
+		return this->_root->canInsertNode(width, height);
+	}
+
+	bool AtlasNode::canInsertNode(int insertedWidth, int insertedHeight) {
+		if (!empty) return false;
+		if (left && right) {
+			if (left->canInsertNode(insertedWidth, insertedHeight)) return true;
+			if (right->canInsertNode(insertedWidth, insertedHeight)) return true;
+
+			return false;
+		}
+
+		if (insertedWidth > width || insertedHeight > height) return false;
+		if (width == insertedWidth && height == insertedHeight) return true;
+
+		// if all of the above didn't return, the current leaf is large enough,
+		// with some space to spare, so we split up the current node so we have
+		// one prefectly fitted node and some spare nodes
+		int remainingWidth = width - insertedWidth;
+		int remainingHeight = height - insertedHeight;
+
+		bool isRemainderWiderThanHigh = remainingWidth > remainingHeight;
+
+		if (isRemainderWiderThanHigh) { // if wider than high, split verticallly
+			left  = std::unique_ptr<AtlasNode>(new AtlasNode{x,                 y, insertedWidth,  height, true, nullptr, nullptr});
+			right = std::unique_ptr<AtlasNode>(new AtlasNode{x + insertedWidth, y, remainingWidth, height, true, nullptr, nullptr});
+		} else { // That'd make the remainder higher than it's wide, split horizontally
+			left  = std::unique_ptr<AtlasNode>(new AtlasNode{x, y,                  width, insertedHeight,  true, nullptr, nullptr});
+			right = std::unique_ptr<AtlasNode>(new AtlasNode{x, y + insertedHeight, width, remainingHeight, true, nullptr, nullptr});
+		}
+
+		return left->canInsertNode(insertedWidth, insertedHeight);
+	}
+
 	std::optional<std::reference_wrapper<AtlasNode>> AtlasNode::InsertNode(int insertedWidth, int insertedHeight) {
 		if (!empty) return std::nullopt;
 

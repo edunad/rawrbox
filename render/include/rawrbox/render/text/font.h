@@ -1,7 +1,8 @@
 #pragma once
 
-#include <rawrBox/render/texture/atlas.h>
 #include <rawrBox/math/vector2.hpp>
+
+#include <bgfx/bgfx.h>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -13,6 +14,8 @@
 
 namespace rawrBox {
 	struct Glyph {
+		uint32_t atlasID;
+
 		FT_ULong codepoint;
 		FT_UInt glyphIndex;
 
@@ -23,27 +26,15 @@ namespace rawrBox {
 		rawrBox::Vector2i size;
 	};
 
-	namespace TextFlags {
-		const uint32_t NONE = 0;
-		const uint32_t STROKE = 1 << 1;
-	};
-
+	class TextEngine;
 	class Font {
 
 		private:
-			std::string _file;
-			uint32_t _size;
-
-			// Freetype
-			FT_Stroker _stroker;
-			// -------------
-
+			TextEngine* _engine;
 			std::vector<Glyph> _glyphs;
 
-			// Loading ---
-			uint32_t _loadFlags = TextFlags::NONE;
-			bool undead = false;
-			// -----
+			std::string _file;
+			uint32_t _size;
 
 			// SIZE ----
 			uint32_t bitmapR = -1;
@@ -54,16 +45,14 @@ namespace rawrBox {
 
 			// GLYPH LOADING -----
 			Glyph loadGlyph(FT_ULong character);
-			std::vector<unsigned char> generateGlyphStroke();
-			std::vector<unsigned char> generateGlyph(std::vector<unsigned char>& buffer);
+			std::vector<unsigned char> generateGlyph();
 
 			void preloadGlyphs(std::string chars);
 			// -----
 		public:
 			FT_Face face;
-			std::unique_ptr<rawrBox::TextureAtlas> atlas;
 
-			Font(FT_Library& ft, std::string filename, uint32_t size, uint32_t flags = TextFlags::NONE);
+			Font(TextEngine* engine, std::string filename, uint32_t size);
 			~Font();
 
 			// UTILS --
@@ -72,6 +61,8 @@ namespace rawrBox {
 			const Glyph& getGlyph(uint32_t codepoint) const;
 			float getKerning(const Glyph& left, const Glyph& right) const;
 			rawrBox::Vector2 getStringSize(const std::string& text) const;
+
+			bgfx::TextureHandle& getHandle(const Glyph& g);
 			// ----
 	};
 

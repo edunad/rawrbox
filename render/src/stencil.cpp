@@ -277,7 +277,6 @@ namespace rawrBox {
 		if (font == nullptr || col.isTransparent() || text.empty()) return;
 
 		// Setup --------
-		this->setTexture(font->atlas->getHandle());
 		this->setShaderProgram(this->_textprogram);
 		this->setDrawMode(); // Reset
 		// ----
@@ -322,7 +321,6 @@ namespace rawrBox {
 				continue;
 			}
 
-			if (!font->hasGlyph(point)) continue;
 			auto& glyph = font->getGlyph(point);
 			if (prevGlyph != nullptr) {
 				curpos.x += font->getKerning(glyph, *prevGlyph);
@@ -330,6 +328,8 @@ namespace rawrBox {
 
 			rawrBox::Vector2 p = {curpos.x + glyph.bearing.x, curpos.y - glyph.bearing.y};
 			rawrBox::Vector2 s = {static_cast<float>(glyph.size.x), static_cast<float>(glyph.size.y)};
+
+			this->setTexture(font->getHandle(glyph));
 
 			this->pushVertice({p.x, p.y}, glyph.textureTopLeft, col);
 			this->pushVertice({p.x, p.y + s.y}, {glyph.textureTopLeft.x, glyph.textureBottomRight.y}, col);

@@ -26,6 +26,7 @@ namespace rawrBox {
 		std::unique_ptr<AtlasNode> left;
 		std::unique_ptr<AtlasNode> right;
 
+		bool canInsertNode(int insertedWidth, int insertedHeight);
 		std::optional<std::reference_wrapper<AtlasNode>> InsertNode(int width, int height);
 	};
 
@@ -40,6 +41,8 @@ namespace rawrBox {
 		TextureAtlas(uint32_t size = 1024, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8);
 
 		size_t getSpriteCount() const;
+
+		bool canInsertNode(int width, int height);
 		AtlasNode& addSprite(int width, int height, const std::vector<unsigned char>& data);
 
 		virtual void upload() override;
