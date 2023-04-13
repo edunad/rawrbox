@@ -7,20 +7,20 @@ function(detect_os OS)
     message(STATUS "Conan-cmake: cmake_system_name=${CMAKE_SYSTEM_NAME}")
     if(CMAKE_SYSTEM_NAME AND NOT CMAKE_SYSTEM_NAME STREQUAL "Generic")
         if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-            set(${OS} Macos CACHE STRING [PARENT_SCOPE])
+            set(${OS} Macos PARENT_SCOPE)
         elseif(${CMAKE_SYSTEM_NAME} STREQUAL "QNX")
-            set(${OS} Neutrino CACHE STRING [PARENT_SCOPE])
+            set(${OS} Neutrino PARENT_SCOPE)
         else()
-            set(${OS} ${CMAKE_SYSTEM_NAME} CACHE STRING [PARENT_SCOPE])
+            set(${OS} ${CMAKE_SYSTEM_NAME} PARENT_SCOPE)
         endif()
     endif()
 endfunction()
 
 
 function(detect_cxx_standard CXX_STANDARD)
-    set(${CXX_STANDARD} ${CMAKE_CXX_STANDARD} CACHE STRING [PARENT_SCOPE])
+    set(${CXX_STANDARD} ${CMAKE_CXX_STANDARD} PARENT_SCOPE)
     if (CMAKE_CXX_EXTENSIONS)
-        set(${CXX_STANDARD} "gnu${CMAKE_CXX_STANDARD}" CACHE STRING [PARENT_SCOPE])
+        set(${CXX_STANDARD} "gnu${CMAKE_CXX_STANDARD}" PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -107,16 +107,13 @@ function(detect_host_profile output_file)
         set(_FN ${output_file})
     endif()
 
-    message(STATUS "Conan-cmake: Make Generator ${CMAKE_MAKE_PROGRAM}")
-    message(STATUS "Conan-cmake: Generator ${CMAKE_GENERATOR}")
-
     string(APPEND PROFILE "[conf]\n")
     string(APPEND PROFILE "tools.cmake.cmaketoolchain:generator=${CMAKE_GENERATOR}\n")
 
     message(STATUS "Conan-cmake: Creating profile ${_FN}")
     file(WRITE ${_FN} ${PROFILE})
+    message(STATUS "Conan-cmake: Profile: \n${PROFILE}")
 endfunction()
-
 
 function(conan_profile_detect_default)
     message(STATUS "Conan-cmake: Checking if a default profile exists")
@@ -139,7 +136,8 @@ function(conan_profile_detect_default)
     endif()
 endfunction()
 
-function(conan_provide_dependency package_name)
+
+macro(conan_provide_dependency package_name)
 	if(NOT CONAN_INSTALL_SUCCESS)
 		message(STATUS "CMake-conan: Detecting default profile...")
 		conan_profile_detect_default()
@@ -161,15 +159,19 @@ function(conan_provide_dependency package_name)
 		endif()
 
 		string(JSON CONAN_GENERATORS_FOLDER GET ${conan_stdout} graph nodes 0 generators_folder)
-        set(CONAN_GENERATORS_FOLDER "${CONAN_GENERATORS_FOLDER}" CACHE STRING [PARENT_SCOPE])
+		set(CONAN_GENERATORS_FOLDER "${CONAN_GENERATORS_FOLDER}" CACHE PATH "Conan generators folder")
 
         message(STATUS "CMake-conan: CONAN_GENERATORS_FOLDER=${CONAN_GENERATORS_FOLDER}")
 		message(STATUS "CMake-conan: Done!")
 
 		file(REMOVE ${CMAKE_SOURCE_DIR}/CMakeUserPresets.json) # REEEE conan
 
+		if (CONAN_GENERATORS_FOLDER)
+			list(PREPEND CMAKE_PREFIX_PATH "${CONAN_GENERATORS_FOLDER}")
+		endif()
+
         set(CONAN_INSTALL_SUCCESS TRUE CACHE BOOL "Conan install has been invoked and was successful")
 	endif()
 
 	find_package(${ARGN} BYPASS_PROVIDER)
-endfunction()
+endmacro()

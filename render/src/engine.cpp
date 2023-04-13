@@ -11,7 +11,7 @@ using namespace std::literals;
 using Clock = std::chrono::steady_clock;
 
 namespace rawrBox {
-	void Engine::init() { throw std::runtime_error("[RawrBOX-Engine] Method 'init' not implemented"); }
+	void Engine::init() { throw std::runtime_error("[RawrBox-Engine] Method 'init' not implemented"); }
 
 	void Engine::pollEvents() {}
 	void Engine::update(float deltaTime, int64_t gameTime) {}
@@ -80,21 +80,21 @@ namespace rawrBox {
 		return this->_deadlockBreaker;
 	}
 
-	void Engine::setTPS(unsigned int ticksPerSecond){
+	void Engine::setTPS(uint32_t ticksPerSecond){
 		this->_tps = ticksPerSecond;
 		this->_delayBetweenTicks = std::chrono::duration_cast<std::chrono::nanoseconds>(1000ms / this->_tps);
 	}
 
-	unsigned int Engine::getTPS() {
+	uint32_t Engine::getTPS() {
 		return this->_tps;
 	}
 
-	void Engine::setFPS(unsigned int framesPerSeond){
+	void Engine::setFPS(uint32_t framesPerSeond){
 		this->_fps = framesPerSeond;
 		this->_delayBetweenFrames = std::chrono::duration_cast<std::chrono::nanoseconds>(1000ms / this->_fps);
 	}
 
-	unsigned int Engine::getFPS() {
+	uint32_t Engine::getFPS() {
 		return this->_fps;
 	}
 

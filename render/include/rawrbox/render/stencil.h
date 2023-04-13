@@ -2,6 +2,7 @@
 
 #include <rawrbox/render/texture/flat.h>
 #include <rawrbox/render/texture/render.h>
+#include <rawrbox/render/text/font.h>
 
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector2.hpp>
@@ -91,6 +92,12 @@ namespace rawrBox {
 		}
 	};
 
+	enum class TextAlignment {
+		Left,
+		Center,
+		Right
+	};
+
 	class Stencil {
 	private:
 		bgfx::ViewId _viewId;
@@ -100,6 +107,7 @@ namespace rawrBox {
 
 		bgfx::ProgramHandle _2dprogram = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle _lineprogram = BGFX_INVALID_HANDLE;
+		bgfx::ProgramHandle _textprogram = BGFX_INVALID_HANDLE;
 
 		bgfx::TextureHandle _textureHandle = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
@@ -159,6 +167,7 @@ namespace rawrBox {
 		void drawTexture(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, std::shared_ptr<rawrBox::TextureBase> tex, const rawrBox::Color& col = rawrBox::Colors::White, const rawrBox::Vector2f& uvStart = {0, 0}, const rawrBox::Vector2f& uvEnd = {1, 1});
 		void drawCircle(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col = rawrBox::Colors::White, size_t roundness = 32, float angleStart = 0.f, float angleEnd = 360.f);
 		void drawLine(const rawrBox::Vector2& from, const rawrBox::Vector2& to, const rawrBox::Color& col = rawrBox::Colors::White);
+		void drawText(rawrBox::Font* font, const std::string& text, const rawrBox::Vector2f& pos, const rawrBox::Color& col = rawrBox::Colors::White, rawrBox::TextAlignment alignX = rawrBox::TextAlignment::Left, rawrBox::TextAlignment alignY = rawrBox::TextAlignment::Left);
 
 		void drawPolygon(const std::vector<rawrBox::Vector2f>& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col = rawrBox::Colors::White); // TODO
 		// --------------------

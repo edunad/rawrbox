@@ -13,12 +13,7 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
         return()
     endif()
 
-    set(VARYING_DEF_LOCATION "${SHADERS_DIR}/varying.def.sc")
-    if(NOT EXISTS "${VARYING_DEF_LOCATION}")
-        message(WARNING "Varying def does not exist")
-        return()
-    endif()
-
+    set(VARYING_DEF_LOCATION "${SHADERS_DIR}/varying.def.sc") # Global
     set(SHADERS_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/include/generated/shaders/${NAMESPACE}")
 
     file(MAKE_DIRECTORY "${SHADERS_OUT_DIR}")

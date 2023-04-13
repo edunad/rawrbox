@@ -9,8 +9,8 @@
 #define STBI_ONLY_BMP
 #define STBI_ONLY_GIF
 
-#include <stb_image.h>
-#include <stb_image_write.h>
+#include <stb/image.hpp>
+#include <stb/image_write.hpp>
 
 #include <vector>
 #include <stdexcept>

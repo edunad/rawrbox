@@ -10,6 +10,8 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
+#include <utf8.h>
+
 #define BGFX_STATE_DEFAULT_2D (0 \
 		| BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA) \
 		| BGFX_STATE_WRITE_RGB \
@@ -22,6 +24,8 @@ static const bgfx::EmbeddedShader shaders[] = {
 	BGFX_EMBEDDED_SHADER(fs_stencil),
 	BGFX_EMBEDDED_SHADER(fs_stencil_line_stipple),
 	BGFX_EMBEDDED_SHADER(vs_stencil_line_stipple),
+	BGFX_EMBEDDED_SHADER(fs_stencil_text),
+	BGFX_EMBEDDED_SHADER(vs_stencil_text),
 	BGFX_EMBEDDED_SHADER_END()
 };
 
@@ -42,6 +46,7 @@ namespace rawrBox {
 		// CLEANUP BUFFERS & PROGRAMS
 		bgfx::destroy(this->_2dprogram);
 		bgfx::destroy(this->_lineprogram);
+		bgfx::destroy(this->_textprogram);
 
 		bgfx::destroy(this->_textureHandle);
 		bgfx::destroy(this->_texColor);
@@ -58,7 +63,7 @@ namespace rawrBox {
 		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, "fs_stencil");
 
 		this->_2dprogram = bgfx::createProgram(vsh, fsh, true);
-		if(this->_2dprogram.idx == 0) throw std::runtime_error("[RawrBOX-Stencil] Failed to initialize shader program");
+		if(this->_2dprogram.idx == 0) throw std::runtime_error("[RawrBox-Stencil] Failed to initialize shader program");
 		// ------------------
 
 		// Load Line ---------
@@ -66,7 +71,15 @@ namespace rawrBox {
 		fsh = bgfx::createEmbeddedShader(shaders, type, "fs_stencil_line_stipple");
 
 		this->_lineprogram = bgfx::createProgram(vsh, fsh, true);
-		if(this->_lineprogram.idx == 0) throw std::runtime_error("[RawrBOX-Stencil] Failed to initialize shader program");
+		if(this->_lineprogram.idx == 0) throw std::runtime_error("[RawrBox-Stencil] Failed to initialize shader program");
+		// --------------------
+
+		// Load Text ---------
+		vsh = bgfx::createEmbeddedShader(shaders, type, "vs_stencil_text");
+		fsh = bgfx::createEmbeddedShader(shaders, type, "fs_stencil_text");
+
+		this->_textprogram = bgfx::createProgram(vsh, fsh, true);
+		if(this->_textprogram.idx == 0) throw std::runtime_error("[RawrBox-Stencil] Failed to initialize shader program");
 		// --------------------
 
 		this->_pixelTexture = std::make_shared<rawrBox::TextureFlat>(rawrBox::Vector2i(1, 1), Colors::White);
@@ -98,7 +111,7 @@ namespace rawrBox {
 	}
 
 	void Stencil::pushIndices(uint16_t a, uint16_t b, uint16_t c) {
-		auto pos = static_cast<unsigned int>(this->_vertices.size());
+		auto pos = static_cast<uint16_t>(this->_vertices.size());
 
 		this->_indices.push_back(pos - a);
 		this->_indices.push_back(pos - b);
@@ -165,7 +178,7 @@ namespace rawrBox {
 		if (col.isTransparent()) return;
 
 		// TextureImage setup -----
-		if(tex == nullptr) throw std::runtime_error("[RawrBOX-Stencil] Invalid texture, cannot draw");
+		if(tex == nullptr) throw std::runtime_error("[RawrBox-Stencil] Invalid texture, cannot draw");
 
 		// TextureImage setup -----
 		this->setTexture(tex->getHandle());
@@ -238,7 +251,7 @@ namespace rawrBox {
 			this->pushVertice(from, 0, col);
 			this->pushVertice(to, outline.stipple, col);
 
-			auto pos = static_cast<unsigned int>(this->_vertices.size());
+			auto pos = static_cast<uint16_t>(this->_vertices.size());
 			this->_indices.push_back(pos - 1);
 			this->_indices.push_back(pos - 2);
 		} else {
@@ -257,6 +270,79 @@ namespace rawrBox {
 
 			this->pushIndices(4, 3, 2);
 			this->pushIndices(3, 1, 2);
+		}
+	}
+
+	void Stencil::drawText(rawrBox::Font* font, const std::string& text, const rawrBox::Vector2f& pos, const rawrBox::Color& col, rawrBox::TextAlignment alignX, rawrBox::TextAlignment alignY) {
+		if (font == nullptr || col.isTransparent() || text.empty()) return;
+
+		// Setup --------
+		this->setTexture(font->atlas->getHandle());
+		this->setShaderProgram(this->_textprogram);
+		this->setDrawMode(); // Reset
+		// ----
+
+		rawrBox::Vector2f startpos = pos;
+		rawrBox::Vector2f tsize = font->getStringSize(text);
+		if (alignX != TextAlignment::Left || alignY != TextAlignment::Left) {
+			switch (alignX) {
+				case TextAlignment::Left: break;
+				case TextAlignment::Center: startpos.x -= tsize.x / 2; break;
+				case TextAlignment::Right: startpos.x -= tsize.x; break;
+			}
+
+			switch (alignY) {
+				case TextAlignment::Left: break;
+				case TextAlignment::Center: startpos.y -= tsize.y / 2; break;
+				case TextAlignment::Right: startpos.y -= tsize.y; break;
+			}
+		}
+
+		startpos.x = std::roundf(startpos.x);
+		startpos.y = std::roundf(startpos.y);
+
+		float lineheight = font->getLineHeight();
+		startpos.y += lineheight + static_cast<float>(font->face->size->metrics.descender >> 6);
+
+		rawrBox::Vector2 curpos = startpos;
+		const rawrBox::Glyph* prevGlyph = nullptr;
+
+		uint32_t point = 0;
+		auto beginIter = text.begin();
+		auto endIter = utf8::find_invalid(text.begin(), text.end());
+
+		while (beginIter != endIter) {
+			point = utf8::next(beginIter, endIter);
+
+			if (point == '\n') {
+				curpos.y += lineheight;
+				curpos.x = startpos.x;
+
+				prevGlyph = nullptr;
+				continue;
+			}
+
+			if (!font->hasGlyph(point)) continue;
+			auto& glyph = font->getGlyph(point);
+			if (prevGlyph != nullptr) {
+				curpos.x += font->getKerning(glyph, *prevGlyph);
+			}
+
+			rawrBox::Vector2 p = {curpos.x + glyph.bearing.x, curpos.y - glyph.bearing.y};
+			rawrBox::Vector2 s = {static_cast<float>(glyph.size.x), static_cast<float>(glyph.size.y)};
+
+			this->pushVertice({p.x, p.y}, glyph.textureTopLeft, col);
+			this->pushVertice({p.x, p.y + s.y}, {glyph.textureTopLeft.x, glyph.textureBottomRight.y}, col);
+			this->pushVertice({p.x + s.x, p.y}, {glyph.textureBottomRight.x, glyph.textureTopLeft.y}, col);
+			this->pushVertice({p.x + s.x, p.y + s.y}, glyph.textureBottomRight, col);
+
+			this->pushIndices(4, 3, 2);
+			this->pushIndices(3, 1, 2);
+
+			curpos.x += glyph.advance.x;
+			curpos.y += glyph.advance.y;
+
+			prevGlyph = &glyph;
 		}
 	}
 
@@ -347,19 +433,19 @@ namespace rawrBox {
 	}
 
 	void Stencil::begin() {
-		if(this->_recording) throw std::runtime_error("[RawrBOX-Stencil] Already drawing");
+		if(this->_recording) throw std::runtime_error("[RawrBox-Stencil] Already drawing");
 
 		this->_renderTexture->startRecord();
 		this->_recording = true;
 	}
 
 	void Stencil::end() {
-		if(!this->_recording) throw std::runtime_error("[RawrBOX-Stencil] Not drawing");
+		if(!this->_recording) throw std::runtime_error("[RawrBox-Stencil] Not drawing");
 
-		if(!this->_offsets.empty()) throw std::runtime_error("[RawrBOX-Stencil] Missing 'popOffset', cannot draw");
-		if(!this->_rotations.empty()) throw std::runtime_error("[RawrBOX-Stencil] Missing 'popRotation', cannot draw");
-		if(!this->_outlines.empty()) throw std::runtime_error("[RawrBOX-Stencil] Missing 'popOutline', cannot draw");
-		if(!this->_clips.empty()) throw std::runtime_error("[RawrBOX-Stencil] Missing 'popClipping', cannot draw");
+		if(!this->_offsets.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popOffset', cannot draw");
+		if(!this->_rotations.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popRotation', cannot draw");
+		if(!this->_outlines.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popOutline', cannot draw");
+		if(!this->_clips.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popClipping', cannot draw");
 
 		this->internalDraw(this->_renderTexture->id()); // Draw remaining primitives
 
@@ -378,7 +464,7 @@ namespace rawrBox {
 	}
 
 	void Stencil::popOffset() {
-		if(this->_offsets.empty()) throw std::runtime_error("[RawrBOX-Stencil] Offset is empty, failed to pop");
+		if(this->_offsets.empty()) throw std::runtime_error("[RawrBox-Stencil] Offset is empty, failed to pop");
 
 		this->_offset -= this->_offsets.back();
 		this->_offsets.pop_back();
@@ -401,7 +487,7 @@ namespace rawrBox {
 	}
 
 	void Stencil::popRotation() {
-		if(this->_rotations.empty()) throw std::runtime_error("[RawrBOX-Stencil] Rotations is empty, failed to pop");
+		if(this->_rotations.empty()) throw std::runtime_error("[RawrBox-Stencil] Rotations is empty, failed to pop");
 
 		this->_rotation -= this->_rotations.back();
 		this->_rotations.pop_back();
@@ -415,7 +501,7 @@ namespace rawrBox {
 	}
 
 	void Stencil::popOutline() {
-		if(this->_outlines.empty()) throw std::runtime_error("[RawrBOX-Stencil] Outline is empty, failed to pop");
+		if(this->_outlines.empty()) throw std::runtime_error("[RawrBox-Stencil] Outline is empty, failed to pop");
 
 		this->_outline -= this->_outlines.back();
 		this->_outlines.pop_back();
@@ -428,7 +514,7 @@ namespace rawrBox {
 	}
 
 	void Stencil::popClipping() {
-		if(this->_clips.empty()) throw std::runtime_error("[RawrBOX-Stencil] Clips is empty, failed to pop");
+		if(this->_clips.empty()) throw std::runtime_error("[RawrBox-Stencil] Clips is empty, failed to pop");
 
 		this->internalDraw(this->_renderTexture->id());
 		this->_clips.pop_back();

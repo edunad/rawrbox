@@ -21,11 +21,16 @@ namespace cube {
 			this->shutdown();
 		};
 
-		this->_window->initialize(width, height, rawrBox::WindowFlags::Features::VSYNC | rawrBox::WindowFlags::Features::RESIZABLE | rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Window::WINDOWED);
+		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Window::WINDOWED);
 
 		this->_render = std::make_shared<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
 		this->_render->setClearColor(0x443355FF);
 		this->_render->initialize();
+
+		this->_textEngine = std::make_unique<rawrBox::TextEngine>();
+
+		this->_font = &this->_textEngine->load("./content/fonts/droidsans.ttf", 18);
+		this->_font2 = &this->_textEngine->load("./content/fonts/visitor1.ttf", 18);
 
 		// Load content
 		this->_texture = std::make_shared<rawrBox::TextureImage>("./content/textures/screem.png");
@@ -36,7 +41,7 @@ namespace cube {
 		// -----
 
 		// Setup camera
-		bx::mtxProj(this->_proj, 60.0f, static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth); // Crashes on linux
+		bx::mtxProj(this->_proj, 60.0f, static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
 		bx::mtxLookAt(this->_view, {0.0f, 0.0f, -5.0f}, {0.0f, 0.0f, 0.0f});
 		// --------------
 
@@ -45,6 +50,9 @@ namespace cube {
 	void Game::shutdown() {
 		this->_texture = nullptr;
 		this->_render = nullptr;
+		this->_textEngine = nullptr;
+		this->_texture = nullptr;
+		this->_texture2 = nullptr;
 
 		rawrBox::Engine::shutdown();
 	}
@@ -67,8 +75,8 @@ namespace cube {
 			bgfx::setViewTransform(this->_render->getID(), NULL, this->_proj);
 
 			auto& stencil = this->_render->getStencil();
-			bgfx::dbgTextPrintf(1, 1, 0x0f, "STENCIL TESTS ---------------------------------------------------------------------------------------------------------------------------------");
-			bgfx::dbgTextPrintf(1, 11, 0x0f, "TEXT TESTS -----------------------------------------------------------------------------------------------------------------------------------");
+			bgfx::dbgTextPrintf(1, 1, 0x0f, "STENCIL TESTS ----------------------------------------------------------------------------------------------------------------");
+			bgfx::dbgTextPrintf(1, 11, 0x0f, "TEXT TESTS ------------------------------------------------------------------------------------------------------------------");
 
 			stencil.begin();
 				stencil.pushOffset({20, 50});
@@ -140,7 +148,10 @@ namespace cube {
 					stencil.popOffset();
 				stencil.popOffset();
 
-
+				stencil.pushOffset({20, 200});
+					stencil.drawText(this->_font, "Cat ipsum dolor sit amet, steal raw zucchini off kitchen counter for put toy mouse in food bowl.", {});
+					stencil.drawText(this->_font2, "Cat ipsum dolor sit amet, steal raw zucchini off kitchen counter for put toy mouse in food bowl.", {0, 30});
+				stencil.popOffset();
 			stencil.end();
 
 			bgfx::setViewTransform(this->_render->getID(), this->_view, this->_proj);

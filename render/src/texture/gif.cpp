@@ -96,7 +96,7 @@ namespace rawrBox {
             | BGFX_SAMPLER_MAG_POINT);
 
 		if(!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureGIF] Failed to bind texture");
-		bgfx::setName(this->_handle, fmt::format("RAWR-TextureGIF-TEXTURE-{}", this->_handle.idx).c_str());
+		bgfx::setName(this->_handle, fmt::format("RAWR-GIF-TEXTURE-{}", this->_handle.idx).c_str());
 	}
 	// --------------------
 }

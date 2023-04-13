@@ -30,14 +30,16 @@
 
 # Dependencies
 
-| LIB    | REQUIRED | NOTE                                              |
-| :----- | :------: | :------------------------------------------------ |
-| bgfx   |    ✔️    |                                                   |
-| bx     |    ✔️    | Required by `bgfx`                                |
-| glfw   |    ✔️    |                                                   |
-| qhull  |    ✖️    | Can be disabled with `RAWRBOX_BUILD_UTIL_QHULL 0` |
-| fmt    |    ✔️    | Used for formatting                               |
-| utfcpp |    ✔️    | Used for text rendering                           |
+| LIB       | REQUIRED | NOTE                                              |
+| :-------- | :------: | :------------------------------------------------ |
+| bgfx      |    ✔️    |                                                   |
+| bx        |    ✔️    | Required by `bgfx`                                |
+| glfw      |    ✔️    |                                                   |
+| qhull     |    ✖️    | Can be disabled with `RAWRBOX_BUILD_UTIL_QHULL 0` |
+| fmt       |    ✔️    | Used for formatting                               |
+| utfcpp    |    ✔️    | Used for text rendering                           |
+| stb/image |    ✔️    | Used for loading images                           |
+| freetype2 |    ✔️    | Used for loading fonts                            |
 
 # Building
 

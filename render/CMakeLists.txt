@@ -37,33 +37,36 @@ set(BGFX_BUILD_TOOLS_BIN2C OFF CACHE INTERNAL "")
 # ---------------------------------
 
 # Packages ----
-find_package(stb REQUIRED)
 find_package(glm REQUIRED)
+find_package(Freetype REQUIRED MODULE)
+find_package(utf8cpp REQUIRED)
 #--------------
 
 add_shaders_directory(${RAWRBOX_CONTENT_FOLDER}/shaders RAWRBOX_SHADERS_TARGET_NAME)
 message("SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
 
 # Grab source files
-file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp" )
+file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
 
 # Project setup
 set(output_target RAWRBOX.RENDER)
 add_library(${output_target} ${RAWRBOX_RENDER_SOURCES})
 target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS GLM_FORCE_LEFT_HANDED NOMINMAX)
-target_include_directories(${output_target} PUBLIC "include")
+target_include_directories(${output_target} PUBLIC "include" ${FREETYPE_INCLUDE_DIRS})
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PRIVATE "${RAWRBOX_SHADERS_TARGET_NAME}" PUBLIC
 	RAWRBOX.MATH
 	RAWRBOX.UTILS
 
-	stb::stb
 	fmt::fmt
-	glfw
-	glm::glm
+	Freetype::Freetype
+	utf8cpp
 
 	bgfx
 	bx
+	glfw
+
+	glm::glm
 
 	${RAWRBOX_EXTRA_LIBS}
 )

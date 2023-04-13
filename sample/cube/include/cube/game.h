@@ -7,6 +7,9 @@
 #include <rawrbox/render/texture/image.h>
 #include <rawrbox/render/texture/gif.h>
 
+#include <rawrbox/render/text/engine.h>
+#include <rawrbox/render/text/font.h>
+
 #include <rawrbox/render/stencil.h>
 
 #include <memory>
@@ -18,6 +21,10 @@ namespace cube {
 
 		std::shared_ptr<rawrBox::Renderer> _render;
 		std::unique_ptr<rawrBox::Window> _window;
+
+		std::unique_ptr<rawrBox::TextEngine> _textEngine;
+		rawrBox::Font* _font;
+		rawrBox::Font* _font2;
 
 		float _view[16];
 		float _proj[16];

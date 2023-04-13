@@ -9,8 +9,8 @@ namespace rawrBox {
 			bool _shouldShutdown = false;
 			bool _runningSlow = false;
 
-			unsigned int _tps = 66;
-			unsigned int _fps = 60;
+			uint32_t _tps = 66;
+			uint32_t _fps = 60;
 
 			std::chrono::milliseconds _deadlockBreaker = std::chrono::milliseconds(500);
 			std::chrono::nanoseconds _delayBetweenTicks;
@@ -41,12 +41,12 @@ namespace rawrBox {
 			virtual const std::chrono::milliseconds& getBreakerTime();
 
 			// sets the update rate per second
-			virtual void setTPS(unsigned int ticksPerSecond);
-			virtual unsigned int getTPS();
+			virtual void setTPS(uint32_t ticksPerSecond);
+			virtual uint32_t getTPS();
 
 			// sets the draw rate per second
-			virtual void setFPS(unsigned int framesPerSecond);
-			virtual unsigned int getFPS();
+			virtual void setFPS(uint32_t framesPerSecond);
+			virtual uint32_t getFPS();
 
 			// returns true after quit() is called
 			bool isQuitting();
