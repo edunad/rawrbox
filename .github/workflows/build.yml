@@ -19,6 +19,11 @@ jobs:
               with:
                   fetch-depth: 0
 
+            - name: Review Code
+              uses: reviewdog/action-setup@v1
+              with:
+                  reviewdog_version: latest
+
             - name: Install dependencies
               run: |
                   sudo apt update
@@ -33,7 +38,7 @@ jobs:
               id: github-cache-conan-restore
               uses: actions/cache/restore@v3
               with:
-                  path: ./build
+                  path: /home/runner/.conan2
                   key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
 
             - name: Install Conan dependencies
@@ -53,5 +58,5 @@ jobs:
               env:
                   cache-name: cache-conan-modules
               with:
-                  path: ./build
+                  path: /home/runner/.conan2
                   key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}

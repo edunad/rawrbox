@@ -156,7 +156,6 @@ namespace cube {
 					stencil.pushRotation({counter * 50.5f, (size / 2.f) + rawrBox::Vector2f(0, 40)});
 						stencil.drawText(this->_font2, "Cat!!", {0, 40});
 					stencil.popRotation();
-
 				stencil.popOffset();
 			stencil.end();
 
