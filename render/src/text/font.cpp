@@ -1,10 +1,10 @@
-#include <rawrbox/render/text/font.h>
 #include <rawrbox/render/text/engine.h>
+#include <rawrbox/render/text/font.h>
 
 #include <fmt/format.h>
 
-#include <utf8.h>
 #include <iostream>
+#include <utf8.h>
 
 namespace rawrBox {
 	Font::~Font() {
@@ -24,7 +24,7 @@ namespace rawrBox {
 
 	void Font::preloadGlyphs(std::string chars) {
 		auto charsIter = chars.begin();
-		while(charsIter < chars.end()) {
+		while (charsIter < chars.end()) {
 			this->loadGlyph(utf8::next(charsIter, chars.end()));
 		}
 	}
@@ -42,7 +42,7 @@ namespace rawrBox {
 
 	const Glyph& Font::getGlyph(uint32_t codepoint) const {
 		auto fnt = std::find_if(this->_glyphs.begin(), this->_glyphs.end(), [codepoint](auto glyph) { return glyph.codepoint == codepoint; });
-		if(fnt == this->_glyphs.end()) return this->_glyphs.front();
+		if (fnt == this->_glyphs.end()) return this->_glyphs.front();
 		return *fnt;
 	}
 
@@ -62,12 +62,11 @@ namespace rawrBox {
 
 		const Glyph* prevGlyph = nullptr;
 
-		uint32_t point = 0;
 		auto beginIter = text.begin();
 		auto endIter = utf8::find_invalid(text.begin(), text.end());
 
 		while (beginIter != endIter) {
-			point = utf8::next(beginIter, endIter);
+			uint32_t point = utf8::next(beginIter, endIter);
 			if (point == '\n') {
 				pos.y += lineheight;
 				pos.x = 0;
@@ -93,7 +92,7 @@ namespace rawrBox {
 	}
 
 	bgfx::TextureHandle& Font::getHandle(const Glyph& g) {
-		if(this->_engine == nullptr) throw std::runtime_error("[RawrBox-FONT] Text engine is null");
+		if (this->_engine == nullptr) throw std::runtime_error("[RawrBox-FONT] Text engine is null");
 		return this->_engine->getAtlas(g.atlasID)->getHandle();
 	}
 	// -------
@@ -109,34 +108,24 @@ namespace rawrBox {
 		std::vector<unsigned char> buffer = this->generateGlyph();
 
 		auto atlas = this->_engine->requestAtlas(bitmapW, bitmapR);
-		if(atlas.second == nullptr) throw std::runtime_error("[RawrBox-FONT] Failed to generate / get atlas texture");
+		if (atlas.second == nullptr) throw std::runtime_error("[RawrBox-FONT] Failed to generate / get atlas texture");
 
 		auto& atlasNode = atlas.second->addSprite(bitmapW, bitmapR, buffer);
 
-		Glyph glyph {
-			atlas.first,
-			character,
-			charIndx,
-			{
-				static_cast<float>(this->face->glyph->metrics.horiBearingX) / 64.f,
-				static_cast<float>(this->face->glyph->metrics.horiBearingY) / 64.f
-			},
-			{
-				static_cast<float>(this->face->glyph->advance.x >> 6),
-				static_cast<float>(this->face->glyph->advance.y >> 6)
-			},
-			{
-				atlasNode.x / static_cast<float>(atlas.second->size),
-				atlasNode.y / static_cast<float>(atlas.second->size)
-			},
-			{
-				(atlasNode.x + atlasNode.width) / static_cast<float>(atlas.second->size),
-				(atlasNode.y + atlasNode.height) / static_cast<float>(atlas.second->size)
-			},
-			{
-				static_cast<float>(this->face->glyph->metrics.width) / 64.f,
-				static_cast<float>(this->face->glyph->metrics.height) / 64.f
-			},
+		Glyph glyph{
+		    atlas.first,
+		    character,
+		    charIndx,
+		    {static_cast<float>(this->face->glyph->metrics.horiBearingX) / 64.f,
+			static_cast<float>(this->face->glyph->metrics.horiBearingY) / 64.f},
+		    {static_cast<float>(this->face->glyph->advance.x >> 6),
+			static_cast<float>(this->face->glyph->advance.y >> 6)},
+		    {atlasNode.x / static_cast<float>(atlas.second->size),
+			atlasNode.y / static_cast<float>(atlas.second->size)},
+		    {(atlasNode.x + atlasNode.width) / static_cast<float>(atlas.second->size),
+			(atlasNode.y + atlasNode.height) / static_cast<float>(atlas.second->size)},
+		    {static_cast<float>(this->face->glyph->metrics.width) / 64.f,
+			static_cast<float>(this->face->glyph->metrics.height) / 64.f},
 		};
 
 		this->_glyphs.push_back(glyph);
@@ -145,23 +134,22 @@ namespace rawrBox {
 
 	std::vector<unsigned char> Font::generateGlyph() {
 		FT_Glyph glyphDescFill;
-		if(FT_Get_Glyph(this->face->glyph, &glyphDescFill) != FT_Err_Ok) return {};
-		if(FT_Glyph_To_Bitmap( &glyphDescFill, FT_RENDER_MODE_NORMAL, nullptr, true) != FT_Err_Ok) return {};
+		if (FT_Get_Glyph(this->face->glyph, &glyphDescFill) != FT_Err_Ok) return {};
+		if (FT_Glyph_To_Bitmap(&glyphDescFill, FT_RENDER_MODE_NORMAL, nullptr, true) != FT_Err_Ok) return {};
 
 		FT_BitmapGlyph glyph_bitmap = reinterpret_cast<FT_BitmapGlyph>(glyphDescFill);
-		FT_Bitmap *bitmap_fill = &glyph_bitmap->bitmap;
-		if(bitmap_fill == nullptr) return {};
+		FT_Bitmap* bitmap_fill = &glyph_bitmap->bitmap;
+		if (bitmap_fill == nullptr) return {};
 
 		bitmapW = bitmap_fill->width;
 		bitmapR = bitmap_fill->rows;
 
 		auto buffer = std::vector<unsigned char>(bitmapW * bitmapR * 2, 0); // * 2 -> 2 color channels (red and green)
-		for ( unsigned int i = 0; i < bitmapW * bitmapR; ++ i)
-			buffer[i * 2] = bitmap_fill->buffer[i];      // + 0 -> 1st color channel
+		for (unsigned int i = 0; i < bitmapW * bitmapR; ++i)
+			buffer[i * 2] = bitmap_fill->buffer[i]; // + 0 -> 1st color channel
 
-
-		FT_Done_Glyph( glyphDescFill ); // Release
+		FT_Done_Glyph(glyphDescFill); // Release
 		return buffer;
 	}
 	// --------
-}
+} // namespace rawrBox

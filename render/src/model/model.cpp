@@ -30,6 +30,8 @@ namespace rawrBox {
 		bgfx::destroy(this->_ibh);
 		bgfx::destroy(this->_handle);
 		bgfx::destroy(this->_texColor);
+
+		this->_meshes = {};
 	}
 
 	// UTIL ---

@@ -47,7 +47,7 @@ if(RAWRBOX_BUILD_RENDER_MODEL_SUPPORT)
 	#find_package(assimp REQUIRED)
 
 	#list(APPEND RAWRBOX_EXTRA_LIBS assimp:assimp)
-	list(APPEND CMAKE_CXX_FLAGS "-DASSIMP_USE_STB_IMAGE_STATIC")
+	#list(APPEND CMAKE_CXX_FLAGS "-DASSIMP_USE_STB_IMAGE_STATIC")
 
 	message("-- Enabled assimp")
 endif()
