@@ -63,7 +63,7 @@ namespace rawrBox {
 		std::vector<rawrBox::ModelVertexData>& getVertices();
 		std::vector<uint16_t>& getIndices();
 
-		void setOffset(const std::array<float, 16>& offset);
+		void setMatrix(const std::array<float, 16>& offset);
 		void setTexture(const std::shared_ptr<rawrBox::TextureBase>& ptr);
 
 		void generatePlane(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& size, const rawrBox::Vector3f& normal = {0, 0, 1}, const rawrBox::Color& cl = rawrBox::Colors::White);

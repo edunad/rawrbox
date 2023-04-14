@@ -28,7 +28,7 @@ namespace rawrBox {
 		this->_data->texture = ptr;
 	}
 
-	void ModelMesh::setOffset(const std::array<float, 16>& offset) {
+	void ModelMesh::setMatrix(const std::array<float, 16>& offset) {
 		this->_data->offsetMatrix = offset;
 	}
 

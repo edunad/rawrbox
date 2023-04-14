@@ -23,7 +23,7 @@ namespace cube {
 			this->shutdown();
 		};
 
-		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Debug::STATS | rawrBox::WindowFlags::Window::WINDOWED);
+		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Window::WINDOWED);
 
 		this->_render = std::make_shared<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
 		this->_render->setClearColor(0x443355FF);
@@ -50,19 +50,6 @@ namespace cube {
 			auto mesh = std::make_shared<rawrBox::ModelMesh>();
 			mesh->generatePlane({0, 0}, 0.5f, {0, 0, 1}, rawrBox::Colors::Yellow);
 			mesh->setTexture(this->_texture2);
-			this->_model->addMesh(mesh);
-		}
-
-		{
-			auto mesh = std::make_shared<rawrBox::ModelMesh>();
-			mesh->generatePlane({1, 1}, 0.5f, {0, 0, 1}, rawrBox::Colors::Red);
-			mesh->setTexture(this->_texture);
-			this->_model->addMesh(mesh);
-		}
-
-		{
-			auto mesh = std::make_shared<rawrBox::ModelMesh>();
-			mesh->generatePlane({1, 0}, 0.5f, {0, 0, 1}, rawrBox::Colors::Green);
 			this->_model->addMesh(mesh);
 		}
 
@@ -116,9 +103,8 @@ namespace cube {
 		auto& stencil = this->_render->getStencil();
 		bgfx::dbgTextPrintf(1, 1, 0x0f, "STENCIL TESTS ----------------------------------------------------------------------------------------------------------------");
 		bgfx::dbgTextPrintf(1, 11, 0x0f, "TEXT TESTS ------------------------------------------------------------------------------------------------------------------");
-		bgfx::dbgTextPrintf(1, 18, 0x0f, "MODEL TESTS -----------------------------------------------------------------------------------------------------------------");
 
-		/*stencil.begin();
+		stencil.begin();
 		stencil.pushOffset({20, 50});
 		stencil.pushRotation({counter * 50.5f, {50, 50}});
 		stencil.drawBox({0, 0}, {100, 100}, rawrBox::Colors::Green);
@@ -197,14 +183,14 @@ namespace cube {
 		stencil.drawText(this->_font2, "Cat!!", {0, 40});
 		stencil.popRotation();
 		stencil.popOffset();
-		stencil.end();*/
+		stencil.end();
 
 		bgfx::setViewTransform(this->_render->getID(), this->_view, this->_proj);
 
 		// -----------------
 		std::array<float, 16> mtx;
 		bx::mtxRotateXY(mtx.data(), 0.f, counter * 0.65f);
-		this->_model->getMesh(3)->setOffset(mtx);
+		this->_model->getMesh(1)->setMatrix(mtx);
 
 		this->_model->draw();
 		// -----------------
