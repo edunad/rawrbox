@@ -1,0 +1,28 @@
+Language: Cpp
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+BasedOnStyle: LLVM
+UseTab: ForContinuationAndIndentation
+ColumnLimit: 0
+BreakBeforeBraces: Attach
+BreakBeforeTernaryOperators: true
+AllowShortIfStatementsOnASingleLine: true
+SortIncludes: true
+IndentWidth: 8
+AlignAfterOpenBracket: DontAlign
+AlignEscapedNewlines: DontAlign
+AlignConsecutiveMacros: true
+NamespaceIndentation: All
+AccessModifierOffset: -8
+IncludeCategories:
+    - Regex: '^"(rawrbox)/'
+      Priority: 2
+      SortPriority: 0
+    - Regex: '<[[:alnum:].]+>'
+      Priority: 4
+    - Regex: '.*'
+      Priority: 1
+      SortPriority: 0
+
+DerivePointerAlignment: true
+PointerAlignment: Left

@@ -1,4 +1,5 @@
 #include <rawrbox/render/model/model_mesh.h>
+#include <rawrbox/utils/pack.hpp>
 
 namespace rawrBox {
 	ModelMesh::ModelMesh(const std::string& name_) {
@@ -23,64 +24,107 @@ namespace rawrBox {
 		return this->_data;
 	}
 
-	// Generate a simple plane
-	void ModelMesh::generatePlane(const rawrBox::Vector3f& pos,const rawrBox::Vector2f& size, const rawrBox::Vector3f& normal, const rawrBox::Color& cl) {
-		if(this->_data == nullptr) throw std::runtime_error("No ModelMeshData found");
-
-		// Clear old --
-		this->_data->vertices.clear();
-		this->_data->indices.clear();
-		// ---
-
-		std::array<rawrBox::ModelVertexData, 4> buff;
-		buff[0] = {{pos.x, pos.y, pos.z}, {0, 0}, normal, cl};
-		buff[2] = {{pos.x, pos.y + size.y, pos.z}, {0, 1}, normal, cl};
-		buff[1] = {{pos.x + size.x, pos.y, pos.z}, {1, 0}, normal, cl};
-		buff[3] = {{pos.x + size.x, pos.y + size.y, pos.z}, {1, 1}, normal, cl};
-
-		auto& vertices = this->getVertices();
-		auto& indices = this->getIndices();
-
-		this->_data->baseVertex = static_cast<uint16_t>(vertices.size());
-		this->_data->baseIndex = static_cast<uint16_t>(indices.size());
-		this->_data->numVertices += static_cast<uint16_t>(buff.size());
-		this->_data->numIndices += 6;
-
-		uint16_t inds[] = {0, 1, 2, 1, 3, 2};
-		this->_data->vertices.insert(this->_data->vertices.end(), buff.begin(), buff.end());
-		for (uint16_t ind : inds) this->_data->indices.push_back(ind);
+	void ModelMesh::setTexture(const std::shared_ptr<rawrBox::TextureBase>& ptr) {
+		this->_data->texture = ptr;
 	}
 
-	void ModelMesh::generateCube(const rawrBox::Vector3f& pos,const rawrBox::Vector3f& size, const rawrBox::Vector3f& normal, const rawrBox::Color& cl) {
-		if(this->_data == nullptr) throw std::runtime_error("No ModelMeshData found");
+	void ModelMesh::setOffset(const std::array<float, 16>& offset) {
+		this->_data->offsetMatrix = offset;
+	}
+
+	// ------------------------
+	void ModelMesh::generatePlane(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& size, const rawrBox::Vector3f& normal, const rawrBox::Color& cl) {
+		if (this->_data == nullptr) throw std::runtime_error("No ModelMeshData found");
 
 		// Clear old --
 		this->_data->vertices.clear();
 		this->_data->indices.clear();
 		// ---
 
-		std::array<rawrBox::ModelVertexData, 8> buff;
-		buff[0] = {pos + rawrBox::Vector3f(-size.x, size.y, size.z), {0, 0}, normal, rawrBox::Colors::Red};
-		buff[1] = {pos + rawrBox::Vector3f(size.x, size.y, size.z), {1, 0}, normal};
-		buff[2] = {pos + rawrBox::Vector3f(-size.x, -size.y, size.z), {0, 1}, normal};
-		buff[3] = {pos + rawrBox::Vector3f(size.x, -size.y, size.z), {1, 1}, normal, rawrBox::Colors::Purple};
+		std::array<rawrBox::ModelVertexData, 6> buff = {
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0x7fff, cl),
+		};
 
-		buff[4] = {pos + rawrBox::Vector3f(-size.x, size.y, -size.z), {0, 0}, normal, rawrBox::Colors::Blue};
-		buff[5] = {pos + rawrBox::Vector3f(size.x, size.y, -size.z), {1, 0}, normal};
-		buff[6] = {pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), {0, 1}, normal};
-		buff[7] = {pos + rawrBox::Vector3f(size.x, -size.y, -size.z), {1, 1}, normal, rawrBox::Colors::Green};
+		std::array<uint16_t, 6> inds = {
+		    0, 1, 2,
+		    0, 3, 1};
 
-		auto& vertices = this->getVertices();
-		auto& indices = this->getIndices();
+		this->_data->numVertices = static_cast<uint16_t>(buff.size());
+		this->_data->numIndices = static_cast<uint16_t>(inds.size());
 
-		this->_data->baseVertex = static_cast<uint16_t>(vertices.size());
-		this->_data->baseIndex = static_cast<uint16_t>(indices.size());
-		this->_data->numVertices += static_cast<uint16_t>(buff.size());
-		this->_data->numIndices += 35;
-
-		uint16_t inds[] = {0, 1, 2, 1, 3, 2, 4, 6, 5, 5, 6, 7, 0, 2, 4, 4, 2, 6, 1, 5, 3, 5, 7, 3, 0, 4, 1, 4, 5, 1, 2, 3, 6, 6, 3, 7};
 		this->_data->vertices.insert(this->_data->vertices.end(), buff.begin(), buff.end());
-		for (uint16_t ind : inds) this->_data->indices.push_back(ind);
+		for (uint16_t ind : inds)
+			this->_data->indices.push_back(this->_data->numVertices - ind);
+	}
+
+	void ModelMesh::generateCube(const rawrBox::Vector3f& pos, const rawrBox::Vector3f& size, const rawrBox::Color& cl) {
+		if (this->_data == nullptr) throw std::runtime_error("No ModelMeshData found");
+
+		// Clear old --
+		this->_data->vertices.clear();
+		this->_data->indices.clear();
+		// ---
+
+		std::array<rawrBox::ModelVertexData, 24> buff = {
+		    // Back
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(-1, 0, 0), 0x7fff, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), rawrBox::PackUtils::packNormal(-1, 0, 0), 0, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, size.z), rawrBox::PackUtils::packNormal(-1, 0, 0), 0x7fff, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(-1, 0, 0), 0, 0x7fff, cl),
+		    // Front
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0x7fff, cl),
+		    // Right
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(0, 0, 1), 0, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), rawrBox::PackUtils::packNormal(0, 0, 1), 0x7fff, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(0, 0, 1), 0x7fff, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(0, 0, 1), 0, 0, cl),
+		    // Left
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(0, 0, -1), 0x7fff, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, size.z), rawrBox::PackUtils::packNormal(0, 0, -1), 0, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(0, 0, -1), 0, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(0, 0, -1), 0x7fff, 0, cl),
+		    // Top
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0x7fff, cl),
+		    // Bottom
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0, cl)};
+
+		std::array<uint16_t, 36> inds = {
+		    0, 1, 2,
+		    0, 3, 1,
+
+		    4, 6, 5,
+		    4, 5, 7,
+
+		    8, 9, 10,
+		    8, 11, 9,
+
+		    12, 14, 13,
+		    12, 13, 15,
+
+		    16, 18, 17,
+		    16, 17, 19,
+
+		    20, 21, 22,
+		    20, 23, 21};
+
+		this->_data->numVertices = static_cast<uint16_t>(buff.size());
+		this->_data->numIndices = static_cast<uint16_t>(inds.size());
+
+		this->_data->vertices.insert(this->_data->vertices.end(), buff.begin(), buff.end());
+		for (uint16_t ind : inds)
+			this->_data->indices.push_back(this->_data->numVertices - ind);
 	}
 	// ----
-}
+} // namespace rawrBox

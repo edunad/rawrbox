@@ -1,7 +1,7 @@
 {
     "folders": [
         {
-            "name": "RawrBOX",
+            "name": "RawrBox",
             "path": "."
         }
     ],
@@ -24,9 +24,6 @@
         "output.smartScroll.enabled": false,
         "files.eol": "\n",
         "editor.formatOnSave": true,
-        "[cpp]": {
-            "editor.formatOnSave": false
-        },
         "trailing-spaces.trimOnSave": true,
         "editor.stickyScroll.enabled": true,
         "C_Cpp.default.compilerArgs": ["-fexceptions"],
