@@ -92,6 +92,7 @@ namespace rawrBox {
 	void Stencil::pushVertice(rawrBox::Vector2f pos, const rawrBox::Vector2f& uv, const rawrBox::Color& col) {
 		this->applyScale(pos);
 		this->applyRotation(pos);
+
 		this->_vertices.emplace_back(
 			// pos
 			((pos.x + this->_offset.x) / _windowSize.x * 2 - 1),
@@ -380,10 +381,6 @@ namespace rawrBox {
 
 			prevGlyph = &glyph;
 		}
-	}
-
-	void Stencil::drawPolygon(const std::vector<rawrBox::Vector2f>& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col) {
-		throw std::runtime_error("TODO");
 	}
 	// --------------------
 

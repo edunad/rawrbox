@@ -14,19 +14,20 @@
 
 # LIBS
 
-| LIB              | NOTE                                                    |
-| :--------------- | :------------------------------------------------------ |
-| `RAWRBOX.RENDER` | Used for rendering (aka, contains window, stencil, etc) |
-| `RAWRBOX.MATH`   | Math lib                                                |
-| `RAWRBOX.UTILS`  | Utils lib                                               |
+| LIB              | NOTE                                               |
+| :--------------- | :------------------------------------------------- |
+| `RAWRBOX.RENDER` | Rendering lib (aka, contains window, stencil, etc) |
+| `RAWRBOX.MATH`   | Math lib                                           |
+| `RAWRBOX.UTILS`  | Utils lib                                          |
 
 # CMAKE
 
-| OPTION NAME                | NOTE                               |
-| :------------------------- | :--------------------------------- |
-| `RAWRBOX_USE_WAYLAND`      | Enables WAYLAND compiling on LINUX |
-| `RAWRBOX_BUILD_SAMPLE`     | Builds the project sample          |
-| `RAWRBOX_BUILD_UTIL_QHULL` | Enables QHull util                 |
+| OPTION NAME                          | NOTE                               |
+| :----------------------------------- | :--------------------------------- |
+| `RAWRBOX_USE_WAYLAND`                | Enables WAYLAND compiling on LINUX |
+| `RAWRBOX_BUILD_SAMPLE`               | Builds the project sample          |
+| `RAWRBOX_BUILD_UTIL_QHULL`           | Enables QHull util                 |
+| `RAWRBOX_BUILD_RENDER_MODEL_SUPPORT` | Enables assimp                     |
 
 # Dependencies
 
@@ -41,6 +42,7 @@
 | stb/image       |    ✔️    | Used for loading images                           |
 | stb/image_write |    ✔️    | Used for writting images                          |
 | freetype2       |    ✔️    | Used for loading fonts                            |
+| assimp          |    ✖️    | Used for loading models                           |
 
 # Building
 

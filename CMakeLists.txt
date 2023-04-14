@@ -21,6 +21,7 @@ list(PREPEND CONAN_GENERATORS_FOLDER ${CMAKE_BINARY_DIR})
 option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 option(RAWRBOX_BUILD_SAMPLE "Build samples" ON)
 option(RAWRBOX_BUILD_UTIL_QHULL "Include QHull on utils" ON)
+option(RAWRBOX_BUILD_RENDER_MODEL_SUPPORT "Build assimp & add model" ON)
 # -----
 
 # OTHER SETTINGS ----
@@ -37,8 +38,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Apple needs this flag to compile mixed objective/c++
-if( APPLE AND NOT XCODE )
-	set( CMAKE_CXX_FLAGS "-ObjC++" )
+if(APPLE AND NOT XCODE)
+	set(CMAKE_CXX_FLAGS "-ObjC++")
 endif()
 
 # Linux and Wayland support

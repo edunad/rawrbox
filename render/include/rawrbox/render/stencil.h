@@ -174,8 +174,6 @@ namespace rawrBox {
 		void drawCircle(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col = rawrBox::Colors::White, size_t roundness = 32, float angleStart = 0.f, float angleEnd = 360.f);
 		void drawLine(const rawrBox::Vector2& from, const rawrBox::Vector2& to, const rawrBox::Color& col = rawrBox::Colors::White);
 		void drawText(rawrBox::Font* font, const std::string& text, const rawrBox::Vector2f& pos, const rawrBox::Color& col = rawrBox::Colors::White, rawrBox::TextAlignment alignX = rawrBox::TextAlignment::Left, rawrBox::TextAlignment alignY = rawrBox::TextAlignment::Left);
-
-		void drawPolygon(const std::vector<rawrBox::Vector2f>& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col = rawrBox::Colors::White); // TODO
 		// --------------------
 
 		// ------ RENDERING

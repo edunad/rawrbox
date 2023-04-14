@@ -34,11 +34,23 @@ set(BGFX_BUILD_TOOLS_SHADER ON CACHE INTERNAL "")
 set(BGFX_BUILD_TOOLS_GEOMETRY OFF CACHE INTERNAL "")
 set(BGFX_BUILD_TOOLS_TEXTURE OFF CACHE INTERNAL "")
 set(BGFX_BUILD_TOOLS_BIN2C OFF CACHE INTERNAL "")
+
+set(ASSIMP_BUILD_TESTS OFF)
+set(ASSIMP_BUILD_STATIC_LIB ON)
 # ---------------------------------
 
 # Packages ----
 find_package(Freetype REQUIRED MODULE)
 find_package(utf8cpp REQUIRED)
+
+if(RAWRBOX_BUILD_RENDER_MODEL_SUPPORT)
+	#find_package(assimp REQUIRED)
+
+	#list(APPEND RAWRBOX_EXTRA_LIBS assimp:assimp)
+	list(APPEND CMAKE_CXX_FLAGS "-DASSIMP_USE_STB_IMAGE_STATIC")
+
+	message("-- Enabled assimp")
+endif()
 #--------------
 
 add_shaders_directory(${RAWRBOX_CONTENT_FOLDER}/shaders RAWRBOX_SHADERS_TARGET_NAME)
@@ -46,6 +58,10 @@ message("SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
+if(NOT RAWRBOX_BUILD_RENDER_MODEL_SUPPORT)
+	# todo: Remove model files
+endif()
+
 
 # Project setup
 set(output_target RAWRBOX.RENDER)

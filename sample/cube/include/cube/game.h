@@ -10,6 +10,8 @@
 #include <rawrbox/render/text/engine.h>
 #include <rawrbox/render/text/font.h>
 
+#include <rawrbox/render/model/model.h>
+
 #include <rawrbox/render/stencil.h>
 
 #include <memory>
@@ -18,6 +20,9 @@ namespace cube {
 	class Game : public rawrBox::Engine {
 		std::shared_ptr<rawrBox::TextureImage> _texture;
 		std::shared_ptr<rawrBox::TextureGIF> _texture2;
+
+		std::shared_ptr<rawrBox::Model> _model;
+		std::shared_ptr<rawrBox::Model> _model2;
 
 		std::shared_ptr<rawrBox::Renderer> _render;
 		std::unique_ptr<rawrBox::Window> _window;

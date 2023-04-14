@@ -1,5 +1,7 @@
 
 #include <cube/game.h>
+#include <rawrbox/render/model/model_mesh.h>
+
 #include <bx/math.h>
 
 #include <vector>
@@ -32,19 +34,39 @@ namespace cube {
 		this->_font = &this->_textEngine->load("./content/fonts/droidsans.ttf", 28);
 		this->_font2 = &this->_textEngine->load("./content/fonts/visitor1.ttf", 18);
 
+
+		// Model loading ---
+		this->_model = std::make_shared<rawrBox::Model>();
+
+		// ----
+		{
+			auto mesh = std::make_shared<rawrBox::ModelMesh>();
+			mesh->generatePlane({}, 1);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = std::make_shared<rawrBox::ModelMesh>();
+			mesh->generateCube({}, 1);
+			this->_model->addMesh(mesh);
+		}
+
+		// -----
+
 		// Load content
 		this->_texture = std::make_shared<rawrBox::TextureImage>("./content/textures/screem.png");
 		this->_texture->upload();
 
 		this->_texture2 = std::make_shared<rawrBox::TextureGIF>("./content/textures/meow3.gif");
 		this->_texture2->upload();
+
+		this->_model->upload();
 		// -----
 
 		// Setup camera
 		bx::mtxProj(this->_proj, 60.0f, static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
 		bx::mtxLookAt(this->_view, {0.0f, 0.0f, -5.0f}, {0.0f, 0.0f, 0.0f});
 		// --------------
-
 	}
 
 	void Game::shutdown() {
@@ -86,7 +108,7 @@ namespace cube {
 					stencil.popRotation();
 
 					stencil.pushOffset({100, 0});
-						stencil.pushScale({std::sin(counter * 0.5f), std::cos(counter * 0.5f)});
+						stencil.pushScale({1.f, -1.f});
 							stencil.drawBox({0, 0}, {100, 100}, rawrBox::Colors::Red);
 						stencil.popScale();
 					stencil.popOffset();
@@ -162,6 +184,14 @@ namespace cube {
 			stencil.end();
 
 			bgfx::setViewTransform(this->_render->getID(), this->_view, this->_proj);
+
+			// -----------------
+			std::array<float, 16> mtx;
+			bx::mtxRotateXY(mtx.data(), counter * 0.1f, counter * 0.1f);
+
+			this->_model->setMatrix(mtx);
+			this->_model->draw();
+			// -----------------
 
 		this->_render->render(); // Commit primitives
 
