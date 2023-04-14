@@ -68,7 +68,7 @@ namespace cube {
 
 		{
 			auto mesh = std::make_shared<rawrBox::ModelMesh>();
-			mesh->generateCube({0, -1}, 0.5f, rawrBox::Colors::White);
+			mesh->generateCube({0, 0}, 0.5f, rawrBox::Colors::White);
 			mesh->setTexture(this->_texture);
 
 			this->_model->addMesh(mesh);
@@ -203,7 +203,7 @@ namespace cube {
 
 		// -----------------
 		std::array<float, 16> mtx;
-		bx::mtxRotateXY(mtx.data(), 0, counter * 0.65f);
+		bx::mtxRotateXY(mtx.data(), 0.f, counter * 0.65f);
 		this->_model->getMesh(3)->setOffset(mtx);
 
 		this->_model->draw();
