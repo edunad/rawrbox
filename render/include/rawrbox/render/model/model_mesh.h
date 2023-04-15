@@ -40,6 +40,7 @@ namespace rawrBox {
 		std::vector<uint16_t> indices = {};
 
 		std::array<float, 16> offsetMatrix;
+		bool wireframe = false;
 
 		virtual ~ModelMeshData() = default;
 		ModelMeshData() {
@@ -65,9 +66,11 @@ namespace rawrBox {
 
 		void setMatrix(const std::array<float, 16>& offset);
 		void setTexture(const std::shared_ptr<rawrBox::TextureBase>& ptr);
+		void setWireframe(bool wireframe);
 
 		void generatePlane(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& size, const rawrBox::Vector3f& normal = {0, 0, 1}, const rawrBox::Color& cl = rawrBox::Colors::White);
 		void generateCube(const rawrBox::Vector3f& pos, const rawrBox::Vector3f& size, const rawrBox::Color& cl = rawrBox::Colors::White);
+		void generateGrid(uint32_t size, const rawrBox::Vector3f& pos, const rawrBox::Color& cl = rawrBox::Colors::White);
 		// ----
 	};
 } // namespace rawrBox

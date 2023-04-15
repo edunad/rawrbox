@@ -1,9 +1,9 @@
 #include <rawrbox/render/engine.h>
 
-#include <iostream>
 #include <chrono>
-#include <thread>
+#include <iostream>
 #include <stdexcept>
+#include <thread>
 
 using namespace std::chrono;
 using namespace std::literals;
@@ -27,7 +27,7 @@ namespace rawrBox {
 		time_point currentTimeFPS = gameStart;
 
 		// while game is running, do update and draw logic
-		while(!this->_shouldShutdown) {
+		while (!this->_shouldShutdown) {
 			// process game input
 			pollEvents();
 
@@ -41,7 +41,7 @@ namespace rawrBox {
 			if (frameTimeFPS > this->_deadlockBreaker) frameTimeFPS = this->_deadlockBreaker;
 
 			// ensure we call update as much times per second as requested
-			while(frameTimeTPS >= this->_delayBetweenTicks) {
+			while (frameTimeTPS >= this->_delayBetweenTicks) {
 				update(1.0f / static_cast<float>(this->_tps), (newTime - gameStart).count());
 				if (this->_shouldShutdown) return;
 
@@ -80,7 +80,7 @@ namespace rawrBox {
 		return this->_deadlockBreaker;
 	}
 
-	void Engine::setTPS(uint32_t ticksPerSecond){
+	void Engine::setTPS(uint32_t ticksPerSecond) {
 		this->_tps = ticksPerSecond;
 		this->_delayBetweenTicks = std::chrono::duration_cast<std::chrono::nanoseconds>(1000ms / this->_tps);
 	}
@@ -89,7 +89,7 @@ namespace rawrBox {
 		return this->_tps;
 	}
 
-	void Engine::setFPS(uint32_t framesPerSeond){
+	void Engine::setFPS(uint32_t framesPerSeond) {
 		this->_fps = framesPerSeond;
 		this->_delayBetweenFrames = std::chrono::duration_cast<std::chrono::nanoseconds>(1000ms / this->_fps);
 	}
@@ -109,4 +109,4 @@ namespace rawrBox {
 	bool Engine::isRunningSlow() {
 		return this->_runningSlow;
 	}
-}
+} // namespace rawrBox

@@ -34,8 +34,8 @@ namespace rawrBox {
 
 	std::pair<uint32_t, rawrBox::TextureAtlas*> TextEngine::requestAtlas(int width, int height) {
 		// Try to find a spot
-		for(auto& at: this->_atlas) {
-			if(at.second->canInsertNode(width, height)) return {at.first, at.second.get()};
+		for (auto& at : this->_atlas) {
+			if (at.second->canInsertNode(width, height)) return {at.first, at.second.get()};
 		}
 
 		// Ok, make a new atlas then
@@ -49,7 +49,7 @@ namespace rawrBox {
 
 	rawrBox::TextureAtlas* TextEngine::getAtlas(uint32_t id) {
 		auto fnd = this->_atlas.find(id);
-		if(fnd == this->_atlas.end()) throw std::runtime_error(fmt::format("[RawrBox-Freetype] Failed to find atlas id '{}'", id));
+		if (fnd == this->_atlas.end()) throw std::runtime_error(fmt::format("[RawrBox-Freetype] Failed to find atlas id '{}'", id));
 
 		return fnd->second.get();
 	}
@@ -57,4 +57,4 @@ namespace rawrBox {
 	rawrBox::Font& TextEngine::load(std::string filename, uint32_t size) {
 		return *this->_fonts.emplace_back(std::make_unique<rawrBox::Font>(this, filename, size));
 	}
-}
+} // namespace rawrBox

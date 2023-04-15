@@ -1,7 +1,7 @@
 #pragma once
 
-#include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/color.hpp>
+#include <rawrbox/math/vector2.hpp>
 
 #include <bgfx/bgfx.h>
 
@@ -21,4 +21,4 @@ namespace rawrBox {
 		virtual void upload() = 0;
 		virtual bgfx::TextureHandle& getHandle();
 	};
-}
+} // namespace rawrBox

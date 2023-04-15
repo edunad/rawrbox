@@ -50,7 +50,7 @@ namespace rawrBox {
 
 		this->_vertices.insert(this->_vertices.end(), data->vertices.begin(), data->vertices.end());
 		auto pos = static_cast<uint16_t>(this->_vertices.size());
-		for (auto in : data->indices)
+		for (auto& in : data->indices)
 			this->_indices.push_back(pos - in);
 
 		this->_meshes.push_back(mesh);
@@ -65,26 +65,31 @@ namespace rawrBox {
 		if (bgfx::isValid(this->_vbh) || bgfx::isValid(this->_ibh)) throw std::runtime_error("ModelMeshData::generate called twice");
 		if (this->_vertices.empty() || this->_indices.empty()) return;
 
-		this->_vbh = bgfx::createVertexBuffer(bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * this->_vLayout.m_stride), this->_vLayout);
-		this->_ibh = bgfx::createIndexBuffer(bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t)));
-
-		bgfx::RendererType::Enum type = bgfx::getRendererType();
-		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, "vs_model");
-		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, "fs_model");
-
 		if (Model::defaultTexture == nullptr) {
 			Model::defaultTexture = std::make_shared<rawrBox::TextureFlat>(rawrBox::Vector2i(1, 1), Colors::White);
 			Model::defaultTexture->upload();
 		}
 
-		// Fix textures to default
+		// Fix textures to default & wireframe
 		for (auto& mesh : this->_meshes) {
-			if (mesh->getData()->texture != nullptr) continue;
-			mesh->getData()->texture = Model::defaultTexture;
+			auto& data = mesh->getData();
+			if (data->texture != nullptr && !data->wireframe) continue;
+
+			data->texture = Model::defaultTexture;
 		}
+		// ----
+
+		this->_vbh = bgfx::createVertexBuffer(bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * this->_vLayout.m_stride), this->_vLayout);
+		this->_ibh = bgfx::createIndexBuffer(bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t)));
+
+		// Setup shader -----
+		bgfx::RendererType::Enum type = bgfx::getRendererType();
+		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, "vs_model");
+		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, "fs_model");
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 		this->_handle = bgfx::createProgram(vsh, fsh, true);
+		// -----------------
 	}
 
 	void Model::draw(bgfx::ViewId id) {
@@ -101,7 +106,10 @@ namespace rawrBox {
 			bx::mtxMul(a, data->offsetMatrix.data(), this->_matrix.data());
 			bgfx::setTransform(a);
 
-			bgfx::setState(BGFX_STATE_DEFAULT_3D);
+			uint64_t flags = BGFX_STATE_DEFAULT_3D;
+			if (data->wireframe) flags |= BGFX_STATE_PT_LINES;
+
+			bgfx::setState(flags);
 			bgfx::submit(id, this->_handle);
 		}
 	}

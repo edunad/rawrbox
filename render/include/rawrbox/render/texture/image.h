@@ -2,11 +2,11 @@
 
 #include <rawrbox/render/texture/base.h>
 
-#include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/color.hpp>
+#include <rawrbox/math/vector2.hpp>
 
-#include <bgfx/bgfx.h>
 #include <string>
+#include <bgfx/bgfx.h>
 
 namespace rawrBox {
 	class TextureImage : public TextureBase {
@@ -28,4 +28,4 @@ namespace rawrBox {
 
 		virtual void upload() override;
 	};
-}
+} // namespace rawrBox

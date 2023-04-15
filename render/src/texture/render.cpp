@@ -1,5 +1,5 @@
-#include <rawrbox/render/texture/render.h>
 #include <fmt/format.h>
+#include <rawrbox/render/texture/render.h>
 
 // Compiled shaders
 #include <generated/shaders/render/all.h>
@@ -27,17 +27,17 @@ namespace rawrBox {
 	}
 
 	void TextureRender::startRecord() {
-		if(!bgfx::isValid(this->_renderView)) return;
+		if (!bgfx::isValid(this->_renderView)) return;
 
 		bgfx::setViewFrameBuffer(this->_renderId, this->_renderView);
 		bgfx::touch(this->_renderId);
 	}
 
 	void TextureRender::stopRecord() {
-		if(!bgfx::isValid(this->_renderView)) return;
+		if (!bgfx::isValid(this->_renderView)) return;
 		bgfx::touch(0);
 	}
 
 	void TextureRender::upload() { throw std::runtime_error("Not required"); }
 	const bgfx::ViewId TextureRender::id() { return this->_renderId; }
-}
+} // namespace rawrBox

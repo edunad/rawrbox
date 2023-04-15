@@ -1,5 +1,5 @@
-#include <rawrbox/render/texture/atlas.h>
 #include <fmt/format.h>
+#include <rawrbox/render/texture/atlas.h>
 
 namespace rawrBox {
 	TextureAtlas::TextureAtlas(uint32_t _size, bgfx::TextureFormat::Enum _format) {
@@ -14,7 +14,7 @@ namespace rawrBox {
 	}
 
 	AtlasNode& TextureAtlas::addSprite(int width, int height, const std::vector<unsigned char>& data) {
-		if(!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureAtlas] Texture not bound");
+		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureAtlas] Texture not bound");
 
 		auto nodeOpt = this->_root->InsertNode(width, height);
 		if (!nodeOpt.has_value()) throw std::runtime_error(fmt::format("[TextureAtlas] Error: failed to add sprite with size {}, {}", width, height));
@@ -22,7 +22,7 @@ namespace rawrBox {
 		this->_spriteCount++;
 		auto& node = (*nodeOpt).get();
 
-		if(!data.empty()) bgfx::updateTexture2D(this->_handle, 0, 0, node.x, node.y, node.width, node.height, bgfx::copy(data.data(), static_cast<uint32_t>(data.size())));
+		if (!data.empty()) bgfx::updateTexture2D(this->_handle, 0, 0, node.x, node.y, node.width, node.height, bgfx::copy(data.data(), static_cast<uint32_t>(data.size())));
 		return node;
 	}
 
@@ -51,10 +51,10 @@ namespace rawrBox {
 		bool isRemainderWiderThanHigh = remainingWidth > remainingHeight;
 
 		if (isRemainderWiderThanHigh) { // if wider than high, split verticallly
-			left  = std::unique_ptr<AtlasNode>(new AtlasNode{x,                 y, insertedWidth,  height, true, nullptr, nullptr});
+			left = std::unique_ptr<AtlasNode>(new AtlasNode{x, y, insertedWidth, height, true, nullptr, nullptr});
 			right = std::unique_ptr<AtlasNode>(new AtlasNode{x + insertedWidth, y, remainingWidth, height, true, nullptr, nullptr});
 		} else { // That'd make the remainder higher than it's wide, split horizontally
-			left  = std::unique_ptr<AtlasNode>(new AtlasNode{x, y,                  width, insertedHeight,  true, nullptr, nullptr});
+			left = std::unique_ptr<AtlasNode>(new AtlasNode{x, y, width, insertedHeight, true, nullptr, nullptr});
 			right = std::unique_ptr<AtlasNode>(new AtlasNode{x, y + insertedHeight, width, remainingHeight, true, nullptr, nullptr});
 		}
 
@@ -97,10 +97,10 @@ namespace rawrBox {
 		bool isRemainderWiderThanHigh = remainingWidth > remainingHeight;
 
 		if (isRemainderWiderThanHigh) { // if wider than high, split verticallly
-			left  = std::unique_ptr<AtlasNode>(new AtlasNode{x,                 y, insertedWidth,  height, true, nullptr, nullptr});
+			left = std::unique_ptr<AtlasNode>(new AtlasNode{x, y, insertedWidth, height, true, nullptr, nullptr});
 			right = std::unique_ptr<AtlasNode>(new AtlasNode{x + insertedWidth, y, remainingWidth, height, true, nullptr, nullptr});
 		} else { // That'd make the remainder higher than it's wide, split horizontally
-			left  = std::unique_ptr<AtlasNode>(new AtlasNode{x, y,                  width, insertedHeight,  true, nullptr, nullptr});
+			left = std::unique_ptr<AtlasNode>(new AtlasNode{x, y, width, insertedHeight, true, nullptr, nullptr});
 			right = std::unique_ptr<AtlasNode>(new AtlasNode{x, y + insertedHeight, width, remainingHeight, true, nullptr, nullptr});
 		}
 
@@ -108,11 +108,11 @@ namespace rawrBox {
 	}
 
 	void TextureAtlas::upload() {
-		if(bgfx::isValid(this->_handle)) return; // Already bound
+		if (bgfx::isValid(this->_handle)) return; // Already bound
 		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->size), static_cast<uint16_t>(this->size), false, 0, this->_format);
 
-		if(!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureAtlas] Failed to bind texture");
+		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureAtlas] Failed to bind texture");
 		bgfx::setName(this->_handle, fmt::format("RAWR-ATLAS-TEXTURE-{}", this->_handle.idx).c_str());
 	}
 
-}
+} // namespace rawrBox

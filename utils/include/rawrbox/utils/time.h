@@ -16,4 +16,4 @@ namespace rawrBox {
 		static int64_t time();
 		static int64_t curTime();
 	};
-}
+} // namespace rawrBox

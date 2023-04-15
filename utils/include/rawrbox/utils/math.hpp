@@ -5,12 +5,12 @@
 namespace rawrBox {
 	class MathUtils {
 	public:
-		template<typename T = int>
+		template <typename T = int>
 		static inline T clamp(T val, T min, T max) {
 			return std::min(std::max(val, min), max);
 		}
 
-		template<typename T = int>
+		template <typename T = int>
 		static inline T repeat(T val, T min, T max) {
 			return ((val - min) % max) + min;
 		}
@@ -18,7 +18,6 @@ namespace rawrBox {
 		static inline float toRad(float val) {
 			return val * rawrBox::pi<float> / 180.f;
 		}
-
 
 		static inline float toDeg(float val) {
 			return val * 180.f / rawrBox::pi<float>;
@@ -38,8 +37,7 @@ namespace rawrBox {
 				b += 360.f;
 				result = lerp(a, b, lerpFactor);
 				if (result >= 360.f) result -= 360.f;
-			}
-			else if (diff > 180.f) {
+			} else if (diff > 180.f) {
 				// lerp downwards past 0
 				b -= 360.f;
 				result = lerp(a, b, lerpFactor);
@@ -53,7 +51,7 @@ namespace rawrBox {
 		}
 
 		static inline float angleRadLerp(float a, float b, float lerpFactor) {
-			if(a == b) return b;
+			if (a == b) return b;
 
 			float PI = rawrBox::pi<float>;
 			float PI_TIMES_TWO = PI * 2;
@@ -94,4 +92,4 @@ namespace rawrBox {
 			return pow;
 		}
 	};
-}
+} // namespace rawrBox

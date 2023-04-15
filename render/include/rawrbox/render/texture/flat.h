@@ -1,8 +1,8 @@
 #pragma once
 
-#include <rawrbox/render/texture/base.h>
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector2.hpp>
+#include <rawrbox/render/texture/base.h>
 
 #include <bgfx/bgfx.h>
 
@@ -19,4 +19,4 @@ namespace rawrBox {
 		virtual void upload() override;
 		// --------------------
 	};
-}
+} // namespace rawrBox

@@ -1,14 +1,14 @@
 #pragma once
 
+#include <rawrbox/render/text/font.h>
 #include <rawrbox/render/texture/flat.h>
 #include <rawrbox/render/texture/render.h>
-#include <rawrbox/render/text/font.h>
 
+#include <rawrbox/math/aabb.hpp>
 #include <rawrbox/math/color.hpp>
+#include <rawrbox/math/pi.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/math/aabb.hpp>
-#include <rawrbox/math/pi.hpp>
 
 #include <bgfx/bgfx.h>
 
@@ -26,8 +26,8 @@ namespace rawrBox {
 		uint32_t abgr = 0xFFFFFFFF;
 
 		PosUVColorVertexData() = default;
-		PosUVColorVertexData(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& uv, const rawrBox::Color& cl): x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y), abgr(rawrBox::Color::pack(cl)) { }
-		PosUVColorVertexData(float _x, float _y, float _z, float _u, float _v, uint32_t _abgr): x(_x), y(_y), z(_z), u(_u), v(_v), abgr(_abgr) { }
+		PosUVColorVertexData(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& uv, const rawrBox::Color& cl) : x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y), abgr(rawrBox::Color::pack(cl)) {}
+		PosUVColorVertexData(float _x, float _y, float _z, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v), abgr(_abgr) {}
 	};
 
 	struct StencilRotation {
@@ -35,24 +35,24 @@ namespace rawrBox {
 		rawrBox::Vector2f origin = {};
 
 		StencilRotation() = default;
-		StencilRotation(float _rotation, const rawrBox::Vector2f& _origin): rotation(_rotation), origin(_origin) { }
+		StencilRotation(float _rotation, const rawrBox::Vector2f& _origin) : rotation(_rotation), origin(_origin) {}
 
-		StencilRotation operator- (const StencilRotation& other) const {
+		StencilRotation operator-(const StencilRotation& other) const {
 			return {this->rotation - other.rotation, this->origin - other.origin};
 		}
 
-		StencilRotation& operator-= (const StencilRotation& other) {
+		StencilRotation& operator-=(const StencilRotation& other) {
 			this->rotation -= other.rotation;
 			this->origin -= other.origin;
 
 			return *this;
 		}
 
-		StencilRotation operator+ (const StencilRotation& other) const {
+		StencilRotation operator+(const StencilRotation& other) const {
 			return {this->rotation + other.rotation, this->origin + other.origin};
 		}
 
-		StencilRotation& operator+= (const StencilRotation& other) {
+		StencilRotation& operator+=(const StencilRotation& other) {
 			this->rotation += other.rotation;
 			this->origin += other.origin;
 
@@ -65,26 +65,26 @@ namespace rawrBox {
 		float stipple = 0.f;
 
 		StencilOutline() = default;
-		StencilOutline(float _thickness, float _stipple = 0.f): thickness(_thickness), stipple(_stipple) { }
+		StencilOutline(float _thickness, float _stipple = 0.f) : thickness(_thickness), stipple(_stipple) {}
 
 		bool isSet() { return thickness > 0.f || stipple > 0.f; }
 
-		StencilOutline operator- (const StencilOutline& other) const {
+		StencilOutline operator-(const StencilOutline& other) const {
 			return {this->thickness - other.thickness, this->stipple - other.stipple};
 		}
 
-		StencilOutline& operator-= (const StencilOutline& other) {
+		StencilOutline& operator-=(const StencilOutline& other) {
 			this->thickness -= other.thickness;
 			this->stipple -= other.stipple;
 
 			return *this;
 		}
 
-		StencilOutline operator+ (const StencilOutline& other) const {
+		StencilOutline operator+(const StencilOutline& other) const {
 			return {this->thickness + other.thickness, this->stipple + other.stipple};
 		}
 
-		StencilOutline& operator+= (const StencilOutline& other) {
+		StencilOutline& operator+=(const StencilOutline& other) {
 			this->thickness += other.thickness;
 			this->stipple += other.stipple;
 
@@ -212,4 +212,4 @@ namespace rawrBox {
 		void popScale();
 		// --------------------
 	};
-}
+} // namespace rawrBox

@@ -14,8 +14,8 @@ namespace rawrBox {
 		int w;
 		int h;
 
-		stbi_uc *image = stbi_load(fileName.c_str(), &w, &h, &this->_channels, 4); // force it to produce RGBA8
-		if(image == NULL) throw std::runtime_error(fmt::format("[TextureImage] Error loading image: {}", stbi_failure_reason()));
+		stbi_uc* image = stbi_load(fileName.c_str(), &w, &h, &this->_channels, 4); // force it to produce RGBA8
+		if (image == NULL) throw std::runtime_error(fmt::format("[TextureImage] Error loading image: {}", stbi_failure_reason()));
 
 		this->_size = {w, h};
 		this->_pixels = bgfx::copy(image, static_cast<uint32_t>(w * h) * this->_channels);
@@ -66,16 +66,12 @@ namespace rawrBox {
 	// --------------------
 
 	void TextureImage::upload() {
-		if(bgfx::isValid(this->_handle)) return; // Already bound
+		if (bgfx::isValid(this->_handle)) return; // Already bound
 
 		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 0, bgfx::TextureFormat::RGBA8,
-              BGFX_SAMPLER_U_CLAMP
-            | BGFX_SAMPLER_V_CLAMP
-            | BGFX_SAMPLER_MIN_POINT
-            | BGFX_SAMPLER_MAG_POINT
-		, this->_pixels);
+		    BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT, this->_pixels);
 
-		if(!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureImage] Failed to bind texture");
+		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureImage] Failed to bind texture");
 		bgfx::setName(this->_handle, fmt::format("RAWR-IMAGE-TEXTURE-{}", this->_handle.idx).c_str());
 	}
-}
+} // namespace rawrBox

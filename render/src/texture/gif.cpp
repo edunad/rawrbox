@@ -18,12 +18,11 @@ namespace rawrBox {
 
 		// Need to find a way to not load it all to memory
 		auto gifPixels = stbi_xload(
-			fileName.c_str(),
-			&w,
-			&h,
-			&frames_n,
-			&delays
-		);
+		    fileName.c_str(),
+		    &w,
+		    &h,
+		    &frames_n,
+		    &delays);
 
 		this->_size = {w, h};
 
@@ -54,10 +53,10 @@ namespace rawrBox {
 
 	// ------ANIMATION
 	void TextureGIF::step() {
-		if(!bgfx::isValid(this->_handle)) return; // Not bound
+		if (!bgfx::isValid(this->_handle)) return; // Not bound
 
-		if(!this->_loop && this->_currentFrame >= this->_frames.size() - 1) return;
-		if(this->_cooldown >= rawrBox::TimeUtils::curTime()) return;
+		if (!this->_loop && this->_currentFrame >= this->_frames.size() - 1) return;
+		if (this->_cooldown >= rawrBox::TimeUtils::curTime()) return;
 
 		this->_cooldown = static_cast<int64_t>(this->_frames[this->_currentFrame].delay * this->_speed) + rawrBox::TimeUtils::curTime(); // TODO: FIX SPEED
 		this->_currentFrame = MathUtils::repeat<int>(this->_currentFrame + 1, 0, static_cast<int>(this->_frames.size()) - 1);
@@ -66,7 +65,7 @@ namespace rawrBox {
 	}
 
 	void TextureGIF::reset() {
-		if(!bgfx::isValid(this->_handle)) return; // Not bound
+		if (!bgfx::isValid(this->_handle)) return; // Not bound
 
 		this->_cooldown = 0;
 		this->_currentFrame = 0;
@@ -86,15 +85,12 @@ namespace rawrBox {
 
 	// ------RENDER
 	void TextureGIF::upload() {
-		if(bgfx::isValid(this->_handle)) return; // Already bound
+		if (bgfx::isValid(this->_handle)) return; // Already bound
 		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 0, bgfx::TextureFormat::RGBA8,
-              BGFX_SAMPLER_U_BORDER
-            | BGFX_SAMPLER_V_BORDER
-            | BGFX_SAMPLER_MIN_POINT
-            | BGFX_SAMPLER_MAG_POINT);
+		    BGFX_SAMPLER_U_BORDER | BGFX_SAMPLER_V_BORDER | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT);
 
-		if(!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureGIF] Failed to bind texture");
+		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureGIF] Failed to bind texture");
 		bgfx::setName(this->_handle, fmt::format("RAWR-GIF-TEXTURE-{}", this->_handle.idx).c_str());
 	}
 	// --------------------
-}
+} // namespace rawrBox

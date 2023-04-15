@@ -11,13 +11,12 @@
 #ifndef RINGBUFFER_HPP
 #define RINGBUFFER_HPP
 
-#include <stdint.h>
-#include <stddef.h>
-#include <limits>
 #include <atomic>
+#include <limits>
+#include <stddef.h>
+#include <stdint.h>
 
-namespace jnk0le
-{
+namespace jnk0le {
 	/*!
 	 * \brief Lock free, with no wasted slots ringbuffer implementation
 	 *
@@ -27,9 +26,8 @@ namespace jnk0le
 	 * \tparam cacheline_size Size of the cache line, to insert appropriate padding in between indexes and buffer
 	 * \tparam index_t Type of array indexing type. Serves also as placeholder for future implementations.
 	 */
-	template<typename T, size_t buffer_size = 16, bool fake_tso = false, size_t cacheline_size = 0, typename index_t = size_t>
-	class Ringbuffer
-	{
+	template <typename T, size_t buffer_size = 16, bool fake_tso = false, size_t cacheline_size = 0, typename index_t = size_t>
+	class Ringbuffer {
 	public:
 		/*!
 		 * \brief Default constructor, will initialize head and tail indexes
@@ -99,14 +97,12 @@ namespace jnk0le
 		 * \param data element to be inserted into internal buffer
 		 * \return True if data was inserted
 		 */
-		bool insert(T data)
-		{
+		bool insert(T data) {
 			index_t tmp_head = head.load(std::memory_order_relaxed);
 
-			if((tmp_head - tail.load(index_acquire_barrier)) == buffer_size)
+			if ((tmp_head - tail.load(index_acquire_barrier)) == buffer_size)
 				return false;
-			else
-			{
+			else {
 				data_buff[tmp_head++ & buffer_mask] = data;
 				std::atomic_signal_fence(std::memory_order_release);
 				head.store(tmp_head, index_release_barrier);
@@ -119,14 +115,12 @@ namespace jnk0le
 		 * \param[in] data Pointer to memory location where element, to be inserted into internal buffer, is located
 		 * \return True if data was inserted
 		 */
-		bool insert(const T* data)
-		{
+		bool insert(const T* data) {
 			index_t tmp_head = head.load(std::memory_order_relaxed);
 
-			if((tmp_head - tail.load(index_acquire_barrier)) == buffer_size)
+			if ((tmp_head - tail.load(index_acquire_barrier)) == buffer_size)
 				return false;
-			else
-			{
+			else {
 				data_buff[tmp_head++ & buffer_mask] = *data;
 				std::atomic_signal_fence(std::memory_order_release);
 				head.store(tmp_head, index_release_barrier);
@@ -143,15 +137,13 @@ namespace jnk0le
 		 * \param get_data_callback Pointer to callback function that returns element to be inserted into buffer
 		 * \return True if data was inserted and callback called
 		 */
-		bool insertFromCallbackWhenAvailable(T (*get_data_callback)(void))
-		{
+		bool insertFromCallbackWhenAvailable(T (*get_data_callback)(void)) {
 			index_t tmp_head = head.load(std::memory_order_relaxed);
 
-			if((tmp_head - tail.load(index_acquire_barrier)) == buffer_size)
+			if ((tmp_head - tail.load(index_acquire_barrier)) == buffer_size)
 				return false;
-			else
-			{
-				//execute callback only when there is space in buffer
+			else {
+				// execute callback only when there is space in buffer
 				data_buff[tmp_head++ & buffer_mask] = get_data_callback();
 				std::atomic_signal_fence(std::memory_order_release);
 				head.store(tmp_head, index_release_barrier);
@@ -163,11 +155,10 @@ namespace jnk0le
 		 * \brief Removes single element without reading
 		 * \return True if one element was removed
 		 */
-		bool remove()
-		{
+		bool remove() {
 			index_t tmp_tail = tail.load(std::memory_order_relaxed);
 
-			if(tmp_tail == head.load(std::memory_order_relaxed))
+			if (tmp_tail == head.load(std::memory_order_relaxed))
 				return false;
 			else
 				tail.store(++tmp_tail, index_release_barrier); // release in case data was loaded/used before
@@ -207,10 +198,9 @@ namespace jnk0le
 		bool remove(T* data) {
 			index_t tmp_tail = tail.load(std::memory_order_relaxed);
 
-			if(tmp_tail == head.load(index_acquire_barrier))
+			if (tmp_tail == head.load(index_acquire_barrier))
 				return false;
-			else
-			{
+			else {
 				*data = data_buff[tmp_tail++ & buffer_mask];
 				std::atomic_signal_fence(std::memory_order_release);
 				tail.store(tmp_tail, index_release_barrier);
@@ -228,7 +218,7 @@ namespace jnk0le
 		T* peek() {
 			index_t tmp_tail = tail.load(std::memory_order_relaxed);
 
-			if(tmp_tail == head.load(index_acquire_barrier))
+			if (tmp_tail == head.load(index_acquire_barrier))
 				return nullptr;
 			else
 				return &data_buff[tmp_tail & buffer_mask];
@@ -245,7 +235,7 @@ namespace jnk0le
 		T* at(size_t index) {
 			index_t tmp_tail = tail.load(std::memory_order_relaxed);
 
-			if((head.load(index_acquire_barrier) - tmp_tail) <= index)
+			if ((head.load(index_acquire_barrier) - tmp_tail) <= index)
 				return nullptr;
 			else
 				return &data_buff[(tmp_tail + index) & buffer_mask];
@@ -322,13 +312,11 @@ namespace jnk0le
 		size_t readBuff(T* buff, size_t count, size_t count_to_callback, void (*execute_data_callback)(void));
 
 	private:
-		constexpr static index_t buffer_mask = buffer_size-1; //!< bitwise mask for a given buffer size
-		constexpr static std::memory_order index_acquire_barrier = fake_tso ?
-				  std::memory_order_relaxed
-				: std::memory_order_acquire; // do not load from, or store to buffer before confirmed by the opposite side
-		constexpr static std::memory_order index_release_barrier = fake_tso ?
-				  std::memory_order_relaxed
-				: std::memory_order_release; // do not update own side before all operations on data_buff committed
+		constexpr static index_t buffer_mask = buffer_size - 1; //!< bitwise mask for a given buffer size
+		constexpr static std::memory_order index_acquire_barrier = fake_tso ? std::memory_order_relaxed
+										    : std::memory_order_acquire; // do not load from, or store to buffer before confirmed by the opposite side
+		constexpr static std::memory_order index_release_barrier = fake_tso ? std::memory_order_relaxed
+										    : std::memory_order_release; // do not update own side before all operations on data_buff committed
 
 		alignas(cacheline_size) std::atomic<index_t> head; //!< head index
 		alignas(cacheline_size) std::atomic<index_t> tail; //!< tail index
@@ -340,28 +328,27 @@ namespace jnk0le
 		static_assert((buffer_size != 0), "buffer cannot be of zero size");
 		static_assert((buffer_size & buffer_mask) == 0, "buffer size is not a power of 2");
 		static_assert(sizeof(index_t) <= sizeof(size_t),
-			"indexing type size is larger than size_t, operation is not lock free and doesn't make sense");
+		    "indexing type size is larger than size_t, operation is not lock free and doesn't make sense");
 
 		static_assert(std::numeric_limits<index_t>::is_integer, "indexing type is not integral type");
 		static_assert(!(std::numeric_limits<index_t>::is_signed), "indexing type shall not be signed");
 		static_assert(buffer_mask <= ((std::numeric_limits<index_t>::max)() >> 1),
-			"buffer size is too large for a given indexing type (maximum size for n-bit type is 2^(n-1))");
+		    "buffer size is too large for a given indexing type (maximum size for n-bit type is 2^(n-1))");
 	};
 
-	template<typename T, size_t buffer_size, bool fake_tso, size_t cacheline_size, typename index_t>
-	size_t Ringbuffer<T, buffer_size, fake_tso, cacheline_size, index_t>::writeBuff(const T* buff, size_t count)
-	{
+	template <typename T, size_t buffer_size, bool fake_tso, size_t cacheline_size, typename index_t>
+	size_t Ringbuffer<T, buffer_size, fake_tso, cacheline_size, index_t>::writeBuff(const T* buff, size_t count) {
 		index_t available = 0;
 		index_t tmp_head = head.load(std::memory_order_relaxed);
 		size_t to_write = count;
 
 		available = buffer_size - (tmp_head - tail.load(index_acquire_barrier));
 
-		if(available < count) // do not write more than we can
+		if (available < count) // do not write more than we can
 			to_write = available;
 
 		// maybe divide it into 2 separate writes
-		for(size_t i = 0; i < to_write; i++)
+		for (size_t i = 0; i < to_write; i++)
 			data_buff[tmp_head++ & buffer_mask] = buff[i];
 
 		std::atomic_signal_fence(std::memory_order_release);
@@ -370,35 +357,33 @@ namespace jnk0le
 		return to_write;
 	}
 
-	template<typename T, size_t buffer_size, bool fake_tso, size_t cacheline_size, typename index_t>
+	template <typename T, size_t buffer_size, bool fake_tso, size_t cacheline_size, typename index_t>
 	size_t Ringbuffer<T, buffer_size, fake_tso, cacheline_size, index_t>::writeBuff(const T* buff, size_t count,
-			size_t count_to_callback, void(*execute_data_callback)())
-	{
+	    size_t count_to_callback, void (*execute_data_callback)()) {
 		size_t written = 0;
 		index_t available = 0;
 		index_t tmp_head = head.load(std::memory_order_relaxed);
 		size_t to_write = count;
 
-		if(count_to_callback != 0 && count_to_callback < count)
+		if (count_to_callback != 0 && count_to_callback < count)
 			to_write = count_to_callback;
 
-		while(written < count)
-		{
+		while (written < count) {
 			available = buffer_size - (tmp_head - tail.load(index_acquire_barrier));
 
-			if(available == 0) // less than ??
+			if (available == 0) // less than ??
 				break;
 
-			if(to_write > available) // do not write more than we can
+			if (to_write > available) // do not write more than we can
 				to_write = available;
 
-			while(to_write--)
+			while (to_write--)
 				data_buff[tmp_head++ & buffer_mask] = buff[written++];
 
 			std::atomic_signal_fence(std::memory_order_release);
 			head.store(tmp_head, index_release_barrier);
 
-			if(execute_data_callback != nullptr)
+			if (execute_data_callback != nullptr)
 				execute_data_callback();
 
 			to_write = count - written;
@@ -407,20 +392,19 @@ namespace jnk0le
 		return written;
 	}
 
-	template<typename T, size_t buffer_size, bool fake_tso, size_t cacheline_size, typename index_t>
-	size_t Ringbuffer<T, buffer_size, fake_tso, cacheline_size, index_t>::readBuff(T* buff, size_t count)
-	{
+	template <typename T, size_t buffer_size, bool fake_tso, size_t cacheline_size, typename index_t>
+	size_t Ringbuffer<T, buffer_size, fake_tso, cacheline_size, index_t>::readBuff(T* buff, size_t count) {
 		index_t available = 0;
 		index_t tmp_tail = tail.load(std::memory_order_relaxed);
 		size_t to_read = count;
 
 		available = head.load(index_acquire_barrier) - tmp_tail;
 
-		if(available < count) // do not read more than we can
+		if (available < count) // do not read more than we can
 			to_read = available;
 
 		// maybe divide it into 2 separate reads
-		for(size_t i = 0; i < to_read; i++)
+		for (size_t i = 0; i < to_read; i++)
 			buff[i] = data_buff[tmp_tail++ & buffer_mask];
 
 		std::atomic_signal_fence(std::memory_order_release);
@@ -429,35 +413,33 @@ namespace jnk0le
 		return to_read;
 	}
 
-	template<typename T, size_t buffer_size, bool fake_tso, size_t cacheline_size, typename index_t>
+	template <typename T, size_t buffer_size, bool fake_tso, size_t cacheline_size, typename index_t>
 	size_t Ringbuffer<T, buffer_size, fake_tso, cacheline_size, index_t>::readBuff(T* buff, size_t count,
-			size_t count_to_callback, void(*execute_data_callback)())
-	{
+	    size_t count_to_callback, void (*execute_data_callback)()) {
 		size_t read = 0;
 		index_t available = 0;
 		index_t tmp_tail = tail.load(std::memory_order_relaxed);
 		size_t to_read = count;
 
-		if(count_to_callback != 0 && count_to_callback < count)
+		if (count_to_callback != 0 && count_to_callback < count)
 			to_read = count_to_callback;
 
-		while(read < count)
-		{
+		while (read < count) {
 			available = head.load(index_acquire_barrier) - tmp_tail;
 
-			if(available == 0) // less than ??
+			if (available == 0) // less than ??
 				break;
 
-			if(to_read > available) // do not write more than we can
+			if (to_read > available) // do not write more than we can
 				to_read = available;
 
-			while(to_read--)
+			while (to_read--)
 				buff[read++] = data_buff[tmp_tail++ & buffer_mask];
 
 			std::atomic_signal_fence(std::memory_order_release);
 			tail.store(tmp_tail, index_release_barrier);
 
-			if(execute_data_callback != nullptr)
+			if (execute_data_callback != nullptr)
 				execute_data_callback();
 
 			to_read = count - read;
@@ -466,6 +448,6 @@ namespace jnk0le
 		return read;
 	}
 
-} // namespace
+} // namespace jnk0le
 
-#endif //RINGBUFFER_HPP
+#endif // RINGBUFFER_HPP

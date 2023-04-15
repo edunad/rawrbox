@@ -1,8 +1,8 @@
-#include <rawrbox/render/renderer.h>
 #include <fmt/format.h>
+#include <rawrbox/render/renderer.h>
 
 namespace rawrBox {
-	Renderer::~Renderer(){ this->_stencil = nullptr; }
+	Renderer::~Renderer() { this->_stencil = nullptr; }
 	Renderer::Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size) {
 		this->_id = id;
 		this->_size = size;
@@ -26,7 +26,7 @@ namespace rawrBox {
 		bgfx::setViewRect(this->_id, 0, 0, size.x, size.y);
 		bgfx::setViewClear(this->_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, this->_clearColor, 1.0f, 0);
 
-		if(this->_stencil != nullptr) this->_stencil->resize(size);
+		if (this->_stencil != nullptr) this->_stencil->resize(size);
 	}
 
 	// ------RENDERING
@@ -44,7 +44,7 @@ namespace rawrBox {
 		return this->_id;
 	}
 
-	rawrBox::Vector2i& Renderer::getSize()  {
+	rawrBox::Vector2i& Renderer::getSize() {
 		return this->_size;
 	}
 
@@ -52,4 +52,4 @@ namespace rawrBox {
 		return *this->_stencil;
 	}
 	// --------------------
-}
+} // namespace rawrBox

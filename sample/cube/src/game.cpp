@@ -74,15 +74,22 @@ namespace cube {
 		// ----
 		{
 			auto mesh = std::make_shared<rawrBox::ModelMesh>();
-			mesh->generatePlane({0, 0}, 0.5f, {0, 0, 1}, rawrBox::Colors::Yellow);
+			mesh->generatePlane({0, 0, 0}, 0.5f, {0, 0, 1}, rawrBox::Colors::Yellow);
 			mesh->setTexture(this->_texture2);
 			this->_model->addMesh(mesh);
 		}
 
 		{
 			auto mesh = std::make_shared<rawrBox::ModelMesh>();
-			mesh->generateCube({0, 0}, 0.5f, rawrBox::Colors::White);
+			mesh->generateCube({0, 0, 0}, 0.5f, rawrBox::Colors::White);
 			mesh->setTexture(this->_texture);
+
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = std::make_shared<rawrBox::ModelMesh>();
+			mesh->generateGrid(12, {0.f, -2.0f, 0.f});
 
 			this->_model->addMesh(mesh);
 		}
@@ -96,7 +103,8 @@ namespace cube {
 
 		// Setup camera
 		this->_camera = std::make_shared<rawrBox::CameraPerspective>(static_cast<float>(width) / static_cast<float>(height), 60.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-		this->_camera->setPos({0, 0, -5.f});
+		this->_camera->setPos({0.f, 5.f, -5.f});
+		this->_camera->setAngle({0.f, bx::toRad(-45), 0.f});
 		// --------------
 	}
 
@@ -244,7 +252,7 @@ namespace cube {
 
 		// -----------------
 		std::array<float, 16> mtx;
-		bx::mtxRotateXY(mtx.data(), 0.f, counter * 0.65f);
+		bx::mtxRotateXY(mtx.data(), 0.f, counter * 0.1f);
 		this->_model->getMesh(1)->setMatrix(mtx);
 
 		this->_model->draw();

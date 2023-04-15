@@ -32,6 +32,10 @@ namespace rawrBox {
 		this->_data->offsetMatrix = offset;
 	}
 
+	void ModelMesh::setWireframe(bool wireframe) {
+		this->_data->wireframe = wireframe;
+	}
+
 	// ------------------------
 	void ModelMesh::generatePlane(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& size, const rawrBox::Vector3f& normal, const rawrBox::Color& cl) {
 		if (this->_data == nullptr) throw std::runtime_error("No ModelMeshData found");
@@ -130,6 +134,59 @@ namespace rawrBox {
 		this->_data->vertices.insert(this->_data->vertices.end(), buff.begin(), buff.end());
 		for (uint16_t ind : inds)
 			this->_data->indices.push_back(this->_data->numVertices - ind);
+	}
+
+	// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
+	void ModelMesh::generateGrid(uint32_t size, const rawrBox::Vector3f& pos, const rawrBox::Color& cl) {
+		if (this->_data == nullptr) throw std::runtime_error("No ModelMeshData found");
+
+		// Clear old --
+		this->_data->vertices.clear();
+		this->_data->indices.clear();
+		// ---
+
+		std::vector<rawrBox::ModelVertexData> buff = {};
+		std::vector<uint16_t> inds = {};
+
+		float step = 1.f;
+		for (uint32_t j = 0; j <= size; ++j) {
+			for (uint32_t i = 0; i <= size; ++i) {
+				float x = static_cast<float>(i) / static_cast<float>(step);
+				float y = 0;
+				float z = static_cast<float>(j) / static_cast<float>(step);
+				auto col = cl;
+
+				if (j == 0 || i == 0 || j >= size || i >= size) col = rawrBox::Colors::DarkGray;
+				buff.push_back({rawrBox::Vector3f(pos.x - size / 2, pos.y, pos.z - size / 2) + rawrBox::Vector3f(x, y, z), rawrBox::PackUtils::packNormal(0, 0, 1), 1, 1, col});
+			}
+		}
+
+		for (uint32_t j = 0; j < size; ++j) {
+			for (uint32_t i = 0; i < size; ++i) {
+
+				uint32_t row1 = j * (size + 1);
+				uint32_t row2 = (j + 1) * (size + 1);
+
+				inds.push_back(row1 + i);
+				inds.push_back(row1 + i + 1);
+				inds.push_back(row1 + i + 1);
+				inds.push_back(row2 + i + 1);
+
+				inds.push_back(row2 + i + 1);
+				inds.push_back(row2 + i);
+				inds.push_back(row2 + i);
+				inds.push_back(row1 + i);
+			}
+		}
+
+		this->_data->numVertices = static_cast<uint16_t>(buff.size());
+		this->_data->numIndices = static_cast<uint16_t>(inds.size());
+
+		this->_data->vertices.insert(this->_data->vertices.end(), buff.begin(), buff.end());
+		for (uint16_t ind : inds)
+			this->_data->indices.push_back(this->_data->numVertices - ind);
+
+		this->setWireframe(true);
 	}
 	// ----
 } // namespace rawrBox

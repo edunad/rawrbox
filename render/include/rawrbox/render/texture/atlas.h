@@ -4,9 +4,9 @@
 
 #include <bgfx/bgfx.h>
 
+#include <functional>
 #include <memory>
 #include <optional>
-#include <functional>
 
 namespace rawrBox {
 	struct Sprite {
@@ -30,12 +30,13 @@ namespace rawrBox {
 		std::optional<std::reference_wrapper<AtlasNode>> InsertNode(int width, int height);
 	};
 
-	class TextureAtlas: public rawrBox::TextureBase {
+	class TextureAtlas : public rawrBox::TextureBase {
 	private:
 		size_t _spriteCount = 0;
 		bgfx::TextureFormat::Enum _format;
 
 		std::unique_ptr<AtlasNode> _root;
+
 	public:
 		uint32_t size;
 		TextureAtlas(uint32_t size = 1024, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8);
@@ -47,4 +48,4 @@ namespace rawrBox {
 
 		virtual void upload() override;
 	};
-}
+} // namespace rawrBox

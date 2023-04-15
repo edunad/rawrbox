@@ -7,9 +7,9 @@
 #include FT_FREETYPE_H
 #include FT_LCD_FILTER_H
 
-#include <vector>
 #include <map>
 #include <utility>
+#include <vector>
 
 namespace rawrBox {
 
@@ -21,6 +21,7 @@ namespace rawrBox {
 
 		void initialize();
 		void destroy();
+
 	public:
 		FT_Library ft = nullptr;
 
@@ -37,4 +38,4 @@ namespace rawrBox {
 
 		rawrBox::Font& load(std::string filename, uint32_t size);
 	};
-}
+} // namespace rawrBox
