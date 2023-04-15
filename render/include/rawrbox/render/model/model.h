@@ -10,6 +10,7 @@ namespace rawrBox {
 	class ModelMesh;
 
 	class Model {
+	protected:
 		bgfx::VertexLayout _vLayout;
 
 		bgfx::ProgramHandle _handle = BGFX_INVALID_HANDLE;
@@ -24,6 +25,8 @@ namespace rawrBox {
 		std::vector<rawrBox::ModelVertexData> _vertices;
 		std::vector<uint16_t> _indices;
 
+		uint64_t _cull = BGFX_STATE_CULL_CW;
+
 	public:
 		static std::shared_ptr<rawrBox::TextureFlat> defaultTexture;
 
@@ -36,6 +39,9 @@ namespace rawrBox {
 
 		void addMesh(const std::shared_ptr<rawrBox::ModelMesh>& mesh);
 		const std::shared_ptr<rawrBox::ModelMesh>& getMesh(size_t id = 0);
+
+		void setWireframe(bool wireframe, int id = -1);
+		void setCulling(uint64_t cull);
 		// ----
 
 		void upload();

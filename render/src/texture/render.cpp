@@ -38,6 +38,6 @@ namespace rawrBox {
 		bgfx::touch(0);
 	}
 
-	void TextureRender::upload() { throw std::runtime_error("Not required"); }
+	void TextureRender::upload(bgfx::TextureFormat::Enum format) { throw std::runtime_error("Not required"); }
 	const bgfx::ViewId TextureRender::id() { return this->_renderId; }
 } // namespace rawrBox

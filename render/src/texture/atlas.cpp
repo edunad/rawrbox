@@ -2,10 +2,8 @@
 #include <rawrbox/render/texture/atlas.h>
 
 namespace rawrBox {
-	TextureAtlas::TextureAtlas(uint32_t _size, bgfx::TextureFormat::Enum _format) {
+	TextureAtlas::TextureAtlas(uint32_t _size) {
 		this->size = _size;
-
-		this->_format = _format;
 		this->_root = std::make_unique<AtlasNode>(0, 0, size, size, true, nullptr, nullptr);
 	}
 
@@ -107,9 +105,9 @@ namespace rawrBox {
 		return left->InsertNode(insertedWidth, insertedHeight);
 	}
 
-	void TextureAtlas::upload() {
+	void TextureAtlas::upload(bgfx::TextureFormat::Enum format) {
 		if (bgfx::isValid(this->_handle)) return; // Already bound
-		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->size), static_cast<uint16_t>(this->size), false, 0, this->_format);
+		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->size), static_cast<uint16_t>(this->size), false, 0, format);
 
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureAtlas] Failed to bind texture");
 		bgfx::setName(this->_handle, fmt::format("RAWR-ATLAS-TEXTURE-{}", this->_handle.idx).c_str());

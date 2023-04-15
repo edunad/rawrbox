@@ -52,16 +52,13 @@ namespace cube {
 		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Window::WINDOWED);
 
 		this->_render = std::make_shared<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
-		this->_render->setClearColor(0x443355FF);
+		this->_render->setClearColor(0x000000FF);
 		this->_render->initialize();
 
 		this->_textEngine = std::make_unique<rawrBox::TextEngine>();
 
 		this->_font = &this->_textEngine->load("./content/fonts/droidsans.ttf", 28);
 		this->_font2 = &this->_textEngine->load("./content/fonts/visitor1.ttf", 18);
-
-		// Model loading ---
-		this->_model = std::make_shared<rawrBox::Model>();
 
 		// Load content
 		this->_texture = std::make_shared<rawrBox::TextureImage>("./content/textures/screem.png");
@@ -71,17 +68,24 @@ namespace cube {
 		this->_texture2->upload();
 		// -----
 
+		// Model loading ---
+
+		this->_model2 = std::make_shared<rawrBox::ModelImported>();
+		this->_model2->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx"); //  // Phasmaphobia_Semi.fbx
+		// this->_model2->setWireframe(true);
+
+		this->_model = std::make_shared<rawrBox::Model>();
 		// ----
 		{
 			auto mesh = std::make_shared<rawrBox::ModelMesh>();
-			mesh->generatePlane({0, 0, 0}, 0.5f, {0, 0, 1}, rawrBox::Colors::Yellow);
+			mesh->generatePlane({5, 0, 0}, 0.5f, {0, 0, 1}, rawrBox::Colors::Yellow);
 			mesh->setTexture(this->_texture2);
 			this->_model->addMesh(mesh);
 		}
 
 		{
 			auto mesh = std::make_shared<rawrBox::ModelMesh>();
-			mesh->generateCube({0, 0, 0}, 0.5f, rawrBox::Colors::White);
+			mesh->generateCube({5, 0, 0}, 0.5f, rawrBox::Colors::White);
 			mesh->setTexture(this->_texture);
 
 			this->_model->addMesh(mesh);
@@ -94,11 +98,14 @@ namespace cube {
 			this->_model->addMesh(mesh);
 		}
 
+		this->_model2->upload();
 		this->_model->upload();
 
 		std::array<float, 16> n;
 		bx::mtxIdentity(n.data());
+
 		this->_model->setMatrix(n);
+		this->_model2->setMatrix(n);
 		// -----
 
 		// Setup camera
@@ -114,6 +121,8 @@ namespace cube {
 		this->_textEngine = nullptr;
 		this->_texture = nullptr;
 		this->_texture2 = nullptr;
+		this->_model = nullptr;
+		this->_model2 = nullptr;
 
 		rawrBox::Engine::shutdown();
 	}
@@ -134,6 +143,10 @@ namespace cube {
 
 		auto m_dir = bx::Vec3(dir.x, dir.y, dir.z);
 		auto m_eye = bx::Vec3(eye.x, eye.y, eye.z);
+
+		if (this->_window->isKeyDown(KEY_LEFT_SHIFT)) {
+			m_moveSpeed = 60.f;
+		}
 
 		if (this->_window->isKeyDown(KEY_W)) {
 			m_eye = bx::mad({dir.x, dir.y, dir.z}, deltaTime * m_moveSpeed, m_eye);
@@ -161,7 +174,7 @@ namespace cube {
 		if (this->_render == nullptr) return;
 
 		this->_render->swapBuffer(); // Clean up and set renderer
-		bgfx::setViewTransform(this->_render->getID(), NULL, NULL);
+		bgfx::setViewTransform(this->_render->getID(), nullptr, nullptr);
 
 		auto& stencil = this->_render->getStencil();
 		bgfx::dbgTextPrintf(1, 1, 0x0f, "STENCIL TESTS ----------------------------------------------------------------------------------------------------------------");
@@ -256,6 +269,7 @@ namespace cube {
 		this->_model->getMesh(1)->setMatrix(mtx);
 
 		this->_model->draw();
+		this->_model2->draw();
 		// -----------------
 
 		this->_render->render(); // Commit primitives

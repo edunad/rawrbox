@@ -21,7 +21,7 @@ list(PREPEND CONAN_GENERATORS_FOLDER ${CMAKE_BINARY_DIR})
 option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 option(RAWRBOX_BUILD_SAMPLE "Build samples" ON)
 option(RAWRBOX_BUILD_UTIL_QHULL "Include QHull on utils" ON)
-option(RAWRBOX_BUILD_RENDER_MODEL_SUPPORT "Build assimp & add model" ON)
+option(RAWRBOX_BUILD_RENDER_ASSIMP_SUPPORT "Build assimp & add model" ON)
 # -----
 
 # OTHER SETTINGS ----

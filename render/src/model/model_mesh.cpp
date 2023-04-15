@@ -12,6 +12,10 @@ namespace rawrBox {
 		return this->_name;
 	}
 
+	void ModelMesh::setName(const std::string& name) {
+		this->_name = name;
+	}
+
 	std::vector<ModelVertexData>& ModelMesh::getVertices() {
 		return this->_data->vertices;
 	}
@@ -46,22 +50,19 @@ namespace rawrBox {
 		// ---
 
 		std::array<rawrBox::ModelVertexData, 6> buff = {
-		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0x7fff, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 1, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 1, 0, cl),
 		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 1, 1, cl),
 		};
 
 		std::array<uint16_t, 6> inds = {
 		    0, 1, 2,
 		    0, 3, 1};
 
-		this->_data->numVertices = static_cast<uint16_t>(buff.size());
-		this->_data->numIndices = static_cast<uint16_t>(inds.size());
-
 		this->_data->vertices.insert(this->_data->vertices.end(), buff.begin(), buff.end());
 		for (uint16_t ind : inds)
-			this->_data->indices.push_back(this->_data->numVertices - ind);
+			this->_data->indices.push_back(static_cast<uint16_t>(buff.size()) - ind);
 	}
 
 	void ModelMesh::generateCube(const rawrBox::Vector3f& pos, const rawrBox::Vector3f& size, const rawrBox::Color& cl) {
@@ -75,39 +76,39 @@ namespace rawrBox {
 		std::array<rawrBox::ModelVertexData, 24> buff = {
 		    // Back
 		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), rawrBox::PackUtils::packNormal(-1, 0, 0), 0, 0, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(-1, 0, 0), 0x7fff, 0x7fff, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, size.z), rawrBox::PackUtils::packNormal(-1, 0, 0), 0x7fff, 0, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(-1, 0, 0), 0, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(-1, 0, 0), 1, 1, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, size.z), rawrBox::PackUtils::packNormal(-1, 0, 0), 1, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(-1, 0, 0), 0, 1, cl),
 
 		    // Front
-		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 1, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 1, cl),
 		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 1, 1, cl),
 
 		    // Right
-		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), rawrBox::PackUtils::packNormal(0, 0, 1), 0x7fff, 0, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(0, 0, 1), 0, 0x7fff, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(0, 0, 1), 0x7fff, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), rawrBox::PackUtils::packNormal(0, 0, 1), 1, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(0, 0, 1), 0, 1, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(0, 0, 1), 1, 1, cl),
 		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(0, 0, 1), 0, 0, cl),
 
 		    // Left
 		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, size.z), rawrBox::PackUtils::packNormal(0, 0, -1), 0, 0, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(0, 0, -1), 0x7fff, 0x7fff, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(0, 0, -1), 0, 0x7fff, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(0, 0, -1), 0x7fff, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(0, 0, -1), 1, 1, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(0, 0, -1), 0, 1, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(0, 0, -1), 1, 0, cl),
 
 		    // Top
-		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 1, 0, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 1, cl),
 		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, size.y, size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 1, 1, cl),
 
 		    // Bottom
-		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0x7fff, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 1, 1, cl),
 		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0x7fff, cl),
-		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0x7fff, 0, cl)};
+		    ModelVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 1, cl),
+		    ModelVertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 1, 0, cl)};
 
 		std::array<uint16_t, 36> inds = {
 		    0, 1, 2,
@@ -128,12 +129,9 @@ namespace rawrBox {
 		    20, 21, 22,
 		    20, 23, 21};
 
-		this->_data->numVertices = static_cast<uint16_t>(buff.size());
-		this->_data->numIndices = static_cast<uint16_t>(inds.size());
-
 		this->_data->vertices.insert(this->_data->vertices.end(), buff.begin(), buff.end());
 		for (uint16_t ind : inds)
-			this->_data->indices.push_back(this->_data->numVertices - ind);
+			this->_data->indices.push_back(static_cast<uint16_t>(buff.size()) - ind);
 	}
 
 	// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
@@ -179,12 +177,9 @@ namespace rawrBox {
 			}
 		}
 
-		this->_data->numVertices = static_cast<uint16_t>(buff.size());
-		this->_data->numIndices = static_cast<uint16_t>(inds.size());
-
 		this->_data->vertices.insert(this->_data->vertices.end(), buff.begin(), buff.end());
 		for (uint16_t ind : inds)
-			this->_data->indices.push_back(this->_data->numVertices - ind);
+			this->_data->indices.push_back(static_cast<uint16_t>(buff.size()) - ind);
 
 		this->setWireframe(true);
 	}

@@ -18,22 +18,20 @@ namespace rawrBox {
 		float z = 0;
 
 		uint32_t normal;
-		int16_t u;
-		int16_t v;
+		float u;
+		float v;
 
 		uint32_t abgr = 0xFFFFFFFF;
 
 		ModelVertexData() = default;
-		ModelVertexData(const rawrBox::Vector3f& _pos, uint32_t _normal, int16_t _u, int16_t _v, const rawrBox::Color cl = rawrBox::Colors::White) : x(_pos.x), y(_pos.y), z(_pos.z), u(_u), v(_v), normal(_normal), abgr(rawrBox::Color::pack(cl)) {}
-		ModelVertexData(float _x, float _y, float _z, uint32_t _normal, int16_t _u, int16_t _v, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v), normal(_normal), abgr(_abgr) {}
+		ModelVertexData(const rawrBox::Vector3f& _pos, uint32_t _normal, float _u, float _v, const rawrBox::Color cl = rawrBox::Colors::White) : x(_pos.x), y(_pos.y), z(_pos.z), u(_u), v(_v), normal(_normal), abgr(rawrBox::Color::pack(cl)) {}
+		ModelVertexData(float _x, float _y, float _z, uint32_t _normal, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v), normal(_normal), abgr(_abgr) {}
 	};
 
 	struct ModelMeshData {
 	public:
 		uint16_t baseVertex = 0;
 		uint16_t baseIndex = 0;
-		uint16_t numVertices = 0;
-		uint16_t numIndices = 0;
 
 		std::shared_ptr<rawrBox::TextureBase> texture = nullptr;
 		std::vector<rawrBox::ModelVertexData> vertices = {};
@@ -59,6 +57,7 @@ namespace rawrBox {
 
 		// UTILS ----
 		const std::string& getName();
+		void setName(const std::string& name);
 
 		std::shared_ptr<rawrBox::ModelMeshData>& getData();
 		std::vector<rawrBox::ModelVertexData>& getVertices();

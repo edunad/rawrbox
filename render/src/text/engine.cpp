@@ -40,8 +40,8 @@ namespace rawrBox {
 
 		// Ok, make a new atlas then
 		auto id = TextEngine::atlasID++;
-		auto atlas = std::make_unique<rawrBox::TextureAtlas>(128, bgfx::TextureFormat::RG8);
-		atlas->upload();
+		auto atlas = std::make_unique<rawrBox::TextureAtlas>(512);
+		atlas->upload(bgfx::TextureFormat::RG8);
 
 		this->_atlas.emplace(id, std::move(atlas));
 		return {id, this->_atlas[id].get()};

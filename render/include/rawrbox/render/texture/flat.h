@@ -10,13 +10,12 @@ namespace rawrBox {
 	class TextureFlat : public TextureBase {
 	private:
 		const bgfx::Memory* _pixels;
-		bgfx::TextureFormat::Enum _format;
 
 	public:
-		TextureFlat(const rawrBox::Vector2i& initsize, const rawrBox::Color& bgcol = Colors::Transparent, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8);
+		TextureFlat(const rawrBox::Vector2i& initsize, const rawrBox::Color& bgcol = Colors::Transparent);
 
 		// ------RENDER
-		virtual void upload() override;
+		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
 		// --------------------
 	};
 } // namespace rawrBox

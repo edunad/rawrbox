@@ -36,32 +36,37 @@ set(BGFX_BUILD_TOOLS_TEXTURE OFF CACHE INTERNAL "")
 set(BGFX_BUILD_TOOLS_BIN2C OFF CACHE INTERNAL "")
 
 set(ASSIMP_BUILD_TESTS OFF)
-set(ASSIMP_BUILD_STATIC_LIB ON)
+set(ASSIMP_BUILD_SAMPLES OFF)
+set(ASSIMP_BUILD_DOCS OFF)
+set(ASSIMP_BUILD_ASSIMP_VIEW OFF)
 # ---------------------------------
 
 # Packages ----
 find_package(Freetype REQUIRED MODULE)
 find_package(utf8cpp REQUIRED)
 
-if(RAWRBOX_BUILD_RENDER_MODEL_SUPPORT)
-	#find_package(assimp REQUIRED)
-
-	#list(APPEND RAWRBOX_EXTRA_LIBS assimp:assimp)
-	#list(APPEND CMAKE_CXX_FLAGS "-DASSIMP_USE_STB_IMAGE_STATIC")
-
+if(RAWRBOX_BUILD_RENDER_ASSIMP_SUPPORT)
 	message("-- Enabled assimp")
+	find_package(assimp REQUIRED)
+
+	list(APPEND CMAKE_CXX_FLAGS "-DASSIMP_USE_STB_IMAGE_STATIC")
+	list(APPEND RAWRBOX_EXTRA_LIBS assimp::assimp)
 endif()
 #--------------
 
-add_shaders_directory(${RAWRBOX_CONTENT_FOLDER}/shaders RAWRBOX_SHADERS_TARGET_NAME)
-message("SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
-
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
-if(NOT RAWRBOX_BUILD_RENDER_MODEL_SUPPORT)
-	# todo: Remove model files
+if(NOT RAWRBOX_BUILD_RENDER_ASSIMP_SUPPORT)
+	foreach (TMP_PATH ${RAWRBOX_RENDER_SOURCES})
+		string (FIND ${TMP_PATH} "/assimp/" EXCLUDE_DIR_FOUND)
+		if (NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
+			list (REMOVE_ITEM RAWRBOX_RENDER_SOURCES ${TMP_PATH})
+		endif ()
+	endforeach(TMP_PATH)
 endif()
 
+add_shaders_directory(${RAWRBOX_CONTENT_FOLDER}/shaders RAWRBOX_SHADERS_TARGET_NAME)
+message("SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
 
 # Project setup
 set(output_target RAWRBOX.RENDER)

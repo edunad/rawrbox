@@ -26,6 +26,6 @@ namespace rawrBox {
 		virtual void resize(const rawrBox::Vector2i& newsize);
 		// --------------------
 
-		virtual void upload() override;
+		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
 	};
 } // namespace rawrBox

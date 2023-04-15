@@ -12,6 +12,7 @@
 
 #include <rawrbox/render/camera/perspective.h>
 
+#include <rawrbox/render/model/assimp/model_imported.h>
 #include <rawrbox/render/model/model.h>
 
 #include <rawrbox/render/stencil.h>
@@ -29,7 +30,7 @@ namespace cube {
 		std::shared_ptr<rawrBox::TextureGIF> _texture2;
 
 		std::shared_ptr<rawrBox::Model> _model;
-		std::shared_ptr<rawrBox::Model> _model2;
+		std::shared_ptr<rawrBox::ModelImported> _model2;
 
 		rawrBox::Font* _font;
 		rawrBox::Font* _font2;

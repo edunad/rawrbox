@@ -6,7 +6,7 @@
 
 #include <bx/math.h>
 
-#define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_CULL_CW)
+#define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS)
 
 static const bgfx::EmbeddedShader shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_model),
@@ -20,7 +20,7 @@ namespace rawrBox {
 		this->_vLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
 		    .add(bgfx::Attrib::Normal, 4, bgfx::AttribType::Uint8, true, true)
-		    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Int16, true, true)
+		    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 		    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 		    .end();
 	}
@@ -58,6 +58,17 @@ namespace rawrBox {
 
 	const std::shared_ptr<rawrBox::ModelMesh>& Model::getMesh(size_t id) {
 		return this->_meshes[id];
+	}
+
+	void Model::setWireframe(bool wireframe, int id) {
+		for (size_t i = 0; i < this->_meshes.size(); i++) {
+			if (id != -1 && i != id) continue;
+			this->_meshes[i]->setWireframe(wireframe);
+		}
+	}
+
+	void Model::setCulling(uint64_t cull) {
+		this->_cull = cull;
 	}
 	// -------
 
@@ -99,8 +110,8 @@ namespace rawrBox {
 			auto& data = mesh->getData();
 			if (data->texture != nullptr) bgfx::setTexture(0, this->_texColor, data->texture->getHandle());
 
-			bgfx::setVertexBuffer(0, this->_vbh, data->baseVertex, data->numVertices);
-			bgfx::setIndexBuffer(this->_ibh, data->baseIndex, data->numIndices);
+			bgfx::setVertexBuffer(0, this->_vbh, data->baseVertex, static_cast<uint32_t>(data->vertices.size()));
+			bgfx::setIndexBuffer(this->_ibh, data->baseIndex, static_cast<uint32_t>(data->indices.size()));
 
 			float a[16];
 			bx::mtxMul(a, data->offsetMatrix.data(), this->_matrix.data());
@@ -109,7 +120,7 @@ namespace rawrBox {
 			uint64_t flags = BGFX_STATE_DEFAULT_3D;
 			if (data->wireframe) flags |= BGFX_STATE_PT_LINES;
 
-			bgfx::setState(flags);
+			bgfx::setState(flags | this->_cull);
 			bgfx::submit(id, this->_handle);
 		}
 	}

@@ -18,7 +18,7 @@ namespace rawrBox {
 		TextureBase(const TextureBase& t) = default;
 		virtual ~TextureBase();
 
-		virtual void upload() = 0;
+		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) = 0;
 		virtual bgfx::TextureHandle& getHandle();
 	};
 } // namespace rawrBox

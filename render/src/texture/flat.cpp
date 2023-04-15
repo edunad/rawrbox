@@ -2,10 +2,9 @@
 #include <rawrbox/render/texture/flat.h>
 
 namespace rawrBox {
-	TextureFlat::TextureFlat(const rawrBox::Vector2i& initsize, const rawrBox::Color& bgcol, bgfx::TextureFormat::Enum format) {
+	TextureFlat::TextureFlat(const rawrBox::Vector2i& initsize, const rawrBox::Color& bgcol) {
 		this->_pixels = bgfx::alloc(static_cast<uint32_t>(initsize.y * initsize.x) * this->_channels);
 		this->_size = initsize;
-		this->_format = format;
 
 		for (size_t i = 0; i < this->_pixels->size; i += 4) {
 			this->_pixels->data[i] = static_cast<uint8_t>(bgcol.r * 255);
@@ -15,9 +14,9 @@ namespace rawrBox {
 		}
 	}
 
-	void TextureFlat::upload() {
+	void TextureFlat::upload(bgfx::TextureFormat::Enum format) {
 		if (bgfx::isValid(this->_handle)) return; // Already bound
-		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 0, this->_format,
+		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 0, format,
 		    BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT, this->_pixels);
 
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureFlat] Failed to bind texture");

@@ -77,7 +77,7 @@ namespace rawrBox {
 		return glfwGetX11Display();
 #endif
 #else
-		return NULL;
+		return nullptr;
 #endif // BX_PLATFORM_*
 	}
 

@@ -23,7 +23,7 @@ namespace rawrBox {
 		virtual void startRecord();
 		virtual void stopRecord();
 
-		virtual void upload() override;
+		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
 		// --------------------
 
 		virtual const bgfx::ViewId id();
