@@ -1,6 +1,8 @@
 
-#include <cube/game.h>
 #include <rawrbox/render/model/model_mesh.h>
+#include <rawrbox/utils/keys.hpp>
+
+#include <cube/game.h>
 
 #include <bx/math.h>
 
@@ -21,6 +23,30 @@ namespace cube {
 		};
 		this->_window->onWindowClose += [this](auto& w) {
 			this->shutdown();
+		};
+
+		this->_window->onMouseKey += [this](auto& w, const rawrBox::Vector2i& mousePos, int button, int action, int mods) {
+			const bool isDown = action == 1;
+			if (button != MOUSE_BUTTON_2) return;
+
+			this->_rightClick = isDown;
+			this->_oldMousePos = mousePos;
+		};
+
+		this->_window->onMouseMove += [this](auto& w, const rawrBox::Vector2i& mousePos) {
+			if (this->_camera == nullptr || !this->_rightClick) return;
+
+			float m_mouseSpeed = 0.0020f;
+
+			auto deltaX = mousePos.x - this->_oldMousePos.x;
+			auto deltaY = mousePos.y - this->_oldMousePos.y;
+
+			auto ang = this->_camera->getAngle();
+			ang.x += m_mouseSpeed * static_cast<float>(deltaX);
+			ang.y -= m_mouseSpeed * static_cast<float>(deltaY);
+
+			this->_camera->setAngle(ang);
+			this->_oldMousePos = mousePos;
 		};
 
 		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Window::WINDOWED);
@@ -69,8 +95,8 @@ namespace cube {
 		// -----
 
 		// Setup camera
-		bx::mtxProj(this->_proj, 60.0f, static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-		bx::mtxLookAt(this->_view, {0.0f, 0.0f, -5.0f}, {0.0f, 0.0f, 0.0f});
+		this->_camera = std::make_shared<rawrBox::CameraPerspective>(static_cast<float>(width) / static_cast<float>(height), 60.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+		this->_camera->setPos({0, 0, -5.f});
 		// --------------
 	}
 
@@ -90,7 +116,36 @@ namespace cube {
 	}
 
 	void Game::update(float deltaTime, int64_t gameTime) {
-		if (this->_render == nullptr) return;
+		if (this->_render == nullptr || this->_camera == nullptr) return;
+
+		float m_moveSpeed = 10.f;
+
+		auto dir = this->_camera->getForward();
+		auto eye = this->_camera->getPos();
+		auto right = this->_camera->getRight();
+
+		auto m_dir = bx::Vec3(dir.x, dir.y, dir.z);
+		auto m_eye = bx::Vec3(eye.x, eye.y, eye.z);
+
+		if (this->_window->isKeyDown(KEY_W)) {
+			m_eye = bx::mad({dir.x, dir.y, dir.z}, deltaTime * m_moveSpeed, m_eye);
+			this->_camera->setPos({m_eye.x, m_eye.y, m_eye.z});
+		}
+
+		if (this->_window->isKeyDown(KEY_S)) {
+			m_eye = bx::mad({dir.x, dir.y, dir.z}, -deltaTime * m_moveSpeed, m_eye);
+			this->_camera->setPos({m_eye.x, m_eye.y, m_eye.z});
+		}
+
+		if (this->_window->isKeyDown(KEY_A)) {
+			m_eye = bx::mad({right.x, right.y, right.z}, deltaTime * m_moveSpeed, m_eye);
+			this->_camera->setPos({m_eye.x, m_eye.y, m_eye.z});
+		}
+
+		if (this->_window->isKeyDown(KEY_D)) {
+			m_eye = bx::mad({right.x, right.y, right.z}, -deltaTime * m_moveSpeed, m_eye);
+			this->_camera->setPos({m_eye.x, m_eye.y, m_eye.z});
+		}
 	}
 
 	float counter = 0;
@@ -98,7 +153,7 @@ namespace cube {
 		if (this->_render == nullptr) return;
 
 		this->_render->swapBuffer(); // Clean up and set renderer
-		bgfx::setViewTransform(this->_render->getID(), NULL, this->_proj);
+		bgfx::setViewTransform(this->_render->getID(), NULL, NULL);
 
 		auto& stencil = this->_render->getStencil();
 		bgfx::dbgTextPrintf(1, 1, 0x0f, "STENCIL TESTS ----------------------------------------------------------------------------------------------------------------");
@@ -185,7 +240,7 @@ namespace cube {
 		stencil.popOffset();
 		stencil.end();
 
-		bgfx::setViewTransform(this->_render->getID(), this->_view, this->_proj);
+		bgfx::setViewTransform(this->_render->getID(), this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 
 		// -----------------
 		std::array<float, 16> mtx;

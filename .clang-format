@@ -16,12 +16,13 @@ NamespaceIndentation: All
 AccessModifierOffset: -8
 IncludeCategories:
     - Regex: '^"(rawrbox)/'
-      Priority: 2
-      SortPriority: 0
-    - Regex: '<[[:alnum:].]+>'
-      Priority: 4
-    - Regex: '.*'
       Priority: 1
+      SortPriority: 100
+    - Regex: '<[[:alnum:].]+>'
+      Priority: 5
+      SortPriority: 0
+    - Regex: '.*'
+      Priority: 8
       SortPriority: 0
 
 DerivePointerAlignment: true

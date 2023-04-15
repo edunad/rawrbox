@@ -1,35 +1,35 @@
 #include <rawrbox/render/window.h>
 
-#include <bx/bx.h>
 #include <bgfx/bgfx.h>
+#include <bx/bx.h>
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
 #if GLFW_VERSION_MINOR < 2
-#	error "GLFW 3.2 or later is required"
+#error "GLFW 3.2 or later is required"
 #endif // GLFW_VERSION_MINOR < 2
 
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-#	if RAWRBOX_USE_WAYLAND
-#		include <wayland-egl.h>
-#		define GLFW_EXPOSE_NATIVE_WAYLAND
-#	else
-#		define GLFW_EXPOSE_NATIVE_X11
-#		define GLFW_EXPOSE_NATIVE_GLX
-#	endif
+#if RAWRBOX_USE_WAYLAND
+#include <wayland-egl.h>
+#define GLFW_EXPOSE_NATIVE_WAYLAND
+#else
+#define GLFW_EXPOSE_NATIVE_X11
+#define GLFW_EXPOSE_NATIVE_GLX
+#endif
 #elif BX_PLATFORM_OSX
-#	define GLFW_EXPOSE_NATIVE_COCOA
-#	define GLFW_EXPOSE_NATIVE_NSGL
+#define GLFW_EXPOSE_NATIVE_COCOA
+#define GLFW_EXPOSE_NATIVE_NSGL
 #elif BX_PLATFORM_WINDOWS
-#	define GLFW_EXPOSE_NATIVE_WIN32
-#	define GLFW_EXPOSE_NATIVE_WGL
+#define GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_EXPOSE_NATIVE_WGL
 #endif //
 #include <GLFW/glfw3native.h>
 
-#include <fmt/printf.h>
-#include <stdexcept>
 #include <map>
+#include <stdexcept>
+#include <fmt/printf.h>
 
 #define GLFWHANDLE reinterpret_cast<GLFWwindow*>(_handle)
 
@@ -38,48 +38,47 @@ namespace rawrBox {
 		return *static_cast<Window*>(glfwGetWindowUserPointer(ptr));
 	}
 
-	static void glfw_errorCallback(int error, const char *description) {
+	static void glfw_errorCallback(int error, const char* description) {
 		fmt::print("GLFW error {}: {}\n", error, description);
 	}
 
 	static void* glfwNativeWindowHandle(GLFWwindow* _window) {
-	#	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-	# 		if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
-				wl_egl_window *win_impl = static_cast<wl_egl_window*>(glfwGetWindowUserPointer(_window));
-				if(!win_impl)
-				{
-					int width, height;
-					glfwGetWindowSize(_window, &width, &height);
-					struct wl_surface* surface = (struct wl_surface*)glfwGetWaylandWindow(_window);
-					if(!surface)
-						return nullptr;
-					win_impl = wl_egl_window_create(surface, width, height);
-					glfwSetWindowUserPointer(_window, (void*)(uintptr_t)win_impl);
-				}
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+#if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
+		wl_egl_window* win_impl = static_cast<wl_egl_window*>(glfwGetWindowUserPointer(_window));
+		if (!win_impl) {
+			int width, height;
+			glfwGetWindowSize(_window, &width, &height);
+			struct wl_surface* surface = (struct wl_surface*)glfwGetWaylandWindow(_window);
+			if (!surface)
+				return nullptr;
+			win_impl = wl_egl_window_create(surface, width, height);
+			glfwSetWindowUserPointer(_window, (void*)(uintptr_t)win_impl);
+		}
 
-				return (void*)(uintptr_t)win_impl;
-	#		else
-				return (void*)(uintptr_t)glfwGetX11Window(_window);
-	#		endif
-	#	elif BX_PLATFORM_OSX
-			return glfwGetCocoaWindow(_window);
-	#	elif BX_PLATFORM_WINDOWS
-			return glfwGetWin32Window(_window);
-	#	endif // BX_PLATFORM_
+		return (void*)(uintptr_t)win_impl;
+#else
+		return (void*)(uintptr_t)glfwGetX11Window(_window);
+#endif
+#elif BX_PLATFORM_OSX
+		return glfwGetCocoaWindow(_window);
+#elif BX_PLATFORM_WINDOWS
+		return glfwGetWin32Window(_window);
+#endif // BX_PLATFORM_
 
 		throw std::runtime_error("[RawrBox-Render] Failed to detect platform");
 	}
 
 	static void* getNativeDisplayHandle() {
-	#	if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-	#		if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
-				return glfwGetWaylandDisplay();
-	#		else
-				return glfwGetX11Display();
-	#		endif
-	#	else
-			return NULL;
-	#	endif // BX_PLATFORM_*
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+#if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
+		return glfwGetWaylandDisplay();
+#else
+		return glfwGetX11Display();
+#endif
+#else
+		return NULL;
+#endif // BX_PLATFORM_*
 	}
 
 	void Window::initialize(int width, int height, uint32_t flags) {
@@ -111,9 +110,9 @@ namespace rawrBox {
 		bool borderless = (flags & WindowFlags::Window::BORDERLESS) > 0;
 		bool fullscreen = (flags & WindowFlags::Window::FULLSCREEN) > 0;
 
-		if(windowed && (borderless || fullscreen)) throw std::runtime_error("[RawrBox-Window] Only one window attribute can be selected");
-		if(borderless && (windowed || fullscreen)) throw std::runtime_error("[RawrBox-Window] Only one window attribute can be selected");
-		if(fullscreen && (windowed || borderless)) throw std::runtime_error("[RawrBox-Window] Only one window attribute can be selected");
+		if (windowed && (borderless || fullscreen)) throw std::runtime_error("[RawrBox-Window] Only one window attribute can be selected");
+		if (borderless && (windowed || fullscreen)) throw std::runtime_error("[RawrBox-Window] Only one window attribute can be selected");
+		if (fullscreen && (windowed || borderless)) throw std::runtime_error("[RawrBox-Window] Only one window attribute can be selected");
 
 		if (fullscreen) {
 			width = mode->width;
@@ -141,30 +140,30 @@ namespace rawrBox {
 		glfwSetWindowUserPointer(glfwHandle, this);
 
 		// Center window
-		if(windowed) {
+		if (windowed) {
 			int monx = 0, mony = 0, monw = 0, monh = 0;
 			glfwGetMonitorPos(mon, &monx, &mony);
 
 			glfwSetWindowPos(glfwHandle, monx + mode->width / 2 - width / 2, mony + mode->height / 2 - height / 2);
 			glfwShowWindow(glfwHandle);
 		}
-		// ------
+// ------
 
-		// Set icon
-		#ifdef WIN32
-			HANDLE hIcon = LoadIconW(GetModuleHandleW(nullptr), L"GLFW_ICON");
-			if (!hIcon) {
-				// No user-provided icon found, load default icon
-				hIcon = LoadIcon(nullptr, IDI_WINLOGO);
-			}
+// Set icon
+#ifdef WIN32
+		HANDLE hIcon = LoadIconW(GetModuleHandleW(nullptr), L"GLFW_ICON");
+		if (!hIcon) {
+			// No user-provided icon found, load default icon
+			hIcon = LoadIcon(nullptr, IDI_WINLOGO);
+		}
 
-			HWND hwnd = glfwGetWin32Window(glfwHandle);
-			::SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
-			::SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
-		#endif
+		HWND hwnd = glfwGetWin32Window(glfwHandle);
+		::SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+		::SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+#endif
 		// ---------------
 
-		if((flags & WindowFlags::Features::MULTI_THREADED) == 0) bgfx::renderFrame(); // Disable multi-threading
+		if ((flags & WindowFlags::Features::MULTI_THREADED) == 0) bgfx::renderFrame(); // Disable multi-threading
 
 		bgfx::Init init;
 		init.type = this->_renderType;
@@ -172,8 +171,8 @@ namespace rawrBox {
 		init.resolution.height = static_cast<uint32_t>(height);
 
 		auto resetFlags = BGFX_RESET_NONE;
-		if((flags & WindowFlags::Features::VSYNC) > 0) resetFlags |= BGFX_RESET_VSYNC;
-		if((flags & WindowFlags::Features::ANTI_ALIAS) > 0) resetFlags |= BGFX_RESET_MAXANISOTROPY;
+		if ((flags & WindowFlags::Features::VSYNC) > 0) resetFlags |= BGFX_RESET_VSYNC;
+		if ((flags & WindowFlags::Features::MSAA) > 0) resetFlags |= BGFX_RESET_MAXANISOTROPY;
 
 		init.resolution.reset = resetFlags;
 		init.platformData.nwh = glfwNativeWindowHandle(GLFWHANDLE);
@@ -182,9 +181,9 @@ namespace rawrBox {
 		if (!bgfx::init(init)) throw std::runtime_error("[RawrBox-Render] Failed to initialize bgfx");
 
 		auto debugFlags = BGFX_DEBUG_NONE;
-		if((flags & WindowFlags::Debug::WIREFRAME) > 0) debugFlags |= BGFX_DEBUG_WIREFRAME;
-		if((flags & WindowFlags::Debug::STATS) > 0) debugFlags |= BGFX_DEBUG_STATS;
-		if((flags & WindowFlags::Debug::TEXT) > 0) debugFlags |= BGFX_DEBUG_TEXT;
+		if ((flags & WindowFlags::Debug::WIREFRAME) > 0) debugFlags |= BGFX_DEBUG_WIREFRAME;
+		if ((flags & WindowFlags::Debug::STATS) > 0) debugFlags |= BGFX_DEBUG_STATS;
+		if ((flags & WindowFlags::Debug::TEXT) > 0) debugFlags |= BGFX_DEBUG_TEXT;
 
 		bgfx::setDebug(debugFlags);
 
@@ -203,7 +202,7 @@ namespace rawrBox {
 	}
 
 	void Window::setRenderer(bgfx::RendererType::Enum render) {
-		if(!this->isRendererSupported(render)) throw std::runtime_error(fmt::format("[RawrBox-Render] Window {} is not supported by your OS", bgfx::getRendererName(render)));
+		if (!this->isRendererSupported(render)) throw std::runtime_error(fmt::format("[RawrBox-Render] Window {} is not supported by your OS", bgfx::getRendererName(render)));
 		this->_renderType = render;
 	}
 
@@ -229,12 +228,12 @@ namespace rawrBox {
 	}
 
 	bool Window::isRendererSupported(bgfx::RendererType::Enum render) {
-		if(render == bgfx::RendererType::Count) return true;
+		if (render == bgfx::RendererType::Count) return true;
 
 		bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
 		uint8_t num = bgfx::getSupportedRenderers(BX_COUNTOF(supportedRenderers), supportedRenderers);
 		for (uint8_t i = 0; i < num; ++i) {
-			if(supportedRenderers[i] == render) return true;
+			if (supportedRenderers[i] == render) return true;
 		}
 
 		return false;
@@ -265,6 +264,12 @@ namespace rawrBox {
 		if (this->_handle == nullptr) return;
 		glfwSetWindowShouldClose(GLFWHANDLE, close ? 1 : 0);
 	}
+
+	bool Window::isKeyDown(int key) {
+		auto fnd = this->keysIn.find(key);
+		if (fnd == this->keysIn.end()) return false;
+		return fnd->second;
+	}
 	// --------------------
 
 	// ------EVENTS
@@ -285,11 +290,10 @@ namespace rawrBox {
 
 		auto& window = glfwHandleToRenderer(whandle);
 		window.onKey(window,
-						static_cast<unsigned int>(key),
-						static_cast<unsigned int>(scancode),
-						static_cast<unsigned int>(action),
-						static_cast<unsigned int>(mods)
-		);
+		    static_cast<unsigned int>(key),
+		    static_cast<unsigned int>(scancode),
+		    static_cast<unsigned int>(action),
+		    static_cast<unsigned int>(mods));
 
 		if (action == GLFW_REPEAT) return;
 		window.keysIn[key] = action != GLFW_RELEASE ? 1 : 0;
@@ -302,11 +306,10 @@ namespace rawrBox {
 		auto pos = window.getMousePos();
 
 		window.onMouseKey(window,
-							pos,
-							static_cast<unsigned int>(button),
-							static_cast<unsigned int>(action),
-							static_cast<unsigned int>(mods)
-		);
+		    pos,
+		    static_cast<unsigned int>(button),
+		    static_cast<unsigned int>(action),
+		    static_cast<unsigned int>(mods));
 
 		window.mouseIn[button] = action == GLFW_PRESS ? 1 : 0;
 	}
@@ -340,4 +343,4 @@ namespace rawrBox {
 	// --------------------
 
 	Window::~Window() { this->close(); }
-}
+} // namespace rawrBox
