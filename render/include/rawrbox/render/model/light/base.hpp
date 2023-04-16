@@ -6,24 +6,31 @@
 #include <array>
 
 namespace rawrBox {
+
+	enum LightType {
+		LIGHT_POINT,
+		LIGHT_SPOT,
+		LIGHT_DIR,
+	};
+
 	class LightBase {
 	protected:
 		bool _isOn = true;
 
-		rawrBox::Vector3f _pos;
-		rawrBox::Colorf _color = rawrBox::Colors::White;
+		std::array<float, 16> _posMatrix;
+		rawrBox::Colorf _diffuse = rawrBox::Colors::White;
 
 	public:
 		uint32_t indx;
 
 		virtual void setStatus(bool on) { this->_isOn = on; };
-		virtual void setPosition(rawrBox::Vector3f p) { this->_pos = p; };
-		virtual void setColor(rawrBox::Colorf p) { this->_color = p; };
-		virtual rawrBox::Colorf getColor() { return this->_color; };
 
-		LightBase(rawrBox::Vector3f pos, rawrBox::Colorf color) : _pos(pos), _color(color){};
+		LightBase(std::array<float, 16> posMatrix, rawrBox::Colorf diffuse) : _posMatrix(posMatrix), _diffuse(diffuse){};
 		virtual ~LightBase() = default;
 
-		virtual std::array<float, 16> getMatrix() = 0;
+		virtual std::array<float, 16>& getPosMatrix() { return this->_posMatrix; }
+		virtual std::array<float, 16> getDataMatrix() = 0;
+
+		virtual LightType getType() = 0;
 	};
 } // namespace rawrBox

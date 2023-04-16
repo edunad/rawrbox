@@ -21,7 +21,10 @@ namespace rawrBox {
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle _lightsSettings = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _lightsPosition = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _lightsData = BGFX_INVALID_HANDLE;
+
+		bgfx::UniformHandle _viewPos = BGFX_INVALID_HANDLE;
 
 		std::vector<std::shared_ptr<rawrBox::ModelMesh>> _meshes;
 		std::array<float, 16> _matrix;
@@ -31,6 +34,8 @@ namespace rawrBox {
 
 		uint64_t _cull = BGFX_STATE_CULL_CW;
 		bool _fullbright = false;
+
+		void processLights();
 
 	public:
 		static std::shared_ptr<rawrBox::TextureFlat> defaultTexture;
@@ -51,6 +56,6 @@ namespace rawrBox {
 		// ----
 
 		virtual void upload();
-		virtual void draw(bgfx::ViewId id = 0);
+		virtual void draw(rawrBox::Vector3 camPos, bgfx::ViewId id = 0);
 	};
 } // namespace rawrBox

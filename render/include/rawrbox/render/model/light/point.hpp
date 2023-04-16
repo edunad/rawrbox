@@ -8,17 +8,23 @@
 namespace rawrBox {
 	class LightPoint : public rawrBox::LightBase {
 	protected:
-		float _fallOffStart = 1.0f;
-		float _fallOffEnd = 10.0f;
-		float _luminance = 1.0f;
+		// rawrBox::Colorf _diffuse;
+		// rawrBox::Colorf _specular;
+
+		float _constant;
+		float _linear;
+		float _quadratic;
 
 	public:
-		LightPoint(rawrBox::Vector3f pos, rawrBox::Colorf color, float fallOffStart, float fallOffEnd, float luminance) : rawrBox::LightBase(pos, color), _fallOffStart(fallOffStart), _fallOffEnd(fallOffEnd), _luminance(std::clamp(luminance, 0.f, 1.f)){};
-		virtual std::array<float, 16> getMatrix() override {
-			return {this->_pos.x, this->_color.r, this->_fallOffStart, 0,
-			    this->_pos.y, this->_color.g, this->_fallOffStart, 0,
-			    this->_pos.z, this->_color.b, this->_luminance, 0,
-			    0, 0.f, this->_isOn ? 1.f : 0, 0};
+		LightPoint(std::array<float, 16> posMatrix, rawrBox::Colorf diffuse, float constant, float linear, float quadratic) : rawrBox::LightBase(posMatrix, diffuse), _constant(constant), _linear(linear), _quadratic(quadratic){};
+
+		virtual LightType getType() override { return LightType::LIGHT_POINT; };
+		virtual std::array<float, 16> getDataMatrix() override {
+			return {
+			    this->_diffuse.r, 0, 0, 0,
+			    this->_diffuse.g, 0, 0, 0,
+			    this->_diffuse.b, 0, 0, 0,
+			    this->_constant, this->_linear, this->_quadratic, this->_isOn ? 1.f : 0};
 		}
 	};
 } // namespace rawrBox

@@ -8,6 +8,7 @@
 #include <bx/math.h>
 
 #define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
+#define MAX_LIGHTS            12
 
 static const bgfx::EmbeddedShader shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_model),
@@ -21,7 +22,6 @@ namespace rawrBox {
 		this->_vLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
 		    .add(bgfx::Attrib::Normal, 4, bgfx::AttribType::Uint8, true, true)
-		    //.add(bgfx::Attrib::Tangent, 4, bgfx::AttribType::Uint8, true, true)
 		    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 		    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 		    .end();
@@ -35,7 +35,9 @@ namespace rawrBox {
 		bgfx::destroy(this->_texColor);
 
 		bgfx::destroy(this->_lightsSettings);
+		bgfx::destroy(this->_lightsPosition);
 		bgfx::destroy(this->_lightsData);
+		bgfx::destroy(this->_viewPos);
 
 		this->_meshes.clear();
 		this->_vertices.clear();
@@ -113,13 +115,49 @@ namespace rawrBox {
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 
 		this->_lightsSettings = bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4);
-		this->_lightsData = bgfx::createUniform("u_lightsData", bgfx::UniformType::Mat4, 8);
+		this->_lightsPosition = bgfx::createUniform("u_lightsPosition", bgfx::UniformType::Mat4, MAX_LIGHTS);
+		this->_lightsData = bgfx::createUniform("u_lightsData", bgfx::UniformType::Mat4, MAX_LIGHTS);
+		this->_viewPos = bgfx::createUniform("u_viewPos", bgfx::UniformType::Vec4, 3);
 
 		this->_handle = bgfx::createProgram(vsh, fsh, true);
 		// -----------------
 	}
 
-	void Model::draw(bgfx::ViewId id) {
+	void Model::processLights() {
+		auto& lightManager = rawrBox::LightManager::getInstance();
+		size_t lightCount = lightManager.count();
+
+		float lightSettings[4] = {lightManager.FULLBRIGHT || this->_fullbright ? 1.f : 0.f, 0, 0, 0};
+
+		std::vector<std::array<float, 16>> lightData(lightCount);
+		std::vector<std::array<float, 16>> lightPos(lightCount);
+
+		float totalSpot = 0;
+		float totalPoint = 0;
+		float totalDir = 0;
+
+		for (size_t i = 0; i < lightCount; i++) {
+			auto light = lightManager.getLight(i);
+			if (light->getType() == LightType::LIGHT_POINT) lightSettings[1]++;
+			if (light->getType() == LightType::LIGHT_SPOT) lightSettings[2]++;
+			if (light->getType() == LightType::LIGHT_DIR) lightSettings[3]++;
+
+			lightPos[i] = light->getPosMatrix();
+			lightData[i] = light->getDataMatrix();
+		}
+
+		if (lightPos.size() != lightData.size()) throw std::runtime_error("[RawrBox-MODEL] LightPos and LightData do not match!");
+
+		bgfx::setUniform(this->_lightsSettings, lightSettings);
+		if (lightSettings[0] == 1.f) return; // Fullbright
+
+		if (lightCount > 0) {
+			bgfx::setUniform(this->_lightsPosition, lightPos.front().data(), static_cast<uint16_t>(lightCount));
+			bgfx::setUniform(this->_lightsData, lightData.front().data(), static_cast<uint16_t>(lightCount));
+		}
+	}
+
+	void Model::draw(rawrBox::Vector3 camPos, bgfx::ViewId id) {
 		if (!bgfx::isValid(this->_vbh) || !bgfx::isValid(this->_ibh)) return;
 
 		for (auto& mesh : this->_meshes) {
@@ -128,22 +166,13 @@ namespace rawrBox {
 			// Setup handles ----
 			if (data->texture != nullptr) bgfx::setTexture(0, this->_texColor, data->texture->getHandle());
 
+			// Set camera --
+			float cam[3] = {camPos.x, camPos.y, camPos.z};
+			bgfx::setUniform(this->_viewPos, cam, 3);
+			// ----------
+
 			// LIGHT ----
-			auto& l = rawrBox::LightManager::getInstance();
-			size_t lc = l.count();
-			float s[4] = {
-			    l.FULLBRIGHT || this->_fullbright ? 1.f : 0, static_cast<float>(lc), 0, 0};
-
-			bgfx::setUniform(this->_lightsSettings, s);
-			if (lc > 0) {
-				std::vector<std::array<float, 16>> lightMat(lc);
-				for (size_t i = 0; i < lc; i++) {
-					lightMat[i] = l.getLight(i)->getMatrix();
-				}
-
-				bgfx::setUniform(this->_lightsData, lightMat.front().data(), lc);
-			}
-			// ----
+			this->processLights();
 			// -----------------
 
 			bgfx::setVertexBuffer(0, this->_vbh, data->baseVertex, static_cast<uint32_t>(data->vertices.size()));

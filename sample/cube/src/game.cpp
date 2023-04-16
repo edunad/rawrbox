@@ -272,8 +272,8 @@ namespace cube {
 		bx::mtxRotateXY(mtx.data(), 0.f, counter * 0.1f);
 		this->_model->getMesh(1)->setMatrix(mtx);
 
-		this->_model->draw();
-		this->_model2->draw();
+		this->_model->draw(this->_camera->getPos());
+		this->_model2->draw(this->_camera->getPos());
 		// -----------------
 
 		this->_render->render(); // Commit primitives
