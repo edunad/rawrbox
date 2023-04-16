@@ -18,6 +18,7 @@ namespace rawrBox {
 		float z = 0;
 
 		uint32_t normal;
+		// uint32_t tangent;
 		float u;
 		float v;
 

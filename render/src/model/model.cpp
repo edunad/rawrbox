@@ -1,3 +1,4 @@
+#include <rawrbox/render/model/light/manager.h>
 #include <rawrbox/render/model/model.h>
 #include <rawrbox/render/model/model_mesh.h>
 #include <rawrbox/render/shader_defines.h>
@@ -20,6 +21,7 @@ namespace rawrBox {
 		this->_vLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
 		    .add(bgfx::Attrib::Normal, 4, bgfx::AttribType::Uint8, true, true)
+		    //.add(bgfx::Attrib::Tangent, 4, bgfx::AttribType::Uint8, true, true)
 		    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 		    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 		    .end();
@@ -29,7 +31,11 @@ namespace rawrBox {
 		bgfx::destroy(this->_vbh);
 		bgfx::destroy(this->_ibh);
 		bgfx::destroy(this->_handle);
+
 		bgfx::destroy(this->_texColor);
+
+		bgfx::destroy(this->_lightsSettings);
+		bgfx::destroy(this->_lightsData);
 
 		this->_meshes.clear();
 		this->_vertices.clear();
@@ -72,6 +78,10 @@ namespace rawrBox {
 	void Model::setCulling(uint64_t cull) {
 		this->_cull = cull;
 	}
+
+	void Model::setFullbright(bool b) {
+		this->_fullbright = b;
+	}
 	// -------
 
 	void Model::upload() {
@@ -101,6 +111,10 @@ namespace rawrBox {
 		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, "fs_model");
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+
+		this->_lightsSettings = bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4);
+		this->_lightsData = bgfx::createUniform("u_lightsData", bgfx::UniformType::Mat4, 8);
+
 		this->_handle = bgfx::createProgram(vsh, fsh, true);
 		// -----------------
 	}
@@ -110,7 +124,27 @@ namespace rawrBox {
 
 		for (auto& mesh : this->_meshes) {
 			auto& data = mesh->getData();
+
+			// Setup handles ----
 			if (data->texture != nullptr) bgfx::setTexture(0, this->_texColor, data->texture->getHandle());
+
+			// LIGHT ----
+			auto& l = rawrBox::LightManager::getInstance();
+			size_t lc = l.count();
+			float s[4] = {
+			    l.FULLBRIGHT || this->_fullbright ? 1.f : 0, static_cast<float>(lc), 0, 0};
+
+			bgfx::setUniform(this->_lightsSettings, s);
+			if (lc > 0) {
+				std::vector<std::array<float, 16>> lightMat(lc);
+				for (size_t i = 0; i < lc; i++) {
+					lightMat[i] = l.getLight(i)->getMatrix();
+				}
+
+				bgfx::setUniform(this->_lightsData, lightMat.front().data(), lc);
+			}
+			// ----
+			// -----------------
 
 			bgfx::setVertexBuffer(0, this->_vbh, data->baseVertex, static_cast<uint32_t>(data->vertices.size()));
 			bgfx::setIndexBuffer(this->_ibh, data->baseIndex, static_cast<uint32_t>(data->indices.size()));

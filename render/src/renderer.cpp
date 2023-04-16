@@ -13,7 +13,7 @@ namespace rawrBox {
 		bgfx::setViewRect(this->_id, 0, 0, bgfx::BackbufferRatio::Equal);
 		bgfx::setViewMode(this->_id, bgfx::ViewMode::Default);
 		bgfx::setViewClear(this->_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, this->_clearColor, 1.0f, 0);
-		bgfx::setViewName(this->_id, fmt::format("RawrBox-Render-{}", this->_id).c_str());
+		bgfx::setViewName(this->_id, fmt::format("RawrBox-RENDERER-{}", this->_id).c_str());
 
 		this->_stencil->initialize();
 	}

@@ -10,6 +10,7 @@ namespace rawrBox {
 	class ModelMesh;
 
 	class Model {
+
 	protected:
 		bgfx::VertexLayout _vLayout;
 
@@ -19,6 +20,9 @@ namespace rawrBox {
 
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 
+		bgfx::UniformHandle _lightsSettings = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _lightsData = BGFX_INVALID_HANDLE;
+
 		std::vector<std::shared_ptr<rawrBox::ModelMesh>> _meshes;
 		std::array<float, 16> _matrix;
 
@@ -26,25 +30,27 @@ namespace rawrBox {
 		std::vector<uint16_t> _indices;
 
 		uint64_t _cull = BGFX_STATE_CULL_CW;
+		bool _fullbright = false;
 
 	public:
 		static std::shared_ptr<rawrBox::TextureFlat> defaultTexture;
 
 		Model();
-		~Model();
+		virtual ~Model();
 
 		// UTIL ---
-		void setMatrix(const std::array<float, 16>& matrix);
-		std::array<float, 16>& getMatrix();
+		virtual void setMatrix(const std::array<float, 16>& matrix);
+		virtual std::array<float, 16>& getMatrix();
 
-		void addMesh(const std::shared_ptr<rawrBox::ModelMesh>& mesh);
-		const std::shared_ptr<rawrBox::ModelMesh>& getMesh(size_t id = 0);
+		virtual void addMesh(const std::shared_ptr<rawrBox::ModelMesh>& mesh);
+		virtual const std::shared_ptr<rawrBox::ModelMesh>& getMesh(size_t id = 0);
 
-		void setWireframe(bool wireframe, int id = -1);
-		void setCulling(uint64_t cull);
+		virtual void setWireframe(bool wireframe, int id = -1);
+		virtual void setCulling(uint64_t cull);
+		virtual void setFullbright(bool b);
 		// ----
 
-		void upload();
-		void draw(bgfx::ViewId id = 0);
+		virtual void upload();
+		virtual void draw(bgfx::ViewId id = 0);
 	};
 } // namespace rawrBox

@@ -19,6 +19,7 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
     file(MAKE_DIRECTORY "${SHADERS_OUT_DIR}")
     file(GLOB_RECURSE VERTEX_SHADER_FILES CONFIGURE_DEPENDS FOLLOW_SYMLINKS "${SHADERS_DIR}/vs_*.sc")
     file(GLOB_RECURSE FRAGMENT_SHADER_FILES CONFIGURE_DEPENDS FOLLOW_SYMLINKS "${SHADERS_DIR}/fs_*.sc")
+    file(GLOB_RECURSE INCLUDES_SHADER_FILES CONFIGURE_DEPENDS FOLLOW_SYMLINKS "${SHADERS_DIR}/*.sh")
 
 	message("VERTEX (${SHADERS_DIR}) ->\n: ${VERTEX_SHADER_FILES}")
 	message("FRAGMENT (${SHADERS_DIR}) ->\n: ${FRAGMENT_SHADER_FILES}")
@@ -29,6 +30,7 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
             VARYING_DEF "${VARYING_DEF_LOCATION}"
             OUTPUT_DIR "${SHADERS_OUT_DIR}"
             OUT_FILES_VAR VERTEX_OUTPUT_FILES
+			OPTIMIZE "1"
             INCLUDE_DIRS "${SHADERS_DIR}" "${BGFX_DIR}/src"
     )
 
@@ -39,6 +41,7 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
             OUTPUT_DIR "${SHADERS_OUT_DIR}"
             OUT_FILES_VAR FRAGMENT_OUTPUT_FILES
             PROFILES ${PROFILES}
+			OPTIMIZE "1"
             INCLUDE_DIRS "${SHADERS_DIR}" "${BGFX_DIR}/src"
     )
 
@@ -48,6 +51,7 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
 
 	message("OUTPUT ->\n     VERTEX ->\n    ${VERTEX_OUTPUT_FILES}")
 	message("     FRAGMENT ->\n     ${FRAGMENT_OUTPUT_FILES}")
+	message("     INCLUDES ->\n     ${INCLUDES_SHADER_FILES}")
 
     list(LENGTH OUTPUT_FILES SHADER_COUNT)
     if(SHADER_COUNT EQUAL 0)
@@ -64,8 +68,12 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
     list(APPEND OUTPUT_FILES "${SHADERS_OUT_DIR}/all.h")
 
     string(MD5 DIR_HASH "${SHADERS_DIR}")
-    set(TARGET_NAME "Shaders_${DIR_HASH}")
-    add_custom_target("${DIR_HASH}" ALL DEPENDS ${OUTPUT_FILES})
+    string(MD5 INCLUDE_HASH "${INCLUDES_SHADER_FILES}")
+
+    set(TARGET_NAME "Shaders_${DIR_HASH}_${INCLUDE_HASH}")
+
+    add_custom_target("${DIR_HASH}_${INCLUDE_HASH}" ALL DEPENDS ${OUTPUT_FILES})
+    list(APPEND OUTPUT_FILES "${SHADERS_OUT_DIR}/all.h")
 
     add_library("${TARGET_NAME}" INTERFACE)
     add_dependencies("${TARGET_NAME}" shaderc "${DIR_HASH}")

@@ -1,5 +1,7 @@
 
 #include <rawrbox/render/model/assimp/model_imported.h>
+#include <rawrbox/render/model/light/manager.h>
+#include <rawrbox/render/model/light/point.hpp>
 #include <rawrbox/render/texture/image.h>
 #include <rawrbox/utils/pack.hpp>
 
@@ -16,8 +18,8 @@ namespace rawrBox {
 	}
 
 	// LOADING -----
-	void ModelImported::load(const std::string& path, uint32_t flags) {
-		const aiScene* scene = aiImportFile(path.c_str(), flags);
+	void ModelImported::load(const std::string& path, uint32_t loadFlags, uint32_t assimpFlags) {
+		const aiScene* scene = aiImportFile(path.c_str(), assimpFlags);
 		if (scene == nullptr) throw std::runtime_error(fmt::format("[Resources] Content 'model' error: {}: '{}'\n", path, aiGetErrorString()));
 
 		this->_meshes.clear(); // Clear old meshes
@@ -26,6 +28,7 @@ namespace rawrBox {
 
 		// load models
 		this->loadSubmeshes(scene, scene->mRootNode);
+		if ((loadFlags & rawrBox::ModelLoadFlags::IMPORT_LIGHT) > 0) this->loadLights(scene);
 		// ----
 
 		aiReleaseImport(scene);
@@ -60,7 +63,6 @@ namespace rawrBox {
 	}
 
 	void ModelImported::loadSubmeshes(const aiScene* sc, const aiNode* nd) {
-
 		for (size_t n = 0; n < nd->mNumMeshes; ++n) {
 			auto mesh = std::make_shared<rawrBox::ModelMesh>();
 
@@ -122,6 +124,24 @@ namespace rawrBox {
 		// recursive
 		for (size_t n = 0; n < nd->mNumChildren; ++n) {
 			this->loadSubmeshes(sc, nd->mChildren[n]);
+		}
+	}
+
+	void ModelImported::loadLights(const aiScene* sc) {
+		for (size_t n = 0; n < sc->mNumLights; ++n) {
+			auto& aiLight = *sc->mLights[n];
+
+			auto pos = rawrBox::Vector3f(aiLight.mPosition.x, aiLight.mPosition.y, aiLight.mPosition.z);
+			auto color = rawrBox::Colori(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b).cast<float>();
+
+			switch (aiLight.mType) {
+			case aiLightSource_SPOT:
+			case aiLightSource_POINT:
+				rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightPoint>(pos, color, aiLight.mAngleInnerCone, aiLight.mAngleOuterCone, 0.7f)); // aiLight.mAttenuationQuadratic
+				continue;
+			default:
+				continue;
+			}
 		}
 	}
 	// ----------

@@ -1,4 +1,6 @@
 
+#include <rawrbox/render/model/light/manager.h>
+#include <rawrbox/render/model/light/point.hpp>
 #include <rawrbox/render/model/model_mesh.h>
 #include <rawrbox/utils/keys.hpp>
 
@@ -57,10 +59,11 @@ namespace cube {
 
 		this->_textEngine = std::make_unique<rawrBox::TextEngine>();
 
+		// Load content ---
+		// Fonts ----
 		this->_font = &this->_textEngine->load("./content/fonts/droidsans.ttf", 28);
 		this->_font2 = &this->_textEngine->load("./content/fonts/visitor1.ttf", 18);
 
-		// Load content ---
 		// Textures ---
 		this->_texture = std::make_shared<rawrBox::TextureImage>("./content/textures/screem.png");
 		this->_texture->upload();
@@ -70,12 +73,12 @@ namespace cube {
 
 		// Model ---
 		this->_model2 = std::make_shared<rawrBox::ModelImported>();
-		this->_model2->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx");
+		this->_model2->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_LIGHT);
 		// this->_model2->setWireframe(true);
-
 		// -----
 
 		this->_model = std::make_shared<rawrBox::Model>();
+		this->_model->setFullbright(true);
 		// ----
 		{
 			auto mesh = std::make_shared<rawrBox::ModelMesh>();
