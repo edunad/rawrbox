@@ -11,52 +11,47 @@
 
 namespace rawrBox {
 	TextureImage::TextureImage(const std::string& fileName) {
-		int w;
-		int h;
-
-		stbi_uc* image = stbi_load(fileName.c_str(), &w, &h, &this->_channels, 4); // force it to produce RGBA8
+		stbi_uc* image = stbi_load(fileName.c_str(), &this->_size.x, &this->_size.y, &this->_channels, 0);
 		if (image == nullptr) throw std::runtime_error(fmt::format("[TextureImage] Error loading image: {}", stbi_failure_reason()));
 
-		this->_size = {w, h};
-		this->_pixels = bgfx::copy(image, static_cast<uint32_t>(w * h) * this->_channels);
+		this->_pixels.resize(static_cast<uint32_t>(this->_size.x * this->_size.y) * this->_channels);
+		std::memcpy(this->_pixels.data(), image, static_cast<uint32_t>(this->_pixels.size()));
 
 		stbi_image_free(image);
 	}
 
 	// ------PIXEL-UTILS
-	rawrBox::Color TextureImage::getPixel(unsigned int x, unsigned int y) {
-		if (this->_pixels->size == 0 && this->_size != 0) {
+	rawrBox::Colori TextureImage::getPixel(unsigned int x, unsigned int y) {
+		if (this->_pixels.empty())
 			throw std::runtime_error("[TextureImage] Trying to access pixels, but memory is not set");
-		}
 
 		size_t index = y * this->_size.x + x;
 
-		rawrBox::Color cl;
-		cl.r = this->_pixels->data[index++];
-		cl.g = this->_pixels->data[index++];
-		cl.b = this->_pixels->data[index++];
-		cl.a = this->_pixels->data[index++];
+		rawrBox::Colori cl;
+		cl.r = this->_pixels[index++];
+		cl.g = this->_pixels[index++];
+		cl.b = this->_pixels[index++];
+		cl.a = this->_pixels[index++];
 
 		return cl;
 	}
 
-	rawrBox::Color TextureImage::getPixel(const rawrBox::Vector2i& pos) {
+	rawrBox::Colori TextureImage::getPixel(const rawrBox::Vector2i& pos) {
 		return this->getPixel(pos.x, pos.y);
 	}
 
-	void TextureImage::setPixel(unsigned int x, unsigned int y, const rawrBox::Color& col) {
-		if (this->_pixels->size == 0 && this->_size != 0) {
+	void TextureImage::setPixel(unsigned int x, unsigned int y, const rawrBox::Colori& col) {
+		if (this->_pixels.empty())
 			throw std::runtime_error("[TextureImage] Trying to access pixels, but memory is not set");
-		}
 
 		size_t index = y * this->_size.x + x;
-		this->_pixels->data[index++] = static_cast<uint8_t>(col.r * 255);
-		this->_pixels->data[index++] = static_cast<uint8_t>(col.g * 255);
-		this->_pixels->data[index++] = static_cast<uint8_t>(col.b * 255);
-		this->_pixels->data[index++] = static_cast<uint8_t>(col.a * 255);
+		this->_pixels[index++] = static_cast<uint8_t>(col.r);
+		this->_pixels[index++] = static_cast<uint8_t>(col.g);
+		this->_pixels[index++] = static_cast<uint8_t>(col.b);
+		this->_pixels[index++] = static_cast<uint8_t>(col.a);
 	}
 
-	void TextureImage::setPixel(const rawrBox::Vector2i& pos, const rawrBox::Color& col) {
+	void TextureImage::setPixel(const rawrBox::Vector2i& pos, const rawrBox::Colori& col) {
 		this->setPixel(pos.x, pos.y, col);
 	}
 
@@ -68,8 +63,21 @@ namespace rawrBox {
 	void TextureImage::upload(bgfx::TextureFormat::Enum format) {
 		if (bgfx::isValid(this->_handle)) return; // Already bound
 
+		if (format == bgfx::TextureFormat::Count) {
+			// Try to determine
+			switch (this->_channels) { // TODO: Handle different texture formats
+			case 3:
+				format = bgfx::TextureFormat::RGB8;
+				break;
+			default:
+			case 4:
+				format = bgfx::TextureFormat::RGBA8;
+				break;
+			}
+		}
+
 		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 0, format,
-		    BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT, this->_pixels);
+		    BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT, bgfx::copy(this->_pixels.data(), static_cast<uint32_t>(this->_pixels.size())));
 
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureImage] Failed to bind texture");
 		bgfx::setName(this->_handle, fmt::format("RAWR-IMAGE-TEXTURE-{}", this->_handle.idx).c_str());

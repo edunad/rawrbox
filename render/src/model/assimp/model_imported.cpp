@@ -1,5 +1,6 @@
 
 #include <rawrbox/render/model/assimp/model_imported.h>
+#include <rawrbox/render/texture/image.h>
 #include <rawrbox/utils/pack.hpp>
 
 #include <bx/math.h>
@@ -9,6 +10,11 @@
 #include <stdexcept>
 
 namespace rawrBox {
+	ModelImported::~ModelImported() {
+		Model::~Model();
+		this->_textures.clear();
+	}
+
 	// LOADING -----
 	void ModelImported::load(const std::string& path, uint32_t flags) {
 		const aiScene* scene = aiImportFile(path.c_str(), flags);
@@ -32,14 +38,23 @@ namespace rawrBox {
 		if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
 			aiString matpath;
 
+			// TEXTURE
 			if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &matpath, nullptr, nullptr, nullptr, nullptr, nullptr) == AI_SUCCESS) {
 				auto textPath = std::filesystem::path(matpath.data);
 				auto base = std::filesystem::path(this->_fileName);
 
-				auto texture = std::make_shared<rawrBox::TextureImage>(fmt::format("{}/{}", base.parent_path().generic_string(), textPath.generic_string()));
-				texture->upload(bgfx::TextureFormat::RGBA8); // TODO: Handle different texture formats
+				std::string finalPath = fmt::format("{}/{}", base.parent_path().generic_string(), textPath.generic_string());
 
-				mesh->setTexture(std::move(texture));
+				auto fnd = this->_textures.find(finalPath);
+				if (fnd == this->_textures.end()) {
+					auto texture = std::make_shared<rawrBox::TextureImage>(finalPath);
+					texture->upload(bgfx::TextureFormat::Count);
+
+					mesh->setTexture(texture);
+					this->_textures[finalPath] = std::move(texture);
+				} else {
+					mesh->setTexture(fnd->second);
+				}
 			}
 		}
 	}

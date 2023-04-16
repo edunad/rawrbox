@@ -6,7 +6,7 @@
 
 #include <bx/math.h>
 
-#define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS)
+#define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
 
 static const bgfx::EmbeddedShader shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_model),
@@ -31,7 +31,9 @@ namespace rawrBox {
 		bgfx::destroy(this->_handle);
 		bgfx::destroy(this->_texColor);
 
-		this->_meshes = {};
+		this->_meshes.clear();
+		this->_vertices.clear();
+		this->_indices.clear();
 	}
 
 	// UTIL ---

@@ -60,19 +60,20 @@ namespace cube {
 		this->_font = &this->_textEngine->load("./content/fonts/droidsans.ttf", 28);
 		this->_font2 = &this->_textEngine->load("./content/fonts/visitor1.ttf", 18);
 
-		// Load content
+		// Load content ---
+		// Textures ---
 		this->_texture = std::make_shared<rawrBox::TextureImage>("./content/textures/screem.png");
 		this->_texture->upload();
 
 		this->_texture2 = std::make_shared<rawrBox::TextureGIF>("./content/textures/meow3.gif");
 		this->_texture2->upload();
-		// -----
 
-		// Model loading ---
-
+		// Model ---
 		this->_model2 = std::make_shared<rawrBox::ModelImported>();
-		this->_model2->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx"); //  // Phasmaphobia_Semi.fbx
+		this->_model2->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx");
 		// this->_model2->setWireframe(true);
+
+		// -----
 
 		this->_model = std::make_shared<rawrBox::Model>();
 		// ----

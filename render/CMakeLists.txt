@@ -64,9 +64,12 @@ if(NOT RAWRBOX_BUILD_RENDER_ASSIMP_SUPPORT)
 		endif ()
 	endforeach(TMP_PATH)
 endif()
+# -----------------
 
+# Compile shaders
 add_shaders_directory(${RAWRBOX_CONTENT_FOLDER}/shaders RAWRBOX_SHADERS_TARGET_NAME)
 message("SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
+# ------------------
 
 # Project setup
 set(output_target RAWRBOX.RENDER)
