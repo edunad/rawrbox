@@ -2,6 +2,8 @@
 
 #include <rawrbox/render/model/light/base.hpp>
 
+#include <memory>
+
 namespace rawrBox {
 	class LightManager {
 		std::vector<std::shared_ptr<rawrBox::LightBase>> _lights;
