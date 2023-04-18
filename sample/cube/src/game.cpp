@@ -2,11 +2,12 @@
 #include <rawrbox/render/model/light/manager.h>
 #include <rawrbox/render/model/light/point.hpp>
 #include <rawrbox/render/model/model_mesh.h>
+#include <rawrbox/render/postprocess/dither_psx.hpp>
 #include <rawrbox/utils/keys.hpp>
 
-#include <cube/game.h>
-
+#include <bx/bx.h>
 #include <bx/math.h>
+#include <cube/game.h>
 
 #include <vector>
 
@@ -38,7 +39,7 @@ namespace cube {
 		this->_window->onMouseMove += [this](auto& w, const rawrBox::Vector2i& mousePos) {
 			if (this->_camera == nullptr || !this->_rightClick) return;
 
-			float m_mouseSpeed = 0.0020f;
+			float m_mouseSpeed = 0.0015f;
 
 			auto deltaX = mousePos.x - this->_oldMousePos.x;
 			auto deltaY = mousePos.y - this->_oldMousePos.y;
@@ -54,12 +55,17 @@ namespace cube {
 		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Window::WINDOWED);
 
 		this->_render = std::make_shared<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
-		this->_render->setClearColor(0x000000FF);
+		this->_render->setClearColor(0x443355FF);
 		this->_render->initialize();
 
 		this->_textEngine = std::make_unique<rawrBox::TextEngine>();
+		this->_postProcess = std::make_unique<rawrBox::PostProcessManager>(0, this->_window->getSize());
+		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessPSXDither>(rawrBox::DITHER_SIZE::_2x2, false));
 
 		// Load content ---
+
+		this->_postProcess->upload();
+
 		// Fonts ----
 		this->_font = &this->_textEngine->load("./content/fonts/droidsans.ttf", 28);
 		this->_font2 = &this->_textEngine->load("./content/fonts/visitor1.ttf", 18);
@@ -98,18 +104,13 @@ namespace cube {
 		{
 			auto mesh = std::make_shared<rawrBox::ModelMesh>();
 			mesh->generateGrid(12, {0.f, -2.0f, 0.f});
+			// mesh->setColor(rawrBox::Colors::Purple);
 
 			this->_model->addMesh(mesh);
 		}
 
-		this->_model2->upload();
 		this->_model->upload();
-
-		std::array<float, 16> n;
-		bx::mtxIdentity(n.data());
-
-		this->_model->setMatrix(n);
-		this->_model2->setMatrix(n);
+		this->_model2->upload();
 		// -----
 
 		// Setup camera
@@ -127,6 +128,7 @@ namespace cube {
 		this->_texture2 = nullptr;
 		this->_model = nullptr;
 		this->_model2 = nullptr;
+		this->_postProcess = nullptr;
 
 		rawrBox::Engine::shutdown();
 	}
@@ -171,20 +173,17 @@ namespace cube {
 			m_eye = bx::mad({right.x, right.y, right.z}, -deltaTime * m_moveSpeed, m_eye);
 			this->_camera->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
+
+		if (this->_texture2 != nullptr) this->_texture2->step();
 	}
 
 	float counter = 0;
-	void Game::draw(const double alpha) {
-		if (this->_render == nullptr) return;
 
-		this->_render->swapBuffer(); // Clean up and set renderer
-		bgfx::setViewTransform(this->_render->getID(), nullptr, nullptr);
-
+	void Game::drawOverlay() {
 		auto& stencil = this->_render->getStencil();
-		bgfx::dbgTextPrintf(1, 1, 0x0f, "STENCIL TESTS ----------------------------------------------------------------------------------------------------------------");
-		bgfx::dbgTextPrintf(1, 11, 0x0f, "TEXT TESTS ------------------------------------------------------------------------------------------------------------------");
 
 		stencil.begin();
+
 		stencil.pushOffset({20, 50});
 		stencil.pushRotation({counter * 50.5f, {50, 50}});
 		stencil.drawBox({0, 0}, {100, 100}, rawrBox::Colors::Green);
@@ -263,21 +262,39 @@ namespace cube {
 		stencil.drawText(this->_font2, "Cat!!", {0, 40});
 		stencil.popRotation();
 		stencil.popOffset();
+
 		stencil.end();
+	}
 
-		bgfx::setViewTransform(this->_render->getID(), this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+	void Game::drawWorld() {
+		bgfx::setViewTransform(rawrBox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 
-		// -----------------
 		std::array<float, 16> mtx;
 		bx::mtxRotateXY(mtx.data(), 0.f, counter * 0.1f);
 		this->_model->getMesh(1)->setMatrix(mtx);
 
 		this->_model->draw(this->_camera->getPos());
 		this->_model2->draw(this->_camera->getPos());
+	}
+
+	void Game::draw(const double alpha) {
+		if (this->_render == nullptr) return;
+		this->_render->swapBuffer(); // Clean up and set renderer
+
+		bgfx::dbgTextPrintf(1, 1, 0x0f, "STENCIL TESTS ----------------------------------------------------------------------------------------------------------------");
+		bgfx::dbgTextPrintf(1, 11, 0x0f, "TEXT TESTS ------------------------------------------------------------------------------------------------------------------");
+
 		// -----------------
 
+		this->_postProcess->begin();
+		this->drawWorld();
+		this->_postProcess->end();
+
+		this->drawOverlay();
+
+		//  -----------------
+
 		this->_render->render(); // Commit primitives
-		this->_texture2->step();
 
 		counter += 0.1f;
 	}

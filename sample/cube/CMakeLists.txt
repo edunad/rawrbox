@@ -22,10 +22,8 @@ else()
 endif()
 
 
-# symlink content
-if (NOT EXISTS ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/content)
-	add_custom_command(
-		TARGET ${output_target} POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/content ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/content
-	)
-endif()
+# copy content
+add_custom_command(
+	TARGET ${output_target} POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/content ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/content
+)

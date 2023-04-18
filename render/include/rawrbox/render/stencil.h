@@ -1,14 +1,13 @@
 #pragma once
 
-#include <rawrbox/render/text/font.h>
-#include <rawrbox/render/texture/flat.h>
-#include <rawrbox/render/texture/render.h>
-
 #include <rawrbox/math/aabb.hpp>
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/pi.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/render/text/font.h>
+#include <rawrbox/render/texture/flat.h>
+#include <rawrbox/render/texture/render.h>
 
 #include <bgfx/bgfx.h>
 
@@ -157,7 +156,7 @@ namespace rawrBox {
 		// --------------------
 
 		// ------ RENDERING
-		void internalDraw(bgfx::ViewId id);
+		void internalDraw();
 		void drawRecording();
 		// --------------------
 	public:

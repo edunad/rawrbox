@@ -15,15 +15,15 @@ AlignConsecutiveMacros: true
 NamespaceIndentation: All
 AccessModifierOffset: -8
 IncludeCategories:
-    - Regex: '^"(rawrbox)/'
+    - Regex: '^<rawrbox/.*>'
       Priority: 1
-      SortPriority: 100
-    - Regex: '<[[:alnum:].]+>'
-      Priority: 5
-      SortPriority: 0
+    - Regex: '^<.*\.h>'
+      Priority: 2
+    - Regex: '^<.*'
+      Priority: 3
     - Regex: '.*'
-      Priority: 8
-      SortPriority: 0
+      Priority: 4
 
+IncludeBlocks: Regroup
 DerivePointerAlignment: true
 PointerAlignment: Left

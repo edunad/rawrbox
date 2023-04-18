@@ -2,12 +2,12 @@
 #include <rawrbox/render/model/model.h>
 #include <rawrbox/render/model/model_mesh.h>
 #include <rawrbox/render/shader_defines.h>
-
-#include <generated/shaders/render/all.h>
+#include <rawrbox/render/static.h>
 
 #include <bx/math.h>
+#include <generated/shaders/render/all.h>
 
-#define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
+#define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA) | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL)
 #define MAX_LIGHTS            12
 
 static const bgfx::EmbeddedShader shaders[] = {
@@ -28,16 +28,17 @@ namespace rawrBox {
 	}
 
 	Model::~Model() {
-		bgfx::destroy(this->_vbh);
-		bgfx::destroy(this->_ibh);
-		bgfx::destroy(this->_handle);
+		RAWRBOX_DESTROY(this->_vbh);
+		RAWRBOX_DESTROY(this->_ibh);
+		RAWRBOX_DESTROY(this->_program);
 
-		bgfx::destroy(this->_texColor);
+		RAWRBOX_DESTROY(this->_texColor);
+		RAWRBOX_DESTROY(this->_offsetColor);
 
-		bgfx::destroy(this->_lightsSettings);
-		bgfx::destroy(this->_lightsPosition);
-		bgfx::destroy(this->_lightsData);
-		bgfx::destroy(this->_viewPos);
+		RAWRBOX_DESTROY(this->_lightsSettings);
+		RAWRBOX_DESTROY(this->_lightsPosition);
+		RAWRBOX_DESTROY(this->_lightsData);
+		RAWRBOX_DESTROY(this->_viewPos);
 
 		this->_meshes.clear();
 		this->_vertices.clear();
@@ -113,13 +114,15 @@ namespace rawrBox {
 		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, "fs_model");
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+		this->_offsetColor = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 
 		this->_lightsSettings = bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4);
 		this->_lightsPosition = bgfx::createUniform("u_lightsPosition", bgfx::UniformType::Mat4, MAX_LIGHTS);
 		this->_lightsData = bgfx::createUniform("u_lightsData", bgfx::UniformType::Mat4, MAX_LIGHTS);
 		this->_viewPos = bgfx::createUniform("u_viewPos", bgfx::UniformType::Vec4, 3);
 
-		this->_handle = bgfx::createProgram(vsh, fsh, true);
+		this->_program = bgfx::createProgram(vsh, fsh, true);
+		if (!bgfx::isValid(this->_program)) throw std::runtime_error("[RawrBox-Model] Failed to bind shader");
 		// -----------------
 	}
 
@@ -157,36 +160,37 @@ namespace rawrBox {
 		}
 	}
 
-	void Model::draw(rawrBox::Vector3 camPos, bgfx::ViewId id) {
+	void Model::draw(rawrBox::Vector3 camPos) {
 		if (!bgfx::isValid(this->_vbh) || !bgfx::isValid(this->_ibh)) return;
+
+		// Set camera --
+		float cam[3] = {camPos.x, camPos.y, camPos.z};
+		bgfx::setUniform(this->_viewPos, cam, 3);
+		// ----------
+
+		// LIGHT ----
+		this->processLights();
+		// -----------------
 
 		for (auto& mesh : this->_meshes) {
 			auto& data = mesh->getData();
-
-			// Setup handles ----
 			if (data->texture != nullptr) bgfx::setTexture(0, this->_texColor, data->texture->getHandle());
 
-			// Set camera --
-			float cam[3] = {camPos.x, camPos.y, camPos.z};
-			bgfx::setUniform(this->_viewPos, cam, 3);
-			// ----------
-
-			// LIGHT ----
-			this->processLights();
-			// -----------------
+			float meshColor[4] = {data->color.r, data->color.g, data->color.b, data->color.a};
+			bgfx::setUniform(this->_offsetColor, meshColor);
 
 			bgfx::setVertexBuffer(0, this->_vbh, data->baseVertex, static_cast<uint32_t>(data->vertices.size()));
 			bgfx::setIndexBuffer(this->_ibh, data->baseIndex, static_cast<uint32_t>(data->indices.size()));
 
-			float a[16];
-			bx::mtxMul(a, data->offsetMatrix.data(), this->_matrix.data());
-			bgfx::setTransform(a);
+			float matrix[16];
+			bx::mtxMul(matrix, data->offsetMatrix.data(), this->_matrix.data());
+			bgfx::setTransform(matrix);
 
-			uint64_t flags = BGFX_STATE_DEFAULT_3D;
+			uint64_t flags = BGFX_STATE_DEFAULT_3D | this->_cull;
 			if (data->wireframe) flags |= BGFX_STATE_PT_LINES;
 
-			bgfx::setState(flags | this->_cull);
-			bgfx::submit(id, this->_handle);
+			bgfx::setState(flags, 0);
+			bgfx::submit(rawrBox::CURRENT_VIEW_ID, this->_program);
 		}
 	}
 } // namespace rawrBox

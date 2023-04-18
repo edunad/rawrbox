@@ -14,11 +14,12 @@ namespace rawrBox {
 	protected:
 		bgfx::VertexLayout _vLayout;
 
-		bgfx::ProgramHandle _handle = BGFX_INVALID_HANDLE;
+		bgfx::ProgramHandle _program = BGFX_INVALID_HANDLE;
 		bgfx::VertexBufferHandle _vbh = BGFX_INVALID_HANDLE; // Vertices
 		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;  // Indices
 
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _offsetColor = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle _lightsSettings = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _lightsPosition = BGFX_INVALID_HANDLE;
@@ -27,7 +28,7 @@ namespace rawrBox {
 		bgfx::UniformHandle _viewPos = BGFX_INVALID_HANDLE;
 
 		std::vector<std::shared_ptr<rawrBox::ModelMesh>> _meshes;
-		std::array<float, 16> _matrix;
+		std::array<float, 16> _matrix = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}; // Identity matrix by default
 
 		std::vector<rawrBox::ModelVertexData> _vertices;
 		std::vector<uint16_t> _indices;
@@ -56,6 +57,6 @@ namespace rawrBox {
 		// ----
 
 		virtual void upload();
-		virtual void draw(rawrBox::Vector3 camPos, bgfx::ViewId id = 0);
+		virtual void draw(rawrBox::Vector3 camPos);
 	};
 } // namespace rawrBox

@@ -2,8 +2,7 @@
 #include <rawrbox/utils/pack.hpp>
 
 namespace rawrBox {
-	ModelMesh::ModelMesh(const std::string& name_) {
-		this->_name = name_;
+	ModelMesh::ModelMesh() {
 		this->_data = std::make_shared<rawrBox::ModelMeshData>();
 	}
 
@@ -38,6 +37,10 @@ namespace rawrBox {
 
 	void ModelMesh::setWireframe(bool wireframe) {
 		this->_data->wireframe = wireframe;
+	}
+
+	void ModelMesh::setColor(const rawrBox::Color& color) {
+		this->_data->color = color;
 	}
 
 	// ------------------------

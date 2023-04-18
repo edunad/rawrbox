@@ -1,5 +1,5 @@
-#ifndef INCLUDED_MODEL_PSX_GLSL
-#define INCLUDED_MODEL_PSX_GLSL
+#ifndef INCLUDED_MODEL_PSX
+#define INCLUDED_MODEL_PSX
 
 // Snap vertex to achieve PSX look
 vec4 psx_snap(vec4 vertex, vec2 resolution) {

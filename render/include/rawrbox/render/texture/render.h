@@ -11,13 +11,17 @@ namespace rawrBox {
 
 	private:
 		bgfx::FrameBufferHandle _renderView = BGFX_INVALID_HANDLE;
+		bgfx::TextureHandle _depthHandle = BGFX_INVALID_HANDLE;
+		bgfx::TextureHandle _renderHandle = BGFX_INVALID_HANDLE;
+
 		rawrBox::Vector2i _size;
 
 		bgfx::ViewId _viewId;
 		bgfx::ViewId _renderId;
 
 	public:
-		TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size);
+		TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size, bgfx::ViewId forcedId = 0);
+		~TextureRender();
 
 		// ------RENDER
 		virtual void startRecord();

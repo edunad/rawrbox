@@ -69,7 +69,9 @@ endif()
 # -----------------
 
 # Compile shaders
-add_shaders_directory(${RAWRBOX_CONTENT_FOLDER}/shaders RAWRBOX_SHADERS_TARGET_NAME)
+set(PROFILES 300_es spirv s_4_0 s_5_0)
+
+add_shaders_directory(./shaders RAWRBOX_SHADERS_TARGET_NAME)
 message("SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
 # ------------------
 
@@ -79,7 +81,7 @@ add_library(${output_target} ${RAWRBOX_RENDER_SOURCES})
 target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_include_directories(${output_target} PUBLIC "include" ${FREETYPE_INCLUDE_DIRS})
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
-target_link_libraries(${output_target} PRIVATE "${RAWRBOX_SHADERS_TARGET_NAME}" PUBLIC
+target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	RAWRBOX.MATH
 	RAWRBOX.UTILS
 
@@ -93,3 +95,10 @@ target_link_libraries(${output_target} PRIVATE "${RAWRBOX_SHADERS_TARGET_NAME}" 
 
 	${RAWRBOX_EXTRA_LIBS}
 )
+
+# Copy content
+add_custom_command(
+	TARGET ${output_target} POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_HOME_DIRECTORY}/render/${RAWRBOX_CONTENT_FOLDER} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
+)
+# ------------------

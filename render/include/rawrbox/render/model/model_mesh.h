@@ -38,13 +38,12 @@ namespace rawrBox {
 		std::vector<rawrBox::ModelVertexData> vertices = {};
 		std::vector<uint16_t> indices = {};
 
-		std::array<float, 16> offsetMatrix;
+		std::array<float, 16> offsetMatrix = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}; // Identity matrix by default
 		bool wireframe = false;
+		rawrBox::Color color = rawrBox::Colors::White;
 
 		virtual ~ModelMeshData() = default;
-		ModelMeshData() {
-			bx::mtxIdentity(offsetMatrix.data());
-		};
+		ModelMeshData() = default;
 	};
 
 	class ModelMesh {
@@ -53,7 +52,7 @@ namespace rawrBox {
 		std::shared_ptr<rawrBox::ModelMeshData> _data = nullptr;
 
 	public:
-		ModelMesh(const std::string& name_ = "mesh");
+		ModelMesh();
 		virtual ~ModelMesh() = default;
 
 		// UTILS ----
@@ -67,6 +66,7 @@ namespace rawrBox {
 		void setMatrix(const std::array<float, 16>& offset);
 		void setTexture(const std::shared_ptr<rawrBox::TextureBase>& ptr);
 		void setWireframe(bool wireframe);
+		void setColor(const rawrBox::Color& color);
 
 		void generatePlane(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& size, const rawrBox::Vector3f& normal = {0, 0, 1}, const rawrBox::Color& cl = rawrBox::Colors::White);
 		void generateCube(const rawrBox::Vector3f& pos, const rawrBox::Vector3f& size, const rawrBox::Color& cl = rawrBox::Colors::White);

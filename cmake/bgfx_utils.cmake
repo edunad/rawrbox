@@ -30,7 +30,7 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
             VARYING_DEF "${VARYING_DEF_LOCATION}"
             OUTPUT_DIR "${SHADERS_OUT_DIR}"
             OUT_FILES_VAR VERTEX_OUTPUT_FILES
-			OPTIMIZE "1"
+			PROFILES ${PROFILES}
             INCLUDE_DIRS "${SHADERS_DIR}" "${BGFX_DIR}/src"
     )
 
@@ -41,7 +41,6 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
             OUTPUT_DIR "${SHADERS_OUT_DIR}"
             OUT_FILES_VAR FRAGMENT_OUTPUT_FILES
             PROFILES ${PROFILES}
-			OPTIMIZE "1"
             INCLUDE_DIRS "${SHADERS_DIR}" "${BGFX_DIR}/src"
     )
 
@@ -68,11 +67,9 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
     list(APPEND OUTPUT_FILES "${SHADERS_OUT_DIR}/all.h")
 
     string(MD5 DIR_HASH "${SHADERS_DIR}")
-    string(MD5 INCLUDE_HASH "${INCLUDES_SHADER_FILES}")
+    set(TARGET_NAME "Shaders_${DIR_HASH}")
 
-    set(TARGET_NAME "Shaders_${DIR_HASH}_${INCLUDE_HASH}")
-
-    add_custom_target("${DIR_HASH}_${INCLUDE_HASH}" ALL DEPENDS ${OUTPUT_FILES})
+    add_custom_target("${DIR_HASH}" ALL DEPENDS ${OUTPUT_FILES})
     list(APPEND OUTPUT_FILES "${SHADERS_OUT_DIR}/all.h")
 
     add_library("${TARGET_NAME}" INTERFACE)

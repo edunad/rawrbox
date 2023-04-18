@@ -1,14 +1,14 @@
 
 #include <rawrbox/render/shader_defines.h>
+#include <rawrbox/render/static.h>
 #include <rawrbox/render/stencil.h>
 
 // Compiled shaders
 #include <bx/math.h>
 #include <generated/shaders/render/all.h>
-
 #include <utf8.h>
 
-#define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA) | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_CULL_CW)
+#define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA) | BGFX_STATE_CULL_CW)
 
 static const bgfx::EmbeddedShader shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_stencil),
@@ -30,19 +30,26 @@ namespace rawrBox {
 		    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 		    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 		    .end();
+
+		this->_renderTexture = std::make_shared<rawrBox::TextureRender>(this->_viewId, this->_windowSize);
+		this->_pixelTexture = std::make_shared<rawrBox::TextureFlat>(rawrBox::Vector2i(1, 1), Colors::White);
 	}
 
 	Stencil::~Stencil() {
 		// CLEANUP BUFFERS & PROGRAMS
-		bgfx::destroy(this->_2dprogram);
-		bgfx::destroy(this->_lineprogram);
-		bgfx::destroy(this->_textprogram);
+		RAWRBOX_DESTROY(this->_2dprogram);
+		RAWRBOX_DESTROY(this->_lineprogram);
+		RAWRBOX_DESTROY(this->_textprogram);
+		RAWRBOX_DESTROY(this->_stencilProgram);
 
-		bgfx::destroy(this->_textureHandle);
-		bgfx::destroy(this->_texColor);
+		RAWRBOX_DESTROY(this->_textureHandle);
+		RAWRBOX_DESTROY(this->_texColor);
 
 		this->_pixelTexture = nullptr;
 		this->_renderTexture = nullptr;
+
+		this->_indices.clear();
+		this->_vertices.clear();
 	}
 
 	void Stencil::initialize() {
@@ -53,7 +60,7 @@ namespace rawrBox {
 		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, "fs_stencil");
 
 		this->_2dprogram = bgfx::createProgram(vsh, fsh, true);
-		if (this->_2dprogram.idx == 0) throw std::runtime_error("[RawrBox-Stencil] Failed to initialize shader program");
+		if (!bgfx::isValid(this->_2dprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to initialize shader program");
 		// ------------------
 
 		// Load Line ---------
@@ -61,7 +68,7 @@ namespace rawrBox {
 		fsh = bgfx::createEmbeddedShader(shaders, type, "fs_stencil_line_stipple");
 
 		this->_lineprogram = bgfx::createProgram(vsh, fsh, true);
-		if (this->_lineprogram.idx == 0) throw std::runtime_error("[RawrBox-Stencil] Failed to initialize shader program");
+		if (!bgfx::isValid(this->_lineprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to initialize shader program");
 		// --------------------
 
 		// Load Text ---------
@@ -69,14 +76,13 @@ namespace rawrBox {
 		fsh = bgfx::createEmbeddedShader(shaders, type, "fs_stencil_text");
 
 		this->_textprogram = bgfx::createProgram(vsh, fsh, true);
-		if (this->_textprogram.idx == 0) throw std::runtime_error("[RawrBox-Stencil] Failed to initialize shader program");
+		if (!bgfx::isValid(this->_textprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to initialize shader program");
 		// --------------------
 
-		this->_pixelTexture = std::make_shared<rawrBox::TextureFlat>(rawrBox::Vector2i(1, 1), Colors::White);
-		this->_pixelTexture->upload();
-
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
-		this->_renderTexture = std::make_shared<rawrBox::TextureRender>(this->_viewId, this->_windowSize);
+
+		this->_renderTexture->upload();
+		this->_pixelTexture->upload();
 	}
 
 	void Stencil::resize(const rawrBox::Vector2i& size) {
@@ -386,21 +392,21 @@ namespace rawrBox {
 
 	// ------RENDERING
 	void Stencil::setTexture(const bgfx::TextureHandle& tex) {
-		if (this->_textureHandle.idx != tex.idx) this->internalDraw(this->_renderTexture->id());
+		if (this->_textureHandle.idx != tex.idx) this->internalDraw();
 		this->_textureHandle = tex;
 	}
 
 	void Stencil::setShaderProgram(const bgfx::ProgramHandle& handle) {
-		if (this->_stencilProgram.idx != handle.idx) this->internalDraw(this->_renderTexture->id());
+		if (this->_stencilProgram.idx != handle.idx) this->internalDraw();
 		this->_stencilProgram = handle;
 	}
 
 	void Stencil::setDrawMode(uint64_t mode) {
-		if (this->_drawMode != mode) this->internalDraw(this->_renderTexture->id());
+		if (this->_drawMode != mode) this->internalDraw();
 		this->_drawMode = mode;
 	}
 
-	void Stencil::internalDraw(bgfx::ViewId id) {
+	void Stencil::internalDraw() {
 		if (this->_vertices.empty() || this->_indices.empty()) return;
 		if ((this->_drawMode & BGFX_STATE_PT_LINES) == 0) bgfx::setTexture(0, this->_texColor, this->_textureHandle);
 
@@ -437,7 +443,7 @@ namespace rawrBox {
 			bgfx::setScissor(); // Clear scissor
 		}
 
-		bgfx::submit(id, this->_stencilProgram);
+		bgfx::submit(rawrBox::CURRENT_VIEW_ID, this->_stencilProgram);
 
 		this->_vertices.clear();
 		this->_indices.clear();
@@ -462,7 +468,7 @@ namespace rawrBox {
 		this->pushIndices(4, 3, 2);
 		this->pushIndices(3, 1, 2);
 
-		this->internalDraw(this->_viewId); // Draw on main window
+		this->internalDraw(); // Draw on main window
 	}
 
 	void Stencil::begin() {
@@ -470,6 +476,8 @@ namespace rawrBox {
 
 		this->_renderTexture->startRecord();
 		this->_recording = true;
+
+		bgfx::setViewTransform(rawrBox::CURRENT_VIEW_ID, nullptr, nullptr);
 	}
 
 	void Stencil::end() {
@@ -481,7 +489,7 @@ namespace rawrBox {
 		if (!this->_clips.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popClipping', cannot draw");
 		if (!this->_scales.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popScale', cannot draw");
 
-		this->internalDraw(this->_renderTexture->id()); // Draw remaining primitives
+		this->internalDraw(); // Draw remaining primitives
 
 		this->_renderTexture->stopRecord();
 		this->_recording = false;
@@ -550,7 +558,7 @@ namespace rawrBox {
 	void Stencil::popClipping() {
 		if (this->_clips.empty()) throw std::runtime_error("[RawrBox-Stencil] Clips is empty, failed to pop");
 
-		this->internalDraw(this->_renderTexture->id());
+		this->internalDraw();
 		this->_clips.pop_back();
 	}
 	// --------------------

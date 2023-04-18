@@ -1,5 +1,5 @@
-#ifndef INCLUDED_MODEL_GLSL
-#define INCLUDED_MODEL_GLSL
+#ifndef INCLUDED_MODEL_LIGHT
+#define INCLUDED_MODEL_LIGHT
 
 // Lighting
 uniform vec4 u_lightsSetting;
@@ -24,7 +24,7 @@ vec3 calculatePointLight(vec3 pos, mat4 lightData, vec3 fragPos, vec3 viewDir, v
 	float light_linear = lightData[1][3];
 	float light_quadratic = lightData[2][3];
 
-	float attenuation = 1.0f; // 1.0f / (light_constant + light_linear * distance + light_quadratic * (distance * distance));
+	float attenuation = 2.0f; // 1.0f / (light_constant + light_linear * distance + light_quadratic * (distance * distance));
 
 	// Combine results
 	vec3 ambient = vec3(0, 0, 0);
@@ -53,7 +53,7 @@ vec3 calculateSpotLight(vec3 pos, mat4 lightData, vec3 fragPos, vec3 viewDir, ve
 	float light_quadratic = lightData[2][3];
 
 	float distance = length(pos - fragPos);
-	float attenuation = 1.0f; // 1.0f / (light_constant + light_linear * distance + light_quadratic * (distance * distance));
+	float attenuation = 2.0f; // 1.0f / (light_constant + light_linear * distance + light_quadratic * (distance * distance));
 
 	// Spotlight intensity
 	float theta = dot(lightDir, normalize(-dir));

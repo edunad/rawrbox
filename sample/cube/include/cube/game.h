@@ -1,21 +1,17 @@
 #pragma once
 
-#include <rawrbox/render/engine.h>
-#include <rawrbox/render/renderer.h>
-#include <rawrbox/render/window.h>
-
-#include <rawrbox/render/texture/gif.h>
-#include <rawrbox/render/texture/image.h>
-
-#include <rawrbox/render/text/engine.h>
-#include <rawrbox/render/text/font.h>
-
 #include <rawrbox/render/camera/perspective.h>
-
+#include <rawrbox/render/engine.h>
 #include <rawrbox/render/model/assimp/model_imported.h>
 #include <rawrbox/render/model/model.h>
-
+#include <rawrbox/render/postprocess/manager.h>
+#include <rawrbox/render/renderer.h>
 #include <rawrbox/render/stencil.h>
+#include <rawrbox/render/text/engine.h>
+#include <rawrbox/render/text/font.h>
+#include <rawrbox/render/texture/gif.h>
+#include <rawrbox/render/texture/image.h>
+#include <rawrbox/render/window.h>
 
 #include <memory>
 
@@ -25,6 +21,7 @@ namespace cube {
 		std::shared_ptr<rawrBox::Renderer> _render;
 		std::shared_ptr<rawrBox::CameraPerspective> _camera;
 		std::unique_ptr<rawrBox::TextEngine> _textEngine;
+		std::unique_ptr<rawrBox::PostProcessManager> _postProcess;
 
 		std::shared_ptr<rawrBox::TextureImage> _texture;
 		std::shared_ptr<rawrBox::TextureGIF> _texture2;
@@ -44,5 +41,8 @@ namespace cube {
 		virtual void pollEvents() override;
 		virtual void update(float deltaTime, int64_t gameTime) override;
 		virtual void draw(const double alpha) override;
+
+		void drawOverlay();
+		void drawWorld();
 	};
 } // namespace cube
