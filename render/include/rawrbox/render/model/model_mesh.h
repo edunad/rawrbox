@@ -18,15 +18,15 @@ namespace rawrBox {
 		float z = 0;
 
 		uint32_t normal;
-		// uint32_t tangent;
+		uint32_t tangent;
 		float u;
 		float v;
 
 		uint32_t abgr = 0xFFFFFFFF;
 
 		ModelVertexData() = default;
-		ModelVertexData(const rawrBox::Vector3f& _pos, uint32_t _normal, float _u, float _v, const rawrBox::Color cl = rawrBox::Colors::White) : x(_pos.x), y(_pos.y), z(_pos.z), u(_u), v(_v), normal(_normal), abgr(rawrBox::Color::pack(cl)) {}
-		ModelVertexData(float _x, float _y, float _z, uint32_t _normal, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v), normal(_normal), abgr(_abgr) {}
+		ModelVertexData(const rawrBox::Vector3f& _pos, uint32_t _normal, uint32_t _tangent, float _u, float _v, const rawrBox::Color cl = rawrBox::Colors::White) : x(_pos.x), y(_pos.y), z(_pos.z), u(_u), v(_v), normal(_normal), tangent(_tangent), abgr(rawrBox::Color::pack(cl)) {}
+		ModelVertexData(float _x, float _y, float _z, uint32_t _normal, uint32_t _tangent, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v), normal(_normal), tangent(_tangent), abgr(_abgr) {}
 	};
 
 	struct ModelMeshData {

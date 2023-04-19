@@ -26,10 +26,11 @@ namespace rawrBox {
 		this->_meshes.clear(); // Clear old meshes
 		this->_fileName = path;
 		this->_cull = BGFX_STATE_CULL_CCW;
+		this->_loadFlags = loadFlags;
 
 		// load models
 		this->loadSubmeshes(scene, scene->mRootNode);
-		if ((loadFlags & rawrBox::ModelLoadFlags::IMPORT_LIGHT) > 0) this->loadLights(scene);
+		if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_LIGHT) > 0) this->loadLights(scene);
 		// ----
 
 		aiReleaseImport(scene);
@@ -79,8 +80,10 @@ namespace rawrBox {
 			data->baseVertex = static_cast<uint16_t>(data->vertices.size());
 			data->baseIndex = static_cast<uint16_t>(data->indices.size());
 
-			// Event
-			this->loadTexture(sc, aiMesh, mesh);
+			// Textures
+			if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
+				this->loadTexture(sc, aiMesh, mesh);
+			}
 
 			// Vertices
 			for (size_t i = 0; i < aiMesh.mNumVertices; i++) {
@@ -106,6 +109,11 @@ namespace rawrBox {
 				if (aiMesh.HasNormals()) {
 					auto& normal = aiMesh.mNormals[i];
 					v.normal = rawrBox::PackUtils::packNormal(normal.x, normal.y, normal.z);
+				}
+
+				if (aiMesh.HasTangentsAndBitangents()) {
+					auto& tangents = aiMesh.mTangents[i];
+					v.tangent = rawrBox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
 				}
 
 				data->vertices.push_back(v);

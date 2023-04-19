@@ -17,11 +17,14 @@ namespace rawrBox {
 	namespace ModelLoadFlags {
 		const uint32_t NONE = 0;
 		const uint32_t IMPORT_LIGHT = 1 << 1;
+		const uint32_t IMPORT_TEXTURES = 1 << 2;
+		const uint32_t IMPORT_ANIMATIONS = 1 << 3;
 	}; // namespace ModelLoadFlags
 
 	class ModelImported : public Model {
 		std::string _fileName;
 		std::unordered_map<std::string, std::shared_ptr<rawrBox::TextureBase>> _textures;
+		uint32_t _loadFlags;
 
 		void loadTexture(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::ModelMesh>& mesh);
 		void loadSubmeshes(const aiScene* sc, const aiNode* nd);

@@ -42,6 +42,8 @@ namespace cube {
 		virtual void update(float deltaTime, int64_t gameTime) override;
 		virtual void draw(const double alpha) override;
 
+		void loadContent();
+
 		void drawOverlay();
 		void drawWorld();
 	};

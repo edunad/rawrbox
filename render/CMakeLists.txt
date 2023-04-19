@@ -69,7 +69,11 @@ endif()
 # -----------------
 
 # Compile shaders
-set(PROFILES 300_es spirv s_4_0 s_5_0)
+if(LINUX)
+	set(PROFILES 300_es spirv)
+else()
+	set(PROFILES 300_es spirv s_4_0 s_5_0)
+endif()
 
 add_shaders_directory(./shaders RAWRBOX_SHADERS_TARGET_NAME)
 message("SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
