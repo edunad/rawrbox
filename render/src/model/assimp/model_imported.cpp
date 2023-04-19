@@ -1,5 +1,6 @@
 
 #include <rawrbox/render/model/assimp/model_imported.h>
+#include <rawrbox/render/model/light/directional.hpp>
 #include <rawrbox/render/model/light/manager.h>
 #include <rawrbox/render/model/light/point.hpp>
 #include <rawrbox/render/model/light/spot.hpp>
@@ -171,18 +172,19 @@ namespace rawrBox {
 
 			auto diffuse = rawrBox::Colori(static_cast<int>(aiLight.mColorDiffuse.r), static_cast<int>(aiLight.mColorDiffuse.g), static_cast<int>(aiLight.mColorDiffuse.b)).cast<float>();
 			auto ambient = rawrBox::Colori(static_cast<int>(aiLight.mColorAmbient.r), static_cast<int>(aiLight.mColorAmbient.g), static_cast<int>(aiLight.mColorAmbient.b)).cast<float>();
+			auto specular = rawrBox::Colori(static_cast<int>(aiLight.mColorSpecular.r), static_cast<int>(aiLight.mColorSpecular.g), static_cast<int>(aiLight.mColorSpecular.b)).cast<float>();
 
 			auto direction = rawrBox::Vector3f(aiLight.mDirection.x, aiLight.mDirection.y, aiLight.mDirection.z);
 
 			switch (aiLight.mType) {
-			/*case aiLightSource_DIRECTIONAL:
-				rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightSpot>(pos, diffuse, aiLight.mAngleInnerCone, aiLight.mAngleOuterCone, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
-				continue;*/
+			case aiLightSource_DIRECTIONAL:
+				rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightDirectional>(pos, direction, diffuse, specular));
+				continue;
 			case aiLightSource_SPOT:
-				rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightSpot>(pos, direction, diffuse, aiLight.mAngleInnerCone, aiLight.mAngleOuterCone, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
+				rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightSpot>(pos, direction, diffuse, specular, aiLight.mAngleInnerCone, aiLight.mAngleOuterCone, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
 				continue;
 			case aiLightSource_POINT:
-				rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightPoint>(pos, diffuse, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
+				rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightPoint>(pos, diffuse, specular, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
 				continue;
 			default:
 				continue;

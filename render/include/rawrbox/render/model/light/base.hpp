@@ -19,13 +19,15 @@ namespace rawrBox {
 
 		std::array<float, 16> _posMatrix;
 		rawrBox::Colorf _diffuse = rawrBox::Colors::White;
+		rawrBox::Colorf _specular = rawrBox::Colors::White;
+		rawrBox::Colorf _ambient = rawrBox::Colors::White;
 
 	public:
 		uint32_t indx;
 
 		virtual void setStatus(bool on) { this->_isOn = on; };
 
-		LightBase(std::array<float, 16> posMatrix, rawrBox::Colorf diffuse) : _posMatrix(posMatrix), _diffuse(diffuse){};
+		LightBase(std::array<float, 16> posMatrix, rawrBox::Colorf diffuse, rawrBox::Colorf specular) : _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
 		virtual ~LightBase() = default;
 
 		virtual std::array<float, 16>& getPosMatrix() { return this->_posMatrix; }

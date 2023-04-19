@@ -4,7 +4,7 @@ $input v_color0, v_texcoord0, v_fragPos0, v_fragPos1, v_normal, v_tangent, v_bit
 #include <../include/model_light.sh>
 
 SAMPLER2D(s_texColor, 0);
-SAMPLER2D(s_texSpecularColor, 0);
+SAMPLER2D(s_texSpecularColor, 1);
 
 uniform vec4 u_viewPos;
 uniform vec4 u_colorOffset;
@@ -12,8 +12,10 @@ uniform vec4 u_colorOffset;
 void main() {
 	//mat3 tbn = mtxFromCols(v_tangent, v_bitangent, v_normal);
 
+	vec4 specularColor = texture2D(s_texSpecularColor, v_texcoord0.xy) * v_color0 * u_colorOffset;
 	vec4 texColor = texture2D(s_texColor, v_texcoord0.xy) * v_color0 * u_colorOffset;
 	if (texColor.a <= 0.0) discard;
+
     vec3 viewDir = normalize( u_viewPos.xyz - v_fragPos0 );
 
 	if(u_lightsSetting.x != 1.0) {
@@ -30,14 +32,15 @@ void main() {
 
 			vec3 lightPos = mul(u_lightsPosition[i], vec4(v_fragPos0, 1.0)).xyz;
 			if(i <= totalPoint) { // POINT
-				ambient += calculatePointLight(lightPos, u_lightsData[i], v_fragPos0, viewDir, v_normal);
+				ambient += calculatePointLight(lightPos, u_lightsData[i], v_fragPos0, viewDir, v_normal, texColor, specularColor);
 			}else if(i > totalPoint && i <= totalPoint + totalSpot) { // SPOT
-				ambient += calculateSpotLight(lightPos, u_lightsData[i], v_fragPos0, viewDir, v_normal);
+				ambient += calculateSpotLight(lightPos, u_lightsData[i], v_fragPos0, viewDir, v_normal, texColor, specularColor);
 			}else if(i > totalPoint + totalSpot && i <= totalLights) { // DIR
-				//ambient += calculateDirLight(lightPos, u_lightsData[i], v_fragPos0, viewDir, v_normal);
+				ambient += calculateDirectionalLight(lightPos, u_lightsData[i], v_fragPos0, viewDir, v_normal, texColor, specularColor);
 			}
 		}
-		gl_FragColor = vec4(ambient, 1.0) * texColor;
+
+		gl_FragColor = vec4(ambient, 1.0);
 	} else {
 		gl_FragColor = texColor; // Full bright
 	}
