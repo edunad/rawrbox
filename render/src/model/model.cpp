@@ -34,6 +34,7 @@ namespace rawrBox {
 		RAWRBOX_DESTROY(this->_program);
 
 		RAWRBOX_DESTROY(this->_texColor);
+		RAWRBOX_DESTROY(this->_texSpecularColor);
 		RAWRBOX_DESTROY(this->_offsetColor);
 
 		RAWRBOX_DESTROY(this->_lightsSettings);
@@ -115,6 +116,8 @@ namespace rawrBox {
 		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, "fs_model");
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+		this->_texSpecularColor = bgfx::createUniform("s_texSpecularColor", bgfx::UniformType::Sampler);
+
 		this->_offsetColor = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 
 		this->_lightsSettings = bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4);
@@ -176,6 +179,7 @@ namespace rawrBox {
 		for (auto& mesh : this->_meshes) {
 			auto& data = mesh->getData();
 			if (data->texture != nullptr) bgfx::setTexture(0, this->_texColor, data->texture->getHandle());
+			if (data->specular_texture != nullptr) bgfx::setTexture(0, this->_texSpecularColor, data->specular_texture->getHandle());
 
 			float meshColor[4] = {data->color.r, data->color.g, data->color.b, data->color.a};
 			bgfx::setUniform(this->_offsetColor, meshColor);

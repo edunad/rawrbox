@@ -26,7 +26,9 @@ namespace rawrBox {
 		std::unordered_map<std::string, std::shared_ptr<rawrBox::TextureBase>> _textures;
 		uint32_t _loadFlags;
 
-		void loadTexture(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::ModelMesh>& mesh);
+		std::shared_ptr<rawrBox::TextureBase> importTexture(const std::string& path);
+		void loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::ModelMesh>& mesh);
+
 		void loadSubmeshes(const aiScene* sc, const aiNode* nd);
 		void loadLights(const aiScene* sc);
 

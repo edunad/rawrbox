@@ -35,6 +35,8 @@ namespace rawrBox {
 		uint16_t baseIndex = 0;
 
 		std::shared_ptr<rawrBox::TextureBase> texture = nullptr;
+		std::shared_ptr<rawrBox::TextureBase> specular_texture = nullptr;
+
 		std::vector<rawrBox::ModelVertexData> vertices = {};
 		std::vector<uint16_t> indices = {};
 
@@ -65,6 +67,7 @@ namespace rawrBox {
 
 		void setMatrix(const std::array<float, 16>& offset);
 		void setTexture(const std::shared_ptr<rawrBox::TextureBase>& ptr);
+		void setSpecularTexture(const std::shared_ptr<rawrBox::TextureBase>& ptr);
 		void setWireframe(bool wireframe);
 		void setColor(const rawrBox::Color& color);
 

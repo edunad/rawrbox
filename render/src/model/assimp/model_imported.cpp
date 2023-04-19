@@ -36,30 +36,47 @@ namespace rawrBox {
 		aiReleaseImport(scene);
 	}
 
-	void ModelImported::loadTexture(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::ModelMesh>& mesh) {
+	std::shared_ptr<rawrBox::TextureBase> ModelImported::importTexture(const std::string& path) {
+		auto textPath = std::filesystem::path(path);
+		auto base = std::filesystem::path(this->_fileName);
+
+		std::string finalPath = fmt::format("{}/{}", base.parent_path().generic_string(), textPath.generic_string());
+
+		auto fnd = this->_textures.find(finalPath);
+		if (fnd == this->_textures.end()) {
+			auto texture = std::make_shared<rawrBox::TextureImage>(finalPath);
+			texture->upload(bgfx::TextureFormat::Count);
+
+			this->_textures[finalPath] = std::move(texture);
+			return this->_textures[finalPath];
+		} else {
+			return fnd->second;
+		}
+	}
+
+	void ModelImported::loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::ModelMesh>& mesh) {
 		if (sc->mNumMaterials <= 0 || assimp.mMaterialIndex > sc->mNumMaterials) return;
 
 		const aiMaterial* pMaterial = sc->mMaterials[assimp.mMaterialIndex];
+		aiString matpath;
+
+		// TEXTURE DIFFUSE
 		if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
-			aiString matpath;
-
-			// TEXTURE
 			if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &matpath, nullptr, nullptr, nullptr, nullptr, nullptr) == AI_SUCCESS) {
-				auto textPath = std::filesystem::path(matpath.data);
-				auto base = std::filesystem::path(this->_fileName);
+				auto ptr = this->importTexture(matpath.data);
+				if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load diffuse texture '{}'", matpath.data));
 
-				std::string finalPath = fmt::format("{}/{}", base.parent_path().generic_string(), textPath.generic_string());
+				mesh->setTexture(ptr);
+			}
+		}
 
-				auto fnd = this->_textures.find(finalPath);
-				if (fnd == this->_textures.end()) {
-					auto texture = std::make_shared<rawrBox::TextureImage>(finalPath);
-					texture->upload(bgfx::TextureFormat::Count);
+		// TEXTURE SPECULAR
+		if (pMaterial->GetTextureCount(aiTextureType_SPECULAR) > 0) {
+			if (pMaterial->GetTexture(aiTextureType_SPECULAR, 0, &matpath, nullptr, nullptr, nullptr, nullptr, nullptr) == AI_SUCCESS) {
+				auto ptr = this->importTexture(matpath.data);
+				if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load specular texture '{}'", matpath.data));
 
-					mesh->setTexture(texture);
-					this->_textures[finalPath] = std::move(texture);
-				} else {
-					mesh->setTexture(fnd->second);
-				}
+				mesh->setSpecularTexture(ptr);
 			}
 		}
 	}
@@ -82,7 +99,7 @@ namespace rawrBox {
 
 			// Textures
 			if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
-				this->loadTexture(sc, aiMesh, mesh);
+				this->loadTextures(sc, aiMesh, mesh);
 			}
 
 			// Vertices

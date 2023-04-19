@@ -19,6 +19,8 @@ namespace rawrBox {
 		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;  // Indices
 
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _texSpecularColor = BGFX_INVALID_HANDLE;
+
 		bgfx::UniformHandle _offsetColor = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle _lightsSettings = BGFX_INVALID_HANDLE;

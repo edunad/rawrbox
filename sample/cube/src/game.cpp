@@ -89,7 +89,7 @@ namespace cube {
 
 		// Model ---
 		this->_model2 = std::make_shared<rawrBox::ModelImported>();
-		this->_model2->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_LIGHT);
+		this->_model2->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_LIGHT | rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
 		// this->_model2->setWireframe(true);
 		// -----
 

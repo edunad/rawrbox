@@ -4,6 +4,7 @@ $input v_color0, v_texcoord0, v_fragPos0, v_fragPos1, v_normal, v_tangent, v_bit
 #include <../include/model_light.sh>
 
 SAMPLER2D(s_texColor, 0);
+SAMPLER2D(s_texSpecularColor, 0);
 
 uniform vec4 u_viewPos;
 uniform vec4 u_colorOffset;

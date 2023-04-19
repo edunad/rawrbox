@@ -31,6 +31,10 @@ namespace rawrBox {
 		this->_data->texture = ptr;
 	}
 
+	void ModelMesh::setSpecularTexture(const std::shared_ptr<rawrBox::TextureBase>& ptr) {
+		this->_data->specular_texture = ptr;
+	}
+
 	void ModelMesh::setMatrix(const std::array<float, 16>& offset) {
 		this->_data->offsetMatrix = offset;
 	}
