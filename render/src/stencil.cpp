@@ -8,7 +8,7 @@
 #include <generated/shaders/render/all.h>
 #include <utf8.h>
 
-#define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA) | BGFX_STATE_CULL_CW)
+#define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
 
 static const bgfx::EmbeddedShader shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_stencil),
@@ -30,9 +30,6 @@ namespace rawrBox {
 		    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 		    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 		    .end();
-
-		this->_renderTexture = std::make_shared<rawrBox::TextureRender>(this->_viewId, this->_windowSize);
-		this->_pixelTexture = std::make_shared<rawrBox::TextureFlat>(rawrBox::Vector2i(1, 1), Colors::White);
 	}
 
 	Stencil::~Stencil() {
@@ -52,7 +49,8 @@ namespace rawrBox {
 		this->_vertices.clear();
 	}
 
-	void Stencil::initialize() {
+	void Stencil::upload() {
+		if (this->_renderTexture != nullptr || this->_pixelTexture != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
 		bgfx::RendererType::Enum type = bgfx::getRendererType();
 
 		// Load 2D --------
@@ -60,7 +58,7 @@ namespace rawrBox {
 		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, "fs_stencil");
 
 		this->_2dprogram = bgfx::createProgram(vsh, fsh, true);
-		if (!bgfx::isValid(this->_2dprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to initialize shader program");
+		if (!bgfx::isValid(this->_2dprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to upload '2d' shader program");
 		// ------------------
 
 		// Load Line ---------
@@ -68,7 +66,7 @@ namespace rawrBox {
 		fsh = bgfx::createEmbeddedShader(shaders, type, "fs_stencil_line_stipple");
 
 		this->_lineprogram = bgfx::createProgram(vsh, fsh, true);
-		if (!bgfx::isValid(this->_lineprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to initialize shader program");
+		if (!bgfx::isValid(this->_lineprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to upload 'line' shader program");
 		// --------------------
 
 		// Load Text ---------
@@ -76,11 +74,13 @@ namespace rawrBox {
 		fsh = bgfx::createEmbeddedShader(shaders, type, "fs_stencil_text");
 
 		this->_textprogram = bgfx::createProgram(vsh, fsh, true);
-		if (!bgfx::isValid(this->_textprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to initialize shader program");
+		if (!bgfx::isValid(this->_textprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to upload 'text' shader program");
 		// --------------------
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 
+		this->_renderTexture = std::make_shared<rawrBox::TextureRender>(this->_viewId, this->_windowSize);
+		this->_pixelTexture = std::make_shared<rawrBox::TextureFlat>(rawrBox::Vector2i(1, 1), Colors::White);
 		this->_renderTexture->upload();
 		this->_pixelTexture->upload();
 	}
@@ -319,25 +319,25 @@ namespace rawrBox {
 		rawrBox::Vector2f tsize = font->getStringSize(text);
 		if (alignX != TextAlignment::Left || alignY != TextAlignment::Left) {
 			switch (alignX) {
-			case TextAlignment::Left:
-				break;
-			case TextAlignment::Center:
-				startpos.x -= tsize.x / 2;
-				break;
-			case TextAlignment::Right:
-				startpos.x -= tsize.x;
-				break;
+				case TextAlignment::Left:
+					break;
+				case TextAlignment::Center:
+					startpos.x -= tsize.x / 2;
+					break;
+				case TextAlignment::Right:
+					startpos.x -= tsize.x;
+					break;
 			}
 
 			switch (alignY) {
-			case TextAlignment::Left:
-				break;
-			case TextAlignment::Center:
-				startpos.y -= tsize.y / 2;
-				break;
-			case TextAlignment::Right:
-				startpos.y -= tsize.y;
-				break;
+				case TextAlignment::Left:
+					break;
+				case TextAlignment::Center:
+					startpos.y -= tsize.y / 2;
+					break;
+				case TextAlignment::Right:
+					startpos.y -= tsize.y;
+					break;
 			}
 		}
 
@@ -432,6 +432,7 @@ namespace rawrBox {
 		// ----------------------
 
 		uint64_t flags = BGFX_STATE_DEFAULT_2D;
+		if (this->_cull) flags |= BGFX_STATE_CULL_CW;
 		if (this->_drawMode != 0) flags |= this->_drawMode;
 
 		bgfx::setState(flags, 0);
@@ -567,6 +568,8 @@ namespace rawrBox {
 	void Stencil::pushScale(const rawrBox::Vector2f& scale) {
 		this->_scales.push_back(scale);
 		this->_scale += scale;
+
+		this->_cull = this->_scale.x > 0 && this->_scale.y > 0;
 	}
 
 	void Stencil::popScale() {

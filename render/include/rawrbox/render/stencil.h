@@ -113,7 +113,9 @@ namespace rawrBox {
 
 		std::shared_ptr<rawrBox::TextureFlat> _pixelTexture;
 		std::shared_ptr<rawrBox::TextureRender> _renderTexture;
+
 		uint64_t _drawMode = 0;
+		bool _cull = true;
 
 		rawrBox::Vector2i _windowSize;
 
@@ -163,7 +165,7 @@ namespace rawrBox {
 		Stencil(bgfx::ViewId id, const rawrBox::Vector2i& size);
 		~Stencil();
 
-		void initialize();
+		void upload();
 		void resize(const rawrBox::Vector2i& size);
 
 		// ------ UTILS

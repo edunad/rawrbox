@@ -3,20 +3,24 @@
 #include <fmt/format.h>
 
 namespace rawrBox {
-	Renderer::~Renderer() { this->_stencil = nullptr; }
+	Renderer::~Renderer() {
+		this->_stencil = nullptr;
+	}
+
 	Renderer::Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size) {
 		this->_id = id;
 		this->_size = size;
 		this->_stencil = std::make_unique<rawrBox::Stencil>(id, size);
+
+		bgfx::setViewRect(this->_id, 0, 0, size.x, size.y);
+		bgfx::setViewMode(this->_id, bgfx::ViewMode::Sequential);
+		bgfx::setViewName(this->_id, fmt::format("RawrBox-RENDERER-{}", this->_id).c_str());
+		bgfx::setViewClear(this->_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_STENCIL | BGFX_CLEAR_DEPTH, this->_clearColor, 1.0f, 0);
 	}
 
-	void Renderer::initialize() {
-		bgfx::setViewRect(this->_id, 0, 0, bgfx::BackbufferRatio::Equal);
-		bgfx::setViewMode(this->_id, bgfx::ViewMode::Sequential);
-		bgfx::setViewClear(this->_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_STENCIL | BGFX_CLEAR_DEPTH, this->_clearColor, 1.0f, 0);
-		bgfx::setViewName(this->_id, fmt::format("RawrBox-RENDERER-{}", this->_id).c_str());
-
-		this->_stencil->initialize();
+	void Renderer::upload() {
+		if (this->_stencil == nullptr) throw std::runtime_error("[RawrBox-Renderer] Failed to upload, stencil is not initialized!");
+		this->_stencil->upload();
 	}
 
 	void Renderer::setClearColor(uint32_t clearColor) {
@@ -32,7 +36,7 @@ namespace rawrBox {
 
 	// ------RENDERING
 	void Renderer::swapBuffer() const {
-		bgfx::touch(this->_id); // This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0.
+		bgfx::touch(this->_id); // Make sure we draw on the view
 		bgfx::setViewClear(this->_id, BGFX_CLEAR_COLOR | BGFX_CLEAR_STENCIL | BGFX_CLEAR_DEPTH, this->_clearColor, 1.0f, 0);
 	}
 

@@ -5,93 +5,83 @@
 
 // Lighting
 uniform vec4 u_lightsSetting;
-uniform mat4 u_lightsPosition[MAX_LIGHTS];
+uniform vec4 u_lightsPosition[MAX_LIGHTS];
 uniform mat4 u_lightsData[MAX_LIGHTS];
 // -----
-
-// From https://github.com/SonarSystems/Modern-OpenGL-Tutorials/blob/master/%5BLIGHTING%5D/%5B14%5D%20Combining%20Directional%2C%20Point%20and%20Spot%20Lights/res/shaders/lighting.frag
-vec3 calculatePointLight(vec3 pos, mat4 lightData, vec3 fragPos, vec3 viewDir, vec3 vNormal, vec4 texColor, vec4 specularColor) {
-	vec3 lightDir = normalize(pos - fragPos);
+vec3 calculatePointLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, vec3 vNormal, vec4 texColor, vec4 specularColor) {
+	// Ambient
+	vec3 ambient = vec3(0.1, 0.1, 0.1);
+	vec3 lightDirection = normalize(pos - worldPos);
 
 	// Diffuse shading
-	float diff = max(dot(vNormal, lightDir), 0.0);
+	vec3 diffuse = vec3(lightData[0][0], lightData[0][1], lightData[0][2]) * max(dot(vNormal, lightDirection), 0.0);
 
 	// Specular shading
-	vec3 reflectDir = reflect(-lightDir, vNormal);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 1.0); // material.shininess
+	float shininess = 10.0; // material.shininess
+	vec3 reflectDir = reflect(-lightDirection, vNormal);
+	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(viewDir, reflectDir), 0.0), shininess);
 
-	// Attenuation
-	float distance = length(pos - fragPos);
+	// Spotlight power
+	float distance = length(pos - worldPos);
 	float light_constant = lightData[0][3];
 	float light_linear = lightData[1][3];
 	float light_quadratic = lightData[2][3];
-
 	float attenuation = 1.0f / (light_constant + light_linear * distance + light_quadratic * (distance * distance));
 
-	// Combine results
-	vec3 ambient = vec3(1, 1, 1);
-	vec3 diffuse = vec3(lightData[0][0], lightData[0][1], lightData[0][2]) * diff * texColor.rgb;
-	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * spec * specularColor.rgb;
+	vec3 dif = texColor.rgb * (diffuse.rgb * attenuation + ambient);
+	vec3 spec = specularColor.r * (specular.rgb * attenuation);
 
-	ambient *= attenuation;
-	diffuse *= attenuation;
-	specular *= attenuation;
-
-	return ambient + diffuse + specular;
+	return dif + spec;
 }
 
-vec3 calculateSpotLight(vec3 pos, mat4 lightData, vec3 fragPos, vec3 viewDir, vec3 vNormal, vec4 texColor, vec4 specularColor) {
-	vec3 dir = vec3(lightData[2][0], lightData[2][1], lightData[2][2]);
-	vec3 lightDir = normalize(pos - fragPos);
+vec3 calculateSpotLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, vec3 vNormal, vec4 texColor, vec4 specularColor) {
+	// Ambient
+	vec3 ambient = vec3(0.1, 0.1, 0.1);
+	vec3 lightDirection = normalize(pos - worldPos);
 
 	// Diffuse shading
-	float diff = max(dot(vNormal, lightDir), 0.0);
+	vec3 diffuse = vec3(lightData[0][0], lightData[0][1], lightData[0][2]) * max(dot(vNormal, lightDirection), 0.0);
 
 	// Specular shading
-	vec3 reflectDir = reflect(-lightDir, vNormal);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 1.0); // material.shininess
-
-	// Attenuation
-	float light_constant = lightData[0][3];
-	float light_linear = lightData[1][3];
-	float light_quadratic = lightData[2][3];
-
-	float distance = length(pos - fragPos);
-	float attenuation = 1.0f / (light_constant + light_linear * distance + light_quadratic * (distance * distance));
+	float shininess = 20.0; // material.shininess
+	vec3 reflectDir = reflect(-lightDirection, vNormal);
+	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(viewDir, reflectDir), 0.0), shininess);
 
 	// Spotlight intensity
-	float theta = dot(lightDir, normalize(-dir));
-	float epsilon = lightData[3][0] - lightData[3][1];
-	float intensity = clamp((theta - lightData[3][1]) / epsilon, 0.0, 1.0);
+	float theta = dot(vec3(lightData[2][0], lightData[2][1], lightData[2][2]), -lightDirection);
+	float intensity = clamp((theta - lightData[3][1]) / (lightData[3][2] - lightData[3][1]), 0.0f, 1.0f);
 
-	// Combine results
-	vec3 ambient = vec3(1, 1, 1);
-	vec3 diffuse = vec3(lightData[0][0], lightData[0][1], lightData[0][2]) * diff * texColor.rgb;
-	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * spec * specularColor.rgb;
+	// Spotlight power
+	float distance = length(pos - worldPos);
+	float light_constant = lightData[0][3];
+	float light_linear = lightData[1][3];
+	float light_quadratic = lightData[2][3];
+	float attenuation = 1.0f / (light_constant + light_linear * distance + light_quadratic * (distance * distance));
 
-	ambient *= attenuation * intensity;
-	diffuse *= attenuation * intensity;
-	specular *= attenuation * intensity;
+	vec3 dif = texColor.rgb * (diffuse.rgb * intensity * attenuation + ambient);
+	vec3 spec = specularColor.r * (specular.rgb * intensity * attenuation);
 
-	return ambient + diffuse + specular;
+	return dif + spec;
 }
 
-vec3 calculateDirectionalLight(vec3 pos, mat4 lightData, vec3 fragPos, vec3 viewDir, vec3 vNormal, vec4 texColor, vec4 specularColor) {
-	vec3 dir = vec3(lightData[2][0], lightData[2][1], lightData[2][2]);
-	vec3 lightDir = normalize(-pos);
+vec3 calculateDirectionalLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, vec3 vNormal, vec4 texColor, vec4 specularColor) {
+
+	// Ambient
+	vec3 ambient = vec3(0.1, 0.1, 0.1);
 
 	// Diffuse shading
-	float diff = max(dot(vNormal, lightDir), 0.0);
+	vec3 lightDirection = normalize(vec3(lightData[2][0], lightData[2][1], lightData[2][2]));
+	vec3 diffuse = vec3(lightData[0][0], lightData[0][1], lightData[0][2]) * max(dot(vNormal, lightDirection), 0.0f);
 
-	// Specular shading
-	vec3 reflectDir = reflect(-lightDir, vNormal);
-	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 1.0); // material.shininess
+	// specular lighting
+	float shininess = 20.0; // material.shininess
+	vec3 reflectionDirection = reflect(-lightDirection, vNormal);
+	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(viewDir, reflectionDirection), 0.0f), shininess);
 
-	// Combine results
-	vec3 ambient = vec3(1, 1, 1);
-	vec3 diffuse = vec3(lightData[0][0], lightData[0][1], lightData[0][2]) * diff * texColor.rgb;
-	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * spec * specularColor.rgb;
+	vec3 dif = texColor.rgb * (diffuse.rgb + ambient);
+	vec3 spec = specularColor.r * specular.rgb;
 
-	return ambient + diffuse + specular;
+	return dif + spec;
 }
+
 #endif

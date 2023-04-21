@@ -12,7 +12,7 @@ namespace rawrBox {
 		const bgfx::Memory* _pixels;
 
 	public:
-		TextureFlat(const rawrBox::Vector2i& initsize, const rawrBox::Color& bgcol = Colors::Transparent);
+		TextureFlat(const rawrBox::Vector2i& initsize, const rawrBox::Color& bgcol = rawrBox::Colors::White);
 
 		// ------RENDER
 		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;

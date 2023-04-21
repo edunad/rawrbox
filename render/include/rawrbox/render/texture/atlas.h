@@ -9,13 +9,6 @@
 #include <optional>
 
 namespace rawrBox {
-	struct Sprite {
-		int x;
-		int y;
-		int width;
-		int height;
-	};
-
 	struct AtlasNode {
 		int x;
 		int y;

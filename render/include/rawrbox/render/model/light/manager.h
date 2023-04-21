@@ -1,24 +1,44 @@
 #pragma once
 
 #include <rawrbox/render/model/light/base.hpp>
+#include <rawrbox/render/model/sprite.h>
+#include <rawrbox/render/texture/image.h>
 
 #include <memory>
 
 namespace rawrBox {
+
 	class LightManager {
+	protected:
 		std::vector<std::shared_ptr<rawrBox::LightBase>> _lights;
 
+		std::shared_ptr<rawrBox::TextureImage> _pointTexture;
+		std::shared_ptr<rawrBox::TextureImage> _spotTexture;
+		std::shared_ptr<rawrBox::TextureImage> _dirTexture;
+
+		std::shared_ptr<rawrBox::Sprite> _debugMdl;
+
 	public:
-		static bool FULLBRIGHT;
+		bool fullbright = false;
+		int32_t maxLights;
+
+		virtual void init(int32_t maxLights = 8);
+		virtual void destroy();
+
+		virtual void setEnabled(bool fb);
 
 		// Light utils ----
-		void addLight(const std::shared_ptr<rawrBox::LightBase>& light);
-		void removeLight(size_t indx);
-		std::shared_ptr<rawrBox::LightBase> getLight(size_t indx);
+		virtual void addLight(const std::shared_ptr<rawrBox::LightBase>& light);
+		virtual void removeLight(const std::shared_ptr<rawrBox::LightBase>& light);
+		virtual std::shared_ptr<rawrBox::LightBase> getLight(size_t indx);
+
+		virtual size_t count();
 		// ---------
 
-		void clear();
-		size_t count();
+		// DEBUG ----
+		virtual void uploadDebug();
+		virtual void drawDebug(const rawrBox::Vector3f& camPos);
+		// ---
 
 		static LightManager& getInstance() {
 			static LightManager i;

@@ -15,14 +15,12 @@ uniform vec2 u_dithering_depth;
 uniform vec2 u_dithering_color_depth;
 uniform vec2 u_dithering_threshold;
 
-uniform vec2 u_dithering_fastMode;
-
 void main() {
 	vec4 col = texture2D(s_texColor, v_texcoord0.xy);
 	if (col.a <= 0.0) discard;
 
 	float luma = LinearRgbToLuminance(col.rgb);
-	if(u_dithering_fastMode.x == 1.0) {
+	if(u_dither_size.x == 0.0) { // FAST MODE
 		vec4 ditherTex = texture2D(s_ditherColor, vec2(v_texcoord0.x, v_texcoord0.y) * u_dither_size.x * u_viewRect.z);
 		float dither = (ditherTex.a - 0.5) * 2.0 / u_dithering_threshold.x;
 

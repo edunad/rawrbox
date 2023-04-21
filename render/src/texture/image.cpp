@@ -5,9 +5,9 @@
 #define STBI_ONLY_PNG
 #define STBI_ONLY_JPEG
 #define STBI_ONLY_BMP
-#include <stb/image.hpp>
-
 #include <fmt/format.h>
+
+#include <stb/image.hpp>
 
 namespace rawrBox {
 	TextureImage::TextureImage(const std::string& fileName) {
@@ -63,16 +63,22 @@ namespace rawrBox {
 	void TextureImage::upload(bgfx::TextureFormat::Enum format) {
 		if (bgfx::isValid(this->_handle)) return; // Already bound
 
+		// Try to determine
 		if (format == bgfx::TextureFormat::Count) {
-			// Try to determine
-			switch (this->_channels) { // TODO: Handle different texture formats
-			case 3:
-				format = bgfx::TextureFormat::RGB8;
-				break;
-			default:
-			case 4:
-				format = bgfx::TextureFormat::RGBA8;
-				break;
+			switch (this->_channels) {
+				case 1:
+					format = bgfx::TextureFormat::R8;
+					break;
+				case 2:
+					format = bgfx::TextureFormat::RG8;
+					break;
+				case 3:
+					format = bgfx::TextureFormat::RGB8;
+					break;
+				default:
+				case 4:
+					format = bgfx::TextureFormat::RGBA8;
+					break;
 			}
 		}
 

@@ -27,3 +27,6 @@ IncludeCategories:
 IncludeBlocks: Regroup
 DerivePointerAlignment: true
 PointerAlignment: Left
+AllowShortCaseLabelsOnASingleLine: true
+IndentCaseBlocks: true
+IndentCaseLabels: true

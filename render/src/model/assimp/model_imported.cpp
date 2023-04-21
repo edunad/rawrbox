@@ -22,9 +22,14 @@ namespace rawrBox {
 	// LOADING -----
 	void ModelImported::load(const std::string& path, uint32_t loadFlags, uint32_t assimpFlags) {
 		const aiScene* scene = aiImportFile(path.c_str(), assimpFlags);
-		if (scene == nullptr) throw std::runtime_error(fmt::format("[Resources] Content 'model' error: {}: '{}'\n", path, aiGetErrorString()));
+
+		if (scene == nullptr) {
+			auto aaaaaa = aiGetErrorString(); // Because vscode doesn't print the error bellow
+			throw std::runtime_error(fmt::format("[Resources] Content 'model' error: {}: '{}'\n", path, aaaaaa));
+		}
 
 		this->_meshes.clear(); // Clear old meshes
+
 		this->_fileName = path;
 		this->_cull = BGFX_STATE_CULL_CCW;
 		this->_loadFlags = loadFlags;
@@ -55,7 +60,7 @@ namespace rawrBox {
 		}
 	}
 
-	void ModelImported::loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::ModelMesh>& mesh) {
+	void ModelImported::loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::Mesh<rawrBox::ModelVertexData>>& mesh) {
 		if (sc->mNumMaterials <= 0 || assimp.mMaterialIndex > sc->mNumMaterials) return;
 
 		const aiMaterial* pMaterial = sc->mMaterials[assimp.mMaterialIndex];
@@ -84,15 +89,14 @@ namespace rawrBox {
 
 	void ModelImported::loadSubmeshes(const aiScene* sc, const aiNode* nd) {
 		for (size_t n = 0; n < nd->mNumMeshes; ++n) {
-			auto mesh = std::make_shared<rawrBox::ModelMesh>();
+			auto& aiMesh = *sc->mMeshes[nd->mMeshes[n]];
+			auto mesh = std::make_shared<rawrBox::Mesh<rawrBox::ModelVertexData>>();
 
 			auto& data = mesh->getData();
 			auto& vertices = mesh->getVertices();
 			auto& indices = mesh->getIndices();
 
 			bx::mtxTranspose(data->offsetMatrix.data(), &nd->mTransformation.a1);
-
-			auto& aiMesh = *sc->mMeshes[nd->mMeshes[n]];
 			mesh->setName(aiMesh.mName.data);
 
 			data->baseVertex = static_cast<uint16_t>(data->vertices.size());
@@ -163,12 +167,18 @@ namespace rawrBox {
 			auto lightNode = sc->mRootNode->FindNode(aiLight.mName.data);
 			if (lightNode == nullptr) continue;
 
-			std::array<float, 4> offset = {
-			    aiLight.mPosition.x, aiLight.mPosition.y, aiLight.mPosition.z, 0};
+			rawrBox::Vector3f pos;
+			aiVector3D p;
+			aiQuaternion q;
 
-			std::array<float, 16> pos;
-			bx::mtxTranspose(pos.data(), &lightNode->mTransformation.a1);
-			bx::vec4MulMtx(pos.data(), offset.data(), pos.data());
+			lightNode->mTransformation.DecomposeNoScaling(q, p);
+			pos = {aiLight.mPosition.x + p.x, aiLight.mPosition.y + p.y, aiLight.mPosition.z + p.z};
+
+			auto parent = lightNode->mParent;
+			if (parent != nullptr) {
+				parent->mTransformation.DecomposeNoScaling(q, p);
+				pos += {p.x, p.y, p.z};
+			}
 
 			auto diffuse = rawrBox::Colori(static_cast<int>(aiLight.mColorDiffuse.r), static_cast<int>(aiLight.mColorDiffuse.g), static_cast<int>(aiLight.mColorDiffuse.b)).cast<float>();
 			auto ambient = rawrBox::Colori(static_cast<int>(aiLight.mColorAmbient.r), static_cast<int>(aiLight.mColorAmbient.g), static_cast<int>(aiLight.mColorAmbient.b)).cast<float>();
@@ -177,17 +187,17 @@ namespace rawrBox {
 			auto direction = rawrBox::Vector3f(aiLight.mDirection.x, aiLight.mDirection.y, aiLight.mDirection.z);
 
 			switch (aiLight.mType) {
-			case aiLightSource_DIRECTIONAL:
-				rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightDirectional>(pos, direction, diffuse, specular));
-				continue;
-			case aiLightSource_SPOT:
-				rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightSpot>(pos, direction, diffuse, specular, aiLight.mAngleInnerCone, aiLight.mAngleOuterCone, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
-				continue;
-			case aiLightSource_POINT:
-				rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightPoint>(pos, diffuse, specular, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
-				continue;
-			default:
-				continue;
+				case aiLightSource_DIRECTIONAL:
+					rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightDirectional>(pos, direction, diffuse, specular));
+					continue;
+				case aiLightSource_SPOT:
+					rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightSpot>(pos, direction, diffuse, specular, aiLight.mAngleInnerCone, aiLight.mAngleOuterCone, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
+					continue;
+				case aiLightSource_POINT:
+					rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightPoint>(pos, diffuse, specular, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
+					continue;
+				default:
+					continue;
 			}
 		}
 	}

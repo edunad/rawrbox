@@ -3,8 +3,9 @@
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/stencil.h>
 
-#include <memory>
 #include <bgfx/bgfx.h>
+
+#include <memory>
 
 namespace rawrBox {
 	class Renderer {
@@ -21,7 +22,7 @@ namespace rawrBox {
 		~Renderer();
 		Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size);
 
-		void initialize();
+		void upload();
 		void setClearColor(uint32_t clearColor);
 		void resizeView(const rawrBox::Vector2i& size);
 		void clear();
