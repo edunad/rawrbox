@@ -13,7 +13,7 @@
 #include <memory>
 #include <unordered_map>
 
-static const bgfx::EmbeddedShader shaders[] = {
+static const bgfx::EmbeddedShader dither_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_post_dither),
     BGFX_EMBEDDED_SHADER(fs_post_dither),
     BGFX_EMBEDDED_SHADER_END()};
@@ -30,20 +30,27 @@ namespace rawrBox {
 
 	class PostProcessPSXDither : public rawrBox::PostProcessBase {
 		std::unordered_map<DITHER_SIZE, std::shared_ptr<rawrBox::TextureImage>> _textures;
-		DITHER_SIZE _size = DITHER_SIZE::_SLOW_MODE;
 
 		bgfx::ProgramHandle _program = BGFX_INVALID_HANDLE;
-
 		bgfx::UniformHandle _ditherColor = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle _dither_size = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _dither_color_depth = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle _dither_dithering = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _dithering_intensity = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _dithering_depth = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _dither_threshold = BGFX_INVALID_HANDLE;
 
 	protected:
+		DITHER_SIZE _size = DITHER_SIZE::_SLOW_MODE;
+
+		// Settings ----
+		float _dithering = 0.5f;
+		float _intensity = 10.0f;
+		float _depth = 5.0f;
+		float _colorDepth = 5.0f;
+		float _threshold = 1.0f;
+		// ---
+
 	public:
 		~PostProcessPSXDither() {
 			this->_textures.clear();
@@ -54,7 +61,6 @@ namespace rawrBox {
 
 			RAWRBOX_DESTROY(this->_dither_size);
 			RAWRBOX_DESTROY(this->_dither_color_depth);
-			RAWRBOX_DESTROY(this->_dither_dithering);
 			RAWRBOX_DESTROY(this->_dithering_intensity);
 			RAWRBOX_DESTROY(this->_dithering_depth);
 			RAWRBOX_DESTROY(this->_dither_threshold);
@@ -71,6 +77,26 @@ namespace rawrBox {
 			}
 		}
 
+		virtual void setIntensity(float in) {
+			this->_intensity = in;
+			if (bgfx::isValid(this->_dithering_intensity)) rawrBox::UniformUtils::setUniform(this->_dithering_intensity, this->_intensity * 0.01f);
+		}
+
+		virtual void setDepth(float dep) {
+			this->_depth = dep;
+			if (bgfx::isValid(this->_dithering_depth)) rawrBox::UniformUtils::setUniform(this->_dithering_depth, this->_depth);
+		}
+
+		virtual void setColorDepth(float dep) {
+			this->_colorDepth = dep;
+			if (bgfx::isValid(this->_dither_color_depth)) rawrBox::UniformUtils::setUniform(this->_dither_color_depth, std::pow(this->_colorDepth, 2));
+		}
+
+		virtual void setThreshold(float th) {
+			this->_threshold = th;
+			if (bgfx::isValid(this->_dither_threshold)) rawrBox::UniformUtils::setUniform(this->_dither_threshold, this->_threshold);
+		}
+
 		virtual void upload() override {
 			bool fastMode = this->_size != DITHER_SIZE::_SLOW_MODE;
 			if (fastMode) {
@@ -82,28 +108,27 @@ namespace rawrBox {
 
 			// Load Shader --------
 			bgfx::RendererType::Enum type = bgfx::getRendererType();
-			bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, "vs_post_dither");
-			bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, "fs_post_dither");
+			bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(dither_shaders, type, "vs_post_dither");
+			bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(dither_shaders, type, "fs_post_dither");
 
 			this->_program = bgfx::createProgram(vsh, fsh, true);
 			if (!bgfx::isValid(this->_program)) throw std::runtime_error("[RawrBox-Dither] Failed to initialize shader program");
 			// ------------------
 
 			this->_ditherColor = bgfx::createUniform("s_ditherColor", bgfx::UniformType::Sampler);
-
 			this->_dither_size = bgfx::createUniform("u_dither_size", bgfx::UniformType::Vec4, 1);
-			this->_dither_dithering = bgfx::createUniform("u_dithering", bgfx::UniformType::Vec4, 1);
+
 			this->_dithering_intensity = bgfx::createUniform("u_dithering_intensity", bgfx::UniformType::Vec4, 1);
 			this->_dithering_depth = bgfx::createUniform("u_dithering_depth", bgfx::UniformType::Vec4, 1);
 			this->_dither_color_depth = bgfx::createUniform("u_dithering_color_depth", bgfx::UniformType::Vec4, 1);
 			this->_dither_threshold = bgfx::createUniform("u_dithering_threshold", bgfx::UniformType::Vec4, 1);
 
 			rawrBox::UniformUtils::setUniform(this->_dither_size, static_cast<float>(_size));
-			rawrBox::UniformUtils::setUniform(this->_dither_dithering, 0.5f);
-			rawrBox::UniformUtils::setUniform(this->_dithering_intensity, 10.0f * 0.01f);
-			rawrBox::UniformUtils::setUniform(this->_dithering_depth, 5.0f);
-			rawrBox::UniformUtils::setUniform(this->_dither_color_depth, std::pow(5.0f, 2));
-			rawrBox::UniformUtils::setUniform(this->_dither_threshold, 1.0f);
+
+			rawrBox::UniformUtils::setUniform(this->_dithering_intensity, this->_intensity * 0.01f);
+			rawrBox::UniformUtils::setUniform(this->_dithering_depth, this->_depth);
+			rawrBox::UniformUtils::setUniform(this->_dither_color_depth, std::pow(this->_colorDepth, 2));
+			rawrBox::UniformUtils::setUniform(this->_dither_threshold, this->_threshold);
 		}
 
 		virtual void applyEffect() override {

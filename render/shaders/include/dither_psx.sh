@@ -2,27 +2,11 @@
 #define INCLUDED_DITHER_PSX
 
 vec3 GetDither(vec2 pos, vec3 c, float intensity) {
-	mat4 DITHER_THRESHOLDS;
-
-	DITHER_THRESHOLDS[0][0] = -4.0;
-	DITHER_THRESHOLDS[0][1] = 0.0;
-	DITHER_THRESHOLDS[0][2] = -3.0;
-	DITHER_THRESHOLDS[0][3] = 1.0;
-
-	DITHER_THRESHOLDS[1][0] = 2.0;
-	DITHER_THRESHOLDS[1][1] = -2.0;
-	DITHER_THRESHOLDS[1][2] = 3.0;
-	DITHER_THRESHOLDS[1][3] = -1.0;
-
-	DITHER_THRESHOLDS[2][0] = -3.0;
-	DITHER_THRESHOLDS[2][1] = 1.0;
-	DITHER_THRESHOLDS[2][2] = -4.0;
-	DITHER_THRESHOLDS[2][3] = 0.0;
-
-	DITHER_THRESHOLDS[3][0] = 3.0;
-	DITHER_THRESHOLDS[3][1] = -1.0;
-	DITHER_THRESHOLDS[3][2] = 2.0;
-	DITHER_THRESHOLDS[3][3] = -2.0;
+	mat4 DITHER_THRESHOLDS = mat4(
+	    -4, 0, -3, 1,
+	    2, -2, 3, -1,
+	    -3, 1, -4, 0,
+	    3, -1, 2, -2);
 
 	int DITHER_COLORS = 256;
 	int index = (int(pos.x) & 3) * 4 + (int(pos.y) & 3);

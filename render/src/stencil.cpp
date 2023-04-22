@@ -10,7 +10,7 @@
 
 #define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
 
-static const bgfx::EmbeddedShader shaders[] = {
+static const bgfx::EmbeddedShader stencil_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_stencil),
     BGFX_EMBEDDED_SHADER(fs_stencil),
     BGFX_EMBEDDED_SHADER(fs_stencil_line_stipple),
@@ -54,24 +54,24 @@ namespace rawrBox {
 		bgfx::RendererType::Enum type = bgfx::getRendererType();
 
 		// Load 2D --------
-		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, "vs_stencil");
-		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, "fs_stencil");
+		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(stencil_shaders, type, "vs_stencil");
+		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(stencil_shaders, type, "fs_stencil");
 
 		this->_2dprogram = bgfx::createProgram(vsh, fsh, true);
 		if (!bgfx::isValid(this->_2dprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to upload '2d' shader program");
 		// ------------------
 
 		// Load Line ---------
-		vsh = bgfx::createEmbeddedShader(shaders, type, "vs_stencil_line_stipple");
-		fsh = bgfx::createEmbeddedShader(shaders, type, "fs_stencil_line_stipple");
+		vsh = bgfx::createEmbeddedShader(stencil_shaders, type, "vs_stencil_line_stipple");
+		fsh = bgfx::createEmbeddedShader(stencil_shaders, type, "fs_stencil_line_stipple");
 
 		this->_lineprogram = bgfx::createProgram(vsh, fsh, true);
 		if (!bgfx::isValid(this->_lineprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to upload 'line' shader program");
 		// --------------------
 
 		// Load Text ---------
-		vsh = bgfx::createEmbeddedShader(shaders, type, "vs_stencil_text");
-		fsh = bgfx::createEmbeddedShader(shaders, type, "fs_stencil_text");
+		vsh = bgfx::createEmbeddedShader(stencil_shaders, type, "vs_stencil_text");
+		fsh = bgfx::createEmbeddedShader(stencil_shaders, type, "fs_stencil_text");
 
 		this->_textprogram = bgfx::createProgram(vsh, fsh, true);
 		if (!bgfx::isValid(this->_textprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to upload 'text' shader program");
@@ -408,7 +408,7 @@ namespace rawrBox {
 
 	void Stencil::internalDraw() {
 		if (this->_vertices.empty() || this->_indices.empty()) return;
-		if ((this->_drawMode & BGFX_STATE_PT_LINES) == 0) bgfx::setTexture(0, this->_texColor, this->_textureHandle);
+		bgfx::setTexture(0, this->_texColor, this->_textureHandle);
 
 		/*
 		Setup buffer (Transient are destroyed every frame, made for things that change a lot) ----

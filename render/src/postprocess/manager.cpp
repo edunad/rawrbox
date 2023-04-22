@@ -7,7 +7,7 @@
 #include <fmt/format.h>
 #include <generated/shaders/render/all.h>
 
-static const bgfx::EmbeddedShader shaders[] = {
+static const bgfx::EmbeddedShader model_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_stencil_flat),
     BGFX_EMBEDDED_SHADER(fs_stencil_flat),
     BGFX_EMBEDDED_SHADER_END()};
@@ -103,8 +103,8 @@ namespace rawrBox {
 
 		// Load Shader --------
 		bgfx::RendererType::Enum type = bgfx::getRendererType();
-		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, "vs_stencil_flat");
-		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, "fs_stencil_flat");
+		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(model_shaders, type, "vs_stencil_flat");
+		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(model_shaders, type, "fs_stencil_flat");
 
 		this->_program = bgfx::createProgram(vsh, fsh, true);
 		if ((!bgfx::isValid(this->_program))) throw std::runtime_error("[RawrBox-Dither] Failed to initialize shader program");
@@ -151,7 +151,6 @@ namespace rawrBox {
 
 		// Draw final texture
 		bgfx::setTexture(0, this->_texColor, this->_finalHandle); // Pass our flatten render target
-		// bgfx::setState(BGFX_STATE_DEFAULT);
 		bgfx::setVertexBuffer(0, this->_vbh);
 		bgfx::setIndexBuffer(this->_ibh);
 		bgfx::submit(0, this->_program);

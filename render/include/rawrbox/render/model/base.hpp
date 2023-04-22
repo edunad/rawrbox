@@ -2,6 +2,7 @@
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/render/static.h>
 #include <rawrbox/render/texture/flat.h>
+#include <rawrbox/render/util/uniforms.hpp>
 
 #include <array>
 #include <memory>
@@ -18,9 +19,6 @@ namespace rawrBox {
 		bgfx::VertexBufferHandle _vbh = BGFX_INVALID_HANDLE; // Vertices
 		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;  // Indices
 
-		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
-
-		bgfx::UniformHandle _offsetColor = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _viewPos = BGFX_INVALID_HANDLE;
 
 		std::vector<std::shared_ptr<rawrBox::Mesh<T>>> _meshes;
@@ -59,18 +57,11 @@ namespace rawrBox {
 			RAWRBOX_DESTROY(this->_ibh);
 			RAWRBOX_DESTROY(this->_program);
 
-			RAWRBOX_DESTROY(this->_texColor);
-			RAWRBOX_DESTROY(this->_offsetColor);
 			RAWRBOX_DESTROY(this->_viewPos);
 
 			this->_meshes.clear();
 			this->_vertices.clear();
 			this->_indices.clear();
-		}
-
-		std::shared_ptr<rawrBox::TextureFlat>& defaultTexture() {
-			static std::shared_ptr<rawrBox::TextureFlat> defaultTexture;
-			return defaultTexture;
 		}
 
 		// UTIL ---
@@ -136,17 +127,9 @@ namespace rawrBox {
 			if (bgfx::isValid(this->_vbh) || bgfx::isValid(this->_ibh)) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
 			if (this->_vertices.empty() || this->_indices.empty()) throw std::runtime_error("[RawrBox-ModelBase] Vertices / Indices cannot be empty");
 
-			if (ModelBase::defaultTexture() == nullptr) {
-				ModelBase::defaultTexture() = std::make_shared<rawrBox::TextureFlat>(1);
-				ModelBase::defaultTexture()->upload();
-			}
-
 			this->_vbh = bgfx::createVertexBuffer(bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * this->_vLayout.m_stride), this->_vLayout);
 			this->_ibh = bgfx::createIndexBuffer(bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t)));
 			// -----------------
-
-			this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
-			this->_offsetColor = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 
 			this->_viewPos = bgfx::createUniform("u_viewPos", bgfx::UniformType::Vec4, 3);
 		}
@@ -155,6 +138,10 @@ namespace rawrBox {
 			if (!bgfx::isValid(this->_vbh) || !bgfx::isValid(this->_ibh)) {
 				throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not valid");
 			}
+
+			// Setup camera view pos ---
+			rawrBox::UniformUtils::setUniform(this->_viewPos, camPos);
+			// -----
 		}
 	};
 } // namespace rawrBox

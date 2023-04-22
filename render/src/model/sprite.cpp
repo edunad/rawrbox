@@ -10,7 +10,7 @@
 
 #define BGFX_STATE_DEFAULT_SPRITE (0 | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA) | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 
-static const bgfx::EmbeddedShader shaders[] = {
+static const bgfx::EmbeddedShader sprite_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_sprite),
     BGFX_EMBEDDED_SHADER(fs_sprite),
     BGFX_EMBEDDED_SHADER_END()};
@@ -26,7 +26,10 @@ namespace rawrBox {
 
 	Sprite::~Sprite() {
 		ModelBase::~ModelBase();
+
 		RAWRBOX_DESTROY(this->_spritePos);
+		RAWRBOX_DESTROY(this->_texColor);
+		RAWRBOX_DESTROY(this->_offsetColor);
 	}
 
 	void Sprite::upload() {
@@ -34,14 +37,17 @@ namespace rawrBox {
 
 		// Setup shader -----
 		bgfx::RendererType::Enum type = bgfx::getRendererType();
-		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, "vs_sprite");
-		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, "fs_sprite");
+		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(sprite_shaders, type, "vs_sprite");
+		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(sprite_shaders, type, "fs_sprite");
 
 		this->_program = bgfx::createProgram(vsh, fsh, true);
 		if (!bgfx::isValid(this->_program)) throw std::runtime_error("[RawrBox-Model] Failed to bind shader");
 		// -----------------
 
 		this->_spritePos = bgfx::createUniform("u_sprite_pos", bgfx::UniformType::Vec4); // ¯\_(ツ)_/¯ hate it
+
+		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+		this->_offsetColor = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 	}
 
 	void Sprite::draw(const rawrBox::Vector3f& camPos) {
@@ -49,10 +55,11 @@ namespace rawrBox {
 
 		for (auto& mesh : this->_meshes) {
 			auto& data = mesh->getData();
-			if (data->texture != nullptr && !data->wireframe) {
+
+			if (data->texture != nullptr && data->texture->valid() && !data->wireframe) {
 				bgfx::setTexture(0, this->_texColor, data->texture->getHandle());
 			} else {
-				bgfx::setTexture(0, this->_texColor, ModelBase::defaultTexture()->getHandle());
+				bgfx::setTexture(0, this->_texColor, rawrBox::MISSING_TEXTURE->getHandle());
 			}
 
 			UniformUtils::setUniform(this->_offsetColor, data->color);

@@ -19,14 +19,14 @@ vec3 calculatePointLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, 
 	// Specular shading
 	float shininess = 10.0; // material.shininess
 	vec3 reflectDir = reflect(-lightDirection, vNormal);
-	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(reflectDir, viewDir), 0.0), shininess);
 
 	// Spotlight power
 	float distance = length(pos - worldPos);
 	float light_constant = lightData[0][3];
 	float light_linear = lightData[1][3];
 	float light_quadratic = lightData[2][3];
-	float attenuation = 1.0f / (light_constant + light_linear * distance + light_quadratic * (distance * distance));
+	float attenuation = 1.0 / (light_constant + light_linear * distance + light_quadratic * distance * distance);
 
 	vec3 dif = texColor.rgb * (diffuse.rgb * attenuation + ambient);
 	vec3 spec = specularColor.r * (specular.rgb * attenuation);
@@ -45,7 +45,7 @@ vec3 calculateSpotLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, v
 	// Specular shading
 	float shininess = 20.0; // material.shininess
 	vec3 reflectDir = reflect(-lightDirection, vNormal);
-	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(viewDir, reflectDir), 0.0), shininess);
+	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(reflectDir, viewDir), 0.0), shininess);
 
 	// Spotlight intensity
 	float theta = dot(vec3(lightData[2][0], lightData[2][1], lightData[2][2]), -lightDirection);
@@ -56,7 +56,8 @@ vec3 calculateSpotLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, v
 	float light_constant = lightData[0][3];
 	float light_linear = lightData[1][3];
 	float light_quadratic = lightData[2][3];
-	float attenuation = 1.0f / (light_constant + light_linear * distance + light_quadratic * (distance * distance));
+
+	float attenuation = 1.0 / (light_constant + light_linear * distance + light_quadratic * distance * distance);
 
 	vec3 dif = texColor.rgb * (diffuse.rgb * intensity * attenuation + ambient);
 	vec3 spec = specularColor.r * (specular.rgb * intensity * attenuation);
@@ -76,7 +77,7 @@ vec3 calculateDirectionalLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 vie
 	// specular lighting
 	float shininess = 20.0; // material.shininess
 	vec3 reflectionDirection = reflect(-lightDirection, vNormal);
-	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(viewDir, reflectionDirection), 0.0f), shininess);
+	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(reflectionDirection, viewDir), 0.0f), shininess);
 
 	vec3 dif = texColor.rgb * (diffuse.rgb + ambient);
 	vec3 spec = specularColor.r * specular.rgb;

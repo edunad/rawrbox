@@ -9,7 +9,7 @@
 namespace rawrBox {
 	class TextureFlat : public TextureBase {
 	private:
-		const bgfx::Memory* _pixels;
+		std::vector<uint8_t> _pixels;
 
 	public:
 		TextureFlat(const rawrBox::Vector2i& initsize, const rawrBox::Color& bgcol = rawrBox::Colors::White);

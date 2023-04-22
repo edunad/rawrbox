@@ -27,7 +27,9 @@ namespace rawrBox {
 
 	class Model : public rawrBox::ModelBase<ModelVertexData> {
 	protected:
+		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _texSpecularColor = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _offsetColor = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle _lightsSettings = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _lightsPosition = BGFX_INVALID_HANDLE;

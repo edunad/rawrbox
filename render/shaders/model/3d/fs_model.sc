@@ -35,7 +35,6 @@ void main() {
 			}
 		}
 
-
 		gl_FragColor = vec4(ambient, 1.0);
 	} else {
 		gl_FragColor = texColor; // Full bright

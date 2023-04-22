@@ -9,7 +9,6 @@ SAMPLER2D(s_ditherColor, 1);
 
 uniform vec2 u_dither_size;
 
-uniform vec2 u_dithering;
 uniform vec2 u_dithering_intensity;
 uniform vec2 u_dithering_depth;
 uniform vec2 u_dithering_color_depth;
@@ -20,13 +19,14 @@ void main() {
 	if (col.a <= 0.0) discard;
 
 	float luma = LinearRgbToLuminance(col.rgb);
-	if(u_dither_size.x == 0.0) { // FAST MODE
-		vec4 ditherTex = texture2D(s_ditherColor, vec2(v_texcoord0.x, v_texcoord0.y) * u_dither_size.x * u_viewRect.z);
+
+	if(u_dither_size.x != 0.0) { // FAST MODE
+		vec4 ditherTex = texture2D(s_ditherColor, v_texcoord0.xy * u_dither_size.x * u_viewRect.zw);
 		float dither = (ditherTex.a - 0.5) * 2.0 / u_dithering_threshold.x;
 
-		col.rgb *= 1.0f + (luma < dither ? (1.0 - luma) * (1.0 - (u_dithering_color_depth.x / 24.0)) * u_dithering_intensity.x * 10.0 : 0.0) * u_dithering_depth.x * u_dithering.x;
+		col.rgb *= 1.0f + (luma < dither ? (1.0 - luma) * (1.0 - (u_dithering_color_depth.x / 24.0)) * u_dithering_intensity.x * 10.0 : 0.0) * (1.0 / u_dithering_depth.x);
 	} else {
-		col.rgb = GetDither(vec2(v_texcoord0.x, v_texcoord0.y) * u_viewRect.z, col.rgb, u_dithering_intensity.x * u_dithering_depth.x * u_dithering.x / 3.0);
+		col.rgb = GetDither(v_texcoord0.xy * u_viewRect.zw, col.rgb, u_dithering_intensity.x * u_dithering_depth.x * 1.0 / 3.0);
 	}
 
 	col.rgb = saturate(floor(col.rgb * u_dithering_color_depth.x) / u_dithering_color_depth.x);

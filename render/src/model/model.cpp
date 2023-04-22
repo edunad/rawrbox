@@ -9,7 +9,7 @@
 
 #define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA) | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL)
 
-static const bgfx::EmbeddedShader shaders[] = {
+static const bgfx::EmbeddedShader model_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_model),
     BGFX_EMBEDDED_SHADER(fs_model),
     BGFX_EMBEDDED_SHADER_END()};
@@ -27,7 +27,9 @@ namespace rawrBox {
 
 	Model::~Model() {
 		ModelBase::~ModelBase();
+		RAWRBOX_DESTROY(this->_texColor);
 		RAWRBOX_DESTROY(this->_texSpecularColor);
+		RAWRBOX_DESTROY(this->_offsetColor);
 	}
 
 	void Model::upload() {
@@ -35,9 +37,11 @@ namespace rawrBox {
 
 		// Setup shader -----
 		bgfx::RendererType::Enum type = bgfx::getRendererType();
-		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, "vs_model");
-		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, "fs_model");
+		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(model_shaders, type, "vs_model");
+		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(model_shaders, type, "fs_model");
 
+		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+		this->_offsetColor = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 		this->_texSpecularColor = bgfx::createUniform("s_texSpecularColor", bgfx::UniformType::Sampler);
 
 		this->_lightsSettings = bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4, 2);
@@ -78,23 +82,22 @@ namespace rawrBox {
 
 	void Model::draw(const rawrBox::Vector3f& camPos) {
 		ModelBase::draw(camPos);
-
-		// Set camera --
-		float cam[3] = {camPos.x, camPos.y, camPos.z};
-		bgfx::setUniform(this->_viewPos, cam, 3);
-		// ----------
-
 		this->processLights();
 
 		for (auto& mesh : this->_meshes) {
 			auto& data = mesh->getData();
-			if (data->texture != nullptr && !data->wireframe) {
+
+			if (data->texture != nullptr && !data->wireframe && data->texture->valid()) {
 				bgfx::setTexture(0, this->_texColor, data->texture->getHandle());
 			} else {
-				bgfx::setTexture(0, this->_texColor, Model::defaultTexture()->getHandle());
+				bgfx::setTexture(0, this->_texColor, rawrBox::MISSING_TEXTURE->getHandle());
 			}
 
-			if (data->specular_texture != nullptr) bgfx::setTexture(1, this->_texSpecularColor, data->specular_texture->getHandle());
+			if (data->specular_texture != nullptr && data->specular_texture->valid()) {
+				bgfx::setTexture(1, this->_texSpecularColor, data->specular_texture->getHandle());
+			} else {
+				bgfx::setTexture(1, this->_texSpecularColor, rawrBox::MISSING_SPECULAR_TEXTURE->getHandle());
+			}
 
 			UniformUtils::setUniform(this->_offsetColor, data->color);
 

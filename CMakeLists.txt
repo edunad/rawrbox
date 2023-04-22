@@ -78,5 +78,5 @@ add_subdirectory ("render")
 #add_subdirectory ("ui")
 
 if(RAWRBOX_BUILD_SAMPLE)
-	add_subdirectory ("sample")
+	add_subdirectory ("samples")
 endif()

@@ -20,5 +20,6 @@ namespace rawrBox {
 
 		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) = 0;
 		virtual bgfx::TextureHandle& getHandle();
+		virtual bool valid();
 	};
 } // namespace rawrBox

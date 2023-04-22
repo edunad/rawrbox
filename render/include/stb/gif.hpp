@@ -10,10 +10,10 @@
 #define STBI_ONLY_JPEG
 #define STBI_ONLY_BMP
 #define STBI_ONLY_GIF
+#define STBI_ONLY_TGA
 
 #include <stb/image.hpp>
 #include <stb/image_write.hpp>
-
 #include <stdexcept>
 #include <vector>
 

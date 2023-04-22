@@ -2,13 +2,13 @@
 #include <rawrbox/utils/math.hpp>
 #include <rawrbox/utils/time.h>
 
+#include <bgfx/bgfx.h>
 #include <fmt/format.h>
 
-#include <bgfx/bgfx.h>
 #include <stb/gif.hpp>
 
 namespace rawrBox {
-	TextureGIF::TextureGIF(const std::string& fileName) {
+	TextureGIF::TextureGIF(const std::string& fileName, bool useFallback) {
 		this->_frames.clear();
 
 		int frames_n = 0;
@@ -17,17 +17,22 @@ namespace rawrBox {
 		int* delays = nullptr;
 
 		// Need to find a way to not load it all to memory
-		auto gifPixels = stbi_xload(
-		    fileName.c_str(),
-		    &w,
-		    &h,
-		    &frames_n,
-		    &delays);
+		auto gifPixels = stbi_xload(fileName.c_str(), &w, &h, &frames_n, &delays);
+		if (gifPixels == nullptr) {
+			auto failure = stbi_failure_reason();
+
+			if (useFallback) {
+				this->_failedToLoad = true;
+				fmt::print("[TextureGIF] Error loading gif image '{}' | Error: {} --- > Using fallback image\n", fileName, failure);
+				return;
+			} else {
+				throw std::runtime_error(fmt::format("[TextureGIF] Error loading image: {}", failure));
+			}
+		}
 
 		this->_size = {w, h};
 
 		if (gifPixels == nullptr || delays == nullptr) throw std::runtime_error("Invalid image");
-
 		uint32_t framePixelCount = this->_size.x * this->_size.y * this->_channels;
 
 		for (int i = 0; i < frames_n; i++) {
@@ -53,7 +58,7 @@ namespace rawrBox {
 
 	// ------ANIMATION
 	void TextureGIF::step() {
-		if (!bgfx::isValid(this->_handle)) return; // Not bound
+		if (this->_failedToLoad || !bgfx::isValid(this->_handle)) return; // Not bound
 
 		if (!this->_loop && this->_currentFrame >= this->_frames.size() - 1) return;
 		if (this->_cooldown >= rawrBox::TimeUtils::curTime()) return;
@@ -65,7 +70,7 @@ namespace rawrBox {
 	}
 
 	void TextureGIF::reset() {
-		if (!bgfx::isValid(this->_handle)) return; // Not bound
+		if (this->_failedToLoad || !bgfx::isValid(this->_handle)) return; // Not bound
 
 		this->_cooldown = 0;
 		this->_currentFrame = 0;
@@ -81,13 +86,16 @@ namespace rawrBox {
 	void TextureGIF::setSpeed(float speed) {
 		this->_speed = speed;
 	}
+
+	void TextureGIF::setFlags(uint32_t flags) {
+		this->_flags = flags;
+	}
 	// --------------------
 
 	// ------RENDER
 	void TextureGIF::upload(bgfx::TextureFormat::Enum format) {
-		if (bgfx::isValid(this->_handle)) return; // Already bound
-		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 0, format,
-		    BGFX_SAMPLER_U_BORDER | BGFX_SAMPLER_V_BORDER | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT);
+		if (this->_failedToLoad || bgfx::isValid(this->_handle)) return; // Failed texture is already bound, so skip it
+		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 0, format, 0 | this->_flags);
 
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureGIF] Failed to bind texture");
 		bgfx::setName(this->_handle, fmt::format("RAWR-GIF-TEXTURE-{}", this->_handle.idx).c_str());

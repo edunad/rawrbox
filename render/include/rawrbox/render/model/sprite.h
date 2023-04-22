@@ -21,6 +21,8 @@ namespace rawrBox {
 
 	class Sprite : public rawrBox::ModelBase<SpriteVertexData> {
 		bgfx::UniformHandle _spritePos = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _offsetColor = BGFX_INVALID_HANDLE;
 
 	public:
 		Sprite();

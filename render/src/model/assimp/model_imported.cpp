@@ -85,6 +85,16 @@ namespace rawrBox {
 				mesh->setSpecularTexture(ptr);
 			}
 		}
+
+		// TEXTURE SPECULAR
+		/*if (pMaterial->GetTextureCount(aiTextureType_EMISSIVE) > 0) {
+			if (pMaterial->GetTexture(aiTextureType_EMISSIVE, 0, &matpath, nullptr, nullptr, nullptr, nullptr, nullptr) == AI_SUCCESS) {
+				auto ptr = this->importTexture(matpath.data);
+				if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load specular texture '{}'", matpath.data));
+
+				mesh->setSpecularTexture(ptr);
+			}
+		}*/
 	}
 
 	void ModelImported::loadSubmeshes(const aiScene* sc, const aiNode* nd) {
