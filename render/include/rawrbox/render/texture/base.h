@@ -15,7 +15,12 @@ namespace rawrBox {
 
 	public:
 		TextureBase() = default;
-		TextureBase(const TextureBase& t) = default;
+
+		TextureBase(TextureBase&&) = delete;
+		TextureBase& operator=(TextureBase&&) = delete;
+		TextureBase(const TextureBase&) = delete;
+		TextureBase& operator=(const TextureBase&) = delete;
+
 		virtual ~TextureBase();
 
 		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) = 0;

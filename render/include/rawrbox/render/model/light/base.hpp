@@ -28,6 +28,11 @@ namespace rawrBox {
 		virtual void setStatus(bool on) { this->_isOn = on; };
 
 		LightBase(rawrBox::Vector3f posMatrix, rawrBox::Colorf diffuse, rawrBox::Colorf specular) : _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
+		LightBase(LightBase&&) = delete;
+		LightBase& operator=(LightBase&&) = delete;
+		LightBase(const LightBase&) = delete;
+		LightBase& operator=(const LightBase&) = delete;
+
 		virtual ~LightBase() = default;
 
 		virtual rawrBox::Color& getSpecularColor() { return this->_specular; }

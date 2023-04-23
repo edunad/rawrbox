@@ -18,21 +18,16 @@
                 "query": "is:open"
             }
         ],
-        "terminal.integrated.persistentSessionReviveProcess": "never",
         "editor.bracketPairColorization.enabled": true,
         "terminal.integrated.gpuAcceleration": "on",
-        "output.smartScroll.enabled": false,
         "files.eol": "\n",
         "editor.formatOnSave": true,
-        "trailing-spaces.trimOnSave": true,
-        "editor.stickyScroll.enabled": true,
-        "C_Cpp.default.compilerArgs": ["-fexceptions"],
-        "markdown.validate.enabled": true,
-
-        "[json]": {
-            "editor.defaultFormatter": null
+        "[hlsl]": {
+            "editor.defaultFormatter": null,
+            "editor.formatOnSave": false
         },
-
+        "trailing-spaces.trimOnSave": true,
+        "C_Cpp.default.compilerArgs": ["-fexceptions"],
         "cmake.configureOnOpen": false,
         "cmake.autoSelectActiveFolder": false,
         "cmake.generator": "Ninja",
@@ -44,13 +39,14 @@
         },
         "C_Cpp.vcFormat.newLine.beforeCatch": false,
         "C_Cpp.vcFormat.newLine.beforeElse": false,
-        "C_Cpp.codeAnalysis.clangTidy.enabled": false,
+        "C_Cpp.codeAnalysis.clangTidy.enabled": true,
         "workbench.editor.pinnedTabSizing": "shrink",
         "workbench.editor.wrapTabs": true,
         "editor.detectIndentation": false,
         "editor.insertSpaces": false,
         "files.insertFinalNewline": true,
         "files.associations": {
+			"*.sc": "hlsl",
             "xstring": "cpp",
             "functional": "cpp",
             "map": "cpp",
@@ -160,8 +156,8 @@
                 "variable.global": "#ff60bf"
             }
         },
-        "debug.terminal.clearBeforeReusing": true,
-        "terminal.integrated.enablePersistentSessions": false
+
+        "debug.terminal.clearBeforeReusing": true
     },
     "extensions": {
         "recommendations": [
@@ -169,20 +165,7 @@
             "twxs.cmake",
             "ms-vscode.cmake-tools",
             "ibm.output-colorizer",
-            "geekidos.vdf",
             "shardulm94.trailing-spaces"
-        ]
-    },
-    "launch": {
-        "compounds": [
-            {
-                "name": "Test",
-                "configurations": [
-                    {
-                        "name": "Launch (Debug)"
-                    }
-                ]
-            }
         ]
     }
 }

@@ -12,12 +12,12 @@
 
 #include <memory>
 #include <unordered_map>
-
+// NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader dither_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_post_dither),
     BGFX_EMBEDDED_SHADER(fs_post_dither),
     BGFX_EMBEDDED_SHADER_END()};
-
+// NOLINTEND(*)
 namespace rawrBox {
 	enum DITHER_SIZE {
 		_SLOW_MODE = 0,
@@ -52,7 +52,7 @@ namespace rawrBox {
 		// ---
 
 	public:
-		~PostProcessPSXDither() {
+		~PostProcessPSXDither() override {
 			this->_textures.clear();
 
 			RAWRBOX_DESTROY(this->_program);
@@ -66,9 +66,12 @@ namespace rawrBox {
 			RAWRBOX_DESTROY(this->_dither_threshold);
 		}
 
-		PostProcessPSXDither(DITHER_SIZE dither = DITHER_SIZE::_SLOW_MODE) {
-			this->_size = dither;
+		PostProcessPSXDither(PostProcessPSXDither&&) = delete;
+		PostProcessPSXDither& operator=(PostProcessPSXDither&&) = delete;
+		PostProcessPSXDither(const PostProcessPSXDither&) = delete;
+		PostProcessPSXDither& operator=(const PostProcessPSXDither&) = delete;
 
+		PostProcessPSXDither(DITHER_SIZE dither = DITHER_SIZE::_SLOW_MODE) : _size(dither) {
 			if (dither != DITHER_SIZE::_SLOW_MODE) {
 				this->_textures[DITHER_SIZE::_2x2] = std::make_shared<rawrBox::TextureImage>("./content/textures/dither/2x2.png");
 				this->_textures[DITHER_SIZE::_3x3] = std::make_shared<rawrBox::TextureImage>("./content/textures/dither/3x3.png");
@@ -97,7 +100,7 @@ namespace rawrBox {
 			if (bgfx::isValid(this->_dither_threshold)) rawrBox::UniformUtils::setUniform(this->_dither_threshold, this->_threshold);
 		}
 
-		virtual void upload() override {
+		void upload() override {
 			bool fastMode = this->_size != DITHER_SIZE::_SLOW_MODE;
 			if (fastMode) {
 				for (auto t : this->_textures) {
@@ -131,7 +134,7 @@ namespace rawrBox {
 			rawrBox::UniformUtils::setUniform(this->_dither_threshold, this->_threshold);
 		}
 
-		virtual void applyEffect() override {
+		void applyEffect() override {
 			if (this->_size != DITHER_SIZE::_SLOW_MODE) bgfx::setTexture(1, this->_ditherColor, this->_textures[this->_size]->getHandle());
 			bgfx::submit(rawrBox::CURRENT_VIEW_ID, this->_program);
 		}

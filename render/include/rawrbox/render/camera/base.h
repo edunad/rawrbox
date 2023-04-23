@@ -17,8 +17,13 @@ namespace rawrBox {
 		virtual void update();
 
 	public:
-		CameraBase();
 		virtual ~CameraBase() = default;
+
+		CameraBase();
+		CameraBase(CameraBase&&) = delete;
+		CameraBase& operator=(CameraBase&&) = delete;
+		CameraBase(const CameraBase&) = delete;
+		CameraBase& operator=(const CameraBase&) = delete;
 
 		// UTILS -----
 		virtual void setPos(const rawrBox::Vector3f& pos);

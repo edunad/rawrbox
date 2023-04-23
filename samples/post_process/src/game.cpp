@@ -1,5 +1,6 @@
 
 #include <rawrbox/render/model/light/manager.h>
+#include <rawrbox/render/model/material/lit.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/render/postprocess/bloom.hpp>
 #include <rawrbox/render/postprocess/dither_psx.hpp>
@@ -84,10 +85,10 @@ namespace post_process {
 		this->_postProcess->upload();
 
 		// Assimp test ---
-		this->_model = std::make_shared<rawrBox::ModelImported>();
+		auto mat = std::make_shared<rawrBox::MaterialLit>();
+
+		this->_model = std::make_shared<rawrBox::ModelImported>(mat);
 		this->_model->load("./content/models/ps1_road/output.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
-		// this->_model->setWireframe(true);
-		this->_model->setFullbright(true);
 		this->_model->setScale({0.5f, 0.5f, 0.5f});
 		this->_model->upload();
 		// -----

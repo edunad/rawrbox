@@ -1,23 +1,25 @@
 
-#include <rawrbox/render/model/light/manager.h>
 #include <rawrbox/render/model/material/lit.hpp>
+#include <rawrbox/render/model/material/unlit.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/utils/keys.hpp>
 
-#include <assimp/game.h>
 #include <bx/bx.h>
 #include <bx/math.h>
+#include <model/game.h>
 
 #include <vector>
 
-namespace assimp {
+#include "rawrbox/render/window.h"
+
+namespace model {
 	void Game::init() {
 		int width = 1024;
 		int height = 768;
 
 		this->_window = std::make_unique<rawrBox::Window>();
 		this->_window->setMonitor(-1);
-		this->_window->setTitle("ASSIMP TEST");
+		this->_window->setTitle("SIMPLE MODEL TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
 		this->_window->onResize += [this](auto& w, auto& size) {
 			if (this->_render == nullptr) return;
@@ -52,14 +54,10 @@ namespace assimp {
 			this->_oldMousePos = mousePos;
 		};
 
-		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Window::WINDOWED);
+		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Debug::STATS | rawrBox::WindowFlags::Window::WINDOWED);
 
 		this->_render = std::make_shared<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
 		this->_render->setClearColor(0x000000FF);
-
-		// Initialize the global light manager, i don't like it being static tough..
-		rawrBox::LightManager::getInstance().init(10);
-		// ----
 
 		// Setup camera
 		this->_camera = std::make_shared<rawrBox::CameraPerspective>(static_cast<float>(width) / static_cast<float>(height), 60.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
@@ -75,36 +73,42 @@ namespace assimp {
 	void Game::loadContent() {
 		this->_render->upload();
 
-		// Assimp test ---
-		std::shared_ptr<rawrBox::MaterialLit> lit = std::make_shared<rawrBox::MaterialLit>();
+		// Textures ---
+		this->_texture = std::make_shared<rawrBox::TextureImage>("./content/textures/screem.png");
+		this->_texture->upload();
 
-		auto mat = std::make_shared<rawrBox::MaterialLit>();
+		this->_texture2 = std::make_shared<rawrBox::TextureGIF>("./content/textures/meow3.gif");
+		this->_texture2->upload();
 
-		this->_model = std::make_shared<rawrBox::ModelImported>(mat);
-		this->_model->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_LIGHT | rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
+		auto mat = std::make_shared<rawrBox::MaterialUnlit>();
+		this->_model = std::make_shared<rawrBox::Model>(mat);
+		// ----
+
+		{
+			auto mesh = rawrBox::ModelBase::generatePlane({5, 0, 0}, 0.5f, rawrBox::Colors::Yellow);
+			mesh->setTexture(this->_texture2);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrBox::ModelBase::generateCube({5, 0, 0}, 0.5f, rawrBox::Colors::White);
+			mesh->setTexture(this->_texture);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrBox::ModelBase::generateGrid(12, {0.f, -2.0f, 0.f});
+			this->_model->addMesh(mesh);
+		}
+
 		this->_model->upload();
-
-		this->_model2 = std::make_shared<rawrBox::ModelImported>(mat);
-		this->_model2->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
-		this->_model2->setPos({10, 0, 0});
-		this->_model2->upload();
-
-		this->_model3 = std::make_shared<rawrBox::ModelImported>(mat);
-		this->_model3->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx");
-		this->_model3->setPos({-10, 0, 0});
-		this->_model3->upload();
 		// -----
-
-		rawrBox::LightManager::getInstance().uploadDebug();
 	}
 
 	void Game::shutdown() {
 		this->_render = nullptr;
 		this->_model = nullptr;
-		this->_model2 = nullptr;
-		this->_model3 = nullptr;
 
-		rawrBox::LightManager::getInstance().destroy();
 		rawrBox::Engine::shutdown();
 	}
 
@@ -148,15 +152,15 @@ namespace assimp {
 			m_eye = bx::mad({right.x, right.y, right.z}, -deltaTime * m_moveSpeed, m_eye);
 			this->_camera->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
+
+		this->_texture2->step();
 	}
 
 	void Game::drawWorld() {
-		if (this->_model == nullptr || this->_model2 == nullptr || this->_model3 == nullptr) return;
-		auto pos = this->_camera->getPos();
+		bgfx::setViewTransform(rawrBox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		if (this->_model == nullptr) return;
 
-		this->_model->draw(pos);
-		this->_model2->draw(pos);
-		this->_model3->draw(pos);
+		this->_model->draw(this->_camera->getPos());
 	}
 
 	void Game::draw(const double alpha) {
@@ -164,11 +168,10 @@ namespace assimp {
 		this->_render->swapBuffer(); // Clean up and set renderer
 
 		bgfx::setViewTransform(rawrBox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-		bgfx::dbgTextPrintf(1, 1, 0x0f, "ASSIMP TESTS ----------------------------------------------------------------------------------------------------------------");
+		bgfx::dbgTextPrintf(1, 1, 0x0f, "MODEL TESTS -----------------------------------------------------------------------------------------------------------");
 
 		this->drawWorld();
 
-		rawrBox::LightManager::getInstance().drawDebug(this->_camera->getPos());
 		this->_render->render(); // Commit primitives
 	}
-} // namespace assimp
+} // namespace model

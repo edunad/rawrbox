@@ -4,17 +4,18 @@
 #include <rawrbox/render/static.h>
 #include <rawrbox/render/util/uniforms.hpp>
 
-// Compiled shaders
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
 #include <generated/shaders/render/all.h>
 
 #include <memory>
 
+// NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader bloom_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_post_bloom),
     BGFX_EMBEDDED_SHADER(fs_post_bloom),
     BGFX_EMBEDDED_SHADER_END()};
+// NOLINTEND(*)
 
 namespace rawrBox {
 	class PostProcessBloom : public rawrBox::PostProcessBase {
@@ -26,7 +27,12 @@ namespace rawrBox {
 
 	public:
 		PostProcessBloom() = default;
-		~PostProcessBloom() {
+		PostProcessBloom(PostProcessBloom&&) = delete;
+		PostProcessBloom& operator=(PostProcessBloom&&) = delete;
+		PostProcessBloom(const PostProcessBloom&) = delete;
+		PostProcessBloom& operator=(const PostProcessBloom&) = delete;
+
+		~PostProcessBloom() override {
 			RAWRBOX_DESTROY(this->_program);
 			RAWRBOX_DESTROY(this->_bloom_intensity);
 		}
@@ -36,7 +42,7 @@ namespace rawrBox {
 			if (bgfx::isValid(this->_bloom_intensity)) rawrBox::UniformUtils::setUniform(this->_bloom_intensity, this->_intensity);
 		}
 
-		virtual void upload() override {
+		void upload() override {
 			// Load Shader --------
 			bgfx::RendererType::Enum type = bgfx::getRendererType();
 			bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(bloom_shaders, type, "vs_post_bloom");
@@ -50,7 +56,7 @@ namespace rawrBox {
 			rawrBox::UniformUtils::setUniform(this->_bloom_intensity, this->_intensity);
 		}
 
-		virtual void applyEffect() override {
+		void applyEffect() override {
 			bgfx::submit(rawrBox::CURRENT_VIEW_ID, this->_program);
 		}
 	};

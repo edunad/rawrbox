@@ -13,7 +13,9 @@
 	}
 
 namespace rawrBox {
+	//NOLINTBEGIN{cppcoreguidelines-avoid-non-const-global-variables}
 	extern bgfx::ViewId CURRENT_VIEW_ID;
 	extern std::shared_ptr<rawrBox::TextureMissing> MISSING_TEXTURE;
 	extern std::shared_ptr<rawrBox::TextureFlat> MISSING_SPECULAR_TEXTURE;
+	//NOLINTEND{cppcoreguidelines-avoid-non-const-global-variables}
 } // namespace rawrBox

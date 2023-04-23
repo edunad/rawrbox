@@ -163,6 +163,11 @@ namespace rawrBox {
 		// --------------------
 	public:
 		Stencil(bgfx::ViewId id, const rawrBox::Vector2i& size);
+		Stencil(Stencil&&) = delete;
+		Stencil& operator=(Stencil&&) = delete;
+		Stencil(const Stencil&) = delete;
+		Stencil& operator=(const Stencil&) = delete;
+
 		~Stencil();
 
 		void upload();

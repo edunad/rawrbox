@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <stdexcept>
 
+// NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 namespace rawrBox {
 	ModelImported::~ModelImported() {
 		Model::~Model();
@@ -60,7 +61,7 @@ namespace rawrBox {
 		}
 	}
 
-	void ModelImported::loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::Mesh<rawrBox::ModelVertexData>>& mesh) {
+	void ModelImported::loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::Mesh>& mesh) {
 		if (sc->mNumMaterials <= 0 || assimp.mMaterialIndex > sc->mNumMaterials) return;
 
 		const aiMaterial* pMaterial = sc->mMaterials[assimp.mMaterialIndex];
@@ -100,16 +101,12 @@ namespace rawrBox {
 	void ModelImported::loadSubmeshes(const aiScene* sc, const aiNode* nd) {
 		for (size_t n = 0; n < nd->mNumMeshes; ++n) {
 			auto& aiMesh = *sc->mMeshes[nd->mMeshes[n]];
-			auto mesh = std::make_shared<rawrBox::Mesh<rawrBox::ModelVertexData>>();
-
-			auto& data = mesh->getData();
-			auto& vertices = mesh->getVertices();
-			auto& indices = mesh->getIndices();
+			auto mesh = std::make_shared<rawrBox::Mesh>();
 
 			mesh->setName(aiMesh.mName.data);
 
-			data->baseVertex = static_cast<uint16_t>(data->vertices.size());
-			data->baseIndex = static_cast<uint16_t>(data->indices.size());
+			mesh->baseVertex = static_cast<uint16_t>(mesh->vertices.size());
+			mesh->baseIndex = static_cast<uint16_t>(mesh->indices.size());
 
 			// Textures
 			if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
@@ -118,10 +115,11 @@ namespace rawrBox {
 
 			// Vertices
 			for (size_t i = 0; i < aiMesh.mNumVertices; i++) {
-				rawrBox::ModelVertexData v;
+				rawrBox::MeshVertexData v;
 
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
+
 					v.x = vert.x;
 					v.y = vert.y;
 					v.z = vert.z;
@@ -149,19 +147,19 @@ namespace rawrBox {
 					v.tangent = rawrBox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
 				}
 
-				data->vertices.push_back(v);
+				mesh->vertices.push_back(v);
 			}
 
 			// Indices
 			for (size_t t = 0; t < aiMesh.mNumFaces; ++t) {
 				auto& face = aiMesh.mFaces[t];
 				for (size_t i = 0; i < face.mNumIndices; i++) {
-					data->indices.push_back(static_cast<uint16_t>(data->vertices.size()) - static_cast<uint16_t>(face.mIndices[i]));
+					mesh->indices.push_back(static_cast<uint16_t>(mesh->vertices.size()) - static_cast<uint16_t>(face.mIndices[i]));
 				}
 			}
 
-			data->totalVertex = static_cast<uint16_t>(data->vertices.size());
-			data->totalIndex = static_cast<uint16_t>(data->indices.size());
+			mesh->totalVertex = static_cast<uint16_t>(mesh->vertices.size());
+			mesh->totalIndex = static_cast<uint16_t>(mesh->indices.size());
 
 			this->addMesh(mesh);
 		}
@@ -195,7 +193,7 @@ namespace rawrBox {
 			}
 
 			auto diffuse = rawrBox::Colori(static_cast<int>(aiLight.mColorDiffuse.r), static_cast<int>(aiLight.mColorDiffuse.g), static_cast<int>(aiLight.mColorDiffuse.b)).cast<float>();
-			auto ambient = rawrBox::Colori(static_cast<int>(aiLight.mColorAmbient.r), static_cast<int>(aiLight.mColorAmbient.g), static_cast<int>(aiLight.mColorAmbient.b)).cast<float>();
+			// auto ambient = rawrBox::Colori(static_cast<int>(aiLight.mColorAmbient.r), static_cast<int>(aiLight.mColorAmbient.g), static_cast<int>(aiLight.mColorAmbient.b)).cast<float>();
 			auto specular = rawrBox::Colori(static_cast<int>(aiLight.mColorSpecular.r), static_cast<int>(aiLight.mColorSpecular.g), static_cast<int>(aiLight.mColorSpecular.b)).cast<float>();
 
 			auto direction = rawrBox::Vector3f(aiLight.mDirection.x, aiLight.mDirection.y, aiLight.mDirection.z);
@@ -217,3 +215,5 @@ namespace rawrBox {
 	}
 	// ----------
 } // namespace rawrBox
+
+// NOLINTEND(cppcoreguidelines-pro-bounds-pointer-arithmetic)

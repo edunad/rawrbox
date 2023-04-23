@@ -12,8 +12,8 @@ namespace rawrBox {
 	public:
 		LightDirectional(rawrBox::Vector3f posMatrix, rawrBox::Vector3 dir, rawrBox::Colorf diffuse, rawrBox::Colorf specular) : rawrBox::LightBase(posMatrix, diffuse, specular), _direction(dir){};
 
-		virtual LightType getType() override { return LightType::LIGHT_DIR; };
-		virtual std::array<float, 16> getDataMatrix() override {
+		LightType getType() override { return LightType::LIGHT_DIR; };
+		std::array<float, 16> getDataMatrix() override {
 			return {
 			    this->_diffuse.r, this->_specular.r, this->_direction.x, static_cast<float>(this->getType()),
 			    this->_diffuse.g, this->_specular.g, this->_direction.y, 0,

@@ -2,21 +2,24 @@
 
 #include <rawrbox/render/camera/perspective.h>
 #include <rawrbox/render/engine.h>
-#include <rawrbox/render/model/assimp/model_imported.h>
+#include <rawrbox/render/model/model.h>
 #include <rawrbox/render/renderer.h>
+#include <rawrbox/render/texture/gif.h>
+#include <rawrbox/render/texture/image.h>
 #include <rawrbox/render/window.h>
 
 #include <memory>
 
-namespace assimp {
+namespace model {
 	class Game : public rawrBox::Engine {
 		std::unique_ptr<rawrBox::Window> _window;
 		std::shared_ptr<rawrBox::Renderer> _render;
 		std::shared_ptr<rawrBox::CameraPerspective> _camera;
 
-		std::shared_ptr<rawrBox::ModelImported> _model;
-		std::shared_ptr<rawrBox::ModelImported> _model2;
-		std::shared_ptr<rawrBox::ModelImported> _model3;
+		std::shared_ptr<rawrBox::TextureImage> _texture;
+		std::shared_ptr<rawrBox::TextureGIF> _texture2;
+
+		std::shared_ptr<rawrBox::Model> _model;
 
 		bool _rightClick = false;
 		rawrBox::Vector2i _oldMousePos = {};
@@ -33,4 +36,4 @@ namespace assimp {
 		void loadContent();
 		void drawWorld();
 	};
-} // namespace assimp
+} // namespace model

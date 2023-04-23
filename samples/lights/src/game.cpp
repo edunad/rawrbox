@@ -1,5 +1,6 @@
 
 #include <rawrbox/render/model/light/manager.h>
+#include <rawrbox/render/model/material/lit.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -8,6 +9,8 @@
 #include <light/game.h>
 
 #include <vector>
+
+#include "rawrbox/render/window.h"
 
 namespace light {
 	void Game::init() {
@@ -51,7 +54,7 @@ namespace light {
 			this->_oldMousePos = mousePos;
 		};
 
-		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Window::WINDOWED);
+		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Window::WINDOWED | rawrBox::WindowFlags::Debug::STATS);
 
 		this->_render = std::make_shared<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
 		this->_render->setClearColor(0x000000FF);
@@ -75,7 +78,7 @@ namespace light {
 		this->_render->upload();
 
 		// Assimp test ---
-		this->_model = std::make_shared<rawrBox::ModelImported>();
+		this->_model = std::make_shared<rawrBox::ModelImported>(std::make_shared<rawrBox::MaterialLit>());
 		this->_model->load("./content/models/light_test/test.fbx", rawrBox::ModelLoadFlags::IMPORT_LIGHT | rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
 		this->_model->upload();
 		// -----
@@ -147,7 +150,7 @@ namespace light {
 
 		this->drawWorld();
 
-		rawrBox::LightManager::getInstance().drawDebug(this->_camera->getPos());
+		// rawrBox::LightManager::getInstance().drawDebug(this->_camera->getPos());
 		this->_render->render(); // Commit primitives
 	}
 } // namespace light

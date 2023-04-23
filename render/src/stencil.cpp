@@ -10,6 +10,7 @@
 
 #define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
 
+// NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader stencil_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_stencil),
     BGFX_EMBEDDED_SHADER(fs_stencil),
@@ -18,12 +19,10 @@ static const bgfx::EmbeddedShader stencil_shaders[] = {
     BGFX_EMBEDDED_SHADER(fs_stencil_text),
     BGFX_EMBEDDED_SHADER(vs_stencil_text),
     BGFX_EMBEDDED_SHADER_END()};
+// NOLINTEND(*)
 
 namespace rawrBox {
-	Stencil::Stencil(bgfx::ViewId id, const rawrBox::Vector2i& size) {
-		this->_windowSize = size;
-		this->_viewId = id;
-
+	Stencil::Stencil(bgfx::ViewId id, const rawrBox::Vector2i& size) : _viewId(id), _windowSize(size) {
 		// Shader layout
 		this->_vLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)

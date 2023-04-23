@@ -14,11 +14,12 @@
 namespace rawrBox {
 
 	class TextEngine { // Not threadsafe, make one engine per thread
+		// NOLINTBEGIN{cppcoreguidelines-avoid-non-const-global-variables}
 		static uint32_t atlasID;
+		// NOLINTEND{cppcoreguidelines-avoid-non-const-global-variables}
 
 		std::vector<std::unique_ptr<rawrBox::Font>> _fonts;
 		std::map<uint32_t, std::unique_ptr<rawrBox::TextureAtlas>> _atlas;
-
 		void initialize();
 		void destroy();
 

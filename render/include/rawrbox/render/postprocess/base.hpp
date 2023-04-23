@@ -9,6 +9,11 @@ namespace rawrBox {
 	protected:
 	public:
 		PostProcessBase() = default;
+		PostProcessBase(PostProcessBase&&) = delete;
+		PostProcessBase& operator=(PostProcessBase&&) = delete;
+		PostProcessBase(const PostProcessBase&) = delete;
+		PostProcessBase& operator=(const PostProcessBase&) = delete;
+
 		virtual ~PostProcessBase() = default;
 
 		virtual void upload() = 0;

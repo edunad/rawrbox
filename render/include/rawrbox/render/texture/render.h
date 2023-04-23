@@ -7,7 +7,9 @@
 
 namespace rawrBox {
 	class TextureRender : public TextureBase {
+		// NOLINTBEGIN{cppcoreguidelines-avoid-non-const-global-variables}
 		static uint32_t renderID;
+		// NOLINTEND{cppcoreguidelines-avoid-non-const-global-variables}
 
 	private:
 		bgfx::FrameBufferHandle _renderView = BGFX_INVALID_HANDLE;
@@ -21,13 +23,19 @@ namespace rawrBox {
 
 	public:
 		TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size, bgfx::ViewId forcedId = 0);
-		~TextureRender();
+
+		TextureRender(TextureRender&&) = delete;
+		TextureRender& operator=(TextureRender&&) = delete;
+		TextureRender(const TextureRender&) = delete;
+		TextureRender& operator=(const TextureRender&) = delete;
+
+		~TextureRender() override;
 
 		// ------RENDER
 		virtual void startRecord();
 		virtual void stopRecord();
 
-		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
+		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
 		// --------------------
 
 		virtual const bgfx::ViewId id();

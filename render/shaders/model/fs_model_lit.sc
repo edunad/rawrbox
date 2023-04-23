@@ -1,7 +1,7 @@
 $input v_color0, v_texcoord0, v_wPos, v_normal, v_tangent, v_bitangent
 
 #include <bgfx_shader.sh>
-#include <../../include/model_light.sh>
+#include <../include/model_light.sh>
 
 SAMPLER2D(s_texColor, 0);
 SAMPLER2D(s_texSpecularColor, 1);

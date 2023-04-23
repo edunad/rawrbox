@@ -5,13 +5,15 @@
 
 #include <bgfx/platform.h>
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 
 struct GLFWwindow;
 namespace rawrBox {
 	// ------FLAGS
+
+	// NOLINTBEGIN{unused-const-variable}
 	namespace WindowFlags {
 		const uint32_t NONE = 0;
 
@@ -34,7 +36,9 @@ namespace rawrBox {
 			const uint32_t TEXT = 1 << 10;
 		}; // namespace Debug
 	};         // namespace WindowFlags
-		   // --------------------
+
+	// NOLINTEND{unused-const-variable}
+	//  --------------------
 
 	class Window;
 	// ------EVENTS
@@ -98,17 +102,22 @@ namespace rawrBox {
 
 		// ------UTILS
 		void close();
-		bool getShouldClose() const;
+		[[nodiscard]] bool getShouldClose() const;
 		void setShouldClose(bool close) const;
 
 		bool isRendererSupported(bgfx::RendererType::Enum render);
 
-		Vector2i getSize() const;
-		Vector2i getMousePos() const;
+		[[nodiscard]] Vector2i getSize() const;
+		[[nodiscard]] Vector2i getMousePos() const;
 
 		bool isKeyDown(int key);
 		// --------------------
 
 		~Window();
+		Window() = default;
+		Window(Window&&) = delete;
+		Window& operator=(Window&&) = delete;
+		Window(const Window&) = delete;
+		Window& operator=(const Window&) = delete;
 	};
 } // namespace rawrBox

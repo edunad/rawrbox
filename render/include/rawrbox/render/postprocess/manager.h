@@ -55,8 +55,13 @@ namespace rawrBox {
 		PostProcessManager(bgfx::ViewId view, const rawrBox::Vector2i& size);
 		~PostProcessManager();
 
+		PostProcessManager(PostProcessManager&&) = delete;
+		PostProcessManager& operator=(PostProcessManager&&) = delete;
+		PostProcessManager(const PostProcessManager&) = delete;
+		PostProcessManager& operator=(const PostProcessManager&) = delete;
+
 		// Process utils ----
-		void registerPostProcess(const std::shared_ptr<rawrBox::PostProcessBase>& post);
+		void registerPostProcess(std::shared_ptr<rawrBox::PostProcessBase> post);
 		void removePostProcess(size_t indx);
 		// ---------
 

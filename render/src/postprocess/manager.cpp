@@ -6,12 +6,12 @@
 #include <bx/bx.h>
 #include <fmt/format.h>
 #include <generated/shaders/render/all.h>
-
+// NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader model_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_stencil_flat),
     BGFX_EMBEDDED_SHADER(fs_stencil_flat),
     BGFX_EMBEDDED_SHADER_END()};
-
+// NOLINTEND(*)
 namespace rawrBox {
 	PostProcessManager::PostProcessManager(bgfx::ViewId view, const rawrBox::Vector2i& windowSize) {
 		this->_view = view;
@@ -41,7 +41,7 @@ namespace rawrBox {
 	}
 
 	// Post utils ----
-	void PostProcessManager::registerPostProcess(const std::shared_ptr<rawrBox::PostProcessBase>& post) {
+	void PostProcessManager::registerPostProcess(std::shared_ptr<rawrBox::PostProcessBase> post) {
 		this->_postProcesses.push_back(std::move(post));
 	}
 

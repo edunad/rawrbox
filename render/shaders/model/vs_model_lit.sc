@@ -2,7 +2,7 @@ $input a_position, a_normal, a_tangent, a_color0, a_texcoord0
 $output v_color0, v_texcoord0, v_wPos, v_normal, v_tangent, v_bitangent
 
 #include <bgfx_shader.sh>
-#include <../../include/model_psx.sh>
+#include <../include/model_psx.sh>
 
 void main() {
 	vec4 world = mul(u_model[0], vec4(a_position, 1.0) );
