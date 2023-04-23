@@ -41,8 +41,10 @@ namespace rawrBox {
 		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(model_shaders, type, "fs_model");
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
-		this->_offsetColor = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 		this->_texSpecularColor = bgfx::createUniform("s_texSpecularColor", bgfx::UniformType::Sampler);
+
+		this->_offsetColor = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
+		UniformUtils::setUniform(this->_offsetColor, rawrBox::Color(255, 255, 255, 255));
 
 		this->_lightsSettings = bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4, 2);
 		this->_lightsPosition = bgfx::createUniform("u_lightsPosition", bgfx::UniformType::Vec4, rawrBox::LightManager::getInstance().maxLights);
@@ -84,6 +86,7 @@ namespace rawrBox {
 		ModelBase::draw(camPos);
 		this->processLights();
 
+		bgfx::setTransform(nullptr);
 		for (auto& mesh : this->_meshes) {
 			auto& data = mesh->getData();
 
@@ -101,12 +104,12 @@ namespace rawrBox {
 
 			UniformUtils::setUniform(this->_offsetColor, data->color);
 
-			bgfx::setVertexBuffer(0, this->_vbh, data->baseVertex, static_cast<uint32_t>(data->vertices.size()));
-			bgfx::setIndexBuffer(this->_ibh, data->baseIndex, static_cast<uint32_t>(data->indices.size()));
+			bgfx::setVertexBuffer(0, this->_vbh, data->baseVertex, data->totalVertex);
+			bgfx::setIndexBuffer(this->_ibh, data->baseIndex, data->totalIndex);
 
 			float matrix[16];
 			bx::mtxMul(matrix, data->offsetMatrix.data(), this->_matrix.data());
-			bgfx::setTransform(matrix);
+			bgfx::setTransform(this->_matrix.data());
 
 			uint64_t flags = BGFX_STATE_DEFAULT_3D | this->_cull;
 			if (data->wireframe) flags |= BGFX_STATE_PT_LINES;

@@ -86,6 +86,7 @@ namespace post_process {
 		// Assimp test ---
 		this->_model = std::make_shared<rawrBox::ModelImported>();
 		this->_model->load("./content/models/ps1_road/output.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
+		// this->_model->setWireframe(true);
 		this->_model->setFullbright(true);
 		this->_model->setScale({0.5f, 0.5f, 0.5f});
 		this->_model->upload();

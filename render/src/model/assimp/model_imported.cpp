@@ -24,8 +24,8 @@ namespace rawrBox {
 		const aiScene* scene = aiImportFile(path.c_str(), assimpFlags);
 
 		if (scene == nullptr) {
-			auto aaaaaa = aiGetErrorString(); // Because vscode doesn't print the error bellow
-			throw std::runtime_error(fmt::format("[Resources] Content 'model' error: {}: '{}'\n", path, aaaaaa));
+			auto error = aiGetErrorString(); // Because vscode doesn't print the error bellow
+			throw std::runtime_error(fmt::format("[Resources] Content 'model' error: {}: '{}'\n", path, error));
 		}
 
 		this->_meshes.clear(); // Clear old meshes
@@ -106,7 +106,6 @@ namespace rawrBox {
 			auto& vertices = mesh->getVertices();
 			auto& indices = mesh->getIndices();
 
-			bx::mtxTranspose(data->offsetMatrix.data(), &nd->mTransformation.a1);
 			mesh->setName(aiMesh.mName.data);
 
 			data->baseVertex = static_cast<uint16_t>(data->vertices.size());
@@ -119,12 +118,14 @@ namespace rawrBox {
 
 			// Vertices
 			for (size_t i = 0; i < aiMesh.mNumVertices; i++) {
-				auto& vert = aiMesh.mVertices[i];
-
 				rawrBox::ModelVertexData v;
-				v.x = vert.x;
-				v.y = vert.y;
-				v.z = vert.z;
+
+				if (aiMesh.HasPositions()) {
+					auto& vert = aiMesh.mVertices[i];
+					v.x = vert.x;
+					v.y = vert.y;
+					v.z = vert.z;
+				}
 
 				if (aiMesh.HasTextureCoords(0)) {
 					auto& uv = aiMesh.mTextureCoords[0][i];
@@ -158,6 +159,9 @@ namespace rawrBox {
 					data->indices.push_back(static_cast<uint16_t>(data->vertices.size()) - static_cast<uint16_t>(face.mIndices[i]));
 				}
 			}
+
+			data->totalVertex = static_cast<uint16_t>(data->vertices.size());
+			data->totalIndex = static_cast<uint16_t>(data->indices.size());
 
 			this->addMesh(mesh);
 		}

@@ -16,8 +16,12 @@ namespace rawrBox {
 	template <typename T>
 	struct MeshData {
 	public:
+		std::string name = "mesh";
+
 		uint16_t baseVertex = 0;
 		uint16_t baseIndex = 0;
+		uint16_t totalVertex = 0;
+		uint16_t totalIndex = 0;
 
 		std::shared_ptr<rawrBox::TextureBase> texture = nullptr;
 		std::shared_ptr<rawrBox::TextureBase> specular_texture = nullptr;
@@ -42,7 +46,6 @@ namespace rawrBox {
 	template <typename T>
 	class Mesh {
 	private:
-		std::string _name = "mesh";
 		std::shared_ptr<rawrBox::MeshData<T>> _data = nullptr;
 
 	public:
@@ -56,11 +59,11 @@ namespace rawrBox {
 
 		// UTILS ----
 		const std::string& getName() {
-			return this->_name;
+			return this->_data->name;
 		}
 
 		void setName(const std::string& name) {
-			this->_name = name;
+			this->_data->name = name;
 		}
 
 		std::shared_ptr<rawrBox::MeshData<T>>& getData() {
@@ -95,6 +98,12 @@ namespace rawrBox {
 			this->_data->color = color;
 		}
 
-		// ----
+		bool canMerge(const std::shared_ptr<rawrBox::Mesh<T>>& other) {
+			return this->_data->texture == other->_data->texture &&
+			       this->_data->specular_texture == other->_data->specular_texture &&
+			       this->_data->color == other->_data->color &&
+			       this->_data->color == other->_data->color &&
+			       this->_data->offsetMatrix == other->_data->offsetMatrix;
+		}
 	};
 } // namespace rawrBox

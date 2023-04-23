@@ -49,6 +49,9 @@ namespace rawrBox {
 			    0, 1, 2,
 			    0, 3, 1};
 
+			data->totalVertex = static_cast<uint16_t>(buff.size());
+			data->totalIndex = static_cast<uint16_t>(inds.size());
+
 			data->vertices.insert(data->vertices.end(), buff.begin(), buff.end());
 			for (uint16_t ind : inds)
 				data->indices.push_back(static_cast<uint16_t>(buff.size()) - ind);

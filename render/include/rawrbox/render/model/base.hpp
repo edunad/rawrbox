@@ -4,6 +4,8 @@
 #include <rawrbox/render/texture/flat.h>
 #include <rawrbox/render/util/uniforms.hpp>
 
+#include <fmt/printf.h>
+
 #include <array>
 #include <memory>
 #include <vector>
@@ -30,24 +32,56 @@ namespace rawrBox {
 		uint64_t _cull = BGFX_STATE_CULL_CW;
 		bool _fullbright = false;
 
-		void internalUpdate() {
+		void pushMeshes(bool quickOptimize = true) {
 			this->_vertices.clear();
 			this->_indices.clear();
 
-			for (auto m : this->_meshes) {
-				auto& data = m->getData();
+			// Merge same meshes to reduce calls
+			size_t old = this->_meshes.size();
 
-				// Fix textures & base index
+			for (auto mesh = this->_meshes.begin(); mesh != this->_meshes.end();) {
+				auto& data = (*mesh)->getData();
+				bool erased = false;
+
+				// Fix start index ----
 				data->baseIndex = static_cast<uint16_t>(this->_indices.size());
-				// ----
+				// --------------------
 
 				// Append vertices and indices
 				this->_vertices.insert(this->_vertices.end(), data->vertices.begin(), data->vertices.end());
+
 				auto pos = static_cast<uint16_t>(this->_vertices.size());
 				for (auto& in : data->indices)
 					this->_indices.push_back(pos - in);
-				// ---
+				// ------
+
+				// Previous mesh available?
+				if (quickOptimize) {
+					if (mesh != this->_meshes.begin()) {
+
+						// Check old meshes
+						if (mesh != this->_meshes.begin()) {
+							auto prevMesh = std::prev(mesh);
+							auto& dataOld = (*prevMesh)->getData();
+
+							if ((*prevMesh)->canMerge(*mesh)) {
+								fmt::print("Merging {} with {}\n", data->name, dataOld->name);
+
+								dataOld->totalVertex += data->totalVertex;
+								dataOld->totalIndex += data->totalIndex;
+
+								mesh = this->_meshes.erase(mesh);
+								erased = true;
+							}
+						}
+					}
+				}
+
+				if (!erased)
+					mesh++;
 			}
+
+			if (old != this->_meshes.size()) fmt::print("Optimized mesh (Before {} | After {})\n", old, this->_meshes.size());
 		}
 
 	public:
@@ -93,14 +127,11 @@ namespace rawrBox {
 
 		virtual void removeMesh(size_t index) {
 			if (index < 0 || index > this->_meshes.size()) return;
-
 			this->_meshes.erase(this->_meshes.begin() + index);
-			this->internalUpdate();
 		}
 
 		virtual void addMesh(const std::shared_ptr<rawrBox::Mesh<T>>& mesh) {
 			this->_meshes.push_back(std::move(mesh));
-			this->internalUpdate();
 		}
 
 		virtual const std::shared_ptr<rawrBox::Mesh<T>>& getMesh(size_t id = 0) {
@@ -125,6 +156,8 @@ namespace rawrBox {
 
 		virtual void upload() {
 			if (bgfx::isValid(this->_vbh) || bgfx::isValid(this->_ibh)) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
+
+			this->pushMeshes();
 			if (this->_vertices.empty() || this->_indices.empty()) throw std::runtime_error("[RawrBox-ModelBase] Vertices / Indices cannot be empty");
 
 			this->_vbh = bgfx::createVertexBuffer(bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * this->_vLayout.m_stride), this->_vLayout);

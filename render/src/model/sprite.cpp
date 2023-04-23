@@ -44,10 +44,11 @@ namespace rawrBox {
 		if (!bgfx::isValid(this->_program)) throw std::runtime_error("[RawrBox-Model] Failed to bind shader");
 		// -----------------
 
-		this->_spritePos = bgfx::createUniform("u_sprite_pos", bgfx::UniformType::Vec4); // ¯\_(ツ)_/¯ hate it
-
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+
+		this->_spritePos = bgfx::createUniform("u_sprite_pos", bgfx::UniformType::Vec4); // ¯\_(ツ)_/¯ hate it
 		this->_offsetColor = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
+		UniformUtils::setUniform(this->_offsetColor, rawrBox::Color(255, 255, 255, 255));
 	}
 
 	void Sprite::draw(const rawrBox::Vector3f& camPos) {
@@ -67,8 +68,8 @@ namespace rawrBox {
 
 			bgfx::setTransform(this->_matrix.data());
 
-			bgfx::setVertexBuffer(0, this->_vbh, data->baseVertex, static_cast<uint32_t>(data->vertices.size()));
-			bgfx::setIndexBuffer(this->_ibh, data->baseIndex, static_cast<uint32_t>(data->indices.size()));
+			bgfx::setVertexBuffer(0, this->_vbh, data->baseVertex, data->totalVertex);
+			bgfx::setIndexBuffer(this->_ibh, data->baseIndex, data->totalIndex);
 
 			uint64_t flags = BGFX_STATE_DEFAULT_SPRITE;
 			if (data->wireframe) flags |= BGFX_STATE_PT_LINES;
