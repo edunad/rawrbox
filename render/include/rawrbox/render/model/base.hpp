@@ -98,19 +98,18 @@ namespace rawrBox {
 		}
 
 		// UTILS -----
-		static std::shared_ptr<rawrBox::Mesh> generatePlane(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& size, const rawrBox::Color& cl = rawrBox::Colors::White) {
-			std::shared_ptr<rawrBox::Mesh> mesh = std::make_shared<rawrBox::Mesh>();
-
+		static std::shared_ptr<rawrBox::Mesh> generatePlane(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& size, const rawrBox::Colorf& cl = rawrBox::Colors::White) {
+			auto mesh = std::make_shared<rawrBox::Mesh>();
 			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
 
-			std::array<rawrBox::MeshVertexData, 6> buff = {
+			std::array buff{
 			    rawrBox::MeshVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0, 1, cl),
 			    rawrBox::MeshVertexData(pos + rawrBox::Vector3f(size.x, size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 1, 0, cl),
 			    rawrBox::MeshVertexData(pos + rawrBox::Vector3f(-size.x, size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0, 0, cl),
 			    rawrBox::MeshVertexData(pos + rawrBox::Vector3f(size.x, -size.y, 0), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 1, 1, cl),
 			};
 
-			std::array<uint16_t, 6> inds = {
+			std::array<uint16_t, 6> inds{
 			    0, 1, 2,
 			    0, 3, 1};
 
@@ -124,11 +123,11 @@ namespace rawrBox {
 			return mesh;
 		}
 
-		static std::shared_ptr<rawrBox::Mesh> generateCube(const rawrBox::Vector3f& pos, const rawrBox::Vector3f& size, const rawrBox::Color& cl = rawrBox::Colors::White) {
-			std::shared_ptr<rawrBox::Mesh> mesh = std::make_shared<rawrBox::Mesh>();
+		static std::shared_ptr<rawrBox::Mesh> generateCube(const rawrBox::Vector3f& pos, const rawrBox::Vector3f& size, const rawrBox::Colorf& cl = rawrBox::Colors::White) {
+			auto mesh = std::make_shared<rawrBox::Mesh>();
 			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
 
-			std::array<rawrBox::MeshVertexData, 24> buff = {
+			std::array buff{
 			    // Back
 			    rawrBox::MeshVertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), rawrBox::PackUtils::packNormal(-1, 0, 0), 0, 0, 0, cl),
 			    rawrBox::MeshVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(-1, 0, 0), 0, 1, 1, cl),
@@ -165,7 +164,7 @@ namespace rawrBox {
 			    rawrBox::MeshVertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0, 1, cl),
 			    rawrBox::MeshVertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 1, 0, cl)};
 
-			std::array<uint16_t, 36> inds = {
+			std::array<uint16_t, 36> inds{
 			    0, 1, 2,
 			    0, 3, 1,
 
@@ -195,9 +194,8 @@ namespace rawrBox {
 		}
 
 		// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
-		static std::shared_ptr<rawrBox::Mesh> generateGrid(uint32_t size, const rawrBox::Vector3f& pos, const rawrBox::Color& cl = rawrBox::Colors::White) {
+		static std::shared_ptr<rawrBox::Mesh> generateGrid(uint32_t size, const rawrBox::Vector3f& pos, const rawrBox::Colorf& cl = rawrBox::Colors::White) {
 			std::shared_ptr<rawrBox::Mesh> mesh = std::make_shared<rawrBox::Mesh>();
-
 			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
 
 			std::vector<rawrBox::MeshVertexData> buff = {};
@@ -249,17 +247,17 @@ namespace rawrBox {
 		// UTIL ---
 		virtual void setPos(const rawrBox::Vector3f& pos) {
 			this->_pos = pos;
-			bx::mtxSRT(this->_matrix.data(), this->_pos.x, this->_pos.y, this->_pos.z, bx::toRad(this->_angle.x), bx::toRad(this->_angle.y), bx::toRad(this->_angle.z), this->_scale.x, this->_scale.y, this->_scale.z);
+			bx::mtxSRT(this->_matrix.data(), this->_scale.x, this->_scale.y, this->_scale.z, bx::toRad(this->_angle.x), bx::toRad(this->_angle.y), bx::toRad(this->_angle.z), this->_pos.x, this->_pos.y, this->_pos.z);
 		}
 
 		virtual void setScale(const rawrBox::Vector3f& scale) {
 			this->_scale = scale;
-			bx::mtxSRT(this->_matrix.data(), this->_pos.x, this->_pos.y, this->_pos.z, bx::toRad(this->_angle.x), bx::toRad(this->_angle.y), bx::toRad(this->_angle.z), this->_scale.x, this->_scale.y, this->_scale.z);
+			bx::mtxSRT(this->_matrix.data(), this->_scale.x, this->_scale.y, this->_scale.z, bx::toRad(this->_angle.x), bx::toRad(this->_angle.y), bx::toRad(this->_angle.z), this->_pos.x, this->_pos.y, this->_pos.z);
 		}
 
 		virtual void setAngle(const rawrBox::Vector3f& ang) {
 			this->_angle = ang;
-			bx::mtxSRT(this->_matrix.data(), this->_pos.x, this->_pos.y, this->_pos.z, bx::toRad(this->_angle.x), bx::toRad(this->_angle.y), bx::toRad(this->_angle.z), this->_scale.x, this->_scale.y, this->_scale.z);
+			bx::mtxSRT(this->_matrix.data(), this->_scale.x, this->_scale.y, this->_scale.z, bx::toRad(this->_angle.x), bx::toRad(this->_angle.y), bx::toRad(this->_angle.z), this->_pos.x, this->_pos.y, this->_pos.z);
 		}
 
 		virtual std::array<float, 16>& getMatrix() {
@@ -282,13 +280,21 @@ namespace rawrBox {
 		virtual void setCulling(uint64_t cull) {
 			this->_cull = cull;
 		}
+
+		virtual void setWireframe(bool wireframe, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->wireframe = true;
+			}
+		}
 		// ----
 
 		virtual void upload() {
 			if (bgfx::isValid(this->_vbh) || bgfx::isValid(this->_ibh)) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
-			this->pushMeshes();
 
+			this->pushMeshes();
 			if (this->_vertices.empty() || this->_indices.empty()) throw std::runtime_error("[RawrBox-ModelBase] Vertices / Indices cannot be empty");
+
 			this->_vbh = bgfx::createVertexBuffer(bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * this->_material->vLayout.m_stride), this->_material->vLayout);
 			this->_ibh = bgfx::createIndexBuffer(bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t)));
 			// -----------------

@@ -20,7 +20,7 @@ namespace rawrBox {
 
 	public:
 		bool fullbright = false;
-		int32_t maxLights = 0;
+		int32_t maxLights = 8;
 
 		virtual void init(int32_t maxLights = 8);
 		virtual void destroy();

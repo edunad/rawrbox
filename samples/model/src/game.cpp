@@ -85,14 +85,14 @@ namespace model {
 		// ----
 
 		{
-			auto mesh = rawrBox::ModelBase::generatePlane({5, 0, 0}, 0.5f, rawrBox::Colors::Yellow);
-			mesh->setTexture(this->_texture2);
+			auto mesh = rawrBox::ModelBase::generatePlane({5, 0, 0}, 0.5f);
+			mesh->setTexture(this->_texture);
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrBox::ModelBase::generateCube({5, 0, 0}, 0.5f, rawrBox::Colors::White);
-			mesh->setTexture(this->_texture);
+			auto mesh = rawrBox::ModelBase::generateCube({-5, 0, 0}, 0.5f, rawrBox::Colors::White);
+			mesh->setTexture(this->_texture2);
 			this->_model->addMesh(mesh);
 		}
 

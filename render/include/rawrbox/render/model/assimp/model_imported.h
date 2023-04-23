@@ -14,14 +14,14 @@
 #define DEFAULT_ASSIMP_FLAGS (0 | aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_PreTransformVertices)
 
 namespace rawrBox {
-	//NOLINTBEGIN{unused-const-variable}
+	// NOLINTBEGIN{unused-const-variable}
 	namespace ModelLoadFlags {
 		const uint32_t NONE = 0;
 		const uint32_t IMPORT_LIGHT = 1 << 1;
 		const uint32_t IMPORT_TEXTURES = 1 << 2;
 		const uint32_t IMPORT_ANIMATIONS = 1 << 3;
 	}; // namespace ModelLoadFlags
-	//NOLINTEND{unused-const-variable}
+	// NOLINTEND{unused-const-variable}
 
 	class ModelImported : public rawrBox::Model {
 		using Model::Model;

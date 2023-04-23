@@ -18,17 +18,17 @@ namespace rawrBox {
 		float y = 0;
 		float z = 0;
 
-		float u = 0;
-		float v = 0;
-
 		uint32_t normal = 0;
 		uint32_t tangent = 0;
+
+		float u = 0;
+		float v = 0;
 
 		uint32_t abgr = 0xFFFFFFFF;
 
 		MeshVertexData() = default;
-		MeshVertexData(const rawrBox::Vector3f& _pos, uint32_t _normal, uint32_t _tangent, float _u, float _v, const rawrBox::Color cl = rawrBox::Colors::White) : x(_pos.x), y(_pos.y), z(_pos.z), u(_u), v(_v), normal(_normal), tangent(_tangent), abgr(rawrBox::Color::pack(cl)) {}
-		MeshVertexData(float _x, float _y, float _z, uint32_t _normal, uint32_t _tangent, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v), normal(_normal), tangent(_tangent), abgr(_abgr) {}
+		MeshVertexData(const rawrBox::Vector3f& _pos, uint32_t _normal, uint32_t _tangent, float _u, float _v, const rawrBox::Color cl = rawrBox::Colors::White) : x(_pos.x), y(_pos.y), z(_pos.z), normal(_normal), tangent(_tangent), u(_u), v(_v), abgr(rawrBox::Color::pack(cl)) {}
+		MeshVertexData(float _x, float _y, float _z, uint32_t _normal, uint32_t _tangent, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), normal(_normal), tangent(_tangent), u(_u), v(_v), abgr(_abgr) {}
 	};
 
 	class Mesh {
@@ -48,7 +48,7 @@ namespace rawrBox {
 
 		std::array<float, 16> offsetMatrix = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}; // Identity matrix by default
 		std::array<float, 16> vertexPos = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};    // Identity matrix by default
-		rawrBox::Color color = rawrBox::Colors::White;
+		rawrBox::Colorf color = rawrBox::Colors::White;
 
 		bool wireframe = false;
 
@@ -95,7 +95,7 @@ namespace rawrBox {
 			this->specularTexture = ptr;
 		}
 
-		void setColor(const rawrBox::Color& color) {
+		void setColor(const rawrBox::Colorf& color) {
 			this->color = color;
 		}
 

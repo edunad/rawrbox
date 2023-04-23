@@ -1,6 +1,6 @@
 
 #include <rawrbox/render/model/light/manager.h>
-#include <rawrbox/render/model/material/lit.hpp>
+#include <rawrbox/render/model/material/unlit.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/render/postprocess/bloom.hpp>
 #include <rawrbox/render/postprocess/dither_psx.hpp>
@@ -85,7 +85,7 @@ namespace post_process {
 		this->_postProcess->upload();
 
 		// Assimp test ---
-		auto mat = std::make_shared<rawrBox::MaterialLit>();
+		auto mat = std::make_shared<rawrBox::MaterialUnlit>();
 
 		this->_model = std::make_shared<rawrBox::ModelImported>(mat);
 		this->_model->load("./content/models/ps1_road/output.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES);

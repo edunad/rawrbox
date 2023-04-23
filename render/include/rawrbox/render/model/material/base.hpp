@@ -24,9 +24,6 @@ namespace rawrBox {
 		bgfx::VertexLayout vLayout;
 
 		MaterialBase() {
-			// Default uniforms
-			this->registerUniform("u_viewPos", bgfx::UniformType::Vec4, 3);
-
 			this->vLayout.begin()
 			    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
 			    .add(bgfx::Attrib::Normal, 4, bgfx::AttribType::Uint8, true, true)
@@ -34,6 +31,9 @@ namespace rawrBox {
 			    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 			    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 			    .end();
+
+			// Default uniforms
+			this->registerUniform("u_viewPos", bgfx::UniformType::Vec4, 3);
 		};
 
 		MaterialBase(MaterialBase&&) = delete;
@@ -53,7 +53,10 @@ namespace rawrBox {
 			auto fnd = this->_uniforms.find(name);
 			if (fnd != this->_uniforms.end()) throw std::runtime_error(fmt::format("[RawrBox-MaterialBase] Uniform '{}' already registered!", name));
 
-			this->_uniforms[name] = bgfx::createUniform(name.c_str(), type, num);
+			auto handle = bgfx::createUniform(name.c_str(), type, num);
+			if (!bgfx::isValid(handle)) throw std::runtime_error(fmt::format("[RawrBox-MaterialBase] Failed to create uniform '{}'!", name));
+
+			this->_uniforms[name] = handle;
 		}
 
 		virtual void buildShader(const bgfx::EmbeddedShader shaders[], const std::string& name) {
@@ -82,7 +85,9 @@ namespace rawrBox {
 
 		virtual void preProcess(){};
 		virtual void process(std::shared_ptr<rawrBox::Mesh> mesh){};
-		virtual void postProcess() { bgfx::submit(rawrBox::CURRENT_VIEW_ID, this->_program); }
+		virtual void postProcess() {
+			bgfx::submit(rawrBox::CURRENT_VIEW_ID, this->_program);
+		}
 
 		virtual void upload() = 0;
 	};

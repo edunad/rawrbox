@@ -150,7 +150,7 @@ namespace light {
 
 		this->drawWorld();
 
-		// rawrBox::LightManager::getInstance().drawDebug(this->_camera->getPos());
+		rawrBox::LightManager::getInstance().drawDebug(this->_camera->getPos());
 		this->_render->render(); // Commit primitives
 	}
 } // namespace light

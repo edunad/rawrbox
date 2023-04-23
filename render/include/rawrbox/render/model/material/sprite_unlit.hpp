@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rawrbox/math/quaternion.hpp>
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/shader_defines.h>
 #include <rawrbox/render/static.h>
@@ -25,8 +26,8 @@ namespace rawrBox {
 		MaterialSpriteUnlit() : MaterialBase() {
 			this->registerUniform("s_texColor", bgfx::UniformType::Sampler);
 
-			this->registerUniform("u_sprite_pos", bgfx::UniformType::Vec4, 3); // ¯\_(ツ)_/¯ hate it
-			this->registerUniform("u_colorOffset", bgfx::UniformType::Vec4, 2);
+			this->registerUniform("u_sprite_pos", bgfx::UniformType::Vec4); // ¯\_(ツ)_/¯ hate it
+			this->registerUniform("u_colorOffset", bgfx::UniformType::Vec4);
 		};
 
 		void upload() override {
@@ -40,9 +41,9 @@ namespace rawrBox {
 				bgfx::setTexture(0, this->getUniform("s_texColor"), rawrBox::MISSING_TEXTURE->getHandle());
 			}
 
-			auto pos = rawrBox::Vector3f(mesh->vertexPos[12], mesh->vertexPos[13], mesh->vertexPos[14]);
-
+			auto pos = rawrBox::Quaternion(mesh->vertexPos[12], mesh->vertexPos[13], mesh->vertexPos[14], mesh->vertexPos[15]);
 			this->setUniform("u_sprite_pos", pos);
+
 			this->setUniform("u_colorOffset", mesh->color);
 		}
 	};
