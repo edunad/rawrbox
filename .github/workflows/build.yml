@@ -1,4 +1,4 @@
-name: CI/CD
+name: CI/CD - Build
 
 on:
     push:
@@ -48,7 +48,9 @@ jobs:
               id: github-cache-conan-restore
               uses: actions/cache/restore@v3
               with:
-                  path: ./build
+                  path: |
+                    ./build
+                    ~/.conan2
                   key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
 
             - name: Install Conan dependencies
@@ -68,5 +70,7 @@ jobs:
               env:
                   cache-name: cache-conan-modules
               with:
-                  path: ./build
+                  path: |
+                    ./build
+                    ~/.conan2
                   key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
