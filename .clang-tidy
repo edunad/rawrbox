@@ -5,6 +5,7 @@ Checks: clang-diagnostic-*
     clang-analyzer-*
     cppcoreguidelines-*
     modernize-*
+	bugprone-*
     -modernize-use-trailing-return-type
     -cppcoreguidelines-non-private-member-variables-in-classes
     -cppcoreguidelines-avoid-magic-numbers
