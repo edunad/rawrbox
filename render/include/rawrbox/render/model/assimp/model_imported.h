@@ -1,6 +1,5 @@
 #pragma once
 
-// NOLINTBEGIN{*}
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/render/model/model.h>
 #include <rawrbox/render/texture/base.h>
@@ -12,7 +11,6 @@
 
 #include <string>
 #include <unordered_map>
-// NOLINTEND{*}
 
 #define DEFAULT_ASSIMP_FLAGS (0 | aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_PreTransformVertices)
 
