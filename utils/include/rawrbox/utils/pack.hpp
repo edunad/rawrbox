@@ -10,7 +10,7 @@ namespace rawrBox {
 	class PackUtils {
 	public:
 		static uint32_t packUint32(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) {
-			return bit_cast<uint32_t>(std::array<uint8_t, 4>{_x, _y, _z, _w});
+			return std::bit_cast<uint32_t>(std::array<uint8_t, 4>{_x, _y, _z, _w});
 		}
 
 		static uint32_t packF4u(float _x, float _y = 0.0f, float _z = 0.0f, float _w = 0.0f) {
@@ -23,7 +23,7 @@ namespace rawrBox {
 		}
 
 		static uint32_t packRgba8(float x, float y, float z, float w) {
-			return bit_cast<uint32_t>(std::array<uint8_t, 4>{
+			return std::bit_cast<uint32_t>(std::array<uint8_t, 4>{
 			    uint8_t(toUnorm(x, 255.0f)),
 			    uint8_t(toUnorm(y, 255.0f)),
 			    uint8_t(toUnorm(z, 255.0f)),

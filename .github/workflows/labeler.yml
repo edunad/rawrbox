@@ -1,7 +1,12 @@
 name: CI/CD - Labeler
+
 on:
-    - pull_request_target
-    - workflow_dispatch
+    pull_request_target:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    pull-requests: write
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -9,9 +14,6 @@ concurrency:
 
 jobs:
     label:
-        permissions:
-            contents: read
-            pull-requests: write
         runs-on: ubuntu-latest
         steps:
             - name: Label PR
