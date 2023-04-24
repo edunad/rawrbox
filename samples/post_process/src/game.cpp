@@ -12,8 +12,6 @@
 
 #include <vector>
 
-#include "rawrbox/render/window.h"
-
 namespace post_process {
 	void Game::init() {
 		int width = 1024;
