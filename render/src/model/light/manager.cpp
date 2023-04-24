@@ -38,6 +38,7 @@ namespace rawrBox {
 
 			auto mesh = rawrBox::ModelBase::generatePlane({pos[0], pos[1], pos[2]}, 0.1f);
 			mesh->setName(fmt::format("Light-{}", light->getType()));
+			mesh->setCulling(BGFX_STATE_CULL_CW);
 			// mesh->setColor(light->getDiffuseColor());
 
 			switch (light->getType()) {

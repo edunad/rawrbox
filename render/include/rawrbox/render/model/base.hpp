@@ -243,16 +243,19 @@ namespace rawrBox {
 		// -------
 
 		// UTIL ---
+		virtual const rawrBox::Vector3f& getPos() { return this->_pos; }
 		virtual void setPos(const rawrBox::Vector3f& pos) {
 			this->_pos = pos;
 			bx::mtxSRT(this->_matrix.data(), this->_scale.x, this->_scale.y, this->_scale.z, bx::toRad(this->_angle.x), bx::toRad(this->_angle.y), bx::toRad(this->_angle.z), this->_pos.x, this->_pos.y, this->_pos.z);
 		}
 
+		virtual const rawrBox::Vector3f& getScale() { return this->_scale; }
 		virtual void setScale(const rawrBox::Vector3f& scale) {
 			this->_scale = scale;
 			bx::mtxSRT(this->_matrix.data(), this->_scale.x, this->_scale.y, this->_scale.z, bx::toRad(this->_angle.x), bx::toRad(this->_angle.y), bx::toRad(this->_angle.z), this->_pos.x, this->_pos.y, this->_pos.z);
 		}
 
+		virtual const rawrBox::Vector3f& getAngle() { return this->_angle; }
 		virtual void setAngle(const rawrBox::Vector3f& ang) {
 			this->_angle = ang;
 			bx::mtxSRT(this->_matrix.data(), this->_scale.x, this->_scale.y, this->_scale.z, bx::toRad(this->_angle.x), bx::toRad(this->_angle.y), bx::toRad(this->_angle.z), this->_pos.x, this->_pos.y, this->_pos.z);

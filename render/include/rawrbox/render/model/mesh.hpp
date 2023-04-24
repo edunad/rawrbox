@@ -43,7 +43,7 @@ namespace rawrBox {
 		std::shared_ptr<rawrBox::TextureBase> texture = nullptr;
 
 		std::shared_ptr<rawrBox::TextureBase> specularTexture = nullptr;
-		float specularShininess = 0.f;
+		float specularShininess = 1.0f;
 
 		std::vector<rawrBox::MeshVertexData> vertices = {};
 		std::vector<uint16_t> indices = {};
@@ -53,8 +53,8 @@ namespace rawrBox {
 		rawrBox::Colorf color = rawrBox::Colors::White;
 
 		bool wireframe = false;
-		uint64_t culling = BGFX_STATE_CULL_CW;
-		uint64_t blending = BGFX_STATE_BLEND_ALPHA;
+		uint64_t culling = BGFX_STATE_CULL_CCW;
+		uint64_t blending = BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
 
 		Mesh() = default;
 		Mesh(Mesh&&) = delete;

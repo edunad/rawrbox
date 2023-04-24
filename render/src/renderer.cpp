@@ -22,7 +22,7 @@ namespace rawrBox {
 		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0f, 0);
 
 		rawrBox::MISSING_TEXTURE = std::make_shared<rawrBox::TextureMissing>();
-		rawrBox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrBox::TextureFlat>(1);
+		rawrBox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrBox::TextureFlat>(1, rawrBox::Colors::Black);
 	}
 
 	void Renderer::upload() {

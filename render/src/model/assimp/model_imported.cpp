@@ -12,8 +12,8 @@
 #include <assimp/pbrmaterial.h>
 #include <bx/math.h>
 #include <fmt/format.h>
-#include <cstdint>
 
+#include <cstdint>
 #include <filesystem>
 #include <stdexcept>
 
@@ -182,7 +182,7 @@ namespace rawrBox {
 
 		// TEXTURE EMISSIVE
 		/*if (pMaterial->GetTextureCount(aiTextureType_EMISSIVE) > 0) {
-			if (pMaterial->GetTexture(aiTextureType_EMISSIVE, 0, &matpath, nullptr, nullptr, nullptr, nullptr, nullptr) == AI_SUCCESS) {
+			if (pMaterial->GetTexture(aiTextureType_EMISSIVE, 0, nullptr, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
 				auto ptr = this->importTexture(matpath.data);
 				if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load specular texture '{}'", matpath.data));
 
@@ -272,7 +272,7 @@ namespace rawrBox {
 			auto lightNode = sc->mRootNode->FindNode(aiLight.mName.data);
 			if (lightNode == nullptr) continue;
 
-			rawrBox::Vector3f pos = {aiLight.mPosition.x, aiLight.mPosition.y, aiLight.mPosition.z};
+			rawrBox::Vector3f pos = rawrBox::Vector3f(aiLight.mPosition.x, aiLight.mPosition.y, aiLight.mPosition.z) + this->getPos();
 			rawrBox::Vector3f direction = rawrBox::Vector3f(aiLight.mDirection.x, aiLight.mDirection.y, aiLight.mDirection.z).normalized();
 
 			aiVector3D p;
