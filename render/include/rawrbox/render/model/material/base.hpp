@@ -18,10 +18,10 @@ namespace rawrBox {
 
 	protected:
 		bgfx::ProgramHandle _program = BGFX_INVALID_HANDLE;
-		std::unordered_map<std::string, bgfx::UniformHandle> _uniforms;
 
 	public:
 		bgfx::VertexLayout vLayout;
+		bgfx::UniformHandle u_viewPos = BGFX_INVALID_HANDLE;
 
 		MaterialBase() {
 			this->vLayout.begin()
@@ -31,9 +31,6 @@ namespace rawrBox {
 			    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 			    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 			    .end();
-
-			// Default uniforms
-			this->registerUniform("u_viewPos", bgfx::UniformType::Vec4, 3);
 		};
 
 		MaterialBase(MaterialBase&&) = delete;
@@ -43,20 +40,7 @@ namespace rawrBox {
 
 		virtual ~MaterialBase() {
 			RAWRBOX_DESTROY(this->_program);
-			for (auto& un : this->_uniforms)
-				RAWRBOX_DESTROY(un.second);
-
-			this->_uniforms.clear();
-		}
-
-		virtual void registerUniform(const std::string& name, bgfx::UniformType::Enum type = bgfx::UniformType::Vec4, uint16_t num = (uint16_t)1U) {
-			auto fnd = this->_uniforms.find(name);
-			if (fnd != this->_uniforms.end()) throw std::runtime_error(fmt::format("[RawrBox-MaterialBase] Uniform '{}' already registered!", name));
-
-			auto handle = bgfx::createUniform(name.c_str(), type, num);
-			if (!bgfx::isValid(handle)) throw std::runtime_error(fmt::format("[RawrBox-MaterialBase] Failed to create uniform '{}'!", name));
-
-			this->_uniforms[name] = handle;
+			RAWRBOX_DESTROY(this->u_viewPos);
 		}
 
 		virtual void buildShader(const bgfx::EmbeddedShader shaders[], const std::string& name) {
@@ -66,24 +50,20 @@ namespace rawrBox {
 
 			this->_program = bgfx::createProgram(vsh, fsh, true);
 			if (!bgfx::isValid(this->_program)) throw std::runtime_error("[RawrBox-MaterialBase] Failed to create shader");
+
+			this->registerUniforms();
 		}
 
-		template <typename T>
-		void setUniform(const std::string& name, T& data) {
-			auto fnd = this->_uniforms.find(name);
-			if (fnd == this->_uniforms.end()) throw std::runtime_error(fmt::format("[RawrBox-MaterialBase] Uniform '{}' not found!", name));
+		virtual void registerUniforms() {
+			// Default uniforms
+			this->u_viewPos = bgfx::createUniform("u_viewPos", bgfx::UniformType::Vec4, 3);
+		};
 
-			rawrBox::UniformUtils::setUniform(fnd->second, data);
-		}
+		virtual void preProcess(const rawrBox::Vector3f& camPos) {
+			std::array pos = {camPos.x, camPos.y, camPos.z};
+			bgfx::setUniform(this->u_viewPos, pos.data());
+		};
 
-		bgfx::UniformHandle getUniform(const std::string& name) {
-			auto fnd = this->_uniforms.find(name);
-			if (fnd == this->_uniforms.end()) throw std::runtime_error(fmt::format("[RawrBox-MaterialBase] Uniform '{}' not found!", name));
-
-			return fnd->second;
-		}
-
-		virtual void preProcess(){};
 		virtual void process(std::shared_ptr<rawrBox::Mesh> mesh){};
 		virtual void postProcess() {
 			bgfx::submit(rawrBox::CURRENT_VIEW_ID, this->_program);

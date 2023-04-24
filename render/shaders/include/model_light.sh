@@ -8,6 +8,7 @@ uniform vec4 u_lightsSetting;
 uniform vec4 u_lightsPosition[MAX_LIGHTS];
 uniform mat4 u_lightsData[MAX_LIGHTS];
 // -----
+
 vec3 calculatePointLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, vec3 vNormal, vec4 texColor, vec4 specularColor) {
 	// Ambient
 	vec3 ambient = vec3(0.1, 0.1, 0.1);

@@ -307,8 +307,7 @@ namespace rawrBox {
 				throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not valid");
 			}
 
-			this->_material->setUniform("u_viewPos", camPos);
-			this->_material->preProcess();
+			this->_material->preProcess(camPos);
 		}
 	};
 } // namespace rawrBox

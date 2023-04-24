@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/model/light/manager.h>
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/shader_defines.h>
@@ -20,25 +21,52 @@ namespace rawrBox {
 	class MaterialLit : public rawrBox::MaterialBase {
 
 	public:
-		MaterialLit() : MaterialBase() {
-			this->registerUniform("s_texColor", bgfx::UniformType::Sampler);
-			this->registerUniform("s_texSpecularColor", bgfx::UniformType::Sampler);
+		bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle s_texSpecularColor = BGFX_INVALID_HANDLE;
 
-			this->registerUniform("u_colorOffset", bgfx::UniformType::Vec4);
+		bgfx::UniformHandle u_colorOffset = BGFX_INVALID_HANDLE;
 
-			this->registerUniform("u_lightsSetting", bgfx::UniformType::Vec4, 2);
-			this->registerUniform("u_lightsPosition", bgfx::UniformType::Vec4, rawrBox::LightManager::getInstance().maxLights);
-			this->registerUniform("u_lightsData", bgfx::UniformType::Mat4, rawrBox::LightManager::getInstance().maxLights);
-		};
+		bgfx::UniformHandle u_lightsSetting = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle u_lightsPosition = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle u_lightsData = BGFX_INVALID_HANDLE;
 
-		void preProcess() override {
+		MaterialLit() : MaterialBase(){};
+		MaterialLit(MaterialLit&&) = delete;
+		MaterialLit& operator=(MaterialLit&&) = delete;
+		MaterialLit(const MaterialLit&) = delete;
+		MaterialLit& operator=(const MaterialLit&) = delete;
+		~MaterialLit() override {
+			MaterialBase::~MaterialBase();
+
+			RAWRBOX_DESTROY(this->s_texColor);
+			RAWRBOX_DESTROY(this->s_texSpecularColor);
+			RAWRBOX_DESTROY(this->u_colorOffset);
+			RAWRBOX_DESTROY(this->u_lightsSetting);
+			RAWRBOX_DESTROY(this->u_lightsPosition);
+			RAWRBOX_DESTROY(this->u_lightsData);
+		}
+
+		void registerUniforms() override {
+			MaterialBase::registerUniforms();
+
+			this->s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+			this->s_texSpecularColor = bgfx::createUniform("s_texSpecularColor", bgfx::UniformType::Sampler);
+
+			this->u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
+
+			this->u_lightsSetting = bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4, 2);
+			this->u_lightsPosition = bgfx::createUniform("u_lightsPosition", bgfx::UniformType::Vec4, rawrBox::LightManager::getInstance().maxLights);
+			this->u_lightsData = bgfx::createUniform("u_lightsData", bgfx::UniformType::Mat4, rawrBox::LightManager::getInstance().maxLights);
+		}
+
+		void preProcess(const rawrBox::Vector3f& camPos) override {
 			auto& lightManager = rawrBox::LightManager::getInstance();
 			size_t lightCount = lightManager.count();
 
-			rawrBox::Vector2 lightSettings = {lightManager.fullbright ? 1.f : 0.f, static_cast<float>(lightCount)};
-			this->setUniform("u_lightsSetting", lightSettings);
+			std::array lightSettings = {lightManager.fullbright ? 1.f : 0.f, static_cast<float>(lightCount)};
+			bgfx::setUniform(u_lightsSetting, lightSettings.data());
 
-			if (lightSettings.x == 1.f || lightCount <= 0) return; // Fullbright
+			if (lightSettings[0] == 1.f || lightCount <= 0) return; // Fullbright
 
 			std::vector<std::array<float, 16>> lightData(lightCount);
 			std::vector<std::array<float, 4>> lightPos(lightCount);
@@ -52,24 +80,25 @@ namespace rawrBox {
 
 			if (lightPos.size() != lightData.size()) throw std::runtime_error("[RawrBox-MODEL] LightPos and LightData do not match!");
 
-			this->setUniform("u_lightsPosition", lightPos);
-			this->setUniform("u_lightsData", lightData);
+			bgfx::setUniform(u_lightsPosition, lightPos.front().data(), static_cast<uint16_t>(lightCount));
+			bgfx::setUniform(u_lightsData, lightData.front().data(), static_cast<uint16_t>(lightCount));
 		}
 
 		void process(std::shared_ptr<rawrBox::Mesh> mesh) override {
 			if (mesh->texture != nullptr && mesh->texture->valid() && !mesh->wireframe) {
-				bgfx::setTexture(0, this->getUniform("s_texColor"), mesh->texture->getHandle());
+				bgfx::setTexture(0, this->s_texColor, mesh->texture->getHandle());
 			} else {
-				bgfx::setTexture(0, this->getUniform("s_texColor"), rawrBox::MISSING_TEXTURE->getHandle());
+				bgfx::setTexture(0, this->s_texColor, rawrBox::MISSING_TEXTURE->getHandle());
 			}
 
 			if (mesh->specularTexture != nullptr && mesh->specularTexture->valid() && !mesh->wireframe) {
-				bgfx::setTexture(1, this->getUniform("s_texSpecularColor"), mesh->specularTexture->getHandle());
+				bgfx::setTexture(1, this->s_texSpecularColor, mesh->specularTexture->getHandle());
 			} else {
-				bgfx::setTexture(1, this->getUniform("s_texSpecularColor"), rawrBox::MISSING_SPECULAR_TEXTURE->getHandle());
+				bgfx::setTexture(1, this->s_texSpecularColor, rawrBox::MISSING_SPECULAR_TEXTURE->getHandle());
 			}
 
-			this->setUniform("u_colorOffset", mesh->color);
+			std::array colorOffset = {mesh->color.r, mesh->color.b, mesh->color.g, mesh->color.a};
+			bgfx::setUniform(u_colorOffset, colorOffset.data());
 		}
 
 		void upload() override {

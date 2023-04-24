@@ -1,10 +1,10 @@
 
+#include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/light/manager.h>
 #include <rawrbox/render/model/material/sprite_unlit.hpp>
+#include <rawrbox/render/model/material/unlit.hpp>
 
 #include <fmt/format.h>
-
-#include "rawrbox/render/model/base.hpp"
 
 namespace rawrBox {
 	void LightManager::init(int32_t maxLights) {
@@ -14,7 +14,7 @@ namespace rawrBox {
 		this->_spotTexture = std::make_shared<rawrBox::TextureImage>("./content/textures/debug/spot.png");
 		this->_dirTexture = std::make_shared<rawrBox::TextureImage>("./content/textures/debug/dir.png");
 
-		this->_debugMdl = std::make_shared<rawrBox::Sprite>(std::make_shared<rawrBox::MaterialSpriteUnlit>());
+		this->_debugMdl = std::make_shared<rawrBox::Sprite>(std::make_shared<rawrBox::MaterialUnlit>());
 	}
 
 	void LightManager::destroy() {
@@ -39,6 +39,7 @@ namespace rawrBox {
 			auto mesh = rawrBox::ModelBase::generatePlane({pos[0], pos[1], pos[2]}, 0.1f);
 			mesh->setName(fmt::format("Light-{}", light->getType()));
 			mesh->setColor(light->getDiffuseColor());
+
 			switch (light->getType()) {
 				case LightType::LIGHT_SPOT:
 					mesh->setTexture(this->_spotTexture);

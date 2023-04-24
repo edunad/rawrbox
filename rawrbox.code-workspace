@@ -22,6 +22,8 @@
         "terminal.integrated.gpuAcceleration": "on",
         "files.eol": "\n",
         "editor.formatOnSave": true,
+        "editor.stickyScroll.enabled": true,
+        "output.smartScroll.enabled": false,
         "[hlsl]": {
             "editor.defaultFormatter": null,
             "editor.formatOnSave": false

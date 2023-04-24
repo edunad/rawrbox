@@ -39,6 +39,10 @@ namespace rawrBox {
 			bgfx::setUniform(handle, data.front().data(), static_cast<uint16_t>(data.size()));
 		}
 
+		static void setUniform(const bgfx::UniformHandle& handle, std::vector<std::array<float, 3>> data) {
+			bgfx::setUniform(handle, data.front().data(), static_cast<uint16_t>(data.size()));
+		}
+
 		static void setUniform(const bgfx::UniformHandle& handle, rawrBox::Vector2f data) {
 			float d[2] = {data.x, data.y};
 			bgfx::setUniform(handle, d, 2);

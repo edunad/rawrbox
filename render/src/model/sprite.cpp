@@ -20,7 +20,7 @@ namespace rawrBox {
 			bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
 			bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
 
-			uint64_t flags = BGFX_STATE_DEFAULT_SPRITE | this->_cull;
+			uint64_t flags = BGFX_STATE_DEFAULT_SPRITE;
 			if (mesh->wireframe) flags |= BGFX_STATE_PT_LINES;
 
 			bgfx::setState(flags, 0);

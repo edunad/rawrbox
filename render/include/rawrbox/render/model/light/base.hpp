@@ -35,12 +35,12 @@ namespace rawrBox {
 
 		virtual ~LightBase() = default;
 
-		virtual rawrBox::Color& getSpecularColor() { return this->_specular; }
-		virtual rawrBox::Color& getDiffuseColor() { return this->_diffuse; }
-		virtual rawrBox::Color& getAmbientColor() { return this->_ambient; }
+		[[nodiscard]] virtual const rawrBox::Colorf& getSpecularColor() const { return this->_specular; }
+		[[nodiscard]] virtual const rawrBox::Colorf& getDiffuseColor() const { return this->_diffuse; }
+		[[nodiscard]] virtual const rawrBox::Colorf& getAmbientColor() const { return this->_ambient; }
 
 		virtual std::array<float, 4> getPosMatrix() { return {this->_posMatrix.x, this->_posMatrix.y, this->_posMatrix.z, 0}; }
-		virtual std::array<float, 16> getDataMatrix() = 0;
+		virtual std::array<float, 16> const getDataMatrix() = 0;
 
 		virtual LightType getType() = 0;
 	};
