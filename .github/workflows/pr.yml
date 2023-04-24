@@ -6,8 +6,11 @@ on:
 
 permissions:
     contents: write
-    actions: read
+    actions: write
     checks: write
+    pull-requests: write
+    discussions: write
+    issues: write
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -25,7 +28,6 @@ jobs:
             - name: Run linter
               uses: cpp-linter/cpp-linter-action@v2
               id: linter
-              continue-on-error: true
               env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
@@ -39,5 +41,6 @@ jobs:
                 ignore: 'build | .github'
 
             - name: Check linting
+              continue-on-error: true # Change me to false once we figure out linting
               if: steps.linter.outputs.checks-failed > 0
-              run: echo "Linting failed!" | exit 0 # Change me to 1 once we figure out linting
+              run: echo "Linting failed!" | exit 1
