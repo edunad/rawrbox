@@ -43,7 +43,7 @@ namespace rawrBox {
 
 			this->s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 
-			this->u_sprite_pos = bgfx::createUniform("u_sprite_pos", bgfx::UniformType::Vec4); // ¯\_(ツ)_/¯ hate it
+			this->u_sprite_pos = bgfx::createUniform("u_sprite_pos", bgfx::UniformType::Vec4, 3); // ¯\_(ツ)_/¯ hate it
 			this->u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 		}
 
@@ -61,7 +61,7 @@ namespace rawrBox {
 			std::array colorOffset = {mesh->color.r, mesh->color.b, mesh->color.g, mesh->color.a};
 			bgfx::setUniform(this->u_colorOffset, colorOffset.data());
 
-			std::array offset = {mesh->vertexPos[12], mesh->vertexPos[13], mesh->vertexPos[14], mesh->vertexPos[15]};
+			std::array offset = {mesh->vertexPos[12], mesh->vertexPos[13], mesh->vertexPos[14]};
 			bgfx::setUniform(this->u_sprite_pos, offset.data());
 		}
 	};

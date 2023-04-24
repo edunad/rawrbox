@@ -20,7 +20,7 @@ namespace rawrBox {
 
 			float matrix[16];
 			bx::mtxMul(matrix, mesh->offsetMatrix.data(), this->_matrix.data());
-			bgfx::setTransform(this->_matrix.data());
+			bgfx::setTransform(matrix);
 
 			uint64_t flags = BGFX_STATE_DEFAULT_3D | this->_cull;
 			if (mesh->wireframe) flags |= BGFX_STATE_PT_LINES;

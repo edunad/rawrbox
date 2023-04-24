@@ -14,7 +14,7 @@ namespace rawrBox {
 		this->_spotTexture = std::make_shared<rawrBox::TextureImage>("./content/textures/debug/spot.png");
 		this->_dirTexture = std::make_shared<rawrBox::TextureImage>("./content/textures/debug/dir.png");
 
-		this->_debugMdl = std::make_shared<rawrBox::Sprite>(std::make_shared<rawrBox::MaterialUnlit>());
+		this->_debugMdl = std::make_shared<rawrBox::Sprite>(std::make_shared<rawrBox::MaterialSpriteUnlit>());
 	}
 
 	void LightManager::destroy() {
@@ -38,7 +38,7 @@ namespace rawrBox {
 
 			auto mesh = rawrBox::ModelBase::generatePlane({pos[0], pos[1], pos[2]}, 0.1f);
 			mesh->setName(fmt::format("Light-{}", light->getType()));
-			mesh->setColor(light->getDiffuseColor());
+			// mesh->setColor(light->getDiffuseColor());
 
 			switch (light->getType()) {
 				case LightType::LIGHT_SPOT:
