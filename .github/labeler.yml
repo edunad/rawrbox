@@ -1,0 +1,15 @@
+
+"📷 RENDERER":
+- 'render/**/*'
+
+"🧮 MATH":
+- 'math/**/*'
+
+"🖼️ UI":
+- 'ui/**/*'
+
+"⚒️ UTILS":
+- 'utils/**/*'
+
+"🐲 SAMPLES":
+- 'samples/**/*'

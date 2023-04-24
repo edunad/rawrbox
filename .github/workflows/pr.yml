@@ -1,4 +1,4 @@
-name: CI/CD - PR
+name: CI/CD - Pull request
 
 on:
     pull_request:
