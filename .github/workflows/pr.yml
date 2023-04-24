@@ -31,6 +31,8 @@ jobs:
                 style: file
                 files-changed-only: true
                 tidy-checks: ''
+                extra-args: '-std=c++20 -Wall'
+                version: '14'
 
             - name: Check linting
               if: steps.linter.outputs.checks-failed > 0
