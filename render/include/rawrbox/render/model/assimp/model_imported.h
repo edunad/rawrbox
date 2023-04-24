@@ -5,14 +5,13 @@
 #include <rawrbox/render/texture/base.h>
 
 #include <assimp/cimport.h>
-#include <assimp/mesh.h>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
 #include <string>
 #include <unordered_map>
 
-#define DEFAULT_ASSIMP_FLAGS (0 | aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_PreTransformVertices)
+#define DEFAULT_ASSIMP_FLAGS (0 | aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_PreTransformVertices | aiProcess_RemoveRedundantMaterials | aiProcess_FindInvalidData)
 
 namespace rawrBox {
 	// NOLINTBEGIN{unused-const-variable}
@@ -31,7 +30,7 @@ namespace rawrBox {
 		std::unordered_map<std::string, std::shared_ptr<rawrBox::TextureBase>> _textures;
 		uint32_t _loadFlags;
 
-		std::shared_ptr<rawrBox::TextureBase> importTexture(const std::string& path, const std::string& name, aiTextureMapMode mode);
+		std::shared_ptr<rawrBox::TextureBase> importTexture(const std::string& path, const std::string& name, const std::array<aiTextureMapMode, 3>& mode);
 		void loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::Mesh>& mesh);
 
 		void loadSubmeshes(const aiScene* sc, const aiNode* nd);

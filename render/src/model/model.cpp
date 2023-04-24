@@ -6,7 +6,7 @@
 
 #include <cstdint>
 
-#define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA) | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL)
+#define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_BLEND_ALPHA_TO_COVERAGE)
 
 namespace rawrBox {
 	void Model::draw(const rawrBox::Vector3f& camPos) {
@@ -22,7 +22,7 @@ namespace rawrBox {
 			bx::mtxMul(matrix, mesh->offsetMatrix.data(), this->_matrix.data());
 			bgfx::setTransform(matrix);
 
-			uint64_t flags = BGFX_STATE_DEFAULT_3D | this->_cull;
+			uint64_t flags = BGFX_STATE_DEFAULT_3D | mesh->culling | mesh->blending;
 			if (mesh->wireframe) flags |= BGFX_STATE_PT_LINES;
 
 			bgfx::setState(flags, 0);

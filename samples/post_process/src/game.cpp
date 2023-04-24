@@ -12,6 +12,8 @@
 
 #include <vector>
 
+#include "rawrbox/render/window.h"
+
 namespace post_process {
 	void Game::init() {
 		int width = 1024;
@@ -54,10 +56,10 @@ namespace post_process {
 			this->_oldMousePos = mousePos;
 		};
 
-		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Debug::STATS | rawrBox::WindowFlags::Window::WINDOWED);
+		this->_window->initialize(width, height, rawrBox::WindowFlags::Window::WINDOWED);
 
-		this->_render = std::make_shared<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
-		this->_render->setClearColor(0x000000FF);
+		this->_render = std::make_shared<rawrBox::Renderer>(0, this->_window->getSize());
+		this->_render->setClearColor(0x00000000);
 
 		// Initialize the global light manager, i don't like it being static tough..
 		rawrBox::LightManager::getInstance().init(10);
@@ -65,12 +67,12 @@ namespace post_process {
 
 		// rawrBox::LightManager::getInstance().addLight()
 
-		this->_postProcess = std::make_shared<rawrBox::PostProcessManager>(0, rawrBox::Vector2i(width, height));
+		this->_postProcess = std::make_shared<rawrBox::PostProcessManager>(0, this->_window->getSize());
 		// this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessPSXDither>(rawrBox::DITHER_SIZE::_SLOW_MODE));
 		// this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessBloom>());
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrBox::CameraPerspective>(static_cast<float>(width) / static_cast<float>(height), 60.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
 		this->_camera->setPos({0.f, 5.f, -5.f});
 		this->_camera->setAngle({0.f, bx::toRad(-45), 0.f});
 		// --------------
@@ -88,8 +90,8 @@ namespace post_process {
 		auto mat = std::make_shared<rawrBox::MaterialUnlit>();
 
 		this->_model = std::make_shared<rawrBox::ModelImported>(mat);
-		this->_model->load("./content/models/ps1_road/output.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
-		this->_model->setScale({0.5f, 0.5f, 0.5f});
+		this->_model->load("./content/models/ps1_road/scene.gltf", rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
+		this->_model->setScale({0.01f, 0.01f, 0.01f});
 		this->_model->upload();
 		// -----
 

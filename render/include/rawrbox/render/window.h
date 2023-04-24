@@ -24,16 +24,17 @@ namespace rawrBox {
 		}; // namespace Window
 
 		namespace Features {
-			const uint32_t RESIZABLE = 1 << 4;
-			const uint32_t VSYNC = 1 << 5;
-			const uint32_t MSAA = 1 << 6;
-			const uint32_t MULTI_THREADED = 1 << 7;
+			const uint32_t TRANSPARENT_BUFFER = 1 << 4;
+			const uint32_t RESIZABLE = 1 << 5;
+			const uint32_t VSYNC = 1 << 6;
+			const uint32_t MSAA = 1 << 7;
+			const uint32_t MULTI_THREADED = 1 << 8;
 		}; // namespace Features
 
 		namespace Debug {
-			const uint32_t WIREFRAME = 1 << 8;
-			const uint32_t STATS = 1 << 9;
-			const uint32_t TEXT = 1 << 10;
+			const uint32_t WIREFRAME = 1 << 9;
+			const uint32_t STATS = 1 << 10;
+			const uint32_t TEXT = 1 << 11;
 		}; // namespace Debug
 	};         // namespace WindowFlags
 
@@ -108,6 +109,8 @@ namespace rawrBox {
 		bool isRendererSupported(bgfx::RendererType::Enum render);
 
 		[[nodiscard]] Vector2i getSize() const;
+		[[nodiscard]] float getAspectRatio() const;
+
 		[[nodiscard]] Vector2i getMousePos() const;
 
 		bool isKeyDown(int key);

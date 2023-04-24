@@ -27,8 +27,6 @@ namespace rawrBox {
 		std::vector<rawrBox::MeshVertexData> _vertices;
 		std::vector<uint16_t> _indices;
 
-		uint64_t _cull = BGFX_STATE_CULL_CW;
-
 		rawrBox::Vector3f _scale = {1, 1, 1};
 		rawrBox::Vector3f _pos = {};
 		rawrBox::Vector3f _angle = {};
@@ -277,14 +275,17 @@ namespace rawrBox {
 			return this->_meshes[id];
 		}
 
-		virtual void setCulling(uint64_t cull) {
-			this->_cull = cull;
+		virtual void setCulling(uint64_t cull, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->setCulling(cull);
+			}
 		}
 
 		virtual void setWireframe(bool wireframe, int id = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
 				if (id != -1 && i != id) continue;
-				this->_meshes[i]->wireframe = true;
+				this->_meshes[i]->setWireframe(wireframe);
 			}
 		}
 		// ----

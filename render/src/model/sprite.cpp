@@ -6,7 +6,7 @@
 
 #include <bx/math.h>
 
-#define BGFX_STATE_DEFAULT_SPRITE (0 | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA) | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
+#define BGFX_STATE_DEFAULT_SPRITE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 
 namespace rawrBox {
 	void Sprite::draw(const rawrBox::Vector3f& camPos) {
@@ -20,7 +20,7 @@ namespace rawrBox {
 			bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
 			bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
 
-			uint64_t flags = BGFX_STATE_DEFAULT_SPRITE;
+			uint64_t flags = BGFX_STATE_DEFAULT_SPRITE | mesh->culling | mesh->blending;
 			if (mesh->wireframe) flags |= BGFX_STATE_PT_LINES;
 
 			bgfx::setState(flags, 0);
