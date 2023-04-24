@@ -29,6 +29,8 @@ jobs:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
                 style: file
+                files-changed-only: true
+                tidy-checks: ''
 
             - name: Check linting
               if: steps.linter.outputs.checks-failed > 0
