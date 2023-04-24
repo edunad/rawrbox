@@ -1,0 +1,35 @@
+name: CI/CD - PR
+
+on:
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: write
+    actions: read
+    checks: write
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    build-linux:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 0.
+
+            - name: Run linter
+              uses: cpp-linter/cpp-linter-action@v2
+              id: linter
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                style: file
+
+            - name: Check linting
+              if: steps.linter.outputs.checks-failed > 0
+              run: echo "Linting failed!" | exit 1

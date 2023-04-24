@@ -41,7 +41,9 @@ namespace rawrBox {
 		uint16_t totalIndex = 0;
 
 		std::shared_ptr<rawrBox::TextureBase> texture = nullptr;
+
 		std::shared_ptr<rawrBox::TextureBase> specularTexture = nullptr;
+		float specularShininess = 0.f;
 
 		std::vector<rawrBox::MeshVertexData> vertices = {};
 		std::vector<uint16_t> indices = {};
@@ -91,8 +93,9 @@ namespace rawrBox {
 			this->texture = ptr;
 		}
 
-		void setSpecularTexture(std::shared_ptr<rawrBox::TextureBase> ptr) {
+		void setSpecularTexture(std::shared_ptr<rawrBox::TextureBase> ptr, float shininess) {
 			this->specularTexture = ptr;
+			this->specularShininess = shininess;
 		}
 
 		void setColor(const rawrBox::Colorf& color) {

@@ -1,4 +1,5 @@
 
+#include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/model/assimp/model_imported.h>
 #include <rawrbox/render/model/light/directional.hpp>
 #include <rawrbox/render/model/light/manager.h>
@@ -43,7 +44,7 @@ namespace rawrBox {
 		aiReleaseImport(scene);
 	}
 
-	std::shared_ptr<rawrBox::TextureBase> ModelImported::importTexture(const std::string& path) {
+	std::shared_ptr<rawrBox::TextureBase> ModelImported::importTexture(const std::string& path, const std::string& name, aiTextureMapMode mode) {
 		auto textPath = std::filesystem::path(path);
 		auto base = std::filesystem::path(this->_fileName);
 
@@ -52,8 +53,26 @@ namespace rawrBox {
 		auto fnd = this->_textures.find(finalPath);
 		if (fnd == this->_textures.end()) {
 			auto texture = std::make_shared<rawrBox::TextureImage>(finalPath);
-			texture->upload(bgfx::TextureFormat::Count);
 
+			// Setup flags ----
+			auto flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
+			switch (mode) {
+				case aiTextureMapMode_Clamp:
+					flags |= BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP;
+					break;
+				case aiTextureMapMode_Decal:
+					flags |= BGFX_SAMPLER_U_BORDER | BGFX_SAMPLER_V_BORDER;
+					break;
+				case aiTextureMapMode_Mirror:
+					flags |= BGFX_SAMPLER_U_MIRROR | BGFX_SAMPLER_V_MIRROR;
+					break;
+				default: break; // WRAP
+			}
+
+			texture->setFlags(flags);
+			// ----
+			texture->setName(name);
+			texture->upload(bgfx::TextureFormat::Count);
 			this->_textures[finalPath] = std::move(texture);
 			return this->_textures[finalPath];
 		} else {
@@ -65,13 +84,18 @@ namespace rawrBox {
 		if (sc->mNumMaterials <= 0 || assimp.mMaterialIndex > sc->mNumMaterials) return;
 
 		const aiMaterial* pMaterial = sc->mMaterials[assimp.mMaterialIndex];
-		aiString matpath;
+		aiString matPath;
+		aiTextureMapMode matMode = {};
+
+		aiString matName;
+		pMaterial->Get(AI_MATKEY_NAME, matName);
+		// TODO: Add GLTF_MAPPINGFILTER_MIN
 
 		// TEXTURE DIFFUSE
 		if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
-			if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &matpath, nullptr, nullptr, nullptr, nullptr, nullptr) == AI_SUCCESS) {
-				auto ptr = this->importTexture(matpath.data);
-				if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load diffuse texture '{}'", matpath.data));
+			if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &matPath, nullptr, nullptr, nullptr, nullptr, &matMode) == AI_SUCCESS) {
+				auto ptr = this->importTexture(matPath.data, matName.data, matMode);
+				if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load diffuse texture '{}'", matPath.data));
 
 				mesh->setTexture(ptr);
 			}
@@ -79,15 +103,18 @@ namespace rawrBox {
 
 		// TEXTURE SPECULAR
 		if (pMaterial->GetTextureCount(aiTextureType_SPECULAR) > 0) {
-			if (pMaterial->GetTexture(aiTextureType_SPECULAR, 0, &matpath, nullptr, nullptr, nullptr, nullptr, nullptr) == AI_SUCCESS) {
-				auto ptr = this->importTexture(matpath.data);
-				if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load specular texture '{}'", matpath.data));
+			if (pMaterial->GetTexture(aiTextureType_SPECULAR, 0, &matPath, nullptr, nullptr, nullptr, nullptr, &matMode) == AI_SUCCESS) {
+				auto ptr = this->importTexture(matPath.data, matName.data, matMode);
+				if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load specular texture '{}'", matPath.data));
 
-				mesh->setSpecularTexture(ptr);
+				float shininess = 0;
+				pMaterial->Get(AI_MATKEY_SHININESS, shininess);
+
+				mesh->setSpecularTexture(ptr, shininess);
 			}
 		}
 
-		// TEXTURE SPECULAR
+		// TEXTURE EMISSIVE
 		/*if (pMaterial->GetTextureCount(aiTextureType_EMISSIVE) > 0) {
 			if (pMaterial->GetTexture(aiTextureType_EMISSIVE, 0, &matpath, nullptr, nullptr, nullptr, nullptr, nullptr) == AI_SUCCESS) {
 				auto ptr = this->importTexture(matpath.data);
@@ -179,12 +206,14 @@ namespace rawrBox {
 			auto lightNode = sc->mRootNode->FindNode(aiLight.mName.data);
 			if (lightNode == nullptr) continue;
 
-			rawrBox::Vector3f pos;
+			rawrBox::Vector3f pos = {aiLight.mPosition.x, aiLight.mPosition.y, aiLight.mPosition.z};
+			rawrBox::Vector3f direction = rawrBox::Vector3f(aiLight.mDirection.x, aiLight.mDirection.y, aiLight.mDirection.z).normalized();
+
 			aiVector3D p;
 			aiQuaternion q;
 
 			lightNode->mTransformation.DecomposeNoScaling(q, p);
-			pos = {aiLight.mPosition.x + p.x, aiLight.mPosition.y + p.y, aiLight.mPosition.z + p.z};
+			pos += {p.x, p.y, p.z};
 
 			auto parent = lightNode->mParent;
 			if (parent != nullptr) {
@@ -195,8 +224,6 @@ namespace rawrBox {
 			auto diffuse = rawrBox::Colori(static_cast<int>(aiLight.mColorDiffuse.r), static_cast<int>(aiLight.mColorDiffuse.g), static_cast<int>(aiLight.mColorDiffuse.b)).cast<float>();
 			// auto ambient = rawrBox::Colori(static_cast<int>(aiLight.mColorAmbient.r), static_cast<int>(aiLight.mColorAmbient.g), static_cast<int>(aiLight.mColorAmbient.b)).cast<float>();
 			auto specular = rawrBox::Colori(static_cast<int>(aiLight.mColorSpecular.r), static_cast<int>(aiLight.mColorSpecular.g), static_cast<int>(aiLight.mColorSpecular.b)).cast<float>();
-
-			auto direction = rawrBox::Vector3f(aiLight.mDirection.x, aiLight.mDirection.y, aiLight.mDirection.z);
 
 			switch (aiLight.mType) {
 				case aiLightSource_DIRECTIONAL:

@@ -8,6 +8,7 @@ SAMPLER2D(s_texSpecularColor, 1);
 
 uniform vec4 u_viewPos;
 uniform vec4 u_colorOffset;
+uniform vec2 u_texSpecularShininess;
 
 void main() {
 	vec4 specularColor = texture2D(s_texSpecularColor, v_texcoord0.xy) * v_color0 * u_colorOffset;
@@ -27,11 +28,11 @@ void main() {
 			vec3 lightPos = vec3(u_lightsPosition[i][0], u_lightsPosition[i][1], u_lightsPosition[i][2]);
 
 			if(u_lightsData[i][3][0] == 1.0) { // POINT
-				ambient += calculatePointLight(lightPos, u_lightsData[i], v_wPos, viewDir, v_normal, texColor, specularColor);
+				ambient += calculatePointLight(lightPos, u_lightsData[i], v_wPos, viewDir, v_normal, texColor, specularColor, u_texSpecularShininess);
 			}else if(u_lightsData[i][3][0] == 2.0) { // SPOT
-				ambient += calculateSpotLight(lightPos, u_lightsData[i], v_wPos, viewDir, v_normal, texColor, specularColor);
+				ambient += calculateSpotLight(lightPos, u_lightsData[i], v_wPos, viewDir, v_normal, texColor, specularColor, u_texSpecularShininess);
 			}else if(u_lightsData[i][3][0] == 3.0) { // DIR
-				ambient += calculateDirectionalLight(lightPos, u_lightsData[i], v_wPos, viewDir, v_normal, texColor, specularColor);
+				ambient += calculateDirectionalLight(lightPos, u_lightsData[i], v_wPos, viewDir, v_normal, texColor, specularColor, u_texSpecularShininess);
 			}
 		}
 

@@ -22,7 +22,9 @@ namespace rawrBox {
 
 	public:
 		bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
+
 		bgfx::UniformHandle s_texSpecularColor = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle u_texShininess = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle u_colorOffset = BGFX_INVALID_HANDLE;
 
@@ -40,6 +42,8 @@ namespace rawrBox {
 
 			RAWRBOX_DESTROY(this->s_texColor);
 			RAWRBOX_DESTROY(this->s_texSpecularColor);
+			RAWRBOX_DESTROY(this->u_texShininess);
+
 			RAWRBOX_DESTROY(this->u_colorOffset);
 			RAWRBOX_DESTROY(this->u_lightsSetting);
 			RAWRBOX_DESTROY(this->u_lightsPosition);
@@ -52,6 +56,7 @@ namespace rawrBox {
 			this->s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 			this->s_texSpecularColor = bgfx::createUniform("s_texSpecularColor", bgfx::UniformType::Sampler);
 
+			this->u_texShininess = bgfx::createUniform("u_texSpecularShininess", bgfx::UniformType::Vec4, 1);
 			this->u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 
 			this->u_lightsSetting = bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4, 2);
@@ -96,6 +101,9 @@ namespace rawrBox {
 			} else {
 				bgfx::setTexture(1, this->s_texSpecularColor, rawrBox::MISSING_SPECULAR_TEXTURE->getHandle());
 			}
+
+			std::array shininess = {mesh->specularShininess};
+			bgfx::setUniform(u_texShininess, shininess.data());
 
 			std::array colorOffset = {mesh->color.r, mesh->color.b, mesh->color.g, mesh->color.a};
 			bgfx::setUniform(u_colorOffset, colorOffset.data());
