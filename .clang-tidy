@@ -18,6 +18,6 @@ Checks: clang-diagnostic-*
     -bugprone-easily-swappable-parameters
     -bugprone-narrowing-conversions
 WarningsAsErrors: '*'
-HeaderFilterRegex: '^((?!build).)*hpp|h$'
+HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
 ...
