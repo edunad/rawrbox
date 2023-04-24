@@ -1,0 +1,23 @@
+---
+# Enable all by default, then disable some that have either too many warnings
+# at the moment or ones that don't make sense for our codebase
+Checks: clang-diagnostic-*
+    clang-analyzer-*
+    cppcoreguidelines-*
+    modernize-*
+    bugprone-*
+    modernize-deprecated-headers
+    -modernize-use-trailing-return-type
+    -cppcoreguidelines-non-private-member-variables-in-classes
+    -cppcoreguidelines-avoid-magic-numbers
+    -cppcoreguidelines-pro-type-vararg
+    -modernize-avoid-c-arrays
+    -cppcoreguidelines-avoid-c-arrays
+    -cppcoreguidelines-pro-bounds-array-to-pointer-decay
+    -cppcoreguidelines-narrowing-conversions
+    -bugprone-easily-swappable-parameters
+    -bugprone-narrowing-conversions
+WarningsAsErrors: '*'
+HeaderFilterRegex: ''
+AnalyzeTemporaryDtors: false
+...

@@ -49,7 +49,7 @@ namespace rawrBox {
 		}
 
 		template <class ReturnType>
-		Color_t<ReturnType> cast() const {
+		[[nodiscard]] Color_t<ReturnType> cast() const {
 			if constexpr (std::is_same<NumberType, int>::value) {
 				return {
 				    static_cast<ReturnType>(r) / 255.0f,
@@ -100,7 +100,7 @@ namespace rawrBox {
 			}
 		}
 
-		ColorType lerp(const ColorType& other, float timestep) const {
+		[[nodiscard]] ColorType lerp(const ColorType& other, float timestep) const {
 			if ((*this) == other) return other;
 			ColorType ret;
 
@@ -112,9 +112,9 @@ namespace rawrBox {
 			return ret;
 		}
 
-		bool isTransparent() const { return (r == 0 && g == 0 && b == 0) || a == 0; }
+		[[nodiscard]] bool isTransparent() const { return (r == 0 && g == 0 && b == 0) || a == 0; }
 
-		NumberType dot(const ColorType& other) const {
+		[[nodiscard]] NumberType dot(const ColorType& other) const {
 			return r * other.r + g * other.g + b * other.b + a * other.a;
 		}
 

@@ -1,0 +1,11 @@
+Model Information:
+* title:	PS1 Phasmophobia
+* source:	https://sketchfab.com/3d-models/ps1-phasmophobia-da1af845dd6643079b379f3018d451f5
+* author:	Liron (https://sketchfab.com/LironHero)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "PS1 Phasmophobia" (https://sketchfab.com/3d-models/ps1-phasmophobia-da1af845dd6643079b379f3018d451f5) by Liron (https://sketchfab.com/LironHero) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

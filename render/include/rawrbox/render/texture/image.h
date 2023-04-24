@@ -13,6 +13,7 @@ namespace rawrBox {
 	private:
 		std::vector<unsigned char> _pixels;
 		bool _failedToLoad = false;
+		std::string _name = "IMAGE-TEXTURE";
 
 		uint32_t _flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
 
@@ -27,9 +28,10 @@ namespace rawrBox {
 		virtual void setPixel(const rawrBox::Vector2i& pos, const rawrBox::Colori& col);
 
 		virtual void setFlags(uint32_t flags);
+		virtual void setName(const std::string& name);
 		virtual void resize(const rawrBox::Vector2i& newsize);
 		// --------------------
 
-		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
+		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
 	};
 } // namespace rawrBox

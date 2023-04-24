@@ -18,7 +18,7 @@ namespace rawrBox {
 
 		// Need to find a way to not load it all to memory
 		auto gifPixels = stbi_xload(fileName.c_str(), &w, &h, &frames_n, &delays);
-		if (gifPixels == nullptr) {
+		if (gifPixels == nullptr || delays == nullptr) {
 			auto failure = stbi_failure_reason();
 
 			if (useFallback) {
@@ -31,8 +31,6 @@ namespace rawrBox {
 		}
 
 		this->_size = {w, h};
-
-		if (gifPixels == nullptr || delays == nullptr) throw std::runtime_error("Invalid image");
 		uint32_t framePixelCount = this->_size.x * this->_size.y * this->_channels;
 
 		for (int i = 0; i < frames_n; i++) {

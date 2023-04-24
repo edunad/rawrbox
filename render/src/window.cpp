@@ -3,6 +3,8 @@
 #include <bgfx/bgfx.h>
 #include <bx/bx.h>
 
+#include <cmath>
+
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
@@ -26,12 +28,12 @@
 #define GLFW_EXPOSE_NATIVE_WGL
 #endif //
 #include <GLFW/glfw3native.h>
+#include <fmt/printf.h>
 
 #include <map>
 #include <stdexcept>
-#include <fmt/printf.h>
 
-#define GLFWHANDLE reinterpret_cast<GLFWwindow*>(_handle)
+#define GLFWHANDLE (reinterpret_cast<GLFWwindow*>(_handle))
 
 namespace rawrBox {
 	static Window& glfwHandleToRenderer(GLFWwindow* ptr) {
@@ -82,7 +84,6 @@ namespace rawrBox {
 	}
 
 	void Window::initialize(int width, int height, uint32_t flags) {
-
 		glfwSetErrorCallback(glfw_errorCallback);
 		if (!glfwInit()) throw std::runtime_error("[RawrBox-Window] Failed to initialize glfw");
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // Disable opengl
@@ -110,13 +111,17 @@ namespace rawrBox {
 		bool borderless = (flags & WindowFlags::Window::BORDERLESS) > 0;
 		bool fullscreen = (flags & WindowFlags::Window::FULLSCREEN) > 0;
 
-		if (windowed && (borderless || fullscreen)) throw std::runtime_error("[RawrBox-Window] Only one window attribute can be selected");
-		if (borderless && (windowed || fullscreen)) throw std::runtime_error("[RawrBox-Window] Only one window attribute can be selected");
-		if (fullscreen && (windowed || borderless)) throw std::runtime_error("[RawrBox-Window] Only one window attribute can be selected");
+		if (!fullscreen && !windowed && !borderless) throw std::runtime_error("[RawrBox-Window] Window flag attribute missing");
+		if (windowed && (borderless || fullscreen)) throw std::runtime_error("[RawrBox-Window] Only one window flag attribute can be selected");
+		if (borderless && (windowed || fullscreen)) throw std::runtime_error("[RawrBox-Window] Only one window flag attribute can be selected");
+		if (fullscreen && (windowed || borderless)) throw std::runtime_error("[RawrBox-Window] Only one window aflag ttribute can be selected");
 
 		if (fullscreen) {
 			width = mode->width;
 			height = mode->height;
+		} else if (borderless) {
+			width = mode->width - 1;
+			height = mode->height - 1;
 		} else if ((width >= mode->width || height >= mode->height)) {
 			width = mode->width;
 			height = mode->height;
@@ -125,23 +130,30 @@ namespace rawrBox {
 		glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 		// -----------
 
+		// Set transparent
+		bool transparent = (flags & WindowFlags::Features::TRANSPARENT_BUFFER) > 0;
+		if (transparent) {
+			glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
+		}
+		// ----
+
 		// Window properties
 		properties[GLFW_RESIZABLE] = (flags & WindowFlags::Features::RESIZABLE) > 0 ? 1 : 0;
-		properties[GLFW_DECORATED] = borderless || fullscreen ? 0 : 1;
+		properties[GLFW_DECORATED] = borderless || fullscreen || transparent ? 0 : 1;
 		for (const auto& pair : properties) {
 			glfwWindowHint(pair.first, pair.second);
 		}
 		// ------
 
-		auto glfwHandle = glfwCreateWindow(width, height, this->_title.c_str(), windowed ? nullptr : mon, nullptr);
+		auto glfwHandle = glfwCreateWindow(width, height, this->_title.c_str(), windowed || borderless ? nullptr : mon, nullptr);
 		if (glfwHandle == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Window] Failed to initialize window [{} - {}x{}]", this->_title, width, height));
 
 		this->_handle = glfwHandle;
 		glfwSetWindowUserPointer(glfwHandle, this);
 
 		// Center window
-		if (windowed) {
-			int monx = 0, mony = 0, monw = 0, monh = 0;
+		if (windowed || transparent) {
+			int monx = 0, mony = 0;
 			glfwGetMonitorPos(mon, &monx, &mony);
 
 			glfwSetWindowPos(glfwHandle, monx + mode->width / 2 - width / 2, mony + mode->height / 2 - height / 2);
@@ -173,6 +185,7 @@ namespace rawrBox {
 		auto resetFlags = BGFX_RESET_NONE;
 		if ((flags & WindowFlags::Features::VSYNC) > 0) resetFlags |= BGFX_RESET_VSYNC;
 		if ((flags & WindowFlags::Features::MSAA) > 0) resetFlags |= BGFX_RESET_MAXANISOTROPY;
+		if (transparent) resetFlags |= BGFX_RESET_TRANSPARENT_BACKBUFFER;
 
 		init.resolution.reset = resetFlags;
 		init.platformData.nwh = glfwNativeWindowHandle(GLFWHANDLE);
@@ -247,12 +260,19 @@ namespace rawrBox {
 		return ret;
 	}
 
+	float Window::getAspectRatio() const {
+		if (this->_handle == nullptr) throw std::runtime_error("[RawrBox-Render] Window not initialized, handle not found");
+		Vector2f ret = this->getSize().cast<float>();
+
+		return ret.x / ret.y;
+	}
+
 	Vector2i Window::getMousePos() const {
 		if (this->_handle == nullptr) throw std::runtime_error("[RawrBox-Render] Window not initialized, handle not found");
-		double x, y;
+		double x = NAN, y = NAN;
 
 		glfwGetCursorPos(GLFWHANDLE, &x, &y);
-		return Vector2i(static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y)));
+		return {static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y))};
 	}
 
 	bool Window::getShouldClose() const {

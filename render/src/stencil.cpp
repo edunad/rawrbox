@@ -10,6 +10,7 @@
 
 #define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
 
+// NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader stencil_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_stencil),
     BGFX_EMBEDDED_SHADER(fs_stencil),
@@ -18,12 +19,10 @@ static const bgfx::EmbeddedShader stencil_shaders[] = {
     BGFX_EMBEDDED_SHADER(fs_stencil_text),
     BGFX_EMBEDDED_SHADER(vs_stencil_text),
     BGFX_EMBEDDED_SHADER_END()};
+// NOLINTEND(*)
 
 namespace rawrBox {
-	Stencil::Stencil(bgfx::ViewId id, const rawrBox::Vector2i& size) {
-		this->_windowSize = size;
-		this->_viewId = id;
-
+	Stencil::Stencil(bgfx::ViewId id, const rawrBox::Vector2i& size) : _viewId(id), _windowSize(size) {
 		// Shader layout
 		this->_vLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
@@ -418,8 +417,8 @@ namespace rawrBox {
 		- Dynamic - changes sometimes (if you don't pass data on creation, buffer/texture is dynamic)
 		- Static - never changes (if you pass data to any creation function, it's assumed that buffer/texture is immutable)
 		*/
-		bgfx::TransientVertexBuffer vbh;
-		bgfx::TransientIndexBuffer ibh;
+		bgfx::TransientVertexBuffer vbh = {};
+		bgfx::TransientIndexBuffer ibh = {};
 
 		bgfx::allocTransientVertexBuffer(&vbh, static_cast<uint32_t>(this->_vertices.size()), this->_vLayout);
 		bx::memCopy(vbh.data, this->_vertices.data(), this->_vertices.size() * this->_vLayout.m_stride);
@@ -553,7 +552,7 @@ namespace rawrBox {
 
 	// ------ CLIPPING
 	void Stencil::pushClipping(const rawrBox::AABB& rect) {
-		this->_clips.push_back({rect.pos.x + this->_offset.x, rect.pos.y + this->_offset.y, rect.size.x, rect.size.y});
+		this->_clips.emplace_back(rect.pos.x + this->_offset.x, rect.pos.y + this->_offset.y, rect.size.x, rect.size.y);
 	}
 
 	void Stencil::popClipping() {

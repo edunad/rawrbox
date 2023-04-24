@@ -1,5 +1,7 @@
 
 #include <rawrbox/render/model/light/manager.h>
+#include <rawrbox/render/model/material/lit.hpp>
+#include <rawrbox/render/model/material/unlit.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -75,19 +77,22 @@ namespace assimp {
 		this->_render->upload();
 
 		// Assimp test ---
-		this->_model = std::make_shared<rawrBox::ModelImported>();
-		this->_model->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_LIGHT | rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
+		auto unlitMat = std::make_shared<rawrBox::MaterialUnlit>();
+
+		this->_model = std::make_shared<rawrBox::ModelImported>(unlitMat);
+		this->_model->setPos({10, 0, 0});
+		this->_model->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx");
 		this->_model->upload();
 
-		this->_model2 = std::make_shared<rawrBox::ModelImported>();
+		this->_model2 = std::make_shared<rawrBox::ModelImported>(unlitMat);
+		this->_model2->setPos({0, 0, 0});
 		this->_model2->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
-		this->_model2->setFullbright(true);
-		this->_model2->setPos({10, 0, 0});
 		this->_model2->upload();
 
-		this->_model3 = std::make_shared<rawrBox::ModelImported>();
-		this->_model3->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx");
+		auto litMat = std::make_shared<rawrBox::MaterialLit>();
+		this->_model3 = std::make_shared<rawrBox::ModelImported>(litMat);
 		this->_model3->setPos({-10, 0, 0});
+		this->_model3->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_LIGHT);
 		this->_model3->upload();
 		// -----
 

@@ -32,11 +32,11 @@ namespace rawrBox {
 		uint32_t size;
 		TextureAtlas(uint32_t size = 1024);
 
-		size_t getSpriteCount() const;
+		[[nodiscard]] size_t getSpriteCount() const;
 
 		bool canInsertNode(int width, int height);
 		AtlasNode& addSprite(int width, int height, const std::vector<unsigned char>& data);
 
-		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
+		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
 	};
 } // namespace rawrBox

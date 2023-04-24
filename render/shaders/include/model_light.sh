@@ -8,7 +8,8 @@ uniform vec4 u_lightsSetting;
 uniform vec4 u_lightsPosition[MAX_LIGHTS];
 uniform mat4 u_lightsData[MAX_LIGHTS];
 // -----
-vec3 calculatePointLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, vec3 vNormal, vec4 texColor, vec4 specularColor) {
+
+vec3 calculatePointLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, vec3 vNormal, vec4 texColor, vec4 specularColor, vec2 shinny) {
 	// Ambient
 	vec3 ambient = vec3(0.1, 0.1, 0.1);
 	vec3 lightDirection = normalize(pos - worldPos);
@@ -17,9 +18,8 @@ vec3 calculatePointLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, 
 	vec3 diffuse = vec3(lightData[0][0], lightData[0][1], lightData[0][2]) * max(dot(vNormal, lightDirection), 0.0);
 
 	// Specular shading
-	float shininess = 10.0; // material.shininess
 	vec3 reflectDir = reflect(-lightDirection, vNormal);
-	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(reflectDir, viewDir), 0.0), shininess);
+	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(reflectDir, viewDir), 0.0), shinny.x);
 
 	// Spotlight power
 	float distance = length(pos - worldPos);
@@ -34,7 +34,7 @@ vec3 calculatePointLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, 
 	return dif + spec;
 }
 
-vec3 calculateSpotLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, vec3 vNormal, vec4 texColor, vec4 specularColor) {
+vec3 calculateSpotLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, vec3 vNormal, vec4 texColor, vec4 specularColor, vec2 shinny) {
 	// Ambient
 	vec3 ambient = vec3(0.1, 0.1, 0.1);
 	vec3 lightDirection = normalize(pos - worldPos);
@@ -43,9 +43,8 @@ vec3 calculateSpotLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, v
 	vec3 diffuse = vec3(lightData[0][0], lightData[0][1], lightData[0][2]) * max(dot(vNormal, lightDirection), 0.0);
 
 	// Specular shading
-	float shininess = 20.0; // material.shininess
 	vec3 reflectDir = reflect(-lightDirection, vNormal);
-	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(reflectDir, viewDir), 0.0), shininess);
+	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(reflectDir, viewDir), 0.0), shinny.x);
 
 	// Spotlight intensity
 	float theta = dot(vec3(lightData[2][0], lightData[2][1], lightData[2][2]), -lightDirection);
@@ -65,7 +64,7 @@ vec3 calculateSpotLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, v
 	return dif + spec;
 }
 
-vec3 calculateDirectionalLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, vec3 vNormal, vec4 texColor, vec4 specularColor) {
+vec3 calculateDirectionalLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 viewDir, vec3 vNormal, vec4 texColor, vec4 specularColor, vec2 shinny) {
 
 	// Ambient
 	vec3 ambient = vec3(0.1, 0.1, 0.1);
@@ -75,9 +74,8 @@ vec3 calculateDirectionalLight(vec3 pos, mat4 lightData, vec3 worldPos, vec3 vie
 	vec3 diffuse = vec3(lightData[0][0], lightData[0][1], lightData[0][2]) * max(dot(vNormal, lightDirection), 0.0f);
 
 	// specular lighting
-	float shininess = 20.0; // material.shininess
 	vec3 reflectionDirection = reflect(-lightDirection, vNormal);
-	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(reflectionDirection, viewDir), 0.0f), shininess);
+	vec3 specular = vec3(lightData[1][0], lightData[1][1], lightData[1][2]) * pow(max(dot(reflectionDirection, viewDir), 0.0f), shinny.x);
 
 	vec3 dif = texColor.rgb * (diffuse.rgb + ambient);
 	vec3 spec = specularColor.r * specular.rgb;

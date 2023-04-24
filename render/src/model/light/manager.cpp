@@ -1,5 +1,8 @@
 
+#include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/light/manager.h>
+#include <rawrbox/render/model/material/sprite_unlit.hpp>
+#include <rawrbox/render/model/material/unlit.hpp>
 
 #include <fmt/format.h>
 
@@ -11,9 +14,7 @@ namespace rawrBox {
 		this->_spotTexture = std::make_shared<rawrBox::TextureImage>("./content/textures/debug/spot.png");
 		this->_dirTexture = std::make_shared<rawrBox::TextureImage>("./content/textures/debug/dir.png");
 
-		this->_debugMdl = std::make_shared<rawrBox::Sprite>();
-		this->_debugMdl->setFullbright(true);
-		this->_debugMdl->setWireframe(true);
+		this->_debugMdl = std::make_shared<rawrBox::Sprite>(std::make_shared<rawrBox::MaterialSpriteUnlit>());
 	}
 
 	void LightManager::destroy() {
@@ -28,17 +29,18 @@ namespace rawrBox {
 	void LightManager::setEnabled(bool fb) { this->fullbright = fb; }
 
 	// Light utils ----
-	void LightManager::addLight(const std::shared_ptr<rawrBox::LightBase>& light) {
+	void LightManager::addLight(std::shared_ptr<rawrBox::LightBase> light) {
 		if (light == nullptr || this->_lights.size() >= this->maxLights) return;
-		this->_lights.push_back(std::move(light));
 
 		// Add mesh --
 		if (this->_debugMdl != nullptr) {
 			auto pos = light->getPosMatrix();
 
-			auto mesh = rawrBox::Sprite::generatePlane({pos[0], pos[1], pos[2]}, 0.1f);
+			auto mesh = rawrBox::ModelBase::generatePlane({pos[0], pos[1], pos[2]}, 0.1f);
 			mesh->setName(fmt::format("Light-{}", light->getType()));
-			mesh->setColor(light->getDiffuseColor());
+			mesh->setCulling(BGFX_STATE_CULL_CW);
+			// mesh->setColor(light->getDiffuseColor());
+
 			switch (light->getType()) {
 				case LightType::LIGHT_SPOT:
 					mesh->setTexture(this->_spotTexture);
@@ -54,9 +56,11 @@ namespace rawrBox {
 
 			this->_debugMdl->addMesh(mesh);
 		}
+
+		this->_lights.push_back(std::move(light));
 	}
 
-	void LightManager::removeLight(const std::shared_ptr<rawrBox::LightBase>& light) {
+	void LightManager::removeLight(std::shared_ptr<rawrBox::LightBase> light) {
 		if (this->_lights.empty()) return;
 
 		for (size_t i = 0; i < this->_lights.size(); i++) {

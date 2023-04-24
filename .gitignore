@@ -259,3 +259,4 @@ CMakeSettings.json
 cmake_install.cmake
 MakeFile
 bin/*
+.cache/

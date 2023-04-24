@@ -63,8 +63,8 @@
 #include <cstddef> // Includes ::std::size_t
 #include <cstdint> // Includes ::std::uint8_t, ::std::uint16_t, ::std::uint32_t, ::std::uint64_t
 #else
-#include <stddef.h> // Includes size_t
-#include <stdint.h> // Includes uint8_t, uint16_t, uint32_t, uint64_t
+#include <cstddef> // Includes size_t
+#include <cstdint> // Includes uint8_t, uint16_t, uint32_t, uint64_t
 #endif
 #include <limits>  // Includes ::std::numeric_limits
 #include <utility> // Includes ::std::move
@@ -161,7 +161,7 @@ namespace CRCPP {
 			bool reflectInput;    ///< true to reflect all input bytes
 			bool reflectOutput;   ///< true to reflect the output CRC (reflection occurs before the final XOR)
 
-			Table<CRCType, CRCWidth> MakeTable() const;
+			[[nodiscard]] Table<CRCType, CRCWidth> MakeTable() const;
 		};
 
 		/**
@@ -302,9 +302,9 @@ namespace CRCPP {
 
 	private:
 #ifndef CRCPP_USE_CPP11
-		CRC();
-		CRC(const CRC &other);
-		CRC &operator=(const CRC &other);
+		CRC() = delete;
+		CRC(const CRC &other) = delete;
+		CRC &operator=(const CRC &other) = delete;
 #endif
 
 		template <typename IntegerType>
@@ -743,7 +743,7 @@ namespace CRCPP {
 	enum { static_assert_failed_CRCType_is_too_small_to_contain_a_CRC_of_width_CRCWidth = 1 / (::std::numeric_limits<CRCType>::digits >= CRCWidth ? 1 : 0) };
 #endif
 
-		const unsigned char *current = reinterpret_cast<const unsigned char *>(data);
+		const auto *current = reinterpret_cast<const unsigned char *>(data);
 
 		// Slightly different implementations based on the parameters. The current implementations try to eliminate as much
 		// computation from the inner loop (looping over each bit) as possible.
@@ -799,7 +799,7 @@ namespace CRCPP {
 			// The conditional expression is used to avoid a -Wshift-count-overflow warning.
 			static crcpp_constexpr CRCType SHIFT((CHAR_BIT >= CRCWidth) ? static_cast<CRCType>(CHAR_BIT - CRCWidth) : 0);
 
-			CRCType polynomial = static_cast<CRCType>(parameters.polynomial << SHIFT);
+			auto polynomial = static_cast<CRCType>(parameters.polynomial << SHIFT);
 			remainder = static_cast<CRCType>(remainder << SHIFT);
 
 			while (size--) {
@@ -838,7 +838,7 @@ namespace CRCPP {
 	*/
 	template <typename CRCType, crcpp_uint16 CRCWidth>
 	inline CRCType CRC::CalculateRemainder(const void *data, crcpp_size size, const Table<CRCType, CRCWidth> &lookupTable, CRCType remainder) {
-		const unsigned char *current = reinterpret_cast<const unsigned char *>(data);
+		const auto *current = reinterpret_cast<const unsigned char *>(data);
 
 		if (lookupTable.GetParameters().reflectInput) {
 			while (size--) {
@@ -930,7 +930,7 @@ namespace CRCPP {
 			// The conditional expression is used to avoid a -Wshift-count-overflow warning.
 			static crcpp_constexpr CRCType SHIFT((CHAR_BIT >= CRCWidth) ? static_cast<CRCType>(CHAR_BIT - CRCWidth) : 0);
 
-			CRCType polynomial = static_cast<CRCType>(parameters.polynomial << SHIFT);
+			auto polynomial = static_cast<CRCType>(parameters.polynomial << SHIFT);
 			remainder = static_cast<CRCType>((remainder << SHIFT) ^ byte);
 
 			// An optimizing compiler might choose to unroll this loop.

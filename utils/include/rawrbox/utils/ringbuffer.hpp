@@ -13,8 +13,8 @@
 
 #include <atomic>
 #include <limits>
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 
 namespace jnk0le {
 	/*!
@@ -47,7 +47,7 @@ namespace jnk0le {
 		 * \brief Clear buffer from producer side
 		 * \warning function may return without performing any action if consumer tries to read data at the same time
 		 */
-		void producerClear(void) {
+		void producerClear() {
 			// head modification will lead to underflow if cleared during consumer read
 			// doing this properly with CAS is not possible without modifying the consumer code
 			consumerClear();
@@ -56,7 +56,7 @@ namespace jnk0le {
 		/*!
 		 * \brief Clear buffer from consumer side
 		 */
-		void consumerClear(void) {
+		void consumerClear() {
 			tail.store(head.load(std::memory_order_relaxed), std::memory_order_relaxed);
 		}
 
@@ -64,7 +64,7 @@ namespace jnk0le {
 		 * \brief Check if buffer is empty
 		 * \return True if buffer is empty
 		 */
-		bool isEmpty(void) const {
+		[[nodiscard]] bool isEmpty() const {
 			return readAvailable() == 0;
 		}
 
@@ -72,7 +72,7 @@ namespace jnk0le {
 		 * \brief Check if buffer is full
 		 * \return True if buffer is full
 		 */
-		bool isFull(void) const {
+		[[nodiscard]] bool isFull() const {
 			return writeAvailable() == 0;
 		}
 
@@ -80,7 +80,7 @@ namespace jnk0le {
 		 * \brief Check how many elements can be read from the buffer
 		 * \return Number of elements that can be read
 		 */
-		index_t readAvailable(void) const {
+		index_t readAvailable() const {
 			return head.load(index_acquire_barrier) - tail.load(std::memory_order_relaxed);
 		}
 
@@ -88,7 +88,7 @@ namespace jnk0le {
 		 * \brief Check how many elements can be written into the buffer
 		 * \return Number of free slots that can be be written
 		 */
-		index_t writeAvailable(void) const {
+		index_t writeAvailable() const {
 			return buffer_size - (head.load(std::memory_order_relaxed) - tail.load(index_acquire_barrier));
 		}
 
@@ -137,7 +137,7 @@ namespace jnk0le {
 		 * \param get_data_callback Pointer to callback function that returns element to be inserted into buffer
 		 * \return True if data was inserted and callback called
 		 */
-		bool insertFromCallbackWhenAvailable(T (*get_data_callback)(void)) {
+		bool insertFromCallbackWhenAvailable(T (*get_data_callback)()) {
 			index_t tmp_head = head.load(std::memory_order_relaxed);
 
 			if ((tmp_head - tail.load(index_acquire_barrier)) == buffer_size)
@@ -281,7 +281,7 @@ namespace jnk0le {
 		 * \param execute_data_callback Pointer to callback function executed after every loop iteration
 		 * \return Number of elements written into internal  buffer
 		 */
-		size_t writeBuff(const T* buff, size_t count, size_t count_to_callback, void (*execute_data_callback)(void));
+		size_t writeBuff(const T* buff, size_t count, size_t count_to_callback, void (*execute_data_callback)());
 
 		/*!
 		 * \brief Load multiple elements from internal buffer without blocking
@@ -309,7 +309,7 @@ namespace jnk0le {
 		 * \param execute_data_callback Pointer to callback function executed after every loop iteration
 		 * \return Number of elements that were read from internal buffer
 		 */
-		size_t readBuff(T* buff, size_t count, size_t count_to_callback, void (*execute_data_callback)(void));
+		size_t readBuff(T* buff, size_t count, size_t count_to_callback, void (*execute_data_callback)());
 
 	private:
 		constexpr static index_t buffer_mask = buffer_size - 1; //!< bitwise mask for a given buffer size

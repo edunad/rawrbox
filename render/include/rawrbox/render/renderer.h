@@ -21,6 +21,10 @@ namespace rawrBox {
 	public:
 		~Renderer();
 		Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size);
+		Renderer(Renderer&&) = delete;
+		Renderer& operator=(Renderer&&) = delete;
+		Renderer(const Renderer&) = delete;
+		Renderer& operator=(const Renderer&) = delete;
 
 		void upload();
 		void setClearColor(uint32_t clearColor);
@@ -33,9 +37,9 @@ namespace rawrBox {
 		// --------------------
 
 		// ------UTILS
-		bgfx::ViewId getID() const;
-		rawrBox::Vector2i& getSize();
-		rawrBox::Stencil& getStencil() const;
+		[[nodiscard]] bgfx::ViewId getID() const;
+		[[nodiscard]] const rawrBox::Vector2i& getSize() const;
+		[[nodiscard]] rawrBox::Stencil& getStencil() const;
 		// --------------------
 	};
 } // namespace rawrBox

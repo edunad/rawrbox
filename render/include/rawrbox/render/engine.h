@@ -13,10 +13,18 @@ namespace rawrBox {
 		uint32_t _fps = 60;
 
 		std::chrono::milliseconds _deadlockBreaker = std::chrono::milliseconds(500);
-		std::chrono::nanoseconds _delayBetweenTicks;
-		std::chrono::nanoseconds _delayBetweenFrames;
+		std::chrono::nanoseconds _delayBetweenTicks{};
+		std::chrono::nanoseconds _delayBetweenFrames{};
 
 	public:
+		virtual ~Engine() = default;
+		Engine() = default;
+
+		Engine(Engine&&) = delete;
+		Engine& operator=(Engine&&) = delete;
+		Engine(const Engine&) = delete;
+		Engine& operator=(const Engine&) = delete;
+
 		// one time initializer
 		virtual void init();
 

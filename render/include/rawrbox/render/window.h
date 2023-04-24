@@ -5,13 +5,15 @@
 
 #include <bgfx/platform.h>
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 
 struct GLFWwindow;
 namespace rawrBox {
 	// ------FLAGS
+
+	// NOLINTBEGIN{unused-const-variable}
 	namespace WindowFlags {
 		const uint32_t NONE = 0;
 
@@ -22,19 +24,22 @@ namespace rawrBox {
 		}; // namespace Window
 
 		namespace Features {
-			const uint32_t RESIZABLE = 1 << 4;
-			const uint32_t VSYNC = 1 << 5;
-			const uint32_t MSAA = 1 << 6;
-			const uint32_t MULTI_THREADED = 1 << 7;
+			const uint32_t TRANSPARENT_BUFFER = 1 << 4;
+			const uint32_t RESIZABLE = 1 << 5;
+			const uint32_t VSYNC = 1 << 6;
+			const uint32_t MSAA = 1 << 7;
+			const uint32_t MULTI_THREADED = 1 << 8;
 		}; // namespace Features
 
 		namespace Debug {
-			const uint32_t WIREFRAME = 1 << 8;
-			const uint32_t STATS = 1 << 9;
-			const uint32_t TEXT = 1 << 10;
+			const uint32_t WIREFRAME = 1 << 9;
+			const uint32_t STATS = 1 << 10;
+			const uint32_t TEXT = 1 << 11;
 		}; // namespace Debug
 	};         // namespace WindowFlags
-		   // --------------------
+
+	// NOLINTEND{unused-const-variable}
+	//  --------------------
 
 	class Window;
 	// ------EVENTS
@@ -98,17 +103,24 @@ namespace rawrBox {
 
 		// ------UTILS
 		void close();
-		bool getShouldClose() const;
+		[[nodiscard]] bool getShouldClose() const;
 		void setShouldClose(bool close) const;
 
 		bool isRendererSupported(bgfx::RendererType::Enum render);
 
-		Vector2i getSize() const;
-		Vector2i getMousePos() const;
+		[[nodiscard]] Vector2i getSize() const;
+		[[nodiscard]] float getAspectRatio() const;
+
+		[[nodiscard]] Vector2i getMousePos() const;
 
 		bool isKeyDown(int key);
 		// --------------------
 
 		~Window();
+		Window() = default;
+		Window(Window&&) = delete;
+		Window& operator=(Window&&) = delete;
+		Window(const Window&) = delete;
+		Window& operator=(const Window&) = delete;
 	};
 } // namespace rawrBox

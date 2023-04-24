@@ -13,9 +13,7 @@ namespace rawrBox {
 		rawrBox::MISSING_SPECULAR_TEXTURE = nullptr;
 	}
 
-	Renderer::Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size) {
-		this->_id = id;
-		this->_size = size;
+	Renderer::Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size) : _id(id), _size(size) {
 		this->_stencil = std::make_unique<rawrBox::Stencil>(id, size);
 
 		bgfx::setViewRect(this->_id, 0, 0, size.x, size.y);
@@ -24,7 +22,7 @@ namespace rawrBox {
 		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0f, 0);
 
 		rawrBox::MISSING_TEXTURE = std::make_shared<rawrBox::TextureMissing>();
-		rawrBox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrBox::TextureFlat>(1);
+		rawrBox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrBox::TextureFlat>(1, rawrBox::Colors::Black);
 	}
 
 	void Renderer::upload() {
@@ -62,7 +60,7 @@ namespace rawrBox {
 		return this->_id;
 	}
 
-	rawrBox::Vector2i& Renderer::getSize() {
+	const rawrBox::Vector2i& Renderer::getSize() const {
 		return this->_size;
 	}
 

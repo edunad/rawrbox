@@ -11,7 +11,7 @@ namespace rawrBox {
 		TextureMissing();
 
 		// ------RENDER
-		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGB8) override;
+		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGB8) override;
 		// --------------------
 	};
 } // namespace rawrBox

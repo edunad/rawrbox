@@ -3,7 +3,6 @@
 #include <rawrbox/math/vector2.hpp>
 
 #include <bgfx/bgfx.h>
-
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_STROKER_H
@@ -14,10 +13,10 @@
 
 namespace rawrBox {
 	struct Glyph {
-		uint32_t atlasID;
+		uint32_t atlasID{};
 
-		FT_ULong codepoint;
-		FT_UInt glyphIndex;
+		FT_ULong codepoint{};
+		FT_UInt glyphIndex{};
 
 		rawrBox::Vector2f bearing;
 		rawrBox::Vector2f advance;
@@ -50,17 +49,22 @@ namespace rawrBox {
 		void preloadGlyphs(std::string chars);
 		// -----
 	public:
-		FT_Face face;
+		FT_Face face = {};
 
 		Font(TextEngine* engine, std::string filename, uint32_t size);
+		Font(Font&&) = delete;
+		Font& operator=(Font&&) = delete;
+		Font(const Font&) = delete;
+		Font& operator=(const Font&) = delete;
+
 		~Font();
 
 		// UTILS --
-		float getLineHeight() const;
-		bool hasGlyph(uint32_t codepoint) const;
-		const Glyph& getGlyph(uint32_t codepoint) const;
-		float getKerning(const Glyph& left, const Glyph& right) const;
-		rawrBox::Vector2 getStringSize(const std::string& text) const;
+		[[nodiscard]] float getLineHeight() const;
+		[[nodiscard]] bool hasGlyph(uint32_t codepoint) const;
+		[[nodiscard]] const Glyph& getGlyph(uint32_t codepoint) const;
+		[[nodiscard]] float getKerning(const Glyph& left, const Glyph& right) const;
+		[[nodiscard]] rawrBox::Vector2 getStringSize(const std::string& text) const;
 
 		bgfx::TextureHandle& getHandle(const Glyph& g);
 		// ----

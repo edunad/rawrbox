@@ -76,6 +76,10 @@ namespace rawrBox {
 		this->_flags = flags;
 	}
 
+	void TextureImage::setName(const std::string& name) {
+		this->_name = name;
+	}
+
 	void TextureImage::resize(const rawrBox::Vector2i& newsize) {
 		throw std::runtime_error("TODO");
 	}
@@ -107,6 +111,6 @@ namespace rawrBox {
 		    0 | this->_flags, bgfx::copy(this->_pixels.data(), static_cast<uint32_t>(this->_pixels.size())));
 
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureImage] Failed to bind texture");
-		bgfx::setName(this->_handle, fmt::format("RAWR-IMAGE-TEXTURE-{}", this->_handle.idx).c_str());
+		bgfx::setName(this->_handle, fmt::format("RAWR-{}-{}", this->_name, this->_handle.idx).c_str());
 	}
 } // namespace rawrBox

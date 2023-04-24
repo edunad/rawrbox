@@ -22,11 +22,13 @@ namespace assimp {
 		rawrBox::Vector2i _oldMousePos = {};
 
 	public:
-		virtual void init() override;
-		virtual void shutdown() override;
-		virtual void pollEvents() override;
-		virtual void update(float deltaTime, int64_t gameTime) override;
-		virtual void draw(const double alpha) override;
+		using Engine::Engine;
+
+		void init() override;
+		void shutdown() override;
+		void pollEvents() override;
+		void update(float deltaTime, int64_t gameTime) override;
+		void draw(const double alpha) override;
 
 		void loadContent();
 		void drawWorld();
