@@ -6,6 +6,7 @@ Checks: clang-diagnostic-*
     cppcoreguidelines-*
     modernize-*
     bugprone-*
+    modernize-deprecated-headers
     -modernize-use-trailing-return-type
     -cppcoreguidelines-non-private-member-variables-in-classes
     -cppcoreguidelines-avoid-magic-numbers
@@ -14,6 +15,8 @@ Checks: clang-diagnostic-*
     -cppcoreguidelines-avoid-c-arrays
     -cppcoreguidelines-pro-bounds-array-to-pointer-decay
     -cppcoreguidelines-narrowing-conversions
+    -bugprone-easily-swappable-parameters
+    -bugprone-narrowing-conversions
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false

@@ -417,8 +417,8 @@ namespace rawrBox {
 		- Dynamic - changes sometimes (if you don't pass data on creation, buffer/texture is dynamic)
 		- Static - never changes (if you pass data to any creation function, it's assumed that buffer/texture is immutable)
 		*/
-		bgfx::TransientVertexBuffer vbh;
-		bgfx::TransientIndexBuffer ibh;
+		bgfx::TransientVertexBuffer vbh = {};
+		bgfx::TransientIndexBuffer ibh = {};
 
 		bgfx::allocTransientVertexBuffer(&vbh, static_cast<uint32_t>(this->_vertices.size()), this->_vLayout);
 		bx::memCopy(vbh.data, this->_vertices.data(), this->_vertices.size() * this->_vLayout.m_stride);
@@ -552,7 +552,7 @@ namespace rawrBox {
 
 	// ------ CLIPPING
 	void Stencil::pushClipping(const rawrBox::AABB& rect) {
-		this->_clips.push_back({rect.pos.x + this->_offset.x, rect.pos.y + this->_offset.y, rect.size.x, rect.size.y});
+		this->_clips.emplace_back(rect.pos.x + this->_offset.x, rect.pos.y + this->_offset.y, rect.size.x, rect.size.y);
 	}
 
 	void Stencil::popClipping() {

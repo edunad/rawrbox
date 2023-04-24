@@ -12,7 +12,7 @@
 #include <assimp/pbrmaterial.h>
 #include <bx/math.h>
 #include <fmt/format.h>
-#include <stdint.h>
+#include <cstdint>
 
 #include <filesystem>
 #include <stdexcept>

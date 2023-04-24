@@ -36,31 +36,31 @@ namespace rawrBox {
 			return closest_point.distance(*this);
 		}
 
-		NumberType distance(const VecType& other) const {
+		[[nodiscard]] NumberType distance(const VecType& other) const {
 			return std::sqrt(((x - other.x) * (x - other.x)) + ((y - other.y) * (y - other.y)) + ((z - other.z) * (z - other.z)));
 		}
 
-		NumberType length() const {
+		[[nodiscard]] NumberType length() const {
 			return static_cast<NumberType>(std::sqrt(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2)));
 		}
 
-		VecType normalized() const {
+		[[nodiscard]] VecType normalized() const {
 			return (*this) / length();
 		}
 
-		VecType abs() const {
+		[[nodiscard]] VecType abs() const {
 			return {std::abs(x), std::abs(y), std::abs(z)};
 		}
 
-		Vector2_t<NumberType> xy() const {
+		[[nodiscard]] Vector2_t<NumberType> xy() const {
 			return {x, y};
 		}
 
-		VecType xzy() const {
+		[[nodiscard]] VecType xzy() const {
 			return {x, z, y};
 		}
 
-		VecType lerp(const VecType& other, float timestep) const {
+		[[nodiscard]] VecType lerp(const VecType& other, float timestep) const {
 			if ((*this) == other) return other;
 			VecType ret;
 
@@ -71,26 +71,26 @@ namespace rawrBox {
 			return ret;
 		}
 
-		VecType clamp(NumberType min, NumberType max) const {
+		[[nodiscard]] VecType clamp(NumberType min, NumberType max) const {
 			return {
 			    std::clamp(x, min, max),
 			    std::clamp(y, min, max),
 			    std::clamp(z, min, max)};
 		}
 
-		VecType floor() const {
+		[[nodiscard]] VecType floor() const {
 			return {std::floor(x), std::floor(y), std::floor(z)};
 		}
 
-		VecType round() const {
+		[[nodiscard]] VecType round() const {
 			return {std::round(x), std::round(y), std::round(z)};
 		}
 
-		VecType ceil() const {
+		[[nodiscard]] VecType ceil() const {
 			return {std::ceil(x), std::ceil(y), std::ceil(z)};
 		}
 
-		VecType cross(const VecType& other) const {
+		[[nodiscard]] VecType cross(const VecType& other) const {
 			VecType retVal;
 			retVal.x = y * other.z - z * other.y;
 			retVal.y = z * other.x - x * other.z;
@@ -100,7 +100,7 @@ namespace rawrBox {
 		}
 
 		// FROM: https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Math/Vector3.cs#L324
-		NumberType angle(const VecType& other) const {
+		[[nodiscard]] NumberType angle(const VecType& other) const {
 			float denominator = length() * other.length();
 			if (denominator < 1e-15f)
 				return 0.f;
@@ -109,7 +109,7 @@ namespace rawrBox {
 			return std::acos(val);
 		}
 
-		NumberType dot(const VecType& other) const {
+		[[nodiscard]] NumberType dot(const VecType& other) const {
 			return x * other.x + y * other.y + z * other.z;
 		}
 

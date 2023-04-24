@@ -2,16 +2,17 @@
 #include <rawrbox/render/text/font.h>
 
 #include <fmt/format.h>
+#include <utf8.h>
 
 #include <iostream>
-#include <utf8.h>
+#include <utility>
 
 namespace rawrBox {
 	Font::~Font() {
 		if (FT_Done_Face(this->face) != 0) fmt::print(stderr, "Error: failed to clean up font\n");
 	}
 
-	Font::Font(rawrBox::TextEngine* engine, std::string _filename, uint32_t size) : _engine(engine), _file(_filename), _size(size) {
+	Font::Font(rawrBox::TextEngine* engine, std::string _filename, uint32_t size) : _engine(engine), _file(std::move(_filename)), _size(size) {
 		if (FT_New_Face(engine->ft, this->_file.c_str(), 0, &this->face) != FT_Err_Ok) {
 			throw std::runtime_error(fmt::format("Error: failed to load font: {}", this->_file));
 		}
@@ -133,11 +134,11 @@ namespace rawrBox {
 	}
 
 	std::vector<unsigned char> Font::generateGlyph() {
-		FT_Glyph glyphDescFill;
+		FT_Glyph glyphDescFill = nullptr;
 		if (FT_Get_Glyph(this->face->glyph, &glyphDescFill) != FT_Err_Ok) return {};
 		if (FT_Glyph_To_Bitmap(&glyphDescFill, FT_RENDER_MODE_NORMAL, nullptr, true) != FT_Err_Ok) return {};
 
-		FT_BitmapGlyph glyph_bitmap = reinterpret_cast<FT_BitmapGlyph>(glyphDescFill);
+		auto glyph_bitmap = reinterpret_cast<FT_BitmapGlyph>(glyphDescFill);
 		FT_Bitmap* bitmap_fill = &glyph_bitmap->bitmap;
 		if (bitmap_fill == nullptr) return {};
 

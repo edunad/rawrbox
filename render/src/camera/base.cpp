@@ -4,8 +4,6 @@
 #include <bx/math.h>
 
 namespace rawrBox {
-	CameraBase::CameraBase() {}
-
 	// UTILS -----
 	void CameraBase::setPos(const rawrBox::Vector3f& pos) {
 		this->_pos = pos;

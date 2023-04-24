@@ -49,7 +49,7 @@ namespace rawrBox {
 		void preloadGlyphs(std::string chars);
 		// -----
 	public:
-		FT_Face face;
+		FT_Face face = {};
 
 		Font(TextEngine* engine, std::string filename, uint32_t size);
 		Font(Font&&) = delete;

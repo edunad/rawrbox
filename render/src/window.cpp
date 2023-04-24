@@ -3,6 +3,8 @@
 #include <bgfx/bgfx.h>
 #include <bx/bx.h>
 
+#include <cmath>
+
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
@@ -31,7 +33,7 @@
 #include <map>
 #include <stdexcept>
 
-#define GLFWHANDLE reinterpret_cast<GLFWwindow*>(_handle)
+#define GLFWHANDLE (reinterpret_cast<GLFWwindow*>(_handle))
 
 namespace rawrBox {
 	static Window& glfwHandleToRenderer(GLFWwindow* ptr) {
@@ -267,10 +269,10 @@ namespace rawrBox {
 
 	Vector2i Window::getMousePos() const {
 		if (this->_handle == nullptr) throw std::runtime_error("[RawrBox-Render] Window not initialized, handle not found");
-		double x, y;
+		double x = NAN, y = NAN;
 
 		glfwGetCursorPos(GLFWHANDLE, &x, &y);
-		return Vector2i(static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y)));
+		return {static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y))};
 	}
 
 	bool Window::getShouldClose() const {

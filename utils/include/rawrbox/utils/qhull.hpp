@@ -56,22 +56,22 @@ namespace rawrBox {
 			int exitcode = qh_new_qhull(qh, dimension, static_cast<int>(size), points, true, flags.c_str(), outfile, errfile);
 			if (exitcode != 0 || qh->num_vertices == 0) {
 				qh_freeqhull(qh, !qh_ALL);
-				int curlong, totlong;
+				int curlong = 0, totlong = 0;
 				qh_memfreeshort(qh, &curlong, &totlong);
 
 				return hull;
 			}
 
-			vertexT* vertex;
+			vertexT* vertex = nullptr;
 			FORALLvertices {
 				hull.push_back(vertPoints[qh_pointid(qh, vertex->point)]);
 			}
 
 			qh_freeqhull(qh, !qh_ALL);
-			int curlong, totlong;
+			int curlong = 0, totlong = 0;
 			qh_memfreeshort(qh, &curlong, &totlong);
 
 			return hull;
 		}
-	}
+	};
 } // namespace rawrBox

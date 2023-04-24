@@ -1,9 +1,9 @@
-#include <fmt/format.h>
 #include <rawrbox/render/texture/atlas.h>
 
+#include <fmt/format.h>
+
 namespace rawrBox {
-	TextureAtlas::TextureAtlas(uint32_t _size) {
-		this->size = _size;
+	TextureAtlas::TextureAtlas(uint32_t _size) : size(_size) {
 		this->_root = std::make_unique<AtlasNode>(0, 0, size, size, true, nullptr, nullptr);
 	}
 
@@ -95,11 +95,11 @@ namespace rawrBox {
 		bool isRemainderWiderThanHigh = remainingWidth > remainingHeight;
 
 		if (isRemainderWiderThanHigh) { // if wider than high, split verticallly
-			left = std::unique_ptr<AtlasNode>(new AtlasNode{x, y, insertedWidth, height, true, nullptr, nullptr});
-			right = std::unique_ptr<AtlasNode>(new AtlasNode{x + insertedWidth, y, remainingWidth, height, true, nullptr, nullptr});
+			left = std::make_unique<AtlasNode>(x, y, insertedWidth, height, true, nullptr, nullptr);
+			right = std::make_unique<AtlasNode>(x + insertedWidth, y, remainingWidth, height, true, nullptr, nullptr);
 		} else { // That'd make the remainder higher than it's wide, split horizontally
-			left = std::unique_ptr<AtlasNode>(new AtlasNode{x, y, width, insertedHeight, true, nullptr, nullptr});
-			right = std::unique_ptr<AtlasNode>(new AtlasNode{x, y + insertedHeight, width, remainingHeight, true, nullptr, nullptr});
+			left = std::make_unique<AtlasNode>(x, y, width, insertedHeight, true, nullptr, nullptr);
+			right = std::make_unique<AtlasNode>(x, y + insertedHeight, width, remainingHeight, true, nullptr, nullptr);
 		}
 
 		return left->InsertNode(insertedWidth, insertedHeight);

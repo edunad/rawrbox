@@ -9,11 +9,7 @@
 namespace rawrBox {
 	uint32_t TextureRender::renderID = 10; // 5 > reserved to render textures
 
-	TextureRender::TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size, bgfx::ViewId forcedId) {
-		this->_size = size;
-		this->_viewId = viewId;
-		this->_renderId = forcedId == 0 ? TextureRender::renderID++ : forcedId;
-
+	TextureRender::TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size, bgfx::ViewId forcedId) : _size(size), _viewId(viewId), _renderId(forcedId == 0 ? TextureRender::renderID++ : forcedId) {
 		// Setup texture target view
 		bgfx::setViewName(this->_renderId, fmt::format("RAWR-RENDER-VIEW-{}", this->_renderId).c_str());
 		bgfx::setViewRect(this->_renderId, 0, 0, this->_size.x, this->_size.y);

@@ -20,7 +20,7 @@ static const bgfx::EmbeddedShader dither_shaders[] = {
 // NOLINTEND(*)
 namespace rawrBox {
 	enum DITHER_SIZE {
-		_SLOW_MODE = 0,
+		SLOW_MODE = 0,
 
 		_2x2 = 2,
 		_3x3 = 3,
@@ -41,7 +41,7 @@ namespace rawrBox {
 		bgfx::UniformHandle _dither_threshold = BGFX_INVALID_HANDLE;
 
 	protected:
-		DITHER_SIZE _size = DITHER_SIZE::_SLOW_MODE;
+		DITHER_SIZE _size = DITHER_SIZE::SLOW_MODE;
 
 		// Settings ----
 		float _dithering = 0.5f;
@@ -71,8 +71,8 @@ namespace rawrBox {
 		PostProcessPSXDither(const PostProcessPSXDither&) = delete;
 		PostProcessPSXDither& operator=(const PostProcessPSXDither&) = delete;
 
-		PostProcessPSXDither(DITHER_SIZE dither = DITHER_SIZE::_SLOW_MODE) : _size(dither) {
-			if (dither != DITHER_SIZE::_SLOW_MODE) {
+		PostProcessPSXDither(DITHER_SIZE dither = DITHER_SIZE::SLOW_MODE) : _size(dither) {
+			if (dither != DITHER_SIZE::SLOW_MODE) {
 				this->_textures[DITHER_SIZE::_2x2] = std::make_shared<rawrBox::TextureImage>("./content/textures/dither/2x2.png");
 				this->_textures[DITHER_SIZE::_3x3] = std::make_shared<rawrBox::TextureImage>("./content/textures/dither/3x3.png");
 				this->_textures[DITHER_SIZE::_4x4] = std::make_shared<rawrBox::TextureImage>("./content/textures/dither/4x4.png");
@@ -101,7 +101,7 @@ namespace rawrBox {
 		}
 
 		void upload() override {
-			bool fastMode = this->_size != DITHER_SIZE::_SLOW_MODE;
+			bool fastMode = this->_size != DITHER_SIZE::SLOW_MODE;
 			if (fastMode) {
 				for (auto t : this->_textures) {
 					if (t.second == nullptr) throw std::runtime_error("[RawrBox-Dither] Failed to load texture");
@@ -135,7 +135,7 @@ namespace rawrBox {
 		}
 
 		void applyEffect() override {
-			if (this->_size != DITHER_SIZE::_SLOW_MODE) bgfx::setTexture(1, this->_ditherColor, this->_textures[this->_size]->getHandle());
+			if (this->_size != DITHER_SIZE::SLOW_MODE) bgfx::setTexture(1, this->_ditherColor, this->_textures[this->_size]->getHandle());
 			bgfx::submit(rawrBox::CURRENT_VIEW_ID, this->_program);
 		}
 	};

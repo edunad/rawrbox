@@ -11,15 +11,15 @@ namespace rawrBox {
 		rawrBox::Vector3f _pos;
 		rawrBox::Quaternion _angle;
 
-		std::array<float, 16> _view;
-		std::array<float, 16> _projection;
+		std::array<float, 16> _view = {};
+		std::array<float, 16> _projection = {};
 
 		virtual void update();
 
 	public:
 		virtual ~CameraBase() = default;
 
-		CameraBase();
+		CameraBase() = default;
 		CameraBase(CameraBase&&) = delete;
 		CameraBase& operator=(CameraBase&&) = delete;
 		CameraBase(const CameraBase&) = delete;

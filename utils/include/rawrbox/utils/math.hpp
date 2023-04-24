@@ -2,6 +2,8 @@
 
 #include <rawrbox/math/pi.hpp>
 
+#include <cmath>
+
 namespace rawrBox {
 	class MathUtils {
 	public:
@@ -29,7 +31,7 @@ namespace rawrBox {
 
 		// https://gist.github.com/itsmrpeck/be41d72e9d4c72d2236de687f6f53974
 		static inline float angleLerp(float a, float b, float lerpFactor) {
-			float result;
+			float result = NAN;
 			float diff = b - a;
 
 			if (diff < -180.f) {

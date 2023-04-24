@@ -19,17 +19,17 @@
 
 const int defaultFrameDelayCentiseconds = 4;
 
-typedef struct gif_result_t {
+using gif_result = struct gif_result_t {
 	int delay;
 	unsigned char *data;
 	struct gif_result_t *next;
-} gif_result;
+};
 
 unsigned char *stbi_xload(char const *filename, int *x, int *y, int *frames, int **delays) {
-	FILE *f;
+	FILE *f = nullptr;
 
-	int comp;
-	unsigned char *result = 0;
+	int comp = 0;
+	unsigned char *result = nullptr;
 	stbi__context s;
 
 	if (!(f = stbi__fopen(filename, "rb"))) throw std::runtime_error("Failed to open file");

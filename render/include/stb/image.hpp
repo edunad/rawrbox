@@ -366,7 +366,7 @@ RECENT REVISION HISTORY:
 //    very big.
 
 #ifndef STBI_NO_STDIO
-#include <stdio.h>
+#include <cstdio>
 #endif // STBI_NO_STDIO
 
 #define STBI_VERSION 1
@@ -381,9 +381,9 @@ enum
    STBI_rgb_alpha  = 4
 };
 
-#include <stdlib.h>
-typedef unsigned char stbi_uc;
-typedef unsigned short stbi_us;
+#include <cstdlib>
+using stbi_uc = unsigned char;
+using stbi_us = unsigned short;
 
 #ifdef __cplusplus
 extern "C" {
@@ -406,12 +406,12 @@ extern "C" {
 // load image by filename, open file, or memory buffer
 //
 
-typedef struct
+using stbi_io_callbacks = struct
 {
    int      (*read)  (void *user,char *data,int size);   // fill 'data' with 'size' bytes.  return number of bytes actually read
    void     (*skip)  (void *user,int n);                 // skip the next 'n' bytes, or 'unget' the last -n bytes if negative
    int      (*eof)   (void *user);                       // returns nonzero if we are at end of file/data
-} stbi_io_callbacks;
+};
 
 ////////////////////////////////////
 //

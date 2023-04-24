@@ -25,36 +25,36 @@ namespace rawrBox {
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1); }
 
-		NumberType distance(const VecType& other) const {
+		[[nodiscard]] NumberType distance(const VecType& other) const {
 			return std::sqrt(((x - other.x) * (x - other.x)) + ((y - other.y) * (y - other.y)));
 		}
 
-		NumberType length() const {
+		[[nodiscard]] NumberType length() const {
 			return static_cast<NumberType>(std::sqrt(std::pow(x, 2) + std::pow(y, 2)));
 		}
 
-		NumberType angle(const VecType& target) const {
+		[[nodiscard]] NumberType angle(const VecType& target) const {
 			return -std::atan2(x - target.x, y - target.y);
 		}
 
-		VecType normalized() const {
+		[[nodiscard]] VecType normalized() const {
 			NumberType l = length();
 			return l == 0 ? VecType() : (*this) / l;
 		}
 
-		NumberType dot(const VecType& other) const {
+		[[nodiscard]] NumberType dot(const VecType& other) const {
 			return x * other.x + y * other.y;
 		}
 
-		NumberType cross(const VecType& other) const {
+		[[nodiscard]] NumberType cross(const VecType& other) const {
 			return x * other.y - y * other.x;
 		}
 
-		VecType abs() const {
+		[[nodiscard]] VecType abs() const {
 			return {std::abs(x), std::abs(y)};
 		}
 
-		VecType lerp(const VecType& other, float timestep) const {
+		[[nodiscard]] VecType lerp(const VecType& other, float timestep) const {
 			VecType ret;
 
 			ret.x = static_cast<NumberType>(static_cast<float>(x) + static_cast<float>(other.x - x) * timestep);
@@ -63,33 +63,33 @@ namespace rawrBox {
 			return ret;
 		}
 
-		VecType floor() const {
+		[[nodiscard]] VecType floor() const {
 			return { std::floor(x), std::floor(y) };
 		}
 
-		VecType round() const {
+		[[nodiscard]] VecType round() const {
 			return { std::round(x), std::round(y) };
 		}
 
-		VecType ceil() const {
+		[[nodiscard]] VecType ceil() const {
 			return { std::ceil(x), std::ceil(y) };
 		}
 
-		VecType clampVec(const VecType& min, const VecType& max) const {
+		[[nodiscard]] VecType clampVec(const VecType& min, const VecType& max) const {
 			return {
 				std::clamp(x, min.x, max.x),
 				std::clamp(y, min.y, max.y)
 			};
 		}
 
-		VecType clamp(NumberType min, NumberType max) const {
+		[[nodiscard]] VecType clamp(NumberType min, NumberType max) const {
 			return {
 				std::clamp(x, min, max),
 				std::clamp(y, min, max)
 			};
 		}
 
-		NumberType atan2() const {
+		[[nodiscard]] NumberType atan2() const {
 			return std::atan2(y, x);
 		}
 
@@ -97,11 +97,11 @@ namespace rawrBox {
 			return VecType(std::cos(radians), std::sin(radians));
 		}
 
-		bool isNaN() const {
+		[[nodiscard]] bool isNaN() const {
 			return std::isnan(x) || std::isnan(y);
 		}
 
-		VecType rotateAroundOrigin(NumberType rads, const VecType& origin) const {
+		[[nodiscard]] VecType rotateAroundOrigin(NumberType rads, const VecType& origin) const {
 			if (rads == 0) return *this;
 
 			VecType u = *this - origin;
@@ -114,7 +114,7 @@ namespace rawrBox {
 			return u;
 		}
 
-		VecType yx() const {
+		[[nodiscard]] VecType yx() const {
 			return VecType(y, x);
 		}
 
