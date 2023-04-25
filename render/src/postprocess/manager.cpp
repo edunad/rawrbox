@@ -6,17 +6,18 @@
 #include <bx/bx.h>
 #include <fmt/format.h>
 #include <generated/shaders/render/all.h>
+
 // NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader model_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_stencil_flat),
     BGFX_EMBEDDED_SHADER(fs_stencil_flat),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
+
+constexpr int RENDER_PASS_DOWNSAMPLE_ID = 30;
+
 namespace rawrBox {
 	PostProcessManager::PostProcessManager(bgfx::ViewId view, const rawrBox::Vector2i& windowSize) : _view(view), _windowSize(windowSize) {
-
-		this->_pixels.resize(this->_windowSize.x * this->_windowSize.y * 4); // * Channels
-
 		// Shader layout
 		this->_vLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
@@ -29,9 +30,11 @@ namespace rawrBox {
 		RAWRBOX_DESTROY(this->_ibh);
 		RAWRBOX_DESTROY(this->_texColor);
 		RAWRBOX_DESTROY(this->_program);
-		RAWRBOX_DESTROY(this->_finalHandle);
-		RAWRBOX_DESTROY(this->_copyHandle);
 
+		for (auto sample : this->_samples)
+			RAWRBOX_DESTROY(sample);
+
+		this->_samples.clear();
 		this->_render = nullptr;
 
 		this->_postProcesses.clear();
@@ -93,13 +96,6 @@ namespace rawrBox {
 		this->_vbh = bgfx::createVertexBuffer(bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * this->_vLayout.m_stride), this->_vLayout);
 		this->_ibh = bgfx::createIndexBuffer(bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t)));
 
-		// Final texture
-		this->_copyHandle = bgfx::createTexture2D(static_cast<uint32_t>(this->_windowSize.x), static_cast<uint32_t>(this->_windowSize.y), false, 1, bgfx::TextureFormat::RGBA8, 0 | BGFX_TEXTURE_BLIT_DST | BGFX_TEXTURE_READ_BACK | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP);
-		bgfx::setName(this->_copyHandle, fmt::format("RAWR-BLIT-{}", this->_copyHandle.idx).c_str());
-
-		this->_finalHandle = bgfx::createTexture2D(static_cast<uint32_t>(this->_windowSize.x), static_cast<uint32_t>(this->_windowSize.y), false, 1, bgfx::TextureFormat::RGBA8, 0 | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP);
-		bgfx::setName(this->_finalHandle, fmt::format("RAWR-POSTPROCESS-{}", this->_finalHandle.idx).c_str());
-
 		// Load Shader --------
 		bgfx::RendererType::Enum type = bgfx::getRendererType();
 		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(model_shaders, type, "vs_stencil_flat");
@@ -110,6 +106,20 @@ namespace rawrBox {
 		// ------------------
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+
+		// Prepare sample views
+		this->_samples.resize(this->_postProcesses.size());
+		for (size_t i = 0; i < this->_postProcesses.size(); i++) {
+			bgfx::ViewId id = RENDER_PASS_DOWNSAMPLE_ID + static_cast<bgfx::ViewId>(i);
+			this->_samples[i] = bgfx::createFrameBuffer(this->_windowSize.x, this->_windowSize.y, bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_RT);
+
+			bgfx::touch(id);
+			bgfx::setViewRect(id, 0, 0, bgfx::BackbufferRatio::Equal);
+			bgfx::setViewClear(id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 1.0f, 0, 0);
+			bgfx::setViewName(id, fmt::format("POST-PROCESSING-SAMPLE-{}", i).c_str());
+			bgfx::setViewFrameBuffer(id, this->_samples[i]);
+		}
+		// ----
 	}
 
 	void PostProcessManager::begin() {
@@ -120,38 +130,34 @@ namespace rawrBox {
 		this->_render->startRecord();
 	}
 
-	void PostProcessManager::captureData() {
-		bgfx::blit(rawrBox::CURRENT_VIEW_ID, this->_copyHandle, 0, 0, this->_render->getHandle()); // Get pixels from RT texture
-		bgfx::readTexture(this->_copyHandle, this->_pixels.data());
-
-		bgfx::updateTexture2D(this->_finalHandle, 0, 0, 0, 0, static_cast<uint32_t>(this->_windowSize.x), static_cast<uint32_t>(this->_windowSize.y), bgfx::copy(this->_pixels.data(), static_cast<uint32_t>(this->_pixels.size())));
-	}
-
 	void PostProcessManager::end() {
 		if (!this->_recording) throw std::runtime_error("[RawrBox-PostProcess] Not drawing, call 'begin()' first");
 		if (this->_render == nullptr) throw std::runtime_error("[RawrBox-PostProcess] Render texture is not set");
 
 		this->_recording = false;
 		this->_render->stopRecord();
-		this->captureData();
 
-		// Apply effects in order
-		for (auto effect : this->_postProcesses) {
-			// this->_render->startRecord();
+		for (size_t pass = 0; pass < this->_postProcesses.size(); pass++) {
+			bgfx::ViewId id = RENDER_PASS_DOWNSAMPLE_ID + static_cast<bgfx::ViewId>(pass);
+			rawrBox::CURRENT_VIEW_ID = id;
 
-			bgfx::setTexture(0, this->_texColor, this->_finalHandle); // Pass our flatten render target
+			bgfx::touch(id);
+			bgfx::setTexture(0, this->_texColor, pass == 0 ? this->_render->getHandle() : bgfx::getTexture(this->_samples[pass - 1]));
 			bgfx::setVertexBuffer(0, this->_vbh);
 			bgfx::setIndexBuffer(this->_ibh);
-			effect->applyEffect();
 
-			// this->_render->stopRecord();
-			// this->captureData();
+			bgfx::setState(0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_CULL_CW);
+			this->_postProcesses[pass]->applyEffect();
 		}
 
+		rawrBox::CURRENT_VIEW_ID = this->_view;
+
 		// Draw final texture
-		bgfx::setTexture(0, this->_texColor, this->_finalHandle); // Pass our flatten render target
+		bgfx::touch(this->_view);
+		bgfx::setTexture(0, this->_texColor, bgfx::getTexture(this->_samples[this->_samples.size() - 1]));
 		bgfx::setVertexBuffer(0, this->_vbh);
 		bgfx::setIndexBuffer(this->_ibh);
+		bgfx::setState(0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_CULL_CW);
 		bgfx::submit(0, this->_program);
 	}
 

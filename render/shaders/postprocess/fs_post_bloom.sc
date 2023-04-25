@@ -36,7 +36,7 @@ vec4 GetBloom ( in vec2 uv, in vec4 inColor ) {
 // Adapted from https://www.shadertoy.com/view/4tlBWH
 void main() {
     vec4 color =  texture2D(s_texColor, v_texcoord0);
-	if(color.a <= 0.0) discard;
+	if(color.a <= 0.01) discard;
 
     gl_FragColor = mix(color, GetBloom(v_texcoord0.xy, color), u_intensity.x);
 }

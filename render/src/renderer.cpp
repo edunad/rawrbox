@@ -19,6 +19,7 @@ namespace rawrBox {
 		bgfx::setViewRect(this->_id, 0, 0, size.x, size.y);
 		bgfx::setViewMode(this->_id, bgfx::ViewMode::Sequential);
 		bgfx::setViewName(this->_id, fmt::format("RawrBox-RENDERER-{}", this->_id).c_str());
+
 		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0f, 0);
 
 		rawrBox::MISSING_TEXTURE = std::make_shared<rawrBox::TextureMissing>();

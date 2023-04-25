@@ -7,14 +7,16 @@
 #include <generated/shaders/render/all.h>
 
 namespace rawrBox {
+	// NOLINTBEGIN{cppcoreguidelines-avoid-non-const-global-variables}
 	uint32_t TextureRender::renderID = 10; // 5 > reserved to render textures
+	// NOLINTEND{cppcoreguidelines-avoid-non-const-global-variables}
 
-	TextureRender::TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size, bgfx::ViewId forcedId) : _size(size), _viewId(viewId), _renderId(forcedId == 0 ? TextureRender::renderID++ : forcedId) {
+	TextureRender::TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size) : _size(size), _viewId(viewId), _renderId(TextureRender::renderID++) {
 		// Setup texture target view
 		bgfx::setViewName(this->_renderId, fmt::format("RAWR-RENDER-VIEW-{}", this->_renderId).c_str());
 		bgfx::setViewRect(this->_renderId, 0, 0, this->_size.x, this->_size.y);
 		bgfx::setViewMode(this->_renderId, bgfx::ViewMode::Default);
-		bgfx::setViewClear(this->_renderId, BGFX_CLEAR_DISCARD_DEPTH | BGFX_CLEAR_DISCARD_STENCIL);
+		bgfx::setViewClear(this->_renderId, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL);
 		//   ------
 	}
 
@@ -23,13 +25,14 @@ namespace rawrBox {
 		RAWRBOX_DESTROY(this->_renderHandle);
 	}
 
-	void TextureRender::startRecord() {
+	void TextureRender::startRecord(bool clear) {
 		if (!bgfx::isValid(this->_renderView)) return;
+
 		rawrBox::CURRENT_VIEW_ID = this->_renderId;
 
 		bgfx::setViewFrameBuffer(this->_renderId, this->_renderView);
 		bgfx::setViewRect(this->_renderId, 0, 0, this->_size.x, this->_size.y);
-		bgfx::setViewClear(this->_renderId, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL, 0x00000000, 1.f, 0);
+		bgfx::setViewClear(this->_renderId, clear ? BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL : BGFX_CLEAR_NONE, 0x00000000, 1.f, 0);
 		bgfx::touch(this->_renderId);
 	}
 

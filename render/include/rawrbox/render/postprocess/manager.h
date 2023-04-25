@@ -39,17 +39,17 @@ namespace rawrBox {
 		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;  // Indices
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle _program = BGFX_INVALID_HANDLE;
-		bgfx::TextureHandle _copyHandle = BGFX_INVALID_HANDLE;
-		bgfx::TextureHandle _finalHandle = BGFX_INVALID_HANDLE;
 
-		std::vector<uint8_t> _pixels;
 		std::vector<PosUVVertexData> _vertices;
 		std::vector<uint16_t> _indices;
 		// -----
 
+		// POS-PROCESS SAMPLES
+		std::vector<bgfx::FrameBufferHandle> _samples;
+		// ----
+
 		void pushVertice(rawrBox::Vector2f pos, const rawrBox::Vector2f& uv);
 		void pushIndices(uint16_t a, uint16_t b, uint16_t c);
-		void captureData();
 
 	public:
 		PostProcessManager(bgfx::ViewId view, const rawrBox::Vector2i& size);

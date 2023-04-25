@@ -1,8 +1,8 @@
 $input v_texcoord0
 
 #include <bgfx_shader.sh>
-#include <../../include/dither_psx.sh>
-#include <../../include/unity_utils.sh>
+#include <../include/dither_psx.sh>
+#include <../include/unity_utils.sh>
 
 SAMPLER2D(s_texColor, 0);
 SAMPLER2D(s_ditherColor, 1);
@@ -16,10 +16,9 @@ uniform vec2 u_dithering_threshold;
 
 void main() {
 	vec4 col = texture2D(s_texColor, v_texcoord0.xy);
-	if (col.a <= 0.0) discard;
+	if(col.a <= 0.01) discard;
 
 	float luma = LinearRgbToLuminance(col.rgb);
-
 	if(u_dither_size.x != 0.0) { // FAST MODE
 		vec4 ditherTex = texture2D(s_ditherColor, v_texcoord0.xy * u_dither_size.x * u_viewRect.zw);
 		float dither = (ditherTex.a - 0.5) * 2.0 / u_dithering_threshold.x;

@@ -26,7 +26,8 @@ namespace rawrBox {
 		float _intensity = 0.08f;
 
 	public:
-		PostProcessBloom() = default;
+		PostProcessBloom(float intensity) : _intensity(intensity) {}
+
 		PostProcessBloom(PostProcessBloom&&) = delete;
 		PostProcessBloom& operator=(PostProcessBloom&&) = delete;
 		PostProcessBloom(const PostProcessBloom&) = delete;

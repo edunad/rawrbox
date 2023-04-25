@@ -22,7 +22,7 @@ namespace rawrBox {
 		bgfx::ViewId _renderId;
 
 	public:
-		TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size, bgfx::ViewId forcedId = 0);
+		TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size);
 
 		TextureRender(TextureRender&&) = delete;
 		TextureRender& operator=(TextureRender&&) = delete;
@@ -32,7 +32,7 @@ namespace rawrBox {
 		~TextureRender() override;
 
 		// ------RENDER
-		virtual void startRecord();
+		virtual void startRecord(bool clear = true);
 		virtual void stopRecord();
 
 		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
