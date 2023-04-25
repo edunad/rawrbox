@@ -20,7 +20,7 @@ namespace rawrBox {
 
 		int _currentFrame = 0;
 		bool _loop = true;
-		int64_t _cooldown = 0;
+		uint64_t _cooldown = 0;
 		float _speed = 1.f;
 		bool _failedToLoad = false;
 

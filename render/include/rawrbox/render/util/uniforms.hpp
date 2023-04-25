@@ -5,6 +5,7 @@
 #include <rawrbox/math/vector3.hpp>
 
 #include <bgfx/bgfx.h>
+#include <stdint.h>
 
 #include <array>
 #include <string>
@@ -20,6 +21,11 @@ namespace rawrBox {
 
 		static void setUniform(const bgfx::UniformHandle& handle, float data) {
 			float d[1] = {data};
+			bgfx::setUniform(handle, d, 1);
+		}
+
+		static void setUniform(const bgfx::UniformHandle& handle, uint64_t data) {
+			float d[1] = {static_cast<float>(data)};
 			bgfx::setUniform(handle, d, 1);
 		}
 

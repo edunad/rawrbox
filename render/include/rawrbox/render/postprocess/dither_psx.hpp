@@ -12,6 +12,7 @@
 
 #include <memory>
 #include <unordered_map>
+
 // NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader dither_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_post_dither),
@@ -102,6 +103,7 @@ namespace rawrBox {
 
 		void upload() override {
 			bool fastMode = this->_size != DITHER_SIZE::SLOW_MODE;
+
 			if (fastMode) {
 				for (auto t : this->_textures) {
 					if (t.second == nullptr) throw std::runtime_error("[RawrBox-Dither] Failed to load texture");
@@ -135,7 +137,12 @@ namespace rawrBox {
 		}
 
 		void applyEffect() override {
-			if (this->_size != DITHER_SIZE::SLOW_MODE) bgfx::setTexture(1, this->_ditherColor, this->_textures[this->_size]->getHandle());
+			if (this->_size != DITHER_SIZE::SLOW_MODE) {
+				bgfx::setTexture(1, this->_ditherColor, this->_textures[this->_size]->getHandle());
+			} else {
+				bgfx::setTexture(1, this->_ditherColor, rawrBox::MISSING_SPECULAR_TEXTURE->getHandle());
+			}
+
 			bgfx::submit(rawrBox::CURRENT_VIEW_ID, this->_program);
 		}
 	};

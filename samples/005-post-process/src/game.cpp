@@ -4,6 +4,7 @@
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/render/postprocess/bloom.hpp>
 #include <rawrbox/render/postprocess/dither_psx.hpp>
+#include <rawrbox/render/postprocess/static_noise.hpp>
 #include <rawrbox/utils/keys.hpp>
 
 #include <bx/bx.h>
@@ -54,20 +55,15 @@ namespace post_process {
 			this->_oldMousePos = mousePos;
 		};
 
-		this->_window->initialize(width, height, rawrBox::WindowFlags::Window::WINDOWED);
+		this->_window->initialize(width, height, rawrBox::WindowFlags::Window::WINDOWED | rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Debug::STATS);
 
 		this->_render = std::make_shared<rawrBox::Renderer>(0, this->_window->getSize());
 		this->_render->setClearColor(0x00000000);
 
-		// Initialize the global light manager, i don't like it being static tough..
-		rawrBox::LightManager::getInstance().init(10);
-		// ----
-
-		// rawrBox::LightManager::getInstance().addLight()
-
 		this->_postProcess = std::make_shared<rawrBox::PostProcessManager>(0, this->_window->getSize());
-		// this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessPSXDither>(rawrBox::DITHER_SIZE::_SLOW_MODE));
-		// this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessBloom>());
+		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessBloom>(0.05f));
+		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessPSXDither>(rawrBox::DITHER_SIZE::SLOW_MODE));
+		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessStaticNoise>(0.2f));
 
 		// Setup camera
 		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
@@ -92,8 +88,6 @@ namespace post_process {
 		this->_model->setScale({0.01f, 0.01f, 0.01f});
 		this->_model->upload();
 		// -----
-
-		// rawrBox::LightManager::getInstance().uploadDebug();
 	}
 
 	void Game::shutdown() {
@@ -160,11 +154,10 @@ namespace post_process {
 		bgfx::setViewTransform(rawrBox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 		bgfx::dbgTextPrintf(1, 1, 0x0f, "POST-PROCESS TESTS -----------------------------------------------------------------------------------------------------------");
 
-		// this->_postProcess->begin();
+		this->_postProcess->begin();
 		this->drawWorld();
-		// this->_postProcess->end();
+		this->_postProcess->end();
 
-		// rawrBox::LightManager::getInstance().drawDebug(this->_camera->getPos());
 		this->_render->render(); // Commit primitives
 	}
 } // namespace post_process
