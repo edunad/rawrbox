@@ -1,10 +1,10 @@
-﻿project("stencil")
+﻿project("001-stencil")
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_SAMPLE_SOURCES "include/*.h" "include/*.hpp" "src/*.cpp" "src/*.c" )
 
 # Project setup
-set(output_target stencil)
+set(output_target 001-stencil)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE})
 
 add_executable(${output_target} ${RAWRBOX_SAMPLE_SOURCES} "ias.rc")

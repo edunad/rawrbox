@@ -8,7 +8,7 @@ set(RAWRBOX_VERSION_MAJOR 1 CACHE STRING "major version" FORCE)
 set(RAWRBOX_VERSION_MINOR 0 CACHE STRING "minor version" FORCE)
 set(RAWRBOX_VERSION ${RAWRBOX_VERSION_MAJOR}.${RAWRBOX_VERSION_MINOR} CACHE STRING "version" FORCE)
 
-project ("RAWRBOX" VERSION ${RAWRBOX_VERSION} DESCRIPTION "Lite Mainframe" LANGUAGES CXX)
+project ("RAWRBOX" VERSION ${RAWRBOX_VERSION} DESCRIPTION "Game engine - By edunad" LANGUAGES CXX)
 # ---
 
 # Fix cmake paths
@@ -21,7 +21,7 @@ list(PREPEND CONAN_GENERATORS_FOLDER ${CMAKE_BINARY_DIR})
 option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 option(RAWRBOX_BUILD_SAMPLE "Build samples" ON)
 option(RAWRBOX_BUILD_UTIL_QHULL "Include QHull on utils" ON)
-option(RAWRBOX_BUILD_RENDER_ASSIMP_SUPPORT "Build assimp & add model" ON)
+option(RAWRBOX_BUILD_RENDER_ASSIMP_SUPPORT "Build assimp & add model loading support" ON)
 # -----
 
 # OTHER SETTINGS ----
