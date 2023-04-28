@@ -11,7 +11,9 @@
 #include <string>
 #include <unordered_map>
 
-#define DEFAULT_ASSIMP_FLAGS (0 | aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_PreTransformVertices | aiProcess_RemoveRedundantMaterials | aiProcess_FindInvalidData)
+#include "rawrbox/render/model/base.hpp"
+
+#define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded)
 
 namespace rawrBox {
 	// NOLINTBEGIN{unused-const-variable}
@@ -28,12 +30,18 @@ namespace rawrBox {
 
 		std::string _fileName;
 		std::unordered_map<std::string, std::shared_ptr<rawrBox::TextureBase>> _textures;
+
 		uint32_t _loadFlags;
+		uint32_t _assimpFlags;
 
 		std::shared_ptr<rawrBox::TextureBase> importTexture(const std::string& path, const std::string& name, const std::array<aiTextureMapMode, 3>& mode);
-		void loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::Mesh>& mesh);
 
-		void loadSubmeshes(const aiScene* sc, const aiNode* nd);
+		void generateSkeleton(Skeleton& skeleton, const aiNode* pNode, rawrBox::Bone& parent);
+
+		void loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::Mesh>& mesh);
+		void loadSubmeshes(const aiScene* sc, const aiNode* nd, std::shared_ptr<Mesh> parentMesh);
+		void loadAnimations(const aiScene* sc);
+		void loadSkeleton(const aiMesh& aiMesh, std::shared_ptr<rawrBox::Mesh> mesh);
 		void loadLights(const aiScene* sc);
 
 	public:

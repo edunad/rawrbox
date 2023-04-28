@@ -7,9 +7,11 @@
 #include <rawrbox/render/model/light/spot.hpp>
 #include <rawrbox/render/texture/image.h>
 #include <rawrbox/utils/pack.hpp>
+#include <rawrbox/utils/string.hpp>
 
+#include <assimp/GltfMaterial.h>
 #include <assimp/material.h>
-#include <assimp/pbrmaterial.h>
+#include <assimp/mesh.h>
 #include <bx/math.h>
 #include <fmt/format.h>
 
@@ -17,34 +19,119 @@
 #include <filesystem>
 #include <stdexcept>
 
+#include "rawrbox/render/model/base.hpp"
+
 // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 namespace rawrBox {
 	ModelImported::~ModelImported() {
-		Model::~Model();
 		this->_textures.clear();
 	}
 
 	// LOADING -----
 	void ModelImported::load(const std::string& path, uint32_t loadFlags, uint32_t assimpFlags) {
-		const aiScene* scene = aiImportFile(path.c_str(), assimpFlags);
+		this->_meshes.clear(); // Clear old meshes
 
+		this->_fileName = path;
+		this->_loadFlags = loadFlags;
+		this->_assimpFlags = assimpFlags;
+
+		if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {
+			this->_assimpFlags |= aiProcess_PopulateArmatureData; // Enable armature & limit bones
+		} else {
+			this->_assimpFlags |= aiProcess_PreTransformVertices; // Enable PreTransformVertices for optimization
+		}
+
+		const aiScene* scene = aiImportFile(path.c_str(), this->_assimpFlags);
 		if (scene == nullptr) {
 			auto error = aiGetErrorString(); // Because vscode doesn't print the error bellow
 			throw std::runtime_error(fmt::format("[Resources] Content 'model' error: {}: '{}'\n", path, error));
 		}
 
-		this->_meshes.clear(); // Clear old meshes
-
-		this->_fileName = path;
-		this->_loadFlags = loadFlags;
-
 		// load models
-		this->loadSubmeshes(scene, scene->mRootNode);
 		if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_LIGHT) > 0) this->loadLights(scene);
+		if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) this->loadAnimations(scene);
+
+		this->loadSubmeshes(scene, scene->mRootNode, nullptr);
 		// ----
 
 		aiReleaseImport(scene);
+	}
+
+	void ModelImported::loadSkeleton(const aiMesh& aiMesh, std::shared_ptr<rawrBox::Mesh> mesh) {
+		if (!aiMesh.HasBones()) return;
+
+		// Pre-populate bone ids
+		for (size_t i_bone = 0; i_bone < aiMesh.mNumBones; i_bone++) {
+			aiBone* bone = aiMesh.mBones[i_bone];
+			if (bone->mArmature == nullptr) continue;
+
+			std::string name = std::string(bone->mArmature->mName.data);
+			std::string boneName = std::string(bone->mName.data);
+
+			std::string boneKey = fmt::format("{}-{}", name, boneName);
+			if (this->_boneMap.find(boneKey) == this->_boneMap.end()) {
+				std::array<float, 16> offset;
+				bx::mtxTranspose(offset.data(), &bone->mOffsetMatrix.a1);
+
+				this->_boneMap[boneKey] = {static_cast<uint8_t>(this->_boneMap.size()), offset};
+			}
+
+			// Calculate object weights
+			for (size_t j = 0; j < bone->mNumWeights; j++) {
+				auto& weightobj = bone->mWeights[j];
+				mesh->vertices[mesh->baseVertex + weightobj.mVertexId].addBoneData(this->_boneMap[boneKey].first, weightobj.mWeight); // Global vertices
+			}
+		}
+		// -----
+
+		for (size_t i_bone = 0; i_bone < aiMesh.mNumBones; i_bone++) {
+			aiBone* bone = aiMesh.mBones[i_bone];
+			if (bone->mArmature == nullptr) continue;
+
+			// Armature parsing
+			std::string name = std::string(bone->mArmature->mName.data);
+			if (this->_skeletons.find(name) == this->_skeletons.end()) {
+				Skeleton armature;
+				armature.name = name;
+				armature.rootBone.name = "ROOT";
+
+				bx::mtxIdentity(armature.rootBone.transformationMtx.data());
+				bx::mtxTranspose(armature.rootBone.transformationMtx.data(), &bone->mNode->mTransformation.a1);
+
+				bx::mtxIdentity(armature.rootBone.offsetMtx.data());
+				bx::mtxTranspose(armature.rootBone.offsetMtx.data(), &bone->mOffsetMatrix.a1);
+
+				// bx::mtxIdentity(armature.rootBone.inverseMtx.data());
+				// bx::mtxInverse(armature.rootBone.inverseMtx.data(), &bone->mArmature->mTransformation.a1);
+
+				this->generateSkeleton(armature, bone->mNode, armature.rootBone);
+				this->_skeletons[name] = armature;
+			}
+			// -----
+
+			mesh->skeleton = &this->_skeletons[name];
+		}
+	}
+
+	void ModelImported::generateSkeleton(Skeleton& skeleton, const aiNode* pNode, rawrBox::Bone& parent) {
+		for (size_t i = 0; i < pNode->mNumChildren; i++) {
+			auto child = pNode->mChildren[i];
+
+			std::string boneName = child->mName.data;
+			std::string boneKey = fmt::format("{}-{}", skeleton.name, boneName);
+
+			rawrBox::Bone bone;
+			bone.name = boneName;
+			bone.parent = &parent;
+			bone.boneId = this->_boneMap[boneKey].first;
+
+			// bx::mtxIdentity(bone.transformationMtx.data());
+			// bx::mtxTranspose(bone.transformationMtx.data(), &child->mTransformation.a1);
+
+			this->generateSkeleton(skeleton, child, bone);
+			parent.children.push_back(bone);
+		}
 	}
 
 	uint64_t assimpSamplerToBGFX(const std::array<aiTextureMapMode, 3>& mode, int axis) {
@@ -93,9 +180,9 @@ namespace rawrBox {
 
 			// Setup flags ----
 			auto flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
-			flags |= assimpSamplerToBGFX(mode, 0);
-			flags |= assimpSamplerToBGFX(mode, 1);
-			flags |= assimpSamplerToBGFX(mode, 2);
+			flags |= assimpSamplerToBGFX(mode, 0); // u
+			flags |= assimpSamplerToBGFX(mode, 1); // v
+			flags |= assimpSamplerToBGFX(mode, 2); // w
 
 			texture->setFlags(flags);
 			// ----
@@ -191,18 +278,30 @@ namespace rawrBox {
 		}*/
 	}
 
-	void ModelImported::loadSubmeshes(const aiScene* sc, const aiNode* nd) {
-		for (size_t n = 0; n < nd->mNumMeshes; ++n) {
-			auto& aiMesh = *sc->mMeshes[nd->mMeshes[n]];
-			auto mesh = std::make_shared<rawrBox::Mesh>();
+	void ModelImported::loadSubmeshes(const aiScene* sc, const aiNode* root, std::shared_ptr<Mesh> parentMesh) {
+		std::shared_ptr<rawrBox::Mesh> mesh = nullptr;
+
+		bool loadAnims = (this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0;
+		bool loadTextures = (this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_TEXTURES) > 0;
+
+		for (size_t n = 0; n < root->mNumMeshes; n++) {
+			aiMesh& aiMesh = *sc->mMeshes[root->mMeshes[n]];
+			mesh = std::make_shared<rawrBox::Mesh>();
 
 			mesh->setName(aiMesh.mName.data);
+			mesh->parent = parentMesh;
 
+			// Offset for rendering
 			mesh->baseVertex = static_cast<uint16_t>(mesh->vertices.size());
 			mesh->baseIndex = static_cast<uint16_t>(mesh->indices.size());
+			// ----
+
+			if ((this->_assimpFlags & aiProcess_PreTransformVertices) == 0) {
+				bx::mtxTranspose(mesh->offsetMatrix.data(), &root->mTransformation.a1); // Append matrix to our vertices
+			}
 
 			// Textures
-			if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
+			if (loadTextures) {
 				this->loadTextures(sc, aiMesh, mesh);
 			}
 
@@ -212,17 +311,12 @@ namespace rawrBox {
 
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
-
-					v.x = vert.x;
-					v.y = vert.y;
-					v.z = vert.z;
+					v.position = {vert.x, vert.y, vert.z};
 				}
 
 				if (aiMesh.HasTextureCoords(0)) {
 					auto& uv = aiMesh.mTextureCoords[0][i];
-
-					v.u = uv.x;
-					v.v = uv.y;
+					v.uv = {uv.x, uv.y};
 				}
 
 				if (aiMesh.HasVertexColors(0)) {
@@ -232,24 +326,32 @@ namespace rawrBox {
 
 				if (aiMesh.HasNormals()) {
 					auto& normal = aiMesh.mNormals[i];
-					v.normal = rawrBox::PackUtils::packNormal(normal.x, normal.y, normal.z);
+					v.normal[0] = rawrBox::PackUtils::packNormal(normal.x, normal.y, normal.z);
 				}
 
 				if (aiMesh.HasTangentsAndBitangents()) {
 					auto& tangents = aiMesh.mTangents[i];
-					v.tangent = rawrBox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
+					v.normal[1] = rawrBox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
 				}
 
 				mesh->vertices.push_back(v);
 			}
 
 			// Indices
-			for (size_t t = 0; t < aiMesh.mNumFaces; ++t) {
+			for (size_t t = 0; t < aiMesh.mNumFaces; t++) {
 				auto& face = aiMesh.mFaces[t];
+				if (face.mNumIndices != 3) continue; // we only do triangles
+
 				for (size_t i = 0; i < face.mNumIndices; i++) {
-					mesh->indices.push_back(static_cast<uint16_t>(mesh->vertices.size()) - static_cast<uint16_t>(face.mIndices[i]));
+					mesh->indices.push_back(static_cast<uint16_t>(static_cast<uint16_t>(mesh->vertices.size()) - face.mIndices[i]));
 				}
 			}
+
+			// Bones
+			if (aiMesh.HasBones() && loadAnims) {
+				this->loadSkeleton(aiMesh, mesh);
+			}
+			// -------------------
 
 			mesh->totalVertex = static_cast<uint16_t>(mesh->vertices.size());
 			mesh->totalIndex = static_cast<uint16_t>(mesh->indices.size());
@@ -258,8 +360,54 @@ namespace rawrBox {
 		}
 
 		// recursive
-		for (size_t n = 0; n < nd->mNumChildren; ++n) {
-			this->loadSubmeshes(sc, nd->mChildren[n]);
+		for (size_t n = 0; n < root->mNumChildren; n++) {
+			this->loadSubmeshes(sc, root->mChildren[n], mesh);
+		}
+	}
+
+	void ModelImported::loadAnimations(const aiScene* sc) {
+		if (!sc->HasAnimations()) return;
+
+		for (size_t i = 0; i < sc->mNumAnimations; i++) {
+			auto& anim = *sc->mAnimations[i];
+
+			std::string animName = anim.mName.data;
+			if (animName.empty()) animName = fmt::format("anim_{}", i);
+
+			auto spl = rawrBox::StrUtils::split(animName, '|');
+
+			// create an entry in the mapping and start filling it with data
+			auto& ourAnim = this->_animations[spl[spl.size() - 1]];
+			ourAnim.ticksPerSecond = static_cast<float>(anim.mTicksPerSecond);
+			ourAnim.duration = static_cast<float>(anim.mDuration);
+
+			// for each channel (frame / keyframe)
+			// extract position, rotation, scale and timings
+			for (size_t channelIndex = 0; channelIndex < anim.mNumChannels; channelIndex++) {
+				auto aChannel = anim.mChannels[channelIndex];
+
+				rawrBox::AnimationFrame ourChannel;
+				ourChannel.nodeName = aChannel->mNodeName.data;
+				// ourChannel.stateStart = static_cast<AnimationChannelBehaviour>(aChannel->mPreState);
+				// ourChannel.stateEnd = static_cast<AnimationChannelBehaviour>(aChannel->mPostState);
+
+				for (size_t positionIndex = 0; positionIndex < aChannel->mNumPositionKeys; positionIndex++) {
+					auto aPos = aChannel->mPositionKeys[positionIndex];
+					ourChannel.position.push_back({static_cast<float>(aPos.mTime), aPos.mValue});
+				}
+
+				for (size_t scaleIndex = 0; scaleIndex < aChannel->mNumScalingKeys; scaleIndex++) {
+					auto aScale = aChannel->mScalingKeys[scaleIndex];
+					ourChannel.scale.push_back({static_cast<float>(aScale.mTime), aScale.mValue});
+				}
+
+				for (size_t rotationIndex = 0; rotationIndex < aChannel->mNumRotationKeys; rotationIndex++) {
+					auto aRot = aChannel->mRotationKeys[rotationIndex];
+					ourChannel.rotation.push_back({static_cast<float>(aRot.mTime), aRot.mValue});
+				}
+
+				ourAnim.frames.push_back(ourChannel);
+			}
 		}
 	}
 

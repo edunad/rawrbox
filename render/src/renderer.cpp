@@ -11,6 +11,7 @@ namespace rawrBox {
 
 		rawrBox::MISSING_TEXTURE = nullptr;
 		rawrBox::MISSING_SPECULAR_TEXTURE = nullptr;
+		rawrBox::WHITE_TEXTURE = nullptr;
 	}
 
 	Renderer::Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size) : _id(id), _size(size) {
@@ -23,12 +24,14 @@ namespace rawrBox {
 		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0f, 0);
 
 		rawrBox::MISSING_TEXTURE = std::make_shared<rawrBox::TextureMissing>();
-		rawrBox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrBox::TextureFlat>(1, rawrBox::Colors::Black);
+		rawrBox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrBox::TextureFlat>(2, rawrBox::Colors::Black);
+		rawrBox::WHITE_TEXTURE = std::make_shared<rawrBox::TextureFlat>(2, rawrBox::Colors::White);
 	}
 
 	void Renderer::upload() {
 		rawrBox::MISSING_TEXTURE->upload();
 		rawrBox::MISSING_SPECULAR_TEXTURE->upload();
+		rawrBox::WHITE_TEXTURE->upload();
 
 		if (this->_stencil == nullptr) throw std::runtime_error("[RawrBox-Renderer] Failed to upload, stencil is not initialized!");
 		this->_stencil->upload();

@@ -13,6 +13,8 @@
 
 #include <vector>
 
+#include "rawrbox/render/model/assimp/model_imported.h"
+
 namespace post_process {
 	void Game::init() {
 		int width = 1024;
@@ -61,9 +63,9 @@ namespace post_process {
 		this->_render->setClearColor(0x00000000);
 
 		this->_postProcess = std::make_shared<rawrBox::PostProcessManager>(0, this->_window->getSize());
-		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessBloom>(0.05f));
+		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessBloom>(0.015f));
 		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessPSXDither>(rawrBox::DITHER_SIZE::SLOW_MODE));
-		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessStaticNoise>(0.2f));
+		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessStaticNoise>(0.1f));
 
 		// Setup camera
 		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);

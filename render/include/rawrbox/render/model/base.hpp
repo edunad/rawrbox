@@ -6,12 +6,35 @@
 
 #include <bx/math.h>
 #include <fmt/printf.h>
+#include <stdint.h>
+#include <vcruntime.h>
 
 #include <array>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace rawrBox {
+
+	struct Bone {
+		std::string name;
+		size_t boneId = 0;
+
+		// Rendering ---
+		std::array<float, 16> transformationMtx = {};
+		std::array<float, 16> offsetMtx = {};
+		// ----
+
+		// Lookup ----
+		const Bone* parent = nullptr;
+		std::vector<Bone> children = {};
+		// ----
+	};
+
+	struct Skeleton {
+		std::string name;
+		rawrBox::Bone rootBone;
+	};
 
 	class ModelBase {
 
@@ -31,7 +54,12 @@ namespace rawrBox {
 		rawrBox::Vector3f _pos = {};
 		rawrBox::Vector3f _angle = {};
 
-		void pushMeshes(bool quickOptimize = true) {
+		// SKINNING ----
+		std::unordered_map<std::string, Skeleton> _skeletons = {};
+		std::unordered_map<std::string, std::pair<uint8_t, std::array<float, 16>>> _boneMap = {}; // Map for quick lookup
+		// --------
+
+		void flattenMeshes(bool quickOptimize = true) {
 			this->_vertices.clear();
 			this->_indices.clear();
 
@@ -39,7 +67,7 @@ namespace rawrBox {
 			size_t old = this->_meshes.size();
 
 			for (auto mesh = this->_meshes.begin(); mesh != this->_meshes.end();) {
-				bool erased = false;
+				bool merged = false;
 
 				// Fix start index ----
 				(*mesh)->baseIndex = static_cast<uint16_t>(this->_indices.size());
@@ -59,18 +87,18 @@ namespace rawrBox {
 						auto prevMesh = std::prev(mesh); // Check old meshes
 
 						if ((*prevMesh)->canMerge(*mesh)) {
-							fmt::print("Merging {} with {}\n", (*mesh)->name, (*mesh)->name);
+							fmt::print("Merging {} with {}\n", (*prevMesh)->name, (*mesh)->name);
 
 							(*prevMesh)->totalVertex += (*mesh)->totalVertex;
 							(*prevMesh)->totalIndex += (*mesh)->totalIndex;
 
 							mesh = this->_meshes.erase(mesh);
-							erased = true;
+							merged = true;
 						}
 					}
 				}
 
-				if (!erased)
+				if (!merged)
 					mesh++;
 			}
 
@@ -191,6 +219,60 @@ namespace rawrBox {
 			return mesh;
 		}
 
+		static std::shared_ptr<rawrBox::Mesh> generateAxis(float size, const rawrBox::Vector3f& pos) {
+			std::shared_ptr<rawrBox::Mesh> mesh = std::make_shared<rawrBox::Mesh>();
+			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
+
+			/*auto x = generateCube(pos, {size, 0.01f, 0.01f}, Colors::Red);
+			auto y = generateCube(pos, {0.01f, size, 0.01f}, Colors::Green);
+			auto z = generateCube(pos, {0.01f, 0.01f, size}, Colors::Blue);
+
+			mesh->vertices.insert(mesh->vertices.end(), x->vertices.begin(), x->vertices.end());
+			for (uint16_t i : x->indices)
+				mesh->indices.push_back(i);
+
+			mesh->vertices.insert(mesh->vertices.end(), x->vertices.begin(), x->vertices.end());
+			for (uint16_t i : y->indices)
+				mesh->indices.push_back(i + static_cast<uint16_t>(x->vertices.size()));
+
+			mesh->vertices.insert(mesh->vertices.end(), x->vertices.begin(), x->vertices.end());
+			for (uint16_t i : z->indices)
+				mesh->indices.push_back(i + static_cast<uint16_t>(y->vertices.size()) + static_cast<uint16_t>(z->vertices.size()));
+
+			mesh->setCulling(0);
+			mesh->setTexture(rawrBox::WHITE_TEXTURE);*/
+
+			return mesh;
+		}
+
+		static std::shared_ptr<rawrBox::Mesh> generateCone(const rawrBox::Vector3f& pos, const rawrBox::Vector3f& size, const rawrBox::Colorf& cl = rawrBox::Colors::White) {
+			std::shared_ptr<rawrBox::Mesh> mesh = std::make_shared<rawrBox::Mesh>();
+			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
+
+			return mesh;
+		}
+
+		static std::shared_ptr<rawrBox::Mesh> generateSphere(const rawrBox::Vector3f& pos, const rawrBox::Vector3f& size, const rawrBox::Colorf& cl = rawrBox::Colors::White, int ratio = 5) {
+			std::shared_ptr<rawrBox::Mesh> mesh = std::make_shared<rawrBox::Mesh>();
+			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
+
+			/*std::vector<rawrBox::MeshVertexData> buff = {};
+			std::vector<uint16_t> inds = {};
+
+			for (size_t ph2 = -90; ph2 < 90; ph2 += ratio) {
+				for (size_t th2 = 0; th2 <= 360; th2 += 2 * ratio) {
+
+					double x = std::sin(th2) * std::cos(ph2);
+					double y = std::cos(th2) * std::cos(ph2);
+					double z = std::sin(ph2);
+
+					buff.emplace_back(rawrBox::Vector3f(x, y, z), rawrBox::PackUtils::packNormal(0, 0, 1), rawrBox::PackUtils::packNormal(0, 0, 1), 0.0f, 0.0f, cl);
+				}
+			}*/
+
+			return mesh;
+		}
+
 		// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
 		static std::shared_ptr<rawrBox::Mesh> generateGrid(uint32_t size, const rawrBox::Vector3f& pos, const rawrBox::Colorf& cl = rawrBox::Colors::White) {
 			std::shared_ptr<rawrBox::Mesh> mesh = std::make_shared<rawrBox::Mesh>();
@@ -208,7 +290,7 @@ namespace rawrBox {
 					auto col = cl;
 
 					if (j == 0 || i == 0 || j >= size || i >= size) col = rawrBox::Colors::DarkGray;
-					buff.emplace_back(rawrBox::Vector3f(pos.x - size / 2, pos.y, pos.z - size / 2) + rawrBox::Vector3f(x, y, z), rawrBox::PackUtils::packNormal(0, 0, 1), rawrBox::PackUtils::packNormal(0, 0, 1), 1.0f, 1.0f, col);
+					buff.emplace_back(rawrBox::Vector3f(pos.x - static_cast<uint32_t>(size / 2), pos.y, pos.z - static_cast<uint32_t>(size / 2)) + rawrBox::Vector3f(x, y, z), rawrBox::PackUtils::packNormal(0, 0, 1), rawrBox::PackUtils::packNormal(0, 0, 1), 1.0f, 1.0f, col);
 				}
 			}
 
@@ -296,7 +378,7 @@ namespace rawrBox {
 		virtual void upload() {
 			if (bgfx::isValid(this->_vbh) || bgfx::isValid(this->_ibh)) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
 
-			this->pushMeshes();
+			this->flattenMeshes(); // Merge and optimize meshes for drawing
 			if (this->_vertices.empty() || this->_indices.empty()) throw std::runtime_error("[RawrBox-ModelBase] Vertices / Indices cannot be empty");
 
 			this->_vbh = bgfx::createVertexBuffer(bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * this->_material->vLayout.m_stride), this->_material->vLayout);

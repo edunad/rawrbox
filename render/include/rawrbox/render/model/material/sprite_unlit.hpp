@@ -21,30 +21,14 @@ namespace rawrBox {
 	class MaterialSpriteUnlit : public rawrBox::MaterialBase {
 
 	public:
-		bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle u_sprite_pos = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle u_colorOffset = BGFX_INVALID_HANDLE;
-
-		MaterialSpriteUnlit() : MaterialBase(){};
-		MaterialSpriteUnlit(MaterialSpriteUnlit&&) = delete;
-		MaterialSpriteUnlit& operator=(MaterialSpriteUnlit&&) = delete;
-		MaterialSpriteUnlit(const MaterialSpriteUnlit&) = delete;
-		MaterialSpriteUnlit& operator=(const MaterialSpriteUnlit&) = delete;
-		~MaterialSpriteUnlit() override {
-			MaterialBase::~MaterialBase();
-
-			RAWRBOX_DESTROY(this->s_texColor);
-			RAWRBOX_DESTROY(this->u_sprite_pos);
-			RAWRBOX_DESTROY(this->u_colorOffset);
-		}
+		using MaterialBase::MaterialBase;
 
 		void registerUniforms() override {
 			MaterialBase::registerUniforms();
+			this->registerUniform("s_texColor", bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler));
 
-			this->s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
-
-			this->u_sprite_pos = bgfx::createUniform("u_sprite_pos", bgfx::UniformType::Vec4, 3); // ¯\_(ツ)_/¯ hate it
-			this->u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
+			this->registerUniform("u_colorOffset", bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4));
+			this->registerUniform("u_sprite_pos", bgfx::createUniform("u_sprite_pos", bgfx::UniformType::Vec4, 3)); // ¯\_(ツ)_/¯ hate it
 		}
 
 		void upload() override {
@@ -53,16 +37,16 @@ namespace rawrBox {
 
 		void process(std::shared_ptr<rawrBox::Mesh> mesh) override {
 			if (mesh->texture != nullptr && mesh->texture->valid() && !mesh->wireframe) {
-				bgfx::setTexture(0, this->s_texColor, mesh->texture->getHandle());
+				bgfx::setTexture(0, this->getUniform("s_texColor"), mesh->texture->getHandle());
 			} else {
-				bgfx::setTexture(0, this->s_texColor, rawrBox::MISSING_TEXTURE->getHandle());
+				bgfx::setTexture(0, this->getUniform("s_texColor"), rawrBox::MISSING_TEXTURE->getHandle());
 			}
 
 			std::array colorOffset = {mesh->color.r, mesh->color.b, mesh->color.g, mesh->color.a};
-			bgfx::setUniform(this->u_colorOffset, colorOffset.data());
+			bgfx::setUniform(this->getUniform("u_colorOffset"), colorOffset.data());
 
 			std::array offset = {mesh->vertexPos[12], mesh->vertexPos[13], mesh->vertexPos[14]};
-			bgfx::setUniform(this->u_sprite_pos, offset.data());
+			bgfx::setUniform(this->getUniform("u_sprite_pos"), offset.data());
 		}
 	};
 } // namespace rawrBox

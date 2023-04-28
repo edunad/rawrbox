@@ -1,23 +1,23 @@
 
-#include <rawrbox/render/model/material/lit.hpp>
-#include <rawrbox/render/model/material/unlit.hpp>
+#include <rawrbox/render/model/material/skinned_unlit.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/utils/keys.hpp>
+#include <rawrbox/utils/time.h>
 
+#include <anims/game.h>
 #include <bx/bx.h>
 #include <bx/math.h>
-#include <model/game.h>
 
 #include <vector>
 
-namespace model {
+namespace anims {
 	void Game::init() {
 		int width = 1024;
 		int height = 768;
 
 		this->_window = std::make_unique<rawrBox::Window>();
 		this->_window->setMonitor(-1);
-		this->_window->setTitle("SIMPLE MODEL TEST");
+		this->_window->setTitle("ANIMATIONS TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
 		this->_window->onResize += [this](auto& w, auto& size) {
 			if (this->_render == nullptr) return;
@@ -52,13 +52,12 @@ namespace model {
 			this->_oldMousePos = mousePos;
 		};
 
-		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Debug::STATS | rawrBox::WindowFlags::Window::WINDOWED);
+		this->_window->initialize(width, height, rawrBox::WindowFlags::Window::WINDOWED | rawrBox::WindowFlags::Debug::TEXT);
 
-		this->_render = std::make_shared<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
-		this->_render->setClearColor(0x000000FF);
-
+		this->_render = std::make_shared<rawrBox::Renderer>(0, this->_window->getSize());
+		this->_render->setClearColor(0x00000000);
 		// Setup camera
-		this->_camera = std::make_shared<rawrBox::CameraPerspective>(static_cast<float>(width) / static_cast<float>(height), 60.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
 		this->_camera->setPos({0.f, 5.f, -5.f});
 		this->_camera->setAngle({0.f, bx::toRad(-45), 0.f});
 		// --------------
@@ -71,44 +70,13 @@ namespace model {
 	void Game::loadContent() {
 		this->_render->upload();
 
-		// Textures ---
-		this->_texture = std::make_shared<rawrBox::TextureImage>("./content/textures/screem.png");
-		this->_texture->upload();
+		// Assimp test ---
+		auto mat = std::make_shared<rawrBox::MaterialSkinnedUnlit>();
 
-		this->_texture2 = std::make_shared<rawrBox::TextureGIF>("./content/textures/meow3.gif");
-		this->_texture2->upload();
-
-		auto mat = std::make_shared<rawrBox::MaterialUnlit>();
-		this->_model = std::make_shared<rawrBox::Model>(mat);
-		// ----
-
-		{
-			auto mesh = rawrBox::ModelBase::generatePlane({5, 0, 0}, 0.5f);
-			mesh->setTexture(this->_texture);
-			this->_model->addMesh(mesh);
-		}
-
-		{
-			auto mesh = rawrBox::ModelBase::generateCube({-5, 0, 0}, 0.5f, rawrBox::Colors::White);
-			mesh->setTexture(this->_texture2);
-			this->_model->addMesh(mesh);
-		}
-
-		{
-			auto mesh = rawrBox::ModelBase::generateAxis(1, {0.f, 0.f, 0.f});
-			this->_model->addMesh(mesh);
-		}
-
-		{
-			auto mesh = rawrBox::ModelBase::generateCone({0, 5, 0}, 0.5f);
-			this->_model->addMesh(mesh);
-		}
-
-		{
-			auto mesh = rawrBox::ModelBase::generateGrid(12, {0.f, -2.0f, 0.f});
-			this->_model->addMesh(mesh);
-		}
-
+		this->_model = std::make_shared<rawrBox::ModelImported>(mat);
+		this->_model->load("./content/models/wolf/wolfman_animated.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS); // bob/boblampclean.md5mesh
+		this->_model->playAnimation("Scene");
+		// this->_model->setScale({0.01, 0.01, 0.01});
 		this->_model->upload();
 		// -----
 	}
@@ -126,9 +94,10 @@ namespace model {
 	}
 
 	void Game::update(float deltaTime, int64_t gameTime) {
+		rawrBox::TimeUtils::deltaTime = deltaTime;
 		if (this->_render == nullptr || this->_camera == nullptr) return;
 
-		float m_moveSpeed = 10.f;
+		float m_moveSpeed = 5.f;
 
 		auto dir = this->_camera->getForward();
 		auto eye = this->_camera->getPos();
@@ -160,14 +129,10 @@ namespace model {
 			m_eye = bx::mad({right.x, right.y, right.z}, -deltaTime * m_moveSpeed, m_eye);
 			this->_camera->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
-
-		this->_texture2->step();
 	}
 
 	void Game::drawWorld() {
-		bgfx::setViewTransform(rawrBox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 		if (this->_model == nullptr) return;
-
 		this->_model->draw(this->_camera->getPos());
 	}
 
@@ -176,10 +141,10 @@ namespace model {
 		this->_render->swapBuffer(); // Clean up and set renderer
 
 		bgfx::setViewTransform(rawrBox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-		bgfx::dbgTextPrintf(1, 1, 0x0f, "MODEL TESTS -----------------------------------------------------------------------------------------------------------");
+		bgfx::dbgTextPrintf(1, 1, 0x0f, "ASSIMP ANIMATIONS TESTS ----------------------------------------------------------------------------------------");
 
 		this->drawWorld();
 
 		this->_render->render(); // Commit primitives
 	}
-} // namespace model
+} // namespace anims
