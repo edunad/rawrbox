@@ -5,6 +5,7 @@
 #include <rawrbox/utils/time.h>
 
 #include <assimp/matrix3x3.h>
+#include <assimp/matrix4x4.h>
 #include <assimp/quaternion.h>
 #include <bx/math.h>
 #include <fmt/format.h>
@@ -60,51 +61,24 @@ namespace rawrBox {
 		bgfx::setUniform(this->_material->getUniform("u_bones"), &bones.front(), static_cast<uint32_t>(bones.size()));
 	}
 
-	void Model::readAnim(Skeleton* skeleton, Bone& bone, const std::array<float, 16>& parentTransform) {
+	void Model::readAnim(std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const std::array<float, 16>& parentTransform) {
 		if (skeleton == nullptr) return;
 
-		// store the result of our parent bone and our current node
-		std::array<float, 16> nodeTransformation = {};
-		bx::mtxTranspose(nodeTransformation.data(), bone.transformationMtx.data());
-
-		std::array<float, 16> globalTransformation = {};
-		bx::mtxMul(globalTransformation.data(), parentTransform.data(), nodeTransformation.data());
-
-		// std::array<float, 16> globalInverseTransformation = {};
-		// bx::mtxMul(globalInverseTransformation.data(), parentTransform.data(), nodeTransformation.data());
-
 		// update the final result inside the bones
-		std::string boneKey = fmt::format("{}-{}", skeleton->name, bone.name);
+		std::array<float, 16> parentTransformation = parentBone->transformationMtx;
+		std::string boneKey = fmt::format("{}-{}", skeleton->name, parentBone->name);
 
-		auto fnd = this->_boneMap.find(boneKey);
-		if (fnd != this->_boneMap.end()) {
-			bx::mtxMul(this->_boneCalcs[fnd->second.first].data(), globalTransformation.data(), fnd->second.second.data());
-		}
+		// ANIMATE
+		auto animChannel = std::find_if(this->_currentAnimation->data->frames.begin(), this->_currentAnimation->data->frames.end(), [&](AnimationFrame& x) {
+			return x.nodeName == parentBone->name;
+		});
 
-		// recursively go the children of our current bone
-		for (auto& child : bone.children) {
-			this->readAnim(skeleton, child, globalTransformation);
-		}
-
-		// start with the main tran
-
-		/*
-		// start with the main transform of our node
-		auto nodeTransform = node.transformMtx;
-
-		// if we have animations playing
-		for (auto& animation : this->_currentAnimations) {
-			// find the animation bone inside of the animation
-			auto animChannel = std::find_if(animation.data->frames.begin(), animation.data->frames.end(), [&](AnimationFrame& x) {
-				return x.nodeName == node.name;
-			});
-
-			if (animChannel == animation.data->frames.end()) continue;
+		if (animChannel != this->_currentAnimation->data->frames.end()) {
 
 			// figure out how "fast" the animation needs to play and the current playtime of the animation
-			float ticksPerSecond = animation.data->ticksPerSecond != 0 ? animation.data->ticksPerSecond : 25.0f;
-			float timeInTicks = animation.time * ticksPerSecond;
-			timeInTicks = std::fmod(timeInTicks, animation.data->duration);
+			float ticksPerSecond = this->_currentAnimation->data->ticksPerSecond != 0 ? this->_currentAnimation->data->ticksPerSecond : 25.0f;
+			float timeInTicks = this->_currentAnimation->time * ticksPerSecond;
+			timeInTicks = std::fmod(timeInTicks, this->_currentAnimation->data->duration);
 
 			// helper, select the next "frame" we should play depending on the time
 			auto findFrameIndex = [&](auto& keys) {
@@ -127,92 +101,30 @@ namespace rawrBox {
 			aiQuaternion rotation = AssimpUtils::lerpRotation(timeInTicks, animChannel->rotation[rotationFrameIndex], rotationFrameIndex + 1 >= animChannel->rotation.size() ? animChannel->rotation.front() : animChannel->rotation[rotationFrameIndex + 1]);
 			aiVector3D scale = AssimpUtils::lerpScale(timeInTicks, animChannel->scale[scaleFrameIndex], scaleFrameIndex + 1 >= animChannel->scale.size() ? animChannel->scale.front() : animChannel->scale[scaleFrameIndex + 1]);
 
-			// position.SymMul(scale);
-			aiMatrix3x3 rotMat = rotation.GetMatrix();
-			// aiMatrix3x3 posMat(position); // create a 4x4 matrix
+			std::array<float, 16> rotPos = {};
+			bx::mtxFromQuaternion(rotPos.data(), {rotation.x, rotation.y, rotation.z, rotation.w}, {position.x, position.y, position.z});
 
-			// Convert position data from parent's bone space to the current bone's space...
-			const aiVectorKey& positionKey = channel.mPositionKeys[keyIndex];
-			const aiVector3D position(parentToBone * positionKey.mValue);
-
-			// Convert rotation data into bone space...
-			const aiQuatKey& rotationKey = channel.mRotationKeys[keyIndex];
-			const aiQuaternion rotation(aiQuaternion(aiMatrix3x3(parentToBone)) * rotationKey.mValue);
-		}
-
-		// if we have animations playing
-		for (auto& animation : animations) {
-			// find the animation bone inside of the animation
-			auto animChannel = std::find_if(animation.data->frames.begin(), animation.data->frames.end(), [&](AnimationFrame& x) {
-				return x.nodeName == node.name;
-			});
-
-			if (animChannel == animation.data->frames.end()) continue;
-
-			// figure out how "fast" the animation needs to play and the current playtime of the animation
-			float ticksPerSecond = animation.data->ticksPerSecond != 0 ? animation.data->ticksPerSecond : 25.0f;
-			float timeInTicks = animation.time * ticksPerSecond;
-			timeInTicks = std::fmod(timeInTicks, animation.data->duration);
-
-			// helper, select the next "frame" we should play depending on the time
-			auto findFrameIndex = [&](auto& keys) {
-				for (size_t i = 0; i + 1 < keys.size(); i++) {
-					if (timeInTicks < keys[i + 1].time) {
-						return i;
-					}
-				}
-
-				return static_cast<size_t>(0);
-			};
-
-			// find all frames
-			auto scaleFrameIndex = findFrameIndex(animChannel->scale);
-			auto positionFrameIndex = findFrameIndex(animChannel->position);
-			auto rotationFrameIndex = findFrameIndex(animChannel->rotation);
-
-			// lerp the 3 components
-			auto position = AssimpUtils::lerpPosition(timeInTicks, animChannel->position[positionFrameIndex], positionFrameIndex + 1 >= animChannel->position.size() ? animChannel->position.front() : animChannel->position[positionFrameIndex + 1]);
-			auto rotation = AssimpUtils::lerpRotation(timeInTicks, animChannel->rotation[rotationFrameIndex], rotationFrameIndex + 1 >= animChannel->rotation.size() ? animChannel->rotation.front() : animChannel->rotation[rotationFrameIndex + 1]);
-			auto scale = AssimpUtils::lerpScale(timeInTicks, animChannel->scale[scaleFrameIndex], scaleFrameIndex + 1 >= animChannel->scale.size() ? animChannel->scale.front() : animChannel->scale[scaleFrameIndex + 1]);
-
-			// use GLM due Mainframe does not have quaterions :(
-			auto glmRotation = bx::Quaternion(rotation.w, rotation.x, rotation.y, rotation.z);
-
-			bx::mtxIdentity(nodeTransform.data());
-
-			float a[16];
-			bx::mtxIdentity(a);
-			bx::mtxTranslate(a, position.x, position.y, position.z);
-
-			float b[16];
-			bx::mtxIdentity(b);
-			bx::mtxScale(b, scale.x, scale.y, scale.z);
-
-			bx::mtxMul(nodeTransform.data(), a, b);
-
-			float c[16];
-			bx::mtxIdentity(c);
-			bx::mtxFromQuaternion(c, rotation, {position.x, position.y, position.z});
-
-			bx::mtxMul(nodeTransform.data(), nodeTransform.data(), c);
+			std::array<float, 16> s = {};
+			bx::mtxScale(s.data(), scale.x, scale.y, scale.z);
+			bx::mtxMul(parentTransformation.data(), rotPos.data(), s.data());
 		}
 
 		// store the result of our parent bone and our current node
-		std::array<float, 16> glbTf = {};
-		bx::mtxMul(glbTf.data(), parentTransform.data(), nodeTransform.data());
+		std::array<float, 16> globalTransformation = {};
+		bx::mtxMul(globalTransformation.data(), parentTransform.data(), parentTransformation.data());
 
-		// update the final result inside the bones
-		if (boneMapping.find(node.name) != boneMapping.end()) {
-			auto& boneInfo = boneMapping[node.name];
+		auto fnd = this->_boneMap.find(boneKey);
+		if (fnd != this->_boneMap.end()) {
+			auto& p = this->_boneCalcs[fnd->second.first];
 
-			bx::mtxMul(boneInfo.computedOffsetMtx.data(), inverse.data(), glbTf.data());
-			bx::mtxMul(boneInfo.computedOffsetMtx.data(), boneInfo.computedOffsetMtx.data(), boneInfo.offsetMtx.data());
+			bx::mtxMul(p.data(), skeleton->invTransformationMtx.data(), globalTransformation.data());
+			bx::mtxMul(p.data(), p.data(), fnd->second.second.data());
 		}
 
 		// recursively go the children of our current bone
-		for (auto& c : node.childs) {
-			this->readAnim(inverse, boneMapping, animations, c, glbTf);
-		}*/
+		for (auto child : parentBone->children) {
+			this->readAnim(skeleton, child, globalTransformation);
+		}
 	}
 
 	// Animations ----
@@ -258,7 +170,7 @@ namespace rawrBox {
 
 			float matrix[16];
 			bx::mtxMul(matrix, mesh->offsetMatrix.data(), this->_matrix.data());
-			bgfx::setTransform(matrix);
+			bgfx::setTransform(this->_matrix.data());
 
 			if (this->_material->hasUniform("u_displayBone")) {
 				float a[]{1};

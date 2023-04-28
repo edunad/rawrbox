@@ -5,6 +5,7 @@
 #include <assimp/vector3.h>
 
 #include <unordered_map>
+#include <utility>
 
 namespace rawrBox {
 
@@ -37,7 +38,7 @@ namespace rawrBox {
 
 		Animation* data = nullptr;
 		PlayingAnimationData() = default;
-		PlayingAnimationData(const std::string& _name, bool _loop, float _speed, float _time, Animation* _data) : name(_name), loop(_loop), speed(_speed), time(_time), data(_data){};
+		PlayingAnimationData(std::string _name, bool _loop, float _speed, float _time, Animation* _data) : name(std::move(_name)), loop(_loop), speed(_speed), time(_time), data(_data){};
 	};
 
 	class Model : public rawrBox::ModelBase {
@@ -48,7 +49,7 @@ namespace rawrBox {
 		std::unique_ptr<rawrBox::PlayingAnimationData> _currentAnimation = nullptr;
 
 		void updateBones(std::shared_ptr<rawrBox::Mesh> mesh);
-		void readAnim(Skeleton* skeleton, Bone& node, const std::array<float, 16>& transform);
+		void readAnim(std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const std::array<float, 16>& parentTransform);
 
 		void preDraw();
 		void postDraw();

@@ -36,12 +36,12 @@ namespace rawrBox {
 
 		std::shared_ptr<rawrBox::TextureBase> importTexture(const std::string& path, const std::string& name, const std::array<aiTextureMapMode, 3>& mode);
 
-		void generateSkeleton(Skeleton& skeleton, const aiNode* pNode, rawrBox::Bone& parent);
+		void generateSkeleton(std::shared_ptr<Skeleton> skeleton, const aiNode* pNode, std::shared_ptr<rawrBox::Bone> parent);
 
 		void loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::Mesh>& mesh);
 		void loadSubmeshes(const aiScene* sc, const aiNode* nd, std::shared_ptr<Mesh> parentMesh);
 		void loadAnimations(const aiScene* sc);
-		void loadSkeleton(const aiMesh& aiMesh, std::shared_ptr<rawrBox::Mesh> mesh);
+		void loadSkeleton(std::shared_ptr<Mesh> mesh, const aiMesh& aiMesh);
 		void loadLights(const aiScene* sc);
 
 	public:

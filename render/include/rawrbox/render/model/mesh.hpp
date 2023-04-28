@@ -10,9 +10,9 @@
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
 #include <fmt/printf.h>
-#include <stdint.h>
 
 #include <array>
+#include <cstdint>
 #include <map>
 #include <memory>
 
@@ -91,7 +91,7 @@ namespace rawrBox {
 		// --------------
 
 		std::shared_ptr<Mesh> parent = nullptr;
-		Skeleton* skeleton = nullptr;
+		std::shared_ptr<Skeleton> skeleton = nullptr;
 
 		Mesh() = default;
 		Mesh(Mesh&&) = delete;

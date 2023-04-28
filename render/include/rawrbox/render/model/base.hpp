@@ -6,12 +6,13 @@
 
 #include <bx/math.h>
 #include <fmt/printf.h>
-#include <stdint.h>
 #include <vcruntime.h>
 
 #include <array>
+#include <cstdint>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace rawrBox {
@@ -22,18 +23,22 @@ namespace rawrBox {
 
 		// Rendering ---
 		std::array<float, 16> transformationMtx = {};
-		std::array<float, 16> offsetMtx = {};
 		// ----
 
 		// Lookup ----
-		const Bone* parent = nullptr;
-		std::vector<Bone> children = {};
+		std::shared_ptr<Bone> parent;
+		std::vector<std::shared_ptr<Bone>> children = {};
 		// ----
+
+		Bone(std::string _name) : name(std::move(_name)) {}
 	};
 
 	struct Skeleton {
 		std::string name;
-		rawrBox::Bone rootBone;
+		std::shared_ptr<Bone> rootBone;
+
+		std::array<float, 16> invTransformationMtx = {};
+		Skeleton(std::string _name) : name(std::move(_name)) {}
 	};
 
 	class ModelBase {
@@ -55,7 +60,7 @@ namespace rawrBox {
 		rawrBox::Vector3f _angle = {};
 
 		// SKINNING ----
-		std::unordered_map<std::string, Skeleton> _skeletons = {};
+		std::unordered_map<std::string, std::shared_ptr<Skeleton>> _skeletons = {};
 		std::unordered_map<std::string, std::pair<uint8_t, std::array<float, 16>>> _boneMap = {}; // Map for quick lookup
 		// --------
 
