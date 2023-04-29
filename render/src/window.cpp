@@ -33,7 +33,7 @@
 #include <map>
 #include <stdexcept>
 
-#define GLFWHANDLE (reinterpret_cast<GLFWwindow*>(_handle))
+#define GLFWHANDLE (std::bit_cast<GLFWwindow*>(_handle))
 
 namespace rawrBox {
 	static Window& glfwHandleToRenderer(GLFWwindow* ptr) {
@@ -116,15 +116,12 @@ namespace rawrBox {
 		if (borderless && (windowed || fullscreen)) throw std::runtime_error("[RawrBox-Window] Only one window flag attribute can be selected");
 		if (fullscreen && (windowed || borderless)) throw std::runtime_error("[RawrBox-Window] Only one window aflag ttribute can be selected");
 
-		if (fullscreen) {
+		if (fullscreen || (width >= mode->width || height >= mode->height)) {
 			width = mode->width;
 			height = mode->height;
 		} else if (borderless) {
 			width = mode->width - 1;
 			height = mode->height - 1;
-		} else if ((width >= mode->width || height >= mode->height)) {
-			width = mode->width;
-			height = mode->height;
 		}
 
 		glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
@@ -170,14 +167,18 @@ namespace rawrBox {
 		}
 
 		HWND hwnd = glfwGetWin32Window(glfwHandle);
-		::SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
-		::SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+		::SendMessage(hwnd, WM_SETICON, ICON_SMALL, std::bit_cast<LPARAM>(hIcon));
+		::SendMessage(hwnd, WM_SETICON, ICON_BIG, std::bit_cast<LPARAM>(hIcon));
 #endif
 		// ---------------
 
 		if ((flags & WindowFlags::Features::MULTI_THREADED) == 0) bgfx::renderFrame(); // Disable multi-threading
 
 		bgfx::Init init;
+		if (this->_renderType == bgfx::RendererType::Vulkan && (flags & WindowFlags::Features::MULTI_THREADED) == 0) {
+			fmt::print("[RawrBox-Window] WARNING: VULKAN SHOULD HAVE THE 'WindowFlags::Features::MULTI_THREADED' SET FOR BETTER PERFORMANCE!\n");
+		}
+
 		init.type = this->_renderType;
 		init.resolution.width = static_cast<uint32_t>(width);
 		init.resolution.height = static_cast<uint32_t>(height);

@@ -74,8 +74,8 @@ namespace anims {
 		auto mat = std::make_shared<rawrBox::MaterialSkinnedUnlit>();
 
 		this->_model = std::make_shared<rawrBox::ModelImported>(mat);
-		this->_model->load("./content/models/bob/boblampclean.md5mesh", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS); // bob/boblampclean.md5mesh
-		this->_model->playAnimation("anim_0");
+		this->_model->load("./content/models/wolf/wolfman_animated.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS); // bob/boblampclean.md5mesh
+		this->_model->playAnimation("Scene");
 		// this->_model->setScale({0.01, 0.01, 0.01});
 		this->_model->upload();
 		// -----

@@ -11,12 +11,18 @@
 #include <fmt/format.h>
 
 #include <algorithm>
+#include <array>
 #include <cstdint>
+#include <glm/fwd.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <memory>
 #include <stdexcept>
 
-#include "bgfx/bgfx.h"
-#include "rawrbox/render/model/base.hpp"
+#include "rawrbox/math/quaternion.hpp"
+#include "rawrbox/utils/math.hpp"
 
 #define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_BLEND_ALPHA_TO_COVERAGE)
 
@@ -47,25 +53,28 @@ namespace rawrBox {
 		if (mesh->skeleton == nullptr || this->_currentAnimation == nullptr) return;
 
 		// recursively calculate bone offsets
-		std::array<float, 16> root = {};
-		bx::mtxIdentity(root.data());
-
 		this->_boneCalcs.clear();
-		this->readAnim(mesh->skeleton, mesh->skeleton->rootBone, root);
+		this->readAnim(mesh->skeleton, mesh->skeleton->rootBone, glm::mat4(1.f));
 
-		// copy the bone matrixes inside of the shader
-		std::vector<std::array<float, 16>> bones;
-		for (auto pair : this->_boneCalcs)
-			bones.push_back(pair.second);
+		std::vector<std::array<float, 16>> transforms;
+		for (auto pair : this->_boneCalcs) {
+			float* pSource = glm::value_ptr(pair.second);
 
-		bgfx::setUniform(this->_material->getUniform("u_bones"), &bones.front(), static_cast<uint32_t>(bones.size()));
+			std::array<float, 16> a = {};
+			for (int i = 0; i < 16; ++i)
+				a[i] = pSource[i];
+
+			transforms.push_back(a);
+		}
+
+		bgfx::setUniform(this->_material->getUniform("u_bones"), &transforms.front(), static_cast<uint32_t>(transforms.size()));
 	}
 
-	void Model::readAnim(std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const std::array<float, 16>& parentTransform) {
+	void Model::readAnim(std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const glm::mat4x4& parentTransform) {
 		if (skeleton == nullptr) return;
 
 		// update the final result inside the bones
-		std::array<float, 16> parentTransformation = parentBone->transformationMtx;
+		auto nodeTransform = parentBone->transformationMtx;
 		std::string boneKey = fmt::format("{}-{}", skeleton->name, parentBone->name);
 
 		// ANIMATE
@@ -92,39 +101,52 @@ namespace rawrBox {
 			};
 
 			// find all frames
-			auto scaleFrameIndex = findFrameIndex(animChannel->scale);
 			auto positionFrameIndex = findFrameIndex(animChannel->position);
 			auto rotationFrameIndex = findFrameIndex(animChannel->rotation);
+			auto scaleFrameIndex = findFrameIndex(animChannel->scale);
 
 			// lerp the 3 components
-			aiVector3D position = AssimpUtils::lerpPosition(timeInTicks, animChannel->position[positionFrameIndex], positionFrameIndex + 1 >= animChannel->position.size() ? animChannel->position.front() : animChannel->position[positionFrameIndex + 1]);
-			aiQuaternion rotation = AssimpUtils::lerpRotation(timeInTicks, animChannel->rotation[rotationFrameIndex], rotationFrameIndex + 1 >= animChannel->rotation.size() ? animChannel->rotation.front() : animChannel->rotation[rotationFrameIndex + 1]);
-			aiVector3D scale = AssimpUtils::lerpScale(timeInTicks, animChannel->scale[scaleFrameIndex], scaleFrameIndex + 1 >= animChannel->scale.size() ? animChannel->scale.front() : animChannel->scale[scaleFrameIndex + 1]);
+			aiVector3D position = animChannel->position[positionFrameIndex].value;   // AssimpUtils::lerpPosition(timeInTicks, animChannel->position[positionFrameIndex], positionFrameIndex + 1 >= animChannel->position.size() ? animChannel->position.front() : animChannel->position[positionFrameIndex + 1]);
+			aiQuaternion rotation = animChannel->rotation[rotationFrameIndex].value; // AssimpUtils::lerpRotation(timeInTicks, animChannel->rotation[rotationFrameIndex], rotationFrameIndex + 1 >= animChannel->rotation.size() ? animChannel->rotation.front() : animChannel->rotation[rotationFrameIndex + 1]);
+			aiVector3D scale = animChannel->scale[scaleFrameIndex].value;            // AssimpUtils::lerpScale(timeInTicks, animChannel->scale[scaleFrameIndex], scaleFrameIndex + 1 >= animChannel->scale.size() ? animChannel->scale.front() : animChannel->scale[scaleFrameIndex + 1]);
 
-			std::array<float, 16> rotPos = {};
-			bx::mtxFromQuaternion(rotPos.data(), {rotation.x, rotation.y, rotation.z, rotation.w}, {position.x, position.y, position.z});
-
-			std::array<float, 16> s = {};
-			bx::mtxScale(s.data(), scale.x, scale.y, scale.z);
-			bx::mtxMul(parentTransformation.data(), rotPos.data(), s.data());
+			auto glmRotation = glm::toMat4(glm::quat(rotation.w, rotation.x, rotation.y, rotation.z));
+			nodeTransform = glm::mat4x4(1.f);
+			nodeTransform = glm::translate(nodeTransform, {position.x, position.y, position.z});
+			nodeTransform = glm::scale(nodeTransform, {scale.x, scale.y, scale.z});
+			nodeTransform *= glmRotation;
 		}
 
 		// store the result of our parent bone and our current node
-		std::array<float, 16> globalTransformation = {};
-		bx::mtxMul(globalTransformation.data(), parentTransform.data(), parentTransformation.data());
+		auto globalTransformation = parentTransform * nodeTransform;
+
+		auto fnd = this->_boneMap.find(boneKey);
+		if (fnd != this->_boneMap.end()) {
+			auto& p = this->_boneCalcs[fnd->second.first];
+			p = skeleton->invTransformationMtx * globalTransformation * fnd->second.second;
+
+			// bx::mtxMul(p.data(), skeleton->invTransformationMtx.data(), globalTransformation.data());
+			// bx::mtxMul(p.data(), p.data(), fnd->second.second.data());
+		}
+
+		for (auto child : parentBone->children) {
+			this->readAnim(skeleton, child, globalTransformation);
+		}
+
+		/*std::array<float, 16> globalTransformation = MathUtils::mtxMul(parentTransform, nodeTransform);
 
 		auto fnd = this->_boneMap.find(boneKey);
 		if (fnd != this->_boneMap.end()) {
 			auto& p = this->_boneCalcs[fnd->second.first];
 
-			bx::mtxMul(p.data(), skeleton->invTransformationMtx.data(), globalTransformation.data());
-			bx::mtxMul(p.data(), p.data(), fnd->second.second.data());
+			p = MathUtils::mtxMul(skeleton->invTransformationMtx, globalTransformation);
+			p = MathUtils::mtxMul(p, fnd->second.second);
 		}
 
 		// recursively go the children of our current bone
 		for (auto child : parentBone->children) {
 			this->readAnim(skeleton, child, globalTransformation);
-		}
+		}*/
 	}
 
 	// Animations ----
@@ -154,13 +176,6 @@ namespace rawrBox {
 	void Model::draw(const rawrBox::Vector3f& camPos) {
 		ModelBase::draw(camPos);
 
-		/*this->_material->process(this->_meshes[0]);
-		bgfx::setVertexBuffer(0, this->_vbh);
-		bgfx::setIndexBuffer(this->_ibh);
-
-		bgfx::setState(BGFX_STATE_DEFAULT_3D, 0);
-		this->_material->postProcess();*/
-
 		this->preDraw();
 		for (auto& mesh : this->_meshes) {
 			this->_material->process(mesh);
@@ -170,7 +185,7 @@ namespace rawrBox {
 
 			float matrix[16];
 			bx::mtxMul(matrix, mesh->offsetMatrix.data(), this->_matrix.data());
-			bgfx::setTransform(this->_matrix.data());
+			bgfx::setTransform(matrix);
 
 			if (this->_material->hasUniform("u_displayBone")) {
 				float a[]{1};

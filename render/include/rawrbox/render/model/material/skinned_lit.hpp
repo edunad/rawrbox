@@ -26,7 +26,7 @@ namespace rawrBox {
 
 		void registerUniforms() override {
 			rawrBox::MaterialLit::registerUniforms();
-			this->registerUniform("u_bones", bgfx::createUniform("u_bones", bgfx::UniformType::Mat4, 200));
+			this->registerUniform("u_bones", bgfx::createUniform("u_bones", bgfx::UniformType::Mat4, rawrBox::MAX_BONES_PER_MODEL));
 		}
 
 		void process(std::shared_ptr<rawrBox::Mesh> mesh) override {

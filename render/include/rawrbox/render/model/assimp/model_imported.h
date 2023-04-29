@@ -41,7 +41,7 @@ namespace rawrBox {
 		void loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::Mesh>& mesh);
 		void loadSubmeshes(const aiScene* sc, const aiNode* nd, std::shared_ptr<Mesh> parentMesh);
 		void loadAnimations(const aiScene* sc);
-		void loadSkeleton(std::shared_ptr<Mesh> mesh, const aiMesh& aiMesh);
+		void loadSkeleton(const aiScene* sc, std::shared_ptr<Mesh> mesh, const aiMesh& aiMesh);
 		void loadLights(const aiScene* sc);
 
 	public:

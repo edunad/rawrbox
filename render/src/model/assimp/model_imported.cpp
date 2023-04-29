@@ -12,20 +12,24 @@
 #include <assimp/GltfMaterial.h>
 #include <assimp/material.h>
 #include <assimp/mesh.h>
+#include <assimp/scene.h>
 #include <bx/math.h>
 #include <fmt/format.h>
 
 #include <cstdint>
 #include <filesystem>
 #include <functional>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/matrix.hpp>
 #include <memory>
 #include <stdexcept>
-
-#include "rawrbox/render/model/base.hpp"
 
 // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 namespace rawrBox {
+	static inline glm::mat4 mat4_cast(const aiMatrix4x4& m) { return glm::transpose(glm::make_mat4(&m.a1)); }
+
 	ModelImported::~ModelImported() {
 		this->_textures.clear();
 	}
@@ -39,7 +43,7 @@ namespace rawrBox {
 		this->_assimpFlags = assimpFlags;
 
 		if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {
-			this->_assimpFlags |= aiProcess_PopulateArmatureData | aiProcess_OptimizeGraph; // Enable armature & limit bones
+			this->_assimpFlags |= aiProcess_PopulateArmatureData | aiProcess_OptimizeGraph | aiProcess_LimitBoneWeights; // Enable armature & limit bones
 		} else {
 			this->_assimpFlags |= aiProcess_PreTransformVertices; // Enable PreTransformVertices for optimization
 		}
@@ -59,11 +63,11 @@ namespace rawrBox {
 		aiReleaseImport(scene);
 	}
 
-	void ModelImported::loadSkeleton(std::shared_ptr<Mesh> mesh, const aiMesh& aiMesh) {
+	void ModelImported::loadSkeleton(const aiScene* sc, std::shared_ptr<Mesh> mesh, const aiMesh& aiMesh) {
 		if (!aiMesh.HasBones()) return;
 
-		for (size_t i_bone = 0; i_bone < aiMesh.mNumBones; i_bone++) {
-			aiBone* bone = aiMesh.mBones[i_bone];
+		for (size_t i = 0; i < aiMesh.mNumBones; i++) {
+			aiBone* bone = aiMesh.mBones[i];
 			if (bone->mArmature == nullptr) continue;
 
 			// Armature parsing
@@ -75,11 +79,9 @@ namespace rawrBox {
 				auto armature = std::make_shared<Skeleton>(name);
 				armature->rootBone = std::make_shared<Bone>("ARMATURE-ROOT");
 
-				bx::mtxIdentity(armature->rootBone->transformationMtx.data());
-				bx::mtxTranspose(armature->rootBone->transformationMtx.data(), &bone->mArmature->mTransformation.a1);
-
-				bx::mtxIdentity(armature->invTransformationMtx.data());
-				bx::mtxInverse(armature->invTransformationMtx.data(), &bone->mArmature->mTransformation.a1);
+				armature->rootBone->transformationMtx = mat4_cast(bone->mArmature->mTransformation);
+				armature->invTransformationMtx = mat4_cast(sc->mRootNode->mTransformation);
+				armature->invTransformationMtx = glm::inverse(armature->invTransformationMtx);
 
 				this->generateSkeleton(armature, bone->mArmature, armature->rootBone);
 
@@ -106,7 +108,11 @@ namespace rawrBox {
 
 			auto fnd = this->_boneMap.find(boneKey);
 			if (fnd == this->_boneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
-			bx::mtxTranspose(fnd->second.second.data(), &bone->mOffsetMatrix.a1);
+
+			fnd->second.second = mat4_cast(bone->mOffsetMatrix);
+
+			// bx::mtxTranspose(fnd->second.second.data(), &bone->mOffsetMatrix.a1);
+			//  bx::mtxMul(fnd->second.second.data(), fnd->second.second.data(), mesh->offsetMatrix.data());
 
 			mesh->skeleton = this->_skeletons[name];
 
@@ -133,8 +139,8 @@ namespace rawrBox {
 			std::shared_ptr<rawrBox::Bone> bone = std::make_shared<rawrBox::Bone>(boneName);
 			bone->parent = parent;
 			bone->boneId = this->_boneMap[boneKey].first;
-
-			bx::mtxTranspose(bone->transformationMtx.data(), &pNode->mTransformation.a1);
+			bone->transformationMtx = mat4_cast(child->mTransformation);
+			// bx::mtxTranspose(bone->transformationMtx.data(), &child->mTransformation.a1);
 
 			this->generateSkeleton(skeleton, child, bone);
 			parent->children.push_back(std::move(bone));
@@ -288,7 +294,7 @@ namespace rawrBox {
 	void ModelImported::loadSubmeshes(const aiScene* sc, const aiNode* root, std::shared_ptr<Mesh> parentMesh) {
 		std::shared_ptr<rawrBox::Mesh> mesh = nullptr;
 
-		for (size_t n = 0; n < root->mNumMeshes; n++) {
+		for (size_t n = 0; n < root->mNumMeshes; ++n) {
 			aiMesh& aiMesh = *sc->mMeshes[root->mMeshes[n]];
 			mesh = std::make_shared<rawrBox::Mesh>();
 
@@ -342,7 +348,7 @@ namespace rawrBox {
 			}
 
 			// Indices
-			for (size_t t = 0; t < aiMesh.mNumFaces; t++) {
+			for (size_t t = 0; t < aiMesh.mNumFaces; ++t) {
 				auto& face = aiMesh.mFaces[t];
 				if (face.mNumIndices != 3) continue; // we only do triangles
 
@@ -353,7 +359,7 @@ namespace rawrBox {
 
 			// Bones
 			if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0 && aiMesh.HasBones()) {
-				this->loadSkeleton(mesh, aiMesh);
+				this->loadSkeleton(sc, mesh, aiMesh);
 			}
 			// -------------------
 
@@ -364,7 +370,7 @@ namespace rawrBox {
 		}
 
 		// recursive
-		for (size_t n = 0; n < root->mNumChildren; n++) {
+		for (size_t n = 0; n < root->mNumChildren; ++n) {
 			this->loadSubmeshes(sc, root->mChildren[n], mesh);
 		}
 	}
@@ -408,7 +414,7 @@ namespace rawrBox {
 
 				for (size_t rotationIndex = 0; rotationIndex < aChannel->mNumRotationKeys; rotationIndex++) {
 					auto aRot = aChannel->mRotationKeys[rotationIndex];
-					ourChannel.rotation.push_back({static_cast<float>(aRot.mTime), aRot.mValue});
+					ourChannel.rotation.push_back({static_cast<float>(aRot.mTime), {aRot.mValue.w, aRot.mValue.x, aRot.mValue.y, aRot.mValue.z}});
 				}
 
 				ourAnim.frames.push_back(ourChannel);

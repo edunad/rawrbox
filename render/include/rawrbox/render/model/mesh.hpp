@@ -25,8 +25,8 @@ namespace rawrBox {
 
 		uint32_t abgr = 0xFFFFFFFF;
 
-		std::array<uint8_t, rawrBox::NUM_BONES_PER_VERTEX> bone_indices = {};
-		std::array<float, rawrBox::NUM_BONES_PER_VERTEX> bone_weights = {};
+		std::array<uint8_t, rawrBox::MAX_BONES_PER_VERTEX> bone_indices = {};
+		std::array<float, rawrBox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
 		MeshVertexData() = default;
 		MeshVertexData(const rawrBox::Vector3f& _pos, uint32_t _normal, uint32_t _tangent,

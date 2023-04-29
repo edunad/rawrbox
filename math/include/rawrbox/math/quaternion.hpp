@@ -19,35 +19,35 @@ namespace rawrBox {
 		Quaternion_t(Vector3_t<NumberType> vec, NumberType _w = 0) : x(vec.x), y(vec.y), z(vec.z), w(_w) {}
 		Quaternion_t(NumberType _x, NumberType _y = 0, NumberType _z = 0, NumberType _w = 0) : x(_x), y(_y), z(_z), w(_w) {}
 
-		QuaternionType operator- (const QuaternionType& other) const {
+		QuaternionType operator-(const QuaternionType& other) const {
 			return QuaternionType(x - other.x, y - other.y, z - other.z, w - other.w);
 		}
 
-		QuaternionType operator+ (const QuaternionType& other) const {
+		QuaternionType operator+(const QuaternionType& other) const {
 			return QuaternionType(x + other.x, y + other.y, z + other.z, w + other.w);
 		}
 
-		QuaternionType operator* (const QuaternionType& other) const {
+		QuaternionType operator*(const QuaternionType& other) const {
 			return QuaternionType(x * other.x, y * other.y, z * other.z, w * other.w);
 		}
 
-		QuaternionType operator/ (const QuaternionType& other) const {
+		QuaternionType operator/(const QuaternionType& other) const {
 			return QuaternionType(x / other.x, y / other.y, z / other.z, w / other.w);
 		}
 
-		QuaternionType operator- (NumberType other) const {
+		QuaternionType operator-(NumberType other) const {
 			return QuaternionType(x - other, y - other, z - other, w - other);
 		}
 
-		QuaternionType operator+ (NumberType other) const {
+		QuaternionType operator+(NumberType other) const {
 			return QuaternionType(x + other, y + other, z + other, w + other);
 		}
 
-		QuaternionType operator* (NumberType other) const {
+		QuaternionType operator*(NumberType other) const {
 			return QuaternionType(x * other, y * other, z * other, w * other);
 		}
 
-		QuaternionType operator/ (NumberType other) const {
+		QuaternionType operator/(NumberType other) const {
 			return QuaternionType(x / other, y / other, z / other, w / other);
 		}
 
@@ -60,13 +60,13 @@ namespace rawrBox {
 		}
 
 		QuaternionType lerp(const QuaternionType& other, NumberType timestep) const {
-			if((*this) == other) return other;
+			if ((*this) == other) return other;
 			QuaternionType ret;
 
 			float dot = w * other.w + x * other.x + y * other.y + z * other.z;
 			float blend = 1.f - timestep;
 
-			if(dot < 0.f) {
+			if (dot < 0.f) {
 				ret.w = blend * w + blend * -other.w;
 				ret.x = blend * x + blend * -other.x;
 				ret.y = blend * y + blend * -other.y;
@@ -81,7 +81,7 @@ namespace rawrBox {
 			return ret.normalized();
 		}
 
-		QuaternionType& operator-= (const QuaternionType& other) {
+		QuaternionType& operator-=(const QuaternionType& other) {
 			x -= other.x;
 			y -= other.y;
 			z -= other.z;
@@ -89,7 +89,7 @@ namespace rawrBox {
 			return *this;
 		}
 
-		QuaternionType& operator+= (const QuaternionType& other) {
+		QuaternionType& operator+=(const QuaternionType& other) {
 			x += other.x;
 			y += other.y;
 			z += other.z;
@@ -97,7 +97,7 @@ namespace rawrBox {
 			return *this;
 		}
 
-		QuaternionType& operator*= (const QuaternionType& other) {
+		QuaternionType& operator*=(const QuaternionType& other) {
 			x *= other.x;
 			y *= other.y;
 			z *= other.z;
@@ -105,7 +105,7 @@ namespace rawrBox {
 			return *this;
 		}
 
-		QuaternionType& operator/= (const QuaternionType& other) {
+		QuaternionType& operator/=(const QuaternionType& other) {
 			x /= other.x;
 			y /= other.y;
 			z /= other.z;
@@ -113,7 +113,7 @@ namespace rawrBox {
 			return *this;
 		}
 
-		QuaternionType& operator-= (NumberType other) {
+		QuaternionType& operator-=(NumberType other) {
 			x -= other;
 			y -= other;
 			z -= other;
@@ -121,7 +121,7 @@ namespace rawrBox {
 			return *this;
 		}
 
-		QuaternionType& operator+= (NumberType other) {
+		QuaternionType& operator+=(NumberType other) {
 			x += other;
 			y += other;
 			z += other;
@@ -129,7 +129,7 @@ namespace rawrBox {
 			return *this;
 		}
 
-		QuaternionType& operator*= (NumberType other) {
+		QuaternionType& operator*=(NumberType other) {
 			x *= other;
 			y *= other;
 			z *= other;
@@ -137,7 +137,7 @@ namespace rawrBox {
 			return *this;
 		}
 
-		QuaternionType& operator/= (NumberType other) {
+		QuaternionType& operator/=(NumberType other) {
 			x /= other;
 			y /= other;
 			z /= other;
@@ -149,11 +149,11 @@ namespace rawrBox {
 			return QuaternionType(-x, -y, -z, -w);
 		}
 
-		bool operator== (const QuaternionType& other) const {
+		bool operator==(const QuaternionType& other) const {
 			return x == other.x && y == other.y && z == other.z && w == other.w;
 		}
 
-		bool operator!= (const QuaternionType& other) const {
+		bool operator!=(const QuaternionType& other) const {
 			return !operator==(other);
 		}
 	};
@@ -163,4 +163,4 @@ namespace rawrBox {
 	using Quaternioni = Quaternion_t<int>;
 	using Quaternion = Quaternionf;
 
-}
+} // namespace rawrBox
