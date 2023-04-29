@@ -19,17 +19,12 @@
 #include <cstdint>
 #include <filesystem>
 #include <functional>
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/matrix.hpp>
 #include <memory>
 #include <stdexcept>
 
 // NOLINTBEGIN(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 namespace rawrBox {
-	static inline glm::mat4 mat4_cast(const aiMatrix4x4& m) { return glm::transpose(glm::make_mat4(&m.a1)); }
-
 	ModelImported::~ModelImported() {
 		this->_textures.clear();
 	}
@@ -79,9 +74,8 @@ namespace rawrBox {
 				auto armature = std::make_shared<Skeleton>(name);
 				armature->rootBone = std::make_shared<Bone>("ARMATURE-ROOT");
 
-				armature->rootBone->transformationMtx = mat4_cast(bone->mArmature->mTransformation);
-				armature->invTransformationMtx = mat4_cast(sc->mRootNode->mTransformation);
-				armature->invTransformationMtx = glm::inverse(armature->invTransformationMtx);
+				bx::mtxTranspose(armature->rootBone->transformationMtx.data(), &bone->mArmature->mTransformation.a1);
+				bx::mtxTranspose(armature->invTransformationMtx.data(), &sc->mRootNode->mTransformation.a1);
 
 				this->generateSkeleton(armature, bone->mArmature, armature->rootBone);
 
@@ -109,7 +103,7 @@ namespace rawrBox {
 			auto fnd = this->_boneMap.find(boneKey);
 			if (fnd == this->_boneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
 
-			fnd->second.second = mat4_cast(bone->mOffsetMatrix);
+			bx::mtxTranspose(fnd->second.second.data(), &bone->mOffsetMatrix.a1);
 
 			// bx::mtxTranspose(fnd->second.second.data(), &bone->mOffsetMatrix.a1);
 			//  bx::mtxMul(fnd->second.second.data(), fnd->second.second.data(), mesh->offsetMatrix.data());
@@ -139,8 +133,7 @@ namespace rawrBox {
 			std::shared_ptr<rawrBox::Bone> bone = std::make_shared<rawrBox::Bone>(boneName);
 			bone->parent = parent;
 			bone->boneId = this->_boneMap[boneKey].first;
-			bone->transformationMtx = mat4_cast(child->mTransformation);
-			// bx::mtxTranspose(bone->transformationMtx.data(), &child->mTransformation.a1);
+			bx::mtxTranspose(bone->transformationMtx.data(), &child->mTransformation.a1);
 
 			this->generateSkeleton(skeleton, child, bone);
 			parent->children.push_back(std::move(bone));

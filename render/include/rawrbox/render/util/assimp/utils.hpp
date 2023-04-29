@@ -78,7 +78,7 @@ namespace rawrBox {
 			aiQuaternion aiIntrp = AssimpUtils::interpolate(aiStart, aiEnd, norm);
 
 			AssimpUtils::normalize(aiIntrp);
-			return {aiIntrp.x, aiIntrp.y, aiIntrp.z, aiIntrp.w};
+			return {aiIntrp.w, aiIntrp.x, aiIntrp.y, aiIntrp.z};
 		};
 
 		static aiVector3D lerpPosition(float time, rawrBox::AnimKey<aiVector3D> a, rawrBox::AnimKey<aiVector3D> b) {
@@ -95,10 +95,10 @@ namespace rawrBox {
 			b.value.y *= norm;
 			b.value.z *= norm;
 
-			return aiVector3D(
+			return {
 			    a.value.x + b.value.x,
 			    a.value.y + b.value.y,
-			    a.value.z + b.value.z);
+			    a.value.z + b.value.z};
 		};
 
 		static aiVector3D lerpScale(float time, rawrBox::AnimKey<aiVector3D> a, rawrBox::AnimKey<aiVector3D> b) {

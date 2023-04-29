@@ -10,7 +10,6 @@
 
 #include <array>
 #include <cstdint>
-#include <glm/glm.hpp>
 #include <memory>
 #include <string>
 #include <utility>
@@ -23,7 +22,7 @@ namespace rawrBox {
 		size_t boneId = 0;
 
 		// Rendering ---
-		glm::mat4x4 transformationMtx = {};
+		std::array<float, 16> transformationMtx = {};
 		// ----
 
 		// Lookup ----
@@ -38,7 +37,7 @@ namespace rawrBox {
 		std::string name;
 		std::shared_ptr<Bone> rootBone;
 
-		glm::mat4x4 invTransformationMtx = {};
+		std::array<float, 16> invTransformationMtx = {};
 		Skeleton(std::string _name) : name(std::move(_name)) {}
 	};
 
@@ -62,7 +61,7 @@ namespace rawrBox {
 
 		// SKINNING ----
 		std::unordered_map<std::string, std::shared_ptr<Skeleton>> _skeletons = {};
-		std::unordered_map<std::string, std::pair<uint8_t, glm::mat4x4>> _boneMap = {}; // Map for quick lookup
+		std::unordered_map<std::string, std::pair<uint8_t, std::array<float, 16>>> _boneMap = {}; // Map for quick lookup
 		// --------
 
 		void flattenMeshes(bool quickOptimize = true) {

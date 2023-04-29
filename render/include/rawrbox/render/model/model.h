@@ -4,8 +4,6 @@
 #include <assimp/quaternion.h>
 #include <assimp/vector3.h>
 
-#include <glm/fwd.hpp>
-#include <glm/glm.hpp>
 #include <unordered_map>
 #include <utility>
 
@@ -46,12 +44,12 @@ namespace rawrBox {
 	class Model : public rawrBox::ModelBase {
 	protected:
 		std::unordered_map<std::string, Animation> _animations = {};
-		std::unordered_map<size_t, glm::mat4x4> _boneCalcs = {};
+		std::unordered_map<size_t, std::array<float, 16>> _boneCalcs = {};
 
 		std::unique_ptr<rawrBox::PlayingAnimationData> _currentAnimation = nullptr;
 
 		void updateBones(std::shared_ptr<rawrBox::Mesh> mesh);
-		void readAnim(std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const glm::mat4x4& parentTransform);
+		void readAnim(std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const std::array<float, 16>& parentTransform);
 
 		void preDraw();
 		void postDraw();

@@ -57,7 +57,6 @@ set(ASSIMP_INSTALL_PDB OFF CACHE BOOL "")
 # Packages ----
 find_package(Freetype REQUIRED MODULE)
 find_package(utf8cpp REQUIRED)
-find_package(glm REQUIRED)
 
 if(RAWRBOX_BUILD_RENDER_ASSIMP_SUPPORT)
 	message("-- Enabled assimp")
@@ -107,8 +106,6 @@ target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	bgfx
 	bx
 	glfw
-
-	glm::glm
 
 	${RAWRBOX_EXTRA_LIBS}
 )

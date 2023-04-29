@@ -6,8 +6,6 @@
 #include <array>
 #include <cmath>
 
-#include "rawrbox/math/quaternion.hpp"
-
 namespace rawrBox {
 	class MathUtils {
 	public:
@@ -99,6 +97,12 @@ namespace rawrBox {
 		}
 
 		/// MATRIX
+		static inline void mtxTranslate(std::array<float, 16>& mtx, rawrBox::Vector3f pos) {
+			mtx[12] = pos.x;
+			mtx[13] = pos.y;
+			mtx[14] = pos.z;
+		}
+
 		static inline void mtxScale(std::array<float, 16>& mtx, rawrBox::Vector3f scale) {
 			mtx[0] *= scale.x;
 			mtx[5] *= scale.y;
@@ -113,7 +117,7 @@ namespace rawrBox {
 			_result[3] = _vec[0] * _mat[3] + _vec[1] * _mat[7] + _vec[2] * _mat[11] + _vec[3] * _mat[15];
 		}
 
-		static inline std::array<float, 16> mtxMul(const std::array<float, 16>& mtx, const std::array<float, 16>& mtxB) {
+		static inline std::array<float, 16> mtxMul(const std::array<float, 16>& mtxB, const std::array<float, 16>& mtx) {
 			std::array<float, 16> _result = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 			vec4MulMtx(&_result[0], &mtx[0], mtxB.data());
@@ -124,22 +128,21 @@ namespace rawrBox {
 			return _result;
 		}
 
-		static inline std::array<float, 16>
-		mtxQuaternion(rawrBox::Quaternion rot) {
+		static inline std::array<float, 16> mtxQuaternion(float w, float x, float y, float z) {
 			std::array<float, 16> mtx = {};
 
-			const float x2 = rot.x + rot.x;
-			const float y2 = rot.y + rot.y;
-			const float z2 = rot.z + rot.z;
-			const float x2x = x2 * rot.x;
-			const float x2y = x2 * rot.y;
-			const float x2z = x2 * rot.z;
-			const float x2w = x2 * rot.w;
-			const float y2y = y2 * rot.y;
-			const float y2z = y2 * rot.z;
-			const float y2w = y2 * rot.w;
-			const float z2z = z2 * rot.z;
-			const float z2w = z2 * rot.w;
+			const float x2 = x + x;
+			const float y2 = y + y;
+			const float z2 = z + z;
+			const float x2x = x2 * x;
+			const float x2y = x2 * y;
+			const float x2z = x2 * z;
+			const float x2w = x2 * w;
+			const float y2y = y2 * y;
+			const float y2z = y2 * z;
+			const float y2w = y2 * w;
+			const float z2z = z2 * z;
+			const float z2w = z2 * w;
 
 			mtx[0] = 1.0f - (y2y + z2z);
 			mtx[4] = x2y - z2w;

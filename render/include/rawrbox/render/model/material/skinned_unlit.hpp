@@ -28,19 +28,7 @@ namespace rawrBox {
 
 		void registerUniforms() override {
 			rawrBox::MaterialUnlit::registerUniforms();
-
-			this->registerUniform("u_displayBone", bgfx::createUniform("u_displayBone", bgfx::UniformType::Vec4, 1));
 			this->registerUniform("u_bones", bgfx::createUniform("u_bones", bgfx::UniformType::Mat4, rawrBox::MAX_BONES_PER_MODEL));
-		}
-
-		void process(std::shared_ptr<rawrBox::Mesh> mesh) override {
-			rawrBox::MaterialUnlit::process(mesh);
-
-			/*auto b = mesh->parent["Head"];
-			float a[1] = {static_cast<float>(b.boneId)};
-
-			bgfx::setUniform(this->getUniform("u_displayBone"), a);
-			bgfx::dbgTextPrintf(1, 2, 0x0f, fmt::format("Current Bone: {}", b.name).c_str());*/
 		}
 
 		void upload() override {
