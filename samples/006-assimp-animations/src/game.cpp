@@ -82,10 +82,11 @@ namespace anims {
 		this->_model->upload();
 
 		this->_model2 = std::make_shared<rawrBox::ModelImported>(mat);
-		this->_model2->load("./content/models/uv_animation/scene.gltf", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrBox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE);
-		// this->_model2->playAnimation("MewAction", true, 0.8f);
+		this->_model2->load("./content/models/multiple_skeleton/twocubestest.gltf", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrBox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE);
+		this->_model2->playAnimation("MewAction", true, 0.8f);
 		this->_model2->playAnimation("MewAction.001", true, 0.8f);
 		this->_model2->setPos({0, 0, 0});
+		this->_model2->setScale({0.25f, 0.25f, 0.25f});
 		this->_model2->upload();
 
 		// -----
