@@ -32,7 +32,7 @@ namespace rawrBox {
 		std::vector<std::shared_ptr<Bone>> children = {};
 		// ----
 
-		Bone(std::string _name) : name(std::move(_name)) {}
+		explicit Bone(std::string _name) : name(std::move(_name)) {}
 	};
 
 	struct Skeleton {
@@ -43,7 +43,7 @@ namespace rawrBox {
 
 		std::array<float, 16> invTransformationMtx = {};
 
-		Skeleton(std::string _name) : name(std::move(_name)) {}
+		explicit Skeleton(std::string _name) : name(std::move(_name)) {}
 	};
 
 	class ModelBase {
@@ -114,7 +114,7 @@ namespace rawrBox {
 		}
 
 	public:
-		ModelBase(std::shared_ptr<rawrBox::MaterialBase> material) : _material(std::move(material)){};
+		explicit ModelBase(std::shared_ptr<rawrBox::MaterialBase> material) : _material(std::move(material)){};
 
 		ModelBase(ModelBase&&) = delete;
 		ModelBase& operator=(ModelBase&&) = delete;
@@ -241,9 +241,9 @@ namespace rawrBox {
 			std::shared_ptr<rawrBox::Mesh> mesh = std::make_shared<rawrBox::Mesh>();
 			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
 
-			merge(mesh, generateCube(pos, {size, 0.01f, 0.01f}, Colors::Red));   // x;
-			merge(mesh, generateCube(pos, {0.01f, size, 0.01f}, Colors::Green)); // y;
-			merge(mesh, generateCube(pos, {0.01f, 0.01f, size}, Colors::Blue));  // z;
+			merge(mesh, generateCube(pos, {size, 0.01F, 0.01F}, Colors::Red));   // x;
+			merge(mesh, generateCube(pos, {0.01F, size, 0.01F}, Colors::Green)); // y;
+			merge(mesh, generateCube(pos, {0.01F, 0.01F, size}, Colors::Blue));  // z;
 
 			mesh->setCulling(0);
 			mesh->setTexture(rawrBox::WHITE_TEXTURE);
@@ -287,7 +287,7 @@ namespace rawrBox {
 			std::vector<rawrBox::MeshVertexData> buff = {};
 			std::vector<uint16_t> inds = {};
 
-			float step = 1.f;
+			float step = 1.F;
 			for (uint32_t j = 0; j <= size; ++j) {
 				for (uint32_t i = 0; i <= size; ++i) {
 					float x = static_cast<float>(i) / static_cast<float>(step);
@@ -296,7 +296,7 @@ namespace rawrBox {
 					auto col = cl;
 
 					if (j == 0 || i == 0 || j >= size || i >= size) col = borderCl;
-					buff.emplace_back(rawrBox::Vector3f(pos.x - static_cast<uint32_t>(size / 2), pos.y, pos.z - static_cast<uint32_t>(size / 2)) + rawrBox::Vector3f(x, y, z), rawrBox::PackUtils::packNormal(0, 0, 1), rawrBox::PackUtils::packNormal(0, 0, 1), 1.0f, 1.0f, col);
+					buff.emplace_back(rawrBox::Vector3f(pos.x - static_cast<uint32_t>(size / 2), pos.y, pos.z - static_cast<uint32_t>(size / 2)) + rawrBox::Vector3f(x, y, z), rawrBox::PackUtils::packNormal(0, 0, 1), rawrBox::PackUtils::packNormal(0, 0, 1), 1.0F, 1.0F, col);
 				}
 			}
 

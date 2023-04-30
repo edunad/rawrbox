@@ -36,7 +36,7 @@ namespace rawrBox {
 		if (this->_debugMdl != nullptr) {
 			auto pos = light->getPosMatrix();
 
-			auto mesh = rawrBox::ModelBase::generatePlane({pos[0], pos[1], pos[2]}, 0.1f);
+			auto mesh = rawrBox::ModelBase::generatePlane({pos[0], pos[1], pos[2]}, {0.1F, 0.1F});
 			mesh->setName(fmt::format("Light-{}", light->getType()));
 			mesh->setCulling(BGFX_STATE_CULL_CW);
 			// mesh->setColor(light->getDiffuseColor());

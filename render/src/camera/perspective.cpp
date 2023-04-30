@@ -4,10 +4,12 @@
 #include <bx/math.h>
 
 namespace rawrBox {
-	CameraPerspective::CameraPerspective(float ratio, float FOV, float near, float far, bool homogeneousDepth) : rawrBox::CameraBase() {
+	// NOLINTBEGIN(clang-analyzer-optin.cplusplus.VirtualCall)
+	CameraPerspective::CameraPerspective(float ratio, float FOV, float near, float far, bool homogeneousDepth) {
 		bx::mtxProj(this->_projection.data(), FOV, ratio, near, far, homogeneousDepth);
 		this->update();
 	}
+	// NOLINTEND(clang-analyzer-optin.cplusplus.VirtualCall)
 
 	void CameraPerspective::update() {
 		auto dir = this->getForward();

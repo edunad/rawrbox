@@ -1,6 +1,7 @@
 #pragma once
 #include <bgfx/embedded_shader.h>
 
+// NOLINTBEGIN(*)
 // Disable dx9
 #undef BGFX_PLATFORM_SUPPORTS_DX9BC
 #define BGFX_PLATFORM_SUPPORTS_DX9BC 0
@@ -23,3 +24,4 @@
 #define BGFX_EMBEDDED_SHADER_DXBC(...)
 #endif
 // ----------------
+// NOLINTEND(*)

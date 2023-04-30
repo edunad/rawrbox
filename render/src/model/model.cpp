@@ -76,7 +76,7 @@ namespace rawrBox {
 			if (animChannel != anim.data->frames.end()) {
 
 				// figure out how "fast" the animation needs to play and the current playtime of the animation
-				float ticksPerSecond = anim.data->ticksPerSecond != 0 ? anim.data->ticksPerSecond : 25.0f;
+				float ticksPerSecond = anim.data->ticksPerSecond != 0 ? anim.data->ticksPerSecond : 25.0F;
 				float timeInTicks = anim.time * ticksPerSecond;
 				timeInTicks = std::fmod(timeInTicks, anim.data->duration);
 
@@ -132,7 +132,7 @@ namespace rawrBox {
 		this->_playingAnimations.emplace_back(name,
 		    loop,
 		    speed,
-		    0.0f,
+		    0.0F,
 		    &iter->second);
 
 		return true;
@@ -160,9 +160,9 @@ namespace rawrBox {
 			bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
 			bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
 
-			float matrix[16];
-			bx::mtxMul(matrix, mesh->offsetMatrix.data(), this->_matrix.data());
-			bgfx::setTransform(matrix);
+			std::array<float, 16> matrix = {};
+			bx::mtxMul(matrix.data(), mesh->offsetMatrix.data(), this->_matrix.data());
+			bgfx::setTransform(matrix.data());
 
 			uint64_t flags = BGFX_STATE_DEFAULT_3D | mesh->culling | mesh->blending;
 			if (mesh->wireframe) flags |= BGFX_STATE_PT_LINES;

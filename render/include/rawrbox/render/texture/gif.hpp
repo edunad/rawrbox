@@ -20,8 +20,8 @@ namespace rawrBox {
 
 		int _currentFrame = 0;
 		bool _loop = true;
-		uint64_t _cooldown = 0;
-		float _speed = 1.f;
+		int64_t _cooldown = 0;
+		float _speed = 1.F;
 		bool _failedToLoad = false;
 
 		uint32_t _flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
@@ -29,7 +29,7 @@ namespace rawrBox {
 		void update();
 
 	public:
-		TextureGIF(const std::string& fileName, bool useFallback = true);
+		explicit TextureGIF(const std::string& fileName, bool useFallback = true);
 
 		// ------ANIMATION
 		virtual void step();

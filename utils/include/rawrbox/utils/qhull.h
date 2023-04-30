@@ -1,4 +1,5 @@
 
+// NOLINTBEGIN(*)
 #pragma once
 #include <rawrbox/math/vector2.hpp>
 
@@ -31,7 +32,7 @@ namespace rawrBox {
 			⢀⣹⣿⣿⣿⣿⣽⣿⣿⣿⣿⣿⡀⠄⠄⡀⠄⡇⠄⢀⣀⣀⣸⣯⢠⡇⠄⠄⢼⡆⢡⣿⣿⣿⣿⣿⣿⣿
 			⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠄⠄⠨⢾⣿⣿⣿⣿⣿⣿⣿⠄⣷⡀⠄⢸⡇⢘⣻⣿⣿⣿⣿⣿⣿
 		*/
-		static std::vector<rawrBox::Vector2> calculateConvex(const std::vector<rawrBox::Vector2>& vertPoints, std::string& flags = "qhull FA") {
+		static std::vector<rawrBox::Vector2> calculateConvex(const std::vector<rawrBox::Vector2>& vertPoints, const std::string& flags = "qhull FA") {
 			std::vector<rawrBox::Vector2> hull = {};
 
 			// Setup QHULL ---
@@ -53,7 +54,8 @@ namespace rawrBox {
 			QHULL_LIB_CHECK
 			qh_zero(qh, errfile);
 
-			int exitcode = qh_new_qhull(qh, dimension, static_cast<int>(size), points, true, flags.c_str(), outfile, errfile);
+			char* a = const_cast<char*>(flags.c_str());
+			int exitcode = qh_new_qhull(qh, dimension, static_cast<int>(size), points, true, a, outfile, errfile);
 			if (exitcode != 0 || qh->num_vertices == 0) {
 				qh_freeqhull(qh, !qh_ALL);
 				int curlong = 0, totlong = 0;
@@ -75,3 +77,4 @@ namespace rawrBox {
 		}
 	};
 } // namespace rawrBox
+  // NOLINTEND(*)

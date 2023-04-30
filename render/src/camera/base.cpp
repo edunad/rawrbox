@@ -34,7 +34,7 @@ namespace rawrBox {
 	rawrBox::Vector3f CameraBase::getRight() {
 		return {
 		    bx::sin(this->_angle.x - bx::kPiHalf),
-		    0.0f,
+		    0.0F,
 		    bx::cos(this->_angle.x - bx::kPiHalf),
 		};
 	}

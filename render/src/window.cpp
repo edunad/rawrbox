@@ -163,7 +163,9 @@ namespace rawrBox {
 		HANDLE hIcon = LoadIconW(GetModuleHandleW(nullptr), L"GLFW_ICON");
 		if (!hIcon) {
 			// No user-provided icon found, load default icon
+			// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
 			hIcon = LoadIcon(nullptr, IDI_WINLOGO);
+			// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
 		}
 
 		HWND hwnd = glfwGetWin32Window(glfwHandle);
@@ -244,11 +246,13 @@ namespace rawrBox {
 	bool Window::isRendererSupported(bgfx::RendererType::Enum render) {
 		if (render == bgfx::RendererType::Count) return true;
 
+		// NOLINTBEGIN(hicpp-avoid-c-arrays)
 		bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
 		uint8_t num = bgfx::getSupportedRenderers(BX_COUNTOF(supportedRenderers), supportedRenderers);
 		for (uint8_t i = 0; i < num; ++i) {
 			if (supportedRenderers[i] == render) return true;
 		}
+		// NOLINTEND(hicpp-avoid-c-arrays)
 
 		return false;
 	}

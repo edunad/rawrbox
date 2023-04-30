@@ -62,7 +62,7 @@ namespace rawrBox {
 		using ModelBase::ModelBase;
 
 		// Animations ----
-		bool playAnimation(const std::string& name, bool loop = true, float speed = 1.f);
+		bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F);
 		bool stopAnimation(const std::string& name);
 		// -----
 

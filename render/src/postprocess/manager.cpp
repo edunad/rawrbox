@@ -59,7 +59,7 @@ namespace rawrBox {
 		    // pos
 		    (pos.x / this->_windowSize.x * 2 - 1),
 		    (pos.y / this->_windowSize.y * 2 - 1) * -1,
-		    0.0f,
+		    0.0F,
 
 		    // uv
 		    uv.x,
@@ -85,10 +85,10 @@ namespace rawrBox {
 		}
 
 		// Generate vertices -----
-		this->pushVertice(0, 0);
+		this->pushVertice({0, 0}, {0, 0});
 		this->pushVertice({0, this->_windowSize.y}, {0, 1});
 		this->pushVertice({this->_windowSize.x, 0}, {1, 0});
-		this->pushVertice({this->_windowSize.x, this->_windowSize.y}, 1);
+		this->pushVertice({this->_windowSize.x, this->_windowSize.y}, {1, 1});
 
 		this->pushIndices(4, 3, 2);
 		this->pushIndices(3, 1, 2);
@@ -116,7 +116,7 @@ namespace rawrBox {
 
 			bgfx::touch(id);
 			bgfx::setViewRect(id, 0, 0, bgfx::BackbufferRatio::Equal);
-			bgfx::setViewClear(id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 1.0f, 0, 0);
+			bgfx::setViewClear(id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 1.0F, 0, 0);
 			bgfx::setViewName(id, fmt::format("POST-PROCESSING-SAMPLE-{}", i).c_str());
 			bgfx::setViewFrameBuffer(id, this->_samples[i]);
 		}

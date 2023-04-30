@@ -27,11 +27,11 @@ namespace rawrBox {
 		bgfx::UniformHandle _settings = BGFX_INVALID_HANDLE;
 
 		int64_t m_timeOffset = 0;
-		float _strength = 0.1f;
+		float _strength = 0.1F;
 
 	protected:
 	public:
-		PostProcessStaticNoise(float s) : _strength(std::clamp(s, 0.f, 1.f)){};
+		explicit PostProcessStaticNoise(float s) : _strength(std::clamp(s, 0.F, 1.F)){};
 		PostProcessStaticNoise(PostProcessStaticNoise&&) = delete;
 		PostProcessStaticNoise& operator=(PostProcessStaticNoise&&) = delete;
 		PostProcessStaticNoise(const PostProcessStaticNoise&) = delete;
@@ -43,7 +43,7 @@ namespace rawrBox {
 		}
 
 		void setStrength(float s) {
-			this->_strength = std::clamp(s, 0.f, 1.f);
+			this->_strength = std::clamp(s, 0.F, 1.F);
 		}
 
 		void upload() override {

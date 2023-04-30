@@ -40,7 +40,7 @@ namespace anims {
 		this->_window->onMouseMove += [this](auto& w, const rawrBox::Vector2i& mousePos) {
 			if (this->_camera == nullptr || !this->_rightClick) return;
 
-			float m_mouseSpeed = 0.0015f;
+			float m_mouseSpeed = 0.0015F;
 
 			auto deltaX = mousePos.x - this->_oldMousePos.x;
 			auto deltaY = mousePos.y - this->_oldMousePos.y;
@@ -58,9 +58,9 @@ namespace anims {
 		this->_render = std::make_shared<rawrBox::Renderer>(0, this->_window->getSize());
 		this->_render->setClearColor(0x00000000);
 		// Setup camera
-		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-		this->_camera->setPos({0.f, 5.f, -5.f});
-		this->_camera->setAngle({0.f, bx::toRad(-45), 0.f});
+		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
+		this->_camera->setPos({0.F, 5.F, -5.F});
+		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		// Load content ---
@@ -77,23 +77,23 @@ namespace anims {
 
 		this->_model = std::make_shared<rawrBox::ModelImported>(mat);
 		this->_model->load("./content/models/wolf/wolfman_animated.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS);
-		this->_model->playAnimation("Scene", true, 1.5f);
+		this->_model->playAnimation("Scene", true, 1.5F);
 		this->_model->setPos({0, 0, 0});
 		this->_model->upload();
 
 		this->_model2 = std::make_shared<rawrBox::ModelImported>(mat);
 		this->_model2->load("./content/models/multiple_skeleton/twocubestest.gltf", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrBox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE);
-		this->_model2->playAnimation("MewAction", true, 0.8f);
-		this->_model2->playAnimation("MewAction.001", true, 0.8f);
+		this->_model2->playAnimation("MewAction", true, 0.8F);
+		this->_model2->playAnimation("MewAction.001", true, 0.8F);
 		this->_model2->setPos({0, 0, 0});
-		this->_model2->setScale({0.25f, 0.25f, 0.25f});
+		this->_model2->setScale({0.25F, 0.25F, 0.25F});
 		this->_model2->upload();
 
 		// -----
 
 		this->_modelGrid = std::make_shared<rawrBox::Model>(meshMat);
 		{
-			auto mesh = rawrBox::ModelBase::generateGrid(12, {0.f, 0.f, 0.f});
+			auto mesh = rawrBox::ModelBase::generateGrid(12, {0.F, 0.F, 0.F});
 			this->_modelGrid->addMesh(mesh);
 		}
 
@@ -118,7 +118,7 @@ namespace anims {
 		rawrBox::TimeUtils::deltaTime = deltaTime;
 		if (this->_render == nullptr || this->_camera == nullptr) return;
 
-		float m_moveSpeed = 5.f;
+		float m_moveSpeed = 5.F;
 
 		auto dir = this->_camera->getForward();
 		auto eye = this->_camera->getPos();
@@ -128,7 +128,7 @@ namespace anims {
 		auto m_eye = bx::Vec3(eye.x, eye.y, eye.z);
 
 		if (this->_window->isKeyDown(KEY_LEFT_SHIFT)) {
-			m_moveSpeed = 60.f;
+			m_moveSpeed = 60.F;
 		}
 
 		if (this->_window->isKeyDown(KEY_W)) {

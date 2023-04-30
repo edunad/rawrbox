@@ -42,7 +42,7 @@ namespace rawrBox {
 
 			// ensure we call update as much times per second as requested
 			while (frameTimeTPS >= this->_delayBetweenTicks) {
-				update(1.0f / static_cast<float>(this->_tps), (newTime - gameStart).count());
+				update(1.0F / static_cast<float>(this->_tps), (newTime - gameStart).count());
 				if (this->_shouldShutdown) return;
 
 				frameTimeTPS -= this->_delayBetweenTicks;
@@ -54,7 +54,7 @@ namespace rawrBox {
 			// we only need to draw a single frame after a update
 			// else we're redrawing the same thing without any change
 			if (frameTimeFPS >= this->_delayBetweenFrames) {
-				draw(1.0f / static_cast<float>(this->_fps));
+				draw(1.0F / static_cast<float>(this->_fps));
 				currentTimeFPS = newTime;
 			}
 

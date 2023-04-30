@@ -14,6 +14,7 @@
 namespace rawrBox {
 	TextureImage::TextureImage(const std::string& fileName, bool useFallback) {
 		stbi_uc* image = stbi_load(fileName.c_str(), &this->_size.x, &this->_size.y, &this->_channels, 0);
+
 		if (image == nullptr) {
 			stbi_image_free(image);
 

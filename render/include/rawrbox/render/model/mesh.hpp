@@ -77,7 +77,7 @@ namespace rawrBox {
 		// TEXTURES ---
 		std::shared_ptr<rawrBox::TextureBase> texture = nullptr;
 		std::shared_ptr<rawrBox::TextureBase> specularTexture = nullptr;
-		float specularShininess = 1.0f;
+		float specularShininess = 1.0F;
 		// -------
 
 		// RENDERING ---

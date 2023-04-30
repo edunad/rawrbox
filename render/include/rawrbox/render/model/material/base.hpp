@@ -48,6 +48,7 @@ namespace rawrBox {
 		MaterialBase(const MaterialBase&) = delete;
 		MaterialBase& operator=(const MaterialBase&) = delete;
 
+		// NOLINTBEGIN(bugprone-exception-escape)
 		virtual ~MaterialBase() {
 			RAWRBOX_DESTROY(this->_program);
 
@@ -56,6 +57,7 @@ namespace rawrBox {
 
 			this->_uniforms.clear();
 		}
+		// NOLINTEND(bugprone-exception-escape)
 
 		virtual bool hasUniform(const std::string id) {
 			return this->_uniforms.find(id) != this->_uniforms.end();
@@ -68,6 +70,7 @@ namespace rawrBox {
 			return fnd->second;
 		}
 
+		// NOLINTBEGIN(hicpp-avoid-c-arrays)
 		virtual void buildShader(const bgfx::EmbeddedShader shaders[], const std::string& name) {
 			bgfx::RendererType::Enum type = bgfx::getRendererType();
 			bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, fmt::format("vs_{}", name).c_str());
@@ -78,6 +81,7 @@ namespace rawrBox {
 
 			this->registerUniforms();
 		}
+		// NOLINTEND(hicpp-avoid-c-arrays)
 
 		virtual void registerUniforms() {
 			this->_uniforms = {

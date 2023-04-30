@@ -23,6 +23,8 @@ namespace stencil {
 		rawrBox::Font* _font2;
 
 	public:
+		float counter = 0;
+
 		using Engine::Engine;
 
 		void init() override;

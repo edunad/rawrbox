@@ -334,7 +334,7 @@ namespace rawrBox {
 
 				if (aiMesh.HasVertexColors(0)) {
 					auto& col = aiMesh.mColors[0][i];
-					v.abgr = rawrBox::Color::pack({col.r, col.g, col.b, col.a});
+					v.abgr = rawrBox::Color::pack(Colorf{col.r, col.g, col.b, col.a});
 				}
 
 				if (aiMesh.HasNormals()) {

@@ -43,7 +43,7 @@ namespace post_process {
 		this->_window->onMouseMove += [this](auto& w, const rawrBox::Vector2i& mousePos) {
 			if (this->_camera == nullptr || !this->_rightClick) return;
 
-			float m_mouseSpeed = 0.0015f;
+			float m_mouseSpeed = 0.0015F;
 
 			auto deltaX = mousePos.x - this->_oldMousePos.x;
 			auto deltaY = mousePos.y - this->_oldMousePos.y;
@@ -62,14 +62,14 @@ namespace post_process {
 		this->_render->setClearColor(0x00000000);
 
 		this->_postProcess = std::make_shared<rawrBox::PostProcessManager>(0, this->_window->getSize());
-		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessBloom>(0.015f));
+		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessBloom>(0.015F));
 		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessPSXDither>(rawrBox::DITHER_SIZE::SLOW_MODE));
-		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessStaticNoise>(0.1f));
+		this->_postProcess->registerPostProcess(std::make_shared<rawrBox::PostProcessStaticNoise>(0.1F));
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-		this->_camera->setPos({0.f, 5.f, -5.f});
-		this->_camera->setAngle({0.f, bx::toRad(-45), 0.f});
+		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
+		this->_camera->setPos({0.F, 5.F, -5.F});
+		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		// Load content ---
@@ -86,7 +86,7 @@ namespace post_process {
 
 		this->_model = std::make_shared<rawrBox::ModelImported>(mat);
 		this->_model->load("./content/models/ps1_road/scene.gltf", rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
-		this->_model->setScale({0.01f, 0.01f, 0.01f});
+		this->_model->setScale({0.01F, 0.01F, 0.01F});
 		this->_model->upload();
 		// -----
 	}
@@ -107,7 +107,7 @@ namespace post_process {
 	void Game::update(float deltaTime, int64_t gameTime) {
 		if (this->_render == nullptr || this->_camera == nullptr) return;
 
-		float m_moveSpeed = 10.f;
+		float m_moveSpeed = 10.F;
 
 		auto dir = this->_camera->getForward();
 		auto eye = this->_camera->getPos();
@@ -117,7 +117,7 @@ namespace post_process {
 		auto m_eye = bx::Vec3(eye.x, eye.y, eye.z);
 
 		if (this->_window->isKeyDown(KEY_LEFT_SHIFT)) {
-			m_moveSpeed = 60.f;
+			m_moveSpeed = 60.F;
 		}
 
 		if (this->_window->isKeyDown(KEY_W)) {

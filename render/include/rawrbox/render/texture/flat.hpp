@@ -12,7 +12,7 @@ namespace rawrBox {
 		std::vector<uint8_t> _pixels;
 
 	public:
-		TextureFlat(const rawrBox::Vector2i& initsize, const rawrBox::Color& bgcol = rawrBox::Colors::White);
+		TextureFlat(const rawrBox::Vector2i& initsize, const rawrBox::Color& bgcol);
 
 		// ------RENDER
 		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;

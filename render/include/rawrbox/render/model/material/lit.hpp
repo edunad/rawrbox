@@ -28,10 +28,10 @@ namespace rawrBox {
 			auto& lightManager = rawrBox::LightManager::getInstance();
 			size_t lightCount = lightManager.count();
 
-			std::array lightSettings = {lightManager.fullbright ? 1.f : 0.f, static_cast<float>(lightCount)};
+			std::array lightSettings = {lightManager.fullbright ? 1.F : 0.F, static_cast<float>(lightCount)};
 			bgfx::setUniform(this->getUniform("u_lightsSetting"), lightSettings.data());
 
-			if (lightSettings[0] == 1.f || lightCount <= 0) return; // Fullbright
+			if (lightSettings[0] == 1.F || lightCount <= 0) return; // Fullbright
 
 			std::vector<std::array<float, 16>> lightData(lightCount);
 			std::vector<std::array<float, 4>> lightPos(lightCount);

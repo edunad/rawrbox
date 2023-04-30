@@ -21,11 +21,11 @@ namespace rawrBox {
 		bgfx::setViewMode(this->_id, bgfx::ViewMode::Sequential);
 		bgfx::setViewName(this->_id, fmt::format("RawrBox-RENDERER-{}", this->_id).c_str());
 
-		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0f, 0);
+		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 
 		rawrBox::MISSING_TEXTURE = std::make_shared<rawrBox::TextureMissing>();
-		rawrBox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrBox::TextureFlat>(2, rawrBox::Colors::Black);
-		rawrBox::WHITE_TEXTURE = std::make_shared<rawrBox::TextureFlat>(2, rawrBox::Colors::White);
+		rawrBox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrBox::TextureFlat>(rawrBox::Vector2i(2, 2), rawrBox::Colors::Black);
+		rawrBox::WHITE_TEXTURE = std::make_shared<rawrBox::TextureFlat>(rawrBox::Vector2i(2, 2), rawrBox::Colors::White);
 	}
 
 	void Renderer::upload() {
@@ -43,7 +43,7 @@ namespace rawrBox {
 
 	void Renderer::resizeView(const rawrBox::Vector2i& size) {
 		bgfx::setViewRect(this->_id, 0, 0, size.x, size.y);
-		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0f, 0);
+		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 
 		if (this->_stencil != nullptr) this->_stencil->resize(size);
 	}
@@ -51,7 +51,7 @@ namespace rawrBox {
 	// ------RENDERING
 	void Renderer::swapBuffer() const {
 		bgfx::touch(this->_id); // Make sure we draw on the view
-		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0f, 0);
+		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 	}
 
 	void Renderer::render() const {

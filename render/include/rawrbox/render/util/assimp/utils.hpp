@@ -28,7 +28,10 @@ namespace rawrBox {
 			}
 
 			// Calculate coefficients
-			float sclp = NAN, sclq = NAN;
+			// NOLINTBEGIN(clang-analyzer-deadcode.DeadStores)
+			float sclp = NAN;
+			float sclq = NAN;
+
 			if ((static_cast<float>(1.0) - cosom) > static_cast<float>(0.0001)) // 0.0001 -> some epsillon
 			{
 				// Standard case (slerp)
@@ -42,6 +45,7 @@ namespace rawrBox {
 				sclp = static_cast<float>(1.0) - pFactor;
 				sclq = pFactor;
 			}
+			// NOLINTEND(clang-analyzer-deadcode.DeadStores)
 
 			aiQuaternion pOut;
 			pOut.x = sclp * pStart.x + sclq * end.x;
@@ -87,9 +91,9 @@ namespace rawrBox {
 			float dt = b.time - a.time;
 			float norm = (time - a.time) / dt;
 
-			a.value.x *= (1.0f - norm);
-			a.value.y *= (1.0f - norm);
-			a.value.z *= (1.0f - norm);
+			a.value.x *= (1.0F - norm);
+			a.value.y *= (1.0F - norm);
+			a.value.z *= (1.0F - norm);
 
 			b.value.x *= norm;
 			b.value.y *= norm;

@@ -41,7 +41,7 @@ namespace assimp {
 		this->_window->onMouseMove += [this](auto& w, const rawrBox::Vector2i& mousePos) {
 			if (this->_camera == nullptr || !this->_rightClick) return;
 
-			float m_mouseSpeed = 0.0015f;
+			float m_mouseSpeed = 0.0015F;
 
 			auto deltaX = mousePos.x - this->_oldMousePos.x;
 			auto deltaY = mousePos.y - this->_oldMousePos.y;
@@ -64,9 +64,9 @@ namespace assimp {
 		// ----
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrBox::CameraPerspective>(static_cast<float>(width) / static_cast<float>(height), 60.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-		this->_camera->setPos({0.f, 5.f, -5.f});
-		this->_camera->setAngle({0.f, bx::toRad(-45), 0.f});
+		this->_camera = std::make_shared<rawrBox::CameraPerspective>(static_cast<float>(width) / static_cast<float>(height), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
+		this->_camera->setPos({0.F, 5.F, -5.F});
+		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		// Load content ---
@@ -118,7 +118,7 @@ namespace assimp {
 	void Game::update(float deltaTime, int64_t gameTime) {
 		if (this->_render == nullptr || this->_camera == nullptr) return;
 
-		float m_moveSpeed = 10.f;
+		float m_moveSpeed = 10.F;
 
 		auto dir = this->_camera->getForward();
 		auto eye = this->_camera->getPos();
@@ -128,7 +128,7 @@ namespace assimp {
 		auto m_eye = bx::Vec3(eye.x, eye.y, eye.z);
 
 		if (this->_window->isKeyDown(KEY_LEFT_SHIFT)) {
-			m_moveSpeed = 60.f;
+			m_moveSpeed = 60.F;
 		}
 
 		if (this->_window->isKeyDown(KEY_W)) {

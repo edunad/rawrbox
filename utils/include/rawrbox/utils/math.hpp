@@ -20,15 +20,15 @@ namespace rawrBox {
 		}
 
 		static inline float toRad(float val) {
-			return val * rawrBox::pi<float> / 180.f;
+			return val * rawrBox::pi<float> / 180.F;
 		}
 
 		static inline float toDeg(float val) {
-			return val * 180.f / rawrBox::pi<float>;
+			return val * 180.F / rawrBox::pi<float>;
 		}
 
 		static inline float lerp(float a, float b, float lerpFactor) {
-			return ((1.f - lerpFactor) * a) + (lerpFactor * b);
+			return ((1.F - lerpFactor) * a) + (lerpFactor * b);
 		}
 
 		// https://gist.github.com/itsmrpeck/be41d72e9d4c72d2236de687f6f53974
@@ -36,16 +36,16 @@ namespace rawrBox {
 			float result = NAN;
 			float diff = b - a;
 
-			if (diff < -180.f) {
+			if (diff < -180.F) {
 				// lerp upwards past 360
-				b += 360.f;
+				b += 360.F;
 				result = lerp(a, b, lerpFactor);
-				if (result >= 360.f) result -= 360.f;
-			} else if (diff > 180.f) {
+				if (result >= 360.F) result -= 360.F;
+			} else if (diff > 180.F) {
 				// lerp downwards past 0
-				b -= 360.f;
+				b -= 360.F;
 				result = lerp(a, b, lerpFactor);
-				if (result < 0.f) result += 360.f;
+				if (result < 0.F) result += 360.F;
 			} else {
 				// straight lerp
 				result = lerp(a, b, lerpFactor);
@@ -60,7 +60,7 @@ namespace rawrBox {
 			float PI = rawrBox::pi<float>;
 			float PI_TIMES_TWO = PI * 2;
 
-			float result = 0.f;
+			float result = 0.F;
 			float diff = b - a;
 
 			if (diff < -PI) {
@@ -73,7 +73,7 @@ namespace rawrBox {
 				// lerp downwards past 0
 				b -= PI_TIMES_TWO;
 				result = lerp(a, b, lerpFactor);
-				if (result < 0.f) result += PI_TIMES_TWO;
+				if (result < 0.F) result += PI_TIMES_TWO;
 			} else {
 				// straight lerp
 				result = lerp(a, b, lerpFactor);
@@ -107,7 +107,7 @@ namespace rawrBox {
 			mtx[0] *= scale.x;
 			mtx[5] *= scale.y;
 			mtx[10] *= scale.z;
-			mtx[15] *= 1.0f;
+			mtx[15] *= 1.0F;
 		}
 
 		static inline void vec4MulMtx(float* _result, const float* _vec, const float* _mat) {
@@ -148,25 +148,25 @@ namespace rawrBox {
 			const float z2z = z2 * z;
 			const float z2w = z2 * w;
 
-			mtx[0] = 1.0f - (y2y + z2z);
+			mtx[0] = 1.0F - (y2y + z2z);
 			mtx[4] = x2y - z2w;
 			mtx[8] = x2z + y2w;
-			mtx[3] = 0.0f;
+			mtx[3] = 0.0F;
 
 			mtx[1] = x2y + z2w;
-			mtx[5] = 1.0f - (x2x + z2z);
+			mtx[5] = 1.0F - (x2x + z2z);
 			mtx[9] = y2z - x2w;
-			mtx[7] = 0.0f;
+			mtx[7] = 0.0F;
 
 			mtx[2] = x2z - y2w;
 			mtx[6] = y2z + x2w;
-			mtx[10] = 1.0f - (x2x + y2y);
-			mtx[11] = 0.0f;
+			mtx[10] = 1.0F - (x2x + y2y);
+			mtx[11] = 0.0F;
 
-			mtx[12] = 0.0f;
-			mtx[13] = 0.0f;
-			mtx[14] = 0.0f;
-			mtx[15] = 1.0f;
+			mtx[12] = 0.0F;
+			mtx[13] = 0.0F;
+			mtx[14] = 0.0F;
+			mtx[15] = 1.0F;
 
 			return mtx;
 		}

@@ -6,12 +6,13 @@
 
 #include <memory>
 
+// NOLINTBEGIN(*)
 #define RAWRBOX_DESTROY(HANDLE) \
 	if (bgfx::isValid(HANDLE)) { \
 		bgfx::destroy(HANDLE); \
 		(HANDLE) = BGFX_INVALID_HANDLE; \
 	}
-
+// NOLINTEND(*)
 namespace rawrBox {
 	// NOLINTBEGIN{cppcoreguidelines-avoid-non-const-global-variables}
 	constexpr auto MAX_BONES_PER_VERTEX = 4;

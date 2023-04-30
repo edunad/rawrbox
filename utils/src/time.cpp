@@ -1,12 +1,14 @@
 #include <rawrbox/utils/time.hpp>
 
 namespace rawrBox {
+	// NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
 	int64_t TimeUtils::gameTime = 0; // Game time since start
 
 	float TimeUtils::deltaTime = 0;   // Update delta time
 	double TimeUtils::frameAlpha = 0; // Frame alpha for interpolation
 
 	std::chrono::high_resolution_clock::time_point TimeUtils::startTime;
+	// NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
 	int64_t TimeUtils::time() {
 		return (std::chrono::high_resolution_clock::now() - startTime).count();

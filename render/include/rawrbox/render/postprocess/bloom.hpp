@@ -24,10 +24,10 @@ namespace rawrBox {
 		bgfx::UniformHandle _bloom_intensity = BGFX_INVALID_HANDLE;
 
 	protected:
-		float _intensity = 0.08f;
+		float _intensity = 0.08F;
 
 	public:
-		PostProcessBloom(float intensity) : _intensity(intensity) {}
+		explicit PostProcessBloom(float intensity) : _intensity(intensity) {}
 
 		PostProcessBloom(PostProcessBloom&&) = delete;
 		PostProcessBloom& operator=(PostProcessBloom&&) = delete;

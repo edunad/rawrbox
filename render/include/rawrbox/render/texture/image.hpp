@@ -18,7 +18,7 @@ namespace rawrBox {
 		uint32_t _flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
 
 	public:
-		TextureImage(const std::string& fileName, bool useFallback = true);
+		explicit TextureImage(const std::string& fileName, bool useFallback = true);
 
 		// ------ PIXEL-UTILS
 		virtual rawrBox::Colori getPixel(unsigned int x, unsigned int y);

@@ -10,17 +10,20 @@
 
 namespace rawrBox {
 	struct AtlasNode {
-		int x;
-		int y;
-		int width;
-		int height;
-		bool empty;
+		int x = 0;
+		int y = 0;
+		int width = 0;
+		int height = 0;
+		bool empty = true;
 
-		std::unique_ptr<AtlasNode> left;
-		std::unique_ptr<AtlasNode> right;
+		std::unique_ptr<AtlasNode> left = nullptr;
+		std::unique_ptr<AtlasNode> right = nullptr;
 
 		bool canInsertNode(int insertedWidth, int insertedHeight);
 		std::optional<std::reference_wrapper<AtlasNode>> InsertNode(int width, int height);
+
+		AtlasNode() = default;
+		AtlasNode(int _x, int _y, int _w, int _h) : x(_x), y(_y), width(_w), height(_h){};
 	};
 
 	class TextureAtlas : public rawrBox::TextureBase {
@@ -30,7 +33,7 @@ namespace rawrBox {
 
 	public:
 		uint32_t size;
-		TextureAtlas(uint32_t size = 1024);
+		explicit TextureAtlas(uint32_t size = 1024);
 
 		[[nodiscard]] size_t getSpriteCount() const;
 

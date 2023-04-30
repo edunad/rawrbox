@@ -1,3 +1,5 @@
+
+// NOLINTBEGIN(*)
 /*!
  * \file ringbuffer.hpp
  * \version 2.0.4
@@ -12,9 +14,9 @@
 #define RINGBUFFER_HPP
 
 #include <atomic>
-#include <limits>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 
 namespace jnk0le {
 	/*!
@@ -451,3 +453,5 @@ namespace jnk0le {
 } // namespace jnk0le
 
 #endif // RINGBUFFER_HPP
+
+// NOLINTEND(*)

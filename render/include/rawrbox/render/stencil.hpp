@@ -30,7 +30,7 @@ namespace rawrBox {
 	};
 
 	struct StencilRotation {
-		float rotation = 0.f;
+		float rotation = 0.F;
 		rawrBox::Vector2f origin = {};
 
 		StencilRotation() = default;
@@ -60,13 +60,17 @@ namespace rawrBox {
 	};
 
 	struct StencilOutline {
-		float thickness = 0.f;
-		float stipple = 0.f;
+		float thickness = 0.F;
+		float stipple = 0.F;
 
 		StencilOutline() = default;
-		StencilOutline(float _thickness, float _stipple = 0.f) : thickness(_thickness), stipple(_stipple) {}
 
-		bool isSet() { return thickness > 0.f || stipple > 0.f; }
+		// NOLINTBEGIN(hicpp-explicit-conversions)
+		StencilOutline(float _thickness) : thickness(_thickness) {}
+		// NOLINTEND(hicpp-explicit-conversions)
+		StencilOutline(float _thickness, float _stipple) : thickness(_thickness), stipple(_stipple) {}
+
+		bool isSet() { return thickness > 0.F || stipple > 0.F; }
 
 		StencilOutline operator-(const StencilOutline& other) const {
 			return {this->thickness - other.thickness, this->stipple - other.stipple};
@@ -177,7 +181,7 @@ namespace rawrBox {
 		void drawTriangle(const rawrBox::Vector2f& a, const rawrBox::Vector2f& aUV, const rawrBox::Color& colA, const rawrBox::Vector2f& b, const rawrBox::Vector2f& bUV, const rawrBox::Color& colB, const rawrBox::Vector2f& c, const rawrBox::Vector2f& cUV, const rawrBox::Color& colC);
 		void drawBox(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col = rawrBox::Colors::White);
 		void drawTexture(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, std::shared_ptr<rawrBox::TextureBase> tex, const rawrBox::Color& col = rawrBox::Colors::White, const rawrBox::Vector2f& uvStart = {0, 0}, const rawrBox::Vector2f& uvEnd = {1, 1});
-		void drawCircle(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col = rawrBox::Colors::White, size_t roundness = 32, float angleStart = 0.f, float angleEnd = 360.f);
+		void drawCircle(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col = rawrBox::Colors::White, size_t roundness = 32, float angleStart = 0.F, float angleEnd = 360.F);
 		void drawLine(const rawrBox::Vector2& from, const rawrBox::Vector2& to, const rawrBox::Color& col = rawrBox::Colors::White);
 		void drawText(rawrBox::Font* font, const std::string& text, const rawrBox::Vector2f& pos, const rawrBox::Color& col = rawrBox::Colors::White, rawrBox::TextAlignment alignX = rawrBox::TextAlignment::Left, rawrBox::TextAlignment alignY = rawrBox::TextAlignment::Left);
 		// --------------------
