@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "rawrbox/render/model/assimp/model_imported.h"
+#include "rawrbox/render/model/material/unlit.hpp"
 
 namespace anims {
 	void Game::init() {
@@ -74,22 +75,28 @@ namespace anims {
 
 		// Assimp test ---
 		auto mat = std::make_shared<rawrBox::MaterialSkinnedUnlit>();
+		auto meshMat = std::make_shared<rawrBox::MaterialUnlit>();
 
-		/*this->_model = std::make_shared<rawrBox::ModelImported>(mat);
+		this->_model = std::make_shared<rawrBox::ModelImported>(mat);
 		this->_model->load("./content/models/wolf/wolfman_animated.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS);
 		this->_model->playAnimation("Scene", true, 1.5f);
-		this->_model->setPos({2, 0, 0});
-		this->_model->upload();*/
+		this->_model->setPos({0, 0, 0});
+		this->_model->upload();
 
 		this->_model2 = std::make_shared<rawrBox::ModelImported>(mat);
-		this->_model2->load("./content/models/multiple_skeleton/twwo_cube_wiggle_bones_animation.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrBox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE);
-		this->_model2->playAnimation("ArmatureAction", true, 0.8f);
-		// this->_model2->playAnimation("ArmatureAction.001", true, 0.8f);
-		this->_model2->setPos({3, 0, 0});
+		this->_model2->load("./content/models/multiple_skeleton/twocubestest.gltf", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrBox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE);
+		// this->_model2->playAnimation("MewAction", true, 0.8f);
+		this->_model2->playAnimation("MewAction.001", true, 0.8f);
+		this->_model2->setPos({0, 0, 0});
 		this->_model2->upload();
+
 		// -----
 
-		this->_modelGrid = std::make_shared<rawrBox::Model>(mat);
+		this->_modelGrid = std::make_shared<rawrBox::Model>(meshMat);
+		{
+			auto mesh = rawrBox::ModelBase::generateCube(0, {0.05f, 0.05f, 0.05f});
+			this->_modelGrid->addMesh(mesh);
+		}
 		{
 			auto mesh = rawrBox::ModelBase::generateGrid(12, {0.f, 0.f, 0.f});
 			this->_modelGrid->addMesh(mesh);
@@ -155,7 +162,7 @@ namespace anims {
 
 		this->_modelGrid->draw(this->_camera->getPos());
 
-		// this->_model->draw(this->_camera->getPos());
+		this->_model->draw(this->_camera->getPos());
 		this->_model2->draw(this->_camera->getPos());
 	}
 

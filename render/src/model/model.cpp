@@ -45,16 +45,17 @@ namespace rawrBox {
 	}
 
 	void Model::updateBones(std::shared_ptr<rawrBox::Mesh> mesh) {
-		if (mesh->skeleton == nullptr) return;
-
-		// recursively calculate bone offsets
 		this->_boneCalcs.clear();
-		this->readAnim(mesh->skeleton, mesh->skeleton->rootBone, {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
+
+		if (mesh->skeleton != nullptr) {
+			// recursively calculate bone offsets
+			this->readAnim(mesh->skeleton, mesh->skeleton->rootBone, {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
+		}
 
 		std::vector<std::array<float, 16>> transforms = {};
 		transforms.resize(rawrBox::MAX_BONES_PER_MODEL);
 		for (size_t i = 0; i < this->_boneCalcs.size(); i++) {
-			transforms[i] = this->_boneCalcs[i];
+			transforms[i] = this->_boneCalcs[static_cast<uint8_t>(i)];
 		}
 
 		bgfx::setUniform(this->_material->getUniform("u_bones"), &transforms.front(), static_cast<uint32_t>(transforms.size()));
@@ -114,7 +115,7 @@ namespace rawrBox {
 
 		auto fnd = this->_globalBoneMap.find(parentBone->name);
 		if (fnd != this->_globalBoneMap.end()) {
-			this->_boneCalcs[fnd->second.first] = MathUtils::mtxMul(globalTransformation, fnd->second.second);
+			this->_boneCalcs[fnd->second->boneId] = MathUtils::mtxMul(MathUtils::mtxMul(skeleton->invTransformationMtx, globalTransformation), fnd->second->offsetMtx);
 		}
 
 		for (auto child : parentBone->children) {

@@ -117,15 +117,19 @@ namespace rawrBox {
 			_result[3] = _vec[0] * _mat[3] + _vec[1] * _mat[7] + _vec[2] * _mat[11] + _vec[3] * _mat[15];
 		}
 
-		static inline std::array<float, 16> mtxMul(const std::array<float, 16>& mtxB, const std::array<float, 16>& mtx) {
+		static inline std::array<float, 16> mtxMul(const float* mtxB, const float* mtx) {
 			std::array<float, 16> _result = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
-			vec4MulMtx(&_result[0], &mtx[0], mtxB.data());
-			vec4MulMtx(&_result[4], &mtx[4], mtxB.data());
-			vec4MulMtx(&_result[8], &mtx[8], mtxB.data());
-			vec4MulMtx(&_result[12], &mtx[12], mtxB.data());
+			vec4MulMtx(&_result[0], &mtx[0], mtxB);
+			vec4MulMtx(&_result[4], &mtx[4], mtxB);
+			vec4MulMtx(&_result[8], &mtx[8], mtxB);
+			vec4MulMtx(&_result[12], &mtx[12], mtxB);
 
 			return _result;
+		}
+
+		static inline std::array<float, 16> mtxMul(const std::array<float, 16>& mtxB, const std::array<float, 16>& mtx) {
+			return mtxMul(mtxB.data(), mtx.data());
 		}
 
 		static inline std::array<float, 16> mtxQuaternion(float w, float x, float y, float z) {

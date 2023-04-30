@@ -18,7 +18,8 @@
                 "query": "is:open"
             }
         ],
-
+        "clangd.serverCompletionRanking": false,
+        "clangd.restartAfterCrash": true,
         "editor.bracketPairColorization.enabled": true,
         "editor.formatOnSave": true,
         "editor.stickyScroll.enabled": true,

@@ -6,8 +6,6 @@
 
 #include <bx/math.h>
 #include <fmt/printf.h>
-#include <stdint.h>
-#include <vcruntime.h>
 
 #include <array>
 #include <cstdint>
@@ -20,13 +18,16 @@ namespace rawrBox {
 
 	struct Bone {
 		std::string name;
-		size_t boneId = 0;
+		uint8_t boneId = 0;
 
 		// Rendering ---
 		std::array<float, 16> transformationMtx = {};
+		std::array<float, 16> offsetMtx = {};
 		// ----
 
 		// Lookup ----
+		Skeleton* owner = nullptr;
+
 		std::shared_ptr<Bone> parent;
 		std::vector<std::shared_ptr<Bone>> children = {};
 		// ----
@@ -39,6 +40,8 @@ namespace rawrBox {
 
 		std::string name;
 		std::shared_ptr<Bone> rootBone;
+
+		std::array<float, 16> invTransformationMtx = {};
 
 		Skeleton(std::string _name) : name(std::move(_name)) {}
 	};
@@ -63,7 +66,7 @@ namespace rawrBox {
 
 		// SKINNING ----
 		std::unordered_map<std::string, std::shared_ptr<Skeleton>> _skeletons = {};
-		std::unordered_map<std::string, std::pair<uint8_t, std::array<float, 16>>> _globalBoneMap = {}; // Map for quick lookup
+		std::unordered_map<std::string, std::shared_ptr<Bone>> _globalBoneMap = {}; // Map for quick lookup
 		// --------
 
 		void flattenMeshes(bool quickOptimize = true) {
@@ -280,7 +283,7 @@ namespace rawrBox {
 		}
 
 		// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
-		static std::shared_ptr<rawrBox::Mesh> generateGrid(uint32_t size, const rawrBox::Vector3f& pos, const rawrBox::Colorf& cl = rawrBox::Colors::White) {
+		static std::shared_ptr<rawrBox::Mesh> generateGrid(uint32_t size, const rawrBox::Vector3f& pos, const rawrBox::Colorf& cl = rawrBox::Colors::DarkGray, const rawrBox::Colorf& borderCl = rawrBox::Colors::Transparent) {
 			std::shared_ptr<rawrBox::Mesh> mesh = std::make_shared<rawrBox::Mesh>();
 			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
 
@@ -295,7 +298,7 @@ namespace rawrBox {
 					float z = static_cast<float>(j) / static_cast<float>(step);
 					auto col = cl;
 
-					if (j == 0 || i == 0 || j >= size || i >= size) col = rawrBox::Colors::DarkGray;
+					if (j == 0 || i == 0 || j >= size || i >= size) col = borderCl;
 					buff.emplace_back(rawrBox::Vector3f(pos.x - static_cast<uint32_t>(size / 2), pos.y, pos.z - static_cast<uint32_t>(size / 2)) + rawrBox::Vector3f(x, y, z), rawrBox::PackUtils::packNormal(0, 0, 1), rawrBox::PackUtils::packNormal(0, 0, 1), 1.0f, 1.0f, col);
 				}
 			}

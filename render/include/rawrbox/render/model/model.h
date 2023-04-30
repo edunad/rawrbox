@@ -45,7 +45,7 @@ namespace rawrBox {
 	class Model : public rawrBox::ModelBase {
 	protected:
 		std::unordered_map<std::string, Animation> _animations = {};
-		std::unordered_map<size_t, std::array<float, 16>> _boneCalcs = {};
+		std::unordered_map<uint8_t, std::array<float, 16>> _boneCalcs = {};
 
 		std::vector<rawrBox::PlayingAnimationData> _playingAnimations = {};
 

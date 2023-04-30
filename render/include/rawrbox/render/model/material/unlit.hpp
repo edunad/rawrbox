@@ -27,7 +27,7 @@ namespace rawrBox {
 			if (mesh->texture != nullptr && mesh->texture->valid() && !mesh->wireframe) {
 				bgfx::setTexture(0, this->getUniform("s_texColor"), mesh->texture->getHandle());
 			} else {
-				bgfx::setTexture(0, this->getUniform("s_texColor"), rawrBox::MISSING_TEXTURE->getHandle());
+				bgfx::setTexture(0, this->getUniform("s_texColor"), rawrBox::WHITE_TEXTURE->getHandle());
 			}
 
 			std::array colorOffset = {mesh->color.r, mesh->color.b, mesh->color.g, mesh->color.a};

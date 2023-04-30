@@ -7,7 +7,7 @@
 uniform mat4 u_bones[MAX_BONES]; // Max bones
 
 // Snap vertex to achieve PSX look
-mat4 boneTransform(ivec4 indices, vec4 weight) {
+vec4 boneTransform(ivec4 indices, vec4 weight, vec3 position) {
 	mat4 BoneTransform = mat4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	bool skinned = false;
 
@@ -18,7 +18,7 @@ mat4 boneTransform(ivec4 indices, vec4 weight) {
 		}
 	}
 
-	return skinned ? BoneTransform : mat4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+	return skinned ? mul(BoneTransform, vec4(position, 1.f)) : vec4(position, 1.f);
 }
 
 #endif

@@ -15,6 +15,7 @@
 #include <assimp/mesh.h>
 #include <assimp/scene.h>
 #include <bx/math.h>
+#include <fmt/core.h>
 #include <fmt/format.h>
 
 #include <cstdint>
@@ -77,6 +78,9 @@ namespace rawrBox {
 
 				// Create root bone ----
 				armature->rootBone = std::make_shared<Bone>("ROOT-BONE");
+				armature->rootBone->owner = armature.get();
+
+				bx::mtxInverse(armature->invTransformationMtx.data(), &sc->mRootNode->mTransformation.a1);
 				bx::mtxTranspose(armature->rootBone->transformationMtx.data(), &bone->mArmature->mTransformation.a1);
 				//  ---------------------
 
@@ -108,15 +112,15 @@ namespace rawrBox {
 			auto fnd = this->_globalBoneMap.find(boneKey);
 			if (fnd == this->_globalBoneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
 
-			bx::mtxTranspose(fnd->second.second.data(), &bone->mOffsetMatrix.a1);
-			fnd->second.second = rawrBox::MathUtils::mtxMul(fnd->second.second, mesh->offsetMatrix);
+			bx::mtxTranspose(fnd->second->offsetMtx.data(), &bone->mOffsetMatrix.a1);
+			fnd->second->offsetMtx = rawrBox::MathUtils::mtxMul(fnd->second->offsetMtx, mesh->offsetMatrix);
 
 			mesh->skeleton = this->_skeletons[name];
 
 			// Calculate object weights
 			for (size_t j = 0; j < bone->mNumWeights; j++) {
 				auto& weightobj = bone->mWeights[j];
-				mesh->vertices[mesh->baseVertex + weightobj.mVertexId].addBoneData(fnd->second.first, weightobj.mWeight); // Global vertices
+				mesh->vertices[mesh->baseVertex + weightobj.mVertexId].addBoneData(fnd->second->boneId, weightobj.mWeight); // Global vertices
 			}
 			// ------
 		}
@@ -129,14 +133,13 @@ namespace rawrBox {
 			std::string boneName = child->mName.data;
 			std::string boneKey = fmt::format("{}-{}", skeleton->name, boneName);
 
-			if (this->_globalBoneMap.find(boneKey) == this->_globalBoneMap.end()) { // Bone does not exist in our global map?
-				this->_globalBoneMap[boneKey] = {skeleton->boneIndex++, {}};
-			}
-
 			std::shared_ptr<rawrBox::Bone> bone = std::make_shared<rawrBox::Bone>(boneKey);
 			bone->parent = parent;
-			bone->boneId = this->_globalBoneMap[boneKey].first;
+			bone->owner = skeleton.get();
+			bone->boneId = static_cast<uint8_t>(this->_globalBoneMap.size());
+
 			bx::mtxTranspose(bone->transformationMtx.data(), &child->mTransformation.a1);
+			this->_globalBoneMap[boneKey] = bone;
 
 			this->generateSkeleton(skeleton, child, bone);
 			parent->children.push_back(std::move(bone));
@@ -353,6 +356,9 @@ namespace rawrBox {
 				if (aiMesh.HasTangentsAndBitangents()) {
 					auto& tangents = aiMesh.mTangents[i];
 					v.normal[1] = rawrBox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
+
+					// auto& bitangents = aiMesh.mBitangents[i];
+					// v.normal[2] = rawrBox::PackUtils::packNormal(bitangents.x, bitangents.y, bitangents.z);
 				}
 
 				mesh->vertices.push_back(v);
@@ -404,15 +410,42 @@ namespace rawrBox {
 			ourAnim.ticksPerSecond = static_cast<float>(anim.mTicksPerSecond);
 			ourAnim.duration = static_cast<float>(anim.mDuration);
 
+			/*
+			for (size_t channelIndex = 0; channelIndex < anim.mNumMeshChannels; channelIndex++) {
+				auto aaa = anim.mMeshChannels[channelIndex];
+			}
+			for (size_t channelIndex = 0; channelIndex < anim.mNumMorphMeshChannels; channelIndex++) {
+				auto aaa = anim.mMorphMeshChannels[channelIndex];
+			}
+			for (size_t channelIndex = 0; channelIndex < anim.; channelIndex++) {
+				auto aaa = anim.mMorphMeshChannels[channelIndex];
+			}*/
+
 			// for each channel (frame / keyframe)
 			// extract position, rotation, scale and timings
-			std::string armatureName = "Armature";
 			for (size_t channelIndex = 0; channelIndex < anim.mNumChannels; channelIndex++) {
 				auto aChannel = anim.mChannels[channelIndex];
-				if (channelIndex == 0) armatureName = aChannel->mNodeName.data;
+				std::string meshName = aChannel->mNodeName.data;
+
+				// Find armature
+				auto aiNodeParent = sc->mRootNode->FindNode(meshName.c_str());
+				while (true) {
+					if (aiNodeParent->mParent == nullptr || aiNodeParent->mParent->mName == sc->mRootNode->mName) break;
+					aiNodeParent = aiNodeParent->mParent;
+				}
+
+				std::string armature = aiNodeParent->mName.data;
+				if (meshName == armature) continue;
+
+				std::string boneKey = fmt::format("{}-{}", armature, meshName);
+				auto fnd = this->_globalBoneMap.find(boneKey);
+
+				if (fnd == this->_globalBoneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Model] Bone '{}' not found on the global bone map!", boneKey));
+				if (fnd->second == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Invalid Bone '{}', pointer not defined?", boneKey));
+				if (fnd->second->owner == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Invalid Bone '{}' skeleton, pointer not defined?", boneKey));
 
 				rawrBox::AnimationFrame ourChannel;
-				ourChannel.nodeName = fmt::format("{}-{}", armatureName, aChannel->mNodeName.data);
+				ourChannel.nodeName = fmt::format("{}-{}", fnd->second->owner->name, aChannel->mNodeName.data);
 
 				// ourChannel.stateStart = static_cast<AnimationChannelBehaviour>(aChannel->mPreState);
 				// ourChannel.stateEnd = static_cast<AnimationChannelBehaviour>(aChannel->mPostState);
