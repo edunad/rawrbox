@@ -57,12 +57,6 @@ namespace rawrBox {
 			this->_uniforms.clear();
 		}
 
-		virtual void registerUniform(const std::string id, bgfx::UniformHandle handle) {
-			auto fnd = this->_uniforms.find(id);
-			if (fnd != this->_uniforms.end()) throw std::runtime_error(fmt::format("[RawrBox-MaterialBase] Failed to register uniform '{}', already created!", id));
-			this->_uniforms[id] = handle;
-		}
-
 		virtual bool hasUniform(const std::string id) {
 			return this->_uniforms.find(id) != this->_uniforms.end();
 		}
@@ -86,8 +80,27 @@ namespace rawrBox {
 		}
 
 		virtual void registerUniforms() {
-			// Default uniforms
-			this->registerUniform("u_viewPos", bgfx::createUniform("u_viewPos", bgfx::UniformType::Vec4, 3));
+			this->_uniforms = {
+			    {"u_viewPos", bgfx::createUniform("u_viewPos", bgfx::UniformType::Vec4, 3)},
+
+			    // LIT / UNLIT
+			    {"s_texColor", bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler)},
+			    {"s_texSpecularColor", bgfx::createUniform("s_texSpecularColor", bgfx::UniformType::Sampler)},
+
+			    {"u_texSpecularShininess", bgfx::createUniform("u_texSpecularShininess", bgfx::UniformType::Vec4, 1)},
+			    {"u_colorOffset", bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4)},
+
+			    {"u_lightsSetting", bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4, 2)},
+			    {"u_lightsPosition", bgfx::createUniform("u_lightsPosition", bgfx::UniformType::Vec4, rawrBox::MAX_LIGHTS)},
+			    {"u_lightsData", bgfx::createUniform("u_lightsData", bgfx::UniformType::Mat4, rawrBox::MAX_LIGHTS)},
+
+			    // SKINNED
+			    {"u_bones", bgfx::createUniform("u_bones", bgfx::UniformType::Mat4, rawrBox::MAX_BONES_PER_MODEL)},
+
+			    // SPRITE
+			    {"u_colorOffset", bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4)},
+			    {"u_sprite_pos", bgfx::createUniform("u_sprite_pos", bgfx::UniformType::Vec4, 3)}, // ¯\_(ツ)_/¯ hate it
+			};
 		};
 
 		virtual void preProcess(const rawrBox::Vector3f& camPos) {

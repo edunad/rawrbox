@@ -6,6 +6,7 @@
 
 #include <bx/math.h>
 #include <fmt/printf.h>
+#include <stdint.h>
 #include <vcruntime.h>
 
 #include <array>
@@ -34,10 +35,11 @@ namespace rawrBox {
 	};
 
 	struct Skeleton {
+		uint8_t boneIndex = 0;
+
 		std::string name;
 		std::shared_ptr<Bone> rootBone;
 
-		std::array<float, 16> invTransformationMtx = {};
 		Skeleton(std::string _name) : name(std::move(_name)) {}
 	};
 
@@ -61,7 +63,7 @@ namespace rawrBox {
 
 		// SKINNING ----
 		std::unordered_map<std::string, std::shared_ptr<Skeleton>> _skeletons = {};
-		std::unordered_map<std::string, std::pair<uint8_t, std::array<float, 16>>> _boneMap = {}; // Map for quick lookup
+		std::unordered_map<std::string, std::pair<uint8_t, std::array<float, 16>>> _globalBoneMap = {}; // Map for quick lookup
 		// --------
 
 		void flattenMeshes(bool quickOptimize = true) {
@@ -92,8 +94,6 @@ namespace rawrBox {
 						auto prevMesh = std::prev(mesh); // Check old meshes
 
 						if ((*prevMesh)->canMerge(*mesh)) {
-							fmt::print("Merging {} with {}\n", (*prevMesh)->name, (*mesh)->name);
-
 							(*prevMesh)->totalVertex += (*mesh)->totalVertex;
 							(*prevMesh)->totalIndex += (*mesh)->totalIndex;
 
@@ -107,11 +107,12 @@ namespace rawrBox {
 					mesh++;
 			}
 
-			if (old != this->_meshes.size()) fmt::print("Optimized mesh (Before {} | After {})\n", old, this->_meshes.size());
+			if (old != this->_meshes.size()) fmt::print("[RawrBox-Model] Optimized mesh (Before {} | After {})\n", old, this->_meshes.size());
 		}
 
 	public:
 		ModelBase(std::shared_ptr<rawrBox::MaterialBase> material) : _material(std::move(material)){};
+
 		ModelBase(ModelBase&&) = delete;
 		ModelBase& operator=(ModelBase&&) = delete;
 		ModelBase(const ModelBase&) = delete;

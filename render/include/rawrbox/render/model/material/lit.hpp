@@ -23,20 +23,6 @@ namespace rawrBox {
 	public:
 		using MaterialBase::MaterialBase;
 
-		void registerUniforms() override {
-			MaterialBase::registerUniforms();
-
-			this->registerUniform("s_texColor", bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler));
-			this->registerUniform("s_texSpecularColor", bgfx::createUniform("s_texSpecularColor", bgfx::UniformType::Sampler));
-
-			this->registerUniform("u_texSpecularShininess", bgfx::createUniform("u_texSpecularShininess", bgfx::UniformType::Vec4, 1));
-			this->registerUniform("u_colorOffset", bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4));
-
-			this->registerUniform("u_lightsSetting", bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4, 2));
-			this->registerUniform("u_lightsPosition", bgfx::createUniform("u_lightsPosition", bgfx::UniformType::Vec4, rawrBox::LightManager::getInstance().maxLights));
-			this->registerUniform("u_lightsData", bgfx::createUniform("u_lightsData", bgfx::UniformType::Mat4, rawrBox::LightManager::getInstance().maxLights));
-		}
-
 		void preProcess(const rawrBox::Vector3f& camPos) override {
 			auto& lightManager = rawrBox::LightManager::getInstance();
 			size_t lightCount = lightManager.count();

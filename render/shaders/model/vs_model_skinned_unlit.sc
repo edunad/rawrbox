@@ -8,8 +8,8 @@ $output v_color0, v_texcoord0
 
 void main() {
 	vec4 translated = mul(u_modelViewProj, mul(boneTransform(a_indices, a_weight), vec4(a_position, 1.0)));
-
 	gl_Position = psx_snap(translated, u_viewRect.zw / 2.);
+
 	v_texcoord0 = a_texcoord0;;
 	v_color0 = a_color0;
 }

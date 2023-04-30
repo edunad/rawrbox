@@ -6,6 +6,7 @@
 #include <rawrbox/render/model/light/point.hpp>
 #include <rawrbox/render/model/light/spot.hpp>
 #include <rawrbox/render/texture/image.h>
+#include <rawrbox/utils/math.hpp>
 #include <rawrbox/utils/pack.hpp>
 #include <rawrbox/utils/string.hpp>
 
@@ -68,45 +69,47 @@ namespace rawrBox {
 			// Armature parsing
 			std::string name = std::string(bone->mArmature->mName.data);
 			std::string boneName = std::string(bone->mName.data);
+			std::string boneKey = fmt::format("{}-{}", name, boneName);
 
 			// Armature does not exist, this should be the root bone
 			if (this->_skeletons.find(name) == this->_skeletons.end()) {
 				auto armature = std::make_shared<Skeleton>(name);
-				armature->rootBone = std::make_shared<Bone>("ARMATURE-ROOT");
 
+				// Create root bone ----
+				armature->rootBone = std::make_shared<Bone>("ROOT-BONE");
 				bx::mtxTranspose(armature->rootBone->transformationMtx.data(), &bone->mArmature->mTransformation.a1);
-				bx::mtxTranspose(armature->invTransformationMtx.data(), &sc->mRootNode->mTransformation.a1);
+				//  ---------------------
 
 				this->generateSkeleton(armature, bone->mArmature, armature->rootBone);
 
 				// DEBUG ----
-				std::function<void(std::shared_ptr<Bone>, int)> printBone;
-				printBone = [&printBone](std::shared_ptr<Bone> bn, int deep) -> void {
-					for (auto c : bn->children) {
-						std::string d = "";
-						for (size_t i = 0; i < deep; i++)
-							d += "\t";
+				if ((this->_loadFlags & rawrBox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE) > 0) {
+					std::function<void(std::shared_ptr<Bone>, int)> printBone;
+					printBone = [&printBone](std::shared_ptr<Bone> bn, int deep) -> void {
+						for (auto c : bn->children) {
+							std::string d = "";
+							for (size_t i = 0; i < deep; i++)
+								d += "\t";
 
-						fmt::print("{}[{}] {}\n", d, c->boneId, c->name);
-						printBone(c, ++deep);
-					}
-				};
+							fmt::print("{}[{}] {}\n", d, c->boneId, c->name);
+							printBone(c, ++deep);
+						}
+					};
 
-				printBone(armature->rootBone, 0);
+					printBone(armature->rootBone, 0);
+				}
+				// -------------
+
 				this->_skeletons[name] = std::move(armature);
 			}
 			// ---------------
 
 			// Apply the weights -----
-			std::string boneKey = fmt::format("{}-{}", name, boneName);
-
-			auto fnd = this->_boneMap.find(boneKey);
-			if (fnd == this->_boneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
+			auto fnd = this->_globalBoneMap.find(boneKey);
+			if (fnd == this->_globalBoneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
 
 			bx::mtxTranspose(fnd->second.second.data(), &bone->mOffsetMatrix.a1);
-
-			// bx::mtxTranspose(fnd->second.second.data(), &bone->mOffsetMatrix.a1);
-			//  bx::mtxMul(fnd->second.second.data(), fnd->second.second.data(), mesh->offsetMatrix.data());
+			fnd->second.second = rawrBox::MathUtils::mtxMul(fnd->second.second, mesh->offsetMatrix);
 
 			mesh->skeleton = this->_skeletons[name];
 
@@ -126,13 +129,13 @@ namespace rawrBox {
 			std::string boneName = child->mName.data;
 			std::string boneKey = fmt::format("{}-{}", skeleton->name, boneName);
 
-			if (this->_boneMap.find(boneKey) == this->_boneMap.end()) { // Bone does not exist in our global map?
-				this->_boneMap[boneKey] = {static_cast<uint8_t>(this->_boneMap.size()), {}};
+			if (this->_globalBoneMap.find(boneKey) == this->_globalBoneMap.end()) { // Bone does not exist in our global map?
+				this->_globalBoneMap[boneKey] = {skeleton->boneIndex++, {}};
 			}
 
-			std::shared_ptr<rawrBox::Bone> bone = std::make_shared<rawrBox::Bone>(boneName);
+			std::shared_ptr<rawrBox::Bone> bone = std::make_shared<rawrBox::Bone>(boneKey);
 			bone->parent = parent;
-			bone->boneId = this->_boneMap[boneKey].first;
+			bone->boneId = this->_globalBoneMap[boneKey].first;
 			bx::mtxTranspose(bone->transformationMtx.data(), &child->mTransformation.a1);
 
 			this->generateSkeleton(skeleton, child, bone);
@@ -273,6 +276,19 @@ namespace rawrBox {
 			}
 		}
 
+		// TEXTURE FLAT
+		/*if (pMaterial->GetTextureCount(aiTextureType_BASE_COLOR) > 0) {
+			if (pMaterial->GetTexture(aiTextureType_BASE_COLOR, 0, nullptr, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
+				auto ptr = this->importTexture(matPath.data, matName.data, matMode);
+				if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load specular texture '{}'", matPath.data));
+
+				float shininess = 0;
+				pMaterial->Get(AI_MATKEY_SHININESS, shininess);
+
+				mesh->setSpecularTexture(ptr, shininess);
+			}
+		}*/
+
 		// TEXTURE EMISSIVE
 		/*if (pMaterial->GetTextureCount(aiTextureType_EMISSIVE) > 0) {
 			if (pMaterial->GetTexture(aiTextureType_EMISSIVE, 0, nullptr, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
@@ -306,6 +322,8 @@ namespace rawrBox {
 			// Textures
 			if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
 				this->loadTextures(sc, aiMesh, mesh);
+			} else {
+				mesh->setCulling(BGFX_STATE_CULL_CCW); // Default cullingf or assimp
 			}
 
 			// Vertices
@@ -381,17 +399,21 @@ namespace rawrBox {
 			auto spl = rawrBox::StrUtils::split(animName, '|');
 
 			// create an entry in the mapping and start filling it with data
-			auto& ourAnim = this->_animations[spl[spl.size() - 1]];
+			auto& ourAnim = this->_animations[spl.back()];
+
 			ourAnim.ticksPerSecond = static_cast<float>(anim.mTicksPerSecond);
 			ourAnim.duration = static_cast<float>(anim.mDuration);
 
 			// for each channel (frame / keyframe)
 			// extract position, rotation, scale and timings
+			std::string armatureName = "Armature";
 			for (size_t channelIndex = 0; channelIndex < anim.mNumChannels; channelIndex++) {
 				auto aChannel = anim.mChannels[channelIndex];
+				if (channelIndex == 0) armatureName = aChannel->mNodeName.data;
 
 				rawrBox::AnimationFrame ourChannel;
-				ourChannel.nodeName = aChannel->mNodeName.data;
+				ourChannel.nodeName = fmt::format("{}-{}", armatureName, aChannel->mNodeName.data);
+
 				// ourChannel.stateStart = static_cast<AnimationChannelBehaviour>(aChannel->mPreState);
 				// ourChannel.stateEnd = static_cast<AnimationChannelBehaviour>(aChannel->mPostState);
 
@@ -407,7 +429,7 @@ namespace rawrBox {
 
 				for (size_t rotationIndex = 0; rotationIndex < aChannel->mNumRotationKeys; rotationIndex++) {
 					auto aRot = aChannel->mRotationKeys[rotationIndex];
-					ourChannel.rotation.push_back({static_cast<float>(aRot.mTime), {aRot.mValue.w, aRot.mValue.x, aRot.mValue.y, aRot.mValue.z}});
+					ourChannel.rotation.push_back({static_cast<float>(aRot.mTime), aRot.mValue});
 				}
 
 				ourAnim.frames.push_back(ourChannel);

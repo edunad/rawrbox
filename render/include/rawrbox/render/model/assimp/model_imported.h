@@ -11,9 +11,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "rawrbox/render/model/base.hpp"
-
-#define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded)
+#define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_RemoveRedundantMaterials)
 
 namespace rawrBox {
 	// NOLINTBEGIN{unused-const-variable}
@@ -22,6 +20,10 @@ namespace rawrBox {
 		const uint32_t IMPORT_LIGHT = 1 << 1;
 		const uint32_t IMPORT_TEXTURES = 1 << 2;
 		const uint32_t IMPORT_ANIMATIONS = 1 << 3;
+
+		namespace Debug {
+			const uint32_t PRINT_BONE_STRUCTURE = 1 << 4;
+		}
 	}; // namespace ModelLoadFlags
 	// NOLINTEND{unused-const-variable}
 

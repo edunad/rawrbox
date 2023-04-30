@@ -4,7 +4,6 @@
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/model/material/lit.hpp>
 #include <rawrbox/render/shader_defines.h>
-#include <rawrbox/render/static.h>
 
 #include <bgfx/bgfx.h>
 #include <fmt/format.h>
@@ -23,11 +22,6 @@ namespace rawrBox {
 
 	public:
 		using MaterialLit::MaterialLit;
-
-		void registerUniforms() override {
-			rawrBox::MaterialLit::registerUniforms();
-			this->registerUniform("u_bones", bgfx::createUniform("u_bones", bgfx::UniformType::Mat4, rawrBox::MAX_BONES_PER_MODEL));
-		}
 
 		void process(std::shared_ptr<rawrBox::Mesh> mesh) override {
 			rawrBox::MaterialLit::process(mesh);

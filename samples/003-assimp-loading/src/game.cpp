@@ -89,14 +89,14 @@ namespace assimp {
 		this->_model2->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
 		this->_model2->upload();
 
-		/*auto litMat = std::make_shared<rawrBox::MaterialLit>();
+		auto litMat = std::make_shared<rawrBox::MaterialLit>();
 		this->_model3 = std::make_shared<rawrBox::ModelImported>(litMat);
 		this->_model3->setPos({-10, 0, 0});
 		this->_model3->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_LIGHT);
-		this->_model3->upload();*/
+		this->_model3->upload();
 		// -----
 
-		// rawrBox::LightManager::getInstance().uploadDebug();
+		rawrBox::LightManager::getInstance().uploadDebug();
 	}
 
 	void Game::shutdown() {

@@ -154,8 +154,6 @@ namespace rawrBox {
 		}
 
 		bool canMerge(std::shared_ptr<rawrBox::Mesh> other) {
-			// if (!this->boneInfos.empty()) return false;
-
 			return this->texture == other->texture &&
 			       this->color == other->color &&
 			       this->wireframe == other->wireframe &&

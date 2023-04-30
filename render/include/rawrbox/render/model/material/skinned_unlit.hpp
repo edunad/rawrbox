@@ -26,11 +26,6 @@ namespace rawrBox {
 	public:
 		using MaterialUnlit::MaterialUnlit;
 
-		void registerUniforms() override {
-			rawrBox::MaterialUnlit::registerUniforms();
-			this->registerUniform("u_bones", bgfx::createUniform("u_bones", bgfx::UniformType::Mat4, rawrBox::MAX_BONES_PER_MODEL));
-		}
-
 		void upload() override {
 			this->buildShader(model_skinned_unlit_shaders, "model_skinned_unlit");
 		}

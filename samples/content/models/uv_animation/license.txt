@@ -1,0 +1,11 @@
+Model Information:
+* title:	Grandma's TV
+* source:	https://sketchfab.com/3d-models/grandmas-tv-b2310e7e18dc4c11b5758804cfcc7dab
+* author:	AtskaHeart (https://sketchfab.com/atskaheart)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Grandma's TV" (https://sketchfab.com/3d-models/grandmas-tv-b2310e7e18dc4c11b5758804cfcc7dab) by AtskaHeart (https://sketchfab.com/atskaheart) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -17,6 +17,8 @@ namespace anims {
 		std::shared_ptr<rawrBox::PostProcessManager> _postProcess;
 
 		std::shared_ptr<rawrBox::ModelImported> _model;
+		std::shared_ptr<rawrBox::ModelImported> _model2;
+		std::shared_ptr<rawrBox::Model> _modelGrid;
 
 		bool _rightClick = false;
 		rawrBox::Vector2i _oldMousePos = {};

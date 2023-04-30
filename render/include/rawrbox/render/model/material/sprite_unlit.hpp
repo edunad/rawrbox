@@ -23,14 +23,6 @@ namespace rawrBox {
 	public:
 		using MaterialBase::MaterialBase;
 
-		void registerUniforms() override {
-			MaterialBase::registerUniforms();
-			this->registerUniform("s_texColor", bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler));
-
-			this->registerUniform("u_colorOffset", bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4));
-			this->registerUniform("u_sprite_pos", bgfx::createUniform("u_sprite_pos", bgfx::UniformType::Vec4, 3)); // ¯\_(ツ)_/¯ hate it
-		}
-
 		void upload() override {
 			this->buildShader(model_sprite_shaders, "sprite_unlit");
 		}

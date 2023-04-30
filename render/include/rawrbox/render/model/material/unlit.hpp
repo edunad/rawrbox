@@ -23,13 +23,6 @@ namespace rawrBox {
 	public:
 		using MaterialBase::MaterialBase;
 
-		void registerUniforms() override {
-			MaterialBase::registerUniforms();
-
-			this->registerUniform("s_texColor", bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler));
-			this->registerUniform("u_colorOffset", bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4));
-		}
-
 		void process(std::shared_ptr<rawrBox::Mesh> mesh) override {
 			if (mesh->texture != nullptr && mesh->texture->valid() && !mesh->wireframe) {
 				bgfx::setTexture(0, this->getUniform("s_texColor"), mesh->texture->getHandle());

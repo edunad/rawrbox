@@ -6,6 +6,7 @@
 
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace rawrBox {
 
@@ -46,7 +47,7 @@ namespace rawrBox {
 		std::unordered_map<std::string, Animation> _animations = {};
 		std::unordered_map<size_t, std::array<float, 16>> _boneCalcs = {};
 
-		std::unique_ptr<rawrBox::PlayingAnimationData> _currentAnimation = nullptr;
+		std::vector<rawrBox::PlayingAnimationData> _playingAnimations = {};
 
 		void updateBones(std::shared_ptr<rawrBox::Mesh> mesh);
 		void readAnim(std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const std::array<float, 16>& parentTransform);
@@ -59,7 +60,7 @@ namespace rawrBox {
 
 		// Animations ----
 		bool playAnimation(const std::string& name, bool loop = true, float speed = 1.f);
-		bool stopAnimation();
+		bool stopAnimation(const std::string& name);
 		// -----
 
 		void draw(const rawrBox::Vector3f& camPos) override;
