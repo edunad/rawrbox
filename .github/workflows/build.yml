@@ -61,7 +61,7 @@ jobs:
             - name: Build
               run: |
                   cd build
-                  CXX=g++-12 cmake .. -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin"
+                  CXX=g++-12 cmake .. -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON"
                   ninja
 
             - name: Cache conan

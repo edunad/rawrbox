@@ -25,6 +25,14 @@ jobs:
               with:
                   fetch-depth: 0.
 
+            - name: Restore previous build
+              id: github-cache-conan-restore
+              uses: actions/cache/restore@v3
+              with:
+                  path: |
+                    ./build
+                  key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
+
             - name: Run linter
               uses: cpp-linter/cpp-linter-action@v2
               id: linter
@@ -33,7 +41,6 @@ jobs:
               with:
                 style: file
                 files-changed-only: true
-                thread-comments: true
                 tidy-checks: ''
                 extra-args: '-std=c++20 -Wall'
                 version: '14'
