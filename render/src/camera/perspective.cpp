@@ -1,6 +1,7 @@
 
+#include <rawrbox/render/camera/perspective.hpp>
+
 #include <bx/math.h>
-#include <rawrbox/render/camera/perspective.h>
 
 namespace rawrBox {
 	CameraPerspective::CameraPerspective(float ratio, float FOV, float near, float far, bool homogeneousDepth) : rawrBox::CameraBase() {

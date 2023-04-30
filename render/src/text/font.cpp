@@ -1,5 +1,5 @@
-#include <rawrbox/render/text/engine.h>
-#include <rawrbox/render/text/font.h>
+#include <rawrbox/render/text/engine.hpp>
+#include <rawrbox/render/text/font.hpp>
 
 #include <fmt/format.h>
 #include <utf8.h>

@@ -1,12 +1,13 @@
 
-#include <rawrbox/render/model/light/manager.h>
+#include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/material/lit.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/utils/keys.hpp>
 
+#include <light/game.hpp>
+
 #include <bx/bx.h>
 #include <bx/math.h>
-#include <light/game.h>
 
 #include <vector>
 

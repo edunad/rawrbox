@@ -2,12 +2,13 @@
 
 #include <rawrbox/math/quaternion.hpp>
 #include <rawrbox/render/model/material/base.hpp>
-#include <rawrbox/render/shader_defines.h>
-#include <rawrbox/render/static.h>
+#include <rawrbox/render/shader_defines.hpp>
+#include <rawrbox/render/static.hpp>
+
+#include <generated/shaders/render/all.hpp>
 
 #include <bgfx/bgfx.h>
 #include <fmt/format.h>
-#include <generated/shaders/render/all.h>
 
 // NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader model_sprite_shaders[] = {

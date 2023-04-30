@@ -4,9 +4,10 @@
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/utils/keys.hpp>
 
+#include <model/game.hpp>
+
 #include <bx/bx.h>
 #include <bx/math.h>
-#include <model/game.h>
 
 #include <vector>
 
@@ -96,11 +97,6 @@ namespace model {
 
 		{
 			auto mesh = rawrBox::ModelBase::generateAxis(1, {0.f, 0.f, 0.f});
-			this->_model->addMesh(mesh);
-		}
-
-		{
-			auto mesh = rawrBox::ModelBase::generateCone({0, 5, 0}, 0.5f);
 			this->_model->addMesh(mesh);
 		}
 

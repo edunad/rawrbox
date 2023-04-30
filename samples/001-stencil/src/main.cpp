@@ -3,7 +3,7 @@
 #include <windows.h>
 #endif
 
-#include <stencil/game.h>
+#include <stencil/game.hpp>
 using namespace rawrBox;
 
 int main(int argc, char* argv[]) {

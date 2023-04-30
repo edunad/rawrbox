@@ -1,4 +1,4 @@
-#include <rawrbox/utils/time.h>
+#include <rawrbox/utils/time.hpp>
 
 namespace rawrBox {
 	int64_t TimeUtils::gameTime = 0; // Game time since start

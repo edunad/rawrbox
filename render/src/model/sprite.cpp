@@ -1,7 +1,7 @@
 
 #include <rawrbox/math/quaternion.hpp>
-#include <rawrbox/render/model/sprite.h>
-#include <rawrbox/render/static.h>
+#include <rawrbox/render/model/sprite.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/util/uniforms.hpp>
 
 #include <bx/math.h>

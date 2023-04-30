@@ -1,7 +1,7 @@
 #pragma once
 
-#include <rawrbox/render/text/font.h>
-#include <rawrbox/render/texture/atlas.h>
+#include <rawrbox/render/text/font.hpp>
+#include <rawrbox/render/texture/atlas.hpp>
 
 #include <ft2build.h>
 #include FT_FREETYPE_H

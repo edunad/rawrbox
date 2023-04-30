@@ -1,4 +1,4 @@
-#include <rawrbox/render/texture/atlas.h>
+#include <rawrbox/render/texture/atlas.hpp>
 
 #include <fmt/format.h>
 

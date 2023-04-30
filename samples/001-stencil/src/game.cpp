@@ -1,9 +1,10 @@
 
-#include <rawrbox/render/static.h>
+#include <rawrbox/render/static.hpp>
+
+#include <stencil/game.hpp>
 
 #include <bx/bx.h>
 #include <bx/math.h>
-#include <stencil/game.h>
 
 #include <vector>
 

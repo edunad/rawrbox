@@ -3,7 +3,7 @@
 #include <rawrbox/math/quaternion.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/model/model.h>
+#include <rawrbox/render/model/model.hpp>
 
 #include <assimp/quaternion.h>
 
@@ -67,7 +67,7 @@ namespace rawrBox {
 		}
 
 		// ---
-		static aiQuaternion lerpRotation(float time, rawrBox::AnimKey<aiQuaternion> a, rawrBox::AnimKey<aiQuaternion> b) {
+		static aiQuaternion lerpRotation(float time, AnimKey<aiQuaternion> a, AnimKey<aiQuaternion> b) {
 			if (a.time == b.time) return a.value;
 
 			float dt = b.time - a.time;
@@ -81,7 +81,7 @@ namespace rawrBox {
 			return {aiIntrp.w, aiIntrp.x, aiIntrp.y, aiIntrp.z};
 		};
 
-		static aiVector3D lerpPosition(float time, rawrBox::AnimKey<aiVector3D> a, rawrBox::AnimKey<aiVector3D> b) {
+		static aiVector3D lerpPosition(float time, AnimKey<aiVector3D> a, AnimKey<aiVector3D> b) {
 			if (a.time == b.time) return a.value;
 
 			float dt = b.time - a.time;
@@ -101,7 +101,7 @@ namespace rawrBox {
 			    a.value.z + b.value.z};
 		};
 
-		static aiVector3D lerpScale(float time, rawrBox::AnimKey<aiVector3D> a, rawrBox::AnimKey<aiVector3D> b) {
+		static aiVector3D lerpScale(float time, AnimKey<aiVector3D> a, AnimKey<aiVector3D> b) {
 			if (a.time == b.time) return a.value;
 
 			float dt = b.time - a.time;

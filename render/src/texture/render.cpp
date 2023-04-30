@@ -1,10 +1,10 @@
-#include <rawrbox/render/static.h>
-#include <rawrbox/render/texture/render.h>
+#include <rawrbox/render/static.hpp>
+#include <rawrbox/render/texture/render.hpp>
 
 #include <fmt/format.h>
 
 // Compiled shaders
-#include <generated/shaders/render/all.h>
+#include <generated/shaders/render/all.hpp>
 
 namespace rawrBox {
 	// NOLINTBEGIN{cppcoreguidelines-avoid-non-const-global-variables}

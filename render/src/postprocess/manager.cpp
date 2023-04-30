@@ -1,11 +1,12 @@
 
-#include <rawrbox/render/postprocess/manager.h>
-#include <rawrbox/render/shader_defines.h>
-#include <rawrbox/render/static.h>
+#include <rawrbox/render/postprocess/manager.hpp>
+#include <rawrbox/render/shader_defines.hpp>
+#include <rawrbox/render/static.hpp>
+
+#include <generated/shaders/render/all.hpp>
 
 #include <bx/bx.h>
 #include <fmt/format.h>
-#include <generated/shaders/render/all.h>
 
 // NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader model_shaders[] = {

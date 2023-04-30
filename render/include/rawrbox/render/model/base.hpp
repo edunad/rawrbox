@@ -1,7 +1,7 @@
 #pragma once
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/model/mesh.hpp>
-#include <rawrbox/render/static.h>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/utils/pack.hpp>
 
 #include <bx/math.h>
@@ -228,28 +228,25 @@ namespace rawrBox {
 			return mesh;
 		}
 
+		static void merge(std::shared_ptr<rawrBox::Mesh> in, std::shared_ptr<rawrBox::Mesh> other) {
+			for (uint16_t i : other->indices)
+				in->indices.push_back(static_cast<uint16_t>(in->vertices.size()) + i);
+
+			in->vertices.insert(in->vertices.end(), other->vertices.begin(), other->vertices.end());
+			in->totalVertex = static_cast<uint16_t>(in->vertices.size());
+			in->totalIndex = static_cast<uint16_t>(in->indices.size());
+		}
+
 		static std::shared_ptr<rawrBox::Mesh> generateAxis(float size, const rawrBox::Vector3f& pos) {
 			std::shared_ptr<rawrBox::Mesh> mesh = std::make_shared<rawrBox::Mesh>();
 			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
 
-			/*auto x = generateCube(pos, {size, 0.01f, 0.01f}, Colors::Red);
-			auto y = generateCube(pos, {0.01f, size, 0.01f}, Colors::Green);
-			auto z = generateCube(pos, {0.01f, 0.01f, size}, Colors::Blue);
-
-			mesh->vertices.insert(mesh->vertices.end(), x->vertices.begin(), x->vertices.end());
-			for (uint16_t i : x->indices)
-				mesh->indices.push_back(i);
-
-			mesh->vertices.insert(mesh->vertices.end(), x->vertices.begin(), x->vertices.end());
-			for (uint16_t i : y->indices)
-				mesh->indices.push_back(i + static_cast<uint16_t>(x->vertices.size()));
-
-			mesh->vertices.insert(mesh->vertices.end(), x->vertices.begin(), x->vertices.end());
-			for (uint16_t i : z->indices)
-				mesh->indices.push_back(i + static_cast<uint16_t>(y->vertices.size()) + static_cast<uint16_t>(z->vertices.size()));
+			merge(mesh, generateCube(pos, {size, 0.01f, 0.01f}, Colors::Red));   // x;
+			merge(mesh, generateCube(pos, {0.01f, size, 0.01f}, Colors::Green)); // y;
+			merge(mesh, generateCube(pos, {0.01f, 0.01f, size}, Colors::Blue));  // z;
 
 			mesh->setCulling(0);
-			mesh->setTexture(rawrBox::WHITE_TEXTURE);*/
+			mesh->setTexture(rawrBox::WHITE_TEXTURE);
 
 			return mesh;
 		}

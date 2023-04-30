@@ -1,8 +1,8 @@
 #pragma once
 
 #include <rawrbox/render/model/light/base.hpp>
-#include <rawrbox/render/model/sprite.h>
-#include <rawrbox/render/texture/image.h>
+#include <rawrbox/render/model/sprite.hpp>
+#include <rawrbox/render/texture/image.hpp>
 
 #include <memory>
 

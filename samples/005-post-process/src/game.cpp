@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/model/light/manager.h>
+#include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/material/unlit.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/render/postprocess/bloom.hpp>
@@ -7,13 +7,12 @@
 #include <rawrbox/render/postprocess/static_noise.hpp>
 #include <rawrbox/utils/keys.hpp>
 
+#include <post_process/game.hpp>
+
 #include <bx/bx.h>
 #include <bx/math.h>
-#include <post_process/game.h>
 
 #include <vector>
-
-#include "rawrbox/render/model/assimp/model_imported.h"
 
 namespace post_process {
 	void Game::init() {

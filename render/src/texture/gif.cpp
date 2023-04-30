@@ -1,11 +1,11 @@
-#include <rawrbox/render/texture/gif.h>
+#include <rawrbox/render/texture/gif.hpp>
 #include <rawrbox/utils/math.hpp>
-#include <rawrbox/utils/time.h>
+#include <rawrbox/utils/time.hpp>
+
+#include <stb/gif.hpp>
 
 #include <bgfx/bgfx.h>
 #include <fmt/format.h>
-
-#include <stb/gif.hpp>
 
 namespace rawrBox {
 	TextureGIF::TextureGIF(const std::string& fileName, bool useFallback) {

@@ -1,5 +1,5 @@
-#include <rawrbox/render/renderer.h>
-#include <rawrbox/render/static.h>
+#include <rawrbox/render/renderer.hpp>
+#include <rawrbox/render/static.hpp>
 
 #include <fmt/format.h>
 

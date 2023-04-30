@@ -1,11 +1,12 @@
 
-#include <rawrbox/render/shader_defines.h>
-#include <rawrbox/render/static.h>
-#include <rawrbox/render/stencil.h>
+#include <rawrbox/render/shader_defines.hpp>
+#include <rawrbox/render/static.hpp>
+#include <rawrbox/render/stencil.hpp>
 
 // Compiled shaders
+#include <generated/shaders/render/all.hpp>
+
 #include <bx/math.h>
-#include <generated/shaders/render/all.h>
 #include <utf8.h>
 
 #define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))

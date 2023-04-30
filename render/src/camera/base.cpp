@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/camera/base.h>
+#include <rawrbox/render/camera/base.hpp>
 
 #include <bx/math.h>
 

@@ -1,19 +1,18 @@
 #pragma once
 #include <rawrbox/render/postprocess/base.hpp>
-#include <rawrbox/render/shader_defines.h>
-#include <rawrbox/render/static.h>
+#include <rawrbox/render/shader_defines.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/util/uniforms.hpp>
-#include <rawrbox/utils/time.h>
+#include <rawrbox/utils/time.hpp>
+
+#include <generated/shaders/render/all.hpp>
 
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
-#include <generated/shaders/render/all.h>
+#include <bx/timer.h>
 
 #include <algorithm>
 #include <memory>
-
-#include "bx/timer.h"
-#include "rawrbox/math/vector2.hpp"
 
 // NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader noise_shaders[] = {

@@ -1,12 +1,13 @@
 #pragma once
 #include <rawrbox/render/postprocess/base.hpp>
-#include <rawrbox/render/shader_defines.h>
-#include <rawrbox/render/static.h>
+#include <rawrbox/render/shader_defines.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/util/uniforms.hpp>
+
+#include <generated/shaders/render/all.hpp>
 
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
-#include <generated/shaders/render/all.h>
 
 #include <memory>
 

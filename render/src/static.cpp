@@ -1,4 +1,4 @@
-#include <rawrbox/render/static.h>
+#include <rawrbox/render/static.hpp>
 namespace rawrBox {
 	// NOLINTBEGIN{cppcoreguidelines-avoid-non-const-global-variables}
 	bgfx::ViewId CURRENT_VIEW_ID = 0;

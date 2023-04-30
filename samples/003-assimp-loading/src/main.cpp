@@ -3,7 +3,7 @@
 #include <windows.h>
 #endif
 
-#include <assimp/game.h>
+#include <assimp/game.hpp>
 using namespace rawrBox;
 
 int main(int argc, char* argv[]) {

@@ -1,7 +1,8 @@
-#include <rawrbox/render/text/engine.h>
+#include <rawrbox/render/text/engine.hpp>
+
+#include <fmt/format.h>
 
 #include <stdexcept>
-#include <fmt/format.h>
 
 namespace rawrBox {
 	uint32_t TextEngine::atlasID = 0;

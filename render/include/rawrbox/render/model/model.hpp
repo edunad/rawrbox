@@ -1,7 +1,7 @@
 #pragma once
 #include <rawrbox/render/model/base.hpp>
 
-#include <assimp/quaternion.h>
+#include <assimp/anim.h>
 #include <assimp/vector3.h>
 
 #include <unordered_map>
@@ -22,6 +22,9 @@ namespace rawrBox {
 		std::vector<AnimKey<aiVector3D>> position;
 		std::vector<AnimKey<aiVector3D>> scale;
 		std::vector<AnimKey<aiQuaternion>> rotation;
+
+		aiAnimBehaviour stateStart;
+		aiAnimBehaviour stateEnd;
 	};
 
 	struct Animation {

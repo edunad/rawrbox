@@ -6,9 +6,9 @@ $output v_color0, v_texcoord0, v_wPos, v_normal, v_tangent, v_bitangent
 #include <../include/model_skinned.sh>
 
 void main() {
-	vec4 world = mul(u_model[0], vec4(a_position, 1.0) );
+	vec4 world = mul(u_model[0], boneTransform(a_indices, a_weight, a_position) );
 
-	vec4 translated = mul(u_viewProj, mul(boneTransform(a_indices, a_weight), world));
+	vec4 translated = mul(u_viewProj, world);
 	gl_Position = psx_snap(translated, u_viewRect.zw / 2.);
 
     v_color0 = a_color0;

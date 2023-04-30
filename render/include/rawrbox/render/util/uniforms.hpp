@@ -5,9 +5,9 @@
 #include <rawrbox/math/vector3.hpp>
 
 #include <bgfx/bgfx.h>
-#include <cstdint>
 
 #include <array>
+#include <cstdint>
 #include <string>
 #include <vector>
 

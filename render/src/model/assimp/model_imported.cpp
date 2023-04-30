@@ -1,11 +1,11 @@
 
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/model/assimp/model_imported.h>
+#include <rawrbox/render/model/assimp/model_imported.hpp>
 #include <rawrbox/render/model/light/directional.hpp>
-#include <rawrbox/render/model/light/manager.h>
+#include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/light/point.hpp>
 #include <rawrbox/render/model/light/spot.hpp>
-#include <rawrbox/render/texture/image.h>
+#include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/utils/math.hpp>
 #include <rawrbox/utils/pack.hpp>
 #include <rawrbox/utils/string.hpp>
@@ -108,14 +108,16 @@ namespace rawrBox {
 			}
 			// ---------------
 
+			// Set armature ---
+			mesh->skeleton = this->_skeletons[name];
+			// ----
+
 			// Apply the weights -----
 			auto fnd = this->_globalBoneMap.find(boneKey);
 			if (fnd == this->_globalBoneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
 
 			bx::mtxTranspose(fnd->second->offsetMtx.data(), &bone->mOffsetMatrix.a1);
 			fnd->second->offsetMtx = rawrBox::MathUtils::mtxMul(fnd->second->offsetMtx, mesh->offsetMatrix);
-
-			mesh->skeleton = this->_skeletons[name];
 
 			// Calculate object weights
 			for (size_t j = 0; j < bone->mNumWeights; j++) {
@@ -279,19 +281,6 @@ namespace rawrBox {
 			}
 		}
 
-		// TEXTURE FLAT
-		/*if (pMaterial->GetTextureCount(aiTextureType_BASE_COLOR) > 0) {
-			if (pMaterial->GetTexture(aiTextureType_BASE_COLOR, 0, nullptr, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
-				auto ptr = this->importTexture(matPath.data, matName.data, matMode);
-				if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load specular texture '{}'", matPath.data));
-
-				float shininess = 0;
-				pMaterial->Get(AI_MATKEY_SHININESS, shininess);
-
-				mesh->setSpecularTexture(ptr, shininess);
-			}
-		}*/
-
 		// TEXTURE EMISSIVE
 		/*if (pMaterial->GetTextureCount(aiTextureType_EMISSIVE) > 0) {
 			if (pMaterial->GetTexture(aiTextureType_EMISSIVE, 0, nullptr, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
@@ -395,6 +384,11 @@ namespace rawrBox {
 	void ModelImported::loadAnimations(const aiScene* sc) {
 		if (!sc->HasAnimations()) return;
 
+		if (this->_globalBoneMap.empty()) {
+			fmt::print("[RawrBox-Model] Non-bone animations not supported yet!\n");
+			return;
+		}
+
 		// Load animations ----
 		for (size_t i = 0; i < sc->mNumAnimations; i++) {
 			auto& anim = *sc->mAnimations[i];
@@ -409,17 +403,6 @@ namespace rawrBox {
 
 			ourAnim.ticksPerSecond = static_cast<float>(anim.mTicksPerSecond);
 			ourAnim.duration = static_cast<float>(anim.mDuration);
-
-			/*
-			for (size_t channelIndex = 0; channelIndex < anim.mNumMeshChannels; channelIndex++) {
-				auto aaa = anim.mMeshChannels[channelIndex];
-			}
-			for (size_t channelIndex = 0; channelIndex < anim.mNumMorphMeshChannels; channelIndex++) {
-				auto aaa = anim.mMorphMeshChannels[channelIndex];
-			}
-			for (size_t channelIndex = 0; channelIndex < anim.; channelIndex++) {
-				auto aaa = anim.mMorphMeshChannels[channelIndex];
-			}*/
 
 			// for each channel (frame / keyframe)
 			// extract position, rotation, scale and timings
@@ -446,9 +429,8 @@ namespace rawrBox {
 
 				rawrBox::AnimationFrame ourChannel;
 				ourChannel.nodeName = fmt::format("{}-{}", fnd->second->owner->name, aChannel->mNodeName.data);
-
-				// ourChannel.stateStart = static_cast<AnimationChannelBehaviour>(aChannel->mPreState);
-				// ourChannel.stateEnd = static_cast<AnimationChannelBehaviour>(aChannel->mPostState);
+				ourChannel.stateStart = aChannel->mPreState;
+				ourChannel.stateEnd = aChannel->mPostState;
 
 				for (size_t positionIndex = 0; positionIndex < aChannel->mNumPositionKeys; positionIndex++) {
 					auto aPos = aChannel->mPositionKeys[positionIndex];

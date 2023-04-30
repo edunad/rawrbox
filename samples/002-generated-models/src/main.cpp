@@ -3,7 +3,7 @@
 #include <windows.h>
 #endif
 
-#include <model/game.h>
+#include <model/game.hpp>
 
 int main(int argc, char* argv[]) {
 #ifdef _WIN32

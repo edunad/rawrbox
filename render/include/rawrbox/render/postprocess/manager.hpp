@@ -3,7 +3,7 @@
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/postprocess/base.hpp>
-#include <rawrbox/render/texture/render.h>
+#include <rawrbox/render/texture/render.hpp>
 
 #include <bgfx/bgfx.h>
 

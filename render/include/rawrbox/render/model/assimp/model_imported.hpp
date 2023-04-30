@@ -1,8 +1,8 @@
 #pragma once
 
 #include <rawrbox/render/model/mesh.hpp>
-#include <rawrbox/render/model/model.h>
-#include <rawrbox/render/texture/base.h>
+#include <rawrbox/render/model/model.hpp>
+#include <rawrbox/render/texture/base.hpp>
 
 #include <assimp/cimport.h>
 #include <assimp/postprocess.h>

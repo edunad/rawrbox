@@ -1,9 +1,9 @@
-#include <rawrbox/render/model/light/manager.h>
-#include <rawrbox/render/model/model.h>
-#include <rawrbox/render/static.h>
+#include <rawrbox/render/model/light/manager.hpp>
+#include <rawrbox/render/model/model.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/util/assimp/utils.hpp>
 #include <rawrbox/utils/math.hpp>
-#include <rawrbox/utils/time.h>
+#include <rawrbox/utils/time.hpp>
 
 #include <assimp/matrix3x3.h>
 #include <assimp/matrix4x4.h>

@@ -3,7 +3,7 @@
 #include <windows.h>
 #endif
 
-#include <anims/game.h>
+#include <anims/game.hpp>
 using namespace rawrBox;
 
 int main(int argc, char* argv[]) {

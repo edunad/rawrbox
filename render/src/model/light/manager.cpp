@@ -1,6 +1,6 @@
 
 #include <rawrbox/render/model/base.hpp>
-#include <rawrbox/render/model/light/manager.h>
+#include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/material/sprite_unlit.hpp>
 #include <rawrbox/render/model/material/unlit.hpp>
 

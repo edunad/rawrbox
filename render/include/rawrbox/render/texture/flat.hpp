@@ -2,7 +2,7 @@
 
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector2.hpp>
-#include <rawrbox/render/texture/base.h>
+#include <rawrbox/render/texture/base.hpp>
 
 #include <bgfx/bgfx.h>
 

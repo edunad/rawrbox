@@ -1,5 +1,5 @@
-#include <rawrbox/render/static.h>
-#include <rawrbox/render/texture/image.h>
+#include <rawrbox/render/static.hpp>
+#include <rawrbox/render/texture/image.hpp>
 
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
@@ -7,9 +7,9 @@
 #define STBI_ONLY_JPEG
 #define STBI_ONLY_BMP
 #define STBI_ONLY_TGA
-#include <fmt/format.h>
-
 #include <stb/image.hpp>
+
+#include <fmt/format.h>
 
 namespace rawrBox {
 	TextureImage::TextureImage(const std::string& fileName, bool useFallback) {

@@ -1,4 +1,4 @@
-#include <rawrbox/render/window.h>
+#include <rawrbox/render/window.hpp>
 
 #include <bgfx/bgfx.h>
 #include <bx/bx.h>

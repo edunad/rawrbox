@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rawrbox/math/vector2.hpp>
-#include <rawrbox/render/stencil.h>
+#include <rawrbox/render/stencil.hpp>
 
 #include <bgfx/bgfx.h>
 

@@ -2,16 +2,14 @@
 #include <rawrbox/render/model/material/skinned_unlit.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/utils/keys.hpp>
-#include <rawrbox/utils/time.h>
+#include <rawrbox/utils/time.hpp>
 
-#include <anims/game.h>
+#include <anims/game.hpp>
+
 #include <bx/bx.h>
 #include <bx/math.h>
 
 #include <vector>
-
-#include "rawrbox/render/model/assimp/model_imported.h"
-#include "rawrbox/render/model/material/unlit.hpp"
 
 namespace anims {
 	void Game::init() {
@@ -84,7 +82,7 @@ namespace anims {
 		this->_model->upload();
 
 		this->_model2 = std::make_shared<rawrBox::ModelImported>(mat);
-		this->_model2->load("./content/models/multiple_skeleton/twocubestest.gltf", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrBox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE);
+		this->_model2->load("./content/models/uv_animation/scene.gltf", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrBox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE);
 		// this->_model2->playAnimation("MewAction", true, 0.8f);
 		this->_model2->playAnimation("MewAction.001", true, 0.8f);
 		this->_model2->setPos({0, 0, 0});
@@ -93,10 +91,6 @@ namespace anims {
 		// -----
 
 		this->_modelGrid = std::make_shared<rawrBox::Model>(meshMat);
-		{
-			auto mesh = rawrBox::ModelBase::generateCube(0, {0.05f, 0.05f, 0.05f});
-			this->_modelGrid->addMesh(mesh);
-		}
 		{
 			auto mesh = rawrBox::ModelBase::generateGrid(12, {0.f, 0.f, 0.f});
 			this->_modelGrid->addMesh(mesh);
