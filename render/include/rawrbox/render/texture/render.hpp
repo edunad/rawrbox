@@ -7,9 +7,7 @@
 
 namespace rawrBox {
 	class TextureRender : public TextureBase {
-		// NOLINTBEGIN{cppcoreguidelines-avoid-non-const-global-variables}
 		static uint32_t renderID;
-		// NOLINTEND{cppcoreguidelines-avoid-non-const-global-variables}
 
 	private:
 		bgfx::FrameBufferHandle _renderView = BGFX_INVALID_HANDLE;

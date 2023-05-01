@@ -1,5 +1,4 @@
 
-#include <rawrbox/render/model/material/skinned_unlit.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/utils/keys.hpp>
 #include <rawrbox/utils/time.hpp>
@@ -60,7 +59,7 @@ namespace anims {
 		// Setup camera
 		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
 		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
 		// --------------
 
 		// Load content ---
@@ -72,16 +71,11 @@ namespace anims {
 		this->_render->upload();
 
 		// Assimp test ---
-		auto mat = std::make_shared<rawrBox::MaterialSkinnedUnlit>();
-		auto meshMat = std::make_shared<rawrBox::MaterialUnlit>();
-
-		this->_model = std::make_shared<rawrBox::ModelImported>(mat);
 		this->_model->load("./content/models/wolf/wolfman_animated.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS);
 		this->_model->playAnimation("Scene", true, 1.5F);
 		this->_model->setPos({0, 0, 0});
 		this->_model->upload();
 
-		this->_model2 = std::make_shared<rawrBox::ModelImported>(mat);
 		this->_model2->load("./content/models/multiple_skeleton/twocubestest.gltf", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrBox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE);
 		this->_model2->playAnimation("MewAction", true, 0.8F);
 		this->_model2->playAnimation("MewAction.001", true, 0.8F);
@@ -91,9 +85,8 @@ namespace anims {
 
 		// -----
 
-		this->_modelGrid = std::make_shared<rawrBox::Model>(meshMat);
 		{
-			auto mesh = rawrBox::ModelBase::generateGrid(12, {0.F, 0.F, 0.F});
+			auto mesh = this->_modelGrid->generateGrid(12, {0.F, 0.F, 0.F});
 			this->_modelGrid->addMesh(mesh);
 		}
 

@@ -12,47 +12,45 @@ namespace rawrBox {
 		using QuaternionType = Quaternion_t<NumberType>;
 
 	public:
-		NumberType x = 0, y = 0, z = 0, w = 0;
+		NumberType w = 0, x = 0, y = 0, z = 0;
 
 		Quaternion_t() = default;
-		explicit Quaternion_t(Vector2_t<NumberType> first, Vector2_t<NumberType> second = 0) : x(first.x), y(first.y), z(second.x), w(second.y) {}
-		explicit Quaternion_t(Vector3_t<NumberType> vec, NumberType _w = 0) : x(vec.x), y(vec.y), z(vec.z), w(_w) {}
-		Quaternion_t(NumberType _x, NumberType _y, NumberType _z, NumberType _w) : x(_x), y(_y), z(_z), w(_w) {}
+		Quaternion_t(NumberType _w, NumberType _x, NumberType _y, NumberType _z) : w(_w), x(_x), y(_y), z(_z) {}
 
 		QuaternionType operator-(const QuaternionType& other) const {
-			return QuaternionType(x - other.x, y - other.y, z - other.z, w - other.w);
+			return QuaternionType(w - other.w, x - other.x, y - other.y, z - other.z);
 		}
 
 		QuaternionType operator+(const QuaternionType& other) const {
-			return QuaternionType(x + other.x, y + other.y, z + other.z, w + other.w);
+			return QuaternionType(w + other.w, x + other.x, y + other.y, z + other.z);
 		}
 
 		QuaternionType operator*(const QuaternionType& other) const {
-			return QuaternionType(x * other.x, y * other.y, z * other.z, w * other.w);
+			return QuaternionType(w * other.w, x * other.x, y * other.y, z * other.z);
 		}
 
 		QuaternionType operator/(const QuaternionType& other) const {
-			return QuaternionType(x / other.x, y / other.y, z / other.z, w / other.w);
+			return QuaternionType(w / other.w, x / other.x, y / other.y, z / other.z);
 		}
 
 		QuaternionType operator-(NumberType other) const {
-			return QuaternionType(x - other, y - other, z - other, w - other);
+			return QuaternionType(w - other, x - other, y - other, z - other);
 		}
 
 		QuaternionType operator+(NumberType other) const {
-			return QuaternionType(x + other, y + other, z + other, w + other);
+			return QuaternionType(w + other, x + other, y + other, z + other);
 		}
 
 		QuaternionType operator*(NumberType other) const {
-			return QuaternionType(x * other, y * other, z * other, w * other);
+			return QuaternionType(w * other, x * other, y * other, z * other);
 		}
 
 		QuaternionType operator/(NumberType other) const {
-			return QuaternionType(x / other, y / other, z / other, w / other);
+			return QuaternionType(w / other, x / other, y / other, z / other);
 		}
 
 		NumberType length() const {
-			return static_cast<NumberType>(std::sqrt(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2) + std::pow(w, 2)));
+			return static_cast<NumberType>(std::sqrt(std::pow(w, 2) + std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2)));
 		}
 
 		QuaternionType normalized() const {
@@ -82,75 +80,75 @@ namespace rawrBox {
 		}
 
 		QuaternionType& operator-=(const QuaternionType& other) {
+			w -= other.w;
 			x -= other.x;
 			y -= other.y;
 			z -= other.z;
-			w -= other.w;
 			return *this;
 		}
 
 		QuaternionType& operator+=(const QuaternionType& other) {
+			w += other.w;
 			x += other.x;
 			y += other.y;
 			z += other.z;
-			w += other.w;
 			return *this;
 		}
 
 		QuaternionType& operator*=(const QuaternionType& other) {
+			w *= other.w;
 			x *= other.x;
 			y *= other.y;
 			z *= other.z;
-			w *= other.w;
 			return *this;
 		}
 
 		QuaternionType& operator/=(const QuaternionType& other) {
+			w /= other.w;
 			x /= other.x;
 			y /= other.y;
 			z /= other.z;
-			w /= other.w;
 			return *this;
 		}
 
 		QuaternionType& operator-=(NumberType other) {
+			w -= other;
 			x -= other;
 			y -= other;
 			z -= other;
-			w -= other;
 			return *this;
 		}
 
 		QuaternionType& operator+=(NumberType other) {
+			w += other;
 			x += other;
 			y += other;
 			z += other;
-			w += other;
 			return *this;
 		}
 
 		QuaternionType& operator*=(NumberType other) {
+			w *= other;
 			x *= other;
 			y *= other;
 			z *= other;
-			w *= other;
 			return *this;
 		}
 
 		QuaternionType& operator/=(NumberType other) {
+			w /= other;
 			x /= other;
 			y /= other;
 			z /= other;
-			w /= other;
 			return *this;
 		}
 
 		QuaternionType operator-() const {
-			return QuaternionType(-x, -y, -z, -w);
+			return QuaternionType(-w, -x, -y, -z);
 		}
 
 		bool operator==(const QuaternionType& other) const {
-			return x == other.x && y == other.y && z == other.z && w == other.w;
+			return w == other.w && x == other.x && y == other.y && z == other.z;
 		}
 
 		bool operator!=(const QuaternionType& other) const {

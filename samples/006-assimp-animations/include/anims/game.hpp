@@ -3,6 +3,7 @@
 #include <rawrbox/render/camera/perspective.hpp>
 #include <rawrbox/render/engine.hpp>
 #include <rawrbox/render/model/assimp/model_imported.hpp>
+#include <rawrbox/render/model/material/skinned_unlit.hpp>
 #include <rawrbox/render/postprocess/manager.hpp>
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/window.hpp>
@@ -16,9 +17,9 @@ namespace anims {
 		std::shared_ptr<rawrBox::CameraPerspective> _camera = nullptr;
 		std::shared_ptr<rawrBox::PostProcessManager> _postProcess = nullptr;
 
-		std::shared_ptr<rawrBox::ModelImported> _model = nullptr;
-		std::shared_ptr<rawrBox::ModelImported> _model2 = nullptr;
-		std::shared_ptr<rawrBox::Model> _modelGrid = nullptr;
+		std::shared_ptr<rawrBox::ModelImported<rawrBox::MaterialSkinnedUnlit>> _model = std::make_shared<rawrBox::ModelImported<rawrBox::MaterialSkinnedUnlit>>();
+		std::shared_ptr<rawrBox::ModelImported<rawrBox::MaterialSkinnedUnlit>> _model2 = std::make_shared<rawrBox::ModelImported<rawrBox::MaterialSkinnedUnlit>>();
+		std::shared_ptr<rawrBox::Model<>> _modelGrid = std::make_shared<rawrBox::Model<>>();
 
 		bool _rightClick = false;
 		rawrBox::Vector2i _oldMousePos = {};

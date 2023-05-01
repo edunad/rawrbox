@@ -1,24 +1,21 @@
 #pragma once
 
 #include <rawrbox/math/quaternion.hpp>
-#include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/model/model.hpp>
-
-#include <assimp/quaternion.h>
 
 #include <cmath>
 
 namespace rawrBox {
-	class AssimpUtils {
+
+	class AnimUtils {
 	public:
 		// taken from assimp, because linux /shrug
-		static aiQuaternion interpolate(const aiQuaternion& pStart, const aiQuaternion& pEnd, float pFactor) {
+		static rawrBox::Quaternion interpolate(const rawrBox::Quaternion& pStart, const rawrBox::Quaternion& pEnd, float pFactor) {
 			// calc cosine theta
 			float cosom = pStart.x * pEnd.x + pStart.y * pEnd.y + pStart.z * pEnd.z + pStart.w * pEnd.w;
 
 			// adjust signs (if necessary)
-			aiQuaternion end = pEnd;
+			rawrBox::Quaternion end = pEnd;
 			if (cosom < static_cast<float>(0.0)) {
 				cosom = -cosom;
 				end.x = -end.x; // Reverse all signs
@@ -47,7 +44,7 @@ namespace rawrBox {
 			}
 			// NOLINTEND(clang-analyzer-deadcode.DeadStores)
 
-			aiQuaternion pOut;
+			rawrBox::Quaternion pOut;
 			pOut.x = sclp * pStart.x + sclq * end.x;
 			pOut.y = sclp * pStart.y + sclq * end.y;
 			pOut.z = sclp * pStart.z + sclq * end.z;
@@ -56,7 +53,7 @@ namespace rawrBox {
 			return pOut;
 		};
 
-		static void normalize(aiQuaternion& quart) {
+		static void normalize(rawrBox::Quaternion& quart) {
 			// compute the magnitude and divide through it
 			const float mag = std::sqrt(quart.x * quart.x + quart.y * quart.y + quart.z * quart.z + quart.w * quart.w);
 
@@ -71,45 +68,45 @@ namespace rawrBox {
 		}
 
 		// ---
-		static aiQuaternion lerpRotation(float time, AnimKey<aiQuaternion> a, AnimKey<aiQuaternion> b) {
-			if (a.time == b.time) return a.value;
+		static rawrBox::Quaternion lerpRotation(float time, std::pair<float, rawrBox::Quaternion> a, std::pair<float, rawrBox::Quaternion> b) {
+			if (a.first == b.first) return a.second;
 
-			float dt = b.time - a.time;
-			float norm = (time - a.time) / dt;
+			float dt = b.first - a.first;
+			float norm = (time - a.first) / dt;
 
-			aiQuaternion aiStart = {a.value.w, a.value.x, a.value.y, a.value.z};
-			aiQuaternion aiEnd = {b.value.w, b.value.x, b.value.y, b.value.z};
-			aiQuaternion aiIntrp = AssimpUtils::interpolate(aiStart, aiEnd, norm);
+			rawrBox::Quaternion aiStart = {a.second.w, a.second.x, a.second.y, a.second.z};
+			rawrBox::Quaternion aiEnd = {b.second.w, b.second.x, b.second.y, b.second.z};
+			rawrBox::Quaternion aiIntrp = AnimUtils::interpolate(aiStart, aiEnd, norm);
 
-			AssimpUtils::normalize(aiIntrp);
+			AnimUtils::normalize(aiIntrp);
 			return {aiIntrp.w, aiIntrp.x, aiIntrp.y, aiIntrp.z};
 		};
 
-		static aiVector3D lerpPosition(float time, AnimKey<aiVector3D> a, AnimKey<aiVector3D> b) {
-			if (a.time == b.time) return a.value;
+		static rawrBox::Vector3f lerpPosition(float time, std::pair<float, rawrBox::Vector3f> a, std::pair<float, rawrBox::Vector3f> b) {
+			if (a.first == b.first) return a.second;
 
-			float dt = b.time - a.time;
-			float norm = (time - a.time) / dt;
+			float dt = b.first - a.first;
+			float norm = (time - a.first) / dt;
 
-			a.value.x *= (1.0F - norm);
-			a.value.y *= (1.0F - norm);
-			a.value.z *= (1.0F - norm);
+			a.second.x *= (1.0F - norm);
+			a.second.y *= (1.0F - norm);
+			a.second.z *= (1.0F - norm);
 
-			b.value.x *= norm;
-			b.value.y *= norm;
-			b.value.z *= norm;
+			b.second.x *= norm;
+			b.second.y *= norm;
+			b.second.z *= norm;
 
 			return {
-			    a.value.x + b.value.x,
-			    a.value.y + b.value.y,
-			    a.value.z + b.value.z};
+			    a.second.x + b.second.x,
+			    a.second.y + b.second.y,
+			    a.second.z + b.second.z};
 		};
 
-		static aiVector3D lerpScale(float time, AnimKey<aiVector3D> a, AnimKey<aiVector3D> b) {
-			if (a.time == b.time) return a.value;
+		static rawrBox::Vector3f lerpScale(float time, std::pair<float, rawrBox::Vector3f> a, std::pair<float, rawrBox::Vector3f> b) {
+			if (a.first == b.first) return a.second;
 
-			float dt = b.time - a.time;
-			float norm = (time - a.time) / dt;
+			float dt = b.first - a.first;
+			float norm = (time - a.first) / dt;
 
 			return lerpPosition(norm, a, b);
 		};

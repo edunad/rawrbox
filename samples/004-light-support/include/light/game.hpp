@@ -3,6 +3,7 @@
 #include <rawrbox/render/camera/perspective.hpp>
 #include <rawrbox/render/engine.hpp>
 #include <rawrbox/render/model/assimp/model_imported.hpp>
+#include <rawrbox/render/model/material/lit.hpp>
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/window.hpp>
 
@@ -14,7 +15,7 @@ namespace light {
 		std::shared_ptr<rawrBox::Renderer> _render = nullptr;
 		std::shared_ptr<rawrBox::CameraPerspective> _camera = nullptr;
 
-		std::shared_ptr<rawrBox::ModelImported> _model = nullptr;
+		std::shared_ptr<rawrBox::ModelImported<rawrBox::MaterialLit>> _model = std::make_shared<rawrBox::ModelImported<rawrBox::MaterialLit>>();
 
 		bool _rightClick = false;
 		rawrBox::Vector2i _oldMousePos = {};

@@ -20,26 +20,46 @@ static const bgfx::EmbeddedShader model_sprite_shaders[] = {
 namespace rawrBox {
 
 	class MaterialSpriteUnlit : public rawrBox::MaterialBase {
-
 	public:
-		using MaterialBase::MaterialBase;
+		bgfx::UniformHandle u_sprite_pos = BGFX_INVALID_HANDLE;
 
-		void upload() override {
-			this->buildShader(model_sprite_shaders, "sprite_unlit");
+		using vertexBufferType = rawrBox::VertexData;
+
+		MaterialSpriteUnlit() = default;
+		MaterialSpriteUnlit(MaterialSpriteUnlit&&) = delete;
+		MaterialSpriteUnlit& operator=(MaterialSpriteUnlit&&) = delete;
+		MaterialSpriteUnlit(const MaterialSpriteUnlit&) = delete;
+		MaterialSpriteUnlit& operator=(const MaterialSpriteUnlit&) = delete;
+		~MaterialSpriteUnlit() {
+			RAWRBOX_DESTROY(u_sprite_pos);
 		}
 
-		void process(std::shared_ptr<rawrBox::Mesh> mesh) override {
+		void registerUniforms() {
+			MaterialBase::registerUniforms();
+
+			// SPRITE ----
+			u_sprite_pos = bgfx::createUniform("u_sprite_pos", bgfx::UniformType::Vec4, 3);
+			// ---
+		}
+
+		template <typename T>
+		void process(std::shared_ptr<rawrBox::Mesh<T>> mesh) {
 			if (mesh->texture != nullptr && mesh->texture->valid() && !mesh->wireframe) {
-				bgfx::setTexture(0, this->getUniform("s_texColor"), mesh->texture->getHandle());
+				bgfx::setTexture(0, s_texColor, mesh->texture->getHandle());
 			} else {
-				bgfx::setTexture(0, this->getUniform("s_texColor"), rawrBox::WHITE_TEXTURE->getHandle());
+				bgfx::setTexture(0, s_texColor, rawrBox::WHITE_TEXTURE->getHandle());
 			}
 
 			std::array colorOffset = {mesh->color.r, mesh->color.b, mesh->color.g, mesh->color.a};
-			bgfx::setUniform(this->getUniform("u_colorOffset"), colorOffset.data());
+			bgfx::setUniform(u_colorOffset, colorOffset.data());
 
 			std::array offset = {mesh->vertexPos[12], mesh->vertexPos[13], mesh->vertexPos[14]};
-			bgfx::setUniform(this->getUniform("u_sprite_pos"), offset.data());
+			bgfx::setUniform(u_sprite_pos, offset.data());
+		}
+
+		void upload() {
+			buildShader(model_sprite_shaders, "sprite_unlit");
 		}
 	};
+
 } // namespace rawrBox

@@ -9,9 +9,7 @@
 #include <array>
 
 namespace rawrBox {
-	// NOLINTBEGIN{cppcoreguidelines-avoid-non-const-global-variables}
 	uint32_t TextureRender::renderID = 10; // 5 > reserved to render textures
-	// NOLINTEND{cppcoreguidelines-avoid-non-const-global-variables}
 
 	TextureRender::TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size) : _size(size), _viewId(viewId), _renderId(TextureRender::renderID++) {
 		// Setup texture target view

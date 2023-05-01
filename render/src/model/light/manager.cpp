@@ -1,8 +1,6 @@
 
 #include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
-#include <rawrbox/render/model/material/sprite_unlit.hpp>
-#include <rawrbox/render/model/material/unlit.hpp>
 
 #include <fmt/format.h>
 
@@ -13,8 +11,6 @@ namespace rawrBox {
 		this->_pointTexture = std::make_shared<rawrBox::TextureImage>("./content/textures/debug/point.png");
 		this->_spotTexture = std::make_shared<rawrBox::TextureImage>("./content/textures/debug/spot.png");
 		this->_dirTexture = std::make_shared<rawrBox::TextureImage>("./content/textures/debug/dir.png");
-
-		this->_debugMdl = std::make_shared<rawrBox::Sprite>(std::make_shared<rawrBox::MaterialSpriteUnlit>());
 	}
 
 	void LightManager::destroy() {
@@ -36,7 +32,7 @@ namespace rawrBox {
 		if (this->_debugMdl != nullptr) {
 			auto pos = light->getPosMatrix();
 
-			auto mesh = rawrBox::ModelBase::generatePlane({pos[0], pos[1], pos[2]}, {0.1F, 0.1F});
+			auto mesh = this->_debugMdl->generatePlane({pos[0], pos[1], pos[2]}, {0.1F, 0.1F});
 			mesh->setName(fmt::format("Light-{}", light->getType()));
 			mesh->setCulling(BGFX_STATE_CULL_CW);
 			// mesh->setColor(light->getDiffuseColor());

@@ -3,6 +3,7 @@
 #include <rawrbox/render/camera/perspective.hpp>
 #include <rawrbox/render/engine.hpp>
 #include <rawrbox/render/model/model.hpp>
+#include <rawrbox/render/model/sprite.hpp>
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/texture/gif.hpp>
 #include <rawrbox/render/texture/image.hpp>
@@ -19,7 +20,8 @@ namespace model {
 		std::shared_ptr<rawrBox::TextureImage> _texture = nullptr;
 		std::shared_ptr<rawrBox::TextureGIF> _texture2 = nullptr;
 
-		std::shared_ptr<rawrBox::Model> _model = nullptr;
+		std::shared_ptr<rawrBox::Model<>> _model = std::make_shared<rawrBox::Model<>>();
+		std::shared_ptr<rawrBox::Sprite<>> _sprite = std::make_shared<rawrBox::Sprite<>>();
 
 		bool _rightClick = false;
 		rawrBox::Vector2i _oldMousePos = {};

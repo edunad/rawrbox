@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <complex>
 #include <vector>
 
@@ -66,7 +67,7 @@ namespace rawrBox {
 		}
 
 		static ColorType debug(int index) {
-			std::array<ColorType, 10> cols{
+			std::array cols{
 			    ColorType(255, 82, 82, 255),   // rgb(255, 82, 82)
 			    ColorType(51, 217, 178, 255),  // rgb(51, 217, 178)
 			    ColorType(52, 172, 224, 255),  // rgb(52, 172, 224)
@@ -81,7 +82,7 @@ namespace rawrBox {
 			    ColorType(255, 255, 255, 255) // rgb(255, 255, 255)
 			};
 
-			auto col = cols[index % (sizeof(cols) / sizeof(ColorType))];
+			auto col = cols[index % cols.size()];
 			if constexpr (std::is_same<NumberType, int>::value) {
 				return col;
 			} else {

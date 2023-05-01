@@ -6,9 +6,7 @@
 #include <stdexcept>
 
 namespace rawrBox {
-	// NOLINTBEGIN{cppcoreguidelines-avoid-non-const-global-variables}
 	uint32_t TextEngine::atlasID = 0;
-	// NOLINTEND{cppcoreguidelines-avoid-non-const-global-variables}
 
 	TextEngine::~TextEngine() { destroy(); }
 	TextEngine::TextEngine() { initialize(); }

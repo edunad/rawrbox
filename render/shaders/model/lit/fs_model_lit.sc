@@ -1,7 +1,7 @@
 $input v_color0, v_texcoord0, v_wPos, v_normal, v_tangent, v_bitangent
 
 #include <bgfx_shader.sh>
-#include <../include/model_light.sh>
+#include <../../include/model_light.sh>
 
 SAMPLER2D(s_texColor, 0);
 SAMPLER2D(s_texSpecularColor, 1);
@@ -36,7 +36,7 @@ void main() {
 			}
 		}
 
-		gl_FragColor = vec4(ambient, 1.0);
+		gl_FragColor = vec4(ambient, texColor.a);
 	} else {
 		gl_FragColor = texColor; // Full bright
 	}

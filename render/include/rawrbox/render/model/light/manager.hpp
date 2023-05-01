@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/render/model/light/base.hpp>
+#include <rawrbox/render/model/material/sprite_unlit.hpp>
 #include <rawrbox/render/model/sprite.hpp>
 #include <rawrbox/render/texture/image.hpp>
 
@@ -16,7 +17,7 @@ namespace rawrBox {
 		std::shared_ptr<rawrBox::TextureImage> _spotTexture;
 		std::shared_ptr<rawrBox::TextureImage> _dirTexture;
 
-		std::shared_ptr<rawrBox::Sprite> _debugMdl;
+		std::shared_ptr<rawrBox::Sprite<>> _debugMdl = std::make_shared<rawrBox::Sprite<>>();
 
 	public:
 		bool fullbright = false;

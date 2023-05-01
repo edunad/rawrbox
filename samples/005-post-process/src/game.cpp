@@ -1,6 +1,5 @@
 
 #include <rawrbox/render/model/light/manager.hpp>
-#include <rawrbox/render/model/material/unlit.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/render/postprocess/bloom.hpp>
 #include <rawrbox/render/postprocess/dither_psx.hpp>
@@ -69,7 +68,7 @@ namespace post_process {
 		// Setup camera
 		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
 		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
 		// --------------
 
 		// Load content ---
@@ -82,9 +81,6 @@ namespace post_process {
 		this->_postProcess->upload();
 
 		// Assimp test ---
-		auto mat = std::make_shared<rawrBox::MaterialUnlit>();
-
-		this->_model = std::make_shared<rawrBox::ModelImported>(mat);
 		this->_model->load("./content/models/ps1_road/scene.gltf", rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
 		this->_model->setScale({0.01F, 0.01F, 0.01F});
 		this->_model->upload();

@@ -1,6 +1,5 @@
 
 #include <rawrbox/render/model/light/manager.hpp>
-#include <rawrbox/render/model/material/lit.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -65,7 +64,7 @@ namespace light {
 		// Setup camera
 		this->_camera = std::make_shared<rawrBox::CameraPerspective>(static_cast<float>(width) / static_cast<float>(height), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
 		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
 		// --------------
 
 		// Load content ---
@@ -77,7 +76,6 @@ namespace light {
 		this->_render->upload();
 
 		// Assimp test ---
-		this->_model = std::make_shared<rawrBox::ModelImported>(std::make_shared<rawrBox::MaterialLit>());
 		this->_model->load("./content/models/light_test/test.fbx", rawrBox::ModelLoadFlags::IMPORT_LIGHT | rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
 		this->_model->upload();
 		// -----

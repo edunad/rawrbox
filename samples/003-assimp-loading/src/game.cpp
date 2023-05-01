@@ -1,8 +1,5 @@
 
 #include <rawrbox/render/model/light/manager.hpp>
-#include <rawrbox/render/model/material/lit.hpp>
-#include <rawrbox/render/model/material/unlit.hpp>
-#include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/utils/keys.hpp>
 
 #include <assimp/game.hpp>
@@ -66,7 +63,7 @@ namespace assimp {
 		// Setup camera
 		this->_camera = std::make_shared<rawrBox::CameraPerspective>(static_cast<float>(width) / static_cast<float>(height), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
 		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
 		// --------------
 
 		// Load content ---
@@ -78,30 +75,25 @@ namespace assimp {
 		this->_render->upload();
 
 		// Assimp test ---
-		auto unlitMat = std::make_shared<rawrBox::MaterialUnlit>();
+		this->_model3->setPos({-10, 0, 0});
+		this->_model3->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_LIGHT);
+		this->_model3->upload();
 
-		this->_model = std::make_shared<rawrBox::ModelImported>(unlitMat);
 		this->_model->setPos({10, 0, 0});
 		this->_model->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx");
 		this->_model->upload();
 
-		this->_model2 = std::make_shared<rawrBox::ModelImported>(unlitMat);
 		this->_model2->setPos({0, 0, 0});
 		this->_model2->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
 		this->_model2->upload();
-
-		auto litMat = std::make_shared<rawrBox::MaterialLit>();
-		this->_model3 = std::make_shared<rawrBox::ModelImported>(litMat);
-		this->_model3->setPos({-10, 0, 0});
-		this->_model3->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_LIGHT);
-		this->_model3->upload();
 		// -----
 
-		rawrBox::LightManager::getInstance().uploadDebug();
+		// rawrBox::LightManager::getInstance().uploadDebug();
 	}
 
 	void Game::shutdown() {
 		this->_render = nullptr;
+
 		this->_model = nullptr;
 		this->_model2 = nullptr;
 		this->_model3 = nullptr;
@@ -170,7 +162,7 @@ namespace assimp {
 
 		this->drawWorld();
 
-		rawrBox::LightManager::getInstance().drawDebug(this->_camera->getPos());
+		// rawrBox::LightManager::getInstance().drawDebug(this->_camera->getPos());
 		this->_render->render(); // Commit primitives
 	}
 } // namespace assimp

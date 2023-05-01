@@ -16,7 +16,7 @@ namespace post_process {
 		std::shared_ptr<rawrBox::CameraPerspective> _camera = nullptr;
 		std::shared_ptr<rawrBox::PostProcessManager> _postProcess = nullptr;
 
-		std::shared_ptr<rawrBox::ModelImported> _model = nullptr;
+		std::shared_ptr<rawrBox::ModelImported<>> _model = std::make_shared<rawrBox::ModelImported<>>();
 
 		bool _rightClick = false;
 		rawrBox::Vector2i _oldMousePos = {};

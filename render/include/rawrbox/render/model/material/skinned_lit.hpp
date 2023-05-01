@@ -1,7 +1,5 @@
 #pragma once
 
-#include <rawrbox/render/model/light/manager.hpp>
-#include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/model/material/lit.hpp>
 #include <rawrbox/render/shader_defines.hpp>
 
@@ -20,16 +18,30 @@ static const bgfx::EmbeddedShader model_skinned_lit_shaders[] = {
 namespace rawrBox {
 
 	class MaterialSkinnedLit : public rawrBox::MaterialLit {
-
 	public:
-		using MaterialLit::MaterialLit;
+		bgfx::UniformHandle u_bones = BGFX_INVALID_HANDLE;
 
-		void process(std::shared_ptr<rawrBox::Mesh> mesh) override {
-			rawrBox::MaterialLit::process(mesh);
+		using vertexBufferType = rawrBox::VertexSkinnedLitData;
+
+		MaterialSkinnedLit() = default;
+		MaterialSkinnedLit(MaterialSkinnedLit&&) = delete;
+		MaterialSkinnedLit& operator=(MaterialSkinnedLit&&) = delete;
+		MaterialSkinnedLit(const MaterialSkinnedLit&) = delete;
+		MaterialSkinnedLit& operator=(const MaterialSkinnedLit&) = delete;
+		~MaterialSkinnedLit() {
+			RAWRBOX_DESTROY(u_bones);
 		}
 
-		void upload() override {
-			this->buildShader(model_skinned_lit_shaders, "model_skinned_lit");
+		void registerUniforms() {
+			MaterialLit::registerUniforms();
+
+			// BONES ----
+			u_bones = bgfx::createUniform("u_bones", bgfx::UniformType::Mat4, rawrBox::MAX_BONES_PER_MODEL);
+			// ---
+		}
+
+		void upload() {
+			buildShader(model_skinned_lit_shaders, "model_skinned_lit");
 		}
 	};
 } // namespace rawrBox
