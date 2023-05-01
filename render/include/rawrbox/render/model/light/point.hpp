@@ -20,7 +20,7 @@ namespace rawrBox {
 			    this->_diffuse.r, this->_specular.r, 0, static_cast<float>(this->getType()),
 			    this->_diffuse.g, this->_specular.g, 0, 0,
 			    this->_diffuse.b, this->_specular.b, 0, 0,
-			    this->_constant, this->_linear, this->_quadratic, this->_isOn ? 1.f : 0};
+			    this->_constant, this->_linear, this->_quadratic, this->_isOn ? 1.F : 0};
 		}
 	};
 } // namespace rawrBox

@@ -1,3 +1,5 @@
+
+// NOLINTBEGIN(*)
 /**
     @file CRC.h
     @author Daniel Bahr
@@ -1985,3 +1987,5 @@ namespace CRCPP {
 #endif
 
 #endif // CRCPP_CRC_H_
+
+// NOLINTEND(*)

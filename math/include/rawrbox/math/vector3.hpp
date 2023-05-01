@@ -12,7 +12,7 @@ namespace rawrBox {
 		NumberType x = 0, y = 0, z = 0;
 
 		Vector3_t() = default;
-		Vector3_t(NumberType val) : x(val), y(val), z(val) {}
+		explicit Vector3_t(NumberType val) : x(val), y(val), z(val) {}
 		explicit Vector3_t(Vector2_t<NumberType> xy, NumberType _z = 0) : x(xy.x), y(xy.y), z(_z) {}
 		Vector3_t(NumberType _x, NumberType _y, NumberType _z = 0) : x(_x), y(_y), z(_z) {}
 
@@ -27,10 +27,11 @@ namespace rawrBox {
 			NumberType ap_ab = ap.x * ab.x + ap.y * ab.y;
 
 			NumberType t = ap_ab / ab2;
-			if (t < 0.0f)
-				t = 0.0f;
-			else if (t > 1.0f)
-				t = 1.0f;
+			if (t < 0.0F) {
+				t = 0.0F;
+			} else if (t > 1.0F) {
+				t = 1.0F;
+			}
 
 			VecType closest_point = point_a + ab * t;
 			return closest_point.distance(*this);
@@ -102,8 +103,8 @@ namespace rawrBox {
 		// FROM: https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Math/Vector3.cs#L324
 		[[nodiscard]] NumberType angle(const VecType& other) const {
 			float denominator = length() * other.length();
-			if (denominator < 1e-15f)
-				return 0.f;
+			if (denominator < 1e-15F)
+				return 0.F;
 
 			float val = dot(other) / denominator;
 			return std::acos(val);

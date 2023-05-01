@@ -1,12 +1,11 @@
 
-#include <rawrbox/render/model/material/lit.hpp>
-#include <rawrbox/render/model/material/unlit.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/utils/keys.hpp>
 
+#include <model/game.hpp>
+
 #include <bx/bx.h>
 #include <bx/math.h>
-#include <model/game.h>
 
 #include <vector>
 
@@ -39,7 +38,7 @@ namespace model {
 		this->_window->onMouseMove += [this](auto& w, const rawrBox::Vector2i& mousePos) {
 			if (this->_camera == nullptr || !this->_rightClick) return;
 
-			float m_mouseSpeed = 0.0015f;
+			float m_mouseSpeed = 0.0015F;
 
 			auto deltaX = mousePos.x - this->_oldMousePos.x;
 			auto deltaY = mousePos.y - this->_oldMousePos.y;
@@ -58,9 +57,9 @@ namespace model {
 		this->_render->setClearColor(0x000000FF);
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrBox::CameraPerspective>(static_cast<float>(width) / static_cast<float>(height), 60.0f, 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
-		this->_camera->setPos({0.f, 5.f, -5.f});
-		this->_camera->setAngle({0.f, bx::toRad(-45), 0.f});
+		this->_camera = std::make_shared<rawrBox::CameraPerspective>(static_cast<float>(width) / static_cast<float>(height), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
+		this->_camera->setPos({0.F, 5.F, -5.F});
+		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
 		// --------------
 
 		// Load content ---
@@ -78,34 +77,44 @@ namespace model {
 		this->_texture2 = std::make_shared<rawrBox::TextureGIF>("./content/textures/meow3.gif");
 		this->_texture2->upload();
 
-		auto mat = std::make_shared<rawrBox::MaterialUnlit>();
-		this->_model = std::make_shared<rawrBox::Model>(mat);
 		// ----
-
 		{
-			auto mesh = rawrBox::ModelBase::generatePlane({5, 0, 0}, 0.5f);
+			auto mesh = this->_model->generatePlane({5, 0, 0}, {0.5F, 0.5F});
 			mesh->setTexture(this->_texture);
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrBox::ModelBase::generateCube({-5, 0, 0}, 0.5f, rawrBox::Colors::White);
+			auto mesh = this->_model->generateCube({-5, 0, 0}, {0.5F, 0.5F}, rawrBox::Colors::White);
 			mesh->setTexture(this->_texture2);
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrBox::ModelBase::generateGrid(12, {0.f, -2.0f, 0.f});
+			auto mesh = this->_model->generateAxis(1, {0.F, 0.F, 0.F});
 			this->_model->addMesh(mesh);
 		}
 
+		{
+			auto mesh = this->_model->generateGrid(12, {0.F, 0.F, 0.F});
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = this->_sprite->generatePlane({0, 2, 0}, {0.2F, 0.2F});
+			mesh->setTexture(this->_texture);
+			this->_sprite->addMesh(mesh);
+		}
+
 		this->_model->upload();
+		this->_sprite->upload();
 		// -----
 	}
 
 	void Game::shutdown() {
 		this->_render = nullptr;
 		this->_model = nullptr;
+		this->_sprite = nullptr;
 
 		rawrBox::Engine::shutdown();
 	}
@@ -118,7 +127,7 @@ namespace model {
 	void Game::update(float deltaTime, int64_t gameTime) {
 		if (this->_render == nullptr || this->_camera == nullptr) return;
 
-		float m_moveSpeed = 10.f;
+		float m_moveSpeed = 10.F;
 
 		auto dir = this->_camera->getForward();
 		auto eye = this->_camera->getPos();
@@ -128,7 +137,7 @@ namespace model {
 		auto m_eye = bx::Vec3(eye.x, eye.y, eye.z);
 
 		if (this->_window->isKeyDown(KEY_LEFT_SHIFT)) {
-			m_moveSpeed = 60.f;
+			m_moveSpeed = 60.F;
 		}
 
 		if (this->_window->isKeyDown(KEY_W)) {
@@ -159,6 +168,7 @@ namespace model {
 		if (this->_model == nullptr) return;
 
 		this->_model->draw(this->_camera->getPos());
+		this->_sprite->draw(this->_camera->getPos());
 	}
 
 	void Game::draw(const double alpha) {

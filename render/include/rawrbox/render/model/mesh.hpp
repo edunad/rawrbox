@@ -1,60 +1,55 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/math/vector2.hpp>
-#include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/texture/base.h>
+#include <rawrbox/render/static.hpp>
+#include <rawrbox/render/texture/base.hpp>
 
 #include <bgfx/bgfx.h>
-#include <bx/math.h>
+#include <fmt/printf.h>
 
 #include <array>
+#include <cstdint>
+#include <map>
 #include <memory>
 
 namespace rawrBox {
 
-	struct MeshVertexData {
-		float x = 0;
-		float y = 0;
-		float z = 0;
+	struct VertexData;
+	struct Skeleton;
 
-		uint32_t normal = 0;
-		uint32_t tangent = 0;
-
-		float u = 0;
-		float v = 0;
-
-		uint32_t abgr = 0xFFFFFFFF;
-
-		MeshVertexData() = default;
-		MeshVertexData(const rawrBox::Vector3f& _pos, uint32_t _normal, uint32_t _tangent, float _u, float _v, const rawrBox::Color cl = rawrBox::Colors::White) : x(_pos.x), y(_pos.y), z(_pos.z), normal(_normal), tangent(_tangent), u(_u), v(_v), abgr(rawrBox::Color::pack(cl)) {}
-		MeshVertexData(float _x, float _y, float _z, uint32_t _normal, uint32_t _tangent, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), normal(_normal), tangent(_tangent), u(_u), v(_v), abgr(_abgr) {}
-	};
-
+	template <typename T = VertexData>
 	class Mesh {
 	public:
 		std::string name = "mesh";
 
+		// OFFSETS ---
 		uint16_t baseVertex = 0;
 		uint16_t baseIndex = 0;
 		uint16_t totalVertex = 0;
 		uint16_t totalIndex = 0;
 
-		std::shared_ptr<rawrBox::TextureBase> texture = nullptr;
-
-		std::shared_ptr<rawrBox::TextureBase> specularTexture = nullptr;
-		float specularShininess = 1.0f;
-
-		std::vector<rawrBox::MeshVertexData> vertices = {};
+		std::vector<T> vertices = {};
 		std::vector<uint16_t> indices = {};
+		// -------
 
+		// TEXTURES ---
+		std::shared_ptr<rawrBox::TextureBase> texture = nullptr;
+		std::shared_ptr<rawrBox::TextureBase> specularTexture = nullptr;
+		float specularShininess = 1.0F;
+		// -------
+
+		// RENDERING ---
 		std::array<float, 16> offsetMatrix = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}; // Identity matrix by default
 		std::array<float, 16> vertexPos = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};    // Identity matrix by default
 		rawrBox::Colorf color = rawrBox::Colors::White;
 
 		bool wireframe = false;
-		uint64_t culling = BGFX_STATE_CULL_CCW;
+		uint64_t culling = BGFX_STATE_CULL_CW;
 		uint64_t blending = BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
+		// --------------
+
+		std::shared_ptr<Mesh<T>> parent = nullptr;
+		std::shared_ptr<Skeleton> skeleton = nullptr;
 
 		Mesh() = default;
 		Mesh(Mesh&&) = delete;
@@ -79,7 +74,7 @@ namespace rawrBox {
 			this->name = name;
 		}
 
-		std::vector<rawrBox::MeshVertexData>& getVertices() {
+		std::vector<T>& getVertices() {
 			return this->vertices;
 		}
 
@@ -116,7 +111,7 @@ namespace rawrBox {
 			this->color = color;
 		}
 
-		bool canMerge(std::shared_ptr<rawrBox::Mesh> other) {
+		bool canMerge(std::shared_ptr<rawrBox::Mesh<T>> other) {
 			return this->texture == other->texture &&
 			       this->color == other->color &&
 			       this->wireframe == other->wireframe &&

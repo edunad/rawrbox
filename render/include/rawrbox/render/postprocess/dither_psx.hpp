@@ -1,14 +1,15 @@
 #pragma once
 #include <rawrbox/render/postprocess/base.hpp>
-#include <rawrbox/render/shader_defines.h>
-#include <rawrbox/render/static.h>
-#include <rawrbox/render/texture/image.h>
+#include <rawrbox/render/shader_defines.hpp>
+#include <rawrbox/render/static.hpp>
+#include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/render/util/uniforms.hpp>
 
 // Compiled shaders
+#include <generated/shaders/render/all.hpp>
+
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
-#include <generated/shaders/render/all.h>
 
 #include <memory>
 #include <unordered_map>
@@ -45,11 +46,11 @@ namespace rawrBox {
 		DITHER_SIZE _size = DITHER_SIZE::SLOW_MODE;
 
 		// Settings ----
-		float _dithering = 0.5f;
-		float _intensity = 10.0f;
-		float _depth = 5.0f;
-		float _colorDepth = 5.0f;
-		float _threshold = 1.0f;
+		float _dithering = 0.5F;
+		float _intensity = 10.0F;
+		float _depth = 5.0F;
+		float _colorDepth = 5.0F;
+		float _threshold = 1.0F;
 		// ---
 
 	public:
@@ -72,7 +73,7 @@ namespace rawrBox {
 		PostProcessPSXDither(const PostProcessPSXDither&) = delete;
 		PostProcessPSXDither& operator=(const PostProcessPSXDither&) = delete;
 
-		PostProcessPSXDither(DITHER_SIZE dither = DITHER_SIZE::SLOW_MODE) : _size(dither) {
+		explicit PostProcessPSXDither(DITHER_SIZE dither = DITHER_SIZE::SLOW_MODE) : _size(dither) {
 			if (dither != DITHER_SIZE::SLOW_MODE) {
 				this->_textures[DITHER_SIZE::_2x2] = std::make_shared<rawrBox::TextureImage>("./content/textures/dither/2x2.png");
 				this->_textures[DITHER_SIZE::_3x3] = std::make_shared<rawrBox::TextureImage>("./content/textures/dither/3x3.png");
@@ -83,7 +84,7 @@ namespace rawrBox {
 
 		virtual void setIntensity(float in) {
 			this->_intensity = in;
-			if (bgfx::isValid(this->_dithering_intensity)) rawrBox::UniformUtils::setUniform(this->_dithering_intensity, this->_intensity * 0.01f);
+			if (bgfx::isValid(this->_dithering_intensity)) rawrBox::UniformUtils::setUniform(this->_dithering_intensity, this->_intensity * 0.01F);
 		}
 
 		virtual void setDepth(float dep) {
@@ -130,7 +131,7 @@ namespace rawrBox {
 
 			rawrBox::UniformUtils::setUniform(this->_dither_size, static_cast<float>(_size));
 
-			rawrBox::UniformUtils::setUniform(this->_dithering_intensity, this->_intensity * 0.01f);
+			rawrBox::UniformUtils::setUniform(this->_dithering_intensity, this->_intensity * 0.01F);
 			rawrBox::UniformUtils::setUniform(this->_dithering_depth, this->_depth);
 			rawrBox::UniformUtils::setUniform(this->_dither_color_depth, std::pow(this->_colorDepth, 2));
 			rawrBox::UniformUtils::setUniform(this->_dither_threshold, this->_threshold);

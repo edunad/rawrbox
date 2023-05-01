@@ -1,4 +1,4 @@
-#include <rawrbox/render/window.h>
+#include <rawrbox/render/window.hpp>
 
 #include <bgfx/bgfx.h>
 #include <bx/bx.h>
@@ -33,7 +33,7 @@
 #include <map>
 #include <stdexcept>
 
-#define GLFWHANDLE (reinterpret_cast<GLFWwindow*>(_handle))
+#define GLFWHANDLE (std::bit_cast<GLFWwindow*>(_handle))
 
 namespace rawrBox {
 	static Window& glfwHandleToRenderer(GLFWwindow* ptr) {
@@ -116,15 +116,12 @@ namespace rawrBox {
 		if (borderless && (windowed || fullscreen)) throw std::runtime_error("[RawrBox-Window] Only one window flag attribute can be selected");
 		if (fullscreen && (windowed || borderless)) throw std::runtime_error("[RawrBox-Window] Only one window aflag ttribute can be selected");
 
-		if (fullscreen) {
+		if (fullscreen || (width >= mode->width || height >= mode->height)) {
 			width = mode->width;
 			height = mode->height;
 		} else if (borderless) {
 			width = mode->width - 1;
 			height = mode->height - 1;
-		} else if ((width >= mode->width || height >= mode->height)) {
-			width = mode->width;
-			height = mode->height;
 		}
 
 		glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
@@ -166,18 +163,24 @@ namespace rawrBox {
 		HANDLE hIcon = LoadIconW(GetModuleHandleW(nullptr), L"GLFW_ICON");
 		if (!hIcon) {
 			// No user-provided icon found, load default icon
+			// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
 			hIcon = LoadIcon(nullptr, IDI_WINLOGO);
+			// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
 		}
 
 		HWND hwnd = glfwGetWin32Window(glfwHandle);
-		::SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
-		::SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
+		::SendMessage(hwnd, WM_SETICON, ICON_SMALL, std::bit_cast<LPARAM>(hIcon));
+		::SendMessage(hwnd, WM_SETICON, ICON_BIG, std::bit_cast<LPARAM>(hIcon));
 #endif
 		// ---------------
 
 		if ((flags & WindowFlags::Features::MULTI_THREADED) == 0) bgfx::renderFrame(); // Disable multi-threading
 
 		bgfx::Init init;
+		if (this->_renderType == bgfx::RendererType::Vulkan && (flags & WindowFlags::Features::MULTI_THREADED) == 0) {
+			fmt::print("[RawrBox-Window] WARNING: VULKAN SHOULD HAVE THE 'WindowFlags::Features::MULTI_THREADED' SET FOR BETTER PERFORMANCE!\n");
+		}
+
 		init.type = this->_renderType;
 		init.resolution.width = static_cast<uint32_t>(width);
 		init.resolution.height = static_cast<uint32_t>(height);
@@ -243,11 +246,13 @@ namespace rawrBox {
 	bool Window::isRendererSupported(bgfx::RendererType::Enum render) {
 		if (render == bgfx::RendererType::Count) return true;
 
+		// NOLINTBEGIN(hicpp-avoid-c-arrays)
 		bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
 		uint8_t num = bgfx::getSupportedRenderers(BX_COUNTOF(supportedRenderers), supportedRenderers);
 		for (uint8_t i = 0; i < num; ++i) {
 			if (supportedRenderers[i] == render) return true;
 		}
+		// NOLINTEND(hicpp-avoid-c-arrays)
 
 		return false;
 	}

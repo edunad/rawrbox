@@ -1,7 +1,9 @@
-#include <rawrbox/render/text/engine.h>
+#include <rawrbox/render/text/engine.hpp>
 
-#include <stdexcept>
 #include <fmt/format.h>
+
+#include <array>
+#include <stdexcept>
 
 namespace rawrBox {
 	uint32_t TextEngine::atlasID = 0;
@@ -15,10 +17,10 @@ namespace rawrBox {
 
 		// FT_LCD_FILTER_LIGHT   is (0x00, 0x55, 0x56, 0x55, 0x00)
 		// FT_LCD_FILTER_DEFAULT is (0x10, 0x40, 0x70, 0x40, 0x10)
-		unsigned char lcd_weights[5] = {0x10, 0x40, 0x70, 0x40, 0x10};
+		std::array<unsigned char, 5> lcd_weights = {0x10, 0x40, 0x70, 0x40, 0x10};
 
 		FT_Library_SetLcdFilter(ft, FT_LCD_FILTER_DEFAULT);
-		FT_Library_SetLcdFilterWeights(ft, lcd_weights);
+		FT_Library_SetLcdFilterWeights(ft, lcd_weights.data());
 	}
 
 	void TextEngine::destroy() {

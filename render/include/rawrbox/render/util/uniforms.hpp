@@ -5,9 +5,9 @@
 #include <rawrbox/math/vector3.hpp>
 
 #include <bgfx/bgfx.h>
-#include <stdint.h>
 
 #include <array>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -15,18 +15,18 @@ namespace rawrBox {
 	class UniformUtils {
 	public:
 		static void setUniform(const bgfx::UniformHandle& handle, double data) {
-			float d[1] = {static_cast<float>(data)};
-			bgfx::setUniform(handle, d, 1);
+			std::array<float, 1> d = {static_cast<float>(data)};
+			bgfx::setUniform(handle, d.data(), 1);
 		}
 
 		static void setUniform(const bgfx::UniformHandle& handle, float data) {
-			float d[1] = {data};
-			bgfx::setUniform(handle, d, 1);
+			std::array<float, 1> d = {data};
+			bgfx::setUniform(handle, d.data(), 1);
 		}
 
 		static void setUniform(const bgfx::UniformHandle& handle, uint64_t data) {
-			float d[1] = {static_cast<float>(data)};
-			bgfx::setUniform(handle, d, 1);
+			std::array<float, 1> d = {static_cast<float>(data)};
+			bgfx::setUniform(handle, d.data(), 1);
 		}
 
 		static void setUniform(const bgfx::UniformHandle& handle, std::array<float, 16> data) {
@@ -50,23 +50,23 @@ namespace rawrBox {
 		}
 
 		static void setUniform(const bgfx::UniformHandle& handle, rawrBox::Vector2f data) {
-			float d[2] = {data.x, data.y};
-			bgfx::setUniform(handle, d, 2);
+			std::array<float, 2> d = {data.x, data.y};
+			bgfx::setUniform(handle, d.data(), 2);
 		}
 
 		static void setUniform(const bgfx::UniformHandle& handle, rawrBox::Vector3f data) {
-			float d[3] = {data.x, data.y, data.z};
-			bgfx::setUniform(handle, d, 3);
+			std::array<float, 3> d = {data.x, data.y, data.z};
+			bgfx::setUniform(handle, d.data(), 3);
 		}
 
 		static void setUniform(const bgfx::UniformHandle& handle, rawrBox::Quaternion data) {
-			float d[4] = {data.x, data.y, data.z, data.w};
-			bgfx::setUniform(handle, d);
+			std::array<float, 4> d = {data.x, data.y, data.z, data.w};
+			bgfx::setUniform(handle, d.data());
 		}
 
 		static void setUniform(const bgfx::UniformHandle& handle, rawrBox::Colorf data) {
-			float d[4] = {data.r, data.g, data.b, data.a};
-			bgfx::setUniform(handle, d);
+			std::array<float, 4> d = {data.r, data.g, data.b, data.a};
+			bgfx::setUniform(handle, d.data());
 		}
 	};
 } // namespace rawrBox

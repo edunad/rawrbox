@@ -1,19 +1,18 @@
 #pragma once
 #include <rawrbox/render/postprocess/base.hpp>
-#include <rawrbox/render/shader_defines.h>
-#include <rawrbox/render/static.h>
+#include <rawrbox/render/shader_defines.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/util/uniforms.hpp>
-#include <rawrbox/utils/time.h>
+#include <rawrbox/utils/time.hpp>
+
+#include <generated/shaders/render/all.hpp>
 
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
-#include <generated/shaders/render/all.h>
+#include <bx/timer.h>
 
 #include <algorithm>
 #include <memory>
-
-#include "bx/timer.h"
-#include "rawrbox/math/vector2.hpp"
 
 // NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader noise_shaders[] = {
@@ -28,11 +27,11 @@ namespace rawrBox {
 		bgfx::UniformHandle _settings = BGFX_INVALID_HANDLE;
 
 		int64_t m_timeOffset = 0;
-		float _strength = 0.1f;
+		float _strength = 0.1F;
 
 	protected:
 	public:
-		PostProcessStaticNoise(float s) : _strength(std::clamp(s, 0.f, 1.f)){};
+		explicit PostProcessStaticNoise(float s) : _strength(std::clamp(s, 0.F, 1.F)){};
 		PostProcessStaticNoise(PostProcessStaticNoise&&) = delete;
 		PostProcessStaticNoise& operator=(PostProcessStaticNoise&&) = delete;
 		PostProcessStaticNoise(const PostProcessStaticNoise&) = delete;
@@ -44,7 +43,7 @@ namespace rawrBox {
 		}
 
 		void setStrength(float s) {
-			this->_strength = std::clamp(s, 0.f, 1.f);
+			this->_strength = std::clamp(s, 0.F, 1.F);
 		}
 
 		void upload() override {

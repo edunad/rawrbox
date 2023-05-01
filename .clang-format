@@ -17,12 +17,14 @@ AccessModifierOffset: -8
 IncludeCategories:
     - Regex: '^<rawrbox/.*>'
       Priority: 1
-    - Regex: '^<.*\.h>'
+    - Regex: '^<.*\.hpp>'
       Priority: 2
-    - Regex: '^<.*'
+    - Regex: '^<.*\.h>'
       Priority: 3
-    - Regex: '.*'
+    - Regex: '^<.*'
       Priority: 4
+    - Regex: '.*'
+      Priority: 5
 
 IncludeBlocks: Regroup
 DerivePointerAlignment: true

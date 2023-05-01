@@ -63,14 +63,14 @@ function(add_shaders_directory SHADERS_DIR TARGET_OUT_VAR)
         string(APPEND INCLUDE_ALL_HEADER "#include <generated/shaders/${NAMESPACE}/${OUTPUT_FILENAME}>\n")
     endforeach()
 
-    file(WRITE "${SHADERS_OUT_DIR}/all.h" "${INCLUDE_ALL_HEADER}")
-    list(APPEND OUTPUT_FILES "${SHADERS_OUT_DIR}/all.h")
+    file(WRITE "${SHADERS_OUT_DIR}/all.hpp" "${INCLUDE_ALL_HEADER}")
+    list(APPEND OUTPUT_FILES "${SHADERS_OUT_DIR}/all.hpp")
 
     string(MD5 DIR_HASH "${SHADERS_DIR}")
     set(TARGET_NAME "Shaders_${DIR_HASH}")
 
     add_custom_target("${DIR_HASH}" ALL DEPENDS ${OUTPUT_FILES})
-    list(APPEND OUTPUT_FILES "${SHADERS_OUT_DIR}/all.h")
+    list(APPEND OUTPUT_FILES "${SHADERS_OUT_DIR}/all.hpp")
 
     add_library("${TARGET_NAME}" INTERFACE)
     add_dependencies("${TARGET_NAME}" shaderc "${DIR_HASH}")

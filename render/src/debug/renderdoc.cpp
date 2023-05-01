@@ -13,7 +13,7 @@
 #include <psapi.h>
 #include <windows.h>
 #endif // BX_PLATFORM_WINDOWS
-#include <renderdoc/renderdoc_app.h>
+#include <renderdoc/renderdoc_app.hpp>
 
 namespace bgfx {
 	void* findModule(const char* _name) {

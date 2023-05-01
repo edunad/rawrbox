@@ -8,9 +8,8 @@ namespace rawrBox {
 		using Func = std::function<void(CallbackArgs...)>;
 
 		Event() = default;
-		~Event() = default;
-		Event(Func callback) { (*this) += callback; }
-		Event(Func& callback) { (*this) += callback; }
+		explicit Event(Func callback) { (*this) += callback; }
+		explicit Event(Func& callback) { (*this) += callback; }
 
 		Event& operator+=(Func callback) {
 			calls.push_back(callback);

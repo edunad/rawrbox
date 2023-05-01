@@ -1,15 +1,15 @@
-#include <rawrbox/render/static.h>
-#include <rawrbox/render/texture/render.h>
+#include <rawrbox/render/static.hpp>
+#include <rawrbox/render/texture/render.hpp>
 
 #include <fmt/format.h>
 
 // Compiled shaders
-#include <generated/shaders/render/all.h>
+#include <generated/shaders/render/all.hpp>
+
+#include <array>
 
 namespace rawrBox {
-	// NOLINTBEGIN{cppcoreguidelines-avoid-non-const-global-variables}
 	uint32_t TextureRender::renderID = 10; // 5 > reserved to render textures
-	// NOLINTEND{cppcoreguidelines-avoid-non-const-global-variables}
 
 	TextureRender::TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size) : _size(size), _viewId(viewId), _renderId(TextureRender::renderID++) {
 		// Setup texture target view
@@ -32,7 +32,7 @@ namespace rawrBox {
 
 		bgfx::setViewFrameBuffer(this->_renderId, this->_renderView);
 		bgfx::setViewRect(this->_renderId, 0, 0, this->_size.x, this->_size.y);
-		bgfx::setViewClear(this->_renderId, clear ? BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL : BGFX_CLEAR_NONE, 0x00000000, 1.f, 0);
+		bgfx::setViewClear(this->_renderId, clear ? BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL : BGFX_CLEAR_NONE, 0x00000000, 1.F, 0);
 		bgfx::touch(this->_renderId);
 	}
 
@@ -50,8 +50,8 @@ namespace rawrBox {
 		this->_depthHandle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 1, bgfx::TextureFormat::D24S8, BGFX_TEXTURE_RT | BGFX_TEXTURE_RT_WRITE_ONLY);
 		bgfx::setName(this->_depthHandle, fmt::format("RAWR-RENDER-TARGET-DEPTH-{}", this->_depthHandle.idx).c_str());
 
-		bgfx::TextureHandle texHandles[] = {this->_handle, this->_depthHandle};
-		this->_renderView = bgfx::createFrameBuffer(2, texHandles);
+		std::array<bgfx::TextureHandle, 2> texHandles = {this->_handle, this->_depthHandle};
+		this->_renderView = bgfx::createFrameBuffer(2, texHandles.data());
 	}
 
 	const bgfx::ViewId TextureRender::id() { return this->_renderId; }

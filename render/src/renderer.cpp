@@ -1,5 +1,5 @@
-#include <rawrbox/render/renderer.h>
-#include <rawrbox/render/static.h>
+#include <rawrbox/render/renderer.hpp>
+#include <rawrbox/render/static.hpp>
 
 #include <fmt/format.h>
 
@@ -11,6 +11,7 @@ namespace rawrBox {
 
 		rawrBox::MISSING_TEXTURE = nullptr;
 		rawrBox::MISSING_SPECULAR_TEXTURE = nullptr;
+		rawrBox::WHITE_TEXTURE = nullptr;
 	}
 
 	Renderer::Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size) : _id(id), _size(size) {
@@ -20,15 +21,17 @@ namespace rawrBox {
 		bgfx::setViewMode(this->_id, bgfx::ViewMode::Sequential);
 		bgfx::setViewName(this->_id, fmt::format("RawrBox-RENDERER-{}", this->_id).c_str());
 
-		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0f, 0);
+		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 
 		rawrBox::MISSING_TEXTURE = std::make_shared<rawrBox::TextureMissing>();
-		rawrBox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrBox::TextureFlat>(1, rawrBox::Colors::Black);
+		rawrBox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrBox::TextureFlat>(rawrBox::Vector2i(2, 2), rawrBox::Colors::Black);
+		rawrBox::WHITE_TEXTURE = std::make_shared<rawrBox::TextureFlat>(rawrBox::Vector2i(2, 2), rawrBox::Colors::White);
 	}
 
 	void Renderer::upload() {
 		rawrBox::MISSING_TEXTURE->upload();
 		rawrBox::MISSING_SPECULAR_TEXTURE->upload();
+		rawrBox::WHITE_TEXTURE->upload();
 
 		if (this->_stencil == nullptr) throw std::runtime_error("[RawrBox-Renderer] Failed to upload, stencil is not initialized!");
 		this->_stencil->upload();
@@ -40,7 +43,7 @@ namespace rawrBox {
 
 	void Renderer::resizeView(const rawrBox::Vector2i& size) {
 		bgfx::setViewRect(this->_id, 0, 0, size.x, size.y);
-		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0f, 0);
+		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 
 		if (this->_stencil != nullptr) this->_stencil->resize(size);
 	}
@@ -48,7 +51,7 @@ namespace rawrBox {
 	// ------RENDERING
 	void Renderer::swapBuffer() const {
 		bgfx::touch(this->_id); // Make sure we draw on the view
-		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0f, 0);
+		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 	}
 
 	void Renderer::render() const {

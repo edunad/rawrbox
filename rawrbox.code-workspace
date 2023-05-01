@@ -18,11 +18,12 @@
                 "query": "is:open"
             }
         ],
+        "clangd.restartAfterCrash": true,
         "editor.bracketPairColorization.enabled": true,
-        "terminal.integrated.gpuAcceleration": "on",
-        "files.eol": "\n",
         "editor.formatOnSave": true,
         "editor.stickyScroll.enabled": true,
+        "terminal.integrated.gpuAcceleration": "auto",
+        "files.eol": "\n",
         "output.smartScroll.enabled": false,
         "[hlsl]": {
             "editor.defaultFormatter": null,
@@ -44,8 +45,6 @@
         "C_Cpp.codeAnalysis.clangTidy.enabled": true,
         "workbench.editor.pinnedTabSizing": "shrink",
         "workbench.editor.wrapTabs": true,
-        "editor.detectIndentation": false,
-        "editor.insertSpaces": false,
         "files.insertFinalNewline": true,
         "files.associations": {
 			"*.sc": "hlsl",
@@ -166,8 +165,9 @@
             "ms-vscode.cpptools",
             "twxs.cmake",
             "ms-vscode.cmake-tools",
-            "ibm.output-colorizer",
-            "shardulm94.trailing-spaces"
+            "shardulm94.trailing-spaces",
+            "xaver.clang-format",
+            "llvm-vs-code-extensions.vscode-clangd"
         ]
     }
 }

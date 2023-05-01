@@ -3,7 +3,7 @@
 #include <windows.h>
 #endif
 
-#include <light/game.h>
+#include <light/game.hpp>
 using namespace rawrBox;
 
 int main(int argc, char* argv[]) {

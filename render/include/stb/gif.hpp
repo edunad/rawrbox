@@ -14,9 +14,11 @@
 
 #include <stb/image.hpp>
 #include <stb/image_write.hpp>
+
 #include <stdexcept>
 #include <vector>
 
+// NOLINTBEGIN(*)
 const int defaultFrameDelayCentiseconds = 4;
 
 using gif_result = struct gif_result_t {
@@ -45,3 +47,4 @@ unsigned char *stbi_xload(char const *filename, int *x, int *y, int *frames, int
 
 	return ret;
 };
+// NOLINTEND(*)

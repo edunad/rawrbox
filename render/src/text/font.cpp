@@ -1,9 +1,10 @@
-#include <rawrbox/render/text/engine.h>
-#include <rawrbox/render/text/font.h>
+#include <rawrbox/render/text/engine.hpp>
+#include <rawrbox/render/text/font.hpp>
 
 #include <fmt/format.h>
 #include <utf8.h>
 
+#include <bit>
 #include <iostream>
 #include <utility>
 
@@ -117,16 +118,16 @@ namespace rawrBox {
 		    atlas.first,
 		    character,
 		    charIndx,
-		    {static_cast<float>(this->face->glyph->metrics.horiBearingX) / 64.f,
-			static_cast<float>(this->face->glyph->metrics.horiBearingY) / 64.f},
+		    {static_cast<float>(this->face->glyph->metrics.horiBearingX) / 64.F,
+			static_cast<float>(this->face->glyph->metrics.horiBearingY) / 64.F},
 		    {static_cast<float>(this->face->glyph->advance.x >> 6),
 			static_cast<float>(this->face->glyph->advance.y >> 6)},
 		    {atlasNode.x / static_cast<float>(atlas.second->size),
 			atlasNode.y / static_cast<float>(atlas.second->size)},
 		    {(atlasNode.x + atlasNode.width) / static_cast<float>(atlas.second->size),
 			(atlasNode.y + atlasNode.height) / static_cast<float>(atlas.second->size)},
-		    {static_cast<float>(this->face->glyph->metrics.width) / 64.f,
-			static_cast<float>(this->face->glyph->metrics.height) / 64.f},
+		    {static_cast<float>(this->face->glyph->metrics.width) / 64.F,
+			static_cast<float>(this->face->glyph->metrics.height) / 64.F},
 		};
 
 		this->_glyphs.push_back(glyph);
@@ -138,14 +139,15 @@ namespace rawrBox {
 		if (FT_Get_Glyph(this->face->glyph, &glyphDescFill) != FT_Err_Ok) return {};
 		if (FT_Glyph_To_Bitmap(&glyphDescFill, FT_RENDER_MODE_NORMAL, nullptr, true) != FT_Err_Ok) return {};
 
-		auto glyph_bitmap = reinterpret_cast<FT_BitmapGlyph>(glyphDescFill);
+		auto glyph_bitmap = std::bit_cast<FT_BitmapGlyph>(glyphDescFill);
 		FT_Bitmap* bitmap_fill = &glyph_bitmap->bitmap;
 		if (bitmap_fill == nullptr) return {};
 
 		bitmapW = bitmap_fill->width;
 		bitmapR = bitmap_fill->rows;
 
-		auto buffer = std::vector<unsigned char>(bitmapW * bitmapR * 2, 0); // * 2 -> 2 color channels (red and green)
+		auto siz = bitmapW * bitmapR * 2;
+		auto buffer = std::vector<unsigned char>(siz, 0); // * 2 -> 2 color channels (red and green)
 		for (unsigned int i = 0; i < bitmapW * bitmapR; ++i)
 			buffer[i * 2] = bitmap_fill->buffer[i]; // + 0 -> 1st color channel
 

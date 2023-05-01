@@ -12,7 +12,7 @@ namespace rawrBox {
 
 		AABB_t() = default;
 
-		AABB_t(NumberType x_, NumberType y_ = 0, NumberType w_ = 0, NumberType h_ = 0) : pos(x_, y_), size(w_, h_) {}
+		explicit AABB_t(NumberType x_, NumberType y_ = 0, NumberType w_ = 0, NumberType h_ = 0) : pos(x_, y_), size(w_, h_) {}
 		AABB_t(const Vector2_t<NumberType>& pos_, const Vector2_t<NumberType>& size_) : pos(pos_), size(size_) {}
 
 		AABB_t<NumberType> clamp(const AABB_t<NumberType>& boundries) {
@@ -67,10 +67,10 @@ namespace rawrBox {
 		AABB_t<NumberType> mask(const AABB_t<NumberType>& other) const {
 			auto masked = *this;
 
-			if (masked.right() < other.left()) masked = {other.left(), other.top(), 0.0f, 0.0f};
-			if (masked.bottom() < other.top()) masked = {other.left(), other.top(), 0.0f, 0.0f};
-			if (masked.top() > other.bottom()) masked = {other.left(), other.top(), 0.0f, 0.0f};
-			if (masked.left() > other.right()) masked = {other.left(), other.top(), 0.0f, 0.0f};
+			if (masked.right() < other.left()) masked = {other.left(), other.top(), 0.0F, 0.0F};
+			if (masked.bottom() < other.top()) masked = {other.left(), other.top(), 0.0F, 0.0F};
+			if (masked.top() > other.bottom()) masked = {other.left(), other.top(), 0.0F, 0.0F};
+			if (masked.left() > other.right()) masked = {other.left(), other.top(), 0.0F, 0.0F};
 
 			if (masked.left() < other.left()) {
 				masked.size.x -= other.left() - std::abs(masked.left());

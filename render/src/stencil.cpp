@@ -1,12 +1,15 @@
 
-#include <rawrbox/render/shader_defines.h>
-#include <rawrbox/render/static.h>
-#include <rawrbox/render/stencil.h>
+#include <rawrbox/render/shader_defines.hpp>
+#include <rawrbox/render/static.hpp>
+#include <rawrbox/render/stencil.hpp>
 
 // Compiled shaders
+#include <generated/shaders/render/all.hpp>
+
 #include <bx/math.h>
-#include <generated/shaders/render/all.h>
 #include <utf8.h>
+
+#include <array>
 
 #define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
 
@@ -96,7 +99,7 @@ namespace rawrBox {
 		    // pos
 		    ((pos.x + this->_offset.x) / _windowSize.x * 2 - 1),
 		    ((pos.y + this->_offset.y) / _windowSize.y * 2 - 1) * -1,
-		    0.0f,
+		    0.0F,
 
 		    // uv
 		    uv.x,
@@ -117,25 +120,25 @@ namespace rawrBox {
 	void Stencil::applyRotation(rawrBox::Vector2f& vert) {
 		if (this->_rotation.rotation == 0) return;
 
-		float translationMatrix[16];
-		bx::mtxIdentity(translationMatrix);
-		bx::mtxTranslate(translationMatrix, -_rotation.origin.x, -_rotation.origin.y, 0);
+		std::array<float, 16> translationMatrix = {};
+		bx::mtxIdentity(translationMatrix.data());
+		bx::mtxTranslate(translationMatrix.data(), -_rotation.origin.x, -_rotation.origin.y, 0);
 
-		float rotationMatrix[16];
-		bx::mtxIdentity(rotationMatrix);
-		bx::mtxRotateZ(rotationMatrix, bx::toRad(_rotation.rotation));
+		std::array<float, 16> rotationMatrix = {};
+		bx::mtxIdentity(rotationMatrix.data());
+		bx::mtxRotateZ(rotationMatrix.data(), bx::toRad(_rotation.rotation));
 
-		float reverseTranslationMatrix[16];
-		bx::mtxIdentity(reverseTranslationMatrix);
-		bx::mtxTranslate(reverseTranslationMatrix, _rotation.origin.x, _rotation.origin.y, 0);
+		std::array<float, 16> reverseTranslationMatrix = {};
+		bx::mtxIdentity(reverseTranslationMatrix.data());
+		bx::mtxTranslate(reverseTranslationMatrix.data(), _rotation.origin.x, _rotation.origin.y, 0);
 
-		float mul[16];
-		bx::mtxMul(mul, reverseTranslationMatrix, rotationMatrix);
-		bx::mtxMul(mul, mul, translationMatrix);
+		std::array<float, 16> mul = {};
+		bx::mtxMul(mul.data(), reverseTranslationMatrix.data(), rotationMatrix.data());
+		bx::mtxMul(mul.data(), mul.data(), translationMatrix.data());
 
-		float vv[4] = {vert.x, vert.y, 0, -1.0f};
-		float v[4];
-		bx::vec4MulMtx(v, vv, mul);
+		std::array<float, 4> vv = {vert.x, vert.y, 0, -1.0F};
+		std::array<float, 4> v = {};
+		bx::vec4MulMtx(v.data(), vv.data(), mul.data());
 
 		vert.x = v[0];
 		vert.y = v[1];
@@ -144,25 +147,25 @@ namespace rawrBox {
 	void Stencil::applyScale(rawrBox::Vector2f& vert) {
 		if (this->_scale == 0) return;
 
-		float translationMatrix[16];
-		bx::mtxIdentity(translationMatrix);
-		bx::mtxTranslate(translationMatrix, -_rotation.origin.x, -_rotation.origin.y, 0);
+		std::array<float, 16> translationMatrix = {};
+		bx::mtxIdentity(translationMatrix.data());
+		bx::mtxTranslate(translationMatrix.data(), -_rotation.origin.x, -_rotation.origin.y, 0);
 
-		float rotationMatrix[16];
-		bx::mtxIdentity(rotationMatrix);
-		bx::mtxScale(rotationMatrix, this->_scale.x, this->_scale.y, 1.f);
+		std::array<float, 16> rotationMatrix = {};
+		bx::mtxIdentity(rotationMatrix.data());
+		bx::mtxScale(rotationMatrix.data(), this->_scale.x, this->_scale.y, 1.F);
 
-		float reverseTranslationMatrix[16];
-		bx::mtxIdentity(reverseTranslationMatrix);
-		bx::mtxTranslate(reverseTranslationMatrix, _rotation.origin.x, _rotation.origin.y, 0);
+		std::array<float, 16> reverseTranslationMatrix = {};
+		bx::mtxIdentity(reverseTranslationMatrix.data());
+		bx::mtxTranslate(reverseTranslationMatrix.data(), _rotation.origin.x, _rotation.origin.y, 0);
 
-		float mul[16];
-		bx::mtxMul(mul, reverseTranslationMatrix, rotationMatrix);
-		bx::mtxMul(mul, mul, translationMatrix);
+		std::array<float, 16> mul = {};
+		bx::mtxMul(mul.data(), reverseTranslationMatrix.data(), rotationMatrix.data());
+		bx::mtxMul(mul.data(), mul.data(), translationMatrix.data());
 
-		float vv[4] = {vert.x, vert.y, 0, -1.0f};
-		float v[4];
-		bx::vec4MulMtx(v, vv, mul);
+		std::array<float, 4> vv = {vert.x, vert.y, 0, -1.0F};
+		std::array<float, 4> v = {};
+		bx::vec4MulMtx(v.data(), vv.data(), mul.data());
 
 		vert.x = v[0];
 		vert.y = v[1];
@@ -176,9 +179,9 @@ namespace rawrBox {
 		if (this->_outline.isSet()) {
 			float thick = this->_outline.thickness;
 
-			this->drawLine({a.x, a.y - thick}, {b.x, b.y + thick / 2.f}, colA);
+			this->drawLine({a.x, a.y - thick}, {b.x, b.y + thick / 2.F}, colA);
 			this->drawLine(b, c, colB);
-			this->drawLine({c.x + thick / 2.f, c.y}, a, colC);
+			this->drawLine({c.x + thick / 2.F, c.y}, a, colC);
 		} else {
 			// Setup --------
 			this->setTexture(this->_pixelTexture->getHandle());
@@ -200,7 +203,7 @@ namespace rawrBox {
 
 			this->drawLine({pos.x - thick, pos.y}, {pos.x + size.x, pos.y}, col);
 			this->drawLine({pos.x + size.x, pos.y - thick}, {pos.x + size.x, pos.y + size.y}, col);
-			this->drawLine({pos.x + size.x + (thick > 1.f ? thick : 0.f), pos.y + size.y}, {pos.x - thick, pos.y + size.y}, col);
+			this->drawLine({pos.x + size.x + (thick > 1.F ? thick : 0.F), pos.y + size.y}, {pos.x - thick, pos.y + size.y}, col);
 			this->drawLine({pos.x, pos.y + size.y}, {pos.x, pos.y}, col);
 		} else {
 			this->drawTexture(pos, size, this->_pixelTexture, col);
@@ -268,38 +271,38 @@ namespace rawrBox {
 	void Stencil::drawLine(const rawrBox::Vector2& from, const rawrBox::Vector2& to, const rawrBox::Color& col) {
 		if (col.isTransparent()) return;
 
-		rawrBox::StencilOutline outline = {1.f, 0.f};
+		rawrBox::StencilOutline outline = {1.F, 0.F};
 		if (this->_outline.isSet()) outline = this->_outline;
-		if (outline.thickness <= 0.f) return;
+		if (outline.thickness <= 0.F) return;
 
-		bool usePTLines = outline.thickness == 1.f;
+		bool usePTLines = outline.thickness == 1.F;
 
 		// Setup --------
-		this->setShaderProgram((usePTLines || outline.stipple > 0.f) ? this->_lineprogram : this->_2dprogram);
+		this->setShaderProgram((usePTLines || outline.stipple > 0.F) ? this->_lineprogram : this->_2dprogram);
 		this->setTexture(this->_pixelTexture->getHandle());
 		this->setDrawMode(usePTLines ? BGFX_STATE_PT_LINES : 0); // Reset
 		// ----
 
 		if (usePTLines) {
-			this->pushVertice(from, 0, col);
-			this->pushVertice(to, outline.stipple, col);
+			this->pushVertice(from, {0, 0}, col);
+			this->pushVertice(to, {outline.stipple, outline.stipple}, col);
 
 			auto pos = static_cast<uint16_t>(this->_vertices.size());
 			this->_indices.push_back(pos - 1);
 			this->_indices.push_back(pos - 2);
 		} else {
 			float angle = from.angle(to);
-			float uvEnd = outline.stipple <= 0.f ? 1.f : outline.stipple;
+			float uvEnd = outline.stipple <= 0.F ? 1.F : outline.stipple;
 
 			auto vertA = from + rawrBox::Vector2::cosSin(angle) * outline.thickness;
 			auto vertB = from + rawrBox::Vector2::cosSin(angle) * -outline.thickness;
 			auto vertC = to + rawrBox::Vector2::cosSin(angle) * outline.thickness;
 			auto vertD = to + rawrBox::Vector2::cosSin(angle) * -outline.thickness;
 
-			this->pushVertice(vertA, 0, col);
+			this->pushVertice(vertA, {0, 0}, col);
 			this->pushVertice(vertC, {uvEnd, 0}, col);
 			this->pushVertice(vertB, {0, uvEnd}, col);
-			this->pushVertice(vertD, uvEnd, col);
+			this->pushVertice(vertD, {uvEnd, uvEnd}, col);
 
 			this->pushIndices(4, 3, 2);
 			this->pushIndices(3, 1, 2);
@@ -460,10 +463,10 @@ namespace rawrBox {
 
 		rawrBox::Vector2i size = this->_windowSize;
 
-		this->pushVertice(0, 0, rawrBox::Colors::White);
+		this->pushVertice({0, 0}, {0, 0}, rawrBox::Colors::White);
 		this->pushVertice({0, size.y}, {0, 1}, rawrBox::Colors::White);
 		this->pushVertice({size.x, 0}, {1, 0}, rawrBox::Colors::White);
-		this->pushVertice({size.x, size.y}, 1, rawrBox::Colors::White);
+		this->pushVertice({size.x, size.y}, {1, 1}, rawrBox::Colors::White);
 
 		this->pushIndices(4, 3, 2);
 		this->pushIndices(3, 1, 2);

@@ -1,12 +1,13 @@
 #pragma once
 #include <rawrbox/render/postprocess/base.hpp>
-#include <rawrbox/render/shader_defines.h>
-#include <rawrbox/render/static.h>
+#include <rawrbox/render/shader_defines.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/util/uniforms.hpp>
+
+#include <generated/shaders/render/all.hpp>
 
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
-#include <generated/shaders/render/all.h>
 
 #include <memory>
 
@@ -23,10 +24,10 @@ namespace rawrBox {
 		bgfx::UniformHandle _bloom_intensity = BGFX_INVALID_HANDLE;
 
 	protected:
-		float _intensity = 0.08f;
+		float _intensity = 0.08F;
 
 	public:
-		PostProcessBloom(float intensity) : _intensity(intensity) {}
+		explicit PostProcessBloom(float intensity) : _intensity(intensity) {}
 
 		PostProcessBloom(PostProcessBloom&&) = delete;
 		PostProcessBloom& operator=(PostProcessBloom&&) = delete;
