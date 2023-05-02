@@ -28,7 +28,7 @@ namespace stencil {
 
 		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Window::WINDOWED);
 
-		this->_render = std::make_shared<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
+		this->_render = std::make_shared<rawrBox::Renderer>(0, this->_window->getSize());
 		this->_render->setClearColor(0x443355FF);
 
 		this->_textEngine = std::make_unique<rawrBox::TextEngine>();
@@ -44,6 +44,7 @@ namespace stencil {
 		// Fonts ----
 		this->_font = &this->_textEngine->load("./content/fonts/droidsans.ttf", 28);
 		this->_font2 = &this->_textEngine->load("./content/fonts/visitor1.ttf", 18);
+		this->_font3 = &this->_textEngine->load("cour.ttf", 12);
 
 		// Textures ---
 		this->_texture = std::make_shared<rawrBox::TextureImage>("./content/textures/screem.png");
@@ -153,6 +154,8 @@ namespace stencil {
 		stencil.pushRotation({counter * 50.5F, (size / 2.F) + rawrBox::Vector2f(0, 40)});
 		stencil.drawText(this->_font2, "Cat!!", {0, 40});
 		stencil.popRotation();
+
+		stencil.drawText(this->_font3, "MeW MeW MeW!", {0, 75});
 		stencil.popOffset();
 
 		stencil.end();

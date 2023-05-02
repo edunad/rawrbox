@@ -84,10 +84,6 @@ namespace rawrBox {
 	void TextureGIF::setSpeed(float speed) {
 		this->_speed = speed;
 	}
-
-	void TextureGIF::setFlags(uint32_t flags) {
-		this->_flags = flags;
-	}
 	// --------------------
 
 	// ------RENDER

@@ -32,3 +32,5 @@ PointerAlignment: Left
 AllowShortCaseLabelsOnASingleLine: true
 IndentCaseBlocks: true
 IndentCaseLabels: true
+IndentPPDirectives: BeforeHash
+

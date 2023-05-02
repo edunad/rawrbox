@@ -1,7 +1,6 @@
 #pragma once
 
 #include <rawrbox/render/model/light/base.hpp>
-#include <rawrbox/render/model/material/sprite_unlit.hpp>
 #include <rawrbox/render/model/sprite.hpp>
 #include <rawrbox/render/texture/image.hpp>
 

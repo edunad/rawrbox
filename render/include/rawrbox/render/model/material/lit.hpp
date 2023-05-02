@@ -82,11 +82,7 @@ namespace rawrBox {
 
 		template <typename T>
 		void process(std::shared_ptr<rawrBox::Mesh<T>> mesh) {
-			if (mesh->texture != nullptr && mesh->texture->valid() && !mesh->wireframe) {
-				bgfx::setTexture(0, s_texColor, mesh->texture->getHandle());
-			} else {
-				bgfx::setTexture(0, s_texColor, rawrBox::WHITE_TEXTURE->getHandle());
-			}
+			rawrBox::MaterialBase::process(mesh);
 
 			if (mesh->specularTexture != nullptr && mesh->specularTexture->valid() && !mesh->wireframe) {
 				bgfx::setTexture(1, s_texSpecularColor, mesh->specularTexture->getHandle());
@@ -96,9 +92,6 @@ namespace rawrBox {
 
 			std::array shininess = {mesh->specularShininess};
 			bgfx::setUniform(u_texSpecularShininess, shininess.data());
-
-			std::array colorOffset = {mesh->color.r, mesh->color.b, mesh->color.g, mesh->color.a};
-			bgfx::setUniform(u_colorOffset, colorOffset.data());
 		}
 
 		void upload() {

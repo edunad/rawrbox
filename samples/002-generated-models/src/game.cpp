@@ -53,14 +53,16 @@ namespace model {
 
 		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Debug::STATS | rawrBox::WindowFlags::Window::WINDOWED);
 
-		this->_render = std::make_shared<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
-		this->_render->setClearColor(0x000000FF);
+		this->_render = std::make_shared<rawrBox::Renderer>(0, this->_window->getSize());
+		this->_render->setClearColor(0x00000000);
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrBox::CameraPerspective>(static_cast<float>(width) / static_cast<float>(height), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
+		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
 		// --------------
+
+		this->_textEngine = std::make_unique<rawrBox::TextEngine>();
 
 		// Load content ---
 		this->loadContent();
@@ -70,14 +72,19 @@ namespace model {
 	void Game::loadContent() {
 		this->_render->upload();
 
+		// Fonts -----
+		this->_font = &this->_textEngine->load("cour.ttf", 16);
+		// ------
+
 		// Textures ---
 		this->_texture = std::make_shared<rawrBox::TextureImage>("./content/textures/screem.png");
 		this->_texture->upload();
 
 		this->_texture2 = std::make_shared<rawrBox::TextureGIF>("./content/textures/meow3.gif");
 		this->_texture2->upload();
-
 		// ----
+
+		// Model test ----
 		{
 			auto mesh = this->_model->generatePlane({5, 0, 0}, {0.5F, 0.5F});
 			mesh->setTexture(this->_texture);
@@ -85,7 +92,7 @@ namespace model {
 		}
 
 		{
-			auto mesh = this->_model->generateCube({-5, 0, 0}, {0.5F, 0.5F}, rawrBox::Colors::White);
+			auto mesh = this->_model->generateCube({-5, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrBox::Colors::White);
 			mesh->setTexture(this->_texture2);
 			this->_model->addMesh(mesh);
 		}
@@ -99,15 +106,28 @@ namespace model {
 			auto mesh = this->_model->generateGrid(12, {0.F, 0.F, 0.F});
 			this->_model->addMesh(mesh);
 		}
+		// -----
 
+		// Sprite test ----
 		{
 			auto mesh = this->_sprite->generatePlane({0, 2, 0}, {0.2F, 0.2F});
 			mesh->setTexture(this->_texture);
 			this->_sprite->addMesh(mesh);
 		}
+		// -----
+
+		// Text test ----
+		{
+			this->_text->addText(this->_font, "PLANE", {5.F, 0.5F, 0});
+			this->_text->addText(this->_font, "CUBE", {-5.F, 0.8F, 0});
+			this->_text->addText(this->_font, "AXIS", {0.F, 1.2F, 0});
+			this->_text->addText(this->_font, "SPRITE", {0.F, 2.2F, 0});
+		}
+		// ------
 
 		this->_model->upload();
 		this->_sprite->upload();
+		this->_text->upload();
 		// -----
 	}
 
@@ -115,6 +135,7 @@ namespace model {
 		this->_render = nullptr;
 		this->_model = nullptr;
 		this->_sprite = nullptr;
+		this->_text = nullptr;
 
 		rawrBox::Engine::shutdown();
 	}
@@ -165,10 +186,11 @@ namespace model {
 
 	void Game::drawWorld() {
 		bgfx::setViewTransform(rawrBox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-		if (this->_model == nullptr) return;
+		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr) return;
 
 		this->_model->draw(this->_camera->getPos());
 		this->_sprite->draw(this->_camera->getPos());
+		this->_text->draw(this->_camera->getPos());
 	}
 
 	void Game::draw(const double alpha) {

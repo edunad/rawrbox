@@ -24,8 +24,6 @@ namespace rawrBox {
 		float _speed = 1.F;
 		bool _failedToLoad = false;
 
-		uint32_t _flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
-
 		void update();
 
 	public:
@@ -39,7 +37,6 @@ namespace rawrBox {
 		// ------UTILS
 		virtual void setLoop(bool loop);
 		virtual void setSpeed(float speed);
-		virtual void setFlags(uint32_t flags);
 		// --------------------
 
 		// ------RENDER

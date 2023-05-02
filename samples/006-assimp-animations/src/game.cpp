@@ -62,6 +62,8 @@ namespace anims {
 		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
 		// --------------
 
+		this->_textEngine = std::make_unique<rawrBox::TextEngine>();
+
 		// Load content ---
 		this->loadContent();
 		// -----
@@ -70,16 +72,20 @@ namespace anims {
 	void Game::loadContent() {
 		this->_render->upload();
 
+		// Fonts -----
+		this->_font = &this->_textEngine->load("cour.ttf", 16);
+		// ------
+
 		// Assimp test ---
 		this->_model->load("./content/models/wolf/wolfman_animated.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS);
-		this->_model->playAnimation("Scene", true, 1.5F);
+		this->_model->playAnimation("Scene", true, 1.F);
 		this->_model->setPos({0, 0, 0});
 		this->_model->upload();
 
 		this->_model2->load("./content/models/multiple_skeleton/twocubestest.gltf", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrBox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE);
 		this->_model2->playAnimation("MewAction", true, 0.8F);
-		this->_model2->playAnimation("MewAction.001", true, 0.8F);
-		this->_model2->setPos({0, 0, 0});
+		this->_model2->playAnimation("MewAction.001", true, 0.5F);
+		this->_model2->setPos({0, 0, 1.5F});
 		this->_model2->setScale({0.25F, 0.25F, 0.25F});
 		this->_model2->upload();
 
@@ -90,12 +96,22 @@ namespace anims {
 			this->_modelGrid->addMesh(mesh);
 		}
 
+		// Text test ----
+		{
+			this->_text->addText(this->_font, "SINGLE ARMATURE", {0.F, 1.8F, 0});
+			this->_text->addText(this->_font, "TWO ARMATURES", {0.F, 1.8F, 2.3F});
+		}
+		// ------
+
+		this->_text->upload();
 		this->_modelGrid->upload();
 		// -----
 	}
 
 	void Game::shutdown() {
 		this->_render = nullptr;
+
+		this->_text = nullptr;
 		this->_model = nullptr;
 		this->_modelGrid = nullptr;
 
@@ -146,12 +162,13 @@ namespace anims {
 	}
 
 	void Game::drawWorld() {
-		// if (this->_model == nullptr || this->_modelGrid == nullptr || this->_model2 == nullptr) return;
+		if (this->_model == nullptr || this->_modelGrid == nullptr || this->_model2 == nullptr || this->_text == nullptr) return;
 
 		this->_modelGrid->draw(this->_camera->getPos());
 
 		this->_model->draw(this->_camera->getPos());
 		this->_model2->draw(this->_camera->getPos());
+		this->_text->draw(this->_camera->getPos());
 	}
 
 	void Game::draw(const double alpha) {

@@ -29,6 +29,9 @@ namespace rawrBox {
 		bgfx::UniformHandle u_viewPos = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_colorOffset = BGFX_INVALID_HANDLE;
 
+		bgfx::UniformHandle u_mesh_pos = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle u_billboard = BGFX_INVALID_HANDLE;
+
 		using vertexBufferType = rawrBox::VertexData;
 
 		MaterialBase() = default;
@@ -42,6 +45,9 @@ namespace rawrBox {
 			RAWRBOX_DESTROY(s_texColor);
 			RAWRBOX_DESTROY(u_viewPos);
 			RAWRBOX_DESTROY(u_colorOffset);
+
+			RAWRBOX_DESTROY(u_mesh_pos);
+			RAWRBOX_DESTROY(u_billboard);
 		}
 
 		// NOLINTBEGIN(hicpp-avoid-c-arrays)
@@ -60,6 +66,9 @@ namespace rawrBox {
 
 			u_viewPos = bgfx::createUniform("u_viewPos", bgfx::UniformType::Vec4, 3);
 			u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
+
+			u_mesh_pos = bgfx::createUniform("u_mesh_pos", bgfx::UniformType::Vec4, 3);
+			u_billboard = bgfx::createUniform("u_billboard", bgfx::UniformType::Vec4, 1);
 		}
 
 		void preProcess(const rawrBox::Vector3f& camPos) {
@@ -77,6 +86,16 @@ namespace rawrBox {
 
 			std::array colorOffset = {mesh->color.r, mesh->color.b, mesh->color.g, mesh->color.a};
 			bgfx::setUniform(u_colorOffset, colorOffset.data());
+
+			std::array offset = {mesh->vertexPos[12], mesh->vertexPos[13], mesh->vertexPos[14]};
+			bgfx::setUniform(u_mesh_pos, offset.data());
+
+			std::array<float, 2> billboard = {0.F, 0.F};
+			if (mesh->hasData("billboard_mode")) {
+				billboard[0] = mesh->getData("billboard_mode").x;
+			}
+
+			bgfx::setUniform(u_billboard, billboard.data());
 		}
 
 		void postProcess() { bgfx::submit(rawrBox::CURRENT_VIEW_ID, program); }

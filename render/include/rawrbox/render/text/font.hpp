@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/math/vector2.hpp>
+#include <rawrbox/render/texture/atlas.hpp>
 
 #include <bgfx/bgfx.h>
 #include <ft2build.h>
@@ -12,6 +13,12 @@
 #include <vector>
 
 namespace rawrBox {
+	enum class Alignment {
+		Left,
+		Center,
+		Right
+	};
+
 	struct Glyph {
 		uint32_t atlasID{};
 
@@ -33,7 +40,7 @@ namespace rawrBox {
 		std::vector<Glyph> _glyphs;
 
 		std::string _file;
-		uint32_t _size;
+		FT_Render_Mode _mode = FT_RENDER_MODE_MONO;
 
 		// SIZE ----
 		uint32_t bitmapR = -1;
@@ -50,8 +57,9 @@ namespace rawrBox {
 		// -----
 	public:
 		FT_Face face = {};
+		uint32_t size;
 
-		Font(TextEngine* engine, std::string filename, uint32_t size);
+		Font(TextEngine* engine, std::string filename, uint32_t size, FT_Render_Mode renderMode = FT_RENDER_MODE_NORMAL);
 		Font(Font&&) = delete;
 		Font& operator=(Font&&) = delete;
 		Font(const Font&) = delete;
@@ -66,7 +74,7 @@ namespace rawrBox {
 		[[nodiscard]] float getKerning(const Glyph& left, const Glyph& right) const;
 		[[nodiscard]] rawrBox::Vector2 getStringSize(const std::string& text) const;
 
-		bgfx::TextureHandle& getHandle(const Glyph& g);
+		std::shared_ptr<rawrBox::TextureAtlas> getAtlasTexture(const Glyph& g);
 		// ----
 	};
 

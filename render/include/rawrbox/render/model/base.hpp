@@ -71,7 +71,7 @@ namespace rawrBox {
 		std::unordered_map<std::string, std::shared_ptr<Bone>> _globalBoneMap = {}; // Map for quick lookup
 		// --------
 
-		void flattenMeshes(bool quickOptimize = true) {
+		void flattenMeshes() {
 			this->_vertices.clear();
 			this->_indices.clear();
 
@@ -93,7 +93,7 @@ namespace rawrBox {
 					this->_indices.push_back(pos - in);
 				// ------
 
-				if (quickOptimize) {
+				if (this->supportsOptimization()) {
 					// Previous mesh available?
 					if (mesh != this->_meshes.begin()) {
 						auto prevMesh = std::prev(mesh); // Check old meshes
@@ -131,7 +131,18 @@ namespace rawrBox {
 			this->_indices.clear();
 		}
 
+		virtual bool supportsOptimization() { return true; }
+
 		// UTILS -----
+		void merge(std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> in, std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> other) {
+			for (uint16_t i : other->indices)
+				in->indices.push_back(static_cast<uint16_t>(in->vertices.size()) + i);
+
+			in->vertices.insert(in->vertices.end(), other->vertices.begin(), other->vertices.end());
+			in->totalVertex = static_cast<uint16_t>(in->vertices.size());
+			in->totalIndex = static_cast<uint16_t>(in->indices.size());
+		}
+
 		std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> generatePlane(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& size, const rawrBox::Colorf& cl = rawrBox::Colors::White) {
 			auto mesh = std::make_shared<rawrBox::Mesh<typename M::vertexBufferType>>();
 			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
@@ -277,15 +288,6 @@ namespace rawrBox {
 				mesh->indices.push_back(static_cast<uint16_t>(buff.size()) - ind);
 
 			return mesh;
-		}
-
-		void merge(std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> in, std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> other) {
-			for (uint16_t i : other->indices)
-				in->indices.push_back(static_cast<uint16_t>(in->vertices.size()) + i);
-
-			in->vertices.insert(in->vertices.end(), other->vertices.begin(), other->vertices.end());
-			in->totalVertex = static_cast<uint16_t>(in->vertices.size());
-			in->totalIndex = static_cast<uint16_t>(in->indices.size());
 		}
 
 		std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> generateAxis(float size, const rawrBox::Vector3f& pos) {

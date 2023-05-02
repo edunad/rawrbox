@@ -66,6 +66,7 @@ namespace rawrBox {
 		std::unordered_map<std::string, Animation> _animations = {};
 		std::vector<rawrBox::PlayingAnimationData> _playingAnimations = {};
 
+		// ANIMATIONS ----
 		virtual void updateBones(std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> mesh) {
 			std::vector<std::array<float, 16>> transforms = {};
 			transforms.resize(rawrBox::MAX_BONES_PER_MODEL);
@@ -185,6 +186,7 @@ namespace rawrBox {
 				++it2;
 			}
 		}
+		// --------------
 
 	public:
 		using ModelBase<M>::ModelBase;
