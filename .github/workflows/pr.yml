@@ -1,7 +1,6 @@
 name: CI/CD - Pull request
 
 on:
-  workflow_dispatch:
   workflow_run:
     workflows: [CI/CD - Build]
     types:
@@ -20,7 +19,8 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    build-linux:
+
+    lint-linux:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
