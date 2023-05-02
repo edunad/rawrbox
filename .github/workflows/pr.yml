@@ -43,8 +43,8 @@ jobs:
                 files-changed-only: true
                 tidy-checks: ''
                 extra-args: '-std=c++20 -Wall'
-                version: '14'
-                database: 'build/'
+                version: '16'
+                database: './build/'
                 ignore: 'build | .github'
 
             - name: Check linting
