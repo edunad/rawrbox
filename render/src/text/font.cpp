@@ -5,7 +5,7 @@
 #include <fmt/format.h>
 #include <utf8.h>
 
-#ifdef BX_PLATFORM_WINDOWS
+#if BX_PLATFORM_WINDOWS
 	#include <windows.h>
 #endif
 
