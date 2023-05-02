@@ -28,7 +28,7 @@ namespace rawrBox {
 				throw std::runtime_error(fmt::format("Error: failed to load font: {}", this->_file));
 			}
 #elif BX_PLATFORM_WINDOWS
-			std::array<TCHAR, MAX_PATH> windir;
+			std::array<TCHAR, MAX_PATH> windir = {};
 
 			GetWindowsDirectory(windir.data(), MAX_PATH);
 			std::string p = fmt::format("{}\\Fonts\\{}", windir.data(), this->_file);
