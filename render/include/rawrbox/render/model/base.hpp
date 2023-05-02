@@ -174,43 +174,6 @@ namespace rawrBox {
 			std::array<typename M::vertexBufferType, 24> buff;
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				buff = {
-				    // Back
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), 0, 0, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), 1, 1, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, size.y, size.z), 1, 0, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), 0, 1, cl),
-
-				    // Front
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), 1, 0, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), 0, 1, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), 0, 0, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), 1, 1, cl),
-
-				    // Right
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), 1, 0, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), 0, 1, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), 1, 1, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), 0, 0, cl),
-
-				    // Left
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, size.y, size.z), 0, 0, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), 1, 1, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), 0, 1, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), 1, 0, cl),
-
-				    // Top
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), 1, 0, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), 0, 1, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, size.y, size.z), 0, 0, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), 1, 1, cl),
-
-				    // Bottom
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), 1, 1, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), 0, 0, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), 0, 1, cl),
-				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), 1, 0, cl)};
-			} else {
 				// We don't support bones on generated :P, so they just won't be set
 				buff = {
 				    // Back
@@ -248,6 +211,43 @@ namespace rawrBox {
 				    rawrBox::VertexLitData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0, 0, cl),
 				    rawrBox::VertexLitData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 0, 1, cl),
 				    rawrBox::VertexLitData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), rawrBox::PackUtils::packNormal(1, 0, 0), 0, 1, 0, cl)};
+			} else {
+				buff = {
+				    // Back
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), 0, 0, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), 1, 1, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, size.y, size.z), 1, 0, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), 0, 1, cl),
+
+				    // Front
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), 1, 0, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), 0, 1, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), 0, 0, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), 1, 1, cl),
+
+				    // Right
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), 1, 0, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), 0, 1, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), 1, 1, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), 0, 0, cl),
+
+				    // Left
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, size.y, size.z), 0, 0, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), 1, 1, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), 0, 1, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), 1, 0, cl),
+
+				    // Top
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, size.y, size.z), 1, 0, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, size.y, -size.z), 0, 1, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, size.y, size.z), 0, 0, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, size.y, -size.z), 1, 1, cl),
+
+				    // Bottom
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, -size.y, size.z), 1, 1, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, -size.y, -size.z), 0, 0, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(-size.x, -size.y, size.z), 0, 1, cl),
+				    rawrBox::VertexData(pos + rawrBox::Vector3f(size.x, -size.y, -size.z), 1, 0, cl)};
 			}
 
 			std::array<uint16_t, 36> inds{
