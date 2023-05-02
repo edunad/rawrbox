@@ -303,7 +303,7 @@ namespace rawrBox {
 		}
 
 		std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> generateCone(const rawrBox::Vector3f& pos, const rawrBox::Vector3f& size, const rawrBox::Colorf& cl = rawrBox::Colors::White) {
-			auto mesh = std::make_shared<rawrBox::Mesh>();
+			auto mesh = std::make_shared<rawrBox::Mesh<typename M::vertexBufferType>>();
 			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
 
 			return mesh;
