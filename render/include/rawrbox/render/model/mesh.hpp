@@ -9,8 +9,12 @@
 
 #include <array>
 #include <cstdint>
-#include <map>
 #include <memory>
+#include <stdexcept>
+#include <string>
+#include <unordered_map>
+
+#include "rawrbox/math/vector3.hpp"
 
 namespace rawrBox {
 
@@ -50,6 +54,8 @@ namespace rawrBox {
 
 		std::shared_ptr<Mesh<T>> parent = nullptr;
 		std::shared_ptr<Skeleton> skeleton = nullptr;
+
+		std::unordered_map<std::string, rawrBox::Vector3f> data = {};
 
 		Mesh() = default;
 		Mesh(Mesh&&) = delete;
@@ -109,6 +115,21 @@ namespace rawrBox {
 
 		void setColor(const rawrBox::Colorf& color) {
 			this->color = color;
+		}
+
+		void addData(const std::string& id, rawrBox::Vector3f data) { // BGFX shaders only accept vec4, so.. yea
+			if (this->hasData(id)) throw std::runtime_error(fmt::format("[RawrBox-Mesh] Data '{}' already added", id));
+			this->data[id] = data;
+		}
+
+		rawrBox::Vector3f getData(const std::string& id) {
+			auto fnd = this->data.find(id);
+			if (fnd == this->data.end()) throw std::runtime_error(fmt::format("[RawrBox-Mesh] Data '{}' not found", id));
+			return fnd->second;
+		}
+
+		bool hasData(const std::string& id) {
+			return this->data.find(id) != this->data.end();
 		}
 
 		bool canMerge(std::shared_ptr<rawrBox::Mesh<T>> other) {

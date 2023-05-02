@@ -73,10 +73,6 @@ namespace rawrBox {
 		this->setPixel(pos.x, pos.y, col);
 	}
 
-	void TextureImage::setFlags(uint32_t flags) {
-		this->_flags = flags;
-	}
-
 	void TextureImage::setName(const std::string& name) {
 		this->_name = name;
 	}

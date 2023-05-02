@@ -95,12 +95,6 @@ namespace rawrBox {
 		}
 	};
 
-	enum class TextAlignment {
-		Left,
-		Center,
-		Right
-	};
-
 	class Stencil {
 	private:
 		bgfx::ViewId _viewId;
@@ -183,7 +177,7 @@ namespace rawrBox {
 		void drawTexture(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, std::shared_ptr<rawrBox::TextureBase> tex, const rawrBox::Color& col = rawrBox::Colors::White, const rawrBox::Vector2f& uvStart = {0, 0}, const rawrBox::Vector2f& uvEnd = {1, 1});
 		void drawCircle(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col = rawrBox::Colors::White, size_t roundness = 32, float angleStart = 0.F, float angleEnd = 360.F);
 		void drawLine(const rawrBox::Vector2& from, const rawrBox::Vector2& to, const rawrBox::Color& col = rawrBox::Colors::White);
-		void drawText(rawrBox::Font* font, const std::string& text, const rawrBox::Vector2f& pos, const rawrBox::Color& col = rawrBox::Colors::White, rawrBox::TextAlignment alignX = rawrBox::TextAlignment::Left, rawrBox::TextAlignment alignY = rawrBox::TextAlignment::Left);
+		void drawText(rawrBox::Font* font, const std::string& text, const rawrBox::Vector2f& pos, const rawrBox::Color& col = rawrBox::Colors::White, rawrBox::Alignment alignX = rawrBox::Alignment::Left, rawrBox::Alignment alignY = rawrBox::Alignment::Left);
 		// --------------------
 
 		// ------ RENDERING

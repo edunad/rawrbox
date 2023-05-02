@@ -109,7 +109,7 @@ namespace rawrBox {
 
 	void TextureAtlas::upload(bgfx::TextureFormat::Enum format) {
 		if (bgfx::isValid(this->_handle)) return; // Already bound
-		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->size), static_cast<uint16_t>(this->size), false, 0, format);
+		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->size), static_cast<uint16_t>(this->size), false, 0, format, 0 | this->_flags);
 
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureAtlas] Failed to bind texture");
 		bgfx::setName(this->_handle, fmt::format("RAWR-ATLAS-TEXTURE-{}", this->_handle.idx).c_str());

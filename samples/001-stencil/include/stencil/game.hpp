@@ -12,15 +12,16 @@
 
 namespace stencil {
 	class Game : public rawrBox::Engine {
-		std::unique_ptr<rawrBox::Window> _window;
-		std::shared_ptr<rawrBox::Renderer> _render;
-		std::unique_ptr<rawrBox::TextEngine> _textEngine;
+		std::unique_ptr<rawrBox::Window> _window = nullptr;
+		std::shared_ptr<rawrBox::Renderer> _render = nullptr;
+		std::unique_ptr<rawrBox::TextEngine> _textEngine = nullptr;
 
-		std::shared_ptr<rawrBox::TextureImage> _texture;
-		std::shared_ptr<rawrBox::TextureGIF> _texture2;
+		std::shared_ptr<rawrBox::TextureImage> _texture = nullptr;
+		std::shared_ptr<rawrBox::TextureGIF> _texture2 = nullptr;
 
-		rawrBox::Font* _font;
-		rawrBox::Font* _font2;
+		rawrBox::Font* _font = nullptr;
+		rawrBox::Font* _font2 = nullptr;
+		rawrBox::Font* _font3 = nullptr;
 
 	public:
 		float counter = 0;

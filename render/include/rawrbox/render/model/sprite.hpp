@@ -1,14 +1,20 @@
 #pragma once
 #include <rawrbox/render/model/base.hpp>
-#include <rawrbox/render/model/material/sprite_unlit.hpp>
+#include <rawrbox/render/model/material/base.hpp>
 
 #define BGFX_STATE_DEFAULT_SPRITE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 namespace rawrBox {
 
-	template <typename M = rawrBox::MaterialSpriteUnlit>
+	template <typename M = rawrBox::MaterialBase>
 	class Sprite : public rawrBox::ModelBase<M> {
 	public:
 		using ModelBase<M>::ModelBase;
+
+		bool supportsOptimization() override { return false; }
+		void addMesh(std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> mesh) override {
+			mesh->addData("billboard_mode", {1.F, 0, 0}); // Force billboard for sprites
+			this->_meshes.push_back(std::move(mesh));
+		}
 
 		void draw(const rawrBox::Vector3f& camPos) override {
 			ModelBase<M>::draw(camPos);

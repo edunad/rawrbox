@@ -30,7 +30,7 @@ namespace rawrBox {
 	void TextureMissing::upload(bgfx::TextureFormat::Enum format) {
 		if (bgfx::isValid(this->_handle)) return; // Already bound
 		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 0, format,
-		    BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT, bgfx::copy(this->pixels.data(), static_cast<uint32_t>(this->pixels.size())));
+		    0 | this->_flags, bgfx::copy(this->pixels.data(), static_cast<uint32_t>(this->pixels.size())));
 
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureMissing] Failed to bind texture");
 		bgfx::setName(this->_handle, fmt::format("RAWR-FLAT-MISSING-{}", this->_handle.idx).c_str());

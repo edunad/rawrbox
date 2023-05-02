@@ -17,7 +17,7 @@ namespace rawrBox {
 		static uint32_t atlasID;
 
 		std::vector<std::unique_ptr<rawrBox::Font>> _fonts;
-		std::map<uint32_t, std::unique_ptr<rawrBox::TextureAtlas>> _atlas;
+		std::map<uint32_t, std::shared_ptr<rawrBox::TextureAtlas>> _atlas;
 		void initialize();
 		void destroy();
 
@@ -32,8 +32,8 @@ namespace rawrBox {
 		TextEngine& operator=(const TextEngine& other) = delete;
 		TextEngine& operator=(TextEngine&& other) = delete;
 
-		std::pair<uint32_t, rawrBox::TextureAtlas*> requestAtlas(int width, int height);
-		rawrBox::TextureAtlas* getAtlas(uint32_t id);
+		std::pair<uint32_t, std::shared_ptr<rawrBox::TextureAtlas>> requestAtlas(int width, int height, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8);
+		std::shared_ptr<rawrBox::TextureAtlas> getAtlas(uint32_t id);
 
 		rawrBox::Font& load(std::string filename, uint32_t size);
 	};

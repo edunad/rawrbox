@@ -53,7 +53,7 @@ namespace assimp {
 
 		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Window::WINDOWED);
 
-		this->_render = std::make_shared<rawrBox::Renderer>(0, rawrBox::Vector2i(width, height));
+		this->_render = std::make_shared<rawrBox::Renderer>(0, this->_window->getSize());
 		this->_render->setClearColor(0x000000FF);
 
 		// Initialize the global light manager, i don't like it being static tough..
@@ -61,10 +61,12 @@ namespace assimp {
 		// ----
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrBox::CameraPerspective>(static_cast<float>(width) / static_cast<float>(height), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
+		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
 		// --------------
+
+		this->_textEngine = std::make_unique<rawrBox::TextEngine>();
 
 		// Load content ---
 		this->loadContent();
@@ -73,6 +75,10 @@ namespace assimp {
 
 	void Game::loadContent() {
 		this->_render->upload();
+
+		// Fonts -----
+		this->_font = &this->_textEngine->load("cour.ttf", 16);
+		// ------
 
 		// Assimp test ---
 		this->_model3->setPos({-10, 0, 0});
@@ -88,7 +94,16 @@ namespace assimp {
 		this->_model2->upload();
 		// -----
 
-		// rawrBox::LightManager::getInstance().uploadDebug();
+		// Text test ----
+		{
+			this->_text->addText(this->_font, "TEXTURES + LIGHT", {-10.F, 2.0F, 0});
+			this->_text->addText(this->_font, "NONE", {10.F, 2.0F, 0});
+			this->_text->addText(this->_font, "TEXTURES", {0.F, 2.0F, 0});
+			this->_text->upload();
+		}
+		// ------
+
+		rawrBox::LightManager::getInstance().uploadDebug();
 	}
 
 	void Game::shutdown() {
@@ -97,6 +112,8 @@ namespace assimp {
 		this->_model = nullptr;
 		this->_model2 = nullptr;
 		this->_model3 = nullptr;
+
+		this->_text = nullptr;
 
 		rawrBox::LightManager::getInstance().destroy();
 		rawrBox::Engine::shutdown();
@@ -145,12 +162,14 @@ namespace assimp {
 	}
 
 	void Game::drawWorld() {
-		if (this->_model == nullptr || this->_model2 == nullptr || this->_model3 == nullptr) return;
+		if (this->_model == nullptr || this->_model2 == nullptr || this->_model3 == nullptr || this->_text == nullptr) return;
 		auto pos = this->_camera->getPos();
 
 		this->_model->draw(pos);
 		this->_model2->draw(pos);
 		this->_model3->draw(pos);
+
+		this->_text->draw(pos);
 	}
 
 	void Game::draw(const double alpha) {
@@ -162,7 +181,7 @@ namespace assimp {
 
 		this->drawWorld();
 
-		// rawrBox::LightManager::getInstance().drawDebug(this->_camera->getPos());
+		rawrBox::LightManager::getInstance().drawDebug(this->_camera->getPos());
 		this->_render->render(); // Commit primitives
 	}
 } // namespace assimp

@@ -309,7 +309,7 @@ namespace rawrBox {
 		}
 	}
 
-	void Stencil::drawText(rawrBox::Font* font, const std::string& text, const rawrBox::Vector2f& pos, const rawrBox::Color& col, rawrBox::TextAlignment alignX, rawrBox::TextAlignment alignY) {
+	void Stencil::drawText(rawrBox::Font* font, const std::string& text, const rawrBox::Vector2f& pos, const rawrBox::Color& col, rawrBox::Alignment alignX, rawrBox::Alignment alignY) {
 		if (font == nullptr || col.isTransparent() || text.empty()) return;
 
 		// Setup --------
@@ -319,25 +319,25 @@ namespace rawrBox {
 
 		rawrBox::Vector2f startpos = pos;
 		rawrBox::Vector2f tsize = font->getStringSize(text);
-		if (alignX != TextAlignment::Left || alignY != TextAlignment::Left) {
+		if (alignX != Alignment::Left || alignY != Alignment::Left) {
 			switch (alignX) {
-				case TextAlignment::Left:
+				case Alignment::Left:
 					break;
-				case TextAlignment::Center:
+				case Alignment::Center:
 					startpos.x -= tsize.x / 2;
 					break;
-				case TextAlignment::Right:
+				case Alignment::Right:
 					startpos.x -= tsize.x;
 					break;
 			}
 
 			switch (alignY) {
-				case TextAlignment::Left:
+				case Alignment::Left:
 					break;
-				case TextAlignment::Center:
+				case Alignment::Center:
 					startpos.y -= tsize.y / 2;
 					break;
-				case TextAlignment::Right:
+				case Alignment::Right:
 					startpos.y -= tsize.y;
 					break;
 			}
@@ -374,7 +374,7 @@ namespace rawrBox {
 			rawrBox::Vector2 p = {curpos.x + glyph.bearing.x, curpos.y - glyph.bearing.y};
 			rawrBox::Vector2 s = {static_cast<float>(glyph.size.x), static_cast<float>(glyph.size.y)};
 
-			this->setTexture(font->getHandle(glyph));
+			this->setTexture(font->getAtlasTexture(glyph)->getHandle());
 
 			this->pushVertice({p.x, p.y}, glyph.textureTopLeft, col);
 			this->pushVertice({p.x, p.y + s.y}, {glyph.textureTopLeft.x, glyph.textureBottomRight.y}, col);
