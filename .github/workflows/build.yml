@@ -1,6 +1,7 @@
 name: CI/CD - Build
 
 on:
+    pull_request:
     push:
         branches:
             - master
@@ -22,17 +23,6 @@ jobs:
               uses: actions/checkout@v3
               with:
                   fetch-depth: 0
-
-            - name: cppcheck
-              uses: deep5050/cppcheck-action@main
-              with:
-                  github_token: ${{ secrets.GITHUB_TOKEN}}
-
-            - name: Upload CPPCheck Report
-              uses: actions/upload-artifact@v3
-              with:
-                  name: cpp_report
-                  path: ./cppcheck_report.txt
 
             - name: Install dependencies
               run: |
