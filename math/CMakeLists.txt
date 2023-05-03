@@ -25,7 +25,7 @@ add_library(${output_target} INTERFACE ${RAWRBOX_MATH_IMPORTS})
 target_include_directories(${output_target} INTERFACE "include")
 #--------------
 
-# LIB ----
+# TESTING ----
 if(RAWRBOX_BUILD_TESTING)
     file(GLOB_RECURSE RAWRBOX_MATH_TESTS_IMPORTS "tests/*.spec.cpp" )
 

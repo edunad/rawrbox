@@ -215,5 +215,11 @@ namespace rawrBox {
 		void pushScale(const rawrBox::Vector2f& scale);
 		void popScale();
 		// --------------------
+
+		// ------ OTHER
+		[[nodiscard]] const std::vector<PosUVColorVertexData>& getVertices() const;
+		[[nodiscard]] const std::vector<uint16_t>& getIndices() const;
+		void clear();
+		// --------------------
 	};
 } // namespace rawrBox

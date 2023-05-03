@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
+#include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
@@ -13,8 +14,6 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
-
-#include "rawrbox/math/vector3.hpp"
 
 namespace rawrBox {
 

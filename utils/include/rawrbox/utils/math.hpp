@@ -10,11 +10,6 @@ namespace rawrBox {
 	class MathUtils {
 	public:
 		template <typename T = int>
-		static inline T clamp(T val, T min, T max) {
-			return std::min(std::max(val, min), max);
-		}
-
-		template <typename T = int>
 		static inline T repeat(T val, T min, T max) {
 			return ((val - min) % max) + min;
 		}

@@ -71,5 +71,9 @@ namespace rawrBox {
 	rawrBox::Stencil& Renderer::getStencil() const {
 		return *this->_stencil;
 	}
+
+	uint32_t Renderer::getClearColor() const {
+		return this->_clearColor;
+	}
 	// --------------------
 } // namespace rawrBox

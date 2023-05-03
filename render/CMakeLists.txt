@@ -1,3 +1,5 @@
+project ("RAWRBOX.RENDER" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - Render lib" LANGUAGES CXX)
+set(output_target RAWRBOX.RENDER)
 
 # INSTALL GLFW & BGFX -----
 FetchContent_GetProperties(glfw3)
@@ -35,6 +37,21 @@ if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
 endif()
 #--------------
 
+# TEST ----
+if(RAWRBOX_BUILD_TESTING)
+	message("-- Enabled testing")
+    enable_testing()
+
+	find_package(Catch2 3 REQUIRED)
+	list(APPEND RAWRBOX_EXTRA_LIBS Catch2::Catch2WithMain)
+    list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+
+    include(CTest)
+    include(Catch)
+endif()
+#--------------
+
+
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
 if(NOT RAWRBOX_ENABLE_ASSIMP_SUPPORT)
@@ -59,7 +76,6 @@ message("SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
 # ------------------
 
 # Project setup
-set(output_target RAWRBOX.RENDER)
 add_library(${output_target} ${RAWRBOX_RENDER_SOURCES})
 target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_include_directories(${output_target} PUBLIC "include" ${FREETYPE_INCLUDE_DIRS})
@@ -85,3 +101,17 @@ add_custom_command(
 	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_HOME_DIRECTORY}/render/${RAWRBOX_CONTENT_FOLDER} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
 )
 # ------------------
+
+# TESTING ----
+if(RAWRBOX_BUILD_TESTING)
+    file(GLOB_RECURSE RAWRBOX_RENDERER_TESTS_IMPORTS "tests/*.spec.cpp" )
+
+    add_executable(${output_target}-TESTS ${RAWRBOX_RENDERER_TESTS_IMPORTS})
+    target_compile_features(${output_target}-TESTS PRIVATE cxx_std_${CMAKE_CXX_STANDARD})
+    target_link_libraries(${output_target}-TESTS PRIVATE ${output_target} Catch2::Catch2WithMain)
+
+    catch_discover_tests(${output_target}-TESTS
+        DISCOVERY_MODE PRE_TEST
+    )
+endif()
+#--------------

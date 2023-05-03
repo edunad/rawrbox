@@ -184,7 +184,7 @@ namespace rawrBox {
 			this->drawLine({c.x + thick / 2.F, c.y}, a, colC);
 		} else {
 			// Setup --------
-			this->setTexture(this->_pixelTexture->getHandle());
+			if (this->_pixelTexture != nullptr) this->setTexture(this->_pixelTexture->getHandle());
 			this->setShaderProgram(this->_2dprogram);
 			this->setDrawMode();
 			// ----
@@ -217,7 +217,7 @@ namespace rawrBox {
 		if (tex == nullptr) throw std::runtime_error("[RawrBox-Stencil] Invalid texture, cannot draw");
 
 		// TextureImage setup -----
-		this->setTexture(tex->getHandle());
+		if (tex != nullptr) this->setTexture(tex->getHandle());
 		this->setShaderProgram(this->_2dprogram);
 		this->setDrawMode();
 		// ------
@@ -236,7 +236,7 @@ namespace rawrBox {
 
 		// Setup --------
 		if (!this->_outline.isSet()) {
-			this->setTexture(this->_pixelTexture->getHandle());
+			if (this->_pixelTexture != nullptr) this->setTexture(this->_pixelTexture->getHandle());
 			this->setShaderProgram(this->_2dprogram);
 			this->setDrawMode();
 		}
@@ -278,8 +278,8 @@ namespace rawrBox {
 		bool usePTLines = outline.thickness == 1.F;
 
 		// Setup --------
+		if (this->_pixelTexture != nullptr) this->setTexture(this->_pixelTexture->getHandle());
 		this->setShaderProgram((usePTLines || outline.stipple > 0.F) ? this->_lineprogram : this->_2dprogram);
-		this->setTexture(this->_pixelTexture->getHandle());
 		this->setDrawMode(usePTLines ? BGFX_STATE_PT_LINES : 0); // Reset
 		// ----
 
@@ -399,6 +399,8 @@ namespace rawrBox {
 	}
 
 	void Stencil::setShaderProgram(const bgfx::ProgramHandle& handle) {
+		if (!bgfx::isValid(handle)) return;
+
 		if (this->_stencilProgram.idx != handle.idx) this->internalDraw();
 		this->_stencilProgram = handle;
 	}
@@ -580,5 +582,11 @@ namespace rawrBox {
 		this->_scale -= this->_scales.back();
 		this->_scales.pop_back();
 	}
+	// --------------------
+
+	// ------ OTHER
+	const std::vector<PosUVColorVertexData>& Stencil::getVertices() const { return this->_vertices; }
+	const std::vector<uint16_t>& Stencil::getIndices() const { return this->_indices; }
+	void Stencil::clear() { this->_vertices.clear(); }
 	// --------------------
 } // namespace rawrBox
