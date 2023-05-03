@@ -1,10 +1,7 @@
-name: Build
+name: CI/CD - BUILD
 
 on:
     pull_request:
-    push:
-        branches:
-            - master
     workflow_dispatch:
 
 permissions:
@@ -73,7 +70,6 @@ jobs:
                 ignore: 'build | .github'
 
             - name: Check linting
-              continue-on-error: false # Change me to false once we figure out linting
               if: steps.linter.outputs.checks-failed > 0
               run: echo "Linting failed!" | exit 1
 

@@ -1,4 +1,4 @@
-name: Labeler
+name: CI/CD - Labeler
 
 on:
     pull_request_target:
