@@ -159,8 +159,8 @@ namespace rawrBox {
 			atlasNode.y / static_cast<float>(atlas.second->size)},
 		    {(atlasNode.x + atlasNode.width) / static_cast<float>(atlas.second->size),
 			(atlasNode.y + atlasNode.height) / static_cast<float>(atlas.second->size)},
-		    {static_cast<float>(this->face->glyph->metrics.width) / 64.F,
-			static_cast<float>(this->face->glyph->metrics.height) / 64.F},
+		    {this->face->glyph->metrics.width / 64,
+			this->face->glyph->metrics.height / 64},
 		};
 
 		this->_glyphs.push_back(glyph);

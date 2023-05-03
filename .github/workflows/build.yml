@@ -66,6 +66,11 @@ jobs:
                       ~/.conan2
                   key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
 
+            - name: Tests
+              run: |
+                  cd build
+                  ctest --test-dir ./build/math
+
             - name: Run linter
               uses: cpp-linter/cpp-linter-action@v2
               id: linter

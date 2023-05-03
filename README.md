@@ -26,6 +26,7 @@
 | :------------------------------ | :--------------------------------- |
 | `RAWRBOX_USE_WAYLAND`           | Enables WAYLAND compiling on LINUX |
 | `RAWRBOX_BUILD_SAMPLES`         | Builds the project sample          |
+| `RAWRBOX_BUILD_TESTING`         | Builds and runs tests              |
 | `RAWRBOX_ENABLE_QHULL`          | Enables QHull util                 |
 | `RAWRBOX_ENABLE_ASSIMP_SUPPORT` | Enables assimp model loading       |
 
@@ -43,6 +44,7 @@
 | stb/image_write |    ✔️    | Used for writting images                            |
 | freetype2       |    ✔️    | Used for loading fonts                              |
 | assimp          |    ✖️    | Used for loading models                             |
+| catch2          |    ✖️    | Used for testing                                    |
 
 # Building
 

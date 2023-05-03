@@ -106,7 +106,7 @@ namespace rawrBox {
 		    uv.y,
 
 		    // color
-		    rawrBox::Color::pack(col));
+		    rawrBox::Color::toHEX(col));
 	}
 
 	void Stencil::pushIndices(uint16_t a, uint16_t b, uint16_t c) {
@@ -461,7 +461,7 @@ namespace rawrBox {
 		this->_drawMode = 0;
 		// -----
 
-		rawrBox::Vector2i size = this->_windowSize;
+		rawrBox::Vector2f size = this->_windowSize.cast<float>();
 
 		this->pushVertice({0, 0}, {0, 0}, rawrBox::Colors::White);
 		this->pushVertice({0, size.y}, {0, 1}, rawrBox::Colors::White);

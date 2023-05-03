@@ -85,10 +85,11 @@ namespace rawrBox {
 		}
 
 		// Generate vertices -----
+		auto screeSize = this->_windowSize.cast<float>();
 		this->pushVertice({0, 0}, {0, 0});
-		this->pushVertice({0, this->_windowSize.y}, {0, 1});
-		this->pushVertice({this->_windowSize.x, 0}, {1, 0});
-		this->pushVertice({this->_windowSize.x, this->_windowSize.y}, {1, 1});
+		this->pushVertice({0, screeSize.y}, {0, 1});
+		this->pushVertice({screeSize.x, 0}, {1, 0});
+		this->pushVertice({screeSize.x, screeSize.y}, {1, 1});
 
 		this->pushIndices(4, 3, 2);
 		this->pushIndices(3, 1, 2);

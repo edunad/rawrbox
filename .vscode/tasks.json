@@ -1,20 +1,28 @@
 {
-	// See https://go.microsoft.com/fwlink/?LinkId=733558
-	// for the documentation about the tasks.json format
-	"version": "2.0.0",
-	"tasks": [
-	  {
-		"label": "Run clang-tidy",
-		"type": "shell",
-		"command": "clang-tidy -p \"build\" `find -not -path \"*build*\" -name *.cpp && find -not -path \"*build*\" -name *.h && find -not -path \"*build*\" -name *.hpp` --fix-errors",
-		"group": "build",
-		"options": {
-		  "cwd": "${workspaceFolder}"
-		},
-		"presentation": {
-		  "reveal": "always",
-		  "panel": "new"
-		}
-	  }
-	]
-  }
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run clang-tidy",
+            "type": "shell",
+            "command": "clang-tidy -p \"build\" `find -not -path \"*build*\" -name *.cpp && find -not -path \"*build*\" -name *.h && find -not -path \"*build*\" -name *.hpp` --fix-errors",
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "type": "cmake",
+            "label": "CMake: test",
+            "command": "test",
+            "problemMatcher": [],
+            "w"
+            "detail": "CMake template test task"
+        }
+    ]
+}
