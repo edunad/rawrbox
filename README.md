@@ -22,27 +22,27 @@
 
 # CMAKE
 
-| OPTION NAME                          | NOTE                               |
-| :----------------------------------- | :--------------------------------- |
-| `RAWRBOX_USE_WAYLAND`                | Enables WAYLAND compiling on LINUX |
-| `RAWRBOX_BUILD_SAMPLE`               | Builds the project sample          |
-| `RAWRBOX_BUILD_UTIL_QHULL`           | Enables QHull util                 |
-| `RAWRBOX_BUILD_RENDER_MODEL_SUPPORT` | Enables assimp                     |
+| OPTION NAME                     | NOTE                               |
+| :------------------------------ | :--------------------------------- |
+| `RAWRBOX_USE_WAYLAND`           | Enables WAYLAND compiling on LINUX |
+| `RAWRBOX_BUILD_SAMPLES`         | Builds the project sample          |
+| `RAWRBOX_ENABLE_QHULL`          | Enables QHull util                 |
+| `RAWRBOX_ENABLE_ASSIMP_SUPPORT` | Enables assimp model loading       |
 
 # Dependencies
 
-| LIB             | REQUIRED | NOTE                                              |
-| :-------------- | :------: | :------------------------------------------------ |
-| bgfx            |    ✔️    |                                                   |
-| bx              |    ✔️    | Required by `bgfx`                                |
-| glfw            |    ✔️    |                                                   |
-| qhull           |    ✖️    | Can be disabled with `RAWRBOX_BUILD_UTIL_QHULL 0` |
-| fmt             |    ✔️    | Used for formatting                               |
-| utfcpp          |    ✔️    | Used for text rendering                           |
-| stb/image       |    ✔️    | Used for loading images                           |
-| stb/image_write |    ✔️    | Used for writting images                          |
-| freetype2       |    ✔️    | Used for loading fonts                            |
-| assimp          |    ✖️    | Used for loading models                           |
+| LIB             | REQUIRED | NOTE                                                |
+| :-------------- | :------: | :-------------------------------------------------- |
+| bgfx            |    ✔️    |                                                     |
+| bx              |    ✔️    | Required by `bgfx`                                  |
+| glfw            |    ✔️    |                                                     |
+| qhull           |    ✖️    | Used for calculating convex hulls from given points |
+| fmt             |    ✔️    | Used for formatting                                 |
+| utfcpp          |    ✔️    | Used for text rendering                             |
+| stb/image       |    ✔️    | Used for loading images                             |
+| stb/image_write |    ✔️    | Used for writting images                            |
+| freetype2       |    ✔️    | Used for loading fonts                              |
+| assimp          |    ✖️    | Used for loading models                             |
 
 # Building
 

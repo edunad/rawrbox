@@ -40,8 +40,8 @@ jobs:
               uses: actions/cache/restore@v3
               with:
                   path: |
-                    ./build
-                    ~/.conan2
+                      ./build
+                      ~/.conan2
                   key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
 
             - name: Install Conan dependencies
@@ -62,27 +62,24 @@ jobs:
                   cache-name: cache-conan-modules
               with:
                   path: |
-                    ./build
-                    ~/.conan2
+                      ./build
+                      ~/.conan2
                   key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
 
             - name: Run linter
               uses: cpp-linter/cpp-linter-action@v2
               id: linter
               env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               with:
-                style: file
-                files-changed-only: true
-                tidy-checks: ''
-                extra-args: '-std=c++20 -Wall'
-                version: '15'
-                database: './build/'
-                ignore: 'build | .github'
+                  style: file
+                  files-changed-only: true
+                  tidy-checks: ''
+                  extra-args: '-std=c++20 -Wall'
+                  version: '15'
+                  database: './build/'
+                  ignore: 'build | .github | stb'
 
             - name: Check linting
               if: steps.linter.outputs.checks-failed > 0
               run: echo "Linting failed!" | exit 1
-
-
-

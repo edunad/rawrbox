@@ -58,7 +58,7 @@ set(ASSIMP_INSTALL_PDB OFF CACHE BOOL "")
 find_package(Freetype REQUIRED MODULE)
 find_package(utf8cpp REQUIRED)
 
-if(RAWRBOX_BUILD_RENDER_ASSIMP_SUPPORT)
+if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
 	message("-- Enabled assimp")
 	find_package(assimp REQUIRED)
 
@@ -68,7 +68,7 @@ endif()
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
-if(NOT RAWRBOX_BUILD_RENDER_ASSIMP_SUPPORT)
+if(NOT RAWRBOX_ENABLE_ASSIMP_SUPPORT)
 	foreach (TMP_PATH ${RAWRBOX_RENDER_SOURCES})
 		string (FIND ${TMP_PATH} "/assimp/" EXCLUDE_DIR_FOUND)
 		if (NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
