@@ -55,6 +55,17 @@ jobs:
                   CXX=g++-12 cmake .. -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON"
                   ninja
 
+            - name: Cache conan
+              id: github-cache-conan
+              uses: actions/cache@v3
+              env:
+                  cache-name: cache-conan-modules
+              with:
+                  path: |
+                    ./build
+                    ~/.conan2
+                  key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
+
             - name: Run linter
               uses: cpp-linter/cpp-linter-action@v2
               id: linter
@@ -73,15 +84,5 @@ jobs:
               if: steps.linter.outputs.checks-failed > 0
               run: echo "Linting failed!" | exit 1
 
-            - name: Cache conan
-              id: github-cache-conan
-              uses: actions/cache@v3
-              env:
-                  cache-name: cache-conan-modules
-              with:
-                  path: |
-                    ./build
-                    ~/.conan2
-                  key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
 
 
