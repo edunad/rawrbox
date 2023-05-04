@@ -50,6 +50,7 @@ jobs:
                   conan install . --output-folder=build --build=missing
 
             - name: Build
+              id: build
               run: |
                   cd build
                   CXX=g++-12 cmake .. -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON"
@@ -58,7 +59,7 @@ jobs:
             - name: Cache conan
               id: github-cache-conan
               uses: actions/cache/save@v3
-              if: always()
+              if: steps.build.outputs.exit_code == 0
               env:
                   cache-name: cache-conan-modules
               with:
