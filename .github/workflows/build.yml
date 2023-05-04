@@ -91,4 +91,4 @@ jobs:
 
             - name: Check linting
               if: steps.linter.outputs.checks-failed > 0
-              run: echo "Linting failed!" | exit 1
+              run: exit 1
