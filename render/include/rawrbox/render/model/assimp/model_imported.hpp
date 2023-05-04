@@ -21,8 +21,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "rawrbox/math/color.hpp"
-
 #define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_RemoveRedundantMaterials)
 
 namespace rawrBox {
@@ -427,6 +425,15 @@ namespace rawrBox {
 				mesh->baseVertex = static_cast<uint16_t>(mesh->vertices.size());
 				mesh->baseIndex = static_cast<uint16_t>(mesh->indices.size());
 				// ----
+
+				// Calculate bbox ---
+				auto min = aiMesh.mAABB.mMin;
+				auto max = aiMesh.mAABB.mMax;
+
+				mesh->bbox.m_min = {min.x, min.y, min.z};
+				mesh->bbox.m_max = {max.x, max.y, max.z};
+				mesh->bbox.m_size = mesh->bbox.m_min.abs() + mesh->bbox.m_max.abs();
+				// -----
 
 				if ((this->_assimpFlags & aiProcess_PreTransformVertices) == 0) {
 					bx::mtxTranspose(mesh->offsetMatrix.data(), &root->mTransformation.a1); // Append matrix to our vertices

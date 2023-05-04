@@ -46,8 +46,31 @@ TEST_CASE("ModelBase should behave as expected", "[rawrBox::ModelBase]") {
 		REQUIRE(m1->totalVertex == 8);
 	}
 
+	SECTION("rawrBox::ModelBase::getBBOX") {
+		auto base = std::make_shared<rawrBox::ModelBase<>>();
+
+		auto& b = base->getBBOX();
+		REQUIRE(b.isEmpty() == true);
+		REQUIRE(b.size() == 0.F);
+
+		base->addMesh(base->generatePlane({}, {2, 2}));
+
+		REQUIRE(b.isEmpty() == false);
+		REQUIRE(b.size().x == 4.F);
+		REQUIRE(b.size().y == 4.F);
+		REQUIRE(b.size().z == 0.F);
+
+		base->addMesh(base->generateCube({}, {2, 4, 2}));
+
+		REQUIRE(b.size().x == 4.F);
+		REQUIRE(b.size().y == 8.F);
+		REQUIRE(b.size().z == 4.F);
+	}
+
 	SECTION("rawrBox::ModelBase::setPos / rawrBox::ModelBase::getPos") {
 		auto base = std::make_shared<rawrBox::ModelBase<>>();
+		base->addMesh(base->generatePlane({}, {1, 1}));
+
 		REQUIRE(base->getPos().x == 0);
 		REQUIRE(base->getPos().y == 0);
 		REQUIRE(base->getPos().z == 0);

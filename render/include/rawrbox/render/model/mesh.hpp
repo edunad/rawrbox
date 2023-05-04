@@ -17,6 +17,31 @@
 
 namespace rawrBox {
 
+	struct BBOX {
+	public:
+		rawrBox::Vector3f m_min = {};
+		rawrBox::Vector3f m_max = {};
+		rawrBox::Vector3f m_size = {};
+
+		[[nodiscard]] bool isEmpty() const {
+			return this->m_size == 0;
+		}
+
+		[[nodiscard]] const rawrBox::Vector3f& size() const {
+			return this->m_size;
+		}
+
+		void combine(const rawrBox::BBOX& b) {
+			this->m_min = {std::min(this->m_min.x, b.m_min.x), std::min(this->m_min.y, b.m_min.y), std::min(this->m_min.z, b.m_min.z)};
+			this->m_max = {std::max(this->m_max.x, b.m_max.x), std::max(this->m_max.y, b.m_max.y), std::max(this->m_max.z, b.m_max.z)};
+
+			this->m_size = m_min.abs() + m_max.abs();
+		}
+
+		bool operator==(const rawrBox::BBOX& other) const { return this->m_size == other.m_size; }
+		bool operator!=(const rawrBox::BBOX& other) const { return !operator==(other); }
+	};
+
 	struct VertexData;
 	struct Skeleton;
 
@@ -44,11 +69,12 @@ namespace rawrBox {
 		// RENDERING ---
 		std::array<float, 16> offsetMatrix = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}; // Identity matrix by default
 		std::array<float, 16> vertexPos = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};    // Identity matrix by default
-		rawrBox::Colorf color = rawrBox::Colors::White;
+		rawrBox::Color color = rawrBox::Colors::White;
 
 		bool wireframe = false;
 		uint64_t culling = BGFX_STATE_CULL_CW;
 		uint64_t blending = BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
+		rawrBox::BBOX bbox = {};
 		// --------------
 
 		std::shared_ptr<Mesh<T>> parent = nullptr;
@@ -87,6 +113,10 @@ namespace rawrBox {
 			return this->indices;
 		}
 
+		rawrBox::BBOX& getBBOX() {
+			return this->bbox;
+		}
+
 		void setMatrix(const std::array<float, 16>& offset) {
 			this->offsetMatrix = offset;
 		}
@@ -112,7 +142,7 @@ namespace rawrBox {
 			this->specularShininess = shininess;
 		}
 
-		void setColor(const rawrBox::Colorf& color) {
+		void setColor(const rawrBox::Color& color) {
 			this->color = color;
 		}
 

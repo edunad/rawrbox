@@ -67,6 +67,8 @@ namespace rawrBox {
 		rawrBox::Vector3f _pos = {};
 		rawrBox::Vector3f _angle = {};
 
+		rawrBox::BBOX _bbox = {};
+
 		// SKINNING ----
 		std::unordered_map<std::string, std::shared_ptr<Skeleton>> _skeletons = {};
 		std::unordered_map<std::string, std::shared_ptr<Bone>> _globalBoneMap = {}; // Map for quick lookup
@@ -171,6 +173,12 @@ namespace rawrBox {
 
 			mesh->totalVertex = static_cast<uint16_t>(buff.size());
 			mesh->totalIndex = static_cast<uint16_t>(inds.size());
+
+			// AABB ---
+			mesh->bbox.m_min = {-size.x, -size.y, 0};
+			mesh->bbox.m_max = {size.x, size.y, 0};
+			mesh->bbox.m_size = mesh->bbox.m_min.abs() + mesh->bbox.m_max.abs();
+			// -----
 
 			mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
 			for (uint16_t ind : inds)
@@ -284,6 +292,12 @@ namespace rawrBox {
 			mesh->totalVertex = static_cast<uint16_t>(buff.size());
 			mesh->totalIndex = static_cast<uint16_t>(inds.size());
 
+			// AABB ---
+			mesh->bbox.m_min = -size;
+			mesh->bbox.m_max = size;
+			mesh->bbox.m_size = mesh->bbox.m_min.abs() + mesh->bbox.m_max.abs();
+			// -----
+
 			mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
 			for (uint16_t ind : inds)
 				mesh->indices.push_back(static_cast<uint16_t>(buff.size()) - ind);
@@ -298,6 +312,12 @@ namespace rawrBox {
 			this->mergeMeshes(mesh, generateCube(pos, {size, 0.01F, 0.01F}, Colors::Red));   // x;
 			this->mergeMeshes(mesh, generateCube(pos, {0.01F, size, 0.01F}, Colors::Green)); // y;
 			this->mergeMeshes(mesh, generateCube(pos, {0.01F, 0.01F, size}, Colors::Blue));  // z;
+
+			// AABB ---
+			mesh->bbox.m_min = {-size, -size, -size};
+			mesh->bbox.m_max = {size, size, size};
+			mesh->bbox.m_size = mesh->bbox.m_min.abs() + mesh->bbox.m_max.abs();
+			// -----
 
 			mesh->setCulling(0);
 			mesh->setTexture(rawrBox::WHITE_TEXTURE);
@@ -386,6 +406,8 @@ namespace rawrBox {
 		// -------
 
 		// UTIL ---
+		virtual const rawrBox::BBOX& getBBOX() { return this->_bbox; }
+
 		virtual const rawrBox::Vector3f& getPos() { return this->_pos; }
 		virtual void setPos(const rawrBox::Vector3f& pos) {
 			this->_pos = pos;
@@ -414,6 +436,7 @@ namespace rawrBox {
 		}
 
 		virtual void addMesh(std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> mesh) {
+			this->_bbox.combine(mesh->getBBOX());
 			this->_meshes.push_back(std::move(mesh));
 		}
 

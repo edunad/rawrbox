@@ -21,6 +21,7 @@ namespace assimp {
 		std::shared_ptr<rawrBox::ModelImported<>> _model = std::make_shared<rawrBox::ModelImported<>>();
 		std::shared_ptr<rawrBox::ModelImported<>> _model2 = std::make_shared<rawrBox::ModelImported<>>();
 		std::shared_ptr<rawrBox::ModelImported<rawrBox::MaterialLit>> _model3 = std::make_shared<rawrBox::ModelImported<rawrBox::MaterialLit>>();
+
 		std::shared_ptr<rawrBox::Text3D> _text = std::make_shared<rawrBox::Text3D>();
 
 		rawrBox::Font* _font = nullptr;
