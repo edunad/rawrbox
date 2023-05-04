@@ -435,6 +435,13 @@ namespace rawrBox {
 				this->_meshes[i]->setWireframe(wireframe);
 			}
 		}
+
+		virtual void setBlend(uint64_t blend, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->setBlend(blend);
+			}
+		}
 		// ----
 
 		virtual void upload() {

@@ -5,27 +5,29 @@
 
 #include <cmath>
 
+#include "rawrbox/render/static.hpp"
+
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
 #if GLFW_VERSION_MINOR < 2
-#error "GLFW 3.2 or later is required"
+	#error "GLFW 3.2 or later is required"
 #endif // GLFW_VERSION_MINOR < 2
 
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-#if RAWRBOX_USE_WAYLAND
-#include <wayland-egl.h>
-#define GLFW_EXPOSE_NATIVE_WAYLAND
-#else
-#define GLFW_EXPOSE_NATIVE_X11
-#define GLFW_EXPOSE_NATIVE_GLX
-#endif
+	#if RAWRBOX_USE_WAYLAND
+		#include <wayland-egl.h>
+		#define GLFW_EXPOSE_NATIVE_WAYLAND
+	#else
+		#define GLFW_EXPOSE_NATIVE_X11
+		#define GLFW_EXPOSE_NATIVE_GLX
+	#endif
 #elif BX_PLATFORM_OSX
-#define GLFW_EXPOSE_NATIVE_COCOA
-#define GLFW_EXPOSE_NATIVE_NSGL
+	#define GLFW_EXPOSE_NATIVE_COCOA
+	#define GLFW_EXPOSE_NATIVE_NSGL
 #elif BX_PLATFORM_WINDOWS
-#define GLFW_EXPOSE_NATIVE_WIN32
-#define GLFW_EXPOSE_NATIVE_WGL
+	#define GLFW_EXPOSE_NATIVE_WIN32
+	#define GLFW_EXPOSE_NATIVE_WGL
 #endif //
 #include <GLFW/glfw3native.h>
 #include <fmt/printf.h>
@@ -46,7 +48,7 @@ namespace rawrBox {
 
 	static void* glfwNativeWindowHandle(GLFWwindow* _window) {
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-#if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
+	#if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
 		wl_egl_window* win_impl = static_cast<wl_egl_window*>(glfwGetWindowUserPointer(_window));
 		if (!win_impl) {
 			int width, height;
@@ -59,9 +61,9 @@ namespace rawrBox {
 		}
 
 		return (void*)(uintptr_t)win_impl;
-#else
+	#else
 		return (void*)(uintptr_t)glfwGetX11Window(_window);
-#endif
+	#endif
 #elif BX_PLATFORM_OSX
 		return glfwGetCocoaWindow(_window);
 #elif BX_PLATFORM_WINDOWS
@@ -73,11 +75,11 @@ namespace rawrBox {
 
 	static void* getNativeDisplayHandle() {
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-#if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
+	#if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
 		return glfwGetWaylandDisplay();
-#else
+	#else
 		return glfwGetX11Display();
-#endif
+	#endif
 #else
 		return nullptr;
 #endif // BX_PLATFORM_*
@@ -211,6 +213,8 @@ namespace rawrBox {
 		glfwSetCursorPosCallback(GLFWHANDLE, callbacks_mouseMove);
 		glfwSetMouseButtonCallback(GLFWHANDLE, callbacks_mouseKey);
 		glfwSetWindowCloseCallback(GLFWHANDLE, callbacks_windowClose);
+
+		rawrBox::BGFX_INITIALIZED = true;
 	}
 
 	void Window::setMonitor(int monitor) {

@@ -51,6 +51,8 @@ namespace rawrBox {
 		void pushVertice(rawrBox::Vector2f pos, const rawrBox::Vector2f& uv);
 		void pushIndices(uint16_t a, uint16_t b, uint16_t c);
 
+		void buildPRViews();
+
 	public:
 		PostProcessManager(bgfx::ViewId view, const rawrBox::Vector2i& size);
 		~PostProcessManager();
@@ -61,8 +63,10 @@ namespace rawrBox {
 		PostProcessManager& operator=(const PostProcessManager&) = delete;
 
 		// Process utils ----
-		void registerPostProcess(std::shared_ptr<rawrBox::PostProcessBase> post);
-		void removePostProcess(size_t indx);
+		void add(std::shared_ptr<rawrBox::PostProcessBase> post);
+		void remove(size_t indx);
+		std::shared_ptr<rawrBox::PostProcessBase> get(size_t indx);
+		size_t count();
 		// ---------
 
 		void upload();

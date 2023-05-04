@@ -36,13 +36,11 @@ TEST_CASE("Stencil should behave as expected", "[rawrBox::Stencil]") {
 		REQUIRE(base.getVertices().size() == 2);
 	}
 
-	/*
-		SECTION("rawrBox::Stencil::drawBox") {
-			base.clear();
+	SECTION("rawrBox::Stencil::drawBox") {
+		base.clear();
 
-			REQUIRE(base.getVertices().size() == 0);
-			base.drawBox({0, 0}, {10, 10}, rawrBox::Colors::Black);
-			REQUIRE(base.getVertices().size() == 4);
-		}
-	*/
+		REQUIRE(base.getVertices().size() == 0);
+		base.drawBox({0, 0}, {10, 10}, rawrBox::Colors::Black);
+		REQUIRE(base.getVertices().size() == 4);
+	}
 }

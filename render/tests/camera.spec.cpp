@@ -6,8 +6,6 @@
 
 #include <bx/math.h>
 
-#include <string>
-
 TEST_CASE("Camera should behave as expected", "[rawrBox::Camera]") {
 	rawrBox::CameraBase base;
 

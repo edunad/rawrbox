@@ -2,13 +2,8 @@
 #include <rawrbox/render/model/mesh.hpp>
 
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/matchers/catch_matchers.hpp>
-#include <catch2/matchers/catch_matchers_floating_point.hpp>
-
-#include <bx/math.h>
 
 #include <memory>
-#include <string>
 
 TEST_CASE("Mesh should behave as expected", "[rawrBox::Mesh]") {
 	std::shared_ptr<rawrBox::Mesh<rawrBox::VertexData>> base = std::make_shared<rawrBox::Mesh<rawrBox::VertexData>>();

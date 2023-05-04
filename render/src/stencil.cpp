@@ -214,9 +214,6 @@ namespace rawrBox {
 		if (col.isTransparent()) return;
 
 		// TextureImage setup -----
-		if (tex == nullptr) throw std::runtime_error("[RawrBox-Stencil] Invalid texture, cannot draw");
-
-		// TextureImage setup -----
 		if (tex != nullptr) this->setTexture(tex->getHandle());
 		this->setShaderProgram(this->_2dprogram);
 		this->setDrawMode();

@@ -11,6 +11,7 @@ namespace rawrBox {
 	public:
 		template <typename T = int>
 		static inline T repeat(T val, T min, T max) {
+			if (val < 0 && max > 0) val = max - std::abs(val - min);
 			return ((val - min) % max) + min;
 		}
 
