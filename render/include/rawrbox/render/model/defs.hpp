@@ -18,7 +18,7 @@ namespace rawrBox {
 
 		VertexData() = default;
 		VertexData(const rawrBox::Vector3f& _pos,
-		    float _u, float _v, const rawrBox::Color cl = rawrBox::Colors::White) : position({_pos.x, _pos.y, _pos.z}), uv({_u, _v}), abgr(rawrBox::Color::pack(cl)) {}
+		    float _u, float _v, const rawrBox::Color cl = rawrBox::Colors::White) : position({_pos.x, _pos.y, _pos.z}), uv({_u, _v}), abgr(rawrBox::Color::toHEX(cl)) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;

@@ -25,7 +25,7 @@ namespace rawrBox {
 		uint32_t abgr = 0xFFFFFFFF;
 
 		PosUVColorVertexData() = default;
-		PosUVColorVertexData(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& uv, const rawrBox::Color& cl) : x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y), abgr(rawrBox::Color::pack(cl)) {}
+		PosUVColorVertexData(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& uv, const rawrBox::Color& cl) : x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y), abgr(rawrBox::Color::toHEX(cl)) {}
 		PosUVColorVertexData(float _x, float _y, float _z, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v), abgr(_abgr) {}
 	};
 
@@ -214,6 +214,12 @@ namespace rawrBox {
 		// ------ SCALE
 		void pushScale(const rawrBox::Vector2f& scale);
 		void popScale();
+		// --------------------
+
+		// ------ OTHER
+		[[nodiscard]] const std::vector<PosUVColorVertexData>& getVertices() const;
+		[[nodiscard]] const std::vector<uint16_t>& getIndices() const;
+		void clear();
 		// --------------------
 	};
 } // namespace rawrBox

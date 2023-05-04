@@ -14,6 +14,9 @@ namespace rawrBox {
 	public:
 		NumberType r = 0, g = 0, b = 0, a = 1;
 
+		Color_t() = default;
+		Color_t(NumberType _r, NumberType _g, NumberType _b, NumberType _a) : r(_r), g(_g), b(_b), a(_a) {}
+
 		static Color_t<NumberType> RGBAHex(uint32_t x) {
 			if constexpr (std::is_same<NumberType, float>::value) {
 				return {
@@ -35,18 +38,24 @@ namespace rawrBox {
 				return {
 				    ((x >> 16) & 0xFF) / 255.0F,
 				    ((x >> 8) & 0xFF) / 255.0F,
-				    ((x)&0xFF) / 255.0F};
+				    ((x)&0xFF) / 255.0F,
+				    1.F};
 			} else {
 				return {
-				    ((x >> 16) & 0xFF),
-				    ((x >> 8) & 0xFF),
-				    ((x)&0xFF)};
+				    static_cast<int>(((x >> 16) & 0xFF)),
+				    static_cast<int>(((x >> 8) & 0xFF)),
+				    static_cast<int>(((x)&0xFF)),
+				    255};
 			}
 		}
 
-		static uint32_t pack(Color_t<NumberType> c) {
-			Color_t<int> cc = c.cast<int>();
-			return static_cast<uint32_t>(cc.r | (cc.g << 8) | (cc.b << 16) | (cc.a << 24));
+		static uint32_t toHEX(Color_t<NumberType> c) {
+			if constexpr (std::is_same<NumberType, int>::value) {
+				return static_cast<uint32_t>(c.r | (c.b << 8) | (c.g << 16) | (c.a << 24));
+			} else {
+				Color_t<int> cc = c.cast<int>();
+				return static_cast<uint32_t>(cc.r | (cc.b << 8) | (cc.g << 16) | (cc.a << 24));
+			}
 		}
 
 		template <class ReturnType>
@@ -75,11 +84,10 @@ namespace rawrBox {
 			    ColorType(179, 55, 113, 255),  // rgb(179, 55, 113)
 			    ColorType(255, 0, 255, 255),   // rgb(252, 0, 255)
 			    ColorType(241, 196, 15, 255),  // rgb(241, 196, 15)
-
-			    ColorType(88, 177, 159, 255), // rgb(88, 177, 159)
-			    ColorType(27, 20, 100, 255),  // rgb(27, 20, 100)
-			    ColorType(87, 88, 187, 255),  // rgb(87, 88, 187)
-			    ColorType(255, 255, 255, 255) // rgb(255, 255, 255)
+			    ColorType(88, 177, 159, 255),  // rgb(88, 177, 159)
+			    ColorType(27, 20, 100, 255),   // rgb(27, 20, 100)
+			    ColorType(87, 88, 187, 255),   // rgb(87, 88, 187)
+			    ColorType(255, 255, 255, 255)  // rgb(255, 255, 255)
 			};
 
 			auto col = cols[index % cols.size()];
@@ -87,17 +95,6 @@ namespace rawrBox {
 				return col;
 			} else {
 				return col / 255.0F;
-			}
-		}
-
-		Color_t() = default;
-		explicit Color_t(NumberType _r, NumberType _g = 0, NumberType _b = 0, NumberType _a = -1) : r(_r), g(_g), b(_b), a(_a) {
-			if (a == -1) {
-				if constexpr (std::is_same<NumberType, int>::value) {
-					a = 255;
-				} else {
-					a = 1.0F;
-				}
 			}
 		}
 
@@ -113,8 +110,7 @@ namespace rawrBox {
 			return ret;
 		}
 
-		[[nodiscard]] bool isTransparent() const { return (r == 0 && g == 0 && b == 0) || a == 0; }
-
+		[[nodiscard]] bool isTransparent() const { return a == 0; }
 		[[nodiscard]] NumberType dot(const ColorType& other) const {
 			return r * other.r + g * other.g + b * other.b + a * other.a;
 		}
@@ -238,18 +234,18 @@ namespace rawrBox {
 		using ColorType = Color_t<NumberType>;
 
 	public:
-		inline const static ColorType Black = ColorType(0, 0, 0);
-		inline const static ColorType White = ColorType(1, 1, 1);
+		inline const static ColorType Black = ColorType(0, 0, 0, 1);
+		inline const static ColorType White = ColorType(1, 1, 1, 1);
 
-		inline const static ColorType Gray = ColorType(0.81F, 0.8F, 0.75F);
-		inline const static ColorType DarkGray = ColorType(0.51F, 0.50F, 0.47F);
+		inline const static ColorType Gray = ColorType(0.81F, 0.8F, 0.75F, 1);
+		inline const static ColorType DarkGray = ColorType(0.51F, 0.50F, 0.47F, 1);
 
-		inline const static ColorType Red = ColorType(1, 0.32F, 0.32F);
-		inline const static ColorType Green = ColorType(0.14F, 0.87F, 0.50F);
-		inline const static ColorType Blue = ColorType(0.2F, 0.67F, 0.87F);
-		inline const static ColorType Orange = ColorType(1, 0.47F, 0.24F);
-		inline const static ColorType Yellow = ColorType(1, 0.69F, 0.25F);
-		inline const static ColorType Purple = ColorType(1.F, 0.F, 1.F);
+		inline const static ColorType Red = ColorType(1, 0.32F, 0.32F, 1);
+		inline const static ColorType Green = ColorType(0.14F, 0.87F, 0.50F, 1);
+		inline const static ColorType Blue = ColorType(0.2F, 0.67F, 0.87F, 1);
+		inline const static ColorType Orange = ColorType(1, 0.47F, 0.24F, 1);
+		inline const static ColorType Yellow = ColorType(1, 0.69F, 0.25F, 1);
+		inline const static ColorType Purple = ColorType(1.F, 0.F, 1.F, 1);
 
 		inline const static ColorType Transparent = ColorType(0, 0, 0, 0);
 	};

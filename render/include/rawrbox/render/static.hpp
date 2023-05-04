@@ -22,4 +22,6 @@ namespace rawrBox {
 	extern std::shared_ptr<rawrBox::TextureMissing> MISSING_TEXTURE;
 	extern std::shared_ptr<rawrBox::TextureFlat> MISSING_SPECULAR_TEXTURE;
 	extern std::shared_ptr<rawrBox::TextureFlat> WHITE_TEXTURE;
+
+	extern bool BGFX_INITIALIZED;
 } // namespace rawrBox

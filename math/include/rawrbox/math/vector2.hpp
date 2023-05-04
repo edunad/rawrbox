@@ -2,12 +2,13 @@
 
 #include <algorithm>
 #include <cmath>
+#include <concepts>
 #include <type_traits>
 
 namespace rawrBox {
 	template <class NumberType>
 	class Vector2_t {
-	private:
+	protected:
 		using VecType = Vector2_t<NumberType>;
 
 	public:
@@ -15,18 +16,14 @@ namespace rawrBox {
 
 		Vector2_t() = default;
 		explicit Vector2_t(NumberType val) : x(val), y(val) {}
-
-		template <class TX, class TY>
-		Vector2_t(TX _x, TY _y) : x(static_cast<NumberType>(_x)), y(static_cast<NumberType>(_y)) {}
-
-		template <class T>
-		explicit Vector2_t(Vector2_t<T> other) : x(static_cast<NumberType>(other.x)), y(static_cast<NumberType>(other.y)) {}
+		Vector2_t(NumberType _x, NumberType _y) : x(_x), y(_y) {}
 
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1); }
 
+		// UTILS ---
 		[[nodiscard]] NumberType distance(const VecType& other) const {
-			return std::sqrt(((x - other.x) * (x - other.x)) + ((y - other.y) * (y - other.y)));
+			return static_cast<NumberType>(std::sqrt(((x - other.x) * (x - other.x)) + ((y - other.y) * (y - other.y))));
 		}
 
 		[[nodiscard]] NumberType length() const {
@@ -34,20 +31,7 @@ namespace rawrBox {
 		}
 
 		[[nodiscard]] NumberType angle(const VecType& target) const {
-			return -std::atan2(x - target.x, y - target.y);
-		}
-
-		[[nodiscard]] VecType normalized() const {
-			NumberType l = length();
-			return l == 0 ? VecType() : (*this) / l;
-		}
-
-		[[nodiscard]] NumberType dot(const VecType& other) const {
-			return x * other.x + y * other.y;
-		}
-
-		[[nodiscard]] NumberType cross(const VecType& other) const {
-			return x * other.y - y * other.x;
+			return -static_cast<NumberType>(std::atan2(x - target.x, y - target.y));
 		}
 
 		[[nodiscard]] VecType abs() const {
@@ -63,40 +47,17 @@ namespace rawrBox {
 			return ret;
 		}
 
-		[[nodiscard]] VecType floor() const {
-			return {std::floor(x), std::floor(y)};
-		}
-
-		[[nodiscard]] VecType round() const {
-			return {std::round(x), std::round(y)};
-		}
-
-		[[nodiscard]] VecType ceil() const {
-			return {std::ceil(x), std::ceil(y)};
-		}
-
-		[[nodiscard]] VecType clampVec(const VecType& min, const VecType& max) const {
-			return {
-			    std::clamp(x, min.x, max.x),
-			    std::clamp(y, min.y, max.y)};
-		}
-
 		[[nodiscard]] VecType clamp(NumberType min, NumberType max) const {
 			return {
 			    std::clamp(x, min, max),
 			    std::clamp(y, min, max)};
 		}
-
 		[[nodiscard]] NumberType atan2() const {
 			return std::atan2(y, x);
 		}
 
-		static VecType cosSin(NumberType radians) {
+		static VecType cosSin(float radians) {
 			return VecType(std::cos(radians), std::sin(radians));
-		}
-
-		[[nodiscard]] bool isNaN() const {
-			return std::isnan(x) || std::isnan(y);
 		}
 
 		[[nodiscard]] VecType rotateAroundOrigin(NumberType rads, const VecType& origin) const {
@@ -120,7 +81,48 @@ namespace rawrBox {
 		Vector2_t<ReturnType> cast() const {
 			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y)};
 		}
+		// ------
 
+		// UTILS - FLOAT ---
+		[[nodiscard]] float dot(const Vector2_t<float>& other) const
+			requires(std::is_same<NumberType, float>::value)
+		{
+			return x * other.x + y * other.y;
+		}
+
+		[[nodiscard]] Vector2_t<float> normalized() const
+			requires(std::is_same<NumberType, float>::value)
+		{
+			float l = length();
+			return l == 0 ? Vector2_t<float>() : (*this) / l;
+		}
+
+		[[nodiscard]] float cross(const Vector2_t<float>& other) const
+			requires(std::is_same<NumberType, float>::value)
+		{
+			return x * other.y - y * other.x;
+		}
+
+		[[nodiscard]] Vector2_t<float> floor() const
+			requires(std::is_same<NumberType, float>::value)
+		{
+			return {std::floor(x), std::floor(y)};
+		}
+
+		[[nodiscard]] Vector2_t<float> round() const
+			requires(std::is_same<NumberType, float>::value)
+		{
+			return {std::round(x), std::round(y)};
+		}
+
+		[[nodiscard]] Vector2_t<float> ceil() const
+			requires(std::is_same<NumberType, float>::value)
+		{
+			return {std::ceil(x), std::ceil(y)};
+		}
+		// ----
+
+		// OPERATORS ---
 		// numberic typed operators
 		VecType operator-(NumberType other) const { return VecType(x - other, y - other); }
 		VecType operator+(NumberType other) const { return VecType(x + other, y + other); }
@@ -190,9 +192,9 @@ namespace rawrBox {
 		bool operator>=(const VecType& other) const { return x >= other.x && y >= other.y; }
 
 		VecType operator-() const { return VecType(-x, -y); }
+		// -------
 	};
 
-	using Vector2d = Vector2_t<double>;
 	using Vector2f = Vector2_t<float>;
 	using Vector2i = Vector2_t<int>;
 	using Vector2 = Vector2f;

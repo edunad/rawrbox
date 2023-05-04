@@ -1,9 +1,9 @@
 #pragma once
 #include <rawrbox/math/quaternion.hpp>
+#include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/util/anim_utils.hpp>
-#include <rawrbox/utils/math.hpp>
 #include <rawrbox/utils/time.hpp>
 
 #include <assimp/anim.h>

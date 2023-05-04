@@ -10,6 +10,7 @@
 #include <array>
 #include <cstdint>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -134,7 +135,7 @@ namespace rawrBox {
 		virtual bool supportsOptimization() { return true; }
 
 		// UTILS -----
-		void merge(std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> in, std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> other) {
+		void mergeMeshes(std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> in, std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> other) {
 			for (uint16_t i : other->indices)
 				in->indices.push_back(static_cast<uint16_t>(in->vertices.size()) + i);
 
@@ -294,9 +295,9 @@ namespace rawrBox {
 			auto mesh = std::make_shared<rawrBox::Mesh<typename M::vertexBufferType>>();
 			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
 
-			merge(mesh, generateCube(pos, {size, 0.01F, 0.01F}, Colors::Red));   // x;
-			merge(mesh, generateCube(pos, {0.01F, size, 0.01F}, Colors::Green)); // y;
-			merge(mesh, generateCube(pos, {0.01F, 0.01F, size}, Colors::Blue));  // z;
+			this->mergeMeshes(mesh, generateCube(pos, {size, 0.01F, 0.01F}, Colors::Red));   // x;
+			this->mergeMeshes(mesh, generateCube(pos, {0.01F, size, 0.01F}, Colors::Green)); // y;
+			this->mergeMeshes(mesh, generateCube(pos, {0.01F, 0.01F, size}, Colors::Blue));  // z;
 
 			mesh->setCulling(0);
 			mesh->setTexture(rawrBox::WHITE_TEXTURE);
@@ -408,7 +409,7 @@ namespace rawrBox {
 		}
 
 		virtual void removeMesh(size_t index) {
-			if (index < 0 || index > this->_meshes.size()) return;
+			if (index >= this->_meshes.size()) return;
 			this->_meshes.erase(this->_meshes.begin() + index);
 		}
 
@@ -417,6 +418,7 @@ namespace rawrBox {
 		}
 
 		virtual std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> getMesh(size_t id = 0) {
+			if (id >= this->_meshes.size()) throw std::runtime_error(fmt::format("[RawrBox-ModelBase] Mesh {} does not exist", id));
 			return this->_meshes[id];
 		}
 
@@ -431,6 +433,13 @@ namespace rawrBox {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
 				if (id != -1 && i != id) continue;
 				this->_meshes[i]->setWireframe(wireframe);
+			}
+		}
+
+		virtual void setBlend(uint64_t blend, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->setBlend(blend);
 			}
 		}
 		// ----

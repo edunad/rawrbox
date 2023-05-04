@@ -40,6 +40,7 @@ namespace rawrBox {
 		[[nodiscard]] bgfx::ViewId getID() const;
 		[[nodiscard]] const rawrBox::Vector2i& getSize() const;
 		[[nodiscard]] rawrBox::Stencil& getStencil() const;
+		[[nodiscard]] uint32_t getClearColor() const;
 		// --------------------
 	};
 } // namespace rawrBox

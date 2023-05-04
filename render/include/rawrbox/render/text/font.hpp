@@ -29,6 +29,7 @@ namespace rawrBox {
 		rawrBox::Vector2f advance;
 		rawrBox::Vector2f textureTopLeft;
 		rawrBox::Vector2f textureBottomRight;
+
 		rawrBox::Vector2i size;
 	};
 

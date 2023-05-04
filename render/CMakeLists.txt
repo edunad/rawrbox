@@ -1,3 +1,5 @@
+project ("RAWRBOX.RENDER" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - Render lib" LANGUAGES CXX)
+set(output_target RAWRBOX.RENDER)
 
 # INSTALL GLFW & BGFX -----
 FetchContent_GetProperties(glfw3)
@@ -23,37 +25,6 @@ if(NOT bgfx_POPULATED)
 endif()
 # ---------------------
 
-# libraries 3th party
-set(GLFW_BUILD_DOCS     OFF CACHE INTERNAL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "" FORCE)
-set(GLFW_BUILD_TESTS    OFF CACHE INTERNAL "" FORCE)
-set(GLFW_INSTALL        OFF CACHE INTERNAL "" FORCE)
-set(GLFW_USE_OSMESA     OFF CACHE INTERNAL "" FORCE)
-set(GLFW_VULKAN_STATIC  OFF CACHE INTERNAL "" FORCE)
-
-set(BGFX_BUILD_TOOLS ON CACHE INTERNAL "" FORCE)
-set(BGFX_BUILD_TOOLS_SHADER ON CACHE INTERNAL "" FORCE)
-set(BGFX_BUILD_TOOLS_GEOMETRY OFF CACHE INTERNAL "" FORCE)
-set(BGFX_BUILD_TOOLS_TEXTURE OFF CACHE INTERNAL "" FORCE)
-set(BGFX_BUILD_TOOLS_BIN2C OFF CACHE INTERNAL "" FORCE)
-
-set(BGFX_AMALGAMATED ON CACHE INTERNAL "" FORCE)
-set(BX_AMALGAMATED ON CACHE INTERNAL "" FORCE)
-
-set(BGFX_BUILD_EXAMPLES OFF CACHE INTERNAL "" FORCE)
-set(BGFX_USE_OVR OFF CACHE INTERNAL "" FORCE)
-set(BGFX_INSTALL_EXAMPLES OFF CACHE INTERNAL "" FORCE)
-
-set(ASSIMP_NO_EXPORT ON CACHE BOOL "")
-set(ASSIMP_BUILD_ASSIMP_TOOLS OFF CACHE BOOL "")
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "")
-set(ASSIMP_BUILD_SAMPLES OFF CACHE BOOL "")
-set(ASSIMP_BUILD_DOCS OFF CACHE BOOL "")
-set(ASSIMP_BUILD_ASSIMP_VIEW OFF CACHE BOOL "")
-set(ASSIMP_BUILD_DRACO ON CACHE BOOL "")
-set(ASSIMP_INSTALL_PDB OFF CACHE BOOL "")
-# ---------------------------------
-
 # Packages ----
 find_package(Freetype REQUIRED MODULE)
 find_package(utf8cpp REQUIRED)
@@ -65,6 +36,21 @@ if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
 	list(APPEND RAWRBOX_EXTRA_LIBS assimp::assimp)
 endif()
 #--------------
+
+# TEST ----
+if(RAWRBOX_BUILD_TESTING)
+	message("-- Enabled testing")
+    enable_testing()
+
+	find_package(Catch2 3 REQUIRED)
+	list(APPEND RAWRBOX_EXTRA_LIBS Catch2::Catch2WithMain)
+    list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+
+    include(CTest)
+    include(Catch)
+endif()
+#--------------
+
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
@@ -90,7 +76,6 @@ message("SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
 # ------------------
 
 # Project setup
-set(output_target RAWRBOX.RENDER)
 add_library(${output_target} ${RAWRBOX_RENDER_SOURCES})
 target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_include_directories(${output_target} PUBLIC "include" ${FREETYPE_INCLUDE_DIRS})
@@ -111,8 +96,19 @@ target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 )
 
 # Copy content
-add_custom_command(
-	TARGET ${output_target} PRE_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_HOME_DIRECTORY}/render/${RAWRBOX_CONTENT_FOLDER} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
-)
+add_custom_command( TARGET ${output_target} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/${RAWRBOX_CONTENT_FOLDER} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER} )
 # ------------------
+
+# TESTING ----
+if(RAWRBOX_BUILD_TESTING)
+    file(GLOB_RECURSE RAWRBOX_RENDERER_TESTS_IMPORTS "tests/*.spec.cpp" )
+
+    add_executable(${output_target}-TESTS ${RAWRBOX_RENDERER_TESTS_IMPORTS})
+    target_compile_features(${output_target}-TESTS PRIVATE cxx_std_${CMAKE_CXX_STANDARD})
+    target_link_libraries(${output_target}-TESTS PRIVATE ${output_target} Catch2::Catch2WithMain)
+
+    catch_discover_tests(${output_target}-TESTS
+        DISCOVERY_MODE PRE_TEST
+    )
+endif()
+#--------------

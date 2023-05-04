@@ -10,13 +10,14 @@ namespace rawrBox {
 	class MathUtils {
 	public:
 		template <typename T = int>
-		static inline T clamp(T val, T min, T max) {
-			return std::min(std::max(val, min), max);
+		static inline T repeat(T val, T min, T max) {
+			if (val < 0 && max > 0) val = max - std::abs(val - min);
+			return ((val - min) % max) + min;
 		}
 
 		template <typename T = int>
-		static inline T repeat(T val, T min, T max) {
-			return ((val - min) % max) + min;
+		static inline T pingPong(T val, T max) {
+			return static_cast<T>(val - (std::floor(val / max) * max));
 		}
 
 		static inline float toRad(float val) {
@@ -97,6 +98,7 @@ namespace rawrBox {
 		}
 
 		/// MATRIX
+		// Adapted from BX & GLM ----
 		static inline void mtxTranslate(std::array<float, 16>& mtx, rawrBox::Vector3f pos) {
 			mtx[12] = pos.x;
 			mtx[13] = pos.y;
@@ -170,5 +172,6 @@ namespace rawrBox {
 
 			return mtx;
 		}
+		// -----
 	};
 } // namespace rawrBox

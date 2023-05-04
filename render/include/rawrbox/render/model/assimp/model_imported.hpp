@@ -21,6 +21,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "rawrbox/math/color.hpp"
+
 #define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_RemoveRedundantMaterials)
 
 namespace rawrBox {
@@ -390,9 +392,8 @@ namespace rawrBox {
 					pos += {p.x, p.y, p.z};
 				}
 
-				auto diffuse = rawrBox::Colori(static_cast<int>(aiLight.mColorDiffuse.r), static_cast<int>(aiLight.mColorDiffuse.g), static_cast<int>(aiLight.mColorDiffuse.b)).cast<float>();
-				// auto ambient = rawrBox::Colori(static_cast<int>(aiLight.mColorAmbient.r), static_cast<int>(aiLight.mColorAmbient.g), static_cast<int>(aiLight.mColorAmbient.b)).cast<float>();
-				auto specular = rawrBox::Colori(static_cast<int>(aiLight.mColorSpecular.r), static_cast<int>(aiLight.mColorSpecular.g), static_cast<int>(aiLight.mColorSpecular.b)).cast<float>();
+				auto diffuse = rawrBox::Color(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F) / 255.F;
+				auto specular = rawrBox::Color(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F) / 255.F;
 
 				switch (aiLight.mType) {
 					case aiLightSource_DIRECTIONAL:
@@ -454,7 +455,7 @@ namespace rawrBox {
 
 					if (aiMesh.HasVertexColors(0)) {
 						auto& col = aiMesh.mColors[0][i];
-						v.abgr = rawrBox::Color::pack(Colorf{col.r, col.g, col.b, col.a});
+						v.abgr = rawrBox::Color::toHEX(Colorf{col.r, col.g, col.b, col.a});
 					}
 
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {

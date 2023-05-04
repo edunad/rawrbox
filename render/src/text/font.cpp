@@ -151,16 +151,11 @@ namespace rawrBox {
 		    atlas.first,
 		    character,
 		    charIndx,
-		    {static_cast<float>(this->face->glyph->metrics.horiBearingX) / 64.F,
-			static_cast<float>(this->face->glyph->metrics.horiBearingY) / 64.F},
-		    {static_cast<float>(this->face->glyph->advance.x >> 6),
-			static_cast<float>(this->face->glyph->advance.y >> 6)},
-		    {atlasNode.x / static_cast<float>(atlas.second->size),
-			atlasNode.y / static_cast<float>(atlas.second->size)},
-		    {(atlasNode.x + atlasNode.width) / static_cast<float>(atlas.second->size),
-			(atlasNode.y + atlasNode.height) / static_cast<float>(atlas.second->size)},
-		    {static_cast<float>(this->face->glyph->metrics.width) / 64.F,
-			static_cast<float>(this->face->glyph->metrics.height) / 64.F},
+		    {static_cast<float>(this->face->glyph->metrics.horiBearingX) / 64.F, static_cast<float>(this->face->glyph->metrics.horiBearingY) / 64.F},
+		    {static_cast<float>(this->face->glyph->advance.x >> 6), static_cast<float>(this->face->glyph->advance.y >> 6)},
+		    {atlasNode.x / static_cast<float>(atlas.second->size), atlasNode.y / static_cast<float>(atlas.second->size)},
+		    {(atlasNode.x + atlasNode.width) / static_cast<float>(atlas.second->size), (atlasNode.y + atlasNode.height) / static_cast<float>(atlas.second->size)},
+		    {static_cast<int>(this->face->glyph->metrics.width) / 64, static_cast<int>(this->face->glyph->metrics.height) / 64},
 		};
 
 		this->_glyphs.push_back(glyph);

@@ -50,6 +50,7 @@ jobs:
                   conan install . --output-folder=build --build=missing
 
             - name: Build
+              id: build
               run: |
                   cd build
                   CXX=g++-12 cmake .. -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON"
@@ -57,7 +58,8 @@ jobs:
 
             - name: Cache conan
               id: github-cache-conan
-              uses: actions/cache@v3
+              uses: actions/cache/save@v3
+              if: steps.build.outputs.exit_code == 0
               env:
                   cache-name: cache-conan-modules
               with:
@@ -65,6 +67,13 @@ jobs:
                       ./build
                       ~/.conan2
                   key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
+
+            - name: Run tests
+              run: |
+                  cd build
+                  ctest --test-dir ./math --output-on-failure
+                  ctest --test-dir ./utils --output-on-failure
+                  ctest --test-dir ./render --output-on-failure
 
             - name: Run linter
               uses: cpp-linter/cpp-linter-action@v2
@@ -80,6 +89,21 @@ jobs:
                   database: './build/'
                   ignore: 'build | .github | stb'
 
-            - name: Check linting
+            - name: Find linting comment
               if: steps.linter.outputs.checks-failed > 0
-              run: echo "Linting failed!" | exit 1
+              uses: peter-evans/find-comment@v2
+              id: fc
+              with:
+                  issue-number: ${{ github.event.pull_request.number }}
+                  comment-author: 'github-actions[bot]'
+                  body-includes: Linting failed ⚠
+
+            - name: Create / Update linting comment
+              uses: peter-evans/create-or-update-comment@v2
+              if: steps.linter.outputs.checks-failed > 0
+              with:
+                  comment-id: ${{ steps.fc.outputs.comment-id }}
+                  issue-number: ${{ github.event.pull_request.number }}
+                  body: |
+                      ### Linting failed ⚠ - ${{ steps.linter.outputs.checks-failed }} lint errors found
+                  edit-mode: replace

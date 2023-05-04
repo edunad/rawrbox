@@ -25,8 +25,6 @@ namespace rawrBox {
 		rawrBox::Colorf _ambient = rawrBox::Colors::White;
 
 	public:
-		virtual void setStatus(bool on) { this->_isOn = on; };
-
 		LightBase(rawrBox::Vector3f posMatrix, rawrBox::Colorf diffuse, rawrBox::Colorf specular) : _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
 		LightBase(LightBase&&) = delete;
 		LightBase& operator=(LightBase&&) = delete;
@@ -38,6 +36,9 @@ namespace rawrBox {
 		[[nodiscard]] virtual const rawrBox::Colorf& getSpecularColor() const { return this->_specular; }
 		[[nodiscard]] virtual const rawrBox::Colorf& getDiffuseColor() const { return this->_diffuse; }
 		[[nodiscard]] virtual const rawrBox::Colorf& getAmbientColor() const { return this->_ambient; }
+
+		[[nodiscard]] virtual const bool isOn() const { return this->_isOn; }
+		virtual void setStatus(bool on) { this->_isOn = on; };
 
 		virtual std::array<float, 4> getPosMatrix() { return {this->_posMatrix.x, this->_posMatrix.y, this->_posMatrix.z, 0}; }
 		virtual std::array<float, 16> const getDataMatrix() = 0;

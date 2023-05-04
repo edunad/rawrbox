@@ -4,13 +4,27 @@
 
 <h2>
 	<p align="center">
-		<a href="https://github.com/MythicalRawr/rawrbox">RawrBox</a> - A different version of <a href="https://github.com/Goofy-Penguin/Mainframe">Mainframe</a>, so brom doesn't yell at me for breaking his apps<br/>
-		<a href="#LIBS">Libs</a> -
-		<a href="#CMAKE">Settings</a> -
-		<a href="#Dependencies">Dependencies</a> -
-		<a href="#Building">Building</a>
+		<a href="https://github.com/MythicalRawr/rawrbox">RawrBox</a> - Another engine made with BGFX. Similar to <a href="https://github.com/Goofy-Penguin/Mainframe">Mainframe</a> but with focus on games (and so i can practice some C++)<br/>
+		<a href="#features">Features</a> -
+		<a href="#libs">Libs</a> -
+		<a href="#cmake">Settings</a> -
+		<a href="#dependencies">Dependencies</a> -
+		<a href="#building">Building</a>
 	</p>
 </h2>
+
+# FEATURES (so far)
+
+-   Model loading (animations, light, texture import)
+-   Light support (point, directional, spotlight)
+-   3D text
+-   2D stencil drawing
+-   Font loading
+-   Image loading (png, jpeg, tga, bitmap)
+-   GIF loading / animation
+-   Vulkan / DirectX / OpenGL support
+-   Wayland support (linux only)
+-   Works on steam deck :P
 
 # LIBS
 
@@ -26,6 +40,7 @@
 | :------------------------------ | :--------------------------------- |
 | `RAWRBOX_USE_WAYLAND`           | Enables WAYLAND compiling on LINUX |
 | `RAWRBOX_BUILD_SAMPLES`         | Builds the project sample          |
+| `RAWRBOX_BUILD_TESTING`         | Builds and runs tests              |
 | `RAWRBOX_ENABLE_QHULL`          | Enables QHull util                 |
 | `RAWRBOX_ENABLE_ASSIMP_SUPPORT` | Enables assimp model loading       |
 
@@ -43,6 +58,7 @@
 | stb/image_write |    ✔️    | Used for writting images                            |
 | freetype2       |    ✔️    | Used for loading fonts                              |
 | assimp          |    ✖️    | Used for loading models                             |
+| catch2          |    ✖️    | Used for testing                                    |
 
 # Building
 

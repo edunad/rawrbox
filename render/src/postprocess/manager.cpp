@@ -8,6 +8,8 @@
 #include <bx/bx.h>
 #include <fmt/format.h>
 
+#include <stdexcept>
+
 // NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader model_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_stencil_flat),
@@ -44,15 +46,47 @@ namespace rawrBox {
 	}
 
 	// Post utils ----
-	void PostProcessManager::registerPostProcess(std::shared_ptr<rawrBox::PostProcessBase> post) {
+	void PostProcessManager::add(std::shared_ptr<rawrBox::PostProcessBase> post) {
 		this->_postProcesses.push_back(std::move(post));
+		this->buildPRViews();
 	}
 
-	void PostProcessManager::removePostProcess(size_t indx) {
-		if (this->_postProcesses.empty() || indx >= this->_postProcesses.size()) return;
+	void PostProcessManager::remove(size_t indx) {
+		if (this->_postProcesses.empty() || indx >= this->_postProcesses.size()) throw std::runtime_error(fmt::format("[RawrBox-PostProcess] Failed to remove {}!", indx));
 		this->_postProcesses.erase(this->_postProcesses.begin() + indx);
+		this->buildPRViews();
+	}
+
+	std::shared_ptr<rawrBox::PostProcessBase> PostProcessManager::get(size_t indx) {
+		if (indx >= this->_postProcesses.size()) throw std::runtime_error(fmt::format("[RawrBox-PostProcess] Failed to get {}!", indx));
+		return this->_postProcesses[indx];
+	}
+
+	size_t PostProcessManager::count() {
+		return this->_postProcesses.size();
 	}
 	// ----
+	void PostProcessManager::buildPRViews() {
+		if (!rawrBox::BGFX_INITIALIZED) return;
+
+		// Delete old samples
+		for (auto sample : this->_samples)
+			RAWRBOX_DESTROY(sample);
+
+		// Prepare new samples
+		this->_samples.clear();
+		for (size_t i = 0; i < this->_postProcesses.size(); i++) {
+			bgfx::ViewId id = RENDER_PASS_DOWNSAMPLE_ID + static_cast<bgfx::ViewId>(i);
+			this->_samples.push_back(bgfx::createFrameBuffer(this->_windowSize.x, this->_windowSize.y, bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_RT));
+
+			bgfx::touch(id);
+			bgfx::setViewRect(id, 0, 0, bgfx::BackbufferRatio::Equal);
+			bgfx::setViewClear(id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 1.0F, 0, 0);
+			bgfx::setViewName(id, fmt::format("POST-PROCESSING-SAMPLE-{}", i).c_str());
+			bgfx::setViewFrameBuffer(id, this->_samples[i]);
+		}
+		// ----
+	}
 
 	void PostProcessManager::pushVertice(rawrBox::Vector2f pos, const rawrBox::Vector2f& uv) {
 		this->_vertices.emplace_back(
@@ -85,10 +119,11 @@ namespace rawrBox {
 		}
 
 		// Generate vertices -----
+		auto screeSize = this->_windowSize.cast<float>();
 		this->pushVertice({0, 0}, {0, 0});
-		this->pushVertice({0, this->_windowSize.y}, {0, 1});
-		this->pushVertice({this->_windowSize.x, 0}, {1, 0});
-		this->pushVertice({this->_windowSize.x, this->_windowSize.y}, {1, 1});
+		this->pushVertice({0, screeSize.y}, {0, 1});
+		this->pushVertice({screeSize.x, 0}, {1, 0});
+		this->pushVertice({screeSize.x, screeSize.y}, {1, 1});
 
 		this->pushIndices(4, 3, 2);
 		this->pushIndices(3, 1, 2);
@@ -107,20 +142,6 @@ namespace rawrBox {
 		// ------------------
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
-
-		// Prepare sample views
-		this->_samples.resize(this->_postProcesses.size());
-		for (size_t i = 0; i < this->_postProcesses.size(); i++) {
-			bgfx::ViewId id = RENDER_PASS_DOWNSAMPLE_ID + static_cast<bgfx::ViewId>(i);
-			this->_samples[i] = bgfx::createFrameBuffer(this->_windowSize.x, this->_windowSize.y, bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_RT);
-
-			bgfx::touch(id);
-			bgfx::setViewRect(id, 0, 0, bgfx::BackbufferRatio::Equal);
-			bgfx::setViewClear(id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 1.0F, 0, 0);
-			bgfx::setViewName(id, fmt::format("POST-PROCESSING-SAMPLE-{}", i).c_str());
-			bgfx::setViewFrameBuffer(id, this->_samples[i]);
-		}
-		// ----
 	}
 
 	void PostProcessManager::begin() {
@@ -155,7 +176,7 @@ namespace rawrBox {
 
 		// Draw final texture
 		bgfx::touch(this->_view);
-		bgfx::setTexture(0, this->_texColor, bgfx::getTexture(this->_samples[this->_samples.size() - 1]));
+		bgfx::setTexture(0, this->_texColor, bgfx::getTexture(this->_samples.back()));
 		bgfx::setVertexBuffer(0, this->_vbh);
 		bgfx::setIndexBuffer(this->_ibh);
 		bgfx::setState(0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_CULL_CW);

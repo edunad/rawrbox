@@ -1,5 +1,5 @@
+#include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/texture/gif.hpp>
-#include <rawrbox/utils/math.hpp>
 #include <rawrbox/utils/time.hpp>
 
 #include <stb/gif.hpp>
