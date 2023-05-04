@@ -1,15 +1,17 @@
+'📷 RENDERER':
+    - 'render/**/*'
 
-"📷 RENDERER":
-- 'render/**/*'
+'🧮 MATH':
+    - 'math/**/*'
 
-"🧮 MATH":
-- 'math/**/*'
+'🖼️ UI':
+    - 'ui/**/*'
 
-"🖼️ UI":
-- 'ui/**/*'
+'⚒️ UTILS':
+    - 'utils/**/*'
 
-"⚒️ UTILS":
-- 'utils/**/*'
+'🐲 SAMPLES':
+    - 'samples/**/*'
 
-"🐲 SAMPLES":
-- 'samples/**/*'
+'🧪 TESTS':
+    - 'tests/**/*'
