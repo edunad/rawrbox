@@ -38,6 +38,7 @@
 #define GLFWHANDLE (std::bit_cast<GLFWwindow*>(_handle))
 
 namespace rawrBox {
+	// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
 	static Window& glfwHandleToRenderer(GLFWwindow* ptr) {
 		return *static_cast<Window*>(glfwGetWindowUserPointer(ptr));
 	}
@@ -84,6 +85,7 @@ namespace rawrBox {
 		return nullptr;
 #endif // BX_PLATFORM_*
 	}
+	// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
 
 	void Window::initialize(int width, int height, uint32_t flags) {
 		glfwSetErrorCallback(glfw_errorCallback);

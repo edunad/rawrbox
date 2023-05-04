@@ -15,14 +15,6 @@
                 "reveal": "always",
                 "panel": "new"
             }
-        },
-        {
-            "type": "cmake",
-            "label": "CMake: test",
-            "command": "test",
-            "problemMatcher": [],
-            "w"
-            "detail": "CMake template test task"
         }
     ]
 }

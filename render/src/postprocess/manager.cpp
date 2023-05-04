@@ -74,6 +74,7 @@ namespace rawrBox {
 			RAWRBOX_DESTROY(sample);
 
 		// Prepare new samples
+		this->_samples.clear();
 		for (size_t i = 0; i < this->_postProcesses.size(); i++) {
 			bgfx::ViewId id = RENDER_PASS_DOWNSAMPLE_ID + static_cast<bgfx::ViewId>(i);
 			this->_samples.push_back(bgfx::createFrameBuffer(this->_windowSize.x, this->_windowSize.y, bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_RT));
@@ -163,7 +164,7 @@ namespace rawrBox {
 			rawrBox::CURRENT_VIEW_ID = id;
 
 			bgfx::touch(id);
-			bgfx::setTexture(0, this->_texColor, pass == 0 ? this->_render->getHandle() : bgfx::getTexture(this->_samples.back()));
+			bgfx::setTexture(0, this->_texColor, pass == 0 ? this->_render->getHandle() : bgfx::getTexture(this->_samples[pass - 1]));
 			bgfx::setVertexBuffer(0, this->_vbh);
 			bgfx::setIndexBuffer(this->_ibh);
 

@@ -17,6 +17,7 @@ namespace rawrBox {
 		Color_t() = default;
 		Color_t(NumberType _r, NumberType _g, NumberType _b, NumberType _a) : r(_r), g(_g), b(_b), a(_a) {}
 
+		// NOLINTBEGIN(clang-diagnostic-c++11-narrowing)
 		static Color_t<NumberType> RGBAHex(uint32_t x) {
 			if constexpr (std::is_same<NumberType, float>::value) {
 				return {
@@ -48,6 +49,7 @@ namespace rawrBox {
 				    255};
 			}
 		}
+		// NOLINTEND(clang-diagnostic-c++11-narrowing)
 
 		static uint32_t toHEX(Color_t<NumberType> c) {
 			if constexpr (std::is_same<NumberType, int>::value) {
