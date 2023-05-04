@@ -57,7 +57,8 @@ jobs:
 
             - name: Cache conan
               id: github-cache-conan
-              uses: actions/cache@v3
+              uses: actions/cache/save@v3
+              if: always()
               env:
                   cache-name: cache-conan-modules
               with:
