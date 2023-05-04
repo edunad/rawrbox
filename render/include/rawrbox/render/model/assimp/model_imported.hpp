@@ -21,6 +21,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "rawrbox/math/color.hpp"
+
 #define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_RemoveRedundantMaterials)
 
 namespace rawrBox {
@@ -390,8 +392,8 @@ namespace rawrBox {
 					pos += {p.x, p.y, p.z};
 				}
 
-				auto diffuse = rawrBox::Colorf(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F);
-				auto specular = rawrBox::Colorf(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F);
+				auto diffuse = rawrBox::Color(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F) / 255.F;
+				auto specular = rawrBox::Color(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F) / 255.F;
 
 				switch (aiLight.mType) {
 					case aiLightSource_DIRECTIONAL:
