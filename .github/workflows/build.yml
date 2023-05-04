@@ -96,7 +96,7 @@ jobs:
               with:
                   issue-number: ${{ github.event.pull_request.number }}
                   comment-author: 'github-actions[bot]'
-                  body-includes: ## NOTICE  - Linting failed ⚠
+                  body-includes: Linting failed ⚠
 
             - name: Create / Update linting comment
               uses: peter-evans/create-or-update-comment@v2
@@ -105,6 +105,5 @@ jobs:
                   comment-id: ${{ steps.fc.outputs.comment-id }}
                   issue-number: ${{ github.event.pull_request.number }}
                   body: |
-                      ## NOTICE  - Linting failed ⚠
-                      ${{ steps.linter.outputs.checks-failed }}
+                      ### Linting failed ⚠ - ${{ steps.linter.outputs.checks-failed }} lint errors found
                   edit-mode: replace
