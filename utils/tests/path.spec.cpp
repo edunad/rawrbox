@@ -9,6 +9,11 @@
 TEST_CASE("PathUtils should behave as expected", "[rawrBox::PathUtils]") {
 	SECTION("rawrBox::PathUtils::stripRootPath") {
 		REQUIRE(rawrBox::PathUtils::stripRootPath("C:/windows/pls") == "pls");
+
+#ifdef WIN32
 		REQUIRE(rawrBox::PathUtils::stripRootPath("C:/windows/pls/screee") == "pls//screee");
+#else
+		REQUIRE(rawrBox::PathUtils::stripRootPath("C:\windows\pls\screee") == "pls\screee");
+#endif
 	}
 }

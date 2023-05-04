@@ -13,6 +13,11 @@ TEST_CASE("MathUtils should behave as expected", "[rawrBox::MathUtils]") {
 		REQUIRE(rawrBox::MathUtils::repeat(-5, 0, 10) == 5);
 	}
 
+	SECTION("rawrBox::MathUtils::pingPong") {
+		REQUIRE(rawrBox::MathUtils::pingPong(2, 10) == 2);
+		REQUIRE(rawrBox::MathUtils::pingPong(15, 10) == 5);
+	}
+
 	SECTION("rawrBox::MathUtils::toRad") {
 		REQUIRE_THAT(rawrBox::MathUtils::toRad(90), Catch::Matchers::WithinAbs(1.5708F, 0.0001F));
 	}
