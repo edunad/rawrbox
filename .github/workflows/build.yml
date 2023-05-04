@@ -70,8 +70,8 @@ jobs:
             - name: Run tests
               run: |
                   cd build
-                  ctest --test-dir ./math
-                  ctest --test-dir ./utils
+                  ctest --test-dir ./math --output-on-failure
+                  ctest --test-dir ./utils --output-on-failure
 
             - name: Run linter
               uses: cpp-linter/cpp-linter-action@v2
