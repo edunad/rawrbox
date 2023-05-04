@@ -17,10 +17,6 @@ namespace rawrBox {
 	protected:
 		using VecType = Vector3_t<NumberType>;
 
-		// Magic numbers from unity
-		float kEpsilon = 0.00001F;
-		float kEpsilonNormalSqrt = 1e-15F;
-
 	public:
 		NumberType x = 0, y = 0, z = 0;
 
@@ -64,7 +60,7 @@ namespace rawrBox {
 		// From: https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Math/Vector3.cs#L324
 		[[nodiscard]] NumberType angle(const VecType& target) const {
 			float denominator = std::sqrt(sqrMagnitude() * target.sqrMagnitude());
-			if (denominator < kEpsilonNormalSqrt)
+			if (denominator < 1e-15F)
 				return 0.F;
 
 			float dot = std::clamp(this->dot(target) / denominator, -1.F, 1.F);

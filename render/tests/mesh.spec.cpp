@@ -37,6 +37,13 @@ TEST_CASE("Mesh should behave as expected", "[rawrBox::Mesh]") {
 		REQUIRE(base->color == rawrBox::Colors::Orange);
 	}
 
+	SECTION("rawrBox::Mesh::getBBOX") {
+		auto& b = base->getBBOX();
+
+		REQUIRE(b.isEmpty() == true);
+		REQUIRE(b.size() == 0.F);
+	}
+
 	SECTION("rawrBox::Mesh::addData / rawrBox::Mesh::getData / rawrBox::Mesh::hasData") {
 		base->data.clear();
 		REQUIRE(base->data.size() == 0);

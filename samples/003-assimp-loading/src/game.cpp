@@ -81,10 +81,6 @@ namespace assimp {
 		// ------
 
 		// Assimp test ---
-		this->_model3->setPos({-10, 0, 0});
-		this->_model3->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_LIGHT);
-		this->_model3->upload();
-
 		this->_model->setPos({10, 0, 0});
 		this->_model->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx");
 		this->_model->upload();
@@ -92,6 +88,10 @@ namespace assimp {
 		this->_model2->setPos({0, 0, 0});
 		this->_model2->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
 		this->_model2->upload();
+
+		this->_model3->setPos({-10, 0, 0});
+		this->_model3->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrBox::ModelLoadFlags::IMPORT_TEXTURES | rawrBox::ModelLoadFlags::IMPORT_LIGHT);
+		this->_model3->upload();
 		// -----
 
 		// Text test ----
