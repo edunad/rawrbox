@@ -32,17 +32,19 @@
 | :--------------- | :------------------------------------------------- |
 | `RAWRBOX.RENDER` | Rendering lib (aka, contains window, stencil, etc) |
 | `RAWRBOX.MATH`   | Math lib                                           |
+| `RAWRBOX.BASS`   | Bass lib                                           |
 | `RAWRBOX.UTILS`  | Utils lib                                          |
 
 # CMAKE
 
-| OPTION NAME                     | NOTE                               |
-| :------------------------------ | :--------------------------------- |
-| `RAWRBOX_USE_WAYLAND`           | Enables WAYLAND compiling on LINUX |
-| `RAWRBOX_BUILD_SAMPLES`         | Builds the project sample          |
-| `RAWRBOX_BUILD_TESTING`         | Builds and runs tests              |
-| `RAWRBOX_ENABLE_QHULL`          | Enables QHull util                 |
-| `RAWRBOX_ENABLE_ASSIMP_SUPPORT` | Enables assimp model loading       |
+| OPTION NAME                     | NOTE                                                                                               |
+| :------------------------------ | :------------------------------------------------------------------------------------------------- |
+| `RAWRBOX_USE_WAYLAND`           | Enables WAYLAND compiling on LINUX                                                                 |
+| `RAWRBOX_BUILD_SAMPLES`         | Builds the project sample                                                                          |
+| `RAWRBOX_BUILD_TESTING`         | Builds and runs tests                                                                              |
+| `RAWRBOX_ENABLE_QHULL`          | Enables QHull util                                                                                 |
+| `RAWRBOX_ENABLE_ASSIMP_SUPPORT` | Enables assimp model loading                                                                       |
+| `RAWRBOX_ENABLE_BASS_SUPPORT`   | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
 
 # Dependencies
 
@@ -59,6 +61,7 @@
 | freetype2       |    ✔️    | Used for loading fonts                              |
 | assimp          |    ✖️    | Used for loading models                             |
 | catch2          |    ✖️    | Used for testing                                    |
+| bass            |    ✖️    | Used for loadins sounds                             |
 
 # Building
 

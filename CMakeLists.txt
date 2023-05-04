@@ -13,6 +13,7 @@ project ("RAWRBOX" VERSION ${RAWRBOX_VERSION} DESCRIPTION "Game engine - By edun
 
 # Fix cmake paths
 list(PREPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
+list(PREPEND CMAKE_MODULE_PATH "${CMAKE_HOME_DIRECTORY}/cmake")
 list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 list(PREPEND CONAN_GENERATORS_FOLDER ${CMAKE_BINARY_DIR})
 # ---
@@ -23,6 +24,7 @@ option(RAWRBOX_BUILD_SAMPLES "Build samples" ON)
 option(RAWRBOX_BUILD_TESTING "Build tests" ON)
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
 option(RAWRBOX_ENABLE_ASSIMP_SUPPORT "Build assimp & add model loading support" ON)
+option(RAWRBOX_ENABLE_BASS_SUPPORT "Build bass & add sound loading support" ON)
 # -----
 
 # OTHER SETTINGS ----
@@ -112,6 +114,9 @@ set(CATCH_INSTALL_EXTRAS ON CACHE BOOL "")
 add_subdirectory ("math")
 add_subdirectory ("utils")
 add_subdirectory ("render")
+if(RAWRBOX_ENABLE_BASS_SUPPORT)
+	add_subdirectory ("bass")
+endif()
 #add_subdirectory ("ui")
 
 if(RAWRBOX_BUILD_SAMPLES)
