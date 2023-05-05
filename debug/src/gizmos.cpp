@@ -56,7 +56,7 @@ namespace rawrBox {
 	}
 
 	void GIZMOS::removeLight(size_t indx) {
-		if (this->_gizmo_lights != nullptr) return;
+		if (this->_gizmo_lights == nullptr) return;
 		this->_gizmo_lights->removeMesh(indx);
 	}
 #ifdef RAWRBOX_BASS
@@ -72,7 +72,7 @@ namespace rawrBox {
 	}
 
 	void GIZMOS::removeSound(rawrBox::SoundInstance* l) {
-		if (this->_gizmo_sounds != nullptr) return;
+		if (this->_gizmo_sounds == nullptr) return;
 
 		auto& m = this->_gizmo_sounds->meshes();
 		for (size_t i = 0; i < m.size(); i++) {
