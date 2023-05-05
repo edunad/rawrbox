@@ -11,8 +11,6 @@
 
 #include <vector>
 
-#include "rawrbox/bass/sound/flags.hpp"
-
 namespace bass_test {
 	void Game::init() {
 		int width = 1024;
