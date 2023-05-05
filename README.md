@@ -34,6 +34,8 @@
 | `RAWRBOX.MATH`   | Math lib                                           |
 | `RAWRBOX.BASS`   | Bass lib                                           |
 | `RAWRBOX.UTILS`  | Utils lib                                          |
+| `RAWRBOX.ENGINE` | Engine lib (aka game loop)                         |
+| `RAWRBOX.DEBUG`  | Debug utils lib                                    |
 
 # CMAKE
 
@@ -61,7 +63,7 @@
 | freetype2       |    ✔️    | Used for loading fonts                              |
 | assimp          |    ✖️    | Used for loading models                             |
 | catch2          |    ✖️    | Used for testing                                    |
-| bass            |    ✖️    | Used for loadins sounds                             |
+| bass            |    ✖️    | Used for loading sounds                             |
 
 # Building
 

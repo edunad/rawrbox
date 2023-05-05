@@ -33,7 +33,7 @@ namespace rawrBox {
 
 		// ------RENDERING
 		void swapBuffer() const;
-		void render() const;
+		void render(bool gizmos = false) const;
 		// --------------------
 
 		// ------UTILS

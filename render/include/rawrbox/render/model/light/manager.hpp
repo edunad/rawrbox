@@ -1,8 +1,6 @@
 #pragma once
 
 #include <rawrbox/render/model/light/base.hpp>
-#include <rawrbox/render/model/sprite.hpp>
-#include <rawrbox/render/texture/image.hpp>
 
 #include <memory>
 
@@ -12,19 +10,10 @@ namespace rawrBox {
 	protected:
 		std::vector<std::shared_ptr<rawrBox::LightBase>> _lights;
 
-		std::shared_ptr<rawrBox::TextureImage> _pointTexture;
-		std::shared_ptr<rawrBox::TextureImage> _spotTexture;
-		std::shared_ptr<rawrBox::TextureImage> _dirTexture;
-
-		std::shared_ptr<rawrBox::Sprite<>> _debugMdl = std::make_shared<rawrBox::Sprite<>>();
-
 	public:
 		bool fullbright = false;
-		int32_t maxLights = 8;
 
-		virtual void init(int32_t maxLights = 8);
 		virtual void destroy();
-
 		virtual void setEnabled(bool fb);
 
 		// Light utils ----
@@ -35,12 +24,7 @@ namespace rawrBox {
 		virtual size_t count();
 		// ---------
 
-		// DEBUG ----
-		virtual void uploadDebug();
-		virtual void drawDebug(const rawrBox::Vector3f& camPos);
-		// ---
-
-		static LightManager& getInstance() {
+		static LightManager& get() {
 			static LightManager i;
 			return i;
 		}

@@ -1,10 +1,17 @@
 
+#include <rawrbox/bass/manager.hpp>
+#include <rawrbox/render/static.hpp>
+#include <rawrbox/utils/keys.hpp>
+
 #include <bass_test/game.hpp>
 
 #include <bx/bx.h>
 #include <bx/math.h>
+#include <fmt/printf.h>
 
 #include <vector>
+
+#include "rawrbox/bass/sound/flags.hpp"
 
 namespace bass_test {
 	void Game::init() {
@@ -59,6 +66,9 @@ namespace bass_test {
 		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
 		// --------------
 
+		rawrBox::SoundManager::get().initialize();
+		this->_textEngine = std::make_unique<rawrBox::TextEngine>();
+
 		// Load content ---
 		this->loadContent();
 		// -----
@@ -66,10 +76,53 @@ namespace bass_test {
 
 	void Game::loadContent() {
 		this->_render->upload();
+
+		// Fonts -----
+		this->_font = &this->_textEngine->load("cour.ttf", 16);
+		// ------
+
+		// SOUND -----
+		// https://i.rawr.dev/Mystery%20Skulls%20-%20Freaking%20Out.mp3
+		// https://i.rawr.dev/Just_a_Bit_Crazy.ogg
+		this->_sound = rawrBox::SoundManager::get().loadHTTPSound("https://i.rawr.dev/Just_a_Bit_Crazy.ogg", rawrBox::SoundFlags::SOUND_3D | rawrBox::SoundFlags::BEAT_DETECTION | rawrBox::SoundFlags::BPM_DETECTION)->createInstance();
+		this->_sound->setVolume(1.F);
+		this->_sound->setLooping(true);
+		this->_sound->set3D(10.F);
+		this->_sound->setPosition({0, 1.F, 0});
+		this->_sound->setTempo(0.8F);
+		this->_sound->play();
+
+		// this->_sound->setBeatSettings(8, 8, 2.f);
+		this->_sound->onBEAT += [this](double pos) {
+			this->_beat = 0.5F;
+		};
+
+		this->_sound->onBPM += [](float bpm) {
+			fmt::print("BPM: {}\n", bpm);
+		};
+		// --------
+
+		// Text test ----
+		{
+			this->_text->addText(this->_font, "BEAT", {0.F, 1.3F, 0});
+			this->_text->upload();
+		}
+		// ------
+
+		// GRID -----
+		{
+			auto mesh = this->_modelGrid->generateGrid(12, {0.F, 0.F, 0.F});
+			this->_modelGrid->addMesh(mesh);
+			this->_modelGrid->upload();
+		}
 	}
 
 	void Game::shutdown() {
 		this->_render = nullptr;
+		this->_sound = nullptr;
+		this->_modelGrid = nullptr;
+
+		rawrBox::SoundManager::get().shutdown();
 		rawrBox::Engine::shutdown();
 	}
 
@@ -114,11 +167,16 @@ namespace bass_test {
 			this->_camera->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 
-		this->_texture2->step();
+		rawrBox::SoundManager::get().setListenerLocation(this->_camera->getPos(), this->_camera->getForward(), this->_camera->getUp());
+		if (this->_beat > 0.F) this->_beat -= 0.05F;
 	}
 
 	void Game::drawWorld() {
 		bgfx::setViewTransform(rawrBox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+
+		this->_text->setPos({0, this->_beat, 0});
+		this->_text->draw({});
+		this->_modelGrid->draw({});
 	}
 
 	void Game::draw(const double alpha) {
@@ -130,6 +188,6 @@ namespace bass_test {
 
 		this->drawWorld();
 
-		this->_render->render(); // Commit primitives
+		this->_render->render(true); // Commit primitives
 	}
 } // namespace bass_test

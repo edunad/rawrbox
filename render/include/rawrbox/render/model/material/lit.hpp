@@ -56,7 +56,7 @@ namespace rawrBox {
 		}
 
 		void preProcess(const rawrBox::Vector3f& camPos) {
-			auto& lightManager = rawrBox::LightManager::getInstance();
+			auto& lightManager = rawrBox::LightManager::get();
 			size_t lightCount = lightManager.count();
 
 			std::array lightSettings = {lightManager.fullbright ? 1.F : 0.F, static_cast<float>(lightCount)};

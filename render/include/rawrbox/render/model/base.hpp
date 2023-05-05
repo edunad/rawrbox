@@ -52,14 +52,16 @@ namespace rawrBox {
 	class ModelBase {
 
 	protected:
-		bgfx::VertexBufferHandle _vbh = BGFX_INVALID_HANDLE; // Vertices
-		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;  // Indices
+		bgfx::DynamicVertexBufferHandle _vbdh = BGFX_INVALID_HANDLE; // Vertices - Dynamic
+		bgfx::VertexBufferHandle _vbh = BGFX_INVALID_HANDLE;         // Vertices - Static
+		bgfx::DynamicIndexBufferHandle _ibdh = BGFX_INVALID_HANDLE;  // Indices - Dynamic
+		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;          // Indices - Static
 
 		std::vector<std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>>> _meshes;
 		std::array<float, 16> _matrix = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}; // Identity matrix by default
 
-		std::vector<typename M::vertexBufferType> _vertices;
-		std::vector<uint16_t> _indices;
+		std::vector<typename M::vertexBufferType> _vertices = {};
+		std::vector<uint16_t> _indices = {};
 
 		std::unique_ptr<M> _material = std::make_unique<M>();
 
@@ -68,6 +70,10 @@ namespace rawrBox {
 		rawrBox::Vector3f _angle = {};
 
 		rawrBox::BBOX _bbox = {};
+
+		// BGFX DYNAMIC SUPPORT ---
+		bool _isDynamic = false;
+		// ----
 
 		// SKINNING ----
 		std::unordered_map<std::string, std::shared_ptr<Skeleton>> _skeletons = {};
@@ -116,6 +122,17 @@ namespace rawrBox {
 			}
 
 			if (old != this->_meshes.size()) fmt::print("[RawrBox-Model] Optimized mesh (Before {} | After {})\n", old, this->_meshes.size());
+			this->updateBuffers();
+		}
+
+		virtual void updateBuffers() {
+			if (!this->isDynamicBuffer() || !this->isUploaded()) return;
+
+			const bgfx::Memory* vertMem = bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * M::vertexBufferType::vLayout().m_stride);
+			const bgfx::Memory* indexMem = bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t));
+
+			bgfx::update(this->_vbdh, 0, vertMem);
+			bgfx::update(this->_ibdh, 0, indexMem);
 		}
 
 	public:
@@ -128,6 +145,8 @@ namespace rawrBox {
 		virtual ~ModelBase() {
 			RAWRBOX_DESTROY(this->_vbh);
 			RAWRBOX_DESTROY(this->_ibh);
+			RAWRBOX_DESTROY(this->_vbdh);
+			RAWRBOX_DESTROY(this->_ibdh);
 
 			this->_meshes.clear();
 			this->_vertices.clear();
@@ -144,6 +163,39 @@ namespace rawrBox {
 			in->vertices.insert(in->vertices.end(), other->vertices.begin(), other->vertices.end());
 			in->totalVertex = static_cast<uint16_t>(in->vertices.size());
 			in->totalIndex = static_cast<uint16_t>(in->indices.size());
+		}
+
+		std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> generateTriangle(const rawrBox::Vector3f& a, const rawrBox::Vector2f& aUV, const rawrBox::Color& colA, const rawrBox::Vector3f& b, const rawrBox::Vector2f& bUV, const rawrBox::Color& colB, const rawrBox::Vector3f& c, const rawrBox::Vector2f& cUV, const rawrBox::Color& colC) {
+			auto mesh = std::make_shared<rawrBox::Mesh<typename M::vertexBufferType>>();
+
+			auto center = (a + b + c) / 3;
+			bx::mtxTranslate(mesh->vertexPos.data(), center.x, center.y, center.z);
+
+			std::array<typename M::vertexBufferType, 3> buff;
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
+				buff = {
+				    rawrBox::VertexLitData(a, rawrBox::PackUtils::packNormal(1, 0, 0), 0, aUV.x, aUV.y, colA),
+				    rawrBox::VertexLitData(b, rawrBox::PackUtils::packNormal(1, 0, 0), 0, bUV.x, bUV.y, colB),
+				    rawrBox::VertexLitData(c, rawrBox::PackUtils::packNormal(1, 0, 0), 0, cUV.x, cUV.y, colC),
+				};
+			} else {
+				buff = {
+				    rawrBox::VertexData(a, aUV.x, aUV.y, colA),
+				    rawrBox::VertexData(b, bUV.x, bUV.y, colB),
+				    rawrBox::VertexData(c, cUV.x, cUV.y, colC),
+				};
+			}
+
+			std::array<uint16_t, 3> inds{0, 1, 2};
+
+			mesh->totalVertex = static_cast<uint16_t>(buff.size());
+			mesh->totalIndex = static_cast<uint16_t>(inds.size());
+
+			mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
+			for (uint16_t ind : inds)
+				mesh->indices.push_back(static_cast<uint16_t>(buff.size()) - ind);
+
+			return mesh;
 		}
 
 		std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> generatePlane(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& size, const rawrBox::Colorf& cl = rawrBox::Colors::White) {
@@ -430,14 +482,37 @@ namespace rawrBox {
 			return this->_matrix;
 		}
 
+		virtual size_t totalMeshes() {
+			return this->_meshes.size();
+		}
+
+		virtual std::vector<std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>>>& meshes() {
+			return this->_meshes;
+		}
+
+		virtual bool isDynamicBuffer() {
+			return this->_isDynamic;
+		}
+
+		virtual bool isUploaded() {
+			if (this->isDynamicBuffer()) return bgfx::isValid(this->_ibdh) && bgfx::isValid(this->_vbdh);
+			return bgfx::isValid(this->_ibh) && bgfx::isValid(this->_vbh);
+		}
+
 		virtual void removeMesh(size_t index) {
 			if (index >= this->_meshes.size()) return;
 			this->_meshes.erase(this->_meshes.begin() + index);
+
+			if (this->isUploaded() & this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 		}
 
 		virtual void addMesh(std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> mesh) {
 			this->_bbox.combine(mesh->getBBOX());
 			this->_meshes.push_back(std::move(mesh));
+
+			if (this->isUploaded() & this->isDynamicBuffer()) {
+				this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
+			}
 		}
 
 		virtual std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> getMesh(size_t id = 0) {
@@ -466,26 +541,38 @@ namespace rawrBox {
 			}
 		}
 		// ----
-
-		virtual void upload() {
-			if (bgfx::isValid(this->_vbh) || bgfx::isValid(this->_ibh)) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
-			this->flattenMeshes(); // Merge and optimize meshes for drawing
+		virtual void upload(bool dynamic = false) {
+			if (this->isUploaded()) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
 
 			// Generate buffers ----
-			if (this->_vertices.empty() || this->_indices.empty()) throw std::runtime_error("[RawrBox-ModelBase] Vertices / Indices cannot be empty");
-			this->_vbh = bgfx::createVertexBuffer(bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * M::vertexBufferType::vLayout().m_stride), M::vertexBufferType::vLayout());
-			this->_ibh = bgfx::createIndexBuffer(bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t)));
+			this->_isDynamic = dynamic;
+			this->flattenMeshes(); // Merge and optimize meshes for drawing
+
+			const bgfx::Memory* vertMem = bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * M::vertexBufferType::vLayout().m_stride);
+			const bgfx::Memory* indexMem = bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t));
+
+			if (dynamic) {
+				if (this->_vertices.empty() || this->_indices.empty()) {
+					this->_vbdh = bgfx::createDynamicVertexBuffer(1, M::vertexBufferType::vLayout(), 0 | BGFX_BUFFER_ALLOW_RESIZE);
+					this->_ibdh = bgfx::createDynamicIndexBuffer(1, 0 | BGFX_BUFFER_ALLOW_RESIZE);
+				} else {
+					this->_vbdh = bgfx::createDynamicVertexBuffer(vertMem, M::vertexBufferType::vLayout(), 0 | BGFX_BUFFER_ALLOW_RESIZE);
+					this->_ibdh = bgfx::createDynamicIndexBuffer(indexMem, 0 | BGFX_BUFFER_ALLOW_RESIZE);
+				}
+			} else {
+				if (this->_vertices.empty() || this->_indices.empty()) throw std::runtime_error("[RawrBox-ModelBase] Static buffer cannot contain empty vertices / indices");
+
+				this->_vbh = bgfx::createVertexBuffer(vertMem, M::vertexBufferType::vLayout());
+				this->_ibh = bgfx::createIndexBuffer(indexMem);
+			}
 			// -----------------
 
 			this->_material->upload();
 			this->_material->registerUniforms();
 		}
 
-		virtual void draw(const rawrBox::Vector3f& camPos) {
-			if (!bgfx::isValid(this->_vbh) || !bgfx::isValid(this->_ibh)) {
-				throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not valid");
-			}
-
+		virtual void draw(const rawrBox::Vector3f& camPos = {}) {
+			if (!this->isUploaded()) throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not valid");
 			this->_material->preProcess(camPos);
 		}
 	};

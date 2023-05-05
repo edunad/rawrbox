@@ -1,4 +1,5 @@
 
+#include <rawrbox/debug/gizmos.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -8,6 +9,8 @@
 #include <bx/math.h>
 
 #include <vector>
+
+#include "rawrbox/debug/gizmos.hpp"
 
 namespace assimp {
 	void Game::init() {
@@ -56,10 +59,6 @@ namespace assimp {
 		this->_render = std::make_shared<rawrBox::Renderer>(0, this->_window->getSize());
 		this->_render->setClearColor(0x000000FF);
 
-		// Initialize the global light manager, i don't like it being static tough..
-		rawrBox::LightManager::getInstance().init(10);
-		// ----
-
 		// Setup camera
 		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
 		this->_camera->setPos({0.F, 5.F, -5.F});
@@ -102,8 +101,6 @@ namespace assimp {
 			this->_text->upload();
 		}
 		// ------
-
-		rawrBox::LightManager::getInstance().uploadDebug();
 	}
 
 	void Game::shutdown() {
@@ -115,7 +112,7 @@ namespace assimp {
 
 		this->_text = nullptr;
 
-		rawrBox::LightManager::getInstance().destroy();
+		rawrBox::LightManager::get().destroy();
 		rawrBox::Engine::shutdown();
 	}
 
@@ -181,7 +178,6 @@ namespace assimp {
 
 		this->drawWorld();
 
-		rawrBox::LightManager::getInstance().drawDebug(this->_camera->getPos());
-		this->_render->render(); // Commit primitives
+		this->_render->render(true); // Commit primitives
 	}
 } // namespace assimp

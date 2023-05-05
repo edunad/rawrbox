@@ -395,13 +395,13 @@ namespace rawrBox {
 
 				switch (aiLight.mType) {
 					case aiLightSource_DIRECTIONAL:
-						rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightDirectional>(pos, direction, diffuse, specular));
+						rawrBox::LightManager::get().addLight(std::make_shared<rawrBox::LightDirectional>(pos, direction, diffuse, specular));
 						continue;
 					case aiLightSource_SPOT:
-						rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightSpot>(pos, direction, diffuse, specular, aiLight.mAngleInnerCone, aiLight.mAngleOuterCone, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
+						rawrBox::LightManager::get().addLight(std::make_shared<rawrBox::LightSpot>(pos, direction, diffuse, specular, aiLight.mAngleInnerCone, aiLight.mAngleOuterCone, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
 						continue;
 					case aiLightSource_POINT:
-						rawrBox::LightManager::getInstance().addLight(std::make_shared<rawrBox::LightPoint>(pos, diffuse, specular, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
+						rawrBox::LightManager::get().addLight(std::make_shared<rawrBox::LightPoint>(pos, diffuse, specular, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
 						continue;
 					default:
 						continue;

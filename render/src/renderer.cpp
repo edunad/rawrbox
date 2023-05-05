@@ -1,3 +1,4 @@
+#include <rawrbox/debug/gizmos.hpp>
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/static.hpp>
 
@@ -12,6 +13,8 @@ namespace rawrBox {
 		rawrBox::MISSING_TEXTURE = nullptr;
 		rawrBox::MISSING_SPECULAR_TEXTURE = nullptr;
 		rawrBox::WHITE_TEXTURE = nullptr;
+
+		rawrBox::GIZMOS::get().shutdown();
 	}
 
 	Renderer::Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size) : _id(id), _size(size) {
@@ -35,6 +38,10 @@ namespace rawrBox {
 		rawrBox::MISSING_TEXTURE->upload();
 		rawrBox::MISSING_SPECULAR_TEXTURE->upload();
 		rawrBox::WHITE_TEXTURE->upload();
+
+		// Debug gizmos ----
+		rawrBox::GIZMOS::get().upload();
+		// -----
 
 		if (this->_stencil == nullptr) throw std::runtime_error("[RawrBox-Renderer] Failed to upload, stencil is not initialized!");
 		this->_stencil->upload();
@@ -61,9 +68,10 @@ namespace rawrBox {
 		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 	}
 
-	void Renderer::render() const {
+	void Renderer::render(bool gizmos) const {
 		if (!rawrBox::BGFX_INITIALIZED) return;
 
+		if (gizmos) rawrBox::GIZMOS::get().draw();
 		bgfx::frame();
 	}
 	// --------------------

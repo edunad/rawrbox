@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
+#include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/base.hpp>
@@ -119,6 +120,10 @@ namespace rawrBox {
 
 		void setMatrix(const std::array<float, 16>& offset) {
 			this->offsetMatrix = offset;
+		}
+
+		virtual void setPos(const rawrBox::Vector3f& pos) {
+			rawrBox::MathUtils::mtxTranslate(this->offsetMatrix, pos);
 		}
 
 		void setTexture(std::shared_ptr<rawrBox::TextureBase> ptr) {

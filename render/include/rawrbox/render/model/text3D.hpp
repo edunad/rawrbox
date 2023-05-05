@@ -112,8 +112,13 @@ namespace rawrBox {
 
 				bgfx::setTransform(this->_matrix.data());
 
-				bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
-				bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
+				if (this->isDynamicBuffer()) {
+					bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
+					bgfx::setIndexBuffer(this->_ibdh, mesh->baseIndex, mesh->totalIndex);
+				} else {
+					bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
+					bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
+				}
 
 				uint64_t flags = BGFX_STATE_DEFAULT_3D_TEXT | mesh->culling | mesh->blending;
 				if (mesh->wireframe) flags |= BGFX_STATE_PT_LINES;

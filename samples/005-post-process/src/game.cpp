@@ -91,7 +91,7 @@ namespace post_process {
 		this->_render = nullptr;
 		this->_model = nullptr;
 
-		rawrBox::LightManager::getInstance().destroy();
+		rawrBox::LightManager::get().destroy();
 		rawrBox::Engine::shutdown();
 	}
 

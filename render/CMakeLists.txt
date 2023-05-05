@@ -83,6 +83,7 @@ target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	RAWRBOX.MATH
 	RAWRBOX.UTILS
+	RAWRBOX.DEBUG
 
 	fmt::fmt
 	Freetype::Freetype

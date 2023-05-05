@@ -57,10 +57,6 @@ namespace light {
 		this->_render = std::make_shared<rawrBox::Renderer>(0, this->_window->getSize());
 		this->_render->setClearColor(0x000000FF);
 
-		// Initialize the global light manager, i don't like it being static tough..
-		rawrBox::LightManager::getInstance().init(10);
-		// ----
-
 		// Setup camera
 		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
 		this->_camera->setPos({0.F, 5.F, -5.F});
@@ -94,8 +90,6 @@ namespace light {
 			this->_text->upload();
 		}
 		// ------
-
-		rawrBox::LightManager::getInstance().uploadDebug();
 	}
 
 	void Game::shutdown() {
@@ -103,7 +97,7 @@ namespace light {
 		this->_model = nullptr;
 		this->_text = nullptr;
 
-		rawrBox::LightManager::getInstance().destroy();
+		rawrBox::LightManager::get().destroy();
 		rawrBox::Engine::shutdown();
 	}
 
@@ -164,8 +158,6 @@ namespace light {
 		bgfx::dbgTextPrintf(1, 1, 0x0f, "LIGHT TESTS ----------------------------------------------------------------------------------------------------------------");
 
 		this->drawWorld();
-
-		rawrBox::LightManager::getInstance().drawDebug(this->_camera->getPos());
-		this->_render->render(); // Commit primitives
+		this->_render->render(true); // Commit primitives
 	}
 } // namespace light

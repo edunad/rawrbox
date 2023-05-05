@@ -230,8 +230,13 @@ namespace rawrBox {
 				}
 				// ---
 
-				bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
-				bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
+				if (this->isDynamicBuffer()) {
+					bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
+					bgfx::setIndexBuffer(this->_ibdh, mesh->baseIndex, mesh->totalIndex);
+				} else {
+					bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
+					bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
+				}
 
 				std::array<float, 16> matrix = {};
 				bx::mtxMul(matrix.data(), mesh->offsetMatrix.data(), this->_matrix.data());
