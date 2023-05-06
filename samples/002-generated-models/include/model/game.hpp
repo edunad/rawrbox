@@ -39,7 +39,7 @@ namespace model {
 		void shutdown() override;
 		void pollEvents() override;
 		void update(float deltaTime, int64_t gameTime) override;
-		void draw(const double alpha) override;
+		void draw() override;
 
 		void loadContent();
 		void drawWorld();

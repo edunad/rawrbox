@@ -2,9 +2,11 @@
 #include <rawrbox/bass/sound/flags.hpp>
 #include <rawrbox/bass/sound/instance.hpp>
 #include <rawrbox/bass/utils/bass.hpp>
+
 #ifdef RAWRBOX_DEBUG
 	#include <rawrbox/debug/gizmos.hpp>
 #endif
+
 #include <bass.h>
 #include <bass_fx.h>
 #include <fmt/printf.h>
@@ -135,8 +137,7 @@ namespace rawrbox {
 	}
 
 	bool SoundInstance::isHTTPStream() const {
-		std::string tags = BASS_ChannelGetTags(this->_channel, BASS_TAG_HTTP);
-		return !tags.empty();
+		return !BASS_ChannelGetTags(this->_channel, BASS_TAG_HTTP);
 	}
 
 	const std::vector<float> SoundInstance::getFFT(int bass_length) const {

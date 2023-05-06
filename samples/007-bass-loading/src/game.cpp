@@ -86,7 +86,7 @@ namespace bass_test {
 		this->_sound->setVolume(1.F);
 		this->_sound->setLooping(true);
 		this->_sound->set3D(10.F);
-		this->_sound->setPosition({0, 1.F, 0});
+		this->_sound->setPosition({-3.F, 1.F, 0});
 		this->_sound->setTempo(0.8F);
 		this->_sound->play();
 
@@ -98,11 +98,25 @@ namespace bass_test {
 		this->_sound->onBPM += [](float bpm) {
 			fmt::print("BPM: {}\n", bpm);
 		};
+
+		this->_sound2 = rawrbox::SoundManager::get().loadSound("./content/sounds/clownmusic.ogg", rawrbox::SoundFlags::SOUND_3D)->createInstance();
+		this->_sound2->setLooping(true);
+		this->_sound2->set3D(10.F);
+		this->_sound2->setPosition({3.F, 1.F, 0});
+		this->_sound2->setTempo(1.2F);
+		this->_sound2->play();
+
 		// --------
 
 		// Text test ----
 		{
-			this->_text->addText(this->_font, "BEAT", {0.F, 1.3F, 0});
+			this->_beatText->addText(this->_font, "BEAT", {-3.F, 1.3F, 0});
+			this->_beatText->upload();
+		}
+
+		{
+			this->_text->addText(this->_font, "HTTP LOADING", {-3.F, 1.1F, 0});
+			this->_text->addText(this->_font, "LOCAL LOADING", {3.F, 1.1F, 0});
 			this->_text->upload();
 		}
 		// ------
@@ -119,6 +133,8 @@ namespace bass_test {
 		this->_render = nullptr;
 		this->_sound = nullptr;
 		this->_modelGrid = nullptr;
+		this->_beatText = nullptr;
+		this->_text = nullptr;
 
 		rawrbox::SoundManager::get().shutdown();
 		rawrbox::Engine::shutdown();
@@ -171,13 +187,14 @@ namespace bass_test {
 
 	void Game::drawWorld() {
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-
-		this->_text->setPos({0, this->_beat, 0});
-		this->_text->draw({});
 		this->_modelGrid->draw({});
+
+		this->_beatText->setPos({0, this->_beat, 0});
+		this->_beatText->draw({});
+		this->_text->draw({});
 	}
 
-	void Game::draw(const double alpha) {
+	void Game::draw() {
 		if (this->_render == nullptr) return;
 		this->_render->swapBuffer(); // Clean up and set renderer
 

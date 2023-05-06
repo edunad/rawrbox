@@ -52,7 +52,7 @@ namespace rawrbox {
 		virtual void update(float deltaTime, int64_t gameTime){};
 
 		// called acordingly with the FPS lock
-		virtual void draw(const double alpha){};
+		virtual void draw(){};
 
 		// starts the game loop and blocks until quit is called and is handled
 		virtual void run() {
@@ -98,7 +98,7 @@ namespace rawrbox {
 				// we only need to draw a single frame after a update
 				// else we're redrawing the same thing without any change
 				if (frameTimeFPS >= this->_delayBetweenFrames) {
-					draw(1.0F / static_cast<float>(this->_fps));
+					draw();
 					currentTimeFPS = newTime;
 				}
 

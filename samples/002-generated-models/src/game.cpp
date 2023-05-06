@@ -193,7 +193,7 @@ namespace model {
 		this->_text->draw(this->_camera->getPos());
 	}
 
-	void Game::draw(const double alpha) {
+	void Game::draw() {
 		if (this->_render == nullptr) return;
 		this->_render->swapBuffer(); // Clean up and set renderer
 

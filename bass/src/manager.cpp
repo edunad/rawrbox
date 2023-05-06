@@ -1,13 +1,14 @@
 #include <rawrbox/bass/manager.hpp>
 #include <rawrbox/bass/sound/instance.hpp>
+#include <rawrbox/bass/utils/bass.hpp>
 #include <rawrbox/engine/static.hpp>
 
 #include <bass.h>
 #include <bass_fx.h>
 #include <fmt/printf.h>
-#include <minwindef.h>
 
-#include "rawrbox/bass/utils/bass.hpp"
+#include <filesystem>
+#include <stdexcept>
 
 namespace rawrbox {
 	constexpr auto MAX_SOUND_INSTANCES = 5; // Max sound effects playing at the same time
@@ -17,9 +18,9 @@ namespace rawrbox {
 		rawrbox::runOnMainThread([channel]() {
 			auto& inst = rawrbox::SoundManager::get();
 
-			for (auto it2 = inst.httpSounds.begin(); it2 != inst.httpSounds.end();) {
+			for (auto it2 = inst.sounds.begin(); it2 != inst.sounds.end();) {
 				if ((*it2).second->getSample() == channel) {
-					it2 = inst.httpSounds.erase(it2);
+					it2 = inst.sounds.erase(it2);
 					return;
 				} else {
 					++it2;
@@ -64,11 +65,17 @@ namespace rawrbox {
 	}
 
 	void SoundManager::shutdown() {
+		this->sounds.clear();
 		BASS_Free();
 	}
 
 	// LOAD ----
 	std::shared_ptr<rawrbox::SoundBase> SoundManager::loadSound(const std::filesystem::path& path, uint32_t flags) {
+		std::string pth = path.generic_string().c_str();
+
+		if (this->sounds.find(pth) != this->sounds.end()) return this->sounds[pth];
+		if (!std::filesystem::exists(path)) throw std::runtime_error(fmt::format("[RawrBox-BASS] File '{}' not found!", pth));
+
 		auto size = std::filesystem::file_size(path);
 		if (path.generic_string().rfind(".3D") != std::string::npos) flags |= SoundFlags::SOUND_3D;
 
@@ -107,12 +114,13 @@ namespace rawrbox {
 			// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
 		}
 
-		return std::make_shared<rawrbox::SoundBase>(sample, 0, flags, shouldStream);
+		sounds[pth] = std::make_shared<rawrbox::SoundBase>(sample, 0, flags, shouldStream);
+		return sounds[pth];
 	}
 
 	std::shared_ptr<rawrbox::SoundBase> SoundManager::loadHTTPSound(const std::string& url, uint32_t flags) {
 		if (!url.starts_with("http://") && !url.starts_with("https://")) throw std::runtime_error(fmt::format("[BASS] Invalid sound url '{}'", url));
-		if (httpSounds.find(url) != httpSounds.end()) return httpSounds[url];
+		if (sounds.find(url) != sounds.end()) return sounds[url];
 
 		if (url.rfind(".3D") != std::string::npos) flags |= SoundFlags::SOUND_3D;
 
@@ -148,10 +156,8 @@ namespace rawrbox {
 			// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
 		}
 
-		auto sound = std::make_shared<rawrbox::SoundBase>(sampleStreamed, 0, flags, true);
-		httpSounds[url] = sound;
-
-		return sound;
+		sounds[url] = std::make_shared<rawrbox::SoundBase>(sampleStreamed, 0, flags, true);
+		return sounds[url];
 	}
 	// ----
 

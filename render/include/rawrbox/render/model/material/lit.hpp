@@ -56,6 +56,8 @@ namespace rawrbox {
 		}
 
 		void preProcess(const rawrbox::Vector3f& camPos) {
+			rawrbox::MaterialBase::preProcess(camPos);
+
 			auto& lightManager = rawrbox::LightManager::get();
 			size_t lightCount = lightManager.count();
 
@@ -90,7 +92,7 @@ namespace rawrbox {
 				bgfx::setTexture(1, s_texSpecularColor, rawrbox::MISSING_SPECULAR_TEXTURE->getHandle());
 			}
 
-			std::array shininess = {mesh->specularShininess};
+			std::array<float, 2> shininess = {mesh->specularShininess, 0};
 			bgfx::setUniform(u_texSpecularShininess, shininess.data());
 		}
 

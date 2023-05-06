@@ -26,7 +26,7 @@ namespace rawrbox {
 		bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle u_viewPos = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle u_cameraPos = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_colorOffset = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle u_mesh_pos = BGFX_INVALID_HANDLE;
@@ -43,7 +43,7 @@ namespace rawrbox {
 			RAWRBOX_DESTROY(program);
 
 			RAWRBOX_DESTROY(s_texColor);
-			RAWRBOX_DESTROY(u_viewPos);
+			RAWRBOX_DESTROY(u_cameraPos);
 			RAWRBOX_DESTROY(u_colorOffset);
 
 			RAWRBOX_DESTROY(u_mesh_pos);
@@ -64,7 +64,7 @@ namespace rawrbox {
 		void registerUniforms() {
 			s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 
-			u_viewPos = bgfx::createUniform("u_viewPos", bgfx::UniformType::Vec4, 3);
+			u_cameraPos = bgfx::createUniform("u_cameraPos", bgfx::UniformType::Vec4, 3);
 			u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 
 			u_mesh_pos = bgfx::createUniform("u_mesh_pos", bgfx::UniformType::Vec4, 3);
@@ -73,7 +73,7 @@ namespace rawrbox {
 
 		void preProcess(const rawrbox::Vector3f& camPos) {
 			std::array pos = {camPos.x, camPos.y, camPos.z};
-			bgfx::setUniform(u_viewPos, pos.data());
+			bgfx::setUniform(u_cameraPos, pos.data());
 		}
 
 		template <typename T>

@@ -18,9 +18,14 @@ namespace bass_test {
 		std::shared_ptr<rawrbox::CameraPerspective> _camera = nullptr;
 
 		std::shared_ptr<rawrbox::SoundInstance> _sound = nullptr;
+		std::shared_ptr<rawrbox::SoundInstance> _sound2 = nullptr;
+
 		std::shared_ptr<rawrbox::Model<>> _modelGrid = std::make_shared<rawrbox::Model<>>();
+
 		std::unique_ptr<rawrbox::TextEngine> _textEngine = nullptr;
+
 		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
+		std::shared_ptr<rawrbox::Text3D> _beatText = std::make_shared<rawrbox::Text3D>();
 
 		rawrbox::Font* _font = nullptr;
 
@@ -35,7 +40,7 @@ namespace bass_test {
 		void shutdown() override;
 		void pollEvents() override;
 		void update(float deltaTime, int64_t gameTime) override;
-		void draw(const double alpha) override;
+		void draw() override;
 
 		void loadContent();
 		void drawWorld();

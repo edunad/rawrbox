@@ -17,7 +17,7 @@ namespace rawrbox {
 		rawrbox::Vector3f _oldLocation = {};
 
 	public:
-		std::unordered_map<std::string, std::shared_ptr<rawrbox::SoundBase>> httpSounds = {}; // Keep alive the http sounds
+		std::unordered_map<std::string, std::shared_ptr<rawrbox::SoundBase>> sounds = {}; // Keep alive the sounds
 
 		rawrbox::EventNamed<std::pair<uint32_t, double>> onBEAT;
 		rawrbox::EventNamed<std::pair<uint32_t, float>> onBPM;
