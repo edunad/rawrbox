@@ -1,13 +1,13 @@
 #include <rawrbox/bass/manager.hpp>
+#include <rawrbox/bass/sound/flags.hpp>
 #include <rawrbox/bass/sound/instance.hpp>
 #include <rawrbox/bass/utils/bass.hpp>
-#include <rawrbox/debug/gizmos.hpp>
-
+#ifdef RAWRBOX_DEBUG
+	#include <rawrbox/debug/gizmos.hpp>
+#endif
 #include <bass.h>
 #include <bass_fx.h>
 #include <fmt/printf.h>
-
-#include "rawrbox/bass/sound/flags.hpp"
 
 namespace rawrBox {
 	SoundInstance::SoundInstance(uint32_t audioSample, bool isStream, uint32_t flags) : _sample(audioSample), _flags(flags), _stream(isStream) {
@@ -40,7 +40,9 @@ namespace rawrBox {
 		snd.onBEAT.remove(std::to_string(this->_sample));
 		snd.onSoundEnd.remove(std::to_string(this->_sample));
 
+#ifdef RAWRBOX_DEBUG
 		GIZMOS::get().removeSound(this);
+#endif
 	}
 
 	uint32_t SoundInstance::getNextAvailableChannel() const {
@@ -72,7 +74,9 @@ namespace rawrBox {
 		BASS_ChannelPlay(this->_channel, this->_stream || this->_looping); // actualy play the thing
 		rawrBox::BASSUtils::checkBASSError();
 
+#ifdef RAWRBOX_DEBUG
 		GIZMOS::get().addSound(this);
+#endif
 	}
 
 	void SoundInstance::stop() {
@@ -236,7 +240,9 @@ namespace rawrBox {
 		BASS_Apply3D();
 
 		rawrBox::BASSUtils::checkBASSError();
+#ifdef RAWRBOX_DEBUG
 		rawrBox::GIZMOS::get().updateGizmo(fmt::format("Sound-{}", this->id()), pos);
+#endif
 	}
 
 	void SoundInstance::set3D(float maxDistance, float minDistance) {

@@ -25,6 +25,7 @@ option(RAWRBOX_BUILD_TESTING "Build tests" ON)
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
 option(RAWRBOX_ENABLE_ASSIMP_SUPPORT "Build assimp & add model loading support" ON)
 option(RAWRBOX_ENABLE_BASS_SUPPORT "Build bass & add sound loading support" ON)
+option(RAWRBOX_ENABLE_DEBUG_SUPPORT "Build debug lib & add gizmo support" ON)
 # -----
 
 # OTHER SETTINGS ----
@@ -115,7 +116,10 @@ add_subdirectory ("math")
 add_subdirectory ("utils")
 add_subdirectory ("render")
 add_subdirectory ("engine")
-add_subdirectory ("debug")
+
+if(RAWRBOX_ENABLE_DEBUG_SUPPORT)
+	add_subdirectory ("debug")
+endif()
 
 if(RAWRBOX_ENABLE_BASS_SUPPORT)
 	add_subdirectory ("bass")

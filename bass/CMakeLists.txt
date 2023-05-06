@@ -27,15 +27,19 @@ file(COPY "${BASS_BINARY_FX}" DESTINATION "${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUT
 file(GLOB_RECURSE RAWRBOX_BASS_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
 # -----------------
 
+if(RAWRBOX_ENABLE_DEBUG_SUPPORT)
+    set(RAWRBOX_BASS_DEFINES RAWRBOX_DEBUG)
+    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.DEBUG)
+endif()
+
 # Project setup
 add_library(${output_target} ${RAWRBOX_BASS_SOURCES})
-target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX)
+target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX ${RAWRBOX_BASS_DEFINES})
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC
 	RAWRBOX.UTILS
 	RAWRBOX.ENGINE
-	RAWRBOX.DEBUG
 
 	fmt::fmt
 

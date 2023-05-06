@@ -1,4 +1,7 @@
 #pragma once
+#ifdef RAWRBOX_DEBUG
+	#include <rawrbox/debug/gizmos.hpp>
+#endif
 
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector3.hpp>
@@ -17,7 +20,21 @@ namespace rawrBox {
 		float _quadratic;
 
 	public:
-		LightSpot(rawrBox::Vector3f posMatrix, rawrBox::Vector3f direction, rawrBox::Colorf diffuse, rawrBox::Colorf specular, float innerCone, float outerCone, float constant, float linear, float quadratic) : rawrBox::LightBase(posMatrix, diffuse, specular), _direction(direction), _innerCone(innerCone), _outerCone(outerCone), _constant(constant), _linear(linear), _quadratic(quadratic){};
+		LightSpot(rawrBox::Vector3f posMatrix, rawrBox::Vector3f direction, rawrBox::Colorf diffuse, rawrBox::Colorf specular, float innerCone, float outerCone, float constant, float linear, float quadratic) : rawrBox::LightBase(posMatrix, diffuse, specular), _direction(direction), _innerCone(innerCone), _outerCone(outerCone), _constant(constant), _linear(linear), _quadratic(quadratic) {
+#ifdef RAWRBOX_DEBUG
+			GIZMOS::get().addLight(this);
+#endif
+		};
+
+		LightSpot(LightSpot&&) = delete;
+		LightSpot& operator=(LightSpot&&) = delete;
+		LightSpot(const LightSpot&) = delete;
+		LightSpot& operator=(const LightSpot&) = delete;
+		~LightSpot() override {
+#ifdef RAWRBOX_DEBUG
+			GIZMOS::get().removeLight(this);
+#endif
+		};
 
 		LightType getType() override { return LightType::LIGHT_SPOT; };
 		std::array<float, 16> const getDataMatrix() override {

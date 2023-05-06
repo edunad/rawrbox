@@ -18,6 +18,7 @@ namespace rawrBox {
 	class LightBase {
 	protected:
 		bool _isOn = true;
+		size_t _id = 0;
 
 		rawrBox::Vector3f _posMatrix;
 		rawrBox::Colorf _diffuse = rawrBox::Colors::White;
@@ -25,17 +26,21 @@ namespace rawrBox {
 		rawrBox::Colorf _ambient = rawrBox::Colors::White;
 
 	public:
+		LightBase() = default;
 		LightBase(rawrBox::Vector3f posMatrix, rawrBox::Colorf diffuse, rawrBox::Colorf specular) : _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
+
 		LightBase(LightBase&&) = delete;
 		LightBase& operator=(LightBase&&) = delete;
 		LightBase(const LightBase&) = delete;
 		LightBase& operator=(const LightBase&) = delete;
-
 		virtual ~LightBase() = default;
 
 		[[nodiscard]] virtual const rawrBox::Colorf& getSpecularColor() const { return this->_specular; }
 		[[nodiscard]] virtual const rawrBox::Colorf& getDiffuseColor() const { return this->_diffuse; }
 		[[nodiscard]] virtual const rawrBox::Colorf& getAmbientColor() const { return this->_ambient; }
+
+		[[nodiscard]] virtual const size_t id() const { return this->_id; };
+		virtual void setId(size_t id) { this->_id = id; };
 
 		[[nodiscard]] virtual const bool isOn() const { return this->_isOn; }
 		virtual void setStatus(bool on) { this->_isOn = on; };

@@ -1,8 +1,7 @@
 ﻿#pragma once
 
+#include <rawrbox/math/pi.hpp>
 #include <rawrbox/math/vector2.hpp>
-
-#include "rawrbox/math/pi.hpp"
 
 #pragma once
 

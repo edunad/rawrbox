@@ -1,8 +1,12 @@
+
 #include <rawrbox/debug/gizmos.hpp>
+#include <rawrbox/render/model/light/base.hpp>
+
+#ifdef RAWRBOX_BASS
+	#include <rawrbox/bass/sound/instance.hpp>
+#endif
 
 #include <stdexcept>
-
-#include "rawrbox/math/vector3.hpp"
 
 namespace rawrBox {
 
@@ -14,6 +18,7 @@ namespace rawrBox {
 	}
 
 	void GIZMOS::upload() {
+		if (!rawrBox::BGFX_INITIALIZED) return;
 		if (!this->_textures.empty()) throw std::runtime_error(fmt::format("[RawrBox-Debug] GIZMOS already initialized!"));
 
 		// Lights
@@ -32,11 +37,11 @@ namespace rawrBox {
 		this->_gizmo_sounds->upload(true); // Dynamic
 	}
 
-	void GIZMOS::addLight(std::shared_ptr<rawrBox::LightBase> l) {
-		auto pos = l->getPosMatrix();
+	void GIZMOS::addLight(rawrBox::LightBase* l) {
+		/*auto pos = l->getPosMatrix();
 
 		auto mesh = this->_gizmo_lights->generatePlane({pos[0], pos[1], pos[2]}, {0.1F, 0.1F});
-		mesh->setName(fmt::format("Light-{}", l->getType()));
+		mesh->setName(fmt::format("Light-{}", l->id()));
 		mesh->setCulling(BGFX_STATE_CULL_CW);
 
 		switch (l->getType()) {
@@ -52,12 +57,18 @@ namespace rawrBox {
 				break;
 		}
 
-		this->_gizmo_lights->addMesh(mesh);
+		this->_gizmo_lights->addMesh(mesh);*/
 	}
 
-	void GIZMOS::removeLight(size_t indx) {
+	void GIZMOS::removeLight(rawrBox::LightBase* l) {
 		if (this->_gizmo_lights == nullptr) return;
-		this->_gizmo_lights->removeMesh(indx);
+
+		auto& m = this->_gizmo_lights->meshes();
+		for (size_t i = 0; i < m.size(); i++) {
+			if (m[i]->getName() != fmt::format("Light-{}", l->id())) continue;
+			this->_gizmo_lights->removeMesh(i);
+			return;
+		}
 	}
 #ifdef RAWRBOX_BASS
 	void GIZMOS::addSound(rawrBox::SoundInstance* l) {
@@ -98,6 +109,8 @@ namespace rawrBox {
 	}
 
 	void GIZMOS::draw() {
+		if (!rawrBox::BGFX_INITIALIZED) return;
+
 		if (this->_gizmo_lights != nullptr && this->_gizmo_lights->totalMeshes() > 0) this->_gizmo_lights->draw({});
 		if (this->_gizmo_sounds != nullptr && this->_gizmo_sounds->totalMeshes() > 0) this->_gizmo_sounds->draw({});
 	}

@@ -1,5 +1,8 @@
 
-#include <rawrbox/debug/gizmos.hpp>
+#ifdef RAWRBOX_DEBUG
+	#include <rawrbox/debug/gizmos.hpp>
+#endif
+
 #include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
 
@@ -15,8 +18,8 @@ namespace rawrBox {
 	// Light utils ----
 	void LightManager::addLight(std::shared_ptr<rawrBox::LightBase> light) {
 		if (light == nullptr || this->_lights.size() >= rawrBox::MAX_LIGHTS) return;
+		light->setId(this->_lights.size());
 
-		GIZMOS::get().addLight(light);
 		this->_lights.push_back(std::move(light));
 	}
 
@@ -25,7 +28,6 @@ namespace rawrBox {
 
 		for (size_t i = 0; i < this->_lights.size(); i++) {
 			if (this->_lights[i] == light) {
-				GIZMOS::get().removeLight(i);
 				this->_lights.erase(this->_lights.begin() + i);
 				return;
 			}

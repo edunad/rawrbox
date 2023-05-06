@@ -47,6 +47,7 @@
 | `RAWRBOX_ENABLE_QHULL`          | Enables QHull util                                                                                 |
 | `RAWRBOX_ENABLE_ASSIMP_SUPPORT` | Enables assimp model loading                                                                       |
 | `RAWRBOX_ENABLE_BASS_SUPPORT`   | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
+| `RAWRBOX_ENABLE_DEBUG_SUPPORT`  | Enables DEBUG support (aka gizmo rendering & renderdoc)                                            |
 
 # Dependencies
 

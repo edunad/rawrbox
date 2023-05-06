@@ -1,5 +1,3 @@
-
-#include <rawrbox/debug/gizmos.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -9,8 +7,6 @@
 #include <bx/math.h>
 
 #include <vector>
-
-#include "rawrbox/debug/gizmos.hpp"
 
 namespace assimp {
 	void Game::init() {

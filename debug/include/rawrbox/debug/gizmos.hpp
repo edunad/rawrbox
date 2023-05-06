@@ -1,11 +1,6 @@
 #pragma once
 
-#ifdef RAWRBOX_BASS
-	#include <rawrbox/bass/sound/instance.hpp>
-#endif
-
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/model/light/base.hpp>
 #include <rawrbox/render/model/sprite.hpp>
 #include <rawrbox/render/texture/image.hpp>
 
@@ -16,6 +11,10 @@
 #include <unordered_map>
 
 namespace rawrBox {
+
+	class LightBase;
+	class SoundInstance;
+
 	class GIZMOS {
 	protected:
 		std::shared_ptr<rawrBox::Sprite<>> _gizmo_lights = std::make_shared<rawrBox::Sprite<>>();
@@ -28,8 +27,8 @@ namespace rawrBox {
 		void upload();
 
 		// UTILS ----
-		void addLight(std::shared_ptr<rawrBox::LightBase> l);
-		void removeLight(size_t indx);
+		void addLight(rawrBox::LightBase* l);
+		void removeLight(rawrBox::LightBase* l);
 
 #ifdef RAWRBOX_BASS
 		void addSound(rawrBox::SoundInstance* l);
