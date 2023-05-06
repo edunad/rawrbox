@@ -1,16 +1,39 @@
 #pragma once
+#ifdef RAWRBOX_DEBUG
+	#ifndef RAWRBOX_TESTING
+		#include <rawrbox/debug/gizmos.hpp>
+	#endif
+#endif
 
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/model/light/base.hpp>
 
-namespace rawrBox {
-	class LightDirectional : public rawrBox::LightBase {
+namespace rawrbox {
+	class LightDirectional : public rawrbox::LightBase {
 	protected:
-		rawrBox::Vector3 _direction;
+		rawrbox::Vector3 _direction;
 
 	public:
-		LightDirectional(rawrBox::Vector3f posMatrix, rawrBox::Vector3 dir, rawrBox::Colorf diffuse, rawrBox::Colorf specular) : rawrBox::LightBase(posMatrix, diffuse, specular), _direction(dir){};
+		LightDirectional(rawrbox::Vector3f posMatrix, rawrbox::Vector3 dir, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : rawrbox::LightBase(posMatrix, diffuse, specular), _direction(dir) {
+#ifdef RAWRBOX_DEBUG
+	#ifndef RAWRBOX_TESTING
+			GIZMOS::get().addLight(this);
+	#endif
+#endif
+		};
+
+		LightDirectional(LightDirectional&&) = delete;
+		LightDirectional& operator=(LightDirectional&&) = delete;
+		LightDirectional(const LightDirectional&) = delete;
+		LightDirectional& operator=(const LightDirectional&) = delete;
+		~LightDirectional() override {
+#ifdef RAWRBOX_DEBUG
+	#ifndef RAWRBOX_TESTING
+			GIZMOS::get().removeLight(this);
+	#endif
+#endif
+		};
 
 		LightType getType() override { return LightType::LIGHT_DIR; };
 		std::array<float, 16> const getDataMatrix() override {
@@ -21,4 +44,4 @@ namespace rawrBox {
 			    0, 0, 0, this->_isOn ? 1.F : 0};
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

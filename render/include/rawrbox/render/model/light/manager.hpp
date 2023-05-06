@@ -1,46 +1,30 @@
 #pragma once
 
 #include <rawrbox/render/model/light/base.hpp>
-#include <rawrbox/render/model/sprite.hpp>
-#include <rawrbox/render/texture/image.hpp>
 
 #include <memory>
 
-namespace rawrBox {
+namespace rawrbox {
 
 	class LightManager {
 	protected:
-		std::vector<std::shared_ptr<rawrBox::LightBase>> _lights;
-
-		std::shared_ptr<rawrBox::TextureImage> _pointTexture;
-		std::shared_ptr<rawrBox::TextureImage> _spotTexture;
-		std::shared_ptr<rawrBox::TextureImage> _dirTexture;
-
-		std::shared_ptr<rawrBox::Sprite<>> _debugMdl = std::make_shared<rawrBox::Sprite<>>();
+		std::vector<std::shared_ptr<rawrbox::LightBase>> _lights;
 
 	public:
 		bool fullbright = false;
-		int32_t maxLights = 8;
 
-		virtual void init(int32_t maxLights = 8);
 		virtual void destroy();
-
 		virtual void setEnabled(bool fb);
 
 		// Light utils ----
-		virtual void addLight(std::shared_ptr<rawrBox::LightBase> light);
-		virtual void removeLight(std::shared_ptr<rawrBox::LightBase> light);
-		virtual std::shared_ptr<rawrBox::LightBase> getLight(size_t indx);
+		virtual void addLight(std::shared_ptr<rawrbox::LightBase> light);
+		virtual void removeLight(std::shared_ptr<rawrbox::LightBase> light);
+		virtual std::shared_ptr<rawrbox::LightBase> getLight(size_t indx);
 
 		virtual size_t count();
 		// ---------
 
-		// DEBUG ----
-		virtual void uploadDebug();
-		virtual void drawDebug(const rawrBox::Vector3f& camPos);
-		// ---
-
-		static LightManager& getInstance() {
+		static LightManager& get() {
 			static LightManager i;
 			return i;
 		}
@@ -52,4 +36,4 @@ namespace rawrBox {
 		LightManager& operator=(const LightManager&) = delete;
 		virtual ~LightManager() = default;
 	};
-} // namespace rawrBox
+} // namespace rawrbox

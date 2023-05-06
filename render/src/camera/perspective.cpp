@@ -3,7 +3,7 @@
 
 #include <bx/math.h>
 
-namespace rawrBox {
+namespace rawrbox {
 	// NOLINTBEGIN(clang-analyzer-optin.cplusplus.VirtualCall)
 	CameraPerspective::CameraPerspective(float ratio, float FOV, float near, float far, bool homogeneousDepth) {
 		bx::mtxProj(this->_projection.data(), FOV, ratio, near, far, homogeneousDepth);
@@ -20,4 +20,4 @@ namespace rawrBox {
 
 		bx::mtxLookAt(this->_view.data(), m_eye, m_at, {m_up.x, m_up.y, m_up.z});
 	}
-} // namespace rawrBox
+} // namespace rawrbox

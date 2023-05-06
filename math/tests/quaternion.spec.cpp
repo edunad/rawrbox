@@ -4,21 +4,21 @@
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-TEST_CASE("Quaternion should behave as expected", "[rawrBox::Quaternion]") {
-	rawrBox::Quaternion q = rawrBox::Quaternion{3.F, 1.F, 7.F, 10.F};
+TEST_CASE("Quaternion should behave as expected", "[rawrbox::Quaternion]") {
+	rawrbox::Quaternion q = rawrbox::Quaternion{3.F, 1.F, 7.F, 10.F};
 
-	SECTION("rawrBox::Quaternion") {
+	SECTION("rawrbox::Quaternion") {
 		REQUIRE(q.w == 3.F);
 		REQUIRE(q.x == 1.F);
 		REQUIRE(q.y == 7.F);
 		REQUIRE(q.z == 10.F);
 	}
 
-	SECTION("rawrBox::Quaternion::length") {
+	SECTION("rawrbox::Quaternion::length") {
 		REQUIRE(q.length() == 12.60952F);
 	}
 
-	SECTION("rawrBox::Quaternion::normalized") {
+	SECTION("rawrbox::Quaternion::normalized") {
 		auto n = q.normalized();
 
 		REQUIRE_THAT(n.w, Catch::Matchers::WithinAbs(0.23792F, 0.0001F));
@@ -27,8 +27,8 @@ TEST_CASE("Quaternion should behave as expected", "[rawrBox::Quaternion]") {
 		REQUIRE_THAT(n.z, Catch::Matchers::WithinAbs(0.79305F, 0.0001F));
 	}
 
-	SECTION("rawrBox::Quaternion::lerp") {
-		rawrBox::Quaternion o = rawrBox::Quaternion{1.F, 1.F, 0.F, 10.F};
+	SECTION("rawrbox::Quaternion::lerp") {
+		rawrbox::Quaternion o = rawrbox::Quaternion{1.F, 1.F, 0.F, 10.F};
 		auto n = q.lerp(o, 0.5F);
 
 		REQUIRE_THAT(n.w, Catch::Matchers::WithinAbs(0.1847F, 0.0001F));

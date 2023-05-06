@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 
-TEST_CASE("ModelBase should behave as expected", "[rawrBox::ModelBase]") {
+TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 
-	SECTION("rawrBox::ModelBase::addMesh / rawrBox::ModelBase::removeMesh") {
-		auto base = std::make_shared<rawrBox::ModelBase<>>();
+	SECTION("rawrbox::ModelBase::addMesh / rawrbox::ModelBase::removeMesh") {
+		auto base = std::make_shared<rawrbox::ModelBase<>>();
 
 		REQUIRE_THROWS(base->getMesh(0));
 		REQUIRE_THROWS(base->getMesh(1));
@@ -27,8 +27,8 @@ TEST_CASE("ModelBase should behave as expected", "[rawrBox::ModelBase]") {
 		REQUIRE_THROWS(base->getMesh(0));
 	}
 
-	SECTION("rawrBox::ModelBase::mergeMeshes") {
-		auto base = std::make_shared<rawrBox::ModelBase<>>();
+	SECTION("rawrbox::ModelBase::mergeMeshes") {
+		auto base = std::make_shared<rawrbox::ModelBase<>>();
 
 		auto m1 = base->generatePlane({}, {1, 1});
 		auto m2 = base->generatePlane({}, {1, 1});
@@ -46,8 +46,8 @@ TEST_CASE("ModelBase should behave as expected", "[rawrBox::ModelBase]") {
 		REQUIRE(m1->totalVertex == 8);
 	}
 
-	SECTION("rawrBox::ModelBase::getBBOX") {
-		auto base = std::make_shared<rawrBox::ModelBase<>>();
+	SECTION("rawrbox::ModelBase::getBBOX") {
+		auto base = std::make_shared<rawrbox::ModelBase<>>();
 
 		auto& b = base->getBBOX();
 		REQUIRE(b.isEmpty() == true);
@@ -67,8 +67,8 @@ TEST_CASE("ModelBase should behave as expected", "[rawrBox::ModelBase]") {
 		REQUIRE(b.size().z == 4.F);
 	}
 
-	SECTION("rawrBox::ModelBase::setPos / rawrBox::ModelBase::getPos") {
-		auto base = std::make_shared<rawrBox::ModelBase<>>();
+	SECTION("rawrbox::ModelBase::setPos / rawrbox::ModelBase::getPos") {
+		auto base = std::make_shared<rawrbox::ModelBase<>>();
 		base->addMesh(base->generatePlane({}, {1, 1}));
 
 		REQUIRE(base->getPos().x == 0);
@@ -82,8 +82,8 @@ TEST_CASE("ModelBase should behave as expected", "[rawrBox::ModelBase]") {
 		REQUIRE(base->getPos().z == 8);
 	}
 
-	SECTION("rawrBox::ModelBase::setAngle / rawrBox::ModelBase::getAngle") {
-		auto base = std::make_shared<rawrBox::ModelBase<>>();
+	SECTION("rawrbox::ModelBase::setAngle / rawrbox::ModelBase::getAngle") {
+		auto base = std::make_shared<rawrbox::ModelBase<>>();
 		REQUIRE(base->getAngle().x == 0);
 		REQUIRE(base->getAngle().y == 0);
 		REQUIRE(base->getAngle().z == 0);
@@ -95,8 +95,8 @@ TEST_CASE("ModelBase should behave as expected", "[rawrBox::ModelBase]") {
 		REQUIRE(base->getAngle().z == 8);
 	}
 
-	SECTION("rawrBox::ModelBase::setScale / rawrBox::ModelBase::getScale") {
-		auto base = std::make_shared<rawrBox::ModelBase<>>();
+	SECTION("rawrbox::ModelBase::setScale / rawrbox::ModelBase::getScale") {
+		auto base = std::make_shared<rawrbox::ModelBase<>>();
 		REQUIRE(base->getScale().x == 1);
 		REQUIRE(base->getScale().y == 1);
 		REQUIRE(base->getScale().z == 1);
@@ -108,8 +108,8 @@ TEST_CASE("ModelBase should behave as expected", "[rawrBox::ModelBase]") {
 		REQUIRE(base->getScale().z == 8);
 	}
 
-	SECTION("rawrBox::ModelBase::setCulling") {
-		auto base = std::make_shared<rawrBox::ModelBase<>>();
+	SECTION("rawrbox::ModelBase::setCulling") {
+		auto base = std::make_shared<rawrbox::ModelBase<>>();
 		base->addMesh(base->generatePlane({}, {1, 1}));
 		base->addMesh(base->generatePlane({}, {1, 1}));
 
@@ -123,8 +123,8 @@ TEST_CASE("ModelBase should behave as expected", "[rawrBox::ModelBase]") {
 		REQUIRE(base->getMesh(1)->culling == BGFX_STATE_CULL_CCW);
 	}
 
-	SECTION("rawrBox::ModelBase::setWireframe") {
-		auto base = std::make_shared<rawrBox::ModelBase<>>();
+	SECTION("rawrbox::ModelBase::setWireframe") {
+		auto base = std::make_shared<rawrbox::ModelBase<>>();
 		base->addMesh(base->generatePlane({}, {1, 1}));
 		base->addMesh(base->generatePlane({}, {1, 1}));
 
@@ -138,8 +138,8 @@ TEST_CASE("ModelBase should behave as expected", "[rawrBox::ModelBase]") {
 		REQUIRE(base->getMesh(1)->wireframe == true);
 	}
 
-	SECTION("rawrBox::ModelBase::setBlend") {
-		auto base = std::make_shared<rawrBox::ModelBase<>>();
+	SECTION("rawrbox::ModelBase::setBlend") {
+		auto base = std::make_shared<rawrbox::ModelBase<>>();
 		base->addMesh(base->generatePlane({}, {1, 1}));
 		base->addMesh(base->generatePlane({}, {1, 1}));
 

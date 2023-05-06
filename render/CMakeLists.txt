@@ -29,28 +29,19 @@ endif()
 find_package(Freetype REQUIRED MODULE)
 find_package(utf8cpp REQUIRED)
 
+if(RAWRBOX_ENABLE_DEBUG_SUPPORT)
+    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.DEBUG)
+endif()
+
+
 if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
 	message("-- Enabled assimp")
 	find_package(assimp REQUIRED)
 
 	list(APPEND RAWRBOX_EXTRA_LIBS assimp::assimp)
 endif()
+
 #--------------
-
-# TEST ----
-if(RAWRBOX_BUILD_TESTING)
-	message("-- Enabled testing")
-    enable_testing()
-
-	find_package(Catch2 3 REQUIRED)
-	list(APPEND RAWRBOX_EXTRA_LIBS Catch2::Catch2WithMain)
-    list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
-
-    include(CTest)
-    include(Catch)
-endif()
-#--------------
-
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
@@ -75,6 +66,7 @@ add_shaders_directory(./shaders RAWRBOX_SHADERS_TARGET_NAME)
 message("SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
 # ------------------
 
+
 # Project setup
 add_library(${output_target} ${RAWRBOX_RENDER_SOURCES})
 target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX)
@@ -83,6 +75,7 @@ target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	RAWRBOX.MATH
 	RAWRBOX.UTILS
+	${RAWRBOX_EXTRA_LIBS}
 
 	fmt::fmt
 	Freetype::Freetype
@@ -91,24 +84,12 @@ target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	bgfx
 	bx
 	glfw
-
-	${RAWRBOX_EXTRA_LIBS}
 )
 
 # Copy content
 add_custom_command( TARGET ${output_target} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/${RAWRBOX_CONTENT_FOLDER} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER} )
 # ------------------
 
-# TESTING ----
-if(RAWRBOX_BUILD_TESTING)
-    file(GLOB_RECURSE RAWRBOX_RENDERER_TESTS_IMPORTS "tests/*.spec.cpp" )
-
-    add_executable(${output_target}-TESTS ${RAWRBOX_RENDERER_TESTS_IMPORTS})
-    target_compile_features(${output_target}-TESTS PRIVATE cxx_std_${CMAKE_CXX_STANDARD})
-    target_link_libraries(${output_target}-TESTS PRIVATE ${output_target} Catch2::Catch2WithMain)
-
-    catch_discover_tests(${output_target}-TESTS
-        DISCOVERY_MODE PRE_TEST
-    )
-endif()
+# TEST ----
+include(../cmake/catch2.cmake)
 #--------------

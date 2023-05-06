@@ -9,7 +9,7 @@
 
 #include <array>
 
-namespace rawrBox {
+namespace rawrbox {
 
 	struct VertexData {
 		std::array<float, 3> position = {0, 0, 0};
@@ -17,8 +17,8 @@ namespace rawrBox {
 		uint32_t abgr = 0xFFFFFFFF;
 
 		VertexData() = default;
-		VertexData(const rawrBox::Vector3f& _pos,
-		    float _u, float _v, const rawrBox::Color cl = rawrBox::Colors::White) : position({_pos.x, _pos.y, _pos.z}), uv({_u, _v}), abgr(rawrBox::Color::toHEX(cl)) {}
+		VertexData(const rawrbox::Vector3f& _pos,
+		    float _u, float _v, const rawrbox::Color cl = rawrbox::Colors::White) : position({_pos.x, _pos.y, _pos.z}), uv({_u, _v}), abgr(rawrbox::Color::toHEX(cl)) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
@@ -35,8 +35,8 @@ namespace rawrBox {
 		std::array<uint32_t, 2> normal = {0, 0}; // normal, tangent
 
 		VertexLitData() = default;
-		VertexLitData(const rawrBox::Vector3f& _pos, uint32_t _normal, uint32_t _tangent,
-		    float _u, float _v, const rawrBox::Color cl = rawrBox::Colors::White) : VertexData(_pos, _u, _v, cl), normal({_normal, _tangent}) {}
+		VertexLitData(const rawrbox::Vector3f& _pos, uint32_t _normal, uint32_t _tangent,
+		    float _u, float _v, const rawrbox::Color cl = rawrbox::Colors::White) : VertexData(_pos, _u, _v, cl), normal({_normal, _tangent}) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
@@ -54,11 +54,11 @@ namespace rawrBox {
 	};
 
 	struct VertexSkinnedUnlitData : public VertexData {
-		std::array<uint8_t, rawrBox::MAX_BONES_PER_VERTEX> bone_indices = {};
-		std::array<float, rawrBox::MAX_BONES_PER_VERTEX> bone_weights = {};
+		std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
+		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
 		VertexSkinnedUnlitData() = default;
-		VertexSkinnedUnlitData(const rawrBox::Vector3f& _pos, float _u, float _v, const rawrBox::Color cl = rawrBox::Colors::White) : VertexData(_pos, _u, _v, cl) {}
+		VertexSkinnedUnlitData(const rawrbox::Vector3f& _pos, float _u, float _v, const rawrbox::Color cl = rawrbox::Colors::White) : VertexData(_pos, _u, _v, cl) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
@@ -67,8 +67,8 @@ namespace rawrBox {
 			    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 			    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true, true)
 
-			    .add(bgfx::Attrib::Indices, rawrBox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Uint8, false, true)
-			    .add(bgfx::Attrib::Weight, rawrBox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Float)
+			    .add(bgfx::Attrib::Indices, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Uint8, false, true)
+			    .add(bgfx::Attrib::Weight, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Float)
 
 			    .skip(sizeof(int))
 
@@ -79,7 +79,7 @@ namespace rawrBox {
 		// BONES UTILS -----
 		int index = 0;
 		void addBoneData(uint8_t boneId, float weight) {
-			if (index < rawrBox::MAX_BONES_PER_VERTEX) {
+			if (index < rawrbox::MAX_BONES_PER_VERTEX) {
 				this->bone_indices[index] = boneId;
 				this->bone_weights[index] = weight;
 
@@ -88,7 +88,7 @@ namespace rawrBox {
 				// find the bone with the smallest weight
 				int minIndex = 0;
 				float minWeight = this->bone_weights[0];
-				for (int i = 1; i < rawrBox::MAX_BONES_PER_VERTEX; i++) {
+				for (int i = 1; i < rawrbox::MAX_BONES_PER_VERTEX; i++) {
 					if (this->bone_weights[i] < minWeight) {
 						minIndex = i;
 						minWeight = this->bone_weights[i];
@@ -106,12 +106,12 @@ namespace rawrBox {
 	};
 
 	struct VertexSkinnedLitData : public VertexLitData {
-		std::array<uint8_t, rawrBox::MAX_BONES_PER_VERTEX> bone_indices = {};
-		std::array<float, rawrBox::MAX_BONES_PER_VERTEX> bone_weights = {};
+		std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
+		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
 		VertexSkinnedLitData() = default;
-		VertexSkinnedLitData(const rawrBox::Vector3f& _pos, uint32_t _normal, uint32_t _tangent,
-		    float _u, float _v, const rawrBox::Color cl = rawrBox::Colors::White) : VertexLitData(_pos, _normal, _tangent, _u, _v, cl) {}
+		VertexSkinnedLitData(const rawrbox::Vector3f& _pos, uint32_t _normal, uint32_t _tangent,
+		    float _u, float _v, const rawrbox::Color cl = rawrbox::Colors::White) : VertexLitData(_pos, _normal, _tangent, _u, _v, cl) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
@@ -123,8 +123,8 @@ namespace rawrBox {
 			    .add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Uint8, true, true)
 			    .add(bgfx::Attrib::Tangent, 3, bgfx::AttribType::Uint8, true, true)
 
-			    .add(bgfx::Attrib::Indices, rawrBox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Uint8, false, true)
-			    .add(bgfx::Attrib::Weight, rawrBox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Float)
+			    .add(bgfx::Attrib::Indices, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Uint8, false, true)
+			    .add(bgfx::Attrib::Weight, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Float)
 
 			    .skip(sizeof(int))
 			    .end();
@@ -134,7 +134,7 @@ namespace rawrBox {
 		// BONES UTILS -----
 		int index = 0;
 		void addBoneData(uint8_t boneId, float weight) {
-			if (index < rawrBox::MAX_BONES_PER_VERTEX) {
+			if (index < rawrbox::MAX_BONES_PER_VERTEX) {
 				this->bone_indices[index] = boneId;
 				this->bone_weights[index] = weight;
 
@@ -143,7 +143,7 @@ namespace rawrBox {
 				// find the bone with the smallest weight
 				int minIndex = 0;
 				float minWeight = this->bone_weights[0];
-				for (int i = 1; i < rawrBox::MAX_BONES_PER_VERTEX; i++) {
+				for (int i = 1; i < rawrbox::MAX_BONES_PER_VERTEX; i++) {
 					if (this->bone_weights[i] < minWeight) {
 						minIndex = i;
 						minWeight = this->bone_weights[i];
@@ -170,4 +170,4 @@ namespace rawrBox {
 	concept supportsNormals = requires(T t) { t.normal; };
 	// ---
 
-} // namespace rawrBox
+} // namespace rawrbox

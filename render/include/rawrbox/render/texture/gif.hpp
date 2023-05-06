@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace rawrBox {
+namespace rawrbox {
 	struct GIFFrame {
 		int delay;
 		std::vector<uint8_t> pixels;
@@ -43,4 +43,4 @@ namespace rawrBox {
 		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
 		// --------------------
 	};
-} // namespace rawrBox
+} // namespace rawrbox

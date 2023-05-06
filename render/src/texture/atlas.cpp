@@ -4,7 +4,7 @@
 
 #include <memory>
 
-namespace rawrBox {
+namespace rawrbox {
 	TextureAtlas::TextureAtlas(uint32_t _size) : size(_size) {
 		this->_root = std::make_unique<AtlasNode>(0, 0, size, size);
 	}
@@ -115,4 +115,4 @@ namespace rawrBox {
 		bgfx::setName(this->_handle, fmt::format("RAWR-ATLAS-TEXTURE-{}", this->_handle.idx).c_str());
 	}
 
-} // namespace rawrBox
+} // namespace rawrbox

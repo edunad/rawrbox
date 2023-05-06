@@ -9,38 +9,38 @@
 
 #include <string>
 
-TEST_CASE("Stencil should behave as expected", "[rawrBox::Stencil]") {
-	rawrBox::Stencil base(0, {100, 100});
+TEST_CASE("Stencil should behave as expected", "[rawrbox::Stencil]") {
+	rawrbox::Stencil base(0, {100, 100});
 
-	SECTION("rawrBox::Stencil::drawTriangle") {
+	SECTION("rawrbox::Stencil::drawTriangle") {
 		base.clear();
 
 		REQUIRE(base.getVertices().size() == 0);
-		base.drawTriangle({0, 0}, {0, 0}, rawrBox::Colors::Black, {0, 10}, {0, 1}, rawrBox::Colors::Black, {10, 0}, {1, 0}, rawrBox::Colors::Black);
+		base.drawTriangle({0, 0}, {0, 0}, rawrbox::Colors::Black, {0, 10}, {0, 1}, rawrbox::Colors::Black, {10, 0}, {1, 0}, rawrbox::Colors::Black);
 		REQUIRE(base.getVertices().size() == 3);
 	}
 
-	SECTION("rawrBox::Stencil::drawCircle") {
+	SECTION("rawrbox::Stencil::drawCircle") {
 		base.clear();
 
 		REQUIRE(base.getVertices().size() == 0);
-		base.drawCircle({0, 0}, {10, 10}, rawrBox::Colors::Black);
+		base.drawCircle({0, 0}, {10, 10}, rawrbox::Colors::Black);
 		REQUIRE(base.getVertices().size() == 96);
 	}
 
-	SECTION("rawrBox::Stencil::drawLine") {
+	SECTION("rawrbox::Stencil::drawLine") {
 		base.clear();
 
 		REQUIRE(base.getVertices().size() == 0);
-		base.drawLine({0, 0}, {10, 10}, rawrBox::Colors::Black);
+		base.drawLine({0, 0}, {10, 10}, rawrbox::Colors::Black);
 		REQUIRE(base.getVertices().size() == 2);
 	}
 
-	SECTION("rawrBox::Stencil::drawBox") {
+	SECTION("rawrbox::Stencil::drawBox") {
 		base.clear();
 
 		REQUIRE(base.getVertices().size() == 0);
-		base.drawBox({0, 0}, {10, 10}, rawrBox::Colors::Black);
+		base.drawBox({0, 0}, {10, 10}, rawrbox::Colors::Black);
 		REQUIRE(base.getVertices().size() == 4);
 	}
 }

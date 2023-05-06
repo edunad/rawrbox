@@ -19,31 +19,31 @@ static const bgfx::EmbeddedShader model_unlit_shaders[] = {
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
-namespace rawrBox {
+namespace rawrbox {
 
 	class MaterialBase {
 	public:
 		bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle u_viewPos = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle u_cameraPos = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_colorOffset = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle u_mesh_pos = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_billboard = BGFX_INVALID_HANDLE;
 
-		using vertexBufferType = rawrBox::VertexData;
+		using vertexBufferType = rawrbox::VertexData;
 
 		MaterialBase() = default;
 		MaterialBase(MaterialBase&&) = delete;
 		MaterialBase& operator=(MaterialBase&&) = delete;
 		MaterialBase(const MaterialBase&) = delete;
 		MaterialBase& operator=(const MaterialBase&) = delete;
-		~MaterialBase() {
+		virtual ~MaterialBase() {
 			RAWRBOX_DESTROY(program);
 
 			RAWRBOX_DESTROY(s_texColor);
-			RAWRBOX_DESTROY(u_viewPos);
+			RAWRBOX_DESTROY(u_cameraPos);
 			RAWRBOX_DESTROY(u_colorOffset);
 
 			RAWRBOX_DESTROY(u_mesh_pos);
@@ -64,24 +64,24 @@ namespace rawrBox {
 		void registerUniforms() {
 			s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 
-			u_viewPos = bgfx::createUniform("u_viewPos", bgfx::UniformType::Vec4, 3);
+			u_cameraPos = bgfx::createUniform("u_cameraPos", bgfx::UniformType::Vec4, 3);
 			u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 
 			u_mesh_pos = bgfx::createUniform("u_mesh_pos", bgfx::UniformType::Vec4, 3);
 			u_billboard = bgfx::createUniform("u_billboard", bgfx::UniformType::Vec4, 1);
 		}
 
-		void preProcess(const rawrBox::Vector3f& camPos) {
+		void preProcess(const rawrbox::Vector3f& camPos) {
 			std::array pos = {camPos.x, camPos.y, camPos.z};
-			bgfx::setUniform(u_viewPos, pos.data());
+			bgfx::setUniform(u_cameraPos, pos.data());
 		}
 
 		template <typename T>
-		void process(std::shared_ptr<rawrBox::Mesh<T>> mesh) {
+		void process(std::shared_ptr<rawrbox::Mesh<T>> mesh) {
 			if (mesh->texture != nullptr && mesh->texture->valid() && !mesh->wireframe) {
 				bgfx::setTexture(0, s_texColor, mesh->texture->getHandle());
 			} else {
-				bgfx::setTexture(0, s_texColor, rawrBox::WHITE_TEXTURE->getHandle());
+				bgfx::setTexture(0, s_texColor, rawrbox::WHITE_TEXTURE->getHandle());
 			}
 
 			std::array colorOffset = {mesh->color.r, mesh->color.b, mesh->color.g, mesh->color.a};
@@ -98,10 +98,10 @@ namespace rawrBox {
 			bgfx::setUniform(u_billboard, billboard.data());
 		}
 
-		void postProcess() { bgfx::submit(rawrBox::CURRENT_VIEW_ID, program); }
+		void postProcess() { bgfx::submit(rawrbox::CURRENT_VIEW_ID, program); }
 		void upload() {
 			MaterialBase::buildShader(model_unlit_shaders, "model_unlit");
 		}
 	};
 
-} // namespace rawrBox
+} // namespace rawrbox

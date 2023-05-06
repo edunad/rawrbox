@@ -20,7 +20,7 @@ static const bgfx::EmbeddedShader dither_shaders[] = {
     BGFX_EMBEDDED_SHADER(fs_post_dither),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
-namespace rawrBox {
+namespace rawrbox {
 	enum DITHER_SIZE {
 		SLOW_MODE = 0,
 
@@ -30,8 +30,8 @@ namespace rawrBox {
 		_8x8 = 8,
 	};
 
-	class PostProcessPSXDither : public rawrBox::PostProcessBase {
-		std::unordered_map<DITHER_SIZE, std::shared_ptr<rawrBox::TextureImage>> _textures;
+	class PostProcessPSXDither : public rawrbox::PostProcessBase {
+		std::unordered_map<DITHER_SIZE, std::shared_ptr<rawrbox::TextureImage>> _textures;
 
 		bgfx::ProgramHandle _program = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _ditherColor = BGFX_INVALID_HANDLE;
@@ -75,31 +75,31 @@ namespace rawrBox {
 
 		explicit PostProcessPSXDither(DITHER_SIZE dither = DITHER_SIZE::SLOW_MODE) : _size(dither) {
 			if (dither != DITHER_SIZE::SLOW_MODE) {
-				this->_textures[DITHER_SIZE::_2x2] = std::make_shared<rawrBox::TextureImage>("./content/textures/dither/2x2.png");
-				this->_textures[DITHER_SIZE::_3x3] = std::make_shared<rawrBox::TextureImage>("./content/textures/dither/3x3.png");
-				this->_textures[DITHER_SIZE::_4x4] = std::make_shared<rawrBox::TextureImage>("./content/textures/dither/4x4.png");
-				this->_textures[DITHER_SIZE::_8x8] = std::make_shared<rawrBox::TextureImage>("./content/textures/dither/8x8.png");
+				this->_textures[DITHER_SIZE::_2x2] = std::make_shared<rawrbox::TextureImage>("./content/textures/dither/2x2.png");
+				this->_textures[DITHER_SIZE::_3x3] = std::make_shared<rawrbox::TextureImage>("./content/textures/dither/3x3.png");
+				this->_textures[DITHER_SIZE::_4x4] = std::make_shared<rawrbox::TextureImage>("./content/textures/dither/4x4.png");
+				this->_textures[DITHER_SIZE::_8x8] = std::make_shared<rawrbox::TextureImage>("./content/textures/dither/8x8.png");
 			}
 		}
 
 		virtual void setIntensity(float in) {
 			this->_intensity = in;
-			if (bgfx::isValid(this->_dithering_intensity)) rawrBox::UniformUtils::setUniform(this->_dithering_intensity, this->_intensity * 0.01F);
+			if (bgfx::isValid(this->_dithering_intensity)) rawrbox::UniformUtils::setUniform(this->_dithering_intensity, this->_intensity * 0.01F);
 		}
 
 		virtual void setDepth(float dep) {
 			this->_depth = dep;
-			if (bgfx::isValid(this->_dithering_depth)) rawrBox::UniformUtils::setUniform(this->_dithering_depth, this->_depth);
+			if (bgfx::isValid(this->_dithering_depth)) rawrbox::UniformUtils::setUniform(this->_dithering_depth, this->_depth);
 		}
 
 		virtual void setColorDepth(float dep) {
 			this->_colorDepth = dep;
-			if (bgfx::isValid(this->_dither_color_depth)) rawrBox::UniformUtils::setUniform(this->_dither_color_depth, std::pow(this->_colorDepth, 2));
+			if (bgfx::isValid(this->_dither_color_depth)) rawrbox::UniformUtils::setUniform(this->_dither_color_depth, std::pow(this->_colorDepth, 2));
 		}
 
 		virtual void setThreshold(float th) {
 			this->_threshold = th;
-			if (bgfx::isValid(this->_dither_threshold)) rawrBox::UniformUtils::setUniform(this->_dither_threshold, this->_threshold);
+			if (bgfx::isValid(this->_dither_threshold)) rawrbox::UniformUtils::setUniform(this->_dither_threshold, this->_threshold);
 		}
 
 		void upload() override {
@@ -129,22 +129,22 @@ namespace rawrBox {
 			this->_dither_color_depth = bgfx::createUniform("u_dithering_color_depth", bgfx::UniformType::Vec4, 1);
 			this->_dither_threshold = bgfx::createUniform("u_dithering_threshold", bgfx::UniformType::Vec4, 1);
 
-			rawrBox::UniformUtils::setUniform(this->_dither_size, static_cast<float>(_size));
+			rawrbox::UniformUtils::setUniform(this->_dither_size, static_cast<float>(_size));
 
-			rawrBox::UniformUtils::setUniform(this->_dithering_intensity, this->_intensity * 0.01F);
-			rawrBox::UniformUtils::setUniform(this->_dithering_depth, this->_depth);
-			rawrBox::UniformUtils::setUniform(this->_dither_color_depth, std::pow(this->_colorDepth, 2));
-			rawrBox::UniformUtils::setUniform(this->_dither_threshold, this->_threshold);
+			rawrbox::UniformUtils::setUniform(this->_dithering_intensity, this->_intensity * 0.01F);
+			rawrbox::UniformUtils::setUniform(this->_dithering_depth, this->_depth);
+			rawrbox::UniformUtils::setUniform(this->_dither_color_depth, std::pow(this->_colorDepth, 2));
+			rawrbox::UniformUtils::setUniform(this->_dither_threshold, this->_threshold);
 		}
 
 		void applyEffect() override {
 			if (this->_size != DITHER_SIZE::SLOW_MODE) {
 				bgfx::setTexture(1, this->_ditherColor, this->_textures[this->_size]->getHandle());
 			} else {
-				bgfx::setTexture(1, this->_ditherColor, rawrBox::MISSING_SPECULAR_TEXTURE->getHandle());
+				bgfx::setTexture(1, this->_ditherColor, rawrbox::MISSING_SPECULAR_TEXTURE->getHandle());
 			}
 
-			bgfx::submit(rawrBox::CURRENT_VIEW_ID, this->_program);
+			bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

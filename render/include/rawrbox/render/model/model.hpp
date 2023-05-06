@@ -15,7 +15,7 @@
 
 #define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_BLEND_ALPHA_TO_COVERAGE)
 
-namespace rawrBox {
+namespace rawrbox {
 
 	template <typename T>
 	struct AnimKey {
@@ -33,9 +33,9 @@ namespace rawrBox {
 	struct AnimationFrame {
 		std::string nodeName;
 
-		std::vector<AnimKey<rawrBox::Vector3f>> position;
-		std::vector<AnimKey<rawrBox::Vector3f>> scale;
-		std::vector<AnimKey<rawrBox::Quaternion>> rotation;
+		std::vector<AnimKey<rawrbox::Vector3f>> position;
+		std::vector<AnimKey<rawrbox::Vector3f>> scale;
+		std::vector<AnimKey<rawrbox::Quaternion>> rotation;
 
 		AnimBehaviour stateStart;
 		AnimBehaviour stateEnd;
@@ -60,16 +60,16 @@ namespace rawrBox {
 		PlayingAnimationData(std::string _name, bool _loop, float _speed, float _time, Animation* _data) : name(std::move(_name)), loop(_loop), speed(_speed), time(_time), data(_data){};
 	};
 
-	template <typename M = rawrBox::MaterialBase>
-	class Model : public rawrBox::ModelBase<M> {
+	template <typename M = rawrbox::MaterialBase>
+	class Model : public rawrbox::ModelBase<M> {
 	protected:
 		std::unordered_map<std::string, Animation> _animations = {};
-		std::vector<rawrBox::PlayingAnimationData> _playingAnimations = {};
+		std::vector<rawrbox::PlayingAnimationData> _playingAnimations = {};
 
 		// ANIMATIONS ----
-		virtual void updateBones(std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> mesh) {
+		virtual void updateBones(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
 			std::vector<std::array<float, 16>> transforms = {};
-			transforms.resize(rawrBox::MAX_BONES_PER_MODEL);
+			transforms.resize(rawrbox::MAX_BONES_PER_MODEL);
 
 			if (mesh->skeleton != nullptr) {
 				auto calcs = std::unordered_map<uint8_t, std::array<float, 16>>();
@@ -167,7 +167,7 @@ namespace rawrBox {
 
 		virtual void preDraw() {
 			for (auto& anim : this->_playingAnimations) {
-				float timeToAdd = rawrBox::TimeUtils::deltaTime * anim.speed;
+				float timeToAdd = rawrbox::TimeUtils::deltaTime * anim.speed;
 				float time = anim.time + timeToAdd;
 				float totalDur = anim.data->duration;
 
@@ -217,7 +217,7 @@ namespace rawrBox {
 		}
 		// -----
 
-		void draw(const rawrBox::Vector3f& camPos) override {
+		void draw(const rawrbox::Vector3f& camPos) override {
 			ModelBase<M>::draw(camPos);
 
 			this->preDraw();
@@ -230,8 +230,13 @@ namespace rawrBox {
 				}
 				// ---
 
-				bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
-				bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
+				if (this->isDynamicBuffer()) {
+					bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
+					bgfx::setIndexBuffer(this->_ibdh, mesh->baseIndex, mesh->totalIndex);
+				} else {
+					bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
+					bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
+				}
 
 				std::array<float, 16> matrix = {};
 				bx::mtxMul(matrix.data(), mesh->offsetMatrix.data(), this->_matrix.data());
@@ -246,4 +251,4 @@ namespace rawrBox {
 			this->postDraw();
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

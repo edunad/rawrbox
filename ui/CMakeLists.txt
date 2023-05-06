@@ -2,7 +2,7 @@
 file(GLOB_RECURSE RAWRBOX_UI_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp" )
 
 # Project setup
-set(output_target rawrBox::UI)
+set(output_target rawrbox::UI)
 add_library(${output_target} ${RAWRBOX_UI_SOURCES})
 
 target_include_directories(${output_target} PUBLIC "include")

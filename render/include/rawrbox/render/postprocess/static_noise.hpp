@@ -21,8 +21,8 @@ static const bgfx::EmbeddedShader noise_shaders[] = {
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
-namespace rawrBox {
-	class PostProcessStaticNoise : public rawrBox::PostProcessBase {
+namespace rawrbox {
+	class PostProcessStaticNoise : public rawrbox::PostProcessBase {
 		bgfx::ProgramHandle _program = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _settings = BGFX_INVALID_HANDLE;
 
@@ -57,7 +57,7 @@ namespace rawrBox {
 			// ------------------
 
 			this->_settings = bgfx::createUniform("u_settings", bgfx::UniformType::Vec4, 2);
-			rawrBox::UniformUtils::setUniform(this->_settings, rawrBox::Vector2f(0,
+			rawrbox::UniformUtils::setUniform(this->_settings, rawrbox::Vector2f(0,
 									       this->_strength));
 
 			m_timeOffset = bx::getHPCounter();
@@ -68,9 +68,9 @@ namespace rawrBox {
 			const auto freq = double(bx::getHPFrequency());
 			auto time = (float)((now - m_timeOffset) / freq);
 
-			rawrBox::UniformUtils::setUniform(this->_settings, rawrBox::Vector2f(time,
+			rawrbox::UniformUtils::setUniform(this->_settings, rawrbox::Vector2f(time,
 									       this->_strength));
-			bgfx::submit(rawrBox::CURRENT_VIEW_ID, this->_program);
+			bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

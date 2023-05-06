@@ -8,7 +8,7 @@
 #include <memory>
 #include <optional>
 
-namespace rawrBox {
+namespace rawrbox {
 	struct AtlasNode {
 		int x = 0;
 		int y = 0;
@@ -26,7 +26,7 @@ namespace rawrBox {
 		AtlasNode(int _x, int _y, int _w, int _h) : x(_x), y(_y), width(_w), height(_h){};
 	};
 
-	class TextureAtlas : public rawrBox::TextureBase {
+	class TextureAtlas : public rawrbox::TextureBase {
 	private:
 		size_t _spriteCount = 0;
 		std::unique_ptr<AtlasNode> _root;
@@ -42,4 +42,4 @@ namespace rawrBox {
 
 		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
 	};
-} // namespace rawrBox
+} // namespace rawrbox

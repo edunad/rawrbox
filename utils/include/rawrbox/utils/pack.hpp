@@ -7,7 +7,7 @@
 #include <cstdint>
 
 // From https://github.com/bkaradzic/bgfx/blob/master/examples/33-pom/pom.cpp#L56
-namespace rawrBox {
+namespace rawrbox {
 	class PackUtils {
 	public:
 		static uint32_t packUint32(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) {
@@ -56,4 +56,4 @@ namespace rawrBox {
 			    _w * 0.5F + 0.5F);
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

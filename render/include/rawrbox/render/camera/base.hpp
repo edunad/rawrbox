@@ -5,11 +5,11 @@
 
 #include <array>
 
-namespace rawrBox {
+namespace rawrbox {
 	class CameraBase {
 	protected:
-		rawrBox::Vector3f _pos;
-		rawrBox::Quaternion _angle;
+		rawrbox::Vector3f _pos;
+		rawrbox::Quaternion _angle;
 
 		std::array<float, 16> _view = {};
 		std::array<float, 16> _projection = {};
@@ -26,18 +26,18 @@ namespace rawrBox {
 		CameraBase& operator=(const CameraBase&) = delete;
 
 		// UTILS -----
-		virtual void setPos(const rawrBox::Vector3f& pos);
-		virtual const rawrBox::Vector3f& getPos();
+		virtual void setPos(const rawrbox::Vector3f& pos);
+		virtual const rawrbox::Vector3f& getPos();
 
-		virtual void setAngle(const rawrBox::Quaternion& ang);
-		virtual const rawrBox::Quaternion& getAngle();
+		virtual void setAngle(const rawrbox::Quaternion& ang);
+		virtual const rawrbox::Quaternion& getAngle();
 
-		virtual rawrBox::Vector3f getForward();
-		virtual rawrBox::Vector3f getRight();
-		virtual rawrBox::Vector3f getUp();
+		virtual rawrbox::Vector3f getForward();
+		virtual rawrbox::Vector3f getRight();
+		virtual rawrbox::Vector3f getUp();
 
 		virtual std::array<float, 16>& getViewMtx();
 		virtual std::array<float, 16>& getProjMtx();
 		// ----------------
 	};
-} // namespace rawrBox
+} // namespace rawrbox

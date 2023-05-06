@@ -4,15 +4,15 @@
 
 #include <string>
 
-TEST_CASE("KeyUtils should behave as expected", "[rawrBox::KeyUtils]") {
-	SECTION("rawrBox::KeyUtils::keyToStr") {
-		REQUIRE(rawrBox::KeyUtils::keyToStr(KEY_MINUS) == "-");
-		REQUIRE(rawrBox::KeyUtils::keyToStr(KEY_S) == "S");
-		REQUIRE(rawrBox::KeyUtils::keyToStr(KEY_SPACE) == " ");
+TEST_CASE("KeyUtils should behave as expected", "[rawrbox::KeyUtils]") {
+	SECTION("rawrbox::KeyUtils::keyToStr") {
+		REQUIRE(rawrbox::KeyUtils::keyToStr(KEY_MINUS) == "-");
+		REQUIRE(rawrbox::KeyUtils::keyToStr(KEY_S) == "S");
+		REQUIRE(rawrbox::KeyUtils::keyToStr(KEY_SPACE) == " ");
 	}
 
-	SECTION("rawrBox::KeyUtils::strToKey") {
-		REQUIRE(rawrBox::KeyUtils::strToKey("+") == KEY_KP_ADD);
-		REQUIRE(rawrBox::KeyUtils::strToKey(";") == KEY_SEMICOLON);
+	SECTION("rawrbox::KeyUtils::strToKey") {
+		REQUIRE(rawrbox::KeyUtils::strToKey("+") == KEY_KP_ADD);
+		REQUIRE(rawrbox::KeyUtils::strToKey(";") == KEY_SEMICOLON);
 	}
 }

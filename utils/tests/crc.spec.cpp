@@ -4,8 +4,8 @@
 
 #include <string>
 
-TEST_CASE("CRC should behave as expected", "[rawrBox::CRC]") {
-	SECTION("rawrBox::CRC") {
+TEST_CASE("CRC should behave as expected", "[rawrbox::CRC]") {
+	SECTION("rawrbox::CRC") {
 		std::string buff = "test";
 		auto c1 = CRC::Calculate(buff.data(), buff.size(), CRC::CRC_32());
 

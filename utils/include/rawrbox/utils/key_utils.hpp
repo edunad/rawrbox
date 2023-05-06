@@ -3,7 +3,7 @@
 #include <rawrbox/utils/keys.hpp>
 #include <rawrbox/utils/string.hpp>
 
-namespace rawrBox {
+namespace rawrbox {
 
 	class KeyUtils {
 	public:
@@ -237,7 +237,7 @@ namespace rawrBox {
 		}
 
 		static unsigned int strToKey(const std::string& rawKey) {
-			auto key = rawrBox::StrUtils::toUpper(rawKey);
+			auto key = rawrbox::StrUtils::toUpper(rawKey);
 
 			if (key == " ")
 				return KEY_SPACE;
@@ -466,4 +466,4 @@ namespace rawrBox {
 				return 0;
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

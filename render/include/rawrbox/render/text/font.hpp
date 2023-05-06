@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-namespace rawrBox {
+namespace rawrbox {
 	enum class Alignment {
 		Left,
 		Center,
@@ -25,12 +25,12 @@ namespace rawrBox {
 		FT_ULong codepoint{};
 		FT_UInt glyphIndex{};
 
-		rawrBox::Vector2f bearing;
-		rawrBox::Vector2f advance;
-		rawrBox::Vector2f textureTopLeft;
-		rawrBox::Vector2f textureBottomRight;
+		rawrbox::Vector2f bearing;
+		rawrbox::Vector2f advance;
+		rawrbox::Vector2f textureTopLeft;
+		rawrbox::Vector2f textureBottomRight;
 
-		rawrBox::Vector2i size;
+		rawrbox::Vector2i size;
 	};
 
 	class TextEngine;
@@ -65,7 +65,6 @@ namespace rawrBox {
 		Font& operator=(Font&&) = delete;
 		Font(const Font&) = delete;
 		Font& operator=(const Font&) = delete;
-
 		~Font();
 
 		// UTILS --
@@ -73,10 +72,10 @@ namespace rawrBox {
 		[[nodiscard]] bool hasGlyph(uint32_t codepoint) const;
 		[[nodiscard]] const Glyph& getGlyph(uint32_t codepoint) const;
 		[[nodiscard]] float getKerning(const Glyph& left, const Glyph& right) const;
-		[[nodiscard]] rawrBox::Vector2 getStringSize(const std::string& text) const;
+		[[nodiscard]] rawrbox::Vector2 getStringSize(const std::string& text) const;
 
-		std::shared_ptr<rawrBox::TextureAtlas> getAtlasTexture(const Glyph& g);
+		std::shared_ptr<rawrbox::TextureAtlas> getAtlasTexture(const Glyph& g);
 		// ----
 	};
 
-} // namespace rawrBox
+} // namespace rawrbox

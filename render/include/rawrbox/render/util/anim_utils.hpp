@@ -5,17 +5,17 @@
 
 #include <cmath>
 
-namespace rawrBox {
+namespace rawrbox {
 
 	class AnimUtils {
 	public:
 		// taken from assimp, because linux /shrug
-		static rawrBox::Quaternion interpolate(const rawrBox::Quaternion& pStart, const rawrBox::Quaternion& pEnd, float pFactor) {
+		static rawrbox::Quaternion interpolate(const rawrbox::Quaternion& pStart, const rawrbox::Quaternion& pEnd, float pFactor) {
 			// calc cosine theta
 			float cosom = pStart.x * pEnd.x + pStart.y * pEnd.y + pStart.z * pEnd.z + pStart.w * pEnd.w;
 
 			// adjust signs (if necessary)
-			rawrBox::Quaternion end = pEnd;
+			rawrbox::Quaternion end = pEnd;
 			if (cosom < static_cast<float>(0.0)) {
 				cosom = -cosom;
 				end.x = -end.x; // Reverse all signs
@@ -44,7 +44,7 @@ namespace rawrBox {
 			}
 			// NOLINTEND(clang-analyzer-deadcode.DeadStores)
 
-			rawrBox::Quaternion pOut;
+			rawrbox::Quaternion pOut;
 			pOut.x = sclp * pStart.x + sclq * end.x;
 			pOut.y = sclp * pStart.y + sclq * end.y;
 			pOut.z = sclp * pStart.z + sclq * end.z;
@@ -53,7 +53,7 @@ namespace rawrBox {
 			return pOut;
 		};
 
-		static void normalize(rawrBox::Quaternion& quart) {
+		static void normalize(rawrbox::Quaternion& quart) {
 			// compute the magnitude and divide through it
 			const float mag = std::sqrt(quart.x * quart.x + quart.y * quart.y + quart.z * quart.z + quart.w * quart.w);
 
@@ -68,21 +68,21 @@ namespace rawrBox {
 		}
 
 		// ---
-		static rawrBox::Quaternion lerpRotation(float time, std::pair<float, rawrBox::Quaternion> a, std::pair<float, rawrBox::Quaternion> b) {
+		static rawrbox::Quaternion lerpRotation(float time, std::pair<float, rawrbox::Quaternion> a, std::pair<float, rawrbox::Quaternion> b) {
 			if (a.first == b.first) return a.second;
 
 			float dt = b.first - a.first;
 			float norm = (time - a.first) / dt;
 
-			rawrBox::Quaternion aiStart = {a.second.w, a.second.x, a.second.y, a.second.z};
-			rawrBox::Quaternion aiEnd = {b.second.w, b.second.x, b.second.y, b.second.z};
-			rawrBox::Quaternion aiIntrp = AnimUtils::interpolate(aiStart, aiEnd, norm);
+			rawrbox::Quaternion aiStart = {a.second.w, a.second.x, a.second.y, a.second.z};
+			rawrbox::Quaternion aiEnd = {b.second.w, b.second.x, b.second.y, b.second.z};
+			rawrbox::Quaternion aiIntrp = AnimUtils::interpolate(aiStart, aiEnd, norm);
 
 			AnimUtils::normalize(aiIntrp);
 			return {aiIntrp.w, aiIntrp.x, aiIntrp.y, aiIntrp.z};
 		};
 
-		static rawrBox::Vector3f lerpPosition(float time, std::pair<float, rawrBox::Vector3f> a, std::pair<float, rawrBox::Vector3f> b) {
+		static rawrbox::Vector3f lerpPosition(float time, std::pair<float, rawrbox::Vector3f> a, std::pair<float, rawrbox::Vector3f> b) {
 			if (a.first == b.first) return a.second;
 
 			float dt = b.first - a.first;
@@ -102,7 +102,7 @@ namespace rawrBox {
 			    a.second.z + b.second.z};
 		};
 
-		static rawrBox::Vector3f lerpScale(float time, std::pair<float, rawrBox::Vector3f> a, std::pair<float, rawrBox::Vector3f> b) {
+		static rawrbox::Vector3f lerpScale(float time, std::pair<float, rawrbox::Vector3f> a, std::pair<float, rawrbox::Vector3f> b) {
 			if (a.first == b.first) return a.second;
 
 			float dt = b.first - a.first;
@@ -111,4 +111,4 @@ namespace rawrBox {
 			return lerpPosition(norm, a, b);
 		};
 	};
-} // namespace rawrBox
+} // namespace rawrbox

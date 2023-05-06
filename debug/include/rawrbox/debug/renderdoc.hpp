@@ -1,9 +1,9 @@
 
 #pragma once
 
-namespace rawrBox {
+namespace rawrbox {
 	void* loadRenderDoc();
 	void unloadRenderDoc(void*);
 	void renderDocTriggerCapture();
 
-} // namespace rawrBox
+} // namespace rawrbox

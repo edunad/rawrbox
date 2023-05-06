@@ -5,7 +5,7 @@
 
 #include <bgfx/bgfx.h>
 
-namespace rawrBox {
+namespace rawrbox {
 	class TextureRender : public TextureBase {
 		static uint32_t renderID;
 
@@ -14,13 +14,13 @@ namespace rawrBox {
 		bgfx::TextureHandle _depthHandle = BGFX_INVALID_HANDLE;
 		bgfx::TextureHandle _renderHandle = BGFX_INVALID_HANDLE;
 
-		rawrBox::Vector2i _size;
+		rawrbox::Vector2i _size;
 
 		bgfx::ViewId _viewId;
 		bgfx::ViewId _renderId;
 
 	public:
-		TextureRender(bgfx::ViewId viewId, const rawrBox::Vector2i& size);
+		TextureRender(bgfx::ViewId viewId, const rawrbox::Vector2i& size);
 
 		TextureRender(TextureRender&&) = delete;
 		TextureRender& operator=(TextureRender&&) = delete;
@@ -38,4 +38,4 @@ namespace rawrBox {
 
 		virtual const bgfx::ViewId id();
 	};
-} // namespace rawrBox
+} // namespace rawrbox

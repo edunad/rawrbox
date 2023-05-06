@@ -6,14 +6,14 @@
 
 #include <string>
 
-TEST_CASE("PathUtils should behave as expected", "[rawrBox::PathUtils]") {
-	SECTION("rawrBox::PathUtils::stripRootPath") {
+TEST_CASE("PathUtils should behave as expected", "[rawrbox::PathUtils]") {
+	SECTION("rawrbox::PathUtils::stripRootPath") {
 #ifdef WIN32
-		REQUIRE(rawrBox::PathUtils::stripRootPath("C:/windows/pls") == "pls");
-		REQUIRE(rawrBox::PathUtils::stripRootPath("C:/windows/pls/screee") == "pls//screee");
+		REQUIRE(rawrbox::PathUtils::stripRootPath("C:/windows/pls") == "pls");
+		REQUIRE(rawrbox::PathUtils::stripRootPath("C:/windows/pls/screee") == "pls//screee");
 #else
-		REQUIRE(rawrBox::PathUtils::stripRootPath("C:/windows/pls") == "windows/pls");
-		REQUIRE(rawrBox::PathUtils::stripRootPath("C:/windows/pls/screee") == "windows/pls/screee");
+		REQUIRE(rawrbox::PathUtils::stripRootPath("C:/windows/pls") == "windows/pls");
+		REQUIRE(rawrbox::PathUtils::stripRootPath("C:/windows/pls/screee") == "windows/pls/screee");
 #endif
 	}
 }

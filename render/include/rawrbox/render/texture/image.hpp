@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace rawrBox {
+namespace rawrbox {
 	class TextureImage : public TextureBase {
 	private:
 		std::vector<unsigned char> _pixels;
@@ -19,16 +19,16 @@ namespace rawrBox {
 		explicit TextureImage(const std::string& fileName, bool useFallback = true);
 
 		// ------ PIXEL-UTILS
-		virtual rawrBox::Colori getPixel(unsigned int x, unsigned int y);
-		virtual rawrBox::Colori getPixel(const rawrBox::Vector2i& pos);
+		virtual rawrbox::Colori getPixel(unsigned int x, unsigned int y);
+		virtual rawrbox::Colori getPixel(const rawrbox::Vector2i& pos);
 
-		virtual void setPixel(unsigned int x, unsigned int y, const rawrBox::Colori& col);
-		virtual void setPixel(const rawrBox::Vector2i& pos, const rawrBox::Colori& col);
+		virtual void setPixel(unsigned int x, unsigned int y, const rawrbox::Colori& col);
+		virtual void setPixel(const rawrbox::Vector2i& pos, const rawrbox::Colori& col);
 
 		virtual void setName(const std::string& name);
-		virtual void resize(const rawrBox::Vector2i& newsize);
+		virtual void resize(const rawrbox::Vector2i& newsize);
 		// --------------------
 
-		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
+		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count) override;
 	};
-} // namespace rawrBox
+} // namespace rawrbox

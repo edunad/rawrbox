@@ -11,7 +11,7 @@
 
 #include <fmt/format.h>
 
-namespace rawrBox {
+namespace rawrbox {
 	TextureImage::TextureImage(const std::string& fileName, bool useFallback) {
 		stbi_uc* image = stbi_load(fileName.c_str(), &this->_size.x, &this->_size.y, &this->_channels, 0);
 
@@ -21,7 +21,7 @@ namespace rawrBox {
 			auto failure = stbi_failure_reason();
 
 			if (useFallback) {
-				this->_pixels = rawrBox::MISSING_TEXTURE->pixels;
+				this->_pixels = rawrbox::MISSING_TEXTURE->pixels;
 				this->_size = {2, 2};
 				this->_failedToLoad = true;
 
@@ -39,13 +39,13 @@ namespace rawrBox {
 	}
 
 	// ------PIXEL-UTILS
-	rawrBox::Colori TextureImage::getPixel(unsigned int x, unsigned int y) {
+	rawrbox::Colori TextureImage::getPixel(unsigned int x, unsigned int y) {
 		if (this->_pixels.empty())
 			throw std::runtime_error("[TextureImage] Trying to access pixels, but memory is not set");
 
 		size_t index = y * this->_size.x + x;
 
-		rawrBox::Colori cl;
+		rawrbox::Colori cl;
 		cl.r = this->_pixels[index++];
 		cl.g = this->_pixels[index++];
 		cl.b = this->_pixels[index++];
@@ -54,11 +54,11 @@ namespace rawrBox {
 		return cl;
 	}
 
-	rawrBox::Colori TextureImage::getPixel(const rawrBox::Vector2i& pos) {
+	rawrbox::Colori TextureImage::getPixel(const rawrbox::Vector2i& pos) {
 		return this->getPixel(pos.x, pos.y);
 	}
 
-	void TextureImage::setPixel(unsigned int x, unsigned int y, const rawrBox::Colori& col) {
+	void TextureImage::setPixel(unsigned int x, unsigned int y, const rawrbox::Colori& col) {
 		if (this->_pixels.empty())
 			throw std::runtime_error("[TextureImage] Trying to access pixels, but memory is not set");
 
@@ -69,7 +69,7 @@ namespace rawrBox {
 		this->_pixels[index++] = static_cast<uint8_t>(col.a);
 	}
 
-	void TextureImage::setPixel(const rawrBox::Vector2i& pos, const rawrBox::Colori& col) {
+	void TextureImage::setPixel(const rawrbox::Vector2i& pos, const rawrbox::Colori& col) {
 		this->setPixel(pos.x, pos.y, col);
 	}
 
@@ -77,7 +77,7 @@ namespace rawrBox {
 		this->_name = name;
 	}
 
-	void TextureImage::resize(const rawrBox::Vector2i& newsize) {
+	void TextureImage::resize(const rawrbox::Vector2i& newsize) {
 		throw std::runtime_error("TODO");
 	}
 	// --------------------
@@ -110,4 +110,4 @@ namespace rawrBox {
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureImage] Failed to bind texture");
 		bgfx::setName(this->_handle, fmt::format("RAWR-{}-{}", this->_name, this->_handle.idx).c_str());
 	}
-} // namespace rawrBox
+} // namespace rawrbox

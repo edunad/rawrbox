@@ -13,7 +13,7 @@
 
 #include <memory>
 
-namespace rawrBox {
+namespace rawrbox {
 	struct PosUVColorVertexData {
 		float x = 0;
 		float y = 0;
@@ -25,16 +25,16 @@ namespace rawrBox {
 		uint32_t abgr = 0xFFFFFFFF;
 
 		PosUVColorVertexData() = default;
-		PosUVColorVertexData(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& uv, const rawrBox::Color& cl) : x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y), abgr(rawrBox::Color::toHEX(cl)) {}
+		PosUVColorVertexData(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& uv, const rawrbox::Color& cl) : x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y), abgr(rawrbox::Color::toHEX(cl)) {}
 		PosUVColorVertexData(float _x, float _y, float _z, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v), abgr(_abgr) {}
 	};
 
 	struct StencilRotation {
 		float rotation = 0.F;
-		rawrBox::Vector2f origin = {};
+		rawrbox::Vector2f origin = {};
 
 		StencilRotation() = default;
-		StencilRotation(float _rotation, const rawrBox::Vector2f& _origin) : rotation(_rotation), origin(_origin) {}
+		StencilRotation(float _rotation, const rawrbox::Vector2f& _origin) : rotation(_rotation), origin(_origin) {}
 
 		StencilRotation operator-(const StencilRotation& other) const {
 			return {this->rotation - other.rotation, this->origin - other.origin};
@@ -109,22 +109,22 @@ namespace rawrBox {
 		bgfx::TextureHandle _textureHandle = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 
-		std::shared_ptr<rawrBox::TextureFlat> _pixelTexture;
-		std::shared_ptr<rawrBox::TextureRender> _renderTexture;
+		std::shared_ptr<rawrbox::TextureFlat> _pixelTexture;
+		std::shared_ptr<rawrbox::TextureRender> _renderTexture;
 
 		uint64_t _drawMode = 0;
 		bool _cull = true;
 
-		rawrBox::Vector2i _windowSize;
+		rawrbox::Vector2i _windowSize;
 
 		// Offset handling ----
-		rawrBox::Vector2f _offset;
-		rawrBox::Vector2f _oldOffset;
-		std::vector<rawrBox::Vector2f> _offsets;
+		rawrbox::Vector2f _offset;
+		rawrbox::Vector2f _oldOffset;
+		std::vector<rawrbox::Vector2f> _offsets;
 		// ----------
 
 		// Clip handling ----
-		std::vector<rawrBox::AABB> _clips;
+		std::vector<rawrbox::AABB> _clips;
 		// ----------
 
 		// Outline handling ----
@@ -138,8 +138,8 @@ namespace rawrBox {
 		// ----------
 
 		// Scale handling ----
-		std::vector<rawrBox::Vector2f> _scales;
-		rawrBox::Vector2f _scale;
+		std::vector<rawrbox::Vector2f> _scales;
+		rawrbox::Vector2f _scale;
 		// ----------
 
 		std::vector<PosUVColorVertexData> _vertices;
@@ -148,11 +148,11 @@ namespace rawrBox {
 		bool _recording = false;
 
 		// ------ UTILS
-		void pushVertice(rawrBox::Vector2f pos, const rawrBox::Vector2f& uv, const rawrBox::Color& col);
+		void pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv, const rawrbox::Color& col);
 		void pushIndices(uint16_t a, uint16_t b, uint16_t c);
 
-		void applyRotation(rawrBox::Vector2f& vert);
-		void applyScale(rawrBox::Vector2f& vert);
+		void applyRotation(rawrbox::Vector2f& vert);
+		void applyScale(rawrbox::Vector2f& vert);
 		// --------------------
 
 		// ------ RENDERING
@@ -160,24 +160,24 @@ namespace rawrBox {
 		void drawRecording();
 		// --------------------
 	public:
-		Stencil(bgfx::ViewId id, const rawrBox::Vector2i& size);
+		Stencil(bgfx::ViewId id, const rawrbox::Vector2i& size);
 		Stencil(Stencil&&) = delete;
 		Stencil& operator=(Stencil&&) = delete;
 		Stencil(const Stencil&) = delete;
 		Stencil& operator=(const Stencil&) = delete;
 
-		~Stencil();
+		virtual ~Stencil();
 
 		void upload();
-		void resize(const rawrBox::Vector2i& size);
+		void resize(const rawrbox::Vector2i& size);
 
 		// ------ UTILS
-		void drawTriangle(const rawrBox::Vector2f& a, const rawrBox::Vector2f& aUV, const rawrBox::Color& colA, const rawrBox::Vector2f& b, const rawrBox::Vector2f& bUV, const rawrBox::Color& colB, const rawrBox::Vector2f& c, const rawrBox::Vector2f& cUV, const rawrBox::Color& colC);
-		void drawBox(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col = rawrBox::Colors::White);
-		void drawTexture(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, std::shared_ptr<rawrBox::TextureBase> tex, const rawrBox::Color& col = rawrBox::Colors::White, const rawrBox::Vector2f& uvStart = {0, 0}, const rawrBox::Vector2f& uvEnd = {1, 1});
-		void drawCircle(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col = rawrBox::Colors::White, size_t roundness = 32, float angleStart = 0.F, float angleEnd = 360.F);
-		void drawLine(const rawrBox::Vector2& from, const rawrBox::Vector2& to, const rawrBox::Color& col = rawrBox::Colors::White);
-		void drawText(rawrBox::Font* font, const std::string& text, const rawrBox::Vector2f& pos, const rawrBox::Color& col = rawrBox::Colors::White, rawrBox::Alignment alignX = rawrBox::Alignment::Left, rawrBox::Alignment alignY = rawrBox::Alignment::Left);
+		void drawTriangle(const rawrbox::Vector2f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector2f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector2f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC);
+		void drawBox(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White);
+		void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, std::shared_ptr<rawrbox::TextureBase> tex, const rawrbox::Color& col = rawrbox::Colors::White, const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1});
+		void drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White, size_t roundness = 32, float angleStart = 0.F, float angleEnd = 360.F);
+		void drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const rawrbox::Color& col = rawrbox::Colors::White);
+		void drawText(rawrbox::Font* font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
 		// --------------------
 
 		// ------ RENDERING
@@ -190,7 +190,7 @@ namespace rawrBox {
 		// --------------------
 
 		// ------ LOCATION
-		void pushOffset(const rawrBox::Vector2f& offset);
+		void pushOffset(const rawrbox::Vector2f& offset);
 		void popOffset();
 		void pushLocalOffset();
 		void popLocalOffset();
@@ -207,12 +207,12 @@ namespace rawrBox {
 		// --------------------
 
 		// ------ CLIPPING
-		void pushClipping(const rawrBox::AABB& rect);
+		void pushClipping(const rawrbox::AABB& rect);
 		void popClipping();
 		// --------------------
 
 		// ------ SCALE
-		void pushScale(const rawrBox::Vector2f& scale);
+		void pushScale(const rawrbox::Vector2f& scale);
 		void popScale();
 		// --------------------
 
@@ -222,4 +222,4 @@ namespace rawrBox {
 		void clear();
 		// --------------------
 	};
-} // namespace rawrBox
+} // namespace rawrbox

@@ -24,8 +24,8 @@ static const bgfx::EmbeddedShader stencil_shaders[] = {
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
-namespace rawrBox {
-	Stencil::Stencil(bgfx::ViewId id, const rawrBox::Vector2i& size) : _viewId(id), _windowSize(size) {
+namespace rawrbox {
+	Stencil::Stencil(bgfx::ViewId id, const rawrbox::Vector2i& size) : _viewId(id), _windowSize(size) {
 		// Shader layout
 		this->_vLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
@@ -81,17 +81,17 @@ namespace rawrBox {
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 
-		this->_renderTexture = std::make_shared<rawrBox::TextureRender>(this->_viewId, this->_windowSize);
-		this->_pixelTexture = std::make_shared<rawrBox::TextureFlat>(rawrBox::Vector2i(1, 1), Colors::White);
+		this->_renderTexture = std::make_shared<rawrbox::TextureRender>(this->_viewId, this->_windowSize);
+		this->_pixelTexture = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(1, 1), Colors::White);
 		this->_renderTexture->upload();
 		this->_pixelTexture->upload();
 	}
 
-	void Stencil::resize(const rawrBox::Vector2i& size) {
+	void Stencil::resize(const rawrbox::Vector2i& size) {
 		this->_windowSize = size;
 	}
 
-	void Stencil::pushVertice(rawrBox::Vector2f pos, const rawrBox::Vector2f& uv, const rawrBox::Color& col) {
+	void Stencil::pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv, const rawrbox::Color& col) {
 		this->applyScale(pos);
 		this->applyRotation(pos);
 
@@ -106,7 +106,7 @@ namespace rawrBox {
 		    uv.y,
 
 		    // color
-		    rawrBox::Color::toHEX(col));
+		    rawrbox::Color::toHEX(col));
 	}
 
 	void Stencil::pushIndices(uint16_t a, uint16_t b, uint16_t c) {
@@ -117,7 +117,7 @@ namespace rawrBox {
 		this->_indices.push_back(pos - c);
 	}
 
-	void Stencil::applyRotation(rawrBox::Vector2f& vert) {
+	void Stencil::applyRotation(rawrbox::Vector2f& vert) {
 		if (this->_rotation.rotation == 0) return;
 
 		std::array<float, 16> translationMatrix = {};
@@ -144,7 +144,7 @@ namespace rawrBox {
 		vert.y = v[1];
 	}
 
-	void Stencil::applyScale(rawrBox::Vector2f& vert) {
+	void Stencil::applyScale(rawrbox::Vector2f& vert) {
 		if (this->_scale == 0) return;
 
 		std::array<float, 16> translationMatrix = {};
@@ -173,7 +173,7 @@ namespace rawrBox {
 	// --------------------
 
 	// ------UTILS
-	void Stencil::drawTriangle(const rawrBox::Vector2f& a, const rawrBox::Vector2f& aUV, const rawrBox::Color& colA, const rawrBox::Vector2f& b, const rawrBox::Vector2f& bUV, const rawrBox::Color& colB, const rawrBox::Vector2f& c, const rawrBox::Vector2f& cUV, const rawrBox::Color& colC) {
+	void Stencil::drawTriangle(const rawrbox::Vector2f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector2f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector2f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC) {
 		if (colA.isTransparent() && colB.isTransparent() && colC.isTransparent()) return;
 
 		if (this->_outline.isSet()) {
@@ -197,7 +197,7 @@ namespace rawrBox {
 		}
 	}
 
-	void Stencil::drawBox(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col) {
+	void Stencil::drawBox(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col) {
 		if (this->_outline.isSet()) {
 			float thick = this->_outline.thickness;
 
@@ -210,7 +210,7 @@ namespace rawrBox {
 		}
 	}
 
-	void Stencil::drawTexture(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, std::shared_ptr<rawrBox::TextureBase> tex, const rawrBox::Color& col, const rawrBox::Vector2f& uvStart, const rawrBox::Vector2f& uvEnd) {
+	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, std::shared_ptr<rawrbox::TextureBase> tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd) {
 		if (col.isTransparent()) return;
 
 		// TextureImage setup -----
@@ -228,7 +228,7 @@ namespace rawrBox {
 		this->pushIndices(3, 1, 2);
 	}
 
-	void Stencil::drawCircle(const rawrBox::Vector2f& pos, const rawrBox::Vector2f& size, const rawrBox::Color& col, size_t roundness, float angleStart, float angleEnd) {
+	void Stencil::drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col, size_t roundness, float angleStart, float angleEnd) {
 		if (col.isTransparent()) return;
 
 		// Setup --------
@@ -245,14 +245,14 @@ namespace rawrBox {
 		float angStartRad = bx::toRad(angleStart);
 		float angEndRad = bx::toRad(angleEnd);
 
-		float space = rawrBox::pi<float> / roundness * 2;
+		float space = rawrbox::pi<float> / roundness * 2;
 
 		for (size_t i = 0; i < roundness;) {
 			auto ang = space * i++ + angStartRad;
 			if (ang + space > angEndRad) break;
 
-			rawrBox::Vector2 b = targetPos + rawrBox::Vector2::cosSin(ang) * radius;
-			rawrBox::Vector2 c = targetPos + rawrBox::Vector2::cosSin(ang + space) * radius;
+			rawrbox::Vector2 b = targetPos + rawrbox::Vector2::cosSin(ang) * radius;
+			rawrbox::Vector2 c = targetPos + rawrbox::Vector2::cosSin(ang + space) * radius;
 
 			if (this->_outline.isSet()) {
 				this->drawLine(b, c, col);
@@ -265,10 +265,10 @@ namespace rawrBox {
 		}
 	}
 
-	void Stencil::drawLine(const rawrBox::Vector2& from, const rawrBox::Vector2& to, const rawrBox::Color& col) {
+	void Stencil::drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const rawrbox::Color& col) {
 		if (col.isTransparent()) return;
 
-		rawrBox::StencilOutline outline = {1.F, 0.F};
+		rawrbox::StencilOutline outline = {1.F, 0.F};
 		if (this->_outline.isSet()) outline = this->_outline;
 		if (outline.thickness <= 0.F) return;
 
@@ -291,10 +291,10 @@ namespace rawrBox {
 			float angle = from.angle(to);
 			float uvEnd = outline.stipple <= 0.F ? 1.F : outline.stipple;
 
-			auto vertA = from + rawrBox::Vector2::cosSin(angle) * outline.thickness;
-			auto vertB = from + rawrBox::Vector2::cosSin(angle) * -outline.thickness;
-			auto vertC = to + rawrBox::Vector2::cosSin(angle) * outline.thickness;
-			auto vertD = to + rawrBox::Vector2::cosSin(angle) * -outline.thickness;
+			auto vertA = from + rawrbox::Vector2::cosSin(angle) * outline.thickness;
+			auto vertB = from + rawrbox::Vector2::cosSin(angle) * -outline.thickness;
+			auto vertC = to + rawrbox::Vector2::cosSin(angle) * outline.thickness;
+			auto vertD = to + rawrbox::Vector2::cosSin(angle) * -outline.thickness;
 
 			this->pushVertice(vertA, {0, 0}, col);
 			this->pushVertice(vertC, {uvEnd, 0}, col);
@@ -306,7 +306,7 @@ namespace rawrBox {
 		}
 	}
 
-	void Stencil::drawText(rawrBox::Font* font, const std::string& text, const rawrBox::Vector2f& pos, const rawrBox::Color& col, rawrBox::Alignment alignX, rawrBox::Alignment alignY) {
+	void Stencil::drawText(rawrbox::Font* font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, rawrbox::Alignment alignX, rawrbox::Alignment alignY) {
 		if (font == nullptr || col.isTransparent() || text.empty()) return;
 
 		// Setup --------
@@ -314,8 +314,8 @@ namespace rawrBox {
 		this->setDrawMode(); // Reset
 		// ----
 
-		rawrBox::Vector2f startpos = pos;
-		rawrBox::Vector2f tsize = font->getStringSize(text);
+		rawrbox::Vector2f startpos = pos;
+		rawrbox::Vector2f tsize = font->getStringSize(text);
 		if (alignX != Alignment::Left || alignY != Alignment::Left) {
 			switch (alignX) {
 				case Alignment::Left:
@@ -346,8 +346,8 @@ namespace rawrBox {
 		float lineheight = font->getLineHeight();
 		startpos.y += lineheight + static_cast<float>(font->face->size->metrics.descender >> 6);
 
-		rawrBox::Vector2 curpos = startpos;
-		const rawrBox::Glyph* prevGlyph = nullptr;
+		rawrbox::Vector2 curpos = startpos;
+		const rawrbox::Glyph* prevGlyph = nullptr;
 
 		auto beginIter = text.begin();
 		auto endIter = utf8::find_invalid(text.begin(), text.end());
@@ -368,8 +368,8 @@ namespace rawrBox {
 				curpos.x += font->getKerning(glyph, *prevGlyph);
 			}
 
-			rawrBox::Vector2 p = {curpos.x + glyph.bearing.x, curpos.y - glyph.bearing.y};
-			rawrBox::Vector2 s = {static_cast<float>(glyph.size.x), static_cast<float>(glyph.size.y)};
+			rawrbox::Vector2 p = {curpos.x + glyph.bearing.x, curpos.y - glyph.bearing.y};
+			rawrbox::Vector2 s = {static_cast<float>(glyph.size.x), static_cast<float>(glyph.size.y)};
 
 			this->setTexture(font->getAtlasTexture(glyph)->getHandle());
 
@@ -445,7 +445,7 @@ namespace rawrBox {
 			bgfx::setScissor(); // Clear scissor
 		}
 
-		bgfx::submit(rawrBox::CURRENT_VIEW_ID, this->_stencilProgram);
+		bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_stencilProgram);
 
 		this->_vertices.clear();
 		this->_indices.clear();
@@ -460,12 +460,12 @@ namespace rawrBox {
 		this->_drawMode = 0;
 		// -----
 
-		rawrBox::Vector2f size = this->_windowSize.cast<float>();
+		rawrbox::Vector2f size = this->_windowSize.cast<float>();
 
-		this->pushVertice({0, 0}, {0, 0}, rawrBox::Colors::White);
-		this->pushVertice({0, size.y}, {0, 1}, rawrBox::Colors::White);
-		this->pushVertice({size.x, 0}, {1, 0}, rawrBox::Colors::White);
-		this->pushVertice({size.x, size.y}, {1, 1}, rawrBox::Colors::White);
+		this->pushVertice({0, 0}, {0, 0}, rawrbox::Colors::White);
+		this->pushVertice({0, size.y}, {0, 1}, rawrbox::Colors::White);
+		this->pushVertice({size.x, 0}, {1, 0}, rawrbox::Colors::White);
+		this->pushVertice({size.x, size.y}, {1, 1}, rawrbox::Colors::White);
 
 		this->pushIndices(4, 3, 2);
 		this->pushIndices(3, 1, 2);
@@ -479,7 +479,7 @@ namespace rawrBox {
 		this->_renderTexture->startRecord();
 		this->_recording = true;
 
-		bgfx::setViewTransform(rawrBox::CURRENT_VIEW_ID, nullptr, nullptr);
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
 	}
 
 	void Stencil::end() {
@@ -502,7 +502,7 @@ namespace rawrBox {
 	// --------------------
 
 	// ------ LOCATION
-	void Stencil::pushOffset(const rawrBox::Vector2f& offset) {
+	void Stencil::pushOffset(const rawrbox::Vector2f& offset) {
 		this->_offsets.push_back(offset);
 		this->_offset += offset;
 	}
@@ -553,7 +553,7 @@ namespace rawrBox {
 	// --------------------
 
 	// ------ CLIPPING
-	void Stencil::pushClipping(const rawrBox::AABB& rect) {
+	void Stencil::pushClipping(const rawrbox::AABB& rect) {
 		this->_clips.emplace_back(rect.pos.x + this->_offset.x, rect.pos.y + this->_offset.y, rect.size.x, rect.size.y);
 	}
 
@@ -566,7 +566,7 @@ namespace rawrBox {
 	// --------------------
 
 	// ------ SCALE
-	void Stencil::pushScale(const rawrBox::Vector2f& scale) {
+	void Stencil::pushScale(const rawrbox::Vector2f& scale) {
 		this->_scales.push_back(scale);
 		this->_scale += scale;
 
@@ -586,4 +586,4 @@ namespace rawrBox {
 	const std::vector<uint16_t>& Stencil::getIndices() const { return this->_indices; }
 	void Stencil::clear() { this->_vertices.clear(); }
 	// --------------------
-} // namespace rawrBox
+} // namespace rawrbox

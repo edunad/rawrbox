@@ -1,7 +1,7 @@
 #pragma once
 
+#include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/camera/perspective.hpp>
-#include <rawrbox/render/engine.hpp>
 #include <rawrbox/render/model/assimp/model_imported.hpp>
 #include <rawrbox/render/postprocess/manager.hpp>
 #include <rawrbox/render/renderer.hpp>
@@ -10,16 +10,16 @@
 #include <memory>
 
 namespace post_process {
-	class Game : public rawrBox::Engine {
-		std::unique_ptr<rawrBox::Window> _window = nullptr;
-		std::shared_ptr<rawrBox::Renderer> _render = nullptr;
-		std::shared_ptr<rawrBox::CameraPerspective> _camera = nullptr;
-		std::shared_ptr<rawrBox::PostProcessManager> _postProcess = nullptr;
+	class Game : public rawrbox::Engine {
+		std::unique_ptr<rawrbox::Window> _window = nullptr;
+		std::shared_ptr<rawrbox::Renderer> _render = nullptr;
+		std::shared_ptr<rawrbox::CameraPerspective> _camera = nullptr;
+		std::shared_ptr<rawrbox::PostProcessManager> _postProcess = nullptr;
 
-		std::shared_ptr<rawrBox::ModelImported<>> _model = std::make_shared<rawrBox::ModelImported<>>();
+		std::shared_ptr<rawrbox::ModelImported<>> _model = std::make_shared<rawrbox::ModelImported<>>();
 
 		bool _rightClick = false;
-		rawrBox::Vector2i _oldMousePos = {};
+		rawrbox::Vector2i _oldMousePos = {};
 
 	public:
 		using Engine::Engine;
@@ -28,7 +28,7 @@ namespace post_process {
 		void shutdown() override;
 		void pollEvents() override;
 		void update(float deltaTime, int64_t gameTime) override;
-		void draw(const double alpha) override;
+		void draw() override;
 
 		void loadContent();
 		void drawWorld();

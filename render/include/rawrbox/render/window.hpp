@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 struct GLFWwindow;
-namespace rawrBox {
+namespace rawrbox {
 	// ------FLAGS
 
 	// NOLINTBEGIN{unused-const-variable}
@@ -116,11 +116,11 @@ namespace rawrBox {
 		bool isKeyDown(int key);
 		// --------------------
 
-		~Window();
+		virtual ~Window();
 		Window() = default;
 		Window(Window&&) = delete;
 		Window& operator=(Window&&) = delete;
 		Window(const Window&) = delete;
 		Window& operator=(const Window&) = delete;
 	};
-} // namespace rawrBox
+} // namespace rawrbox

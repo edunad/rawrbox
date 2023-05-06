@@ -17,22 +17,16 @@ static const bgfx::EmbeddedShader model_text3D_shaders[] = {
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
-namespace rawrBox {
+namespace rawrbox {
 
-	class MaterialText3DUnlit : public rawrBox::MaterialBase {
+	class MaterialText3DUnlit : public rawrbox::MaterialBase {
 	public:
-		using vertexBufferType = rawrBox::VertexData;
-
+		using vertexBufferType = rawrbox::VertexData;
 		MaterialText3DUnlit() = default;
-		MaterialText3DUnlit(MaterialText3DUnlit&&) = delete;
-		MaterialText3DUnlit& operator=(MaterialText3DUnlit&&) = delete;
-		MaterialText3DUnlit(const MaterialText3DUnlit&) = delete;
-		MaterialText3DUnlit& operator=(const MaterialText3DUnlit&) = delete;
-		~MaterialText3DUnlit() = default;
 
 		void upload() {
 			buildShader(model_text3D_shaders, "text_3d_unlit");
 		}
 	};
 
-} // namespace rawrBox
+} // namespace rawrbox

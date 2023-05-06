@@ -1,3 +1,7 @@
+#ifdef RAWRBOX_DEBUG
+	#include <rawrbox/debug/gizmos.hpp>
+#endif
+
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/static.hpp>
 
@@ -5,18 +9,22 @@
 
 #define BGFX_DEFAULT_CLEAR (0 | BGFX_CLEAR_COLOR | BGFX_CLEAR_STENCIL | BGFX_CLEAR_DEPTH)
 
-namespace rawrBox {
+namespace rawrbox {
 	Renderer::~Renderer() {
 		this->_stencil = nullptr;
 
-		rawrBox::MISSING_TEXTURE = nullptr;
-		rawrBox::MISSING_SPECULAR_TEXTURE = nullptr;
-		rawrBox::WHITE_TEXTURE = nullptr;
+		rawrbox::MISSING_TEXTURE = nullptr;
+		rawrbox::MISSING_SPECULAR_TEXTURE = nullptr;
+		rawrbox::WHITE_TEXTURE = nullptr;
+
+#ifdef RAWRBOX_DEBUG
+		rawrbox::GIZMOS::get().shutdown();
+#endif
 	}
 
-	Renderer::Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size) : _id(id), _size(size) {
-		if (!rawrBox::BGFX_INITIALIZED) return;
-		this->_stencil = std::make_unique<rawrBox::Stencil>(id, size);
+	Renderer::Renderer(bgfx::ViewId id, const rawrbox::Vector2i& size) : _id(id), _size(size) {
+		if (!rawrbox::BGFX_INITIALIZED) return;
+		this->_stencil = std::make_unique<rawrbox::Stencil>(id, size);
 
 		bgfx::setViewRect(this->_id, 0, 0, size.x, size.y);
 		bgfx::setViewMode(this->_id, bgfx::ViewMode::Sequential);
@@ -24,17 +32,23 @@ namespace rawrBox {
 
 		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 
-		rawrBox::MISSING_TEXTURE = std::make_shared<rawrBox::TextureMissing>();
-		rawrBox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrBox::TextureFlat>(rawrBox::Vector2i(2, 2), rawrBox::Colors::Black);
-		rawrBox::WHITE_TEXTURE = std::make_shared<rawrBox::TextureFlat>(rawrBox::Vector2i(2, 2), rawrBox::Colors::White);
+		rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
+		rawrbox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black);
+		rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
 	}
 
 	void Renderer::upload() {
-		if (!rawrBox::BGFX_INITIALIZED) return;
+		if (!rawrbox::BGFX_INITIALIZED) return;
 
-		rawrBox::MISSING_TEXTURE->upload();
-		rawrBox::MISSING_SPECULAR_TEXTURE->upload();
-		rawrBox::WHITE_TEXTURE->upload();
+		rawrbox::MISSING_TEXTURE->upload();
+		rawrbox::MISSING_SPECULAR_TEXTURE->upload();
+		rawrbox::WHITE_TEXTURE->upload();
+
+		// Debug gizmos ----
+#ifdef RAWRBOX_DEBUG
+		rawrbox::GIZMOS::get().upload();
+#endif
+		// -----
 
 		if (this->_stencil == nullptr) throw std::runtime_error("[RawrBox-Renderer] Failed to upload, stencil is not initialized!");
 		this->_stencil->upload();
@@ -44,8 +58,8 @@ namespace rawrBox {
 		this->_clearColor = clearColor;
 	}
 
-	void Renderer::resizeView(const rawrBox::Vector2i& size) {
-		if (!rawrBox::BGFX_INITIALIZED) return;
+	void Renderer::resizeView(const rawrbox::Vector2i& size) {
+		if (!rawrbox::BGFX_INITIALIZED) return;
 
 		bgfx::setViewRect(this->_id, 0, 0, size.x, size.y);
 		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
@@ -55,17 +69,25 @@ namespace rawrBox {
 
 	// ------RENDERING
 	void Renderer::swapBuffer() const {
-		if (!rawrBox::BGFX_INITIALIZED) return;
+		if (!rawrbox::BGFX_INITIALIZED) return;
 
 		bgfx::touch(this->_id); // Make sure we draw on the view
 		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 	}
 
-	void Renderer::render() const {
-		if (!rawrBox::BGFX_INITIALIZED) return;
+#ifdef RAWRBOX_DEBUG
+	void Renderer::render(bool gizmos) const {
+		if (!rawrbox::BGFX_INITIALIZED) return;
 
+		if (gizmos) rawrbox::GIZMOS::get().draw();
 		bgfx::frame();
 	}
+#else
+	void Renderer::render() const {
+		if (!rawrbox::BGFX_INITIALIZED) return;
+		bgfx::frame();
+	}
+#endif
 	// --------------------
 
 	// ------UTILS
@@ -73,11 +95,11 @@ namespace rawrBox {
 		return this->_id;
 	}
 
-	const rawrBox::Vector2i& Renderer::getSize() const {
+	const rawrbox::Vector2i& Renderer::getSize() const {
 		return this->_size;
 	}
 
-	rawrBox::Stencil& Renderer::getStencil() const {
+	rawrbox::Stencil& Renderer::getStencil() const {
 		return *this->_stencil;
 	}
 
@@ -85,4 +107,4 @@ namespace rawrBox {
 		return this->_clearColor;
 	}
 	// --------------------
-} // namespace rawrBox
+} // namespace rawrbox
