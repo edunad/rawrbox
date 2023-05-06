@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/camera/perspective.hpp>
+#include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/model/sprite.hpp>
 #include <rawrbox/render/model/text3D.hpp>
@@ -17,7 +17,7 @@ namespace model {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
 		std::shared_ptr<rawrbox::Renderer> _render = nullptr;
-		std::shared_ptr<rawrbox::CameraPerspective> _camera = nullptr;
+		std::shared_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 		std::unique_ptr<rawrbox::TextEngine> _textEngine = nullptr;
 
 		std::shared_ptr<rawrbox::TextureImage> _texture = nullptr;
@@ -28,9 +28,6 @@ namespace model {
 		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
 
 		rawrbox::Font* _font = nullptr;
-
-		bool _rightClick = false;
-		rawrbox::Vector2i _oldMousePos = {};
 
 	public:
 		using Engine::Engine;

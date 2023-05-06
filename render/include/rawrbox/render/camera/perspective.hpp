@@ -8,8 +8,9 @@
 namespace rawrbox {
 	class CameraPerspective : public CameraBase {
 	protected:
+		void updateMtx() override;
+
 	public:
 		explicit CameraPerspective(float ratio, float FOV = 60.F, float near = 0.1F, float far = 100.F, bool homogeneousDepth = false);
-		void update() override;
 	};
 } // namespace rawrbox

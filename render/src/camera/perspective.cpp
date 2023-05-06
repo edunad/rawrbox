@@ -7,11 +7,11 @@ namespace rawrbox {
 	// NOLINTBEGIN(clang-analyzer-optin.cplusplus.VirtualCall)
 	CameraPerspective::CameraPerspective(float ratio, float FOV, float near, float far, bool homogeneousDepth) {
 		bx::mtxProj(this->_projection.data(), FOV, ratio, near, far, homogeneousDepth);
-		this->update();
+		this->updateMtx();
 	}
 	// NOLINTEND(clang-analyzer-optin.cplusplus.VirtualCall)
 
-	void CameraPerspective::update() {
+	void CameraPerspective::updateMtx() {
 		auto dir = this->getForward();
 
 		auto m_eye = bx::Vec3(this->_pos.x, this->_pos.y, this->_pos.z);
