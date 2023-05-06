@@ -24,7 +24,7 @@ file(COPY "${BASS_BINARY_FX}" DESTINATION "${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUT
 #--------------
 
 # Grab source files
-file(GLOB_RECURSE RAWRBOX_BASS_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
+file(GLOB_RECURSE RAWRBOX_BASS_SOURCES "src/*.cpp" "include/*.hpp")
 # -----------------
 
 if(RAWRBOX_ENABLE_DEBUG_SUPPORT)
