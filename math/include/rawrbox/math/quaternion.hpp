@@ -5,7 +5,7 @@
 
 #include <algorithm>
 
-namespace rawrBox {
+namespace rawrbox {
 	template <class NumberType>
 	class Quaternion_t {
 	private:
@@ -161,4 +161,4 @@ namespace rawrBox {
 	using Quaternioni = Quaternion_t<int>;
 	using Quaternion = Quaternionf;
 
-} // namespace rawrBox
+} // namespace rawrbox

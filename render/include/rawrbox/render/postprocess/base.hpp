@@ -4,7 +4,7 @@
 
 #include <memory>
 
-namespace rawrBox {
+namespace rawrbox {
 	class PostProcessBase {
 	protected:
 	public:
@@ -19,4 +19,4 @@ namespace rawrBox {
 		virtual void upload() = 0;
 		virtual void applyEffect() = 0;
 	};
-} // namespace rawrBox
+} // namespace rawrbox

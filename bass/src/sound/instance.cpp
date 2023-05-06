@@ -9,9 +9,9 @@
 #include <bass_fx.h>
 #include <fmt/printf.h>
 
-namespace rawrBox {
+namespace rawrbox {
 	SoundInstance::SoundInstance(uint32_t audioSample, bool isStream, uint32_t flags) : _sample(audioSample), _flags(flags), _stream(isStream) {
-		auto& snd = rawrBox::SoundManager::get();
+		auto& snd = rawrbox::SoundManager::get();
 
 		snd.onBEAT.add(std::to_string(this->_sample), [this](std::pair<uint32_t, double> data) {
 			if (this->_sample == data.first || this->_channel == data.first) this->onBEAT(data.second);
@@ -36,7 +36,7 @@ namespace rawrBox {
 			BASS_StreamFree(this->_channel);
 
 		// CLEANUP CALLBACKS
-		auto& snd = rawrBox::SoundManager::get();
+		auto& snd = rawrbox::SoundManager::get();
 		snd.onBEAT.remove(std::to_string(this->_sample));
 		snd.onSoundEnd.remove(std::to_string(this->_sample));
 
@@ -51,7 +51,7 @@ namespace rawrBox {
 
 		// no slots free, so lets kill the furthest away or oldest if we're over the 5 channels limit
 		auto newInstance = BASS_SampleGetChannel(this->_sample, this->is3D() ? BASS_SAMPLE_OVER_DIST : BASS_SAMPLE_OVER_POS);
-		rawrBox::BASSUtils::checkBASSError();
+		rawrbox::BASSUtils::checkBASSError();
 
 		return newInstance;
 	}
@@ -72,7 +72,7 @@ namespace rawrBox {
 		}
 
 		BASS_ChannelPlay(this->_channel, this->_stream || this->_looping); // actualy play the thing
-		rawrBox::BASSUtils::checkBASSError();
+		rawrbox::BASSUtils::checkBASSError();
 
 #ifdef RAWRBOX_DEBUG
 		GIZMOS::get().addSound(this);
@@ -85,7 +85,7 @@ namespace rawrBox {
 		BASS_ChannelPause(this->_channel);
 		BASS_ChannelSetPosition(this->_channel, 0, 0);
 
-		rawrBox::BASSUtils::checkBASSError();
+		rawrbox::BASSUtils::checkBASSError();
 		this->_channel = 0;
 	}
 
@@ -170,12 +170,12 @@ namespace rawrBox {
 		}
 
 		BASS_ChannelGetData(this->_channel, &buffer.front(), flag);
-		rawrBox::BASSUtils::checkBASSError();
+		rawrbox::BASSUtils::checkBASSError();
 
 		return buffer;
 	}
 
-	const rawrBox::Vector3f& SoundInstance::getPosition() const {
+	const rawrbox::Vector3f& SoundInstance::getPosition() const {
 		return this->_location;
 	}
 	// --------------
@@ -185,7 +185,7 @@ namespace rawrBox {
 		if (!this->isCreated()) return;
 
 		BASS_FX_BPM_BeatSetParameters(this->_channel, bandwidth, center_freq, release_time);
-		rawrBox::BASSUtils::checkBASSError();
+		rawrbox::BASSUtils::checkBASSError();
 	}
 
 	void SoundInstance::setVolume(float volume) {
@@ -193,7 +193,7 @@ namespace rawrBox {
 		if (!this->isCreated()) return;
 
 		BASS_ChannelSetAttribute(this->_channel, BASS_ATTRIB_VOL, volume);
-		rawrBox::BASSUtils::checkBASSError();
+		rawrbox::BASSUtils::checkBASSError();
 	}
 
 	void SoundInstance::setTempo(float tempo) {
@@ -204,7 +204,7 @@ namespace rawrBox {
 		BASS_ChannelGetAttribute(this->_channel, BASS_ATTRIB_FREQ, &m_fDefaultFrequency);
 		BASS_ChannelSetAttribute(this->_channel, BASS_ATTRIB_FREQ, this->_tempo * m_fDefaultFrequency);
 
-		rawrBox::BASSUtils::checkBASSError();
+		rawrbox::BASSUtils::checkBASSError();
 	}
 
 	void SoundInstance::setLooping(bool loop) {
@@ -217,7 +217,7 @@ namespace rawrBox {
 			BASS_ChannelFlags(this->_channel, 0, 0xff);
 		}
 
-		rawrBox::BASSUtils::checkBASSError();
+		rawrbox::BASSUtils::checkBASSError();
 	}
 
 	void SoundInstance::seek(double seek) {
@@ -228,10 +228,10 @@ namespace rawrBox {
 		QWORD byteLength = BASS_ChannelGetLength(this->_channel, BASS_POS_BYTE);
 		BASS_ChannelSetPosition(this->_channel, std::clamp<QWORD>(bytePosition, 0, byteLength - 1), BASS_POS_BYTE);
 
-		rawrBox::BASSUtils::checkBASSError();
+		rawrbox::BASSUtils::checkBASSError();
 	}
 
-	void SoundInstance::setPosition(const rawrBox::Vector3f& pos) {
+	void SoundInstance::setPosition(const rawrbox::Vector3f& pos) {
 		this->_location = pos;
 		if (!this->isCreated() || !this->is3D()) return;
 
@@ -239,9 +239,9 @@ namespace rawrBox {
 		BASS_ChannelSet3DPosition(this->_channel, &location, nullptr, nullptr);
 		BASS_Apply3D();
 
-		rawrBox::BASSUtils::checkBASSError();
+		rawrbox::BASSUtils::checkBASSError();
 #ifdef RAWRBOX_DEBUG
-		rawrBox::GIZMOS::get().updateGizmo(fmt::format("Sound-{}", this->id()), pos);
+		rawrbox::GIZMOS::get().updateGizmo(fmt::format("Sound-{}", this->id()), pos);
 #endif
 	}
 
@@ -253,6 +253,6 @@ namespace rawrBox {
 		BASS_ChannelSet3DAttributes(this->_channel, -1, this->_minDistance * 1000.F, this->_maxDistance * 1000.F, -1, -1, -1);
 		BASS_Apply3D();
 
-		rawrBox::BASSUtils::checkBASSError();
+		rawrbox::BASSUtils::checkBASSError();
 	}
-} // namespace rawrBox
+} // namespace rawrbox

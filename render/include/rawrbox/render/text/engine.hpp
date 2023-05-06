@@ -11,13 +11,13 @@
 #include <utility>
 #include <vector>
 
-namespace rawrBox {
+namespace rawrbox {
 
 	class TextEngine { // Not threadsafe, make one engine per thread
 		static uint32_t atlasID;
 
-		std::vector<std::unique_ptr<rawrBox::Font>> _fonts;
-		std::map<uint32_t, std::shared_ptr<rawrBox::TextureAtlas>> _atlas;
+		std::vector<std::unique_ptr<rawrbox::Font>> _fonts;
+		std::map<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> _atlas;
 		void initialize();
 		void destroy();
 
@@ -32,9 +32,9 @@ namespace rawrBox {
 		TextEngine& operator=(const TextEngine& other) = delete;
 		TextEngine& operator=(TextEngine&& other) = delete;
 
-		std::pair<uint32_t, std::shared_ptr<rawrBox::TextureAtlas>> requestAtlas(int width, int height, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8);
-		std::shared_ptr<rawrBox::TextureAtlas> getAtlas(uint32_t id);
+		std::pair<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> requestAtlas(int width, int height, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8);
+		std::shared_ptr<rawrbox::TextureAtlas> getAtlas(uint32_t id);
 
-		rawrBox::Font& load(std::string filename, uint32_t size);
+		rawrbox::Font& load(std::string filename, uint32_t size);
 	};
-} // namespace rawrBox
+} // namespace rawrbox

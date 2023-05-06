@@ -19,8 +19,8 @@ static const bgfx::EmbeddedShader model_shaders[] = {
 
 constexpr int RENDER_PASS_DOWNSAMPLE_ID = 30;
 
-namespace rawrBox {
-	PostProcessManager::PostProcessManager(bgfx::ViewId view, const rawrBox::Vector2i& windowSize) : _view(view), _windowSize(windowSize) {
+namespace rawrbox {
+	PostProcessManager::PostProcessManager(bgfx::ViewId view, const rawrbox::Vector2i& windowSize) : _view(view), _windowSize(windowSize) {
 		// Shader layout
 		this->_vLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
@@ -46,7 +46,7 @@ namespace rawrBox {
 	}
 
 	// Post utils ----
-	void PostProcessManager::add(std::shared_ptr<rawrBox::PostProcessBase> post) {
+	void PostProcessManager::add(std::shared_ptr<rawrbox::PostProcessBase> post) {
 		this->_postProcesses.push_back(std::move(post));
 		this->buildPRViews();
 	}
@@ -57,7 +57,7 @@ namespace rawrBox {
 		this->buildPRViews();
 	}
 
-	std::shared_ptr<rawrBox::PostProcessBase> PostProcessManager::get(size_t indx) {
+	std::shared_ptr<rawrbox::PostProcessBase> PostProcessManager::get(size_t indx) {
 		if (indx >= this->_postProcesses.size()) throw std::runtime_error(fmt::format("[RawrBox-PostProcess] Failed to get {}!", indx));
 		return this->_postProcesses[indx];
 	}
@@ -67,7 +67,7 @@ namespace rawrBox {
 	}
 	// ----
 	void PostProcessManager::buildPRViews() {
-		if (!rawrBox::BGFX_INITIALIZED) return;
+		if (!rawrbox::BGFX_INITIALIZED) return;
 
 		// Delete old samples
 		for (auto sample : this->_samples)
@@ -88,7 +88,7 @@ namespace rawrBox {
 		// ----
 	}
 
-	void PostProcessManager::pushVertice(rawrBox::Vector2f pos, const rawrBox::Vector2f& uv) {
+	void PostProcessManager::pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv) {
 		this->_vertices.emplace_back(
 		    // pos
 		    (pos.x / this->_windowSize.x * 2 - 1),
@@ -111,7 +111,7 @@ namespace rawrBox {
 	void PostProcessManager::upload() {
 		if (this->_render != nullptr) throw std::runtime_error("[RawrBox-PostProcess] Already uploaded");
 
-		this->_render = std::make_shared<rawrBox::TextureRender>(this->_view, this->_windowSize);
+		this->_render = std::make_shared<rawrbox::TextureRender>(this->_view, this->_windowSize);
 		this->_render->upload();
 
 		for (auto effect : this->_postProcesses) {
@@ -161,7 +161,7 @@ namespace rawrBox {
 
 		for (size_t pass = 0; pass < this->_postProcesses.size(); pass++) {
 			bgfx::ViewId id = RENDER_PASS_DOWNSAMPLE_ID + static_cast<bgfx::ViewId>(pass);
-			rawrBox::CURRENT_VIEW_ID = id;
+			rawrbox::CURRENT_VIEW_ID = id;
 
 			bgfx::touch(id);
 			bgfx::setTexture(0, this->_texColor, pass == 0 ? this->_render->getHandle() : bgfx::getTexture(this->_samples[pass - 1]));
@@ -172,7 +172,7 @@ namespace rawrBox {
 			this->_postProcesses[pass]->applyEffect();
 		}
 
-		rawrBox::CURRENT_VIEW_ID = this->_view;
+		rawrbox::CURRENT_VIEW_ID = this->_view;
 
 		// Draw final texture
 		bgfx::touch(this->_view);
@@ -183,4 +183,4 @@ namespace rawrBox {
 		bgfx::submit(0, this->_program);
 	}
 
-} // namespace rawrBox
+} // namespace rawrbox

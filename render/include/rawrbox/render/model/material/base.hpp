@@ -19,7 +19,7 @@ static const bgfx::EmbeddedShader model_unlit_shaders[] = {
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
-namespace rawrBox {
+namespace rawrbox {
 
 	class MaterialBase {
 	public:
@@ -32,7 +32,7 @@ namespace rawrBox {
 		bgfx::UniformHandle u_mesh_pos = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_billboard = BGFX_INVALID_HANDLE;
 
-		using vertexBufferType = rawrBox::VertexData;
+		using vertexBufferType = rawrbox::VertexData;
 
 		MaterialBase() = default;
 		MaterialBase(MaterialBase&&) = delete;
@@ -71,17 +71,17 @@ namespace rawrBox {
 			u_billboard = bgfx::createUniform("u_billboard", bgfx::UniformType::Vec4, 1);
 		}
 
-		void preProcess(const rawrBox::Vector3f& camPos) {
+		void preProcess(const rawrbox::Vector3f& camPos) {
 			std::array pos = {camPos.x, camPos.y, camPos.z};
 			bgfx::setUniform(u_viewPos, pos.data());
 		}
 
 		template <typename T>
-		void process(std::shared_ptr<rawrBox::Mesh<T>> mesh) {
+		void process(std::shared_ptr<rawrbox::Mesh<T>> mesh) {
 			if (mesh->texture != nullptr && mesh->texture->valid() && !mesh->wireframe) {
 				bgfx::setTexture(0, s_texColor, mesh->texture->getHandle());
 			} else {
-				bgfx::setTexture(0, s_texColor, rawrBox::WHITE_TEXTURE->getHandle());
+				bgfx::setTexture(0, s_texColor, rawrbox::WHITE_TEXTURE->getHandle());
 			}
 
 			std::array colorOffset = {mesh->color.r, mesh->color.b, mesh->color.g, mesh->color.a};
@@ -98,10 +98,10 @@ namespace rawrBox {
 			bgfx::setUniform(u_billboard, billboard.data());
 		}
 
-		void postProcess() { bgfx::submit(rawrBox::CURRENT_VIEW_ID, program); }
+		void postProcess() { bgfx::submit(rawrbox::CURRENT_VIEW_ID, program); }
 		void upload() {
 			MaterialBase::buildShader(model_unlit_shaders, "model_unlit");
 		}
 	};
 
-} // namespace rawrBox
+} // namespace rawrbox

@@ -10,7 +10,7 @@
 #include <concepts>
 #include <type_traits>
 
-namespace rawrBox {
+namespace rawrbox {
 	template <class NumberType>
 	class Vector3_t {
 	protected:
@@ -63,7 +63,7 @@ namespace rawrBox {
 				return 0.F;
 
 			float dot = std::clamp(this->dot(target) / denominator, -1.F, 1.F);
-			return std::acos(dot) * (1.F / (rawrBox::pi<float> * 2.F / 360.F));
+			return std::acos(dot) * (1.F / (rawrbox::pi<float> * 2.F / 360.F));
 		}
 
 		[[nodiscard]] VecType lerp(const VecType& other, float timestep) const {
@@ -216,4 +216,4 @@ namespace rawrBox {
 	using Vector3f = Vector3_t<float>;
 	using Vector3i = Vector3_t<int>;
 	using Vector3 = Vector3f;
-} // namespace rawrBox
+} // namespace rawrbox

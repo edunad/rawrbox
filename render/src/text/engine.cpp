@@ -5,7 +5,7 @@
 #include <array>
 #include <stdexcept>
 
-namespace rawrBox {
+namespace rawrbox {
 	uint32_t TextEngine::atlasID = 0;
 
 	TextEngine::~TextEngine() { destroy(); }
@@ -34,7 +34,7 @@ namespace rawrBox {
 		ft = nullptr;
 	}
 
-	std::pair<uint32_t, std::shared_ptr<rawrBox::TextureAtlas>> TextEngine::requestAtlas(int width, int height, bgfx::TextureFormat::Enum format) {
+	std::pair<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> TextEngine::requestAtlas(int width, int height, bgfx::TextureFormat::Enum format) {
 		// Try to find a spot
 		for (auto& at : this->_atlas) {
 			if (at.second->canInsertNode(width, height)) return {at.first, at.second};
@@ -42,20 +42,20 @@ namespace rawrBox {
 
 		// Ok, make a new atlas then
 		auto id = TextEngine::atlasID++;
-		auto atlas = std::make_shared<rawrBox::TextureAtlas>(512);
+		auto atlas = std::make_shared<rawrbox::TextureAtlas>(512);
 		atlas->upload(format);
 
 		this->_atlas.emplace(id, std::move(atlas));
 		return {id, this->_atlas[id]};
 	}
 
-	std::shared_ptr<rawrBox::TextureAtlas> TextEngine::getAtlas(uint32_t id) {
+	std::shared_ptr<rawrbox::TextureAtlas> TextEngine::getAtlas(uint32_t id) {
 		auto fnd = this->_atlas.find(id);
 		if (fnd == this->_atlas.end()) throw std::runtime_error(fmt::format("[RawrBox-Freetype] Failed to find atlas id '{}'", id));
 		return fnd->second;
 	}
 
-	rawrBox::Font& TextEngine::load(std::string filename, uint32_t size) {
-		return *this->_fonts.emplace_back(std::make_unique<rawrBox::Font>(this, filename, size));
+	rawrbox::Font& TextEngine::load(std::string filename, uint32_t size) {
+		return *this->_fonts.emplace_back(std::make_unique<rawrbox::Font>(this, filename, size));
 	}
-} // namespace rawrBox
+} // namespace rawrbox

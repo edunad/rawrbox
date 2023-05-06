@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace rawrBox {
+namespace rawrbox {
 	class UniformUtils {
 	public:
 		static void setUniform(const bgfx::UniformHandle& handle, double data) {
@@ -49,24 +49,24 @@ namespace rawrBox {
 			bgfx::setUniform(handle, data.front().data(), static_cast<uint16_t>(data.size()));
 		}
 
-		static void setUniform(const bgfx::UniformHandle& handle, rawrBox::Vector2f data) {
+		static void setUniform(const bgfx::UniformHandle& handle, rawrbox::Vector2f data) {
 			std::array<float, 2> d = {data.x, data.y};
 			bgfx::setUniform(handle, d.data(), 2);
 		}
 
-		static void setUniform(const bgfx::UniformHandle& handle, rawrBox::Vector3f data) {
+		static void setUniform(const bgfx::UniformHandle& handle, rawrbox::Vector3f data) {
 			std::array<float, 3> d = {data.x, data.y, data.z};
 			bgfx::setUniform(handle, d.data(), 3);
 		}
 
-		static void setUniform(const bgfx::UniformHandle& handle, rawrBox::Quaternion data) {
+		static void setUniform(const bgfx::UniformHandle& handle, rawrbox::Quaternion data) {
 			std::array<float, 4> d = {data.x, data.y, data.z, data.w};
 			bgfx::setUniform(handle, d.data());
 		}
 
-		static void setUniform(const bgfx::UniformHandle& handle, rawrBox::Colorf data) {
+		static void setUniform(const bgfx::UniformHandle& handle, rawrbox::Colorf data) {
 			std::array<float, 4> d = {data.r, data.g, data.b, data.a};
 			bgfx::setUniform(handle, d.data());
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

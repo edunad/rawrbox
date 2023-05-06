@@ -2,7 +2,7 @@
 
 #include <rawrbox/math/vector2.hpp>
 
-namespace rawrBox {
+namespace rawrbox {
 	template <class NumberType>
 	class AABB_t {
 	private:
@@ -70,4 +70,4 @@ namespace rawrBox {
 	using AABBf = AABB_t<float>;
 	using AABBi = AABB_t<int>;
 	using AABB = AABBf;
-} // namespace rawrBox
+} // namespace rawrbox

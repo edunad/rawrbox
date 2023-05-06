@@ -16,13 +16,13 @@ static const bgfx::EmbeddedShader model_skinned_unlit_shaders[] = {
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
-namespace rawrBox {
+namespace rawrbox {
 
-	class MaterialSkinnedUnlit : public rawrBox::MaterialBase {
+	class MaterialSkinnedUnlit : public rawrbox::MaterialBase {
 	public:
 		bgfx::UniformHandle u_bones = BGFX_INVALID_HANDLE;
 
-		using vertexBufferType = rawrBox::VertexSkinnedUnlitData;
+		using vertexBufferType = rawrbox::VertexSkinnedUnlitData;
 
 		MaterialSkinnedUnlit() = default;
 		MaterialSkinnedUnlit(MaterialSkinnedUnlit&&) = delete;
@@ -37,7 +37,7 @@ namespace rawrBox {
 			MaterialBase::registerUniforms();
 
 			// BONES ----
-			u_bones = bgfx::createUniform("u_bones", bgfx::UniformType::Mat4, rawrBox::MAX_BONES_PER_MODEL);
+			u_bones = bgfx::createUniform("u_bones", bgfx::UniformType::Mat4, rawrbox::MAX_BONES_PER_MODEL);
 			// ---
 		}
 
@@ -46,4 +46,4 @@ namespace rawrBox {
 		}
 	};
 
-} // namespace rawrBox
+} // namespace rawrbox

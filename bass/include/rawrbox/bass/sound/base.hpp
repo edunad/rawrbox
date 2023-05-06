@@ -6,13 +6,13 @@
 #include <cstdint>
 #include <memory>
 
-namespace rawrBox {
+namespace rawrbox {
 
 	class SoundBase {
 	private:
 		uint32_t _sample = 0;
 		uint32_t _fxSample = 0;
-		uint32_t _flags = rawrBox::SoundFlags::NONE;
+		uint32_t _flags = rawrbox::SoundFlags::NONE;
 
 		bool _isStream = false;
 
@@ -29,6 +29,6 @@ namespace rawrBox {
 		[[nodiscard]] virtual uint32_t getSample() const;
 		[[nodiscard]] virtual uint32_t getFXSample() const;
 
-		virtual std::shared_ptr<rawrBox::SoundInstance> createInstance();
+		virtual std::shared_ptr<rawrbox::SoundInstance> createInstance();
 	};
-} // namespace rawrBox
+} // namespace rawrbox

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace rawrBox {
+namespace rawrbox {
 	class Renderer {
 	private:
 		// Default settings
@@ -15,12 +15,12 @@ namespace rawrBox {
 		bgfx::ViewId _id = 0;
 		// -----
 
-		rawrBox::Vector2i _size = {};
-		std::unique_ptr<rawrBox::Stencil> _stencil = nullptr;
+		rawrbox::Vector2i _size = {};
+		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
 
 	public:
 		~Renderer();
-		Renderer(bgfx::ViewId id, const rawrBox::Vector2i& size);
+		Renderer(bgfx::ViewId id, const rawrbox::Vector2i& size);
 		Renderer(Renderer&&) = delete;
 		Renderer& operator=(Renderer&&) = delete;
 		Renderer(const Renderer&) = delete;
@@ -28,7 +28,7 @@ namespace rawrBox {
 
 		void upload();
 		void setClearColor(uint32_t clearColor);
-		void resizeView(const rawrBox::Vector2i& size);
+		void resizeView(const rawrbox::Vector2i& size);
 		void clear();
 
 		// ------RENDERING
@@ -43,9 +43,9 @@ namespace rawrBox {
 
 		// ------UTILS
 		[[nodiscard]] bgfx::ViewId getID() const;
-		[[nodiscard]] const rawrBox::Vector2i& getSize() const;
-		[[nodiscard]] rawrBox::Stencil& getStencil() const;
+		[[nodiscard]] const rawrbox::Vector2i& getSize() const;
+		[[nodiscard]] rawrbox::Stencil& getStencil() const;
 		[[nodiscard]] uint32_t getClearColor() const;
 		// --------------------
 	};
-} // namespace rawrBox
+} // namespace rawrbox

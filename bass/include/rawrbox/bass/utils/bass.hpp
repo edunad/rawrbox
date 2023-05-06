@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <stdexcept>
 
-namespace rawrBox {
+namespace rawrbox {
 	class BASSUtils {
 	public:
 		static void checkBASSError() {
@@ -49,4 +49,4 @@ namespace rawrBox {
 		}
 	};
 
-} // namespace rawrBox
+} // namespace rawrbox

@@ -4,26 +4,26 @@
 
 #include <string>
 
-TEST_CASE("StrUtils should behave as expected", "[rawrBox::StrUtils]") {
-	SECTION("rawrBox::StrUtils::toLower") {
-		REQUIRE(rawrBox::StrUtils::toLower("AvI STOP PLayING BAD GAmES") == "avi stop playing bad games");
+TEST_CASE("StrUtils should behave as expected", "[rawrbox::StrUtils]") {
+	SECTION("rawrbox::StrUtils::toLower") {
+		REQUIRE(rawrbox::StrUtils::toLower("AvI STOP PLayING BAD GAmES") == "avi stop playing bad games");
 	}
 
-	SECTION("rawrBox::StrUtils::toUpper") {
-		REQUIRE(rawrBox::StrUtils::toUpper("AvI STOP PLayING BAD GAmES") == "AVI STOP PLAYING BAD GAMES");
+	SECTION("rawrbox::StrUtils::toUpper") {
+		REQUIRE(rawrbox::StrUtils::toUpper("AvI STOP PLayING BAD GAmES") == "AVI STOP PLAYING BAD GAMES");
 	}
 
-	SECTION("rawrBox::StrUtils::isNumeric") {
-		REQUIRE(rawrBox::StrUtils::isNumeric("A3B4") == false);
+	SECTION("rawrbox::StrUtils::isNumeric") {
+		REQUIRE(rawrbox::StrUtils::isNumeric("A3B4") == false);
 	}
 
-	SECTION("rawrBox::StrUtils::extractNumbers") {
-		REQUIRE(rawrBox::StrUtils::extractNumbers("A3B4") == "34");
+	SECTION("rawrbox::StrUtils::extractNumbers") {
+		REQUIRE(rawrbox::StrUtils::extractNumbers("A3B4") == "34");
 	}
 
-	SECTION("rawrBox::StrUtils::split") {
-		auto spl = rawrBox::StrUtils::split("a|bC|C", '|');
-		auto spl2 = rawrBox::StrUtils::split("abc", '|');
+	SECTION("rawrbox::StrUtils::split") {
+		auto spl = rawrbox::StrUtils::split("a|bC|C", '|');
+		auto spl2 = rawrbox::StrUtils::split("abc", '|');
 
 		REQUIRE(spl[0] == "a");
 		REQUIRE(spl[1] == "bC");

@@ -1,10 +1,10 @@
 
 #ifdef _WIN32
-#include <windows.h>
+	#include <windows.h>
 #endif
 
 #include <anims/game.hpp>
-using namespace rawrBox;
+using namespace rawrbox;
 
 int main(int argc, char* argv[]) {
 #ifdef _WIN32

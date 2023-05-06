@@ -4,7 +4,7 @@
 
 #include <bgfx/bgfx.h>
 
-namespace rawrBox {
+namespace rawrbox {
 	class TextureMissing : public TextureBase {
 	public:
 		std::vector<uint8_t> pixels;
@@ -14,4 +14,4 @@ namespace rawrBox {
 		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGB8) override;
 		// --------------------
 	};
-} // namespace rawrBox
+} // namespace rawrbox

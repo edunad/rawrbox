@@ -5,16 +5,16 @@
 
 #include <memory>
 
-TEST_CASE("Lights should behave as expected", "[rawrBox::LightBase]") {
-	/*auto base = std::make_shared<rawrBox::LightDirectional>(rawrBox::Vector3f{5, -10, 0}, rawrBox::Vector3f{0, 9.F, 0}, rawrBox::Colors::Red, rawrBox::Colors::Gray);
+TEST_CASE("Lights should behave as expected", "[rawrbox::LightBase]") {
+	/*auto base = std::make_shared<rawrbox::LightDirectional>(rawrbox::Vector3f{5, -10, 0}, rawrbox::Vector3f{0, 9.F, 0}, rawrbox::Colors::Red, rawrbox::Colors::Gray);
 
-	SECTION("rawrBox::LightBase::isOn") {
+	SECTION("rawrbox::LightBase::isOn") {
 		REQUIRE(base->isOn() == true);
 		base->setStatus(false);
 		REQUIRE(base->isOn() == false);
 	}
 
-	SECTION("rawrBox::LightBase::getPosMatrix") {
+	SECTION("rawrbox::LightBase::getPosMatrix") {
 		auto pos = base->getPosMatrix();
 
 		REQUIRE(pos[0] == 5);
@@ -23,11 +23,11 @@ TEST_CASE("Lights should behave as expected", "[rawrBox::LightBase]") {
 		REQUIRE(pos[3] == 0);
 	}
 
-	SECTION("rawrBox::LightBase::getType") {
-		REQUIRE(base->getType() == rawrBox::LightType::LIGHT_DIR);
+	SECTION("rawrbox::LightBase::getType") {
+		REQUIRE(base->getType() == rawrbox::LightType::LIGHT_DIR);
 	}
 
-	SECTION("rawrBox::LightBase::getDataMatrix") {
+	SECTION("rawrbox::LightBase::getDataMatrix") {
 		auto data = base->getDataMatrix();
 
 		REQUIRE(data[0] == 1);

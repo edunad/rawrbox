@@ -7,7 +7,7 @@
 #include <bgfx/bgfx.h>
 #include <fmt/format.h>
 
-namespace rawrBox {
+namespace rawrbox {
 	TextureGIF::TextureGIF(const std::string& fileName, bool useFallback) {
 		this->_frames.clear();
 
@@ -59,9 +59,9 @@ namespace rawrBox {
 		if (this->_failedToLoad || !bgfx::isValid(this->_handle)) return; // Not bound
 
 		if (!this->_loop && this->_currentFrame >= this->_frames.size() - 1) return;
-		if (this->_cooldown >= rawrBox::TimeUtils::curTime()) return;
+		if (this->_cooldown >= rawrbox::TimeUtils::curTime()) return;
 
-		this->_cooldown = static_cast<int64_t>(this->_frames[this->_currentFrame].delay * this->_speed) + rawrBox::TimeUtils::curTime(); // TODO: FIX SPEED
+		this->_cooldown = static_cast<int64_t>(this->_frames[this->_currentFrame].delay * this->_speed) + rawrbox::TimeUtils::curTime(); // TODO: FIX SPEED
 		this->_currentFrame = MathUtils::repeat<int>(this->_currentFrame + 1, 0, static_cast<int>(this->_frames.size()) - 1);
 
 		this->update();
@@ -95,4 +95,4 @@ namespace rawrBox {
 		bgfx::setName(this->_handle, fmt::format("RAWR-GIF-TEXTURE-{}", this->_handle.idx).c_str());
 	}
 	// --------------------
-} // namespace rawrBox
+} // namespace rawrbox

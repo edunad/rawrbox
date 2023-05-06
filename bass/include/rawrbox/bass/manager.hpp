@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <unordered_map>
 
-namespace rawrBox {
+namespace rawrbox {
 	class SoundManager {
 	protected:
 		bool _initialized = false;
@@ -14,20 +14,20 @@ namespace rawrBox {
 		float _masterVolume = 1.0F;
 		bool _muteOnUnfocus = true;
 
-		rawrBox::Vector3f _oldLocation = {};
+		rawrbox::Vector3f _oldLocation = {};
 
 	public:
-		std::unordered_map<std::string, std::shared_ptr<rawrBox::SoundBase>> httpSounds = {}; // Keep alive the http sounds
+		std::unordered_map<std::string, std::shared_ptr<rawrbox::SoundBase>> httpSounds = {}; // Keep alive the http sounds
 
-		rawrBox::EventNamed<std::pair<uint32_t, double>> onBEAT;
-		rawrBox::EventNamed<std::pair<uint32_t, float>> onBPM;
-		rawrBox::EventNamed<uint32_t> onSoundEnd;
+		rawrbox::EventNamed<std::pair<uint32_t, double>> onBEAT;
+		rawrbox::EventNamed<std::pair<uint32_t, float>> onBPM;
+		rawrbox::EventNamed<uint32_t> onSoundEnd;
 
 		void initialize();
 		void shutdown();
 
-		std::shared_ptr<rawrBox::SoundBase> loadSound(const std::filesystem::path& path, uint32_t flags = SoundFlags::NONE);
-		std::shared_ptr<rawrBox::SoundBase> loadHTTPSound(const std::string& url, uint32_t flags = SoundFlags::NONE);
+		std::shared_ptr<rawrbox::SoundBase> loadSound(const std::filesystem::path& path, uint32_t flags = SoundFlags::NONE);
+		std::shared_ptr<rawrbox::SoundBase> loadHTTPSound(const std::string& url, uint32_t flags = SoundFlags::NONE);
 
 		// UTILS -----
 		[[nodiscard]] float getMasterVolume() const;
@@ -35,7 +35,7 @@ namespace rawrBox {
 		void setMasterVolume(float volume, bool set = true);
 		void setMuteOnUnfocus(bool set);
 		void setHasFocus(bool hasFocus);
-		void setListenerLocation(const rawrBox::Vector3f& location, const rawrBox::Vector3f& front = {0, 0, -1}, const rawrBox::Vector3f& top = {0, -1, 0});
+		void setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& front = {0, 0, -1}, const rawrbox::Vector3f& top = {0, -1, 0});
 		// -----
 
 		static SoundManager& get() {
@@ -43,4 +43,4 @@ namespace rawrBox {
 			return cl;
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

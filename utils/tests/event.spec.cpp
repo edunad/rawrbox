@@ -4,9 +4,9 @@
 
 #include <string>
 
-TEST_CASE("Event should behave as expected", "[rawrBox::Event]") {
-	SECTION("rawrBox::Event::size") {
-		rawrBox::Event<std::string> a;
+TEST_CASE("Event should behave as expected", "[rawrbox::Event]") {
+	SECTION("rawrbox::Event::size") {
+		rawrbox::Event<std::string> a;
 		REQUIRE(a.size() == 0);
 
 		a += [](std::string t) {};
@@ -16,8 +16,8 @@ TEST_CASE("Event should behave as expected", "[rawrBox::Event]") {
 		REQUIRE(a.size() == 0);
 	}
 
-	SECTION("rawrBox::Event::call") {
-		rawrBox::Event<std::string> a;
+	SECTION("rawrbox::Event::call") {
+		rawrbox::Event<std::string> a;
 		a += [](std::string t) {
 			REQUIRE(t == "ok");
 		};

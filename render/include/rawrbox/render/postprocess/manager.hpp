@@ -9,7 +9,7 @@
 
 #include <memory>
 
-namespace rawrBox {
+namespace rawrbox {
 	struct PosUVVertexData {
 		float x = 0;
 		float y = 0;
@@ -19,16 +19,16 @@ namespace rawrBox {
 		float v = 0;
 
 		PosUVVertexData() = default;
-		PosUVVertexData(const rawrBox::Vector3f& pos, const rawrBox::Vector2f& uv) : x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y) {}
+		PosUVVertexData(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& uv) : x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y) {}
 		PosUVVertexData(float _x, float _y, float _z, float _u, float _v) : x(_x), y(_y), z(_z), u(_u), v(_v) {}
 	};
 
 	class PostProcessManager {
-		std::shared_ptr<rawrBox::TextureRender> _render;
-		std::vector<std::shared_ptr<rawrBox::PostProcessBase>> _postProcesses;
+		std::shared_ptr<rawrbox::TextureRender> _render;
+		std::vector<std::shared_ptr<rawrbox::PostProcessBase>> _postProcesses;
 
 		bgfx::ViewId _view;
-		rawrBox::Vector2i _windowSize;
+		rawrbox::Vector2i _windowSize;
 
 		bool _recording = false;
 
@@ -48,13 +48,13 @@ namespace rawrBox {
 		std::vector<bgfx::FrameBufferHandle> _samples;
 		// ----
 
-		void pushVertice(rawrBox::Vector2f pos, const rawrBox::Vector2f& uv);
+		void pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv);
 		void pushIndices(uint16_t a, uint16_t b, uint16_t c);
 
 		void buildPRViews();
 
 	public:
-		PostProcessManager(bgfx::ViewId view, const rawrBox::Vector2i& size);
+		PostProcessManager(bgfx::ViewId view, const rawrbox::Vector2i& size);
 		~PostProcessManager();
 
 		PostProcessManager(PostProcessManager&&) = delete;
@@ -63,9 +63,9 @@ namespace rawrBox {
 		PostProcessManager& operator=(const PostProcessManager&) = delete;
 
 		// Process utils ----
-		void add(std::shared_ptr<rawrBox::PostProcessBase> post);
+		void add(std::shared_ptr<rawrbox::PostProcessBase> post);
 		void remove(size_t indx);
-		std::shared_ptr<rawrBox::PostProcessBase> get(size_t indx);
+		std::shared_ptr<rawrbox::PostProcessBase> get(size_t indx);
 		size_t count();
 		// ---------
 
@@ -74,4 +74,4 @@ namespace rawrBox {
 		void begin();
 		void end();
 	};
-} // namespace rawrBox
+} // namespace rawrbox

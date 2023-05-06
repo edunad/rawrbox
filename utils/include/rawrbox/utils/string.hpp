@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace rawrBox {
+namespace rawrbox {
 	class StrUtils {
 	public:
 		static std::string toLower(std::string str) {
@@ -43,4 +43,4 @@ namespace rawrBox {
 			return elems;
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

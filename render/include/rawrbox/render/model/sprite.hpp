@@ -3,20 +3,20 @@
 #include <rawrbox/render/model/material/base.hpp>
 
 #define BGFX_STATE_DEFAULT_SPRITE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
-namespace rawrBox {
+namespace rawrbox {
 
-	template <typename M = rawrBox::MaterialBase>
-	class Sprite : public rawrBox::ModelBase<M> {
+	template <typename M = rawrbox::MaterialBase>
+	class Sprite : public rawrbox::ModelBase<M> {
 	public:
 		using ModelBase<M>::ModelBase;
 
 		bool supportsOptimization() override { return false; }
-		void addMesh(std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> mesh) override {
+		void addMesh(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) override {
 			mesh->addData("billboard_mode", {1.F, 0, 0}); // Force billboard for sprites
 			ModelBase<M>::addMesh(mesh);
 		}
 
-		void draw(const rawrBox::Vector3f& camPos) override {
+		void draw(const rawrbox::Vector3f& camPos) override {
 			ModelBase<M>::draw(camPos);
 
 			for (auto& mesh : this->_meshes) {
@@ -41,4 +41,4 @@ namespace rawrBox {
 			}
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

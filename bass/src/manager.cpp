@@ -9,13 +9,13 @@
 
 #include "rawrbox/bass/utils/bass.hpp"
 
-namespace rawrBox {
+namespace rawrbox {
 	constexpr auto MAX_SOUND_INSTANCES = 5; // Max sound effects playing at the same time
 
 	// BASS CALLBACKS (Not thread safe! We need to run these on the main thread) ------
 	void CALLBACK onHTTPSoundFree(HSYNC handle, DWORD channel, DWORD data, void* user) {
-		rawrBox::runOnMainThread([channel]() {
-			auto& inst = rawrBox::SoundManager::get();
+		rawrbox::runOnMainThread([channel]() {
+			auto& inst = rawrbox::SoundManager::get();
 
 			for (auto it2 = inst.httpSounds.begin(); it2 != inst.httpSounds.end();) {
 				if ((*it2).second->getSample() == channel) {
@@ -29,20 +29,20 @@ namespace rawrBox {
 	}
 
 	void CALLBACK soundBEAT(uint32_t channel, double beatpos, void* user) {
-		rawrBox::runOnMainThread([channel, beatpos]() {
-			rawrBox::SoundManager::get().onBEAT({channel, beatpos});
+		rawrbox::runOnMainThread([channel, beatpos]() {
+			rawrbox::SoundManager::get().onBEAT({channel, beatpos});
 		});
 	}
 
 	void CALLBACK soundBPM(uint32_t channel, float bpm, void* user) {
-		rawrBox::runOnMainThread([channel, bpm]() {
-			rawrBox::SoundManager::get().onBPM({channel, bpm});
+		rawrbox::runOnMainThread([channel, bpm]() {
+			rawrbox::SoundManager::get().onBPM({channel, bpm});
 		});
 	}
 
 	void CALLBACK soundEnd(HSYNC handle, DWORD channel, DWORD data, void* user) {
-		rawrBox::runOnMainThread([channel]() {
-			rawrBox::SoundManager::get().onSoundEnd(static_cast<uint32_t>(channel));
+		rawrbox::runOnMainThread([channel]() {
+			rawrbox::SoundManager::get().onSoundEnd(static_cast<uint32_t>(channel));
 		});
 	}
 	// ----------------
@@ -68,7 +68,7 @@ namespace rawrBox {
 	}
 
 	// LOAD ----
-	std::shared_ptr<rawrBox::SoundBase> SoundManager::loadSound(const std::filesystem::path& path, uint32_t flags) {
+	std::shared_ptr<rawrbox::SoundBase> SoundManager::loadSound(const std::filesystem::path& path, uint32_t flags) {
 		auto size = std::filesystem::file_size(path);
 		if (path.generic_string().rfind(".3D") != std::string::npos) flags |= SoundFlags::SOUND_3D;
 
@@ -87,7 +87,7 @@ namespace rawrBox {
 		}
 
 		if (sample == 0) {
-			rawrBox::BASSUtils::checkBASSError();
+			rawrbox::BASSUtils::checkBASSError();
 			return nullptr;
 		}
 
@@ -107,10 +107,10 @@ namespace rawrBox {
 			// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
 		}
 
-		return std::make_shared<rawrBox::SoundBase>(sample, 0, flags, shouldStream);
+		return std::make_shared<rawrbox::SoundBase>(sample, 0, flags, shouldStream);
 	}
 
-	std::shared_ptr<rawrBox::SoundBase> SoundManager::loadHTTPSound(const std::string& url, uint32_t flags) {
+	std::shared_ptr<rawrbox::SoundBase> SoundManager::loadHTTPSound(const std::string& url, uint32_t flags) {
 		if (!url.starts_with("http://") && !url.starts_with("https://")) throw std::runtime_error(fmt::format("[BASS] Invalid sound url '{}'", url));
 		if (httpSounds.find(url) != httpSounds.end()) return httpSounds[url];
 
@@ -127,7 +127,7 @@ namespace rawrBox {
 
 		HSAMPLE sampleStreamed = BASS_StreamCreateURL(url.c_str(), 0, bassFlags, nullptr, nullptr);
 		if (sampleStreamed == 0) {
-			rawrBox::BASSUtils::checkBASSError();
+			rawrbox::BASSUtils::checkBASSError();
 			return nullptr;
 		}
 
@@ -148,7 +148,7 @@ namespace rawrBox {
 			// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
 		}
 
-		auto sound = std::make_shared<rawrBox::SoundBase>(sampleStreamed, 0, flags, true);
+		auto sound = std::make_shared<rawrbox::SoundBase>(sampleStreamed, 0, flags, true);
 		httpSounds[url] = sound;
 
 		return sound;
@@ -178,7 +178,7 @@ namespace rawrBox {
 		return this->_masterVolume;
 	}
 
-	void SoundManager::setListenerLocation(const rawrBox::Vector3f& location, const rawrBox::Vector3f& forward, const rawrBox::Vector3f& up) {
+	void SoundManager::setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& forward, const rawrbox::Vector3f& up) {
 		if (!this->_initialized) return;
 
 		auto velo = location - this->_oldLocation;
@@ -193,4 +193,4 @@ namespace rawrBox {
 		BASS_Apply3D();
 	}
 
-} // namespace rawrBox
+} // namespace rawrbox

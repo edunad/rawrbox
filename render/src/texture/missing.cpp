@@ -2,7 +2,7 @@
 
 #include <fmt/format.h>
 
-namespace rawrBox {
+namespace rawrbox {
 	TextureMissing::TextureMissing() {
 		this->pixels.resize(static_cast<uint32_t>(2 * 2) * 3);
 		this->_size = {2, 2};
@@ -35,4 +35,4 @@ namespace rawrBox {
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureMissing] Failed to bind texture");
 		bgfx::setName(this->_handle, fmt::format("RAWR-FLAT-MISSING-{}", this->_handle.idx).c_str());
 	}
-} // namespace rawrBox
+} // namespace rawrbox

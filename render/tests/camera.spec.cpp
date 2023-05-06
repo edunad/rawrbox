@@ -6,10 +6,10 @@
 
 #include <bx/math.h>
 
-TEST_CASE("Camera should behave as expected", "[rawrBox::Camera]") {
-	rawrBox::CameraBase base;
+TEST_CASE("Camera should behave as expected", "[rawrbox::Camera]") {
+	rawrbox::CameraBase base;
 
-	SECTION("rawrBox::Camera::setPos / rawrBox::Camera::getPos") {
+	SECTION("rawrbox::Camera::setPos / rawrbox::Camera::getPos") {
 		base.setPos({10, 0, 5.F});
 
 		auto p = base.getPos();
@@ -18,7 +18,7 @@ TEST_CASE("Camera should behave as expected", "[rawrBox::Camera]") {
 		REQUIRE(p.z == 5.F);
 	}
 
-	SECTION("rawrBox::Camera::setAngle / rawrBox::Camera::getAngle") {
+	SECTION("rawrbox::Camera::setAngle / rawrbox::Camera::getAngle") {
 		base.setAngle({0, 0, bx::toRad(90), 0});
 
 		auto p = base.getAngle();
@@ -28,7 +28,7 @@ TEST_CASE("Camera should behave as expected", "[rawrBox::Camera]") {
 		REQUIRE(p.w == 0.F);
 	}
 
-	SECTION("rawrBox::Camera::getForward") {
+	SECTION("rawrbox::Camera::getForward") {
 		base.setAngle({0, 0, bx::toRad(90), 0});
 
 		auto p = base.getForward();
@@ -37,7 +37,7 @@ TEST_CASE("Camera should behave as expected", "[rawrBox::Camera]") {
 		REQUIRE_THAT(p.z, Catch::Matchers::WithinAbs(0.0F, 0.0001F));
 	}
 
-	SECTION("rawrBox::Camera::getUp") {
+	SECTION("rawrbox::Camera::getUp") {
 		base.setAngle({0, 0, bx::toRad(90), 0});
 
 		auto p = base.getUp();
@@ -46,7 +46,7 @@ TEST_CASE("Camera should behave as expected", "[rawrBox::Camera]") {
 		REQUIRE_THAT(p.z, Catch::Matchers::WithinAbs(-1.0F, 0.0001F));
 	}
 
-	SECTION("rawrBox::Camera::getRight") {
+	SECTION("rawrbox::Camera::getRight") {
 		base.setAngle({0, 0, bx::toRad(90), 0});
 
 		auto p = base.getRight();

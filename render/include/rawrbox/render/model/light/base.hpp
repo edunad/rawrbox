@@ -5,7 +5,7 @@
 
 #include <array>
 
-namespace rawrBox {
+namespace rawrbox {
 
 	enum LightType {
 		LIGHT_UNKNOWN = 0,
@@ -20,14 +20,14 @@ namespace rawrBox {
 		bool _isOn = true;
 		size_t _id = 0;
 
-		rawrBox::Vector3f _posMatrix;
-		rawrBox::Colorf _diffuse = rawrBox::Colors::White;
-		rawrBox::Colorf _specular = rawrBox::Colors::White;
-		rawrBox::Colorf _ambient = rawrBox::Colors::White;
+		rawrbox::Vector3f _posMatrix;
+		rawrbox::Colorf _diffuse = rawrbox::Colors::White;
+		rawrbox::Colorf _specular = rawrbox::Colors::White;
+		rawrbox::Colorf _ambient = rawrbox::Colors::White;
 
 	public:
 		LightBase() = default;
-		LightBase(rawrBox::Vector3f posMatrix, rawrBox::Colorf diffuse, rawrBox::Colorf specular) : _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
+		LightBase(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
 
 		LightBase(LightBase&&) = delete;
 		LightBase& operator=(LightBase&&) = delete;
@@ -35,9 +35,9 @@ namespace rawrBox {
 		LightBase& operator=(const LightBase&) = delete;
 		virtual ~LightBase() = default;
 
-		[[nodiscard]] virtual const rawrBox::Colorf& getSpecularColor() const { return this->_specular; }
-		[[nodiscard]] virtual const rawrBox::Colorf& getDiffuseColor() const { return this->_diffuse; }
-		[[nodiscard]] virtual const rawrBox::Colorf& getAmbientColor() const { return this->_ambient; }
+		[[nodiscard]] virtual const rawrbox::Colorf& getSpecularColor() const { return this->_specular; }
+		[[nodiscard]] virtual const rawrbox::Colorf& getDiffuseColor() const { return this->_diffuse; }
+		[[nodiscard]] virtual const rawrbox::Colorf& getAmbientColor() const { return this->_ambient; }
 
 		[[nodiscard]] virtual const size_t id() const { return this->_id; };
 		virtual void setId(size_t id) { this->_id = id; };
@@ -50,4 +50,4 @@ namespace rawrBox {
 
 		virtual LightType getType() = 0;
 	};
-} // namespace rawrBox
+} // namespace rawrbox

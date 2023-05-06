@@ -3,27 +3,27 @@
 
 #include <bx/math.h>
 
-namespace rawrBox {
+namespace rawrbox {
 	// UTILS -----
-	void CameraBase::setPos(const rawrBox::Vector3f& pos) {
+	void CameraBase::setPos(const rawrbox::Vector3f& pos) {
 		this->_pos = pos;
 		this->update();
 	}
 
-	const rawrBox::Vector3f& CameraBase::getPos() {
+	const rawrbox::Vector3f& CameraBase::getPos() {
 		return this->_pos;
 	}
 
-	void CameraBase::setAngle(const rawrBox::Quaternion& angle) {
+	void CameraBase::setAngle(const rawrbox::Quaternion& angle) {
 		this->_angle = angle;
 		this->update();
 	}
 
-	const rawrBox::Quaternion& CameraBase::getAngle() {
+	const rawrbox::Quaternion& CameraBase::getAngle() {
 		return this->_angle;
 	}
 
-	rawrBox::Vector3f CameraBase::getForward() {
+	rawrbox::Vector3f CameraBase::getForward() {
 		return {
 		    bx::cos(this->_angle.y) * bx::sin(this->_angle.x),
 		    bx::sin(this->_angle.y),
@@ -31,7 +31,7 @@ namespace rawrBox {
 		};
 	}
 
-	rawrBox::Vector3f CameraBase::getRight() {
+	rawrbox::Vector3f CameraBase::getRight() {
 		return {
 		    bx::sin(this->_angle.x - bx::kPiHalf),
 		    0.0F,
@@ -39,7 +39,7 @@ namespace rawrBox {
 		};
 	}
 
-	rawrBox::Vector3f CameraBase::getUp() {
+	rawrbox::Vector3f CameraBase::getUp() {
 		auto right = this->getRight();
 		auto forward = this->getForward();
 
@@ -57,4 +57,4 @@ namespace rawrBox {
 
 	// ----------------
 	void CameraBase::update() {}
-} // namespace rawrBox
+} // namespace rawrbox

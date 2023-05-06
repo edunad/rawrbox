@@ -6,13 +6,13 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/model/light/base.hpp>
 
-namespace rawrBox {
-	class LightDirectional : public rawrBox::LightBase {
+namespace rawrbox {
+	class LightDirectional : public rawrbox::LightBase {
 	protected:
-		rawrBox::Vector3 _direction;
+		rawrbox::Vector3 _direction;
 
 	public:
-		LightDirectional(rawrBox::Vector3f posMatrix, rawrBox::Vector3 dir, rawrBox::Colorf diffuse, rawrBox::Colorf specular) : rawrBox::LightBase(posMatrix, diffuse, specular), _direction(dir) {
+		LightDirectional(rawrbox::Vector3f posMatrix, rawrbox::Vector3 dir, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : rawrbox::LightBase(posMatrix, diffuse, specular), _direction(dir) {
 #ifdef RAWRBOX_DEBUG
 			GIZMOS::get().addLight(this);
 #endif
@@ -37,4 +37,4 @@ namespace rawrBox {
 			    0, 0, 0, this->_isOn ? 1.F : 0};
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

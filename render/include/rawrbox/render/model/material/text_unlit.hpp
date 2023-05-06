@@ -17,11 +17,11 @@ static const bgfx::EmbeddedShader model_text3D_shaders[] = {
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
-namespace rawrBox {
+namespace rawrbox {
 
-	class MaterialText3DUnlit : public rawrBox::MaterialBase {
+	class MaterialText3DUnlit : public rawrbox::MaterialBase {
 	public:
-		using vertexBufferType = rawrBox::VertexData;
+		using vertexBufferType = rawrbox::VertexData;
 
 		MaterialText3DUnlit() = default;
 		MaterialText3DUnlit(MaterialText3DUnlit&&) = delete;
@@ -35,4 +35,4 @@ namespace rawrBox {
 		}
 	};
 
-} // namespace rawrBox
+} // namespace rawrbox

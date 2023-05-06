@@ -15,13 +15,13 @@ static const bgfx::EmbeddedShader model_skinned_lit_shaders[] = {
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
-namespace rawrBox {
+namespace rawrbox {
 
-	class MaterialSkinnedLit : public rawrBox::MaterialLit {
+	class MaterialSkinnedLit : public rawrbox::MaterialLit {
 	public:
 		bgfx::UniformHandle u_bones = BGFX_INVALID_HANDLE;
 
-		using vertexBufferType = rawrBox::VertexSkinnedLitData;
+		using vertexBufferType = rawrbox::VertexSkinnedLitData;
 
 		MaterialSkinnedLit() = default;
 		MaterialSkinnedLit(MaterialSkinnedLit&&) = delete;
@@ -36,7 +36,7 @@ namespace rawrBox {
 			MaterialLit::registerUniforms();
 
 			// BONES ----
-			u_bones = bgfx::createUniform("u_bones", bgfx::UniformType::Mat4, rawrBox::MAX_BONES_PER_MODEL);
+			u_bones = bgfx::createUniform("u_bones", bgfx::UniformType::Mat4, rawrbox::MAX_BONES_PER_MODEL);
 			// ---
 		}
 
@@ -44,4 +44,4 @@ namespace rawrBox {
 			buildShader(model_skinned_lit_shaders, "model_skinned_lit");
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

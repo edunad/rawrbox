@@ -5,7 +5,7 @@
 #include <complex>
 #include <vector>
 
-namespace rawrBox {
+namespace rawrbox {
 	template <class NumberType>
 	class Color_t {
 	private:
@@ -253,4 +253,4 @@ namespace rawrBox {
 	using Colorsf = Colors_t<float>;
 	using Colorsi = Colors_t<int>;
 	using Colors = Colorsf;
-} // namespace rawrBox
+} // namespace rawrbox

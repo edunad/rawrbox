@@ -5,46 +5,46 @@
 
 #include <memory>
 
-TEST_CASE("Mesh should behave as expected", "[rawrBox::Mesh]") {
-	std::shared_ptr<rawrBox::Mesh<rawrBox::VertexData>> base = std::make_shared<rawrBox::Mesh<rawrBox::VertexData>>();
+TEST_CASE("Mesh should behave as expected", "[rawrbox::Mesh]") {
+	std::shared_ptr<rawrbox::Mesh<rawrbox::VertexData>> base = std::make_shared<rawrbox::Mesh<rawrbox::VertexData>>();
 
-	SECTION("rawrBox::Mesh::setName / rawrBox::Mesh::getName") {
+	SECTION("rawrbox::Mesh::setName / rawrbox::Mesh::getName") {
 		REQUIRE(base->getName() == "mesh");
 		base->setName("test");
 		REQUIRE(base->getName() == "test");
 	}
 
-	SECTION("rawrBox::Mesh::setWireframe") {
+	SECTION("rawrbox::Mesh::setWireframe") {
 		base->setWireframe(true);
 		REQUIRE(base->wireframe == true);
 	}
 
-	SECTION("rawrBox::Mesh::setCulling") {
+	SECTION("rawrbox::Mesh::setCulling") {
 		REQUIRE(base->culling == BGFX_STATE_CULL_CW);
 		base->setCulling(BGFX_STATE_CULL_CCW);
 		REQUIRE(base->culling == BGFX_STATE_CULL_CCW);
 	}
 
-	SECTION("rawrBox::Mesh::setBlend") {
+	SECTION("rawrbox::Mesh::setBlend") {
 		REQUIRE(base->blending == BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA));
 		base->setBlend(BGFX_STATE_BLEND_ADD);
 		REQUIRE(base->blending == BGFX_STATE_BLEND_ADD);
 	}
 
-	SECTION("rawrBox::Mesh::setColor") {
-		REQUIRE(base->color == rawrBox::Colors::White);
-		base->setColor(rawrBox::Colors::Orange);
-		REQUIRE(base->color == rawrBox::Colors::Orange);
+	SECTION("rawrbox::Mesh::setColor") {
+		REQUIRE(base->color == rawrbox::Colors::White);
+		base->setColor(rawrbox::Colors::Orange);
+		REQUIRE(base->color == rawrbox::Colors::Orange);
 	}
 
-	SECTION("rawrBox::Mesh::getBBOX") {
+	SECTION("rawrbox::Mesh::getBBOX") {
 		auto& b = base->getBBOX();
 
 		REQUIRE(b.isEmpty() == true);
 		REQUIRE(b.size() == 0.F);
 	}
 
-	SECTION("rawrBox::Mesh::addData / rawrBox::Mesh::getData / rawrBox::Mesh::hasData") {
+	SECTION("rawrbox::Mesh::addData / rawrbox::Mesh::getData / rawrbox::Mesh::hasData") {
 		base->data.clear();
 		REQUIRE(base->data.size() == 0);
 
@@ -57,9 +57,9 @@ TEST_CASE("Mesh should behave as expected", "[rawrBox::Mesh]") {
 		REQUIRE_NOTHROW(base->getData("test"));
 	}
 
-	SECTION("rawrBox::Mesh::canMerge") {
-		std::shared_ptr<rawrBox::Mesh<>> base2 = std::make_shared<rawrBox::Mesh<>>();
-		std::shared_ptr<rawrBox::Mesh<>> base3 = std::make_shared<rawrBox::Mesh<>>();
+	SECTION("rawrbox::Mesh::canMerge") {
+		std::shared_ptr<rawrbox::Mesh<>> base2 = std::make_shared<rawrbox::Mesh<>>();
+		std::shared_ptr<rawrbox::Mesh<>> base3 = std::make_shared<rawrbox::Mesh<>>();
 
 		REQUIRE(base2->canMerge(base3) == true);
 

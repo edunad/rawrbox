@@ -14,12 +14,12 @@
 #include <iostream>
 #include <utility>
 
-namespace rawrBox {
+namespace rawrbox {
 	Font::~Font() {
 		if (FT_Done_Face(this->face) != 0) fmt::print(stderr, "Error: failed to clean up font\n");
 	}
 
-	Font::Font(rawrBox::TextEngine* engine, std::string _filename, uint32_t _size, FT_Render_Mode renderMode) : _engine(engine), _file(std::move(_filename)), _mode(renderMode), size(_size) {
+	Font::Font(rawrbox::TextEngine* engine, std::string _filename, uint32_t _size, FT_Render_Mode renderMode) : _engine(engine), _file(std::move(_filename)), _mode(renderMode), size(_size) {
 		// Check our own content
 		if (FT_New_Face(engine->ft, this->_file.c_str(), 0, &this->face) != FT_Err_Ok) {
 			// Check system path
@@ -87,12 +87,12 @@ namespace rawrBox {
 		return static_cast<float>(kerning.x >> 6);
 	}
 
-	rawrBox::Vector2 Font::getStringSize(const std::string& text) const {
+	rawrbox::Vector2 Font::getStringSize(const std::string& text) const {
 		const float lineheight = this->getLineHeight();
 		if (text.empty()) return {0, lineheight};
 
-		rawrBox::Vector2 total;
-		rawrBox::Vector2 pos;
+		rawrbox::Vector2 total;
+		rawrbox::Vector2 pos;
 
 		const Glyph* prevGlyph = nullptr;
 
@@ -125,7 +125,7 @@ namespace rawrBox {
 		return total;
 	}
 
-	std::shared_ptr<rawrBox::TextureAtlas> Font::getAtlasTexture(const Glyph& g) {
+	std::shared_ptr<rawrbox::TextureAtlas> Font::getAtlasTexture(const Glyph& g) {
 		if (this->_engine == nullptr) throw std::runtime_error("[RawrBox-FONT] Text engine is null");
 		return this->_engine->getAtlas(g.atlasID);
 	}
@@ -183,4 +183,4 @@ namespace rawrBox {
 		return buffer;
 	}
 	// --------
-} // namespace rawrBox
+} // namespace rawrbox

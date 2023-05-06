@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 struct GLFWwindow;
-namespace rawrBox {
+namespace rawrbox {
 	// ------FLAGS
 
 	// NOLINTBEGIN{unused-const-variable}
@@ -123,4 +123,4 @@ namespace rawrBox {
 		Window(const Window&) = delete;
 		Window& operator=(const Window&) = delete;
 	};
-} // namespace rawrBox
+} // namespace rawrbox

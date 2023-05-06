@@ -5,7 +5,7 @@
 #include <memory>
 #include <thread>
 
-namespace rawrBox {
+namespace rawrbox {
 	// THREADING ----
 	extern std::thread::id MAIN_THREAD_ID;
 	extern jnk0le::Ringbuffer<std::function<void()>> MAIN_THREAD_INVOKES;
@@ -21,11 +21,11 @@ namespace rawrBox {
 
 	// ⚠️ INTERNAL - DO NOT CALL UNLESS YOU KNOW WHAT YOU ARE DOING ⚠️
 	static void ___runThreadInvokes() {
-		while (!rawrBox::MAIN_THREAD_INVOKES.isEmpty()) {
+		while (!rawrbox::MAIN_THREAD_INVOKES.isEmpty()) {
 			std::function<void()> fnc;
-			rawrBox::MAIN_THREAD_INVOKES.remove(fnc);
+			rawrbox::MAIN_THREAD_INVOKES.remove(fnc);
 			fnc();
 		}
 	}
 	// -------
-} // namespace rawrBox
+} // namespace rawrbox

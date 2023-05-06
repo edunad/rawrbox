@@ -37,7 +37,7 @@
 
 #define GLFWHANDLE (std::bit_cast<GLFWwindow*>(_handle))
 
-namespace rawrBox {
+namespace rawrbox {
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
 	static Window& glfwHandleToRenderer(GLFWwindow* ptr) {
 		return *static_cast<Window*>(glfwGetWindowUserPointer(ptr));
@@ -216,7 +216,7 @@ namespace rawrBox {
 		glfwSetMouseButtonCallback(GLFWHANDLE, callbacks_mouseKey);
 		glfwSetWindowCloseCallback(GLFWHANDLE, callbacks_windowClose);
 
-		rawrBox::BGFX_INITIALIZED = true;
+		rawrbox::BGFX_INITIALIZED = true;
 	}
 
 	void Window::setMonitor(int monitor) {
@@ -374,4 +374,4 @@ namespace rawrBox {
 	// --------------------
 
 	Window::~Window() { this->close(); }
-} // namespace rawrBox
+} // namespace rawrbox

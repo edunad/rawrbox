@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-namespace rawrBox {
+namespace rawrbox {
 	class TimeUtils {
 
 	public:
@@ -16,4 +16,4 @@ namespace rawrBox {
 		static int64_t time();
 		static int64_t curTime();
 	};
-} // namespace rawrBox
+} // namespace rawrbox

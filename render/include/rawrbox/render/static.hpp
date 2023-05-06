@@ -16,7 +16,7 @@
 		(HANDLE) = BGFX_INVALID_HANDLE; \
 	}
 // NOLINTEND(*)
-namespace rawrBox {
+namespace rawrbox {
 	constexpr auto MAX_BONES_PER_VERTEX = 4;
 	constexpr auto MAX_BONES_PER_MODEL = 200;
 	constexpr auto MAX_LIGHTS = 12;
@@ -24,7 +24,7 @@ namespace rawrBox {
 	extern bool BGFX_INITIALIZED;
 
 	extern bgfx::ViewId CURRENT_VIEW_ID;
-	extern std::shared_ptr<rawrBox::TextureMissing> MISSING_TEXTURE;
-	extern std::shared_ptr<rawrBox::TextureFlat> MISSING_SPECULAR_TEXTURE;
-	extern std::shared_ptr<rawrBox::TextureFlat> WHITE_TEXTURE;
-} // namespace rawrBox
+	extern std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE;
+	extern std::shared_ptr<rawrbox::TextureFlat> MISSING_SPECULAR_TEXTURE;
+	extern std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE;
+} // namespace rawrbox

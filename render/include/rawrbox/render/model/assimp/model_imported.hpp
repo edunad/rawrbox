@@ -23,7 +23,7 @@
 
 #define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_RemoveRedundantMaterials)
 
-namespace rawrBox {
+namespace rawrbox {
 	// NOLINTBEGIN{unused-const-variable}
 	namespace ModelLoadFlags {
 		const uint32_t NONE = 0;
@@ -37,12 +37,12 @@ namespace rawrBox {
 	}; // namespace ModelLoadFlags
 	// NOLINTEND{unused-const-variable}
 
-	template <typename M = rawrBox::MaterialBase>
-	class ModelImported : public rawrBox::Model<M> {
+	template <typename M = rawrbox::MaterialBase>
+	class ModelImported : public rawrbox::Model<M> {
 		using Model<M>::Model;
 
 		std::string _fileName;
-		std::unordered_map<std::string, std::shared_ptr<rawrBox::TextureBase>> _textures;
+		std::unordered_map<std::string, std::shared_ptr<rawrbox::TextureBase>> _textures;
 
 		uint32_t _loadFlags;
 		uint32_t _assimpFlags;
@@ -82,7 +82,7 @@ namespace rawrBox {
 			return flags;
 		}
 
-		std::shared_ptr<rawrBox::TextureBase> importTexture(const std::string& path, const std::string& name, const std::array<aiTextureMapMode, 3>& mode) {
+		std::shared_ptr<rawrbox::TextureBase> importTexture(const std::string& path, const std::string& name, const std::array<aiTextureMapMode, 3>& mode) {
 			auto textPath = std::filesystem::path(path);
 			auto base = std::filesystem::path(this->_fileName);
 
@@ -90,7 +90,7 @@ namespace rawrBox {
 
 			auto fnd = this->_textures.find(finalPath);
 			if (fnd == this->_textures.end()) {
-				auto texture = std::make_shared<rawrBox::TextureImage>(finalPath);
+				auto texture = std::make_shared<rawrbox::TextureImage>(finalPath);
 
 				// Setup flags ----
 				auto flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
@@ -109,7 +109,7 @@ namespace rawrBox {
 			}
 		}
 
-		void loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> mesh) {
+		void loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
 			if (sc->mNumMaterials <= 0 || assimp.mMaterialIndex > sc->mNumMaterials) return;
 
 			const aiMaterial* pMaterial = sc->mMaterials[assimp.mMaterialIndex];
@@ -194,7 +194,7 @@ namespace rawrBox {
 		/// -------
 
 		// SKELETON LOADING -----
-		void loadSkeleton(const aiScene* sc, std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> mesh, const aiMesh& aiMesh) {
+		void loadSkeleton(const aiScene* sc, std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh, const aiMesh& aiMesh) {
 			if (!aiMesh.HasBones()) return;
 
 			for (size_t i = 0; i < aiMesh.mNumBones; i++) {
@@ -221,7 +221,7 @@ namespace rawrBox {
 					this->generateSkeleton(armature, bone->mArmature, armature->rootBone);
 
 					// DEBUG ----
-					if ((this->_loadFlags & rawrBox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE) > 0) {
+					if ((this->_loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE) > 0) {
 						std::function<void(std::shared_ptr<Bone>, int)> printBone;
 						printBone = [&printBone](std::shared_ptr<Bone> bn, int deep) -> void {
 							for (auto c : bn->children) {
@@ -251,7 +251,7 @@ namespace rawrBox {
 				if (fnd == this->_globalBoneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
 
 				bx::mtxTranspose(fnd->second->offsetMtx.data(), &bone->mOffsetMatrix.a1);
-				fnd->second->offsetMtx = rawrBox::MathUtils::mtxMul(fnd->second->offsetMtx, mesh->offsetMatrix);
+				fnd->second->offsetMtx = rawrbox::MathUtils::mtxMul(fnd->second->offsetMtx, mesh->offsetMatrix);
 
 				// Calculate object weights
 				if constexpr (supportsBones<typename M::vertexBufferType>) {
@@ -264,14 +264,14 @@ namespace rawrBox {
 			}
 		}
 
-		void generateSkeleton(std::shared_ptr<Skeleton> skeleton, const aiNode* pNode, std::shared_ptr<rawrBox::Bone> parent) {
+		void generateSkeleton(std::shared_ptr<Skeleton> skeleton, const aiNode* pNode, std::shared_ptr<rawrbox::Bone> parent) {
 			for (size_t i = 0; i < pNode->mNumChildren; i++) {
 				auto child = pNode->mChildren[i];
 
 				std::string boneName = child->mName.data;
 				std::string boneKey = fmt::format("{}-{}", skeleton->name, boneName);
 
-				std::shared_ptr<rawrBox::Bone> bone = std::make_shared<rawrBox::Bone>(boneKey);
+				std::shared_ptr<rawrbox::Bone> bone = std::make_shared<rawrbox::Bone>(boneKey);
 				bone->parent = parent;
 				bone->owner = skeleton.get();
 				bone->boneId = static_cast<uint8_t>(this->_globalBoneMap.size());
@@ -308,7 +308,7 @@ namespace rawrBox {
 				std::string animName = anim.mName.data;
 				if (animName.empty()) animName = fmt::format("anim_{}", i);
 
-				auto spl = rawrBox::StrUtils::split(animName, '|');
+				auto spl = rawrbox::StrUtils::split(animName, '|');
 
 				// create an entry in the mapping and start filling it with data
 				auto& ourAnim = this->_animations[spl.back()];
@@ -339,7 +339,7 @@ namespace rawrBox {
 					if (fnd->second == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Invalid Bone '{}', pointer not defined?", boneKey));
 					if (fnd->second->owner == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Invalid Bone '{}' skeleton, pointer not defined?", boneKey));
 
-					rawrBox::AnimationFrame ourChannel;
+					rawrbox::AnimationFrame ourChannel;
 					ourChannel.nodeName = fmt::format("{}-{}", fnd->second->owner->name, aChannel->mNodeName.data);
 					ourChannel.stateStart = assimpBehavior(aChannel->mPreState);
 					ourChannel.stateEnd = assimpBehavior(aChannel->mPostState);
@@ -375,8 +375,8 @@ namespace rawrBox {
 				auto lightNode = sc->mRootNode->FindNode(aiLight.mName.data);
 				if (lightNode == nullptr) continue;
 
-				rawrBox::Vector3f pos = rawrBox::Vector3f(aiLight.mPosition.x, aiLight.mPosition.y, aiLight.mPosition.z) + this->getPos();
-				rawrBox::Vector3f direction = rawrBox::Vector3f(aiLight.mDirection.x, aiLight.mDirection.y, aiLight.mDirection.z).normalized();
+				rawrbox::Vector3f pos = rawrbox::Vector3f(aiLight.mPosition.x, aiLight.mPosition.y, aiLight.mPosition.z) + this->getPos();
+				rawrbox::Vector3f direction = rawrbox::Vector3f(aiLight.mDirection.x, aiLight.mDirection.y, aiLight.mDirection.z).normalized();
 
 				aiVector3D p;
 				aiQuaternion q;
@@ -390,18 +390,18 @@ namespace rawrBox {
 					pos += {p.x, p.y, p.z};
 				}
 
-				auto diffuse = rawrBox::Color(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F) / 255.F;
-				auto specular = rawrBox::Color(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F) / 255.F;
+				auto diffuse = rawrbox::Color(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F) / 255.F;
+				auto specular = rawrbox::Color(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F) / 255.F;
 
 				switch (aiLight.mType) {
 					case aiLightSource_DIRECTIONAL:
-						rawrBox::LightManager::get().addLight(std::make_shared<rawrBox::LightDirectional>(pos, direction, diffuse, specular));
+						rawrbox::LightManager::get().addLight(std::make_shared<rawrbox::LightDirectional>(pos, direction, diffuse, specular));
 						continue;
 					case aiLightSource_SPOT:
-						rawrBox::LightManager::get().addLight(std::make_shared<rawrBox::LightSpot>(pos, direction, diffuse, specular, aiLight.mAngleInnerCone, aiLight.mAngleOuterCone, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
+						rawrbox::LightManager::get().addLight(std::make_shared<rawrbox::LightSpot>(pos, direction, diffuse, specular, aiLight.mAngleInnerCone, aiLight.mAngleOuterCone, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
 						continue;
 					case aiLightSource_POINT:
-						rawrBox::LightManager::get().addLight(std::make_shared<rawrBox::LightPoint>(pos, diffuse, specular, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
+						rawrbox::LightManager::get().addLight(std::make_shared<rawrbox::LightPoint>(pos, diffuse, specular, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic));
 						continue;
 					default:
 						continue;
@@ -411,12 +411,12 @@ namespace rawrBox {
 		/// -------
 
 		// MESH LOADING -----
-		void loadSubmeshes(const aiScene* sc, const aiNode* root, std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> parent) {
-			std::shared_ptr<rawrBox::Mesh<typename M::vertexBufferType>> mesh = nullptr;
+		void loadSubmeshes(const aiScene* sc, const aiNode* root, std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> parent) {
+			std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh = nullptr;
 
 			for (size_t n = 0; n < root->mNumMeshes; ++n) {
 				aiMesh& aiMesh = *sc->mMeshes[root->mMeshes[n]];
-				mesh = std::make_shared<rawrBox::Mesh<typename M::vertexBufferType>>();
+				mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
 
 				mesh->setName(aiMesh.mName.data);
 				mesh->parent = parent;
@@ -440,7 +440,7 @@ namespace rawrBox {
 				}
 
 				// Textures
-				if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
+				if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
 					this->loadTextures(sc, aiMesh, mesh);
 				} else {
 					mesh->setCulling(BGFX_STATE_CULL_CCW); // Default cullingf or assimp
@@ -462,21 +462,21 @@ namespace rawrBox {
 
 					if (aiMesh.HasVertexColors(0)) {
 						auto& col = aiMesh.mColors[0][i];
-						v.abgr = rawrBox::Color::toHEX(Colorf{col.r, col.g, col.b, col.a});
+						v.abgr = rawrbox::Color::toHEX(Colorf{col.r, col.g, col.b, col.a});
 					}
 
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
 						if (aiMesh.HasNormals()) {
 							auto& normal = aiMesh.mNormals[i];
-							v.normal[0] = rawrBox::PackUtils::packNormal(normal.x, normal.y, normal.z);
+							v.normal[0] = rawrbox::PackUtils::packNormal(normal.x, normal.y, normal.z);
 						}
 
 						if (aiMesh.HasTangentsAndBitangents()) {
 							auto& tangents = aiMesh.mTangents[i];
-							v.normal[1] = rawrBox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
+							v.normal[1] = rawrbox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
 
 							// auto& bitangents = aiMesh.mBitangents[i];
-							// v.normal[2] = rawrBox::PackUtils::packNormal(bitangents.x, bitangents.y, bitangents.z);
+							// v.normal[2] = rawrbox::PackUtils::packNormal(bitangents.x, bitangents.y, bitangents.z);
 						}
 					}
 
@@ -494,7 +494,7 @@ namespace rawrBox {
 				}
 
 				// Bones
-				if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0 && aiMesh.HasBones()) {
+				if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0 && aiMesh.HasBones()) {
 					this->loadSkeleton(sc, mesh, aiMesh);
 				}
 				// -------------------
@@ -530,7 +530,7 @@ namespace rawrBox {
 			this->_loadFlags = loadFlags;
 			this->_assimpFlags = assimpFlags;
 
-			if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {
+			if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {
 				this->_assimpFlags |= aiProcess_PopulateArmatureData | aiProcess_OptimizeGraph | aiProcess_LimitBoneWeights; // Enable armature & limit bones
 			} else {
 				this->_assimpFlags |= aiProcess_PreTransformVertices; // Enable PreTransformVertices for optimization
@@ -544,12 +544,12 @@ namespace rawrBox {
 
 			// load models
 			this->loadSubmeshes(scene, scene->mRootNode, nullptr);
-			if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_LIGHT) > 0) this->loadLights(scene);
-			if ((this->_loadFlags & rawrBox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) this->loadAnimations(scene);
+			if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_LIGHT) > 0) this->loadLights(scene);
+			if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) this->loadAnimations(scene);
 			// ----
 
 			aiReleaseImport(scene);
 		}
 		// ---
 	};
-} // namespace rawrBox
+} // namespace rawrbox

@@ -10,7 +10,7 @@ extern "C" {
 #include <string>
 #include <vector>
 
-namespace rawrBox {
+namespace rawrbox {
 	class QHull {
 	public:
 		/*
@@ -32,8 +32,8 @@ namespace rawrBox {
 			⢀⣹⣿⣿⣿⣿⣽⣿⣿⣿⣿⣿⡀⠄⠄⡀⠄⡇⠄⢀⣀⣀⣸⣯⢠⡇⠄⠄⢼⡆⢡⣿⣿⣿⣿⣿⣿⣿
 			⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠄⠄⠨⢾⣿⣿⣿⣿⣿⣿⣿⠄⣷⡀⠄⢸⡇⢘⣻⣿⣿⣿⣿⣿⣿
 		*/
-		static std::vector<rawrBox::Vector2> calculateConvex(const std::vector<rawrBox::Vector2>& vertPoints, const std::string& flags = "qhull FA") {
-			std::vector<rawrBox::Vector2> hull = {};
+		static std::vector<rawrbox::Vector2> calculateConvex(const std::vector<rawrbox::Vector2>& vertPoints, const std::string& flags = "qhull FA") {
+			std::vector<rawrbox::Vector2> hull = {};
 
 			// Setup QHULL ---
 			int dimension = 2; // Set as 2D
@@ -76,5 +76,5 @@ namespace rawrBox {
 			return hull;
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox
   // NOLINTEND(*)

@@ -8,7 +8,7 @@
 
 #include <fmt/format.h>
 
-namespace rawrBox {
+namespace rawrbox {
 	void LightManager::destroy() {
 		this->_lights.clear();
 	}
@@ -16,14 +16,14 @@ namespace rawrBox {
 	void LightManager::setEnabled(bool fb) { this->fullbright = fb; }
 
 	// Light utils ----
-	void LightManager::addLight(std::shared_ptr<rawrBox::LightBase> light) {
-		if (light == nullptr || this->_lights.size() >= rawrBox::MAX_LIGHTS) return;
+	void LightManager::addLight(std::shared_ptr<rawrbox::LightBase> light) {
+		if (light == nullptr || this->_lights.size() >= rawrbox::MAX_LIGHTS) return;
 		light->setId(this->_lights.size());
 
 		this->_lights.push_back(std::move(light));
 	}
 
-	void LightManager::removeLight(std::shared_ptr<rawrBox::LightBase> light) {
+	void LightManager::removeLight(std::shared_ptr<rawrbox::LightBase> light) {
 		if (this->_lights.empty()) return;
 
 		for (size_t i = 0; i < this->_lights.size(); i++) {
@@ -34,7 +34,7 @@ namespace rawrBox {
 		}
 	}
 
-	std::shared_ptr<rawrBox::LightBase> LightManager::getLight(size_t indx) {
+	std::shared_ptr<rawrbox::LightBase> LightManager::getLight(size_t indx) {
 		if (indx < 0 || indx >= this->_lights.size()) return nullptr;
 		return this->_lights[indx];
 	}
@@ -44,4 +44,4 @@ namespace rawrBox {
 	}
 	// ---------
 
-} // namespace rawrBox
+} // namespace rawrbox

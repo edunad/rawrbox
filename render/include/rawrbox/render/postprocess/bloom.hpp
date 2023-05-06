@@ -18,8 +18,8 @@ static const bgfx::EmbeddedShader bloom_shaders[] = {
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
-namespace rawrBox {
-	class PostProcessBloom : public rawrBox::PostProcessBase {
+namespace rawrbox {
+	class PostProcessBloom : public rawrbox::PostProcessBase {
 		bgfx::ProgramHandle _program = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _bloom_intensity = BGFX_INVALID_HANDLE;
 
@@ -41,7 +41,7 @@ namespace rawrBox {
 
 		virtual void setIntensity(float in) {
 			this->_intensity = in;
-			if (bgfx::isValid(this->_bloom_intensity)) rawrBox::UniformUtils::setUniform(this->_bloom_intensity, this->_intensity);
+			if (bgfx::isValid(this->_bloom_intensity)) rawrbox::UniformUtils::setUniform(this->_bloom_intensity, this->_intensity);
 		}
 
 		void upload() override {
@@ -55,11 +55,11 @@ namespace rawrBox {
 			// ------------------
 
 			this->_bloom_intensity = bgfx::createUniform("u_intensity", bgfx::UniformType::Vec4, 1);
-			rawrBox::UniformUtils::setUniform(this->_bloom_intensity, this->_intensity);
+			rawrbox::UniformUtils::setUniform(this->_bloom_intensity, this->_intensity);
 		}
 
 		void applyEffect() override {
-			bgfx::submit(rawrBox::CURRENT_VIEW_ID, this->_program);
+			bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

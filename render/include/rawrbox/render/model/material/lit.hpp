@@ -17,8 +17,8 @@ static const bgfx::EmbeddedShader model_lit_shaders[] = {
     BGFX_EMBEDDED_SHADER(fs_model_lit),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
-namespace rawrBox {
-	class MaterialLit : public rawrBox::MaterialBase {
+namespace rawrbox {
+	class MaterialLit : public rawrbox::MaterialBase {
 	public:
 		bgfx::UniformHandle s_texSpecularColor = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_texSpecularShininess = BGFX_INVALID_HANDLE;
@@ -26,7 +26,7 @@ namespace rawrBox {
 		bgfx::UniformHandle u_lightsPosition = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_lightsData = BGFX_INVALID_HANDLE;
 
-		using vertexBufferType = rawrBox::VertexLitData;
+		using vertexBufferType = rawrbox::VertexLitData;
 
 		MaterialLit() = default;
 		MaterialLit(MaterialLit&&) = delete;
@@ -50,13 +50,13 @@ namespace rawrBox {
 			u_texSpecularShininess = bgfx::createUniform("u_texSpecularShininess", bgfx::UniformType::Vec4, 1);
 
 			u_lightsSetting = bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4, 2);
-			u_lightsPosition = bgfx::createUniform("u_lightsPosition", bgfx::UniformType::Vec4, rawrBox::MAX_LIGHTS);
-			u_lightsData = bgfx::createUniform("u_lightsData", bgfx::UniformType::Mat4, rawrBox::MAX_LIGHTS);
+			u_lightsPosition = bgfx::createUniform("u_lightsPosition", bgfx::UniformType::Vec4, rawrbox::MAX_LIGHTS);
+			u_lightsData = bgfx::createUniform("u_lightsData", bgfx::UniformType::Mat4, rawrbox::MAX_LIGHTS);
 			// ---
 		}
 
-		void preProcess(const rawrBox::Vector3f& camPos) {
-			auto& lightManager = rawrBox::LightManager::get();
+		void preProcess(const rawrbox::Vector3f& camPos) {
+			auto& lightManager = rawrbox::LightManager::get();
 			size_t lightCount = lightManager.count();
 
 			std::array lightSettings = {lightManager.fullbright ? 1.F : 0.F, static_cast<float>(lightCount)};
@@ -81,13 +81,13 @@ namespace rawrBox {
 		}
 
 		template <typename T>
-		void process(std::shared_ptr<rawrBox::Mesh<T>> mesh) {
-			rawrBox::MaterialBase::process(mesh);
+		void process(std::shared_ptr<rawrbox::Mesh<T>> mesh) {
+			rawrbox::MaterialBase::process(mesh);
 
 			if (mesh->specularTexture != nullptr && mesh->specularTexture->valid() && !mesh->wireframe) {
 				bgfx::setTexture(1, s_texSpecularColor, mesh->specularTexture->getHandle());
 			} else {
-				bgfx::setTexture(1, s_texSpecularColor, rawrBox::MISSING_SPECULAR_TEXTURE->getHandle());
+				bgfx::setTexture(1, s_texSpecularColor, rawrbox::MISSING_SPECULAR_TEXTURE->getHandle());
 			}
 
 			std::array shininess = {mesh->specularShininess};
@@ -98,4 +98,4 @@ namespace rawrBox {
 			buildShader(model_lit_shaders, "model_lit");
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

@@ -2,8 +2,8 @@
 
 #include <fmt/format.h>
 
-namespace rawrBox {
-	TextureFlat::TextureFlat(const rawrBox::Vector2i& initsize, const rawrBox::Color& bgcol) {
+namespace rawrbox {
+	TextureFlat::TextureFlat(const rawrbox::Vector2i& initsize, const rawrbox::Color& bgcol) {
 		this->_pixels.resize(static_cast<uint32_t>(initsize.y * initsize.x) * this->_channels);
 		this->_size = initsize;
 
@@ -23,4 +23,4 @@ namespace rawrBox {
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureFlat] Failed to bind texture");
 		bgfx::setName(this->_handle, fmt::format("RAWR-FLAT-TEXTURE-{}", this->_handle.idx).c_str());
 	}
-} // namespace rawrBox
+} // namespace rawrbox

@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace rawrBox {
+namespace rawrbox {
 	template <typename... CallbackArgs>
 	class EventNamed {
 		std::atomic<size_t> uniqueId = 0;
@@ -89,4 +89,4 @@ namespace rawrBox {
 	private:
 		std::map<std::string, Func> calls;
 	};
-} // namespace rawrBox
+} // namespace rawrbox

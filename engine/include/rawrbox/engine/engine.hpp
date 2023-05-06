@@ -14,7 +14,7 @@ using namespace std::literals;
 
 using Clock = std::chrono::steady_clock;
 
-namespace rawrBox {
+namespace rawrbox {
 
 	class Engine {
 	private:
@@ -56,7 +56,7 @@ namespace rawrBox {
 
 		// starts the game loop and blocks until quit is called and is handled
 		virtual void run() {
-			rawrBox::MAIN_THREAD_ID = std::this_thread::get_id();
+			rawrbox::MAIN_THREAD_ID = std::this_thread::get_id();
 
 			this->_delayBetweenTicks = std::chrono::duration_cast<std::chrono::nanoseconds>(1000ms / this->_tps);
 			this->_delayBetweenFrames = std::chrono::duration_cast<std::chrono::nanoseconds>(1000ms / this->_fps);
@@ -83,7 +83,7 @@ namespace rawrBox {
 				// ensure we call update as much times per second as requested
 				while (frameTimeTPS >= this->_delayBetweenTicks) {
 					update(1.0F / static_cast<float>(this->_tps), (newTime - gameStart).count());
-					rawrBox::___runThreadInvokes();
+					rawrbox::___runThreadInvokes();
 					// THREADING ----
 					// -------
 
@@ -151,4 +151,4 @@ namespace rawrBox {
 			return this->_runningSlow;
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

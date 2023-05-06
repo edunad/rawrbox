@@ -6,7 +6,7 @@
 #include <array>
 #include <cmath>
 
-namespace rawrBox {
+namespace rawrbox {
 	class MathUtils {
 	public:
 		template <typename T = int>
@@ -21,11 +21,11 @@ namespace rawrBox {
 		}
 
 		static inline float toRad(float val) {
-			return val * rawrBox::pi<float> / 180.F;
+			return val * rawrbox::pi<float> / 180.F;
 		}
 
 		static inline float toDeg(float val) {
-			return val * 180.F / rawrBox::pi<float>;
+			return val * 180.F / rawrbox::pi<float>;
 		}
 
 		static inline float lerp(float a, float b, float lerpFactor) {
@@ -58,7 +58,7 @@ namespace rawrBox {
 		static inline float angleRadLerp(float a, float b, float lerpFactor) {
 			if (a == b) return b;
 
-			float PI = rawrBox::pi<float>;
+			float PI = rawrbox::pi<float>;
 			float PI_TIMES_TWO = PI * 2;
 
 			float result = 0.F;
@@ -99,13 +99,13 @@ namespace rawrBox {
 
 		/// MATRIX
 		// Adapted from BX & GLM ----
-		static inline void mtxTranslate(std::array<float, 16>& mtx, rawrBox::Vector3f pos) {
+		static inline void mtxTranslate(std::array<float, 16>& mtx, rawrbox::Vector3f pos) {
 			mtx[12] = pos.x;
 			mtx[13] = pos.y;
 			mtx[14] = pos.z;
 		}
 
-		static inline void mtxScale(std::array<float, 16>& mtx, rawrBox::Vector3f scale) {
+		static inline void mtxScale(std::array<float, 16>& mtx, rawrbox::Vector3f scale) {
 			mtx[0] *= scale.x;
 			mtx[5] *= scale.y;
 			mtx[10] *= scale.z;
@@ -174,4 +174,4 @@ namespace rawrBox {
 		}
 		// -----
 	};
-} // namespace rawrBox
+} // namespace rawrbox

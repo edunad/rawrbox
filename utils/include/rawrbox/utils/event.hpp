@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <functional>
 
-namespace rawrBox {
+namespace rawrbox {
 	template <typename... CallbackArgs>
 	class Event {
 	public:
@@ -47,4 +47,4 @@ namespace rawrBox {
 	private:
 		std::vector<Func> calls;
 	};
-} // namespace rawrBox
+} // namespace rawrbox

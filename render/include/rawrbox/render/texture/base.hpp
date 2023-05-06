@@ -5,11 +5,11 @@
 
 #include <bgfx/bgfx.h>
 
-namespace rawrBox {
+namespace rawrbox {
 	class TextureBase {
 	protected:
 		bgfx::TextureHandle _handle = BGFX_INVALID_HANDLE;
-		rawrBox::Vector2i _size;
+		rawrbox::Vector2i _size;
 
 		int _channels = 4;
 		uint32_t _flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
@@ -32,4 +32,4 @@ namespace rawrBox {
 		virtual bgfx::TextureHandle& getHandle();
 		virtual bool valid();
 	};
-} // namespace rawrBox
+} // namespace rawrbox

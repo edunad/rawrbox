@@ -18,7 +18,7 @@ namespace post_process {
 		int width = 1024;
 		int height = 768;
 
-		this->_window = std::make_unique<rawrBox::Window>();
+		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("POST-PROCESS TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
@@ -31,7 +31,7 @@ namespace post_process {
 			this->shutdown();
 		};
 
-		this->_window->onMouseKey += [this](auto& w, const rawrBox::Vector2i& mousePos, int button, int action, int mods) {
+		this->_window->onMouseKey += [this](auto& w, const rawrbox::Vector2i& mousePos, int button, int action, int mods) {
 			const bool isDown = action == 1;
 			if (button != MOUSE_BUTTON_2) return;
 
@@ -39,7 +39,7 @@ namespace post_process {
 			this->_oldMousePos = mousePos;
 		};
 
-		this->_window->onMouseMove += [this](auto& w, const rawrBox::Vector2i& mousePos) {
+		this->_window->onMouseMove += [this](auto& w, const rawrbox::Vector2i& mousePos) {
 			if (this->_camera == nullptr || !this->_rightClick) return;
 
 			float m_mouseSpeed = 0.0015F;
@@ -55,18 +55,18 @@ namespace post_process {
 			this->_oldMousePos = mousePos;
 		};
 
-		this->_window->initialize(width, height, rawrBox::WindowFlags::Window::WINDOWED | rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Debug::STATS);
+		this->_window->initialize(width, height, rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::STATS);
 
-		this->_render = std::make_shared<rawrBox::Renderer>(0, this->_window->getSize());
+		this->_render = std::make_shared<rawrbox::Renderer>(0, this->_window->getSize());
 		this->_render->setClearColor(0x00000000);
 
-		this->_postProcess = std::make_shared<rawrBox::PostProcessManager>(0, this->_window->getSize());
-		this->_postProcess->add(std::make_shared<rawrBox::PostProcessBloom>(0.015F));
-		this->_postProcess->add(std::make_shared<rawrBox::PostProcessPSXDither>(rawrBox::DITHER_SIZE::SLOW_MODE));
-		this->_postProcess->add(std::make_shared<rawrBox::PostProcessStaticNoise>(0.1F));
+		this->_postProcess = std::make_shared<rawrbox::PostProcessManager>(0, this->_window->getSize());
+		this->_postProcess->add(std::make_shared<rawrbox::PostProcessBloom>(0.015F));
+		this->_postProcess->add(std::make_shared<rawrbox::PostProcessPSXDither>(rawrbox::DITHER_SIZE::SLOW_MODE));
+		this->_postProcess->add(std::make_shared<rawrbox::PostProcessStaticNoise>(0.1F));
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
+		this->_camera = std::make_shared<rawrbox::CameraPerspective>(this->_window->getAspectRatio(), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
 		// --------------
@@ -81,7 +81,7 @@ namespace post_process {
 		this->_postProcess->upload();
 
 		// Assimp test ---
-		this->_model->load("./content/models/ps1_road/scene.gltf", rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
+		this->_model->load("./content/models/ps1_road/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES);
 		this->_model->setScale({0.01F, 0.01F, 0.01F});
 		this->_model->upload();
 		// -----
@@ -91,8 +91,8 @@ namespace post_process {
 		this->_render = nullptr;
 		this->_model = nullptr;
 
-		rawrBox::LightManager::get().destroy();
-		rawrBox::Engine::shutdown();
+		rawrbox::LightManager::get().destroy();
+		rawrbox::Engine::shutdown();
 	}
 
 	void Game::pollEvents() {
@@ -138,7 +138,7 @@ namespace post_process {
 	}
 
 	void Game::drawWorld() {
-		bgfx::setViewTransform(rawrBox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 		if (this->_model == nullptr) return;
 
 		this->_model->draw(this->_camera->getPos());
@@ -148,7 +148,7 @@ namespace post_process {
 		if (this->_render == nullptr) return;
 		this->_render->swapBuffer(); // Clean up and set renderer
 
-		bgfx::setViewTransform(rawrBox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 		bgfx::dbgTextPrintf(1, 1, 0x0f, "POST-PROCESS TESTS -----------------------------------------------------------------------------------------------------------");
 
 		this->_postProcess->begin();

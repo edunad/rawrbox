@@ -6,15 +6,15 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/model/light/base.hpp>
 
-namespace rawrBox {
-	class LightPoint : public rawrBox::LightBase {
+namespace rawrbox {
+	class LightPoint : public rawrbox::LightBase {
 	protected:
 		float _constant;
 		float _linear;
 		float _quadratic;
 
 	public:
-		LightPoint(rawrBox::Vector3f posMatrix, rawrBox::Colorf diffuse, rawrBox::Colorf specular, float constant, float linear, float quadratic) : rawrBox::LightBase(posMatrix, diffuse, specular), _constant(constant), _linear(linear), _quadratic(quadratic) {
+		LightPoint(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular, float constant, float linear, float quadratic) : rawrbox::LightBase(posMatrix, diffuse, specular), _constant(constant), _linear(linear), _quadratic(quadratic) {
 #ifdef RAWRBOX_DEBUG
 			GIZMOS::get().addLight(this);
 #endif
@@ -39,4 +39,4 @@ namespace rawrBox {
 			    this->_constant, this->_linear, this->_quadratic, this->_isOn ? 1.F : 0};
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

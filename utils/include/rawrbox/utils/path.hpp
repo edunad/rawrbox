@@ -1,7 +1,7 @@
 #pragma once
 #include <filesystem>
 
-namespace rawrBox {
+namespace rawrbox {
 	class PathUtils {
 	public:
 		static std::filesystem::path stripRootPath(std::filesystem::path path) {
@@ -11,4 +11,4 @@ namespace rawrBox {
 			return path.lexically_relative(*path.begin());
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

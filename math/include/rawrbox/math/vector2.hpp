@@ -5,7 +5,7 @@
 #include <concepts>
 #include <type_traits>
 
-namespace rawrBox {
+namespace rawrbox {
 	template <class NumberType>
 	class Vector2_t {
 	protected:
@@ -198,4 +198,4 @@ namespace rawrBox {
 	using Vector2f = Vector2_t<float>;
 	using Vector2i = Vector2_t<int>;
 	using Vector2 = Vector2f;
-} // namespace rawrBox
+} // namespace rawrbox

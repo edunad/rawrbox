@@ -15,7 +15,7 @@ namespace light {
 		int width = 1024;
 		int height = 768;
 
-		this->_window = std::make_unique<rawrBox::Window>();
+		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("LIGHT TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
@@ -28,7 +28,7 @@ namespace light {
 			this->shutdown();
 		};
 
-		this->_window->onMouseKey += [this](auto& w, const rawrBox::Vector2i& mousePos, int button, int action, int mods) {
+		this->_window->onMouseKey += [this](auto& w, const rawrbox::Vector2i& mousePos, int button, int action, int mods) {
 			const bool isDown = action == 1;
 			if (button != MOUSE_BUTTON_2) return;
 
@@ -36,7 +36,7 @@ namespace light {
 			this->_oldMousePos = mousePos;
 		};
 
-		this->_window->onMouseMove += [this](auto& w, const rawrBox::Vector2i& mousePos) {
+		this->_window->onMouseMove += [this](auto& w, const rawrbox::Vector2i& mousePos) {
 			if (this->_camera == nullptr || !this->_rightClick) return;
 
 			float m_mouseSpeed = 0.0015F;
@@ -52,18 +52,18 @@ namespace light {
 			this->_oldMousePos = mousePos;
 		};
 
-		this->_window->initialize(width, height, rawrBox::WindowFlags::Debug::TEXT | rawrBox::WindowFlags::Window::WINDOWED | rawrBox::WindowFlags::Debug::STATS);
+		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Debug::STATS);
 
-		this->_render = std::make_shared<rawrBox::Renderer>(0, this->_window->getSize());
+		this->_render = std::make_shared<rawrbox::Renderer>(0, this->_window->getSize());
 		this->_render->setClearColor(0x000000FF);
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrBox::CameraPerspective>(this->_window->getAspectRatio(), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
+		this->_camera = std::make_shared<rawrbox::CameraPerspective>(this->_window->getAspectRatio(), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
 		// --------------
 
-		this->_textEngine = std::make_unique<rawrBox::TextEngine>();
+		this->_textEngine = std::make_unique<rawrbox::TextEngine>();
 
 		// Load content ---
 		this->loadContent();
@@ -78,7 +78,7 @@ namespace light {
 		// ------
 
 		// Assimp test ---
-		this->_model->load("./content/models/light_test/test.fbx", rawrBox::ModelLoadFlags::IMPORT_LIGHT | rawrBox::ModelLoadFlags::IMPORT_TEXTURES);
+		this->_model->load("./content/models/light_test/test.fbx", rawrbox::ModelLoadFlags::IMPORT_LIGHT | rawrbox::ModelLoadFlags::IMPORT_TEXTURES);
 		this->_model->upload();
 		// -----
 
@@ -97,8 +97,8 @@ namespace light {
 		this->_model = nullptr;
 		this->_text = nullptr;
 
-		rawrBox::LightManager::get().destroy();
-		rawrBox::Engine::shutdown();
+		rawrbox::LightManager::get().destroy();
+		rawrbox::Engine::shutdown();
 	}
 
 	void Game::pollEvents() {
@@ -154,7 +154,7 @@ namespace light {
 		if (this->_render == nullptr) return;
 		this->_render->swapBuffer(); // Clean up and set renderer
 
-		bgfx::setViewTransform(rawrBox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 		bgfx::dbgTextPrintf(1, 1, 0x0f, "LIGHT TESTS ----------------------------------------------------------------------------------------------------------------");
 
 		this->drawWorld();

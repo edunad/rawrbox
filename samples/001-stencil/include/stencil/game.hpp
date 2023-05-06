@@ -11,17 +11,17 @@
 #include <memory>
 
 namespace stencil {
-	class Game : public rawrBox::Engine {
-		std::unique_ptr<rawrBox::Window> _window = nullptr;
-		std::shared_ptr<rawrBox::Renderer> _render = nullptr;
-		std::unique_ptr<rawrBox::TextEngine> _textEngine = nullptr;
+	class Game : public rawrbox::Engine {
+		std::unique_ptr<rawrbox::Window> _window = nullptr;
+		std::shared_ptr<rawrbox::Renderer> _render = nullptr;
+		std::unique_ptr<rawrbox::TextEngine> _textEngine = nullptr;
 
-		std::shared_ptr<rawrBox::TextureImage> _texture = nullptr;
-		std::shared_ptr<rawrBox::TextureGIF> _texture2 = nullptr;
+		std::shared_ptr<rawrbox::TextureImage> _texture = nullptr;
+		std::shared_ptr<rawrbox::TextureGIF> _texture2 = nullptr;
 
-		rawrBox::Font* _font = nullptr;
-		rawrBox::Font* _font2 = nullptr;
-		rawrBox::Font* _font3 = nullptr;
+		rawrbox::Font* _font = nullptr;
+		rawrbox::Font* _font2 = nullptr;
+		rawrbox::Font* _font3 = nullptr;
 
 	public:
 		float counter = 0;

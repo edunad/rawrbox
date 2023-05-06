@@ -7,19 +7,19 @@
 #include <utf8.h>
 
 #define BGFX_STATE_DEFAULT_3D_TEXT (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
-namespace rawrBox {
-	class Text3D : public rawrBox::ModelBase<rawrBox::MaterialText3DUnlit> {
+namespace rawrbox {
+	class Text3D : public rawrbox::ModelBase<rawrbox::MaterialText3DUnlit> {
 	public:
-		using ModelBase<rawrBox::MaterialText3DUnlit>::ModelBase;
+		using ModelBase<rawrbox::MaterialText3DUnlit>::ModelBase;
 
 		bool supportsOptimization() override { return false; }
 
 		// UTILS ----
-		void addText(rawrBox::Font* font, const std::string& text, const rawrBox::Vector3f& pos, const rawrBox::Colorf& cl = rawrBox::Colors::White, rawrBox::Alignment alignX = rawrBox::Alignment::Center, rawrBox::Alignment alignY = rawrBox::Alignment::Center, bool billboard = true) {
+		void addText(rawrbox::Font* font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center, bool billboard = true) {
 			float screenSize = (font->size * 0.025F) / 64.F;
 
-			rawrBox::Vector3f startpos = pos;
-			rawrBox::Vector2f tsize = font->getStringSize(text) * screenSize;
+			rawrbox::Vector3f startpos = pos;
+			rawrbox::Vector2f tsize = font->getStringSize(text) * screenSize;
 			float lineheight = font->getLineHeight();
 
 			if (alignX != Alignment::Left || alignY != Alignment::Left) {
@@ -50,11 +50,11 @@ namespace rawrBox {
 			auto beginIter = text.begin();
 			auto endIter = utf8::find_invalid(text.begin(), text.end()); // until invalid
 
-			rawrBox::Vector3 curpos = {0, 0, 0};
+			rawrbox::Vector3 curpos = {0, 0, 0};
 
-			const rawrBox::Glyph* prevGlyph = nullptr;
+			const rawrbox::Glyph* prevGlyph = nullptr;
 			while (beginIter != endIter) {
-				auto mesh = std::make_shared<rawrBox::Mesh<typename rawrBox::MaterialText3DUnlit::vertexBufferType>>();
+				auto mesh = std::make_shared<rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType>>();
 				uint32_t point = utf8::next(beginIter, endIter);
 
 				auto& glyph = font->getGlyph(point);
@@ -68,8 +68,8 @@ namespace rawrBox {
 					continue;
 				}
 
-				rawrBox::Vector3 p = {curpos.x + glyph.bearing.x, curpos.y};
-				rawrBox::Vector3 s = {static_cast<float>(glyph.size.x), static_cast<float>(glyph.size.y), 0.F};
+				rawrbox::Vector3 p = {curpos.x + glyph.bearing.x, curpos.y};
+				rawrbox::Vector3 s = {static_cast<float>(glyph.size.x), static_cast<float>(glyph.size.y), 0.F};
 
 				// Set the atlas
 				mesh->setTexture(font->getAtlasTexture(glyph));
@@ -78,11 +78,11 @@ namespace rawrBox {
 
 				bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
 
-				std::array<typename rawrBox::MaterialText3DUnlit::vertexBufferType, 4> buff{
-				    rawrBox::VertexData(startpos + Vector3f(p.x * screenSize, p.y * screenSize, 0), glyph.textureTopLeft.x, glyph.textureBottomRight.y, cl),
-				    rawrBox::VertexData(startpos + Vector3f((p.x + s.x) * screenSize, (p.y + s.y) * screenSize, 0), glyph.textureBottomRight.x, glyph.textureTopLeft.y, cl),
-				    rawrBox::VertexData(startpos + Vector3f(p.x * screenSize, (p.y + s.y) * screenSize, 0), glyph.textureTopLeft.x, glyph.textureTopLeft.y, cl),
-				    rawrBox::VertexData(startpos + Vector3f((p.x + s.x) * screenSize, p.y * screenSize, 0), glyph.textureBottomRight.x, glyph.textureBottomRight.y, cl),
+				std::array<typename rawrbox::MaterialText3DUnlit::vertexBufferType, 4> buff{
+				    rawrbox::VertexData(startpos + Vector3f(p.x * screenSize, p.y * screenSize, 0), glyph.textureTopLeft.x, glyph.textureBottomRight.y, cl),
+				    rawrbox::VertexData(startpos + Vector3f((p.x + s.x) * screenSize, (p.y + s.y) * screenSize, 0), glyph.textureBottomRight.x, glyph.textureTopLeft.y, cl),
+				    rawrbox::VertexData(startpos + Vector3f(p.x * screenSize, (p.y + s.y) * screenSize, 0), glyph.textureTopLeft.x, glyph.textureTopLeft.y, cl),
+				    rawrbox::VertexData(startpos + Vector3f((p.x + s.x) * screenSize, p.y * screenSize, 0), glyph.textureBottomRight.x, glyph.textureBottomRight.y, cl),
 				};
 
 				std::array<uint16_t, 6> inds{
@@ -104,8 +104,8 @@ namespace rawrBox {
 		}
 		// ----------
 
-		void draw(const rawrBox::Vector3f& camPos) override {
-			ModelBase<rawrBox::MaterialText3DUnlit>::draw(camPos);
+		void draw(const rawrbox::Vector3f& camPos) override {
+			ModelBase<rawrbox::MaterialText3DUnlit>::draw(camPos);
 
 			for (auto& mesh : this->_meshes) {
 				this->_material->process(mesh);
@@ -129,4 +129,4 @@ namespace rawrBox {
 			}
 		}
 	};
-} // namespace rawrBox
+} // namespace rawrbox

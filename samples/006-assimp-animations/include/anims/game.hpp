@@ -13,22 +13,22 @@
 #include <memory>
 
 namespace anims {
-	class Game : public rawrBox::Engine {
-		std::unique_ptr<rawrBox::Window> _window = nullptr;
-		std::shared_ptr<rawrBox::Renderer> _render = nullptr;
-		std::shared_ptr<rawrBox::CameraPerspective> _camera = nullptr;
-		std::shared_ptr<rawrBox::PostProcessManager> _postProcess = nullptr;
-		std::unique_ptr<rawrBox::TextEngine> _textEngine = nullptr;
+	class Game : public rawrbox::Engine {
+		std::unique_ptr<rawrbox::Window> _window = nullptr;
+		std::shared_ptr<rawrbox::Renderer> _render = nullptr;
+		std::shared_ptr<rawrbox::CameraPerspective> _camera = nullptr;
+		std::shared_ptr<rawrbox::PostProcessManager> _postProcess = nullptr;
+		std::unique_ptr<rawrbox::TextEngine> _textEngine = nullptr;
 
-		std::shared_ptr<rawrBox::ModelImported<rawrBox::MaterialSkinnedUnlit>> _model = std::make_shared<rawrBox::ModelImported<rawrBox::MaterialSkinnedUnlit>>();
-		std::shared_ptr<rawrBox::ModelImported<rawrBox::MaterialSkinnedUnlit>> _model2 = std::make_shared<rawrBox::ModelImported<rawrBox::MaterialSkinnedUnlit>>();
-		std::shared_ptr<rawrBox::Model<>> _modelGrid = std::make_shared<rawrBox::Model<>>();
-		std::shared_ptr<rawrBox::Text3D> _text = std::make_shared<rawrBox::Text3D>();
+		std::shared_ptr<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>> _model = std::make_shared<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>>();
+		std::shared_ptr<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>> _model2 = std::make_shared<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>>();
+		std::shared_ptr<rawrbox::Model<>> _modelGrid = std::make_shared<rawrbox::Model<>>();
+		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
 
-		rawrBox::Font* _font = nullptr;
+		rawrbox::Font* _font = nullptr;
 
 		bool _rightClick = false;
-		rawrBox::Vector2i _oldMousePos = {};
+		rawrbox::Vector2i _oldMousePos = {};
 
 	public:
 		using Engine::Engine;
