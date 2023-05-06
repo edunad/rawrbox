@@ -29,12 +29,18 @@ endif()
 find_package(Freetype REQUIRED MODULE)
 find_package(utf8cpp REQUIRED)
 
+if(RAWRBOX_ENABLE_DEBUG_SUPPORT)
+    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.DEBUG)
+endif()
+
+
 if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
 	message("-- Enabled assimp")
 	find_package(assimp REQUIRED)
 
 	list(APPEND RAWRBOX_EXTRA_LIBS assimp::assimp)
 endif()
+
 #--------------
 
 # Grab source files
@@ -60,19 +66,16 @@ add_shaders_directory(./shaders RAWRBOX_SHADERS_TARGET_NAME)
 message("SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
 # ------------------
 
-if(RAWRBOX_ENABLE_DEBUG_SUPPORT)
-    set(RAWRBOX_RENDER_DEFINES RAWRBOX_DEBUG)
-    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.DEBUG)
-endif()
 
 # Project setup
 add_library(${output_target} ${RAWRBOX_RENDER_SOURCES})
-target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX ${RAWRBOX_RENDER_DEFINES})
+target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_include_directories(${output_target} PUBLIC "include" ${FREETYPE_INCLUDE_DIRS})
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	RAWRBOX.MATH
 	RAWRBOX.UTILS
+	${RAWRBOX_EXTRA_LIBS}
 
 	fmt::fmt
 	Freetype::Freetype
@@ -81,8 +84,6 @@ target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	bgfx
 	bx
 	glfw
-
-	${RAWRBOX_EXTRA_LIBS}
 )
 
 # Copy content

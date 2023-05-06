@@ -1,8 +1,9 @@
 #pragma once
 #ifdef RAWRBOX_DEBUG
-	#include <rawrbox/debug/gizmos.hpp>
+	#ifndef RAWRBOX_TESTING
+		#include <rawrbox/debug/gizmos.hpp>
+	#endif
 #endif
-
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/model/light/base.hpp>
@@ -22,7 +23,9 @@ namespace rawrbox {
 	public:
 		LightSpot(rawrbox::Vector3f posMatrix, rawrbox::Vector3f direction, rawrbox::Colorf diffuse, rawrbox::Colorf specular, float innerCone, float outerCone, float constant, float linear, float quadratic) : rawrbox::LightBase(posMatrix, diffuse, specular), _direction(direction), _innerCone(innerCone), _outerCone(outerCone), _constant(constant), _linear(linear), _quadratic(quadratic) {
 #ifdef RAWRBOX_DEBUG
+	#ifndef RAWRBOX_TESTING
 			GIZMOS::get().addLight(this);
+	#endif
 #endif
 		};
 
@@ -32,7 +35,9 @@ namespace rawrbox {
 		LightSpot& operator=(const LightSpot&) = delete;
 		~LightSpot() override {
 #ifdef RAWRBOX_DEBUG
+	#ifndef RAWRBOX_TESTING
 			GIZMOS::get().removeLight(this);
+	#endif
 #endif
 		};
 

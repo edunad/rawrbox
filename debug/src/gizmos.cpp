@@ -38,7 +38,7 @@ namespace rawrbox {
 	}
 
 	void GIZMOS::addLight(rawrbox::LightBase* l) {
-		/*auto pos = l->getPosMatrix();
+		auto pos = l->getPosMatrix();
 
 		auto mesh = this->_gizmo_lights->generatePlane({pos[0], pos[1], pos[2]}, {0.1F, 0.1F});
 		mesh->setName(fmt::format("Light-{}", l->id()));
@@ -57,7 +57,7 @@ namespace rawrbox {
 				break;
 		}
 
-		this->_gizmo_lights->addMesh(mesh);*/
+		this->_gizmo_lights->addMesh(mesh);
 	}
 
 	void GIZMOS::removeLight(rawrbox::LightBase* l) {

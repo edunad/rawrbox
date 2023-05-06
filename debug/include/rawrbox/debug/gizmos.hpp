@@ -12,9 +12,11 @@
 
 namespace rawrbox {
 
-	class LightBase;
+#ifdef RAWRBOX_BASS
 	class SoundInstance;
+#endif
 
+	class LightBase;
 	class GIZMOS {
 	protected:
 		std::shared_ptr<rawrbox::Sprite<>> _gizmo_lights = std::make_shared<rawrbox::Sprite<>>();

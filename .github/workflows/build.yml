@@ -74,6 +74,8 @@ jobs:
                   ctest --test-dir ./math --output-on-failure
                   ctest --test-dir ./utils --output-on-failure
                   ctest --test-dir ./render --output-on-failure
+                  ctest --test-dir ./engine --output-on-failure
+                  ctest --test-dir ./debug --output-on-failure
 
             - name: Run linter
               uses: cpp-linter/cpp-linter-action@v2

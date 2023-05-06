@@ -6,9 +6,10 @@
 #include <memory>
 
 TEST_CASE("Lights should behave as expected", "[rawrbox::LightBase]") {
-	/*auto base = std::make_shared<rawrbox::LightDirectional>(rawrbox::Vector3f{5, -10, 0}, rawrbox::Vector3f{0, 9.F, 0}, rawrbox::Colors::Red, rawrbox::Colors::Gray);
+	auto base = std::make_shared<rawrbox::LightDirectional>(rawrbox::Vector3f{5, -10, 0}, rawrbox::Vector3f{0, 9.F, 0}, rawrbox::Colors::Red, rawrbox::Colors::Gray);
 
 	SECTION("rawrbox::LightBase::isOn") {
+
 		REQUIRE(base->isOn() == true);
 		base->setStatus(false);
 		REQUIRE(base->isOn() == false);
@@ -49,5 +50,5 @@ TEST_CASE("Lights should behave as expected", "[rawrbox::LightBase]") {
 		REQUIRE(data[3] == static_cast<float>(base->getType()));
 		REQUIRE(data[7] == 0.F);
 		REQUIRE(data[11] == 0.F);
-	}*/
+	}
 }
