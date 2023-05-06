@@ -7,7 +7,7 @@ namespace rawrbox {
 	// UTILS -----
 	void CameraBase::setPos(const rawrbox::Vector3f& pos) {
 		this->_pos = pos;
-		this->update();
+		this->updateMtx();
 	}
 
 	const rawrbox::Vector3f& CameraBase::getPos() {
@@ -16,7 +16,7 @@ namespace rawrbox {
 
 	void CameraBase::setAngle(const rawrbox::Quaternion& angle) {
 		this->_angle = angle;
-		this->update();
+		this->updateMtx();
 	}
 
 	const rawrbox::Quaternion& CameraBase::getAngle() {
@@ -56,5 +56,5 @@ namespace rawrbox {
 	}
 
 	// ----------------
-	void CameraBase::update() {}
+	void CameraBase::updateMtx() {}
 } // namespace rawrbox

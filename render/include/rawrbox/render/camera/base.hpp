@@ -14,7 +14,7 @@ namespace rawrbox {
 		std::array<float, 16> _view = {};
 		std::array<float, 16> _projection = {};
 
-		virtual void update();
+		virtual void updateMtx();
 
 	public:
 		virtual ~CameraBase() = default;

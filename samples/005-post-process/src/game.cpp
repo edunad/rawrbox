@@ -31,30 +31,6 @@ namespace post_process {
 			this->shutdown();
 		};
 
-		this->_window->onMouseKey += [this](auto& w, const rawrbox::Vector2i& mousePos, int button, int action, int mods) {
-			const bool isDown = action == 1;
-			if (button != MOUSE_BUTTON_2) return;
-
-			this->_rightClick = isDown;
-			this->_oldMousePos = mousePos;
-		};
-
-		this->_window->onMouseMove += [this](auto& w, const rawrbox::Vector2i& mousePos) {
-			if (this->_camera == nullptr || !this->_rightClick) return;
-
-			float m_mouseSpeed = 0.0015F;
-
-			auto deltaX = mousePos.x - this->_oldMousePos.x;
-			auto deltaY = mousePos.y - this->_oldMousePos.y;
-
-			auto ang = this->_camera->getAngle();
-			ang.x += m_mouseSpeed * static_cast<float>(deltaX);
-			ang.y -= m_mouseSpeed * static_cast<float>(deltaY);
-
-			this->_camera->setAngle(ang);
-			this->_oldMousePos = mousePos;
-		};
-
 		this->_window->initialize(width, height, rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::STATS);
 
 		this->_render = std::make_shared<rawrbox::Renderer>(0, this->_window->getSize());
@@ -66,7 +42,7 @@ namespace post_process {
 		this->_postProcess->add(std::make_shared<rawrbox::PostProcessStaticNoise>(0.1F));
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrbox::CameraPerspective>(this->_window->getAspectRatio(), 60.0F, 0.1F, 100.0F, bgfx::getCaps()->homogeneousDepth);
+		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window.get());
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
 		// --------------
@@ -89,6 +65,7 @@ namespace post_process {
 
 	void Game::shutdown() {
 		this->_render = nullptr;
+		this->_camera = nullptr;
 		this->_model = nullptr;
 
 		rawrbox::LightManager::get().destroy();
@@ -101,40 +78,8 @@ namespace post_process {
 	}
 
 	void Game::update(float deltaTime, int64_t gameTime) {
-		if (this->_render == nullptr || this->_camera == nullptr) return;
-
-		float m_moveSpeed = 10.F;
-
-		auto dir = this->_camera->getForward();
-		auto eye = this->_camera->getPos();
-		auto right = this->_camera->getRight();
-
-		auto m_dir = bx::Vec3(dir.x, dir.y, dir.z);
-		auto m_eye = bx::Vec3(eye.x, eye.y, eye.z);
-
-		if (this->_window->isKeyDown(KEY_LEFT_SHIFT)) {
-			m_moveSpeed = 60.F;
-		}
-
-		if (this->_window->isKeyDown(KEY_W)) {
-			m_eye = bx::mad(m_dir, deltaTime * m_moveSpeed, m_eye);
-			this->_camera->setPos({m_eye.x, m_eye.y, m_eye.z});
-		}
-
-		if (this->_window->isKeyDown(KEY_S)) {
-			m_eye = bx::mad(m_dir, -deltaTime * m_moveSpeed, m_eye);
-			this->_camera->setPos({m_eye.x, m_eye.y, m_eye.z});
-		}
-
-		if (this->_window->isKeyDown(KEY_A)) {
-			m_eye = bx::mad({right.x, right.y, right.z}, deltaTime * m_moveSpeed, m_eye);
-			this->_camera->setPos({m_eye.x, m_eye.y, m_eye.z});
-		}
-
-		if (this->_window->isKeyDown(KEY_D)) {
-			m_eye = bx::mad({right.x, right.y, right.z}, -deltaTime * m_moveSpeed, m_eye);
-			this->_camera->setPos({m_eye.x, m_eye.y, m_eye.z});
-		}
+		if (this->_camera == nullptr) return;
+		this->_camera->update(deltaTime);
 	}
 
 	void Game::drawWorld() {
