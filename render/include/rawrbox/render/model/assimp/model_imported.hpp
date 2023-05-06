@@ -544,6 +544,7 @@ namespace rawrbox {
 
 			// load models
 			this->loadSubmeshes(scene, scene->mRootNode, nullptr);
+
 			if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_LIGHT) > 0) this->loadLights(scene);
 			if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) this->loadAnimations(scene);
 			// ----

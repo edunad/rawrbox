@@ -6,6 +6,7 @@
 	#include <rawrbox/bass/sound/instance.hpp>
 #endif
 
+#include <memory>
 #include <stdexcept>
 
 namespace rawrbox {
@@ -40,7 +41,7 @@ namespace rawrbox {
 	void GIZMOS::addLight(rawrbox::LightBase* l) {
 		auto pos = l->getPosMatrix();
 
-		auto mesh = this->_gizmo_lights->generatePlane({pos[0], pos[1], pos[2]}, {0.1F, 0.1F});
+		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = this->_gizmo_lights->generatePlane({pos[0], pos[1], pos[2]}, {0.1F, 0.1F});
 		mesh->setName(fmt::format("Light-{}", l->id()));
 		mesh->setCulling(BGFX_STATE_CULL_CW);
 
@@ -74,7 +75,7 @@ namespace rawrbox {
 	void GIZMOS::addSound(rawrbox::SoundInstance* l) {
 		if (!l->isValid() || !l->is3D()) return;
 
-		auto mesh = this->_gizmo_sounds->generatePlane(l->getPosition(), {0.1F, 0.1F});
+		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = this->_gizmo_sounds->generatePlane(l->getPosition(), {0.1F, 0.1F});
 		mesh->setName(fmt::format("Sound-{}", l->id()));
 		mesh->setCulling(BGFX_STATE_CULL_CW);
 		mesh->setTexture(_textures["sound_emitter"]);

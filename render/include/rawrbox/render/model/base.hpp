@@ -503,14 +503,14 @@ namespace rawrbox {
 			if (index >= this->_meshes.size()) return;
 			this->_meshes.erase(this->_meshes.begin() + index);
 
-			if (this->isUploaded() & this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
+			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 		}
 
 		virtual void addMesh(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
 			this->_bbox.combine(mesh->getBBOX());
 			this->_meshes.push_back(std::move(mesh));
 
-			if (this->isUploaded() & this->isDynamicBuffer()) {
+			if (this->isUploaded() && this->isDynamicBuffer()) {
 				this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 			}
 		}

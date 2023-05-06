@@ -6,7 +6,7 @@
         {
             "label": "Run clang-tidy",
             "type": "shell",
-            "command": "clang-tidy -p \"build\" `find -not -path \"*build*\" -name *.cpp && find -not -path \"*build*\" -name *.h && find -not -path \"*build*\" -name *.hpp` --fix-errors",
+            "command": "clang-tidy -p \"build\" `find -not -path \"*build*\" -not -path \"*deps*\" -not -path \"*.cache*\" \\( -name *.cpp -o -name *.h -o -name *.hpp \\)` --fix-errors",
             "group": "build",
             "options": {
                 "cwd": "${workspaceFolder}"
