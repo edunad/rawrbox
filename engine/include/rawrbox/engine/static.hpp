@@ -10,6 +10,7 @@ namespace rawrbox {
 	extern std::thread::id MAIN_THREAD_ID;
 	extern jnk0le::Ringbuffer<std::function<void()>> MAIN_THREAD_INVOKES;
 
+	// NOLINTBEGIN(clang-diagnostic-unused-function)
 	static void runOnMainThread(std::function<void()> func) {
 		if (MAIN_THREAD_ID != std::this_thread::get_id()) {
 			MAIN_THREAD_INVOKES.insert(std::move(func));
@@ -27,5 +28,6 @@ namespace rawrbox {
 			fnc();
 		}
 	}
+	// NOLINTEND(clang-diagnostic-unused-function)
 	// -------
 } // namespace rawrbox

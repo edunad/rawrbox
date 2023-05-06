@@ -27,14 +27,14 @@ namespace rawrbox {
 		TextEngine();
 		TextEngine(const TextEngine& other) = delete;
 		TextEngine(TextEngine&& other) = delete;
-		~TextEngine();
+		virtual ~TextEngine();
 
 		TextEngine& operator=(const TextEngine& other) = delete;
 		TextEngine& operator=(TextEngine&& other) = delete;
 
-		std::pair<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> requestAtlas(int width, int height, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8);
-		std::shared_ptr<rawrbox::TextureAtlas> getAtlas(uint32_t id);
+		virtual std::pair<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> requestAtlas(int width, int height, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8);
+		virtual std::shared_ptr<rawrbox::TextureAtlas> getAtlas(uint32_t id);
 
-		rawrbox::Font& load(std::string filename, uint32_t size);
+		virtual rawrbox::Font& load(std::string filename, uint32_t size);
 	};
 } // namespace rawrbox

@@ -29,7 +29,7 @@ namespace rawrbox {
 		MaterialSkinnedUnlit& operator=(MaterialSkinnedUnlit&&) = delete;
 		MaterialSkinnedUnlit(const MaterialSkinnedUnlit&) = delete;
 		MaterialSkinnedUnlit& operator=(const MaterialSkinnedUnlit&) = delete;
-		~MaterialSkinnedUnlit() {
+		~MaterialSkinnedUnlit() override {
 			RAWRBOX_DESTROY(u_bones);
 		}
 

@@ -89,7 +89,7 @@ namespace rawrbox {
 		Mesh(const Mesh&) = delete;
 		Mesh& operator=(const Mesh&) = delete;
 
-		~Mesh() {
+		virtual ~Mesh() {
 			this->texture = nullptr;
 			this->specularTexture = nullptr;
 

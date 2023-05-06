@@ -166,7 +166,7 @@ namespace rawrbox {
 		Stencil(const Stencil&) = delete;
 		Stencil& operator=(const Stencil&) = delete;
 
-		~Stencil();
+		virtual ~Stencil();
 
 		void upload();
 		void resize(const rawrbox::Vector2i& size);

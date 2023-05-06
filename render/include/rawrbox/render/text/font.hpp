@@ -65,7 +65,6 @@ namespace rawrbox {
 		Font& operator=(Font&&) = delete;
 		Font(const Font&) = delete;
 		Font& operator=(const Font&) = delete;
-
 		~Font();
 
 		// UTILS --

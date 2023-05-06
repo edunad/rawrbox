@@ -19,7 +19,7 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
 
 	public:
-		~Renderer();
+		virtual ~Renderer();
 		Renderer(bgfx::ViewId id, const rawrbox::Vector2i& size);
 		Renderer(Renderer&&) = delete;
 		Renderer& operator=(Renderer&&) = delete;

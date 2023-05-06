@@ -513,7 +513,7 @@ namespace rawrbox {
 		/// -------
 
 	public:
-		~ModelImported() {
+		~ModelImported() override {
 			this->_textures.clear();
 		}
 

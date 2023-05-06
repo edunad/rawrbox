@@ -22,13 +22,7 @@ namespace rawrbox {
 	class MaterialText3DUnlit : public rawrbox::MaterialBase {
 	public:
 		using vertexBufferType = rawrbox::VertexData;
-
 		MaterialText3DUnlit() = default;
-		MaterialText3DUnlit(MaterialText3DUnlit&&) = delete;
-		MaterialText3DUnlit& operator=(MaterialText3DUnlit&&) = delete;
-		MaterialText3DUnlit(const MaterialText3DUnlit&) = delete;
-		MaterialText3DUnlit& operator=(const MaterialText3DUnlit&) = delete;
-		~MaterialText3DUnlit() = default;
 
 		void upload() {
 			buildShader(model_text3D_shaders, "text_3d_unlit");

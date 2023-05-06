@@ -25,4 +25,3 @@ Checks: clang-diagnostic-*
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
-...

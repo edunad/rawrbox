@@ -33,7 +33,7 @@ namespace rawrbox {
 		MaterialLit& operator=(MaterialLit&&) = delete;
 		MaterialLit(const MaterialLit&) = delete;
 		MaterialLit& operator=(const MaterialLit&) = delete;
-		~MaterialLit() {
+		~MaterialLit() override {
 			RAWRBOX_DESTROY(s_texSpecularColor);
 
 			RAWRBOX_DESTROY(u_texSpecularShininess);

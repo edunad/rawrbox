@@ -14,4 +14,4 @@
     - 'samples/**/*'
 
 '🧪 TESTS':
-    - 'tests/**/*'
+    - 'tests/*.cpp'

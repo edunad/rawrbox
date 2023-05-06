@@ -116,7 +116,7 @@ namespace rawrbox {
 		bool isKeyDown(int key);
 		// --------------------
 
-		~Window();
+		virtual ~Window();
 		Window() = default;
 		Window(Window&&) = delete;
 		Window& operator=(Window&&) = delete;

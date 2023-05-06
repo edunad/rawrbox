@@ -39,7 +39,7 @@ namespace rawrbox {
 		SoundInstance() = default;
 		SoundInstance(uint32_t audioSample, bool isStream, uint32_t flags);
 
-		~SoundInstance();
+		virtual ~SoundInstance();
 		SoundInstance(SoundInstance&&) = delete;
 		SoundInstance& operator=(SoundInstance&&) = delete;
 		SoundInstance(const SoundInstance&) = delete;

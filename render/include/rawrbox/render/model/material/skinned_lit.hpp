@@ -28,7 +28,7 @@ namespace rawrbox {
 		MaterialSkinnedLit& operator=(MaterialSkinnedLit&&) = delete;
 		MaterialSkinnedLit(const MaterialSkinnedLit&) = delete;
 		MaterialSkinnedLit& operator=(const MaterialSkinnedLit&) = delete;
-		~MaterialSkinnedLit() {
+		~MaterialSkinnedLit() override {
 			RAWRBOX_DESTROY(u_bones);
 		}
 

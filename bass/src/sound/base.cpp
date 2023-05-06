@@ -10,14 +10,13 @@
 namespace rawrbox {
 	SoundBase::SoundBase(uint32_t sample, uint32_t fx, uint32_t flags, bool stream) : _sample(sample), _fxSample(fx), _flags(flags), _isStream(stream) {}
 	SoundBase::~SoundBase() {
-		if (this->isValid()) {
-			if (this->_flags & SoundFlags::BEAT_DETECTION) BASS_FX_BPM_BeatFree(this->_sample);
+		if (this->isValid()) return;
+		if (this->_flags & SoundFlags::BEAT_DETECTION) BASS_FX_BPM_BeatFree(this->_sample);
 
-			if (this->_isStream) {
-				BASS_StreamFree(this->_sample);
-			} else {
-				BASS_SampleFree(this->_sample);
-			}
+		if (this->_isStream) {
+			BASS_StreamFree(this->_sample);
+		} else {
+			BASS_SampleFree(this->_sample);
 		}
 	}
 

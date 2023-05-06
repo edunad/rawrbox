@@ -25,7 +25,7 @@ namespace rawrbox {
 		SoundBase(const SoundBase&) = delete;
 		SoundBase& operator=(const SoundBase&) = delete;
 
-		[[nodiscard]] virtual bool isValid() const;
+		[[nodiscard]] bool isValid() const;
 		[[nodiscard]] virtual uint32_t getSample() const;
 		[[nodiscard]] virtual uint32_t getFXSample() const;
 

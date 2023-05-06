@@ -24,6 +24,7 @@ namespace rawrbox {
 	};
 
 	class PostProcessManager {
+	protected:
 		std::shared_ptr<rawrbox::TextureRender> _render;
 		std::vector<std::shared_ptr<rawrbox::PostProcessBase>> _postProcesses;
 
@@ -55,7 +56,7 @@ namespace rawrbox {
 
 	public:
 		PostProcessManager(bgfx::ViewId view, const rawrbox::Vector2i& size);
-		~PostProcessManager();
+		virtual ~PostProcessManager();
 
 		PostProcessManager(PostProcessManager&&) = delete;
 		PostProcessManager& operator=(PostProcessManager&&) = delete;
@@ -63,15 +64,15 @@ namespace rawrbox {
 		PostProcessManager& operator=(const PostProcessManager&) = delete;
 
 		// Process utils ----
-		void add(std::shared_ptr<rawrbox::PostProcessBase> post);
-		void remove(size_t indx);
-		std::shared_ptr<rawrbox::PostProcessBase> get(size_t indx);
-		size_t count();
+		virtual void add(std::shared_ptr<rawrbox::PostProcessBase> post);
+		virtual void remove(size_t indx);
+		virtual std::shared_ptr<rawrbox::PostProcessBase> get(size_t indx);
+		virtual size_t count();
 		// ---------
 
-		void upload();
+		virtual void upload();
 
-		void begin();
-		void end();
+		virtual void begin();
+		virtual void end();
 	};
 } // namespace rawrbox

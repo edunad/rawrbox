@@ -6,7 +6,7 @@
         {
             "label": "Run clang-tidy",
             "type": "shell",
-            "command": "clang-tidy -p \"build\" `find -not -path \"*build*\" -not -path \"*deps*\" -not -path \"*.cache*\" \\( -name *.cpp -o -name *.h -o -name *.hpp \\)` --fix-errors",
+            "command": "python run-clang-tidy.py -p \"build\" -j 12 -filter build -filter bin -filter deps -fix",
             "group": "build",
             "options": {
                 "cwd": "${workspaceFolder}"

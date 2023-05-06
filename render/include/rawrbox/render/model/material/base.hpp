@@ -39,7 +39,7 @@ namespace rawrbox {
 		MaterialBase& operator=(MaterialBase&&) = delete;
 		MaterialBase(const MaterialBase&) = delete;
 		MaterialBase& operator=(const MaterialBase&) = delete;
-		~MaterialBase() {
+		virtual ~MaterialBase() {
 			RAWRBOX_DESTROY(program);
 
 			RAWRBOX_DESTROY(s_texColor);
