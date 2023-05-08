@@ -5,6 +5,7 @@
 
 #include <bx/bx.h>
 #include <bx/math.h>
+#include <bx/timer.h>
 
 #include <vector>
 
@@ -161,12 +162,30 @@ namespace stencil {
 		stencil.end();
 	}
 
+	void printFrames() {
+		int64_t now = bx::getHPCounter();
+		static int64_t last = now;
+		const int64_t frameTime = now - last;
+		last = now;
+
+		const auto freq = static_cast<double>(bx::getHPFrequency());
+		const double toMs = 1000.0 / freq;
+
+		bgfx::dbgTextPrintf(1, 4, 0x0f, "Frame: %7.3f[ms]", double(frameTime) * toMs);
+	}
+
 	void Game::draw() {
 		if (this->_render == nullptr) return;
 		this->_render->swapBuffer(); // Clean up and set renderer
 
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
-		bgfx::dbgTextPrintf(1, 1, 0x0f, "STENCIL TESTS ----------------------------------------------------------------------------------------------------------------");
+
+		// DEBUG ----
+		bgfx::dbgTextClear();
+		bgfx::dbgTextPrintf(1, 1, 0x1f, "001-stencil");
+		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: 2D Stencil test");
+		printFrames();
+		// -----------
 
 		this->drawOverlay();
 

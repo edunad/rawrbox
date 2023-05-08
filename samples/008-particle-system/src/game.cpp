@@ -6,6 +6,7 @@
 
 #include <bx/bx.h>
 #include <bx/math.h>
+#include <bx/timer.h>
 #include <fmt/printf.h>
 
 #include <memory>
@@ -17,7 +18,7 @@ namespace particle_test {
 		int height = 768;
 
 		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(1);
+		this->_window->setMonitor(-1);
 		this->_window->setTitle("PARTICLE TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
 		this->_window->onResize += [this](auto& w, auto& size) {
@@ -139,14 +140,32 @@ namespace particle_test {
 		this->_text->draw({});
 	}
 
+	void printFrames() {
+		int64_t now = bx::getHPCounter();
+		static int64_t last = now;
+		const int64_t frameTime = now - last;
+		last = now;
+
+		const auto freq = static_cast<double>(bx::getHPFrequency());
+		const double toMs = 1000.0 / freq;
+
+		bgfx::dbgTextPrintf(1, 4, 0x0f, "Frame: %7.3f[ms]", double(frameTime) * toMs);
+	}
+
 	void Game::draw() {
 		if (this->_render == nullptr) return;
 		this->_render->swapBuffer(); // Clean up and set renderer
 
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-		bgfx::dbgTextPrintf(1, 1, 0x0f, "PARTICLE TESTS -----------------------------------------------------------------------------------------------------------");
 
 		this->drawWorld();
+
+		// DEBUG ----
+		bgfx::dbgTextClear();
+		bgfx::dbgTextPrintf(1, 1, 0x1f, "008-particle-system");
+		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: Particle system test");
+		printFrames();
+		// -----------
 
 		this->_render->render(true); // Commit primitives
 	}
