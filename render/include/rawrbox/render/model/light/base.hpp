@@ -5,6 +5,8 @@
 
 #include <array>
 
+#include "rawrbox/render/static.hpp"
+
 namespace rawrbox {
 
 	enum LightType {
@@ -27,7 +29,7 @@ namespace rawrbox {
 
 	public:
 		LightBase() = default;
-		LightBase(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
+		LightBase(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : _id(++rawrbox::SOUND_ID), _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
 
 		LightBase(LightBase&&) = delete;
 		LightBase& operator=(LightBase&&) = delete;
@@ -40,8 +42,6 @@ namespace rawrbox {
 		[[nodiscard]] virtual const rawrbox::Colorf& getAmbientColor() const { return this->_ambient; }
 
 		[[nodiscard]] virtual const size_t id() const { return this->_id; };
-		virtual void setId(size_t id) { this->_id = id; };
-
 		[[nodiscard]] virtual const bool isOn() const { return this->_isOn; }
 		virtual void setStatus(bool on) { this->_isOn = on; };
 

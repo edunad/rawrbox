@@ -24,7 +24,15 @@ namespace rawrbox {
 	extern bool BGFX_INITIALIZED;
 
 	extern bgfx::ViewId CURRENT_VIEW_ID;
+
+	// TEXTURE FALLBACKS ---
 	extern std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE;
 	extern std::shared_ptr<rawrbox::TextureFlat> MISSING_SPECULAR_TEXTURE;
 	extern std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE;
+	// ----
+
+	// ID GENERATION
+	extern int SOUND_ID;
+	extern int EMITTER_ID;
+	// -----
 } // namespace rawrbox

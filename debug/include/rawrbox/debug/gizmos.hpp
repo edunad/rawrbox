@@ -16,11 +16,13 @@ namespace rawrbox {
 	class SoundInstance;
 #endif
 
+	class Emitter;
 	class LightBase;
 	class GIZMOS {
 	protected:
 		std::shared_ptr<rawrbox::Sprite<>> _gizmo_lights = std::make_shared<rawrbox::Sprite<>>();
 		std::shared_ptr<rawrbox::Sprite<>> _gizmo_sounds = std::make_shared<rawrbox::Sprite<>>();
+		std::shared_ptr<rawrbox::Sprite<>> _gizmo_emitters = std::make_shared<rawrbox::Sprite<>>();
 
 		std::unordered_map<std::string, std::shared_ptr<rawrbox::TextureImage>> _textures = {};
 
@@ -31,6 +33,9 @@ namespace rawrbox {
 		// UTILS ----
 		void addLight(rawrbox::LightBase* l);
 		void removeLight(rawrbox::LightBase* l);
+
+		void addEmitter(rawrbox::Emitter* l);
+		void removeEmitter(rawrbox::Emitter* l);
 
 #ifdef RAWRBOX_BASS
 		void addSound(rawrbox::SoundInstance* l);

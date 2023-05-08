@@ -18,8 +18,6 @@ namespace rawrbox {
 	// Light utils ----
 	void LightManager::addLight(std::shared_ptr<rawrbox::LightBase> light) {
 		if (light == nullptr || this->_lights.size() >= rawrbox::MAX_LIGHTS) return;
-		light->setId(this->_lights.size());
-
 		this->_lights.push_back(std::move(light));
 	}
 

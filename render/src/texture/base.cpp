@@ -4,8 +4,12 @@
 namespace rawrbox {
 	TextureBase::~TextureBase() { RAWRBOX_DESTROY(this->_handle); }
 
-	bgfx::TextureHandle& TextureBase::getHandle() { return this->_handle; }
+	// UTILS ---
+	const rawrbox::Vector2i& TextureBase::getSize() const { return this->_size; };
+	const bool TextureBase::valid() const { return bgfx::isValid(this->_handle); }
+	const bgfx::TextureHandle& TextureBase::getHandle() const { return this->_handle; }
+	// ----
 
-	bool TextureBase::valid() { return bgfx::isValid(this->_handle); }
 	void TextureBase::setFlags(uint32_t flags) { this->_flags = flags; }
+
 } // namespace rawrbox

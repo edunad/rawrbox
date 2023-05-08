@@ -98,6 +98,14 @@ namespace rawrbox {
 			bgfx::setUniform(u_billboard, billboard.data());
 		}
 
+		void process(bgfx::TextureHandle texture) {
+			if (bgfx::isValid(texture)) {
+				bgfx::setTexture(0, s_texColor, texture);
+			} else {
+				bgfx::setTexture(0, s_texColor, rawrbox::WHITE_TEXTURE->getHandle());
+			}
+		}
+
 		void postProcess() { bgfx::submit(rawrbox::CURRENT_VIEW_ID, program); }
 		void upload() {
 			MaterialBase::buildShader(model_unlit_shaders, "model_unlit");

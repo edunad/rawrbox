@@ -18,13 +18,33 @@ namespace rawrbox {
 
 		VertexData() = default;
 		VertexData(const rawrbox::Vector3f& _pos,
-		    float _u, float _v, const rawrbox::Color cl = rawrbox::Colors::White) : position({_pos.x, _pos.y, _pos.z}), uv({_u, _v}), abgr(rawrbox::Color::toHEX(cl)) {}
+		    float _u, float _v, const rawrbox::Color cl = rawrbox::Colors::White) : position({_pos.x, _pos.y, _pos.z}), uv({_u, _v}), abgr(cl.pack()) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
 			l.begin()
 			    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
 			    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+			    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true, true)
+			    .end();
+			return l;
+		}
+	};
+
+	struct VertexBlendData {
+		std::array<float, 3> position = {0, 0, 0};
+		std::array<float, 4> uv = {0, 0, 0, 0};
+		uint32_t abgr = 0xFFFFFFFF;
+
+		VertexBlendData() = default;
+		VertexBlendData(const rawrbox::Vector3f& _pos,
+		    float _u, float _v, float _blend, const rawrbox::Color cl = rawrbox::Colors::White) : position({_pos.x, _pos.y, _pos.z}), uv({_u, _v, _blend, 0.F}), abgr(cl.pack()) {}
+
+		static bgfx::VertexLayout vLayout() {
+			static bgfx::VertexLayout l;
+			l.begin()
+			    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+			    .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float)
 			    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true, true)
 			    .end();
 			return l;
@@ -168,6 +188,9 @@ namespace rawrbox {
 
 	template <typename T>
 	concept supportsNormals = requires(T t) { t.normal; };
+
+	template <typename T>
+	concept supportsBlend = requires(T t) { t.uv.size() == 4; };
 	// ---
 
 } // namespace rawrbox

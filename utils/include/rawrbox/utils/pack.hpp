@@ -55,5 +55,9 @@ namespace rawrbox {
 			    _z * 0.5F + 0.5F,
 			    _w * 0.5F + 0.5F);
 		}
+
+		static uint32_t toAbgr(float _rr, float _gg, float _bb, float _aa) {
+			return 0 | (uint8_t(_rr * 255.0F) << 0) | (uint8_t(_gg * 255.0F) << 8) | (uint8_t(_bb * 255.0F) << 16) | (uint8_t(_aa * 255.0F) << 24);
+		}
 	};
 } // namespace rawrbox

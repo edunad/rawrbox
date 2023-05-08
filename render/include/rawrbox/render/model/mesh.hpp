@@ -166,6 +166,15 @@ namespace rawrbox {
 			return this->data.find(id) != this->data.end();
 		}
 
+		void merge(std::shared_ptr<rawrbox::Mesh<T>> other) {
+			for (uint16_t i : other->indices)
+				this->indices.push_back(static_cast<uint16_t>(this->vertices.size()) + i);
+
+			this->vertices.insert(this->vertices.end(), other->vertices.begin(), other->vertices.end());
+			this->totalVertex = static_cast<uint16_t>(this->vertices.size());
+			this->totalIndex = static_cast<uint16_t>(this->indices.size());
+		}
+
 		bool canMerge(std::shared_ptr<rawrbox::Mesh<T>> other) {
 			return this->texture == other->texture &&
 			       this->color == other->color &&

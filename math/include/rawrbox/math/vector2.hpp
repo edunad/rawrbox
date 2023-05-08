@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <concepts>
 #include <type_traits>
@@ -120,6 +121,8 @@ namespace rawrbox {
 		{
 			return {std::ceil(x), std::ceil(y)};
 		}
+
+		[[nodiscard]] std::array<NumberType, 2> toArray() const { return {x, y}; }
 		// ----
 
 		// OPERATORS ---

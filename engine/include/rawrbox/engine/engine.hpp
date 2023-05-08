@@ -58,6 +58,33 @@ namespace rawrbox {
 		virtual void run() {
 			rawrbox::MAIN_THREAD_ID = std::this_thread::get_id();
 
+			/*auto constexpr dt = std::chrono::duration<long long, std::ratio<1, 66>>{1}; // TODO: PASS TICK TO RATIO
+			using duration = decltype(Clock::duration{} + dt);
+			using time_point = std::chrono::time_point<Clock, duration>;
+
+			time_point t{};
+			time_point currentTime = Clock::now();
+			duration accumulator = 0s;
+
+			while (!this->_shouldShutdown) {
+				time_point newTime = Clock::now();
+				auto frameTime = newTime - currentTime;
+				if (frameTime > 250ms) frameTime = 250ms; // Anti spiral of death (mostly when debugging stuff, or game paused / minimized) // TODO: PASS Maxframe
+
+				currentTime = newTime;
+				accumulator += frameTime;
+
+				pollEvents();
+
+				while (accumulator >= dt) {
+					update(std::chrono::duration<float>{dt} / 1s, t.time_since_epoch().count());
+					t += dt;
+					accumulator -= dt;
+				}
+				draw();
+				// draw(std::chrono::duration<double>{accumulator} / dt);
+			}*/
+
 			this->_delayBetweenTicks = std::chrono::duration_cast<std::chrono::nanoseconds>(1000ms / this->_tps);
 			this->_delayBetweenFrames = std::chrono::duration_cast<std::chrono::nanoseconds>(1000ms / this->_fps);
 
@@ -83,8 +110,9 @@ namespace rawrbox {
 				// ensure we call update as much times per second as requested
 				while (frameTimeTPS >= this->_delayBetweenTicks) {
 					update(1.0F / static_cast<float>(this->_tps), (newTime - gameStart).count());
-					rawrbox::___runThreadInvokes();
+
 					// THREADING ----
+					rawrbox::___runThreadInvokes();
 					// -------
 
 					if (this->_shouldShutdown) return;

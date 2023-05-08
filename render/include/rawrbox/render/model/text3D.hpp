@@ -109,7 +109,6 @@ namespace rawrbox {
 
 			for (auto& mesh : this->_meshes) {
 				this->_material->process(mesh);
-
 				bgfx::setTransform(this->_matrix.data());
 
 				if (this->isDynamicBuffer()) {

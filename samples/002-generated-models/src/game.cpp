@@ -6,10 +6,9 @@
 
 #include <bx/bx.h>
 #include <bx/math.h>
+#include <bx/timer.h>
 
 #include <vector>
-
-#include "rawrbox/render/camera/orbital.hpp"
 
 namespace model {
 	void Game::init() {
@@ -29,7 +28,7 @@ namespace model {
 			this->shutdown();
 		};
 
-		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::STATS | rawrbox::WindowFlags::Window::WINDOWED);
+		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Window::WINDOWED);
 		this->_render = std::make_shared<rawrbox::Renderer>(0, this->_window->getSize());
 		this->_render->setClearColor(0x00000000);
 
@@ -138,12 +137,30 @@ namespace model {
 		this->_text->draw(this->_camera->getPos());
 	}
 
+	void printFrames() {
+		int64_t now = bx::getHPCounter();
+		static int64_t last = now;
+		const int64_t frameTime = now - last;
+		last = now;
+
+		const auto freq = static_cast<double>(bx::getHPFrequency());
+		const double toMs = 1000.0 / freq;
+
+		bgfx::dbgTextPrintf(1, 4, 0x0f, "Frame: %7.3f[ms]", double(frameTime) * toMs);
+	}
+
 	void Game::draw() {
 		if (this->_render == nullptr) return;
 		this->_render->swapBuffer(); // Clean up and set renderer
 
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-		bgfx::dbgTextPrintf(1, 1, 0x0f, "MODEL TESTS -----------------------------------------------------------------------------------------------------------");
+
+		// DEBUG ----
+		bgfx::dbgTextClear();
+		bgfx::dbgTextPrintf(1, 1, 0x1f, "002-generated-models");
+		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: Generated models test");
+		printFrames();
+		// -----------
 
 		this->drawWorld();
 

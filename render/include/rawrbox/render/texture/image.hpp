@@ -19,12 +19,6 @@ namespace rawrbox {
 		explicit TextureImage(const std::string& fileName, bool useFallback = true);
 
 		// ------ PIXEL-UTILS
-		virtual rawrbox::Colori getPixel(unsigned int x, unsigned int y);
-		virtual rawrbox::Colori getPixel(const rawrbox::Vector2i& pos);
-
-		virtual void setPixel(unsigned int x, unsigned int y, const rawrbox::Colori& col);
-		virtual void setPixel(const rawrbox::Vector2i& pos, const rawrbox::Colori& col);
-
 		virtual void setName(const std::string& name);
 		virtual void resize(const rawrbox::Vector2i& newsize);
 		// --------------------

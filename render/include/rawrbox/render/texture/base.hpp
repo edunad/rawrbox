@@ -25,11 +25,12 @@ namespace rawrbox {
 		virtual ~TextureBase();
 
 		// UTILS----
-		virtual void setFlags(uint32_t flags);
+		[[nodiscard]] const virtual rawrbox::Vector2i& getSize() const;
+		[[nodiscard]] const virtual bool valid() const;
+		[[nodiscard]] const virtual bgfx::TextureHandle& getHandle() const;
 		// -----
 
+		virtual void setFlags(uint32_t flags);
 		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) = 0;
-		virtual bgfx::TextureHandle& getHandle();
-		virtual bool valid();
 	};
 } // namespace rawrbox

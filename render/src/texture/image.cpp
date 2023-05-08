@@ -22,6 +22,7 @@ namespace rawrbox {
 
 			if (useFallback) {
 				this->_pixels = rawrbox::MISSING_TEXTURE->pixels;
+				this->_channels = 3;
 				this->_size = {2, 2};
 				this->_failedToLoad = true;
 
@@ -36,41 +37,6 @@ namespace rawrbox {
 		std::memcpy(this->_pixels.data(), image, static_cast<uint32_t>(this->_pixels.size()));
 
 		stbi_image_free(image);
-	}
-
-	// ------PIXEL-UTILS
-	rawrbox::Colori TextureImage::getPixel(unsigned int x, unsigned int y) {
-		if (this->_pixels.empty())
-			throw std::runtime_error("[TextureImage] Trying to access pixels, but memory is not set");
-
-		size_t index = y * this->_size.x + x;
-
-		rawrbox::Colori cl;
-		cl.r = this->_pixels[index++];
-		cl.g = this->_pixels[index++];
-		cl.b = this->_pixels[index++];
-		cl.a = this->_pixels[index++];
-
-		return cl;
-	}
-
-	rawrbox::Colori TextureImage::getPixel(const rawrbox::Vector2i& pos) {
-		return this->getPixel(pos.x, pos.y);
-	}
-
-	void TextureImage::setPixel(unsigned int x, unsigned int y, const rawrbox::Colori& col) {
-		if (this->_pixels.empty())
-			throw std::runtime_error("[TextureImage] Trying to access pixels, but memory is not set");
-
-		size_t index = y * this->_size.x + x;
-		this->_pixels[index++] = static_cast<uint8_t>(col.r);
-		this->_pixels[index++] = static_cast<uint8_t>(col.g);
-		this->_pixels[index++] = static_cast<uint8_t>(col.b);
-		this->_pixels[index++] = static_cast<uint8_t>(col.a);
-	}
-
-	void TextureImage::setPixel(const rawrbox::Vector2i& pos, const rawrbox::Colori& col) {
-		this->setPixel(pos.x, pos.y, col);
 	}
 
 	void TextureImage::setName(const std::string& name) {

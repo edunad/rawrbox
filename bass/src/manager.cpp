@@ -102,16 +102,12 @@ namespace rawrbox {
 
 		if (beatDetection) {
 			BASS_FX_BPM_BeatCallbackReset(sample);
-			// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
-			BASS_FX_BPM_BeatCallbackSet(sample, (BPMBEATPROC*)&soundBEAT, nullptr);
-			// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
+			BASS_FX_BPM_BeatCallbackSet(sample, std::bit_cast<BPMBEATPROC*>(&soundBEAT), nullptr);
 		}
 
 		if (bpmDetection) {
 			BASS_FX_BPM_CallbackReset(sample);
-			// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
-			BASS_FX_BPM_CallbackSet(sample, (BPMPROC*)&soundBPM, 1, 0, 0, nullptr);
-			// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
+			BASS_FX_BPM_CallbackSet(sample, std::bit_cast<BPMPROC*>(&soundBPM), 1, 0, 0, nullptr);
 		}
 
 		sounds[pth] = std::make_shared<rawrbox::SoundBase>(sample, 0, flags, shouldStream);
@@ -141,19 +137,15 @@ namespace rawrbox {
 
 		BASS_ChannelSetSync(sampleStreamed, BASS_SYNC_END, 0, &soundEnd, nullptr);
 		BASS_ChannelSetSync(sampleStreamed, BASS_SYNC_MIXTIME | BASS_SYNC_FREE, 0, &onHTTPSoundFree, nullptr); // Auto cleanup on free
+
 		if (beatDetection) {
 			BASS_FX_BPM_BeatCallbackReset(sampleStreamed);
-
-			// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
-			BASS_FX_BPM_BeatCallbackSet(sampleStreamed, (BPMBEATPROC*)&soundBEAT, nullptr);
-			// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
+			BASS_FX_BPM_BeatCallbackSet(sampleStreamed, std::bit_cast<BPMBEATPROC*>(&soundBEAT), nullptr);
 		}
 
 		if (bpmDetection) {
 			BASS_FX_BPM_CallbackReset(sampleStreamed);
-			// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
-			BASS_FX_BPM_CallbackSet(sampleStreamed, (BPMPROC*)&soundBPM, 1, 0, 0, nullptr);
-			// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
+			BASS_FX_BPM_CallbackSet(sampleStreamed, std::bit_cast<BPMPROC*>(&soundBPM), 1, 0, 0, nullptr);
 		}
 
 		sounds[url] = std::make_shared<rawrbox::SoundBase>(sampleStreamed, 0, flags, true);
