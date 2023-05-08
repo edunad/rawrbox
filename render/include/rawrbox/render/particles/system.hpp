@@ -3,6 +3,7 @@
 #include <rawrbox/render/camera/base.hpp>
 #include <rawrbox/render/model/material/particle_unlit.hpp>
 #include <rawrbox/render/particles/emitter.hpp>
+#include <rawrbox/render/texture/base.hpp>
 
 #include <bgfx/bgfx.h>
 
@@ -10,6 +11,7 @@
 #include <cstdlib>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 
 #define BGFX_STATE_DEFAULT_PARTICLE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_CULL_CW | BGFX_STATE_BLEND_NORMAL)
 
@@ -23,16 +25,18 @@ namespace rawrbox {
 		// ---
 
 		// TEXTURE ---
-		std::shared_ptr<rawrbox::TextureBase> _texture = nullptr;
+		std::shared_ptr<rawrbox::TextureBase> _atlas = nullptr;
 		// ----
 
-		uint32_t totalParticles = 0;
+		uint32_t _totalParticles = 0;
+		uint32_t _spriteSize = 32;
 
 	public:
-		ParticleSystem() = default;
+		explicit ParticleSystem(std::shared_ptr<rawrbox::TextureBase> spriteAtlas, uint32_t spriteSize = 32) : _atlas(std::move(spriteAtlas)), _spriteSize(spriteSize){};
 		virtual ~ParticleSystem() {
-			this->_texture = nullptr;
+			this->_atlas = nullptr;
 			this->_material = nullptr;
+
 			this->_emitters.clear();
 		}
 
@@ -48,8 +52,7 @@ namespace rawrbox {
 		}
 
 		// UTILS -----
-		virtual void setTexture(std::shared_ptr<rawrbox::TextureBase> texture) { this->_texture = texture; }
-		[[nodiscard]] virtual std::shared_ptr<rawrbox::TextureBase> getTexture() const { return this->_texture; }
+		[[nodiscard]] virtual std::shared_ptr<rawrbox::TextureBase> getTexture() const { return this->_atlas; }
 
 		void upload() {
 			this->_material->upload();
@@ -64,24 +67,24 @@ namespace rawrbox {
 		// -----
 
 		void update(float deltaTime) {
-			totalParticles = 0;
+			this->_totalParticles = 0;
 			for (auto& em : this->_emitters) {
 				em->update(deltaTime);
-				totalParticles += static_cast<uint32_t>(em->totalParticles());
+				this->_totalParticles += static_cast<uint32_t>(em->totalParticles());
 			}
 		}
 
 		void draw(std::shared_ptr<rawrbox::CameraBase> cam) {
-			if (this->_emitters.empty() || totalParticles <= 0) return;
+			if (this->_emitters.empty() || this->_totalParticles <= 0) return;
 
 			int vertCount = 4; // Plane
 			int indxCount = 6;
 
-			const uint32_t numVertices = bgfx::getAvailTransientVertexBuffer(totalParticles * vertCount, M::vertexBufferType::vLayout());
-			const uint32_t numIndices = bgfx::getAvailTransientIndexBuffer(totalParticles * indxCount);
+			const uint32_t numVertices = bgfx::getAvailTransientVertexBuffer(this->_totalParticles * vertCount, M::vertexBufferType::vLayout());
+			const uint32_t numIndices = bgfx::getAvailTransientIndexBuffer(this->_totalParticles * indxCount);
 			const uint32_t max = bx::uint32_min(numVertices / vertCount, numIndices / indxCount);
 
-			if (max != this->totalParticles) fmt::print("[RawrBox-ParticleEngine] Truncating transient buffer for particles to maximum available (requested {}, available {}) \n", this->totalParticles, max);
+			if (max != this->_totalParticles) fmt::print("[RawrBox-ParticleEngine] Truncating transient buffer for particles to maximum available (requested {}, available {}) \n", this->_totalParticles, max);
 			if (max <= 0) return;
 
 			bgfx::TransientVertexBuffer tvb = {};
@@ -92,13 +95,13 @@ namespace rawrbox {
 			std::vector<rawrbox::ParticleSort> particleSort{max};
 			uint32_t pos = 0;
 
-			if (this->_texture != nullptr) this->_material->process(this->_texture->getHandle());
+			this->_material->process(this->_atlas->getHandle());
 
 			auto* vertices = std::bit_cast<typename M::vertexBufferType*>(tvb.data);
 			auto* indices = std::bit_cast<uint16_t*>(tib.data);
 
 			for (auto& em : this->_emitters)
-				pos += em->template draw<M>(cam, pos, max, particleSort.data(), vertices);
+				pos += em->template draw<M>(cam, this->_atlas->getSize(), this->_spriteSize, pos, max, particleSort.data(), vertices);
 
 			std::qsort(particleSort.data(), max, sizeof(ParticleSort), particleSortFn);
 

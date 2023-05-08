@@ -88,6 +88,8 @@ namespace rawrbox {
 		Vector3_t<ReturnType> cast() const {
 			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y), static_cast<ReturnType>(z)};
 		}
+
+		[[nodiscard]] std::array<NumberType, 3> toArray() const { return {x, y, z}; }
 		// ------
 
 		// UTILS - FLOAT ---

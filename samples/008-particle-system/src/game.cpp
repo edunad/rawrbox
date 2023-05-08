@@ -52,7 +52,7 @@ namespace particle_test {
 		this->_render->upload();
 
 		// TEXTURES ----
-		this->_texture = std::make_shared<rawrbox::TextureImage>("./content/textures/particles/circle_05.png");
+		this->_texture = std::make_shared<rawrbox::TextureImage>("./content/textures/particles/particles.png");
 		this->_texture->upload();
 		// -----
 
@@ -61,8 +61,7 @@ namespace particle_test {
 		// ------
 
 		// Setup Engine
-		this->_ps = std::make_shared<rawrbox::ParticleSystem<>>();
-		this->_ps->setTexture(this->_texture);
+		this->_ps = std::make_shared<rawrbox::ParticleSystem<>>(this->_texture);
 
 		{
 			auto m = std::make_shared<rawrbox::Emitter>();
@@ -73,10 +72,11 @@ namespace particle_test {
 
 		{
 			rawrbox::EmitterSettings s;
+			s.texture = {0, 3};
 			s.offsetStart = {0.F, 0.05F};
 			s.rgba = {0xFF0000FF, 0xFF000FFF, 0xFF00F0FF, 0xFF000000, 0x00FFFFFF};
 			s.scaleEnd = {0.5F, 0.5F};
-			s.offsetEnd = {0.45F, 0.45F};
+			s.offsetEnd = {0.85F, 0.85F};
 			s.preHeat = true;
 			s.particlesPerSecond = 20;
 			s.maxParticles = 100;

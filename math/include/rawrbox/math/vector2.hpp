@@ -120,6 +120,8 @@ namespace rawrbox {
 		{
 			return {std::ceil(x), std::ceil(y)};
 		}
+
+		[[nodiscard]] std::array<NumberType, 2> toArray() const { return {x, y}; }
 		// ----
 
 		// OPERATORS ---
