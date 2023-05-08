@@ -1,7 +1,9 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
+#include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/render/camera/base.hpp>
 #include <rawrbox/render/model/material/particle_unlit.hpp>
 #include <rawrbox/render/particles/particle.hpp>
 #include <rawrbox/render/static.hpp>
@@ -9,11 +11,9 @@
 #include <rawrbox/utils/pack.hpp>
 
 #include <algorithm>
+#include <bit>
 #include <cstdint>
 #include <stdexcept>
-
-#include "rawrbox/math/utils/math.hpp"
-#include "rawrbox/utils/time.hpp"
 
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
@@ -47,8 +47,9 @@ namespace rawrbox {
 	};
 
 	struct EmitterSettings {
-		EmitterShape shape = EmitterShape::RECT;
+		EmitterShape shape = EmitterShape::RECT; // The random shape
 		EmitterDirection direction = EmitterDirection::UP;
+		rawrbox::Vector3f angle = {0, 0, 0}; // In DEG
 
 		// OFFSETS ---
 		rawrbox::Vector2f offsetStart = {0.F, 0.F}; // Random between these 2 values
@@ -65,7 +66,7 @@ namespace rawrbox {
 		rawrbox::Vector2f blendEnd = {0.2F, 0.2F}; // Random between these 2 values
 		// ---
 
-		// BLEND ---
+		// ROTATION ---
 		rawrbox::Vector2f rotationStart = {0.F, 0.F}; // Random between these 2 values
 		rawrbox::Vector2f rotationEnd = {90.F, 90.F}; // Random between these 2 values
 		// ---
@@ -74,7 +75,7 @@ namespace rawrbox {
 		   particle life time ------------------>
 	       0 ---> 1 ----> 2 ----> 3 ----> 4 ----> 5
 		*/
-		std::array<uint32_t, 5> rgba = {0x00FFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00FFFFFF}; // Default: Transparent to white to transparent
+		std::array<uint32_t, 5> rgba = {0x00FFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00FFFFFF}; // Default: transparent -> white -> transparent
 
 		std::array<float, 2> lifeSpan = {2.F, 2.F}; // Random between these 2 values
 		float gravityScale = 0.F;
@@ -99,14 +100,14 @@ namespace rawrbox {
 		EmitterSettings _settings = {};
 		// -----
 
+		size_t _id = 0;
 		rawrbox::Vector3f _pos = {0, 0, 0};
+
+		// PARTICLES ----
 		float _timer = .0F;
 		bool _preHeated = false;
 
-		size_t _id = 0;
 		bx::RngMwc _rng;
-
-		// PARTICLES ----
 		std::vector<rawrbox::Particle> _particles = {};
 		// -------
 
@@ -115,7 +116,7 @@ namespace rawrbox {
 			if (this->_settings.particlesPerSecond <= 0) return;
 
 			std::array<float, 16> mtx = {};
-			bx::mtxSRT(mtx.data(), 1.0F, 1.0F, 1.0F, 0, 0, 0, this->getPos().x, this->getPos().y, this->getPos().z);
+			bx::mtxSRT(mtx.data(), 1.0F, 1.0F, 1.0F, bx::toRad(this->_settings.angle.x), bx::toRad(this->_settings.angle.y), bx::toRad(this->_settings.angle.z), this->_pos.x, this->_pos.y, this->_pos.z);
 
 			auto ppS = !this->_preHeated && this->_settings.preHeat ? this->_settings.maxParticles : this->_settings.particlesPerSecond;
 			const float timePerParticle = !this->_preHeated && this->_settings.preHeat ? ppS : 1.0F / ppS;
@@ -209,11 +210,11 @@ namespace rawrbox {
 				particle.blendEnd = bx::lerp(this->_settings.blendEnd.x, this->_settings.blendEnd.y, bx::frnd(&this->_rng));
 				// -------------
 
-				time += timePerParticle;
+				time += timePerParticle; // When to spawn the next particle
 				this->_particles.push_back(particle);
 			}
 
-			this->_preHeated = true;
+			if (!this->_preHeated) this->_preHeated = true; // Done pre-heating
 		}
 
 		template <typename M = rawrbox::MaterialParticleUnlit>
@@ -225,7 +226,7 @@ namespace rawrbox {
 		}
 
 	public:
-		explicit Emitter(EmitterSettings settings = {}) : _settings(settings), _timer(this->_settings.preHeat ? 1.F : 0.F), _id(++rawrbox::EMITTER_ID) {
+		explicit Emitter(EmitterSettings settings = {}) : _settings(settings), _id(++rawrbox::EMITTER_ID), _timer(this->_settings.preHeat ? 1.F : 0.F) {
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
 			rawrbox::GIZMOS::get().addEmitter(this);
@@ -248,6 +249,7 @@ namespace rawrbox {
 		Emitter(const Emitter&) = delete;
 		Emitter& operator=(const Emitter&) = delete;
 
+		// UTILS -----
 		virtual void clear() {
 			this->_particles.clear();
 			this->_rng.reset();
@@ -255,19 +257,18 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual const size_t id() const { return this->_id; }
 		[[nodiscard]] virtual const size_t totalParticles() const { return this->_particles.size(); }
-
+		[[nodiscard]] virtual const EmitterSettings& getSettings() const { return this->_settings; }
 		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_pos; }
+
 		virtual void setPos(const rawrbox::Vector3f& pos) {
 			this->_pos = pos;
-
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
 			rawrbox::GIZMOS::get().updateGizmo(fmt::format("Emitter-{}", this->_id), pos);
 	#endif
 #endif
 		}
-
-		[[nodiscard]] virtual const EmitterSettings& getSettings() const { return this->_settings; }
+		// ------
 
 		void update(float deltaTime) {
 			for (auto it2 = this->_particles.begin(); it2 != this->_particles.end();) {
@@ -285,7 +286,7 @@ namespace rawrbox {
 		}
 
 		template <typename M = rawrbox::MaterialParticleUnlit>
-		uint32_t draw(const std::array<float, 16>& viewMtx, const rawrbox::Vector3f& eye, uint32_t first, uint32_t max, rawrbox::ParticleSort* outSort, typename M::vertexBufferType* outVert)
+		uint32_t draw(std::shared_ptr<rawrbox::CameraBase> camera, uint32_t first, uint32_t max, rawrbox::ParticleSort* outSort, typename M::vertexBufferType* outVert)
 			requires(supportsBlend<typename M::vertexBufferType>)
 		{
 			bx::EaseFn easeRgba = bx::getEaseFunc(this->_settings.easeRgba);
@@ -314,7 +315,7 @@ namespace rawrbox {
 				const bx::Vec3 pf = bx::lerp(p0, p1, ttPos);
 
 				auto rot = rawrbox::MathUtils::mtxQuaternion(bx::toRad(rotation), 0, 0, 0);
-				auto rotatedView = rawrbox::MathUtils::mtxMul(rot, viewMtx);
+				auto rotatedView = rawrbox::MathUtils::mtxMul(rot, camera->getViewMtx());
 
 				rawrbox::Vector3f udir = rawrbox::Vector3f(rotatedView[0], rotatedView[4], rotatedView[8]) * scale;
 				rawrbox::Vector3f vdir = rawrbox::Vector3f(rotatedView[1], rotatedView[5], rotatedView[9]) * scale;
@@ -324,7 +325,7 @@ namespace rawrbox {
 
 				// SORTING --
 				ParticleSort& sort = outSort[index];
-				sort.dist = pos.distance(eye);
+				sort.dist = pos.distance(camera->getPos());
 				sort.idx = index;
 				// ----
 
@@ -334,12 +335,13 @@ namespace rawrbox {
 				uint32_t rgbaStart = p.rgba[idx];
 				uint32_t rgbaEnd = p.rgba[idx + 1];
 
-				// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
-				float rr = bx::lerp(((uint8_t*)&rgbaStart)[0], ((uint8_t*)&rgbaEnd)[0], ttmod) / 255.0F;
-				float gg = bx::lerp(((uint8_t*)&rgbaStart)[1], ((uint8_t*)&rgbaEnd)[1], ttmod) / 255.0F;
-				float bb = bx::lerp(((uint8_t*)&rgbaStart)[2], ((uint8_t*)&rgbaEnd)[2], ttmod) / 255.0F;
-				float aa = bx::lerp(((uint8_t*)&rgbaStart)[3], ((uint8_t*)&rgbaEnd)[3], ttmod) / 255.0F;
-				// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
+				auto clStart = std::bit_cast<uint8_t*>(&rgbaStart);
+				auto clEnd = std::bit_cast<uint8_t*>(&rgbaEnd);
+
+				float rr = bx::lerp(clStart[0], clEnd[0], ttmod) / 255.0F;
+				float gg = bx::lerp(clStart[1], clEnd[1], ttmod) / 255.0F;
+				float bb = bx::lerp(clStart[2], clEnd[2], ttmod) / 255.0F;
+				float aa = bx::lerp(clStart[3], clEnd[3], ttmod) / 255.0F;
 
 				auto color = rawrbox::Colorf(rr, gg, bb, aa);
 

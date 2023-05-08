@@ -42,8 +42,8 @@ namespace rawrbox {
 		ParticleSystem& operator=(const ParticleSystem&) = delete;
 
 		static int32_t particleSortFn(const void* _lhs, const void* _rhs) {
-			const rawrbox::ParticleSort& lhs = *(const rawrbox::ParticleSort*)_lhs;
-			const rawrbox::ParticleSort& rhs = *(const rawrbox::ParticleSort*)_rhs;
+			const rawrbox::ParticleSort& lhs = *std::bit_cast<const rawrbox::ParticleSort*>(_lhs);
+			const rawrbox::ParticleSort& rhs = *std::bit_cast<const rawrbox::ParticleSort*>(_rhs);
 			return lhs.dist > rhs.dist ? -1 : 1;
 		}
 
@@ -81,10 +81,9 @@ namespace rawrbox {
 			const uint32_t numIndices = bgfx::getAvailTransientIndexBuffer(totalParticles * indxCount);
 			const uint32_t max = bx::uint32_min(numVertices / vertCount, numIndices / indxCount);
 
-			this->_material->preProcess(cam->getPos());
-
-			// BX_WARN(this->totalParticles == max, "Truncating transient buffer for particles to maximum available (requested %d, available %d).", this->totalParticles, max);
+			if (max != this->totalParticles) fmt::print("[RawrBox-ParticleEngine] Truncating transient buffer for particles to maximum available (requested {}, available {}) \n", this->totalParticles, max);
 			if (max <= 0) return;
+
 			bgfx::TransientVertexBuffer tvb = {};
 			bgfx::TransientIndexBuffer tib = {};
 
@@ -95,18 +94,18 @@ namespace rawrbox {
 
 			if (this->_texture != nullptr) this->_material->process(this->_texture->getHandle());
 
-			auto* vertices = (typename M::vertexBufferType*)tvb.data;
-			auto* indices = (uint16_t*)tib.data;
+			auto* vertices = std::bit_cast<typename M::vertexBufferType*>(tvb.data);
+			auto* indices = std::bit_cast<uint16_t*>(tib.data);
 
 			for (auto& em : this->_emitters)
-				pos += em->template draw<M>(cam->getViewMtx(), cam->getPos(), pos, max, particleSort.data(), vertices);
+				pos += em->template draw<M>(cam, pos, max, particleSort.data(), vertices);
 
 			std::qsort(particleSort.data(), max, sizeof(ParticleSort), particleSortFn);
 
 			for (uint32_t ii = 0; ii < max; ++ii) {
 				auto tri = [](uint16_t*& dest, uint16_t a, uint16_t b, uint16_t c) { *dest++ = a; *dest++ = b; *dest++ = c; };
 
-				const uint16_t index = uint16_t(particleSort[ii].idx) * 4;
+				const uint16_t index = static_cast<uint16_t>(particleSort[ii].idx) * 4;
 				uint16_t* dest = &indices[ii * 6];
 
 				tri(dest, index + 0, index + 1, index + 2);
