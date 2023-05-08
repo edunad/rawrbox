@@ -254,7 +254,7 @@ namespace rawrbox {
 		Emitter& operator=(const Emitter&) = delete;
 
 		// UTILS -----
-		virtual void clear() {
+		void clear() {
 			this->_particles.clear();
 			this->_rng.reset();
 		}
