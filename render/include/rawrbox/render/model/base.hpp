@@ -156,13 +156,34 @@ namespace rawrbox {
 		virtual bool supportsOptimization() { return true; }
 
 		// UTILS -----
-		void mergeMeshes(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> in, std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> other) {
-			for (uint16_t i : other->indices)
-				in->indices.push_back(static_cast<uint16_t>(in->vertices.size()) + i);
+		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateLine(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Color& col) {
+			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
+			bx::mtxTranslate(mesh->vertexPos.data(), a.x, a.y, a.z);
 
-			in->vertices.insert(in->vertices.end(), other->vertices.begin(), other->vertices.end());
-			in->totalVertex = static_cast<uint16_t>(in->vertices.size());
-			in->totalIndex = static_cast<uint16_t>(in->indices.size());
+			std::array<typename M::vertexBufferType, 3> buff;
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
+				buff = {
+				    rawrbox::VertexLitData(a, rawrbox::PackUtils::packNormal(1, 0, 0), 0, 0, 0, col),
+				    rawrbox::VertexLitData(b, rawrbox::PackUtils::packNormal(1, 0, 0), 0, 0, 0, col),
+				};
+			} else {
+				buff = {
+				    rawrbox::VertexData(a, 0, 0, col),
+				    rawrbox::VertexData(b, 0, 0, col),
+				};
+			}
+
+			std::array<uint16_t, 2> inds{0, 1};
+
+			mesh->totalVertex = static_cast<uint16_t>(buff.size());
+			mesh->totalIndex = static_cast<uint16_t>(inds.size());
+			mesh->setWireframe(true);
+
+			mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
+			for (uint16_t ind : inds)
+				mesh->indices.push_back(static_cast<uint16_t>(buff.size()) - ind);
+
+			return mesh;
 		}
 
 		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateTriangle(const rawrbox::Vector3f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector3f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector3f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC) {
@@ -361,9 +382,9 @@ namespace rawrbox {
 			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
 			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
 
-			this->mergeMeshes(mesh, generateCube(pos, {size, 0.01F, 0.01F}, Colors::Red));   // x;
-			this->mergeMeshes(mesh, generateCube(pos, {0.01F, size, 0.01F}, Colors::Green)); // y;
-			this->mergeMeshes(mesh, generateCube(pos, {0.01F, 0.01F, size}, Colors::Blue));  // z;
+			mesh->merge(generateCube(pos, {size, 0.01F, 0.01F}, Colors::Red));   // x
+			mesh->merge(generateCube(pos, {0.01F, size, 0.01F}, Colors::Green)); // y
+			mesh->merge(generateCube(pos, {0.01F, 0.01F, size}, Colors::Blue));  // z
 
 			// AABB ---
 			mesh->bbox.m_min = {-size, -size, -size};
@@ -572,7 +593,7 @@ namespace rawrbox {
 		}
 
 		virtual void draw(const rawrbox::Vector3f& camPos) {
-			if (!this->isUploaded()) throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not valid");
+			if (!this->isUploaded()) throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not uploaded");
 			this->_material->preProcess(camPos);
 		}
 	};

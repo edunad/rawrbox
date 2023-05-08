@@ -22,7 +22,9 @@ namespace rawrbox {
 			for (auto& mesh : this->_meshes) {
 				this->_material->process(mesh);
 
-				bgfx::setTransform(this->_matrix.data());
+				std::array<float, 16> matrix = {};
+				bx::mtxMul(matrix.data(), mesh->offsetMatrix.data(), this->_matrix.data());
+				bgfx::setTransform(matrix.data());
 
 				if (this->isDynamicBuffer()) {
 					bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);

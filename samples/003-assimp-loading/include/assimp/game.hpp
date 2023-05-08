@@ -26,9 +26,6 @@ namespace assimp {
 
 		rawrbox::Font* _font = nullptr;
 
-		bool _rightClick = false;
-		rawrbox::Vector2i _oldMousePos = {};
-
 	public:
 		using Engine::Engine;
 

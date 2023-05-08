@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rawrbox/utils/pack.hpp>
+
 #include <algorithm>
 #include <array>
 #include <complex>
@@ -46,15 +48,6 @@ namespace rawrbox {
 				    static_cast<int>(((x >> 8) & 0xFF)),
 				    static_cast<int>(((x)&0xFF)),
 				    255};
-			}
-		}
-
-		static uint32_t toHEX(Color_t<NumberType> c) {
-			if constexpr (std::is_same<NumberType, int>::value) {
-				return static_cast<uint32_t>(c.r | (c.b << 8) | (c.g << 16) | (c.a << 24));
-			} else {
-				Color_t<int> cc = c.cast<int>();
-				return static_cast<uint32_t>(cc.r | (cc.b << 8) | (cc.g << 16) | (cc.a << 24));
 			}
 		}
 
@@ -113,6 +106,15 @@ namespace rawrbox {
 		[[nodiscard]] bool isTransparent() const { return a == 0; }
 		[[nodiscard]] NumberType dot(const ColorType& other) const {
 			return r * other.r + g * other.g + b * other.b + a * other.a;
+		}
+
+		[[nodiscard]] uint32_t toHEX() const {
+			if constexpr (std::is_same<NumberType, int>::value) {
+				Color_t<float> cc = this->cast<float>();
+				return rawrbox::PackUtils::toAbgr(cc.r, cc.g, cc.b, cc.a);
+			} else {
+				return rawrbox::PackUtils::toAbgr(this->r, this->g, this->b, this->a);
+			}
 		}
 
 		ColorType operator-(const ColorType& other) const {

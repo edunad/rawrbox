@@ -27,7 +27,7 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		REQUIRE_THROWS(base->getMesh(0));
 	}
 
-	SECTION("rawrbox::ModelBase::mergeMeshes") {
+	SECTION("rawrbox::ModelBase::merge") {
 		auto base = std::make_shared<rawrbox::ModelBase<>>();
 
 		auto m1 = base->generatePlane({}, {1, 1});
@@ -38,7 +38,7 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		REQUIRE(m1->totalIndex == 6);
 		REQUIRE(m1->totalVertex == 4);
 
-		base->mergeMeshes(m1, m2);
+		m1->merge(m2);
 
 		REQUIRE(m1->baseIndex == 0);
 		REQUIRE(m1->baseVertex == 0);

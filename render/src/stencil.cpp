@@ -106,7 +106,7 @@ namespace rawrbox {
 		    uv.y,
 
 		    // color
-		    rawrbox::Color::toHEX(col));
+		    col.toHEX());
 	}
 
 	void Stencil::pushIndices(uint16_t a, uint16_t b, uint16_t c) {
@@ -422,11 +422,14 @@ namespace rawrbox {
 		bgfx::TransientVertexBuffer vbh = {};
 		bgfx::TransientIndexBuffer ibh = {};
 
-		bgfx::allocTransientVertexBuffer(&vbh, static_cast<uint32_t>(this->_vertices.size()), this->_vLayout);
-		bx::memCopy(vbh.data, this->_vertices.data(), this->_vertices.size() * this->_vLayout.m_stride);
+		uint32_t vertSize = static_cast<uint32_t>(this->_vertices.size()) * this->_vLayout.m_stride;
+		uint32_t indSize = static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t);
 
-		bgfx::allocTransientIndexBuffer(&ibh, static_cast<uint32_t>(this->_indices.size()));
-		bx::memCopy(ibh.data, this->_indices.data(), this->_indices.size() * sizeof(uint16_t));
+		bgfx::allocTransientVertexBuffer(&vbh, vertSize, this->_vLayout);
+		bx::memCopy(vbh.data, this->_vertices.data(), vertSize);
+
+		bgfx::allocTransientIndexBuffer(&ibh, indSize);
+		bx::memCopy(ibh.data, this->_indices.data(), indSize);
 
 		bgfx::setVertexBuffer(0, &vbh, 0, static_cast<uint32_t>(this->_vertices.size()));
 		bgfx::setIndexBuffer(&ibh, 0, static_cast<uint32_t>(this->_indices.size()));

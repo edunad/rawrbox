@@ -18,9 +18,6 @@ namespace post_process {
 
 		std::shared_ptr<rawrbox::ModelImported<>> _model = std::make_shared<rawrbox::ModelImported<>>();
 
-		bool _rightClick = false;
-		rawrbox::Vector2i _oldMousePos = {};
-
 	public:
 		using Engine::Engine;
 
