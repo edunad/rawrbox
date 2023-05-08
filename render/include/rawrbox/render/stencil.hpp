@@ -25,7 +25,7 @@ namespace rawrbox {
 		uint32_t abgr = 0xFFFFFFFF;
 
 		PosUVColorVertexData() = default;
-		PosUVColorVertexData(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& uv, const rawrbox::Color& cl) : x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y), abgr(cl.toHEX()) {}
+		PosUVColorVertexData(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& uv, const rawrbox::Color& cl) : x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y), abgr(cl.pack()) {}
 		PosUVColorVertexData(float _x, float _y, float _z, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v), abgr(_abgr) {}
 	};
 

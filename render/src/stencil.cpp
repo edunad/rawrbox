@@ -106,7 +106,7 @@ namespace rawrbox {
 		    uv.y,
 
 		    // color
-		    col.toHEX());
+		    col.pack());
 	}
 
 	void Stencil::pushIndices(uint16_t a, uint16_t b, uint16_t c) {

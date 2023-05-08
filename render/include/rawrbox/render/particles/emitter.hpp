@@ -4,20 +4,11 @@
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/camera/base.hpp>
-#include <rawrbox/render/model/material/particle_unlit.hpp>
+#include <rawrbox/render/model/material/particle.hpp>
 #include <rawrbox/render/particles/particle.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/base.hpp>
 #include <rawrbox/utils/pack.hpp>
-
-#include <algorithm>
-#include <bit>
-#include <cmath>
-#include <cstdint>
-#include <functional>
-#include <stdexcept>
-
-#include "rawrbox/math/vector2.hpp"
 
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
@@ -31,8 +22,14 @@
 #include <bx/math.h>
 #include <bx/rng.h>
 
+#include <algorithm>
 #include <array>
+#include <bit>
+#include <cmath>
+#include <cstdint>
+#include <functional>
 #include <memory>
+#include <stdexcept>
 #include <vector>
 
 // Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/32-particles/particles.cpp
@@ -224,7 +221,7 @@ namespace rawrbox {
 			if (!this->_preHeated) this->_preHeated = true; // Done pre-heating
 		}
 
-		template <typename M = rawrbox::MaterialParticleUnlit>
+		template <typename M = rawrbox::MaterialParticle>
 		void write_vertex(typename M::vertexBufferType*& dest, typename M::vertexBufferType vertex)
 			requires(supportsBlend<typename M::vertexBufferType>)
 		{
@@ -292,7 +289,7 @@ namespace rawrbox {
 			this->spawnParticle(deltaTime);
 		}
 
-		template <typename M = rawrbox::MaterialParticleUnlit>
+		template <typename M = rawrbox::MaterialParticle>
 		uint32_t draw(std::shared_ptr<rawrbox::CameraBase> camera, const rawrbox::Vector2i& atlasSize, uint32_t spriteSize, uint32_t first, uint32_t max, rawrbox::ParticleSort* outSort, typename M::vertexBufferType* outVert)
 			requires(supportsBlend<typename M::vertexBufferType>)
 		{
@@ -365,17 +362,11 @@ namespace rawrbox {
 				// -----------
 
 				typename M::vertexBufferType* vertex = &outVert[index * 4];
-				if constexpr (supportsNormals<typename M::vertexBufferType>) {
-					this->write_vertex(vertex, rawrbox::VertexLitBlendData(pos - udir - vdir, rawrbox::PackUtils::packNormal(1, 0, 0), 0, uvS.x, uvE.y, blend, color));
-					this->write_vertex(vertex, rawrbox::VertexLitBlendData(pos + udir + vdir, rawrbox::PackUtils::packNormal(1, 0, 0), 0, uvE.x, uvS.y, blend, color));
-					this->write_vertex(vertex, rawrbox::VertexLitBlendData(pos - udir + vdir, rawrbox::PackUtils::packNormal(1, 0, 0), 0, uvS.x, uvS.y, blend, color));
-					this->write_vertex(vertex, rawrbox::VertexLitBlendData(pos + udir - vdir, rawrbox::PackUtils::packNormal(1, 0, 0), 0, uvE.x, uvE.y, blend, color));
-				} else {
-					this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir - vdir, uvS.x, uvE.y, blend, color));
-					this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir + vdir, uvE.x, uvS.y, blend, color));
-					this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir + vdir, uvS.x, uvS.y, blend, color));
-					this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir - vdir, uvE.x, uvE.y, blend, color));
-				}
+
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir - vdir, uvS.x, uvE.y, blend, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir + vdir, uvE.x, uvS.y, blend, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir + vdir, uvS.x, uvS.y, blend, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir - vdir, uvE.x, uvE.y, blend, color));
 
 				++index;
 			}

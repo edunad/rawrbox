@@ -65,7 +65,7 @@ namespace particle_test {
 
 		{
 			auto m = std::make_shared<rawrbox::Emitter>();
-			m->setPos({-4, 0.5F, 0});
+			m->setPos({-2.F, 0.5F, 0});
 
 			this->_ps->addEmitter(m);
 		}
@@ -81,10 +81,8 @@ namespace particle_test {
 			s.particlesPerSecond = 20;
 			s.maxParticles = 100;
 
-			auto m = std::make_shared<rawrbox::Emitter>(s);
-			m->setPos({2, 0.5F, 0});
-
-			this->_ps->addEmitter(m);
+			this->_em = std::make_shared<rawrbox::Emitter>(s);
+			this->_ps->addEmitter(this->_em);
 		}
 
 		this->_ps->upload();
@@ -92,7 +90,8 @@ namespace particle_test {
 		// ------
 
 		{
-			this->_text->addText(this->_font, "DEFAULT EMITTER SETTINGS", {-4.F, 0.15F, 0});
+			this->_text->addText(this->_font, "DEFAULT EMITTER SETTINGS", {-2.F, 0.15F, 0});
+			this->_text->addText(this->_font, "CUSTOM EMITTER SETTINGS", {2.F, 0.15F, 0});
 			this->_text->upload();
 		}
 
@@ -121,11 +120,15 @@ namespace particle_test {
 		this->_window->pollEvents();
 	}
 
+	float move = 0.F;
 	void Game::update(float deltaTime, int64_t gameTime) {
 		if (this->_camera == nullptr || this->_ps == nullptr) return;
 
 		this->_camera->update(deltaTime);
 		this->_ps->update(deltaTime);
+
+		this->_em->setPos({2.F + std::cos(move) * 0.5F, 0.5F, std::sin(move) * 0.5F});
+		move += 0.05F;
 	}
 
 	void Game::drawWorld() {

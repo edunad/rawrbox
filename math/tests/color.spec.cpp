@@ -74,7 +74,7 @@ TEST_CASE("Color should behave as expected", "[rawrbox::Color]") {
 
 	SECTION("rawrbox::Color::pack") {
 		rawrbox::Colori col = rawrbox::Colori(255, 0, 255, 255);
-		REQUIRE(col.toHEX() == 0xffff00ff);
+		REQUIRE(col.pack() == 0xffff00ff);
 	}
 
 	SECTION("rawrbox::Color::RGBHex") {

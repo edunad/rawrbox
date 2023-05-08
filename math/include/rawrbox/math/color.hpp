@@ -108,7 +108,7 @@ namespace rawrbox {
 			return r * other.r + g * other.g + b * other.b + a * other.a;
 		}
 
-		[[nodiscard]] uint32_t toHEX() const {
+		[[nodiscard]] uint32_t pack() const {
 			if constexpr (std::is_same<NumberType, int>::value) {
 				Color_t<float> cc = this->cast<float>();
 				return rawrbox::PackUtils::toAbgr(cc.r, cc.g, cc.b, cc.a);

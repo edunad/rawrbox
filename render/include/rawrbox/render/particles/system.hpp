@@ -1,7 +1,7 @@
 #pragma once
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/camera/base.hpp>
-#include <rawrbox/render/model/material/particle_unlit.hpp>
+#include <rawrbox/render/model/material/particle.hpp>
 #include <rawrbox/render/particles/emitter.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
@@ -16,7 +16,7 @@
 #define BGFX_STATE_DEFAULT_PARTICLE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_CULL_CW | BGFX_STATE_BLEND_NORMAL)
 
 namespace rawrbox {
-	template <typename M = rawrbox::MaterialParticleUnlit>
+	template <typename M = rawrbox::MaterialParticle>
 	class ParticleSystem {
 	protected:
 		// Drawing ----
@@ -116,7 +116,6 @@ namespace rawrbox {
 			}
 
 			bgfx::setState(BGFX_STATE_DEFAULT_PARTICLE, 0);
-
 			bgfx::setVertexBuffer(0, &tvb);
 			bgfx::setIndexBuffer(&tib);
 

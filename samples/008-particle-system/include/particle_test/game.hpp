@@ -23,6 +23,8 @@ namespace particle_test {
 		std::shared_ptr<rawrbox::Model<>> _modelGrid = std::make_shared<rawrbox::Model<>>();
 
 		std::unique_ptr<rawrbox::TextEngine> _textEngine = nullptr;
+
+		std::shared_ptr<rawrbox::Emitter> _em = nullptr;
 		std::shared_ptr<rawrbox::ParticleSystem<>> _ps = nullptr;
 
 		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();

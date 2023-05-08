@@ -462,7 +462,7 @@ namespace rawrbox {
 
 					if (aiMesh.HasVertexColors(0)) {
 						auto& col = aiMesh.mColors[0][i];
-						v.abgr = Colorf{col.r, col.g, col.b, col.a}.toHEX();
+						v.abgr = Colorf{col.r, col.g, col.b, col.a}.pack();
 					}
 
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
