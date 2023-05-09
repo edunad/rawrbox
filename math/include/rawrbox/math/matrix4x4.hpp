@@ -159,7 +159,7 @@ namespace rawrbox {
 			std::memcpy(this->mtx.data(), _result.data(), sizeof(float) * this->mtx.size());
 		}
 
-		rawrbox::Vector3f mulVec(const rawrbox::Vector3f& other) {
+		[[nodiscard]] rawrbox::Vector3f const mulVec(const rawrbox::Vector3f& other) const {
 			rawrbox::Vector3f result = {};
 
 			result.x = other.x * this->mtx[0] + other.y * this->mtx[4] + other.z * this->mtx[8] + this->mtx[12];
@@ -169,7 +169,7 @@ namespace rawrbox {
 			return result;
 		}
 
-		rawrbox::Vector4f mulVec(const rawrbox::Vector4f& other) {
+		[[nodiscard]] rawrbox::Vector4f const mulVec(const rawrbox::Vector4f& other) const {
 			rawrbox::Vector4f result = {};
 
 			result.x = other.x * this->mtx[0] + other.y * this->mtx[4] + other.z * this->mtx[8] + other.w * this->mtx[12];
@@ -254,17 +254,38 @@ namespace rawrbox {
 
 		// STATIC UTILS ----
 		static inline rawrbox::Vector3f project(const rawrbox::Vector3f& pos, const rawrbox::Matrix4x4& view, const rawrbox::Matrix4x4& proj, const rawrbox::Vector4f& viewport) {
-			rawrbox::Vector3f _result = {};
+			std::array<float, 12> fTempo = {};
+			// Modelview transform
+			fTempo[0] = view[0] * pos.x + view[4] * pos.y + view[8] * pos.z + view[12]; // w is always 1
+			fTempo[1] = view[1] * pos.x + view[5] * pos.y + view[9] * pos.z + view[13];
+			fTempo[2] = view[2] * pos.x + view[6] * pos.y + view[10] * pos.z + view[14];
+			fTempo[3] = view[3] * pos.x + view[7] * pos.y + view[11] * pos.z + view[15];
 
-			auto ml = view * proj;
-			ml.inverse();
+			// Projection transform, the final row of projection matrix is always [0 0 -1 0]
+			// so we optimize for that.
+			fTempo[4] = proj[0] * fTempo[0] + proj[4] * fTempo[1] + proj[8] * fTempo[2] + proj[12] * fTempo[3];
+			fTempo[5] = proj[1] * fTempo[0] + proj[5] * fTempo[1] + proj[9] * fTempo[2] + proj[13] * fTempo[3];
+			fTempo[6] = proj[2] * fTempo[0] + proj[6] * fTempo[1] + proj[10] * fTempo[2] + proj[14] * fTempo[3];
+			fTempo[7] = -fTempo[2];
 
-			_result.x = _result.x - viewport.x / viewport.z;
-			_result.y = _result.y - viewport.y / viewport.w;
-			_result.x = _result.x * 2.F - 1.F;
-			_result.y = _result.y * 2.F - 1.F;
+			// The result normalizes between -1 and 1
+			if (fTempo[7] == 0.0F) // The w value
+				return {};
 
-			return ml.mulVec(_result);
+			fTempo[7] = 1.0F / fTempo[7];
+
+			// Perspective division
+			fTempo[4] *= fTempo[7];
+			fTempo[5] *= fTempo[7];
+			fTempo[6] *= fTempo[7];
+
+			// Map x, y to range 0-1
+			rawrbox::Vector3f windowCoordinate = {};
+			windowCoordinate.x = (fTempo[4] * -0.5F + 0.5F) * viewport.z + viewport.x;
+			windowCoordinate.y = (fTempo[5] * 0.5F + 0.5F) * viewport.w + viewport.y;
+			windowCoordinate.z = (1.0F + fTempo[6]) * 0.5F;
+
+			return windowCoordinate;
 		}
 
 		// ------

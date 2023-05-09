@@ -27,7 +27,7 @@ static const bgfx::EmbeddedShader stencil_shaders[] = {
 // NOLINTEND(*)
 
 namespace rawrbox {
-	Stencil::Stencil(bgfx::ViewId id, const rawrbox::Vector2i& size) : _viewId(id), _windowSize(size) {
+	Stencil::Stencil(const rawrbox::Vector2i& size) : _windowSize(size) {
 		// Shader layout
 		this->_vLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
@@ -83,7 +83,7 @@ namespace rawrbox {
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 
-		this->_renderTexture = std::make_shared<rawrbox::TextureRender>(this->_viewId, this->_windowSize);
+		this->_renderTexture = std::make_shared<rawrbox::TextureRender>(this->_windowSize);
 		this->_pixelTexture = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(1, 1), Colors::White);
 		this->_renderTexture->upload();
 		this->_pixelTexture->upload();
@@ -393,29 +393,19 @@ namespace rawrbox {
 		if (this->_vertices.empty() || this->_indices.empty()) return;
 		bgfx::setTexture(0, this->_texColor, this->_textureHandle);
 
-		/*
-		Setup buffer (Transient are destroyed every frame, made for things that change a lot) ----
+		auto vertSize = static_cast<uint32_t>(this->_vertices.size());
+		auto indSize = static_cast<uint32_t>(this->_indices.size());
 
-		TLDR: It's special buffer type for index/vertex buffers that are changing every frame. It's there as convenience as fire&forget, so you don't have to manually manage buffers that are changing all the time. Also, as we know what's life-time of these buffers, it allows some internal optimizations.
-		- Transient - changes every frame
-		- Dynamic - changes sometimes (if you don't pass data on creation, buffer/texture is dynamic)
-		- Static - never changes (if you pass data to any creation function, it's assumed that buffer/texture is immutable)
-		*/
-		bgfx::TransientVertexBuffer vbh = {};
-		bgfx::TransientIndexBuffer ibh = {};
+		bgfx::TransientVertexBuffer tvb = {};
+		bgfx::TransientIndexBuffer tib = {};
 
-		uint32_t vertSize = static_cast<uint32_t>(this->_vertices.size()) * this->_vLayout.m_stride;
-		uint32_t indSize = static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t);
+		if (!bgfx::allocTransientBuffers(&tvb, this->_vLayout, vertSize, &tib, indSize)) return;
 
-		bgfx::allocTransientVertexBuffer(&vbh, vertSize, this->_vLayout);
-		bx::memCopy(vbh.data, this->_vertices.data(), vertSize);
+		bx::memCopy(tvb.data, this->_vertices.data(), vertSize * this->_vLayout.m_stride);
+		bx::memCopy(tib.data, this->_indices.data(), indSize * sizeof(uint16_t));
 
-		bgfx::allocTransientIndexBuffer(&ibh, indSize);
-		bx::memCopy(ibh.data, this->_indices.data(), indSize);
-
-		bgfx::setVertexBuffer(0, &vbh, 0, static_cast<uint32_t>(this->_vertices.size()));
-		bgfx::setIndexBuffer(&ibh, 0, static_cast<uint32_t>(this->_indices.size()));
-		// ----------------------
+		bgfx::setVertexBuffer(0, &tvb);
+		bgfx::setIndexBuffer(&tib);
 
 		uint64_t flags = BGFX_STATE_DEFAULT_2D;
 		if (this->_cull) flags |= BGFX_STATE_CULL_CW;

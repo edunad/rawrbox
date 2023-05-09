@@ -1,11 +1,11 @@
 #pragma once
+#include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/util/anim_utils.hpp>
-#include <rawrbox/utils/time.hpp>
 
 #include <assimp/anim.h>
 #include <assimp/vector3.h>
@@ -165,7 +165,7 @@ namespace rawrbox {
 
 		virtual void preDraw() {
 			for (auto& anim : this->_playingAnimations) {
-				float timeToAdd = rawrbox::TimeUtils::deltaTime * anim.speed;
+				float timeToAdd = rawrbox::DELTA_TIME * anim.speed;
 				float time = anim.time + timeToAdd;
 				float totalDur = anim.data->duration;
 

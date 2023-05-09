@@ -145,14 +145,4 @@ TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 		REQUIRE_THAT(q2[8], Catch::Matchers::WithinAbs(q[8], 0.0001F));
 		REQUIRE_THAT(q2[12], Catch::Matchers::WithinAbs(q[12], 0.0001F));
 	}
-
-	SECTION("rawrbox::Matrix4x4::project") {
-		/*rawrbox::Matrix4x4 q = {};
-		q.project();
-
-		REQUIRE_THAT(q[0], Catch::Matchers::WithinAbs(0.70711F, 0.0001F));
-		REQUIRE_THAT(q[1], Catch::Matchers::WithinAbs(-0.70711F, 0.0001F));
-		REQUIRE_THAT(q[4], Catch::Matchers::WithinAbs(0.70711F, 0.0001F));
-		REQUIRE_THAT(q[5], Catch::Matchers::WithinAbs(0.70711F, 0.0001F));*/
-	}
 }

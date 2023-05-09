@@ -1,4 +1,5 @@
 
+#include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -30,7 +31,7 @@ namespace rawrbox {
 		};
 	}
 
-	void CameraOrbital::update(float deltaTime) {
+	void CameraOrbital::update() {
 		auto dir = this->getForward();
 		auto eye = this->getPos();
 		auto right = this->getRight();
@@ -44,22 +45,22 @@ namespace rawrbox {
 		}
 
 		if (this->_window->isKeyDown(KEY_W)) {
-			m_eye = bx::mad(m_dir, deltaTime * sp, m_eye);
+			m_eye = bx::mad(m_dir, rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 
 		if (this->_window->isKeyDown(KEY_S)) {
-			m_eye = bx::mad(m_dir, -deltaTime * sp, m_eye);
+			m_eye = bx::mad(m_dir, -rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 
 		if (this->_window->isKeyDown(KEY_A)) {
-			m_eye = bx::mad({right.x, right.y, right.z}, deltaTime * sp, m_eye);
+			m_eye = bx::mad({right.x, right.y, right.z}, rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 
 		if (this->_window->isKeyDown(KEY_D)) {
-			m_eye = bx::mad({right.x, right.y, right.z}, -deltaTime * sp, m_eye);
+			m_eye = bx::mad({right.x, right.y, right.z}, -rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 	}

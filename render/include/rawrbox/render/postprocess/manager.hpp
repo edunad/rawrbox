@@ -28,7 +28,6 @@ namespace rawrbox {
 		std::shared_ptr<rawrbox::TextureRender> _render;
 		std::vector<std::shared_ptr<rawrbox::PostProcessBase>> _postProcesses;
 
-		bgfx::ViewId _view;
 		rawrbox::Vector2i _windowSize;
 
 		bool _recording = false;
@@ -55,7 +54,8 @@ namespace rawrbox {
 		void buildPRViews();
 
 	public:
-		PostProcessManager(bgfx::ViewId view, const rawrbox::Vector2i& size);
+		PostProcessManager() = default;
+		explicit PostProcessManager(const rawrbox::Vector2i& size);
 		virtual ~PostProcessManager();
 
 		PostProcessManager(PostProcessManager&&) = delete;

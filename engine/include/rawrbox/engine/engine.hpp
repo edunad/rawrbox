@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/engine/static.hpp>
+#include <rawrbox/engine/timer.hpp>
 
 #include <chrono>
 #include <functional>
@@ -12,21 +13,31 @@
 using namespace std::chrono;
 using namespace std::literals;
 
-using Clock = std::chrono::steady_clock;
-
 namespace rawrbox {
 
 	class Engine {
 	private:
 		bool _shouldShutdown = false;
-		bool _runningSlow = false;
+		float _deltaTimeAccumulator = 0;
 
 		uint32_t _tps = 66;
 		uint32_t _fps = 60;
 
-		std::chrono::milliseconds _deadlockBreaker = std::chrono::milliseconds(500);
-		std::chrono::nanoseconds _delayBetweenTicks{};
-		std::chrono::nanoseconds _delayBetweenFrames{};
+		rawrbox::Timer _timer;
+
+		// Quick sleep from  https://github.com/turanszkij/WickedEngine/blob/387c3e0a379a843c433d425f970846a073d55665/WickedEngine/wiApplication.cpp#L148
+		void sleep(float milliseconds) {
+			const std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+			const double seconds = double(milliseconds) / 1000.0;
+			const int sleep_millisec_accuracy = 1;
+			const double sleep_sec_accuracy = double(sleep_millisec_accuracy) / 1000.0;
+
+			while (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - t1).count() < seconds) {
+				if (seconds - (std::chrono::high_resolution_clock::now() - t1).count() > sleep_sec_accuracy) {
+					std::this_thread::sleep_for(std::chrono::milliseconds(sleep_millisec_accuracy));
+				}
+			}
+		}
 
 	public:
 		virtual ~Engine() = default;
@@ -41,15 +52,16 @@ namespace rawrbox {
 		virtual void init() { throw std::runtime_error("[RawrBox-Engine] Method 'init' not implemented"); };
 
 		// mark quit flag and allow for `isQuiting()` for clean exit threaded
-		virtual void shutdown() {
-			this->_shouldShutdown = true;
-		};
+		virtual void shutdown() { this->_shouldShutdown = true; };
 
 		// poll window and input events
 		virtual void pollEvents(){};
 
 		// called on a fixed timestep
-		virtual void update(float deltaTime, int64_t gameTime){};
+		virtual void fixedUpdate(){};
+
+		// called on a variable timestep
+		virtual void update(){};
 
 		// called acordingly with the FPS lock
 		virtual void draw(){};
@@ -58,101 +70,50 @@ namespace rawrbox {
 		virtual void run() {
 			rawrbox::MAIN_THREAD_ID = std::this_thread::get_id();
 
-			/*auto constexpr dt = std::chrono::duration<long long, std::ratio<1, 66>>{1}; // TODO: PASS TICK TO RATIO
-			using duration = decltype(Clock::duration{} + dt);
-			using time_point = std::chrono::time_point<Clock, duration>;
-
-			time_point t{};
-			time_point currentTime = Clock::now();
-			duration accumulator = 0s;
-
 			while (!this->_shouldShutdown) {
-				time_point newTime = Clock::now();
-				auto frameTime = newTime - currentTime;
-				if (frameTime > 250ms) frameTime = 250ms; // Anti spiral of death (mostly when debugging stuff, or game paused / minimized) // TODO: PASS Maxframe
+				rawrbox::DELTA_TIME = float(std::max(0.0, this->_timer.record_elapsed_seconds()));
 
-				currentTime = newTime;
-				accumulator += frameTime;
-
-				pollEvents();
-
-				while (accumulator >= dt) {
-					update(std::chrono::duration<float>{dt} / 1s, t.time_since_epoch().count());
-					t += dt;
-					accumulator -= dt;
+				const float target_deltaTime = 1.0F / this->_fps;
+				if (rawrbox::DELTA_TIME < target_deltaTime) {
+					sleep((target_deltaTime - rawrbox::DELTA_TIME) * 1000);
+					rawrbox::DELTA_TIME += float(std::max(0.0, this->_timer.record_elapsed_seconds()));
 				}
-				draw();
-				// draw(std::chrono::duration<double>{accumulator} / dt);
-			}*/
 
-			this->_delayBetweenTicks = std::chrono::duration_cast<std::chrono::nanoseconds>(1000ms / this->_tps);
-			this->_delayBetweenFrames = std::chrono::duration_cast<std::chrono::nanoseconds>(1000ms / this->_fps);
+				// INPUT
+				this->pollEvents();
+				// ----------
 
-			// setup init timestamps
-			time_point gameStart = Clock::now();
-			time_point currentTimeTPS = gameStart;
-			time_point currentTimeFPS = gameStart;
+				// THREADING ----
+				rawrbox::___runThreadInvokes();
+				// -------
 
-			// while game is running, do update and draw logic
-			while (!this->_shouldShutdown) {
-				// process game input
-				pollEvents();
+				// Fixed time update --------
+				this->_deltaTimeAccumulator += rawrbox::DELTA_TIME;
+				if (this->_deltaTimeAccumulator > 10) this->_deltaTimeAccumulator = 0;
 
-				// track current "tick" time points
-				time_point newTime = Clock::now();
-				auto frameTimeTPS = newTime - currentTimeTPS;
-				auto frameTimeFPS = newTime - currentTimeFPS;
+				const float targetFrameRateInv = 1.0F / this->_tps;
+				while (this->_deltaTimeAccumulator >= targetFrameRateInv) {
+					this->fixedUpdate();
 
-				// Anti spiral of death (mostly when debugging stuff, or game paused / minimized)
-				if (frameTimeTPS > this->_deadlockBreaker) frameTimeTPS = this->_deadlockBreaker;
-				if (frameTimeFPS > this->_deadlockBreaker) frameTimeFPS = this->_deadlockBreaker;
-
-				// ensure we call update as much times per second as requested
-				while (frameTimeTPS >= this->_delayBetweenTicks) {
-					update(1.0F / static_cast<float>(this->_tps), (newTime - gameStart).count());
-
-					// THREADING ----
-					rawrbox::___runThreadInvokes();
-					// -------
-
+					this->_deltaTimeAccumulator -= targetFrameRateInv;
 					if (this->_shouldShutdown) return;
-
-					frameTimeTPS -= this->_delayBetweenTicks;
-					currentTimeTPS += this->_delayBetweenTicks;
-
-					if (this->_runningSlow) break;
 				}
 
-				// we only need to draw a single frame after a update
-				// else we're redrawing the same thing without any change
-				if (frameTimeFPS >= this->_delayBetweenFrames) {
-					draw();
-					currentTimeFPS = newTime;
-				}
+				// ---------------------------
 
-				// check if we can go sleep to let the cpu rest
-				// or if we need to keep going without sleep to keep up
-				newTime = Clock::now();
-				frameTimeTPS = newTime - currentTimeTPS;
-				if (frameTimeTPS >= this->_delayBetweenTicks) {
-					this->_runningSlow = true;
-					continue;
-				}
+				// VARIABLE-TIME
+				this->update();
+				// ----
 
-				this->_runningSlow = false;
-				std::this_thread::sleep_for(1ms);
+				// ACTUAL DRAWING
+				rawrbox::FRAME_ALPHA = this->_deltaTimeAccumulator / rawrbox::DELTA_TIME;
+				this->draw();
+				// ----------
 			}
 		}
-
-		// sets maximum time of backlog for update and draw calls. Once backlog will be cleared
-		// and will start skipping cycles
-		virtual void setBreakerTime(const std::chrono::milliseconds& timeBeforeBreaker) { this->_deadlockBreaker = timeBeforeBreaker; };
-		virtual const std::chrono::milliseconds& getBreakerTime() { return this->_deadlockBreaker; };
-
 		// sets the update rate per second
 		virtual void setTPS(uint32_t ticksPerSecond) {
 			this->_tps = ticksPerSecond;
-			this->_delayBetweenTicks = std::chrono::duration_cast<std::chrono::nanoseconds>(1000ms / this->_tps);
 		}
 
 		virtual uint32_t getTPS() {
@@ -162,7 +123,6 @@ namespace rawrbox {
 		// sets the draw rate per second
 		virtual void setFPS(uint32_t framesPerSecond) {
 			this->_fps = framesPerSecond;
-			this->_delayBetweenFrames = std::chrono::duration_cast<std::chrono::nanoseconds>(1000ms / this->_fps);
 		}
 
 		virtual uint32_t getFPS() {
@@ -172,11 +132,6 @@ namespace rawrbox {
 		// returns true after quit() is called
 		bool isQuitting() {
 			return this->_shouldShutdown;
-		}
-
-		// are we running behind on updates
-		bool isRunningSlow() {
-			return this->_runningSlow;
 		}
 	};
 } // namespace rawrbox

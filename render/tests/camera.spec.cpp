@@ -6,6 +6,8 @@
 
 #include <bx/math.h>
 
+#include "rawrbox/render/camera/perspective.hpp"
+
 TEST_CASE("Camera should behave as expected", "[rawrbox::Camera]") {
 	rawrbox::CameraBase base;
 
@@ -53,5 +55,13 @@ TEST_CASE("Camera should behave as expected", "[rawrbox::Camera]") {
 		REQUIRE_THAT(p.x, Catch::Matchers::WithinAbs(-1.0F, 0.0001F));
 		REQUIRE_THAT(p.y, Catch::Matchers::WithinAbs(0.0F, 0.0001F));
 		REQUIRE_THAT(p.z, Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+	}
+
+	SECTION("rawrbox::Camera::worldToScreen") {
+		REQUIRE_THROWS(base.worldToScreen({0, 0, 0}));
+	}
+
+	SECTION("rawrbox::Camera::screenToWorld") {
+		REQUIRE_THROWS(base.screenToWorld({0, 0}));
 	}
 }

@@ -6,6 +6,8 @@
 #include <stdexcept>
 
 namespace rawrbox {
+	void CameraBase::updateMtx(){};
+
 	// UTILS -----
 	void CameraBase::setPos(const rawrbox::Vector3f& pos) {
 		this->_pos = pos;
@@ -57,14 +59,17 @@ namespace rawrbox {
 		return this->_projection;
 	}
 
-	const rawrbox::Vector3i CameraBase::worldToScreen(const rawrbox::Vector3& pos) const {
+	void CameraBase::update() {
 		throw std::runtime_error("Not implemented");
 	}
 
-	const rawrbox::Vector3 CameraBase::screenToWorld(const rawrbox::Vector2i& screen_pos) const {
+	const rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f& pos) const {
+		throw std::runtime_error("Not implemented");
+	}
+
+	const rawrbox::Vector3f CameraBase::screenToWorld(const rawrbox::Vector2f& screen_pos) const {
 		throw std::runtime_error("Not implemented");
 	}
 
 	// ----------------
-	void CameraBase::updateMtx() {}
 } // namespace rawrbox

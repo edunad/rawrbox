@@ -15,6 +15,6 @@ namespace rawrbox {
 
 	public:
 		explicit CameraOrbital(rawrbox::Window* window, float speed = 8.F);
-		void update(float deltaTime);
+		void update() override;
 	};
 } // namespace rawrbox

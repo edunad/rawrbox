@@ -22,7 +22,7 @@ namespace rawrbox {
 
 		Vector4_t() = default;
 		explicit Vector4_t(NumberType val) : x(val), y(val), z(val), w(val) {}
-		Vector4_t(NumberType _x, NumberType _y, NumberType _z = 0, NumberType _w = 0) : x(_x), y(_y), z(_z), w(_w) {}
+		Vector4_t(NumberType _x, NumberType _y, NumberType _z, NumberType _w) : x(_x), y(_y), z(_z), w(_w) {}
 
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1, 1); }

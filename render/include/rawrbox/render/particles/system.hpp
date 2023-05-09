@@ -66,10 +66,10 @@ namespace rawrbox {
 		}
 		// -----
 
-		void update(float deltaTime) {
+		void update() {
 			this->_totalParticles = 0;
 			for (auto& em : this->_emitters) {
-				em->update(deltaTime);
+				em->update();
 				this->_totalParticles += static_cast<uint32_t>(em->totalParticles());
 			}
 		}
@@ -100,8 +100,9 @@ namespace rawrbox {
 			auto* vertices = std::bit_cast<typename M::vertexBufferType*>(tvb.data);
 			auto* indices = std::bit_cast<uint16_t*>(tib.data);
 
-			for (auto& em : this->_emitters)
+			for (auto& em : this->_emitters) {
 				pos += em->template draw<M>(cam, this->_atlas->getSize(), this->_spriteSize, pos, max, particleSort.data(), vertices);
+			}
 
 			std::qsort(particleSort.data(), max, sizeof(ParticleSort), particleSortFn);
 
@@ -115,9 +116,9 @@ namespace rawrbox {
 				tri(dest, index + 0, index + 3, index + 1);
 			}
 
-			bgfx::setState(BGFX_STATE_DEFAULT_PARTICLE, 0);
 			bgfx::setVertexBuffer(0, &tvb);
 			bgfx::setIndexBuffer(&tib);
+			bgfx::setState(BGFX_STATE_DEFAULT_PARTICLE, 0);
 
 			this->_material->postProcess();
 		}

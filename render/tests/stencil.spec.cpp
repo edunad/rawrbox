@@ -10,7 +10,7 @@
 #include <string>
 
 TEST_CASE("Stencil should behave as expected", "[rawrbox::Stencil]") {
-	rawrbox::Stencil base(0, {100, 100});
+	rawrbox::Stencil base({100, 100});
 
 	SECTION("rawrbox::Stencil::drawTriangle") {
 		base.clear();

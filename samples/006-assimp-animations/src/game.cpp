@@ -1,7 +1,6 @@
 
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/utils/keys.hpp>
-#include <rawrbox/utils/time.hpp>
 
 #include <anims/game.hpp>
 
@@ -102,10 +101,9 @@ namespace anims {
 		this->_window->pollEvents();
 	}
 
-	void Game::update(float deltaTime, int64_t gameTime) {
-		rawrbox::TimeUtils::deltaTime = deltaTime;
+	void Game::update() {
 		if (this->_camera == nullptr) return;
-		this->_camera->update(deltaTime);
+		this->_camera->update();
 	}
 
 	void Game::drawWorld() {
@@ -134,8 +132,6 @@ namespace anims {
 		if (this->_render == nullptr) return;
 		this->_render->swapBuffer(); // Clean up and set renderer
 
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-
 		// DEBUG ----
 		bgfx::dbgTextClear();
 		bgfx::dbgTextPrintf(1, 1, 0x1f, "006-assimp-animations");
@@ -146,5 +142,6 @@ namespace anims {
 		this->drawWorld();
 
 		this->_render->render(); // Commit primitives
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 } // namespace anims

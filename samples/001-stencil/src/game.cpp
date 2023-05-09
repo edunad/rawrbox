@@ -69,10 +69,6 @@ namespace stencil {
 		this->_window->pollEvents();
 	}
 
-	void Game::update(float deltaTime, int64_t gameTime) {
-		if (this->_render == nullptr) return;
-	}
-
 	void Game::drawOverlay() {
 		auto& stencil = this->_render->getStencil();
 
@@ -178,8 +174,6 @@ namespace stencil {
 		if (this->_render == nullptr) return;
 		this->_render->swapBuffer(); // Clean up and set renderer
 
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
-
 		// DEBUG ----
 		bgfx::dbgTextClear();
 		bgfx::dbgTextPrintf(1, 1, 0x1f, "001-stencil");
@@ -189,9 +183,12 @@ namespace stencil {
 
 		this->drawOverlay();
 
-		this->_render->render(); // Commit primitives
+		// TEST ---
 		this->_texture2->step();
-
 		counter += 0.1F;
+		// ---
+
+		this->_render->render(); // Commit primitives
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
 	}
 } // namespace stencil
