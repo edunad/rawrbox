@@ -216,7 +216,9 @@ namespace rawrbox {
 					armature->rootBone = std::make_shared<Bone>("ROOT-BONE");
 					armature->rootBone->owner = armature.get();
 
-					armature->invTransformationMtx = rawrbox::Matrix4x4(&sc->mRootNode->mTransformation.a1).inverse();
+					armature->invTransformationMtx.transpose(&sc->mRootNode->mTransformation.a1);
+					armature->invTransformationMtx.inverse();
+
 					armature->rootBone->transformationMtx.transpose(&bone->mArmature->mTransformation.a1);
 					//  ---------------------
 

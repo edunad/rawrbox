@@ -53,8 +53,8 @@ namespace rawrbox {
 		EmitterShape shape = EmitterShape::RECT; // The random shape
 		EmitterDirection direction = EmitterDirection::UP;
 
-		rawrbox::Vector3f angle = {0, 0, 0}; // In DEG
-		rawrbox::Vector2f texture = {0, 0};  // Random between these 2 values
+		rawrbox::Vector4f angle = {0, 0, 0, 0}; // In DEG
+		rawrbox::Vector2f texture = {0, 0};     // Random between these 2 values
 
 		// OFFSETS ---
 		rawrbox::Vector2f offsetStart = {0.F, 0.F}; // Random between these 2 values
@@ -121,9 +121,9 @@ namespace rawrbox {
 			if (this->_settings.particlesPerSecond <= 0) return;
 
 			rawrbox::Matrix4x4 mtx = {};
+			mtx.rotate(this->_settings.angle);
 			mtx.translate(this->_pos);
 			mtx.scale({1.F, 1.F, 1.F});
-			mtx.rotate(0.F, bx::toRad(this->_settings.angle.x), bx::toRad(this->_settings.angle.y), bx::toRad(this->_settings.angle.z));
 
 			auto ppS = !this->_preHeated && this->_settings.preHeat ? this->_settings.maxParticles : this->_settings.particlesPerSecond;
 			const float timePerParticle = !this->_preHeated && this->_settings.preHeat ? ppS : 1.0F / ppS;
@@ -301,7 +301,7 @@ namespace rawrbox {
 			bx::EaseFn easePos = bx::getEaseFunc(this->_settings.easePos);
 			bx::EaseFn easeScale = bx::getEaseFunc(this->_settings.easeScale);
 			bx::EaseFn easeBlend = bx::getEaseFunc(this->_settings.easeBlend);
-			bx::EaseFn easeRotation = bx::getEaseFunc(this->_settings.easeRotation);
+			// bx::EaseFn easeRotation = bx::getEaseFunc(this->_settings.easeRotation);
 
 			uint32_t index = first;
 			for (const auto& p : this->_particles) {
@@ -310,11 +310,11 @@ namespace rawrbox {
 				const float ttPos = easePos(p.life);
 				const float ttScale = easeScale(p.life);
 				const float ttBlend = easeBlend(p.life);
-				const float ttRotation = easeRotation(p.life);
+				// const float ttRotation = easeRotation(p.life);
 				const float ttRgba = std::clamp(easeRgba(p.life), 0.F, 1.F);
 
 				float scale = bx::lerp(p.scaleStart, p.scaleEnd, ttScale);
-				float rotation = bx::lerp(p.rotationStart, p.rotationEnd, ttRotation);
+				// float rotation = bx::lerp(p.rotationStart, p.rotationEnd, ttRotation);
 				float blend = bx::lerp(p.blendStart, p.blendEnd, ttBlend);
 
 				// POSITION -----
@@ -323,7 +323,7 @@ namespace rawrbox {
 				const bx::Vec3 pf = bx::lerp(p0, p1, ttPos);
 
 				rawrbox::Matrix4x4 rot = {};
-				rot.rotate(bx::toRad(rotation), 0, 0, 0);
+				// rot.rotateZ(bx::toRad(rotation)); // TODO: FIX ME
 
 				auto rotatedView = camera->getViewMtx() * rot;
 

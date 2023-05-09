@@ -144,7 +144,7 @@ namespace rawrbox {
 
 					nodeTransform.translate(position);
 					nodeTransform.scale(scale);
-					nodeTransform.rotate(rotation.x, rotation.y, rotation.z, rotation.w);
+					nodeTransform.rotate(rotation);
 				}
 			}
 

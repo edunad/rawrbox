@@ -10,6 +10,7 @@
 #include <cstring>
 
 namespace rawrbox {
+
 	class Matrix4x4 {
 	protected:
 		void vec4MulMtx(float* _result, const float* _vec, const float* _mat) {
@@ -30,10 +31,19 @@ namespace rawrbox {
 		explicit Matrix4x4(const std::array<float, 16>& other) { std::memcpy(this->mtx.data(), other.data(), sizeof(float) * this->mtx.size()); };
 		explicit Matrix4x4(const float* other) { std::memcpy(this->mtx.data(), other, sizeof(float) * this->mtx.size()); };
 
+		[[nodiscard]] size_t size() const { return this->mtx.size(); }
 		[[nodiscard]] const float* data() const { return this->mtx.data(); }
 		[[nodiscard]] float* data() { return this->mtx.data(); }
 
 		// UTILS ----
+		void zero() {
+			std::memset(this->mtx.data(), 0, sizeof(float) * this->mtx.size());
+		}
+
+		void identity() {
+			this->mtx = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+		}
+
 		void transpose(const float* other) {
 			this->mtx[0] = other[0];
 			this->mtx[4] = other[1];
@@ -64,24 +74,24 @@ namespace rawrbox {
 		}
 
 		void scale(const rawrbox::Vector3f& scale) {
-			this->mtx[0] *= scale.x;
-			this->mtx[5] *= scale.y;
-			this->mtx[10] *= scale.z;
+			this->mtx[0] = scale.x;
+			this->mtx[5] = scale.y;
+			this->mtx[10] = scale.z;
 		}
 
-		void rotate(float x, float y, float z, float w) {
-			const float x2 = x + x;
-			const float y2 = y + y;
-			const float z2 = z + z;
-			const float x2x = x2 * x;
-			const float x2y = x2 * y;
-			const float x2z = x2 * z;
-			const float x2w = x2 * w;
-			const float y2y = y2 * y;
-			const float y2z = y2 * z;
-			const float y2w = y2 * w;
-			const float z2z = z2 * z;
-			const float z2w = z2 * w;
+		void rotate(const rawrbox::Vector4f& rot) {
+			const float x2 = rot.x + rot.x;
+			const float y2 = rot.y + rot.y;
+			const float z2 = rot.z + rot.z;
+			const float x2x = x2 * rot.x;
+			const float x2y = x2 * rot.y;
+			const float x2z = x2 * rot.z;
+			const float x2w = x2 * rot.w;
+			const float y2y = y2 * rot.y;
+			const float y2z = y2 * rot.z;
+			const float y2w = y2 * rot.w;
+			const float z2z = z2 * rot.z;
+			const float z2w = z2 * rot.w;
 
 			this->mtx[0] = 1.0F - (y2y + z2z);
 			this->mtx[4] = x2y - z2w;
@@ -99,7 +109,6 @@ namespace rawrbox {
 		void rotateX(float _ax) {
 			const float sx = sin(_ax);
 			const float cx = cos(_ax);
-			std::memset(this->mtx.data(), 0, sizeof(float) * this->mtx.size());
 
 			this->mtx[5] = cx;
 			this->mtx[6] = -sx;
@@ -110,7 +119,6 @@ namespace rawrbox {
 		void rotateY(float _ay) {
 			const float sy = sin(_ay);
 			const float cy = cos(_ay);
-			std::memset(this->mtx.data(), 0, sizeof(float) * this->mtx.size());
 
 			this->mtx[0] = cy;
 			this->mtx[2] = sy;
@@ -121,7 +129,6 @@ namespace rawrbox {
 		void rotateZ(float _az) {
 			const float sz = sin(_az);
 			const float cz = cos(_az);
-			std::memset(this->mtx.data(), 0, sizeof(float) * this->mtx.size());
 
 			this->mtx[0] = cz;
 			this->mtx[1] = -sz;
@@ -173,9 +180,7 @@ namespace rawrbox {
 			return result;
 		}
 
-		rawrbox::Matrix4x4 inverse() {
-			rawrbox::Matrix4x4 _result;
-
+		void inverse() {
 			const float xx = mtx[0];
 			const float xy = mtx[1];
 			const float xz = mtx[2];
@@ -201,27 +206,25 @@ namespace rawrbox {
 
 			float invDet = 1.0F / det;
 
-			_result.mtx[0] = +(yy * (zz * ww - wz * zw) - yz * (zy * ww - wy * zw) + yw * (zy * wz - wy * zz)) * invDet;
-			_result.mtx[1] = -(xy * (zz * ww - wz * zw) - xz * (zy * ww - wy * zw) + xw * (zy * wz - wy * zz)) * invDet;
-			_result.mtx[2] = +(xy * (yz * ww - wz * yw) - xz * (yy * ww - wy * yw) + xw * (yy * wz - wy * yz)) * invDet;
-			_result.mtx[3] = -(xy * (yz * zw - zz * yw) - xz * (yy * zw - zy * yw) + xw * (yy * zz - zy * yz)) * invDet;
+			this->mtx[0] = +(yy * (zz * ww - wz * zw) - yz * (zy * ww - wy * zw) + yw * (zy * wz - wy * zz)) * invDet;
+			this->mtx[1] = -(xy * (zz * ww - wz * zw) - xz * (zy * ww - wy * zw) + xw * (zy * wz - wy * zz)) * invDet;
+			this->mtx[2] = +(xy * (yz * ww - wz * yw) - xz * (yy * ww - wy * yw) + xw * (yy * wz - wy * yz)) * invDet;
+			this->mtx[3] = -(xy * (yz * zw - zz * yw) - xz * (yy * zw - zy * yw) + xw * (yy * zz - zy * yz)) * invDet;
 
-			_result.mtx[4] = -(yx * (zz * ww - wz * zw) - yz * (zx * ww - wx * zw) + yw * (zx * wz - wx * zz)) * invDet;
-			_result.mtx[5] = +(xx * (zz * ww - wz * zw) - xz * (zx * ww - wx * zw) + xw * (zx * wz - wx * zz)) * invDet;
-			_result.mtx[6] = -(xx * (yz * ww - wz * yw) - xz * (yx * ww - wx * yw) + xw * (yx * wz - wx * yz)) * invDet;
-			_result.mtx[7] = +(xx * (yz * zw - zz * yw) - xz * (yx * zw - zx * yw) + xw * (yx * zz - zx * yz)) * invDet;
+			this->mtx[4] = -(yx * (zz * ww - wz * zw) - yz * (zx * ww - wx * zw) + yw * (zx * wz - wx * zz)) * invDet;
+			this->mtx[5] = +(xx * (zz * ww - wz * zw) - xz * (zx * ww - wx * zw) + xw * (zx * wz - wx * zz)) * invDet;
+			this->mtx[6] = -(xx * (yz * ww - wz * yw) - xz * (yx * ww - wx * yw) + xw * (yx * wz - wx * yz)) * invDet;
+			this->mtx[7] = +(xx * (yz * zw - zz * yw) - xz * (yx * zw - zx * yw) + xw * (yx * zz - zx * yz)) * invDet;
 
-			_result.mtx[8] = +(yx * (zy * ww - wy * zw) - yy * (zx * ww - wx * zw) + yw * (zx * wy - wx * zy)) * invDet;
-			_result.mtx[9] = -(xx * (zy * ww - wy * zw) - xy * (zx * ww - wx * zw) + xw * (zx * wy - wx * zy)) * invDet;
-			_result.mtx[10] = +(xx * (yy * ww - wy * yw) - xy * (yx * ww - wx * yw) + xw * (yx * wy - wx * yy)) * invDet;
-			_result.mtx[11] = -(xx * (yy * zw - zy * yw) - xy * (yx * zw - zx * yw) + xw * (yx * zy - zx * yy)) * invDet;
+			this->mtx[8] = +(yx * (zy * ww - wy * zw) - yy * (zx * ww - wx * zw) + yw * (zx * wy - wx * zy)) * invDet;
+			this->mtx[9] = -(xx * (zy * ww - wy * zw) - xy * (zx * ww - wx * zw) + xw * (zx * wy - wx * zy)) * invDet;
+			this->mtx[10] = +(xx * (yy * ww - wy * yw) - xy * (yx * ww - wx * yw) + xw * (yx * wy - wx * yy)) * invDet;
+			this->mtx[11] = -(xx * (yy * zw - zy * yw) - xy * (yx * zw - zx * yw) + xw * (yx * zy - zx * yy)) * invDet;
 
-			_result.mtx[12] = -(yx * (zy * wz - wy * zz) - yy * (zx * wz - wx * zz) + yz * (zx * wy - wx * zy)) * invDet;
-			_result.mtx[13] = +(xx * (zy * wz - wy * zz) - xy * (zx * wz - wx * zz) + xz * (zx * wy - wx * zy)) * invDet;
-			_result.mtx[14] = -(xx * (yy * wz - wy * yz) - xy * (yx * wz - wx * yz) + xz * (yx * wy - wx * yy)) * invDet;
-			_result.mtx[15] = +(xx * (yy * zz - zy * yz) - xy * (yx * zz - zx * yz) + xz * (yx * zy - zx * yy)) * invDet;
-
-			return _result;
+			this->mtx[12] = -(yx * (zy * wz - wy * zz) - yy * (zx * wz - wx * zz) + yz * (zx * wy - wx * zy)) * invDet;
+			this->mtx[13] = +(xx * (zy * wz - wy * zz) - xy * (zx * wz - wx * zz) + xz * (zx * wy - wx * zy)) * invDet;
+			this->mtx[14] = -(xx * (yy * wz - wy * yz) - xy * (yx * wz - wx * yz) + xz * (yx * wy - wx * yy)) * invDet;
+			this->mtx[15] = +(xx * (yy * zz - zy * yz) - xy * (yx * zz - zx * yz) + xz * (yx * zy - zx * yy)) * invDet;
 		}
 
 		void lookAt(const rawrbox::Vector3f& _eye, const rawrbox::Vector3f& _at, const rawrbox::Vector3f& _up) {
@@ -254,25 +257,15 @@ namespace rawrbox {
 			rawrbox::Vector3f _result = {};
 
 			auto ml = view * proj;
-			auto inverse = ml.inverse();
+			ml.inverse();
 
 			_result.x = _result.x - viewport.x / viewport.z;
 			_result.y = _result.y - viewport.y / viewport.w;
 			_result.x = _result.x * 2.F - 1.F;
 			_result.y = _result.y * 2.F - 1.F;
 
-			return inverse.mulVec(_result);
+			return ml.mulVec(_result);
 		}
-
-		/*
-
-		static inline rawrbox::Matrix4x4 translateMtx(const rawrbox::Vector3f& pos) {
-			rawrbox::Matrix4x4 _result;
-			_result.translate(pos);
-
-			return _result;
-		}
-		*/
 
 		// ------
 		float operator[](size_t indx) const {
@@ -282,6 +275,13 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 operator*(rawrbox::Matrix4x4 other) const {
 			other.mul(*this);
 			return other;
+		}
+
+		rawrbox::Matrix4x4 operator*(rawrbox::Vector3f other) const {
+			rawrbox::Matrix4x4 res{this->data()};
+			res.mul(other);
+
+			return res;
 		}
 
 		bool operator==(const rawrbox::Matrix4x4& other) const {
