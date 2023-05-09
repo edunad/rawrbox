@@ -66,7 +66,7 @@ namespace rawrbox {
 
 			if (lightSettings[0] == 1.F || lightCount <= 0) return; // Fullbright
 
-			std::vector<std::array<float, 16>> lightData(lightCount);
+			std::vector<rawrbox::Matrix4x4> lightData(lightCount);
 			std::vector<std::array<float, 4>> lightPos(lightCount);
 
 			for (size_t i = 0; i < lightCount; i++) {

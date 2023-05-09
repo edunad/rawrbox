@@ -24,7 +24,7 @@ namespace rawrbox {
 
 	Renderer::Renderer(bgfx::ViewId id, const rawrbox::Vector2i& size) : _id(id), _size(size) {
 		if (!rawrbox::BGFX_INITIALIZED) return;
-		this->_stencil = std::make_unique<rawrbox::Stencil>(id, size);
+		this->_stencil = std::make_unique<rawrbox::Stencil>(size);
 
 		bgfx::setViewRect(this->_id, 0, 0, size.x, size.y);
 		bgfx::setViewMode(this->_id, bgfx::ViewMode::Sequential);

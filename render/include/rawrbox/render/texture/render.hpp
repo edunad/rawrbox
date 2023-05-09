@@ -16,11 +16,11 @@ namespace rawrbox {
 
 		rawrbox::Vector2i _size;
 
-		bgfx::ViewId _viewId;
+		bgfx::ViewId _prevViewId;
 		bgfx::ViewId _renderId;
 
 	public:
-		TextureRender(bgfx::ViewId viewId, const rawrbox::Vector2i& size);
+		explicit TextureRender(const rawrbox::Vector2i& size);
 
 		TextureRender(TextureRender&&) = delete;
 		TextureRender& operator=(TextureRender&&) = delete;

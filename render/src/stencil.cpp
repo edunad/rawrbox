@@ -1,4 +1,6 @@
 
+#include <rawrbox/math/matrix4x4.hpp>
+#include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/shader_defines.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
@@ -25,7 +27,7 @@ static const bgfx::EmbeddedShader stencil_shaders[] = {
 // NOLINTEND(*)
 
 namespace rawrbox {
-	Stencil::Stencil(bgfx::ViewId id, const rawrbox::Vector2i& size) : _viewId(id), _windowSize(size) {
+	Stencil::Stencil(const rawrbox::Vector2i& size) : _windowSize(size) {
 		// Shader layout
 		this->_vLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
@@ -81,7 +83,7 @@ namespace rawrbox {
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 
-		this->_renderTexture = std::make_shared<rawrbox::TextureRender>(this->_viewId, this->_windowSize);
+		this->_renderTexture = std::make_shared<rawrbox::TextureRender>(this->_windowSize);
 		this->_pixelTexture = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(1, 1), Colors::White);
 		this->_renderTexture->upload();
 		this->_pixelTexture->upload();
@@ -120,55 +122,35 @@ namespace rawrbox {
 	void Stencil::applyRotation(rawrbox::Vector2f& vert) {
 		if (this->_rotation.rotation == 0) return;
 
-		std::array<float, 16> translationMatrix = {};
-		bx::mtxIdentity(translationMatrix.data());
-		bx::mtxTranslate(translationMatrix.data(), -_rotation.origin.x, -_rotation.origin.y, 0);
+		rawrbox::Matrix4x4 translationMatrix = {};
+		translationMatrix.translate({-_rotation.origin.x, -_rotation.origin.y, 0});
 
-		std::array<float, 16> rotationMatrix = {};
-		bx::mtxIdentity(rotationMatrix.data());
-		bx::mtxRotateZ(rotationMatrix.data(), bx::toRad(_rotation.rotation));
+		rawrbox::Matrix4x4 rotationMatrix = {};
+		rotationMatrix.rotateZ(bx::toRad(_rotation.rotation));
 
-		std::array<float, 16> reverseTranslationMatrix = {};
-		bx::mtxIdentity(reverseTranslationMatrix.data());
-		bx::mtxTranslate(reverseTranslationMatrix.data(), _rotation.origin.x, _rotation.origin.y, 0);
+		rawrbox::Matrix4x4 reverseTranslationMatrix = {};
+		reverseTranslationMatrix.translate({_rotation.origin.x, _rotation.origin.y, 0});
 
-		std::array<float, 16> mul = {};
-		bx::mtxMul(mul.data(), reverseTranslationMatrix.data(), rotationMatrix.data());
-		bx::mtxMul(mul.data(), mul.data(), translationMatrix.data());
+		rawrbox::Matrix4x4 mul = translationMatrix * rotationMatrix * reverseTranslationMatrix;
 
-		std::array<float, 4> vv = {vert.x, vert.y, 0, -1.0F};
-		std::array<float, 4> v = {};
-		bx::vec4MulMtx(v.data(), vv.data(), mul.data());
+		rawrbox::Vector4f v = {vert.x, vert.y, 0, -1.0F};
+		auto res = mul.mulVec(v);
 
-		vert.x = v[0];
-		vert.y = v[1];
+		vert.x = res.x;
+		vert.y = res.y;
 	}
 
 	void Stencil::applyScale(rawrbox::Vector2f& vert) {
 		if (this->_scale == 0) return;
 
-		std::array<float, 16> translationMatrix = {};
-		bx::mtxIdentity(translationMatrix.data());
-		bx::mtxTranslate(translationMatrix.data(), -_rotation.origin.x, -_rotation.origin.y, 0);
+		rawrbox::Matrix4x4 scaleMtx = {};
+		scaleMtx.scale({this->_scale.x, this->_scale.y, 1.F});
 
-		std::array<float, 16> rotationMatrix = {};
-		bx::mtxIdentity(rotationMatrix.data());
-		bx::mtxScale(rotationMatrix.data(), this->_scale.x, this->_scale.y, 1.F);
+		rawrbox::Vector4f v = {vert.x, vert.y, 0, -1.0F};
+		auto res = scaleMtx.mulVec(v);
 
-		std::array<float, 16> reverseTranslationMatrix = {};
-		bx::mtxIdentity(reverseTranslationMatrix.data());
-		bx::mtxTranslate(reverseTranslationMatrix.data(), _rotation.origin.x, _rotation.origin.y, 0);
-
-		std::array<float, 16> mul = {};
-		bx::mtxMul(mul.data(), reverseTranslationMatrix.data(), rotationMatrix.data());
-		bx::mtxMul(mul.data(), mul.data(), translationMatrix.data());
-
-		std::array<float, 4> vv = {vert.x, vert.y, 0, -1.0F};
-		std::array<float, 4> v = {};
-		bx::vec4MulMtx(v.data(), vv.data(), mul.data());
-
-		vert.x = v[0];
-		vert.y = v[1];
+		vert.x = res.x;
+		vert.y = res.y;
 	}
 	// --------------------
 
@@ -411,29 +393,19 @@ namespace rawrbox {
 		if (this->_vertices.empty() || this->_indices.empty()) return;
 		bgfx::setTexture(0, this->_texColor, this->_textureHandle);
 
-		/*
-		Setup buffer (Transient are destroyed every frame, made for things that change a lot) ----
+		auto vertSize = static_cast<uint32_t>(this->_vertices.size());
+		auto indSize = static_cast<uint32_t>(this->_indices.size());
 
-		TLDR: It's special buffer type for index/vertex buffers that are changing every frame. It's there as convenience as fire&forget, so you don't have to manually manage buffers that are changing all the time. Also, as we know what's life-time of these buffers, it allows some internal optimizations.
-		- Transient - changes every frame
-		- Dynamic - changes sometimes (if you don't pass data on creation, buffer/texture is dynamic)
-		- Static - never changes (if you pass data to any creation function, it's assumed that buffer/texture is immutable)
-		*/
-		bgfx::TransientVertexBuffer vbh = {};
-		bgfx::TransientIndexBuffer ibh = {};
+		bgfx::TransientVertexBuffer tvb = {};
+		bgfx::TransientIndexBuffer tib = {};
 
-		uint32_t vertSize = static_cast<uint32_t>(this->_vertices.size()) * this->_vLayout.m_stride;
-		uint32_t indSize = static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t);
+		if (!bgfx::allocTransientBuffers(&tvb, this->_vLayout, vertSize, &tib, indSize)) return;
 
-		bgfx::allocTransientVertexBuffer(&vbh, vertSize, this->_vLayout);
-		bx::memCopy(vbh.data, this->_vertices.data(), vertSize);
+		bx::memCopy(tvb.data, this->_vertices.data(), vertSize * this->_vLayout.m_stride);
+		bx::memCopy(tib.data, this->_indices.data(), indSize * sizeof(uint16_t));
 
-		bgfx::allocTransientIndexBuffer(&ibh, indSize);
-		bx::memCopy(ibh.data, this->_indices.data(), indSize);
-
-		bgfx::setVertexBuffer(0, &vbh, 0, static_cast<uint32_t>(this->_vertices.size()));
-		bgfx::setIndexBuffer(&ibh, 0, static_cast<uint32_t>(this->_indices.size()));
-		// ----------------------
+		bgfx::setVertexBuffer(0, &tvb);
+		bgfx::setIndexBuffer(&tib);
 
 		uint64_t flags = BGFX_STATE_DEFAULT_2D;
 		if (this->_cull) flags |= BGFX_STATE_CULL_CW;

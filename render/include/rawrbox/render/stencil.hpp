@@ -97,7 +97,6 @@ namespace rawrbox {
 
 	class Stencil {
 	private:
-		bgfx::ViewId _viewId;
 		bgfx::VertexLayout _vLayout;
 
 		bgfx::ProgramHandle _stencilProgram = BGFX_INVALID_HANDLE;
@@ -160,7 +159,9 @@ namespace rawrbox {
 		void drawRecording();
 		// --------------------
 	public:
-		Stencil(bgfx::ViewId id, const rawrbox::Vector2i& size);
+		Stencil() = default;
+		explicit Stencil(const rawrbox::Vector2i& size);
+
 		Stencil(Stencil&&) = delete;
 		Stencil& operator=(Stencil&&) = delete;
 		Stencil(const Stencil&) = delete;

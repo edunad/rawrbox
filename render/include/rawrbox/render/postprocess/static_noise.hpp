@@ -3,7 +3,6 @@
 #include <rawrbox/render/shader_defines.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/util/uniforms.hpp>
-#include <rawrbox/utils/time.hpp>
 
 #include <generated/shaders/render/all.hpp>
 
@@ -68,6 +67,7 @@ namespace rawrbox {
 			const auto freq = double(bx::getHPFrequency());
 			auto time = (float)((now - m_timeOffset) / freq);
 
+			// TODO: REPLACE WITH TIME()
 			rawrbox::UniformUtils::setUniform(this->_settings, rawrbox::Vector2f(time,
 									       this->_strength));
 			bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);

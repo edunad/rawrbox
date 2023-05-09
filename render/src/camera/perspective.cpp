@@ -1,12 +1,15 @@
 
+
 #include <rawrbox/render/camera/perspective.hpp>
 
 #include <bx/math.h>
 
+#include <stdexcept>
+
 namespace rawrbox {
 	// NOLINTBEGIN(clang-analyzer-optin.cplusplus.VirtualCall)
-	CameraPerspective::CameraPerspective(float ratio, float FOV, float near, float far, bool homogeneousDepth) {
-		bx::mtxProj(this->_projection.data(), FOV, ratio, near, far, homogeneousDepth);
+	CameraPerspective::CameraPerspective(rawrbox::Window* window, float FOV, float near, float far, bool homogeneousDepth) : _window(window), _FOV(FOV), _near(near), _far(far), _homogeneousDepth(homogeneousDepth) {
+		bx::mtxProj(this->_projection.data(), FOV, window->getAspectRatio(), near, far, homogeneousDepth);
 		this->updateMtx();
 	}
 	// NOLINTEND(clang-analyzer-optin.cplusplus.VirtualCall)
@@ -14,10 +17,48 @@ namespace rawrbox {
 	void CameraPerspective::updateMtx() {
 		auto dir = this->getForward();
 
-		auto m_eye = bx::Vec3(this->_pos.x, this->_pos.y, this->_pos.z);
-		auto m_at = bx::add(m_eye, {dir.x, dir.y, dir.z});
+		auto m_at = this->_pos + dir;
 		auto m_up = this->getUp();
 
-		bx::mtxLookAt(this->_view.data(), m_eye, m_at, {m_up.x, m_up.y, m_up.z});
+		this->_view.lookAt(this->_pos, m_at, m_up);
 	}
+
+	const rawrbox::Vector3f CameraPerspective::worldToScreen(const rawrbox::Vector3f& pos) const {
+		auto size = this->_window->getSize().cast<float>();
+		return rawrbox::Matrix4x4::project(pos, this->_view, this->_projection, {0, 0, size.x, size.y});
+	}
+
+	const rawrbox::Vector3f CameraPerspective::screenToWorld(const rawrbox::Vector2f& screen_pos) const {
+		rawrbox::Vector3f plane_origin{0, 0, 0};
+		rawrbox::Vector3f plane_normal{0, 0, 1};
+
+		auto winSize = this->_window->getSize().cast<float>();
+		auto screenPos = screen_pos.cast<float>();
+
+		// get our pos and force aim downwards, the getForward() seems to behave odd when aiming full down
+		auto campos = this->getPos();
+
+		rawrbox::Matrix4x4 viewproj_inv = this->_projection * this->_view;
+		viewproj_inv.inverse();
+
+		float screenx_clip = 2 * (screenPos.x / winSize.x) - 1;
+		float screeny_clip = 1 - 2 * (screenPos.y) / winSize.y;
+
+		rawrbox::Vector4f screen_clip = {screenx_clip, screeny_clip, -1, 1};
+		rawrbox::Vector4f world_pos = viewproj_inv.mulVec(screen_clip);
+
+		// divide by the weigth of the universe to resolve black mater offsets
+		world_pos /= world_pos.w;
+
+		// convert the object back to the real universe
+		rawrbox::Vector3f mouse_point_world = {world_pos.x, world_pos.y, world_pos.z};
+		rawrbox::Vector3f camera_forward_world = mouse_point_world - campos;
+
+		float numerator = (plane_origin - campos).dot(plane_normal);
+		float denumerator = camera_forward_world.dot(plane_normal);
+
+		float delta = numerator / denumerator;
+		return camera_forward_world * delta + campos;
+	}
+
 } // namespace rawrbox

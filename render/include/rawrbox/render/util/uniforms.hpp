@@ -1,8 +1,9 @@
 #pragma once
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/math/quaternion.hpp>
+#include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/math/vector4.hpp>
 
 #include <bgfx/bgfx.h>
 
@@ -29,11 +30,11 @@ namespace rawrbox {
 			bgfx::setUniform(handle, d.data(), 1);
 		}
 
-		static void setUniform(const bgfx::UniformHandle& handle, std::array<float, 16> data) {
+		static void setUniform(const bgfx::UniformHandle& handle, rawrbox::Matrix4x4 data) {
 			bgfx::setUniform(handle, data.data());
 		}
 
-		static void setUniform(const bgfx::UniformHandle& handle, std::vector<std::array<float, 16>> data) {
+		static void setUniform(const bgfx::UniformHandle& handle, std::vector<rawrbox::Matrix4x4> data) {
 			bgfx::setUniform(handle, data.front().data(), static_cast<uint16_t>(data.size()));
 		}
 
@@ -59,7 +60,7 @@ namespace rawrbox {
 			bgfx::setUniform(handle, d.data(), 3);
 		}
 
-		static void setUniform(const bgfx::UniformHandle& handle, rawrbox::Quaternion data) {
+		static void setUniform(const bgfx::UniformHandle& handle, rawrbox::Vector4f data) {
 			std::array<float, 4> d = {data.x, data.y, data.z, data.w};
 			bgfx::setUniform(handle, d.data());
 		}

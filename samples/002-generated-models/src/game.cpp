@@ -28,14 +28,14 @@ namespace model {
 			this->shutdown();
 		};
 
-		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Window::WINDOWED);
+		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::STATS | rawrbox::WindowFlags::Window::WINDOWED);
 		this->_render = std::make_shared<rawrbox::Renderer>(0, this->_window->getSize());
 		this->_render->setClearColor(0x00000000);
 
 		// Setup camera
 		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window.get());
 		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
+		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		this->_textEngine = std::make_unique<rawrbox::TextEngine>();
@@ -82,6 +82,7 @@ namespace model {
 			auto mesh = this->_model->generateGrid(12, {0.F, 0.F, 0.F});
 			this->_model->addMesh(mesh);
 		}
+
 		// -----
 
 		// Sprite test ----
@@ -110,6 +111,7 @@ namespace model {
 	void Game::shutdown() {
 		this->_render = nullptr;
 		this->_camera = nullptr;
+		this->_texture2 = nullptr;
 
 		this->_model = nullptr;
 		this->_sprite = nullptr;
@@ -123,13 +125,13 @@ namespace model {
 		this->_window->pollEvents();
 	}
 
-	void Game::update(float deltaTime, int64_t gameTime) {
-		this->_camera->update(deltaTime);
+	void Game::update() {
+		if (this->_texture2 == nullptr || this->_camera == nullptr) return;
+		this->_camera->update();
 		this->_texture2->step();
 	}
 
 	void Game::drawWorld() {
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr) return;
 
 		this->_model->draw(this->_camera->getPos());
@@ -153,8 +155,6 @@ namespace model {
 		if (this->_render == nullptr) return;
 		this->_render->swapBuffer(); // Clean up and set renderer
 
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-
 		// DEBUG ----
 		bgfx::dbgTextClear();
 		bgfx::dbgTextPrintf(1, 1, 0x1f, "002-generated-models");
@@ -165,5 +165,7 @@ namespace model {
 		this->drawWorld();
 
 		this->_render->render(); // Commit primitives
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
+
 } // namespace model

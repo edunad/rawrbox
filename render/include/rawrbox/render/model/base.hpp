@@ -1,4 +1,5 @@
 #pragma once
+#include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/render/static.hpp>
@@ -23,8 +24,8 @@ namespace rawrbox {
 		uint8_t boneId = 0;
 
 		// Rendering ---
-		std::array<float, 16> transformationMtx = {};
-		std::array<float, 16> offsetMtx = {};
+		rawrbox::Matrix4x4 transformationMtx = {};
+		rawrbox::Matrix4x4 offsetMtx = {};
 		// ----
 
 		// Lookup ----
@@ -43,7 +44,7 @@ namespace rawrbox {
 		std::string name;
 		std::shared_ptr<Bone> rootBone;
 
-		std::array<float, 16> invTransformationMtx = {};
+		rawrbox::Matrix4x4 invTransformationMtx = {};
 
 		explicit Skeleton(std::string _name) : name(std::move(_name)) {}
 	};
@@ -58,7 +59,7 @@ namespace rawrbox {
 		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;          // Indices - Static
 
 		std::vector<std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes;
-		std::array<float, 16> _matrix = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}; // Identity matrix by default
+		rawrbox::Matrix4x4 _matrix = {};
 
 		std::vector<typename M::vertexBufferType> _vertices = {};
 		std::vector<uint16_t> _indices = {};
@@ -67,7 +68,7 @@ namespace rawrbox {
 
 		rawrbox::Vector3f _scale = {1, 1, 1};
 		rawrbox::Vector3f _pos = {};
-		rawrbox::Vector3f _angle = {};
+		rawrbox::Vector4f _angle = {};
 
 		rawrbox::BBOX _bbox = {};
 
@@ -158,7 +159,7 @@ namespace rawrbox {
 		// UTILS -----
 		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateLine(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Color& col) {
 			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
-			bx::mtxTranslate(mesh->vertexPos.data(), a.x, a.y, a.z);
+			mesh->vertexPos.translate(a);
 
 			std::array<typename M::vertexBufferType, 3> buff;
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
@@ -190,7 +191,7 @@ namespace rawrbox {
 			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
 
 			auto center = (a + b + c) / 3;
-			bx::mtxTranslate(mesh->vertexPos.data(), center.x, center.y, center.z);
+			mesh->vertexPos.translate(center);
 
 			std::array<typename M::vertexBufferType, 3> buff;
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
@@ -221,7 +222,7 @@ namespace rawrbox {
 
 		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generatePlane(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
 			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
-			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
+			mesh->vertexPos.translate(pos);
 
 			std::array<typename M::vertexBufferType, 4> buff;
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
@@ -262,7 +263,7 @@ namespace rawrbox {
 
 		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateCube(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
 			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
-			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
+			mesh->vertexPos.translate(pos);
 
 			std::array<typename M::vertexBufferType, 24> buff;
 
@@ -380,7 +381,7 @@ namespace rawrbox {
 
 		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateAxis(float size, const rawrbox::Vector3f& pos) {
 			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
-			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
+			mesh->vertexPos.translate(pos);
 
 			mesh->merge(generateCube(pos, {size, 0.01F, 0.01F}, Colors::Red));   // x
 			mesh->merge(generateCube(pos, {0.01F, size, 0.01F}, Colors::Green)); // y
@@ -400,14 +401,14 @@ namespace rawrbox {
 
 		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
 			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
-			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
+			mesh->vertexPos.translate(pos);
 
 			return mesh;
 		}
 
 		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateSphere(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White, int ratio = 5) {
 			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
-			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
+			mesh->vertexPos.translate(pos);
 
 			/*std::vector<rawrbox::VertexData> buff = {};
 			std::vector<uint16_t> inds = {};
@@ -429,7 +430,7 @@ namespace rawrbox {
 		// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
 		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateGrid(uint32_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::DarkGray, const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent) {
 			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
-			bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
+			mesh->vertexPos.translate(pos);
 
 			std::vector<rawrbox::VertexData> buff = {};
 			std::vector<uint16_t> inds = {};
@@ -484,22 +485,22 @@ namespace rawrbox {
 		virtual const rawrbox::Vector3f& getPos() { return this->_pos; }
 		virtual void setPos(const rawrbox::Vector3f& pos) {
 			this->_pos = pos;
-			bx::mtxSRT(this->_matrix.data(), this->_scale.x, this->_scale.y, this->_scale.z, bx::toRad(this->_angle.x), bx::toRad(this->_angle.y), bx::toRad(this->_angle.z), this->_pos.x, this->_pos.y, this->_pos.z);
+			this->_matrix.translate(this->_pos);
 		}
 
 		virtual const rawrbox::Vector3f& getScale() { return this->_scale; }
 		virtual void setScale(const rawrbox::Vector3f& scale) {
 			this->_scale = scale;
-			bx::mtxSRT(this->_matrix.data(), this->_scale.x, this->_scale.y, this->_scale.z, bx::toRad(this->_angle.x), bx::toRad(this->_angle.y), bx::toRad(this->_angle.z), this->_pos.x, this->_pos.y, this->_pos.z);
+			this->_matrix.scale(this->_scale);
 		}
 
-		virtual const rawrbox::Vector3f& getAngle() { return this->_angle; }
-		virtual void setAngle(const rawrbox::Vector3f& ang) {
+		virtual const rawrbox::Vector4f& getAngle() { return this->_angle; }
+		virtual void setAngle(const rawrbox::Vector4f& ang) {
 			this->_angle = ang;
-			bx::mtxSRT(this->_matrix.data(), this->_scale.x, this->_scale.y, this->_scale.z, bx::toRad(this->_angle.x), bx::toRad(this->_angle.y), bx::toRad(this->_angle.z), this->_pos.x, this->_pos.y, this->_pos.z);
+			this->_matrix.rotate(ang);
 		}
 
-		virtual std::array<float, 16>& getMatrix() {
+		virtual rawrbox::Matrix4x4& getMatrix() {
 			return this->_matrix;
 		}
 

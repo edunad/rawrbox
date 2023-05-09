@@ -1,6 +1,8 @@
 #pragma once
 
+#include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/color.hpp>
+#include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/camera/base.hpp>
@@ -51,8 +53,8 @@ namespace rawrbox {
 		EmitterShape shape = EmitterShape::RECT; // The random shape
 		EmitterDirection direction = EmitterDirection::UP;
 
-		rawrbox::Vector3f angle = {0, 0, 0}; // In DEG
-		rawrbox::Vector2f texture = {0, 0};  // Random between these 2 values
+		rawrbox::Vector4f angle = {0, 0, 0, 0}; // In DEG
+		rawrbox::Vector2f texture = {0, 0};     // Random between these 2 values
 
 		// OFFSETS ---
 		rawrbox::Vector2f offsetStart = {0.F, 0.F}; // Random between these 2 values
@@ -114,17 +116,19 @@ namespace rawrbox {
 		std::vector<rawrbox::Particle> _particles = {};
 		// -------
 
-		void spawnParticle(float deltaTime) {
+		void spawnParticle() {
 			// Calculate the next particle spawn time
 			if (this->_settings.particlesPerSecond <= 0) return;
 
-			std::array<float, 16> mtx = {};
-			bx::mtxSRT(mtx.data(), 1.0F, 1.0F, 1.0F, bx::toRad(this->_settings.angle.x), bx::toRad(this->_settings.angle.y), bx::toRad(this->_settings.angle.z), this->_pos.x, this->_pos.y, this->_pos.z);
+			rawrbox::Matrix4x4 mtx = {};
+			mtx.rotate(this->_settings.angle);
+			mtx.translate(this->_pos);
+			mtx.scale({1.F, 1.F, 1.F});
 
 			auto ppS = !this->_preHeated && this->_settings.preHeat ? this->_settings.maxParticles : this->_settings.particlesPerSecond;
 			const float timePerParticle = !this->_preHeated && this->_settings.preHeat ? ppS : 1.0F / ppS;
 
-			this->_timer += deltaTime;
+			this->_timer += rawrbox::DELTA_TIME;
 			const auto numParticles = static_cast<uint32_t>(this->_timer / timePerParticle);
 			this->_timer -= numParticles * timePerParticle;
 			// -------
@@ -274,9 +278,9 @@ namespace rawrbox {
 		}
 		// ------
 
-		void update(float deltaTime) {
+		void update() {
 			for (auto it2 = this->_particles.begin(); it2 != this->_particles.end();) {
-				(*it2).life += deltaTime / (*it2).lifeSpan;
+				(*it2).life += rawrbox::DELTA_TIME / (*it2).lifeSpan;
 
 				if ((*it2).life > 1.F) {
 					it2 = this->_particles.erase(it2);
@@ -286,7 +290,7 @@ namespace rawrbox {
 				++it2;
 			}
 
-			this->spawnParticle(deltaTime);
+			this->spawnParticle();
 		}
 
 		template <typename M = rawrbox::MaterialParticle>
@@ -297,7 +301,7 @@ namespace rawrbox {
 			bx::EaseFn easePos = bx::getEaseFunc(this->_settings.easePos);
 			bx::EaseFn easeScale = bx::getEaseFunc(this->_settings.easeScale);
 			bx::EaseFn easeBlend = bx::getEaseFunc(this->_settings.easeBlend);
-			bx::EaseFn easeRotation = bx::getEaseFunc(this->_settings.easeRotation);
+			// bx::EaseFn easeRotation = bx::getEaseFunc(this->_settings.easeRotation);
 
 			uint32_t index = first;
 			for (const auto& p : this->_particles) {
@@ -306,11 +310,11 @@ namespace rawrbox {
 				const float ttPos = easePos(p.life);
 				const float ttScale = easeScale(p.life);
 				const float ttBlend = easeBlend(p.life);
-				const float ttRotation = easeRotation(p.life);
+				// const float ttRotation = easeRotation(p.life);
 				const float ttRgba = std::clamp(easeRgba(p.life), 0.F, 1.F);
 
 				float scale = bx::lerp(p.scaleStart, p.scaleEnd, ttScale);
-				float rotation = bx::lerp(p.rotationStart, p.rotationEnd, ttRotation);
+				// float rotation = bx::lerp(p.rotationStart, p.rotationEnd, ttRotation);
 				float blend = bx::lerp(p.blendStart, p.blendEnd, ttBlend);
 
 				// POSITION -----
@@ -318,8 +322,10 @@ namespace rawrbox {
 				const bx::Vec3 p1 = bx::lerp({p.posEnd[0].x, p.posEnd[0].y, p.posEnd[0].z}, {p.posEnd[1].x, p.posEnd[1].y, p.posEnd[1].z}, ttPos);
 				const bx::Vec3 pf = bx::lerp(p0, p1, ttPos);
 
-				auto rot = rawrbox::MathUtils::mtxQuaternion(bx::toRad(rotation), 0, 0, 0);
-				auto rotatedView = rawrbox::MathUtils::mtxMul(rot, camera->getViewMtx());
+				rawrbox::Matrix4x4 rot = {};
+				// rot.rotateZ(bx::toRad(rotation)); // TODO: FIX ME
+
+				auto rotatedView = camera->getViewMtx() * rot;
 
 				rawrbox::Vector3f udir = rawrbox::Vector3f(rotatedView[0], rotatedView[4], rotatedView[8]) * scale;
 				rawrbox::Vector3f vdir = rawrbox::Vector3f(rotatedView[1], rotatedView[5], rotatedView[9]) * scale;
@@ -337,7 +343,7 @@ namespace rawrbox {
 				float ttmod = bx::mod(ttRgba, 0.25F) / 0.25F;
 
 				uint32_t rgbaStart = p.rgba[idx];
-				uint32_t rgbaEnd = p.rgba[idx + 1];
+				uint32_t rgbaEnd = idx + 1 >= p.rgba.size() ? 0x00FFFFFF : p.rgba[idx + 1];
 
 				auto clStart = std::bit_cast<uint8_t*>(&rgbaStart);
 				auto clEnd = std::bit_cast<uint8_t*>(&rgbaEnd);

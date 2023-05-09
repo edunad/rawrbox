@@ -1,6 +1,5 @@
 #pragma once
 
-#include <rawrbox/math/quaternion.hpp>
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/shader_defines.hpp>
 #include <rawrbox/render/static.hpp>

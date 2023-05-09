@@ -38,7 +38,7 @@ namespace particle_test {
 		// Setup camera
 		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window.get());
 		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
+		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		this->_textEngine = std::make_unique<rawrbox::TextEngine>();
@@ -122,11 +122,11 @@ namespace particle_test {
 	}
 
 	float move = 0.F;
-	void Game::update(float deltaTime, int64_t gameTime) {
+	void Game::update() {
 		if (this->_camera == nullptr || this->_ps == nullptr) return;
 
-		this->_camera->update(deltaTime);
-		this->_ps->update(deltaTime);
+		this->_camera->update();
+		this->_ps->update();
 
 		this->_em->setPos({2.F + std::cos(move) * 0.5F, 0.5F, std::sin(move) * 0.5F});
 		move += 0.05F;
@@ -156,10 +156,6 @@ namespace particle_test {
 		if (this->_render == nullptr) return;
 		this->_render->swapBuffer(); // Clean up and set renderer
 
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-
-		this->drawWorld();
-
 		// DEBUG ----
 		bgfx::dbgTextClear();
 		bgfx::dbgTextPrintf(1, 1, 0x1f, "008-particle-system");
@@ -167,6 +163,9 @@ namespace particle_test {
 		printFrames();
 		// -----------
 
+		this->drawWorld();
+
 		this->_render->render(true); // Commit primitives
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 } // namespace particle_test

@@ -1,16 +1,26 @@
 #pragma once
 
-#include <rawrbox/math/quaternion.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/camera/base.hpp>
+#include <rawrbox/render/window.hpp>
 
 namespace rawrbox {
 	class CameraPerspective : public CameraBase {
 	protected:
+		rawrbox::Window* _window = nullptr;
+
+		float _FOV = 60.F;
+		float _near = 0.1F;
+		float _far = 100.F;
+		bool _homogeneousDepth = false;
+
 		void updateMtx() override;
 
 	public:
-		explicit CameraPerspective(float ratio, float FOV = 60.F, float near = 0.1F, float far = 100.F, bool homogeneousDepth = false);
+		explicit CameraPerspective(rawrbox::Window* window, float FOV = 60.F, float near = 0.1F, float far = 100.F, bool homogeneousDepth = false);
+
+		[[nodiscard]] const rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const override;
+		[[nodiscard]] const rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screen_pos) const override;
 	};
 } // namespace rawrbox

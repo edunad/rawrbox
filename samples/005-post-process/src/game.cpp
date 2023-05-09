@@ -37,7 +37,7 @@ namespace post_process {
 		this->_render = std::make_shared<rawrbox::Renderer>(0, this->_window->getSize());
 		this->_render->setClearColor(0x00000000);
 
-		this->_postProcess = std::make_shared<rawrbox::PostProcessManager>(0, this->_window->getSize());
+		this->_postProcess = std::make_shared<rawrbox::PostProcessManager>(this->_window->getSize());
 		this->_postProcess->add(std::make_shared<rawrbox::PostProcessBloom>(0.015F));
 		this->_postProcess->add(std::make_shared<rawrbox::PostProcessPSXDither>(rawrbox::DITHER_SIZE::SLOW_MODE));
 		this->_postProcess->add(std::make_shared<rawrbox::PostProcessStaticNoise>(0.1F));
@@ -45,7 +45,7 @@ namespace post_process {
 		// Setup camera
 		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window.get());
 		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
+		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		// Load content ---
@@ -78,16 +78,23 @@ namespace post_process {
 		this->_window->pollEvents();
 	}
 
-	void Game::update(float deltaTime, int64_t gameTime) {
+	void Game::update() {
 		if (this->_camera == nullptr) return;
-		this->_camera->update(deltaTime);
+		this->_camera->update();
 	}
 
 	void Game::drawWorld() {
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 		if (this->_model == nullptr) return;
-
 		this->_model->draw(this->_camera->getPos());
+
+		auto& stencil = this->_render->getStencil();
+		rawrbox::Vector3f out2 = this->_camera->worldToScreen({0, 0, 0});
+
+		stencil.begin();
+		stencil.drawBox({out2.x, out2.y}, {50, 50});
+		stencil.end();
+
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 
 	void printFrames() {
@@ -106,8 +113,6 @@ namespace post_process {
 		if (this->_render == nullptr) return;
 		this->_render->swapBuffer(); // Clean up and set renderer
 
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-
 		// DEBUG ----
 		bgfx::dbgTextClear();
 		bgfx::dbgTextPrintf(1, 1, 0x1f, "005-post-process");
@@ -120,5 +125,7 @@ namespace post_process {
 		this->_postProcess->end();
 
 		this->_render->render(); // Commit primitives
+
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 } // namespace post_process

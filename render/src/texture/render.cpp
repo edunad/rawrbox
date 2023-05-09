@@ -11,7 +11,7 @@
 namespace rawrbox {
 	uint32_t TextureRender::renderID = 10; // 5 > reserved to render textures
 
-	TextureRender::TextureRender(bgfx::ViewId viewId, const rawrbox::Vector2i& size) : _size(size), _viewId(viewId), _renderId(TextureRender::renderID++) {
+	TextureRender::TextureRender(const rawrbox::Vector2i& size) : _size(size), _prevViewId(rawrbox::CURRENT_VIEW_ID), _renderId(TextureRender::renderID++) {
 		// Setup texture target view
 		bgfx::setViewName(this->_renderId, fmt::format("RAWR-RENDER-VIEW-{}", this->_renderId).c_str());
 		bgfx::setViewRect(this->_renderId, 0, 0, this->_size.x, this->_size.y);
@@ -28,6 +28,7 @@ namespace rawrbox {
 	void TextureRender::startRecord(bool clear) {
 		if (!bgfx::isValid(this->_renderView)) return;
 
+		this->_prevViewId = rawrbox::CURRENT_VIEW_ID;
 		rawrbox::CURRENT_VIEW_ID = this->_renderId;
 
 		bgfx::setViewFrameBuffer(this->_renderId, this->_renderView);
@@ -38,9 +39,9 @@ namespace rawrbox {
 
 	void TextureRender::stopRecord() {
 		if (!bgfx::isValid(this->_renderView)) return;
-		rawrbox::CURRENT_VIEW_ID = this->_viewId;
+		rawrbox::CURRENT_VIEW_ID = this->_prevViewId;
 
-		bgfx::touch(this->_viewId);
+		bgfx::touch(this->_prevViewId);
 	}
 
 	void TextureRender::upload(bgfx::TextureFormat::Enum format) {

@@ -33,6 +33,7 @@ namespace rawrbox {
 
 	// ID GENERATION
 	extern int SOUND_ID;
+	extern int LIGHT_ID;
 	extern int EMITTER_ID;
 	// -----
 } // namespace rawrbox

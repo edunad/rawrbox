@@ -33,7 +33,7 @@ namespace anims {
 		void init() override;
 		void shutdown() override;
 		void pollEvents() override;
-		void update(float deltaTime, int64_t gameTime) override;
+		void update() override;
 		void draw() override;
 
 		void loadContent();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
+#include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/static.hpp>
@@ -68,8 +69,8 @@ namespace rawrbox {
 		// -------
 
 		// RENDERING ---
-		std::array<float, 16> offsetMatrix = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}; // Identity matrix by default
-		std::array<float, 16> vertexPos = {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};    // Identity matrix by default
+		rawrbox::Matrix4x4 offsetMatrix = {};
+		rawrbox::Matrix4x4 vertexPos = {};
 		rawrbox::Color color = rawrbox::Colors::White;
 
 		bool wireframe = false;
@@ -118,12 +119,12 @@ namespace rawrbox {
 			return this->bbox;
 		}
 
-		void setMatrix(const std::array<float, 16>& offset) {
+		void setMatrix(const rawrbox::Matrix4x4& offset) {
 			this->offsetMatrix = offset;
 		}
 
 		virtual void setPos(const rawrbox::Vector3f& pos) {
-			rawrbox::MathUtils::mtxTranslate(this->offsetMatrix, pos);
+			this->offsetMatrix.translate(pos);
 		}
 
 		void setTexture(std::shared_ptr<rawrbox::TextureBase> ptr) {

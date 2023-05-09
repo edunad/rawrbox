@@ -184,6 +184,7 @@ namespace rawrbox {
 		VecType& operator-=(const VecType& other) {
 			x = x - other.x;
 			y = y - other.y;
+			z = z - other.z;
 			return *this;
 		}
 		VecType& operator+=(const VecType& other) {

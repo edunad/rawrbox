@@ -38,7 +38,7 @@ namespace bass_test {
 		// Setup camera
 		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window.get());
 		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
+		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		rawrbox::SoundManager::get().initialize();
@@ -124,18 +124,16 @@ namespace bass_test {
 		this->_window->pollEvents();
 	}
 
-	void Game::update(float deltaTime, int64_t gameTime) {
+	void Game::update() {
 		if (this->_camera == nullptr) return;
-		this->_camera->update(deltaTime);
+		this->_camera->update();
 
 		rawrbox::SoundManager::get().setListenerLocation(this->_camera->getPos(), this->_camera->getForward(), this->_camera->getUp());
 		if (this->_beat > 0.F) this->_beat -= 0.05F;
 	}
 
 	void Game::drawWorld() {
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 		this->_modelGrid->draw({});
-
 		this->_beatText->setPos({0, this->_beat, 0});
 		this->_beatText->draw({});
 		this->_text->draw({});
@@ -157,8 +155,6 @@ namespace bass_test {
 		if (this->_render == nullptr) return;
 		this->_render->swapBuffer(); // Clean up and set renderer
 
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-
 		// DEBUG ----
 		bgfx::dbgTextClear();
 		bgfx::dbgTextPrintf(1, 1, 0x1f, "007-bass-loading");
@@ -169,5 +165,6 @@ namespace bass_test {
 		this->drawWorld();
 
 		this->_render->render(true); // Commit primitives
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 } // namespace bass_test

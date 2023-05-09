@@ -56,6 +56,7 @@ namespace rawrbox {
 	class Window {
 	private:
 		void* _handle = nullptr;
+		uint32_t _resetFlags = BGFX_RESET_NONE;
 
 		// Default settings
 		std::string _title = "RawrBOX - Window";

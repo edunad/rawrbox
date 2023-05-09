@@ -20,7 +20,7 @@ static const bgfx::EmbeddedShader model_shaders[] = {
 constexpr int RENDER_PASS_DOWNSAMPLE_ID = 30;
 
 namespace rawrbox {
-	PostProcessManager::PostProcessManager(bgfx::ViewId view, const rawrbox::Vector2i& windowSize) : _view(view), _windowSize(windowSize) {
+	PostProcessManager::PostProcessManager(const rawrbox::Vector2i& windowSize) : _windowSize(windowSize) {
 		// Shader layout
 		this->_vLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
@@ -111,7 +111,7 @@ namespace rawrbox {
 	void PostProcessManager::upload() {
 		if (this->_render != nullptr) throw std::runtime_error("[RawrBox-PostProcess] Already uploaded");
 
-		this->_render = std::make_shared<rawrbox::TextureRender>(this->_view, this->_windowSize);
+		this->_render = std::make_shared<rawrbox::TextureRender>(this->_windowSize);
 		this->_render->upload();
 
 		for (auto effect : this->_postProcesses) {
@@ -159,6 +159,7 @@ namespace rawrbox {
 		this->_recording = false;
 		this->_render->stopRecord();
 
+		bgfx::ViewId prevID = rawrbox::CURRENT_VIEW_ID;
 		for (size_t pass = 0; pass < this->_postProcesses.size(); pass++) {
 			bgfx::ViewId id = RENDER_PASS_DOWNSAMPLE_ID + static_cast<bgfx::ViewId>(pass);
 			rawrbox::CURRENT_VIEW_ID = id;
@@ -172,10 +173,10 @@ namespace rawrbox {
 			this->_postProcesses[pass]->applyEffect();
 		}
 
-		rawrbox::CURRENT_VIEW_ID = this->_view;
+		rawrbox::CURRENT_VIEW_ID = prevID;
 
 		// Draw final texture
-		bgfx::touch(this->_view);
+		bgfx::touch(rawrbox::CURRENT_VIEW_ID);
 		bgfx::setTexture(0, this->_texColor, bgfx::getTexture(this->_samples.back()));
 		bgfx::setVertexBuffer(0, this->_vbh);
 		bgfx::setIndexBuffer(this->_ibh);

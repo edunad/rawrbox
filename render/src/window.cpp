@@ -127,8 +127,6 @@ namespace rawrbox {
 			width = mode->width - 1;
 			height = mode->height - 1;
 		}
-
-		glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
 		// -----------
 
 		// Set transparent
@@ -167,9 +165,7 @@ namespace rawrbox {
 		HANDLE hIcon = LoadIconW(GetModuleHandleW(nullptr), L"GLFW_ICON");
 		if (!hIcon) {
 			// No user-provided icon found, load default icon
-			// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
 			hIcon = LoadIcon(nullptr, IDI_WINLOGO);
-			// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
 		}
 
 		HWND hwnd = glfwGetWin32Window(glfwHandle);
@@ -189,12 +185,12 @@ namespace rawrbox {
 		init.resolution.width = static_cast<uint32_t>(width);
 		init.resolution.height = static_cast<uint32_t>(height);
 
-		auto resetFlags = BGFX_RESET_NONE;
-		if ((flags & WindowFlags::Features::VSYNC) > 0) resetFlags |= BGFX_RESET_VSYNC;
-		if ((flags & WindowFlags::Features::MSAA) > 0) resetFlags |= BGFX_RESET_MAXANISOTROPY;
-		if (transparent) resetFlags |= BGFX_RESET_TRANSPARENT_BACKBUFFER;
+		this->_resetFlags = BGFX_RESET_NONE;
+		if ((flags & WindowFlags::Features::VSYNC) > 0) this->_resetFlags |= BGFX_RESET_VSYNC;
+		if ((flags & WindowFlags::Features::MSAA) > 0) this->_resetFlags |= BGFX_RESET_MAXANISOTROPY;
+		if (transparent) this->_resetFlags |= BGFX_RESET_TRANSPARENT_BACKBUFFER;
 
-		init.resolution.reset = resetFlags;
+		init.resolution.reset = this->_resetFlags;
 		init.platformData.nwh = glfwNativeWindowHandle(GLFWHANDLE);
 		init.platformData.ndt = getNativeDisplayHandle();
 
@@ -312,7 +308,7 @@ namespace rawrbox {
 	void Window::callbacks_resize(GLFWwindow* whandle, int width, int height) {
 		auto& window = glfwHandleToRenderer(whandle);
 
-		bgfx::reset(static_cast<uint32_t>(width), static_cast<uint32_t>(height), BGFX_RESET_VSYNC);
+		bgfx::reset(static_cast<uint32_t>(width), static_cast<uint32_t>(height), window._resetFlags);
 		window.onResize(window, {width, height});
 	}
 
