@@ -1,4 +1,6 @@
 
+#include <rawrbox/math/matrix4x4.hpp>
+#include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/shader_defines.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
@@ -120,55 +122,35 @@ namespace rawrbox {
 	void Stencil::applyRotation(rawrbox::Vector2f& vert) {
 		if (this->_rotation.rotation == 0) return;
 
-		std::array<float, 16> translationMatrix = {};
-		bx::mtxIdentity(translationMatrix.data());
-		bx::mtxTranslate(translationMatrix.data(), -_rotation.origin.x, -_rotation.origin.y, 0);
+		rawrbox::Matrix4x4 translationMatrix = {};
+		translationMatrix.translate({-_rotation.origin.x, -_rotation.origin.y, 0});
 
-		std::array<float, 16> rotationMatrix = {};
-		bx::mtxIdentity(rotationMatrix.data());
-		bx::mtxRotateZ(rotationMatrix.data(), bx::toRad(_rotation.rotation));
+		rawrbox::Matrix4x4 rotationMatrix = {};
+		rotationMatrix.rotateZ(bx::toRad(_rotation.rotation));
 
-		std::array<float, 16> reverseTranslationMatrix = {};
-		bx::mtxIdentity(reverseTranslationMatrix.data());
-		bx::mtxTranslate(reverseTranslationMatrix.data(), _rotation.origin.x, _rotation.origin.y, 0);
+		rawrbox::Matrix4x4 reverseTranslationMatrix = {};
+		reverseTranslationMatrix.translate({_rotation.origin.x, _rotation.origin.y, 0});
 
-		std::array<float, 16> mul = {};
-		bx::mtxMul(mul.data(), reverseTranslationMatrix.data(), rotationMatrix.data());
-		bx::mtxMul(mul.data(), mul.data(), translationMatrix.data());
+		rawrbox::Matrix4x4 mul = translationMatrix * rotationMatrix * reverseTranslationMatrix;
 
-		std::array<float, 4> vv = {vert.x, vert.y, 0, -1.0F};
-		std::array<float, 4> v = {};
-		bx::vec4MulMtx(v.data(), vv.data(), mul.data());
+		rawrbox::Vector4f v = {vert.x, vert.y, 0, -1.0F};
+		auto res = mul.mulVec(v);
 
-		vert.x = v[0];
-		vert.y = v[1];
+		vert.x = res.x;
+		vert.y = res.y;
 	}
 
 	void Stencil::applyScale(rawrbox::Vector2f& vert) {
 		if (this->_scale == 0) return;
 
-		std::array<float, 16> translationMatrix = {};
-		bx::mtxIdentity(translationMatrix.data());
-		bx::mtxTranslate(translationMatrix.data(), -_rotation.origin.x, -_rotation.origin.y, 0);
+		rawrbox::Matrix4x4 scaleMtx = {};
+		scaleMtx.scale({this->_scale.x, this->_scale.y, 1.F});
 
-		std::array<float, 16> rotationMatrix = {};
-		bx::mtxIdentity(rotationMatrix.data());
-		bx::mtxScale(rotationMatrix.data(), this->_scale.x, this->_scale.y, 1.F);
+		rawrbox::Vector4f v = {vert.x, vert.y, 0, -1.0F};
+		auto res = scaleMtx.mulVec(v);
 
-		std::array<float, 16> reverseTranslationMatrix = {};
-		bx::mtxIdentity(reverseTranslationMatrix.data());
-		bx::mtxTranslate(reverseTranslationMatrix.data(), _rotation.origin.x, _rotation.origin.y, 0);
-
-		std::array<float, 16> mul = {};
-		bx::mtxMul(mul.data(), reverseTranslationMatrix.data(), rotationMatrix.data());
-		bx::mtxMul(mul.data(), mul.data(), translationMatrix.data());
-
-		std::array<float, 4> vv = {vert.x, vert.y, 0, -1.0F};
-		std::array<float, 4> v = {};
-		bx::vec4MulMtx(v.data(), vv.data(), mul.data());
-
-		vert.x = v[0];
-		vert.y = v[1];
+		vert.x = res.x;
+		vert.y = res.y;
 	}
 	// --------------------
 

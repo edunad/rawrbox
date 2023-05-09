@@ -1,11 +1,11 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
+#include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/render/static.hpp>
 
 #include <array>
-
-#include "rawrbox/render/static.hpp"
 
 namespace rawrbox {
 
@@ -29,7 +29,7 @@ namespace rawrbox {
 
 	public:
 		LightBase() = default;
-		LightBase(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : _id(++rawrbox::SOUND_ID), _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
+		LightBase(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : _id(++rawrbox::LIGHT_ID), _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
 
 		LightBase(LightBase&&) = delete;
 		LightBase& operator=(LightBase&&) = delete;
@@ -46,7 +46,7 @@ namespace rawrbox {
 		virtual void setStatus(bool on) { this->_isOn = on; };
 
 		virtual std::array<float, 4> getPosMatrix() { return {this->_posMatrix.x, this->_posMatrix.y, this->_posMatrix.z, 0}; }
-		virtual std::array<float, 16> const getDataMatrix() = 0;
+		virtual rawrbox::Matrix4x4 const getDataMatrix() = 0;
 
 		virtual LightType getType() = 0;
 	};

@@ -36,12 +36,11 @@ namespace rawrbox {
 		};
 
 		LightType getType() override { return LightType::LIGHT_DIR; };
-		std::array<float, 16> const getDataMatrix() override {
-			return {
-			    this->_diffuse.r, this->_specular.r, this->_direction.x, static_cast<float>(this->getType()),
-			    this->_diffuse.g, this->_specular.g, this->_direction.y, 0,
-			    this->_diffuse.b, this->_specular.b, this->_direction.z, 0,
-			    0, 0, 0, this->_isOn ? 1.F : 0};
+		const rawrbox::Matrix4x4 getDataMatrix() override {
+			return rawrbox::Matrix4x4({this->_diffuse.r, this->_specular.r, this->_direction.x, static_cast<float>(this->getType()),
+			    this->_diffuse.g, this->_specular.g, this->_direction.y, 0.F,
+			    this->_diffuse.b, this->_specular.b, this->_direction.z, 0.F,
+			    0.F, 0.F, 0.F, this->_isOn ? 1.F : 0.F});
 		}
 	};
 } // namespace rawrbox

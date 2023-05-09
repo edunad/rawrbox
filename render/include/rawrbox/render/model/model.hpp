@@ -1,6 +1,7 @@
 #pragma once
-#include <rawrbox/math/quaternion.hpp>
+#include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/utils/math.hpp>
+#include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/util/anim_utils.hpp>
@@ -35,7 +36,7 @@ namespace rawrbox {
 
 		std::vector<AnimKey<rawrbox::Vector3f>> position;
 		std::vector<AnimKey<rawrbox::Vector3f>> scale;
-		std::vector<AnimKey<rawrbox::Quaternion>> rotation;
+		std::vector<AnimKey<rawrbox::Vector4f>> rotation;
 
 		AnimBehaviour stateStart;
 		AnimBehaviour stateEnd;
@@ -68,12 +69,12 @@ namespace rawrbox {
 
 		// ANIMATIONS ----
 		virtual void updateBones(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
-			std::vector<std::array<float, 16>> transforms = {};
+			std::vector<rawrbox::Matrix4x4> transforms = {};
 			transforms.resize(rawrbox::MAX_BONES_PER_MODEL);
 
 			if (mesh->skeleton != nullptr) {
-				auto calcs = std::unordered_map<uint8_t, std::array<float, 16>>();
-				this->readAnim(calcs, mesh->skeleton, mesh->skeleton->rootBone, {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
+				auto calcs = std::unordered_map<uint8_t, rawrbox::Matrix4x4>();
+				this->readAnim(calcs, mesh->skeleton, mesh->skeleton->rootBone, {});
 
 				for (size_t i = 0; i < calcs.size(); i++) {
 					transforms[i] = calcs[static_cast<uint8_t>(i)];
@@ -85,7 +86,7 @@ namespace rawrbox {
 			}
 		}
 
-		virtual void readAnim(std::unordered_map<uint8_t, std::array<float, 16>>& calcs, std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const std::array<float, 16>& parentTransform) {
+		virtual void readAnim(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const rawrbox::Matrix4x4& parentTransform) {
 			if (skeleton == nullptr) return;
 
 			// update the final result inside the bones
@@ -131,7 +132,7 @@ namespace rawrbox {
 
 					// lerp the 3 components.
 					Vector3f position = nextPos.value;
-					Quaternion rotation = nextRot.value;
+					Vector4f rotation = nextRot.value;
 					Vector3f scale = nextScl.value;
 
 					if (animChannel->stateEnd == AnimBehaviour::LERP) {
@@ -141,21 +142,18 @@ namespace rawrbox {
 					}
 					// ----
 
-					bx::mtxIdentity(nodeTransform.data());
-
-					auto rot = MathUtils::mtxQuaternion(rotation.w, rotation.x, rotation.y, rotation.z);
-					MathUtils::mtxTranslate(nodeTransform, {position.x, position.y, position.z});
-					MathUtils::mtxScale(nodeTransform, {scale.x, scale.y, scale.z});
-					nodeTransform = MathUtils::mtxMul(nodeTransform, rot);
+					nodeTransform.translate(position);
+					nodeTransform.scale(scale);
+					nodeTransform.rotate(rotation.x, rotation.y, rotation.z, rotation.w);
 				}
 			}
 
 			// store the result of our parent bone and our current node
-			auto globalTransformation = MathUtils::mtxMul(parentTransform, nodeTransform);
+			rawrbox::Matrix4x4 globalTransformation = parentTransform * nodeTransform;
 
 			auto fnd = this->_globalBoneMap.find(parentBone->name);
 			if (fnd != this->_globalBoneMap.end()) {
-				calcs[fnd->second->boneId] = MathUtils::mtxMul(MathUtils::mtxMul(skeleton->invTransformationMtx, globalTransformation), fnd->second->offsetMtx);
+				calcs[fnd->second->boneId] = skeleton->invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
 			}
 
 			for (auto child : parentBone->children) {
@@ -238,9 +236,7 @@ namespace rawrbox {
 					bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
 				}
 
-				std::array<float, 16> matrix = {};
-				bx::mtxMul(matrix.data(), mesh->offsetMatrix.data(), this->_matrix.data());
-				bgfx::setTransform(matrix.data());
+				bgfx::setTransform((this->_matrix * mesh->offsetMatrix).data());
 
 				uint64_t flags = BGFX_STATE_DEFAULT_3D | mesh->culling | mesh->blending;
 				if (mesh->wireframe) flags |= BGFX_STATE_PT_LINES;

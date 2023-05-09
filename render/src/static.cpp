@@ -12,6 +12,7 @@ namespace rawrbox {
 
 	// ID GENERATION
 	int SOUND_ID = 0;
+	int LIGHT_ID = 0;
 	int EMITTER_ID = 0;
 	// -----
 } // namespace rawrbox

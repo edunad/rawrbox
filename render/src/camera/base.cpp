@@ -3,6 +3,8 @@
 
 #include <bx/math.h>
 
+#include <stdexcept>
+
 namespace rawrbox {
 	// UTILS -----
 	void CameraBase::setPos(const rawrbox::Vector3f& pos) {
@@ -10,20 +12,20 @@ namespace rawrbox {
 		this->updateMtx();
 	}
 
-	const rawrbox::Vector3f& CameraBase::getPos() {
+	const rawrbox::Vector3f& CameraBase::getPos() const {
 		return this->_pos;
 	}
 
-	void CameraBase::setAngle(const rawrbox::Quaternion& angle) {
+	void CameraBase::setAngle(const rawrbox::Vector4f& angle) {
 		this->_angle = angle;
 		this->updateMtx();
 	}
 
-	const rawrbox::Quaternion& CameraBase::getAngle() {
+	const rawrbox::Vector4f& CameraBase::getAngle() const {
 		return this->_angle;
 	}
 
-	rawrbox::Vector3f CameraBase::getForward() {
+	rawrbox::Vector3f CameraBase::getForward() const {
 		return {
 		    bx::cos(this->_angle.y) * bx::sin(this->_angle.x),
 		    bx::sin(this->_angle.y),
@@ -31,7 +33,7 @@ namespace rawrbox {
 		};
 	}
 
-	rawrbox::Vector3f CameraBase::getRight() {
+	rawrbox::Vector3f CameraBase::getRight() const {
 		return {
 		    bx::sin(this->_angle.x - bx::kPiHalf),
 		    0.0F,
@@ -39,7 +41,7 @@ namespace rawrbox {
 		};
 	}
 
-	rawrbox::Vector3f CameraBase::getUp() {
+	rawrbox::Vector3f CameraBase::getUp() const {
 		auto right = this->getRight();
 		auto forward = this->getForward();
 
@@ -47,12 +49,20 @@ namespace rawrbox {
 		return {up.x, up.y, up.z};
 	}
 
-	std::array<float, 16>& CameraBase::getViewMtx() {
+	const rawrbox::Matrix4x4& CameraBase::getViewMtx() const {
 		return this->_view;
 	}
 
-	std::array<float, 16>& CameraBase::getProjMtx() {
+	const rawrbox::Matrix4x4& CameraBase::getProjMtx() const {
 		return this->_projection;
+	}
+
+	const rawrbox::Vector3i CameraBase::worldToScreen(const rawrbox::Vector3& pos) const {
+		throw std::runtime_error("Not implemented");
+	}
+
+	const rawrbox::Vector3 CameraBase::screenToWorld(const rawrbox::Vector2i& screen_pos) const {
+		throw std::runtime_error("Not implemented");
 	}
 
 	// ----------------

@@ -21,6 +21,8 @@
 #include <string>
 #include <unordered_map>
 
+#include "rawrbox/math/matrix4x4.hpp"
+
 #define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_RemoveRedundantMaterials)
 
 namespace rawrbox {
@@ -214,8 +216,8 @@ namespace rawrbox {
 					armature->rootBone = std::make_shared<Bone>("ROOT-BONE");
 					armature->rootBone->owner = armature.get();
 
-					bx::mtxInverse(armature->invTransformationMtx.data(), &sc->mRootNode->mTransformation.a1);
-					bx::mtxTranspose(armature->rootBone->transformationMtx.data(), &bone->mArmature->mTransformation.a1);
+					armature->invTransformationMtx = rawrbox::Matrix4x4(&sc->mRootNode->mTransformation.a1).inverse();
+					armature->rootBone->transformationMtx.transpose(&bone->mArmature->mTransformation.a1);
 					//  ---------------------
 
 					this->generateSkeleton(armature, bone->mArmature, armature->rootBone);
@@ -250,8 +252,8 @@ namespace rawrbox {
 				auto fnd = this->_globalBoneMap.find(boneKey);
 				if (fnd == this->_globalBoneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
 
-				bx::mtxTranspose(fnd->second->offsetMtx.data(), &bone->mOffsetMatrix.a1);
-				fnd->second->offsetMtx = rawrbox::MathUtils::mtxMul(fnd->second->offsetMtx, mesh->offsetMatrix);
+				fnd->second->offsetMtx.transpose(&bone->mOffsetMatrix.a1);
+				fnd->second->offsetMtx.mul(mesh->offsetMatrix);
 
 				// Calculate object weights
 				if constexpr (supportsBones<typename M::vertexBufferType>) {
@@ -275,8 +277,8 @@ namespace rawrbox {
 				bone->parent = parent;
 				bone->owner = skeleton.get();
 				bone->boneId = static_cast<uint8_t>(this->_globalBoneMap.size());
+				bone->transformationMtx.transpose(&child->mTransformation.a1);
 
-				bx::mtxTranspose(bone->transformationMtx.data(), &child->mTransformation.a1);
 				this->_globalBoneMap[boneKey] = bone;
 
 				this->generateSkeleton(skeleton, child, bone);
@@ -356,7 +358,7 @@ namespace rawrbox {
 
 					for (size_t rotationIndex = 0; rotationIndex < aChannel->mNumRotationKeys; rotationIndex++) {
 						auto aRot = aChannel->mRotationKeys[rotationIndex];
-						ourChannel.rotation.push_back({static_cast<float>(aRot.mTime), {aRot.mValue.w, aRot.mValue.x, aRot.mValue.y, aRot.mValue.z}});
+						ourChannel.rotation.push_back({static_cast<float>(aRot.mTime), {aRot.mValue.x, aRot.mValue.y, aRot.mValue.z, aRot.mValue.w}});
 					}
 
 					ourAnim.frames.push_back(ourChannel);
@@ -436,7 +438,7 @@ namespace rawrbox {
 				// -----
 
 				if ((this->_assimpFlags & aiProcess_PreTransformVertices) == 0) {
-					bx::mtxTranspose(mesh->offsetMatrix.data(), &root->mTransformation.a1); // Append matrix to our vertices
+					mesh->offsetMatrix.transpose(&root->mTransformation.a1); // Append matrix to our vertices, since pre-transform is disabled
 				}
 
 				// Textures

@@ -82,7 +82,7 @@ namespace rawrbox {
 
 			const uint32_t numVertices = bgfx::getAvailTransientVertexBuffer(this->_totalParticles * vertCount, M::vertexBufferType::vLayout());
 			const uint32_t numIndices = bgfx::getAvailTransientIndexBuffer(this->_totalParticles * indxCount);
-			const uint32_t max = bx::uint32_min(numVertices / vertCount, numIndices / indxCount);
+			const uint32_t max = std::min(numVertices / vertCount, numIndices / indxCount);
 
 			if (max != this->_totalParticles) fmt::print("[RawrBox-ParticleEngine] Truncating transient buffer for particles to maximum available (requested {}, available {}) \n", this->_totalParticles, max);
 			if (max <= 0) return;

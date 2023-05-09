@@ -1,7 +1,8 @@
 #pragma once
-#include <rawrbox/math/quaternion.hpp>
+#include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/math/vector4.hpp>
 
 #include <array>
 
@@ -9,10 +10,10 @@ namespace rawrbox {
 	class CameraBase {
 	protected:
 		rawrbox::Vector3f _pos;
-		rawrbox::Quaternion _angle;
+		rawrbox::Vector4f _angle;
 
-		std::array<float, 16> _view = {};
-		std::array<float, 16> _projection = {};
+		rawrbox::Matrix4x4 _view = {};
+		rawrbox::Matrix4x4 _projection = {};
 
 		virtual void updateMtx();
 
@@ -27,17 +28,21 @@ namespace rawrbox {
 
 		// UTILS -----
 		virtual void setPos(const rawrbox::Vector3f& pos);
-		virtual const rawrbox::Vector3f& getPos();
+		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const;
 
-		virtual void setAngle(const rawrbox::Quaternion& ang);
-		virtual const rawrbox::Quaternion& getAngle();
+		virtual void setAngle(const rawrbox::Vector4f& ang);
+		[[nodiscard]] virtual const rawrbox::Vector4f& getAngle() const;
 
-		virtual rawrbox::Vector3f getForward();
-		virtual rawrbox::Vector3f getRight();
-		virtual rawrbox::Vector3f getUp();
+		[[nodiscard]] virtual rawrbox::Vector3f getForward() const;
+		[[nodiscard]] virtual rawrbox::Vector3f getRight() const;
+		[[nodiscard]] virtual rawrbox::Vector3f getUp() const;
 
-		virtual std::array<float, 16>& getViewMtx();
-		virtual std::array<float, 16>& getProjMtx();
+		[[nodiscard]] virtual const rawrbox::Matrix4x4& getViewMtx() const;
+		[[nodiscard]] virtual const rawrbox::Matrix4x4& getProjMtx() const;
+
+		[[nodiscard]] virtual const rawrbox::Vector3i worldToScreen(const rawrbox::Vector3& pos) const;
+		[[nodiscard]] virtual const rawrbox::Vector3 screenToWorld(const rawrbox::Vector2i& screen_pos) const;
+
 		// ----------------
 	};
 } // namespace rawrbox

@@ -10,6 +10,8 @@
 #include <rawrbox/render/texture/base.hpp>
 #include <rawrbox/utils/pack.hpp>
 
+#include "rawrbox/math/matrix4x4.hpp"
+
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
 		#include <rawrbox/debug/gizmos.hpp>
@@ -118,8 +120,10 @@ namespace rawrbox {
 			// Calculate the next particle spawn time
 			if (this->_settings.particlesPerSecond <= 0) return;
 
-			std::array<float, 16> mtx = {};
-			bx::mtxSRT(mtx.data(), 1.0F, 1.0F, 1.0F, bx::toRad(this->_settings.angle.x), bx::toRad(this->_settings.angle.y), bx::toRad(this->_settings.angle.z), this->_pos.x, this->_pos.y, this->_pos.z);
+			rawrbox::Matrix4x4 mtx = {};
+			mtx.translate(this->_pos);
+			mtx.scale({1.F, 1.F, 1.F});
+			mtx.rotate(0.F, bx::toRad(this->_settings.angle.x), bx::toRad(this->_settings.angle.y), bx::toRad(this->_settings.angle.z));
 
 			auto ppS = !this->_preHeated && this->_settings.preHeat ? this->_settings.maxParticles : this->_settings.particlesPerSecond;
 			const float timePerParticle = !this->_preHeated && this->_settings.preHeat ? ppS : 1.0F / ppS;
@@ -318,8 +322,10 @@ namespace rawrbox {
 				const bx::Vec3 p1 = bx::lerp({p.posEnd[0].x, p.posEnd[0].y, p.posEnd[0].z}, {p.posEnd[1].x, p.posEnd[1].y, p.posEnd[1].z}, ttPos);
 				const bx::Vec3 pf = bx::lerp(p0, p1, ttPos);
 
-				auto rot = rawrbox::MathUtils::mtxQuaternion(bx::toRad(rotation), 0, 0, 0);
-				auto rotatedView = rawrbox::MathUtils::mtxMul(rot, camera->getViewMtx());
+				rawrbox::Matrix4x4 rot = {};
+				rot.rotate(bx::toRad(rotation), 0, 0, 0);
+
+				auto rotatedView = camera->getViewMtx() * rot;
 
 				rawrbox::Vector3f udir = rawrbox::Vector3f(rotatedView[0], rotatedView[4], rotatedView[8]) * scale;
 				rawrbox::Vector3f vdir = rawrbox::Vector3f(rotatedView[1], rotatedView[5], rotatedView[9]) * scale;

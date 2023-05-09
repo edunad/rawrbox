@@ -38,7 +38,7 @@ namespace bass_test {
 		// Setup camera
 		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window.get());
 		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, 0.F, bx::toRad(-45), 0.F});
+		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		rawrbox::SoundManager::get().initialize();

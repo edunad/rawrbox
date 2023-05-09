@@ -75,8 +75,7 @@ namespace rawrbox {
 				mesh->setTexture(font->getAtlasTexture(glyph));
 				mesh->setCulling(0);
 				mesh->addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
-
-				bx::mtxTranslate(mesh->vertexPos.data(), pos.x, pos.y, pos.z);
+				mesh->vertexPos.translate(pos);
 
 				std::array<typename rawrbox::MaterialText3DUnlit::vertexBufferType, 4> buff{
 				    rawrbox::VertexData(startpos + Vector3f(p.x * screenSize, p.y * screenSize, 0), glyph.textureTopLeft.x, glyph.textureBottomRight.y, cl),
