@@ -107,7 +107,6 @@ namespace assimp {
 		this->_model->draw(pos);
 		this->_model2->draw(pos);
 		this->_model3->draw(pos);
-		this->_model4->draw(pos);
 
 		this->_text->draw(pos);
 	}
