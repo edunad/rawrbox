@@ -6,7 +6,7 @@
 #include <bx/math.h>
 
 namespace rawrbox {
-	CameraOrbital::CameraOrbital(rawrbox::Window* window, float speed) : CameraPerspective(window->getSize()), _window(window), _speed(speed) {
+	CameraOrbital::CameraOrbital(rawrbox::Window* window, float speed, float FOV, float near, float far, bool homogeneousDepth) : CameraPerspective(window->getSize(), FOV, near, far, homogeneousDepth), _window(window), _speed(speed) {
 		window->onMouseKey += [this](auto& w, const rawrbox::Vector2i& mousePos, int button, int action, int mods) {
 			const bool isDown = action == 1;
 			if (button != MOUSE_BUTTON_2) return;

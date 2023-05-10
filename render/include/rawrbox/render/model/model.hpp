@@ -33,6 +33,7 @@ namespace rawrbox {
 
 	struct AnimationFrame {
 		std::string nodeName;
+		bool usesBones = false;
 
 		std::vector<AnimKey<rawrbox::Vector3f>> position;
 		std::vector<AnimKey<rawrbox::Vector3f>> scale;
@@ -98,8 +99,7 @@ namespace rawrbox {
 					return x.nodeName == parentBone->name;
 				});
 
-				if (animChannel != anim.data->frames.end()) {
-
+				if (animChannel != anim.data->frames.end() && animChannel->usesBones) {
 					// figure out how "fast" the animation needs to play and the current playtime of the animation
 					float ticksPerSecond = anim.data->ticksPerSecond != 0 ? anim.data->ticksPerSecond : 25.0F;
 					float timeInTicks = anim.time * ticksPerSecond;

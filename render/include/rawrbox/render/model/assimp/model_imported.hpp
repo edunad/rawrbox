@@ -21,8 +21,6 @@
 #include <string>
 #include <unordered_map>
 
-#include "rawrbox/math/matrix4x4.hpp"
-
 #define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_RemoveRedundantMaterials)
 
 namespace rawrbox {
@@ -160,12 +158,23 @@ namespace rawrbox {
 
 			aiString matPath;
 			std::array<aiTextureMapMode, 3> matMode = {};
+			mesh->setTexture(rawrbox::MISSING_TEXTURE); // Default
 
 			// TEXTURE DIFFUSE
 			if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
 				if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
 					auto ptr = this->importTexture(matPath.data, matName.data, matMode);
 					if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load diffuse texture '{}'", matPath.data));
+
+					mesh->setTexture(ptr);
+				}
+			}
+
+			// TEXTURE DIFFUSE
+			if (pMaterial->GetTextureCount(aiTextureType_BASE_COLOR) > 0) {
+				if (pMaterial->GetTexture(aiTextureType_BASE_COLOR, 0, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
+					auto ptr = this->importTexture(matPath.data, matName.data, matMode);
+					if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load pbr texture '{}'", matPath.data));
 
 					mesh->setTexture(ptr);
 				}
@@ -185,14 +194,9 @@ namespace rawrbox {
 			}
 
 			// TEXTURE EMISSIVE
-			/*if (pMaterial->GetTextureCount(aiTextureType_EMISSIVE) > 0) {
-				if (pMaterial->GetTexture(aiTextureType_EMISSIVE, 0, nullptr, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
-					auto ptr = this->importTexture(matpath.data);
-					if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load specular texture '{}'", matpath.data));
-
-					mesh->setSpecularTexture(ptr);
-				}
-			}*/
+			if (mesh->getTexture() == rawrbox::MISSING_TEXTURE) {
+				fmt::print("[RawrBox-Assimp] Unsupported texture '{}'\n", pMaterial->GetName().C_Str());
+			}
 		}
 		/// -------
 
@@ -327,7 +331,9 @@ namespace rawrbox {
 					auto aChannel = anim.mChannels[channelIndex];
 					std::string meshName = aChannel->mNodeName.data;
 
-					// Find armature
+					rawrbox::AnimationFrame ourChannel;
+
+					// Attempt to find armature
 					auto aiNodeParent = sc->mRootNode->FindNode(meshName.c_str());
 					while (true) {
 						if (aiNodeParent->mParent == nullptr || aiNodeParent->mParent->mName == sc->mRootNode->mName) break;
@@ -338,17 +344,22 @@ namespace rawrbox {
 					if (meshName == armature) continue;
 
 					std::string boneKey = fmt::format("{}-{}", armature, meshName);
+
 					auto fnd = this->_globalBoneMap.find(boneKey);
+					if (fnd != this->_globalBoneMap.end()) {
+						if (fnd->second == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Invalid Bone '{}', pointer not defined?", boneKey));
+						if (fnd->second->owner == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Invalid Bone '{}' skeleton, pointer not defined?", boneKey));
 
-					if (fnd == this->_globalBoneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Model] Bone '{}' not found on the global bone map!", boneKey));
-					if (fnd->second == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Invalid Bone '{}', pointer not defined?", boneKey));
-					if (fnd->second->owner == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Invalid Bone '{}' skeleton, pointer not defined?", boneKey));
+						ourChannel.nodeName = fmt::format("{}-{}", fnd->second->owner->name, meshName);
+						ourChannel.usesBones = true;
+					} else {
+						// Non-bone animation
+						ourChannel.nodeName = meshName;
+					}
+					// ----
 
-					rawrbox::AnimationFrame ourChannel;
-					ourChannel.nodeName = fmt::format("{}-{}", fnd->second->owner->name, aChannel->mNodeName.data);
 					ourChannel.stateStart = assimpBehavior(aChannel->mPreState);
 					ourChannel.stateEnd = assimpBehavior(aChannel->mPostState);
-
 					for (size_t positionIndex = 0; positionIndex < aChannel->mNumPositionKeys; positionIndex++) {
 						auto aPos = aChannel->mPositionKeys[positionIndex];
 						ourChannel.position.push_back({static_cast<float>(aPos.mTime), {aPos.mValue.x, aPos.mValue.y, aPos.mValue.z}});

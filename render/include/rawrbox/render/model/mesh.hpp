@@ -49,6 +49,9 @@ namespace rawrbox {
 
 	template <typename T = VertexData>
 	class Mesh {
+	private:
+		bool _canMerge = true;
+
 	public:
 		std::string name = "mesh";
 
@@ -99,7 +102,7 @@ namespace rawrbox {
 		}
 
 		// UTILS ----
-		const std::string& getName() {
+		[[nodiscard]] const std::string& getName() const {
 			return this->name;
 		}
 
@@ -127,6 +130,7 @@ namespace rawrbox {
 			this->offsetMatrix.translate(pos);
 		}
 
+		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getTexture() const { return this->texture; }
 		void setTexture(std::shared_ptr<rawrbox::TextureBase> ptr) {
 			this->texture = ptr;
 		}
@@ -143,6 +147,7 @@ namespace rawrbox {
 			this->blending = blend;
 		}
 
+		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getSpecularTexture() const { return this->specularTexture; }
 		void setSpecularTexture(std::shared_ptr<rawrbox::TextureBase> ptr, float shininess) {
 			this->specularTexture = ptr;
 			this->specularShininess = shininess;
@@ -176,7 +181,10 @@ namespace rawrbox {
 			this->totalIndex = static_cast<uint16_t>(this->indices.size());
 		}
 
+		void setMergeable(bool merge) { this->_canMerge = merge; }
 		bool canMerge(std::shared_ptr<rawrbox::Mesh<T>> other) {
+			if (!this->_canMerge) return false;
+
 			return this->texture == other->texture &&
 			       this->color == other->color &&
 			       this->wireframe == other->wireframe &&
