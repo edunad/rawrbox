@@ -65,7 +65,6 @@ namespace anims {
 		this->_model2->setPos({0, 0, 1.5F});
 		this->_model2->setScale({0.25F, 0.25F, 0.25F});
 		this->_model2->upload();
-
 		// -----
 
 		{
@@ -130,7 +129,7 @@ namespace anims {
 
 	void Game::draw() {
 		if (this->_render == nullptr) return;
-		this->_render->swapBuffer(); // Clean up and set renderer
+		this->_render->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -141,7 +140,7 @@ namespace anims {
 
 		this->drawWorld();
 
-		this->_render->render(); // Commit primitives
+		this->_render->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 } // namespace anims

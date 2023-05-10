@@ -21,9 +21,9 @@ namespace rawrbox {
 
 		Vector4_t() = default;
 		explicit Vector4_t(NumberType val) : x(val), y(val), z(val), w(val) {}
-		Vector4_t(NumberType _x, NumberType _y, NumberType _z, NumberType _w = 1.F) : x(_x), y(_y), z(_z), w(_w) {}
-		explicit Vector4_t(Vector3_t<NumberType> val, NumberType _w = 1.F) : x(val.x), y(val.y), z(val.z), w(_w) {}
-		explicit Vector4_t(Vector2_t<NumberType> val, NumberType _z = 1.F, NumberType _w = 1.F) : x(val.x), y(val.y), z(_z), w(_w) {}
+		Vector4_t(NumberType _x, NumberType _y, NumberType _z, NumberType _w = 0.F) : x(_x), y(_y), z(_z), w(_w) {}
+		explicit Vector4_t(Vector3_t<NumberType> val, NumberType _w = 0.F) : x(val.x), y(val.y), z(val.z), w(_w) {}
+		explicit Vector4_t(Vector2_t<NumberType> val, NumberType _z = 0.F, NumberType _w = 0.F) : x(val.x), y(val.y), z(_z), w(_w) {}
 
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1, 1); }

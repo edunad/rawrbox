@@ -107,6 +107,7 @@ namespace assimp {
 		this->_model->draw(pos);
 		this->_model2->draw(pos);
 		this->_model3->draw(pos);
+		this->_model4->draw(pos);
 
 		this->_text->draw(pos);
 	}
@@ -125,7 +126,7 @@ namespace assimp {
 
 	void Game::draw() {
 		if (this->_render == nullptr) return;
-		this->_render->swapBuffer(); // Clean up and set renderer
+		this->_render->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -136,7 +137,7 @@ namespace assimp {
 
 		this->drawWorld();
 
-		this->_render->render(true); // Commit primitives
+		this->_render->frame(true); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 } // namespace assimp

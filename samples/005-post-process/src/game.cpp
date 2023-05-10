@@ -111,7 +111,7 @@ namespace post_process {
 
 	void Game::draw() {
 		if (this->_render == nullptr) return;
-		this->_render->swapBuffer(); // Clean up and set renderer
+		this->_render->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -124,7 +124,7 @@ namespace post_process {
 		this->drawWorld();
 		this->_postProcess->end();
 
-		this->_render->render(); // Commit primitives
+		this->_render->frame(); // Commit primitives
 
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}

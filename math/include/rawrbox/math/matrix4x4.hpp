@@ -4,6 +4,7 @@
 #include <rawrbox/math/vector4.hpp>
 
 #include <bx/math.h>
+#include <xfilesystem_abi.h>
 
 #include <algorithm>
 #include <array>
@@ -74,9 +75,9 @@ namespace rawrbox {
 		}
 
 		void scale(const rawrbox::Vector3f& scale) {
-			this->mtx[0] = scale.x;
-			this->mtx[5] = scale.y;
-			this->mtx[10] = scale.z;
+			this->mtx[0] *= scale.x;
+			this->mtx[5] *= scale.y;
+			this->mtx[10] *= scale.z;
 		}
 
 		void rotate(const rawrbox::Vector4f& rot) {
@@ -134,6 +135,19 @@ namespace rawrbox {
 			this->mtx[1] = -sz;
 			this->mtx[4] = sz;
 			this->mtx[5] = cz;
+		}
+
+		void rotateXYZ(const rawrbox::Vector3f& rot) {
+			Matrix4x4 x = {};
+			x.rotateX(rot.x);
+
+			Matrix4x4 y = {};
+			y.rotateY(rot.y);
+
+			Matrix4x4 z = {};
+			z.rotateZ(rot.z);
+
+			this->mtx = (x * y * z).mtx;
 		}
 
 		void mul(const rawrbox::Matrix4x4& other) {

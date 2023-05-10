@@ -29,15 +29,14 @@ namespace rawrbox {
 		void upload();
 		void setClearColor(uint32_t clearColor);
 		void resizeView(const rawrbox::Vector2i& size);
-		void clear();
 
 		// ------RENDERING
-		void swapBuffer() const;
+		void clear() const;
 
 #ifdef RAWRBOX_DEBUG
-		void render(bool gizmos = false) const;
+		void frame(bool gizmos = false) const;
 #else
-		void render() const;
+		void frame() const;
 #endif
 		// --------------------
 

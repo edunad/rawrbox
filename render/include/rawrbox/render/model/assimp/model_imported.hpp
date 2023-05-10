@@ -104,6 +104,7 @@ namespace rawrbox {
 				// ----
 				texture->setName(name);
 				texture->upload(bgfx::TextureFormat::Count);
+
 				this->_textures[finalPath] = std::move(texture);
 				return this->_textures[finalPath];
 			} else {

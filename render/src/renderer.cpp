@@ -68,7 +68,7 @@ namespace rawrbox {
 	}
 
 	// ------RENDERING
-	void Renderer::swapBuffer() const {
+	void Renderer::clear() const {
 		if (!rawrbox::BGFX_INITIALIZED) return;
 
 		bgfx::touch(this->_id); // Make sure we draw on the view
@@ -76,14 +76,14 @@ namespace rawrbox {
 	}
 
 #ifdef RAWRBOX_DEBUG
-	void Renderer::render(bool gizmos) const {
+	void Renderer::frame(bool gizmos) const {
 		if (!rawrbox::BGFX_INITIALIZED) return;
 
 		if (gizmos) rawrbox::GIZMOS::get().draw();
 		bgfx::frame();
 	}
 #else
-	void Renderer::render() const {
+	void Renderer::frame() const {
 		if (!rawrbox::BGFX_INITIALIZED) return;
 		bgfx::frame();
 	}

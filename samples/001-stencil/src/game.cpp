@@ -172,7 +172,7 @@ namespace stencil {
 
 	void Game::draw() {
 		if (this->_render == nullptr) return;
-		this->_render->swapBuffer(); // Clean up and set renderer
+		this->_render->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -188,7 +188,7 @@ namespace stencil {
 		counter += 0.1F;
 		// ---
 
-		this->_render->render(); // Commit primitives
+		this->_render->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
 	}
 } // namespace stencil

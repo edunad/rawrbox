@@ -153,7 +153,7 @@ namespace model {
 
 	void Game::draw() {
 		if (this->_render == nullptr) return;
-		this->_render->swapBuffer(); // Clean up and set renderer
+		this->_render->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -164,7 +164,7 @@ namespace model {
 
 		this->drawWorld();
 
-		this->_render->render(); // Commit primitives
+		this->_render->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 
