@@ -75,9 +75,9 @@ namespace rawrbox {
 		}
 
 		void scale(const rawrbox::Vector3f& scale) {
-			this->mtx[0] *= scale.x;
-			this->mtx[5] *= scale.y;
-			this->mtx[10] *= scale.z;
+			this->mtx[0] = scale.x;
+			this->mtx[5] = scale.y;
+			this->mtx[10] = scale.z;
 		}
 
 		void rotate(const rawrbox::Vector4f& rot) {
@@ -148,6 +148,39 @@ namespace rawrbox {
 			z.rotateZ(rot.z);
 
 			this->mtx = (x * y * z).mtx;
+		}
+
+		// Adapted from BX
+		void mtxSRT(const rawrbox::Vector3f& scale, const rawrbox::Vector3f& angle, const rawrbox::Vector3f& pos) {
+			const float sx = sin(angle.x);
+			const float cx = cos(angle.x);
+			const float sy = sin(angle.y);
+			const float cy = cos(angle.y);
+			const float sz = sin(angle.z);
+			const float cz = cos(angle.z);
+
+			const float sxsz = sx * sz;
+			const float cycz = cy * cz;
+
+			this->mtx[0] = scale.x * (cycz - sxsz * sy);
+			this->mtx[1] = scale.x * -cx * sz;
+			this->mtx[2] = scale.x * (cz * sy + cy * sxsz);
+			this->mtx[3] = 0.0F;
+
+			this->mtx[4] = scale.y * (cz * sx * sy + cy * sz);
+			this->mtx[5] = scale.y * cx * cz;
+			this->mtx[6] = scale.y * (sy * sz - cycz * sx);
+			this->mtx[7] = 0.0F;
+
+			this->mtx[8] = scale.z * -cx * sy;
+			this->mtx[9] = scale.z * sx;
+			this->mtx[10] = scale.z * cx * cy;
+			this->mtx[11] = 0.0F;
+
+			this->mtx[12] = pos.x;
+			this->mtx[13] = pos.y;
+			this->mtx[14] = pos.z;
+			this->mtx[15] = 1.0F;
 		}
 
 		void mul(const rawrbox::Matrix4x4& other) {
