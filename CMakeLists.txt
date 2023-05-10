@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 
 include(FetchContent)
+set(FETCHCONTENT_QUIET FALSE)
+
 include("cmake/bgfx_utils.cmake")
 
 # Versioning

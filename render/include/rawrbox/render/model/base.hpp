@@ -78,7 +78,8 @@ namespace rawrbox {
 
 		// SKINNING ----
 		std::unordered_map<std::string, std::shared_ptr<Skeleton>> _skeletons = {};
-		std::unordered_map<std::string, std::shared_ptr<Bone>> _globalBoneMap = {}; // Map for quick lookup
+		std::unordered_map<std::string, std::shared_ptr<Bone>> _globalBoneMap = {};                                         // Map for quick lookup
+		std::unordered_map<std::string, std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _animatedMeshes = {}; // Map for quick lookup
 		// --------
 
 		void flattenMeshes() {
@@ -152,6 +153,10 @@ namespace rawrbox {
 			this->_meshes.clear();
 			this->_vertices.clear();
 			this->_indices.clear();
+
+			this->_animatedMeshes.clear();
+			this->_skeletons.clear();
+			this->_animatedMeshes.clear();
 		}
 
 		virtual bool supportsOptimization() { return true; }

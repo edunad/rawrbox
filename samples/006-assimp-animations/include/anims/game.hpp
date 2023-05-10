@@ -3,6 +3,7 @@
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/assimp/model_imported.hpp>
+#include <rawrbox/render/model/material/skinned_lit.hpp>
 #include <rawrbox/render/model/material/skinned_unlit.hpp>
 #include <rawrbox/render/model/text3D.hpp>
 #include <rawrbox/render/postprocess/manager.hpp>
@@ -22,6 +23,7 @@ namespace anims {
 
 		std::shared_ptr<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>> _model = std::make_shared<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>>();
 		std::shared_ptr<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>> _model2 = std::make_shared<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>>();
+		std::shared_ptr<rawrbox::ModelImported<rawrbox::MaterialSkinnedLit>> _model3 = std::make_shared<rawrbox::ModelImported<rawrbox::MaterialSkinnedLit>>();
 		std::shared_ptr<rawrbox::Model<>> _modelGrid = std::make_shared<rawrbox::Model<>>();
 		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
 

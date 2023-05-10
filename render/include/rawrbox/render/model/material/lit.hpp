@@ -21,7 +21,13 @@ namespace rawrbox {
 	class MaterialLit : public rawrbox::MaterialBase {
 	public:
 		bgfx::UniformHandle s_texSpecularColor = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle u_texSpecularShininess = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle s_texEmissionColor = BGFX_INVALID_HANDLE;
+
+		bgfx::UniformHandle u_specularColorOffset = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle u_emissionColorOffset = BGFX_INVALID_HANDLE;
+
+		bgfx::UniformHandle u_texMatData = BGFX_INVALID_HANDLE;
+
 		bgfx::UniformHandle u_lightsSetting = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_lightsPosition = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_lightsData = BGFX_INVALID_HANDLE;
@@ -35,8 +41,13 @@ namespace rawrbox {
 		MaterialLit& operator=(const MaterialLit&) = delete;
 		~MaterialLit() override {
 			RAWRBOX_DESTROY(s_texSpecularColor);
+			RAWRBOX_DESTROY(s_texEmissionColor);
 
-			RAWRBOX_DESTROY(u_texSpecularShininess);
+			RAWRBOX_DESTROY(u_specularColorOffset);
+			RAWRBOX_DESTROY(u_emissionColorOffset);
+
+			RAWRBOX_DESTROY(u_texMatData);
+
 			RAWRBOX_DESTROY(u_lightsSetting);
 			RAWRBOX_DESTROY(u_lightsPosition);
 			RAWRBOX_DESTROY(u_lightsData);
@@ -47,7 +58,12 @@ namespace rawrbox {
 
 			// LIT ----
 			s_texSpecularColor = bgfx::createUniform("s_texSpecularColor", bgfx::UniformType::Sampler);
-			u_texSpecularShininess = bgfx::createUniform("u_texSpecularShininess", bgfx::UniformType::Vec4, 1);
+			u_texMatData = bgfx::createUniform("u_texMatData", bgfx::UniformType::Vec4, 2);
+
+			u_specularColorOffset = bgfx::createUniform("u_colorSpecularOffset", bgfx::UniformType::Vec4);
+			u_emissionColorOffset = bgfx::createUniform("u_emissionColorOffset", bgfx::UniformType::Vec4);
+
+			s_texEmissionColor = bgfx::createUniform("s_texEmissionColor", bgfx::UniformType::Sampler);
 
 			u_lightsSetting = bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4, 2);
 			u_lightsPosition = bgfx::createUniform("u_lightsPosition", bgfx::UniformType::Vec4, rawrbox::MAX_LIGHTS);
@@ -92,8 +108,17 @@ namespace rawrbox {
 				bgfx::setTexture(1, s_texSpecularColor, rawrbox::MISSING_SPECULAR_TEXTURE->getHandle());
 			}
 
-			std::array<float, 2> shininess = {mesh->specularShininess, 0};
-			bgfx::setUniform(u_texSpecularShininess, shininess.data());
+			if (mesh->emissionTexture != nullptr && mesh->emissionTexture->valid() && !mesh->wireframe) {
+				bgfx::setTexture(2, s_texEmissionColor, mesh->emissionTexture->getHandle());
+			} else {
+				bgfx::setTexture(2, s_texEmissionColor, rawrbox::MISSING_SPECULAR_TEXTURE->getHandle());
+			}
+
+			std::array<float, 2> matData = {mesh->specularShininess, mesh->emissionIntensity};
+			bgfx::setUniform(u_texMatData, matData.data());
+
+			bgfx::setUniform(u_specularColorOffset, mesh->specularColor.data().data());
+			bgfx::setUniform(u_emissionColorOffset, mesh->emissionColor.data().data());
 		}
 
 		void upload() {

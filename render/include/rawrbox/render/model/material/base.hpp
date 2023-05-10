@@ -53,8 +53,8 @@ namespace rawrbox {
 		// NOLINTBEGIN(hicpp-avoid-c-arrays)
 		void buildShader(const bgfx::EmbeddedShader shaders[], const std::string& name) {
 			bgfx::RendererType::Enum type = bgfx::getRendererType();
-			bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, fmt::format("vs_{}", name).c_str());
-			bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, fmt::format("fs_{}", name).c_str());
+			bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, shaders[0].name);
+			bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, shaders[1].name);
 
 			program = bgfx::createProgram(vsh, fsh, true);
 			if (!bgfx::isValid(program)) throw std::runtime_error("[RawrBox-MaterialBase] Failed to create shader");
@@ -84,8 +84,7 @@ namespace rawrbox {
 				bgfx::setTexture(0, s_texColor, rawrbox::WHITE_TEXTURE->getHandle());
 			}
 
-			std::array colorOffset = {mesh->color.r, mesh->color.b, mesh->color.g, mesh->color.a};
-			bgfx::setUniform(u_colorOffset, colorOffset.data());
+			bgfx::setUniform(u_colorOffset, mesh->color.data().data());
 
 			std::array offset = {mesh->vertexPos[12], mesh->vertexPos[13], mesh->vertexPos[14]};
 			bgfx::setUniform(u_mesh_pos, offset.data());

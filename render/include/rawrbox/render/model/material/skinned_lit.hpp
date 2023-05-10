@@ -11,7 +11,7 @@
 // NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader model_skinned_lit_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_model_skinned_lit),
-    BGFX_EMBEDDED_SHADER(fs_model_skinned_lit),
+    BGFX_EMBEDDED_SHADER(fs_model_lit),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 

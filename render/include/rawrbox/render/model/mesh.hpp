@@ -68,13 +68,18 @@ namespace rawrbox {
 		// TEXTURES ---
 		std::shared_ptr<rawrbox::TextureBase> texture = nullptr;
 		std::shared_ptr<rawrbox::TextureBase> specularTexture = nullptr;
-		float specularShininess = 1.0F;
+		std::shared_ptr<rawrbox::TextureBase> emissionTexture = nullptr;
+		float specularShininess = 25.0F;
+		float emissionIntensity = 1.F;
 		// -------
 
 		// RENDERING ---
 		rawrbox::Matrix4x4 offsetMatrix = {};
 		rawrbox::Matrix4x4 vertexPos = {};
+
 		rawrbox::Color color = rawrbox::Colors::White;
+		rawrbox::Color specularColor = rawrbox::Colors::White;
+		rawrbox::Color emissionColor = rawrbox::Colors::White;
 
 		bool wireframe = false;
 		uint64_t culling = BGFX_STATE_CULL_CW;
@@ -135,6 +140,18 @@ namespace rawrbox {
 			this->texture = ptr;
 		}
 
+		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getEmissionTexture() const { return this->emissionTexture; }
+		void setEmissionTexture(std::shared_ptr<rawrbox::TextureBase> ptr, float intensity) {
+			this->emissionTexture = ptr;
+			this->emissionIntensity = intensity;
+		}
+
+		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getSpecularTexture() const { return this->specularTexture; }
+		void setSpecularTexture(std::shared_ptr<rawrbox::TextureBase> ptr, float shininess) {
+			this->specularTexture = ptr;
+			this->specularShininess = shininess;
+		}
+
 		void setWireframe(bool wireframe) {
 			this->wireframe = wireframe;
 		}
@@ -147,14 +164,16 @@ namespace rawrbox {
 			this->blending = blend;
 		}
 
-		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getSpecularTexture() const { return this->specularTexture; }
-		void setSpecularTexture(std::shared_ptr<rawrbox::TextureBase> ptr, float shininess) {
-			this->specularTexture = ptr;
-			this->specularShininess = shininess;
-		}
-
 		void setColor(const rawrbox::Color& color) {
 			this->color = color;
+		}
+
+		void setSpecularColor(const rawrbox::Color& color) {
+			this->specularColor = color;
+		}
+
+		void setEmissionColor(const rawrbox::Color& color) {
+			this->emissionColor = color;
 		}
 
 		void addData(const std::string& id, rawrbox::Vector3f data) { // BGFX shaders only accept vec4, so.. yea
