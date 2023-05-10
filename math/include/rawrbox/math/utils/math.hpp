@@ -96,5 +96,11 @@ namespace rawrbox {
 
 			return pow;
 		}
+
+		// In DEG
+		static inline float angleDistance(float A, float B) {
+			auto diff = std::abs(A - B);
+			return std::min(diff, 360.F - diff);
+		}
 	};
 } // namespace rawrbox

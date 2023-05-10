@@ -1,3 +1,4 @@
+#include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
 
 #include <catch2/catch_test_macros.hpp>
@@ -21,6 +22,13 @@ TEST_CASE("Vector3 should behave as expected", "[rawrbox::Vector3]") {
 		REQUIRE(col3.x == 1);
 		REQUIRE(col3.y == 1);
 		REQUIRE(col3.z == 1);
+	}
+
+	SECTION("rawrbox::Vector2 to rawrbox::Vector3") {
+		rawrbox::Vector3 q = rawrbox::Vector3{rawrbox::Vector2{3, 1}, 10.F};
+		REQUIRE(q.x == 3.F);
+		REQUIRE(q.y == 1.F);
+		REQUIRE(q.z == 10.F);
 	}
 
 	SECTION("rawrbox::Vector3::cast") {

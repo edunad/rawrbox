@@ -8,6 +8,7 @@
 namespace rawrbox {
 	class CameraOrbital : public CameraPerspective {
 	protected:
+		rawrbox::Window* _window = nullptr;
 		float _speed = 0.F;
 
 		bool _rightClick = false;

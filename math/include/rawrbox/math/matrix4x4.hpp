@@ -253,7 +253,7 @@ namespace rawrbox {
 		// ------
 
 		// STATIC UTILS ----
-		static inline rawrbox::Vector3f project(const rawrbox::Vector3f& pos, const rawrbox::Matrix4x4& view, const rawrbox::Matrix4x4& proj, const rawrbox::Vector4f& viewport) {
+		static inline rawrbox::Vector3f project(const rawrbox::Vector3f& pos, const rawrbox::Matrix4x4& view, const rawrbox::Matrix4x4& proj, const rawrbox::Vector4i& viewport) {
 			std::array<float, 12> fTempo = {};
 			// Modelview transform
 			fTempo[0] = view[0] * pos.x + view[4] * pos.y + view[8] * pos.z + view[12]; // w is always 1

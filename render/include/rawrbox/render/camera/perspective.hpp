@@ -8,8 +8,7 @@
 namespace rawrbox {
 	class CameraPerspective : public CameraBase {
 	protected:
-		rawrbox::Window* _window = nullptr;
-
+		rawrbox::Vector2i _winSize = {};
 		float _FOV = 60.F;
 		float _near = 0.1F;
 		float _far = 100.F;
@@ -18,7 +17,7 @@ namespace rawrbox {
 		void updateMtx() override;
 
 	public:
-		explicit CameraPerspective(rawrbox::Window* window, float FOV = 60.F, float near = 0.1F, float far = 100.F, bool homogeneousDepth = false);
+		explicit CameraPerspective(const rawrbox::Vector2i& winSize, float FOV = 60.F, float near = 0.1F, float far = 100.F, bool homogeneousDepth = false);
 
 		[[nodiscard]] const rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const override;
 		[[nodiscard]] const rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screen_pos) const override;

@@ -15,6 +15,12 @@
                 "reveal": "always",
                 "panel": "new"
             }
+        },
+        {
+            "label": "Build tests",
+            "type": "cmake",
+            "command": "build",
+            "group": "build"
         }
     ]
 }

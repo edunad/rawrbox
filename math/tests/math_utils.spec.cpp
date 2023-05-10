@@ -43,4 +43,10 @@ TEST_CASE("MathUtils should behave as expected", "[rawrbox::MathUtils]") {
 		REQUIRE(rawrbox::MathUtils::nextPow2(12) == 16);
 		REQUIRE(rawrbox::MathUtils::nextPow2(1) == 1);
 	}
+
+	SECTION("rawrbox::MathUtils::angleDistance") {
+		REQUIRE(rawrbox::MathUtils::angleDistance(179, -180) == 1);
+		REQUIRE(rawrbox::MathUtils::angleDistance(0, -90) == 90);
+		REQUIRE(rawrbox::MathUtils::angleDistance(-90, 90) == 180);
+	}
 }

@@ -22,6 +22,8 @@ namespace rawrbox {
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1); }
 
+		[[nodiscard]] Vector2_t<NumberType> yx() const { return Vector2_t<NumberType>(y, x); }
+
 		// UTILS ---
 		[[nodiscard]] NumberType distance(const VecType& other) const {
 			return static_cast<NumberType>(std::sqrt(((x - other.x) * (x - other.x)) + ((y - other.y) * (y - other.y))));
@@ -72,10 +74,6 @@ namespace rawrbox {
 			u.y += origin.y;
 
 			return u;
-		}
-
-		[[nodiscard]] VecType yx() const {
-			return VecType(y, x);
 		}
 
 		template <class ReturnType>

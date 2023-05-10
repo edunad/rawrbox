@@ -19,6 +19,17 @@
             }
         ],
         "clangd.restartAfterCrash": true,
+        "clangd.checkUpdates": true,
+        "clangd.arguments": ["--header-insertion=iwyu", "--enable-config"],
+        "testMate.cpp.test.advancedExecutables": [
+            {
+                "pattern": "build/*/*",
+                "cwd": "${absDirpath}",
+                "runTask": {
+                    "before": ["Build tests"]
+                }
+            }
+        ],
         "editor.bracketPairColorization.enabled": true,
         "editor.formatOnSave": true,
         "editor.stickyScroll.enabled": true,
@@ -47,7 +58,7 @@
         "workbench.editor.wrapTabs": true,
         "files.insertFinalNewline": true,
         "files.associations": {
-			"*.sc": "hlsl",
+            "*.sc": "hlsl",
             "xstring": "cpp",
             "functional": "cpp",
             "map": "cpp",
@@ -167,7 +178,8 @@
             "ms-vscode.cmake-tools",
             "shardulm94.trailing-spaces",
             "xaver.clang-format",
-            "llvm-vs-code-extensions.vscode-clangd"
+            "llvm-vs-code-extensions.vscode-clangd",
+            "matepek.vscode-catch2-test-adapter"
         ]
     }
 }

@@ -28,6 +28,16 @@ namespace rawrbox {
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1); }
 
+		[[nodiscard]] Vector3_t<NumberType> xyz() const { return Vector3_t<NumberType>(x, y, z); }
+		[[nodiscard]] Vector3_t<NumberType> yxz() const { return Vector3_t<NumberType>(y, x, z); }
+		[[nodiscard]] Vector3_t<NumberType> yzx() const { return Vector3_t<NumberType>(y, z, x); }
+		[[nodiscard]] Vector3_t<NumberType> xzy() const { return Vector3_t<NumberType>(x, z, y); }
+		[[nodiscard]] Vector3_t<NumberType> zxy() const { return Vector3_t<NumberType>(z, x, y); }
+		[[nodiscard]] Vector3_t<NumberType> zyx() const { return Vector3_t<NumberType>(z, y, x); }
+
+		[[nodiscard]] Vector2_t<NumberType> xy() const { return Vector2_t<NumberType>(x, y); }
+		[[nodiscard]] Vector2_t<NumberType> yx() const { return Vector2_t<NumberType>(y, x); }
+
 		// UTILS ---
 		[[nodiscard]] NumberType distance(const VecType& other) const {
 			return static_cast<NumberType>(std::sqrt(((x - other.x) * (x - other.x)) + ((y - other.y) * (y - other.y)) + ((z - other.z) * (z - other.z))));
@@ -43,18 +53,6 @@ namespace rawrbox {
 
 		[[nodiscard]] VecType abs() const {
 			return {std::abs(x), std::abs(y), std::abs(z)};
-		}
-
-		[[nodiscard]] VecType yxz() const {
-			return VecType(y, x, z);
-		}
-
-		[[nodiscard]] VecType zyx() const {
-			return VecType(z, y, x);
-		}
-
-		[[nodiscard]] VecType xzy() const {
-			return VecType(x, z, y);
 		}
 
 		// From: https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Math/Vector3.cs#L324

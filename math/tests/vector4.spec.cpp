@@ -1,3 +1,5 @@
+#include <rawrbox/math/vector2.hpp>
+#include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/vector4.hpp>
 
 #include <catch2/catch_test_macros.hpp>
@@ -8,6 +10,22 @@ TEST_CASE("Vector4 should behave as expected", "[rawrbox::Vector4]") {
 	rawrbox::Vector4 q = rawrbox::Vector4{3.F, 1.F, 7.F, 10.F};
 
 	SECTION("rawrbox::Vector4") {
+		REQUIRE(q.x == 3.F);
+		REQUIRE(q.y == 1.F);
+		REQUIRE(q.z == 7.F);
+		REQUIRE(q.w == 10.F);
+	}
+
+	SECTION("rawrbox::Vector3 to rawrbox::Vector4") {
+		rawrbox::Vector4 q = rawrbox::Vector4{rawrbox::Vector3{3, 1, 7}, 10.F};
+		REQUIRE(q.x == 3.F);
+		REQUIRE(q.y == 1.F);
+		REQUIRE(q.z == 7.F);
+		REQUIRE(q.w == 10.F);
+	}
+
+	SECTION("rawrbox::Vector2 to rawrbox::Vector4") {
+		rawrbox::Vector4 q = rawrbox::Vector4{rawrbox::Vector2{3, 1}, 7.F, 10.F};
 		REQUIRE(q.x == 3.F);
 		REQUIRE(q.y == 1.F);
 		REQUIRE(q.z == 7.F);
@@ -27,7 +45,7 @@ TEST_CASE("Vector4 should behave as expected", "[rawrbox::Vector4]") {
 		REQUIRE_THAT(n.w, Catch::Matchers::WithinAbs(0.79305F, 0.0001F));
 	}
 
-	SECTION("rawrbox::Quaternion::lerp") {
+	SECTION("rawrbox::Vector4::lerp") {
 		rawrbox::Vector4f o = rawrbox::Vector4f{1.F, 1.F, 0.F, 10.F};
 		auto n = q.lerp(o, 0.5F);
 
