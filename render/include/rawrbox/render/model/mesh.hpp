@@ -78,8 +78,6 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 vertexPos = {};
 
 		rawrbox::Color color = rawrbox::Colors::White;
-		rawrbox::Color specularColor = rawrbox::Colors::White;
-		rawrbox::Color emissionColor = rawrbox::Colors::White;
 
 		bool wireframe = false;
 		bool lineMode = false;
@@ -166,14 +164,6 @@ namespace rawrbox {
 
 		void setColor(const rawrbox::Color& color) {
 			this->color = color;
-		}
-
-		void setSpecularColor(const rawrbox::Color& color) {
-			this->specularColor = color;
-		}
-
-		void setEmissionColor(const rawrbox::Color& color) {
-			this->emissionColor = color;
 		}
 
 		void addData(const std::string& id, rawrbox::Vector4f data) { // BGFX shaders only accept vec4, so.. yea

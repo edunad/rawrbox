@@ -162,7 +162,7 @@ namespace rawrbox {
 			std::array<aiTextureMapMode, 3> matMode = {};
 
 			mesh->setSpecularTexture(rawrbox::MISSING_SPECULAR_TEXTURE, 25.F); // Default
-			mesh->setEmissionTexture(rawrbox::MISSING_SPECULAR_TEXTURE, 1.F);  // Default
+			mesh->setEmissionTexture(rawrbox::MISSING_EMISSION_TEXTURE, 1.F);  // Default
 
 			// TEXTURE DIFFUSE / BASE_COLOR
 			if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
@@ -194,13 +194,9 @@ namespace rawrbox {
 						auto ptr = this->importTexture(matPath.data, matName.data, matMode);
 						if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load emissive texture '{}'", matPath.data));
 
-						aiColor3D color;
-						pMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, color);
-
 						float intensity = 1.F;
 						pMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, intensity);
 
-						mesh->setEmissionColor(rawrbox::Color(color.r, color.g, color.b, opacity));
 						mesh->setEmissionTexture(ptr, intensity);
 					}
 				}
@@ -214,10 +210,6 @@ namespace rawrbox {
 						float shininess = 0;
 						pMaterial->Get(AI_MATKEY_SHININESS, shininess);
 
-						aiColor3D color;
-						pMaterial->Get(AI_MATKEY_COLOR_SPECULAR, color);
-
-						mesh->setSpecularColor(rawrbox::Color(color.r, color.g, color.b, opacity));
 						mesh->setSpecularTexture(ptr, shininess);
 					}
 				}

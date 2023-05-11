@@ -33,7 +33,8 @@ namespace rawrbox {
 		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 
 		rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
-		rawrbox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black);
+		rawrbox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
+		rawrbox::MISSING_EMISSION_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black);
 		rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
 	}
 

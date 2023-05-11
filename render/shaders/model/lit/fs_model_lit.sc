@@ -10,20 +10,18 @@ SAMPLER2D(s_texEmissionColor, 2);
 uniform vec4 u_cameraPos;
 uniform vec4 u_colorOffset;
 
-uniform vec4 u_specularColorOffset;
-uniform vec4 u_emissionColorOffset;
-
 uniform vec2 u_texMatData;
 
 void main() {
-	vec4 specularColor = texture2D(s_texSpecularColor, v_texcoord0.xy) * v_color0 * u_specularColorOffset;
-	vec4 emissionColor = texture2D(s_texEmissionColor, v_texcoord0.xy) * v_color0 * u_emissionColorOffset;
+	vec4 specularColor = texture2D(s_texSpecularColor, v_texcoord0.xy) * v_color0 * u_colorOffset;
+	vec4 emissionColor = texture2D(s_texEmissionColor, v_texcoord0.xy) * v_color0 * u_colorOffset;
 
 	vec4 texColor = texture2D(s_texColor, v_texcoord0.xy) * v_color0 * u_colorOffset;
 	if (texColor.a <= 0.0) discard;
 
     vec3 viewDir = normalize(u_cameraPos.xyz - v_wPos);
 	//mat3 tbn = mtxFromCols(v_tangent, v_bitangent, v_normal);
+
 
 	if(u_lightsSetting.x != 1.0) {
 		vec3 ambient = vec3(0, 0, 0);

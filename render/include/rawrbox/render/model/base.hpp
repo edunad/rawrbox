@@ -17,6 +17,8 @@
 #include <utility>
 #include <vector>
 
+#include "rawrbox/math/color.hpp"
+
 namespace rawrbox {
 
 	struct Bone {
@@ -573,6 +575,13 @@ namespace rawrbox {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
 				if (id != -1 && i != id) continue;
 				this->_meshes[i]->setBlend(blend);
+			}
+		}
+
+		virtual void setColor(const rawrbox::Color& color, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->setColor(color);
 			}
 		}
 		// ----
