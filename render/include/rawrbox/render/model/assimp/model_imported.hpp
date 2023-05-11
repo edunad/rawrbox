@@ -21,7 +21,10 @@
 #include <string>
 #include <unordered_map>
 
-#define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_RemoveRedundantMaterials)
+#define MAGIC_ENUM_USING_ALIAS_STRING using string = std::string;
+#include <magic_enum.hpp>
+
+#define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_GlobalScale)
 
 namespace rawrbox {
 	// NOLINTBEGIN{unused-const-variable}
@@ -33,8 +36,9 @@ namespace rawrbox {
 
 		namespace Debug {
 			const uint32_t PRINT_BONE_STRUCTURE = 1 << 10;
-		}
-	}; // namespace ModelLoadFlags
+			const uint32_t PRINT_MATERIALS = 1 << 11;
+		} // namespace Debug
+	};        // namespace ModelLoadFlags
 	// NOLINTEND{unused-const-variable}
 
 	template <typename M = rawrbox::MaterialBase>
@@ -99,6 +103,7 @@ namespace rawrbox {
 				flags |= assimpSamplerToBGFX(mode, 2); // w
 
 				texture->setFlags(flags);
+
 				// ----
 				texture->setName(name);
 				texture->upload(bgfx::TextureFormat::Count);
@@ -131,30 +136,13 @@ namespace rawrbox {
 			aiBlendMode blending = aiBlendMode_Default;
 			pMaterial->Get(AI_MATKEY_BLEND_FUNC, blending);
 			switch (blending) {
-					/*
-					case aiBlendMode_Mix:
-						mesh->setBlend(BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA));
-						break;
-
-					case aiBlendMode_Sub:
-						mesh->setBlend(BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_ONE) | BGFX_STATE_BLEND_EQUATION(BGFX_STATE_BLEND_EQUATION_REVSUB));
-						break;
-
-					case aiBlendMode_Mul:
-						mesh->setBlend(BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA));
-						break;
-
-					case aiBlendMode_Alpha:
-						mesh->setBlend(BGFX_STATE_BLEND_ALPHA);
-						break;
-						*/
 				case aiBlendMode_Additive:
 					mesh->setBlend(BGFX_STATE_BLEND_ADD);
 					break;
 
 				default:
 				case aiBlendMode_Default:
-					mesh->setBlend(BGFX_STATE_BLEND_NORMAL);
+					mesh->setBlend(BGFX_STATE_BLEND_ALPHA_TO_COVERAGE);
 					break;
 			}
 
@@ -163,6 +151,26 @@ namespace rawrbox {
 
 			mesh->setSpecularTexture(rawrbox::MISSING_SPECULAR_TEXTURE, 25.F); // Default
 			mesh->setEmissionTexture(rawrbox::MISSING_EMISSION_TEXTURE, 1.F);  // Default
+
+			if ((this->_loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS) > 0) {
+				const auto dump = [](const aiMaterial* mat, aiTextureType type) {
+					const unsigned count = mat->GetTextureCount(type);
+
+					if (count > 0) {
+						aiString matPath;
+						if (mat->GetTexture(type, 0, &matPath, nullptr, nullptr, nullptr, nullptr, nullptr) == AI_SUCCESS) {
+							fmt::print("[RawrBox-Assimp] Found texture [{}]{} of type '{}'\n", count, matPath.C_Str(), magic_enum::enum_name(type));
+						}
+					}
+				};
+
+				constexpr auto assimp_mat = magic_enum::enum_entries<aiTextureType>();
+
+				fmt::print("==== DUMP FOR MATERIAL {}\n", pMaterial->GetName().C_Str());
+				for (auto& m : assimp_mat)
+					dump(pMaterial, m.first);
+				fmt::print("==== ====================\n");
+			}
 
 			// TEXTURE DIFFUSE / BASE_COLOR
 			if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
@@ -191,6 +199,18 @@ namespace rawrbox {
 				// EMISSION ------
 				if (pMaterial->GetTextureCount(aiTextureType_EMISSION_COLOR) > 0) {
 					if (pMaterial->GetTexture(aiTextureType_EMISSION_COLOR, 0, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
+						auto ptr = this->importTexture(matPath.data, matName.data, matMode);
+						if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load emissive texture '{}'", matPath.data));
+
+						float intensity = 1.F;
+						pMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, intensity);
+
+						mesh->setEmissionTexture(ptr, intensity);
+					}
+				}
+
+				if (pMaterial->GetTextureCount(aiTextureType_EMISSIVE) > 0) {
+					if (pMaterial->GetTexture(aiTextureType_EMISSIVE, 0, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
 						auto ptr = this->importTexture(matPath.data, matName.data, matMode);
 						if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load emissive texture '{}'", matPath.data));
 
@@ -588,9 +608,13 @@ namespace rawrbox {
 			this->_assimpFlags = assimpFlags;
 
 			if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {
-				this->_assimpFlags |= aiProcess_PopulateArmatureData | aiProcess_OptimizeGraph | aiProcess_LimitBoneWeights; // Enable armature & limit bones
+				this->_assimpFlags |= aiProcess_PopulateArmatureData | aiProcess_LimitBoneWeights; // Enable armature & limit bones
 			} else {
 				this->_assimpFlags |= aiProcess_PreTransformVertices; // Enable PreTransformVertices for optimization
+			}
+
+			if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
+				this->_assimpFlags |= aiProcess_RemoveRedundantMaterials; // Enable armature & limit bones
 			}
 
 			const aiScene* scene = aiImportFile(path.c_str(), this->_assimpFlags);

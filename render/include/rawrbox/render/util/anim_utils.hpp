@@ -82,7 +82,7 @@ namespace rawrbox {
 			return {aiIntrp.x, aiIntrp.y, aiIntrp.z, aiIntrp.w};
 		};
 
-		static rawrbox::Vector3f lerpPosition(float time, std::pair<float, rawrbox::Vector3f> a, std::pair<float, rawrbox::Vector3f> b) {
+		static rawrbox::Vector3f lerpVector3(float time, std::pair<float, rawrbox::Vector3f> a, std::pair<float, rawrbox::Vector3f> b) {
 			if (a.first == b.first) return a.second;
 
 			float dt = b.first - a.first;
@@ -100,15 +100,6 @@ namespace rawrbox {
 			    a.second.x + b.second.x,
 			    a.second.y + b.second.y,
 			    a.second.z + b.second.z};
-		};
-
-		static rawrbox::Vector3f lerpScale(float time, std::pair<float, rawrbox::Vector3f> a, std::pair<float, rawrbox::Vector3f> b) {
-			if (a.first == b.first) return a.second;
-
-			float dt = b.first - a.first;
-			float norm = (time - a.first) / dt;
-
-			return lerpPosition(norm, a, b);
 		};
 	};
 } // namespace rawrbox

@@ -70,7 +70,7 @@ namespace rawrbox {
 
 		rawrbox::Vector3f _scale = {1, 1, 1};
 		rawrbox::Vector3f _pos = {};
-		rawrbox::Vector3f _angle = {};
+		rawrbox::Vector4f _angle = {};
 
 		rawrbox::BBOX _bbox = {};
 
@@ -509,8 +509,8 @@ namespace rawrbox {
 			this->_matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 		}
 
-		virtual const rawrbox::Vector3f& getAngle() { return this->_angle; }
-		virtual void setAngle(const rawrbox::Vector3f& ang) {
+		virtual const rawrbox::Vector4f& getAngle() { return this->_angle; }
+		virtual void setAngle(const rawrbox::Vector4f& ang) {
 			this->_angle = ang;
 			this->_matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 		}

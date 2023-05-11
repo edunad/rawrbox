@@ -22,7 +22,6 @@ void main() {
     vec3 viewDir = normalize(u_cameraPos.xyz - v_wPos);
 	//mat3 tbn = mtxFromCols(v_tangent, v_bitangent, v_normal);
 
-
 	if(u_lightsSetting.x != 1.0) {
 		vec3 ambient = vec3(0, 0, 0);
 
@@ -41,7 +40,7 @@ void main() {
 			}
 		}
 
-		gl_FragColor = vec4(ambient, texColor.a);
+		gl_FragColor = vec4(ambient + emissionColor.rgb, texColor.a);
 	} else {
 		gl_FragColor = texColor; // Full bright
 	}

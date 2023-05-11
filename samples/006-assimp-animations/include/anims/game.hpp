@@ -23,7 +23,8 @@ namespace anims {
 
 		std::shared_ptr<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>> _model = std::make_shared<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>>();
 		std::shared_ptr<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>> _model2 = std::make_shared<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>>();
-		std::shared_ptr<rawrbox::ModelImported<rawrbox::MaterialSkinnedLit>> _model3 = std::make_shared<rawrbox::ModelImported<rawrbox::MaterialSkinnedLit>>();
+		std::shared_ptr<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>> _model3 = std::make_shared<rawrbox::ModelImported<rawrbox::MaterialSkinnedUnlit>>();
+
 		std::shared_ptr<rawrbox::Model<>> _modelGrid = std::make_shared<rawrbox::Model<>>();
 		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
 

@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -9,11 +10,6 @@
 #include <bx/timer.h>
 
 #include <vector>
-
-#include "rawrbox/math/color.hpp"
-#include "rawrbox/math/vector3.hpp"
-#include "rawrbox/render/model/light/directional.hpp"
-#include "rawrbox/render/model/light/manager.hpp"
 
 namespace anims {
 	void Game::init() {
@@ -62,7 +58,6 @@ namespace anims {
 		this->_model->load("./content/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS);
 		this->_model->playAnimation("Scene", true, 1.F);
 		this->_model->setPos({0, 0, 0});
-		// this->_model->setAngle({0, bx::toRad(90), 0});
 		this->_model->upload();
 
 		this->_model2->load("./content/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE);
@@ -75,11 +70,9 @@ namespace anims {
 		this->_model3->load("./content/models/grandma_tv/TV_emission.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS);
 		this->_model3->playAnimation("Scene", true, 1.F);
 		this->_model3->setPos({0, 0, -3.5F});
-		this->_model3->setScale({0.40F, 0.4F, 0.4F});
+		this->_model3->setScale({0.35F, 0.35F, 0.35F});
 		this->_model3->upload();
 		// -----
-
-		rawrbox::LightManager::get().addLight(std::make_shared<rawrbox::LightDirectional>(rawrbox::Vector3f{0.F, 3.F, 0.F}, rawrbox::Vector3f{0.F, bx::toRad(45), bx::toRad(90)}, rawrbox::Colors::White, rawrbox::Colors::White));
 
 		{
 			auto mesh = this->_modelGrid->generateGrid(12, {0.F, 0.F, 0.F});

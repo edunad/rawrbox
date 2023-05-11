@@ -21,7 +21,7 @@
 
         "clangd.restartAfterCrash": true,
         "clangd.checkUpdates": true,
-        "clangd.arguments": ["--header-insertion=iwyu", "--enable-config"],
+        "clangd.arguments": ["--header-insertion=never", "--enable-config"],
 
         "git.autoRepositoryDetection": false,
 

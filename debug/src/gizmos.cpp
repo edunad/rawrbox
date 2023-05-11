@@ -48,7 +48,7 @@ namespace rawrbox {
 	void GIZMOS::addLight(rawrbox::LightBase* l) {
 		auto pos = l->getPosMatrix();
 
-		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = this->_gizmo_lights->generatePlane({pos[0], pos[1], pos[2]}, {0.1F, 0.1F});
+		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = this->_gizmo_lights->generatePlane({pos[0], pos[1], pos[2]}, {0.25F, 0.25F});
 		mesh->setName(fmt::format("Light-{}", l->id()));
 		mesh->setCulling(BGFX_STATE_CULL_CW);
 
@@ -80,7 +80,7 @@ namespace rawrbox {
 	}
 
 	void GIZMOS::addEmitter(rawrbox::Emitter* l) {
-		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = this->_gizmo_emitters->generatePlane(l->getPos(), {0.1F, 0.1F});
+		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = this->_gizmo_emitters->generatePlane(l->getPos(), {0.25F, 0.25F});
 		mesh->setName(fmt::format("Emitter-{}", l->id()));
 		mesh->setCulling(BGFX_STATE_CULL_CW);
 		mesh->setTexture(_textures["particle_emitter"]);
@@ -103,7 +103,7 @@ namespace rawrbox {
 	void GIZMOS::addSound(rawrbox::SoundInstance* l) {
 		if (!l->isValid() || !l->is3D()) return;
 
-		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = this->_gizmo_sounds->generatePlane(l->getPosition(), {0.1F, 0.1F});
+		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = this->_gizmo_sounds->generatePlane(l->getPosition(), {0.25F, 0.25F});
 		mesh->setName(fmt::format("Sound-{}", l->id()));
 		mesh->setCulling(BGFX_STATE_CULL_CW);
 		mesh->setTexture(_textures["sound_emitter"]);

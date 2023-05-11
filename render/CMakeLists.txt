@@ -88,6 +88,7 @@ target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	${RAWRBOX_EXTRA_LIBS}
 
 	fmt::fmt
+	magic_enum::magic_enum
 	Freetype::Freetype
 	utf8cpp
 

@@ -201,7 +201,7 @@ namespace rawrbox {
 
 		void setOptimizable(bool status) { this->_canOptimize = status; }
 		bool canOptimize(std::shared_ptr<rawrbox::Mesh<T>> other) {
-			if (!this->_canOptimize) return false;
+			if (this->skeleton != nullptr || !this->_canOptimize) return false;
 			return this->texture == other->texture &&
 			       this->color == other->color &&
 			       this->wireframe == other->wireframe &&

@@ -148,14 +148,21 @@ namespace rawrbox {
 					bx::EaseFn ease = bx::getEaseFunc(animChannel->stateEnd);
 					float t = ease(timeInTicks);
 
-					position = AnimUtils::lerpPosition(t, currPos, nextPos);
+					position = AnimUtils::lerpVector3(t, currPos, nextPos);
 					rotation = AnimUtils::lerpRotation(t, currRot, nextRot);
-					scale = AnimUtils::lerpScale(t, currScl, nextScl);
-					// ----
+					scale = AnimUtils::lerpVector3(t, currScl, nextScl);
+					//   ----
 
-					nodeTransform.translate(position);
-					nodeTransform.scale(scale);
-					nodeTransform.rotate(rotation);
+					rawrbox::Matrix4x4 mt = {};
+					mt.translate(position);
+
+					rawrbox::Matrix4x4 ms = {};
+					ms.scale(scale);
+
+					rawrbox::Matrix4x4 mr = {};
+					mr.rotate(rotation);
+
+					nodeTransform = mt * mr * ms;
 				}
 			}
 		}
