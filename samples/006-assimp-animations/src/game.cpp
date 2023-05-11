@@ -128,8 +128,8 @@ namespace anims {
 
 		this->_modelGrid->draw(this->_camera->getPos());
 
-		// this->_model->draw(this->_camera->getPos());
-		// this->_model2->draw(this->_camera->getPos());
+		this->_model->draw(this->_camera->getPos());
+		this->_model2->draw(this->_camera->getPos());
 		this->_model3->draw(this->_camera->getPos());
 
 		this->_text->draw(this->_camera->getPos());
