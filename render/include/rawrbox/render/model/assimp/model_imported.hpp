@@ -37,8 +37,10 @@ namespace rawrbox {
 		namespace Debug {
 			const uint32_t PRINT_BONE_STRUCTURE = 1 << 10;
 			const uint32_t PRINT_MATERIALS = 1 << 11;
+			const uint32_t PRINT_ANIMATIONS = 1 << 12;
 		} // namespace Debug
-	};        // namespace ModelLoadFlags
+
+	}; // namespace ModelLoadFlags
 	// NOLINTEND{unused-const-variable}
 
 	template <typename M = rawrbox::MaterialBase>
@@ -115,6 +117,7 @@ namespace rawrbox {
 			}
 		}
 
+		// TODO: IMPROVE ME, SOMETHING IS WRONG HERE
 		void loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
 			if (sc->mNumMaterials <= 0 || assimp.mMaterialIndex > sc->mNumMaterials) return;
 			const aiMaterial* pMaterial = sc->mMaterials[assimp.mMaterialIndex];
@@ -140,10 +143,7 @@ namespace rawrbox {
 					mesh->setBlend(BGFX_STATE_BLEND_ADD);
 					break;
 
-				default:
-				case aiBlendMode_Default:
-					mesh->setBlend(BGFX_STATE_BLEND_ALPHA_TO_COVERAGE);
-					break;
+				default: break;
 			}
 
 			aiString matPath;
@@ -187,9 +187,12 @@ namespace rawrbox {
 			} else {
 				// Default painted texture ----
 				aiColor3D flatColor;
-				pMaterial->Get(AI_MATKEY_BASE_COLOR, flatColor);
+				if (pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, flatColor) == AI_SUCCESS) {
+					mesh->setColor(rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, opacity));
+				} else if (pMaterial->Get(AI_MATKEY_BASE_COLOR, flatColor) == AI_SUCCESS) {
+					mesh->setColor(rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, opacity));
+				}
 
-				mesh->setColor(rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, opacity));
 				mesh->setTexture(rawrbox::WHITE_TEXTURE);
 				// -----------
 			}
@@ -378,6 +381,10 @@ namespace rawrbox {
 
 				std::string animName = anim.mName.data;
 				if (animName.empty()) animName = fmt::format("anim_{}", i);
+
+				if ((this->_loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS) > 0) {
+					fmt::print("[RawrBox-Assimp] Found animation {}\n", animName);
+				}
 
 				auto spl = rawrbox::StrUtils::split(animName, '|');
 
