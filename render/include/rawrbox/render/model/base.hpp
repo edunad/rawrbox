@@ -415,8 +415,8 @@ namespace rawrbox {
 			mesh->merge(generateCube(pos, {0.01F, 0.01F, hSize}, Colors::Blue));  // z
 
 			// AABB ---
-			mesh->bbox.m_min = {-hSize};
-			mesh->bbox.m_max = {hSize};
+			mesh->bbox.m_min = {-hSize, -hSize, -hSize};
+			mesh->bbox.m_max = {hSize, hSize, hSize};
 			mesh->bbox.m_size = mesh->bbox.m_min.abs() + mesh->bbox.m_max.abs();
 			// -----
 
