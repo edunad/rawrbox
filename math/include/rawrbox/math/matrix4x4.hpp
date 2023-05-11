@@ -4,7 +4,6 @@
 #include <rawrbox/math/vector4.hpp>
 
 #include <bx/math.h>
-#include <xfilesystem_abi.h>
 
 #include <algorithm>
 #include <array>
