@@ -10,9 +10,10 @@ namespace rawrbox {
 	public:
 		using ModelBase<M>::ModelBase;
 
-		bool supportsOptimization() override { return false; }
 		void addMesh(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) override {
 			mesh->addData("billboard_mode", {1.F, 0, 0}); // Force billboard for sprites
+			mesh->setOptimizable(false);
+
 			ModelBase<M>::addMesh(mesh);
 		}
 
@@ -33,7 +34,8 @@ namespace rawrbox {
 				}
 
 				uint64_t flags = BGFX_STATE_DEFAULT_SPRITE | mesh->culling | mesh->blending;
-				if (mesh->wireframe) flags |= BGFX_STATE_PT_LINES;
+				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
+												: 0;
 
 				bgfx::setState(flags, 0);
 

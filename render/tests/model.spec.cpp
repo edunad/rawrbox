@@ -56,15 +56,15 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		base->addMesh(base->generatePlane({}, {2, 2}));
 
 		REQUIRE(b.isEmpty() == false);
-		REQUIRE(b.size().x == 4.F);
-		REQUIRE(b.size().y == 4.F);
+		REQUIRE(b.size().x == 2.F);
+		REQUIRE(b.size().y == 2.F);
 		REQUIRE(b.size().z == 0.F);
 
 		base->addMesh(base->generateCube({}, {2, 4, 2}));
 
-		REQUIRE(b.size().x == 4.F);
-		REQUIRE(b.size().y == 8.F);
-		REQUIRE(b.size().z == 4.F);
+		REQUIRE(b.size().x == 2.F);
+		REQUIRE(b.size().y == 4.F);
+		REQUIRE(b.size().z == 2.F);
 	}
 
 	SECTION("rawrbox::ModelBase::setPos / rawrbox::ModelBase::getPos") {

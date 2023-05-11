@@ -38,6 +38,8 @@ namespace rawrbox {
 		[[nodiscard]] Vector2_t<NumberType> xy() const { return Vector2_t<NumberType>(x, y); }
 		[[nodiscard]] Vector2_t<NumberType> yx() const { return Vector2_t<NumberType>(y, x); }
 
+		[[nodiscard]] const std::array<NumberType, 4> data() const { return {x, y, z, w}; }
+
 		NumberType length() const {
 			return static_cast<NumberType>(std::sqrt(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2) + std::pow(w, 2)));
 		}

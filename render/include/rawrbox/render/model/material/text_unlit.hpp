@@ -11,7 +11,7 @@
 
 // NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader model_text3D_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_text_3d_unlit),
+    BGFX_EMBEDDED_SHADER(vs_model_unlit),
     BGFX_EMBEDDED_SHADER(fs_text_3d_unlit),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)

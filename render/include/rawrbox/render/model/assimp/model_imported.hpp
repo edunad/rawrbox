@@ -32,7 +32,7 @@ namespace rawrbox {
 		const uint32_t IMPORT_ANIMATIONS = 1 << 3;
 
 		namespace Debug {
-			const uint32_t PRINT_BONE_STRUCTURE = 1 << 4;
+			const uint32_t PRINT_BONE_STRUCTURE = 1 << 10;
 		}
 	}; // namespace ModelLoadFlags
 	// NOLINTEND{unused-const-variable}
@@ -112,11 +112,13 @@ namespace rawrbox {
 
 		void loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
 			if (sc->mNumMaterials <= 0 || assimp.mMaterialIndex > sc->mNumMaterials) return;
-
 			const aiMaterial* pMaterial = sc->mMaterials[assimp.mMaterialIndex];
 
 			aiString matName;
 			pMaterial->Get(AI_MATKEY_NAME, matName);
+
+			float opacity = 1.F;
+			pMaterial->Get(AI_MATKEY_OPACITY, opacity);
 
 			bool matWireframe = false;
 			pMaterial->Get(AI_MATKEY_ENABLE_WIREFRAME, matWireframe);
@@ -158,44 +160,60 @@ namespace rawrbox {
 
 			aiString matPath;
 			std::array<aiTextureMapMode, 3> matMode = {};
-			mesh->setTexture(rawrbox::MISSING_TEXTURE); // Default
 
-			// TEXTURE DIFFUSE
+			mesh->setSpecularTexture(rawrbox::MISSING_SPECULAR_TEXTURE, 25.F); // Default
+			mesh->setEmissionTexture(rawrbox::MISSING_EMISSION_TEXTURE, 1.F);  // Default
+
+			// TEXTURE DIFFUSE / BASE_COLOR
 			if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
 				if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
 					auto ptr = this->importTexture(matPath.data, matName.data, matMode);
 					if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load diffuse texture '{}'", matPath.data));
 
+					aiColor3D color;
+					pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+
+					mesh->setColor(rawrbox::Color(color.r, color.g, color.b, opacity));
 					mesh->setTexture(ptr);
 				}
+			} else {
+				// Default painted texture ----
+				aiColor3D flatColor;
+				pMaterial->Get(AI_MATKEY_BASE_COLOR, flatColor);
+
+				mesh->setColor(rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, opacity));
+				mesh->setTexture(rawrbox::WHITE_TEXTURE);
+				// -----------
 			}
+			// --------------------
 
-			// TEXTURE DIFFUSE
-			if (pMaterial->GetTextureCount(aiTextureType_BASE_COLOR) > 0) {
-				if (pMaterial->GetTexture(aiTextureType_BASE_COLOR, 0, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
-					auto ptr = this->importTexture(matPath.data, matName.data, matMode);
-					if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load pbr texture '{}'", matPath.data));
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
+				// EMISSION ------
+				if (pMaterial->GetTextureCount(aiTextureType_EMISSION_COLOR) > 0) {
+					if (pMaterial->GetTexture(aiTextureType_EMISSION_COLOR, 0, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
+						auto ptr = this->importTexture(matPath.data, matName.data, matMode);
+						if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load emissive texture '{}'", matPath.data));
 
-					mesh->setTexture(ptr);
+						float intensity = 1.F;
+						pMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, intensity);
+
+						mesh->setEmissionTexture(ptr, intensity);
+					}
 				}
-			}
+				// --------------------
+				// SPECULAR -----------
+				if (pMaterial->GetTextureCount(aiTextureType_SPECULAR) > 0) {
+					if (pMaterial->GetTexture(aiTextureType_SPECULAR, 0, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
+						auto ptr = this->importTexture(matPath.data, matName.data, matMode);
+						if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load specular texture '{}'", matPath.data));
 
-			// TEXTURE SPECULAR
-			if (pMaterial->GetTextureCount(aiTextureType_SPECULAR) > 0) {
-				if (pMaterial->GetTexture(aiTextureType_SPECULAR, 0, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
-					auto ptr = this->importTexture(matPath.data, matName.data, matMode);
-					if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load specular texture '{}'", matPath.data));
+						float shininess = 0;
+						pMaterial->Get(AI_MATKEY_SHININESS, shininess);
 
-					float shininess = 0;
-					pMaterial->Get(AI_MATKEY_SHININESS, shininess);
-
-					mesh->setSpecularTexture(ptr, shininess);
+						mesh->setSpecularTexture(ptr, shininess);
+					}
 				}
-			}
-
-			// TEXTURE EMISSIVE
-			if (mesh->getTexture() == rawrbox::MISSING_TEXTURE) {
-				fmt::print("[RawrBox-Assimp] Unsupported texture '{}'\n", pMaterial->GetName().C_Str());
+				// ---------------------
 			}
 		}
 		/// -------
@@ -293,22 +311,46 @@ namespace rawrbox {
 			}
 		}
 
-		AnimBehaviour assimpBehavior(aiAnimBehaviour b) {
+		bx::Easing::Enum assimpBehavior(aiAnimBehaviour b) {
 			switch (b) {
 				case aiAnimBehaviour_CONSTANT:
-					return AnimBehaviour::CONSTANT;
+					return bx::Easing::Step;
 				default:
-					return AnimBehaviour::LERP;
+					return bx::Easing::Linear;
 			}
+		}
+
+		aiNode* findRootSkeleton(const aiScene* sc, const std::string& meshName) {
+			// Attempt to find armature
+			auto aiNode = sc->mRootNode->FindNode(meshName.c_str());
+			if (aiNode == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Failed to find node '{}' on scene root", meshName));
+
+			auto fnd = this->_skeletons.find(aiNode->mName.data);
+			if (fnd != this->_skeletons.end()) return aiNode;
+
+			while (true) {
+				if (aiNode->mParent == nullptr) return nullptr;
+
+				auto fnd = this->_skeletons.find(aiNode->mParent->mName.data);
+				if (fnd != this->_skeletons.end()) return aiNode->mParent;
+
+				aiNode = aiNode->mParent;
+			}
+			// --------
+
+			return nullptr;
+		}
+
+		void markMeshAnimated(const std::string& meshName, const std::string& search) {
+			auto m = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&](std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> x) { return x->name == search; });
+			if (m == this->_meshes.end()) return;
+
+			(*m)->setOptimizable(false); // Has animation, don't optimize
+			this->_animatedMeshes[meshName] = *m;
 		}
 
 		void loadAnimations(const aiScene* sc) {
 			if (!sc->HasAnimations()) return;
-
-			if (this->_globalBoneMap.empty()) {
-				fmt::print("[RawrBox-Model] Non-bone animations not supported yet!\n");
-				return;
-			}
 
 			// Load animations ----
 			for (size_t i = 0; i < sc->mNumAnimations; i++) {
@@ -331,35 +373,40 @@ namespace rawrbox {
 					auto aChannel = anim.mChannels[channelIndex];
 					std::string meshName = aChannel->mNodeName.data;
 
-					rawrbox::AnimationFrame ourChannel;
+					rawrbox::AnimationFrame ourChannel = {};
 
-					// Attempt to find armature
-					auto aiNodeParent = sc->mRootNode->FindNode(meshName.c_str());
-					while (true) {
-						if (aiNodeParent->mParent == nullptr || aiNodeParent->mParent->mName == sc->mRootNode->mName) break;
-						aiNodeParent = aiNodeParent->mParent;
+					// ANIMATION MAPPING -----
+					auto pNode = this->findRootSkeleton(sc, meshName.c_str());
+					if (pNode != nullptr) {
+						std::string armature = pNode->mName.data;
+						if (armature == meshName) continue;
+
+						// Found a bone!
+						ourChannel.nodeName = fmt::format("{}-{}", armature, meshName);
 					}
 
-					std::string armature = aiNodeParent->mName.data;
-					if (meshName == armature) continue;
+					// Could not find a skeleton / bone, probably a vertice anim then
+					if (ourChannel.nodeName.empty()) {
+						// Mark meshes as animated for quick lookup ----
+						pNode = sc->mRootNode->FindNode(meshName.c_str());
+						if (pNode == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Failed to find animated mesh '{}'", meshName));
 
-					std::string boneKey = fmt::format("{}-{}", armature, meshName);
+						for (size_t i = 0; i < pNode->mNumChildren; i++) {
+							this->markMeshAnimated(meshName, pNode->mChildren[i]->mName.data);
+						}
 
-					auto fnd = this->_globalBoneMap.find(boneKey);
-					if (fnd != this->_globalBoneMap.end()) {
-						if (fnd->second == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Invalid Bone '{}', pointer not defined?", boneKey));
-						if (fnd->second->owner == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Invalid Bone '{}' skeleton, pointer not defined?", boneKey));
+						for (size_t n = 0; n < pNode->mNumMeshes; ++n) {
+							this->markMeshAnimated(meshName, sc->mMeshes[pNode->mMeshes[n]]->mName.data);
+						}
 
-						ourChannel.nodeName = fmt::format("{}-{}", fnd->second->owner->name, meshName);
-						ourChannel.usesBones = true;
-					} else {
-						// Non-bone animation
 						ourChannel.nodeName = meshName;
+						// ----------------------
 					}
-					// ----
+					// -------------------------
 
 					ourChannel.stateStart = assimpBehavior(aChannel->mPreState);
 					ourChannel.stateEnd = assimpBehavior(aChannel->mPostState);
+
 					for (size_t positionIndex = 0; positionIndex < aChannel->mNumPositionKeys; positionIndex++) {
 						auto aPos = aChannel->mPositionKeys[positionIndex];
 						ourChannel.position.push_back({static_cast<float>(aPos.mTime), {aPos.mValue.x, aPos.mValue.y, aPos.mValue.z}});
@@ -427,20 +474,12 @@ namespace rawrbox {
 		/// -------
 
 		// MESH LOADING -----
-		void loadSubmeshes(const aiScene* sc, const aiNode* root, std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> parent) {
-			std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh = nullptr;
-
+		void loadSubmeshes(const aiScene* sc, const aiNode* root) {
 			for (size_t n = 0; n < root->mNumMeshes; ++n) {
 				aiMesh& aiMesh = *sc->mMeshes[root->mMeshes[n]];
-				mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
 
+				auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
 				mesh->setName(aiMesh.mName.data);
-				mesh->parent = parent;
-
-				// Offset for rendering
-				mesh->baseVertex = static_cast<uint16_t>(mesh->vertices.size());
-				mesh->baseIndex = static_cast<uint16_t>(mesh->indices.size());
-				// ----
 
 				// Calculate bbox ---
 				auto min = aiMesh.mAABB.mMin;
@@ -459,7 +498,7 @@ namespace rawrbox {
 				if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
 					this->loadTextures(sc, aiMesh, mesh);
 				} else {
-					mesh->setCulling(BGFX_STATE_CULL_CCW); // Default cullingf or assimp
+					mesh->setCulling(BGFX_STATE_CULL_CCW); // Default culling for assimp
 				}
 
 				// Vertices
@@ -491,8 +530,8 @@ namespace rawrbox {
 							auto& tangents = aiMesh.mTangents[i];
 							v.normal[1] = rawrbox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
 
-							// auto& bitangents = aiMesh.mBitangents[i];
-							// v.normal[2] = rawrbox::PackUtils::packNormal(bitangents.x, bitangents.y, bitangents.z);
+							auto& bitangents = aiMesh.mBitangents[i];
+							v.normal[2] = rawrbox::PackUtils::packNormal(bitangents.x, bitangents.y, bitangents.z);
 						}
 					}
 
@@ -505,7 +544,7 @@ namespace rawrbox {
 					if (face.mNumIndices != 3) continue; // we only do triangles
 
 					for (size_t i = 0; i < face.mNumIndices; i++) {
-						mesh->indices.push_back(static_cast<uint16_t>(static_cast<uint16_t>(mesh->vertices.size()) - face.mIndices[i]));
+						mesh->indices.push_back(face.mIndices[i]);
 					}
 				}
 
@@ -515,6 +554,8 @@ namespace rawrbox {
 				}
 				// -------------------
 
+				mesh->baseVertex = 0;
+				mesh->baseIndex = 0;
 				mesh->totalVertex = static_cast<uint16_t>(mesh->vertices.size());
 				mesh->totalIndex = static_cast<uint16_t>(mesh->indices.size());
 
@@ -523,7 +564,7 @@ namespace rawrbox {
 
 			// recursive
 			for (size_t n = 0; n < root->mNumChildren; ++n) {
-				this->loadSubmeshes(sc, root->mChildren[n], mesh);
+				this->loadSubmeshes(sc, root->mChildren[n]);
 			}
 		}
 		/// -------
@@ -559,8 +600,7 @@ namespace rawrbox {
 			}
 
 			// load models
-			this->loadSubmeshes(scene, scene->mRootNode, nullptr);
-
+			this->loadSubmeshes(scene, scene->mRootNode);
 			if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_LIGHT) > 0) this->loadLights(scene);
 			if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) this->loadAnimations(scene);
 			// ----

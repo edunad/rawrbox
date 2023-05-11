@@ -23,6 +23,7 @@ namespace rawrbox {
 		static VecType one() { return VecType(1, 1); }
 
 		[[nodiscard]] Vector2_t<NumberType> yx() const { return Vector2_t<NumberType>(y, x); }
+		[[nodiscard]] const std::array<NumberType, 2> data() const { return {x, y}; }
 
 		// UTILS ---
 		[[nodiscard]] NumberType distance(const VecType& other) const {

@@ -103,6 +103,8 @@ namespace rawrbox {
 			return ret;
 		}
 
+		[[nodiscard]] const std::array<NumberType, 4> data() const { return {r, g, b, a}; }
+
 		[[nodiscard]] bool isTransparent() const { return a == 0; }
 		[[nodiscard]] NumberType dot(const ColorType& other) const {
 			return r * other.r + g * other.g + b * other.b + a * other.a;

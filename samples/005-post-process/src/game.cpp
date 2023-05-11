@@ -87,13 +87,6 @@ namespace post_process {
 		if (this->_model == nullptr) return;
 		this->_model->draw(this->_camera->getPos());
 
-		auto& stencil = this->_render->getStencil();
-		rawrbox::Vector3f out2 = this->_camera->worldToScreen({0, 0, 0});
-
-		stencil.begin();
-		stencil.drawBox({out2.x, out2.y}, {50, 50});
-		stencil.end();
-
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 

@@ -12,8 +12,6 @@ namespace rawrbox {
 	public:
 		using ModelBase<rawrbox::MaterialText3DUnlit>::ModelBase;
 
-		bool supportsOptimization() override { return false; }
-
 		// UTILS ----
 		void addText(rawrbox::Font* font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center, bool billboard = true) {
 			float screenSize = (font->size * 0.025F) / 64.F;
@@ -74,25 +72,28 @@ namespace rawrbox {
 				// Set the atlas
 				mesh->setTexture(font->getAtlasTexture(glyph));
 				mesh->setCulling(0);
+				mesh->setOptimizable(false);
 				mesh->addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
 				mesh->vertexPos.translate(pos);
 
 				std::array<typename rawrbox::MaterialText3DUnlit::vertexBufferType, 4> buff{
-				    rawrbox::VertexData(startpos + Vector3f(p.x * screenSize, p.y * screenSize, 0), glyph.textureTopLeft.x, glyph.textureBottomRight.y, cl),
-				    rawrbox::VertexData(startpos + Vector3f((p.x + s.x) * screenSize, (p.y + s.y) * screenSize, 0), glyph.textureBottomRight.x, glyph.textureTopLeft.y, cl),
-				    rawrbox::VertexData(startpos + Vector3f(p.x * screenSize, (p.y + s.y) * screenSize, 0), glyph.textureTopLeft.x, glyph.textureTopLeft.y, cl),
-				    rawrbox::VertexData(startpos + Vector3f((p.x + s.x) * screenSize, p.y * screenSize, 0), glyph.textureBottomRight.x, glyph.textureBottomRight.y, cl),
+				    rawrbox::VertexData(startpos + Vector3f(p.x * screenSize, p.y * screenSize, 0), {glyph.textureTopLeft.x, glyph.textureBottomRight.y}, cl),
+				    rawrbox::VertexData(startpos + Vector3f((p.x + s.x) * screenSize, (p.y + s.y) * screenSize, 0), {glyph.textureBottomRight.x, glyph.textureTopLeft.y}, cl),
+				    rawrbox::VertexData(startpos + Vector3f(p.x * screenSize, (p.y + s.y) * screenSize, 0), {glyph.textureTopLeft.x, glyph.textureTopLeft.y}, cl),
+				    rawrbox::VertexData(startpos + Vector3f((p.x + s.x) * screenSize, p.y * screenSize, 0), {glyph.textureBottomRight.x, glyph.textureBottomRight.y}, cl),
 				};
 
 				std::array<uint16_t, 6> inds{
 				    0, 1, 2,
 				    0, 3, 1};
 
-				mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
-				mesh->totalVertex += static_cast<uint16_t>(buff.size());
+				mesh->baseIndex = mesh->totalIndex;
+				mesh->baseVertex = mesh->totalVertex;
 
-				for (uint16_t ind : inds)
-					mesh->indices.push_back(mesh->totalVertex - ind);
+				mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
+				mesh->indices.insert(mesh->indices.end(), inds.begin(), inds.end());
+
+				mesh->totalVertex += static_cast<uint16_t>(buff.size());
 				mesh->totalIndex += static_cast<uint16_t>(inds.size());
 
 				curpos.x += glyph.advance.x;
@@ -119,7 +120,8 @@ namespace rawrbox {
 				}
 
 				uint64_t flags = BGFX_STATE_DEFAULT_3D_TEXT | mesh->culling | mesh->blending;
-				if (mesh->wireframe) flags |= BGFX_STATE_PT_LINES;
+				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
+												: 0;
 
 				bgfx::setState(flags, 0);
 

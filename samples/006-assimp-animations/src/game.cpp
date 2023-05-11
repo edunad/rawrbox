@@ -10,6 +10,11 @@
 
 #include <vector>
 
+#include "rawrbox/math/color.hpp"
+#include "rawrbox/math/vector3.hpp"
+#include "rawrbox/render/model/light/directional.hpp"
+#include "rawrbox/render/model/light/manager.hpp"
+
 namespace anims {
 	void Game::init() {
 		int width = 1024;
@@ -57,15 +62,24 @@ namespace anims {
 		this->_model->load("./content/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS);
 		this->_model->playAnimation("Scene", true, 1.F);
 		this->_model->setPos({0, 0, 0});
+		// this->_model->setAngle({0, bx::toRad(90), 0});
 		this->_model->upload();
 
 		this->_model2->load("./content/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE);
 		this->_model2->playAnimation("MewAction", true, 0.8F);
 		this->_model2->playAnimation("MewAction.001", true, 0.5F);
-		this->_model2->setPos({0, 0, 1.5F});
+		this->_model2->setPos({0, 0, 2.5F});
 		this->_model2->setScale({0.25F, 0.25F, 0.25F});
 		this->_model2->upload();
+
+		this->_model3->load("./content/models/grandma_tv/TV_emission.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS);
+		this->_model3->playAnimation("Scene", true, 1.F);
+		this->_model3->setPos({0, 0, -3.5F});
+		this->_model3->setScale({0.40F, 0.4F, 0.4F});
+		this->_model3->upload();
 		// -----
+
+		rawrbox::LightManager::get().addLight(std::make_shared<rawrbox::LightDirectional>(rawrbox::Vector3f{0.F, 3.F, 0.F}, rawrbox::Vector3f{0.F, bx::toRad(45), bx::toRad(90)}, rawrbox::Colors::White, rawrbox::Colors::White));
 
 		{
 			auto mesh = this->_modelGrid->generateGrid(12, {0.F, 0.F, 0.F});
@@ -74,8 +88,9 @@ namespace anims {
 
 		// Text test ----
 		{
-			this->_text->addText(this->_font, "SINGLE ARMATURE", {0.F, 1.8F, 0});
-			this->_text->addText(this->_font, "TWO ARMATURES", {0.F, 1.8F, 2.3F});
+			this->_text->addText(this->_font, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 1.8F, 0});
+			this->_text->addText(this->_font, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.8F, 3.3F});
+			this->_text->addText(this->_font, "VERTEX ANIMATIONS", {0.F, 1.8F, -3.5F});
 		}
 		// ------
 
@@ -89,7 +104,10 @@ namespace anims {
 		this->_camera = nullptr;
 
 		this->_text = nullptr;
+
 		this->_model = nullptr;
+		this->_model2 = nullptr;
+		this->_model3 = nullptr;
 		this->_modelGrid = nullptr;
 
 		rawrbox::Engine::shutdown();
@@ -106,12 +124,14 @@ namespace anims {
 	}
 
 	void Game::drawWorld() {
-		if (this->_model == nullptr || this->_modelGrid == nullptr || this->_model2 == nullptr || this->_text == nullptr) return;
+		if (this->_model == nullptr || this->_model2 == nullptr || this->_model3 == nullptr || this->_modelGrid == nullptr || this->_text == nullptr) return;
 
 		this->_modelGrid->draw(this->_camera->getPos());
 
 		this->_model->draw(this->_camera->getPos());
 		this->_model2->draw(this->_camera->getPos());
+		this->_model3->draw(this->_camera->getPos());
+
 		this->_text->draw(this->_camera->getPos());
 	}
 
@@ -140,7 +160,7 @@ namespace anims {
 
 		this->drawWorld();
 
-		this->_render->frame(); // Commit primitives
+		this->_render->frame(true); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 } // namespace anims

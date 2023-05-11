@@ -25,6 +25,25 @@ if(NOT bgfx_POPULATED)
 endif()
 # ---------------------
 
+if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
+	message("-- Enabled assimp")
+
+	# INSTALL ASSIMP, CONAN IS OUTDATED AS HELL -----
+	FetchContent_GetProperties(assimp)
+	if(NOT assimp_POPULATED)
+		FetchContent_Declare(assimp
+			GIT_REPOSITORY "https://github.com/assimp/assimp"
+			GIT_TAG "v5.2.5"
+			GIT_PROGRESS TRUE
+		)
+
+		FetchContent_MakeAvailable(assimp)
+	endif()
+	# ------------------
+
+	list(APPEND RAWRBOX_EXTRA_LIBS assimp::assimp)
+endif()
+
 # Packages ----
 find_package(Freetype REQUIRED MODULE)
 find_package(utf8cpp REQUIRED)
@@ -32,15 +51,6 @@ find_package(utf8cpp REQUIRED)
 if(RAWRBOX_ENABLE_DEBUG_SUPPORT)
     list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.DEBUG)
 endif()
-
-
-if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
-	message("-- Enabled assimp")
-	find_package(assimp REQUIRED)
-
-	list(APPEND RAWRBOX_EXTRA_LIBS assimp::assimp)
-endif()
-
 #--------------
 
 # Grab source files

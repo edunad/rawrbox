@@ -50,7 +50,7 @@ namespace rawrbox {
 	template <typename T = VertexData>
 	class Mesh {
 	private:
-		bool _canMerge = true;
+		bool _canOptimize = true;
 
 	public:
 		std::string name = "mesh";
@@ -68,24 +68,27 @@ namespace rawrbox {
 		// TEXTURES ---
 		std::shared_ptr<rawrbox::TextureBase> texture = nullptr;
 		std::shared_ptr<rawrbox::TextureBase> specularTexture = nullptr;
-		float specularShininess = 1.0F;
+		std::shared_ptr<rawrbox::TextureBase> emissionTexture = nullptr;
+		float specularShininess = 25.0F;
+		float emissionIntensity = 1.F;
 		// -------
 
 		// RENDERING ---
 		rawrbox::Matrix4x4 offsetMatrix = {};
 		rawrbox::Matrix4x4 vertexPos = {};
+
 		rawrbox::Color color = rawrbox::Colors::White;
 
 		bool wireframe = false;
+		bool lineMode = false;
+
 		uint64_t culling = BGFX_STATE_CULL_CW;
 		uint64_t blending = BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
 		rawrbox::BBOX bbox = {};
 		// --------------
 
-		std::shared_ptr<Mesh<T>> parent = nullptr;
 		std::shared_ptr<Skeleton> skeleton = nullptr;
-
-		std::unordered_map<std::string, rawrbox::Vector3f> data = {};
+		std::unordered_map<std::string, rawrbox::Vector4f> data = {};
 
 		Mesh() = default;
 		Mesh(Mesh&&) = delete;
@@ -135,6 +138,18 @@ namespace rawrbox {
 			this->texture = ptr;
 		}
 
+		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getEmissionTexture() const { return this->emissionTexture; }
+		void setEmissionTexture(std::shared_ptr<rawrbox::TextureBase> ptr, float intensity) {
+			this->emissionTexture = ptr;
+			this->emissionIntensity = intensity;
+		}
+
+		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getSpecularTexture() const { return this->specularTexture; }
+		void setSpecularTexture(std::shared_ptr<rawrbox::TextureBase> ptr, float shininess) {
+			this->specularTexture = ptr;
+			this->specularShininess = shininess;
+		}
+
 		void setWireframe(bool wireframe) {
 			this->wireframe = wireframe;
 		}
@@ -147,22 +162,15 @@ namespace rawrbox {
 			this->blending = blend;
 		}
 
-		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getSpecularTexture() const { return this->specularTexture; }
-		void setSpecularTexture(std::shared_ptr<rawrbox::TextureBase> ptr, float shininess) {
-			this->specularTexture = ptr;
-			this->specularShininess = shininess;
-		}
-
 		void setColor(const rawrbox::Color& color) {
 			this->color = color;
 		}
 
-		void addData(const std::string& id, rawrbox::Vector3f data) { // BGFX shaders only accept vec4, so.. yea
-			if (this->hasData(id)) throw std::runtime_error(fmt::format("[RawrBox-Mesh] Data '{}' already added", id));
+		void addData(const std::string& id, rawrbox::Vector4f data) { // BGFX shaders only accept vec4, so.. yea
 			this->data[id] = data;
 		}
 
-		rawrbox::Vector3f getData(const std::string& id) {
+		rawrbox::Vector4f getData(const std::string& id) {
 			auto fnd = this->data.find(id);
 			if (fnd == this->data.end()) throw std::runtime_error(fmt::format("[RawrBox-Mesh] Data '{}' not found", id));
 			return fnd->second;
@@ -174,17 +182,26 @@ namespace rawrbox {
 
 		void merge(std::shared_ptr<rawrbox::Mesh<T>> other) {
 			for (uint16_t i : other->indices)
-				this->indices.push_back(static_cast<uint16_t>(this->vertices.size()) + i);
-
+				this->indices.push_back(this->totalVertex + i);
 			this->vertices.insert(this->vertices.end(), other->vertices.begin(), other->vertices.end());
-			this->totalVertex = static_cast<uint16_t>(this->vertices.size());
-			this->totalIndex = static_cast<uint16_t>(this->indices.size());
+
+			this->totalVertex += other->totalVertex;
+			this->totalIndex += other->totalIndex;
 		}
 
-		void setMergeable(bool merge) { this->_canMerge = merge; }
-		bool canMerge(std::shared_ptr<rawrbox::Mesh<T>> other) {
-			if (!this->_canMerge) return false;
+		void clear() {
+			this->vertices.clear();
+			this->indices.clear();
 
+			this->totalIndex = 0;
+			this->totalVertex = 0;
+			this->baseIndex = 0;
+			this->baseVertex = 0;
+		}
+
+		void setOptimizable(bool status) { this->_canOptimize = status; }
+		bool canOptimize(std::shared_ptr<rawrbox::Mesh<T>> other) {
+			if (!this->_canOptimize) return false;
 			return this->texture == other->texture &&
 			       this->color == other->color &&
 			       this->wireframe == other->wireframe &&
