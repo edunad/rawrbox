@@ -18,9 +18,13 @@
                 "query": "is:open"
             }
         ],
+
         "clangd.restartAfterCrash": true,
         "clangd.checkUpdates": true,
         "clangd.arguments": ["--header-insertion=iwyu", "--enable-config"],
+
+        "git.autoRepositoryDetection": false,
+
         "testMate.cpp.test.advancedExecutables": [
             {
                 "pattern": "build/*/*",
@@ -51,14 +55,13 @@
             "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${workspaceFolder}/conan_provider.cmake",
             "RAWRBOX_OUTPUT_BIN": "bin"
         },
-        "C_Cpp.vcFormat.newLine.beforeCatch": false,
-        "C_Cpp.vcFormat.newLine.beforeElse": false,
         "C_Cpp.codeAnalysis.clangTidy.enabled": true,
         "workbench.editor.pinnedTabSizing": "shrink",
         "workbench.editor.wrapTabs": true,
         "files.insertFinalNewline": true,
         "files.associations": {
             "*.sc": "hlsl",
+            "*.sh": "hlsl",
             "xstring": "cpp",
             "functional": "cpp",
             "map": "cpp",
@@ -158,7 +161,6 @@
             "ranges": "cpp",
             "span": "cpp",
             "cfenv": "cpp",
-            "*.sh": "cpp",
             "*.hpp11": "cpp",
             "*.inc": "cpp",
             "coroutine": "cpp"

@@ -369,10 +369,10 @@ namespace rawrbox {
 
 				typename M::vertexBufferType* vertex = &outVert[index * 4];
 
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir - vdir, uvS.x, uvE.y, blend, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir + vdir, uvE.x, uvS.y, blend, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir + vdir, uvS.x, uvS.y, blend, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir - vdir, uvE.x, uvE.y, blend, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir - vdir, {uvS.x, uvE.y, blend}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir + vdir, {uvE.x, uvS.y, blend}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir + vdir, {uvS.x, uvS.y, blend}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir - vdir, {uvE.x, uvE.y, blend}, color));
 
 				++index;
 			}

@@ -9,6 +9,7 @@
 
 #include <assimp/anim.h>
 #include <assimp/vector3.h>
+#include <bx/easing.h>
 
 #include <unordered_map>
 #include <utility>
@@ -19,17 +20,7 @@
 namespace rawrbox {
 
 	template <typename T>
-	struct AnimKey {
-		float time;
-		T value;
-
-		std::pair<float, T> toPair() { return std::make_pair(time, value); }
-	};
-
-	enum AnimBehaviour {
-		CONSTANT = 0,
-		LERP = 1
-	};
+	using AnimKey = std::pair<float, T>;
 
 	struct AnimationFrame {
 		std::string nodeName;
@@ -38,8 +29,8 @@ namespace rawrbox {
 		std::vector<AnimKey<rawrbox::Vector3f>> scale;
 		std::vector<AnimKey<rawrbox::Vector4f>> rotation;
 
-		AnimBehaviour stateStart;
-		AnimBehaviour stateEnd;
+		bx::Easing::Enum stateStart = bx::Easing::Linear;
+		bx::Easing::Enum stateEnd = bx::Easing::Linear;
 	};
 
 	struct Animation {
@@ -69,6 +60,11 @@ namespace rawrbox {
 
 		// ANIMATIONS ----
 		virtual void animate(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
+			// VERTEX ANIMATION ----
+			for (auto& anim : this->_animatedMeshes) {
+				this->readAnims(anim.second->offsetMatrix, anim.first);
+			}
+			// ------------
 
 			// BONE ANIMATION ----
 			if constexpr (supportsBones<typename M::vertexBufferType>) {
@@ -87,12 +83,6 @@ namespace rawrbox {
 				bgfx::setUniform(this->_material->u_bones, &boneTransforms.front(), static_cast<uint32_t>(boneTransforms.size()));
 			}
 			// -----
-
-			// VERTEX ANIMATION ----
-			for (auto& anim : this->_animatedMeshes) {
-				this->readAnims(anim.second->offsetMatrix, anim.first);
-			}
-			// ------------
 		}
 
 		virtual void animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const rawrbox::Matrix4x4& parentTransform) {
@@ -128,7 +118,7 @@ namespace rawrbox {
 					// helper, select the next "frame" we should play depending on the time
 					auto findFrameIndex = [&](auto& keys) {
 						for (size_t i = 0; i + 1 < keys.size(); i++) {
-							if (timeInTicks < keys[i + 1].time) {
+							if (timeInTicks < keys[i + 1].first) {
 								return i;
 							}
 						}
@@ -150,16 +140,17 @@ namespace rawrbox {
 					auto currScl = animChannel->scale[scaleFrameIndex];
 					auto nextScl = scaleFrameIndex + 1 >= animChannel->scale.size() ? animChannel->scale.front() : animChannel->scale[scaleFrameIndex + 1];
 
-					// lerp the 3 components.
-					Vector3f position = nextPos.value;
-					Vector4f rotation = nextRot.value;
-					Vector3f scale = nextScl.value;
+					// Easing ----
+					Vector3f position = nextPos.second;
+					Vector4f rotation = nextRot.second;
+					Vector3f scale = nextScl.second;
 
-					if (animChannel->stateEnd == AnimBehaviour::LERP) {
-						position = AnimUtils::lerpPosition(timeInTicks, currPos.toPair(), nextPos.toPair());
-						rotation = AnimUtils::lerpRotation(timeInTicks, currRot.toPair(), nextRot.toPair());
-						scale = AnimUtils::lerpScale(timeInTicks, currScl.toPair(), nextScl.toPair());
-					}
+					bx::EaseFn ease = bx::getEaseFunc(animChannel->stateEnd);
+					float t = ease(timeInTicks);
+
+					position = AnimUtils::lerpPosition(t, currPos, nextPos);
+					rotation = AnimUtils::lerpRotation(t, currRot, nextRot);
+					scale = AnimUtils::lerpScale(t, currScl, nextScl);
 					// ----
 
 					nodeTransform.translate(position);
@@ -243,7 +234,8 @@ namespace rawrbox {
 				bgfx::setTransform((this->_matrix * mesh->offsetMatrix).data());
 
 				uint64_t flags = BGFX_STATE_DEFAULT_3D | mesh->culling | mesh->blending;
-				if (mesh->wireframe) flags |= BGFX_STATE_PT_LINES;
+				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
+												: 0;
 
 				bgfx::setState(flags, 0);
 				this->_material->postProcess();

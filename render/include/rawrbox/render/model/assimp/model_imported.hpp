@@ -32,7 +32,7 @@ namespace rawrbox {
 		const uint32_t IMPORT_ANIMATIONS = 1 << 3;
 
 		namespace Debug {
-			const uint32_t PRINT_BONE_STRUCTURE = 1 << 4;
+			const uint32_t PRINT_BONE_STRUCTURE = 1 << 10;
 		}
 	}; // namespace ModelLoadFlags
 	// NOLINTEND{unused-const-variable}
@@ -319,12 +319,12 @@ namespace rawrbox {
 			}
 		}
 
-		AnimBehaviour assimpBehavior(aiAnimBehaviour b) {
+		bx::Easing::Enum assimpBehavior(aiAnimBehaviour b) {
 			switch (b) {
 				case aiAnimBehaviour_CONSTANT:
-					return AnimBehaviour::CONSTANT;
+					return bx::Easing::Step;
 				default:
-					return AnimBehaviour::LERP;
+					return bx::Easing::Linear;
 			}
 		}
 
@@ -353,7 +353,7 @@ namespace rawrbox {
 			auto m = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&](std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> x) { return x->name == search; });
 			if (m == this->_meshes.end()) return;
 
-			(*m)->setMergeable(false); // Has animation, don't merge
+			(*m)->setOptimizable(false); // Has animation, don't optimize
 			this->_animatedMeshes[meshName] = *m;
 		}
 
@@ -389,6 +389,7 @@ namespace rawrbox {
 						std::string armature = pNode->mName.data;
 						if (armature == meshName) continue;
 
+						// Found a bone!
 						ourChannel.nodeName = fmt::format("{}-{}", armature, meshName);
 					}
 
@@ -481,20 +482,12 @@ namespace rawrbox {
 		/// -------
 
 		// MESH LOADING -----
-		void loadSubmeshes(const aiScene* sc, const aiNode* root, std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> parent) {
-			std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh = nullptr;
-
+		void loadSubmeshes(const aiScene* sc, const aiNode* root) {
 			for (size_t n = 0; n < root->mNumMeshes; ++n) {
 				aiMesh& aiMesh = *sc->mMeshes[root->mMeshes[n]];
 
-				mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
+				auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
 				mesh->setName(aiMesh.mName.data);
-				mesh->parent = parent;
-
-				// Offset for rendering
-				mesh->baseVertex = static_cast<uint16_t>(mesh->vertices.size());
-				mesh->baseIndex = static_cast<uint16_t>(mesh->indices.size());
-				// ----
 
 				// Calculate bbox ---
 				auto min = aiMesh.mAABB.mMin;
@@ -513,7 +506,7 @@ namespace rawrbox {
 				if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
 					this->loadTextures(sc, aiMesh, mesh);
 				} else {
-					mesh->setCulling(BGFX_STATE_CULL_CCW); // Default cullingf or assimp
+					mesh->setCulling(BGFX_STATE_CULL_CCW); // Default culling for assimp
 				}
 
 				// Vertices
@@ -545,8 +538,8 @@ namespace rawrbox {
 							auto& tangents = aiMesh.mTangents[i];
 							v.normal[1] = rawrbox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
 
-							// auto& bitangents = aiMesh.mBitangents[i];
-							// v.normal[2] = rawrbox::PackUtils::packNormal(bitangents.x, bitangents.y, bitangents.z);
+							auto& bitangents = aiMesh.mBitangents[i];
+							v.normal[2] = rawrbox::PackUtils::packNormal(bitangents.x, bitangents.y, bitangents.z);
 						}
 					}
 
@@ -559,7 +552,7 @@ namespace rawrbox {
 					if (face.mNumIndices != 3) continue; // we only do triangles
 
 					for (size_t i = 0; i < face.mNumIndices; i++) {
-						mesh->indices.push_back(static_cast<uint16_t>(static_cast<uint16_t>(mesh->vertices.size()) - face.mIndices[i]));
+						mesh->indices.push_back(face.mIndices[i]);
 					}
 				}
 
@@ -569,6 +562,8 @@ namespace rawrbox {
 				}
 				// -------------------
 
+				mesh->baseVertex = 0;
+				mesh->baseIndex = 0;
 				mesh->totalVertex = static_cast<uint16_t>(mesh->vertices.size());
 				mesh->totalIndex = static_cast<uint16_t>(mesh->indices.size());
 
@@ -577,7 +572,7 @@ namespace rawrbox {
 
 			// recursive
 			for (size_t n = 0; n < root->mNumChildren; ++n) {
-				this->loadSubmeshes(sc, root->mChildren[n], mesh);
+				this->loadSubmeshes(sc, root->mChildren[n]);
 			}
 		}
 		/// -------
@@ -613,7 +608,7 @@ namespace rawrbox {
 			}
 
 			// load models
-			this->loadSubmeshes(scene, scene->mRootNode, nullptr);
+			this->loadSubmeshes(scene, scene->mRootNode);
 			if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_LIGHT) > 0) this->loadLights(scene);
 			if ((this->_loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) this->loadAnimations(scene);
 			// ----

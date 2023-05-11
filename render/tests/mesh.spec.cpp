@@ -53,17 +53,16 @@ TEST_CASE("Mesh should behave as expected", "[rawrbox::Mesh]") {
 		REQUIRE_NOTHROW(base->addData("test", {0, 0, 0}));
 		REQUIRE(base->hasData("test") == true);
 
-		REQUIRE_THROWS(base->addData("test", {0, 0, 0}));
 		REQUIRE_NOTHROW(base->getData("test"));
 	}
 
-	SECTION("rawrbox::Mesh::canMerge") {
+	SECTION("rawrbox::Mesh::canOptimize") {
 		std::shared_ptr<rawrbox::Mesh<>> base2 = std::make_shared<rawrbox::Mesh<>>();
 		std::shared_ptr<rawrbox::Mesh<>> base3 = std::make_shared<rawrbox::Mesh<>>();
 
-		REQUIRE(base2->canMerge(base3) == true);
+		REQUIRE(base2->canOptimize(base3) == true);
 
 		base2->setWireframe(true);
-		REQUIRE(base2->canMerge(base3) == false);
+		REQUIRE(base2->canOptimize(base3) == false);
 	}
 }

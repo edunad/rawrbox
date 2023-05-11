@@ -3,6 +3,7 @@
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/static.hpp>
 
 #include <bgfx/bgfx.h>
@@ -17,8 +18,8 @@ namespace rawrbox {
 		uint32_t abgr = 0xFFFFFFFF;
 
 		VertexData() = default;
-		VertexData(const rawrbox::Vector3f& _pos,
-		    float _u, float _v, const rawrbox::Color cl = rawrbox::Colors::White) : position({_pos.x, _pos.y, _pos.z}), uv({_u, _v}), abgr(cl.pack()) {}
+		explicit VertexData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos.data()), uv(_uv.data()), abgr(cl.pack()) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
@@ -31,14 +32,14 @@ namespace rawrbox {
 		}
 	};
 
-	struct VertexBlendData {
+	struct VertexBlendData { // Used for particles
 		std::array<float, 3> position = {0, 0, 0};
 		std::array<float, 4> uv = {0, 0, 0, 0};
 		uint32_t abgr = 0xFFFFFFFF;
 
 		VertexBlendData() = default;
-		VertexBlendData(const rawrbox::Vector3f& _pos,
-		    float _u, float _v, float _blend, const rawrbox::Color cl = rawrbox::Colors::White) : position({_pos.x, _pos.y, _pos.z}), uv({_u, _v, _blend, 0.F}), abgr(cl.pack()) {}
+		explicit VertexBlendData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos.data()), uv(_uv.data()), abgr(cl.pack()) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
@@ -52,11 +53,10 @@ namespace rawrbox {
 	};
 
 	struct VertexLitData : public VertexData {
-		std::array<uint32_t, 2> normal = {0, 0}; // normal, tangent
+		std::array<uint32_t, 3> normal = {0, 0, 0}; // normal, tangent, bitangent
 
 		VertexLitData() = default;
-		VertexLitData(const rawrbox::Vector3f& _pos, uint32_t _normal, uint32_t _tangent,
-		    float _u, float _v, const rawrbox::Color cl = rawrbox::Colors::White) : VertexData(_pos, _u, _v, cl), normal({_normal, _tangent}) {}
+		explicit VertexLitData(const rawrbox::Vector3f& _pos, const rawrbox::Vector2f& _uv = {}, const std::array<uint32_t, 3>& _normals = {}, const rawrbox::Color cl = rawrbox::Colors::White) : VertexData(_pos, _uv, cl), normal(_normals) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
@@ -67,6 +67,7 @@ namespace rawrbox {
 
 			    .add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Uint8, true, true)
 			    .add(bgfx::Attrib::Tangent, 3, bgfx::AttribType::Uint8, true, true)
+			    .add(bgfx::Attrib::Bitangent, 3, bgfx::AttribType::Uint8, true, true)
 
 			    .end();
 			return l;
@@ -77,8 +78,7 @@ namespace rawrbox {
 		std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
-		VertexSkinnedUnlitData() = default;
-		VertexSkinnedUnlitData(const rawrbox::Vector3f& _pos, float _u, float _v, const rawrbox::Color cl = rawrbox::Colors::White) : VertexData(_pos, _u, _v, cl) {}
+		using VertexData::VertexData;
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
@@ -90,9 +90,10 @@ namespace rawrbox {
 			    .add(bgfx::Attrib::Indices, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Uint8, false, true)
 			    .add(bgfx::Attrib::Weight, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Float)
 
-			    .skip(sizeof(int))
+			    .skip(sizeof(int)) // skip index
 
 			    .end();
+
 			return l;
 		}
 
@@ -129,9 +130,7 @@ namespace rawrbox {
 		std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
-		VertexSkinnedLitData() = default;
-		VertexSkinnedLitData(const rawrbox::Vector3f& _pos, uint32_t _normal, uint32_t _tangent,
-		    float _u, float _v, const rawrbox::Color cl = rawrbox::Colors::White) : VertexLitData(_pos, _normal, _tangent, _u, _v, cl) {}
+		using VertexLitData::VertexLitData;
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
@@ -142,6 +141,7 @@ namespace rawrbox {
 
 			    .add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Uint8, true, true)
 			    .add(bgfx::Attrib::Tangent, 3, bgfx::AttribType::Uint8, true, true)
+			    .add(bgfx::Attrib::Bitangent, 3, bgfx::AttribType::Uint8, true, true)
 
 			    .add(bgfx::Attrib::Indices, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Uint8, false, true)
 			    .add(bgfx::Attrib::Weight, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Float)

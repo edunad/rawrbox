@@ -38,6 +38,8 @@ namespace rawrbox {
 		[[nodiscard]] Vector2_t<NumberType> xy() const { return Vector2_t<NumberType>(x, y); }
 		[[nodiscard]] Vector2_t<NumberType> yx() const { return Vector2_t<NumberType>(y, x); }
 
+		[[nodiscard]] const std::array<NumberType, 3> data() const { return {x, y, z}; }
+
 		// UTILS ---
 		[[nodiscard]] NumberType distance(const VecType& other) const {
 			return static_cast<NumberType>(std::sqrt(((x - other.x) * (x - other.x)) + ((y - other.y) * (y - other.y)) + ((z - other.z) * (z - other.z))));
