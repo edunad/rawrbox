@@ -28,7 +28,7 @@ namespace model {
 			this->shutdown();
 		};
 
-		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::STATS | rawrbox::WindowFlags::Window::WINDOWED);
+		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Window::WINDOWED);
 		this->_render = std::make_shared<rawrbox::Renderer>(0, this->_window->getSize());
 		this->_render->setClearColor(0x00000000);
 
@@ -62,13 +62,13 @@ namespace model {
 
 		// Model test ----
 		{
-			auto mesh = this->_model->generatePlane({5, 0, 0}, {0.5F, 0.5F});
+			auto mesh = this->_model->generatePlane({2, 0, 0}, {0.5F, 0.5F});
 			mesh->setTexture(this->_texture);
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = this->_model->generateCube({-5, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
+			auto mesh = this->_model->generateCube({-2, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
 			mesh->setTexture(this->_texture2);
 			this->_model->addMesh(mesh);
 		}
@@ -87,7 +87,7 @@ namespace model {
 
 		// Sprite test ----
 		{
-			auto mesh = this->_sprite->generatePlane({0, 2, 0}, {0.2F, 0.2F});
+			auto mesh = this->_sprite->generatePlane({0, 1, 0}, {0.2F, 0.2F});
 			mesh->setTexture(this->_texture);
 			this->_sprite->addMesh(mesh);
 		}
@@ -95,10 +95,10 @@ namespace model {
 
 		// Text test ----
 		{
-			this->_text->addText(this->_font, "PLANE", {5.F, 0.5F, 0});
-			this->_text->addText(this->_font, "CUBE", {-5.F, 0.8F, 0});
-			this->_text->addText(this->_font, "AXIS", {0.F, 1.2F, 0});
-			this->_text->addText(this->_font, "SPRITE", {0.F, 2.2F, 0});
+			this->_text->addText(this->_font, "PLANE", {2.F, 0.5F, 0});
+			this->_text->addText(this->_font, "CUBE", {-2.F, 0.55F, 0});
+			this->_text->addText(this->_font, "AXIS", {0.F, 0.5F, 0});
+			this->_text->addText(this->_font, "SPRITE", {0.F, 1.2F, 0});
 		}
 		// ------
 
