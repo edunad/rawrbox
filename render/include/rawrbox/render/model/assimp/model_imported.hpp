@@ -43,12 +43,32 @@ namespace rawrbox {
 	}; // namespace ModelLoadFlags
 	// NOLINTEND{unused-const-variable}
 
+	struct AssimpMaterials {
+		std::string name;
+
+		float opacity = 1.F;
+		bool wireframe = false;
+		bool matDisableCulling = false;
+		uint64_t blending = BGFX_STATE_BLEND_ALPHA_TO_COVERAGE;
+
+		std::shared_ptr<rawrbox::TextureBase> diffuse = nullptr;
+		std::shared_ptr<rawrbox::TextureBase> specular = nullptr;
+		std::shared_ptr<rawrbox::TextureBase> emissive = nullptr;
+
+		AssimpMaterials() = default;
+		~AssimpMaterials() {
+			diffuse = nullptr;
+			specular = nullptr;
+			emissive = nullptr;
+		}
+	};
+
 	template <typename M = rawrbox::MaterialBase>
 	class ModelImported : public rawrbox::Model<M> {
 		using Model<M>::Model;
 
 		std::string _fileName;
-		std::unordered_map<std::string, std::shared_ptr<rawrbox::TextureBase>> _textures;
+		std::unordered_map<std::string, AssimpMaterials> _materials;
 
 		uint32_t _loadFlags;
 		uint32_t _assimpFlags;
@@ -88,36 +108,51 @@ namespace rawrbox {
 			return flags;
 		}
 
-		std::shared_ptr<rawrbox::TextureBase> importTexture(const std::string& path, const std::string& name, const std::array<aiTextureMapMode, 3>& mode) {
-			auto textPath = std::filesystem::path(path);
-			auto base = std::filesystem::path(this->_fileName);
+		std::vector<std::shared_ptr<rawrbox::TextureBase>> importTexture(const aiMaterial* mat, aiTextureType type) {
+			std::vector<std::shared_ptr<rawrbox::TextureBase>> _textures = {};
 
-			std::string finalPath = fmt::format("{}/{}", base.parent_path().generic_string(), textPath.generic_string());
+			int count = mat->GetTextureCount(type);
+			if (count <= 0) return _textures;
 
-			auto fnd = this->_textures.find(finalPath);
-			if (fnd == this->_textures.end()) {
-				auto texture = std::make_shared<rawrbox::TextureImage>(finalPath);
+			for (size_t i = 0; i < count; i++) {
+				aiString matPath;
+				std::array<aiTextureMapMode, 3> matMode = {};
 
-				// Setup flags ----
-				auto flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
-				flags |= assimpSamplerToBGFX(mode, 0); // u
-				flags |= assimpSamplerToBGFX(mode, 1); // v
-				flags |= assimpSamplerToBGFX(mode, 2); // w
+				if (mat->GetTexture(type, count - 1, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
+					auto textPath = std::filesystem::path(matPath.data);
 
-				texture->setFlags(flags);
+					auto parentFolder = std::filesystem::path(this->_fileName).parent_path();
+					std::string basename = textPath.filename().generic_string();
 
-				// ----
-				texture->setName(name);
-				texture->upload(bgfx::TextureFormat::Count);
+					std::string loadPath = fmt::format("{}/{}", parentFolder.generic_string(), textPath.generic_string());
+					if (!std::filesystem::exists(loadPath)) {
+						// Check relative
+						loadPath = fmt::format("{}/{}", parentFolder.generic_string(), basename);
+						if (!std::filesystem::exists(loadPath)) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load texture '{}'", matPath.data));
+					}
 
-				this->_textures[finalPath] = std::move(texture);
-				return this->_textures[finalPath];
-			} else {
-				return fnd->second;
+					auto texture = std::make_shared<rawrbox::TextureImage>(loadPath);
+
+					// Setup flags ----
+					auto flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
+					flags |= assimpSamplerToBGFX(matMode, 0); // u
+					flags |= assimpSamplerToBGFX(matMode, 1); // v
+					flags |= assimpSamplerToBGFX(matMode, 2); // w
+
+					texture->setFlags(flags);
+					// ----
+
+					// ----
+					texture->setName(basename);
+					texture->upload(bgfx::TextureFormat::Count);
+
+					_textures.push_back(texture);
+				}
 			}
+
+			return _textures;
 		}
 
-		// TODO: IMPROVE ME, SOMETHING IS WRONG HERE
 		void loadTextures(const aiScene* sc, aiMesh& assimp, std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
 			if (sc->mNumMaterials <= 0 || assimp.mMaterialIndex > sc->mNumMaterials) return;
 			const aiMaterial* pMaterial = sc->mMaterials[assimp.mMaterialIndex];
@@ -125,118 +160,114 @@ namespace rawrbox {
 			aiString matName;
 			pMaterial->Get(AI_MATKEY_NAME, matName);
 
-			float opacity = 1.F;
-			pMaterial->Get(AI_MATKEY_OPACITY, opacity);
+			rawrbox::AssimpMaterials mat = {};
 
-			bool matWireframe = false;
-			pMaterial->Get(AI_MATKEY_ENABLE_WIREFRAME, matWireframe);
-			mesh->setWireframe(matWireframe);
+			auto fnd = this->_materials.find(matName.data);
+			if (fnd == this->_materials.end()) {
+				mat.name = matName.data;
 
-			bool matDisableCulling = false;
-			pMaterial->Get(AI_MATKEY_TWOSIDED, matDisableCulling);
-			mesh->setCulling(matDisableCulling ? 0 : BGFX_STATE_CULL_CCW);
+				if (pMaterial->Get(AI_MATKEY_OPACITY, mat.opacity) != AI_SUCCESS) {
+					pMaterial->Get(AI_MATKEY_TRANSPARENCYFACTOR, mat.opacity);
+				}
 
-			aiBlendMode blending = aiBlendMode_Default;
-			pMaterial->Get(AI_MATKEY_BLEND_FUNC, blending);
-			switch (blending) {
-				case aiBlendMode_Additive:
-					mesh->setBlend(BGFX_STATE_BLEND_ADD);
-					break;
+				pMaterial->Get(AI_MATKEY_ENABLE_WIREFRAME, mat.wireframe);
+				pMaterial->Get(AI_MATKEY_TWOSIDED, mat.matDisableCulling);
 
-				default: break;
+				aiBlendMode blending = aiBlendMode_Default;
+				pMaterial->Get(AI_MATKEY_BLEND_FUNC, blending);
+				switch (blending) {
+					case aiBlendMode_Additive:
+						mat.blending = BGFX_STATE_BLEND_ADD;
+						break;
+
+					default: break;
+				}
+
+				// Texture loading ----
+				if ((this->_loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS) > 0) {
+					const auto dump = [](const aiMaterial* mat, aiTextureType type) {
+						const unsigned count = mat->GetTextureCount(type);
+
+						if (count > 0) {
+							aiString matPath;
+							if (mat->GetTexture(type, 0, &matPath, nullptr, nullptr, nullptr, nullptr, nullptr) == AI_SUCCESS) {
+								fmt::print("[RawrBox-Assimp] Found {} texture(s) '{}' of type '{}'\n", count, matPath.C_Str(), magic_enum::enum_name(type));
+							}
+						}
+					};
+
+					constexpr auto assimp_mat = magic_enum::enum_entries<aiTextureType>();
+
+					fmt::print("==== DUMP FOR MATERIAL {}\n", pMaterial->GetName().C_Str());
+					for (auto& m : assimp_mat)
+						dump(pMaterial, m.first);
+					fmt::print("==== ====================\n");
+				}
+
+				// TEXTURE DIFFUSE
+				auto diffuse = this->importTexture(pMaterial, aiTextureType_DIFFUSE);
+				if (!diffuse.empty()) mat.diffuse = diffuse[0]; // Only support one for the moment
+				// ----------------------
+
+				// TEXTURE EMISSION
+				auto emission = this->importTexture(pMaterial, aiTextureType_EMISSION_COLOR);
+				if (!emission.empty()) {
+					mat.emissive = emission[0]; // Only support one for the moment
+				} else {
+					auto emission = this->importTexture(pMaterial, aiTextureType_EMISSIVE);
+					if (!emission.empty()) mat.emissive = emission[0]; // Only support one for the moment
+				}
+				// ----------------------
+
+				// TEXTURE SPECULAR
+				auto specular = this->importTexture(pMaterial, aiTextureType_SPECULAR);
+				if (!specular.empty()) mat.specular = specular[0]; // Only support one for the moment
+				// ----------------------
+
+				this->_materials[matName.data] = mat;
+			} else {
+				mat = fnd->second;
 			}
 
-			aiString matPath;
-			std::array<aiTextureMapMode, 3> matMode = {};
-
+			// Apply material -----
+			mesh->setTexture(rawrbox::WHITE_TEXTURE);                          // Default
 			mesh->setSpecularTexture(rawrbox::MISSING_SPECULAR_TEXTURE, 25.F); // Default
 			mesh->setEmissionTexture(rawrbox::MISSING_EMISSION_TEXTURE, 1.F);  // Default
 
-			if ((this->_loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS) > 0) {
-				const auto dump = [](const aiMaterial* mat, aiTextureType type) {
-					const unsigned count = mat->GetTextureCount(type);
+			mesh->setWireframe(mat.wireframe);
+			mesh->setCulling(mat.matDisableCulling ? 0 : BGFX_STATE_CULL_CCW);
+			mesh->setBlend(mat.blending);
 
-					if (count > 0) {
-						aiString matPath;
-						if (mat->GetTexture(type, 0, &matPath, nullptr, nullptr, nullptr, nullptr, nullptr) == AI_SUCCESS) {
-							fmt::print("[RawrBox-Assimp] Found texture [{}]{} of type '{}'\n", count, matPath.C_Str(), magic_enum::enum_name(type));
-						}
-					}
-				};
+			if (mat.diffuse != nullptr) {
+				mesh->setTexture(mat.diffuse);
 
-				constexpr auto assimp_mat = magic_enum::enum_entries<aiTextureType>();
-
-				fmt::print("==== DUMP FOR MATERIAL {}\n", pMaterial->GetName().C_Str());
-				for (auto& m : assimp_mat)
-					dump(pMaterial, m.first);
-				fmt::print("==== ====================\n");
-			}
-
-			// TEXTURE DIFFUSE / BASE_COLOR
-			if (pMaterial->GetTextureCount(aiTextureType_DIFFUSE) > 0) {
-				if (pMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
-					auto ptr = this->importTexture(matPath.data, matName.data, matMode);
-					if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load diffuse texture '{}'", matPath.data));
-
-					aiColor3D color;
-					pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color);
-
-					mesh->setColor(rawrbox::Color(color.r, color.g, color.b, opacity));
-					mesh->setTexture(ptr);
+				aiColor3D color;
+				if (pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) {
+					mesh->setColor(rawrbox::Color(color.r, color.g, color.b, mat.opacity));
 				}
 			} else {
 				// Default painted texture ----
 				aiColor3D flatColor;
 				if (pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, flatColor) == AI_SUCCESS) {
-					mesh->setColor(rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, opacity));
+					mesh->setColor(rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, mat.opacity));
 				} else if (pMaterial->Get(AI_MATKEY_BASE_COLOR, flatColor) == AI_SUCCESS) {
-					mesh->setColor(rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, opacity));
+					mesh->setColor(rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, mat.opacity));
 				}
-
-				mesh->setTexture(rawrbox::WHITE_TEXTURE);
 				// -----------
 			}
-			// --------------------
 
-			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				// EMISSION ------
-				if (pMaterial->GetTextureCount(aiTextureType_EMISSION_COLOR) > 0) {
-					if (pMaterial->GetTexture(aiTextureType_EMISSION_COLOR, 0, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
-						auto ptr = this->importTexture(matPath.data, matName.data, matMode);
-						if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load emissive texture '{}'", matPath.data));
+			if (mat.specular != nullptr) {
+				float shininess = 25.F;
+				pMaterial->Get(AI_MATKEY_SHININESS, shininess);
 
-						float intensity = 1.F;
-						pMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, intensity);
+				mesh->setSpecularTexture(mat.specular, shininess);
+			}
 
-						mesh->setEmissionTexture(ptr, intensity);
-					}
-				}
+			if (mat.emissive != nullptr) {
+				float intensity = 1.F;
+				pMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, intensity);
 
-				if (pMaterial->GetTextureCount(aiTextureType_EMISSIVE) > 0) {
-					if (pMaterial->GetTexture(aiTextureType_EMISSIVE, 0, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
-						auto ptr = this->importTexture(matPath.data, matName.data, matMode);
-						if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load emissive texture '{}'", matPath.data));
-
-						float intensity = 1.F;
-						pMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, intensity);
-
-						mesh->setEmissionTexture(ptr, intensity);
-					}
-				}
-				// --------------------
-				// SPECULAR -----------
-				if (pMaterial->GetTextureCount(aiTextureType_SPECULAR) > 0) {
-					if (pMaterial->GetTexture(aiTextureType_SPECULAR, 0, &matPath, nullptr, nullptr, nullptr, nullptr, matMode.data()) == AI_SUCCESS) {
-						auto ptr = this->importTexture(matPath.data, matName.data, matMode);
-						if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load specular texture '{}'", matPath.data));
-
-						float shininess = 0;
-						pMaterial->Get(AI_MATKEY_SHININESS, shininess);
-
-						mesh->setSpecularTexture(ptr, shininess);
-					}
-				}
-				// ---------------------
+				mesh->setEmissionTexture(mat.emissive, intensity);
 			}
 		}
 		/// -------
@@ -598,7 +629,7 @@ namespace rawrbox {
 
 	public:
 		~ModelImported() override {
-			this->_textures.clear();
+			this->_materials.clear();
 		}
 
 		ModelImported(ModelImported&&) = delete;
