@@ -26,7 +26,7 @@ TEST_CASE("Mesh should behave as expected", "[rawrbox::Mesh]") {
 	}
 
 	SECTION("rawrbox::Mesh::setBlend") {
-		REQUIRE(base->blending == BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA));
+		REQUIRE(base->blending == BGFX_STATE_BLEND_ALPHA_TO_COVERAGE);
 		base->setBlend(BGFX_STATE_BLEND_ADD);
 		REQUIRE(base->blending == BGFX_STATE_BLEND_ADD);
 	}

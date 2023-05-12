@@ -83,7 +83,7 @@ namespace rawrbox {
 		bool lineMode = false;
 
 		uint64_t culling = BGFX_STATE_CULL_CW;
-		uint64_t blending = BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
+		uint64_t blending = BGFX_STATE_BLEND_ALPHA_TO_COVERAGE;
 		rawrbox::BBOX bbox = {};
 		// --------------
 
