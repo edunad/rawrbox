@@ -9,8 +9,8 @@
 namespace rawrbox {
 	class CameraBase {
 	protected:
-		rawrbox::Vector3f _pos;
-		rawrbox::Vector4f _angle;
+		rawrbox::Vector3f _pos = {};
+		rawrbox::Vector4f _angle = {};
 
 		rawrbox::Matrix4x4 _view = {};
 		rawrbox::Matrix4x4 _projection = {};

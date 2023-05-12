@@ -161,7 +161,6 @@ namespace rawrbox {
 			pMaterial->Get(AI_MATKEY_NAME, matName);
 
 			rawrbox::AssimpMaterials mat = {};
-
 			auto fnd = this->_materials.find(matName.data);
 			if (fnd == this->_materials.end()) {
 				mat.name = matName.data;
@@ -630,6 +629,7 @@ namespace rawrbox {
 	public:
 		~ModelImported() override {
 			this->_materials.clear();
+			this->_animatedMeshes.clear();
 		}
 
 		ModelImported(ModelImported&&) = delete;
