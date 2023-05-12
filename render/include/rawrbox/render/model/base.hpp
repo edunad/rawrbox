@@ -17,8 +17,6 @@
 #include <utility>
 #include <vector>
 
-#include "rawrbox/math/color.hpp"
-
 namespace rawrbox {
 
 	struct Bone {

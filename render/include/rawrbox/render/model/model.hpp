@@ -194,6 +194,10 @@ namespace rawrbox {
 		using ModelBase<M>::ModelBase;
 
 		// Animations ----
+		virtual bool blendAnimation(const std::string& otherAnim, float blend) {
+			throw std::runtime_error("TODO");
+		}
+
 		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F) {
 			auto iter = this->_animations.find(name);
 			if (iter == this->_animations.end()) throw std::runtime_error(fmt::format("[RawrBox-Model] Animation {} not found!", name));
