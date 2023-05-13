@@ -14,10 +14,10 @@
 namespace rawrbox {
 	class UIRoot {
 	protected:
-		rawrbox::Window* _window = nullptr;
 		std::vector<std::shared_ptr<rawrbox::UIContainer>> _uiElements = {};
 
 		rawrbox::AABBi _size = {};
+		float _uiScale = 1.F;
 
 		std::weak_ptr<rawrbox::UIBase> _focusedElement;
 		std::weak_ptr<rawrbox::UIBase> _hoveredElement;
@@ -76,6 +76,7 @@ namespace rawrbox {
 				return;
 			}
 			//----------------
+
 			this->setFocus(target);
 			target->mouseDown(location, button, mods);
 		}
@@ -106,42 +107,40 @@ namespace rawrbox {
 
 	public:
 		virtual ~UIRoot() {
-			this->_window = nullptr;
 			this->_uiElements.clear();
-
 			this->_focusedElement.reset();
 			this->_hoveredElement.reset();
 		}
 
-		explicit UIRoot(rawrbox::Window* window) : _window(window), _size(0, 0, window->getSize().x, window->getSize().y) {
+		explicit UIRoot(rawrbox::Window& window) : _size(0, 0, window.getSize().x, window.getSize().y) {
 			// BINDS ---
-			window->onChar += [this](Window& win, uint32_t character) mutable {
+			window.onChar += [this](Window& win, uint32_t character) mutable {
 				rawrbox::runOnMainThread([this, character]() {
 					if (this->_focusedElement.expired()) return;
 					this->_focusedElement.lock()->keyChar(character);
 				});
 			};
 
-			window->onKey += [this](Window& win, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) mutable {
+			window.onKey += [this](Window& win, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) mutable {
 				rawrbox::runOnMainThread([this, key, scancode, action, mods]() {
 					if (this->_focusedElement.expired()) return;
 					this->_focusedElement.lock()->key(key, scancode, action, mods);
 				});
 			};
 
-			window->onMouseKey += [this](Window& win, const rawrbox::Vector2i& location, uint32_t button, uint32_t action, uint32_t mods) mutable {
+			window.onMouseKey += [this](Window& win, const rawrbox::Vector2i& location, uint32_t button, uint32_t action, uint32_t mods) mutable {
 				rawrbox::runOnMainThread([this, location, button, action, mods]() {
 					this->onMousePress(location, button, action, mods);
 				});
 			};
 
-			window->onMouseMove += [this](Window& win, const rawrbox::Vector2i& location) mutable {
+			window.onMouseMove += [this](Window& win, const rawrbox::Vector2i& location) mutable {
 				rawrbox::runOnMainThread([this, location]() {
 					this->onMouseMove(location);
 				});
 			};
 
-			window->onMouseScroll += [this](Window& win, const rawrbox::Vector2i& location, const rawrbox::Vector2i& offset) mutable {
+			window.onMouseScroll += [this](Window& win, const rawrbox::Vector2i& location, const rawrbox::Vector2i& offset) mutable {
 				rawrbox::runOnMainThread([this, location, offset]() {
 					if (this->_focusedElement.expired()) return;
 					this->_focusedElement.lock()->mouseScroll(location, offset);
@@ -165,9 +164,22 @@ namespace rawrbox {
 			// ---
 		}
 
+		void setUIScale(float scale = 1.F) {
+			this->_uiScale = scale;
+			for (auto elm : this->_uiElements) {
+				elm->setUIScale(scale);
+			}
+		}
+
 		void update() {
 			for (auto elm : this->_uiElements) {
 				elm->update();
+			}
+		}
+
+		void upload() {
+			for (auto elm : this->_uiElements) {
+				elm->upload();
 			}
 		}
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/text/font.hpp>
 #include <rawrbox/render/texture/gif.hpp>
@@ -12,8 +11,7 @@
 
 namespace stencil {
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::shared_ptr<rawrbox::Renderer> _render = nullptr;
+		std::shared_ptr<rawrbox::Window> _window = nullptr;
 		std::unique_ptr<rawrbox::TextEngine> _textEngine = nullptr;
 
 		std::shared_ptr<rawrbox::TextureImage> _texture = nullptr;

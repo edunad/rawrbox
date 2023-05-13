@@ -6,7 +6,6 @@
 
 #include <bx/bx.h>
 #include <bx/math.h>
-#include <bx/timer.h>
 #include <fmt/printf.h>
 
 #include <memory>
@@ -17,26 +16,18 @@ namespace particle_test {
 		int width = 1024;
 		int height = 768;
 
-		this->_window = std::make_unique<rawrbox::Window>();
+		this->_window = std::make_shared<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("PARTICLE TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
-		this->_window->onResize += [this](auto& w, auto& size) {
-			if (this->_render == nullptr) return;
-			this->_render->resizeView(size);
-		};
-
 		this->_window->onWindowClose += [this](auto& w) {
 			this->shutdown();
 		};
 
-		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Window::WINDOWED);
-
-		this->_render = std::make_shared<rawrbox::Renderer>(0, this->_window->getSize());
-		this->_render->setClearColor(0x00000000);
+		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED);
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window.get());
+		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
@@ -50,7 +41,7 @@ namespace particle_test {
 
 	int64_t m_timeOffset;
 	void Game::loadContent() {
-		this->_render->upload();
+		this->_window->upload();
 
 		// TEXTURES ----
 		this->_texture = std::make_shared<rawrbox::TextureImage>("./content/textures/particles/particles.png");
@@ -105,7 +96,7 @@ namespace particle_test {
 	}
 
 	void Game::shutdown() {
-		this->_render = nullptr;
+		this->_window = nullptr;
 		this->_camera = nullptr;
 		this->_ps = nullptr;
 		this->_modelGrid = nullptr;
@@ -141,20 +132,16 @@ namespace particle_test {
 	}
 
 	void printFrames() {
-		int64_t now = bx::getHPCounter();
-		static int64_t last = now;
-		const int64_t frameTime = now - last;
-		last = now;
+		const bgfx::Stats* stats = bgfx::getStats();
 
-		const auto freq = static_cast<double>(bx::getHPFrequency());
-		const double toMs = 1000.0 / freq;
-
-		bgfx::dbgTextPrintf(1, 4, 0x0f, "Frame: %7.3f[ms]", double(frameTime) * toMs);
+		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
+		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
+		bgfx::dbgTextPrintf(1, 6, 0x6f, fmt::format("TRIANGLES: {} ----->    DRAW CALLS: {}", stats->numPrims[bgfx::Topology::TriList], stats->numDraw).c_str());
 	}
 
 	void Game::draw() {
-		if (this->_render == nullptr) return;
-		this->_render->clear(); // Clean up and set renderer
+		if (this->_window == nullptr) return;
+		this->_window->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -165,7 +152,7 @@ namespace particle_test {
 
 		this->drawWorld();
 
-		this->_render->frame(true); // Commit primitives
+		this->_window->frame(true); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 } // namespace particle_test

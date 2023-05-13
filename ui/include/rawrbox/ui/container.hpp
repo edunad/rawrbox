@@ -17,6 +17,7 @@ namespace rawrbox {
 		std::vector<std::shared_ptr<UIBase>> _children;
 
 		rawrbox::AABBf _aabb = {};
+		float _uiScale = 1.F;
 
 	public:
 		virtual ~UIContainer() = default;
@@ -26,7 +27,9 @@ namespace rawrbox {
 		virtual void setPos(const rawrbox::Vector2f& pos);
 		[[nodiscard]] virtual const rawrbox::Vector2f& getPos() const;
 		virtual void setSize(const rawrbox::Vector2f& size);
-		[[nodiscard]] virtual const rawrbox::Vector2f& getSize() const;
+		[[nodiscard]] virtual const rawrbox::Vector2f getSize() const;
+		virtual void setUIScale(float size);
+		[[nodiscard]] virtual const float getUIScale() const;
 
 		virtual void removeChildren();
 		virtual void remove();
@@ -65,6 +68,7 @@ namespace rawrbox {
 
 		// RENDERING -----
 		virtual void update();
+		virtual void upload();
 		virtual void draw(rawrbox::Stencil& stencil);
 		// ----
 	};

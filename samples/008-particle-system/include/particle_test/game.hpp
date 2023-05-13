@@ -6,7 +6,6 @@
 #include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/model/text3D.hpp>
 #include <rawrbox/render/particles/system.hpp>
-#include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/render/window.hpp>
@@ -15,8 +14,7 @@
 
 namespace particle_test {
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::shared_ptr<rawrbox::Renderer> _render = nullptr;
+		std::shared_ptr<rawrbox::Window> _window = nullptr;
 		std::shared_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 		std::shared_ptr<rawrbox::TextureImage> _texture = nullptr;
 

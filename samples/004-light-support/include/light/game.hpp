@@ -5,7 +5,6 @@
 #include <rawrbox/render/model/assimp/model_imported.hpp>
 #include <rawrbox/render/model/material/lit.hpp>
 #include <rawrbox/render/model/text3D.hpp>
-#include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/window.hpp>
 
@@ -13,8 +12,7 @@
 
 namespace light {
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::shared_ptr<rawrbox::Renderer> _render = nullptr;
+		std::shared_ptr<rawrbox::Window> _window = nullptr;
 		std::shared_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 		std::unique_ptr<rawrbox::TextEngine> _textEngine = nullptr;
 

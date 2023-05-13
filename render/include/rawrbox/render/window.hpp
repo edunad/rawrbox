@@ -1,11 +1,14 @@
 #pragma once
 
 #include <rawrbox/math/vector2.hpp>
+#include <rawrbox/render/renderer.hpp>
+#include <rawrbox/render/stencil.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <bgfx/platform.h>
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -35,6 +38,8 @@ namespace rawrbox {
 			const uint32_t WIREFRAME = 1 << 9;
 			const uint32_t STATS = 1 << 10;
 			const uint32_t TEXT = 1 << 11;
+			const uint32_t PROFILER = 1 << 12;
+
 		}; // namespace Debug
 	};         // namespace WindowFlags
 
@@ -42,6 +47,7 @@ namespace rawrbox {
 	//  --------------------
 
 	class Window;
+
 	// ------EVENTS
 	using OnFocusCallback = Event<Window&, bool>;
 	using OnCharCallback = Event<Window&, uint32_t>;
@@ -58,6 +64,12 @@ namespace rawrbox {
 		void* _handle = nullptr;
 		void* _cursor = nullptr;
 		uint32_t _resetFlags = BGFX_RESET_NONE;
+		uint32_t _debugFlags = BGFX_DEBUG_NONE;
+
+		// Drawing stuff ---
+		std::unique_ptr<rawrbox::Renderer> _renderer = nullptr;
+		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
+		// -------
 
 		// Default settings
 		std::string _title = "RawrBOX - Window";
@@ -75,6 +87,9 @@ namespace rawrbox {
 		static void callbacks_key(GLFWwindow* whandle, int key, int scancode, int action, int mods);
 		static void callbacks_windowClose(GLFWwindow* whandle);
 		// --------------------
+
+		bool isRendererSupported(bgfx::RendererType::Enum render);
+
 	public:
 		std::unordered_map<unsigned int, unsigned char> keysIn;
 		std::unordered_map<unsigned int, unsigned char> mouseIn;
@@ -95,30 +110,45 @@ namespace rawrbox {
 
 		void setMonitor(int monitor);
 		void setRenderer(bgfx::RendererType::Enum render);
-		void setClearColor(uint32_t clearColor);
 		void setTitle(const std::string& title);
+		void setClearColor(uint32_t clearColor);
 
+		// CURSOR ------
+		void hideCursor(bool hidden);
 		void setCursor(uint32_t cursor);
 		void setCursor(const std::array<uint8_t, 1024>& cursor); // Max size 16x16 (4 pixel channel)
-
-		// ------RENDERING
-		void shutdown();
-		void pollEvents();
 		// --------------------
 
-		// ------UTILS
+		void shutdown();
+
+		// UPDATE ------
+		void pollEvents();
+		void update();
+		// --------------------
+
+		// DRAW -----
+		void clear();
+		void upload();
+
+#ifdef RAWRBOX_DEBUG
+		void frame(bool debugMode = false) const;
+#else
+		void frame() const;
+#endif
+		// -----------
+
+		// UTILS ---------------
 		void close();
 		[[nodiscard]] bool getShouldClose() const;
 		void setShouldClose(bool close) const;
-
-		bool isRendererSupported(bgfx::RendererType::Enum render);
 
 		[[nodiscard]] Vector2i getSize() const;
 		[[nodiscard]] float getAspectRatio() const;
 
 		[[nodiscard]] Vector2i getMousePos() const;
 
-		bool isKeyDown(int key);
+		[[nodiscard]] virtual rawrbox::Stencil& getStencil() const;
+		[[nodiscard]] virtual bool isKeyDown(int key) const;
 		// --------------------
 
 		virtual ~Window();

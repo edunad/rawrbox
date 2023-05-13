@@ -5,7 +5,7 @@
 
 #include <bx/bx.h>
 #include <bx/math.h>
-#include <bx/timer.h>
+#include <fmt/format.h>
 
 #include <vector>
 
@@ -14,23 +14,15 @@ namespace stencil {
 		int width = 1024;
 		int height = 768;
 
-		this->_window = std::make_unique<rawrbox::Window>();
+		this->_window = std::make_shared<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("STENCIL TEST");
+		this->_window->setClearColor(0x443355FF);
 		this->_window->setRenderer(bgfx::RendererType::Count);
-		this->_window->onResize += [this](auto& w, auto& size) {
-			if (this->_render == nullptr) return;
-			this->_render->resizeView(size);
-		};
-
+		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED);
 		this->_window->onWindowClose += [this](auto& w) {
 			this->shutdown();
 		};
-
-		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Window::WINDOWED);
-
-		this->_render = std::make_shared<rawrbox::Renderer>(0, this->_window->getSize());
-		this->_render->setClearColor(0x443355FF);
 
 		this->_textEngine = std::make_unique<rawrbox::TextEngine>();
 
@@ -40,7 +32,7 @@ namespace stencil {
 	}
 
 	void Game::loadContent() {
-		this->_render->upload();
+		this->_window->upload();
 
 		// Fonts ----
 		this->_font = &this->_textEngine->load("./content/fonts/droidsans.ttf", 28);
@@ -56,7 +48,7 @@ namespace stencil {
 	}
 
 	void Game::shutdown() {
-		this->_render = nullptr;
+		this->_window = nullptr;
 		this->_textEngine = nullptr;
 		this->_texture = nullptr;
 		this->_texture2 = nullptr;
@@ -70,7 +62,7 @@ namespace stencil {
 	}
 
 	void Game::drawOverlay() {
-		auto& stencil = this->_render->getStencil();
+		auto& stencil = this->_window->getStencil();
 
 		stencil.begin();
 
@@ -159,20 +151,16 @@ namespace stencil {
 	}
 
 	void printFrames() {
-		int64_t now = bx::getHPCounter();
-		static int64_t last = now;
-		const int64_t frameTime = now - last;
-		last = now;
+		const bgfx::Stats* stats = bgfx::getStats();
 
-		const auto freq = static_cast<double>(bx::getHPFrequency());
-		const double toMs = 1000.0 / freq;
-
-		bgfx::dbgTextPrintf(1, 4, 0x0f, "Frame: %7.3f[ms]", double(frameTime) * toMs);
+		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
+		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
+		bgfx::dbgTextPrintf(1, 6, 0x6f, fmt::format("TRIANGLES: {} ----->    DRAW CALLS: {}", stats->numPrims[bgfx::Topology::TriList], stats->numDraw).c_str());
 	}
 
 	void Game::draw() {
-		if (this->_render == nullptr) return;
-		this->_render->clear(); // Clean up and set renderer
+		if (this->_window == nullptr) return;
+		this->_window->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -188,7 +176,7 @@ namespace stencil {
 		counter += 0.1F;
 		// ---
 
-		this->_render->frame(); // Commit primitives
+		this->_window->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
 	}
 } // namespace stencil

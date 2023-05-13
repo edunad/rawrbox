@@ -1,6 +1,9 @@
+
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/window.hpp>
-
+#ifdef RAWRBOX_DEBUG
+	#include <rawrbox/debug/gizmos.hpp>
+#endif
 #ifdef RAWRBOX_UI
 	#include <rawrbox/ui/static.hpp>
 #endif
@@ -203,13 +206,14 @@ namespace rawrbox {
 		init.platformData.ndt = getNativeDisplayHandle();
 
 		if (!bgfx::init(init)) throw std::runtime_error("[RawrBox-Render] Failed to initialize bgfx");
+		rawrbox::BGFX_INITIALIZED = true;
 
-		auto debugFlags = BGFX_DEBUG_NONE;
-		if ((flags & WindowFlags::Debug::WIREFRAME) > 0) debugFlags |= BGFX_DEBUG_WIREFRAME;
-		if ((flags & WindowFlags::Debug::STATS) > 0) debugFlags |= BGFX_DEBUG_STATS;
-		if ((flags & WindowFlags::Debug::TEXT) > 0) debugFlags |= BGFX_DEBUG_TEXT;
+		if ((flags & WindowFlags::Debug::WIREFRAME) > 0) this->_debugFlags |= BGFX_DEBUG_WIREFRAME;
+		if ((flags & WindowFlags::Debug::STATS) > 0) this->_debugFlags |= BGFX_DEBUG_STATS;
+		if ((flags & WindowFlags::Debug::TEXT) > 0) this->_debugFlags |= BGFX_DEBUG_TEXT;
+		if ((flags & WindowFlags::Debug::PROFILER) > 0) this->_debugFlags |= BGFX_DEBUG_PROFILER;
 
-		bgfx::setDebug(debugFlags);
+		bgfx::setDebug(this->_debugFlags);
 
 		glfwSetKeyCallback(GLFWHANDLE, callbacks_key);
 		glfwSetCharCallback(GLFWHANDLE, callbacks_char);
@@ -220,13 +224,50 @@ namespace rawrbox {
 		glfwSetMouseButtonCallback(GLFWHANDLE, callbacks_mouseKey);
 		glfwSetWindowCloseCallback(GLFWHANDLE, callbacks_windowClose);
 
-// Initialize UI
-#ifdef RAWRBOX_UI
-		rawrbox::ROOT_UI = std::make_unique<rawrbox::UIRoot>(this);
-#endif
-		// ----
+		// Setup main renderer ----
+		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
+		this->_renderer = std::make_unique<rawrbox::Renderer>(0, this->getSize());
+		this->onResize += [this](auto&, auto& size) {
+			if (this->_renderer != nullptr) this->_renderer->resizeView(size);
+			if (this->_stencil != nullptr) this->_stencil->resize(size);
+		};
 
-		rawrbox::BGFX_INITIALIZED = true;
+		// Setup global util textures ---
+		rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
+		rawrbox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
+		rawrbox::MISSING_EMISSION_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black);
+		rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
+		// ------------------
+
+		// Setup UI
+#ifdef RAWRBOX_UI
+		rawrbox::ROOT_UI = std::make_unique<rawrbox::UIRoot>(*this);
+#endif
+		// -----------
+	}
+
+	void Window::setMonitor(int monitor) {
+		this->_monitor = monitor;
+	}
+
+	void Window::setRenderer(bgfx::RendererType::Enum render) {
+		if (!this->isRendererSupported(render)) throw std::runtime_error(fmt::format("[RawrBox-Render] Window {} is not supported by your OS", bgfx::getRendererName(render)));
+		this->_renderType = render;
+	}
+
+	void Window::setTitle(const std::string& title) {
+		this->_title = title;
+	}
+
+	void Window::setClearColor(uint32_t clearColor) {
+		if (this->_renderer == nullptr) return;
+		this->_renderer->setClearColor(clearColor);
+	}
+
+	// CURSOR ------
+	void Window::hideCursor(bool hidden) {
+		if (GLFWHANDLE == nullptr) return;
+		glfwSetInputMode(GLFWHANDLE, GLFW_CURSOR, hidden ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
 	}
 
 	void Window::setCursor(uint32_t icon) {
@@ -251,38 +292,101 @@ namespace rawrbox {
 
 		glfwSetCursor(GLFWHANDLE, cursor);
 	}
-
-	void Window::setMonitor(int monitor) {
-		this->_monitor = monitor;
-	}
-
-	void Window::setRenderer(bgfx::RendererType::Enum render) {
-		if (!this->isRendererSupported(render)) throw std::runtime_error(fmt::format("[RawrBox-Render] Window {} is not supported by your OS", bgfx::getRendererName(render)));
-		this->_renderType = render;
-	}
-
-	void Window::setTitle(const std::string& title) {
-		this->_title = title;
-	}
+	// -------------------
 
 	void Window::shutdown() {
 		bgfx::shutdown();
 		glfwTerminate();
 	}
 
+	// UPDATE ----
 	void Window::pollEvents() {
 		if (this->_handle == nullptr) return;
 		glfwPollEvents();
 	}
 
+	void Window::update() {
+#ifdef RAWRBOX_UI
+		if (rawrbox::ROOT_UI != nullptr) rawrbox::ROOT_UI->update();
+#endif
+	}
+	// ------
+
+	// DRAW ------
+	void Window::clear() {
+		if (this->_renderer == nullptr) return;
+		this->_renderer->clear(); // Clean up and set renderer
+	}
+
+	void Window::upload() {
+		if (this->_renderer == nullptr) return;
+
+		// MISSING TEXTURES ------
+		rawrbox::MISSING_TEXTURE->upload();
+		rawrbox::MISSING_SPECULAR_TEXTURE->upload();
+		rawrbox::MISSING_EMISSION_TEXTURE->upload();
+		rawrbox::WHITE_TEXTURE->upload();
+		// ------------------
+
+		this->_stencil->upload();
+
+#ifdef RAWRBOX_UI
+		if (rawrbox::ROOT_UI != nullptr) rawrbox::ROOT_UI->upload();
+#endif
+			// Debug gizmos ----
+#ifdef RAWRBOX_DEBUG
+		rawrbox::GIZMOS::get().upload();
+#endif
+		// -----
+	}
+
+#ifdef RAWRBOX_DEBUG
+	void Window::frame(bool debugMode) const {
+		if (this->_renderer == nullptr) return;
+		if (debugMode) rawrbox::GIZMOS::get().draw();
+
+			// Render UI on top of everything
+	#ifdef RAWRBOX_UI
+		if (rawrbox::ROOT_UI != nullptr) rawrbox::ROOT_UI->draw(*this->_stencil);
+	#endif
+		// -----------
+
+		bgfx::frame();
+	}
+#else
+	void Window::frame() const {
+		if (this->_renderer == nullptr) return;
+
+			// Render UI on top of everything
+	#ifdef RAWRBOX_UI
+		if (rawrbox::ROOT_UI != nullptr) rawrbox::ROOT_UI->draw(*this->_stencil);
+	#endif
+		// -----------
+
+		bgfx::frame();
+	}
+#endif
+
+	// -------------------
+
 	// ------UTILS
 	void Window::close() {
-		if (this->_handle == nullptr) return;
-		glfwDestroyWindow(GLFWHANDLE);
-		glfwDestroyCursor(GLFWCURSOR);
+#ifdef RAWRBOX_DEBUG
+		rawrbox::GIZMOS::get().shutdown();
+#endif
 
+		rawrbox::MISSING_TEXTURE = nullptr;
+		rawrbox::MISSING_SPECULAR_TEXTURE = nullptr;
+		rawrbox::MISSING_EMISSION_TEXTURE = nullptr;
+		rawrbox::WHITE_TEXTURE = nullptr;
+
+		this->_stencil = nullptr;
+		this->_renderer = nullptr;
+
+		if (GLFWHANDLE != nullptr) glfwDestroyWindow(GLFWHANDLE);
 		this->_handle = nullptr;
-		rawrbox::ROOT_UI = nullptr;
+		if (GLFWCURSOR != nullptr) glfwDestroyCursor(GLFWCURSOR);
+		this->_cursor = nullptr;
 	}
 
 	bool Window::isRendererSupported(bgfx::RendererType::Enum render) {
@@ -332,11 +436,13 @@ namespace rawrbox {
 		glfwSetWindowShouldClose(GLFWHANDLE, close ? 1 : 0);
 	}
 
-	bool Window::isKeyDown(int key) {
+	bool Window::isKeyDown(int key) const {
 		auto fnd = this->keysIn.find(key);
 		if (fnd == this->keysIn.end()) return false;
 		return fnd->second;
 	}
+
+	rawrbox::Stencil& Window::getStencil() const { return *this->_stencil; }
 	// --------------------
 
 	// ------EVENTS

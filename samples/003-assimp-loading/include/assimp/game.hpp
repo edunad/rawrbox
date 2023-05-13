@@ -13,8 +13,7 @@
 
 namespace assimp {
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::shared_ptr<rawrbox::Renderer> _render = nullptr;
+		std::shared_ptr<rawrbox::Window> _window = nullptr;
 		std::shared_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 		std::unique_ptr<rawrbox::TextEngine> _textEngine = nullptr;
 

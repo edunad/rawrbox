@@ -54,6 +54,16 @@ namespace rawrbox {
 
 	// DRAWING ---
 	void UIFrame::draw(Stencil& stencil) {
+		auto& size = getSize();
+		const float titleSize = 18.F;
+
+		// Panel Background
+		stencil.drawBox({}, size, Color::RGBHex(0x0C0C0C));
+
+		// Title
+		stencil.drawBox({}, {size.x, titleSize}, this->_titleColor);
+		// stencil.drawText(*consolas, this->_title, {5, 8}, Color::RGBAHex(0x000000BA), Stencil::TextAlignment::Left, Stencil::TextAlignment::Center);
+
 		/*auto& size = getSize();
 		const auto titleSize = 18;
 

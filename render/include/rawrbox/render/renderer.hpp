@@ -1,13 +1,13 @@
 #pragma once
 
 #include <rawrbox/math/vector2.hpp>
-#include <rawrbox/render/stencil.hpp>
 
 #include <bgfx/bgfx.h>
 
 #include <memory>
 
 namespace rawrbox {
+	class Window;
 	class Renderer {
 	private:
 		// Default settings
@@ -16,35 +16,27 @@ namespace rawrbox {
 		// -----
 
 		rawrbox::Vector2i _size = {};
-		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
 
 	public:
-		virtual ~Renderer();
+		virtual ~Renderer() = default;
+
 		Renderer(bgfx::ViewId id, const rawrbox::Vector2i& size);
 		Renderer(Renderer&&) = delete;
 		Renderer& operator=(Renderer&&) = delete;
 		Renderer(const Renderer&) = delete;
 		Renderer& operator=(const Renderer&) = delete;
 
-		void upload();
-		void setClearColor(uint32_t clearColor);
-		void resizeView(const rawrbox::Vector2i& size);
+		virtual void setClearColor(uint32_t clearColor);
+		virtual void resizeView(const rawrbox::Vector2i& size);
 
 		// ------RENDERING
-		void clear() const;
-
-#ifdef RAWRBOX_DEBUG
-		void frame(bool gizmos = false) const;
-#else
-		void frame() const;
-#endif
+		virtual void clear() const;
 		// --------------------
 
 		// ------UTILS
-		[[nodiscard]] bgfx::ViewId getID() const;
-		[[nodiscard]] const rawrbox::Vector2i& getSize() const;
-		[[nodiscard]] rawrbox::Stencil& getStencil() const;
-		[[nodiscard]] uint32_t getClearColor() const;
+		[[nodiscard]] virtual bgfx::ViewId getID() const;
+		[[nodiscard]] virtual const rawrbox::Vector2i& getSize() const;
+		[[nodiscard]] virtual uint32_t getClearColor() const;
 		// --------------------
 	};
 } // namespace rawrbox
