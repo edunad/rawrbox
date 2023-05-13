@@ -48,9 +48,19 @@ endif()
 find_package(Freetype REQUIRED MODULE)
 find_package(utf8cpp REQUIRED)
 
-if(RAWRBOX_ENABLE_DEBUG_SUPPORT)
+if(RAWRBOX_BUILD_DEBUG)
     list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.DEBUG)
 endif()
+
+if(RAWRBOX_BUILD_UI)
+    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.UI)
+endif()
+
+if(RAWRBOX_ENABLE_BASS_SUPPORT)
+	list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.BASS)
+endif()
+
+
 #--------------
 
 # Grab source files
@@ -84,7 +94,7 @@ target_include_directories(${output_target} PUBLIC "include" ${FREETYPE_INCLUDE_
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	RAWRBOX.MATH
-	RAWRBOX.UTILS
+	RAWRBOX.ENGINE
 	${RAWRBOX_EXTRA_LIBS}
 
 	fmt::fmt

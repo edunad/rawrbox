@@ -1,11 +1,14 @@
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/window.hpp>
+
+#ifdef RAWRBOX_UI
+	#include <rawrbox/ui/static.hpp>
+#endif
 
 #include <bgfx/bgfx.h>
 #include <bx/bx.h>
 
 #include <cmath>
-
-#include "rawrbox/render/static.hpp"
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -36,6 +39,7 @@
 #include <stdexcept>
 
 #define GLFWHANDLE (std::bit_cast<GLFWwindow*>(_handle))
+#define GLFWCURSOR (std::bit_cast<GLFWcursor*>(_cursor))
 
 namespace rawrbox {
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
@@ -150,6 +154,10 @@ namespace rawrbox {
 		this->_handle = glfwHandle;
 		glfwSetWindowUserPointer(glfwHandle, this);
 
+		// Create cursor
+		this->setCursor(GLFW_ARROW_CURSOR);
+		// -------------
+
 		// Center window
 		if (windowed || transparent) {
 			int monx = 0, mony = 0;
@@ -158,7 +166,7 @@ namespace rawrbox {
 			glfwSetWindowPos(glfwHandle, monx + mode->width / 2 - width / 2, mony + mode->height / 2 - height / 2);
 			glfwShowWindow(glfwHandle);
 		}
-// ------
+		// ------
 
 // Set icon
 #ifdef WIN32
@@ -212,7 +220,36 @@ namespace rawrbox {
 		glfwSetMouseButtonCallback(GLFWHANDLE, callbacks_mouseKey);
 		glfwSetWindowCloseCallback(GLFWHANDLE, callbacks_windowClose);
 
+// Initialize UI
+#ifdef RAWRBOX_UI
+		rawrbox::ROOT_UI = std::make_unique<rawrbox::UIRoot>(this);
+#endif
+		// ----
+
 		rawrbox::BGFX_INITIALIZED = true;
+	}
+
+	void Window::setCursor(uint32_t icon) {
+		if (GLFWCURSOR != nullptr) glfwDestroyCursor(GLFWCURSOR); // Delete old one
+
+		auto cursor = glfwCreateStandardCursor(icon);
+		this->_cursor = cursor;
+
+		glfwSetCursor(GLFWHANDLE, cursor);
+	}
+
+	void Window::setCursor(const std::array<uint8_t, 1024>& pixels) {
+		GLFWimage image = {};
+		image.width = 16;
+		image.height = 16;
+
+		std::memcpy(image.pixels, pixels.data(), pixels.size() * sizeof(uint8_t));
+
+		if (GLFWCURSOR != nullptr) glfwDestroyCursor(GLFWCURSOR); // Delete old one
+		auto cursor = glfwCreateCursor(&image, 0, 0);
+		this->_cursor = cursor;
+
+		glfwSetCursor(GLFWHANDLE, cursor);
 	}
 
 	void Window::setMonitor(int monitor) {
@@ -242,7 +279,10 @@ namespace rawrbox {
 	void Window::close() {
 		if (this->_handle == nullptr) return;
 		glfwDestroyWindow(GLFWHANDLE);
+		glfwDestroyCursor(GLFWCURSOR);
+
 		this->_handle = nullptr;
+		rawrbox::ROOT_UI = nullptr;
 	}
 
 	bool Window::isRendererSupported(bgfx::RendererType::Enum render) {
@@ -317,10 +357,10 @@ namespace rawrbox {
 
 		auto& window = glfwHandleToRenderer(whandle);
 		window.onKey(window,
-		    static_cast<unsigned int>(key),
-		    static_cast<unsigned int>(scancode),
-		    static_cast<unsigned int>(action),
-		    static_cast<unsigned int>(mods));
+		    static_cast<uint32_t>(key),
+		    static_cast<uint32_t>(scancode),
+		    static_cast<uint32_t>(action),
+		    static_cast<uint32_t>(mods));
 
 		if (action == GLFW_REPEAT) return;
 		window.keysIn[key] = action != GLFW_RELEASE ? 1 : 0;
@@ -334,9 +374,9 @@ namespace rawrbox {
 
 		window.onMouseKey(window,
 		    pos,
-		    static_cast<unsigned int>(button),
-		    static_cast<unsigned int>(action),
-		    static_cast<unsigned int>(mods));
+		    static_cast<uint32_t>(button),
+		    static_cast<uint32_t>(action),
+		    static_cast<uint32_t>(mods));
 
 		window.mouseIn[button] = action == GLFW_PRESS ? 1 : 0;
 	}
@@ -353,7 +393,7 @@ namespace rawrbox {
 		auto pos = window.getMousePos();
 
 		if (pos.x < 0 || pos.y < 0 || pos.x > size.x || pos.y > size.y) return; // Outside window
-		window.onScroll(window, pos, {static_cast<int>(x * 10), static_cast<int>(y * 10)});
+		window.onMouseScroll(window, pos, {static_cast<int>(x * 10), static_cast<int>(y * 10)});
 	}
 
 	void Window::callbacks_mouseMove(GLFWwindow* whandle, double x, double y) {

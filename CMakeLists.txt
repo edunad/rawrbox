@@ -10,7 +10,7 @@ set(RAWRBOX_VERSION_MAJOR 1 CACHE STRING "major version" FORCE)
 set(RAWRBOX_VERSION_MINOR 0 CACHE STRING "minor version" FORCE)
 set(RAWRBOX_VERSION ${RAWRBOX_VERSION_MAJOR}.${RAWRBOX_VERSION_MINOR} CACHE STRING "version" FORCE)
 
-project ("RAWRBOX" VERSION ${RAWRBOX_VERSION} DESCRIPTION "Game engine - By edunad" LANGUAGES CXX)
+project ("RAWRBOX" VERSION ${RAWRBOX_VERSION} DESCRIPTION "Game engine - By edunad" LANGUAGES C CXX)
 # ---
 
 # Fix cmake paths
@@ -24,10 +24,13 @@ list(PREPEND CONAN_GENERATORS_FOLDER ${CMAKE_BINARY_DIR})
 option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 option(RAWRBOX_BUILD_SAMPLES "Build samples" ON)
 option(RAWRBOX_BUILD_TESTING "Build tests" ON)
+option(RAWRBOX_BUILD_UI "Build ui" ON)
+option(RAWRBOX_BUILD_DEBUG "Build debug lib & add gizmo support" ON)
+
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
+
 option(RAWRBOX_ENABLE_ASSIMP_SUPPORT "Build assimp & add model loading support" ON)
 option(RAWRBOX_ENABLE_BASS_SUPPORT "Build bass & add sound loading support" ON)
-option(RAWRBOX_ENABLE_DEBUG_SUPPORT "Build debug lib & add gizmo support" ON)
 # -----
 
 # OTHER SETTINGS ----
@@ -121,17 +124,20 @@ set(CATCH_INSTALL_EXTRAS ON CACHE BOOL "")
 
 add_subdirectory ("math")
 add_subdirectory ("utils")
-add_subdirectory ("render")
 add_subdirectory ("engine")
+add_subdirectory ("render")
 
-if(RAWRBOX_ENABLE_DEBUG_SUPPORT)
-	add_subdirectory ("debug")
+if(RAWRBOX_BUILD_UI)
+	add_subdirectory ("ui")
 endif()
 
 if(RAWRBOX_ENABLE_BASS_SUPPORT)
 	add_subdirectory ("bass")
 endif()
-#add_subdirectory ("ui")
+
+if(RAWRBOX_BUILD_DEBUG)
+	add_subdirectory ("debug")
+endif()
 
 if(RAWRBOX_BUILD_SAMPLES)
 	add_subdirectory ("samples")

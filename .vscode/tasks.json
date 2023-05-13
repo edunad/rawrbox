@@ -13,7 +13,7 @@
             },
             "presentation": {
                 "reveal": "always",
-                "panel": "new"
+                "panel": "shared"
             }
         },
         {
@@ -21,6 +21,19 @@
             "type": "cmake",
             "command": "build",
             "group": "build"
+        },
+        {
+            "label": "Clean project",
+            "type": "shell",
+            "command": "rm -rf build bin .cache",
+            "group": "build",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            }
         }
     ]
 }

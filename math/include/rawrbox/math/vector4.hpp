@@ -48,6 +48,22 @@ namespace rawrbox {
 			return (*this) / length();
 		}
 
+		[[nodiscard]] VecType clamp(NumberType min, NumberType max) const {
+			return {
+			    std::clamp(x, min, max),
+			    std::clamp(y, min, max),
+			    std::clamp(z, min, max),
+			    std::clamp(w, min, max)};
+		}
+
+		[[nodiscard]] VecType clamp(VecType min, VecType max) const {
+			return {
+			    std::clamp(x, min.x, max.x),
+			    std::clamp(y, min.y, max.y),
+			    std::clamp(z, min.z, max.z),
+			    std::clamp(w, min.w, max.w)};
+		}
+
 		VecType lerp(const VecType& other, NumberType timestep) const {
 			if ((*this) == other) return other;
 			VecType ret;

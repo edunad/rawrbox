@@ -85,6 +85,13 @@ namespace rawrbox {
 			    std::clamp(z, min, max)};
 		}
 
+		[[nodiscard]] VecType clamp(VecType min, VecType max) const {
+			return {
+			    std::clamp(x, min.x, max.x),
+			    std::clamp(y, min.y, max.y),
+			    std::clamp(z, min.z, max.z)};
+		}
+
 		template <class ReturnType>
 		Vector3_t<ReturnType> cast() const {
 			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y), static_cast<ReturnType>(z)};

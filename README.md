@@ -32,10 +32,11 @@
 | :--------------- | :------------------------------------------------- |
 | `RAWRBOX.RENDER` | Rendering lib (aka, contains window, stencil, etc) |
 | `RAWRBOX.MATH`   | Math lib                                           |
-| `RAWRBOX.BASS`   | Bass lib                                           |
+| `RAWRBOX.BASS`   | Bass lib (aka sound loading)                       |
 | `RAWRBOX.UTILS`  | Utils lib                                          |
 | `RAWRBOX.ENGINE` | Engine lib (aka game loop)                         |
 | `RAWRBOX.DEBUG`  | Debug utils lib                                    |
+| `RAWRBOX.UI`     | UI lib                                             |
 
 # CMAKE
 
@@ -44,10 +45,11 @@
 | `RAWRBOX_USE_WAYLAND`           | Enables WAYLAND compiling on LINUX                                                                 |
 | `RAWRBOX_BUILD_SAMPLES`         | Builds the project sample                                                                          |
 | `RAWRBOX_BUILD_TESTING`         | Builds and runs tests                                                                              |
+| `RAWRBOX_BUILD_UI`              | Builds and includes ui                                                                             |
+| `RAWRBOX_BUILD_DEBUG`           | Builds and includes debug (aka gizmo rendering & renderdoc)                                        |
 | `RAWRBOX_ENABLE_QHULL`          | Enables QHull util                                                                                 |
 | `RAWRBOX_ENABLE_ASSIMP_SUPPORT` | Enables assimp model loading                                                                       |
 | `RAWRBOX_ENABLE_BASS_SUPPORT`   | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
-| `RAWRBOX_ENABLE_DEBUG_SUPPORT`  | Enables DEBUG support (aka gizmo rendering & renderdoc)                                            |
 
 # Dependencies
 

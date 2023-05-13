@@ -1,19 +1,8 @@
+
+# Project setup
 project ("RAWRBOX.BASS" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - BASS lib" LANGUAGES CXX)
 set(output_target RAWRBOX.BASS)
 set(BASS_VERSION 24)
-
-# TEST ----
-if(RAWRBOX_BUILD_TESTING)
-	message("-- Enabled testing")
-    enable_testing()
-
-	find_package(Catch2 3 REQUIRED)
-	list(APPEND RAWRBOX_EXTRA_LIBS Catch2::Catch2WithMain)
-    list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
-
-    include(CTest)
-    include(Catch)
-endif()
 #--------------
 
 # Packages ----
@@ -27,7 +16,7 @@ file(COPY "${BASS_BINARY_FX}" DESTINATION "${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUT
 file(GLOB_RECURSE RAWRBOX_BASS_SOURCES "src/*.cpp" "include/*.hpp")
 # -----------------
 
-if(RAWRBOX_ENABLE_DEBUG_SUPPORT)
+if(RAWRBOX_BUILD_DEBUG)
     set(RAWRBOX_BASS_DEFINES RAWRBOX_DEBUG)
     list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.DEBUG)
 endif()
@@ -38,26 +27,16 @@ target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMIN
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC
-	RAWRBOX.UTILS
 	RAWRBOX.ENGINE
+	RAWRBOX.MATH
+	${RAWRBOX_EXTRA_LIBS}
 
 	fmt::fmt
 
 	BASS::BASS
 	BASS::FX
-	${RAWRBOX_EXTRA_LIBS}
 )
 
-# TESTING ----
-if(RAWRBOX_BUILD_TESTING)
-    file(GLOB_RECURSE RAWRBOX_BASS_TESTS_IMPORTS "tests/*.spec.cpp" )
-
-    add_executable(${output_target}-TESTS ${RAWRBOX_BASS_TESTS_IMPORTS})
-    target_compile_features(${output_target}-TESTS PRIVATE cxx_std_${CMAKE_CXX_STANDARD})
-    target_link_libraries(${output_target}-TESTS PRIVATE ${output_target} Catch2::Catch2WithMain)
-
-    catch_discover_tests(${output_target}-TESTS
-        DISCOVERY_MODE PRE_TEST
-    )
-endif()
+# TEST ----
+include(../cmake/catch2.cmake)
 #--------------

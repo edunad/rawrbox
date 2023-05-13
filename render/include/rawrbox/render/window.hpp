@@ -44,18 +44,19 @@ namespace rawrbox {
 	class Window;
 	// ------EVENTS
 	using OnFocusCallback = Event<Window&, bool>;
-	using OnCharCallback = Event<Window&, unsigned int>;
+	using OnCharCallback = Event<Window&, uint32_t>;
 	using OnResizeCallback = Event<Window&, const Vector2i&>;
 	using OnScrollCallback = Event<Window&, const Vector2i&, const Vector2i&>;
 	using OnMouseMoveCallback = Event<Window&, const Vector2i&>;
-	using OnKeyCallback = Event<Window&, unsigned int, unsigned int, unsigned int, unsigned int>;
-	using OnMouseKeyCallback = Event<Window&, const Vector2i&, unsigned int, unsigned int, unsigned int>;
+	using OnKeyCallback = Event<Window&, uint32_t, uint32_t, uint32_t, uint32_t>;
+	using OnMouseKeyCallback = Event<Window&, const Vector2i&, uint32_t, uint32_t, uint32_t>;
 	using OnWindowClose = Event<Window&>;
 	// --------------------
 
 	class Window {
 	private:
 		void* _handle = nullptr;
+		void* _cursor = nullptr;
 		uint32_t _resetFlags = BGFX_RESET_NONE;
 
 		// Default settings
@@ -84,7 +85,7 @@ namespace rawrbox {
 		OnCharCallback onChar;
 		OnFocusCallback onFocus;
 		OnResizeCallback onResize;
-		OnScrollCallback onScroll;
+		OnScrollCallback onMouseScroll;
 		OnMouseKeyCallback onMouseKey;
 		OnMouseMoveCallback onMouseMove;
 		OnWindowClose onWindowClose;
@@ -96,6 +97,9 @@ namespace rawrbox {
 		void setRenderer(bgfx::RendererType::Enum render);
 		void setClearColor(uint32_t clearColor);
 		void setTitle(const std::string& title);
+
+		void setCursor(uint32_t cursor);
+		void setCursor(const std::array<uint8_t, 1024>& cursor); // Max size 16x16 (4 pixel channel)
 
 		// ------RENDERING
 		void shutdown();

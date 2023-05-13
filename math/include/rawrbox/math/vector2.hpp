@@ -56,6 +56,13 @@ namespace rawrbox {
 			    std::clamp(x, min, max),
 			    std::clamp(y, min, max)};
 		}
+
+		[[nodiscard]] VecType clamp(VecType min, VecType max) const {
+			return {
+			    std::clamp(x, min.x, max.x),
+			    std::clamp(y, min.y, max.y)};
+		}
+
 		[[nodiscard]] NumberType atan2() const {
 			return std::atan2(y, x);
 		}

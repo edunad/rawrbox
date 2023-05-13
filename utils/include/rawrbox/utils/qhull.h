@@ -1,7 +1,6 @@
 
 // NOLINTBEGIN(*)
 #pragma once
-#include <rawrbox/math/vector2.hpp>
 
 extern "C" {
 #include <libqhull_r/libqhull_r.h>
@@ -11,6 +10,13 @@ extern "C" {
 #include <vector>
 
 namespace rawrbox {
+	struct QHullPoint {
+		float x = 0.F;
+		float y = 0.F;
+
+		QHullPoint() = default;
+	};
+
 	class QHull {
 	public:
 		/*
@@ -32,8 +38,8 @@ namespace rawrbox {
 			⢀⣹⣿⣿⣿⣿⣽⣿⣿⣿⣿⣿⡀⠄⠄⡀⠄⡇⠄⢀⣀⣀⣸⣯⢠⡇⠄⠄⢼⡆⢡⣿⣿⣿⣿⣿⣿⣿
 			⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠄⠄⠨⢾⣿⣿⣿⣿⣿⣿⣿⠄⣷⡀⠄⢸⡇⢘⣻⣿⣿⣿⣿⣿⣿
 		*/
-		static std::vector<rawrbox::Vector2> calculateConvex(const std::vector<rawrbox::Vector2>& vertPoints, const std::string& flags = "qhull FA") {
-			std::vector<rawrbox::Vector2> hull = {};
+		static std::vector<QHullPoint> calculateConvex(const std::vector<QHullPoint>& vertPoints, const std::string& flags = "qhull FA") {
+			std::vector<QHullPoint> hull = {};
 
 			// Setup QHULL ---
 			int dimension = 2; // Set as 2D

@@ -1,7 +1,7 @@
 ﻿project("005-post-process")
 
 # Grab source files
-file(GLOB_RECURSE RAWRBOX_SAMPLE_SOURCES "include/*.h" "include/*.hpp" "src/*.cpp" "src/*.c" )
+file(GLOB_RECURSE RAWRBOX_SAMPLE_SOURCES "include/*.hpp" "src/*.cpp" )
 
 # Project setup
 set(output_target 005-post-process)
