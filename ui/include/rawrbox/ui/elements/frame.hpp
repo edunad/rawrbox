@@ -1,8 +1,10 @@
 #pragma once
 
+#include <rawrbox/math/color.hpp>
 #include <rawrbox/ui/base.hpp>
+#include <rawrbox/utils/event.hpp>
 
-#include <array>
+#include <string>
 
 namespace rawrbox {
 	class UIFrame : public rawrbox::UIBase {

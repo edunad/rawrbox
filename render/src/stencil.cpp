@@ -13,7 +13,7 @@
 
 #include <array>
 
-#define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA_TO_COVERAGE)
+#define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
 
 // NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader stencil_shaders[] = {
@@ -233,8 +233,8 @@ namespace rawrbox {
 			auto ang = space * i++ + angStartRad;
 			if (ang + space > angEndRad) break;
 
-			rawrbox::Vector2 b = targetPos + rawrbox::Vector2::cosSin(ang) * radius;
-			rawrbox::Vector2 c = targetPos + rawrbox::Vector2::cosSin(ang + space) * radius;
+			rawrbox::Vector2 b = targetPos + rawrbox::Vector2::sinCos(ang) * radius;
+			rawrbox::Vector2 c = targetPos + rawrbox::Vector2::sinCos(ang + space) * radius;
 
 			if (this->_outline.isSet()) {
 				this->drawLine(b, c, col);
@@ -273,10 +273,10 @@ namespace rawrbox {
 			float angle = from.angle(to);
 			float uvEnd = outline.stipple <= 0.F ? 1.F : outline.stipple;
 
-			auto vertA = from + rawrbox::Vector2::cosSin(angle) * outline.thickness;
-			auto vertB = from + rawrbox::Vector2::cosSin(angle) * -outline.thickness;
-			auto vertC = to + rawrbox::Vector2::cosSin(angle) * outline.thickness;
-			auto vertD = to + rawrbox::Vector2::cosSin(angle) * -outline.thickness;
+			auto vertA = from + rawrbox::Vector2::sinCos(angle) * outline.thickness;
+			auto vertB = from + rawrbox::Vector2::sinCos(angle) * -outline.thickness;
+			auto vertC = to + rawrbox::Vector2::sinCos(angle) * outline.thickness;
+			auto vertD = to + rawrbox::Vector2::sinCos(angle) * -outline.thickness;
 
 			this->pushVertice(vertA, {0, 0}, col);
 			this->pushVertice(vertC, {uvEnd, 0}, col);
@@ -288,8 +288,9 @@ namespace rawrbox {
 		}
 	}
 
-	void Stencil::drawText(rawrbox::Font* font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, rawrbox::Alignment alignX, rawrbox::Alignment alignY) {
-		if (font == nullptr || col.isTransparent() || text.empty()) return;
+	void Stencil::drawText(std::weak_ptr<rawrbox::Font> font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, rawrbox::Alignment alignX, rawrbox::Alignment alignY) {
+		if (font.expired() || col.isTransparent() || text.empty()) return;
+		auto f = font.lock();
 
 		// Setup --------
 		this->setShaderProgram(this->_textprogram);
@@ -297,7 +298,7 @@ namespace rawrbox {
 		// ----
 
 		rawrbox::Vector2f startpos = pos;
-		rawrbox::Vector2f tsize = font->getStringSize(text);
+		rawrbox::Vector2f tsize = f->getStringSize(text);
 		if (alignX != Alignment::Left || alignY != Alignment::Left) {
 			switch (alignX) {
 				case Alignment::Left:
@@ -325,8 +326,8 @@ namespace rawrbox {
 		startpos.x = std::roundf(startpos.x);
 		startpos.y = std::roundf(startpos.y);
 
-		float lineheight = font->getLineHeight();
-		startpos.y += lineheight + static_cast<float>(font->face->size->metrics.descender >> 6);
+		float lineheight = f->getLineHeight();
+		startpos.y += lineheight + static_cast<float>(f->face->size->metrics.descender >> 6);
 
 		rawrbox::Vector2 curpos = startpos;
 		const rawrbox::Glyph* prevGlyph = nullptr;
@@ -345,15 +346,15 @@ namespace rawrbox {
 				continue;
 			}
 
-			auto& glyph = font->getGlyph(point);
+			auto& glyph = f->getGlyph(point);
 			if (prevGlyph != nullptr) {
-				curpos.x += font->getKerning(glyph, *prevGlyph);
+				curpos.x += f->getKerning(glyph, *prevGlyph);
 			}
 
 			rawrbox::Vector2 p = {curpos.x + glyph.bearing.x, curpos.y - glyph.bearing.y};
 			rawrbox::Vector2 s = {static_cast<float>(glyph.size.x), static_cast<float>(glyph.size.y)};
 
-			this->setTexture(font->getAtlasTexture(glyph)->getHandle());
+			this->setTexture(f->getAtlasTexture(glyph)->getHandle());
 
 			this->pushVertice({p.x, p.y}, glyph.textureTopLeft, col);
 			this->pushVertice({p.x, p.y + s.y}, {glyph.textureTopLeft.x, glyph.textureBottomRight.y}, col);

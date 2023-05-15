@@ -9,15 +9,15 @@
 
 #include <map>
 #include <utility>
-#include <vector>
 
 namespace rawrbox {
 
-	class TextEngine { // Not threadsafe, make one engine per thread
+	class TextEngine {
 		static uint32_t atlasID;
 
-		std::vector<std::unique_ptr<rawrbox::Font>> _fonts;
+		std::map<std::string, std::shared_ptr<rawrbox::Font>> _fonts;
 		std::map<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> _atlas;
+
 		void initialize();
 		void destroy();
 
@@ -35,6 +35,6 @@ namespace rawrbox {
 		virtual std::pair<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> requestAtlas(int width, int height, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8);
 		virtual std::shared_ptr<rawrbox::TextureAtlas> getAtlas(uint32_t id);
 
-		virtual rawrbox::Font& load(std::string filename, uint32_t size);
+		virtual std::weak_ptr<rawrbox::Font> load(std::string filename, uint32_t size);
 	};
 } // namespace rawrbox

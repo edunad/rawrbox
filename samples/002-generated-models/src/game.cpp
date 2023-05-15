@@ -1,5 +1,9 @@
 
 #include <rawrbox/render/model/mesh.hpp>
+#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/render/resources/gif.hpp>
+#include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/resources/static.hpp>
 #include <rawrbox/utils/keys.hpp>
 
 #include <model/game.hpp>
@@ -30,7 +34,9 @@ namespace model {
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		this->_textEngine = std::make_unique<rawrbox::TextEngine>();
+		rawrbox::Resources.addLoader(std::make_unique<rawrbox::TextureLoader>());
+		rawrbox::Resources.addLoader(std::make_unique<rawrbox::GIFLoader>());
+		rawrbox::Resources.addLoader(std::make_unique<rawrbox::FontLoader>());
 
 		// Load content ---
 		this->loadContent();
@@ -38,19 +44,33 @@ namespace model {
 	}
 
 	void Game::loadContent() {
+		std::array<std::string, 3> initialContentFiles = {
+		    "cour.ttf",
+		    "content/textures/screem.png",
+		    "content/textures/meow3.gif",
+		};
+
+		rawrbox::ASYNC.run([initialContentFiles]() {
+			for (auto& f : initialContentFiles) {
+				rawrbox::Resources.loadFile( f);
+			} },
+		    [this] {
+			    rawrbox::runOnMainThread([this]() {
+				    rawrbox::Resources.upload();
+				    this->contentLoaded();
+			    });
+		    });
+
 		this->_window->upload();
+	}
 
-		// Fonts -----
-		this->_font = &this->_textEngine->load("cour.ttf", 16);
-		// ------
+	void Game::contentLoaded() {
+		this->_ready = true;
 
-		// Textures ---
-		this->_texture = std::make_shared<rawrbox::TextureImage>("./content/textures/screem.png");
-		this->_texture->upload();
+		this->_texture = rawrbox::Resources.getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->texture;
+		this->_texture2 = rawrbox::Resources.getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->texture;
 
-		this->_texture2 = std::make_shared<rawrbox::TextureGIF>("./content/textures/meow3.gif");
-		this->_texture2->upload();
-		// ----
+		this->_font = rawrbox::Resources.getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 
 		// Model test ----
 		{
@@ -84,7 +104,6 @@ namespace model {
 			this->_sprite->addMesh(mesh);
 		}
 		// -----
-
 		// Text test ----
 		{
 			this->_text->addText(this->_font, "PLANE", {2.F, 0.5F, 0});
@@ -97,7 +116,6 @@ namespace model {
 		this->_model->upload();
 		this->_sprite->upload();
 		this->_text->upload();
-		// -----
 	}
 
 	void Game::shutdown() {
@@ -150,7 +168,13 @@ namespace model {
 		printFrames();
 		// -----------
 
-		this->drawWorld();
+		if (this->_ready) {
+			this->drawWorld();
+		} else {
+			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
+			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
+			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
+		}
 
 		this->_window->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());

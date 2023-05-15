@@ -18,7 +18,7 @@ namespace rawrbox {
 
 	class Emitter;
 	class LightBase;
-	class GIZMOS {
+	class Gizmos {
 	protected:
 		std::shared_ptr<rawrbox::Sprite<>> _gizmo_lights = std::make_shared<rawrbox::Sprite<>>();
 		std::shared_ptr<rawrbox::Sprite<>> _gizmo_sounds = std::make_shared<rawrbox::Sprite<>>();
@@ -44,10 +44,5 @@ namespace rawrbox {
 		// ------
 		void updateGizmo(const std::string& id, const rawrbox::Vector3f& pos);
 		void draw();
-
-		static GIZMOS& get() {
-			static GIZMOS cl;
-			return cl;
-		}
 	};
 } // namespace rawrbox

@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/stencil.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
 #include <rawrbox/ui/static.hpp>
 
@@ -36,7 +37,7 @@ namespace rawrbox {
 	void UIFrame::mouseMove(const rawrbox::Vector2i& mousePos) {
 		if (!this->_dragging) return;
 
-		auto p = this->getParent();
+		auto p = getParent<rawrbox::UIContainer>();
 		this->setPos((getPos() + (mousePos.cast<float>() - this->_dragStart)).clamp(p->getPos(), p->getPos() + p->getSize() - getSize()));
 	}
 
@@ -53,7 +54,7 @@ namespace rawrbox {
 	// -----
 
 	// DRAWING ---
-	void UIFrame::draw(Stencil& stencil) {
+	void UIFrame::draw(rawrbox::Stencil& stencil) {
 		auto& size = getSize();
 		const float titleSize = 18.F;
 

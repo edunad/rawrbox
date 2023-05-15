@@ -1,4 +1,8 @@
+#include <rawrbox/render/model/assimp/assimp_importer.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
+#include <rawrbox/render/resources/assimp/model.hpp>
+#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/resources/static.hpp>
 #include <rawrbox/utils/keys.hpp>
 
 #include <assimp/game.hpp>
@@ -29,7 +33,8 @@ namespace assimp {
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		this->_textEngine = std::make_unique<rawrbox::TextEngine>();
+		rawrbox::Resources.addLoader(std::make_unique<rawrbox::FontLoader>());
+		rawrbox::Resources.addLoader(std::make_unique<rawrbox::AssimpLoader>());
 
 		// Load content ---
 		this->loadContent();
@@ -37,34 +42,44 @@ namespace assimp {
 	}
 
 	void Game::loadContent() {
-		this->_window->upload();
+		std::array<std::pair<std::string, uint32_t>, 3> initialContentFiles = {
+		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("content/models/light_test/light_test.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT)};
 
-		// Fonts -----
-		this->_font = &this->_textEngine->load("cour.ttf", 16);
-		// ------
+		rawrbox::ASYNC.run([initialContentFiles]() {
+			for (auto& f : initialContentFiles) {
+				rawrbox::Resources.loadFile(f.first, f.second);
+			} }, [this] { rawrbox::runOnMainThread([this]() {
+										 rawrbox::Resources.upload();
+										 this->contentLoaded();
+									 }); });
+
+		this->_window->upload();
+	}
+
+	void Game::contentLoaded() {
+
+		this->_font = rawrbox::Resources.getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 
 		// Assimp test ---
-		this->_model->setPos({10, 0, 0});
-		this->_model->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx");
-		this->_model->upload();
+		auto mdl = rawrbox::Resources.getFile<rawrbox::ResourceAssimp>("./content/models/light_test/light_test.fbx");
 
+		this->_model->load(mdl->model);
+		this->_model->setPos({3, 0, 0});
+
+		this->_model2->load(mdl->model);
 		this->_model2->setPos({0, 0, 0});
-		this->_model2->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES);
-		this->_model2->upload();
-
-		this->_model3->setPos({-10, 0, 0});
-		this->_model3->load("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT);
-		this->_model3->upload();
-		// -----
+		//   -----
 
 		// Text test ----
 		{
-			this->_text->addText(this->_font, "TEXTURES + LIGHT", {-10.F, 2.0F, 0});
-			this->_text->addText(this->_font, "NONE", {10.F, 2.0F, 0});
-			this->_text->addText(this->_font, "TEXTURES", {0.F, 2.0F, 0});
+			this->_text->addText(this->_font, "TEXTURES + LIGHT", {-3.F, 2.0F, 0});
+			this->_text->addText(this->_font, "TEXTURES", {3.F, 2.0F, 0});
 			this->_text->upload();
 		}
 		// ------
+
+		this->_ready = true;
 	}
 
 	void Game::shutdown() {
@@ -73,11 +88,10 @@ namespace assimp {
 
 		this->_model = nullptr;
 		this->_model2 = nullptr;
-		this->_model3 = nullptr;
 
 		this->_text = nullptr;
 
-		rawrbox::LightManager::get().destroy();
+		rawrbox::Lights.destroy();
 		rawrbox::Engine::shutdown();
 	}
 
@@ -92,12 +106,10 @@ namespace assimp {
 	}
 
 	void Game::drawWorld() {
-		if (this->_model == nullptr || this->_model2 == nullptr || this->_model3 == nullptr || this->_text == nullptr) return;
 		auto pos = this->_camera->getPos();
 
 		this->_model->draw(pos);
 		this->_model2->draw(pos);
-		this->_model3->draw(pos);
 
 		this->_text->draw(pos);
 	}
@@ -121,7 +133,13 @@ namespace assimp {
 		printFrames();
 		// -----------
 
-		this->drawWorld();
+		if (this->_ready) {
+			this->drawWorld();
+		} else {
+			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
+			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
+			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
+		}
 
 		this->_window->frame(true); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());

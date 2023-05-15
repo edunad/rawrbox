@@ -12,7 +12,7 @@
 
 namespace rawrbox {
 
-	void GIZMOS::shutdown() {
+	void Gizmos::shutdown() {
 		this->_gizmo_lights = nullptr;
 		this->_gizmo_sounds = nullptr;
 		this->_gizmo_emitters = nullptr;
@@ -20,7 +20,7 @@ namespace rawrbox {
 		this->_textures.clear();
 	}
 
-	void GIZMOS::upload() {
+	void Gizmos::upload() {
 		if (!rawrbox::BGFX_INITIALIZED) return;
 		if (!this->_textures.empty()) throw std::runtime_error(fmt::format("[RawrBox-Debug] GIZMOS already initialized!"));
 
@@ -45,7 +45,7 @@ namespace rawrbox {
 	}
 
 	// UTILS ----
-	void GIZMOS::addLight(rawrbox::LightBase* l) {
+	void Gizmos::addLight(rawrbox::LightBase* l) {
 		auto pos = l->getPosMatrix();
 
 		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = this->_gizmo_lights->generatePlane({pos[0], pos[1], pos[2]}, {0.25F, 0.25F});
@@ -68,7 +68,7 @@ namespace rawrbox {
 		this->_gizmo_lights->addMesh(mesh);
 	}
 
-	void GIZMOS::removeLight(rawrbox::LightBase* l) {
+	void Gizmos::removeLight(rawrbox::LightBase* l) {
 		if (this->_gizmo_lights == nullptr) return;
 
 		auto& m = this->_gizmo_lights->meshes();
@@ -79,7 +79,7 @@ namespace rawrbox {
 		}
 	}
 
-	void GIZMOS::addEmitter(rawrbox::Emitter* l) {
+	void Gizmos::addEmitter(rawrbox::Emitter* l) {
 		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = this->_gizmo_emitters->generatePlane(l->getPos(), {0.25F, 0.25F});
 		mesh->setName(fmt::format("Emitter-{}", l->id()));
 		mesh->setCulling(BGFX_STATE_CULL_CW);
@@ -88,7 +88,7 @@ namespace rawrbox {
 		this->_gizmo_emitters->addMesh(mesh);
 	}
 
-	void GIZMOS::removeEmitter(rawrbox::Emitter* l) {
+	void Gizmos::removeEmitter(rawrbox::Emitter* l) {
 		if (this->_gizmo_emitters == nullptr) return;
 
 		auto& m = this->_gizmo_emitters->meshes();
@@ -100,7 +100,7 @@ namespace rawrbox {
 	}
 
 #ifdef RAWRBOX_BASS
-	void GIZMOS::addSound(rawrbox::SoundInstance* l) {
+	void Gizmos::addSound(rawrbox::SoundInstance* l) {
 		if (!l->isValid() || !l->is3D()) return;
 
 		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = this->_gizmo_sounds->generatePlane(l->getPosition(), {0.25F, 0.25F});
@@ -111,7 +111,7 @@ namespace rawrbox {
 		this->_gizmo_sounds->addMesh(mesh);
 	}
 
-	void GIZMOS::removeSound(rawrbox::SoundInstance* l) {
+	void Gizmos::removeSound(rawrbox::SoundInstance* l) {
 		if (this->_gizmo_sounds == nullptr) return;
 
 		auto& m = this->_gizmo_sounds->meshes();
@@ -124,7 +124,7 @@ namespace rawrbox {
 #endif
 	// -----
 
-	void GIZMOS::updateGizmo(const std::string& id, const rawrbox::Vector3f& pos) {
+	void Gizmos::updateGizmo(const std::string& id, const rawrbox::Vector3f& pos) {
 		for (auto& m : this->_gizmo_lights->meshes()) {
 			if (m->getName() != id) continue;
 			m->setPos(pos);
@@ -144,7 +144,7 @@ namespace rawrbox {
 		}
 	}
 
-	void GIZMOS::draw() {
+	void Gizmos::draw() {
 		if (!rawrbox::BGFX_INITIALIZED) return;
 
 		if (this->_gizmo_lights != nullptr && this->_gizmo_lights->totalMeshes() > 0) this->_gizmo_lights->draw({});

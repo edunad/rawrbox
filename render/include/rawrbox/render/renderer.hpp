@@ -7,7 +7,6 @@
 #include <memory>
 
 namespace rawrbox {
-	class Window;
 	class Renderer {
 	private:
 		// Default settings

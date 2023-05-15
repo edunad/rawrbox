@@ -1,5 +1,9 @@
 
+#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/render/resources/gif.hpp>
+#include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/resources/static.hpp>
 
 #include <stencil/game.hpp>
 
@@ -24,7 +28,9 @@ namespace stencil {
 			this->shutdown();
 		};
 
-		this->_textEngine = std::make_unique<rawrbox::TextEngine>();
+		rawrbox::Resources.addLoader(std::make_unique<rawrbox::TextureLoader>());
+		rawrbox::Resources.addLoader(std::make_unique<rawrbox::GIFLoader>());
+		rawrbox::Resources.addLoader(std::make_unique<rawrbox::FontLoader>());
 
 		// Load content ---
 		this->loadContent();
@@ -32,27 +38,50 @@ namespace stencil {
 	}
 
 	void Game::loadContent() {
+		std::array<std::string, 5> initialContentFiles = {
+		    "content/fonts/droidsans.ttf",
+		    "content/fonts/visitor1.ttf",
+		    "cour.ttf",
+		    "content/textures/screem.png",
+		    "content/textures/meow3.gif",
+		};
+
+		rawrbox::ASYNC.run([initialContentFiles]() {
+			for (auto& f : initialContentFiles) {
+				rawrbox::Resources.loadFile( f);
+			} },
+		    [this] {
+			    rawrbox::runOnMainThread([this]() {
+				    rawrbox::Resources.upload();
+				    this->contentLoaded();
+			    });
+		    });
+
 		this->_window->upload();
+	}
 
-		// Fonts ----
-		this->_font = &this->_textEngine->load("./content/fonts/droidsans.ttf", 28);
-		this->_font2 = &this->_textEngine->load("./content/fonts/visitor1.ttf", 18);
-		this->_font3 = &this->_textEngine->load("cour.ttf", 12);
-
+	void Game::contentLoaded() {
 		// Textures ---
-		this->_texture = std::make_shared<rawrbox::TextureImage>("./content/textures/screem.png");
-		this->_texture->upload();
+		this->_texture = rawrbox::Resources.getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->texture;
+		this->_texture2 = rawrbox::Resources.getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->texture;
 
-		this->_texture2 = std::make_shared<rawrbox::TextureGIF>("./content/textures/meow3.gif");
-		this->_texture2->upload();
+		this->_font = rawrbox::Resources.getFile<rawrbox::ResourceFont>("./content/fonts/droidsans.ttf")->getSize(28);
+		this->_font2 = rawrbox::Resources.getFile<rawrbox::ResourceFont>("./content/fonts/visitor1.ttf")->getSize(18);
+		this->_font3 = rawrbox::Resources.getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(12);
+
+		this->_ready = true;
 	}
 
 	void Game::shutdown() {
 		this->_window = nullptr;
-		this->_textEngine = nullptr;
 		this->_texture = nullptr;
 		this->_texture2 = nullptr;
 
+		this->_font.reset();
+		this->_font2.reset();
+		this->_font3.reset();
+
+		rawrbox::Resources.shutdown();
 		rawrbox::Engine::shutdown();
 	}
 
@@ -139,7 +168,7 @@ namespace stencil {
 		stencil.pushOffset({20, 200});
 		stencil.drawText(this->_font, "Cat ipsum dolor sit amet, steal raw zucchini off kitchen counter. $£%&", {});
 
-		auto size = this->_font2->getStringSize("Cat!!");
+		auto size = this->_font2.lock()->getStringSize("Cat!!");
 		stencil.pushRotation({counter * 50.5F, (size / 2.F) + rawrbox::Vector2f(0, 40)});
 		stencil.drawText(this->_font2, "Cat!!", {0, 40});
 		stencil.popRotation();
@@ -148,6 +177,11 @@ namespace stencil {
 		stencil.popOffset();
 
 		stencil.end();
+
+		// TEST ---
+		this->_texture2->step();
+		counter += 0.1F;
+		// ---
 	}
 
 	void printFrames() {
@@ -169,12 +203,13 @@ namespace stencil {
 		printFrames();
 		// -----------
 
-		this->drawOverlay();
-
-		// TEST ---
-		this->_texture2->step();
-		counter += 0.1F;
-		// ---
+		if (this->_ready) {
+			this->drawOverlay();
+		} else {
+			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
+			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
+			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
+		}
 
 		this->_window->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);

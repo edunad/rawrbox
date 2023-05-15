@@ -8,13 +8,18 @@ SAMPLER2D(s_texSpecularColor, 1);
 SAMPLER2D(s_texEmissionColor, 2);
 
 uniform vec4 u_cameraPos;
+
 uniform vec4 u_colorOffset;
+uniform vec4 u_specularColor;
+uniform vec4 u_emissionColor;
+
+
 
 uniform vec2 u_texMatData; // x = shininess, y = emission strength
 
 void main() {
-	vec4 specularColor = texture2D(s_texSpecularColor, v_texcoord0.xy) * v_color0 * u_colorOffset;
-	vec4 emissionColor = texture2D(s_texEmissionColor, v_texcoord0.xy) * v_color0 * u_colorOffset;
+	vec4 specularColor = texture2D(s_texSpecularColor, v_texcoord0.xy) * v_color0 * u_specularColor;
+	vec4 emissionColor = texture2D(s_texEmissionColor, v_texcoord0.xy) * v_color0 * u_emissionColor;
 
 	vec4 texColor = texture2D(s_texColor, v_texcoord0.xy) * v_color0 * u_colorOffset;
 	if (texColor.a <= 0.0) discard;

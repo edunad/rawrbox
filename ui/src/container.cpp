@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/stencil.hpp>
 #include <rawrbox/ui/base.hpp>
 #include <rawrbox/ui/container.hpp>
 
@@ -34,17 +35,17 @@ namespace rawrbox {
 	// ---
 
 	// REFERENCE HANDLING --
-	void UIContainer::setRef(const std::shared_ptr<UIContainer>& ref) { this->_ref = ref; }
+	void UIContainer::setRef(std::shared_ptr<UIContainer> ref) { this->_ref = ref; }
 	// ---
 
 	// PARENTING ---
-	std::vector<std::shared_ptr<UIBase>>& UIContainer::getChildren() { return this->_children; }
-	const std::vector<std::shared_ptr<UIBase>>& UIContainer::getChildren() const { return this->_children; }
+	std::vector<std::shared_ptr<rawrbox::UIBase>>& UIContainer::getChildren() { return this->_children; }
+	const std::vector<std::shared_ptr<rawrbox::UIBase>>& UIContainer::getChildren() const { return this->_children; }
 
 	bool UIContainer::hasParent() const { return !this->_parent.expired(); }
-	void UIContainer::addChild(const std::shared_ptr<UIBase>& elm) { elm->setParent(getRef<UIBase>()); }
-	void UIContainer::setParent(const std::shared_ptr<UIContainer>& elm) {
-		auto sharedPtr = getRef<UIBase>();
+	void UIContainer::addChild(std::shared_ptr<rawrbox::UIBase> elm) { elm->setParent(this->getRef<rawrbox::UIContainer>()); }
+	void UIContainer::setParent(std::shared_ptr<rawrbox::UIContainer> elm) {
+		auto sharedPtr = this->getRef<rawrbox::UIBase>();
 
 		if (hasParent()) {
 			auto& childs = this->_parent.lock()->getChildren();

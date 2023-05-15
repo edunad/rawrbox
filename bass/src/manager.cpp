@@ -1,5 +1,6 @@
 #include <rawrbox/bass/manager.hpp>
 #include <rawrbox/bass/sound/instance.hpp>
+#include <rawrbox/bass/static.hpp>
 #include <rawrbox/bass/utils/bass.hpp>
 #include <rawrbox/engine/static.hpp>
 
@@ -16,7 +17,7 @@ namespace rawrbox {
 	// BASS CALLBACKS (Not thread safe! We need to run these on the main thread) ------
 	void CALLBACK onHTTPSoundFree(HSYNC handle, DWORD channel, DWORD data, void* user) {
 		rawrbox::runOnMainThread([channel]() {
-			auto& inst = rawrbox::SoundManager::get();
+			auto& inst = rawrbox::BASS;
 
 			for (auto it2 = inst.sounds.begin(); it2 != inst.sounds.end();) {
 				if ((*it2).second->getSample() == channel) {
@@ -31,24 +32,24 @@ namespace rawrbox {
 
 	void CALLBACK soundBEAT(uint32_t channel, double beatpos, void* user) {
 		rawrbox::runOnMainThread([channel, beatpos]() {
-			rawrbox::SoundManager::get().onBEAT({channel, beatpos});
+			rawrbox::BASS.onBEAT({channel, beatpos});
 		});
 	}
 
 	void CALLBACK soundBPM(uint32_t channel, float bpm, void* user) {
 		rawrbox::runOnMainThread([channel, bpm]() {
-			rawrbox::SoundManager::get().onBPM({channel, bpm});
+			rawrbox::BASS.onBPM({channel, bpm});
 		});
 	}
 
 	void CALLBACK soundEnd(HSYNC handle, DWORD channel, DWORD data, void* user) {
 		rawrbox::runOnMainThread([channel]() {
-			rawrbox::SoundManager::get().onSoundEnd(static_cast<uint32_t>(channel));
+			rawrbox::BASS.onSoundEnd(static_cast<uint32_t>(channel));
 		});
 	}
 	// ----------------
 
-	void SoundManager::initialize() {
+	void BASSManager::initialize() {
 		auto fxVersion = HIWORD(BASS_FX_GetVersion());
 		if (fxVersion != BASSVERSION) throw std::runtime_error(fmt::format("[RawrBox-BASS] BASS Version missmatch! FX [{}] | BASS [{}]", fxVersion, BASSVERSION));
 
@@ -64,13 +65,13 @@ namespace rawrbox {
 		}
 	}
 
-	void SoundManager::shutdown() {
+	void BASSManager::shutdown() {
 		this->sounds.clear();
 		BASS_Free();
 	}
 
 	// LOAD ----
-	std::shared_ptr<rawrbox::SoundBase> SoundManager::loadSound(const std::filesystem::path& path, uint32_t flags) {
+	std::shared_ptr<rawrbox::SoundBase> BASSManager::loadSound(const std::filesystem::path& path, uint32_t flags) {
 		std::string pth = path.generic_string().c_str();
 
 		if (this->sounds.find(pth) != this->sounds.end()) return this->sounds[pth];
@@ -114,7 +115,7 @@ namespace rawrbox {
 		return sounds[pth];
 	}
 
-	std::shared_ptr<rawrbox::SoundBase> SoundManager::loadHTTPSound(const std::string& url, uint32_t flags) {
+	std::shared_ptr<rawrbox::SoundBase> BASSManager::loadHTTPSound(const std::string& url, uint32_t flags) {
 		if (!url.starts_with("http://") && !url.starts_with("https://")) throw std::runtime_error(fmt::format("[BASS] Invalid sound url '{}'", url));
 		if (sounds.find(url) != sounds.end()) return sounds[url];
 
@@ -154,12 +155,12 @@ namespace rawrbox {
 	// ----
 
 	// UTILS -----
-	void SoundManager::setHasFocus(bool focus) {
+	void BASSManager::setHasFocus(bool focus) {
 		if (!this->_initialized) return;
 		setMasterVolume(this->_muteOnUnfocus ? (focus ? this->_masterVolume : 0.F) : this->_masterVolume, false); // Mute on unfocus
 	}
 
-	void SoundManager::setMasterVolume(float volume, bool set) {
+	void BASSManager::setMasterVolume(float volume, bool set) {
 		volume = std::clamp(volume, 0.F, 1.F);
 		if (set) this->_masterVolume = volume;
 
@@ -168,15 +169,15 @@ namespace rawrbox {
 		BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, static_cast<DWORD>(volume * 10000));
 	}
 
-	void SoundManager::setMuteOnUnfocus(bool active) {
+	void BASSManager::setMuteOnUnfocus(bool active) {
 		this->_muteOnUnfocus = active;
 	}
 
-	float SoundManager::getMasterVolume() const {
+	float BASSManager::getMasterVolume() const {
 		return this->_masterVolume;
 	}
 
-	void SoundManager::setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& forward, const rawrbox::Vector3f& up) {
+	void BASSManager::setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& forward, const rawrbox::Vector3f& up) {
 		if (!this->_initialized) return;
 
 		auto velo = location - this->_oldLocation;

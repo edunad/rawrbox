@@ -1,5 +1,7 @@
 
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/ui/elements/frame.hpp>
+#include <rawrbox/ui/static.hpp>
 
 #include <ui_test/game.hpp>
 
@@ -16,10 +18,17 @@ namespace ui_test {
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("UI TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
+		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED);
 		this->_window->onWindowClose += [this](auto& w) {
 			this->shutdown();
 		};
-		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED);
+
+		// SETUP UI
+		{
+			auto frame = rawrbox::ROOT_UI->createChild<rawrbox::UIFrame>();
+			frame->setTitle("mewww");
+		}
+		// ---
 
 		// Load content ---
 		this->loadContent();

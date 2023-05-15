@@ -2,7 +2,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/window.hpp>
 #ifdef RAWRBOX_DEBUG
-	#include <rawrbox/debug/gizmos.hpp>
+	#include <rawrbox/debug/static.hpp>
 #endif
 #ifdef RAWRBOX_UI
 	#include <rawrbox/ui/static.hpp>
@@ -234,14 +234,12 @@ namespace rawrbox {
 
 		// Setup global util textures ---
 		rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
-		rawrbox::MISSING_SPECULAR_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
-		rawrbox::MISSING_EMISSION_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black);
 		rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
 		// ------------------
 
 		// Setup UI
 #ifdef RAWRBOX_UI
-		rawrbox::ROOT_UI = std::make_unique<rawrbox::UIRoot>(*this);
+		rawrbox::ROOT_UI = rawrbox::UIRoot::create(*this);
 #endif
 		// -----------
 	}
@@ -323,8 +321,6 @@ namespace rawrbox {
 
 		// MISSING TEXTURES ------
 		rawrbox::MISSING_TEXTURE->upload();
-		rawrbox::MISSING_SPECULAR_TEXTURE->upload();
-		rawrbox::MISSING_EMISSION_TEXTURE->upload();
 		rawrbox::WHITE_TEXTURE->upload();
 		// ------------------
 
@@ -335,7 +331,7 @@ namespace rawrbox {
 #endif
 			// Debug gizmos ----
 #ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS::get().upload();
+		rawrbox::GIZMOS.upload();
 #endif
 		// -----
 	}
@@ -343,7 +339,7 @@ namespace rawrbox {
 #ifdef RAWRBOX_DEBUG
 	void Window::frame(bool debugMode) const {
 		if (this->_renderer == nullptr) return;
-		if (debugMode) rawrbox::GIZMOS::get().draw();
+		if (debugMode) rawrbox::GIZMOS.draw();
 
 			// Render UI on top of everything
 	#ifdef RAWRBOX_UI
@@ -372,13 +368,12 @@ namespace rawrbox {
 	// ------UTILS
 	void Window::close() {
 #ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS::get().shutdown();
+		rawrbox::GIZMOS.shutdown();
 #endif
 
 		rawrbox::MISSING_TEXTURE = nullptr;
-		rawrbox::MISSING_SPECULAR_TEXTURE = nullptr;
-		rawrbox::MISSING_EMISSION_TEXTURE = nullptr;
 		rawrbox::WHITE_TEXTURE = nullptr;
+		rawrbox::ROOT_UI = nullptr;
 
 		this->_stencil = nullptr;
 		this->_renderer = nullptr;

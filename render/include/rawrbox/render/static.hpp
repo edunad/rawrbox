@@ -17,6 +17,8 @@
 	}
 // NOLINTEND(*)
 namespace rawrbox {
+	class LightManager;
+
 	constexpr auto MAX_BONES_PER_VERTEX = 4;
 	constexpr auto MAX_BONES_PER_MODEL = 200;
 	constexpr auto MAX_LIGHTS = 12;
@@ -27,14 +29,14 @@ namespace rawrbox {
 
 	// TEXTURE FALLBACKS ---
 	extern std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE;
-	extern std::shared_ptr<rawrbox::TextureFlat> MISSING_SPECULAR_TEXTURE;
-	extern std::shared_ptr<rawrbox::TextureFlat> MISSING_EMISSION_TEXTURE;
 	extern std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE;
 	// ----
 
+	extern rawrbox::LightManager Lights;
+
 	// ID GENERATION
-	extern int SOUND_ID;
-	extern int LIGHT_ID;
-	extern int EMITTER_ID;
+	extern size_t SOUND_ID;
+	extern size_t LIGHT_ID;
+	extern size_t EMITTER_ID;
 	// -----
 } // namespace rawrbox

@@ -1,10 +1,10 @@
-#include <rawrbox/bass/manager.hpp>
 #include <rawrbox/bass/sound/flags.hpp>
 #include <rawrbox/bass/sound/instance.hpp>
+#include <rawrbox/bass/static.hpp>
 #include <rawrbox/bass/utils/bass.hpp>
 
 #ifdef RAWRBOX_DEBUG
-	#include <rawrbox/debug/gizmos.hpp>
+	#include <rawrbox/debug/static.hpp>
 #endif
 
 #include <bass.h>
@@ -13,17 +13,15 @@
 
 namespace rawrbox {
 	SoundInstance::SoundInstance(uint32_t audioSample, bool isStream, uint32_t flags) : _sample(audioSample), _flags(flags), _stream(isStream) {
-		auto& snd = rawrbox::SoundManager::get();
-
-		snd.onBEAT.add(std::to_string(this->_sample), [this](std::pair<uint32_t, double> data) {
+		rawrbox::BASS.onBEAT.add(std::to_string(this->_sample), [this](std::pair<uint32_t, double> data) {
 			if (this->_sample == data.first || this->_channel == data.first) this->onBEAT(data.second);
 		});
 
-		snd.onBPM.add(std::to_string(this->_sample), [this](std::pair<uint32_t, float> data) {
+		rawrbox::BASS.onBPM.add(std::to_string(this->_sample), [this](std::pair<uint32_t, float> data) {
 			if (this->_sample == data.first || this->_channel == data.first) this->onBPM(data.second);
 		});
 
-		snd.onSoundEnd.add(std::to_string(this->_sample), [this](uint32_t sample) {
+		rawrbox::BASS.onSoundEnd.add(std::to_string(this->_sample), [this](uint32_t sample) {
 			if (this->_sample == sample || this->_channel == sample) this->onEnd();
 		});
 	}
@@ -38,12 +36,11 @@ namespace rawrbox {
 			BASS_StreamFree(this->_channel);
 
 		// CLEANUP CALLBACKS
-		auto& snd = rawrbox::SoundManager::get();
-		snd.onBEAT.remove(std::to_string(this->_sample));
-		snd.onSoundEnd.remove(std::to_string(this->_sample));
+		rawrbox::BASS.onBEAT.remove(std::to_string(this->_sample));
+		rawrbox::BASS.onSoundEnd.remove(std::to_string(this->_sample));
 
 #ifdef RAWRBOX_DEBUG
-		GIZMOS::get().removeSound(this);
+		// rawrbox::GIZMOS.removeSound(this);
 #endif
 	}
 
@@ -77,7 +74,7 @@ namespace rawrbox {
 		rawrbox::BASSUtils::checkBASSError();
 
 #ifdef RAWRBOX_DEBUG
-		GIZMOS::get().addSound(this);
+		// rawrbox::GIZMOS.addSound(this);
 #endif
 	}
 
@@ -242,7 +239,7 @@ namespace rawrbox {
 
 		rawrbox::BASSUtils::checkBASSError();
 #ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS::get().updateGizmo(fmt::format("Sound-{}", this->id()), pos);
+		// rawrbox::GIZMOS.updateGizmo(fmt::format("Sound-{}", this->id()), pos);
 #endif
 	}
 

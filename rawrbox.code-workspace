@@ -20,8 +20,8 @@
         ],
 
         "clangd.restartAfterCrash": true,
-        "clangd.checkUpdates": true,
-        "clangd.arguments": ["--header-insertion=never", "--enable-config"],
+        "clangd.checkUpdates": false,
+        "clangd.arguments": ["--header-insertion=never", "--clang-tidy=0"],
 
         "git.autoRepositoryDetection": false,
 

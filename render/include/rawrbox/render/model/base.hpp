@@ -2,6 +2,7 @@
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/model/mesh.hpp>
+#include <rawrbox/render/model/skeleton.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/utils/pack.hpp>
 
@@ -18,36 +19,6 @@
 #include <vector>
 
 namespace rawrbox {
-
-	struct Bone {
-		std::string name;
-		uint8_t boneId = 0;
-
-		// Rendering ---
-		rawrbox::Matrix4x4 transformationMtx = {};
-		rawrbox::Matrix4x4 offsetMtx = {};
-		// ----
-
-		// Lookup ----
-		Skeleton* owner = nullptr;
-
-		std::shared_ptr<Bone> parent;
-		std::vector<std::shared_ptr<Bone>> children = {};
-		// ----
-
-		explicit Bone(std::string _name) : name(std::move(_name)) {}
-	};
-
-	struct Skeleton {
-		uint8_t boneIndex = 0;
-
-		std::string name;
-		std::shared_ptr<Bone> rootBone;
-
-		rawrbox::Matrix4x4 invTransformationMtx = {};
-
-		explicit Skeleton(std::string _name) : name(std::move(_name)) {}
-	};
 
 	template <typename M = rawrbox::MaterialBase>
 	class ModelBase {
@@ -79,8 +50,8 @@ namespace rawrbox {
 		bool _canOptimize = true;
 
 		// SKINNING ----
-		std::unordered_map<std::string, std::shared_ptr<Skeleton>> _skeletons = {};
-		std::unordered_map<std::string, std::shared_ptr<Bone>> _globalBoneMap = {};                                         // Map for quick lookup
+		std::unordered_map<std::string, std::shared_ptr<rawrbox::Skeleton>> _skeletons = {};
+		std::unordered_map<std::string, std::shared_ptr<rawrbox::Bone>> _globalBoneMap = {};                                // Map for quick lookup
 		std::unordered_map<std::string, std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _animatedMeshes = {}; // Map for quick lookup
 		// --------
 

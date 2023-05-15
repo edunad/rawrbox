@@ -1,7 +1,6 @@
 #pragma once
 
 #include <rawrbox/math/vector2.hpp>
-#include <rawrbox/render/window.hpp>
 #include <rawrbox/ui/container.hpp>
 
 #include <array>
@@ -13,7 +12,7 @@ namespace rawrbox {
 	protected:
 		bool _hovering = false;
 		bool _focused = false;
-		bool _visible = false;
+		bool _visible = true;
 
 	public:
 		explicit UIBase(bool alwaysOnTop = false);

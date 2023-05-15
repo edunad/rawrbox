@@ -2,13 +2,13 @@
 
 #include <rawrbox/math/aabb.hpp>
 #include <rawrbox/math/vector2.hpp>
-#include <rawrbox/render/stencil.hpp>
 
-#include <array>
 #include <memory>
+#include <vector>
 
 namespace rawrbox {
 	class UIBase;
+	class Stencil;
 	class UIContainer {
 	protected:
 		std::weak_ptr<rawrbox::UIContainer> _parent;
@@ -36,24 +36,25 @@ namespace rawrbox {
 		// ---
 
 		// REFERENCE HANDLING --
-		void setRef(const std::shared_ptr<UIContainer>& ref);
+		void setRef(std::shared_ptr<rawrbox::UIContainer> ref);
 
-		template <class ChildT = UIContainer>
+		template <class ChildT = rawrbox::UIContainer>
 		[[nodiscard]] std::shared_ptr<ChildT> getRef() const {
 			return std::dynamic_pointer_cast<ChildT>(this->_ref.lock());
 		}
 
-		template <class ChildT = UIContainer>
+		template <class ChildT = rawrbox::UIContainer>
 		[[nodiscard]] std::shared_ptr<ChildT> getParent() const {
 			return std::dynamic_pointer_cast<ChildT>(this->_parent.lock());
 		}
 		// ---
 
 		// CHILD HANDLING --
-		template <class T = UIContainer, typename... CallbackArgs>
+		template <class T, typename... CallbackArgs>
 		std::shared_ptr<T> createChild(CallbackArgs&&... args) {
 			auto child = std::make_shared<T>(std::forward<CallbackArgs>(args)...);
-			child->setParent(this);
+			child->setRef(child);
+			this->addChild(std::dynamic_pointer_cast<rawrbox::UIBase>(child));
 
 			return child;
 		}
@@ -61,8 +62,8 @@ namespace rawrbox {
 		std::vector<std::shared_ptr<UIBase>>& getChildren();
 		[[nodiscard]] const std::vector<std::shared_ptr<UIBase>>& getChildren() const;
 
-		virtual void addChild(const std::shared_ptr<UIBase>& elm);
-		virtual void setParent(const std::shared_ptr<UIContainer>& elm);
+		virtual void addChild(std::shared_ptr<rawrbox::UIBase> elm);
+		virtual void setParent(std::shared_ptr<rawrbox::UIContainer> elm);
 		[[nodiscard]] virtual bool hasParent() const;
 		// ----
 

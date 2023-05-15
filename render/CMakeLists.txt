@@ -52,6 +52,10 @@ if(RAWRBOX_BUILD_DEBUG)
     list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.DEBUG)
 endif()
 
+if(RAWRBOX_BUILD_RESOURCES_MANAGER)
+    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.RESOURCES)
+endif()
+
 if(RAWRBOX_BUILD_UI)
     list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.UI)
 endif()
@@ -65,6 +69,7 @@ endif()
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
+
 if(NOT RAWRBOX_ENABLE_ASSIMP_SUPPORT)
 	foreach (TMP_PATH ${RAWRBOX_RENDER_SOURCES})
 		string (FIND ${TMP_PATH} "/assimp/" EXCLUDE_DIR_FOUND)
@@ -73,6 +78,16 @@ if(NOT RAWRBOX_ENABLE_ASSIMP_SUPPORT)
 		endif ()
 	endforeach(TMP_PATH)
 endif()
+
+if(NOT RAWRBOX_BUILD_RESOURCES_MANAGER)
+	foreach (TMP_PATH ${RAWRBOX_RENDER_SOURCES})
+		string (FIND ${TMP_PATH} "/resources/" EXCLUDE_DIR_FOUND)
+		if (NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
+			list (REMOVE_ITEM RAWRBOX_RENDER_SOURCES ${TMP_PATH})
+		endif ()
+	endforeach(TMP_PATH)
+endif()
+
 # -----------------
 
 # Compile shaders
@@ -86,9 +101,18 @@ add_shaders_directory(./shaders RAWRBOX_SHADERS_TARGET_NAME)
 message("SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
 # ------------------
 
+# Copy content - RENDER
+add_custom_target(copy_resources_render ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${CMAKE_CURRENT_SOURCE_DIR}/${RAWRBOX_CONTENT_FOLDER}
+        ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
+        COMMENT "Copying RENDERER resources into binary directory")
+# ------------------
+
 
 # Project setup
 add_library(${output_target} ${RAWRBOX_RENDER_SOURCES})
+add_dependencies(${output_target} copy_resources_render)
 target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_include_directories(${output_target} PUBLIC "include" ${FREETYPE_INCLUDE_DIRS})
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
@@ -107,10 +131,6 @@ target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	glfw
 )
 
-# Copy content
-add_custom_command( TARGET ${output_target} PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/${RAWRBOX_CONTENT_FOLDER} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER} )
-# ------------------
-
 # TEST ----
-include(../cmake/catch2.cmake)
+#include(../cmake/catch2.cmake)
 #--------------

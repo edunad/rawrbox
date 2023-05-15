@@ -24,11 +24,6 @@ namespace rawrbox {
 		virtual size_t count();
 		// ---------
 
-		static LightManager& get() {
-			static LightManager i;
-			return i;
-		}
-
 		LightManager() = default;
 		LightManager(LightManager&&) = delete;
 		LightManager& operator=(LightManager&&) = delete;

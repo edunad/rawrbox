@@ -2,7 +2,6 @@
 
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/window.hpp>
 
 #include <fmt/format.h>
 

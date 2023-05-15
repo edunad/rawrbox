@@ -68,7 +68,11 @@ namespace rawrbox {
 		// TEXTURES ---
 		std::shared_ptr<rawrbox::TextureBase> texture = nullptr;
 		std::shared_ptr<rawrbox::TextureBase> specularTexture = nullptr;
+		rawrbox::Color specularColor = rawrbox::Colors::Black;
+
 		std::shared_ptr<rawrbox::TextureBase> emissionTexture = nullptr;
+		rawrbox::Color emissionColor = rawrbox::Colors::Black;
+
 		float specularShininess = 25.0F;
 		float emissionIntensity = 1.F;
 		// -------
@@ -83,7 +87,7 @@ namespace rawrbox {
 		bool lineMode = false;
 
 		uint64_t culling = BGFX_STATE_CULL_CW;
-		uint64_t blending = BGFX_STATE_BLEND_ALPHA_TO_COVERAGE;
+		uint64_t blending = BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
 		rawrbox::BBOX bbox = {};
 		// --------------
 
@@ -164,6 +168,14 @@ namespace rawrbox {
 
 		void setColor(const rawrbox::Color& color) {
 			this->color = color;
+		}
+
+		void setSpecularColor(const rawrbox::Color& color) {
+			this->specularColor = color;
+		}
+
+		void setEmissionColor(const rawrbox::Color& color) {
+			this->emissionColor = color;
 		}
 
 		void addData(const std::string& id, rawrbox::Vector4f data) { // BGFX shaders only accept vec4, so.. yea

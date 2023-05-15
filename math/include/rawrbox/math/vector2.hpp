@@ -35,7 +35,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] NumberType angle(const VecType& target) const {
-			return -static_cast<NumberType>(std::atan2(x - target.x, y - target.y));
+			return static_cast<NumberType>(std::atan2(target.x - x, target.y - y));
 		}
 
 		[[nodiscard]] VecType abs() const {
@@ -67,8 +67,8 @@ namespace rawrbox {
 			return std::atan2(y, x);
 		}
 
-		static VecType cosSin(float radians) {
-			return VecType(std::cos(radians), std::sin(radians));
+		static VecType sinCos(float radians) {
+			return VecType(std::sin(radians), std::cos(radians));
 		}
 
 		[[nodiscard]] VecType rotateAroundOrigin(NumberType rads, const VecType& origin) const {

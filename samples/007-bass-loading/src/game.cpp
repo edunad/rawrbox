@@ -1,5 +1,5 @@
 
-#include <rawrbox/bass/manager.hpp>
+#include <rawrbox/bass/static.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -32,7 +32,7 @@ namespace bass_test {
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::SoundManager::get().initialize();
+		rawrbox::BASS.initialize();
 		this->_textEngine = std::make_unique<rawrbox::TextEngine>();
 
 		// Load content ---
@@ -50,7 +50,7 @@ namespace bass_test {
 		// SOUND -----
 		// https://i.rawr.dev/Mystery%20Skulls%20-%20Freaking%20Out.mp3
 		// https://i.rawr.dev/Just_a_Bit_Crazy.ogg
-		this->_sound = rawrbox::SoundManager::get().loadHTTPSound("https://i.rawr.dev/Just_a_Bit_Crazy.ogg", rawrbox::SoundFlags::SOUND_3D | rawrbox::SoundFlags::BEAT_DETECTION | rawrbox::SoundFlags::BPM_DETECTION)->createInstance();
+		this->_sound = rawrbox::BASS.loadHTTPSound("https://i.rawr.dev/Just_a_Bit_Crazy.ogg", rawrbox::SoundFlags::SOUND_3D | rawrbox::SoundFlags::BEAT_DETECTION | rawrbox::SoundFlags::BPM_DETECTION)->createInstance();
 		this->_sound->setVolume(1.F);
 		this->_sound->setLooping(true);
 		this->_sound->set3D(10.F);
@@ -67,7 +67,7 @@ namespace bass_test {
 			fmt::print("BPM: {}\n", bpm);
 		};
 
-		this->_sound2 = rawrbox::SoundManager::get().loadSound("./content/sounds/clownmusic.ogg", rawrbox::SoundFlags::SOUND_3D)->createInstance();
+		this->_sound2 = rawrbox::BASS.loadSound("./content/sounds/clownmusic.ogg", rawrbox::SoundFlags::SOUND_3D)->createInstance();
 		this->_sound2->setLooping(true);
 		this->_sound2->set3D(10.F);
 		this->_sound2->setPosition({3.F, 1.F, 0});
@@ -106,7 +106,7 @@ namespace bass_test {
 		this->_beatText = nullptr;
 		this->_text = nullptr;
 
-		rawrbox::SoundManager::get().shutdown();
+		rawrbox::BASS.shutdown();
 		rawrbox::Engine::shutdown();
 	}
 
@@ -119,7 +119,7 @@ namespace bass_test {
 		if (this->_camera == nullptr) return;
 		this->_camera->update();
 
-		rawrbox::SoundManager::get().setListenerLocation(this->_camera->getPos(), this->_camera->getForward(), this->_camera->getUp());
+		rawrbox::BASS.setListenerLocation(this->_camera->getPos(), this->_camera->getForward(), this->_camera->getUp());
 		if (this->_beat > 0.F) this->_beat -= 0.05F;
 	}
 

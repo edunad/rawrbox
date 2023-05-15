@@ -7,7 +7,7 @@
 #include <unordered_map>
 
 namespace rawrbox {
-	class SoundManager {
+	class BASSManager {
 	protected:
 		bool _initialized = false;
 
@@ -37,10 +37,5 @@ namespace rawrbox {
 		void setHasFocus(bool hasFocus);
 		void setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& front = {0, 0, -1}, const rawrbox::Vector3f& top = {0, -1, 0});
 		// -----
-
-		static SoundManager& get() {
-			static SoundManager cl;
-			return cl;
-		}
 	};
 } // namespace rawrbox

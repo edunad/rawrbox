@@ -141,7 +141,7 @@ namespace rawrbox {
 			if (this->_size != DITHER_SIZE::SLOW_MODE) {
 				bgfx::setTexture(1, this->_ditherColor, this->_textures[this->_size]->getHandle());
 			} else {
-				bgfx::setTexture(1, this->_ditherColor, rawrbox::MISSING_SPECULAR_TEXTURE->getHandle());
+				bgfx::setTexture(1, this->_ditherColor, rawrbox::WHITE_TEXTURE->getHandle());
 			}
 
 			bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);

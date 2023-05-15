@@ -52,7 +52,10 @@ namespace rawrbox {
 		virtual void init() { throw std::runtime_error("[RawrBox-Engine] Method 'init' not implemented"); };
 
 		// mark quit flag and allow for `isQuiting()` for clean exit threaded
-		virtual void shutdown() { this->_shouldShutdown = true; };
+		virtual void shutdown() {
+			this->_shouldShutdown = true;
+			rawrbox::ASYNC.shutdown();
+		};
 
 		// poll window and input events
 		virtual void pollEvents(){};
@@ -69,6 +72,9 @@ namespace rawrbox {
 		// starts the game loop and blocks until quit is called and is handled
 		virtual void run() {
 			rawrbox::MAIN_THREAD_ID = std::this_thread::get_id();
+#ifdef _WIN32
+			rawrbox::ThreadUtils::setName("RAWRBOX_MAIN_THREAD");
+#endif
 
 			while (!this->_shouldShutdown) {
 				rawrbox::DELTA_TIME = float(std::max(0.0, this->_timer.record_elapsed_seconds()));

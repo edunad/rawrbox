@@ -55,7 +55,13 @@ namespace rawrbox {
 		return fnd->second;
 	}
 
-	rawrbox::Font& TextEngine::load(std::string filename, uint32_t size) {
-		return *this->_fonts.emplace_back(std::make_unique<rawrbox::Font>(this, filename, size));
+	std::weak_ptr<rawrbox::Font> TextEngine::load(std::string filename, uint32_t size) {
+		std::string key = fmt::format("{}-{}", filename, size);
+
+		auto fnd = this->_fonts.find(key);
+		if (fnd != this->_fonts.end()) return fnd->second;
+
+		this->_fonts[key] = std::make_shared<rawrbox::Font>(this, filename, size);
+		return this->_fonts[key];
 	}
 } // namespace rawrbox

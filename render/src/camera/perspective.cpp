@@ -29,7 +29,7 @@ namespace rawrbox {
 
 	const rawrbox::Vector3f CameraPerspective::screenToWorld(const rawrbox::Vector2f& screen_pos) const {
 		rawrbox::Vector3f plane_origin{0, 0, 0};
-		rawrbox::Vector3f plane_normal{0, 0, 1};
+		rawrbox::Vector3f plane_normal{0, 1, 0};
 
 		auto screenPos = screen_pos.cast<float>();
 

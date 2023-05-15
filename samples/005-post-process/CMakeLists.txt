@@ -8,7 +8,7 @@ set(output_target 005-post-process)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE})
 
 add_executable(${output_target} ${RAWRBOX_SAMPLE_SOURCES} "ias.rc")
-add_dependencies(${output_target} copy_resources)
+add_dependencies(${output_target} copy_resources_samples)
 
 target_include_directories(${output_target} PRIVATE "include")
 target_compile_features(${output_target} PRIVATE cxx_std_${CMAKE_CXX_STANDARD})

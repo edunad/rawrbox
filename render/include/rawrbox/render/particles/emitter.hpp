@@ -14,7 +14,7 @@
 
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
-		#include <rawrbox/debug/gizmos.hpp>
+		#include <rawrbox/debug/static.hpp>
 	#endif
 #endif
 
@@ -237,7 +237,7 @@ namespace rawrbox {
 		explicit Emitter(EmitterSettings settings = {}) : _settings(settings), _id(++rawrbox::EMITTER_ID), _timer(this->_settings.preHeat ? 1.F : 0.F) {
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
-			rawrbox::GIZMOS::get().addEmitter(this);
+			rawrbox::GIZMOS.addEmitter(this);
 	#endif
 #endif
 		};
@@ -247,7 +247,7 @@ namespace rawrbox {
 
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
-			rawrbox::GIZMOS::get().removeEmitter(this);
+			rawrbox::GIZMOS.removeEmitter(this);
 	#endif
 #endif
 		};
@@ -272,7 +272,7 @@ namespace rawrbox {
 			this->_pos = pos;
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
-			rawrbox::GIZMOS::get().updateGizmo(fmt::format("Emitter-{}", this->_id), pos);
+			rawrbox::GIZMOS.updateGizmo(fmt::format("Emitter-{}", this->_id), pos);
 	#endif
 #endif
 		}

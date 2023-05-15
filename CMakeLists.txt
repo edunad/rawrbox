@@ -25,6 +25,7 @@ option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 option(RAWRBOX_BUILD_SAMPLES "Build samples" ON)
 option(RAWRBOX_BUILD_TESTING "Build tests" ON)
 option(RAWRBOX_BUILD_UI "Build ui" ON)
+option(RAWRBOX_BUILD_RESOURCES_MANAGER "Build resources manager" ON)
 option(RAWRBOX_BUILD_DEBUG "Build debug lib & add gizmo support" ON)
 
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
@@ -122,9 +123,15 @@ set(CATCH_INSTALL_DOCS OFF CACHE BOOL "")
 set(CATCH_INSTALL_EXTRAS ON CACHE BOOL "")
 # ---------------------------------
 
+
 add_subdirectory ("math")
 add_subdirectory ("utils")
 add_subdirectory ("engine")
+
+if(RAWRBOX_BUILD_RESOURCES_MANAGER)
+	add_subdirectory ("resources")
+endif()
+
 add_subdirectory ("render")
 
 if(RAWRBOX_BUILD_UI)
