@@ -7,7 +7,7 @@
 
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
-		#include <rawrbox/debug/static.hpp>
+		#include <rawrbox/debug/gizmos.hpp>
 	#endif
 #endif
 
@@ -80,7 +80,7 @@ namespace rawrbox {
 			}
 
 	#ifdef RAWRBOX_DEBUG
-			rawrbox::GIZMOS.updateGizmo(fmt::format("Light-{}", this->id()), {pos[0], pos[1], pos[2]});
+			rawrbox::GIZMOS::updateGizmo(fmt::format("Light-{}", this->id()), {pos[0], pos[1], pos[2]});
 	#endif
 #endif
 			return pos;

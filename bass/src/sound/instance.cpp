@@ -4,7 +4,7 @@
 #include <rawrbox/bass/utils/bass.hpp>
 
 #ifdef RAWRBOX_DEBUG
-	#include <rawrbox/debug/static.hpp>
+	#include <rawrbox/debug/gizmos.hpp>
 #endif
 
 #include <bass.h>
@@ -40,7 +40,7 @@ namespace rawrbox {
 		rawrbox::BASS.onSoundEnd.remove(std::to_string(this->_sample));
 
 #ifdef RAWRBOX_DEBUG
-		// rawrbox::GIZMOS.removeSound(this);
+		rawrbox::GIZMOS::removeSound(this);
 #endif
 	}
 
@@ -74,7 +74,7 @@ namespace rawrbox {
 		rawrbox::BASSUtils::checkBASSError();
 
 #ifdef RAWRBOX_DEBUG
-		// rawrbox::GIZMOS.addSound(this);
+		rawrbox::GIZMOS::addSound(this);
 #endif
 	}
 
@@ -239,7 +239,7 @@ namespace rawrbox {
 
 		rawrbox::BASSUtils::checkBASSError();
 #ifdef RAWRBOX_DEBUG
-		// rawrbox::GIZMOS.updateGizmo(fmt::format("Sound-{}", this->id()), pos);
+		rawrbox::GIZMOS::updateGizmo(fmt::format("Sound-{}", this->id()), pos);
 #endif
 	}
 

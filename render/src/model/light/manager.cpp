@@ -3,7 +3,7 @@
 #include <rawrbox/render/model/light/manager.hpp>
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
-		#include <rawrbox/debug/static.hpp>
+		#include <rawrbox/debug/gizmos.hpp>
 	#endif
 #endif
 
@@ -22,7 +22,7 @@ namespace rawrbox {
 
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
-		rawrbox::GIZMOS.addLight(light.get());
+		rawrbox::GIZMOS::addLight(light.get());
 	#endif
 #endif
 		light->setId(++rawrbox::LIGHT_ID);
@@ -34,7 +34,7 @@ namespace rawrbox {
 
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
-		rawrbox::GIZMOS.removeLight(light.get());
+		rawrbox::GIZMOS::removeLight(light.get());
 	#endif
 #endif
 

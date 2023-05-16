@@ -2,7 +2,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/window.hpp>
 #ifdef RAWRBOX_DEBUG
-	#include <rawrbox/debug/static.hpp>
+	#include <rawrbox/debug/gizmos.hpp>
 #endif
 #ifdef RAWRBOX_UI
 	#include <rawrbox/ui/static.hpp>
@@ -237,7 +237,7 @@ namespace rawrbox {
 		rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
 		// ------------------
 
-		// Setup UI
+// Setup UI
 #ifdef RAWRBOX_UI
 		rawrbox::ROOT_UI = rawrbox::UIRoot::create(*this);
 #endif
@@ -331,7 +331,7 @@ namespace rawrbox {
 #endif
 			// Debug gizmos ----
 #ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS.upload();
+		rawrbox::GIZMOS::upload();
 #endif
 		// -----
 	}
@@ -339,7 +339,7 @@ namespace rawrbox {
 #ifdef RAWRBOX_DEBUG
 	void Window::frame(bool debugMode) const {
 		if (this->_renderer == nullptr) return;
-		if (debugMode) rawrbox::GIZMOS.draw();
+		if (debugMode) rawrbox::GIZMOS::draw();
 
 			// Render UI on top of everything
 	#ifdef RAWRBOX_UI
@@ -368,7 +368,7 @@ namespace rawrbox {
 	// ------UTILS
 	void Window::close() {
 #ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS.shutdown();
+		rawrbox::GIZMOS::shutdown();
 #endif
 
 		rawrbox::MISSING_TEXTURE = nullptr;

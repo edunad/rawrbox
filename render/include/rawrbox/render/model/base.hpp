@@ -464,43 +464,47 @@ namespace rawrbox {
 		// -------
 
 		// UTIL ---
-		virtual const rawrbox::BBOX& getBBOX() { return this->_bbox; }
+		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const { return this->_bbox; }
 
-		virtual const rawrbox::Vector3f& getPos() { return this->_pos; }
+		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_pos; }
 		virtual void setPos(const rawrbox::Vector3f& pos) {
 			this->_pos = pos;
 			this->_matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 		}
 
-		virtual const rawrbox::Vector3f& getScale() { return this->_scale; }
+		[[nodiscard]] virtual const rawrbox::Vector3f& getScale() const { return this->_scale; }
 		virtual void setScale(const rawrbox::Vector3f& scale) {
 			this->_scale = scale;
 			this->_matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 		}
 
-		virtual const rawrbox::Vector4f& getAngle() { return this->_angle; }
+		[[nodiscard]] virtual const rawrbox::Vector4f& getAngle() const { return this->_angle; }
 		virtual void setAngle(const rawrbox::Vector4f& ang) {
 			this->_angle = ang;
 			this->_matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 		}
 
-		virtual rawrbox::Matrix4x4& getMatrix() {
+		[[nodiscard]] virtual const rawrbox::Matrix4x4& getMatrix() const {
 			return this->_matrix;
 		}
 
-		virtual size_t totalMeshes() {
+		[[nodiscard]] virtual const size_t totalMeshes() const {
 			return this->_meshes.size();
+		}
+
+		[[nodiscard]] virtual const bool empty() const {
+			return this->_meshes.empty();
 		}
 
 		virtual std::vector<std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>>>& meshes() {
 			return this->_meshes;
 		}
 
-		virtual bool isDynamicBuffer() {
+		[[nodiscard]] virtual const bool isDynamicBuffer() const {
 			return this->_isDynamic;
 		}
 
-		virtual bool isUploaded() {
+		[[nodiscard]] virtual const bool isUploaded() const {
 			if (this->isDynamicBuffer()) return bgfx::isValid(this->_ibdh) && bgfx::isValid(this->_vbdh);
 			return bgfx::isValid(this->_ibh) && bgfx::isValid(this->_vbh);
 		}
