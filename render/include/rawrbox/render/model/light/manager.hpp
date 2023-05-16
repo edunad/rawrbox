@@ -6,29 +6,22 @@
 
 namespace rawrbox {
 
-	class LightManager {
+	class LIGHTS {
 	protected:
-		std::vector<std::shared_ptr<rawrbox::LightBase>> _lights;
+		static std::vector<std::shared_ptr<rawrbox::LightBase>> _lights;
 
 	public:
-		bool fullbright = false;
+		static bool fullbright;
 
-		virtual void destroy();
-		virtual void setEnabled(bool fb);
+		static void destroy();
+		static void setEnabled(bool fb);
 
 		// Light utils ----
-		virtual void addLight(std::shared_ptr<rawrbox::LightBase> light);
-		virtual void removeLight(std::shared_ptr<rawrbox::LightBase> light);
-		virtual std::shared_ptr<rawrbox::LightBase> getLight(size_t indx);
+		static void addLight(std::shared_ptr<rawrbox::LightBase> light);
+		static void removeLight(std::shared_ptr<rawrbox::LightBase> light);
+		static std::shared_ptr<rawrbox::LightBase> getLight(size_t indx);
 
-		virtual size_t count();
+		static size_t count();
 		// ---------
-
-		LightManager() = default;
-		LightManager(LightManager&&) = delete;
-		LightManager& operator=(LightManager&&) = delete;
-		LightManager(const LightManager&) = delete;
-		LightManager& operator=(const LightManager&) = delete;
-		virtual ~LightManager() = default;
 	};
 } // namespace rawrbox

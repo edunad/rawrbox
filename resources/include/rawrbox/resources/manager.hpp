@@ -14,13 +14,13 @@
 #include <vector>
 
 namespace rawrbox {
-	class ResourceManager {
+	class RESOURCES {
 	protected:
-		std::mutex _threadLock;
-		std::vector<std::unique_ptr<rawrbox::Loader>> _loaders = {};
+		static std::mutex _threadLock;
+		static std::vector<std::unique_ptr<rawrbox::Loader>> _loaders;
 
 		// LOADS ---
-		std::vector<uint8_t> getRawData(const std::filesystem::path& filePath) {
+		static std::vector<uint8_t> getRawData(const std::filesystem::path& filePath) {
 			std::vector<uint8_t> data = {};
 			if (!std::filesystem::exists(filePath)) return data;
 
@@ -41,9 +41,9 @@ namespace rawrbox {
 		}
 
 		template <class T = rawrbox::Resource>
-		T* getFileImpl(const std::filesystem::path& filePath) {
+		static T* getFileImpl(const std::filesystem::path& filePath) {
 			auto ext = filePath.extension().generic_string();
-			for (auto& loader : this->_loaders) {
+			for (auto& loader : _loaders) {
 				if (!loader->canLoad(ext)) continue;
 
 				auto ret = loader->getFile<T>(filePath);
@@ -56,14 +56,14 @@ namespace rawrbox {
 		}
 
 		template <class T = rawrbox::Resource>
-		T* loadFileImpl(const std::filesystem::path& filePath, uint32_t loadFlags = 0) {
+		static T* loadFileImpl(const std::filesystem::path& filePath, uint32_t loadFlags = 0) {
 			// check if it's already loaded
-			auto found = this->getFileImpl<T>(filePath.generic_string());
+			auto found = getFileImpl<T>(filePath.generic_string());
 			if (found != nullptr) return found;
 
 			// load file
 			auto ext = filePath.extension().generic_string();
-			for (auto& loader : this->_loaders) {
+			for (auto& loader : _loaders) {
 				if (!loader->canLoad(ext)) continue;
 
 				auto ret = loader->createResource<T>(filePath, loadFlags);
@@ -73,7 +73,7 @@ namespace rawrbox {
 				ret->flags = loadFlags;
 
 				// try to see if the file exists to make a crc32 of it
-				std::vector<uint8_t> buffer = this->getRawData(filePath);
+				std::vector<uint8_t> buffer = getRawData(filePath);
 				if (buffer.empty()) {
 					ret->crc32 = 0;
 				} else {
@@ -92,69 +92,67 @@ namespace rawrbox {
 		// ---------
 
 	public:
-		virtual ~ResourceManager() = default;
-
-		virtual void addLoader(std::unique_ptr<rawrbox::Loader> loader) { this->_loaders.push_back(std::move(loader)); }
+		static void addLoader(std::unique_ptr<rawrbox::Loader> loader) { _loaders.push_back(std::move(loader)); }
 
 		// ⚠️ NOTE, IT SHOULD BE RAN ON THE MAIN THREAD OF THE APPLICATION, BGFX MIGHT NOT LIKE NON-MAIN
-		virtual void upload() {
-			for (auto& loader : this->_loaders) {
+		static void upload() {
+			for (auto& loader : _loaders) {
 				loader->upload();
 			}
 		}
 
 		// LOADING ---
-		virtual void loadFolder(const std::filesystem::path& folderPath, std::function<void(std::string)> startLoad = nullptr, std::function<void(std::string)> endLoad = nullptr) {
+		static void loadFolder(const std::filesystem::path& folderPath, std::function<void(std::string)> startLoad = nullptr, std::function<void(std::string)> endLoad = nullptr) {
 			for (auto& p : std::filesystem::recursive_directory_iterator(folderPath)) {
 				if (!p.is_regular_file()) continue;
 				auto file = p.path().generic_string();
 
 				if (startLoad != nullptr) startLoad(file);
-				this->loadFile(p, false);
+				loadFile(p, false);
 				if (endLoad != nullptr) endLoad(file);
 			}
 		}
 
 		template <class T = rawrbox::Resource>
-		T* loadFile(const std::filesystem::path& filePath, uint32_t loadFlags = 0) {
-			const std::lock_guard<std::mutex> mutexGuard(this->_threadLock);
+		static T* loadFile(const std::filesystem::path& filePath, uint32_t loadFlags = 0) {
+			const std::lock_guard<std::mutex> mutexGuard(_threadLock);
 			return loadFileImpl<T>(filePath, loadFlags);
 		}
 
 		template <class T = rawrbox::Resource>
-		T* getFile(const std::filesystem::path& filePath) {
-			const std::lock_guard<std::mutex> mutexGuard(this->_threadLock);
+		static T* getFile(const std::filesystem::path& filePath) {
+			const std::lock_guard<std::mutex> mutexGuard(_threadLock);
 			return getFileImpl<T>(filePath);
 		}
 
-		virtual void preLoadFolder(const std::filesystem::path& folderPath) {
+		static void preLoadFolder(const std::filesystem::path& folderPath) {
 			for (auto& p : std::filesystem::recursive_directory_iterator(folderPath)) {
 				if (!p.is_regular_file()) continue;
 				preLoadFile(p);
 			}
 		}
 
-		virtual void preLoadFile(const std::filesystem::path& filePath, uint32_t loadFlags = 0) {
+		static void preLoadFile(const std::filesystem::path& filePath, uint32_t loadFlags = 0) {
 			auto ext = filePath.extension().generic_string();
-			for (auto& loader : this->_loaders) {
+			for (auto& loader : _loaders) {
 				if (!loader->canLoad(ext)) continue;
 				loader->addToPreLoad(filePath, loadFlags);
 			}
 		}
 
-		virtual void startPreLoadQueue(std::function<void(std::string, uint32_t)> startLoad = nullptr, std::function<void(std::string, uint32_t)> endLoad = nullptr) {
-			for (auto& loader : this->_loaders) {
+		static void startPreLoadQueue(std::function<void(std::string, uint32_t)> startLoad = nullptr, std::function<void(std::string, uint32_t)> endLoad = nullptr) {
+			for (auto& loader : _loaders) {
 				for (auto& file : loader->getPreload()) {
 					if (startLoad != nullptr) startLoad(file.first.generic_string(), file.second);
-					this->loadFile(file.first, file.second);
+					loadFile(file.first, file.second);
 					if (endLoad != nullptr) endLoad(file.first.generic_string(), file.second);
 				}
 			}
 		}
 
 		// -----
-		virtual void shutdown() {
-			this->_loaders.clear();
+		static void shutdown() {
+			_loaders.clear();
 		}
 	};
 

@@ -10,15 +10,15 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-	void LightManager::destroy() {
-		this->_lights.clear();
-	}
+	std::vector<std::shared_ptr<rawrbox::LightBase>> LIGHTS::_lights = {};
+	bool LIGHTS::fullbright = false;
 
-	void LightManager::setEnabled(bool fb) { this->fullbright = fb; }
+	void LIGHTS::destroy() { _lights.clear(); }
+	void LIGHTS::setEnabled(bool fb) { fullbright = fb; }
 
 	// Light utils ----
-	void LightManager::addLight(std::shared_ptr<rawrbox::LightBase> light) {
-		if (light == nullptr || this->_lights.size() >= rawrbox::MAX_LIGHTS) return;
+	void LIGHTS::addLight(std::shared_ptr<rawrbox::LightBase> light) {
+		if (light == nullptr || _lights.size() >= rawrbox::MAX_LIGHTS) return;
 
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
@@ -26,11 +26,11 @@ namespace rawrbox {
 	#endif
 #endif
 		light->setId(++rawrbox::LIGHT_ID);
-		this->_lights.push_back(std::move(light));
+		_lights.push_back(std::move(light));
 	}
 
-	void LightManager::removeLight(std::shared_ptr<rawrbox::LightBase> light) {
-		if (this->_lights.empty()) return;
+	void LIGHTS::removeLight(std::shared_ptr<rawrbox::LightBase> light) {
+		if (_lights.empty()) return;
 
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
@@ -38,21 +38,21 @@ namespace rawrbox {
 	#endif
 #endif
 
-		for (size_t i = 0; i < this->_lights.size(); i++) {
-			if (this->_lights[i] == light) {
-				this->_lights.erase(this->_lights.begin() + i);
+		for (size_t i = 0; i < _lights.size(); i++) {
+			if (_lights[i] == light) {
+				_lights.erase(_lights.begin() + i);
 				return;
 			}
 		}
 	}
 
-	std::shared_ptr<rawrbox::LightBase> LightManager::getLight(size_t indx) {
-		if (indx < 0 || indx >= this->_lights.size()) return nullptr;
-		return this->_lights[indx];
+	std::shared_ptr<rawrbox::LightBase> LIGHTS::getLight(size_t indx) {
+		if (indx < 0 || indx >= _lights.size()) return nullptr;
+		return _lights[indx];
 	}
 
-	size_t LightManager::count() {
-		return this->_lights.size();
+	size_t LIGHTS::count() {
+		return _lights.size();
 	}
 	// ---------
 

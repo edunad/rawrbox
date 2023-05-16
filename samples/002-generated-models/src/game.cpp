@@ -3,7 +3,7 @@
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/gif.hpp>
 #include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/resources/static.hpp>
+#include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
 #include <model/game.hpp>
@@ -34,9 +34,9 @@ namespace model {
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::Resources.addLoader(std::make_unique<rawrbox::TextureLoader>());
-		rawrbox::Resources.addLoader(std::make_unique<rawrbox::GIFLoader>());
-		rawrbox::Resources.addLoader(std::make_unique<rawrbox::FontLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::GIFLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
 
 		// Load content ---
 		this->loadContent();
@@ -52,11 +52,11 @@ namespace model {
 
 		rawrbox::ASYNC::run([initialContentFiles]() {
 			for (auto& f : initialContentFiles) {
-				rawrbox::Resources.loadFile( f);
+				rawrbox::RESOURCES::loadFile( f);
 			} },
 		    [this] {
 			    rawrbox::runOnMainThread([this]() {
-				    rawrbox::Resources.upload();
+				    rawrbox::RESOURCES::upload();
 				    this->contentLoaded();
 			    });
 		    });
@@ -67,10 +67,10 @@ namespace model {
 	void Game::contentLoaded() {
 		this->_ready = true;
 
-		this->_texture = rawrbox::Resources.getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->texture;
-		this->_texture2 = rawrbox::Resources.getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->texture;
+		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->texture;
+		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->texture;
 
-		this->_font = rawrbox::Resources.getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 
 		// Model test ----
 		{

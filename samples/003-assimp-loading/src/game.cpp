@@ -2,7 +2,7 @@
 #include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/resources/static.hpp>
+#include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
 #include <assimp/game.hpp>
@@ -33,8 +33,8 @@ namespace assimp {
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::Resources.addLoader(std::make_unique<rawrbox::FontLoader>());
-		rawrbox::Resources.addLoader(std::make_unique<rawrbox::AssimpLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::AssimpLoader>());
 
 		// Load content ---
 		this->loadContent();
@@ -48,9 +48,9 @@ namespace assimp {
 
 		rawrbox::ASYNC::run([initialContentFiles]() {
 			for (auto& f : initialContentFiles) {
-				rawrbox::Resources.loadFile(f.first, f.second);
+				rawrbox::RESOURCES::loadFile(f.first, f.second);
 			} }, [this] { rawrbox::runOnMainThread([this]() {
-										  rawrbox::Resources.upload();
+										  rawrbox::RESOURCES::upload();
 										  this->contentLoaded();
 									  }); });
 
@@ -59,10 +59,10 @@ namespace assimp {
 
 	void Game::contentLoaded() {
 
-		this->_font = rawrbox::Resources.getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 
 		// Assimp test ---
-		auto mdl = rawrbox::Resources.getFile<rawrbox::ResourceAssimp>("./content/models/light_test/light_test.fbx");
+		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/light_test/light_test.fbx");
 
 		this->_model->load(mdl->model);
 		this->_model->setPos({3, 0, 0});
@@ -91,7 +91,7 @@ namespace assimp {
 
 		this->_text = nullptr;
 
-		rawrbox::Lights.destroy();
+		rawrbox::LIGHTS::destroy();
 		rawrbox::Engine::shutdown();
 	}
 

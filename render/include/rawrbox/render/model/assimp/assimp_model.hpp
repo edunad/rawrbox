@@ -104,8 +104,8 @@ namespace rawrbox {
 				}
 
 				assimpLights.second->setParent(std::dynamic_pointer_cast<rawrbox::Mesh<>>(parent));
-				rawrbox::Lights.addLight(assimpLights.second);*/
-				rawrbox::Lights.addLight(assimpLights.second);
+				rawrbox::LIGHTS::addLight(assimpLights.second);*/
+				rawrbox::LIGHTS::addLight(assimpLights.second);
 			}
 		}
 

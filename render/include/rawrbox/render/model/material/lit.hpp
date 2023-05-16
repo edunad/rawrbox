@@ -74,9 +74,9 @@ namespace rawrbox {
 		void preProcess(const rawrbox::Vector3f& camPos) {
 			rawrbox::MaterialBase::preProcess(camPos);
 
-			size_t lightCount = rawrbox::Lights.count();
+			size_t lightCount = rawrbox::LIGHTS::count();
 
-			std::array lightSettings = {rawrbox::Lights.fullbright ? 1.F : 0.F, static_cast<float>(lightCount)};
+			std::array lightSettings = {rawrbox::LIGHTS::fullbright ? 1.F : 0.F, static_cast<float>(lightCount)};
 			bgfx::setUniform(u_lightsSetting, lightSettings.data());
 
 			if (lightSettings[0] == 1.F || lightCount <= 0) return; // Fullbright
@@ -85,7 +85,7 @@ namespace rawrbox {
 			std::vector<std::array<float, 4>> lightPos(lightCount);
 
 			for (size_t i = 0; i < lightCount; i++) {
-				auto light = rawrbox::Lights.getLight(i);
+				auto light = rawrbox::LIGHTS::getLight(i);
 
 				lightPos[i] = light->getPosMatrix();
 				lightData[i] = light->getDataMatrix();

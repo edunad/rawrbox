@@ -3,7 +3,7 @@
 #include <rawrbox/render/resources/gif.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/resources/static.hpp>
+#include <rawrbox/resources/manager.hpp>
 
 #include <stencil/game.hpp>
 
@@ -28,9 +28,9 @@ namespace stencil {
 			this->shutdown();
 		};
 
-		rawrbox::Resources.addLoader(std::make_unique<rawrbox::TextureLoader>());
-		rawrbox::Resources.addLoader(std::make_unique<rawrbox::GIFLoader>());
-		rawrbox::Resources.addLoader(std::make_unique<rawrbox::FontLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::GIFLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
 
 		// Load content ---
 		this->loadContent();
@@ -48,11 +48,11 @@ namespace stencil {
 
 		rawrbox::ASYNC::run([initialContentFiles]() {
 			for (auto& f : initialContentFiles) {
-				rawrbox::Resources.loadFile( f);
+				rawrbox::RESOURCES::loadFile( f);
 			} },
 		    [this] {
 			    rawrbox::runOnMainThread([this]() {
-				    rawrbox::Resources.upload();
+				    rawrbox::RESOURCES::upload();
 				    this->contentLoaded();
 			    });
 		    });
@@ -62,12 +62,12 @@ namespace stencil {
 
 	void Game::contentLoaded() {
 		// Textures ---
-		this->_texture = rawrbox::Resources.getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->texture;
-		this->_texture2 = rawrbox::Resources.getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->texture;
+		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->texture;
+		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->texture;
 
-		this->_font = rawrbox::Resources.getFile<rawrbox::ResourceFont>("./content/fonts/droidsans.ttf")->getSize(28);
-		this->_font2 = rawrbox::Resources.getFile<rawrbox::ResourceFont>("./content/fonts/visitor1.ttf")->getSize(18);
-		this->_font3 = rawrbox::Resources.getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(12);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/droidsans.ttf")->getSize(28);
+		this->_font2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/visitor1.ttf")->getSize(18);
+		this->_font3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(12);
 
 		this->_ready = true;
 	}
@@ -81,7 +81,7 @@ namespace stencil {
 		this->_font2.reset();
 		this->_font3.reset();
 
-		rawrbox::Resources.shutdown();
+		rawrbox::RESOURCES::shutdown();
 		rawrbox::Engine::shutdown();
 	}
 

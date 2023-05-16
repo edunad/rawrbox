@@ -10,8 +10,6 @@ namespace rawrbox {
 	std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE = nullptr;
 	// ---------
 
-	rawrbox::LightManager Lights;
-
 	// ID GENERATION
 	size_t SOUND_ID = 0;
 	size_t LIGHT_ID = 0;
