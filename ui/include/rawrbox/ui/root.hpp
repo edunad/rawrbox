@@ -1,6 +1,5 @@
 #pragma once
 
-#include <rawrbox/engine/static.hpp>
 #include <rawrbox/ui/base.hpp>
 
 #include <array>

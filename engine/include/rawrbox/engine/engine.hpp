@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/engine/static.hpp>
+#include <rawrbox/engine/threading.hpp>
 #include <rawrbox/engine/timer.hpp>
 
 #include <chrono>
@@ -54,7 +55,7 @@ namespace rawrbox {
 		// mark quit flag and allow for `isQuiting()` for clean exit threaded
 		virtual void shutdown() {
 			this->_shouldShutdown = true;
-			rawrbox::ASYNC.shutdown();
+			rawrbox::ASYNC::shutdown();
 		};
 
 		// poll window and input events

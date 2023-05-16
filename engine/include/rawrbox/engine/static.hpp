@@ -10,7 +10,6 @@ namespace rawrbox {
 	// THREADING ----
 	extern std::thread::id MAIN_THREAD_ID;
 	extern jnk0le::Ringbuffer<std::function<void()>> MAIN_THREAD_INVOKES;
-	extern rawrbox::Threading ASYNC;
 
 	// TIMING ---
 	extern float DELTA_TIME;

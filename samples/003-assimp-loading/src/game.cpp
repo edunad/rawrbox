@@ -46,13 +46,13 @@ namespace assimp {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/models/light_test/light_test.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT)};
 
-		rawrbox::ASYNC.run([initialContentFiles]() {
+		rawrbox::ASYNC::run([initialContentFiles]() {
 			for (auto& f : initialContentFiles) {
 				rawrbox::Resources.loadFile(f.first, f.second);
 			} }, [this] { rawrbox::runOnMainThread([this]() {
-										 rawrbox::Resources.upload();
-										 this->contentLoaded();
-									 }); });
+										  rawrbox::Resources.upload();
+										  this->contentLoaded();
+									  }); });
 
 		this->_window->upload();
 	}

@@ -13,44 +13,44 @@
 #include <thread>
 
 namespace rawrbox {
-	class Threading {
+	class ASYNC {
 	protected:
-		bool _shuttingdown = false;
+		static bool _shuttingdown;
 
-		int _workers = 2;
-		int _running = 0;
+		static int _workers;
+		static int _running;
 
-		jnk0le::Ringbuffer<std::function<void()>> _threadInvokes = {512};
-		std::exception_ptr exception_ptr = nullptr;
+		static jnk0le::Ringbuffer<std::function<void()>> _threadInvokes;
+		static std::exception_ptr _exception_ptr;
 
-		void completedTask() {
-			if (exception_ptr != nullptr) std::rethrow_exception(exception_ptr);
+		static void completedTask() {
+			if (_exception_ptr != nullptr) std::rethrow_exception(_exception_ptr);
 		}
 
-		void internal_run(std::function<void()> onComplete = nullptr) {
-			if (this->_running > 0) return;
+		static void internal_run(std::function<void()> onComplete = nullptr) {
+			if (_running > 0) return;
 
-			for (size_t i = 0; i < this->_workers; i++) {
-				new std::jthread([this, onComplete, i]() {
+			for (size_t i = 0; i < _workers; i++) {
+				new std::jthread([onComplete, i]() {
 #ifdef _WIN32
 					rawrbox::ThreadUtils::setName("rawrbox:async_#" + std::to_string(i));
 #endif
-					this->_running++;
+					_running++;
 					try {
-						while (!this->_threadInvokes.isEmpty() && !this->_shuttingdown) {
+						while (!_threadInvokes.isEmpty() && !_shuttingdown) {
 							std::function<void()> fnc;
-							this->_threadInvokes.remove(fnc);
+							_threadInvokes.remove(fnc);
 
 							fnc();
 							std::this_thread::sleep_for(std::chrono::milliseconds(1));
 						}
 					} catch (...) {
-						exception_ptr = std::current_exception();
+						_exception_ptr = std::current_exception();
 					}
 
-					this->_running--;
-					if (this->_running <= 0) {
-						this->completedTask();
+					_running--;
+					if (_running <= 0) {
+						completedTask();
 						if (onComplete != nullptr) onComplete();
 					}
 				});
@@ -58,14 +58,14 @@ namespace rawrbox {
 		}
 
 	public:
-		void run(std::function<void()> m, std::function<void()> onComplete = nullptr) {
-			this->_threadInvokes.insert(std::move(m));
-			this->internal_run(onComplete);
+		static void run(std::function<void()> m, std::function<void()> onComplete = nullptr) {
+			_threadInvokes.insert(std::move(m));
+			internal_run(onComplete);
 		}
 
-		void shutdown() {
-			this->_shuttingdown = true;
-			this->_threadInvokes.consumerClear();
+		static void shutdown() {
+			_shuttingdown = true;
+			_threadInvokes.consumerClear();
 		}
 	};
 } // namespace rawrbox

@@ -50,7 +50,7 @@ namespace model {
 		    "content/textures/meow3.gif",
 		};
 
-		rawrbox::ASYNC.run([initialContentFiles]() {
+		rawrbox::ASYNC::run([initialContentFiles]() {
 			for (auto& f : initialContentFiles) {
 				rawrbox::Resources.loadFile( f);
 			} },

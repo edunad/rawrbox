@@ -1,4 +1,5 @@
 
+#include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/window.hpp>
 #include <rawrbox/ui/root.hpp>
 
