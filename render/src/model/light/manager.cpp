@@ -1,6 +1,8 @@
 
 #include <rawrbox/render/model/base.hpp>
+#include <rawrbox/render/model/light/base.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
+
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
 		#include <rawrbox/debug/gizmos.hpp>
@@ -19,27 +21,31 @@ namespace rawrbox {
 	// Light utils ----
 	void LIGHTS::addLight(std::shared_ptr<rawrbox::LightBase> light) {
 		if (light == nullptr || _lights.size() >= rawrbox::MAX_LIGHTS) return;
+		light->setId(++rawrbox::LIGHT_ID);
 
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
 		rawrbox::GIZMOS::addLight(light.get());
 	#endif
 #endif
-		light->setId(++rawrbox::LIGHT_ID);
 		_lights.push_back(std::move(light));
 	}
 
 	void LIGHTS::removeLight(std::shared_ptr<rawrbox::LightBase> light) {
+		removeLight(light.get());
+	}
+
+	void LIGHTS::removeLight(rawrbox::LightBase* light) {
 		if (_lights.empty()) return;
 
 #ifdef RAWRBOX_DEBUG
 	#ifndef RAWRBOX_TESTING
-		rawrbox::GIZMOS::removeLight(light.get());
+		rawrbox::GIZMOS::removeLight(light);
 	#endif
 #endif
 
 		for (size_t i = 0; i < _lights.size(); i++) {
-			if (_lights[i] == light) {
+			if (_lights[i].get() == light) {
 				_lights.erase(_lights.begin() + i);
 				return;
 			}

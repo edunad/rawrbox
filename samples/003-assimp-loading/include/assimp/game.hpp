@@ -15,8 +15,8 @@ namespace assimp {
 		std::shared_ptr<rawrbox::Window> _window = nullptr;
 		std::shared_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 
-		std::shared_ptr<rawrbox::AssimModel<>> _model = std::make_shared<rawrbox::AssimModel<>>();
-		std::shared_ptr<rawrbox::AssimModel<rawrbox::MaterialLit>> _model2 = std::make_shared<rawrbox::AssimModel<rawrbox::MaterialLit>>();
+		std::shared_ptr<rawrbox::AssimpModel<>> _model = std::make_shared<rawrbox::AssimpModel<>>();
+		std::shared_ptr<rawrbox::AssimpModel<rawrbox::MaterialLit>> _model2 = std::make_shared<rawrbox::AssimpModel<rawrbox::MaterialLit>>();
 
 		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
 

@@ -2,7 +2,8 @@
 #include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/material/base.hpp>
 
-#define BGFX_STATE_DEFAULT_SPRITE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
+#define BGFX_STATE_DEFAULT_SPRITE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL)
+
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>

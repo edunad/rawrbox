@@ -57,7 +57,7 @@ namespace rawrbox {
 			MaterialBase::registerUniforms();
 
 			// LIT ----
-			u_texMatData = bgfx::createUniform("u_texMatData", bgfx::UniformType::Vec4, 2);
+			u_texMatData = bgfx::createUniform("u_texMatData", bgfx::UniformType::Vec4);
 
 			s_texSpecularColor = bgfx::createUniform("s_texSpecularColor", bgfx::UniformType::Sampler);
 			s_texEmissionColor = bgfx::createUniform("s_texEmissionColor", bgfx::UniformType::Sampler);
@@ -65,7 +65,7 @@ namespace rawrbox {
 			u_specularColor = bgfx::createUniform("u_specularColor", bgfx::UniformType::Vec4);
 			u_emissionColor = bgfx::createUniform("u_emissionColor", bgfx::UniformType::Vec4);
 
-			u_lightsSetting = bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4, 2);
+			u_lightsSetting = bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4);
 			u_lightsPosition = bgfx::createUniform("u_lightsPosition", bgfx::UniformType::Vec4, rawrbox::MAX_LIGHTS);
 			u_lightsData = bgfx::createUniform("u_lightsData", bgfx::UniformType::Mat4, rawrbox::MAX_LIGHTS);
 			// ---
@@ -104,13 +104,13 @@ namespace rawrbox {
 			if (mesh->specularTexture != nullptr && mesh->specularTexture->valid() && !mesh->wireframe) {
 				bgfx::setTexture(1, s_texSpecularColor, mesh->specularTexture->getHandle());
 			} else {
-				bgfx::setTexture(1, s_texSpecularColor, rawrbox::WHITE_TEXTURE->getHandle());
+				bgfx::setTexture(1, s_texSpecularColor, rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE->getHandle());
 			}
 
 			if (mesh->emissionTexture != nullptr && mesh->emissionTexture->valid() && !mesh->wireframe) {
 				bgfx::setTexture(2, s_texEmissionColor, mesh->emissionTexture->getHandle());
 			} else {
-				bgfx::setTexture(2, s_texEmissionColor, rawrbox::WHITE_TEXTURE->getHandle());
+				bgfx::setTexture(2, s_texEmissionColor, rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE->getHandle());
 			}
 
 			bgfx::setUniform(u_specularColor, mesh->specularColor.data().data());

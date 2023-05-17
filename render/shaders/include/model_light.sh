@@ -5,7 +5,7 @@
 
 // Lighting
 uniform vec4 u_lightsSetting;
-uniform vec4 u_lightsPosition[MAX_LIGHTS];
+uniform vec3 u_lightsPosition[MAX_LIGHTS];
 uniform mat4 u_lightsData[MAX_LIGHTS];
 // -----
 

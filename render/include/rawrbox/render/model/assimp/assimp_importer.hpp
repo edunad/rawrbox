@@ -1,11 +1,9 @@
 #pragma once
 
+#include <rawrbox/math/bbox.hpp>
 #include <rawrbox/render/model/animation.hpp>
 #include <rawrbox/render/model/defs.hpp>
-#include <rawrbox/render/model/light/directional.hpp>
-#include <rawrbox/render/model/light/manager.hpp>
-#include <rawrbox/render/model/light/point.hpp>
-#include <rawrbox/render/model/light/spot.hpp>
+#include <rawrbox/render/model/light/types.hpp>
 #include <rawrbox/render/model/skeleton.hpp>
 #include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/utils/string.hpp>
@@ -16,6 +14,7 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 #include <bx/easing.h>
+#include <fmt/format.h>
 
 #include <filesystem>
 #include <functional>
@@ -73,7 +72,31 @@ namespace rawrbox {
 		}
 	};
 
-	struct AssimMesh {
+	struct AssimpLight {
+		rawrbox::LightType type = rawrbox::LightType::LIGHT_UNKNOWN;
+		std::string name = "light";
+		std::string parentID = "";
+
+		rawrbox::Color diffuse = rawrbox::Colors::White;
+		rawrbox::Color specular = rawrbox::Colors::White;
+		rawrbox::Color ambient = rawrbox::Colors::Black;
+
+		rawrbox::Vector3f pos = {};
+		rawrbox::Vector3f direction = {};
+		rawrbox::Vector3f up = {};
+
+		float attenuationConstant = 0.F;
+		float attenuationLinear = 0.F;
+		float attenuationQuadratic = 0.F;
+
+		float angleInnerCone = 0.F;
+		float angleOuterCone = 0.F;
+
+		AssimpLight() = default;
+		~AssimpLight() = default;
+	};
+
+	struct AssimpMesh {
 	public:
 		std::string name;
 		rawrbox::BBOX bbox;
@@ -87,8 +110,8 @@ namespace rawrbox {
 		std::vector<rawrbox::VertexSkinnedLitData> vertices = {};
 		std::vector<uint16_t> indices = {};
 
-		AssimMesh() = default;
-		~AssimMesh() {
+		AssimpMesh() = default;
+		~AssimpMesh() {
 			this->material = nullptr;
 			this->skeleton = nullptr;
 
@@ -183,7 +206,7 @@ namespace rawrbox {
 			return _textures;
 		}
 
-		void loadTextures(const aiScene* sc, aiMesh& assimp, rawrbox::AssimMesh& mesh) {
+		void loadTextures(const aiScene* sc, aiMesh& assimp, rawrbox::AssimpMesh& mesh) {
 			if (sc->mNumMaterials <= 0 || assimp.mMaterialIndex > sc->mNumMaterials) return;
 			const aiMaterial* pMaterial = sc->mMaterials[assimp.mMaterialIndex];
 
@@ -213,7 +236,7 @@ namespace rawrbox {
 						mat->blending = BGFX_STATE_BLEND_ADD;
 						break;
 					case aiBlendMode_Default:
-						mat->blending = BGFX_STATE_BLEND_ALPHA_TO_COVERAGE;
+						mat->blending = BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
 
 					default: break;
 				}
@@ -291,7 +314,7 @@ namespace rawrbox {
 		/// -------
 
 		// SKELETON LOADING -----
-		void loadSkeleton(const aiScene* sc, rawrbox::AssimMesh& mesh, const aiMesh& aiMesh) {
+		void loadSkeleton(const aiScene* sc, rawrbox::AssimpMesh& mesh, const aiMesh& aiMesh) {
 			if (!aiMesh.HasBones()) return;
 
 			for (size_t i = 0; i < aiMesh.mNumBones; i++) {
@@ -412,7 +435,7 @@ namespace rawrbox {
 		}
 
 		void markMeshAnimated(const std::string& meshName, const std::string& search) {
-			auto m = std::find_if(this->meshes.begin(), this->meshes.end(), [&](rawrbox::AssimMesh x) { return x.name == search; });
+			auto m = std::find_if(this->meshes.begin(), this->meshes.end(), [&](rawrbox::AssimpMesh x) { return x.name == search; });
 			if (m == this->meshes.end()) return;
 			(*m).animated = true;
 
@@ -512,41 +535,45 @@ namespace rawrbox {
 				auto lightNode = sc->mRootNode->FindNode(aiLight.mName.data);
 				if (lightNode == nullptr) continue;
 
-				rawrbox::Vector3f pos = rawrbox::Vector3f(aiLight.mPosition.x, aiLight.mPosition.y, aiLight.mPosition.z);
-				rawrbox::Vector3f direction = rawrbox::Vector3f(aiLight.mDirection.x, aiLight.mDirection.y, aiLight.mDirection.z).normalized();
+				rawrbox::AssimpLight light;
+				light.name = aiLight.mName.data;
 
-				aiVector3D p;
-				aiQuaternion q;
+				light.pos = rawrbox::Vector3f(aiLight.mPosition.x, aiLight.mPosition.y, aiLight.mPosition.z);
+				light.direction = rawrbox::Vector3f(aiLight.mDirection.x, aiLight.mDirection.y, aiLight.mDirection.z).normalized();
 
-				lightNode->mTransformation.DecomposeNoScaling(q, p);
-				pos += {p.x, p.y, p.z};
-
-				std::string parentName = "";
-
-				auto parent = lightNode->mParent;
-				if (parent != nullptr) {
-					parentName = lightNode->mParent->mName.data;
-
-					parent->mTransformation.DecomposeNoScaling(q, p);
-					// pos += {p.x, p.y, p.z};
+				light.parentID = "";
+				if (lightNode->mParent != nullptr) {
+					light.parentID = lightNode->mParent->mName.data;
 				}
 
-				auto diffuse = rawrbox::Color(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F) / 255.F;
-				auto specular = rawrbox::Color(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F) / 255.F;
+				light.diffuse = rawrbox::Color(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F) / 255.F;
+				light.specular = rawrbox::Color(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F) / 255.F;
+				light.ambient = rawrbox::Color(aiLight.mColorAmbient.r, aiLight.mColorAmbient.g, aiLight.mColorAmbient.b, 1.F) / 255.F;
+
+				light.attenuationConstant = aiLight.mAttenuationConstant;
+				light.attenuationLinear = aiLight.mAttenuationLinear;
+				light.attenuationQuadratic = aiLight.mAttenuationQuadratic;
+
+				light.angleInnerCone = aiLight.mAngleInnerCone;
+				light.angleOuterCone = aiLight.mAngleOuterCone;
+
+				light.up = rawrbox::Vector3f(aiLight.mUp.x, aiLight.mUp.y, aiLight.mUp.z);
 
 				switch (aiLight.mType) {
 					case aiLightSource_DIRECTIONAL:
-						this->lights.push_back({parentName, std::make_shared<rawrbox::LightDirectional>(pos, direction, diffuse, specular)});
+						light.type = rawrbox::LightType::LIGHT_POINT;
 						break;
 					case aiLightSource_SPOT:
-						this->lights.push_back({parentName, std::make_shared<rawrbox::LightSpot>(pos, direction, diffuse, specular, aiLight.mAngleInnerCone, aiLight.mAngleOuterCone, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic)});
+						light.type = rawrbox::LightType::LIGHT_SPOT;
 						break;
 					case aiLightSource_POINT:
-						this->lights.push_back({parentName, std::make_shared<rawrbox::LightPoint>(pos, diffuse, specular, aiLight.mAttenuationConstant, aiLight.mAttenuationLinear, aiLight.mAttenuationQuadratic)});
+						light.type = rawrbox::LightType::LIGHT_POINT;
 						break;
 					default:
 						break;
 				}
+
+				this->lights.push_back(light);
 			}
 		}
 		/// -------
@@ -556,7 +583,7 @@ namespace rawrbox {
 			for (size_t n = 0; n < root->mNumMeshes; ++n) {
 				aiMesh& aiMesh = *sc->mMeshes[root->mMeshes[n]];
 
-				rawrbox::AssimMesh mesh;
+				rawrbox::AssimpMesh mesh;
 				mesh.name = aiMesh.mName.data;
 
 				// Calculate bbox ---
@@ -638,13 +665,19 @@ namespace rawrbox {
 		}
 		/// -------
 
-		void internalLoad(const aiScene* scene) {
+		void internalLoad(const aiScene* scene, bool attemptedFallback = false) {
 			if (scene == nullptr) {
-				scene = aiImportFile("./content/models/error.gltf", this->assimpFlags); // fallback
+				if (attemptedFallback) {
+					throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load fallback model! \n"));
+				} else {
 
-				if (scene == nullptr) {
-					auto error = aiGetErrorString(); // Because vscode doesn't print the error bellow
-					throw std::runtime_error(fmt::format("[Resources] Content '{}' error : '{}'\n", this->fileName.generic_string(), error));
+					fmt::print("[RawrBox-Assimp] Failed to load '{}'\n", this->fileName.generic_string());
+					scene = aiImportFile("./content/models/error.gltf", this->assimpFlags); // fallback
+
+					if (scene == nullptr) {
+						auto error = aiGetErrorString(); // Because vscode doesn't print the error bellow
+						throw std::runtime_error(fmt::format("[RawrBox-Assimp] Content '{}' error : '{}'\n", this->fileName.generic_string(), error));
+					}
 				}
 			}
 
@@ -660,7 +693,7 @@ namespace rawrbox {
 	public:
 		std::filesystem::path fileName;
 		std::unordered_map<std::string, std::shared_ptr<rawrbox::AssimpMaterial>> materials = {};
-		std::vector<rawrbox::AssimMesh> meshes = {};
+		std::vector<rawrbox::AssimpMesh> meshes = {};
 
 		uint32_t loadFlags;
 		uint32_t assimpFlags;
@@ -668,9 +701,9 @@ namespace rawrbox {
 		// SKINNING ----
 		std::unordered_map<std::string, std::shared_ptr<rawrbox::Skeleton>> skeletons = {};
 
-		std::unordered_map<std::string, rawrbox::AssimMesh*> animatedMeshes = {}; // Map for quick lookup
+		std::unordered_map<std::string, rawrbox::AssimpMesh*> animatedMeshes = {}; // Map for quick lookup
 		std::unordered_map<std::string, rawrbox::Animation> animations = {};
-		std::vector<std::pair<std::string, std::shared_ptr<rawrbox::LightBase>>> lights = {};
+		std::vector<rawrbox::AssimpLight> lights = {};
 		// --------
 
 		AssimpImporter() = default;
@@ -709,7 +742,8 @@ namespace rawrbox {
 				this->internalLoad(aiImportFileFromMemory(bah, static_cast<uint32_t>(buffer.size() * sizeof(char)), this->assimpFlags, nullptr));
 			} else {
 				// Fallback
-				this->internalLoad(aiImportFile("./content/models/error.gltf", this->assimpFlags));
+				fmt::print("[RawrBox-Assimp] Failed to load '{}'\n", this->fileName.generic_string());
+				this->internalLoad(aiImportFile("./content/models/error.gltf", this->assimpFlags), true);
 			}
 		}
 

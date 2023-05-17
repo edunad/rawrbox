@@ -11,7 +11,7 @@ namespace rawrbox {
 	public:
 		LightPoint(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular, float constant, float linear, float quadratic) : rawrbox::LightBase(posMatrix, diffuse, specular), _constant(constant), _linear(linear), _quadratic(quadratic){};
 
-		LightType getType() override { return LightType::LIGHT_POINT; };
+		LightType getType() override { return rawrbox::LightType::LIGHT_POINT; };
 		rawrbox::Matrix4x4 const getDataMatrix() override {
 			return rawrbox::Matrix4x4({this->_diffuse.r, this->_specular.r, 0.F, static_cast<float>(this->getType()),
 			    this->_diffuse.g, this->_specular.g, 0.F, 0.F,

@@ -30,7 +30,8 @@ namespace rawrbox {
 		virtual void animate(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
 			// VERTEX ANIMATION ----
 			for (auto& anim : this->_animatedMeshes) {
-				this->readAnims(anim.second->offsetMatrix, anim.first);
+				if (anim.second.expired()) continue;
+				this->readAnims(anim.second.lock()->offsetMatrix, anim.first);
 			}
 			// ------------
 
@@ -61,8 +62,8 @@ namespace rawrbox {
 
 			// store the result of our parent bone and our current node
 			rawrbox::Matrix4x4 globalTransformation = parentTransform * nodeTransform;
-			auto fnd = this->_globalBoneMap.find(parentBone->name);
-			if (fnd != this->_globalBoneMap.end()) {
+			auto fnd = skeleton->boneMap.find(parentBone->name);
+			if (fnd != skeleton->boneMap.end()) {
 				calcs[fnd->second->boneId] = skeleton->invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
 			}
 

@@ -13,8 +13,6 @@ uniform vec4 u_colorOffset;
 uniform vec4 u_specularColor;
 uniform vec4 u_emissionColor;
 
-
-
 uniform vec2 u_texMatData; // x = shininess, y = emission strength
 
 void main() {
@@ -34,7 +32,7 @@ void main() {
 		int totalLights = int(u_lightsSetting.y);
 		for(int i = 0; i < totalLights; i++) {
 			if(u_lightsData[i][3][3] != 1.0) continue; // Is it on?
-			vec3 lightPos = vec3(u_lightsPosition[i][0], u_lightsPosition[i][1], u_lightsPosition[i][2]);
+			vec3 lightPos = u_lightsPosition[i];
 
 			if(u_lightsData[i][3][0] == 1.0) { // POINT
 				ambient += calculatePointLight(lightPos, u_lightsData[i], v_wPos, viewDir, v_normal, texColor, specularColor, u_texMatData);
@@ -45,7 +43,7 @@ void main() {
 			}
 		}
 
-		gl_FragColor = vec4(ambient + emissionColor.rgb * u_texMatData.y, texColor.a);
+		gl_FragColor = vec4(ambient + (emissionColor.rgb * u_texMatData.y), texColor.a);
 	} else {
 		gl_FragColor = texColor; // Full bright
 	}

@@ -1,6 +1,7 @@
 
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/window.hpp>
+
 #ifdef RAWRBOX_DEBUG
 	#include <rawrbox/debug/gizmos.hpp>
 #endif
@@ -235,6 +236,7 @@ namespace rawrbox {
 		// Setup global util textures ---
 		rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
 		rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
+		rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black);
 		// ------------------
 
 // Setup UI
@@ -322,6 +324,7 @@ namespace rawrbox {
 		// MISSING TEXTURES ------
 		rawrbox::MISSING_TEXTURE->upload();
 		rawrbox::WHITE_TEXTURE->upload();
+		rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE->upload();
 		// ------------------
 
 		this->_stencil->upload();
@@ -373,6 +376,7 @@ namespace rawrbox {
 
 		rawrbox::MISSING_TEXTURE = nullptr;
 		rawrbox::WHITE_TEXTURE = nullptr;
+		rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE = nullptr;
 		rawrbox::ROOT_UI = nullptr;
 
 		this->_stencil = nullptr;

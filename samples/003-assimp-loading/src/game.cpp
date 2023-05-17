@@ -44,7 +44,7 @@ namespace assimp {
 	void Game::loadContent() {
 		std::array<std::pair<std::string, uint32_t>, 3> initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("content/models/light_test/light_test.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT)};
+		    std::make_pair<std::string, uint32_t>("content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT)};
 
 		rawrbox::ASYNC::run([initialContentFiles]() {
 			for (auto& f : initialContentFiles) {
@@ -62,13 +62,13 @@ namespace assimp {
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 
 		// Assimp test ---
-		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/light_test/light_test.fbx");
+		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx");
 
 		this->_model->load(mdl->model);
 		this->_model->setPos({3, 0, 0});
 
 		this->_model2->load(mdl->model);
-		this->_model2->setPos({0, 0, 0});
+		this->_model2->setPos({-3, 0, 0});
 		//   -----
 
 		// Text test ----

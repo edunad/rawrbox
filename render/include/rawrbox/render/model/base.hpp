@@ -51,8 +51,7 @@ namespace rawrbox {
 
 		// SKINNING ----
 		std::unordered_map<std::string, std::shared_ptr<rawrbox::Skeleton>> _skeletons = {};
-		std::unordered_map<std::string, std::shared_ptr<rawrbox::Bone>> _globalBoneMap = {};                                // Map for quick lookup
-		std::unordered_map<std::string, std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _animatedMeshes = {}; // Map for quick lookup
+		std::unordered_map<std::string, std::weak_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _animatedMeshes = {}; // Map for quick lookup
 		// --------
 
 		void flattenMeshes() {
@@ -518,8 +517,9 @@ namespace rawrbox {
 
 		virtual void addMesh(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
 			this->_bbox.combine(mesh->getBBOX());
-			this->_meshes.push_back(std::move(mesh));
+			mesh->owner = this;
 
+			this->_meshes.push_back(std::move(mesh));
 			if (this->isUploaded() && this->isDynamicBuffer()) {
 				this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 			}
