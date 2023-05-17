@@ -12,7 +12,7 @@ add_custom_target(copy_resources_samples ALL
 
 if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
     add_subdirectory ("003-assimp-loading")
-#    add_subdirectory ("004-light-support")
+    add_subdirectory ("004-light-support")
 #    add_subdirectory ("005-post-process")
 #    add_subdirectory ("006-assimp-animations")
 endif()
