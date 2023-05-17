@@ -543,7 +543,7 @@ namespace rawrbox {
 
 				light.parentID = "";
 				if (lightNode->mParent != nullptr) {
-					light.parentID = lightNode->mParent->mName.data; // shrug
+					light.parentID = lightNode->mParent->mName.data; // TODO: Assimp doesn't seem to give the correct parent, will need to manually find it
 				}
 
 				light.diffuse = rawrbox::Color(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F) / 255.F;
