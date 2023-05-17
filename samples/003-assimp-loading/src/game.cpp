@@ -1,5 +1,4 @@
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
-#include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>

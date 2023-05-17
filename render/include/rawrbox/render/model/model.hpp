@@ -5,6 +5,8 @@
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/model/animation.hpp>
 #include <rawrbox/render/model/base.hpp>
+#include <rawrbox/render/model/light/base.hpp>
+#include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/util/anim_utils.hpp>
 
@@ -25,6 +27,7 @@ namespace rawrbox {
 	protected:
 		std::unordered_map<std::string, Animation> _animations = {};
 		std::vector<rawrbox::PlayingAnimationData> _playingAnimations = {};
+		std::vector<rawrbox::LightBase> lights = {};
 
 		// ANIMATIONS ----
 		virtual void animate(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
@@ -158,6 +161,18 @@ namespace rawrbox {
 			}
 		}
 		// --------------
+		void updateLights() {
+
+			// Update lights ---
+			for (auto mesh : this->meshes()) {
+				auto p = rawrbox::MathUtils::applyRotation({mesh->offsetMatrix[12], mesh->offsetMatrix[13], mesh->offsetMatrix[14]}, this->getAngle());
+
+				for (auto light : mesh->lights) {
+					if (light.expired()) continue;
+					light.lock()->setOffsetPos(p);
+				}
+			}
+		}
 
 	public:
 		using ModelBase<M>::ModelBase;
@@ -190,7 +205,40 @@ namespace rawrbox {
 
 			return false;
 		}
+
+		// --------------
+		// LIGHTS ------
+		virtual void addLight(std::shared_ptr<rawrbox::LightBase> light, const std::string& parentMesh = "") {
+			auto parent = this->_meshes.back();
+			if (!parentMesh.empty()) {
+				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> msh) {
+					return msh->getName() == parentMesh;
+				});
+
+				if (fnd != this->_meshes.end()) parent = *fnd;
+			}
+
+			light->setOffsetPos(parent->getPos() + this->getPos());
+
+			parent->lights.push_back(light);
+			rawrbox::LIGHTS::addLight(light);
+		}
 		// -----
+
+		virtual void setPos(const rawrbox::Vector3f& pos) override {
+			rawrbox::ModelBase<M>::setPos(pos);
+			this->updateLights();
+		}
+
+		virtual void setAngle(const rawrbox::Vector4f& angle) override {
+			rawrbox::ModelBase<M>::setAngle(angle);
+			// this->updateLights(); // TODO
+		}
+
+		virtual void setScale(const rawrbox::Vector3f& size) override {
+			rawrbox::ModelBase<M>::setScale(size);
+			// this->updateLights(); // TODO
+		}
 
 		void draw(const rawrbox::Vector3f& camPos) override {
 			ModelBase<M>::draw(camPos);

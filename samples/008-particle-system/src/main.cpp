@@ -8,6 +8,8 @@
 int main(int argc, char* argv[]) {
 #ifdef _WIN32
 	SetConsoleTitle("PARTICLE test");
+	SetConsoleCP(CP_UTF8);
+	SetConsoleOutputCP(CP_UTF8);
 #endif
 
 	particle_test::Game engine;

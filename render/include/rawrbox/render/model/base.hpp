@@ -557,6 +557,7 @@ namespace rawrbox {
 				this->_meshes[i]->setColor(color);
 			}
 		}
+
 		// ----
 		virtual void upload(bool dynamic = false) {
 			if (this->isUploaded()) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");

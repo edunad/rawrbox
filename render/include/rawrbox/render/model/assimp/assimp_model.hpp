@@ -2,7 +2,6 @@
 
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
 #include <rawrbox/render/model/light/directional.hpp>
-#include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/light/point.hpp>
 #include <rawrbox/render/model/light/spot.hpp>
 #include <rawrbox/render/model/model.hpp>
@@ -133,19 +132,7 @@ namespace rawrbox {
 					continue;
 				}
 
-				auto parent = this->_meshes.back();
-				if (!assimpLights.parentID.empty()) {
-					auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [assimpLights](std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> msh) {
-						return msh->getName() == assimpLights.parentID;
-					});
-
-					if (fnd != this->_meshes.end()) parent = *fnd;
-				}
-
-				light->setOffsetPos(parent->getPos() + this->getPos());
-
-				parent->lights.push_back(light);
-				rawrbox::LIGHTS::addLight(light);
+				this->addLight(light, assimpLights.parentID);
 			}
 		}
 
@@ -156,18 +143,6 @@ namespace rawrbox {
 			this->_playingAnimations.clear();
 			this->_animatedMeshes.clear();
 		};
-
-		virtual void setPos(const rawrbox::Vector3f& pos) override {
-			rawrbox::Model<M>::setPos(pos);
-
-			// Update lights ---
-			for (auto mesh : this->meshes()) {
-				for (auto light : mesh->lights) {
-					if (light.expired()) continue;
-					light.lock()->setOffsetPos(pos);
-				}
-			}
-		}
 
 		virtual void load(std::shared_ptr<rawrbox::AssimpImporter> model) {
 			this->loadMeshes(model);

@@ -543,7 +543,7 @@ namespace rawrbox {
 
 				light.parentID = "";
 				if (lightNode->mParent != nullptr) {
-					light.parentID = lightNode->mParent->mName.data;
+					light.parentID = lightNode->mParent->mName.data; // shrug
 				}
 
 				light.diffuse = rawrbox::Color(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F) / 255.F;
@@ -561,7 +561,7 @@ namespace rawrbox {
 
 				switch (aiLight.mType) {
 					case aiLightSource_DIRECTIONAL:
-						light.type = rawrbox::LightType::LIGHT_POINT;
+						light.type = rawrbox::LightType::LIGHT_DIR;
 						break;
 					case aiLightSource_SPOT:
 						light.type = rawrbox::LightType::LIGHT_SPOT;
@@ -596,7 +596,7 @@ namespace rawrbox {
 				// -----
 
 				if ((this->assimpFlags & aiProcess_PreTransformVertices) == 0) {
-					mesh.offsetMatrix.transpose(&root->mTransformation.a1); // Append matrix to our vertices, since pre-transform is disabled
+					// mesh.offsetMatrix.transpose(&root->mTransformation.a1); // Append matrix to our vertices, since pre-transform is disabled
 				}
 
 				// Textures
@@ -667,6 +667,9 @@ namespace rawrbox {
 
 		void internalLoad(const aiScene* scene, bool attemptedFallback = false) {
 			if (scene == nullptr) {
+				auto error = aiGetErrorString(); // Because vscode doesn't print the error bellow
+				fmt::print("[RawrBox-Assimp] Failed to load '{}' ──> {}\n  └── Loading fallback model!\n", this->fileName.generic_string(), error);
+
 				if (attemptedFallback) {
 					throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load fallback model! \n"));
 				} else {
@@ -675,7 +678,7 @@ namespace rawrbox {
 					scene = aiImportFile("./content/models/error.gltf", this->assimpFlags); // fallback
 
 					if (scene == nullptr) {
-						auto error = aiGetErrorString(); // Because vscode doesn't print the error bellow
+						error = aiGetErrorString(); // Because vscode doesn't print the error bellow
 						throw std::runtime_error(fmt::format("[RawrBox-Assimp] Content '{}' error : '{}'\n", this->fileName.generic_string(), error));
 					}
 				}

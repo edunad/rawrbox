@@ -1,7 +1,7 @@
 #pragma once
 
+#include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/pi.hpp>
-#include <rawrbox/math/vector3.hpp>
 
 #include <array>
 #include <cmath>
@@ -101,6 +101,30 @@ namespace rawrbox {
 		static inline float angleDistance(float A, float B) {
 			auto diff = std::abs(A - B);
 			return std::min(diff, 360.F - diff);
+		}
+
+		// VEC
+		static inline rawrbox::Vector3f applyRotation(const rawrbox::Vector3f& vert, const rawrbox::Vector4f& ang) {
+			rawrbox::Matrix4x4 translationMatrix = {};
+			translationMatrix.translate({-ang.x, -ang.y, ang.z});
+
+			rawrbox::Matrix4x4 rotationMatrix = {};
+			rotationMatrix.rotateXYZ(ang.xyz());
+
+			rawrbox::Matrix4x4 reverseTranslationMatrix = {};
+			reverseTranslationMatrix.translate({ang.x, ang.y, ang.z});
+
+			rawrbox::Matrix4x4 mul = translationMatrix * rotationMatrix * reverseTranslationMatrix;
+
+			rawrbox::Vector4f v = {vert.x, vert.y, vert.z, -1.0F};
+			auto res = mul.mulVec(v);
+
+			rawrbox::Vector3f out;
+			out.x = res.x;
+			out.y = res.y;
+			out.z = res.z;
+
+			return out;
 		}
 	};
 } // namespace rawrbox

@@ -1,6 +1,9 @@
 
-#include <rawrbox/render/model/light/manager.hpp>
-#include <rawrbox/render/model/mesh.hpp>
+
+#include <rawrbox/render/model/assimp/assimp_importer.hpp>
+#include <rawrbox/render/resources/assimp/model.hpp>
+#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
 #include <light/game.hpp>
@@ -31,7 +34,8 @@ namespace light {
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		this->_textEngine = std::make_unique<rawrbox::TextEngine>();
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::AssimpLoader>());
 
 		// Load content ---
 		this->loadContent();
@@ -39,16 +43,30 @@ namespace light {
 	}
 
 	void Game::loadContent() {
-		this->_window->upload();
+		std::array<std::pair<std::string, uint32_t>, 2> initialContentFiles = {
+		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("content/models/light_test/test.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS)};
 
-		// Fonts -----
-		this->_font = &this->_textEngine->load("cour.ttf", 16);
-		// ------
+		rawrbox::ASYNC::run([initialContentFiles]() {
+			for (auto& f : initialContentFiles) {
+				rawrbox::RESOURCES::loadFile(f.first, f.second);
+			} }, [this] { rawrbox::runOnMainThread([this]() {
+										  rawrbox::RESOURCES::upload();
+										  this->contentLoaded();
+									  }); });
+
+		this->_window->upload();
+	}
+
+	void Game::contentLoaded() {
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 
 		// Assimp test ---
-		this->_model->load("./content/models/light_test/test.fbx", rawrbox::ModelLoadFlags::IMPORT_LIGHT | rawrbox::ModelLoadFlags::IMPORT_TEXTURES);
-		this->_model->upload();
-		// -----
+		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/light_test/test.fbx");
+
+		this->_model->load(mdl->model);
+		this->_model->setPos({0, 0, 0});
+		//   -----
 
 		// Text test ----
 		{
@@ -58,6 +76,8 @@ namespace light {
 			this->_text->upload();
 		}
 		// ------
+
+		this->_ready = true;
 	}
 
 	void Game::shutdown() {
@@ -67,7 +87,6 @@ namespace light {
 		this->_model = nullptr;
 		this->_text = nullptr;
 
-		rawrbox::LightManager::get().destroy();
 		rawrbox::Engine::shutdown();
 	}
 
@@ -76,9 +95,13 @@ namespace light {
 		this->_window->pollEvents();
 	}
 
+	float t = 0.F;
 	void Game::update() {
 		if (this->_camera == nullptr) return;
 		this->_camera->update();
+
+		t += 0.45F;
+		this->_model->setAngle({0, bx::toRad(t), 0});
 	}
 
 	void Game::drawWorld() {
@@ -107,7 +130,13 @@ namespace light {
 		printFrames();
 		// -----------
 
-		this->drawWorld();
+		if (this->_ready) {
+			this->drawWorld();
+		} else {
+			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
+			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
+			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
+		}
 
 		this->_window->frame(true); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());

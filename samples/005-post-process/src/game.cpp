@@ -1,9 +1,11 @@
 
-#include <rawrbox/render/model/light/manager.hpp>
-#include <rawrbox/render/model/mesh.hpp>
+#include <rawrbox/render/model/assimp/assimp_importer.hpp>
 #include <rawrbox/render/postprocess/bloom.hpp>
 #include <rawrbox/render/postprocess/dither_psx.hpp>
 #include <rawrbox/render/postprocess/static_noise.hpp>
+#include <rawrbox/render/resources/assimp/model.hpp>
+#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
 #include <post_process/game.hpp>
@@ -39,20 +41,40 @@ namespace post_process {
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::AssimpLoader>());
+
 		// Load content ---
 		this->loadContent();
 		// -----
 	}
 
 	void Game::loadContent() {
+
+		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
+		    std::make_pair<std::string, uint32_t>("content/models/ps1_road/scene.gltf", 0 | rawrbox::ModelLoadFlags::IMPORT_TEXTURES)};
+
+		rawrbox::ASYNC::run([initialContentFiles]() {
+			for (auto& f : initialContentFiles) {
+				rawrbox::RESOURCES::loadFile(f.first, f.second);
+			} }, [this] { rawrbox::runOnMainThread([this]() {
+										  rawrbox::RESOURCES::upload();
+										  this->contentLoaded();
+									  }); });
+
 		this->_window->upload();
 		this->_postProcess->upload();
+	}
 
+	void Game::contentLoaded() {
 		// Assimp test ---
-		this->_model->load("./content/models/ps1_road/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES);
-		this->_model->setScale({0.01F, 0.01F, 0.01F});
-		this->_model->upload();
-		// -----
+		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_road/scene.gltf");
+
+		this->_model->load(mdl->model);
+		this->_model->setPos({0, 0, 0});
+		//   -----
+
+		this->_ready = true;
 	}
 
 	void Game::shutdown() {
@@ -60,7 +82,6 @@ namespace post_process {
 		this->_camera = nullptr;
 		this->_model = nullptr;
 
-		rawrbox::LightManager::get().destroy();
 		rawrbox::Engine::shutdown();
 	}
 
@@ -100,9 +121,15 @@ namespace post_process {
 		printFrames();
 		// -----------
 
-		this->_postProcess->begin();
-		this->drawWorld();
-		this->_postProcess->end();
+		if (this->_ready) {
+			this->_postProcess->begin();
+			this->drawWorld();
+			this->_postProcess->end();
+		} else {
+			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
+			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
+			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
+		}
 
 		this->_window->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
