@@ -6,6 +6,7 @@ $input v_color0, v_texcoord0, v_wPos, v_normal, v_tangent, v_bitangent
 SAMPLER2D(s_texColor, 0);
 SAMPLER2D(s_texSpecularColor, 1);
 SAMPLER2D(s_texEmissionColor, 2);
+SAMPLER2D(s_texOpacityColor, 3);
 
 uniform vec4 u_cameraPos;
 
@@ -18,7 +19,7 @@ uniform vec2 u_texMatData; // x = shininess, y = emission strength
 void main() {
 	vec4 specularColor = texture2D(s_texSpecularColor, v_texcoord0.xy) * v_color0 * u_specularColor;
 	vec4 emissionColor = texture2D(s_texEmissionColor, v_texcoord0.xy) * v_color0 * u_emissionColor;
-
+	vec4 opacityColor = texture2D(s_texOpacityColor, v_texcoord0.xy) * v_color0;
 	vec4 texColor = texture2D(s_texColor, v_texcoord0.xy) * v_color0 * u_colorOffset;
 	if (texColor.a <= 0.0) discard;
 
@@ -43,7 +44,7 @@ void main() {
 			}
 		}
 
-		gl_FragColor = vec4(ambient + (emissionColor.rgb * u_texMatData.y), texColor.a);
+		gl_FragColor = vec4(ambient + (emissionColor.rgb * u_texMatData.y), opacityColor.a);
 	} else {
 		gl_FragColor = texColor; // Full bright
 	}

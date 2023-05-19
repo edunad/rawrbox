@@ -57,8 +57,23 @@ namespace rawrbox {
 			std::copy(pixelsOffset, pixelsOffset + framePixelCount, frame.pixels.data());
 		}
 
+		// Check for transparency ----
+		if (this->_channels == 4 && !this->_frames.empty()) {
+			auto& frame1 = this->_frames.back().pixels;
+			for (size_t i = 0; i < frame1.size(); i += this->_channels) {
+				if (frame1[i + 3] == 1.F) continue;
+				_transparent = true;
+				break;
+			}
+		}
+		// ---------------------------
+
 		stbi_image_free(gifPixels);
 		stbi_image_free(delays);
+	}
+
+	const bool TextureGIF::hasTransparency() const {
+		return this->_channels == 4 && this->_transparent;
 	}
 
 	void TextureGIF::update() {

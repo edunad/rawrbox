@@ -44,6 +44,8 @@ namespace rawrbox {
 
 		// TEXTURES ---
 		std::shared_ptr<rawrbox::TextureBase> texture = nullptr;
+		std::shared_ptr<rawrbox::TextureBase> opacityTexture = nullptr;
+
 		std::shared_ptr<rawrbox::TextureBase> specularTexture = nullptr;
 		rawrbox::Color specularColor = rawrbox::Colors::White;
 
@@ -64,7 +66,9 @@ namespace rawrbox {
 		bool lineMode = false;
 
 		uint64_t culling = BGFX_STATE_CULL_CW;
-		uint64_t blending = BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
+		uint64_t blending = BGFX_STATE_BLEND_NORMAL;
+		uint64_t depthTest = BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS;
+
 		rawrbox::BBOX bbox = {};
 		// --------------
 
@@ -76,7 +80,7 @@ namespace rawrbox {
 		std::vector<std::weak_ptr<rawrbox::LightBase>> lights = {};
 		// -----------------
 
-		void* owner = nullptr;
+		void* owner = nullptr; // Eeeehhhh
 		std::unordered_map<std::string, rawrbox::Vector4f> data = {};
 
 		Mesh() = default;
@@ -84,8 +88,9 @@ namespace rawrbox {
 			this->texture = nullptr;
 			this->specularTexture = nullptr;
 			this->emissionTexture = nullptr;
-			this->owner = nullptr;
+			this->opacityTexture = nullptr;
 
+			this->owner = nullptr;
 			this->skeleton.reset();
 
 			this->lights.clear();
@@ -144,6 +149,11 @@ namespace rawrbox {
 			this->emissionIntensity = intensity;
 		}
 
+		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getOpacityTexture() const { return this->opacityTexture; }
+		void setOpacityTexture(std::shared_ptr<rawrbox::TextureBase> ptr) {
+			this->opacityTexture = ptr;
+		}
+
 		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getSpecularTexture() const { return this->specularTexture; }
 		void setSpecularTexture(std::shared_ptr<rawrbox::TextureBase> ptr, float shininess) {
 			this->specularTexture = ptr;
@@ -156,6 +166,10 @@ namespace rawrbox {
 
 		void setCulling(uint64_t culling) {
 			this->culling = culling;
+		}
+
+		void setDepthTest(uint64_t depthTest) {
+			this->depthTest = depthTest;
 		}
 
 		void setBlend(uint64_t blend) {
@@ -209,7 +223,8 @@ namespace rawrbox {
 
 		void setOptimizable(bool status) { this->_canOptimize = status; }
 		bool canOptimize(std::shared_ptr<rawrbox::Mesh<T>> other) {
-			if (!this->skeleton.expired() || !this->_canOptimize) return false;
+			if (!this->_canOptimize || !other->_canOptimize) return false;
+
 			return this->texture == other->texture &&
 			       this->color == other->color &&
 			       this->wireframe == other->wireframe &&

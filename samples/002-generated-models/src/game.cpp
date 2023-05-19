@@ -127,6 +127,7 @@ namespace model {
 		this->_sprite = nullptr;
 		this->_text = nullptr;
 
+		rawrbox::RESOURCES::shutdown();
 		rawrbox::Engine::shutdown();
 	}
 

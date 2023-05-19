@@ -6,9 +6,7 @@
 #include <fmt/format.h>
 
 #include <filesystem>
-#include <fstream>
 #include <functional>
-#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,26 +18,6 @@ namespace rawrbox {
 		static std::vector<std::unique_ptr<rawrbox::Loader>> _loaders;
 
 		// LOADS ---
-		static std::vector<uint8_t> getRawData(const std::filesystem::path& filePath) {
-			std::vector<uint8_t> data = {};
-			if (!std::filesystem::exists(filePath)) return data;
-
-			std::ifstream file(filePath.generic_string(), std::ios::in | std::ios::binary | std::ios::ate);
-			if (!file.is_open()) return data;
-
-			auto size = static_cast<size_t>(file.tellg());
-
-			std::vector<char> fileData;
-			fileData.resize(size);
-
-			file.seekg(0, std::ios::beg);
-			file.read(fileData.data(), size);
-			file.close();
-
-			data.insert(data.begin(), fileData.begin(), fileData.end());
-			return data;
-		}
-
 		template <class T = rawrbox::Resource>
 		static T* getFileImpl(const std::filesystem::path& filePath) {
 			auto ext = filePath.extension().generic_string();
@@ -73,7 +51,7 @@ namespace rawrbox {
 				ret->flags = loadFlags;
 
 				// try to see if the file exists to make a crc32 of it
-				std::vector<uint8_t> buffer = getRawData(filePath);
+				std::vector<uint8_t> buffer = rawrbox::PathUtils::getRawData(filePath);
 				if (buffer.empty()) {
 					ret->crc32 = 0;
 				} else {
@@ -87,14 +65,14 @@ namespace rawrbox {
 				return ret;
 			}
 
-			return nullptr;
+			throw std::runtime_error(fmt::format("[RawrBox-Content] Attempted to load unknown file extension '{}'. Missing loader!", filePath.generic_string()));
 		}
 		// ---------
 
 	public:
 		static void addLoader(std::unique_ptr<rawrbox::Loader> loader) { _loaders.push_back(std::move(loader)); }
 
-		// ⚠️ NOTE, IT SHOULD BE RAN ON THE MAIN THREAD OF THE APPLICATION, BGFX MIGHT NOT LIKE NON-MAIN
+		// ⚠️ NOTE, IT SHOULD BE RAN ON THE MAIN THREAD OF THE APPLICATION, BGFX MIGHT NOT LIKE NON-MAIN THREAD ⚠️
 		static void upload() {
 			for (auto& loader : _loaders) {
 				loader->upload();
@@ -120,7 +98,7 @@ namespace rawrbox {
 		}
 
 		template <class T = rawrbox::Resource>
-		static T* getFile(const std::filesystem::path& filePath) {
+		[[nodiscard]] static T* getFile(const std::filesystem::path& filePath) {
 			const std::lock_guard<std::mutex> mutexGuard(_threadLock);
 			return getFileImpl<T>(filePath);
 		}

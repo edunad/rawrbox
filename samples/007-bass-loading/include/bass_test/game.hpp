@@ -5,7 +5,6 @@
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/model/text3D.hpp>
-#include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/window.hpp>
 
 #include <memory>
@@ -20,14 +19,13 @@ namespace bass_test {
 
 		std::shared_ptr<rawrbox::Model<>> _modelGrid = std::make_shared<rawrbox::Model<>>();
 
-		std::unique_ptr<rawrbox::TextEngine> _textEngine = nullptr;
-
 		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
 		std::shared_ptr<rawrbox::Text3D> _beatText = std::make_shared<rawrbox::Text3D>();
 
-		rawrbox::Font* _font = nullptr;
+		std::weak_ptr<rawrbox::Font> _font;
 
 		float _beat = 0;
+		bool _ready = false;
 
 	public:
 		using Engine::Engine;
@@ -39,6 +37,7 @@ namespace bass_test {
 		void draw() override;
 
 		void loadContent();
+		void contentLoaded();
 		void drawWorld();
 	};
 } // namespace bass_test

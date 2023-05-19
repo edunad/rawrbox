@@ -14,15 +14,15 @@ if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
     add_subdirectory ("003-assimp-loading")
     add_subdirectory ("004-light-support")
     add_subdirectory ("005-post-process")
-#    add_subdirectory ("006-assimp-animations")
+    add_subdirectory ("006-assimp-animations")
 endif()
-#
-#if(RAWRBOX_ENABLE_BASS_SUPPORT)
-#    add_subdirectory ("007-bass-loading")
-#endif()
-#
+
+if(RAWRBOX_ENABLE_BASS_SUPPORT)
+    add_subdirectory ("007-bass-loading")
+endif()
+
 #add_subdirectory ("008-particle-system")
-#
+
 #if(RAWRBOX_BUILD_UI)
 #    add_subdirectory ("009-ui")
 #endif()

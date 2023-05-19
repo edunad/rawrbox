@@ -6,10 +6,14 @@
 #include <stdexcept>
 
 namespace rawrbox {
-	uint32_t TextEngine::atlasID = 0;
+	// VARS ----
+	std::map<std::string, std::shared_ptr<rawrbox::Font>> TextEngine::_fonts = {};
+	std::map<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> TextEngine::_atlas = {};
 
-	TextEngine::~TextEngine() { destroy(); }
-	TextEngine::TextEngine() { initialize(); }
+	// PUBLIC ----
+	uint32_t TextEngine::atlasID = 0;
+	FT_Library TextEngine::ft = nullptr;
+	// ----------
 
 	void TextEngine::initialize() {
 		if (ft != nullptr) throw std::runtime_error("[RawrBox-Freetype] Freetype already initialized");
@@ -23,10 +27,10 @@ namespace rawrbox {
 		FT_Library_SetLcdFilterWeights(ft, lcd_weights.data());
 	}
 
-	void TextEngine::destroy() {
+	void TextEngine::shutdown() {
 		if (ft == nullptr) return;
-		this->_fonts.clear();
-		this->_atlas.clear();
+		_fonts.clear();
+		_atlas.clear();
 
 		TextEngine::atlasID = 0;
 
@@ -36,7 +40,7 @@ namespace rawrbox {
 
 	std::pair<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> TextEngine::requestAtlas(int width, int height, bgfx::TextureFormat::Enum format) {
 		// Try to find a spot
-		for (auto& at : this->_atlas) {
+		for (auto& at : _atlas) {
 			if (at.second->canInsertNode(width, height)) return {at.first, at.second};
 		}
 
@@ -45,23 +49,23 @@ namespace rawrbox {
 		auto atlas = std::make_shared<rawrbox::TextureAtlas>(512);
 		atlas->upload(format);
 
-		this->_atlas.emplace(id, std::move(atlas));
-		return {id, this->_atlas[id]};
+		_atlas.emplace(id, std::move(atlas));
+		return {id, _atlas[id]};
 	}
 
 	std::shared_ptr<rawrbox::TextureAtlas> TextEngine::getAtlas(uint32_t id) {
-		auto fnd = this->_atlas.find(id);
-		if (fnd == this->_atlas.end()) throw std::runtime_error(fmt::format("[RawrBox-Freetype] Failed to find atlas id '{}'", id));
+		auto fnd = _atlas.find(id);
+		if (fnd == _atlas.end()) throw std::runtime_error(fmt::format("[RawrBox-Freetype] Failed to find atlas id '{}'", id));
 		return fnd->second;
 	}
 
 	std::weak_ptr<rawrbox::Font> TextEngine::load(std::string filename, uint32_t size) {
 		std::string key = fmt::format("{}-{}", filename, size);
 
-		auto fnd = this->_fonts.find(key);
-		if (fnd != this->_fonts.end()) return fnd->second;
+		auto fnd = _fonts.find(key);
+		if (fnd != _fonts.end()) return fnd->second;
 
-		this->_fonts[key] = std::make_shared<rawrbox::Font>(this, filename, size);
-		return this->_fonts[key];
+		_fonts[key] = std::make_shared<rawrbox::Font>(filename, size);
+		return _fonts[key];
 	}
 } // namespace rawrbox

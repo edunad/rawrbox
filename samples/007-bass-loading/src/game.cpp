@@ -1,6 +1,7 @@
 
-#include <rawrbox/bass/static.hpp>
-#include <rawrbox/render/static.hpp>
+#include <rawrbox/bass/resources/sound.hpp>
+#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
 #include <bass_test/game.hpp>
@@ -32,8 +33,8 @@ namespace bass_test {
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::BASS.initialize();
-		this->_textEngine = std::make_unique<rawrbox::TextEngine>();
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::BASSLoader>());
 
 		// Load content ---
 		this->loadContent();
@@ -41,16 +42,31 @@ namespace bass_test {
 	}
 
 	void Game::loadContent() {
-		this->_window->upload();
 
+		std::array initialContentFiles = {
+		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("content/sounds/clownmusic.ogg", 0 | rawrbox::SoundFlags::SOUND_3D)};
+
+		rawrbox::ASYNC::run([initialContentFiles]() {
+			for (auto& f : initialContentFiles) {
+				rawrbox::RESOURCES::loadFile(f.first, f.second);
+			} }, [this] { rawrbox::runOnMainThread([this]() {
+										  rawrbox::RESOURCES::upload();
+										  this->contentLoaded();
+									  }); });
+
+		this->_window->upload();
+	}
+
+	void Game::contentLoaded() {
 		// Fonts -----
-		this->_font = &this->_textEngine->load("cour.ttf", 16);
-		// ------
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
+		//  ------
 
 		// SOUND -----
 		// https://i.rawr.dev/Mystery%20Skulls%20-%20Freaking%20Out.mp3
 		// https://i.rawr.dev/Just_a_Bit_Crazy.ogg
-		this->_sound = rawrbox::BASS.loadHTTPSound("https://i.rawr.dev/Just_a_Bit_Crazy.ogg", rawrbox::SoundFlags::SOUND_3D | rawrbox::SoundFlags::BEAT_DETECTION | rawrbox::SoundFlags::BPM_DETECTION)->createInstance();
+		this->_sound = rawrbox::BASS::loadHTTPSound("https://i.rawr.dev/Just_a_Bit_Crazy.ogg", rawrbox::SoundFlags::SOUND_3D | rawrbox::SoundFlags::BEAT_DETECTION | rawrbox::SoundFlags::BPM_DETECTION)->createInstance();
 		this->_sound->setVolume(1.F);
 		this->_sound->setLooping(true);
 		this->_sound->set3D(10.F);
@@ -58,7 +74,6 @@ namespace bass_test {
 		this->_sound->setTempo(0.8F);
 		this->_sound->play();
 
-		// this->_sound->setBeatSettings(8, 8, 2.f);
 		this->_sound->onBEAT += [this](double pos) {
 			this->_beat = 0.5F;
 		};
@@ -67,14 +82,12 @@ namespace bass_test {
 			fmt::print("BPM: {}\n", bpm);
 		};
 
-		this->_sound2 = rawrbox::BASS.loadSound("./content/sounds/clownmusic.ogg", rawrbox::SoundFlags::SOUND_3D)->createInstance();
+		this->_sound2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceBASS>("content/sounds/clownmusic.ogg")->sound->createInstance();
 		this->_sound2->setLooping(true);
 		this->_sound2->set3D(10.F);
 		this->_sound2->setPosition({3.F, 1.F, 0});
 		this->_sound2->setTempo(1.2F);
 		this->_sound2->play();
-
-		// --------
 
 		// Text test ----
 		{
@@ -95,6 +108,8 @@ namespace bass_test {
 			this->_modelGrid->addMesh(mesh);
 			this->_modelGrid->upload();
 		}
+
+		this->_ready = true;
 	}
 
 	void Game::shutdown() {
@@ -106,7 +121,8 @@ namespace bass_test {
 		this->_beatText = nullptr;
 		this->_text = nullptr;
 
-		rawrbox::BASS.shutdown();
+		rawrbox::RESOURCES::shutdown();
+		rawrbox::LIGHTS::shutdown();
 		rawrbox::Engine::shutdown();
 	}
 
@@ -119,7 +135,7 @@ namespace bass_test {
 		if (this->_camera == nullptr) return;
 		this->_camera->update();
 
-		rawrbox::BASS.setListenerLocation(this->_camera->getPos(), this->_camera->getForward(), this->_camera->getUp());
+		rawrbox::BASS::setListenerLocation(this->_camera->getPos(), this->_camera->getForward(), this->_camera->getUp());
 		if (this->_beat > 0.F) this->_beat -= 0.05F;
 	}
 
@@ -149,7 +165,13 @@ namespace bass_test {
 		printFrames();
 		// -----------
 
-		this->drawWorld();
+		if (this->_ready) {
+			this->drawWorld();
+		} else {
+			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
+			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
+			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
+		}
 
 		this->_window->frame(true); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());

@@ -11,48 +11,56 @@ namespace rawrbox {
 	class AssimpModel : public rawrbox::Model<M> {
 
 		virtual void loadMeshes(std::shared_ptr<rawrbox::AssimpImporter> model) {
-			for (auto& assimpMesh : model->meshes) {
+			for (auto assimpMesh : model->meshes) {
 				auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
 
-				mesh->setName(assimpMesh.name);
-				mesh->setCulling(BGFX_STATE_CULL_CCW); // Default culling for assimp
-
+				mesh->name = assimpMesh.name;
 				mesh->bbox = assimpMesh.bbox;
-				mesh->offsetMatrix = assimpMesh.offsetMatrix; // Append matrix to our vertices, since pre-transform is disabled
+				mesh->offsetMatrix = assimpMesh.offsetMatrix;
 
 				// Textures ---
-				if (assimpMesh.material != nullptr) {
+				if (!assimpMesh.material.expired()) {
+					auto mat = assimpMesh.material.lock();
+
 					mesh->setTexture(rawrbox::WHITE_TEXTURE);                                   // Default
 					mesh->setSpecularTexture(rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE, 25.F); // Default
 					mesh->setEmissionTexture(rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE, 1.F);  // Default
+					mesh->setOpacityTexture(rawrbox::WHITE_TEXTURE);                            // Default
 
-					mesh->setWireframe(assimpMesh.material->wireframe);
-					mesh->setCulling(assimpMesh.material->matDisableCulling ? 0 : BGFX_STATE_CULL_CCW);
-					mesh->setBlend(assimpMesh.material->blending);
+					mesh->setWireframe(mat->wireframe);
+					mesh->setBlend(mat->blending);
+					mesh->setCulling(mat->doubleSided ? 0 : BGFX_STATE_CULL_CCW);
 
 					// DIFFUSE -----
-					if (assimpMesh.material->diffuse != nullptr) {
-						mesh->setTexture(assimpMesh.material->diffuse);
+					if (mat->diffuse != nullptr) {
+						mesh->setTexture(mat->diffuse);
 					}
 
-					mesh->setColor(assimpMesh.material->diffuseColor);
+					mesh->setColor(mat->diffuseColor);
 					// --------
 
-					// SPECULAR -----
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
-						if (assimpMesh.material->specular != nullptr) {
-							mesh->setSpecularTexture(assimpMesh.material->specular, assimpMesh.material->shininess);
+						// SPECULAR -----
+						if (mat->specular != nullptr) {
+							mesh->setSpecularTexture(mat->specular, mat->shininess);
 						}
 
-						mesh->setSpecularColor(assimpMesh.material->specularColor);
+						mesh->setSpecularColor(mat->specularColor);
 						// --------
 
 						// EMISSION -----
-						if (assimpMesh.material->emissive != nullptr) {
-							mesh->setEmissionTexture(assimpMesh.material->emissive, assimpMesh.material->intensity);
+						if (mat->emissive != nullptr) {
+							mesh->setEmissionTexture(mat->emissive, mat->intensity);
 						}
 
-						mesh->setEmissionColor(assimpMesh.material->emissionColor);
+						mesh->setEmissionColor(mat->emissionColor);
+						// --------
+
+						// OPACITY -----
+						if (mat->opacity != nullptr) {
+							mesh->setOpacityTexture(mat->opacity);
+						}
+						// --------
 					}
 					// --------
 				}
@@ -80,7 +88,7 @@ namespace rawrbox {
 
 				// Bones
 				if constexpr (supportsBones<typename M::vertexBufferType>) {
-					if (assimpMesh.skeleton != nullptr) {
+					if (!assimpMesh.skeleton.expired()) {
 						mesh->skeleton = assimpMesh.skeleton;
 						mesh->setOptimizable(false);
 					}
@@ -100,14 +108,17 @@ namespace rawrbox {
 			this->_animations = model->animations;
 			this->_animatedMeshes.clear();
 
+			// Mark animated meshes ---
 			for (auto& anim : model->animatedMeshes) {
 				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [anim](std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> msh) {
 					return msh->getName() == anim.second->name;
 				});
-
 				if (fnd == this->_meshes.end()) continue;
+
+				(*fnd)->setOptimizable(false);
 				this->_animatedMeshes[anim.first] = *fnd;
 			}
+			// -----------------------
 		}
 
 		virtual void loadLights(std::shared_ptr<rawrbox::AssimpImporter> model) {

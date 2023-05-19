@@ -23,18 +23,20 @@ namespace rawrbox {
 		std::vector<unsigned char> _pixels;
 
 		bool _failedToLoad = false;
+		bool _transparent = false;
+
 		std::filesystem::path _filePath = "";
 		std::string _name = "IMAGE-TEXTURE";
 
 		void internalLoad(stbi_uc* image, bool useFallback = true);
 
 	public:
-		explicit TextureImage(const std::filesystem::path& filePath, bool useFallback = true);
-		explicit TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback = true);
+		explicit TextureImage(const std::filesystem::path& filePath, int forceChannels = 0, bool useFallback = true);
+		explicit TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, int forceChannels = 0, bool useFallback = true);
 
 		// ------ PIXEL-UTILS
 		virtual void setName(const std::string& name);
-		virtual void resize(const rawrbox::Vector2i& newsize);
+		[[nodiscard]] const bool hasTransparency() const override;
 		// --------------------
 
 		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count) override;

@@ -143,12 +143,12 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		base->addMesh(base->generatePlane({}, {1, 1}));
 		base->addMesh(base->generatePlane({}, {1, 1}));
 
-		REQUIRE(base->getMesh(0)->blending == BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA));
-		REQUIRE(base->getMesh(1)->blending == BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA));
+		REQUIRE(base->getMesh(0)->blending == 0);
+		REQUIRE(base->getMesh(1)->blending == 0);
 		base->setBlend(BGFX_STATE_BLEND_SRC_ALPHA, 0);
 
 		REQUIRE(base->getMesh(0)->blending == BGFX_STATE_BLEND_SRC_ALPHA);
-		REQUIRE(base->getMesh(1)->blending == BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA));
+		REQUIRE(base->getMesh(1)->blending == 0);
 		base->setBlend(BGFX_STATE_BLEND_SRC_ALPHA);
 
 		REQUIRE(base->getMesh(0)->blending == BGFX_STATE_BLEND_SRC_ALPHA);

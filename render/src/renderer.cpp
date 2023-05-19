@@ -16,7 +16,6 @@ namespace rawrbox {
 		bgfx::setViewName(id, fmt::format("RawrBox-RENDERER-{}", id).c_str());
 
 		bgfx::setViewClear(id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
-		// ----
 	}
 
 	void Renderer::setClearColor(uint32_t clearColor) {

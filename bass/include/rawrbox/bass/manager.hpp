@@ -7,35 +7,35 @@
 #include <unordered_map>
 
 namespace rawrbox {
-	class BASSManager {
+	class BASS {
 	protected:
-		bool _initialized = false;
+		static bool _initialized;
 
-		float _masterVolume = 1.0F;
-		bool _muteOnUnfocus = true;
+		static float _masterVolume;
+		static bool _muteOnUnfocus;
 
-		rawrbox::Vector3f _oldLocation = {};
+		static rawrbox::Vector3f _oldLocation;
 
 	public:
-		std::unordered_map<std::string, std::shared_ptr<rawrbox::SoundBase>> sounds = {}; // Keep alive the sounds
+		static std::unordered_map<std::string, std::shared_ptr<rawrbox::SoundBase>> sounds; // Keep alive the sounds
 
-		rawrbox::EventNamed<std::pair<uint32_t, double>> onBEAT;
-		rawrbox::EventNamed<std::pair<uint32_t, float>> onBPM;
-		rawrbox::EventNamed<uint32_t> onSoundEnd;
+		static rawrbox::EventNamed<std::pair<uint32_t, double>> onBEAT;
+		static rawrbox::EventNamed<std::pair<uint32_t, float>> onBPM;
+		static rawrbox::EventNamed<uint32_t> onSoundEnd;
 
-		void initialize();
-		void shutdown();
+		static void initialize();
+		static void shutdown();
 
-		std::shared_ptr<rawrbox::SoundBase> loadSound(const std::filesystem::path& path, uint32_t flags = SoundFlags::NONE);
-		std::shared_ptr<rawrbox::SoundBase> loadHTTPSound(const std::string& url, uint32_t flags = SoundFlags::NONE);
+		static std::shared_ptr<rawrbox::SoundBase> loadSound(const std::filesystem::path& path, uint32_t flags = SoundFlags::NONE);
+		static std::shared_ptr<rawrbox::SoundBase> loadHTTPSound(const std::string& url, uint32_t flags = SoundFlags::NONE);
 
 		// UTILS -----
-		[[nodiscard]] float getMasterVolume() const;
+		static float getMasterVolume();
 
-		void setMasterVolume(float volume, bool set = true);
-		void setMuteOnUnfocus(bool set);
-		void setHasFocus(bool hasFocus);
-		void setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& front = {0, 0, -1}, const rawrbox::Vector3f& top = {0, -1, 0});
+		static void setMasterVolume(float volume, bool set = true);
+		static void setMuteOnUnfocus(bool set);
+		static void setHasFocus(bool hasFocus);
+		static void setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& front = {0, 0, -1}, const rawrbox::Vector3f& top = {0, -1, 0});
 		// -----
 	};
 } // namespace rawrbox

@@ -23,6 +23,7 @@ namespace rawrbox {
 		int _currentFrame = 0;
 		bool _loop = true;
 		bool _failedToLoad = false;
+		bool _transparent = false;
 
 		int64_t _cooldown = 0;
 		float _speed = 1.F;
@@ -42,6 +43,7 @@ namespace rawrbox {
 		// ------UTILS
 		virtual void setLoop(bool loop);
 		virtual void setSpeed(float speed);
+		[[nodiscard]] const bool hasTransparency() const override;
 		// --------------------
 
 		// ------RENDER

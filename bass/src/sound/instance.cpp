@@ -1,6 +1,6 @@
+#include <rawrbox/bass/manager.hpp>
 #include <rawrbox/bass/sound/flags.hpp>
 #include <rawrbox/bass/sound/instance.hpp>
-#include <rawrbox/bass/static.hpp>
 #include <rawrbox/bass/utils/bass.hpp>
 
 #ifdef RAWRBOX_DEBUG
@@ -13,15 +13,15 @@
 
 namespace rawrbox {
 	SoundInstance::SoundInstance(uint32_t audioSample, bool isStream, uint32_t flags) : _sample(audioSample), _flags(flags), _stream(isStream) {
-		rawrbox::BASS.onBEAT.add(std::to_string(this->_sample), [this](std::pair<uint32_t, double> data) {
+		rawrbox::BASS::onBEAT.add(std::to_string(this->_sample), [this](std::pair<uint32_t, double> data) {
 			if (this->_sample == data.first || this->_channel == data.first) this->onBEAT(data.second);
 		});
 
-		rawrbox::BASS.onBPM.add(std::to_string(this->_sample), [this](std::pair<uint32_t, float> data) {
+		rawrbox::BASS::onBPM.add(std::to_string(this->_sample), [this](std::pair<uint32_t, float> data) {
 			if (this->_sample == data.first || this->_channel == data.first) this->onBPM(data.second);
 		});
 
-		rawrbox::BASS.onSoundEnd.add(std::to_string(this->_sample), [this](uint32_t sample) {
+		rawrbox::BASS::onSoundEnd.add(std::to_string(this->_sample), [this](uint32_t sample) {
 			if (this->_sample == sample || this->_channel == sample) this->onEnd();
 		});
 	}
@@ -36,8 +36,8 @@ namespace rawrbox {
 			BASS_StreamFree(this->_channel);
 
 		// CLEANUP CALLBACKS
-		rawrbox::BASS.onBEAT.remove(std::to_string(this->_sample));
-		rawrbox::BASS.onSoundEnd.remove(std::to_string(this->_sample));
+		rawrbox::BASS::onBEAT.remove(std::to_string(this->_sample));
+		rawrbox::BASS::onSoundEnd.remove(std::to_string(this->_sample));
 
 #ifdef RAWRBOX_DEBUG
 		rawrbox::GIZMOS::removeSound(this);

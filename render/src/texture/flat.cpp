@@ -4,6 +4,8 @@
 
 namespace rawrbox {
 	TextureFlat::TextureFlat(const rawrbox::Vector2i& initsize, const rawrbox::Color& bgcol) {
+		this->_channels = 4;
+
 		this->_pixels.resize(static_cast<uint32_t>(initsize.y * initsize.x) * this->_channels);
 		this->_size = initsize;
 
@@ -12,7 +14,13 @@ namespace rawrbox {
 			this->_pixels[i + 1] = static_cast<uint8_t>(bgcol.g * 255);
 			this->_pixels[i + 2] = static_cast<uint8_t>(bgcol.b * 255);
 			this->_pixels[i + 3] = static_cast<uint8_t>(bgcol.a * 255);
+
+			if (bgcol.a != 1.F) this->_transparent = true;
 		}
+	}
+
+	const bool TextureFlat::hasTransparency() const {
+		return this->_channels == 4 && this->_transparent;
 	}
 
 	void TextureFlat::upload(bgfx::TextureFormat::Enum format) {

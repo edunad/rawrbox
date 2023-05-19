@@ -6,6 +6,7 @@
 #include <rawrbox/render/model/light/types.hpp>
 #include <rawrbox/render/model/skeleton.hpp>
 #include <rawrbox/render/texture/image.hpp>
+#include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/string.hpp>
 
 #include <assimp/GltfMaterial.h>
@@ -48,13 +49,14 @@ namespace rawrbox {
 	public:
 		std::string name = "";
 
-		float opacity = 1.F;
 		bool wireframe = false;
-		bool matDisableCulling = false;
-		uint64_t blending = BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
+		bool doubleSided = false;
+		uint64_t blending = BGFX_STATE_BLEND_NORMAL;
 
 		std::shared_ptr<rawrbox::TextureBase> diffuse = nullptr;
 		rawrbox::Colorf diffuseColor = rawrbox::Colors::White;
+
+		std::shared_ptr<rawrbox::TextureBase> opacity = nullptr;
 
 		std::shared_ptr<rawrbox::TextureBase> specular = nullptr;
 		rawrbox::Colorf specularColor = rawrbox::Colors::White;
@@ -64,9 +66,10 @@ namespace rawrbox {
 		rawrbox::Colorf emissionColor = rawrbox::Colors::White;
 		float intensity = 1.F;
 
-		AssimpMaterial() = default;
+		AssimpMaterial(const std::string& _name) : name(_name){};
 		~AssimpMaterial() {
 			this->diffuse = nullptr;
+			this->opacity = nullptr;
 			this->specular = nullptr;
 			this->emissive = nullptr;
 		}
@@ -91,9 +94,6 @@ namespace rawrbox {
 
 		float angleInnerCone = 0.F;
 		float angleOuterCone = 0.F;
-
-		AssimpLight() = default;
-		~AssimpLight() = default;
 	};
 
 	struct AssimpMesh {
@@ -102,8 +102,8 @@ namespace rawrbox {
 		rawrbox::BBOX bbox;
 		rawrbox::Matrix4x4 offsetMatrix;
 
-		std::shared_ptr<rawrbox::AssimpMaterial> material = nullptr;
-		std::shared_ptr<rawrbox::Skeleton> skeleton = nullptr;
+		std::weak_ptr<rawrbox::AssimpMaterial> material;
+		std::weak_ptr<rawrbox::Skeleton> skeleton;
 
 		bool animated = false;
 
@@ -112,8 +112,8 @@ namespace rawrbox {
 
 		AssimpMesh() = default;
 		~AssimpMesh() {
-			this->material = nullptr;
-			this->skeleton = nullptr;
+			this->material.reset();
+			this->skeleton.reset();
 
 			this->vertices.clear();
 			this->indices.clear();
@@ -157,7 +157,7 @@ namespace rawrbox {
 			return flags;
 		}
 
-		std::vector<std::shared_ptr<rawrbox::TextureBase>> importTexture(const aiMaterial* mat, aiTextureType type) {
+		std::vector<std::shared_ptr<rawrbox::TextureBase>> importTexture(const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count) {
 			std::vector<std::shared_ptr<rawrbox::TextureBase>> _textures = {};
 
 			int count = mat->GetTextureCount(type);
@@ -197,7 +197,7 @@ namespace rawrbox {
 
 					// ----
 					texture->setName(basename);
-					texture->upload(bgfx::TextureFormat::Count);
+					texture->upload(format);
 
 					_textures.push_back(texture);
 				}
@@ -217,29 +217,24 @@ namespace rawrbox {
 				name = matName.data;
 			}
 
-			auto mat = std::make_shared<rawrbox::AssimpMaterial>();
 			auto fnd = this->materials.find(name);
 			if (fnd == this->materials.end()) {
-				mat->name = name;
+				auto mat = std::make_shared<rawrbox::AssimpMaterial>(name);
 
-				if (pMaterial->Get(AI_MATKEY_OPACITY, mat->opacity) != AI_SUCCESS) {
-					pMaterial->Get(AI_MATKEY_TRANSPARENCYFACTOR, mat->opacity);
-				}
-
+				// WIREFRAME ----
 				pMaterial->Get(AI_MATKEY_ENABLE_WIREFRAME, mat->wireframe);
-				pMaterial->Get(AI_MATKEY_TWOSIDED, mat->matDisableCulling);
+				// ---------
 
-				aiBlendMode blending = aiBlendMode_Default;
-				pMaterial->Get(AI_MATKEY_BLEND_FUNC, blending);
-				switch (blending) {
-					case aiBlendMode_Additive:
-						mat->blending = BGFX_STATE_BLEND_ADD;
-						break;
-					case aiBlendMode_Default:
-						mat->blending = BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
+				// CULLING ----
+				pMaterial->Get(AI_MATKEY_TWOSIDED, mat->doubleSided);
+				/// ----
 
-					default: break;
+				// TRANSPARENCY ----
+				float alpha = 1.F;
+				if (pMaterial->Get(AI_MATKEY_OPACITY, alpha) != AI_SUCCESS) {
+					pMaterial->Get(AI_MATKEY_TRANSPARENCYFACTOR, alpha);
 				}
+				// ---------
 
 				// Texture loading ----
 				if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS) > 0) {
@@ -264,13 +259,15 @@ namespace rawrbox {
 
 				// TEXTURE DIFFUSE
 				auto diffuse = this->importTexture(pMaterial, aiTextureType_DIFFUSE);
-				if (!diffuse.empty()) mat->diffuse = diffuse[0]; // Only support one for the moment
+				if (!diffuse.empty()) {
+					mat->diffuse = diffuse[0]; // Only support one for the moment
+				}
 
 				aiColor3D flatColor;
 				if (pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, flatColor) == AI_SUCCESS) {
-					mat->diffuseColor = rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, mat->opacity);
+					mat->diffuseColor = rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, alpha);
 				} else if (pMaterial->Get(AI_MATKEY_BASE_COLOR, flatColor) == AI_SUCCESS) {
-					mat->diffuseColor = rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, mat->opacity);
+					mat->diffuseColor = rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, alpha);
 				}
 				// ----------------------
 
@@ -287,7 +284,7 @@ namespace rawrbox {
 
 				aiColor3D emissionColor;
 				if (pMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emissionColor) == AI_SUCCESS) {
-					mat->emissionColor = rawrbox::Color{emissionColor.r, emissionColor.g, emissionColor.b, mat->opacity};
+					mat->emissionColor = rawrbox::Color{emissionColor.r, emissionColor.g, emissionColor.b, alpha};
 				}
 				// ----------------------
 
@@ -301,15 +298,25 @@ namespace rawrbox {
 
 				aiColor3D specularColor;
 				if (pMaterial->Get(AI_MATKEY_COLOR_SPECULAR, specularColor) == AI_SUCCESS) {
-					mat->specularColor = rawrbox::Color{specularColor.r, specularColor.g, specularColor.b, mat->opacity};
+					mat->specularColor = rawrbox::Color{specularColor.r, specularColor.g, specularColor.b, alpha};
 				}
 				// ----------------------
 
-				this->materials.insert_or_assign(matName.data, std::move(mat));
-				mesh.material = this->materials[matName.data];
-			} else {
-				mesh.material = fnd->second;
+				// TEXTURE OPACITY
+				auto opacity = this->importTexture(pMaterial, aiTextureType_OPACITY); // bgfx::TextureFormat::D24S8
+				if (!opacity.empty()) {
+					mat->opacity = opacity[0]; // Only support one for the moment
+				}
+				// ----------------------
+
+				if (alpha != 1.F || mat->opacity != nullptr) {
+					mat->blending = BGFX_STATE_BLEND_ALPHA;
+				}
+
+				this->materials[matName.data] = std::move(mat);
 			}
+
+			mesh.material = this->materials[matName.data];
 		}
 		/// -------
 
@@ -369,8 +376,9 @@ namespace rawrbox {
 				// ----
 
 				// Apply the weights -----
-				auto fnd = mesh.skeleton->boneMap.find(boneKey);
-				if (fnd == mesh.skeleton->boneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
+				auto skl = mesh.skeleton.lock();
+				auto fnd = skl->boneMap.find(boneKey);
+				if (fnd == skl->boneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
 
 				fnd->second->offsetMtx.transpose(&bone->mOffsetMatrix.a1);
 				fnd->second->offsetMtx.mul(mesh.offsetMatrix);
@@ -453,7 +461,7 @@ namespace rawrbox {
 				if (animName.empty()) animName = fmt::format("anim_{}", i);
 
 				if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS) > 0) {
-					fmt::print("[RawrBox-Assimp] Found animation {}\n", animName);
+					fmt::print("[RawrBox-Assimp] Found animation '{}'\n", animName);
 				}
 
 				auto spl = rawrbox::StrUtils::split(animName, '|');
@@ -596,7 +604,7 @@ namespace rawrbox {
 				// -----
 
 				if ((this->assimpFlags & aiProcess_PreTransformVertices) == 0) {
-					// mesh.offsetMatrix.transpose(&root->mTransformation.a1); // Append matrix to our vertices, since pre-transform is disabled
+					mesh.offsetMatrix.transpose(&root->mTransformation.a1); // Append matrix to our vertices, since pre-transform is disabled
 				}
 
 				// Textures
@@ -740,9 +748,15 @@ namespace rawrbox {
 		void load(const std::filesystem::path& path, const std::vector<uint8_t>& buffer, uint32_t loadFlags = ModelLoadFlags::NONE, uint32_t assimpFlags = DEFAULT_ASSIMP_FLAGS) {
 			this->fileName = path;
 
-			if (!buffer.empty()) {
-				const char* bah = reinterpret_cast<const char*>(buffer.data());
-				this->internalLoad(aiImportFileFromMemory(bah, static_cast<uint32_t>(buffer.size() * sizeof(char)), this->assimpFlags, nullptr));
+			auto b = buffer;
+			if (!b.empty()) {
+				const char* bah = reinterpret_cast<const char*>(b.data());
+
+				if (path.extension() == ".gltf") {
+					this->load(path, loadFlags, assimpFlags); // GLTF has external dependencies, not sure how to load them using file from memory
+				} else {
+					this->internalLoad(aiImportFileFromMemory(bah, static_cast<uint32_t>(b.size() * sizeof(char)), this->assimpFlags, nullptr));
+				}
 			} else {
 				// Fallback
 				fmt::print("[RawrBox-Assimp] Failed to load '{}'\n", this->fileName.generic_string());

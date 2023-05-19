@@ -41,7 +41,7 @@ namespace assimp {
 	}
 
 	void Game::loadContent() {
-		std::array<std::pair<std::string, uint32_t>, 3> initialContentFiles = {
+		std::array<std::pair<std::string, uint32_t>, 2> initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT)};
 
@@ -90,7 +90,8 @@ namespace assimp {
 
 		this->_text = nullptr;
 
-		rawrbox::LIGHTS::destroy();
+		rawrbox::RESOURCES::shutdown();
+		rawrbox::LIGHTS::shutdown();
 		rawrbox::Engine::shutdown();
 	}
 

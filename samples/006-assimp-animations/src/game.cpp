@@ -1,6 +1,9 @@
 
-#include <rawrbox/render/model/light/manager.hpp>
+#include <rawrbox/render/model/assimp/assimp_importer.hpp>
 #include <rawrbox/render/model/mesh.hpp>
+#include <rawrbox/render/resources/assimp/model.hpp>
+#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
 #include <anims/game.hpp>
@@ -31,7 +34,8 @@ namespace anims {
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		this->_textEngine = std::make_unique<rawrbox::TextEngine>();
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::AssimpLoader>());
 
 		// Load content ---
 		this->loadContent();
@@ -39,30 +43,48 @@ namespace anims {
 	}
 
 	void Game::loadContent() {
+
+		std::array initialContentFiles = {
+		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("content/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS),
+		    std::make_pair<std::string, uint32_t>("content/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE),
+		    std::make_pair<std::string, uint32_t>("content/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS)};
+
+		rawrbox::ASYNC::run([initialContentFiles]() {
+			for (auto& f : initialContentFiles) {
+				rawrbox::RESOURCES::loadFile(f.first, f.second);
+			} }, [this] { rawrbox::runOnMainThread([this]() {
+										  rawrbox::RESOURCES::upload();
+										  this->contentLoaded();
+									  }); });
+
 		this->_window->upload();
+	}
+
+	void Game::contentLoaded() {
 
 		// Fonts -----
-		this->_font = &this->_textEngine->load("cour.ttf", 16);
-		// ------
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
+		//  ------
 
 		// Assimp test ---
-		this->_model->load("./content/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS);
+		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/wolf/wolfman_animated.fbx");
+		this->_model->load(mdl->model);
 		this->_model->playAnimation("Scene", true, 1.F);
 		this->_model->setPos({0, 0, 0});
-		this->_model->upload();
 
-		this->_model2->load("./content/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE);
+		auto mdl2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/multiple_skeleton/twocubestest.gltf");
+		this->_model2->load(mdl2->model);
 		this->_model2->playAnimation("MewAction", true, 0.8F);
 		this->_model2->playAnimation("MewAction.001", true, 0.5F);
 		this->_model2->setPos({0, 0, 2.5F});
 		this->_model2->setScale({0.25F, 0.25F, 0.25F});
-		this->_model2->upload();
 
-		this->_model3->load("./content/models/grandma_tv/TV_emission.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS);
+		auto mdl3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/grandma_tv/scene.gltf");
+		this->_model3->load(mdl3->model);
 		this->_model3->playAnimation("Scene", true, 1.F);
 		this->_model3->setPos({0, 0, -3.5F});
 		this->_model3->setScale({0.35F, 0.35F, 0.35F});
-		this->_model3->upload();
 		// -----
 
 		{
@@ -81,6 +103,8 @@ namespace anims {
 		this->_text->upload();
 		this->_modelGrid->upload();
 		// -----
+
+		this->_ready = true;
 	}
 
 	void Game::shutdown() {
@@ -94,6 +118,8 @@ namespace anims {
 		this->_model3 = nullptr;
 		this->_modelGrid = nullptr;
 
+		rawrbox::RESOURCES::shutdown();
+		rawrbox::LIGHTS::shutdown();
 		rawrbox::Engine::shutdown();
 	}
 
@@ -138,7 +164,13 @@ namespace anims {
 		printFrames();
 		// -----------
 
-		this->drawWorld();
+		if (this->_ready) {
+			this->drawWorld();
+		} else {
+			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
+			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
+			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
+		}
 
 		this->_window->frame(true); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());

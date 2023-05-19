@@ -6,7 +6,7 @@
 
 #include <utf8.h>
 
-#define BGFX_STATE_DEFAULT_3D_TEXT (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
+#define BGFX_STATE_DEFAULT_3D_TEXT (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA_TO_COVERAGE)
 namespace rawrbox {
 	class Text3D : public rawrbox::ModelBase<rawrbox::MaterialText3DUnlit> {
 	public:

@@ -87,6 +87,8 @@ namespace light {
 		this->_model = nullptr;
 		this->_text = nullptr;
 
+		rawrbox::RESOURCES::shutdown();
+		rawrbox::LIGHTS::shutdown();
 		rawrbox::Engine::shutdown();
 	}
 

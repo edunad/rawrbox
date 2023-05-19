@@ -37,7 +37,6 @@ namespace rawrbox {
 	class Font {
 
 	private:
-		TextEngine* _engine;
 		std::vector<Glyph> _glyphs;
 
 		std::string _file;
@@ -54,13 +53,14 @@ namespace rawrbox {
 		Glyph loadGlyph(FT_ULong character);
 		std::vector<unsigned char> generateGlyph();
 
-		void preloadGlyphs(std::string chars);
+		void preloadGlyphs(const std::string& chars);
+		std::string getFontInSystem(const std::string& path);
 		// -----
 	public:
 		FT_Face face = {};
 		uint32_t size;
 
-		Font(TextEngine* engine, std::string filename, uint32_t size, FT_Render_Mode renderMode = FT_RENDER_MODE_NORMAL);
+		Font(const std::string& filename, uint32_t size, FT_Render_Mode renderMode = FT_RENDER_MODE_NORMAL);
 		Font(Font&&) = delete;
 		Font& operator=(Font&&) = delete;
 		Font(const Font&) = delete;

@@ -71,7 +71,7 @@ namespace post_process {
 		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_road/scene.gltf");
 
 		this->_model->load(mdl->model);
-		this->_model->setPos({0, 0, 0});
+		this->_model->setScale({0.01F});
 		//   -----
 
 		this->_ready = true;
@@ -82,6 +82,8 @@ namespace post_process {
 		this->_camera = nullptr;
 		this->_model = nullptr;
 
+		rawrbox::RESOURCES::shutdown();
+		rawrbox::LIGHTS::shutdown();
 		rawrbox::Engine::shutdown();
 	}
 

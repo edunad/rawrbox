@@ -12,7 +12,7 @@ namespace rawrbox {
 	public:
 		static bool fullbright;
 
-		static void destroy();
+		static void shutdown();
 		static void setEnabled(bool fb);
 
 		// Light utils ----

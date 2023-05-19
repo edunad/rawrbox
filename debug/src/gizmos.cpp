@@ -55,8 +55,6 @@ namespace rawrbox {
 		auto p = l->getPosMatrix();
 		mesh->setPos({p[0], p[1], p[2]});
 		mesh->setName(fmt::format("Light-{}", l->id()));
-		mesh->setCulling(BGFX_STATE_CULL_CW);
-		mesh->setBlend(BGFX_STATE_BLEND_NORMAL);
 
 		switch (l->getType()) {
 			case LightType::LIGHT_SPOT:
@@ -89,9 +87,7 @@ namespace rawrbox {
 		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = _gizmo_emitters->generatePlane({}, {0.25F, 0.25F});
 		mesh->setPos(l->getPos());
 		mesh->setName(fmt::format("Emitter-{}", l->id()));
-		mesh->setCulling(BGFX_STATE_CULL_CW);
 		mesh->setTexture(_textures["particle_emitter"]);
-		mesh->setBlend(BGFX_STATE_BLEND_NORMAL);
 
 		_gizmo_emitters->addMesh(mesh);
 	}
@@ -114,9 +110,7 @@ namespace rawrbox {
 		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = _gizmo_sounds->generatePlane({}, {0.25F, 0.25F});
 		mesh->setPos(l->getPosition());
 		mesh->setName(fmt::format("Sound-{}", l->id()));
-		mesh->setCulling(BGFX_STATE_CULL_CW);
 		mesh->setTexture(_textures["sound_emitter"]);
-		mesh->setBlend(BGFX_STATE_BLEND_NORMAL);
 
 		_gizmo_sounds->addMesh(mesh);
 	}

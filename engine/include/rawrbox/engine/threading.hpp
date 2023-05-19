@@ -8,6 +8,8 @@
 	#include <rawrbox/utils/thread_utils.hpp>
 #endif
 
+#include <fmt/printf.h>
+
 #include <functional>
 #include <string>
 #include <thread>
@@ -24,7 +26,8 @@ namespace rawrbox {
 		static std::exception_ptr _exception_ptr;
 
 		static void completedTask() {
-			if (_exception_ptr != nullptr) std::rethrow_exception(_exception_ptr);
+			if (_exception_ptr != nullptr)
+				std::rethrow_exception(_exception_ptr);
 		}
 
 		static void internal_run(std::function<void()> onComplete = nullptr) {
@@ -44,7 +47,8 @@ namespace rawrbox {
 							fnc();
 							std::this_thread::sleep_for(std::chrono::milliseconds(1));
 						}
-					} catch (...) {
+					} catch (const std::exception& e) {
+						fmt::print("[RawrBox-ASYNC] Fatal error\n  └── {}", e.what());
 						_exception_ptr = std::current_exception();
 					}
 

@@ -11,32 +11,45 @@
 
 #include <array>
 #include <bit>
+#include <filesystem>
 #include <iostream>
 #include <utility>
 
 namespace rawrbox {
-	Font::~Font() {
-		if (FT_Done_Face(this->face) != 0) fmt::print(stderr, "Error: failed to clean up font\n");
+
+	std::string Font::getFontInSystem(const std::string& path) {
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+		return fmt::format("/usr/share/fonts/{}", path);
+#elif BX_PLATFORM_WINDOWS
+		std::array<TCHAR, MAX_PATH> windir = {};
+
+		GetWindowsDirectory(windir.data(), MAX_PATH);
+		return fmt::format("{}\\Fonts\\{}", windir.data(), path);
+#endif
 	}
 
-	Font::Font(rawrbox::TextEngine* engine, std::string _filename, uint32_t _size, FT_Render_Mode renderMode) : _engine(engine), _file(std::move(_filename)), _mode(renderMode), size(_size) {
+	Font::~Font() {
+		if (FT_Done_Face(this->face) != 0) fmt::print(stderr, "[RawrBox-Font] Failed to clean up font\n");
+	}
+
+	Font::Font(const std::string& _filename, uint32_t _size, FT_Render_Mode renderMode) : _mode(renderMode), size(_size) {
+		this->_file = _filename;
+
 		// Check our own content
-		if (FT_New_Face(engine->ft, this->_file.c_str(), 0, &this->face) != FT_Err_Ok) {
-			// Check system path
-#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-			if (FT_New_Face(engine->ft, fmt::format("/usr/share/fonts/{}", this->_file).c_str(), 0, &this->face) != FT_Err_Ok) {
-				throw std::runtime_error(fmt::format("Error: failed to load font: {}", this->_file));
-			}
-#elif BX_PLATFORM_WINDOWS
-			std::array<TCHAR, MAX_PATH> windir = {};
+		if (!std::filesystem::exists(this->_file)) {
+			this->_file = this->getFontInSystem(this->_file);
 
-			GetWindowsDirectory(windir.data(), MAX_PATH);
-			std::string p = fmt::format("{}\\Fonts\\{}", windir.data(), this->_file);
-
-			if (FT_New_Face(engine->ft, p.c_str(), 0, &this->face) != FT_Err_Ok) {
-				throw std::runtime_error(fmt::format("Error: failed to load font: {}", this->_file));
+			// Not found on content & system? Load fallback
+			if (!std::filesystem::exists(this->_file)) {
+				fmt::print("  └── Loading fallback font!\n");
+				this->_file = this->getFontInSystem("cour.ttf"); // Fallback
+										 // TODO: CHECK FALLBACK ON LINUX
+				if (!std::filesystem::exists(this->_file)) throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load font '{}'", this->_file));
 			}
-#endif
+		}
+
+		if (FT_New_Face(rawrbox::TextEngine::ft, this->_file.c_str(), 0, &this->face) != FT_Err_Ok) {
+			throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load font '{}'", this->_file));
 		}
 
 		FT_Size_RequestRec req;
@@ -56,7 +69,7 @@ namespace rawrbox {
 		this->preloadGlyphs("�~!@#$%^&*()_+`1234567890-=QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm|<>?,./:;\"'}{][ \\");
 	}
 
-	void Font::preloadGlyphs(std::string chars) {
+	void Font::preloadGlyphs(const std::string& chars) {
 		auto charsIter = chars.begin();
 		while (charsIter < chars.end()) {
 			this->loadGlyph(utf8::next(charsIter, chars.end()));
@@ -126,8 +139,7 @@ namespace rawrbox {
 	}
 
 	std::shared_ptr<rawrbox::TextureAtlas> Font::getAtlasTexture(const Glyph& g) {
-		if (this->_engine == nullptr) throw std::runtime_error("[RawrBox-FONT] Text engine is null");
-		return this->_engine->getAtlas(g.atlasID);
+		return rawrbox::TextEngine::getAtlas(g.atlasID);
 	}
 
 	// -------
@@ -142,7 +154,7 @@ namespace rawrbox {
 		if (FT_Load_Glyph(this->face, charIndx, FT_LOAD_TARGET_(this->_mode) | FT_LOAD_FORCE_AUTOHINT) != FT_Err_Ok) return {};
 		std::vector<unsigned char> buffer = this->generateGlyph();
 
-		auto atlas = this->_engine->requestAtlas(bitmapW, bitmapR, bgfx::TextureFormat::RG8);
+		auto atlas = rawrbox::TextEngine::requestAtlas(bitmapW, bitmapR, bgfx::TextureFormat::RG8);
 		if (atlas.second == nullptr) throw std::runtime_error("[RawrBox-FONT] Failed to generate / get atlas texture");
 
 		auto& atlasNode = atlas.second->addSprite(bitmapW, bitmapR, buffer);

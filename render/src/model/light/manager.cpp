@@ -15,7 +15,7 @@ namespace rawrbox {
 	std::vector<std::shared_ptr<rawrbox::LightBase>> LIGHTS::_lights = {};
 	bool LIGHTS::fullbright = false;
 
-	void LIGHTS::destroy() { _lights.clear(); }
+	void LIGHTS::shutdown() { _lights.clear(); }
 	void LIGHTS::setEnabled(bool fb) { fullbright = fb; }
 
 	// Light utils ----

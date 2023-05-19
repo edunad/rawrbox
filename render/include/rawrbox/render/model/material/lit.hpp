@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/render/model/light/base.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/shader_defines.hpp>
@@ -22,6 +23,7 @@ namespace rawrbox {
 	public:
 		bgfx::UniformHandle s_texSpecularColor = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle s_texEmissionColor = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle s_texOpacityColor = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle u_specularColor = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_emissionColor = BGFX_INVALID_HANDLE;
@@ -42,6 +44,7 @@ namespace rawrbox {
 		~MaterialLit() override {
 			RAWRBOX_DESTROY(s_texSpecularColor);
 			RAWRBOX_DESTROY(s_texEmissionColor);
+			RAWRBOX_DESTROY(s_texOpacityColor);
 
 			RAWRBOX_DESTROY(u_specularColor);
 			RAWRBOX_DESTROY(u_emissionColor);
@@ -61,6 +64,7 @@ namespace rawrbox {
 
 			s_texSpecularColor = bgfx::createUniform("s_texSpecularColor", bgfx::UniformType::Sampler);
 			s_texEmissionColor = bgfx::createUniform("s_texEmissionColor", bgfx::UniformType::Sampler);
+			s_texOpacityColor = bgfx::createUniform("s_texOpacityColor", bgfx::UniformType::Sampler);
 
 			u_specularColor = bgfx::createUniform("u_specularColor", bgfx::UniformType::Vec4);
 			u_emissionColor = bgfx::createUniform("u_emissionColor", bgfx::UniformType::Vec4);
@@ -111,6 +115,12 @@ namespace rawrbox {
 				bgfx::setTexture(2, s_texEmissionColor, mesh->emissionTexture->getHandle());
 			} else {
 				bgfx::setTexture(2, s_texEmissionColor, rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE->getHandle());
+			}
+
+			if (mesh->opacityTexture != nullptr && mesh->opacityTexture->valid() && !mesh->wireframe) {
+				bgfx::setTexture(3, s_texOpacityColor, mesh->opacityTexture->getHandle());
+			} else {
+				bgfx::setTexture(3, s_texOpacityColor, rawrbox::WHITE_TEXTURE->getHandle());
 			}
 
 			bgfx::setUniform(u_specularColor, mesh->specularColor.data().data());

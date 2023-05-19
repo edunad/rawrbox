@@ -97,6 +97,12 @@ namespace rawrbox {
 			}
 			// --------
 
+			// Sort alpha
+			std::sort(this->_meshes.begin(), this->_meshes.end(), [](auto a, auto b) {
+				return a->blending != BGFX_STATE_BLEND_ALPHA && b->blending == BGFX_STATE_BLEND_ALPHA;
+			});
+			// --------
+
 			this->updateBuffers();
 		}
 

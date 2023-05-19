@@ -14,6 +14,7 @@ namespace rawrbox {
 		std::vector<std::pair<std::filesystem::path, uint32_t>> _preLoadFiles = {};
 
 	public:
+		Loader() = default;
 		virtual ~Loader() = default;
 
 		// UTILS -----

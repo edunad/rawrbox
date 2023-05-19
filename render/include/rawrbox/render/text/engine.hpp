@@ -13,28 +13,20 @@
 namespace rawrbox {
 
 	class TextEngine {
-		static uint32_t atlasID;
 
-		std::map<std::string, std::shared_ptr<rawrbox::Font>> _fonts;
-		std::map<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> _atlas;
-
-		void initialize();
-		void destroy();
+		static std::map<std::string, std::shared_ptr<rawrbox::Font>> _fonts;
+		static std::map<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> _atlas;
 
 	public:
-		FT_Library ft = nullptr;
+		static uint32_t atlasID;
+		static FT_Library ft;
 
-		TextEngine();
-		TextEngine(const TextEngine& other) = delete;
-		TextEngine(TextEngine&& other) = delete;
-		virtual ~TextEngine();
+		static void initialize();
+		static void shutdown();
 
-		TextEngine& operator=(const TextEngine& other) = delete;
-		TextEngine& operator=(TextEngine&& other) = delete;
+		static std::pair<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> requestAtlas(int width, int height, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8);
+		static std::shared_ptr<rawrbox::TextureAtlas> getAtlas(uint32_t id);
 
-		virtual std::pair<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> requestAtlas(int width, int height, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8);
-		virtual std::shared_ptr<rawrbox::TextureAtlas> getAtlas(uint32_t id);
-
-		virtual std::weak_ptr<rawrbox::Font> load(std::string filename, uint32_t size);
+		static std::weak_ptr<rawrbox::Font> load(std::string filename, uint32_t size);
 	};
 } // namespace rawrbox
