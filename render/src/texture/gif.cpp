@@ -20,6 +20,7 @@ namespace rawrbox {
 
 	void TextureGIF::internalLoad(const std::vector<uint8_t>& buffer, bool useFallback) {
 		this->_frames.clear();
+		this->_channels = 4; // Force 4 channels on GIFS
 
 		int frames_n = 0;
 		int* delays = nullptr;

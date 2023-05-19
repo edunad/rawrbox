@@ -41,9 +41,12 @@ namespace assimp {
 	}
 
 	void Game::loadContent() {
-		std::array<std::pair<std::string, uint32_t>, 2> initialContentFiles = {
+		std::array initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT)};
+		    std::make_pair<std::string, uint32_t>("content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT),
+		    std::make_pair<std::string, uint32_t>("content/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS),
+		    std::make_pair<std::string, uint32_t>("content/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE),
+		    std::make_pair<std::string, uint32_t>("content/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS)};
 
 		rawrbox::ASYNC::run([initialContentFiles]() {
 			for (auto& f : initialContentFiles) {
@@ -64,19 +67,48 @@ namespace assimp {
 		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx");
 
 		this->_model->load(mdl->model);
-		this->_model->setPos({3, 0, 0});
+		this->_model->setPos({7, 1.1F, 0.F});
 
 		this->_model2->load(mdl->model);
-		this->_model2->setPos({-3, 0, 0});
+		this->_model2->setPos({-6, 1.1F, 0.F});
+
+		// ANIMATIONS ---
+		auto mdl2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/wolf/wolfman_animated.fbx");
+		this->_model3->load(mdl2->model);
+		this->_model3->playAnimation("Scene", true, 1.F);
+		this->_model3->setPos({0, 0, 0});
+
+		auto mdl3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/multiple_skeleton/twocubestest.gltf");
+		this->_model4->load(mdl3->model);
+		this->_model4->playAnimation("MewAction", true, 0.8F);
+		this->_model4->playAnimation("MewAction.001", true, 0.5F);
+		this->_model4->setPos({0, 0, 2.5F});
+		this->_model4->setScale({0.25F, 0.25F, 0.25F});
+
+		auto mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/grandma_tv/scene.gltf");
+		this->_model5->load(mdl4->model);
+		this->_model5->playAnimation("Scene", true, 1.F);
+		this->_model5->setPos({0, 0, -3.5F});
+		this->_model5->setScale({0.35F, 0.35F, 0.35F});
+
 		//   -----
 
 		// Text test ----
 		{
-			this->_text->addText(this->_font, "TEXTURES + LIGHT", {-3.F, 2.0F, 0});
-			this->_text->addText(this->_font, "TEXTURES", {3.F, 2.0F, 0});
+			this->_text->addText(this->_font, "TEXTURES + LIGHT", {-6.F, 3.0F, 0});
+			this->_text->addText(this->_font, "TEXTURES", {6.F, 3.0F, 0});
+			this->_text->addText(this->_font, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
+			this->_text->addText(this->_font, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.F, 2.5F});
+			this->_text->addText(this->_font, "VERTEX ANIMATIONS", {0.F, 1.8F, -3.5F});
 			this->_text->upload();
 		}
 		// ------
+
+		{
+			auto mesh = this->_modelGrid->generateGrid(24, {0.F, 0.F, 0.F});
+			this->_modelGrid->addMesh(mesh);
+			this->_modelGrid->upload();
+		}
 
 		this->_ready = true;
 	}
@@ -87,6 +119,10 @@ namespace assimp {
 
 		this->_model = nullptr;
 		this->_model2 = nullptr;
+		this->_model3 = nullptr;
+		this->_model4 = nullptr;
+		this->_model5 = nullptr;
+		this->_modelGrid = nullptr;
 
 		this->_text = nullptr;
 
@@ -107,9 +143,13 @@ namespace assimp {
 
 	void Game::drawWorld() {
 		auto pos = this->_camera->getPos();
+		this->_modelGrid->draw(pos);
 
 		this->_model->draw(pos);
 		this->_model2->draw(pos);
+		this->_model3->draw(pos);
+		this->_model4->draw(pos);
+		this->_model5->draw(pos);
 
 		this->_text->draw(pos);
 	}

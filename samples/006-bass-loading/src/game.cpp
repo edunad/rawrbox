@@ -160,7 +160,7 @@ namespace bass_test {
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "007-bass-loading");
+		bgfx::dbgTextPrintf(1, 1, 0x1f, "006-bass-loading");
 		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: BASS test");
 		printFrames();
 		// -----------

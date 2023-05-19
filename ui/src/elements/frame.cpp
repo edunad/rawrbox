@@ -1,18 +1,23 @@
 
 #include <rawrbox/render/stencil.hpp>
+#include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
 #include <rawrbox/ui/static.hpp>
 
 namespace rawrbox {
-	UIFrame::UIFrame() {
-		/*auto& content = IasGame::getInstance().content;
-		consolas = content.getFile<ContentEntryFont>("content/fonts/consola.ttf")->getSize(11);
+	UIFrame::~UIFrame() {
+		this->_stripes = nullptr;
+		this->_overlay = nullptr;
 
-		stripes = content.getFile<ContentEntryTexture>("content/textures/ui/components/stripe.png")->texture;
-		overlay = content.getFile<ContentEntryTexture>("content/textures/ui/components/overlay.png")->texture;*/
+		this->_consola.reset();
 	}
 
 	void UIFrame::initialize() {
+		this->_stripes = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/stripe.png")->texture;
+		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->texture;
+
+		this->_consola = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(11);
+
 		rawrbox::ROOT_UI->setFocus(this->getRef<UIFrame>());
 	}
 
@@ -37,8 +42,8 @@ namespace rawrbox {
 	void UIFrame::mouseMove(const rawrbox::Vector2i& mousePos) {
 		if (!this->_dragging) return;
 
-		auto p = getParent<rawrbox::UIContainer>();
-		this->setPos((getPos() + (mousePos.cast<float>() - this->_dragStart)).clamp(p->getPos(), p->getPos() + p->getSize() - getSize()));
+		auto p = this->getParent<>();
+		this->setPos((this->getPos() + (mousePos.cast<float>() - this->_dragStart)).clamp(p->getPos(), p->getPos() + p->getSize() - getSize()));
 	}
 
 	void UIFrame::mouseDown(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) {
@@ -63,33 +68,26 @@ namespace rawrbox {
 
 		// Title
 		stencil.drawBox({}, {size.x, titleSize}, this->_titleColor);
-		// stencil.drawText(*consolas, this->_title, {5, 8}, Color::RGBAHex(0x000000BA), Stencil::TextAlignment::Left, Stencil::TextAlignment::Center);
+		stencil.drawText(this->_consola, this->_title, {5, 8}, Color::RGBAHex(0x000000BA), rawrbox::Alignment::Left, rawrbox::Alignment::Center);
 
-		/*auto& size = getSize();
-		const auto titleSize = 18;
-
-		// Panel Background
-		stencil.drawBox({}, size, Color::RGBHex(0x0C0C0C));
-
-		// Title
-		stencil.drawBox({}, {size.x, titleSize}, this->titleColor);
-		stencil.drawText(*consolas, fmt::format(":// {}", title), {5, 8}, Color::RGBAHex(0x000000BA), Stencil::TextAlignment::Left, Stencil::TextAlignment::Center);
-
-		if (closable) {
-			stencil.drawTexture({size.x - 36, 0}, {6, titleSize}, *stripes, Color::RGBAHex(0x0000004A), {}, {1, static_cast<float>(titleSize) / static_cast<float>(stripes->getSize().y / 2)});
+		if (this->_closable) {
+			stencil.drawTexture({size.x - 36, 0}, {6, titleSize}, this->_stripes, Color::RGBAHex(0x0000004A), {}, {1, static_cast<float>(titleSize) / static_cast<float>(this->_stripes->getSize().y / 2)});
 		}
 
 		// Title bottom border
 		stencil.drawBox({0, titleSize - 2}, {size.x, 2}, Color::RGBAHex(0x0000004A));
 
 		// Bottom frame border
-		stencil.drawBoxOutlined({0, titleSize}, {size.x, size.y - titleSize}, 2, Color::RGBAHex(0x0000005A));*/
+		stencil.pushOutline({1.F, 0.F});
+		stencil.drawBox({0, titleSize}, {size.x, size.y - titleSize}, Color::RGBAHex(0x0000005A));
+		stencil.popOutline();
 	}
 
 	void UIFrame::afterDraw(Stencil& stencil) {
-		/*auto& size = getSize();
+		if (this->_overlay == nullptr) return;
 
-		stencil.drawTexture({}, size, *overlay, Color::RGBAHex(0xFFFFFF0A), {}, {static_cast<float>(size.x) / static_cast<float>(overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(overlay->getSize().y / 2)});*/
+		auto& size = this->getSize();
+		stencil.drawTexture({}, size, this->_overlay, Color::RGBAHex(0xFFFFFF0A), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
 	}
 	// -----
 

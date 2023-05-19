@@ -15,8 +15,8 @@ namespace rawrbox {
 		// INTERNAL UTILS
 		int _pressingMouseButton = 0;
 
-		std::shared_ptr<rawrbox::UIBase> findElement(const rawrbox::Vector2f& mousePos, rawrbox::Vector2f& offsetOut);
-		std::shared_ptr<rawrbox::UIBase> findElement(std::shared_ptr<rawrbox::UIBase> elmPtr, const rawrbox::Vector2f& mousePos, const rawrbox::Vector2f& offset, rawrbox::Vector2f& offsetOut);
+		std::shared_ptr<rawrbox::UIBase> findElement(const rawrbox::Vector2i& mousePos, rawrbox::Vector2i& offsetOut);
+		std::shared_ptr<rawrbox::UIBase> findElement(std::shared_ptr<rawrbox::UIBase> elmPtr, const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset, rawrbox::Vector2i& offsetOut);
 		// ----
 
 		// EVENTS ---

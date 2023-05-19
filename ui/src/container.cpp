@@ -43,14 +43,19 @@ namespace rawrbox {
 	const std::vector<std::shared_ptr<rawrbox::UIBase>>& UIContainer::getChildren() const { return this->_children; }
 
 	bool UIContainer::hasParent() const { return !this->_parent.expired(); }
-	void UIContainer::addChild(std::shared_ptr<rawrbox::UIBase> elm) { elm->setParent(this->getRef<rawrbox::UIContainer>()); }
+	void UIContainer::addChild(std::shared_ptr<rawrbox::UIBase> elm) {
+		elm->setParent(this->getRef<rawrbox::UIContainer>());
+	}
+
 	void UIContainer::setParent(std::shared_ptr<rawrbox::UIContainer> elm) {
 		auto sharedPtr = this->getRef<rawrbox::UIBase>();
 
-		if (hasParent()) {
+		if (this->hasParent()) {
 			auto& childs = this->_parent.lock()->getChildren();
 			childs.erase(std::find(childs.begin(), childs.end(), sharedPtr));
 		}
+
+		this->_parent = elm;
 
 		auto& childn = elm->getChildren();
 		if (sharedPtr->alwaysOnTop()) {
@@ -58,8 +63,6 @@ namespace rawrbox {
 		} else {
 			childn.push_back(sharedPtr);
 		}
-
-		this->_parent = elm;
 	}
 	// --------------
 

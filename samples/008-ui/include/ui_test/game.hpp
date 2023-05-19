@@ -19,5 +19,6 @@ namespace ui_test {
 		void draw() override;
 
 		void loadContent();
+		void contentLoaded();
 	};
 } // namespace ui_test

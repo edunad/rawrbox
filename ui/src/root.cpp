@@ -6,7 +6,7 @@
 namespace rawrbox {
 
 	// INTERNAL UTILS
-	std::shared_ptr<rawrbox::UIBase> UIRoot::findElement(const rawrbox::Vector2f& mousePos, rawrbox::Vector2f& offsetOut) {
+	std::shared_ptr<rawrbox::UIBase> UIRoot::findElement(const rawrbox::Vector2i& mousePos, rawrbox::Vector2i& offsetOut) {
 		for (size_t i = this->getChildren().size(); i > 0; i--) {
 			auto base = std::dynamic_pointer_cast<rawrbox::UIBase>(this->getChildren()[i - 1]);
 			if (base == nullptr) continue;
@@ -18,10 +18,10 @@ namespace rawrbox {
 		return nullptr;
 	}
 
-	std::shared_ptr<rawrbox::UIBase> UIRoot::findElement(std::shared_ptr<rawrbox::UIBase> elmPtr, const rawrbox::Vector2f& mousePos, const rawrbox::Vector2f& offset, rawrbox::Vector2f& offsetOut) {
-		if (elmPtr == nullptr || !elmPtr->visible() || !elmPtr->hitTest(mousePos)) return nullptr;
+	std::shared_ptr<rawrbox::UIBase> UIRoot::findElement(std::shared_ptr<rawrbox::UIBase> elmPtr, const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset, rawrbox::Vector2i& offsetOut) {
+		if (elmPtr == nullptr || !elmPtr->visible() || !elmPtr->hitTest(mousePos.cast<float>())) return nullptr;
 
-		auto& pos = elmPtr->getPos();
+		auto pos = elmPtr->getPos().cast<int>();
 		auto elms = elmPtr->getChildren();
 
 		for (size_t i = elms.size(); i > 0; i--) {
@@ -43,15 +43,17 @@ namespace rawrbox {
 			this->_pressingMouseButton--;
 
 			if (this->_focusedElement.expired()) return;
-			this->_focusedElement.lock()->mouseUp(location, button, mods);
+
+			auto focused = this->_focusedElement.lock();
+			focused->mouseUp(location - focused->getPos().cast<int>(), button, mods);
 			return;
 		}
 
 		this->_pressingMouseButton++;
 
 		// Clicked outside, reset focus ---
-		rawrbox::Vector2f offsetOut = {};
-		auto target = this->findElement(location.cast<float>(), offsetOut);
+		rawrbox::Vector2i offsetOut = {};
+		auto target = this->findElement(location, offsetOut);
 		if (target == nullptr) {
 			this->_focusedElement.reset();
 			return;
@@ -59,12 +61,12 @@ namespace rawrbox {
 		//----------------
 
 		this->setFocus(target);
-		target->mouseDown(location, button, mods);
+		target->mouseDown(location - offsetOut, button, mods);
 	}
 
 	void UIRoot::onMouseMove(const rawrbox::Vector2i& location) {
-		rawrbox::Vector2f offsetOut = {};
-		auto target = this->findElement(location.cast<float>(), offsetOut);
+		rawrbox::Vector2i offsetOut = {};
+		auto target = this->findElement(location, offsetOut);
 
 		// were holding our mouse on something, like dragging?
 		std::shared_ptr<rawrbox::UIBase> focused = nullptr;
@@ -81,7 +83,33 @@ namespace rawrbox {
 				this->_hoveredElement.reset();
 			}
 
-			if (focused != nullptr) focused->mouseMove(location);
+			if (focused != nullptr) {
+				auto absPos = focused->getPosAbsolute().cast<int>();
+				focused->mouseMove(location - absPos);
+			}
+
+			return;
+		}
+
+		// see if we're having a different target, if so notify it
+		if (!this->_hoveredElement.expired()) {
+			auto elm = this->_hoveredElement.lock();
+			if (elm != target) {
+				elm->setHovering(false);
+				target->setHovering(true);
+				this->_hoveredElement = target;
+			}
+		} else {
+			target->setHovering(true);
+			this->_hoveredElement = target;
+		}
+
+		target->mouseMove(location - offsetOut);
+
+		// also send it to the dragged element if relevant
+		if (focused != nullptr) {
+			auto absPos = focused->getPosAbsolute().cast<int>();
+			focused->mouseMove(location - absPos);
 		}
 	}
 	// -----

@@ -40,7 +40,7 @@ namespace rawrbox {
 		std::vector<Glyph> _glyphs;
 
 		std::string _file;
-		FT_Render_Mode _mode = FT_RENDER_MODE_MONO;
+		FT_Render_Mode _mode = FT_RENDER_MODE_NORMAL;
 
 		// SIZE ----
 		uint32_t bitmapR = -1;

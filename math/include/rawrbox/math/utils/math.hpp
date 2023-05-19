@@ -99,6 +99,11 @@ namespace rawrbox {
 
 		// In DEG
 		static inline float angleDistance(float A, float B) {
+			if (A >= 180) A = -180.F + std::fmod(A, 180.F);
+			if (A <= -180) A = 180.F + std::fmod(A, -180.F);
+			if (B >= 180) B = -180.F + std::fmod(B, 180.F);
+			if (B <= -180) B = 180.F + std::fmod(B, -180.F);
+
 			auto diff = std::abs(A - B);
 			return std::min(diff, 360.F - diff);
 		}

@@ -4,6 +4,7 @@
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/assimp/assimp_model.hpp>
 #include <rawrbox/render/model/material/lit.hpp>
+#include <rawrbox/render/model/material/skinned_unlit.hpp>
 #include <rawrbox/render/model/text3D.hpp>
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/window.hpp>
@@ -17,6 +18,11 @@ namespace assimp {
 
 		std::shared_ptr<rawrbox::AssimpModel<>> _model = std::make_shared<rawrbox::AssimpModel<>>();
 		std::shared_ptr<rawrbox::AssimpModel<rawrbox::MaterialLit>> _model2 = std::make_shared<rawrbox::AssimpModel<rawrbox::MaterialLit>>();
+		std::shared_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>> _model3 = std::make_shared<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>>();
+		std::shared_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>> _model4 = std::make_shared<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>>();
+		std::shared_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>> _model5 = std::make_shared<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>>();
+
+		std::shared_ptr<rawrbox::Model<>> _modelGrid = std::make_shared<rawrbox::Model<>>();
 
 		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
 

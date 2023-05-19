@@ -1,6 +1,9 @@
 
 #include <rawrbox/render/particles/emitter.hpp>
+#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/resources/manager.hpp>
 
 #include <particle_test/game.hpp>
 
@@ -32,28 +35,38 @@ namespace particle_test {
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		this->_textEngine = std::make_unique<rawrbox::TextEngine>();
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
 
 		// Load content ---
 		this->loadContent();
 		// -----
 	}
 
-	int64_t m_timeOffset;
 	void Game::loadContent() {
+		std::array initialContentFiles = {
+		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("content/textures/particles/particles.png", 0)};
+
+		rawrbox::ASYNC::run([initialContentFiles]() {
+			for (auto& f : initialContentFiles) {
+				rawrbox::RESOURCES::loadFile(f.first, f.second);
+			} }, [this] { rawrbox::runOnMainThread([this]() {
+										  rawrbox::RESOURCES::upload();
+										  this->contentLoaded();
+									  }); });
+
 		this->_window->upload();
+	}
 
-		// TEXTURES ----
-		this->_texture = std::make_shared<rawrbox::TextureImage>("./content/textures/particles/particles.png");
-		this->_texture->upload();
-		// -----
-
+	void Game::contentLoaded() {
 		// Fonts -----
-		this->_font = &this->_textEngine->load("cour.ttf", 16);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 		// ------
 
 		// Setup Engine
-		this->_ps = std::make_shared<rawrbox::ParticleSystem<>>(this->_texture);
+		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/particles/particles.png")->texture;
+		this->_ps = std::make_shared<rawrbox::ParticleSystem<>>(texture);
 
 		{
 			auto m = std::make_shared<rawrbox::Emitter>();
@@ -93,6 +106,8 @@ namespace particle_test {
 			this->_modelGrid->addMesh(mesh);
 			this->_modelGrid->upload();
 		}
+
+		this->_ready = true;
 	}
 
 	void Game::shutdown() {
@@ -101,9 +116,8 @@ namespace particle_test {
 		this->_ps = nullptr;
 		this->_modelGrid = nullptr;
 		this->_text = nullptr;
-		this->_font = nullptr;
-		this->_textEngine = nullptr;
 
+		rawrbox::RESOURCES::shutdown();
 		rawrbox::Engine::shutdown();
 	}
 
@@ -145,12 +159,18 @@ namespace particle_test {
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "008-particle-system");
+		bgfx::dbgTextPrintf(1, 1, 0x1f, "007-particle-system");
 		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: Particle system test");
 		printFrames();
 		// -----------
 
-		this->drawWorld();
+		if (this->_ready) {
+			this->drawWorld();
+		} else {
+			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
+			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
+			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
+		}
 
 		this->_window->frame(true); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());

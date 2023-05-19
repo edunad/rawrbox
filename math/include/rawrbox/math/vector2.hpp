@@ -73,6 +73,10 @@ namespace rawrbox {
 			return VecType(std::sin(radians), std::cos(radians));
 		}
 
+		static VecType cosSin(float radians) {
+			return VecType(std::cos(radians), std::sin(radians));
+		}
+
 		[[nodiscard]] VecType rotateAroundOrigin(NumberType rads, const VecType& origin) const {
 			if (rads == 0) return *this;
 

@@ -233,8 +233,8 @@ namespace rawrbox {
 			auto ang = space * i++ + angStartRad;
 			if (ang + space > angEndRad) break;
 
-			rawrbox::Vector2 b = targetPos + rawrbox::Vector2::sinCos(ang) * radius;
-			rawrbox::Vector2 c = targetPos + rawrbox::Vector2::sinCos(ang + space) * radius;
+			rawrbox::Vector2 b = targetPos + rawrbox::Vector2::cosSin(ang) * radius;
+			rawrbox::Vector2 c = targetPos + rawrbox::Vector2::cosSin(ang + space) * radius;
 
 			if (this->_outline.isSet()) {
 				this->drawLine(b, c, col);
@@ -273,10 +273,10 @@ namespace rawrbox {
 			float angle = from.angle(to);
 			float uvEnd = outline.stipple <= 0.F ? 1.F : outline.stipple;
 
-			auto vertA = from + rawrbox::Vector2::sinCos(angle) * outline.thickness;
-			auto vertB = from + rawrbox::Vector2::sinCos(angle) * -outline.thickness;
-			auto vertC = to + rawrbox::Vector2::sinCos(angle) * outline.thickness;
-			auto vertD = to + rawrbox::Vector2::sinCos(angle) * -outline.thickness;
+			auto vertA = from + rawrbox::Vector2::cosSin(angle) * outline.thickness;
+			auto vertB = from + rawrbox::Vector2::cosSin(angle) * -outline.thickness;
+			auto vertC = to + rawrbox::Vector2::cosSin(angle) * outline.thickness;
+			auto vertD = to + rawrbox::Vector2::cosSin(angle) * -outline.thickness;
 
 			this->pushVertice(vertA, {0, 0}, col);
 			this->pushVertice(vertC, {uvEnd, 0}, col);

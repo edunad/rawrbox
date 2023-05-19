@@ -54,8 +54,8 @@ namespace rawrbox {
 		std::shared_ptr<T> createChild(CallbackArgs&&... args) {
 			auto child = std::make_shared<T>(std::forward<CallbackArgs>(args)...);
 			child->setRef(child);
-			this->addChild(std::dynamic_pointer_cast<rawrbox::UIBase>(child));
 
+			this->addChild(std::dynamic_pointer_cast<rawrbox::UIBase>(child));
 			return child;
 		}
 
