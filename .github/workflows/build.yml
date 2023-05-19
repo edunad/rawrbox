@@ -87,25 +87,8 @@ jobs:
                   files-changed-only: true
                   tidy-checks: ''
                   extra-args: '-std=c++20 -Wall'
-                  version: '15'
+                  version: '16'
                   database: './build/'
+                  thread-comments: true
                   ignore: 'build | .github | stb | deps'
 
-            - name: Find linting comment
-              if: steps.linter.outputs.checks-failed > 0
-              uses: peter-evans/find-comment@v2
-              id: fc
-              with:
-                  issue-number: ${{ github.event.pull_request.number }}
-                  comment-author: 'github-actions[bot]'
-                  body-includes: Linting failed ⚠
-
-            - name: Create / Update linting comment
-              uses: peter-evans/create-or-update-comment@v2
-              if: steps.linter.outputs.checks-failed > 0
-              with:
-                  comment-id: ${{ steps.fc.outputs.comment-id }}
-                  issue-number: ${{ github.event.pull_request.number }}
-                  body: |
-                      ### Linting failed ⚠ - ${{ steps.linter.outputs.checks-failed }} lint errors found
-                  edit-mode: replace
