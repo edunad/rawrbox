@@ -1,5 +1,6 @@
 
 #include <rawrbox/bass/resources/sound.hpp>
+#include <rawrbox/debug/gizmos.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
@@ -56,6 +57,10 @@ namespace bass_test {
 									  }); });
 
 		this->_window->upload();
+
+		// DEBUG ---
+		rawrbox::GIZMOS::upload();
+		// -----------
 	}
 
 	void Game::contentLoaded() {
@@ -121,6 +126,7 @@ namespace bass_test {
 		this->_beatText = nullptr;
 		this->_text = nullptr;
 
+		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::LIGHTS::shutdown();
 		rawrbox::Engine::shutdown();
@@ -173,7 +179,11 @@ namespace bass_test {
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
 		}
 
-		this->_window->frame(true); // Commit primitives
+		// Draw DEBUG ---
+		rawrbox::GIZMOS::draw();
+		// -----------
+
+		this->_window->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 } // namespace bass_test

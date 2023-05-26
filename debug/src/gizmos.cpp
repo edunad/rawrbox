@@ -3,7 +3,7 @@
 #include <rawrbox/render/model/light/base.hpp>
 #include <rawrbox/render/particles/emitter.hpp>
 
-#ifdef RAWRBOX_BASS
+#if RAWRBOX_BASS
 	#include <rawrbox/bass/sound/instance.hpp>
 #endif
 
@@ -103,7 +103,7 @@ namespace rawrbox {
 		}
 	}
 
-#ifdef RAWRBOX_BASS
+#if RAWRBOX_BASS
 	void GIZMOS::addSound(rawrbox::SoundInstance* l) {
 		if (!l->isValid() || !l->is3D()) return;
 

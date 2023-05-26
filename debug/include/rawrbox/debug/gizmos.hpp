@@ -12,7 +12,7 @@
 
 namespace rawrbox {
 
-#ifdef RAWRBOX_BASS
+#if RAWRBOX_BASS
 	class SoundInstance;
 #endif
 
@@ -37,7 +37,7 @@ namespace rawrbox {
 		static void addEmitter(rawrbox::Emitter* l);
 		static void removeEmitter(rawrbox::Emitter* l);
 
-#ifdef RAWRBOX_BASS
+#if RAWRBOX_BASS
 		static void addSound(rawrbox::SoundInstance* l);
 		static void removeSound(rawrbox::SoundInstance* l);
 #endif

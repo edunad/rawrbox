@@ -14,8 +14,11 @@ file(GLOB_RECURSE RAWRBOX_BASS_SOURCES "src/*.cpp" "include/*.hpp")
 # -----------------
 
 if(RAWRBOX_BUILD_DEBUG)
-    set(RAWRBOX_BASS_DEFINES RAWRBOX_DEBUG)
     list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.DEBUG)
+endif()
+
+if(RAWRBOX_BUILD_RESOURCES_MANAGER)
+    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.RESOURCES)
 endif()
 
 # Copy content - BASS
@@ -39,15 +42,14 @@ add_custom_target(copy_dll_bass_fx ALL
 # ------------------
 
 # Project setup
-add_library(${output_target} ${RAWRBOX_BASS_SOURCES})
+add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_BASS_SOURCES})
 add_dependencies(${output_target} copy_dll_bass copy_dll_bass_fx copy_resources_bass)
-target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX ${RAWRBOX_BASS_DEFINES})
+target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX INTERFACE RAWRBOX_BASS)
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC
 	RAWRBOX.ENGINE
 	RAWRBOX.MATH
-	RAWRBOX.RESOURCES
 	${RAWRBOX_EXTRA_LIBS}
 
 	fmt::fmt

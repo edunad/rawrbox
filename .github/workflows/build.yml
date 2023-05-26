@@ -29,44 +29,34 @@ jobs:
               run: |
                   sudo apt update
                   sudo apt install build-essential gcc-12 libgl1-mesa-glx libgl1-mesa-dev libglew-dev ninja-build python3-pip libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev libxcomposite-dev libxcursor-dev libxdamage-dev libxdmcp-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxinerama-dev libxkbfile-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev libxrender-dev libxres-dev libxss-dev libxt-dev libxtst-dev libxv-dev libxvmc-dev libxxf86vm-dev xtrans-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-xkb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev xkb-data libxcb-dri3-dev uuid-dev libxcb-util-dev
-                  sudo pip install conan
 
-            - name: Detect Conan profile
-              run: |
-                  conan profile detect --force
-
-            - name: Restore conan cache
-              id: github-cache-conan-restore
+            - name: Restore cache
+              id: github-cache-restore
               uses: actions/cache/restore@v3
               with:
                   path: |
                       ./build
-                      ~/.conan2
-                  key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
-
-            - name: Install Conan dependencies
-              run: |
-                  mkdir -p build
-                  conan install . --output-folder=build --build=missing
+                      ~/cpm-cache
+                  key: host-${{ runner.os }}-${{ hashFiles('**/*/CMakeLists.txt') }}
 
             - name: Build
               id: build
               run: |
                   cd build
-                  CXX=g++-12 cmake .. -G Ninja -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON"
+                  CXX=g++-12 cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON"
                   ninja
 
-            - name: Cache conan
-              id: github-cache-conan
+            - name: Cache build
+              id: github-cache
               uses: actions/cache/save@v3
               if: steps.build.outputs.exit_code == 0
               env:
-                  cache-name: cache-conan-modules
+                  cache-name: cache-build
               with:
                   path: |
                       ./build
-                      ~/.conan2
-                  key: host-${{ runner.os }}-${{ hashFiles('conanfile.py') }}
+                      ~/cpm-cache
+                  key: host-${{ runner.os }}-${{ hashFiles('**/*/CMakeLists.txt') }}
 
             - name: Run tests
               run: |
@@ -91,4 +81,3 @@ jobs:
                   database: './build/'
                   thread-comments: true
                   ignore: 'build | .github | stb | deps'
-

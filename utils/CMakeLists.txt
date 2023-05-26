@@ -10,13 +10,22 @@ file(GLOB_RECURSE RAWRBOX_UTILS_IMPORTS "src/*.c" "src/*.cpp" "include/*.hpp" "i
 if(NOT RAWRBOX_ENABLE_QHULL)
 	list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "include/rawrbox/utils/qhull.h")
 else()
-	find_package(Qhull REQUIRED)
-	set(EXTRA_UTIL_LIBS Qhull::qhullstatic_r)
+	CPMAddPackage(
+		NAME Qhull
+		GITHUB_REPOSITORY qhull/qhull
+		GIT_TAG 2020.2
+		OPTIONS
+			"QHULL_ENABLE_TESTING OFF"
+			"BUILD_STATIC_LIBS ON"
+			"BUILD_SHARED_LIBS OFF"
+	)
+
+	set(EXTRA_UTIL_LIBS qhullstatic_r)
 endif()
 
 # LIB ----
 
-add_library(${output_target} ${RAWRBOX_UTILS_IMPORTS})
+add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_UTILS_IMPORTS})
 target_include_directories(${output_target} PUBLIC "include" )
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX RAWRBOX_UTILS)

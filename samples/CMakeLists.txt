@@ -23,5 +23,5 @@ endif()
 add_subdirectory ("007-particle-system")
 
 if(RAWRBOX_BUILD_UI)
-    add_subdirectory ("008-ui")
+    #add_subdirectory ("008-ui")
 endif()

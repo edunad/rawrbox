@@ -29,6 +29,7 @@ namespace rawrbox {
 
 	void TextureMissing::upload(bgfx::TextureFormat::Enum format) {
 		if (bgfx::isValid(this->_handle)) return; // Already bound
+
 		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 0, format,
 		    0 | this->_flags, bgfx::copy(this->pixels.data(), static_cast<uint32_t>(this->pixels.size())));
 

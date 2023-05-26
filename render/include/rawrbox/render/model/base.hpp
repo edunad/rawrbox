@@ -557,6 +557,13 @@ namespace rawrbox {
 			}
 		}
 
+		virtual void setDepthTest(uint64_t depth, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->setDepthTest(depth);
+			}
+		}
+
 		virtual void setColor(const rawrbox::Color& color, int id = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
 				if (id != -1 && i != id) continue;
@@ -584,7 +591,7 @@ namespace rawrbox {
 					this->_ibdh = bgfx::createDynamicIndexBuffer(indexMem, 0 | BGFX_BUFFER_ALLOW_RESIZE);
 				}
 			} else {
-				if (this->_vertices.empty() || this->_indices.empty()) throw std::runtime_error("[RawrBox-ModelBase] Static buffer cannot contain empty vertices / indices");
+				if (this->_vertices.empty() || this->_indices.empty()) throw std::runtime_error("[RawrBox-ModelBase] Static buffer cannot contain empty vertices / indices. Use dynamic buffer instead!");
 
 				this->_vbh = bgfx::createVertexBuffer(vertMem, M::vertexBufferType::vLayout());
 				this->_ibh = bgfx::createIndexBuffer(indexMem);

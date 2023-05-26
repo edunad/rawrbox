@@ -6,8 +6,8 @@
 #include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/light/types.hpp>
 
-#ifdef RAWRBOX_DEBUG
-	#ifndef RAWRBOX_TESTING
+#ifndef RAWRBOX_TESTING
+	#ifdef RAWRBOX_DEBUG
 		#include <rawrbox/debug/gizmos.hpp>
 	#endif
 #endif
@@ -17,7 +17,7 @@
 #include <array>
 
 namespace rawrbox {
-	// class LIGHTS;
+
 	class LightBase {
 	protected:
 		bool _isOn = true;
@@ -44,13 +44,26 @@ namespace rawrbox {
 		LightBase(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
 		virtual ~LightBase() {
 			rawrbox::LIGHTS::removeLight(this);
+#ifndef RAWRBOX_TESTING
+	#ifdef RAWRBOX_DEBUG
+			rawrbox::GIZMOS::removeLight(this);
+	#endif
+#endif
 		};
 
 		[[nodiscard]] virtual const rawrbox::Colorf& getSpecularColor() const { return this->_specular; }
 		[[nodiscard]] virtual const rawrbox::Colorf& getDiffuseColor() const { return this->_diffuse; }
 		[[nodiscard]] virtual const rawrbox::Colorf& getAmbientColor() const { return this->_ambient; }
 
-		virtual void setId(size_t id) { this->_id = id; };
+		virtual void setId(size_t id) {
+			this->_id = id;
+#ifndef RAWRBOX_TESTING
+	#ifdef RAWRBOX_DEBUG
+			rawrbox::GIZMOS::addLight(this);
+	#endif
+#endif
+		};
+
 		[[nodiscard]] virtual const size_t id() const { return this->_id; };
 
 		[[nodiscard]] virtual const bool isOn() const { return this->_isOn; }

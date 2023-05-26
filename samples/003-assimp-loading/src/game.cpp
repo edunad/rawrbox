@@ -1,3 +1,4 @@
+#include <rawrbox/debug/gizmos.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
 #include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/font.hpp>
@@ -57,10 +58,13 @@ namespace assimp {
 									  }); });
 
 		this->_window->upload();
+
+		// DEBUG ---
+		rawrbox::GIZMOS::upload();
+		// -----------
 	}
 
 	void Game::contentLoaded() {
-
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 
 		// Assimp test ---
@@ -126,6 +130,7 @@ namespace assimp {
 
 		this->_text = nullptr;
 
+		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::LIGHTS::shutdown();
 		rawrbox::Engine::shutdown();
@@ -181,7 +186,11 @@ namespace assimp {
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
 		}
 
-		this->_window->frame(true); // Commit primitives
+		// Draw DEBUG ---
+		rawrbox::GIZMOS::draw();
+		// -----------
+
+		this->_window->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 } // namespace assimp

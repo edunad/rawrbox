@@ -28,6 +28,7 @@ namespace rawrbox {
 		bgfx::UniformHandle u_specularColor = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_emissionColor = BGFX_INVALID_HANDLE;
 
+		bgfx::UniformHandle u_cameraPos = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_texMatData = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle u_lightsSetting = BGFX_INVALID_HANDLE;
@@ -50,6 +51,7 @@ namespace rawrbox {
 			RAWRBOX_DESTROY(u_emissionColor);
 
 			RAWRBOX_DESTROY(u_texMatData);
+			RAWRBOX_DESTROY(u_cameraPos);
 
 			RAWRBOX_DESTROY(u_lightsSetting);
 			RAWRBOX_DESTROY(u_lightsPosition);
@@ -61,6 +63,7 @@ namespace rawrbox {
 
 			// LIT ----
 			u_texMatData = bgfx::createUniform("u_texMatData", bgfx::UniformType::Vec4);
+			u_cameraPos = bgfx::createUniform("u_cameraPos", bgfx::UniformType::Vec4, 3);
 
 			s_texSpecularColor = bgfx::createUniform("s_texSpecularColor", bgfx::UniformType::Sampler);
 			s_texEmissionColor = bgfx::createUniform("s_texEmissionColor", bgfx::UniformType::Sampler);
@@ -99,6 +102,10 @@ namespace rawrbox {
 
 			bgfx::setUniform(u_lightsPosition, lightPos.front().data(), static_cast<uint16_t>(lightCount));
 			bgfx::setUniform(u_lightsData, lightData.front().data(), static_cast<uint16_t>(lightCount));
+
+			// Camera position for reflection
+			std::array pos = {camPos.x, camPos.y, camPos.z};
+			bgfx::setUniform(u_cameraPos, pos.data());
 		}
 
 		template <typename T>

@@ -2,13 +2,6 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/window.hpp>
 
-#ifdef RAWRBOX_DEBUG
-	#include <rawrbox/debug/gizmos.hpp>
-#endif
-#ifdef RAWRBOX_UI
-	#include <rawrbox/ui/static.hpp>
-#endif
-
 #include <bgfx/bgfx.h>
 #include <bx/bx.h>
 
@@ -234,16 +227,19 @@ namespace rawrbox {
 		};
 
 		// Setup global util textures ---
-		rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
-		rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
-		rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black);
+		if (rawrbox::__OPEN_WINDOWS__ == 0) {
+			if (rawrbox::MISSING_TEXTURE == nullptr)
+				rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
+
+			if (rawrbox::WHITE_TEXTURE == nullptr)
+				rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
+
+			if (rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE == nullptr)
+				rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black);
+		}
 		// ------------------
 
-// Setup UI
-#ifdef RAWRBOX_UI
-		rawrbox::ROOT_UI = rawrbox::UIRoot::create(*this);
-#endif
-		// -----------
+		rawrbox::__OPEN_WINDOWS__++;
 	}
 
 	void Window::setMonitor(int monitor) {
@@ -305,11 +301,7 @@ namespace rawrbox {
 		glfwPollEvents();
 	}
 
-	void Window::update() {
-#ifdef RAWRBOX_UI
-		if (rawrbox::ROOT_UI != nullptr) rawrbox::ROOT_UI->update();
-#endif
-	}
+	void Window::update() {}
 	// ------
 
 	// DRAW ------
@@ -328,56 +320,23 @@ namespace rawrbox {
 		// ------------------
 
 		this->_stencil->upload();
-
-#ifdef RAWRBOX_UI
-		if (rawrbox::ROOT_UI != nullptr) rawrbox::ROOT_UI->upload();
-#endif
-			// Debug gizmos ----
-#ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS::upload();
-#endif
 		// -----
 	}
 
-#ifdef RAWRBOX_DEBUG
-	void Window::frame(bool debugMode) const {
-		if (this->_renderer == nullptr) return;
-		if (debugMode) rawrbox::GIZMOS::draw();
-
-			// Render UI on top of everything
-	#ifdef RAWRBOX_UI
-		if (rawrbox::ROOT_UI != nullptr) rawrbox::ROOT_UI->draw(*this->_stencil);
-	#endif
-		// -----------
-
-		bgfx::frame();
-	}
-#else
 	void Window::frame() const {
 		if (this->_renderer == nullptr) return;
-
-			// Render UI on top of everything
-	#ifdef RAWRBOX_UI
-		if (rawrbox::ROOT_UI != nullptr) rawrbox::ROOT_UI->draw(*this->_stencil);
-	#endif
-		// -----------
-
 		bgfx::frame();
 	}
-#endif
 
 	// -------------------
 
 	// ------UTILS
 	void Window::close() {
-#ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS::shutdown();
-#endif
-
-		rawrbox::MISSING_TEXTURE = nullptr;
-		rawrbox::WHITE_TEXTURE = nullptr;
-		rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE = nullptr;
-		rawrbox::ROOT_UI = nullptr;
+		if (rawrbox::__OPEN_WINDOWS__-- <= 0) {
+			rawrbox::MISSING_TEXTURE = nullptr;
+			rawrbox::WHITE_TEXTURE = nullptr;
+			rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE = nullptr;
+		}
 
 		this->_stencil = nullptr;
 		this->_renderer = nullptr;

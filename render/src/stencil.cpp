@@ -270,7 +270,7 @@ namespace rawrbox {
 			this->_indices.push_back(pos - 1);
 			this->_indices.push_back(pos - 2);
 		} else {
-			float angle = from.angle(to);
+			float angle = -from.angle(to);
 			float uvEnd = outline.stipple <= 0.F ? 1.F : outline.stipple;
 
 			auto vertA = from + rawrbox::Vector2::cosSin(angle) * outline.thickness;

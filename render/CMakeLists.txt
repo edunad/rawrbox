@@ -1,69 +1,92 @@
 project ("RAWRBOX.RENDER" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - Render lib" LANGUAGES CXX)
 set(output_target RAWRBOX.RENDER)
 
-# INSTALL GLFW & BGFX -----
-FetchContent_GetProperties(glfw3)
-if(NOT glfw3_POPULATED)
-	FetchContent_Declare(glfw3
-		GIT_REPOSITORY "https://github.com/glfw/glfw"
-		GIT_TAG "origin/master"
-		GIT_PROGRESS TRUE
-	)
+# Packages ----
+CPMAddPackage(
+	NAME glfw
+	GITHUB_REPOSITORY glfw/glfw
+	GIT_TAG 3.3.8
+	OPTIONS
+		"GLFW_BUILD_DOCS OFF"
+		"GLFW_BUILD_EXAMPLES OFF"
+		"GLFW_BUILD_TESTS OFF"
+		"GLFW_INSTALL OFF"
+		"GLFW_USE_OSMESA OFF"
+		"GLFW_VULKAN_STATIC OFF"
+)
 
-	FetchContent_MakeAvailable(glfw3)
+CPMAddPackage(
+	NAME bgfx
+	GITHUB_REPOSITORY edunad/bgfx.cmake
+	GIT_TAG master
+	OPTIONS
+		"BGFX_BUILD_TOOLS ON"
+		"BGFX_BUILD_TOOLS_SHADER ON"
+		"BGFX_BUILD_TOOLS_GEOMETRY OFF"
+		"BGFX_BUILD_TOOLS_TEXTURE OFF"
+		"BGFX_BUILD_TOOLS_BIN2C OFF"
+		"BGFX_BUILD_EXAMPLES OFF"
+		"BGFX_INSTALL_EXAMPLES OFF"
+		"BGFX_USE_OVR OFF"
+
+		"BGFX_AMALGAMATED ON"
+		"BX_AMALGAMATED ON"
+)
+
+if(bgfx_ADDED)
+	message("-- Including bgfx utils")
+	include("../cmake/bgfx_utils.cmake")
 endif()
 
-FetchContent_GetProperties(bgfx)
-if(NOT bgfx_POPULATED)
-	FetchContent_Declare(bgfx
-		GIT_REPOSITORY "https://github.com/edunad/bgfx.cmake.git"
-		GIT_TAG "origin/master"
-		GIT_PROGRESS TRUE
-	)
-
-	FetchContent_MakeAvailable(bgfx)
-endif()
-# ---------------------
+CPMAddPackage(
+	NAME Freetype
+	GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype
+	GIT_TAG master
+)
+CPMAddPackage("gh:nemtrif/utfcpp@3.2.3")
 
 if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
 	message("-- Enabled assimp")
 
-	# INSTALL ASSIMP, CONAN IS OUTDATED AS HELL -----
-	FetchContent_GetProperties(assimp)
-	if(NOT assimp_POPULATED)
-		FetchContent_Declare(assimp
-			GIT_REPOSITORY "https://github.com/assimp/assimp"
-			GIT_TAG "v5.2.5"
-			GIT_PROGRESS TRUE
-		)
-
-		FetchContent_MakeAvailable(assimp)
-	endif()
-	# ------------------
+	CPMAddPackage(
+		NAME assimp
+		VERSION 5.2.5
+		GITHUB_REPOSITORY assimp/assimp
+		OPTIONS
+			"BUILD_SHARED_LIBS OFF"
+			"ASSIMP_NO_EXPORT ON"
+			"ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF"
+			"ASSIMP_INSTALL ON"
+			"ASSIMP_BUILD_ASSIMP_TOOLS OFF"
+			"ASSIMP_BUILD_TESTS OFF"
+			"ASSIMP_BUILD_SAMPLES OFF"
+			"ASSIMP_BUILD_DOCS OFF"
+			"ASSIMP_BUILD_ASSIMP_VIEW OFF"
+			"ASSIMP_BUILD_ZLIB TRUE"
+			"ASSIMP_WARNINGS_AS_ERRORS OFF"
+			"ASSIMP_INSTALL_PDB OFF"
+			"ASSIMP_BUILD_DRACO ON"
+			"ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF"
+			"ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF"
+			# IMPORT SUPPORTS
+			"ASSIMP_BUILD_OBJ_IMPORTER ON"
+			"ASSIMP_BUILD_FBX_IMPORTER ON"
+			"ASSIMP_BUILD_DAE_IMPORTER ON"
+			"ASSIMP_BUILD_STL_IMPORTER ON"
+			"ASSIMP_BUILD_GLTF_IMPORTER ON"
+			"ASSIMP_BUILD_3DS_IMPORTER ON"
+			#"ASSIMP_BUILD_MDL_IMPORTER ON"
+			"ASSIMP_BUILD_MD5_IMPORTER ON"
+	)
 
 	list(APPEND RAWRBOX_EXTRA_LIBS assimp::assimp)
 endif()
 
-# Packages ----
-find_package(Freetype REQUIRED MODULE)
-find_package(utf8cpp REQUIRED)
-
-if(RAWRBOX_BUILD_DEBUG)
-    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.DEBUG)
-endif()
+# ----
 
 if(RAWRBOX_BUILD_RESOURCES_MANAGER)
     list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.RESOURCES)
 endif()
-
-if(RAWRBOX_BUILD_UI)
-    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.UI)
-endif()
-
-if(RAWRBOX_ENABLE_BASS_SUPPORT)
-	list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.BASS)
-endif()
-
 
 #--------------
 
@@ -109,12 +132,11 @@ add_custom_target(copy_resources_render ALL
         COMMENT "Copying RENDERER resources into binary directory")
 # ------------------
 
-
 # Project setup
-add_library(${output_target} ${RAWRBOX_RENDER_SOURCES})
+add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RENDER_SOURCES})
 add_dependencies(${output_target} copy_resources_render)
 target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX)
-target_include_directories(${output_target} PUBLIC "include" ${FREETYPE_INCLUDE_DIRS})
+target_include_directories(${output_target} PUBLIC "include" "${freetype_SOURCE_DIR}/include" )
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	RAWRBOX.MATH
@@ -123,8 +145,8 @@ target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 
 	fmt::fmt
 	magic_enum::magic_enum
-	Freetype::Freetype
 	utf8cpp
+	freetype
 
 	bgfx
 	bx

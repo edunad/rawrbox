@@ -4,7 +4,7 @@
 
 <h2>
 	<p align="center">
-		<a href="https://github.com/MythicalRawr/rawrbox">RawrBox</a> - Another game engine made with <a href="https://github.com/bkaradzic/bgfx">BGFX</a>
+		<a href="https://github.com/MythicalRawr/rawrbox">RawrBox</a> - Another modular game engine made with <a href="https://github.com/bkaradzic/bgfx">BGFX</a>
     </p>
 </h2>
 
@@ -58,21 +58,26 @@
 | `RAWRBOX.UI`        | UI lib                                             | UI components lib                                                                          |    ✖️    |
 | `RAWRBOX.RESOURCES` | Resources manager lib                              | Resource manager. Handles loading and stores the pointers for easy access                  |    ✖️    |
 
-# CMAKE
+# CMAKE OPTIONS
 
 | OPTION NAME                       | NOTE                                                                                               |
 | :-------------------------------- | :------------------------------------------------------------------------------------------------- |
+| `RAWRBOX_OUTPUT_BIN`              | The output build folder. Default is `bin`                                                          |
+| `RAWRBOX_CONTENT_FOLDER`          | The content folder to output resources. Default is `content`                                       |
+| --                                | --                                                                                                 |
 | `RAWRBOX_USE_WAYLAND`             | Enables WAYLAND compiling on LINUX                                                                 |
+| --                                | --                                                                                                 |
+| `RAWRBOX_ENABLE_QHULL`            | Enables QHull util                                                                                 |
+| `RAWRBOX_ENABLE_ASSIMP_SUPPORT`   | Enables assimp model loading                                                                       |
+| `RAWRBOX_ENABLE_BASS_SUPPORT`     | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
+|                                   |                                                                                                    |
 | `RAWRBOX_BUILD_SAMPLES`           | Builds the project sample                                                                          |
 | `RAWRBOX_BUILD_TESTING`           | Builds and runs tests                                                                              |
 | `RAWRBOX_BUILD_UI`                | Builds and includes ui                                                                             |
 | `RAWRBOX_BUILD_DEBUG`             | Builds and includes debug (aka gizmo rendering & renderdoc)                                        |
 | `RAWRBOX_BUILD_RESOURCES_MANAGER` | Builds and resouces manager (aka handling and storing loaded resources)                            |
-| `RAWRBOX_ENABLE_QHULL`            | Enables QHull util                                                                                 |
-| `RAWRBOX_ENABLE_ASSIMP_SUPPORT`   | Enables assimp model loading                                                                       |
-| `RAWRBOX_ENABLE_BASS_SUPPORT`     | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
 
-# Dependencies
+# DEPENCENDIES
 
 | LIB             | REQUIRED | NOTE                                                |
 | :-------------- | :------: | :-------------------------------------------------- |
@@ -89,16 +94,15 @@
 | catch2          |    ✖️    | Used for testing                                    |
 | bass            |    ✖️    | Used for loading sounds                             |
 
-# Building
+# BUILDING
 
 ## WINDOWS
 
-### Required software
+### REQUIRED SOFTWARE
 
 -   [GIT](https://git-scm.com/) or something similar to GIT
--   Download and install C++ Build Tools
--   Download and install a IDE, [Visual Code](https://code.visualstudio.com/) is recommended.
--   Download and install CONAN (> 2.0)
+-   Download and install **C++ Build Tools**
+-   Download and install a IDE, [Visual Code](https://code.visualstudio.com/) is **recommended**.
 -   Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)
 
 ### IDE SETUP (Visual Code)
@@ -111,7 +115,7 @@
 
 ## LINUX
 
-### Required software
+### REQUIRED SOFTWARE
 
 -   [PODMAN](https://podman.io/)
 

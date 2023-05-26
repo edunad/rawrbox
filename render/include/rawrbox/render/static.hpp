@@ -40,4 +40,8 @@ namespace rawrbox {
 	extern size_t LIGHT_ID;
 	extern size_t EMITTER_ID;
 	// -----
+
+	// INTERNAL, DO NOT USE
+	extern size_t __OPEN_WINDOWS__;
+	// -------
 } // namespace rawrbox

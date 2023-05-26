@@ -1,5 +1,6 @@
 
 #include <rawrbox/render/particles/emitter.hpp>
+#include <rawrbox/debug/gizmos.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
@@ -57,6 +58,10 @@ namespace particle_test {
 									  }); });
 
 		this->_window->upload();
+
+		// DEBUG ---
+		rawrbox::GIZMOS::upload();
+		// -----------
 	}
 
 	void Game::contentLoaded() {
@@ -117,6 +122,7 @@ namespace particle_test {
 		this->_modelGrid = nullptr;
 		this->_text = nullptr;
 
+		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::Engine::shutdown();
 	}
@@ -172,7 +178,11 @@ namespace particle_test {
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
 		}
 
-		this->_window->frame(true); // Commit primitives
+		// Draw DEBUG ---
+		rawrbox::GIZMOS::draw();
+		// -----------
+
+		this->_window->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 } // namespace particle_test

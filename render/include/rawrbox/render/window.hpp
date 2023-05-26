@@ -129,12 +129,7 @@ namespace rawrbox {
 		// DRAW -----
 		void clear();
 		void upload();
-
-#ifdef RAWRBOX_DEBUG
-		void frame(bool debugMode = false) const;
-#else
 		void frame() const;
-#endif
 		// -----------
 
 		// UTILS ---------------

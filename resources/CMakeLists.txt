@@ -6,7 +6,7 @@ set(output_target RAWRBOX.RESOURCES)
 
 # LIB ----
 file(GLOB_RECURSE RAWRBOX_RESOURCES_IMPORTS "src/*.cpp" "include/*.hpp")
-add_library(${output_target} ${RAWRBOX_RESOURCES_IMPORTS})
+add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RESOURCES_IMPORTS})
 
 target_include_directories(${output_target} PUBLIC "include" )
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
