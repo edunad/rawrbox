@@ -29,6 +29,10 @@ namespace ui_test {
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
 
+		// SETUP UI
+		rawrbox::ROOT_UI = rawrbox::UIRoot::create(this->_window);
+		// ----
+
 		// Load content ---
 		this->loadContent();
 		// -----
@@ -56,6 +60,7 @@ namespace ui_test {
 			auto frame = rawrbox::ROOT_UI->createChild<rawrbox::UIFrame>();
 			frame->setTitle("mewww");
 			frame->setSize({400, 200});
+			frame->setPos({400, 200});
 			frame->initialize();
 		}
 		// ---
@@ -73,6 +78,8 @@ namespace ui_test {
 
 	void Game::update() {
 		if (this->_window == nullptr) return;
+
+		rawrbox::ROOT_UI->update();
 		this->_window->update();
 	}
 
@@ -95,7 +102,8 @@ namespace ui_test {
 		printFrames();
 		// -----------
 
-		this->_window->frame(true); // Commit primitives
+		rawrbox::ROOT_UI->render();
+		this->_window->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
 	}
 } // namespace ui_test

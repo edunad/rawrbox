@@ -121,48 +121,52 @@ namespace rawrbox {
 		this->_hoveredElement.reset();
 	}
 
-	std::shared_ptr<UIRoot> UIRoot::create(rawrbox::Window& window) {
+	std::shared_ptr<UIRoot> UIRoot::create(std::shared_ptr<rawrbox::Window> window) {
 		auto ret = std::make_shared<rawrbox::UIRoot>();
+		ret->setWindow(window);
 		ret->setRef(ret);
 
-		ret->_aabb = {0, 0, static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)};
+		return ret;
+	}
+
+	void UIRoot::setWindow(std::shared_ptr<rawrbox::Window> window) {
+		this->_window = window;
+		this->_aabb = {0, 0, static_cast<float>(window->getSize().x), static_cast<float>(window->getSize().y)};
 
 		// BINDS ---
-		window.onChar += [ret](Window& win, uint32_t character) mutable {
-			rawrbox::runOnMainThread([ret, character]() {
-				if (ret->_focusedElement.expired()) return;
-				ret->_focusedElement.lock()->keyChar(character);
+		window->onChar += [this](Window& win, uint32_t character) mutable {
+			rawrbox::runOnMainThread([this, character]() {
+				if (this->_focusedElement.expired()) return;
+				this->_focusedElement.lock()->keyChar(character);
 			});
 		};
 
-		window.onKey += [ret](Window& win, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) mutable {
-			rawrbox::runOnMainThread([ret, key, scancode, action, mods]() {
-				if (ret->_focusedElement.expired()) return;
-				ret->_focusedElement.lock()->key(key, scancode, action, mods);
+		window->onKey += [this](Window& win, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) mutable {
+			rawrbox::runOnMainThread([this, key, scancode, action, mods]() {
+				if (this->_focusedElement.expired()) return;
+				this->_focusedElement.lock()->key(key, scancode, action, mods);
 			});
 		};
 
-		window.onMouseKey += [ret](Window& win, const rawrbox::Vector2i& location, uint32_t button, uint32_t action, uint32_t mods) mutable {
-			rawrbox::runOnMainThread([ret, location, button, action, mods]() {
-				ret->onMousePress(location, button, action, mods);
+		window->onMouseKey += [this](Window& win, const rawrbox::Vector2i& location, uint32_t button, uint32_t action, uint32_t mods) mutable {
+			rawrbox::runOnMainThread([this, location, button, action, mods]() {
+				this->onMousePress(location, button, action, mods);
 			});
 		};
 
-		window.onMouseMove += [ret](Window& win, const rawrbox::Vector2i& location) mutable {
-			rawrbox::runOnMainThread([ret, location]() {
-				ret->onMouseMove(location);
+		window->onMouseMove += [this](Window& win, const rawrbox::Vector2i& location) mutable {
+			rawrbox::runOnMainThread([this, location]() {
+				this->onMouseMove(location);
 			});
 		};
 
-		window.onMouseScroll += [ret](Window& win, const rawrbox::Vector2i& location, const rawrbox::Vector2i& offset) mutable {
-			rawrbox::runOnMainThread([ret, location, offset]() {
-				if (ret->_focusedElement.expired()) return;
-				ret->_focusedElement.lock()->mouseScroll(location, offset);
+		window->onMouseScroll += [this](Window& win, const rawrbox::Vector2i& location, const rawrbox::Vector2i& offset) mutable {
+			rawrbox::runOnMainThread([this, location, offset]() {
+				if (this->_focusedElement.expired()) return;
+				this->_focusedElement.lock()->mouseScroll(location, offset);
 			});
 		};
 		/// ----
-
-		return ret;
 	}
 
 	const std::shared_ptr<rawrbox::UIBase> UIRoot::getFocus() const {
@@ -178,5 +182,11 @@ namespace rawrbox {
 		elm->setFocused(true);
 		this->_focusedElement = elm;
 		// ---
+	}
+
+	void UIRoot::draw(rawrbox::Stencil& stencil) { throw std::runtime_error("[RawrBox-UI] Call 'render()' instead"); }
+	void UIRoot::render() {
+		if (this->_window.expired()) return;
+		rawrbox::UIContainer::draw(this->_window.lock()->getStencil());
 	}
 } // namespace rawrbox

@@ -21,7 +21,7 @@
 
         "clangd.restartAfterCrash": true,
         "clangd.checkUpdates": false,
-        "clangd.arguments": ["--header-insertion=never", "--clang-tidy=0"],
+        "clangd.arguments": ["--header-insertion=never"],
 
         "git.autoRepositoryDetection": false,
 

@@ -67,31 +67,47 @@ namespace rawrbox {
 	// --------------
 
 	// RENDERING -----
-	void UIContainer::update() {
-		for (auto elm : this->_children) {
-			elm->update();
+	void UIContainer::internalUpdate(std::shared_ptr<rawrbox::UIBase> elm) {
+		if (!elm->visible()) return;
+		elm->update();
+
+		auto elms = elm->getChildren();
+		for (auto& celm : elms) {
+			this->internalUpdate(celm);
 		}
 	}
 
-	void UIContainer::upload() {
+	void UIContainer::update() {
 		for (auto elm : this->_children) {
-			elm->upload();
+			this->internalUpdate(elm);
 		}
+	}
+
+	void UIContainer::internalDraw(std::shared_ptr<rawrbox::UIBase> elm, rawrbox::Stencil& stencil) {
+		if (!elm->visible()) return;
+
+		stencil.pushOffset(elm->getPos());
+		stencil.pushClipping({{0, 0}, elm->getSize()});
+
+		elm->beforeDraw(stencil);
+		elm->draw(stencil);
+
+		// Draw children of the element ---
+		auto elms = elm->getChildren();
+		for (auto& celm : elms) {
+			this->internalDraw(celm, stencil);
+		}
+		// -----------
+
+		elm->afterDraw(stencil);
+
+		stencil.popClipping();
+		stencil.popOffset();
 	}
 
 	void UIContainer::draw(rawrbox::Stencil& stencil) {
 		for (auto elm : this->_children) {
-			if (!elm->visible()) continue;
-
-			stencil.pushOffset(elm->getPos());
-			stencil.pushClipping({{0, 0}, elm->getSize()});
-
-			elm->beforeDraw(stencil);
-			elm->draw(stencil);
-			elm->afterDraw(stencil);
-
-			stencil.popClipping();
-			stencil.popOffset();
+			this->internalDraw(elm, stencil);
 		}
 	}
 	// ----

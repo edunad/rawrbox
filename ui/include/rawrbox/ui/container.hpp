@@ -19,6 +19,9 @@ namespace rawrbox {
 		rawrbox::AABBf _aabb = {};
 		float _uiScale = 1.F;
 
+		void internalUpdate(std::shared_ptr<rawrbox::UIBase> elm);
+		void internalDraw(std::shared_ptr<rawrbox::UIBase> elm, rawrbox::Stencil& stencil);
+
 	public:
 		virtual ~UIContainer() = default;
 		UIContainer() = default;
@@ -69,7 +72,6 @@ namespace rawrbox {
 
 		// RENDERING -----
 		virtual void update();
-		virtual void upload();
 		virtual void draw(rawrbox::Stencil& stencil);
 		// ----
 	};

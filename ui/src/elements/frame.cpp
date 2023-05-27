@@ -8,6 +8,7 @@ namespace rawrbox {
 	UIFrame::~UIFrame() {
 		this->_stripes = nullptr;
 		this->_overlay = nullptr;
+		this->_closeButton = nullptr;
 
 		this->_consola.reset();
 	}
@@ -18,6 +19,29 @@ namespace rawrbox {
 
 		this->_consola = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(11);
 
+		// Build close button ---
+		auto size = this->getSize();
+
+		this->_closeButton = this->createChild<rawrbox::UIButton>();
+		this->_closeButton->setTexture("content/textures/ui/icons/close.png");
+		this->_closeButton->setSize({30, 18});
+		this->_closeButton->setPos({size.x - 30, 0});
+		this->_closeButton->setTextureSize({8, 8});
+		this->_closeButton->setTextureColor(Colors::Black);
+		this->_closeButton->setEnabled(true);
+		this->_closeButton->setBorder(false);
+		this->_closeButton->setBackgroundColor(Colors::Transparent);
+		this->_closeButton->setVisible(this->_closable);
+		this->_closeButton->initialize();
+
+		this->_closeButton->onClick += [this]() {
+			auto ref = this->getRef<rawrbox::UIFrame>();
+
+			ref->onClose();
+			ref->remove();
+		};
+
+		// --
 		rawrbox::ROOT_UI->setFocus(this->getRef<UIFrame>());
 	}
 
@@ -30,12 +54,17 @@ namespace rawrbox {
 
 	void UIFrame::setClosable(bool closable) {
 		this->_closable = closable;
-		// closable ? closeButton->show() : closeButton->hide();
+		if (this->_closeButton != nullptr) this->_closeButton->setVisible(closable);
 	}
 	bool UIFrame::isClosable() const { return this->_closable; }
 
 	void UIFrame::setDraggable(bool draggable) { this->_draggable = draggable; }
 	bool UIFrame::isDraggable() const { return this->_draggable; }
+
+	void UIFrame::setSize(const rawrbox::Vector2& size) {
+		rawrbox::UIBase::setSize(size);
+		if (this->_closeButton != nullptr) this->_closeButton->setPos({size.x - 30, 0});
+	}
 	// -------
 
 	// INPUTS ---

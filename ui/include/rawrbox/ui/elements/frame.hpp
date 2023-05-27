@@ -4,6 +4,7 @@
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/elements/button.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <string>
@@ -17,10 +18,12 @@ namespace rawrbox {
 		bool _draggable = true;
 		bool _closable = true;
 
+		std::shared_ptr<rawrbox::UIButton> _closeButton = nullptr;
+
 		// DRAGGING --
 		bool _dragging = false;
 		rawrbox::Vector2f _dragStart = {};
-		//
+		// ----
 
 		// RESOURCES ---
 		std::shared_ptr<rawrbox::TextureImage> _stripes = nullptr;
@@ -31,8 +34,10 @@ namespace rawrbox {
 	public:
 		rawrbox::Event<> onClose;
 
-		virtual ~UIFrame() override;
-		virtual void initialize();
+		UIFrame() = default;
+		~UIFrame() override;
+
+		void initialize();
 
 		// UTILS -----
 		[[nodiscard]] const rawrbox::Color& getTitleColor() const;
@@ -46,17 +51,19 @@ namespace rawrbox {
 
 		virtual void setDraggable(bool draggable);
 		[[nodiscard]] virtual bool isDraggable() const;
+
+		void setSize(const rawrbox::Vector2& size) override;
 		// -------
 
 		// INPUTS ---
-		virtual void mouseMove(const rawrbox::Vector2i& mousePos) override;
-		virtual void mouseDown(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) override;
-		virtual void mouseUp(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) override;
+		void mouseMove(const rawrbox::Vector2i& mousePos) override;
+		void mouseDown(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) override;
+		void mouseUp(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) override;
 		// -----
 
 		// DRAWING ---
-		virtual void draw(rawrbox::Stencil& stencil) override;
-		virtual void afterDraw(rawrbox::Stencil& stencil) override;
+		void draw(rawrbox::Stencil& stencil) override;
+		void afterDraw(rawrbox::Stencil& stencil) override;
 		// -----
 	};
 } // namespace rawrbox
