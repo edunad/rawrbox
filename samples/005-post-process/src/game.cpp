@@ -71,7 +71,7 @@ namespace post_process {
 		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_road/scene.gltf");
 
 		this->_model->load(mdl->model);
-		this->_model->setScale({0.01F});
+		this->_model->setScale({0.01F, 0.01F});
 		//   -----
 
 		this->_ready = true;
