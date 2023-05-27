@@ -11,7 +11,7 @@ namespace rawrbox {
 		bgfx::TextureHandle _handle = BGFX_INVALID_HANDLE;
 		rawrbox::Vector2i _size;
 
-		int _channels;
+		int _channels = 0;
 		uint32_t _flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
 
 	public:

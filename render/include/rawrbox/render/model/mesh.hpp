@@ -135,7 +135,7 @@ namespace rawrbox {
 		template <typename B>
 		B* getOwner() {
 			if (this->owner == nullptr) return nullptr;
-			return reinterpret_cast<B*>(this->owner);
+			return std::bit_cast<B*>(this->owner);
 		}
 
 		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getTexture() const { return this->texture; }

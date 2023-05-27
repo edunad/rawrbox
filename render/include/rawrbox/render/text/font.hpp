@@ -60,7 +60,7 @@ namespace rawrbox {
 		FT_Face face = {};
 		uint32_t size;
 
-		Font(const std::string& filename, uint32_t size, FT_Render_Mode renderMode = FT_RENDER_MODE_NORMAL);
+		Font(std::string  filename, uint32_t size, FT_Render_Mode renderMode = FT_RENDER_MODE_NORMAL);
 		Font(Font&&) = delete;
 		Font& operator=(Font&&) = delete;
 		Font(const Font&) = delete;

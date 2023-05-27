@@ -20,9 +20,9 @@ namespace rawrbox {
 
 		Vector3_t() = default;
 
-		Vector3_t(NumberType val) : x(val), y(val), z(val) {}
-		Vector3_t(const std::array<NumberType, 3>& val) : x(val[0]), y(val[1]), z(val[2]) {}
-		Vector3_t(Vector2_t<NumberType> xy, NumberType _z = 0) : x(xy.x), y(xy.y), z(_z) {}
+		explicit Vector3_t(NumberType val) : x(val), y(val), z(val) {}
+		explicit Vector3_t(const std::array<NumberType, 3>& val) : x(val[0]), y(val[1]), z(val[2]) {}
+		explicit Vector3_t(Vector2_t<NumberType> xy, NumberType _z = 0) : x(xy.x), y(xy.y), z(_z) {}
 		Vector3_t(NumberType _x, NumberType _y, NumberType _z = 0) : x(_x), y(_y), z(_z) {}
 
 		static VecType zero() { return VecType(); }

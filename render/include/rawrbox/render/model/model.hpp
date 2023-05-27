@@ -227,17 +227,17 @@ namespace rawrbox {
 		}
 		// -----
 
-		virtual void setPos(const rawrbox::Vector3f& pos) override {
+		void setPos(const rawrbox::Vector3f& pos) override {
 			rawrbox::ModelBase<M>::setPos(pos);
 			this->updateLights();
 		}
 
-		virtual void setAngle(const rawrbox::Vector4f& angle) override {
+		void setAngle(const rawrbox::Vector4f& angle) override {
 			rawrbox::ModelBase<M>::setAngle(angle);
 			// this->updateLights(); // TODO
 		}
 
-		virtual void setScale(const rawrbox::Vector3f& size) override {
+		void setScale(const rawrbox::Vector3f& size) override {
 			rawrbox::ModelBase<M>::setScale(size);
 			// this->updateLights(); // TODO
 		}

@@ -277,6 +277,7 @@ namespace rawrbox {
 
 	void Window::setCursor(const std::array<uint8_t, 1024>& pixels) {
 		GLFWimage image = {};
+		image.pixels = {};
 		image.width = 16;
 		image.height = 16;
 

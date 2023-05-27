@@ -26,6 +26,8 @@
 #define MAGIC_ENUM_USING_ALIAS_STRING using string = std::string;
 #include <magic_enum.hpp>
 
+#include <utility>
+
 #define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_GlobalScale)
 
 namespace rawrbox {
@@ -66,7 +68,7 @@ namespace rawrbox {
 		rawrbox::Colorf emissionColor = rawrbox::Colors::White;
 		float intensity = 1.F;
 
-		AssimpMaterial(const std::string& _name) : name(_name){};
+		explicit AssimpMaterial(std::string _name) : name(std::move(_name)){};
 		~AssimpMaterial() {
 			this->diffuse = nullptr;
 			this->opacity = nullptr;
@@ -706,8 +708,8 @@ namespace rawrbox {
 		std::unordered_map<std::string, std::shared_ptr<rawrbox::AssimpMaterial>> materials = {};
 		std::vector<rawrbox::AssimpMesh> meshes = {};
 
-		uint32_t loadFlags;
-		uint32_t assimpFlags;
+		uint32_t loadFlags{};
+		uint32_t assimpFlags{};
 
 		// SKINNING ----
 		std::unordered_map<std::string, std::shared_ptr<rawrbox::Skeleton>> skeletons = {};
@@ -718,11 +720,8 @@ namespace rawrbox {
 		// --------
 
 		AssimpImporter() = default;
-		AssimpImporter(uint32_t loadFlags = ModelLoadFlags::NONE, uint32_t assimpFlags = DEFAULT_ASSIMP_FLAGS) {
+		explicit AssimpImporter(uint32_t loadFlags = ModelLoadFlags::NONE, uint32_t assimpFlags = DEFAULT_ASSIMP_FLAGS) : loadFlags(loadFlags), assimpFlags(assimpFlags) {
 			this->meshes.clear(); // Clear old meshes
-
-			this->loadFlags = loadFlags;
-			this->assimpFlags = assimpFlags;
 
 			if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {
 				this->assimpFlags |= aiProcess_PopulateArmatureData | aiProcess_LimitBoneWeights; // Enable armature & limit bones
@@ -750,7 +749,7 @@ namespace rawrbox {
 
 			auto b = buffer;
 			if (!b.empty()) {
-				const char* bah = reinterpret_cast<const char*>(b.data());
+				const char* bah = std::bit_cast<const char*>(b.data());
 
 				if (path.extension() == ".gltf") {
 					this->load(path, loadFlags, assimpFlags); // GLTF has external dependencies, not sure how to load them using file from memory

@@ -32,8 +32,7 @@ namespace rawrbox {
 		if (FT_Done_Face(this->face) != 0) fmt::print(stderr, "[RawrBox-Font] Failed to clean up font\n");
 	}
 
-	Font::Font(const std::string& _filename, uint32_t _size, FT_Render_Mode renderMode) : _mode(renderMode), size(_size) {
-		this->_file = _filename;
+	Font::Font(std::string _filename, uint32_t _size, FT_Render_Mode renderMode) : _file(std::move(_filename)), _mode(renderMode), size(_size) {
 
 		// Check our own content
 		if (!std::filesystem::exists(this->_file)) {
