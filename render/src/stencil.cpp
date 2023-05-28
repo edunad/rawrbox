@@ -415,8 +415,9 @@ namespace rawrbox {
 		bgfx::setState(flags, 0);
 
 		if (!this->_clips.empty()) {
-			auto& clip = this->_clips.front();
-			bgfx::setScissor(static_cast<uint16_t>(clip.pos.x), static_cast<uint16_t>(clip.pos.y), static_cast<uint16_t>(clip.size.x), static_cast<uint16_t>(clip.size.y));
+			for (auto& clip : this->_clips) {
+				bgfx::setScissor(static_cast<uint16_t>(clip.pos.x), static_cast<uint16_t>(clip.pos.y), static_cast<uint16_t>(clip.size.x), static_cast<uint16_t>(clip.size.y));
+			}
 		} else {
 			bgfx::setScissor(); // Clear scissor
 		}

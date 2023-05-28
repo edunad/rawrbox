@@ -24,8 +24,8 @@ namespace rawrbox {
 
 		this->_closeButton = this->createChild<rawrbox::UIButton>();
 		this->_closeButton->setTexture("content/textures/ui/icons/close.png");
-		this->_closeButton->setSize({30, 18});
-		this->_closeButton->setPos({size.x - 30, 0});
+		this->_closeButton->setSize({30, 16});
+		this->_closeButton->setPos({size.x - 30, -18});
 		this->_closeButton->setTextureSize({8, 8});
 		this->_closeButton->setTextureColor(Colors::Black);
 		this->_closeButton->setEnabled(true);
@@ -43,6 +43,10 @@ namespace rawrbox {
 
 		// --
 		rawrbox::ROOT_UI->setFocus(this->getRef<UIFrame>());
+	}
+
+	const rawrbox::Vector2f UIFrame::getDrawOffset() const {
+		return {0, 18.F}; // Title offset
 	}
 
 	// UTILS -----

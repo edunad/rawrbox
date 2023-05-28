@@ -6,6 +6,8 @@
 namespace rawrbox {
 
 	// UTILS ---
+	const rawrbox::Vector2f UIContainer::getDrawOffset() const { return {}; };
+
 	void UIContainer::setPos(const rawrbox::Vector2f& pos) { this->_aabb.pos = pos; }
 	const rawrbox::Vector2f& UIContainer::getPos() const { return this->_aabb.pos; }
 
@@ -87,16 +89,18 @@ namespace rawrbox {
 		if (!elm->visible()) return;
 
 		stencil.pushOffset(elm->getPos());
-		stencil.pushClipping({{0, 0}, elm->getSize()});
+		stencil.pushClipping({{}, elm->getSize()});
 
 		elm->beforeDraw(stencil);
 		elm->draw(stencil);
 
 		// Draw children of the element ---
+		stencil.pushOffset(elm->getDrawOffset());
 		auto elms = elm->getChildren();
 		for (auto& celm : elms) {
 			this->internalDraw(celm, stencil);
 		}
+		stencil.popOffset();
 		// -----------
 
 		elm->afterDraw(stencil);

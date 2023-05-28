@@ -20,6 +20,7 @@ namespace rawrbox {
 
 		// UTILS -----
 		[[nodiscard]] virtual const bool alwaysOnTop() const;
+		void bringToFront();
 
 		virtual void setVisible(bool visible);
 		[[nodiscard]] virtual const bool visible() const;
@@ -30,13 +31,17 @@ namespace rawrbox {
 		virtual void setHovering(bool hovering);
 		[[nodiscard]] virtual const bool hovering() const;
 
-		[[nodiscard]] const rawrbox::Vector2f getPosAbsolute() const;
-		void bringToFront();
+		[[nodiscard]] virtual const rawrbox::Vector2f getPosAbsolute() const;
 		// ---
 
 		// DRAWING ------
 		virtual void beforeDraw(rawrbox::Stencil& stencil);
 		virtual void afterDraw(rawrbox::Stencil& stencil);
+		// --
+
+		// FOCUS HANDLING ------
+		[[nodiscard]] virtual bool lockKeyboard() const;
+		[[nodiscard]] virtual bool lockScroll() const;
 		// --
 
 		// INPUTS ----

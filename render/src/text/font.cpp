@@ -65,10 +65,10 @@ namespace rawrbox {
 		FT_Request_Size(this->face, &req);
 		FT_Select_Charmap(this->face, FT_ENCODING_UNICODE);
 
-		this->preloadGlyphs("�~!@#$%^&*()_+`1234567890-=QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm|<>?,./:;\"'}{][ \\");
+		this->addChars("�~!@#$%^&*()_+`1234567890-=QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm|<>?,./:;\"'}{][ \\");
 	}
 
-	void Font::preloadGlyphs(const std::string& chars) {
+	void Font::addChars(const std::string& chars) {
 		auto charsIter = chars.begin();
 		while (charsIter < chars.end()) {
 			this->loadGlyph(utf8::next(charsIter, chars.end()));
@@ -88,7 +88,7 @@ namespace rawrbox {
 
 	const Glyph& Font::getGlyph(uint32_t codepoint) const {
 		auto fnt = std::find_if(this->_glyphs.begin(), this->_glyphs.end(), [codepoint](auto glyph) { return glyph.codepoint == codepoint; });
-		if (fnt == this->_glyphs.end()) return this->_glyphs.front();
+		if (fnt == this->_glyphs.end()) return this->_glyphs.front(); // Return the unknown one
 		return *fnt;
 	}
 
@@ -120,9 +120,9 @@ namespace rawrbox {
 				continue;
 			}
 
-			if (!hasGlyph(point)) continue;
+			if (!this->hasGlyph(point)) continue;
 
-			const auto& glyph = getGlyph(point);
+			const auto& glyph = this->getGlyph(point);
 			auto maxh = std::max(static_cast<float>(glyph.size.y), lineheight);
 
 			if (prevGlyph != nullptr) pos.x += getKerning(glyph, *prevGlyph);
@@ -194,4 +194,43 @@ namespace rawrbox {
 		return buffer;
 	}
 	// --------
+
+	// GLOBAL UTILS ---
+	size_t Font::getByteCount(const std::string& text, size_t characterPosition) {
+		if (characterPosition <= 0) return 0;
+
+		size_t count = 0;
+		auto beginIter = text.begin();
+		auto endIter = text.end();
+		while (beginIter != endIter) {
+			utf8::next(beginIter, endIter);
+
+			count++;
+			if (characterPosition == count) {
+				return std::distance(text.begin(), beginIter);
+			}
+		}
+
+		return text.size();
+	}
+
+	size_t Font::getCharacterCount(const std::string& text) {
+		size_t count = 0;
+
+		auto beginIter = text.begin();
+		auto endIter = text.end();
+		while (beginIter != endIter) {
+			utf8::next(beginIter, endIter);
+			count++;
+		}
+
+		return count;
+	}
+
+	std::string Font::toUTF8(const std::wstring text) {
+		std::string result;
+		utf8::utf16to8(text.begin(), text.end(), std::back_inserter(result));
+		return result;
+	}
+	// -------------
 } // namespace rawrbox

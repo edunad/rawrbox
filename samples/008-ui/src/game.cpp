@@ -4,6 +4,8 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
+#include <rawrbox/ui/elements/input.hpp>
+#include <rawrbox/ui/elements/label.hpp>
 #include <rawrbox/ui/static.hpp>
 
 #include <ui_test/game.hpp>
@@ -62,7 +64,30 @@ namespace ui_test {
 			frame->setSize({400, 200});
 			frame->setPos({400, 200});
 			frame->initialize();
+
+			{
+				auto label = frame->createChild<rawrbox::UILabel>();
+				label->setPos({10, 5});
+				label->setFont("cour.ttf", 14);
+				label->setText("Label: mew!");
+				label->sizeToContents();
+			}
+
+			{
+				auto label = frame->createChild<rawrbox::UILabel>();
+				label->setPos({10, 18});
+				label->setFont("cour.ttf", 14);
+				label->setText("Label: shadow mew!");
+				label->setShadowColor(rawrbox::Colors::Black);
+				label->sizeToContents();
+			}
+
+			auto input = frame->createChild<rawrbox::UIInput>();
+			input->setPos({10, 36});
+			input->setSize({380, 22});
+			input->setFont("cour.ttf", 14);
 		}
+
 		// ---
 	}
 
@@ -103,6 +128,7 @@ namespace ui_test {
 		// -----------
 
 		rawrbox::ROOT_UI->render();
+
 		this->_window->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
 	}

@@ -38,6 +38,7 @@ namespace rawrbox {
 		~UIFrame() override;
 
 		void initialize();
+		[[nodiscard]] const rawrbox::Vector2f getDrawOffset() const override;
 
 		// UTILS -----
 		[[nodiscard]] const rawrbox::Color& getTitleColor() const;

@@ -29,8 +29,11 @@ namespace rawrbox {
 		// UTILS ---
 		virtual void setPos(const rawrbox::Vector2f& pos);
 		[[nodiscard]] virtual const rawrbox::Vector2f& getPos() const;
+		[[nodiscard]] virtual const rawrbox::Vector2f getDrawOffset() const;
+
 		virtual void setSize(const rawrbox::Vector2f& size);
 		[[nodiscard]] virtual const rawrbox::Vector2f getSize() const;
+
 		virtual void setUIScale(float size);
 		[[nodiscard]] virtual const float getUIScale() const;
 

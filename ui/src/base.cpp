@@ -44,6 +44,11 @@ namespace rawrbox {
 	void UIBase::afterDraw(rawrbox::Stencil& stencil) {}
 	// --
 
+	// FOCUS HANDLING ------
+	bool UIBase::lockKeyboard() const { return false; }
+	bool UIBase::lockScroll() const { return false; }
+	// --
+
 	// INPUTS ----
 	void UIBase::mouseDown(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) {}
 	void UIBase::mouseUp(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) {}

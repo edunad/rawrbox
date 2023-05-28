@@ -21,7 +21,7 @@ namespace rawrbox {
 	std::shared_ptr<rawrbox::UIBase> UIRoot::findElement(std::shared_ptr<rawrbox::UIBase> elmPtr, const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset, rawrbox::Vector2i& offsetOut) {
 		if (elmPtr == nullptr || !elmPtr->visible() || !elmPtr->hitTest(mousePos.cast<float>())) return nullptr;
 
-		auto pos = elmPtr->getPos().cast<int>();
+		auto pos = (elmPtr->getPos() + elmPtr->getDrawOffset()).cast<int>();
 		auto elms = elmPtr->getChildren();
 
 		for (size_t i = elms.size(); i > 0; i--) {
