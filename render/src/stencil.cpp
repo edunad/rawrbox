@@ -48,6 +48,7 @@ namespace rawrbox {
 
 		this->_pixelTexture = nullptr;
 		this->_renderTexture = nullptr;
+		this->_totalVertices = 0;
 
 		this->_indices.clear();
 		this->_vertices.clear();
@@ -111,12 +112,9 @@ namespace rawrbox {
 		    col.pack());
 	}
 
-	void Stencil::pushIndices(uint16_t a, uint16_t b, uint16_t c) {
-		auto pos = static_cast<uint16_t>(this->_vertices.size());
-
-		this->_indices.push_back(pos - a);
-		this->_indices.push_back(pos - b);
-		this->_indices.push_back(pos - c);
+	void Stencil::pushIndices(std::vector<uint16_t> ind) {
+		for (auto in : ind)
+			this->_indices.push_back(this->_totalVertices + in);
 	}
 
 	void Stencil::applyRotation(rawrbox::Vector2f& vert) {
@@ -175,7 +173,8 @@ namespace rawrbox {
 			this->pushVertice(b, bUV, colB);
 			this->pushVertice(c, cUV, colC);
 
-			this->pushIndices(3, 2, 1);
+			this->pushIndices({0, 1, 2});
+			this->_totalVertices += 3;
 		}
 	}
 
@@ -206,8 +205,9 @@ namespace rawrbox {
 		this->pushVertice({pos.x + size.x, pos.y}, {uvEnd.x, uvStart.y}, col);
 		this->pushVertice({pos.x + size.x, pos.y + size.y}, uvEnd, col);
 
-		this->pushIndices(4, 3, 2);
-		this->pushIndices(3, 1, 2);
+		this->pushIndices({0, 1, 2,
+		    1, 2, 3});
+		this->_totalVertices += 4;
 	}
 
 	void Stencil::drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col, size_t roundness, float angleStart, float angleEnd) {
@@ -265,10 +265,9 @@ namespace rawrbox {
 		if (usePTLines) {
 			this->pushVertice(from, {0, 0}, col);
 			this->pushVertice(to, {outline.stipple, outline.stipple}, col);
+			this->pushIndices({0, 1});
 
-			auto pos = static_cast<uint16_t>(this->_vertices.size());
-			this->_indices.push_back(pos - 1);
-			this->_indices.push_back(pos - 2);
+			this->_totalVertices += 2;
 		} else {
 			float angle = -from.angle(to);
 			float uvEnd = outline.stipple <= 0.F ? 1.F : outline.stipple;
@@ -283,8 +282,9 @@ namespace rawrbox {
 			this->pushVertice(vertB, {0, uvEnd}, col);
 			this->pushVertice(vertD, {uvEnd, uvEnd}, col);
 
-			this->pushIndices(4, 3, 2);
-			this->pushIndices(3, 1, 2);
+			this->pushIndices({0, 1, 2,
+			    1, 2, 3});
+			this->_totalVertices += 4;
 		}
 	}
 
@@ -361,8 +361,10 @@ namespace rawrbox {
 			this->pushVertice({p.x + s.x, p.y}, {glyph.textureBottomRight.x, glyph.textureTopLeft.y}, col);
 			this->pushVertice({p.x + s.x, p.y + s.y}, glyph.textureBottomRight, col);
 
-			this->pushIndices(4, 3, 2);
-			this->pushIndices(3, 1, 2);
+			this->pushIndices({0, 1, 2,
+			    1, 2, 3});
+
+			this->_totalVertices += 4;
 
 			curpos.x += glyph.advance.x;
 			curpos.y += glyph.advance.y;
@@ -424,6 +426,7 @@ namespace rawrbox {
 
 		bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_stencilProgram);
 
+		this->_totalVertices = 0;
 		this->_vertices.clear();
 		this->_indices.clear();
 	}
@@ -444,8 +447,10 @@ namespace rawrbox {
 		this->pushVertice({size.x, 0}, {1, 0}, rawrbox::Colors::White);
 		this->pushVertice({size.x, size.y}, {1, 1}, rawrbox::Colors::White);
 
-		this->pushIndices(4, 3, 2);
-		this->pushIndices(3, 1, 2);
+		this->pushIndices({0, 1, 2,
+		    1, 2, 3});
+
+		this->_totalVertices += 4;
 
 		this->internalDraw(); // Draw on main window
 	}

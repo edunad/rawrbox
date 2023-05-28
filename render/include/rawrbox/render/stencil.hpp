@@ -145,10 +145,11 @@ namespace rawrbox {
 		std::vector<uint16_t> _indices;
 
 		bool _recording = false;
+		uint32_t _totalVertices = 0;
 
 		// ------ UTILS
 		void pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv, const rawrbox::Color& col);
-		void pushIndices(uint16_t a, uint16_t b, uint16_t c);
+		void pushIndices(std::vector<uint16_t> ind);
 
 		void applyRotation(rawrbox::Vector2f& vert);
 		void applyScale(rawrbox::Vector2f& vert);
