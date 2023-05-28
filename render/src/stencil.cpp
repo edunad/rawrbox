@@ -95,13 +95,15 @@ namespace rawrbox {
 	}
 
 	void Stencil::pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv, const rawrbox::Color& col) {
+		auto wSize = this->_windowSize.cast<float>();
+
 		this->applyScale(pos);
 		this->applyRotation(pos);
 
 		this->_vertices.emplace_back(
 		    // pos
-		    ((pos.x + this->_offset.x) / _windowSize.x * 2 - 1),
-		    ((pos.y + this->_offset.y) / _windowSize.y * 2 - 1) * -1,
+		    ((pos.x + this->_offset.x) / wSize.x * 2 - 1),
+		    ((pos.y + this->_offset.y) / wSize.y * 2 - 1) * -1,
 		    0.0F,
 
 		    // uv
@@ -124,7 +126,7 @@ namespace rawrbox {
 		translationMatrix.translate({-_rotation.origin.x, -_rotation.origin.y, 0});
 
 		rawrbox::Matrix4x4 rotationMatrix = {};
-		rotationMatrix.rotateZ(bx::toRad(_rotation.rotation));
+		rotationMatrix.rotateZ(-bx::toRad(_rotation.rotation));
 
 		rawrbox::Matrix4x4 reverseTranslationMatrix = {};
 		reverseTranslationMatrix.translate({_rotation.origin.x, _rotation.origin.y, 0});
@@ -206,7 +208,7 @@ namespace rawrbox {
 		this->pushVertice({pos.x + size.x, pos.y + size.y}, uvEnd, col);
 
 		this->pushIndices({0, 1, 2,
-		    1, 2, 3});
+		    1, 3, 2});
 		this->_totalVertices += 4;
 	}
 
@@ -283,7 +285,7 @@ namespace rawrbox {
 			this->pushVertice(vertD, {uvEnd, uvEnd}, col);
 
 			this->pushIndices({0, 1, 2,
-			    1, 2, 3});
+			    1, 3, 2});
 			this->_totalVertices += 4;
 		}
 	}
@@ -362,7 +364,7 @@ namespace rawrbox {
 			this->pushVertice({p.x + s.x, p.y + s.y}, glyph.textureBottomRight, col);
 
 			this->pushIndices({0, 1, 2,
-			    1, 2, 3});
+			    1, 3, 2});
 
 			this->_totalVertices += 4;
 
@@ -448,10 +450,9 @@ namespace rawrbox {
 		this->pushVertice({size.x, size.y}, {1, 1}, rawrbox::Colors::White);
 
 		this->pushIndices({0, 1, 2,
-		    1, 2, 3});
+		    1, 3, 2});
 
 		this->_totalVertices += 4;
-
 		this->internalDraw(); // Draw on main window
 	}
 
