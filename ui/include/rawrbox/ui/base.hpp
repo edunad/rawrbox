@@ -6,6 +6,7 @@
 #include <array>
 
 namespace rawrbox {
+	class UIRoot;
 	class UIBase : public rawrbox::UIContainer {
 		bool _alwaysOnTop = false;
 
@@ -31,6 +32,7 @@ namespace rawrbox {
 		virtual void setHovering(bool hovering);
 		[[nodiscard]] virtual const bool hovering() const;
 
+		[[nodiscard]] virtual const std::shared_ptr<rawrbox::UIRoot> getRootContainer() const;
 		[[nodiscard]] virtual const rawrbox::Vector2f getPosAbsolute() const;
 		// ---
 

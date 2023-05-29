@@ -9,15 +9,10 @@ namespace rawrbox {
 	const rawrbox::Vector2f UIContainer::getDrawOffset() const { return {}; };
 
 	void UIContainer::setPos(const rawrbox::Vector2f& pos) { this->_aabb.pos = pos; }
-	const rawrbox::Vector2f& UIContainer::getPos() const { return this->_aabb.pos; }
+	const rawrbox::Vector2f UIContainer::getPos() const { return this->_aabb.pos; }
 
 	void UIContainer::setSize(const rawrbox::Vector2f& size) { this->_aabb.size = size; }
-	const rawrbox::Vector2f UIContainer::getSize() const {
-		return {this->_aabb.size.x * this->_uiScale, this->_aabb.size.y * this->_uiScale};
-	}
-
-	void UIContainer::setUIScale(const float scale) { this->_uiScale = scale; }
-	const float UIContainer::getUIScale() const { return this->_uiScale; }
+	const rawrbox::Vector2f UIContainer::getSize() const { return this->_aabb.size; }
 
 	void UIContainer::removeChildren() {
 		while (!this->_children.empty())

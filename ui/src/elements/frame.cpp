@@ -40,9 +40,6 @@ namespace rawrbox {
 			ref->onClose();
 			ref->remove();
 		};
-
-		// --
-		rawrbox::ROOT_UI->setFocus(this->getRef<UIFrame>());
 	}
 
 	const rawrbox::Vector2f UIFrame::getDrawOffset() const {
@@ -76,7 +73,7 @@ namespace rawrbox {
 		if (!this->_dragging) return;
 
 		auto p = this->getParent<>();
-		this->setPos((this->getPos() + (mousePos.cast<float>() - this->_dragStart)).clamp(p->getPos(), p->getPos() + p->getSize() - getSize()));
+		this->setPos((this->getPos() + (mousePos.cast<float>() - this->_dragStart)).clamp(p->getPos(), p->getPos() + p->getSize() - this->getSize()));
 	}
 
 	void UIFrame::mouseDown(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) {

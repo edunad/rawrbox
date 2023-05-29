@@ -68,6 +68,8 @@ namespace rawrbox {
 			return masked;
 		}
 
+		AABBType operator*(NumberType other) const { return AABBType(this->pos * other, this->size * other); }
+
 		bool operator==(const AABBType& other) const { return this->pos == other.pos && this->size == other.size; }
 		bool operator!=(const AABBType& other) const { return !operator==(other); }
 	};

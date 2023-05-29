@@ -1,7 +1,6 @@
 #include <rawrbox/ui/static.hpp>
 
 namespace rawrbox {
-	std::shared_ptr<rawrbox::UIRoot> ROOT_UI = nullptr;
 	std::vector<std::pair<std::string, uint32_t>> UI_RESOURCES = {
 	    // FONTS
 	    std::make_pair<std::string, uint32_t>("consola.ttf", 0), // TODO: ADD LINUX FONT

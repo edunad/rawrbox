@@ -7,9 +7,9 @@
 
 #include <functional>
 
-namespace ias::cl {
+namespace rawrbox {
 	template <class T>
-	class VirtualList : public rawrbox::UIBase {
+	class UIVirtualList : public rawrbox::UIBase {
 		std::vector<T> items;
 
 		// MOUSE POS ---
@@ -18,8 +18,8 @@ namespace ias::cl {
 		//
 
 		// MOUSE SCROLL ----
-		float mouseScrollY = 0;
-		float maxYOffset = 0;
+		int mouseScrollY = 0;
+		int maxYOffset = 0;
 		// ----
 
 		rawrbox::Color backgroundColor = rawrbox::Colors::Transparent;
@@ -28,9 +28,9 @@ namespace ias::cl {
 		std::function<bool(size_t, T&)> shouldRender = nullptr;
 		std::function<void(size_t, T&, bool, rawrbox::Stencil&)> renderItem = nullptr;
 		std::function<void(rawrbox::Stencil&)> renderAfter = nullptr;
-		std::function<float(float)> getItemSize = nullptr;
+		std::function<int(size_t)> getItemSize = nullptr;
 
-		rawrbox::Event<size_t, T&> onItemClick = nullptr;
+		rawrbox::Event<size_t, T&> onItemClick;
 
 		void clear() {
 			this->items.clear();
@@ -58,13 +58,13 @@ namespace ias::cl {
 			return items[index];
 		};
 
-		// TODO: Implement record?
+		[[nodiscard]] bool clipOverflow() const override { return true; }
 		void draw(rawrbox::Stencil& stencil) override {
 			if (getItemSize == nullptr) throw std::runtime_error("[VirtualList] Missing 'getItemSize' implementation");
 			if (renderItem == nullptr) throw std::runtime_error("[VirtualList] Missing 'renderItem' implementation");
 
 			auto size = this->getSize();
-			float yPosOffset = 0;
+			int yPosOffset = 0;
 
 			// Reset
 			hoverIndex = -1;
@@ -79,15 +79,15 @@ namespace ias::cl {
 				int itemHeight = this->getItemSize(indx);
 
 				// Item size
-				float yStart = yPosOffset + mouseScrollY;
-				float yEnd = yPosOffset + itemHeight + mouseScrollY;
+				int yStart = yPosOffset + mouseScrollY;
+				int yEnd = yPosOffset + itemHeight + mouseScrollY;
 
 				// Hover check
-				if (mousePos.y > yStart && mousePos.y < yEnd && mousePos.x > 0 && mousePos.x < size.x) hoverIndex = indx;
+				if (mousePos.y > yStart && mousePos.y < yEnd && mousePos.x > 0 && mousePos.x < size.x) hoverIndex = static_cast<int>(indx);
 
 				// Calculate visibility
 				if (yEnd > 0 && yStart < size.y) {
-					stencil.pushOffset({0, yStart});
+					stencil.pushOffset({0, static_cast<float>(yStart)});
 					renderItem(indx, itm, hoverIndex == static_cast<int>(indx), stencil);
 					stencil.popOffset();
 				}
@@ -97,7 +97,7 @@ namespace ias::cl {
 			}
 
 			// Set the max Y
-			int val = -(yPosOffset - size.y);
+			int val = -(yPosOffset - static_cast<int>(size.y));
 			if (yPosOffset < size.y) val = 0; // No need to scroll, it's not outside
 
 			maxYOffset = val;
@@ -123,7 +123,7 @@ namespace ias::cl {
 			if (newVal > 0) newVal = 0;
 			if (newVal < maxYOffset) newVal = maxYOffset;
 
-			mouseScrollY = static_cast<float>(newVal);
+			mouseScrollY = newVal;
 		};
 
 		void setHovering(bool hover) override {
@@ -143,4 +143,4 @@ namespace ias::cl {
 			return this->backgroundColor;
 		}
 	};
-} // namespace ias::cl
+} // namespace rawrbox

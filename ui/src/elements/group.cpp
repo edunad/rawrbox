@@ -32,7 +32,7 @@ namespace rawrbox {
 		auto size = this->getSize();
 
 		stencil.pushOutline({this->_border, 0});
-		stencil.drawBox({this->_border, this->_border}, size - this->_border * 2, rawrbox::Colors::White);
+		stencil.drawBox({this->_border, this->_border}, size - this->_border * 2, rawrbox::Color::RGBAHex(0x0000001A));
 		stencil.popOutline();
 	}
 	// -------

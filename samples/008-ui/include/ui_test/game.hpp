@@ -2,12 +2,14 @@
 
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/window.hpp>
+#include <rawrbox/ui/root.hpp>
 
 #include <memory>
 
 namespace ui_test {
 	class Game : public rawrbox::Engine {
 		std::shared_ptr<rawrbox::Window> _window = nullptr;
+		std::shared_ptr<rawrbox::UIRoot> _ROOT_UI = nullptr;
 
 		bool _ready = false;
 

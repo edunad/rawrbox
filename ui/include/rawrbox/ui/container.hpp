@@ -17,7 +17,6 @@ namespace rawrbox {
 		std::vector<std::shared_ptr<UIBase>> _children;
 
 		rawrbox::AABBf _aabb = {};
-		float _uiScale = 1.F;
 
 		void internalUpdate(std::shared_ptr<rawrbox::UIBase> elm);
 		void internalDraw(std::shared_ptr<rawrbox::UIBase> elm, rawrbox::Stencil& stencil);
@@ -28,14 +27,11 @@ namespace rawrbox {
 
 		// UTILS ---
 		virtual void setPos(const rawrbox::Vector2f& pos);
-		[[nodiscard]] virtual const rawrbox::Vector2f& getPos() const;
+		[[nodiscard]] virtual const rawrbox::Vector2f getPos() const;
 		[[nodiscard]] virtual const rawrbox::Vector2f getDrawOffset() const;
 
 		virtual void setSize(const rawrbox::Vector2f& size);
 		[[nodiscard]] virtual const rawrbox::Vector2f getSize() const;
-
-		virtual void setUIScale(float size);
-		[[nodiscard]] virtual const float getUIScale() const;
 
 		virtual void removeChildren();
 		virtual void remove();

@@ -1,5 +1,8 @@
 
 #include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/root.hpp>
+
+#include <functional>
 
 namespace rawrbox {
 	UIBase::UIBase(bool alwaysOnTop) : _alwaysOnTop(alwaysOnTop) {}
@@ -15,6 +18,18 @@ namespace rawrbox {
 
 	void UIBase::setHovering(bool hovering) { this->_hovering = hovering; }
 	const bool UIBase::hovering() const { return this->_hovering; }
+
+	const std::shared_ptr<rawrbox::UIRoot> UIBase::getRootContainer() const {
+		std::function<std::shared_ptr<UIContainer>(std::shared_ptr<UIContainer>)> rt;
+		rt = [&rt](std::shared_ptr<UIContainer> parent) {
+			if (!parent->hasParent()) return parent;
+			return rt(parent->getParent());
+		};
+
+		auto rootContainer = rt(this->getParent());
+		if (rootContainer == nullptr) return nullptr;
+		return std::dynamic_pointer_cast<rawrbox::UIRoot>(rootContainer);
+	}
 
 	const rawrbox::Vector2f UIBase::getPosAbsolute() const {
 		rawrbox::Vector2f ret;

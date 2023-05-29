@@ -9,6 +9,7 @@
 #include <rawrbox/ui/elements/image.hpp>
 #include <rawrbox/ui/elements/input.hpp>
 #include <rawrbox/ui/elements/label.hpp>
+#include <rawrbox/ui/elements/virtual_list.hpp>
 #include <rawrbox/ui/static.hpp>
 
 #include <ui_test/game.hpp>
@@ -36,7 +37,7 @@ namespace ui_test {
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::GIFLoader>());
 
 		// SETUP UI
-		rawrbox::ROOT_UI = rawrbox::UIRoot::create(this->_window);
+		this->_ROOT_UI = rawrbox::UIRoot::create(this->_window);
 		// ----
 
 		// Load content ---
@@ -64,7 +65,7 @@ namespace ui_test {
 	void Game::contentLoaded() {
 		// SETUP UI
 		{
-			auto frame = rawrbox::ROOT_UI->createChild<rawrbox::UIFrame>();
+			auto frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
 			frame->setTitle("mewww");
 			frame->setSize({400, 200});
 			frame->setPos({400, 200});
@@ -123,12 +124,16 @@ namespace ui_test {
 				img->setSize({128, 128});
 			}
 
-			/*{
-				auto img = frame->createChild<rawrbox::UIImage>();
-				img->setTexture("./content/textures/meow3.gif");
-				img->setPos({0, 0});
-				img->setSize({512, 512});
-			}*/
+			auto vlist = frame->createChild<rawrbox::UIVirtualList<float>>();
+			vlist->setPos({279, 96});
+			vlist->setSize({64, 64});
+			vlist->renderItem = [](size_t indx, float& msg, bool isHovering, rawrbox::Stencil& stencil) { stencil.drawBox({msg, 0}, {1, 10}); };
+			vlist->getItemSize = [](size_t indx) {
+				return 9;
+			};
+
+			for (float i = 0.F; i < 64.F; i++)
+				vlist->addItem(i);
 		}
 		// ---
 
@@ -148,7 +153,7 @@ namespace ui_test {
 	void Game::update() {
 		if (this->_window == nullptr) return;
 
-		rawrbox::ROOT_UI->update();
+		this->_ROOT_UI->update();
 		this->_window->update();
 	}
 
@@ -177,7 +182,7 @@ namespace ui_test {
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
 		}
 
-		rawrbox::ROOT_UI->render();
+		this->_ROOT_UI->render();
 
 		this->_window->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
