@@ -7,21 +7,24 @@ set(output_target RAWRBOX.UTILS)
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_UTILS_IMPORTS "src/*.c" "src/*.cpp" "include/*.hpp" "include/*.h")
 
-if(NOT RAWRBOX_ENABLE_QHULL)
-	list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "include/rawrbox/utils/qhull.h")
-else()
-	CPMAddPackage(
-		NAME Qhull
-		GITHUB_REPOSITORY qhull/qhull
-		GIT_TAG 2020.2
-		OPTIONS
-			"QHULL_ENABLE_TESTING OFF"
-			"BUILD_STATIC_LIBS ON"
-			"BUILD_SHARED_LIBS OFF"
-	)
+list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "include/rawrbox/utils/qhull.h")
 
-	set(EXTRA_UTIL_LIBS qhullstatic_r)
-endif()
+#
+#if(NOT RAWRBOX_ENABLE_QHULL)
+#	list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "include/rawrbox/utils/qhull.h")
+#else()
+#	CPMAddPackage(
+#		NAME Qhull
+#		GITHUB_REPOSITORY qhull/qhull
+#		GIT_TAG 2020.2
+#		OPTIONS
+#			"QHULL_ENABLE_TESTING OFF"
+#			"BUILD_STATIC_LIBS ON"
+#			"BUILD_SHARED_LIBS OFF"
+#	)
+#
+#	set(EXTRA_UTIL_LIBS qhullstatic_r)
+#endif()
 
 # LIB ----
 
