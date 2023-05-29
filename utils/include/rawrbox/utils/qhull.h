@@ -1,9 +1,9 @@
 
 // NOLINTBEGIN(*)
 #pragma once
-
+/*
 extern "C" {
-#include <libqhull_r/libqhull_r.h>
+#include <libqhull/libqhull.h>
 }
 
 #include <string>
@@ -19,7 +19,7 @@ namespace rawrbox {
 
 	class QHull {
 	public:
-		/*
+
 			My god, this lib's documentation is a mess
 			⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⣀⠄⣀⠄⠄⣀⣀⠄⠄⠄⠄⠄⠄⠄⢀⣀⣀⣀⣀⣀⣀⣀
 			⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⣀⣴⣲⠟⠛⠛⠃⣀⠉⠁⠈⠙⢶⣤⣀⠄⠄⠄⣸⣿⣿⣿⣿⣿⣿⣿
@@ -37,7 +37,7 @@ namespace rawrbox {
 			⠄⢸⣿⣿⣿⣿⠈⣼⣿⣿⣿⡄⠄⠄⠄⠄⠹⣟⠉⠁⠄⠄⢾⣿⡏⡀⠄⠄⣀⠈⡿⣿⣿⣿⣿⣿⣿⣿
 			⢀⣹⣿⣿⣿⣿⣽⣿⣿⣿⣿⣿⡀⠄⠄⡀⠄⡇⠄⢀⣀⣀⣸⣯⢠⡇⠄⠄⢼⡆⢡⣿⣿⣿⣿⣿⣿⣿
 			⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠄⠄⠨⢾⣿⣿⣿⣿⣿⣿⣿⠄⣷⡀⠄⢸⡇⢘⣻⣿⣿⣿⣿⣿⣿
-		*/
+
 		static std::vector<QHullPoint> calculateConvex(const std::vector<QHullPoint>& vertPoints, const std::string& flags = "qhull FA") {
 			std::vector<QHullPoint> hull = {};
 
@@ -84,3 +84,4 @@ namespace rawrbox {
 	};
 } // namespace rawrbox
   // NOLINTEND(*)
+*/
