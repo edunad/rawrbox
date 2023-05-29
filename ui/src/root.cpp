@@ -187,6 +187,11 @@ namespace rawrbox {
 	void UIRoot::draw(rawrbox::Stencil& stencil) { throw std::runtime_error("[RawrBox-UI] Call 'render()' instead"); }
 	void UIRoot::render() {
 		if (this->_window.expired()) return;
-		rawrbox::UIContainer::draw(this->_window.lock()->getStencil());
+
+		auto win = this->_window.lock();
+		auto& sten = win->getStencil();
+
+		rawrbox::UIContainer::draw(sten);
+		sten.render();
 	}
 } // namespace rawrbox

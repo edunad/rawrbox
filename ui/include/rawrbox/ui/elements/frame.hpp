@@ -12,6 +12,8 @@
 namespace rawrbox {
 	class UIFrame : public rawrbox::UIBase {
 	protected:
+		float _titleSize = 18.F;
+
 		std::string _title;
 		rawrbox::Color _titleColor = rawrbox::Colors::White;
 

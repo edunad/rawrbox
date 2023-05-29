@@ -93,19 +93,29 @@ namespace stencil {
 	void Game::drawOverlay() {
 		auto& stencil = this->_window->getStencil();
 
-		stencil.begin();
-
 		stencil.pushOffset({20, 50});
-		stencil.pushRotation({counter * 50.5F, {50, 50}});
-		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Green);
-		stencil.popRotation();
 
+		// Box + clipping --
+		stencil.pushRotation({counter * 50.5F, {50, 50}});
+		stencil.pushClipping({-20, -20, 50, 140});
+		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Green);
+		stencil.popClipping();
+
+		stencil.pushClipping({50, -20, 50, 140});
+		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Red);
+		stencil.popClipping();
+		stencil.popRotation();
+		// --
+
+		// Inverted box ---
 		stencil.pushOffset({100, 0});
 		stencil.pushScale({1.F, -1.F});
 		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Red);
 		stencil.popScale();
 		stencil.popOffset();
+		// ---
 
+		// Outline box ---
 		stencil.pushOffset({200, 0});
 		stencil.pushOutline({1.F, 2.F});
 		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Purple);
@@ -115,11 +125,15 @@ namespace stencil {
 		stencil.drawBox({25, 25}, {50, 50}, rawrbox::Colors::Purple);
 		stencil.popOutline();
 		stencil.popOffset();
+		// ---
 
+		// Triangle ---
 		stencil.pushOffset({300, 0});
 		stencil.drawTriangle({0, 0}, {0, 0}, rawrbox::Colors::Blue, {0, 100}, {0, 1}, rawrbox::Colors::Blue, {100, 0}, {0, 1}, rawrbox::Colors::Blue);
 		stencil.popOffset();
+		// ---
 
+		// Outline triangle ---
 		stencil.pushOffset({400, 0});
 		stencil.pushOutline({2.F});
 		stencil.drawTriangle({15, 15}, {0, 0}, rawrbox::Colors::Blue, {15, 65}, {0, 1}, rawrbox::Colors::Blue, {65, 15}, {0, 1}, rawrbox::Colors::Blue);
@@ -129,24 +143,32 @@ namespace stencil {
 		stencil.drawTriangle({0, 0}, {0, 0}, rawrbox::Colors::Blue, {0, 100}, {0, 1}, rawrbox::Colors::Blue, {100, 0}, {0, 1}, rawrbox::Colors::Blue);
 		stencil.popOutline();
 		stencil.popOffset();
+		// ---
 
+		// Circle ---
 		stencil.pushOffset({500, 0});
 		stencil.drawCircle({0, 0}, {100, 100}, rawrbox::Colors::Orange, 16, 0, std::fmod(counter * 50.5F, 360.F));
 		stencil.popOffset();
+		// ---
 
+		// Outline circle ---
 		stencil.pushOffset({600, 0});
 		stencil.pushOutline({1.F, 0.25F});
 		stencil.drawCircle({0, 0}, {100, 100}, rawrbox::Colors::Red, 16, 0.F, std::fmod(counter * 50.5F, 360.F));
 		stencil.popOutline();
 
 		stencil.pushOutline({2.F});
-		stencil.drawCircle({25, 25}, {50, 50}, rawrbox::Colors::Red, 16, 0.F, std::fmod(counter * 50.5F, 360.F));
+		stencil.drawCircle({25, 25}, {50, 50}, rawrbox::Colors::Red, 32, 0.F, std::fmod(counter * 50.5F, 360.F));
 		stencil.popOutline();
 		stencil.popOffset();
+		// ---
 
+		// Line ---
 		stencil.pushOffset({700, 0});
 		stencil.drawLine({0, 0}, {100, 100}, rawrbox::Colors::Red);
+		// ---
 
+		// Outline line ---
 		stencil.pushOutline({1.F, 2.F});
 		stencil.drawLine({100, 0}, {0, 100}, rawrbox::Colors::Blue);
 		stencil.popOutline();
@@ -155,7 +177,9 @@ namespace stencil {
 		stencil.drawLine({50, 0}, {50, 100}, rawrbox::Colors::Purple);
 		stencil.popOutline();
 		stencil.popOffset();
+		// ---
 
+		// Texture ---
 		stencil.pushOffset({800, 0});
 		stencil.drawTexture({0, 0}, {100, 100}, this->_texture);
 		stencil.popOffset();
@@ -163,8 +187,11 @@ namespace stencil {
 		stencil.pushOffset({900, 0});
 		stencil.drawTexture({0, 0}, {100, 100}, this->_texture2);
 		stencil.popOffset();
+		// ---
+
 		stencil.popOffset();
 
+		// Text ---
 		stencil.pushOffset({20, 200});
 		stencil.drawText(this->_font, "Cat ipsum dolor sit amet, steal raw zucchini off kitchen counter. $£%&", {});
 
@@ -174,9 +201,10 @@ namespace stencil {
 		stencil.popRotation();
 
 		stencil.drawText(this->_font3, "MeW MeW MeW!", {0, 75});
-		stencil.popOffset();
+		// ---
 
-		stencil.end();
+		stencil.popOffset();
+		stencil.render();
 
 		// TEST ---
 		this->_texture2->step();

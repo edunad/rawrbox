@@ -24,8 +24,8 @@ namespace rawrbox {
 
 		this->_closeButton = this->createChild<rawrbox::UIButton>();
 		this->_closeButton->setTexture("content/textures/ui/icons/close.png");
-		this->_closeButton->setSize({30, 16});
-		this->_closeButton->setPos({size.x - 30, -18});
+		this->_closeButton->setSize({30, this->_titleSize - 1});
+		this->_closeButton->setPos({size.x - 30, -this->_titleSize});
 		this->_closeButton->setTextureSize({8, 8});
 		this->_closeButton->setTextureColor(Colors::Black);
 		this->_closeButton->setEnabled(true);
@@ -83,7 +83,7 @@ namespace rawrbox {
 		if (!this->_draggable || mousePos.y >= 18) return; // or Touching title
 
 		this->_dragging = true;
-		this->_dragStart = mousePos.cast<float>();
+		this->_dragStart = mousePos.cast<float>() + this->getDrawOffset();
 	}
 
 	void UIFrame::mouseUp(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) {
@@ -94,26 +94,20 @@ namespace rawrbox {
 	// DRAWING ---
 	void UIFrame::draw(rawrbox::Stencil& stencil) {
 		auto& size = getSize();
-		const float titleSize = 18.F;
 
 		// Panel Background
 		stencil.drawBox({}, size, Color::RGBHex(0x0C0C0C));
 
 		// Title
-		stencil.drawBox({}, {size.x, titleSize}, this->_titleColor);
+		stencil.drawBox({}, {size.x, this->_titleSize}, this->_titleColor);
 		stencil.drawText(this->_consola, this->_title, {5, 8}, Color::RGBAHex(0x000000BA), rawrbox::Alignment::Left, rawrbox::Alignment::Center);
 
 		if (this->_closable) {
-			stencil.drawTexture({size.x - 36, 0}, {6, titleSize}, this->_stripes, Color::RGBAHex(0x0000004A), {}, {1, static_cast<float>(titleSize) / static_cast<float>(this->_stripes->getSize().y / 2)});
+			stencil.drawTexture({size.x - 36, 0}, {6, this->_titleSize}, this->_stripes, Color::RGBAHex(0x0000004A), {}, {1, static_cast<float>(this->_titleSize) / static_cast<float>(this->_stripes->getSize().y / 2)});
 		}
 
 		// Title bottom border
-		stencil.drawBox({0, titleSize - 2}, {size.x, 2}, Color::RGBAHex(0x0000004A));
-
-		// Bottom frame border
-		stencil.pushOutline({1.F, 0.F});
-		stencil.drawBox({0, titleSize}, {size.x, size.y - titleSize}, Color::RGBAHex(0x0000005A));
-		stencil.popOutline();
+		stencil.drawLine({0, this->_titleSize}, {size.x, this->_titleSize}, Color::RGBAHex(0x0000004A));
 	}
 
 	void UIFrame::afterDraw(Stencil& stencil) {

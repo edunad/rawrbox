@@ -39,7 +39,7 @@ namespace rawrbox {
 		[[nodiscard]] const std::string& getText() const;
 
 		void setFont(std::shared_ptr<rawrbox::Font> font);
-		void setFont(const std::string& font, int size = 11);
+		void setFont(const std::filesystem::path& font, int size = 11);
 		[[nodiscard]] std::weak_ptr<rawrbox::Font> getFont() const;
 
 		void sizeToContents();

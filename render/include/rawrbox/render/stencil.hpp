@@ -5,6 +5,7 @@
 #include <rawrbox/math/pi.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/text/font.hpp>
 #include <rawrbox/render/texture/flat.hpp>
 #include <rawrbox/render/texture/render.hpp>
@@ -12,6 +13,7 @@
 #include <bgfx/bgfx.h>
 
 #include <memory>
+#include <queue>
 
 namespace rawrbox {
 	struct PosUVColorVertexData {
@@ -27,6 +29,32 @@ namespace rawrbox {
 		PosUVColorVertexData() = default;
 		PosUVColorVertexData(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& uv, const rawrbox::Color& cl) : x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y), abgr(cl.pack()) {}
 		PosUVColorVertexData(float _x, float _y, float _z, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v), abgr(_abgr) {}
+	};
+
+	struct StencilDraw {
+		bgfx::ProgramHandle stencilProgram = BGFX_INVALID_HANDLE;
+		bgfx::TextureHandle textureHandle = BGFX_INVALID_HANDLE;
+
+		std::vector<PosUVColorVertexData> vertices = {};
+		std::vector<uint16_t> indices = {};
+
+		uint64_t drawMode = 0;
+		uint16_t clip = UINT16_MAX;
+		bool cull = true;
+
+		void clear() {
+			this->cull = true;
+			this->drawMode = 0;      // Triangle
+			this->clip = UINT16_MAX; // NONE
+
+			this->stencilProgram = BGFX_INVALID_HANDLE;
+			this->textureHandle = BGFX_INVALID_HANDLE;
+
+			this->indices.clear();
+			this->vertices.clear();
+		}
+
+		StencilDraw() = default;
 	};
 
 	struct StencilRotation {
@@ -99,21 +127,13 @@ namespace rawrbox {
 	private:
 		bgfx::VertexLayout _vLayout;
 
-		bgfx::ProgramHandle _stencilProgram = BGFX_INVALID_HANDLE;
-
 		bgfx::ProgramHandle _2dprogram = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle _lineprogram = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle _textprogram = BGFX_INVALID_HANDLE;
 
-		bgfx::TextureHandle _textureHandle = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 
 		std::shared_ptr<rawrbox::TextureFlat> _pixelTexture;
-		std::shared_ptr<rawrbox::TextureRender> _renderTexture;
-
-		uint64_t _drawMode = 0;
-		bool _cull = true;
-
 		rawrbox::Vector2i _windowSize;
 
 		// Offset handling ----
@@ -123,7 +143,7 @@ namespace rawrbox {
 		// ----------
 
 		// Clip handling ----
-		std::vector<rawrbox::AABB> _clips;
+		std::vector<uint32_t> _clips;
 		// ----------
 
 		// Outline handling ----
@@ -141,11 +161,10 @@ namespace rawrbox {
 		rawrbox::Vector2f _scale;
 		// ----------
 
-		std::vector<PosUVColorVertexData> _vertices;
-		std::vector<uint16_t> _indices;
-
-		bool _recording = false;
-		uint32_t _totalVertices = 0;
+		// Drawing -----
+		rawrbox::StencilDraw _currentDraw = {};
+		std::vector<rawrbox::StencilDraw> _drawCalls;
+		// ----------
 
 		// ------ UTILS
 		void pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv, const rawrbox::Color& col);
@@ -156,8 +175,9 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ RENDERING
+		void setupDrawCall(bgfx::ProgramHandle program, bgfx::TextureHandle texture = BGFX_INVALID_HANDLE, uint64_t drawMode = 0);
+		void pushDrawCall();
 		void internalDraw();
-		void drawRecording();
 		// --------------------
 	public:
 		Stencil() = default;
@@ -183,12 +203,7 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ RENDERING
-		void setTexture(const bgfx::TextureHandle& tex);
-		void setShaderProgram(const bgfx::ProgramHandle& handle);
-		void setDrawMode(uint64_t mode = 0);
-
-		void begin();
-		void end();
+		void render();
 		// --------------------
 
 		// ------ LOCATION
@@ -219,8 +234,6 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ OTHER
-		[[nodiscard]] const std::vector<PosUVColorVertexData>& getVertices() const;
-		[[nodiscard]] const std::vector<uint16_t>& getIndices() const;
 		void clear();
 		// --------------------
 	};

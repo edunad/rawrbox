@@ -9,7 +9,7 @@
 
 namespace rawrbox {
 	class UIInput : public rawrbox::UIBase {
-		rawrbox::Color _backgroundColor = rawrbox::Colors::Black;
+		rawrbox::Color _backgroundColor = {0.15F, 0.15F, 0.15F, 1.F};
 		rawrbox::Color _border = rawrbox::Colors::Transparent;
 		rawrbox::Color _textColor = rawrbox::Colors::White;
 
@@ -89,7 +89,7 @@ namespace rawrbox {
 		[[nodiscard]] const rawrbox::Color& getBackgroundColor() const;
 
 		void setFont(std::shared_ptr<rawrbox::Font> font);
-		void setFont(const std::string& font, int size = 11);
+		void setFont(const std::filesystem::path& font, int size = 11);
 		[[nodiscard]] std::weak_ptr<rawrbox::Font> getFont() const;
 
 		[[nodiscard]] bool empty() const;

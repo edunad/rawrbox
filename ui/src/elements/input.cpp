@@ -181,9 +181,9 @@ namespace rawrbox {
 	const rawrbox::Color& UIInput::getBorderColor() const { return this->_border; }
 
 	void UIInput::setBackgroundColor(const rawrbox::Color& col) { this->_backgroundColor = col; }
-	const Color& UIInput::getBackgroundColor() const { return this->_backgroundColor; }
+	const rawrbox::Color& UIInput::getBackgroundColor() const { return this->_backgroundColor; }
 
-	void UIInput::setFont(const std::string& font, int size) {
+	void UIInput::setFont(const std::filesystem::path& font, int size) {
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>(font)->getSize(size);
 
 		this->_charSize = this->_font.lock()->getStringSize("W");       // Tallest character possible, usually it's W
@@ -316,7 +316,9 @@ namespace rawrbox {
 		auto& text = this->getText();
 		auto fnt = font.lock();
 
-		stencil.drawBox({}, size, focused() || this->_readOnly ? getBackgroundColor() : getBackgroundColor() * 0.9F);
+		stencil.drawBox({}, size, !(this->focused() || this->hovering()) || this->_readOnly ? getBackgroundColor() : getBackgroundColor() * 0.9F);
+		stencil.drawBox({0, 2}, {2, size.y - 2}, getBackgroundColor() * 0.5F);
+		stencil.drawBox({0, 0}, {size.x, 2}, getBackgroundColor() * 0.5F);
 
 		auto pos = Vector2f(this->_padding, (size.y - this->_textSize.y) / 2 + this->_offsetY);
 
@@ -335,7 +337,7 @@ namespace rawrbox {
 		if (text.empty() && !this->_readOnly) {
 			stencil.drawText(fnt, this->_placeholder, {pos.x + 5, pos.y}, getColor() * 0.5F);
 		} else {
-			stencil.drawText(fnt, text, pos, getColor());
+			stencil.drawText(fnt, text, pos, this->_readOnly ? this->getColor() * 0.65F : this->getColor());
 		}
 
 		if (!this->_fillText.empty()) stencil.drawText(fnt, this->_fillText, {pos.x + this->_textSize.x, pos.y}, getColor() * 0.2F);

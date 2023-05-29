@@ -9,6 +9,8 @@ namespace ui_test {
 	class Game : public rawrbox::Engine {
 		std::shared_ptr<rawrbox::Window> _window = nullptr;
 
+		bool _ready = false;
+
 	public:
 		using Engine::Engine;
 
