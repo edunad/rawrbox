@@ -108,6 +108,7 @@ namespace rawrbox {
 		// -------
 
 		// DRAW ----
+		[[nodiscard]] bool clipOverflow() const override;
 		void draw(rawrbox::Stencil& stencil) override;
 		// -------
 	};

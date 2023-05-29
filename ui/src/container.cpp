@@ -45,6 +45,7 @@ namespace rawrbox {
 	const std::vector<std::shared_ptr<rawrbox::UIBase>>& UIContainer::getChildren() const { return this->_children; }
 
 	bool UIContainer::hasParent() const { return !this->_parent.expired(); }
+	bool UIContainer::hasChildren() const { return !this->_children.empty(); }
 	void UIContainer::addChild(std::shared_ptr<rawrbox::UIBase> elm) {
 		elm->setParent(this->getRef<rawrbox::UIContainer>());
 	}
@@ -69,6 +70,7 @@ namespace rawrbox {
 	// --------------
 
 	// RENDERING -----
+	bool UIContainer::clipOverflow() const { return !this->_children.empty(); }
 	void UIContainer::internalUpdate(std::shared_ptr<rawrbox::UIBase> elm) {
 		if (!elm->visible()) return;
 		elm->update();
@@ -87,9 +89,10 @@ namespace rawrbox {
 
 	void UIContainer::internalDraw(std::shared_ptr<rawrbox::UIBase> elm, rawrbox::Stencil& stencil) {
 		if (!elm->visible()) return;
+		bool canClip = elm->clipOverflow();
 
 		stencil.pushOffset(elm->getPos());
-		stencil.pushClipping({{}, elm->getSize()});
+		if (canClip) stencil.pushClipping({{}, elm->getSize()});
 
 		elm->beforeDraw(stencil);
 		elm->draw(stencil);
@@ -105,7 +108,7 @@ namespace rawrbox {
 
 		elm->afterDraw(stencil);
 
-		stencil.popClipping();
+		if (canClip) stencil.popClipping();
 		stencil.popOffset();
 	}
 

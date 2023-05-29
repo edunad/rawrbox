@@ -308,6 +308,7 @@ namespace rawrbox {
 	// ---
 
 	// DRAW ----
+	bool UIInput::clipOverflow() const { return true; }
 	void UIInput::draw(Stencil& stencil) {
 		auto font = this->getFont();
 		if (font.expired()) return;

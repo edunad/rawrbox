@@ -92,6 +92,7 @@ namespace ui_test {
 				input->setPos({10, 36});
 				input->setSize({380, 22});
 				input->setFont("cour.ttf", 14);
+				input->setPlaceholder("cour.taaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaatf");
 			}
 
 			{
@@ -175,13 +176,6 @@ namespace ui_test {
 			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
 		}
-
-		// TEST ----
-		auto& stencil = this->_window->getStencil();
-
-		stencil.drawBox({100, 100}, {100, 100}, rawrbox::Colors::Green);
-		stencil.render();
-		// -----------
 
 		rawrbox::ROOT_UI->render();
 

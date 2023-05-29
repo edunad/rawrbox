@@ -5,7 +5,6 @@ namespace rawrbox {
 	TextureBase::~TextureBase() { RAWRBOX_DESTROY(this->_handle); }
 
 	// UTILS ---
-
 	const bool TextureBase::hasTransparency() const { return false; }
 	const rawrbox::Vector2i& TextureBase::getSize() const { return this->_size; }
 	const bool TextureBase::valid() const { return bgfx::isValid(this->_handle); }

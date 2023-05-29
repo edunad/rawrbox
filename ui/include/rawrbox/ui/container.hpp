@@ -70,10 +70,13 @@ namespace rawrbox {
 
 		virtual void addChild(std::shared_ptr<rawrbox::UIBase> elm);
 		virtual void setParent(std::shared_ptr<rawrbox::UIContainer> elm);
+
+		[[nodiscard]] virtual bool hasChildren() const;
 		[[nodiscard]] virtual bool hasParent() const;
 		// ----
 
 		// RENDERING -----
+		[[nodiscard]] virtual bool clipOverflow() const;
 		virtual void update();
 		virtual void draw(rawrbox::Stencil& stencil);
 		// ----
