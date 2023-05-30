@@ -3,7 +3,10 @@
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector4.hpp>
+#include <rawrbox/render/model/animation.hpp>
 #include <rawrbox/render/model/base.hpp>
+#include <rawrbox/render/model/light/base.hpp>
+#include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/util/anim_utils.hpp>
 
@@ -15,54 +18,23 @@
 #include <utility>
 #include <vector>
 
-#define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS)
+#define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 
 namespace rawrbox {
-
-	template <typename T>
-	using AnimKey = std::pair<float, T>;
-
-	struct AnimationFrame {
-		std::string nodeName;
-
-		std::vector<AnimKey<rawrbox::Vector3f>> position;
-		std::vector<AnimKey<rawrbox::Vector3f>> scale;
-		std::vector<AnimKey<rawrbox::Vector4f>> rotation;
-
-		bx::Easing::Enum stateStart = bx::Easing::Linear;
-		bx::Easing::Enum stateEnd = bx::Easing::Linear;
-	};
-
-	struct Animation {
-		float ticksPerSecond = 0;
-		float duration = 0;
-
-		std::vector<AnimationFrame> frames;
-	};
-
-	struct PlayingAnimationData {
-		std::string name;
-
-		bool loop = false;
-		float speed = 1;
-		float time = 0;
-
-		Animation* data = nullptr;
-		PlayingAnimationData() = default;
-		PlayingAnimationData(std::string _name, bool _loop, float _speed, float _time, Animation* _data) : name(std::move(_name)), loop(_loop), speed(_speed), time(_time), data(_data){};
-	};
 
 	template <typename M = rawrbox::MaterialBase>
 	class Model : public rawrbox::ModelBase<M> {
 	protected:
 		std::unordered_map<std::string, Animation> _animations = {};
 		std::vector<rawrbox::PlayingAnimationData> _playingAnimations = {};
+		std::vector<rawrbox::LightBase> lights = {};
 
 		// ANIMATIONS ----
 		virtual void animate(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
 			// VERTEX ANIMATION ----
 			for (auto& anim : this->_animatedMeshes) {
-				this->readAnims(anim.second->offsetMatrix, anim.first);
+				if (anim.second.expired()) continue;
+				this->readAnims(anim.second.lock()->offsetMatrix, anim.first);
 			}
 			// ------------
 
@@ -71,9 +43,10 @@ namespace rawrbox {
 				std::vector<rawrbox::Matrix4x4> boneTransforms = {};
 				boneTransforms.resize(rawrbox::MAX_BONES_PER_MODEL);
 
-				if (mesh->skeleton != nullptr) {
+				if (!mesh->skeleton.expired()) {
+					auto skl = mesh->skeleton.lock();
 					auto calcs = std::unordered_map<uint8_t, rawrbox::Matrix4x4>();
-					this->animateBones(calcs, mesh->skeleton, mesh->skeleton->rootBone, {});
+					this->animateBones(calcs, skl, skl->rootBone, {});
 
 					for (size_t i = 0; i < calcs.size(); i++) {
 						boneTransforms[i] = calcs[static_cast<uint8_t>(i)];
@@ -85,17 +58,18 @@ namespace rawrbox {
 			// -----
 		}
 
-		virtual void animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const rawrbox::Matrix4x4& parentTransform) {
-			if (skeleton == nullptr) return;
+		virtual void animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, std::weak_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const rawrbox::Matrix4x4& parentTransform) {
+			if (skeleton.expired()) return;
 
+			auto skl = skeleton.lock();
 			auto nodeTransform = parentBone->transformationMtx;
 			this->readAnims(nodeTransform, parentBone->name);
 
 			// store the result of our parent bone and our current node
 			rawrbox::Matrix4x4 globalTransformation = parentTransform * nodeTransform;
-			auto fnd = this->_globalBoneMap.find(parentBone->name);
-			if (fnd != this->_globalBoneMap.end()) {
-				calcs[fnd->second->boneId] = skeleton->invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
+			auto fnd = skl->boneMap.find(parentBone->name);
+			if (fnd != skl->boneMap.end()) {
+				calcs[fnd->second->boneId] = skl->invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
 			}
 
 			for (auto child : parentBone->children) {
@@ -189,6 +163,19 @@ namespace rawrbox {
 			}
 		}
 		// --------------
+		void updateLights() {
+
+			// Update lights ---
+			for (auto mesh : this->meshes()) {
+				rawrbox::Vector3f meshPos = {mesh->offsetMatrix[12], mesh->offsetMatrix[13], mesh->offsetMatrix[14]};
+				auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle());
+
+				for (auto light : mesh->lights) {
+					if (light.expired()) continue;
+					light.lock()->setOffsetPos(p);
+				}
+			}
+		}
 
 	public:
 		using ModelBase<M>::ModelBase;
@@ -221,7 +208,39 @@ namespace rawrbox {
 
 			return false;
 		}
+
+		// --------------
+		// LIGHTS ------
+		virtual void addLight(std::shared_ptr<rawrbox::LightBase> light, const std::string& parentMesh = "") {
+			auto parent = this->_meshes.back();
+			if (!parentMesh.empty()) {
+				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> msh) {
+					return msh->getName() == parentMesh;
+				});
+
+				if (fnd != this->_meshes.end()) parent = *fnd;
+			}
+
+			light->setOffsetPos(parent->getPos() + this->getPos());
+			parent->lights.push_back(light);
+			rawrbox::LIGHTS::addLight(light);
+		}
 		// -----
+
+		void setPos(const rawrbox::Vector3f& pos) override {
+			rawrbox::ModelBase<M>::setPos(pos);
+			this->updateLights();
+		}
+
+		void setAngle(const rawrbox::Vector4f& angle) override {
+			rawrbox::ModelBase<M>::setAngle(angle);
+			// this->updateLights(); // TODO
+		}
+
+		void setScale(const rawrbox::Vector3f& size) override {
+			rawrbox::ModelBase<M>::setScale(size);
+			// this->updateLights(); // TODO
+		}
 
 		void draw(const rawrbox::Vector3f& camPos) override {
 			ModelBase<M>::draw(camPos);
@@ -244,7 +263,7 @@ namespace rawrbox {
 
 				bgfx::setTransform((this->_matrix * mesh->offsetMatrix).data());
 
-				uint64_t flags = BGFX_STATE_DEFAULT_3D | mesh->culling | mesh->blending;
+				uint64_t flags = BGFX_STATE_DEFAULT_3D | mesh->culling | mesh->blending | mesh->depthTest;
 				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
 												: 0;
 

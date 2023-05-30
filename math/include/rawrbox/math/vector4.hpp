@@ -22,6 +22,7 @@ namespace rawrbox {
 		Vector4_t() = default;
 		explicit Vector4_t(NumberType val) : x(val), y(val), z(val), w(val) {}
 		Vector4_t(NumberType _x, NumberType _y, NumberType _z, NumberType _w = 0.F) : x(_x), y(_y), z(_z), w(_w) {}
+		explicit Vector4_t(std::array<NumberType, 4> val) : x(val[0]), y(val[1]), z(val[2]), w(val[3]) {}
 		explicit Vector4_t(Vector3_t<NumberType> val, NumberType _w = 0.F) : x(val.x), y(val.y), z(val.z), w(_w) {}
 		explicit Vector4_t(Vector2_t<NumberType> val, NumberType _z = 0.F, NumberType _w = 0.F) : x(val.x), y(val.y), z(_z), w(_w) {}
 
@@ -46,6 +47,22 @@ namespace rawrbox {
 
 		VecType normalized() const {
 			return (*this) / length();
+		}
+
+		[[nodiscard]] VecType clamp(NumberType min, NumberType max) const {
+			return {
+			    std::clamp(x, min, max),
+			    std::clamp(y, min, max),
+			    std::clamp(z, min, max),
+			    std::clamp(w, min, max)};
+		}
+
+		[[nodiscard]] VecType clamp(VecType min, VecType max) const {
+			return {
+			    std::clamp(x, min.x, max.x),
+			    std::clamp(y, min.y, max.y),
+			    std::clamp(z, min.z, max.z),
+			    std::clamp(w, min.w, max.w)};
 		}
 
 		VecType lerp(const VecType& other, NumberType timestep) const {

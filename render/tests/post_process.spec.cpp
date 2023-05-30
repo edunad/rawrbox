@@ -9,10 +9,7 @@
 
 #include <string>
 
-#include "rawrbox/math/vector2.hpp"
-
 TEST_CASE("PostProcessManager should behave as expected", "[rawrbox::PostProcessManager]") {
-
 	SECTION("rawrbox::PostProcessManager::add / rawrbox::PostProcessManager::count") {
 		auto base = std::make_shared<rawrbox::PostProcessManager>(rawrbox::Vector2i{100, 100});
 

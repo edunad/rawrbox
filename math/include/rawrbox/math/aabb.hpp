@@ -5,7 +5,9 @@
 namespace rawrbox {
 	template <class NumberType>
 	class AABB_t {
-	private:
+	protected:
+		using AABBType = AABB_t<NumberType>;
+
 	public:
 		Vector2_t<NumberType> pos;
 		Vector2_t<NumberType> size;
@@ -15,34 +17,35 @@ namespace rawrbox {
 		AABB_t(NumberType x_, NumberType y_, NumberType w_, NumberType h_) : pos(x_, y_), size(w_, h_) {}
 		AABB_t(const Vector2_t<NumberType>& pos_, const Vector2_t<NumberType>& size_) : pos(pos_), size(size_) {}
 
-		NumberType surfaceArea() const {
-			return size.x * size.y;
+		[[nodiscard]] NumberType surfaceArea() const {
+			return this->size.x * this->size.y;
 		}
 
-		NumberType top() const {
-			return pos.y;
+		[[nodiscard]] NumberType top() const {
+			return this->pos.y;
 		}
 
-		NumberType right() const {
-			return pos.x + size.x;
+		[[nodiscard]] NumberType right() const {
+			return this->pos.x + this->size.x;
 		}
 
-		NumberType left() const {
-			return pos.x;
+		[[nodiscard]] NumberType left() const {
+			return this->pos.x;
 		}
 
-		NumberType bottom() const {
-			return pos.y + size.y;
+		[[nodiscard]] NumberType bottom() const {
+			return this->pos.y + this->size.y;
 		}
 
-		bool contains(const Vector2_t<NumberType>& pos_) const {
-			return pos_.x >= pos.x &&          // left
-			       pos_.y >= pos.y &&          // top
-			       pos_.x <= pos.x + size.x && // right
-			       pos_.y <= pos.y + size.y;   // bottom
+		[[nodiscard]] bool empty() const { return this->pos == 0 && this->size == 0; }
+		[[nodiscard]] bool contains(const Vector2_t<NumberType>& pos_) const {
+			return pos_.x >= this->pos.x &&                // left
+			       pos_.y >= this->pos.y &&                // top
+			       pos_.x <= this->pos.x + this->size.x && // right
+			       pos_.y <= this->pos.y + this->size.y;   // bottom
 		}
 
-		AABB_t<NumberType> mask(const AABB_t<NumberType>& other) const {
+		[[nodiscard]] AABB_t<NumberType> mask(const AABB_t<NumberType>& other) const {
 			auto masked = *this;
 
 			if (masked.right() < other.left()) masked = {other.left(), other.top(), 0.0F, 0.0F};
@@ -64,6 +67,11 @@ namespace rawrbox {
 
 			return masked;
 		}
+
+		AABBType operator*(NumberType other) const { return AABBType(this->pos * other, this->size * other); }
+
+		bool operator==(const AABBType& other) const { return this->pos == other.pos && this->size == other.size; }
+		bool operator!=(const AABBType& other) const { return !operator==(other); }
 	};
 
 	using AABBd = AABB_t<double>;

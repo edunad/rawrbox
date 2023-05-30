@@ -6,19 +6,22 @@
 
 #include <utf8.h>
 
-#define BGFX_STATE_DEFAULT_3D_TEXT (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
+#define BGFX_STATE_DEFAULT_3D_TEXT (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA)
 namespace rawrbox {
 	class Text3D : public rawrbox::ModelBase<rawrbox::MaterialText3DUnlit> {
 	public:
 		using ModelBase<rawrbox::MaterialText3DUnlit>::ModelBase;
 
 		// UTILS ----
-		void addText(rawrbox::Font* font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center, bool billboard = true) {
-			float screenSize = (font->size * 0.025F) / 64.F;
+		void addText(std::weak_ptr<rawrbox::Font> font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center, bool billboard = true) {
+			if (font.expired()) throw std::runtime_error("[RawrBox-Text3D] Invalid font");
+
+			auto f = font.lock();
+			float screenSize = (f->size * 0.025F) / 64.F;
 
 			rawrbox::Vector3f startpos = pos;
-			rawrbox::Vector2f tsize = font->getStringSize(text) * screenSize;
-			float lineheight = font->getLineHeight();
+			rawrbox::Vector2f tsize = f->getStringSize(text) * screenSize;
+			float lineheight = f->getLineHeight();
 
 			if (alignX != Alignment::Left || alignY != Alignment::Left) {
 				switch (alignX) {
@@ -55,9 +58,9 @@ namespace rawrbox {
 				auto mesh = std::make_shared<rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType>>();
 				uint32_t point = utf8::next(beginIter, endIter);
 
-				auto& glyph = font->getGlyph(point);
+				auto& glyph = f->getGlyph(point);
 				if (prevGlyph != nullptr) {
-					curpos.x += font->getKerning(glyph, *prevGlyph);
+					curpos.x += f->getKerning(glyph, *prevGlyph);
 				}
 
 				if (point == '\n') {
@@ -70,7 +73,7 @@ namespace rawrbox {
 				rawrbox::Vector3 s = {static_cast<float>(glyph.size.x), static_cast<float>(glyph.size.y), 0.F};
 
 				// Set the atlas
-				mesh->setTexture(font->getAtlasTexture(glyph));
+				mesh->setTexture(font.lock()->getAtlasTexture(glyph));
 				mesh->setCulling(0);
 				mesh->setOptimizable(false);
 				mesh->addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});

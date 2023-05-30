@@ -4,8 +4,6 @@
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include "bx/math.h"
-
 TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 
 	SECTION("rawrbox::Matrix4x4") {

@@ -8,31 +8,44 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-	TextureGIF::TextureGIF(const std::string& fileName, bool useFallback) {
+	// NOLINTBEGIN(modernize-pass-by-value)
+	TextureGIF::TextureGIF(const std::filesystem::path& filePath, bool useFallback) : _filePath(filePath) {
+		this->internalLoad({}, useFallback);
+	}
+
+	TextureGIF::TextureGIF(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback) : _filePath(filePath) {
+		this->internalLoad(buffer, useFallback);
+	}
+	// NOLINTEND(modernize-pass-by-value)
+
+	void TextureGIF::internalLoad(const std::vector<uint8_t>& buffer, bool useFallback) {
 		this->_frames.clear();
+		this->_channels = 4; // Force 4 channels on GIFS
 
 		int frames_n = 0;
-		int w = 0;
-		int h = 0;
 		int* delays = nullptr;
+		uint8_t* gifPixels = nullptr;
 
 		// Need to find a way to not load it all to memory
-		auto gifPixels = stbi_xload(fileName.c_str(), &w, &h, &frames_n, &delays);
+		if (buffer.empty()) {
+			gifPixels = stbi_xload_file(this->_filePath.generic_string().c_str(), &this->_size.x, &this->_size.y, &frames_n, &delays);
+		} else {
+			gifPixels = stbi_xload_mem(buffer.data(), static_cast<int>(buffer.size()) * sizeof(uint8_t), &this->_size.x, &this->_size.y, &frames_n, &delays);
+		}
+
 		if (gifPixels == nullptr || delays == nullptr) {
 			auto failure = stbi_failure_reason();
 
 			if (useFallback) {
 				this->_failedToLoad = true;
-				fmt::print("[TextureGIF] Error loading gif image '{}' | Error: {} --- > Using fallback image\n", fileName, failure);
+				fmt::print("[TextureGIF] Error loading gif image '{}' | Error: {} --- > Using fallback image\n", this->_filePath.generic_string(), failure);
 				return;
 			} else {
 				throw std::runtime_error(fmt::format("[TextureGIF] Error loading image: {}", failure));
 			}
 		}
 
-		this->_size = {w, h};
 		uint32_t framePixelCount = this->_size.x * this->_size.y * this->_channels;
-
 		for (int i = 0; i < frames_n; i++) {
 			// first push it, then allocate to prevent double copy of memory
 			this->_frames.push_back({});
@@ -45,8 +58,23 @@ namespace rawrbox {
 			std::copy(pixelsOffset, pixelsOffset + framePixelCount, frame.pixels.data());
 		}
 
+		// Check for transparency ----
+		if (this->_channels == 4 && !this->_frames.empty()) {
+			auto& frame1 = this->_frames.back().pixels;
+			for (size_t i = 0; i < frame1.size(); i += this->_channels) {
+				if (frame1[i + 3] == 1.F) continue;
+				_transparent = true;
+				break;
+			}
+		}
+		// ---------------------------
+
 		stbi_image_free(gifPixels);
 		stbi_image_free(delays);
+	}
+
+	const bool TextureGIF::hasTransparency() const {
+		return this->_channels == 4 && this->_transparent;
 	}
 
 	void TextureGIF::update() {

@@ -3,6 +3,7 @@
 #include <rawrbox/render/model/material/base.hpp>
 
 #define BGFX_STATE_DEFAULT_SPRITE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
+
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
@@ -23,8 +24,6 @@ namespace rawrbox {
 			for (auto& mesh : this->_meshes) {
 				this->_material->process(mesh);
 
-				bgfx::setTransform((this->_matrix * mesh->offsetMatrix).data());
-
 				if (this->isDynamicBuffer()) {
 					bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
 					bgfx::setIndexBuffer(this->_ibdh, mesh->baseIndex, mesh->totalIndex);
@@ -33,12 +32,13 @@ namespace rawrbox {
 					bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
 				}
 
-				uint64_t flags = BGFX_STATE_DEFAULT_SPRITE | mesh->culling | mesh->blending;
+				bgfx::setTransform((this->_matrix * mesh->offsetMatrix).data());
+
+				uint64_t flags = BGFX_STATE_DEFAULT_SPRITE | mesh->culling | mesh->blending | mesh->depthTest;
 				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
 												: 0;
 
 				bgfx::setState(flags, 0);
-
 				this->_material->postProcess();
 			}
 		}

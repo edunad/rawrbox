@@ -67,7 +67,7 @@ TEST_CASE("Vector2 should behave as expected", "[rawrbox::Vector2]") {
 
 	SECTION("rawrbox::Vector2::angle") {
 		auto l = rawrbox::Vector2f(5.F, 3.F).angle({0, 5});
-		REQUIRE_THAT(l, Catch::Matchers::WithinAbs(-1.9513F, 0.0001F));
+		REQUIRE_THAT(l, Catch::Matchers::WithinAbs(-1.19029F, 0.0001F));
 	}
 
 	SECTION("rawrbox::Vector2::distance") {

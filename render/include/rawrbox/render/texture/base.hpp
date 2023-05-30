@@ -11,7 +11,7 @@ namespace rawrbox {
 		bgfx::TextureHandle _handle = BGFX_INVALID_HANDLE;
 		rawrbox::Vector2i _size;
 
-		int _channels = 4;
+		int _channels = 0;
 		uint32_t _flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
 
 	public:
@@ -25,9 +25,10 @@ namespace rawrbox {
 		virtual ~TextureBase();
 
 		// UTILS----
+		[[nodiscard]] const virtual bool hasTransparency() const;
 		[[nodiscard]] const virtual rawrbox::Vector2i& getSize() const;
 		[[nodiscard]] const virtual bool valid() const;
-		[[nodiscard]] const virtual bgfx::TextureHandle& getHandle() const;
+		[[nodiscard]] const virtual bgfx::TextureHandle getHandle() const;
 		// -----
 
 		virtual void setFlags(uint32_t flags);

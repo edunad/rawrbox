@@ -3,19 +3,20 @@
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/static.hpp>
+#include <rawrbox/render/model/light/manager.hpp>
+#include <rawrbox/render/model/light/types.hpp>
+
+#ifndef RAWRBOX_TESTING
+	#ifdef RAWRBOX_DEBUG
+		#include <rawrbox/debug/gizmos.hpp>
+	#endif
+#endif
+
+#include <fmt/format.h>
 
 #include <array>
 
 namespace rawrbox {
-
-	enum LightType {
-		LIGHT_UNKNOWN = 0,
-
-		LIGHT_POINT,
-		LIGHT_SPOT,
-		LIGHT_DIR,
-	};
 
 	class LightBase {
 	protected:
@@ -23,31 +24,69 @@ namespace rawrbox {
 		size_t _id = 0;
 
 		rawrbox::Vector3f _posMatrix;
+		rawrbox::Vector3f _offsetPos;
+		rawrbox::Vector3f _prevPosMatrix;
+
 		rawrbox::Colorf _diffuse = rawrbox::Colors::White;
 		rawrbox::Colorf _specular = rawrbox::Colors::White;
 		rawrbox::Colorf _ambient = rawrbox::Colors::White;
 
+		void updateGizmo() {
+#ifndef RAWRBOX_TESTING
+	#ifdef RAWRBOX_DEBUG
+			rawrbox::GIZMOS::updateGizmo(fmt::format("Light-{}", this->id()), this->getPos() + this->_offsetPos);
+	#endif
+#endif
+		}
+
 	public:
 		LightBase() = default;
-		LightBase(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : _id(++rawrbox::LIGHT_ID), _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
-
-		LightBase(LightBase&&) = delete;
-		LightBase& operator=(LightBase&&) = delete;
-		LightBase(const LightBase&) = delete;
-		LightBase& operator=(const LightBase&) = delete;
-		virtual ~LightBase() = default;
+		LightBase(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
+		virtual ~LightBase() {
+			rawrbox::LIGHTS::removeLight(this);
+#ifndef RAWRBOX_TESTING
+	#ifdef RAWRBOX_DEBUG
+			rawrbox::GIZMOS::removeLight(this);
+	#endif
+#endif
+		};
 
 		[[nodiscard]] virtual const rawrbox::Colorf& getSpecularColor() const { return this->_specular; }
 		[[nodiscard]] virtual const rawrbox::Colorf& getDiffuseColor() const { return this->_diffuse; }
 		[[nodiscard]] virtual const rawrbox::Colorf& getAmbientColor() const { return this->_ambient; }
 
+		virtual void setId(size_t id) {
+			this->_id = id;
+#ifndef RAWRBOX_TESTING
+	#ifdef RAWRBOX_DEBUG
+			rawrbox::GIZMOS::addLight(this);
+	#endif
+#endif
+		};
+
 		[[nodiscard]] virtual const size_t id() const { return this->_id; };
+
 		[[nodiscard]] virtual const bool isOn() const { return this->_isOn; }
 		virtual void setStatus(bool on) { this->_isOn = on; };
 
-		virtual std::array<float, 4> getPosMatrix() { return {this->_posMatrix.x, this->_posMatrix.y, this->_posMatrix.z, 0}; }
-		virtual rawrbox::Matrix4x4 const getDataMatrix() = 0;
+		[[nodiscard]] const rawrbox::Vector3f& getPos() const { return this->_posMatrix; }
+		virtual void setPos(const rawrbox::Vector3f& pos) {
+			this->_posMatrix = pos;
+			this->updateGizmo();
+		}
 
-		virtual LightType getType() = 0;
+		[[nodiscard]] const rawrbox::Vector3f& getOffsetPos() const { return this->_offsetPos; }
+		virtual void setOffsetPos(const rawrbox::Vector3f& pos) {
+			this->_offsetPos = pos;
+			this->updateGizmo();
+		}
+
+		virtual std::array<float, 4> getPosMatrix() {
+			auto p = this->getPos() + this->getOffsetPos();
+			return {p.x, p.y, p.z, 0};
+		}
+
+		virtual rawrbox::Matrix4x4 const getDataMatrix() = 0;
+		virtual rawrbox::LightType getType() = 0;
 	};
 } // namespace rawrbox

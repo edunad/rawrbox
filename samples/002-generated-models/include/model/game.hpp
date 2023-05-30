@@ -5,8 +5,6 @@
 #include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/model/sprite.hpp>
 #include <rawrbox/render/model/text3D.hpp>
-#include <rawrbox/render/renderer.hpp>
-#include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/texture/gif.hpp>
 #include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/render/window.hpp>
@@ -15,10 +13,8 @@
 
 namespace model {
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::shared_ptr<rawrbox::Renderer> _render = nullptr;
+		std::shared_ptr<rawrbox::Window> _window = nullptr;
 		std::shared_ptr<rawrbox::CameraOrbital> _camera = nullptr;
-		std::unique_ptr<rawrbox::TextEngine> _textEngine = nullptr;
 
 		std::shared_ptr<rawrbox::TextureImage> _texture = nullptr;
 		std::shared_ptr<rawrbox::TextureGIF> _texture2 = nullptr;
@@ -27,7 +23,8 @@ namespace model {
 		std::shared_ptr<rawrbox::Sprite<>> _sprite = std::make_shared<rawrbox::Sprite<>>();
 		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
 
-		rawrbox::Font* _font = nullptr;
+		std::weak_ptr<rawrbox::Font> _font;
+		bool _ready = false;
 
 	public:
 		using Engine::Engine;
@@ -40,6 +37,8 @@ namespace model {
 		void draw() override;
 
 		void loadContent();
+		void contentLoaded();
+
 		void drawWorld();
 	};
 } // namespace model

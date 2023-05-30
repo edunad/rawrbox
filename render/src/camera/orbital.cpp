@@ -6,7 +6,7 @@
 #include <bx/math.h>
 
 namespace rawrbox {
-	CameraOrbital::CameraOrbital(rawrbox::Window* window, float speed, float FOV, float near, float far, bool homogeneousDepth) : CameraPerspective(window->getSize(), FOV, near, far, homogeneousDepth), _window(window), _speed(speed) {
+	CameraOrbital::CameraOrbital(std::shared_ptr<rawrbox::Window> window, float speed, float FOV, float near, float far, bool homogeneousDepth) : CameraPerspective(window->getSize(), FOV, near, far, homogeneousDepth), _window(window), _speed(speed) {
 		window->onMouseKey += [this](auto& w, const rawrbox::Vector2i& mousePos, int button, int action, int mods) {
 			const bool isDown = action == 1;
 			if (button != MOUSE_BUTTON_2) return;
@@ -32,6 +32,8 @@ namespace rawrbox {
 	}
 
 	void CameraOrbital::update() {
+		if (this->_window.expired()) return;
+
 		auto dir = this->getForward();
 		auto eye = this->getPos();
 		auto right = this->getRight();
@@ -40,26 +42,26 @@ namespace rawrbox {
 		auto m_eye = bx::Vec3(eye.x, eye.y, eye.z);
 
 		float sp = this->_speed;
-		if (this->_window->isKeyDown(KEY_LEFT_SHIFT)) {
+		if (this->_window.lock()->isKeyDown(KEY_LEFT_SHIFT)) {
 			sp *= 2.F;
 		}
 
-		if (this->_window->isKeyDown(KEY_W)) {
+		if (this->_window.lock()->isKeyDown(KEY_W)) {
 			m_eye = bx::mad(m_dir, rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 
-		if (this->_window->isKeyDown(KEY_S)) {
+		if (this->_window.lock()->isKeyDown(KEY_S)) {
 			m_eye = bx::mad(m_dir, -rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 
-		if (this->_window->isKeyDown(KEY_A)) {
+		if (this->_window.lock()->isKeyDown(KEY_A)) {
 			m_eye = bx::mad({right.x, right.y, right.z}, rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 
-		if (this->_window->isKeyDown(KEY_D)) {
+		if (this->_window.lock()->isKeyDown(KEY_D)) {
 			m_eye = bx::mad({right.x, right.y, right.z}, -rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}

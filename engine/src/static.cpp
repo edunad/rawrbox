@@ -6,7 +6,7 @@ namespace rawrbox {
 
 	// THREADING -------
 	std::thread::id MAIN_THREAD_ID;
-	jnk0le::Ringbuffer<std::function<void()>> MAIN_THREAD_INVOKES = {64};
+	jnk0le::Ringbuffer<std::function<void()>> MAIN_THREAD_INVOKES = {512};
 	// -------
 
 } // namespace rawrbox

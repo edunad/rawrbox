@@ -1,4 +1,5 @@
 
+#pragma once
 
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector2.hpp>

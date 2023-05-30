@@ -17,6 +17,8 @@ namespace rawrbox {
 
 		Vector2_t() = default;
 		explicit Vector2_t(NumberType val) : x(val), y(val) {}
+
+		explicit Vector2_t(std::array<NumberType, 2> val) : x(val[0]), y(val[1]) {}
 		Vector2_t(NumberType _x, NumberType _y) : x(_x), y(_y) {}
 
 		static VecType zero() { return VecType(); }
@@ -35,7 +37,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] NumberType angle(const VecType& target) const {
-			return -static_cast<NumberType>(std::atan2(x - target.x, y - target.y));
+			return static_cast<NumberType>(std::atan2(target.x - x, target.y - y));
 		}
 
 		[[nodiscard]] VecType abs() const {
@@ -56,8 +58,19 @@ namespace rawrbox {
 			    std::clamp(x, min, max),
 			    std::clamp(y, min, max)};
 		}
+
+		[[nodiscard]] VecType clamp(VecType min, VecType max) const {
+			return {
+			    std::clamp(x, min.x, max.x),
+			    std::clamp(y, min.y, max.y)};
+		}
+
 		[[nodiscard]] NumberType atan2() const {
 			return std::atan2(y, x);
+		}
+
+		static VecType sinCos(float radians) {
+			return VecType(std::sin(radians), std::cos(radians));
 		}
 
 		static VecType cosSin(float radians) {

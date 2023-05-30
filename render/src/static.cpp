@@ -1,3 +1,4 @@
+#include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/static.hpp>
 
 namespace rawrbox {
@@ -6,14 +7,17 @@ namespace rawrbox {
 
 	// TEXTURE FALLBACKS ---
 	std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE = nullptr;
-	std::shared_ptr<rawrbox::TextureFlat> MISSING_SPECULAR_TEXTURE = nullptr;
-	std::shared_ptr<rawrbox::TextureFlat> MISSING_EMISSION_TEXTURE = nullptr;
 	std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE = nullptr;
+	std::shared_ptr<rawrbox::TextureFlat> MISSING_SPECULAR_EMISSIVE_TEXTURE = nullptr;
 	// ---------
 
 	// ID GENERATION
-	int SOUND_ID = 0;
-	int LIGHT_ID = 0;
-	int EMITTER_ID = 0;
+	size_t SOUND_ID = 0;
+	size_t LIGHT_ID = 0;
+	size_t EMITTER_ID = 0;
 	// -----
+
+	// INTERNAL, DO NOT USE
+	size_t __OPEN_WINDOWS__ = 0;
+	// -------
 } // namespace rawrbox

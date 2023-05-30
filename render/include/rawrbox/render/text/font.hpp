@@ -37,11 +37,10 @@ namespace rawrbox {
 	class Font {
 
 	private:
-		TextEngine* _engine;
 		std::vector<Glyph> _glyphs;
 
 		std::string _file;
-		FT_Render_Mode _mode = FT_RENDER_MODE_MONO;
+		FT_Render_Mode _mode = FT_RENDER_MODE_NORMAL;
 
 		// SIZE ----
 		uint32_t bitmapR = -1;
@@ -54,18 +53,20 @@ namespace rawrbox {
 		Glyph loadGlyph(FT_ULong character);
 		std::vector<unsigned char> generateGlyph();
 
-		void preloadGlyphs(std::string chars);
+		std::string getFontInSystem(const std::string& path);
 		// -----
 	public:
 		FT_Face face = {};
 		uint32_t size;
 
-		Font(TextEngine* engine, std::string filename, uint32_t size, FT_Render_Mode renderMode = FT_RENDER_MODE_NORMAL);
+		Font(std::string filename, uint32_t size, FT_Render_Mode renderMode = FT_RENDER_MODE_NORMAL);
 		Font(Font&&) = delete;
 		Font& operator=(Font&&) = delete;
 		Font(const Font&) = delete;
 		Font& operator=(const Font&) = delete;
 		~Font();
+
+		void addChars(const std::string& chars);
 
 		// UTILS --
 		[[nodiscard]] float getLineHeight() const;
@@ -76,6 +77,12 @@ namespace rawrbox {
 
 		std::shared_ptr<rawrbox::TextureAtlas> getAtlasTexture(const Glyph& g);
 		// ----
+
+		// GLOBAL UTILS ---
+		static size_t getByteCount(const std::string& text, size_t characterPosition);
+		static size_t getCharacterCount(const std::string& text);
+		static std::string toUTF8(const std::wstring text);
+		// -------------
 	};
 
 } // namespace rawrbox

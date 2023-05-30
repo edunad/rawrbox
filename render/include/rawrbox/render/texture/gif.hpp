@@ -5,6 +5,7 @@
 
 #include <bgfx/bgfx.h>
 
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -17,17 +18,22 @@ namespace rawrbox {
 	class TextureGIF : public TextureBase {
 	private:
 		std::vector<GIFFrame> _frames;
+		std::filesystem::path _filePath = "";
 
 		int _currentFrame = 0;
 		bool _loop = true;
+		bool _failedToLoad = false;
+		bool _transparent = false;
+
 		int64_t _cooldown = 0;
 		float _speed = 1.F;
-		bool _failedToLoad = false;
 
 		void update();
+		void internalLoad(const std::vector<uint8_t>& data, bool useFallback = true);
 
 	public:
-		explicit TextureGIF(const std::string& fileName, bool useFallback = true);
+		explicit TextureGIF(const std::filesystem::path& filePath, bool useFallback = true);
+		explicit TextureGIF(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback = true);
 
 		// ------ANIMATION
 		virtual void step();
@@ -37,6 +43,7 @@ namespace rawrbox {
 		// ------UTILS
 		virtual void setLoop(bool loop);
 		virtual void setSpeed(float speed);
+		[[nodiscard]] const bool hasTransparency() const override;
 		// --------------------
 
 		// ------RENDER

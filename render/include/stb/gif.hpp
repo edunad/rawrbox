@@ -27,24 +27,32 @@ using gif_result = struct gif_result_t {
 	struct gif_result_t *next;
 };
 
-unsigned char *stbi_xload(char const *filename, int *x, int *y, int *frames, int **delays) {
-	FILE *f = nullptr;
-
+unsigned char *stbi_xload(stbi__context *s, int *x, int *y, int *frames, int **delays) {
 	int comp = 0;
-	unsigned char *result = nullptr;
+	return reinterpret_cast<unsigned char *>(stbi__load_gif_main(s, delays, x, y, frames, &comp, 4)); // Force 4 channels
+}
+
+unsigned char *stbi_xload_file(char const *filename, int *x, int *y, int *frames, int **delays) {
 	stbi__context s;
 
+	FILE *f = nullptr;
 	if (!(f = stbi__fopen(filename, "rb"))) throw std::runtime_error("Failed to open file");
 	stbi__start_file(&s, f);
 
 	if (!stbi__gif_test(&s)) {
 		fclose(f);
-		throw std::runtime_error("Give file not a GIF");
+		throw std::runtime_error("Given file not a GIF");
 	}
 
-	auto ret = reinterpret_cast<unsigned char *>(stbi__load_gif_main(&s, delays, x, y, frames, &comp, 4));
+	auto ret = stbi_xload(&s, x, y, frames, delays);
 	fclose(f);
 
 	return ret;
+};
+
+unsigned char *stbi_xload_mem(const unsigned char *buffer, int len, int *x, int *y, int *frames, int **delays) {
+	stbi__context s;
+	stbi__start_mem(&s, buffer, len);
+	return stbi_xload(&s, x, y, frames, delays);
 };
 // NOLINTEND(*)

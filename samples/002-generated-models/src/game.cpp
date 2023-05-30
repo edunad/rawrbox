@@ -1,12 +1,15 @@
 
 #include <rawrbox/render/model/mesh.hpp>
+#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/render/resources/gif.hpp>
+#include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
 #include <model/game.hpp>
 
 #include <bx/bx.h>
 #include <bx/math.h>
-#include <bx/timer.h>
 
 #include <vector>
 
@@ -15,30 +18,25 @@ namespace model {
 		int width = 1024;
 		int height = 768;
 
-		this->_window = std::make_unique<rawrbox::Window>();
+		this->_window = std::make_shared<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("SIMPLE MODEL TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
-		this->_window->onResize += [this](auto& w, auto& size) {
-			if (this->_render == nullptr) return;
-			this->_render->resizeView(size);
-		};
-
 		this->_window->onWindowClose += [this](auto& w) {
 			this->shutdown();
 		};
 
-		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Window::WINDOWED);
-		this->_render = std::make_shared<rawrbox::Renderer>(0, this->_window->getSize());
-		this->_render->setClearColor(0x00000000);
+		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED);
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window.get());
+		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		this->_textEngine = std::make_unique<rawrbox::TextEngine>();
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::GIFLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
 
 		// Load content ---
 		this->loadContent();
@@ -46,19 +44,33 @@ namespace model {
 	}
 
 	void Game::loadContent() {
-		this->_render->upload();
+		std::array<std::string, 3> initialContentFiles = {
+		    "cour.ttf",
+		    "content/textures/screem.png",
+		    "content/textures/meow3.gif",
+		};
 
-		// Fonts -----
-		this->_font = &this->_textEngine->load("cour.ttf", 16);
-		// ------
+		rawrbox::ASYNC::run([initialContentFiles]() {
+			for (auto& f : initialContentFiles) {
+				rawrbox::RESOURCES::loadFile( f);
+			} },
+		    [this] {
+			    rawrbox::runOnMainThread([this]() {
+				    rawrbox::RESOURCES::upload();
+				    this->contentLoaded();
+			    });
+		    });
 
-		// Textures ---
-		this->_texture = std::make_shared<rawrbox::TextureImage>("./content/textures/screem.png");
-		this->_texture->upload();
+		this->_window->upload();
+	}
 
-		this->_texture2 = std::make_shared<rawrbox::TextureGIF>("./content/textures/meow3.gif");
-		this->_texture2->upload();
-		// ----
+	void Game::contentLoaded() {
+		this->_ready = true;
+
+		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->texture;
+		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->texture;
+
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 
 		// Model test ----
 		{
@@ -92,7 +104,6 @@ namespace model {
 			this->_sprite->addMesh(mesh);
 		}
 		// -----
-
 		// Text test ----
 		{
 			this->_text->addText(this->_font, "PLANE", {2.F, 0.5F, 0});
@@ -105,11 +116,10 @@ namespace model {
 		this->_model->upload();
 		this->_sprite->upload();
 		this->_text->upload();
-		// -----
 	}
 
 	void Game::shutdown() {
-		this->_render = nullptr;
+		this->_window = nullptr;
 		this->_camera = nullptr;
 		this->_texture2 = nullptr;
 
@@ -117,6 +127,7 @@ namespace model {
 		this->_sprite = nullptr;
 		this->_text = nullptr;
 
+		rawrbox::RESOURCES::shutdown();
 		rawrbox::Engine::shutdown();
 	}
 
@@ -140,20 +151,16 @@ namespace model {
 	}
 
 	void printFrames() {
-		int64_t now = bx::getHPCounter();
-		static int64_t last = now;
-		const int64_t frameTime = now - last;
-		last = now;
+		const bgfx::Stats* stats = bgfx::getStats();
 
-		const auto freq = static_cast<double>(bx::getHPFrequency());
-		const double toMs = 1000.0 / freq;
-
-		bgfx::dbgTextPrintf(1, 4, 0x0f, "Frame: %7.3f[ms]", double(frameTime) * toMs);
+		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
+		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
+		bgfx::dbgTextPrintf(1, 6, 0x6f, fmt::format("TRIANGLES: {} ----->    DRAW CALLS: {}", stats->numPrims[bgfx::Topology::TriList], stats->numDraw).c_str());
 	}
 
 	void Game::draw() {
-		if (this->_render == nullptr) return;
-		this->_render->clear(); // Clean up and set renderer
+		if (this->_window == nullptr) return;
+		this->_window->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -162,9 +169,15 @@ namespace model {
 		printFrames();
 		// -----------
 
-		this->drawWorld();
+		if (this->_ready) {
+			this->drawWorld();
+		} else {
+			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
+			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
+			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
+		}
 
-		this->_render->frame(); // Commit primitives
+		this->_window->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 

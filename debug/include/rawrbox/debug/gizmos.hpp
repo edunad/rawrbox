@@ -12,7 +12,7 @@
 
 namespace rawrbox {
 
-#ifdef RAWRBOX_BASS
+#if RAWRBOX_BASS
 	class SoundInstance;
 #endif
 
@@ -20,34 +20,29 @@ namespace rawrbox {
 	class LightBase;
 	class GIZMOS {
 	protected:
-		std::shared_ptr<rawrbox::Sprite<>> _gizmo_lights = std::make_shared<rawrbox::Sprite<>>();
-		std::shared_ptr<rawrbox::Sprite<>> _gizmo_sounds = std::make_shared<rawrbox::Sprite<>>();
-		std::shared_ptr<rawrbox::Sprite<>> _gizmo_emitters = std::make_shared<rawrbox::Sprite<>>();
+		static std::shared_ptr<rawrbox::Sprite<>> _gizmo_lights;
+		static std::shared_ptr<rawrbox::Sprite<>> _gizmo_sounds;
+		static std::shared_ptr<rawrbox::Sprite<>> _gizmo_emitters;
 
-		std::unordered_map<std::string, std::shared_ptr<rawrbox::TextureImage>> _textures = {};
+		static std::unordered_map<std::string, std::shared_ptr<rawrbox::TextureImage>> _textures;
 
 	public:
-		void shutdown();
-		void upload();
+		static void shutdown();
+		static void upload();
 
 		// UTILS ----
-		void addLight(rawrbox::LightBase* l);
-		void removeLight(rawrbox::LightBase* l);
+		static void addLight(rawrbox::LightBase* l);
+		static void removeLight(rawrbox::LightBase* l);
 
-		void addEmitter(rawrbox::Emitter* l);
-		void removeEmitter(rawrbox::Emitter* l);
+		static void addEmitter(rawrbox::Emitter* l);
+		static void removeEmitter(rawrbox::Emitter* l);
 
-#ifdef RAWRBOX_BASS
-		void addSound(rawrbox::SoundInstance* l);
-		void removeSound(rawrbox::SoundInstance* l);
+#if RAWRBOX_BASS
+		static void addSound(rawrbox::SoundInstance* l);
+		static void removeSound(rawrbox::SoundInstance* l);
 #endif
 		// ------
-		void updateGizmo(const std::string& id, const rawrbox::Vector3f& pos);
-		void draw();
-
-		static GIZMOS& get() {
-			static GIZMOS cl;
-			return cl;
-		}
+		static void updateGizmo(const std::string& id, const rawrbox::Vector3f& pos);
+		static void draw();
 	};
 } // namespace rawrbox

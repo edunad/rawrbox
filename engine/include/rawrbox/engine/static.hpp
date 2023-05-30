@@ -1,4 +1,5 @@
 #pragma once
+#include <rawrbox/engine/threading.hpp>
 #include <rawrbox/utils/ringbuffer.hpp>
 
 #include <functional>

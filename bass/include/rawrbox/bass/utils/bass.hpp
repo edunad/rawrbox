@@ -44,7 +44,6 @@ namespace rawrbox {
 					break;
 			}
 
-			fmt::print("[RawrBox-BASS] Bass audio error: {}\n", readErr);
 			throw std::runtime_error(fmt::format("[RawrBox-BASS] Bass audio error: {}\n", readErr));
 		}
 	};

@@ -10,6 +10,7 @@ void main() {
 
     vec2 texCol = texture2D(s_texColor, v_texcoord0.xy).rg;
 	texCol.r = smoothstep(1.0 - thickness - softness, 1.0 - thickness + softness, texCol.r);
+	if(texCol.r <= 0.0) discard;
 
 	gl_FragColor = vec4(v_color0.rgb, texCol.r);
 }

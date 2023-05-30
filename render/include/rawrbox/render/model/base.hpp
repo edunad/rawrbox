@@ -2,6 +2,7 @@
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/render/model/material/base.hpp>
 #include <rawrbox/render/model/mesh.hpp>
+#include <rawrbox/render/model/skeleton.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/utils/pack.hpp>
 
@@ -18,36 +19,6 @@
 #include <vector>
 
 namespace rawrbox {
-
-	struct Bone {
-		std::string name;
-		uint8_t boneId = 0;
-
-		// Rendering ---
-		rawrbox::Matrix4x4 transformationMtx = {};
-		rawrbox::Matrix4x4 offsetMtx = {};
-		// ----
-
-		// Lookup ----
-		Skeleton* owner = nullptr;
-
-		std::shared_ptr<Bone> parent;
-		std::vector<std::shared_ptr<Bone>> children = {};
-		// ----
-
-		explicit Bone(std::string _name) : name(std::move(_name)) {}
-	};
-
-	struct Skeleton {
-		uint8_t boneIndex = 0;
-
-		std::string name;
-		std::shared_ptr<Bone> rootBone;
-
-		rawrbox::Matrix4x4 invTransformationMtx = {};
-
-		explicit Skeleton(std::string _name) : name(std::move(_name)) {}
-	};
 
 	template <typename M = rawrbox::MaterialBase>
 	class ModelBase {
@@ -79,9 +50,8 @@ namespace rawrbox {
 		bool _canOptimize = true;
 
 		// SKINNING ----
-		std::unordered_map<std::string, std::shared_ptr<Skeleton>> _skeletons = {};
-		std::unordered_map<std::string, std::shared_ptr<Bone>> _globalBoneMap = {};                                         // Map for quick lookup
-		std::unordered_map<std::string, std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _animatedMeshes = {}; // Map for quick lookup
+		std::unordered_map<std::string, std::shared_ptr<rawrbox::Skeleton>> _skeletons = {};
+		std::unordered_map<std::string, std::weak_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _animatedMeshes = {}; // Map for quick lookup
 		// --------
 
 		void flattenMeshes() {
@@ -125,6 +95,12 @@ namespace rawrbox {
 				this->_indices.insert(this->_indices.end(), mesh->indices.begin(), mesh->indices.end());
 				// -----------------
 			}
+			// --------
+
+			// Sort alpha
+			std::sort(this->_meshes.begin(), this->_meshes.end(), [](auto a, auto b) {
+				return a->blending != BGFX_STATE_BLEND_ALPHA && b->blending == BGFX_STATE_BLEND_ALPHA;
+			});
 			// --------
 
 			this->updateBuffers();
@@ -493,43 +469,47 @@ namespace rawrbox {
 		// -------
 
 		// UTIL ---
-		virtual const rawrbox::BBOX& getBBOX() { return this->_bbox; }
+		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const { return this->_bbox; }
 
-		virtual const rawrbox::Vector3f& getPos() { return this->_pos; }
+		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_pos; }
 		virtual void setPos(const rawrbox::Vector3f& pos) {
 			this->_pos = pos;
 			this->_matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 		}
 
-		virtual const rawrbox::Vector3f& getScale() { return this->_scale; }
+		[[nodiscard]] virtual const rawrbox::Vector3f& getScale() const { return this->_scale; }
 		virtual void setScale(const rawrbox::Vector3f& scale) {
 			this->_scale = scale;
 			this->_matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 		}
 
-		virtual const rawrbox::Vector4f& getAngle() { return this->_angle; }
+		[[nodiscard]] virtual const rawrbox::Vector4f& getAngle() const { return this->_angle; }
 		virtual void setAngle(const rawrbox::Vector4f& ang) {
 			this->_angle = ang;
 			this->_matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 		}
 
-		virtual rawrbox::Matrix4x4& getMatrix() {
+		[[nodiscard]] virtual const rawrbox::Matrix4x4& getMatrix() const {
 			return this->_matrix;
 		}
 
-		virtual size_t totalMeshes() {
+		[[nodiscard]] virtual const size_t totalMeshes() const {
 			return this->_meshes.size();
+		}
+
+		[[nodiscard]] virtual const bool empty() const {
+			return this->_meshes.empty();
 		}
 
 		virtual std::vector<std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>>>& meshes() {
 			return this->_meshes;
 		}
 
-		virtual bool isDynamicBuffer() {
+		[[nodiscard]] virtual const bool isDynamicBuffer() const {
 			return this->_isDynamic;
 		}
 
-		virtual bool isUploaded() {
+		[[nodiscard]] virtual const bool isUploaded() const {
 			if (this->isDynamicBuffer()) return bgfx::isValid(this->_ibdh) && bgfx::isValid(this->_vbdh);
 			return bgfx::isValid(this->_ibh) && bgfx::isValid(this->_vbh);
 		}
@@ -543,8 +523,9 @@ namespace rawrbox {
 
 		virtual void addMesh(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
 			this->_bbox.combine(mesh->getBBOX());
-			this->_meshes.push_back(std::move(mesh));
+			mesh->owner = this;
 
+			this->_meshes.push_back(std::move(mesh));
 			if (this->isUploaded() && this->isDynamicBuffer()) {
 				this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 			}
@@ -576,12 +557,20 @@ namespace rawrbox {
 			}
 		}
 
+		virtual void setDepthTest(uint64_t depth, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->setDepthTest(depth);
+			}
+		}
+
 		virtual void setColor(const rawrbox::Color& color, int id = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
 				if (id != -1 && i != id) continue;
 				this->_meshes[i]->setColor(color);
 			}
 		}
+
 		// ----
 		virtual void upload(bool dynamic = false) {
 			if (this->isUploaded()) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
@@ -602,7 +591,7 @@ namespace rawrbox {
 					this->_ibdh = bgfx::createDynamicIndexBuffer(indexMem, 0 | BGFX_BUFFER_ALLOW_RESIZE);
 				}
 			} else {
-				if (this->_vertices.empty() || this->_indices.empty()) throw std::runtime_error("[RawrBox-ModelBase] Static buffer cannot contain empty vertices / indices");
+				if (this->_vertices.empty() || this->_indices.empty()) throw std::runtime_error("[RawrBox-ModelBase] Static buffer cannot contain empty vertices / indices. Use dynamic buffer instead!");
 
 				this->_vbh = bgfx::createVertexBuffer(vertMem, M::vertexBufferType::vLayout());
 				this->_ibh = bgfx::createIndexBuffer(indexMem);

@@ -13,14 +13,26 @@
 namespace rawrbox {
 	constexpr auto MAX_SOUND_INSTANCES = 5; // Max sound effects playing at the same time
 
+	// STATIC VARS ----
+	bool rawrbox::BASS::_initialized = false;
+	bool rawrbox::BASS::_muteOnUnfocus = true;
+	float rawrbox::BASS::_masterVolume = 1.F;
+	rawrbox::Vector3f rawrbox::BASS::_oldLocation = {};
+
+	// PUBLIC
+	std::unordered_map<std::string, std::shared_ptr<rawrbox::SoundBase>> rawrbox::BASS::sounds = {};
+
+	rawrbox::EventNamed<std::pair<uint32_t, double>> rawrbox::BASS::onBEAT;
+	rawrbox::EventNamed<std::pair<uint32_t, float>> rawrbox::BASS::onBPM;
+	rawrbox::EventNamed<uint32_t> rawrbox::BASS::onSoundEnd;
+	// ------------
+
 	// BASS CALLBACKS (Not thread safe! We need to run these on the main thread) ------
 	void CALLBACK onHTTPSoundFree(HSYNC handle, DWORD channel, DWORD data, void* user) {
 		rawrbox::runOnMainThread([channel]() {
-			auto& inst = rawrbox::SoundManager::get();
-
-			for (auto it2 = inst.sounds.begin(); it2 != inst.sounds.end();) {
+			for (auto it2 = rawrbox::BASS::sounds.begin(); it2 != rawrbox::BASS::sounds.end();) {
 				if ((*it2).second->getSample() == channel) {
-					it2 = inst.sounds.erase(it2);
+					it2 = rawrbox::BASS::sounds.erase(it2);
 					return;
 				} else {
 					++it2;
@@ -31,29 +43,29 @@ namespace rawrbox {
 
 	void CALLBACK soundBEAT(uint32_t channel, double beatpos, void* user) {
 		rawrbox::runOnMainThread([channel, beatpos]() {
-			rawrbox::SoundManager::get().onBEAT({channel, beatpos});
+			rawrbox::BASS::onBEAT({channel, beatpos});
 		});
 	}
 
 	void CALLBACK soundBPM(uint32_t channel, float bpm, void* user) {
 		rawrbox::runOnMainThread([channel, bpm]() {
-			rawrbox::SoundManager::get().onBPM({channel, bpm});
+			rawrbox::BASS::onBPM({channel, bpm});
 		});
 	}
 
 	void CALLBACK soundEnd(HSYNC handle, DWORD channel, DWORD data, void* user) {
 		rawrbox::runOnMainThread([channel]() {
-			rawrbox::SoundManager::get().onSoundEnd(static_cast<uint32_t>(channel));
+			rawrbox::BASS::onSoundEnd(static_cast<uint32_t>(channel));
 		});
 	}
 	// ----------------
 
-	void SoundManager::initialize() {
+	void BASS::initialize() {
 		auto fxVersion = HIWORD(BASS_FX_GetVersion());
 		if (fxVersion != BASSVERSION) throw std::runtime_error(fmt::format("[RawrBox-BASS] BASS Version missmatch! FX [{}] | BASS [{}]", fxVersion, BASSVERSION));
 
-		this->_initialized = BASS_Init(-1, 44100, BASS_DEVICE_3D, nullptr, nullptr);
-		if (this->_initialized) {
+		_initialized = BASS_Init(-1, 44100, BASS_DEVICE_3D, nullptr, nullptr);
+		if (_initialized) {
 			fmt::print("[RawrBox-BASS] INITIALIZED BASS [{}] | BASS_FX [{}] \n", fxVersion, BASSVERSION);
 
 			BASS_Start();
@@ -64,16 +76,18 @@ namespace rawrbox {
 		}
 	}
 
-	void SoundManager::shutdown() {
-		this->sounds.clear();
+	void BASS::shutdown() {
+		sounds.clear();
 		BASS_Free();
+
+		fmt::print("[RawrBox-BASS] BASS Shutdown \n");
 	}
 
 	// LOAD ----
-	std::shared_ptr<rawrbox::SoundBase> SoundManager::loadSound(const std::filesystem::path& path, uint32_t flags) {
+	std::shared_ptr<rawrbox::SoundBase> BASS::loadSound(const std::filesystem::path& path, uint32_t flags) {
 		std::string pth = path.generic_string().c_str();
 
-		if (this->sounds.find(pth) != this->sounds.end()) return this->sounds[pth];
+		if (sounds.find(pth) != sounds.end()) return sounds[pth];
 		if (!std::filesystem::exists(path)) throw std::runtime_error(fmt::format("[RawrBox-BASS] File '{}' not found!", pth));
 
 		auto size = std::filesystem::file_size(path);
@@ -93,11 +107,7 @@ namespace rawrbox {
 			sample = BASS_SampleLoad(false, path.generic_string().c_str(), 0, 0, MAX_SOUND_INSTANCES, bassFlags);
 		}
 
-		if (sample == 0) {
-			rawrbox::BASSUtils::checkBASSError();
-			return nullptr;
-		}
-
+		if (sample == 0) rawrbox::BASSUtils::checkBASSError();
 		BASS_ChannelSetSync(sample, BASS_SYNC_END, 0, &soundEnd, nullptr);
 
 		if (beatDetection) {
@@ -114,7 +124,7 @@ namespace rawrbox {
 		return sounds[pth];
 	}
 
-	std::shared_ptr<rawrbox::SoundBase> SoundManager::loadHTTPSound(const std::string& url, uint32_t flags) {
+	std::shared_ptr<rawrbox::SoundBase> BASS::loadHTTPSound(const std::string& url, uint32_t flags) {
 		if (!url.starts_with("http://") && !url.starts_with("https://")) throw std::runtime_error(fmt::format("[BASS] Invalid sound url '{}'", url));
 		if (sounds.find(url) != sounds.end()) return sounds[url];
 
@@ -130,10 +140,7 @@ namespace rawrbox {
 		if (is3D) bassFlags |= BASS_SAMPLE_3D | BASS_SAMPLE_MONO | BASS_SAMPLE_OVER_DIST | BASS_SAMPLE_MUTEMAX;
 
 		HSAMPLE sampleStreamed = BASS_StreamCreateURL(url.c_str(), 0, bassFlags, nullptr, nullptr);
-		if (sampleStreamed == 0) {
-			rawrbox::BASSUtils::checkBASSError();
-			return nullptr;
-		}
+		if (sampleStreamed == 0) rawrbox::BASSUtils::checkBASSError();
 
 		BASS_ChannelSetSync(sampleStreamed, BASS_SYNC_END, 0, &soundEnd, nullptr);
 		BASS_ChannelSetSync(sampleStreamed, BASS_SYNC_MIXTIME | BASS_SYNC_FREE, 0, &onHTTPSoundFree, nullptr); // Auto cleanup on free
@@ -154,33 +161,33 @@ namespace rawrbox {
 	// ----
 
 	// UTILS -----
-	void SoundManager::setHasFocus(bool focus) {
-		if (!this->_initialized) return;
-		setMasterVolume(this->_muteOnUnfocus ? (focus ? this->_masterVolume : 0.F) : this->_masterVolume, false); // Mute on unfocus
+	void BASS::setHasFocus(bool focus) {
+		if (!_initialized) return;
+		setMasterVolume(_muteOnUnfocus ? (focus ? _masterVolume : 0.F) : _masterVolume, false); // Mute on unfocus
 	}
 
-	void SoundManager::setMasterVolume(float volume, bool set) {
+	void BASS::setMasterVolume(float volume, bool set) {
 		volume = std::clamp(volume, 0.F, 1.F);
-		if (set) this->_masterVolume = volume;
+		if (set) _masterVolume = volume;
 
 		BASS_SetConfig(BASS_CONFIG_GVOL_MUSIC, static_cast<DWORD>(volume * 10000));
 		BASS_SetConfig(BASS_CONFIG_GVOL_SAMPLE, static_cast<DWORD>(volume * 10000));
 		BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, static_cast<DWORD>(volume * 10000));
 	}
 
-	void SoundManager::setMuteOnUnfocus(bool active) {
-		this->_muteOnUnfocus = active;
+	void BASS::setMuteOnUnfocus(bool active) {
+		_muteOnUnfocus = active;
 	}
 
-	float SoundManager::getMasterVolume() const {
-		return this->_masterVolume;
+	float BASS::getMasterVolume() {
+		return _masterVolume;
 	}
 
-	void SoundManager::setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& forward, const rawrbox::Vector3f& up) {
-		if (!this->_initialized) return;
+	void BASS::setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& forward, const rawrbox::Vector3f& up) {
+		if (!_initialized) return;
 
-		auto velo = location - this->_oldLocation;
-		this->_oldLocation = location;
+		auto velo = location - _oldLocation;
+		_oldLocation = location;
 
 		BASS_3DVECTOR Bass_Player = {location.x, location.y, location.z};
 		BASS_3DVECTOR Bass_Front = {forward.x, forward.y, forward.z};

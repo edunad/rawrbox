@@ -3,8 +3,6 @@
 #include <rawrbox/math/pi.hpp>
 #include <rawrbox/math/vector2.hpp>
 
-#pragma once
-
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -21,7 +19,9 @@ namespace rawrbox {
 		NumberType x = 0, y = 0, z = 0;
 
 		Vector3_t() = default;
+
 		explicit Vector3_t(NumberType val) : x(val), y(val), z(val) {}
+		explicit Vector3_t(const std::array<NumberType, 3>& val) : x(val[0]), y(val[1]), z(val[2]) {}
 		explicit Vector3_t(Vector2_t<NumberType> xy, NumberType _z = 0) : x(xy.x), y(xy.y), z(_z) {}
 		Vector3_t(NumberType _x, NumberType _y, NumberType _z = 0) : x(_x), y(_y), z(_z) {}
 
@@ -83,6 +83,13 @@ namespace rawrbox {
 			    std::clamp(x, min, max),
 			    std::clamp(y, min, max),
 			    std::clamp(z, min, max)};
+		}
+
+		[[nodiscard]] VecType clamp(VecType min, VecType max) const {
+			return {
+			    std::clamp(x, min.x, max.x),
+			    std::clamp(y, min.y, max.y),
+			    std::clamp(z, min.z, max.z)};
 		}
 
 		template <class ReturnType>

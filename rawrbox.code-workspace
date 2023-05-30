@@ -20,8 +20,8 @@
         ],
 
         "clangd.restartAfterCrash": true,
-        "clangd.checkUpdates": true,
-        "clangd.arguments": ["--header-insertion=never", "--enable-config"],
+        "clangd.checkUpdates": false,
+        "clangd.arguments": ["--header-insertion=never"],
 
         "git.autoRepositoryDetection": false,
 
@@ -51,8 +51,9 @@
         "cmake.generator": "Ninja",
         "cmake.configureArgs": ["-Wno-dev"],
         "cmake.configureSettings": {
+            "DUSE_CCACHE": "YES",
+            "DCCACHE_OPTIONS": "CCACHE_CPP2=true;CCACHE_SLOPPINESS=clang_index_store",
             "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-            "CMAKE_PROJECT_TOP_LEVEL_INCLUDES": "${workspaceFolder}/conan_provider.cmake",
             "RAWRBOX_OUTPUT_BIN": "bin"
         },
         "C_Cpp.codeAnalysis.clangTidy.enabled": true,
