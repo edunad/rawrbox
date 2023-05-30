@@ -81,4 +81,4 @@ jobs:
                   version: '16'
                   database: './build/'
                   thread-comments: true
-                  ignore: 'build | .github | stb | deps | tests'
+                  ignore: 'build | .github | stb | deps | **/tests'
