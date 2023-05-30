@@ -1,16 +1,12 @@
 #pragma once
 #include <rawrbox/utils/ringbuffer.hpp>
-
-#include <future>
-#include <stdexcept>
-
-#ifdef _WIN32
-	#include <rawrbox/utils/thread_utils.hpp>
-#endif
+#include <rawrbox/utils/thread_utils.hpp>
 
 #include <fmt/printf.h>
 
 #include <functional>
+#include <future>
+#include <stdexcept>
 #include <string>
 #include <thread>
 

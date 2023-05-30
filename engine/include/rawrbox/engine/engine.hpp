@@ -73,9 +73,7 @@ namespace rawrbox {
 		// starts the game loop and blocks until quit is called and is handled
 		virtual void run() {
 			rawrbox::MAIN_THREAD_ID = std::this_thread::get_id();
-#ifdef _WIN32
 			rawrbox::ThreadUtils::setName("RAWRBOX_MAIN_THREAD");
-#endif
 
 			while (!this->_shouldShutdown) {
 				rawrbox::DELTA_TIME = float(std::max(0.0, this->_timer.record_elapsed_seconds()));
