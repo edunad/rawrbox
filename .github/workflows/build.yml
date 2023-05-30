@@ -81,4 +81,5 @@ jobs:
                   version: '16'
                   database: './build/'
                   thread-comments: true
+                  step-summary: true
                   ignore: 'build | .github | stb | deps | **/tests'
