@@ -59,13 +59,13 @@ namespace rawrbox {
 				}
 
 				ret->status = rawrbox::LoadStatus::LOADING;
-				if (!ret->load(buffer)) throw std::runtime_error(fmt::format("[RawrBox-Content] Failed to load file '{}'", filePath.generic_string()));
+				if (!ret->load(buffer)) throw std::runtime_error(fmt::format("[RawrBox-Resources] Failed to load file '{}'", filePath.generic_string()));
 				ret->status = rawrbox::LoadStatus::LOADED;
 
 				return ret;
 			}
 
-			throw std::runtime_error(fmt::format("[RawrBox-Content] Attempted to load unknown file extension '{}'. Missing loader!", filePath.generic_string()));
+			throw std::runtime_error(fmt::format("[RawrBox-Resources] Attempted to load unknown file extension '{}'. Missing loader!", filePath.generic_string()));
 		}
 		// ---------
 
@@ -100,7 +100,11 @@ namespace rawrbox {
 		template <class T = rawrbox::Resource>
 		[[nodiscard]] static T* getFile(const std::filesystem::path& filePath) {
 			const std::lock_guard<std::mutex> mutexGuard(_threadLock);
-			return getFileImpl<T>(filePath);
+			auto fl = getFileImpl<T>(filePath);
+			if (fl == nullptr)
+				throw std::runtime_error(fmt::format("[RawrBox-Resources] File '{}' not loaded / found!", filePath.generic_string()));
+
+			return fl;
 		}
 
 		static void preLoadFolder(const std::filesystem::path& folderPath) {

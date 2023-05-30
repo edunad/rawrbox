@@ -2,7 +2,6 @@
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
-#include <rawrbox/ui/static.hpp>
 
 namespace rawrbox {
 	UIFrame::~UIFrame() {

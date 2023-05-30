@@ -20,7 +20,7 @@ namespace rawrbox {
 		// UTILS -----
 		[[nodiscard]] virtual const std::vector<std::pair<std::filesystem::path, uint32_t>>& getPreload() const { return this->_preLoadFiles; }
 		virtual void addToPreLoad(const std::filesystem::path& path, uint32_t loadFlags = 0) {
-			fmt::print("[RawrBox-Content] Content `{}` marked for pre-loading\n", path.generic_string());
+			fmt::print("[RawrBox-Resources] Content `{}` marked for pre-loading\n", path.generic_string());
 			this->_preLoadFiles.emplace_back(path, loadFlags);
 		}
 

@@ -6,6 +6,7 @@
 
 namespace rawrbox {
 	UIBase::UIBase(bool alwaysOnTop) : _alwaysOnTop(alwaysOnTop) {}
+	void UIBase::initialize() {}
 
 	// UTILS ---
 	const bool UIBase::alwaysOnTop() const { return this->_alwaysOnTop; }

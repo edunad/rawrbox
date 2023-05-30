@@ -173,11 +173,11 @@ namespace rawrbox {
 	void UIInput::setPadding(float padding) { this->_padding = padding; }
 	float UIInput::getPadding() const { return this->_padding; }
 
-	void UIInput::setColor(const Color& col) { this->_textColor = col; }
-	const Color& UIInput::getColor() const { return this->_textColor; }
+	void UIInput::setColor(rawrbox::Color col) { this->_textColor = col; }
+	const rawrbox::Color& UIInput::getColor() const { return this->_textColor; }
 
 	void UIInput::setBorderSize(float size) { this->_borderSize = size; }
-	void UIInput::setBorderColor(const Color& col) { this->_border = col; }
+	void UIInput::setBorderColor(const rawrbox::Color& col) { this->_border = col; }
 	const rawrbox::Color& UIInput::getBorderColor() const { return this->_border; }
 
 	void UIInput::setBackgroundColor(const rawrbox::Color& col) { this->_backgroundColor = col; }

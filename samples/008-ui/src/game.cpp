@@ -3,12 +3,13 @@
 #include <rawrbox/render/resources/gif.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/resources/loaders/json.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
 #include <rawrbox/ui/elements/group.hpp>
-#include <rawrbox/ui/elements/image.hpp>
 #include <rawrbox/ui/elements/input.hpp>
 #include <rawrbox/ui/elements/label.hpp>
+#include <rawrbox/ui/elements/progress_bar.hpp>
 #include <rawrbox/ui/elements/virtual_list.hpp>
 #include <rawrbox/ui/static.hpp>
 
@@ -48,7 +49,8 @@ namespace ui_test {
 	void Game::loadContent() {
 		std::vector initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("./content/textures/meow3.gif", 0)};
+		    std::make_pair<std::string, uint32_t>("./content/textures/meow3.gif", 0),
+		    std::make_pair<std::string, uint32_t>("./content/json/test.json", 0)};
 		initialContentFiles.insert(initialContentFiles.begin(), rawrbox::UI_RESOURCES.begin(), rawrbox::UI_RESOURCES.end()); // Insert the UI resources
 
 		rawrbox::ASYNC::run([initialContentFiles]() {
@@ -64,12 +66,14 @@ namespace ui_test {
 
 	void Game::contentLoaded() {
 		// SETUP UI
+		this->_anim = std::make_shared<rawrbox::UIAnim<rawrbox::UIImage>>();
+		this->_anim->setAnimation(rawrbox::RESOURCES::getFile<rawrbox::ResourceJSON>("./content/json/test.json")->json);
+
 		{
 			auto frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
 			frame->setTitle("mewww");
 			frame->setSize({400, 200});
 			frame->setPos({400, 200});
-			frame->initialize();
 
 			{
 				auto label = frame->createChild<rawrbox::UILabel>();
@@ -132,8 +136,34 @@ namespace ui_test {
 				return 9;
 			};
 
-			for (float i = 0.F; i < 64.F; i++)
-				vlist->addItem(i);
+			for (size_t i = 0; i < 64; i++)
+				vlist->addItem(static_cast<float>(i));
+
+			{
+				auto prog = frame->createChild<rawrbox::UIProgressBar>();
+				prog->setPos({10, 130});
+				prog->setSize({200, 16});
+				prog->setValue(50);
+				prog->setBarColor(rawrbox::Colors::Orange);
+			}
+
+			{
+				auto prog = frame->createChild<rawrbox::UIProgressBar>();
+				prog->setPos({10, 146});
+				prog->setSize({200, 16});
+				prog->setValue(100);
+			}
+
+			{
+				auto img = this->_ROOT_UI->createChild<rawrbox::UIImage>();
+				img->setTexture("./content/textures/meow3.gif");
+				img->setSize({32, 32});
+
+				this->_anim->setPos({100, 100});
+				this->_anim->setElement(img);
+				this->_anim->setLoop(true);
+				this->_anim->play();
+			}
 		}
 		// ---
 
@@ -142,6 +172,9 @@ namespace ui_test {
 
 	void Game::shutdown() {
 		this->_window = nullptr;
+		this->_anim = nullptr;
+		this->_ROOT_UI = nullptr;
+
 		rawrbox::Engine::shutdown();
 	}
 
@@ -155,6 +188,7 @@ namespace ui_test {
 
 		this->_ROOT_UI->update();
 		this->_window->update();
+		if (this->_anim != nullptr) this->_anim->update();
 	}
 
 	void printFrames() {

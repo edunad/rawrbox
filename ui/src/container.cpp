@@ -43,6 +43,7 @@ namespace rawrbox {
 	bool UIContainer::hasChildren() const { return !this->_children.empty(); }
 	void UIContainer::addChild(std::shared_ptr<rawrbox::UIBase> elm) {
 		elm->setParent(this->getRef<rawrbox::UIContainer>());
+		elm->initialize();
 	}
 
 	void UIContainer::setParent(std::shared_ptr<rawrbox::UIContainer> elm) {

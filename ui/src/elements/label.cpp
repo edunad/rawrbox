@@ -14,14 +14,14 @@ namespace rawrbox {
 	// -----
 
 	// UTILS ----
-	void UILabel::setColor(const Color& col) { this->_color = col; }
-	const Color& UILabel::getColor() const { return this->_color; }
+	void UILabel::setColor(const rawrbox::Color col) { this->_color = col; }
+	const rawrbox::Color& UILabel::getColor() const { return this->_color; }
 
 	void UILabel::setShadowPos(const rawrbox::Vector2f& pos) { this->_shadow = pos; }
 	const rawrbox::Vector2f& UILabel::getShadowPos() const { return this->_shadow; }
 
-	void UILabel::setShadowColor(const Color& col) { this->_shadowColor = col; }
-	const Color& UILabel::getShadowColor() const { return this->_shadowColor; }
+	void UILabel::setShadowColor(const rawrbox::Color& col) { this->_shadowColor = col; }
+	const rawrbox::Color& UILabel::getShadowColor() const { return this->_shadowColor; }
 
 	void UILabel::setText(const std::string& text) { this->_text = text; }
 	const std::string& UILabel::getText() const { return this->_text; }

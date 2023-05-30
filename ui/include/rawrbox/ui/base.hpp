@@ -19,9 +19,11 @@ namespace rawrbox {
 		explicit UIBase(bool alwaysOnTop = false);
 		~UIBase() override = default;
 
+		virtual void initialize();
+
 		// UTILS -----
 		[[nodiscard]] virtual const bool alwaysOnTop() const;
-		void bringToFront();
+		virtual void bringToFront();
 
 		virtual void setVisible(bool visible);
 		[[nodiscard]] virtual const bool visible() const;

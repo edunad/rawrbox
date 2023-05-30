@@ -1,8 +1,6 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/ui/base.hpp>
 #include <rawrbox/ui/elements/button.hpp>
 #include <rawrbox/utils/event.hpp>
@@ -39,7 +37,7 @@ namespace rawrbox {
 		UIFrame() = default;
 		~UIFrame() override;
 
-		void initialize();
+		void initialize() override;
 		[[nodiscard]] const rawrbox::Vector2f getDrawOffset() const override;
 
 		// UTILS -----

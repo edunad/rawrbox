@@ -56,45 +56,45 @@ namespace rawrbox {
 		~UIInput() override;
 
 		// UTILS ----
-		void setHints(const std::vector<std::string>& hints);
+		virtual void setHints(const std::vector<std::string>& hints);
 
-		void setText(const std::string& text, bool updateCharet = false, bool preventEvent = false);
-		[[nodiscard]] const std::string& getText() const;
+		virtual void setText(const std::string& text, bool updateCharet = false, bool preventEvent = false);
+		[[nodiscard]] virtual const std::string& getText() const;
 
-		void setPlaceholder(const std::string& text);
-		[[nodiscard]] const std::string& getPlaceholder() const;
+		virtual void setPlaceholder(const std::string& text);
+		[[nodiscard]] virtual const std::string& getPlaceholder() const;
 
-		void setLimit(uint32_t limit);
-		[[nodiscard]] uint32_t getLimit() const;
+		virtual void setLimit(uint32_t limit);
+		[[nodiscard]] virtual uint32_t getLimit() const;
 
-		void setFill(const std::string& fill);
+		virtual void setFill(const std::string& fill);
 
-		void setNumericOnly(bool numeric);
-		[[nodiscard]] bool getNumericOnly() const;
+		virtual void setNumericOnly(bool numeric);
+		[[nodiscard]] virtual bool getNumericOnly() const;
 
-		void setReadOnly(bool read);
-		[[nodiscard]] bool getReadOnly() const;
+		virtual void setReadOnly(bool read);
+		[[nodiscard]] virtual bool getReadOnly() const;
 
-		void setPadding(float padding);
-		[[nodiscard]] float getPadding() const;
+		virtual void setPadding(float padding);
+		[[nodiscard]] virtual float getPadding() const;
 
-		void setColor(const rawrbox::Color& col);
-		[[nodiscard]] const rawrbox::Color& getColor() const;
+		virtual void setColor(rawrbox::Color col);
+		[[nodiscard]] virtual const rawrbox::Color& getColor() const;
 
-		void setBorderSize(float size);
-		void setBorderColor(const rawrbox::Color& col);
-		[[nodiscard]] const rawrbox::Color& getBorderColor() const;
+		virtual void setBorderSize(float size);
+		virtual void setBorderColor(const rawrbox::Color& col);
+		[[nodiscard]] virtual const rawrbox::Color& getBorderColor() const;
 
-		void setBackgroundColor(const rawrbox::Color& col);
-		[[nodiscard]] const rawrbox::Color& getBackgroundColor() const;
+		virtual void setBackgroundColor(const rawrbox::Color& col);
+		[[nodiscard]] virtual const rawrbox::Color& getBackgroundColor() const;
 
-		void setFont(std::shared_ptr<rawrbox::Font> font);
-		void setFont(const std::filesystem::path& font, int size = 11);
-		[[nodiscard]] std::weak_ptr<rawrbox::Font> getFont() const;
+		virtual void setFont(std::shared_ptr<rawrbox::Font> font);
+		virtual void setFont(const std::filesystem::path& font, int size = 11);
+		[[nodiscard]] virtual std::weak_ptr<rawrbox::Font> getFont() const;
 
-		[[nodiscard]] bool empty() const;
-		[[nodiscard]] size_t size() const;
-		void clear();
+		[[nodiscard]] virtual bool empty() const;
+		[[nodiscard]] virtual size_t size() const;
+		virtual void clear();
 		// ----------
 
 		// INPUT ----
