@@ -189,6 +189,29 @@ namespace stencil {
 		stencil.popOffset();
 		// ---
 
+		// POLYGON ---
+		rawrbox::Polygon poly;
+		poly.verts = {
+		    {{0, 0}, {0, 0}, rawrbox::Colors::White},
+		    {{0, 100}, {1, 0}, rawrbox::Colors::White},
+		    {{100, 0}, {0, 1}, rawrbox::Colors::White},
+		    {{80, 80}, {1, 1}, rawrbox::Colors::White}};
+		poly.indices = {0, 1, 2,
+		    1, 3, 2};
+
+		stencil.pushOffset({0, 100});
+		stencil.drawPolygon(poly);
+
+		stencil.pushOutline({1.F, 2.F});
+		stencil.pushOffset({60, 0});
+		stencil.drawPolygon(poly);
+		stencil.popOffset();
+		stencil.popOutline();
+
+		stencil.popOffset();
+
+		// -----
+
 		stencil.popOffset();
 
 		// Text ---

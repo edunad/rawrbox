@@ -2,6 +2,7 @@
 
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/render/text/font.hpp>
 #include <rawrbox/ui/base.hpp>
 #include <rawrbox/utils/event.hpp>
 

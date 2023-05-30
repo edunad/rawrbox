@@ -31,6 +31,17 @@ namespace rawrbox {
 		PosUVColorVertexData(float _x, float _y, float _z, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v), abgr(_abgr) {}
 	};
 
+	struct PolygonVertice {
+		rawrbox::Vector2f pos = {};
+		rawrbox::Vector2f uv = {};
+		rawrbox::Color col = rawrbox::Colors::White;
+	};
+
+	struct Polygon {
+		std::vector<PolygonVertice> verts = {};
+		std::vector<unsigned int> indices = {};
+	};
+
 	struct StencilDraw {
 		bgfx::ProgramHandle stencilProgram = BGFX_INVALID_HANDLE;
 		bgfx::TextureHandle textureHandle = BGFX_INVALID_HANDLE;
@@ -44,6 +55,7 @@ namespace rawrbox {
 
 		void clear() {
 			this->cull = true;
+
 			this->drawMode = 0;      // Triangle
 			this->clip = UINT16_MAX; // NONE
 
@@ -194,6 +206,7 @@ namespace rawrbox {
 		void resize(const rawrbox::Vector2i& size);
 
 		// ------ UTILS
+		void drawPolygon(rawrbox::Polygon poly);
 		void drawTriangle(const rawrbox::Vector2f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector2f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector2f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC);
 		void drawBox(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White);
 		void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, std::shared_ptr<rawrbox::TextureBase> tex, const rawrbox::Color& col = rawrbox::Colors::White, const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1});

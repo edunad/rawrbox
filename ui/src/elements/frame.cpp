@@ -63,7 +63,7 @@ namespace rawrbox {
 
 	void UIFrame::setSize(const rawrbox::Vector2& size) {
 		rawrbox::UIBase::setSize(size);
-		if (this->_closeButton != nullptr) this->_closeButton->setPos({size.x - 30, 0});
+		if (this->_closeButton != nullptr) this->_closeButton->setPos({size.x - 30, -this->_titleSize});
 	}
 	// -------
 

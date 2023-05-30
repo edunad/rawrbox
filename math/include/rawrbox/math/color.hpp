@@ -106,6 +106,14 @@ namespace rawrbox {
 		[[nodiscard]] const std::array<NumberType, 4> data() const { return {r, g, b, a}; }
 
 		[[nodiscard]] bool isTransparent() const { return a == 0; }
+		[[nodiscard]] bool hasTransparency() const {
+			if constexpr (std::is_same<NumberType, int>::value) {
+				return a != 255;
+			} else {
+				return a != 1.F;
+			}
+		}
+
 		[[nodiscard]] NumberType dot(const ColorType& other) const {
 			return r * other.r + g * other.g + b * other.b + a * other.a;
 		}

@@ -73,7 +73,7 @@ namespace ui_test {
 			auto frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
 			frame->setTitle("mewww");
 			frame->setSize({400, 200});
-			frame->setPos({400, 200});
+			frame->setPos({600, 200});
 
 			{
 				auto label = frame->createChild<rawrbox::UILabel>();
@@ -165,6 +165,21 @@ namespace ui_test {
 				this->_anim->play();
 			}
 		}
+
+		{
+			auto frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
+			frame->setTitle("graphss");
+			frame->setSize({400, 200});
+			frame->setPos({100, 200});
+
+			this->_graph = frame->createChild<rawrbox::UIGraph>();
+			this->_graph->setPos({10, 10});
+			this->_graph->setSize({380, 160});
+			this->_graph->addCategory("Cats /s", rawrbox::Colors::Orange);
+			this->_graph->addCategory("Meows /s", rawrbox::Colors::Purple);
+			this->_graph->setAutoScale(true);
+			this->_graph->setSmoothing(20);
+		}
 		// ---
 
 		this->_ready = true;
@@ -174,6 +189,7 @@ namespace ui_test {
 		this->_window = nullptr;
 		this->_anim = nullptr;
 		this->_ROOT_UI = nullptr;
+		this->_graph = nullptr;
 
 		rawrbox::Engine::shutdown();
 	}
@@ -216,8 +232,12 @@ namespace ui_test {
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
 		}
 
-		this->_ROOT_UI->render();
+		if (this->_graph != nullptr) {
+			this->_graph->getCategory(0).addEntry(rawrbox::FRAME_ALPHA - rawrbox::DELTA_TIME - 0.1F);
+			this->_graph->getCategory(1).addEntry(rawrbox::FRAME_ALPHA);
+		}
 
+		this->_ROOT_UI->render();
 		this->_window->frame(); // Commit primitives
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
 	}

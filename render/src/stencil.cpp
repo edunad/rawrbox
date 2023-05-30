@@ -144,6 +144,40 @@ namespace rawrbox {
 	// --------------------
 
 	// ------UTILS
+	void Stencil::drawPolygon(rawrbox::Polygon poly) {
+		// Setup --------
+		bgfx::TextureHandle handl = BGFX_INVALID_HANDLE;
+		if (this->_pixelTexture != nullptr) handl = this->_pixelTexture->getHandle();
+
+		this->setupDrawCall(
+		    this->_2dprogram,
+		    handl);
+		// ----
+
+		if (this->_outline.isSet()) {
+			for (auto ind = poly.indices.begin(); ind != poly.indices.end();) {
+				auto nextInd = std::next(ind);
+				if (nextInd == poly.indices.end()) break;
+
+				this->drawLine(poly.verts[(*ind)].pos, poly.verts[(*nextInd)].pos, poly.verts[(*ind)].col);
+				ind++;
+			}
+
+			// Close loop
+			this->drawLine(poly.verts[poly.indices.back()].pos, poly.verts[poly.indices.front()].pos, poly.verts[poly.indices.back()].col);
+
+		} else {
+			for (auto& v : poly.verts)
+				this->pushVertice(v.pos, v.uv, v.col);
+
+			this->_currentDraw.indices.insert(this->_currentDraw.indices.end(), poly.indices.begin(), poly.indices.end());
+		}
+
+		// Add to calls
+		this->pushDrawCall();
+		// ----
+	}
+
 	void Stencil::drawTriangle(const rawrbox::Vector2f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector2f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector2f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC) {
 		if (colA.isTransparent() && colB.isTransparent() && colC.isTransparent()) return;
 
@@ -180,9 +214,9 @@ namespace rawrbox {
 			float thick = this->_outline.thickness;
 
 			this->drawLine({pos.x - thick, pos.y}, {pos.x + size.x, pos.y}, col);
+			this->drawLine({pos.x, pos.y + size.y}, {pos.x, pos.y}, col);
 			this->drawLine({pos.x + size.x, pos.y - thick}, {pos.x + size.x, pos.y + size.y}, col);
 			this->drawLine({pos.x + size.x + (thick > 1.F ? thick : 0.F), pos.y + size.y}, {pos.x - thick, pos.y + size.y}, col);
-			this->drawLine({pos.x, pos.y + size.y}, {pos.x, pos.y}, col);
 		} else {
 			this->drawTexture(pos, size, this->_pixelTexture, col);
 		}
@@ -259,6 +293,7 @@ namespace rawrbox {
 		    (usePTLines || outline.stipple > 0.F) ? this->_lineprogram : this->_2dprogram,
 		    handl,
 		    usePTLines ? BGFX_STATE_PT_LINES : 0);
+
 		// ----
 
 		if (usePTLines) {
@@ -378,6 +413,7 @@ namespace rawrbox {
 	// ------RENDERING
 	void Stencil::setupDrawCall(bgfx::ProgramHandle program, bgfx::TextureHandle texture, uint64_t drawMode) {
 		this->_currentDraw.clear();
+
 		this->_currentDraw.stencilProgram = program;
 		this->_currentDraw.textureHandle = texture;
 		this->_currentDraw.drawMode = drawMode;
@@ -433,6 +469,7 @@ namespace rawrbox {
 			uint64_t flags = BGFX_STATE_DEFAULT_2D;
 			if (group.cull) flags |= BGFX_STATE_CULL_CW;
 			if (group.drawMode != 0) flags |= group.drawMode;
+
 			bgfx::setState(flags, 0);
 
 			bgfx::setScissor(group.clip);
