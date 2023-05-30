@@ -19,6 +19,7 @@ namespace rawrbox {
 		rawrbox::Vector2f _shadow = {1, 1};
 
 	public:
+		UILabel() = default;
 		~UILabel() override;
 
 		// FOCUS HANDLE ---

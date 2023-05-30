@@ -33,7 +33,8 @@ namespace rawrbox {
 
 		UIButton() = default;
 		~UIButton() override;
-		virtual void initialize();
+
+		void initialize() override;
 
 		// UTILS -----
 		void setTextureSize(const rawrbox::Vector2& size);

@@ -54,6 +54,7 @@ namespace rawrbox {
 		rawrbox::Event<> onTextUpdate;
 		rawrbox::Event<> onEnter;
 
+		UIInput() = default;
 		~UIInput() override;
 
 		// UTILS ----

@@ -109,18 +109,21 @@ namespace ui_test {
 				input->setReadOnly(true);
 			}
 
+			auto group = frame->createChild<rawrbox::UIGroup>();
+			group->setBorder(1.F);
+			group->setPos({215, 96});
+			group->setSize({64, 64});
+
 			{
 				auto btn = frame->createChild<rawrbox::UIButton>();
 				btn->setPos({10, 96});
 				btn->setSize({200, 32});
 				btn->setText("MEW");
 				btn->setEnabled(true);
+				btn->onClick += [group]() {
+					group->remove();
+				};
 			}
-
-			auto group = frame->createChild<rawrbox::UIGroup>();
-			group->setBorder(1.F);
-			group->setPos({215, 96});
-			group->setSize({64, 64});
 
 			{
 				auto img = group->createChild<rawrbox::UIImage>();

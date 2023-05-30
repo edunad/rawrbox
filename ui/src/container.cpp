@@ -15,19 +15,22 @@ namespace rawrbox {
 	const rawrbox::Vector2f UIContainer::getSize() const { return this->_aabb.size; }
 
 	void UIContainer::removeChildren() {
-		while (!this->_children.empty())
-			this->_children.front()->remove();
+		this->_children.clear();
 	}
 
 	void UIContainer::remove() {
 		this->removeChildren();
 
-		auto p = this->_parent.lock();
-		auto& parentChilds = p->getChildren();
-		auto sharedPtr = getRef<UIBase>();
-		parentChilds.erase(std::find(parentChilds.begin(), parentChilds.end(), sharedPtr));
+		// Remove self from parent
+		if (!this->_parent.expired()) {
+			auto p = this->_parent.lock();
 
-		this->_parent.reset();
+			auto& parentChilds = p->getChildren();
+			auto sharedPtr = this->getRef<UIBase>();
+			parentChilds.erase(std::find(parentChilds.begin(), parentChilds.end(), sharedPtr));
+
+			this->_parent.reset();
+		}
 	}
 	// ---
 

@@ -14,6 +14,7 @@ namespace rawrbox {
 		bool _isAnimated = false;
 
 	public:
+		UIImage() = default;
 		~UIImage() override;
 
 		// UTILS ----

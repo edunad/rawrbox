@@ -17,8 +17,6 @@ namespace rawrbox {
 
 	public:
 		explicit UIBase(bool alwaysOnTop = false);
-		~UIBase() override = default;
-
 		virtual void initialize();
 
 		// UTILS -----

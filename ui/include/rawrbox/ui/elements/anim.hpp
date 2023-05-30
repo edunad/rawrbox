@@ -52,6 +52,9 @@ namespace rawrbox {
 	public:
 		std::function<void()> onFinish = nullptr;
 
+		UIAnim() = default;
+		virtual ~UIAnim() = default;
+
 		virtual void setLoop(bool loop) { this->_loop = loop; };
 		virtual void setReverse(bool reverse) { this->_reverse = reverse; };
 		virtual void setPos(const rawrbox::Vector2f& pos) { this->_posOffset = pos; };
