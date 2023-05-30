@@ -31,13 +31,12 @@ namespace rawrbox {
 		}
 
 		static void internal_run(std::function<void()> onComplete = nullptr) {
-			if (_running > 0) return;
+			if (_running > 0) return; // Already running
 
 			for (size_t i = 0; i < _workers; i++) {
 				new std::jthread([onComplete, i]() {
-#ifdef _WIN32
 					rawrbox::ThreadUtils::setName("rawrbox:async_#" + std::to_string(i));
-#endif
+
 					_running++;
 					try {
 						while (!_threadInvokes.isEmpty() && !_shuttingdown) {

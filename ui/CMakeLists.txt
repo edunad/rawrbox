@@ -26,7 +26,7 @@ CPMAddPackage(
 file(GLOB_RECURSE RAWRBOX_UI_IMPORTS "src/*.cpp" "include/*.hpp")
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_UI_IMPORTS})
 add_dependencies(${output_target} copy_resources_ui)
-target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX RAWRBOX_UI)
+target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX INTERFACE RAWRBOX_UI)
 target_include_directories(${output_target} PUBLIC "include" "${clip_SOURCE_DIR}")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC RAWRBOX.RENDER RAWRBOX.RESOURCES clip)

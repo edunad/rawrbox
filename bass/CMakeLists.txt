@@ -57,7 +57,3 @@ target_link_libraries(${output_target} PUBLIC
 	BASS::BASS
 	BASS::FX
 )
-
-# TEST ----
-include(../cmake/catch2.cmake)
-#--------------

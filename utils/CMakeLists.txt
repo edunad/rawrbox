@@ -31,7 +31,7 @@ list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "include/rawrbox/utils/qhull.h")
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_UTILS_IMPORTS})
 target_include_directories(${output_target} PUBLIC "include" )
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
-target_compile_definitions(${output_target} PUBLIC _CRT_SECURE_NO_WARNINGS NOMINMAX RAWRBOX_UTILS)
+target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX INTERFACE RAWRBOX_UTILS)
 target_link_libraries(${output_target} PUBLIC ${EXTRA_UTIL_LIBS})
 #--------------
 

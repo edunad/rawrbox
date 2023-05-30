@@ -202,52 +202,53 @@ namespace rawrbox {
 
 		virtual ~Stencil();
 
-		void upload();
-		void resize(const rawrbox::Vector2i& size);
+		virtual void upload();
+		virtual void resize(const rawrbox::Vector2i& size);
 
 		// ------ UTILS
-		void drawPolygon(rawrbox::Polygon poly);
-		void drawTriangle(const rawrbox::Vector2f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector2f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector2f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC);
-		void drawBox(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White);
-		void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, std::shared_ptr<rawrbox::TextureBase> tex, const rawrbox::Color& col = rawrbox::Colors::White, const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1});
-		void drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White, size_t roundness = 32, float angleStart = 0.F, float angleEnd = 360.F);
-		void drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const rawrbox::Color& col = rawrbox::Colors::White);
-		void drawText(std::weak_ptr<rawrbox::Font> font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
+		virtual void drawPolygon(rawrbox::Polygon poly);
+		virtual void drawTriangle(const rawrbox::Vector2f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector2f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector2f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC);
+		virtual void drawBox(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White);
+		virtual void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, std::shared_ptr<rawrbox::TextureBase> tex, const rawrbox::Color& col = rawrbox::Colors::White, const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1});
+		virtual void drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White, size_t roundness = 32, float angleStart = 0.F, float angleEnd = 360.F);
+		virtual void drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const rawrbox::Color& col = rawrbox::Colors::White);
+		virtual void drawText(std::weak_ptr<rawrbox::Font> font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
 		// --------------------
 
 		// ------ RENDERING
-		void render();
+		virtual void render();
 		// --------------------
 
 		// ------ LOCATION
-		void pushOffset(const rawrbox::Vector2f& offset);
-		void popOffset();
-		void pushLocalOffset();
-		void popLocalOffset();
+		virtual void pushOffset(const rawrbox::Vector2f& offset);
+		virtual void popOffset();
+		virtual void pushLocalOffset();
+		virtual void popLocalOffset();
 		// --------------------
 
 		// ------ ROTATION
-		void pushRotation(const StencilRotation& rot);
-		void popRotation();
+		virtual void pushRotation(const StencilRotation& rot);
+		virtual void popRotation();
 		// --------------------
 
 		// ------ OUTLINE
-		void pushOutline(const StencilOutline& outline);
-		void popOutline();
+		virtual void pushOutline(const StencilOutline& outline);
+		virtual void popOutline();
 		// --------------------
 
 		// ------ CLIPPING
-		void pushClipping(const rawrbox::AABB& rect);
-		void popClipping();
+		virtual void pushClipping(const rawrbox::AABB& rect);
+		virtual void popClipping();
 		// --------------------
 
 		// ------ SCALE
-		void pushScale(const rawrbox::Vector2f& scale);
-		void popScale();
+		virtual void pushScale(const rawrbox::Vector2f& scale);
+		virtual void popScale();
 		// --------------------
 
 		// ------ OTHER
-		void clear();
+		[[nodiscard]] virtual const std::vector<rawrbox::StencilDraw> getDrawCalls() const;
+		virtual void clear();
 		// --------------------
 	};
 } // namespace rawrbox

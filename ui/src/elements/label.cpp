@@ -14,7 +14,7 @@ namespace rawrbox {
 	// -----
 
 	// UTILS ----
-	void UILabel::setColor(const rawrbox::Color col) { this->_color = col; }
+	void UILabel::setColor(const rawrbox::Color& col) { this->_color = col; }
 	const rawrbox::Color& UILabel::getColor() const { return this->_color; }
 
 	void UILabel::setShadowPos(const rawrbox::Vector2f& pos) { this->_shadow = pos; }

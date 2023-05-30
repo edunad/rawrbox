@@ -29,17 +29,14 @@ namespace rawrbox {
 		// UTILS ----
 		void initialize() override;
 
-		void showPercent(bool show);
-		[[nodiscard]] bool isPercentVisible() const;
+		virtual void showPercent(bool show);
+		[[nodiscard]] virtual bool isPercentVisible() const;
 
-		void setTitle(const std::string& title);
-		[[nodiscard]] const std::string& getTitle() const;
+		virtual void setBarColor(const rawrbox::Color& color);
+		[[nodiscard]] virtual const rawrbox::Color& getBarColor() const;
 
-		void setBarColor(const rawrbox::Color& color);
-		[[nodiscard]] const rawrbox::Color& getBarColor() const;
-
-		void setValue(float value);
-		[[nodiscard]] float getValue() const;
+		virtual void setValue(float value);
+		[[nodiscard]] virtual float getValue() const;
 		// ---------
 
 		// FOCUS HANDLE ---

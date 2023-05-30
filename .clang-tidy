@@ -1,12 +1,12 @@
 ---
 # Enable all by default, then disable some that have either too many warnings
 # at the moment or ones that don't make sense for our codebase
-Checks:
-    clang-diagnostic-*
+Checks: clang-diagnostic-*
     clang-analyzer-*
     cppcoreguidelines-*
     modernize-*
     hicpp-*
+    -cppcoreguidelines-avoid-do-while
     -cppcoreguidelines-pro-bounds-constant-array-index
     -modernize-use-trailing-return-type
     -cppcoreguidelines-avoid-non-const-global-variables

@@ -26,11 +26,11 @@ namespace rawrbox {
 	void UIProgressBar::setBarColor(const rawrbox::Color& color) { this->_progressColor = color; }
 	const rawrbox::Color& UIProgressBar::getBarColor() const { return this->_progressColor; }
 
+	float UIProgressBar::getValue() const { return this->_value; }
 	void UIProgressBar::setValue(float value) {
 		this->_value = std::clamp(value, 0.F, 100.F);
 		this->onValueChange(value);
 	}
-	float UIProgressBar::getValue() const { return this->_value; }
 	// ---------
 
 	// DRAWING ---

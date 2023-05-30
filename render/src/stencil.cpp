@@ -422,8 +422,6 @@ namespace rawrbox {
 	}
 
 	void Stencil::pushDrawCall() {
-		if (!bgfx::isValid(this->_currentDraw.stencilProgram) || !bgfx::isValid(this->_currentDraw.textureHandle)) return;
-
 		if (!this->_drawCalls.empty()) {
 			auto& oldCall = this->_drawCalls.back();
 			bool canMerge = oldCall.clip == this->_currentDraw.clip &&
@@ -449,7 +447,9 @@ namespace rawrbox {
 		if (this->_drawCalls.empty()) return;
 
 		for (auto& group : this->_drawCalls) {
+			if (!bgfx::isValid(group.stencilProgram) || !bgfx::isValid(group.textureHandle)) continue;
 			if (group.vertices.empty() || group.indices.empty()) continue;
+
 			bgfx::setTexture(0, this->_texColor, group.textureHandle);
 
 			auto vertSize = static_cast<uint32_t>(group.vertices.size());
@@ -569,6 +569,7 @@ namespace rawrbox {
 	// --------------------
 
 	// ------ OTHER
+	const std::vector<rawrbox::StencilDraw> Stencil::getDrawCalls() const { return this->_drawCalls; }
 	void Stencil::clear() { this->_drawCalls.clear(); }
 	// --------------------
 } // namespace rawrbox

@@ -22,7 +22,7 @@ namespace rawrbox {
 	};
 
 	template <typename T>
-	concept isColorable = requires(T t, rawrbox::Color p) {
+	concept isColorable = requires(T t, const rawrbox::Color& p) {
 		{ t.setColor(p) };
 	};
 
@@ -154,7 +154,8 @@ namespace rawrbox {
 				}
 			if (prevKey.color.has_value() && newKey.color.has_value())
 				if constexpr (isColorable<T>) {
-					_element->setColor(prevKey.color.value().lerp(newKey.color.value(), time));
+					auto cl = prevKey.color.value().lerp(newKey.color.value(), time);
+					_element->setColor(cl);
 				}
 		}
 

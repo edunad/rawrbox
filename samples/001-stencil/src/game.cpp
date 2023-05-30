@@ -199,11 +199,11 @@ namespace stencil {
 		poly.indices = {0, 1, 2,
 		    1, 3, 2};
 
-		stencil.pushOffset({0, 100});
+		stencil.pushOffset({0, 260});
 		stencil.drawPolygon(poly);
 
 		stencil.pushOutline({1.F, 2.F});
-		stencil.pushOffset({60, 0});
+		stencil.pushOffset({140, 0});
 		stencil.drawPolygon(poly);
 		stencil.popOffset();
 		stencil.popOutline();

@@ -26,7 +26,7 @@ namespace rawrbox {
 		// -----
 
 		// UTILS ----
-		void setColor(rawrbox::Color col);
+		void setColor(const rawrbox::Color& col);
 		[[nodiscard]] const rawrbox::Color& getColor() const;
 
 		void setShadowPos(const rawrbox::Vector2f& pos);

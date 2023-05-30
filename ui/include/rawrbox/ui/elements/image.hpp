@@ -21,7 +21,7 @@ namespace rawrbox {
 		virtual void setTexture(const std::filesystem::path& path);
 
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const;
-		virtual void setColor(rawrbox::Color col);
+		virtual void setColor(const rawrbox::Color& col);
 
 		virtual void sizeToContents();
 		// ----------

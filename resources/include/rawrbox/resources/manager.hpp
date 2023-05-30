@@ -71,6 +71,7 @@ namespace rawrbox {
 
 	public:
 		static void addLoader(std::unique_ptr<rawrbox::Loader> loader) { _loaders.push_back(std::move(loader)); }
+		static const std::vector<std::unique_ptr<rawrbox::Loader>>& getLoaders() { return _loaders; }
 
 		// ⚠️ NOTE, IT SHOULD BE RAN ON THE MAIN THREAD OF THE APPLICATION, BGFX MIGHT NOT LIKE NON-MAIN THREAD ⚠️
 		static void upload() {
