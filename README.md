@@ -4,7 +4,7 @@
 
 <h2>
 	<p align="center">
-		<a href="https://github.com/MythicalRawr/rawrbox">RawrBox</a> - Another modular game engine made with <a href="https://github.com/bkaradzic/bgfx">BGFX</a>
+		<a href="https://github.com/MythicalRawr/rawrbox">RawrBox</a> - Another modular(?) game engine made with <a href="https://github.com/bkaradzic/bgfx">BGFX</a>
     </p>
 </h2>
 
@@ -47,16 +47,20 @@
 
 # LIBS
 
-| LIB                 | DESCRIPTION                                        | USAGE                                                                                      | REQUIRED |
-| :------------------ | :------------------------------------------------- | :----------------------------------------------------------------------------------------- | :------: |
-| `RAWRBOX.RENDER`    | Rendering lib (aka, contains window, stencil, etc) | Contains window, stencil, model / texture loading. Basically anything related to rendering |    ✔️    |
-| `RAWRBOX.MATH`      | Math lib                                           | Contains vector, color and other math related classes                                      |    ✔️    |
-| `RAWRBOX.BASS`      | Bass lib (aka sound loading)                       | Loads sounds using the BASS lib, supports 3D & http sound streaming                        |    ✖️    |
-| `RAWRBOX.UTILS`     | Utils lib                                          | Utils for game development                                                                 |    ✔️    |
-| `RAWRBOX.ENGINE`    | Engine lib (aka game loop)                         | The engine it self, contains the game loop mechanism                                       |    ✔️    |
-| `RAWRBOX.DEBUG`     | Debug utils lib                                    | Automatically adds GIZMOS and other debug methods to the renderer                          |    ✖️    |
-| `RAWRBOX.UI`        | UI lib                                             | UI components lib                                                                          |    ✖️    |
-| `RAWRBOX.RESOURCES` | Resources manager lib                              | Resource manager. Handles loading and stores the pointers for easy access                  |    ✖️    |
+| LIB                 | DESCRIPTION                                        | USAGE                                                                                      |      DEPENDENCIES      |
+| :------------------ | :------------------------------------------------- | :----------------------------------------------------------------------------------------- | :--------------------: |
+| `RAWRBOX.RENDER`    | Rendering lib (aka, contains window, stencil, etc) | Contains window, stencil, model / texture loading. Basically anything related to rendering |   `ENGINE` & `MATH`    |
+| `RAWRBOX.MATH`      | Math lib                                           | Contains vector, color and other math related classes                                      |                        |
+| `RAWRBOX.BASS`      | Bass lib (aka sound loading)                       | Loads sounds using the BASS lib, supports 3D & http sound streaming                        |   `ENGINE` & `MATH`    |
+| `RAWRBOX.UTILS`     | Utils lib                                          | Utils for game development                                                                 |                        |
+| `RAWRBOX.ENGINE`    | Engine lib (aka game loop)                         | The engine it self, contains the game loop mechanism                                       |        `UTILS`         |
+| `RAWRBOX.DEBUG`     | Debug utils lib                                    | Automatically adds GIZMOS and other debug methods to the renderer                          |        `RENDER`        |
+| `RAWRBOX.UI`        | UI lib                                             | UI components lib                                                                          | `RENDER` & `RESOURCES` |
+| `RAWRBOX.RESOURCES` | Resources manager lib                              | Resource manager. Handles loading and stores the pointers for easy access                  |        `UTILS`         |
+
+<p align="center">
+  <img src="./RAWBOX%20-%20Dependencies.png" />
+</p><br/>
 
 # CMAKE OPTIONS
 
@@ -93,6 +97,7 @@
 | assimp          |    ✖️    | Used for loading models                             |
 | catch2          |    ✖️    | Used for testing                                    |
 | bass            |    ✖️    | Used for loading sounds                             |
+| nlohmann_json   |    ✔️    | Used for loading JSON files                         |
 
 # BUILDING
 
