@@ -22,7 +22,7 @@ namespace rawrbox {
 
 	std::string TextEngine::getFontInSystem(const std::filesystem::path& path) {
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-		return fmt::format("/usr/share/fonts/{}", path);
+		return fmt::format("/usr/share/fonts/{}", path.generic_string());
 #elif BX_PLATFORM_WINDOWS
 		std::array<TCHAR, MAX_PATH> windir = {};
 
