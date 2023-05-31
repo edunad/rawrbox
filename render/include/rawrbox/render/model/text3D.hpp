@@ -13,97 +13,105 @@ namespace rawrbox {
 		using ModelBase<rawrbox::MaterialText3DUnlit>::ModelBase;
 
 		// UTILS ----
-		void addText(std::weak_ptr<rawrbox::Font> font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center, bool billboard = true) {
-			if (font.expired()) throw std::runtime_error("[RawrBox-Text3D] Invalid font");
+		void addText(std::shared_ptr<rawrbox::Font> font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center, bool billboard = true) {
+			if (font == nullptr) throw std::runtime_error("[RawrBox-Text3D] Invalid font");
 
-			auto f = font.lock();
-			float screenSize = (f->size * 0.025F) / 64.F;
+			/*
+						float screenSize = (f->getSize() * 0.025F) / 64.F;
 
-			rawrbox::Vector3f startpos = pos;
-			rawrbox::Vector2f tsize = f->getStringSize(text) * screenSize;
-			float lineheight = f->getLineHeight();
+						rawrbox::Vector3f startpos = pos;
+						rawrbox::Vector2f tsize = f->getStringSize(text) * screenSize;
 
-			if (alignX != Alignment::Left || alignY != Alignment::Left) {
-				switch (alignX) {
-					case Alignment::Left:
-						break;
-					case Alignment::Center:
-						startpos.x -= tsize.x / 2;
-						break;
-					case Alignment::Right:
-						startpos.x -= tsize.x;
-						break;
-				}
+						if (alignX != Alignment::Left || alignY != Alignment::Left) {
+							switch (alignX) {
+								case Alignment::Left:
+									break;
+								case Alignment::Center:
+									startpos.x -= tsize.x / 2;
+									break;
+								case Alignment::Right:
+									startpos.x -= tsize.x;
+									break;
+							}
 
-				switch (alignY) {
-					case Alignment::Left:
-						break;
-					case Alignment::Center:
-						startpos.y += tsize.y / 2;
-						break;
-					case Alignment::Right:
-						startpos.y += tsize.y;
-						break;
-				}
-			}
+							switch (alignY) {
+								case Alignment::Left:
+									break;
+								case Alignment::Center:
+									startpos.y -= tsize.y / 2;
+									break;
+								case Alignment::Right:
+									startpos.y -= tsize.y;
+									break;
+							}
+						}
 
-			// Glyph rendering
-			auto beginIter = text.begin();
-			auto endIter = utf8::find_invalid(text.begin(), text.end()); // until invalid
+						startpos.x = std::roundf(startpos.x);
+						startpos.y = std::roundf(startpos.y);
 
-			rawrbox::Vector3 curpos = {0, 0, 0};
+						auto info = f->getFontInfo();
+						const float lineHeight = f->getLineHeight();
+						startpos.y += lineHeight + info.descender;
 
-			const rawrbox::Glyph* prevGlyph = nullptr;
-			while (beginIter != endIter) {
-				auto mesh = std::make_shared<rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType>>();
-				uint32_t point = utf8::next(beginIter, endIter);
+						rawrbox::Vector3f cursor = startpos;
+						uint16_t prevCodePoint = 0;
 
-				auto& glyph = f->getGlyph(point);
-				if (prevGlyph != nullptr) {
-					curpos.x += f->getKerning(glyph, *prevGlyph);
-				}
+						auto beginIter = text.begin();
+						auto endIter = utf8::find_invalid(text.begin(), text.end()); // Find invalid utf8
 
-				if (point == '\n') {
-					curpos.y -= lineheight;
-					curpos.x = 0;
-					continue;
-				}
+						while (beginIter != endIter) {
+							uint16_t point = utf8::next(beginIter, endIter); // get codepoint
+							if (point == L'\n') {
+								cursor.y -= lineHeight;
+								cursor.x = startpos.x;
 
-				rawrbox::Vector3 p = {curpos.x + glyph.bearing.x, curpos.y};
-				rawrbox::Vector3 s = {static_cast<float>(glyph.size.x), static_cast<float>(glyph.size.y), 0.F};
+								prevCodePoint = 0;
+								continue;
+							}
 
-				// Set the atlas
-				mesh->setTexture(font.lock()->getAtlasTexture(glyph));
-				mesh->setCulling(0);
-				mesh->setOptimizable(false);
-				mesh->addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
-				mesh->vertexPos.translate(pos);
+							const auto glyph = f->getGlyph(point);
+							if (glyph.expired()) continue;
 
-				std::array<typename rawrbox::MaterialText3DUnlit::vertexBufferType, 4> buff{
-				    rawrbox::VertexData(startpos + Vector3f(p.x * screenSize, p.y * screenSize, 0), {glyph.textureTopLeft.x, glyph.textureBottomRight.y}, cl),
-				    rawrbox::VertexData(startpos + Vector3f((p.x + s.x) * screenSize, (p.y + s.y) * screenSize, 0), {glyph.textureBottomRight.x, glyph.textureTopLeft.y}, cl),
-				    rawrbox::VertexData(startpos + Vector3f(p.x * screenSize, (p.y + s.y) * screenSize, 0), {glyph.textureTopLeft.x, glyph.textureTopLeft.y}, cl),
-				    rawrbox::VertexData(startpos + Vector3f((p.x + s.x) * screenSize, p.y * screenSize, 0), {glyph.textureBottomRight.x, glyph.textureBottomRight.y}, cl),
-				};
+							auto gl = glyph.lock();
+							float kerning = f->getKerning(prevCodePoint, point);
+							cursor.x += kerning;
 
-				std::array<uint16_t, 6> inds{
-				    0, 1, 2,
-				    0, 3, 1};
+							float x0 = (cursor.x + (gl->offset.x)) * screenSize;
+							float y0 = (cursor.y + (gl->offset.y)) * screenSize;
+							float x1 = (x0 + gl->size.x) * screenSize;
+							float y1 = (y0 + gl->size.y) * screenSize;
 
-				mesh->baseIndex = mesh->totalIndex;
-				mesh->baseVertex = mesh->totalVertex;
+							auto mesh = std::make_shared<rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType>>();
+							// Set the atlas
+							mesh->setTexture(font.lock()->getAtlasTexture(glyph));
+							mesh->setCulling(0);
+							mesh->setOptimizable(false);
+							mesh->addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
+							mesh->vertexPos.translate(pos);
 
-				mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
-				mesh->indices.insert(mesh->indices.end(), inds.begin(), inds.end());
+							std::array<typename rawrbox::MaterialText3DUnlit::vertexBufferType, 4> buff{
+							    rawrbox::VertexData(startpos + Vector3f(x0, y0, 0), {gl->textureTopLeft.x, gl->textureBottomRight.y}, cl),
+							    rawrbox::VertexData(startpos + Vector3f(x0, y1, 0), {gl->textureBottomRight.x, gl->textureTopLeft.y}, cl),
+							    rawrbox::VertexData(startpos + Vector3f(x1, y0, 0), {gl->textureTopLeft.x, gl->textureTopLeft.y}, cl),
+							    rawrbox::VertexData(startpos + Vector3f(x1, y1, 0), {gl->textureBottomRight.x, gl->textureBottomRight.y}, cl),
+							};
 
-				mesh->totalVertex += static_cast<uint16_t>(buff.size());
-				mesh->totalIndex += static_cast<uint16_t>(inds.size());
+							std::array<uint16_t, 6> inds{
+							    0, 1, 2,
+							    0, 3, 1};
 
-				curpos.x += glyph.advance.x;
-				curpos.y += glyph.advance.y;
+							mesh->baseIndex = mesh->totalIndex;
+							mesh->baseVertex = mesh->totalVertex;
 
-				this->addMesh(std::move(mesh));
-			}
+							mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
+							mesh->indices.insert(mesh->indices.end(), inds.begin(), inds.end());
+
+							mesh->totalVertex += static_cast<uint16_t>(buff.size());
+							mesh->totalIndex += static_cast<uint16_t>(inds.size());
+
+							cursor.x += gl->advance.x;
+							this->addMesh(std::move(mesh));
+						}*/
 		}
 		// ----------
 

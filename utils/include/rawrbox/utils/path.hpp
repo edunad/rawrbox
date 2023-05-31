@@ -25,23 +25,17 @@ namespace rawrbox {
 		}
 
 		static std::vector<uint8_t> getRawData(const std::filesystem::path& filePath) {
-			std::vector<uint8_t> data = {};
-			if (!std::filesystem::exists(filePath)) return data;
+			if (!std::filesystem::exists(filePath)) return {};
 
-			std::ifstream file(filePath.generic_string(), std::ios::in | std::ios::binary | std::ios::ate);
-			if (!file.is_open()) return data;
+			std::vector<uint8_t> file;
+			const auto iflags = std::ios::in | std::ios::binary | std::ios::ate;
+			if (auto ifs = std::ifstream{filePath.generic_string(), iflags}) {
+				file.resize(ifs.tellg());
+				ifs.seekg(0, std::ios::beg);
+				ifs.read(std::bit_cast<char*>(file.data()), file.size());
+			}
 
-			auto size = static_cast<size_t>(file.tellg());
-
-			std::vector<char> fileData;
-			fileData.resize(size);
-
-			file.seekg(0, std::ios::beg);
-			file.read(fileData.data(), size);
-			file.close();
-
-			data.insert(data.begin(), fileData.begin(), fileData.end());
-			return data;
+			return file;
 		}
 	};
 } // namespace rawrbox

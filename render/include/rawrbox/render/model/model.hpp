@@ -58,18 +58,17 @@ namespace rawrbox {
 			// -----
 		}
 
-		virtual void animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, std::weak_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const rawrbox::Matrix4x4& parentTransform) {
-			if (skeleton.expired()) return;
+		virtual void animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const rawrbox::Matrix4x4& parentTransform) {
+			if (skeleton == nullptr) return;
 
-			auto skl = skeleton.lock();
 			auto nodeTransform = parentBone->transformationMtx;
 			this->readAnims(nodeTransform, parentBone->name);
 
 			// store the result of our parent bone and our current node
 			rawrbox::Matrix4x4 globalTransformation = parentTransform * nodeTransform;
-			auto fnd = skl->boneMap.find(parentBone->name);
-			if (fnd != skl->boneMap.end()) {
-				calcs[fnd->second->boneId] = skl->invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
+			auto fnd = skeleton->boneMap.find(parentBone->name);
+			if (fnd != skeleton->boneMap.end()) {
+				calcs[fnd->second->boneId] = skeleton->invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
 			}
 
 			for (auto child : parentBone->children) {

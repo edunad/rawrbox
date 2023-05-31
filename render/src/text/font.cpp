@@ -1,199 +1,223 @@
 #include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/text/font.hpp>
 
-#include <bx/platform.h>
 #include <fmt/format.h>
 #include <utf8.h>
-
-#if BX_PLATFORM_WINDOWS
-	#include <windows.h>
-#endif
 
 #include <array>
 #include <bit>
 #include <filesystem>
 #include <iostream>
-#include <utility>
+#include <string>
 
 namespace rawrbox {
-
-	std::string Font::getFontInSystem(const std::string& path) {
-#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-		return fmt::format("/usr/share/fonts/{}", path);
-#elif BX_PLATFORM_WINDOWS
-		std::array<TCHAR, MAX_PATH> windir = {};
-
-		GetWindowsDirectory(windir.data(), MAX_PATH);
-		return fmt::format("{}\\Fonts\\{}", windir.data(), path);
-#endif
-	}
-
 	Font::~Font() {
-		if (FT_Done_Face(this->face) != 0) fmt::print(stderr, "[RawrBox-Font] Failed to clean up font\n");
+		if (this->_font == nullptr) return;
+		this->_font = nullptr;
+		this->_glyphs.clear();
 	}
 
-	Font::Font(std::string _filename, uint32_t _size, FT_Render_Mode renderMode) : _file(std::move(_filename)), _mode(renderMode), size(_size) {
+	Font::Font(const std::vector<uint8_t>& buffer, uint32_t pixelHeight, int32_t fontIndex, int16_t widthPadding, int16_t heightPadding) : _widthPadding(widthPadding), _heightPadding(heightPadding), _info({}) {
+		int offset = stbtt_GetFontOffsetForIndex(buffer.data(), fontIndex); // Get the offset for `otf` fonts
 
-		// Check our own content
-		if (!std::filesystem::exists(this->_file)) {
-			this->_file = this->getFontInSystem(this->_file);
+		// Load
+		this->_font = std::make_unique<stbtt_fontinfo>();
+		if (!stbtt_InitFont(this->_font.get(), buffer.data(), offset)) throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load font"));
+		this->_scale = stbtt_ScaleForMappingEmToPixels(this->_font.get(), static_cast<float>(pixelHeight));
+		this->_pixelSize = static_cast<float>(pixelHeight);
 
-			// Not found on content & system? Load fallback
-			if (!std::filesystem::exists(this->_file)) {
-				fmt::print("  └── Loading fallback font!\n");
-				this->_file = this->getFontInSystem("cour.ttf"); // Fallback
-										 // TODO: CHECK FALLBACK ON LINUX
-				if (!std::filesystem::exists(this->_file)) throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load font '{}'", this->_file));
-			}
-		}
-
-		if (FT_New_Face(rawrbox::TextEngine::ft, this->_file.c_str(), 0, &this->face) != FT_Err_Ok) {
-			throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load font '{}'", this->_file));
-		}
-
-		FT_Size_RequestRec req;
-		auto pixel_size = (FT_Long)std::round(this->size * 64.0F);
-		if (pixel_size < 1)
-			pixel_size = 1;
-
-		req.type = FT_SIZE_REQUEST_TYPE_NOMINAL;
-		req.width = pixel_size;
-		req.height = pixel_size;
-		req.horiResolution = 0;
-		req.vertResolution = 0;
-
-		FT_Request_Size(this->face, &req);
-		FT_Select_Charmap(this->face, FT_ENCODING_UNICODE);
-
-		this->addChars("�~!@#$%^&*()_+`1234567890-=QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm|<>?,./:;\"'}{][ \\");
+		this->loadFontInfo();
+		this->addChars("�~!@#$%^&*()_+`1234567890-=QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm|<>?,./:;\"'}{][ \\░▒▓█");
 	}
 
-	void Font::addChars(const std::string& chars) {
-		auto charsIter = chars.begin();
-		while (charsIter < chars.end()) {
-			this->loadGlyph(utf8::next(charsIter, chars.end()));
-		}
+	// INTERNAL ---
+	void Font::loadFontInfo() {
+		if (this->_font == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Font] Font not loaded"));
+
+		int ascent = 0;
+		int descent = 0;
+		int lineGap = 0;
+		stbtt_GetFontVMetrics(this->_font.get(), &ascent, &descent, &lineGap);
+
+		int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+		stbtt_GetFontBoundingBox(this->_font.get(), &x0, &y0, &x1, &y1);
+
+		this->_info = {};
+		this->_info.scale = 1.0F;
+		this->_info.ascender = std::round(ascent * this->_scale);
+		this->_info.descender = std::round(descent * this->_scale);
+		this->_info.lineGap = std::round(lineGap * this->_scale);
+		this->_info.maxAdvanceWidth = std::round((y1 - y0) * this->_scale);
+
+		this->_info.underlinePosition = (x1 - x0) * this->_scale - ascent;
+		this->_info.underlineThickness = (x1 - x0) * this->_scale / 24.F;
 	}
 
-	// UTILS --
-	float Font::getLineHeight() const {
-		return static_cast<float>(this->face->size->metrics.height >> 6);
-	}
+	std::shared_ptr<rawrbox::Glyph> Font::bakeGlyphAlpha(uint16_t codePoint) {
+		if (this->_font == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Font] Font not loaded"));
 
-	bool Font::hasGlyph(uint32_t codepoint) const {
-		return std::find_if(this->_glyphs.begin(), this->_glyphs.end(), [codepoint](auto glyph) {
-			return glyph.codepoint == codepoint;
-		}) != this->_glyphs.end();
-	}
+		int32_t ascent = 0, descent = 0, lineGap = 0;
+		stbtt_GetFontVMetrics(this->_font.get(), &ascent, &descent, &lineGap);
 
-	const Glyph& Font::getGlyph(uint32_t codepoint) const {
-		auto fnt = std::find_if(this->_glyphs.begin(), this->_glyphs.end(), [codepoint](auto glyph) { return glyph.codepoint == codepoint; });
-		if (fnt == this->_glyphs.end()) return this->_glyphs.front(); // Return the unknown one
-		return *fnt;
-	}
+		int32_t advance = 0, lsb = 0;
+		stbtt_GetCodepointHMetrics(this->_font.get(), codePoint, &advance, &lsb);
 
-	float Font::getKerning(const Glyph& left, const Glyph& right) const {
-		FT_Vector kerning;
+		const float scale = this->_scale;
+		int32_t x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+		stbtt_GetCodepointBitmapBox(this->_font.get(), codePoint, scale, scale, &x0, &y0, &x1, &y1);
 
-		FT_Get_Kerning(this->face, left.glyphIndex, right.glyphIndex, FT_KERNING_UNFITTED, &kerning);
-		return static_cast<float>(kerning.x >> 6);
-	}
+		const int32_t ww = x1 - x0;
+		const int32_t hh = y1 - y0;
 
-	rawrbox::Vector2 Font::getStringSize(const std::string& text) const {
-		const float lineheight = this->getLineHeight();
-		if (text.empty()) return {0, lineheight};
+		std::shared_ptr<rawrbox::Glyph> glyph = std::make_shared<rawrbox::Glyph>();
+		glyph->codePoint = codePoint;
+		glyph->offset = {static_cast<float>(x0), static_cast<float>(y0)};
+		glyph->size = {static_cast<float>(ww), static_cast<float>(hh)};
+		glyph->advance = {std::round(static_cast<float>(advance) * scale), std::round((static_cast<float>(ascent + descent + lineGap)) * scale)};
 
-		rawrbox::Vector2 total;
-		rawrbox::Vector2 pos;
+		// Bitmap ----
+		uint32_t bpp = 1;
+		uint32_t dstPitch = ww * bpp;
 
-		const Glyph* prevGlyph = nullptr;
+		std::vector<uint8_t> buffer = {};
+		buffer.resize(ww * hh * sizeof(uint8_t));
+		stbtt_MakeCodepointBitmap(this->_font.get(), buffer.data(), ww, hh, dstPitch, scale, scale, codePoint);
+		// ----
 
-		auto beginIter = text.begin();
-		auto endIter = utf8::find_invalid(text.begin(), text.end());
-
-		while (beginIter != endIter) {
-			uint32_t point = utf8::next(beginIter, endIter);
-			if (point == '\n') {
-				pos.y += lineheight;
-				pos.x = 0;
-				prevGlyph = nullptr;
-				continue;
-			}
-
-			if (!this->hasGlyph(point)) continue;
-
-			const auto& glyph = this->getGlyph(point);
-			auto maxh = std::max(static_cast<float>(glyph.size.y), lineheight);
-
-			if (prevGlyph != nullptr) pos.x += getKerning(glyph, *prevGlyph);
-			pos.x += glyph.advance.x;
-
-			if (pos.x > total.x) total.x = pos.x;
-			if (pos.y + maxh > total.y) total.y = pos.y + maxh;
-
-			prevGlyph = &glyph;
-		}
-
-		return total;
-	}
-
-	std::shared_ptr<rawrbox::TextureAtlas> Font::getAtlasTexture(const Glyph& g) {
-		return rawrbox::TextEngine::getAtlas(g.atlasID);
-	}
-
-	// -------
-
-	// GLYPH LOADING -----
-	Glyph Font::loadGlyph(FT_ULong character) {
-		if (this->hasGlyph(character)) return getGlyph(character);
-
-		FT_UInt charIndx = FT_Get_Char_Index(this->face, character);
-		if (charIndx == 0) return {};
-
-		if (FT_Load_Glyph(this->face, charIndx, FT_LOAD_TARGET_(this->_mode) | FT_LOAD_FORCE_AUTOHINT) != FT_Err_Ok) return {};
-		std::vector<unsigned char> buffer = this->generateGlyph();
-
-		auto atlas = rawrbox::TextEngine::requestAtlas(bitmapW, bitmapR, bgfx::TextureFormat::RG8);
+		auto atlas = rawrbox::TextEngine::requestAtlas(ww, hh, bgfx::TextureFormat::A8); // FONT_TYPE_ALPHA
 		if (atlas.second == nullptr) throw std::runtime_error("[RawrBox-FONT] Failed to generate / get atlas texture");
 
-		auto& atlasNode = atlas.second->addSprite(bitmapW, bitmapR, buffer);
+		auto& atlasNode = atlas.second->addSprite(ww, hh, buffer);
 
-		Glyph glyph{
-		    atlas.first,
-		    character,
-		    charIndx,
-		    {static_cast<float>(this->face->glyph->metrics.horiBearingX) / 64.F, static_cast<float>(this->face->glyph->metrics.horiBearingY) / 64.F},
-		    {static_cast<float>(this->face->glyph->advance.x >> 6), static_cast<float>(this->face->glyph->advance.y >> 6)},
-		    {atlasNode.x / static_cast<float>(atlas.second->size), atlasNode.y / static_cast<float>(atlas.second->size)},
-		    {(atlasNode.x + atlasNode.width) / static_cast<float>(atlas.second->size), (atlasNode.y + atlasNode.height) / static_cast<float>(atlas.second->size)},
-		    {static_cast<int>(this->face->glyph->metrics.width) / 64, static_cast<int>(this->face->glyph->metrics.height) / 64},
-		};
+		glyph->atlasID = atlas.first;
+		glyph->textureTopLeft = {atlasNode.x / static_cast<float>(atlas.second->size), atlasNode.y / static_cast<float>(atlas.second->size)};
+		glyph->textureBottomRight = {(atlasNode.x + atlasNode.width) / static_cast<float>(atlas.second->size), (atlasNode.y + atlasNode.height) / static_cast<float>(atlas.second->size)};
 
-		this->_glyphs.push_back(glyph);
+		glyph->scale = this->_info.scale;
+
+		glyph->advance *= this->_info.scale;
+		glyph->offset *= this->_info.scale;
+		glyph->size *= this->_info.scale;
+
 		return glyph;
 	}
 
-	std::vector<unsigned char> Font::generateGlyph() {
-		FT_Glyph glyphDescFill = nullptr;
-		if (FT_Get_Glyph(this->face->glyph, &glyphDescFill) != FT_Err_Ok) return {};
-		if (FT_Glyph_To_Bitmap(&glyphDescFill, this->_mode, nullptr, true) != FT_Err_Ok) return {};
-
-		auto glyph_bitmap = std::bit_cast<FT_BitmapGlyph>(glyphDescFill);
-		FT_Bitmap* bitmap_fill = &glyph_bitmap->bitmap;
-		if (bitmap_fill == nullptr) return {};
-
-		bitmapW = bitmap_fill->width;
-		bitmapR = bitmap_fill->rows;
-
-		auto siz = bitmapW * bitmapR * 2;
-		auto buffer = std::vector<unsigned char>(siz, 0); // * 2 -> 2 color channels (red and green)
-		for (unsigned int i = 0; i < bitmapW * bitmapR; ++i)
-			buffer[i * 2] = bitmap_fill->buffer[i]; // + 0 -> 1st color channel
-
-		FT_Done_Glyph(glyphDescFill); // Release
-		return buffer;
+	void Font::generateGlyph(uint16_t codePoint) {
+		if (this->hasGlyph(codePoint)) return;
+		this->_glyphs[codePoint] = this->bakeGlyphAlpha(codePoint);
 	}
-	// --------
+	// ----
+
+	// LOADING ---
+	void Font::addChars(const std::string& chars) {
+		auto charsIter = chars.begin();
+		while (charsIter < chars.end()) {
+			this->generateGlyph(utf8::next(charsIter, chars.end()));
+		}
+	}
+	// ----
+
+	// UTILS ---
+	const rawrbox::FontInfo Font::getFontInfo() const { return this->_info; }
+
+	bool Font::hasGlyph(uint16_t codepoint) const {
+		return this->_glyphs.find(codepoint) != this->_glyphs.end();
+	}
+
+	std::shared_ptr<rawrbox::Glyph> Font::getGlyph(uint16_t codepoint) const {
+		auto fnd = this->_glyphs.find(codepoint);
+		if (this->_glyphs.find(codepoint) == this->_glyphs.end()) return this->_glyphs.find(65533)->second; // �
+		return fnd->second;
+	}
+
+	float Font::getSize() const { return this->_pixelSize; }
+	float Font::getLineHeight() const { return this->_info.ascender - this->_info.descender + this->_info.lineGap; }
+	float Font::getKerning(uint16_t prevCodePoint, uint16_t nextCodePoint) const {
+		if (this->_font == nullptr || (!this->_font->kern && !this->_font->gpos)) return 0; // no kerning
+
+		return this->_info.scale * static_cast<float>(stbtt__GetGlyphKernInfoAdvance(this->_font.get(), prevCodePoint, nextCodePoint));
+	}
+
+	rawrbox::Vector2f Font::getStringSize(const std::string& text) const {
+		rawrbox::Vector2f size = {};
+		if (this->_font == nullptr) return size;
+
+		const float lineHeight = this->getLineHeight();
+		size.y = lineHeight;
+
+		if (text.empty()) return size;
+
+		uint16_t prevCodePoint = 0;
+		float cursorX = 0.F;
+
+		auto beginIter = text.begin();
+		auto endIter = utf8::find_invalid(text.begin(), text.end()); // Find invalid utf8
+
+		while (beginIter != endIter) {
+			uint16_t point = utf8::next(beginIter, endIter); // get codepoint
+
+			const auto glyph = this->getGlyph(point);
+			if (glyph == nullptr) continue;
+
+			if (point == '\n') {
+				size.y += lineHeight;
+				cursorX = 0;
+				prevCodePoint = 0;
+			}
+
+			float kerning = this->getKerning(prevCodePoint, point);
+			cursorX += kerning;
+			cursorX += glyph->advance.x;
+
+			if (cursorX > size.x) size.x = cursorX;
+			prevCodePoint = point;
+		}
+
+		return size;
+	}
+
+	std::shared_ptr<rawrbox::TextureAtlas> Font::getAtlasTexture(std::shared_ptr<rawrbox::Glyph> g) const {
+		if (g == nullptr) return nullptr;
+		return rawrbox::TextEngine::getAtlas(g->atlasID);
+	}
+
+	void Font::render(const std::string& text, const rawrbox::Vector2f& pos, std::function<void(std::shared_ptr<rawrbox::Glyph>, float, float, float, float)> render) {
+		auto info = this->getFontInfo();
+		const float lineHeight = this->getLineHeight();
+
+		rawrbox::Vector2f cursor = {pos.x, pos.y + lineHeight + info.descender};
+		uint16_t prevCodePoint = 0;
+
+		auto beginIter = text.begin();
+		auto endIter = utf8::find_invalid(text.begin(), text.end()); // Find invalid utf8
+		while (beginIter != endIter) {
+			uint16_t point = utf8::next(beginIter, endIter); // get codepoint
+			if (point == L'\n') {
+				cursor.y += lineHeight;
+				cursor.x = pos.x;
+
+				prevCodePoint = 0;
+				continue;
+			}
+
+			const auto glyph = this->getGlyph(point);
+			if (glyph == nullptr) continue;
+
+			float kerning = this->getKerning(prevCodePoint, point);
+			cursor.x += kerning;
+
+			float x0 = cursor.x + (glyph->offset.x);
+			float y0 = (cursor.y + (glyph->offset.y));
+			float x1 = (x0 + glyph->size.x);
+			float y1 = (y0 + glyph->size.y);
+
+			render(glyph, x0, y0, x1, y1);
+
+			cursor.x += glyph->advance.x;
+			prevCodePoint = point;
+		}
+	}
+	// ----
 
 	// GLOBAL UTILS ---
 	size_t Font::getByteCount(const std::string& text, size_t characterPosition) {
@@ -229,6 +253,7 @@ namespace rawrbox {
 
 	std::string Font::toUTF8(const std::wstring text) {
 		std::string result;
+
 		utf8::utf16to8(text.begin(), text.end(), std::back_inserter(result));
 		return result;
 	}

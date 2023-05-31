@@ -50,9 +50,11 @@ namespace rawrbox {
 		stencil.drawLine({0, size.y - 1}, {size.x, size.y - 1}, Color::RGBAHex(0x0000004A));
 		// --------------------
 
-		if (this->_percent) {
+		if (!this->_font_11.expired() && this->_percent) {
+			auto f = this->_font_11.lock();
+
 			auto val = std::to_string(static_cast<int>(this->_value));
-			stencil.drawText(this->_font_11, val, {5, size.y / 2.F}, this->_progressColor * 0.35F, rawrbox::Alignment::Left, rawrbox::Alignment::Center);
+			stencil.drawText(f, val, {5, size.y / 2.F}, this->_progressColor * 0.35F, rawrbox::Alignment::Left, rawrbox::Alignment::Center);
 		}
 
 		// BORDER--
