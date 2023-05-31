@@ -82,4 +82,4 @@ jobs:
                   database: './build/'
                   thread-comments: true
                   step-summary: true
-                  ignore: 'build | .github | stb | deps | **/tests'
+                  ignore: 'build | .github | **/stb | **/deps | **/tests'
