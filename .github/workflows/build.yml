@@ -3,6 +3,8 @@ name: CI/CD - BUILD
 on:
     pull_request:
     workflow_dispatch:
+    push:
+        branches: master
 
 permissions:
     contents: write
@@ -82,4 +84,4 @@ jobs:
                   database: './build/'
                   thread-comments: true
                   step-summary: true
-                  ignore: 'build | .github | render/include/stb | deps | /tests/'
+                  ignore: 'build | .github | render/include/stb | deps | debug/tests | engine/tests | math/tests | render/tests | resources/tests | utils/tests'
