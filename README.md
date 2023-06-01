@@ -2,16 +2,21 @@
   <img src="https://i.rawr.dev/caw_sleep.png" width=215 /><br/>
 </p>
 
+
 <h2>
 	<p align="center">
 		<a href="https://github.com/MythicalRawr/rawrbox">RawrBox</a> - Another modular(?) game engine made with <a href="https://github.com/bkaradzic/bgfx">BGFX</a>
-    </p>
+	</p>
 </h2>
 
+<p align="center">
+	<img src="https://github.com/edunad/rawrbox/actions/workflows/build.yml/badge.svg?branch=master&event=push"/>
+</p>
+		
 <h4>
 	<p align="center">
 		Similar to <a href="https://github.com/Goofy-Penguin/Mainframe">Mainframe</a> but with focus on games (and so i can practice some C++)
-    </p>
+	</p>
 	<p align="center">
 		<a href="#features">Features</a> -
 		<a href="#libs">Libs</a> -
