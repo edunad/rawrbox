@@ -22,12 +22,13 @@ CPMAddPackage(
 	OPTIONS
 		"BGFX_BUILD_TOOLS ON"
 		"BGFX_BUILD_TOOLS_SHADER ON"
-		"BGFX_BUILD_TOOLS_GEOMETRY OFF"
-		"BGFX_BUILD_TOOLS_TEXTURE OFF"
-		"BGFX_BUILD_TOOLS_BIN2C OFF"
 		"BGFX_BUILD_EXAMPLES OFF"
+		"BGFX_BUILD_TESTS OFF"
+
+		"BGFX_OPENGLES_VERSION 30"
+		"BGFX_OPENGL_VERSION 33"
+
 		"BGFX_INSTALL_EXAMPLES OFF"
-		"BGFX_USE_OVR OFF"
 
 		"BGFX_AMALGAMATED ON"
 		"BX_AMALGAMATED ON"
@@ -38,11 +39,6 @@ if(bgfx_ADDED)
 	include("../cmake/bgfx_utils.cmake")
 endif()
 
-CPMAddPackage(
-	NAME Freetype
-	GIT_REPOSITORY https://gitlab.freedesktop.org/freetype/freetype
-	GIT_TAG master
-)
 CPMAddPackage("gh:nemtrif/utfcpp@3.2.3")
 
 if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
@@ -115,9 +111,9 @@ endif()
 
 # Compile shaders
 if(LINUX)
-	set(PROFILES 300_es spirv)
+	set(PROFILES 120 300_es spirv)
 else()
-	set(PROFILES 300_es spirv s_4_0 s_5_0)
+	set(PROFILES 120 300_es spirv s_4_0 s_5_0)
 endif()
 
 add_shaders_directory(./shaders RAWRBOX_SHADERS_TARGET_NAME)
@@ -136,7 +132,7 @@ add_custom_target(copy_resources_render ALL
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RENDER_SOURCES})
 add_dependencies(${output_target} copy_resources_render)
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX INTERFACE RAWRBOX_RENDER)
-target_include_directories(${output_target} PUBLIC "include" "${freetype_SOURCE_DIR}/include" )
+target_include_directories(${output_target} PUBLIC "include" )
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	RAWRBOX.MATH
@@ -146,7 +142,6 @@ target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	fmt::fmt
 	magic_enum::magic_enum
 	utf8cpp
-	freetype
 
 	bgfx
 	bx

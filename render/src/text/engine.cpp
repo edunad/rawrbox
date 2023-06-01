@@ -1,9 +1,15 @@
 #include <rawrbox/render/text/engine.hpp>
+#include <rawrbox/utils/path.hpp>
 
+#include <bx/platform.h>
 #include <fmt/format.h>
 
 #include <array>
 #include <stdexcept>
+
+#if BX_PLATFORM_WINDOWS
+	#include <windows.h>
+#endif
 
 namespace rawrbox {
 	// VARS ----
@@ -12,30 +18,24 @@ namespace rawrbox {
 
 	// PUBLIC ----
 	uint32_t TextEngine::atlasID = 0;
-	FT_Library TextEngine::ft = nullptr;
 	// ----------
 
-	void TextEngine::initialize() {
-		if (ft != nullptr) throw std::runtime_error("[RawrBox-Freetype] Freetype already initialized");
-		if (FT_Init_FreeType(&ft) != 0) throw std::runtime_error("[RawrBox-Freetype] Failed to initialize Freetype");
+	std::string TextEngine::getFontInSystem(const std::filesystem::path& path) {
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+		return fmt::format("/usr/share/fonts/{}", path.generic_string());
+#elif BX_PLATFORM_WINDOWS
+		std::array<TCHAR, MAX_PATH> windir = {};
 
-		// FT_LCD_FILTER_LIGHT   is (0x00, 0x55, 0x56, 0x55, 0x00)
-		// FT_LCD_FILTER_DEFAULT is (0x10, 0x40, 0x70, 0x40, 0x10)
-		std::array<unsigned char, 5> lcd_weights = {0x10, 0x40, 0x70, 0x40, 0x10};
-
-		FT_Library_SetLcdFilter(ft, FT_LCD_FILTER_DEFAULT);
-		FT_Library_SetLcdFilterWeights(ft, lcd_weights.data());
+		GetWindowsDirectory(windir.data(), MAX_PATH);
+		return fmt::format("{}\\Fonts\\{}", windir.data(), path.generic_string());
+#endif
 	}
 
 	void TextEngine::shutdown() {
-		if (ft == nullptr) return;
 		_fonts.clear();
 		_atlas.clear();
 
 		TextEngine::atlasID = 0;
-
-		if (FT_Done_FreeType(ft) != 0) throw std::runtime_error("[RawrBox-Freetype] Failed to clean up freetype");
-		ft = nullptr;
 	}
 
 	std::pair<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> TextEngine::requestAtlas(int width, int height, bgfx::TextureFormat::Enum format) {
@@ -59,13 +59,31 @@ namespace rawrbox {
 		return fnd->second;
 	}
 
-	std::weak_ptr<rawrbox::Font> TextEngine::load(std::string filename, uint32_t size) {
-		std::string key = fmt::format("{}-{}", filename, size);
-
+	std::shared_ptr<rawrbox::Font> TextEngine::load(const std::filesystem::path& filename, uint32_t size, uint32_t index) {
+		std::string key = fmt::format("{}-{}", filename.generic_string(), size);
+		// Check cache
 		auto fnd = _fonts.find(key);
 		if (fnd != _fonts.end()) return fnd->second;
+		// ------
 
-		_fonts[key] = std::make_shared<rawrbox::Font>(filename, size);
+		// Check our own content
+		auto pth = filename;
+		if (!std::filesystem::exists(pth)) {
+			pth = getFontInSystem(pth);
+
+			// Not found on content & system? Load fallback
+			if (!std::filesystem::exists(pth)) {
+				fmt::print("  └── Loading fallback font!\n");
+				pth = getFontInSystem("cour.ttf"); // Fallback
+								   // TODO: CHECK FALLBACK ON LINUX
+				if (!std::filesystem::exists(pth)) throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load font '{}'", filename.generic_string()));
+			}
+		}
+
+		auto bytes = rawrbox::PathUtils::getRawData(pth);
+		if (bytes.empty()) throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load font '{}'", filename.generic_string()));
+
+		_fonts[key] = std::make_shared<rawrbox::Font>(bytes, size, index);
 		return _fonts[key];
 	}
 } // namespace rawrbox

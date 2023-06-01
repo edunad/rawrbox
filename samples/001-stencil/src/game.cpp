@@ -215,18 +215,23 @@ namespace stencil {
 		stencil.popOffset();
 
 		// Text ---
+		auto f = this->_font.lock();
 		stencil.pushOffset({20, 200});
-		stencil.drawText(this->_font, "Cat ipsum dolor sit amet, steal raw zucchini off kitchen counter. $£%&", {});
+		stencil.drawText(f, "Cat ipsum dolor sit amet, steal raw zucchini off kitchen counter. $£%&", {});
 
-		auto size = this->_font2.lock()->getStringSize("Cat!!");
+		auto f2 = this->_font2.lock();
+		auto size = f2->getStringSize("Cat!!");
+
 		stencil.pushRotation({counter * 50.5F, (size / 2.F) + rawrbox::Vector2f(0, 40)});
-		stencil.drawText(this->_font2, "Cat!!", {0, 40});
+		stencil.drawText(f2, "Cat!!", {0, 40});
 		stencil.popRotation();
 
-		stencil.drawText(this->_font3, "MeW MeW MeW!", {0, 75});
+		auto f3 = this->_font3.lock();
+		stencil.drawText(f3, "MeW MeW MeW!", {0, 75});
 		// ---
 
 		stencil.popOffset();
+
 		stencil.render();
 
 		// TEST ---

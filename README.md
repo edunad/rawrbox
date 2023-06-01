@@ -93,7 +93,7 @@
 | utfcpp          |    ✔️    | Used for text rendering                             |
 | stb/image       |    ✔️    | Used for loading images                             |
 | stb/image_write |    ✔️    | Used for writting images                            |
-| freetype2       |    ✔️    | Used for loading fonts                              |
+| stb/freetype    |    ✔️    | Used for loading fonts                              |
 | assimp          |    ✖️    | Used for loading models                             |
 | catch2          |    ✖️    | Used for testing                                    |
 | bass            |    ✖️    | Used for loading sounds                             |

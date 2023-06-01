@@ -101,13 +101,14 @@ namespace rawrbox {
 
 		if (!this->_text.empty() && !this->_consola.expired()) {
 			auto progSize = this->_consola.lock()->getStringSize(this->_text);
+			auto f = this->_consola.lock();
 
 			// No icon, center text
 			if (this->_texture == nullptr) {
-				stencil.drawText(this->_consola, this->_text, {(size.x - progSize.x) / 2, (size.y - progSize.y) / 2}, this->_textColor);
+				stencil.drawText(f, this->_text, {(size.x - progSize.x) / 2, (size.y - progSize.y) / 2}, this->_textColor);
 			} else {
 				// Text after icon
-				stencil.drawText(this->_consola, this->_text, {this->_textureSize.x + 4, (size.y - progSize.y) / 2}, this->_textColor);
+				stencil.drawText(f, this->_text, {this->_textureSize.x + 4, (size.y - progSize.y) / 2}, this->_textColor);
 			}
 		}
 

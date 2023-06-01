@@ -12,7 +12,7 @@
 
 #include <array>
 
-#define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_ALPHA)
+#define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
 
 // NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader stencil_shaders[] = {
@@ -323,12 +323,12 @@ namespace rawrbox {
 		// ----
 	}
 
-	void Stencil::drawText(std::weak_ptr<rawrbox::Font> font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, rawrbox::Alignment alignX, rawrbox::Alignment alignY) {
-		if (font.expired() || col.isTransparent() || text.empty()) return;
-		auto f = font.lock();
+	void Stencil::drawText(std::shared_ptr<rawrbox::Font> font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, rawrbox::Alignment alignX, rawrbox::Alignment alignY) {
+		if (font == nullptr || col.isTransparent() || text.empty()) return;
 
 		rawrbox::Vector2f startpos = pos;
-		rawrbox::Vector2f tsize = f->getStringSize(text);
+		rawrbox::Vector2f tsize = font->getStringSize(text);
+
 		if (alignX != Alignment::Left || alignY != Alignment::Left) {
 			switch (alignX) {
 				case Alignment::Left:
@@ -356,44 +356,17 @@ namespace rawrbox {
 		startpos.x = std::roundf(startpos.x);
 		startpos.y = std::roundf(startpos.y);
 
-		float lineheight = f->getLineHeight();
-		startpos.y += lineheight + static_cast<float>(f->face->size->metrics.descender >> 6);
-
-		rawrbox::Vector2 curpos = startpos;
-		const rawrbox::Glyph* prevGlyph = nullptr;
-
-		auto beginIter = text.begin();
-		auto endIter = utf8::find_invalid(text.begin(), text.end());
-
-		while (beginIter != endIter) {
-			uint32_t point = utf8::next(beginIter, endIter);
-
-			if (point == '\n') {
-				curpos.y += lineheight;
-				curpos.x = startpos.x;
-
-				prevGlyph = nullptr;
-				continue;
-			}
-
-			auto& glyph = f->getGlyph(point);
-			if (prevGlyph != nullptr) {
-				curpos.x += f->getKerning(glyph, *prevGlyph);
-			}
-
-			rawrbox::Vector2 p = {curpos.x + glyph.bearing.x, curpos.y - glyph.bearing.y};
-			rawrbox::Vector2 s = {static_cast<float>(glyph.size.x), static_cast<float>(glyph.size.y)};
-
+		font->render(text, startpos, [this, font, col](std::shared_ptr<rawrbox::Glyph> glyph, float x0, float y0, float x1, float y1) {
 			// Setup --------
 			this->setupDrawCall(
 			    this->_textprogram,
-			    f->getAtlasTexture(glyph)->getHandle());
+			    font->getAtlasTexture(glyph)->getHandle());
 			// ----
 
-			this->pushVertice({p.x, p.y}, glyph.textureTopLeft, col);
-			this->pushVertice({p.x, p.y + s.y}, {glyph.textureTopLeft.x, glyph.textureBottomRight.y}, col);
-			this->pushVertice({p.x + s.x, p.y}, {glyph.textureBottomRight.x, glyph.textureTopLeft.y}, col);
-			this->pushVertice({p.x + s.x, p.y + s.y}, glyph.textureBottomRight, col);
+			this->pushVertice({x0, y0}, glyph->textureTopLeft, col);
+			this->pushVertice({x0, y1}, {glyph->textureTopLeft.x, glyph->textureBottomRight.y}, col);
+			this->pushVertice({x1, y0}, {glyph->textureBottomRight.x, glyph->textureTopLeft.y}, col);
+			this->pushVertice({x1, y1}, glyph->textureBottomRight, col);
 
 			this->pushIndices({0, 1, 2,
 			    1, 3, 2});
@@ -401,12 +374,7 @@ namespace rawrbox {
 			// Add to calls
 			this->pushDrawCall();
 			// ----
-
-			curpos.x += glyph.advance.x;
-			curpos.y += glyph.advance.y;
-
-			prevGlyph = &glyph;
-		}
+		});
 	}
 	// --------------------
 

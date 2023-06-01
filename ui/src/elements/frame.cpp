@@ -96,7 +96,10 @@ namespace rawrbox {
 
 		// Title
 		stencil.drawBox({}, {size.x, this->_titleSize}, this->_titleColor);
-		stencil.drawText(this->_consola, this->_title, {5, 8}, Color::RGBAHex(0x000000BA), rawrbox::Alignment::Left, rawrbox::Alignment::Center);
+		if (!this->_consola.expired()) {
+			auto f = this->_consola.lock();
+			stencil.drawText(f, this->_title, {5, 8}, Color::RGBAHex(0x000000BA), rawrbox::Alignment::Left, rawrbox::Alignment::Center);
+		}
 
 		if (this->_closable) {
 			stencil.drawTexture({size.x - 36, 0}, {6, this->_titleSize}, this->_stripes, Color::RGBAHex(0x0000004A), {}, {1, static_cast<float>(this->_titleSize) / static_cast<float>(this->_stripes->getSize().y / 2)});
