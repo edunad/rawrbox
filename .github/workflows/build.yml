@@ -37,7 +37,7 @@ jobs:
                   path: |
                       ./build
                       ~/cpm-cache
-                  key: host-${{ runner.os }}-${{ hashFiles('**/*/CMakeLists.txt') }}
+                  key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './debug/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt') }}
 
             - name: Build
               id: build
@@ -56,7 +56,7 @@ jobs:
                   path: |
                       ./build
                       ~/cpm-cache
-                  key: host-${{ runner.os }}-${{ hashFiles('**/*/CMakeLists.txt') }}
+                  key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './debug/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt') }}
 
             - name: Run tests
               run: |
@@ -82,4 +82,4 @@ jobs:
                   database: './build/'
                   thread-comments: true
                   step-summary: true
-                  ignore: 'build | .github | **/stb | **/deps | **/tests'
+                  ignore: 'build | .github | render/include/stb | deps | /tests/'
