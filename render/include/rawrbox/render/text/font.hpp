@@ -128,9 +128,10 @@ namespace rawrbox {
 		[[nodiscard]] bool hasGlyph(uint16_t codepoint) const;
 		[[nodiscard]] std::shared_ptr<rawrbox::Glyph> getGlyph(uint16_t codepoint) const;
 
+		[[nodiscard]] float getSize() const;
+		[[nodiscard]] float getScale() const;
 		[[nodiscard]] float getLineHeight() const;
 		[[nodiscard]] float getKerning(uint16_t prevCodePoint, uint16_t nextCodePoint) const;
-		[[nodiscard]] float getSize() const;
 
 		[[nodiscard]] rawrbox::Vector2f getStringSize(const std::string& text) const;
 		[[nodiscard]] std::shared_ptr<rawrbox::TextureAtlas> getAtlasTexture(std::shared_ptr<rawrbox::Glyph> g) const;

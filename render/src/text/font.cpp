@@ -131,10 +131,10 @@ namespace rawrbox {
 	}
 
 	float Font::getSize() const { return this->_pixelSize; }
+	float Font::getScale() const { return this->_scale; }
 	float Font::getLineHeight() const { return this->_info.ascender - this->_info.descender + this->_info.lineGap; }
 	float Font::getKerning(uint16_t prevCodePoint, uint16_t nextCodePoint) const {
 		if (this->_font == nullptr || (!this->_font->kern && !this->_font->gpos)) return 0; // no kerning
-
 		return this->_info.scale * static_cast<float>(stbtt__GetGlyphKernInfoAdvance(this->_font.get(), prevCodePoint, nextCodePoint));
 	}
 
@@ -181,7 +181,9 @@ namespace rawrbox {
 		return rawrbox::TextEngine::getAtlas(g->atlasID);
 	}
 
-	void Font::render(const std::string& text, const rawrbox::Vector2f& pos, std::function<void(std::shared_ptr<rawrbox::Glyph>, float, float, float, float)> render) {
+	void Font::render(const std::string& text, const rawrbox::Vector2f& pos, std::function<void(std::shared_ptr<rawrbox::Glyph>, float, float, float, float)> renderGlyph) {
+		if (renderGlyph == nullptr) throw std::runtime_error("[RawrBox-FONT] Failed to render glyph! Missing 'renderGlyph' param");
+
 		auto info = this->getFontInfo();
 		const float lineHeight = this->getLineHeight();
 
@@ -201,8 +203,6 @@ namespace rawrbox {
 			}
 
 			const auto glyph = this->getGlyph(point);
-			if (glyph == nullptr) continue;
-
 			float kerning = this->getKerning(prevCodePoint, point);
 			cursor.x += kerning;
 
@@ -211,7 +211,7 @@ namespace rawrbox {
 			float x1 = (x0 + glyph->size.x);
 			float y1 = (y0 + glyph->size.y);
 
-			render(glyph, x0, y0, x1, y1);
+			renderGlyph(glyph, x0, y0, x1, y1);
 
 			cursor.x += glyph->advance.x;
 			prevCodePoint = point;
