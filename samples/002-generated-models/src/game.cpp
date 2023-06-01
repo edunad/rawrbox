@@ -19,7 +19,7 @@ namespace model {
 		int height = 768;
 
 		this->_window = std::make_shared<rawrbox::Window>();
-		this->_window->setMonitor(1);
+		this->_window->setMonitor(-1);
 		this->_window->setTitle("SIMPLE MODEL TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
 		this->_window->onWindowClose += [this](auto& w) {
