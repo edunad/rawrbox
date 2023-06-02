@@ -224,7 +224,7 @@ namespace ui_test {
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "009-ui");
+		bgfx::dbgTextPrintf(1, 1, 0x1f, "008-ui");
 		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: UI test");
 		printFrames();
 		// -----------

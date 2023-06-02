@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
 
 # SETUP CPM -----
 include("cmake/cpm.cmake")
@@ -27,6 +27,7 @@ option(RAWRBOX_BUILD_TESTING "Build tests" ON)
 option(RAWRBOX_BUILD_UI "Build ui" ON)
 option(RAWRBOX_BUILD_RESOURCES_MANAGER "Build resources manager" ON)
 option(RAWRBOX_BUILD_DEBUG "Build debug lib & add gizmo support" ON)
+option(RAWRBOX_BUILD_PHYSICS "Build physics support" ON)
 
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
 
@@ -84,8 +85,25 @@ CPMAddPackage(
 # --------------
 
 # PACKAGES ------
-CPMAddPackage("gh:fmtlib/fmt#10.0.0")
-CPMAddPackage("gh:Neargye/magic_enum@0.9.0")
+CPMAddPackage(
+	NAME fmt
+	GITHUB_REPOSITORY fmtlib/fmt
+	GIT_TAG 10.0.0
+	OPTIONS
+		"FMT_DOC OFF"
+		"FMT_TEST OFF"
+)
+
+CPMAddPackage(
+	NAME magic_enum
+	GITHUB_REPOSITORY Neargye/magic_enum
+	VERSION 0.9.0
+)
+
+if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
+    set_property(TARGET fmt PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    set_property(TARGET magic_enum PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
 
 if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
 	CPMAddPackage("gl:wayland/weston@12.0.1")
@@ -114,10 +132,10 @@ if(RAWRBOX_BUILD_DEBUG)
 	add_subdirectory ("debug")
 endif()
 
+if(RAWRBOX_BUILD_PHYSICS)
+	add_subdirectory ("physics")
+endif()
+
 if(RAWRBOX_BUILD_SAMPLES)
 	add_subdirectory ("samples")
 endif()
-
-# SHRUG
-string(REGEX REPLACE "/W[3|4]" "/w" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-# ------------------

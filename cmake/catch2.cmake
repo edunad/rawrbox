@@ -16,6 +16,11 @@ if(RAWRBOX_BUILD_TESTING)
     list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
 	list(APPEND RAWRBOX_EXTRA_TEST_LIBS Catch2::Catch2WithMain)
 
+    if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
+        set_property(TARGET Catch2 PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+        set_property(TARGET Catch2WithMain PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endif()
+
 	if(RAWRBOX_BUILD_DEBUG)
         if(NOT output_target MATCHES "RAWRBOX.DEBUG")
 		    list(APPEND RAWRBOX_EXTRA_TEST_LIBS RAWRBOX.DEBUG)
@@ -36,6 +41,10 @@ if(RAWRBOX_BUILD_TESTING)
     set_target_properties(${output_target}-TESTS PROPERTIES COMPILE_DEFINITIONS RAWRBOX_TESTING=1)
     target_compile_features(${output_target}-TESTS PRIVATE cxx_std_${CMAKE_CXX_STANDARD})
     target_link_libraries(${output_target}-TESTS PRIVATE ${output_target} ${RAWRBOX_EXTRA_TEST_LIBS})
+
+    if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
+        set_property(TARGET ${output_target}-TESTS PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    endif()
 
     catch_discover_tests(${output_target}-TESTS
         DISCOVERY_MODE PRE_TEST

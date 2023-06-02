@@ -13,6 +13,7 @@ CPMAddPackage(
 		"GLFW_INSTALL OFF"
 		"GLFW_USE_OSMESA OFF"
 		"GLFW_VULKAN_STATIC OFF"
+		"USE_MSVC_RUNTIME_LIBRARY_DLL OFF"
 )
 
 CPMAddPackage(
@@ -33,6 +34,12 @@ CPMAddPackage(
 		"BGFX_AMALGAMATED ON"
 		"BX_AMALGAMATED ON"
 )
+
+if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
+    set_property(TARGET bimg PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    set_property(TARGET bx PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    set_property(TARGET bgfx PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
 
 if(bgfx_ADDED)
 	message("-- Including bgfx utils")
@@ -57,11 +64,12 @@ if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
 			"ASSIMP_BUILD_TESTS OFF"
 			"ASSIMP_BUILD_SAMPLES OFF"
 			"ASSIMP_BUILD_DOCS OFF"
+			"USE_STATIC_CRT ON"
 			"ASSIMP_BUILD_ASSIMP_VIEW OFF"
 			"ASSIMP_BUILD_ZLIB TRUE"
 			"ASSIMP_WARNINGS_AS_ERRORS OFF"
 			"ASSIMP_INSTALL_PDB OFF"
-			"ASSIMP_BUILD_DRACO ON"
+			"ASSIMP_BUILD_DRACO OFF"
 			"ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF"
 			"ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF"
 			# IMPORT SUPPORTS
@@ -139,14 +147,18 @@ target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	RAWRBOX.ENGINE
 	${RAWRBOX_EXTRA_LIBS}
 
-	fmt::fmt
-	magic_enum::magic_enum
+	fmt
+	magic_enum
 	utf8cpp
 
 	bgfx
 	bx
 	glfw
 )
+
+if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
+    set_property(TARGET ${output_target} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
 
 # TEST ----
 include(../cmake/catch2.cmake)

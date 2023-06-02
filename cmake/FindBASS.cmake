@@ -11,6 +11,7 @@ endif()
 
 set(BASS_URL "http://uk.un4seen.com/files/bass${BASS_VERSION}")
 set(BASS_FX_URL "http://www.un4seen.com/files/z/0/bass_fx${BASS_VERSION}")
+set(BASS_STATIC_MULTITHREADED ON)
 
 set(BASS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/bass${BASS_VERSION})
 set(BASS_FX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/bass_fx${BASS_VERSION})
@@ -173,6 +174,13 @@ if (NOT BASSSDK_FOUND AND NOT TARGET BASS::BASS)
 		IMPORTED_LOCATION "${BASS_BINARY_FX}"
 		INTERFACE_INCLUDE_DIRECTORIES "${BASS_LIBRARY_FX_INCLUDE_DIR}"
 	)
+
+	if(BASS_STATIC_MULTITHREADED)
+		if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
+			set_target_properties( BASS::BASS PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+			set_target_properties( BASS::FX PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+		endif()
+	endif()
 
 	MESSAGE("BASS library: ${BASS_LIBRARY}")
 	MESSAGE("BASS FX library: ${BASS_LIBRARY_FX}")

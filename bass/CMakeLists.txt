@@ -52,8 +52,12 @@ target_link_libraries(${output_target} PUBLIC
 	RAWRBOX.MATH
 	${RAWRBOX_EXTRA_LIBS}
 
-	fmt::fmt
+	fmt
 
 	BASS::BASS
 	BASS::FX
 )
+
+if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
+    set_property(TARGET ${output_target} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
