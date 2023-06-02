@@ -1,9 +1,12 @@
 #pragma once
 #include <rawrbox/engine/static.hpp>
+#include <rawrbox/math/vector3.hpp>
 
 #include <Jolt/Jolt.h>
 
 // Jolt includes
+#include <magic_enum.hpp>
+
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <Jolt/Core/TempAllocator.h>
@@ -14,16 +17,126 @@
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/RegisterTypes.h>
+#include <fmt/format.h>
 
 #include <memory>
 #include <thread>
 
+using namespace JPH::literals; // If you want your code to compile using single or double precision write 0.0_r to get a Real value that compiles to double or float depending if JPH_DOUBLE_PRECISION is set or not.
+
 namespace rawrbox {
+
+	enum class PHYS_LAYERS : JPH::ObjectLayer {
+		STATIC = 0,
+		DYNAMIC = 1
+	};
+
+	class LayerFilter : public JPH::ObjectLayerPairFilter {
+	public:
+		[[nodiscard]] bool ShouldCollide(JPH::ObjectLayer inObject1, JPH::ObjectLayer inObject2) const override {
+			switch (static_cast<rawrbox::PHYS_LAYERS>(inObject1)) {
+				case rawrbox::PHYS_LAYERS::STATIC:
+					return static_cast<PHYS_LAYERS>(inObject2) == rawrbox::PHYS_LAYERS::DYNAMIC;
+				case rawrbox::PHYS_LAYERS::DYNAMIC:
+					return true;
+				default:
+					return false;
+			}
+		}
+	};
+
+	class BPLayerInterface final : public JPH::BroadPhaseLayerInterface {
+	protected:
+		std::vector<JPH::BroadPhaseLayer> _objectToBroadPhase = {};
+
+	public:
+		BPLayerInterface() {
+			// Create a mapping table from object to broad phase layer
+			constexpr auto phys = magic_enum::enum_values<rawrbox::PHYS_LAYERS>();
+			for (PHYS_LAYERS p : phys)
+				this->_objectToBroadPhase.emplace_back(static_cast<uint8_t>(p));
+		}
+
+		[[nodiscard]] uint32_t GetNumBroadPhaseLayers() const override {
+			return static_cast<uint32_t>(this->_objectToBroadPhase.size());
+		}
+
+		[[nodiscard]] JPH::BroadPhaseLayer GetBroadPhaseLayer(JPH::ObjectLayer inLayer) const override {
+			if (inLayer >= this->_objectToBroadPhase.size()) throw std::runtime_error(fmt::format("[RawrBox-Physics] Missing physics layer {}!", inLayer));
+			return this->_objectToBroadPhase[inLayer];
+		}
+
+#if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
+		[[nodiscard]] const char *GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override {
+			auto a = static_cast<uint8_t>(inLayer);
+			auto name = magic_enum::enum_name(static_cast<rawrbox::PHYS_LAYERS>(a)).data();
+			return name;
+		}
+#endif
+	};
+
+	class BPLayerFilter : public JPH::ObjectVsBroadPhaseLayerFilter {
+	public:
+		[[nodiscard]] bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override {
+			auto a = static_cast<uint8_t>(inLayer2);
+
+			switch (static_cast<rawrbox::PHYS_LAYERS>(inLayer1)) {
+				case rawrbox::PHYS_LAYERS::STATIC:
+					return static_cast<PHYS_LAYERS>(a) == rawrbox::PHYS_LAYERS::DYNAMIC;
+				case rawrbox::PHYS_LAYERS::DYNAMIC:
+					return true;
+				default:
+					return false;
+			}
+		}
+	};
+
+	class ContactListener : public JPH::ContactListener {
+	public:
+		// See: ContactListener
+		JPH::ValidateResult OnContactValidate(const JPH::Body &inBody1, const JPH::Body &inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult &inCollisionResult) override {
+			// fmt::print("Contact validate callback\n");
+
+			// Allows you to ignore a contact before it is created (using layers to not make objects collide is cheaper!)
+			return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
+		}
+
+		void OnContactAdded(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override {
+			// fmt::print("A contact was added\n");
+		}
+
+		void OnContactPersisted(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override {
+			// fmt::print("A contact was persisted\n");
+		}
+
+		void OnContactRemoved(const JPH::SubShapeIDPair &inSubShapePair) override {
+			// fmt::print("A contact was removed\n");
+		}
+	};
+
+	class BodyActivationListener : public JPH::BodyActivationListener {
+	public:
+		void OnBodyActivated(const JPH::BodyID &inBodyID, uint64_t inBodyUserData) override {
+			// fmt::print("A body got activated\n");
+		}
+
+		void OnBodyDeactivated(const JPH::BodyID &inBodyID, uint64_t inBodyUserData) override {
+			// fmt::print("A body went to sleep\n");
+		}
+	};
+
 	class PHYSICS {
 	protected:
 		static std::unique_ptr<JPH::TempAllocatorImpl> _allocator;
 		static std::unique_ptr<JPH::JobSystemThreadPool> _threadPool;
 		static std::unique_ptr<JPH::Factory> _factory;
+
+		static const std::unique_ptr<rawrbox::BPLayerInterface> _bpLayerInterface;
+		static const std::unique_ptr<rawrbox::BPLayerFilter> _bpLayerFilter;
+		static const std::unique_ptr<rawrbox::LayerFilter> _layerFilter;
+
+		static std::unique_ptr<rawrbox::BodyActivationListener> _bodyListener;
+		static std::unique_ptr<rawrbox::ContactListener> _contactListener;
 
 	public:
 		static std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
@@ -31,45 +144,10 @@ namespace rawrbox {
 		static int steps;
 		static int subSteps;
 
-		static void init(uint32_t maxBodies = 1024, uint32_t maxBodyMutexes = 0, uint32_t maxBodyPairs = 1024, uint32_t maxContactConstraints = 1024, uint32_t maxThreads = 0) {
-			// Register allocation hook
-			JPH::RegisterDefaultAllocator();
+		static void init(uint32_t maxBodies = 1024, uint32_t maxBodyMutexes = 0, uint32_t maxBodyPairs = 1024, uint32_t maxContactConstraints = 1024, uint32_t maxThreads = 0);
+		static void shutdown();
 
-			_factory = std::make_unique<JPH::Factory>();
-			JPH::Factory::sInstance = _factory.get(); // Initialize singleton factory
-
-			// Register all Jolt physics types
-			JPH::RegisterTypes();
-
-			// Initialize allocator
-			_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024); // 10 MB
-
-			// Initialize pool
-			if (maxThreads == 0) maxThreads = std::thread::hardware_concurrency() - 1;
-			_threadPool = std::make_unique<JPH::JobSystemThreadPool>(JPH::cMaxPhysicsJobs, JPH::cMaxPhysicsBarriers, maxThreads);
-
-			// Initialize physics system
-			physicsSystem = std::make_shared<JPH::PhysicsSystem>();
-			// physicsSystem->Init(maxBodies, maxBodyMutexes, maxBodyPairs, maxContactConstraints,);
-		}
-
-		static void shutdown() {
-			JPH::UnregisterTypes();
-
-			_factory.reset();
-			JPH::Factory::sInstance = nullptr;
-
-			_allocator.reset();
-			_threadPool.reset();
-
-			physicsSystem.reset()
-		}
-
-		static void tick(bool optimize = true) {
-			if (_factory == nullptr || _allocator == nullptr || _threadPool == nullptr || physicsSystem == nullptr) return;
-			if (optimize) physicsSystem->OptimizeBroadPhase();
-
-			physicsSystem->Update(rawrbox::DELTA_TIME, steps, subSteps, _allocator.get(), _threadPool.get());
-		}
+		static void tick();     // Should be tick based update
+		static void optimize(); // Call only when a lot of bodies are added at a single time
 	};
 } // namespace rawrbox

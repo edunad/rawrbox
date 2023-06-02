@@ -34,8 +34,8 @@ namespace rawrbox {
 	public:
 		explicit ParticleSystem(std::shared_ptr<rawrbox::TextureBase> spriteAtlas, uint32_t spriteSize = 32) : _atlas(std::move(spriteAtlas)), _spriteSize(spriteSize){};
 		virtual ~ParticleSystem() {
-			this->_atlas = nullptr;
-			this->_material = nullptr;
+			this->_atlas.reset();
+			this->_material.reset();
 
 			this->_emitters.clear();
 		}

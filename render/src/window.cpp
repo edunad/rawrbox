@@ -340,12 +340,12 @@ namespace rawrbox {
 	void Window::close() {
 		if (rawrbox::__OPEN_WINDOWS__-- <= 0) {
 			rawrbox::MISSING_TEXTURE = nullptr;
-			rawrbox::WHITE_TEXTURE = nullptr;
-			rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE = nullptr;
+			rawrbox::WHITE_TEXTURE.reset();
+			rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE.reset();
 		}
 
-		this->_stencil = nullptr;
-		this->_renderer = nullptr;
+		this->_stencil.reset();
+		this->_renderer.reset();
 
 		if (GLFWHANDLE != nullptr) glfwDestroyWindow(GLFWHANDLE);
 		this->_handle = nullptr;

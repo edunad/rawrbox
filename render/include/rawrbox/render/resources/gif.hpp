@@ -8,7 +8,7 @@ namespace rawrbox {
 
 	public:
 		std::shared_ptr<rawrbox::TextureGIF> texture = nullptr;
-		~ResourceGIF() override { this->texture = nullptr; }
+		~ResourceGIF() override { this->texture.reset(); }
 
 		bool load(const std::vector<uint8_t>& buffer) override {
 			this->texture = std::make_shared<rawrbox::TextureGIF>(this->filePath, buffer);

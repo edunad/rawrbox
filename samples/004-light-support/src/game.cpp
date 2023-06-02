@@ -86,11 +86,11 @@ namespace light {
 	}
 
 	void Game::shutdown() {
-		this->_window = nullptr;
-		this->_camera = nullptr;
+		this->_window.reset();
+		this->_camera.reset();
 
-		this->_model = nullptr;
-		this->_text = nullptr;
+		this->_model.reset();
+		this->_text.reset();
 
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();

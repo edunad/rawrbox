@@ -7,10 +7,7 @@ namespace rawrbox {
 	class ResourceAssimp : public rawrbox::Resource {
 	public:
 		std::shared_ptr<rawrbox::AssimpImporter> model = nullptr;
-
-		~ResourceAssimp() override {
-			this->model = nullptr;
-		}
+		~ResourceAssimp() override { this->model.reset(); }
 
 		bool load(const std::vector<uint8_t>& buffer) override {
 			this->model = std::make_shared<rawrbox::AssimpImporter>(flags);

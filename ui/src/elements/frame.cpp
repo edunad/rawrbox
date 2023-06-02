@@ -5,9 +5,9 @@
 
 namespace rawrbox {
 	UIFrame::~UIFrame() {
-		this->_stripes = nullptr;
-		this->_overlay = nullptr;
-		this->_closeButton = nullptr;
+		this->_stripes.reset();
+		this->_overlay.reset();
+		this->_closeButton.reset();
 
 		this->_consola.reset();
 	}

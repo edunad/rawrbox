@@ -6,8 +6,8 @@
 
 namespace rawrbox {
 	UIButton::~UIButton() {
-		this->_texture = nullptr;
-		this->_overlay = nullptr;
+		this->_texture.reset();
+		this->_overlay.reset();
 		this->_consola.reset();
 	}
 

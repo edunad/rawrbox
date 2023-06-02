@@ -119,13 +119,13 @@ namespace bass_test {
 	}
 
 	void Game::shutdown() {
-		this->_window = nullptr;
-		this->_camera = nullptr;
+		this->_window.reset();
+		this->_camera.reset();
 
-		this->_sound = nullptr;
-		this->_modelGrid = nullptr;
-		this->_beatText = nullptr;
-		this->_text = nullptr;
+		this->_sound.reset();
+		this->_modelGrid.reset();
+		this->_beatText.reset();
+		this->_text.reset();
 
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();

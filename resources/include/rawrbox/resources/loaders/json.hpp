@@ -14,7 +14,7 @@ namespace rawrbox {
 
 	public:
 		std::shared_ptr<nlohmann::json> json = nullptr;
-		~ResourceJSON() override { this->json = nullptr; }
+		~ResourceJSON() override { this->json.reset(); }
 
 		bool load(const std::vector<uint8_t>& buffer) override {
 			json = std::make_shared<nlohmann::json>(nlohmann::json::parse(buffer));

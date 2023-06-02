@@ -189,10 +189,10 @@ namespace ui_test {
 	}
 
 	void Game::shutdown() {
-		this->_window = nullptr;
-		this->_anim = nullptr;
-		this->_ROOT_UI = nullptr;
-		this->_graph = nullptr;
+		this->_window.reset();
+		this->_anim.reset();
+		this->_ROOT_UI.reset();
+		this->_graph.reset();
 
 		rawrbox::Engine::shutdown();
 	}

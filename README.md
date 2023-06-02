@@ -61,7 +61,7 @@
 | `RAWRBOX.DEBUG`     | Debug utils lib                                    | Automatically adds GIZMOS and other debug methods to the renderer                          |        `RENDER`        |
 | `RAWRBOX.UI`        | UI lib                                             | UI components lib                                                                          | `RENDER` & `RESOURCES` |
 | `RAWRBOX.RESOURCES` | Resources manager lib                              | Resource manager. Handles loading and stores the pointers for easy access                  |        `UTILS`         |
-| `RAWRBOX.PHYSICS`   | Physics lib                                        | Physics lib                                                                                |        `ENGINE`        |
+| `RAWRBOX.PHYSICS`   | Physics lib                                        | Physics lib                                                                                |   `ENGINE` & `MATH`    |
 
 <p align="center">
   <img src="./RAWBOX%20-%20Dependencies.png" />

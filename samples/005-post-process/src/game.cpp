@@ -78,9 +78,9 @@ namespace post_process {
 	}
 
 	void Game::shutdown() {
-		this->_window = nullptr;
-		this->_camera = nullptr;
-		this->_model = nullptr;
+		this->_window.reset();
+		this->_camera.reset();
+		this->_model.reset();
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::LIGHTS::shutdown();

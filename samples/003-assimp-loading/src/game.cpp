@@ -119,17 +119,17 @@ namespace assimp {
 	}
 
 	void Game::shutdown() {
-		this->_window = nullptr;
-		this->_camera = nullptr;
+		this->_window.reset();
+		this->_camera.reset();
 
-		this->_model = nullptr;
-		this->_model2 = nullptr;
-		this->_model3 = nullptr;
-		this->_model4 = nullptr;
-		this->_model5 = nullptr;
-		this->_modelGrid = nullptr;
+		this->_model.reset();
+		this->_model2.reset();
+		this->_model3.reset();
+		this->_model4.reset();
+		this->_model5.reset();
+		this->_modelGrid.reset();
 
-		this->_text = nullptr;
+		this->_text.reset();
 
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();

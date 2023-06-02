@@ -13,7 +13,7 @@
 namespace rawrbox {
 	Font::~Font() {
 		if (this->_font == nullptr) return;
-		this->_font = nullptr;
+		this->_font.reset();
 		this->_glyphs.clear();
 	}
 

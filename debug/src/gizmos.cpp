@@ -18,9 +18,9 @@ namespace rawrbox {
 	std::unordered_map<std::string, std::shared_ptr<rawrbox::TextureImage>> GIZMOS::_textures = {};
 
 	void GIZMOS::shutdown() {
-		_gizmo_lights = nullptr;
-		_gizmo_sounds = nullptr;
-		_gizmo_emitters = nullptr;
+		_gizmo_lights.reset();
+		_gizmo_sounds.reset();
+		_gizmo_emitters.reset();
 
 		_textures.clear();
 	}

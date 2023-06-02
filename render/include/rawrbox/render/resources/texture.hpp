@@ -7,9 +7,7 @@ namespace rawrbox {
 	class ResourceTexture : public rawrbox::Resource {
 	public:
 		std::shared_ptr<rawrbox::TextureImage> texture = nullptr;
-		~ResourceTexture() override {
-			this->texture = nullptr;
-		}
+		~ResourceTexture() override { this->texture.reset(); }
 
 		bool load(const std::vector<uint8_t>& buffer) override {
 			this->texture = std::make_shared<rawrbox::TextureImage>(this->filePath, buffer);

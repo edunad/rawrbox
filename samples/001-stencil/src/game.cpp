@@ -73,9 +73,9 @@ namespace stencil {
 	}
 
 	void Game::shutdown() {
-		this->_window = nullptr;
-		this->_texture = nullptr;
-		this->_texture2 = nullptr;
+		this->_window.reset();
+		this->_texture.reset();
+		this->_texture2.reset();
 
 		this->_font.reset();
 		this->_font2.reset();
