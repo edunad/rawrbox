@@ -13,5 +13,20 @@
 '🐲 SAMPLES':
     - 'samples/**/*'
 
+'🪛 DEBUG':
+    - 'debug/**/*'
+
+'🧱 PHYSICS':
+    - 'physics/**/*'
+
+'🎺 BASS':
+    - 'bass/**/*'
+
+'💼 RESOURCES':
+    - 'resources/**/*'
+
+'💽 ENGINE':
+    - 'engine/**/*'
+
 '🧪 TESTS':
     - '**/tests/**/*.cpp'
