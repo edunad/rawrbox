@@ -36,6 +36,8 @@ namespace physics_test {
 
 		// Initialize physics
 		rawrbox::PHYSICS::init();
+		rawrbox::PHYSICS::onBodyAwake += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body awake \n"); };
+		rawrbox::PHYSICS::onBodySleep += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body sleep \n"); };
 
 		// Load content ---
 		this->loadContent();

@@ -1,6 +1,7 @@
 #pragma once
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/utils/event.hpp>
 
 #include <Jolt/Jolt.h>
 
@@ -25,7 +26,6 @@
 using namespace JPH::literals; // If you want your code to compile using single or double precision write 0.0_r to get a Real value that compiles to double or float depending if JPH_DOUBLE_PRECISION is set or not.
 
 namespace rawrbox {
-
 	enum class PHYS_LAYERS : JPH::ObjectLayer {
 		STATIC = 0,
 		DYNAMIC = 1
@@ -91,39 +91,8 @@ namespace rawrbox {
 		}
 	};
 
-	class ContactListener : public JPH::ContactListener {
-	public:
-		// See: ContactListener
-		JPH::ValidateResult OnContactValidate(const JPH::Body &inBody1, const JPH::Body &inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult &inCollisionResult) override {
-			// fmt::print("Contact validate callback\n");
-
-			// Allows you to ignore a contact before it is created (using layers to not make objects collide is cheaper!)
-			return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
-		}
-
-		void OnContactAdded(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override {
-			// fmt::print("A contact was added\n");
-		}
-
-		void OnContactPersisted(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override {
-			// fmt::print("A contact was persisted\n");
-		}
-
-		void OnContactRemoved(const JPH::SubShapeIDPair &inSubShapePair) override {
-			// fmt::print("A contact was removed\n");
-		}
-	};
-
-	class BodyActivationListener : public JPH::BodyActivationListener {
-	public:
-		void OnBodyActivated(const JPH::BodyID &inBodyID, uint64_t inBodyUserData) override {
-			// fmt::print("A body got activated\n");
-		}
-
-		void OnBodyDeactivated(const JPH::BodyID &inBodyID, uint64_t inBodyUserData) override {
-			// fmt::print("A body went to sleep\n");
-		}
-	};
+	class BodyActivationListener;
+	class ContactListener;
 
 	class PHYSICS {
 	protected:
@@ -139,15 +108,57 @@ namespace rawrbox {
 		static std::unique_ptr<rawrbox::ContactListener> _contactListener;
 
 	public:
+		// VARS ----
 		static std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
-
 		static int steps;
 		static int subSteps;
+
+		static rawrbox::Event<const JPH::BodyID &, uint64_t> onBodyAwake;
+		static rawrbox::Event<const JPH::BodyID &, uint64_t> onBodySleep;
+
+		static std::function<JPH::ValidateResult(const JPH::Body &, const JPH::Body &, JPH::RVec3Arg, const JPH::CollideShapeResult &)> onContactValidate;
+
+		static rawrbox::Event<const JPH::Body &, const JPH::Body &, const JPH::ContactManifold &, JPH::ContactSettings &> onContactAdded;
+		static rawrbox::Event<const JPH::Body &, const JPH::Body &, const JPH::ContactManifold &, JPH::ContactSettings &> onContactPersisted;
+		static rawrbox::Event<const JPH::SubShapeIDPair &> onContactRemoved;
+		// ----
 
 		static void init(uint32_t maxBodies = 1024, uint32_t maxBodyMutexes = 0, uint32_t maxBodyPairs = 1024, uint32_t maxContactConstraints = 1024, uint32_t maxThreads = 0);
 		static void shutdown();
 
 		static void tick();     // Should be tick based update
 		static void optimize(); // Call only when a lot of bodies are added at a single time
+	};
+
+	class BodyActivationListener : public JPH::BodyActivationListener {
+	public:
+		void OnBodyActivated(const JPH::BodyID &inBodyID, uint64_t inBodyUserData) override {
+			PHYSICS::onBodyAwake(inBodyID, inBodyUserData);
+		}
+
+		void OnBodyDeactivated(const JPH::BodyID &inBodyID, uint64_t inBodyUserData) override {
+			PHYSICS::onBodySleep(inBodyID, inBodyUserData);
+		}
+	};
+
+	class ContactListener : public JPH::ContactListener {
+	public:
+		// See: ContactListener
+		JPH::ValidateResult OnContactValidate(const JPH::Body &inBody1, const JPH::Body &inBody2, JPH::RVec3Arg inBaseOffset, const JPH::CollideShapeResult &inCollisionResult) override {
+			if (rawrbox::PHYSICS::onContactValidate == nullptr) return JPH::ValidateResult::AcceptAllContactsForThisBodyPair;
+			return rawrbox::PHYSICS::onContactValidate(inBody1, inBody2, inBaseOffset, inCollisionResult);
+		}
+
+		void OnContactAdded(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override {
+			rawrbox::PHYSICS::onContactAdded(inBody1, inBody2, inManifold, ioSettings);
+		}
+
+		void OnContactPersisted(const JPH::Body &inBody1, const JPH::Body &inBody2, const JPH::ContactManifold &inManifold, JPH::ContactSettings &ioSettings) override {
+			rawrbox::PHYSICS::onContactPersisted(inBody1, inBody2, inManifold, ioSettings);
+		}
+
+		void OnContactRemoved(const JPH::SubShapeIDPair &inSubShapePair) override {
+			rawrbox::PHYSICS::onContactRemoved(inSubShapePair);
+		}
 	};
 } // namespace rawrbox

@@ -17,6 +17,15 @@ namespace rawrbox {
 
 	// Public
 	std::shared_ptr<JPH::PhysicsSystem> PHYSICS::physicsSystem = nullptr;
+
+	rawrbox::Event<const JPH::BodyID &, uint64_t> PHYSICS::onBodyAwake;
+	rawrbox::Event<const JPH::BodyID &, uint64_t> PHYSICS::onBodySleep;
+
+	std::function<JPH::ValidateResult(const JPH::Body &, const JPH::Body &, JPH::RVec3Arg, const JPH::CollideShapeResult &)> PHYSICS::onContactValidate = nullptr;
+
+	rawrbox::Event<const JPH::Body &, const JPH::Body &, const JPH::ContactManifold &, JPH::ContactSettings &> PHYSICS::onContactAdded;
+	rawrbox::Event<const JPH::Body &, const JPH::Body &, const JPH::ContactManifold &, JPH::ContactSettings &> PHYSICS::onContactPersisted;
+	rawrbox::Event<const JPH::SubShapeIDPair &> PHYSICS::onContactRemoved;
 	// ---
 
 	// Default settings ---
