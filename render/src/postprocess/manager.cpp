@@ -38,7 +38,7 @@ namespace rawrbox {
 			RAWRBOX_DESTROY(sample);
 
 		this->_samples.clear();
-		this->_render = nullptr;
+		this->_render.reset();
 
 		this->_postProcesses.clear();
 		this->_vertices.clear();

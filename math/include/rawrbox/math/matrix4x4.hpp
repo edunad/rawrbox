@@ -150,6 +150,19 @@ namespace rawrbox {
 		}
 
 		void mtxSRT(const rawrbox::Vector3f& scale, const rawrbox::Vector4f& angle, const rawrbox::Vector3f& pos) {
+			rawrbox::Matrix4x4 mt = {};
+			mt.translate(pos);
+
+			rawrbox::Matrix4x4 ms = {};
+			ms.scale(scale);
+
+			rawrbox::Matrix4x4 mr = {};
+			mr.rotate(angle); // Angle should be in world coords
+
+			this->mtx = (mt * mr * ms).mtx;
+		}
+
+		void mtxSRT(const rawrbox::Vector3f& scale, const rawrbox::Vector3f& angle, const rawrbox::Vector3f& pos) {
 			const float sx = sin(angle.x);
 			const float cx = cos(angle.x);
 			const float sy = sin(angle.y);

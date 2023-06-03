@@ -94,6 +94,7 @@ namespace assimp {
 		this->_model5->playAnimation("Scene", true, 1.F);
 		this->_model5->setPos({0, 0, -3.5F});
 		this->_model5->setScale({0.35F, 0.35F, 0.35F});
+		this->_model5->setEulerAngle({0, bx::toRad(90.F), 0});
 
 		//   -----
 
@@ -119,17 +120,17 @@ namespace assimp {
 	}
 
 	void Game::shutdown() {
-		this->_window = nullptr;
-		this->_camera = nullptr;
+		this->_window.reset();
+		this->_camera.reset();
 
-		this->_model = nullptr;
-		this->_model2 = nullptr;
-		this->_model3 = nullptr;
-		this->_model4 = nullptr;
-		this->_model5 = nullptr;
-		this->_modelGrid = nullptr;
+		this->_model.reset();
+		this->_model2.reset();
+		this->_model3.reset();
+		this->_model4.reset();
+		this->_model5.reset();
+		this->_modelGrid.reset();
 
-		this->_text = nullptr;
+		this->_text.reset();
 
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();

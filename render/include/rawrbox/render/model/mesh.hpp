@@ -85,10 +85,10 @@ namespace rawrbox {
 
 		Mesh() = default;
 		virtual ~Mesh() {
-			this->texture = nullptr;
-			this->specularTexture = nullptr;
-			this->emissionTexture = nullptr;
-			this->opacityTexture = nullptr;
+			this->texture.reset();
+			this->specularTexture.reset();
+			this->emissionTexture.reset();
+			this->opacityTexture.reset();
 
 			this->owner = nullptr;
 			this->skeleton.reset();

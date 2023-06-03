@@ -13,7 +13,7 @@
 namespace rawrbox {
 	Font::~Font() {
 		if (this->_font == nullptr) return;
-		this->_font = nullptr;
+		this->_font.reset();
 		this->_glyphs.clear();
 	}
 
@@ -22,7 +22,7 @@ namespace rawrbox {
 
 		// Load
 		this->_font = std::make_unique<stbtt_fontinfo>();
-		if (!stbtt_InitFont(this->_font.get(), buffer.data(), offset)) throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load font"));
+		if (!stbtt_InitFont(this->_font.get(), buffer.data(), offset)) throw std::runtime_error("[RawrBox-Font] Failed to load font");
 		this->_scale = stbtt_ScaleForMappingEmToPixels(this->_font.get(), static_cast<float>(pixelHeight));
 		this->_pixelSize = static_cast<float>(pixelHeight);
 
@@ -32,7 +32,7 @@ namespace rawrbox {
 
 	// INTERNAL ---
 	void Font::loadFontInfo() {
-		if (this->_font == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Font] Font not loaded"));
+		if (this->_font == nullptr) throw std::runtime_error("[RawrBox-Font] Font not loaded");
 
 		int ascent = 0;
 		int descent = 0;
@@ -54,7 +54,7 @@ namespace rawrbox {
 	}
 
 	std::shared_ptr<rawrbox::Glyph> Font::bakeGlyphAlpha(uint16_t codePoint) {
-		if (this->_font == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Font] Font not loaded"));
+		if (this->_font == nullptr) throw std::runtime_error("[RawrBox-Font] Font not loaded");
 
 		int32_t ascent = 0, descent = 0, lineGap = 0;
 		stbtt_GetFontVMetrics(this->_font.get(), &ascent, &descent, &lineGap);

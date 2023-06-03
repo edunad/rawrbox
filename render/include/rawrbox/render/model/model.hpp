@@ -156,6 +156,7 @@ namespace rawrbox {
 			for (auto it2 = this->_playingAnimations.begin(); it2 != this->_playingAnimations.end();) {
 				if ((*it2).time >= (*it2).data->duration && !(*it2).loop) {
 					it2 = this->_playingAnimations.erase(it2);
+					continue;
 				}
 
 				++it2;
@@ -233,6 +234,11 @@ namespace rawrbox {
 
 		void setAngle(const rawrbox::Vector4f& angle) override {
 			rawrbox::ModelBase<M>::setAngle(angle);
+			// this->updateLights(); // TODO
+		}
+
+		void setEulerAngle(const rawrbox::Vector3f& angle) override {
+			rawrbox::ModelBase<M>::setEulerAngle(angle);
 			// this->updateLights(); // TODO
 		}
 

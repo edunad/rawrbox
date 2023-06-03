@@ -5,7 +5,8 @@ using namespace std::chrono;
 using namespace std::literals;
 
 namespace rawrbox {
-	struct Timer {
+	struct Watch {
+	public:
 		std::chrono::high_resolution_clock::time_point timestamp = std::chrono::high_resolution_clock::now();
 
 		inline double elapsed_seconds_since(std::chrono::high_resolution_clock::time_point timestamp2) {
@@ -19,7 +20,5 @@ namespace rawrbox {
 			timestamp = timestamp2;
 			return elapsed;
 		}
-
-		Timer() = default;
 	};
 } // namespace rawrbox

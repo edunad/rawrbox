@@ -86,11 +86,11 @@ namespace light {
 	}
 
 	void Game::shutdown() {
-		this->_window = nullptr;
-		this->_camera = nullptr;
+		this->_window.reset();
+		this->_camera.reset();
 
-		this->_model = nullptr;
-		this->_text = nullptr;
+		this->_model.reset();
+		this->_text.reset();
 
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
@@ -109,7 +109,7 @@ namespace light {
 		this->_camera->update();
 
 		t += 0.45F;
-		this->_model->setAngle({0, bx::toRad(t), 0});
+		this->_model->setEulerAngle({0, bx::toRad(t), 0});
 	}
 
 	void Game::drawWorld() {

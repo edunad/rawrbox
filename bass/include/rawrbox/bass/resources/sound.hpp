@@ -8,9 +8,7 @@ namespace rawrbox {
 	class ResourceBASS : public rawrbox::Resource {
 	public:
 		std::shared_ptr<rawrbox::SoundBase> sound = nullptr;
-		~ResourceBASS() override {
-			this->sound = nullptr;
-		}
+		~ResourceBASS() override { this->sound.reset(); }
 
 		bool load(const std::vector<uint8_t>& buffer) override {
 			auto p = this->filePath.generic_string();

@@ -70,10 +70,10 @@ namespace rawrbox {
 
 		explicit AssimpMaterial(std::string _name) : name(std::move(_name)){};
 		~AssimpMaterial() {
-			this->diffuse = nullptr;
-			this->opacity = nullptr;
-			this->specular = nullptr;
-			this->emissive = nullptr;
+			this->diffuse.reset();
+			this->opacity.reset();
+			this->specular.reset();
+			this->emissive.reset();
 		}
 	};
 

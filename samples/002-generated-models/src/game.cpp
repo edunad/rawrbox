@@ -120,13 +120,13 @@ namespace model {
 	}
 
 	void Game::shutdown() {
-		this->_window = nullptr;
-		this->_camera = nullptr;
-		this->_texture2 = nullptr;
+		this->_window.reset();
+		this->_camera.reset();
+		this->_texture2.reset();
 
-		this->_model = nullptr;
-		this->_sprite = nullptr;
-		this->_text = nullptr;
+		this->_model.reset();
+		this->_sprite.reset();
+		this->_text.reset();
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::Engine::shutdown();

@@ -6,7 +6,7 @@
 
 namespace rawrbox {
 	UIImage::~UIImage() {
-		this->_texture = nullptr;
+		this->_texture.reset();
 	}
 
 	// UTILS ----

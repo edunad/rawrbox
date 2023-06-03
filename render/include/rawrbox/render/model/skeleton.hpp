@@ -20,7 +20,7 @@ namespace rawrbox {
 
 		explicit Skeleton(std::string _name) : name(std::move(_name)) {}
 		~Skeleton() {
-			this->rootBone = nullptr;
+			this->rootBone.reset();
 			this->boneMap.clear();
 		}
 	};

@@ -117,11 +117,11 @@ namespace particle_test {
 	}
 
 	void Game::shutdown() {
-		this->_window = nullptr;
-		this->_camera = nullptr;
-		this->_ps = nullptr;
-		this->_modelGrid = nullptr;
-		this->_text = nullptr;
+		this->_window.reset();
+		this->_camera.reset();
+		this->_ps.reset();
+		this->_modelGrid.reset();
+		this->_text.reset();
 
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();

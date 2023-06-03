@@ -6,8 +6,8 @@
 
 namespace rawrbox {
 	UIProgressBar::~UIProgressBar() {
-		this->_overlay = nullptr;
-		this->_bg = nullptr;
+		this->_overlay.reset();
+		this->_bg.reset();
 
 		this->_font_11.reset();
 	}

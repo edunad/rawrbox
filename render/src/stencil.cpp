@@ -43,7 +43,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_texColor);
 
 		this->_drawCalls.clear();
-		this->_pixelTexture = nullptr;
+		this->_pixelTexture.reset();
 	}
 
 	void Stencil::upload() {

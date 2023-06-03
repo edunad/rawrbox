@@ -189,10 +189,10 @@ namespace ui_test {
 	}
 
 	void Game::shutdown() {
-		this->_window = nullptr;
-		this->_anim = nullptr;
-		this->_ROOT_UI = nullptr;
-		this->_graph = nullptr;
+		this->_window.reset();
+		this->_anim.reset();
+		this->_ROOT_UI.reset();
+		this->_graph.reset();
 
 		rawrbox::Engine::shutdown();
 	}
@@ -224,7 +224,7 @@ namespace ui_test {
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "009-ui");
+		bgfx::dbgTextPrintf(1, 1, 0x1f, "008-ui");
 		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: UI test");
 		printFrames();
 		// -----------

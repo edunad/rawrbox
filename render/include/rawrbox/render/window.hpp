@@ -93,7 +93,7 @@ namespace rawrbox {
 	public:
 		std::unordered_map<unsigned int, unsigned char> keysIn;
 		std::unordered_map<unsigned int, unsigned char> mouseIn;
-		bool hasFocus = false;
+		bool hasFocus = true;
 
 		// ------CALLBACKS
 		OnKeyCallback onKey;

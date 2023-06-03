@@ -2,7 +2,6 @@
   <img src="https://i.rawr.dev/caw_sleep.png" width=215 /><br/>
 </p>
 
-
 <h2>
 	<p align="center">
 		<a href="https://github.com/MythicalRawr/rawrbox">RawrBox</a> - Another modular(?) game engine made with <a href="https://github.com/bkaradzic/bgfx">BGFX</a>
@@ -12,7 +11,7 @@
 <p align="center">
 	<img src="https://github.com/edunad/rawrbox/actions/workflows/build.yml/badge.svg?branch=master&event=push"/>
 </p>
-		
+
 <h4>
 	<p align="center">
 		Similar to <a href="https://github.com/Goofy-Penguin/Mainframe">Mainframe</a> but with focus on games (and so i can practice some C++)
@@ -40,6 +39,7 @@
 -   Vulkan / DirectX / OpenGL support
 -   Wayland support (linux only)
 -   Works on steam deck 😺
+-   Physics system using [JoltPhysics](https://github.com/jrouwe/JoltPhysics)
 
 # TODO LIST
 
@@ -48,7 +48,6 @@
 -   Add shadow maps to lights
 -   Add scripting lib (with lua support)
 -   Add steam networking lib
--   Add physics system (JoltPhysics maybe :O?)
 
 # LIBS
 
@@ -62,6 +61,7 @@
 | `RAWRBOX.DEBUG`     | Debug utils lib                                    | Automatically adds GIZMOS and other debug methods to the renderer                          |        `RENDER`        |
 | `RAWRBOX.UI`        | UI lib                                             | UI components lib                                                                          | `RENDER` & `RESOURCES` |
 | `RAWRBOX.RESOURCES` | Resources manager lib                              | Resource manager. Handles loading and stores the pointers for easy access                  |        `UTILS`         |
+| `RAWRBOX.PHYSICS`   | Physics lib                                        | Physics lib                                                                                |   `ENGINE` & `MATH`    |
 
 <p align="center">
   <img src="./RAWBOX%20-%20Dependencies.png" />
@@ -69,22 +69,25 @@
 
 # CMAKE OPTIONS
 
-| OPTION NAME                       | NOTE                                                                                               |
-| :-------------------------------- | :------------------------------------------------------------------------------------------------- |
-| `RAWRBOX_OUTPUT_BIN`              | The output build folder. Default is `bin`                                                          |
-| `RAWRBOX_CONTENT_FOLDER`          | The content folder to output resources. Default is `content`                                       |
-| --                                | --                                                                                                 |
-| `RAWRBOX_USE_WAYLAND`             | Enables WAYLAND compiling on LINUX                                                                 |
-| --                                | --                                                                                                 |
-| `RAWRBOX_ENABLE_QHULL`            | Enables QHull util                                                                                 |
-| `RAWRBOX_ENABLE_ASSIMP_SUPPORT`   | Enables assimp model loading                                                                       |
-| `RAWRBOX_ENABLE_BASS_SUPPORT`     | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
-|                                   |                                                                                                    |
-| `RAWRBOX_BUILD_SAMPLES`           | Builds the project sample                                                                          |
-| `RAWRBOX_BUILD_TESTING`           | Builds and runs tests                                                                              |
-| `RAWRBOX_BUILD_UI`                | Builds and includes ui                                                                             |
-| `RAWRBOX_BUILD_DEBUG`             | Builds and includes debug (aka gizmo rendering & renderdoc)                                        |
-| `RAWRBOX_BUILD_RESOURCES_MANAGER` | Builds and resouces manager (aka handling and storing loaded resources)                            |
+| OPTION NAME                                | NOTE                                                                                               |
+| :----------------------------------------- | :------------------------------------------------------------------------------------------------- |
+| `RAWRBOX_OUTPUT_BIN`                       | The output build folder. Default is `bin`                                                          |
+| `RAWRBOX_CONTENT_FOLDER`                   | The content folder to output resources. Default is `content`                                       |
+| --                                         | --                                                                                                 |
+| `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 |
+| --                                         | --                                                                                                 |
+| `RAWRBOX_ENABLE_QHULL`                     | Enables QHull util                                                                                 |
+| `RAWRBOX_ENABLE_ASSIMP_SUPPORT`            | Enables assimp model loading                                                                       |
+| `RAWRBOX_ENABLE_BASS_SUPPORT`              | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
+|                                            |                                                                                                    |
+| `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          |
+| `RAWRBOX_BUILD_TESTING`                    | Builds and runs tests                                                                              |
+| `RAWRBOX_BUILD_UI`                         | Builds and includes ui                                                                             |
+| `RAWRBOX_BUILD_DEBUG`                      | Builds and includes debug (aka gizmo rendering & renderdoc)                                        |
+| `RAWRBOX_BUILD_RESOURCES_MANAGER`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
+| `RAWRBOX_BUILD_PHYSICS`                    | Builds the physics engine                                                                          |
+|                                            |                                                                                                    |
+| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime                                                   |
 
 # DEPENCENDIES
 
@@ -93,16 +96,17 @@
 | bgfx            |    ✔️    |                                                     |
 | bx              |    ✔️    | Required by `bgfx`                                  |
 | glfw            |    ✔️    |                                                     |
-| qhull           |    ✖️    | Used for calculating convex hulls from given points |
+| nlohmann_json   |    ✔️    | Used for loading JSON files                         |
 | fmt             |    ✔️    | Used for formatting                                 |
 | utfcpp          |    ✔️    | Used for text rendering                             |
 | stb/image       |    ✔️    | Used for loading images                             |
 | stb/image_write |    ✔️    | Used for writting images                            |
 | stb/freetype    |    ✔️    | Used for loading fonts                              |
+| qhull           |    ✖️    | Used for calculating convex hulls from given points |
 | assimp          |    ✖️    | Used for loading models                             |
 | catch2          |    ✖️    | Used for testing                                    |
 | bass            |    ✖️    | Used for loading sounds                             |
-| nlohmann_json   |    ✔️    | Used for loading JSON files                         |
+| JoltPhysics     |    ✖️    | Used for managing physics                           |
 
 # BUILDING
 
