@@ -11,9 +11,7 @@ target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMI
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC RAWRBOX.UTILS fmt)
 
-if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
-    set_property(TARGET ${output_target} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
+set_lib_runtime_mt(${output_target})
 #--------------
 
 # TEST ----

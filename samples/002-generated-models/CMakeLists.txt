@@ -17,9 +17,7 @@ target_compile_definitions(${output_target} PUBLIC
 	NOMINMAX
 )
 
-if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
-    set_property(TARGET ${output_target} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
+set_lib_runtime_mt(${output_target})
 
 if(NOT WIN32)
 	set_target_properties(${output_target} PROPERTIES LINK_FLAGS -Wl,-rpath,'\$ORIGIN')

@@ -35,11 +35,9 @@ CPMAddPackage(
 		"BX_AMALGAMATED ON"
 )
 
-if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
-    set_property(TARGET bimg PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    set_property(TARGET bx PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    set_property(TARGET bgfx PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
+set_lib_runtime_mt(bimg)
+set_lib_runtime_mt(bx)
+set_lib_runtime_mt(bgfx)
 
 if(bgfx_ADDED)
 	message("-- Including bgfx utils")
@@ -156,9 +154,7 @@ target_link_libraries(${output_target} PUBLIC ${RAWRBOX_SHADERS_TARGET_NAME}
 	glfw
 )
 
-if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
-    set_property(TARGET ${output_target} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
+set_lib_runtime_mt(${output_target})
 
 # TEST ----
 include(../cmake/catch2.cmake)

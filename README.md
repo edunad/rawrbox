@@ -69,23 +69,25 @@
 
 # CMAKE OPTIONS
 
-| OPTION NAME                       | NOTE                                                                                               |
-| :-------------------------------- | :------------------------------------------------------------------------------------------------- |
-| `RAWRBOX_OUTPUT_BIN`              | The output build folder. Default is `bin`                                                          |
-| `RAWRBOX_CONTENT_FOLDER`          | The content folder to output resources. Default is `content`                                       |
-| --                                | --                                                                                                 |
-| `RAWRBOX_USE_WAYLAND`             | Enables WAYLAND compiling on LINUX                                                                 |
-| --                                | --                                                                                                 |
-| `RAWRBOX_ENABLE_QHULL`            | Enables QHull util                                                                                 |
-| `RAWRBOX_ENABLE_ASSIMP_SUPPORT`   | Enables assimp model loading                                                                       |
-| `RAWRBOX_ENABLE_BASS_SUPPORT`     | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
-|                                   |                                                                                                    |
-| `RAWRBOX_BUILD_SAMPLES`           | Builds the project sample                                                                          |
-| `RAWRBOX_BUILD_TESTING`           | Builds and runs tests                                                                              |
-| `RAWRBOX_BUILD_UI`                | Builds and includes ui                                                                             |
-| `RAWRBOX_BUILD_DEBUG`             | Builds and includes debug (aka gizmo rendering & renderdoc)                                        |
-| `RAWRBOX_BUILD_RESOURCES_MANAGER` | Builds and resouces manager (aka handling and storing loaded resources)                            |
-| `RAWRBOX_BUILD_PHYSICS`           | Builds the physics engine                                                                          |
+| OPTION NAME                                | NOTE                                                                                               |
+| :----------------------------------------- | :------------------------------------------------------------------------------------------------- |
+| `RAWRBOX_OUTPUT_BIN`                       | The output build folder. Default is `bin`                                                          |
+| `RAWRBOX_CONTENT_FOLDER`                   | The content folder to output resources. Default is `content`                                       |
+| --                                         | --                                                                                                 |
+| `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 |
+| --                                         | --                                                                                                 |
+| `RAWRBOX_ENABLE_QHULL`                     | Enables QHull util                                                                                 |
+| `RAWRBOX_ENABLE_ASSIMP_SUPPORT`            | Enables assimp model loading                                                                       |
+| `RAWRBOX_ENABLE_BASS_SUPPORT`              | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
+|                                            |                                                                                                    |
+| `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          |
+| `RAWRBOX_BUILD_TESTING`                    | Builds and runs tests                                                                              |
+| `RAWRBOX_BUILD_UI`                         | Builds and includes ui                                                                             |
+| `RAWRBOX_BUILD_DEBUG`                      | Builds and includes debug (aka gizmo rendering & renderdoc)                                        |
+| `RAWRBOX_BUILD_RESOURCES_MANAGER`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
+| `RAWRBOX_BUILD_PHYSICS`                    | Builds the physics engine                                                                          |
+|                                            |                                                                                                    |
+| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime                                                   |
 
 # DEPENCENDIES
 

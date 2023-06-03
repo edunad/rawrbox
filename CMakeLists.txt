@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
 
+# SETUP UTILS
+include("cmake/rawrbox_utils.cmake")
+# -----
+
 # SETUP CPM -----
 include("cmake/cpm.cmake")
 # ---------------
@@ -25,9 +29,14 @@ option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 option(RAWRBOX_BUILD_SAMPLES "Build samples" ON)
 option(RAWRBOX_BUILD_TESTING "Build tests" ON)
 option(RAWRBOX_BUILD_UI "Build ui" ON)
+
 option(RAWRBOX_BUILD_RESOURCES_MANAGER "Build resources manager" ON)
 option(RAWRBOX_BUILD_DEBUG "Build debug lib & add gizmo support" ON)
 option(RAWRBOX_BUILD_PHYSICS "Build physics support" ON)
+option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" ON)
+if(RAWRBOX_BUILD_PHYSICS)
+	set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Jolt requires msvc multithreaded runtime
+endif()
 
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
 
@@ -100,10 +109,8 @@ CPMAddPackage(
 	VERSION 0.9.0
 )
 
-if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
-    set_property(TARGET fmt PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-    set_property(TARGET magic_enum PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
+set_lib_runtime_mt(fmt)
+set_lib_runtime_mt(magic_enum)
 
 if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
 	CPMAddPackage("gl:wayland/weston@12.0.1")

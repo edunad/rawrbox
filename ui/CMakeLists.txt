@@ -21,9 +21,8 @@ CPMAddPackage(
     "CLIP_TESTS OFF"
 )
 
-if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
-    set_property(TARGET clip PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
+
+set_lib_runtime_mt(clip)
 # ----
 
 # LIB ----
@@ -35,9 +34,7 @@ target_include_directories(${output_target} PUBLIC "include" "${clip_SOURCE_DIR}
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC RAWRBOX.RENDER RAWRBOX.RESOURCES clip)
 
-if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
-    set_property(TARGET ${output_target} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
+set_lib_runtime_mt(${output_target})
 #--------------
 
 # TEST ----

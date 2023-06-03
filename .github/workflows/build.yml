@@ -39,7 +39,7 @@ jobs:
                   path: |
                       ./build
                       ~/cpm-cache
-                  key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './debug/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt') }}
+                  key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './debug/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics/CMakeLists.txt') }}
 
             - name: Build
               id: build
@@ -58,7 +58,7 @@ jobs:
                   path: |
                       ./build
                       ~/cpm-cache
-                  key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './debug/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt') }}
+                  key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './debug/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics/CMakeLists.txt') }}
 
             - name: Run tests
               run: |
@@ -83,5 +83,4 @@ jobs:
                   version: '16'
                   database: './build/'
                   thread-comments: true
-                  step-summary: true
-                  ignore: 'build | .github | render/include/stb | deps | debug/tests | engine/tests | math/tests | render/tests | resources/tests | utils/tests'
+                  ignore: 'build | .github | render/include/stb | build/_deps | debug/tests | engine/tests | math/tests | render/tests | resources/tests | utils/tests'
