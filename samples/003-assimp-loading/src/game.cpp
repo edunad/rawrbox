@@ -94,6 +94,7 @@ namespace assimp {
 		this->_model5->playAnimation("Scene", true, 1.F);
 		this->_model5->setPos({0, 0, -3.5F});
 		this->_model5->setScale({0.35F, 0.35F, 0.35F});
+		this->_model5->setEulerAngle({0, bx::toRad(90.F), 0});
 
 		//   -----
 

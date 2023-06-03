@@ -87,12 +87,29 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		REQUIRE(base->getAngle().x == 0);
 		REQUIRE(base->getAngle().y == 0);
 		REQUIRE(base->getAngle().z == 0);
+		REQUIRE(base->getAngle().w == 0);
 
-		base->setAngle({12, 3, 8});
+		base->setAngle({12, 3, 8, 32});
 
 		REQUIRE(base->getAngle().x == 12);
 		REQUIRE(base->getAngle().y == 3);
 		REQUIRE(base->getAngle().z == 8);
+		REQUIRE(base->getAngle().w == 32);
+	}
+
+	SECTION("rawrbox::ModelBase::setEulerAngle / rawrbox::ModelBase::getAngle") {
+		auto base = std::make_shared<rawrbox::ModelBase<>>();
+		REQUIRE(base->getAngle().x == 0);
+		REQUIRE(base->getAngle().y == 0);
+		REQUIRE(base->getAngle().z == 0);
+		REQUIRE(base->getAngle().w == 0);
+
+		base->setEulerAngle({12, 3, 8});
+
+		REQUIRE(base->getAngle().x == 12);
+		REQUIRE(base->getAngle().y == 3);
+		REQUIRE(base->getAngle().z == 8);
+		REQUIRE(base->getAngle().w == 0);
 	}
 
 	SECTION("rawrbox::ModelBase::setScale / rawrbox::ModelBase::getScale") {

@@ -109,7 +109,7 @@ namespace light {
 		this->_camera->update();
 
 		t += 0.45F;
-		this->_model->setAngle({0, bx::toRad(t), 0});
+		this->_model->setEulerAngle({0, bx::toRad(t), 0});
 	}
 
 	void Game::drawWorld() {

@@ -16,7 +16,7 @@ namespace rawrbox {
 	// ---
 
 	// Public
-	std::shared_ptr<JPH::PhysicsSystem> PHYSICS::physicsSystem = nullptr;
+	std::unique_ptr<JPH::PhysicsSystem> PHYSICS::physicsSystem = nullptr;
 
 	rawrbox::Event<const JPH::BodyID &, uint64_t> PHYSICS::onBodyAwake;
 	rawrbox::Event<const JPH::BodyID &, uint64_t> PHYSICS::onBodySleep;
@@ -54,7 +54,7 @@ namespace rawrbox {
 		_contactListener = std::make_unique<rawrbox::ContactListener>();
 
 		// Initialize physics system
-		physicsSystem = std::make_shared<JPH::PhysicsSystem>();
+		physicsSystem = std::make_unique<JPH::PhysicsSystem>();
 		physicsSystem->Init(maxBodies, maxBodyMutexes, maxBodyPairs, maxContactConstraints, *_bpLayerInterface, *_bpLayerFilter, *_layerFilter);
 		physicsSystem->SetBodyActivationListener(_bodyListener.get());
 		physicsSystem->SetContactListener(_contactListener.get());

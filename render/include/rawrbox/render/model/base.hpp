@@ -489,6 +489,11 @@ namespace rawrbox {
 			this->_matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 		}
 
+		virtual void setEulerAngle(const rawrbox::Vector3f& ang) {
+			this->_angle = {ang.x, ang.y, ang.z, 0.F};
+			this->_matrix.mtxSRT(this->_scale, ang, this->_pos);
+		}
+
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getMatrix() const {
 			return this->_matrix;
 		}

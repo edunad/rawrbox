@@ -36,6 +36,7 @@ namespace physics_test {
 
 		// Initialize physics
 		rawrbox::PHYSICS::init();
+
 		rawrbox::PHYSICS::onBodyAwake += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body awake \n"); };
 		rawrbox::PHYSICS::onBodySleep += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body sleep \n"); };
 
@@ -78,6 +79,7 @@ namespace physics_test {
 
 		// Create the settings for the body itself. Note that here you can also set other properties like the restitution / friction.
 		JPH::BodyCreationSettings floor_settings(floor_shape, JPH::RVec3(0.0_r, 0.0_r, 0.0_r), JPH::Quat::sIdentity(), JPH::EMotionType::Static, static_cast<JPH::ObjectLayer>(rawrbox::PHYS_LAYERS::STATIC));
+		floor_settings.mFriction = 1.F;
 		// ---
 
 		// Create the actual rigid body
@@ -114,12 +116,14 @@ namespace physics_test {
 
 		JPH::BodyInterface& body_interface = rawrbox::PHYSICS::physicsSystem->GetBodyInterface();
 		JPH::BoxShapeSettings box_shape_settings(JPH::Vec3(size.x / 2.F, size.y / 2.F, size.z / 2.F));
+		// JPH::SphereShapeSettings box_shape_settings(size.x / 2.F);
 
 		JPH::ShapeSettings::ShapeResult box_result = box_shape_settings.Create();
 		JPH::ShapeRefC box_shape = box_result.Get(); // We don't expect an error here, but you can check floor_shape_result for HasError() / GetError()
 
 		// Create the settings for the body itself. Note that here you can also set other properties like the restitution / friction.
 		JPH::BodyCreationSettings box_settings(box_shape, JPH::RVec3(pos.x, pos.y, pos.x), JPH::Quat::sIdentity(), JPH::EMotionType::Dynamic, static_cast<JPH::ObjectLayer>(rawrbox::PHYS_LAYERS::DYNAMIC));
+		box_settings.mFriction = 1.F;
 		// ---
 
 		// Create the actual rigid body

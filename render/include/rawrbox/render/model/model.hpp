@@ -236,6 +236,11 @@ namespace rawrbox {
 			// this->updateLights(); // TODO
 		}
 
+		void setEulerAngle(const rawrbox::Vector3f& angle) override {
+			rawrbox::ModelBase<M>::setEulerAngle(angle);
+			// this->updateLights(); // TODO
+		}
+
 		void setScale(const rawrbox::Vector3f& size) override {
 			rawrbox::ModelBase<M>::setScale(size);
 			// this->updateLights(); // TODO

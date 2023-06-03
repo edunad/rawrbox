@@ -109,7 +109,7 @@ namespace rawrbox {
 
 	public:
 		// VARS ----
-		static std::shared_ptr<JPH::PhysicsSystem> physicsSystem;
+		static std::unique_ptr<JPH::PhysicsSystem> physicsSystem;
 		static int steps;
 		static int subSteps;
 
