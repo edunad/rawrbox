@@ -2,7 +2,7 @@
 
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/engine/threading.hpp>
-#include <rawrbox/engine/timer.hpp>
+#include <rawrbox/engine/watch.hpp>
 
 #include <chrono>
 #include <functional>
@@ -24,7 +24,7 @@ namespace rawrbox {
 		uint32_t _tps = 66;
 		uint32_t _fps = 60;
 
-		rawrbox::Timer _timer;
+		rawrbox::Watch _timer;
 
 		// Quick sleep from  https://github.com/turanszkij/WickedEngine/blob/387c3e0a379a843c433d425f970846a073d55665/WickedEngine/wiApplication.cpp#L148
 		void sleep(float milliseconds) {

@@ -33,7 +33,7 @@ namespace rawrbox {
 			for (auto it2 = rawrbox::BASS::sounds.begin(); it2 != rawrbox::BASS::sounds.end();) {
 				if ((*it2).second->getSample() == channel) {
 					it2 = rawrbox::BASS::sounds.erase(it2);
-					return;
+					continue;
 				} else {
 					++it2;
 				}

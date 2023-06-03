@@ -1,6 +1,6 @@
-#include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/texture/gif.hpp>
+#include <rawrbox/utils/time_utils.hpp>
 
 #include <stb/gif.hpp>
 

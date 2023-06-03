@@ -31,6 +31,7 @@ namespace physics_test {
 		std::vector<BoxOfDoom> _boxes = std::vector<BoxOfDoom>();
 
 		bool _ready = false;
+		bool _paused = true;
 
 	public:
 		using Engine::Engine;
@@ -41,6 +42,8 @@ namespace physics_test {
 		void update() override;
 		void draw() override;
 		void drawWorld();
+
+		void printFrames();
 
 		void createBox(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size);
 

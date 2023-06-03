@@ -4,6 +4,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
+#include <rawrbox/utils/timer.hpp>
 
 #include <physics_test/game.hpp>
 
@@ -37,8 +38,13 @@ namespace physics_test {
 		// Initialize physics
 		rawrbox::PHYSICS::init();
 
-		rawrbox::PHYSICS::onBodyAwake += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body awake \n"); };
-		rawrbox::PHYSICS::onBodySleep += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body sleep \n"); };
+		auto settings = rawrbox::PHYSICS::physicsSystem->GetPhysicsSettings();
+		settings.mNumPositionSteps = 2;
+		settings.mNumVelocitySteps = 2;
+
+		rawrbox::PHYSICS::physicsSystem->SetPhysicsSettings(settings);
+		// rawrbox::PHYSICS::onBodyAwake += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body awake \n"); };
+		// rawrbox::PHYSICS::onBodySleep += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body sleep \n"); };
 
 		// Load content ---
 		this->loadContent();
@@ -99,14 +105,23 @@ namespace physics_test {
 		}
 		// -----
 
+		// TIMER ---
+		auto timer = rawrbox::Timer::create(600, 25, [this]() {
+			this->createBox({0, 5, 0}, {0.5F, 0.5F, 0.5F});
+		});
+
+		timer.setPaused(this->_paused);
+		// --------
+
 		// BINDS ----
-		this->_window->onMouseKey += [this](auto& w, const rawrbox::Vector2i& mousePos, int button, int action, int mods) {
+		this->_window->onMouseKey += [this, &timer](auto& w, const rawrbox::Vector2i& mousePos, int button, int action, int mods) {
 			const bool isDown = action == 1;
 			if (!isDown || button != MOUSE_BUTTON_1) return;
 
-			fmt::print("Create box\n");
-			this->createBox({0, 5, 0}, {0.5F, 0.5F, 0.5F});
+			this->_paused = !this->_paused;
+			timer.setPaused(this->_paused);
 		};
+		// -----
 
 		this->_ready = true;
 	}
@@ -165,6 +180,26 @@ namespace physics_test {
 		this->_window->update();
 		this->_camera->update();
 
+		if (!this->_paused) {
+			rawrbox::Timer::update();
+			rawrbox::PHYSICS::tick();
+		}
+	}
+
+	void Game::printFrames() {
+		const bgfx::Stats* stats = bgfx::getStats();
+
+		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
+		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
+		bgfx::dbgTextPrintf(1, 6, 0x6f, fmt::format("TRIANGLES: {} ----->    DRAW CALLS: {}", stats->numPrims[bgfx::Topology::TriList], stats->numDraw).c_str());
+
+		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("TOTAL BODIES: {}", rawrbox::PHYSICS::physicsSystem->GetBodyStats().mNumBodies).c_str());
+		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("ACTIVE: {}", rawrbox::PHYSICS::physicsSystem->GetNumActiveBodies()).c_str());
+
+		bgfx::dbgTextPrintf(1, 11, 0x4f, fmt::format("Mouse1 to {} simulation", this->_paused ? "unpause" : "pause").c_str());
+	}
+
+	void Game::drawWorld() {
 		for (auto& b : this->_boxes) {
 			auto body = b.body;
 			if (body == nullptr) continue;
@@ -174,21 +209,8 @@ namespace physics_test {
 
 			b.mdl->setPos(pos);
 			b.mdl->setAngle(ang);
-		}
+			b.mdl->setColor(body->IsActive() ? rawrbox::Colors::White : rawrbox::Colors::DarkGray);
 
-		rawrbox::PHYSICS::tick();
-	}
-
-	void printFrames() {
-		const bgfx::Stats* stats = bgfx::getStats();
-
-		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 6, 0x6f, fmt::format("TRIANGLES: {} ----->    DRAW CALLS: {}", stats->numPrims[bgfx::Topology::TriList], stats->numDraw).c_str());
-	}
-
-	void Game::drawWorld() {
-		for (auto& b : this->_boxes) {
 			b.mdl->draw(this->_camera->getPos());
 		}
 
@@ -203,7 +225,7 @@ namespace physics_test {
 		bgfx::dbgTextClear();
 		bgfx::dbgTextPrintf(1, 1, 0x1f, "009-physics");
 		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: PHYSICS test");
-		printFrames();
+		this->printFrames();
 		// -----------
 
 		if (!this->_ready) {

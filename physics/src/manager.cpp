@@ -33,7 +33,7 @@ namespace rawrbox {
 	int PHYSICS::subSteps = 1;
 	// ---
 
-	void PHYSICS::init(uint32_t maxBodies, uint32_t maxBodyMutexes, uint32_t maxBodyPairs, uint32_t maxContactConstraints, uint32_t maxThreads) {
+	void PHYSICS::init(uint32_t mbAlloc, uint32_t maxBodies, uint32_t maxBodyMutexes, uint32_t maxBodyPairs, uint32_t maxContactConstraints, uint32_t maxThreads) {
 		// Register allocation hook
 		JPH::RegisterDefaultAllocator();
 
@@ -44,7 +44,7 @@ namespace rawrbox {
 		JPH::RegisterTypes();
 
 		// Initialize allocator
-		_allocator = std::make_unique<JPH::TempAllocatorImpl>(10 * 1024 * 1024); // 10 MB
+		_allocator = std::make_unique<JPH::TempAllocatorImpl>(mbAlloc * 1024 * 1024); // MB
 
 		// Initialize pool
 		if (maxThreads == 0) maxThreads = std::thread::hardware_concurrency() - 1;

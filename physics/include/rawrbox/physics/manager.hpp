@@ -123,7 +123,7 @@ namespace rawrbox {
 		static rawrbox::Event<const JPH::SubShapeIDPair &> onContactRemoved;
 		// ----
 
-		static void init(uint32_t maxBodies = 1024, uint32_t maxBodyMutexes = 0, uint32_t maxBodyPairs = 1024, uint32_t maxContactConstraints = 1024, uint32_t maxThreads = 0);
+		static void init(uint32_t mbAlloc = 20, uint32_t maxBodies = 2048, uint32_t maxBodyMutexes = 2048, uint32_t maxBodyPairs = 2048, uint32_t maxContactConstraints = 2048, uint32_t maxThreads = 0);
 		static void shutdown();
 
 		static void tick();     // Should be tick based update

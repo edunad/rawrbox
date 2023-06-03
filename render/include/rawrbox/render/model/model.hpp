@@ -156,6 +156,7 @@ namespace rawrbox {
 			for (auto it2 = this->_playingAnimations.begin(); it2 != this->_playingAnimations.end();) {
 				if ((*it2).time >= (*it2).data->duration && !(*it2).loop) {
 					it2 = this->_playingAnimations.erase(it2);
+					continue;
 				}
 
 				++it2;
