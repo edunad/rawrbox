@@ -1,34 +1,35 @@
-
 # Packages ----
 if(RAWRBOX_BUILD_TESTING)
-	message("-- Enabled testing for ${output_target}")
+    message(STATUS "Enabled testing for ${output_target}")
     enable_testing()
 
-    CPMAddPackage(
-        NAME Catch2
-        GITHUB_REPOSITORY catchorg/Catch2
-        VERSION 3.3.2
+    cpmaddpackage(
+        NAME
+        Catch2
+        GITHUB_REPOSITORY
+        catchorg/Catch2
+        VERSION
+        3.3.2
         OPTIONS
         "CATCH_INSTALL_DOCS OFF"
-        "CATCH_INSTALL_EXTRAS ON"
-    )
+        "CATCH_INSTALL_EXTRAS ON")
 
     list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
-	list(APPEND RAWRBOX_EXTRA_TEST_LIBS Catch2::Catch2WithMain)
+    list(APPEND RAWRBOX_EXTRA_TEST_LIBS Catch2::Catch2WithMain)
 
     set_lib_runtime_mt(Catch2)
     set_lib_runtime_mt(Catch2WithMain)
 
-	if(RAWRBOX_BUILD_DEBUG)
+    if(RAWRBOX_BUILD_DEBUG)
         if(NOT output_target MATCHES "RAWRBOX.DEBUG")
-		    list(APPEND RAWRBOX_EXTRA_TEST_LIBS RAWRBOX.DEBUG)
+            list(APPEND RAWRBOX_EXTRA_TEST_LIBS RAWRBOX.DEBUG)
         endif()
-	endif()
+    endif()
 
     include(CTest)
     include(Catch)
 endif()
-#--------------
+# --------------
 
 # TESTING ----
 if(RAWRBOX_BUILD_TESTING)
@@ -41,8 +42,6 @@ if(RAWRBOX_BUILD_TESTING)
     target_link_libraries(${output_target}-TESTS PRIVATE ${output_target} ${RAWRBOX_EXTRA_TEST_LIBS})
 
     set_lib_runtime_mt(${output_target}-TESTS)
-    catch_discover_tests(${output_target}-TESTS
-        DISCOVERY_MODE PRE_TEST
-    )
+    catch_discover_tests(${output_target}-TESTS DISCOVERY_MODE PRE_TEST)
 endif()
-#--------------
+# --------------
