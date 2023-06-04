@@ -77,7 +77,7 @@ namespace rawrbox {
 
 	void PHYSICS::tick() {
 		if (_factory == nullptr || _allocator == nullptr || _threadPool == nullptr || physicsSystem == nullptr) return;
-		physicsSystem->Update(rawrbox::DELTA_TIME, steps, subSteps, _allocator.get(), _threadPool.get());
+		physicsSystem->Update(rawrbox::FIXED_DELTA_TIME, steps, subSteps, _allocator.get(), _threadPool.get());
 	}
 
 	void PHYSICS::optimize() {

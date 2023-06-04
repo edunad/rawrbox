@@ -19,6 +19,8 @@ cpmaddpackage(
     "COMPILE_AS_SHARED_LIBRARY OFF"
     "INTERPROCEDURAL_OPTIMIZATION ON"
     "USE_STATIC_MSVC_RUNTIME_LIBRARY ON"
+    "TARGET_SAMPLES ON"
+    "ENABLE_ALL_WARNINGS OFF"
     SOURCE_SUBDIR
     "Build")
 # ----
@@ -37,5 +39,6 @@ target_link_libraries(${output_target} PUBLIC RAWRBOX.ENGINE RAWRBOX.MATH Jolt m
 set_lib_runtime_mt(${output_target})
 # --------------
 
-# TEST ---- include(../cmake/catch2.cmake)
+# TEST ----
+#include(../cmake/catch2.cmake)
 # --------------

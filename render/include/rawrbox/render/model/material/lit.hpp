@@ -115,13 +115,13 @@ namespace rawrbox {
 			if (mesh->specularTexture != nullptr && mesh->specularTexture->valid() && !mesh->wireframe) {
 				bgfx::setTexture(1, s_texSpecularColor, mesh->specularTexture->getHandle());
 			} else {
-				bgfx::setTexture(1, s_texSpecularColor, rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE->getHandle());
+				bgfx::setTexture(1, s_texSpecularColor, rawrbox::BLACK_TEXTURE->getHandle());
 			}
 
 			if (mesh->emissionTexture != nullptr && mesh->emissionTexture->valid() && !mesh->wireframe) {
 				bgfx::setTexture(2, s_texEmissionColor, mesh->emissionTexture->getHandle());
 			} else {
-				bgfx::setTexture(2, s_texEmissionColor, rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE->getHandle());
+				bgfx::setTexture(2, s_texEmissionColor, rawrbox::BLACK_TEXTURE->getHandle());
 			}
 
 			if (mesh->opacityTexture != nullptr && mesh->opacityTexture->valid() && !mesh->wireframe) {

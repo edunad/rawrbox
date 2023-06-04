@@ -28,11 +28,11 @@ TEST_CASE("Engine should behave as expected", "[rawrbox::Engine]") {
 		REQUIRE(eng.isQuitting() == true);
 	}
 
-	SECTION("rawrbox::Engine::runOnMainThread") {
-		REQUIRE(rawrbox::MAIN_THREAD_INVOKES.isEmpty() == true);
+	SECTION("rawrbox::Engine::runOnRenderThread") {
+		REQUIRE(rawrbox::RENDER_THREAD_INVOKES.isEmpty() == true);
 		std::thread t1([](const std::string& msg) {
 			REQUIRE(msg == "nice");
-			rawrbox::runOnMainThread([]() {
+			rawrbox::runOnRenderThread([]() {
 				REQUIRE(true);
 			});
 		},
@@ -40,6 +40,6 @@ TEST_CASE("Engine should behave as expected", "[rawrbox::Engine]") {
 
 		rawrbox::___runThreadInvokes();
 		t1.join();
-		REQUIRE(rawrbox::MAIN_THREAD_INVOKES.isEmpty() == false);
+		REQUIRE(rawrbox::RENDER_THREAD_INVOKES.isEmpty() == false);
 	}
 }

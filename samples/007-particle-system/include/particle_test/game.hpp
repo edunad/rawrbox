@@ -26,14 +26,13 @@ namespace particle_test {
 
 		void setupGLFW() override;
 		void init() override;
-
-	public:
-		using Engine::Engine;
-
-		void shutdown() override;
+		void onThreadShutdown(rawrbox::ENGINE_THREADS thread) override;
 		void pollEvents() override;
 		void update() override;
 		void draw() override;
+
+	public:
+		void printFrames();
 
 		void loadContent();
 		void contentLoaded();

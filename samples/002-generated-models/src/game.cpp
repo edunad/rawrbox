@@ -20,10 +20,8 @@ namespace model {
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("SIMPLE MODEL TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED);
-		this->_window->onWindowClose += [this](auto& w) {
-			this->shutdown();
-		};
+		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
+		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
 
 	void Game::init() {
@@ -57,7 +55,7 @@ namespace model {
 				rawrbox::RESOURCES::loadFile( f);
 			} },
 		    [this] {
-			    rawrbox::runOnMainThread([this]() {
+			    rawrbox::runOnRenderThread([this]() {
 				    rawrbox::RESOURCES::upload();
 				    this->contentLoaded();
 			    });
@@ -121,7 +119,9 @@ namespace model {
 		this->_text->upload();
 	}
 
-	void Game::shutdown() {
+	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
+
 		this->_window.reset();
 		this->_camera.reset();
 		this->_texture2.reset();
@@ -131,7 +131,9 @@ namespace model {
 		this->_text.reset();
 
 		rawrbox::RESOURCES::shutdown();
-		rawrbox::Engine::shutdown();
+		rawrbox::ASYNC::shutdown();
+
+		this->_window->unblockPoll();
 	}
 
 	void Game::pollEvents() {
@@ -153,7 +155,7 @@ namespace model {
 		this->_text->draw(this->_camera->getPos());
 	}
 
-	void printFrames() {
+	void Game::printFrames() {
 		const bgfx::Stats* stats = bgfx::getStats();
 
 		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);

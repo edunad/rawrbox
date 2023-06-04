@@ -29,7 +29,7 @@ namespace rawrbox {
 
 	// BASS CALLBACKS (Not thread safe! We need to run these on the main thread) ------
 	void CALLBACK onHTTPSoundFree(HSYNC handle, DWORD channel, DWORD data, void* user) {
-		rawrbox::runOnMainThread([channel]() {
+		rawrbox::runOnRenderThread([channel]() {
 			for (auto it2 = rawrbox::BASS::sounds.begin(); it2 != rawrbox::BASS::sounds.end();) {
 				if ((*it2).second->getSample() == channel) {
 					it2 = rawrbox::BASS::sounds.erase(it2);
@@ -42,19 +42,19 @@ namespace rawrbox {
 	}
 
 	void CALLBACK soundBEAT(uint32_t channel, double beatpos, void* user) {
-		rawrbox::runOnMainThread([channel, beatpos]() {
+		rawrbox::runOnRenderThread([channel, beatpos]() {
 			rawrbox::BASS::onBEAT({channel, beatpos});
 		});
 	}
 
 	void CALLBACK soundBPM(uint32_t channel, float bpm, void* user) {
-		rawrbox::runOnMainThread([channel, bpm]() {
+		rawrbox::runOnRenderThread([channel, bpm]() {
 			rawrbox::BASS::onBPM({channel, bpm});
 		});
 	}
 
 	void CALLBACK soundEnd(HSYNC handle, DWORD channel, DWORD data, void* user) {
-		rawrbox::runOnMainThread([channel]() {
+		rawrbox::runOnRenderThread([channel]() {
 			rawrbox::BASS::onSoundEnd(static_cast<uint32_t>(channel));
 		});
 	}

@@ -19,18 +19,17 @@ namespace stencil {
 		std::weak_ptr<rawrbox::Font> _font3;
 
 		bool _ready = false;
+		float _counter = 0;
 
 		void setupGLFW() override;
 		void init() override;
 
-	public:
-		float counter = 0;
-
-		using Engine::Engine;
-
-		void shutdown() override;
+		void onThreadShutdown(rawrbox::ENGINE_THREADS thread) override;
 		void pollEvents() override;
 		void draw() override;
+
+	public:
+		void printFrames();
 
 		void loadContent();
 		void contentLoaded();

@@ -13,6 +13,7 @@ namespace rawrbox {
 
 		int _iterations = -1;
 		std::function<void()> _func = nullptr;
+		std::function<void()> _onComplete = nullptr;
 
 		bool _paused = false;
 		bool _infinite = false;
@@ -27,8 +28,8 @@ namespace rawrbox {
 
 		// STATIC ----
 		static void update();
-		static Timer simple(int msDelay, std::function<void()> func);
-		static Timer create(int reps, int msDelay, std::function<void()> func);
+		static Timer simple(int msDelay, std::function<void()> func, std::function<void()> onComplete = nullptr);
+		static Timer create(int reps, int msDelay, std::function<void()> func, std::function<void()> onComplete = nullptr);
 		static const bool isRunning(const std::string& id);
 		static void clear();
 		// ----

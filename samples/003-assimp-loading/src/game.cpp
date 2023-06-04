@@ -19,10 +19,8 @@ namespace assimp {
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("ASSIMP TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED);
-		this->_window->onWindowClose += [this](auto& w) {
-			this->shutdown();
-		};
+		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
+		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
 
 	void Game::init() {
@@ -54,7 +52,7 @@ namespace assimp {
 		rawrbox::ASYNC::run([initialContentFiles]() {
 			for (auto& f : initialContentFiles) {
 				rawrbox::RESOURCES::loadFile(f.first, f.second);
-			} }, [this] { rawrbox::runOnMainThread([this]() {
+			} }, [this] { rawrbox::runOnRenderThread([this]() {
 										  rawrbox::RESOURCES::upload();
 										  this->contentLoaded();
 									  }); });
@@ -121,7 +119,9 @@ namespace assimp {
 		this->_ready = true;
 	}
 
-	void Game::shutdown() {
+	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
+
 		this->_window.reset();
 		this->_camera.reset();
 
@@ -137,7 +137,9 @@ namespace assimp {
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::LIGHTS::shutdown();
-		rawrbox::Engine::shutdown();
+		rawrbox::ASYNC::shutdown();
+
+		this->_window->unblockPoll();
 	}
 
 	void Game::pollEvents() {
@@ -163,7 +165,7 @@ namespace assimp {
 		this->_text->draw(pos);
 	}
 
-	void printFrames() {
+	void Game::printFrames() {
 		const bgfx::Stats* stats = bgfx::getStats();
 
 		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);

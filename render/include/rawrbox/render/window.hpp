@@ -128,6 +128,7 @@ namespace rawrbox {
 
 		// UPDATE ------
 		void pollEvents();
+		void unblockPoll();
 		// --------------------
 		// DRAW -----
 		void clear();
