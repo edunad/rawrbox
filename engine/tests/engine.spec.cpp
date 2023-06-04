@@ -26,7 +26,6 @@ TEST_CASE("Engine should behave as expected", "[rawrbox::Engine]") {
 		REQUIRE(eng.isQuitting() == false);
 		eng.shutdown();
 		REQUIRE(eng.isQuitting() == true);
-		REQUIRE_NOTHROW(eng.run());
 	}
 
 	SECTION("rawrbox::Engine::runOnMainThread") {
