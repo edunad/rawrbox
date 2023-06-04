@@ -317,7 +317,7 @@ namespace rawrbox {
 
 	void Window::pollEvents() {
 		if (this->_handle == nullptr) return;
-		glfwPollEvents();
+		glfwWaitEvents();
 	}
 
 	// DRAW ------

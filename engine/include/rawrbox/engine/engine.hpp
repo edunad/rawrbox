@@ -125,8 +125,7 @@ namespace rawrbox {
 
 			// GLFW needs to run on main thread
 			while (!this->_shouldShutdown) {
-				this->pollEvents();
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				this->pollEvents(); // pollEvents sleeps by calling glfwWaitEvents()
 			}
 			// -----
 		}
