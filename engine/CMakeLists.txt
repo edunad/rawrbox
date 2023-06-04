@@ -15,7 +15,7 @@ target_compile_definitions(
     PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX
     INTERFACE RAWRBOX_ENGINE)
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
-target_link_libraries(${output_target} PUBLIC RAWRBOX.UTILS fmt)
+target_link_libraries(${output_target} PUBLIC RAWRBOX.UTILS fmt::fmt)
 
 set_lib_runtime_mt(${output_target})
 # --------------

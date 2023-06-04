@@ -4,6 +4,7 @@
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
+#include <rawrbox/utils/threading.hpp>
 
 #include <assimp/game.hpp>
 
@@ -49,13 +50,16 @@ namespace assimp {
 		    std::make_pair<std::string, uint32_t>("content/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE),
 		    std::make_pair<std::string, uint32_t>("content/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS)};
 
-		rawrbox::ASYNC::run([initialContentFiles]() {
-			for (auto& f : initialContentFiles) {
-				rawrbox::RESOURCES::loadFile(f.first, f.second);
-			} }, [this] { rawrbox::runOnRenderThread([this]() {
-										  rawrbox::RESOURCES::upload();
-										  this->contentLoaded();
-									  }); });
+		for (auto& f : initialContentFiles) {
+			this->_loadingFiles++;
+
+			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
+				this->_loadingFiles--;
+				if (this->_loadingFiles <= 0) {
+					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
+				}
+			});
+		}
 
 		this->_window->upload();
 

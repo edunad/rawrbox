@@ -16,6 +16,7 @@ namespace post_process {
 
 		std::shared_ptr<rawrbox::AssimpModel<>> _model = std::make_shared<rawrbox::AssimpModel<>>();
 
+		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;
 
 		void init() override;

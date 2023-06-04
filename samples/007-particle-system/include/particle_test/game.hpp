@@ -23,6 +23,7 @@ namespace particle_test {
 		std::weak_ptr<rawrbox::Font> _font;
 
 		bool _ready = false;
+		std::atomic<int> _loadingFiles = 0;
 
 		void setupGLFW() override;
 		void init() override;

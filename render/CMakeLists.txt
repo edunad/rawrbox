@@ -156,8 +156,8 @@ target_link_libraries(
            RAWRBOX.MATH
            RAWRBOX.ENGINE
            ${RAWRBOX_EXTRA_LIBS}
-           fmt
-           magic_enum
+           fmt::fmt
+           magic_enum::magic_enum
            utf8cpp
            bgfx
            bx

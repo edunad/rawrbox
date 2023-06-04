@@ -102,6 +102,7 @@
 | stb/image       |    ✔️    | Used for loading images                             |
 | stb/image_write |    ✔️    | Used for writting images                            |
 | stb/freetype    |    ✔️    | Used for loading fonts                              |
+| thread-pool     |    ✔️    | Used for managing async                             |
 | qhull           |    ✖️    | Used for calculating convex hulls from given points |
 | assimp          |    ✖️    | Used for loading models                             |
 | catch2          |    ✖️    | Used for testing                                    |

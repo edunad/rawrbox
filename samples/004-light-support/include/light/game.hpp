@@ -21,6 +21,7 @@ namespace light {
 
 		std::weak_ptr<rawrbox::Font> _font;
 
+		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;
 
 		void setupGLFW() override;

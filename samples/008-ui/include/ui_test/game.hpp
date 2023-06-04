@@ -18,6 +18,7 @@ namespace ui_test {
 		std::shared_ptr<rawrbox::UIGraph> _graph = nullptr;
 
 		bool _ready = false;
+		std::atomic<int> _loadingFiles = 0;
 
 		void setupGLFW() override;
 		void init() override;

@@ -56,13 +56,16 @@ namespace physics_test {
 		    "content/textures/crate_hl1.png",
 		};
 
-		rawrbox::ASYNC::run([initialContentFiles]() {
-			for (auto& f : initialContentFiles) {
-				rawrbox::RESOURCES::loadFile(f, 0);
-			} }, [this] { rawrbox::runOnRenderThread([this]() {
-										  rawrbox::RESOURCES::upload();
-										  this->contentLoaded();
-									  }); });
+		for (auto& f : initialContentFiles) {
+			this->_loadingFiles++;
+
+			rawrbox::RESOURCES::loadFileAsync(f, 0, [this]() {
+				this->_loadingFiles--;
+				if (this->_loadingFiles <= 0) {
+					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
+				}
+			});
+		}
 
 		this->_window->upload();
 	}

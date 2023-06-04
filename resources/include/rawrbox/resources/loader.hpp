@@ -10,6 +10,7 @@
 namespace rawrbox {
 	class Loader {
 	protected:
+		std::mutex _threadLock;
 		std::vector<std::unique_ptr<rawrbox::Resource>> _files = {};
 		std::vector<std::pair<std::filesystem::path, uint32_t>> _preLoadFiles = {};
 
@@ -22,13 +23,6 @@ namespace rawrbox {
 		virtual void addToPreLoad(const std::filesystem::path& path, uint32_t loadFlags = 0) {
 			fmt::print("[RawrBox-Resources] Content `{}` marked for pre-loading\n", path.generic_string());
 			this->_preLoadFiles.emplace_back(path, loadFlags);
-		}
-
-		virtual void upload() {
-			for (auto& file : _files) {
-				file->upload();
-				file->uploaded = true;
-			}
 		}
 
 		[[nodiscard]] virtual const bool hasFile(const std::filesystem::path& filePath) const {
@@ -46,6 +40,7 @@ namespace rawrbox {
 		// GET ------
 		template <class T>
 		T* getFile(const std::filesystem::path& filePath) {
+			const std::lock_guard<std::mutex> mutexGuard(_threadLock);
 			for (auto& file : this->_files) {
 				std::error_code err;
 				if (!rawrbox::PathUtils::isSame(filePath, file->filePath)) continue;
@@ -64,7 +59,11 @@ namespace rawrbox {
 
 			// store pointer so we can return it
 			auto ptr = obj.get();
-			this->_files.push_back(std::move(obj));
+
+			{
+				const std::lock_guard<std::mutex> mutexGuard(_threadLock);
+				this->_files.push_back(std::move(obj));
+			}
 
 			return dynamic_cast<T*>(ptr);
 		}

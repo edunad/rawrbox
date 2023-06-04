@@ -51,6 +51,6 @@ target_compile_definitions(
     INTERFACE RAWRBOX_BASS)
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
-target_link_libraries(${output_target} PUBLIC RAWRBOX.ENGINE RAWRBOX.MATH ${RAWRBOX_EXTRA_LIBS} fmt BASS::BASS BASS::FX)
+target_link_libraries(${output_target} PUBLIC RAWRBOX.ENGINE RAWRBOX.MATH ${RAWRBOX_EXTRA_LIBS} fmt::fmt BASS::BASS BASS::FX)
 
 set_lib_runtime_mt(${output_target})
