@@ -34,7 +34,7 @@ target_compile_definitions(
     ${output_target}
     PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX
     INTERFACE RAWRBOX_RESOURCES)
-target_link_libraries(${output_target} PUBLIC RAWRBOX.UTILS fmt nlohmann_json)
+target_link_libraries(${output_target} PUBLIC RAWRBOX.UTILS fmt::fmt nlohmann_json)
 
 set_lib_runtime_mt(${output_target})
 # --------------

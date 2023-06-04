@@ -19,6 +19,8 @@ namespace stencil {
 		std::weak_ptr<rawrbox::Font> _font3;
 
 		bool _ready = false;
+		std::atomic<int> _loadingFiles = 0;
+
 		float _counter = 0;
 
 		void setupGLFW() override;

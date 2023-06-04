@@ -47,13 +47,16 @@ namespace bass_test {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/sounds/clownmusic.ogg", 0 | rawrbox::SoundFlags::SOUND_3D)};
 
-		rawrbox::ASYNC::run([initialContentFiles]() {
-			for (auto& f : initialContentFiles) {
-				rawrbox::RESOURCES::loadFile(f.first, f.second);
-			} }, [this] { rawrbox::runOnRenderThread([this]() {
-										  rawrbox::RESOURCES::upload();
-										  this->contentLoaded();
-									  }); });
+		for (auto& f : initialContentFiles) {
+			this->_loadingFiles++;
+
+			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
+				this->_loadingFiles--;
+				if (this->_loadingFiles <= 0) {
+					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
+				}
+			});
+		}
 
 		this->_window->upload();
 

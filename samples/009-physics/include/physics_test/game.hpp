@@ -30,6 +30,7 @@ namespace physics_test {
 
 		std::vector<BoxOfDoom> _boxes = std::vector<BoxOfDoom>();
 
+		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;
 		bool _paused = true;
 

@@ -53,14 +53,16 @@ namespace ui_test {
 		    std::make_pair<std::string, uint32_t>("./content/json/test.json", 0)};
 		initialContentFiles.insert(initialContentFiles.begin(), rawrbox::UI_RESOURCES.begin(), rawrbox::UI_RESOURCES.end()); // Insert the UI resources
 
-		rawrbox::ASYNC::run([initialContentFiles]() {
-			for (auto& f : initialContentFiles) {
-				rawrbox::RESOURCES::loadFile(f.first, f.second);
-			} }, [this] { rawrbox::runOnRenderThread([this]() {
-										  rawrbox::RESOURCES::upload();
-										  this->contentLoaded();
-									  }); });
+		for (auto& f : initialContentFiles) {
+			this->_loadingFiles++;
 
+			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
+				this->_loadingFiles--;
+				if (this->_loadingFiles <= 0) {
+					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
+				}
+			});
+		}
 		this->_window->upload();
 	}
 

@@ -26,6 +26,7 @@ namespace bass_test {
 
 		float _beat = 0;
 		bool _ready = false;
+		std::atomic<int> _loadingFiles = 0;
 
 		void init() override;
 		void setupGLFW() override;

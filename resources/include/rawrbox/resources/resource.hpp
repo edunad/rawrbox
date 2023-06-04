@@ -14,7 +14,6 @@ namespace rawrbox {
 	class Resource {
 	public:
 		rawrbox::LoadStatus status = rawrbox::LoadStatus::NONE;
-		bool uploaded = false;
 
 		uint32_t flags = 0; // Used for certain files
 		uint32_t crc32 = 0;

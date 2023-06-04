@@ -1,5 +1,8 @@
 #include <rawrbox/engine/engine.hpp>
+#include <rawrbox/engine/static.hpp>
 #include <rawrbox/utils/thread_utils.hpp>
+
+#include <fmt/printf.h>
 
 #include <chrono>
 #include <functional>

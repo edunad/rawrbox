@@ -52,13 +52,16 @@ namespace post_process {
 		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("content/models/ps1_road/scene.gltf", 0 | rawrbox::ModelLoadFlags::IMPORT_TEXTURES)};
 
-		rawrbox::ASYNC::run([initialContentFiles]() {
-			for (auto& f : initialContentFiles) {
-				rawrbox::RESOURCES::loadFile(f.first, f.second);
-			} }, [this] { rawrbox::runOnRenderThread([this]() {
-										  rawrbox::RESOURCES::upload();
-										  this->contentLoaded();
-									  }); });
+		for (auto& f : initialContentFiles) {
+			this->_loadingFiles++;
+
+			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
+				this->_loadingFiles--;
+				if (this->_loadingFiles <= 0) {
+					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
+				}
+			});
+		}
 
 		this->_window->upload();
 		this->_postProcess->upload();
