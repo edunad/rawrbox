@@ -24,10 +24,12 @@ namespace particle_test {
 
 		bool _ready = false;
 
+		void setupGLFW() override;
+		void init() override;
+
 	public:
 		using Engine::Engine;
 
-		void init() override;
 		void shutdown() override;
 		void pollEvents() override;
 		void update() override;

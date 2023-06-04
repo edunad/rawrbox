@@ -40,6 +40,12 @@ namespace rawrbox {
 			}
 		}
 
+		// Create the GLFW window
+		virtual void setupGLFW() { throw std::runtime_error("[RawrBox-Engine] Method 'setupGLFW' not implemented"); };
+
+		// Initialize your game
+		virtual void init(){};
+
 	public:
 		virtual ~Engine() = default;
 		Engine() = default;
@@ -48,9 +54,6 @@ namespace rawrbox {
 		Engine& operator=(Engine&&) = delete;
 		Engine(const Engine&) = delete;
 		Engine& operator=(const Engine&) = delete;
-
-		// one time initializer
-		virtual void init() { throw std::runtime_error("[RawrBox-Engine] Method 'init' not implemented"); };
 
 		// mark quit flag and allow for `isQuiting()` for clean exit threaded
 		virtual void shutdown() {
@@ -72,49 +75,60 @@ namespace rawrbox {
 
 		// starts the game loop and blocks until quit is called and is handled
 		virtual void run() {
-			rawrbox::MAIN_THREAD_ID = std::this_thread::get_id();
-			rawrbox::ThreadUtils::setName("RAWRBOX_MAIN_THREAD");
+			rawrbox::ThreadUtils::setName("rawrbox:glfw");
+			this->setupGLFW();
 
+			// Setup render threading
+			new std::jthread([this]() {
+				rawrbox::MAIN_THREAD_ID = std::this_thread::get_id();
+				this->init();
+
+				rawrbox::ThreadUtils::setName("rawrbox:main");
+				while (!this->_shouldShutdown) {
+					rawrbox::DELTA_TIME = float(std::max(0.0, this->_timer.record_elapsed_seconds()));
+
+					const float target_deltaTime = 1.0F / this->_fps;
+					if (rawrbox::DELTA_TIME < target_deltaTime) {
+						sleep((target_deltaTime - rawrbox::DELTA_TIME) * 1000);
+						rawrbox::DELTA_TIME += float(std::max(0.0, this->_timer.record_elapsed_seconds()));
+					}
+
+					// THREADING ----
+					rawrbox::___runThreadInvokes();
+					// -------
+
+					// Fixed time update --------
+					this->_deltaTimeAccumulator += rawrbox::DELTA_TIME;
+					if (this->_deltaTimeAccumulator > 10.F) this->_deltaTimeAccumulator = 0;
+
+					const float targetFrameRateInv = 1.0F / this->_tps;
+					while (this->_deltaTimeAccumulator >= targetFrameRateInv) {
+						this->fixedUpdate();
+
+						this->_deltaTimeAccumulator -= targetFrameRateInv;
+						if (this->_shouldShutdown) return;
+					}
+
+					// ---------------------------
+
+					// VARIABLE-TIME
+					this->update();
+					// ----
+
+					// ACTUAL DRAWING
+					rawrbox::FRAME_ALPHA = this->_deltaTimeAccumulator / rawrbox::DELTA_TIME;
+					this->draw();
+					// ----------
+				}
+			});
+			// ----
+
+			// GLFW needs to run on main thread
 			while (!this->_shouldShutdown) {
-				rawrbox::DELTA_TIME = float(std::max(0.0, this->_timer.record_elapsed_seconds()));
-
-				const float target_deltaTime = 1.0F / this->_fps;
-				if (rawrbox::DELTA_TIME < target_deltaTime) {
-					sleep((target_deltaTime - rawrbox::DELTA_TIME) * 1000);
-					rawrbox::DELTA_TIME += float(std::max(0.0, this->_timer.record_elapsed_seconds()));
-				}
-
-				// INPUT
 				this->pollEvents();
-				// ----------
-
-				// THREADING ----
-				rawrbox::___runThreadInvokes();
-				// -------
-
-				// Fixed time update --------
-				this->_deltaTimeAccumulator += rawrbox::DELTA_TIME;
-				if (this->_deltaTimeAccumulator > 10) this->_deltaTimeAccumulator = 0;
-
-				const float targetFrameRateInv = 1.0F / this->_tps;
-				while (this->_deltaTimeAccumulator >= targetFrameRateInv) {
-					this->fixedUpdate();
-
-					this->_deltaTimeAccumulator -= targetFrameRateInv;
-					if (this->_shouldShutdown) return;
-				}
-
-				// ---------------------------
-
-				// VARIABLE-TIME
-				this->update();
-				// ----
-
-				// ACTUAL DRAWING
-				rawrbox::FRAME_ALPHA = this->_deltaTimeAccumulator / rawrbox::DELTA_TIME;
-				this->draw();
-				// ----------
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
+			// -----
 		}
 		// sets the update rate per second
 		virtual void setTPS(uint32_t ticksPerSecond) {

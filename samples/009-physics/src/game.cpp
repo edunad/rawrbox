@@ -13,18 +13,20 @@
 #include <vector>
 
 namespace physics_test {
-	void Game::init() {
-		int width = 1024;
-		int height = 768;
-
+	void Game::setupGLFW() {
 		this->_window = std::make_shared<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("PHYSICS TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
-		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED);
+		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED);
 		this->_window->onWindowClose += [this](auto& w) {
 			this->shutdown();
 		};
+	}
+
+	void Game::init() {
+		if (this->_window == nullptr) return;
+		this->_window->initializeBGFX();
 
 		// Setup camera
 		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window);
@@ -176,8 +178,6 @@ namespace physics_test {
 	}
 
 	void Game::update() {
-		if (this->_window == nullptr) return;
-		this->_window->update();
 		this->_camera->update();
 
 		if (!this->_paused) {

@@ -22,10 +22,6 @@ TEST_CASE("Engine should behave as expected", "[rawrbox::Engine]") {
 		REQUIRE(eng.getFPS() == 10);
 	}
 
-	SECTION("rawrbox::Engine::init") {
-		REQUIRE_THROWS(eng.init());
-	}
-
 	SECTION("rawrbox::Engine::shutdown") {
 		REQUIRE(eng.isQuitting() == false);
 		eng.shutdown();

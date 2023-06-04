@@ -26,10 +26,12 @@ namespace model {
 		std::weak_ptr<rawrbox::Font> _font;
 		bool _ready = false;
 
+		void setupGLFW() override;
+		void init() override;
+
 	public:
 		using Engine::Engine;
 
-		void init() override;
 		void shutdown() override;
 		void pollEvents() override;
 

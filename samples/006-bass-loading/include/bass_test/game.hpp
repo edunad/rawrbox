@@ -27,10 +27,12 @@ namespace bass_test {
 		float _beat = 0;
 		bool _ready = false;
 
+		void init() override;
+		void setupGLFW() override;
+
 	public:
 		using Engine::Engine;
 
-		void init() override;
 		void shutdown() override;
 		void pollEvents() override;
 		void update() override;

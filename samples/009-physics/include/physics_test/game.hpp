@@ -33,10 +33,12 @@ namespace physics_test {
 		bool _ready = false;
 		bool _paused = true;
 
+		void setupGLFW() override;
+		void init() override;
+
 	public:
 		using Engine::Engine;
 
-		void init() override;
 		void shutdown() override;
 		void pollEvents() override;
 		void update() override;

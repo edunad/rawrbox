@@ -16,19 +16,20 @@
 #include <vector>
 
 namespace post_process {
-	void Game::init() {
-		int width = 1024;
-		int height = 768;
-
+	void Game::setupGLFW() {
 		this->_window = std::make_shared<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("POST-PROCESS TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
+		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED);
 		this->_window->onWindowClose += [this](auto& w) {
 			this->shutdown();
 		};
+	}
 
-		this->_window->initialize(width, height, rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Debug::TEXT);
+	void Game::init() {
+		if (this->_window == nullptr) return;
+		this->_window->initializeBGFX();
 
 		this->_postProcess = std::make_shared<rawrbox::PostProcessManager>(this->_window->getSize());
 		this->_postProcess->add(std::make_shared<rawrbox::PostProcessBloom>(0.015F));
@@ -71,7 +72,7 @@ namespace post_process {
 		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_road/scene.gltf");
 
 		this->_model->load(mdl->model);
-		this->_model->setScale({0.01F, 0.01F});
+		this->_model->setScale({0.01F, 0.01F, 0.01F});
 		//   -----
 
 		this->_ready = true;
