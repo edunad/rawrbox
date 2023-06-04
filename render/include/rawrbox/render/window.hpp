@@ -63,6 +63,8 @@ namespace rawrbox {
 	private:
 		void* _handle = nullptr;
 		void* _cursor = nullptr;
+
+		uint32_t _windowFlags = 0;
 		uint32_t _resetFlags = BGFX_RESET_NONE;
 		uint32_t _debugFlags = BGFX_DEBUG_NONE;
 
@@ -75,6 +77,8 @@ namespace rawrbox {
 		std::string _title = "RawrBOX - Window";
 		bgfx::RendererType::Enum _renderType = bgfx::RendererType::Count;
 		int _monitor = -1;
+
+		rawrbox::Vector2i _size = {};
 		// -----
 
 		// ------CALLBACKS
@@ -106,7 +110,8 @@ namespace rawrbox {
 		OnWindowClose onWindowClose;
 		// --------------------
 
-		void initialize(int width, int height, uint32_t flags = WindowFlags::NONE);
+		void create(int width, int height, uint32_t flags = WindowFlags::NONE);
+		void initializeBGFX();
 
 		void setMonitor(int monitor);
 		void setRenderer(bgfx::RendererType::Enum render);
@@ -123,9 +128,8 @@ namespace rawrbox {
 
 		// UPDATE ------
 		void pollEvents();
-		void update();
+		void unblockPoll();
 		// --------------------
-
 		// DRAW -----
 		void clear();
 		void upload();
@@ -137,10 +141,12 @@ namespace rawrbox {
 		[[nodiscard]] bool getShouldClose() const;
 		void setShouldClose(bool close) const;
 
-		[[nodiscard]] Vector2i getSize() const;
+		[[nodiscard]] rawrbox::Vector2i getSize() const;
 		[[nodiscard]] float getAspectRatio() const;
 
-		[[nodiscard]] Vector2i getMousePos() const;
+		[[nodiscard]] rawrbox::Vector2i getMousePos() const;
+
+		[[nodiscard]] uint32_t getWindowFlags() const;
 
 		[[nodiscard]] virtual rawrbox::Stencil& getStencil() const;
 		[[nodiscard]] virtual bool isKeyDown(int key) const;

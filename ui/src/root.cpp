@@ -135,33 +135,33 @@ namespace rawrbox {
 
 		// BINDS ---
 		window->onChar += [this](Window& win, uint32_t character) mutable {
-			rawrbox::runOnMainThread([this, character]() {
+			rawrbox::runOnRenderThread([this, character]() {
 				if (this->_focusedElement.expired()) return;
 				this->_focusedElement.lock()->keyChar(character);
 			});
 		};
 
 		window->onKey += [this](Window& win, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) mutable {
-			rawrbox::runOnMainThread([this, key, scancode, action, mods]() {
+			rawrbox::runOnRenderThread([this, key, scancode, action, mods]() {
 				if (this->_focusedElement.expired()) return;
 				this->_focusedElement.lock()->key(key, scancode, action, mods);
 			});
 		};
 
 		window->onMouseKey += [this](Window& win, const rawrbox::Vector2i& location, uint32_t button, uint32_t action, uint32_t mods) mutable {
-			rawrbox::runOnMainThread([this, location, button, action, mods]() {
+			rawrbox::runOnRenderThread([this, location, button, action, mods]() {
 				this->onMousePress(location, button, action, mods);
 			});
 		};
 
 		window->onMouseMove += [this](Window& win, const rawrbox::Vector2i& location) mutable {
-			rawrbox::runOnMainThread([this, location]() {
+			rawrbox::runOnRenderThread([this, location]() {
 				this->onMouseMove(location);
 			});
 		};
 
 		window->onMouseScroll += [this](Window& win, const rawrbox::Vector2i& location, const rawrbox::Vector2i& offset) mutable {
-			rawrbox::runOnMainThread([this, location, offset]() {
+			rawrbox::runOnRenderThread([this, location, offset]() {
 				if (this->_focusedElement.expired()) return;
 				this->_focusedElement.lock()->mouseScroll(location, offset);
 			});

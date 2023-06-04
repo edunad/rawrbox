@@ -14,19 +14,18 @@
 #include <vector>
 
 namespace bass_test {
-	void Game::init() {
-		int width = 1024;
-		int height = 768;
-
+	void Game::setupGLFW() {
 		this->_window = std::make_shared<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("BASS TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
-		this->_window->onWindowClose += [this](auto& w) {
-			this->shutdown();
-		};
+		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
+		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
+	}
 
-		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED);
+	void Game::init() {
+		if (this->_window == nullptr) return;
+		this->_window->initializeBGFX();
 
 		// Setup camera
 		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window);
@@ -51,7 +50,7 @@ namespace bass_test {
 		rawrbox::ASYNC::run([initialContentFiles]() {
 			for (auto& f : initialContentFiles) {
 				rawrbox::RESOURCES::loadFile(f.first, f.second);
-			} }, [this] { rawrbox::runOnMainThread([this]() {
+			} }, [this] { rawrbox::runOnRenderThread([this]() {
 										  rawrbox::RESOURCES::upload();
 										  this->contentLoaded();
 									  }); });
@@ -118,7 +117,9 @@ namespace bass_test {
 		this->_ready = true;
 	}
 
-	void Game::shutdown() {
+	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
+
 		this->_window.reset();
 		this->_camera.reset();
 
@@ -130,7 +131,7 @@ namespace bass_test {
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::LIGHTS::shutdown();
-		rawrbox::Engine::shutdown();
+		rawrbox::ASYNC::shutdown();
 	}
 
 	void Game::pollEvents() {
@@ -153,7 +154,7 @@ namespace bass_test {
 		this->_text->draw({});
 	}
 
-	void printFrames() {
+	void Game::printFrames() {
 		const bgfx::Stats* stats = bgfx::getStats();
 
 		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);

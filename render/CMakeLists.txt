@@ -6,7 +6,7 @@ project(
 set(output_target RAWRBOX.RENDER)
 
 # Packages ----
-cpmaddpackage(
+CPMAddPackage(
     NAME
     glfw
     GITHUB_REPOSITORY
@@ -22,7 +22,7 @@ cpmaddpackage(
     "GLFW_VULKAN_STATIC OFF"
     "USE_MSVC_RUNTIME_LIBRARY_DLL OFF")
 
-cpmaddpackage(
+CPMAddPackage(
     NAME
     bgfx
     GITHUB_REPOSITORY
@@ -49,12 +49,12 @@ if(bgfx_ADDED)
     set_lib_runtime_mt(bgfx)
 endif()
 
-cpmaddpackage("gh:nemtrif/utfcpp@3.2.3")
+CPMAddPackage("gh:nemtrif/utfcpp@3.2.3")
 
 if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
     message(STATUS "Enabled assimp")
 
-    cpmaddpackage(
+    CPMAddPackage(
         NAME
         assimp
         VERSION

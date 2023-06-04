@@ -14,19 +14,19 @@
 #include <vector>
 
 namespace stencil {
-	void Game::init() {
-		int width = 1024;
-		int height = 768;
-
+	void Game::setupGLFW() {
 		this->_window = std::make_shared<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("STENCIL TEST");
 		this->_window->setClearColor(0x443355FF);
 		this->_window->setRenderer(bgfx::RendererType::Count);
-		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED);
-		this->_window->onWindowClose += [this](auto& w) {
-			this->shutdown();
-		};
+		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
+		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
+	}
+
+	void Game::init() {
+		if (this->_window == nullptr) return;
+		this->_window->initializeBGFX();
 
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::GIFLoader>());
@@ -51,7 +51,7 @@ namespace stencil {
 				rawrbox::RESOURCES::loadFile( f);
 			} },
 		    [this] {
-			    rawrbox::runOnMainThread([this]() {
+			    rawrbox::runOnRenderThread([this]() {
 				    rawrbox::RESOURCES::upload();
 				    this->contentLoaded();
 			    });
@@ -72,7 +72,9 @@ namespace stencil {
 		this->_ready = true;
 	}
 
-	void Game::shutdown() {
+	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
+
 		this->_window.reset();
 		this->_texture.reset();
 		this->_texture2.reset();
@@ -82,7 +84,9 @@ namespace stencil {
 		this->_font3.reset();
 
 		rawrbox::RESOURCES::shutdown();
-		rawrbox::Engine::shutdown();
+		rawrbox::ASYNC::shutdown();
+
+		this->_window->unblockPoll();
 	}
 
 	void Game::pollEvents() {
@@ -96,7 +100,7 @@ namespace stencil {
 		stencil.pushOffset({20, 50});
 
 		// Box + clipping --
-		stencil.pushRotation({counter * 50.5F, {50, 50}});
+		stencil.pushRotation({this->_counter * 50.5F, {50, 50}});
 		stencil.pushClipping({-20, -20, 50, 140});
 		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Green);
 		stencil.popClipping();
@@ -147,18 +151,18 @@ namespace stencil {
 
 		// Circle ---
 		stencil.pushOffset({500, 0});
-		stencil.drawCircle({0, 0}, {100, 100}, rawrbox::Colors::Orange, 16, 0, std::fmod(counter * 50.5F, 360.F));
+		stencil.drawCircle({0, 0}, {100, 100}, rawrbox::Colors::Orange, 16, 0, std::fmod(this->_counter * 50.5F, 360.F));
 		stencil.popOffset();
 		// ---
 
 		// Outline circle ---
 		stencil.pushOffset({600, 0});
 		stencil.pushOutline({1.F, 0.25F});
-		stencil.drawCircle({0, 0}, {100, 100}, rawrbox::Colors::Red, 16, 0.F, std::fmod(counter * 50.5F, 360.F));
+		stencil.drawCircle({0, 0}, {100, 100}, rawrbox::Colors::Red, 16, 0.F, std::fmod(this->_counter * 50.5F, 360.F));
 		stencil.popOutline();
 
 		stencil.pushOutline({2.F});
-		stencil.drawCircle({25, 25}, {50, 50}, rawrbox::Colors::Red, 32, 0.F, std::fmod(counter * 50.5F, 360.F));
+		stencil.drawCircle({25, 25}, {50, 50}, rawrbox::Colors::Red, 32, 0.F, std::fmod(this->_counter * 50.5F, 360.F));
 		stencil.popOutline();
 		stencil.popOffset();
 		// ---
@@ -222,7 +226,7 @@ namespace stencil {
 		auto f2 = this->_font2.lock();
 		auto size = f2->getStringSize("Cat!!");
 
-		stencil.pushRotation({counter * 50.5F, (size / 2.F) + rawrbox::Vector2f(0, 40)});
+		stencil.pushRotation({this->_counter * 50.5F, (size / 2.F) + rawrbox::Vector2f(0, 40)});
 		stencil.drawText(f2, "Cat!!", {0, 40});
 		stencil.popRotation();
 
@@ -236,11 +240,11 @@ namespace stencil {
 
 		// TEST ---
 		this->_texture2->step();
-		counter += 0.1F;
+		this->_counter += 0.1F;
 		// ---
 	}
 
-	void printFrames() {
+	void Game::printFrames() {
 		const bgfx::Stats* stats = bgfx::getStats();
 
 		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);

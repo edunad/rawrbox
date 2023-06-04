@@ -29,14 +29,15 @@ namespace assimp {
 		std::weak_ptr<rawrbox::Font> _font;
 		bool _ready = false;
 
-	public:
-		using Engine::Engine;
-
 		void init() override;
-		void shutdown() override;
+		void setupGLFW() override;
+		void onThreadShutdown(rawrbox::ENGINE_THREADS thread) override;
 		void pollEvents() override;
 		void update() override;
 		void draw() override;
+
+	public:
+		void printFrames();
 
 		void loadContent();
 		void contentLoaded();

@@ -33,16 +33,16 @@ namespace physics_test {
 		bool _ready = false;
 		bool _paused = true;
 
-	public:
-		using Engine::Engine;
-
+		void setupGLFW() override;
 		void init() override;
-		void shutdown() override;
+		void onThreadShutdown(rawrbox::ENGINE_THREADS thread) override;
 		void pollEvents() override;
 		void update() override;
+		void fixedUpdate() override;
 		void draw() override;
-		void drawWorld();
 
+	public:
+		void drawWorld();
 		void printFrames();
 
 		void createBox(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size);

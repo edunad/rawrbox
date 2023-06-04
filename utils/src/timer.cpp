@@ -23,6 +23,8 @@ namespace rawrbox {
 			// Life
 			if (!timer._infinite) timer._iterations--;
 			if (timer._iterations <= 0) {
+				if (timer._onComplete) timer._onComplete();
+
 				it2 = timers.erase(it2);
 				continue;
 			} else {
@@ -33,14 +35,15 @@ namespace rawrbox {
 		}
 	}
 
-	rawrbox::Timer Timer::simple(int msDelay, std::function<void()> func) {
-		return create(1, msDelay, func);
+	rawrbox::Timer Timer::simple(int msDelay, std::function<void()> func, std::function<void()> onComplete) {
+		return create(1, msDelay, func, onComplete);
 	}
 
-	rawrbox::Timer Timer::create(int reps, int msDelay, std::function<void()> func) {
+	rawrbox::Timer Timer::create(int reps, int msDelay, std::function<void()> func, std::function<void()> onComplete) {
 		rawrbox::Timer t;
 		t._delay = msDelay;
 		t._func = func;
+		t._onComplete = onComplete;
 		t._iterations = reps;
 		t._id = std::to_string(ID++);
 		t._infinite = reps <= 0;

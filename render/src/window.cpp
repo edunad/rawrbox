@@ -1,4 +1,5 @@
 
+#include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/window.hpp>
 
@@ -45,7 +46,7 @@ namespace rawrbox {
 	}
 
 	static void glfw_errorCallback(int error, const char* description) {
-		fmt::print("GLFW error {}: {}\n", error, description);
+		fmt::print("[RawrBox-Render] GLFW error {}: {}\n", error, description);
 	}
 
 	static void* glfwNativeWindowHandle(GLFWwindow* _window) {
@@ -88,10 +89,13 @@ namespace rawrbox {
 	}
 	// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
 
-	void Window::initialize(int width, int height, uint32_t flags) {
+	void Window::create(int width, int height, uint32_t flags) {
+		if (rawrbox::RENDER_THREAD_ID == std::this_thread::get_id()) throw std::runtime_error("[RawrBox-Window] 'create' should be called inside engine's 'setupGLFW'!");
+
 		glfwSetErrorCallback(glfw_errorCallback);
 		if (!glfwInit()) throw std::runtime_error("[RawrBox-Window] Failed to initialize glfw");
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // Disable opengl
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);  // Disable opengl
+		glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE); // Disable v-sync, it's handled by bgfx
 		// -------------
 
 		std::map<int, int> properties = {};
@@ -119,7 +123,7 @@ namespace rawrbox {
 		if (!fullscreen && !windowed && !borderless) throw std::runtime_error("[RawrBox-Window] Window flag attribute missing");
 		if (windowed && (borderless || fullscreen)) throw std::runtime_error("[RawrBox-Window] Only one window flag attribute can be selected");
 		if (borderless && (windowed || fullscreen)) throw std::runtime_error("[RawrBox-Window] Only one window flag attribute can be selected");
-		if (fullscreen && (windowed || borderless)) throw std::runtime_error("[RawrBox-Window] Only one window aflag ttribute can be selected");
+		if (fullscreen && (windowed || borderless)) throw std::runtime_error("[RawrBox-Window] Only one window flag attribute can be selected");
 
 		if (fullscreen || (width >= mode->width || height >= mode->height)) {
 			width = mode->width;
@@ -179,36 +183,6 @@ namespace rawrbox {
 #endif
 		// ---------------
 
-		if ((flags & WindowFlags::Features::MULTI_THREADED) == 0) bgfx::renderFrame(); // Disable multi-threading
-
-		bgfx::Init init;
-		if (this->_renderType == bgfx::RendererType::Vulkan && (flags & WindowFlags::Features::MULTI_THREADED) == 0) {
-			fmt::print("[RawrBox-Window] WARNING: VULKAN SHOULD HAVE THE 'WindowFlags::Features::MULTI_THREADED' SET FOR BETTER PERFORMANCE!\n");
-		}
-
-		init.type = this->_renderType;
-		init.resolution.width = static_cast<uint32_t>(width);
-		init.resolution.height = static_cast<uint32_t>(height);
-
-		this->_resetFlags = BGFX_RESET_NONE;
-		if ((flags & WindowFlags::Features::VSYNC) > 0) this->_resetFlags |= BGFX_RESET_VSYNC;
-		if ((flags & WindowFlags::Features::MSAA) > 0) this->_resetFlags |= BGFX_RESET_MAXANISOTROPY;
-		if (transparent) this->_resetFlags |= BGFX_RESET_TRANSPARENT_BACKBUFFER;
-
-		init.resolution.reset = this->_resetFlags;
-		init.platformData.nwh = glfwNativeWindowHandle(GLFWHANDLE);
-		init.platformData.ndt = getNativeDisplayHandle();
-
-		if (!bgfx::init(init)) throw std::runtime_error("[RawrBox-Render] Failed to initialize bgfx");
-		rawrbox::BGFX_INITIALIZED = true;
-
-		if ((flags & WindowFlags::Debug::WIREFRAME) > 0) this->_debugFlags |= BGFX_DEBUG_WIREFRAME;
-		if ((flags & WindowFlags::Debug::STATS) > 0) this->_debugFlags |= BGFX_DEBUG_STATS;
-		if ((flags & WindowFlags::Debug::TEXT) > 0) this->_debugFlags |= BGFX_DEBUG_TEXT;
-		if ((flags & WindowFlags::Debug::PROFILER) > 0) this->_debugFlags |= BGFX_DEBUG_PROFILER;
-
-		bgfx::setDebug(this->_debugFlags);
-
 		glfwSetKeyCallback(GLFWHANDLE, callbacks_key);
 		glfwSetCharCallback(GLFWHANDLE, callbacks_char);
 		glfwSetScrollCallback(GLFWHANDLE, callbacks_scroll);
@@ -217,6 +191,46 @@ namespace rawrbox {
 		glfwSetCursorPosCallback(GLFWHANDLE, callbacks_mouseMove);
 		glfwSetMouseButtonCallback(GLFWHANDLE, callbacks_mouseKey);
 		glfwSetWindowCloseCallback(GLFWHANDLE, callbacks_windowClose);
+
+		// Initialize renderer
+		this->_windowFlags = flags;
+		this->_size = {width, height};
+		// -------------------
+
+		rawrbox::__OPEN_WINDOWS__++;
+	}
+
+	// Should be ran on main render thread!
+	void Window::initializeBGFX() {
+		if (rawrbox::RENDER_THREAD_ID != std::this_thread::get_id()) throw std::runtime_error("[RawrBox-Window] 'initializeBGFX' should be called inside 'init'. Aka the main render thread!");
+		if ((this->_windowFlags & WindowFlags::Features::MULTI_THREADED) == 0) bgfx::renderFrame(); // Disable multi-threading
+
+		bgfx::Init init;
+		if (this->_renderType == bgfx::RendererType::Vulkan && (this->_windowFlags & WindowFlags::Features::MULTI_THREADED) == 0) {
+			fmt::print("[RawrBox-Window] WARNING: VULKAN SHOULD HAVE THE 'WindowFlags::Features::MULTI_THREADED' SET FOR BETTER PERFORMANCE!\n");
+		}
+
+		init.type = this->_renderType;
+		init.resolution.width = static_cast<uint32_t>(this->_size.x);
+		init.resolution.height = static_cast<uint32_t>(this->_size.y);
+
+		if ((this->_windowFlags & WindowFlags::Features::VSYNC) > 0) this->_resetFlags |= BGFX_RESET_VSYNC;
+		if ((this->_windowFlags & WindowFlags::Features::MSAA) > 0) this->_resetFlags |= BGFX_RESET_MAXANISOTROPY;
+		if ((this->_windowFlags & WindowFlags::Features::TRANSPARENT_BUFFER) > 0) this->_resetFlags |= BGFX_RESET_TRANSPARENT_BACKBUFFER;
+
+		init.resolution.reset = this->_resetFlags;
+		init.platformData.nwh = glfwNativeWindowHandle(GLFWHANDLE);
+		init.platformData.ndt = getNativeDisplayHandle();
+
+		if (!bgfx::init(init)) throw std::runtime_error("[RawrBox-Render] Failed to initialize bgfx");
+		rawrbox::BGFX_INITIALIZED = true;
+
+		if ((this->_windowFlags & WindowFlags::Debug::WIREFRAME) > 0) this->_debugFlags |= BGFX_DEBUG_WIREFRAME;
+		if ((this->_windowFlags & WindowFlags::Debug::STATS) > 0) this->_debugFlags |= BGFX_DEBUG_STATS;
+		if ((this->_windowFlags & WindowFlags::Debug::TEXT) > 0) this->_debugFlags |= BGFX_DEBUG_TEXT;
+		if ((this->_windowFlags & WindowFlags::Debug::PROFILER) > 0) this->_debugFlags |= BGFX_DEBUG_PROFILER;
+
+		bgfx::setDebug(this->_debugFlags);
 
 		// Setup main renderer ----
 		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
@@ -227,19 +241,15 @@ namespace rawrbox {
 		};
 
 		// Setup global util textures ---
-		if (rawrbox::__OPEN_WINDOWS__ == 0) {
-			if (rawrbox::MISSING_TEXTURE == nullptr)
-				rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
+		if (rawrbox::MISSING_TEXTURE == nullptr)
+			rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
 
-			if (rawrbox::WHITE_TEXTURE == nullptr)
-				rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
+		if (rawrbox::WHITE_TEXTURE == nullptr)
+			rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
 
-			if (rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE == nullptr)
-				rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black);
-		}
+		if (rawrbox::BLACK_TEXTURE == nullptr)
+			rawrbox::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black);
 		// ------------------
-
-		rawrbox::__OPEN_WINDOWS__++;
 	}
 
 	void Window::setMonitor(int monitor) {
@@ -268,7 +278,6 @@ namespace rawrbox {
 
 	void Window::setCursor(uint32_t icon) {
 		if (GLFWCURSOR != nullptr) glfwDestroyCursor(GLFWCURSOR); // Delete old one
-
 		auto cursor = glfwCreateStandardCursor(icon);
 		this->_cursor = cursor;
 
@@ -297,18 +306,20 @@ namespace rawrbox {
 	// -------------------
 
 	void Window::shutdown() {
-		bgfx::shutdown();
+		if (this->_handle == nullptr) return;
+
+		glfwDestroyWindow(GLFWHANDLE); // Optional
 		glfwTerminate();
 	}
 
-	// UPDATE ----
-	void Window::pollEvents() {
-		if (this->_handle == nullptr) return;
-		glfwPollEvents();
+	void Window::unblockPoll() {
+		glfwPostEmptyEvent();
 	}
 
-	void Window::update() {}
-	// ------
+	void Window::pollEvents() {
+		if (this->_handle == nullptr) return;
+		glfwWaitEvents();
+	}
 
 	// DRAW ------
 	void Window::clear() {
@@ -322,7 +333,7 @@ namespace rawrbox {
 		// MISSING TEXTURES ------
 		rawrbox::MISSING_TEXTURE->upload();
 		rawrbox::WHITE_TEXTURE->upload();
-		rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE->upload();
+		rawrbox::BLACK_TEXTURE->upload();
 		// ------------------
 
 		this->_stencil->upload();
@@ -341,7 +352,7 @@ namespace rawrbox {
 		if (rawrbox::__OPEN_WINDOWS__-- <= 0) {
 			rawrbox::MISSING_TEXTURE = nullptr;
 			rawrbox::WHITE_TEXTURE.reset();
-			rawrbox::MISSING_SPECULAR_EMISSIVE_TEXTURE.reset();
+			rawrbox::BLACK_TEXTURE.reset();
 		}
 
 		this->_stencil.reset();
@@ -416,66 +427,81 @@ namespace rawrbox {
 	}
 
 	void Window::callbacks_resize(GLFWwindow* whandle, int width, int height) {
-		auto& window = glfwHandleToRenderer(whandle);
+		rawrbox::runOnRenderThread([whandle, width, height]() {
+			auto& window = glfwHandleToRenderer(whandle);
 
-		bgfx::reset(static_cast<uint32_t>(width), static_cast<uint32_t>(height), window._resetFlags);
-		window.onResize(window, {width, height});
+			bgfx::reset(static_cast<uint32_t>(width), static_cast<uint32_t>(height), window._resetFlags);
+			window.onResize(window, {width, height});
+		});
 	}
 
 	void Window::callbacks_key(GLFWwindow* whandle, int key, int scancode, int action, int mods) {
 		if (key < 0) return;
 
-		auto& window = glfwHandleToRenderer(whandle);
-		window.onKey(window,
-		    static_cast<uint32_t>(key),
-		    static_cast<uint32_t>(scancode),
-		    static_cast<uint32_t>(action),
-		    static_cast<uint32_t>(mods));
+		rawrbox::runOnRenderThread([whandle, key, scancode, action, mods]() {
+			auto& window = glfwHandleToRenderer(whandle);
 
-		if (action == GLFW_REPEAT) return;
-		window.keysIn[key] = action != GLFW_RELEASE ? 1 : 0;
+			window.onKey(window,
+			    static_cast<uint32_t>(key),
+			    static_cast<uint32_t>(scancode),
+			    static_cast<uint32_t>(action),
+			    static_cast<uint32_t>(mods));
+
+			if (action == GLFW_REPEAT) return;
+			window.keysIn[key] = action != GLFW_RELEASE ? 1 : 0;
+		});
 	}
 
 	void Window::callbacks_mouseKey(GLFWwindow* whandle, int button, int action, int mods) {
 		if (button < 0) return;
 
-		auto& window = glfwHandleToRenderer(whandle);
-		auto pos = window.getMousePos();
+		rawrbox::runOnRenderThread([whandle, button, action, mods]() {
+			auto& window = glfwHandleToRenderer(whandle);
+			auto pos = window.getMousePos();
 
-		window.onMouseKey(window,
-		    pos,
-		    static_cast<uint32_t>(button),
-		    static_cast<uint32_t>(action),
-		    static_cast<uint32_t>(mods));
+			window.onMouseKey(window,
+			    pos,
+			    static_cast<uint32_t>(button),
+			    static_cast<uint32_t>(action),
+			    static_cast<uint32_t>(mods));
 
-		window.mouseIn[button] = action == GLFW_PRESS ? 1 : 0;
+			window.mouseIn[button] = action == GLFW_PRESS ? 1 : 0;
+		});
 	}
 
 	void Window::callbacks_char(GLFWwindow* whandle, unsigned int ch) {
-		auto& window = glfwHandleToRenderer(whandle);
-		window.onChar(window, ch);
+		rawrbox::runOnRenderThread([whandle, ch]() {
+			auto& window = glfwHandleToRenderer(whandle);
+			window.onChar(window, ch);
+		});
 	}
 
 	void Window::callbacks_scroll(GLFWwindow* whandle, double x, double y) {
-		auto& window = glfwHandleToRenderer(whandle);
+		rawrbox::runOnRenderThread([whandle, x, y]() {
+			auto& window = glfwHandleToRenderer(whandle);
 
-		auto size = window.getSize();
-		auto pos = window.getMousePos();
+			auto size = window.getSize();
+			auto pos = window.getMousePos();
 
-		if (pos.x < 0 || pos.y < 0 || pos.x > size.x || pos.y > size.y) return; // Outside window
-		window.onMouseScroll(window, pos, {static_cast<int>(x * 10), static_cast<int>(y * 10)});
+			if (pos.x < 0 || pos.y < 0 || pos.x > size.x || pos.y > size.y) return; // Outside window
+			window.onMouseScroll(window, pos, {static_cast<int>(x * 10), static_cast<int>(y * 10)});
+		});
 	}
 
 	void Window::callbacks_mouseMove(GLFWwindow* whandle, double x, double y) {
-		auto& window = glfwHandleToRenderer(whandle);
-		window.onMouseMove(window, {static_cast<int>(x), static_cast<int>(y)});
+		rawrbox::runOnRenderThread([whandle, x, y]() {
+			auto& window = glfwHandleToRenderer(whandle);
+			window.onMouseMove(window, {static_cast<int>(x), static_cast<int>(y)});
+		});
 	}
 
 	void Window::callbacks_focus(GLFWwindow* whandle, int focus) {
-		auto& window = glfwHandleToRenderer(whandle);
+		rawrbox::runOnRenderThread([whandle, focus]() {
+			auto& window = glfwHandleToRenderer(whandle);
 
-		window.hasFocus = focus == 1;
-		window.onFocus(window, focus);
+			window.hasFocus = (focus == 1);
+			window.onFocus(window, focus);
+		});
 	}
 	// --------------------
 

@@ -8,18 +8,19 @@
 
 namespace rawrbox {
 	// THREADING ----
-	extern std::thread::id MAIN_THREAD_ID;
-	extern jnk0le::Ringbuffer<std::function<void()>> MAIN_THREAD_INVOKES;
+	extern std::thread::id RENDER_THREAD_ID;
+	extern jnk0le::Ringbuffer<std::function<void()>> RENDER_THREAD_INVOKES;
 
 	// TIMING ---
 	extern float DELTA_TIME;
+	extern float FIXED_DELTA_TIME;
 	extern float FRAME_ALPHA;
 	// -----
 
 	// NOLINTBEGIN(clang-diagnostic-unused-function)
-	static void runOnMainThread(std::function<void()> func) {
-		if (MAIN_THREAD_ID != std::this_thread::get_id()) {
-			MAIN_THREAD_INVOKES.insert(std::move(func));
+	static void runOnRenderThread(std::function<void()> func) {
+		if (RENDER_THREAD_ID != std::this_thread::get_id()) {
+			RENDER_THREAD_INVOKES.insert(std::move(func));
 			return;
 		}
 
@@ -28,9 +29,9 @@ namespace rawrbox {
 
 	// ⚠️ INTERNAL - DO NOT CALL UNLESS YOU KNOW WHAT YOU ARE DOING ⚠️
 	static void ___runThreadInvokes() {
-		while (!rawrbox::MAIN_THREAD_INVOKES.isEmpty()) {
+		while (!rawrbox::RENDER_THREAD_INVOKES.isEmpty()) {
 			std::function<void()> fnc;
-			rawrbox::MAIN_THREAD_INVOKES.remove(fnc);
+			rawrbox::RENDER_THREAD_INVOKES.remove(fnc);
 			fnc();
 		}
 	}

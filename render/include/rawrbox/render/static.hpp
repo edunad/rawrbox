@@ -30,7 +30,7 @@ namespace rawrbox {
 	// TEXTURE FALLBACKS ---
 	extern std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE;
 	extern std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE;
-	extern std::shared_ptr<rawrbox::TextureFlat> MISSING_SPECULAR_EMISSIVE_TEXTURE;
+	extern std::shared_ptr<rawrbox::TextureFlat> BLACK_TEXTURE;
 	// ----
 
 	extern rawrbox::LightManager Lights;

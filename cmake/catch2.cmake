@@ -3,7 +3,7 @@ if(RAWRBOX_BUILD_TESTING)
     message(STATUS "Enabled testing for ${output_target}")
     enable_testing()
 
-    cpmaddpackage(
+    CPMAddPackage(
         NAME
         Catch2
         GITHUB_REPOSITORY

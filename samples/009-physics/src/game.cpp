@@ -13,18 +13,18 @@
 #include <vector>
 
 namespace physics_test {
-	void Game::init() {
-		int width = 1024;
-		int height = 768;
-
+	void Game::setupGLFW() {
 		this->_window = std::make_shared<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("PHYSICS TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
-		this->_window->initialize(width, height, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED);
-		this->_window->onWindowClose += [this](auto& w) {
-			this->shutdown();
-		};
+		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
+		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
+	}
+
+	void Game::init() {
+		if (this->_window == nullptr) return;
+		this->_window->initializeBGFX();
 
 		// Setup camera
 		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window);
@@ -36,7 +36,7 @@ namespace physics_test {
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
 
 		// Initialize physics
-		rawrbox::PHYSICS::init();
+		rawrbox::PHYSICS::init(20, 2048, 2048, 2048, 2048, 5);
 
 		auto settings = rawrbox::PHYSICS::physicsSystem->GetPhysicsSettings();
 		settings.mNumPositionSteps = 2;
@@ -59,7 +59,7 @@ namespace physics_test {
 		rawrbox::ASYNC::run([initialContentFiles]() {
 			for (auto& f : initialContentFiles) {
 				rawrbox::RESOURCES::loadFile(f, 0);
-			} }, [this] { rawrbox::runOnMainThread([this]() {
+			} }, [this] { rawrbox::runOnRenderThread([this]() {
 										  rawrbox::RESOURCES::upload();
 										  this->contentLoaded();
 									  }); });
@@ -106,9 +106,10 @@ namespace physics_test {
 		// -----
 
 		// TIMER ---
-		auto timer = rawrbox::Timer::create(600, 25, [this]() {
-			this->createBox({0, 5, 0}, {0.5F, 0.5F, 0.5F});
-		});
+		auto timer = rawrbox::Timer::create(
+		    600, 25, [this]() { this->createBox({0, 5, 0}, {0.5F, 0.5F, 0.5F}); }, [] {
+			    rawrbox::PHYSICS::optimize(); // Only need to be called after adding a lot of bodies in one go
+		    });
 
 		timer.setPaused(this->_paused);
 		// --------
@@ -159,7 +160,9 @@ namespace physics_test {
 		this->_boxes.push_back(box);
 	}
 
-	void Game::shutdown() {
+	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
+
 		this->_window.reset();
 		this->_camera.reset();
 		this->_modelGrid.reset();
@@ -167,7 +170,8 @@ namespace physics_test {
 		this->_boxes.clear();
 
 		rawrbox::PHYSICS::shutdown();
-		rawrbox::Engine::shutdown();
+		rawrbox::RESOURCES::shutdown();
+		rawrbox::ASYNC::shutdown();
 	}
 
 	void Game::pollEvents() {
@@ -176,14 +180,16 @@ namespace physics_test {
 	}
 
 	void Game::update() {
-		if (this->_window == nullptr) return;
-		this->_window->update();
 		this->_camera->update();
 
 		if (!this->_paused) {
 			rawrbox::Timer::update();
-			rawrbox::PHYSICS::tick();
 		}
+	}
+
+	void Game::fixedUpdate() {
+		if (this->_paused) return;
+		rawrbox::PHYSICS::tick();
 	}
 
 	void Game::printFrames() {

@@ -16,19 +16,18 @@
 #include <vector>
 
 namespace post_process {
-	void Game::init() {
-		int width = 1024;
-		int height = 768;
-
+	void Game::setupGLFW() {
 		this->_window = std::make_shared<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("POST-PROCESS TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
-		this->_window->onWindowClose += [this](auto& w) {
-			this->shutdown();
-		};
+		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
+		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
+	}
 
-		this->_window->initialize(width, height, rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Debug::TEXT);
+	void Game::init() {
+		if (this->_window == nullptr) return;
+		this->_window->initializeBGFX();
 
 		this->_postProcess = std::make_shared<rawrbox::PostProcessManager>(this->_window->getSize());
 		this->_postProcess->add(std::make_shared<rawrbox::PostProcessBloom>(0.015F));
@@ -50,14 +49,13 @@ namespace post_process {
 	}
 
 	void Game::loadContent() {
-
 		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("content/models/ps1_road/scene.gltf", 0 | rawrbox::ModelLoadFlags::IMPORT_TEXTURES)};
 
 		rawrbox::ASYNC::run([initialContentFiles]() {
 			for (auto& f : initialContentFiles) {
 				rawrbox::RESOURCES::loadFile(f.first, f.second);
-			} }, [this] { rawrbox::runOnMainThread([this]() {
+			} }, [this] { rawrbox::runOnRenderThread([this]() {
 										  rawrbox::RESOURCES::upload();
 										  this->contentLoaded();
 									  }); });
@@ -71,20 +69,21 @@ namespace post_process {
 		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_road/scene.gltf");
 
 		this->_model->load(mdl->model);
-		this->_model->setScale({0.01F, 0.01F});
+		this->_model->setScale({0.01F, 0.01F, 0.01F});
 		//   -----
 
 		this->_ready = true;
 	}
 
-	void Game::shutdown() {
+	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 		this->_window.reset();
 		this->_camera.reset();
 		this->_model.reset();
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::LIGHTS::shutdown();
-		rawrbox::Engine::shutdown();
+		rawrbox::ASYNC::shutdown();
 	}
 
 	void Game::pollEvents() {
@@ -104,7 +103,7 @@ namespace post_process {
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 
-	void printFrames() {
+	void Game::printFrames() {
 		const bgfx::Stats* stats = bgfx::getStats();
 
 		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
