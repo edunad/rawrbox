@@ -106,28 +106,22 @@ set(CMAKE_SKIP_BUILD_RPATH TRUE)
 # ---------------------------------
 
 # SETUP CCACHE ---
-cpmaddpackage(NAME Ccache.cmake GITHUB_REPOSITORY TheLartians/Ccache.cmake VERSION 1.2.4)
+CPMAddPackage("gh:TheLartians/Ccache.cmake@1.2.4")
 # --------------
 
 # PACKAGES ------
-cpmaddpackage(
-    NAME
-    fmt
-    GITHUB_REPOSITORY
-    fmtlib/fmt
-    GIT_TAG
-    10.0.0
-    OPTIONS
-    "FMT_DOC OFF"
-    "FMT_TEST OFF")
+CPMAddPackage("gh:fmtlib/fmt#10.0.0")
+if(fmt_ADDED)
+    set_lib_runtime_mt(fmt)
+endif()
 
-cpmaddpackage(NAME magic_enum GITHUB_REPOSITORY Neargye/magic_enum VERSION 0.9.0)
-
-set_lib_runtime_mt(fmt)
-set_lib_runtime_mt(magic_enum)
+CPMAddPackage("gh:Neargye/magic_enum@0.9.0")
+if(magic_enum_ADDED)
+    set_lib_runtime_mt(magic_enum)
+endif()
 
 if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
-    cpmaddpackage("gl:wayland/weston@12.0.1")
+    CPMAddPackage("gl:wayland/weston@12.0.1")
 endif()
 # --------------------
 

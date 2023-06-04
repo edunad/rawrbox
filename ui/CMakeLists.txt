@@ -15,18 +15,12 @@ add_custom_target(
 # ------------------
 
 # LIBS ---
-cpmaddpackage(
-    NAME
-    clip
-    GITHUB_REPOSITORY
-    dacap/clip
-    VERSION
-    1.5
-    OPTIONS
-    "CLIP_EXAMPLES OFF"
-    "CLIP_TESTS OFF")
+CPMAddPackage("gh:dacap/clip@1.5")
+if(clip_ADDED)
+    target_include_directories(clip PUBLIC ${clip_SOURCE_DIR})
+    set_lib_runtime_mt(clip)
+endif()
 
-set_lib_runtime_mt(clip)
 # ----
 
 # LIB ----
@@ -37,7 +31,7 @@ target_compile_definitions(
     ${output_target}
     PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX
     INTERFACE RAWRBOX_UI)
-target_include_directories(${output_target} PUBLIC "include" "${clip_SOURCE_DIR}")
+target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC RAWRBOX.RENDER RAWRBOX.RESOURCES clip)
 

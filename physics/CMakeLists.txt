@@ -7,7 +7,7 @@ project(
 set(output_target RAWRBOX.PHYSICS)
 
 # LIBS ---
-cpmaddpackage(
+CPMAddPackage(
     NAME
     Jolt
     GITHUB_REPOSITORY
@@ -19,7 +19,7 @@ cpmaddpackage(
     "COMPILE_AS_SHARED_LIBRARY OFF"
     "INTERPROCEDURAL_OPTIMIZATION ON"
     "USE_STATIC_MSVC_RUNTIME_LIBRARY ON"
-    "TARGET_SAMPLES ON"
+    #"TARGET_SAMPLES ON"
     "ENABLE_ALL_WARNINGS OFF"
     SOURCE_SUBDIR
     "Build")

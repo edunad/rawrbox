@@ -1,4 +1,3 @@
-
 # Project setup
 project(
     "RAWRBOX.RESOURCES"
@@ -8,7 +7,7 @@ project(
 set(output_target RAWRBOX.RESOURCES)
 
 # LIBS ---
-cpmaddpackage(
+CPMAddPackage(
     NAME
     nlohmann_json
     VERSION
