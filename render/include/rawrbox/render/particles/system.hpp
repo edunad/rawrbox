@@ -1,17 +1,6 @@
 #pragma once
-#include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/camera/base.hpp>
-#include <rawrbox/render/model/material/particle.hpp>
+
 #include <rawrbox/render/particles/emitter.hpp>
-#include <rawrbox/render/texture/base.hpp>
-
-#include <bgfx/bgfx.h>
-
-#include <array>
-#include <cstdlib>
-#include <memory>
-#include <stdexcept>
-#include <utility>
 
 #define BGFX_STATE_DEFAULT_PARTICLE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_CULL_CW | BGFX_STATE_BLEND_NORMAL)
 

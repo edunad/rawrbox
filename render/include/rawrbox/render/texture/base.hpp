@@ -28,7 +28,7 @@ namespace rawrbox {
 		[[nodiscard]] const virtual bool hasTransparency() const;
 		[[nodiscard]] const virtual rawrbox::Vector2i& getSize() const;
 		[[nodiscard]] const virtual bool valid() const;
-		[[nodiscard]] const virtual bgfx::TextureHandle getHandle() const;
+		[[nodiscard]] const virtual bgfx::TextureHandle& getHandle() const;
 		// -----
 
 		virtual void setFlags(uint32_t flags);

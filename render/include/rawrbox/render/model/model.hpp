@@ -8,7 +8,7 @@
 #include <rawrbox/render/model/light/base.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/material/base.hpp>
-#include <rawrbox/render/util/anim_utils.hpp>
+#include <rawrbox/render/utils/anim.hpp>
 
 #include <assimp/anim.h>
 #include <assimp/vector3.h>

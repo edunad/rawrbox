@@ -104,6 +104,49 @@ namespace rawrbox {
 			return {std::atan2(sinr_cosp, cosr_cosp), std::asin(sinp), std::atan2(siny_cosp, cosy_cosp)};
 		}
 
+		VecType interpolate(const VecType& pEnd, float pFactor) {
+			// calc cosine theta
+			float cosom = x * pEnd.x + y * pEnd.y + z * pEnd.z + w * pEnd.w;
+
+			// adjust signs (if necessary)
+			VecType end = pEnd;
+			if (cosom < static_cast<float>(0.0)) {
+				cosom = -cosom;
+				end.x = -end.x; // Reverse all signs
+				end.y = -end.y;
+				end.z = -end.z;
+				end.w = -end.w;
+			}
+
+			// Calculate coefficients
+			// NOLINTBEGIN(clang-analyzer-deadcode.DeadStores)
+			float sclp = NAN;
+			float sclq = NAN;
+
+			if ((static_cast<float>(1.0) - cosom) > static_cast<float>(0.0001)) // 0.0001 -> some epsillon
+			{
+				// Standard case (slerp)
+				float omega = NAN, sinom = NAN;
+				omega = std::acos(cosom); // extract theta from dot product's cos theta
+				sinom = std::sin(omega);
+				sclp = std::sin((static_cast<float>(1.0) - pFactor) * omega) / sinom;
+				sclq = std::sin(pFactor * omega) / sinom;
+			} else {
+				// Very close, do linear interp (because it's faster)
+				sclp = static_cast<float>(1.0) - pFactor;
+				sclq = pFactor;
+			}
+			// NOLINTEND(clang-analyzer-deadcode.DeadStores)
+
+			VecType pOut;
+			pOut.x = sclp * x + sclq * end.x;
+			pOut.y = sclp * y + sclq * end.y;
+			pOut.z = sclp * z + sclq * end.z;
+			pOut.w = sclp * w + sclq * end.w;
+
+			return pOut;
+		};
+
 		// OPERATORS ---
 		// numberic typed operators
 		VecType operator-(NumberType other) const { return VecType(x - other, y - other, z - other, w - other); }

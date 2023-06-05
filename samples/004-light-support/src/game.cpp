@@ -91,7 +91,6 @@ namespace light {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
-		this->_window.reset();
 		this->_camera.reset();
 
 		this->_model.reset();
@@ -101,6 +100,9 @@ namespace light {
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::LIGHTS::shutdown();
 		rawrbox::ASYNC::shutdown();
+
+		this->_window->unblockPoll();
+		this->_window.reset();
 	}
 
 	void Game::pollEvents() {

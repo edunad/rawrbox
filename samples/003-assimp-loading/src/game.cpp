@@ -126,7 +126,6 @@ namespace assimp {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
-		this->_window.reset();
 		this->_camera.reset();
 
 		this->_model.reset();
@@ -144,6 +143,7 @@ namespace assimp {
 		rawrbox::ASYNC::shutdown();
 
 		this->_window->unblockPoll();
+		this->_window.reset();
 	}
 
 	void Game::pollEvents() {

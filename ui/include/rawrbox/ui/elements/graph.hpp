@@ -6,7 +6,7 @@
 #include <chrono>
 
 namespace rawrbox {
-	enum UIGraphStyle {
+	enum class UIGraphStyle {
 		BLOCK = 0,
 		LINE
 	};
