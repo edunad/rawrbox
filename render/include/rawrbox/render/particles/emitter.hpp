@@ -15,7 +15,7 @@
 
 // Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/32-particles/particles.cpp
 namespace rawrbox {
-	enum EmitterShape {
+	enum class EmitterShape {
 		SPHERE = 0,
 		HEMISPHERE,
 		CIRCLE,
@@ -23,7 +23,7 @@ namespace rawrbox {
 		RECT,
 	};
 
-	enum EmitterDirection {
+	enum class EmitterDirection {
 		UP = 0,
 		OUTWARD,
 	};

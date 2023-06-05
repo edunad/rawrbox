@@ -8,7 +8,7 @@
 #include <unordered_map>
 
 namespace rawrbox {
-	enum DITHER_SIZE {
+	enum class DITHER_SIZE {
 		SLOW_MODE = 0,
 
 		_2x2 = 2,

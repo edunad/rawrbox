@@ -126,14 +126,14 @@ namespace rawrbox {
 				std::shared_ptr<rawrbox::LightBase> light = nullptr;
 
 				switch (assimpLights.type) {
-					case LIGHT_UNKNOWN: break;
-					case LIGHT_POINT:
+					case LightType::LIGHT_UNKNOWN: break;
+					case LightType::LIGHT_POINT:
 						light = std::make_shared<rawrbox::LightPoint>(assimpLights.pos, assimpLights.diffuse, assimpLights.specular, assimpLights.attenuationConstant, assimpLights.attenuationLinear, assimpLights.attenuationQuadratic);
 						break;
-					case LIGHT_SPOT:
+					case LightType::LIGHT_SPOT:
 						light = std::make_shared<rawrbox::LightSpot>(assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.specular, assimpLights.angleInnerCone, assimpLights.angleOuterCone, assimpLights.attenuationConstant, assimpLights.attenuationLinear, assimpLights.attenuationQuadratic);
 						break;
-					case LIGHT_DIR:
+					case LightType::LIGHT_DIR:
 						light = std::make_shared<rawrbox::LightDirectional>(assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.specular);
 						break;
 				}

@@ -379,7 +379,7 @@ namespace rawrbox {
 	// --------------------
 
 	// ------RENDERING
-	void Stencil::setupDrawCall(bgfx::ProgramHandle program, bgfx::TextureHandle texture, uint64_t drawMode) {
+	void Stencil::setupDrawCall(const bgfx::ProgramHandle& program, const bgfx::TextureHandle& texture, uint64_t drawMode) {
 		this->_currentDraw.clear();
 
 		this->_currentDraw.stencilProgram = program;

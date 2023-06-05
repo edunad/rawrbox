@@ -35,20 +35,20 @@ namespace rawrbox {
 			// Randomize position -----
 			bx::Vec3 pos(bx::InitNone);
 			switch (this->_settings.shape) {
-				case SPHERE:
+				case EmitterShape::SPHERE:
 					pos = bx::randUnitSphere(&this->_rng);
 					break;
-				case HEMISPHERE:
+				case EmitterShape::HEMISPHERE:
 					pos = bx::randUnitHemisphere(&this->_rng, {0, 1.0F, 0});
 					break;
-				case CIRCLE:
+				case EmitterShape::CIRCLE:
 					pos = bx::randUnitCircle(&this->_rng);
 					break;
-				case DISC:
+				case EmitterShape::DISC:
 					pos = bx::mul(bx::randUnitCircle(&this->_rng), bx::frnd(&this->_rng));
 					break;
 				default:
-				case RECT:
+				case EmitterShape::RECT:
 					pos = {
 					    bx::frndh(&this->_rng),
 					    bx::frndh(&this->_rng),

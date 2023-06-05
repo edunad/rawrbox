@@ -187,7 +187,7 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ RENDERING
-		void setupDrawCall(bgfx::ProgramHandle program, bgfx::TextureHandle texture = BGFX_INVALID_HANDLE, uint64_t drawMode = 0);
+		void setupDrawCall(const bgfx::ProgramHandle& program, const bgfx::TextureHandle& texture = BGFX_INVALID_HANDLE, uint64_t drawMode = 0);
 		void pushDrawCall();
 		void internalDraw();
 		// --------------------

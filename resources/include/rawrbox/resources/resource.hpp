@@ -4,7 +4,7 @@
 #include <vector>
 
 namespace rawrbox {
-	enum LoadStatus {
+	enum class LoadStatus {
 		NONE = 0,
 		UNLOADED,
 		LOADING,

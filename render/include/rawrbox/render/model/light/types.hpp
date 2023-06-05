@@ -1,7 +1,7 @@
 #pragma once
 
 namespace rawrbox {
-	enum LightType {
+	enum class LightType {
 		LIGHT_UNKNOWN = 0,
 
 		LIGHT_POINT,
