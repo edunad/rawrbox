@@ -87,7 +87,7 @@ namespace rawrbox {
 			return ret.normalized();
 		}
 
-		Vector3_t<NumberType> getEulerAngles() const {
+		Vector3_t<NumberType> toEuler() const {
 			// roll
 			float sinr_cosp = 2.0F * (w * x + y * z);
 			float cosr_cosp = 1.0F - 2.0F * (x * x + y * y);
@@ -102,6 +102,28 @@ namespace rawrbox {
 			float cosy_cosp = 1.0F - 2.0F * (y * y + z * z);
 
 			return {std::atan2(sinr_cosp, cosr_cosp), std::asin(sinp), std::atan2(siny_cosp, cosy_cosp)};
+		}
+
+		static Vector4_t<NumberType> toQuat(const Vector3_t<NumberType>& in) {
+			rawrbox::Vector4_t<NumberType> ret = {};
+
+			float x = in.x * 0.5F;
+			float y = in.y * 0.5F;
+			float z = in.z * 0.5F;
+
+			float sinX = std::sin(x);
+			float cosX = std::cos(x);
+			float sinY = std::sin(y);
+			float cosY = std::cos(y);
+			float sinZ = std::sin(z);
+			float cosZ = std::cos(z);
+
+			ret.w = cosY * cosX * cosZ + sinY * sinX * sinZ;
+			ret.x = cosY * sinX * cosZ + sinY * cosX * sinZ;
+			ret.y = sinY * cosX * cosZ - cosY * sinX * sinZ;
+			ret.z = cosY * cosX * sinZ - sinY * sinX * cosZ;
+
+			return ret;
 		}
 
 		VecType interpolate(const VecType& pEnd, float pFactor) {

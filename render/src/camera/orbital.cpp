@@ -33,6 +33,7 @@ namespace rawrbox {
 
 	void CameraOrbital::update() {
 		if (this->_window.expired()) return;
+		auto win = this->_window.lock();
 
 		auto dir = this->getForward();
 		auto eye = this->getPos();
@@ -42,26 +43,26 @@ namespace rawrbox {
 		auto m_eye = bx::Vec3(eye.x, eye.y, eye.z);
 
 		float sp = this->_speed;
-		if (this->_window.lock()->isKeyDown(KEY_LEFT_SHIFT)) {
+		if (win->isKeyDown(KEY_LEFT_SHIFT)) {
 			sp *= 2.F;
 		}
 
-		if (this->_window.lock()->isKeyDown(KEY_W)) {
+		if (win->isKeyDown(KEY_W)) {
 			m_eye = bx::mad(m_dir, rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 
-		if (this->_window.lock()->isKeyDown(KEY_S)) {
+		if (win->isKeyDown(KEY_S)) {
 			m_eye = bx::mad(m_dir, -rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 
-		if (this->_window.lock()->isKeyDown(KEY_A)) {
+		if (win->isKeyDown(KEY_A)) {
 			m_eye = bx::mad({right.x, right.y, right.z}, rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 
-		if (this->_window.lock()->isKeyDown(KEY_D)) {
+		if (win->isKeyDown(KEY_D)) {
 			m_eye = bx::mad({right.x, right.y, right.z}, -rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}

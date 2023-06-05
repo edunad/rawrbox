@@ -55,11 +55,20 @@ TEST_CASE("Vector4 should behave as expected", "[rawrbox::Vector4]") {
 		REQUIRE_THAT(n.w, Catch::Matchers::WithinAbs(0.92351F, 0.0001F));
 	}
 
-	SECTION("rawrbox::Vector4::getEulerAngles") {
-		auto n = q.getEulerAngles();
+	SECTION("rawrbox::Vector4::toEuler") {
+		auto n = q.toEuler();
 
 		REQUIRE_THAT(n.x, Catch::Matchers::WithinAbs(1.82212F, 0.0001F));
 		REQUIRE_THAT(n.y, Catch::Matchers::WithinAbs(-1.5708F, 0.0001F));
 		REQUIRE_THAT(n.z, Catch::Matchers::WithinAbs(2.16666F, 0.0001F));
+	}
+
+	SECTION("rawrbox::Vector4::toQuat") {
+		auto n2 = rawrbox::Vector4f::toQuat({0.4F, 0.12F, 0.8F});
+
+		REQUIRE_THAT(n2.x, Catch::Matchers::WithinAbs(0.20554F, 0.0001F));
+		REQUIRE_THAT(n2.y, Catch::Matchers::WithinAbs(-0.0231F, 0.0001F));
+		REQUIRE_THAT(n2.z, Catch::Matchers::WithinAbs(0.37F, 0.0001F));
+		REQUIRE_THAT(n2.w, Catch::Matchers::WithinAbs(0.90572F, 0.0001F));
 	}
 }

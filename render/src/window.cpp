@@ -412,9 +412,13 @@ namespace rawrbox {
 	}
 
 	bool Window::isKeyDown(int key) const {
-		auto fnd = this->keysIn.find(key);
-		if (fnd == this->keysIn.end()) return false;
-		return fnd->second;
+		if (this->_handle == nullptr) return false;
+		return glfwGetKey(GLFWHANDLE, key) == GLFW_PRESS;
+	}
+
+	bool Window::isMouseDown(int key) const {
+		if (this->_handle == nullptr) return false;
+		return glfwGetMouseButton(GLFWHANDLE, key) == GLFW_PRESS;
 	}
 
 	rawrbox::Stencil& Window::getStencil() const { return *this->_stencil; }
@@ -446,9 +450,6 @@ namespace rawrbox {
 			    static_cast<uint32_t>(scancode),
 			    static_cast<uint32_t>(action),
 			    static_cast<uint32_t>(mods));
-
-			if (action == GLFW_REPEAT) return;
-			window.keysIn[key] = action != GLFW_RELEASE ? 1 : 0;
 		});
 	}
 
@@ -464,8 +465,6 @@ namespace rawrbox {
 			    static_cast<uint32_t>(button),
 			    static_cast<uint32_t>(action),
 			    static_cast<uint32_t>(mods));
-
-			window.mouseIn[button] = action == GLFW_PRESS ? 1 : 0;
 		});
 	}
 

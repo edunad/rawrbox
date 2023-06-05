@@ -95,8 +95,6 @@ namespace rawrbox {
 		bool isRendererSupported(bgfx::RendererType::Enum render);
 
 	public:
-		std::unordered_map<unsigned int, unsigned char> keysIn;
-		std::unordered_map<unsigned int, unsigned char> mouseIn;
 		bool hasFocus = true;
 
 		// ------CALLBACKS
@@ -150,6 +148,7 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual rawrbox::Stencil& getStencil() const;
 		[[nodiscard]] virtual bool isKeyDown(int key) const;
+		[[nodiscard]] virtual bool isMouseDown(int key) const;
 		// --------------------
 
 		virtual ~Window();
