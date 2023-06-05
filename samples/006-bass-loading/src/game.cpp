@@ -1,4 +1,5 @@
 
+#include <rawrbox/bass/manager.hpp>
 #include <rawrbox/bass/resources/sound.hpp>
 #include <rawrbox/debug/gizmos.hpp>
 #include <rawrbox/render/resources/font.hpp>

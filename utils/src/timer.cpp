@@ -1,4 +1,4 @@
-#include <rawrbox/utils/time_utils.hpp>
+#include <rawrbox/utils/time.hpp>
 #include <rawrbox/utils/timer.hpp>
 
 namespace rawrbox {
@@ -9,7 +9,7 @@ namespace rawrbox {
 	void Timer::update() {
 		if (timers.empty()) return;
 
-		auto time = rawrbox::curtime();
+		auto time = rawrbox::TimeUtils::time();
 		for (auto it2 = timers.begin(); it2 != timers.end();) {
 
 			auto& timer = (*it2).second;
@@ -64,7 +64,7 @@ namespace rawrbox {
 	void Timer::start() {
 		if (isRunning(this->_id)) return;
 
-		this->_nextTick = rawrbox::curtime() + this->_delay;
+		this->_nextTick = rawrbox::TimeUtils::time() + this->_delay;
 		timers[this->_id] = *this;
 	}
 
@@ -79,9 +79,9 @@ namespace rawrbox {
 		this->_paused = pause;
 
 		if (pause) {
-			this->_pausedTime = rawrbox::curtime();
+			this->_pausedTime = rawrbox::TimeUtils::time();
 		} else {
-			this->_nextTick += (rawrbox::curtime() - this->_pausedTime);
+			this->_nextTick += (rawrbox::TimeUtils::time() - this->_pausedTime);
 			this->_pausedTime = 0.F;
 		}
 	}

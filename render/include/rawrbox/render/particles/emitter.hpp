@@ -1,22 +1,9 @@
 #pragma once
 
-#include <rawrbox/engine/static.hpp>
-#include <rawrbox/math/color.hpp>
-#include <rawrbox/math/matrix4x4.hpp>
-#include <rawrbox/math/utils/math.hpp>
-#include <rawrbox/math/vector3.hpp>
+#include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/camera/base.hpp>
 #include <rawrbox/render/model/material/particle.hpp>
 #include <rawrbox/render/particles/particle.hpp>
-#include <rawrbox/render/static.hpp>
-#include <rawrbox/render/texture/base.hpp>
-#include <rawrbox/utils/pack.hpp>
-
-#ifndef RAWRBOX_TESTING
-	#ifdef RAWRBOX_DEBUG
-		#include <rawrbox/debug/gizmos.hpp>
-	#endif
-#endif
 
 #include <bgfx/bgfx.h>
 #include <bx/bounds.h>
@@ -24,14 +11,6 @@
 #include <bx/math.h>
 #include <bx/rng.h>
 
-#include <algorithm>
-#include <array>
-#include <bit>
-#include <cmath>
-#include <cstdint>
-#include <functional>
-#include <memory>
-#include <stdexcept>
 #include <vector>
 
 // Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/32-particles/particles.cpp
@@ -116,114 +95,7 @@ namespace rawrbox {
 		std::vector<rawrbox::Particle> _particles = {};
 		// -------
 
-		void spawnParticle() {
-			// Calculate the next particle spawn time
-			if (this->_settings.particlesPerSecond <= 0) return;
-
-			rawrbox::Matrix4x4 mtx = {};
-			mtx.rotate(this->_settings.angle);
-			mtx.translate(this->_pos);
-			mtx.scale({1.F, 1.F, 1.F});
-
-			auto ppS = !this->_preHeated && this->_settings.preHeat ? this->_settings.maxParticles : this->_settings.particlesPerSecond;
-			const float timePerParticle = !this->_preHeated && this->_settings.preHeat ? ppS : 1.0F / ppS;
-
-			this->_timer += rawrbox::DELTA_TIME;
-			const auto numParticles = static_cast<uint32_t>(this->_timer / timePerParticle);
-			this->_timer -= numParticles * timePerParticle;
-			// -------
-
-			// Spawn ---
-			float time = 0.F;
-			for (uint32_t ii = 0; ii < numParticles && this->_particles.size() < this->_settings.maxParticles; ++ii) {
-				Particle particle = {};
-
-				// Randomize position -----
-				bx::Vec3 pos(bx::InitNone);
-				switch (this->_settings.shape) {
-					case SPHERE:
-						pos = bx::randUnitSphere(&this->_rng);
-						break;
-					case HEMISPHERE:
-						pos = bx::randUnitHemisphere(&this->_rng, {0, 1.0F, 0});
-						break;
-					case CIRCLE:
-						pos = bx::randUnitCircle(&this->_rng);
-						break;
-					case DISC:
-						pos = bx::mul(bx::randUnitCircle(&this->_rng), bx::frnd(&this->_rng));
-						break;
-					default:
-					case RECT:
-						pos = {
-						    bx::frndh(&this->_rng),
-						    bx::frndh(&this->_rng),
-						    bx::frndh(&this->_rng),
-						};
-						break;
-				}
-				// ------
-
-				// Calculate direction -----
-				bx::Vec3 dir(bx::InitNone);
-				switch (this->_settings.direction) {
-					default:
-					case EmitterDirection::UP:
-						dir = {0, 1.0F, 0};
-						break;
-
-					case EmitterDirection::OUTWARD:
-						dir = bx::normalize(pos);
-						break;
-				}
-				// --------
-
-				// ----
-
-				particle.life = time;
-				particle.lifeSpan = bx::lerp(this->_settings.lifeSpan[0], this->_settings.lifeSpan[1], bx::frnd(&this->_rng));
-				particle.texture = static_cast<uint32_t>(bx::lerp(this->_settings.texture.x, this->_settings.texture.y, bx::frnd(&this->_rng)));
-
-				// Copy color settings ---
-				particle.rgba = this->_settings.rgba;
-				// -----
-
-				// Set pos settings ---
-				const float startOffset = bx::lerp(this->_settings.offsetStart.x, this->_settings.offsetStart.y, bx::frnd(&this->_rng));
-				const bx::Vec3 start = bx::mul(pos, startOffset);
-
-				const float endOffset = bx::lerp(this->_settings.offsetEnd.x, this->_settings.offsetEnd.y, bx::frnd(&this->_rng));
-				const bx::Vec3 tmp1 = bx::mul(dir, endOffset);
-				const bx::Vec3 end = bx::add(tmp1, start);
-
-				const bx::Vec3 gravity = {0.0F, -9.81F * this->_settings.gravityScale * bx::square(particle.lifeSpan), 0.0F};
-
-				particle.posStart = bx::mul(start, mtx.data());
-				particle.posEnd[0] = bx::mul(end, mtx.data());
-				particle.posEnd[1] = bx::add(particle.posEnd[0], gravity);
-				// ----
-
-				// Rotation settings ----
-				particle.rotationStart = bx::lerp(this->_settings.rotationStart.x, this->_settings.rotationStart.y, bx::frnd(&this->_rng));
-				particle.rotationEnd = bx::lerp(this->_settings.rotationEnd.x, this->_settings.rotationEnd.y, bx::frnd(&this->_rng));
-				// -------
-
-				// Scale settings ----
-				particle.scaleStart = bx::lerp(this->_settings.scaleStart.x, this->_settings.scaleStart.y, bx::frnd(&this->_rng));
-				particle.scaleEnd = bx::lerp(this->_settings.scaleEnd.x, this->_settings.scaleEnd.y, bx::frnd(&this->_rng));
-				// -------
-
-				// BLEND settings ----
-				particle.blendStart = bx::lerp(this->_settings.blendStart.x, this->_settings.blendStart.y, bx::frnd(&this->_rng));
-				particle.blendEnd = bx::lerp(this->_settings.blendEnd.x, this->_settings.blendEnd.y, bx::frnd(&this->_rng));
-				// -------------
-
-				time += timePerParticle; // When to spawn the next particle
-				this->_particles.push_back(particle);
-			}
-
-			if (!this->_preHeated) this->_preHeated = true; // Done pre-heating
-		}
+		void spawnParticle();
 
 		template <typename M = rawrbox::MaterialParticle>
 		void write_vertex(typename M::vertexBufferType*& dest, typename M::vertexBufferType vertex)
@@ -234,23 +106,8 @@ namespace rawrbox {
 		}
 
 	public:
-		explicit Emitter(EmitterSettings settings = {}) : _settings(settings), _id(++rawrbox::EMITTER_ID), _timer(this->_settings.preHeat ? 1.F : 0.F) {
-#ifndef RAWRBOX_TESTING
-	#ifdef RAWRBOX_DEBUG
-			rawrbox::GIZMOS::addEmitter(this);
-	#endif
-#endif
-		};
-
-		virtual ~Emitter() {
-			this->clear();
-
-#ifndef RAWRBOX_TESTING
-	#ifdef RAWRBOX_DEBUG
-			rawrbox::GIZMOS::removeEmitter(this);
-	#endif
-#endif
-		};
+		explicit Emitter(EmitterSettings settings = {});
+		virtual ~Emitter();
 
 		Emitter(Emitter&&) = delete;
 		Emitter& operator=(Emitter&&) = delete;
@@ -258,40 +115,17 @@ namespace rawrbox {
 		Emitter& operator=(const Emitter&) = delete;
 
 		// UTILS -----
-		void clear() {
-			this->_particles.clear();
-			this->_rng.reset();
-		}
+		void clear();
 
-		[[nodiscard]] virtual const size_t id() const { return this->_id; }
-		[[nodiscard]] virtual const size_t totalParticles() const { return this->_particles.size(); }
-		[[nodiscard]] virtual const EmitterSettings& getSettings() const { return this->_settings; }
-		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_pos; }
+		[[nodiscard]] virtual const size_t id() const;
+		[[nodiscard]] virtual const size_t totalParticles() const;
+		[[nodiscard]] virtual const EmitterSettings& getSettings() const;
 
-		virtual void setPos(const rawrbox::Vector3f& pos) {
-			this->_pos = pos;
-#ifndef RAWRBOX_TESTING
-	#ifdef RAWRBOX_DEBUG
-			rawrbox::GIZMOS::updateGizmo(fmt::format("Emitter-{}", this->_id), pos);
-	#endif
-#endif
-		}
+		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const;
+		virtual void setPos(const rawrbox::Vector3f& pos);
 		// ------
 
-		void update() {
-			for (auto it2 = this->_particles.begin(); it2 != this->_particles.end();) {
-				(*it2).life += rawrbox::DELTA_TIME / (*it2).lifeSpan;
-
-				if ((*it2).life > 1.F) {
-					it2 = this->_particles.erase(it2);
-					continue;
-				}
-
-				++it2;
-			}
-
-			this->spawnParticle();
-		}
+		void update();
 
 		template <typename M = rawrbox::MaterialParticle>
 		uint32_t draw(std::shared_ptr<rawrbox::CameraBase> camera, const rawrbox::Vector2i& atlasSize, uint32_t spriteSize, uint32_t first, uint32_t max, rawrbox::ParticleSort* outSort, typename M::vertexBufferType* outVert)

@@ -21,8 +21,8 @@ namespace rawrbox {
 		std::filesystem::path filePath;
 		std::string extention;
 
-		virtual bool load(const std::vector<uint8_t>& buffer) { return true; };
-		virtual void upload(){};
+		virtual bool load(const std::vector<uint8_t>& buffer);
+		virtual void upload();
 
 		Resource() = default;
 		virtual ~Resource() = default;

@@ -1,4 +1,4 @@
-#include <rawrbox/utils/key_utils.hpp>
+#include <rawrbox/utils/key.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 

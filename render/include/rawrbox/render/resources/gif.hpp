@@ -8,29 +8,17 @@ namespace rawrbox {
 
 	public:
 		std::shared_ptr<rawrbox::TextureGIF> texture = nullptr;
-		~ResourceGIF() override { this->texture.reset(); }
+		~ResourceGIF() override;
 
-		bool load(const std::vector<uint8_t>& buffer) override {
-			this->texture = std::make_shared<rawrbox::TextureGIF>(this->filePath, buffer);
-			return true;
-		}
-
-		void upload() override {
-			if (this->texture == nullptr) return;
-			this->texture->upload();
-		}
+		bool load(const std::vector<uint8_t>& buffer) override;
+		void upload() override;
 	};
 
 	class GIFLoader : public rawrbox::Loader {
 	public:
 		~GIFLoader() override = default;
 
-		std::unique_ptr<rawrbox::Resource> createEntry(uint32_t flags = 0) override {
-			return std::make_unique<rawrbox::ResourceGIF>();
-		}
-
-		bool canLoad(const std::string& fileExtention) override {
-			return fileExtention == ".gif";
-		}
+		std::unique_ptr<rawrbox::Resource> createEntry(uint32_t flags = 0) override;
+		bool canLoad(const std::string& fileExtention) override;
 	};
 } // namespace rawrbox

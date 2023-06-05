@@ -1,6 +1,6 @@
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/texture/gif.hpp>
-#include <rawrbox/utils/time_utils.hpp>
+#include <rawrbox/utils/time.hpp>
 
 #include <stb/gif.hpp>
 
@@ -87,9 +87,9 @@ namespace rawrbox {
 		if (this->_failedToLoad || !bgfx::isValid(this->_handle)) return; // Not bound
 
 		if (!this->_loop && this->_currentFrame >= this->_frames.size() - 1) return;
-		if (this->_cooldown >= rawrbox::curtime()) return;
+		if (this->_cooldown >= rawrbox::TimeUtils::curtime()) return;
 
-		this->_cooldown = static_cast<int64_t>(this->_frames[this->_currentFrame].delay * this->_speed) + rawrbox::curtime(); // TODO: FIX SPEED
+		this->_cooldown = static_cast<int64_t>(this->_frames[this->_currentFrame].delay * this->_speed) + rawrbox::TimeUtils::curtime(); // TODO: FIX SPEED
 		this->_currentFrame = MathUtils::repeat<int>(this->_currentFrame + 1, 0, static_cast<int>(this->_frames.size()) - 1);
 
 		this->update();
