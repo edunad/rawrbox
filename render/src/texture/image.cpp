@@ -4,6 +4,7 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
+
 	// NOLINTBEGIN(modernize-pass-by-value)
 	TextureImage::TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, int forceChannels, bool useFallback) : _filePath(filePath) {
 		stbi_uc* image = stbi_load_from_memory(buffer.data(), static_cast<int>(buffer.size()) * sizeof(uint8_t), &this->_size.x, &this->_size.y, &this->_channels, forceChannels);

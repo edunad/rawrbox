@@ -11,9 +11,9 @@ namespace rawrbox {
 	public:
 		using ModelBase<M>::ModelBase;
 
-		void addMesh(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) override {
-			mesh->addData("billboard_mode", {1.F, 0, 0}); // Force billboard for sprites
-			mesh->setOptimizable(false);
+		void addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) override {
+			mesh.addData("billboard_mode", {1.F, 0, 0}); // Force billboard for sprites
+			mesh.setOptimizable(false);
 
 			ModelBase<M>::addMesh(mesh);
 		}
@@ -25,18 +25,18 @@ namespace rawrbox {
 				this->_material->process(mesh);
 
 				if (this->isDynamicBuffer()) {
-					bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
-					bgfx::setIndexBuffer(this->_ibdh, mesh->baseIndex, mesh->totalIndex);
+					bgfx::setVertexBuffer(0, this->_vbdh, mesh.baseVertex, mesh.totalVertex);
+					bgfx::setIndexBuffer(this->_ibdh, mesh.baseIndex, mesh.totalIndex);
 				} else {
-					bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
-					bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
+					bgfx::setVertexBuffer(0, this->_vbh, mesh.baseVertex, mesh.totalVertex);
+					bgfx::setIndexBuffer(this->_ibh, mesh.baseIndex, mesh.totalIndex);
 				}
 
-				bgfx::setTransform((this->_matrix * mesh->offsetMatrix).data());
+				bgfx::setTransform((this->_matrix * mesh.offsetMatrix).data());
 
-				uint64_t flags = BGFX_STATE_DEFAULT_SPRITE | mesh->culling | mesh->blending | mesh->depthTest;
-				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
-												: 0;
+				uint64_t flags = BGFX_STATE_DEFAULT_SPRITE | mesh.culling | mesh.blending | mesh.depthTest;
+				flags |= mesh.lineMode ? BGFX_STATE_PT_LINES : mesh.wireframe ? BGFX_STATE_PT_LINESTRIP
+											      : 0;
 
 				bgfx::setState(flags, 0);
 				this->_material->postProcess();

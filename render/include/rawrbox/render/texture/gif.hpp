@@ -32,6 +32,7 @@ namespace rawrbox {
 		void internalLoad(const std::vector<uint8_t>& data, bool useFallback = true);
 
 	public:
+		TextureGIF(const TextureGIF& a) = default;
 		explicit TextureGIF(const std::filesystem::path& filePath, bool useFallback = true);
 		explicit TextureGIF(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback = true);
 

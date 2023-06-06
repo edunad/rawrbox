@@ -93,7 +93,7 @@ namespace rawrbox {
 	class Font {
 	private:
 		std::unique_ptr<stbtt_fontinfo> _font = nullptr;
-		std::unordered_map<uint16_t, std::shared_ptr<rawrbox::Glyph>> _glyphs = {};
+		std::unordered_map<uint16_t, std::unique_ptr<rawrbox::Glyph>> _glyphs = {};
 
 		float _scale = 0.F;
 		float _pixelSize = 0.F;
@@ -105,7 +105,7 @@ namespace rawrbox {
 		// INTERNAL ---
 		void loadFontInfo();
 
-		std::shared_ptr<rawrbox::Glyph> bakeGlyphAlpha(uint16_t codePoint);
+		std::unique_ptr<rawrbox::Glyph> bakeGlyphAlpha(uint16_t codePoint);
 		void generateGlyph(uint16_t codePoint);
 		// ----
 
@@ -126,7 +126,7 @@ namespace rawrbox {
 		[[nodiscard]] const rawrbox::FontInfo getFontInfo() const;
 
 		[[nodiscard]] bool hasGlyph(uint16_t codepoint) const;
-		[[nodiscard]] std::shared_ptr<rawrbox::Glyph> getGlyph(uint16_t codepoint) const;
+		[[nodiscard]] rawrbox::Glyph* getGlyph(uint16_t codepoint) const;
 
 		[[nodiscard]] float getSize() const;
 		[[nodiscard]] float getScale() const;
@@ -134,9 +134,9 @@ namespace rawrbox {
 		[[nodiscard]] float getKerning(uint16_t prevCodePoint, uint16_t nextCodePoint) const;
 
 		[[nodiscard]] rawrbox::Vector2f getStringSize(const std::string& text) const;
-		[[nodiscard]] std::shared_ptr<rawrbox::TextureAtlas> getAtlasTexture(std::shared_ptr<rawrbox::Glyph> g) const;
+		[[nodiscard]] rawrbox::TextureAtlas* getAtlasTexture(rawrbox::Glyph* g) const;
 
-		void render(const std::string& text, const rawrbox::Vector2f& pos, std::function<void(std::shared_ptr<rawrbox::Glyph>, float, float, float, float)> render);
+		void render(const std::string& text, const rawrbox::Vector2f& pos, std::function<void(rawrbox::Glyph*, float, float, float, float)> render);
 		// ----
 
 		// GLOBAL UTILS ---

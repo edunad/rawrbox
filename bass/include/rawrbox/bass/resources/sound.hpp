@@ -6,7 +6,7 @@
 namespace rawrbox {
 	class ResourceBASS : public rawrbox::Resource {
 	public:
-		std::shared_ptr<rawrbox::SoundBase> sound = nullptr;
+		rawrbox::SoundBase* sound = nullptr;
 
 		~ResourceBASS() override;
 		bool load(const std::vector<uint8_t>& buffer) override;

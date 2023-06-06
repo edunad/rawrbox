@@ -4,7 +4,7 @@
 
 namespace rawrbox {
 	// Resource ----
-	ResourceBASS::~ResourceBASS() { this->sound.reset(); }
+	ResourceBASS::~ResourceBASS() { this->sound = nullptr; }
 	bool ResourceBASS::load(const std::vector<uint8_t>& buffer) {
 		auto p = this->filePath.generic_string();
 		if (p.starts_with("https://") || p.starts_with("http://")) throw std::runtime_error("[RawrBox-BASS] Use 'rawrbox::BASS::loadSoundHTPP' instead!\n");

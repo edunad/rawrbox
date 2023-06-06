@@ -16,10 +16,10 @@ namespace rawrbox {
 
 	public:
 		TextureBase() = default;
+		TextureBase(const TextureBase& a) = default;
 
 		TextureBase(TextureBase&&) = delete;
 		TextureBase& operator=(TextureBase&&) = delete;
-		TextureBase(const TextureBase&) = delete;
 		TextureBase& operator=(const TextureBase&) = delete;
 
 		virtual ~TextureBase();

@@ -20,7 +20,7 @@
 namespace rawrbox {
 	class TextureImage : public rawrbox::TextureBase {
 	private:
-		std::vector<unsigned char> _pixels;
+		std::vector<uint8_t> _pixels;
 
 		bool _failedToLoad = false;
 		bool _transparent = false;
@@ -31,6 +31,7 @@ namespace rawrbox {
 		void internalLoad(stbi_uc* image, bool useFallback = true);
 
 	public:
+		TextureImage(const TextureImage& a) = default;
 		explicit TextureImage(const std::filesystem::path& filePath, int forceChannels = 0, bool useFallback = true);
 		explicit TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, int forceChannels = 0, bool useFallback = true);
 

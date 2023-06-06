@@ -33,17 +33,17 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		auto m1 = base->generatePlane({}, {1, 1});
 		auto m2 = base->generatePlane({}, {1, 1});
 
-		REQUIRE(m1->baseIndex == 0);
-		REQUIRE(m1->baseVertex == 0);
-		REQUIRE(m1->totalIndex == 6);
-		REQUIRE(m1->totalVertex == 4);
+		REQUIRE(m1.baseIndex == 0);
+		REQUIRE(m1.baseVertex == 0);
+		REQUIRE(m1.totalIndex == 6);
+		REQUIRE(m1.totalVertex == 4);
 
-		m1->merge(m2);
+		m1.merge(m2);
 
-		REQUIRE(m1->baseIndex == 0);
-		REQUIRE(m1->baseVertex == 0);
-		REQUIRE(m1->totalIndex == 12);
-		REQUIRE(m1->totalVertex == 8);
+		REQUIRE(m1.baseIndex == 0);
+		REQUIRE(m1.baseVertex == 0);
+		REQUIRE(m1.totalIndex == 12);
+		REQUIRE(m1.totalVertex == 8);
 	}
 
 	SECTION("rawrbox::ModelBase::getBBOX") {
@@ -130,14 +130,14 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		base->addMesh(base->generatePlane({}, {1, 1}));
 		base->addMesh(base->generatePlane({}, {1, 1}));
 
-		REQUIRE(base->getMesh(0)->culling == BGFX_STATE_CULL_CW);
-		REQUIRE(base->getMesh(1)->culling == BGFX_STATE_CULL_CW);
+		REQUIRE(base->getMesh(0).culling == BGFX_STATE_CULL_CW);
+		REQUIRE(base->getMesh(1).culling == BGFX_STATE_CULL_CW);
 		base->setCulling(BGFX_STATE_CULL_CCW, 0);
-		REQUIRE(base->getMesh(0)->culling == BGFX_STATE_CULL_CCW);
-		REQUIRE(base->getMesh(1)->culling == BGFX_STATE_CULL_CW);
+		REQUIRE(base->getMesh(0).culling == BGFX_STATE_CULL_CCW);
+		REQUIRE(base->getMesh(1).culling == BGFX_STATE_CULL_CW);
 		base->setCulling(BGFX_STATE_CULL_CCW);
-		REQUIRE(base->getMesh(0)->culling == BGFX_STATE_CULL_CCW);
-		REQUIRE(base->getMesh(1)->culling == BGFX_STATE_CULL_CCW);
+		REQUIRE(base->getMesh(0).culling == BGFX_STATE_CULL_CCW);
+		REQUIRE(base->getMesh(1).culling == BGFX_STATE_CULL_CCW);
 	}
 
 	SECTION("rawrbox::ModelBase::setWireframe") {
@@ -145,14 +145,14 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		base->addMesh(base->generatePlane({}, {1, 1}));
 		base->addMesh(base->generatePlane({}, {1, 1}));
 
-		REQUIRE(base->getMesh(0)->wireframe == false);
-		REQUIRE(base->getMesh(1)->wireframe == false);
+		REQUIRE(base->getMesh(0).wireframe == false);
+		REQUIRE(base->getMesh(1).wireframe == false);
 		base->setWireframe(true, 0);
-		REQUIRE(base->getMesh(0)->wireframe == true);
-		REQUIRE(base->getMesh(1)->wireframe == false);
+		REQUIRE(base->getMesh(0).wireframe == true);
+		REQUIRE(base->getMesh(1).wireframe == false);
 		base->setWireframe(true);
-		REQUIRE(base->getMesh(0)->wireframe == true);
-		REQUIRE(base->getMesh(1)->wireframe == true);
+		REQUIRE(base->getMesh(0).wireframe == true);
+		REQUIRE(base->getMesh(1).wireframe == true);
 	}
 
 	SECTION("rawrbox::ModelBase::setBlend") {
@@ -160,15 +160,15 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		base->addMesh(base->generatePlane({}, {1, 1}));
 		base->addMesh(base->generatePlane({}, {1, 1}));
 
-		REQUIRE(base->getMesh(0)->blending == BGFX_STATE_BLEND_NORMAL);
-		REQUIRE(base->getMesh(1)->blending == BGFX_STATE_BLEND_NORMAL);
+		REQUIRE(base->getMesh(0).blending == BGFX_STATE_BLEND_NORMAL);
+		REQUIRE(base->getMesh(1).blending == BGFX_STATE_BLEND_NORMAL);
 		base->setBlend(BGFX_STATE_BLEND_SRC_ALPHA, 0);
 
-		REQUIRE(base->getMesh(0)->blending == BGFX_STATE_BLEND_SRC_ALPHA);
-		REQUIRE(base->getMesh(1)->blending == BGFX_STATE_BLEND_NORMAL);
+		REQUIRE(base->getMesh(0).blending == BGFX_STATE_BLEND_SRC_ALPHA);
+		REQUIRE(base->getMesh(1).blending == BGFX_STATE_BLEND_NORMAL);
 		base->setBlend(BGFX_STATE_BLEND_SRC_ALPHA);
 
-		REQUIRE(base->getMesh(0)->blending == BGFX_STATE_BLEND_SRC_ALPHA);
-		REQUIRE(base->getMesh(1)->blending == BGFX_STATE_BLEND_SRC_ALPHA);
+		REQUIRE(base->getMesh(0).blending == BGFX_STATE_BLEND_SRC_ALPHA);
+		REQUIRE(base->getMesh(1).blending == BGFX_STATE_BLEND_SRC_ALPHA);
 	}
 }

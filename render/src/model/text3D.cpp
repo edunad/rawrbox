@@ -37,13 +37,13 @@ namespace rawrbox {
 			}
 		}
 
-		font->render(text, startpos.xy(), [this, font, billboard, pos, startpos, cl, screenSize](std::shared_ptr<rawrbox::Glyph> glyph, float x0, float y0, float x1, float y1) {
-			auto mesh = std::make_shared<rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType>>();
+		font->render(text, startpos.xy(), [this, font, billboard, pos, startpos, cl, screenSize](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
+			auto mesh = rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType>();
 
-			mesh->setTexture(font->getAtlasTexture(glyph)); // Set the atlas
-			mesh->setOptimizable(false);
-			mesh->addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
-			mesh->vertexPos.translate(pos);
+			mesh.setTexture(font->getAtlasTexture(glyph)); // Set the atlas
+			mesh.setOptimizable(false);
+			mesh.addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
+			mesh.vertexPos.translate(pos);
 
 			std::array<typename rawrbox::MaterialText3DUnlit::vertexBufferType, 4> buff{
 			    rawrbox::VertexData(startpos + Vector3f(x0 * screenSize, y0 * screenSize, 0), {glyph->textureTopLeft.x, glyph->textureBottomRight.y}, cl),
@@ -56,16 +56,16 @@ namespace rawrbox {
 			    0, 1, 2,
 			    0, 3, 1};
 
-			mesh->baseIndex = mesh->totalIndex;
-			mesh->baseVertex = mesh->totalVertex;
+			mesh.baseIndex = mesh.totalIndex;
+			mesh.baseVertex = mesh.totalVertex;
 
-			mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
-			mesh->indices.insert(mesh->indices.end(), inds.begin(), inds.end());
+			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
+			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
 
-			mesh->totalVertex += static_cast<uint16_t>(buff.size());
-			mesh->totalIndex += static_cast<uint16_t>(inds.size());
+			mesh.totalVertex += static_cast<uint16_t>(buff.size());
+			mesh.totalIndex += static_cast<uint16_t>(inds.size());
 
-			this->addMesh(std::move(mesh));
+			this->addMesh(mesh);
 		});
 	}
 	// ----------
@@ -75,19 +75,20 @@ namespace rawrbox {
 
 		for (auto& mesh : this->_meshes) {
 			this->_material->process(mesh);
+
 			bgfx::setTransform(this->_matrix.data());
 
 			if (this->isDynamicBuffer()) {
-				bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
-				bgfx::setIndexBuffer(this->_ibdh, mesh->baseIndex, mesh->totalIndex);
+				bgfx::setVertexBuffer(0, this->_vbdh, mesh.baseVertex, mesh.totalVertex);
+				bgfx::setIndexBuffer(this->_ibdh, mesh.baseIndex, mesh.totalIndex);
 			} else {
-				bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
-				bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
+				bgfx::setVertexBuffer(0, this->_vbh, mesh.baseVertex, mesh.totalVertex);
+				bgfx::setIndexBuffer(this->_ibh, mesh.baseIndex, mesh.totalIndex);
 			}
 
-			uint64_t flags = BGFX_STATE_DEFAULT_3D_TEXT | mesh->culling | mesh->blending;
-			flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
-											: 0;
+			uint64_t flags = BGFX_STATE_DEFAULT_3D_TEXT | mesh.culling | mesh.blending;
+			flags |= mesh.lineMode ? BGFX_STATE_PT_LINES : mesh.wireframe ? BGFX_STATE_PT_LINESTRIP
+										      : 0;
 
 			bgfx::setState(flags, 0);
 

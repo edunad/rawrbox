@@ -102,9 +102,9 @@ namespace physics_test {
 
 		// Setup grid
 		{
-			auto mesh = this->_modelGrid->generateGrid(24, {0.F, 0.F, 0.F});
-			this->_modelGrid->addMesh(mesh);
-			this->_modelGrid->upload();
+			auto mesh = this->_modelGrid.generateGrid(24, {0.F, 0.F, 0.F});
+			this->_modelGrid.addMesh(mesh);
+			this->_modelGrid.upload();
 		}
 		// -----
 
@@ -150,25 +150,23 @@ namespace physics_test {
 		body_interface.AddBody(box.body->GetID(), JPH::EActivation::Activate);
 
 		// Create model
-		box.mdl = std::make_shared<rawrbox::Model<>>();
+		box.mdl = std::make_unique<rawrbox::Model<>>();
 		auto mesh = box.mdl->generateCube({}, size);
 
 		auto text = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->texture;
-		mesh->setTexture(text);
+		mesh.setTexture(text.get());
 
 		box.mdl->addMesh(mesh);
 		box.mdl->upload();
 
 		// Store reference
-		this->_boxes.push_back(box);
+		// this->_boxes.push_back(box);
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
 		this->_camera.reset();
-		this->_modelGrid.reset();
-
 		this->_boxes.clear();
 
 		rawrbox::PHYSICS::shutdown();
@@ -225,7 +223,7 @@ namespace physics_test {
 			b.mdl->draw(this->_camera->getPos());
 		}
 
-		this->_modelGrid->draw({});
+		this->_modelGrid.draw({});
 	}
 
 	void Game::draw() {

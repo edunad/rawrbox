@@ -57,12 +57,11 @@ TEST_CASE("Mesh should behave as expected", "[rawrbox::Mesh]") {
 	}
 
 	SECTION("rawrbox::Mesh::canOptimize") {
-		std::shared_ptr<rawrbox::Mesh<>> base2 = std::make_shared<rawrbox::Mesh<>>();
-		std::shared_ptr<rawrbox::Mesh<>> base3 = std::make_shared<rawrbox::Mesh<>>();
+		rawrbox::Mesh<> base2 = {};
+		rawrbox::Mesh<> base3 = {};
 
-		REQUIRE(base2->canOptimize(base3) == true);
-
-		base2->setWireframe(true);
-		REQUIRE(base2->canOptimize(base3) == false);
+		REQUIRE(base2.canOptimize(base3) == true);
+		base2.setWireframe(true);
+		REQUIRE(base2.canOptimize(base3) == false);
 	}
 }

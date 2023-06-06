@@ -43,13 +43,13 @@ namespace rawrbox {
 		// -------
 
 		// TEXTURES ---
-		std::shared_ptr<rawrbox::TextureBase> texture = nullptr;
-		std::shared_ptr<rawrbox::TextureBase> opacityTexture = nullptr;
+		rawrbox::TextureBase* texture = nullptr;
+		rawrbox::TextureBase* opacityTexture = nullptr;
 
-		std::shared_ptr<rawrbox::TextureBase> specularTexture = nullptr;
+		rawrbox::TextureBase* specularTexture = nullptr;
 		rawrbox::Color specularColor = rawrbox::Colors::White;
 
-		std::shared_ptr<rawrbox::TextureBase> emissionTexture = nullptr;
+		rawrbox::TextureBase* emissionTexture = nullptr;
 		rawrbox::Color emissionColor = rawrbox::Colors::White;
 
 		float specularShininess = 25.0F;
@@ -73,7 +73,7 @@ namespace rawrbox {
 		// --------------
 
 		// ANIMATION ------
-		std::weak_ptr<rawrbox::Skeleton> skeleton;
+		rawrbox::Skeleton* skeleton = nullptr;
 		// -----------------
 
 		// LIGHTS ------
@@ -85,13 +85,13 @@ namespace rawrbox {
 
 		Mesh() = default;
 		virtual ~Mesh() {
-			this->texture.reset();
-			this->specularTexture.reset();
-			this->emissionTexture.reset();
-			this->opacityTexture.reset();
+			this->texture = nullptr;
+			this->specularTexture = nullptr;
+			this->emissionTexture = nullptr;
+			this->opacityTexture = nullptr;
 
 			this->owner = nullptr;
-			this->skeleton.reset();
+			this->skeleton = nullptr;
 
 			this->lights.clear();
 			this->data.clear();
@@ -138,24 +138,24 @@ namespace rawrbox {
 			return std::bit_cast<B*>(this->owner);
 		}
 
-		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getTexture() const { return this->texture; }
-		void setTexture(std::shared_ptr<rawrbox::TextureBase> ptr) {
+		[[nodiscard]] const rawrbox::TextureBase* getTexture() const { return this->texture; }
+		void setTexture(rawrbox::TextureBase* ptr) {
 			this->texture = ptr;
 		}
 
-		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getEmissionTexture() const { return this->emissionTexture; }
-		void setEmissionTexture(std::shared_ptr<rawrbox::TextureBase> ptr, float intensity) {
+		[[nodiscard]] const rawrbox::TextureBase* getEmissionTexture() const { return this->emissionTexture; }
+		void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity) {
 			this->emissionTexture = ptr;
 			this->emissionIntensity = intensity;
 		}
 
-		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getOpacityTexture() const { return this->opacityTexture; }
-		void setOpacityTexture(std::shared_ptr<rawrbox::TextureBase> ptr) {
+		[[nodiscard]] const rawrbox::TextureBase* getOpacityTexture() const { return this->opacityTexture; }
+		void setOpacityTexture(rawrbox::TextureBase* ptr) {
 			this->opacityTexture = ptr;
 		}
 
-		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getSpecularTexture() const { return this->specularTexture; }
-		void setSpecularTexture(std::shared_ptr<rawrbox::TextureBase> ptr, float shininess) {
+		[[nodiscard]] const rawrbox::TextureBase* getSpecularTexture() const { return this->specularTexture; }
+		void setSpecularTexture(rawrbox::TextureBase* ptr, float shininess) {
 			this->specularTexture = ptr;
 			this->specularShininess = shininess;
 		}
@@ -192,23 +192,23 @@ namespace rawrbox {
 			this->data[id] = data;
 		}
 
-		rawrbox::Vector4f getData(const std::string& id) {
+		[[nodiscard]] rawrbox::Vector4f getData(const std::string& id) const {
 			auto fnd = this->data.find(id);
 			if (fnd == this->data.end()) throw std::runtime_error(fmt::format("[RawrBox-Mesh] Data '{}' not found", id));
 			return fnd->second;
 		}
 
-		bool hasData(const std::string& id) {
+		[[nodiscard]] bool hasData(const std::string& id) const {
 			return this->data.find(id) != this->data.end();
 		}
 
-		void merge(std::shared_ptr<rawrbox::Mesh<T>> other) {
-			for (uint16_t i : other->indices)
+		void merge(const rawrbox::Mesh<T>& other) {
+			for (uint16_t i : other.indices)
 				this->indices.push_back(this->totalVertex + i);
-			this->vertices.insert(this->vertices.end(), other->vertices.begin(), other->vertices.end());
+			this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
 
-			this->totalVertex += other->totalVertex;
-			this->totalIndex += other->totalIndex;
+			this->totalVertex += other.totalVertex;
+			this->totalIndex += other.totalIndex;
 		}
 
 		void clear() {
@@ -222,13 +222,13 @@ namespace rawrbox {
 		}
 
 		void setOptimizable(bool status) { this->_canOptimize = status; }
-		bool canOptimize(std::shared_ptr<rawrbox::Mesh<T>> other) {
-			if (!this->_canOptimize || !other->_canOptimize) return false;
+		bool canOptimize(const rawrbox::Mesh<T>& other) {
+			if (!this->_canOptimize || !other._canOptimize) return false;
 
-			return this->texture == other->texture &&
-			       this->color == other->color &&
-			       this->wireframe == other->wireframe &&
-			       this->offsetMatrix == other->offsetMatrix;
+			return this->texture == other.texture &&
+			       this->color == other.color &&
+			       this->wireframe == other.wireframe &&
+			       this->offsetMatrix == other.offsetMatrix;
 		}
 	};
 } // namespace rawrbox

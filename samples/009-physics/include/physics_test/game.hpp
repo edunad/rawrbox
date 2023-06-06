@@ -13,12 +13,12 @@ namespace physics_test {
 	struct BoxOfDoom {
 	public:
 		JPH::Body* body = nullptr;
-		std::shared_ptr<rawrbox::Model<>> mdl = nullptr;
+		std::unique_ptr<rawrbox::Model<>> mdl = nullptr;
 
 		BoxOfDoom() = default;
 		~BoxOfDoom() {
 			body = nullptr;
-			mdl.reset();
+			mdl.release();
 		}
 	};
 
@@ -26,9 +26,8 @@ namespace physics_test {
 		std::shared_ptr<rawrbox::Window> _window = nullptr;
 		std::shared_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 
-		std::shared_ptr<rawrbox::Model<>> _modelGrid = std::make_shared<rawrbox::Model<>>();
-
-		std::vector<BoxOfDoom> _boxes = std::vector<BoxOfDoom>();
+		rawrbox::Model<> _modelGrid = {};
+		std::vector<BoxOfDoom> _boxes = {};
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;

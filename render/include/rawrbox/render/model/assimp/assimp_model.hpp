@@ -12,53 +12,51 @@ namespace rawrbox {
 
 		virtual void loadMeshes(std::shared_ptr<rawrbox::AssimpImporter> model) {
 			for (auto assimpMesh : model->meshes) {
-				auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
+				auto mesh = rawrbox::Mesh<typename M::vertexBufferType>();
 
-				mesh->name = assimpMesh.name;
-				mesh->bbox = assimpMesh.bbox;
-				mesh->offsetMatrix = assimpMesh.offsetMatrix;
+				mesh.name = assimpMesh.name;
+				mesh.bbox = assimpMesh.bbox;
+				mesh.offsetMatrix = assimpMesh.offsetMatrix;
 
 				// Textures ---
-				if (!assimpMesh.material.expired()) {
-					auto mat = assimpMesh.material.lock();
+				if (assimpMesh.material != nullptr) {
+					mesh.setTexture(rawrbox::WHITE_TEXTURE.get());               // Default
+					mesh.setSpecularTexture(rawrbox::BLACK_TEXTURE.get(), 25.F); // Default
+					mesh.setEmissionTexture(rawrbox::BLACK_TEXTURE.get(), 1.F);  // Default
+					mesh.setOpacityTexture(rawrbox::WHITE_TEXTURE.get());        // Default
 
-					mesh->setTexture(rawrbox::WHITE_TEXTURE);               // Default
-					mesh->setSpecularTexture(rawrbox::BLACK_TEXTURE, 25.F); // Default
-					mesh->setEmissionTexture(rawrbox::BLACK_TEXTURE, 1.F);  // Default
-					mesh->setOpacityTexture(rawrbox::WHITE_TEXTURE);        // Default
-
-					mesh->setWireframe(mat->wireframe);
-					mesh->setBlend(mat->blending);
-					mesh->setCulling(mat->doubleSided ? 0 : BGFX_STATE_CULL_CCW);
+					mesh.setWireframe(assimpMesh.material->wireframe);
+					mesh.setBlend(assimpMesh.material->blending);
+					mesh.setCulling(assimpMesh.material->doubleSided ? 0 : BGFX_STATE_CULL_CCW);
 
 					// DIFFUSE -----
-					if (mat->diffuse != nullptr) {
-						mesh->setTexture(mat->diffuse);
+					if (assimpMesh.material->diffuse != nullptr) {
+						mesh.setTexture(assimpMesh.material->diffuse.get());
 					}
 
-					mesh->setColor(mat->diffuseColor);
+					mesh.setColor(assimpMesh.material->diffuseColor);
 					// --------
 
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
 						// SPECULAR -----
-						if (mat->specular != nullptr) {
-							mesh->setSpecularTexture(mat->specular, mat->shininess);
+						if (assimpMesh.material->specular != nullptr) {
+							mesh.setSpecularTexture(assimpMesh.material->specular.get(), assimpMesh.material->shininess);
 						}
 
-						mesh->setSpecularColor(mat->specularColor);
+						mesh.setSpecularColor(assimpMesh.material->specularColor);
 						// --------
 
 						// EMISSION -----
-						if (mat->emissive != nullptr) {
-							mesh->setEmissionTexture(mat->emissive, mat->intensity);
+						if (assimpMesh.material->emissive != nullptr) {
+							mesh.setEmissionTexture(assimpMesh.material->emissive.get(), assimpMesh.material->intensity);
 						}
 
-						mesh->setEmissionColor(mat->emissionColor);
+						mesh.setEmissionColor(assimpMesh.material->emissionColor);
 						// --------
 
 						// OPACITY -----
-						if (mat->opacity != nullptr) {
-							mesh->setOpacityTexture(mat->opacity);
+						if (assimpMesh.material->opacity != nullptr) {
+							mesh.setOpacityTexture(assimpMesh.material->opacity.get());
 						}
 						// --------
 					}
@@ -66,7 +64,7 @@ namespace rawrbox {
 				}
 				// ------------
 
-				mesh->indices = assimpMesh.indices;
+				mesh.indices = assimpMesh.indices;
 				for (auto& vert : assimpMesh.vertices) {
 					typename M::vertexBufferType m;
 					m.position = vert.position;
@@ -83,22 +81,22 @@ namespace rawrbox {
 						m.bone_weights = vert.bone_weights;
 					}
 
-					mesh->vertices.push_back(m);
+					mesh.vertices.push_back(m);
 				}
 
 				// Bones
 				if constexpr (supportsBones<typename M::vertexBufferType>) {
-					if (!assimpMesh.skeleton.expired()) {
-						mesh->skeleton = assimpMesh.skeleton;
-						mesh->setOptimizable(false);
+					if (assimpMesh.skeleton != nullptr) {
+						mesh.skeleton = assimpMesh.skeleton;
+						mesh.setOptimizable(false);
 					}
 				}
 				// -------------------
 
-				mesh->baseVertex = 0;
-				mesh->baseIndex = 0;
-				mesh->totalVertex = static_cast<uint16_t>(mesh->vertices.size());
-				mesh->totalIndex = static_cast<uint16_t>(mesh->indices.size());
+				mesh.baseVertex = 0;
+				mesh.baseIndex = 0;
+				mesh.totalVertex = static_cast<uint16_t>(mesh.vertices.size());
+				mesh.totalIndex = static_cast<uint16_t>(mesh.indices.size());
 
 				this->addMesh(mesh);
 			}
@@ -110,13 +108,13 @@ namespace rawrbox {
 
 			// Mark animated meshes ---
 			for (auto& anim : model->animatedMeshes) {
-				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [anim](std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> msh) {
-					return msh->getName() == anim.second->name;
+				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [anim](rawrbox::Mesh<typename M::vertexBufferType>& msh) {
+					return msh.getName() == anim.second->name;
 				});
 				if (fnd == this->_meshes.end()) continue;
 
-				(*fnd)->setOptimizable(false);
-				this->_animatedMeshes[anim.first] = *fnd;
+				(*fnd).setOptimizable(false);
+				this->_animatedMeshes[anim.first] = &(*fnd);
 			}
 			// -----------------------
 		}

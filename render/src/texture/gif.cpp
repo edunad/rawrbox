@@ -8,6 +8,7 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
+
 	// NOLINTBEGIN(modernize-pass-by-value)
 	TextureGIF::TextureGIF(const std::filesystem::path& filePath, bool useFallback) : _filePath(filePath) {
 		this->internalLoad({}, useFallback);

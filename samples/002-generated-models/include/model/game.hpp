@@ -19,9 +19,9 @@ namespace model {
 		std::shared_ptr<rawrbox::TextureImage> _texture = nullptr;
 		std::shared_ptr<rawrbox::TextureGIF> _texture2 = nullptr;
 
-		std::shared_ptr<rawrbox::Model<>> _model = std::make_shared<rawrbox::Model<>>();
-		std::shared_ptr<rawrbox::Sprite<>> _sprite = std::make_shared<rawrbox::Sprite<>>();
-		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
+		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::Sprite<>> _sprite = std::make_unique<rawrbox::Sprite<>>();
+		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 
 		std::weak_ptr<rawrbox::Font> _font;
 

@@ -75,13 +75,13 @@ namespace model {
 		// Model test ----
 		{
 			auto mesh = this->_model->generatePlane({2, 0, 0}, {0.5F, 0.5F});
-			mesh->setTexture(this->_texture);
+			mesh.setTexture(this->_texture.get());
 			this->_model->addMesh(mesh);
 		}
 
 		{
 			auto mesh = this->_model->generateCube({-2, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
-			mesh->setTexture(this->_texture2);
+			mesh.setTexture(this->_texture2.get());
 			this->_model->addMesh(mesh);
 		}
 
@@ -100,7 +100,7 @@ namespace model {
 		// Sprite test ----
 		{
 			auto mesh = this->_sprite->generatePlane({0, 1, 0}, {0.2F, 0.2F});
-			mesh->setTexture(this->_texture);
+			mesh.setTexture(this->_texture.get());
 			this->_sprite->addMesh(mesh);
 		}
 		// -----
