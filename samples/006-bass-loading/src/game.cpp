@@ -98,15 +98,14 @@ namespace bass_test {
 		this->_sound2->play();
 
 		// Text test ----
-		auto f = this->_font.lock();
 		{
-			this->_beatText->addText(f, "BEAT", {-3.F, 1.3F, 0});
+			this->_beatText->addText(*this->_font, "BEAT", {-3.F, 1.3F, 0});
 			this->_beatText->upload();
 		}
 
 		{
-			this->_text->addText(f, "HTTP LOADING", {-3.F, 1.1F, 0});
-			this->_text->addText(f, "LOCAL LOADING", {3.F, 1.1F, 0});
+			this->_text->addText(*this->_font, "HTTP LOADING", {-3.F, 1.1F, 0});
+			this->_text->addText(*this->_font, "LOCAL LOADING", {3.F, 1.1F, 0});
 			this->_text->upload();
 		}
 		// ------

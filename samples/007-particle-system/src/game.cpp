@@ -102,9 +102,8 @@ namespace particle_test {
 		// ------
 
 		{
-			auto f = this->_font.lock();
-			this->_text->addText(f, "DEFAULT EMITTER SETTINGS", {-2.F, 0.15F, 0});
-			this->_text->addText(f, "CUSTOM EMITTER SETTINGS", {2.F, 0.15F, 0});
+			this->_text->addText(*this->_font, "DEFAULT EMITTER SETTINGS", {-2.F, 0.15F, 0});
+			this->_text->addText(*this->_font, "CUSTOM EMITTER SETTINGS", {2.F, 0.15F, 0});
 			this->_text->upload();
 		}
 

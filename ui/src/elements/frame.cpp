@@ -9,7 +9,7 @@ namespace rawrbox {
 		this->_overlay.reset();
 		this->_closeButton.reset();
 
-		this->_consola.reset();
+		this->_consola = nullptr;
 	}
 
 	void UIFrame::initialize() {
@@ -96,9 +96,8 @@ namespace rawrbox {
 
 		// Title
 		stencil.drawBox({}, {size.x, this->_titleSize}, this->_titleColor);
-		if (!this->_consola.expired()) {
-			auto f = this->_consola.lock();
-			stencil.drawText(f, this->_title, {5, 8}, Color::RGBAHex(0x000000BA), rawrbox::Alignment::Left, rawrbox::Alignment::Center);
+		if (this->_consola != nullptr) {
+			stencil.drawText(*this->_consola, this->_title, {5, 8}, Color::RGBAHex(0x000000BA), rawrbox::Alignment::Left, rawrbox::Alignment::Center);
 		}
 
 		if (this->_closable) {

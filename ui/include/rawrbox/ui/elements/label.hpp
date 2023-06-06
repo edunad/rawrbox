@@ -12,7 +12,7 @@ namespace rawrbox {
 		rawrbox::Color _shadowColor = rawrbox::Colors::Transparent;
 
 		// RESOURCES ---
-		std::weak_ptr<rawrbox::Font> _font;
+		rawrbox::Font* _font = nullptr;
 		// -----------------
 
 		std::string _text = "";
@@ -39,9 +39,9 @@ namespace rawrbox {
 		void setText(const std::string& text);
 		[[nodiscard]] const std::string& getText() const;
 
-		void setFont(std::shared_ptr<rawrbox::Font> font);
+		void setFont(rawrbox::Font* font);
 		void setFont(const std::filesystem::path& font, int size = 11);
-		[[nodiscard]] std::weak_ptr<rawrbox::Font> getFont() const;
+		[[nodiscard]] rawrbox::Font* getFont() const;
 
 		void sizeToContents();
 		// -----

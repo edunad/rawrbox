@@ -104,12 +104,11 @@ namespace assimp {
 
 		// Text test ----
 		{
-			auto f = this->_font.lock();
-			this->_text->addText(f, "TEXTURES + LIGHT", {-6.F, 3.0F, 0});
-			this->_text->addText(f, "TEXTURES", {6.F, 3.0F, 0});
-			this->_text->addText(f, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
-			this->_text->addText(f, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.F, 2.5F});
-			this->_text->addText(f, "VERTEX ANIMATIONS", {0.F, 1.8F, -3.5F});
+			this->_text->addText(*this->_font, "TEXTURES + LIGHT", {-6.F, 3.0F, 0});
+			this->_text->addText(*this->_font, "TEXTURES", {6.F, 3.0F, 0});
+			this->_text->addText(*this->_font, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
+			this->_text->addText(*this->_font, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.F, 2.5F});
+			this->_text->addText(*this->_font, "VERTEX ANIMATIONS", {0.F, 1.8F, -3.5F});
 			this->_text->upload();
 		}
 		// ------

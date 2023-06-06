@@ -11,8 +11,8 @@ namespace rawrbox {
 
 	class TextEngine {
 
-		static std::map<std::string, std::shared_ptr<rawrbox::Font>> _fonts;
-		static std::map<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> _atlas;
+		static std::map<std::string, std::unique_ptr<rawrbox::Font>> _fonts;
+		static std::map<uint32_t, std::unique_ptr<rawrbox::TextureAtlas>> _atlas;
 
 		static std::string getFontInSystem(const std::filesystem::path& path);
 
@@ -21,9 +21,9 @@ namespace rawrbox {
 
 		static void shutdown();
 
-		static std::pair<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> requestAtlas(int width, int height, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8);
-		static std::shared_ptr<rawrbox::TextureAtlas> getAtlas(uint32_t id);
+		static std::pair<uint32_t, rawrbox::TextureAtlas*> requestAtlas(int width, int height, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8);
+		static rawrbox::TextureAtlas* getAtlas(uint32_t id);
 
-		static std::shared_ptr<rawrbox::Font> load(const std::filesystem::path& filename, uint32_t size, uint32_t index = 0);
+		static rawrbox::Font* load(const std::filesystem::path& filename, uint32_t size, uint32_t index = 0);
 	};
 } // namespace rawrbox

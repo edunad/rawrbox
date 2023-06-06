@@ -26,7 +26,7 @@ namespace assimp {
 
 		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
 
-		std::weak_ptr<rawrbox::Font> _font;
+		rawrbox::Font* _font;
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;

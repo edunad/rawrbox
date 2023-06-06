@@ -79,9 +79,9 @@ namespace stencil {
 		this->_texture.reset();
 		this->_texture2.reset();
 
-		this->_font.reset();
-		this->_font2.reset();
-		this->_font3.reset();
+		this->_font = nullptr;
+		this->_font2 = nullptr;
+		this->_font3 = nullptr;
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
@@ -220,19 +220,16 @@ namespace stencil {
 		stencil.popOffset();
 
 		// Text ---
-		auto f = this->_font.lock();
 		stencil.pushOffset({20, 200});
-		stencil.drawText(f, "Cat ipsum dolor sit amet, steal raw zucchini off kitchen counter. $£%&", {});
+		stencil.drawText(*this->_font, "Cat ipsum dolor sit amet, steal raw zucchini off kitchen counter. $£%&", {});
 
-		auto f2 = this->_font2.lock();
-		auto size = f2->getStringSize("Cat!!");
+		auto size = this->_font2->getStringSize("Cat!!");
 
 		stencil.pushRotation({this->_counter * 50.5F, (size / 2.F) + rawrbox::Vector2f(0, 40)});
-		stencil.drawText(f2, "Cat!!", {0, 40});
+		stencil.drawText(*this->_font2, "Cat!!", {0, 40});
 		stencil.popRotation();
 
-		auto f3 = this->_font3.lock();
-		stencil.drawText(f3, "MeW MeW MeW!", {0, 75});
+		stencil.drawText(*this->_font3, "MeW MeW MeW!", {0, 75});
 		// ---
 
 		stencil.popOffset();

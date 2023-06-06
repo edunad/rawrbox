@@ -106,11 +106,10 @@ namespace model {
 		// -----
 		// Text test ----
 		{
-			auto f = this->_font.lock();
-			this->_text->addText(f, "PLANE", {2.F, 0.5F, 0});
-			this->_text->addText(f, "CUBE", {-2.F, 0.55F, 0});
-			this->_text->addText(f, "AXIS", {0.F, 0.5F, 0});
-			this->_text->addText(f, "SPRITE", {0.F, 1.2F, 0});
+			this->_text->addText(*this->_font, "PLANE", {2.F, 0.5F, 0});
+			this->_text->addText(*this->_font, "CUBE", {-2.F, 0.55F, 0});
+			this->_text->addText(*this->_font, "AXIS", {0.F, 0.5F, 0});
+			this->_text->addText(*this->_font, "SPRITE", {0.F, 1.2F, 0});
 		}
 		// ------
 

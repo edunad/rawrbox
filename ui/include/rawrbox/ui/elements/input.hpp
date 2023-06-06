@@ -15,7 +15,7 @@ namespace rawrbox {
 		rawrbox::Color _textColor = rawrbox::Colors::White;
 
 		// RESOURCES ---
-		std::weak_ptr<rawrbox::Font> _font;
+		rawrbox::Font* _font = nullptr;
 		// -----------------
 
 		std::string _text = "";
@@ -90,9 +90,9 @@ namespace rawrbox {
 		virtual void setBackgroundColor(const rawrbox::Color& col);
 		[[nodiscard]] virtual const rawrbox::Color& getBackgroundColor() const;
 
-		virtual void setFont(std::shared_ptr<rawrbox::Font> font);
+		virtual void setFont(rawrbox::Font* font);
 		virtual void setFont(const std::filesystem::path& font, int size = 11);
-		[[nodiscard]] virtual std::weak_ptr<rawrbox::Font> getFont() const;
+		[[nodiscard]] virtual rawrbox::Font* getFont() const;
 
 		[[nodiscard]] virtual bool empty() const;
 		[[nodiscard]] virtual size_t size() const;

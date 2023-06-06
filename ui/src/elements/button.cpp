@@ -8,7 +8,7 @@ namespace rawrbox {
 	UIButton::~UIButton() {
 		this->_texture.reset();
 		this->_overlay.reset();
-		this->_consola.reset();
+		this->_consola = nullptr;
 	}
 
 	void UIButton::initialize() {
@@ -99,16 +99,15 @@ namespace rawrbox {
 			}
 		}
 
-		if (!this->_text.empty() && !this->_consola.expired()) {
-			auto progSize = this->_consola.lock()->getStringSize(this->_text);
-			auto f = this->_consola.lock();
+		if (!this->_text.empty() && this->_consola != nullptr) {
+			auto progSize = this->_consola->getStringSize(this->_text);
 
 			// No icon, center text
 			if (this->_texture == nullptr) {
-				stencil.drawText(f, this->_text, {(size.x - progSize.x) / 2, (size.y - progSize.y) / 2}, this->_textColor);
+				stencil.drawText(*this->_consola, this->_text, {(size.x - progSize.x) / 2, (size.y - progSize.y) / 2}, this->_textColor);
 			} else {
 				// Text after icon
-				stencil.drawText(f, this->_text, {this->_textureSize.x + 4, (size.y - progSize.y) / 2}, this->_textColor);
+				stencil.drawText(*this->_consola, this->_text, {this->_textureSize.x + 4, (size.y - progSize.y) / 2}, this->_textColor);
 			}
 		}
 

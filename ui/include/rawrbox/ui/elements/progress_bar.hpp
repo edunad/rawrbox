@@ -12,7 +12,7 @@ namespace rawrbox {
 		std::shared_ptr<rawrbox::TextureBase> _bg = nullptr;
 		std::shared_ptr<rawrbox::TextureBase> _overlay = nullptr;
 
-		std::weak_ptr<rawrbox::Font> _font_11;
+		rawrbox::Font* _font = nullptr;
 		// -----------------
 
 		rawrbox::Vector2f _labelSize = {};

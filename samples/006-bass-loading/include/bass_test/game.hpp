@@ -22,7 +22,7 @@ namespace bass_test {
 		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
 		std::shared_ptr<rawrbox::Text3D> _beatText = std::make_shared<rawrbox::Text3D>();
 
-		std::weak_ptr<rawrbox::Font> _font;
+		rawrbox::Font* _font;
 
 		float _beat = 0;
 		bool _ready = false;

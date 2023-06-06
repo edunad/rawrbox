@@ -7,12 +7,11 @@
 namespace rawrbox {
 
 	// UTILS ----
-	void Text3D::addText(std::shared_ptr<rawrbox::Font> font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl, rawrbox::Alignment alignX, rawrbox::Alignment alignY, bool billboard) {
-		if (font == nullptr) throw std::runtime_error("[RawrBox-Text3D] Invalid font");
-		float screenSize = font->getScale() * 0.75F;
+	void Text3D::addText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl, rawrbox::Alignment alignX, rawrbox::Alignment alignY, bool billboard) {
+		float screenSize = font.getScale() * 0.75F;
 
 		rawrbox::Vector3f startpos = pos;
-		rawrbox::Vector2f tsize = font->getStringSize(text) * screenSize;
+		rawrbox::Vector2f tsize = font.getStringSize(text) * screenSize;
 		if (alignX != Alignment::Left || alignY != Alignment::Left) {
 			switch (alignX) {
 				case Alignment::Left:
@@ -37,10 +36,10 @@ namespace rawrbox {
 			}
 		}
 
-		font->render(text, startpos.xy(), [this, font, billboard, pos, startpos, cl, screenSize](std::shared_ptr<rawrbox::Glyph> glyph, float x0, float y0, float x1, float y1) {
+		font.render(text, startpos.xy(), [this, &font, billboard, pos, startpos, cl, screenSize](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
 			auto mesh = std::make_shared<rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType>>();
 
-			mesh->setTexture(font->getAtlasTexture(glyph).get()); // Set the atlas
+			mesh->setTexture(font.getAtlasTexture(glyph)); // Set the atlas
 			mesh->setOptimizable(false);
 			mesh->addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
 			mesh->vertexPos.translate(pos);

@@ -77,10 +77,9 @@ namespace light {
 
 		// Text test ----
 		{
-			auto f = this->_font.lock();
-			this->_text->addText(f, "SPOT LIGHT", {-6.F, 1.8F, 0});
-			this->_text->addText(f, "DIRECTIONAL LIGHT", {0.F, 1.8F, 0});
-			this->_text->addText(f, "POINT LIGHT", {6.F, 1.8F, 0});
+			this->_text->addText(*this->_font, "SPOT LIGHT", {-6.F, 1.8F, 0});
+			this->_text->addText(*this->_font, "DIRECTIONAL LIGHT", {0.F, 1.8F, 0});
+			this->_text->addText(*this->_font, "POINT LIGHT", {6.F, 1.8F, 0});
 			this->_text->upload();
 		}
 		// ------

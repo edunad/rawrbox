@@ -6,7 +6,7 @@
 
 namespace rawrbox {
 	UILabel::~UILabel() {
-		this->_font.reset();
+		this->_font = nullptr;
 	}
 
 	// FOCUS HANDLE ---
@@ -30,26 +30,25 @@ namespace rawrbox {
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>(font)->getSize(size);
 	}
 
-	void UILabel::setFont(std::shared_ptr<rawrbox::Font> font) {
+	void UILabel::setFont(rawrbox::Font* font) {
 		if (font == nullptr) throw std::runtime_error("[RawrBox-UI] Invalid font");
 		this->_font = font;
 	}
 
-	std::weak_ptr<rawrbox::Font> UILabel::getFont() const { return this->_font; }
+	rawrbox::Font* UILabel::getFont() const { return this->_font; }
 
 	void UILabel::sizeToContents() {
-		if (this->_font.expired()) return;
-		this->setSize(this->_font.lock()->getStringSize(this->_text));
+		if (this->_font == nullptr) return;
+		this->setSize(this->_font->getStringSize(this->_text));
 	}
 	// ----------
 
 	// DRAW ----
 	void UILabel::draw(Stencil& stencil) {
-		if (this->_font.expired()) return;
+		if (this->_font == nullptr) return;
 
-		auto fnt = this->_font.lock();
-		stencil.drawText(fnt, this->_text, this->_shadow, this->_shadowColor);
-		stencil.drawText(fnt, this->_text, {0, 0}, this->_color);
+		stencil.drawText(*this->_font, this->_text, this->_shadow, this->_shadowColor);
+		stencil.drawText(*this->_font, this->_text, {0, 0}, this->_color);
 	}
 	// ----------
 } // namespace rawrbox

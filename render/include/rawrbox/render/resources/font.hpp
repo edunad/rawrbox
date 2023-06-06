@@ -7,7 +7,7 @@ namespace rawrbox {
 	class ResourceFont : public rawrbox::Resource {
 
 	public:
-		std::shared_ptr<rawrbox::Font> getSize(int size, uint32_t flags = 0);
+		rawrbox::Font* getSize(int size, uint32_t flags = 0);
 	};
 
 	class FontLoader : public rawrbox::Loader {

@@ -9,7 +9,7 @@ namespace rawrbox {
 		this->_overlay.reset();
 		this->_bg.reset();
 
-		this->_font_11.reset();
+		this->_font = nullptr;
 	}
 
 	// UTILS ----
@@ -17,7 +17,7 @@ namespace rawrbox {
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->texture;
 		this->_bg = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/background_grid.png")->texture;
 
-		this->_font_11 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(11);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(11);
 	}
 
 	void UIProgressBar::showPercent(bool show) { this->_percent = show; }
@@ -50,11 +50,9 @@ namespace rawrbox {
 		stencil.drawLine({0, size.y - 1}, {size.x, size.y - 1}, Color::RGBAHex(0x0000004A));
 		// --------------------
 
-		if (!this->_font_11.expired() && this->_percent) {
-			auto f = this->_font_11.lock();
-
+		if (this->_font != nullptr && this->_percent) {
 			auto val = std::to_string(static_cast<int>(this->_value));
-			stencil.drawText(f, val, {5, size.y / 2.F}, this->_progressColor * 0.35F, rawrbox::Alignment::Left, rawrbox::Alignment::Center);
+			stencil.drawText(*this->_font, val, {5, size.y / 2.F}, this->_progressColor * 0.35F, rawrbox::Alignment::Left, rawrbox::Alignment::Center);
 		}
 
 		// BORDER--
