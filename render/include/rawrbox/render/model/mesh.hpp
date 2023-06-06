@@ -138,7 +138,7 @@ namespace rawrbox {
 			return std::bit_cast<B*>(this->owner);
 		}
 
-		[[nodiscard]] const rawrbox::TextureBase getTexture() const { return this->texture; }
+		[[nodiscard]] const rawrbox::TextureBase* getTexture() const { return this->texture; }
 		void setTexture(rawrbox::TextureBase* ptr) {
 			this->texture = ptr;
 		}
