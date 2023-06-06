@@ -22,10 +22,10 @@ namespace rawrbox {
 				if (!assimpMesh.material.expired()) {
 					auto mat = assimpMesh.material.lock();
 
-					mesh->setTexture(rawrbox::WHITE_TEXTURE);               // Default
-					mesh->setSpecularTexture(rawrbox::BLACK_TEXTURE, 25.F); // Default
-					mesh->setEmissionTexture(rawrbox::BLACK_TEXTURE, 1.F);  // Default
-					mesh->setOpacityTexture(rawrbox::WHITE_TEXTURE);        // Default
+					mesh->setTexture(rawrbox::WHITE_TEXTURE.get());               // Default
+					mesh->setSpecularTexture(rawrbox::BLACK_TEXTURE.get(), 25.F); // Default
+					mesh->setEmissionTexture(rawrbox::BLACK_TEXTURE.get(), 1.F);  // Default
+					mesh->setOpacityTexture(rawrbox::WHITE_TEXTURE.get());        // Default
 
 					mesh->setWireframe(mat->wireframe);
 					mesh->setBlend(mat->blending);
@@ -33,7 +33,7 @@ namespace rawrbox {
 
 					// DIFFUSE -----
 					if (mat->diffuse != nullptr) {
-						mesh->setTexture(mat->diffuse);
+						mesh->setTexture(mat->diffuse.get());
 					}
 
 					mesh->setColor(mat->diffuseColor);
@@ -42,7 +42,7 @@ namespace rawrbox {
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
 						// SPECULAR -----
 						if (mat->specular != nullptr) {
-							mesh->setSpecularTexture(mat->specular, mat->shininess);
+							mesh->setSpecularTexture(mat->specular.get(), mat->shininess);
 						}
 
 						mesh->setSpecularColor(mat->specularColor);
@@ -50,7 +50,7 @@ namespace rawrbox {
 
 						// EMISSION -----
 						if (mat->emissive != nullptr) {
-							mesh->setEmissionTexture(mat->emissive, mat->intensity);
+							mesh->setEmissionTexture(mat->emissive.get(), mat->intensity);
 						}
 
 						mesh->setEmissionColor(mat->emissionColor);
@@ -58,7 +58,7 @@ namespace rawrbox {
 
 						// OPACITY -----
 						if (mat->opacity != nullptr) {
-							mesh->setOpacityTexture(mat->opacity);
+							mesh->setOpacityTexture(mat->opacity.get());
 						}
 						// --------
 					}

@@ -395,7 +395,7 @@ namespace rawrbox {
 			// -----
 
 			mesh->setCulling(0);
-			mesh->setTexture(rawrbox::WHITE_TEXTURE);
+			mesh->setTexture(rawrbox::WHITE_TEXTURE.get());
 
 			return mesh;
 		}

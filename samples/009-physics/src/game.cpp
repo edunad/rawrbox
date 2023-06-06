@@ -154,7 +154,7 @@ namespace physics_test {
 		auto mesh = box.mdl->generateCube({}, size);
 
 		auto text = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->texture;
-		mesh->setTexture(text);
+		mesh->setTexture(text.get());
 
 		box.mdl->addMesh(mesh);
 		box.mdl->upload();

@@ -20,11 +20,11 @@ namespace rawrbox {
 	class LightBase;
 	class GIZMOS {
 	protected:
-		static std::shared_ptr<rawrbox::Sprite<>> _gizmo_lights;
-		static std::shared_ptr<rawrbox::Sprite<>> _gizmo_sounds;
-		static std::shared_ptr<rawrbox::Sprite<>> _gizmo_emitters;
+		static std::unique_ptr<rawrbox::Sprite<>> _gizmo_lights;
+		static std::unique_ptr<rawrbox::Sprite<>> _gizmo_sounds;
+		static std::unique_ptr<rawrbox::Sprite<>> _gizmo_emitters;
 
-		static std::unordered_map<std::string, std::shared_ptr<rawrbox::TextureImage>> _textures;
+		static std::unordered_map<std::string, std::unique_ptr<rawrbox::TextureImage>> _textures;
 
 	public:
 		static void shutdown();

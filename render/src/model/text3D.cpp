@@ -40,7 +40,7 @@ namespace rawrbox {
 		font->render(text, startpos.xy(), [this, font, billboard, pos, startpos, cl, screenSize](std::shared_ptr<rawrbox::Glyph> glyph, float x0, float y0, float x1, float y1) {
 			auto mesh = std::make_shared<rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType>>();
 
-			mesh->setTexture(font->getAtlasTexture(glyph)); // Set the atlas
+			mesh->setTexture(font->getAtlasTexture(glyph).get()); // Set the atlas
 			mesh->setOptimizable(false);
 			mesh->addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
 			mesh->vertexPos.translate(pos);

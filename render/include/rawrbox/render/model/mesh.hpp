@@ -43,13 +43,13 @@ namespace rawrbox {
 		// -------
 
 		// TEXTURES ---
-		std::shared_ptr<rawrbox::TextureBase> texture = nullptr;
-		std::shared_ptr<rawrbox::TextureBase> opacityTexture = nullptr;
+		rawrbox::TextureBase* texture = nullptr;
+		rawrbox::TextureBase* opacityTexture = nullptr;
 
-		std::shared_ptr<rawrbox::TextureBase> specularTexture = nullptr;
+		rawrbox::TextureBase* specularTexture = nullptr;
 		rawrbox::Color specularColor = rawrbox::Colors::White;
 
-		std::shared_ptr<rawrbox::TextureBase> emissionTexture = nullptr;
+		rawrbox::TextureBase* emissionTexture = nullptr;
 		rawrbox::Color emissionColor = rawrbox::Colors::White;
 
 		float specularShininess = 25.0F;
@@ -85,10 +85,10 @@ namespace rawrbox {
 
 		Mesh() = default;
 		virtual ~Mesh() {
-			this->texture.reset();
-			this->specularTexture.reset();
-			this->emissionTexture.reset();
-			this->opacityTexture.reset();
+			this->texture = nullptr;
+			this->specularTexture = nullptr;
+			this->emissionTexture = nullptr;
+			this->opacityTexture = nullptr;
 
 			this->owner = nullptr;
 			this->skeleton.reset();
@@ -138,24 +138,24 @@ namespace rawrbox {
 			return std::bit_cast<B*>(this->owner);
 		}
 
-		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getTexture() const { return this->texture; }
-		void setTexture(std::shared_ptr<rawrbox::TextureBase> ptr) {
+		[[nodiscard]] const rawrbox::TextureBase getTexture() const { return this->texture; }
+		void setTexture(rawrbox::TextureBase* ptr) {
 			this->texture = ptr;
 		}
 
-		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getEmissionTexture() const { return this->emissionTexture; }
-		void setEmissionTexture(std::shared_ptr<rawrbox::TextureBase> ptr, float intensity) {
+		[[nodiscard]] const rawrbox::TextureBase* getEmissionTexture() const { return this->emissionTexture; }
+		void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity) {
 			this->emissionTexture = ptr;
 			this->emissionIntensity = intensity;
 		}
 
-		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getOpacityTexture() const { return this->opacityTexture; }
-		void setOpacityTexture(std::shared_ptr<rawrbox::TextureBase> ptr) {
+		[[nodiscard]] const rawrbox::TextureBase* getOpacityTexture() const { return this->opacityTexture; }
+		void setOpacityTexture(rawrbox::TextureBase* ptr) {
 			this->opacityTexture = ptr;
 		}
 
-		[[nodiscard]] const std::shared_ptr<rawrbox::TextureBase> getSpecularTexture() const { return this->specularTexture; }
-		void setSpecularTexture(std::shared_ptr<rawrbox::TextureBase> ptr, float shininess) {
+		[[nodiscard]] const rawrbox::TextureBase* getSpecularTexture() const { return this->specularTexture; }
+		void setSpecularTexture(rawrbox::TextureBase* ptr, float shininess) {
 			this->specularTexture = ptr;
 			this->specularShininess = shininess;
 		}
