@@ -73,7 +73,7 @@ namespace rawrbox {
 		// --------------
 
 		// ANIMATION ------
-		std::weak_ptr<rawrbox::Skeleton> skeleton;
+		rawrbox::Skeleton* skeleton = nullptr;
 		// -----------------
 
 		// LIGHTS ------
@@ -91,7 +91,7 @@ namespace rawrbox {
 			this->opacityTexture = nullptr;
 
 			this->owner = nullptr;
-			this->skeleton.reset();
+			this->skeleton = nullptr;
 
 			this->lights.clear();
 			this->data.clear();
@@ -192,13 +192,13 @@ namespace rawrbox {
 			this->data[id] = data;
 		}
 
-		rawrbox::Vector4f getData(const std::string& id) {
+		[[nodiscard]] const rawrbox::Vector4f& getData(const std::string& id) const {
 			auto fnd = this->data.find(id);
 			if (fnd == this->data.end()) throw std::runtime_error(fmt::format("[RawrBox-Mesh] Data '{}' not found", id));
 			return fnd->second;
 		}
 
-		bool hasData(const std::string& id) {
+		[[nodiscard]] bool hasData(const std::string& id) const {
 			return this->data.find(id) != this->data.end();
 		}
 
@@ -222,7 +222,7 @@ namespace rawrbox {
 		}
 
 		void setOptimizable(bool status) { this->_canOptimize = status; }
-		bool canOptimize(std::shared_ptr<rawrbox::Mesh<T>> other) {
+		[[nodiscard]] bool canOptimize(std::shared_ptr<rawrbox::Mesh<T>> other) const {
 			if (!this->_canOptimize || !other->_canOptimize) return false;
 
 			return this->texture == other->texture &&

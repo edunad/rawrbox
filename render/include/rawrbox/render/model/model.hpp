@@ -30,7 +30,7 @@ namespace rawrbox {
 		std::vector<rawrbox::LightBase> lights = {};
 
 		// ANIMATIONS ----
-		virtual void animate(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
+		virtual void animate(const std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) const {
 			// VERTEX ANIMATION ----
 			for (auto& anim : this->_animatedMeshes) {
 				if (anim.second.expired()) continue;
@@ -43,10 +43,9 @@ namespace rawrbox {
 				std::vector<rawrbox::Matrix4x4> boneTransforms = {};
 				boneTransforms.resize(rawrbox::MAX_BONES_PER_MODEL);
 
-				if (!mesh->skeleton.expired()) {
-					auto skl = mesh->skeleton.lock();
+				if (mesh->skeleton != nullptr) {
 					auto calcs = std::unordered_map<uint8_t, rawrbox::Matrix4x4>();
-					this->animateBones(calcs, skl, skl->rootBone, {});
+					this->animateBones(calcs, *mesh->skeleton, *mesh->skeleton->rootBone, {});
 
 					for (size_t i = 0; i < calcs.size(); i++) {
 						boneTransforms[i] = calcs[static_cast<uint8_t>(i)];
@@ -58,25 +57,23 @@ namespace rawrbox {
 			// -----
 		}
 
-		virtual void animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const rawrbox::Matrix4x4& parentTransform) {
-			if (skeleton == nullptr) return;
-
-			auto nodeTransform = parentBone->transformationMtx;
-			this->readAnims(nodeTransform, parentBone->name);
+		virtual void animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, const rawrbox::Skeleton& skeleton, const rawrbox::Bone& parentBone, const rawrbox::Matrix4x4& parentTransform) const {
+			auto nodeTransform = parentBone.transformationMtx;
+			this->readAnims(nodeTransform, parentBone.name);
 
 			// store the result of our parent bone and our current node
 			rawrbox::Matrix4x4 globalTransformation = parentTransform * nodeTransform;
-			auto fnd = skeleton->boneMap.find(parentBone->name);
-			if (fnd != skeleton->boneMap.end()) {
-				calcs[fnd->second->boneId] = skeleton->invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
+			auto fnd = skeleton.boneMap.find(parentBone.name);
+			if (fnd != skeleton.boneMap.end()) {
+				calcs[fnd->second->boneId] = skeleton.invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
 			}
 
-			for (auto child : parentBone->children) {
-				this->animateBones(calcs, skeleton, child, globalTransformation);
+			for (auto& child : parentBone.children) {
+				this->animateBones(calcs, skeleton, *child, globalTransformation);
 			}
 		}
 
-		virtual void readAnims(rawrbox::Matrix4x4& nodeTransform, const std::string& nodeName) {
+		virtual void readAnims(rawrbox::Matrix4x4& nodeTransform, const std::string& nodeName) const {
 			for (auto& anim : this->_playingAnimations) {
 				auto animChannel = std::find_if(anim.data->frames.begin(), anim.data->frames.end(), [&](AnimationFrame& x) {
 					return x.nodeName == nodeName;

@@ -88,7 +88,7 @@ namespace rawrbox {
 
 				// Bones
 				if constexpr (supportsBones<typename M::vertexBufferType>) {
-					if (!assimpMesh.skeleton.expired()) {
+					if (assimpMesh.skeleton != nullptr) {
 						mesh->skeleton = assimpMesh.skeleton;
 						mesh->setOptimizable(false);
 					}

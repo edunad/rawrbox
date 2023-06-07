@@ -284,10 +284,10 @@ namespace rawrbox {
 		glfwSetCursor(GLFWHANDLE, cursor);
 	}
 
-	// NOLINTBEGIN(clang-analyzer-core.NonNullParamChecker)
+	// NOLINTBEGIN(cppcoreguidelines-owning-memory)
 	void Window::setCursor(const std::array<uint8_t, 1024>& pixels) {
 		GLFWimage image = {};
-		image.pixels = {};
+		image.pixels = new uint8_t[16 * 16 * 4];
 		image.width = 16;
 		image.height = 16;
 
@@ -302,7 +302,7 @@ namespace rawrbox {
 
 		glfwSetCursor(GLFWHANDLE, cursor);
 	}
-	// NOLINTEND(clang-analyzer-core.NonNullParamChecker)
+	// NOLINTEND(cppcoreguidelines-owning-memory)
 	// -------------------
 
 	void Window::shutdown() {

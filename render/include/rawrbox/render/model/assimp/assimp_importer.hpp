@@ -92,7 +92,7 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 offsetMatrix;
 
 		std::weak_ptr<rawrbox::AssimpMaterial> material;
-		std::weak_ptr<rawrbox::Skeleton> skeleton;
+		rawrbox::Skeleton* skeleton = nullptr;
 
 		bool animated = false;
 
@@ -102,7 +102,7 @@ namespace rawrbox {
 		AssimpMesh() = default;
 		~AssimpMesh() {
 			this->material.reset();
-			this->skeleton.reset();
+			this->skeleton = nullptr;
 
 			this->vertices.clear();
 			this->indices.clear();
@@ -121,7 +121,7 @@ namespace rawrbox {
 		// SKELETON LOADING -----
 		void loadSkeleton(const aiScene* sc, rawrbox::AssimpMesh& mesh, const aiMesh& aiMesh);
 
-		void generateSkeleton(std::shared_ptr<rawrbox::Skeleton> skeleton, const aiNode* pNode, std::shared_ptr<rawrbox::Bone> parent);
+		void generateSkeleton(rawrbox::Skeleton& skeleton, const aiNode* pNode, rawrbox::Bone& parent);
 		aiNode* findRootSkeleton(const aiScene* sc, const std::string& meshName);
 
 		bx::Easing::Enum assimpBehavior(aiAnimBehaviour b);
