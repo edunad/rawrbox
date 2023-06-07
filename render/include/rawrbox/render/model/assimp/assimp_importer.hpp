@@ -14,6 +14,7 @@
 #include <assimp/scene.h>
 
 #include <filesystem>
+#include <optional>
 
 #define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_GlobalScale)
 
