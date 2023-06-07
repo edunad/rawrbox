@@ -106,10 +106,10 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 
 		base->setEulerAngle({12, 3, 8});
 
-		REQUIRE(base->getAngle().x == 12);
-		REQUIRE(base->getAngle().y == 3);
-		REQUIRE(base->getAngle().z == 8);
-		REQUIRE(base->getAngle().w == 0);
+		REQUIRE_THAT(base->getAngle().x, Catch::Matchers::WithinAbs(0.73776F, 0.0001F));
+		REQUIRE_THAT(base->getAngle().y, Catch::Matchers::WithinAbs(0.61108F, 0.0001F));
+		REQUIRE_THAT(base->getAngle().z, Catch::Matchers::WithinAbs(0.13078F, 0.0001F));
+		REQUIRE_THAT(base->getAngle().w, Catch::Matchers::WithinAbs(-0.25533F, 0.0001F));
 	}
 
 	SECTION("rawrbox::ModelBase::setScale / rawrbox::ModelBase::getScale") {
