@@ -19,7 +19,7 @@ namespace rawrbox {
 		bgfx::UniformHandle u_colorOffset = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle u_mesh_pos = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle u_billboard = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle u_data = BGFX_INVALID_HANDLE;
 
 		using vertexBufferType = rawrbox::VertexData;
 
@@ -55,7 +55,7 @@ namespace rawrbox {
 				bgfx::setUniform(u_mesh_pos, offset.data());
 			}
 
-			bgfx::setUniform(u_billboard, billboard.data());
+			bgfx::setUniform(u_data, billboard.data());
 		}
 
 		virtual void process(const bgfx::TextureHandle& texture);
