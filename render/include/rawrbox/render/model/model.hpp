@@ -30,11 +30,11 @@ namespace rawrbox {
 		std::vector<rawrbox::LightBase> lights = {};
 
 		// ANIMATIONS ----
-		virtual void animate(const std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) const {
+		virtual void animate(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
 			// VERTEX ANIMATION ----
 			for (auto& anim : this->_animatedMeshes) {
-				if (anim.second.expired()) continue;
-				this->readAnims(anim.second.lock()->offsetMatrix, anim.first);
+				if (anim.second == nullptr) continue;
+				this->readAnims(anim.second->offsetMatrix, anim.first);
 			}
 			// ------------
 
@@ -43,9 +43,9 @@ namespace rawrbox {
 				std::vector<rawrbox::Matrix4x4> boneTransforms = {};
 				boneTransforms.resize(rawrbox::MAX_BONES_PER_MODEL);
 
-				if (mesh->skeleton != nullptr) {
+				if (mesh.skeleton != nullptr) {
 					auto calcs = std::unordered_map<uint8_t, rawrbox::Matrix4x4>();
-					this->animateBones(calcs, *mesh->skeleton, *mesh->skeleton->rootBone, {});
+					this->animateBones(calcs, *mesh.skeleton, *mesh.skeleton->rootBone, {});
 
 					for (size_t i = 0; i < calcs.size(); i++) {
 						boneTransforms[i] = calcs[static_cast<uint8_t>(i)];
@@ -163,7 +163,7 @@ namespace rawrbox {
 		void updateLights() {
 
 			// Update lights ---
-			for (auto mesh : this->meshes()) {
+			for (auto& mesh : this->meshes()) {
 				rawrbox::Vector3f meshPos = {mesh->offsetMatrix[12], mesh->offsetMatrix[13], mesh->offsetMatrix[14]};
 				auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle());
 
@@ -209,17 +209,19 @@ namespace rawrbox {
 		// --------------
 		// LIGHTS ------
 		virtual void addLight(std::shared_ptr<rawrbox::LightBase> light, const std::string& parentMesh = "") {
-			auto parent = this->_meshes.back();
+			auto parent = this->_meshes.back().get();
+
 			if (!parentMesh.empty()) {
-				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> msh) {
+				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
 					return msh->getName() == parentMesh;
 				});
 
-				if (fnd != this->_meshes.end()) parent = *fnd;
+				if (fnd != this->_meshes.end()) parent = fnd->get();
 			}
 
 			light->setOffsetPos(parent->getPos() + this->getPos());
 			parent->lights.push_back(light);
+
 			rawrbox::LIGHTS::addLight(light);
 		}
 		// -----
@@ -248,11 +250,11 @@ namespace rawrbox {
 			ModelBase<M>::draw(camPos);
 
 			this->preDraw();
-			for (auto mesh : this->_meshes) {
-				this->_material->process(mesh);
+			for (auto& mesh : this->_meshes) {
+				this->_material->process(*mesh);
 
 				// Process animations ---
-				this->animate(mesh);
+				this->animate(*mesh);
 				// ---
 
 				if (this->isDynamicBuffer()) {

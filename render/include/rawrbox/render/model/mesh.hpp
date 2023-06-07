@@ -202,13 +202,13 @@ namespace rawrbox {
 			return this->data.find(id) != this->data.end();
 		}
 
-		void merge(std::shared_ptr<rawrbox::Mesh<T>> other) {
-			for (uint16_t i : other->indices)
+		void merge(const rawrbox::Mesh<T>& other) {
+			for (uint16_t i : other.indices)
 				this->indices.push_back(this->totalVertex + i);
-			this->vertices.insert(this->vertices.end(), other->vertices.begin(), other->vertices.end());
+			this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
 
-			this->totalVertex += other->totalVertex;
-			this->totalIndex += other->totalIndex;
+			this->totalVertex += other.totalVertex;
+			this->totalIndex += other.totalIndex;
 		}
 
 		void clear() {
@@ -222,13 +222,13 @@ namespace rawrbox {
 		}
 
 		void setOptimizable(bool status) { this->_canOptimize = status; }
-		[[nodiscard]] bool canOptimize(std::shared_ptr<rawrbox::Mesh<T>> other) const {
-			if (!this->_canOptimize || !other->_canOptimize) return false;
+		[[nodiscard]] bool canOptimize(const rawrbox::Mesh<T>& other) const {
+			if (!this->_canOptimize || !other._canOptimize) return false;
 
-			return this->texture == other->texture &&
-			       this->color == other->color &&
-			       this->wireframe == other->wireframe &&
-			       this->offsetMatrix == other->offsetMatrix;
+			return this->texture == other.texture &&
+			       this->color == other.color &&
+			       this->wireframe == other.wireframe &&
+			       this->offsetMatrix == other.offsetMatrix;
 		}
 	};
 } // namespace rawrbox

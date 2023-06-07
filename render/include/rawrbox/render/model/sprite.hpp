@@ -11,9 +11,9 @@ namespace rawrbox {
 	public:
 		using ModelBase<M>::ModelBase;
 
-		void addMesh(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) override {
-			mesh->addData("billboard_mode", {1.F, 0, 0}); // Force billboard for sprites
-			mesh->setOptimizable(false);
+		void addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) override {
+			mesh.addData("billboard_mode", {1.F, 0, 0}); // Force billboard for sprites
+			mesh.setOptimizable(false);
 
 			ModelBase<M>::addMesh(mesh);
 		}
@@ -22,7 +22,7 @@ namespace rawrbox {
 			ModelBase<M>::draw(camPos);
 
 			for (auto& mesh : this->_meshes) {
-				this->_material->process(mesh);
+				this->_material->process(*mesh);
 
 				if (this->isDynamicBuffer()) {
 					bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);

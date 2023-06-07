@@ -51,21 +51,21 @@ namespace rawrbox {
 
 	// UTILS ----
 	void GIZMOS::addLight(rawrbox::LightBase* l) {
-		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = _gizmo_lights->generatePlane({}, {0.25F, 0.25F});
+		auto mesh = _gizmo_lights->generatePlane({}, {0.25F, 0.25F});
 		auto p = l->getPosMatrix();
-		mesh->setPos({p[0], p[1], p[2]});
-		mesh->setName(fmt::format("Light-{}", l->id()));
+		mesh.setPos({p[0], p[1], p[2]});
+		mesh.setName(fmt::format("Light-{}", l->id()));
 
 		switch (l->getType()) {
 			case LightType::LIGHT_SPOT:
-				mesh->setTexture(_textures["light_spot"].get());
+				mesh.setTexture(_textures["light_spot"].get());
 				break;
 			case LightType::LIGHT_DIR:
-				mesh->setTexture(_textures["light_dir"].get());
+				mesh.setTexture(_textures["light_dir"].get());
 				break;
 			default:
 			case LightType::LIGHT_POINT:
-				mesh->setTexture(_textures["light_point"].get());
+				mesh.setTexture(_textures["light_point"].get());
 				break;
 		}
 
@@ -84,10 +84,10 @@ namespace rawrbox {
 	}
 
 	void GIZMOS::addEmitter(rawrbox::Emitter* l) {
-		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = _gizmo_emitters->generatePlane({}, {0.25F, 0.25F});
-		mesh->setPos(l->getPos());
-		mesh->setName(fmt::format("Emitter-{}", l->id()));
-		mesh->setTexture(_textures["particle_emitter"].get());
+		auto mesh = _gizmo_emitters->generatePlane({}, {0.25F, 0.25F});
+		mesh.setPos(l->getPos());
+		mesh.setName(fmt::format("Emitter-{}", l->id()));
+		mesh.setTexture(_textures["particle_emitter"].get());
 
 		_gizmo_emitters->addMesh(mesh);
 	}
@@ -107,10 +107,10 @@ namespace rawrbox {
 	void GIZMOS::addSound(rawrbox::SoundInstance* l) {
 		if (!l->isValid() || !l->is3D()) return;
 
-		std::shared_ptr<rawrbox::Mesh<typename MaterialBase::vertexBufferType>> mesh = _gizmo_sounds->generatePlane({}, {0.25F, 0.25F});
-		mesh->setPos(l->getPosition());
-		mesh->setName(fmt::format("Sound-{}", l->id()));
-		mesh->setTexture(_textures["sound_emitter"].get());
+		auto mesh = _gizmo_sounds->generatePlane({}, {0.25F, 0.25F});
+		mesh.setPos(l->getPosition());
+		mesh.setName(fmt::format("Sound-{}", l->id()));
+		mesh.setTexture(_textures["sound_emitter"].get());
 
 		_gizmo_sounds->addMesh(mesh);
 	}
