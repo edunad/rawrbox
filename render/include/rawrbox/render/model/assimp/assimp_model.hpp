@@ -19,21 +19,17 @@ namespace rawrbox {
 				mesh.offsetMatrix = assimpMesh.offsetMatrix;
 
 				// Textures ---
-				if (!assimpMesh.material.expired()) {
-					auto mat = assimpMesh.material.lock();
-
-					mesh.setTexture(rawrbox::WHITE_TEXTURE.get());               // Default
-					mesh.setSpecularTexture(rawrbox::BLACK_TEXTURE.get(), 25.F); // Default
-					mesh.setEmissionTexture(rawrbox::BLACK_TEXTURE.get(), 1.F);  // Default
-					mesh.setOpacityTexture(rawrbox::WHITE_TEXTURE.get());        // Default
-
+				if (assimpMesh.material != nullptr) {
+					auto mat = assimpMesh.material;
 					mesh.setWireframe(mat->wireframe);
 					mesh.setBlend(mat->blending);
 					mesh.setCulling(mat->doubleSided ? 0 : BGFX_STATE_CULL_CCW);
 
 					// DIFFUSE -----
-					if (mat->diffuse != nullptr) {
-						mesh.setTexture(mat->diffuse.get());
+					if (mat->diffuse.has_value()) {
+						mesh.setTexture(mat->diffuse.value() == nullptr ? rawrbox::MISSING_TEXTURE.get() : mat->diffuse.value().get());
+					} else {
+						mesh.setTexture(rawrbox::WHITE_TEXTURE.get()); // Default
 					}
 
 					mesh.setColor(mat->diffuseColor);

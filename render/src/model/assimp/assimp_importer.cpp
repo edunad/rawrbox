@@ -45,8 +45,8 @@ namespace rawrbox {
 		return flags;
 	}
 
-	std::vector<std::shared_ptr<rawrbox::TextureBase>> AssimpImporter::importTexture(const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format) {
-		std::vector<std::shared_ptr<rawrbox::TextureBase>> _textures = {};
+	std::vector<OptionalTexture> AssimpImporter::importTexture(const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format) {
+		std::vector<OptionalTexture> _textures = {};
 
 		int count = mat->GetTextureCount(type);
 		if (count <= 0) return _textures;
@@ -67,12 +67,12 @@ namespace rawrbox {
 					loadPath = fmt::format("{}/{}", parentFolder.generic_string(), basename);
 					if (!std::filesystem::exists(loadPath)) {
 						fmt::print("[RawrBox-Assimp] Failed to load texture '{}'\n", matPath.data);
-						_textures.push_back(rawrbox::MISSING_TEXTURE);
-						return _textures;
+						_textures.emplace_back(nullptr);
+						continue;
 					}
 				}
 
-				auto texture = std::make_shared<rawrbox::TextureImage>(loadPath);
+				auto texture = std::make_unique<rawrbox::TextureImage>(loadPath);
 
 				// Setup flags ----
 				auto flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
@@ -87,7 +87,7 @@ namespace rawrbox {
 				texture->setName(basename);
 				texture->upload(format);
 
-				_textures.push_back(texture);
+				_textures.emplace_back(std::move(texture));
 			}
 		}
 
@@ -107,7 +107,7 @@ namespace rawrbox {
 
 		auto fnd = this->materials.find(name);
 		if (fnd == this->materials.end()) {
-			auto mat = std::make_shared<rawrbox::AssimpMaterial>(name);
+			auto mat = std::make_unique<rawrbox::AssimpMaterial>(name);
 
 			// WIREFRAME ----
 			pMaterial->Get(AI_MATKEY_ENABLE_WIREFRAME, mat->wireframe);
@@ -148,7 +148,7 @@ namespace rawrbox {
 			// TEXTURE DIFFUSE
 			auto diffuse = this->importTexture(pMaterial, aiTextureType_DIFFUSE);
 			if (!diffuse.empty()) {
-				mat->diffuse = diffuse[0]; // Only support one for the moment
+				mat->diffuse = std::move(diffuse[0]); // Only support one for the moment
 			}
 
 			aiColor3D flatColor;
@@ -162,10 +162,10 @@ namespace rawrbox {
 			// TEXTURE EMISSION
 			auto emission = this->importTexture(pMaterial, aiTextureType_EMISSION_COLOR);
 			if (!emission.empty()) {
-				mat->emissive = emission[0]; // Only support one for the moment
+				mat->emissive = std::move(emission[0].value()); // Only support one for the moment
 			} else {
 				auto emission = this->importTexture(pMaterial, aiTextureType_EMISSIVE);
-				if (!emission.empty()) mat->emissive = emission[0]; // Only support one for the moment
+				if (!emission.empty()) mat->emissive = std::move(emission[0].value()); // Only support one for the moment
 			}
 
 			pMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, mat->intensity);
@@ -179,7 +179,7 @@ namespace rawrbox {
 			// TEXTURE SPECULAR
 			auto specular = this->importTexture(pMaterial, aiTextureType_SPECULAR);
 			if (!specular.empty()) {
-				mat->specular = specular[0]; // Only support one for the moment
+				mat->specular = std::move(specular[0].value()); // Only support one for the moment
 			}
 
 			pMaterial->Get(AI_MATKEY_SHININESS, mat->shininess);
@@ -193,7 +193,7 @@ namespace rawrbox {
 			// TEXTURE OPACITY
 			auto opacity = this->importTexture(pMaterial, aiTextureType_OPACITY); // bgfx::TextureFormat::D24S8
 			if (!opacity.empty()) {
-				mat->opacity = opacity[0]; // Only support one for the moment
+				mat->opacity = std::move(opacity[0].value()); // Only support one for the moment
 			}
 			// ----------------------
 
@@ -204,7 +204,7 @@ namespace rawrbox {
 			this->materials[matName.data] = std::move(mat);
 		}
 
-		mesh.material = this->materials[matName.data];
+		mesh.material = this->materials[matName.data].get();
 	}
 	/// -------
 

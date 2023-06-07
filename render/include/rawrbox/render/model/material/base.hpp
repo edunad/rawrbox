@@ -42,7 +42,7 @@ namespace rawrbox {
 			if (mesh.texture != nullptr && mesh.texture->valid() && !mesh.wireframe) {
 				bgfx::setTexture(0, s_texColor, mesh.texture->getHandle());
 			} else {
-				bgfx::setTexture(0, s_texColor, rawrbox::WHITE_TEXTURE->getHandle());
+				bgfx::setTexture(0, s_texColor, rawrbox::MISSING_TEXTURE->getHandle());
 			}
 
 			bgfx::setUniform(u_colorOffset, mesh.color.data().data());

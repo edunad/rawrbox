@@ -34,6 +34,8 @@ namespace rawrbox {
 	}; // namespace ModelLoadFlags
 	   // NOLINTEND{unused-const-variable}
 
+	using OptionalTexture = std::optional<std::unique_ptr<rawrbox::TextureBase>>;
+
 	struct AssimpMaterial {
 	public:
 		std::string name = "";
@@ -42,16 +44,16 @@ namespace rawrbox {
 		bool doubleSided = false;
 		uint64_t blending = BGFX_STATE_BLEND_NORMAL;
 
-		std::shared_ptr<rawrbox::TextureBase> diffuse = nullptr;
+		OptionalTexture diffuse = std::nullopt;
 		rawrbox::Colorf diffuseColor = rawrbox::Colors::White;
 
-		std::shared_ptr<rawrbox::TextureBase> opacity = nullptr;
+		std::unique_ptr<rawrbox::TextureBase> opacity = nullptr;
 
-		std::shared_ptr<rawrbox::TextureBase> specular = nullptr;
+		std::unique_ptr<rawrbox::TextureBase> specular = nullptr;
 		rawrbox::Colorf specularColor = rawrbox::Colors::White;
 		float shininess = 25.F;
 
-		std::shared_ptr<rawrbox::TextureBase> emissive = nullptr;
+		std::unique_ptr<rawrbox::TextureBase> emissive = nullptr;
 		rawrbox::Colorf emissionColor = rawrbox::Colors::White;
 		float intensity = 1.F;
 
@@ -91,7 +93,7 @@ namespace rawrbox {
 		rawrbox::BBOX bbox;
 		rawrbox::Matrix4x4 offsetMatrix;
 
-		std::weak_ptr<rawrbox::AssimpMaterial> material;
+		rawrbox::AssimpMaterial* material = nullptr;
 		rawrbox::Skeleton* skeleton = nullptr;
 
 		bool animated = false;
@@ -101,7 +103,7 @@ namespace rawrbox {
 
 		AssimpMesh() = default;
 		~AssimpMesh() {
-			this->material.reset();
+			this->material = nullptr;
 			this->skeleton = nullptr;
 
 			this->vertices.clear();
@@ -114,7 +116,7 @@ namespace rawrbox {
 		// TEXTURE LOADING -----
 		uint64_t assimpSamplerToBGFX(const std::array<aiTextureMapMode, 3>& mode, int axis);
 
-		std::vector<std::shared_ptr<rawrbox::TextureBase>> importTexture(const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count);
+		std::vector<OptionalTexture> importTexture(const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count);
 		void loadTextures(const aiScene* sc, aiMesh& assimp, rawrbox::AssimpMesh& mesh);
 		/// -------
 
@@ -142,14 +144,14 @@ namespace rawrbox {
 
 	public:
 		std::filesystem::path fileName;
-		std::unordered_map<std::string, std::shared_ptr<rawrbox::AssimpMaterial>> materials = {};
+		std::unordered_map<std::string, std::unique_ptr<rawrbox::AssimpMaterial>> materials = {};
 		std::vector<rawrbox::AssimpMesh> meshes = {};
 
-		uint32_t loadFlags{};
-		uint32_t assimpFlags{};
+		uint32_t loadFlags = 0;
+		uint32_t assimpFlags = 0;
 
 		// SKINNING ----
-		std::unordered_map<std::string, std::shared_ptr<rawrbox::Skeleton>> skeletons = {};
+		std::unordered_map<std::string, std::unique_ptr<rawrbox::Skeleton>> skeletons = {};
 
 		std::unordered_map<std::string, rawrbox::AssimpMesh*> animatedMeshes = {}; // Map for quick lookup
 		std::unordered_map<std::string, rawrbox::Animation> animations = {};
