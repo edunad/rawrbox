@@ -53,7 +53,7 @@ namespace rawrbox {
 		this->_info.underlineThickness = (x1 - x0) * this->_scale / 24.F;
 	}
 
-	std::shared_ptr<rawrbox::Glyph> Font::bakeGlyphAlpha(uint16_t codePoint) {
+	std::unique_ptr<rawrbox::Glyph> Font::bakeGlyphAlpha(uint16_t codePoint) {
 		if (this->_font == nullptr) throw std::runtime_error("[RawrBox-Font] Font not loaded");
 
 		int32_t ascent = 0, descent = 0, lineGap = 0;
@@ -69,7 +69,7 @@ namespace rawrbox {
 		const int32_t ww = x1 - x0;
 		const int32_t hh = y1 - y0;
 
-		std::shared_ptr<rawrbox::Glyph> glyph = std::make_shared<rawrbox::Glyph>();
+		std::unique_ptr<rawrbox::Glyph> glyph = std::make_unique<rawrbox::Glyph>();
 		glyph->codePoint = codePoint;
 		glyph->offset = {static_cast<float>(x0), static_cast<float>(y0)};
 		glyph->size = {static_cast<float>(ww), static_cast<float>(hh)};
@@ -104,7 +104,7 @@ namespace rawrbox {
 
 	void Font::generateGlyph(uint16_t codePoint) {
 		if (this->hasGlyph(codePoint)) return;
-		this->_glyphs[codePoint] = this->bakeGlyphAlpha(codePoint);
+		this->_glyphs[codePoint] = std::move(this->bakeGlyphAlpha(codePoint));
 	}
 	// ----
 

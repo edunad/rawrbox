@@ -13,6 +13,11 @@ namespace rawrbox {
 	class FontLoader : public rawrbox::Loader {
 	public:
 		FontLoader() = default;
+		FontLoader(const FontLoader&) = delete;
+		FontLoader(FontLoader&&) = delete;
+		FontLoader& operator=(const FontLoader&) = delete;
+		FontLoader& operator=(FontLoader&&) = delete;
+
 		~FontLoader() override;
 
 		std::unique_ptr<rawrbox::Resource> createEntry(uint32_t flags = 0) override;

@@ -93,7 +93,7 @@ namespace rawrbox {
 	class Font {
 	private:
 		std::unique_ptr<stbtt_fontinfo> _font = nullptr;
-		std::unordered_map<uint16_t, std::shared_ptr<rawrbox::Glyph>> _glyphs = {};
+		std::unordered_map<uint16_t, std::unique_ptr<rawrbox::Glyph>> _glyphs = {};
 
 		float _scale = 0.F;
 		float _pixelSize = 0.F;
@@ -105,7 +105,7 @@ namespace rawrbox {
 		// INTERNAL ---
 		void loadFontInfo();
 
-		std::shared_ptr<rawrbox::Glyph> bakeGlyphAlpha(uint16_t codePoint);
+		std::unique_ptr<rawrbox::Glyph> bakeGlyphAlpha(uint16_t codePoint);
 		void generateGlyph(uint16_t codePoint);
 		// ----
 

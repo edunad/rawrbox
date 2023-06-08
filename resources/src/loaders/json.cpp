@@ -3,12 +3,15 @@
 
 namespace rawrbox {
 	// Resource ----
-	ResourceJSON::~ResourceJSON() { this->json.reset(); }
+	ResourceJSON::~ResourceJSON() { this->_json.reset(); }
 	bool ResourceJSON::load(const std::vector<uint8_t>& buffer) {
-		json = std::make_shared<nlohmann::json>(nlohmann::json::parse(buffer));
+		this->_json = std::make_unique<nlohmann::json>(nlohmann::json::parse(buffer));
 		return true;
 	}
 
+	nlohmann::json* ResourceJSON::get() const {
+		return this->_json.get();
+	}
 	// -------
 
 	// Loader ----

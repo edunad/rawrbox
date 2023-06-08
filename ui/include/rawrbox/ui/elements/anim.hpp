@@ -63,15 +63,14 @@ namespace rawrbox {
 		virtual void setReverse(bool reverse) { this->_reverse = reverse; };
 		virtual void setPos(const rawrbox::Vector2f& pos) { this->_posOffset = pos; };
 		virtual void setElement(T* element) { this->_element = element; };
-		virtual void setAnimation(std::shared_ptr<nlohmann::json> json) {
-			if (json == nullptr || json->empty()) return;
-			auto& rawData = *json;
+		virtual void setAnimation(const nlohmann::json& json) {
+			if (json == nullptr || json.empty()) return;
 
-			auto dt = rawData.find("anim");
-			if (dt == rawData.end() || dt->empty()) throw std::runtime_error("[RawrBox-UI] Missing anim data");
+			auto dt = json.find("anim");
+			if (dt == json.end() || dt->empty()) throw std::runtime_error("[RawrBox-UI] Missing anim data");
 			if (!dt->is_array()) throw std::runtime_error("[RawrBox-UI] Invalid anim data");
 
-			for (auto& data : rawData["anim"]) {
+			for (auto& data : json["anim"]) {
 				UIAnimKeyframe key;
 
 				if (data.contains("time")) {

@@ -111,10 +111,10 @@ namespace rawrbox {
 	void PostProcessManager::upload() {
 		if (this->_render != nullptr) throw std::runtime_error("[RawrBox-PostProcess] Already uploaded");
 
-		this->_render = std::make_shared<rawrbox::TextureRender>(this->_windowSize);
+		this->_render = std::make_unique<rawrbox::TextureRender>(this->_windowSize);
 		this->_render->upload();
 
-		for (auto effect : this->_postProcesses) {
+		for (auto& effect : this->_postProcesses) {
 			effect->upload();
 		}
 

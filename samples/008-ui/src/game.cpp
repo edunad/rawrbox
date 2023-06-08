@@ -69,7 +69,7 @@ namespace ui_test {
 	void Game::contentLoaded() {
 		// SETUP UI
 		this->_anim = std::make_unique<rawrbox::UIAnim<rawrbox::UIImage>>();
-		this->_anim->setAnimation(rawrbox::RESOURCES::getFile<rawrbox::ResourceJSON>("./content/json/test.json")->json);
+		this->_anim->setAnimation(*rawrbox::RESOURCES::getFile<rawrbox::ResourceJSON>("./content/json/test.json")->get());
 
 		{
 			auto frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();

@@ -16,6 +16,10 @@ namespace rawrbox {
 
 	public:
 		Loader() = default;
+		Loader(const Loader&) = delete;
+		Loader(Loader&&) = delete;
+		Loader& operator=(const Loader&) = delete;
+		Loader& operator=(Loader&&) = delete;
 		virtual ~Loader() = default;
 
 		// UTILS -----

@@ -32,10 +32,10 @@ namespace rawrbox {
 
 	PostProcessPSXDither::PostProcessPSXDither(rawrbox::DITHER_SIZE dither) : _size(dither) {
 		if (dither != DITHER_SIZE::SLOW_MODE) {
-			this->_textures[DITHER_SIZE::_2x2] = std::make_shared<rawrbox::TextureImage>("./content/textures/dither/2x2.png");
-			this->_textures[DITHER_SIZE::_3x3] = std::make_shared<rawrbox::TextureImage>("./content/textures/dither/3x3.png");
-			this->_textures[DITHER_SIZE::_4x4] = std::make_shared<rawrbox::TextureImage>("./content/textures/dither/4x4.png");
-			this->_textures[DITHER_SIZE::_8x8] = std::make_shared<rawrbox::TextureImage>("./content/textures/dither/8x8.png");
+			this->_textures[DITHER_SIZE::_2x2] = std::make_unique<rawrbox::TextureImage>("./content/textures/dither/2x2.png");
+			this->_textures[DITHER_SIZE::_3x3] = std::make_unique<rawrbox::TextureImage>("./content/textures/dither/3x3.png");
+			this->_textures[DITHER_SIZE::_4x4] = std::make_unique<rawrbox::TextureImage>("./content/textures/dither/4x4.png");
+			this->_textures[DITHER_SIZE::_8x8] = std::make_unique<rawrbox::TextureImage>("./content/textures/dither/8x8.png");
 		}
 	}
 
@@ -63,7 +63,7 @@ namespace rawrbox {
 		bool fastMode = this->_size != DITHER_SIZE::SLOW_MODE;
 
 		if (fastMode) {
-			for (auto t : this->_textures) {
+			for (auto& t : this->_textures) {
 				if (t.second == nullptr) throw std::runtime_error("[RawrBox-Dither] Failed to load texture");
 				t.second->upload();
 			}

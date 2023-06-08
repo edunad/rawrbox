@@ -50,7 +50,6 @@ namespace rawrbox {
 		bool _canOptimize = true;
 
 		// SKINNING ----
-		std::unordered_map<std::string, std::shared_ptr<rawrbox::Skeleton>> _skeletons = {};
 		std::unordered_map<std::string, rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // Map for quick lookup
 		// --------
 
@@ -134,7 +133,6 @@ namespace rawrbox {
 			this->_indices.clear();
 
 			this->_animatedMeshes.clear();
-			this->_skeletons.clear();
 			this->_animatedMeshes.clear();
 		}
 

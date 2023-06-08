@@ -25,8 +25,8 @@ namespace rawrbox {
 
 	class PostProcessManager {
 	protected:
-		std::shared_ptr<rawrbox::TextureRender> _render;
-		std::vector<std::shared_ptr<rawrbox::PostProcessBase>> _postProcesses;
+		std::unique_ptr<rawrbox::TextureRender> _render;
+		std::vector<std::unique_ptr<rawrbox::PostProcessBase>> _postProcesses;
 
 		rawrbox::Vector2i _windowSize;
 
@@ -40,7 +40,7 @@ namespace rawrbox {
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle _program = BGFX_INVALID_HANDLE;
 
-		std::vector<PosUVVertexData> _vertices;
+		std::vector<rawrbox::PosUVVertexData> _vertices;
 		std::vector<uint16_t> _indices;
 		// -----
 
