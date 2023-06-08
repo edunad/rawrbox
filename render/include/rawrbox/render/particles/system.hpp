@@ -2,14 +2,14 @@
 
 #include <rawrbox/render/particles/emitter.hpp>
 
-#define BGFX_STATE_DEFAULT_PARTICLE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_CULL_CW | BGFX_STATE_BLEND_NORMAL)
+#define BGFX_STATE_DEFAULT_PARTICLE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_CULL_CW | BGFX_STATE_BLEND_NORMAL)
 
 namespace rawrbox {
 	template <typename M = rawrbox::MaterialParticle>
 	class ParticleSystem {
 	protected:
 		// Drawing ----
-		std::vector<rawrbox::Emitter> _emitters = {};
+		std::vector<std::unique_ptr<rawrbox::Emitter>> _emitters = {};
 		std::unique_ptr<M> _material = std::make_unique<M>();
 		// ---
 
@@ -38,7 +38,7 @@ namespace rawrbox {
 		}
 
 		rawrbox::Emitter& addEmitter(rawrbox::Emitter em) {
-			return this->_emitters.emplace_back(em);
+			return *this->_emitters.emplace_back(std::make_unique<rawrbox::Emitter>(em));
 		}
 
 		[[nodiscard]] rawrbox::Emitter& get(size_t indx) const {
@@ -49,9 +49,10 @@ namespace rawrbox {
 
 		void update() {
 			this->_totalParticles = 0;
+
 			for (auto& em : this->_emitters) {
-				em.update();
-				this->_totalParticles += static_cast<uint32_t>(em.totalParticles());
+				em->update();
+				this->_totalParticles += static_cast<uint32_t>(em->totalParticles());
 			}
 		}
 
@@ -82,7 +83,7 @@ namespace rawrbox {
 			auto* indices = std::bit_cast<uint16_t*>(tib.data);
 
 			for (auto& em : this->_emitters) {
-				pos += em.template draw<M>(cam, this->_atlas->getSize(), this->_spriteSize, pos, max, particleSort.data(), vertices);
+				pos += em->template draw<M>(cam, this->_atlas->getSize(), this->_spriteSize, pos, max, particleSort.data(), vertices);
 			}
 
 			std::qsort(particleSort.data(), max, sizeof(ParticleSort), particleSortFn);
