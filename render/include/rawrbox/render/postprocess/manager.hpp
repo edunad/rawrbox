@@ -64,9 +64,9 @@ namespace rawrbox {
 		PostProcessManager& operator=(const PostProcessManager&) = delete;
 
 		// Process utils ----
-		virtual void add(std::shared_ptr<rawrbox::PostProcessBase> post);
+		virtual void add(std::unique_ptr<rawrbox::PostProcessBase> post);
 		virtual void remove(size_t indx);
-		virtual std::shared_ptr<rawrbox::PostProcessBase> get(size_t indx);
+		[[nodiscard]] virtual rawrbox::PostProcessBase& get(size_t indx) const;
 		virtual size_t count();
 		// ---------
 

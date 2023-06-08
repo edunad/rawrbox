@@ -153,8 +153,8 @@ namespace physics_test {
 		box.mdl = std::make_shared<rawrbox::Model<>>();
 
 		auto mesh = box.mdl->generateCube({}, size);
-		auto text = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->texture;
-		mesh.setTexture(text.get());
+		auto text = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->get();
+		mesh.setTexture(text);
 
 		box.mdl->addMesh(mesh);
 		box.mdl->upload();

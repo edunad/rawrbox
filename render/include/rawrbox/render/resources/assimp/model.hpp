@@ -5,11 +5,12 @@
 
 namespace rawrbox {
 	class ResourceAssimp : public rawrbox::Resource {
-	public:
-		std::shared_ptr<rawrbox::AssimpImporter> model = nullptr;
+		std::unique_ptr<rawrbox::AssimpImporter> _model = nullptr;
 
+	public:
 		~ResourceAssimp() override;
 		bool load(const std::vector<uint8_t>& buffer) override;
+		[[nodiscard]] rawrbox::AssimpImporter* get() const;
 	};
 
 	class AssimpLoader : public rawrbox::Loader {

@@ -16,7 +16,7 @@
 
 namespace stencil {
 	void Game::setupGLFW() {
-		this->_window = std::make_shared<rawrbox::Window>();
+		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("STENCIL TEST");
 		this->_window->setClearColor(0x443355FF);
@@ -63,8 +63,8 @@ namespace stencil {
 
 	void Game::contentLoaded() {
 		// Textures ---
-		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->texture;
-		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->texture;
+		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
+		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->get();
 
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/droidsans.ttf")->getSize(28);
 		this->_font2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/visitor1.ttf")->getSize(18);
@@ -76,8 +76,8 @@ namespace stencil {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
-		this->_texture.reset();
-		this->_texture2.reset();
+		this->_texture = nullptr;
+		this->_texture2 = nullptr;
 
 		this->_font = nullptr;
 		this->_font2 = nullptr;
@@ -186,11 +186,11 @@ namespace stencil {
 
 		// Texture ---
 		stencil.pushOffset({800, 0});
-		stencil.drawTexture({0, 0}, {100, 100}, this->_texture);
+		stencil.drawTexture({0, 0}, {100, 100}, *this->_texture);
 		stencil.popOffset();
 
 		stencil.pushOffset({900, 0});
-		stencil.drawTexture({0, 0}, {100, 100}, this->_texture2);
+		stencil.drawTexture({0, 0}, {100, 100}, *this->_texture2);
 		stencil.popOffset();
 		// ---
 

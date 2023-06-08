@@ -6,16 +6,15 @@
 
 namespace rawrbox {
 	UIProgressBar::~UIProgressBar() {
-		this->_overlay.reset();
-		this->_bg.reset();
-
+		this->_overlay = nullptr;
+		this->_bg = nullptr;
 		this->_font = nullptr;
 	}
 
 	// UTILS ----
 	void UIProgressBar::initialize() {
-		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->texture;
-		this->_bg = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/background_grid.png")->texture;
+		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->get();
+		this->_bg = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/background_grid.png")->get();
 
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(11);
 	}
@@ -38,7 +37,7 @@ namespace rawrbox {
 		auto& size = this->getSize();
 
 		// BG
-		stencil.drawTexture({0, 0}, {size.x, size.y}, this->_bg, Color::RGBAHex(0xFFFFFFA4), {}, {static_cast<float>(size.x) / static_cast<float>(this->_bg->getSize().x), static_cast<float>(size.y) / static_cast<float>(this->_bg->getSize().y)});
+		stencil.drawTexture({0, 0}, {size.x, size.y}, *this->_bg, Color::RGBAHex(0xFFFFFFA4), {}, {static_cast<float>(size.x) / static_cast<float>(this->_bg->getSize().x), static_cast<float>(size.y) / static_cast<float>(this->_bg->getSize().y)});
 		// ------
 
 		// BAR
@@ -70,7 +69,7 @@ namespace rawrbox {
 		if (this->_overlay == nullptr) return;
 
 		auto& size = this->getSize();
-		stencil.drawTexture({}, size, this->_overlay, Color::RGBAHex(0xFFFFFF0A), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
+		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xFFFFFF0A), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
 	}
 	// -----
 } // namespace rawrbox

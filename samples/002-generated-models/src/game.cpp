@@ -16,7 +16,7 @@
 namespace model {
 
 	void Game::setupGLFW() {
-		this->_window = std::make_shared<rawrbox::Window>();
+		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("SIMPLE MODEL TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
@@ -29,7 +29,7 @@ namespace model {
 		this->_window->initializeBGFX();
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window);
+		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
@@ -67,21 +67,21 @@ namespace model {
 	void Game::contentLoaded() {
 		this->_ready = true;
 
-		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->texture;
-		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->texture;
+		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
+		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->get();
 
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 
 		// Model test ----
 		{
 			auto mesh = this->_model->generatePlane({2, 0, 0}, {0.5F, 0.5F});
-			mesh.setTexture(this->_texture.get());
+			mesh.setTexture(this->_texture);
 			this->_model->addMesh(mesh);
 		}
 
 		{
 			auto mesh = this->_model->generateCube({-2, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
-			mesh.setTexture(this->_texture2.get());
+			mesh.setTexture(this->_texture2);
 			this->_model->addMesh(mesh);
 		}
 
@@ -100,7 +100,7 @@ namespace model {
 		// Sprite test ----
 		{
 			auto mesh = this->_sprite->generatePlane({0, 1, 0}, {0.2F, 0.2F});
-			mesh.setTexture(this->_texture.get());
+			mesh.setTexture(this->_texture);
 			this->_sprite->addMesh(mesh);
 		}
 		// -----
@@ -122,7 +122,8 @@ namespace model {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
 		this->_camera.reset();
-		this->_texture2.reset();
+		this->_texture = nullptr;
+		this->_texture2 = nullptr;
 
 		this->_model.reset();
 		this->_sprite.reset();

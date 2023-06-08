@@ -8,7 +8,7 @@
 namespace rawrbox {
 	class UIImage : public rawrbox::UIBase {
 	protected:
-		std::shared_ptr<rawrbox::TextureBase> _texture = nullptr;
+		rawrbox::TextureBase* _texture = nullptr;
 
 		rawrbox::Color _color = rawrbox::Colors::White;
 		bool _isAnimated = false;
@@ -18,7 +18,7 @@ namespace rawrbox {
 		~UIImage() override;
 
 		// UTILS ----
-		virtual void setTexture(std::shared_ptr<rawrbox::TextureBase>& texture);
+		virtual void setTexture(rawrbox::TextureBase& texture);
 		virtual void setTexture(const std::filesystem::path& path);
 
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const;

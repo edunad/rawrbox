@@ -51,6 +51,8 @@ namespace rawrbox {
 
 	// UTILS ----
 	void GIZMOS::addLight(rawrbox::LightBase* l) {
+		if (l == nullptr || _gizmo_lights == nullptr) return;
+
 		auto mesh = _gizmo_lights->generatePlane({}, {0.25F, 0.25F});
 		auto p = l->getPosMatrix();
 		mesh.setPos({p[0], p[1], p[2]});
@@ -73,7 +75,7 @@ namespace rawrbox {
 	}
 
 	void GIZMOS::removeLight(rawrbox::LightBase* l) {
-		if (_gizmo_lights == nullptr) return;
+		if (l == nullptr || _gizmo_lights == nullptr) return;
 
 		auto& m = _gizmo_lights->meshes();
 		for (size_t i = 0; i < m.size(); i++) {
@@ -84,6 +86,8 @@ namespace rawrbox {
 	}
 
 	void GIZMOS::addEmitter(rawrbox::Emitter* l) {
+		if (l == nullptr || _gizmo_emitters == nullptr) return;
+
 		auto mesh = _gizmo_emitters->generatePlane({}, {0.25F, 0.25F});
 		mesh.setPos(l->getPos());
 		mesh.setName(fmt::format("Emitter-{}", l->id()));
@@ -93,7 +97,7 @@ namespace rawrbox {
 	}
 
 	void GIZMOS::removeEmitter(rawrbox::Emitter* l) {
-		if (_gizmo_emitters == nullptr) return;
+		if (l == nullptr || _gizmo_emitters == nullptr) return;
 
 		auto& m = _gizmo_emitters->meshes();
 		for (size_t i = 0; i < m.size(); i++) {
@@ -105,7 +109,7 @@ namespace rawrbox {
 
 #if RAWRBOX_BASS
 	void GIZMOS::addSound(rawrbox::SoundInstance* l) {
-		if (!l->isValid() || !l->is3D()) return;
+		if (l == nullptr || _gizmo_sounds == nullptr || !l->isValid() || !l->is3D()) return;
 
 		auto mesh = _gizmo_sounds->generatePlane({}, {0.25F, 0.25F});
 		mesh.setPos(l->getPosition());
@@ -116,7 +120,7 @@ namespace rawrbox {
 	}
 
 	void GIZMOS::removeSound(rawrbox::SoundInstance* l) {
-		if (_gizmo_sounds == nullptr) return;
+		if (l == nullptr || _gizmo_sounds == nullptr) return;
 
 		auto& m = _gizmo_sounds->meshes();
 		for (size_t i = 0; i < m.size(); i++) {

@@ -6,13 +6,13 @@
 
 namespace rawrbox {
 	UIButton::~UIButton() {
-		this->_texture.reset();
-		this->_overlay.reset();
+		this->_texture = nullptr;
+		this->_overlay = nullptr;
 		this->_consola = nullptr;
 	}
 
 	void UIButton::initialize() {
-		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->texture;
+		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->get();
 	}
 
 	// UTILS -----
@@ -42,11 +42,11 @@ namespace rawrbox {
 	const std::string& UIButton::getTooltip() const { return this->_tooltip; }
 
 	void UIButton::setTexture(const std::string& path) {
-		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->texture;
+		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->get();
 	}
 
-	void UIButton::setTexture(std::shared_ptr<rawrbox::TextureBase>& texture) {
-		this->_texture = texture;
+	void UIButton::setTexture(rawrbox::TextureBase& texture) {
+		this->_texture = &texture;
 	}
 	// ---------
 
@@ -92,10 +92,10 @@ namespace rawrbox {
 		if (this->_texture != nullptr) {
 			// No text, center icon
 			if (this->_text.empty()) {
-				stencil.drawTexture({(size.x - this->_textureSize.x) / 2, (size.y - this->_textureSize.y) / 2}, this->_textureSize, this->_texture, this->_textureColor);
+				stencil.drawTexture({(size.x - this->_textureSize.x) / 2, (size.y - this->_textureSize.y) / 2}, this->_textureSize, *this->_texture, this->_textureColor);
 			} else {
 				// Set icon on left
-				stencil.drawTexture({2, (size.y - this->_textureSize.y) / 2}, this->_textureSize, this->_texture, this->_textureColor); // Padding
+				stencil.drawTexture({2, (size.y - this->_textureSize.y) / 2}, this->_textureSize, *this->_texture, this->_textureColor); // Padding
 			}
 		}
 
@@ -123,7 +123,7 @@ namespace rawrbox {
 		if (this->_overlay == nullptr) return;
 
 		auto& size = this->getSize();
-		stencil.drawTexture({}, size, this->_overlay, Color::RGBAHex(0xFFFFFF0A), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
+		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xFFFFFF0A), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
 	}
 	// ---------
 

@@ -17,7 +17,7 @@
 
 namespace post_process {
 	void Game::setupGLFW() {
-		this->_window = std::make_shared<rawrbox::Window>();
+		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("POST-PROCESS TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
@@ -29,13 +29,13 @@ namespace post_process {
 		if (this->_window == nullptr) return;
 		this->_window->initializeBGFX();
 
-		this->_postProcess = std::make_shared<rawrbox::PostProcessManager>(this->_window->getSize());
-		this->_postProcess->add(std::make_shared<rawrbox::PostProcessBloom>(0.015F));
-		this->_postProcess->add(std::make_shared<rawrbox::PostProcessPSXDither>(rawrbox::DITHER_SIZE::SLOW_MODE));
-		this->_postProcess->add(std::make_shared<rawrbox::PostProcessStaticNoise>(0.1F));
+		this->_postProcess = std::make_unique<rawrbox::PostProcessManager>(this->_window->getSize());
+		this->_postProcess->add(std::make_unique<rawrbox::PostProcessBloom>(0.015F));
+		this->_postProcess->add(std::make_unique<rawrbox::PostProcessPSXDither>(rawrbox::DITHER_SIZE::SLOW_MODE));
+		this->_postProcess->add(std::make_unique<rawrbox::PostProcessStaticNoise>(0.1F));
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window);
+		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
@@ -69,9 +69,9 @@ namespace post_process {
 
 	void Game::contentLoaded() {
 		// Assimp test ---
-		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_road/scene.gltf");
+		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_road/scene.gltf")->get();
 
-		this->_model->load(mdl->model);
+		this->_model->load(*mdl);
 		this->_model->setScale({0.01F, 0.01F, 0.01F});
 		//   -----
 
@@ -82,6 +82,7 @@ namespace post_process {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 		this->_camera.reset();
 		this->_model.reset();
+		this->_postProcess.reset();
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::LIGHTS::shutdown();

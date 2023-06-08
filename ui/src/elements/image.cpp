@@ -6,18 +6,18 @@
 
 namespace rawrbox {
 	UIImage::~UIImage() {
-		this->_texture.reset();
+		this->_texture = nullptr;
 	}
 
 	// UTILS ----
-	void UIImage::setTexture(std::shared_ptr<rawrbox::TextureBase>& texture) { this->_texture = texture; }
+	void UIImage::setTexture(rawrbox::TextureBase& texture) { this->_texture = &texture; }
 	void UIImage::setTexture(const std::filesystem::path& path) {
 		this->_isAnimated = path.extension() == ".gif";
 
 		if (!this->_isAnimated) {
-			this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->texture;
+			this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->get();
 		} else {
-			this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>(path)->texture;
+			this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>(path)->get();
 		}
 	}
 
@@ -37,7 +37,7 @@ namespace rawrbox {
 	// DRAW ----
 	void UIImage::update() {
 		if (!this->_isAnimated || this->_texture == nullptr) return;
-		auto t = std::dynamic_pointer_cast<rawrbox::TextureGIF>(this->_texture);
+		auto t = dynamic_cast<rawrbox::TextureGIF*>(this->_texture);
 		if (t == nullptr) return;
 
 		t->step();
@@ -45,7 +45,7 @@ namespace rawrbox {
 
 	void UIImage::draw(rawrbox::Stencil& stencil) {
 		if (this->_texture == nullptr) return;
-		stencil.drawTexture({0, 0}, this->getSize(), this->_texture, this->_color);
+		stencil.drawTexture({0, 0}, this->getSize(), *this->_texture, this->_color);
 	}
 	// -------
 } // namespace rawrbox

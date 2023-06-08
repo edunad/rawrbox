@@ -13,18 +13,18 @@
 
 namespace assimp {
 	class Game : public rawrbox::Engine {
-		std::shared_ptr<rawrbox::Window> _window = nullptr;
-		std::shared_ptr<rawrbox::CameraOrbital> _camera = nullptr;
+		std::unique_ptr<rawrbox::Window> _window = nullptr;
+		std::unique_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 
-		std::shared_ptr<rawrbox::AssimpModel<>> _model = std::make_shared<rawrbox::AssimpModel<>>();
-		std::shared_ptr<rawrbox::AssimpModel<rawrbox::MaterialLit>> _model2 = std::make_shared<rawrbox::AssimpModel<rawrbox::MaterialLit>>();
-		std::shared_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>> _model3 = std::make_shared<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>>();
-		std::shared_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>> _model4 = std::make_shared<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>>();
-		std::shared_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>> _model5 = std::make_shared<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>>();
+		std::unique_ptr<rawrbox::AssimpModel<>> _model = std::make_unique<rawrbox::AssimpModel<>>();
+		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialLit>> _model2 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialLit>>();
+		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>> _model3 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>>();
+		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>> _model4 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>>();
+		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>> _model5 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>>();
 
-		std::shared_ptr<rawrbox::Model<>> _modelGrid = std::make_shared<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
 
-		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
+		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 
 		rawrbox::Font* _font;
 

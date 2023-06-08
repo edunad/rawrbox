@@ -5,10 +5,12 @@
 
 namespace rawrbox {
 	class ResourceTexture : public rawrbox::Resource {
+		std::unique_ptr<rawrbox::TextureImage> _texture = nullptr;
+
 	public:
-		std::shared_ptr<rawrbox::TextureImage> texture = nullptr;
 		~ResourceTexture() override;
 
+		[[nodiscard]] rawrbox::TextureImage* get() const;
 		bool load(const std::vector<uint8_t>& buffer) override;
 		void upload() override;
 	};

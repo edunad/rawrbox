@@ -16,7 +16,7 @@
 namespace light {
 
 	void Game::setupGLFW() {
-		this->_window = std::make_shared<rawrbox::Window>();
+		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("LIGHT TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
@@ -29,7 +29,7 @@ namespace light {
 		this->_window->initializeBGFX();
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window);
+		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
@@ -69,9 +69,9 @@ namespace light {
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 
 		// Assimp test ---
-		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/light_test/test.fbx");
+		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/light_test/test.fbx")->get();
 
-		this->_model->load(mdl->model);
+		this->_model->load(*mdl);
 		this->_model->setPos({0, 0, 0});
 		//   -----
 
@@ -91,7 +91,6 @@ namespace light {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
 		this->_camera.reset();
-
 		this->_model.reset();
 		this->_text.reset();
 

@@ -91,7 +91,7 @@ namespace rawrbox {
 		float _timer = .0F;
 		bool _preHeated = false;
 
-		bx::RngMwc _rng;
+		bx::RngMwc _rng = {};
 		std::vector<rawrbox::Particle> _particles = {};
 		// -------
 
@@ -108,14 +108,14 @@ namespace rawrbox {
 	public:
 		explicit Emitter(EmitterSettings settings = {});
 		virtual ~Emitter();
+		Emitter(const Emitter&);
+		Emitter(Emitter&&) noexcept;
 
-		Emitter(Emitter&&) = delete;
-		Emitter& operator=(Emitter&&) = delete;
-		Emitter(const Emitter&) = delete;
 		Emitter& operator=(const Emitter&) = delete;
+		Emitter& operator=(Emitter&&) = delete;
 
 		// UTILS -----
-		void clear();
+		virtual void clear();
 
 		[[nodiscard]] virtual const size_t id() const;
 		[[nodiscard]] virtual const size_t totalParticles() const;
@@ -125,10 +125,10 @@ namespace rawrbox {
 		virtual void setPos(const rawrbox::Vector3f& pos);
 		// ------
 
-		void update();
+		virtual void update();
 
 		template <typename M = rawrbox::MaterialParticle>
-		uint32_t draw(std::shared_ptr<rawrbox::CameraBase> camera, const rawrbox::Vector2i& atlasSize, uint32_t spriteSize, uint32_t first, uint32_t max, rawrbox::ParticleSort* outSort, typename M::vertexBufferType* outVert)
+		uint32_t draw(const rawrbox::CameraBase& camera, const rawrbox::Vector2i& atlasSize, uint32_t spriteSize, uint32_t first, uint32_t max, rawrbox::ParticleSort* outSort, typename M::vertexBufferType* outVert)
 			requires(supportsBlend<typename M::vertexBufferType>)
 		{
 			bx::EaseFn easeRgba = bx::getEaseFunc(this->_settings.easeRgba);
@@ -159,7 +159,7 @@ namespace rawrbox {
 				rawrbox::Matrix4x4 rot = {};
 				// rot.rotateZ(bx::toRad(rotation)); // TODO: FIX ME
 
-				auto rotatedView = camera->getViewMtx() * rot;
+				auto rotatedView = camera.getViewMtx() * rot;
 
 				rawrbox::Vector3f udir = rawrbox::Vector3f(rotatedView[0], rotatedView[4], rotatedView[8]) * scale;
 				rawrbox::Vector3f vdir = rawrbox::Vector3f(rotatedView[1], rotatedView[5], rotatedView[9]) * scale;
@@ -169,7 +169,7 @@ namespace rawrbox {
 
 				// SORTING --
 				ParticleSort& sort = outSort[index];
-				sort.dist = pos.distance(camera->getPos());
+				sort.dist = pos.distance(camera.getPos());
 				sort.idx = index;
 				// ----
 

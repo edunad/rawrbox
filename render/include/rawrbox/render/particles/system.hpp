@@ -9,23 +9,23 @@ namespace rawrbox {
 	class ParticleSystem {
 	protected:
 		// Drawing ----
-		std::vector<std::shared_ptr<rawrbox::Emitter>> _emitters = {};
+		std::vector<rawrbox::Emitter> _emitters = {};
 		std::unique_ptr<M> _material = std::make_unique<M>();
 		// ---
 
 		// TEXTURE ---
-		std::shared_ptr<rawrbox::TextureBase> _atlas = nullptr;
+		rawrbox::TextureBase* _atlas = nullptr;
 		// ----
 
 		uint32_t _totalParticles = 0;
 		uint32_t _spriteSize = 32;
 
 	public:
-		explicit ParticleSystem(std::shared_ptr<rawrbox::TextureBase> spriteAtlas, uint32_t spriteSize = 32) : _atlas(std::move(spriteAtlas)), _spriteSize(spriteSize){};
+		explicit ParticleSystem(rawrbox::TextureBase& spriteAtlas, uint32_t spriteSize = 32) : _atlas(&spriteAtlas), _spriteSize(spriteSize){};
 		virtual ~ParticleSystem() {
-			this->_atlas.reset();
-			this->_material.reset();
+			this->_atlas = nullptr;
 
+			this->_material.reset();
 			this->_emitters.clear();
 		}
 
@@ -41,29 +41,32 @@ namespace rawrbox {
 		}
 
 		// UTILS -----
-		[[nodiscard]] virtual std::shared_ptr<rawrbox::TextureBase> getTexture() const { return this->_atlas; }
+		[[nodiscard]] virtual rawrbox::TextureBase* getTexture() const { return this->_atlas; }
 
 		void upload() {
 			this->_material->upload();
 			this->_material->registerUniforms();
 		}
 
-		void addEmitter(std::shared_ptr<rawrbox::Emitter> em) { this->_emitters.push_back(std::move(em)); }
-		std::shared_ptr<rawrbox::Emitter> get(size_t indx) {
+		rawrbox::Emitter& addEmitter(rawrbox::Emitter em) {
+			return this->_emitters.emplace_back(em);
+		}
+
+		[[nodiscard]] rawrbox::Emitter& get(size_t indx) const {
 			if (indx >= this->_emitters.size()) throw std::runtime_error(fmt::format("[RawrBox-ParticleEngine] Emitter {} not found!", indx));
-			return this->_emitters[indx];
+			return *this->_emitters[indx];
 		}
 		// -----
 
 		void update() {
 			this->_totalParticles = 0;
 			for (auto& em : this->_emitters) {
-				em->update();
-				this->_totalParticles += static_cast<uint32_t>(em->totalParticles());
+				em.update();
+				this->_totalParticles += static_cast<uint32_t>(em.totalParticles());
 			}
 		}
 
-		void draw(std::shared_ptr<rawrbox::CameraBase> cam) {
+		void draw(const rawrbox::CameraBase& cam) {
 			if (this->_emitters.empty() || this->_totalParticles <= 0) return;
 
 			int vertCount = 4; // Plane
@@ -90,7 +93,7 @@ namespace rawrbox {
 			auto* indices = std::bit_cast<uint16_t*>(tib.data);
 
 			for (auto& em : this->_emitters) {
-				pos += em->template draw<M>(cam, this->_atlas->getSize(), this->_spriteSize, pos, max, particleSort.data(), vertices);
+				pos += em.template draw<M>(cam, this->_atlas->getSize(), this->_spriteSize, pos, max, particleSort.data(), vertices);
 			}
 
 			std::qsort(particleSort.data(), max, sizeof(ParticleSort), particleSortFn);

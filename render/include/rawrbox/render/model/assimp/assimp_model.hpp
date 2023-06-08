@@ -10,8 +10,8 @@ namespace rawrbox {
 	template <typename M = rawrbox::MaterialBase>
 	class AssimpModel : public rawrbox::Model<M> {
 
-		virtual void loadMeshes(std::shared_ptr<rawrbox::AssimpImporter> model) {
-			for (auto& assimpMesh : model->meshes) {
+		virtual void loadMeshes(const rawrbox::AssimpImporter& model) {
+			for (auto& assimpMesh : model.meshes) {
 				rawrbox::Mesh<typename M::vertexBufferType> mesh;
 
 				mesh.name = assimpMesh.name;
@@ -100,12 +100,12 @@ namespace rawrbox {
 			}
 		}
 
-		virtual void loadAnimations(std::shared_ptr<rawrbox::AssimpImporter> model) {
-			this->_animations = model->animations;
+		virtual void loadAnimations(const rawrbox::AssimpImporter& model) {
+			this->_animations = model.animations;
 			this->_animatedMeshes.clear();
 
 			// Mark animated meshes ---
-			for (auto& anim : model->animatedMeshes) {
+			for (auto& anim : model.animatedMeshes) {
 				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [anim](std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>& msh) {
 					return msh->getName() == anim.second->name;
 				});
@@ -117,8 +117,8 @@ namespace rawrbox {
 			// -----------------------
 		}
 
-		virtual void loadLights(std::shared_ptr<rawrbox::AssimpImporter> model) {
-			for (auto& assimpLights : model->lights) {
+		virtual void loadLights(const rawrbox::AssimpImporter& model) {
+			for (auto& assimpLights : model.lights) {
 				std::shared_ptr<rawrbox::LightBase> light = nullptr;
 
 				switch (assimpLights.type) {
@@ -151,7 +151,7 @@ namespace rawrbox {
 			this->_animatedMeshes.clear();
 		};
 
-		virtual void load(std::shared_ptr<rawrbox::AssimpImporter> model) {
+		virtual void load(const rawrbox::AssimpImporter& model) {
 			this->loadMeshes(model);
 
 			if constexpr (supportsBones<typename M::vertexBufferType>) {

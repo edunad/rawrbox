@@ -16,7 +16,7 @@
 
 namespace bass_test {
 	void Game::setupGLFW() {
-		this->_window = std::make_shared<rawrbox::Window>();
+		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("BASS TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
@@ -29,7 +29,7 @@ namespace bass_test {
 		this->_window->initializeBGFX();
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window);
+		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
@@ -43,7 +43,6 @@ namespace bass_test {
 	}
 
 	void Game::loadContent() {
-
 		std::array initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/sounds/clownmusic.ogg", 0 | rawrbox::SoundFlags::SOUND_3D)};
@@ -122,10 +121,11 @@ namespace bass_test {
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-
 		this->_camera.reset();
 
 		this->_sound.reset();
+		this->_sound2.reset();
+
 		this->_modelGrid.reset();
 		this->_beatText.reset();
 		this->_text.reset();

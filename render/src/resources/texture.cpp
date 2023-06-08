@@ -3,15 +3,19 @@
 
 namespace rawrbox {
 	// Resource ----
-	ResourceTexture::~ResourceTexture() { this->texture.reset(); }
+	ResourceTexture::~ResourceTexture() { this->_texture.reset(); }
 	bool ResourceTexture::load(const std::vector<uint8_t>& buffer) {
-		this->texture = std::make_shared<rawrbox::TextureImage>(this->filePath, buffer);
+		this->_texture = std::make_unique<rawrbox::TextureImage>(this->filePath, buffer);
 		return true;
 	}
 
 	void ResourceTexture::upload() {
-		if (this->texture == nullptr) return;
-		this->texture->upload();
+		if (this->_texture == nullptr) return;
+		this->_texture->upload();
+	}
+
+	rawrbox::TextureImage* ResourceTexture::get() const {
+		return this->_texture.get();
 	}
 	// -------
 

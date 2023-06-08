@@ -9,8 +9,8 @@ namespace rawrbox {
 	class UIProgressBar : public rawrbox::UIBase {
 	protected:
 		// RESOURCES ---
-		std::shared_ptr<rawrbox::TextureBase> _bg = nullptr;
-		std::shared_ptr<rawrbox::TextureBase> _overlay = nullptr;
+		rawrbox::TextureBase* _bg = nullptr;
+		rawrbox::TextureBase* _overlay = nullptr;
 
 		rawrbox::Font* _font = nullptr;
 		// -----------------

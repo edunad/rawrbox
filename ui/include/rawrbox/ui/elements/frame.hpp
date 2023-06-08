@@ -26,8 +26,8 @@ namespace rawrbox {
 		// ----
 
 		// RESOURCES ---
-		std::shared_ptr<rawrbox::TextureImage> _stripes = nullptr;
-		std::shared_ptr<rawrbox::TextureImage> _overlay = nullptr;
+		rawrbox::TextureImage* _stripes = nullptr;
+		rawrbox::TextureImage* _overlay = nullptr;
 		rawrbox::Font* _consola = nullptr;
 		// -----------------
 

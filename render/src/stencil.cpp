@@ -76,7 +76,7 @@ namespace rawrbox {
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 
-		this->_pixelTexture = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(1, 1), Colors::White);
+		this->_pixelTexture = std::make_unique<rawrbox::TextureFlat>(rawrbox::Vector2i(1, 1), Colors::White);
 		this->_pixelTexture->upload();
 	}
 
@@ -218,20 +218,17 @@ namespace rawrbox {
 			this->drawLine({pos.x + size.x, pos.y - thick}, {pos.x + size.x, pos.y + size.y}, col);
 			this->drawLine({pos.x + size.x + (thick > 1.F ? thick : 0.F), pos.y + size.y}, {pos.x - thick, pos.y + size.y}, col);
 		} else {
-			this->drawTexture(pos, size, this->_pixelTexture, col);
+			this->drawTexture(pos, size, *this->_pixelTexture, col);
 		}
 	}
 
-	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, std::shared_ptr<rawrbox::TextureBase> tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd) {
+	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd) {
 		if (col.isTransparent()) return;
 
 		// Setup --------
-		bgfx::TextureHandle handl = BGFX_INVALID_HANDLE;
-		if (tex != nullptr) handl = tex->getHandle();
-
 		this->setupDrawCall(
 		    this->_2dprogram,
-		    handl);
+		    tex.getHandle());
 		// ----
 
 		this->pushVertice({pos.x, pos.y}, uvStart, col);

@@ -5,16 +5,16 @@
 
 namespace rawrbox {
 	UIFrame::~UIFrame() {
-		this->_stripes.reset();
-		this->_overlay.reset();
+		this->_stripes = nullptr;
+		this->_overlay = nullptr;
 		this->_closeButton.reset();
 
 		this->_consola = nullptr;
 	}
 
 	void UIFrame::initialize() {
-		this->_stripes = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/stripe.png")->texture;
-		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->texture;
+		this->_stripes = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/stripe.png")->get();
+		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->get();
 
 		this->_consola = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(11);
 
@@ -101,7 +101,7 @@ namespace rawrbox {
 		}
 
 		if (this->_closable) {
-			stencil.drawTexture({size.x - 36, 0}, {6, this->_titleSize}, this->_stripes, Color::RGBAHex(0x0000004A), {}, {1, static_cast<float>(this->_titleSize) / static_cast<float>(this->_stripes->getSize().y / 2)});
+			stencil.drawTexture({size.x - 36, 0}, {6, this->_titleSize}, *this->_stripes, Color::RGBAHex(0x0000004A), {}, {1, static_cast<float>(this->_titleSize) / static_cast<float>(this->_stripes->getSize().y / 2)});
 		}
 
 		// Title bottom border
@@ -112,7 +112,7 @@ namespace rawrbox {
 		if (this->_overlay == nullptr) return;
 
 		auto& size = this->getSize();
-		stencil.drawTexture({}, size, this->_overlay, Color::RGBAHex(0xFFFFFF0A), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
+		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xFFFFFF0A), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
 	}
 	// -----
 

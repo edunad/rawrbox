@@ -11,15 +11,15 @@
 
 namespace particle_test {
 	class Game : public rawrbox::Engine {
-		std::shared_ptr<rawrbox::Window> _window = nullptr;
-		std::shared_ptr<rawrbox::CameraOrbital> _camera = nullptr;
+		std::unique_ptr<rawrbox::Window> _window = nullptr;
+		std::unique_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 
-		std::shared_ptr<rawrbox::Model<>> _modelGrid = std::make_shared<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
 
-		std::shared_ptr<rawrbox::Emitter> _em = nullptr;
-		std::shared_ptr<rawrbox::ParticleSystem<>> _ps = nullptr;
+		rawrbox::Emitter* _em = nullptr;
+		std::unique_ptr<rawrbox::ParticleSystem<>> _ps = nullptr;
 
-		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
+		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 		rawrbox::Font* _font;
 
 		bool _ready = false;

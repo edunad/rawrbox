@@ -23,8 +23,8 @@ namespace rawrbox {
 		std::string _tooltip = "";
 
 		// RESOURCES ---
-		std::shared_ptr<rawrbox::TextureBase> _texture = nullptr;
-		std::shared_ptr<rawrbox::TextureImage> _overlay = nullptr;
+		rawrbox::TextureBase* _texture = nullptr;
+		rawrbox::TextureImage* _overlay = nullptr;
 		rawrbox::Font* _consola = nullptr;
 		// -----------------
 
@@ -53,7 +53,7 @@ namespace rawrbox {
 		void setTooltip(const std::string& text);
 		[[nodiscard]] const std::string& getTooltip() const;
 
-		void setTexture(std::shared_ptr<rawrbox::TextureBase>& texture);
+		void setTexture(rawrbox::TextureBase& texture);
 		void setTexture(const std::string& path);
 
 		void setEnabled(bool enabled);

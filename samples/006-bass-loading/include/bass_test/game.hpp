@@ -11,16 +11,16 @@
 
 namespace bass_test {
 	class Game : public rawrbox::Engine {
-		std::shared_ptr<rawrbox::Window> _window = nullptr;
-		std::shared_ptr<rawrbox::CameraOrbital> _camera = nullptr;
+		std::unique_ptr<rawrbox::Window> _window = nullptr;
+		std::unique_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 
-		std::shared_ptr<rawrbox::SoundInstance> _sound = nullptr;
-		std::shared_ptr<rawrbox::SoundInstance> _sound2 = nullptr;
+		std::unique_ptr<rawrbox::SoundInstance> _sound = nullptr;
+		std::unique_ptr<rawrbox::SoundInstance> _sound2 = nullptr;
 
-		std::shared_ptr<rawrbox::Model<>> _modelGrid = std::make_shared<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
 
-		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
-		std::shared_ptr<rawrbox::Text3D> _beatText = std::make_shared<rawrbox::Text3D>();
+		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
+		std::unique_ptr<rawrbox::Text3D> _beatText = std::make_unique<rawrbox::Text3D>();
 
 		rawrbox::Font* _font;
 
