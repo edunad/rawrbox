@@ -14,7 +14,7 @@
 
 namespace physics_test {
 	void Game::setupGLFW() {
-		this->_window = std::make_shared<rawrbox::Window>();
+		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("PHYSICS TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
@@ -27,7 +27,7 @@ namespace physics_test {
 		this->_window->initializeBGFX();
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window);
+		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
@@ -131,7 +131,7 @@ namespace physics_test {
 	}
 
 	void Game::createBox(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size) {
-		BoxOfDoom box;
+		auto box = std::make_unique<BoxOfDoom>();
 
 		JPH::BodyInterface& body_interface = rawrbox::PHYSICS::physicsSystem->GetBodyInterface();
 		JPH::BoxShapeSettings box_shape_settings(JPH::Vec3(size.x / 2.F, size.y / 2.F, size.z / 2.F));
@@ -146,21 +146,21 @@ namespace physics_test {
 		// ---
 
 		// Create the actual rigid body
-		box.body = body_interface.CreateBody(box_settings);
-		body_interface.AddBody(box.body->GetID(), JPH::EActivation::Activate);
+		box->body = body_interface.CreateBody(box_settings);
+		body_interface.AddBody(box->body->GetID(), JPH::EActivation::Activate);
 
 		// Create model
-		box.mdl = std::make_shared<rawrbox::Model<>>();
+		box->mdl = std::make_unique<rawrbox::Model<>>();
 
-		auto mesh = box.mdl->generateCube({}, size);
+		auto mesh = box->mdl->generateCube({}, size);
 		auto text = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->get();
 		mesh.setTexture(text);
 
-		box.mdl->addMesh(mesh);
-		box.mdl->upload();
+		box->mdl->addMesh(mesh);
+		box->mdl->upload();
 
 		// Store reference
-		this->_boxes.push_back(box);
+		this->_boxes.push_back(std::move(box));
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
@@ -212,17 +212,17 @@ namespace physics_test {
 
 	void Game::drawWorld() {
 		for (auto& b : this->_boxes) {
-			auto body = b.body;
+			auto body = b->body;
 			if (body == nullptr) continue;
 
 			auto pos = rawrbox::PhysUtils::posToVec(body->GetCenterOfMassPosition());
 			auto ang = rawrbox::PhysUtils::quatToVec4(body->GetRotation());
 
-			b.mdl->setPos(pos);
-			b.mdl->setAngle(ang);
-			b.mdl->setColor(body->IsActive() ? rawrbox::Colors::White : rawrbox::Colors::DarkGray);
+			b->mdl->setPos(pos);
+			b->mdl->setAngle(ang);
+			b->mdl->setColor(body->IsActive() ? rawrbox::Colors::White : rawrbox::Colors::DarkGray);
 
-			b.mdl->draw(this->_camera->getPos());
+			b->mdl->draw(this->_camera->getPos());
 		}
 
 		this->_modelGrid->draw({});
