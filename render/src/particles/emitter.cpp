@@ -2,32 +2,10 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/particles/emitter.hpp>
 
-#if RAWRBOX_DEBUG
-	#include <rawrbox/debug/gizmos.hpp>
-#endif
-
 namespace rawrbox {
-	Emitter::Emitter(rawrbox::EmitterSettings settings) : _settings(settings), _id(++rawrbox::EMITTER_ID), _timer(this->_settings.preHeat ? 1.F : 0.F) {
-
-#ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS::addEmitter(this);
-#endif
-	};
-
-	Emitter::~Emitter() {
-#ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS::removeEmitter(this);
-#endif
-		this->clear();
-	}
-
-	Emitter::Emitter(const Emitter& other) : _settings(other._settings), _id(other._id), _particles(other._particles), _pos(other._pos), _timer(other._timer) {
-
-#ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS::addEmitter(this);
-#endif
-	}
-
+	Emitter::Emitter(rawrbox::EmitterSettings settings) : _settings(settings), _id(++rawrbox::EMITTER_ID), _timer(this->_settings.preHeat ? 1.F : 0.F){};
+	Emitter::~Emitter() { this->clear(); }
+	Emitter::Emitter(const Emitter& other) : _settings(other._settings), _id(other._id), _particles(other._particles), _pos(other._pos), _timer(other._timer) {}
 	Emitter::Emitter(Emitter&& other) noexcept : _particles(std::move(other._particles)), _settings(other._settings), _id(other._id), _pos(other._pos), _timer(other._timer) {}
 
 	void Emitter::spawnParticle() {
@@ -152,11 +130,6 @@ namespace rawrbox {
 
 	void Emitter::setPos(const rawrbox::Vector3f& pos) {
 		this->_pos = pos;
-#ifndef RAWRBOX_TESTING
-	#ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS::updateGizmo(fmt::format("Emitter-{}", this->_id), pos);
-	#endif
-#endif
 	}
 	// ------
 

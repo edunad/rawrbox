@@ -6,12 +6,6 @@
 #include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/light/types.hpp>
 
-#ifndef RAWRBOX_TESTING
-	#ifdef RAWRBOX_DEBUG
-		#include <rawrbox/debug/gizmos.hpp>
-	#endif
-#endif
-
 #include <fmt/format.h>
 
 #include <array>
@@ -31,24 +25,15 @@ namespace rawrbox {
 		rawrbox::Colorf _specular = rawrbox::Colors::White;
 		rawrbox::Colorf _ambient = rawrbox::Colors::White;
 
-		void updateGizmo() {
-#ifndef RAWRBOX_TESTING
-	#ifdef RAWRBOX_DEBUG
-			rawrbox::GIZMOS::updateGizmo(fmt::format("Light-{}", this->id()), this->getPos() + this->_offsetPos);
-	#endif
-#endif
-		}
-
 	public:
-		LightBase() = default;
 		LightBase(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : _posMatrix(posMatrix), _diffuse(diffuse), _specular(specular){};
+		LightBase(const LightBase&) = default;
+		LightBase(LightBase&&) = default;
+
+		LightBase& operator=(const LightBase&) = default;
+		LightBase& operator=(LightBase&&) = delete;
 		virtual ~LightBase() {
 			rawrbox::LIGHTS::removeLight(this);
-#ifndef RAWRBOX_TESTING
-	#ifdef RAWRBOX_DEBUG
-			rawrbox::GIZMOS::removeLight(this);
-	#endif
-#endif
 		};
 
 		[[nodiscard]] virtual const rawrbox::Colorf& getSpecularColor() const { return this->_specular; }
@@ -57,11 +42,6 @@ namespace rawrbox {
 
 		virtual void setId(size_t id) {
 			this->_id = id;
-#ifndef RAWRBOX_TESTING
-	#ifdef RAWRBOX_DEBUG
-			rawrbox::GIZMOS::addLight(this);
-	#endif
-#endif
 		};
 
 		[[nodiscard]] virtual const size_t id() const { return this->_id; };
@@ -72,13 +52,11 @@ namespace rawrbox {
 		[[nodiscard]] const rawrbox::Vector3f& getPos() const { return this->_posMatrix; }
 		virtual void setPos(const rawrbox::Vector3f& pos) {
 			this->_posMatrix = pos;
-			this->updateGizmo();
 		}
 
 		[[nodiscard]] const rawrbox::Vector3f& getOffsetPos() const { return this->_offsetPos; }
 		virtual void setOffsetPos(const rawrbox::Vector3f& pos) {
 			this->_offsetPos = pos;
-			this->updateGizmo();
 		}
 
 		virtual std::array<float, 4> getPosMatrix() {

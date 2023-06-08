@@ -3,10 +3,6 @@
 #include <rawrbox/bass/sound/instance.hpp>
 #include <rawrbox/bass/utils/bass.hpp>
 
-#ifdef RAWRBOX_DEBUG
-	#include <rawrbox/debug/gizmos.hpp>
-#endif
-
 #include <bass.h>
 #include <bass_fx.h>
 #include <fmt/printf.h>
@@ -38,10 +34,6 @@ namespace rawrbox {
 		// CLEANUP CALLBACKS
 		rawrbox::BASS::onBEAT.remove(std::to_string(this->_sample));
 		rawrbox::BASS::onSoundEnd.remove(std::to_string(this->_sample));
-
-#ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS::removeSound(this);
-#endif
 	}
 
 	uint32_t SoundInstance::getNextAvailableChannel() const {
@@ -72,10 +64,6 @@ namespace rawrbox {
 
 		BASS_ChannelPlay(this->_channel, this->_stream || this->_looping); // actualy play the thing
 		rawrbox::BASSUtils::checkBASSError();
-
-#ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS::addSound(this);
-#endif
 	}
 
 	void SoundInstance::stop() {
@@ -238,9 +226,6 @@ namespace rawrbox {
 		BASS_Apply3D();
 
 		rawrbox::BASSUtils::checkBASSError();
-#ifdef RAWRBOX_DEBUG
-		rawrbox::GIZMOS::updateGizmo(fmt::format("Sound-{}", this->id()), pos);
-#endif
 	}
 
 	void SoundInstance::set3D(float maxDistance, float minDistance) {
