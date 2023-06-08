@@ -6,7 +6,6 @@
 #include <rawrbox/render/model/material/lit.hpp>
 #include <rawrbox/render/model/material/skinned_unlit.hpp>
 #include <rawrbox/render/model/text3D.hpp>
-#include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/window.hpp>
 
 #include <memory>
@@ -23,10 +22,9 @@ namespace assimp {
 		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>> _model5 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>>();
 
 		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
-
 		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 
-		rawrbox::Font* _font;
+		rawrbox::Font* _font = nullptr;
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;

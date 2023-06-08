@@ -1,7 +1,6 @@
 #pragma once
 
 #include <rawrbox/math/vector2.hpp>
-#include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/utils/event.hpp>
 
@@ -68,8 +67,10 @@ namespace rawrbox {
 		uint32_t _resetFlags = BGFX_RESET_NONE;
 		uint32_t _debugFlags = BGFX_DEBUG_NONE;
 
+		uint32_t _clearColor = 0x000000FF;
+		bgfx::ViewId _id = 0;
+
 		// Drawing stuff ---
-		std::unique_ptr<rawrbox::Renderer> _renderer = nullptr;
 		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
 		// -------
 

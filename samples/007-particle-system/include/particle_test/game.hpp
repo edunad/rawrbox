@@ -20,7 +20,7 @@ namespace particle_test {
 		std::unique_ptr<rawrbox::ParticleSystem<>> _ps = nullptr;
 
 		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
-		rawrbox::Font* _font;
+		rawrbox::Font* _font = nullptr;
 
 		bool _ready = false;
 		std::atomic<int> _loadingFiles = 0;

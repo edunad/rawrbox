@@ -34,12 +34,7 @@ namespace rawrbox {
 		rawrbox::UIContainer* focusedElement = nullptr;
 		rawrbox::UIContainer* hoveredElement = nullptr;
 
-		~UIRoot();
 		explicit UIRoot(rawrbox::Window& window);
-		UIRoot(const UIRoot&) = default;
-		UIRoot(UIRoot&&) = delete;
-		UIRoot& operator=(const UIRoot&) = default;
-		UIRoot& operator=(UIRoot&&) = delete;
 
 		// UTIL
 		[[nodiscard]] const rawrbox::AABBf& getAABB() const;

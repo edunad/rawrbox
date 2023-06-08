@@ -218,6 +218,7 @@ namespace rawrbox {
 			this->drawLine({pos.x + size.x, pos.y - thick}, {pos.x + size.x, pos.y + size.y}, col);
 			this->drawLine({pos.x + size.x + (thick > 1.F ? thick : 0.F), pos.y + size.y}, {pos.x - thick, pos.y + size.y}, col);
 		} else {
+			if (this->_pixelTexture == nullptr) return;
 			this->drawTexture(pos, size, *this->_pixelTexture, col);
 		}
 	}

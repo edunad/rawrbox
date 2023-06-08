@@ -59,12 +59,6 @@ namespace rawrbox {
 		float intensity = 1.F;
 
 		explicit AssimpMaterial(std::string _name) : name(std::move(_name)){};
-		~AssimpMaterial() {
-			this->diffuse.reset();
-			this->opacity.reset();
-			this->specular.reset();
-			this->emissive.reset();
-		}
 	};
 
 	struct AssimpLight {
@@ -91,8 +85,8 @@ namespace rawrbox {
 	struct AssimpMesh {
 	public:
 		std::string name;
-		rawrbox::BBOX bbox;
-		rawrbox::Matrix4x4 offsetMatrix;
+		rawrbox::BBOX bbox = {};
+		rawrbox::Matrix4x4 offsetMatrix = {};
 
 		rawrbox::AssimpMaterial* material = nullptr;
 		rawrbox::Skeleton* skeleton = nullptr;
@@ -102,14 +96,7 @@ namespace rawrbox {
 		std::vector<rawrbox::VertexSkinnedLitData> vertices = {};
 		std::vector<uint16_t> indices = {};
 
-		AssimpMesh() = default;
-		~AssimpMesh() {
-			this->material = nullptr;
-			this->skeleton = nullptr;
-
-			this->vertices.clear();
-			this->indices.clear();
-		}
+		explicit AssimpMesh(std::string _name) : name(std::move(_name)){};
 	};
 
 	class AssimpImporter {
@@ -160,7 +147,6 @@ namespace rawrbox {
 		// --------
 
 		explicit AssimpImporter(uint32_t loadFlags = ModelLoadFlags::NONE, uint32_t assimpFlags = DEFAULT_ASSIMP_FLAGS);
-		~AssimpImporter();
 
 		// Loading ----
 		void load(const std::filesystem::path& path, const std::vector<uint8_t>& buffer, uint32_t loadFlags = ModelLoadFlags::NONE, uint32_t assimpFlags = DEFAULT_ASSIMP_FLAGS);

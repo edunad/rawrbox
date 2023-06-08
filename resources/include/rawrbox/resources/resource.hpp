@@ -21,10 +21,15 @@ namespace rawrbox {
 		std::filesystem::path filePath;
 		std::string extention;
 
-		virtual bool load(const std::vector<uint8_t>& buffer);
+		virtual bool load(const std::vector<uint8_t> &buffer);
 		virtual void upload();
 
 		Resource() = default;
+		Resource(const Resource &) = default;
+		Resource(Resource &&) = delete;
+		Resource &operator=(const Resource &) = default;
+		Resource &operator=(Resource &&) = delete;
+
 		virtual ~Resource() = default;
 	};
 } // namespace rawrbox

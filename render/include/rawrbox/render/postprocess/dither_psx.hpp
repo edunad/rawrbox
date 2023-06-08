@@ -18,7 +18,7 @@ namespace rawrbox {
 	};
 
 	class PostProcessPSXDither : public rawrbox::PostProcessBase {
-		std::unordered_map<DITHER_SIZE, std::unique_ptr<rawrbox::TextureImage>> _textures;
+		std::unordered_map<DITHER_SIZE, std::unique_ptr<rawrbox::TextureImage>> _textures = {};
 
 		bgfx::ProgramHandle _program = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _ditherColor = BGFX_INVALID_HANDLE;

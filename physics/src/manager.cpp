@@ -11,8 +11,8 @@ namespace rawrbox {
 	const std::unique_ptr<rawrbox::BPLayerFilter> PHYSICS::_bpLayerFilter = std::make_unique<rawrbox::BPLayerFilter>();
 	const std::unique_ptr<rawrbox::LayerFilter> PHYSICS::_layerFilter = std::make_unique<rawrbox::LayerFilter>();
 
-	std::unique_ptr<rawrbox::BodyActivationListener> PHYSICS::_bodyListener;
-	std::unique_ptr<rawrbox::ContactListener> PHYSICS::_contactListener;
+	std::unique_ptr<rawrbox::BodyActivationListener> PHYSICS::_bodyListener = nullptr;
+	std::unique_ptr<rawrbox::ContactListener> PHYSICS::_contactListener = nullptr;
 	// ---
 
 	// Public

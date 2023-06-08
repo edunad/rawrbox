@@ -83,29 +83,6 @@ namespace rawrbox {
 		void* owner = nullptr; // Eeeehhhh
 		std::unordered_map<std::string, rawrbox::Vector4f> data = {};
 
-		Mesh() = default;
-
-		Mesh(const Mesh& other) : _canOptimize(other._canOptimize), name(std::move(other.name)), offsetMatrix(other.offsetMatrix), vertexPos(other.vertexPos), color(other.color), bbox(other.bbox), data(std::move(other.data)), lights(std::move(other.lights)), baseIndex(other.baseIndex), baseVertex(other.baseVertex), totalIndex(other.totalIndex), totalVertex(other.totalVertex), blending(other.blending), culling(other.culling), depthTest(other.depthTest), emissionIntensity(other.emissionIntensity), emissionTexture(other.emissionTexture), opacityTexture(other.opacityTexture), specularTexture(other.specularTexture), specularShininess(other.specularShininess), texture(other.texture), lineMode(other.lineMode), owner(other.owner), skeleton(other.skeleton), vertices(std::move(other.vertices)), indices(std::move(other.indices)), wireframe(other.wireframe){};
-		Mesh(Mesh&& other) noexcept : _canOptimize(other._canOptimize), name(other.name), offsetMatrix(other.offsetMatrix), vertexPos(other.vertexPos), color(other.color), bbox(other.bbox), data(other.data), lights(other.lights), baseIndex(other.baseIndex), baseVertex(other.baseVertex), totalIndex(other.totalIndex), totalVertex(other.totalVertex), blending(other.blending), culling(other.culling), depthTest(other.depthTest), emissionIntensity(other.emissionIntensity), emissionTexture(other.emissionTexture), opacityTexture(other.opacityTexture), specularTexture(other.specularTexture), specularShininess(other.specularShininess), texture(other.texture), lineMode(other.lineMode), owner(other.owner), skeleton(other.skeleton), vertices(other.vertices), indices(other.indices), wireframe(other.wireframe){};
-
-		Mesh& operator=(const Mesh&) = delete;
-		Mesh& operator=(Mesh&&) = delete;
-
-		virtual ~Mesh() {
-			this->texture = nullptr;
-			this->specularTexture = nullptr;
-			this->emissionTexture = nullptr;
-			this->opacityTexture = nullptr;
-
-			this->owner = nullptr;
-			this->skeleton = nullptr;
-
-			this->lights.clear();
-			this->data.clear();
-			this->vertices.clear();
-			this->indices.clear();
-		}
-
 		// UTILS ----
 		[[nodiscard]] const std::string& getName() const {
 			return this->name;

@@ -30,7 +30,7 @@ namespace rawrbox {
 		std::vector<rawrbox::LightBase> lights = {};
 
 		// ANIMATIONS ----
-		virtual void animate(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
+		void animate(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
 			// VERTEX ANIMATION ----
 			for (auto& anim : this->_animatedMeshes) {
 				if (anim.second == nullptr) continue;
@@ -57,7 +57,7 @@ namespace rawrbox {
 			// -----
 		}
 
-		virtual void animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, const rawrbox::Skeleton& skeleton, const rawrbox::Bone& parentBone, const rawrbox::Matrix4x4& parentTransform) const {
+		void animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, const rawrbox::Skeleton& skeleton, const rawrbox::Bone& parentBone, const rawrbox::Matrix4x4& parentTransform) const {
 			auto nodeTransform = parentBone.transformationMtx;
 			this->readAnims(nodeTransform, parentBone.name);
 
@@ -73,7 +73,7 @@ namespace rawrbox {
 			}
 		}
 
-		virtual void readAnims(rawrbox::Matrix4x4& nodeTransform, const std::string& nodeName) const {
+		void readAnims(rawrbox::Matrix4x4& nodeTransform, const std::string& nodeName) const {
 			for (auto& anim : this->_playingAnimations) {
 				auto animChannel = std::find_if(anim.data->frames.begin(), anim.data->frames.end(), [&](AnimationFrame& x) {
 					return x.nodeName == nodeName;
@@ -137,7 +137,7 @@ namespace rawrbox {
 			}
 		}
 
-		virtual void preDraw() {
+		void preDraw() {
 			for (auto& anim : this->_playingAnimations) {
 				float timeToAdd = rawrbox::DELTA_TIME * anim.speed;
 				float time = anim.time + timeToAdd;
@@ -149,7 +149,7 @@ namespace rawrbox {
 			}
 		}
 
-		virtual void postDraw() {
+		void postDraw() {
 			for (auto it2 = this->_playingAnimations.begin(); it2 != this->_playingAnimations.end();) {
 				if ((*it2).time >= (*it2).data->duration && !(*it2).loop) {
 					it2 = this->_playingAnimations.erase(it2);
@@ -178,11 +178,11 @@ namespace rawrbox {
 		using ModelBase<M>::ModelBase;
 
 		// Animations ----
-		virtual bool blendAnimation(const std::string& otherAnim, float blend) {
+		bool blendAnimation(const std::string& otherAnim, float blend) {
 			throw std::runtime_error("TODO");
 		}
 
-		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F) {
+		bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F) {
 			auto iter = this->_animations.find(name);
 			if (iter == this->_animations.end()) throw std::runtime_error(fmt::format("[RawrBox-Model] Animation {} not found!", name));
 

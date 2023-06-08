@@ -107,25 +107,19 @@ namespace rawrbox {
 
 	public:
 		explicit Emitter(EmitterSettings settings = {});
-		virtual ~Emitter();
-		Emitter(const Emitter&);
-		Emitter(Emitter&&) noexcept;
-
-		Emitter& operator=(const Emitter&) = delete;
-		Emitter& operator=(Emitter&&) = delete;
 
 		// UTILS -----
-		virtual void clear();
+		void clear();
 
-		[[nodiscard]] virtual const size_t id() const;
-		[[nodiscard]] virtual const size_t totalParticles() const;
-		[[nodiscard]] virtual const EmitterSettings& getSettings() const;
+		[[nodiscard]] const size_t id() const;
+		[[nodiscard]] const size_t totalParticles() const;
+		[[nodiscard]] const EmitterSettings& getSettings() const;
 
-		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const;
-		virtual void setPos(const rawrbox::Vector3f& pos);
+		[[nodiscard]] const rawrbox::Vector3f& getPos() const;
+		void setPos(const rawrbox::Vector3f& pos);
 		// ------
 
-		virtual void update();
+		void update();
 
 		template <typename M = rawrbox::MaterialParticle>
 		uint32_t draw(const rawrbox::CameraBase& camera, const rawrbox::Vector2i& atlasSize, uint32_t spriteSize, uint32_t first, uint32_t max, rawrbox::ParticleSort* outSort, typename M::vertexBufferType* outVert)

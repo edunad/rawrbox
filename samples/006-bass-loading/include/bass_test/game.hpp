@@ -22,7 +22,7 @@ namespace bass_test {
 		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 		std::unique_ptr<rawrbox::Text3D> _beatText = std::make_unique<rawrbox::Text3D>();
 
-		rawrbox::Font* _font;
+		rawrbox::Font* _font = nullptr;
 
 		float _beat = 0;
 		bool _ready = false;

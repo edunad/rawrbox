@@ -14,13 +14,6 @@ namespace rawrbox {
 		std::unique_ptr<nlohmann::json> _json = nullptr;
 
 	public:
-		ResourceJSON() = default;
-		ResourceJSON(const ResourceJSON&) = delete;
-		ResourceJSON(ResourceJSON&&) = delete;
-		ResourceJSON& operator=(const ResourceJSON&) = delete;
-		ResourceJSON& operator=(ResourceJSON&&) = delete;
-		~ResourceJSON() override;
-
 		bool load(const std::vector<uint8_t>& buffer) override;
 		[[nodiscard]] nlohmann::json* get() const;
 	};

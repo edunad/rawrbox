@@ -4,7 +4,6 @@
 #include <rawrbox/ui/root.hpp>
 
 namespace rawrbox {
-
 	UIRoot::UIRoot(rawrbox::Window& window) : _window(&window) {
 		this->_aabb = {0, 0, static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)};
 
@@ -36,14 +35,6 @@ namespace rawrbox {
 			this->_aabb = {0, 0, static_cast<float>(size.x), static_cast<float>(size.y)};
 		};
 		/// ----
-	}
-
-	UIRoot::~UIRoot() {
-		this->removeChildren();
-
-		this->focusedElement = nullptr;
-		this->hoveredElement = nullptr;
-		this->_window = nullptr;
 	}
 
 	// INTERNAL UTILS

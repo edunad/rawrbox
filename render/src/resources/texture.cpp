@@ -3,7 +3,6 @@
 
 namespace rawrbox {
 	// Resource ----
-	ResourceTexture::~ResourceTexture() { this->_texture.reset(); }
 	bool ResourceTexture::load(const std::vector<uint8_t>& buffer) {
 		this->_texture = std::make_unique<rawrbox::TextureImage>(this->filePath, buffer);
 		return true;

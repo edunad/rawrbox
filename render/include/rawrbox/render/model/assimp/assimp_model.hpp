@@ -10,7 +10,7 @@ namespace rawrbox {
 	template <typename M = rawrbox::MaterialBase>
 	class AssimpModel : public rawrbox::Model<M> {
 
-		virtual void loadMeshes(const rawrbox::AssimpImporter& model) {
+		void loadMeshes(const rawrbox::AssimpImporter& model) {
 			for (auto& assimpMesh : model.meshes) {
 				rawrbox::Mesh<typename M::vertexBufferType> mesh;
 
@@ -100,7 +100,7 @@ namespace rawrbox {
 			}
 		}
 
-		virtual void loadAnimations(const rawrbox::AssimpImporter& model) {
+		void loadAnimations(const rawrbox::AssimpImporter& model) {
 			this->_animations = model.animations;
 			this->_animatedMeshes.clear();
 
@@ -117,7 +117,7 @@ namespace rawrbox {
 			// -----------------------
 		}
 
-		virtual void loadLights(const rawrbox::AssimpImporter& model) {
+		void loadLights(const rawrbox::AssimpImporter& model) {
 			for (auto& assimpLights : model.lights) {
 				std::shared_ptr<rawrbox::LightBase> light = nullptr;
 
@@ -145,13 +145,7 @@ namespace rawrbox {
 
 	public:
 		using Model<M>::Model;
-		~AssimpModel() {
-			this->_animations.clear();
-			this->_playingAnimations.clear();
-			this->_animatedMeshes.clear();
-		};
-
-		virtual void load(const rawrbox::AssimpImporter& model) {
+		void load(const rawrbox::AssimpImporter& model) {
 			this->loadMeshes(model);
 
 			if constexpr (supportsBones<typename M::vertexBufferType>) {

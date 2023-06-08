@@ -4,9 +4,6 @@
 
 namespace rawrbox {
 	Emitter::Emitter(rawrbox::EmitterSettings settings) : _settings(settings), _id(++rawrbox::EMITTER_ID), _timer(this->_settings.preHeat ? 1.F : 0.F){};
-	Emitter::~Emitter() { this->clear(); }
-	Emitter::Emitter(const Emitter& other) : _settings(other._settings), _id(other._id), _particles(other._particles), _pos(other._pos), _timer(other._timer) {}
-	Emitter::Emitter(Emitter&& other) noexcept : _particles(std::move(other._particles)), _settings(other._settings), _id(other._id), _pos(other._pos), _timer(other._timer) {}
 
 	void Emitter::spawnParticle() {
 		// Calculate the next particle spawn time

@@ -18,7 +18,7 @@ namespace light {
 		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialLit>> _model = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialLit>>();
 		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 
-		rawrbox::Font* _font;
+		rawrbox::Font* _font = nullptr;
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;

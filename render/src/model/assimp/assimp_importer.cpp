@@ -479,8 +479,7 @@ namespace rawrbox {
 		for (size_t n = 0; n < root->mNumMeshes; ++n) {
 			aiMesh& aiMesh = *sc->mMeshes[root->mMeshes[n]];
 
-			rawrbox::AssimpMesh mesh;
-			mesh.name = aiMesh.mName.data;
+			rawrbox::AssimpMesh mesh(aiMesh.mName.data);
 
 			// Calculate bbox ---
 			auto min = aiMesh.mAABB.mMin;
@@ -601,15 +600,6 @@ namespace rawrbox {
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
 			this->assimpFlags |= aiProcess_RemoveRedundantMaterials; // Enable armature & limit bones
 		}
-	}
-
-	AssimpImporter::~AssimpImporter() {
-		this->animations.clear();
-		this->animatedMeshes.clear();
-		this->skeletons.clear();
-		this->lights.clear();
-		this->materials.clear();
-		this->meshes.clear();
 	}
 
 	// Loading ----

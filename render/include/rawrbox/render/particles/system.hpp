@@ -22,17 +22,6 @@ namespace rawrbox {
 
 	public:
 		explicit ParticleSystem(rawrbox::TextureBase& spriteAtlas, uint32_t spriteSize = 32) : _atlas(&spriteAtlas), _spriteSize(spriteSize){};
-		virtual ~ParticleSystem() {
-			this->_atlas = nullptr;
-
-			this->_material.reset();
-			this->_emitters.clear();
-		}
-
-		ParticleSystem(ParticleSystem&&) = delete;
-		ParticleSystem& operator=(ParticleSystem&&) = delete;
-		ParticleSystem(const ParticleSystem&) = delete;
-		ParticleSystem& operator=(const ParticleSystem&) = delete;
 
 		static int32_t particleSortFn(const void* _lhs, const void* _rhs) {
 			const rawrbox::ParticleSort& lhs = *std::bit_cast<const rawrbox::ParticleSort*>(_lhs);

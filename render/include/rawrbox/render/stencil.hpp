@@ -145,37 +145,37 @@ namespace rawrbox {
 
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 
-		std::unique_ptr<rawrbox::TextureFlat> _pixelTexture;
-		rawrbox::Vector2i _windowSize;
+		std::unique_ptr<rawrbox::TextureFlat> _pixelTexture = nullptr;
+		rawrbox::Vector2i _windowSize = {};
 
 		// Offset handling ----
-		rawrbox::Vector2f _offset;
-		rawrbox::Vector2f _oldOffset;
-		std::vector<rawrbox::Vector2f> _offsets;
+		rawrbox::Vector2f _offset = {};
+		rawrbox::Vector2f _oldOffset = {};
+		std::vector<rawrbox::Vector2f> _offsets = {};
 		// ----------
 
 		// Clip handling ----
-		std::vector<uint32_t> _clips;
+		std::vector<uint32_t> _clips = {};
 		// ----------
 
 		// Outline handling ----
-		std::vector<StencilOutline> _outlines; // thickness, stipple
-		StencilOutline _outline;
+		std::vector<StencilOutline> _outlines = {}; // thickness, stipple
+		StencilOutline _outline = {};
 		// ----------
 
 		// Rotation handling ----
-		std::vector<StencilRotation> _rotations;
-		StencilRotation _rotation;
+		std::vector<StencilRotation> _rotations = {};
+		StencilRotation _rotation = {};
 		// ----------
 
 		// Scale handling ----
-		std::vector<rawrbox::Vector2f> _scales;
-		rawrbox::Vector2f _scale;
+		std::vector<rawrbox::Vector2f> _scales = {};
+		rawrbox::Vector2f _scale = {};
 		// ----------
 
 		// Drawing -----
 		rawrbox::StencilDraw _currentDraw = {};
-		std::vector<rawrbox::StencilDraw> _drawCalls;
+		std::vector<rawrbox::StencilDraw> _drawCalls = {};
 		// ----------
 
 		// ------ UTILS
