@@ -2,7 +2,7 @@
 #pragma once
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/container.hpp>
 
 #include <nlohmann/json.hpp>
 
@@ -47,18 +47,22 @@ namespace rawrbox {
 
 		rawrbox::Vector2f _posOffset = {};
 		std::vector<UIAnimKeyframe> _keyframes = {};
-		std::shared_ptr<T> _element;
+		T* _element = nullptr;
 
 	public:
 		std::function<void()> onFinish = nullptr;
 
 		UIAnim() = default;
+		UIAnim(const UIAnim&) = delete;
+		UIAnim(UIAnim&&) = delete;
+		UIAnim& operator=(const UIAnim&) = delete;
+		UIAnim& operator=(UIAnim&&) = delete;
 		virtual ~UIAnim() = default;
 
 		virtual void setLoop(bool loop) { this->_loop = loop; };
 		virtual void setReverse(bool reverse) { this->_reverse = reverse; };
 		virtual void setPos(const rawrbox::Vector2f& pos) { this->_posOffset = pos; };
-		virtual void setElement(std::shared_ptr<T> element) { this->_element = element; };
+		virtual void setElement(T* element) { this->_element = element; };
 		virtual void setAnimation(std::shared_ptr<nlohmann::json> json) {
 			if (json == nullptr || json->empty()) return;
 			auto& rawData = *json;

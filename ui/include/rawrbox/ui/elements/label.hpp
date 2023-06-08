@@ -2,12 +2,12 @@
 
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/container.hpp>
 
 #include <string>
 
 namespace rawrbox {
-	class UILabel : public rawrbox::UIBase {
+	class UILabel : public rawrbox::UIContainer {
 		rawrbox::Color _color = rawrbox::Colors::White;
 		rawrbox::Color _shadowColor = rawrbox::Colors::Transparent;
 
@@ -19,9 +19,6 @@ namespace rawrbox {
 		rawrbox::Vector2f _shadow = {1, 1};
 
 	public:
-		UILabel() = default;
-		~UILabel() override;
-
 		// FOCUS HANDLE ---
 		[[nodiscard]] bool hitTest(const rawrbox::Vector2f& point) const override;
 		// -----

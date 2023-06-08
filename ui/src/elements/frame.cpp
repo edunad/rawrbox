@@ -2,16 +2,9 @@
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
+#include <rawrbox/ui/root.hpp>
 
 namespace rawrbox {
-	UIFrame::~UIFrame() {
-		this->_stripes = nullptr;
-		this->_overlay = nullptr;
-		this->_closeButton.reset();
-
-		this->_consola = nullptr;
-	}
-
 	void UIFrame::initialize() {
 		this->_stripes = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/stripe.png")->get();
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->get();
@@ -34,10 +27,8 @@ namespace rawrbox {
 		this->_closeButton->initialize();
 
 		this->_closeButton->onClick += [this]() {
-			auto ref = this->getRef<rawrbox::UIFrame>();
-
-			ref->onClose();
-			ref->remove();
+			this->onClose();
+			this->remove();
 		};
 	}
 
@@ -62,7 +53,7 @@ namespace rawrbox {
 	bool UIFrame::isDraggable() const { return this->_draggable; }
 
 	void UIFrame::setSize(const rawrbox::Vector2& size) {
-		rawrbox::UIBase::setSize(size);
+		rawrbox::UIContainer::setSize(size);
 		if (this->_closeButton != nullptr) this->_closeButton->setPos({size.x - 30, -this->_titleSize});
 	}
 	// -------
@@ -71,8 +62,12 @@ namespace rawrbox {
 	void UIFrame::mouseMove(const rawrbox::Vector2i& mousePos) {
 		if (!this->_dragging) return;
 
-		auto p = this->getParent<>();
-		this->setPos((this->getPos() + (mousePos.cast<float>() - this->_dragStart)).clamp(p->getPos(), p->getPos() + p->getSize() - this->getSize()));
+		if (this->hasParent()) {
+			this->setPos((this->getPos() + (mousePos.cast<float>() - this->_dragStart)).clamp(this->_parent->getPos(), this->_parent->getPos() + this->_parent->getSize() - this->getSize()));
+		} else {
+			auto& bb = this->getRoot()->getAABB();
+			this->setPos((this->getPos() + (mousePos.cast<float>() - this->_dragStart)).clamp(bb.pos, bb.size - this->getSize()));
+		}
 	}
 
 	void UIFrame::mouseDown(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) {

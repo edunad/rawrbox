@@ -3,13 +3,13 @@
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/text/font.hpp>
-#include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/container.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <string>
 
 namespace rawrbox {
-	class UIInput : public rawrbox::UIBase {
+	class UIInput : public rawrbox::UIContainer {
 		rawrbox::Color _backgroundColor = {0.15F, 0.15F, 0.15F, 1.F};
 		rawrbox::Color _border = rawrbox::Colors::Transparent;
 		rawrbox::Color _textColor = rawrbox::Colors::White;
@@ -53,9 +53,6 @@ namespace rawrbox {
 		rawrbox::Event<uint32_t> onKey;
 		rawrbox::Event<> onTextUpdate;
 		rawrbox::Event<> onEnter;
-
-		UIInput() = default;
-		~UIInput() override;
 
 		// UTILS ----
 		virtual void setHints(const std::vector<std::string>& hints);

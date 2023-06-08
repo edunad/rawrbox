@@ -5,10 +5,6 @@
 #include <rawrbox/ui/elements/image.hpp>
 
 namespace rawrbox {
-	UIImage::~UIImage() {
-		this->_texture = nullptr;
-	}
-
 	// UTILS ----
 	void UIImage::setTexture(rawrbox::TextureBase& texture) { this->_texture = &texture; }
 	void UIImage::setTexture(const std::filesystem::path& path) {

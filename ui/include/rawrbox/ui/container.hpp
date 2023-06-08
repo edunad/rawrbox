@@ -7,23 +7,35 @@
 #include <vector>
 
 namespace rawrbox {
-	class UIBase;
 	class Stencil;
+	class UIRoot;
 	class UIContainer {
 	protected:
-		std::weak_ptr<rawrbox::UIContainer> _parent;
-		std::weak_ptr<rawrbox::UIContainer> _ref;
+		bool _hovering = false;
+		bool _focused = false;
+		bool _visible = true;
 
-		std::vector<std::shared_ptr<UIBase>> _children;
+		rawrbox::UIContainer* _parent = nullptr;
+		rawrbox::UIRoot* _root = nullptr;
 
+		std::vector<std::unique_ptr<rawrbox::UIContainer>> _children = {};
+
+		bool _alwaysOnTop = false;
 		rawrbox::AABBf _aabb = {};
 
-		void internalUpdate(std::shared_ptr<rawrbox::UIBase> elm);
-		void internalDraw(std::shared_ptr<rawrbox::UIBase> elm, rawrbox::Stencil& stencil);
+		void internalUpdate(rawrbox::UIContainer* elm);
+		void internalDraw(rawrbox::UIContainer* elm, rawrbox::Stencil& stencil);
 
 	public:
 		virtual ~UIContainer() = default;
 		UIContainer() = default;
+		UIContainer(const UIContainer&) = default;
+		UIContainer(UIContainer&&) noexcept;
+
+		UIContainer& operator=(const UIContainer&) = default;
+		UIContainer& operator=(UIContainer&&) = delete;
+
+		virtual void initialize();
 
 		// UTILS ---
 		virtual void setPos(const rawrbox::Vector2f& pos);
@@ -35,46 +47,77 @@ namespace rawrbox {
 
 		virtual void removeChildren();
 		virtual void remove();
+
+		virtual void setVisible(bool visible);
+		[[nodiscard]] virtual const bool visible() const;
+
+		virtual void setFocused(bool visible);
+		[[nodiscard]] virtual const bool focused() const;
+
+		virtual void setHovering(bool hovering);
+		[[nodiscard]] virtual const bool hovering() const;
+
+		[[nodiscard]] virtual const rawrbox::UIRoot* getRoot() const;
+		[[nodiscard]] virtual const rawrbox::Vector2f getPosAbsolute() const;
 		// ---
 
-		// REFERENCE HANDLING --
-		void setRef(std::shared_ptr<rawrbox::UIContainer> ref);
-
-		template <class ChildT = rawrbox::UIContainer>
-		[[nodiscard]] std::shared_ptr<ChildT> getRef() const {
-			return std::dynamic_pointer_cast<ChildT>(this->_ref.lock());
-		}
-
-		template <class ChildT = rawrbox::UIContainer>
-		[[nodiscard]] std::shared_ptr<ChildT> getParent() const {
-			return std::dynamic_pointer_cast<ChildT>(this->_parent.lock());
-		}
-		// ---
+		// SORTING -----
+		[[nodiscard]] virtual const bool alwaysOnTop() const;
+		virtual void bringToFront();
+		// -------
 
 		// CHILD HANDLING --
 		template <class T, typename... CallbackArgs>
-		std::shared_ptr<T> createChild(CallbackArgs&&... args) {
-			auto child = std::make_shared<T>(std::forward<CallbackArgs>(args)...);
-			child->setRef(child);
+		T* createChild(CallbackArgs&&... args) {
+			auto elm = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
+			elm->setRoot(this->_root);
+			elm->setParent(this);
+			elm->initialize();
 
-			this->addChild(std::dynamic_pointer_cast<rawrbox::UIBase>(child));
-			return child;
+			auto& childn = this->getChildren();
+			if (elm->alwaysOnTop()) {
+				childn.insert(childn.begin(), std::move(elm));
+			} else {
+				childn.push_back(std::move(elm));
+			}
+
+			return dynamic_cast<T*>(this->getChildren().back().get());
 		}
 
-		std::vector<std::shared_ptr<UIBase>>& getChildren();
-		[[nodiscard]] const std::vector<std::shared_ptr<UIBase>>& getChildren() const;
-
-		virtual void addChild(std::shared_ptr<rawrbox::UIBase> elm);
-		virtual void setParent(std::shared_ptr<rawrbox::UIContainer> elm);
+		std::vector<std::unique_ptr<rawrbox::UIContainer>>& getChildren();
+		[[nodiscard]] const std::vector<std::unique_ptr<rawrbox::UIContainer>>& getChildren() const;
 
 		[[nodiscard]] virtual bool hasChildren() const;
 		[[nodiscard]] virtual bool hasParent() const;
+		[[nodiscard]] virtual rawrbox::UIContainer* getParent() const;
+		virtual void setParent(rawrbox::UIContainer* elm);
+		virtual void setRoot(rawrbox::UIRoot* elm);
 		// ----
 
 		// RENDERING -----
-		[[nodiscard]] virtual bool clipOverflow() const;
-		virtual void update();
+		virtual void beforeDraw(rawrbox::Stencil& stencil);
+		virtual void afterDraw(rawrbox::Stencil& stencil);
+		virtual void drawChildren(rawrbox::Stencil& stencil);
 		virtual void draw(rawrbox::Stencil& stencil);
+		[[nodiscard]] virtual bool clipOverflow() const;
 		// ----
+
+		// FOCUS HANDLING ------
+		[[nodiscard]] virtual bool lockKeyboard() const;
+		[[nodiscard]] virtual bool lockScroll() const;
+		[[nodiscard]] virtual bool hitTest(const rawrbox::Vector2f& point) const;
+		// --
+
+		// INPUTS ----
+		virtual void mouseDown(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods);
+		virtual void mouseUp(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods);
+		virtual void mouseScroll(const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset);
+		virtual void mouseMove(const rawrbox::Vector2i& mousePos);
+		virtual void key(uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods);
+		virtual void keyChar(uint32_t key);
+		// ---
+
+		virtual void update();
+		virtual void updateChildren();
 	};
 } // namespace rawrbox

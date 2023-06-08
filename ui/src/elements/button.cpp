@@ -5,12 +5,6 @@
 #include <rawrbox/utils/keys.hpp>
 
 namespace rawrbox {
-	UIButton::~UIButton() {
-		this->_texture = nullptr;
-		this->_overlay = nullptr;
-		this->_consola = nullptr;
-	}
-
 	void UIButton::initialize() {
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->get();
 	}
@@ -58,7 +52,7 @@ namespace rawrbox {
 	// ---------
 
 	void UIButton::setHovering(bool hover) {
-		rawrbox::UIBase::setHovering(hover);
+		rawrbox::UIContainer::setHovering(hover);
 		if (this->_tooltip.empty()) return;
 
 		/*auto& game = IasGame::getInstance();

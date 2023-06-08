@@ -2,11 +2,11 @@
 #pragma once
 #include <rawrbox/render/text/font.hpp>
 #include <rawrbox/render/texture/base.hpp>
-#include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/container.hpp>
 #include <rawrbox/utils/event.hpp>
 
 namespace rawrbox {
-	class UIProgressBar : public rawrbox::UIBase {
+	class UIProgressBar : public rawrbox::UIContainer {
 	protected:
 		// RESOURCES ---
 		rawrbox::TextureBase* _bg = nullptr;
@@ -23,8 +23,6 @@ namespace rawrbox {
 
 	public:
 		rawrbox::Event<float> onValueChange;
-
-		~UIProgressBar() override;
 
 		// UTILS ----
 		void initialize() override;

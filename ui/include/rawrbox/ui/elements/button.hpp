@@ -3,13 +3,13 @@
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/container.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <string>
 
 namespace rawrbox {
-	class UIButton : public rawrbox::UIBase {
+	class UIButton : public rawrbox::UIContainer {
 		rawrbox::Color _backgroundColor = rawrbox::Color::RGBHex(0x36393f);
 		rawrbox::Color _textColor = rawrbox::Color::RGBHex(0xf5f6fa);
 		rawrbox::Color _textureColor = rawrbox::Colors::White;
@@ -30,10 +30,6 @@ namespace rawrbox {
 
 	public:
 		rawrbox::Event<> onClick;
-
-		UIButton() = default;
-		~UIButton() override;
-
 		void initialize() override;
 
 		// UTILS -----

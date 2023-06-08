@@ -8,10 +8,6 @@
 #include <clip.h>
 
 namespace rawrbox {
-	UIInput::~UIInput() {
-		this->_font = nullptr;
-	}
-
 	// INTERNAL ---
 	void UIInput::genFill() {
 		this->_fillText = "";

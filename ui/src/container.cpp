@@ -1,9 +1,11 @@
 
 #include <rawrbox/render/stencil.hpp>
-#include <rawrbox/ui/base.hpp>
 #include <rawrbox/ui/container.hpp>
+#include <rawrbox/ui/root.hpp>
 
 namespace rawrbox {
+	UIContainer::UIContainer(rawrbox::UIContainer&& other) noexcept : _children(std::move(other._children)), _parent(other._parent), _alwaysOnTop(other._alwaysOnTop), _aabb(other._aabb) {}
+	void UIContainer::initialize() {}
 
 	// UTILS ---
 	const rawrbox::Vector2f UIContainer::getDrawOffset() const { return {}; };
@@ -15,6 +17,11 @@ namespace rawrbox {
 	const rawrbox::Vector2f UIContainer::getSize() const { return this->_aabb.size; }
 
 	void UIContainer::removeChildren() {
+		for (auto& c : this->_children) {
+			if (this->_root->focusedElement == c.get()) this->_root->focusedElement = nullptr;
+			if (this->_root->hoveredElement == c.get()) this->_root->hoveredElement = nullptr;
+		}
+
 		this->_children.clear();
 	}
 
@@ -22,72 +29,70 @@ namespace rawrbox {
 		this->removeChildren();
 
 		// Remove self from parent
-		if (!this->_parent.expired()) {
-			auto p = this->_parent.lock();
+		if (this->hasParent()) {
+			auto& parentChilds = this->_parent->getChildren();
+			parentChilds.erase(std::find_if(parentChilds.begin(), parentChilds.end(), [this](auto& c) {
+				return c.get() == this;
+			}));
 
-			auto& parentChilds = p->getChildren();
-			auto sharedPtr = this->getRef<UIBase>();
-			parentChilds.erase(std::find(parentChilds.begin(), parentChilds.end(), sharedPtr));
-
-			this->_parent.reset();
+			this->_parent = nullptr;
+		} else {
+			this->_root->removeChild(this);
 		}
 	}
-	// ---
 
-	// REFERENCE HANDLING --
-	void UIContainer::setRef(std::shared_ptr<UIContainer> ref) { this->_ref = ref; }
+	void UIContainer::setVisible(bool visible) { this->_visible = visible; }
+	const bool UIContainer::visible() const { return this->_visible; }
+
+	void UIContainer::setFocused(bool focused) { this->_focused = focused; }
+	const bool UIContainer::focused() const { return this->_focused; }
+
+	void UIContainer::setHovering(bool hovering) { this->_hovering = hovering; }
+	const bool UIContainer::hovering() const { return this->_hovering; }
+
+	const rawrbox::UIRoot* UIContainer::getRoot() const { return this->_root; }
+
+	const rawrbox::Vector2f UIContainer::getPosAbsolute() const {
+		if (!this->hasParent()) return this->getPos();
+
+		rawrbox::Vector2f ret;
+		auto parent = this->getParent();
+		while ((parent = parent->getParent()) != nullptr) {
+			ret += parent->getPos();
+		}
+
+		return ret + this->getPos();
+	}
 	// ---
 
 	// PARENTING ---
-	std::vector<std::shared_ptr<rawrbox::UIBase>>& UIContainer::getChildren() { return this->_children; }
-	const std::vector<std::shared_ptr<rawrbox::UIBase>>& UIContainer::getChildren() const { return this->_children; }
+	std::vector<std::unique_ptr<rawrbox::UIContainer>>& UIContainer::getChildren() { return this->_children; }
+	const std::vector<std::unique_ptr<rawrbox::UIContainer>>& UIContainer::getChildren() const { return this->_children; }
 
-	bool UIContainer::hasParent() const { return !this->_parent.expired(); }
+	bool UIContainer::hasParent() const { return this->_parent != nullptr; }
 	bool UIContainer::hasChildren() const { return !this->_children.empty(); }
-	void UIContainer::addChild(std::shared_ptr<rawrbox::UIBase> elm) {
-		elm->setParent(this->getRef<rawrbox::UIContainer>());
-		elm->initialize();
-	}
+	void UIContainer::setParent(rawrbox::UIContainer* elm) { this->_parent = elm; }
+	void UIContainer::setRoot(rawrbox::UIRoot* elm) { this->_root = elm; }
+	rawrbox::UIContainer* UIContainer::getParent() const { return this->_parent; }
+	// --------------
 
-	void UIContainer::setParent(std::shared_ptr<rawrbox::UIContainer> elm) {
-		auto sharedPtr = this->getRef<rawrbox::UIBase>();
+	// SORTING -----
+	const bool UIContainer::alwaysOnTop() const { return this->_alwaysOnTop; }
+	void UIContainer::bringToFront() {
+		auto& children = this->_parent->getChildren();
+		auto pivot = std::find_if(children.begin(), children.end(), [this](auto& el) -> bool {
+			return el.get() == this;
+		});
 
-		if (this->hasParent()) {
-			auto& childs = this->_parent.lock()->getChildren();
-			childs.erase(std::find(childs.begin(), childs.end(), sharedPtr));
-		}
-
-		this->_parent = elm;
-
-		auto& childn = elm->getChildren();
-		if (sharedPtr->alwaysOnTop()) {
-			childn.insert(childn.begin(), sharedPtr);
-		} else {
-			childn.push_back(sharedPtr);
-		}
+		if (pivot == children.end()) return; // Already in front
+		// TODO: CHECK IF TOP ONE IS ALWAYS TOP
+		std::rotate(pivot, pivot + 1, children.end());
 	}
 	// --------------
 
 	// RENDERING -----
-	bool UIContainer::clipOverflow() const { return !this->_children.empty(); }
-	void UIContainer::internalUpdate(std::shared_ptr<rawrbox::UIBase> elm) {
-		if (!elm->visible()) return;
-		elm->update();
-
-		auto elms = elm->getChildren();
-		for (auto& celm : elms) {
-			this->internalUpdate(celm);
-		}
-	}
-
-	void UIContainer::update() {
-		for (auto elm : this->_children) {
-			this->internalUpdate(elm);
-		}
-	}
-
-	void UIContainer::internalDraw(std::shared_ptr<rawrbox::UIBase> elm, rawrbox::Stencil& stencil) {
-		if (!elm->visible()) return;
+	void UIContainer::internalDraw(rawrbox::UIContainer* elm, rawrbox::Stencil& stencil) {
+		if (elm == nullptr || !elm->visible()) return;
 		bool canClip = elm->clipOverflow();
 
 		stencil.pushOffset(elm->getPos());
@@ -98,9 +103,9 @@ namespace rawrbox {
 
 		// Draw children of the element ---
 		stencil.pushOffset(elm->getDrawOffset());
-		auto elms = elm->getChildren();
+		auto& elms = elm->getChildren();
 		for (auto& celm : elms) {
-			this->internalDraw(celm, stencil);
+			this->internalDraw(celm.get(), stencil);
 		}
 		stencil.popOffset();
 		// -----------
@@ -111,10 +116,45 @@ namespace rawrbox {
 		stencil.popOffset();
 	}
 
-	void UIContainer::draw(rawrbox::Stencil& stencil) {
-		for (auto elm : this->_children) {
-			this->internalDraw(elm, stencil);
+	void UIContainer::beforeDraw(rawrbox::Stencil& stencil) {}
+	void UIContainer::afterDraw(rawrbox::Stencil& stencil) {}
+	void UIContainer::draw(rawrbox::Stencil& stencil) {}
+
+	void UIContainer::drawChildren(rawrbox::Stencil& stencil) {
+		this->internalDraw(this, stencil);
+	}
+
+	bool UIContainer::clipOverflow() const { return !this->_children.empty(); }
+	// ----
+
+	// FOCUS HANDLING ------
+	bool UIContainer::lockKeyboard() const { return false; }
+	bool UIContainer::lockScroll() const { return false; }
+	[[nodiscard]] bool UIContainer::hitTest(const rawrbox::Vector2f& point) const { return this->_aabb.contains(point); }
+	// --
+
+	// INPUTS ----
+	void UIContainer::mouseDown(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) {}
+	void UIContainer::mouseUp(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) {}
+	void UIContainer::mouseScroll(const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset) {}
+	void UIContainer::mouseMove(const rawrbox::Vector2i& mousePos) {}
+	void UIContainer::key(uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) {}
+	void UIContainer::keyChar(uint32_t key) {}
+	// ---
+
+	void UIContainer::updateChildren() {
+		this->internalUpdate(this);
+	}
+
+	void UIContainer::internalUpdate(rawrbox::UIContainer* elm) {
+		if (elm == nullptr || !elm->visible()) return;
+		elm->update();
+
+		auto& elms = elm->getChildren();
+		for (auto& celm : elms) {
+			this->internalUpdate(celm.get());
 		}
 	}
-	// ----
+
+	void UIContainer::update() {}
 } // namespace rawrbox

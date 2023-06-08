@@ -1,12 +1,12 @@
 
 #pragma once
 #include <rawrbox/render/texture/base.hpp>
-#include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/container.hpp>
 
 #include <filesystem>
 
 namespace rawrbox {
-	class UIImage : public rawrbox::UIBase {
+	class UIImage : public rawrbox::UIContainer {
 	protected:
 		rawrbox::TextureBase* _texture = nullptr;
 
@@ -14,9 +14,6 @@ namespace rawrbox {
 		bool _isAnimated = false;
 
 	public:
-		UIImage() = default;
-		~UIImage() override;
-
 		// UTILS ----
 		virtual void setTexture(rawrbox::TextureBase& texture);
 		virtual void setTexture(const std::filesystem::path& path);

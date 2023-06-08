@@ -5,12 +5,6 @@
 #include <rawrbox/ui/elements/progress_bar.hpp>
 
 namespace rawrbox {
-	UIProgressBar::~UIProgressBar() {
-		this->_overlay = nullptr;
-		this->_bg = nullptr;
-		this->_font = nullptr;
-	}
-
 	// UTILS ----
 	void UIProgressBar::initialize() {
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->get();

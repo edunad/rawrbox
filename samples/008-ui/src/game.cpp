@@ -21,7 +21,7 @@
 
 namespace ui_test {
 	void Game::setupGLFW() {
-		this->_window = std::make_shared<rawrbox::Window>();
+		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("UI TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
@@ -38,7 +38,7 @@ namespace ui_test {
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::GIFLoader>());
 
 		// SETUP UI
-		this->_ROOT_UI = rawrbox::UIRoot::create(this->_window);
+		this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*this->_window);
 		// ----
 
 		// Load content ---
@@ -68,7 +68,7 @@ namespace ui_test {
 
 	void Game::contentLoaded() {
 		// SETUP UI
-		this->_anim = std::make_shared<rawrbox::UIAnim<rawrbox::UIImage>>();
+		this->_anim = std::make_unique<rawrbox::UIAnim<rawrbox::UIImage>>();
 		this->_anim->setAnimation(rawrbox::RESOURCES::getFile<rawrbox::ResourceJSON>("./content/json/test.json")->json);
 
 		{
@@ -176,6 +176,9 @@ namespace ui_test {
 			frame->setTitle("graphss");
 			frame->setSize({400, 200});
 			frame->setPos({100, 200});
+			frame->onClose += [this]() {
+				this->_graph = nullptr;
+			};
 
 			this->_graph = frame->createChild<rawrbox::UIGraph>();
 			this->_graph->setPos({10, 10});
@@ -193,9 +196,10 @@ namespace ui_test {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
-		this->_anim.reset();
+		this->_anim->reset();
+		this->_graph = nullptr;
+
 		this->_ROOT_UI.reset();
-		this->_graph.reset();
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();

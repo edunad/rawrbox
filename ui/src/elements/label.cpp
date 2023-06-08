@@ -5,10 +5,6 @@
 #include <rawrbox/ui/elements/label.hpp>
 
 namespace rawrbox {
-	UILabel::~UILabel() {
-		this->_font = nullptr;
-	}
-
 	// FOCUS HANDLE ---
 	bool UILabel::hitTest(const rawrbox::Vector2f& point) const { return false; }
 	// -----

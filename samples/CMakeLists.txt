@@ -21,10 +21,10 @@ endif()
 
 add_subdirectory("007-particle-system")
 
-#if(RAWRBOX_BUILD_UI)
-#    add_subdirectory("008-ui")
-#endif()
-#
+if(RAWRBOX_BUILD_UI)
+    add_subdirectory("008-ui")
+endif()
+
 #if(RAWRBOX_BUILD_PHYSICS)
 #    add_subdirectory("009-physics")
 #endif()
