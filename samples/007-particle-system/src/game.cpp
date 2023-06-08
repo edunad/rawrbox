@@ -1,5 +1,5 @@
 
-#include <rawrbox/debug/gizmos.hpp>
+#include <rawrbox/render/gizmos.hpp>
 #include <rawrbox/render/particles/emitter.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
@@ -60,10 +60,6 @@ namespace particle_test {
 		}
 
 		this->_window->upload();
-
-		// DEBUG ---
-		rawrbox::GIZMOS::upload();
-		// -----------
 	}
 
 	void Game::contentLoaded() {

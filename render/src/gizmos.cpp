@@ -1,25 +1,63 @@
 
-#include <rawrbox/debug/gizmos.hpp>
-#include <rawrbox/render/model/light/base.hpp>
-#include <rawrbox/render/particles/emitter.hpp>
-
-#if RAWRBOX_BASS
-	#include <rawrbox/bass/sound/instance.hpp>
-#endif
-
-#include <memory>
-#include <stdexcept>
+#include <rawrbox/render/gizmos.hpp>
+#include <rawrbox/utils/string.hpp>
 
 namespace rawrbox {
-	std::unique_ptr<rawrbox::Sprite<>> GIZMOS::_gizmo_lights = std::make_unique<rawrbox::Sprite<>>();
-	std::unique_ptr<rawrbox::Sprite<>> GIZMOS::_gizmo_sounds = std::make_unique<rawrbox::Sprite<>>();
+
+	std::unique_ptr<rawrbox::Sprite<>> GIZMOS::_gizmos = std::make_unique<rawrbox::Sprite<>>();
+	std::unordered_map<std::string, std::unique_ptr<rawrbox::TextureImage>> GIZMOS::_textures = {};
+	uint32_t GIZMOS::_ID = 0;
+
+	// UTILS ----
+	uint32_t GIZMOS::addGizmo(const std::string& type, const rawrbox::Vector3f& pos) {
+		auto id = ++_ID;
+
+		auto mesh = _gizmos->generatePlane({}, {0.25F, 0.25F});
+		mesh.setPos(pos);
+		mesh.setName(fmt::format("GIZMO-{}", ++_ID));
+
+		auto upperType = rawrbox::StrUtils::toUpper(type);
+		auto tex = _textures.find(upperType);
+		if (tex == _textures.end()) {
+			_textures[upperType] = std::make_unique<rawrbox::TextureImage>(fmt::format("./content/textures/gizmos/{}.png", upperType));
+			_textures[upperType]->upload();
+			mesh.setTexture(_textures[upperType].get());
+		} else {
+			mesh.setTexture((*tex).second.get());
+		}
+
+		_gizmos->addMesh(mesh);
+		if (!_gizmos->isUploaded()) _gizmos->upload(true); // Dynamic
+
+		return id;
+	}
+
+	void GIZMOS::removeGizmo(uint32_t id) {
+		_gizmos->removeMeshByName(fmt::format("GIZMO-{}", id));
+	}
+
+	void GIZMOS::updateGizmo(uint32_t id, const rawrbox::Vector3f& pos) {
+		_gizmos->getMeshByName(fmt::format("GIZMO-{}", id));
+	}
+
+	void GIZMOS::shutdown() {
+		_gizmos.reset();
+		_textures.clear();
+	}
+
+	void GIZMOS::draw() {
+		if (!rawrbox::BGFX_INITIALIZED) return;
+		if (_gizmos != nullptr && _gizmos->totalMeshes() > 0) _gizmos->draw({});
+	}
+	// ------
+
+	/*std::unique_ptr<rawrbox::Sprite<>> GIZMOS::_gizmo_lights = std::make_unique<rawrbox::Sprite<>>();
 	std::unique_ptr<rawrbox::Sprite<>> GIZMOS::_gizmo_emitters = std::make_unique<rawrbox::Sprite<>>();
 
 	std::unordered_map<std::string, std::unique_ptr<rawrbox::TextureImage>> GIZMOS::_textures = {};
 
 	void GIZMOS::shutdown() {
 		_gizmo_lights.reset();
-		_gizmo_sounds.reset();
 		_gizmo_emitters.reset();
 
 		_textures.clear();
@@ -30,12 +68,9 @@ namespace rawrbox {
 		if (!_textures.empty()) throw std::runtime_error(fmt::format("[RawrBox-Debug] GIZMOS already initialized!"));
 
 		// Lights
-		_textures["light_point"] = std::make_unique<rawrbox::TextureImage>("./content/textures/debug/gizmo_lights/point.png");
+		_textures["light_point"] = std::make_unique<rawrbox::TextureImage>("./content/textures/gizmos/light_point.png");
 		_textures["light_dir"] = std::make_unique<rawrbox::TextureImage>("./content/textures/debug/gizmo_lights/dir.png");
 		_textures["light_spot"] = std::make_unique<rawrbox::TextureImage>("./content/textures/debug/gizmo_lights/spot.png");
-
-		// Sound
-		_textures["sound_emitter"] = std::make_unique<rawrbox::TextureImage>("./content/textures/debug/gizmo_sounds/emitter.png");
 
 		// Particle
 		_textures["particle_emitter"] = std::make_unique<rawrbox::TextureImage>("./content/textures/debug/gizmo_emitter/emitter.png");
@@ -45,7 +80,6 @@ namespace rawrbox {
 		}
 
 		_gizmo_lights->upload(true);   // Dynamic
-		_gizmo_sounds->upload(true);   // Dynamic
 		_gizmo_emitters->upload(true); // Dynamic
 	}
 
@@ -158,5 +192,5 @@ namespace rawrbox {
 		if (_gizmo_lights != nullptr && _gizmo_lights->totalMeshes() > 0) _gizmo_lights->draw({});
 		if (_gizmo_sounds != nullptr && _gizmo_sounds->totalMeshes() > 0) _gizmo_sounds->draw({});
 		if (_gizmo_emitters != nullptr && _gizmo_emitters->totalMeshes() > 0) _gizmo_emitters->draw({});
-	}
+	}*/
 } // namespace rawrbox

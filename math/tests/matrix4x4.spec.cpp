@@ -1,4 +1,5 @@
 #include <rawrbox/math/matrix4x4.hpp>
+#include <rawrbox/math/utils/math.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
@@ -99,7 +100,7 @@ TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 
 	SECTION("rawrbox::Matrix4x4::rotateX") {
 		rawrbox::Matrix4x4 q = {};
-		q.rotateX(bx::toRad(45));
+		q.rotateX(rawrbox::MathUtils::toRad(45));
 
 		REQUIRE_THAT(q[5], Catch::Matchers::WithinAbs(0.70711F, 0.0001F));
 		REQUIRE_THAT(q[6], Catch::Matchers::WithinAbs(-0.70711F, 0.0001F));
@@ -109,7 +110,7 @@ TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 
 	SECTION("rawrbox::Matrix4x4::rotateY") {
 		rawrbox::Matrix4x4 q = {};
-		q.rotateY(bx::toRad(45));
+		q.rotateY(rawrbox::MathUtils::toRad(45));
 
 		REQUIRE_THAT(q[0], Catch::Matchers::WithinAbs(0.70711F, 0.0001F));
 		REQUIRE_THAT(q[2], Catch::Matchers::WithinAbs(0.70711F, 0.0001F));
@@ -119,7 +120,7 @@ TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 
 	SECTION("rawrbox::Matrix4x4::rotateZ") {
 		rawrbox::Matrix4x4 q = {};
-		q.rotateZ(bx::toRad(45));
+		q.rotateZ(rawrbox::MathUtils::toRad(45));
 
 		REQUIRE_THAT(q[0], Catch::Matchers::WithinAbs(0.70711F, 0.0001F));
 		REQUIRE_THAT(q[1], Catch::Matchers::WithinAbs(-0.70711F, 0.0001F));

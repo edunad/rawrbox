@@ -20,12 +20,6 @@ if(RAWRBOX_BUILD_TESTING)
     set_lib_runtime_mt(Catch2)
     set_lib_runtime_mt(Catch2WithMain)
 
-    if(RAWRBOX_BUILD_DEBUG)
-        if(NOT output_target MATCHES "RAWRBOX.DEBUG")
-            list(APPEND RAWRBOX_EXTRA_TEST_LIBS RAWRBOX.DEBUG)
-        endif()
-    endif()
-
     include(CTest)
     include(Catch)
 endif()

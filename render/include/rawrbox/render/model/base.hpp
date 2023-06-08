@@ -519,6 +519,14 @@ namespace rawrbox {
 			return bgfx::isValid(this->_ibh) && bgfx::isValid(this->_vbh);
 		}
 
+		virtual void removeMeshByName(const std::string& id) {
+			auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&id](auto& mesh) { return mesh->getName() == id; });
+			if (fnd == this->_meshes.end()) return;
+
+			this->_meshes.erase(fnd);
+			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
+		}
+
 		virtual void removeMesh(size_t index) {
 			if (index >= this->_meshes.size()) return;
 			this->_meshes.erase(this->_meshes.begin() + index);
@@ -536,9 +544,20 @@ namespace rawrbox {
 			}
 		}
 
+		virtual rawrbox::Mesh<typename M::vertexBufferType>* getMeshByName(const std::string& id) {
+			auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&id](auto& mesh) { return mesh->getName() == id; });
+			if (fnd == this->_meshes.end()) return nullptr;
+
+			return (*fnd).get();
+		}
+
 		virtual rawrbox::Mesh<typename M::vertexBufferType>& getMesh(size_t id = 0) {
-			if (id >= this->_meshes.size()) throw std::runtime_error(fmt::format("[RawrBox-ModelBase] Mesh {} does not exist", id));
+			if (!this->hasMesh(id)) throw std::runtime_error(fmt::format("[RawrBox-ModelBase] Mesh {} does not exist", id));
 			return *this->_meshes[id];
+		}
+
+		virtual bool hasMesh(size_t id) {
+			return id < this->_meshes.size();
 		}
 
 		virtual void setCulling(uint64_t cull, int id = -1) {

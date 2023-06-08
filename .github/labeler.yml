@@ -13,9 +13,6 @@
 '🐲 SAMPLES':
     - 'samples/**/*'
 
-'🪛 DEBUG':
-    - 'debug/**/*'
-
 '🧱 PHYSICS':
     - 'physics/**/*'
 
