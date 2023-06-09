@@ -30,11 +30,11 @@ namespace rawrbox {
 		std::vector<rawrbox::LightBase> lights = {};
 
 		// ANIMATIONS ----
-		virtual void animate(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
+		void animate(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
 			// VERTEX ANIMATION ----
 			for (auto& anim : this->_animatedMeshes) {
-				if (anim.second.expired()) continue;
-				this->readAnims(anim.second.lock()->offsetMatrix, anim.first);
+				if (anim.second == nullptr) continue;
+				this->readAnims(anim.second->offsetMatrix, anim.first);
 			}
 			// ------------
 
@@ -43,10 +43,9 @@ namespace rawrbox {
 				std::vector<rawrbox::Matrix4x4> boneTransforms = {};
 				boneTransforms.resize(rawrbox::MAX_BONES_PER_MODEL);
 
-				if (!mesh->skeleton.expired()) {
-					auto skl = mesh->skeleton.lock();
+				if (mesh.skeleton != nullptr) {
 					auto calcs = std::unordered_map<uint8_t, rawrbox::Matrix4x4>();
-					this->animateBones(calcs, skl, skl->rootBone, {});
+					this->animateBones(calcs, *mesh.skeleton, *mesh.skeleton->rootBone, {});
 
 					for (size_t i = 0; i < calcs.size(); i++) {
 						boneTransforms[i] = calcs[static_cast<uint8_t>(i)];
@@ -58,25 +57,23 @@ namespace rawrbox {
 			// -----
 		}
 
-		virtual void animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, std::shared_ptr<Skeleton> skeleton, std::shared_ptr<Bone> parentBone, const rawrbox::Matrix4x4& parentTransform) {
-			if (skeleton == nullptr) return;
-
-			auto nodeTransform = parentBone->transformationMtx;
-			this->readAnims(nodeTransform, parentBone->name);
+		void animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, const rawrbox::Skeleton& skeleton, const rawrbox::Bone& parentBone, const rawrbox::Matrix4x4& parentTransform) const {
+			auto nodeTransform = parentBone.transformationMtx;
+			this->readAnims(nodeTransform, parentBone.name);
 
 			// store the result of our parent bone and our current node
 			rawrbox::Matrix4x4 globalTransformation = parentTransform * nodeTransform;
-			auto fnd = skeleton->boneMap.find(parentBone->name);
-			if (fnd != skeleton->boneMap.end()) {
-				calcs[fnd->second->boneId] = skeleton->invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
+			auto fnd = skeleton.boneMap.find(parentBone.name);
+			if (fnd != skeleton.boneMap.end()) {
+				calcs[fnd->second->boneId] = skeleton.invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
 			}
 
-			for (auto child : parentBone->children) {
-				this->animateBones(calcs, skeleton, child, globalTransformation);
+			for (auto& child : parentBone.children) {
+				this->animateBones(calcs, skeleton, *child, globalTransformation);
 			}
 		}
 
-		virtual void readAnims(rawrbox::Matrix4x4& nodeTransform, const std::string& nodeName) {
+		void readAnims(rawrbox::Matrix4x4& nodeTransform, const std::string& nodeName) const {
 			for (auto& anim : this->_playingAnimations) {
 				auto animChannel = std::find_if(anim.data->frames.begin(), anim.data->frames.end(), [&](AnimationFrame& x) {
 					return x.nodeName == nodeName;
@@ -140,7 +137,7 @@ namespace rawrbox {
 			}
 		}
 
-		virtual void preDraw() {
+		void preDraw() {
 			for (auto& anim : this->_playingAnimations) {
 				float timeToAdd = rawrbox::DELTA_TIME * anim.speed;
 				float time = anim.time + timeToAdd;
@@ -152,7 +149,7 @@ namespace rawrbox {
 			}
 		}
 
-		virtual void postDraw() {
+		void postDraw() {
 			for (auto it2 = this->_playingAnimations.begin(); it2 != this->_playingAnimations.end();) {
 				if ((*it2).time >= (*it2).data->duration && !(*it2).loop) {
 					it2 = this->_playingAnimations.erase(it2);
@@ -166,7 +163,7 @@ namespace rawrbox {
 		void updateLights() {
 
 			// Update lights ---
-			for (auto mesh : this->meshes()) {
+			for (auto& mesh : this->meshes()) {
 				rawrbox::Vector3f meshPos = {mesh->offsetMatrix[12], mesh->offsetMatrix[13], mesh->offsetMatrix[14]};
 				auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle());
 
@@ -181,11 +178,11 @@ namespace rawrbox {
 		using ModelBase<M>::ModelBase;
 
 		// Animations ----
-		virtual bool blendAnimation(const std::string& otherAnim, float blend) {
+		bool blendAnimation(const std::string& otherAnim, float blend) {
 			throw std::runtime_error("TODO");
 		}
 
-		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F) {
+		bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F) {
 			auto iter = this->_animations.find(name);
 			if (iter == this->_animations.end()) throw std::runtime_error(fmt::format("[RawrBox-Model] Animation {} not found!", name));
 
@@ -212,17 +209,19 @@ namespace rawrbox {
 		// --------------
 		// LIGHTS ------
 		virtual void addLight(std::shared_ptr<rawrbox::LightBase> light, const std::string& parentMesh = "") {
-			auto parent = this->_meshes.back();
+			auto parent = this->_meshes.back().get();
+
 			if (!parentMesh.empty()) {
-				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> msh) {
+				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
 					return msh->getName() == parentMesh;
 				});
 
-				if (fnd != this->_meshes.end()) parent = *fnd;
+				if (fnd != this->_meshes.end()) parent = fnd->get();
 			}
 
 			light->setOffsetPos(parent->getPos() + this->getPos());
 			parent->lights.push_back(light);
+
 			rawrbox::LIGHTS::addLight(light);
 		}
 		// -----
@@ -251,11 +250,11 @@ namespace rawrbox {
 			ModelBase<M>::draw(camPos);
 
 			this->preDraw();
-			for (auto mesh : this->_meshes) {
-				this->_material->process(mesh);
+			for (auto& mesh : this->_meshes) {
+				this->_material->process(*mesh);
 
 				// Process animations ---
-				this->animate(mesh);
+				this->animate(*mesh);
 				// ---
 
 				if (this->isDynamicBuffer()) {

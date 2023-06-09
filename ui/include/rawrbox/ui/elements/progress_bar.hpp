@@ -2,17 +2,17 @@
 #pragma once
 #include <rawrbox/render/text/font.hpp>
 #include <rawrbox/render/texture/base.hpp>
-#include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/container.hpp>
 #include <rawrbox/utils/event.hpp>
 
 namespace rawrbox {
-	class UIProgressBar : public rawrbox::UIBase {
+	class UIProgressBar : public rawrbox::UIContainer {
 	protected:
 		// RESOURCES ---
-		std::shared_ptr<rawrbox::TextureBase> _bg = nullptr;
-		std::shared_ptr<rawrbox::TextureBase> _overlay = nullptr;
+		rawrbox::TextureBase* _bg = nullptr;
+		rawrbox::TextureBase* _overlay = nullptr;
 
-		std::weak_ptr<rawrbox::Font> _font_11;
+		rawrbox::Font* _font = nullptr;
 		// -----------------
 
 		rawrbox::Vector2f _labelSize = {};
@@ -23,8 +23,6 @@ namespace rawrbox {
 
 	public:
 		rawrbox::Event<float> onValueChange;
-
-		~UIProgressBar() override;
 
 		// UTILS ----
 		void initialize() override;

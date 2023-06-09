@@ -3,13 +3,13 @@
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/container.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <string>
 
 namespace rawrbox {
-	class UIButton : public rawrbox::UIBase {
+	class UIButton : public rawrbox::UIContainer {
 		rawrbox::Color _backgroundColor = rawrbox::Color::RGBHex(0x36393f);
 		rawrbox::Color _textColor = rawrbox::Color::RGBHex(0xf5f6fa);
 		rawrbox::Color _textureColor = rawrbox::Colors::White;
@@ -23,17 +23,13 @@ namespace rawrbox {
 		std::string _tooltip = "";
 
 		// RESOURCES ---
-		std::shared_ptr<rawrbox::TextureBase> _texture = nullptr;
-		std::shared_ptr<rawrbox::TextureImage> _overlay = nullptr;
-		std::weak_ptr<rawrbox::Font> _consola;
+		rawrbox::TextureBase* _texture = nullptr;
+		rawrbox::TextureImage* _overlay = nullptr;
+		rawrbox::Font* _consola = nullptr;
 		// -----------------
 
 	public:
 		rawrbox::Event<> onClick;
-
-		UIButton() = default;
-		~UIButton() override;
-
 		void initialize() override;
 
 		// UTILS -----
@@ -53,7 +49,7 @@ namespace rawrbox {
 		void setTooltip(const std::string& text);
 		[[nodiscard]] const std::string& getTooltip() const;
 
-		void setTexture(std::shared_ptr<rawrbox::TextureBase>& texture);
+		void setTexture(rawrbox::TextureBase& texture);
 		void setTexture(const std::string& path);
 
 		void setEnabled(bool enabled);

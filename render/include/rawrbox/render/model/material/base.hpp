@@ -19,7 +19,7 @@ namespace rawrbox {
 		bgfx::UniformHandle u_colorOffset = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle u_mesh_pos = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle u_billboard = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle u_data = BGFX_INVALID_HANDLE;
 
 		using vertexBufferType = rawrbox::VertexData;
 
@@ -38,24 +38,24 @@ namespace rawrbox {
 		virtual void preProcess(const rawrbox::Vector3f& camPos);
 
 		template <typename T>
-		void process(std::shared_ptr<rawrbox::Mesh<T>> mesh) {
-			if (mesh->texture != nullptr && mesh->texture->valid() && !mesh->wireframe) {
-				bgfx::setTexture(0, s_texColor, mesh->texture->getHandle());
+		void process(const rawrbox::Mesh<T>& mesh) {
+			if (mesh.texture != nullptr && mesh.texture->valid() && !mesh.wireframe) {
+				bgfx::setTexture(0, s_texColor, mesh.texture->getHandle());
 			} else {
 				bgfx::setTexture(0, s_texColor, rawrbox::WHITE_TEXTURE->getHandle());
 			}
 
-			bgfx::setUniform(u_colorOffset, mesh->color.data().data());
+			bgfx::setUniform(u_colorOffset, mesh.color.data().data());
 
 			std::array<float, 1> billboard = {0.F};
-			if (mesh->hasData("billboard_mode")) {
-				billboard[0] = mesh->getData("billboard_mode").x;
+			if (mesh.hasData("billboard_mode")) {
+				billboard[0] = mesh.getData("billboard_mode").x;
 
-				std::array offset = {mesh->vertexPos[12], mesh->vertexPos[13], mesh->vertexPos[14]};
+				std::array offset = {mesh.vertexPos[12], mesh.vertexPos[13], mesh.vertexPos[14]};
 				bgfx::setUniform(u_mesh_pos, offset.data());
 			}
 
-			bgfx::setUniform(u_billboard, billboard.data());
+			bgfx::setUniform(u_data, billboard.data());
 		}
 
 		virtual void process(const bgfx::TextureHandle& texture);

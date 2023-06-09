@@ -12,17 +12,13 @@ namespace rawrbox {
 	struct Skeleton {
 		uint8_t boneIndex = 0;
 
-		std::string name;
-		std::shared_ptr<rawrbox::Bone> rootBone;
+		std::string name = "Armature";
+		std::unique_ptr<rawrbox::Bone> rootBone = nullptr;
 
-		std::unordered_map<std::string, std::shared_ptr<rawrbox::Bone>> boneMap = {}; // Map for quick lookup
+		std::unordered_map<std::string, rawrbox::Bone*> boneMap = {}; // Map for quick lookup
 		rawrbox::Matrix4x4 invTransformationMtx = {};
 
 		explicit Skeleton(std::string _name) : name(std::move(_name)) {}
-		~Skeleton() {
-			this->rootBone.reset();
-			this->boneMap.clear();
-		}
 	};
 
 	struct Bone {
@@ -35,18 +31,10 @@ namespace rawrbox {
 		// ----
 
 		// Lookup ----
-		std::weak_ptr<rawrbox::Skeleton> owner;
-		std::weak_ptr<rawrbox::Bone> parent;
+		rawrbox::Skeleton* owner = nullptr;
+		rawrbox::Bone* parent = nullptr;
 
-		std::vector<std::shared_ptr<rawrbox::Bone>> children = {};
+		std::vector<std::unique_ptr<rawrbox::Bone>> children = {};
 		// ----
-
-		explicit Bone(std::string _name) : name(std::move(_name)) {}
-		~Bone() {
-			this->parent.reset();
-			this->owner.reset();
-
-			this->children.clear();
-		}
 	};
 } // namespace rawrbox

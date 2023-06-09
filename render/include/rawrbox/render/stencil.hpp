@@ -145,37 +145,37 @@ namespace rawrbox {
 
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 
-		std::shared_ptr<rawrbox::TextureFlat> _pixelTexture;
-		rawrbox::Vector2i _windowSize;
+		std::unique_ptr<rawrbox::TextureFlat> _pixelTexture = nullptr;
+		rawrbox::Vector2i _windowSize = {};
 
 		// Offset handling ----
-		rawrbox::Vector2f _offset;
-		rawrbox::Vector2f _oldOffset;
-		std::vector<rawrbox::Vector2f> _offsets;
+		rawrbox::Vector2f _offset = {};
+		rawrbox::Vector2f _oldOffset = {};
+		std::vector<rawrbox::Vector2f> _offsets = {};
 		// ----------
 
 		// Clip handling ----
-		std::vector<uint32_t> _clips;
+		std::vector<uint32_t> _clips = {};
 		// ----------
 
 		// Outline handling ----
-		std::vector<StencilOutline> _outlines; // thickness, stipple
-		StencilOutline _outline;
+		std::vector<StencilOutline> _outlines = {}; // thickness, stipple
+		StencilOutline _outline = {};
 		// ----------
 
 		// Rotation handling ----
-		std::vector<StencilRotation> _rotations;
-		StencilRotation _rotation;
+		std::vector<StencilRotation> _rotations = {};
+		StencilRotation _rotation = {};
 		// ----------
 
 		// Scale handling ----
-		std::vector<rawrbox::Vector2f> _scales;
-		rawrbox::Vector2f _scale;
+		std::vector<rawrbox::Vector2f> _scales = {};
+		rawrbox::Vector2f _scale = {};
 		// ----------
 
 		// Drawing -----
 		rawrbox::StencilDraw _currentDraw = {};
-		std::vector<rawrbox::StencilDraw> _drawCalls;
+		std::vector<rawrbox::StencilDraw> _drawCalls = {};
 		// ----------
 
 		// ------ UTILS
@@ -209,10 +209,10 @@ namespace rawrbox {
 		virtual void drawPolygon(rawrbox::Polygon poly);
 		virtual void drawTriangle(const rawrbox::Vector2f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector2f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector2f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC);
 		virtual void drawBox(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White);
-		virtual void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, std::shared_ptr<rawrbox::TextureBase> tex, const rawrbox::Color& col = rawrbox::Colors::White, const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1});
+		virtual void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col = rawrbox::Colors::White, const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1});
 		virtual void drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White, size_t roundness = 32, float angleStart = 0.F, float angleEnd = 360.F);
 		virtual void drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const rawrbox::Color& col = rawrbox::Colors::White);
-		virtual void drawText(std::shared_ptr<rawrbox::Font> font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
+		virtual void drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
 		// --------------------
 
 		// ------ RENDERING

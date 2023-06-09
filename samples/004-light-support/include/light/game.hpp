@@ -12,14 +12,13 @@
 
 namespace light {
 	class Game : public rawrbox::Engine {
-		std::shared_ptr<rawrbox::Window> _window = nullptr;
-		std::shared_ptr<rawrbox::CameraOrbital> _camera = nullptr;
-		std::unique_ptr<rawrbox::TextEngine> _textEngine = nullptr;
+		std::unique_ptr<rawrbox::Window> _window = nullptr;
+		std::unique_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 
-		std::shared_ptr<rawrbox::AssimpModel<rawrbox::MaterialLit>> _model = std::make_shared<rawrbox::AssimpModel<rawrbox::MaterialLit>>();
-		std::shared_ptr<rawrbox::Text3D> _text = std::make_shared<rawrbox::Text3D>();
+		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialLit>> _model = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialLit>>();
+		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 
-		std::weak_ptr<rawrbox::Font> _font;
+		rawrbox::Font* _font = nullptr;
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;

@@ -17,7 +17,7 @@ namespace rawrbox {
 		static rawrbox::Vector3f _oldLocation;
 
 	public:
-		static std::unordered_map<std::string, std::shared_ptr<rawrbox::SoundBase>> sounds; // Keep alive the sounds
+		static std::unordered_map<std::string, std::unique_ptr<rawrbox::SoundBase>> sounds; // Keep alive the sounds
 
 		static rawrbox::EventNamed<std::pair<uint32_t, double>> onBEAT;
 		static rawrbox::EventNamed<std::pair<uint32_t, float>> onBPM;
@@ -26,8 +26,8 @@ namespace rawrbox {
 		static void initialize();
 		static void shutdown();
 
-		static std::shared_ptr<rawrbox::SoundBase> loadSound(const std::filesystem::path& path, uint32_t flags = SoundFlags::NONE);
-		static std::shared_ptr<rawrbox::SoundBase> loadHTTPSound(const std::string& url, uint32_t flags = SoundFlags::NONE);
+		static rawrbox::SoundBase* loadSound(const std::filesystem::path& path, uint32_t flags = SoundFlags::NONE);
+		static rawrbox::SoundBase* loadHTTPSound(const std::string& url, uint32_t flags = SoundFlags::NONE);
 
 		// UTILS -----
 		static float getMasterVolume();

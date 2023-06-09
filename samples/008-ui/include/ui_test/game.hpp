@@ -11,11 +11,11 @@
 
 namespace ui_test {
 	class Game : public rawrbox::Engine {
-		std::shared_ptr<rawrbox::Window> _window = nullptr;
-		std::shared_ptr<rawrbox::UIRoot> _ROOT_UI = nullptr;
+		std::unique_ptr<rawrbox::Window> _window = nullptr;
+		std::unique_ptr<rawrbox::UIRoot> _ROOT_UI = nullptr;
 
-		std::shared_ptr<rawrbox::UIAnim<rawrbox::UIImage>> _anim = nullptr;
-		std::shared_ptr<rawrbox::UIGraph> _graph = nullptr;
+		std::unique_ptr<rawrbox::UIAnim<rawrbox::UIImage>> _anim = nullptr;
+		rawrbox::UIGraph* _graph = nullptr;
 
 		bool _ready = false;
 		std::atomic<int> _loadingFiles = 0;

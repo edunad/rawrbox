@@ -1,4 +1,4 @@
-#include <rawrbox/debug/gizmos.hpp>
+#include <rawrbox/render/gizmos.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
 #include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/font.hpp>
@@ -16,7 +16,7 @@
 namespace assimp {
 
 	void Game::setupGLFW() {
-		this->_window = std::make_shared<rawrbox::Window>();
+		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("ASSIMP TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
@@ -29,7 +29,7 @@ namespace assimp {
 		this->_window->initializeBGFX();
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window);
+		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
@@ -62,39 +62,35 @@ namespace assimp {
 		}
 
 		this->_window->upload();
-
-		// DEBUG ---
-		rawrbox::GIZMOS::upload();
-		// -----------
 	}
 
 	void Game::contentLoaded() {
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 
 		// Assimp test ---
-		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx");
+		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx")->get();
 
-		this->_model->load(mdl->model);
+		this->_model->load(*mdl);
 		this->_model->setPos({7, 1.1F, 0.F});
 
-		this->_model2->load(mdl->model);
+		this->_model2->load(*mdl);
 		this->_model2->setPos({-6, 1.1F, 0.F});
 
 		// ANIMATIONS ---
-		auto mdl2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/wolf/wolfman_animated.fbx");
-		this->_model3->load(mdl2->model);
+		auto mdl2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/wolf/wolfman_animated.fbx")->get();
+		this->_model3->load(*mdl2);
 		this->_model3->playAnimation("Scene", true, 1.F);
 		this->_model3->setPos({0, 0, 0});
 
-		auto mdl3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/multiple_skeleton/twocubestest.gltf");
-		this->_model4->load(mdl3->model);
+		auto mdl3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/multiple_skeleton/twocubestest.gltf")->get();
+		this->_model4->load(*mdl3);
 		this->_model4->playAnimation("MewAction", true, 0.8F);
 		this->_model4->playAnimation("MewAction.001", true, 0.5F);
 		this->_model4->setPos({0, 0, 2.5F});
 		this->_model4->setScale({0.25F, 0.25F, 0.25F});
 
-		auto mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/grandma_tv/scene.gltf");
-		this->_model5->load(mdl4->model);
+		auto mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/grandma_tv/scene.gltf")->get();
+		this->_model5->load(*mdl4);
 		this->_model5->playAnimation("Scene", true, 1.F);
 		this->_model5->setPos({0, 0, -3.5F});
 		this->_model5->setScale({0.35F, 0.35F, 0.35F});
@@ -104,12 +100,11 @@ namespace assimp {
 
 		// Text test ----
 		{
-			auto f = this->_font.lock();
-			this->_text->addText(f, "TEXTURES + LIGHT", {-6.F, 3.0F, 0});
-			this->_text->addText(f, "TEXTURES", {6.F, 3.0F, 0});
-			this->_text->addText(f, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
-			this->_text->addText(f, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.F, 2.5F});
-			this->_text->addText(f, "VERTEX ANIMATIONS", {0.F, 1.8F, -3.5F});
+			this->_text->addText(*this->_font, "TEXTURES + LIGHT", {-6.F, 3.0F, 0});
+			this->_text->addText(*this->_font, "TEXTURES", {6.F, 3.0F, 0});
+			this->_text->addText(*this->_font, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
+			this->_text->addText(*this->_font, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.F, 2.5F});
+			this->_text->addText(*this->_font, "VERTEX ANIMATIONS", {0.F, 1.8F, -3.5F});
 			this->_text->upload();
 		}
 		// ------

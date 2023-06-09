@@ -46,7 +46,7 @@ namespace rawrbox {
 	}
 
 	// Post utils ----
-	void PostProcessManager::add(std::shared_ptr<rawrbox::PostProcessBase> post) {
+	void PostProcessManager::add(std::unique_ptr<rawrbox::PostProcessBase> post) {
 		this->_postProcesses.push_back(std::move(post));
 		this->buildPRViews();
 	}
@@ -57,9 +57,9 @@ namespace rawrbox {
 		this->buildPRViews();
 	}
 
-	std::shared_ptr<rawrbox::PostProcessBase> PostProcessManager::get(size_t indx) {
+	rawrbox::PostProcessBase& PostProcessManager::get(size_t indx) const {
 		if (indx >= this->_postProcesses.size()) throw std::runtime_error(fmt::format("[RawrBox-PostProcess] Failed to get {}!", indx));
-		return this->_postProcesses[indx];
+		return *this->_postProcesses[indx];
 	}
 
 	size_t PostProcessManager::count() {
@@ -111,10 +111,10 @@ namespace rawrbox {
 	void PostProcessManager::upload() {
 		if (this->_render != nullptr) throw std::runtime_error("[RawrBox-PostProcess] Already uploaded");
 
-		this->_render = std::make_shared<rawrbox::TextureRender>(this->_windowSize);
+		this->_render = std::make_unique<rawrbox::TextureRender>(this->_windowSize);
 		this->_render->upload();
 
-		for (auto effect : this->_postProcesses) {
+		for (auto& effect : this->_postProcesses) {
 			effect->upload();
 		}
 

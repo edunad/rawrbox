@@ -12,7 +12,7 @@
 #include <array>
 
 namespace rawrbox {
-
+	// NOLINTBEGIN(*)
 	struct VertexData {
 		std::array<float, 3> position = {0, 0, 0};
 		std::array<float, 2> uv = {0, 0};
@@ -178,7 +178,8 @@ namespace rawrbox {
 				}
 			}
 		}
-		// ----
+		//  ----
+		// NOLINTEND(*)
 	};
 
 	// UTILS ---

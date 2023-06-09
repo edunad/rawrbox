@@ -5,10 +5,10 @@ $output v_color0, v_texcoord0
 #include <../../include/model_psx.sh>
 
 uniform vec3 u_mesh_pos;
-uniform vec2 u_billboard;
+uniform vec2 u_data;
 
 void main() {
-    if(u_billboard.x == 0.){
+    if(u_data.x == 0.){
         vec4 translated = mul(u_modelViewProj, vec4(a_position, 1.0));
         gl_Position = psx_snap(translated, u_viewRect.zw / 2.);
     } else {

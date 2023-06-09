@@ -1,6 +1,7 @@
 
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
 #include <rawrbox/render/texture/image.hpp>
+#include <rawrbox/utils/pack.hpp>
 #include <rawrbox/utils/string.hpp>
 
 #include <magic_enum.hpp>
@@ -45,8 +46,8 @@ namespace rawrbox {
 		return flags;
 	}
 
-	std::vector<std::shared_ptr<rawrbox::TextureBase>> AssimpImporter::importTexture(const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format) {
-		std::vector<std::shared_ptr<rawrbox::TextureBase>> _textures = {};
+	std::vector<OptionalTexture> AssimpImporter::importTexture(const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format) {
+		std::vector<OptionalTexture> _textures = {};
 
 		int count = mat->GetTextureCount(type);
 		if (count <= 0) return _textures;
@@ -67,12 +68,12 @@ namespace rawrbox {
 					loadPath = fmt::format("{}/{}", parentFolder.generic_string(), basename);
 					if (!std::filesystem::exists(loadPath)) {
 						fmt::print("[RawrBox-Assimp] Failed to load texture '{}'\n", matPath.data);
-						_textures.push_back(rawrbox::MISSING_TEXTURE);
-						return _textures;
+						_textures.emplace_back(nullptr);
+						continue;
 					}
 				}
 
-				auto texture = std::make_shared<rawrbox::TextureImage>(loadPath);
+				auto texture = std::make_unique<rawrbox::TextureImage>(loadPath);
 
 				// Setup flags ----
 				auto flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
@@ -87,7 +88,7 @@ namespace rawrbox {
 				texture->setName(basename);
 				texture->upload(format);
 
-				_textures.push_back(texture);
+				_textures.emplace_back(std::move(texture));
 			}
 		}
 
@@ -107,7 +108,7 @@ namespace rawrbox {
 
 		auto fnd = this->materials.find(name);
 		if (fnd == this->materials.end()) {
-			auto mat = std::make_shared<rawrbox::AssimpMaterial>(name);
+			auto mat = std::make_unique<rawrbox::AssimpMaterial>(name);
 
 			// WIREFRAME ----
 			pMaterial->Get(AI_MATKEY_ENABLE_WIREFRAME, mat->wireframe);
@@ -148,7 +149,7 @@ namespace rawrbox {
 			// TEXTURE DIFFUSE
 			auto diffuse = this->importTexture(pMaterial, aiTextureType_DIFFUSE);
 			if (!diffuse.empty()) {
-				mat->diffuse = diffuse[0]; // Only support one for the moment
+				mat->diffuse = std::move(diffuse[0]); // Only support one for the moment
 			}
 
 			aiColor3D flatColor;
@@ -162,10 +163,10 @@ namespace rawrbox {
 			// TEXTURE EMISSION
 			auto emission = this->importTexture(pMaterial, aiTextureType_EMISSION_COLOR);
 			if (!emission.empty()) {
-				mat->emissive = emission[0]; // Only support one for the moment
+				mat->emissive = std::move(emission[0].value()); // Only support one for the moment
 			} else {
 				auto emission = this->importTexture(pMaterial, aiTextureType_EMISSIVE);
-				if (!emission.empty()) mat->emissive = emission[0]; // Only support one for the moment
+				if (!emission.empty()) mat->emissive = std::move(emission[0].value()); // Only support one for the moment
 			}
 
 			pMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, mat->intensity);
@@ -179,7 +180,7 @@ namespace rawrbox {
 			// TEXTURE SPECULAR
 			auto specular = this->importTexture(pMaterial, aiTextureType_SPECULAR);
 			if (!specular.empty()) {
-				mat->specular = specular[0]; // Only support one for the moment
+				mat->specular = std::move(specular[0].value()); // Only support one for the moment
 			}
 
 			pMaterial->Get(AI_MATKEY_SHININESS, mat->shininess);
@@ -193,7 +194,7 @@ namespace rawrbox {
 			// TEXTURE OPACITY
 			auto opacity = this->importTexture(pMaterial, aiTextureType_OPACITY); // bgfx::TextureFormat::D24S8
 			if (!opacity.empty()) {
-				mat->opacity = opacity[0]; // Only support one for the moment
+				mat->opacity = std::move(opacity[0].value()); // Only support one for the moment
 			}
 			// ----------------------
 
@@ -204,7 +205,7 @@ namespace rawrbox {
 			this->materials[matName.data] = std::move(mat);
 		}
 
-		mesh.material = this->materials[matName.data];
+		mesh.material = this->materials[matName.data].get();
 	}
 	/// -------
 
@@ -223,11 +224,11 @@ namespace rawrbox {
 
 			// Armature does not exist, this should be the root bone
 			if (this->skeletons.find(name) == this->skeletons.end()) {
-				auto armature = std::make_shared<Skeleton>(name);
+				auto armature = std::make_unique<rawrbox::Skeleton>(name);
 
 				// Create root bone ----
-				armature->rootBone = std::make_shared<Bone>("ROOT-BONE");
-				armature->rootBone->owner = armature;
+				armature->rootBone = std::make_unique<rawrbox::Bone>("ROOT-BONE");
+				armature->rootBone->owner = armature.get();
 
 				armature->invTransformationMtx.transpose(&sc->mRootNode->mTransformation.a1);
 				armature->invTransformationMtx.inverse();
@@ -235,13 +236,13 @@ namespace rawrbox {
 				armature->rootBone->transformationMtx.transpose(&bone->mArmature->mTransformation.a1);
 				//  ---------------------
 
-				this->generateSkeleton(armature, bone->mArmature, armature->rootBone);
+				this->generateSkeleton(*armature, bone->mArmature, *armature->rootBone);
 
 				// DEBUG ----
 				if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE) > 0) {
-					std::function<void(std::shared_ptr<Bone>, int)> printBone;
-					printBone = [&printBone](std::shared_ptr<Bone> bn, int deep) -> void {
-						for (auto c : bn->children) {
+					std::function<void(std::unique_ptr<Bone>&, int)> printBone;
+					printBone = [&printBone](std::unique_ptr<Bone>& bn, int deep) -> void {
+						for (auto& c : bn->children) {
 							std::string d = "";
 							for (size_t i = 0; i < deep; i++)
 								d += "\t";
@@ -260,13 +261,12 @@ namespace rawrbox {
 			// ---------------
 
 			// Set armature ---
-			mesh.skeleton = this->skeletons[name];
+			mesh.skeleton = this->skeletons[name].get();
 			// ----
 
 			// Apply the weights -----
-			auto skl = mesh.skeleton.lock();
-			auto fnd = skl->boneMap.find(boneKey);
-			if (fnd == skl->boneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
+			auto fnd = mesh.skeleton->boneMap.find(boneKey);
+			if (fnd == mesh.skeleton->boneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
 
 			fnd->second->offsetMtx.transpose(&bone->mOffsetMatrix.a1);
 			fnd->second->offsetMtx.mul(mesh.offsetMatrix);
@@ -280,23 +280,23 @@ namespace rawrbox {
 		}
 	}
 
-	void AssimpImporter::generateSkeleton(std::shared_ptr<rawrbox::Skeleton> skeleton, const aiNode* pNode, std::shared_ptr<rawrbox::Bone> parent) {
+	void AssimpImporter::generateSkeleton(rawrbox::Skeleton& skeleton, const aiNode* pNode, rawrbox::Bone& parent) {
 		for (size_t i = 0; i < pNode->mNumChildren; i++) {
 			auto child = pNode->mChildren[i];
 
 			std::string boneName = child->mName.data;
-			std::string boneKey = fmt::format("{}-{}", skeleton->name, boneName);
+			std::string boneKey = fmt::format("{}-{}", skeleton.name, boneName);
 
-			std::shared_ptr<rawrbox::Bone> bone = std::make_shared<rawrbox::Bone>(boneKey);
-			bone->parent = parent;
-			bone->owner = skeleton;
-			bone->boneId = static_cast<uint8_t>(skeleton->boneMap.size());
+			auto bone = std::make_unique<rawrbox::Bone>(boneKey);
+			bone->parent = &parent;
+			bone->owner = &skeleton;
+			bone->boneId = static_cast<uint8_t>(skeleton.boneMap.size());
 			bone->transformationMtx.transpose(&child->mTransformation.a1);
 
-			skeleton->boneMap[boneKey] = bone;
+			skeleton.boneMap[boneKey] = bone.get();
 
-			this->generateSkeleton(skeleton, child, bone);
-			parent->children.push_back(std::move(bone));
+			this->generateSkeleton(skeleton, child, *bone);
+			parent.children.push_back(std::move(bone));
 		}
 	}
 
@@ -479,8 +479,7 @@ namespace rawrbox {
 		for (size_t n = 0; n < root->mNumMeshes; ++n) {
 			aiMesh& aiMesh = *sc->mMeshes[root->mMeshes[n]];
 
-			rawrbox::AssimpMesh mesh;
-			mesh.name = aiMesh.mName.data;
+			rawrbox::AssimpMesh mesh(aiMesh.mName.data);
 
 			// Calculate bbox ---
 			auto min = aiMesh.mAABB.mMin;
@@ -601,15 +600,6 @@ namespace rawrbox {
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
 			this->assimpFlags |= aiProcess_RemoveRedundantMaterials; // Enable armature & limit bones
 		}
-	}
-
-	AssimpImporter::~AssimpImporter() {
-		this->animations.clear();
-		this->animatedMeshes.clear();
-		this->skeletons.clear();
-		this->lights.clear();
-		this->materials.clear();
-		this->meshes.clear();
 	}
 
 	// Loading ----

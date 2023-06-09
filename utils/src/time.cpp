@@ -7,7 +7,7 @@ namespace rawrbox {
 	// NOLINTBEGIN(clang-diagnostic-unused-function)
 	int64_t TimeUtils::time() {
 		static std::chrono::high_resolution_clock::time_point startTime = std::chrono::high_resolution_clock::now();
-		return (std::chrono::high_resolution_clock::now() - startTime).count();
+		return std::chrono::duration_cast<std::chrono::milliseconds>((std::chrono::high_resolution_clock::now() - startTime)).count();
 	}
 
 	int64_t TimeUtils::curtime() {

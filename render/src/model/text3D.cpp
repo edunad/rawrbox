@@ -7,12 +7,11 @@
 namespace rawrbox {
 
 	// UTILS ----
-	void Text3D::addText(std::shared_ptr<rawrbox::Font> font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl, rawrbox::Alignment alignX, rawrbox::Alignment alignY, bool billboard) {
-		if (font == nullptr) throw std::runtime_error("[RawrBox-Text3D] Invalid font");
-		float screenSize = font->getScale() * 0.75F;
+	void Text3D::addText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl, rawrbox::Alignment alignX, rawrbox::Alignment alignY, bool billboard) {
+		float screenSize = font.getScale() * 0.75F;
 
 		rawrbox::Vector3f startpos = pos;
-		rawrbox::Vector2f tsize = font->getStringSize(text) * screenSize;
+		rawrbox::Vector2f tsize = font.getStringSize(text) * screenSize;
 		if (alignX != Alignment::Left || alignY != Alignment::Left) {
 			switch (alignX) {
 				case Alignment::Left:
@@ -37,13 +36,13 @@ namespace rawrbox {
 			}
 		}
 
-		font->render(text, startpos.xy(), [this, font, billboard, pos, startpos, cl, screenSize](std::shared_ptr<rawrbox::Glyph> glyph, float x0, float y0, float x1, float y1) {
-			auto mesh = std::make_shared<rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType>>();
+		font.render(text, startpos.xy(), [this, &font, billboard, pos, startpos, cl, screenSize](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
+			rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType> mesh;
 
-			mesh->setTexture(font->getAtlasTexture(glyph)); // Set the atlas
-			mesh->setOptimizable(false);
-			mesh->addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
-			mesh->vertexPos.translate(pos);
+			mesh.setTexture(font.getAtlasTexture(glyph)); // Set the atlas
+			mesh.setOptimizable(false);
+			mesh.addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
+			mesh.vertexPos.translate(pos);
 
 			std::array<typename rawrbox::MaterialText3DUnlit::vertexBufferType, 4> buff{
 			    rawrbox::VertexData(startpos + Vector3f(x0 * screenSize, y0 * screenSize, 0), {glyph->textureTopLeft.x, glyph->textureBottomRight.y}, cl),
@@ -56,16 +55,16 @@ namespace rawrbox {
 			    0, 1, 2,
 			    0, 3, 1};
 
-			mesh->baseIndex = mesh->totalIndex;
-			mesh->baseVertex = mesh->totalVertex;
+			mesh.baseIndex = mesh.totalIndex;
+			mesh.baseVertex = mesh.totalVertex;
 
-			mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
-			mesh->indices.insert(mesh->indices.end(), inds.begin(), inds.end());
+			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
+			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
 
-			mesh->totalVertex += static_cast<uint16_t>(buff.size());
-			mesh->totalIndex += static_cast<uint16_t>(inds.size());
+			mesh.totalVertex += static_cast<uint16_t>(buff.size());
+			mesh.totalIndex += static_cast<uint16_t>(inds.size());
 
-			this->addMesh(std::move(mesh));
+			this->addMesh(mesh);
 		});
 	}
 	// ----------
@@ -74,7 +73,7 @@ namespace rawrbox {
 		ModelBase<rawrbox::MaterialText3DUnlit>::draw(camPos);
 
 		for (auto& mesh : this->_meshes) {
-			this->_material->process(mesh);
+			this->_material->process(*mesh);
 			bgfx::setTransform(this->_matrix.data());
 
 			if (this->isDynamicBuffer()) {

@@ -19,7 +19,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(u_colorOffset);
 
 		RAWRBOX_DESTROY(u_mesh_pos);
-		RAWRBOX_DESTROY(u_billboard);
+		RAWRBOX_DESTROY(u_data);
 	}
 
 	// NOLINTBEGIN(hicpp-avoid-c-arrays)
@@ -38,7 +38,7 @@ namespace rawrbox {
 
 		u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 		u_mesh_pos = bgfx::createUniform("u_mesh_pos", bgfx::UniformType::Vec4, 3);
-		u_billboard = bgfx::createUniform("u_billboard", bgfx::UniformType::Vec4, 1);
+		u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4, 1);
 	}
 
 	void MaterialBase::preProcess(const rawrbox::Vector3f& camPos) {}

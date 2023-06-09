@@ -4,17 +4,19 @@
 namespace rawrbox {
 
 	// Resource ----
-	ResourceGIF::~ResourceGIF() { this->texture.reset(); }
 	bool ResourceGIF::load(const std::vector<uint8_t>& buffer) {
-		this->texture = std::make_shared<rawrbox::TextureGIF>(this->filePath, buffer);
+		this->_texture = std::make_unique<rawrbox::TextureGIF>(this->filePath, buffer);
 		return true;
 	}
 
 	void ResourceGIF::upload() {
-		if (this->texture == nullptr) return;
-		this->texture->upload();
+		if (this->_texture == nullptr) return;
+		this->_texture->upload();
 	}
 
+	rawrbox::TextureGIF* ResourceGIF::get() const {
+		return this->_texture.get();
+	}
 	// -------
 
 	// Loader ----

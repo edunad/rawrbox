@@ -3,14 +3,14 @@
 
 namespace rawrbox {
 	// Resource ----
-	ResourceAssimp::~ResourceAssimp() { this->model.reset(); }
-
 	bool ResourceAssimp::load(const std::vector<uint8_t>& buffer) {
-		this->model = std::make_shared<rawrbox::AssimpImporter>(flags);
-		this->model->load(this->filePath, buffer);
+		this->_model = std::make_unique<rawrbox::AssimpImporter>(flags);
+		this->_model->load(this->filePath, buffer);
 
 		return true;
 	}
+
+	rawrbox::AssimpImporter* ResourceAssimp::get() const { return this->_model.get(); }
 	// -------
 
 	// Loader ----

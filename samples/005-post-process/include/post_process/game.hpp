@@ -10,11 +10,11 @@
 
 namespace post_process {
 	class Game : public rawrbox::Engine {
-		std::shared_ptr<rawrbox::Window> _window = nullptr;
-		std::shared_ptr<rawrbox::CameraOrbital> _camera = nullptr;
-		std::shared_ptr<rawrbox::PostProcessManager> _postProcess = nullptr;
+		std::unique_ptr<rawrbox::Window> _window = nullptr;
+		std::unique_ptr<rawrbox::CameraOrbital> _camera = nullptr;
+		std::unique_ptr<rawrbox::PostProcessManager> _postProcess = nullptr;
 
-		std::shared_ptr<rawrbox::AssimpModel<>> _model = std::make_shared<rawrbox::AssimpModel<>>();
+		std::unique_ptr<rawrbox::AssimpModel<>> _model = std::make_unique<rawrbox::AssimpModel<>>();
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;

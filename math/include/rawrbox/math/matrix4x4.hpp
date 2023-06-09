@@ -3,8 +3,6 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/vector4.hpp>
 
-#include <bx/math.h>
-
 #include <algorithm>
 #include <array>
 #include <cstring>

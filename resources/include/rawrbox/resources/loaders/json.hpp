@@ -11,12 +11,11 @@
 
 namespace rawrbox {
 	class ResourceJSON : public rawrbox::Resource {
+		std::unique_ptr<nlohmann::json> _json = nullptr;
 
 	public:
-		std::shared_ptr<nlohmann::json> json = nullptr;
-		~ResourceJSON() override;
-
 		bool load(const std::vector<uint8_t>& buffer) override;
+		[[nodiscard]] nlohmann::json* get() const;
 	};
 
 	class JSONLoader : public rawrbox::Loader {

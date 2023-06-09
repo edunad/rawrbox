@@ -43,8 +43,12 @@ TEST_CASE("Stencil should behave as expected", "[rawrbox::Stencil]") {
 		base.clear();
 
 		REQUIRE(base.getDrawCalls().size() == 0);
+
+		base.pushOutline({1.F}); // Draw box uses texture, so we need to draw outline instead, since bgfx is not active
 		base.drawBox({0, 0}, {10, 10}, rawrbox::Colors::Black);
+		base.popOutline();
+
 		REQUIRE(base.getDrawCalls().size() == 1);
-		REQUIRE(base.getDrawCalls().front().vertices.size() == 4);
+		REQUIRE(base.getDrawCalls().front().vertices.size() == 8);
 	}
 }

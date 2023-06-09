@@ -1,14 +1,14 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/container.hpp>
 #include <rawrbox/ui/elements/button.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <string>
 
 namespace rawrbox {
-	class UIFrame : public rawrbox::UIBase {
+	class UIFrame : public rawrbox::UIContainer {
 	protected:
 		float _titleSize = 18.F;
 
@@ -18,7 +18,7 @@ namespace rawrbox {
 		bool _draggable = true;
 		bool _closable = true;
 
-		std::shared_ptr<rawrbox::UIButton> _closeButton = nullptr;
+		rawrbox::UIButton* _closeButton = nullptr;
 
 		// DRAGGING --
 		bool _dragging = false;
@@ -26,16 +26,13 @@ namespace rawrbox {
 		// ----
 
 		// RESOURCES ---
-		std::shared_ptr<rawrbox::TextureImage> _stripes = nullptr;
-		std::shared_ptr<rawrbox::TextureImage> _overlay = nullptr;
-		std::weak_ptr<rawrbox::Font> _consola;
+		rawrbox::TextureImage* _stripes = nullptr;
+		rawrbox::TextureImage* _overlay = nullptr;
+		rawrbox::Font* _consola = nullptr;
 		// -----------------
 
 	public:
 		rawrbox::Event<> onClose;
-
-		UIFrame() = default;
-		~UIFrame() override;
 
 		void initialize() override;
 		[[nodiscard]] const rawrbox::Vector2f getDrawOffset() const override;

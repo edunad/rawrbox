@@ -4,11 +4,44 @@
 #include <rawrbox/ui/root.hpp>
 
 namespace rawrbox {
+	UIRoot::UIRoot(rawrbox::Window& window) : _window(&window) {
+		this->_aabb = {0, 0, static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)};
+
+		// BINDS ---
+		window.onChar += [this](Window& win, uint32_t character) mutable {
+			if (this->focusedElement == nullptr) return;
+			this->focusedElement->keyChar(character);
+		};
+
+		window.onKey += [this](Window& win, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) mutable {
+			if (this->focusedElement == nullptr) return;
+			this->focusedElement->key(key, scancode, action, mods);
+		};
+
+		window.onMouseKey += [this](Window& win, const rawrbox::Vector2i& location, uint32_t button, uint32_t action, uint32_t mods) mutable {
+			this->onMousePress(location, button, action, mods);
+		};
+
+		window.onMouseMove += [this](Window& win, const rawrbox::Vector2i& location) mutable {
+			this->onMouseMove(location);
+		};
+
+		window.onMouseScroll += [this](Window& win, const rawrbox::Vector2i& location, const rawrbox::Vector2i& offset) mutable {
+			if (this->focusedElement == nullptr) return;
+			this->focusedElement->mouseScroll(location, offset);
+		};
+
+		window.onResize += [this](Window& win, const rawrbox::Vector2i& size) mutable {
+			this->_aabb = {0, 0, static_cast<float>(size.x), static_cast<float>(size.y)};
+		};
+		/// ----
+	}
 
 	// INTERNAL UTILS
-	std::shared_ptr<rawrbox::UIBase> UIRoot::findElement(const rawrbox::Vector2i& mousePos, rawrbox::Vector2i& offsetOut) {
-		for (size_t i = this->getChildren().size(); i > 0; i--) {
-			auto base = std::dynamic_pointer_cast<rawrbox::UIBase>(this->getChildren()[i - 1]);
+	rawrbox::UIContainer* UIRoot::findElement(const rawrbox::Vector2i& mousePos, rawrbox::Vector2i& offsetOut) {
+		auto& children = this->getChildren();
+		for (size_t i = children.size(); i > 0; i--) {
+			auto base = children[i - 1].get();
 			if (base == nullptr) continue;
 
 			auto elm = this->findElement(base, mousePos, {0, 0}, offsetOut);
@@ -18,14 +51,14 @@ namespace rawrbox {
 		return nullptr;
 	}
 
-	std::shared_ptr<rawrbox::UIBase> UIRoot::findElement(std::shared_ptr<rawrbox::UIBase> elmPtr, const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset, rawrbox::Vector2i& offsetOut) {
+	rawrbox::UIContainer* UIRoot::findElement(rawrbox::UIContainer* elmPtr, const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset, rawrbox::Vector2i& offsetOut) {
 		if (elmPtr == nullptr || !elmPtr->visible() || !elmPtr->hitTest(mousePos.cast<float>())) return nullptr;
 
 		auto pos = (elmPtr->getPos() + elmPtr->getDrawOffset()).cast<int>();
-		auto elms = elmPtr->getChildren();
+		auto& elms = elmPtr->getChildren();
 
 		for (size_t i = elms.size(); i > 0; i--) {
-			auto base = elms[i - 1];
+			auto base = elms[i - 1].get();
 			if (base == nullptr) continue;
 
 			auto found = this->findElement(base, mousePos - pos, offset + pos, offsetOut);
@@ -37,15 +70,43 @@ namespace rawrbox {
 	}
 	// ---------------------
 
+	// UTIL
+	const rawrbox::AABBf& UIRoot::getAABB() const { return this->_aabb; }
+	// ---
+
+	// CHILDREN
+	void UIRoot::removeChildren() {
+		for (auto& ch : this->_children) {
+			ch->remove();
+		}
+
+		this->_children.clear();
+	}
+
+	void UIRoot::removeChild(rawrbox::UIContainer* elm) {
+		if (elm == nullptr) return;
+
+		if (this->focusedElement == elm) this->focusedElement = nullptr;
+		if (this->hoveredElement == elm) this->hoveredElement = nullptr;
+
+		this->_children.erase(std::find_if(this->_children.begin(), this->_children.end(), [elm](auto& c) {
+			return c.get() == elm;
+		}));
+	}
+
+	std::vector<std::unique_ptr<rawrbox::UIContainer>>& UIRoot::getChildren() {
+		return this->_children;
+	}
+	// -----
+
 	// EVENTS ---
 	void UIRoot::onMousePress(const rawrbox::Vector2i& location, uint32_t button, uint32_t action, uint32_t mods) {
 		if (action == 0) {
 			this->_pressingMouseButton--;
 
-			if (this->_focusedElement.expired()) return;
+			if (this->focusedElement == nullptr) return;
+			this->focusedElement->mouseUp(location - this->focusedElement->getPos().cast<int>(), button, mods);
 
-			auto focused = this->_focusedElement.lock();
-			focused->mouseUp(location - focused->getPos().cast<int>(), button, mods);
 			return;
 		}
 
@@ -55,7 +116,7 @@ namespace rawrbox {
 		rawrbox::Vector2i offsetOut = {};
 		auto target = this->findElement(location, offsetOut);
 		if (target == nullptr) {
-			this->_focusedElement.reset();
+			this->focusedElement = nullptr;
 			return;
 		}
 		//----------------
@@ -66,21 +127,19 @@ namespace rawrbox {
 
 	void UIRoot::onMouseMove(const rawrbox::Vector2i& location) {
 		rawrbox::Vector2i offsetOut = {};
-		auto target = this->findElement(location, offsetOut);
+		auto target = findElement(location, offsetOut);
 
 		// were holding our mouse on something, like dragging?
-		std::shared_ptr<rawrbox::UIBase> focused = nullptr;
-		if (this->_pressingMouseButton > 0 && !this->_focusedElement.expired()) {
-			focused = this->_focusedElement.lock();
+		rawrbox::UIContainer* focused = nullptr;
+		if (this->_pressingMouseButton > 0 && this->focusedElement != nullptr) {
+			focused = this->focusedElement;
 		}
 
 		// not hovering anything, so send it off to the scene event
 		if (target == nullptr) {
-			if (!this->_hoveredElement.expired()) {
-				auto elm = this->_hoveredElement.lock();
-				elm->setHovering(false);
-
-				this->_hoveredElement.reset();
+			if (this->hoveredElement != nullptr) {
+				this->hoveredElement->setHovering(false);
+				this->hoveredElement = nullptr;
 			}
 
 			if (focused != nullptr) {
@@ -92,16 +151,15 @@ namespace rawrbox {
 		}
 
 		// see if we're having a different target, if so notify it
-		if (!this->_hoveredElement.expired()) {
-			auto elm = this->_hoveredElement.lock();
-			if (elm != target) {
-				elm->setHovering(false);
+		if (this->hoveredElement != nullptr) {
+			if (this->hoveredElement != target) {
+				this->hoveredElement->setHovering(false);
 				target->setHovering(true);
-				this->_hoveredElement = target;
+				this->hoveredElement = target;
 			}
 		} else {
 			target->setHovering(true);
-			this->_hoveredElement = target;
+			this->hoveredElement = target;
 		}
 
 		target->mouseMove(location - offsetOut);
@@ -114,84 +172,35 @@ namespace rawrbox {
 	}
 	// -----
 
-	UIRoot::~UIRoot() {
-		this->removeChildren();
-
-		this->_focusedElement.reset();
-		this->_hoveredElement.reset();
+	// FOCUS
+	const rawrbox::UIContainer* UIRoot::getFocus() const {
+		return this->focusedElement;
 	}
 
-	std::shared_ptr<UIRoot> UIRoot::create(std::shared_ptr<rawrbox::Window> window) {
-		auto ret = std::make_shared<rawrbox::UIRoot>();
-		ret->setWindow(window);
-		ret->setRef(ret);
-
-		return ret;
-	}
-
-	void UIRoot::setWindow(std::shared_ptr<rawrbox::Window> window) {
-		this->_window = window;
-		this->_aabb = {0, 0, static_cast<float>(window->getSize().x), static_cast<float>(window->getSize().y)};
-
-		// BINDS ---
-		window->onChar += [this](Window& win, uint32_t character) mutable {
-			rawrbox::runOnRenderThread([this, character]() {
-				if (this->_focusedElement.expired()) return;
-				this->_focusedElement.lock()->keyChar(character);
-			});
-		};
-
-		window->onKey += [this](Window& win, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) mutable {
-			rawrbox::runOnRenderThread([this, key, scancode, action, mods]() {
-				if (this->_focusedElement.expired()) return;
-				this->_focusedElement.lock()->key(key, scancode, action, mods);
-			});
-		};
-
-		window->onMouseKey += [this](Window& win, const rawrbox::Vector2i& location, uint32_t button, uint32_t action, uint32_t mods) mutable {
-			rawrbox::runOnRenderThread([this, location, button, action, mods]() {
-				this->onMousePress(location, button, action, mods);
-			});
-		};
-
-		window->onMouseMove += [this](Window& win, const rawrbox::Vector2i& location) mutable {
-			rawrbox::runOnRenderThread([this, location]() {
-				this->onMouseMove(location);
-			});
-		};
-
-		window->onMouseScroll += [this](Window& win, const rawrbox::Vector2i& location, const rawrbox::Vector2i& offset) mutable {
-			rawrbox::runOnRenderThread([this, location, offset]() {
-				if (this->_focusedElement.expired()) return;
-				this->_focusedElement.lock()->mouseScroll(location, offset);
-			});
-		};
-		/// ----
-	}
-
-	const std::shared_ptr<rawrbox::UIBase> UIRoot::getFocus() const {
-		if (this->_focusedElement.expired()) return nullptr;
-		return this->_focusedElement.lock();
-	}
-
-	void UIRoot::setFocus(std::shared_ptr<rawrbox::UIBase> elm) {
+	void UIRoot::setFocus(rawrbox::UIContainer* elm) {
 		// Reset old focus & set new one
-		if (!this->_focusedElement.expired()) this->_focusedElement.lock()->setFocused(false);
+		if (this->focusedElement != nullptr) this->focusedElement->setFocused(false);
 
 		// target->bringToFront();
 		elm->setFocused(true);
-		this->_focusedElement = elm;
+		this->focusedElement = elm;
 		// ---
 	}
+	// -----
 
-	void UIRoot::draw(rawrbox::Stencil& stencil) { throw std::runtime_error("[RawrBox-UI] Call 'render()' instead"); }
 	void UIRoot::render() {
-		if (this->_window.expired()) return;
-
-		auto win = this->_window.lock();
-		auto& sten = win->getStencil();
-
-		rawrbox::UIContainer::draw(sten);
+		if (this->_window == nullptr) return;
+		auto& sten = this->_window->getStencil();
+		for (auto& ch : this->_children) {
+			ch->drawChildren(sten);
+		}
 		sten.render();
+	}
+
+	void UIRoot::update() {
+		if (this->_window == nullptr) return;
+		for (auto& ch : this->_children) {
+			ch->updateChildren();
+		}
 	}
 } // namespace rawrbox

@@ -108,7 +108,7 @@ namespace rawrbox {
 			rawrbox::Vector4_t<NumberType> ret = {};
 
 			float x = in.x * 0.5F;
-			float y = in.y * 0.5F;
+			float y = in.y * -0.5F;
 			float z = in.z * 0.5F;
 
 			float sinX = std::sin(x);

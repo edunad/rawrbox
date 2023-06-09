@@ -39,6 +39,8 @@
 #define GLFWHANDLE (std::bit_cast<GLFWwindow*>(_handle))
 #define GLFWCURSOR (std::bit_cast<GLFWcursor*>(_cursor))
 
+#define BGFX_DEFAULT_CLEAR (0 | BGFX_CLEAR_COLOR | BGFX_CLEAR_STENCIL | BGFX_CLEAR_DEPTH)
+
 namespace rawrbox {
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
 	static Window& glfwHandleToRenderer(GLFWwindow* ptr) {
@@ -231,13 +233,18 @@ namespace rawrbox {
 		if ((this->_windowFlags & WindowFlags::Debug::PROFILER) > 0) this->_debugFlags |= BGFX_DEBUG_PROFILER;
 
 		bgfx::setDebug(this->_debugFlags);
+		bgfx::setViewRect(this->_id, 0, 0, this->_size.x, this->_size.y);
+		bgfx::setViewMode(this->_id, bgfx::ViewMode::Default);
+		bgfx::setViewName(this->_id, fmt::format("RawrBox-RENDERER-{}", this->_id).c_str());
+		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 
 		// Setup main renderer ----
 		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
-		this->_renderer = std::make_unique<rawrbox::Renderer>(0, this->getSize());
 		this->onResize += [this](auto&, auto& size) {
-			if (this->_renderer != nullptr) this->_renderer->resizeView(size);
 			if (this->_stencil != nullptr) this->_stencil->resize(size);
+
+			bgfx::setViewRect(this->_id, 0, 0, size.x, size.y);
+			bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 		};
 
 		// Setup global util textures ---
@@ -266,8 +273,7 @@ namespace rawrbox {
 	}
 
 	void Window::setClearColor(uint32_t clearColor) {
-		if (this->_renderer == nullptr) return;
-		this->_renderer->setClearColor(clearColor);
+		this->_clearColor = clearColor;
 	}
 
 	// CURSOR ------
@@ -284,10 +290,10 @@ namespace rawrbox {
 		glfwSetCursor(GLFWHANDLE, cursor);
 	}
 
-	// NOLINTBEGIN(clang-analyzer-core.NonNullParamChecker)
+	// NOLINTBEGIN(cppcoreguidelines-owning-memory)
 	void Window::setCursor(const std::array<uint8_t, 1024>& pixels) {
 		GLFWimage image = {};
-		image.pixels = {};
+		image.pixels = new uint8_t[16 * 16 * 4];
 		image.width = 16;
 		image.height = 16;
 
@@ -302,7 +308,7 @@ namespace rawrbox {
 
 		glfwSetCursor(GLFWHANDLE, cursor);
 	}
-	// NOLINTEND(clang-analyzer-core.NonNullParamChecker)
+	// NOLINTEND(cppcoreguidelines-owning-memory)
 	// -------------------
 
 	void Window::shutdown() {
@@ -323,12 +329,13 @@ namespace rawrbox {
 
 	// DRAW ------
 	void Window::clear() {
-		if (this->_renderer == nullptr) return;
-		this->_renderer->clear(); // Clean up and set renderer
+		if (!rawrbox::BGFX_INITIALIZED) return;
+
+		bgfx::touch(this->_id); // Make sure we draw on the view
+		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 	}
 
 	void Window::upload() {
-		if (this->_renderer == nullptr) return;
 
 		// MISSING TEXTURES ------
 		rawrbox::MISSING_TEXTURE->upload();
@@ -341,7 +348,6 @@ namespace rawrbox {
 	}
 
 	void Window::frame() const {
-		if (this->_renderer == nullptr) return;
 		bgfx::frame();
 	}
 
@@ -356,7 +362,6 @@ namespace rawrbox {
 		}
 
 		this->_stencil.reset();
-		this->_renderer.reset();
 
 		if (GLFWHANDLE != nullptr) glfwDestroyWindow(GLFWHANDLE);
 		this->_handle = nullptr;

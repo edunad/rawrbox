@@ -2,14 +2,14 @@
 #pragma once
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/render/stencil.hpp>
-#include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/container.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <functional>
 
 namespace rawrbox {
 	template <class T>
-	class UIVirtualList : public rawrbox::UIBase {
+	class UIVirtualList : public rawrbox::UIContainer {
 		std::vector<T> items;
 
 		// MOUSE POS ---
@@ -127,7 +127,7 @@ namespace rawrbox {
 		};
 
 		void setHovering(bool hover) override {
-			rawrbox::UIBase::setHovering(hover);
+			rawrbox::UIContainer::setHovering(hover);
 
 			if (!hover) {
 				this->mousePos = {-1, -1};

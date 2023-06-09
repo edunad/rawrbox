@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 
 # SETUP UTILS
 include("cmake/rawrbox_utils.cmake")
@@ -41,7 +41,6 @@ option(RAWRBOX_BUILD_TESTING "Build tests" ON)
 option(RAWRBOX_BUILD_UI "Build ui" ON)
 
 option(RAWRBOX_BUILD_RESOURCES_MANAGER "Build resources manager" ON)
-option(RAWRBOX_BUILD_DEBUG "Build debug lib & add gizmo support" ON)
 option(RAWRBOX_BUILD_PHYSICS "Build physics support" ON)
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" ON)
 if(RAWRBOX_BUILD_PHYSICS)
@@ -144,11 +143,6 @@ endif()
 if(RAWRBOX_ENABLE_BASS_SUPPORT)
     message(STATUS "Enabled BASS support")
     add_subdirectory("bass")
-endif()
-
-if(RAWRBOX_BUILD_DEBUG)
-    message(STATUS "Enabled DEBUG support")
-    add_subdirectory("debug")
 endif()
 
 if(RAWRBOX_BUILD_PHYSICS)

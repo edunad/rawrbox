@@ -8,6 +8,7 @@ void main() {
 
 	rgba.xyz = rgba.xyz * v_color0.xyz * rgba.w * v_color0.w;
 	rgba.w   = rgba.w * v_color0.w * (1.0f - v_texcoord0.z);
+	if(rgba.w <= 0.085) discard;
 
 	gl_FragColor = rgba;
 }

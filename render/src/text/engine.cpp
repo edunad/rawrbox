@@ -13,8 +13,8 @@
 
 namespace rawrbox {
 	// VARS ----
-	std::map<std::string, std::shared_ptr<rawrbox::Font>> TextEngine::_fonts = {};
-	std::map<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> TextEngine::_atlas = {};
+	std::map<std::string, std::unique_ptr<rawrbox::Font>> TextEngine::_fonts = {};
+	std::map<uint32_t, std::unique_ptr<rawrbox::TextureAtlas>> TextEngine::_atlas = {};
 
 	// PUBLIC ----
 	uint32_t TextEngine::atlasID = 0;
@@ -38,32 +38,32 @@ namespace rawrbox {
 		TextEngine::atlasID = 0;
 	}
 
-	std::pair<uint32_t, std::shared_ptr<rawrbox::TextureAtlas>> TextEngine::requestAtlas(int width, int height, bgfx::TextureFormat::Enum format) {
+	std::pair<uint32_t, rawrbox::TextureAtlas*> TextEngine::requestAtlas(int width, int height, bgfx::TextureFormat::Enum format) {
 		// Try to find a spot
 		for (auto& at : _atlas) {
-			if (at.second->canInsertNode(width, height)) return {at.first, at.second};
+			if (at.second->canInsertNode(width, height)) return {at.first, at.second.get()};
 		}
 
 		// Ok, make a new atlas then
 		auto id = TextEngine::atlasID++;
-		auto atlas = std::make_shared<rawrbox::TextureAtlas>(512);
+		auto atlas = std::make_unique<rawrbox::TextureAtlas>(512);
 		atlas->upload(format);
 
 		_atlas.emplace(id, std::move(atlas));
-		return {id, _atlas[id]};
+		return {id, _atlas[id].get()};
 	}
 
-	std::shared_ptr<rawrbox::TextureAtlas> TextEngine::getAtlas(uint32_t id) {
+	rawrbox::TextureAtlas* TextEngine::getAtlas(uint32_t id) {
 		auto fnd = _atlas.find(id);
 		if (fnd == _atlas.end()) throw std::runtime_error(fmt::format("[RawrBox-Freetype] Failed to find atlas id '{}'", id));
-		return fnd->second;
+		return fnd->second.get();
 	}
 
-	std::shared_ptr<rawrbox::Font> TextEngine::load(const std::filesystem::path& filename, uint32_t size, uint32_t index) {
+	rawrbox::Font* TextEngine::load(const std::filesystem::path& filename, uint32_t size, uint32_t index) {
 		std::string key = fmt::format("{}-{}", filename.generic_string(), size);
 		// Check cache
 		auto fnd = _fonts.find(key);
-		if (fnd != _fonts.end()) return fnd->second;
+		if (fnd != _fonts.end()) return fnd->second.get();
 		// ------
 
 		// Check our own content
@@ -83,7 +83,7 @@ namespace rawrbox {
 		auto bytes = rawrbox::PathUtils::getRawData(pth);
 		if (bytes.empty()) throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load font '{}'", filename.generic_string()));
 
-		_fonts[key] = std::make_shared<rawrbox::Font>(bytes, size, index);
-		return _fonts[key];
+		_fonts[key] = std::make_unique<rawrbox::Font>(bytes, size, index);
+		return _fonts[key].get();
 	}
 } // namespace rawrbox

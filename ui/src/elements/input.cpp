@@ -8,10 +8,6 @@
 #include <clip.h>
 
 namespace rawrbox {
-	UIInput::~UIInput() {
-		this->_font.reset();
-	}
-
 	// INTERNAL ---
 	void UIInput::genFill() {
 		this->_fillText = "";
@@ -28,7 +24,7 @@ namespace rawrbox {
 	}
 
 	void UIInput::combo_paste() {
-		if (this->_readOnly || this->_font.expired()) return;
+		if (this->_readOnly || this->_font == nullptr) return;
 
 		std::string paste_text = "";
 		clip::get_text(paste_text);
@@ -45,7 +41,7 @@ namespace rawrbox {
 		this->_charXPos += Font::getCharacterCount(paste_text);
 
 		// be sure the font contains the letters typed
-		this->_font.lock()->addChars(paste_text);
+		this->_font->addChars(paste_text);
 	}
 
 	void UIInput::combo_backspace(uint32_t mods) {
@@ -127,7 +123,7 @@ namespace rawrbox {
 	}
 
 	void UIInput::setText(const std::string& text, bool updateCharet, bool preventEvent) {
-		if (this->_font.expired()) return;
+		if (this->_font == nullptr) return;
 
 		if (this->_limit > 0 && rawrbox::Font::getCharacterCount(text) > this->_limit) {
 			this->_text = text.substr(0, Font::getByteCount(text, this->_limit));
@@ -135,7 +131,7 @@ namespace rawrbox {
 			this->_text = text;
 		}
 
-		this->_textSize = this->_font.lock()->getStringSize(this->_text);
+		this->_textSize = this->_font->getStringSize(this->_text);
 		if (this->_text.empty()) {
 			this->_textSize.y = this->_charSize.y; // Prevent setting y to 0
 		} else if (updateCharet) {
@@ -155,10 +151,10 @@ namespace rawrbox {
 	uint32_t UIInput::getLimit() const { return this->_limit; }
 
 	void UIInput::setFill(const std::string& fill) {
-		if (this->_font.expired()) return;
+		if (this->_font == nullptr) return;
 
 		this->_fillTextPattern = fill;
-		this->_fillSizeChar = this->_font.lock()->getStringSize(fill);
+		this->_fillSizeChar = this->_font->getStringSize(fill);
 
 		this->genFill();
 	}
@@ -185,11 +181,11 @@ namespace rawrbox {
 	void UIInput::setFont(const std::filesystem::path& font, int size) {
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>(font)->getSize(size);
 
-		this->_charSize = this->_font.lock()->getStringSize("W");       // Tallest character possible, usually it's W
+		this->_charSize = this->_font->getStringSize("W");              // Tallest character possible, usually it's W
 		if (this->_text.empty()) this->_textSize.y = this->_charSize.y; // Prevent setting y to 0
 	}
 
-	void UIInput::setFont(std::shared_ptr<rawrbox::Font> font) {
+	void UIInput::setFont(rawrbox::Font* font) {
 		if (font == nullptr) throw std::runtime_error("[RawrBox-UI] Invalid font");
 
 		this->_font = font;
@@ -197,7 +193,7 @@ namespace rawrbox {
 		if (this->_text.empty()) this->_textSize.y = this->_charSize.y; // Prevent setting y to 0
 	}
 
-	std::weak_ptr<rawrbox::Font> UIInput::getFont() const { return this->_font; }
+	rawrbox::Font* UIInput::getFont() const { return this->_font; }
 
 	size_t UIInput::size() const { return this->_text.size(); }
 	bool UIInput::empty() const { return this->_text.empty(); }
@@ -209,14 +205,13 @@ namespace rawrbox {
 
 	// INPUT ----
 	void UIInput::mouseDown(const rawrbox::Vector2i& mousePos, uint32_t /*button*/, uint32_t /*mods*/) {
-		if (this->_readOnly || this->_font.expired()) return;
+		if (this->_readOnly || this->_font == nullptr) return;
 
 		auto& text = this->getText();
 		auto characterCount = Font::getCharacterCount(text);
 
-		auto fnt = this->_font.lock();
 		for (size_t i = 1; i < characterCount; i++) {
-			auto size = fnt->getStringSize(text.substr(0, Font::getByteCount(text, i)));
+			auto size = this->_font->getStringSize(text.substr(0, Font::getByteCount(text, i)));
 			if (mousePos.x < size.cast<int>().x) {
 				this->_charXPos = i - 1;
 				return;
@@ -227,7 +222,7 @@ namespace rawrbox {
 	}
 
 	void UIInput::keyChar(uint32_t key) {
-		if (this->_readOnly || this->_font.expired() || key == KEY_GRAVE_ACCENT) return; // Ignore `, it's used to open stuff, why would you use this
+		if (this->_readOnly || this->_font == nullptr || key == KEY_GRAVE_ACCENT) return; // Ignore `, it's used to open stuff, why would you use this
 		if (this->_numeric && ((key < KEY_0 || key > KEY_9) && (key < KEY_KP_0 || key > KEY_KP_9))) return;
 
 		// check if we're going past our limit
@@ -248,7 +243,7 @@ namespace rawrbox {
 		this->moveCharet(true);
 
 		// be sure the font contains the letters typed
-		this->_font.lock()->addChars(utf8);
+		this->_font->addChars(utf8);
 	}
 
 	void UIInput::key(uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t mods) {
@@ -309,13 +304,10 @@ namespace rawrbox {
 	// DRAW ----
 	bool UIInput::clipOverflow() const { return true; }
 	void UIInput::draw(Stencil& stencil) {
-		auto font = this->getFont();
-		if (font.expired()) return;
+		if (this->_font == nullptr) return;
 
 		auto& size = this->getSize();
 		auto& text = this->getText();
-		auto fnt = font.lock();
-
 		stencil.drawBox({}, size, !(this->focused() || this->hovering()) || this->_readOnly ? getBackgroundColor() : getBackgroundColor() * 0.9F);
 		stencil.drawBox({0, 2}, {2, size.y - 2}, getBackgroundColor() * 0.5F);
 		stencil.drawBox({0, 0}, {size.x, 2}, getBackgroundColor() * 0.5F);
@@ -326,21 +318,21 @@ namespace rawrbox {
 		if (offset > size.x) pos.x -= offset - size.x;
 
 		if ((time(nullptr) % 2) == 0 && focused() && !this->_readOnly) {
-			auto charPos = fnt->getStringSize(text.substr(0, Font::getByteCount(text, this->_charXPos)));
+			auto charPos = this->_font->getStringSize(text.substr(0, Font::getByteCount(text, this->_charXPos)));
 			stencil.drawBox({this->_padding + charPos.x + pos.x, 2}, {1, size.y - 4}, getColor());
 		}
 
 		if (!this->_hint.empty()) {
-			stencil.drawText(fnt, this->_hint, {size.x - 5, pos.y}, Color::RGBAHex(0x000000A4), rawrbox::Alignment::Right);
+			stencil.drawText(*this->_font, this->_hint, {size.x - 5, pos.y}, Color::RGBAHex(0x000000A4), rawrbox::Alignment::Right);
 		}
 
 		if (text.empty() && !this->_readOnly) {
-			stencil.drawText(fnt, this->_placeholder, {pos.x + 5, pos.y}, getColor() * 0.5F);
+			stencil.drawText(*this->_font, this->_placeholder, {pos.x + 5, pos.y}, getColor() * 0.5F);
 		} else {
-			stencil.drawText(fnt, text, pos, this->_readOnly ? this->getColor() * 0.65F : this->getColor());
+			stencil.drawText(*this->_font, text, pos, this->_readOnly ? this->getColor() * 0.65F : this->getColor());
 		}
 
-		if (!this->_fillText.empty()) stencil.drawText(fnt, this->_fillText, {pos.x + this->_textSize.x, pos.y}, getColor() * 0.2F);
+		if (!this->_fillText.empty()) stencil.drawText(*this->_font, this->_fillText, {pos.x + this->_textSize.x, pos.y}, getColor() * 0.2F);
 
 		// Border
 		stencil.pushOutline({this->_borderSize});

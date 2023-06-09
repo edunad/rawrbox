@@ -1,9 +1,9 @@
 
 #pragma once
-#include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/container.hpp>
 
 namespace rawrbox {
-	class UIGroup : public rawrbox::UIBase {
+	class UIGroup : public rawrbox::UIContainer {
 	protected:
 		float _border = 0.F;
 

@@ -1,7 +1,7 @@
 
 #pragma once
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/container.hpp>
 
 #include <chrono>
 
@@ -54,7 +54,7 @@ namespace rawrbox {
 		}
 	};
 
-	class UIGraph : public rawrbox::UIBase {
+	class UIGraph : public rawrbox::UIContainer {
 	protected:
 		std::vector<std::unique_ptr<rawrbox::UIGraphCategory>> _categories = {};
 

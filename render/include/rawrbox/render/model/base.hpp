@@ -29,7 +29,7 @@ namespace rawrbox {
 		bgfx::DynamicIndexBufferHandle _ibdh = BGFX_INVALID_HANDLE;  // Indices - Dynamic
 		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;          // Indices - Static
 
-		std::vector<std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes;
+		std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes = {};
 		rawrbox::Matrix4x4 _matrix = {};
 
 		std::vector<typename M::vertexBufferType> _vertices = {};
@@ -50,8 +50,7 @@ namespace rawrbox {
 		bool _canOptimize = true;
 
 		// SKINNING ----
-		std::unordered_map<std::string, std::shared_ptr<rawrbox::Skeleton>> _skeletons = {};
-		std::unordered_map<std::string, std::weak_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _animatedMeshes = {}; // Map for quick lookup
+		std::unordered_map<std::string, rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // Map for quick lookup
 		// --------
 
 		void flattenMeshes() {
@@ -68,8 +67,8 @@ namespace rawrbox {
 					if (mesh != this->_meshes.begin()) {
 						auto prevMesh = std::prev(mesh); // Check old meshes
 
-						if ((*prevMesh)->canOptimize(*mesh)) {
-							(*prevMesh)->merge(*mesh);
+						if ((*prevMesh)->canOptimize(**mesh)) {
+							(*prevMesh)->merge(**mesh);
 
 							mesh = this->_meshes.erase(mesh);
 							merged = true;
@@ -84,7 +83,7 @@ namespace rawrbox {
 			// ----------------------
 
 			// Flatten meshes for buffers
-			for (auto mesh : this->_meshes) {
+			for (auto& mesh : this->_meshes) {
 				// Fix start index ----
 				mesh->baseIndex = static_cast<uint16_t>(this->_indices.size());
 				mesh->baseVertex = static_cast<uint16_t>(this->_vertices.size());
@@ -98,7 +97,7 @@ namespace rawrbox {
 			// --------
 
 			// Sort alpha
-			std::sort(this->_meshes.begin(), this->_meshes.end(), [](auto a, auto b) {
+			std::sort(this->_meshes.begin(), this->_meshes.end(), [](auto& a, auto& b) {
 				return a->blending != BGFX_STATE_BLEND_ALPHA && b->blending == BGFX_STATE_BLEND_ALPHA;
 			});
 			// --------
@@ -134,16 +133,15 @@ namespace rawrbox {
 			this->_indices.clear();
 
 			this->_animatedMeshes.clear();
-			this->_skeletons.clear();
 			this->_animatedMeshes.clear();
 		}
 
 		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
 
 		// UTILS -----
-		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateLine(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Color& col) {
-			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
-			mesh->vertexPos.translate(a);
+		rawrbox::Mesh<typename M::vertexBufferType> generateLine(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Color& col) {
+			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			mesh.vertexPos.translate(a);
 
 			std::array<typename M::vertexBufferType, 2> buff;
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
@@ -160,25 +158,25 @@ namespace rawrbox {
 
 			std::array<uint16_t, 2> inds{0, 1};
 
-			mesh->baseVertex = 0;
-			mesh->baseIndex = 0;
-			mesh->totalVertex = 2;
-			mesh->totalIndex = 2;
+			mesh.baseVertex = 0;
+			mesh.baseIndex = 0;
+			mesh.totalVertex = 2;
+			mesh.totalIndex = 2;
 
-			mesh->lineMode = true;
-			mesh->setOptimizable(false);
+			mesh.lineMode = true;
+			mesh.setOptimizable(false);
 
-			mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
-			mesh->indices.insert(mesh->indices.end(), inds.begin(), inds.end());
+			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
+			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
 
 			return mesh;
 		}
 
-		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateTriangle(const rawrbox::Vector3f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector3f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector3f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC) {
-			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
+		rawrbox::Mesh<typename M::vertexBufferType> generateTriangle(const rawrbox::Vector3f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector3f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector3f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC) {
+			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 
 			auto center = (a + b + c) / 3;
-			mesh->vertexPos.translate(center);
+			mesh.vertexPos.translate(center);
 
 			std::array<typename M::vertexBufferType, 3> buff;
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
@@ -197,20 +195,20 @@ namespace rawrbox {
 
 			std::array<uint16_t, 3> inds{0, 1, 2};
 
-			mesh->baseVertex = 0;
-			mesh->baseIndex = 0;
-			mesh->totalVertex = 3;
-			mesh->totalIndex = 3;
+			mesh.baseVertex = 0;
+			mesh.baseIndex = 0;
+			mesh.totalVertex = 3;
+			mesh.totalIndex = 3;
 
-			mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
-			mesh->indices.insert(mesh->indices.end(), inds.begin(), inds.end());
+			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
+			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
 
 			return mesh;
 		}
 
-		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generatePlane(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
-			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
-			mesh->vertexPos.translate(pos);
+		rawrbox::Mesh<typename M::vertexBufferType> generatePlane(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			mesh.vertexPos.translate(pos);
 
 			rawrbox::Vector2f hSize = size / 2.F;
 
@@ -235,26 +233,26 @@ namespace rawrbox {
 			    0, 1, 2,
 			    0, 3, 1};
 
-			mesh->baseVertex = 0;
-			mesh->baseIndex = 0;
+			mesh.baseVertex = 0;
+			mesh.baseIndex = 0;
 
-			mesh->totalVertex = 4;
-			mesh->totalIndex = 6;
-			mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
-			mesh->indices.insert(mesh->indices.end(), inds.begin(), inds.end());
+			mesh.totalVertex = 4;
+			mesh.totalIndex = 6;
+			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
+			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
 
 			// AABB ---
-			mesh->bbox.m_min = {-hSize.x, -hSize.y, 0};
-			mesh->bbox.m_max = {hSize.x, hSize.y, 0};
-			mesh->bbox.m_size = mesh->bbox.m_min.abs() + mesh->bbox.m_max.abs();
+			mesh.bbox.m_min = {-hSize.x, -hSize.y, 0};
+			mesh.bbox.m_max = {hSize.x, hSize.y, 0};
+			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
 			// -----
 
 			return mesh;
 		}
 
-		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateCube(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
-			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
-			mesh->vertexPos.translate(pos);
+		rawrbox::Mesh<typename M::vertexBufferType> generateCube(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			mesh.vertexPos.translate(pos);
 
 			rawrbox::Vector3f hSize = size / 2.F;
 
@@ -362,64 +360,64 @@ namespace rawrbox {
 			    20, 21, 22,
 			    20, 23, 21};
 
-			mesh->baseVertex = 0;
-			mesh->baseIndex = 0;
-			mesh->totalVertex = static_cast<uint16_t>(buff.size());
-			mesh->totalIndex = static_cast<uint16_t>(inds.size());
+			mesh.baseVertex = 0;
+			mesh.baseIndex = 0;
+			mesh.totalVertex = static_cast<uint16_t>(buff.size());
+			mesh.totalIndex = static_cast<uint16_t>(inds.size());
 
 			// AABB ---
-			mesh->bbox.m_min = -hSize;
-			mesh->bbox.m_max = hSize;
-			mesh->bbox.m_size = mesh->bbox.m_min.abs() + mesh->bbox.m_max.abs();
+			mesh.bbox.m_min = -hSize;
+			mesh.bbox.m_max = hSize;
+			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
 			// -----
 
-			mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
-			mesh->indices.insert(mesh->indices.end(), inds.begin(), inds.end());
+			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
+			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
 
 			return mesh;
 		}
 
-		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateAxis(float size, const rawrbox::Vector3f& pos) {
-			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
-			mesh->vertexPos.translate(pos);
+		rawrbox::Mesh<typename M::vertexBufferType> generateAxis(float size, const rawrbox::Vector3f& pos) {
+			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			mesh.vertexPos.translate(pos);
 
 			float hSize = size / 2.F;
-			mesh->merge(generateCube(pos, {hSize, 0.01F, 0.01F}, Colors::Red));   // x
-			mesh->merge(generateCube(pos, {0.01F, hSize, 0.01F}, Colors::Green)); // y
-			mesh->merge(generateCube(pos, {0.01F, 0.01F, hSize}, Colors::Blue));  // z
+			mesh.merge(generateCube(pos, {hSize, 0.01F, 0.01F}, Colors::Red));   // x
+			mesh.merge(generateCube(pos, {0.01F, hSize, 0.01F}, Colors::Green)); // y
+			mesh.merge(generateCube(pos, {0.01F, 0.01F, hSize}, Colors::Blue));  // z
 
 			// AABB ---
-			mesh->bbox.m_min = {-hSize, -hSize, -hSize};
-			mesh->bbox.m_max = {hSize, hSize, hSize};
-			mesh->bbox.m_size = mesh->bbox.m_min.abs() + mesh->bbox.m_max.abs();
+			mesh.bbox.m_min = {-hSize, -hSize, -hSize};
+			mesh.bbox.m_max = {hSize, hSize, hSize};
+			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
 			// -----
 
-			mesh->setCulling(0);
-			mesh->setTexture(rawrbox::WHITE_TEXTURE);
+			mesh.setCulling(0);
+			mesh.setTexture(rawrbox::WHITE_TEXTURE.get());
 
 			return mesh;
 		}
 
-		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+		rawrbox::Mesh<typename M::vertexBufferType> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
 			throw std::runtime_error("TODO");
 		}
 
-		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generatePyramid(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+		rawrbox::Mesh<typename M::vertexBufferType> generatePyramid(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
 			throw std::runtime_error("TODO");
 		}
 
-		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+		rawrbox::Mesh<typename M::vertexBufferType> generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
 			throw std::runtime_error("TODO");
 		}
 
-		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateSphere(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White, int ratio = 5) {
+		rawrbox::Mesh<typename M::vertexBufferType> generateSphere(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White, int ratio = 5) {
 			throw std::runtime_error("TODO");
 		}
 
 		// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
-		std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> generateGrid(uint32_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::DarkGray, const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent) {
-			auto mesh = std::make_shared<rawrbox::Mesh<typename M::vertexBufferType>>();
-			mesh->vertexPos.translate(pos);
+		rawrbox::Mesh<typename M::vertexBufferType> generateGrid(uint32_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::DarkGray, const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent) {
+			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			mesh.vertexPos.translate(pos);
 
 			std::vector<rawrbox::VertexData> buff = {};
 			std::vector<uint16_t> inds = {};
@@ -455,15 +453,15 @@ namespace rawrbox {
 				}
 			}
 
-			mesh->baseVertex = 0;
-			mesh->baseIndex = 0;
-			mesh->totalVertex = static_cast<uint16_t>(buff.size());
-			mesh->totalIndex = static_cast<uint16_t>(inds.size());
+			mesh.baseVertex = 0;
+			mesh.baseIndex = 0;
+			mesh.totalVertex = static_cast<uint16_t>(buff.size());
+			mesh.totalIndex = static_cast<uint16_t>(inds.size());
 
-			mesh->vertices.insert(mesh->vertices.end(), buff.begin(), buff.end());
-			mesh->indices.insert(mesh->indices.end(), inds.begin(), inds.end());
+			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
+			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
 
-			mesh->lineMode = true;
+			mesh.lineMode = true;
 			return mesh;
 		}
 		// -------
@@ -506,7 +504,7 @@ namespace rawrbox {
 			return this->_meshes.empty();
 		}
 
-		virtual std::vector<std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>>>& meshes() {
+		virtual std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>>& meshes() {
 			return this->_meshes;
 		}
 
@@ -519,6 +517,14 @@ namespace rawrbox {
 			return bgfx::isValid(this->_ibh) && bgfx::isValid(this->_vbh);
 		}
 
+		virtual void removeMeshByName(const std::string& id) {
+			auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&id](auto& mesh) { return mesh->getName() == id; });
+			if (fnd == this->_meshes.end()) return;
+
+			this->_meshes.erase(fnd);
+			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
+		}
+
 		virtual void removeMesh(size_t index) {
 			if (index >= this->_meshes.size()) return;
 			this->_meshes.erase(this->_meshes.begin() + index);
@@ -526,19 +532,30 @@ namespace rawrbox {
 			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 		}
 
-		virtual void addMesh(std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> mesh) {
-			this->_bbox.combine(mesh->getBBOX());
-			mesh->owner = this;
+		virtual void addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
+			this->_bbox.combine(mesh.getBBOX());
+			mesh.owner = this;
 
-			this->_meshes.push_back(std::move(mesh));
+			this->_meshes.push_back(std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh));
 			if (this->isUploaded() && this->isDynamicBuffer()) {
 				this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 			}
 		}
 
-		virtual std::shared_ptr<rawrbox::Mesh<typename M::vertexBufferType>> getMesh(size_t id = 0) {
-			if (id >= this->_meshes.size()) throw std::runtime_error(fmt::format("[RawrBox-ModelBase] Mesh {} does not exist", id));
-			return this->_meshes[id];
+		virtual rawrbox::Mesh<typename M::vertexBufferType>* getMeshByName(const std::string& id) {
+			auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&id](auto& mesh) { return mesh->getName() == id; });
+			if (fnd == this->_meshes.end()) return nullptr;
+
+			return (*fnd).get();
+		}
+
+		virtual rawrbox::Mesh<typename M::vertexBufferType>& getMesh(size_t id = 0) {
+			if (!this->hasMesh(id)) throw std::runtime_error(fmt::format("[RawrBox-ModelBase] Mesh {} does not exist", id));
+			return *this->_meshes[id];
+		}
+
+		virtual bool hasMesh(size_t id) {
+			return id < this->_meshes.size();
 		}
 
 		virtual void setCulling(uint64_t cull, int id = -1) {

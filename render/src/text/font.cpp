@@ -53,7 +53,7 @@ namespace rawrbox {
 		this->_info.underlineThickness = (x1 - x0) * this->_scale / 24.F;
 	}
 
-	std::shared_ptr<rawrbox::Glyph> Font::bakeGlyphAlpha(uint16_t codePoint) {
+	std::unique_ptr<rawrbox::Glyph> Font::bakeGlyphAlpha(uint16_t codePoint) {
 		if (this->_font == nullptr) throw std::runtime_error("[RawrBox-Font] Font not loaded");
 
 		int32_t ascent = 0, descent = 0, lineGap = 0;
@@ -69,7 +69,7 @@ namespace rawrbox {
 		const int32_t ww = x1 - x0;
 		const int32_t hh = y1 - y0;
 
-		std::shared_ptr<rawrbox::Glyph> glyph = std::make_shared<rawrbox::Glyph>();
+		std::unique_ptr<rawrbox::Glyph> glyph = std::make_unique<rawrbox::Glyph>();
 		glyph->codePoint = codePoint;
 		glyph->offset = {static_cast<float>(x0), static_cast<float>(y0)};
 		glyph->size = {static_cast<float>(ww), static_cast<float>(hh)};
@@ -124,10 +124,10 @@ namespace rawrbox {
 		return this->_glyphs.find(codepoint) != this->_glyphs.end();
 	}
 
-	std::shared_ptr<rawrbox::Glyph> Font::getGlyph(uint16_t codepoint) const {
+	rawrbox::Glyph* Font::getGlyph(uint16_t codepoint) const {
 		auto fnd = this->_glyphs.find(codepoint);
-		if (this->_glyphs.find(codepoint) == this->_glyphs.end()) return this->_glyphs.find(65533)->second; // �
-		return fnd->second;
+		if (fnd == this->_glyphs.end()) return this->_glyphs.find(65533)->second.get(); // �
+		return fnd->second.get();
 	}
 
 	float Font::getSize() const { return this->_pixelSize; }
@@ -176,12 +176,12 @@ namespace rawrbox {
 		return size;
 	}
 
-	std::shared_ptr<rawrbox::TextureAtlas> Font::getAtlasTexture(std::shared_ptr<rawrbox::Glyph> g) const {
+	rawrbox::TextureAtlas* Font::getAtlasTexture(rawrbox::Glyph* g) const {
 		if (g == nullptr) return nullptr;
 		return rawrbox::TextEngine::getAtlas(g->atlasID);
 	}
 
-	void Font::render(const std::string& text, const rawrbox::Vector2f& pos, std::function<void(std::shared_ptr<rawrbox::Glyph>, float, float, float, float)> renderGlyph) {
+	void Font::render(const std::string& text, const rawrbox::Vector2f& pos, std::function<void(rawrbox::Glyph*, float, float, float, float)> renderGlyph) const {
 		if (renderGlyph == nullptr) throw std::runtime_error("[RawrBox-FONT] Failed to render glyph! Missing 'renderGlyph' param");
 
 		auto info = this->getFontInfo();

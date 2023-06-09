@@ -2,7 +2,6 @@
 #include <rawrbox/ui/elements/graph.hpp>
 
 namespace rawrbox {
-
 	// CATEGORY --
 	rawrbox::UIGraphCategory& UIGraph::getCategory(size_t id) { return *this->_categories[id].get(); }
 	rawrbox::UIGraphCategory& UIGraph::addCategory(const std::string& name, const rawrbox::Color& color) {

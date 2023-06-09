@@ -1,5 +1,5 @@
 
-#include <rawrbox/debug/gizmos.hpp>
+#include <rawrbox/render/gizmos.hpp>
 #include <rawrbox/render/particles/emitter.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
@@ -17,7 +17,7 @@
 
 namespace particle_test {
 	void Game::setupGLFW() {
-		this->_window = std::make_shared<rawrbox::Window>();
+		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("PARTICLE TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
@@ -30,7 +30,7 @@ namespace particle_test {
 		this->_window->initializeBGFX();
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window);
+		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
@@ -60,10 +60,6 @@ namespace particle_test {
 		}
 
 		this->_window->upload();
-
-		// DEBUG ---
-		rawrbox::GIZMOS::upload();
-		// -----------
 	}
 
 	void Game::contentLoaded() {
@@ -72,12 +68,12 @@ namespace particle_test {
 		// ------
 
 		// Setup Engine
-		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/particles/particles.png")->texture;
-		this->_ps = std::make_shared<rawrbox::ParticleSystem<>>(texture);
+		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/particles/particles.png")->get();
+		this->_ps = std::make_unique<rawrbox::ParticleSystem<>>(*texture);
 
 		{
-			auto m = std::make_shared<rawrbox::Emitter>();
-			m->setPos({-2.F, 0.5F, 0});
+			rawrbox::Emitter m;
+			m.setPos({-2.F, 0.5F, 0});
 
 			this->_ps->addEmitter(m);
 		}
@@ -93,8 +89,8 @@ namespace particle_test {
 			s.particlesPerSecond = 20;
 			s.maxParticles = 100;
 
-			this->_em = std::make_shared<rawrbox::Emitter>(s);
-			this->_ps->addEmitter(this->_em);
+			rawrbox::Emitter m(s);
+			this->_em = &this->_ps->addEmitter(m);
 		}
 
 		this->_ps->upload();
@@ -102,9 +98,8 @@ namespace particle_test {
 		// ------
 
 		{
-			auto f = this->_font.lock();
-			this->_text->addText(f, "DEFAULT EMITTER SETTINGS", {-2.F, 0.15F, 0});
-			this->_text->addText(f, "CUSTOM EMITTER SETTINGS", {2.F, 0.15F, 0});
+			this->_text->addText(*this->_font, "DEFAULT EMITTER SETTINGS", {-2.F, 0.15F, 0});
+			this->_text->addText(*this->_font, "CUSTOM EMITTER SETTINGS", {2.F, 0.15F, 0});
 			this->_text->upload();
 		}
 
@@ -154,7 +149,7 @@ namespace particle_test {
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 
 		this->_modelGrid->draw({});
-		this->_ps->draw(this->_camera);
+		this->_ps->draw(*this->_camera);
 		this->_text->draw({});
 	}
 

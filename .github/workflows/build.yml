@@ -67,7 +67,6 @@ jobs:
                   ctest --test-dir ./utils --output-on-failure
                   ctest --test-dir ./render --output-on-failure
                   ctest --test-dir ./engine --output-on-failure
-                  ctest --test-dir ./debug --output-on-failure
                   ctest --test-dir ./resources --output-on-failure
 
             - name: Run linter
@@ -83,4 +82,4 @@ jobs:
                   version: '16'
                   database: './build/'
                   thread-comments: true
-                  ignore: build | .github | render/include/stb | debug/tests | engine/tests | math/tests | render/tests | resources/tests | utils/tests | physics/tests
+                  ignore: build | .github | render/include/stb | engine/tests | math/tests | render/tests | resources/tests | utils/tests | physics/tests

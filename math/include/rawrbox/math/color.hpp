@@ -1,7 +1,5 @@
 #pragma once
 
-#include <rawrbox/utils/pack.hpp>
-
 #include <algorithm>
 #include <array>
 #include <complex>
@@ -120,10 +118,9 @@ namespace rawrbox {
 
 		[[nodiscard]] uint32_t pack() const {
 			if constexpr (std::is_same<NumberType, int>::value) {
-				Color_t<float> cc = this->cast<float>();
-				return rawrbox::PackUtils::toAbgr(cc.r, cc.g, cc.b, cc.a);
+				return 0 | (static_cast<uint8_t>(this->r) << 0) | (static_cast<uint8_t>(this->g) << 8) | (static_cast<uint8_t>(this->b) << 16) | (static_cast<uint8_t>(this->a) << 24);
 			} else {
-				return rawrbox::PackUtils::toAbgr(this->r, this->g, this->b, this->a);
+				return 0 | (static_cast<uint8_t>(this->r * 255.0F) << 0) | (static_cast<uint8_t>(this->g * 255.0F) << 8) | (static_cast<uint8_t>(this->b * 255.0F) << 16) | (static_cast<uint8_t>(this->a * 255.0F) << 24);
 			}
 		}
 

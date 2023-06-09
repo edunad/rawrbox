@@ -25,10 +25,10 @@ namespace rawrbox {
 
 	class PostProcessManager {
 	protected:
-		std::shared_ptr<rawrbox::TextureRender> _render;
-		std::vector<std::shared_ptr<rawrbox::PostProcessBase>> _postProcesses;
+		std::unique_ptr<rawrbox::TextureRender> _render = nullptr;
+		std::vector<std::unique_ptr<rawrbox::PostProcessBase>> _postProcesses = {};
 
-		rawrbox::Vector2i _windowSize;
+		rawrbox::Vector2i _windowSize = {};
 
 		bool _recording = false;
 
@@ -40,12 +40,12 @@ namespace rawrbox {
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle _program = BGFX_INVALID_HANDLE;
 
-		std::vector<PosUVVertexData> _vertices;
-		std::vector<uint16_t> _indices;
+		std::vector<rawrbox::PosUVVertexData> _vertices = {};
+		std::vector<uint16_t> _indices = {};
 		// -----
 
 		// POS-PROCESS SAMPLES
-		std::vector<bgfx::FrameBufferHandle> _samples;
+		std::vector<bgfx::FrameBufferHandle> _samples = {};
 		// ----
 
 		void pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv);
@@ -64,9 +64,9 @@ namespace rawrbox {
 		PostProcessManager& operator=(const PostProcessManager&) = delete;
 
 		// Process utils ----
-		virtual void add(std::shared_ptr<rawrbox::PostProcessBase> post);
+		virtual void add(std::unique_ptr<rawrbox::PostProcessBase> post);
 		virtual void remove(size_t indx);
-		virtual std::shared_ptr<rawrbox::PostProcessBase> get(size_t indx);
+		[[nodiscard]] virtual rawrbox::PostProcessBase& get(size_t indx) const;
 		virtual size_t count();
 		// ---------
 

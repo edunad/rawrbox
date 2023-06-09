@@ -22,20 +22,6 @@ namespace rawrbox {
 			std::string name;
 
 		public:
-			EventScoped() = default;
-			EventScoped(EventNamed<CallbackArgs...>* map_, std::string name_) : map(map_), name(std::move(name_)){};
-			EventScoped(EventScoped&&) = delete;
-			EventScoped& operator=(EventScoped&&) = delete;
-			EventScoped(const EventScoped&) = delete;
-			EventScoped& operator=(const EventScoped&) = delete;
-
-			~EventScoped() {
-				if (map == nullptr) return;
-
-				map->remove(name);
-				map = nullptr;
-			}
-
 			void call(CallbackArgs... args) {
 				if (map == nullptr) return;
 

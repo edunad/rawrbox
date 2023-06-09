@@ -76,7 +76,7 @@ namespace rawrbox {
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 
-		this->_pixelTexture = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(1, 1), Colors::White);
+		this->_pixelTexture = std::make_unique<rawrbox::TextureFlat>(rawrbox::Vector2i(1, 1), Colors::White);
 		this->_pixelTexture->upload();
 	}
 
@@ -218,20 +218,18 @@ namespace rawrbox {
 			this->drawLine({pos.x + size.x, pos.y - thick}, {pos.x + size.x, pos.y + size.y}, col);
 			this->drawLine({pos.x + size.x + (thick > 1.F ? thick : 0.F), pos.y + size.y}, {pos.x - thick, pos.y + size.y}, col);
 		} else {
-			this->drawTexture(pos, size, this->_pixelTexture, col);
+			if (this->_pixelTexture == nullptr) return;
+			this->drawTexture(pos, size, *this->_pixelTexture, col);
 		}
 	}
 
-	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, std::shared_ptr<rawrbox::TextureBase> tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd) {
+	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd) {
 		if (col.isTransparent()) return;
 
 		// Setup --------
-		bgfx::TextureHandle handl = BGFX_INVALID_HANDLE;
-		if (tex != nullptr) handl = tex->getHandle();
-
 		this->setupDrawCall(
 		    this->_2dprogram,
-		    handl);
+		    tex.getHandle());
 		// ----
 
 		this->pushVertice({pos.x, pos.y}, uvStart, col);
@@ -323,11 +321,11 @@ namespace rawrbox {
 		// ----
 	}
 
-	void Stencil::drawText(std::shared_ptr<rawrbox::Font> font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, rawrbox::Alignment alignX, rawrbox::Alignment alignY) {
-		if (font == nullptr || col.isTransparent() || text.empty()) return;
+	void Stencil::drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, rawrbox::Alignment alignX, rawrbox::Alignment alignY) {
+		if (col.isTransparent() || text.empty()) return;
 
 		rawrbox::Vector2f startpos = pos;
-		rawrbox::Vector2f tsize = font->getStringSize(text);
+		rawrbox::Vector2f tsize = font.getStringSize(text);
 
 		if (alignX != Alignment::Left || alignY != Alignment::Left) {
 			switch (alignX) {
@@ -356,11 +354,11 @@ namespace rawrbox {
 		startpos.x = std::roundf(startpos.x);
 		startpos.y = std::roundf(startpos.y);
 
-		font->render(text, startpos, [this, font, col](std::shared_ptr<rawrbox::Glyph> glyph, float x0, float y0, float x1, float y1) {
+		font.render(text, startpos, [this, &font, col](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
 			// Setup --------
 			this->setupDrawCall(
 			    this->_textprogram,
-			    font->getAtlasTexture(glyph)->getHandle());
+			    font.getAtlasTexture(glyph)->getHandle());
 			// ----
 
 			this->pushVertice({x0, y0}, glyph->textureTopLeft, col);

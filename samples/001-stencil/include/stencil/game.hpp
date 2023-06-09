@@ -10,13 +10,13 @@
 
 namespace stencil {
 	class Game : public rawrbox::Engine {
-		std::shared_ptr<rawrbox::Window> _window = nullptr;
-		std::shared_ptr<rawrbox::TextureImage> _texture = nullptr;
-		std::shared_ptr<rawrbox::TextureGIF> _texture2 = nullptr;
+		std::unique_ptr<rawrbox::Window> _window = nullptr;
+		rawrbox::TextureImage* _texture = nullptr;
+		rawrbox::TextureGIF* _texture2 = nullptr;
 
-		std::weak_ptr<rawrbox::Font> _font;
-		std::weak_ptr<rawrbox::Font> _font2;
-		std::weak_ptr<rawrbox::Font> _font3;
+		rawrbox::Font* _font = nullptr;
+		rawrbox::Font* _font2 = nullptr;
+		rawrbox::Font* _font3 = nullptr;
 
 		bool _ready = false;
 		std::atomic<int> _loadingFiles = 0;

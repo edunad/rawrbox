@@ -1,7 +1,7 @@
 
 #include <rawrbox/bass/manager.hpp>
 #include <rawrbox/bass/resources/sound.hpp>
-#include <rawrbox/debug/gizmos.hpp>
+#include <rawrbox/render/gizmos.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
@@ -16,7 +16,7 @@
 
 namespace bass_test {
 	void Game::setupGLFW() {
-		this->_window = std::make_shared<rawrbox::Window>();
+		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("BASS TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
@@ -29,7 +29,7 @@ namespace bass_test {
 		this->_window->initializeBGFX();
 
 		// Setup camera
-		this->_camera = std::make_shared<rawrbox::CameraOrbital>(this->_window);
+		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
 		this->_camera->setPos({0.F, 5.F, -5.F});
 		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
@@ -43,7 +43,6 @@ namespace bass_test {
 	}
 
 	void Game::loadContent() {
-
 		std::array initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/sounds/clownmusic.ogg", 0 | rawrbox::SoundFlags::SOUND_3D)};
@@ -60,10 +59,6 @@ namespace bass_test {
 		}
 
 		this->_window->upload();
-
-		// DEBUG ---
-		rawrbox::GIZMOS::upload();
-		// -----------
 	}
 
 	void Game::contentLoaded() {
@@ -90,7 +85,7 @@ namespace bass_test {
 			fmt::print("BPM: {}\n", bpm);
 		};
 
-		this->_sound2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceBASS>("content/sounds/clownmusic.ogg")->sound->createInstance();
+		this->_sound2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceBASS>("content/sounds/clownmusic.ogg")->get()->createInstance();
 		this->_sound2->setLooping(true);
 		this->_sound2->set3D(10.F);
 		this->_sound2->setPosition({3.F, 1.F, 0});
@@ -98,15 +93,14 @@ namespace bass_test {
 		this->_sound2->play();
 
 		// Text test ----
-		auto f = this->_font.lock();
 		{
-			this->_beatText->addText(f, "BEAT", {-3.F, 1.3F, 0});
+			this->_beatText->addText(*this->_font, "BEAT", {-3.F, 1.3F, 0});
 			this->_beatText->upload();
 		}
 
 		{
-			this->_text->addText(f, "HTTP LOADING", {-3.F, 1.1F, 0});
-			this->_text->addText(f, "LOCAL LOADING", {3.F, 1.1F, 0});
+			this->_text->addText(*this->_font, "HTTP LOADING", {-3.F, 1.1F, 0});
+			this->_text->addText(*this->_font, "LOCAL LOADING", {3.F, 1.1F, 0});
 			this->_text->upload();
 		}
 		// ------
@@ -123,10 +117,11 @@ namespace bass_test {
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-
 		this->_camera.reset();
 
 		this->_sound.reset();
+		this->_sound2.reset();
+
 		this->_modelGrid.reset();
 		this->_beatText.reset();
 		this->_text.reset();

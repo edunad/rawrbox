@@ -58,7 +58,6 @@
 | `RAWRBOX.BASS`      | Bass lib (aka sound loading)                       | Loads sounds using the BASS lib, supports 3D & http sound streaming                        |   `ENGINE` & `MATH`    |
 | `RAWRBOX.UTILS`     | Utils lib                                          | Utils for game development                                                                 |                        |
 | `RAWRBOX.ENGINE`    | Engine lib (aka game loop)                         | The engine it self, contains the game loop mechanism                                       |        `UTILS`         |
-| `RAWRBOX.DEBUG`     | Debug utils lib                                    | Automatically adds GIZMOS and other debug methods to the renderer                          |        `RENDER`        |
 | `RAWRBOX.UI`        | UI lib                                             | UI components lib                                                                          | `RENDER` & `RESOURCES` |
 | `RAWRBOX.RESOURCES` | Resources manager lib                              | Resource manager. Handles loading and stores the pointers for easy access                  |        `UTILS`         |
 | `RAWRBOX.PHYSICS`   | Physics lib                                        | Physics lib                                                                                |   `ENGINE` & `MATH`    |
@@ -83,7 +82,6 @@
 | `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          |
 | `RAWRBOX_BUILD_TESTING`                    | Builds and runs tests                                                                              |
 | `RAWRBOX_BUILD_UI`                         | Builds and includes ui                                                                             |
-| `RAWRBOX_BUILD_DEBUG`                      | Builds and includes debug (aka gizmo rendering & renderdoc)                                        |
 | `RAWRBOX_BUILD_RESOURCES_MANAGER`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
 | `RAWRBOX_BUILD_PHYSICS`                    | Builds the physics engine                                                                          |
 |                                            |                                                                                                    |

@@ -1,26 +1,29 @@
 #pragma once
 
-#include <rawrbox/ui/base.hpp>
+#include <rawrbox/ui/container.hpp>
 
 #include <array>
 #include <memory>
 
 namespace rawrbox {
 	class Window;
-	class UIRoot : public rawrbox::UIContainer {
+	class UIRoot {
 	protected:
-		std::weak_ptr<rawrbox::UIBase> _focusedElement;
-		std::weak_ptr<rawrbox::UIBase> _hoveredElement;
-		std::weak_ptr<rawrbox::Window> _window;
+		rawrbox::Window* _window = nullptr;
+
+		std::vector<std::unique_ptr<rawrbox::UIContainer>> _children = {};
+		rawrbox::AABBf _aabb = {};
 
 		// INTERNAL UTILS
 		int _pressingMouseButton = 0;
 
-		std::shared_ptr<rawrbox::UIBase> findElement(const rawrbox::Vector2i& mousePos, rawrbox::Vector2i& offsetOut);
-		std::shared_ptr<rawrbox::UIBase> findElement(std::shared_ptr<rawrbox::UIBase> elmPtr, const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset, rawrbox::Vector2i& offsetOut);
+		rawrbox::UIContainer* findElement(const rawrbox::Vector2i& mousePos, rawrbox::Vector2i& offsetOut);
+		rawrbox::UIContainer* findElement(rawrbox::UIContainer* elmPtr, const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset, rawrbox::Vector2i& offsetOut);
 		// ----
 
-		void setWindow(std::shared_ptr<rawrbox::Window> window);
+		// CHILDREN
+		void removeChildren();
+		// ----
 
 		// EVENTS ---
 		void onMousePress(const rawrbox::Vector2i& location, uint32_t button, uint32_t action, uint32_t mods);
@@ -28,15 +31,42 @@ namespace rawrbox {
 		// -----
 
 	public:
-		~UIRoot() override;
-		UIRoot() = default;
+		rawrbox::UIContainer* focusedElement = nullptr;
+		rawrbox::UIContainer* hoveredElement = nullptr;
 
-		static std::shared_ptr<rawrbox::UIRoot> create(std::shared_ptr<rawrbox::Window> window);
+		explicit UIRoot(rawrbox::Window& window);
 
-		[[nodiscard]] const std::shared_ptr<rawrbox::UIBase> getFocus() const;
-		void setFocus(std::shared_ptr<rawrbox::UIBase> elm);
+		// UTIL
+		[[nodiscard]] const rawrbox::AABBf& getAABB() const;
+		// ---
 
-		void draw(rawrbox::Stencil& stencil) override;
+		// CHILDREN
+		void removeChild(rawrbox::UIContainer* elm);
+		std::vector<std::unique_ptr<rawrbox::UIContainer>>& getChildren();
+
+		template <class T, typename... CallbackArgs>
+		T* createChild(CallbackArgs&&... args) {
+			auto elm = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
+			elm->setRoot(this);
+			elm->initialize();
+
+			auto& childn = this->getChildren();
+			if (elm->alwaysOnTop()) {
+				childn.insert(childn.begin(), std::move(elm));
+			} else {
+				childn.push_back(std::move(elm));
+			}
+
+			return dynamic_cast<T*>(this->getChildren().back().get());
+		}
+		// ----
+
+		// FOCUS
+		[[nodiscard]] const rawrbox::UIContainer* getFocus() const;
+		void setFocus(rawrbox::UIContainer* elm);
+		// ----
+
 		void render();
+		void update();
 	};
 } // namespace rawrbox

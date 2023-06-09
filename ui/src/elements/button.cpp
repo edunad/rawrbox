@@ -5,14 +5,8 @@
 #include <rawrbox/utils/keys.hpp>
 
 namespace rawrbox {
-	UIButton::~UIButton() {
-		this->_texture.reset();
-		this->_overlay.reset();
-		this->_consola.reset();
-	}
-
 	void UIButton::initialize() {
-		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->texture;
+		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->get();
 	}
 
 	// UTILS -----
@@ -42,11 +36,11 @@ namespace rawrbox {
 	const std::string& UIButton::getTooltip() const { return this->_tooltip; }
 
 	void UIButton::setTexture(const std::string& path) {
-		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->texture;
+		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->get();
 	}
 
-	void UIButton::setTexture(std::shared_ptr<rawrbox::TextureBase>& texture) {
-		this->_texture = texture;
+	void UIButton::setTexture(rawrbox::TextureBase& texture) {
+		this->_texture = &texture;
 	}
 	// ---------
 
@@ -58,7 +52,7 @@ namespace rawrbox {
 	// ---------
 
 	void UIButton::setHovering(bool hover) {
-		rawrbox::UIBase::setHovering(hover);
+		rawrbox::UIContainer::setHovering(hover);
 		if (this->_tooltip.empty()) return;
 
 		/*auto& game = IasGame::getInstance();
@@ -92,23 +86,22 @@ namespace rawrbox {
 		if (this->_texture != nullptr) {
 			// No text, center icon
 			if (this->_text.empty()) {
-				stencil.drawTexture({(size.x - this->_textureSize.x) / 2, (size.y - this->_textureSize.y) / 2}, this->_textureSize, this->_texture, this->_textureColor);
+				stencil.drawTexture({(size.x - this->_textureSize.x) / 2, (size.y - this->_textureSize.y) / 2}, this->_textureSize, *this->_texture, this->_textureColor);
 			} else {
 				// Set icon on left
-				stencil.drawTexture({2, (size.y - this->_textureSize.y) / 2}, this->_textureSize, this->_texture, this->_textureColor); // Padding
+				stencil.drawTexture({2, (size.y - this->_textureSize.y) / 2}, this->_textureSize, *this->_texture, this->_textureColor); // Padding
 			}
 		}
 
-		if (!this->_text.empty() && !this->_consola.expired()) {
-			auto progSize = this->_consola.lock()->getStringSize(this->_text);
-			auto f = this->_consola.lock();
+		if (!this->_text.empty() && this->_consola != nullptr) {
+			auto progSize = this->_consola->getStringSize(this->_text);
 
 			// No icon, center text
 			if (this->_texture == nullptr) {
-				stencil.drawText(f, this->_text, {(size.x - progSize.x) / 2, (size.y - progSize.y) / 2}, this->_textColor);
+				stencil.drawText(*this->_consola, this->_text, {(size.x - progSize.x) / 2, (size.y - progSize.y) / 2}, this->_textColor);
 			} else {
 				// Text after icon
-				stencil.drawText(f, this->_text, {this->_textureSize.x + 4, (size.y - progSize.y) / 2}, this->_textColor);
+				stencil.drawText(*this->_consola, this->_text, {this->_textureSize.x + 4, (size.y - progSize.y) / 2}, this->_textColor);
 			}
 		}
 
@@ -124,7 +117,7 @@ namespace rawrbox {
 		if (this->_overlay == nullptr) return;
 
 		auto& size = this->getSize();
-		stencil.drawTexture({}, size, this->_overlay, Color::RGBAHex(0xFFFFFF0A), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
+		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xFFFFFF0A), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
 	}
 	// ---------
 

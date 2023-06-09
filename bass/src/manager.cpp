@@ -20,7 +20,7 @@ namespace rawrbox {
 	rawrbox::Vector3f rawrbox::BASS::_oldLocation = {};
 
 	// PUBLIC
-	std::unordered_map<std::string, std::shared_ptr<rawrbox::SoundBase>> rawrbox::BASS::sounds = {};
+	std::unordered_map<std::string, std::unique_ptr<rawrbox::SoundBase>> rawrbox::BASS::sounds = {};
 
 	rawrbox::EventNamed<std::pair<uint32_t, double>> rawrbox::BASS::onBEAT;
 	rawrbox::EventNamed<std::pair<uint32_t, float>> rawrbox::BASS::onBPM;
@@ -84,10 +84,10 @@ namespace rawrbox {
 	}
 
 	// LOAD ----
-	std::shared_ptr<rawrbox::SoundBase> BASS::loadSound(const std::filesystem::path& path, uint32_t flags) {
+	rawrbox::SoundBase* BASS::loadSound(const std::filesystem::path& path, uint32_t flags) {
 		std::string pth = path.generic_string().c_str();
 
-		if (sounds.find(pth) != sounds.end()) return sounds[pth];
+		if (sounds.find(pth) != sounds.end()) return sounds[pth].get();
 		if (!std::filesystem::exists(path)) throw std::runtime_error(fmt::format("[RawrBox-BASS] File '{}' not found!", pth));
 
 		auto size = std::filesystem::file_size(path);
@@ -120,13 +120,13 @@ namespace rawrbox {
 			BASS_FX_BPM_CallbackSet(sample, std::bit_cast<BPMPROC*>(&soundBPM), 1, 0, 0, nullptr);
 		}
 
-		sounds[pth] = std::make_shared<rawrbox::SoundBase>(sample, 0, flags, shouldStream);
-		return sounds[pth];
+		sounds[pth] = std::make_unique<rawrbox::SoundBase>(sample, 0, flags, shouldStream);
+		return sounds[pth].get();
 	}
 
-	std::shared_ptr<rawrbox::SoundBase> BASS::loadHTTPSound(const std::string& url, uint32_t flags) {
+	rawrbox::SoundBase* BASS::loadHTTPSound(const std::string& url, uint32_t flags) {
 		if (!url.starts_with("http://") && !url.starts_with("https://")) throw std::runtime_error(fmt::format("[BASS] Invalid sound url '{}'", url));
-		if (sounds.find(url) != sounds.end()) return sounds[url];
+		if (sounds.find(url) != sounds.end()) return sounds[url].get();
 
 		if (url.rfind(".3D") != std::string::npos) flags |= SoundFlags::SOUND_3D;
 
@@ -155,8 +155,8 @@ namespace rawrbox {
 			BASS_FX_BPM_CallbackSet(sampleStreamed, std::bit_cast<BPMPROC*>(&soundBPM), 1, 0, 0, nullptr);
 		}
 
-		sounds[url] = std::make_shared<rawrbox::SoundBase>(sampleStreamed, 0, flags, true);
-		return sounds[url];
+		sounds[url] = std::make_unique<rawrbox::SoundBase>(sampleStreamed, 0, flags, true);
+		return sounds[url].get();
 	}
 	// ----
 
