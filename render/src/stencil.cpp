@@ -39,12 +39,14 @@ namespace rawrbox {
 		    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 		    .end();
 
-		// SETUP STENCIL ---
-		bgfx::setViewRect(this->_renderId, 0, 0, this->_windowSize.x, this->_windowSize.y);
-		bgfx::setViewMode(this->_renderId, bgfx::ViewMode::Sequential);
-		bgfx::setViewName(this->_renderId, fmt::format("RawrBox-RENDERER-STENCIL-{}", this->_renderId).c_str());
-		bgfx::setViewClear(this->_renderId, BGFX_DEFAULT_CLEAR, 0x00000000, 1.0F, 0);
-		// ---
+		if (rawrbox::BGFX_INITIALIZED) {
+			// SETUP STENCIL ---
+			bgfx::setViewRect(this->_renderId, 0, 0, this->_windowSize.x, this->_windowSize.y);
+			bgfx::setViewMode(this->_renderId, bgfx::ViewMode::Sequential);
+			bgfx::setViewName(this->_renderId, fmt::format("RawrBox-RENDERER-STENCIL-{}", this->_renderId).c_str());
+			bgfx::setViewClear(this->_renderId, BGFX_DEFAULT_CLEAR, 0x00000000, 1.0F, 0);
+			// ---
+		}
 	}
 
 	Stencil::~Stencil() {
@@ -109,7 +111,7 @@ namespace rawrbox {
 		    // pos
 		    ((pos.x + this->_offset.x) / wSize.x * 2 - 1),
 		    ((pos.y + this->_offset.y) / wSize.y * 2 - 1) * -1,
-		    1.F - static_cast<float>(this->_drawCalls.size()) * 0.0001F,
+		    1.0F,
 
 		    // uv
 		    uv.x,
