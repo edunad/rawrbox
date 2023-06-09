@@ -79,12 +79,14 @@ namespace rawrbox {
 	// SORTING -----
 	const bool UIContainer::alwaysOnTop() const { return this->_alwaysOnTop; }
 	void UIContainer::bringToFront() {
-		auto& children = this->_parent->getChildren();
+
+		auto& children = this->_root->getChildren();
 		auto pivot = std::find_if(children.begin(), children.end(), [this](auto& el) -> bool {
 			return el.get() == this;
 		});
 
 		if (pivot == children.end()) return; // Already in front
+
 		// TODO: CHECK IF TOP ONE IS ALWAYS TOP
 		std::rotate(pivot, pivot + 1, children.end());
 	}

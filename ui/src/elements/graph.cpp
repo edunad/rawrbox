@@ -124,8 +124,8 @@ namespace rawrbox {
 			for (auto& l : lines) {
 				if (this->_style == rawrbox::UIGraphStyle::BLOCK) {
 					rawrbox::Polygon poly;
-					auto col = l.col;
-					col.a = 0.15F;
+					auto col = l.col * 0.25F;
+					col.a = 1.F;
 
 					poly.verts = {
 					    {{l.a.x, size.y}, {0, 0}, col},

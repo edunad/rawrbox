@@ -15,7 +15,17 @@ add_custom_target(
 # ------------------
 
 # LIBS ---
-CPMAddPackage("gh:dacap/clip@1.5")
+CPMAddPackage(
+    NAME
+    clip
+    VERSION
+    1.5
+    GITHUB_REPOSITORY
+    dacap/clip
+    OPTIONS
+    "CLIP_EXAMPLES OFF"
+    "CLIP_TESTS OFF")
+
 if(clip_ADDED)
     target_include_directories(clip PUBLIC ${clip_SOURCE_DIR})
     set_lib_runtime_mt(clip)

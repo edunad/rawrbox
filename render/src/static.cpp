@@ -1,8 +1,16 @@
-#include <rawrbox/render/model/light/manager.hpp>
+
 #include <rawrbox/render/static.hpp>
 
 namespace rawrbox {
-	bgfx::ViewId CURRENT_VIEW_ID = 0;
+	// VIEW IDS ---
+	bgfx::ViewId RENDER_VIEW_ID = 0;     // 1 Views for basic rendering
+	bgfx::ViewId STENCIL_VIEW_ID = 1;    // 3 Views for basic rendering
+	bgfx::ViewId POST_PROCESSING_ID = 3; // 10 Views for basic rendering
+	bgfx::ViewId RENDERER_VIEW_ID = 13;  // Go wild
+
+	bgfx::ViewId CURRENT_VIEW_ID = RENDER_VIEW_ID;
+	// ---------
+
 	bool BGFX_INITIALIZED = false;
 
 	// TEXTURE FALLBACKS ---

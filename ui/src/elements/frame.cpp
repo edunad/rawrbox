@@ -71,7 +71,7 @@ namespace rawrbox {
 	}
 
 	void UIFrame::mouseDown(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) {
-		if (!this->_draggable || mousePos.y >= 18) return; // or Touching title
+		if (!this->_draggable || mousePos.y >= 0) return; // or Touching title
 
 		this->_dragging = true;
 		this->_dragStart = mousePos.cast<float>() + this->getDrawOffset();

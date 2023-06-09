@@ -233,18 +233,20 @@ namespace rawrbox {
 		if ((this->_windowFlags & WindowFlags::Debug::PROFILER) > 0) this->_debugFlags |= BGFX_DEBUG_PROFILER;
 
 		bgfx::setDebug(this->_debugFlags);
-		bgfx::setViewRect(this->_id, 0, 0, this->_size.x, this->_size.y);
-		bgfx::setViewMode(this->_id, bgfx::ViewMode::Default);
-		bgfx::setViewName(this->_id, fmt::format("RawrBox-RENDERER-{}", this->_id).c_str());
-		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
+
+		// SETUP MAIN ---
+		bgfx::setViewRect(rawrbox::RENDER_VIEW_ID, 0, 0, this->_size.x, this->_size.y);
+		bgfx::setViewMode(rawrbox::RENDER_VIEW_ID, bgfx::ViewMode::Default);
+		bgfx::setViewName(rawrbox::RENDER_VIEW_ID, fmt::format("RawrBox-RENDERER-MAIN-{}", rawrbox::RENDER_VIEW_ID).c_str());
+		bgfx::setViewClear(rawrbox::RENDER_VIEW_ID, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
+		// ---
 
 		// Setup main renderer ----
 		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
 		this->onResize += [this](auto&, auto& size) {
 			if (this->_stencil != nullptr) this->_stencil->resize(size);
-
-			bgfx::setViewRect(this->_id, 0, 0, size.x, size.y);
-			bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
+			bgfx::setViewRect(rawrbox::RENDER_VIEW_ID, 0, 0, size.x, size.y);
+			bgfx::setViewClear(rawrbox::RENDER_VIEW_ID, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 		};
 
 		// Setup global util textures ---
@@ -331,8 +333,8 @@ namespace rawrbox {
 	void Window::clear() {
 		if (!rawrbox::BGFX_INITIALIZED) return;
 
-		bgfx::touch(this->_id); // Make sure we draw on the view
-		bgfx::setViewClear(this->_id, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
+		bgfx::touch(rawrbox::RENDER_VIEW_ID); // Make sure we draw on the view
+		bgfx::setViewClear(rawrbox::RENDER_VIEW_ID, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 	}
 
 	void Window::upload() {

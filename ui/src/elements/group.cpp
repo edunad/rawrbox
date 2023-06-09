@@ -21,10 +21,6 @@ namespace rawrbox {
 	}
 	// ---------
 
-	// FOCUS HANDLE ---
-	bool UIGroup::hitTest(const rawrbox::Vector2f& point) const { return false; }
-	// -----
-
 	// DRAW ----
 	void UIGroup::draw(rawrbox::Stencil& stencil) {
 		if (this->_border <= 0.F) return;

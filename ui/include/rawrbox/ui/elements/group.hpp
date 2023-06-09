@@ -15,10 +15,6 @@ namespace rawrbox {
 		virtual void sizeToContents();
 		// ---------
 
-		// FOCUS HANDLE ---
-		[[nodiscard]] bool hitTest(const rawrbox::Vector2f& point) const override;
-		// -----
-
 		// DRAW ----
 		void draw(rawrbox::Stencil& stencil) override;
 		// -------

@@ -1,13 +1,10 @@
 #pragma once
 #include <rawrbox/render/texture/flat.hpp>
 #include <rawrbox/render/texture/missing.hpp>
-#include <rawrbox/utils/ringbuffer.hpp>
 
 #include <bgfx/bgfx.h>
 
-#include <functional>
 #include <memory>
-#include <thread>
 
 // NOLINTBEGIN(*)
 #define RAWRBOX_DESTROY(HANDLE) \
@@ -17,23 +14,26 @@
 	}
 // NOLINTEND(*)
 namespace rawrbox {
-	class LightManager;
-
 	constexpr auto MAX_BONES_PER_VERTEX = 4;
 	constexpr auto MAX_BONES_PER_MODEL = 200;
 	constexpr auto MAX_LIGHTS = 12;
 
 	extern bool BGFX_INITIALIZED;
 
+	// VIEW IDS ---
+	extern bgfx::ViewId RENDER_VIEW_ID;     // 1 Views for basic rendering
+	extern bgfx::ViewId STENCIL_VIEW_ID;    // 3 Views for basic rendering
+	extern bgfx::ViewId POST_PROCESSING_ID; // 10 Views for basic rendering
+	extern bgfx::ViewId RENDERER_VIEW_ID;   // Go wild
+
 	extern bgfx::ViewId CURRENT_VIEW_ID;
+	// ---------
 
 	// TEXTURE FALLBACKS ---
 	extern std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE;
 	extern std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE;
 	extern std::shared_ptr<rawrbox::TextureFlat> BLACK_TEXTURE;
 	// ----
-
-	extern rawrbox::LightManager Lights;
 
 	// ID GENERATION
 	extern size_t SOUND_ID;

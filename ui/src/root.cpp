@@ -181,7 +181,7 @@ namespace rawrbox {
 		// Reset old focus & set new one
 		if (this->focusedElement != nullptr) this->focusedElement->setFocused(false);
 
-		// target->bringToFront();
+		elm->bringToFront();
 		elm->setFocused(true);
 		this->focusedElement = elm;
 		// ---
