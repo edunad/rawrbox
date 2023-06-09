@@ -5,17 +5,22 @@
 
 namespace rawrbox {
 	class ResourceBASS : public rawrbox::Resource {
-	public:
-		rawrbox::SoundBase* sound = nullptr;
+		rawrbox::SoundBase* _sound = nullptr;
 
-		~ResourceBASS() override;
+	public:
 		bool load(const std::vector<uint8_t>& buffer) override;
+		[[nodiscard]] rawrbox::SoundBase* get() const;
 	};
 
 	class BASSLoader : public rawrbox::Loader {
 	public:
 		BASSLoader();
 		~BASSLoader() override;
+
+		BASSLoader(const BASSLoader&) = delete;
+		BASSLoader(BASSLoader&&) = delete;
+		BASSLoader& operator=(const BASSLoader&) = delete;
+		BASSLoader& operator=(BASSLoader&&) = delete;
 
 		std::unique_ptr<rawrbox::Resource> createEntry(uint32_t flags = 0) override;
 		bool canLoad(const std::string& fileExtention) override;
