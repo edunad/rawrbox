@@ -112,7 +112,7 @@ namespace rawrbox {
 			this->offsetMatrix = offset;
 		}
 
-		virtual void setPos(const rawrbox::Vector3f& pos) {
+		void setPos(const rawrbox::Vector3f& pos) {
 			this->offsetMatrix.translate(pos);
 		}
 

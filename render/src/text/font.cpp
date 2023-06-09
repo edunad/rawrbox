@@ -104,7 +104,7 @@ namespace rawrbox {
 
 	void Font::generateGlyph(uint16_t codePoint) {
 		if (this->hasGlyph(codePoint)) return;
-		this->_glyphs[codePoint] = std::move(this->bakeGlyphAlpha(codePoint));
+		this->_glyphs[codePoint] = this->bakeGlyphAlpha(codePoint);
 	}
 	// ----
 

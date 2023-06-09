@@ -30,7 +30,7 @@ namespace rawrbox {
 		}
 
 		// UTILS -----
-		[[nodiscard]] virtual rawrbox::TextureBase* getTexture() const { return this->_atlas; }
+		[[nodiscard]] rawrbox::TextureBase* getTexture() const { return this->_atlas; }
 
 		void upload() {
 			this->_material->upload();

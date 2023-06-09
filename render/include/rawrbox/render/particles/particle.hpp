@@ -32,8 +32,6 @@ namespace rawrbox {
 
 		float rotationStart = 0.F;
 		float rotationEnd = 0.F;
-
-		Particle() = default;
 	};
 
 } // namespace rawrbox

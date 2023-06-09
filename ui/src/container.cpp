@@ -4,7 +4,7 @@
 #include <rawrbox/ui/root.hpp>
 
 namespace rawrbox {
-	UIContainer::UIContainer(rawrbox::UIContainer&& other) noexcept : _children(std::move(other._children)), _parent(other._parent), _alwaysOnTop(other._alwaysOnTop), _aabb(other._aabb) {}
+	UIContainer::UIContainer(rawrbox::UIContainer&& other) noexcept : _parent(other._parent), _children(std::move(other._children)), _alwaysOnTop(other._alwaysOnTop), _aabb(other._aabb) {}
 	void UIContainer::initialize() {}
 
 	// UTILS ---
