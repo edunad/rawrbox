@@ -27,3 +27,9 @@
 
 '🧪 TESTS':
     - '**/tests/**/*.cpp'
+
+'FEATURE':
+    - head-branch: '^feature/'
+
+'BUG':
+    - head-branch: '^bugfixes/'
