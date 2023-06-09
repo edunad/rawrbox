@@ -17,8 +17,6 @@ static const bgfx::EmbeddedShader model_shaders[] = {
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
-constexpr int RENDER_PASS_DOWNSAMPLE_ID = 30;
-
 namespace rawrbox {
 	PostProcessManager::PostProcessManager(const rawrbox::Vector2i& windowSize) : _windowSize(windowSize) {
 		// Shader layout
@@ -76,7 +74,7 @@ namespace rawrbox {
 		// Prepare new samples
 		this->_samples.clear();
 		for (size_t i = 0; i < this->_postProcesses.size(); i++) {
-			bgfx::ViewId id = RENDER_PASS_DOWNSAMPLE_ID + static_cast<bgfx::ViewId>(i);
+			bgfx::ViewId id = rawrbox::POST_PROCESSING_ID + static_cast<bgfx::ViewId>(i);
 			this->_samples.push_back(bgfx::createFrameBuffer(this->_windowSize.x, this->_windowSize.y, bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_RT));
 
 			bgfx::touch(id);
@@ -161,7 +159,7 @@ namespace rawrbox {
 
 		bgfx::ViewId prevID = rawrbox::CURRENT_VIEW_ID;
 		for (size_t pass = 0; pass < this->_postProcesses.size(); pass++) {
-			bgfx::ViewId id = RENDER_PASS_DOWNSAMPLE_ID + static_cast<bgfx::ViewId>(pass);
+			bgfx::ViewId id = rawrbox::POST_PROCESSING_ID + static_cast<bgfx::ViewId>(pass);
 			rawrbox::CURRENT_VIEW_ID = id;
 
 			bgfx::touch(id);

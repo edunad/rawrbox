@@ -9,9 +9,8 @@
 #include <array>
 
 namespace rawrbox {
-	uint32_t TextureRender::renderID = 10; // 5 > reserved to render textures
-
-	TextureRender::TextureRender(const rawrbox::Vector2i& size) : _size(size), _prevViewId(rawrbox::CURRENT_VIEW_ID), _renderId(TextureRender::renderID++) {
+	uint32_t TextureRender::renderID = 0;
+	TextureRender::TextureRender(const rawrbox::Vector2i& size) : _size(size), _prevViewId(rawrbox::CURRENT_VIEW_ID), _renderId(rawrbox::RENDERER_VIEW_ID + ++TextureRender::renderID) {
 		// Setup texture target view
 		bgfx::setViewName(this->_renderId, fmt::format("RAWR-RENDER-VIEW-{}", this->_renderId).c_str());
 		bgfx::setViewRect(this->_renderId, 0, 0, this->_size.x, this->_size.y);

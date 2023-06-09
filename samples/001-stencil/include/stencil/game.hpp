@@ -1,6 +1,8 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
+#include <rawrbox/render/camera/perspective.hpp>
+#include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/text/font.hpp>
 #include <rawrbox/render/texture/gif.hpp>
 #include <rawrbox/render/texture/image.hpp>
@@ -11,6 +13,10 @@
 namespace stencil {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
+		std::unique_ptr<rawrbox::CameraPerspective> _camera = nullptr;
+
+		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
+
 		rawrbox::TextureImage* _texture = nullptr;
 		rawrbox::TextureGIF* _texture2 = nullptr;
 
@@ -28,6 +34,7 @@ namespace stencil {
 
 		void onThreadShutdown(rawrbox::ENGINE_THREADS thread) override;
 		void pollEvents() override;
+		void update() override;
 		void draw() override;
 
 	public:
@@ -36,6 +43,7 @@ namespace stencil {
 		void loadContent();
 		void contentLoaded();
 
+		void drawWorld();
 		void drawOverlay();
 	};
 } // namespace stencil

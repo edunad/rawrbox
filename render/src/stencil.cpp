@@ -2,17 +2,20 @@
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/shader_defines.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 
 // Compiled shaders
 #include <generated/shaders/render/all.hpp>
 
 #include <bx/math.h>
+#include <fmt/format.h>
 #include <utf8.h>
 
 #include <array>
 
-#define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
+#define BGFX_STATE_DEFAULT_2D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_Z | BGFX_STATE_WRITE_A | BGFX_STATE_DEPTH_TEST_LEQUAL | BGFX_STATE_BLEND_ALPHA)
+#define BGFX_DEFAULT_CLEAR    (0 | BGFX_CLEAR_STENCIL | BGFX_CLEAR_DEPTH)
 
 // NOLINTBEGIN(*)
 static const bgfx::EmbeddedShader stencil_shaders[] = {
@@ -26,13 +29,22 @@ static const bgfx::EmbeddedShader stencil_shaders[] = {
 // NOLINTEND(*)
 
 namespace rawrbox {
-	Stencil::Stencil(const rawrbox::Vector2i& size) : _windowSize(size) {
+	uint32_t Stencil::renderID = 0;
+
+	Stencil::Stencil(const rawrbox::Vector2i& size) : _windowSize(size), _renderId(rawrbox::STENCIL_VIEW_ID + ++Stencil::renderID) {
 		// Shader layout
 		this->_vLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
 		    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
 		    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 		    .end();
+
+		// SETUP STENCIL ---
+		bgfx::setViewRect(this->_renderId, 0, 0, this->_windowSize.x, this->_windowSize.y);
+		bgfx::setViewMode(this->_renderId, bgfx::ViewMode::Sequential);
+		bgfx::setViewName(this->_renderId, fmt::format("RawrBox-RENDERER-STENCIL-{}", this->_renderId).c_str());
+		bgfx::setViewClear(this->_renderId, BGFX_DEFAULT_CLEAR, 0x00000000, 1.0F, 0);
+		// ---
 	}
 
 	Stencil::~Stencil() {
@@ -82,6 +94,9 @@ namespace rawrbox {
 
 	void Stencil::resize(const rawrbox::Vector2i& size) {
 		this->_windowSize = size;
+
+		bgfx::setViewRect(this->_renderId, 0, 0, size.x, size.y);
+		bgfx::setViewClear(this->_renderId, BGFX_DEFAULT_CLEAR, 0x00000000, 1.0F, 0);
 	}
 
 	void Stencil::pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv, const rawrbox::Color& col) {
@@ -94,7 +109,7 @@ namespace rawrbox {
 		    // pos
 		    ((pos.x + this->_offset.x) / wSize.x * 2 - 1),
 		    ((pos.y + this->_offset.y) / wSize.y * 2 - 1) * -1,
-		    0.0F,
+		    1.F - static_cast<float>(this->_drawCalls.size()) * 0.0001F,
 
 		    // uv
 		    uv.x,
@@ -397,7 +412,7 @@ namespace rawrbox {
 					oldCall.textureHandle.idx == this->_currentDraw.textureHandle.idx;
 
 			if (canMerge) {
-				for (auto ind : this->_currentDraw.indices) {
+				for (auto& ind : this->_currentDraw.indices) {
 					oldCall.indices.push_back(static_cast<uint32_t>(oldCall.vertices.size()) + ind);
 				}
 
@@ -411,6 +426,13 @@ namespace rawrbox {
 
 	void Stencil::internalDraw() {
 		if (this->_drawCalls.empty()) return;
+
+		this->_prevViewId = rawrbox::CURRENT_VIEW_ID;
+		rawrbox::CURRENT_VIEW_ID = this->_renderId;
+
+		bgfx::touch(rawrbox::CURRENT_VIEW_ID); // Make sure we draw on the view
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
+		bgfx::setViewClear(rawrbox::CURRENT_VIEW_ID, BGFX_DEFAULT_CLEAR, 0x00000000, 1.0F, 0);
 
 		for (auto& group : this->_drawCalls) {
 			if (!bgfx::isValid(group.stencilProgram) || !bgfx::isValid(group.textureHandle)) continue;
@@ -443,6 +465,9 @@ namespace rawrbox {
 		}
 
 		this->_drawCalls.clear();
+
+		rawrbox::CURRENT_VIEW_ID = this->_prevViewId;
+		bgfx::touch(rawrbox::CURRENT_VIEW_ID); // Make sure we draw on the view
 	}
 
 	void Stencil::render() {

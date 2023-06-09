@@ -136,6 +136,8 @@ namespace rawrbox {
 	};
 
 	class Stencil {
+		static uint32_t renderID;
+
 	private:
 		bgfx::VertexLayout _vLayout;
 
@@ -146,7 +148,12 @@ namespace rawrbox {
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 
 		std::unique_ptr<rawrbox::TextureFlat> _pixelTexture = nullptr;
+
+		// WINDOW ----
 		rawrbox::Vector2i _windowSize = {};
+		bgfx::ViewId _prevViewId = 0;
+		bgfx::ViewId _renderId = 0;
+		// ----------
 
 		// Offset handling ----
 		rawrbox::Vector2f _offset = {};
