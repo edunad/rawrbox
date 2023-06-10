@@ -246,12 +246,61 @@ namespace rawrbox {
 			// this->updateLights(); // TODO
 		}
 
+		struct InstanceData {
+			float m_world[16];
+			float m_bboxMin[4];
+			float m_bboxMax[4];
+		};
+
 		void draw(const rawrbox::Vector3f& camPos) override {
+			if (this->_meshes.empty()) return;
+			if (this->isDynamicBuffer()) return; // TODO
+
 			ModelBase<M>::draw(camPos);
 
-			this->preDraw();
-			for (auto& mesh : this->_meshes) {
+			// this->preDraw();
+
+			// Setup instance
+			// figure out how big of a buffer is available
+			uint32_t instanceStride = 80; //  80 bytes stride = 64 bytes for 4x4 matrix + 16 bytes for RGBA color.
+			uint32_t instances = bgfx::getAvailInstanceDataBuffer(this->_meshes.size(), instanceStride);
+
+			bgfx::InstanceDataBuffer idb = {};
+			bgfx::allocInstanceDataBuffer(&idb, instances, instanceStride);
+			// ----
+
+			// Get renderer capabilities info.
+			const bgfx::Caps* caps = bgfx::getCaps();
+
+			// Check if instancing is supported.
+			const bool instancingSupported = 0 != (BGFX_CAPS_INSTANCING & caps->supported);
+			if (!instancingSupported) return;
+
+			auto* data = (InstanceData*)idb.data;
+			for (uint32_t ii = 0; ii < instances; ++ii) {
+				auto& mesh = this->_meshes[ii];
+				auto pos = (this->_matrix * mesh->offsetMatrix);
+
+				bx::memCopy(idb.data, pos.data, instanceStride);
+				idb.data++;
+			}
+
+			this->_material->process(*this->_meshes[0]);
+
+			bgfx::setVertexBuffer(0, this->_vbh);
+			bgfx::setIndexBuffer(this->_ibh);
+			bgfx::setInstanceDataBuffer(&idb);
+
+			bgfx::setState(BGFX_STATE_DEFAULT, 0);
+			this->_material->postProcess();
+
+			/*for (auto& mesh : this->_meshes) {
 				this->_material->process(*mesh);
+
+				// Instance data
+				auto pos = (this->_matrix * mesh->offsetMatrix).data();
+				bx::memCopy(idb.data, pos, sizeof(float) * 16);
+				// ----
 
 				// Process animations ---
 				this->animate(*mesh);
@@ -265,7 +314,8 @@ namespace rawrbox {
 					bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
 				}
 
-				bgfx::setTransform((this->_matrix * mesh->offsetMatrix).data());
+				bgfx::setInstanceDataBuffer(&idb);
+				// bgfx::setTransform();
 
 				uint64_t flags = BGFX_STATE_DEFAULT_3D | mesh->culling | mesh->blending | mesh->depthTest;
 				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
@@ -273,7 +323,7 @@ namespace rawrbox {
 
 				bgfx::setState(flags, 0);
 				this->_material->postProcess();
-			}
+			}*/
 			this->postDraw();
 		}
 	};

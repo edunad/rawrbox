@@ -39,7 +39,7 @@ namespace rawrbox {
 
 		template <typename T>
 		void process(const rawrbox::Mesh<T>& mesh) {
-			if (mesh.texture != nullptr && mesh.texture->valid() && !mesh.wireframe) {
+			/*if (mesh.texture != nullptr && mesh.texture->valid() && !mesh.wireframe) {
 				bgfx::setTexture(0, s_texColor, mesh.texture->getHandle());
 			} else {
 				bgfx::setTexture(0, s_texColor, rawrbox::WHITE_TEXTURE->getHandle());
@@ -55,7 +55,8 @@ namespace rawrbox {
 				bgfx::setUniform(u_mesh_pos, offset.data());
 			}
 
-			bgfx::setUniform(u_data, billboard.data());
+			bgfx::setUniform(u_data, billboard.data());*/
+			bgfx::setTexture(0, s_texColor, rawrbox::WHITE_TEXTURE->getHandle());
 		}
 
 		virtual void process(const bgfx::TextureHandle& texture);

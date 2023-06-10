@@ -26,8 +26,9 @@ namespace rawrbox {
 	protected:
 		bgfx::DynamicVertexBufferHandle _vbdh = BGFX_INVALID_HANDLE; // Vertices - Dynamic
 		bgfx::VertexBufferHandle _vbh = BGFX_INVALID_HANDLE;         // Vertices - Static
-		bgfx::DynamicIndexBufferHandle _ibdh = BGFX_INVALID_HANDLE;  // Indices - Dynamic
-		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;          // Indices - Static
+
+		bgfx::DynamicIndexBufferHandle _ibdh = BGFX_INVALID_HANDLE; // Indices - Dynamic
+		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;         // Indices - Static
 
 		std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes = {};
 		rawrbox::Matrix4x4 _matrix = {};
