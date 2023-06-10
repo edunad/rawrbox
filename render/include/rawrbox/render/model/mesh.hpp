@@ -142,10 +142,7 @@ namespace rawrbox {
 		void setTexture(rawrbox::TextureBase* ptr) { this->texture = ptr; }
 
 		[[nodiscard]] const rawrbox::TextureBase* getBumpTexture() const { return this->bumpTexture; }
-		void setBumpTexture(rawrbox::TextureBase* ptr, float strength) {
-			this->bumpTexture = ptr;
-			this->bumpStrength = strength;
-		}
+		void setBumpTexture(rawrbox::TextureBase* ptr) { this->bumpTexture = ptr; }
 
 		[[nodiscard]] const rawrbox::TextureBase* getEmissionTexture() const { return this->emissionTexture; }
 		void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity) {
@@ -166,6 +163,12 @@ namespace rawrbox {
 
 		void setVertexSnap(float power = 2.F) {
 			this->addData("vertex_snap", {power, 0, 0, 0});
+			this->setOptimizable(false);
+		}
+
+		void setDisplacement(float power) {
+			this->addData("displacement_strength", {power, 0, 0, 0});
+			this->setOptimizable(false);
 		}
 
 		void setWireframe(bool wireframe) {
@@ -235,7 +238,7 @@ namespace rawrbox {
 
 			return this->texture == other.texture &&
 			       this->color == other.color &&
-			       this->wireframe == other.wireframe &&
+			       this->lineMode == other.lineMode &&
 			       this->offsetMatrix == other.offsetMatrix;
 		}
 	};

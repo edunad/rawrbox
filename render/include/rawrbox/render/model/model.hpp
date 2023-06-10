@@ -166,15 +166,16 @@ namespace rawrbox {
 		}
 		// --------------
 		void updateLights() {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
+				// Update lights ---
+				for (auto& mesh : this->meshes()) {
+					rawrbox::Vector3f meshPos = {mesh->offsetMatrix[12], mesh->offsetMatrix[13], mesh->offsetMatrix[14]};
+					auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle());
 
-			// Update lights ---
-			for (auto& mesh : this->meshes()) {
-				rawrbox::Vector3f meshPos = {mesh->offsetMatrix[12], mesh->offsetMatrix[13], mesh->offsetMatrix[14]};
-				auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle());
-
-				for (auto light : mesh->lights) {
-					if (light.expired()) continue;
-					light.lock()->setOffsetPos(p);
+					for (auto light : mesh->lights) {
+						if (light.expired()) continue;
+						light.lock()->setOffsetPos(p);
+					}
 				}
 			}
 		}
@@ -214,20 +215,22 @@ namespace rawrbox {
 		// --------------
 		// LIGHTS ------
 		virtual void addLight(std::shared_ptr<rawrbox::LightBase> light, const std::string& parentMesh = "") {
-			auto parent = this->_meshes.back().get();
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
+				auto parent = this->_meshes.back().get();
 
-			if (!parentMesh.empty()) {
-				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
-					return msh->getName() == parentMesh;
-				});
+				if (!parentMesh.empty()) {
+					auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
+						return msh->getName() == parentMesh;
+					});
 
-				if (fnd != this->_meshes.end()) parent = fnd->get();
+					if (fnd != this->_meshes.end()) parent = fnd->get();
+				}
+
+				light->setOffsetPos(parent->getPos() + this->getPos());
+				parent->lights.push_back(light);
+
+				rawrbox::LIGHTS::addLight(light);
 			}
-
-			light->setOffsetPos(parent->getPos() + this->getPos());
-			parent->lights.push_back(light);
-
-			rawrbox::LIGHTS::addLight(light);
 		}
 		// -----
 
@@ -238,17 +241,17 @@ namespace rawrbox {
 
 		void setAngle(const rawrbox::Vector4f& angle) override {
 			rawrbox::ModelBase<M>::setAngle(angle);
-			// this->updateLights(); // TODO
+			this->updateLights();
 		}
 
 		void setEulerAngle(const rawrbox::Vector3f& angle) override {
 			rawrbox::ModelBase<M>::setEulerAngle(angle);
-			// this->updateLights(); // TODO
+			this->updateLights();
 		}
 
 		void setScale(const rawrbox::Vector3f& size) override {
 			rawrbox::ModelBase<M>::setScale(size);
-			// this->updateLights(); // TODO
+			this->updateLights();
 		}
 
 		void draw(const rawrbox::Vector3f& camPos) override {

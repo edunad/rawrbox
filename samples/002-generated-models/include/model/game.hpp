@@ -2,7 +2,6 @@
 
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/camera/orbital.hpp>
-#include <rawrbox/render/model/displacement.hpp>
 #include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/model/sprite.hpp>
 #include <rawrbox/render/model/text3D.hpp>
@@ -18,7 +17,7 @@ namespace model {
 
 		rawrbox::TextureGIF* _texture2 = nullptr;
 
-		std::unique_ptr<rawrbox::Displacement<>> _displacement = nullptr;
+		std::unique_ptr<rawrbox::Model<>> _displacement = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Sprite<>> _sprite = std::make_unique<rawrbox::Sprite<>>();
 		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();

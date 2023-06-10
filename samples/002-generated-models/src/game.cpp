@@ -91,7 +91,6 @@ namespace model {
 			auto mesh = this->_model->generateCube({-3, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
 			mesh.setTexture(this->_texture2);
 			mesh.setVertexSnap(24.F);
-			mesh.setOptimizable(false);
 			this->_model->addMesh(mesh);
 		}
 
@@ -108,12 +107,26 @@ namespace model {
 		// -----
 
 		// Displacement test ----
-		this->_displacement = std::make_unique<rawrbox::Displacement<>>(64);
-		this->_displacement->setPos({0, 0.1F, -4});
-		this->_displacement->setScale({0.05F, 0.05F, 0.05F});
-		this->_displacement->setTexture(this->_texture2);
-		this->_displacement->setHeightMap(texture3, 16.F);
-		this->_displacement->upload();
+		{
+			auto mesh = this->_displacement->generateMesh({0, 0, 0}, 64, rawrbox::Colors::White);
+			mesh.setTexture(texture3);
+			mesh.setBumpTexture(texture3);
+			mesh.setDisplacement(24.F);
+
+			this->_displacement->addMesh(mesh);
+		}
+
+		{
+			auto mesh = this->_displacement->generateMesh({0, 0.5F, 0}, 64, rawrbox::Colors::Black);
+			mesh.setBumpTexture(texture3);
+			mesh.setDisplacement(24.F);
+			mesh.lineMode = true;
+
+			this->_displacement->addMesh(mesh);
+		}
+
+		this->_displacement->setPos({0, 0.1F, -2});
+		this->_displacement->setScale({0.025F, 0.025F, 0.025F});
 		// -----
 
 		// Sprite test ----
@@ -131,10 +144,12 @@ namespace model {
 			this->_text->addText(*this->_font, "CUBE\nVertex snap", {-3.F, 0.55F, 0});
 			this->_text->addText(*this->_font, "AXIS", {0.F, 0.5F, 0});
 			this->_text->addText(*this->_font, "SPRITE", {0.F, 1.2F, 0});
+			this->_text->addText(*this->_font, "DISPLACEMENT", {0.F, 1.2F, -2});
 		}
 		// ------
 
 		this->_model->upload();
+		this->_displacement->upload();
 		this->_sprite->upload();
 		this->_text->upload();
 	}

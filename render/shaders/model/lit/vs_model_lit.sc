@@ -7,16 +7,23 @@ $output v_color0, v_texcoord0, v_wPos, v_normal, v_tangent, v_bitangent
 uniform vec3 u_mesh_pos;
 uniform vec4 u_data;
 
+SAMPLER2D(s_heightMap, 1);
+
 void main() {
-	vec4 world = mul(u_model[0], vec4(a_position, 1.0) );
+	vec3 vPos = a_position.xyz;
+
+    // displacement mode
+    if(u_data.z != 0.) {
+	    vPos.y += texture2DLod(s_heightMap, a_texcoord0, 0).x * u_data.z;
+    }
+
+	vec4 world = mul(u_model[0], vec4(vPos, 1.0) );
     vec4 translated = mul(u_viewProj, world);
 
 	// vertex_snap mode
     if(u_data.y != 0.) {
-        gl_Position = psx_snap(translated, u_viewRect.zw / u_data.y);
-    } else {
-		gl_Position = translated;
-	}
+        translated = psx_snap(translated, u_viewRect.zw / u_data.y);
+    }
 	// ----
 
     v_color0 = a_color0;
@@ -34,4 +41,5 @@ void main() {
 	v_bitangent = normalize(wbitagent);
 
 	v_wPos = world.xyz;
+	gl_Position = translated;
 }

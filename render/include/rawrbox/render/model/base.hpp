@@ -408,6 +408,51 @@ namespace rawrbox {
 			throw std::runtime_error("TODO");
 		}
 
+		rawrbox::Mesh<typename M::vertexBufferType> generateMesh(const rawrbox::Vector3f& pos, int size = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+
+			std::vector<typename M::vertexBufferType> buff = {};
+			auto ps = static_cast<float>(size / 2);
+
+			for (uint32_t y = 0; y < size; y++) {
+				for (uint32_t x = 0; x < size; x++) {
+
+					auto xF = static_cast<float>(x);
+					auto yF = static_cast<float>(y);
+
+					if constexpr (supportsNormals<typename M::vertexBufferType>) {
+						buff.push_back(rawrbox::VertexLitData(pos + rawrbox::Vector3f(ps - xF, 0, ps - yF), {(x + 0.5F) / size, (y + 0.5F) / size}, {rawrbox::PackUtils::packNormal(0, 1, 0), 0}, cl));
+					} else {
+						buff.push_back(rawrbox::VertexData(pos + rawrbox::Vector3f(ps - xF, 0, ps - yF) + pos, {(x + 0.5F) / size, (y + 0.5F) / size}, cl));
+					}
+				}
+			}
+
+			std::vector<uint16_t> inds = {};
+			for (uint16_t y = 0; y < (size - 1); y++) {
+				uint16_t y_offset = (y * size);
+
+				for (uint16_t x = 0; x < (size - 1); x++) {
+					inds.push_back(y_offset + x + 1);
+					inds.push_back(y_offset + x + size);
+					inds.push_back(y_offset + x);
+					inds.push_back(y_offset + x + size + 1);
+					inds.push_back(y_offset + x + size);
+					inds.push_back(y_offset + x + 1);
+				}
+			}
+
+			mesh.baseVertex = 0;
+			mesh.baseIndex = 0;
+			mesh.totalVertex = static_cast<uint16_t>(buff.size());
+			mesh.totalIndex = static_cast<uint16_t>(inds.size());
+
+			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
+			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
+
+			return mesh;
+		}
+
 		// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
 		rawrbox::Mesh<typename M::vertexBufferType> generateGrid(uint32_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::DarkGray, const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent) {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;

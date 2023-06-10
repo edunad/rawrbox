@@ -16,6 +16,7 @@ namespace rawrbox {
 		bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle s_texBumpColor = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle u_colorOffset = BGFX_INVALID_HANDLE;
 
@@ -46,7 +47,15 @@ namespace rawrbox {
 				bgfx::setTexture(0, s_texColor, rawrbox::WHITE_TEXTURE->getHandle());
 			}
 
+			if (mesh.bumpTexture != nullptr && mesh.bumpTexture->valid()) {
+				bgfx::setTexture(1, s_texBumpColor, mesh.bumpTexture->getHandle());
+			} else {
+				bgfx::setTexture(1, s_texBumpColor, rawrbox::BLACK_TEXTURE->getHandle());
+			}
+
+			// Color override
 			bgfx::setUniform(u_colorOffset, mesh.color.data().data());
+			// -------
 
 			std::array offset = {mesh.vertexPos[12], mesh.vertexPos[13], mesh.vertexPos[14]};
 			bgfx::setUniform(u_mesh_pos, offset.data());
@@ -61,6 +70,9 @@ namespace rawrbox {
 				data[1] = mesh.getData("vertex_snap").x;
 			}
 
+			if (mesh.hasData("displacement_strength")) {
+				data[2] = mesh.getData("displacement_strength").x;
+			}
 			bgfx::setUniform(u_data, data.data());
 			// ---
 		}

@@ -16,6 +16,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(program);
 
 		RAWRBOX_DESTROY(s_texColor);
+		RAWRBOX_DESTROY(s_texBumpColor);
 
 		RAWRBOX_DESTROY(u_colorOffset);
 
@@ -36,10 +37,11 @@ namespace rawrbox {
 
 	void MaterialBase::registerUniforms() {
 		s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+		s_texBumpColor = bgfx::createUniform("s_texBumpColor", bgfx::UniformType::Sampler);
 
 		u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 		u_mesh_pos = bgfx::createUniform("u_mesh_pos", bgfx::UniformType::Vec4, 3);
-		u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4, 1);
+		u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4);
 	}
 
 	void MaterialBase::preProcess(const rawrbox::Vector3f& camPos) {}
