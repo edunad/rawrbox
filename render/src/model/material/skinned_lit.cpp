@@ -27,6 +27,6 @@ namespace rawrbox {
 	}
 
 	void MaterialSkinnedLit::upload() {
-		this->buildShader(model_skinned_lit_shaders, "model_skinned_lit");
+		this->buildShader(model_skinned_lit_shaders);
 	}
 } // namespace rawrbox

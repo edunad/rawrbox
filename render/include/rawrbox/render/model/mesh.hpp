@@ -48,6 +48,7 @@ namespace rawrbox {
 
 		// TEXTURES ---
 		rawrbox::TextureBase* texture = nullptr;
+		rawrbox::TextureBase* bumpTexture = nullptr;
 		rawrbox::TextureBase* opacityTexture = nullptr;
 
 		rawrbox::TextureBase* specularTexture = nullptr;
@@ -58,6 +59,7 @@ namespace rawrbox {
 
 		float specularShininess = 25.0F;
 		float emissionIntensity = 1.F;
+		float bumpStrength = 1.F;
 		// -------
 
 		// RENDERING ---
@@ -138,6 +140,12 @@ namespace rawrbox {
 
 		[[nodiscard]] const rawrbox::TextureBase* getTexture() const { return this->texture; }
 		void setTexture(rawrbox::TextureBase* ptr) { this->texture = ptr; }
+
+		[[nodiscard]] const rawrbox::TextureBase* getBumpTexture() const { return this->bumpTexture; }
+		void setBumpTexture(rawrbox::TextureBase* ptr, float strength) {
+			this->bumpTexture = ptr;
+			this->bumpStrength = strength;
+		}
 
 		[[nodiscard]] const rawrbox::TextureBase* getEmissionTexture() const { return this->emissionTexture; }
 		void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity) {

@@ -27,7 +27,7 @@ namespace rawrbox {
 	}
 
 	void MaterialSkinnedUnlit::upload() {
-		this->buildShader(model_skinned_unlit_shaders, "model_skinned_unlit");
+		this->buildShader(model_skinned_unlit_shaders);
 	}
 
 } // namespace rawrbox

@@ -24,10 +24,15 @@ namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
 	class Model : public rawrbox::ModelBase<M> {
+
 	protected:
 		std::unordered_map<std::string, Animation> _animations = {};
 		std::vector<rawrbox::PlayingAnimationData> _playingAnimations = {};
-		std::vector<rawrbox::LightBase> lights = {};
+		std::vector<rawrbox::LightBase> _lights = {};
+
+		// SKINNING ----
+		std::unordered_map<std::string, rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // Map for quick lookup
+														    // --------
 
 		// ANIMATIONS ----
 		void animate(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {

@@ -32,7 +32,7 @@ namespace rawrbox {
 		virtual ~MaterialBase();
 
 		// NOLINTBEGIN(hicpp-avoid-c-arrays)
-		virtual void buildShader(const bgfx::EmbeddedShader shaders[], const std::string& name);
+		virtual void buildShader(const bgfx::EmbeddedShader shaders[]);
 		// NOLINTEND(hicpp-avoid-c-arrays)
 
 		virtual void registerUniforms();

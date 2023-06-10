@@ -88,7 +88,7 @@ namespace model {
 		}
 
 		{
-			auto mesh = this->_model->generateCube({-4, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
+			auto mesh = this->_model->generateCube({-3, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
 			mesh.setTexture(this->_texture2);
 			mesh.setVertexSnap(24.F);
 			mesh.setOptimizable(false);
@@ -108,14 +108,12 @@ namespace model {
 		// -----
 
 		// Displacement test ----
-		/*{
-			auto mesh = this->_model->generatePlane({0, 0, 0}, {1.F, 1.F});
-			mesh.setTexture(rawrbox::WHITE_TEXTURE.get());
-			mesh.setBumpTexture(texture3, true);
-			mesh.setEulerAngle({bx::toRad(90), 0, 0});
-
-			this->_model->addMesh(mesh);
-		}*/
+		this->_displacement = std::make_unique<rawrbox::Displacement<>>(64);
+		this->_displacement->setPos({0, 0.1F, -4});
+		this->_displacement->setScale({0.05F, 0.05F, 0.05F});
+		this->_displacement->setTexture(this->_texture2);
+		this->_displacement->setHeightMap(texture3, 16.F);
+		this->_displacement->upload();
 		// -----
 
 		// Sprite test ----
@@ -130,7 +128,7 @@ namespace model {
 		{
 			this->_text->addText(*this->_font, "PLANE", {2.F, 0.5F, 0});
 			this->_text->addText(*this->_font, "CUBE", {-2.F, 0.55F, 0});
-			this->_text->addText(*this->_font, "CUBE\nVertex snap", {-4.F, 0.55F, 0});
+			this->_text->addText(*this->_font, "CUBE\nVertex snap", {-3.F, 0.55F, 0});
 			this->_text->addText(*this->_font, "AXIS", {0.F, 0.5F, 0});
 			this->_text->addText(*this->_font, "SPRITE", {0.F, 1.2F, 0});
 		}
@@ -147,6 +145,7 @@ namespace model {
 		this->_texture2 = nullptr;
 		this->_camera.reset();
 
+		this->_displacement.reset();
 		this->_model.reset();
 		this->_sprite.reset();
 		this->_text.reset();
@@ -170,11 +169,14 @@ namespace model {
 	}
 
 	void Game::drawWorld() {
-		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr) return;
+		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr) return;
 
-		this->_model->draw(this->_camera->getPos());
-		this->_sprite->draw(this->_camera->getPos());
-		this->_text->draw(this->_camera->getPos());
+		auto& pos = this->_camera->getPos();
+
+		this->_model->draw(pos);
+		this->_displacement->draw(pos);
+		this->_sprite->draw(pos);
+		this->_text->draw(pos);
 	}
 
 	void Game::printFrames() {

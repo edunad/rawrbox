@@ -56,7 +56,7 @@ namespace rawrbox {
 			bgfx::setUniform(u_specularColor, mesh.specularColor.data().data());
 			bgfx::setUniform(u_emissionColor, mesh.emissionColor.data().data());
 
-			std::array<float, 2> matData = {mesh.specularShininess, mesh.emissionIntensity};
+			std::array<float, 3> matData = {mesh.specularShininess, mesh.emissionIntensity, mesh.bumpStrength};
 			bgfx::setUniform(u_texMatData, matData.data());
 		}
 

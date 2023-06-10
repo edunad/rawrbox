@@ -24,7 +24,7 @@ namespace rawrbox {
 	}
 
 	// NOLINTBEGIN(hicpp-avoid-c-arrays)
-	void MaterialBase::buildShader(const bgfx::EmbeddedShader shaders[], const std::string& name) {
+	void MaterialBase::buildShader(const bgfx::EmbeddedShader shaders[]) {
 		bgfx::RendererType::Enum type = bgfx::getRendererType();
 		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, shaders[0].name);
 		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, shaders[1].name);
@@ -53,7 +53,7 @@ namespace rawrbox {
 
 	void MaterialBase::postProcess() { bgfx::submit(rawrbox::CURRENT_VIEW_ID, program); }
 	void MaterialBase::upload() {
-		this->buildShader(model_unlit_shaders, "model_unlit");
+		this->buildShader(model_unlit_shaders);
 	}
 
 } // namespace rawrbox

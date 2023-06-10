@@ -49,10 +49,6 @@ namespace rawrbox {
 
 		bool _canOptimize = true;
 
-		// SKINNING ----
-		std::unordered_map<std::string, rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // Map for quick lookup
-		// --------
-
 		void flattenMeshes() {
 			this->_vertices.clear();
 			this->_indices.clear();
@@ -131,9 +127,6 @@ namespace rawrbox {
 			this->_meshes.clear();
 			this->_vertices.clear();
 			this->_indices.clear();
-
-			this->_animatedMeshes.clear();
-			this->_animatedMeshes.clear();
 		}
 
 		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
@@ -410,6 +403,7 @@ namespace rawrbox {
 			throw std::runtime_error("TODO");
 		}
 
+		// https://stackoverflow.com/questions/29126226/turning-a-cylinder-into-a-sphere-without-pinching-at-the-poles/29139125#29139125
 		rawrbox::Mesh<typename M::vertexBufferType> generateSphere(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White, int ratio = 5) {
 			throw std::runtime_error("TODO");
 		}
