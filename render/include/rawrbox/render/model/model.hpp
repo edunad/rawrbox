@@ -52,7 +52,7 @@ namespace rawrbox {
 					}
 				}
 
-				bgfx::setUniform(this->_material->u_bones, &boneTransforms.front(), static_cast<uint32_t>(boneTransforms.size()));
+				this->_material->setBoneData(boneTransforms);
 			}
 			// -----
 		}

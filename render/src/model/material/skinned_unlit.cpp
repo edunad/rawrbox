@@ -22,8 +22,12 @@ namespace rawrbox {
 		// ---
 	}
 
+	void MaterialSkinnedUnlit::setBoneData(const std::vector<rawrbox::Matrix4x4>& data) {
+		bgfx::setUniform(this->u_bones, &data.front(), static_cast<uint32_t>(data.size()));
+	}
+
 	void MaterialSkinnedUnlit::upload() {
-		buildShader(model_skinned_unlit_shaders, "model_skinned_unlit");
+		this->buildShader(model_skinned_unlit_shaders, "model_skinned_unlit");
 	}
 
 } // namespace rawrbox

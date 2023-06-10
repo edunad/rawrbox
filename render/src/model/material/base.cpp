@@ -16,6 +16,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(program);
 
 		RAWRBOX_DESTROY(s_texColor);
+
 		RAWRBOX_DESTROY(u_colorOffset);
 
 		RAWRBOX_DESTROY(u_mesh_pos);

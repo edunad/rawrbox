@@ -44,10 +44,11 @@ namespace model {
 	}
 
 	void Game::loadContent() {
-		std::array<std::string, 3> initialContentFiles = {
+		std::array<std::string, 4> initialContentFiles = {
 		    "cour.ttf",
 		    "content/textures/screem.png",
 		    "content/textures/meow3.gif",
+		    "content/textures/displacement_test.png",
 		};
 
 		for (auto& f : initialContentFiles) {
@@ -67,21 +68,30 @@ namespace model {
 	void Game::contentLoaded() {
 		this->_ready = true;
 
-		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
+		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
 		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->get();
+		auto texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/displacement_test.png")->get();
 
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 
 		// Model test ----
 		{
 			auto mesh = this->_model->generatePlane({2, 0, 0}, {0.5F, 0.5F});
-			mesh.setTexture(this->_texture);
+			mesh.setTexture(texture);
 			this->_model->addMesh(mesh);
 		}
 
 		{
 			auto mesh = this->_model->generateCube({-2, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
 			mesh.setTexture(this->_texture2);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = this->_model->generateCube({-4, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
+			mesh.setTexture(this->_texture2);
+			mesh.setVertexSnap(24.F);
+			mesh.setOptimizable(false);
 			this->_model->addMesh(mesh);
 		}
 
@@ -97,17 +107,30 @@ namespace model {
 
 		// -----
 
+		// Displacement test ----
+		/*{
+			auto mesh = this->_model->generatePlane({0, 0, 0}, {1.F, 1.F});
+			mesh.setTexture(rawrbox::WHITE_TEXTURE.get());
+			mesh.setBumpTexture(texture3, true);
+			mesh.setEulerAngle({bx::toRad(90), 0, 0});
+
+			this->_model->addMesh(mesh);
+		}*/
+		// -----
+
 		// Sprite test ----
 		{
 			auto mesh = this->_sprite->generatePlane({0, 1, 0}, {0.2F, 0.2F});
-			mesh.setTexture(this->_texture);
+			mesh.setTexture(texture);
 			this->_sprite->addMesh(mesh);
 		}
 		// -----
+
 		// Text test ----
 		{
 			this->_text->addText(*this->_font, "PLANE", {2.F, 0.5F, 0});
 			this->_text->addText(*this->_font, "CUBE", {-2.F, 0.55F, 0});
+			this->_text->addText(*this->_font, "CUBE\nVertex snap", {-4.F, 0.55F, 0});
 			this->_text->addText(*this->_font, "AXIS", {0.F, 0.5F, 0});
 			this->_text->addText(*this->_font, "SPRITE", {0.F, 1.2F, 0});
 		}
@@ -121,9 +144,8 @@ namespace model {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
-		this->_camera.reset();
-		this->_texture = nullptr;
 		this->_texture2 = nullptr;
+		this->_camera.reset();
 
 		this->_model.reset();
 		this->_sprite.reset();

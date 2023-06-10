@@ -17,6 +17,7 @@ namespace rawrbox {
 		MaterialSkinnedUnlit& operator=(const MaterialSkinnedUnlit&) = delete;
 		~MaterialSkinnedUnlit() override;
 
+		void setBoneData(const std::vector<rawrbox::Matrix4x4>& data);
 		void registerUniforms() override;
 		void upload() override;
 	};

@@ -16,6 +16,7 @@ namespace rawrbox {
 		MaterialSkinnedLit& operator=(const MaterialSkinnedLit&) = delete;
 		~MaterialSkinnedLit() override;
 
+		void setBoneData(const std::vector<rawrbox::Matrix4x4>& data);
 		void registerUniforms() override;
 		void upload() override;
 	};
