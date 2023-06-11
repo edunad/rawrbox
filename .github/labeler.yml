@@ -29,7 +29,7 @@
     - changed-files: '**/tests/**/*.cpp'
 
 'FEATURE':
-    - head-branch: '^feature/'
+    - head-branch: '^features/'
 
 'BUG':
     - head-branch: '^bugfixes/'
