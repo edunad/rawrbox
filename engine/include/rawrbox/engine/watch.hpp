@@ -1,9 +1,6 @@
 #pragma once
 #include <chrono>
 
-using namespace std::chrono;
-using namespace std::literals;
-
 namespace rawrbox {
 	struct Watch {
 	public:

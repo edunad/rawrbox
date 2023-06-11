@@ -256,7 +256,7 @@ namespace stencil {
 		stencil.drawText(*this->_font2, "Cat!!", {0, 40});
 		stencil.popRotation();
 
-		stencil.drawText(*this->_font3, "MeW MeW MeW!", {0, 75});
+		stencil.drawText(*this->_font3, "MeW MeW MeW! I am a cat, nya.", {0, 75});
 		// ---
 
 		stencil.popOffset();

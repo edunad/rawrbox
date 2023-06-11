@@ -176,6 +176,7 @@ namespace rawrbox {
 				auto nextInd = std::next(ind);
 				if (nextInd == poly.indices.end()) break;
 
+				// TODO: IGNORE MIDDLE LINES
 				this->drawLine(poly.verts[(*ind)].pos, poly.verts[(*nextInd)].pos, poly.verts[(*ind)].col);
 				ind++;
 			}
@@ -371,7 +372,7 @@ namespace rawrbox {
 		startpos.x = std::roundf(startpos.x);
 		startpos.y = std::roundf(startpos.y);
 
-		font.render(text, startpos, [this, &font, col](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
+		font.render(text, startpos, false, [this, &font, col](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
 			// Setup --------
 			this->setupDrawCall(
 			    this->_textprogram,

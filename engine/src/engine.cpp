@@ -10,9 +10,6 @@
 #include <string>
 #include <thread>
 
-using namespace std::chrono;
-using namespace std::literals;
-
 namespace rawrbox {
 	// INTERNAL ---
 	void Engine::sleep(float milliseconds) {

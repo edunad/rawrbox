@@ -32,6 +32,13 @@ namespace rawrbox {
 		// -----------------
 
 	public:
+		~UIFrame() override = default;
+		UIFrame() = default;
+		UIFrame(const UIFrame&) = default;
+		UIFrame(UIFrame&&) = delete;
+		UIFrame& operator=(const UIFrame&) = default;
+		UIFrame& operator=(UIFrame&&) = delete;
+
 		rawrbox::Event<> onClose;
 
 		void initialize() override;

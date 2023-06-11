@@ -39,9 +39,7 @@ namespace rawrbox {
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->get();
 	}
 
-	void UIButton::setTexture(rawrbox::TextureBase& texture) {
-		this->_texture = &texture;
-	}
+	void UIButton::setTexture(rawrbox::TextureBase* texture) { this->_texture = texture; }
 	// ---------
 
 	// INPUTS ---

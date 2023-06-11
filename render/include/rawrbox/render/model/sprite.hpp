@@ -9,7 +9,12 @@ namespace rawrbox {
 	template <typename M = rawrbox::MaterialBase>
 	class Sprite : public rawrbox::ModelBase<M> {
 	public:
-		using ModelBase<M>::ModelBase;
+		Sprite() = default;
+		Sprite(const Sprite&) = delete;
+		Sprite(Sprite&&) = delete;
+		Sprite& operator=(const Sprite&) = delete;
+		Sprite& operator=(Sprite&&) = delete;
+		~Sprite() override = default;
 
 		void addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) override {
 			mesh.addData("billboard_mode", {1.F, 0, 0}); // Force billboard for sprites
