@@ -1,22 +1,9 @@
 #pragma once
-#include <rawrbox/math/matrix4x4.hpp>
+
 #include <rawrbox/render/model/material/base.hpp>
-#include <rawrbox/render/model/mesh.hpp>
-#include <rawrbox/render/model/skeleton.hpp>
-#include <rawrbox/render/static.hpp>
 #include <rawrbox/utils/pack.hpp>
 
-#include <bx/math.h>
-#include <fmt/printf.h>
-
-#include <array>
-#include <cstdint>
-#include <memory>
-#include <stdexcept>
-#include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
+#include <functional>
 
 namespace rawrbox {
 
@@ -391,21 +378,232 @@ namespace rawrbox {
 			return mesh;
 		}
 
-		rawrbox::Mesh<typename M::vertexBufferType> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
-			throw std::runtime_error("TODO");
+		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L687
+		// Does not support UV :( / normals
+		rawrbox::Mesh<typename M::vertexBufferType> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, int ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			mesh.vertexPos.translate(pos);
+
+			const float step = rawrbox::pi<float> * 2.0F / ratio;
+
+			const uint32_t numVertices = ratio + 1;
+			const uint32_t numIndices = ratio * 6;
+			const uint32_t numLineListIndices = ratio * 4;
+
+			std::vector<typename M::vertexBufferType> buff = {};
+			buff.resize(numVertices);
+
+			std::vector<uint16_t> index = {};
+			index.resize(numIndices + numLineListIndices);
+
+			auto ps = pos;
+			ps.y -= size.y / 2.F;
+
+			buff[ratio] = rawrbox::VertexData(ps + rawrbox::Vector3f(0, size.y, 0), {0, 0}, cl);
+
+			for (uint32_t ii = 0; ii < ratio; ++ii) {
+				const float angle = step * ii;
+
+				const float angX = std::cos(angle) * size.x;
+				const float angZ = std::sin(angle) * size.z;
+
+				buff[ii] = rawrbox::VertexData(ps + rawrbox::Vector3f(angZ, 0.0F, angX), {0, 0}, cl);
+
+				index[ii * 3 + 0] = uint16_t(ratio);
+				index[ii * 3 + 1] = uint16_t((ii + 1) % ratio);
+				index[ii * 3 + 2] = uint16_t(ii);
+
+				index[ratio * 3 + ii * 3 + 0] = 0;
+				index[ratio * 3 + ii * 3 + 1] = uint16_t(ii);
+				index[ratio * 3 + ii * 3 + 2] = uint16_t((ii + 1) % ratio);
+
+				index[numIndices + ii * 2 + 0] = uint16_t(ii);
+				index[numIndices + ii * 2 + 1] = uint16_t(ratio);
+
+				index[numIndices + ratio * 2 + ii * 2 + 0] = uint16_t(ii);
+				index[numIndices + ratio * 2 + ii * 2 + 1] = uint16_t((ii + 1) % ratio);
+			}
+
+			mesh.baseVertex = 0;
+			mesh.baseIndex = 0;
+			mesh.totalVertex = static_cast<uint16_t>(buff.size());
+			mesh.totalIndex = static_cast<uint16_t>(index.size());
+
+			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
+			mesh.indices.insert(mesh.indices.end(), index.begin(), index.end());
+
+			return mesh;
 		}
 
-		rawrbox::Mesh<typename M::vertexBufferType> generatePyramid(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
-			throw std::runtime_error("TODO");
+		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L750
+		// Does not support UV :( / normals
+		rawrbox::Mesh<typename M::vertexBufferType> generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, int ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			mesh.vertexPos.translate(pos);
+
+			const float step = rawrbox::pi<float> * 2.0F / ratio;
+			const uint32_t numVertices = ratio * 2;
+			const uint32_t numIndices = ratio * 12;
+			const uint32_t numLineListIndices = ratio * 6;
+
+			std::vector<typename M::vertexBufferType> buff = {};
+			buff.resize(numVertices);
+
+			std::vector<uint16_t> index = {};
+			index.resize(numIndices + numLineListIndices);
+
+			auto ps = pos;
+			ps.y -= size.y;
+
+			for (uint32_t ii = 0; ii < ratio; ++ii) {
+				const float angle = step * ii;
+
+				const float angX = std::cos(angle) * size.x;
+				const float angZ = std::sin(angle) * size.z;
+
+				buff[ii] = rawrbox::VertexData(ps + rawrbox::Vector3f(angX, size.y, angZ), {0, 0}, cl);
+				buff[ii + ratio] = rawrbox::VertexData(ps + rawrbox::Vector3f(angX, 0.0F, angZ), {0, 0}, cl);
+
+				index[ii * 6 + 0] = uint16_t(ii + ratio);
+				index[ii * 6 + 1] = uint16_t((ii + 1) % ratio);
+				index[ii * 6 + 2] = uint16_t(ii);
+				index[ii * 6 + 3] = uint16_t(ii + ratio);
+				index[ii * 6 + 4] = uint16_t((ii + 1) % ratio + ratio);
+				index[ii * 6 + 5] = uint16_t((ii + 1) % ratio);
+
+				index[ratio * 6 + ii * 6 + 0] = uint16_t(0);
+				index[ratio * 6 + ii * 6 + 1] = uint16_t(ii);
+				index[ratio * 6 + ii * 6 + 2] = uint16_t((ii + 1) % ratio);
+				index[ratio * 6 + ii * 6 + 3] = uint16_t(ratio);
+				index[ratio * 6 + ii * 6 + 4] = uint16_t((ii + 1) % ratio + ratio);
+				index[ratio * 6 + ii * 6 + 5] = uint16_t(ii + ratio);
+
+				index[numIndices + ii * 2 + 0] = uint16_t(ii);
+				index[numIndices + ii * 2 + 1] = uint16_t(ii + ratio);
+
+				index[numIndices + ratio * 2 + ii * 2 + 0] = uint16_t(ii);
+				index[numIndices + ratio * 2 + ii * 2 + 1] = uint16_t((ii + 1) % ratio);
+
+				index[numIndices + ratio * 4 + ii * 2 + 0] = uint16_t(ratio + ii);
+				index[numIndices + ratio * 4 + ii * 2 + 1] = uint16_t(ratio + (ii + 1) % ratio);
+			}
+
+			mesh.baseVertex = 0;
+			mesh.baseIndex = 0;
+			mesh.totalVertex = static_cast<uint16_t>(buff.size());
+			mesh.totalIndex = static_cast<uint16_t>(index.size());
+
+			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
+			mesh.indices.insert(mesh.indices.end(), index.begin(), index.end());
+
+			return mesh;
 		}
 
-		rawrbox::Mesh<typename M::vertexBufferType> generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
-			throw std::runtime_error("TODO");
-		}
+		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L640
+		// Does not support UV :( / normals
+		rawrbox::Mesh<typename M::vertexBufferType> generateSphere(const rawrbox::Vector3f& pos, float size, int ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			mesh.vertexPos.translate(pos);
 
-		// https://stackoverflow.com/questions/29126226/turning-a-cylinder-into-a-sphere-without-pinching-at-the-poles/29139125#29139125
-		rawrbox::Mesh<typename M::vertexBufferType> generateSphere(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White, int ratio = 5) {
-			throw std::runtime_error("TODO");
+			static const float golden = 1.6180339887F;
+			static const float len = std::sqrt(golden * golden + 1.0F);
+			static const float ss = 1.0F / len * size;
+			static const float ll = ss * golden;
+
+			static const std::array<rawrbox::Vector3f, 32> vv = {
+			    rawrbox::Vector3f{-ll, 0.0F, -ss},
+			    rawrbox::Vector3f{ll, 0.0F, -ss},
+			    rawrbox::Vector3f{ll, 0.0F, ss},
+			    rawrbox::Vector3f{-ll, 0.0F, ss},
+
+			    rawrbox::Vector3f{-ss, ll, 0.0F},
+			    rawrbox::Vector3f{ss, ll, 0.0F},
+			    rawrbox::Vector3f{ss, -ll, 0.0F},
+			    rawrbox::Vector3f{-ss, -ll, 0.0F},
+
+			    rawrbox::Vector3f{0.0F, -ss, ll},
+			    rawrbox::Vector3f{0.0F, ss, ll},
+			    rawrbox::Vector3f{0.0F, ss, -ll},
+			    rawrbox::Vector3f{0.0F, -ss, -ll},
+			};
+
+			std::vector<typename M::vertexBufferType> buff = {};
+
+			std::function<void(const rawrbox::Vector3f& _v0, const rawrbox::Vector3f& _v1, const rawrbox::Vector3f& _v2, float _scale, uint8_t ratio)> triangle;
+			triangle = [&triangle, &buff, pos](const rawrbox::Vector3f& _v0, const rawrbox::Vector3f& _v1, const rawrbox::Vector3f& _v2, float _scale, uint8_t ratio) {
+				if (0 == ratio) {
+					buff.push_back(rawrbox::VertexData(pos + _v0, {1, 1}, rawrbox::Colors::White));
+					buff.push_back(rawrbox::VertexData(pos + _v2, {1, 0}, rawrbox::Colors::White));
+					buff.push_back(rawrbox::VertexData(pos + _v1, {0, 1}, rawrbox::Colors::White));
+				} else {
+					const rawrbox::Vector3f v01 = (_v0 + _v1).normalized() * _scale;
+					const rawrbox::Vector3f v12 = (_v1 + _v2).normalized() * _scale;
+					const rawrbox::Vector3f v20 = (_v2 + _v0).normalized() * _scale;
+
+					--ratio;
+					triangle(_v0, v01, v20, _scale, ratio);
+					triangle(_v1, v12, v01, _scale, ratio);
+					triangle(_v2, v20, v12, _scale, ratio);
+					triangle(v01, v12, v20, _scale, ratio);
+				}
+			};
+
+			triangle(vv[0], vv[4], vv[3], size, ratio);
+			triangle(vv[0], vv[10], vv[4], size, ratio);
+			triangle(vv[4], vv[10], vv[5], size, ratio);
+			triangle(vv[5], vv[10], vv[1], size, ratio);
+			triangle(vv[5], vv[1], vv[2], size, ratio);
+			triangle(vv[5], vv[2], vv[9], size, ratio);
+			triangle(vv[5], vv[9], vv[4], size, ratio);
+			triangle(vv[3], vv[4], vv[9], size, ratio);
+
+			triangle(vv[0], vv[3], vv[7], size, ratio);
+			triangle(vv[0], vv[7], vv[11], size, ratio);
+			triangle(vv[11], vv[7], vv[6], size, ratio);
+			triangle(vv[11], vv[6], vv[1], size, ratio);
+			triangle(vv[1], vv[6], vv[2], size, ratio);
+			triangle(vv[2], vv[6], vv[8], size, ratio);
+			triangle(vv[8], vv[6], vv[7], size, ratio);
+			triangle(vv[8], vv[7], vv[3], size, ratio);
+
+			triangle(vv[0], vv[11], vv[10], size, ratio);
+			triangle(vv[1], vv[10], vv[11], size, ratio);
+			triangle(vv[2], vv[8], vv[9], size, ratio);
+			triangle(vv[3], vv[9], vv[8], size, ratio);
+
+			// ----------
+
+			auto numIndices = static_cast<uint32_t>(buff.size());
+
+			std::vector<uint16_t> trilist = {};
+			trilist.resize(numIndices);
+			for (uint32_t ii = 0; ii < numIndices; ++ii) {
+				trilist[ii] = uint16_t(ii);
+			}
+
+			uint32_t numLineListIndices = bgfx::topologyConvert(
+			    bgfx::TopologyConvert::TriListToLineList, nullptr, 0, trilist.data(), numIndices, false);
+
+			std::vector<uint16_t> inds = {};
+			inds.resize(numLineListIndices * sizeof(uint16_t));
+
+			bgfx::topologyConvert(
+			    bgfx::TopologyConvert::TriListToLineList, inds.data(), numLineListIndices * sizeof(uint16_t), trilist.data(), numIndices, false);
+
+			mesh.baseVertex = 0;
+			mesh.baseIndex = 0;
+			mesh.totalVertex = static_cast<uint16_t>(buff.size());
+			mesh.totalIndex = static_cast<uint16_t>(inds.size());
+
+			// AABB ---
+			mesh.bbox.m_min = -_scale / 2.F;
+			mesh.bbox.m_max = _scale / 2.F;
+			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
+			// -----
+
+			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
+			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
+			return mesh;
 		}
 
 		rawrbox::Mesh<typename M::vertexBufferType> generateMesh(const rawrbox::Vector3f& pos, int size = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White) {

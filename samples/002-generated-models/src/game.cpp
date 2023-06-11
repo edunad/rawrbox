@@ -104,7 +104,37 @@ namespace model {
 			this->_model->addMesh(mesh);
 		}
 
+		// Sphere
+		{
+			auto mesh = this->_model->generateSphere({2.F, 0.F, -2.F}, 0.5F, 0);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = this->_model->generateSphere({3.F, 0.F, -2.F}, 0.5F, 1);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = this->_model->generateSphere({4.F, 0.F, -2.F}, 0.5F, 2);
+			this->_model->addMesh(mesh);
+		}
 		// -----
+
+		{
+			auto mesh = this->_model->generateCylinder({-2.F, 0.5F, -2.F}, {0.5F, 0.5F, 0.5F}, 12);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = this->_model->generateCone({-3.F, 0.5F, -2.F}, {0.5F, 1.F, 0.5F}, 12);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = this->_model->generateCone({-4.F, 0.5F, -2.F}, {0.5F, 1.F, 0.5F}, 4);
+			this->_model->addMesh(mesh);
+		}
 
 		// Displacement test ----
 		{
@@ -145,6 +175,10 @@ namespace model {
 			this->_text->addText(*this->_font, "AXIS", {0.F, 0.5F, 0});
 			this->_text->addText(*this->_font, "SPRITE", {0.F, 1.2F, 0});
 			this->_text->addText(*this->_font, "DISPLACEMENT", {0.F, 1.2F, -2});
+			this->_text->addText(*this->_font, "SPHERES", {3.F, 1.2F, -2});
+			this->_text->addText(*this->_font, "CYLINDER", {-2.F, 1.2F, -2});
+			this->_text->addText(*this->_font, "CONE", {-3.F, 1.2F, -2});
+			this->_text->addText(*this->_font, "PYRAMID", {-4.F, 1.2F, -2});
 		}
 		// ------
 

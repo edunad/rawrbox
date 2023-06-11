@@ -1,22 +1,12 @@
 #pragma once
+
 #include <rawrbox/engine/static.hpp>
-#include <rawrbox/math/matrix4x4.hpp>
-#include <rawrbox/math/utils/math.hpp>
-#include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/model/animation.hpp>
 #include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/light/base.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
-#include <rawrbox/render/model/material/base.hpp>
+#include <rawrbox/render/model/skeleton.hpp>
 #include <rawrbox/render/utils/anim.hpp>
-
-#include <assimp/anim.h>
-#include <assimp/vector3.h>
-#include <bx/easing.h>
-
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
 #define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 
@@ -26,7 +16,7 @@ namespace rawrbox {
 	class Model : public rawrbox::ModelBase<M> {
 
 	protected:
-		std::unordered_map<std::string, Animation> _animations = {};
+		std::unordered_map<std::string, rawrbox::Animation> _animations = {};
 		std::vector<rawrbox::PlayingAnimationData> _playingAnimations = {};
 		std::vector<rawrbox::LightBase> _lights = {};
 
@@ -123,9 +113,9 @@ namespace rawrbox {
 					bx::EaseFn ease = bx::getEaseFunc(animChannel->stateEnd);
 					float t = ease(timeInTicks);
 
-					position = AnimUtils::lerpVector3(t, currPos, nextPos);
-					rotation = AnimUtils::lerpRotation(t, currRot, nextRot);
-					scale = AnimUtils::lerpVector3(t, currScl, nextScl);
+					position = rawrbox::AnimUtils::lerpVector3(t, currPos, nextPos);
+					rotation = rawrbox::AnimUtils::lerpRotation(t, currRot, nextRot);
+					scale = rawrbox::AnimUtils::lerpVector3(t, currScl, nextScl);
 					//   ----
 
 					rawrbox::Matrix4x4 mt = {};
@@ -182,6 +172,12 @@ namespace rawrbox {
 
 	public:
 		using ModelBase<M>::ModelBase;
+
+		Model(const Model&) = delete;
+		Model(Model&&) = delete;
+		Model& operator=(const Model&) = delete;
+		Model& operator=(Model&&) = delete;
+		~Model() override = default;
 
 		// Animations ----
 		bool blendAnimation(const std::string& otherAnim, float blend) {
