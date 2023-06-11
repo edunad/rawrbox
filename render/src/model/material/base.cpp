@@ -16,6 +16,8 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(program);
 
 		RAWRBOX_DESTROY(s_texColor);
+		RAWRBOX_DESTROY(s_texBumpColor);
+
 		RAWRBOX_DESTROY(u_colorOffset);
 
 		RAWRBOX_DESTROY(u_mesh_pos);
@@ -23,7 +25,7 @@ namespace rawrbox {
 	}
 
 	// NOLINTBEGIN(hicpp-avoid-c-arrays)
-	void MaterialBase::buildShader(const bgfx::EmbeddedShader shaders[], const std::string& name) {
+	void MaterialBase::buildShader(const bgfx::EmbeddedShader shaders[]) {
 		bgfx::RendererType::Enum type = bgfx::getRendererType();
 		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, shaders[0].name);
 		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, shaders[1].name);
@@ -35,10 +37,11 @@ namespace rawrbox {
 
 	void MaterialBase::registerUniforms() {
 		s_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
+		s_texBumpColor = bgfx::createUniform("s_texBumpColor", bgfx::UniformType::Sampler);
 
 		u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 		u_mesh_pos = bgfx::createUniform("u_mesh_pos", bgfx::UniformType::Vec4, 3);
-		u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4, 1);
+		u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4);
 	}
 
 	void MaterialBase::preProcess(const rawrbox::Vector3f& camPos) {}
@@ -52,7 +55,7 @@ namespace rawrbox {
 
 	void MaterialBase::postProcess() { bgfx::submit(rawrbox::CURRENT_VIEW_ID, program); }
 	void MaterialBase::upload() {
-		this->buildShader(model_unlit_shaders, "model_unlit");
+		this->buildShader(model_unlit_shaders);
 	}
 
 } // namespace rawrbox

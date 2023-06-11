@@ -62,7 +62,11 @@ TEST_CASE("Mesh should behave as expected", "[rawrbox::Mesh]") {
 
 		REQUIRE(base2.canOptimize(base3) == true);
 
-		base2.setWireframe(true);
+		base2.setOptimizable(false);
+		REQUIRE(base2.canOptimize(base3) == false);
+
+		base2.setOptimizable(true);
+		base2.lineMode = true;
 		REQUIRE(base2.canOptimize(base3) == false);
 	}
 }

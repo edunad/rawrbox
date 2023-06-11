@@ -4,7 +4,7 @@
 
 <h2>
 	<p align="center">
-		<a href="https://github.com/MythicalRawr/rawrbox">RawrBox</a> - Another modular(?) game engine made with <a href="https://github.com/bkaradzic/bgfx">BGFX</a>
+		<a href="https://github.com/MythicalRawr/rawrbox">RawrBox</a> - PSX..ish modular(?) game engine made with <a href="https://github.com/bkaradzic/bgfx">BGFX</a>
 	</p>
 </h2>
 

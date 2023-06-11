@@ -104,13 +104,9 @@ namespace light {
 		this->_window->pollEvents();
 	}
 
-	float t = 0.F;
 	void Game::update() {
 		if (this->_camera == nullptr) return;
 		this->_camera->update();
-
-		t += 0.45F;
-		this->_model->setEulerAngle({0, bx::toRad(t), 0});
 	}
 
 	void Game::drawWorld() {

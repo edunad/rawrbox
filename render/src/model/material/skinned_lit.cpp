@@ -22,7 +22,11 @@ namespace rawrbox {
 		// ---
 	}
 
+	void MaterialSkinnedLit::setBoneData(const std::vector<rawrbox::Matrix4x4>& data) {
+		bgfx::setUniform(this->u_bones, &data.front(), static_cast<uint32_t>(data.size()));
+	}
+
 	void MaterialSkinnedLit::upload() {
-		this->buildShader(model_skinned_lit_shaders, "model_skinned_lit");
+		this->buildShader(model_skinned_lit_shaders);
 	}
 } // namespace rawrbox

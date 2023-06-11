@@ -44,7 +44,7 @@ void main() {
 			}
 		}
 
-		gl_FragColor = vec4(ambient + (emissionColor.rgb * u_texMatData.y), opacityColor.a);
+		gl_FragColor = vec4((emissionColor.rgb * u_texMatData.y) + ambient, opacityColor.a);
 	} else {
 		gl_FragColor = texColor; // Full bright
 	}

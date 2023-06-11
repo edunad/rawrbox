@@ -12,6 +12,6 @@ const bgfx::EmbeddedShader particle_shaders[] = {
 
 namespace rawrbox {
 	void MaterialParticle::upload() {
-		this->buildShader(particle_shaders, "particle");
+		this->buildShader(particle_shaders);
 	}
 } // namespace rawrbox

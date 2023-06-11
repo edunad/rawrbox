@@ -44,10 +44,11 @@ namespace model {
 	}
 
 	void Game::loadContent() {
-		std::array<std::string, 3> initialContentFiles = {
+		std::array<std::string, 4> initialContentFiles = {
 		    "cour.ttf",
 		    "content/textures/screem.png",
 		    "content/textures/meow3.gif",
+		    "content/textures/displacement_test.png",
 		};
 
 		for (auto& f : initialContentFiles) {
@@ -67,21 +68,29 @@ namespace model {
 	void Game::contentLoaded() {
 		this->_ready = true;
 
-		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
+		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
 		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->get();
+		auto texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/displacement_test.png")->get();
 
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
 
 		// Model test ----
 		{
 			auto mesh = this->_model->generatePlane({2, 0, 0}, {0.5F, 0.5F});
-			mesh.setTexture(this->_texture);
+			mesh.setTexture(texture);
 			this->_model->addMesh(mesh);
 		}
 
 		{
 			auto mesh = this->_model->generateCube({-2, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
 			mesh.setTexture(this->_texture2);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = this->_model->generateCube({-3, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
+			mesh.setTexture(this->_texture2);
+			mesh.setVertexSnap(24.F);
 			this->_model->addMesh(mesh);
 		}
 
@@ -95,25 +104,86 @@ namespace model {
 			this->_model->addMesh(mesh);
 		}
 
+		// Sphere
+		{
+			auto mesh = this->_model->generateSphere({2.F, 0.F, -2.F}, 0.5F, 0);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = this->_model->generateSphere({3.F, 0.F, -2.F}, 0.5F, 1);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = this->_model->generateSphere({4.F, 0.F, -2.F}, 0.5F, 2);
+			this->_model->addMesh(mesh);
+		}
+		// -----
+
+		{
+			auto mesh = this->_model->generateCylinder({-2.F, 0.5F, -2.F}, {0.5F, 0.5F, 0.5F}, 12);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = this->_model->generateCone({-3.F, 0.5F, -2.F}, {0.5F, 1.F, 0.5F}, 12);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = this->_model->generateCone({-4.F, 0.5F, -2.F}, {0.5F, 1.F, 0.5F}, 4);
+			this->_model->addMesh(mesh);
+		}
+
+		// Displacement test ----
+		{
+			auto mesh = this->_displacement->generateMesh({0, 0, 0}, 64, rawrbox::Colors::White);
+			mesh.setTexture(texture3);
+			mesh.setBumpTexture(texture3);
+			mesh.setDisplacement(24.F);
+
+			this->_displacement->addMesh(mesh);
+		}
+
+		{
+			auto mesh = this->_displacement->generateMesh({0, 0.5F, 0}, 64, rawrbox::Colors::Black);
+			mesh.setBumpTexture(texture3);
+			mesh.setDisplacement(24.F);
+			mesh.lineMode = true;
+
+			this->_displacement->addMesh(mesh);
+		}
+
+		this->_displacement->setPos({0, 0.1F, -2});
+		this->_displacement->setScale({0.025F, 0.025F, 0.025F});
 		// -----
 
 		// Sprite test ----
 		{
 			auto mesh = this->_sprite->generatePlane({0, 1, 0}, {0.2F, 0.2F});
-			mesh.setTexture(this->_texture);
+			mesh.setTexture(texture);
 			this->_sprite->addMesh(mesh);
 		}
 		// -----
+
 		// Text test ----
 		{
 			this->_text->addText(*this->_font, "PLANE", {2.F, 0.5F, 0});
 			this->_text->addText(*this->_font, "CUBE", {-2.F, 0.55F, 0});
+			this->_text->addText(*this->_font, "CUBE\nVertex snap", {-3.F, 0.55F, 0});
 			this->_text->addText(*this->_font, "AXIS", {0.F, 0.5F, 0});
 			this->_text->addText(*this->_font, "SPRITE", {0.F, 1.2F, 0});
+			this->_text->addText(*this->_font, "DISPLACEMENT", {0.F, 1.2F, -2});
+			this->_text->addText(*this->_font, "SPHERES", {3.F, 1.2F, -2});
+			this->_text->addText(*this->_font, "CYLINDER", {-2.F, 1.2F, -2});
+			this->_text->addText(*this->_font, "CONE", {-3.F, 1.2F, -2});
+			this->_text->addText(*this->_font, "PYRAMID", {-4.F, 1.2F, -2});
 		}
 		// ------
 
 		this->_model->upload();
+		this->_displacement->upload();
 		this->_sprite->upload();
 		this->_text->upload();
 	}
@@ -121,10 +191,10 @@ namespace model {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
-		this->_camera.reset();
-		this->_texture = nullptr;
 		this->_texture2 = nullptr;
+		this->_camera.reset();
 
+		this->_displacement.reset();
 		this->_model.reset();
 		this->_sprite.reset();
 		this->_text.reset();
@@ -148,11 +218,14 @@ namespace model {
 	}
 
 	void Game::drawWorld() {
-		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr) return;
+		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr) return;
 
-		this->_model->draw(this->_camera->getPos());
-		this->_sprite->draw(this->_camera->getPos());
-		this->_text->draw(this->_camera->getPos());
+		auto& pos = this->_camera->getPos();
+
+		this->_model->draw(pos);
+		this->_displacement->draw(pos);
+		this->_sprite->draw(pos);
+		this->_text->draw(pos);
 	}
 
 	void Game::printFrames() {

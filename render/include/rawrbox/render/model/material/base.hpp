@@ -16,6 +16,8 @@ namespace rawrbox {
 		bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle s_texColor = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle s_texBumpColor = BGFX_INVALID_HANDLE;
+
 		bgfx::UniformHandle u_colorOffset = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle u_mesh_pos = BGFX_INVALID_HANDLE;
@@ -31,7 +33,7 @@ namespace rawrbox {
 		virtual ~MaterialBase();
 
 		// NOLINTBEGIN(hicpp-avoid-c-arrays)
-		virtual void buildShader(const bgfx::EmbeddedShader shaders[], const std::string& name);
+		virtual void buildShader(const bgfx::EmbeddedShader shaders[]);
 		// NOLINTEND(hicpp-avoid-c-arrays)
 
 		virtual void registerUniforms();
@@ -45,17 +47,34 @@ namespace rawrbox {
 				bgfx::setTexture(0, s_texColor, rawrbox::WHITE_TEXTURE->getHandle());
 			}
 
-			bgfx::setUniform(u_colorOffset, mesh.color.data().data());
-
-			std::array<float, 1> billboard = {0.F};
-			if (mesh.hasData("billboard_mode")) {
-				billboard[0] = mesh.getData("billboard_mode").x;
-
-				std::array offset = {mesh.vertexPos[12], mesh.vertexPos[13], mesh.vertexPos[14]};
-				bgfx::setUniform(u_mesh_pos, offset.data());
+			if (mesh.bumpTexture != nullptr && mesh.bumpTexture->valid()) {
+				bgfx::setTexture(1, s_texBumpColor, mesh.bumpTexture->getHandle());
+			} else {
+				bgfx::setTexture(1, s_texBumpColor, rawrbox::BLACK_TEXTURE->getHandle());
 			}
 
-			bgfx::setUniform(u_data, billboard.data());
+			// Color override
+			bgfx::setUniform(u_colorOffset, mesh.color.data().data());
+			// -------
+
+			std::array offset = {mesh.vertexPos[12], mesh.vertexPos[13], mesh.vertexPos[14]};
+			bgfx::setUniform(u_mesh_pos, offset.data());
+
+			// Pass "special" data ---
+			std::array<float, 4> data = {0.F, 0.F, 0.F, 0.F};
+			if (mesh.hasData("billboard_mode")) {
+				data[0] = mesh.getData("billboard_mode").x;
+			}
+
+			if (mesh.hasData("vertex_snap")) {
+				data[1] = mesh.getData("vertex_snap").x;
+			}
+
+			if (mesh.hasData("displacement_strength")) {
+				data[2] = mesh.getData("displacement_strength").x;
+			}
+			bgfx::setUniform(u_data, data.data());
+			// ---
 		}
 
 		virtual void process(const bgfx::TextureHandle& texture);

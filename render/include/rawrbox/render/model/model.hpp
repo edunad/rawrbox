@@ -1,22 +1,12 @@
 #pragma once
+
 #include <rawrbox/engine/static.hpp>
-#include <rawrbox/math/matrix4x4.hpp>
-#include <rawrbox/math/utils/math.hpp>
-#include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/model/animation.hpp>
 #include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/light/base.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
-#include <rawrbox/render/model/material/base.hpp>
+#include <rawrbox/render/model/skeleton.hpp>
 #include <rawrbox/render/utils/anim.hpp>
-
-#include <assimp/anim.h>
-#include <assimp/vector3.h>
-#include <bx/easing.h>
-
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
 #define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 
@@ -24,10 +14,15 @@ namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
 	class Model : public rawrbox::ModelBase<M> {
+
 	protected:
-		std::unordered_map<std::string, Animation> _animations = {};
+		std::unordered_map<std::string, rawrbox::Animation> _animations = {};
 		std::vector<rawrbox::PlayingAnimationData> _playingAnimations = {};
-		std::vector<rawrbox::LightBase> lights = {};
+		std::vector<rawrbox::LightBase> _lights = {};
+
+		// SKINNING ----
+		std::unordered_map<std::string, rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // Map for quick lookup
+														    // --------
 
 		// ANIMATIONS ----
 		void animate(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
@@ -52,7 +47,7 @@ namespace rawrbox {
 					}
 				}
 
-				bgfx::setUniform(this->_material->u_bones, &boneTransforms.front(), static_cast<uint32_t>(boneTransforms.size()));
+				this->_material->setBoneData(boneTransforms);
 			}
 			// -----
 		}
@@ -118,9 +113,9 @@ namespace rawrbox {
 					bx::EaseFn ease = bx::getEaseFunc(animChannel->stateEnd);
 					float t = ease(timeInTicks);
 
-					position = AnimUtils::lerpVector3(t, currPos, nextPos);
-					rotation = AnimUtils::lerpRotation(t, currRot, nextRot);
-					scale = AnimUtils::lerpVector3(t, currScl, nextScl);
+					position = rawrbox::AnimUtils::lerpVector3(t, currPos, nextPos);
+					rotation = rawrbox::AnimUtils::lerpRotation(t, currRot, nextRot);
+					scale = rawrbox::AnimUtils::lerpVector3(t, currScl, nextScl);
 					//   ----
 
 					rawrbox::Matrix4x4 mt = {};
@@ -161,21 +156,28 @@ namespace rawrbox {
 		}
 		// --------------
 		void updateLights() {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
+				// Update lights ---
+				for (auto& mesh : this->meshes()) {
+					rawrbox::Vector3f meshPos = {mesh->offsetMatrix[12], mesh->offsetMatrix[13], mesh->offsetMatrix[14]};
+					auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle());
 
-			// Update lights ---
-			for (auto& mesh : this->meshes()) {
-				rawrbox::Vector3f meshPos = {mesh->offsetMatrix[12], mesh->offsetMatrix[13], mesh->offsetMatrix[14]};
-				auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle());
-
-				for (auto light : mesh->lights) {
-					if (light.expired()) continue;
-					light.lock()->setOffsetPos(p);
+					for (auto light : mesh->lights) {
+						if (light.expired()) continue;
+						light.lock()->setOffsetPos(p);
+					}
 				}
 			}
 		}
 
 	public:
 		using ModelBase<M>::ModelBase;
+
+		Model(const Model&) = delete;
+		Model(Model&&) = delete;
+		Model& operator=(const Model&) = delete;
+		Model& operator=(Model&&) = delete;
+		~Model() override = default;
 
 		// Animations ----
 		bool blendAnimation(const std::string& otherAnim, float blend) {
@@ -209,20 +211,22 @@ namespace rawrbox {
 		// --------------
 		// LIGHTS ------
 		virtual void addLight(std::shared_ptr<rawrbox::LightBase> light, const std::string& parentMesh = "") {
-			auto parent = this->_meshes.back().get();
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
+				auto parent = this->_meshes.back().get();
 
-			if (!parentMesh.empty()) {
-				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
-					return msh->getName() == parentMesh;
-				});
+				if (!parentMesh.empty()) {
+					auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
+						return msh->getName() == parentMesh;
+					});
 
-				if (fnd != this->_meshes.end()) parent = fnd->get();
+					if (fnd != this->_meshes.end()) parent = fnd->get();
+				}
+
+				light->setOffsetPos(parent->getPos() + this->getPos());
+				parent->lights.push_back(light);
+
+				rawrbox::LIGHTS::addLight(light);
 			}
-
-			light->setOffsetPos(parent->getPos() + this->getPos());
-			parent->lights.push_back(light);
-
-			rawrbox::LIGHTS::addLight(light);
 		}
 		// -----
 
@@ -233,17 +237,17 @@ namespace rawrbox {
 
 		void setAngle(const rawrbox::Vector4f& angle) override {
 			rawrbox::ModelBase<M>::setAngle(angle);
-			// this->updateLights(); // TODO
+			this->updateLights();
 		}
 
 		void setEulerAngle(const rawrbox::Vector3f& angle) override {
 			rawrbox::ModelBase<M>::setEulerAngle(angle);
-			// this->updateLights(); // TODO
+			this->updateLights();
 		}
 
 		void setScale(const rawrbox::Vector3f& size) override {
 			rawrbox::ModelBase<M>::setScale(size);
-			// this->updateLights(); // TODO
+			this->updateLights();
 		}
 
 		void draw(const rawrbox::Vector3f& camPos) override {
