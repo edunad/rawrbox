@@ -4,7 +4,6 @@
 #include <rawrbox/utils/pack.hpp>
 
 #include <functional>
-
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
@@ -755,10 +754,15 @@ namespace rawrbox {
 		}
 
 		virtual void removeMeshByName(const std::string& id) {
-			auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&id](auto& mesh) { return mesh->getName() == id; });
-			if (fnd == this->_meshes.end()) return;
+			for (auto it2 = this->_meshes.begin(); it2 != this->_meshes.end();) {
+				if ((*it2)->getName() == id) {
+					it2 = this->_meshes.erase(it2);
+					continue;
+				}
 
-			this->_meshes.erase(fnd);
+				++it2;
+			}
+
 			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 		}
 

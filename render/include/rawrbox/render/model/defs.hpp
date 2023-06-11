@@ -79,8 +79,6 @@ namespace rawrbox {
 		std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
-		using VertexData::VertexData;
-
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
 			l.begin()
@@ -130,8 +128,6 @@ namespace rawrbox {
 	struct VertexSkinnedLitData : public VertexLitData {
 		std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
-
-		using VertexLitData::VertexLitData;
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;

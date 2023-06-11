@@ -14,9 +14,19 @@ namespace rawrbox {
 		bool _isAnimated = false;
 
 	public:
+		~UIImage() override = default;
+		UIImage() = default;
+		UIImage(const UIImage&) = default;
+		UIImage(UIImage&&) = delete;
+		UIImage& operator=(const UIImage&) = default;
+		UIImage& operator=(UIImage&&) = delete;
+
 		// UTILS ----
-		virtual void setTexture(rawrbox::TextureBase& texture);
+		[[nodiscard]] virtual const rawrbox::TextureBase* getTexture() const;
+		virtual void setTexture(rawrbox::TextureBase* texture);
 		virtual void setTexture(const std::filesystem::path& path);
+
+		virtual void setAnimated(bool animated);
 
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const;
 		virtual void setColor(const rawrbox::Color& col);

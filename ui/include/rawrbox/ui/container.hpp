@@ -31,7 +31,6 @@ namespace rawrbox {
 		UIContainer() = default;
 		UIContainer(const UIContainer&) = default;
 		UIContainer(UIContainer&&) noexcept;
-
 		UIContainer& operator=(const UIContainer&) = default;
 		UIContainer& operator=(UIContainer&&) = delete;
 

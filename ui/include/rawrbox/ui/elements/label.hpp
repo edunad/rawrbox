@@ -19,28 +19,35 @@ namespace rawrbox {
 		rawrbox::Vector2f _shadow = {1, 1};
 
 	public:
+		~UILabel() override = default;
+		UILabel() = default;
+		UILabel(const UILabel&) = default;
+		UILabel(UILabel&&) = delete;
+		UILabel& operator=(const UILabel&) = default;
+		UILabel& operator=(UILabel&&) = delete;
+
 		// FOCUS HANDLE ---
 		[[nodiscard]] bool hitTest(const rawrbox::Vector2f& point) const override;
 		// -----
 
 		// UTILS ----
-		void setColor(const rawrbox::Color& col);
-		[[nodiscard]] const rawrbox::Color& getColor() const;
+		virtual void setColor(const rawrbox::Color& col);
+		[[nodiscard]] virtual const rawrbox::Color& getColor() const;
 
-		void setShadowPos(const rawrbox::Vector2f& pos);
-		[[nodiscard]] const rawrbox::Vector2f& getShadowPos() const;
+		virtual void setShadowPos(const rawrbox::Vector2f& pos);
+		[[nodiscard]] virtual const rawrbox::Vector2f& getShadowPos() const;
 
-		void setShadowColor(const rawrbox::Color& col);
-		[[nodiscard]] const rawrbox::Color& getShadowColor() const;
+		virtual void setShadowColor(const rawrbox::Color& col);
+		[[nodiscard]] virtual const rawrbox::Color& getShadowColor() const;
 
-		void setText(const std::string& text);
-		[[nodiscard]] const std::string& getText() const;
+		virtual void setText(const std::string& text);
+		[[nodiscard]] virtual const std::string& getText() const;
 
-		void setFont(rawrbox::Font* font);
-		void setFont(const std::filesystem::path& font, int size = 11);
-		[[nodiscard]] rawrbox::Font* getFont() const;
+		virtual void setFont(rawrbox::Font* font);
+		virtual void setFont(const std::filesystem::path& font, int size = 11);
+		[[nodiscard]] virtual rawrbox::Font* getFont() const;
 
-		void sizeToContents();
+		virtual void sizeToContents();
 		// -----
 
 		// DRAW ----

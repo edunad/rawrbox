@@ -50,6 +50,13 @@ namespace rawrbox {
 		// ---------------
 
 	public:
+		~UIInput() override = default;
+		UIInput() = default;
+		UIInput(const UIInput&) = default;
+		UIInput(UIInput&&) = delete;
+		UIInput& operator=(const UIInput&) = default;
+		UIInput& operator=(UIInput&&) = delete;
+
 		rawrbox::Event<uint32_t> onKey;
 		rawrbox::Event<> onTextUpdate;
 		rawrbox::Event<> onEnter;

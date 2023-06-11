@@ -29,6 +29,13 @@ namespace rawrbox {
 		// -----------------
 
 	public:
+		~UIButton() override = default;
+		UIButton() = default;
+		UIButton(const UIButton&) = default;
+		UIButton(UIButton&&) = delete;
+		UIButton& operator=(const UIButton&) = default;
+		UIButton& operator=(UIButton&&) = delete;
+
 		rawrbox::Event<> onClick;
 		void initialize() override;
 
@@ -49,7 +56,7 @@ namespace rawrbox {
 		void setTooltip(const std::string& text);
 		[[nodiscard]] const std::string& getTooltip() const;
 
-		void setTexture(rawrbox::TextureBase& texture);
+		void setTexture(rawrbox::TextureBase* texture);
 		void setTexture(const std::string& path);
 
 		void setEnabled(bool enabled);

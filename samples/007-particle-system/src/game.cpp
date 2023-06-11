@@ -64,7 +64,7 @@ namespace particle_test {
 
 	void Game::contentLoaded() {
 		// Fonts -----
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(24);
 		// ------
 
 		// Setup Engine

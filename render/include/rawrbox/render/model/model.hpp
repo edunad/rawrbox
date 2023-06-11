@@ -171,8 +171,7 @@ namespace rawrbox {
 		}
 
 	public:
-		using ModelBase<M>::ModelBase;
-
+		Model() = default;
 		Model(const Model&) = delete;
 		Model(Model&&) = delete;
 		Model& operator=(const Model&) = delete;

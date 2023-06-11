@@ -210,10 +210,10 @@ namespace rawrbox {
 			float kerning = this->getKerning(prevCodePoint, point);
 			cursor.x += kerning;
 
-			float x0 = cursor.x + (glyph->offset.x);
-			float y0 = yIsUp ? cursor.y : cursor.y + glyph->offset.y;
-			float x1 = (x0 + glyph->size.x);
-			float y1 = (y0 + glyph->size.y);
+			float x0 = cursor.x + glyph->offset.x;
+			float y0 = cursor.y + glyph->offset.y;
+			float x1 = x0 + glyph->size.x;
+			float y1 = y0 + glyph->size.y;
 
 			renderGlyph(glyph, x0, y0, x1, y1);
 

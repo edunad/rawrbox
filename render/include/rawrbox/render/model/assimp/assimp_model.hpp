@@ -144,7 +144,13 @@ namespace rawrbox {
 		}
 
 	public:
-		using Model<M>::Model;
+		AssimpModel() = default;
+		AssimpModel(const AssimpModel&) = delete;
+		AssimpModel(AssimpModel&&) = delete;
+		AssimpModel& operator=(const AssimpModel&) = delete;
+		AssimpModel& operator=(AssimpModel&&) = delete;
+		~AssimpModel() override = default;
+
 		void load(const rawrbox::AssimpImporter& model) {
 			this->loadMeshes(model);
 

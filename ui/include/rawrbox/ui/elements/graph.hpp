@@ -68,6 +68,13 @@ namespace rawrbox {
 		std::vector<std::array<rawrbox::Vector2f, rawrbox::UIGraphCategory::ENTRY_COUNT>> _vertCats = {};
 
 	public:
+		~UIGraph() override = default;
+		UIGraph() = default;
+		UIGraph(const UIGraph&) = default;
+		UIGraph(UIGraph&&) = delete;
+		UIGraph& operator=(const UIGraph&) = default;
+		UIGraph& operator=(UIGraph&&) = delete;
+
 		// CATEGORY --
 		virtual rawrbox::UIGraphCategory& getCategory(size_t id);
 		virtual rawrbox::UIGraphCategory& addCategory(const std::string& name, const rawrbox::Color& color);

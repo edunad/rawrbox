@@ -10,15 +10,24 @@ namespace rawrbox {
 		float _scaleMul = 0.25F;
 
 	public:
-		using ModelBase<rawrbox::MaterialText3DUnlit>::ModelBase;
+		Text3D() = default;
+		Text3D(const Text3D&) = delete;
+		Text3D(Text3D&&) = delete;
+		Text3D& operator=(const Text3D&) = delete;
+		Text3D& operator=(Text3D&&) = delete;
+		~Text3D() override = default;
+
+		static uint32_t ID;
 
 		// UTILS ----
 		void setScaleMul(float mul);
 		[[nodiscard]] const float getScaleMul() const;
 
-		void addText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center, bool billboard = true);
+		uint32_t addText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center, bool billboard = false);
+		void removeText(uint32_t indx);
 		// ----------
 
+		void upload(bool dynamic = false) override;
 		void draw(const rawrbox::Vector3f& camPos) override;
 	};
 } // namespace rawrbox
