@@ -168,18 +168,19 @@ namespace model {
 		// -----
 
 		// Text test ----
-		{
-			this->_text->addText(*this->_font, "PLANE", {2.F, 0.5F, 0});
-			this->_text->addText(*this->_font, "CUBE", {-2.F, 0.55F, 0});
-			this->_text->addText(*this->_font, "CUBE\nVertex snap", {-3.F, 0.55F, 0});
-			this->_text->addText(*this->_font, "AXIS", {0.F, 0.5F, 0});
-			this->_text->addText(*this->_font, "SPRITE", {0.F, 1.2F, 0});
-			this->_text->addText(*this->_font, "DISPLACEMENT", {0.F, 1.2F, -2});
-			this->_text->addText(*this->_font, "SPHERES", {3.F, 1.2F, -2});
-			this->_text->addText(*this->_font, "CYLINDER", {-2.F, 1.2F, -2});
-			this->_text->addText(*this->_font, "CONE", {-3.F, 1.2F, -2});
-			this->_text->addText(*this->_font, "PYRAMID", {-4.F, 1.2F, -2});
-		}
+
+		this->_text->setScaleMul(0.75F);
+		this->_text->addText(*this->_font, "PLANE", {2.F, 0.5F, 0});
+		this->_text->addText(*this->_font, "CUBE", {-2.F, 0.55F, 0});
+		this->_text->addText(*this->_font, "CUBE\nVertex snap", {-3.F, 0.55F, 0});
+		this->_text->addText(*this->_font, "AXIS", {0.F, 0.5F, 0});
+		this->_text->addText(*this->_font, "SPRITE", {0.F, 1.2F, 0});
+		this->_text->addText(*this->_font, "DISPLACEMENT", {0.F, 1.2F, -2});
+		this->_text->addText(*this->_font, "SPHERES", {3.F, 1.2F, -2});
+		this->_text->addText(*this->_font, "CYLINDER", {-2.F, 1.2F, -2});
+		this->_text->addText(*this->_font, "CONE", {-3.F, 1.2F, -2});
+		this->_text->addText(*this->_font, "PYRAMID", {-4.F, 1.2F, -2});
+
 		// ------
 
 		this->_model->upload();

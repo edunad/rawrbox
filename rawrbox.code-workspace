@@ -52,9 +52,10 @@
         "cmake.configureArgs": ["-Wno-dev"],
         "cmake.configureSettings": {
             "DUSE_CCACHE": "YES",
+            "CPM_SOURCE_CACHE": "${workspaceFolder:RawrBox}/.cache/CPM",
             "DCCACHE_OPTIONS": "CCACHE_CPP2=true;CCACHE_SLOPPINESS=clang_index_store",
-            "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-            "RAWRBOX_OUTPUT_BIN": "bin"
+            "DCMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+            "DRAWRBOX_OUTPUT_BIN": "bin"
         },
         "C_Cpp.codeAnalysis.clangTidy.enabled": true,
         "workbench.editor.pinnedTabSizing": "shrink",

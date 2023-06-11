@@ -181,7 +181,7 @@ namespace rawrbox {
 		return rawrbox::TextEngine::getAtlas(g->atlasID);
 	}
 
-	void Font::render(const std::string& text, const rawrbox::Vector2f& pos, std::function<void(rawrbox::Glyph*, float, float, float, float)> renderGlyph) const {
+	void Font::render(const std::string& text, const rawrbox::Vector2f& pos, bool yIsUp, std::function<void(rawrbox::Glyph*, float, float, float, float)> renderGlyph) const {
 		if (renderGlyph == nullptr) throw std::runtime_error("[RawrBox-FONT] Failed to render glyph! Missing 'renderGlyph' param");
 
 		auto info = this->getFontInfo();
@@ -195,9 +195,13 @@ namespace rawrbox {
 		while (beginIter != endIter) {
 			uint16_t point = utf8::next(beginIter, endIter); // get codepoint
 			if (point == L'\n') {
-				cursor.y += lineHeight;
-				cursor.x = pos.x;
+				if (!yIsUp) {
+					cursor.y += lineHeight;
+				} else {
+					cursor.y -= lineHeight;
+				}
 
+				cursor.x = pos.x;
 				prevCodePoint = 0;
 				continue;
 			}
@@ -207,7 +211,7 @@ namespace rawrbox {
 			cursor.x += kerning;
 
 			float x0 = cursor.x + (glyph->offset.x);
-			float y0 = (cursor.y + (glyph->offset.y));
+			float y0 = yIsUp ? cursor.y : cursor.y + glyph->offset.y;
 			float x1 = (x0 + glyph->size.x);
 			float y1 = (y0 + glyph->size.y);
 

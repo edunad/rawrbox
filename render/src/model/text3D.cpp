@@ -2,13 +2,17 @@
 
 #include <utf8.h>
 
-#define BGFX_STATE_DEFAULT_3D_TEXT (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA))
+#define BGFX_STATE_DEFAULT_3D_TEXT (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 
 namespace rawrbox {
 
 	// UTILS ----
+
+	void Text3D::setScaleMul(float mul) { this->_scaleMul = mul; }
+	const float Text3D::getScaleMul() const { return this->_scaleMul; }
+
 	void Text3D::addText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl, rawrbox::Alignment alignX, rawrbox::Alignment alignY, bool billboard) {
-		float screenSize = font.getScale() * 0.75F;
+		float screenSize = font.getScale() * this->_scaleMul;
 
 		rawrbox::Vector3f startpos = pos;
 		rawrbox::Vector2f tsize = font.getStringSize(text) * screenSize;
@@ -28,20 +32,21 @@ namespace rawrbox {
 				case Alignment::Left:
 					break;
 				case Alignment::Center:
-					startpos.y -= tsize.y / 2;
+					startpos.z -= tsize.y / 2;
 					break;
 				case Alignment::Right:
-					startpos.y -= tsize.y;
+					startpos.z -= tsize.y;
 					break;
 			}
 		}
 
-		font.render(text, startpos.xy(), [this, &font, billboard, pos, startpos, cl, screenSize](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
+		font.render(text, startpos.xy(), true, [this, &font, billboard, pos, startpos, cl, screenSize](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
 			rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType> mesh;
 
 			mesh.setTexture(font.getAtlasTexture(glyph)); // Set the atlas
 			mesh.setOptimizable(false);
 			mesh.addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
+			mesh.blending = BGFX_STATE_BLEND_ALPHA;
 			mesh.vertexPos.translate(pos);
 
 			std::array<typename rawrbox::MaterialText3DUnlit::vertexBufferType, 4> buff{
@@ -84,7 +89,7 @@ namespace rawrbox {
 				bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
 			}
 
-			uint64_t flags = BGFX_STATE_DEFAULT_3D_TEXT | mesh->culling | mesh->blending;
+			uint64_t flags = BGFX_STATE_DEFAULT_3D_TEXT | mesh->culling | mesh->blending | mesh->depthTest;
 			flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
 											: 0;
 
