@@ -21,8 +21,8 @@ vec4 psx_snap(vec4 vertex, vec2 resolution) {
 }
 
 // Snap vertex to achieve PSX look
-vec4 getTranslatedPos(vec3 a_position, vec2 a_texcoord0) {
-    vec4 pos = vec4(a_position, 1.0);
+vec4 getTranslatedPos(vec4 a_position, vec2 a_texcoord0) {
+    vec4 pos = a_position;
 
     // displacement mode
     if(u_data[2].x != 0.) {
@@ -46,6 +46,10 @@ vec4 getTranslatedPos(vec3 a_position, vec2 a_texcoord0) {
         return mul(u_modelViewProj, pos);
     }
     // ----
+}
+
+vec4 getTranslatedPos(vec3 a_position, vec2 a_texcoord0) {
+    return getTranslatedPos(vec4(a_position, 1.0), a_texcoord0);
 }
 
 #endif

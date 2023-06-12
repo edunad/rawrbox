@@ -27,7 +27,7 @@ void main() {
 	//mat3 tbn = mtxFromCols(v_tangent, v_bitangent, v_normal);
 
 	if(u_lightsSetting.x != 1.0) {
-		vec3 ambient = vec3(0, 0, 0);
+		vec3 ambient = vec3_splat(0.0);
 
 		// Light parsing
 		int totalLights = int(u_lightsSetting.y);
