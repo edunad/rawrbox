@@ -57,23 +57,26 @@ namespace rawrbox {
 			bgfx::setUniform(u_colorOffset, mesh.color.data().data());
 			// -------
 
+			// Mesh pos
 			std::array offset = {mesh.vertexPos[12], mesh.vertexPos[13], mesh.vertexPos[14]};
 			bgfx::setUniform(u_mesh_pos, offset.data());
+			// -------
 
 			// Pass "special" data ---
-			std::array<float, 4> data = {0.F, 0.F, 0.F, 0.F};
+			std::array<std::array<float, 4>, 4> data = {std::array<float, 4>{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
 			if (mesh.hasData("billboard_mode")) {
-				data[0] = mesh.getData("billboard_mode").x;
+				data[0] = mesh.getData("billboard_mode").data();
 			}
 
 			if (mesh.hasData("vertex_snap")) {
-				data[1] = mesh.getData("vertex_snap").x;
+				data[1] = mesh.getData("vertex_snap").data();
 			}
 
 			if (mesh.hasData("displacement_strength")) {
-				data[2] = mesh.getData("displacement_strength").x;
+				data[2] = mesh.getData("displacement_strength").data();
 			}
-			bgfx::setUniform(u_data, data.data());
+
+			bgfx::setUniform(u_data, data.front().data(), 4);
 			// ---
 		}
 

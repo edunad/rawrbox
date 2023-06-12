@@ -41,7 +41,7 @@ namespace rawrbox {
 
 		u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 		u_mesh_pos = bgfx::createUniform("u_mesh_pos", bgfx::UniformType::Vec4, 3);
-		u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4);
+		u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4, 4);
 	}
 
 	void MaterialBase::preProcess(const rawrbox::Vector3f& camPos) {}
