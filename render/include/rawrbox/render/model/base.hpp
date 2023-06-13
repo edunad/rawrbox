@@ -865,9 +865,9 @@ namespace rawrbox {
 			this->_material->registerUniforms();
 		}
 
-		virtual void draw(const rawrbox::Vector3f& camPos) {
+		virtual void draw() {
 			if (!this->isUploaded()) throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not uploaded");
-			this->_material->preProcess(camPos);
+			this->_material->preProcess();
 		}
 	};
 } // namespace rawrbox

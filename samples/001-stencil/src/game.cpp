@@ -113,7 +113,7 @@ namespace stencil {
 
 	void Game::drawWorld() {
 		if (this->_model == nullptr) return;
-		this->_model->draw({});
+		this->_model->draw();
 	}
 
 	void Game::drawOverlay() {

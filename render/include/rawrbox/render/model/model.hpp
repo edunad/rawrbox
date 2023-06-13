@@ -249,8 +249,8 @@ namespace rawrbox {
 			this->updateLights();
 		}
 
-		void draw(const rawrbox::Vector3f& camPos) override {
-			ModelBase<M>::draw(camPos);
+		void draw() override {
+			ModelBase<M>::draw();
 
 			this->preDraw();
 			for (auto& mesh : this->_meshes) {

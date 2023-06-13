@@ -219,12 +219,10 @@ namespace model {
 	void Game::drawWorld() {
 		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr) return;
 
-		auto& pos = this->_camera->getPos();
-
-		this->_model->draw(pos);
-		this->_displacement->draw(pos);
-		this->_sprite->draw(pos);
-		this->_text->draw(pos);
+		this->_model->draw();
+		this->_displacement->draw();
+		this->_sprite->draw();
+		this->_text->draw();
 	}
 
 	void Game::printFrames() {

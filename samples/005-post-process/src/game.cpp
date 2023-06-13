@@ -104,9 +104,7 @@ namespace post_process {
 
 	void Game::drawWorld() {
 		if (this->_model == nullptr) return;
-		this->_model->draw(this->_camera->getPos());
-
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		this->_model->draw();
 	}
 
 	void Game::printFrames() {

@@ -86,8 +86,8 @@ namespace rawrbox {
 	}
 	// ----------
 
-	void Text3D::draw(const rawrbox::Vector3f& camPos) {
-		ModelBase<rawrbox::MaterialText3DUnlit>::draw(camPos);
+	void Text3D::draw() {
+		ModelBase<rawrbox::MaterialText3DUnlit>::draw();
 
 		for (auto& mesh : this->_meshes) {
 			this->_material->process(*mesh);

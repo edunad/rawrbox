@@ -77,6 +77,25 @@ namespace rawrbox {
 			this->mtx[10] = scale.z;
 		}
 
+		void billboard(const rawrbox::Matrix4x4& view, const rawrbox::Vector3f& pos, const rawrbox::Vector3f& scale) {
+			this->mtx[0] = view[0] * scale.x;
+			this->mtx[1] = view[4] * scale.x;
+			this->mtx[2] = view[8] * scale.x;
+			this->mtx[3] = 0.0F;
+			this->mtx[4] = view[1] * scale.y;
+			this->mtx[5] = view[5] * scale.y;
+			this->mtx[6] = view[9] * scale.y;
+			this->mtx[7] = 0.0F;
+			this->mtx[8] = view[2] * scale.z;
+			this->mtx[9] = view[6] * scale.z;
+			this->mtx[10] = view[10] * scale.z;
+			this->mtx[11] = 0.0F;
+			this->mtx[12] = pos.x;
+			this->mtx[13] = pos.y;
+			this->mtx[14] = pos.z;
+			this->mtx[15] = 1.0F;
+		}
+
 		void rotate(const rawrbox::Vector4f& rot) {
 			const float x2 = rot.x + rot.x;
 			const float y2 = rot.y + rot.y;

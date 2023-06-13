@@ -8,6 +8,11 @@ namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
 	class Sprite : public rawrbox::ModelBase<M> {
+	protected:
+		bool _xAxis = true;
+		bool _yAxis = true;
+		bool _zAxis = true;
+
 	public:
 		Sprite() = default;
 		Sprite(const Sprite&) = delete;
@@ -16,17 +21,26 @@ namespace rawrbox {
 		Sprite& operator=(Sprite&&) = delete;
 		~Sprite() override = default;
 
-		void addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) override {
-			mesh.addData("billboard_mode", {1.F, 0, 0}); // Force billboard for sprites
-			mesh.setOptimizable(false);
+		[[nodiscard]] const bool xAxisEnabled() const { return this->_xAxis; }
+		void lockXAxix(bool locked) { this->_xAxis = !locked; }
+		[[nodiscard]] const bool yAxisEnabled() const { return this->_yAxis; }
+		void lockYAxix(bool locked) { this->_yAxis = !locked; }
+		[[nodiscard]] const bool zAxisEnabled() const { return this->_zAxis; }
+		void lockZAxix(bool locked) { this->_zAxis = !locked; }
 
+		void addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) override {
+			mesh.setOptimizable(false);
 			ModelBase<M>::addMesh(mesh);
 		}
 
-		void draw(const rawrbox::Vector3f& camPos) override {
-			ModelBase<M>::draw(camPos);
+		void draw() override {
+			ModelBase<M>::draw();
 
 			for (auto& mesh : this->_meshes) {
+				// Set billboard ----
+				mesh->addData("billboard_mode", {this->_xAxis ? 1.F : 0.F, this->_yAxis ? 1.F : 0.F, this->_zAxis ? 1.F : 0.F, 0.F}); // Force billboard for sprites
+				// -----
+
 				this->_material->process(*mesh);
 
 				if (this->isDynamicBuffer()) {

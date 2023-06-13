@@ -442,9 +442,9 @@ namespace rawrbox {
 				light.parentID = lightNode->mParent->mName.data; // TODO: Assimp doesn't seem to give the correct parent, will need to manually find it
 			}
 
-			light.diffuse = rawrbox::Color(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F) / 255.F;
-			light.specular = rawrbox::Color(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F) / 255.F;
-			light.ambient = rawrbox::Color(aiLight.mColorAmbient.r, aiLight.mColorAmbient.g, aiLight.mColorAmbient.b, 1.F) / 255.F;
+			light.diffuse = rawrbox::Colorf(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F) / 255.F;
+			light.specular = rawrbox::Colorf(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F) / 255.F;
+			light.ambient = rawrbox::Colorf(aiLight.mColorAmbient.r, aiLight.mColorAmbient.g, aiLight.mColorAmbient.b, 1.F) / 255.F;
 
 			light.attenuationConstant = aiLight.mAttenuationConstant;
 			light.attenuationLinear = aiLight.mAttenuationLinear;

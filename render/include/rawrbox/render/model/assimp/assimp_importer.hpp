@@ -66,9 +66,9 @@ namespace rawrbox {
 		std::string name = "light";
 		std::string parentID = "";
 
-		rawrbox::Color diffuse = rawrbox::Colors::White;
-		rawrbox::Color specular = rawrbox::Colors::White;
-		rawrbox::Color ambient = rawrbox::Colors::Black;
+		rawrbox::Colorf diffuse = rawrbox::Colors::White;
+		rawrbox::Colorf specular = rawrbox::Colors::White;
+		rawrbox::Colorf ambient = rawrbox::Colors::Black;
 
 		rawrbox::Vector3f pos = {};
 		rawrbox::Vector3f direction = {};

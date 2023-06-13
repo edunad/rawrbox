@@ -112,8 +112,8 @@ namespace light {
 	void Game::drawWorld() {
 		if (this->_model == nullptr || this->_text == nullptr) return;
 
-		this->_model->draw(this->_camera->getPos());
-		this->_text->draw(this->_camera->getPos());
+		this->_model->draw();
+		this->_text->draw();
 	}
 
 	void Game::printFrames() {
