@@ -12,7 +12,6 @@ namespace rawrbox {
 		bgfx::UniformHandle u_specularColor = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_emissionColor = BGFX_INVALID_HANDLE;
 
-		bgfx::UniformHandle u_cameraPos = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_texMatData = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle u_lightsSetting = BGFX_INVALID_HANDLE;
@@ -29,7 +28,7 @@ namespace rawrbox {
 		~MaterialLit() override;
 
 		void registerUniforms() override;
-		void preProcess(const rawrbox::Vector3f& camPos) override;
+		void preProcess() override;
 
 		template <typename T>
 		void process(const rawrbox::Mesh<T>& mesh) {
@@ -56,7 +55,7 @@ namespace rawrbox {
 			bgfx::setUniform(u_specularColor, mesh.specularColor.data().data());
 			bgfx::setUniform(u_emissionColor, mesh.emissionColor.data().data());
 
-			std::array<float, 3> matData = {mesh.specularShininess, mesh.emissionIntensity, mesh.bumpStrength};
+			std::array<float, 2> matData = {mesh.specularShininess, mesh.emissionIntensity};
 			bgfx::setUniform(u_texMatData, matData.data());
 		}
 

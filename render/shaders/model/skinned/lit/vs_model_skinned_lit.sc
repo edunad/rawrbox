@@ -1,5 +1,5 @@
 $input a_position, a_normal, a_tangent, a_bitangent, a_color0, a_texcoord0, a_indices, a_weight
-$output v_color0, v_texcoord0, v_wPos, v_normal, v_tangent, v_bitangent
+$output v_color0, v_texcoord0, v_view, v_normal, v_tangent, v_bitangent
 
 #include <bgfx_shader.sh>
 
@@ -23,6 +23,6 @@ void main() {
 
 	vec4 pos = boneTransform(a_indices, a_weight, a_position);
 
-	v_wPos = mul(u_model[0], pos).xyz;
+	v_view = mul(u_view, pos).xyz;
 	gl_Position = getTranslatedPos(pos, a_texcoord0);
 }

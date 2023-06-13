@@ -146,11 +146,9 @@ namespace particle_test {
 	}
 
 	void Game::drawWorld() {
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-
-		this->_modelGrid->draw({});
+		this->_modelGrid->draw();
 		this->_ps->draw(*this->_camera);
-		this->_text->draw({});
+		this->_text->draw();
 	}
 
 	void Game::printFrames() {

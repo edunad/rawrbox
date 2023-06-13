@@ -222,10 +222,10 @@ namespace physics_test {
 			b->mdl->setAngle(ang);
 			b->mdl->setColor(body->IsActive() ? rawrbox::Colors::White : rawrbox::Colors::DarkGray);
 
-			b->mdl->draw(this->_camera->getPos());
+			b->mdl->draw();
 		}
 
-		this->_modelGrid->draw({});
+		this->_modelGrid->draw();
 	}
 
 	void Game::draw() {

@@ -37,7 +37,7 @@ namespace rawrbox {
 		// NOLINTEND(hicpp-avoid-c-arrays)
 
 		virtual void registerUniforms();
-		virtual void preProcess(const rawrbox::Vector3f& camPos);
+		virtual void preProcess();
 
 		template <typename T>
 		void process(const rawrbox::Mesh<T>& mesh) {

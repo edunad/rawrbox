@@ -33,8 +33,8 @@ namespace rawrbox {
 			ModelBase<M>::addMesh(mesh);
 		}
 
-		void draw(const rawrbox::Vector3f& camPos) override {
-			ModelBase<M>::draw(camPos);
+		void draw() override {
+			ModelBase<M>::draw();
 
 			for (auto& mesh : this->_meshes) {
 				// Set billboard ----

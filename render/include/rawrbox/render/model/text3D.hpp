@@ -28,6 +28,6 @@ namespace rawrbox {
 		// ----------
 
 		void upload(bool dynamic = false) override;
-		void draw(const rawrbox::Vector3f& camPos) override;
+		void draw() override;
 	};
 } // namespace rawrbox

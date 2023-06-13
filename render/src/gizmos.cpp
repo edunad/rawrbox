@@ -47,7 +47,7 @@ namespace rawrbox {
 
 	void GIZMOS::draw() {
 		if (!rawrbox::BGFX_INITIALIZED) return;
-		if (_gizmos != nullptr && _gizmos->totalMeshes() > 0) _gizmos->draw({});
+		if (_gizmos != nullptr && _gizmos->totalMeshes() > 0) _gizmos->draw();
 	}
 	// ------
 } // namespace rawrbox

@@ -22,7 +22,6 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->u_emissionColor);
 
 		RAWRBOX_DESTROY(this->u_texMatData);
-		RAWRBOX_DESTROY(this->u_cameraPos);
 
 		RAWRBOX_DESTROY(this->u_lightsSetting);
 		RAWRBOX_DESTROY(this->u_lightsPosition);
@@ -34,7 +33,6 @@ namespace rawrbox {
 
 		// LIT ----
 		this->u_texMatData = bgfx::createUniform("u_texMatData", bgfx::UniformType::Vec4);
-		this->u_cameraPos = bgfx::createUniform("u_cameraPos", bgfx::UniformType::Vec4, 3);
 
 		this->s_texSpecularColor = bgfx::createUniform("s_texSpecularColor", bgfx::UniformType::Sampler);
 		this->s_texEmissionColor = bgfx::createUniform("s_texEmissionColor", bgfx::UniformType::Sampler);
@@ -49,8 +47,8 @@ namespace rawrbox {
 		// ---
 	}
 
-	void MaterialLit::preProcess(const rawrbox::Vector3f& camPos) {
-		rawrbox::MaterialBase::preProcess(camPos);
+	void MaterialLit::preProcess() {
+		rawrbox::MaterialBase::preProcess();
 
 		size_t lightCount = rawrbox::LIGHTS::count();
 
@@ -73,10 +71,6 @@ namespace rawrbox {
 
 		bgfx::setUniform(this->u_lightsPosition, lightPos.front().data(), static_cast<uint16_t>(lightCount));
 		bgfx::setUniform(this->u_lightsData, lightData.front().data(), static_cast<uint16_t>(lightCount));
-
-		// Camera position for reflection
-		std::array pos = {camPos.x, camPos.y, camPos.z};
-		bgfx::setUniform(this->u_cameraPos, pos.data());
 	}
 
 	void MaterialLit::upload() {

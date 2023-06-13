@@ -44,7 +44,7 @@ namespace rawrbox {
 		u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4, 4);
 	}
 
-	void MaterialBase::preProcess(const rawrbox::Vector3f& camPos) {}
+	void MaterialBase::preProcess() {}
 	void MaterialBase::process(const bgfx::TextureHandle& texture) {
 		if (bgfx::isValid(texture)) {
 			bgfx::setTexture(0, s_texColor, texture);

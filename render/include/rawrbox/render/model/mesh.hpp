@@ -59,7 +59,6 @@ namespace rawrbox {
 
 		float specularShininess = 25.0F;
 		float emissionIntensity = 1.F;
-		float bumpStrength = 1.F;
 		// -------
 
 		// RENDERING ---
