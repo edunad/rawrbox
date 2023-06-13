@@ -21,10 +21,12 @@ namespace rawrbox {
 	extern bool BGFX_INITIALIZED;
 
 	// VIEW IDS ---
-	extern bgfx::ViewId RENDER_VIEW_ID;     // 1 Views for basic rendering
-	extern bgfx::ViewId STENCIL_VIEW_ID;    // 3 Views for basic rendering
-	extern bgfx::ViewId POST_PROCESSING_ID; // 10 Views for basic rendering
-	extern bgfx::ViewId RENDERER_VIEW_ID;   // Go wild
+	extern bgfx::ViewId RENDER_VIEW_ID;  // View 0 reserved for basic rendering
+	extern bgfx::ViewId STENCIL_VIEW_ID; // View 1 reserved for stencil rendering
+	extern bgfx::ViewId SHADOW_VIEW_ID;  // View 2 reserved for shadow rendering
+
+	extern bgfx::ViewId POST_PROCESSING_ID; // 10 Views for post processing rendering
+	extern bgfx::ViewId RENDERER_VIEW_ID;   // Rest of the views for textureRendering and etc
 
 	extern bgfx::ViewId CURRENT_VIEW_ID;
 	// ---------

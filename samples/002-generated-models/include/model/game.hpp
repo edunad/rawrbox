@@ -6,7 +6,6 @@
 #include <rawrbox/render/model/sprite.hpp>
 #include <rawrbox/render/model/text3D.hpp>
 #include <rawrbox/render/texture/gif.hpp>
-#include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/render/window.hpp>
 
 #include <memory>
@@ -16,9 +15,9 @@ namespace model {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
 		std::unique_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 
-		rawrbox::TextureImage* _texture = nullptr;
 		rawrbox::TextureGIF* _texture2 = nullptr;
 
+		std::unique_ptr<rawrbox::Model<>> _displacement = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Sprite<>> _sprite = std::make_unique<rawrbox::Sprite<>>();
 		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();

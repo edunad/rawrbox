@@ -29,6 +29,10 @@ namespace rawrbox {
 	private:
 		bool _canOptimize = true;
 
+		rawrbox::Vector3f _scale = {1, 1, 1};
+		rawrbox::Vector3f _pos = {};
+		rawrbox::Vector4f _angle = {};
+
 	public:
 		std::string name = "mesh";
 
@@ -44,6 +48,7 @@ namespace rawrbox {
 
 		// TEXTURES ---
 		rawrbox::TextureBase* texture = nullptr;
+		rawrbox::TextureBase* bumpTexture = nullptr;
 		rawrbox::TextureBase* opacityTexture = nullptr;
 
 		rawrbox::TextureBase* specularTexture = nullptr;
@@ -104,16 +109,26 @@ namespace rawrbox {
 			return this->bbox;
 		}
 
-		[[nodiscard]] const rawrbox::Vector3f getPos() const {
-			return {this->offsetMatrix[12], this->offsetMatrix[13], this->offsetMatrix[14]};
-		}
-
 		void setMatrix(const rawrbox::Matrix4x4& offset) {
 			this->offsetMatrix = offset;
 		}
 
+		[[nodiscard]] const rawrbox::Vector3f& getPos() const { return this->_pos; }
 		void setPos(const rawrbox::Vector3f& pos) {
-			this->offsetMatrix.translate(pos);
+			this->_pos = pos;
+			this->offsetMatrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+		}
+
+		[[nodiscard]] const rawrbox::Vector4f& getAngles() const { return this->_angle; }
+		void setEulerAngle(const rawrbox::Vector3f& ang) {
+			this->_angle = rawrbox::Vector4f::toQuat(ang);
+			this->offsetMatrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+		}
+
+		[[nodiscard]] const rawrbox::Vector3f& getScale() const { return this->_scale; }
+		void setScale(const rawrbox::Vector3f& scale) {
+			this->_scale = scale;
+			this->offsetMatrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 		}
 
 		template <typename B>
@@ -123,9 +138,10 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] const rawrbox::TextureBase* getTexture() const { return this->texture; }
-		void setTexture(rawrbox::TextureBase* ptr) {
-			this->texture = ptr;
-		}
+		void setTexture(rawrbox::TextureBase* ptr) { this->texture = ptr; }
+
+		[[nodiscard]] const rawrbox::TextureBase* getBumpTexture() const { return this->bumpTexture; }
+		void setBumpTexture(rawrbox::TextureBase* ptr) { this->bumpTexture = ptr; }
 
 		[[nodiscard]] const rawrbox::TextureBase* getEmissionTexture() const { return this->emissionTexture; }
 		void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity) {
@@ -142,6 +158,16 @@ namespace rawrbox {
 		void setSpecularTexture(rawrbox::TextureBase* ptr, float shininess) {
 			this->specularTexture = ptr;
 			this->specularShininess = shininess;
+		}
+
+		void setVertexSnap(float power = 2.F) {
+			this->addData("vertex_snap", {power, 0, 0, 0});
+			this->setOptimizable(false);
+		}
+
+		void setDisplacement(float power) {
+			this->addData("displacement_strength", {power, 0, 0, 0});
+			this->setOptimizable(false);
 		}
 
 		void setWireframe(bool wireframe) {
@@ -211,7 +237,7 @@ namespace rawrbox {
 
 			return this->texture == other.texture &&
 			       this->color == other.color &&
-			       this->wireframe == other.wireframe &&
+			       this->lineMode == other.lineMode &&
 			       this->offsetMatrix == other.offsetMatrix;
 		}
 	};

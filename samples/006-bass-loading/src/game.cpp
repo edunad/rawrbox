@@ -63,7 +63,7 @@ namespace bass_test {
 
 	void Game::contentLoaded() {
 		// Fonts -----
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(24);
 		//  ------
 
 		// SOUND -----
@@ -145,14 +145,15 @@ namespace bass_test {
 		this->_camera->update();
 
 		rawrbox::BASS::setListenerLocation(this->_camera->getPos(), this->_camera->getForward(), this->_camera->getUp());
+
 		if (this->_beat > 0.F) this->_beat -= 0.05F;
+		this->_beatText->setPos({0, this->_beat, 0});
 	}
 
 	void Game::drawWorld() {
-		this->_modelGrid->draw({});
-		this->_beatText->setPos({0, this->_beat, 0});
-		this->_beatText->draw({});
-		this->_text->draw({});
+		this->_modelGrid->draw();
+		this->_beatText->draw();
+		this->_text->draw();
 	}
 
 	void Game::printFrames() {

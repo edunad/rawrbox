@@ -1,35 +1,35 @@
 '📷 RENDERER':
-    - 'render/**/*'
+    - changed-files: 'render/**/*'
 
 '🧮 MATH':
-    - 'math/**/*'
+    - changed-files: 'math/**/*'
 
 '🖼️ UI':
-    - 'ui/**/*'
+    - changed-files: 'ui/**/*'
 
 '⚒️ UTILS':
-    - 'utils/**/*'
+    - changed-files: 'utils/**/*'
 
 '🐲 SAMPLES':
-    - 'samples/**/*'
+    - changed-files: 'samples/**/*'
 
 '🧱 PHYSICS':
-    - 'physics/**/*'
+    - changed-files: 'physics/**/*'
 
 '🎺 BASS':
-    - 'bass/**/*'
+    - changed-files: 'bass/**/*'
 
 '💼 RESOURCES':
-    - 'resources/**/*'
+    - changed-files: 'resources/**/*'
 
 '💽 ENGINE':
-    - 'engine/**/*'
+    - changed-files: 'engine/**/*'
 
 '🧪 TESTS':
-    - '**/tests/**/*.cpp'
+    - changed-files: '**/tests/**/*.cpp'
 
 'FEATURE':
-    - head-branch: '^feature/'
+    - head-branch: '^features/'
 
 'BUG':
     - head-branch: '^bugfixes/'

@@ -136,7 +136,7 @@ namespace rawrbox {
 		[[nodiscard]] rawrbox::Vector2f getStringSize(const std::string& text) const;
 		[[nodiscard]] rawrbox::TextureAtlas* getAtlasTexture(rawrbox::Glyph* g) const;
 
-		void render(const std::string& text, const rawrbox::Vector2f& pos, std::function<void(rawrbox::Glyph*, float, float, float, float)> render) const;
+		void render(const std::string& text, const rawrbox::Vector2f& pos, bool yIsUp, std::function<void(rawrbox::Glyph*, float, float, float, float)> render) const;
 		// ----
 
 		// GLOBAL UTILS ---

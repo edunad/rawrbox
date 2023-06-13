@@ -12,6 +12,6 @@ const bgfx::EmbeddedShader model_text3D_shaders[] = {
 
 namespace rawrbox {
 	void MaterialText3DUnlit::upload() {
-		this->buildShader(model_text3D_shaders, "text_3d_unlit");
+		this->buildShader(model_text3D_shaders);
 	}
 } // namespace rawrbox

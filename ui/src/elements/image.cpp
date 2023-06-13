@@ -6,7 +6,8 @@
 
 namespace rawrbox {
 	// UTILS ----
-	void UIImage::setTexture(rawrbox::TextureBase& texture) { this->_texture = &texture; }
+	const rawrbox::TextureBase* UIImage::getTexture() const { return this->_texture; }
+	void UIImage::setTexture(rawrbox::TextureBase* texture) { this->_texture = texture; }
 	void UIImage::setTexture(const std::filesystem::path& path) {
 		this->_isAnimated = path.extension() == ".gif";
 
@@ -16,6 +17,8 @@ namespace rawrbox {
 			this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>(path)->get();
 		}
 	}
+
+	void UIImage::setAnimated(bool animated) { this->_isAnimated = animated; }
 
 	const rawrbox::Color& UIImage::getColor() const { return this->_color; }
 	void UIImage::setColor(const rawrbox::Color& cl) { this->_color = cl; }

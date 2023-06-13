@@ -4,7 +4,6 @@
 #endif
 
 #include <stencil/game.hpp>
-using namespace rawrbox;
 
 int main(int argc, char* argv[]) {
 #ifdef _WIN32

@@ -62,7 +62,7 @@ namespace light {
 	}
 
 	void Game::contentLoaded() {
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(24);
 
 		// Assimp test ---
 		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/light_test/test.fbx")->get();
@@ -104,20 +104,16 @@ namespace light {
 		this->_window->pollEvents();
 	}
 
-	float t = 0.F;
 	void Game::update() {
 		if (this->_camera == nullptr) return;
 		this->_camera->update();
-
-		t += 0.45F;
-		this->_model->setEulerAngle({0, bx::toRad(t), 0});
 	}
 
 	void Game::drawWorld() {
 		if (this->_model == nullptr || this->_text == nullptr) return;
 
-		this->_model->draw(this->_camera->getPos());
-		this->_text->draw(this->_camera->getPos());
+		this->_model->draw();
+		this->_text->draw();
 	}
 
 	void Game::printFrames() {

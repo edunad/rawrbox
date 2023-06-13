@@ -1,22 +1,12 @@
 #pragma once
+
 #include <rawrbox/engine/static.hpp>
-#include <rawrbox/math/matrix4x4.hpp>
-#include <rawrbox/math/utils/math.hpp>
-#include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/model/animation.hpp>
 #include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/light/base.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
-#include <rawrbox/render/model/material/base.hpp>
+#include <rawrbox/render/model/skeleton.hpp>
 #include <rawrbox/render/utils/anim.hpp>
-
-#include <assimp/anim.h>
-#include <assimp/vector3.h>
-#include <bx/easing.h>
-
-#include <unordered_map>
-#include <utility>
-#include <vector>
 
 #define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 
@@ -24,10 +14,15 @@ namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
 	class Model : public rawrbox::ModelBase<M> {
+
 	protected:
-		std::unordered_map<std::string, Animation> _animations = {};
+		std::unordered_map<std::string, rawrbox::Animation> _animations = {};
 		std::vector<rawrbox::PlayingAnimationData> _playingAnimations = {};
-		std::vector<rawrbox::LightBase> lights = {};
+		std::vector<rawrbox::LightBase> _lights = {};
+
+		// SKINNING ----
+		std::unordered_map<std::string, rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // Map for quick lookup
+														    // --------
 
 		// ANIMATIONS ----
 		void animate(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
@@ -52,7 +47,7 @@ namespace rawrbox {
 					}
 				}
 
-				bgfx::setUniform(this->_material->u_bones, &boneTransforms.front(), static_cast<uint32_t>(boneTransforms.size()));
+				this->_material->setBoneData(boneTransforms);
 			}
 			// -----
 		}
@@ -118,9 +113,9 @@ namespace rawrbox {
 					bx::EaseFn ease = bx::getEaseFunc(animChannel->stateEnd);
 					float t = ease(timeInTicks);
 
-					position = AnimUtils::lerpVector3(t, currPos, nextPos);
-					rotation = AnimUtils::lerpRotation(t, currRot, nextRot);
-					scale = AnimUtils::lerpVector3(t, currScl, nextScl);
+					position = rawrbox::AnimUtils::lerpVector3(t, currPos, nextPos);
+					rotation = rawrbox::AnimUtils::lerpRotation(t, currRot, nextRot);
+					scale = rawrbox::AnimUtils::lerpVector3(t, currScl, nextScl);
 					//   ----
 
 					rawrbox::Matrix4x4 mt = {};
@@ -161,21 +156,27 @@ namespace rawrbox {
 		}
 		// --------------
 		void updateLights() {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
+				// Update lights ---
+				for (auto& mesh : this->meshes()) {
+					rawrbox::Vector3f meshPos = {mesh->offsetMatrix[12], mesh->offsetMatrix[13], mesh->offsetMatrix[14]};
+					auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle());
 
-			// Update lights ---
-			for (auto& mesh : this->meshes()) {
-				rawrbox::Vector3f meshPos = {mesh->offsetMatrix[12], mesh->offsetMatrix[13], mesh->offsetMatrix[14]};
-				auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle());
-
-				for (auto light : mesh->lights) {
-					if (light.expired()) continue;
-					light.lock()->setOffsetPos(p);
+					for (auto light : mesh->lights) {
+						if (light.expired()) continue;
+						light.lock()->setOffsetPos(p);
+					}
 				}
 			}
 		}
 
 	public:
-		using ModelBase<M>::ModelBase;
+		Model() = default;
+		Model(const Model&) = delete;
+		Model(Model&&) = delete;
+		Model& operator=(const Model&) = delete;
+		Model& operator=(Model&&) = delete;
+		~Model() override = default;
 
 		// Animations ----
 		bool blendAnimation(const std::string& otherAnim, float blend) {
@@ -209,20 +210,22 @@ namespace rawrbox {
 		// --------------
 		// LIGHTS ------
 		virtual void addLight(std::shared_ptr<rawrbox::LightBase> light, const std::string& parentMesh = "") {
-			auto parent = this->_meshes.back().get();
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
+				auto parent = this->_meshes.back().get();
 
-			if (!parentMesh.empty()) {
-				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
-					return msh->getName() == parentMesh;
-				});
+				if (!parentMesh.empty()) {
+					auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
+						return msh->getName() == parentMesh;
+					});
 
-				if (fnd != this->_meshes.end()) parent = fnd->get();
+					if (fnd != this->_meshes.end()) parent = fnd->get();
+				}
+
+				light->setOffsetPos(parent->getPos() + this->getPos());
+				parent->lights.push_back(light);
+
+				rawrbox::LIGHTS::addLight(light);
 			}
-
-			light->setOffsetPos(parent->getPos() + this->getPos());
-			parent->lights.push_back(light);
-
-			rawrbox::LIGHTS::addLight(light);
 		}
 		// -----
 
@@ -233,98 +236,90 @@ namespace rawrbox {
 
 		void setAngle(const rawrbox::Vector4f& angle) override {
 			rawrbox::ModelBase<M>::setAngle(angle);
-			// this->updateLights(); // TODO
+			this->updateLights();
 		}
 
 		void setEulerAngle(const rawrbox::Vector3f& angle) override {
 			rawrbox::ModelBase<M>::setEulerAngle(angle);
-			// this->updateLights(); // TODO
+			this->updateLights();
 		}
 
 		void setScale(const rawrbox::Vector3f& size) override {
 			rawrbox::ModelBase<M>::setScale(size);
-			// this->updateLights(); // TODO
+			this->updateLights();
 		}
 
-		struct InstanceData {
-			float m_world[16];
-			float m_bboxMin[4];
-			float m_bboxMax[4];
-		};
+		void draw() override {
+			ModelBase<M>::draw();
+			/*
+						// this->preDraw();
 
-		void draw(const rawrbox::Vector3f& camPos) override {
-			if (this->_meshes.empty()) return;
-			if (this->isDynamicBuffer()) return; // TODO
+						// Setup instance
+						// figure out how big of a buffer is available
+						uint32_t instanceStride = 80; //  80 bytes stride = 64 bytes for 4x4 matrix + 16 bytes for RGBA color.
+						uint32_t instances = bgfx::getAvailInstanceDataBuffer(this->_meshes.size(), instanceStride);
 
-			ModelBase<M>::draw(camPos);
+						bgfx::InstanceDataBuffer idb = {};
+						bgfx::allocInstanceDataBuffer(&idb, instances, instanceStride);
+						// ----
 
-			// this->preDraw();
+						// Get renderer capabilities info.
+						const bgfx::Caps* caps = bgfx::getCaps();
 
-			// Setup instance
-			// figure out how big of a buffer is available
-			uint32_t instanceStride = 80; //  80 bytes stride = 64 bytes for 4x4 matrix + 16 bytes for RGBA color.
-			uint32_t instances = bgfx::getAvailInstanceDataBuffer(this->_meshes.size(), instanceStride);
+						// Check if instancing is supported.
+						const bool instancingSupported = 0 != (BGFX_CAPS_INSTANCING & caps->supported);
+						if (!instancingSupported) return;
 
-			bgfx::InstanceDataBuffer idb = {};
-			bgfx::allocInstanceDataBuffer(&idb, instances, instanceStride);
-			// ----
+						auto* data = (InstanceData*)idb.data;
+						for (uint32_t ii = 0; ii < instances; ++ii) {
+							auto& mesh = this->_meshes[ii];
+							auto pos = (this->_matrix * mesh->offsetMatrix);
 
-			// Get renderer capabilities info.
-			const bgfx::Caps* caps = bgfx::getCaps();
+							bx::memCopy(idb.data, pos.data, instanceStride);
+							idb.data++;
+						}
 
-			// Check if instancing is supported.
-			const bool instancingSupported = 0 != (BGFX_CAPS_INSTANCING & caps->supported);
-			if (!instancingSupported) return;
+						this->_material->process(*this->_meshes[0]);
 
-			auto* data = (InstanceData*)idb.data;
-			for (uint32_t ii = 0; ii < instances; ++ii) {
-				auto& mesh = this->_meshes[ii];
-				auto pos = (this->_matrix * mesh->offsetMatrix);
+						bgfx::setVertexBuffer(0, this->_vbh);
+						bgfx::setIndexBuffer(this->_ibh);
+						bgfx::setInstanceDataBuffer(&idb);
 
-				bx::memCopy(idb.data, pos.data, instanceStride);
-				idb.data++;
-			}
+						bgfx::setState(BGFX_STATE_DEFAULT, 0);
+						this->_material->postProcess();
 
-			this->_material->process(*this->_meshes[0]);
+						/*for (auto& mesh : this->_meshes) {
+							this->_material->process(*mesh);
 
-			bgfx::setVertexBuffer(0, this->_vbh);
-			bgfx::setIndexBuffer(this->_ibh);
-			bgfx::setInstanceDataBuffer(&idb);
+							// Instance data
+							auto pos = (this->_matrix * mesh->offsetMatrix).data();
+							bx::memCopy(idb.data, pos, sizeof(float) * 16);
+							// ----
 
-			bgfx::setState(BGFX_STATE_DEFAULT, 0);
-			this->_material->postProcess();
+							// Process animations ---
+							this->animate(*mesh);
+							// ---
 
-			/*for (auto& mesh : this->_meshes) {
-				this->_material->process(*mesh);
+							if (this->isDynamicBuffer()) {
+								bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
+								bgfx::setIndexBuffer(this->_ibdh, mesh->baseIndex, mesh->totalIndex);
+							} else {
+								bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
+								bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
+							}
 
-				// Instance data
-				auto pos = (this->_matrix * mesh->offsetMatrix).data();
-				bx::memCopy(idb.data, pos, sizeof(float) * 16);
-				// ----
+							bgfx::setInstanceDataBuffer(&idb);
+							// bgfx::setTransform();
 
-				// Process animations ---
-				this->animate(*mesh);
-				// ---
+							uint64_t flags = BGFX_STATE_DEFAULT_3D | mesh->culling | mesh->blending | mesh->depthTest;
+							flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
+															: 0;
 
-				if (this->isDynamicBuffer()) {
-					bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
-					bgfx::setIndexBuffer(this->_ibdh, mesh->baseIndex, mesh->totalIndex);
-				} else {
-					bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
-					bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
-				}
-
-				bgfx::setInstanceDataBuffer(&idb);
-				// bgfx::setTransform();
-
-				uint64_t flags = BGFX_STATE_DEFAULT_3D | mesh->culling | mesh->blending | mesh->depthTest;
-				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
-												: 0;
-
-				bgfx::setState(flags, 0);
-				this->_material->postProcess();
-			}*/
-			this->postDraw();
+							bgfx::setState(flags, 0);
+							this->_material->postProcess();
+						}
+						this->postDraw();
+						*/
 		}
 	};
 } // namespace rawrbox

@@ -65,7 +65,7 @@ namespace assimp {
 	}
 
 	void Game::contentLoaded() {
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(16);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(24);
 
 		// Assimp test ---
 		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx")->get();
@@ -152,16 +152,15 @@ namespace assimp {
 	}
 
 	void Game::drawWorld() {
-		auto pos = this->_camera->getPos();
-		this->_modelGrid->draw(pos);
+		this->_modelGrid->draw();
 
-		this->_model->draw(pos);
-		this->_model2->draw(pos);
-		this->_model3->draw(pos);
-		this->_model4->draw(pos);
-		this->_model5->draw(pos);
+		this->_model->draw();
+		this->_model2->draw();
+		this->_model3->draw();
+		this->_model4->draw();
+		this->_model5->draw();
 
-		this->_text->draw(pos);
+		this->_text->draw();
 	}
 
 	void Game::printFrames() {
