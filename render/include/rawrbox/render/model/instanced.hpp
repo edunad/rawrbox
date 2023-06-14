@@ -10,8 +10,9 @@
 namespace rawrbox {
 
 	struct Instance {
-		rawrbox::Matrix4x4 matrix;
-		rawrbox::Colorf color;
+		rawrbox::Matrix4x4 matrix = {};
+		rawrbox::Colorf color = rawrbox::Colors::White;
+		rawrbox::Vector4f uv = {}; // xStart, yStart, xEnd, yEnd
 	};
 
 	template <typename M = rawrbox::MaterialInstancedUnlit>
@@ -31,13 +32,10 @@ namespace rawrbox {
 		}
 
 		virtual void setMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
-			auto& v = mesh.getVertices();
-			auto& i = mesh.getIndices();
+			if (mesh.empty()) throw std::runtime_error("[RawrBox-InstancedModel] Invalid mesh! Missing vertices / indices!");
 
-			if (v.empty() || i.empty()) throw std::runtime_error("[RawrBox-InstancedModel] Invalid mesh! Missing vertices / indices!");
-
-			this->_vertices = mesh.vertices;
-			this->_indices = mesh.indices;
+			this->_vertices = mesh.getVertices();
+			this->_indices = mesh.getIndices();
 			this->_texture = mesh.texture;
 		}
 
@@ -64,12 +62,11 @@ namespace rawrbox {
 
 			auto data = std::bit_cast<rawrbox::Instance*>(idb.data);
 			for (uint32_t ii = 0; ii < instances; ++ii) {
-				std::memcpy(data, &this->_instances[ii], instanceStride);
-				// data += instanceStride;
+				std::memcpy(&data[ii], &this->_instances[ii], instanceStride);
 			}
 
 			// ----
-			// this->_material->process(this->_texture->getHandle());
+			this->_material->process(this->_texture->getHandle());
 
 			if (this->isDynamicBuffer()) {
 				bgfx::setVertexBuffer(0, this->_vbdh);

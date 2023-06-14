@@ -5,6 +5,8 @@
 #include <rawrbox/render/model/instanced.hpp>
 #include <rawrbox/render/window.hpp>
 
+#include <bx/rng.h>
+
 #include <memory>
 
 namespace instance_test {
@@ -16,6 +18,7 @@ namespace instance_test {
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;
+		bx::RngMwc _rng = {};
 
 		void setupGLFW() override;
 		void init() override;

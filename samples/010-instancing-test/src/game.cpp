@@ -2,6 +2,7 @@
 
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 #include <rawrbox/utils/timer.hpp>
@@ -42,7 +43,7 @@ namespace instance_test {
 
 	void Game::loadContent() {
 		std::array<std::string, 1> initialContentFiles = {
-		    "content/textures/crate_hl1.png",
+		    "content/textures/instance_test.png",
 		};
 
 		for (auto& f : initialContentFiles) {
@@ -61,7 +62,7 @@ namespace instance_test {
 
 	void Game::contentLoaded() {
 		int total = 1000;
-		auto t = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->get();
+		auto t = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/instance_test.png")->get();
 
 		auto mesh = this->_model->generateCube({0, 0, 0}, {0.5F, 0.5F, 0.5F});
 		mesh.setTexture(t);
@@ -72,7 +73,9 @@ namespace instance_test {
 				rawrbox::Matrix4x4 m;
 				m.mtxSRT({1.F, 1.F, 1.F}, {0.F, 0.F, 0.F}, {x * 0.85F, 0, z * 0.85F});
 
-				this->_model->addInstance({m, rawrbox::Colors::White});
+				uint32_t id = 1 + this->_rng.gen() % (4 - 1);
+				auto uv = rawrbox::TextureUtils::atlasUV({256, 256}, 32, id);
+				this->_model->addInstance({m, rawrbox::Colors::White, uv});
 			}
 		}
 

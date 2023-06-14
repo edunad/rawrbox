@@ -109,6 +109,10 @@ namespace rawrbox {
 			return this->bbox;
 		}
 
+		[[nodiscard]] const bool empty() const {
+			return this->indices.empty() || this->vertices.empty();
+		}
+
 		void setMatrix(const rawrbox::Matrix4x4& offset) {
 			this->offsetMatrix = offset;
 		}
