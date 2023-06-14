@@ -4,7 +4,7 @@
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/assimp/assimp_model.hpp>
 #include <rawrbox/render/model/material/lit.hpp>
-#include <rawrbox/render/model/material/skinned_unlit.hpp>
+#include <rawrbox/render/model/material/skinned.hpp>
 #include <rawrbox/render/model/text3D.hpp>
 #include <rawrbox/render/window.hpp>
 
@@ -37,6 +37,13 @@ namespace assimp {
 		void draw() override;
 
 	public:
+		Game() = default;
+		Game(const Game&) = delete;
+		Game(Game&&) = delete;
+		Game& operator=(const Game&) = delete;
+		Game& operator=(Game&&) = delete;
+		~Game() override = default;
+
 		void printFrames();
 
 		void loadContent();

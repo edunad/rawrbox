@@ -17,7 +17,7 @@ namespace instance_test {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("INSTANCE TEST");
-		this->_window->setRenderer(bgfx::RendererType::Count);
+		this->_window->setRenderer(bgfx::RendererType::Vulkan);
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
@@ -60,16 +60,19 @@ namespace instance_test {
 	}
 
 	void Game::contentLoaded() {
-		int total = 4;
+		int total = 1000;
 		auto t = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->get();
 
-		for (int y = 0.F; y < total; y++) {
-			for (int x = 0.F; x < total; x++) {
-				auto mesh = this->_model->generateCube({static_cast<float>(x) * 1.5F, 0, static_cast<float>(y) * 1.5F}, {0.5F, 0.5F, 0.5F});
-				mesh.setTexture(t);
-				mesh.setOptimizable(false);
+		auto mesh = this->_model->generateCube({0, 0, 0}, {0.5F, 0.5F, 0.5F});
+		mesh.setTexture(t);
 
-				this->_model->addMesh(mesh);
+		this->_model->setMesh(mesh);
+		for (int z = 0.F; z < total; z++) {
+			for (int x = 0.F; x < total; x++) {
+				rawrbox::Matrix4x4 m;
+				m.mtxSRT({1.F, 1.F, 1.F}, {0.F, 0.F, 0.F}, {x * 0.85F, 0, z * 0.85F});
+
+				this->_model->addInstance({m, rawrbox::Colors::White});
 			}
 		}
 
@@ -108,7 +111,7 @@ namespace instance_test {
 
 	void Game::drawWorld() {
 		if (this->_model == nullptr) return;
-		this->_model->draw({});
+		this->_model->draw();
 	}
 
 	void Game::draw() {

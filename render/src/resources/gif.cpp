@@ -4,6 +4,8 @@
 namespace rawrbox {
 
 	// Resource ----
+	ResourceGIF::~ResourceGIF() { this->_texture->reset(); }
+
 	bool ResourceGIF::load(const std::vector<uint8_t>& buffer) {
 		this->_texture = std::make_unique<rawrbox::TextureGIF>(this->filePath, buffer);
 		return true;

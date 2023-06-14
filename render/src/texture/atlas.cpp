@@ -9,6 +9,8 @@ namespace rawrbox {
 		this->_root = std::make_unique<AtlasNode>(0, 0, size, size);
 	}
 
+	TextureAtlas::~TextureAtlas() { this->_root.reset(); }
+
 	size_t TextureAtlas::getSpriteCount() const {
 		return this->_spriteCount;
 	}

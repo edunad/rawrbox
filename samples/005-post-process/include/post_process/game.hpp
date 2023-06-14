@@ -27,6 +27,13 @@ namespace post_process {
 		void draw() override;
 
 	public:
+		Game() = default;
+		Game(const Game&) = delete;
+		Game(Game&&) = delete;
+		Game& operator=(const Game&) = delete;
+		Game& operator=(Game&&) = delete;
+		~Game() override = default;
+
 		void printFrames();
 
 		void loadContent();

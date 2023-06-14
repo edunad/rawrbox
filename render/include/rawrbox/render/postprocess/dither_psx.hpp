@@ -41,14 +41,12 @@ namespace rawrbox {
 		// ---
 
 	public:
-		~PostProcessPSXDither() override;
-
+		explicit PostProcessPSXDither(DITHER_SIZE dither = DITHER_SIZE::SLOW_MODE);
 		PostProcessPSXDither(PostProcessPSXDither&&) = delete;
 		PostProcessPSXDither& operator=(PostProcessPSXDither&&) = delete;
 		PostProcessPSXDither(const PostProcessPSXDither&) = delete;
 		PostProcessPSXDither& operator=(const PostProcessPSXDither&) = delete;
-
-		explicit PostProcessPSXDither(DITHER_SIZE dither = DITHER_SIZE::SLOW_MODE);
+		~PostProcessPSXDither() override;
 
 		virtual void setIntensity(float in);
 		virtual void setDepth(float dep);

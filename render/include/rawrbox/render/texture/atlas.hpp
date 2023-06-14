@@ -35,6 +35,12 @@ namespace rawrbox {
 		uint32_t size;
 		explicit TextureAtlas(uint32_t size = 1024);
 
+		TextureAtlas(const TextureAtlas&) = delete;
+		TextureAtlas(TextureAtlas&&) = delete;
+		TextureAtlas& operator=(const TextureAtlas&) = delete;
+		TextureAtlas& operator=(TextureAtlas&&) = delete;
+		~TextureAtlas() override;
+
 		[[nodiscard]] size_t getSpriteCount() const;
 
 		bool canInsertNode(int width, int height);

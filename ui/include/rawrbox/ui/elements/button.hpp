@@ -29,12 +29,16 @@ namespace rawrbox {
 		// -----------------
 
 	public:
-		~UIButton() override = default;
 		UIButton() = default;
 		UIButton(const UIButton&) = default;
 		UIButton(UIButton&&) = delete;
 		UIButton& operator=(const UIButton&) = default;
 		UIButton& operator=(UIButton&&) = delete;
+		~UIButton() override {
+			this->_texture = nullptr;
+			this->_overlay = nullptr;
+			this->_consola = nullptr;
+		}
 
 		rawrbox::Event<> onClick;
 		void initialize() override;

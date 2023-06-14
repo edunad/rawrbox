@@ -2,7 +2,7 @@
 
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/camera/base.hpp>
-#include <rawrbox/render/model/material/particle_unlit.hpp>
+#include <rawrbox/render/model/material/particle.hpp>
 #include <rawrbox/render/particles/particle.hpp>
 
 #include <bgfx/bgfx.h>

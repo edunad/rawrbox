@@ -16,7 +16,6 @@ namespace rawrbox {
 		bgfx::DynamicIndexBufferHandle _ibdh = BGFX_INVALID_HANDLE; // Indices - Dynamic
 		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;         // Indices - Static
 
-		std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes = {};
 		rawrbox::Matrix4x4 _matrix = {};
 
 		std::vector<typename M::vertexBufferType> _vertices = {};
@@ -28,65 +27,9 @@ namespace rawrbox {
 		rawrbox::Vector3f _pos = {};
 		rawrbox::Vector4f _angle = {};
 
-		rawrbox::BBOX _bbox = {};
-
 		// BGFX DYNAMIC SUPPORT ---
 		bool _isDynamic = false;
 		// ----
-
-		bool _canOptimize = true;
-
-		void flattenMeshes() {
-			this->_vertices.clear();
-			this->_indices.clear();
-
-			// Merge same meshes to reduce calls
-			if (this->_canOptimize) {
-				size_t old = this->_meshes.size();
-				for (auto mesh = this->_meshes.begin(); mesh != this->_meshes.end();) {
-					bool merged = false;
-
-					// Previous mesh available?
-					if (mesh != this->_meshes.begin()) {
-						auto prevMesh = std::prev(mesh); // Check old meshes
-
-						if ((*prevMesh)->canOptimize(**mesh)) {
-							(*prevMesh)->merge(**mesh);
-
-							mesh = this->_meshes.erase(mesh);
-							merged = true;
-						}
-					}
-
-					if (!merged) mesh++;
-				}
-
-				if (old != this->_meshes.size()) fmt::print("[RawrBox-Model] Optimized mesh for rendering (Before {} | After {})\n", old, this->_meshes.size());
-			}
-			// ----------------------
-
-			// Flatten meshes for buffers
-			for (auto& mesh : this->_meshes) {
-				// Fix start index ----
-				mesh->baseIndex = static_cast<uint16_t>(this->_indices.size());
-				mesh->baseVertex = static_cast<uint16_t>(this->_vertices.size());
-				// --------------------
-
-				// Append vertices
-				this->_vertices.insert(this->_vertices.end(), mesh->vertices.begin(), mesh->vertices.end());
-				this->_indices.insert(this->_indices.end(), mesh->indices.begin(), mesh->indices.end());
-				// -----------------
-			}
-			// --------
-
-			// Sort alpha
-			std::sort(this->_meshes.begin(), this->_meshes.end(), [](auto& a, auto& b) {
-				return a->blending != BGFX_STATE_BLEND_ALPHA && b->blending == BGFX_STATE_BLEND_ALPHA;
-			});
-			// --------
-
-			this->updateBuffers();
-		}
 
 		virtual void updateBuffers() {
 			if (!this->isDynamicBuffer() || !this->isUploaded()) return;
@@ -111,12 +54,9 @@ namespace rawrbox {
 			RAWRBOX_DESTROY(this->_vbdh);
 			RAWRBOX_DESTROY(this->_ibdh);
 
-			this->_meshes.clear();
 			this->_vertices.clear();
 			this->_indices.clear();
 		}
-
-		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
 
 		// UTILS -----
 		rawrbox::Mesh<typename M::vertexBufferType> generateLine(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Color& col) {
@@ -704,8 +644,6 @@ namespace rawrbox {
 		// -------
 
 		// UTIL ---
-		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const { return this->_bbox; }
-
 		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_pos; }
 		virtual void setPos(const rawrbox::Vector3f& pos) {
 			this->_pos = pos;
@@ -733,18 +671,6 @@ namespace rawrbox {
 			return this->_matrix;
 		}
 
-		[[nodiscard]] virtual const size_t totalMeshes() const {
-			return this->_meshes.size();
-		}
-
-		[[nodiscard]] virtual const bool empty() const {
-			return this->_meshes.empty();
-		}
-
-		virtual std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>>& meshes() {
-			return this->_meshes;
-		}
-
 		[[nodiscard]] virtual const bool isDynamicBuffer() const {
 			return this->_isDynamic;
 		}
@@ -754,94 +680,12 @@ namespace rawrbox {
 			return bgfx::isValid(this->_ibh) && bgfx::isValid(this->_vbh);
 		}
 
-		virtual void removeMeshByName(const std::string& id) {
-			for (auto it2 = this->_meshes.begin(); it2 != this->_meshes.end();) {
-				if ((*it2)->getName() == id) {
-					it2 = this->_meshes.erase(it2);
-					continue;
-				}
-
-				++it2;
-			}
-
-			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
-		}
-
-		virtual void removeMesh(size_t index) {
-			if (index >= this->_meshes.size()) return;
-			this->_meshes.erase(this->_meshes.begin() + index);
-
-			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
-		}
-
-		virtual void addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
-			this->_bbox.combine(mesh.getBBOX());
-			mesh.owner = this;
-
-			this->_meshes.push_back(std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh));
-			if (this->isUploaded() && this->isDynamicBuffer()) {
-				this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
-			}
-		}
-
-		virtual rawrbox::Mesh<typename M::vertexBufferType>* getMeshByName(const std::string& id) {
-			auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&id](auto& mesh) { return mesh->getName() == id; });
-			if (fnd == this->_meshes.end()) return nullptr;
-
-			return (*fnd).get();
-		}
-
-		virtual rawrbox::Mesh<typename M::vertexBufferType>& getMesh(size_t id = 0) {
-			if (!this->hasMesh(id)) throw std::runtime_error(fmt::format("[RawrBox-ModelBase] Mesh {} does not exist", id));
-			return *this->_meshes[id];
-		}
-
-		virtual bool hasMesh(size_t id) {
-			return id < this->_meshes.size();
-		}
-
-		virtual void setCulling(uint64_t cull, int id = -1) {
-			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != id) continue;
-				this->_meshes[i]->setCulling(cull);
-			}
-		}
-
-		virtual void setWireframe(bool wireframe, int id = -1) {
-			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != id) continue;
-				this->_meshes[i]->setWireframe(wireframe);
-			}
-		}
-
-		virtual void setBlend(uint64_t blend, int id = -1) {
-			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != id) continue;
-				this->_meshes[i]->setBlend(blend);
-			}
-		}
-
-		virtual void setDepthTest(uint64_t depth, int id = -1) {
-			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != id) continue;
-				this->_meshes[i]->setDepthTest(depth);
-			}
-		}
-
-		virtual void setColor(const rawrbox::Color& color, int id = -1) {
-			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != id) continue;
-				this->_meshes[i]->setColor(color);
-			}
-		}
-
 		// ----
 		virtual void upload(bool dynamic = false) {
 			if (this->isUploaded()) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
 
 			// Generate buffers ----
 			this->_isDynamic = dynamic;
-			this->flattenMeshes(); // Merge and optimize meshes for drawing
 
 			const bgfx::Memory* vertMem = bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * M::vertexBufferType::vLayout().m_stride);
 			const bgfx::Memory* indexMem = bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t));

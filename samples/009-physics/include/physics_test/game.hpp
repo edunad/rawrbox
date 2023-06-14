@@ -37,6 +37,13 @@ namespace physics_test {
 		void draw() override;
 
 	public:
+		Game() = default;
+		Game(const Game&) = delete;
+		Game(Game&&) = delete;
+		Game& operator=(const Game&) = delete;
+		Game& operator=(Game&&) = delete;
+		~Game() override = default;
+
 		void drawWorld();
 		void printFrames();
 

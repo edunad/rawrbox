@@ -24,12 +24,14 @@ namespace rawrbox {
 	public:
 		rawrbox::Event<float> onValueChange;
 
-		~UIProgressBar() override = default;
 		UIProgressBar() = default;
 		UIProgressBar(const UIProgressBar&) = default;
 		UIProgressBar(UIProgressBar&&) = delete;
 		UIProgressBar& operator=(const UIProgressBar&) = default;
 		UIProgressBar& operator=(UIProgressBar&&) = delete;
+		~UIProgressBar() override {
+			this->_font = nullptr;
+		}
 
 		// UTILS ----
 		void initialize() override;

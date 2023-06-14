@@ -78,7 +78,7 @@ namespace rawrbox {
 	}
 
 	void Text3D::upload(bool dynamic) {
-		ModelBase<rawrbox::MaterialText3DUnlit>::upload(true); // Always force dynamic, since we can remove text
+		Model<rawrbox::MaterialText3DUnlit>::upload(true); // Always force dynamic, since we can remove text
 	}
 
 	void Text3D::removeText(uint32_t id) {

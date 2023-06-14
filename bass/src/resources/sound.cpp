@@ -21,6 +21,7 @@ namespace rawrbox {
 		return true;
 	}
 	rawrbox::SoundBase* ResourceBASS::get() const { return this->_sound; }
+	ResourceBASS::~ResourceBASS() { this->_sound = nullptr; }
 	// -------
 
 	// Loader ----

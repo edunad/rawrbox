@@ -8,6 +8,11 @@ namespace rawrbox {
 
 	public:
 		LightDirectional(rawrbox::Vector3f posMatrix, rawrbox::Vector3 dir, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : rawrbox::LightBase(posMatrix, diffuse, specular), _direction(dir){};
+		LightDirectional(const LightDirectional&) = default;
+		LightDirectional(LightDirectional&&) = delete;
+		LightDirectional& operator=(const LightDirectional&) = default;
+		LightDirectional& operator=(LightDirectional&&) = delete;
+		~LightDirectional() override = default;
 
 		LightType getType() override { return LightType::LIGHT_DIR; };
 		const rawrbox::Matrix4x4 getDataMatrix() override {

@@ -2,7 +2,7 @@
 
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/camera/orbital.hpp>
-#include <rawrbox/render/model/model.hpp>
+#include <rawrbox/render/model/instanced.hpp>
 #include <rawrbox/render/window.hpp>
 
 #include <memory>
@@ -12,7 +12,7 @@ namespace instance_test {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
 		std::unique_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 
-		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::InstancedModel<>> _model = std::make_unique<rawrbox::InstancedModel<>>();
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;
@@ -25,6 +25,13 @@ namespace instance_test {
 		void draw() override;
 
 	public:
+		Game() = default;
+		Game(const Game&) = delete;
+		Game(Game&&) = delete;
+		Game& operator=(const Game&) = delete;
+		Game& operator=(Game&&) = delete;
+		~Game() override = default;
+
 		void drawWorld();
 		void printFrames();
 

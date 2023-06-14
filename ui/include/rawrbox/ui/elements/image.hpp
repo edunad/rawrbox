@@ -14,12 +14,14 @@ namespace rawrbox {
 		bool _isAnimated = false;
 
 	public:
-		~UIImage() override = default;
 		UIImage() = default;
 		UIImage(const UIImage&) = default;
 		UIImage(UIImage&&) = delete;
 		UIImage& operator=(const UIImage&) = default;
 		UIImage& operator=(UIImage&&) = delete;
+		~UIImage() override {
+			this->_texture = nullptr;
+		}
 
 		// UTILS ----
 		[[nodiscard]] virtual const rawrbox::TextureBase* getTexture() const;
