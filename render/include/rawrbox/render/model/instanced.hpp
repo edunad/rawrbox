@@ -63,7 +63,7 @@ namespace rawrbox {
 			this->_instances.push_back(instance);
 		}
 
-		[[nodiscard]] rawrbox::Instance& getMesh(size_t i = 0) const {
+		[[nodiscard]] const rawrbox::Instance& getMesh(size_t i = 0) const {
 			if (i < 0 || i >= this->_instances.size()) throw std::runtime_error("[RawrBox-InstancedModel] Failed to find instance");
 			return this->_instances[i];
 		}
