@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/model/material/particle_unlit.hpp>
+#include <rawrbox/render/model/material/particle.hpp>
 
 #include <generated/shaders/render/all.hpp>
 

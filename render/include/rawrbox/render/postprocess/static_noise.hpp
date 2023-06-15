@@ -17,7 +17,6 @@ namespace rawrbox {
 		PostProcessStaticNoise& operator=(PostProcessStaticNoise&&) = delete;
 		PostProcessStaticNoise(const PostProcessStaticNoise&) = delete;
 		PostProcessStaticNoise& operator=(const PostProcessStaticNoise&) = delete;
-
 		~PostProcessStaticNoise() override;
 
 		void setStrength(float s);

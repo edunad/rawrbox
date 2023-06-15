@@ -10,7 +10,7 @@ namespace rawrbox {
 
 	// Loader ----
 	FontLoader::~FontLoader() { rawrbox::TextEngine::shutdown(); };
-	std::unique_ptr<rawrbox::Resource> FontLoader::createEntry(uint32_t flags) {
+	std::unique_ptr<rawrbox::Resource> FontLoader::createEntry() {
 		return std::make_unique<rawrbox::ResourceFont>();
 	}
 

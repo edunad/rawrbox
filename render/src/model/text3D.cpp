@@ -45,7 +45,7 @@ namespace rawrbox {
 			rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType> mesh;
 			mesh.vertexPos.translate(pos);
 
-			mesh.setTexture(font.getAtlasTexture(glyph)); // Set the atlas
+			mesh.setTexture(font.getPackTexture(glyph)); // Set the atlas
 			mesh.setOptimizable(!billboard);
 			mesh.addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
 			mesh.setName(fmt::format("3dtext-{}", id));
@@ -78,7 +78,7 @@ namespace rawrbox {
 	}
 
 	void Text3D::upload(bool dynamic) {
-		ModelBase<rawrbox::MaterialText3DUnlit>::upload(true); // Always force dynamic, since we can remove text
+		Model<rawrbox::MaterialText3DUnlit>::upload(true); // Always force dynamic, since we can remove text
 	}
 
 	void Text3D::removeText(uint32_t id) {
@@ -91,7 +91,8 @@ namespace rawrbox {
 
 		for (auto& mesh : this->_meshes) {
 			this->_material->process(*mesh);
-			bgfx::setTransform(this->_matrix.data());
+
+			bgfx::setTransform((this->getMatrix() * mesh->matrix).data());
 
 			if (this->isDynamicBuffer()) {
 				bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);

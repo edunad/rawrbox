@@ -2,8 +2,9 @@
 
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/camera/base.hpp>
-#include <rawrbox/render/model/material/particle_unlit.hpp>
+#include <rawrbox/render/model/material/particle.hpp>
 #include <rawrbox/render/particles/particle.hpp>
+#include <rawrbox/render/utils/texture.hpp>
 
 #include <bgfx/bgfx.h>
 #include <bx/bounds.h>
@@ -181,26 +182,13 @@ namespace rawrbox {
 				    bx::lerp(clStart[2], clEnd[2], ttmod) / 255.F,
 				    bx::lerp(clStart[3], clEnd[3], ttmod) / 255.F);
 
-				// UV -------
-				rawrbox::Vector2i totalSprites = atlasSize / spriteSize;
-				rawrbox::Vector2f spriteSizeInUV = {static_cast<float>(spriteSize) / atlasSize.x, static_cast<float>(spriteSize) / atlasSize.y};
-
-				uint32_t spriteId = std::clamp<uint32_t>(p.texture, 0, (totalSprites.x * totalSprites.y));
-
-				auto Y = static_cast<uint32_t>(std::floor(spriteId / totalSprites.x));
-				auto X = spriteId - Y * totalSprites.x;
-
-				rawrbox::Vector2f uvS = spriteSizeInUV * Vector2f(static_cast<float>(X), static_cast<float>(Y));
-				rawrbox::Vector2f uvE = uvS + spriteSizeInUV;
-
-				// -----------
-
+				auto uv = rawrbox::TextureUtils::atlasToUV(atlasSize, spriteSize, p.texture);
 				typename M::vertexBufferType* vertex = &outVert[index * 4];
 
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir - vdir, {uvS.x, uvE.y, blend}, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir + vdir, {uvE.x, uvS.y, blend}, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir + vdir, {uvS.x, uvS.y, blend}, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir - vdir, {uvE.x, uvE.y, blend}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir - vdir, {uv.x, uv.w, blend}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir + vdir, {uv.z, uv.y, blend}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir + vdir, {uv.x, uv.y, blend}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir - vdir, {uv.z, uv.w, blend}, color));
 
 				++index;
 			}

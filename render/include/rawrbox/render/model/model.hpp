@@ -20,16 +20,71 @@ namespace rawrbox {
 		std::vector<rawrbox::PlayingAnimationData> _playingAnimations = {};
 		std::vector<rawrbox::LightBase> _lights = {};
 
+		std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes = {};
+		rawrbox::BBOX _bbox = {};
+
 		// SKINNING ----
 		std::unordered_map<std::string, rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // Map for quick lookup
 														    // --------
+
+		bool _canOptimize = true;
+		virtual void flattenMeshes() {
+			this->_mesh->clear();
+
+			// Merge same meshes to reduce calls
+			if (this->_canOptimize) {
+				size_t old = this->_meshes.size();
+				for (auto mesh = this->_meshes.begin(); mesh != this->_meshes.end();) {
+					bool merged = false;
+
+					// Previous mesh available?
+					if (mesh != this->_meshes.begin()) {
+						auto prevMesh = std::prev(mesh); // Check old meshes
+
+						if ((*prevMesh)->canOptimize(**mesh)) {
+							(*prevMesh)->merge(**mesh);
+
+							mesh = this->_meshes.erase(mesh);
+							merged = true;
+						}
+					}
+
+					if (!merged) mesh++;
+				}
+
+				if (old != this->_meshes.size()) fmt::print("[RawrBox-Model] Optimized mesh for rendering (Before {} | After {})\n", old, this->_meshes.size());
+			}
+			// ----------------------
+
+			// Flatten meshes for buffers
+			for (auto& mesh : this->_meshes) {
+				// Fix start index ----
+				mesh->baseIndex = static_cast<uint16_t>(this->_mesh->indices.size());
+				mesh->baseVertex = static_cast<uint16_t>(this->_mesh->vertices.size());
+				// --------------------
+
+				// Append vertices
+				this->_mesh->vertices.insert(this->_mesh->vertices.end(), mesh->vertices.begin(), mesh->vertices.end());
+				this->_mesh->indices.insert(this->_mesh->indices.end(), mesh->indices.begin(), mesh->indices.end());
+				// -----------------
+			}
+			// --------
+
+			// Sort alpha
+			std::sort(this->_meshes.begin(), this->_meshes.end(), [](auto& a, auto& b) {
+				return a->blending != BGFX_STATE_BLEND_ALPHA && b->blending == BGFX_STATE_BLEND_ALPHA;
+			});
+			// --------
+
+			this->updateBuffers();
+		}
 
 		// ANIMATIONS ----
 		void animate(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
 			// VERTEX ANIMATION ----
 			for (auto& anim : this->_animatedMeshes) {
 				if (anim.second == nullptr) continue;
-				this->readAnims(anim.second->offsetMatrix, anim.first);
+				this->readAnims(anim.second->matrix, anim.first);
 			}
 			// ------------
 
@@ -159,7 +214,7 @@ namespace rawrbox {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				// Update lights ---
 				for (auto& mesh : this->meshes()) {
-					rawrbox::Vector3f meshPos = {mesh->offsetMatrix[12], mesh->offsetMatrix[13], mesh->offsetMatrix[14]};
+					rawrbox::Vector3f meshPos = {mesh->matrix[12], mesh->matrix[13], mesh->matrix[14]};
 					auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle());
 
 					for (auto light : mesh->lights) {
@@ -176,14 +231,21 @@ namespace rawrbox {
 		Model(Model&&) = delete;
 		Model& operator=(const Model&) = delete;
 		Model& operator=(Model&&) = delete;
-		~Model() override = default;
+		~Model() override {
+			this->_meshes.clear();
+			this->_animatedMeshes.clear();
+			this->_animations.clear();
+			this->_lights.clear();
+		}
+
+		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
 
 		// Animations ----
-		bool blendAnimation(const std::string& otherAnim, float blend) {
+		virtual bool blendAnimation(const std::string& otherAnim, float blend) {
 			throw std::runtime_error("TODO");
 		}
 
-		bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F) {
+		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F) {
 			auto iter = this->_animations.find(name);
 			if (iter == this->_animations.end()) throw std::runtime_error(fmt::format("[RawrBox-Model] Animation {} not found!", name));
 
@@ -249,6 +311,106 @@ namespace rawrbox {
 			this->updateLights();
 		}
 
+		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const { return this->_bbox; }
+
+		[[nodiscard]] virtual const size_t totalMeshes() const {
+			return this->_meshes.size();
+		}
+
+		[[nodiscard]] virtual const bool empty() const {
+			return this->_meshes.empty();
+		}
+
+		virtual void removeMeshByName(const std::string& id) {
+			for (auto it2 = this->_meshes.begin(); it2 != this->_meshes.end();) {
+				if ((*it2)->getName() == id) {
+					it2 = this->_meshes.erase(it2);
+					continue;
+				}
+
+				++it2;
+			}
+
+			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
+		}
+
+		virtual void removeMesh(size_t index) {
+			if (index >= this->_meshes.size()) return;
+			this->_meshes.erase(this->_meshes.begin() + index);
+
+			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
+		}
+
+		virtual void addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
+			this->_bbox.combine(mesh.getBBOX());
+			mesh.owner = this;
+
+			this->_meshes.push_back(std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh));
+			if (this->isUploaded() && this->isDynamicBuffer()) {
+				this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
+			}
+		}
+
+		virtual rawrbox::Mesh<typename M::vertexBufferType>* getMeshByName(const std::string& id) {
+			auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&id](auto& mesh) { return mesh->getName() == id; });
+			if (fnd == this->_meshes.end()) return nullptr;
+
+			return (*fnd).get();
+		}
+
+		virtual rawrbox::Mesh<typename M::vertexBufferType>& getMesh(size_t id = 0) {
+			if (!this->hasMesh(id)) throw std::runtime_error(fmt::format("[RawrBox-ModelBase] Mesh {} does not exist", id));
+			return *this->_meshes[id];
+		}
+
+		virtual bool hasMesh(size_t id) {
+			return id < this->_meshes.size();
+		}
+
+		virtual void setCulling(uint64_t cull, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->setCulling(cull);
+			}
+		}
+
+		virtual void setWireframe(bool wireframe, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->setWireframe(wireframe);
+			}
+		}
+
+		virtual void setBlend(uint64_t blend, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->setBlend(blend);
+			}
+		}
+
+		virtual void setDepthTest(uint64_t depth, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->setDepthTest(depth);
+			}
+		}
+
+		virtual void setColor(const rawrbox::Color& color, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->setColor(color);
+			}
+		}
+
+		virtual std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>>& meshes() {
+			return this->_meshes;
+		}
+
+		void upload(bool dynamic = false) override {
+			this->flattenMeshes(); // Merge and optimize meshes for drawing
+			ModelBase<M>::upload(dynamic);
+		}
+
 		void draw() override {
 			ModelBase<M>::draw();
 
@@ -268,7 +430,7 @@ namespace rawrbox {
 					bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
 				}
 
-				bgfx::setTransform((this->_matrix * mesh->offsetMatrix).data());
+				bgfx::setTransform((this->getMatrix() * mesh->matrix).data());
 
 				uint64_t flags = BGFX_STATE_DEFAULT_3D | mesh->culling | mesh->blending | mesh->depthTest;
 				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP

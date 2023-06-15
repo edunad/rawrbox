@@ -15,6 +15,11 @@ namespace rawrbox {
 
 	public:
 		LightSpot(rawrbox::Vector3f posMatrix, rawrbox::Vector3f direction, rawrbox::Colorf diffuse, rawrbox::Colorf specular, float innerCone, float outerCone, float constant, float linear, float quadratic) : rawrbox::LightBase(posMatrix, diffuse, specular), _direction(direction), _innerCone(innerCone), _outerCone(outerCone), _constant(constant), _linear(linear), _quadratic(quadratic){};
+		LightSpot(const LightSpot&) = default;
+		LightSpot(LightSpot&&) = delete;
+		LightSpot& operator=(const LightSpot&) = default;
+		LightSpot& operator=(LightSpot&&) = delete;
+		~LightSpot() override = default;
 
 		LightType getType() override { return LightType::LIGHT_SPOT; };
 		rawrbox::Matrix4x4 const getDataMatrix() override {

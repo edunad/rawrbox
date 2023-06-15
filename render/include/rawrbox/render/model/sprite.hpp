@@ -1,13 +1,13 @@
 #pragma once
-#include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/material/base.hpp>
+#include <rawrbox/render/model/model.hpp>
 
 #define BGFX_STATE_DEFAULT_SPRITE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
-	class Sprite : public rawrbox::ModelBase<M> {
+	class Sprite : public rawrbox::Model<M> {
 	protected:
 		bool _xAxis = true;
 		bool _yAxis = true;
@@ -30,7 +30,7 @@ namespace rawrbox {
 
 		void addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) override {
 			mesh.setOptimizable(false);
-			ModelBase<M>::addMesh(mesh);
+			Model<M>::addMesh(mesh);
 		}
 
 		void draw() override {
@@ -51,7 +51,7 @@ namespace rawrbox {
 					bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
 				}
 
-				bgfx::setTransform((this->_matrix * mesh->offsetMatrix).data());
+				bgfx::setTransform((this->getMatrix() * mesh->matrix).data());
 
 				uint64_t flags = BGFX_STATE_DEFAULT_SPRITE | mesh->culling | mesh->blending | mesh->depthTest;
 				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP

@@ -19,12 +19,14 @@ namespace rawrbox {
 		rawrbox::Vector2f _shadow = {1, 1};
 
 	public:
-		~UILabel() override = default;
 		UILabel() = default;
 		UILabel(const UILabel&) = default;
 		UILabel(UILabel&&) = delete;
 		UILabel& operator=(const UILabel&) = default;
 		UILabel& operator=(UILabel&&) = delete;
+		~UILabel() override {
+			this->_font = nullptr;
+		}
 
 		// FOCUS HANDLE ---
 		[[nodiscard]] bool hitTest(const rawrbox::Vector2f& point) const override;

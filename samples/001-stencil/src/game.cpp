@@ -1,7 +1,6 @@
 
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/resources/gif.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -36,7 +35,6 @@ namespace stencil {
 		// --------------
 
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::GIFLoader>());
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
 
 		// Load content ---
@@ -70,7 +68,7 @@ namespace stencil {
 	void Game::contentLoaded() {
 		// Textures ---
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
-		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->get();
+		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get<rawrbox::TextureGIF>();
 
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/droidsans.ttf")->getSize(28);
 		this->_font2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/visitor1.ttf")->getSize(18);

@@ -269,7 +269,7 @@ namespace rawrbox {
 			if (fnd == mesh.skeleton->boneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
 
 			fnd->second->offsetMtx.transpose(&bone->mOffsetMatrix.a1);
-			fnd->second->offsetMtx.mul(mesh.offsetMatrix);
+			fnd->second->offsetMtx.mul(mesh.matrix);
 
 			// Calculate object weights
 			for (size_t j = 0; j < bone->mNumWeights; j++) {
@@ -491,7 +491,7 @@ namespace rawrbox {
 			// -----
 
 			if ((this->assimpFlags & aiProcess_PreTransformVertices) == 0) {
-				mesh.offsetMatrix.transpose(&root->mTransformation.a1); // Append matrix to our vertices, since pre-transform is disabled
+				mesh.matrix.transpose(&root->mTransformation.a1); // Append matrix to our vertices, since pre-transform is disabled
 			}
 
 			// Textures

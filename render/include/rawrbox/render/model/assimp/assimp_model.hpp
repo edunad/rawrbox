@@ -16,7 +16,7 @@ namespace rawrbox {
 
 				mesh.name = assimpMesh.name;
 				mesh.bbox = assimpMesh.bbox;
-				mesh.offsetMatrix = assimpMesh.offsetMatrix;
+				mesh.matrix = assimpMesh.matrix;
 
 				// Textures ---
 				if (assimpMesh.material != nullptr) {

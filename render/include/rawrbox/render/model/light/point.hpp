@@ -10,6 +10,11 @@ namespace rawrbox {
 
 	public:
 		LightPoint(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular, float constant, float linear, float quadratic) : rawrbox::LightBase(posMatrix, diffuse, specular), _constant(constant), _linear(linear), _quadratic(quadratic){};
+		LightPoint(const LightPoint&) = default;
+		LightPoint(LightPoint&&) = delete;
+		LightPoint& operator=(const LightPoint&) = default;
+		LightPoint& operator=(LightPoint&&) = delete;
+		~LightPoint() override = default;
 
 		LightType getType() override { return rawrbox::LightType::LIGHT_POINT; };
 		rawrbox::Matrix4x4 const getDataMatrix() override {

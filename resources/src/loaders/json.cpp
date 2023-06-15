@@ -3,6 +3,8 @@
 
 namespace rawrbox {
 	// Resource ----
+	ResourceJSON::~ResourceJSON() { this->_json.reset(); }
+
 	bool ResourceJSON::load(const std::vector<uint8_t>& buffer) {
 		this->_json = std::make_unique<nlohmann::json>(nlohmann::json::parse(buffer));
 		return true;
@@ -14,7 +16,7 @@ namespace rawrbox {
 	// -------
 
 	// Loader ----
-	std::unique_ptr<rawrbox::Resource> JSONLoader::createEntry(uint32_t flags) {
+	std::unique_ptr<rawrbox::Resource> JSONLoader::createEntry() {
 		return std::make_unique<rawrbox::ResourceJSON>();
 	}
 

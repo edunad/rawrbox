@@ -28,3 +28,5 @@ endif()
 if(RAWRBOX_BUILD_PHYSICS)
     add_subdirectory("009-physics")
 endif()
+
+add_subdirectory("010-instancing-test")

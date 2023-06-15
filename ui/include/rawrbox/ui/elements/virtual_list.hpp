@@ -25,6 +25,13 @@ namespace rawrbox {
 		rawrbox::Color backgroundColor = rawrbox::Colors::Transparent;
 
 	public:
+		UIVirtualList() = default;
+		UIVirtualList(const UIVirtualList&) = delete;
+		UIVirtualList(UIVirtualList&&) = delete;
+		UIVirtualList& operator=(const UIVirtualList&) = delete;
+		UIVirtualList& operator=(UIVirtualList&&) = delete;
+		~UIVirtualList() override = default;
+
 		std::function<bool(size_t, T&)> shouldRender = nullptr;
 		std::function<void(size_t, T&, bool, rawrbox::Stencil&)> renderItem = nullptr;
 		std::function<void(rawrbox::Stencil&)> renderAfter = nullptr;

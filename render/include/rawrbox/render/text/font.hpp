@@ -2,7 +2,7 @@
 
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/texture/atlas.hpp>
+#include <rawrbox/render/texture/pack.hpp>
 
 #define STBTT_STATIC
 #define STB_TRUETYPE_IMPLEMENTATION
@@ -76,7 +76,7 @@ namespace rawrbox {
 	//              |------------- advance_x ---------->|
 
 	struct Glyph {
-		uint32_t atlasID = 0;
+		uint32_t packID = 0;
 		uint16_t codePoint = 0;
 
 		float scale = 0.F;
@@ -134,7 +134,7 @@ namespace rawrbox {
 		[[nodiscard]] float getKerning(uint16_t prevCodePoint, uint16_t nextCodePoint) const;
 
 		[[nodiscard]] rawrbox::Vector2f getStringSize(const std::string& text) const;
-		[[nodiscard]] rawrbox::TextureAtlas* getAtlasTexture(rawrbox::Glyph* g) const;
+		[[nodiscard]] rawrbox::TexturePack* getPackTexture(rawrbox::Glyph* g) const;
 
 		void render(const std::string& text, const rawrbox::Vector2f& pos, bool yIsUp, std::function<void(rawrbox::Glyph*, float, float, float, float)> render) const;
 		// ----

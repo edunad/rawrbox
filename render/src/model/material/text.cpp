@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/model/material/text_unlit.hpp>
+#include <rawrbox/render/model/material/text.hpp>
 
 #include <generated/shaders/render/all.hpp>
 

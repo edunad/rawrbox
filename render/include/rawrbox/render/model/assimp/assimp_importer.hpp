@@ -86,7 +86,7 @@ namespace rawrbox {
 	public:
 		std::string name;
 		rawrbox::BBOX bbox = {};
-		rawrbox::Matrix4x4 offsetMatrix = {};
+		rawrbox::Matrix4x4 matrix = {};
 
 		rawrbox::AssimpMaterial* material = nullptr;
 		rawrbox::Skeleton* skeleton = nullptr;

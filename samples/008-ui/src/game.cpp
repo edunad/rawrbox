@@ -1,6 +1,5 @@
 
 #include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/resources/gif.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/loaders/json.hpp>
@@ -35,7 +34,6 @@ namespace ui_test {
 
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::GIFLoader>());
 
 		// SETUP UI
 		this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*this->_window);

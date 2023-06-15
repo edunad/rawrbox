@@ -1,4 +1,4 @@
-#include <rawrbox/render/model/material/skinned_unlit.hpp>
+#include <rawrbox/render/model/material/skinned.hpp>
 
 #include <generated/shaders/render/all.hpp>
 

@@ -62,7 +62,7 @@ namespace rawrbox {
 		// -------
 
 		// RENDERING ---
-		rawrbox::Matrix4x4 offsetMatrix = {};
+		rawrbox::Matrix4x4 matrix = {};
 		rawrbox::Matrix4x4 vertexPos = {};
 
 		rawrbox::Color color = rawrbox::Colors::White;
@@ -109,26 +109,35 @@ namespace rawrbox {
 			return this->bbox;
 		}
 
-		void setMatrix(const rawrbox::Matrix4x4& offset) {
-			this->offsetMatrix = offset;
+		[[nodiscard]] const bool empty() const {
+			return this->indices.empty() || this->vertices.empty();
+		}
+
+		void setMatrix(const rawrbox::Matrix4x4& matrix) {
+			this->matrix = matrix;
 		}
 
 		[[nodiscard]] const rawrbox::Vector3f& getPos() const { return this->_pos; }
 		void setPos(const rawrbox::Vector3f& pos) {
 			this->_pos = pos;
-			this->offsetMatrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 		}
 
-		[[nodiscard]] const rawrbox::Vector4f& getAngles() const { return this->_angle; }
+		[[nodiscard]] const rawrbox::Vector4f& getAngle() const { return this->_angle; }
+		void setAngle(const rawrbox::Vector4f& ang) {
+			this->_angle = ang;
+			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+		}
+
 		void setEulerAngle(const rawrbox::Vector3f& ang) {
 			this->_angle = rawrbox::Vector4f::toQuat(ang);
-			this->offsetMatrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 		}
 
 		[[nodiscard]] const rawrbox::Vector3f& getScale() const { return this->_scale; }
 		void setScale(const rawrbox::Vector3f& scale) {
 			this->_scale = scale;
-			this->offsetMatrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 		}
 
 		template <typename B>
@@ -238,7 +247,7 @@ namespace rawrbox {
 			return this->texture == other.texture &&
 			       this->color == other.color &&
 			       this->lineMode == other.lineMode &&
-			       this->offsetMatrix == other.offsetMatrix;
+			       this->matrix == other.matrix;
 		}
 	};
 } // namespace rawrbox

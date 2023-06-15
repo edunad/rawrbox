@@ -117,6 +117,26 @@ namespace rawrbox {
 	// ------RENDER
 	void TextureGIF::upload(bgfx::TextureFormat::Enum format) {
 		if (this->_failedToLoad || bgfx::isValid(this->_handle)) return; // Failed texture is already bound, so skip it
+
+		// Try to determine
+		if (format == bgfx::TextureFormat::Count) {
+			switch (this->_channels) {
+				case 1:
+					format = bgfx::TextureFormat::R8;
+					break;
+				case 2:
+					format = bgfx::TextureFormat::RG8;
+					break;
+				case 3:
+					format = bgfx::TextureFormat::RGB8;
+					break;
+				default:
+				case 4:
+					format = bgfx::TextureFormat::RGBA8;
+					break;
+			}
+		}
+
 		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 0, format, 0 | this->_flags);
 
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureGIF] Failed to bind texture");

@@ -376,7 +376,7 @@ namespace rawrbox {
 			// Setup --------
 			this->setupDrawCall(
 			    this->_textprogram,
-			    font.getAtlasTexture(glyph)->getHandle());
+			    font.getPackTexture(glyph)->getHandle());
 			// ----
 
 			this->pushVertice({x0, y0}, glyph->textureTopLeft, col);
