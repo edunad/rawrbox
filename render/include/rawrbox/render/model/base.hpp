@@ -16,16 +16,8 @@ namespace rawrbox {
 		bgfx::DynamicIndexBufferHandle _ibdh = BGFX_INVALID_HANDLE; // Indices - Dynamic
 		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;         // Indices - Static
 
-		rawrbox::Matrix4x4 _matrix = {};
-
-		std::vector<typename M::vertexBufferType> _vertices = {};
-		std::vector<uint16_t> _indices = {};
-
+		std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>> _mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>();
 		std::unique_ptr<M> _material = std::make_unique<M>();
-
-		rawrbox::Vector3f _scale = {1, 1, 1};
-		rawrbox::Vector3f _pos = {};
-		rawrbox::Vector4f _angle = {};
 
 		// BGFX DYNAMIC SUPPORT ---
 		bool _isDynamic = false;
@@ -34,8 +26,8 @@ namespace rawrbox {
 		virtual void updateBuffers() {
 			if (!this->isDynamicBuffer() || !this->isUploaded()) return;
 
-			const bgfx::Memory* vertMem = bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * M::vertexBufferType::vLayout().m_stride);
-			const bgfx::Memory* indexMem = bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t));
+			const bgfx::Memory* vertMem = bgfx::makeRef(this->_mesh->vertices.data(), static_cast<uint32_t>(this->_mesh->vertices.size()) * M::vertexBufferType::vLayout().m_stride);
+			const bgfx::Memory* indexMem = bgfx::makeRef(this->_mesh->indices.data(), static_cast<uint32_t>(this->_mesh->indices.size()) * sizeof(uint16_t));
 
 			bgfx::update(this->_vbdh, 0, vertMem);
 			bgfx::update(this->_ibdh, 0, indexMem);
@@ -54,8 +46,7 @@ namespace rawrbox {
 			RAWRBOX_DESTROY(this->_vbdh);
 			RAWRBOX_DESTROY(this->_ibdh);
 
-			this->_vertices.clear();
-			this->_indices.clear();
+			this->_mesh.reset();
 		}
 
 		// UTILS -----
@@ -536,8 +527,10 @@ namespace rawrbox {
 			mesh.totalIndex = static_cast<uint16_t>(inds.size());
 
 			// AABB ---
-			mesh.bbox.m_min = -_scale / 2.F;
-			mesh.bbox.m_max = _scale / 2.F;
+			auto hScale = rawrbox::Vector3f{size, size, size} / 2.F;
+
+			mesh.bbox.m_min = -hScale;
+			mesh.bbox.m_max = hScale;
 			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
 			// -----
 
@@ -644,31 +637,27 @@ namespace rawrbox {
 		// -------
 
 		// UTIL ---
-		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_pos; }
+		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_mesh->getPos(); }
 		virtual void setPos(const rawrbox::Vector3f& pos) {
-			this->_pos = pos;
-			this->_matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->_mesh->setPos(pos);
 		}
 
-		[[nodiscard]] virtual const rawrbox::Vector3f& getScale() const { return this->_scale; }
+		[[nodiscard]] virtual const rawrbox::Vector3f& getScale() const { return this->_mesh->getScale(); }
 		virtual void setScale(const rawrbox::Vector3f& scale) {
-			this->_scale = scale;
-			this->_matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->_mesh->setScale(scale);
 		}
 
-		[[nodiscard]] virtual const rawrbox::Vector4f& getAngle() const { return this->_angle; }
+		[[nodiscard]] virtual const rawrbox::Vector4f& getAngle() const { return this->_mesh->getAngle(); }
 		virtual void setAngle(const rawrbox::Vector4f& ang) {
-			this->_angle = ang;
-			this->_matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->_mesh->setAngle(ang);
 		}
 
 		virtual void setEulerAngle(const rawrbox::Vector3f& ang) {
-			this->_angle = rawrbox::Vector4f::toQuat(ang);
-			this->_matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->_mesh->setEulerAngle(ang);
 		}
 
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getMatrix() const {
-			return this->_matrix;
+			return this->_mesh->matrix;
 		}
 
 		[[nodiscard]] virtual const bool isDynamicBuffer() const {
@@ -687,11 +676,11 @@ namespace rawrbox {
 			// Generate buffers ----
 			this->_isDynamic = dynamic;
 
-			const bgfx::Memory* vertMem = bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * M::vertexBufferType::vLayout().m_stride);
-			const bgfx::Memory* indexMem = bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t));
+			const bgfx::Memory* vertMem = bgfx::makeRef(this->_mesh->vertices.data(), static_cast<uint32_t>(this->_mesh->vertices.size()) * M::vertexBufferType::vLayout().m_stride);
+			const bgfx::Memory* indexMem = bgfx::makeRef(this->_mesh->indices.data(), static_cast<uint32_t>(this->_mesh->indices.size()) * sizeof(uint16_t));
 
 			if (dynamic) {
-				if (this->_vertices.empty() || this->_indices.empty()) {
+				if (this->_mesh->empty()) {
 					this->_vbdh = bgfx::createDynamicVertexBuffer(1, M::vertexBufferType::vLayout(), 0 | BGFX_BUFFER_ALLOW_RESIZE);
 					this->_ibdh = bgfx::createDynamicIndexBuffer(1, 0 | BGFX_BUFFER_ALLOW_RESIZE);
 				} else {
@@ -699,7 +688,7 @@ namespace rawrbox {
 					this->_ibdh = bgfx::createDynamicIndexBuffer(indexMem, 0 | BGFX_BUFFER_ALLOW_RESIZE);
 				}
 			} else {
-				if (this->_vertices.empty() || this->_indices.empty()) throw std::runtime_error("[RawrBox-ModelBase] Static buffer cannot contain empty vertices / indices. Use dynamic buffer instead!");
+				if (this->_mesh->empty()) throw std::runtime_error("[RawrBox-ModelBase] Static buffer cannot contain empty vertices / indices. Use dynamic buffer instead!");
 
 				this->_vbh = bgfx::createVertexBuffer(vertMem, M::vertexBufferType::vLayout());
 				this->_ibh = bgfx::createIndexBuffer(indexMem);

@@ -182,7 +182,7 @@ namespace rawrbox {
 				    bx::lerp(clStart[2], clEnd[2], ttmod) / 255.F,
 				    bx::lerp(clStart[3], clEnd[3], ttmod) / 255.F);
 
-				auto uv = rawrbox::TextureUtils::atlasUV(atlasSize, spriteSize, p.texture);
+				auto uv = rawrbox::TextureUtils::atlasToUV(atlasSize, spriteSize, p.texture);
 				typename M::vertexBufferType* vertex = &outVert[index * 4];
 
 				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir - vdir, {uv.x, uv.w, blend}, color));

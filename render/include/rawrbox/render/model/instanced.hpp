@@ -13,12 +13,31 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 matrix = {};
 		rawrbox::Colorf color = rawrbox::Colors::White;
 		rawrbox::Vector4f uv = {}; // xStart, yStart, xEnd, yEnd
+
+		static bgfx::VertexLayout vLayout() {
+			static bgfx::VertexLayout l;
+			l.begin()
+			    .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float) // Position
+			    .add(bgfx::Attrib::TexCoord1, 4, bgfx::AttribType::Float)
+			    .add(bgfx::Attrib::TexCoord2, 4, bgfx::AttribType::Float)
+			    .add(bgfx::Attrib::TexCoord3, 4, bgfx::AttribType::Float)
+
+			    .add(bgfx::Attrib::TexCoord4, 4, bgfx::AttribType::Float) // Color
+			    .add(bgfx::Attrib::TexCoord5, 4, bgfx::AttribType::Float) // UV
+			    .end();
+			return l;
+		};
 	};
 
 	template <typename M = rawrbox::MaterialInstancedUnlit>
 	class InstancedModel : public rawrbox::ModelBase<M> {
+		bgfx::DynamicVertexBufferHandle _dataBuffer = BGFX_INVALID_HANDLE;
 		std::vector<Instance> _instances = {};
-		rawrbox::TextureBase* _texture = nullptr;
+
+		void updateBuffers() override {
+			rawrbox::ModelBase<M>::updateBuffers();
+			this->updateInstance();
+		}
 
 	public:
 		InstancedModel() = default;
@@ -27,16 +46,17 @@ namespace rawrbox {
 		InstancedModel& operator=(const InstancedModel&) = delete;
 		InstancedModel& operator=(InstancedModel&&) = delete;
 		~InstancedModel() override {
+			RAWRBOX_DESTROY(this->_dataBuffer);
 			this->_instances.clear();
-			this->_texture = nullptr;
 		}
 
-		virtual void setMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
+		virtual void setTemplate(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
 			if (mesh.empty()) throw std::runtime_error("[RawrBox-InstancedModel] Invalid mesh! Missing vertices / indices!");
+			this->_mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh);
 
-			this->_vertices = mesh.getVertices();
-			this->_indices = mesh.getIndices();
-			this->_texture = mesh.texture;
+			if (this->isUploaded() && this->isDynamicBuffer()) {
+				this->updateBuffers();
+			}
 		}
 
 		virtual void addInstance(const rawrbox::Instance& instance) {
@@ -48,25 +68,28 @@ namespace rawrbox {
 			return this->_instances[i];
 		}
 
+		void upload(bool dynamic = false) override {
+			rawrbox::ModelBase<M>::upload(dynamic);
+
+			this->_dataBuffer = bgfx::createDynamicVertexBuffer(
+			    1, rawrbox::Instance::vLayout(), BGFX_BUFFER_COMPUTE_READ | BGFX_BUFFER_ALLOW_RESIZE);
+
+			this->updateInstance();
+		}
+
+		void updateInstance() {
+			if (!bgfx::isValid(this->_dataBuffer)) throw std::runtime_error("[RawrBox-InstancedModel] Data buffer not valid! Did you call upload()?");
+
+			const bgfx::Memory* mem = bgfx::makeRef(this->_instances.data(), static_cast<uint32_t>(this->_instances.size()) * rawrbox::Instance::vLayout().m_stride);
+			bgfx::update(this->_dataBuffer, 0, mem);
+		}
+
 		void draw() override {
+			if (this->_instances.empty()) return;
 			if ((BGFX_CAPS_INSTANCING & bgfx::getCaps()->supported) == 0) throw std::runtime_error("[RawrBox-InstancedModel] Instancing not supported by the graphics card!");
+
 			ModelBase<M>::draw();
-
-			// Setup instance
-			uint32_t instanceStride = sizeof(rawrbox::Instance);
-			uint32_t instances = bgfx::getAvailInstanceDataBuffer(this->_instances.size(), instanceStride);
-			if (instances <= 0) return;
-
-			bgfx::InstanceDataBuffer idb = {};
-			bgfx::allocInstanceDataBuffer(&idb, instances, instanceStride);
-
-			auto data = std::bit_cast<rawrbox::Instance*>(idb.data);
-			for (uint32_t ii = 0; ii < instances; ++ii) {
-				std::memcpy(&data[ii], &this->_instances[ii], instanceStride);
-			}
-
-			// ----
-			this->_material->process(this->_texture->getHandle());
+			this->_material->process(*this->_mesh); // Set atlas
 
 			if (this->isDynamicBuffer()) {
 				bgfx::setVertexBuffer(0, this->_vbdh);
@@ -77,9 +100,11 @@ namespace rawrbox {
 			}
 
 			// Set instance data buffer.
-			bgfx::setInstanceDataBuffer(&idb, 0, instances);
-			bgfx::setState(BGFX_STATE_DEFAULT, 0);
+			bgfx::setBuffer(6, this->_dataBuffer, bgfx::Access::Read);
+			bgfx::setInstanceDataBuffer(this->_dataBuffer, 0, this->_instances.size());
+			// ----
 
+			bgfx::setState(BGFX_STATE_DEFAULT, 0);
 			this->_material->postProcess();
 		}
 	};

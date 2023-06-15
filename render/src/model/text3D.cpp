@@ -91,7 +91,8 @@ namespace rawrbox {
 
 		for (auto& mesh : this->_meshes) {
 			this->_material->process(*mesh);
-			bgfx::setTransform(this->_matrix.data());
+
+			bgfx::setTransform((this->getMatrix() * mesh->matrix).data());
 
 			if (this->isDynamicBuffer()) {
 				bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);

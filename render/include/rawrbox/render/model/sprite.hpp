@@ -51,7 +51,7 @@ namespace rawrbox {
 					bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
 				}
 
-				bgfx::setTransform((this->_matrix * mesh->offsetMatrix).data());
+				bgfx::setTransform((this->getMatrix() * mesh->matrix).data());
 
 				uint64_t flags = BGFX_STATE_DEFAULT_SPRITE | mesh->culling | mesh->blending | mesh->depthTest;
 				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP

@@ -29,8 +29,7 @@ namespace rawrbox {
 
 		bool _canOptimize = true;
 		virtual void flattenMeshes() {
-			this->_vertices.clear();
-			this->_indices.clear();
+			this->_mesh->clear();
 
 			// Merge same meshes to reduce calls
 			if (this->_canOptimize) {
@@ -60,13 +59,13 @@ namespace rawrbox {
 			// Flatten meshes for buffers
 			for (auto& mesh : this->_meshes) {
 				// Fix start index ----
-				mesh->baseIndex = static_cast<uint16_t>(this->_indices.size());
-				mesh->baseVertex = static_cast<uint16_t>(this->_vertices.size());
+				mesh->baseIndex = static_cast<uint16_t>(this->_mesh->indices.size());
+				mesh->baseVertex = static_cast<uint16_t>(this->_mesh->vertices.size());
 				// --------------------
 
 				// Append vertices
-				this->_vertices.insert(this->_vertices.end(), mesh->vertices.begin(), mesh->vertices.end());
-				this->_indices.insert(this->_indices.end(), mesh->indices.begin(), mesh->indices.end());
+				this->_mesh->vertices.insert(this->_mesh->vertices.end(), mesh->vertices.begin(), mesh->vertices.end());
+				this->_mesh->indices.insert(this->_mesh->indices.end(), mesh->indices.begin(), mesh->indices.end());
 				// -----------------
 			}
 			// --------
@@ -85,7 +84,7 @@ namespace rawrbox {
 			// VERTEX ANIMATION ----
 			for (auto& anim : this->_animatedMeshes) {
 				if (anim.second == nullptr) continue;
-				this->readAnims(anim.second->offsetMatrix, anim.first);
+				this->readAnims(anim.second->matrix, anim.first);
 			}
 			// ------------
 
@@ -215,7 +214,7 @@ namespace rawrbox {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				// Update lights ---
 				for (auto& mesh : this->meshes()) {
-					rawrbox::Vector3f meshPos = {mesh->offsetMatrix[12], mesh->offsetMatrix[13], mesh->offsetMatrix[14]};
+					rawrbox::Vector3f meshPos = {mesh->matrix[12], mesh->matrix[13], mesh->matrix[14]};
 					auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle());
 
 					for (auto light : mesh->lights) {
@@ -431,7 +430,7 @@ namespace rawrbox {
 					bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
 				}
 
-				bgfx::setTransform((this->_matrix * mesh->offsetMatrix).data());
+				bgfx::setTransform((this->getMatrix() * mesh->matrix).data());
 
 				uint64_t flags = BGFX_STATE_DEFAULT_3D | mesh->culling | mesh->blending | mesh->depthTest;
 				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP

@@ -11,12 +11,13 @@
 
 #include <fmt/format.h>
 
+#include <random>
 #include <vector>
 
 namespace instance_test {
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
+		this->_window->setMonitor(1);
 		this->_window->setTitle("INSTANCE TEST");
 		this->_window->setRenderer(bgfx::RendererType::Vulkan);
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
@@ -62,20 +63,25 @@ namespace instance_test {
 
 	void Game::contentLoaded() {
 		int total = 1000;
+		float spacing = 0.85F;
+
 		auto t = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/instance_test.png")->get();
 
 		auto mesh = this->_model->generateCube({0, 0, 0}, {0.5F, 0.5F, 0.5F});
 		mesh.setTexture(t);
 
-		this->_model->setMesh(mesh);
+		this->_model->setTemplate(mesh);
+
+		std::random_device prng;
+		std::uniform_int_distribution<int> dist(0, 4);
+
 		for (int z = 0.F; z < total; z++) {
 			for (int x = 0.F; x < total; x++) {
 				rawrbox::Matrix4x4 m;
-				m.mtxSRT({1.F, 1.F, 1.F}, {0.F, 0.F, 0.F}, {x * 0.85F, 0, z * 0.85F});
+				m.mtxSRT({1.F, 1.F, 1.F}, {0.F, 0.F, 0.F}, {x * spacing, 0, z * spacing});
 
-				uint32_t id = 1 + this->_rng.gen() % (4 - 1);
-				auto uv = rawrbox::TextureUtils::atlasUV({256, 256}, 32, id);
-				this->_model->addInstance({m, rawrbox::Colors::White, uv});
+				auto shdr = rawrbox::TextureUtils::atlasToShader({128, 128}, 32, dist(prng));
+				this->_model->addInstance({m, rawrbox::Colors::White, shdr});
 			}
 		}
 
