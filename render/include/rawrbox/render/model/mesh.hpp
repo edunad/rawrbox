@@ -113,8 +113,8 @@ namespace rawrbox {
 			return this->indices.empty() || this->vertices.empty();
 		}
 
-		void setMatrix(const rawrbox::Matrix4x4& offset) {
-			this->matrix = offset;
+		void setMatrix(const rawrbox::Matrix4x4& matrix) {
+			this->matrix = matrix;
 		}
 
 		[[nodiscard]] const rawrbox::Vector3f& getPos() const { return this->_pos; }
