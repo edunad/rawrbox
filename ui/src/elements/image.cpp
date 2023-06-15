@@ -1,6 +1,7 @@
-#include <rawrbox/render/resources/gif.hpp>
+
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/stencil.hpp>
+#include <rawrbox/render/texture/gif.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/image.hpp>
 
@@ -10,12 +11,7 @@ namespace rawrbox {
 	void UIImage::setTexture(rawrbox::TextureBase* texture) { this->_texture = texture; }
 	void UIImage::setTexture(const std::filesystem::path& path) {
 		this->_isAnimated = path.extension() == ".gif";
-
-		if (!this->_isAnimated) {
-			this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->get();
-		} else {
-			this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>(path)->get();
-		}
+		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->get();
 	}
 
 	void UIImage::setAnimated(bool animated) { this->_isAnimated = animated; }

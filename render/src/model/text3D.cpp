@@ -45,7 +45,7 @@ namespace rawrbox {
 			rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType> mesh;
 			mesh.vertexPos.translate(pos);
 
-			mesh.setTexture(font.getAtlasTexture(glyph)); // Set the atlas
+			mesh.setTexture(font.getPackTexture(glyph)); // Set the atlas
 			mesh.setOptimizable(!billboard);
 			mesh.addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
 			mesh.setName(fmt::format("3dtext-{}", id));

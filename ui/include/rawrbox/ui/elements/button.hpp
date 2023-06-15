@@ -24,7 +24,7 @@ namespace rawrbox {
 
 		// RESOURCES ---
 		rawrbox::TextureBase* _texture = nullptr;
-		rawrbox::TextureImage* _overlay = nullptr;
+		rawrbox::TextureBase* _overlay = nullptr;
 		rawrbox::Font* _consola = nullptr;
 		// -----------------
 

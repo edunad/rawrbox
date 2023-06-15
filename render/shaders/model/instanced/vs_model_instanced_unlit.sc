@@ -24,6 +24,6 @@ void main() {
 
 	v_color0 = getInstanceData(id, 4);
 
-	vec4 uvOffset = getInstanceData(id, 5); // x = offsetX, y = offsetY, z = totalSprites per column
-	v_texcoord0 = (a_texcoord0.xy - uvOffset.xy);
+	v_texcoord0.xy = a_texcoord0;
+	v_texcoord0.z = getInstanceData(id, 5).x;
 }

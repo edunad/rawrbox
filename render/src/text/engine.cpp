@@ -14,10 +14,10 @@
 namespace rawrbox {
 	// VARS ----
 	std::map<std::string, std::unique_ptr<rawrbox::Font>> TextEngine::_fonts = {};
-	std::map<uint32_t, std::unique_ptr<rawrbox::TextureAtlas>> TextEngine::_atlas = {};
+	std::map<uint32_t, std::unique_ptr<rawrbox::TexturePack>> TextEngine::_packs = {};
 
 	// PUBLIC ----
-	uint32_t TextEngine::atlasID = 0;
+	uint32_t TextEngine::packID = 0;
 	// ----------
 
 	std::string TextEngine::getFontInSystem(const std::filesystem::path& path) {
@@ -33,29 +33,29 @@ namespace rawrbox {
 
 	void TextEngine::shutdown() {
 		_fonts.clear();
-		_atlas.clear();
+		_packs.clear();
 
-		TextEngine::atlasID = 0;
+		TextEngine::packID = 0;
 	}
 
-	std::pair<uint32_t, rawrbox::TextureAtlas*> TextEngine::requestAtlas(int width, int height, bgfx::TextureFormat::Enum format) {
+	std::pair<uint32_t, rawrbox::TexturePack*> TextEngine::requestPack(int width, int height, bgfx::TextureFormat::Enum format) {
 		// Try to find a spot
-		for (auto& at : _atlas) {
+		for (auto& at : _packs) {
 			if (at.second->canInsertNode(width, height)) return {at.first, at.second.get()};
 		}
 
-		// Ok, make a new atlas then
-		auto id = TextEngine::atlasID++;
-		auto atlas = std::make_unique<rawrbox::TextureAtlas>(512);
-		atlas->upload(format);
+		// Ok, make a new pack then
+		auto id = TextEngine::packID++;
+		auto pack = std::make_unique<rawrbox::TexturePack>(512);
+		pack->upload(format);
 
-		_atlas.emplace(id, std::move(atlas));
-		return {id, _atlas[id].get()};
+		_packs.emplace(id, std::move(pack));
+		return {id, _packs[id].get()};
 	}
 
-	rawrbox::TextureAtlas* TextEngine::getAtlas(uint32_t id) {
-		auto fnd = _atlas.find(id);
-		if (fnd == _atlas.end()) throw std::runtime_error(fmt::format("[RawrBox-Freetype] Failed to find atlas id '{}'", id));
+	rawrbox::TexturePack* TextEngine::getPack(uint32_t id) {
+		auto fnd = _packs.find(id);
+		if (fnd == _packs.end()) throw std::runtime_error(fmt::format("[RawrBox-Freetype] Failed to find pack id '{}'", id));
 		return fnd->second.get();
 	}
 

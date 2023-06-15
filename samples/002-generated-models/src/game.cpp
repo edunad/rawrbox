@@ -1,7 +1,6 @@
 
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/resources/gif.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
@@ -35,7 +34,6 @@ namespace model {
 		// --------------
 
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::GIFLoader>());
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
 
 		// Load content ---
@@ -69,7 +67,7 @@ namespace model {
 		this->_ready = true;
 
 		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
-		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceGIF>("./content/textures/meow3.gif")->get();
+		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get<rawrbox::TextureGIF>();
 		auto texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/displacement_test.png")->get();
 
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(24);

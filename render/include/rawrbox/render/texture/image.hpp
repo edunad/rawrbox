@@ -19,8 +19,8 @@
 
 namespace rawrbox {
 	class TextureImage : public rawrbox::TextureBase {
-	private:
-		std::vector<unsigned char> _pixels;
+	protected:
+		std::vector<uint8_t> _pixels;
 
 		bool _failedToLoad = false;
 		bool _transparent = false;

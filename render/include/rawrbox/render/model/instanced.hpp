@@ -12,7 +12,7 @@ namespace rawrbox {
 	struct Instance {
 		rawrbox::Matrix4x4 matrix = {};
 		rawrbox::Colorf color = rawrbox::Colors::White;
-		rawrbox::Vector4f uv = {}; // xStart, yStart, xEnd, yEnd
+		rawrbox::Vector4f extraData = {}; // AtlasID, etc..
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
@@ -23,7 +23,7 @@ namespace rawrbox {
 			    .add(bgfx::Attrib::TexCoord3, 4, bgfx::AttribType::Float)
 
 			    .add(bgfx::Attrib::TexCoord4, 4, bgfx::AttribType::Float) // Color
-			    .add(bgfx::Attrib::TexCoord5, 4, bgfx::AttribType::Float) // UV
+			    .add(bgfx::Attrib::TexCoord5, 4, bgfx::AttribType::Float) // ExtraData
 			    .end();
 			return l;
 		};

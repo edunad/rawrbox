@@ -17,7 +17,7 @@ namespace stencil {
 
 		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
 
-		rawrbox::TextureImage* _texture = nullptr;
+		rawrbox::TextureBase* _texture = nullptr;
 		rawrbox::TextureGIF* _texture2 = nullptr;
 
 		rawrbox::Font* _font = nullptr;

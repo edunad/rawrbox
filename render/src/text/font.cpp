@@ -84,14 +84,14 @@ namespace rawrbox {
 		stbtt_MakeCodepointBitmap(this->_font.get(), buffer.data(), ww, hh, dstPitch, scale, scale, codePoint);
 		// ----
 
-		auto atlas = rawrbox::TextEngine::requestAtlas(ww, hh, bgfx::TextureFormat::A8); // FONT_TYPE_ALPHA
-		if (atlas.second == nullptr) throw std::runtime_error("[RawrBox-FONT] Failed to generate / get atlas texture");
+		auto pack = rawrbox::TextEngine::requestPack(ww, hh, bgfx::TextureFormat::A8); // FONT_TYPE_ALPHA
+		if (pack.second == nullptr) throw std::runtime_error("[RawrBox-FONT] Failed to generate / get atlas texture");
 
-		auto& atlasNode = atlas.second->addSprite(ww, hh, buffer);
+		auto& packNode = pack.second->addSprite(ww, hh, buffer);
 
-		glyph->atlasID = atlas.first;
-		glyph->textureTopLeft = {atlasNode.x / static_cast<float>(atlas.second->size), atlasNode.y / static_cast<float>(atlas.second->size)};
-		glyph->textureBottomRight = {(atlasNode.x + atlasNode.width) / static_cast<float>(atlas.second->size), (atlasNode.y + atlasNode.height) / static_cast<float>(atlas.second->size)};
+		glyph->packID = pack.first;
+		glyph->textureTopLeft = {packNode.x / static_cast<float>(pack.second->size), packNode.y / static_cast<float>(pack.second->size)};
+		glyph->textureBottomRight = {(packNode.x + packNode.width) / static_cast<float>(pack.second->size), (packNode.y + packNode.height) / static_cast<float>(pack.second->size)};
 
 		glyph->scale = this->_info.scale;
 
@@ -176,9 +176,9 @@ namespace rawrbox {
 		return size;
 	}
 
-	rawrbox::TextureAtlas* Font::getAtlasTexture(rawrbox::Glyph* g) const {
+	rawrbox::TexturePack* Font::getPackTexture(rawrbox::Glyph* g) const {
 		if (g == nullptr) return nullptr;
-		return rawrbox::TextEngine::getAtlas(g->atlasID);
+		return rawrbox::TextEngine::getPack(g->packID);
 	}
 
 	void Font::render(const std::string& text, const rawrbox::Vector2f& pos, bool yIsUp, std::function<void(rawrbox::Glyph*, float, float, float, float)> renderGlyph) const {

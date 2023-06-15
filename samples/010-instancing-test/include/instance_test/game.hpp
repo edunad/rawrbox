@@ -3,6 +3,7 @@
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/instanced.hpp>
+#include <rawrbox/render/texture/atlas.hpp>
 #include <rawrbox/render/window.hpp>
 
 #include <memory>

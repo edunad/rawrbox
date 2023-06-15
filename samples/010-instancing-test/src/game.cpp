@@ -43,14 +43,14 @@ namespace instance_test {
 	}
 
 	void Game::loadContent() {
-		std::array<std::string, 1> initialContentFiles = {
-		    "content/textures/instance_test.png",
+		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
+		    std::make_pair<std::string, uint32_t>("content/textures/instance_test.png", 64),
 		};
 
 		for (auto& f : initialContentFiles) {
 			this->_loadingFiles++;
 
-			rawrbox::RESOURCES::loadFileAsync(f, 0, [this]() {
+			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
 				this->_loadingFiles--;
 				if (this->_loadingFiles <= 0) {
 					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
@@ -66,7 +66,6 @@ namespace instance_test {
 		float spacing = 0.85F;
 
 		auto t = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/instance_test.png")->get();
-
 		auto mesh = this->_model->generateCube({0, 0, 0}, {0.5F, 0.5F, 0.5F});
 		mesh.setTexture(t);
 
@@ -79,9 +78,7 @@ namespace instance_test {
 			for (int x = 0.F; x < total; x++) {
 				rawrbox::Matrix4x4 m;
 				m.mtxSRT({1.F, 1.F, 1.F}, {0.F, 0.F, 0.F}, {x * spacing, 0, z * spacing});
-
-				auto shdr = rawrbox::TextureUtils::atlasToShader({128, 128}, 32, dist(prng));
-				this->_model->addInstance({m, rawrbox::Colors::White, shdr});
+				this->_model->addInstance({m, rawrbox::Colors::White, {static_cast<float>(dist(prng)), 0, 0, 0}});
 			}
 		}
 

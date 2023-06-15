@@ -1,12 +1,26 @@
 
 #include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render/texture/atlas.hpp>
+#include <rawrbox/render/texture/gif.hpp>
+#include <rawrbox/render/texture/image.hpp>
 
 namespace rawrbox {
 	// Resource ----
 	ResourceTexture::~ResourceTexture() { this->_texture.reset(); }
 
 	bool ResourceTexture::load(const std::vector<uint8_t>& buffer) {
-		this->_texture = std::make_unique<rawrbox::TextureImage>(this->filePath, buffer);
+		const bool isGIF = this->filePath.extension() == ".gif";
+		if (isGIF) {
+			this->_texture = std::make_unique<rawrbox::TextureGIF>(this->filePath, buffer);
+			return true;
+		}
+
+		if (flags) {
+			this->_texture = std::make_unique<rawrbox::TextureAtlas>(this->filePath, buffer, flags); // Use flags for sprite size shhh
+		} else {
+			this->_texture = std::make_unique<rawrbox::TextureImage>(this->filePath, buffer);
+		}
+
 		return true;
 	}
 
@@ -15,9 +29,6 @@ namespace rawrbox {
 		this->_texture->upload();
 	}
 
-	rawrbox::TextureImage* ResourceTexture::get() const {
-		return this->_texture.get();
-	}
 	// -------
 
 	// Loader ----
@@ -29,6 +40,7 @@ namespace rawrbox {
 		return fileExtention == ".png" ||
 		       fileExtention == ".bmp" ||
 		       fileExtention == ".jpg" ||
+		       fileExtention == ".gif" ||
 		       fileExtention == ".jpeg";
 	}
 	// -------

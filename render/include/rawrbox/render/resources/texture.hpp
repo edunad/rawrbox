@@ -1,11 +1,11 @@
 #pragma once
 
-#include <rawrbox/render/texture/image.hpp>
+#include <rawrbox/render/texture/base.hpp>
 #include <rawrbox/resources/loader.hpp>
 
 namespace rawrbox {
 	class ResourceTexture : public rawrbox::Resource {
-		std::unique_ptr<rawrbox::TextureImage> _texture = nullptr;
+		std::unique_ptr<rawrbox::TextureBase> _texture = nullptr;
 
 	public:
 		ResourceTexture() = default;
@@ -15,7 +15,11 @@ namespace rawrbox {
 		ResourceTexture& operator=(ResourceTexture&&) = delete;
 		~ResourceTexture() override;
 
-		[[nodiscard]] rawrbox::TextureImage* get() const;
+		template <typename T = rawrbox::TextureBase>
+		[[nodiscard]] T* get() const {
+			return dynamic_cast<T*>(this->_texture.get());
+		}
+
 		bool load(const std::vector<uint8_t>& buffer) override;
 		void upload() override;
 	};
