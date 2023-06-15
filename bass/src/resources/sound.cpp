@@ -28,7 +28,7 @@ namespace rawrbox {
 	BASSLoader::BASSLoader() { rawrbox::BASS::initialize(); }
 	BASSLoader::~BASSLoader() { rawrbox::BASS::shutdown(); };
 
-	std::unique_ptr<rawrbox::Resource> BASSLoader::createEntry(uint32_t flags) {
+	std::unique_ptr<rawrbox::Resource> BASSLoader::createEntry() {
 		return std::make_unique<rawrbox::ResourceBASS>();
 	}
 

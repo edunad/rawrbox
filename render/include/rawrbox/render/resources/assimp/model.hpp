@@ -28,7 +28,7 @@ namespace rawrbox {
 		AssimpLoader& operator=(AssimpLoader&&) = delete;
 		~AssimpLoader() override = default;
 
-		std::unique_ptr<rawrbox::Resource> createEntry(uint32_t flags = 0) override;
+		std::unique_ptr<rawrbox::Resource> createEntry() override;
 		bool canLoad(const std::string& fileExtention) override;
 	};
 } // namespace rawrbox

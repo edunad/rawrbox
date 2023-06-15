@@ -23,16 +23,16 @@ const int defaultFrameDelayCentiseconds = 4;
 
 using gif_result = struct gif_result_t {
 	int delay;
-	unsigned char *data;
+	uint8_t *data;
 	struct gif_result_t *next;
 };
 
-unsigned char *stbi_xload(stbi__context *s, int *x, int *y, int *frames, int **delays) {
+uint8_t *stbi_xload(stbi__context *s, int *x, int *y, int *frames, int **delays) {
 	int comp = 0;
-	return reinterpret_cast<unsigned char *>(stbi__load_gif_main(s, delays, x, y, frames, &comp, 4)); // Force 4 channels
+	return reinterpret_cast<uint8_t *>(stbi__load_gif_main(s, delays, x, y, frames, &comp, 4)); // Force 4 channels
 }
 
-unsigned char *stbi_xload_file(char const *filename, int *x, int *y, int *frames, int **delays) {
+uint8_t *stbi_xload_file(char const *filename, int *x, int *y, int *frames, int **delays) {
 	stbi__context s;
 
 	FILE *f = nullptr;
@@ -50,7 +50,7 @@ unsigned char *stbi_xload_file(char const *filename, int *x, int *y, int *frames
 	return ret;
 };
 
-unsigned char *stbi_xload_mem(const unsigned char *buffer, int len, int *x, int *y, int *frames, int **delays) {
+uint8_t *stbi_xload_mem(const uint8_t *buffer, int len, int *x, int *y, int *frames, int **delays) {
 	stbi__context s;
 	stbi__start_mem(&s, buffer, len);
 	return stbi_xload(&s, x, y, frames, delays);

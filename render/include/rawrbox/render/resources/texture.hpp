@@ -33,7 +33,7 @@ namespace rawrbox {
 		TextureLoader& operator=(TextureLoader&&) = delete;
 		~TextureLoader() override = default;
 
-		std::unique_ptr<rawrbox::Resource> createEntry(uint32_t flags = 0) override;
+		std::unique_ptr<rawrbox::Resource> createEntry() override;
 		bool canLoad(const std::string& fileExtention) override;
 	};
 } // namespace rawrbox

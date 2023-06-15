@@ -32,6 +32,6 @@ namespace rawrbox {
 		// -----
 
 		virtual void setFlags(uint32_t flags);
-		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) = 0;
+		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count) = 0;
 	};
 } // namespace rawrbox

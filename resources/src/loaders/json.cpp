@@ -16,7 +16,7 @@ namespace rawrbox {
 	// -------
 
 	// Loader ----
-	std::unique_ptr<rawrbox::Resource> JSONLoader::createEntry(uint32_t flags) {
+	std::unique_ptr<rawrbox::Resource> JSONLoader::createEntry() {
 		return std::make_unique<rawrbox::ResourceJSON>();
 	}
 

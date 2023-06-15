@@ -16,7 +16,7 @@ namespace rawrbox {
 		}
 
 		if (flags) {
-			this->_texture = std::make_unique<rawrbox::TextureAtlas>(this->filePath, buffer, flags); // Use flags for sprite size shhh
+			this->_texture = std::make_unique<rawrbox::TextureAtlas>(this->filePath, buffer, flags); // Use flags for sprite size
 		} else {
 			this->_texture = std::make_unique<rawrbox::TextureImage>(this->filePath, buffer);
 		}
@@ -32,7 +32,7 @@ namespace rawrbox {
 	// -------
 
 	// Loader ----
-	std::unique_ptr<rawrbox::Resource> TextureLoader::createEntry(uint32_t flags) {
+	std::unique_ptr<rawrbox::Resource> TextureLoader::createEntry() {
 		return std::make_unique<rawrbox::ResourceTexture>();
 	}
 
