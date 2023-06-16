@@ -32,7 +32,7 @@ namespace rawrbox {
 	template <typename M = rawrbox::MaterialInstancedUnlit>
 	class InstancedModel : public rawrbox::ModelBase<M> {
 		bgfx::DynamicVertexBufferHandle _dataBuffer = BGFX_INVALID_HANDLE;
-		std::vector<Instance> _instances = {};
+		std::vector<rawrbox::Instance> _instances = {};
 
 		void updateBuffers() override {
 			rawrbox::ModelBase<M>::updateBuffers();
@@ -40,7 +40,10 @@ namespace rawrbox {
 		}
 
 	public:
-		InstancedModel() = default;
+		explicit InstancedModel(size_t instanceSize = 0) {
+			if (instanceSize != 0) this->_instances.reserve(instanceSize);
+		}
+
 		InstancedModel(const InstancedModel&) = delete;
 		InstancedModel(InstancedModel&&) = delete;
 		InstancedModel& operator=(const InstancedModel&) = delete;
@@ -61,12 +64,22 @@ namespace rawrbox {
 
 		virtual void addInstance(const rawrbox::Instance& instance) {
 			this->_instances.push_back(instance);
+			if (this->isUploaded()) this->updateInstance();
 		}
 
-		[[nodiscard]] const rawrbox::Instance& getMesh(size_t i = 0) const {
+		virtual void removeInstance(size_t i = 0) {
+			if (i < 0 || i >= this->_instances.size()) throw std::runtime_error("[RawrBox-InstancedModel] Failed to find instance");
+			this->_instances.erase(this->_instances.begin() + i);
+
+			if (this->isUploaded()) this->updateInstance();
+		}
+
+		[[nodiscard]] const rawrbox::Instance& getInstance(size_t i = 0) const {
 			if (i < 0 || i >= this->_instances.size()) throw std::runtime_error("[RawrBox-InstancedModel] Failed to find instance");
 			return this->_instances[i];
 		}
+
+		std::vector<rawrbox::Instance>& instances() { return this->_instances; }
 
 		void upload(bool dynamic = false) override {
 			rawrbox::ModelBase<M>::upload(dynamic);
