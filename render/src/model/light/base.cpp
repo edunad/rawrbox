@@ -1,6 +1,3 @@
-#pragma once
-
-#include <rawrbox/render/model/light/base.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
 
 namespace rawrbox {
