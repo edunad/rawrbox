@@ -3,7 +3,6 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/model/animation.hpp>
 #include <rawrbox/render/model/base.hpp>
-#include <rawrbox/render/model/light/base.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/skeleton.hpp>
 #include <rawrbox/render/utils/anim.hpp>
@@ -215,11 +214,11 @@ namespace rawrbox {
 				// Update lights ---
 				for (auto& mesh : this->meshes()) {
 					rawrbox::Vector3f meshPos = {mesh->matrix[12], mesh->matrix[13], mesh->matrix[14]};
-					auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle());
+					// auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle()); // TODO
 
 					for (auto light : mesh->lights) {
-						if (light.expired()) continue;
-						light.lock()->setOffsetPos(p);
+						if (light == nullptr) continue;
+						light->setOffsetPos(meshPos);
 					}
 				}
 			}
@@ -271,7 +270,8 @@ namespace rawrbox {
 
 		// --------------
 		// LIGHTS ------
-		virtual void addLight(std::shared_ptr<rawrbox::LightBase> light, const std::string& parentMesh = "") {
+		template <typename T = rawrbox::LightBase>
+		void addLight(T light, const std::string& parentMesh = "") {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				auto parent = this->_meshes.back().get();
 
@@ -283,10 +283,8 @@ namespace rawrbox {
 					if (fnd != this->_meshes.end()) parent = fnd->get();
 				}
 
-				light->setOffsetPos(parent->getPos() + this->getPos());
-				parent->lights.push_back(light);
-
-				rawrbox::LIGHTS::addLight(light);
+				light.setOffsetPos(parent->getPos());
+				parent->lights.push_back(rawrbox::LIGHTS::addLight<T>(light));
 			}
 		}
 		// -----

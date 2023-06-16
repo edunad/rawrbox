@@ -82,7 +82,7 @@ namespace rawrbox {
 		// -----------------
 
 		// LIGHTS ------
-		std::vector<std::weak_ptr<rawrbox::LightBase>> lights = {};
+		std::vector<rawrbox::LightBase*> lights = {};
 		// -----------------
 
 		void* owner = nullptr; // Eeeehhhh

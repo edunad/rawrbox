@@ -16,8 +16,8 @@ namespace rawrbox {
 		LightPoint& operator=(LightPoint&&) = delete;
 		~LightPoint() override = default;
 
-		LightType getType() override { return rawrbox::LightType::LIGHT_POINT; };
-		rawrbox::Matrix4x4 const getDataMatrix() override {
+		[[nodiscard]] const rawrbox::LightType getType() const override { return LightType::LIGHT_POINT; };
+		[[nodiscard]] const rawrbox::Matrix4x4 getDataMatrix() const override {
 			return rawrbox::Matrix4x4({this->_diffuse.r, this->_specular.r, 0.F, static_cast<float>(this->getType()),
 			    this->_diffuse.g, this->_specular.g, 0.F, 0.F,
 			    this->_diffuse.b, this->_specular.b, 0.F, 0.F,

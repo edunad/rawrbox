@@ -39,7 +39,6 @@ namespace rawrbox {
 	void TextureRender::stopRecord() {
 		if (!bgfx::isValid(this->_renderView)) return;
 		rawrbox::CURRENT_VIEW_ID = this->_prevViewId;
-
 		bgfx::touch(this->_prevViewId);
 	}
 

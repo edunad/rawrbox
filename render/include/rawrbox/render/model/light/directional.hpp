@@ -14,8 +14,8 @@ namespace rawrbox {
 		LightDirectional& operator=(LightDirectional&&) = delete;
 		~LightDirectional() override = default;
 
-		LightType getType() override { return LightType::LIGHT_DIR; };
-		const rawrbox::Matrix4x4 getDataMatrix() override {
+		[[nodiscard]] const rawrbox::LightType getType() const override { return LightType::LIGHT_DIR; };
+		[[nodiscard]] const rawrbox::Matrix4x4 getDataMatrix() const override {
 			return rawrbox::Matrix4x4({this->_diffuse.r, this->_specular.r, this->_direction.x, static_cast<float>(this->getType()),
 			    this->_diffuse.g, this->_specular.g, this->_direction.y, 0.F,
 			    this->_diffuse.b, this->_specular.b, this->_direction.z, 0.F,

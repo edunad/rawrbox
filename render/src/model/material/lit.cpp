@@ -1,5 +1,4 @@
 
-#include <rawrbox/render/model/light/base.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/material/lit.hpp>
 
@@ -61,10 +60,10 @@ namespace rawrbox {
 		std::vector<std::array<float, 4>> lightPos(lightCount);
 
 		for (size_t i = 0; i < lightCount; i++) {
-			auto light = rawrbox::LIGHTS::getLight(i);
+			auto& light = rawrbox::LIGHTS::getLight(i);
 
-			lightPos[i] = light->getPosMatrix();
-			lightData[i] = light->getDataMatrix();
+			lightPos[i] = light.getPosMatrix();
+			lightData[i] = light.getDataMatrix();
 		}
 
 		if (lightPos.size() != lightData.size()) throw std::runtime_error("[RawrBox-MODEL] LightPos and LightData do not match!");
