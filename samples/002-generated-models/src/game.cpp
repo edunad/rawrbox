@@ -166,7 +166,17 @@ namespace model {
 		// -----
 
 		// Spline test ----
-		this->_spline->setPoints({{-2.F, 0, 2}, {-2.F, 0, 2}, {2.F, 0, 2}, {2.F, 0, 2}});
+
+		{
+			auto mesh = this->_sprite->generateCube({0, 0, 0}, {0.2F, 0.2F, 0.2F});
+			mesh.setTexture(texture);
+			this->_spline->setTemplate(mesh);
+
+			// Curve example
+			this->_spline->setPoints({0, 0, 0}, {0, 0, 1.5F}, {-1.5F, 1.5F, 3.F}, {-3.F, 3.F, 3.F});
+			this->_spline->setPos({0, 0, 1.F});
+		}
+
 		// -----
 
 		// Text test ----

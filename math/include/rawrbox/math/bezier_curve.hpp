@@ -16,18 +16,15 @@ namespace rawrbox {
 		OrientedPoint(rawrbox::Vector3f position, rawrbox::Vector4f rotation, float vCoordinate = 0) : position(position), rotation(rotation), vCoordinate(vCoordinate) {}
 
 		rawrbox::Vector3f LocalToWorld(const rawrbox::Vector3f& point) {
-			// return position + rotation * point;
-			return {};
+			return position + rotation * point;
 		}
 
 		rawrbox::Vector3f WorldToLocal(const rawrbox::Vector3f& point) {
-			// return rotation.inverse() * (point - position);
-			return {};
+			return rotation.inverse() * (point - position);
 		}
 
 		rawrbox::Vector3f LocalToWorldDirection(const rawrbox::Vector3f& dir) {
-			// return rotation * dir;
-			return {};
+			return rotation * dir;
 		}
 	};
 
@@ -35,8 +32,6 @@ namespace rawrbox {
 	protected:
 		std::vector<float> _sampleLenghts = {};
 		std::vector<rawrbox::Vector3f> _points = {};
-
-		float _step = 10.0F;
 
 		void generateSamples() {
 			this->_sampleLenghts.clear();
@@ -47,11 +42,11 @@ namespace rawrbox {
 			rawrbox::Vector3f pt = {};
 			float total = 0;
 
-			float step = 1.0F / this->_step;
+			float step = 1.0F / 10.F;
 			for (float f = step; f < 1.0F; f += step) {
-
 				pt = this->getPoint(f);
 				total += (pt - prevPoint).sqrMagnitude();
+
 				this->_sampleLenghts.push_back(total);
 			}
 
@@ -153,11 +148,23 @@ namespace rawrbox {
 		}
 
 		rawrbox::OrientedPoint getOrientedPoint(float t) {
-			rawrbox::Vector3f tangent, normal;
-			rawrbox::Vector4f orientation;
+			rawrbox::Vector3f tangent = {};
+			rawrbox::Vector3f normal = {};
+			rawrbox::Vector4f orientation = {};
 
 			Vector3 point = this->getPoint(t, tangent, normal, orientation);
 			return {point, orientation, rawrbox::MathUtils::sample(this->_sampleLenghts, t)};
+		}
+
+		std::vector<rawrbox::OrientedPoint> generatePath(float subDivisions) {
+			std::vector<rawrbox::OrientedPoint> paths = {};
+
+			float step = 1.0F / subDivisions;
+			for (float f = 0; f < 1; f += step) {
+				paths.push_back(this->getOrientedPoint(f));
+			}
+
+			return paths;
 		}
 	};
 } // namespace rawrbox

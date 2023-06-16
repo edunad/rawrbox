@@ -195,7 +195,7 @@ namespace rawrbox {
 
 		VecType inverse() {
 			float lengthSq = this->lengthSquared();
-			if (lengthSq == 0.0F) return this;
+			if (lengthSq == 0.0F) return *this;
 
 			float i = 1.0F / lengthSq;
 			return VecType(this->xyz() * -i, this->w * i);
@@ -337,7 +337,7 @@ namespace rawrbox {
 
 		VecType operator-() const { return VecType(-x, -y, -z, -w); }
 
-		VecType operator*(const Vector3_t<NumberType>& other) const {
+		Vector3_t<NumberType> operator*(const Vector3_t<NumberType>& other) const {
 			float num = this->x * 2.F;
 			float num2 = this->y * 2.F;
 			float num3 = this->z * 2.F;
@@ -357,11 +357,6 @@ namespace rawrbox {
 			result.z = (num8 - num11) * other.x + (num9 + num10) * other.y + (1.F - (num4 + num5)) * other.z;
 			return result;
 		}
-
-		VecType operator+(const Vector3_t<NumberType>& other) const {
-			return {};
-		}
-
 		// -------
 	};
 
