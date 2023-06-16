@@ -119,27 +119,22 @@ namespace rawrbox {
 
 		void loadLights(const rawrbox::AssimpImporter& model) {
 			for (auto& assimpLights : model.lights) {
-				std::shared_ptr<rawrbox::LightBase> light = nullptr;
-
 				switch (assimpLights.type) {
-					case LightType::LIGHT_UNKNOWN: break;
 					case LightType::LIGHT_POINT:
-						light = std::make_shared<rawrbox::LightPoint>(assimpLights.pos, assimpLights.diffuse, assimpLights.specular, assimpLights.attenuationConstant, assimpLights.attenuationLinear, assimpLights.attenuationQuadratic);
+						this->template addLight<rawrbox::LightPoint>({assimpLights.pos, assimpLights.diffuse, assimpLights.specular, assimpLights.attenuationConstant, assimpLights.attenuationLinear, assimpLights.attenuationQuadratic}, assimpLights.parentID);
 						break;
 					case LightType::LIGHT_SPOT:
-						light = std::make_shared<rawrbox::LightSpot>(assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.specular, assimpLights.angleInnerCone, assimpLights.angleOuterCone, assimpLights.attenuationConstant, assimpLights.attenuationLinear, assimpLights.attenuationQuadratic);
+						this->template addLight<rawrbox::LightSpot>({assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.specular, assimpLights.angleInnerCone, assimpLights.angleOuterCone, assimpLights.attenuationConstant, assimpLights.attenuationLinear, assimpLights.attenuationQuadratic}, assimpLights.parentID);
 						break;
 					case LightType::LIGHT_DIR:
-						light = std::make_shared<rawrbox::LightDirectional>(assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.specular);
+						this->template addLight<rawrbox::LightDirectional>({assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.specular}, assimpLights.parentID);
+						break;
+
+					default:
+					case LightType::LIGHT_UNKNOWN:
+						fmt::print("[RawrBox-Assimp] Failed to create unknown light '{}'\n", assimpLights.name);
 						break;
 				}
-
-				if (light == nullptr) {
-					fmt::print("[RawrBox-Assimp] Failed to create unknown light '{}'\n", assimpLights.name);
-					continue;
-				}
-
-				this->addLight(light, assimpLights.parentID);
 			}
 		}
 

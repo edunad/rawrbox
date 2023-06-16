@@ -1,13 +1,15 @@
 #pragma once
 
+#include <rawrbox/render/model/light/base.hpp>
+#include <rawrbox/render/static.hpp>
+
 #include <memory>
 #include <vector>
 
 namespace rawrbox {
-	class LightBase;
 	class LIGHTS {
 	protected:
-		static std::vector<std::shared_ptr<rawrbox::LightBase>> _lights;
+		static std::vector<std::unique_ptr<rawrbox::LightBase>> _lights;
 
 	public:
 		static bool fullbright;
@@ -15,13 +17,23 @@ namespace rawrbox {
 		static void shutdown();
 		static void setEnabled(bool fb);
 
-		// Light utils ----
-		static void addLight(std::shared_ptr<rawrbox::LightBase> light);
-		static void removeLight(std::shared_ptr<rawrbox::LightBase> light);
+		// Light ----
+		template <typename T = rawrbox::LightBase>
+		static rawrbox::LightBase* addLight(T light) {
+			if (_lights.size() >= rawrbox::MAX_LIGHTS) {
+				fmt::print("[RawrBox-LIGHTS] Could not add light, max lights limit hit!\n");
+				return nullptr;
+			}
+
+			light.setId(++rawrbox::LIGHT_ID);
+			return _lights.emplace_back(std::make_unique<T>(light)).get();
+		}
+
 		static void removeLight(rawrbox::LightBase* light);
+		// ---------
 
-		static std::shared_ptr<rawrbox::LightBase> getLight(size_t indx);
-
+		// Light utils ----
+		static const rawrbox::LightBase& getLight(size_t indx);
 		static size_t count();
 		// ---------
 	};
