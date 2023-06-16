@@ -45,6 +45,10 @@ namespace rawrbox {
 			return static_cast<NumberType>(std::sqrt(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2) + std::pow(w, 2)));
 		}
 
+		NumberType lengthSquared() const {
+			return static_cast<NumberType>(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2) + std::pow(w, 2));
+		}
+
 		VecType normalized() const {
 			return (*this) / length();
 		}
@@ -126,6 +130,77 @@ namespace rawrbox {
 			return ret;
 		}
 
+		static Vector4_t<NumberType> lookRotation(const Vector3_t<NumberType>& lookAt, const Vector3_t<NumberType>& upDirection) {
+			auto forward = lookAt.normalized();
+			auto right = upDirection.cross(forward).normalized();
+			auto up = forward.cross(right);
+
+			auto m00 = right.x;
+			auto m01 = right.y;
+			auto m02 = right.z;
+			auto m10 = up.x;
+			auto m11 = up.y;
+			auto m12 = up.z;
+			auto m20 = forward.x;
+			auto m21 = forward.y;
+			auto m22 = forward.z;
+
+			float num8 = (m00 + m11) + m22;
+			rawrbox::Vector4_t<NumberType> ret = {};
+
+			if (num8 > 0.F) {
+				auto num = static_cast<float>(std::sqrt(num8 + 1.F));
+
+				ret.w = num * 0.5F;
+				num = 0.5F / num;
+
+				ret.x = (m12 - m21) * num;
+				ret.y = (m20 - m02) * num;
+				ret.z = (m01 - m10) * num;
+				return ret;
+			}
+
+			if ((m00 >= m11) && (m00 >= m22)) {
+				auto num7 = static_cast<float>(std::sqrt(((1.F + m00) - m11) - m22));
+				auto num4 = 0.5F / num7;
+
+				ret.x = 0.5F * num7;
+				ret.y = (m01 + m10) * num4;
+				ret.z = (m02 + m20) * num4;
+				ret.w = (m12 - m21) * num4;
+				return ret;
+			}
+
+			if (m11 > m22) {
+				auto num6 = static_cast<float>(std::sqrt(((1.F + m11) - m00) - m22));
+				auto num3 = 0.5F / num6;
+
+				ret.x = (m10 + m01) * num3;
+				ret.y = 0.5F * num6;
+				ret.z = (m21 + m12) * num3;
+				ret.w = (m20 - m02) * num3;
+				return ret;
+			}
+
+			auto num5 = static_cast<float>(std::sqrt(((1.F + m22) - m00) - m11));
+			auto num2 = 0.5F / num5;
+
+			ret.x = (m20 + m02) * num2;
+			ret.y = (m21 + m12) * num2;
+			ret.z = 0.5F * num5;
+			ret.w = (m01 - m10) * num2;
+
+			return ret;
+		}
+
+		VecType inverse() {
+			float lengthSq = this->lengthSquared();
+			if (lengthSq == 0.0F) return this;
+
+			float i = 1.0F / lengthSq;
+			return VecType(this->xyz() * -i, this->w * i);
+		}
+
 		VecType interpolate(const VecType& pEnd, float pFactor) {
 			// calc cosine theta
 			float cosom = x * pEnd.x + y * pEnd.y + z * pEnd.z + w * pEnd.w;
@@ -183,6 +258,7 @@ namespace rawrbox {
 			w = w - other;
 			return *this;
 		}
+
 		VecType& operator+=(NumberType other) {
 			x = x + other;
 			y = y + other;
@@ -190,6 +266,7 @@ namespace rawrbox {
 			w = w + other;
 			return *this;
 		}
+
 		VecType& operator*=(NumberType other) {
 			x = x * other;
 			y = y * other;
@@ -197,6 +274,7 @@ namespace rawrbox {
 			w = w * other;
 			return *this;
 		}
+
 		VecType& operator/=(NumberType other) {
 			x = x / other;
 			y = y / other;
@@ -215,8 +293,8 @@ namespace rawrbox {
 		// vector typed operators
 		VecType operator-(const VecType& other) const { return VecType(x - other.x, y - other.y, z - other.z, w - other.w); }
 		VecType operator+(const VecType& other) const { return VecType(x + other.x, y + other.y, z + other.z, w + other.w); }
-		VecType operator*(const VecType& other) const { return VecType(x * other.x, y * other.y, z * other.z, w * other.w); }
 		VecType operator/(const VecType& other) const { return VecType(x / other.x, y / other.y, z / other.z, w / other.w); }
+		VecType operator*(const VecType& other) const { return VecType(this->w * other.x + this->x * other.w + this->y * other.z - this->z * other.y, this->w * other.y + this->y * other.w + this->z * other.x - this->x * other.z, this->w * other.z + this->z * other.w + this->x * other.y - this->y * other.x, this->w * other.w - this->x * other.x - this->y * other.y - this->z * other.z); }
 
 		VecType& operator-=(const VecType& other) {
 			x = x - other.x;
@@ -225,6 +303,7 @@ namespace rawrbox {
 			w = w - other.w;
 			return *this;
 		}
+
 		VecType& operator+=(const VecType& other) {
 			x = x + other.x;
 			y = y + other.y;
@@ -232,13 +311,15 @@ namespace rawrbox {
 			w = w + other.w;
 			return *this;
 		}
-		VecType& operator*=(const VecType& other) {
-			x = x * other.x;
-			y = y * other.y;
-			z = z * other.z;
-			w = w * other.w;
+
+		VecType& operator*=(const VecType& other) const {
+			x = this->w * other.x + this->x * other.w + this->y * other.z - this->z * other.y;
+			y = this->w * other.y + this->y * other.w + this->z * other.x - this->x * other.z;
+			z = this->w * other.z + this->z * other.w + this->x * other.y - this->y * other.x;
+			w = this->w * other.w - this->x * other.x - this->y * other.y - this->z * other.z;
 			return *this;
 		}
+
 		VecType& operator/=(const VecType& other) {
 			x = x / other.x;
 			y = y / other.y;
@@ -255,6 +336,32 @@ namespace rawrbox {
 		bool operator>=(const VecType& other) const { return x >= other.x && y >= other.y && z >= other.z && w >= other.w; }
 
 		VecType operator-() const { return VecType(-x, -y, -z, -w); }
+
+		VecType operator*(const Vector3_t<NumberType>& other) const {
+			float num = this->x * 2.F;
+			float num2 = this->y * 2.F;
+			float num3 = this->z * 2.F;
+			float num4 = this->x * num;
+			float num5 = this->y * num2;
+			float num6 = this->z * num3;
+			float num7 = this->x * num2;
+			float num8 = this->x * num3;
+			float num9 = this->y * num3;
+			float num10 = this->w * num;
+			float num11 = this->w * num2;
+			float num12 = this->w * num3;
+
+			Vector3_t<NumberType> result = {};
+			result.x = (1.F - (num5 + num6)) * other.x + (num7 - num12) * other.y + (num8 + num11) * other.z;
+			result.y = (num7 + num12) * other.x + (1.F - (num4 + num6)) * other.y + (num9 - num10) * other.z;
+			result.z = (num8 - num11) * other.x + (num9 + num10) * other.y + (1.F - (num4 + num5)) * other.z;
+			return result;
+		}
+
+		VecType operator+(const Vector3_t<NumberType>& other) const {
+			return {};
+		}
+
 		// -------
 	};
 

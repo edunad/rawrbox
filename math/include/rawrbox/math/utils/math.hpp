@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cmath>
+#include <vector>
 
 namespace rawrbox {
 	class MathUtils {
@@ -30,6 +31,21 @@ namespace rawrbox {
 
 		static inline float lerp(float a, float b, float lerpFactor) {
 			return ((1.F - lerpFactor) * a) + (lerpFactor * b);
+		}
+
+		static inline float sample(std::vector<float> samples, float t) {
+			int count = samples.size();
+			if (count == 0) return 0;
+			if (count == 1) return samples[0];
+
+			float f = t * (count - 1);
+			int idLower = std::floor<int>(f);
+			int idUpper = std::floor<int>(f + 1);
+
+			if (idUpper >= count) return samples[count - 1];
+			if (idLower < 0) return samples[0];
+
+			return std::lerp<float>(samples[idLower], samples[idUpper], f - idLower);
 		}
 
 		// https://gist.github.com/itsmrpeck/be41d72e9d4c72d2236de687f6f53974

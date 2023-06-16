@@ -165,6 +165,10 @@ namespace model {
 		}
 		// -----
 
+		// Spline test ----
+		this->_spline->setPoints({{-2.F, 0, 2}, {-2.F, 0, 2}, {2.F, 0, 2}, {2.F, 0, 2}});
+		// -----
+
 		// Text test ----
 		this->_text->addText(*this->_font, "PLANE", {2.F, 0.5F, 0});
 		this->_text->addText(*this->_font, "CUBE", {-2.F, 0.55F, 0});
@@ -176,12 +180,12 @@ namespace model {
 		this->_text->addText(*this->_font, "CYLINDER", {-2.F, 1.2F, -2});
 		this->_text->addText(*this->_font, "CONE", {-3.F, 1.2F, -2});
 		this->_text->addText(*this->_font, "PYRAMID", {-4.F, 1.2F, -2});
-
 		// ------
 
 		this->_model->upload();
 		this->_displacement->upload();
 		this->_sprite->upload();
+		this->_spline->upload();
 		this->_text->upload();
 	}
 
@@ -215,11 +219,12 @@ namespace model {
 	}
 
 	void Game::drawWorld() {
-		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr) return;
+		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr || this->_spline == nullptr) return;
 
 		this->_model->draw();
 		this->_displacement->draw();
 		this->_sprite->draw();
+		this->_spline->draw();
 		this->_text->draw();
 	}
 
