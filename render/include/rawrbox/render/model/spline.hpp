@@ -4,77 +4,81 @@
 #include <rawrbox/render/model/base.hpp>
 
 namespace rawrbox {
-	template <typename M = rawrbox::MaterialBase>
-	class Spline : public rawrbox::ModelBase<M> {
-		rawrbox::BezierCurve _curve = {};
-		std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>> _template = nullptr;
+	struct Mesh2DShape {
+		std::vector<rawrbox::Vector2f> position = {};
+		std::vector<rawrbox::Vector2f> normal = {};
+		std::vector<float> u = {};
+
+		Mesh2DShape() = default;
 
 		std::vector<int> getLineSegments() {
 			std::vector<int> segments = {};
-			if (this->_template == nullptr) return segments;
-			for (size_t i = 0; i < this->_template->vertices.size(); i++) {
+			for (size_t i = 0; i < this->position.size() - 1; i++) {
 				segments.push_back(i);
 				segments.push_back(i + 1);
 			}
 
 			return segments;
 		}
+	};
+
+	template <typename M = rawrbox::MaterialBase>
+	class Spline : public rawrbox::ModelBase<M> {
+		rawrbox::BezierCurve _curve = {};
+		std::unique_ptr<rawrbox::Mesh2DShape> _shape = nullptr;
 
 		void generateMesh() {
-			if (this->_template == nullptr) throw std::runtime_error("[RawrBox-Spline] Missing mesh template!");
+			if (this->_shape == nullptr) throw std::runtime_error("[RawrBox-Spline] Missing mesh shape!");
 
-			auto paths = this->_curve.generatePath(5.F);
-			if (paths.empty()) return;
+			auto path = this->_curve.generatePath(10.F);
+			if (path.empty()) return;
 
-			auto shapeSegments = this->getLineSegments();
-			int vertsInShape = this->_template->vertices.size();
+			int vertsInShape = this->_shape->position.size();
+			std::vector<int> shapeSegments = this->_shape->getLineSegments();
 
-			int segments = paths.size() - 1;
-			int edgeLoops = paths.size();
+			int segments = path.size() - 1;
+			int edgeLoops = path.size();
 			int vertCount = vertsInShape * edgeLoops;
 			int triCount = shapeSegments.size() * segments * 2;
 			int triIndexCount = triCount * 3;
 
-			std::vector<uint16_t> indices(triIndexCount);
+			std::vector<uint16_t> triangleIndices(triIndexCount);
 			std::vector<typename M::vertexBufferType> buff(vertCount);
 
 			// Generate all of the vertices and normals
-			for (int i = 0; i < paths.size(); i++) {
+			for (int i = 0; i < path.size(); i++) {
 				int offset = i * vertsInShape;
 				for (int j = 0; j < vertsInShape; j++) {
 					int id = offset + j;
-					auto vertex = this->_template->vertices[j];
+
+					auto pos = rawrbox::Vector3f(this->_shape->position[j].x, this->_shape->position[j].y, 0.F);
+					auto norm = rawrbox::Vector3f(this->_shape->normal[j].x, this->_shape->normal[j].y, 0.F);
+					auto uv = rawrbox::Vector2f(this->_shape->u[j], path[i].vCoordinate);
 
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
-						auto normal = paths[i].LocalToWorldDirection(vertex.normals[j]);
-						buff[id] = rawrbox::VertexLitData(paths[i].LocalToWorld({vertex.position[0], vertex.position[1], vertex.position[2]}), {vertex.uv[0], paths[i].vCoordinate}, {rawrbox::PackUtils::packNormal(normal.x, normal.y, normal.z), 0}, rawrbox::Colors::White);
+						buff[id] = rawrbox::VertexLitData(path[i].LocalToWorld(pos), uv, {rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z), 0}, rawrbox::Colors::White);
 					} else {
-						buff[id] = rawrbox::VertexData(paths[i].LocalToWorld({vertex.position[0], vertex.position[1], vertex.position[2]}), {vertex.uv[0], paths[i].vCoordinate}, rawrbox::Colors::White);
+						buff[id] = rawrbox::VertexData(path[i].LocalToWorld(pos), uv, rawrbox::Colors::White);
 					}
-
-					/*vertices[id] = paths[i].LocalToWorld(vertex.position);
-					// normals[id] = paths[i].LocalToWorldDirection(shape.normals[j]);
-					uvs[id] = rawrbox::Vector2f();*/
 				}
 			}
 
-			// Generate all of the triangles
 			int ti = 0;
 			for (int i = 0; i < segments; i++) {
 				int offset = i * vertsInShape;
 				for (int l = 0; l < shapeSegments.size(); l += 2) {
 					int a = offset + shapeSegments[l];
 					int b = offset + shapeSegments[l] + vertsInShape;
-					int c = offset + shapeSegments[l + 1];
-					int d = offset + shapeSegments[l + 1] + vertsInShape;
+					int c = offset + shapeSegments[l + 1] + vertsInShape;
+					int d = offset + shapeSegments[l + 1];
 
-					indices[ti++] = a; // 0
-					indices[ti++] = b; // 1
-					indices[ti++] = c; // 2
+					triangleIndices[ti++] = a; // 0
+					triangleIndices[ti++] = b; // 1
+					triangleIndices[ti++] = c; // 2
 
-					indices[ti++] = a; // 0
-					indices[ti++] = d; // 3
-					indices[ti++] = b; // 1
+					triangleIndices[ti++] = d; // 3
+					triangleIndices[ti++] = c; // 2
+					triangleIndices[ti++] = a; // 0
 				}
 			}
 
@@ -86,7 +90,7 @@ namespace rawrbox {
 			this->_mesh->totalIndex = triIndexCount;
 
 			this->_mesh->vertices.insert(this->_mesh->vertices.end(), buff.begin(), buff.end());
-			this->_mesh->indices.insert(this->_mesh->indices.end(), indices.begin(), indices.end());
+			this->_mesh->indices.insert(this->_mesh->indices.end(), triangleIndices.begin(), triangleIndices.end());
 		};
 
 	public:
@@ -97,12 +101,12 @@ namespace rawrbox {
 		Spline& operator=(Spline&&) = delete;
 		~Spline() override = default;
 
-		virtual void setTemplate(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
-			if (mesh.empty()) throw std::runtime_error("[RawrBox-Spline] Invalid mesh! Missing vertices / indices!");
+		virtual void setExtrudeVerts(rawrbox::Mesh2DShape shape) {
+			this->_shape = std::make_unique<rawrbox::Mesh2DShape>(shape);
+		}
 
-			this->_template = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh);
-			this->_mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh); // Copy over settings, but we remove the vertices anyways
-			this->_mesh->clear();
+		virtual void setTexture(rawrbox::TextureBase* texture) {
+			this->_mesh->setTexture(texture);
 		}
 
 		virtual void setPoints(const rawrbox::Vector3f& p1, const rawrbox::Vector3f& p2, const rawrbox::Vector3f& p3, const rawrbox::Vector3f& p4) {
@@ -112,7 +116,7 @@ namespace rawrbox {
 
 		void draw() override {
 			ModelBase<M>::draw();
-			this->_material->process(*this->_mesh); // Set atlas
+			this->_material->process(*this->_mesh);
 
 			if (this->isDynamicBuffer()) {
 				bgfx::setVertexBuffer(0, this->_vbdh);
@@ -123,7 +127,8 @@ namespace rawrbox {
 			}
 
 			bgfx::setTransform((this->getMatrix()).data());
-			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_CULL_CW, 0);
+			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS, 0);
+
 			this->_material->postProcess();
 		}
 	};

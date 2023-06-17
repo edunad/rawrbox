@@ -45,13 +45,13 @@ namespace rawrbox {
 			float step = 1.0F / 10.F;
 			for (float f = step; f < 1.0F; f += step) {
 				pt = this->getPoint(f);
-				total += (pt - prevPoint).sqrMagnitude();
+				total += (pt - prevPoint).length();
 
 				this->_sampleLenghts.push_back(total);
 			}
 
 			pt = this->getPoint(1);
-			this->_sampleLenghts.push_back(total + (pt - prevPoint).sqrMagnitude());
+			this->_sampleLenghts.push_back(total + (pt - prevPoint).length());
 		}
 
 	public:
@@ -67,24 +67,24 @@ namespace rawrbox {
 
 		[[nodiscard]] const std::vector<rawrbox::Vector3f>& getPoints() const { return this->_points; }
 
-		rawrbox::Vector3 getNormal(float t, Vector3 up) {
+		rawrbox::Vector3f getNormal(float t, Vector3 up) {
 			return this->calculateNormal(this->getTangent(t), up);
 		}
 
-		rawrbox::Vector3 getTangent(float t) {
+		rawrbox::Vector3f getTangent(float t) {
 			float t2 = t * t;
-			float it = (1 - t);
+			float it = (1.F - t);
 			float it2 = it * it;
 
 			return this->calculateTangent(t, t2, it2);
 		}
 
-		rawrbox::Vector3 calculateNormal(Vector3 tangent, Vector3 up) {
-			Vector3 binormal = up.cross(tangent);
+		rawrbox::Vector3f calculateNormal(rawrbox::Vector3f tangent, rawrbox::Vector3f up) {
+			rawrbox::Vector3f binormal = up.cross(tangent);
 			return tangent.cross(binormal);
 		}
 
-		rawrbox::Vector3 calculateTangent(float t, float t2, float it2) {
+		rawrbox::Vector3f calculateTangent(float t, float t2, float it2) {
 			return (this->_points[0] * -it2 +
 				this->_points[1] * (t * (3 * t - 4) + 1) +
 				this->_points[2] * (-3 * t2 + t * 2) +
@@ -92,17 +92,17 @@ namespace rawrbox {
 			    .normalized();
 		}
 
-		rawrbox::Vector3 calculatePoint(float t, float t2, float t3, float it, float it2, float it3) {
+		rawrbox::Vector3f calculatePoint(float t, float t2, float t3, float it, float it2, float it3) {
 			return this->_points[0] * (it3) +
 			       this->_points[1] * (3 * it2 * t) +
 			       this->_points[2] * (3 * it * t2) +
 			       this->_points[3] * t3;
 		}
 
-		rawrbox::Vector3 getPoint(float t, rawrbox::Vector3& tangent, rawrbox::Vector3& normal, rawrbox::Vector4f& orientation) {
+		rawrbox::Vector3f getPoint(float t, rawrbox::Vector3f& tangent, rawrbox::Vector3f& normal, rawrbox::Vector4f& orientation) {
 			float t2 = t * t;
 			float t3 = t2 * t;
-			float it = (1 - t);
+			float it = (1.F - t);
 			float it2 = it * it;
 			float it3 = it * it * it;
 
@@ -113,7 +113,7 @@ namespace rawrbox {
 			return this->calculatePoint(t, t2, t3, it, it2, it3);
 		}
 
-		rawrbox::Vector3 getPoint(float t, rawrbox::Vector3& tangent, rawrbox::Vector3& normal) {
+		rawrbox::Vector3f getPoint(float t, rawrbox::Vector3f& tangent, rawrbox::Vector3f& normal) {
 			float t2 = t * t;
 			float t3 = t2 * t;
 			float it = (1 - t);
@@ -126,7 +126,7 @@ namespace rawrbox {
 			return this->calculatePoint(t, t2, t3, it, it2, it3);
 		}
 
-		rawrbox::Vector3 getPoint(float t, rawrbox::Vector3& tangent) {
+		rawrbox::Vector3f getPoint(float t, rawrbox::Vector3f& tangent) {
 			float t2 = t * t;
 			float t3 = t2 * t;
 			float it = (1 - t);
@@ -137,7 +137,7 @@ namespace rawrbox {
 			return this->calculatePoint(t, t2, t3, it, it2, it3);
 		}
 
-		rawrbox::Vector3 getPoint(float t) {
+		rawrbox::Vector3f getPoint(float t) {
 			float t2 = t * t;
 			float t3 = t2 * t;
 			float it = (1 - t);
@@ -164,6 +164,7 @@ namespace rawrbox {
 				paths.push_back(this->getOrientedPoint(f));
 			}
 
+			paths.push_back(this->getOrientedPoint(1));
 			return paths;
 		}
 	};

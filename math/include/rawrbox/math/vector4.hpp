@@ -28,6 +28,7 @@ namespace rawrbox {
 
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1, 1); }
+		[[nodiscard]] const int size() const { return 4; }
 
 		[[nodiscard]] Vector3_t<NumberType> xyz() const { return Vector3_t<NumberType>(x, y, z); }
 		[[nodiscard]] Vector3_t<NumberType> yxz() const { return Vector3_t<NumberType>(y, x, z); }
@@ -149,7 +150,7 @@ namespace rawrbox {
 			rawrbox::Vector4_t<NumberType> ret = {};
 
 			if (num8 > 0.F) {
-				auto num = static_cast<float>(std::sqrt(num8 + 1.F));
+				auto num = std::sqrt(num8 + 1.F);
 
 				ret.w = num * 0.5F;
 				num = 0.5F / num;
@@ -161,7 +162,7 @@ namespace rawrbox {
 			}
 
 			if ((m00 >= m11) && (m00 >= m22)) {
-				auto num7 = static_cast<float>(std::sqrt(((1.F + m00) - m11) - m22));
+				auto num7 = std::sqrt(((1.F + m00) - m11) - m22);
 				auto num4 = 0.5F / num7;
 
 				ret.x = 0.5F * num7;
@@ -172,7 +173,7 @@ namespace rawrbox {
 			}
 
 			if (m11 > m22) {
-				auto num6 = static_cast<float>(std::sqrt(((1.F + m11) - m00) - m22));
+				auto num6 = std::sqrt(((1.F + m11) - m00) - m22);
 				auto num3 = 0.5F / num6;
 
 				ret.x = (m10 + m01) * num3;
@@ -182,7 +183,7 @@ namespace rawrbox {
 				return ret;
 			}
 
-			auto num5 = static_cast<float>(std::sqrt(((1.F + m22) - m00) - m11));
+			auto num5 = std::sqrt(((1.F + m22) - m00) - m11);
 			auto num2 = 0.5F / num5;
 
 			ret.x = (m20 + m02) * num2;

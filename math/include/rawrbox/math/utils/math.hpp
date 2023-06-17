@@ -33,14 +33,14 @@ namespace rawrbox {
 			return ((1.F - lerpFactor) * a) + (lerpFactor * b);
 		}
 
-		static inline float sample(std::vector<float> samples, float t) {
+		static inline float sample(const std::vector<float>& samples, float t) {
 			int count = samples.size();
 			if (count == 0) return 0;
 			if (count == 1) return samples[0];
 
 			float f = t * (count - 1);
-			int idLower = std::floor<int>(f);
-			int idUpper = std::floor<int>(f + 1);
+			int idLower = static_cast<int>(std::floor(f));
+			int idUpper = static_cast<int>(std::floor(f + 1));
 
 			if (idUpper >= count) return samples[count - 1];
 			if (idLower < 0) return samples[0];

@@ -617,7 +617,7 @@ namespace rawrbox {
 			}
 		} else {
 			// Fallback
-			fmt::print("[RawrBox-Assimp] Failed to load '{}'\n", this->fileName.generic_string());
+			fmt::print("[RawrBox-Assimp] Failed to load '{}'\n  └── Loading fallback model!\n", this->fileName.generic_string());
 			this->internalLoad(aiImportFile("./content/models/error.gltf", this->assimpFlags), true);
 		}
 	}

@@ -14,13 +14,13 @@
 namespace rawrbox {
 	// NOLINTBEGIN(*)
 	struct VertexData {
-		std::array<float, 3> position = {0, 0, 0};
-		std::array<float, 2> uv = {0, 0};
+		rawrbox::Vector3f position = {};
+		rawrbox::Vector2f uv = {};
 		uint32_t abgr = 0xFFFFFFFF;
 
 		VertexData() = default;
 		explicit VertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos.data()), uv(_uv.data()), abgr(cl.pack()) {}
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos), uv(_uv), abgr(cl.pack()) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
@@ -34,13 +34,14 @@ namespace rawrbox {
 	};
 
 	struct VertexBlendData { // Used for particles
-		std::array<float, 3> position = {0, 0, 0};
-		std::array<float, 4> uv = {0, 0, 0, 0};
+		rawrbox::Vector3f position = {};
+		rawrbox::Vector4f uv = {};
+
 		uint32_t abgr = 0xFFFFFFFF;
 
 		VertexBlendData() = default;
 		explicit VertexBlendData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos.data()), uv(_uv.data()), abgr(cl.pack()) {}
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos), uv(_uv), abgr(cl.pack()) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;

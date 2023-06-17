@@ -185,10 +185,10 @@ namespace rawrbox {
 				auto uv = rawrbox::TextureUtils::atlasToUV(atlasSize, spriteSize, p.texture);
 				typename M::vertexBufferType* vertex = &outVert[index * 4];
 
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir - vdir, {uv.x, uv.w, blend}, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir + vdir, {uv.z, uv.y, blend}, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir + vdir, {uv.x, uv.y, blend}, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir - vdir, {uv.z, uv.w, blend}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir - vdir, {uv.x, uv.w, blend, 0.F}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir + vdir, {uv.z, uv.y, blend, 0.F}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir + vdir, {uv.x, uv.y, blend, 0.F}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir - vdir, {uv.z, uv.w, blend, 0.F}, color));
 
 				++index;
 			}

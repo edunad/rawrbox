@@ -28,6 +28,7 @@ namespace rawrbox {
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1); }
 		static VecType up() { return VecType(0, 1, 0); }
+		[[nodiscard]] const int size() const { return 3; }
 
 		[[nodiscard]] Vector3_t<NumberType> xyz() const { return Vector3_t<NumberType>(x, y, z); }
 		[[nodiscard]] Vector3_t<NumberType> yxz() const { return Vector3_t<NumberType>(y, x, z); }
