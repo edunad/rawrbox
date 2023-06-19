@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/render/particles/emitter.hpp>
+#include <rawrbox/render/texture/atlas.hpp>
 
 #define BGFX_STATE_DEFAULT_PARTICLE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_CULL_CW | BGFX_STATE_BLEND_NORMAL)
 
@@ -14,14 +15,13 @@ namespace rawrbox {
 		// ---
 
 		// TEXTURE ---
-		rawrbox::TextureBase* _atlas = nullptr;
+		rawrbox::TextureAtlas* _atlas = nullptr;
 		// ----
 
 		uint32_t _totalParticles = 0;
-		uint32_t _spriteSize = 32;
 
 	public:
-		explicit ParticleSystem(rawrbox::TextureBase& spriteAtlas, uint32_t spriteSize = 32) : _atlas(&spriteAtlas), _spriteSize(spriteSize){};
+		explicit ParticleSystem(rawrbox::TextureAtlas& spriteAtlas) : _atlas(&spriteAtlas){};
 
 		static int32_t particleSortFn(const void* _lhs, const void* _rhs) {
 			const rawrbox::ParticleSort& lhs = *std::bit_cast<const rawrbox::ParticleSort*>(_lhs);
@@ -30,7 +30,7 @@ namespace rawrbox {
 		}
 
 		// UTILS -----
-		[[nodiscard]] rawrbox::TextureBase* getTexture() const { return this->_atlas; }
+		[[nodiscard]] rawrbox::TextureAtlas* getTexture() const { return this->_atlas; }
 
 		void upload() {
 			this->_material->upload();
@@ -83,7 +83,7 @@ namespace rawrbox {
 			auto* indices = std::bit_cast<uint16_t*>(tib.data);
 
 			for (auto& em : this->_emitters) {
-				pos += em->template draw<M>(cam, this->_atlas->getSize(), this->_spriteSize, pos, max, particleSort.data(), vertices);
+				pos += em->template draw<M>(cam, pos, max, particleSort.data(), vertices);
 			}
 
 			std::qsort(particleSort.data(), max, sizeof(ParticleSort), particleSortFn);

@@ -71,7 +71,7 @@ namespace rawrbox {
 
 			particle.life = time;
 			particle.lifeSpan = bx::lerp(this->_settings.lifeSpan[0], this->_settings.lifeSpan[1], bx::frnd(&this->_rng));
-			particle.texture = static_cast<uint32_t>(bx::lerp(this->_settings.texture.x, this->_settings.texture.y, bx::frnd(&this->_rng)));
+			particle.textureLayer = static_cast<uint32_t>(bx::lerp(this->_settings.texture.x, this->_settings.texture.y, bx::frnd(&this->_rng)));
 
 			// Copy color settings ---
 			particle.rgba = this->_settings.rgba;
