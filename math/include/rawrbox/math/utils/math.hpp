@@ -45,7 +45,7 @@ namespace rawrbox {
 			if (idUpper >= count) return samples[count - 1];
 			if (idLower < 0) return samples[0];
 
-			return std::lerp<float>(samples[idLower], samples[idUpper], f - idLower);
+			return std::lerp(samples[idLower], samples[idUpper], f - idLower);
 		}
 
 		// https://gist.github.com/itsmrpeck/be41d72e9d4c72d2236de687f6f53974
