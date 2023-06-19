@@ -1,7 +1,9 @@
 
 #include <rawrbox/render/model/mesh.hpp>
+#include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render/utils/assimp/model.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -35,6 +37,7 @@ namespace model {
 
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
+		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::AssimpLoader>());
 
 		// Load content ---
 		this->loadContent();
@@ -42,17 +45,18 @@ namespace model {
 	}
 
 	void Game::loadContent() {
-		std::array<std::string, 4> initialContentFiles = {
-		    "cour.ttf",
-		    "content/textures/screem.png",
-		    "content/textures/meow3.gif",
-		    "content/textures/displacement_test.png",
+		std::array initialContentFiles = {
+		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("content/textures/screem.png", 0),
+		    std::make_pair<std::string, uint32_t>("content/textures/meow3.gif", 0),
+		    std::make_pair<std::string, uint32_t>("content/textures/displacement_test.png", 0),
+		    std::make_pair<std::string, uint32_t>("content/textures/spline_tex.png", 0),
 		};
 
 		for (auto& f : initialContentFiles) {
 			this->_loadingFiles++;
 
-			rawrbox::RESOURCES::loadFileAsync(f, 0, [this]() {
+			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
 				this->_loadingFiles--;
 				if (this->_loadingFiles <= 0) {
 					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
@@ -65,12 +69,12 @@ namespace model {
 
 	void Game::contentLoaded() {
 		this->_ready = true;
+		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get<rawrbox::TextureGIF>();
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(24);
 
 		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
-		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get<rawrbox::TextureGIF>();
 		auto texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/displacement_test.png")->get();
-
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(24);
+		auto texture4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/spline_tex.png")->get();
 
 		// Model test ----
 		{
@@ -159,10 +163,53 @@ namespace model {
 
 		// Sprite test ----
 		{
-			auto mesh = this->_sprite->generatePlane({0, 1, 0}, {0.2F, 0.2F});
+			auto mesh = this->_sprite->generateCube({0, 1, 0}, {0.2F, 0.2F});
 			mesh.setTexture(texture);
 			this->_sprite->addMesh(mesh);
 		}
+		// -----
+
+		// Spline test ----
+
+		{
+			// Curve example
+			rawrbox::Mesh2DShape shape;
+			shape.vertex = {
+			    {-0.15F, 0.025F},
+			    {-0.1F, 0.025F},
+			    {-0.1F, 0},
+
+			    {0.1F, 0},
+			    {0.1F, 0.025F},
+			    {0.15F, 0.025F},
+			};
+
+			shape.normal = {{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}};
+			shape.u = {
+			    0,
+			    0.08F,
+			    0.09375,
+
+			    0.9140625F,
+
+			    0.92F,
+			    1.F};
+
+			this->_spline->setExtrudeVerts(shape);
+			this->_spline->setTexture(texture4);
+
+			this->_spline->addPoint({0, 0, 0, 0.F}, {-1.F, 0.F, 1.F, 90.F});
+			this->_spline->addPoint({-1.F, 0.F, 1.F, 90.F}, {-2.F, 0.F, 1.F, 90.F}, 0.1F);
+			this->_spline->addPoint({-2.F, 0.F, 1.F, 90.F}, {-3.F, 0.F, 0.F, -180.F});
+			this->_spline->addPoint({-3.F, 0.F, 0.F, -180.F}, {-2.F, 0.F, -1.F, -90.F});
+			this->_spline->addPoint({-2.F, 0.F, -1.F, -90.F}, {-1.F, 0.F, -1.F, -90.F}, 0.1F);
+			this->_spline->addPoint({-1.F, 0.F, -1.F, -90.F}, {0, 0.F, 0, 0.F});
+
+			this->_spline->generateMesh();
+
+			this->_spline->setPos({0, 0, 2.F});
+		}
+
 		// -----
 
 		// Text test ----
@@ -176,12 +223,12 @@ namespace model {
 		this->_text->addText(*this->_font, "CYLINDER", {-2.F, 1.2F, -2});
 		this->_text->addText(*this->_font, "CONE", {-3.F, 1.2F, -2});
 		this->_text->addText(*this->_font, "PYRAMID", {-4.F, 1.2F, -2});
-
 		// ------
 
 		this->_model->upload();
 		this->_displacement->upload();
 		this->_sprite->upload();
+		this->_spline->upload();
 		this->_text->upload();
 	}
 
@@ -215,11 +262,12 @@ namespace model {
 	}
 
 	void Game::drawWorld() {
-		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr) return;
+		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr || this->_spline == nullptr) return;
 
 		this->_model->draw();
 		this->_displacement->draw();
 		this->_sprite->draw();
+		this->_spline->draw();
 		this->_text->draw();
 	}
 

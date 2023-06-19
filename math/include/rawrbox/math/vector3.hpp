@@ -27,6 +27,11 @@ namespace rawrbox {
 
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1); }
+		static VecType up() { return VecType(0, 1, 0); }
+		static VecType forward() { return VecType(0, 0, 1); }
+		static VecType back() { return VecType(0, 0, -1); }
+
+		[[nodiscard]] const int size() const { return 3; }
 
 		[[nodiscard]] Vector3_t<NumberType> xyz() const { return Vector3_t<NumberType>(x, y, z); }
 		[[nodiscard]] Vector3_t<NumberType> yxz() const { return Vector3_t<NumberType>(y, x, z); }
@@ -65,6 +70,13 @@ namespace rawrbox {
 
 			float dot = std::clamp(this->dot(target) / denominator, -1.F, 1.F);
 			return std::acos(dot) * (1.F / (rawrbox::pi<float> * 2.F / 360.F));
+		}
+
+		[[nodiscard]] VecType rotate(const VecType& axis, float theta) const {
+			float cos_theta = std::cos(theta);
+			float sin_theta = std::sin(theta);
+
+			return (VecType{this->x, this->y, this->z} * cos_theta) + (this->cross(axis) * sin_theta) + (axis * this->dot(axis)) * (1.F - cos_theta);
 		}
 
 		[[nodiscard]] VecType lerp(const VecType& other, float timestep) const {
