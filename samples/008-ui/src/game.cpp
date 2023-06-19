@@ -37,7 +37,7 @@ namespace ui_test {
 
 		// SETUP UI
 		this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*this->_window);
-		this->_ROOT_UI->onFocusChange += [this](rawrbox::UIContainer* elm) {
+		this->_ROOT_UI->onFocusChange += [](rawrbox::UIContainer* elm) {
 			if (elm != nullptr)
 				fmt::print("[ROOT_UI] Focusing on element\n");
 			else
