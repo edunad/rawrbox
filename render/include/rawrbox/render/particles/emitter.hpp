@@ -123,7 +123,7 @@ namespace rawrbox {
 		void update();
 
 		template <typename M = rawrbox::MaterialParticle>
-		uint32_t draw(const rawrbox::CameraBase& camera, const rawrbox::Vector2i& atlasSize, uint32_t spriteSize, uint32_t first, uint32_t max, rawrbox::ParticleSort* outSort, typename M::vertexBufferType* outVert)
+		uint32_t draw(const rawrbox::CameraBase& camera, uint32_t first, uint32_t max, rawrbox::ParticleSort* outSort, typename M::vertexBufferType* outVert)
 			requires(supportsBlend<typename M::vertexBufferType>)
 		{
 			bx::EaseFn easeRgba = bx::getEaseFunc(this->_settings.easeRgba);
@@ -182,13 +182,13 @@ namespace rawrbox {
 				    bx::lerp(clStart[2], clEnd[2], ttmod) / 255.F,
 				    bx::lerp(clStart[3], clEnd[3], ttmod) / 255.F);
 
-				auto uv = rawrbox::TextureUtils::atlasToUV(atlasSize, spriteSize, p.texture);
+				auto atlasId = static_cast<float>(p.textureLayer);
 				typename M::vertexBufferType* vertex = &outVert[index * 4];
 
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir - vdir, {uv.x, uv.w, blend, 0.F}, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir + vdir, {uv.z, uv.y, blend, 0.F}, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir + vdir, {uv.x, uv.y, blend, 0.F}, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir - vdir, {uv.z, uv.w, blend, 0.F}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir - vdir, {0, 1, blend, atlasId}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir + vdir, {1, 0, blend, atlasId}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir + vdir, {0, 0, blend, atlasId}, color));
+				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir - vdir, {1, 1, blend, atlasId}, color));
 
 				++index;
 			}

@@ -19,7 +19,7 @@ namespace rawrbox {
 		std::array<bx::Vec3, 2> posEnd = {bx::Vec3(0, 0, 0), bx::Vec3(0, 0, 0)};
 
 		std::array<uint32_t, 5> rgba = {};
-		uint32_t texture = 0;
+		uint32_t textureLayer = 0;
 
 		float life = 0.F;
 		float lifeSpan = 0.F;

@@ -4,6 +4,7 @@
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/texture/atlas.hpp>
 #include <rawrbox/resources/manager.hpp>
 
 #include <particle_test/game.hpp>
@@ -46,7 +47,7 @@ namespace particle_test {
 	void Game::loadContent() {
 		std::array initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("content/textures/particles/particles.png", 0)};
+		    std::make_pair<std::string, uint32_t>("content/textures/particles/particles.png", 32)};
 
 		for (auto& f : initialContentFiles) {
 			this->_loadingFiles++;
@@ -68,7 +69,7 @@ namespace particle_test {
 		// ------
 
 		// Setup Engine
-		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/particles/particles.png")->get();
+		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/particles/particles.png")->get<rawrbox::TextureAtlas>();
 		this->_ps = std::make_unique<rawrbox::ParticleSystem<>>(*texture);
 
 		{
