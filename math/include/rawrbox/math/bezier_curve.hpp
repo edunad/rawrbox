@@ -30,24 +30,26 @@ namespace rawrbox {
 
 	class BezierCurve {
 	protected:
+		float _subDivisions = 5.F;
+
 		std::vector<float> _sampleLenghts = {};
-		std::vector<rawrbox::Vector3f> _points = {};
+		std::array<rawrbox::Vector3f, 4> _points = {};
 
 		void generateSamples() {
 			this->_sampleLenghts.clear();
-			this->_sampleLenghts.reserve(10);
 			this->_sampleLenghts.push_back(0);
 
 			rawrbox::Vector3f prevPoint = this->_points[0];
 			rawrbox::Vector3f pt = {};
 			float total = 0;
 
-			float step = 1.0F / 10.F;
+			float step = 1.0F / this->_subDivisions;
 			for (float f = step; f < 1.0F; f += step) {
 				pt = this->getPoint(f);
 				total += (pt - prevPoint).length();
 
 				this->_sampleLenghts.push_back(total);
+				prevPoint = pt;
 			}
 
 			pt = this->getPoint(1);
@@ -56,16 +58,11 @@ namespace rawrbox {
 
 	public:
 		BezierCurve() = default;
-		explicit BezierCurve(const std::vector<rawrbox::Vector3f>& points) : _points(points) {
-			if (this->_points.size() == 4) this->generateSamples();
+		explicit BezierCurve(const std::array<rawrbox::Vector3f, 4>& points, float subDivisions = 5.F) : _points(points), _subDivisions(subDivisions) {
+			this->generateSamples();
 		}
 
-		void setPoints(const std::vector<rawrbox::Vector3f>& points) {
-			this->_points = points;
-			if (this->_points.size() == 4) this->generateSamples();
-		}
-
-		[[nodiscard]] const std::vector<rawrbox::Vector3f>& getPoints() const { return this->_points; }
+		[[nodiscard]] const std::array<rawrbox::Vector3f, 4>& getPoints() const { return this->_points; }
 
 		rawrbox::Vector3f getNormal(float t, Vector3 up) {
 			return this->calculateNormal(this->getTangent(t), up);
@@ -156,10 +153,10 @@ namespace rawrbox {
 			return {point, orientation, rawrbox::MathUtils::sample(this->_sampleLenghts, t)};
 		}
 
-		std::vector<rawrbox::OrientedPoint> generatePath(float subDivisions) {
+		std::vector<rawrbox::OrientedPoint> generatePath() {
 			std::vector<rawrbox::OrientedPoint> paths = {};
 
-			float step = 1.0F / subDivisions;
+			float step = 1.0F / this->_subDivisions;
 			for (float f = 0; f < 1; f += step) {
 				paths.push_back(this->getOrientedPoint(f));
 			}

@@ -109,6 +109,21 @@ namespace rawrbox {
 			return {std::atan2(sinr_cosp, cosr_cosp), std::asin(sinp), std::atan2(siny_cosp, cosy_cosp)};
 		}
 
+		Vector3_t<NumberType> toAxis() {
+			if (std::abs(this->w) > 1.0F) {
+				auto nrm = this->normalized();
+
+				this->x = nrm.x;
+				this->y = nrm.y;
+				this->z = nrm.z;
+				this->w = nrm.w;
+			}
+
+			float den = std::sqrt(1.0F - this->w * this->w);
+			if (den > 0.0001F) return {this->x / den, this->y / den, this->z / den};
+			return {1, 0, 0};
+		}
+
 		static Vector4_t<NumberType> toQuat(const Vector3_t<NumberType>& in) {
 			rawrbox::Vector4_t<NumberType> ret = {};
 

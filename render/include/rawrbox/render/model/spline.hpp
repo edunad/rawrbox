@@ -3,9 +3,11 @@
 #include <rawrbox/math/bezier_curve.hpp>
 #include <rawrbox/render/model/base.hpp>
 
+#include <bx/math.h>
+
 namespace rawrbox {
 	struct Mesh2DShape {
-		std::vector<rawrbox::Vector2f> position = {};
+		std::vector<rawrbox::Vector2f> vertex = {};
 		std::vector<rawrbox::Vector2f> normal = {};
 		std::vector<float> u = {};
 
@@ -13,7 +15,8 @@ namespace rawrbox {
 
 		std::vector<int> getLineSegments() {
 			std::vector<int> segments = {};
-			for (size_t i = 0; i < this->position.size() - 1; i++) {
+
+			for (size_t i = 0; i < this->vertex.size() - 1; i++) {
 				segments.push_back(i);
 				segments.push_back(i + 1);
 			}
@@ -24,77 +27,16 @@ namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
 	class Spline : public rawrbox::ModelBase<M> {
-		rawrbox::BezierCurve _curve = {};
+		std::vector<std::unique_ptr<rawrbox::BezierCurve>> _curves = {};
 		std::unique_ptr<rawrbox::Mesh2DShape> _shape = nullptr;
+		float _subDivisions = 5.F;
 
-		void generateMesh() {
-			if (this->_shape == nullptr) throw std::runtime_error("[RawrBox-Spline] Missing mesh shape!");
-
-			auto path = this->_curve.generatePath(10.F);
-			if (path.empty()) return;
-
-			int vertsInShape = this->_shape->position.size();
-			std::vector<int> shapeSegments = this->_shape->getLineSegments();
-
-			int segments = path.size() - 1;
-			int edgeLoops = path.size();
-			int vertCount = vertsInShape * edgeLoops;
-			int triCount = shapeSegments.size() * segments * 2;
-			int triIndexCount = triCount * 3;
-
-			std::vector<uint16_t> triangleIndices(triIndexCount);
-			std::vector<typename M::vertexBufferType> buff(vertCount);
-
-			// Generate all of the vertices and normals
-			for (int i = 0; i < path.size(); i++) {
-				int offset = i * vertsInShape;
-				for (int j = 0; j < vertsInShape; j++) {
-					int id = offset + j;
-
-					auto pos = rawrbox::Vector3f(this->_shape->position[j].x, this->_shape->position[j].y, 0.F);
-					auto norm = rawrbox::Vector3f(this->_shape->normal[j].x, this->_shape->normal[j].y, 0.F);
-					auto uv = rawrbox::Vector2f(this->_shape->u[j], path[i].vCoordinate);
-
-					if constexpr (supportsNormals<typename M::vertexBufferType>) {
-						buff[id] = rawrbox::VertexLitData(path[i].LocalToWorld(pos), uv, {rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z), 0}, rawrbox::Colors::White);
-					} else {
-						buff[id] = rawrbox::VertexData(path[i].LocalToWorld(pos), uv, rawrbox::Colors::White);
-					}
-				}
-			}
-
-			int ti = 0;
-			for (int i = 0; i < segments; i++) {
-				int offset = i * vertsInShape;
-				for (int l = 0; l < shapeSegments.size(); l += 2) {
-					int a = offset + shapeSegments[l];
-					int b = offset + shapeSegments[l] + vertsInShape;
-					int c = offset + shapeSegments[l + 1] + vertsInShape;
-					int d = offset + shapeSegments[l + 1];
-
-					triangleIndices[ti++] = a; // 0
-					triangleIndices[ti++] = b; // 1
-					triangleIndices[ti++] = c; // 2
-
-					triangleIndices[ti++] = d; // 3
-					triangleIndices[ti++] = c; // 2
-					triangleIndices[ti++] = a; // 0
-				}
-			}
-
-			this->_mesh->clear();
-
-			this->_mesh->baseVertex = 0;
-			this->_mesh->baseIndex = 0;
-			this->_mesh->totalVertex = vertCount;
-			this->_mesh->totalIndex = triIndexCount;
-
-			this->_mesh->vertices.insert(this->_mesh->vertices.end(), buff.begin(), buff.end());
-			this->_mesh->indices.insert(this->_mesh->indices.end(), triangleIndices.begin(), triangleIndices.end());
-		};
+		void addBezier(std::array<rawrbox::Vector3f, 4> points) {
+			this->_curves.push_back(std::make_unique<rawrbox::BezierCurve>(points, this->_subDivisions));
+		}
 
 	public:
-		explicit Spline() = default;
+		explicit Spline(float subDivisions = 5.F) : _subDivisions(subDivisions) {}
 		Spline(const Spline&) = delete;
 		Spline(Spline&&) = delete;
 		Spline& operator=(const Spline&) = delete;
@@ -109,10 +51,83 @@ namespace rawrbox {
 			this->_mesh->setTexture(texture);
 		}
 
-		virtual void setPoints(const rawrbox::Vector3f& p1, const rawrbox::Vector3f& p2, const rawrbox::Vector3f& p3, const rawrbox::Vector3f& p4) {
-			this->_curve.setPoints({p1, p2, p3, p4});
-			this->generateMesh();
+		virtual void addPoint(const rawrbox::Vector3f& p1, const rawrbox::Vector3f& p2, const rawrbox::Vector3f& p3, const rawrbox::Vector3f& p4) {
+			this->addBezier({p1, p2, p3, p4});
 		}
+
+		virtual void addPoint(const rawrbox::Vector4f& start, const rawrbox::Vector4f& end, float distance = 0.5F) {
+			auto axisS = Vector3f::forward().rotate(rawrbox::Vector3f::up(), bx::toRad(start.w)) * distance;
+			auto axisE = Vector3f::back().rotate(rawrbox::Vector3f::up(), bx::toRad(end.w)) * distance;
+
+			this->addBezier({start.xyz(), start.xyz() + axisS, end.xyz() + axisE, end.xyz()});
+		}
+
+		void generateMesh() {
+			this->_mesh->clear();
+
+			if (this->_shape == nullptr) throw std::runtime_error("[RawrBox-Spline] Missing mesh shape!");
+			std::vector<int> shapeSegments = this->_shape->getLineSegments();
+
+			for (auto& curve : this->_curves) {
+				auto path = curve->generatePath();
+				if (path.empty()) return;
+
+				int vertsInShape = this->_shape->vertex.size();
+				int segments = path.size() - 1;
+				int edgeLoops = path.size();
+				int vertCount = vertsInShape * edgeLoops;
+				int triCount = shapeSegments.size() * segments;
+				int triIndexCount = triCount * 3;
+
+				rawrbox::Mesh<typename M::vertexBufferType> mesh;
+				std::vector<uint16_t> triangleIndices(triIndexCount);
+				std::vector<typename M::vertexBufferType> buff(vertCount);
+
+				// Generate all of the vertices and normals
+				for (int i = 0; i < path.size(); i++) {
+					int offset = i * vertsInShape;
+					for (int j = 0; j < vertsInShape; j++) {
+						int id = offset + j;
+
+						auto pos = rawrbox::Vector3f(this->_shape->vertex[j].x, this->_shape->vertex[j].y, 0.F);
+						auto norm = rawrbox::Vector3f(this->_shape->normal[j].x, this->_shape->normal[j].y, 0.F);
+						auto uv = rawrbox::Vector2f(this->_shape->u[j], path[i].vCoordinate);
+
+						if constexpr (supportsNormals<typename M::vertexBufferType>) {
+							buff[id] = rawrbox::VertexLitData(path[i].LocalToWorld(pos), uv, {rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z), 0}, rawrbox::Colors::White);
+						} else {
+							buff[id] = rawrbox::VertexData(path[i].LocalToWorld(pos), uv, rawrbox::Colors::White);
+						}
+					}
+				}
+
+				int ti = 0;
+				for (int i = 0; i < segments; i++) {
+					int offset = i * vertsInShape;
+					for (int l = 0; l < shapeSegments.size(); l += 2) {
+						int a = offset + shapeSegments[l];
+						int b = offset + shapeSegments[l] + vertsInShape;
+						int c = offset + shapeSegments[l + 1] + vertsInShape;
+						int d = offset + shapeSegments[l + 1];
+
+						triangleIndices[ti++] = a; // 0
+						triangleIndices[ti++] = b; // 1
+						triangleIndices[ti++] = c; // 2
+
+						triangleIndices[ti++] = d; // 3
+						triangleIndices[ti++] = c; // 2
+						triangleIndices[ti++] = a; // 0
+					}
+				}
+
+				mesh.totalIndex = triIndexCount;
+				mesh.totalVertex = vertCount;
+				mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
+				mesh.indices.insert(mesh.indices.end(), triangleIndices.begin(), triangleIndices.end());
+
+				this->_mesh->merge(mesh);
+			}
+		};
 
 		void draw() override {
 			ModelBase<M>::draw();

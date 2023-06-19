@@ -18,7 +18,7 @@ namespace model {
 
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
+		this->_window->setMonitor(1);
 		this->_window->setTitle("SIMPLE MODEL TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
@@ -174,7 +174,7 @@ namespace model {
 		{
 			// Curve example
 			rawrbox::Mesh2DShape shape;
-			shape.position = {
+			shape.vertex = {
 			    {-0.15F, 0.025F},
 			    {-0.1F, 0.025F},
 			    {-0.1F, 0},
@@ -187,8 +187,8 @@ namespace model {
 			shape.normal = {{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}};
 			shape.u = {
 			    0,
-			    0.09375F,
 			    0.08F,
+			    0.09375,
 
 			    0.9140625F,
 
@@ -197,10 +197,17 @@ namespace model {
 
 			this->_spline->setExtrudeVerts(shape);
 			this->_spline->setTexture(texture4);
-			// this->_spline->addPoint({0, 0, 0});
-			// this->_spline->addPoint({-1.F, 0.F, 1.F});
-			this->_spline->setPoints({0, 0, 0}, {0.F, 0.F, 0.5F}, {-0.5F, 0.F, 1.F}, {-1.F, 0.F, 1.F});
-			this->_spline->setPos({0, 0, 1.F});
+
+			this->_spline->addPoint({0, 0, 0, 0.F}, {-1.F, 0.F, 1.F, 90.F});
+			this->_spline->addPoint({-1.F, 0.F, 1.F, 90.F}, {-2.F, 0.F, 1.F, 90.F}, 0.1F);
+			this->_spline->addPoint({-2.F, 0.F, 1.F, 90.F}, {-3.F, 0.F, 0.F, -180.F});
+			this->_spline->addPoint({-3.F, 0.F, 0.F, -180.F}, {-2.F, 0.F, -1.F, -90.F});
+			this->_spline->addPoint({-2.F, 0.F, -1.F, -90.F}, {-1.F, 0.F, -1.F, -90.F}, 0.1F);
+			this->_spline->addPoint({-1.F, 0.F, -1.F, -90.F}, {0, 0.F, 0, 0.F});
+
+			this->_spline->generateMesh();
+
+			this->_spline->setPos({0, 0, 2.F});
 		}
 
 		// -----
