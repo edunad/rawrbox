@@ -21,7 +21,7 @@
 namespace ui_test {
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
+		this->_window->setMonitor(1);
 		this->_window->setTitle("UI TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
@@ -37,6 +37,12 @@ namespace ui_test {
 
 		// SETUP UI
 		this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*this->_window);
+		this->_ROOT_UI->onFocusChange += [this](rawrbox::UIContainer* elm) {
+			if (elm != nullptr)
+				fmt::print("[ROOT_UI] Focusing on element\n");
+			else
+				fmt::print("[ROOT_UI] Not element to focus\n");
+		};
 		// ----
 
 		// Load content ---
@@ -109,10 +115,10 @@ namespace ui_test {
 				input->setReadOnly(true);
 			}
 
-			auto group = frame->createChild<rawrbox::UIGroup>();
-			group->setBorder(1.F);
-			group->setPos({215, 96});
-			group->setSize({64, 64});
+			this->_group = frame->createChild<rawrbox::UIGroup>();
+			this->_group->setBorder(1.F);
+			this->_group->setPos({215, 96});
+			this->_group->setSize({64, 64});
 
 			{
 				auto btn = frame->createChild<rawrbox::UIButton>();
@@ -120,13 +126,16 @@ namespace ui_test {
 				btn->setSize({200, 32});
 				btn->setText("MEW");
 				btn->setEnabled(true);
-				btn->onClick += [group]() {
-					group->remove();
+				btn->onClick += [this]() {
+					if (this->_group == nullptr) return;
+
+					this->_group->remove();
+					this->_group = nullptr;
 				};
 			}
 
 			{
-				auto img = group->createChild<rawrbox::UIImage>();
+				auto img = this->_group->createChild<rawrbox::UIImage>();
 				img->setTexture("./content/textures/meow3.gif");
 				img->setSize({128, 128});
 			}

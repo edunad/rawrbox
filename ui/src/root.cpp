@@ -106,7 +106,6 @@ namespace rawrbox {
 
 			if (this->focusedElement == nullptr) return;
 			this->focusedElement->mouseUp(location - this->focusedElement->getPos().cast<int>(), button, mods);
-
 			return;
 		}
 
@@ -117,6 +116,7 @@ namespace rawrbox {
 		auto target = this->findElement(location, offsetOut);
 		if (target == nullptr) {
 			this->focusedElement = nullptr;
+			this->onFocusChange(nullptr);
 			return;
 		}
 		//----------------
@@ -153,8 +153,9 @@ namespace rawrbox {
 		// see if we're having a different target, if so notify it
 		if (this->hoveredElement != nullptr) {
 			if (this->hoveredElement != target) {
-				this->hoveredElement->setHovering(false);
-				target->setHovering(true);
+				this->hoveredElement->setHovering(false); // Remove old one
+				target->setHovering(true);                // Set new one
+
 				this->hoveredElement = target;
 			}
 		} else {
@@ -185,6 +186,8 @@ namespace rawrbox {
 		elm->setFocused(true);
 		this->focusedElement = elm;
 		// ---
+
+		this->onFocusChange(this->focusedElement);
 	}
 	// -----
 

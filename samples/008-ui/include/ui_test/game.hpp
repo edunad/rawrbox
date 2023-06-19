@@ -4,6 +4,7 @@
 #include <rawrbox/render/window.hpp>
 #include <rawrbox/ui/elements/anim.hpp>
 #include <rawrbox/ui/elements/graph.hpp>
+#include <rawrbox/ui/elements/group.hpp>
 #include <rawrbox/ui/elements/image.hpp>
 #include <rawrbox/ui/root.hpp>
 
@@ -16,6 +17,7 @@ namespace ui_test {
 
 		std::unique_ptr<rawrbox::UIAnim<rawrbox::UIImage>> _anim = nullptr;
 		rawrbox::UIGraph* _graph = nullptr;
+		rawrbox::UIGroup* _group = nullptr;
 
 		bool _ready = false;
 		std::atomic<int> _loadingFiles = 0;

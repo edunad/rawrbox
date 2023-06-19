@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/ui/container.hpp>
+#include <rawrbox/utils/event.hpp>
 
 #include <array>
 #include <memory>
@@ -33,6 +34,8 @@ namespace rawrbox {
 	public:
 		rawrbox::UIContainer* focusedElement = nullptr;
 		rawrbox::UIContainer* hoveredElement = nullptr;
+
+		rawrbox::Event<rawrbox::UIContainer*> onFocusChange;
 
 		explicit UIRoot(rawrbox::Window& window);
 
