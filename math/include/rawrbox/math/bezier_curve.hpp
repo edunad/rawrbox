@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <vector>
 
+// Based off https://pastebin.com/raw/vJhXxfH9
 namespace rawrbox {
 
 	struct OrientedPoint {
@@ -30,7 +31,7 @@ namespace rawrbox {
 
 	class BezierCurve {
 	protected:
-		float _subDivisions = 5.F;
+		float _subDivisions = 8.F;
 
 		std::vector<float> _sampleLenghts = {};
 		std::array<rawrbox::Vector3f, 4> _points = {};
@@ -44,6 +45,7 @@ namespace rawrbox {
 			float total = 0;
 
 			float step = 1.0F / this->_subDivisions;
+			// NOLINTBEGIN(clang-analyzer-security.FloatLoopCounter)
 			for (float f = step; f < 1.0F; f += step) {
 				pt = this->getPoint(f);
 				total += (pt - prevPoint).length();
@@ -51,6 +53,7 @@ namespace rawrbox {
 				this->_sampleLenghts.push_back(total);
 				prevPoint = pt;
 			}
+			// NOLINTEND(clang-analyzer-security.FloatLoopCounter)
 
 			pt = this->getPoint(1);
 			this->_sampleLenghts.push_back(total + (pt - prevPoint).length());
@@ -58,7 +61,7 @@ namespace rawrbox {
 
 	public:
 		BezierCurve() = default;
-		explicit BezierCurve(const std::array<rawrbox::Vector3f, 4>& points, float subDivisions = 5.F) : _points(points), _subDivisions(subDivisions) {
+		explicit BezierCurve(const std::array<rawrbox::Vector3f, 4>& points, float subDivisions = 8.F) : _subDivisions(subDivisions), _points(points) {
 			this->generateSamples();
 		}
 
@@ -157,9 +160,11 @@ namespace rawrbox {
 			std::vector<rawrbox::OrientedPoint> paths = {};
 
 			float step = 1.0F / this->_subDivisions;
+			// NOLINTBEGIN(clang-analyzer-security.FloatLoopCounter)
 			for (float f = 0; f < 1; f += step) {
 				paths.push_back(this->getOrientedPoint(f));
 			}
+			// NOLINTEND(clang-analyzer-security.FloatLoopCounter)
 
 			paths.push_back(this->getOrientedPoint(1));
 			return paths;

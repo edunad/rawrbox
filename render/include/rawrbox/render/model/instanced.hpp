@@ -118,7 +118,11 @@ namespace rawrbox {
 			bgfx::setInstanceDataBuffer(this->_dataBuffer, 0, this->_instances.size());
 			// ----
 
-			bgfx::setState(BGFX_STATE_DEFAULT, 0);
+			uint64_t flags = BGFX_STATE_DEFAULT_3D | this->_mesh->culling | this->_mesh->blending | this->_mesh->depthTest;
+			flags |= this->_mesh->lineMode ? BGFX_STATE_PT_LINES : this->_mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
+												      : 0;
+
+			bgfx::setState(flags, 0);
 			this->_material->postProcess();
 		}
 	};

@@ -5,6 +5,7 @@
 
 #include <bx/math.h>
 
+#define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 namespace rawrbox {
 	struct Mesh2DShape {
 		std::vector<rawrbox::Vector2f> vertex = {};
@@ -29,14 +30,14 @@ namespace rawrbox {
 	class Spline : public rawrbox::ModelBase<M> {
 		std::vector<std::unique_ptr<rawrbox::BezierCurve>> _curves = {};
 		std::unique_ptr<rawrbox::Mesh2DShape> _shape = nullptr;
-		float _subDivisions = 5.F;
+		float _subDivisions = 8.F;
 
 		void addBezier(std::array<rawrbox::Vector3f, 4> points) {
 			this->_curves.push_back(std::make_unique<rawrbox::BezierCurve>(points, this->_subDivisions));
 		}
 
 	public:
-		explicit Spline(float subDivisions = 5.F) : _subDivisions(subDivisions) {}
+		explicit Spline(float subDivisions = 8.F) : _subDivisions(subDivisions) {}
 		Spline(const Spline&) = delete;
 		Spline(Spline&&) = delete;
 		Spline& operator=(const Spline&) = delete;
@@ -63,9 +64,9 @@ namespace rawrbox {
 		}
 
 		void generateMesh() {
-			this->_mesh->clear();
-
 			if (this->_shape == nullptr) throw std::runtime_error("[RawrBox-Spline] Missing mesh shape!");
+
+			this->_mesh->clear();
 			std::vector<int> shapeSegments = this->_shape->getLineSegments();
 
 			for (auto& curve : this->_curves) {
@@ -142,8 +143,12 @@ namespace rawrbox {
 			}
 
 			bgfx::setTransform((this->getMatrix()).data());
-			bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS, 0);
 
+			uint64_t flags = BGFX_STATE_DEFAULT_3D /*| this->_mesh->culling*/ | this->_mesh->blending | this->_mesh->depthTest; // TODO: FIX CULLING
+			flags |= this->_mesh->lineMode ? BGFX_STATE_PT_LINES : this->_mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
+												      : 0;
+
+			bgfx::setState(flags, 0);
 			this->_material->postProcess();
 		}
 	};
