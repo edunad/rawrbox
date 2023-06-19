@@ -221,6 +221,10 @@ namespace rawrbox {
 			return this->data.find(id) != this->data.end();
 		}
 
+		[[nodiscard]] rawrbox::Skeleton* getSkeleton() const {
+			return this->skeleton;
+		}
+
 		void merge(const rawrbox::Mesh<T>& other) {
 			for (uint16_t i : other.indices)
 				this->indices.push_back(this->totalVertex + i);

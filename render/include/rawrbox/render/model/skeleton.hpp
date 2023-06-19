@@ -18,6 +18,12 @@ namespace rawrbox {
 		std::unordered_map<std::string, rawrbox::Bone*> boneMap = {}; // Map for quick lookup
 		rawrbox::Matrix4x4 invTransformationMtx = {};
 
+		[[nodiscard]] rawrbox::Bone* getBone(const std::string& name) const {
+			auto fnd = boneMap.find(name);
+			if (fnd == boneMap.end()) return nullptr;
+			return fnd->second;
+		}
+
 		explicit Skeleton(std::string _name) : name(std::move(_name)) {}
 	};
 
