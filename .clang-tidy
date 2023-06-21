@@ -10,6 +10,7 @@ Checks: clang-diagnostic-*
     -cppcoreguidelines-pro-bounds-constant-array-index
     -modernize-use-trailing-return-type
     -cppcoreguidelines-avoid-non-const-global-variables
+    -hicpp-signed-bitwise
     -hicpp-vararg
     -hicpp-braces-around-statements
     -hicpp-no-array-decay
@@ -17,6 +18,8 @@ Checks: clang-diagnostic-*
     -cppcoreguidelines-non-private-member-variables-in-classes
     -cppcoreguidelines-avoid-magic-numbers
     -cppcoreguidelines-pro-type-vararg
+    -modernize-avoid-c-arrays
+    -cppcoreguidelines-avoid-c-arrays
     -cppcoreguidelines-pro-bounds-array-to-pointer-decay
     -cppcoreguidelines-narrowing-conversions
     -clang-analyzer-deadcode.DeadStores
