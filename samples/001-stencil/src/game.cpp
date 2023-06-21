@@ -1,5 +1,6 @@
 
 #include <rawrbox/engine/static.hpp>
+#include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
@@ -76,8 +77,9 @@ namespace stencil {
 		// ----
 
 		// Textures ---
-		auto mesh = this->_model->generateCube({0, 0, 0}, {2.F, 2.F, 2.F}, rawrbox::Colors::White);
+		auto mesh = rawrbox::MeshUtils<>::generateCube({0, 0, 0}, {2.F, 2.F, 2.F});
 		mesh.setTexture(this->_texture);
+
 		this->_model->addMesh(mesh);
 		this->_model->upload();
 		// ----

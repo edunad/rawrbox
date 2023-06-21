@@ -1,5 +1,6 @@
 #pragma once
 #include <rawrbox/render/texture/flat.hpp>
+#include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/render/texture/missing.hpp>
 
 #include <bgfx/bgfx.h>

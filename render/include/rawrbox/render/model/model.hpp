@@ -437,7 +437,9 @@ namespace rawrbox {
 				bgfx::setState(flags, 0);
 				this->_material->postProcess();
 			}
+
 			this->postDraw();
+			bgfx::discard();
 		}
 	};
 } // namespace rawrbox

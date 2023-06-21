@@ -2,6 +2,7 @@
 #include <rawrbox/bass/manager.hpp>
 #include <rawrbox/bass/resources/sound.hpp>
 #include <rawrbox/render/gizmos.hpp>
+#include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
@@ -107,7 +108,7 @@ namespace bass_test {
 
 		// GRID -----
 		{
-			auto mesh = this->_modelGrid->generateGrid(12, {0.F, 0.F, 0.F});
+			auto mesh = rawrbox::MeshUtils<>::generateGrid(12, {0.F, 0.F, 0.F});
 			this->_modelGrid->addMesh(mesh);
 			this->_modelGrid->upload();
 		}

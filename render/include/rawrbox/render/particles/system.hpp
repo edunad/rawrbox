@@ -103,6 +103,7 @@ namespace rawrbox {
 			bgfx::setState(BGFX_STATE_DEFAULT_PARTICLE, 0);
 
 			this->_material->postProcess();
+			bgfx::discard();
 		}
 	};
 } // namespace rawrbox

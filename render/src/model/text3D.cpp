@@ -103,12 +103,11 @@ namespace rawrbox {
 			}
 
 			uint64_t flags = BGFX_STATE_DEFAULT_3D_TEXT | mesh->culling | mesh->blending | mesh->depthTest;
-			flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
-											: 0;
+			if (mesh->lineMode) flags |= BGFX_STATE_PT_LINES;
 
 			bgfx::setState(flags, 0);
-
 			this->_material->postProcess();
+			bgfx::discard();
 		}
 	}
 } // namespace rawrbox

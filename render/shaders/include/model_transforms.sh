@@ -1,7 +1,7 @@
 
 
-#ifndef INCLUDED_MODEL_POSITION
-#define INCLUDED_MODEL_POSITION
+#ifndef INCLUDED_MODEL_TRANSFORMS
+#define INCLUDED_MODEL_TRANSFORMS
 
 #define MAX_DATA 4
 
@@ -19,9 +19,10 @@ vec4 psx_snap(vec4 vertex, vec2 resolution) {
 
 	return snappedPos;
 }
+// ----------------------
 
 // Snap vertex to achieve PSX look
-vec4 getTranslatedPos(mat4 proj, vec4 a_position, vec2 a_texcoord0) {
+vec4 applyPosTransforms(mat4 proj, vec4 a_position, vec2 a_texcoord0) {
     vec4 pos = a_position;
 
     // displacement mode
@@ -48,15 +49,16 @@ vec4 getTranslatedPos(mat4 proj, vec4 a_position, vec2 a_texcoord0) {
     // ----
 }
 
-vec4 getTranslatedPos(vec4 a_position, vec2 a_texcoord0) {
-    return getTranslatedPos(u_modelViewProj, a_position, a_texcoord0);
+vec4 applyPosTransforms(vec4 a_position, vec2 a_texcoord0) {
+    return applyPosTransforms(u_modelViewProj, a_position, a_texcoord0);
 }
 
-vec4 getTranslatedPos(vec3 a_position, vec2 a_texcoord0) {
-    return getTranslatedPos(u_modelViewProj, vec4(a_position, 1.0), a_texcoord0);
+vec4 applyPosTransforms(vec3 a_position, vec2 a_texcoord0) {
+    return applyPosTransforms(u_modelViewProj, vec4(a_position, 1.0), a_texcoord0);
 }
 
-vec4 getTranslatedPos(mat4 proj, vec3 a_position, vec2 a_texcoord0) {
-    return getTranslatedPos(proj, vec4(a_position, 1.0), a_texcoord0);
+vec4 applyPosTransforms(mat4 proj, vec3 a_position, vec2 a_texcoord0) {
+    return applyPosTransforms(proj, vec4(a_position, 1.0), a_texcoord0);
 }
+// ----------------------
 #endif

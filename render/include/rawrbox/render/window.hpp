@@ -81,6 +81,10 @@ namespace rawrbox {
 		rawrbox::Vector2i _size = {};
 		// -----
 
+		// Screen Utils --
+		std::unordered_map<int, rawrbox::Vector2i> _screenSizes = {};
+		// --------
+
 		// ------CALLBACKS
 		static void callbacks_focus(GLFWwindow* whandle, int focus);
 		static void callbacks_char(GLFWwindow* whandle, unsigned int ch);
@@ -91,8 +95,6 @@ namespace rawrbox {
 		static void callbacks_key(GLFWwindow* whandle, int key, int scancode, int action, int mods);
 		static void callbacks_windowClose(GLFWwindow* whandle);
 		// --------------------
-
-		bool isRendererSupported(bgfx::RendererType::Enum render);
 
 	public:
 		bool hasFocus = true;
@@ -136,23 +138,27 @@ namespace rawrbox {
 
 		// UTILS ---------------
 		void close();
-		[[nodiscard]] bool getShouldClose() const;
-		void setShouldClose(bool close) const;
+		[[nodiscard]] virtual bool getShouldClose() const;
+		virtual void setShouldClose(bool close) const;
 
-		[[nodiscard]] rawrbox::Vector2i getSize() const;
-		[[nodiscard]] float getAspectRatio() const;
+		[[nodiscard]] virtual rawrbox::Vector2i getSize() const;
+		[[nodiscard]] virtual float getAspectRatio() const;
 
-		[[nodiscard]] rawrbox::Vector2i getMousePos() const;
+		[[nodiscard]] virtual rawrbox::Vector2i getMousePos() const;
 
-		[[nodiscard]] uint32_t getWindowFlags() const;
+		[[nodiscard]] virtual uint32_t getWindowFlags() const;
 
 		[[nodiscard]] virtual rawrbox::Stencil& getStencil() const;
+
 		[[nodiscard]] virtual bool isKeyDown(int key) const;
 		[[nodiscard]] virtual bool isMouseDown(int key) const;
+
+		[[nodiscard]] virtual bool isRendererSupported(bgfx::RendererType::Enum render) const;
+		[[nodiscard]] virtual const std::unordered_map<int, rawrbox::Vector2i>& getScreenSizes() const;
 		// --------------------
 
 		virtual ~Window();
-		Window() = default;
+		Window();
 		Window(Window&&) = delete;
 		Window& operator=(Window&&) = delete;
 		Window(const Window&) = delete;

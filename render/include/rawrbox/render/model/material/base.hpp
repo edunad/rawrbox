@@ -41,7 +41,7 @@ namespace rawrbox {
 
 		template <typename T>
 		void process(const rawrbox::Mesh<T>& mesh) {
-			if (mesh.texture != nullptr && mesh.texture->valid() && !mesh.wireframe) {
+			if (mesh.texture != nullptr && mesh.texture->valid() && !mesh.lineMode && !mesh.wireframe) {
 				bgfx::setTexture(0, s_texColor, mesh.texture->getHandle());
 			} else {
 				bgfx::setTexture(0, s_texColor, rawrbox::WHITE_TEXTURE->getHandle());

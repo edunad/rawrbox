@@ -2,7 +2,7 @@ $input a_position, a_normal, a_tangent, a_bitangent, a_color0, a_texcoord0
 $output v_color0, v_texcoord0, v_normal, v_tangent, v_bitangent, v_view
 
 #include <bgfx_shader.sh>
-#include <../../include/model_position.sh>
+#include <../../include/model_transforms.sh>
 
 void main() {
 	vec3 normal = a_normal * 2.0 - 1.0;
@@ -16,5 +16,5 @@ void main() {
 	v_texcoord0 = a_texcoord0;
 
 	v_view = mul(u_view, vec4(a_position, 1.0)).xyz;
-    gl_Position = getTranslatedPos(a_position, a_texcoord0);
+    gl_Position = applyPosTransforms(a_position, a_texcoord0);
 }

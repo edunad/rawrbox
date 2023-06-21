@@ -25,6 +25,8 @@ namespace physics_test {
 		std::vector<std::unique_ptr<BoxOfDoom>> _boxes = std::vector<std::unique_ptr<BoxOfDoom>>();
 
 		std::atomic<int> _loadingFiles = 0;
+
+		rawrbox::TextureBase* _texture = nullptr;
 		bool _ready = false;
 		bool _paused = true;
 

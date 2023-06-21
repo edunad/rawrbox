@@ -91,6 +91,17 @@ namespace rawrbox {
 	}
 	// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
 
+	Window::~Window() { this->close(); }
+	Window::Window() {
+		int count = 0;
+		auto monitors = glfwGetMonitors(&count);
+
+		for (size_t i = 0; i < count; i++) {
+			const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
+			this->_screenSizes[i] = {mode->width, mode->height};
+		}
+	}
+
 	void Window::create(int width, int height, uint32_t flags) {
 		if (rawrbox::RENDER_THREAD_ID == std::this_thread::get_id()) throw std::runtime_error("[RawrBox-Window] 'create' should be called inside engine's 'setupGLFW'!");
 
@@ -358,7 +369,7 @@ namespace rawrbox {
 	// ------UTILS
 	void Window::close() {
 		if (rawrbox::__OPEN_WINDOWS__-- <= 0) {
-			rawrbox::MISSING_TEXTURE = nullptr;
+			rawrbox::MISSING_TEXTURE.reset();
 			rawrbox::WHITE_TEXTURE.reset();
 			rawrbox::BLACK_TEXTURE.reset();
 		}
@@ -369,20 +380,6 @@ namespace rawrbox {
 		this->_handle = nullptr;
 		if (GLFWCURSOR != nullptr) glfwDestroyCursor(GLFWCURSOR);
 		this->_cursor = nullptr;
-	}
-
-	bool Window::isRendererSupported(bgfx::RendererType::Enum render) {
-		if (render == bgfx::RendererType::Count) return true;
-
-		// NOLINTBEGIN(hicpp-avoid-c-arrays)
-		bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
-		uint8_t num = bgfx::getSupportedRenderers(BX_COUNTOF(supportedRenderers), supportedRenderers);
-		for (uint8_t i = 0; i < num; ++i) {
-			if (supportedRenderers[i] == render) return true;
-		}
-		// NOLINTEND(hicpp-avoid-c-arrays)
-
-		return false;
 	}
 
 	Vector2i Window::getSize() const {
@@ -418,6 +415,10 @@ namespace rawrbox {
 		glfwSetWindowShouldClose(GLFWHANDLE, close ? 1 : 0);
 	}
 
+	uint32_t Window::getWindowFlags() const { return this->_windowFlags; }
+
+	rawrbox::Stencil& Window::getStencil() const { return *this->_stencil; }
+
 	bool Window::isKeyDown(int key) const {
 		if (this->_handle == nullptr) return false;
 		return glfwGetKey(GLFWHANDLE, key) == GLFW_PRESS;
@@ -428,7 +429,21 @@ namespace rawrbox {
 		return glfwGetMouseButton(GLFWHANDLE, key) == GLFW_PRESS;
 	}
 
-	rawrbox::Stencil& Window::getStencil() const { return *this->_stencil; }
+	bool Window::isRendererSupported(bgfx::RendererType::Enum render) const {
+		if (render == bgfx::RendererType::Count) return true;
+
+		// NOLINTBEGIN(hicpp-avoid-c-arrays)
+		bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
+		uint8_t num = bgfx::getSupportedRenderers(BX_COUNTOF(supportedRenderers), supportedRenderers);
+		for (uint8_t i = 0; i < num; ++i) {
+			if (supportedRenderers[i] == render) return true;
+		}
+		// NOLINTEND(hicpp-avoid-c-arrays)
+
+		return false;
+	}
+
+	const std::unordered_map<int, rawrbox::Vector2i>& Window::getScreenSizes() const { return this->_screenSizes; }
 	// --------------------
 
 	// ------EVENTS
@@ -511,5 +526,4 @@ namespace rawrbox {
 	}
 	// --------------------
 
-	Window::~Window() { this->close(); }
 } // namespace rawrbox

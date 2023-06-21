@@ -1,5 +1,6 @@
 
 
+#include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/texture.hpp>
@@ -66,7 +67,7 @@ namespace instance_test {
 		float spacing = 0.85F;
 
 		auto t = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/instance_test.png")->get();
-		auto mesh = this->_model->generateCube({0, 0, 0}, {0.5F, 0.5F, 0.5F});
+		auto mesh = rawrbox::MeshUtils<>::generateCube({0, 0, 0}, {0.5F, 0.5F, 0.5F});
 		mesh.setTexture(t);
 
 		this->_model->setTemplate(mesh);
