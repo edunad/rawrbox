@@ -169,6 +169,7 @@ namespace rawrbox {
 
 			bgfx::setState(0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_CULL_CW);
 			this->_postProcesses[pass]->applyEffect();
+			bgfx::discard();
 		}
 
 		rawrbox::CURRENT_VIEW_ID = prevID;
@@ -180,6 +181,7 @@ namespace rawrbox {
 		bgfx::setIndexBuffer(this->_ibh);
 		bgfx::setState(0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_CULL_CW);
 		bgfx::submit(0, this->_program);
+		bgfx::discard();
 	}
 
 } // namespace rawrbox

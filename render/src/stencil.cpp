@@ -465,6 +465,7 @@ namespace rawrbox {
 
 			bgfx::setScissor(group.clip);
 			bgfx::submit(rawrbox::CURRENT_VIEW_ID, group.stencilProgram);
+			bgfx::discard();
 		}
 
 		this->_drawCalls.clear();

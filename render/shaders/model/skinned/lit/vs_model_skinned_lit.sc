@@ -3,7 +3,7 @@ $output v_color0, v_texcoord0, v_view, v_normal, v_tangent, v_bitangent
 
 #include <bgfx_shader.sh>
 
-#include <../../../include/model_position.sh>
+#include <../../../include/model_transforms.sh>
 #include <../../../include/model_skinned.sh>
 
 void main() {
@@ -24,5 +24,5 @@ void main() {
 	vec4 pos = boneTransform(a_indices, a_weight, a_position);
 
 	v_view = mul(u_view, pos).xyz;
-	gl_Position = getTranslatedPos(pos, a_texcoord0);
+	gl_Position = applyPosTransforms(pos, a_texcoord0);
 }

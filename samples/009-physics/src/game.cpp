@@ -1,5 +1,6 @@
 
 #include <rawrbox/physics/utils.hpp>
+#include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -102,11 +103,13 @@ namespace physics_test {
 
 		// Setup grid
 		{
-			auto mesh = this->_modelGrid->generateGrid(24, {0.F, 0.F, 0.F});
+			auto mesh = rawrbox::MeshUtils<>::generateGrid(24, {0.F, 0.F, 0.F});
 			this->_modelGrid->addMesh(mesh);
 			this->_modelGrid->upload();
 		}
 		// -----
+
+		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->get();
 
 		// TIMER ---
 		auto timer = rawrbox::Timer::create(
@@ -131,6 +134,8 @@ namespace physics_test {
 	}
 
 	void Game::createBox(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size) {
+		if (this->_texture == nullptr) return;
+
 		auto box = std::make_unique<BoxOfDoom>();
 
 		JPH::BodyInterface& body_interface = rawrbox::PHYSICS::physicsSystem->GetBodyInterface();
@@ -152,9 +157,8 @@ namespace physics_test {
 		// Create model
 		box->mdl = std::make_unique<rawrbox::Model<>>();
 
-		auto mesh = box->mdl->generateCube({}, size);
-		auto text = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->get();
-		mesh.setTexture(text);
+		auto mesh = rawrbox::MeshUtils<>::generateCube({}, size);
+		mesh.setTexture(this->_texture);
 
 		box->mdl->addMesh(mesh);
 		box->mdl->upload();
@@ -168,6 +172,7 @@ namespace physics_test {
 
 		this->_camera.reset();
 		this->_modelGrid.reset();
+		this->_texture = nullptr;
 
 		this->_boxes.clear();
 

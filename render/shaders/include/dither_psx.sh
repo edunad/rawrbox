@@ -1,7 +1,7 @@
 #ifndef INCLUDED_DITHER_PSX
 #define INCLUDED_DITHER_PSX
 
-vec3 GetDither(vec2 pos, vec3 c, float intensity) {
+vec3 getDither(vec2 pos, vec3 c, float intensity) {
 	mat4 DITHER_THRESHOLDS = mat4(
 	    -4, 0, -3, 1,
 	    2, -2, 3, -1,

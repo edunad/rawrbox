@@ -1,5 +1,6 @@
 
 #include <rawrbox/render/gizmos.hpp>
+#include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/particles/emitter.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
@@ -106,7 +107,7 @@ namespace particle_test {
 
 		// GRID -----
 		{
-			auto mesh = this->_modelGrid->generateGrid(12, {0.F, 0.F, 0.F});
+			auto mesh = rawrbox::MeshUtils<>::generateGrid(12, {0.F, 0.F, 0.F});
 			this->_modelGrid->addMesh(mesh);
 			this->_modelGrid->upload();
 		}

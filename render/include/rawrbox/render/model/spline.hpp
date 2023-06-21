@@ -2,6 +2,7 @@
 
 #include <rawrbox/math/bezier_curve.hpp>
 #include <rawrbox/render/model/base.hpp>
+#include <rawrbox/utils/pack.hpp>
 
 #include <bx/math.h>
 
@@ -150,6 +151,8 @@ namespace rawrbox {
 
 			bgfx::setState(flags, 0);
 			this->_material->postProcess();
+
+			bgfx::discard();
 		}
 	};
 } // namespace rawrbox

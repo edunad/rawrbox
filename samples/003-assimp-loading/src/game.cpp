@@ -1,5 +1,6 @@
 #include <rawrbox/render/gizmos.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
+#include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -110,7 +111,7 @@ namespace assimp {
 		// ------
 
 		{
-			auto mesh = this->_modelGrid->generateGrid(24, {0.F, 0.F, 0.F});
+			auto mesh = rawrbox::MeshUtils<>::generateGrid(24, {0.F, 0.F, 0.F});
 			this->_modelGrid->addMesh(mesh);
 			this->_modelGrid->upload();
 		}
