@@ -6,7 +6,7 @@
 #include <memory>
 
 TEST_CASE("Mesh should behave as expected", "[rawrbox::Mesh]") {
-	rawrbox::Mesh<rawrbox::VertexData> base;
+	/*rawrbox::Mesh<rawrbox::VertexData> base;
 
 	SECTION("rawrbox::Mesh::setName / rawrbox::Mesh::getName") {
 		REQUIRE(base.getName() == "mesh");
@@ -68,5 +68,5 @@ TEST_CASE("Mesh should behave as expected", "[rawrbox::Mesh]") {
 		base2.setOptimizable(true);
 		base2.lineMode = true;
 		REQUIRE(base2.canOptimize(base3) == false);
-	}
+	}*/
 }

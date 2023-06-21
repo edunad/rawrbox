@@ -23,8 +23,6 @@ namespace rawrbox {
 		bgfx::UniformHandle u_mesh_pos = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_data = BGFX_INVALID_HANDLE;
 
-		using vertexBufferType = rawrbox::VertexData;
-
 		MaterialBase() = default;
 		MaterialBase(MaterialBase&&) = delete;
 		MaterialBase& operator=(MaterialBase&&) = delete;
@@ -39,8 +37,11 @@ namespace rawrbox {
 		virtual void registerUniforms();
 		virtual void preProcess();
 
-		template <typename T>
-		void process(const rawrbox::Mesh<T>& mesh) {
+		static const bgfx::VertexLayout vLayout() {
+			return rawrbox::VertexData::vLayout();
+		}
+
+		virtual void process(const rawrbox::Mesh& mesh) {
 			if (mesh.texture != nullptr && mesh.texture->valid() && !mesh.lineMode && !mesh.wireframe) {
 				bgfx::setTexture(0, s_texColor, mesh.texture->getHandle());
 			} else {
@@ -84,5 +85,12 @@ namespace rawrbox {
 		virtual void postProcess();
 		virtual void upload();
 	};
+
+	// UTILS ---
+	template <typename T>
+	concept supportsBones = requires(T t, const std::vector<rawrbox::Matrix4x4>& data) {
+		{ t.setBoneData(data) };
+	};
+	// ---
 
 } // namespace rawrbox

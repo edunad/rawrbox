@@ -451,7 +451,7 @@ namespace rawrbox {
 
 			if (!bgfx::allocTransientBuffers(&tvb, this->_vLayout, vertSize, &tib, indSize)) continue;
 
-			bx::memCopy(tvb.data, group.vertices.data(), vertSize * this->_vLayout.m_stride);
+			bx::memCopy(tvb.data, group.vertices.data(), vertSize * this->_vLayout.getStride());
 			bx::memCopy(tib.data, group.indices.data(), indSize * sizeof(uint16_t));
 
 			bgfx::setVertexBuffer(0, &tvb);

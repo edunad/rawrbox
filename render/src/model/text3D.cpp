@@ -42,7 +42,7 @@ namespace rawrbox {
 
 		uint32_t id = ++Text3D::ID;
 		font.render(text, startpos.xy(), true, [this, &font, billboard, pos, startpos, cl, screenSize, id](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
-			rawrbox::Mesh<typename rawrbox::MaterialText3DUnlit::vertexBufferType> mesh;
+			rawrbox::Mesh mesh;
 			mesh.vertexPos.translate(pos);
 
 			mesh.setTexture(font.getPackTexture(glyph)); // Set the atlas

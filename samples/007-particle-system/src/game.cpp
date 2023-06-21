@@ -107,7 +107,7 @@ namespace particle_test {
 
 		// GRID -----
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateGrid(12, {0.F, 0.F, 0.F});
+			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
 			this->_modelGrid->addMesh(mesh);
 			this->_modelGrid->upload();
 		}

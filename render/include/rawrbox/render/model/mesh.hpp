@@ -5,6 +5,7 @@
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/render/model/defs.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
@@ -19,12 +20,9 @@
 #include <unordered_map>
 
 namespace rawrbox {
-	struct VertexData;
 	struct Skeleton;
-
 	class LightBase;
 
-	template <typename T = VertexData>
 	class Mesh {
 	private:
 		bool _canOptimize = true;
@@ -42,7 +40,7 @@ namespace rawrbox {
 		uint16_t totalVertex = 0;
 		uint16_t totalIndex = 0;
 
-		std::vector<T> vertices = {};
+		std::vector<rawrbox::VertexData> vertices = {};
 		std::vector<uint16_t> indices = {};
 		// -------
 
@@ -85,8 +83,8 @@ namespace rawrbox {
 		std::vector<rawrbox::LightBase*> lights = {};
 		// -----------------
 
-		void* owner = nullptr; // Eeeehhhh
-		std::unordered_map<std::string, rawrbox::Vector4f> data = {};
+		void* owner = nullptr;                                        // Eeeehhhh
+		std::unordered_map<std::string, rawrbox::Vector4f> data = {}; // Other data
 
 		// UTILS ----
 		[[nodiscard]] const std::string& getName() const {
@@ -97,7 +95,7 @@ namespace rawrbox {
 			this->name = name;
 		}
 
-		[[nodiscard]] const std::vector<T>& getVertices() const {
+		[[nodiscard]] const std::vector<rawrbox::VertexData>& getVertices() const {
 			return this->vertices;
 		}
 
@@ -225,7 +223,7 @@ namespace rawrbox {
 			return this->skeleton;
 		}
 
-		void merge(const rawrbox::Mesh<T>& other) {
+		void merge(const rawrbox::Mesh& other) {
 			for (uint16_t i : other.indices)
 				this->indices.push_back(this->totalVertex + i);
 			this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
@@ -245,7 +243,7 @@ namespace rawrbox {
 		}
 
 		void setOptimizable(bool status) { this->_canOptimize = status; }
-		[[nodiscard]] bool canOptimize(const rawrbox::Mesh<T>& other) const {
+		[[nodiscard]] bool canOptimize(const rawrbox::Mesh& other) const {
 			if (!this->_canOptimize || !other._canOptimize) return false;
 
 			return this->texture == other.texture &&

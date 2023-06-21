@@ -13,7 +13,7 @@ namespace rawrbox {
 	uint32_t GIZMOS::addGizmo(const std::string& type, const rawrbox::Vector3f& pos) {
 		auto id = ++_ID;
 
-		auto mesh = rawrbox::MeshUtils<>::generatePlane({}, {0.25F, 0.25F});
+		auto mesh = rawrbox::MeshUtils::generatePlane({}, {0.25F, 0.25F});
 		mesh.setPos(pos);
 		mesh.setName(fmt::format("GIZMO-{}", ++_ID));
 

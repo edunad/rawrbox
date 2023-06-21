@@ -19,8 +19,8 @@ namespace model {
 
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(1);
-		this->_window->setTitle("SIMPLE MODEL TEST");
+		this->_window->setMonitor(-1);
+		this->_window->setTitle("GENERATED MODEL TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
@@ -79,10 +79,10 @@ namespace model {
 
 		// Model test ----
 		{
-			auto mesh = rawrbox::MeshUtils<>::generatePlane({2, 0, 0}, {0.5F, 0.5F});
+			auto mesh = rawrbox::MeshUtils::generatePlane({2, 0, 0}, {0.5F, 0.5F});
 			mesh.setTexture(texture);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils<>::generateBBOX({2, 0, 0}, mesh.getBBOX()));
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({2, 0, 0}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
 
@@ -90,92 +90,92 @@ namespace model {
 			rawrbox::Vector3f pos = {3.25F, -0.25F, 0};
 			rawrbox::Vector3f size = {0.5F, 0.5F, 0.F};
 
-			auto mesh = rawrbox::MeshUtils<>::generateTriangle(pos, rawrbox::Vector3f{0, 0, 0}, {0, 0}, rawrbox::Colors::Red, rawrbox::Vector3f{size.x, size.y, 0}, {1, 0}, rawrbox::Colors::Green, rawrbox::Vector3f{0, size.y, 0}, {0, 1}, rawrbox::Colors::Blue);
-			this->_bboxes->addMesh(rawrbox::MeshUtils<>::generateBBOX(pos + size / 2, mesh.getBBOX()));
+			auto mesh = rawrbox::MeshUtils::generateTriangle(pos, rawrbox::Vector3f{0, 0, 0}, {0, 0}, rawrbox::Colors::Red, rawrbox::Vector3f{size.x, size.y, 0}, {1, 0}, rawrbox::Colors::Green, rawrbox::Vector3f{0, size.y, 0}, {0, 1}, rawrbox::Colors::Blue);
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX(pos + size / 2, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateCube({-2, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
+			auto mesh = rawrbox::MeshUtils::generateCube({-2, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
 			mesh.setTexture(this->_texture2);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils<>::generateBBOX({-2, 0, 0}, mesh.getBBOX()));
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-2, 0, 0}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			this->_model->addMesh(rawrbox::MeshUtils<>::generateCube({3.5F, 0, 2.5F}, {1.0F, 1.0F, 1.0F}, rawrbox::Colors::White));
-			this->_model->addMesh(rawrbox::MeshUtils<>::generateCube({1.5F, 0, 2.5F}, {.5F, .5F, .5F}, rawrbox::Colors::White));
+			this->_model->addMesh(rawrbox::MeshUtils::generateCube({3.5F, 0, 2.5F}, {1.0F, 1.0F, 1.0F}, rawrbox::Colors::White));
+			this->_model->addMesh(rawrbox::MeshUtils::generateCube({1.5F, 0, 2.5F}, {.5F, .5F, .5F}, rawrbox::Colors::White));
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateCube({-3, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
+			auto mesh = rawrbox::MeshUtils::generateCube({-3, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
 			mesh.setTexture(this->_texture2);
 			mesh.setVertexSnap(24.F);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils<>::generateBBOX({-3, 0, 0}, mesh.getBBOX()));
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-3, 0, 0}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateAxis(1, {0.F, 0.F, 0.F});
+			auto mesh = rawrbox::MeshUtils::generateAxis(1, {0.F, 0.F, 0.F});
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils<>::generateBBOX({0, 0, 0}, mesh.getBBOX()));
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({0, 0, 0}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateGrid(12, {0.F, 0.F, 0.F});
+			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
 			this->_model->addMesh(mesh);
 		}
 
 		// Sphere
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateSphere({2.F, 0.F, -2.F}, 0.5F, 0);
+			auto mesh = rawrbox::MeshUtils::generateSphere({2.F, 0.F, -2.F}, 0.5F, 0);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils<>::generateBBOX({2.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({2.F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateSphere({3.5F, 0.F, -2.F}, 0.5F, 1);
+			auto mesh = rawrbox::MeshUtils::generateSphere({3.5F, 0.F, -2.F}, 0.5F, 1);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils<>::generateBBOX({3.5F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({3.5F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateSphere({5.F, 0.F, -2.F}, 0.5F, 2);
+			auto mesh = rawrbox::MeshUtils::generateSphere({5.F, 0.F, -2.F}, 0.5F, 2);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils<>::generateBBOX({5.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({5.F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
 		// -----
 
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateCylinder({-2.F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 12);
+			auto mesh = rawrbox::MeshUtils::generateCylinder({-2.F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 12);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils<>::generateBBOX({-2.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-2.F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateCone({-3.5F, 0.F, -2.F}, {0.5F, 1.F, 0.5F}, 12);
+			auto mesh = rawrbox::MeshUtils::generateCone({-3.5F, 0.F, -2.F}, {0.5F, 1.F, 0.5F}, 12);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils<>::generateBBOX({-3.5F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-3.5F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateCone({-5.F, 0.F, -2.F}, {0.5F, 1.F, 0.5F}, 4);
+			auto mesh = rawrbox::MeshUtils::generateCone({-5.F, 0.F, -2.F}, {0.5F, 1.F, 0.5F}, 4);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils<>::generateBBOX({-5.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-5.F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
 
 		// Displacement test ----
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateMesh({0, 0, 0}, 64, rawrbox::Colors::White);
+			auto mesh = rawrbox::MeshUtils::generateMesh({0, 0, 0}, 64, rawrbox::Colors::White);
 			mesh.setTexture(texture3);
 			mesh.setBumpTexture(texture3);
 			mesh.setDisplacement(24.F);
@@ -184,7 +184,7 @@ namespace model {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateMesh({0, 0.5F, 0}, 64, rawrbox::Colors::Black);
+			auto mesh = rawrbox::MeshUtils::generateMesh({0, 0.5F, 0}, 64, rawrbox::Colors::Black);
 			mesh.setBumpTexture(texture3);
 			mesh.setDisplacement(24.F);
 			mesh.lineMode = true;
@@ -198,7 +198,7 @@ namespace model {
 
 		// Sprite test ----
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateCube({0, 1, 0}, {0.2F, 0.2F});
+			auto mesh = rawrbox::MeshUtils::generateCube({0, 1, 0}, {0.2F, 0.2F});
 			mesh.setTexture(texture);
 			this->_sprite->addMesh(mesh);
 		}

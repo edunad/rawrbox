@@ -8,7 +8,7 @@ $output v_color0, v_texcoord0, v_view, v_normal, v_tangent, v_bitangent
 
 void main() {
     v_color0 = a_color0;
-	v_texcoord0 = a_texcoord0;
+	v_texcoord0 = a_texcoord0.xy;
 
 	vec3 normal = a_normal * 2.0 - 1.0;
 	vec3 tangent = a_tangent * 2.0 - 1.0;
@@ -24,5 +24,5 @@ void main() {
 	vec4 pos = boneTransform(a_indices, a_weight, a_position);
 
 	v_view = mul(u_view, pos).xyz;
-	gl_Position = applyPosTransforms(pos, a_texcoord0);
+	gl_Position = applyPosTransforms(pos, v_texcoord0);
 }

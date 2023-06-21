@@ -15,7 +15,7 @@ namespace rawrbox {
 		bgfx::DynamicIndexBufferHandle _ibdh = BGFX_INVALID_HANDLE; // Indices - Dynamic
 		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;         // Indices - Static
 
-		std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>> _mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>();
+		std::unique_ptr<rawrbox::Mesh> _mesh = std::make_unique<rawrbox::Mesh>();
 		std::unique_ptr<M> _material = std::make_unique<M>();
 
 		// BGFX DYNAMIC SUPPORT ---
@@ -25,7 +25,7 @@ namespace rawrbox {
 		virtual void updateBuffers() {
 			if (!this->isDynamicBuffer() || !this->isUploaded()) return;
 
-			const bgfx::Memory* vertMem = bgfx::makeRef(this->_mesh->vertices.data(), static_cast<uint32_t>(this->_mesh->vertices.size()) * M::vertexBufferType::vLayout().m_stride);
+			const bgfx::Memory* vertMem = bgfx::makeRef(this->_mesh->vertices.data(), static_cast<uint32_t>(this->_mesh->vertices.size()) * M::vLayout().getStride());
 			const bgfx::Memory* indexMem = bgfx::makeRef(this->_mesh->indices.data(), static_cast<uint32_t>(this->_mesh->indices.size()) * sizeof(uint16_t));
 
 			bgfx::update(this->_vbdh, 0, vertMem);
@@ -88,21 +88,22 @@ namespace rawrbox {
 			// Generate buffers ----
 			this->_isDynamic = dynamic;
 
-			const bgfx::Memory* vertMem = bgfx::makeRef(this->_mesh->vertices.data(), static_cast<uint32_t>(this->_mesh->vertices.size()) * M::vertexBufferType::vLayout().m_stride);
+			const auto layout = M::vLayout();
+			const bgfx::Memory* vertMem = bgfx::makeRef(this->_mesh->vertices.data(), static_cast<uint32_t>(this->_mesh->vertices.size()) * layout.getStride());
 			const bgfx::Memory* indexMem = bgfx::makeRef(this->_mesh->indices.data(), static_cast<uint32_t>(this->_mesh->indices.size()) * sizeof(uint16_t));
 
 			if (dynamic) {
 				if (this->_mesh->empty()) {
-					this->_vbdh = bgfx::createDynamicVertexBuffer(1, M::vertexBufferType::vLayout(), 0 | BGFX_BUFFER_ALLOW_RESIZE);
+					this->_vbdh = bgfx::createDynamicVertexBuffer(1, layout, 0 | BGFX_BUFFER_ALLOW_RESIZE);
 					this->_ibdh = bgfx::createDynamicIndexBuffer(1, 0 | BGFX_BUFFER_ALLOW_RESIZE);
 				} else {
-					this->_vbdh = bgfx::createDynamicVertexBuffer(vertMem, M::vertexBufferType::vLayout(), 0 | BGFX_BUFFER_ALLOW_RESIZE);
+					this->_vbdh = bgfx::createDynamicVertexBuffer(vertMem, layout, 0 | BGFX_BUFFER_ALLOW_RESIZE);
 					this->_ibdh = bgfx::createDynamicIndexBuffer(indexMem, 0 | BGFX_BUFFER_ALLOW_RESIZE);
 				}
 			} else {
 				if (this->_mesh->empty()) throw std::runtime_error("[RawrBox-ModelBase] Static buffer cannot contain empty vertices / indices. Use dynamic buffer instead!");
 
-				this->_vbh = bgfx::createVertexBuffer(vertMem, M::vertexBufferType::vLayout());
+				this->_vbh = bgfx::createVertexBuffer(vertMem, layout);
 				this->_ibh = bgfx::createIndexBuffer(indexMem);
 			}
 			// -----------------

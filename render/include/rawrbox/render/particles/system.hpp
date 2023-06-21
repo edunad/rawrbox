@@ -62,7 +62,8 @@ namespace rawrbox {
 			int vertCount = 4; // Plane
 			int indxCount = 6;
 
-			const uint32_t numVertices = bgfx::getAvailTransientVertexBuffer(this->_totalParticles * vertCount, M::vertexBufferType::vLayout());
+			const auto layout = M::vLayout();
+			const uint32_t numVertices = bgfx::getAvailTransientVertexBuffer(this->_totalParticles * vertCount, layout);
 			const uint32_t numIndices = bgfx::getAvailTransientIndexBuffer(this->_totalParticles * indxCount);
 			const uint32_t max = std::min(numVertices / vertCount, numIndices / indxCount);
 
@@ -72,18 +73,18 @@ namespace rawrbox {
 			bgfx::TransientVertexBuffer tvb = {};
 			bgfx::TransientIndexBuffer tib = {};
 
-			bgfx::allocTransientBuffers(&tvb, M::vertexBufferType::vLayout(), max * vertCount, &tib, max * indxCount);
+			bgfx::allocTransientBuffers(&tvb, layout, max * vertCount, &tib, max * indxCount);
 
 			std::vector<rawrbox::ParticleSort> particleSort{max};
 			uint32_t pos = 0;
 
 			this->_material->process(this->_atlas->getHandle());
 
-			auto* vertices = std::bit_cast<typename M::vertexBufferType*>(tvb.data);
+			auto* vertices = std::bit_cast<rawrbox::VertexData*>(tvb.data);
 			auto* indices = std::bit_cast<uint16_t*>(tib.data);
 
 			for (auto& em : this->_emitters) {
-				pos += em->template draw<M>(cam, pos, max, particleSort.data(), vertices);
+				pos += em->draw(cam, pos, max, particleSort.data(), vertices);
 			}
 
 			std::qsort(particleSort.data(), max, sizeof(ParticleSort), particleSortFn);

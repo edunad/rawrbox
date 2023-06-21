@@ -17,9 +17,11 @@ namespace rawrbox {
 
 		Vector2_t() = default;
 		explicit Vector2_t(NumberType val) : x(val), y(val) {}
-
-		explicit Vector2_t(std::array<NumberType, 2> val) : x(val[0]), y(val[1]) {}
 		Vector2_t(NumberType _x, NumberType _y) : x(_x), y(_y) {}
+
+		// NOLINTBEGIN(hicpp-explicit-conversions)
+		Vector2_t(std::array<NumberType, 2> val) : x(val[0]), y(val[1]) {}
+		// NOLINTEND(hicpp-explicit-conversions)
 
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1); }

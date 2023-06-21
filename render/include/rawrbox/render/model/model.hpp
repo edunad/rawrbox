@@ -19,12 +19,12 @@ namespace rawrbox {
 		std::vector<rawrbox::PlayingAnimationData> _playingAnimations = {};
 		std::vector<rawrbox::LightBase> _lights = {};
 
-		std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes = {};
+		std::vector<std::unique_ptr<rawrbox::Mesh>> _meshes = {};
 		rawrbox::BBOX _bbox = {};
 
 		// SKINNING ----
-		std::unordered_map<std::string, rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // Map for quick lookup
-														    // --------
+		std::unordered_map<std::string, rawrbox::Mesh*> _animatedMeshes = {}; // Map for quick lookup
+										      // --------
 
 		bool _canOptimize = true;
 		virtual void flattenMeshes() {
@@ -79,7 +79,7 @@ namespace rawrbox {
 		}
 
 		// ANIMATIONS ----
-		void animate(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
+		void animate(const rawrbox::Mesh& mesh) const {
 			// VERTEX ANIMATION ----
 			for (auto& anim : this->_animatedMeshes) {
 				if (anim.second == nullptr) continue;
@@ -88,7 +88,7 @@ namespace rawrbox {
 			// ------------
 
 			// BONE ANIMATION ----
-			if constexpr (supportsBones<typename M::vertexBufferType>) {
+			if constexpr (supportsBones<M>) {
 				std::vector<rawrbox::Matrix4x4> boneTransforms = {};
 				boneTransforms.resize(rawrbox::MAX_BONES_PER_MODEL);
 
@@ -209,17 +209,16 @@ namespace rawrbox {
 			}
 		}
 		// --------------
-		void updateLights() {
-			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				// Update lights ---
-				for (auto& mesh : this->meshes()) {
-					rawrbox::Vector3f meshPos = {mesh->matrix[12], mesh->matrix[13], mesh->matrix[14]};
-					// auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle()); // TODO
 
-					for (auto light : mesh->lights) {
-						if (light == nullptr) continue;
-						light->setOffsetPos(meshPos);
-					}
+		void updateLights() {
+			// Update lights ---
+			for (auto& mesh : this->meshes()) {
+				rawrbox::Vector3f meshPos = {mesh->matrix[12], mesh->matrix[13], mesh->matrix[14]};
+				// auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle()); // TODO
+
+				for (auto light : mesh->lights) {
+					if (light == nullptr) continue;
+					light->setOffsetPos(meshPos);
 				}
 			}
 		}
@@ -272,20 +271,17 @@ namespace rawrbox {
 		// LIGHTS ------
 		template <typename T = rawrbox::LightBase>
 		void addLight(T light, const std::string& parentMesh = "") {
-			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				auto parent = this->_meshes.back().get();
+			auto parent = this->_meshes.back().get();
+			if (!parentMesh.empty()) {
+				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
+					return msh->getName() == parentMesh;
+				});
 
-				if (!parentMesh.empty()) {
-					auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
-						return msh->getName() == parentMesh;
-					});
-
-					if (fnd != this->_meshes.end()) parent = fnd->get();
-				}
-
-				light.setOffsetPos(parent->getPos());
-				parent->lights.push_back(rawrbox::LIGHTS::addLight<T>(light));
+				if (fnd != this->_meshes.end()) parent = fnd->get();
 			}
+
+			light.setOffsetPos(parent->getPos());
+			parent->lights.push_back(rawrbox::LIGHTS::addLight<T>(light));
 		}
 		// -----
 
@@ -339,24 +335,24 @@ namespace rawrbox {
 			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 		}
 
-		virtual void addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
+		virtual void addMesh(rawrbox::Mesh mesh) {
 			this->_bbox.combine(mesh.getBBOX());
 			mesh.owner = this;
 
-			this->_meshes.push_back(std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh));
+			this->_meshes.push_back(std::make_unique<rawrbox::Mesh>(mesh));
 			if (this->isUploaded() && this->isDynamicBuffer()) {
 				this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 			}
 		}
 
-		virtual rawrbox::Mesh<typename M::vertexBufferType>* getMeshByName(const std::string& id) {
+		virtual rawrbox::Mesh* getMeshByName(const std::string& id) {
 			auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&id](auto& mesh) { return mesh->getName() == id; });
 			if (fnd == this->_meshes.end()) return nullptr;
 
 			return (*fnd).get();
 		}
 
-		virtual rawrbox::Mesh<typename M::vertexBufferType>& getMesh(size_t id = 0) {
+		virtual rawrbox::Mesh& getMesh(size_t id = 0) {
 			if (!this->hasMesh(id)) throw std::runtime_error(fmt::format("[RawrBox-ModelBase] Mesh {} does not exist", id));
 			return *this->_meshes[id];
 		}
@@ -400,7 +396,7 @@ namespace rawrbox {
 			}
 		}
 
-		virtual std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>>& meshes() {
+		virtual std::vector<std::unique_ptr<rawrbox::Mesh>>& meshes() {
 			return this->_meshes;
 		}
 

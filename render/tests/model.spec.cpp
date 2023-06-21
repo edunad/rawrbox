@@ -17,7 +17,7 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		REQUIRE_THROWS(mdl.getMesh(0));
 		REQUIRE_THROWS(mdl.getMesh(1));
 
-		mdl.addMesh(rawrbox::MeshUtils<>::generatePlane({}, {1, 1}));
+		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 		REQUIRE_NOTHROW(mdl.getMesh(0));
 		REQUIRE_THROWS(mdl.getMesh(1));
 
@@ -31,8 +31,8 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 	SECTION("rawrbox::ModelBase::merge") {
 		rawrbox::ModelBase<> base;
 
-		auto m1 = rawrbox::MeshUtils<>::generatePlane({}, {1, 1});
-		auto m2 = rawrbox::MeshUtils<>::generatePlane({}, {1, 1});
+		auto m1 = rawrbox::MeshUtils::generatePlane({}, {1, 1});
+		auto m2 = rawrbox::MeshUtils::generatePlane({}, {1, 1});
 
 		REQUIRE(m1.baseIndex == 0);
 		REQUIRE(m1.baseVertex == 0);
@@ -54,14 +54,14 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		REQUIRE(b.isEmpty() == true);
 		REQUIRE(b.size() == 0.F);
 
-		mdl.addMesh(rawrbox::MeshUtils<>::generatePlane({}, {2, 2}));
+		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {2, 2}));
 
 		REQUIRE(b.isEmpty() == false);
 		REQUIRE(b.size().x == 2.F);
 		REQUIRE(b.size().y == 2.F);
 		REQUIRE(b.size().z == 0.F);
 
-		mdl.addMesh(rawrbox::MeshUtils<>::generateCube({}, {2, 4, 2}));
+		mdl.addMesh(rawrbox::MeshUtils::generateCube({}, {2, 4, 2}));
 
 		REQUIRE(b.size().x == 2.F);
 		REQUIRE(b.size().y == 4.F);
@@ -127,8 +127,8 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 
 	SECTION("rawrbox::Model::setCulling") {
 		rawrbox::Model<> mdl;
-		mdl.addMesh(rawrbox::MeshUtils<>::generatePlane({}, {1, 1}));
-		mdl.addMesh(rawrbox::MeshUtils<>::generatePlane({}, {1, 1}));
+		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
+		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 
 		REQUIRE(mdl.getMesh(0).culling == BGFX_STATE_CULL_CW);
 		REQUIRE(mdl.getMesh(1).culling == BGFX_STATE_CULL_CW);
@@ -142,8 +142,8 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 
 	SECTION("rawrbox::Model::setWireframe") {
 		rawrbox::Model<> mdl;
-		mdl.addMesh(rawrbox::MeshUtils<>::generatePlane({}, {1, 1}));
-		mdl.addMesh(rawrbox::MeshUtils<>::generatePlane({}, {1, 1}));
+		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
+		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 
 		REQUIRE(mdl.getMesh(0).wireframe == false);
 		REQUIRE(mdl.getMesh(1).wireframe == false);
@@ -157,8 +157,8 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 
 	SECTION("rawrbox::Model::setBlend") {
 		rawrbox::Model<> mdl;
-		mdl.addMesh(rawrbox::MeshUtils<>::generatePlane({}, {1, 1}));
-		mdl.addMesh(rawrbox::MeshUtils<>::generatePlane({}, {1, 1}));
+		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
+		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 
 		REQUIRE(mdl.getMesh(0).blending == BGFX_STATE_BLEND_NORMAL);
 		REQUIRE(mdl.getMesh(1).blending == BGFX_STATE_BLEND_NORMAL);

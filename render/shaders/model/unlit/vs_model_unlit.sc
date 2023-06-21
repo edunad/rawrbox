@@ -5,8 +5,8 @@ $output v_color0, v_texcoord0
 #include <../../include/model_transforms.sh>
 
 void main() {
-    gl_Position = applyPosTransforms(a_position, a_texcoord0);
+    gl_Position = applyPosTransforms(a_position, a_texcoord0.xy);
 
     v_color0 = a_color0;
-    v_texcoord0 = a_texcoord0;
+    v_texcoord0 = a_texcoord0.xy;
 }

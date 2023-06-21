@@ -81,9 +81,9 @@ namespace rawrbox {
 				int triCount = shapeSegments.size() * segments;
 				int triIndexCount = triCount * 3;
 
-				rawrbox::Mesh<typename M::vertexBufferType> mesh;
+				rawrbox::Mesh mesh;
 				std::vector<uint16_t> triangleIndices(triIndexCount);
-				std::vector<typename M::vertexBufferType> buff(vertCount);
+				std::vector<rawrbox::VertexData> buff(vertCount);
 
 				// Generate all of the vertices and normals
 				for (int i = 0; i < path.size(); i++) {
@@ -95,11 +95,7 @@ namespace rawrbox {
 						auto norm = rawrbox::Vector3f(this->_shape->normal[j].x, this->_shape->normal[j].y, 0.F);
 						auto uv = rawrbox::Vector2f(this->_shape->u[j], path[i].vCoordinate);
 
-						if constexpr (supportsNormals<typename M::vertexBufferType>) {
-							buff[id] = rawrbox::VertexLitData(path[i].LocalToWorld(pos), uv, {rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z), 0}, rawrbox::Colors::White);
-						} else {
-							buff[id] = rawrbox::VertexData(path[i].LocalToWorld(pos), uv, rawrbox::Colors::White);
-						}
+						buff[id] = rawrbox::VertexData(path[i].LocalToWorld(pos), uv, {rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z), 0}, rawrbox::Colors::White);
 					}
 				}
 

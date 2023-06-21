@@ -99,9 +99,7 @@ namespace rawrbox {
 		void spawnParticle();
 
 		template <typename M = rawrbox::MaterialParticle>
-		void write_vertex(typename M::vertexBufferType*& dest, typename M::vertexBufferType vertex)
-			requires(supportsBlend<typename M::vertexBufferType>)
-		{
+		void write_vertex(rawrbox::VertexData*& dest, rawrbox::VertexData vertex) {
 			*dest = vertex;
 			++dest;
 		}
@@ -123,9 +121,7 @@ namespace rawrbox {
 		void update();
 
 		template <typename M = rawrbox::MaterialParticle>
-		uint32_t draw(const rawrbox::CameraBase& camera, uint32_t first, uint32_t max, rawrbox::ParticleSort* outSort, typename M::vertexBufferType* outVert)
-			requires(supportsBlend<typename M::vertexBufferType>)
-		{
+		uint32_t draw(const rawrbox::CameraBase& camera, uint32_t first, uint32_t max, rawrbox::ParticleSort* outSort, rawrbox::VertexData* outVert) {
 			bx::EaseFn easeRgba = bx::getEaseFunc(this->_settings.easeRgba);
 			bx::EaseFn easePos = bx::getEaseFunc(this->_settings.easePos);
 			bx::EaseFn easeScale = bx::getEaseFunc(this->_settings.easeScale);
@@ -183,12 +179,12 @@ namespace rawrbox {
 				    bx::lerp(clStart[3], clEnd[3], ttmod) / 255.F);
 
 				auto atlasId = static_cast<float>(p.textureLayer);
-				typename M::vertexBufferType* vertex = &outVert[index * 4];
+				rawrbox::VertexData* vertex = &outVert[index * 4];
 
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir - vdir, {0, 1, blend, atlasId}, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir + vdir, {1, 0, blend, atlasId}, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos - udir + vdir, {0, 0, blend, atlasId}, color));
-				this->write_vertex(vertex, rawrbox::VertexBlendData(pos + udir - vdir, {1, 1, blend, atlasId}, color));
+				this->write_vertex(vertex, rawrbox::VertexData(pos - udir - vdir, {0, 1, blend, atlasId}, color));
+				this->write_vertex(vertex, rawrbox::VertexData(pos + udir + vdir, {1, 0, blend, atlasId}, color));
+				this->write_vertex(vertex, rawrbox::VertexData(pos - udir + vdir, {0, 0, blend, atlasId}, color));
+				this->write_vertex(vertex, rawrbox::VertexData(pos + udir - vdir, {1, 1, blend, atlasId}, color));
 
 				++index;
 			}

@@ -18,8 +18,6 @@ namespace rawrbox {
 		bgfx::UniformHandle u_lightsPosition = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_lightsData = BGFX_INVALID_HANDLE;
 
-		using vertexBufferType = rawrbox::VertexLitData;
-
 		MaterialLit() = default;
 		MaterialLit(MaterialLit&&) = delete;
 		MaterialLit& operator=(MaterialLit&&) = delete;
@@ -27,11 +25,14 @@ namespace rawrbox {
 		MaterialLit& operator=(const MaterialLit&) = delete;
 		~MaterialLit() override;
 
+		static const bgfx::VertexLayout vLayout() {
+			return rawrbox::VertexData::vLayout(true, false);
+		}
+
 		void registerUniforms() override;
 		void preProcess() override;
 
-		template <typename T>
-		void process(const rawrbox::Mesh<T>& mesh) {
+		void process(const rawrbox::Mesh& mesh) override {
 			rawrbox::MaterialBase::process(mesh);
 
 			if (mesh.specularTexture != nullptr && mesh.specularTexture->valid() && !mesh.lineMode && !mesh.wireframe) {
