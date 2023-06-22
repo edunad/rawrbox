@@ -45,7 +45,7 @@ namespace rawrbox {
 			    .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float)
 			    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true, true);
 
-			if (!normals) {
+			if (normals) {
 				l.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Uint8, true, true)
 				    .add(bgfx::Attrib::Tangent, 3, bgfx::AttribType::Uint8, true, true)
 				    .add(bgfx::Attrib::Bitangent, 3, bgfx::AttribType::Uint8, true, true);
@@ -53,7 +53,7 @@ namespace rawrbox {
 				l.skip(sizeof(normal));
 			}
 
-			if (!bones) {
+			if (bones) {
 				l.add(bgfx::Attrib::Indices, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Uint8, false, true)
 				    .add(bgfx::Attrib::Weight, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Float);
 			} else {
