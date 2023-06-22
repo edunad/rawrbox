@@ -33,22 +33,19 @@ namespace rawrbox {
 			// Merge same meshes to reduce calls
 			if (this->_canOptimize) {
 				size_t old = this->_meshes.size();
-				for (auto mesh = this->_meshes.begin(); mesh != this->_meshes.end();) {
-					bool merged = false;
+				for (size_t i1 = 0; i1 < this->_meshes.size(); i1++) {
+					auto& mesh1 = this->_meshes[i1];
+					for (size_t i2 = 0; i2 < this->_meshes.size(); i2++) {
+						if (i1 == i2) continue;
 
-					// Previous mesh available?
-					if (mesh != this->_meshes.begin()) {
-						auto prevMesh = std::prev(mesh); // Check old meshes
+						auto& mesh2 = this->_meshes[i2];
+						if (!mesh1->canOptimize(*mesh2)) continue;
 
-						if ((*prevMesh)->canOptimize(**mesh)) {
-							(*prevMesh)->merge(**mesh);
+						mesh1->merge(*mesh2);
 
-							mesh = this->_meshes.erase(mesh);
-							merged = true;
-						}
+						this->_meshes.erase(this->_meshes.begin() + i2);
+						i2--;
 					}
-
-					if (!merged) mesh++;
 				}
 
 				if (old != this->_meshes.size()) fmt::print("[RawrBox-Model] Optimized mesh for rendering (Before {} | After {})\n", old, this->_meshes.size());
