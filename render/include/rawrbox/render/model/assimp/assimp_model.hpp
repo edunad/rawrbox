@@ -64,8 +64,15 @@ namespace rawrbox {
 
 		void load(const rawrbox::AssimpImporter& model) {
 			this->loadMeshes(model);
-			this->loadAnimations(model);
-			this->loadLights(model);
+
+			if constexpr (supportsBones<M>) {
+				this->loadAnimations(model);
+			}
+
+			if constexpr (supportsNormals<M>) {
+				this->loadLights(model);
+			}
+
 			this->upload();
 		}
 	};

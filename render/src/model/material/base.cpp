@@ -45,6 +45,47 @@ namespace rawrbox {
 	}
 
 	void MaterialBase::preProcess() {}
+
+	void MaterialBase::process(const rawrbox::Mesh& mesh) {
+		if (mesh.texture != nullptr && mesh.texture->valid() && !mesh.lineMode && !mesh.wireframe) {
+			bgfx::setTexture(0, s_texColor, mesh.texture->getHandle());
+		} else {
+			bgfx::setTexture(0, s_texColor, rawrbox::WHITE_TEXTURE->getHandle());
+		}
+
+		if (mesh.bumpTexture != nullptr && mesh.bumpTexture->valid()) {
+			bgfx::setTexture(1, s_texBumpColor, mesh.bumpTexture->getHandle());
+		} else {
+			bgfx::setTexture(1, s_texBumpColor, rawrbox::BLACK_TEXTURE->getHandle());
+		}
+
+		// Color override
+		bgfx::setUniform(u_colorOffset, mesh.color.data().data());
+		// -------
+
+		// Mesh pos
+		std::array offset = {mesh.vertexPos[12], mesh.vertexPos[13], mesh.vertexPos[14]};
+		bgfx::setUniform(u_mesh_pos, offset.data());
+		// -------
+
+		// Pass "special" data ---
+		std::array<std::array<float, 4>, 4> data = {std::array<float, 4>{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
+		if (mesh.hasData("billboard_mode")) {
+			data[0] = mesh.getData("billboard_mode").data();
+		}
+
+		if (mesh.hasData("vertex_snap")) {
+			data[1] = mesh.getData("vertex_snap").data();
+		}
+
+		if (mesh.hasData("displacement_strength")) {
+			data[2] = mesh.getData("displacement_strength").data();
+		}
+
+		bgfx::setUniform(u_data, data.front().data(), 4);
+		// ---
+	}
+
 	void MaterialBase::process(const bgfx::TextureHandle& texture) {
 		if (bgfx::isValid(texture)) {
 			bgfx::setTexture(0, s_texColor, texture);

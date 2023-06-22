@@ -14,12 +14,12 @@ namespace rawrbox {
 		MaterialSkinnedLit& operator=(const MaterialSkinnedLit&) = delete;
 		~MaterialSkinnedLit() override;
 
-		static const bgfx::VertexLayout vLayout() {
-			return rawrbox::VertexData::vLayout(true, true);
-		}
-
 		void setBoneData(const std::vector<rawrbox::Matrix4x4>& data);
 		void registerUniforms() override;
 		void upload() override;
+
+		static const bgfx::VertexLayout vLayout() {
+			return rawrbox::VertexData::vLayout(true, true);
+		}
 	};
 } // namespace rawrbox

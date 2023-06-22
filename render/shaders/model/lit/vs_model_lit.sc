@@ -12,6 +12,7 @@ void main() {
 	v_normal = mul(u_modelView, vec4(normal.xyz, 0.0) ).xyz;
 	v_tangent = mul(u_modelView, vec4(tangent.xyz, 0.0) ).xyz;
 	v_bitangent = mul(u_modelView, vec4(bitagent.xyz, 0.0) ).xyz;
+
     v_color0 = a_color0;
 	v_texcoord0 = a_texcoord0.xy;
 

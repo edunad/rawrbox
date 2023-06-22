@@ -7,8 +7,8 @@ $output v_color0, v_texcoord0
 #include <../../../include/model_transforms.sh>
 
 void main() {
-	gl_Position = applyPosTransforms(boneTransform(a_indices, a_weight, a_position), a_texcoord0.xy);
-
 	v_texcoord0 = a_texcoord0.xy;
 	v_color0 = a_color0;
+
+	gl_Position = applyPosTransforms(boneTransform(a_indices, a_weight, a_position), v_texcoord0);
 }

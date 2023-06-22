@@ -25,41 +25,14 @@ namespace rawrbox {
 		MaterialLit& operator=(const MaterialLit&) = delete;
 		~MaterialLit() override;
 
-		static const bgfx::VertexLayout vLayout() {
-			return rawrbox::VertexData::vLayout(true, false);
-		}
-
 		void registerUniforms() override;
 		void preProcess() override;
 
-		void process(const rawrbox::Mesh& mesh) override {
-			rawrbox::MaterialBase::process(mesh);
-
-			if (mesh.specularTexture != nullptr && mesh.specularTexture->valid() && !mesh.lineMode && !mesh.wireframe) {
-				bgfx::setTexture(2, s_texSpecularColor, mesh.specularTexture->getHandle());
-			} else {
-				bgfx::setTexture(2, s_texSpecularColor, rawrbox::BLACK_TEXTURE->getHandle());
-			}
-
-			if (mesh.emissionTexture != nullptr && mesh.emissionTexture->valid() && !mesh.lineMode && !mesh.wireframe) {
-				bgfx::setTexture(3, s_texEmissionColor, mesh.emissionTexture->getHandle());
-			} else {
-				bgfx::setTexture(3, s_texEmissionColor, rawrbox::BLACK_TEXTURE->getHandle());
-			}
-
-			if (mesh.opacityTexture != nullptr && mesh.opacityTexture->valid() && !mesh.lineMode && !mesh.wireframe) {
-				bgfx::setTexture(4, s_texOpacityColor, mesh.opacityTexture->getHandle());
-			} else {
-				bgfx::setTexture(4, s_texOpacityColor, rawrbox::WHITE_TEXTURE->getHandle());
-			}
-
-			bgfx::setUniform(u_specularColor, mesh.specularColor.data().data());
-			bgfx::setUniform(u_emissionColor, mesh.emissionColor.data().data());
-
-			std::array<float, 2> matData = {mesh.specularShininess, mesh.emissionIntensity};
-			bgfx::setUniform(u_texMatData, matData.data());
-		}
-
+		void process(const rawrbox::Mesh& mesh) override;
 		void upload() override;
+
+		static const bgfx::VertexLayout vLayout() {
+			return rawrbox::VertexData::vLayout(true, false);
+		}
 	};
 } // namespace rawrbox

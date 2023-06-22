@@ -211,14 +211,16 @@ namespace rawrbox {
 		// --------------
 
 		void updateLights() {
-			// Update lights ---
-			for (auto& mesh : this->meshes()) {
-				rawrbox::Vector3f meshPos = {mesh->matrix[12], mesh->matrix[13], mesh->matrix[14]};
-				// auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle()); // TODO
+			if constexpr (supportsNormals<M>) {
+				// Update lights ---
+				for (auto& mesh : this->meshes()) {
+					rawrbox::Vector3f meshPos = {mesh->matrix[12], mesh->matrix[13], mesh->matrix[14]};
+					// auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle()); // TODO
 
-				for (auto light : mesh->lights) {
-					if (light == nullptr) continue;
-					light->setOffsetPos(meshPos);
+					for (auto light : mesh->lights) {
+						if (light == nullptr) continue;
+						light->setOffsetPos(meshPos);
+					}
 				}
 			}
 		}
@@ -271,17 +273,19 @@ namespace rawrbox {
 		// LIGHTS ------
 		template <typename T = rawrbox::LightBase>
 		void addLight(T light, const std::string& parentMesh = "") {
-			auto parent = this->_meshes.back().get();
-			if (!parentMesh.empty()) {
-				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
-					return msh->getName() == parentMesh;
-				});
+			if constexpr (supportsNormals<M>) {
+				auto parent = this->_meshes.back().get();
+				if (!parentMesh.empty()) {
+					auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
+						return msh->getName() == parentMesh;
+					});
 
-				if (fnd != this->_meshes.end()) parent = fnd->get();
+					if (fnd != this->_meshes.end()) parent = fnd->get();
+				}
+
+				light.setOffsetPos(parent->getPos());
+				parent->lights.push_back(rawrbox::LIGHTS::addLight<T>(light));
 			}
-
-			light.setOffsetPos(parent->getPos());
-			parent->lights.push_back(rawrbox::LIGHTS::addLight<T>(light));
 		}
 		// -----
 

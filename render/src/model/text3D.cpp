@@ -51,7 +51,7 @@ namespace rawrbox {
 			mesh.setName(fmt::format("3dtext-{}", id));
 
 			mesh.blending = BGFX_STATE_BLEND_ALPHA;
-			std::array<typename rawrbox::MaterialText3DUnlit::vertexBufferType, 4> buff{
+			std::array<rawrbox::VertexData, 4> buff{
 			    rawrbox::VertexData(startpos + Vector3f(x0 * screenSize, y0 * screenSize, 0), {glyph->textureTopLeft.x, glyph->textureBottomRight.y}, cl),
 			    rawrbox::VertexData(startpos + Vector3f(x1 * screenSize, y1 * screenSize, 0), {glyph->textureBottomRight.x, glyph->textureTopLeft.y}, cl),
 			    rawrbox::VertexData(startpos + Vector3f(x0 * screenSize, y1 * screenSize, 0), {glyph->textureTopLeft.x, glyph->textureTopLeft.y}, cl),
