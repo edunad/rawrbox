@@ -28,10 +28,9 @@ namespace rawrbox {
 		LightBase(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular);
 		LightBase(const LightBase&) = default;
 		LightBase(LightBase&&) = default;
-
 		LightBase& operator=(const LightBase&) = default;
 		LightBase& operator=(LightBase&&) = delete;
-		virtual ~LightBase();
+		virtual ~LightBase() = default;
 
 		[[nodiscard]] virtual const rawrbox::Colorf& getSpecularColor() const;
 		[[nodiscard]] virtual const rawrbox::Colorf& getDiffuseColor() const;

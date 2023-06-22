@@ -67,7 +67,7 @@ namespace instance_test {
 		float spacing = 0.85F;
 
 		auto t = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/instance_test.png")->get();
-		auto mesh = rawrbox::MeshUtils<>::generateCube({0, 0, 0}, {0.5F, 0.5F, 0.5F});
+		auto mesh = rawrbox::MeshUtils::generateCube({0, 0, 0}, {0.5F, 0.5F, 0.5F});
 		mesh.setTexture(t);
 
 		this->_model->setTemplate(mesh);
@@ -75,8 +75,8 @@ namespace instance_test {
 		std::random_device prng;
 		std::uniform_int_distribution<int> dist(0, 4);
 
-		for (int z = 0.F; z < total; z++) {
-			for (int x = 0.F; x < total; x++) {
+		for (int z = 0; z < total; z++) {
+			for (int x = 0; x < total; x++) {
 				rawrbox::Matrix4x4 m;
 				m.mtxSRT({1.F, 1.F, 1.F}, {0.F, 0.F, 0.F}, {x * spacing, 0, z * spacing});
 				this->_model->addInstance({m, rawrbox::Colors::White, {static_cast<float>(dist(prng)), 0, 0, 0}});

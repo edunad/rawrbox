@@ -6,8 +6,6 @@ namespace rawrbox {
 
 	class MaterialInstancedUnlit : public rawrbox::MaterialBase {
 	public:
-		using vertexBufferType = rawrbox::VertexData;
-
 		MaterialInstancedUnlit() = default;
 		MaterialInstancedUnlit(MaterialInstancedUnlit&&) = delete;
 		MaterialInstancedUnlit& operator=(MaterialInstancedUnlit&&) = delete;

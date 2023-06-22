@@ -4,8 +4,6 @@
 namespace rawrbox {
 	class MaterialParticle : public rawrbox::MaterialBase {
 	public:
-		using vertexBufferType = rawrbox::VertexBlendData;
-
 		MaterialParticle() = default;
 		MaterialParticle(const MaterialParticle &) = delete;
 		MaterialParticle(MaterialParticle &&) = delete;

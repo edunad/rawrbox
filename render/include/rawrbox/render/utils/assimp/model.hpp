@@ -8,14 +8,13 @@ namespace rawrbox {
 	class AssimpUtils {
 	public:
 		// ---
-		template <typename M = rawrbox::MaterialBase>
-		static rawrbox::Mesh<typename M::vertexBufferType> extractMesh(const rawrbox::AssimpImporter& model, size_t indx) {
+		static rawrbox::Mesh extractMesh(const rawrbox::AssimpImporter& model, size_t indx) {
 			auto& meshes = model.meshes;
 			if (meshes.empty() || indx < 0 || indx >= meshes.size()) throw std::runtime_error(fmt::format("[RawrBox-AssimpUtils] Failed to extract mesh '{}'!", indx));
 
 			auto& assimpMesh = meshes[indx];
 
-			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			rawrbox::Mesh mesh;
 			mesh.name = assimpMesh.name;
 			mesh.bbox = assimpMesh.bbox;
 			mesh.matrix = assimpMesh.matrix;
@@ -37,59 +36,37 @@ namespace rawrbox {
 				mesh.setColor(mat->diffuseColor);
 				// --------
 
-				if constexpr (supportsNormals<typename M::vertexBufferType>) {
-					// SPECULAR -----
-					if (mat->specular != nullptr) {
-						mesh.setSpecularTexture(mat->specular.get(), mat->shininess);
-					}
+				// SPECULAR -----
+				if (mat->specular != nullptr) {
+					mesh.setSpecularTexture(mat->specular.get(), mat->shininess);
+				}
 
-					mesh.setSpecularColor(mat->specularColor);
-					// --------
+				mesh.setSpecularColor(mat->specularColor);
+				// --------
 
-					// EMISSION -----
-					if (mat->emissive != nullptr) {
-						mesh.setEmissionTexture(mat->emissive.get(), mat->intensity);
-					}
+				// EMISSION -----
+				if (mat->emissive != nullptr) {
+					mesh.setEmissionTexture(mat->emissive.get(), mat->intensity);
+				}
 
-					mesh.setEmissionColor(mat->emissionColor);
-					// --------
+				mesh.setEmissionColor(mat->emissionColor);
+				// --------
 
-					// OPACITY -----
-					if (mat->opacity != nullptr) {
-						mesh.setOpacityTexture(mat->opacity.get());
-					}
-					// --------
+				// OPACITY -----
+				if (mat->opacity != nullptr) {
+					mesh.setOpacityTexture(mat->opacity.get());
 				}
 				// --------
 			}
 			// ------------
 
 			mesh.indices = assimpMesh.indices;
-			for (auto& vert : assimpMesh.vertices) {
-				typename M::vertexBufferType m;
-				m.position = vert.position;
-				m.uv = vert.uv;
-				m.abgr = vert.abgr;
-
-				if constexpr (supportsNormals<typename M::vertexBufferType>) {
-					m.normal = vert.normal;
-				}
-
-				if constexpr (supportsBones<typename M::vertexBufferType>) {
-					m.index = vert.index;
-					m.bone_indices = vert.bone_indices;
-					m.bone_weights = vert.bone_weights;
-				}
-
-				mesh.vertices.push_back(m);
-			}
+			mesh.vertices = assimpMesh.vertices;
 
 			// Bones
-			if constexpr (supportsBones<typename M::vertexBufferType>) {
-				if (assimpMesh.skeleton != nullptr) {
-					mesh.skeleton = assimpMesh.skeleton;
-					mesh.setOptimizable(false);
-				}
+			if (assimpMesh.skeleton != nullptr) {
+				mesh.skeleton = assimpMesh.skeleton;
+				mesh.setOptimizable(false);
 			}
 			// -------------------
 

@@ -12,7 +12,7 @@ namespace rawrbox {
 	class AssimpModel : public rawrbox::Model<M> {
 		void loadMeshes(const rawrbox::AssimpImporter& model) {
 			for (size_t i = 0; i < model.meshes.size(); i++) {
-				this->addMesh(rawrbox::AssimpUtils::extractMesh<M>(model, i));
+				this->addMesh(rawrbox::AssimpUtils::extractMesh(model, i));
 			}
 		}
 
@@ -22,7 +22,7 @@ namespace rawrbox {
 
 			// Mark animated meshes ---
 			for (auto& anim : model.animatedMeshes) {
-				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [anim](std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>& msh) {
+				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [anim](std::unique_ptr<rawrbox::Mesh>& msh) {
 					return msh->getName() == anim.second->name;
 				});
 				if (fnd == this->_meshes.end()) continue;
@@ -65,11 +65,11 @@ namespace rawrbox {
 		void load(const rawrbox::AssimpImporter& model) {
 			this->loadMeshes(model);
 
-			if constexpr (supportsBones<typename M::vertexBufferType>) {
+			if constexpr (supportsBones<M>) {
 				this->loadAnimations(model);
 			}
 
-			if constexpr (supportsNormals<typename M::vertexBufferType>) {
+			if constexpr (supportsNormals<M>) {
 				this->loadLights(model);
 			}
 

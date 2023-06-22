@@ -8,8 +8,6 @@ namespace rawrbox {
 	public:
 		bgfx::UniformHandle u_bones = BGFX_INVALID_HANDLE;
 
-		using vertexBufferType = rawrbox::VertexSkinnedUnlitData;
-
 		MaterialSkinnedUnlit() = default;
 		MaterialSkinnedUnlit(MaterialSkinnedUnlit&&) = delete;
 		MaterialSkinnedUnlit& operator=(MaterialSkinnedUnlit&&) = delete;
@@ -20,6 +18,10 @@ namespace rawrbox {
 		void setBoneData(const std::vector<rawrbox::Matrix4x4>& data);
 		void registerUniforms() override;
 		void upload() override;
+
+		static const bgfx::VertexLayout vLayout() {
+			return rawrbox::VertexData::vLayout(false, true);
+		}
 	};
 
 } // namespace rawrbox

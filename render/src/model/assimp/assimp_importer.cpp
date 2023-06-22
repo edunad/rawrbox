@@ -501,7 +501,7 @@ namespace rawrbox {
 
 			// Vertices
 			for (size_t i = 0; i < aiMesh.mNumVertices; i++) {
-				rawrbox::VertexSkinnedLitData v;
+				rawrbox::VertexData v;
 
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
@@ -510,7 +510,7 @@ namespace rawrbox {
 
 				if (aiMesh.HasTextureCoords(0)) {
 					auto& uv = aiMesh.mTextureCoords[0][i];
-					v.uv = {uv.x, uv.y};
+					v.uv = {uv.x, uv.y, 0, 0};
 				}
 
 				if (aiMesh.HasVertexColors(0)) {

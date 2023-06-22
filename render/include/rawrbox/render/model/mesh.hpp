@@ -5,6 +5,7 @@
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/render/model/defs.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
@@ -19,12 +20,9 @@
 #include <unordered_map>
 
 namespace rawrbox {
-	struct VertexData;
 	struct Skeleton;
-
 	class LightBase;
 
-	template <typename T = VertexData>
 	class Mesh {
 	private:
 		bool _canOptimize = true;
@@ -42,7 +40,7 @@ namespace rawrbox {
 		uint16_t totalVertex = 0;
 		uint16_t totalIndex = 0;
 
-		std::vector<T> vertices = {};
+		std::vector<rawrbox::VertexData> vertices = {};
 		std::vector<uint16_t> indices = {};
 		// -------
 
@@ -85,60 +83,30 @@ namespace rawrbox {
 		std::vector<rawrbox::LightBase*> lights = {};
 		// -----------------
 
-		void* owner = nullptr; // Eeeehhhh
-		std::unordered_map<std::string, rawrbox::Vector4f> data = {};
+		void* owner = nullptr;                                        // Eeeehhhh
+		std::unordered_map<std::string, rawrbox::Vector4f> data = {}; // Other data
 
 		// UTILS ----
-		[[nodiscard]] const std::string& getName() const {
-			return this->name;
-		}
+		[[nodiscard]] const std::string& getName() const;
+		void setName(const std::string& name);
 
-		void setName(const std::string& name) {
-			this->name = name;
-		}
+		[[nodiscard]] const std::vector<rawrbox::VertexData>& getVertices() const;
+		[[nodiscard]] const std::vector<uint16_t>& getIndices() const;
+		[[nodiscard]] const rawrbox::BBOX& getBBOX() const;
 
-		[[nodiscard]] const std::vector<T>& getVertices() const {
-			return this->vertices;
-		}
+		[[nodiscard]] const bool empty() const;
 
-		[[nodiscard]] const std::vector<uint16_t>& getIndices() const {
-			return this->indices;
-		}
+		void setMatrix(const rawrbox::Matrix4x4& matrix);
 
-		[[nodiscard]] const rawrbox::BBOX& getBBOX() const {
-			return this->bbox;
-		}
+		[[nodiscard]] const rawrbox::Vector3f& getPos() const;
+		void setPos(const rawrbox::Vector3f& pos);
 
-		[[nodiscard]] const bool empty() const {
-			return this->indices.empty() || this->vertices.empty();
-		}
+		[[nodiscard]] const rawrbox::Vector4f& getAngle() const;
+		void setAngle(const rawrbox::Vector4f& ang);
+		void setEulerAngle(const rawrbox::Vector3f& ang);
 
-		void setMatrix(const rawrbox::Matrix4x4& matrix) {
-			this->matrix = matrix;
-		}
-
-		[[nodiscard]] const rawrbox::Vector3f& getPos() const { return this->_pos; }
-		void setPos(const rawrbox::Vector3f& pos) {
-			this->_pos = pos;
-			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
-		}
-
-		[[nodiscard]] const rawrbox::Vector4f& getAngle() const { return this->_angle; }
-		void setAngle(const rawrbox::Vector4f& ang) {
-			this->_angle = ang;
-			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
-		}
-
-		void setEulerAngle(const rawrbox::Vector3f& ang) {
-			this->_angle = rawrbox::Vector4f::toQuat(ang);
-			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
-		}
-
-		[[nodiscard]] const rawrbox::Vector3f& getScale() const { return this->_scale; }
-		void setScale(const rawrbox::Vector3f& scale) {
-			this->_scale = scale;
-			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
-		}
+		[[nodiscard]] const rawrbox::Vector3f& getScale() const;
+		void setScale(const rawrbox::Vector3f& scale);
 
 		template <typename B>
 		B* getOwner() {
@@ -146,112 +114,47 @@ namespace rawrbox {
 			return std::bit_cast<B*>(this->owner);
 		}
 
-		[[nodiscard]] const rawrbox::TextureBase* getTexture() const { return this->texture; }
-		void setTexture(rawrbox::TextureBase* ptr) { this->texture = ptr; }
+		[[nodiscard]] const rawrbox::TextureBase* getTexture() const;
+		void setTexture(rawrbox::TextureBase* ptr);
 
-		[[nodiscard]] const rawrbox::TextureBase* getBumpTexture() const { return this->bumpTexture; }
-		void setBumpTexture(rawrbox::TextureBase* ptr) { this->bumpTexture = ptr; }
+		[[nodiscard]] const rawrbox::TextureBase* getBumpTexture() const;
+		void setBumpTexture(rawrbox::TextureBase* ptr);
 
-		[[nodiscard]] const rawrbox::TextureBase* getEmissionTexture() const { return this->emissionTexture; }
-		void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity) {
-			this->emissionTexture = ptr;
-			this->emissionIntensity = intensity;
-		}
+		[[nodiscard]] const rawrbox::TextureBase* getEmissionTexture() const;
+		void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity);
 
-		[[nodiscard]] const rawrbox::TextureBase* getOpacityTexture() const { return this->opacityTexture; }
-		void setOpacityTexture(rawrbox::TextureBase* ptr) {
-			this->opacityTexture = ptr;
-		}
+		[[nodiscard]] const rawrbox::TextureBase* getOpacityTexture() const;
+		void setOpacityTexture(rawrbox::TextureBase* ptr);
 
-		[[nodiscard]] const rawrbox::TextureBase* getSpecularTexture() const { return this->specularTexture; }
-		void setSpecularTexture(rawrbox::TextureBase* ptr, float shininess) {
-			this->specularTexture = ptr;
-			this->specularShininess = shininess;
-		}
+		[[nodiscard]] const rawrbox::TextureBase* getSpecularTexture() const;
+		void setSpecularTexture(rawrbox::TextureBase* ptr, float shininess);
 
-		void setVertexSnap(float power = 2.F) {
-			this->addData("vertex_snap", {power, 0, 0, 0});
-			this->setOptimizable(false);
-		}
+		void setVertexSnap(float power = 2.F);
 
-		void setDisplacement(float power) {
-			this->addData("displacement_strength", {power, 0, 0, 0});
-			this->setOptimizable(false);
-		}
+		void setDisplacement(float power);
 
-		void setWireframe(bool wireframe) {
-			this->wireframe = wireframe;
-		}
+		void setWireframe(bool wireframe);
 
-		void setCulling(uint64_t culling) {
-			this->culling = culling;
-		}
+		void setCulling(uint64_t culling);
 
-		void setDepthTest(uint64_t depthTest) {
-			this->depthTest = depthTest;
-		}
+		void setDepthTest(uint64_t depthTest);
 
-		void setBlend(uint64_t blend) {
-			this->blending = blend;
-		}
+		void setBlend(uint64_t blend);
 
-		void setColor(const rawrbox::Color& color) {
-			this->color = color;
-		}
+		void setColor(const rawrbox::Color& color);
+		void setSpecularColor(const rawrbox::Color& color);
+		void setEmissionColor(const rawrbox::Color& color);
 
-		void setSpecularColor(const rawrbox::Color& color) {
-			this->specularColor = color;
-		}
+		void addData(const std::string& id, rawrbox::Vector4f data);
+		[[nodiscard]] const rawrbox::Vector4f& getData(const std::string& id) const;
+		[[nodiscard]] bool hasData(const std::string& id) const;
 
-		void setEmissionColor(const rawrbox::Color& color) {
-			this->emissionColor = color;
-		}
+		[[nodiscard]] rawrbox::Skeleton* getSkeleton() const;
 
-		void addData(const std::string& id, rawrbox::Vector4f data) { // BGFX shaders only accept vec4, so.. yea
-			this->data[id] = data;
-		}
+		void clear();
 
-		[[nodiscard]] const rawrbox::Vector4f& getData(const std::string& id) const {
-			auto fnd = this->data.find(id);
-			if (fnd == this->data.end()) throw std::runtime_error(fmt::format("[RawrBox-Mesh] Data '{}' not found", id));
-			return fnd->second;
-		}
-
-		[[nodiscard]] bool hasData(const std::string& id) const {
-			return this->data.find(id) != this->data.end();
-		}
-
-		[[nodiscard]] rawrbox::Skeleton* getSkeleton() const {
-			return this->skeleton;
-		}
-
-		void merge(const rawrbox::Mesh<T>& other) {
-			for (uint16_t i : other.indices)
-				this->indices.push_back(this->totalVertex + i);
-			this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
-
-			this->totalVertex += other.totalVertex;
-			this->totalIndex += other.totalIndex;
-		}
-
-		void clear() {
-			this->vertices.clear();
-			this->indices.clear();
-
-			this->totalIndex = 0;
-			this->totalVertex = 0;
-			this->baseIndex = 0;
-			this->baseVertex = 0;
-		}
-
-		void setOptimizable(bool status) { this->_canOptimize = status; }
-		[[nodiscard]] bool canOptimize(const rawrbox::Mesh<T>& other) const {
-			if (!this->_canOptimize || !other._canOptimize) return false;
-
-			return this->texture == other.texture &&
-			       this->color == other.color &&
-			       this->lineMode == other.lineMode &&
-			       this->matrix == other.matrix;
-		}
+		void merge(const rawrbox::Mesh& other);
+		void setOptimizable(bool status);
+		[[nodiscard]] bool canOptimize(const rawrbox::Mesh& other) const;
 	};
 } // namespace rawrbox

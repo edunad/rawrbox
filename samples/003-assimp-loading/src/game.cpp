@@ -111,7 +111,7 @@ namespace assimp {
 		// ------
 
 		{
-			auto mesh = rawrbox::MeshUtils<>::generateGrid(24, {0.F, 0.F, 0.F});
+			auto mesh = rawrbox::MeshUtils::generateGrid(24, {0.F, 0.F, 0.F});
 			this->_modelGrid->addMesh(mesh);
 			this->_modelGrid->upload();
 		}

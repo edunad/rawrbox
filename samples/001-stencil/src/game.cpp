@@ -77,7 +77,7 @@ namespace stencil {
 		// ----
 
 		// Textures ---
-		auto mesh = rawrbox::MeshUtils<>::generateCube({0, 0, 0}, {2.F, 2.F, 2.F});
+		auto mesh = rawrbox::MeshUtils::generateCube({0, 0, 0}, {2.F, 2.F, 2.F});
 		mesh.setTexture(this->_texture);
 
 		this->_model->addMesh(mesh);

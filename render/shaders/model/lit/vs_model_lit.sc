@@ -12,9 +12,10 @@ void main() {
 	v_normal = mul(u_modelView, vec4(normal.xyz, 0.0) ).xyz;
 	v_tangent = mul(u_modelView, vec4(tangent.xyz, 0.0) ).xyz;
 	v_bitangent = mul(u_modelView, vec4(bitagent.xyz, 0.0) ).xyz;
+
     v_color0 = a_color0;
-	v_texcoord0 = a_texcoord0;
+	v_texcoord0 = a_texcoord0.xy;
 
 	v_view = mul(u_view, vec4(a_position, 1.0)).xyz;
-    gl_Position = applyPosTransforms(a_position, a_texcoord0);
+    gl_Position = applyPosTransforms(a_position, v_texcoord0);
 }
