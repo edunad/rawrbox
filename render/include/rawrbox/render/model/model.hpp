@@ -336,14 +336,16 @@ namespace rawrbox {
 			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 		}
 
-		virtual void addMesh(rawrbox::Mesh mesh) {
+		virtual rawrbox::Mesh* addMesh(rawrbox::Mesh mesh) {
 			this->_bbox.combine(mesh.getBBOX());
 			mesh.owner = this;
 
-			this->_meshes.push_back(std::make_unique<rawrbox::Mesh>(mesh));
+			auto& a = this->_meshes.emplace_back(std::make_unique<rawrbox::Mesh>(mesh));
 			if (this->isUploaded() && this->isDynamicBuffer()) {
 				this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 			}
+
+			return a.get();
 		}
 
 		virtual rawrbox::Mesh* getMeshByName(const std::string& id) {

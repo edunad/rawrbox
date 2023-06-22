@@ -28,9 +28,9 @@ namespace rawrbox {
 		[[nodiscard]] const bool zAxisEnabled() const { return this->_zAxis; }
 		void lockZAxix(bool locked) { this->_zAxis = !locked; }
 
-		void addMesh(rawrbox::Mesh mesh) override {
+		rawrbox::Mesh* addMesh(rawrbox::Mesh mesh) override {
 			mesh.setOptimizable(false);
-			Model<M>::addMesh(mesh);
+			return Model<M>::addMesh(mesh);
 		}
 
 		void draw() override {
