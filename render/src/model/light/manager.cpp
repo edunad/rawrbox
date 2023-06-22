@@ -4,7 +4,10 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
+	// PRIVATE ----
 	std::vector<std::unique_ptr<rawrbox::LightBase>> LIGHTS::_lights = {};
+	// -----
+	// PUBLIC ----
 	bool LIGHTS::fullbright = false;
 
 	void LIGHTS::shutdown() { _lights.clear(); }
@@ -12,7 +15,7 @@ namespace rawrbox {
 
 	// Light utils ----
 	void LIGHTS::removeLight(rawrbox::LightBase* light) {
-		if (_lights.empty()) return;
+		if (light == nullptr || _lights.empty()) return;
 
 		for (size_t i = 0; i < _lights.size(); i++) {
 			if (_lights[i].get() == light) {

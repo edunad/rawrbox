@@ -2,7 +2,6 @@
 
 namespace rawrbox {
 	LightBase::LightBase(rawrbox::Vector3f pos, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : _pos(pos), _diffuse(diffuse), _specular(specular){};
-	LightBase::~LightBase() { rawrbox::LIGHTS::removeLight(this); };
 
 	const rawrbox::Colorf& LightBase::getSpecularColor() const { return this->_specular; }
 	const rawrbox::Colorf& LightBase::getDiffuseColor() const { return this->_diffuse; }

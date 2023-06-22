@@ -21,7 +21,7 @@
 namespace ui_test {
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(1);
+		this->_window->setMonitor(-1);
 		this->_window->setTitle("UI TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count);
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
