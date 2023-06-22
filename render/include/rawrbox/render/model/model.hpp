@@ -355,13 +355,13 @@ namespace rawrbox {
 			return (*fnd).get();
 		}
 
-		virtual rawrbox::Mesh& getMesh(size_t id = 0) {
-			if (!this->hasMesh(id)) throw std::runtime_error(fmt::format("[RawrBox-ModelBase] Mesh {} does not exist", id));
-			return *this->_meshes[id];
+		virtual rawrbox::Mesh* getMesh(size_t id = 0) {
+			if (!this->hasMesh(id)) return nullptr;
+			return this->_meshes[id].get();
 		}
 
 		virtual bool hasMesh(size_t id) {
-			return id < this->_meshes.size();
+			return id >= 0 && id < this->_meshes.size();
 		}
 
 		virtual void setCulling(uint64_t cull, int id = -1) {

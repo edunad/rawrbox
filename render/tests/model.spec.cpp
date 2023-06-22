@@ -14,18 +14,28 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 	SECTION("rawrbox::Model::addMesh / rawrbox::Model::removeMesh") {
 		rawrbox::Model<> mdl;
 
-		REQUIRE_THROWS(mdl.getMesh(0));
-		REQUIRE_THROWS(mdl.getMesh(1));
-
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
-		REQUIRE_NOTHROW(mdl.getMesh(0));
-		REQUIRE_THROWS(mdl.getMesh(1));
+		REQUIRE(mdl.getMesh(0) != nullptr);
 
 		mdl.removeMesh(1);
-		REQUIRE_NOTHROW(mdl.getMesh(0));
+		REQUIRE(mdl.getMesh(0) != nullptr);
 
 		mdl.removeMesh(0);
-		REQUIRE_THROWS(mdl.getMesh(0));
+		REQUIRE(mdl.getMesh(0) == nullptr);
+	}
+
+	SECTION("rawrbox::Model::getMeshByName") {
+		rawrbox::Model<> mdl;
+
+		REQUIRE(mdl.getMesh(0) == nullptr);
+
+		auto m = rawrbox::MeshUtils::generatePlane({}, {1, 1});
+		m.setName("test");
+		mdl.addMesh(m);
+
+		REQUIRE(mdl.getMesh(0) != nullptr);
+		REQUIRE(mdl.getMeshByName("aaa") == nullptr);
+		REQUIRE(mdl.getMeshByName("test") != nullptr);
 	}
 
 	SECTION("rawrbox::ModelBase::merge") {
@@ -130,14 +140,14 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 
-		REQUIRE(mdl.getMesh(0).culling == BGFX_STATE_CULL_CW);
-		REQUIRE(mdl.getMesh(1).culling == BGFX_STATE_CULL_CW);
+		REQUIRE(mdl.getMesh(0)->culling == BGFX_STATE_CULL_CW);
+		REQUIRE(mdl.getMesh(1)->culling == BGFX_STATE_CULL_CW);
 		mdl.setCulling(BGFX_STATE_CULL_CCW, 0);
-		REQUIRE(mdl.getMesh(0).culling == BGFX_STATE_CULL_CCW);
-		REQUIRE(mdl.getMesh(1).culling == BGFX_STATE_CULL_CW);
+		REQUIRE(mdl.getMesh(0)->culling == BGFX_STATE_CULL_CCW);
+		REQUIRE(mdl.getMesh(1)->culling == BGFX_STATE_CULL_CW);
 		mdl.setCulling(BGFX_STATE_CULL_CCW);
-		REQUIRE(mdl.getMesh(0).culling == BGFX_STATE_CULL_CCW);
-		REQUIRE(mdl.getMesh(1).culling == BGFX_STATE_CULL_CCW);
+		REQUIRE(mdl.getMesh(0)->culling == BGFX_STATE_CULL_CCW);
+		REQUIRE(mdl.getMesh(1)->culling == BGFX_STATE_CULL_CCW);
 	}
 
 	SECTION("rawrbox::Model::setWireframe") {
@@ -145,14 +155,14 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 
-		REQUIRE(mdl.getMesh(0).wireframe == false);
-		REQUIRE(mdl.getMesh(1).wireframe == false);
+		REQUIRE(mdl.getMesh(0)->wireframe == false);
+		REQUIRE(mdl.getMesh(1)->wireframe == false);
 		mdl.setWireframe(true, 0);
-		REQUIRE(mdl.getMesh(0).wireframe == true);
-		REQUIRE(mdl.getMesh(1).wireframe == false);
+		REQUIRE(mdl.getMesh(0)->wireframe == true);
+		REQUIRE(mdl.getMesh(1)->wireframe == false);
 		mdl.setWireframe(true);
-		REQUIRE(mdl.getMesh(0).wireframe == true);
-		REQUIRE(mdl.getMesh(1).wireframe == true);
+		REQUIRE(mdl.getMesh(0)->wireframe == true);
+		REQUIRE(mdl.getMesh(1)->wireframe == true);
 	}
 
 	SECTION("rawrbox::Model::setBlend") {
@@ -160,15 +170,15 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 
-		REQUIRE(mdl.getMesh(0).blending == BGFX_STATE_BLEND_NORMAL);
-		REQUIRE(mdl.getMesh(1).blending == BGFX_STATE_BLEND_NORMAL);
+		REQUIRE(mdl.getMesh(0)->blending == BGFX_STATE_BLEND_NORMAL);
+		REQUIRE(mdl.getMesh(1)->blending == BGFX_STATE_BLEND_NORMAL);
 		mdl.setBlend(BGFX_STATE_BLEND_SRC_ALPHA, 0);
 
-		REQUIRE(mdl.getMesh(0).blending == BGFX_STATE_BLEND_SRC_ALPHA);
-		REQUIRE(mdl.getMesh(1).blending == BGFX_STATE_BLEND_NORMAL);
+		REQUIRE(mdl.getMesh(0)->blending == BGFX_STATE_BLEND_SRC_ALPHA);
+		REQUIRE(mdl.getMesh(1)->blending == BGFX_STATE_BLEND_NORMAL);
 		mdl.setBlend(BGFX_STATE_BLEND_SRC_ALPHA);
 
-		REQUIRE(mdl.getMesh(0).blending == BGFX_STATE_BLEND_SRC_ALPHA);
-		REQUIRE(mdl.getMesh(1).blending == BGFX_STATE_BLEND_SRC_ALPHA);
+		REQUIRE(mdl.getMesh(0)->blending == BGFX_STATE_BLEND_SRC_ALPHA);
+		REQUIRE(mdl.getMesh(1)->blending == BGFX_STATE_BLEND_SRC_ALPHA);
 	}
 }
