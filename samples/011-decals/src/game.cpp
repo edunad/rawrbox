@@ -1,12 +1,10 @@
 
 
+#include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/utils/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
-#include <rawrbox/utils/keys.hpp>
-#include <rawrbox/utils/timer.hpp>
 
 #include <decal_test/game.hpp>
 
@@ -63,12 +61,38 @@ namespace decal_test {
 	}
 
 	void Game::contentLoaded() {
+		rawrbox::DECALS::setTexture(rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/decals.bmp")->get());
+		rawrbox::DECALS::addInstance({0, 1.F, 0});
+
+		// Setup
+		{
+			auto mesh = rawrbox::MeshUtils::generateCube({0, 1.0F, 0}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generatePlane({0, -1.0F, 0.F}, {3.F, 2.F}, rawrbox::Colors::Gray);
+			mesh.setEulerAngle({bx::toRad(90), 0, 0});
+
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
+			this->_model->addMesh(mesh);
+		}
+		// ----
+
+		this->_model->upload();
+		rawrbox::DECALS::upload();
+
 		this->_ready = true;
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 		this->_camera.reset();
+		this->_model.reset();
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
@@ -95,6 +119,8 @@ namespace decal_test {
 	}
 
 	void Game::drawWorld() {
+		if (this->_model != nullptr) this->_model->draw();
+		rawrbox::DECALS::draw();
 	}
 
 	void Game::draw() {
