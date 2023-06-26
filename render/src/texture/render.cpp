@@ -3,9 +3,6 @@
 
 #include <fmt/format.h>
 
-// Compiled shaders
-#include <generated/shaders/render/all.hpp>
-
 #include <array>
 
 namespace rawrbox {

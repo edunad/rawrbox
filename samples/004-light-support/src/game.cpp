@@ -148,6 +148,6 @@ namespace light {
 		// -----------
 
 		this->_window->frame(); // Commit primitives
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		this->_window->setViewProjection(this->_camera->getViewMtx(), this->_camera->getProjMtx());
 	}
 } // namespace light

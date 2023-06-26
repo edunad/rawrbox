@@ -4,8 +4,6 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/uniforms.hpp>
 
-#include <generated/shaders/render/all.hpp>
-
 #include <bx/math.h>
 
 // NOLINTBEGIN(*)

@@ -6,7 +6,6 @@
 #include <rawrbox/render/stencil.hpp>
 
 // Compiled shaders
-#include <generated/shaders/render/all.hpp>
 
 #include <bx/math.h>
 #include <fmt/format.h>

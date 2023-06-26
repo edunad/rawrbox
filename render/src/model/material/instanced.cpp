@@ -1,7 +1,5 @@
 #include <rawrbox/render/model/material/instanced.hpp>
 
-#include <generated/shaders/render/all.hpp>
-
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader model_instanced_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_model_instanced_unlit),

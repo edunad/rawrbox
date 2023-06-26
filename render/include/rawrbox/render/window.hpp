@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/utils/event.hpp>
@@ -69,7 +70,7 @@ namespace rawrbox {
 
 		uint32_t _clearColor = 0x000000FF;
 
-		// Drawing stuff ---
+		// Stencil ---
 		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
 		// -------
 
@@ -133,6 +134,8 @@ namespace rawrbox {
 		// DRAW -----
 		void clear();
 		void upload();
+
+		void setViewProjection(const rawrbox::Matrix4x4& view, const rawrbox::Matrix4x4& proj);
 		void frame() const;
 		// -----------
 

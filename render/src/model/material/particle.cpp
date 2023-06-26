@@ -1,8 +1,6 @@
 
 #include <rawrbox/render/model/material/particle.hpp>
 
-#include <generated/shaders/render/all.hpp>
-
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader particle_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_particle),

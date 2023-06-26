@@ -69,10 +69,7 @@ namespace rawrbox {
 				this->loadAnimations(model);
 			}
 
-			if constexpr (supportsNormals<M>) {
-				this->loadLights(model);
-			}
-
+			this->loadLights(model);
 			this->upload();
 		}
 	};

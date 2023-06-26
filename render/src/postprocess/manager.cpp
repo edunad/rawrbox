@@ -3,8 +3,6 @@
 #include <rawrbox/render/shader_defines.hpp>
 #include <rawrbox/render/static.hpp>
 
-#include <generated/shaders/render/all.hpp>
-
 #include <bx/bx.h>
 #include <fmt/format.h>
 

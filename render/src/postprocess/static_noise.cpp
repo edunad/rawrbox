@@ -5,8 +5,6 @@
 #include <rawrbox/render/utils/uniforms.hpp>
 #include <rawrbox/utils/time.hpp>
 
-#include <generated/shaders/render/all.hpp>
-
 #include <bx/math.h>
 
 // NOLINTBEGIN(*)

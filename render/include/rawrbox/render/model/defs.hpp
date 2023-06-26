@@ -37,21 +37,16 @@ namespace rawrbox {
 		    const rawrbox::Vector4f& _uv = {},
 		    const std::array<uint32_t, 3>& _normal = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos), uv(_uv), abgr(cl.pack()), normal(_normal) {}
 
-		static bgfx::VertexLayout vLayout(bool normals = false, bool bones = false) {
+		static bgfx::VertexLayout vLayout(bool bones = false) {
 			bgfx::VertexLayout l;
 
 			l.begin()
 			    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
 			    .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float)
-			    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true, true);
-
-			if (normals) {
-				l.add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Uint8, true, true)
-				    .add(bgfx::Attrib::Tangent, 3, bgfx::AttribType::Uint8, true, true)
-				    .add(bgfx::Attrib::Bitangent, 3, bgfx::AttribType::Uint8, true, true);
-			} else {
-				l.skip(sizeof(normal));
-			}
+			    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true, true)
+			    .add(bgfx::Attrib::Normal, 3, bgfx::AttribType::Uint8, true, true)
+			    .add(bgfx::Attrib::Tangent, 3, bgfx::AttribType::Uint8, true, true)
+			    .add(bgfx::Attrib::Bitangent, 3, bgfx::AttribType::Uint8, true, true);
 
 			if (bones) {
 				l.add(bgfx::Attrib::Indices, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Uint8, false, true)

@@ -6,27 +6,27 @@ add_custom_target(
     COMMENT "Copying SAMPLES resources into binary directory")
 # ------------------
 
-add_subdirectory("001-stencil")
-add_subdirectory("002-generated-models")
+#add_subdirectory("001-stencil")
+#add_subdirectory("002-generated-models")
 
 if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
-    add_subdirectory("003-assimp-loading")
+    #add_subdirectory("003-assimp-loading")
     add_subdirectory("004-light-support")
-    add_subdirectory("005-post-process")
+    #add_subdirectory("005-post-process")
 endif()
 
 if(RAWRBOX_ENABLE_BASS_SUPPORT)
-    add_subdirectory("006-bass-loading")
+    #add_subdirectory("006-bass-loading")
 endif()
 
-add_subdirectory("007-particle-system")
+#add_subdirectory("007-particle-system")
 
 if(RAWRBOX_BUILD_UI)
-    add_subdirectory("008-ui")
+    #add_subdirectory("008-ui")
 endif()
 
 if(RAWRBOX_BUILD_PHYSICS)
-    add_subdirectory("009-physics")
+    #add_subdirectory("009-physics")
 endif()
 
-add_subdirectory("010-instancing-test")
+#add_subdirectory("010-instancing-test")

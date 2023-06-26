@@ -14,6 +14,7 @@
 		(HANDLE) = BGFX_INVALID_HANDLE; \
 	}
 // NOLINTEND(*)
+
 namespace rawrbox {
 	constexpr auto MAX_BONES_PER_VERTEX = 4;
 	constexpr auto MAX_BONES_PER_MODEL = 200;
@@ -22,12 +23,12 @@ namespace rawrbox {
 	extern bool BGFX_INITIALIZED;
 
 	// VIEW IDS ---
-	extern bgfx::ViewId RENDER_VIEW_ID;  // View 0 reserved for basic rendering
-	extern bgfx::ViewId STENCIL_VIEW_ID; // View 1 reserved for stencil rendering
-	extern bgfx::ViewId SHADOW_VIEW_ID;  // View 2 reserved for shadow rendering
+	extern bgfx::ViewId GBUFFER_COLOR_VIEW_ID;
 
-	extern bgfx::ViewId POST_PROCESSING_ID; // 10 Views for post processing rendering
-	extern bgfx::ViewId RENDERER_VIEW_ID;   // Rest of the views for textureRendering and etc
+	extern bgfx::ViewId STENCIL_VIEW_ID;
+
+	extern bgfx::ViewId POST_PROCESSING_ID;
+	extern bgfx::ViewId RENDERER_VIEW_ID;
 
 	extern bgfx::ViewId CURRENT_VIEW_ID;
 	// ---------

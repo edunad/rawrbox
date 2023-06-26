@@ -3,7 +3,6 @@
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/assimp/assimp_model.hpp>
-#include <rawrbox/render/model/material/lit.hpp>
 #include <rawrbox/render/model/material/skinned.hpp>
 #include <rawrbox/render/model/text3D.hpp>
 #include <rawrbox/render/window.hpp>
@@ -16,10 +15,10 @@ namespace assimp {
 		std::unique_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 
 		std::unique_ptr<rawrbox::AssimpModel<>> _model = std::make_unique<rawrbox::AssimpModel<>>();
-		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialLit>> _model2 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialLit>>();
-		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>> _model3 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>>();
-		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>> _model4 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>>();
-		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>> _model5 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialSkinnedUnlit>>();
+		std::unique_ptr<rawrbox::AssimpModel<>> _model2 = std::make_unique<rawrbox::AssimpModel<>>();
+		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinned>> _model3 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialSkinned>>();
+		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinned>> _model4 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialSkinned>>();
+		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinned>> _model5 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialSkinned>>();
 
 		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();

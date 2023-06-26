@@ -1,20 +1,18 @@
 #include <rawrbox/render/model/material/skinned.hpp>
 
-#include <generated/shaders/render/all.hpp>
-
 // NOLINTBEGIN(*)
-const bgfx::EmbeddedShader model_skinned_unlit_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_model_skinned_unlit),
-    BGFX_EMBEDDED_SHADER(fs_model_unlit),
+const bgfx::EmbeddedShader model_skinned_lit_shaders[] = {
+    BGFX_EMBEDDED_SHADER(vs_model_skinned_lit),
+    BGFX_EMBEDDED_SHADER(fs_model),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
 namespace rawrbox {
-	MaterialSkinnedUnlit::~MaterialSkinnedUnlit() {
+	MaterialSkinned::~MaterialSkinned() {
 		RAWRBOX_DESTROY(u_bones);
 	}
 
-	void MaterialSkinnedUnlit::registerUniforms() {
+	void MaterialSkinned::registerUniforms() {
 		MaterialBase::registerUniforms();
 
 		// BONES ----
@@ -22,12 +20,11 @@ namespace rawrbox {
 		// ---
 	}
 
-	void MaterialSkinnedUnlit::setBoneData(const std::vector<rawrbox::Matrix4x4>& data) {
+	void MaterialSkinned::setBoneData(const std::vector<rawrbox::Matrix4x4>& data) {
 		bgfx::setUniform(this->u_bones, &data.front(), static_cast<uint32_t>(data.size()));
 	}
 
-	void MaterialSkinnedUnlit::upload() {
-		this->buildShader(model_skinned_unlit_shaders);
+	void MaterialSkinned::upload() {
+		this->buildShader(model_skinned_lit_shaders);
 	}
-
 } // namespace rawrbox
