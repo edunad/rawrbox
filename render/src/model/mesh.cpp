@@ -55,8 +55,8 @@ namespace rawrbox {
 	const rawrbox::TextureBase* Mesh::getTexture() const { return this->texture; }
 	void Mesh::setTexture(rawrbox::TextureBase* ptr) { this->texture = ptr; }
 
-	const rawrbox::TextureBase* Mesh::getBumpTexture() const { return this->bumpTexture; }
-	void Mesh::setBumpTexture(rawrbox::TextureBase* ptr) { this->bumpTexture = ptr; }
+	const rawrbox::TextureBase* Mesh::getNormalTexture() const { return this->normalTexture; }
+	void Mesh::setNormalTexture(rawrbox::TextureBase* ptr) { this->normalTexture = ptr; }
 
 	const rawrbox::TextureBase* Mesh::getEmissionTexture() const { return this->emissionTexture; }
 	void Mesh::setEmissionTexture(rawrbox::TextureBase* ptr, float intensity) {

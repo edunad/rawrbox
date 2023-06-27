@@ -2,6 +2,8 @@
 
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector2.hpp>
+#include <rawrbox/render/camera/perspective.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/utils/event.hpp>
 
@@ -72,6 +74,7 @@ namespace rawrbox {
 
 		// Stencil ---
 		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
+		std::unique_ptr<rawrbox::CameraBase> _camera = nullptr;
 		// -------
 
 		// Default settings
@@ -119,6 +122,14 @@ namespace rawrbox {
 		void setTitle(const std::string& title);
 		void setClearColor(uint32_t clearColor);
 
+		template <typename T = rawrbox::CameraPerspective, typename... CallbackArgs>
+		T* setupCamera(CallbackArgs&&... args) {
+			this->_camera = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
+			rawrbox::MAIN_CAMERA = this->_camera.get();
+
+			return dynamic_cast<T*>(this->_camera.get());
+		}
+
 		// CURSOR ------
 		void hideCursor(bool hidden);
 		void setCursor(uint32_t cursor);
@@ -126,6 +137,7 @@ namespace rawrbox {
 		// --------------------
 
 		void shutdown();
+		void update();
 
 		// UPDATE ------
 		void pollEvents();
@@ -134,8 +146,6 @@ namespace rawrbox {
 		// DRAW -----
 		void clear();
 		void upload();
-
-		void setViewProjection(const rawrbox::Matrix4x4& view, const rawrbox::Matrix4x4& proj);
 		void frame() const;
 		// -----------
 

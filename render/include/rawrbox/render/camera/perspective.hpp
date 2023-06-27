@@ -6,7 +6,7 @@
 #include <rawrbox/render/window.hpp>
 
 namespace rawrbox {
-	class CameraPerspective : public CameraBase {
+	class CameraPerspective : public rawrbox::CameraBase {
 	protected:
 		rawrbox::Vector2i _winSize = {};
 		float _FOV = 60.F;
@@ -17,6 +17,12 @@ namespace rawrbox {
 		void updateMtx() override;
 
 	public:
+		CameraPerspective(const CameraPerspective&) = default;
+		CameraPerspective(CameraPerspective&&) = default;
+		CameraPerspective& operator=(const CameraPerspective&) = default;
+		CameraPerspective& operator=(CameraPerspective&&) = default;
+		~CameraPerspective() override = default;
+
 		explicit CameraPerspective(const rawrbox::Vector2i& winSize, float FOV = 60.F, float near = 0.1F, float far = 100.F, bool homogeneousDepth = false);
 
 		[[nodiscard]] const rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const override;

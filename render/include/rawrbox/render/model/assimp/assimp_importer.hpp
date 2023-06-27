@@ -48,6 +48,7 @@ namespace rawrbox {
 		OptionalTexture diffuse = std::nullopt;
 		rawrbox::Colorf diffuseColor = rawrbox::Colors::White;
 
+		std::unique_ptr<rawrbox::TextureBase> normal = nullptr;
 		std::unique_ptr<rawrbox::TextureBase> opacity = nullptr;
 
 		std::unique_ptr<rawrbox::TextureBase> specular = nullptr;

@@ -261,3 +261,4 @@ MakeFile
 bin/*
 .cache/
 deps/
+captures/

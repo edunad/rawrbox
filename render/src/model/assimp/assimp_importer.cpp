@@ -160,6 +160,13 @@ namespace rawrbox {
 			}
 			// ----------------------
 
+			// TEXTURE NORMAL
+			auto normal = this->importTexture(pMaterial, aiTextureType_NORMALS);
+			if (!normal.empty()) {
+				mat->normal = std::move(normal[0].value()); // Only support one for the moment
+			}
+			// ----------------------
+
 			// TEXTURE EMISSION
 			auto emission = this->importTexture(pMaterial, aiTextureType_EMISSION_COLOR);
 			if (!emission.empty()) {
@@ -510,7 +517,7 @@ namespace rawrbox {
 
 				if (aiMesh.HasTextureCoords(0)) {
 					auto& uv = aiMesh.mTextureCoords[0][i];
-					v.uv = {uv.x, uv.y, 0, 0};
+					v.uv = {uv.x, uv.y}; //{uv.x, uv.y, 0, 0};
 				}
 
 				if (aiMesh.HasVertexColors(0)) {
@@ -520,15 +527,16 @@ namespace rawrbox {
 
 				if (aiMesh.HasNormals()) {
 					auto& normal = aiMesh.mNormals[i];
-					v.normal[0] = rawrbox::PackUtils::packNormal(normal.x, normal.y, normal.z);
+					// v.normal[0] = rawrbox::PackUtils::packNormal(normal.x, normal.y, normal.z);
+					v.normal = rawrbox::PackUtils::packNormal(normal.x, normal.y, normal.z);
 				}
 
 				if (aiMesh.HasTangentsAndBitangents()) {
 					auto& tangents = aiMesh.mTangents[i];
-					v.normal[1] = rawrbox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
+					// v.normal[1] = rawrbox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
 
 					auto& bitangents = aiMesh.mBitangents[i];
-					v.normal[2] = rawrbox::PackUtils::packNormal(bitangents.x, bitangents.y, bitangents.z);
+					// v.normal[2] = rawrbox::PackUtils::packNormal(bitangents.x, bitangents.y, bitangents.z);
 				}
 
 				mesh.vertices.push_back(v);

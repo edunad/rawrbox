@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/gizmos.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
 #include <rawrbox/render/resources/assimp/model.hpp>
@@ -29,9 +30,9 @@ namespace light {
 		this->_window->initializeBGFX();
 
 		// Setup camera
-		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
-		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		cam->setPos({0.F, 5.F, -5.F});
+		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
@@ -86,7 +87,6 @@ namespace light {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
-		this->_camera.reset();
 		this->_model.reset();
 		this->_text.reset();
 
@@ -105,15 +105,15 @@ namespace light {
 	}
 
 	void Game::update() {
-		if (this->_camera == nullptr) return;
-		this->_camera->update();
+		if (this->_window == nullptr) return;
+		this->_window->update();
 	}
 
 	void Game::drawWorld() {
 		if (this->_model == nullptr || this->_text == nullptr) return;
 
 		this->_model->draw();
-		this->_text->draw();
+		// this->_text->draw();
 	}
 
 	void Game::printFrames() {
@@ -148,6 +148,5 @@ namespace light {
 		// -----------
 
 		this->_window->frame(); // Commit primitives
-		this->_window->setViewProjection(this->_camera->getViewMtx(), this->_camera->getProjMtx());
 	}
 } // namespace light

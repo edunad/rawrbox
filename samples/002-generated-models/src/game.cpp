@@ -177,7 +177,7 @@ namespace model {
 		{
 			auto mesh = rawrbox::MeshUtils::generateMesh({0, 0, 0}, 64, rawrbox::Colors::White);
 			mesh.setTexture(texture3);
-			mesh.setBumpTexture(texture3);
+			mesh.setNormalTexture(texture3);
 			mesh.setDisplacement(24.F);
 
 			this->_displacement->addMesh(mesh);
@@ -185,7 +185,7 @@ namespace model {
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateMesh({0, 0.5F, 0}, 64, rawrbox::Colors::Black);
-			mesh.setBumpTexture(texture3);
+			mesh.setNormalTexture(texture3);
 			mesh.setDisplacement(24.F);
 			mesh.lineMode = true;
 

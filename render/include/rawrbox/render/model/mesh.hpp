@@ -46,7 +46,7 @@ namespace rawrbox {
 
 		// TEXTURES ---
 		rawrbox::TextureBase* texture = nullptr;
-		rawrbox::TextureBase* bumpTexture = nullptr;
+		rawrbox::TextureBase* normalTexture = nullptr;
 		rawrbox::TextureBase* opacityTexture = nullptr;
 
 		rawrbox::TextureBase* specularTexture = nullptr;
@@ -117,8 +117,8 @@ namespace rawrbox {
 		[[nodiscard]] const rawrbox::TextureBase* getTexture() const;
 		void setTexture(rawrbox::TextureBase* ptr);
 
-		[[nodiscard]] const rawrbox::TextureBase* getBumpTexture() const;
-		void setBumpTexture(rawrbox::TextureBase* ptr);
+		[[nodiscard]] const rawrbox::TextureBase* getNormalTexture() const;
+		void setNormalTexture(rawrbox::TextureBase* ptr);
 
 		[[nodiscard]] const rawrbox::TextureBase* getEmissionTexture() const;
 		void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity);

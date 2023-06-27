@@ -16,7 +16,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->s_albedo);
 		RAWRBOX_DESTROY(this->s_normal);
 
-		RAWRBOX_DESTROY(this->u_colorOffset);
+		/*RAWRBOX_DESTROY(this->u_colorOffset);
 
 		RAWRBOX_DESTROY(this->u_mesh_pos);
 		RAWRBOX_DESTROY(this->u_data);
@@ -27,7 +27,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->s_opacity);
 
 		RAWRBOX_DESTROY(this->u_specularColor);
-		RAWRBOX_DESTROY(this->u_emissionColor);
+		RAWRBOX_DESTROY(this->u_emissionColor);*/
 
 		/*RAWRBOX_DESTROY(this->u_texMatData);
 
@@ -51,7 +51,8 @@ namespace rawrbox {
 	void MaterialBase::registerUniforms() {
 		this->s_albedo = bgfx::createUniform("s_albedo", bgfx::UniformType::Sampler);
 		this->s_normal = bgfx::createUniform("s_normal", bgfx::UniformType::Sampler);
-		this->s_specular = bgfx::createUniform("s_specular", bgfx::UniformType::Sampler);
+
+		/*this->s_specular = bgfx::createUniform("s_specular", bgfx::UniformType::Sampler);
 		this->s_emission = bgfx::createUniform("s_emission", bgfx::UniformType::Sampler);
 		this->s_opacity = bgfx::createUniform("s_opacity", bgfx::UniformType::Sampler);
 
@@ -67,7 +68,7 @@ namespace rawrbox {
 
 		// this->u_lightsSetting = bgfx::createUniform("u_lightsSetting", bgfx::UniformType::Vec4);
 		// this->u_lightsPosition = bgfx::createUniform("u_lightsPosition", bgfx::UniformType::Vec4, rawrbox::MAX_LIGHTS);
-		// this->u_lightsData = bgfx::createUniform("u_lightsData", bgfx::UniformType::Mat4, rawrbox::MAX_LIGHTS);
+		// this->u_lightsData = bgfx::createUniform("u_lightsData", bgfx::UniformType::Mat4, rawrbox::MAX_LIGHTS);*/
 		//  ---
 	}
 
@@ -102,13 +103,13 @@ namespace rawrbox {
 			bgfx::setTexture(0, s_albedo, rawrbox::WHITE_TEXTURE->getHandle());
 		}
 
-		if (mesh.bumpTexture != nullptr && mesh.bumpTexture->valid()) {
-			bgfx::setTexture(1, s_normal, mesh.bumpTexture->getHandle());
+		if (mesh.normalTexture != nullptr && mesh.normalTexture->valid()) {
+			bgfx::setTexture(1, s_normal, mesh.normalTexture->getHandle());
 		} else {
-			bgfx::setTexture(1, s_normal, rawrbox::BLACK_TEXTURE->getHandle());
+			bgfx::setTexture(1, s_normal, rawrbox::NORMAL_TEXTURE->getHandle());
 		}
 
-		if (mesh.specularTexture != nullptr && mesh.specularTexture->valid() && !mesh.lineMode && !mesh.wireframe) {
+		/*if (mesh.specularTexture != nullptr && mesh.specularTexture->valid() && !mesh.lineMode && !mesh.wireframe) {
 			bgfx::setTexture(2, s_specular, mesh.specularTexture->getHandle());
 		} else {
 			bgfx::setTexture(2, s_specular, rawrbox::BLACK_TEXTURE->getHandle());
@@ -158,7 +159,7 @@ namespace rawrbox {
 		}
 
 		bgfx::setUniform(u_data, data.front().data(), 4);
-		// ---
+		// ---*/
 	}
 
 	void MaterialBase::process(const bgfx::TextureHandle& texture) {

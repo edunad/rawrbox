@@ -21,10 +21,10 @@ namespace rawrbox {
 		virtual ~CameraBase() = default;
 
 		CameraBase() = default;
-		CameraBase(CameraBase&&) = delete;
-		CameraBase& operator=(CameraBase&&) = delete;
-		CameraBase(const CameraBase&) = delete;
-		CameraBase& operator=(const CameraBase&) = delete;
+		CameraBase(CameraBase&&) = default;
+		CameraBase& operator=(CameraBase&&) = default;
+		CameraBase(const CameraBase&) = default;
+		CameraBase& operator=(const CameraBase&) = default;
 
 		// UTILS -----
 		virtual void setPos(const rawrbox::Vector3f& pos);

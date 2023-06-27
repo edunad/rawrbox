@@ -20,7 +20,7 @@ namespace rawrbox {
 		auto m_at = this->_pos + dir;
 		auto m_up = this->getUp();
 
-		this->_view.lookAt(this->_pos, m_at, m_up);
+		bx::mtxLookAt(this->_view.data(), bx::load<bx::Vec3>(&this->_pos.x), bx::load<bx::Vec3>(&m_at.x), bx::load<bx::Vec3>(&m_up.x));
 	}
 
 	const rawrbox::Vector3f CameraPerspective::worldToScreen(const rawrbox::Vector3f& pos) const {

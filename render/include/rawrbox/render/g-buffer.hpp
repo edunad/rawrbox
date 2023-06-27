@@ -17,7 +17,7 @@ namespace rawrbox {
 
 		PosUVVertexData() = default;
 		PosUVVertexData(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& uv) : x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y) {}
-		PosUVVertexData(float _x, float _y, float _z, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v) {}
+		PosUVVertexData(float _x, float _y, float _z, float _u, float _v) : x(_x), y(_y), z(_z), u(_u), v(_v) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout layout;
@@ -39,7 +39,11 @@ namespace rawrbox {
 		RenderTarget(RenderTarget&&) = default;
 		RenderTarget& operator=(const RenderTarget&) = default;
 		RenderTarget& operator=(RenderTarget&&) = delete;
-		RenderTarget(uint32_t _width, uint32_t _height, bgfx::TextureFormat::Enum _format, uint64_t _flags) : texture(bgfx::createTexture2D(uint16_t(_width), uint16_t(_height), false, 1, _format, _flags)), buffer(bgfx::createFrameBuffer(1, &texture, true)) {}
+		RenderTarget(uint32_t _width, uint32_t _height, bgfx::TextureFormat::Enum _format, uint64_t _flags) {
+			texture = bgfx::createTexture2D(uint16_t(_width), uint16_t(_height), false, 1, _format, _flags);
+			buffer = bgfx::createFrameBuffer(1, &texture, true);
+		}
+
 		~RenderTarget() { RAWRBOX_DESTROY(buffer); }
 	};
 
@@ -115,10 +119,7 @@ namespace rawrbox {
 		static std::unique_ptr<rawrbox::GBufferUniforms> _uniforms;
 		// -----
 
-		static rawrbox::Matrix4x4 _proj;
-		static rawrbox::Matrix4x4 _view;
-		static float _projL[16];
-
+		static void updateUniforms();
 		static void buildShader(const bgfx::EmbeddedShader shaders[], bgfx::ProgramHandle& program);
 		static void screenSpaceQuad(float _textureWidth, float _textureHeight, float _texelHalf, bool _originBottomLeft, float _width = 1.0F, float _height = 1.0F);
 
@@ -126,8 +127,6 @@ namespace rawrbox {
 		static void init(const rawrbox::Vector2i& size);
 
 		// UTILS ---
-		static void setViewProjection(const rawrbox::Matrix4x4& view, const rawrbox::Matrix4x4& proj);
-
 		static bgfx::FrameBufferHandle& getBuffer();
 		static RenderTarget* getLinearDepth();
 		static RenderTarget* getShadows();
