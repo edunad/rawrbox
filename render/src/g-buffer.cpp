@@ -124,8 +124,8 @@ namespace rawrbox {
 		// -----
 
 		// Buffers ----
-		_gbufferTex[GBUFFER_RT_COLOR] = bgfx::createTexture2D(w, h, false, 1, bgfx::TextureFormat::RGBA8, pointSampleFlags);
-		_gbufferTex[GBUFFER_RT_NORMAL] = bgfx::createTexture2D(w, h, false, 1, bgfx::TextureFormat::RGBA8, pointSampleFlags);
+		_gbufferTex[GBUFFER_RT_COLOR] = bgfx::createTexture2D(w, h, false, 1, bgfx::TextureFormat::BGRA8, pointSampleFlags);
+		_gbufferTex[GBUFFER_RT_NORMAL] = bgfx::createTexture2D(w, h, false, 1, bgfx::TextureFormat::BGRA8, pointSampleFlags);
 		_gbufferTex[GBUFFER_RT_DEPTH] = bgfx::createTexture2D(w, h, false, 1, bgfx::TextureFormat::D32F, pointSampleFlags);
 		_gbuffer = bgfx::createFrameBuffer(BX_COUNTOF(_gbufferTex), _gbufferTex, true);
 
@@ -176,10 +176,10 @@ namespace rawrbox {
 		// Update uniforms --
 		_uniforms->m_displayShadows = 0.F;
 		_uniforms->m_frameIdx = float(rawrbox::BGFX_FRAME % 8);
-		_uniforms->m_shadowRadius = 0.25F;
+		_uniforms->m_shadowRadius = 0.45F;
 		_uniforms->m_shadowSteps = 8;
 		_uniforms->m_useNoiseOffset = 1.0F;
-		_uniforms->m_contactShadowsMode = 0.5F;
+		_uniforms->m_contactShadowsMode = 1.5F;
 		_uniforms->m_useScreenSpaceRadius = 0.0F;
 
 		auto& view = rawrbox::MAIN_CAMERA->getViewMtx();
@@ -218,7 +218,7 @@ namespace rawrbox {
 		{
 			auto frame = static_cast<float>(rawrbox::BGFX_FRAME) * 0.01F;
 
-			float lightPosition[4] = {std::cos(frame) * 3.F, 1.5F, 0.F, bx::toRad(-90)};
+			float lightPosition[4] = {std::cos(frame) * 2.F, 1.F, std::sin(frame) * 2.F, 1.F};
 			float viewSpaceLightPosition[4];
 			bx::vec4MulMtx(viewSpaceLightPosition, lightPosition, view.data());
 			bx::memCopy(_uniforms->m_lightPosition, viewSpaceLightPosition, 3 * sizeof(float));
