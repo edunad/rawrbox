@@ -1,5 +1,6 @@
 
 #include <rawrbox/render/g-buffer.hpp>
+#include <rawrbox/render/utils/render.hpp>
 
 #include <bx/bx.h>
 #include <bx/math.h>
@@ -41,64 +42,11 @@ namespace rawrbox {
 	bgfx::UniformHandle G_BUFFER::_s_shadows = BGFX_INVALID_HANDLE;
 
 	// G-BUFFER ---
-	std::unique_ptr<rawrbox::RenderTarget> G_BUFFER::_linearDepth = nullptr;
-	std::unique_ptr<rawrbox::RenderTarget> G_BUFFER::_shadows = nullptr;
+	std::unique_ptr<rawrbox::TextureRender> G_BUFFER::_linearDepth = nullptr;
+	std::unique_ptr<rawrbox::TextureRender> G_BUFFER::_shadows = nullptr;
 
 	std::unique_ptr<rawrbox::GBufferUniforms> G_BUFFER::_uniforms = nullptr;
 	// -----
-
-	void G_BUFFER::screenSpaceQuad(float _textureWidth, float _textureHeight, float _texelHalf, bool _originBottomLeft, float _width, float _height) {
-		auto layout = rawrbox::PosUVVertexData::vLayout();
-		if (bgfx::getAvailTransientVertexBuffer(3, layout) != 3) return;
-
-		bgfx::TransientVertexBuffer vb = {};
-		bgfx::allocTransientVertexBuffer(&vb, 3, layout);
-		auto vertex = std::bit_cast<rawrbox::PosUVVertexData*>(vb.data);
-
-		const float minx = -_width;
-		const float maxx = _width;
-		const float miny = 0.F;
-		const float maxy = _height * 2.F;
-
-		const float texelHalfW = _texelHalf / _textureWidth;
-		const float texelHalfH = _texelHalf / _textureHeight;
-		const float minu = -1.F + texelHalfW;
-		const float maxu = 1.F + texelHalfW;
-
-		const float zz = 0.F;
-
-		float minv = texelHalfH;
-		float maxv = 2.F + texelHalfH;
-
-		if (_originBottomLeft) {
-			float temp = minv;
-			minv = maxv;
-			maxv = temp;
-
-			minv -= 1.F;
-			maxv -= 1.F;
-		}
-
-		vertex[0].x = minx;
-		vertex[0].y = miny;
-		vertex[0].z = zz;
-		vertex[0].u = minu;
-		vertex[0].v = minv;
-
-		vertex[1].x = maxx;
-		vertex[1].y = miny;
-		vertex[1].z = zz;
-		vertex[1].u = maxu;
-		vertex[1].v = minv;
-
-		vertex[2].x = maxx;
-		vertex[2].y = maxy;
-		vertex[2].z = zz;
-		vertex[2].u = maxu;
-		vertex[2].v = maxv;
-
-		bgfx::setVertexBuffer(0, &vb);
-	}
 
 	// -----
 	void G_BUFFER::buildShader(const bgfx::EmbeddedShader shaders[], bgfx::ProgramHandle& program) {
@@ -124,14 +72,19 @@ namespace rawrbox {
 		// -----
 
 		// Buffers ----
-		_gbufferTex[GBUFFER_RT_COLOR] = bgfx::createTexture2D(w, h, false, 1, bgfx::TextureFormat::BGRA8, pointSampleFlags);
-		_gbufferTex[GBUFFER_RT_NORMAL] = bgfx::createTexture2D(w, h, false, 1, bgfx::TextureFormat::BGRA8, pointSampleFlags);
+		_gbufferTex[GBUFFER_RT_COLOR] = bgfx::createTexture2D(w, h, false, 1, bgfx::TextureFormat::RGBA8, pointSampleFlags);
+		_gbufferTex[GBUFFER_RT_NORMAL] = bgfx::createTexture2D(w, h, false, 1, bgfx::TextureFormat::RGBA8, pointSampleFlags);
 		_gbufferTex[GBUFFER_RT_DEPTH] = bgfx::createTexture2D(w, h, false, 1, bgfx::TextureFormat::D32F, pointSampleFlags);
 		_gbuffer = bgfx::createFrameBuffer(BX_COUNTOF(_gbufferTex), _gbufferTex, true);
 
 		// G-BUFFER ---
-		_linearDepth = std::make_unique<rawrbox::RenderTarget>(w, h, bgfx::TextureFormat::R16F, pointSampleFlags);
-		_shadows = std::make_unique<rawrbox::RenderTarget>(w, h, bgfx::TextureFormat::R16F, pointSampleFlags);
+		_linearDepth = std::make_unique<rawrbox::TextureRender>(size, rawrbox::GBUFFER_L_DEPTH_VIEW_ID);
+		_linearDepth->setFlags(pointSampleFlags);
+		_linearDepth->upload(bgfx::TextureFormat::R16F);
+
+		_shadows = std::make_unique<rawrbox::TextureRender>(size, rawrbox::GBUFFER_SHADOW_VIEW_ID);
+		_shadows->setFlags(pointSampleFlags);
+		_shadows->upload(bgfx::TextureFormat::R16F);
 
 		_uniforms = std::make_unique<rawrbox::GBufferUniforms>();
 		_uniforms->init();
@@ -149,11 +102,11 @@ namespace rawrbox {
 		return _gbuffer;
 	}
 
-	rawrbox::RenderTarget* G_BUFFER::getLinearDepth() {
+	rawrbox::TextureRender* G_BUFFER::getLinearDepth() {
 		return _linearDepth.get();
 	}
 
-	rawrbox::RenderTarget* G_BUFFER::getShadows() {
+	rawrbox::TextureRender* G_BUFFER::getShadows() {
 		return _shadows.get();
 	}
 	// -----
@@ -176,7 +129,7 @@ namespace rawrbox {
 		// Update uniforms --
 		_uniforms->m_displayShadows = 0.F;
 		_uniforms->m_frameIdx = float(rawrbox::BGFX_FRAME % 8);
-		_uniforms->m_shadowRadius = 0.45F;
+		_uniforms->m_shadowRadius = 0.65F;
 		_uniforms->m_shadowSteps = 8;
 		_uniforms->m_useNoiseOffset = 1.0F;
 		_uniforms->m_contactShadowsMode = 1.5F;
@@ -218,7 +171,7 @@ namespace rawrbox {
 		{
 			auto frame = static_cast<float>(rawrbox::BGFX_FRAME) * 0.01F;
 
-			float lightPosition[4] = {std::cos(frame) * 2.F, 1.F, std::sin(frame) * 2.F, 1.F};
+			float lightPosition[4] = {std::cos(frame) * 2.F, 0.5F, std::sin(frame) * 2.F, 1.F};
 			float viewSpaceLightPosition[4];
 			bx::vec4MulMtx(viewSpaceLightPosition, lightPosition, view.data());
 			bx::memCopy(_uniforms->m_lightPosition, viewSpaceLightPosition, 3 * sizeof(float));
@@ -228,10 +181,7 @@ namespace rawrbox {
 	}
 
 	void G_BUFFER::render(const rawrbox::Vector2i& size) {
-		auto lBuffer = rawrbox::G_BUFFER::getLinearDepth();
-		auto shadowBuffer = rawrbox::G_BUFFER::getShadows();
-
-		if (lBuffer == nullptr || shadowBuffer == nullptr || _uniforms == nullptr) return;
+		if (_linearDepth == nullptr || _shadows == nullptr || _uniforms == nullptr) return;
 
 		const bgfx::Caps* caps = bgfx::getCaps();
 		const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
@@ -242,13 +192,7 @@ namespace rawrbox {
 		bx::mtxOrtho(orthoProj.data(), 0.0F, 1.0F, 1.0F, 0.0F, 0.0F, 1.0F, 0.0F, caps->homogeneousDepth);
 
 		updateUniforms();
-
-		{
-			// clear out transform stack
-			float identity[16];
-			bx::mtxIdentity(identity);
-			bgfx::setTransform(identity);
-		}
+		bgfx::discard();
 
 		// Convert depth to linear depth for shadow depth compare
 		{
@@ -257,13 +201,14 @@ namespace rawrbox {
 			bgfx::setViewName(rawrbox::CURRENT_VIEW_ID, "linear depth");
 			bgfx::setViewRect(rawrbox::CURRENT_VIEW_ID, 0, 0, size.x, size.y);
 			bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, orthoProj.data());
-			bgfx::setViewFrameBuffer(rawrbox::CURRENT_VIEW_ID, _linearDepth->buffer);
+			bgfx::setViewFrameBuffer(rawrbox::CURRENT_VIEW_ID, _linearDepth->getBuffer());
 
 			bgfx::setState(0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_DEPTH_TEST_ALWAYS);
 			bgfx::setTexture(0, _s_depth, _gbufferTex[GBUFFER_RT_DEPTH]);
-			_uniforms->submit();
 
-			screenSpaceQuad(size.x, size.y, bgfx::RendererType::Direct3D9 == renderer ? 0.5F : 0.0F, caps->originBottomLeft);
+			_uniforms->submit();
+			rawrbox::RenderUtils::renderScreenQuad(size);
+
 			bgfx::submit(rawrbox::CURRENT_VIEW_ID, _programLDepth);
 		}
 
@@ -274,13 +219,14 @@ namespace rawrbox {
 			bgfx::setViewName(rawrbox::CURRENT_VIEW_ID, "screen space shadows");
 			bgfx::setViewRect(rawrbox::CURRENT_VIEW_ID, 0, 0, size.x, size.y);
 			bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, orthoProj.data());
-			bgfx::setViewFrameBuffer(rawrbox::CURRENT_VIEW_ID, _shadows->buffer);
+			bgfx::setViewFrameBuffer(rawrbox::CURRENT_VIEW_ID, _shadows->getBuffer());
 			bgfx::setState(0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_DEPTH_TEST_ALWAYS);
 
-			bgfx::setTexture(0, _s_depth, _linearDepth->texture);
-			_uniforms->submit();
+			bgfx::setTexture(0, _s_depth, _linearDepth->getHandle());
 
-			screenSpaceQuad(size.x, size.y, bgfx::RendererType::Direct3D9 == renderer ? 0.5F : 0.0F, caps->originBottomLeft);
+			_uniforms->submit();
+			rawrbox::RenderUtils::renderScreenQuad(size);
+
 			bgfx::submit(rawrbox::CURRENT_VIEW_ID, _programShadows);
 
 			// Done
@@ -298,11 +244,12 @@ namespace rawrbox {
 
 			bgfx::setTexture(0, _s_color, _gbufferTex[GBUFFER_RT_COLOR]);
 			bgfx::setTexture(1, _s_normal, _gbufferTex[GBUFFER_RT_NORMAL]);
-			bgfx::setTexture(2, _s_depth, _linearDepth->texture);
-			bgfx::setTexture(3, _s_shadows, _shadows->texture);
+			bgfx::setTexture(2, _s_depth, _linearDepth->getHandle());
+			bgfx::setTexture(3, _s_shadows, _shadows->getHandle());
 
 			_uniforms->submit();
-			screenSpaceQuad(size.x, size.y, bgfx::RendererType::Direct3D9 == renderer ? 0.5F : 0.0F, caps->originBottomLeft);
+			rawrbox::RenderUtils::renderScreenQuad(size);
+
 			bgfx::submit(rawrbox::CURRENT_VIEW_ID, _programCombine);
 		}
 		// ---

@@ -11,6 +11,6 @@ namespace rawrbox {
 	const bgfx::TextureHandle& TextureBase::getHandle() const { return this->_handle; }
 	// ----
 
-	void TextureBase::setFlags(uint32_t flags) { this->_flags = flags; }
+	void TextureBase::setFlags(uint64_t flags) { this->_flags = flags; }
 
 } // namespace rawrbox

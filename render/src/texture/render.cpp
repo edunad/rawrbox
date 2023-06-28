@@ -1,4 +1,4 @@
-#include <rawrbox/render/static.hpp>
+
 #include <rawrbox/render/texture/render.hpp>
 
 #include <fmt/format.h>
@@ -7,7 +7,7 @@
 
 namespace rawrbox {
 	uint32_t TextureRender::renderID = 0;
-	TextureRender::TextureRender(const rawrbox::Vector2i& size) : _size(size), _prevViewId(rawrbox::CURRENT_VIEW_ID), _renderId(rawrbox::RENDERER_VIEW_ID + ++TextureRender::renderID) {
+	TextureRender::TextureRender(const rawrbox::Vector2i& size, bgfx::ViewId id, bool depth) : _size(size), _prevViewId(rawrbox::CURRENT_VIEW_ID), _renderId(id), _depth(depth) {
 		// Setup texture target view
 		bgfx::setViewName(this->_renderId, fmt::format("RAWR-RENDER-VIEW-{}", this->_renderId).c_str());
 		bgfx::setViewRect(this->_renderId, 0, 0, this->_size.x, this->_size.y);
@@ -18,9 +18,15 @@ namespace rawrbox {
 
 	TextureRender::~TextureRender() {
 		RAWRBOX_DESTROY(this->_depthHandle);
-		RAWRBOX_DESTROY(this->_renderHandle);
+		RAWRBOX_DESTROY(this->_renderView);
 	}
 
+	// ------ UTILS
+	const bgfx::TextureHandle& TextureRender::getDepth() const { return this->_depthHandle; }
+	const bgfx::FrameBufferHandle& TextureRender::getBuffer() const { return this->_renderView; }
+	// ------------
+
+	// ------ RENDER
 	void TextureRender::startRecord(bool clear) {
 		if (!bgfx::isValid(this->_renderView)) return;
 
@@ -35,6 +41,7 @@ namespace rawrbox {
 
 	void TextureRender::stopRecord() {
 		if (!bgfx::isValid(this->_renderView)) return;
+
 		rawrbox::CURRENT_VIEW_ID = this->_prevViewId;
 		bgfx::touch(this->_prevViewId);
 	}
@@ -43,12 +50,17 @@ namespace rawrbox {
 		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 1, format, BGFX_TEXTURE_RT | this->_flags);
 		bgfx::setName(this->_handle, fmt::format("RAWR-RENDER-TARGET-{}", this->_handle.idx).c_str());
 
-		this->_depthHandle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 1, bgfx::TextureFormat::D24S8, BGFX_TEXTURE_RT | BGFX_TEXTURE_RT_WRITE_ONLY);
-		bgfx::setName(this->_depthHandle, fmt::format("RAWR-RENDER-TARGET-DEPTH-{}", this->_depthHandle.idx).c_str());
+		if (_depth) {
+			this->_depthHandle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 1, bgfx::TextureFormat::D24S8, BGFX_TEXTURE_RT | BGFX_TEXTURE_RT_WRITE_ONLY);
+			bgfx::setName(this->_depthHandle, fmt::format("RAWR-RENDER-TARGET-DEPTH-{}", this->_depthHandle.idx).c_str());
 
-		std::array<bgfx::TextureHandle, 2> texHandles = {this->_handle, this->_depthHandle};
-		this->_renderView = bgfx::createFrameBuffer(2, texHandles.data());
-	}
+			std::array<bgfx::TextureHandle, 2> texHandles = {this->_handle, this->_depthHandle};
+			this->_renderView = bgfx::createFrameBuffer(2, texHandles.data());
+		} else {
+			std::array<bgfx::TextureHandle, 1> texHandles = {this->_handle};
+			this->_renderView = bgfx::createFrameBuffer(1, texHandles.data());
+		}
+	} // ------------
 
 	const bgfx::ViewId TextureRender::id() { return this->_renderId; }
 } // namespace rawrbox
