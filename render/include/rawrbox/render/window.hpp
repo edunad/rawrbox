@@ -70,8 +70,6 @@ namespace rawrbox {
 		uint32_t _resetFlags = BGFX_RESET_NONE;
 		uint32_t _debugFlags = BGFX_DEBUG_NONE;
 
-		uint32_t _clearColor = 0x000000FF;
-
 		// Stencil ---
 		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
 		std::unique_ptr<rawrbox::CameraBase> _camera = nullptr;
@@ -115,12 +113,11 @@ namespace rawrbox {
 		// --------------------
 
 		void create(int width, int height, uint32_t flags = WindowFlags::NONE);
-		void initializeBGFX();
+		void initializeBGFX(uint32_t clearColor = 0x000000FF);
 
 		void setMonitor(int monitor);
 		void setRenderer(bgfx::RendererType::Enum render);
 		void setTitle(const std::string& title);
-		void setClearColor(uint32_t clearColor);
 
 		template <typename T = rawrbox::CameraPerspective, typename... CallbackArgs>
 		T* setupCamera(CallbackArgs&&... args) {

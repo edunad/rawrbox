@@ -4,8 +4,7 @@
 namespace rawrbox {
 	// VIEW IDS ---
 	bgfx::ViewId GBUFFER_COLOR_VIEW_ID = 0; // View 0 to 3 reserved for deferred rendering
-	bgfx::ViewId GBUFFER_L_DEPTH_VIEW_ID = 1;
-	bgfx::ViewId GBUFFER_SHADOW_VIEW_ID = 2;
+	bgfx::ViewId GBUFFER_LIGHT_VIEW_ID = 1;
 	bgfx::ViewId GBUFFER_COMBINE_VIEW_ID = 3;
 
 	bgfx::ViewId STENCIL_VIEW_ID = 4; // View 3 reserved for stencil rendering

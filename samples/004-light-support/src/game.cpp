@@ -27,7 +27,7 @@ namespace light {
 
 	void Game::init() {
 		if (this->_window == nullptr) return;
-		this->_window->initializeBGFX();
+		this->_window->initializeBGFX(0xFF0000FF);
 
 		// Setup camera
 		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);

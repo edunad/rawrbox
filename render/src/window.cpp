@@ -217,7 +217,7 @@ namespace rawrbox {
 	}
 
 	// Should be ran on main render thread!
-	void Window::initializeBGFX() {
+	void Window::initializeBGFX(uint32_t clearColor) {
 		if (rawrbox::RENDER_THREAD_ID != std::this_thread::get_id()) throw std::runtime_error("[RawrBox-Window] 'initializeBGFX' should be called inside 'init'. Aka the main render thread!");
 		if ((this->_windowFlags & WindowFlags::Features::MULTI_THREADED) == 0) bgfx::renderFrame(); // Disable multi-threading
 
@@ -248,19 +248,29 @@ namespace rawrbox {
 
 		bgfx::setDebug(this->_debugFlags);
 
+		bgfx::setPaletteColor(0, clearColor);
+		bgfx::setPaletteColor(1, static_cast<uint32_t>(0x00000000));
+
 		// SETUP MAIN ---
 		bgfx::setViewRect(rawrbox::GBUFFER_COLOR_VIEW_ID, 0, 0, this->_size.x, this->_size.y);
 		bgfx::setViewMode(rawrbox::GBUFFER_COLOR_VIEW_ID, bgfx::ViewMode::Default);
 		bgfx::setViewName(rawrbox::GBUFFER_COLOR_VIEW_ID, "RawrBox-G-BUFFER-COLOR");
-		bgfx::setViewClear(rawrbox::GBUFFER_COLOR_VIEW_ID, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
+
+		bgfx::setViewClear(rawrbox::GBUFFER_COLOR_VIEW_ID, BGFX_DEFAULT_CLEAR, 1.0F, 0, 0, 1, 1);
+		bgfx::setViewClear(rawrbox::GBUFFER_LIGHT_VIEW_ID, BGFX_DEFAULT_CLEAR, 1.0F, 0, 1);
+		bgfx::setViewClear(rawrbox::GBUFFER_COMBINE_VIEW_ID, BGFX_DEFAULT_CLEAR, 1.0F, 0, 1);
 		// ---
+
+		// SETUP G-BUFFER --
+		bgfx::setViewName(rawrbox::GBUFFER_LIGHT_VIEW_ID, "RawrBox-G-BUFFER-LIGHT");
+		bgfx::setViewName(rawrbox::GBUFFER_COMBINE_VIEW_ID, "RawrBox-G-BUFFER-COMBINE");
+		// ----------------
 
 		// Setup main renderer ----
 		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
 		this->onResize += [this](auto&, auto& size) {
 			if (this->_stencil != nullptr) this->_stencil->resize(size);
 			bgfx::setViewRect(rawrbox::GBUFFER_COLOR_VIEW_ID, 0, 0, size.x, size.y);
-			bgfx::setViewClear(rawrbox::GBUFFER_COLOR_VIEW_ID, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 		};
 
 		// Setup global util textures ---
@@ -294,15 +304,6 @@ namespace rawrbox {
 
 	void Window::setTitle(const std::string& title) {
 		this->_title = title;
-	}
-
-	void Window::setClearColor(uint32_t clearColor) {
-		this->_clearColor = clearColor;
-
-		bgfx::setPaletteColor(rawrbox::GBUFFER_COLOR_VIEW_ID, clearColor);
-		bgfx::setPaletteColor(rawrbox::GBUFFER_L_DEPTH_VIEW_ID, static_cast<uint32_t>(0x00000000));
-		bgfx::setPaletteColor(rawrbox::GBUFFER_SHADOW_VIEW_ID, static_cast<uint32_t>(0x00000000));
-		bgfx::setPaletteColor(rawrbox::GBUFFER_COMBINE_VIEW_ID, static_cast<uint32_t>(0x00000000));
 	}
 
 	// CURSOR ------
@@ -366,7 +367,6 @@ namespace rawrbox {
 		if (!rawrbox::BGFX_INITIALIZED) return;
 
 		bgfx::touch(rawrbox::GBUFFER_COLOR_VIEW_ID); // Make sure we draw on the view
-		bgfx::setViewClear(rawrbox::GBUFFER_COLOR_VIEW_ID, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
 		bgfx::setViewTransform(rawrbox::GBUFFER_COLOR_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 		bgfx::setViewFrameBuffer(rawrbox::GBUFFER_COLOR_VIEW_ID, rawrbox::G_BUFFER::getBuffer());
 	}

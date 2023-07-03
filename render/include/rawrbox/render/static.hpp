@@ -19,15 +19,14 @@
 namespace rawrbox {
 	constexpr auto MAX_BONES_PER_VERTEX = 4;
 	constexpr auto MAX_BONES_PER_MODEL = 200;
-	constexpr auto MAX_LIGHTS = 12;
+	constexpr auto MAX_LIGHTS = 60;
 
 	extern bool BGFX_INITIALIZED;
 	extern uint32_t BGFX_FRAME;
 
 	// VIEW IDS ---
 	extern bgfx::ViewId GBUFFER_COLOR_VIEW_ID;
-	extern bgfx::ViewId GBUFFER_L_DEPTH_VIEW_ID;
-	extern bgfx::ViewId GBUFFER_SHADOW_VIEW_ID;
+	extern bgfx::ViewId GBUFFER_LIGHT_VIEW_ID;
 	extern bgfx::ViewId GBUFFER_COMBINE_VIEW_ID;
 
 	extern bgfx::ViewId STENCIL_VIEW_ID;

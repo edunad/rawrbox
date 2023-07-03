@@ -4,12 +4,13 @@
 namespace rawrbox {
 	class LightPoint : public rawrbox::LightBase {
 	protected:
-		float _constant;
-		float _linear;
-		float _quadratic;
-
 	public:
-		LightPoint(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular, float constant, float linear, float quadratic) : rawrbox::LightBase(posMatrix, diffuse, specular), _constant(constant), _linear(linear), _quadratic(quadratic){};
+		LightPoint(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular, float constant, float linear, float quadratic) : rawrbox::LightBase(posMatrix, diffuse, specular) {
+			_constant = constant;
+			_linear = linear;
+			_quadratic = quadratic;
+		};
+
 		LightPoint(const LightPoint&) = default;
 		LightPoint(LightPoint&&) = delete;
 		LightPoint& operator=(const LightPoint&) = default;

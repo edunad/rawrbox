@@ -17,10 +17,10 @@ namespace rawrbox {
 	void CameraPerspective::updateMtx() {
 		auto dir = this->getForward();
 
-		auto m_at = this->_pos + dir;
-		auto m_up = this->getUp();
+		auto at = this->_pos + dir;
+		auto up = this->getUp();
 
-		bx::mtxLookAt(this->_view.data(), bx::load<bx::Vec3>(&this->_pos.x), bx::load<bx::Vec3>(&m_at.x), bx::load<bx::Vec3>(&m_up.x));
+		bx::mtxLookAt(this->_view.data(), {_pos.x, _pos.y, _pos.z}, {at.x, at.y, at.z}, {up.x, up.y, up.z}, bx::Handedness::Left);
 	}
 
 	const rawrbox::Vector3f CameraPerspective::worldToScreen(const rawrbox::Vector3f& pos) const {
@@ -36,7 +36,7 @@ namespace rawrbox {
 		// get our pos and force aim downwards, the getForward() seems to behave odd when aiming full down
 		auto campos = this->getPos();
 
-		rawrbox::Matrix4x4 viewproj_inv = this->_projection * this->_view;
+		rawrbox::Matrix4x4 viewproj_inv = this->getProjViewMtx();
 		viewproj_inv.inverse();
 
 		float screenx_clip = 2 * (screenPos.x / this->_winSize.x) - 1;

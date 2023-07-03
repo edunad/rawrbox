@@ -24,6 +24,10 @@ namespace rawrbox {
 		rawrbox::Colorf _specular = rawrbox::Colors::White;
 		rawrbox::Colorf _ambient = rawrbox::Colors::White;
 
+		float _constant = 0.F;
+		float _linear = 0.F;
+		float _quadratic = 0.F;
+
 	public:
 		LightBase(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular);
 		LightBase(const LightBase&) = default;
@@ -35,6 +39,10 @@ namespace rawrbox {
 		[[nodiscard]] virtual const rawrbox::Colorf& getSpecularColor() const;
 		[[nodiscard]] virtual const rawrbox::Colorf& getDiffuseColor() const;
 		[[nodiscard]] virtual const rawrbox::Colorf& getAmbientColor() const;
+
+		[[nodiscard]] virtual const float getConstant() const;
+		[[nodiscard]] virtual const float getLinear() const;
+		[[nodiscard]] virtual const float getQuadratic() const;
 
 		virtual void setId(size_t id);
 		[[nodiscard]] virtual const size_t id() const;

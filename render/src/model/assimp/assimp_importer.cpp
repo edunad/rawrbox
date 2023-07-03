@@ -449,9 +449,9 @@ namespace rawrbox {
 				light.parentID = lightNode->mParent->mName.data; // TODO: Assimp doesn't seem to give the correct parent, will need to manually find it
 			}
 
-			light.diffuse = rawrbox::Colorf(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F) / 255.F;
-			light.specular = rawrbox::Colorf(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F) / 255.F;
-			light.ambient = rawrbox::Colorf(aiLight.mColorAmbient.r, aiLight.mColorAmbient.g, aiLight.mColorAmbient.b, 1.F) / 255.F;
+			light.diffuse = rawrbox::Colorf(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F);
+			light.specular = rawrbox::Colorf(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F);
+			light.ambient = rawrbox::Colorf(aiLight.mColorAmbient.r, aiLight.mColorAmbient.g, aiLight.mColorAmbient.b, 1.F);
 
 			light.attenuationConstant = aiLight.mAttenuationConstant;
 			light.attenuationLinear = aiLight.mAttenuationLinear;
@@ -517,7 +517,7 @@ namespace rawrbox {
 
 				if (aiMesh.HasTextureCoords(0)) {
 					auto& uv = aiMesh.mTextureCoords[0][i];
-					v.uv = {uv.x, uv.y}; //{uv.x, uv.y, 0, 0};
+					v.uv = {uv.x, uv.y, 0, 0};
 				}
 
 				if (aiMesh.HasVertexColors(0)) {
@@ -527,16 +527,15 @@ namespace rawrbox {
 
 				if (aiMesh.HasNormals()) {
 					auto& normal = aiMesh.mNormals[i];
-					// v.normal[0] = rawrbox::PackUtils::packNormal(normal.x, normal.y, normal.z);
-					v.normal = rawrbox::PackUtils::packNormal(normal.x, normal.y, normal.z);
+					v.normal[0] = rawrbox::PackUtils::packNormal(normal.x, normal.y, normal.z);
 				}
 
 				if (aiMesh.HasTangentsAndBitangents()) {
 					auto& tangents = aiMesh.mTangents[i];
-					// v.normal[1] = rawrbox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
+					v.normal[1] = rawrbox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
 
 					auto& bitangents = aiMesh.mBitangents[i];
-					// v.normal[2] = rawrbox::PackUtils::packNormal(bitangents.x, bitangents.y, bitangents.z);
+					v.normal[2] = rawrbox::PackUtils::packNormal(bitangents.x, bitangents.y, bitangents.z);
 				}
 
 				mesh.vertices.push_back(v);

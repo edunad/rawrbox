@@ -59,6 +59,10 @@ namespace rawrbox {
 		return this->_projection;
 	}
 
+	const rawrbox::Matrix4x4 CameraBase::getProjViewMtx() const {
+		return this->_projection * this->_view;
+	}
+
 	void CameraBase::update() {
 		throw std::runtime_error("Not implemented");
 	}

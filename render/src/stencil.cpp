@@ -43,7 +43,7 @@ namespace rawrbox {
 			bgfx::setViewRect(this->_renderId, 0, 0, this->_windowSize.x, this->_windowSize.y);
 			bgfx::setViewMode(this->_renderId, bgfx::ViewMode::Sequential);
 			bgfx::setViewName(this->_renderId, fmt::format("RawrBox-RENDERER-STENCIL-{}", this->_renderId).c_str());
-			bgfx::setViewClear(this->_renderId, BGFX_DEFAULT_CLEAR, 0x00000000, 1.0F, 0);
+			bgfx::setViewClear(this->_renderId, BGFX_DEFAULT_CLEAR, 1.0F, 0, 1);
 			// ---
 		}
 	}
@@ -97,7 +97,7 @@ namespace rawrbox {
 		this->_windowSize = size;
 
 		bgfx::setViewRect(this->_renderId, 0, 0, size.x, size.y);
-		bgfx::setViewClear(this->_renderId, BGFX_DEFAULT_CLEAR, 0x00000000, 1.0F, 0);
+		bgfx::setViewClear(this->_renderId, BGFX_DEFAULT_CLEAR, 1.0F, 0, 1);
 	}
 
 	void Stencil::pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv, const rawrbox::Color& col) {
@@ -434,7 +434,7 @@ namespace rawrbox {
 
 		bgfx::touch(rawrbox::CURRENT_VIEW_ID); // Make sure we draw on the view
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
-		bgfx::setViewClear(rawrbox::CURRENT_VIEW_ID, BGFX_DEFAULT_CLEAR, 0x00000000, 1.0F, 0);
+		bgfx::setViewClear(rawrbox::CURRENT_VIEW_ID, BGFX_DEFAULT_CLEAR, 1.0F, 0, 1);
 
 		for (auto& group : this->_drawCalls) {
 			if (!bgfx::isValid(group.stencilProgram) || !bgfx::isValid(group.textureHandle)) continue;

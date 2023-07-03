@@ -57,8 +57,7 @@ namespace rawrbox {
 			std::array<bgfx::TextureHandle, 2> texHandles = {this->_handle, this->_depthHandle};
 			this->_renderView = bgfx::createFrameBuffer(2, texHandles.data());
 		} else {
-			std::array<bgfx::TextureHandle, 1> texHandles = {this->_handle};
-			this->_renderView = bgfx::createFrameBuffer(1, texHandles.data());
+			this->_renderView = bgfx::createFrameBuffer(1, &this->_handle, true);
 		}
 	} // ------------
 

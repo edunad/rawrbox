@@ -39,6 +39,7 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getViewMtx() const;
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getProjMtx() const;
+		[[nodiscard]] virtual const rawrbox::Matrix4x4 getProjViewMtx() const;
 
 		[[nodiscard]] virtual const rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const;
 		[[nodiscard]] virtual const rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screen_pos) const;

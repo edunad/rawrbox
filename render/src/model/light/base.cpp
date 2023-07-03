@@ -7,6 +7,10 @@ namespace rawrbox {
 	const rawrbox::Colorf& LightBase::getDiffuseColor() const { return this->_diffuse; }
 	const rawrbox::Colorf& LightBase::getAmbientColor() const { return this->_ambient; }
 
+	const float LightBase::getConstant() const { return this->_constant; }
+	const float LightBase::getLinear() const { return this->_linear; }
+	const float LightBase::getQuadratic() const { return this->_quadratic; }
+
 	void LightBase::setId(size_t id) { this->_id = id; };
 	const size_t LightBase::id() const { return this->_id; };
 

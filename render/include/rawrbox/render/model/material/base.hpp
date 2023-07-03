@@ -17,6 +17,7 @@ namespace rawrbox {
 
 		bgfx::UniformHandle s_albedo = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle s_normal = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle s_specular = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle u_colorOffset = BGFX_INVALID_HANDLE;
 
@@ -24,18 +25,11 @@ namespace rawrbox {
 		bgfx::UniformHandle u_data = BGFX_INVALID_HANDLE;
 
 		// LIT DATA ---
-		bgfx::UniformHandle s_specular = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle s_emission = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle s_opacity = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle u_specularColor = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_emissionColor = BGFX_INVALID_HANDLE;
-
-		/*bgfx::UniformHandle u_texMatData = BGFX_INVALID_HANDLE;
-
-		bgfx::UniformHandle u_lightsSetting = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle u_lightsPosition = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle u_lightsData = BGFX_INVALID_HANDLE;*/
 		//------
 
 		MaterialBase() = default;
@@ -50,7 +44,6 @@ namespace rawrbox {
 		// NOLINTEND(hicpp-avoid-c-arrays)
 
 		virtual void registerUniforms();
-		virtual void preProcess();
 
 		virtual void process(const rawrbox::Mesh& mesh);
 		virtual void process(const bgfx::TextureHandle& texture);

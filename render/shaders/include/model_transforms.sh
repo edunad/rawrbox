@@ -8,8 +8,6 @@
 uniform vec4 u_data[MAX_DATA];
 uniform vec3 u_mesh_pos;
 
-SAMPLER2D(s_heightMap, 1);
-
 // Snap vertex to achieve PSX look
 vec4 psx_snap(vec4 vertex, vec2 resolution) {
 	vec4 snappedPos = vertex;
@@ -27,7 +25,7 @@ vec4 applyPosTransforms(mat4 proj, vec4 a_position, vec2 a_texcoord0) {
 
     // displacement mode
     if(u_data[2].x != 0.) {
-	    pos.y += texture2DLod(s_heightMap, a_texcoord0, 0).x * u_data[2].x;
+	    //pos.y += texture2DLod(s_heightMap, a_texcoord0, 0).x * u_data[2].x;
     }
     // ----
 
