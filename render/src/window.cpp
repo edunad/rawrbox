@@ -1,6 +1,6 @@
 
 #include <rawrbox/engine/static.hpp>
-#include <rawrbox/render/g-buffer.hpp>
+#include <rawrbox/render/forward_plus.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/window.hpp>
 
@@ -8,8 +8,6 @@
 #include <bx/bx.h>
 
 #include <cmath>
-
-#include "bx/math.h"
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -252,25 +250,18 @@ namespace rawrbox {
 		bgfx::setPaletteColor(1, static_cast<uint32_t>(0x00000000));
 
 		// SETUP MAIN ---
-		bgfx::setViewRect(rawrbox::GBUFFER_COLOR_VIEW_ID, 0, 0, this->_size.x, this->_size.y);
-		bgfx::setViewMode(rawrbox::GBUFFER_COLOR_VIEW_ID, bgfx::ViewMode::Default);
-		bgfx::setViewName(rawrbox::GBUFFER_COLOR_VIEW_ID, "RawrBox-G-BUFFER-COLOR");
+		bgfx::setViewRect(rawrbox::MAIN_VIEW_ID, 0, 0, this->_size.x, this->_size.y);
+		bgfx::setViewMode(rawrbox::MAIN_VIEW_ID, bgfx::ViewMode::Default);
+		bgfx::setViewName(rawrbox::MAIN_VIEW_ID, "RawrBox-G-BUFFER-COLOR");
 
-		bgfx::setViewClear(rawrbox::GBUFFER_COLOR_VIEW_ID, BGFX_DEFAULT_CLEAR, 1.0F, 0, 0, 1, 1);
-		bgfx::setViewClear(rawrbox::GBUFFER_LIGHT_VIEW_ID, BGFX_DEFAULT_CLEAR, 1.0F, 0, 1);
-		bgfx::setViewClear(rawrbox::GBUFFER_COMBINE_VIEW_ID, BGFX_DEFAULT_CLEAR, 1.0F, 0, 1);
+		bgfx::setViewClear(rawrbox::MAIN_VIEW_ID, BGFX_DEFAULT_CLEAR, 1.0F, 0, 0);
 		// ---
-
-		// SETUP G-BUFFER --
-		bgfx::setViewName(rawrbox::GBUFFER_LIGHT_VIEW_ID, "RawrBox-G-BUFFER-LIGHT");
-		bgfx::setViewName(rawrbox::GBUFFER_COMBINE_VIEW_ID, "RawrBox-G-BUFFER-COMBINE");
-		// ----------------
 
 		// Setup main renderer ----
 		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
 		this->onResize += [this](auto&, auto& size) {
 			if (this->_stencil != nullptr) this->_stencil->resize(size);
-			bgfx::setViewRect(rawrbox::GBUFFER_COLOR_VIEW_ID, 0, 0, size.x, size.y);
+			bgfx::setViewRect(rawrbox::MAIN_VIEW_ID, 0, 0, size.x, size.y);
 		};
 
 		// Setup global util textures ---
@@ -289,7 +280,7 @@ namespace rawrbox {
 		// ------------------
 
 		// Setup G-BUFFER
-		rawrbox::G_BUFFER::init(this->_size);
+		rawrbox::FORWARD_PLUS::init(this->_size);
 		// ------------------
 	}
 
@@ -366,9 +357,8 @@ namespace rawrbox {
 	void Window::clear() {
 		if (!rawrbox::BGFX_INITIALIZED) return;
 
-		bgfx::touch(rawrbox::GBUFFER_COLOR_VIEW_ID); // Make sure we draw on the view
-		bgfx::setViewTransform(rawrbox::GBUFFER_COLOR_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-		bgfx::setViewFrameBuffer(rawrbox::GBUFFER_COLOR_VIEW_ID, rawrbox::G_BUFFER::getBuffer());
+		bgfx::touch(rawrbox::MAIN_VIEW_ID); // Make sure we draw on the view
+		bgfx::setViewTransform(rawrbox::MAIN_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 
 	void Window::upload() {
@@ -385,11 +375,10 @@ namespace rawrbox {
 
 	void Window::frame() const {
 		if (this->_camera == nullptr) return;
+		rawrbox::FORWARD_PLUS::render(this->_size);
 
 		rawrbox::BGFX_FRAME = bgfx::frame();
-		bgfx::setViewTransform(rawrbox::GBUFFER_COLOR_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
-
-		rawrbox::G_BUFFER::render(this->getSize());
+		bgfx::setViewTransform(rawrbox::MAIN_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
 	}
 
 	// -------------------
@@ -405,6 +394,8 @@ namespace rawrbox {
 
 		this->_stencil.reset();
 		this->_camera.reset();
+
+		rawrbox::FORWARD_PLUS::shutdown();
 
 		if (GLFWHANDLE != nullptr) glfwDestroyWindow(GLFWHANDLE);
 		this->_handle = nullptr;

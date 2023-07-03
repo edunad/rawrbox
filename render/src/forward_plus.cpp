@@ -1,5 +1,138 @@
 
-#include <rawrbox/render/g-buffer.hpp>
+#include <rawrbox/render/forward_plus.hpp>
+#include <rawrbox/render/model/light/manager.hpp>
+#include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/render.hpp>
+
+// NOLINTBEGIN(*)
+const bgfx::EmbeddedShader lightCull_shaders[] = {
+    BGFX_EMBEDDED_SHADER(cs_lightcull),
+    BGFX_EMBEDDED_SHADER_END()};
+// NOLINTEND(*)
+
+namespace rawrbox {
+
+	// PROTECTED ------
+	float FORWARD_PLUS::_workGroupsX = 0.F;
+	float FORWARD_PLUS::_workGroupsY = 0.F;
+
+	bgfx::FrameBufferHandle FORWARD_PLUS::_gbuffer = BGFX_INVALID_HANDLE;
+	std::array<bgfx::TextureHandle, FORWARD_RT_COUNT> FORWARD_PLUS::_gbufferTex = {};
+
+	bgfx::DynamicVertexBufferHandle FORWARD_PLUS::_lightBuffer = BGFX_INVALID_HANDLE;
+	bgfx::IndexBufferHandle FORWARD_PLUS::_visibleLightBuffer = BGFX_INVALID_HANDLE;
+
+	bgfx::ProgramHandle FORWARD_PLUS::_programLightCull = BGFX_INVALID_HANDLE;
+
+	bgfx::UniformHandle FORWARD_PLUS::_s_depth = BGFX_INVALID_HANDLE;
+
+	bgfx::UniformHandle FORWARD_PLUS::_u_lightSettings = BGFX_INVALID_HANDLE;
+	// ------------
+
+	// NOLINTBEGIN(*)
+	void FORWARD_PLUS::buildShader(const bgfx::EmbeddedShader shaders[], bgfx::ProgramHandle& program) {
+		bgfx::RendererType::Enum type = bgfx::getRendererType();
+		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, shaders[0].name);
+		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, shaders[1].name);
+
+		program = bgfx::createProgram(vsh, fsh, true);
+		if (!bgfx::isValid(program)) throw std::runtime_error("[RawrBox-GBUFFER] Failed to create shader");
+	}
+
+	void FORWARD_PLUS::buildComputeShader(const bgfx::EmbeddedShader shaders[], bgfx::ProgramHandle& program) {
+		bgfx::RendererType::Enum type = bgfx::getRendererType();
+		bgfx::ShaderHandle csh = bgfx::createEmbeddedShader(shaders, type, shaders[0].name);
+
+		program = bgfx::createProgram(csh, true);
+		if (!bgfx::isValid(program)) throw std::runtime_error("[RawrBox-GBUFFER] Failed to create shader");
+	}
+	// NOLINTEND(*)
+
+	void FORWARD_PLUS::init(const rawrbox::Vector2i& size) {
+		const uint64_t pointSampleFlags = 0 | BGFX_TEXTURE_RT | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT | BGFX_SAMPLER_U_BORDER | BGFX_SAMPLER_V_BORDER;
+
+		auto w = static_cast<uint16_t>(size.x);
+		auto h = static_cast<uint16_t>(size.y);
+
+		// Samples ---
+		_s_depth = bgfx::createUniform("s_depth", bgfx::UniformType::Sampler); // Depth
+		// -----
+
+		// Uniforms ---
+		_u_lightSettings = bgfx::createUniform("u_lightSettings", bgfx::UniformType::Vec4);
+		// -----
+
+		// Define work group sizes in x and y direction based off screen size and tile size (in pixels)
+		_workGroupsX = (size.x + (size.x % 16)) / 16;
+		_workGroupsY = (size.y + (size.y % 16)) / 16;
+
+		size_t numberOfTiles = _workGroupsX * _workGroupsY;
+
+		// Setup buffers
+		_gbufferTex[FORWARD_RT_DEPTH] = bgfx::createTexture2D(w, h, false, 1, bgfx::TextureFormat::D24, pointSampleFlags);
+		_gbuffer = bgfx::createFrameBuffer(FORWARD_RT_COUNT, _gbufferTex.data(), true);
+
+		_lightBuffer = bgfx::createDynamicVertexBuffer(
+		    1, rawrbox::Light::vLayout(), BGFX_BUFFER_COMPUTE_READ | BGFX_BUFFER_ALLOW_RESIZE);
+
+		_visibleLightBuffer = bgfx::createIndexBuffer(bgfx::alloc(sizeof(uint32_t) * numberOfTiles * 1024), BGFX_BUFFER_COMPUTE_READ_WRITE | BGFX_BUFFER_INDEX32);
+		// -----
+
+		buildComputeShader(lightCull_shaders, _programLightCull);
+	}
+
+	void FORWARD_PLUS::update() {
+		if (!bgfx::isValid(_lightBuffer) || !bgfx::isValid(_visibleLightBuffer)) return;
+
+		// Update lights ---
+		std::vector<Light> l = {};
+		size_t lightCount = rawrbox::LIGHTS::count();
+		for (size_t i = 0; i < lightCount; i++) {
+			auto& light = rawrbox::LIGHTS::getLight(i);
+			auto p = light.getPosMatrix();
+
+			Light ll;
+			ll.position = rawrbox::Vector4f(p[0], p[1], p[2], 1.0F);
+			ll.color = light.getDiffuseColor();
+			ll.paddingAndRadius = rawrbox::Vector4f(0.0, 0.0, 0.0, 30.0F); // Radius
+			l.push_back(ll);
+		}
+
+		const bgfx::Memory* mem = bgfx::makeRef(l.data(), static_cast<uint32_t>(l.size()) * rawrbox::Light::vLayout().getStride());
+		bgfx::update(_lightBuffer, 0, mem);
+		// -------
+	}
+
+	void FORWARD_PLUS::render(const rawrbox::Vector2i& size) {
+		// Setup depth buffer
+		bgfx::setViewFrameBuffer(rawrbox::MAIN_VIEW_ID, _gbuffer);
+		// -----
+
+		// Update lights
+		update();
+		// ----
+
+		// Light cull ---
+		bgfx::setTexture(0, _s_depth, _gbufferTex[FORWARD_RT_DEPTH]);
+		std::array<float, 4> total = {static_cast<float>(rawrbox ::LIGHTS::count()), 0, 0, 0};
+		bgfx::setUniform(_u_lightSettings, total.data());
+
+		bgfx::setBuffer(0, _lightBuffer, bgfx::Access::Read);
+		bgfx::setBuffer(1, _visibleLightBuffer, bgfx::Access::Write);
+
+		bgfx::dispatch(0, _programLightCull, _workGroupsX, _workGroupsY, 1);
+
+		/*rawrbox::RenderUtils::renderScreenQuad(size);
+		bgfx::submit(rawrbox::CURRENT_VIEW_ID, _programLightCull);*/
+	}
+
+	void FORWARD_PLUS::shutdown() {
+		RAWRBOX_DESTROY(_gbuffer);
+	}
+
+} // namespace rawrbox
+
+/*#include <rawrbox/render/g-buffer.hpp>
 #include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/utils/render.hpp>
 
@@ -271,3 +404,4 @@ namespace rawrbox {
 	}
 
 } // namespace rawrbox
+*/
