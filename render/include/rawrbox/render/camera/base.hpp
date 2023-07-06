@@ -15,6 +15,9 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 _view = {};
 		rawrbox::Matrix4x4 _projection = {};
 
+		float _z_near = 0.1F;
+		float _z_far = 100.F;
+
 		virtual void updateMtx();
 
 	public:
@@ -36,6 +39,9 @@ namespace rawrbox {
 		[[nodiscard]] virtual rawrbox::Vector3f getForward() const;
 		[[nodiscard]] virtual rawrbox::Vector3f getRight() const;
 		[[nodiscard]] virtual rawrbox::Vector3f getUp() const;
+
+		[[nodiscard]] virtual const float getZFar() const;
+		[[nodiscard]] virtual const float getZNear() const;
 
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getViewMtx() const;
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getProjMtx() const;

@@ -1,8 +1,4 @@
-project(
-    "RAWRBOX.RENDER"
-    VERSION ${RAWRBOX_VERSION}
-    DESCRIPTION "RawrBox - Render lib"
-    LANGUAGES CXX)
+project("RAWRBOX.RENDER" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - Render lib" LANGUAGES CXX)
 set(output_target RAWRBOX.RENDER)
 
 # Packages ----
@@ -39,8 +35,8 @@ CPMAddPackage(
     "BGFX_INSTALL_EXAMPLES OFF"
     "BGFX_DEAR_IMGUI OFF"
     "BGFX_BUILD_TESTS OFF"
-    "BGFX_OPENGLES_VERSION 30"
-    "BGFX_OPENGL_VERSION 33"
+    "BGFX_OPENGLES_VERSION 43"
+    "BGFX_OPENGL_VERSION 43"
     "BGFX_AMALGAMATED ON"
     "BX_AMALGAMATED ON")
 
@@ -130,7 +126,7 @@ endif()
 if(LINUX)
     set(PROFILES 120 300_es spirv)
 else()
-    set(PROFILES 120 300_es spirv s_4_0 s_5_0)
+    set(PROFILES 120 300_es spirv s_5_0)
 endif()
 
 add_shaders_directory(./shaders RAWRBOX_SHADERS_TARGET_NAME)
@@ -139,9 +135,8 @@ message(STATUS "SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
 
 # Copy content - RENDER
 add_custom_target(
-    copy_resources_render ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/${RAWRBOX_CONTENT_FOLDER}
-            ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
+    copy_resources_render ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/${RAWRBOX_CONTENT_FOLDER}
+                                      ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
     COMMENT "Copying RENDERER resources into binary directory")
 # ------------------
 

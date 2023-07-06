@@ -15,20 +15,20 @@ TEST_CASE("Lights should behave as expected", "[rawrbox::LightBase]") {
 		REQUIRE(base->isOn() == false);
 	}
 
-	SECTION("rawrbox::LightBase::getPosMatrix") {
+	/*SECTION("rawrbox::LightBase::getPosMatrix") {
 		auto pos = base->getPosMatrix();
 
 		REQUIRE(pos[0] == 5);
 		REQUIRE(pos[1] == -10);
 		REQUIRE(pos[2] == 0);
 		REQUIRE(pos[3] == 0);
-	}
+	}*/
 
 	SECTION("rawrbox::LightBase::getType") {
 		REQUIRE(base->getType() == rawrbox::LightType::LIGHT_DIR);
 	}
 
-	SECTION("rawrbox::LightBase::getDataMatrix") {
+	/*SECTION("rawrbox::LightBase::getDataMatrix") {
 		auto data = base->getDataMatrix();
 
 		REQUIRE(data[0] == 1);
@@ -50,5 +50,5 @@ TEST_CASE("Lights should behave as expected", "[rawrbox::LightBase]") {
 		REQUIRE(data[3] == static_cast<float>(base->getType()));
 		REQUIRE(data[7] == 0.F);
 		REQUIRE(data[11] == 0.F);
-	}
+	}*/
 }

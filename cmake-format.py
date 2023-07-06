@@ -5,7 +5,7 @@ with section("format"):
   separate_ctrl_name_with_space = False
   separate_fn_name_with_space = False
   dangle_parens = False
-  max_subgroups_hwrap = 2
+  max_subgroups_hwrap = 4
   command_case = 'unchanged'
 
 # ------------------------------------------------

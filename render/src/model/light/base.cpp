@@ -23,12 +23,7 @@ namespace rawrbox {
 	const rawrbox::Vector3f& LightBase::getOffsetPos() const { return this->_offset; }
 	void LightBase::setOffsetPos(const rawrbox::Vector3f& pos) { this->_offset = pos; }
 
-	const std::array<float, 4> LightBase::getPosMatrix() const {
-		auto p = this->getPos() + this->getOffsetPos();
-		return {p.x, p.y, p.z, 0};
-	}
-
-	const rawrbox::Matrix4x4 LightBase::getDataMatrix() const { return {}; }
+	const rawrbox::Vector3f LightBase::getWorldPos() const { return this->getPos() + this->getOffsetPos(); }
 	const rawrbox::LightType LightBase::getType() const { return rawrbox::LightType::LIGHT_UNKNOWN; }
 
 } // namespace rawrbox

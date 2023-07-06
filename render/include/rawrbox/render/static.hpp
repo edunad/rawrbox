@@ -1,5 +1,6 @@
 #pragma once
 #include <rawrbox/render/camera/base.hpp>
+#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/texture/flat.hpp>
 #include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/render/texture/missing.hpp>
@@ -19,19 +20,32 @@
 namespace rawrbox {
 	constexpr auto MAX_BONES_PER_VERTEX = 4;
 	constexpr auto MAX_BONES_PER_MODEL = 200;
-	constexpr auto MAX_LIGHTS = 60;
+	constexpr auto MAX_LIGHTS = 1000;
 
 	extern bool BGFX_INITIALIZED;
 	extern uint32_t BGFX_FRAME;
 
 	// VIEW IDS ---
-	extern bgfx::ViewId MAIN_VIEW_ID;
+	extern bgfx::ViewId MAIN_DEFAULT_VIEW;
 	extern bgfx::ViewId STENCIL_VIEW_ID;
 
 	extern bgfx::ViewId POST_PROCESSING_ID;
 	extern bgfx::ViewId RENDERER_VIEW_ID;
 
 	extern bgfx::ViewId CURRENT_VIEW_ID;
+	// ---------
+
+	// GLOBAL UNIFORMS ---
+	extern uint8_t SAMPLE_MAT_ALBEDO;
+	extern uint8_t SAMPLE_MAT_NORMAL;
+	extern uint8_t SAMPLE_MAT_SPECULAR;
+
+	extern uint8_t SAMPLE_LIGHTS_POINTLIGHTS;
+
+	extern uint8_t SAMPLE_CLUSTERS;
+	extern uint8_t SAMPLE_LIGHTINDICES;
+	extern uint8_t SAMPLE_LIGHTGRID;
+	extern uint8_t SAMPLE_ATOMIC_INDEX;
 	// ---------
 
 	// TEXTURE FALLBACKS ---
@@ -47,8 +61,9 @@ namespace rawrbox {
 	extern size_t EMITTER_ID;
 	// -----
 
-	// OTHER ---
+	// QUICK ACCESS ---
 	extern rawrbox::CameraBase* MAIN_CAMERA;
+	extern rawrbox::RendererBase* RENDERER;
 	// ----
 
 	// INTERNAL, DO NOT USE

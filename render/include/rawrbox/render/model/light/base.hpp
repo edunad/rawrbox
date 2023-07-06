@@ -56,8 +56,7 @@ namespace rawrbox {
 		[[nodiscard]] const rawrbox::Vector3f& getOffsetPos() const;
 		virtual void setOffsetPos(const rawrbox::Vector3f& pos);
 
-		[[nodiscard]] virtual const std::array<float, 4> getPosMatrix() const;
-		[[nodiscard]] virtual const rawrbox::Matrix4x4 getDataMatrix() const;
+		[[nodiscard]] virtual const rawrbox::Vector3f getWorldPos() const;
 		[[nodiscard]] virtual const rawrbox::LightType getType() const;
 	};
 } // namespace rawrbox

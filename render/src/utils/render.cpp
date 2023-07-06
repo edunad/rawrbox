@@ -1,6 +1,8 @@
 
 #include <rawrbox/render/utils/render.hpp>
 
+#include <stdexcept>
+
 namespace rawrbox {
 	void RenderUtils::renderScreenQuad(const rawrbox::Vector2i& screenSize) {
 		const bgfx::Caps* caps = bgfx::getCaps();
@@ -43,6 +45,26 @@ namespace rawrbox {
 		vertex[1] = {{maxx, miny, zz}, {maxu, minv}};
 		vertex[2] = {{maxx, maxy, zz}, {maxu, maxv}};
 
+		// RENDER -----
 		bgfx::setVertexBuffer(0, &vb);
 	}
+
+	// NOLINTBEGIN(*)
+	void RenderUtils::buildShader(const bgfx::EmbeddedShader shaders[], bgfx::ProgramHandle& program) {
+		bgfx::RendererType::Enum type = bgfx::getRendererType();
+		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, shaders[0].name);
+		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, shaders[1].name);
+
+		program = bgfx::createProgram(vsh, fsh, true);
+		if (!bgfx::isValid(program)) throw std::runtime_error("[RawrBox-GBUFFER] Failed to create shader");
+	}
+
+	void RenderUtils::buildComputeShader(const bgfx::EmbeddedShader shaders[], bgfx::ProgramHandle& program) {
+		bgfx::RendererType::Enum type = bgfx::getRendererType();
+		bgfx::ShaderHandle csh = bgfx::createEmbeddedShader(shaders, type, shaders[0].name);
+
+		program = bgfx::createProgram(csh, true);
+		if (!bgfx::isValid(program)) throw std::runtime_error("[RawrBox-GBUFFER] Failed to create shader");
+	}
+	// NOLINTEND(*)
 } // namespace rawrbox

@@ -8,8 +8,11 @@
 
 namespace rawrbox {
 	// NOLINTBEGIN(clang-analyzer-optin.cplusplus.VirtualCall)
-	CameraPerspective::CameraPerspective(const rawrbox::Vector2i& _wsize, float FOV, float near, float far, bool homogeneousDepth) : _winSize(_wsize), _FOV(FOV), _near(near), _far(far), _homogeneousDepth(homogeneousDepth) {
+	CameraPerspective::CameraPerspective(const rawrbox::Vector2i& _wsize, float FOV, float near, float far, bool homogeneousDepth) : _winSize(_wsize), _FOV(FOV), _homogeneousDepth(homogeneousDepth) {
 		bx::mtxProj(this->_projection.data(), FOV, static_cast<float>(_wsize.x) / static_cast<float>(_wsize.y), near, far, homogeneousDepth);
+		this->_z_near = near;
+		this->_z_far = far;
+
 		this->updateMtx();
 	}
 	// NOLINTEND(clang-analyzer-optin.cplusplus.VirtualCall)

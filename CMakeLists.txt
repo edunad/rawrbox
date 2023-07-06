@@ -9,21 +9,11 @@ include("cmake/cpm.cmake")
 # ---------------
 
 # Versioning
-set(RAWRBOX_VERSION_MAJOR
-    1
-    CACHE STRING "major version" FORCE)
-set(RAWRBOX_VERSION_MINOR
-    0
-    CACHE STRING "minor version" FORCE)
-set(RAWRBOX_VERSION
-    ${RAWRBOX_VERSION_MAJOR}.${RAWRBOX_VERSION_MINOR}
-    CACHE STRING "version" FORCE)
+set(RAWRBOX_VERSION_MAJOR 1 CACHE STRING "major version" FORCE)
+set(RAWRBOX_VERSION_MINOR 0 CACHE STRING "minor version" FORCE)
+set(RAWRBOX_VERSION ${RAWRBOX_VERSION_MAJOR}.${RAWRBOX_VERSION_MINOR} CACHE STRING "version" FORCE)
 
-project(
-    "RAWRBOX"
-    VERSION ${RAWRBOX_VERSION}
-    DESCRIPTION "Game engine - By edunad"
-    LANGUAGES C CXX)
+project("RAWRBOX" VERSION ${RAWRBOX_VERSION} DESCRIPTION "Game engine - By edunad" LANGUAGES C CXX)
 # ---
 
 # Fix cmake paths
@@ -54,21 +44,16 @@ option(RAWRBOX_ENABLE_BASS_SUPPORT "Build bass & add sound loading support" ON)
 # -----
 
 # OTHER SETTINGS ----
-set(RAWRBOX_OUTPUT_BIN
-    "bin"
-    CACHE STRING "the target directory of where the output of the build will be stored for use by artifacts")
-set(RAWRBOX_CONTENT_FOLDER
-    "content"
-    CACHE STRING "the content folder (aka where shaders, textures, etc are)")
-set(RAWRBOX_LIBRARY_TYPE
-    "STATIC"
-    CACHE STRING "Linking type for library")
+set(RAWRBOX_OUTPUT_BIN "bin" CACHE STRING "the target directory of where the output of the build will be stored for use by artifacts")
+set(RAWRBOX_CONTENT_FOLDER "content" CACHE STRING "the content folder (aka where shaders, textures, etc are)")
+set(RAWRBOX_LIBRARY_TYPE "STATIC" CACHE STRING "Linking type for library")
 # ----------------
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSPDLOG_FMT_EXTERNAL -DNOMINMAX")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(BUILD_SHARED_LIBS OFF)
 
 # Apple needs this flag to compile mixed objective/c++
 if(APPLE AND NOT XCODE)
@@ -83,12 +68,8 @@ if(NOT WIN32)
     if(RAWRBOX_USE_WAYLAND)
         list(APPEND RAWRBOX_EXTRA_LIBS wayland-egl)
 
-        set(GLFW_BUILD_WAYLAND
-            ON
-            CACHE INTERNAL "")
-        set(BGFX_USE_WAYLAND
-            ON
-            CACHE INTERNAL "")
+        set(GLFW_BUILD_WAYLAND ON CACHE INTERNAL "")
+        set(BGFX_USE_WAYLAND ON CACHE INTERNAL "")
     endif()
 else()
     # Ignore warnings about missing pdb

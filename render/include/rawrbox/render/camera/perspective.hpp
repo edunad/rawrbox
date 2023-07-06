@@ -10,8 +10,6 @@ namespace rawrbox {
 	protected:
 		rawrbox::Vector2i _winSize = {};
 		float _FOV = 60.F;
-		float _near = 0.1F;
-		float _far = 100.F;
 		bool _homogeneousDepth = false;
 
 		void updateMtx() override;

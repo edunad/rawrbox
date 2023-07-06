@@ -2,6 +2,7 @@
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/gizmos.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
+#include <rawrbox/render/renderers/cluster.hpp>
 #include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -20,20 +21,22 @@ namespace light {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(1);
 		this->_window->setTitle("LIGHT TEST");
-		this->_window->setRenderer(bgfx::RendererType::Count);
+		this->_window->setRenderer<rawrbox::RendererCluster>(bgfx::RendererType::Count, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
 
 	void Game::init() {
 		if (this->_window == nullptr) return;
-		this->_window->initializeBGFX(0xFF0000FF);
+		this->_window->initializeBGFX();
 
 		// Setup camera
 		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
+
+		rawrbox::LIGHTS::init();
 
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::AssimpLoader>());
@@ -110,7 +113,7 @@ namespace light {
 	}
 
 	void Game::drawWorld() {
-		if (this->_model == nullptr || this->_text == nullptr) return;
+		if (!this->_ready || this->_model == nullptr || this->_text == nullptr) return;
 
 		this->_model->draw();
 		// this->_text->draw();
@@ -126,7 +129,6 @@ namespace light {
 
 	void Game::draw() {
 		if (this->_window == nullptr) return;
-		this->_window->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -135,18 +137,12 @@ namespace light {
 		printFrames();
 		// -----------
 
-		if (this->_ready) {
-			this->drawWorld();
-		} else {
+		if (!this->_ready) {
 			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
 			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
 		}
 
-		// Draw DEBUG ---
-		rawrbox::GIZMOS::draw();
-		// -----------
-
-		this->_window->frame(); // Commit primitives
+		this->_window->render(); // Draw world & commit primitives
 	}
 } // namespace light

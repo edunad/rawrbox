@@ -429,12 +429,12 @@ namespace rawrbox {
 				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
 												: 0;
 
-				bgfx::setState(flags, 0);
+				bgfx::setState(flags & ~BGFX_STATE_CULL_MASK, 0);
 				this->_material->postProcess();
 			}
 
 			this->postDraw();
-			bgfx::discard();
+			bgfx::discard(BGFX_DISCARD_ALL);
 		}
 	};
 } // namespace rawrbox
