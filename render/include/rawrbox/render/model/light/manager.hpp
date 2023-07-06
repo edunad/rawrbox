@@ -22,8 +22,7 @@ namespace rawrbox {
 			static bgfx::VertexLayout l;
 			l.begin()
 			    .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float) // Position
-			    .add(bgfx::Attrib::TexCoord1, 4, bgfx::AttribType::Float) // Color
-			    //.add(bgfx::Attrib::TexCoord2, 4, bgfx::AttribType::Float) // Padding
+			    .add(bgfx::Attrib::TexCoord1, 4, bgfx::AttribType::Float) // Intensity
 			    .end();
 			return l;
 		};

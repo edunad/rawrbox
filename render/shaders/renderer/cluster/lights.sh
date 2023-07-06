@@ -5,7 +5,8 @@
 #include "../../include/defs.sh"
 
 uniform vec4 u_lightSettings;
-#define u_pointLightCount uint(u_lightSettings.x)
+#define u_fullbright uint(u_lightSettings.x)
+#define u_pointLightCount uint(u_lightSettings.y)
 
 uniform vec4 u_ambientLightIrradiance;
 

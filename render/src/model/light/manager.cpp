@@ -37,21 +37,24 @@ namespace rawrbox {
 
 		// Update lights ---
 		auto stride = rawrbox::LightDataVertex::vLayout().getStride();
-		const bgfx::Memory* mem = bgfx::alloc(uint32_t(stride * std::max(_lights.size(), (size_t)1)));
+		const bgfx::Memory* mem = bgfx::alloc(uint32_t(stride * _lights.size()));
 
 		for (size_t i = 0; i < _lights.size(); i++) {
 			auto& l = _lights[i];
-			if (l->getType() != rawrbox::LightType::LIGHT_POINT) continue;
-
-			auto light = (rawrbox::LightDataVertex*)(mem->data + (i * stride));
+			if (l->getType() != rawrbox::LightType::LIGHT_POINT || !l->isOn()) continue;
+			auto light = std::bit_cast<rawrbox::LightDataVertex*>(mem->data + (i * stride));
 
 			auto& cl = l->getDiffuseColor();
 			auto pos = l->getWorldPos();
-			float flux = 70.F;
 
 			light->position = rawrbox::Vector3f(pos.x, pos.y, pos.z);
-			light->intensity = rawrbox::Vector3f(cl.r, cl.g, cl.b) * flux; // * intensity
-			light->radius = 0.25F;
+			light->intensity = rawrbox::Vector3f(cl.r, cl.g, cl.b) * 0.1F;
+
+			float lightMax = std::fmaxf(std::fmaxf(light->intensity.x, light->intensity.y), light->intensity.z);
+			float radius =
+			    (-l->getLinear() + std::sqrtf(l->getLinear() * l->getLinear() - 4 * l->getQuadratic() * (l->getConstant() - (256.0 / 5.0) * lightMax))) / (2 * l->getQuadratic());
+
+			light->radius = radius;
 		}
 
 		bgfx::update(_buffer, 0, mem);
@@ -61,7 +64,7 @@ namespace rawrbox {
 	void LIGHTS::bindUniforms() {
 		if (!bgfx::isValid(_buffer)) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
 
-		std::array<float, 4> total = {static_cast<float>(rawrbox ::LIGHTS::count())};
+		std::array<float, 4> total = {fullbright ? 1.0F : 0.0F, static_cast<float>(rawrbox::LIGHTS::count())};
 		bgfx::setUniform(_u_lightSettings, total.data());
 
 		std::array<float, 4> ambient = {0.01F, 0.01F, 0.01F, 1.F};
@@ -75,7 +78,6 @@ namespace rawrbox {
 	// Light utils ----
 	void LIGHTS::removeLight(rawrbox::LightBase* light) {
 		if (light == nullptr || _lights.empty()) return;
-
 		for (size_t i = 0; i < _lights.size(); i++) {
 			if (_lights[i].get() == light) {
 				_lights.erase(_lights.begin() + i);

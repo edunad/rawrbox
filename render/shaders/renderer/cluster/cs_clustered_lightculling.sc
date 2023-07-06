@@ -93,8 +93,7 @@ void main()
 }
 
 // check if light radius extends into the cluster
-bool pointLightIntersectsCluster(PointLight light, Cluster cluster)
-{
+bool pointLightIntersectsCluster(PointLight light, Cluster cluster) {
     // NOTE: expects light.position to be in view space like the cluster bounds
     // global light list has world space coordinates, but we transform the
     // coordinates in the shared array of lights after copying

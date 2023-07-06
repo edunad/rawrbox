@@ -24,7 +24,7 @@ namespace rawrbox {
 		CameraOrbital& operator=(CameraOrbital&&) = default;
 		~CameraOrbital() override = default;
 
-		explicit CameraOrbital(rawrbox::Window& window, float speed = 8.F, float FOV = 60.F, float near = 0.1F, float far = 100.F, bool homogeneousDepth = false);
+		explicit CameraOrbital(rawrbox::Window& window, float speed = 8.F, float FOV = 60.F, float near = 0.1F, float far = 45.F, bool homogeneousDepth = false);
 		void update() override;
 	};
 } // namespace rawrbox

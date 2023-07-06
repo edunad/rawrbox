@@ -46,33 +46,34 @@ void main() {
 				);
 
 	normal = normalize(mul(tbn, normal));
-	vec3 wnormal = normalize(mul(u_invView, vec4(normal, 0.0) ).xyz);
+	vec3 wnormal = normalize(mul(u_invView, vec4(normal, 0.0)).xyz);
 	// -----
 
-    vec3 radianceOut = vec3_splat(0.0);
     vec3 fragPos = v_worldpos;
 
-	uint cluster = getClusterIndex(gl_FragCoord);
-    LightGrid grid = getLightGrid(cluster);
+	// Apply lights ----
+	if(u_fullbright == 0.0) {
+		vec3 radianceOut = vec3_splat(0.0);
 
-    for(uint i = 0; i < grid.pointLights; i++) {
-        uint lightIndex = getGridLightIndex(grid.offset, i);
-        PointLight light = getPointLight(lightIndex);
+		uint cluster = getClusterIndex(gl_FragCoord);
+		LightGrid grid = getLightGrid(cluster);
 
-        float dist = distance(light.position, fragPos);
-        float attenuation = smoothAttenuation(dist, light.radius);
-		if(attenuation > 0.0) {
-			radianceOut += light.intensity * attenuation;
+		for(uint i = 0; i < grid.pointLights; i++) {
+			uint lightIndex = getGridLightIndex(grid.offset, i);
+			PointLight light = getPointLight(lightIndex);
 
-            /*vec3 L = normalize(light.position - fragPos);
-            vec3 radianceIn = light.intensity * attenuation;
-            float NoL = saturate(dot(N, L));
-            radianceOut += BRDF(V, L, N, NoV, NoL, mat) * msFactor * radianceIn * NoL;*/
-        }
+			float dist = distance(light.position, fragPos);
+			float attenuation = smoothAttenuation(dist, light.radius);
+			if(attenuation > 0.0) {
+				radianceOut += light.intensity * attenuation;
+			}
+		}
+
+		radianceOut += getAmbientLight().irradiance;
+		gl_FragColor.rgb = radianceOut * albedo;
+	} else {
+		gl_FragColor = albedo;
 	}
-
-    radianceOut += getAmbientLight().irradiance * albedo;
-    gl_FragColor.rgb = radianceOut;
+	// -------
     gl_FragColor.a = albedo.a;
-   	//gl_FragColor = albedo;
 }

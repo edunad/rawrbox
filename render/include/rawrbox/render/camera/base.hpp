@@ -16,7 +16,7 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 _projection = {};
 
 		float _z_near = 0.1F;
-		float _z_far = 100.F;
+		float _z_far = 45.F;
 
 		virtual void updateMtx();
 

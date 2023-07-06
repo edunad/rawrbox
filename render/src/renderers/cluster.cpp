@@ -54,15 +54,14 @@ namespace rawrbox {
 		if (this->_uniforms == nullptr || this->worldRender == nullptr) return;
 
 		// Set views
-		auto view = rawrbox::MAIN_CAMERA->getViewMtx().data();
+		auto view = rawrbox::MAIN_CAMERA->getViewMtx();
 		auto proj = rawrbox::MAIN_CAMERA->getProjMtx();
 
-		bgfx::setViewTransform(CLUSTER_BUILD_VIEW_ID, view, proj.data());
-		bgfx::setViewTransform(LIGHT_CULL_VIEW_ID, view, proj.data());
+		bgfx::setViewTransform(CLUSTER_BUILD_VIEW_ID, view.data(), proj.data());
+		bgfx::setViewTransform(LIGHT_CULL_VIEW_ID, view.data(), proj.data());
 
-		bgfx::setViewTransform(rawrbox::MAIN_DEFAULT_VIEW, view, proj.data());
+		bgfx::setViewTransform(rawrbox::MAIN_DEFAULT_VIEW, view.data(), proj.data());
 		bgfx::setViewClear(rawrbox::MAIN_DEFAULT_VIEW, BGFX_DEFAULT_CLEAR, 1.0F, 0, 0);
-		// bgfx::setViewFrameBuffer(rawrbox::MAIN_DEFAULT_VIEW, this->_frameBuffer);
 		//  ---
 
 		this->_uniforms->setUniforms(this->_size);

@@ -4,8 +4,7 @@
 #include "clusters.sh"
 
 NUM_THREADS(1, 1, 1)
-void main()
-{
+void main() {
     if(gl_GlobalInvocationID.x == 0)
     {
         // reset the atomic counter for the light grid generation

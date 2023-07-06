@@ -21,7 +21,7 @@ namespace rawrbox {
 		CameraPerspective& operator=(CameraPerspective&&) = default;
 		~CameraPerspective() override = default;
 
-		explicit CameraPerspective(const rawrbox::Vector2i& winSize, float FOV = 60.F, float near = 0.1F, float far = 100.F, bool homogeneousDepth = false);
+		explicit CameraPerspective(const rawrbox::Vector2i& winSize, float FOV = 60.F, float near = 0.1F, float far = 45.F, bool homogeneousDepth = false);
 
 		[[nodiscard]] const rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const override;
 		[[nodiscard]] const rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screen_pos) const override;
