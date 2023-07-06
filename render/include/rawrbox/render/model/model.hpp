@@ -408,6 +408,7 @@ namespace rawrbox {
 			ModelBase<M>::draw();
 
 			this->preDraw();
+
 			for (auto& mesh : this->_meshes) {
 				this->_material->process(*mesh);
 

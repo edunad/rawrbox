@@ -89,9 +89,6 @@ namespace rawrbox {
 
 		bgfx::setUniform(u_data, data.front().data(), 4);
 		// ---
-
-		// Bind cluster uniforms
-		rawrbox::RENDERER->bindRenderUniforms();
 	}
 
 	void MaterialBase::process(const bgfx::TextureHandle& texture) {
@@ -103,7 +100,17 @@ namespace rawrbox {
 	}
 
 	void MaterialBase::postProcess() {
-		bgfx::submit(rawrbox::CURRENT_VIEW_ID, program);
+		switch (rawrbox::RENDERER_DEBUG) {
+			case DEBUG_OFF:
+				bgfx::submit(rawrbox::CURRENT_VIEW_ID, program, 0, ~BGFX_DISCARD_BINDINGS);
+				break;
+			case DEBUG_CLUSTER_Z:
+				bgfx::submit(rawrbox::CURRENT_VIEW_ID, debug_z_program, 0, ~BGFX_DISCARD_BINDINGS);
+				break;
+			case DEBUG_CLUSTER_COUNT:
+				bgfx::submit(rawrbox::CURRENT_VIEW_ID, debug_program, 0, ~BGFX_DISCARD_BINDINGS);
+				break;
+		}
 	}
 
 	void MaterialBase::upload() {

@@ -1,7 +1,8 @@
 
 $input v_normal, v_tangent, v_bitangent, v_texcoord0, v_color0, v_worldPos
 
-#define READ_MATERIAL
+#define READ_LIGHT_INDICES
+#define READ_LIGHT_GRID
 
 #include <bgfx_shader.sh>
 
@@ -29,14 +30,14 @@ vec4 lit(float _ndotl, float _rdotv, float _m) {
 }
 
 void main() {
-	vec4 albedo = texture2D(s_albedo, v_texcoord0) * v_color0 * u_colorOffset;
+	vec4 albedo = texture2D(s_albedo, v_texcoord0.xy) * v_color0 * u_colorOffset;
 
-	float specular = texture2D(s_specular, v_texcoord0).r;
+	float specular = texture2D(s_specular, v_texcoord0.xy).r;
 	albedo.a = specular;
 
 	// ----
 	vec3 normal;
-	normal.xy = texture2D(s_normal, v_texcoord0).xy * 2.0 - 1.0;
+	normal.xy = texture2D(s_normal, v_texcoord0.xy).xy * 2.0 - 1.0;
 	normal.z  = sqrt(1.0 - dot(normal.xy, normal.xy) );
 
 	mat3 tbn = mat3(
@@ -75,5 +76,6 @@ void main() {
 		gl_FragColor = albedo;
 	}
 	// -------
+
     gl_FragColor.a = albedo.a;
 }

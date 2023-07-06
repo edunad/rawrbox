@@ -18,6 +18,12 @@
 // NOLINTEND(*)
 
 namespace rawrbox {
+	enum RENDER_DEBUG_MODE {
+		DEBUG_OFF,
+		DEBUG_CLUSTER_Z,
+		DEBUG_CLUSTER_COUNT
+	};
+
 	constexpr auto MAX_BONES_PER_VERTEX = 4;
 	constexpr auto MAX_BONES_PER_MODEL = 200;
 	constexpr auto MAX_LIGHTS = 1000;
@@ -64,6 +70,8 @@ namespace rawrbox {
 	// QUICK ACCESS ---
 	extern rawrbox::CameraBase* MAIN_CAMERA;
 	extern rawrbox::RendererBase* RENDERER;
+
+	extern rawrbox::RENDER_DEBUG_MODE RENDERER_DEBUG;
 	// ----
 
 	// INTERNAL, DO NOT USE

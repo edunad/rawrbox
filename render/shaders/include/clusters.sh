@@ -29,24 +29,41 @@ uniform vec4 u_zNearFarVec;
 #define u_zNear        u_zNearFarVec.x
 #define u_zFar         u_zNearFarVec.y
 
-#ifdef WRITE_CLUSTERS
-    #define CLUSTER_BUFFER BUFFER_RW
-#else
-    #define CLUSTER_BUFFER BUFFER_RO
+// list of clusters (2 vec4's each, min + max pos for AABB)
+#if defined(WRITE_CLUSTERS)
+BUFFER_RW(b_clusters, vec4, SAMPLE_CLUSTERS);
+#define CLUSTERS
+#elif defined(READ_CLUSTERS)
+BUFFER_RO(b_clusters, vec4, SAMPLE_CLUSTERS);
+#define CLUSTERS
 #endif
 
 // light indices belonging to clusters
-CLUSTER_BUFFER(b_clusterLightIndices, uint, SAMPLE_LIGHTINDICES);
-// for each cluster: (start index in b_clusterLightIndices, number of point lights, empty, empty)
-CLUSTER_BUFFER(b_clusterLightGrid, uvec4, SAMPLE_LIGHTGRID);
+#if defined(WRITE_LIGHT_INDICES)
+BUFFER_RW(b_clusterLightIndices, uint, SAMPLE_LIGHTINDICES);
+#define LIGHT_INDICES
+#elif defined(READ_LIGHT_INDICES)
+BUFFER_RO(b_clusterLightIndices, uint, SAMPLE_LIGHTINDICES);
+#define LIGHT_INDICES
+#endif
 
-// these are only needed for building clusters and light culling, not in the fragment shader
-#ifdef WRITE_CLUSTERS
-// list of clusters (2 vec4's each, min + max pos for AABB)
-CLUSTER_BUFFER(b_clusters, vec4, SAMPLE_CLUSTERS);
-// atomic counter for building the light grid
-// must be reset to 0 every frame
-CLUSTER_BUFFER(b_globalIndex, uint, SAMPLE_ATOMIC_INDEX);
+// light indices belonging to clusters
+#if defined(WRITE_ATOMIC)
+BUFFER_RW(b_globalIndex, uint, SAMPLE_ATOMIC_INDEX);
+#define ATOMIC
+#elif defined(READ_ATOMIC)
+BUFFER_RO(b_globalIndex, uint, SAMPLE_ATOMIC_INDEX);
+#define ATOMIC
+#endif
+
+
+// for each cluster: (start index in b_clusterLightIndices, number of point lights, empty, empty)
+#if defined(WRITE_LIGHT_GRID)
+#define LIGHT_GRID
+BUFFER_RW(b_clusterLightGrid, uvec4, SAMPLE_LIGHTGRID);
+#elif defined(READ_LIGHT_GRID)
+#define LIGHT_GRID
+BUFFER_RO(b_clusterLightGrid, uvec4, SAMPLE_LIGHTGRID);
 #endif
 
 struct Cluster {
@@ -59,7 +76,7 @@ struct LightGrid {
     uint pointLights; // TODO: SUPPORT OTHER TYPES OF LIGHT
 };
 
-#ifdef WRITE_CLUSTERS
+#ifdef CLUSTERS
 Cluster getCluster(uint index) {
     Cluster cluster;
     cluster.minBounds = b_clusters[2 * index + 0].xyz;
@@ -68,6 +85,7 @@ Cluster getCluster(uint index) {
 }
 #endif
 
+#ifdef LIGHT_GRID
 LightGrid getLightGrid(uint cluster) {
     uvec4 gridvec = b_clusterLightGrid[cluster];
     LightGrid grid;
@@ -75,10 +93,13 @@ LightGrid getLightGrid(uint cluster) {
     grid.pointLights = gridvec.y;
     return grid;
 }
+#endif
 
+#ifdef LIGHT_INDICES
 uint getGridLightIndex(uint start, uint offset) {
     return b_clusterLightIndices[start + offset];
 }
+#endif
 
 // cluster depth index from depth in screen coordinates (gl_FragCoord.z)
 uint getClusterZIndex(float screenDepth) {
@@ -101,5 +122,4 @@ uint getClusterIndex(vec4 fragCoord) {
                    indices.x;
     return cluster;
 }
-
 #endif // CLUSTERS_SH_HEADER_GUARD

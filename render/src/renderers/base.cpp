@@ -16,7 +16,6 @@ const bgfx::EmbeddedShader quad_shaders[] = {
 
 namespace rawrbox {
 	RendererBase::~RendererBase() {
-		RAWRBOX_DESTROY(this->_frameBuffer);
 		bgfx::discard();
 	}
 
@@ -29,26 +28,6 @@ namespace rawrbox {
 	}
 
 	void RendererBase::resize(const rawrbox::Vector2i& size) {
-		RAWRBOX_DESTROY(this->_frameBuffer); // Kill old buffer
-
-		std::array<bgfx::TextureHandle, 2> textures = {};
-		const uint64_t flags = 0 | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT |
-				       BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP;
-
-		if (bgfx::isTextureValid(0, false, 1, bgfx::TextureFormat::RGBA8, flags | BGFX_TEXTURE_RT)) {
-			textures[0] = bgfx::createTexture2D(bgfx::BackbufferRatio::Equal, false, 1, bgfx::TextureFormat::RGBA8, flags | BGFX_TEXTURE_RT); // Color texture
-		}
-
-		// Generate depth =---
-		bgfx::TextureFormat::Enum depthFormat =
-		    bgfx::isTextureValid(0, false, 1, bgfx::TextureFormat::D32, BGFX_TEXTURE_RT_WRITE_ONLY | flags)
-			? bgfx::TextureFormat::D32
-			: bgfx::TextureFormat::D16;
-
-		textures[1] = bgfx::createTexture2D(bgfx::BackbufferRatio::Equal, false, 1, depthFormat, BGFX_TEXTURE_RT_WRITE_ONLY | flags);
-		this->_frameBuffer = bgfx::createFrameBuffer(2, textures.data(), true);
-		this->_size = size;
-
 		// Setup view ---
 		bgfx::setViewName(rawrbox::MAIN_DEFAULT_VIEW, "RAWRBOX-MAIN");
 		bgfx::setViewClear(rawrbox::MAIN_DEFAULT_VIEW, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 1.0F, 0, 0);
@@ -58,29 +37,25 @@ namespace rawrbox {
 
 	void RendererBase::setWorldRender(std::function<void()> render) { this->worldRender = render; }
 	void RendererBase::render() {
-		if (!bgfx::isValid(this->_frameBuffer) || this->worldRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] World render method not set! Did you call 'setWorldRender' ?");
+		if (this->worldRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] World render method not set! Did you call 'setWorldRender' ?");
 
 		bgfx::touch(rawrbox::MAIN_DEFAULT_VIEW); // Make sure we draw on the view
 		bgfx::setViewClear(rawrbox::MAIN_DEFAULT_VIEW, BGFX_DEFAULT_CLEAR, 1.0F, 0, 0);
 		bgfx::setViewTransform(rawrbox::MAIN_DEFAULT_VIEW, rawrbox::MAIN_CAMERA->getViewMtx().data(), rawrbox::MAIN_CAMERA->getProjMtx().data());
-		bgfx::setViewFrameBuffer(rawrbox::MAIN_DEFAULT_VIEW, this->_frameBuffer);
 
 		// render the world
 		this->worldRender();
 		// ----
 
-		this->postRender();
+		this->frame();
 	}
 
-	void RendererBase::postRender() {
-		bgfx::setViewFrameBuffer(rawrbox::MAIN_DEFAULT_VIEW, BGFX_INVALID_HANDLE);
-
+	void RendererBase::frame() {
 		rawrbox::BGFX_FRAME = bgfx::frame();
 		bgfx::discard(BGFX_DISCARD_ALL);
 	}
 
 	void RendererBase::bindRenderUniforms() {}
-
 	// Is it supported by the GPU?
 	bool RendererBase::supported() {
 		const bgfx::Caps* caps = bgfx::getCaps();

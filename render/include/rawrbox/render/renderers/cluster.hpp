@@ -99,17 +99,20 @@ namespace rawrbox {
 			bgfx::setUniform(this->_zNearFarVecUniform, zNearFarVec.data());
 		}
 
-		void bindBuffers(bool readOnly = true) const {
-			// binding ReadWrite in the fragment shader doesn't work with D3D11/12
-			bgfx::Access::Enum access = readOnly ? bgfx::Access::Read : bgfx::Access::ReadWrite;
+		void bindCluster(bool readOnly = false) {
+			bgfx::setBuffer(rawrbox::SAMPLE_CLUSTERS, this->_clustersBuffer, readOnly ? bgfx::Access::Read : bgfx::Access::ReadWrite);
+		}
 
-			if (!readOnly) { // read only does not need clusters and atomic index
-				bgfx::setBuffer(rawrbox::SAMPLE_CLUSTERS, this->_clustersBuffer, access);
-				bgfx::setBuffer(rawrbox::SAMPLE_ATOMIC_INDEX, this->_atomicIndexBuffer, access);
-			}
+		void bindAtomic(bool readOnly = false) {
+			bgfx::setBuffer(rawrbox::SAMPLE_ATOMIC_INDEX, this->_atomicIndexBuffer, readOnly ? bgfx::Access::Read : bgfx::Access::ReadWrite);
+		}
 
-			bgfx::setBuffer(rawrbox::SAMPLE_LIGHTINDICES, this->_lightIndicesBuffer, access);
-			bgfx::setBuffer(rawrbox::SAMPLE_LIGHTGRID, this->_lightGridBuffer, access);
+		void bindLightIndices(bool readOnly = false) {
+			bgfx::setBuffer(rawrbox::SAMPLE_LIGHTINDICES, this->_lightIndicesBuffer, readOnly ? bgfx::Access::Read : bgfx::Access::ReadWrite);
+		}
+
+		void bindLightGrid(bool readOnly = false) {
+			bgfx::setBuffer(rawrbox::SAMPLE_LIGHTGRID, this->_lightGridBuffer, readOnly ? bgfx::Access::Read : bgfx::Access::ReadWrite);
 		}
 	};
 

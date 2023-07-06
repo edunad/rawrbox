@@ -19,9 +19,9 @@ namespace light {
 
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(1);
+		this->_window->setMonitor(-1);
 		this->_window->setTitle("LIGHT TEST");
-		this->_window->setRenderer<rawrbox::RendererCluster>(bgfx::RendererType::Count, [this]() { this->drawWorld(); });
+		this->_window->setRenderer<>(bgfx::RendererType::Count, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
@@ -40,6 +40,16 @@ namespace light {
 
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::AssimpLoader>());
+
+		// Setup binds ---
+		this->_window->onKey += [this](rawrbox::Window& w, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) {
+			if (action != KEY_ACTION_UP) return;
+
+			if (key == KEY_F1) rawrbox::RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_OFF;
+			if (key == KEY_F2) rawrbox::RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_CLUSTER_Z;
+			if (key == KEY_F3) rawrbox::RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_CLUSTER_COUNT;
+		};
+		// ----------
 
 		// Load content ---
 		this->loadContent();
@@ -125,6 +135,10 @@ namespace light {
 		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
 		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
 		bgfx::dbgTextPrintf(1, 6, 0x6f, fmt::format("TRIANGLES: {} ----->    DRAW CALLS: {}", stats->numPrims[bgfx::Topology::TriList], stats->numDraw).c_str());
+
+		bgfx::dbgTextPrintf(1, 11, 0x4f, "F1 to hide cluster debug");
+		bgfx::dbgTextPrintf(1, 12, 0x4f, "F2 to show z cluster debug");
+		bgfx::dbgTextPrintf(1, 13, 0x4f, "F3 to show cluster light debug");
 	}
 
 	void Game::draw() {

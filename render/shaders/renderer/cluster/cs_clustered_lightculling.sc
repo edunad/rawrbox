@@ -1,9 +1,14 @@
-#define WRITE_CLUSTERS
+
+#define READ_CLUSTERS
+#define WRITE_LIGHT_INDICES
+#define WRITE_LIGHT_GRID
+#define WRITE_ATOMIC
 
 #include <bgfx_compute.sh>
 
 #include <../../include/lights.sh>
 #include <../../include/clusters.sh>
+
 
 // compute shader to cull lights against cluster bounds
 // builds a light grid that holds indices of lights for each cluster
@@ -26,8 +31,7 @@ SHARED PointLight lights[GROUP_SIZE];
 
 // each thread handles one cluster
 NUM_THREADS(CLUSTERS_X_THREADS, CLUSTERS_Y_THREADS, CLUSTERS_Z_THREADS)
-void main()
-{
+void main() {
     // local thread variables
     // hold the result of light culling for this cluster
     uint visibleLights[MAX_LIGHTS_PER_CLUSTER];
@@ -83,6 +87,7 @@ void main()
     // get a unique index into the light index list where we can write this cluster's lights
     uint offset = 0;
     atomicFetchAndAdd(b_globalIndex[0], visibleCount, offset);
+
     // copy indices of lights
     for(uint i = 0; i < visibleCount; i++)
     {

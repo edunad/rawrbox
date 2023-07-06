@@ -3,8 +3,6 @@
 #include <rawrbox/render/renderers/cluster.hpp>
 #include <rawrbox/render/utils/render.hpp>
 
-#define BGFX_DEFAULT_CLEAR (0 | BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH)
-
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader clustered_clusterbuilding[] = {
     BGFX_EMBEDDED_SHADER(cs_clustered_clusterbuilding),
@@ -59,18 +57,16 @@ namespace rawrbox {
 
 		bgfx::setViewTransform(CLUSTER_BUILD_VIEW_ID, view.data(), proj.data());
 		bgfx::setViewTransform(LIGHT_CULL_VIEW_ID, view.data(), proj.data());
-
 		bgfx::setViewTransform(rawrbox::MAIN_DEFAULT_VIEW, view.data(), proj.data());
-		bgfx::setViewClear(rawrbox::MAIN_DEFAULT_VIEW, BGFX_DEFAULT_CLEAR, 1.0F, 0, 0);
-		//  ---
+		//   ---
 
 		this->_uniforms->setUniforms(this->_size);
 
 		// Only rebuild cluster if view changed
 		if (this->_oldProj != proj) {
 			this->_oldProj = proj;
-			this->_uniforms->bindBuffers(false); // write access, all buffers
 
+			this->_uniforms->bindCluster();
 			bgfx::dispatch(CLUSTER_BUILD_VIEW_ID,
 			    this->_clusterBuildingComputeProgram,
 			    ClusterUniforms::CLUSTERS_X / ClusterUniforms::CLUSTERS_X_THREADS,
@@ -81,13 +77,17 @@ namespace rawrbox {
 		// reset atomic counter for light grid generation
 		// buffers created with BGFX_BUFFER_COMPUTE_WRITE can't be updated from the CPU
 		// this used to happen during cluster building when it was still run every frame
-		this->_uniforms->bindBuffers(false); // write access, all buffers
+		this->_uniforms->bindAtomic();
 		bgfx::dispatch(LIGHT_CULL_VIEW_ID, this->_resetCounterComputeProgram, 1, 1, 1);
 		// --------
 
 		// Light culling
 		rawrbox::LIGHTS::bindUniforms();
-		this->_uniforms->bindBuffers(false); // write access, all buffers
+
+		this->_uniforms->bindCluster(true);
+		this->_uniforms->bindLightGrid();
+		this->_uniforms->bindAtomic();
+		this->_uniforms->bindLightIndices();
 
 		bgfx::dispatch(LIGHT_CULL_VIEW_ID,
 		    this->_lightCullingComputeProgram,
@@ -100,25 +100,27 @@ namespace rawrbox {
 		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_DEFAULT_VIEW;
 		bgfx::touch(rawrbox::MAIN_DEFAULT_VIEW); // Make sure we draw on the view
 
+		// Bind cluster uniforms
+		rawrbox::RENDERER->bindRenderUniforms();
+
 		// Render world ---
 		this->worldRender();
 		// ----------------
 
-		rawrbox::RendererBase::postRender();
+		rawrbox::RendererBase::frame();
 	}
 
 	void RendererCluster::bindRenderUniforms() {
 		rawrbox::LIGHTS::bindUniforms();
-		this->_uniforms->bindBuffers(true); // read access, only light grid and indices
+		this->_uniforms->bindLightIndices(true);
+		this->_uniforms->bindLightGrid(true);
 	}
 
-	// Is it supported by the GPU?
 	bool RendererCluster::supported() {
 		const bgfx::Caps* caps = bgfx::getCaps();
+
 		return RendererBase::supported() &&
-		       // compute shader
 		       (caps->supported & BGFX_CAPS_COMPUTE) != 0 &&
-		       // 32-bit index buffers, used for light grid structure
 		       (caps->supported & BGFX_CAPS_INDEX32) != 0;
 	}
 } // namespace rawrbox

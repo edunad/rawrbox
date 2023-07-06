@@ -44,6 +44,8 @@ namespace rawrbox {
 	// QUICK ACCESS ---
 	rawrbox::CameraBase* MAIN_CAMERA = nullptr;
 	rawrbox::RendererBase* RENDERER = nullptr;
+
+	rawrbox::RENDER_DEBUG_MODE RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_OFF;
 	// ----
 
 	// INTERNAL, DO NOT USE

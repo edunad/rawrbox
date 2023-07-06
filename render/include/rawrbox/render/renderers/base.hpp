@@ -10,9 +10,9 @@
 namespace rawrbox {
 	class RendererBase {
 	protected:
-		bgfx::FrameBufferHandle _frameBuffer = BGFX_INVALID_HANDLE;
-
 		rawrbox::Vector2i _size = {};
+
+		virtual void frame();
 
 	public:
 		std::function<void()> worldRender = nullptr;
@@ -29,10 +29,7 @@ namespace rawrbox {
 		virtual void setWorldRender(std::function<void()> render);
 
 		virtual void render();
-		virtual void postRender();
-
 		virtual void bindRenderUniforms();
-
 		static bool supported();
 	};
 } // namespace rawrbox
