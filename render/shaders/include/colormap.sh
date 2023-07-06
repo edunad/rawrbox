@@ -14,9 +14,8 @@
 // See also: https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html
 
 vec3 turboColormap(float x) {
-
     if(x < 0.0) {
-        return vec3_splat(0.02);
+        return vec3_splat(0.01); // Not full black, since our background might be black as well :P
     } else if(x > 1.0) {
         return vec3_splat(1.0);
     } else {

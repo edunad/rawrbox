@@ -1,7 +1,7 @@
 
 #include <rawrbox/render/postprocess/manager.hpp>
-#include <rawrbox/render/shader_defines.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/render.hpp>
 
 #include <bx/bx.h>
 #include <fmt/format.h>
@@ -9,24 +9,15 @@
 #include <stdexcept>
 
 // NOLINTBEGIN(*)
-static const bgfx::EmbeddedShader model_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_stencil_flat),
-    BGFX_EMBEDDED_SHADER(fs_stencil_flat),
+static const bgfx::EmbeddedShader quad_shaders[] = {
+    BGFX_EMBEDDED_SHADER(vs_quadtex),
+    BGFX_EMBEDDED_SHADER(fs_quadtex),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
 namespace rawrbox {
-	PostProcessManager::PostProcessManager(const rawrbox::Vector2i& windowSize) : _windowSize(windowSize) {
-		// Shader layout
-		this->_vLayout.begin()
-		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-		    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
-		    .end();
-	}
-
+	PostProcessManager::PostProcessManager(const rawrbox::Vector2i& windowSize) : _windowSize(windowSize) {}
 	PostProcessManager::~PostProcessManager() {
-		RAWRBOX_DESTROY(this->_vbh);
-		RAWRBOX_DESTROY(this->_ibh);
 		RAWRBOX_DESTROY(this->_texColor);
 		RAWRBOX_DESTROY(this->_program);
 
@@ -37,8 +28,6 @@ namespace rawrbox {
 		this->_render.reset();
 
 		this->_postProcesses.clear();
-		this->_vertices.clear();
-		this->_indices.clear();
 	}
 
 	// Post utils ----
@@ -84,26 +73,6 @@ namespace rawrbox {
 		// ----
 	}
 
-	void PostProcessManager::pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv) {
-		this->_vertices.emplace_back(
-		    // pos
-		    (pos.x / this->_windowSize.x * 2 - 1),
-		    (pos.y / this->_windowSize.y * 2 - 1) * -1,
-		    0.0F,
-
-		    // uv
-		    uv.x,
-		    uv.y);
-	}
-
-	void PostProcessManager::pushIndices(uint16_t a, uint16_t b, uint16_t c) {
-		auto pos = static_cast<uint16_t>(this->_vertices.size());
-
-		this->_indices.push_back(pos - a);
-		this->_indices.push_back(pos - b);
-		this->_indices.push_back(pos - c);
-	}
-
 	void PostProcessManager::upload() {
 		if (this->_render != nullptr) throw std::runtime_error("[RawrBox-PostProcess] Already uploaded");
 
@@ -114,27 +83,8 @@ namespace rawrbox {
 			effect->upload();
 		}
 
-		// Generate vertices -----
-		auto screeSize = this->_windowSize.cast<float>();
-		this->pushVertice({0, 0}, {0, 0});
-		this->pushVertice({0, screeSize.y}, {0, 1});
-		this->pushVertice({screeSize.x, 0}, {1, 0});
-		this->pushVertice({screeSize.x, screeSize.y}, {1, 1});
-
-		this->pushIndices(4, 3, 2);
-		this->pushIndices(3, 1, 2);
-
-		// Generate buffers ---
-		this->_vbh = bgfx::createVertexBuffer(bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * this->_vLayout.getStride()), this->_vLayout);
-		this->_ibh = bgfx::createIndexBuffer(bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t)));
-
 		// Load Shader --------
-		bgfx::RendererType::Enum type = bgfx::getRendererType();
-		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(model_shaders, type, "vs_stencil_flat");
-		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(model_shaders, type, "fs_stencil_flat");
-
-		this->_program = bgfx::createProgram(vsh, fsh, true);
-		if ((!bgfx::isValid(this->_program))) throw std::runtime_error("[RawrBox-Dither] Failed to initialize shader program");
+		rawrbox::RenderUtils::buildShader(quad_shaders, this->_program);
 		// ------------------
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
@@ -162,8 +112,7 @@ namespace rawrbox {
 
 			bgfx::touch(id);
 			bgfx::setTexture(0, this->_texColor, pass == 0 ? this->_render->getHandle() : bgfx::getTexture(this->_samples[pass - 1]));
-			bgfx::setVertexBuffer(0, this->_vbh);
-			bgfx::setIndexBuffer(this->_ibh);
+			rawrbox::RenderUtils::renderScreenQuad(this->_windowSize);
 
 			bgfx::setState(0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_CULL_CW);
 			this->_postProcesses[pass]->applyEffect();
@@ -175,8 +124,7 @@ namespace rawrbox {
 		// Draw final texture
 		bgfx::touch(rawrbox::CURRENT_VIEW_ID);
 		bgfx::setTexture(0, this->_texColor, bgfx::getTexture(this->_samples.back()));
-		bgfx::setVertexBuffer(0, this->_vbh);
-		bgfx::setIndexBuffer(this->_ibh);
+		rawrbox::RenderUtils::renderScreenQuad(this->_windowSize);
 		bgfx::setState(0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_CULL_CW);
 		bgfx::submit(0, this->_program);
 		bgfx::discard();

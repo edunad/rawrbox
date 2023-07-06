@@ -2,9 +2,9 @@
 
 #include <rawrbox/math/bbox.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/render/light/types.hpp>
 #include <rawrbox/render/model/animation.hpp>
 #include <rawrbox/render/model/defs.hpp>
-#include <rawrbox/render/model/light/types.hpp>
 #include <rawrbox/render/model/skeleton.hpp>
 #include <rawrbox/render/texture/base.hpp>
 

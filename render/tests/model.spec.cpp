@@ -1,4 +1,4 @@
-#include <rawrbox/render/model/material/base.hpp>
+#include <rawrbox/render/materials/base.hpp>
 #include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 

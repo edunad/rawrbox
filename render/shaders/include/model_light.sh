@@ -1,4 +1,4 @@
-#ifndef INCLUDED_MODEL_LIGHT
+/*#ifndef INCLUDED_MODEL_LIGHT
 #define INCLUDED_MODEL_LIGHT
 
 #define MAX_LIGHTS 8
@@ -152,3 +152,4 @@ vec4 calcLight(vec3 v_view, vec3 normal, vec4 texColor, vec2 v_texcoord0) {
 }
 
 #endif
+*/

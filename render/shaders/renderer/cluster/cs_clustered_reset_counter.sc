@@ -1,7 +1,7 @@
 #define WRITE_CLUSTERS
 
 #include <bgfx_compute.sh>
-#include "clusters.sh"
+#include <../../include/clusters.sh>
 
 NUM_THREADS(1, 1, 1)
 void main() {

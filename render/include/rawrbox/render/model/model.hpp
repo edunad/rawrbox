@@ -1,9 +1,9 @@
 #pragma once
 
 #include <rawrbox/engine/static.hpp>
+#include <rawrbox/render/light/manager.hpp>
 #include <rawrbox/render/model/animation.hpp>
 #include <rawrbox/render/model/base.hpp>
-#include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/skeleton.hpp>
 #include <rawrbox/render/utils/anim.hpp>
 

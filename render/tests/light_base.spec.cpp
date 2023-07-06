@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/model/light/directional.hpp>
+#include <rawrbox/render/light/directional.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 

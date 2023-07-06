@@ -1,8 +1,8 @@
 #define WRITE_CLUSTERS
 
 #include <bgfx_compute.sh>
-#include "clusters.sh"
-#include "../../include/utils.sh"
+#include <../../include/clusters.sh>
+#include <../../include/utils.sh>
 
 // compute shader to calculate light cluster min/max AABB in eye space
 // largely inspired by http://www.aortiz.me/2018/12/21/CG.html

@@ -2,8 +2,8 @@
 
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/camera/orbital.hpp>
+#include <rawrbox/render/materials/skinned.hpp>
 #include <rawrbox/render/model/assimp/assimp_model.hpp>
-#include <rawrbox/render/model/material/skinned.hpp>
 #include <rawrbox/render/model/text3D.hpp>
 #include <rawrbox/render/window.hpp>
 

@@ -1,9 +1,9 @@
 #pragma once
 
+#include <rawrbox/render/light/directional.hpp>
+#include <rawrbox/render/light/point.hpp>
+#include <rawrbox/render/light/spot.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
-#include <rawrbox/render/model/light/directional.hpp>
-#include <rawrbox/render/model/light/point.hpp>
-#include <rawrbox/render/model/light/spot.hpp>
 #include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/utils/assimp/model.hpp>
 

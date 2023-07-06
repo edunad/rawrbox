@@ -1,5 +1,5 @@
 #pragma once
-#include <rawrbox/render/model/material/base.hpp>
+#include <rawrbox/render/materials/base.hpp>
 #include <rawrbox/render/model/model.hpp>
 
 #define BGFX_STATE_DEFAULT_SPRITE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)

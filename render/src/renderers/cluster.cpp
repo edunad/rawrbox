@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/model/light/manager.hpp>
+#include <rawrbox/render/light/manager.hpp>
 #include <rawrbox/render/renderers/cluster.hpp>
 #include <rawrbox/render/utils/render.hpp>
 

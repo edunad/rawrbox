@@ -1,8 +1,9 @@
 #define WRITE_CLUSTERS
 
 #include <bgfx_compute.sh>
-#include "lights.sh"
-#include "clusters.sh"
+
+#include <../../include/lights.sh>
+#include <../../include/clusters.sh>
 
 // compute shader to cull lights against cluster bounds
 // builds a light grid that holds indices of lights for each cluster

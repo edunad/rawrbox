@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrbox/render/model/material/base.hpp>
+#include <rawrbox/render/materials/base.hpp>
 
 #include <functional>
 namespace rawrbox {
