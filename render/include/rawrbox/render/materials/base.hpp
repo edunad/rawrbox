@@ -20,6 +20,7 @@ namespace rawrbox {
 		bgfx::UniformHandle s_normal = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle s_specular = BGFX_INVALID_HANDLE;
 
+		bgfx::UniformHandle u_camPos = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle u_colorOffset = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle u_mesh_pos = BGFX_INVALID_HANDLE;

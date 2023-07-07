@@ -30,6 +30,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->s_normal);
 
 		// Uniforms -----
+		RAWRBOX_DESTROY(this->u_camPos);
 		RAWRBOX_DESTROY(this->u_colorOffset);
 		RAWRBOX_DESTROY(this->u_mesh_pos);
 		RAWRBOX_DESTROY(this->u_data);
@@ -40,6 +41,7 @@ namespace rawrbox {
 		this->s_normal = bgfx::createUniform("s_normal", bgfx::UniformType::Sampler);
 		this->s_specular = bgfx::createUniform("s_specular", bgfx::UniformType::Sampler);
 
+		this->u_camPos = bgfx::createUniform("u_camPos", bgfx::UniformType::Vec4);
 		this->u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 		this->u_mesh_pos = bgfx::createUniform("u_mesh_pos", bgfx::UniformType::Vec4);
 		this->u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4);
@@ -63,6 +65,10 @@ namespace rawrbox {
 		} else {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, s_specular, rawrbox::WHITE_TEXTURE->getHandle());
 		}
+
+		// Camera setup
+		bgfx::setUniform(u_camPos, rawrbox::MAIN_CAMERA->getPos().data().data());
+		// -------
 
 		// Color override
 		bgfx::setUniform(u_colorOffset, mesh.color.data().data());

@@ -10,7 +10,9 @@ uniform vec4 u_lightSettings;
 #define u_fullbright uint(u_lightSettings.x)
 #define u_pointLightCount uint(u_lightSettings.y)
 
-uniform vec4 u_ambientLightIrradiance;
+uniform vec4 u_ambientLight;
+uniform vec4 u_sunDirection;
+uniform vec4 u_sunColor;
 
 // for each light:
 //   vec4 position (w is padding)
@@ -24,15 +26,16 @@ struct PointLight {
     float radius;
 };
 
-struct AmbientLight {
-    vec3 irradiance;
+// Aka sun
+struct DirectionalLight {
+    vec3 direction;
+    vec3 radiance;
 };
 
 // primary source:
 // https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf
 // also really good:
 // https://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
-
 float distanceAttenuation(float distance) {
     // only for point lights
 
@@ -42,8 +45,6 @@ float distanceAttenuation(float distance) {
 }
 
 float smoothAttenuation(float distance, float radius) {
-    // window function with smooth transition to 0
-    // radius is arbitrary (and usually artist controlled)
     float nom = saturate(1.0 - pow(distance / radius, 4.0));
     return nom * nom * distanceAttenuation(distance);
 }
@@ -63,11 +64,15 @@ PointLight getPointLight(uint i) {
     return light;
 }
 
-AmbientLight getAmbientLight() {
-    AmbientLight light;
-    light.irradiance = u_ambientLightIrradiance.xyz; // TODO : ADD DIRECTION?
+DirectionalLight getSunLight() {
+    DirectionalLight light;
 
+    light.direction = u_sunDirection.xyz;
+    light.radiance = u_sunColor.xyz;
     return light;
 }
 
+vec3 getAmbientLight() {
+    return u_ambientLight.xyz;
+}
 #endif // LIGHTS_SH_HEADER_GUARD

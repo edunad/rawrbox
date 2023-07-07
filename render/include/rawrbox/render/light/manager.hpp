@@ -30,18 +30,31 @@ namespace rawrbox {
 
 		static bgfx::DynamicVertexBufferHandle _buffer;
 		static bgfx::UniformHandle _u_lightSettings;
-		static bgfx::UniformHandle _ambientLightIrradianceUniform;
+
+		static bgfx::UniformHandle _u_ambientLight;
+
+		static bgfx::UniformHandle _u_sunDirection;
+		static bgfx::UniformHandle _u_sunColor;
+
+		static rawrbox::Colorf _ambient;
+
+		static rawrbox::Colorf _sun_color;
+		static rawrbox::Vector3f _sun_direction;
 
 	public:
 		static bool fullbright;
 
 		static void init();
 		static void shutdown();
-
 		static void update();
+
 		static void bindUniforms();
 
+		// UTILS ----
 		static void setEnabled(bool fb);
+		static void setSun(const rawrbox::Vector3f& dir, const rawrbox::Colorf& col);
+		static void setAmbient(const rawrbox::Colorf& col);
+		// -------
 
 		// Light ----
 		template <typename T = rawrbox::LightBase>
@@ -52,9 +65,9 @@ namespace rawrbox {
 			}
 
 			light.setId(++rawrbox::LIGHT_ID);
-			auto a = _lights.emplace_back(std::make_unique<T>(light)).get();
+			auto entry = _lights.emplace_back(std::make_unique<T>(light)).get();
 			update();
-			return a;
+			return entry;
 		}
 
 		static void removeLight(rawrbox::LightBase* light);

@@ -44,4 +44,13 @@ float screen2EyeDepth(float depth, float near, float far) {
     return eye;
 }
 
+vec3 convertTangentNormal(vec3 normal_ref, vec3 tangent_ref, vec3 matNormal) {
+    mat3 TBN = mtxFromCols(
+        normalize(tangent_ref),
+        normalize(cross(normal_ref, tangent_ref)),
+        normalize(normal_ref)
+    );
+
+    return normalize(mul(TBN, matNormal));
+}
 #endif // UTIL_SH_HEADER_GUARD

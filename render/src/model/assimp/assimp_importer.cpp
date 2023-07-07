@@ -533,9 +533,6 @@ namespace rawrbox {
 				if (aiMesh.HasTangentsAndBitangents()) {
 					auto& tangents = aiMesh.mTangents[i];
 					v.normal[1] = rawrbox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
-
-					auto& bitangents = aiMesh.mBitangents[i];
-					v.normal[2] = rawrbox::PackUtils::packNormal(bitangents.x, bitangents.y, bitangents.z);
 				}
 
 				mesh.vertices.push_back(v);

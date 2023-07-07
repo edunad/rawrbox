@@ -1,6 +1,5 @@
 #pragma once
 
-#include <rawrbox/render/light/directional.hpp>
 #include <rawrbox/render/light/point.hpp>
 #include <rawrbox/render/light/spot.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
@@ -43,7 +42,7 @@ namespace rawrbox {
 						this->template addLight<rawrbox::LightSpot>({assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.specular, assimpLights.angleInnerCone, assimpLights.angleOuterCone, assimpLights.attenuationConstant, assimpLights.attenuationLinear, assimpLights.attenuationQuadratic}, assimpLights.parentID);
 						break;
 					case LightType::LIGHT_DIR:
-						this->template addLight<rawrbox::LightDirectional>({assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.specular}, assimpLights.parentID);
+						rawrbox::LIGHTS::setSun(assimpLights.direction, assimpLights.diffuse);
 						break;
 
 					default:

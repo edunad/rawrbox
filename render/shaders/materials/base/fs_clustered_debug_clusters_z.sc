@@ -1,4 +1,4 @@
-$input v_normal, v_tangent, v_bitangent, v_texcoord0, v_color0, v_worldPos
+$input v_normal, v_tangent, v_texcoord0, v_color0, v_worldPos
 
 #define READ_CLUSTERS
 

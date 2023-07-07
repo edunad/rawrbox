@@ -17,7 +17,7 @@ namespace rawrbox {
 		rawrbox::Vector4f uv = {};
 		uint32_t abgr = 0xFFFFFFFF;
 
-		std::array<uint32_t, 3> normal = {0, 0, 0}; // normal, tangent, bitangent
+		std::array<uint32_t, 2> normal = {0, 0}; // normal, tangent
 
 		std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
@@ -31,11 +31,11 @@ namespace rawrbox {
 
 		explicit VertexData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector2f& _uv = {},
-		    const std::array<uint32_t, 3>& _normal = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos), uv(_uv), abgr(cl.pack()), normal(_normal) {}
+		    const std::array<uint32_t, 2>& _normal = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos), uv(_uv), abgr(cl.pack()), normal(_normal) {}
 
 		explicit VertexData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {},
-		    const std::array<uint32_t, 3>& _normal = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos), uv(_uv), abgr(cl.pack()), normal(_normal) {}
+		    const std::array<uint32_t, 2>& _normal = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos), uv(_uv), abgr(cl.pack()), normal(_normal) {}
 
 		static bgfx::VertexLayout vLayout(bool bones = false) {
 			bgfx::VertexLayout l;
@@ -46,8 +46,7 @@ namespace rawrbox {
 			    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true, true)
 
 			    .add(bgfx::Attrib::Normal, 4, bgfx::AttribType::Uint8, true, true)
-			    .add(bgfx::Attrib::Tangent, 4, bgfx::AttribType::Uint8, true, true)
-			    .add(bgfx::Attrib::Bitangent, 4, bgfx::AttribType::Uint8, true, true);
+			    .add(bgfx::Attrib::Tangent, 4, bgfx::AttribType::Uint8, true, true);
 
 			if (bones) {
 				l.add(bgfx::Attrib::Indices, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Uint8, false, true)

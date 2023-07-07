@@ -1,6 +1,7 @@
-$input v_normal, v_tangent, v_bitangent, v_texcoord0, v_color0, v_worldPos
+$input v_normal, v_tangent, v_texcoord0, v_color0, v_worldPos
 
 #define READ_CLUSTERS
+#define READ_LIGHT_GRID
 
 #include <bgfx_shader.sh>
 #include "../../include/clusters.sh"
@@ -31,8 +32,4 @@ void main() {
         vec3(0.0, 1.0, 1.0),
         vec3(1.0, 0.0, 1.0)
     ARRAY_END();
-
-    /*uint cluster = getClusterZIndex(gl_FragCoord.z);
-    vec3 sliceColor = colors[cluster % 6];
-    gl_FragColor = vec4(sliceColor, 1.0);*/
 }

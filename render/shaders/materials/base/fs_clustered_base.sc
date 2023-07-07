@@ -1,5 +1,5 @@
 
-$input v_normal, v_tangent, v_bitangent, v_texcoord0, v_color0, v_worldPos
+$input v_normal, v_tangent, v_texcoord0, v_color0, v_worldPos
 
 #define READ_LIGHT_INDICES
 #define READ_LIGHT_GRID
@@ -15,6 +15,7 @@ SAMPLER2D(s_normal, SAMPLE_MAT_NORMAL);
 SAMPLER2D(s_specular, SAMPLE_MAT_SPECULAR);
 
 uniform vec4 u_colorOffset;
+uniform vec4 u_camPos;
 
 vec2 blinn(vec3 _lightDir, vec3 _normal, vec3 _viewDir) {
 	float ndotl = dot(_normal, _lightDir);
@@ -40,14 +41,7 @@ void main() {
 	normal.xy = texture2D(s_normal, v_texcoord0.xy).xy * 2.0 - 1.0;
 	normal.z  = sqrt(1.0 - dot(normal.xy, normal.xy) );
 
-	mat3 tbn = mat3(
-				normalize(v_tangent),
-				normalize(v_bitangent),
-				normalize(v_normal)
-				);
-
-	normal = normalize(mul(tbn, normal));
-	vec3 wnormal = normalize(mul(u_invView, vec4(normal, 0.0)).xyz);
+    vec3 modelNormal = convertTangentNormal(v_normal, v_tangent, normal);
 	// -----
 
     vec3 fragPos = v_worldPos;
@@ -59,6 +53,7 @@ void main() {
 		uint cluster = getClusterIndex(gl_FragCoord);
 		LightGrid grid = getLightGrid(cluster);
 
+		// Point lights ----
 		for(uint i = 0; i < grid.pointLights; i++) {
 			uint lightIndex = getGridLightIndex(grid.offset, i);
 			PointLight light = getPointLight(lightIndex);
@@ -69,9 +64,19 @@ void main() {
 				radianceOut += light.intensity * attenuation;
 			}
 		}
+		// --------
 
-		radianceOut += getAmbientLight().irradiance;
+		// Sun ----
+		DirectionalLight sun = getSunLight();
+		if(sun.radiance.r != 0.0 && sun.radiance.g != 0.0 && sun.radiance.b != 0.0) {
+			radianceOut += sun.radiance * max(dot(modelNormal, -sun.direction), 0.0f);
+		}
+		// --------
+
+		// Final ----
+		radianceOut += getAmbientLight();
 		gl_FragColor.rgb = radianceOut * albedo;
+		// --------
 	} else {
 		gl_FragColor = albedo;
 	}
