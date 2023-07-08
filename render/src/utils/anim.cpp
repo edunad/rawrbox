@@ -2,7 +2,6 @@
 #include <rawrbox/render/utils/anim.hpp>
 
 namespace rawrbox {
-
 	rawrbox::Vector4f AnimUtils::lerpRotation(float time, std::pair<float, rawrbox::Vector4f> a, std::pair<float, rawrbox::Vector4f> b) {
 		if (a.first == b.first) return a.second;
 

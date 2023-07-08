@@ -120,7 +120,7 @@ namespace rawrbox {
 
 			// Set instance data buffer.
 			bgfx::setTransform((this->getMatrix()).data());
-			bgfx::setBuffer(6, this->_dataBuffer, bgfx::Access::Read);
+			bgfx::setBuffer(rawrbox::SAMPLE_INSTANCE_DATA, this->_dataBuffer, bgfx::Access::Read);
 			bgfx::setInstanceDataBuffer(this->_dataBuffer, 0, this->_instances.size());
 			// ----
 

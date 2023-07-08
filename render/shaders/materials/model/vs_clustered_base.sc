@@ -1,4 +1,4 @@
-$input a_position, a_color0, a_normal, a_tangent, a_texcoord0, a_indices, a_weight
+$input a_position, a_color0, a_normal, a_tangent, a_texcoord0
 $output v_normal, v_tangent, v_texcoord0, v_color0, v_worldPos
 
 #include <bgfx_shader.sh>
@@ -21,3 +21,4 @@ void main() {
     v_worldPos = mul(u_model[0], vec4(a_position, 1.0)).xyz;
     gl_Position = applyPosTransforms(u_viewProj, v_worldPos, a_texcoord0.xy);
 }
+

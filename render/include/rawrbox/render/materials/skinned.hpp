@@ -19,7 +19,7 @@ namespace rawrbox {
 		void upload() override;
 
 		static const bgfx::VertexLayout vLayout() {
-			return rawrbox::VertexData::vLayout(true);
+			return rawrbox::VertexData::vLayout(false, true);
 		}
 	};
 } // namespace rawrbox

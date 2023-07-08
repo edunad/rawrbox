@@ -10,6 +10,6 @@ const bgfx::EmbeddedShader model_instanced_shaders[] = {
 
 namespace rawrbox {
 	void MaterialInstanced::upload() {
-		rawrbox::RenderUtils::buildShader(model_instanced_shaders, this->program);
+		rawrbox::RenderUtils::buildShader(model_instanced_shaders, this->_program);
 	}
 } // namespace rawrbox

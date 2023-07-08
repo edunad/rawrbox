@@ -100,9 +100,6 @@ namespace rawrbox {
 		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_DEFAULT_VIEW;
 		bgfx::touch(rawrbox::MAIN_DEFAULT_VIEW); // Make sure we draw on the view
 
-		// Bind cluster uniforms
-		rawrbox::RENDERER->bindRenderUniforms();
-
 		// Render world ---
 		this->worldRender();
 		// ----------------
@@ -112,6 +109,7 @@ namespace rawrbox {
 
 	void RendererCluster::bindRenderUniforms() {
 		rawrbox::LIGHTS::bindUniforms();
+
 		this->_uniforms->bindLightIndices(true);
 		this->_uniforms->bindLightGrid(true);
 	}

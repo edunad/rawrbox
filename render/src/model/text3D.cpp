@@ -107,7 +107,8 @@ namespace rawrbox {
 
 			bgfx::setState(flags, 0);
 			this->_material->postProcess();
-			bgfx::discard();
 		}
+
+		bgfx::discard(BGFX_DISCARD_ALL);
 	}
 } // namespace rawrbox

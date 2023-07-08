@@ -21,7 +21,7 @@ namespace light {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("LIGHT TEST");
-		this->_window->setRenderer<>(bgfx::RendererType::Count, [this]() { this->drawWorld(); });
+		this->_window->setRenderer(bgfx::RendererType::Count, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
@@ -124,9 +124,8 @@ namespace light {
 
 	void Game::drawWorld() {
 		if (!this->_ready || this->_model == nullptr || this->_text == nullptr) return;
-
 		this->_model->draw();
-		// this->_text->draw();
+		//  this->_text->draw();
 	}
 
 	void Game::printFrames() {
@@ -134,11 +133,9 @@ namespace light {
 
 		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
 		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 6, 0x6f, fmt::format("TRIANGLES: {} ----->    DRAW CALLS: {}", stats->numPrims[bgfx::Topology::TriList], stats->numDraw).c_str());
-
-		bgfx::dbgTextPrintf(1, 11, 0x4f, "F1 to hide cluster debug");
-		bgfx::dbgTextPrintf(1, 12, 0x4f, "F2 to show z cluster debug");
-		bgfx::dbgTextPrintf(1, 13, 0x4f, "F3 to show cluster light debug");
+		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
+		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
+		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
 	}
 
 	void Game::draw() {
@@ -152,9 +149,13 @@ namespace light {
 		// -----------
 
 		if (!this->_ready) {
-			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
-			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
-			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
+			bgfx::dbgTextPrintf(1, 11, 0x70, "                                   ");
+			bgfx::dbgTextPrintf(1, 12, 0x70, "          LOADING CONTENT          ");
+			bgfx::dbgTextPrintf(1, 13, 0x70, "                                   ");
+		} else {
+			bgfx::dbgTextPrintf(1, 11, 0x4f, "F1 to hide cluster debug");
+			bgfx::dbgTextPrintf(1, 12, 0x4f, "F2 to show z cluster debug");
+			bgfx::dbgTextPrintf(1, 13, 0x4f, "F3 to show cluster light debug");
 		}
 
 		this->_window->render(); // Draw world & commit primitives

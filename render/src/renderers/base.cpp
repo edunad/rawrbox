@@ -56,6 +56,7 @@ namespace rawrbox {
 	}
 
 	void RendererBase::bindRenderUniforms() {}
+
 	// Is it supported by the GPU?
 	bool RendererBase::supported() {
 		const bgfx::Caps* caps = bgfx::getCaps();

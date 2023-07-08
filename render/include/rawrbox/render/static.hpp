@@ -45,6 +45,8 @@ namespace rawrbox {
 	extern uint8_t SAMPLE_MAT_ALBEDO;
 	extern uint8_t SAMPLE_MAT_NORMAL;
 	extern uint8_t SAMPLE_MAT_SPECULAR;
+	extern uint8_t SAMPLE_MAT_EMISSION;
+	extern uint8_t SAMPLE_MAT_OPACITY;
 
 	extern uint8_t SAMPLE_LIGHTS_POINTLIGHTS;
 
@@ -52,6 +54,8 @@ namespace rawrbox {
 	extern uint8_t SAMPLE_LIGHTINDICES;
 	extern uint8_t SAMPLE_LIGHTGRID;
 	extern uint8_t SAMPLE_ATOMIC_INDEX;
+
+	extern uint8_t SAMPLE_INSTANCE_DATA;
 	// ---------
 
 	// TEXTURE FALLBACKS ---

@@ -1,82 +1,55 @@
 
-#include <rawrbox/render/light/manager.hpp>
 #include <rawrbox/render/materials/base.hpp>
 #include <rawrbox/render/utils/render.hpp>
 
 // NOLINTBEGIN(*)
-const bgfx::EmbeddedShader model_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_clustered_base),
-    BGFX_EMBEDDED_SHADER(fs_clustered_base),
-    BGFX_EMBEDDED_SHADER_END()};
-
-const bgfx::EmbeddedShader clustered_debug_z[] = {
-    BGFX_EMBEDDED_SHADER(vs_clustered_base),
-    BGFX_EMBEDDED_SHADER(fs_clustered_debug_clusters_z),
-    BGFX_EMBEDDED_SHADER_END()};
-
-const bgfx::EmbeddedShader clustered_debug[] = {
-    BGFX_EMBEDDED_SHADER(vs_clustered_base),
-    BGFX_EMBEDDED_SHADER(fs_clustered_debug_clusters),
+const bgfx::EmbeddedShader clustered_unlit_shaders[] = {
+    BGFX_EMBEDDED_SHADER(vs_clustered_unlit_base),
+    BGFX_EMBEDDED_SHADER(fs_clustered_unlit_base),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
 namespace rawrbox {
 	MaterialBase::~MaterialBase() {
-		RAWRBOX_DESTROY(this->program);
-		RAWRBOX_DESTROY(this->debug_program);
-		RAWRBOX_DESTROY(this->debug_z_program);
+		RAWRBOX_DESTROY(this->_program);
 
-		RAWRBOX_DESTROY(this->s_albedo);
-		RAWRBOX_DESTROY(this->s_normal);
+		RAWRBOX_DESTROY(this->_s_albedo);
 
 		// Uniforms -----
-		RAWRBOX_DESTROY(this->u_camPos);
-		RAWRBOX_DESTROY(this->u_colorOffset);
-		RAWRBOX_DESTROY(this->u_mesh_pos);
-		RAWRBOX_DESTROY(this->u_data);
+		RAWRBOX_DESTROY(this->_u_camPos);
+		RAWRBOX_DESTROY(this->_u_colorOffset);
+		RAWRBOX_DESTROY(this->_u_mesh_pos);
+		RAWRBOX_DESTROY(this->_u_data);
 	}
 
 	void MaterialBase::registerUniforms() {
-		this->s_albedo = bgfx::createUniform("s_albedo", bgfx::UniformType::Sampler);
-		this->s_normal = bgfx::createUniform("s_normal", bgfx::UniformType::Sampler);
-		this->s_specular = bgfx::createUniform("s_specular", bgfx::UniformType::Sampler);
+		this->_s_albedo = bgfx::createUniform("s_albedo", bgfx::UniformType::Sampler);
 
-		this->u_camPos = bgfx::createUniform("u_camPos", bgfx::UniformType::Vec4);
-		this->u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
-		this->u_mesh_pos = bgfx::createUniform("u_mesh_pos", bgfx::UniformType::Vec4);
-		this->u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4);
+		this->_u_camPos = bgfx::createUniform("u_camPos", bgfx::UniformType::Vec4);
+		this->_u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
+
+		this->_u_mesh_pos = bgfx::createUniform("u_mesh_pos", bgfx::UniformType::Vec4);
+		this->_u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4);
 	}
 
 	void MaterialBase::process(const rawrbox::Mesh& mesh) {
 		if (mesh.texture != nullptr && mesh.texture->valid() && !mesh.lineMode && !mesh.wireframe) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, s_albedo, mesh.texture->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, mesh.texture->getHandle());
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, s_albedo, rawrbox::WHITE_TEXTURE->getHandle());
-		}
-
-		if (mesh.normalTexture != nullptr && mesh.normalTexture->valid()) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_NORMAL, s_normal, mesh.normalTexture->getHandle());
-		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_NORMAL, s_normal, rawrbox::NORMAL_TEXTURE->getHandle());
-		}
-
-		if (mesh.specularTexture != nullptr && mesh.specularTexture->valid() && !mesh.lineMode && !mesh.wireframe) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, s_specular, mesh.specularTexture->getHandle());
-		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, s_specular, rawrbox::WHITE_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, rawrbox::WHITE_TEXTURE->getHandle());
 		}
 
 		// Camera setup
-		bgfx::setUniform(u_camPos, rawrbox::MAIN_CAMERA->getPos().data().data());
+		bgfx::setUniform(this->_u_camPos, rawrbox::MAIN_CAMERA->getPos().data().data());
 		// -------
 
 		// Color override
-		bgfx::setUniform(u_colorOffset, mesh.color.data().data());
+		bgfx::setUniform(this->_u_colorOffset, mesh.color.data().data());
 		// -------
 
 		// Mesh pos
 		std::array offset = {mesh.vertexPos[12], mesh.vertexPos[13], mesh.vertexPos[14]};
-		bgfx::setUniform(u_mesh_pos, offset.data());
+		bgfx::setUniform(this->_u_mesh_pos, offset.data());
 		// -------
 
 		// Pass "special" data ---
@@ -93,38 +66,27 @@ namespace rawrbox {
 			data[2] = mesh.getData("displacement_strength").data();
 		}
 
-		bgfx::setUniform(u_data, data.front().data(), 4);
+		bgfx::setUniform(this->_u_data, data.front().data(), 4);
 		// ---
+
+		// bind extra renderer uniforms ---
+		rawrbox::RENDERER->bindRenderUniforms();
 	}
 
 	void MaterialBase::process(const bgfx::TextureHandle& texture) {
 		if (bgfx::isValid(texture)) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, s_albedo, texture);
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, texture);
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, s_albedo, rawrbox::WHITE_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, rawrbox::WHITE_TEXTURE->getHandle());
 		}
 	}
 
 	void MaterialBase::postProcess() {
-		switch (rawrbox::RENDERER_DEBUG) {
-			case DEBUG_OFF:
-				bgfx::submit(rawrbox::CURRENT_VIEW_ID, program, 0, ~BGFX_DISCARD_BINDINGS);
-				break;
-			case DEBUG_CLUSTER_Z:
-				bgfx::submit(rawrbox::CURRENT_VIEW_ID, debug_z_program, 0, ~BGFX_DISCARD_BINDINGS);
-				break;
-			case DEBUG_CLUSTER_COUNT:
-				bgfx::submit(rawrbox::CURRENT_VIEW_ID, debug_program, 0, ~BGFX_DISCARD_BINDINGS);
-				break;
-		}
+		bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);
 	}
 
 	void MaterialBase::upload() {
-		// Load programs ---
-		rawrbox::RenderUtils::buildShader(model_shaders, program);
-		rawrbox::RenderUtils::buildShader(clustered_debug, debug_program);
-		rawrbox::RenderUtils::buildShader(clustered_debug_z, debug_z_program);
-		// -----
+		rawrbox::RenderUtils::buildShader(clustered_unlit_shaders, this->_program);
 	}
 
 } // namespace rawrbox

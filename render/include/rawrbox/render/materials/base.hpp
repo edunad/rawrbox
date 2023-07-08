@@ -11,29 +11,18 @@
 namespace rawrbox {
 
 	class MaterialBase {
+	protected:
+		bgfx::ProgramHandle _program = BGFX_INVALID_HANDLE;
+
+		bgfx::UniformHandle _s_albedo = BGFX_INVALID_HANDLE;
+
+		bgfx::UniformHandle _u_camPos = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _u_colorOffset = BGFX_INVALID_HANDLE;
+
+		bgfx::UniformHandle _u_mesh_pos = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _u_data = BGFX_INVALID_HANDLE;
+
 	public:
-		bgfx::ProgramHandle program = BGFX_INVALID_HANDLE;
-		bgfx::ProgramHandle debug_program = BGFX_INVALID_HANDLE;
-		bgfx::ProgramHandle debug_z_program = BGFX_INVALID_HANDLE;
-
-		bgfx::UniformHandle s_albedo = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle s_normal = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle s_specular = BGFX_INVALID_HANDLE;
-
-		bgfx::UniformHandle u_camPos = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle u_colorOffset = BGFX_INVALID_HANDLE;
-
-		bgfx::UniformHandle u_mesh_pos = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle u_data = BGFX_INVALID_HANDLE;
-
-		// LIT DATA ---
-		bgfx::UniformHandle s_emission = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle s_opacity = BGFX_INVALID_HANDLE;
-
-		bgfx::UniformHandle u_specularColor = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle u_emissionColor = BGFX_INVALID_HANDLE;
-		//------
-
 		MaterialBase() = default;
 		MaterialBase(MaterialBase&&) = delete;
 		MaterialBase& operator=(MaterialBase&&) = delete;
@@ -55,6 +44,9 @@ namespace rawrbox {
 	};
 
 	// UTILS ---
+	template <typename T>
+	concept supportsNormals = requires(T t) { t.u_emissionColor; };
+
 	template <typename T>
 	concept supportsBones = requires(T t, const std::vector<rawrbox::Matrix4x4>& data) {
 		{ t.setBoneData(data) };

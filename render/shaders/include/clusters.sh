@@ -56,7 +56,6 @@ BUFFER_RO(b_globalIndex, uint, SAMPLE_ATOMIC_INDEX);
 #define ATOMIC
 #endif
 
-
 // for each cluster: (start index in b_clusterLightIndices, number of point lights, empty, empty)
 #if defined(WRITE_LIGHT_GRID)
 #define LIGHT_GRID
@@ -65,6 +64,7 @@ BUFFER_RW(b_clusterLightGrid, uvec4, SAMPLE_LIGHTGRID);
 #define LIGHT_GRID
 BUFFER_RO(b_clusterLightGrid, uvec4, SAMPLE_LIGHTGRID);
 #endif
+
 
 struct Cluster {
     vec3 minBounds;
@@ -75,6 +75,7 @@ struct LightGrid {
     uint offset;
     uint pointLights; // TODO: SUPPORT OTHER TYPES OF LIGHT
 };
+
 
 #ifdef CLUSTERS
 Cluster getCluster(uint index) {

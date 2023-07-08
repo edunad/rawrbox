@@ -4,12 +4,13 @@ $output v_normal, v_tangent, v_texcoord0, v_color0, v_worldPos
 #include <bgfx_shader.sh>
 #include <bgfx_compute.sh>
 #include "../../include/model_transforms.sh"
+#include "../../include/defs.sh"
 
 // For each mesh
 // 1 to 4 = Matrix position
 // 5 = color
 // 6 = UV override
-BUFFER_RO(u_instanceData, vec4, 0);
+BUFFER_RO(u_instanceData, vec4, SAMPLE_INSTANCE_DATA);
 
 vec4 getInstanceData(int id, int index) {
 	return u_instanceData[id * 6 + index];
@@ -37,3 +38,4 @@ void main() {
 
 	gl_Position = applyPosTransforms(u_viewProj, v_worldPos, a_texcoord0.xy);
 }
+
