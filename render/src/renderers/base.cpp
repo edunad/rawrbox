@@ -33,6 +33,8 @@ namespace rawrbox {
 		bgfx::setViewClear(rawrbox::MAIN_DEFAULT_VIEW, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 1.0F, 0, 0);
 		bgfx::setViewRect(rawrbox::MAIN_DEFAULT_VIEW, 0, 0, size.x, size.y);
 		// -----
+
+		this->_size = size;
 	}
 
 	void RendererBase::setWorldRender(std::function<void()> render) { this->worldRender = render; }

@@ -79,13 +79,13 @@ namespace rawrbox {
 	void MaterialLit::postProcess() {
 		switch (rawrbox::RENDERER_DEBUG) {
 			case DEBUG_OFF:
-				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program, 0, ~BGFX_DISCARD_BINDINGS);
+				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);
 				break;
 			case DEBUG_CLUSTER_Z:
-				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_debug_z_program, 0, ~BGFX_DISCARD_BINDINGS);
+				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_debug_z_program);
 				break;
 			case DEBUG_CLUSTER_COUNT:
-				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_debug_program, 0, ~BGFX_DISCARD_BINDINGS);
+				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_debug_program);
 				break;
 		}
 	}

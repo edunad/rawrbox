@@ -36,7 +36,7 @@ namespace rawrbox {
 			for (auto& assimpLights : model.lights) {
 				// Attempt to convert attenuation to power
 				float power =
-				    (-assimpLights.attenuationLinear + std::sqrtf(assimpLights.attenuationLinear * assimpLights.attenuationLinear - 4 * assimpLights.attenuationQuadratic * (assimpLights.attenuationConstant - (256.0 / 10.0) * assimpLights.diffuse.max()))) / (2 * assimpLights.attenuationQuadratic);
+				    (-assimpLights.attenuationLinear + std::sqrtf(assimpLights.attenuationLinear * assimpLights.attenuationLinear - 4 * assimpLights.attenuationQuadratic * (assimpLights.attenuationConstant - (256.0 / 40.0) * assimpLights.diffuse.max()))) / (2 * assimpLights.attenuationQuadratic);
 
 				switch (assimpLights.type) {
 					case LightType::LIGHT_POINT:

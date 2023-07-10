@@ -72,7 +72,7 @@ namespace rawrbox {
 		// ---
 
 		// bind extra renderer uniforms ---
-		// rawrbox::RENDERER->bindRenderUniforms();
+		rawrbox::RENDERER->bindRenderUniforms();
 	}
 
 	void MaterialBase::process(const bgfx::TextureHandle& texture) {
@@ -84,7 +84,7 @@ namespace rawrbox {
 	}
 
 	void MaterialBase::postProcess() {
-		bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program, 0, ~BGFX_DISCARD_BINDINGS);
+		bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);
 	}
 
 	void MaterialBase::upload() {

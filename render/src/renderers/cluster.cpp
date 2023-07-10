@@ -100,8 +100,6 @@ namespace rawrbox {
 		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_DEFAULT_VIEW;
 		bgfx::touch(rawrbox::MAIN_DEFAULT_VIEW); // Make sure we draw on the view
 
-		this->bindRenderUniforms();
-
 		// Render world ---
 		this->worldRender();
 		// ----------------
