@@ -31,9 +31,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_s_emission);
 		RAWRBOX_DESTROY(this->_s_opacity);
 
-		RAWRBOX_DESTROY(this->_u_texMatData);
-		RAWRBOX_DESTROY(this->_u_specularColor);
-		RAWRBOX_DESTROY(this->u_emissionColor);
+		RAWRBOX_DESTROY(this->u_texMatData);
 	}
 
 	void MaterialLit::registerUniforms() {
@@ -44,9 +42,7 @@ namespace rawrbox {
 		this->_s_emission = bgfx::createUniform("s_emission", bgfx::UniformType::Sampler);
 		this->_s_opacity = bgfx::createUniform("s_opacity", bgfx::UniformType::Sampler);
 
-		this->_u_texMatData = bgfx::createUniform("u_texMatData", bgfx::UniformType::Vec4);
-		this->_u_specularColor = bgfx::createUniform("u_specularColor", bgfx::UniformType::Vec4);
-		this->u_emissionColor = bgfx::createUniform("u_emissionColor", bgfx::UniformType::Vec4);
+		this->u_texMatData = bgfx::createUniform("u_texMatData", bgfx::UniformType::Vec4);
 	}
 
 	void MaterialLit::process(const rawrbox::Mesh& mesh) {
@@ -59,7 +55,7 @@ namespace rawrbox {
 		if (mesh.specularTexture != nullptr && mesh.specularTexture->valid() && !mesh.lineMode && !mesh.wireframe) {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, this->_s_specular, mesh.specularTexture->getHandle());
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, this->_s_specular, rawrbox::WHITE_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, this->_s_specular, rawrbox::BLACK_TEXTURE->getHandle());
 		}
 
 		if (mesh.emissionTexture != nullptr && mesh.emissionTexture->valid() && !mesh.lineMode && !mesh.wireframe) {
@@ -74,11 +70,8 @@ namespace rawrbox {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_OPACITY, this->_s_opacity, rawrbox::WHITE_TEXTURE->getHandle());
 		}
 
-		bgfx::setUniform(this->_u_specularColor, mesh.specularColor.data().data());
-		bgfx::setUniform(this->u_emissionColor, mesh.emissionColor.data().data());
-
 		std::array<float, 2> matData = {mesh.specularShininess, mesh.emissionIntensity};
-		bgfx::setUniform(this->_u_texMatData, matData.data());
+		bgfx::setUniform(this->u_texMatData, matData.data());
 
 		rawrbox::MaterialBase::process(mesh);
 	}
@@ -86,13 +79,13 @@ namespace rawrbox {
 	void MaterialLit::postProcess() {
 		switch (rawrbox::RENDERER_DEBUG) {
 			case DEBUG_OFF:
-				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);
+				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program, 0, ~BGFX_DISCARD_BINDINGS);
 				break;
 			case DEBUG_CLUSTER_Z:
-				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_debug_z_program);
+				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_debug_z_program, 0, ~BGFX_DISCARD_BINDINGS);
 				break;
 			case DEBUG_CLUSTER_COUNT:
-				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_debug_program);
+				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_debug_program, 0, ~BGFX_DISCARD_BINDINGS);
 				break;
 		}
 	}

@@ -242,7 +242,7 @@ namespace rawrbox {
 		if ((this->_windowFlags & WindowFlags::Features::MSAA) > 0) this->_resetFlags |= BGFX_RESET_MAXANISOTROPY;
 		if ((this->_windowFlags & WindowFlags::Features::TRANSPARENT_BUFFER) > 0) this->_resetFlags |= BGFX_RESET_TRANSPARENT_BACKBUFFER;
 
-		init.resolution.reset = this->_resetFlags | BGFX_RESET_SRGB_BACKBUFFER;
+		init.resolution.reset = this->_resetFlags;
 		init.platformData.nwh = glfwNativeWindowHandle(GLFWHANDLE);
 		init.platformData.ndt = getNativeDisplayHandle();
 		init.callback = &this->_callbacks;

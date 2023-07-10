@@ -10,12 +10,7 @@ namespace rawrbox {
 		float _outerCone;
 
 	public:
-		LightSpot(rawrbox::Vector3f posMatrix, rawrbox::Vector3f direction, rawrbox::Colorf diffuse, rawrbox::Colorf specular, float innerCone, float outerCone, float constant, float linear, float quadratic) : rawrbox::LightBase(posMatrix, diffuse, specular), _direction(direction), _innerCone(innerCone), _outerCone(outerCone) {
-			this->_constant = constant;
-			this->_linear = linear;
-			this->_quadratic = quadratic;
-		};
-
+		LightSpot(const rawrbox::Vector3f& posMatrix, const rawrbox::Vector3f& direction, const rawrbox::Colorf& color, float innerCone, float outerCone, float power) : rawrbox::LightBase(posMatrix, color, power), _direction(direction), _innerCone(innerCone), _outerCone(outerCone){};
 		LightSpot(const LightSpot&) = default;
 		LightSpot(LightSpot&&) = delete;
 		LightSpot& operator=(const LightSpot&) = default;

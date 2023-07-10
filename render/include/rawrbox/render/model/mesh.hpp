@@ -50,10 +50,7 @@ namespace rawrbox {
 		rawrbox::TextureBase* opacityTexture = nullptr;
 
 		rawrbox::TextureBase* specularTexture = nullptr;
-		rawrbox::Color specularColor = rawrbox::Colors::White;
-
 		rawrbox::TextureBase* emissionTexture = nullptr;
-		rawrbox::Color emissionColor = rawrbox::Colors::White;
 
 		float specularShininess = 25.0F;
 		float emissionIntensity = 1.F;
@@ -142,8 +139,6 @@ namespace rawrbox {
 		void setBlend(uint64_t blend);
 
 		void setColor(const rawrbox::Color& color);
-		void setSpecularColor(const rawrbox::Color& color);
-		void setEmissionColor(const rawrbox::Color& color);
 
 		void addData(const std::string& id, rawrbox::Vector4f data);
 		[[nodiscard]] const rawrbox::Vector4f& getData(const std::string& id) const;

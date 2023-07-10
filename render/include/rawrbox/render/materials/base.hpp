@@ -45,7 +45,7 @@ namespace rawrbox {
 
 	// UTILS ---
 	template <typename T>
-	concept supportsNormals = requires(T t) { t.u_emissionColor; };
+	concept supportsNormals = requires(T t) { t.u_texMatData; };
 
 	template <typename T>
 	concept supportsBones = requires(T t, const std::vector<rawrbox::Matrix4x4>& data) {

@@ -46,16 +46,12 @@ namespace rawrbox {
 				if (mat->specular != nullptr) {
 					mesh.setSpecularTexture(mat->specular.get(), mat->shininess);
 				}
-
-				mesh.setSpecularColor(mat->specularColor);
 				// --------
 
 				// EMISSION -----
 				if (mat->emissive != nullptr) {
 					mesh.setEmissionTexture(mat->emissive.get(), mat->intensity);
 				}
-
-				mesh.setEmissionColor(mat->emissionColor);
 				// --------
 
 				// OPACITY -----

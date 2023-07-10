@@ -13,7 +13,6 @@ void main() {
     LightGrid grid = getLightGrid(cluster);
 
     int lights = int(grid.pointLights);
-
     // show possible clipping
     if(lights == 0)
         lights--;
@@ -22,14 +21,4 @@ void main() {
 
     vec3 lightCountColor = turboColormap(float(lights) / MAX_LIGHTS_PER_CLUSTER);
     gl_FragColor = vec4(lightCountColor, 1.0);
-
-    // colorize clusters
-    ARRAY_BEGIN(vec3, colors, 6)
-        vec3(1.0, 0.0, 0.0),
-        vec3(0.0, 1.0, 0.0),
-        vec3(0.0, 0.0, 1.0),
-        vec3(1.0, 1.0, 0.0),
-        vec3(0.0, 1.0, 1.0),
-        vec3(1.0, 0.0, 1.0)
-    ARRAY_END();
 }

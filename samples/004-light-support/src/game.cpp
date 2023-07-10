@@ -19,7 +19,7 @@ namespace light {
 
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
+		this->_window->setMonitor(1);
 		this->_window->setTitle("LIGHT TEST");
 		this->_window->setRenderer(bgfx::RendererType::Count, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
@@ -87,9 +87,7 @@ namespace light {
 
 		// Text test ----
 		{
-			this->_text->addText(*this->_font, "SPOT LIGHT", {-6.F, 1.8F, 0});
-			this->_text->addText(*this->_font, "DIRECTIONAL LIGHT", {0.F, 1.8F, 0});
-			this->_text->addText(*this->_font, "POINT LIGHT", {6.F, 1.8F, 0});
+			this->_text->addText(*this->_font, "SUN", {-6.F, 1.8F, 0});
 			this->_text->upload();
 		}
 		// ------
@@ -120,12 +118,18 @@ namespace light {
 	void Game::update() {
 		if (this->_window == nullptr) return;
 		this->_window->update();
+
+		if (this->_ready) {
+			this->_sunDir = {std::cos(rawrbox::BGFX_FRAME * 0.01F) * 1.F, 1.F, std::sin(rawrbox::BGFX_FRAME * 0.01F) * 1.F};
+			rawrbox::LIGHTS::setSun(this->_sunDir, {0.2F, 0.2F, 0.2F, 1.F});
+		}
 	}
 
 	void Game::drawWorld() {
 		if (!this->_ready || this->_model == nullptr || this->_text == nullptr) return;
+
 		this->_model->draw();
-		//  this->_text->draw();
+		this->_text->draw();
 	}
 
 	void Game::printFrames() {
@@ -156,6 +160,8 @@ namespace light {
 			bgfx::dbgTextPrintf(1, 11, 0x4f, "F1 to hide cluster debug");
 			bgfx::dbgTextPrintf(1, 12, 0x4f, "F2 to show z cluster debug");
 			bgfx::dbgTextPrintf(1, 13, 0x4f, "F3 to show cluster light debug");
+
+			bgfx::dbgTextPrintf(1, 15, 0x2f, fmt::format("SUN ANGLE: {},{},{}", this->_sunDir.x, this->_sunDir.y, this->_sunDir.z).c_str());
 		}
 
 		this->_window->render(); // Draw world & commit primitives

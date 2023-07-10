@@ -103,6 +103,10 @@ namespace rawrbox {
 
 		[[nodiscard]] const std::array<NumberType, 4> data() const { return {r, g, b, a}; }
 
+		[[nodiscard]] const NumberType max() const {
+			return std::fmaxf(std::fmaxf(r, g), b);
+		}
+
 		[[nodiscard]] bool isTransparent() const { return a == 0; }
 		[[nodiscard]] bool hasTransparency() const {
 			if constexpr (std::is_same<NumberType, int>::value) {

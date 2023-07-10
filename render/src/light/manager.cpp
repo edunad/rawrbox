@@ -57,16 +57,12 @@ namespace rawrbox {
 			if (l->getType() != rawrbox::LightType::LIGHT_POINT || !l->isOn()) continue; // TODO: SUPPORT SPOT LIGHT
 			auto light = std::bit_cast<rawrbox::LightDataVertex*>(mem->data + (i * stride));
 
-			auto cl = l->getDiffuseColor() * 0.1F;
+			auto cl = l->getFlux();
 			auto pos = l->getWorldPos();
-
-			float lightMax = std::fmaxf(std::fmaxf(cl.r, cl.g), cl.b);
-			float radius =
-			    (-l->getLinear() + std::sqrtf(l->getLinear() * l->getLinear() - 4 * l->getQuadratic() * (l->getConstant() - (256.0 / 5.0) * lightMax))) / (2 * l->getQuadratic());
 
 			light->position = rawrbox::Vector3f(pos.x, pos.y, pos.z);
 			light->intensity = rawrbox::Vector3f(cl.r, cl.g, cl.b);
-			light->radius = radius;
+			light->radius = l->getRadius();
 		}
 
 		bgfx::update(_buffer, 0, mem);

@@ -13,8 +13,7 @@
 
 // each thread handles one cluster
 NUM_THREADS(CLUSTERS_X_THREADS, CLUSTERS_Y_THREADS, CLUSTERS_Z_THREADS)
-void main()
-{
+void main(){
     // index calculation must match the inverse operation in the fragment shader (see getClusterIndex)
     uint clusterIndex = gl_GlobalInvocationID.z * gl_WorkGroupSize.x * gl_WorkGroupSize.y +
                         gl_GlobalInvocationID.y * gl_WorkGroupSize.x +

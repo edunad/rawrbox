@@ -11,8 +11,8 @@ void main() {
 	vec3 wnormal = mul(u_model[0], vec4(normal.xyz, 0.0)).xyz;
 	vec3 wtangent = mul(u_model[0], vec4(tangent.xyz, 0.0)).xyz;
 
-	v_normal = normalize(mul(u_view, vec4(wnormal, 0.0) ).xyz);
-	v_tangent = normalize(mul(u_view, vec4(wtangent, 0.0) ).xyz);
+	v_normal = normalize(wnormal);
+	v_tangent = normalize(wtangent);
 
     v_color0 = a_color0;
 

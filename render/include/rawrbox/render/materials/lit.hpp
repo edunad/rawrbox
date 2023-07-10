@@ -21,11 +21,9 @@ namespace rawrbox {
 		bgfx::UniformHandle _s_emission = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _s_opacity = BGFX_INVALID_HANDLE;
 
-		bgfx::UniformHandle _u_specularColor = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle _u_texMatData = BGFX_INVALID_HANDLE;
 		//------
 	public:
-		bgfx::UniformHandle u_emissionColor = BGFX_INVALID_HANDLE; // Small hack to get supportNormals working
+		bgfx::UniformHandle u_texMatData = BGFX_INVALID_HANDLE;
 
 		MaterialLit() = default;
 		MaterialLit(MaterialLit&&) = delete;

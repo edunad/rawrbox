@@ -10,6 +10,8 @@ const bgfx::EmbeddedShader clustered_unlit_shaders[] = {
 // NOLINTEND(*)
 
 namespace rawrbox {
+	constexpr auto MAX_DATA = 4;
+
 	MaterialBase::~MaterialBase() {
 		RAWRBOX_DESTROY(this->_program);
 
@@ -29,7 +31,7 @@ namespace rawrbox {
 		this->_u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 
 		this->_u_mesh_pos = bgfx::createUniform("u_mesh_pos", bgfx::UniformType::Vec4);
-		this->_u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4);
+		this->_u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4, MAX_DATA);
 	}
 
 	void MaterialBase::process(const rawrbox::Mesh& mesh) {
@@ -53,7 +55,7 @@ namespace rawrbox {
 		// -------
 
 		// Pass "special" data ---
-		std::array<std::array<float, 4>, 4> data = {std::array<float, 4>{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
+		std::array<std::array<float, 4>, MAX_DATA> data = {std::array<float, 4>{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
 		if (mesh.hasData("billboard_mode")) {
 			data[0] = mesh.getData("billboard_mode").data();
 		}
@@ -66,11 +68,11 @@ namespace rawrbox {
 			data[2] = mesh.getData("displacement_strength").data();
 		}
 
-		bgfx::setUniform(this->_u_data, data.front().data(), 4);
+		bgfx::setUniform(this->_u_data, data.front().data(), MAX_DATA);
 		// ---
 
 		// bind extra renderer uniforms ---
-		rawrbox::RENDERER->bindRenderUniforms();
+		// rawrbox::RENDERER->bindRenderUniforms();
 	}
 
 	void MaterialBase::process(const bgfx::TextureHandle& texture) {
@@ -82,7 +84,7 @@ namespace rawrbox {
 	}
 
 	void MaterialBase::postProcess() {
-		bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);
+		bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program, 0, ~BGFX_DISCARD_BINDINGS);
 	}
 
 	void MaterialBase::upload() {

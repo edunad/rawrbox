@@ -92,10 +92,10 @@ namespace rawrbox {
 
 		void setUniforms(const rawrbox::Vector2i &size) const {
 			std::array<float, 4> clusterSizesVec = {std::ceil((float)size.x / CLUSTERS_X),
-			    std::ceil((float)size.y / CLUSTERS_Y), 0, 0};
+			    std::ceil((float)size.y / CLUSTERS_Y)};
 			bgfx::setUniform(this->_clusterSizesVecUniform, clusterSizesVec.data());
 
-			std::array<float, 4> zNearFarVec = {rawrbox::MAIN_CAMERA->getZNear(), rawrbox::MAIN_CAMERA->getZFar(), 0, 0};
+			std::array<float, 4> zNearFarVec = {rawrbox::MAIN_CAMERA->getZNear(), rawrbox::MAIN_CAMERA->getZFar()};
 			bgfx::setUniform(this->_zNearFarVecUniform, zNearFarVec.data());
 		}
 

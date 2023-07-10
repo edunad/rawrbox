@@ -105,14 +105,6 @@ namespace rawrbox {
 		this->color = color;
 	}
 
-	void Mesh::setSpecularColor(const rawrbox::Color& color) {
-		this->specularColor = color;
-	}
-
-	void Mesh::setEmissionColor(const rawrbox::Color& color) {
-		this->emissionColor = color;
-	}
-
 	void Mesh::addData(const std::string& id, rawrbox::Vector4f data) { // BGFX shaders only accept vec4, so.. yea
 		this->data[id] = data;
 	}

@@ -20,6 +20,8 @@ namespace light {
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;
 
+		rawrbox::Vector3f _sunDir = {};
+
 		void setupGLFW() override;
 		void init() override;
 		void onThreadShutdown(rawrbox::ENGINE_THREADS thread) override;

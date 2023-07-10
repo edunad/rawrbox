@@ -19,30 +19,20 @@ namespace rawrbox {
 
 		rawrbox::Vector3f _pos = {};
 		rawrbox::Vector3f _offset = {};
+		rawrbox::Colorf _color = rawrbox::Colors::White;
 
-		rawrbox::Colorf _diffuse = rawrbox::Colors::White;
-		rawrbox::Colorf _specular = rawrbox::Colors::White;
-		rawrbox::Colorf _ambient = rawrbox::Colors::White;
-
-		float _constant = 0.F;
-		float _linear = 0.F;
-		float _quadratic = 0.F;
+		float _intensity = 0.F;
 
 	public:
-		LightBase(rawrbox::Vector3f posMatrix, rawrbox::Colorf diffuse, rawrbox::Colorf specular);
+		LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float intensity);
 		LightBase(const LightBase&) = default;
 		LightBase(LightBase&&) = default;
 		LightBase& operator=(const LightBase&) = default;
 		LightBase& operator=(LightBase&&) = delete;
 		virtual ~LightBase() = default;
 
-		[[nodiscard]] virtual const rawrbox::Colorf& getSpecularColor() const;
-		[[nodiscard]] virtual const rawrbox::Colorf& getDiffuseColor() const;
-		[[nodiscard]] virtual const rawrbox::Colorf& getAmbientColor() const;
-
-		[[nodiscard]] virtual const float getConstant() const;
-		[[nodiscard]] virtual const float getLinear() const;
-		[[nodiscard]] virtual const float getQuadratic() const;
+		[[nodiscard]] virtual const rawrbox::Color getFlux() const;
+		[[nodiscard]] virtual const float getRadius() const;
 
 		virtual void setId(size_t id);
 		[[nodiscard]] virtual const size_t id() const;

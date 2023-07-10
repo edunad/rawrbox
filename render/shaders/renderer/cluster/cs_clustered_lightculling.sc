@@ -53,9 +53,7 @@ void main() {
         // read GROUP_SIZE lights into shared memory
         // each thread copies one light
         uint batchSize = min(GROUP_SIZE, lightCount - lightOffset);
-
-        if(uint(gl_LocalInvocationIndex) < batchSize)
-        {
+        if(uint(gl_LocalInvocationIndex) < batchSize) {
             uint lightIndex = lightOffset + gl_LocalInvocationIndex;
             PointLight light = getPointLight(lightIndex);
             // transform to view space (expected by pointLightAffectsCluster)
@@ -68,11 +66,9 @@ void main() {
         barrier();
 
         // each thread is one cluster and checks against all lights in the cache
-        for(uint i = 0; i < batchSize; i++)
-        {
+        for(uint i = 0; i < batchSize; i++) {
             Cluster cluster = getCluster(clusterIndex);
-            if(visibleCount < MAX_LIGHTS_PER_CLUSTER && pointLightIntersectsCluster(lights[i], cluster))
-            {
+            if(visibleCount < MAX_LIGHTS_PER_CLUSTER && pointLightIntersectsCluster(lights[i], cluster)) {
                 visibleLights[visibleCount] = lightOffset + i;
                 visibleCount++;
             }

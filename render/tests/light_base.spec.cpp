@@ -6,7 +6,7 @@
 #include <memory>
 
 TEST_CASE("Lights should behave as expected", "[rawrbox::LightBase]") {
-	auto base = std::make_shared<rawrbox::LightPoint>(rawrbox::Vector3f{5, -10, 0}, rawrbox::Colors::Red, rawrbox::Colors::Gray, 0.F, 0.F, 0.F);
+	auto base = std::make_shared<rawrbox::LightPoint>(rawrbox::Vector3f{5, -10, 0}, rawrbox::Colors::Red, 0.F);
 
 	SECTION("rawrbox::LightBase::isOn") {
 		REQUIRE(base->isOn() == true);

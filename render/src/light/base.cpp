@@ -1,15 +1,10 @@
 #include <rawrbox/render/light/manager.hpp>
 
 namespace rawrbox {
-	LightBase::LightBase(rawrbox::Vector3f pos, rawrbox::Colorf diffuse, rawrbox::Colorf specular) : _pos(pos), _diffuse(diffuse), _specular(specular){};
+	LightBase::LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float intensity) : _pos(pos), _color(color), _intensity(intensity){};
 
-	const rawrbox::Colorf& LightBase::getSpecularColor() const { return this->_specular; }
-	const rawrbox::Colorf& LightBase::getDiffuseColor() const { return this->_diffuse; }
-	const rawrbox::Colorf& LightBase::getAmbientColor() const { return this->_ambient; }
-
-	const float LightBase::getConstant() const { return this->_constant; }
-	const float LightBase::getLinear() const { return this->_linear; }
-	const float LightBase::getQuadratic() const { return this->_quadratic; }
+	const rawrbox::Colorf LightBase::getFlux() const { return this->_color * this->_intensity; }
+	const float LightBase::getRadius() const { return 0; }
 
 	void LightBase::setId(size_t id) { this->_id = id; };
 	const size_t LightBase::id() const { return this->_id; };
