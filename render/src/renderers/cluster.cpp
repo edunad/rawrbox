@@ -21,6 +21,15 @@ constexpr bgfx::ViewId CLUSTER_BUILD_VIEW_ID = 0;
 constexpr bgfx::ViewId LIGHT_CULL_VIEW_ID = 1;
 
 namespace rawrbox {
+	RendererCluster::~RendererCluster() {
+		rawrbox::LIGHTS::shutdown(); // Shutdown light system
+
+		RAWRBOX_DESTROY(this->_clusterBuildingComputeProgram);
+		RAWRBOX_DESTROY(this->_lightCullingComputeProgram);
+		RAWRBOX_DESTROY(this->_resetCounterComputeProgram);
+
+		this->_uniforms.reset();
+	}
 
 	// -------------------------------------------
 	void RendererCluster::init(const rawrbox::Vector2i& size) {
@@ -37,6 +46,9 @@ namespace rawrbox {
 
 		bgfx::setViewName(CLUSTER_BUILD_VIEW_ID, "RAWRBOX-CLUSTER-COMPUTE");
 		bgfx::setViewName(LIGHT_CULL_VIEW_ID, "RAWRBOX-LIGHT-CULL-COMPUTE");
+
+		// Initialize light engine
+		rawrbox::LIGHTS::init();
 	}
 
 	void RendererCluster::resize(const rawrbox::Vector2i& size) {
@@ -58,7 +70,7 @@ namespace rawrbox {
 		bgfx::setViewTransform(CLUSTER_BUILD_VIEW_ID, view.data(), proj.data());
 		bgfx::setViewTransform(LIGHT_CULL_VIEW_ID, view.data(), proj.data());
 		bgfx::setViewTransform(rawrbox::MAIN_DEFAULT_VIEW, view.data(), proj.data());
-		//   ---
+		//     ---
 
 		this->_uniforms->setUniforms(this->_size);
 
@@ -97,11 +109,19 @@ namespace rawrbox {
 		// --------
 
 		// Final Pass
+		auto prevId = rawrbox::CURRENT_VIEW_ID;
 		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_DEFAULT_VIEW;
 		bgfx::touch(rawrbox::MAIN_DEFAULT_VIEW); // Make sure we draw on the view
 
 		// Render world ---
 		this->worldRender();
+		// ----------------
+
+		rawrbox::CURRENT_VIEW_ID = prevId;
+		bgfx::discard(BGFX_DISCARD_ALL);
+
+		// Render overlay ---
+		this->overlayRender();
 		// ----------------
 
 		rawrbox::RendererBase::frame();

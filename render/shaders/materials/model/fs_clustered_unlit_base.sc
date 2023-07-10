@@ -10,5 +10,8 @@ uniform vec4 u_colorOffset;
 uniform vec4 u_camPos;
 
 void main() {
-	gl_FragColor = texture2D(s_albedo, v_texcoord0.xy) * v_color0 * u_colorOffset;
+	vec4 albedo = texture2D(s_albedo, v_texcoord0.xy) * v_color0 * u_colorOffset;
+	if (albedo.a <= 0.0) discard;
+
+	gl_FragColor = albedo;
 }

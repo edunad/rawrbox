@@ -38,15 +38,21 @@ namespace rawrbox {
 	}
 
 	void RendererBase::setWorldRender(std::function<void()> render) { this->worldRender = render; }
+	void RendererBase::setOverlayRender(std::function<void()> render) { this->overlayRender = render; }
+
 	void RendererBase::render() {
 		if (this->worldRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] World render method not set! Did you call 'setWorldRender' ?");
+		if (this->overlayRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Overlay render method not set! Did you call 'setOverlayRender' ?");
 
 		bgfx::touch(rawrbox::MAIN_DEFAULT_VIEW); // Make sure we draw on the view
-		bgfx::setViewClear(rawrbox::MAIN_DEFAULT_VIEW, BGFX_DEFAULT_CLEAR, 1.0F, 0, 0);
 		bgfx::setViewTransform(rawrbox::MAIN_DEFAULT_VIEW, rawrbox::MAIN_CAMERA->getViewMtx().data(), rawrbox::MAIN_CAMERA->getProjMtx().data());
 
 		// render the world
 		this->worldRender();
+		// ----
+
+		// render the overlay
+		this->overlayRender();
 		// ----
 
 		this->frame();

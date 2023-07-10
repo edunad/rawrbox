@@ -12,7 +12,6 @@ namespace rawrbox {
 		bgfx::setViewName(this->_renderId, fmt::format("RAWR-RENDER-VIEW-{}", this->_renderId).c_str());
 		bgfx::setViewRect(this->_renderId, 0, 0, this->_size.x, this->_size.y);
 		bgfx::setViewMode(this->_renderId, bgfx::ViewMode::Default);
-		bgfx::setViewClear(this->_renderId, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL);
 		//   ------
 	}
 

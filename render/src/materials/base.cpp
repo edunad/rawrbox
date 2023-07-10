@@ -16,6 +16,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_program);
 
 		RAWRBOX_DESTROY(this->_s_albedo);
+		RAWRBOX_DESTROY(this->_s_displacement);
 
 		// Uniforms -----
 		RAWRBOX_DESTROY(this->_u_camPos);
@@ -26,6 +27,7 @@ namespace rawrbox {
 
 	void MaterialBase::registerUniforms() {
 		this->_s_albedo = bgfx::createUniform("s_albedo", bgfx::UniformType::Sampler);
+		this->_s_displacement = bgfx::createUniform("s_displacement", bgfx::UniformType::Sampler);
 
 		this->_u_camPos = bgfx::createUniform("u_camPos", bgfx::UniformType::Vec4);
 		this->_u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
@@ -39,6 +41,12 @@ namespace rawrbox {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, mesh.texture->getHandle());
 		} else {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, rawrbox::WHITE_TEXTURE->getHandle());
+		}
+
+		if (mesh.displacementTexture != nullptr && mesh.displacementTexture->valid()) {
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->_s_displacement, mesh.displacementTexture->getHandle());
+		} else {
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->_s_displacement, rawrbox::BLACK_TEXTURE->getHandle());
 		}
 
 		// Camera setup

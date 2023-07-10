@@ -256,9 +256,7 @@ namespace rawrbox {
 		if ((this->_windowFlags & WindowFlags::Debug::PROFILER) > 0) this->_debugFlags |= BGFX_DEBUG_PROFILER;
 
 		bgfx::setDebug(this->_debugFlags);
-
 		bgfx::setPaletteColor(0, clearColor);
-		bgfx::setPaletteColor(1, static_cast<uint32_t>(0x00000000));
 
 		// Setup renderer
 		this->_renderer->init(this->_size);

@@ -66,7 +66,7 @@ namespace rawrbox {
 
 			bgfx::touch(id);
 			bgfx::setViewRect(id, 0, 0, bgfx::BackbufferRatio::Equal);
-			bgfx::setViewClear(id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL, 1.0F, 0, 0);
+			bgfx::setViewClear(id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL, 0x00000000, 1.0F);
 			bgfx::setViewName(id, fmt::format("POST-PROCESSING-SAMPLE-{}", i).c_str());
 			bgfx::setViewFrameBuffer(id, this->_samples[i]);
 		}

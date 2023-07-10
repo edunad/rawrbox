@@ -135,7 +135,6 @@ namespace assimp {
 
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
-		rawrbox::LIGHTS::shutdown();
 		rawrbox::ASYNC::shutdown();
 
 		this->_window->unblockPoll();

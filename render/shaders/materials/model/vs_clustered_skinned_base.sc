@@ -19,7 +19,8 @@ void main() {
 	v_texcoord0.xyz = a_texcoord0.xyz;
 
 	vec4 pos = boneTransform(a_indices, a_weight, a_position);
-    v_worldPos = mul(u_model[0], pos).xyz;
+    TransformedData transform = applyPosTransforms(pos, a_texcoord0.xy);
 
-    gl_Position = applyPosTransforms(u_viewProj, v_worldPos, a_texcoord0.xy);
+    v_worldPos = mul(u_model[0], transform.pos).xyz;
+	gl_Position = transform.final;
 }

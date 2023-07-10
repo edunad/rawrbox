@@ -123,8 +123,6 @@ namespace rawrbox {
 		bgfx::ProgramHandle _clusterBuildingComputeProgram = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle _resetCounterComputeProgram = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle _lightCullingComputeProgram = BGFX_INVALID_HANDLE;
-		bgfx::ProgramHandle _lightingProgram = BGFX_INVALID_HANDLE;
-		bgfx::ProgramHandle _debugVisProgram = BGFX_INVALID_HANDLE;
 
 		rawrbox::Matrix4x4 _oldProj = {};
 
@@ -134,7 +132,7 @@ namespace rawrbox {
 		RendererCluster(RendererCluster &&) = delete;
 		RendererCluster &operator=(const RendererCluster &) = delete;
 		RendererCluster &operator=(RendererCluster &&) = delete;
-		~RendererCluster() override = default;
+		~RendererCluster() override;
 
 		static bool supported();
 

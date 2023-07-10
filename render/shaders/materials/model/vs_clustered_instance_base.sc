@@ -29,13 +29,15 @@ void main() {
 
 	v_normal = normalize(mul(u_view, vec4(wnormal, 0.0) ).xyz);
 	v_tangent = normalize(mul(u_view, vec4(wtangent, 0.0) ).xyz);
-
-    v_worldPos = mul(model, vec4(a_position, 1.));
 	v_color0 = getInstanceData(id, 4);
 
 	v_texcoord0.xy = a_texcoord0.xy;
 	v_texcoord0.z = getInstanceData(id, 5).x;
 
-	gl_Position = applyPosTransforms(u_viewProj, v_worldPos, a_texcoord0.xy);
+	vec4 a_position_fix = mul(model, vec4(a_position, 1.));
+
+    TransformedData transform = applyPosTransforms(u_viewProj, a_position_fix, a_texcoord0.xy);
+    v_worldPos = mul(model, transform.pos).xyz;
+	gl_Position = transform.final;
 }
 

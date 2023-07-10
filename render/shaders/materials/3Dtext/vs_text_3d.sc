@@ -8,5 +8,5 @@ void main() {
 	v_texcoord0 = a_texcoord0.xy;
 	v_color0 = a_color0;
 
-	gl_Position = applyPosTransforms(a_position, v_texcoord0);
+	gl_Position = applyPosTransforms(a_position, v_texcoord0).final;
 }

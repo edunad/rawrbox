@@ -47,6 +47,7 @@ namespace rawrbox {
 	extern uint8_t SAMPLE_MAT_SPECULAR;
 	extern uint8_t SAMPLE_MAT_EMISSION;
 	extern uint8_t SAMPLE_MAT_OPACITY;
+	extern uint8_t SAMPLE_MAT_DISPLACEMENT;
 
 	extern uint8_t SAMPLE_LIGHTS_POINTLIGHTS;
 

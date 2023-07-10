@@ -18,7 +18,8 @@ void main() {
 
 	v_texcoord0.xyz = a_texcoord0.xyz;
 
-    v_worldPos = mul(u_model[0], vec4(a_position, 1.0)).xyz;
-    gl_Position = applyPosTransforms(u_viewProj, v_worldPos, a_texcoord0.xy);
+    TransformedData transform = applyPosTransforms(u_viewProj, v_worldPos, a_texcoord0.xy);
+    v_worldPos = mul(u_model[0], transform.pos).xyz;
+	gl_Position = transform.final;
 }
 

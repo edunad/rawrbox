@@ -85,7 +85,6 @@ namespace post_process {
 		this->_postProcess.reset();
 
 		rawrbox::RESOURCES::shutdown();
-		rawrbox::LIGHTS::shutdown();
 		rawrbox::ASYNC::shutdown();
 
 		this->_window->unblockPoll();

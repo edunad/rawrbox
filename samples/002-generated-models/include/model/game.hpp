@@ -14,7 +14,6 @@
 namespace model {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 
 		rawrbox::TextureGIF* _texture2 = nullptr;
 

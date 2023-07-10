@@ -3,11 +3,11 @@
 
 namespace rawrbox {
 	// VIEW IDS ---
-	bgfx::ViewId MAIN_DEFAULT_VIEW = 200;
-	bgfx::ViewId STENCIL_VIEW_ID = 199; // View 3 reserved for stencil rendering
+	bgfx::ViewId MAIN_DEFAULT_VIEW = 100;
+	bgfx::ViewId STENCIL_VIEW_ID = 110; // 10 Views reserved for stencil rendering
 
-	bgfx::ViewId POST_PROCESSING_ID = 180; // 10 Views for post processing rendering
-	bgfx::ViewId RENDERER_VIEW_ID = 190;   // Rest of the views for textureRendering and etc
+	bgfx::ViewId POST_PROCESSING_ID = 120; // 10 Views for post processing rendering
+	bgfx::ViewId RENDERER_VIEW_ID = 130;   // Rest of the views for textureRendering and etc
 
 	bgfx::ViewId CURRENT_VIEW_ID = MAIN_DEFAULT_VIEW; // Default -
 	// ---------
@@ -28,15 +28,16 @@ namespace rawrbox {
 	uint8_t SAMPLE_MAT_SPECULAR = 2;
 	uint8_t SAMPLE_MAT_EMISSION = 3;
 	uint8_t SAMPLE_MAT_OPACITY = 4;
+	uint8_t SAMPLE_MAT_DISPLACEMENT = 5;
 
-	uint8_t SAMPLE_LIGHTS_POINTLIGHTS = 5;
+	uint8_t SAMPLE_LIGHTS_POINTLIGHTS = 6;
 
-	uint8_t SAMPLE_CLUSTERS = 6;
-	uint8_t SAMPLE_LIGHTINDICES = 7;
-	uint8_t SAMPLE_LIGHTGRID = 8;
-	uint8_t SAMPLE_ATOMIC_INDEX = 9;
+	uint8_t SAMPLE_CLUSTERS = 7;
+	uint8_t SAMPLE_LIGHTINDICES = 8;
+	uint8_t SAMPLE_LIGHTGRID = 9;
+	uint8_t SAMPLE_ATOMIC_INDEX = 10;
 
-	uint8_t SAMPLE_INSTANCE_DATA = 10;
+	uint8_t SAMPLE_INSTANCE_DATA = 11;
 	// ---------
 
 	// ID GENERATION

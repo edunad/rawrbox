@@ -15,6 +15,7 @@ namespace rawrbox {
 		bgfx::ProgramHandle _program = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle _s_albedo = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _s_displacement = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle _u_camPos = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _u_colorOffset = BGFX_INVALID_HANDLE;

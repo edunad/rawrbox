@@ -10,5 +10,5 @@ void main() {
 	v_texcoord0.xyz = a_texcoord0.xyz;
 
 	vec4 pos = boneTransform(a_indices, a_weight, a_position);
-    gl_Position = applyPosTransforms(u_viewProj, mul(u_model[0], pos).xyz, a_texcoord0.xy);
+	gl_Position = applyPosTransforms(u_viewProj, mul(u_model[0], pos).xyz, a_texcoord0.xy).final;
 }

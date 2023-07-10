@@ -58,6 +58,13 @@ namespace rawrbox {
 	const rawrbox::TextureBase* Mesh::getNormalTexture() const { return this->normalTexture; }
 	void Mesh::setNormalTexture(rawrbox::TextureBase* ptr) { this->normalTexture = ptr; }
 
+	const rawrbox::TextureBase* Mesh::getDisplacementTexture() const { return this->displacementTexture; }
+	void Mesh::setDisplacementTexture(rawrbox::TextureBase* ptr, float power) {
+		this->displacementTexture = ptr;
+		this->addData("displacement_strength", {power, 0, 0, 0});
+		this->setOptimizable(false);
+	}
+
 	const rawrbox::TextureBase* Mesh::getEmissionTexture() const { return this->emissionTexture; }
 	void Mesh::setEmissionTexture(rawrbox::TextureBase* ptr, float intensity) {
 		this->emissionTexture = ptr;
@@ -77,11 +84,6 @@ namespace rawrbox {
 
 	void Mesh::setVertexSnap(float power) {
 		this->addData("vertex_snap", {power, 0, 0, 0});
-		this->setOptimizable(false);
-	}
-
-	void Mesh::setDisplacement(float power) {
-		this->addData("displacement_strength", {power, 0, 0, 0});
 		this->setOptimizable(false);
 	}
 

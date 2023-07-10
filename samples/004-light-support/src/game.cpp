@@ -19,9 +19,10 @@ namespace light {
 
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(1);
+		this->_window->setMonitor(-1);
 		this->_window->setTitle("LIGHT TEST");
-		this->_window->setRenderer(bgfx::RendererType::Count, [this]() { this->drawWorld(); });
+		this->_window->setRenderer(
+		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
@@ -36,13 +37,11 @@ namespace light {
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::LIGHTS::init();
-
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::AssimpLoader>());
 
 		// Setup binds ---
-		this->_window->onKey += [this](rawrbox::Window& w, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) {
+		this->_window->onKey += [](rawrbox::Window& w, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) {
 			if (action != KEY_ACTION_UP) return;
 
 			if (key == KEY_F1) rawrbox::RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_OFF;
@@ -103,7 +102,6 @@ namespace light {
 
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
-		rawrbox::LIGHTS::shutdown();
 		rawrbox::ASYNC::shutdown();
 
 		this->_window->unblockPoll();
