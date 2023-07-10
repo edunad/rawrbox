@@ -57,7 +57,7 @@ namespace rawrbox {
 			if (l->getType() != rawrbox::LightType::LIGHT_POINT || !l->isOn()) continue; // TODO: SUPPORT SPOT LIGHT
 			auto light = std::bit_cast<rawrbox::LightDataVertex*>(mem->data + (i * stride));
 
-			auto cl = l->getFlux();
+			auto cl = l->getColor();
 			auto pos = l->getWorldPos();
 
 			light->position = rawrbox::Vector3f(pos.x, pos.y, pos.z);

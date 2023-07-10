@@ -35,15 +35,15 @@ namespace rawrbox {
 		void loadLights(const rawrbox::AssimpImporter& model) {
 			for (auto& assimpLights : model.lights) {
 				// Attempt to convert attenuation to power
-				float power =
-				    (-assimpLights.attenuationLinear + std::sqrtf(assimpLights.attenuationLinear * assimpLights.attenuationLinear - 4 * assimpLights.attenuationQuadratic * (assimpLights.attenuationConstant - (256.0 / 40.0) * assimpLights.diffuse.max()))) / (2 * assimpLights.attenuationQuadratic);
+				float radius =
+				    (-assimpLights.attenuationLinear + std::sqrt(assimpLights.attenuationLinear * assimpLights.attenuationLinear - 4 * assimpLights.attenuationQuadratic * (assimpLights.attenuationConstant - (256.0 / 10.0) * assimpLights.diffuse.max()))) / (2 * assimpLights.attenuationQuadratic);
 
 				switch (assimpLights.type) {
 					case LightType::LIGHT_POINT:
-						this->template addLight<rawrbox::LightPoint>({assimpLights.pos, assimpLights.diffuse, power}, assimpLights.parentID);
+						this->template addLight<rawrbox::LightPoint>({assimpLights.pos, assimpLights.diffuse, radius * 0.05F}, assimpLights.parentID);
 						break;
 					case LightType::LIGHT_SPOT:
-						this->template addLight<rawrbox::LightSpot>({assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, power}, assimpLights.parentID);
+						this->template addLight<rawrbox::LightSpot>({assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, radius * 0.01F}, assimpLights.parentID);
 						break;
 					case LightType::LIGHT_DIR:
 						rawrbox::LIGHTS::setSun(assimpLights.direction, assimpLights.diffuse);

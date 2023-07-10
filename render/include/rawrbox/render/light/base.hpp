@@ -21,17 +21,19 @@ namespace rawrbox {
 		rawrbox::Vector3f _offset = {};
 		rawrbox::Colorf _color = rawrbox::Colors::White;
 
-		float _intensity = 0.F;
+		float _radius = 5.F;
 
 	public:
-		LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float intensity);
+		LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius);
 		LightBase(const LightBase&) = default;
 		LightBase(LightBase&&) = default;
 		LightBase& operator=(const LightBase&) = default;
 		LightBase& operator=(LightBase&&) = delete;
 		virtual ~LightBase() = default;
 
-		[[nodiscard]] virtual const rawrbox::Color getFlux() const;
+		[[nodiscard]] virtual const rawrbox::Color getColor() const;
+
+		virtual void setRadius(float radius);
 		[[nodiscard]] virtual const float getRadius() const;
 
 		virtual void setId(size_t id);

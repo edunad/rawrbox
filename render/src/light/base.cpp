@@ -1,10 +1,12 @@
 #include <rawrbox/render/light/manager.hpp>
 
 namespace rawrbox {
-	LightBase::LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float intensity) : _pos(pos), _color(color), _intensity(intensity){};
+	LightBase::LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius) : _pos(pos), _color(color), _radius(radius){};
 
-	const rawrbox::Colorf LightBase::getFlux() const { return this->_color * this->_intensity; }
-	const float LightBase::getRadius() const { return 0; }
+	const rawrbox::Colorf LightBase::getColor() const { return this->_color; }
+
+	void LightBase::setRadius(float radius) { this->_radius = radius; }
+	const float LightBase::getRadius() const { return this->_radius; }
 
 	void LightBase::setId(size_t id) { this->_id = id; };
 	const size_t LightBase::id() const { return this->_id; };
