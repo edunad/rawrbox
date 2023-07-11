@@ -21,8 +21,8 @@ namespace post_process {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("POST-PROCESS TEST");
-		this->_window->setRenderer<>(
-		    bgfx::RendererType::Count, [this]() {}, [this]() { this->drawWorld(); });
+		this->_window->setRenderer<rawrbox::RendererBase>(
+		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
@@ -105,9 +105,9 @@ namespace post_process {
 	void Game::drawWorld() {
 		if (!this->_ready || this->_model == nullptr) return;
 
-		this->_postProcess->begin();
+		// this->_postProcess->begin();
 		this->_model->draw();
-		this->_postProcess->end();
+		// this->_postProcess->end();
 	}
 
 	void Game::printFrames() {

@@ -22,7 +22,7 @@ namespace assimp {
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("ASSIMP TEST");
 		this->_window->setRenderer<>(
-		    bgfx::RendererType::Count, [this]() {}, [this]() { this->drawWorld(); });
+		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
