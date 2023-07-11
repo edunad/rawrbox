@@ -3,7 +3,6 @@
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/materials/lit.hpp>
 #include <rawrbox/render/model/assimp/assimp_model.hpp>
-#include <rawrbox/render/model/text3D.hpp>
 #include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/window.hpp>
 
@@ -13,7 +12,6 @@ namespace light {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
 		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialLit>> _model = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialLit>>();
-		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 
 		rawrbox::Font* _font = nullptr;
 

@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/assimp/model.hpp>
@@ -297,8 +298,10 @@ namespace model {
 	}
 
 	void Game::update() {
-		if (this->_texture2 == nullptr) return;
-		this->_texture2->step();
+		if (this->_window == nullptr) return;
+		this->_window->update();
+
+		if (this->_texture2 != nullptr) this->_texture2->step();
 	}
 
 	void Game::drawWorld() {

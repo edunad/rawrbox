@@ -15,9 +15,13 @@ static const bgfx::EmbeddedShader quad_shaders[] = {
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
+#define BGFX_STATE_DEFAULT_POST (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_CULL_CW)
+
 namespace rawrbox {
 	PostProcessManager::PostProcessManager(const rawrbox::Vector2i& windowSize) : _windowSize(windowSize) {}
 	PostProcessManager::~PostProcessManager() {
+		RAWRBOX_DESTROY(this->_vbh);
+		RAWRBOX_DESTROY(this->_ibh);
 		RAWRBOX_DESTROY(this->_texColor);
 		RAWRBOX_DESTROY(this->_program);
 
@@ -28,14 +32,31 @@ namespace rawrbox {
 		this->_render.reset();
 
 		this->_postProcesses.clear();
+		this->_vertices.clear();
+		this->_indices.clear();
+	}
+
+	void PostProcessManager::pushVertice(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& uv) {
+		this->_vertices.emplace_back(
+		    // pos
+		    rawrbox::Vector3f((pos.x / this->_windowSize.x * 2 - 1),
+			(pos.y / this->_windowSize.y * 2 - 1) * -1,
+			0.0F),
+
+		    // uv
+		    rawrbox::Vector2f(uv.x,
+			uv.y));
+	}
+
+	void PostProcessManager::pushIndices(uint16_t a, uint16_t b, uint16_t c) {
+		auto pos = static_cast<uint16_t>(this->_vertices.size());
+
+		this->_indices.push_back(pos - a);
+		this->_indices.push_back(pos - b);
+		this->_indices.push_back(pos - c);
 	}
 
 	// Post utils ----
-	void PostProcessManager::add(std::unique_ptr<rawrbox::PostProcessBase> post) {
-		this->_postProcesses.push_back(std::move(post));
-		this->buildPRViews();
-	}
-
 	void PostProcessManager::remove(size_t indx) {
 		if (this->_postProcesses.empty() || indx >= this->_postProcesses.size()) throw std::runtime_error(fmt::format("[RawrBox-PostProcess] Failed to remove {}!", indx));
 		this->_postProcesses.erase(this->_postProcesses.begin() + indx);
@@ -83,6 +104,20 @@ namespace rawrbox {
 			effect->upload();
 		}
 
+		// Generate vertices -----
+		auto screeSize = this->_windowSize.cast<float>();
+		this->pushVertice({0, 0}, {0, 0});
+		this->pushVertice({0, screeSize.y}, {0, 1});
+		this->pushVertice({screeSize.x, 0}, {1, 0});
+		this->pushVertice({screeSize.x, screeSize.y}, {1, 1});
+
+		this->pushIndices(4, 3, 2);
+		this->pushIndices(3, 1, 2);
+
+		// Generate buffers ---
+		this->_vbh = bgfx::createVertexBuffer(bgfx::makeRef(this->_vertices.data(), static_cast<uint32_t>(this->_vertices.size()) * rawrbox::PosUVVertexData::vLayout().getStride()), rawrbox::PosUVVertexData::vLayout());
+		this->_ibh = bgfx::createIndexBuffer(bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t)));
+
 		// Load Shader --------
 		rawrbox::RenderUtils::buildShader(quad_shaders, this->_program);
 		// ------------------
@@ -96,6 +131,7 @@ namespace rawrbox {
 
 		this->_recording = true;
 		this->_render->startRecord();
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, rawrbox::MAIN_CAMERA->getViewMtx().data(), rawrbox::MAIN_CAMERA->getProjMtx().data());
 	}
 
 	void PostProcessManager::end() {
@@ -112,9 +148,10 @@ namespace rawrbox {
 
 			bgfx::touch(id);
 			bgfx::setTexture(0, this->_texColor, pass == 0 ? this->_render->getHandle() : bgfx::getTexture(this->_samples[pass - 1]));
-			rawrbox::RenderUtils::renderScreenQuad(this->_windowSize);
+			bgfx::setVertexBuffer(0, this->_vbh);
+			bgfx::setIndexBuffer(this->_ibh);
 
-			bgfx::setState(0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_CULL_CW);
+			bgfx::setState(BGFX_STATE_DEFAULT_POST);
 			this->_postProcesses[pass]->applyEffect();
 			bgfx::discard();
 		}
@@ -122,12 +159,13 @@ namespace rawrbox {
 		rawrbox::CURRENT_VIEW_ID = prevID;
 
 		// Draw final texture
-		bgfx::touch(rawrbox::CURRENT_VIEW_ID);
+		/*bgfx::touch(rawrbox::CURRENT_VIEW_ID);
 		bgfx::setTexture(0, this->_texColor, bgfx::getTexture(this->_samples.back()));
-		rawrbox::RenderUtils::renderScreenQuad(this->_windowSize);
-		bgfx::setState(0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_CULL_CW);
+		bgfx::setVertexBuffer(0, this->_vbh);
+		bgfx::setIndexBuffer(this->_ibh);
+		bgfx::setState(BGFX_STATE_DEFAULT_POST);
 		bgfx::submit(0, this->_program);
-		bgfx::discard();
+		bgfx::discard();*/
 	}
 
 } // namespace rawrbox

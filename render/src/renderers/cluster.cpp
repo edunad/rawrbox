@@ -61,7 +61,25 @@ namespace rawrbox {
 	}
 
 	void RendererCluster::render() {
-		if (this->_uniforms == nullptr || this->worldRender == nullptr) return;
+		if (this->_uniforms == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Render uniforms not set! Did you call 'init' ?");
+		if (this->worldRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] World render method not set! Did you call 'setWorldRender' ?");
+		if (this->overlayRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Overlay render method not set! Did you call 'setOverlayRender' ?");
+		// No world / overlay only
+		if (rawrbox::MAIN_CAMERA == nullptr) {
+			auto prevId = rawrbox::CURRENT_VIEW_ID;
+			rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_OVERLAY_VIEW;
+
+			bgfx::touch(rawrbox::MAIN_OVERLAY_VIEW); // Make sure we draw on the view
+			bgfx::setViewTransform(rawrbox::MAIN_OVERLAY_VIEW, nullptr, nullptr);
+
+			// Render overlay ---
+			this->overlayRender();
+			// ----------------
+
+			rawrbox::CURRENT_VIEW_ID = prevId;
+			rawrbox::RendererBase::frame(); // No camera, prob just stencil?
+			return;
+		}
 
 		// Set views
 		auto view = rawrbox::MAIN_CAMERA->getViewMtx();
@@ -69,7 +87,6 @@ namespace rawrbox {
 
 		bgfx::setViewTransform(CLUSTER_BUILD_VIEW_ID, view.data(), proj.data());
 		bgfx::setViewTransform(LIGHT_CULL_VIEW_ID, view.data(), proj.data());
-		bgfx::setViewTransform(rawrbox::MAIN_DEFAULT_VIEW, view.data(), proj.data());
 		//     ---
 
 		this->_uniforms->setUniforms(this->_size);
@@ -108,22 +125,28 @@ namespace rawrbox {
 		    ClusterUniforms::CLUSTERS_Z / ClusterUniforms::CLUSTERS_Z_THREADS);
 		// --------
 
-		// Final Pass
+		// Final Pass ---------------------
 		auto prevId = rawrbox::CURRENT_VIEW_ID;
-		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_DEFAULT_VIEW;
-		bgfx::touch(rawrbox::MAIN_DEFAULT_VIEW); // Make sure we draw on the view
+		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_WORLD_VIEW;
+		bgfx::touch(rawrbox::CURRENT_VIEW_ID); // Make sure we draw on the view
 
 		// Render world ---
 		this->worldRender();
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, view.data(), proj.data());
 		// ----------------
 
 		rawrbox::CURRENT_VIEW_ID = prevId;
 		bgfx::discard(BGFX_DISCARD_ALL);
 
+		prevId = rawrbox::CURRENT_VIEW_ID;
+		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_OVERLAY_VIEW;
+
 		// Render overlay ---
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
 		this->overlayRender();
 		// ----------------
 
+		rawrbox::CURRENT_VIEW_ID = prevId;
 		rawrbox::RendererBase::frame();
 	}
 

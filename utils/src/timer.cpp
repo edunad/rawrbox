@@ -3,7 +3,7 @@
 
 namespace rawrbox {
 	uint32_t Timer::ID = 0;
-	std::unordered_map<std::string, rawrbox::Timer> Timer::timers = {};
+	std::unordered_map<std::string, std::unique_ptr<rawrbox::Timer>> Timer::timers = {};
 
 	// STATIC -----
 	void Timer::update() {
@@ -11,45 +11,52 @@ namespace rawrbox {
 
 		auto time = rawrbox::TimeUtils::time();
 		for (auto it2 = timers.begin(); it2 != timers.end();) {
-
 			auto& timer = (*it2).second;
-			if (timer._paused || time < timer._nextTick) {
+			if (timer == nullptr) {
+				it2 = timers.erase(it2);
+				continue;
+			}
+
+			if (timer->_paused || time < timer->_nextTick) {
 				++it2;
 				continue;
 			}
 
-			if (timer._func != nullptr) timer._func(); // Tick
+			if (timer->_func != nullptr) timer->_func(); // Tick
 
 			// Life
-			if (!timer._infinite) timer._iterations--;
-			if (timer._iterations <= 0) {
-				if (timer._onComplete) timer._onComplete();
-
+			if (!timer->_infinite) timer->_ticks++;
+			if (timer->_ticks >= timer->_iterations) {
+				if (timer->_onComplete) timer->_onComplete();
 				it2 = timers.erase(it2);
 				continue;
 			} else {
-				timer._nextTick = time + timer._delay;
+				timer->_nextTick = time + timer->_delay;
 			}
 
 			++it2;
 		}
 	}
 
-	rawrbox::Timer Timer::simple(int msDelay, std::function<void()> func, std::function<void()> onComplete) {
+	rawrbox::Timer* Timer::simple(int msDelay, std::function<void()> func, std::function<void()> onComplete) {
 		return create(1, msDelay, func, onComplete);
 	}
 
-	rawrbox::Timer Timer::create(int reps, int msDelay, std::function<void()> func, std::function<void()> onComplete) {
-		rawrbox::Timer t;
-		t._delay = msDelay;
-		t._func = func;
-		t._onComplete = onComplete;
-		t._iterations = reps;
-		t._id = std::to_string(ID++);
-		t._infinite = reps <= 0;
+	rawrbox::Timer* Timer::create(int reps, int msDelay, std::function<void()> func, std::function<void()> onComplete) {
+		auto t = std::make_unique<rawrbox::Timer>();
+		auto id = std::to_string(ID++);
 
-		t.start();
-		return t;
+		t->_delay = msDelay;
+		t->_func = func;
+		t->_onComplete = onComplete;
+		t->_iterations = reps;
+		t->_ticks = 0;
+		t->_id = id;
+		t->_infinite = reps <= 0;
+		t->_nextTick = rawrbox::TimeUtils::time() + t->_delay;
+
+		timers[id] = std::move(t);
+		return timers[id].get();
 	}
 
 	const bool Timer::isRunning(const std::string& id) {
@@ -61,11 +68,14 @@ namespace rawrbox {
 		ID = 0;
 	}
 	// -----------
+
 	void Timer::start() {
 		if (isRunning(this->_id)) return;
 
+		this->_ticks = 0; // Reset timer
 		this->_nextTick = rawrbox::TimeUtils::time() + this->_delay;
-		timers[this->_id] = *this;
+
+		this->setPaused(false);
 	}
 
 	void Timer::stop() {

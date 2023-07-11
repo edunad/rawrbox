@@ -199,7 +199,7 @@ namespace rawrbox {
 			// ----------------------
 
 			// TEXTURE OPACITY
-			auto opacity = this->importTexture(pMaterial, aiTextureType_OPACITY); // bgfx::TextureFormat::D24S8
+			auto opacity = this->importTexture(pMaterial, aiTextureType_OPACITY, bgfx::TextureFormat::D32);
 			if (!opacity.empty()) {
 				mat->opacity = std::move(opacity[0].value()); // Only support one for the moment
 			}

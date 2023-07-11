@@ -1,3 +1,4 @@
+#include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/gizmos.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
@@ -20,7 +21,8 @@ namespace assimp {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("ASSIMP TEST");
-		this->_window->setRenderer(bgfx::RendererType::Count);
+		this->_window->setRenderer<>(
+		    bgfx::RendererType::Count, [this]() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
@@ -30,9 +32,9 @@ namespace assimp {
 		this->_window->initializeBGFX();
 
 		// Setup camera
-		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
-		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		cam->setPos({0.F, 5.F, -5.F});
+		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
@@ -122,8 +124,6 @@ namespace assimp {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
-		this->_camera.reset();
-
 		this->_model.reset();
 		this->_model2.reset();
 		this->_model3.reset();
@@ -147,11 +147,12 @@ namespace assimp {
 	}
 
 	void Game::update() {
-		if (this->_camera == nullptr) return;
-		this->_camera->update();
+		if (this->_window == nullptr) return;
+		this->_window->update();
 	}
 
 	void Game::drawWorld() {
+		if (!this->_ready) return;
 		this->_modelGrid->draw();
 
 		this->_model->draw();
@@ -173,7 +174,6 @@ namespace assimp {
 
 	void Game::draw() {
 		if (this->_window == nullptr) return;
-		this->_window->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -182,9 +182,7 @@ namespace assimp {
 		printFrames();
 		// -----------
 
-		if (this->_ready) {
-			this->drawWorld();
-		} else {
+		if (!this->_ready) {
 			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
 			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
@@ -194,7 +192,6 @@ namespace assimp {
 		rawrbox::GIZMOS::draw();
 		// -----------
 
-		this->_window->frame(); // Commit primitives
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		this->_window->render(); // Commit primitives
 	}
 } // namespace assimp

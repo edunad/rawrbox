@@ -34,9 +34,7 @@ void main() {
 	v_texcoord0.xy = a_texcoord0.xy;
 	v_texcoord0.z = getInstanceData(id, 5).x;
 
-	vec4 a_position_fix = mul(model, vec4(a_position, 1.));
-
-    TransformedData transform = applyPosTransforms(u_viewProj, a_position_fix, a_texcoord0.xy);
+    TransformedData transform = applyPosTransforms(u_viewProj, mul(model, vec4(a_position, 1.)), a_texcoord0.xy);
     v_worldPos = mul(model, transform.pos).xyz;
 	gl_Position = transform.final;
 }

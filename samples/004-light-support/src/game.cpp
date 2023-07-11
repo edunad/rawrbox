@@ -84,21 +84,12 @@ namespace light {
 		this->_model->setPos({0, 0, 0});
 		//   -----
 
-		// Text test ----
-		{
-			this->_text->addText(*this->_font, "SUN", {-6.F, 1.8F, 0});
-			this->_text->upload();
-		}
-		// ------
-
 		this->_ready = true;
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-
 		this->_model.reset();
-		this->_text.reset();
 
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
@@ -124,10 +115,8 @@ namespace light {
 	}
 
 	void Game::drawWorld() {
-		if (!this->_ready || this->_model == nullptr || this->_text == nullptr) return;
-
+		if (!this->_ready || this->_model == nullptr) return;
 		this->_model->draw();
-		this->_text->draw();
 	}
 
 	void Game::printFrames() {

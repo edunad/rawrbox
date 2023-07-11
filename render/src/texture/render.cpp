@@ -33,7 +33,6 @@ namespace rawrbox {
 		rawrbox::CURRENT_VIEW_ID = this->_renderId;
 
 		bgfx::setViewFrameBuffer(this->_renderId, this->_renderView);
-		bgfx::setViewRect(this->_renderId, 0, 0, this->_size.x, this->_size.y);
 		bgfx::setViewClear(this->_renderId, clear ? BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL : BGFX_CLEAR_NONE, 0x00000000, 1.F, 0);
 		bgfx::touch(this->_renderId);
 	}
@@ -50,13 +49,18 @@ namespace rawrbox {
 		bgfx::setName(this->_handle, fmt::format("RAWR-RENDER-TARGET-{}", this->_handle.idx).c_str());
 
 		if (_depth) {
-			this->_depthHandle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 1, bgfx::TextureFormat::D24S8, BGFX_TEXTURE_RT | BGFX_TEXTURE_RT_WRITE_ONLY);
+			bgfx::TextureFormat::Enum depthFormat =
+			    bgfx::isTextureValid(0, false, 1, bgfx::TextureFormat::D32, BGFX_TEXTURE_RT_WRITE_ONLY | this->_flags)
+				? bgfx::TextureFormat::D32
+				: bgfx::TextureFormat::D16;
+
+			this->_depthHandle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 1, depthFormat, BGFX_TEXTURE_RT_WRITE_ONLY | this->_flags);
 			bgfx::setName(this->_depthHandle, fmt::format("RAWR-RENDER-TARGET-DEPTH-{}", this->_depthHandle.idx).c_str());
 
 			std::array<bgfx::TextureHandle, 2> texHandles = {this->_handle, this->_depthHandle};
 			this->_renderView = bgfx::createFrameBuffer(2, texHandles.data());
 		} else {
-			this->_renderView = bgfx::createFrameBuffer(1, &this->_handle, true);
+			this->_renderView = bgfx::createFrameBuffer(1, &this->_handle);
 		}
 	} // ------------
 

@@ -388,7 +388,7 @@ namespace rawrbox {
 		this->_currentDraw.textureHandle = texture;
 		this->_currentDraw.drawMode = drawMode;
 		this->_currentDraw.clip = this->_clips.empty() ? UINT16_MAX : this->_clips.back();
-		this->_currentDraw.cull = this->_scale.x >= 0.F && this->_scale.y >= 0.F;
+		this->_currentDraw.cull = this->_culling && this->_scale.x >= 0.F && this->_scale.y >= 0.F;
 	}
 
 	void Stencil::pushDrawCall() {
@@ -544,6 +544,16 @@ namespace rawrbox {
 
 		this->_scale -= this->_scales.back();
 		this->_scales.pop_back();
+	}
+	// --------------------
+
+	// ------ CULLING
+	void Stencil::pushDisableCulling() {
+		this->_culling = false;
+	}
+
+	void Stencil::popDisableCulling() {
+		this->_culling = true;
 	}
 	// --------------------
 

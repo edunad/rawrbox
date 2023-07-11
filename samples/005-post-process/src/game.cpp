@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
 #include <rawrbox/render/postprocess/bloom.hpp>
 #include <rawrbox/render/postprocess/dither_psx.hpp>
@@ -20,7 +21,8 @@ namespace post_process {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("POST-PROCESS TEST");
-		this->_window->setRenderer(bgfx::RendererType::Count);
+		this->_window->setRenderer<>(
+		    bgfx::RendererType::Count, [this]() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
@@ -30,14 +32,14 @@ namespace post_process {
 		this->_window->initializeBGFX();
 
 		this->_postProcess = std::make_unique<rawrbox::PostProcessManager>(this->_window->getSize());
-		this->_postProcess->add(std::make_unique<rawrbox::PostProcessBloom>(0.015F));
-		this->_postProcess->add(std::make_unique<rawrbox::PostProcessPSXDither>(rawrbox::DITHER_SIZE::SLOW_MODE));
-		this->_postProcess->add(std::make_unique<rawrbox::PostProcessStaticNoise>(0.1F));
+		this->_postProcess->add<rawrbox::PostProcessBloom>(0.015F);
+		this->_postProcess->add<rawrbox::PostProcessPSXDither>(rawrbox::DITHER_SIZE::SLOW_MODE);
+		this->_postProcess->add<rawrbox::PostProcessStaticNoise>(0.1F);
 
 		// Setup camera
-		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
-		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		cam->setPos({0.F, 5.F, -5.F});
+		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
@@ -80,7 +82,6 @@ namespace post_process {
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-		this->_camera.reset();
 		this->_model.reset();
 		this->_postProcess.reset();
 
@@ -97,15 +98,16 @@ namespace post_process {
 	}
 
 	void Game::update() {
-		if (this->_camera == nullptr) return;
-		this->_camera->update();
+		if (this->_window == nullptr) return;
+		this->_window->update();
 	}
 
 	void Game::drawWorld() {
-		if (this->_model == nullptr) return;
-		this->_model->draw();
+		if (!this->_ready || this->_model == nullptr) return;
 
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		this->_postProcess->begin();
+		this->_model->draw();
+		this->_postProcess->end();
 	}
 
 	void Game::printFrames() {
@@ -118,7 +120,6 @@ namespace post_process {
 
 	void Game::draw() {
 		if (this->_window == nullptr) return;
-		this->_window->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -127,17 +128,12 @@ namespace post_process {
 		printFrames();
 		// -----------
 
-		if (this->_ready) {
-			this->_postProcess->begin();
-			this->drawWorld();
-			this->_postProcess->end();
-		} else {
+		if (!this->_ready) {
 			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
 			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
 		}
 
-		this->_window->frame(); // Commit primitives
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		this->_window->render(); // Commit primitives
 	}
 } // namespace post_process

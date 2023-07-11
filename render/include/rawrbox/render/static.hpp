@@ -32,7 +32,9 @@ namespace rawrbox {
 	extern uint32_t BGFX_FRAME;
 
 	// VIEW IDS ---
-	extern bgfx::ViewId MAIN_DEFAULT_VIEW;
+	extern bgfx::ViewId MAIN_WORLD_VIEW;
+	extern bgfx::ViewId MAIN_OVERLAY_VIEW;
+
 	extern bgfx::ViewId STENCIL_VIEW_ID;
 
 	extern bgfx::ViewId POST_PROCESSING_ID;
