@@ -15,7 +15,7 @@ else()
         GITHUB_REPOSITORY
         qhull/qhull
         GIT_TAG
-        2020.2
+        v8.0.2
         OPTIONS
         "QHULL_ENABLE_TESTING OFF"
         "BUILD_STATIC_LIBS ON"
