@@ -15,7 +15,7 @@ uniform vec2 u_dithering_threshold;
 
 void main() {
 	vec4 col = texture2D(s_texColor, v_texcoord0.xy);
-	if(col.a <= 0.01) discard;
+	if(col.a <= 0.0) discard;
 
 	float luma = dot(col.rgb, vec3(0.21267290f, 0.71515220f, 0.07217500f));
 

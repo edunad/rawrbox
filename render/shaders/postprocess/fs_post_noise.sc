@@ -13,7 +13,7 @@ uvec3 hash(vec2 s) {
 
 void main() {
 	vec4 col = texture2D(s_texColor, v_texcoord0.xy);
-	if(col.a <= 0.01) discard;
+	if(col.a <= 0.0) discard;
 
 	uvec3 h = hash(v_texcoord0 * 3000.0 * u_settings.x); // x = timer
 	float a = float(h.x) * (1.0 / float(0xffffffffu));

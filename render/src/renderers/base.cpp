@@ -7,13 +7,6 @@
 
 #define BGFX_DEFAULT_CLEAR (0 | BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH)
 
-// NOLINTBEGIN(*)
-const bgfx::EmbeddedShader quad_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_quadtex),
-    BGFX_EMBEDDED_SHADER(fs_quadtex),
-    BGFX_EMBEDDED_SHADER_END()};
-// NOLINTEND(*)
-
 namespace rawrbox {
 	RendererBase::~RendererBase() {
 		bgfx::discard();
@@ -32,10 +25,10 @@ namespace rawrbox {
 		bgfx::setViewName(rawrbox::MAIN_WORLD_VIEW, "RAWRBOX-MAIN-WORLD");
 		bgfx::setViewClear(rawrbox::MAIN_WORLD_VIEW, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 1.0F, 0, 0);
 		bgfx::setViewRect(rawrbox::MAIN_WORLD_VIEW, 0, 0, size.x, size.y);
-		/*
-				bgfx::setViewName(rawrbox::MAIN_OVERLAY_VIEW, "RAWRBOX-MAIN-OVERLAY");
-				bgfx::setViewClear(rawrbox::MAIN_OVERLAY_VIEW, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00000000, 1.0F, 0);
-				bgfx::setViewRect(rawrbox::MAIN_OVERLAY_VIEW, 0, 0, size.x, size.y);*/
+
+		bgfx::setViewName(rawrbox::MAIN_OVERLAY_VIEW, "RAWRBOX-MAIN-OVERLAY");
+		bgfx::setViewClear(rawrbox::MAIN_OVERLAY_VIEW, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00000000, 1.0F, 0);
+		bgfx::setViewRect(rawrbox::MAIN_OVERLAY_VIEW, 0, 0, size.x, size.y);
 		// -----
 
 		this->_size = size;
@@ -82,11 +75,6 @@ namespace rawrbox {
 
 	// Is it supported by the GPU?
 	bool RendererBase::supported() {
-		const bgfx::Caps* caps = bgfx::getCaps();
-		return
-		    // SDR color attachment
-		    (caps->formats[bgfx::TextureFormat::BGRA8] & BGFX_CAPS_FORMAT_TEXTURE_FRAMEBUFFER) != 0 &&
-		    // HDR color attachment
-		    (caps->formats[bgfx::TextureFormat::RGBA16F] & BGFX_CAPS_FORMAT_TEXTURE_FRAMEBUFFER) != 0;
+		return true;
 	}
 } // namespace rawrbox

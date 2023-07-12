@@ -9,9 +9,9 @@
 #include <stdexcept>
 
 // NOLINTBEGIN(*)
-static const bgfx::EmbeddedShader quad_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_quadtex),
-    BGFX_EMBEDDED_SHADER(fs_quadtex),
+static const bgfx::EmbeddedShader final_postprocess_shaders[] = {
+    BGFX_EMBEDDED_SHADER(vs_post_base),
+    BGFX_EMBEDDED_SHADER(fs_post_final),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
@@ -87,7 +87,7 @@ namespace rawrbox {
 
 			bgfx::touch(id);
 			bgfx::setViewRect(id, 0, 0, bgfx::BackbufferRatio::Equal);
-			bgfx::setViewClear(id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL, 0x00000000, 1.0F);
+			bgfx::setViewClear(id, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH | BGFX_CLEAR_STENCIL, 0x00000000, 1.0F, 0);
 			bgfx::setViewName(id, fmt::format("POST-PROCESSING-SAMPLE-{}", i).c_str());
 			bgfx::setViewFrameBuffer(id, this->_samples[i]);
 		}
@@ -119,7 +119,7 @@ namespace rawrbox {
 		this->_ibh = bgfx::createIndexBuffer(bgfx::makeRef(this->_indices.data(), static_cast<uint32_t>(this->_indices.size()) * sizeof(uint16_t)));
 
 		// Load Shader --------
-		rawrbox::RenderUtils::buildShader(quad_shaders, this->_program);
+		rawrbox::RenderUtils::buildShader(final_postprocess_shaders, this->_program);
 		// ------------------
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
@@ -146,26 +146,28 @@ namespace rawrbox {
 			bgfx::ViewId id = rawrbox::POST_PROCESSING_ID + static_cast<bgfx::ViewId>(pass);
 			rawrbox::CURRENT_VIEW_ID = id;
 
-			bgfx::touch(id);
+			bgfx::touch(rawrbox::CURRENT_VIEW_ID);
+			bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
 			bgfx::setTexture(0, this->_texColor, pass == 0 ? this->_render->getHandle() : bgfx::getTexture(this->_samples[pass - 1]));
 			bgfx::setVertexBuffer(0, this->_vbh);
 			bgfx::setIndexBuffer(this->_ibh);
 
 			bgfx::setState(BGFX_STATE_DEFAULT_POST);
 			this->_postProcesses[pass]->applyEffect();
-			bgfx::discard();
 		}
 
-		rawrbox::CURRENT_VIEW_ID = prevID;
+		bgfx::discard(BGFX_DISCARD_ALL);
 
 		// Draw final texture
-		/*bgfx::touch(rawrbox::CURRENT_VIEW_ID);
+		rawrbox::CURRENT_VIEW_ID = prevID;
+		bgfx::touch(rawrbox::CURRENT_VIEW_ID);
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
 		bgfx::setTexture(0, this->_texColor, bgfx::getTexture(this->_samples.back()));
 		bgfx::setVertexBuffer(0, this->_vbh);
 		bgfx::setIndexBuffer(this->_ibh);
 		bgfx::setState(BGFX_STATE_DEFAULT_POST);
-		bgfx::submit(0, this->_program);
-		bgfx::discard();*/
+		bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);
+		bgfx::discard();
 	}
 
 } // namespace rawrbox

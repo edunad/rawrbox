@@ -22,7 +22,7 @@ namespace rawrbox {
 		bool _depth;
 
 	public:
-		explicit TextureRender(const rawrbox::Vector2i& size, bgfx::ViewId id = (rawrbox::RENDERER_VIEW_ID + ++TextureRender::renderID), bool depth = true);
+		explicit TextureRender(const rawrbox::Vector2i& size, bool depth = true, bgfx::ViewId id = (rawrbox::RENDERER_VIEW_ID + ++TextureRender::renderID));
 
 		TextureRender(TextureRender&&) = delete;
 		TextureRender& operator=(TextureRender&&) = delete;

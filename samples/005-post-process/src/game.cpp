@@ -42,8 +42,8 @@ namespace post_process {
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::AssimpLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
 
 		// Load content ---
 		this->loadContent();
@@ -105,9 +105,9 @@ namespace post_process {
 	void Game::drawWorld() {
 		if (!this->_ready || this->_model == nullptr) return;
 
-		// this->_postProcess->begin();
+		this->_postProcess->begin();
 		this->_model->draw();
-		// this->_postProcess->end();
+		this->_postProcess->end();
 	}
 
 	void Game::printFrames() {

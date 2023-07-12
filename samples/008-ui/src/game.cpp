@@ -33,8 +33,8 @@ namespace ui_test {
 		if (this->_window == nullptr) return;
 		this->_window->initializeBGFX();
 
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 
 		// SETUP UI
 		this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*this->_window);

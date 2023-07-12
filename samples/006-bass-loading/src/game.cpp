@@ -37,8 +37,8 @@ namespace bass_test {
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::BASSLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
 
 		// Load content ---
 		this->loadContent();

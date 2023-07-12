@@ -8,7 +8,7 @@
 
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader bloom_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_post_bloom),
+    BGFX_EMBEDDED_SHADER(vs_post_base),
     BGFX_EMBEDDED_SHADER(fs_post_bloom),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)

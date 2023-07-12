@@ -37,8 +37,8 @@ namespace light {
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::AssimpLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
 
 		// Setup binds ---
 		this->_window->onKey += [](rawrbox::Window& w, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) {

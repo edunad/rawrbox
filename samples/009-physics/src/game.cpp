@@ -35,7 +35,7 @@ namespace physics_test {
 		// --------------
 
 		// Setup loaders
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 
 		// Initialize physics
 		rawrbox::PHYSICS::init(20, 2048, 2048, 2048, 2048, 5);

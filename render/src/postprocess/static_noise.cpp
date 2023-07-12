@@ -9,7 +9,7 @@
 
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader noise_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_post_noise),
+    BGFX_EMBEDDED_SHADER(vs_post_base),
     BGFX_EMBEDDED_SHADER(fs_post_noise),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)

@@ -8,7 +8,7 @@
 
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader dither_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_post_dither),
+    BGFX_EMBEDDED_SHADER(vs_post_base),
     BGFX_EMBEDDED_SHADER(fs_post_dither),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)

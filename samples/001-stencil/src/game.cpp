@@ -36,8 +36,8 @@ namespace stencil {
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 
 		// Load content ---
 		this->loadContent();

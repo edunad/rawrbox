@@ -38,7 +38,7 @@ namespace instance_test {
 		// --------------
 
 		// Setup loaders
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 
 		// Load content ---
 		this->loadContent();

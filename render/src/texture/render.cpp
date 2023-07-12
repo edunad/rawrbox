@@ -7,7 +7,7 @@
 
 namespace rawrbox {
 	uint32_t TextureRender::renderID = 0;
-	TextureRender::TextureRender(const rawrbox::Vector2i& size, bgfx::ViewId id, bool depth) : _size(size), _prevViewId(rawrbox::CURRENT_VIEW_ID), _renderId(id), _depth(depth) {
+	TextureRender::TextureRender(const rawrbox::Vector2i& size, bool depth, bgfx::ViewId id) : _size(size), _prevViewId(rawrbox::CURRENT_VIEW_ID), _renderId(id), _depth(depth) {
 		// Setup texture target view
 		bgfx::setViewName(this->_renderId, fmt::format("RAWR-RENDER-VIEW-{}", this->_renderId).c_str());
 		bgfx::setViewRect(this->_renderId, 0, 0, this->_size.x, this->_size.y);
