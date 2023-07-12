@@ -1,26 +1,25 @@
 
 // NOLINTBEGIN(*)
 #pragma once
-/*
+
 extern "C" {
-#include <libqhull/libqhull.h>
+#include <libqhull_r.h>
 }
 
 #include <string>
 #include <vector>
 
 namespace rawrbox {
-	struct QHullPoint {
+	struct QHullPoint2D {
 		float x = 0.F;
 		float y = 0.F;
 
-		QHullPoint() = default;
+		QHullPoint2D(float _x, float _y) : x(_x), y(_y){};
 	};
 
 	class QHull {
 	public:
-
-			My god, this lib's documentation is a mess
+		/*My god, this lib's documentation is a mess
 			⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⣀⠄⣀⠄⠄⣀⣀⠄⠄⠄⠄⠄⠄⠄⢀⣀⣀⣀⣀⣀⣀⣀
 			⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⠄⣀⣴⣲⠟⠛⠛⠃⣀⠉⠁⠈⠙⢶⣤⣀⠄⠄⠄⣸⣿⣿⣿⣿⣿⣿⣿
 			⠄⠄⠄⠄⠄⠄⠄⠄⠄⢀⣴⡿⡹⣕⠁⠄⣠⣾⣿⣿⣿⣿⣷⣦⣄⠽⣿⣷⡄⠄⢹⣿⣿⣿⣿⣿⣿⣿
@@ -37,9 +36,9 @@ namespace rawrbox {
 			⠄⢸⣿⣿⣿⣿⠈⣼⣿⣿⣿⡄⠄⠄⠄⠄⠹⣟⠉⠁⠄⠄⢾⣿⡏⡀⠄⠄⣀⠈⡿⣿⣿⣿⣿⣿⣿⣿
 			⢀⣹⣿⣿⣿⣿⣽⣿⣿⣿⣿⣿⡀⠄⠄⡀⠄⡇⠄⢀⣀⣀⣸⣯⢠⡇⠄⠄⢼⡆⢡⣿⣿⣿⣿⣿⣿⣿
 			⣸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⠄⠄⠨⢾⣿⣿⣿⣿⣿⣿⣿⠄⣷⡀⠄⢸⡇⢘⣻⣿⣿⣿⣿⣿⣿
-
-		static std::vector<QHullPoint> calculateConvex(const std::vector<QHullPoint>& vertPoints, const std::string& flags = "qhull FA") {
-			std::vector<QHullPoint> hull = {};
+*/
+		static std::vector<QHullPoint2D> calculate2DConvex(const std::vector<QHullPoint2D>& vertPoints, const std::string& flags = "qhull FA") {
+			std::vector<QHullPoint2D> hull = {};
 
 			// Setup QHULL ---
 			int dimension = 2; // Set as 2D
@@ -57,6 +56,7 @@ namespace rawrbox {
 
 			qhT qh_qh;
 			qhT* qh = &qh_qh;
+
 			QHULL_LIB_CHECK
 			qh_zero(qh, errfile);
 
@@ -84,4 +84,3 @@ namespace rawrbox {
 	};
 } // namespace rawrbox
   // NOLINTEND(*)
-*/
