@@ -307,25 +307,23 @@ namespace rawrbox {
 		glfwSetCursor(GLFWHANDLE, cursor);
 	}
 
-	// NOLINTBEGIN(cppcoreguidelines-owning-memory)
 	void Window::setCursor(const std::array<uint8_t, 1024>& pixels) {
-		GLFWimage image = {};
-		image.pixels = new uint8_t[16 * 16 * 4];
-		image.width = 16;
-		image.height = 16;
-
 		size_t size = pixels.size() * sizeof(uint8_t);
 		if (size == 0) return;
 
-		std::memcpy(image.pixels, pixels.data(), size);
-
+		std::memcpy(this->_cursorPixels.data(), pixels.data(), size);
 		if (GLFWCURSOR != nullptr) glfwDestroyCursor(GLFWCURSOR); // Delete old one
+
+		GLFWimage image = {};
+		image.pixels = this->_cursorPixels.data();
+		image.width = 16;
+		image.height = 16;
+
 		auto cursor = glfwCreateCursor(&image, 0, 0);
 		this->_cursor = cursor;
 
 		glfwSetCursor(GLFWHANDLE, cursor);
 	}
-	// NOLINTEND(cppcoreguidelines-owning-memory)
 	// -------------------
 
 	void Window::shutdown() {

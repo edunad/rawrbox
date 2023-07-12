@@ -92,6 +92,7 @@ namespace rawrbox {
 	private:
 		void* _handle = nullptr;
 		void* _cursor = nullptr;
+		std::array<uint8_t, 16 * 16 * 4> _cursorPixels = {};
 
 		BgfxCallbacks _callbacks;
 
