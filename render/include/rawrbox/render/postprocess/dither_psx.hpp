@@ -1,6 +1,5 @@
 #pragma once
 #include <rawrbox/render/postprocess/base.hpp>
-#include <rawrbox/render/shader_defines.hpp>
 #include <rawrbox/render/texture/image.hpp>
 
 #include <bgfx/bgfx.h>

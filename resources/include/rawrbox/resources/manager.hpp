@@ -71,7 +71,11 @@ namespace rawrbox {
 		// ---------
 
 	public:
-		static void addLoader(std::unique_ptr<rawrbox::Loader> loader) { _loaders.push_back(std::move(loader)); }
+		template <class T, typename... CallbackArgs>
+		static void addLoader(CallbackArgs&&... args) {
+			_loaders.push_back(std::make_unique<T>(std::forward<CallbackArgs>(args)...));
+		}
+
 		static const std::vector<std::unique_ptr<rawrbox::Loader>>& getLoaders() { return _loaders; }
 
 		// LOADING ---

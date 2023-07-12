@@ -15,16 +15,19 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 _view = {};
 		rawrbox::Matrix4x4 _projection = {};
 
+		float _z_near = 0.1F;
+		float _z_far = 100.F;
+
 		virtual void updateMtx();
 
 	public:
 		virtual ~CameraBase() = default;
 
 		CameraBase() = default;
-		CameraBase(CameraBase&&) = delete;
-		CameraBase& operator=(CameraBase&&) = delete;
-		CameraBase(const CameraBase&) = delete;
-		CameraBase& operator=(const CameraBase&) = delete;
+		CameraBase(CameraBase&&) = default;
+		CameraBase& operator=(CameraBase&&) = default;
+		CameraBase(const CameraBase&) = default;
+		CameraBase& operator=(const CameraBase&) = default;
 
 		// UTILS -----
 		virtual void setPos(const rawrbox::Vector3f& pos);
@@ -37,8 +40,12 @@ namespace rawrbox {
 		[[nodiscard]] virtual rawrbox::Vector3f getRight() const;
 		[[nodiscard]] virtual rawrbox::Vector3f getUp() const;
 
+		[[nodiscard]] virtual const float getZFar() const;
+		[[nodiscard]] virtual const float getZNear() const;
+
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getViewMtx() const;
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getProjMtx() const;
+		[[nodiscard]] virtual const rawrbox::Matrix4x4 getProjViewMtx() const;
 
 		[[nodiscard]] virtual const rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const;
 		[[nodiscard]] virtual const rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screen_pos) const;

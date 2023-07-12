@@ -18,3 +18,5 @@
 #endif
 // ----------------
 // NOLINTEND(*)
+
+#include <generated/shaders/render/all.hpp>

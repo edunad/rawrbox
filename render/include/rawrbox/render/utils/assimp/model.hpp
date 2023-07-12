@@ -1,7 +1,7 @@
 #pragma once
 
+#include <rawrbox/render/materials/base.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
-#include <rawrbox/render/model/material/base.hpp>
 
 namespace rawrbox {
 
@@ -36,20 +36,22 @@ namespace rawrbox {
 				mesh.setColor(mat->diffuseColor);
 				// --------
 
+				// NORMAL -----
+				if (mat->normal != nullptr) {
+					mesh.setNormalTexture(mat->normal.get());
+				}
+				// --------
+
 				// SPECULAR -----
 				if (mat->specular != nullptr) {
 					mesh.setSpecularTexture(mat->specular.get(), mat->shininess);
 				}
-
-				mesh.setSpecularColor(mat->specularColor);
 				// --------
 
 				// EMISSION -----
 				if (mat->emissive != nullptr) {
 					mesh.setEmissionTexture(mat->emissive.get(), mat->intensity);
 				}
-
-				mesh.setEmissionColor(mat->emissionColor);
 				// --------
 
 				// OPACITY -----

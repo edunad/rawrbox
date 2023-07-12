@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <string>
 
 namespace rawrbox {
@@ -12,6 +13,7 @@ namespace rawrbox {
 		float _delay = 1.F;
 
 		int _iterations = -1;
+		int _ticks = 0;
 		std::function<void()> _func = nullptr;
 		std::function<void()> _onComplete = nullptr;
 
@@ -24,12 +26,12 @@ namespace rawrbox {
 
 	public:
 		static uint32_t ID;
-		static std::unordered_map<std::string, rawrbox::Timer> timers;
+		static std::unordered_map<std::string, std::unique_ptr<rawrbox::Timer>> timers;
 
 		// STATIC ----
 		static void update();
-		static Timer simple(int msDelay, std::function<void()> func, std::function<void()> onComplete = nullptr);
-		static Timer create(int reps, int msDelay, std::function<void()> func, std::function<void()> onComplete = nullptr);
+		static rawrbox::Timer* simple(int msDelay, std::function<void()> func, std::function<void()> onComplete = nullptr);
+		static rawrbox::Timer* create(int reps, int msDelay, std::function<void()> func, std::function<void()> onComplete = nullptr);
 		static const bool isRunning(const std::string& id);
 		static void clear();
 		// ----

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/model/spline.hpp>
 #include <rawrbox/render/model/sprite.hpp>
@@ -14,7 +13,6 @@
 namespace model {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 
 		rawrbox::TextureGIF* _texture2 = nullptr;
 

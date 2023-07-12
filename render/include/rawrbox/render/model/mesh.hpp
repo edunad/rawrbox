@@ -46,14 +46,13 @@ namespace rawrbox {
 
 		// TEXTURES ---
 		rawrbox::TextureBase* texture = nullptr;
-		rawrbox::TextureBase* bumpTexture = nullptr;
+		rawrbox::TextureBase* normalTexture = nullptr;
 		rawrbox::TextureBase* opacityTexture = nullptr;
 
 		rawrbox::TextureBase* specularTexture = nullptr;
-		rawrbox::Color specularColor = rawrbox::Colors::White;
-
 		rawrbox::TextureBase* emissionTexture = nullptr;
-		rawrbox::Color emissionColor = rawrbox::Colors::White;
+
+		rawrbox::TextureBase* displacementTexture = nullptr;
 
 		float specularShininess = 25.0F;
 		float emissionIntensity = 1.F;
@@ -117,8 +116,11 @@ namespace rawrbox {
 		[[nodiscard]] const rawrbox::TextureBase* getTexture() const;
 		void setTexture(rawrbox::TextureBase* ptr);
 
-		[[nodiscard]] const rawrbox::TextureBase* getBumpTexture() const;
-		void setBumpTexture(rawrbox::TextureBase* ptr);
+		[[nodiscard]] const rawrbox::TextureBase* getNormalTexture() const;
+		void setNormalTexture(rawrbox::TextureBase* ptr);
+
+		[[nodiscard]] const rawrbox::TextureBase* getDisplacementTexture() const;
+		void setDisplacementTexture(rawrbox::TextureBase* ptr, float power);
 
 		[[nodiscard]] const rawrbox::TextureBase* getEmissionTexture() const;
 		void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity);
@@ -131,8 +133,6 @@ namespace rawrbox {
 
 		void setVertexSnap(float power = 2.F);
 
-		void setDisplacement(float power);
-
 		void setWireframe(bool wireframe);
 
 		void setCulling(uint64_t culling);
@@ -142,8 +142,6 @@ namespace rawrbox {
 		void setBlend(uint64_t blend);
 
 		void setColor(const rawrbox::Color& color);
-		void setSpecularColor(const rawrbox::Color& color);
-		void setEmissionColor(const rawrbox::Color& color);
 
 		void addData(const std::string& id, rawrbox::Vector4f data);
 		[[nodiscard]] const rawrbox::Vector4f& getData(const std::string& id) const;

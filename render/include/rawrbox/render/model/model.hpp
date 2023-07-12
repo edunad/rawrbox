@@ -1,9 +1,9 @@
 #pragma once
 
 #include <rawrbox/engine/static.hpp>
+#include <rawrbox/render/light/manager.hpp>
 #include <rawrbox/render/model/animation.hpp>
 #include <rawrbox/render/model/base.hpp>
-#include <rawrbox/render/model/light/manager.hpp>
 #include <rawrbox/render/model/skeleton.hpp>
 #include <rawrbox/render/utils/anim.hpp>
 
@@ -208,8 +208,8 @@ namespace rawrbox {
 		// --------------
 
 		void updateLights() {
+			// Update lights ---
 			if constexpr (supportsNormals<M>) {
-				// Update lights ---
 				for (auto& mesh : this->meshes()) {
 					rawrbox::Vector3f meshPos = {mesh->matrix[12], mesh->matrix[13], mesh->matrix[14]};
 					// auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle()); // TODO
@@ -412,6 +412,7 @@ namespace rawrbox {
 			ModelBase<M>::draw();
 
 			this->preDraw();
+
 			for (auto& mesh : this->_meshes) {
 				this->_material->process(*mesh);
 
@@ -438,7 +439,7 @@ namespace rawrbox {
 			}
 
 			this->postDraw();
-			bgfx::discard();
+			bgfx::discard(BGFX_DISCARD_ALL);
 		}
 	};
 } // namespace rawrbox

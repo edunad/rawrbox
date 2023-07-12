@@ -1,11 +1,11 @@
 #pragma once
 
-#include <rawrbox/render/model/material/text.hpp>
+#include <rawrbox/render/materials/text.hpp>
 #include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/text/font.hpp>
 
 namespace rawrbox {
-	class Text3D : public rawrbox::Model<rawrbox::MaterialText3DUnlit> {
+	class Text3D : public rawrbox::Model<rawrbox::MaterialText3D> {
 	protected:
 		float _scaleMul = 0.25F;
 

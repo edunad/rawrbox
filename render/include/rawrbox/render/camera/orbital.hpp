@@ -8,7 +8,7 @@
 #include <memory>
 
 namespace rawrbox {
-	class CameraOrbital : public CameraPerspective {
+	class CameraOrbital : public rawrbox::CameraPerspective {
 	protected:
 		rawrbox::Window* _window = nullptr;
 
@@ -18,7 +18,13 @@ namespace rawrbox {
 		rawrbox::Vector2i _oldMousePos = {};
 		// ------------
 	public:
-		explicit CameraOrbital(rawrbox::Window& window, float speed = 8.F, float FOV = 60.F, float near = 0.1F, float far = 100.F, bool homogeneousDepth = false);
+		CameraOrbital(const CameraOrbital& other) = default;
+		CameraOrbital(CameraOrbital&& other) = default;
+		CameraOrbital& operator=(const CameraOrbital&) = default;
+		CameraOrbital& operator=(CameraOrbital&&) = default;
+		~CameraOrbital() override = default;
+
+		explicit CameraOrbital(rawrbox::Window& window, float speed = 8.F, float FOV = 60.F, float near = 0.1F, float far = 100.F);
 		void update() override;
 	};
 } // namespace rawrbox

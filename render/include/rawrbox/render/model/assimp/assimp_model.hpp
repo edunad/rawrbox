@@ -1,9 +1,8 @@
 #pragma once
 
+#include <rawrbox/render/light/point.hpp>
+#include <rawrbox/render/light/spot.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
-#include <rawrbox/render/model/light/directional.hpp>
-#include <rawrbox/render/model/light/point.hpp>
-#include <rawrbox/render/model/light/spot.hpp>
 #include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/utils/assimp/model.hpp>
 
@@ -35,15 +34,19 @@ namespace rawrbox {
 
 		void loadLights(const rawrbox::AssimpImporter& model) {
 			for (auto& assimpLights : model.lights) {
+				// Attempt to convert attenuation to power
+				float radius =
+				    (-assimpLights.attenuationLinear + std::sqrt(assimpLights.attenuationLinear * assimpLights.attenuationLinear - 4 * assimpLights.attenuationQuadratic * (assimpLights.attenuationConstant - (256.0 / 10.0) * assimpLights.diffuse.max()))) / (2 * assimpLights.attenuationQuadratic);
+
 				switch (assimpLights.type) {
 					case LightType::LIGHT_POINT:
-						this->template addLight<rawrbox::LightPoint>({assimpLights.pos, assimpLights.diffuse, assimpLights.specular, assimpLights.attenuationConstant, assimpLights.attenuationLinear, assimpLights.attenuationQuadratic}, assimpLights.parentID);
+						this->template addLight<rawrbox::LightPoint>({assimpLights.pos, assimpLights.diffuse, radius * 0.05F}, assimpLights.parentID);
 						break;
 					case LightType::LIGHT_SPOT:
-						this->template addLight<rawrbox::LightSpot>({assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.specular, assimpLights.angleInnerCone, assimpLights.angleOuterCone, assimpLights.attenuationConstant, assimpLights.attenuationLinear, assimpLights.attenuationQuadratic}, assimpLights.parentID);
+						this->template addLight<rawrbox::LightSpot>({assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, radius * 0.01F}, assimpLights.parentID);
 						break;
 					case LightType::LIGHT_DIR:
-						this->template addLight<rawrbox::LightDirectional>({assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.specular}, assimpLights.parentID);
+						rawrbox::LIGHTS::setSun(assimpLights.direction, assimpLights.diffuse);
 						break;
 
 					default:

@@ -41,6 +41,14 @@ namespace rawrbox {
 			return *this->_emitters.emplace_back(std::make_unique<rawrbox::Emitter>(em));
 		}
 
+		void removeEmitter(rawrbox::Emitter* em) {
+			auto iter = std::find_if(this->_emitters.begin(), this->_emitters.end(), [&](auto& e) { return em == e.get(); });
+			if (iter == this->_emitters.end()) return;
+
+			em->clear();
+			this->_emitters.erase(iter);
+		}
+
 		[[nodiscard]] rawrbox::Emitter& get(size_t indx) const {
 			if (indx >= this->_emitters.size()) throw std::runtime_error(fmt::format("[RawrBox-ParticleEngine] Emitter {} not found!", indx));
 			return *this->_emitters[indx];

@@ -1,16 +1,14 @@
 
 #include <rawrbox/render/postprocess/bloom.hpp>
-#include <rawrbox/render/shader_defines.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/render.hpp>
 #include <rawrbox/render/utils/uniforms.hpp>
-
-#include <generated/shaders/render/all.hpp>
 
 #include <bx/math.h>
 
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader bloom_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_post_bloom),
+    BGFX_EMBEDDED_SHADER(vs_post_base),
     BGFX_EMBEDDED_SHADER(fs_post_bloom),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
@@ -31,12 +29,7 @@ namespace rawrbox {
 
 	void PostProcessBloom::upload() {
 		// Load Shader --------
-		bgfx::RendererType::Enum type = bgfx::getRendererType();
-		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(bloom_shaders, type, "vs_post_bloom");
-		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(bloom_shaders, type, "fs_post_bloom");
-
-		this->_program = bgfx::createProgram(vsh, fsh, true);
-		if (!bgfx::isValid(this->_program)) throw std::runtime_error("[RawrBox-Bloom] Failed to initialize shader program");
+		rawrbox::RenderUtils::buildShader(bloom_shaders, this->_program);
 		// ------------------
 
 		this->_bloom_intensity = bgfx::createUniform("u_intensity", bgfx::UniformType::Vec4, 1);

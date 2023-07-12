@@ -95,11 +95,7 @@ namespace rawrbox {
 						auto norm = rawrbox::Vector3f(this->_shape->normal[j].x, this->_shape->normal[j].y, 0.F);
 						auto uv = rawrbox::Vector2f(this->_shape->u[j], path[i].vCoordinate);
 
-						if constexpr (supportsNormals<M>) {
-							buff[id] = rawrbox::VertexData(path[i].LocalToWorld(pos), uv, {rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z), 0}, rawrbox::Colors::White);
-						} else {
-							buff[id] = rawrbox::VertexData(path[i].LocalToWorld(pos), uv, rawrbox::Colors::White);
-						}
+						buff[id] = rawrbox::VertexData(path[i].LocalToWorld(pos), uv, {rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z), 0}, rawrbox::Colors::White);
 					}
 				}
 

@@ -1,6 +1,8 @@
 
+#include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/gizmos.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
+#include <rawrbox/render/renderers/cluster.hpp>
 #include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -19,7 +21,8 @@ namespace light {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("LIGHT TEST");
-		this->_window->setRenderer(bgfx::RendererType::Count);
+		this->_window->setRenderer(
+		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
@@ -29,13 +32,23 @@ namespace light {
 		this->_window->initializeBGFX();
 
 		// Setup camera
-		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
-		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		cam->setPos({0.F, 5.F, -5.F});
+		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::AssimpLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
+
+		// Setup binds ---
+		this->_window->onKey += [](rawrbox::Window& w, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) {
+			if (action != KEY_ACTION_UP) return;
+
+			if (key == KEY_F1) rawrbox::RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_OFF;
+			if (key == KEY_F2) rawrbox::RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_CLUSTER_Z;
+			if (key == KEY_F3) rawrbox::RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_CLUSTER_COUNT;
+		};
+		// ----------
 
 		// Load content ---
 		this->loadContent();
@@ -71,28 +84,15 @@ namespace light {
 		this->_model->setPos({0, 0, 0});
 		//   -----
 
-		// Text test ----
-		{
-			this->_text->addText(*this->_font, "SPOT LIGHT", {-6.F, 1.8F, 0});
-			this->_text->addText(*this->_font, "DIRECTIONAL LIGHT", {0.F, 1.8F, 0});
-			this->_text->addText(*this->_font, "POINT LIGHT", {6.F, 1.8F, 0});
-			this->_text->upload();
-		}
-		// ------
-
 		this->_ready = true;
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-
-		this->_camera.reset();
 		this->_model.reset();
-		this->_text.reset();
 
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
-		rawrbox::LIGHTS::shutdown();
 		rawrbox::ASYNC::shutdown();
 
 		this->_window->unblockPoll();
@@ -105,15 +105,18 @@ namespace light {
 	}
 
 	void Game::update() {
-		if (this->_camera == nullptr) return;
-		this->_camera->update();
+		if (this->_window == nullptr) return;
+		this->_window->update();
+
+		if (this->_ready) {
+			this->_sunDir = {std::cos(rawrbox::BGFX_FRAME * 0.01F) * 1.F, 1.F, std::sin(rawrbox::BGFX_FRAME * 0.01F) * 1.F};
+			rawrbox::LIGHTS::setSun(this->_sunDir, {0.2F, 0.2F, 0.2F, 1.F});
+		}
 	}
 
 	void Game::drawWorld() {
-		if (this->_model == nullptr || this->_text == nullptr) return;
-
+		if (!this->_ready || this->_model == nullptr) return;
 		this->_model->draw();
-		this->_text->draw();
 	}
 
 	void Game::printFrames() {
@@ -121,12 +124,13 @@ namespace light {
 
 		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
 		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 6, 0x6f, fmt::format("TRIANGLES: {} ----->    DRAW CALLS: {}", stats->numPrims[bgfx::Topology::TriList], stats->numDraw).c_str());
+		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
+		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
+		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
 	}
 
 	void Game::draw() {
 		if (this->_window == nullptr) return;
-		this->_window->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -135,19 +139,18 @@ namespace light {
 		printFrames();
 		// -----------
 
-		if (this->_ready) {
-			this->drawWorld();
+		if (!this->_ready) {
+			bgfx::dbgTextPrintf(1, 11, 0x70, "                                   ");
+			bgfx::dbgTextPrintf(1, 12, 0x70, "          LOADING CONTENT          ");
+			bgfx::dbgTextPrintf(1, 13, 0x70, "                                   ");
 		} else {
-			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
-			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
-			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
+			bgfx::dbgTextPrintf(1, 11, 0x4f, "F1 to hide cluster debug");
+			bgfx::dbgTextPrintf(1, 12, 0x4f, "F2 to show z cluster debug");
+			bgfx::dbgTextPrintf(1, 13, 0x4f, "F3 to show cluster light debug");
+
+			bgfx::dbgTextPrintf(1, 15, 0x2f, fmt::format("SUN ANGLE: {},{},{}", this->_sunDir.x, this->_sunDir.y, this->_sunDir.z).c_str());
 		}
 
-		// Draw DEBUG ---
-		rawrbox::GIZMOS::draw();
-		// -----------
-
-		this->_window->frame(); // Commit primitives
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		this->_window->render(); // Draw world & commit primitives
 	}
 } // namespace light

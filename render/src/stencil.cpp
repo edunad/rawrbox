@@ -1,12 +1,11 @@
 
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector4.hpp>
-#include <rawrbox/render/shader_defines.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
+#include <rawrbox/render/utils/render.hpp>
 
 // Compiled shaders
-#include <generated/shaders/render/all.hpp>
 
 #include <bx/math.h>
 #include <fmt/format.h>
@@ -21,10 +20,16 @@
 static const bgfx::EmbeddedShader stencil_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_stencil),
     BGFX_EMBEDDED_SHADER(fs_stencil),
-    BGFX_EMBEDDED_SHADER(fs_stencil_line_stipple),
+    BGFX_EMBEDDED_SHADER_END()};
+
+static const bgfx::EmbeddedShader stencil_line_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_stencil_line_stipple),
-    BGFX_EMBEDDED_SHADER(fs_stencil_text),
+    BGFX_EMBEDDED_SHADER(fs_stencil_line_stipple),
+    BGFX_EMBEDDED_SHADER_END()};
+
+static const bgfx::EmbeddedShader stencil_text_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_stencil_text),
+    BGFX_EMBEDDED_SHADER(fs_stencil_text),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
@@ -62,31 +67,12 @@ namespace rawrbox {
 
 	void Stencil::upload() {
 		if (this->_pixelTexture != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
-		bgfx::RendererType::Enum type = bgfx::getRendererType();
 
-		// Load 2D --------
-		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(stencil_shaders, type, "vs_stencil");
-		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(stencil_shaders, type, "fs_stencil");
-
-		this->_2dprogram = bgfx::createProgram(vsh, fsh, true);
-		if (!bgfx::isValid(this->_2dprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to upload '2d' shader program");
+		// Load Shaders --------
+		rawrbox::RenderUtils::buildShader(stencil_shaders, this->_2dprogram);
+		rawrbox::RenderUtils::buildShader(stencil_line_shaders, this->_lineprogram);
+		rawrbox::RenderUtils::buildShader(stencil_text_shaders, this->_textprogram);
 		// ------------------
-
-		// Load Line ---------
-		vsh = bgfx::createEmbeddedShader(stencil_shaders, type, "vs_stencil_line_stipple");
-		fsh = bgfx::createEmbeddedShader(stencil_shaders, type, "fs_stencil_line_stipple");
-
-		this->_lineprogram = bgfx::createProgram(vsh, fsh, true);
-		if (!bgfx::isValid(this->_lineprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to upload 'line' shader program");
-		// --------------------
-
-		// Load Text ---------
-		vsh = bgfx::createEmbeddedShader(stencil_shaders, type, "vs_stencil_text");
-		fsh = bgfx::createEmbeddedShader(stencil_shaders, type, "fs_stencil_text");
-
-		this->_textprogram = bgfx::createProgram(vsh, fsh, true);
-		if (!bgfx::isValid(this->_textprogram)) throw std::runtime_error("[RawrBox-Stencil] Failed to upload 'text' shader program");
-		// --------------------
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 
@@ -402,7 +388,7 @@ namespace rawrbox {
 		this->_currentDraw.textureHandle = texture;
 		this->_currentDraw.drawMode = drawMode;
 		this->_currentDraw.clip = this->_clips.empty() ? UINT16_MAX : this->_clips.back();
-		this->_currentDraw.cull = this->_scale.x >= 0.F && this->_scale.y >= 0.F;
+		this->_currentDraw.cull = this->_culling && this->_scale.x >= 0.F && this->_scale.y >= 0.F;
 	}
 
 	void Stencil::pushDrawCall() {
@@ -433,9 +419,8 @@ namespace rawrbox {
 		this->_prevViewId = rawrbox::CURRENT_VIEW_ID;
 		rawrbox::CURRENT_VIEW_ID = this->_renderId;
 
-		bgfx::touch(rawrbox::CURRENT_VIEW_ID); // Make sure we draw on the view
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
-		bgfx::setViewClear(rawrbox::CURRENT_VIEW_ID, BGFX_DEFAULT_CLEAR, 0x00000000, 1.0F, 0);
+		bgfx::touch(rawrbox::CURRENT_VIEW_ID);                              // Make sure we draw on the view
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr); // Clear view
 
 		for (auto& group : this->_drawCalls) {
 			if (!bgfx::isValid(group.stencilProgram) || !bgfx::isValid(group.textureHandle)) continue;
@@ -465,13 +450,12 @@ namespace rawrbox {
 
 			bgfx::setScissor(group.clip);
 			bgfx::submit(rawrbox::CURRENT_VIEW_ID, group.stencilProgram);
-			bgfx::discard();
 		}
 
+		bgfx::discard(BGFX_DISCARD_ALL);
 		this->_drawCalls.clear();
 
 		rawrbox::CURRENT_VIEW_ID = this->_prevViewId;
-		bgfx::touch(rawrbox::CURRENT_VIEW_ID); // Make sure we draw on the view
 	}
 
 	void Stencil::render() {
@@ -560,6 +544,16 @@ namespace rawrbox {
 
 		this->_scale -= this->_scales.back();
 		this->_scales.pop_back();
+	}
+	// --------------------
+
+	// ------ CULLING
+	void Stencil::pushDisableCulling() {
+		this->_culling = false;
+	}
+
+	void Stencil::popDisableCulling() {
+		this->_culling = true;
 	}
 	// --------------------
 

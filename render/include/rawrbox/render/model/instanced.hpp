@@ -1,10 +1,7 @@
 #pragma once
 
+#include <rawrbox/render/materials/instanced.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
-#include <rawrbox/render/model/light/directional.hpp>
-#include <rawrbox/render/model/light/point.hpp>
-#include <rawrbox/render/model/light/spot.hpp>
-#include <rawrbox/render/model/material/instanced.hpp>
 #include <rawrbox/render/model/model.hpp>
 
 namespace rawrbox {
@@ -30,7 +27,7 @@ namespace rawrbox {
 		};
 	};
 
-	template <typename M = rawrbox::MaterialInstancedUnlit>
+	template <typename M = rawrbox::MaterialInstanced>
 	class InstancedModel : public rawrbox::ModelBase<M> {
 		bgfx::DynamicVertexBufferHandle _dataBuffer = BGFX_INVALID_HANDLE;
 		std::vector<rawrbox::Instance> _instances = {};
@@ -120,7 +117,7 @@ namespace rawrbox {
 
 			// Set instance data buffer.
 			bgfx::setTransform((this->getMatrix()).data());
-			bgfx::setBuffer(6, this->_dataBuffer, bgfx::Access::Read);
+			bgfx::setBuffer(rawrbox::SAMPLE_INSTANCE_DATA, this->_dataBuffer, bgfx::Access::Read);
 			bgfx::setInstanceDataBuffer(this->_dataBuffer, 0, this->_instances.size());
 			// ----
 

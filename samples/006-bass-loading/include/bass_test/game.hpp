@@ -2,7 +2,6 @@
 
 #include <rawrbox/bass/sound/instance.hpp>
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/model/text3D.hpp>
 #include <rawrbox/render/window.hpp>
@@ -12,7 +11,6 @@
 namespace bass_test {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 
 		std::unique_ptr<rawrbox::SoundInstance> _sound = nullptr;
 		std::unique_ptr<rawrbox::SoundInstance> _sound2 = nullptr;
