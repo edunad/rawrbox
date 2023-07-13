@@ -19,6 +19,8 @@ namespace rawrbox {
 
 		rawrbox::Vector3f _pos = {};
 		rawrbox::Vector3f _offset = {};
+		rawrbox::Vector3f _direction = {};
+
 		rawrbox::Colorf _color = rawrbox::Colors::White;
 
 		float _radius = 5.F;
@@ -32,6 +34,7 @@ namespace rawrbox {
 		virtual ~LightBase() = default;
 
 		[[nodiscard]] virtual const rawrbox::Color getColor() const;
+		[[nodiscard]] virtual const rawrbox::Vector4f getData() const;
 
 		virtual void setRadius(float radius);
 		[[nodiscard]] virtual const float getRadius() const;
@@ -50,5 +53,7 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual const rawrbox::Vector3f getWorldPos() const;
 		[[nodiscard]] virtual const rawrbox::LightType getType() const;
+
+		[[nodiscard]] const rawrbox::Vector3f& getDirection() const;
 	};
 } // namespace rawrbox

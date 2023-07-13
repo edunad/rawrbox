@@ -8,6 +8,8 @@ namespace rawrbox {
 	void LightBase::setRadius(float radius) { this->_radius = radius; }
 	const float LightBase::getRadius() const { return this->_radius; }
 
+	const rawrbox::Vector4f LightBase::getData() const { return {}; }
+
 	void LightBase::setId(size_t id) { this->_id = id; };
 	const size_t LightBase::id() const { return this->_id; };
 
@@ -22,5 +24,7 @@ namespace rawrbox {
 
 	const rawrbox::Vector3f LightBase::getWorldPos() const { return this->getPos() + this->getOffsetPos(); }
 	const rawrbox::LightType LightBase::getType() const { return rawrbox::LightType::LIGHT_UNKNOWN; }
+
+	const rawrbox::Vector3f& LightBase::getDirection() const { return this->_direction; };
 
 } // namespace rawrbox

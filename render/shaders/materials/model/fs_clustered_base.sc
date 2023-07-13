@@ -44,9 +44,9 @@ void main() {
 		LightGrid grid = getLightGrid(cluster);
 
 		// Point lights ----
-		for(uint i = 0; i < grid.pointLights; i++) {
+		for(uint i = 0; i < grid.lights; i++) {
 			uint lightIndex = getGridLightIndex(grid.offset, i);
-			PointLight light = getPointLight(lightIndex);
+			Light light = getLight(lightIndex);
 
 			vec3 lightDir = normalize(light.position - v_worldPos);
 			float dist = distance(light.position, v_worldPos);

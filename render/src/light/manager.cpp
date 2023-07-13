@@ -54,15 +54,25 @@ namespace rawrbox {
 
 		for (size_t i = 0; i < _lights.size(); i++) {
 			auto& l = _lights[i];
-			if (l->getType() != rawrbox::LightType::LIGHT_POINT || !l->isOn()) continue; // TODO: SUPPORT SPOT LIGHT
+			if (!l->isOn()) continue;
+
 			auto light = std::bit_cast<rawrbox::LightDataVertex*>(mem->data + (i * stride));
 
 			auto cl = l->getColor();
 			auto pos = l->getWorldPos();
+			auto dir = l->getDirection();
 
 			light->position = rawrbox::Vector3f(pos.x, pos.y, pos.z);
 			light->intensity = rawrbox::Vector3f(cl.r, cl.g, cl.b);
-			light->radius = l->getRadius();
+			light->direction = rawrbox::Vector3f(dir.x, dir.y, dir.z);
+
+			if (l->getType() == rawrbox::LightType::LIGHT_POINT) {
+				light->radius = l->getRadius();
+			} else {
+				auto data = l->getData();
+				light->innerCone = data.x;
+				light->outerCone = data.y;
+			}
 		}
 
 		bgfx::update(_buffer, 0, mem);
@@ -79,7 +89,7 @@ namespace rawrbox {
 		bgfx::setUniform(_u_sunColor, _sun_color.data().data());
 		bgfx::setUniform(_u_sunDirection, _sun_direction.data().data());
 
-		bgfx::setBuffer(rawrbox::SAMPLE_LIGHTS_POINTLIGHTS, _buffer, bgfx::Access::Read);
+		bgfx::setBuffer(rawrbox::SAMPLE_LIGHTS, _buffer, bgfx::Access::Read);
 	}
 
 	// UTILS ----

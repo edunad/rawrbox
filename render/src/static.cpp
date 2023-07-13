@@ -32,7 +32,7 @@ namespace rawrbox {
 	uint8_t SAMPLE_MAT_OPACITY = 4;
 	uint8_t SAMPLE_MAT_DISPLACEMENT = 5;
 
-	uint8_t SAMPLE_LIGHTS_POINTLIGHTS = 6;
+	uint8_t SAMPLE_LIGHTS = 6;
 
 	uint8_t SAMPLE_CLUSTERS = 7;
 	uint8_t SAMPLE_LIGHTINDICES = 8;

@@ -15,7 +15,7 @@
 // largely inspired by http://www.aortiz.me/2018/12/21/CG.html
 
 // point lights only for now
-bool pointLightIntersectsCluster(PointLight light, Cluster cluster);
+bool pointLightIntersectsCluster(Light light, Cluster cluster);
 
 #define gl_WorkGroupSize uvec3(CLUSTERS_X_THREADS, CLUSTERS_Y_THREADS, CLUSTERS_Z_THREADS)
 #define GROUP_SIZE (CLUSTERS_X_THREADS * CLUSTERS_Y_THREADS * CLUSTERS_Z_THREADS)
@@ -27,7 +27,7 @@ bool pointLightIntersectsCluster(PointLight light, Cluster cluster);
 // as a guideline the minimum value of GL_MAX_COMPUTE_SHARED_MEMORY_SIZE is 32KB
 // with a workgroup size of 16*8*4 this is 64 bytes per light
 // however, using all available memory would limit the compute shader invocation to only 1 workgroup
-SHARED PointLight lights[GROUP_SIZE];
+SHARED Light lights[GROUP_SIZE];
 
 // each thread handles one cluster
 NUM_THREADS(CLUSTERS_X_THREADS, CLUSTERS_Y_THREADS, CLUSTERS_Z_THREADS)
@@ -46,16 +46,15 @@ void main() {
 
     // we have a cache of GROUP_SIZE lights
     // have to run this loop several times if we have more than GROUP_SIZE lights
-    uint lightCount = pointLightCount();
+    uint lightCount = totalLights();
     uint lightOffset = 0;
-    while(lightOffset < lightCount)
-    {
+    while(lightOffset < lightCount) {
         // read GROUP_SIZE lights into shared memory
         // each thread copies one light
         uint batchSize = min(GROUP_SIZE, lightCount - lightOffset);
         if(uint(gl_LocalInvocationIndex) < batchSize) {
             uint lightIndex = lightOffset + gl_LocalInvocationIndex;
-            PointLight light = getPointLight(lightIndex);
+            Light light = getLight(lightIndex);
             // transform to view space (expected by pointLightAffectsCluster)
             // do it here once rather than for each cluster later
             light.position = mul(u_view, vec4(light.position, 1.0)).xyz;
@@ -95,7 +94,7 @@ void main() {
 }
 
 // check if light radius extends into the cluster
-bool pointLightIntersectsCluster(PointLight light, Cluster cluster) {
+bool pointLightIntersectsCluster(Light light, Cluster cluster) {
     // NOTE: expects light.position to be in view space like the cluster bounds
     // global light list has world space coordinates, but we transform the
     // coordinates in the shared array of lights after copying

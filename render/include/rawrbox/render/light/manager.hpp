@@ -10,15 +10,20 @@ namespace rawrbox {
 
 	struct LightDataVertex {
 		rawrbox::Vector3f position = {};
-		float _padding = 0;
+		float outerCone = 0.F;
+
 		rawrbox::Vector3f intensity = {};
-		float radius = 0;
+		float radius = 0.F;
+
+		rawrbox::Vector3f direction = {};
+		float innerCone = 0.F;
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
 			l.begin()
 			    .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float) // Position
 			    .add(bgfx::Attrib::TexCoord1, 4, bgfx::AttribType::Float) // Intensity
+			    .add(bgfx::Attrib::TexCoord2, 4, bgfx::AttribType::Float) // Direction
 			    .end();
 			return l;
 		};
