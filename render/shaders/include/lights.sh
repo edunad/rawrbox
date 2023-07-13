@@ -29,6 +29,8 @@ struct Light {
 
     vec3 direction;
     float innerCone;
+
+    uint type;
 };
 
 // Aka sun
@@ -58,20 +60,26 @@ uint totalLights() {
     return u_lightCount;
 }
 
+vec4 getLightData(int id, int index) {
+	return b_lights[id * 3 + index];
+}
+
 Light getLight(uint i) {
     Light light;
 
-    vec4 posOuter = b_lights[3 * i + 0];
+    vec4 posOuter = getLightData(i, 0);
     light.position = posOuter.xyz;
     light.outerCone = posOuter.w;
 
-    vec4 intensityRadiusVec = b_lights[3 * i + 1];
+    vec4 intensityRadiusVec = getLightData(i, 1);
     light.intensity = intensityRadiusVec.xyz;
     light.radius = intensityRadiusVec.w;
 
-    vec4 dirInner = b_lights[3 * i + 2];
+    vec4 dirInner = getLightData(i, 2);
     light.direction = dirInner.xyz;
     light.innerCone = dirInner.w;
+
+    light.type = dirInner.w == 0.0 ? LIGHT_POINT : LIGHT_SPOT;
 
     return light;
 }

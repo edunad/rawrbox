@@ -46,7 +46,7 @@ namespace rawrbox {
 
 	void LIGHTS::update() {
 		if (!bgfx::isValid(_buffer)) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
-		if (_lights.empty()) return;
+		if (!rawrbox::__LIGHT_DIRTY__ || _lights.empty()) return;
 
 		// Update lights ---
 		auto stride = rawrbox::LightDataVertex::vLayout().getStride();
@@ -65,22 +65,26 @@ namespace rawrbox {
 			light->position = rawrbox::Vector3f(pos.x, pos.y, pos.z);
 			light->intensity = rawrbox::Vector3f(cl.r, cl.g, cl.b);
 			light->direction = rawrbox::Vector3f(dir.x, dir.y, dir.z);
+			light->radius = l->getRadius();
 
-			if (l->getType() == rawrbox::LightType::LIGHT_POINT) {
-				light->radius = l->getRadius();
-			} else {
+			if (l->getType() == rawrbox::LightType::LIGHT_SPOT) {
 				auto data = l->getData();
 				light->innerCone = data.x;
 				light->outerCone = data.y;
+			} else {
+				light->innerCone = 0.F;
+				light->outerCone = 0.F;
 			}
 		}
 
 		bgfx::update(_buffer, 0, mem);
+		rawrbox::__LIGHT_DIRTY__ = false;
 		// -------
 	}
 
 	void LIGHTS::bindUniforms() {
 		if (!bgfx::isValid(_buffer)) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
+		update(); // Update all lights
 
 		std::array<float, 4> total = {fullbright ? 1.0F : 0.0F, static_cast<float>(rawrbox::LIGHTS::count())}; // other light settings
 		bgfx::setUniform(_u_lightSettings, total.data());
@@ -112,12 +116,12 @@ namespace rawrbox {
 			}
 		}
 
-		update();
+		rawrbox::__LIGHT_DIRTY__ = true;
 	}
 
-	const rawrbox::LightBase& LIGHTS::getLight(size_t indx) {
-		if (indx < 0 || indx >= _lights.size()) throw std::runtime_error(fmt::format("[RawrBox-LIGHTS] Could not get light {}", indx));
-		return *_lights[indx];
+	rawrbox::LightBase* LIGHTS::getLight(size_t indx) {
+		if (indx < 0 || indx >= _lights.size()) return nullptr;
+		return _lights[indx].get();
 	}
 
 	size_t LIGHTS::count() {

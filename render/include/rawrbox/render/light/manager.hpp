@@ -46,12 +46,13 @@ namespace rawrbox {
 		static rawrbox::Colorf _sun_color;
 		static rawrbox::Vector3f _sun_direction;
 
+		static void update();
+
 	public:
 		static bool fullbright;
 
 		static void init();
 		static void shutdown();
-		static void update();
 
 		static void bindUniforms();
 
@@ -71,7 +72,7 @@ namespace rawrbox {
 
 			light.setId(++rawrbox::LIGHT_ID);
 			auto entry = _lights.emplace_back(std::make_unique<T>(light)).get();
-			update();
+			rawrbox::__LIGHT_DIRTY__ = true;
 			return entry;
 		}
 
@@ -79,7 +80,7 @@ namespace rawrbox {
 		// ---------
 
 		// Light utils ----
-		static const rawrbox::LightBase& getLight(size_t indx);
+		static rawrbox::LightBase* getLight(size_t indx);
 		static size_t count();
 		// ---------
 	};

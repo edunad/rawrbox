@@ -33,7 +33,9 @@ namespace rawrbox {
 		LightBase& operator=(LightBase&&) = delete;
 		virtual ~LightBase() = default;
 
-		[[nodiscard]] virtual const rawrbox::Color getColor() const;
+		[[nodiscard]] virtual const rawrbox::Colorf getColor() const;
+		virtual void setColor(const rawrbox::Colorf& col);
+
 		[[nodiscard]] virtual const rawrbox::Vector4f getData() const;
 
 		virtual void setRadius(float radius);
@@ -55,5 +57,6 @@ namespace rawrbox {
 		[[nodiscard]] virtual const rawrbox::LightType getType() const;
 
 		[[nodiscard]] const rawrbox::Vector3f& getDirection() const;
+		virtual void setDirection(const rawrbox::Vector3f& dir);
 	};
 } // namespace rawrbox

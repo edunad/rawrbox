@@ -34,23 +34,20 @@ namespace rawrbox {
 
 		void loadLights(const rawrbox::AssimpImporter& model) {
 			for (auto& assimpLights : model.lights) {
-				// Attempt to convert attenuation to power
-				float radius =
-				    (-assimpLights.attenuationLinear + std::sqrt(assimpLights.attenuationLinear * assimpLights.attenuationLinear - 4 * assimpLights.attenuationQuadratic * (assimpLights.attenuationConstant - (256.0 / 10.0) * assimpLights.diffuse.max()))) / (2 * assimpLights.attenuationQuadratic);
 
 				switch (assimpLights.type) {
-					case LightType::LIGHT_POINT:
-						this->template addLight<rawrbox::LightPoint>({assimpLights.pos, assimpLights.diffuse, radius * 0.05F}, assimpLights.parentID);
+					case rawrbox::LightType::LIGHT_POINT:
+						this->template addLight<rawrbox::LightPoint>({assimpLights.pos, assimpLights.diffuse, assimpLights.angleInnerCone}, assimpLights.parentID);
 						break;
-					case LightType::LIGHT_SPOT:
-						this->template addLight<rawrbox::LightSpot>({assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, radius * 0.01F}, assimpLights.parentID);
+					case rawrbox::LightType::LIGHT_SPOT:
+						this->template addLight<rawrbox::LightSpot>({assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, 100.F}, assimpLights.parentID);
 						break;
-					case LightType::LIGHT_DIR:
+					case rawrbox::LightType::LIGHT_DIR:
 						rawrbox::LIGHTS::setSun(assimpLights.direction, assimpLights.diffuse);
 						break;
 
 					default:
-					case LightType::LIGHT_UNKNOWN:
+					case rawrbox::LightType::LIGHT_UNKNOWN:
 						fmt::print("[RawrBox-Assimp] Failed to create unknown light '{}'\n", assimpLights.name);
 						break;
 				}
