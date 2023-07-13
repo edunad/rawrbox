@@ -15,16 +15,59 @@ else()
         GITHUB_REPOSITORY
         qhull/qhull
         GIT_TAG
-        v8.0.2
-        OPTIONS
-        "QHULL_ENABLE_TESTING OFF"
-        "BUILD_STATIC_LIBS ON"
-        "BUILD_SHARED_LIBS OFF")
+        2020.2
+        DOWNLOAD_ONLY
+        ON)
 
-    set(EXTRA_UTIL_LIBS qhullstatic_r)
-    set(EXTRA_UTIL_INCLUDES "${qhull_SOURCE_DIR}/src/libqhull_r")
+    # Setup lib
+    if(qhull_ADDED)
+        set(libqhullr_HEADERS
+            ${qhull_SOURCE_DIR}/src/libqhull_r/libqhull_r.h
+            ${qhull_SOURCE_DIR}/src/libqhull_r/geom_r.h
+            ${qhull_SOURCE_DIR}/src/libqhull_r/io_r.h
+            ${qhull_SOURCE_DIR}/src/libqhull_r/mem_r.h
+            ${qhull_SOURCE_DIR}/src/libqhull_r/merge_r.h
+            ${qhull_SOURCE_DIR}/src/libqhull_r/poly_r.h
+            ${qhull_SOURCE_DIR}/src/libqhull_r/qhull_ra.h
+            ${qhull_SOURCE_DIR}/src/libqhull_r/qset_r.h
+            ${qhull_SOURCE_DIR}/src/libqhull_r/random_r.h
+            ${qhull_SOURCE_DIR}/src/libqhull_r/stat_r.h
+            ${qhull_SOURCE_DIR}/src/libqhull_r/user_r.h)
 
-    set_lib_runtime_mt(qhullstatic_r)
+        set(libqhullr_SOURCES
+            ${qhull_SOURCE_DIR}/src/libqhull_r/global_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/stat_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/geom2_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/poly2_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/merge_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/libqhull_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/geom_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/poly_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/qset_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/mem_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/random_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/usermem_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/userprintf_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/io_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/user_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/rboxlib_r.c
+            ${qhull_SOURCE_DIR}/src/libqhull_r/userprintf_rbox_r.c
+            ${libqhullr_HEADERS})
+
+        set(qhull_VERSION "8.0.2") # Advance every release
+        set(qhull_STATICR qhullstatic_r)
+
+        add_library(${qhull_STATICR} STATIC ${libqhullr_SOURCES})
+        set_target_properties(${qhull_STATICR} PROPERTIES VERSION ${qhull_VERSION} OUTPUT_NAME "${qhull_STATICR}$<$<CONFIG:Debug>:d>")
+        if(UNIX)
+            target_link_libraries(${qhull_STATICR} m)
+        endif(UNIX)
+
+        set(EXTRA_UTIL_LIBS ${qhull_STATICR})
+        set(EXTRA_UTIL_INCLUDES "${qhull_SOURCE_DIR}/src/libqhull_r")
+
+        set_lib_runtime_mt(${qhull_STATICR})
+    endif()
 endif()
 
 # LIBS ---
