@@ -73,7 +73,7 @@ struct Cluster {
 
 struct LightGrid {
     uint offset;
-    uint pointLights; // TODO: SUPPORT OTHER TYPES OF LIGHT
+    uint lights;
 };
 
 
@@ -91,7 +91,7 @@ LightGrid getLightGrid(uint cluster) {
     uvec4 gridvec = b_clusterLightGrid[cluster];
     LightGrid grid;
     grid.offset = gridvec.x;
-    grid.pointLights = gridvec.y;
+    grid.lights = gridvec.y;
     return grid;
 }
 #endif

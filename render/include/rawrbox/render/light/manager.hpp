@@ -10,15 +10,20 @@ namespace rawrbox {
 
 	struct LightDataVertex {
 		rawrbox::Vector3f position = {};
-		float _padding = 0;
+		float outerCone = 0.F;
+
 		rawrbox::Vector3f intensity = {};
-		float radius = 0;
+		float radius = 0.F;
+
+		rawrbox::Vector3f direction = {};
+		float innerCone = 0.F;
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
 			l.begin()
 			    .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float) // Position
 			    .add(bgfx::Attrib::TexCoord1, 4, bgfx::AttribType::Float) // Intensity
+			    .add(bgfx::Attrib::TexCoord2, 4, bgfx::AttribType::Float) // Direction
 			    .end();
 			return l;
 		};
@@ -41,12 +46,13 @@ namespace rawrbox {
 		static rawrbox::Colorf _sun_color;
 		static rawrbox::Vector3f _sun_direction;
 
+		static void update();
+
 	public:
 		static bool fullbright;
 
 		static void init();
 		static void shutdown();
-		static void update();
 
 		static void bindUniforms();
 
@@ -66,7 +72,7 @@ namespace rawrbox {
 
 			light.setId(++rawrbox::LIGHT_ID);
 			auto entry = _lights.emplace_back(std::make_unique<T>(light)).get();
-			update();
+			rawrbox::__LIGHT_DIRTY__ = true;
 			return entry;
 		}
 
@@ -74,7 +80,7 @@ namespace rawrbox {
 		// ---------
 
 		// Light utils ----
-		static const rawrbox::LightBase& getLight(size_t indx);
+		static rawrbox::LightBase* getLight(size_t indx);
 		static size_t count();
 		// ---------
 	};

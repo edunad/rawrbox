@@ -12,7 +12,7 @@ void main() {
     uint cluster = getClusterIndex(gl_FragCoord);
     LightGrid grid = getLightGrid(cluster);
 
-    int lights = int(grid.pointLights);
+    int lights = int(grid.lights);
     // show possible clipping
     if(lights == 0)
         lights--;

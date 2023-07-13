@@ -111,6 +111,11 @@ namespace light {
 		if (this->_ready) {
 			this->_sunDir = {std::cos(rawrbox::BGFX_FRAME * 0.01F) * 1.F, 1.F, std::sin(rawrbox::BGFX_FRAME * 0.01F) * 1.F};
 			rawrbox::LIGHTS::setSun(this->_sunDir, {0.2F, 0.2F, 0.2F, 1.F});
+
+			auto light = rawrbox::LIGHTS::getLight(0);
+			if (light != nullptr) {
+				light->setOffsetPos({0, std::cos(rawrbox::BGFX_FRAME * 0.01F) * 1.F, 0});
+			}
 		}
 	}
 

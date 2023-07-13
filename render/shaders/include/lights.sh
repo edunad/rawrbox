@@ -8,22 +8,29 @@
 
 uniform vec4 u_lightSettings;
 #define u_fullbright uint(u_lightSettings.x)
-#define u_pointLightCount uint(u_lightSettings.y)
+#define u_lightCount uint(u_lightSettings.y)
 
 uniform vec4 u_ambientLight;
 uniform vec4 u_sunDirection;
 uniform vec4 u_sunColor;
 
 // for each light:
-//   vec4 position (w is padding)
+//   vec4 position (w is outerCone)
 //   vec4 intensity + radius (xyz is intensity, w is radius)
-BUFFER_RO(b_pointLights, vec4, SAMPLE_LIGHTS_POINTLIGHTS);
+//   vec4 direction + innerCone (xyz is direction, w is innerCone)
+BUFFER_RO(b_lights, vec4, SAMPLE_LIGHTS);
 
-struct PointLight {
+struct Light {
     vec3 position;
-    float _padding;
+    float outerCone;
+
     vec3 intensity;
     float radius;
+
+    vec3 direction;
+    float innerCone;
+
+    uint type;
 };
 
 // Aka sun
@@ -49,17 +56,30 @@ float smoothAttenuation(float distance, float radius) {
     return nom * nom * distanceAttenuation(distance);
 }
 
-uint pointLightCount() {
-    return u_pointLightCount;
+uint totalLights() {
+    return u_lightCount;
 }
 
-PointLight getPointLight(uint i) {
-    PointLight light;
-    light.position = b_pointLights[2 * i + 0].xyz;
+vec4 getLightData(int id, int index) {
+	return b_lights[id * 3 + index];
+}
 
-    vec4 intensityRadiusVec = b_pointLights[2 * i + 1];
+Light getLight(uint i) {
+    Light light;
+
+    vec4 posOuter = getLightData(i, 0);
+    light.position = posOuter.xyz;
+    light.outerCone = posOuter.w;
+
+    vec4 intensityRadiusVec = getLightData(i, 1);
     light.intensity = intensityRadiusVec.xyz;
     light.radius = intensityRadiusVec.w;
+
+    vec4 dirInner = getLightData(i, 2);
+    light.direction = dirInner.xyz;
+    light.innerCone = dirInner.w;
+
+    light.type = dirInner.w == 0.0 ? LIGHT_POINT : LIGHT_SPOT;
 
     return light;
 }

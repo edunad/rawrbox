@@ -44,24 +44,42 @@ void main() {
 		LightGrid grid = getLightGrid(cluster);
 
 		// Point lights ----
-		for(uint i = 0; i < grid.pointLights; i++) {
+		for(uint i = 0; i < grid.lights; i++) {
 			uint lightIndex = getGridLightIndex(grid.offset, i);
-			PointLight light = getPointLight(lightIndex);
+			Light light = getLight(lightIndex);
 
 			vec3 lightDir = normalize(light.position - v_worldPos);
 			float dist = distance(light.position, v_worldPos);
-			float attenuation = smoothAttenuation(dist, light.radius);
 
-			if(attenuation > 0.0) {
-				float NdotL = dot(norm, lightDir);
-				if (NdotL > 0.0) {
-					vec3 reflectDir = reflect(-lightDir, norm);
-					float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_texMatData.x);
+			float NdotL = dot(norm, lightDir);
 
-					radianceOut += light.intensity * spec * specular.r; // Specular
+			// Spotlight
+			if(light.type == LIGHT_SPOT) {
+				float theta = dot(light.direction, -lightDir);
+
+				if(theta > light.innerCone) {
+					float intensity = clamp((theta - light.innerCone) / (light.outerCone - light.innerCone), 0.0f, 1.0f);
+
+					if (NdotL > 0.0) {
+						vec3 reflectDir = reflect(-lightDir, norm);
+						float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_texMatData.x);
+						radianceOut += light.intensity * spec * specular.r; // Specular
+					}
+
+					radianceOut += light.intensity * intensity; // Diffuse
 				}
+			} else {
+				float attenuation = smoothAttenuation(dist, light.radius);
 
-				radianceOut += light.intensity * attenuation; // Diffuse
+				if(attenuation > 0.0) {
+					if (NdotL > 0.0) {
+						vec3 reflectDir = reflect(-lightDir, norm);
+						float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_texMatData.x);
+						radianceOut += light.intensity * spec * specular.r; // Specular
+					}
+
+					radianceOut += light.intensity * attenuation; // Diffuse
+				}
 			}
 		}
 		// --------
