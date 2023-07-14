@@ -265,8 +265,9 @@ namespace rawrbox {
 
 		// --------------
 		// LIGHTS ------
-		template <typename T = rawrbox::LightBase>
-		void addLight(T light, const std::string& parentMesh = "") {
+
+		template <typename T = rawrbox::LightBase, typename... CallbackArgs>
+		void addLight(const std::string& parentMesh = "", CallbackArgs&&... args) {
 			if constexpr (supportsNormals<M>) {
 				auto parent = this->_meshes.back().get();
 				if (!parentMesh.empty()) {
@@ -277,8 +278,9 @@ namespace rawrbox {
 					if (fnd != this->_meshes.end()) parent = fnd->get();
 				}
 
-				light.setOffsetPos(parent->getPos());
-				parent->lights.push_back(rawrbox::LIGHTS::addLight<T>(light));
+				auto light = rawrbox::LIGHTS::addLight<T>(std::forward<CallbackArgs>(args)...);
+				light->setOffsetPos(parent->getPos());
+				parent->lights.push_back(light);
 			}
 		}
 		// -----

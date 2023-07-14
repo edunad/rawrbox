@@ -37,10 +37,10 @@ namespace rawrbox {
 
 				switch (assimpLights.type) {
 					case rawrbox::LightType::LIGHT_POINT:
-						this->template addLight<rawrbox::LightPoint>({assimpLights.pos, assimpLights.diffuse, assimpLights.angleInnerCone}, assimpLights.parentID);
+						this->template addLight<rawrbox::LightPoint>(assimpLights.parentID, assimpLights.pos, assimpLights.diffuse, assimpLights.angleInnerCone);
 						break;
 					case rawrbox::LightType::LIGHT_SPOT:
-						this->template addLight<rawrbox::LightSpot>({assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, 100.F}, assimpLights.parentID);
+						this->template addLight<rawrbox::LightSpot>(assimpLights.parentID, assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, 100.F);
 						break;
 					case rawrbox::LightType::LIGHT_DIR:
 						rawrbox::LIGHTS::setSun(assimpLights.direction, assimpLights.diffuse);
