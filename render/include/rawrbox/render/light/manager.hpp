@@ -63,17 +63,18 @@ namespace rawrbox {
 		// -------
 
 		// Light ----
-		template <typename T = rawrbox::LightBase>
-		static rawrbox::LightBase* addLight(T light) {
+		template <typename T = rawrbox::LightBase, typename... CallbackArgs>
+		static rawrbox::LightBase* addLight(CallbackArgs&&... args) {
 			if (_lights.size() >= rawrbox::MAX_LIGHTS) {
 				fmt::print("[RawrBox-LIGHTS] Could not add light, max lights limit hit!\n");
 				return nullptr;
 			}
 
-			light.setId(++rawrbox::LIGHT_ID);
-			auto entry = _lights.emplace_back(std::make_unique<T>(light)).get();
+			auto light = _lights.emplace_back(std::make_unique<T>(std::forward<CallbackArgs>(args)...)).get();
+			light->setId(++rawrbox::LIGHT_ID);
 			rawrbox::__LIGHT_DIRTY__ = true;
-			return entry;
+
+			return light;
 		}
 
 		static void removeLight(rawrbox::LightBase* light);
