@@ -53,6 +53,8 @@ namespace rawrbox {
 
 	extern uint8_t SAMPLE_LIGHTS;
 
+	extern uint8_t SAMPLE_DEPTH;
+
 	extern uint8_t SAMPLE_CLUSTERS;
 	extern uint8_t SAMPLE_LIGHTINDICES;
 	extern uint8_t SAMPLE_LIGHTGRID;

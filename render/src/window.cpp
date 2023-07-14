@@ -329,6 +329,9 @@ namespace rawrbox {
 	void Window::shutdown() {
 		if (this->_handle == nullptr) return;
 
+		rawrbox::RENDERER = nullptr;
+		rawrbox::MAIN_CAMERA = nullptr;
+
 		glfwDestroyWindow(GLFWHANDLE); // Optional
 		glfwTerminate();
 	}

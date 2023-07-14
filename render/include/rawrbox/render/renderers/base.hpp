@@ -11,6 +11,8 @@ namespace rawrbox {
 	class RendererBase {
 	protected:
 		rawrbox::Vector2i _size = {};
+		bgfx::FrameBufferHandle _frameBuffer = BGFX_INVALID_HANDLE; // Used for getting the depth
+
 		virtual void frame();
 
 	public:
@@ -32,6 +34,11 @@ namespace rawrbox {
 
 		virtual void render();
 		virtual void bindRenderUniforms();
+
+		// Utils ----
+		virtual bgfx::TextureHandle getDepth();
+		virtual bgfx::TextureHandle getColor();
+		// ------
 
 		static bool supported();
 	};

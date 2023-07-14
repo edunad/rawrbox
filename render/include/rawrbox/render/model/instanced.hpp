@@ -77,11 +77,6 @@ namespace rawrbox {
 			if (this->isUploaded()) this->updateInstance();
 		}
 
-		[[nodiscard]] rawrbox::Mesh& getTemplate() const {
-			if (this->_mesh == nullptr) throw std::runtime_error("[RawrBox-InstancedModel] Invalid mesh! Missing vertices / indices!");
-			return *this->_mesh;
-		}
-
 		[[nodiscard]] const rawrbox::Instance& getInstance(size_t i = 0) const {
 			if (i < 0 || i >= this->_instances.size()) throw std::runtime_error("[RawrBox-InstancedModel] Failed to find instance");
 			return this->_instances[i];

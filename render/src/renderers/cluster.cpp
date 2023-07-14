@@ -64,6 +64,9 @@ namespace rawrbox {
 		if (this->_uniforms == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Render uniforms not set! Did you call 'init' ?");
 		if (this->worldRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] World render method not set! Did you call 'setWorldRender' ?");
 		if (this->overlayRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Overlay render method not set! Did you call 'setOverlayRender' ?");
+
+		if (!bgfx::isValid(this->_frameBuffer)) return;
+
 		// No world / overlay only
 		if (rawrbox::MAIN_CAMERA == nullptr) {
 			auto prevId = rawrbox::CURRENT_VIEW_ID;
@@ -129,10 +132,12 @@ namespace rawrbox {
 		auto prevId = rawrbox::CURRENT_VIEW_ID;
 		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_WORLD_VIEW;
 		bgfx::touch(rawrbox::CURRENT_VIEW_ID); // Make sure we draw on the view
+		bgfx::setViewFrameBuffer(rawrbox::CURRENT_VIEW_ID, this->_frameBuffer);
 
 		// Render world ---
 		this->worldRender();
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, view.data(), proj.data());
+		bgfx::setViewFrameBuffer(rawrbox::CURRENT_VIEW_ID, BGFX_INVALID_HANDLE);
 		// ----------------
 
 		rawrbox::CURRENT_VIEW_ID = prevId;

@@ -34,12 +34,14 @@ namespace rawrbox {
 
 	uint8_t SAMPLE_LIGHTS = 6;
 
-	uint8_t SAMPLE_CLUSTERS = 7;
-	uint8_t SAMPLE_LIGHTINDICES = 8;
-	uint8_t SAMPLE_LIGHTGRID = 9;
-	uint8_t SAMPLE_ATOMIC_INDEX = 10;
+	uint8_t SAMPLE_DEPTH = 7;
 
-	uint8_t SAMPLE_INSTANCE_DATA = 11;
+	uint8_t SAMPLE_CLUSTERS = 8;
+	uint8_t SAMPLE_LIGHTINDICES = 9;
+	uint8_t SAMPLE_LIGHTGRID = 10;
+	uint8_t SAMPLE_ATOMIC_INDEX = 11;
+
+	uint8_t SAMPLE_INSTANCE_DATA = 12;
 	// ---------
 
 	// ID GENERATION
