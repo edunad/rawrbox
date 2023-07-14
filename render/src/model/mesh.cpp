@@ -55,8 +55,15 @@ namespace rawrbox {
 	const rawrbox::TextureBase* Mesh::getTexture() const { return this->texture; }
 	void Mesh::setTexture(rawrbox::TextureBase* ptr) { this->texture = ptr; }
 
-	const rawrbox::TextureBase* Mesh::getBumpTexture() const { return this->bumpTexture; }
-	void Mesh::setBumpTexture(rawrbox::TextureBase* ptr) { this->bumpTexture = ptr; }
+	const rawrbox::TextureBase* Mesh::getNormalTexture() const { return this->normalTexture; }
+	void Mesh::setNormalTexture(rawrbox::TextureBase* ptr) { this->normalTexture = ptr; }
+
+	const rawrbox::TextureBase* Mesh::getDisplacementTexture() const { return this->displacementTexture; }
+	void Mesh::setDisplacementTexture(rawrbox::TextureBase* ptr, float power) {
+		this->displacementTexture = ptr;
+		this->addData("displacement_strength", {power, 0, 0, 0});
+		this->setOptimizable(false);
+	}
 
 	const rawrbox::TextureBase* Mesh::getEmissionTexture() const { return this->emissionTexture; }
 	void Mesh::setEmissionTexture(rawrbox::TextureBase* ptr, float intensity) {
@@ -80,11 +87,6 @@ namespace rawrbox {
 		this->setOptimizable(false);
 	}
 
-	void Mesh::setDisplacement(float power) {
-		this->addData("displacement_strength", {power, 0, 0, 0});
-		this->setOptimizable(false);
-	}
-
 	void Mesh::setWireframe(bool wireframe) {
 		this->wireframe = wireframe;
 	}
@@ -103,14 +105,6 @@ namespace rawrbox {
 
 	void Mesh::setColor(const rawrbox::Color& color) {
 		this->color = color;
-	}
-
-	void Mesh::setSpecularColor(const rawrbox::Color& color) {
-		this->specularColor = color;
-	}
-
-	void Mesh::setEmissionColor(const rawrbox::Color& color) {
-		this->emissionColor = color;
 	}
 
 	void Mesh::addData(const std::string& id, rawrbox::Vector4f data) { // BGFX shaders only accept vec4, so.. yea

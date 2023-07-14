@@ -23,6 +23,7 @@ Checks: clang-diagnostic-*
     -cppcoreguidelines-pro-bounds-array-to-pointer-decay
     -cppcoreguidelines-narrowing-conversions
     -clang-analyzer-deadcode.DeadStores
+    -hicpp-explicit-conversions
 WarningsAsErrors: '*'
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false

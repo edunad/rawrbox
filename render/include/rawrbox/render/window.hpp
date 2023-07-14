@@ -1,10 +1,15 @@
 #pragma once
 
+#include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector2.hpp>
+#include <rawrbox/render/camera/base.hpp>
+#include <rawrbox/render/renderers/cluster.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <bgfx/platform.h>
+#include <fmt/format.h>
 
 #include <cstdint>
 #include <memory>
@@ -58,19 +63,47 @@ namespace rawrbox {
 	using OnWindowClose = Event<Window&>;
 	// --------------------
 
+	class BgfxCallbacks : public bgfx::CallbackI {
+	protected:
+	public:
+		BgfxCallbacks() = default;
+		BgfxCallbacks(const BgfxCallbacks&) = default;
+		BgfxCallbacks(BgfxCallbacks&&) = delete;
+		BgfxCallbacks& operator=(const BgfxCallbacks&) = default;
+		BgfxCallbacks& operator=(BgfxCallbacks&&) = delete;
+		~BgfxCallbacks() override = default;
+
+		void fatal(const char* /*_filePath*/, uint16_t /*_line*/, bgfx::Fatal::Enum /*_code*/, const char* /*_str*/) override;
+		void traceVargs(const char* /*_filePath*/, uint16_t /*_line*/, const char* /*_format*/, va_list /*_argList*/) override;
+
+		void profilerBegin(const char* /*_name*/, uint32_t /*_abgr*/, const char* /*_filePath*/, uint16_t /*_line*/) override {}
+		void profilerBeginLiteral(const char* /*_name*/, uint32_t /*_abgr*/, const char* /*_filePath*/, uint16_t /*_line*/) override {}
+		void profilerEnd() override {}
+		uint32_t cacheReadSize(uint64_t /*_id*/) override { return 0; }
+		bool cacheRead(uint64_t /*_id*/, void* /*_data*/, uint32_t /*_size*/) override { return false; }
+		void cacheWrite(uint64_t /*_id*/, const void* /*_data*/, uint32_t /*_size*/) override {}
+		void captureBegin(uint32_t /*_width*/, uint32_t /*_height*/, uint32_t /*_pitch*/, bgfx::TextureFormat::Enum /*_format*/, bool /*_yflip*/) override {}
+		void captureEnd() override {}
+		void captureFrame(const void* /*_data*/, uint32_t /*_size*/) override {}
+		void screenShot(const char* /*_filePath*/, uint32_t /*_width*/, uint32_t /*_height*/, uint32_t /*_pitch*/, const void* /*_data*/, uint32_t /*_size*/, bool yflip) override {}
+	};
+
 	class Window {
 	private:
 		void* _handle = nullptr;
 		void* _cursor = nullptr;
+		std::array<uint8_t, 16 * 16 * 4> _cursorPixels = {};
+
+		BgfxCallbacks _callbacks;
 
 		uint32_t _windowFlags = 0;
 		uint32_t _resetFlags = BGFX_RESET_NONE;
 		uint32_t _debugFlags = BGFX_DEBUG_NONE;
 
-		uint32_t _clearColor = 0x000000FF;
-
-		// Drawing stuff ---
+		// Data ---
 		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
+		std::unique_ptr<rawrbox::CameraBase> _camera = nullptr;
+		std::unique_ptr<rawrbox::RendererBase> _renderer = nullptr;
 		// -------
 
 		// Default settings
@@ -111,12 +144,30 @@ namespace rawrbox {
 		// --------------------
 
 		void create(int width, int height, uint32_t flags = WindowFlags::NONE);
-		void initializeBGFX();
+		void initializeBGFX(uint32_t clearColor = 0x000000FF);
 
 		void setMonitor(int monitor);
-		void setRenderer(bgfx::RendererType::Enum render);
 		void setTitle(const std::string& title);
-		void setClearColor(uint32_t clearColor);
+
+		template <class T = rawrbox::CameraBase, typename... CallbackArgs>
+		T* setupCamera(CallbackArgs&&... args) {
+			this->_camera = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
+			rawrbox::MAIN_CAMERA = this->_camera.get();
+
+			return dynamic_cast<T*>(this->_camera.get());
+		}
+
+		template <class T = RendererCluster, typename... CallbackArgs>
+		void setRenderer(bgfx::RendererType::Enum render, std::function<void()> overlay, std::function<void()> world, CallbackArgs&&... args) {
+			if (!this->isRendererSupported(render)) throw std::runtime_error(fmt::format("[RawrBox-Window] RenderType {} is not supported by your GPU", bgfx::getRendererName(render)));
+
+			this->_renderType = render;
+			this->_renderer = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
+			this->_renderer->setOverlayRender(overlay);
+			this->_renderer->setWorldRender(world);
+
+			rawrbox::RENDERER = this->_renderer.get();
+		}
 
 		// CURSOR ------
 		void hideCursor(bool hidden);
@@ -125,15 +176,15 @@ namespace rawrbox {
 		// --------------------
 
 		void shutdown();
+		void update();
 
 		// UPDATE ------
 		void pollEvents();
 		void unblockPoll();
 		// --------------------
 		// DRAW -----
-		void clear();
 		void upload();
-		void frame() const;
+		void render() const;
 		// -----------
 
 		// UTILS ---------------

@@ -12,7 +12,7 @@ namespace rawrbox {
 		rawrbox::Vector2i _size;
 
 		int _channels = 0;
-		uint32_t _flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
+		uint64_t _flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
 
 	public:
 		TextureBase() = default;
@@ -31,7 +31,7 @@ namespace rawrbox {
 		[[nodiscard]] const virtual bgfx::TextureHandle& getHandle() const;
 		// -----
 
-		virtual void setFlags(uint32_t flags);
+		virtual void setFlags(uint64_t flags);
 		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count) = 0;
 	};
 } // namespace rawrbox

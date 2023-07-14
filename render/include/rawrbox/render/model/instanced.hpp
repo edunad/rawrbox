@@ -1,10 +1,7 @@
 #pragma once
 
+#include <rawrbox/render/materials/instanced.hpp>
 #include <rawrbox/render/model/assimp/assimp_importer.hpp>
-#include <rawrbox/render/model/light/directional.hpp>
-#include <rawrbox/render/model/light/point.hpp>
-#include <rawrbox/render/model/light/spot.hpp>
-#include <rawrbox/render/model/material/instanced.hpp>
 #include <rawrbox/render/model/model.hpp>
 
 namespace rawrbox {
@@ -14,6 +11,8 @@ namespace rawrbox {
 		rawrbox::Colorf color = rawrbox::Colors::White;
 		rawrbox::Vector4f extraData = {}; // AtlasID, etc..
 
+		Instance(const rawrbox::Matrix4x4& mat, const rawrbox::Colorf& col = rawrbox::Colors::White, rawrbox::Vector4f data = {}) : matrix(mat), color(col), extraData(data) {}
+
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
 			l.begin()
@@ -21,7 +20,6 @@ namespace rawrbox {
 			    .add(bgfx::Attrib::TexCoord1, 4, bgfx::AttribType::Float)
 			    .add(bgfx::Attrib::TexCoord2, 4, bgfx::AttribType::Float)
 			    .add(bgfx::Attrib::TexCoord3, 4, bgfx::AttribType::Float)
-
 			    .add(bgfx::Attrib::TexCoord4, 4, bgfx::AttribType::Float) // Color
 			    .add(bgfx::Attrib::TexCoord5, 4, bgfx::AttribType::Float) // ExtraData
 			    .end();
@@ -29,7 +27,7 @@ namespace rawrbox {
 		};
 	};
 
-	template <typename M = rawrbox::MaterialInstancedUnlit>
+	template <typename M = rawrbox::MaterialInstanced>
 	class InstancedModel : public rawrbox::ModelBase<M> {
 		bgfx::DynamicVertexBufferHandle _dataBuffer = BGFX_INVALID_HANDLE;
 		std::vector<rawrbox::Instance> _instances = {};
@@ -60,6 +58,11 @@ namespace rawrbox {
 			if (this->isUploaded() && this->isDynamicBuffer()) {
 				this->updateBuffers();
 			}
+		}
+
+		[[nodiscard]] rawrbox::Mesh& getTemplate() const {
+			if (this->_mesh == nullptr) throw std::runtime_error("[RawrBox-InstancedModel] Invalid mesh! Missing vertices / indices!");
+			return *this->_mesh;
 		}
 
 		virtual void addInstance(const rawrbox::Instance& instance) {
@@ -120,7 +123,7 @@ namespace rawrbox {
 
 			// Set instance data buffer.
 			bgfx::setTransform((this->getMatrix()).data());
-			bgfx::setBuffer(6, this->_dataBuffer, bgfx::Access::Read);
+			bgfx::setBuffer(rawrbox::SAMPLE_INSTANCE_DATA, this->_dataBuffer, bgfx::Access::Read);
 			bgfx::setInstanceDataBuffer(this->_dataBuffer, 0, this->_instances.size());
 			// ----
 

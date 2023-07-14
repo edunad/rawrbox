@@ -1,4 +1,4 @@
-#include <rawrbox/render/model/material/base.hpp>
+#include <rawrbox/render/materials/base.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 
 #include <catch2/catch_test_macros.hpp>

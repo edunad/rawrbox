@@ -1,17 +1,15 @@
 
 #include <rawrbox/render/postprocess/static_noise.hpp>
-#include <rawrbox/render/shader_defines.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/render.hpp>
 #include <rawrbox/render/utils/uniforms.hpp>
 #include <rawrbox/utils/time.hpp>
-
-#include <generated/shaders/render/all.hpp>
 
 #include <bx/math.h>
 
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader noise_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_post_noise),
+    BGFX_EMBEDDED_SHADER(vs_post_base),
     BGFX_EMBEDDED_SHADER(fs_post_noise),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
@@ -29,12 +27,7 @@ namespace rawrbox {
 
 	void PostProcessStaticNoise::upload() {
 		// Load Shader --------
-		bgfx::RendererType::Enum type = bgfx::getRendererType();
-		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(noise_shaders, type, "vs_post_noise");
-		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(noise_shaders, type, "fs_post_noise");
-
-		this->_program = bgfx::createProgram(vsh, fsh, true);
-		if (!bgfx::isValid(this->_program)) throw std::runtime_error("[RawrBox-Noise] Failed to initialize shader program");
+		rawrbox::RenderUtils::buildShader(noise_shaders, this->_program);
 		// ------------------
 
 		this->_settings = bgfx::createUniform("u_settings", bgfx::UniformType::Vec4, 2);

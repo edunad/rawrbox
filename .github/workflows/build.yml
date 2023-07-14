@@ -33,7 +33,7 @@ jobs:
                   sudo apt install build-essential gcc-12 libgl1-mesa-glx libgl1-mesa-dev libglew-dev ninja-build python3-pip libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev libxcomposite-dev libxcursor-dev libxdamage-dev libxdmcp-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxinerama-dev libxkbfile-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev libxrender-dev libxres-dev libxss-dev libxt-dev libxtst-dev libxv-dev libxvmc-dev libxxf86vm-dev xtrans-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-xkb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev xkb-data libxcb-dri3-dev uuid-dev libxcb-util-dev
 
             - name: Restore cache
-              id: github-cache-restore
+              id: cache
               uses: actions/cache/restore@v3
               with:
                   path: |
@@ -49,9 +49,8 @@ jobs:
                   ninja
 
             - name: Cache build
-              id: github-cache
               uses: actions/cache/save@v3
-              if: steps.build.outputs.exit_code == 0
+              if: steps.build.outputs.exit_code == 0 && steps.cache.outputs.cache-hit != 'true'
               env:
                   cache-name: cache-build
               with:

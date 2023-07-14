@@ -23,7 +23,8 @@ namespace ui_test {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("UI TEST");
-		this->_window->setRenderer(bgfx::RendererType::Count);
+		this->_window->setRenderer(
+		    bgfx::RendererType::Count, [this]() { if(this->_ROOT_UI == nullptr) return; this->_ROOT_UI->render(); }, []() {});
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
@@ -32,8 +33,8 @@ namespace ui_test {
 		if (this->_window == nullptr) return;
 		this->_window->initializeBGFX();
 
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 
 		// SETUP UI
 		this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*this->_window);
@@ -228,14 +229,21 @@ namespace ui_test {
 	void Game::printFrames() {
 		const bgfx::Stats* stats = bgfx::getStats();
 
-		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
+		double gpu = static_cast<double>(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq;
+		double cpu = static_cast<double>(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq;
+
+		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", gpu);
+		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", cpu);
 		bgfx::dbgTextPrintf(1, 6, 0x6f, fmt::format("TRIANGLES: {} ----->    DRAW CALLS: {}", stats->numPrims[bgfx::Topology::TriList], stats->numDraw).c_str());
+
+		if (this->_graph != nullptr) {
+			this->_graph->getCategory(0).addEntry(gpu);
+			this->_graph->getCategory(1).addEntry(cpu);
+		}
 	}
 
 	void Game::draw() {
 		if (this->_window == nullptr) return;
-		this->_window->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -250,13 +258,6 @@ namespace ui_test {
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
 		}
 
-		if (this->_graph != nullptr) {
-			this->_graph->getCategory(0).addEntry(rawrbox::FRAME_ALPHA - rawrbox::DELTA_TIME - 0.1F);
-			this->_graph->getCategory(1).addEntry(rawrbox::FRAME_ALPHA);
-		}
-
-		this->_ROOT_UI->render();
-		this->_window->frame(); // Commit primitives
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
+		this->_window->render(); // Commit primitives
 	}
 } // namespace ui_test

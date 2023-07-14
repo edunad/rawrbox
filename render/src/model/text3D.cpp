@@ -78,7 +78,7 @@ namespace rawrbox {
 	}
 
 	void Text3D::upload(bool dynamic) {
-		Model<rawrbox::MaterialText3DUnlit>::upload(true); // Always force dynamic, since we can remove text
+		Model<rawrbox::MaterialText3D>::upload(true); // Always force dynamic, since we can remove text
 	}
 
 	void Text3D::removeText(uint32_t id) {
@@ -87,7 +87,7 @@ namespace rawrbox {
 	// ----------
 
 	void Text3D::draw() {
-		ModelBase<rawrbox::MaterialText3DUnlit>::draw();
+		ModelBase<rawrbox::MaterialText3D>::draw();
 
 		for (auto& mesh : this->_meshes) {
 			this->_material->process(*mesh);
@@ -107,7 +107,8 @@ namespace rawrbox {
 
 			bgfx::setState(flags, 0);
 			this->_material->postProcess();
-			bgfx::discard();
 		}
+
+		bgfx::discard(BGFX_DISCARD_ALL);
 	}
 } // namespace rawrbox

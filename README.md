@@ -4,7 +4,7 @@
 
 <h2>
 	<p align="center">
-		<a href="https://github.com/MythicalRawr/rawrbox">RawrBox</a> - PSX..ish modular(?) game engine made with <a href="https://github.com/bkaradzic/bgfx">BGFX</a>
+		<a href="https://github.com/MythicalRawr/rawrbox">RawrBox</a> - PSX..ish game engine made with <a href="https://github.com/bkaradzic/bgfx">BGFX</a>
 	</p>
 </h2>
 
@@ -27,18 +27,19 @@
 
 # FEATURES (so far)
 
--   Model loading (animations, light, texture import)
--   Light support (point, directional, spotlight)
+-   Model loading (animations, light, texture import) using assimp
+-   Light support (point, directional)
+-   Clustered rendering
 -   3D text
 -   2D stencil drawing
--   Font loading
--   Image loading (png, jpeg, tga, bitmap)
--   Sound loading (using BASS)
+-   Fonts
+-   Images (png, jpeg, tga, bitmap)
+-   Sounds (using BASS lib)
 -   Custom UI
--   GIF loading / animation
+-   Material system (similar to unity)
+-   GIF loading & animation
 -   Vulkan / DirectX / OpenGL support
--   Wayland support (linux only)
--   Works on steam deck 😺
+-   Linux Wayland support + steam deck support
 -   Physics system using [JoltPhysics](https://github.com/jrouwe/JoltPhysics)
 
 # TODO LIST
@@ -100,7 +101,7 @@
 | stb/image       |    ✔️    | Used for loading images                             |
 | stb/image_write |    ✔️    | Used for writting images                            |
 | stb/freetype    |    ✔️    | Used for loading fonts                              |
-| thread-pool     |    ✔️    | Used for managing async                             |
+| thread-pool     |    ✔️    | Used for managing async threading                   |
 | qhull           |    ✖️    | Used for calculating convex hulls from given points |
 | assimp          |    ✖️    | Used for loading models                             |
 | catch2          |    ✖️    | Used for testing                                    |
@@ -114,7 +115,7 @@
 ### REQUIRED SOFTWARE
 
 -   [GIT](https://git-scm.com/) or something similar to GIT
--   Download and install **C++ Build Tools**
+-   Download and install **C++ Build Tools** (2022 is recommended)
 -   Download and install a IDE, [Visual Code](https://code.visualstudio.com/) is **recommended**.
 -   Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)
 

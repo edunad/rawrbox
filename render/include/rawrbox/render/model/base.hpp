@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrbox/render/model/material/base.hpp>
+#include <rawrbox/render/materials/base.hpp>
 
 #include <functional>
 namespace rawrbox {
@@ -114,7 +114,6 @@ namespace rawrbox {
 
 		virtual void draw() {
 			if (!this->isUploaded()) throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not uploaded");
-			this->_material->preProcess();
 		}
 	};
 } // namespace rawrbox

@@ -12,7 +12,7 @@ TEST_CASE("RESOURCES should behave as expected", "[rawrbox::RESOURCES]") {
 
 	SECTION("rawrbox::RESOURCES::addLoader") {
 		REQUIRE(rawrbox::RESOURCES::getLoaders().size() == 1);
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::JSONLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::JSONLoader>();
 		REQUIRE(rawrbox::RESOURCES::getLoaders().size() == 2);
 	}
 

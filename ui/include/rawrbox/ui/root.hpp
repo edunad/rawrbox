@@ -17,9 +17,6 @@ namespace rawrbox {
 
 		// INTERNAL UTILS
 		int _pressingMouseButton = 0;
-
-		rawrbox::UIContainer* findElement(const rawrbox::Vector2i& mousePos, rawrbox::Vector2i& offsetOut);
-		rawrbox::UIContainer* findElement(rawrbox::UIContainer* elmPtr, const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset, rawrbox::Vector2i& offsetOut);
 		// ----
 
 		// CHILDREN
@@ -40,6 +37,8 @@ namespace rawrbox {
 		explicit UIRoot(rawrbox::Window& window);
 
 		// UTIL
+		rawrbox::UIContainer* findElement(const rawrbox::Vector2i& mousePos, rawrbox::Vector2i& offsetOut);
+		rawrbox::UIContainer* findElement(rawrbox::UIContainer* elmPtr, const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset, rawrbox::Vector2i& offsetOut);
 		[[nodiscard]] const rawrbox::AABBf& getAABB() const;
 		// ---
 

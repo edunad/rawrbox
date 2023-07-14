@@ -1,16 +1,14 @@
 
 #include <rawrbox/render/postprocess/dither_psx.hpp>
-#include <rawrbox/render/shader_defines.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/render.hpp>
 #include <rawrbox/render/utils/uniforms.hpp>
-
-#include <generated/shaders/render/all.hpp>
 
 #include <bx/math.h>
 
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader dither_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_post_dither),
+    BGFX_EMBEDDED_SHADER(vs_post_base),
     BGFX_EMBEDDED_SHADER(fs_post_dither),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
@@ -70,12 +68,7 @@ namespace rawrbox {
 		}
 
 		// Load Shader --------
-		bgfx::RendererType::Enum type = bgfx::getRendererType();
-		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(dither_shaders, type, "vs_post_dither");
-		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(dither_shaders, type, "fs_post_dither");
-
-		this->_program = bgfx::createProgram(vsh, fsh, true);
-		if (!bgfx::isValid(this->_program)) throw std::runtime_error("[RawrBox-Dither] Failed to initialize shader program");
+		rawrbox::RenderUtils::buildShader(dither_shaders, this->_program);
 		// ------------------
 
 		this->_ditherColor = bgfx::createUniform("s_ditherColor", bgfx::UniformType::Sampler);

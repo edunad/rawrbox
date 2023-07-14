@@ -37,7 +37,7 @@ namespace rawrbox {
 		/// ----
 	}
 
-	// INTERNAL UTILS
+	// UTIL
 	rawrbox::UIContainer* UIRoot::findElement(const rawrbox::Vector2i& mousePos, rawrbox::Vector2i& offsetOut) {
 		auto& children = this->getChildren();
 		for (size_t i = children.size(); i > 0; i--) {
@@ -68,9 +68,7 @@ namespace rawrbox {
 		offsetOut = offset + pos;
 		return elmPtr;
 	}
-	// ---------------------
 
-	// UTIL
 	const rawrbox::AABBf& UIRoot::getAABB() const { return this->_aabb; }
 	// ---
 

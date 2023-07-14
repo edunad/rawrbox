@@ -1,7 +1,6 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/model/text3D.hpp>
 #include <rawrbox/render/particles/system.hpp>
@@ -12,8 +11,6 @@
 namespace particle_test {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::CameraOrbital> _camera = nullptr;
-
 		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
 
 		rawrbox::Emitter* _em = nullptr;

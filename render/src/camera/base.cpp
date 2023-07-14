@@ -27,6 +27,9 @@ namespace rawrbox {
 		return this->_angle;
 	}
 
+	const float CameraBase::getZFar() const { return this->_z_far; }
+	const float CameraBase::getZNear() const { return this->_z_near; }
+
 	rawrbox::Vector3f CameraBase::getForward() const {
 		return {
 		    bx::cos(this->_angle.y) * bx::sin(this->_angle.x),
@@ -57,6 +60,10 @@ namespace rawrbox {
 
 	const rawrbox::Matrix4x4& CameraBase::getProjMtx() const {
 		return this->_projection;
+	}
+
+	const rawrbox::Matrix4x4 CameraBase::getProjViewMtx() const {
+		return this->_projection * this->_view;
 	}
 
 	void CameraBase::update() {

@@ -39,8 +39,6 @@
 #define GLFWHANDLE (std::bit_cast<GLFWwindow*>(_handle))
 #define GLFWCURSOR (std::bit_cast<GLFWcursor*>(_cursor))
 
-#define BGFX_DEFAULT_CLEAR (0 | BGFX_CLEAR_COLOR | BGFX_CLEAR_STENCIL | BGFX_CLEAR_DEPTH)
-
 namespace rawrbox {
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
 	static Window& glfwHandleToRenderer(GLFWwindow* ptr) {
@@ -48,7 +46,18 @@ namespace rawrbox {
 	}
 
 	static void glfw_errorCallback(int error, const char* description) {
-		fmt::print("[RawrBox-Render] GLFW error {}: {}\n", error, description);
+		fmt::print("[RawrBox-Window] GLFW error {}: {}\n", error, description);
+	}
+
+	void BgfxCallbacks::fatal(const char* filePath, uint16_t line, bgfx::Fatal::Enum code, const char* str) {
+		fmt::print("[RawrBox-Window] BGFX fatal error {}: {}\n", line, str);
+		abort();
+	}
+
+	// only called when compiled as debug
+	void BgfxCallbacks::traceVargs(const char* filePath, uint16_t line, const char* format, va_list args) {
+		bx::debugPrintf("%s (%d): ", filePath, line);
+		bx::debugPrintfVargs(format, args);
 	}
 
 	static void* glfwNativeWindowHandle(GLFWwindow* _window) {
@@ -75,7 +84,7 @@ namespace rawrbox {
 		return glfwGetWin32Window(_window);
 #endif // BX_PLATFORM_
 
-		throw std::runtime_error("[RawrBox-Render] Failed to detect platform");
+		throw std::runtime_error("[RawrBox-Window] Failed to detect platform");
 	}
 
 	static void* getNativeDisplayHandle() {
@@ -214,9 +223,11 @@ namespace rawrbox {
 	}
 
 	// Should be ran on main render thread!
-	void Window::initializeBGFX() {
+	void Window::initializeBGFX(uint32_t clearColor) {
 		if (rawrbox::RENDER_THREAD_ID != std::this_thread::get_id()) throw std::runtime_error("[RawrBox-Window] 'initializeBGFX' should be called inside 'init'. Aka the main render thread!");
 		if ((this->_windowFlags & WindowFlags::Features::MULTI_THREADED) == 0) bgfx::renderFrame(); // Disable multi-threading
+
+		if (this->_renderer == nullptr) throw std::runtime_error("[RawrBox-Window] missing renderer! Did you call 'setRenderer' ?");
 
 		bgfx::Init init;
 		if (this->_renderType == bgfx::RendererType::Vulkan && (this->_windowFlags & WindowFlags::Features::MULTI_THREADED) == 0) {
@@ -234,8 +245,9 @@ namespace rawrbox {
 		init.resolution.reset = this->_resetFlags;
 		init.platformData.nwh = glfwNativeWindowHandle(GLFWHANDLE);
 		init.platformData.ndt = getNativeDisplayHandle();
+		init.callback = &this->_callbacks;
 
-		if (!bgfx::init(init)) throw std::runtime_error("[RawrBox-Render] Failed to initialize bgfx");
+		if (!bgfx::init(init)) throw std::runtime_error("[RawrBox-Window] Failed to initialize bgfx");
 		rawrbox::BGFX_INITIALIZED = true;
 
 		if ((this->_windowFlags & WindowFlags::Debug::WIREFRAME) > 0) this->_debugFlags |= BGFX_DEBUG_WIREFRAME;
@@ -244,20 +256,17 @@ namespace rawrbox {
 		if ((this->_windowFlags & WindowFlags::Debug::PROFILER) > 0) this->_debugFlags |= BGFX_DEBUG_PROFILER;
 
 		bgfx::setDebug(this->_debugFlags);
+		bgfx::setPaletteColor(0, clearColor);
 
-		// SETUP MAIN ---
-		bgfx::setViewRect(rawrbox::RENDER_VIEW_ID, 0, 0, this->_size.x, this->_size.y);
-		bgfx::setViewMode(rawrbox::RENDER_VIEW_ID, bgfx::ViewMode::Default);
-		bgfx::setViewName(rawrbox::RENDER_VIEW_ID, fmt::format("RawrBox-RENDERER-MAIN-{}", rawrbox::RENDER_VIEW_ID).c_str());
-		bgfx::setViewClear(rawrbox::RENDER_VIEW_ID, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
-		// ---
+		// Setup renderer
+		this->_renderer->init(this->_size);
+		// ------------------
 
 		// Setup main renderer ----
 		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
 		this->onResize += [this](auto&, auto& size) {
 			if (this->_stencil != nullptr) this->_stencil->resize(size);
-			bgfx::setViewRect(rawrbox::RENDER_VIEW_ID, 0, 0, size.x, size.y);
-			bgfx::setViewClear(rawrbox::RENDER_VIEW_ID, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
+			this->_renderer->resize(this->_size);
 		};
 
 		// Setup global util textures ---
@@ -269,6 +278,10 @@ namespace rawrbox {
 
 		if (rawrbox::BLACK_TEXTURE == nullptr)
 			rawrbox::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black);
+
+		if (rawrbox::NORMAL_TEXTURE == nullptr)
+			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0xbcbcff));
+
 		// ------------------
 	}
 
@@ -276,17 +289,8 @@ namespace rawrbox {
 		this->_monitor = monitor;
 	}
 
-	void Window::setRenderer(bgfx::RendererType::Enum render) {
-		if (!this->isRendererSupported(render)) throw std::runtime_error(fmt::format("[RawrBox-Render] Window {} is not supported by your OS", bgfx::getRendererName(render)));
-		this->_renderType = render;
-	}
-
 	void Window::setTitle(const std::string& title) {
 		this->_title = title;
-	}
-
-	void Window::setClearColor(uint32_t clearColor) {
-		this->_clearColor = clearColor;
 	}
 
 	// CURSOR ------
@@ -303,25 +307,23 @@ namespace rawrbox {
 		glfwSetCursor(GLFWHANDLE, cursor);
 	}
 
-	// NOLINTBEGIN(cppcoreguidelines-owning-memory)
 	void Window::setCursor(const std::array<uint8_t, 1024>& pixels) {
-		GLFWimage image = {};
-		image.pixels = new uint8_t[16 * 16 * 4];
-		image.width = 16;
-		image.height = 16;
-
 		size_t size = pixels.size() * sizeof(uint8_t);
 		if (size == 0) return;
 
-		std::memcpy(image.pixels, pixels.data(), size);
-
+		std::memcpy(this->_cursorPixels.data(), pixels.data(), size);
 		if (GLFWCURSOR != nullptr) glfwDestroyCursor(GLFWCURSOR); // Delete old one
+
+		GLFWimage image = {};
+		image.pixels = this->_cursorPixels.data();
+		image.width = 16;
+		image.height = 16;
+
 		auto cursor = glfwCreateCursor(&image, 0, 0);
 		this->_cursor = cursor;
 
 		glfwSetCursor(GLFWHANDLE, cursor);
 	}
-	// NOLINTEND(cppcoreguidelines-owning-memory)
 	// -------------------
 
 	void Window::shutdown() {
@@ -329,6 +331,11 @@ namespace rawrbox {
 
 		glfwDestroyWindow(GLFWHANDLE); // Optional
 		glfwTerminate();
+	}
+
+	void Window::update() {
+		if (this->_camera == nullptr) return;
+		this->_camera->update();
 	}
 
 	void Window::unblockPoll() {
@@ -341,27 +348,21 @@ namespace rawrbox {
 	}
 
 	// DRAW ------
-	void Window::clear() {
-		if (!rawrbox::BGFX_INITIALIZED) return;
-
-		bgfx::touch(rawrbox::RENDER_VIEW_ID); // Make sure we draw on the view
-		bgfx::setViewClear(rawrbox::RENDER_VIEW_ID, BGFX_DEFAULT_CLEAR, this->_clearColor, 1.0F, 0);
-	}
-
 	void Window::upload() {
-
 		// MISSING TEXTURES ------
 		rawrbox::MISSING_TEXTURE->upload();
 		rawrbox::WHITE_TEXTURE->upload();
 		rawrbox::BLACK_TEXTURE->upload();
+		rawrbox::NORMAL_TEXTURE->upload();
 		// ------------------
 
 		this->_stencil->upload();
 		// -----
 	}
 
-	void Window::frame() const {
-		bgfx::frame();
+	void Window::render() const {
+		if (!rawrbox::BGFX_INITIALIZED) return;
+		this->_renderer->render();
 	}
 
 	// -------------------
@@ -372,9 +373,12 @@ namespace rawrbox {
 			rawrbox::MISSING_TEXTURE.reset();
 			rawrbox::WHITE_TEXTURE.reset();
 			rawrbox::BLACK_TEXTURE.reset();
+			rawrbox::NORMAL_TEXTURE.reset();
 		}
 
 		this->_stencil.reset();
+		this->_camera.reset();
+		this->_renderer.reset();
 
 		if (GLFWHANDLE != nullptr) glfwDestroyWindow(GLFWHANDLE);
 		this->_handle = nullptr;

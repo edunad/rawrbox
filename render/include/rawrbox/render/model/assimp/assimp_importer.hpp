@@ -2,9 +2,9 @@
 
 #include <rawrbox/math/bbox.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/render/light/types.hpp>
 #include <rawrbox/render/model/animation.hpp>
 #include <rawrbox/render/model/defs.hpp>
-#include <rawrbox/render/model/light/types.hpp>
 #include <rawrbox/render/model/skeleton.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
@@ -48,6 +48,7 @@ namespace rawrbox {
 		OptionalTexture diffuse = std::nullopt;
 		rawrbox::Colorf diffuseColor = rawrbox::Colors::White;
 
+		std::unique_ptr<rawrbox::TextureBase> normal = nullptr;
 		std::unique_ptr<rawrbox::TextureBase> opacity = nullptr;
 
 		std::unique_ptr<rawrbox::TextureBase> specular = nullptr;

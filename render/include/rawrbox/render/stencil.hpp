@@ -185,6 +185,10 @@ namespace rawrbox {
 		std::vector<rawrbox::StencilDraw> _drawCalls = {};
 		// ----------
 
+		// Culling ----- Just for you brom
+		bool _culling = true;
+		// -------------
+
 		// ------ UTILS
 		void pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv, const rawrbox::Color& col);
 		void pushIndices(std::vector<uint16_t> ind);
@@ -251,6 +255,11 @@ namespace rawrbox {
 		// ------ SCALE
 		virtual void pushScale(const rawrbox::Vector2f& scale);
 		virtual void popScale();
+		// --------------------
+
+		// ------ CULLING
+		virtual void pushDisableCulling();
+		virtual void popDisableCulling();
 		// --------------------
 
 		// ------ OTHER

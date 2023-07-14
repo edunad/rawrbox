@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/assimp/model.hpp>
@@ -21,7 +22,8 @@ namespace model {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("GENERATED MODEL TEST");
-		this->_window->setRenderer(bgfx::RendererType::Count);
+		this->_window->setRenderer<>(
+		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
@@ -31,14 +33,14 @@ namespace model {
 		this->_window->initializeBGFX();
 
 		// Setup camera
-		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
-		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		cam->setPos({0.F, 5.F, -5.F});
+		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::AssimpLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
 
 		// Load content ---
 		this->loadContent();
@@ -177,16 +179,14 @@ namespace model {
 		{
 			auto mesh = rawrbox::MeshUtils::generateMesh({0, 0, 0}, 64, rawrbox::Colors::White);
 			mesh.setTexture(texture3);
-			mesh.setBumpTexture(texture3);
-			mesh.setDisplacement(24.F);
+			mesh.setDisplacementTexture(texture3, 24.F);
 
 			this->_displacement->addMesh(mesh);
 		}
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateMesh({0, 0.5F, 0}, 64, rawrbox::Colors::Black);
-			mesh.setBumpTexture(texture3);
-			mesh.setDisplacement(24.F);
+			mesh.setDisplacementTexture(texture3, 24.F);
 			mesh.lineMode = true;
 
 			this->_displacement->addMesh(mesh);
@@ -276,9 +276,7 @@ namespace model {
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-
 		this->_texture2 = nullptr;
-		this->_camera.reset();
 
 		this->_displacement.reset();
 		this->_model.reset();
@@ -300,12 +298,14 @@ namespace model {
 	}
 
 	void Game::update() {
-		if (this->_texture2 == nullptr || this->_camera == nullptr) return;
-		this->_camera->update();
-		this->_texture2->step();
+		if (this->_window == nullptr) return;
+		this->_window->update();
+
+		if (this->_texture2 != nullptr) this->_texture2->step();
 	}
 
 	void Game::drawWorld() {
+		if (!this->_ready) return;
 		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr || this->_spline == nullptr) return;
 
 		this->_model->draw();
@@ -326,7 +326,6 @@ namespace model {
 
 	void Game::draw() {
 		if (this->_window == nullptr) return;
-		this->_window->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -335,16 +334,13 @@ namespace model {
 		printFrames();
 		// -----------
 
-		if (this->_ready) {
-			this->drawWorld();
-		} else {
+		if (!this->_ready) {
 			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
 			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
 		}
 
-		this->_window->frame(); // Commit primitives
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		this->_window->render(); // Commit primitives
 	}
 
 } // namespace model

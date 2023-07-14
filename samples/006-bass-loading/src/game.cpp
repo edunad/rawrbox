@@ -1,6 +1,7 @@
 
 #include <rawrbox/bass/manager.hpp>
 #include <rawrbox/bass/resources/sound.hpp>
+#include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/gizmos.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/font.hpp>
@@ -20,7 +21,8 @@ namespace bass_test {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("BASS TEST");
-		this->_window->setRenderer(bgfx::RendererType::Count);
+		this->_window->setRenderer<>(
+		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
@@ -30,13 +32,13 @@ namespace bass_test {
 		this->_window->initializeBGFX();
 
 		// Setup camera
-		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
-		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		cam->setPos({0.F, 5.F, -5.F});
+		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::BASSLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
 
 		// Load content ---
 		this->loadContent();
@@ -118,8 +120,6 @@ namespace bass_test {
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-		this->_camera.reset();
-
 		this->_sound.reset();
 		this->_sound2.reset();
 
@@ -129,7 +129,6 @@ namespace bass_test {
 
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
-		rawrbox::LIGHTS::shutdown();
 		rawrbox::ASYNC::shutdown();
 
 		this->_window->unblockPoll();
@@ -142,16 +141,18 @@ namespace bass_test {
 	}
 
 	void Game::update() {
-		if (this->_camera == nullptr) return;
-		this->_camera->update();
+		if (this->_window == nullptr) return;
+		this->_window->update();
 
-		rawrbox::BASS::setListenerLocation(this->_camera->getPos(), this->_camera->getForward(), this->_camera->getUp());
+		auto cam = rawrbox::MAIN_CAMERA;
+		rawrbox::BASS::setListenerLocation(cam->getPos(), cam->getForward(), cam->getUp());
 
 		if (this->_beat > 0.F) this->_beat -= 0.05F;
 		this->_beatText->setPos({0, this->_beat, 0});
 	}
 
 	void Game::drawWorld() {
+		if (!this->_ready) return;
 		this->_modelGrid->draw();
 		this->_beatText->draw();
 		this->_text->draw();
@@ -167,7 +168,6 @@ namespace bass_test {
 
 	void Game::draw() {
 		if (this->_window == nullptr) return;
-		this->_window->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -176,9 +176,7 @@ namespace bass_test {
 		printFrames();
 		// -----------
 
-		if (this->_ready) {
-			this->drawWorld();
-		} else {
+		if (!this->_ready) {
 			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
 			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
@@ -188,7 +186,6 @@ namespace bass_test {
 		rawrbox::GIZMOS::draw();
 		// -----------
 
-		this->_window->frame(); // Commit primitives
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		this->_window->render(); // Commit primitives
 	}
 } // namespace bass_test

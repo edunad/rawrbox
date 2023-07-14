@@ -1,11 +1,11 @@
 
 #include <rawrbox/physics/utils.hpp>
+#include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
-#include <rawrbox/utils/timer.hpp>
 
 #include <physics_test/game.hpp>
 
@@ -18,7 +18,8 @@ namespace physics_test {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("PHYSICS TEST");
-		this->_window->setRenderer(bgfx::RendererType::Count);
+		this->_window->setRenderer(
+		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
@@ -28,13 +29,13 @@ namespace physics_test {
 		this->_window->initializeBGFX();
 
 		// Setup camera
-		this->_camera = std::make_unique<rawrbox::CameraOrbital>(*this->_window);
-		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		cam->setPos({0.F, 5.F, -5.F});
+		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		// Setup loaders
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 
 		// Initialize physics
 		rawrbox::PHYSICS::init(20, 2048, 2048, 2048, 2048, 5);
@@ -112,21 +113,22 @@ namespace physics_test {
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->get();
 
 		// TIMER ---
-		auto timer = rawrbox::Timer::create(
-		    600, 25, [this]() { this->createBox({0, 5, 0}, {0.5F, 0.5F, 0.5F}); }, [] {
+		this->_timer = rawrbox::Timer::create(
+		    600, 25, [this]() { this->createBox({0, 5, 0}, {0.5F, 0.5F, 0.5F}); }, [this] {
+			    this->_timer = nullptr;
 			    rawrbox::PHYSICS::optimize(); // Only need to be called after adding a lot of bodies in one go
 		    });
 
-		timer.setPaused(this->_paused);
+		this->_timer->setPaused(this->_paused);
 		// --------
 
 		// BINDS ----
-		this->_window->onMouseKey += [this, &timer](auto& w, const rawrbox::Vector2i& mousePos, int button, int action, int mods) {
+		this->_window->onMouseKey += [this](auto& w, const rawrbox::Vector2i& mousePos, int button, int action, int mods) {
 			const bool isDown = action == 1;
 			if (!isDown || button != MOUSE_BUTTON_1) return;
 
 			this->_paused = !this->_paused;
-			timer.setPaused(this->_paused);
+			if (this->_timer != nullptr) this->_timer->setPaused(this->_paused);
 		};
 		// -----
 
@@ -170,10 +172,10 @@ namespace physics_test {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
-		this->_camera.reset();
-		this->_modelGrid.reset();
 		this->_texture = nullptr;
+		this->_timer = nullptr;
 
+		this->_modelGrid.reset();
 		this->_boxes.clear();
 
 		rawrbox::PHYSICS::shutdown();
@@ -190,11 +192,9 @@ namespace physics_test {
 	}
 
 	void Game::update() {
-		this->_camera->update();
-
-		if (!this->_paused) {
-			rawrbox::Timer::update();
-		}
+		if (this->_window == nullptr) return;
+		this->_window->update();
+		rawrbox::Timer::update();
 	}
 
 	void Game::fixedUpdate() {
@@ -216,6 +216,8 @@ namespace physics_test {
 	}
 
 	void Game::drawWorld() {
+		if (!this->_ready) return;
+
 		for (auto& b : this->_boxes) {
 			auto body = b->body;
 			if (body == nullptr) continue;
@@ -235,7 +237,6 @@ namespace physics_test {
 
 	void Game::draw() {
 		if (this->_window == nullptr) return;
-		this->_window->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -248,11 +249,8 @@ namespace physics_test {
 			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
 			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
-		} else {
-			this->drawWorld();
 		}
 
-		this->_window->frame(); // Commit primitives
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		this->_window->render(); // Commit primitives
 	}
 } // namespace physics_test

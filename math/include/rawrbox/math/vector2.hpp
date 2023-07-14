@@ -80,6 +80,26 @@ namespace rawrbox {
 			return VecType(std::cos(radians), std::sin(radians));
 		}
 
+		static VecType intersects(const VecType& a1, const VecType& a2, const VecType& b1, const VecType& b2) {
+			float ua = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x);
+			float ub = (a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x);
+			float denominator = (b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y);
+
+			if (std::abs(denominator) > 0.00001F) {
+				ua /= denominator;
+				ub /= denominator;
+
+				if (ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1)
+					return {
+					    a1.x + ua * (a2.x - a1.x),
+					    a1.y + ua * (a2.y - a1.y)};
+			}
+
+			return {
+			    std::numeric_limits<double>::quiet_NaN(),
+			    std::numeric_limits<double>::quiet_NaN()};
+		}
+
 		[[nodiscard]] VecType rotateAroundOrigin(NumberType rads, const VecType& origin) const {
 			if (rads == 0) return *this;
 

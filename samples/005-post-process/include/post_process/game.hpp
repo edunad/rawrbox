@@ -1,7 +1,6 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/assimp/assimp_model.hpp>
 #include <rawrbox/render/postprocess/manager.hpp>
 #include <rawrbox/render/window.hpp>
@@ -11,7 +10,6 @@
 namespace post_process {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::CameraOrbital> _camera = nullptr;
 		std::unique_ptr<rawrbox::PostProcessManager> _postProcess = nullptr;
 
 		std::unique_ptr<rawrbox::AssimpModel<>> _model = std::make_unique<rawrbox::AssimpModel<>>();

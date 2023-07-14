@@ -1,5 +1,6 @@
 
 #include <rawrbox/engine/static.hpp>
+#include <rawrbox/render/camera/perspective.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
@@ -19,24 +20,24 @@ namespace stencil {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("STENCIL TEST");
-		this->_window->setClearColor(0x443355FF);
-		this->_window->setRenderer(bgfx::RendererType::Count);
+		this->_window->setRenderer<>(
+		    bgfx::RendererType::Count, [this]() { this->drawOverlay(); }, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
 	}
 
 	void Game::init() {
 		if (this->_window == nullptr) return;
-		this->_window->initializeBGFX();
+		this->_window->initializeBGFX(0x443355FF);
 
 		// Setup camera
-		this->_camera = std::make_unique<rawrbox::CameraPerspective>(this->_window->getSize());
-		this->_camera->setPos({0.F, 5.F, -5.F});
-		this->_camera->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		auto cam = this->_window->setupCamera<rawrbox::CameraPerspective>(this->_window->getSize());
+		cam->setPos({0.F, 5.F, -5.F});
+		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::TextureLoader>());
-		rawrbox::RESOURCES::addLoader(std::make_unique<rawrbox::FontLoader>());
+		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 
 		// Load content ---
 		this->loadContent();
@@ -89,7 +90,6 @@ namespace stencil {
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-		this->_camera.reset();
 		this->_model.reset();
 
 		this->_texture = nullptr;
@@ -112,11 +112,12 @@ namespace stencil {
 	}
 
 	void Game::drawWorld() {
-		if (this->_model == nullptr) return;
+		if (!this->_ready || this->_model == nullptr) return;
 		this->_model->draw();
 	}
 
 	void Game::drawOverlay() {
+		if (!this->_ready) return;
 		auto& stencil = this->_window->getStencil();
 
 		stencil.pushOffset({20, 50});
@@ -284,7 +285,6 @@ namespace stencil {
 
 	void Game::draw() {
 		if (this->_window == nullptr) return;
-		this->_window->clear(); // Clean up and set renderer
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
@@ -293,16 +293,12 @@ namespace stencil {
 		printFrames();
 		// -----------
 
-		if (this->_ready) {
-			this->drawWorld();
-			this->drawOverlay();
-		} else {
+		if (!this->_ready) {
 			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
 			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
 		}
 
-		this->_window->frame(); // Commit primitives
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, this->_camera->getViewMtx().data(), this->_camera->getProjMtx().data());
+		this->_window->render(); // Draw world, overlay & commit primitives
 	}
 } // namespace stencil
