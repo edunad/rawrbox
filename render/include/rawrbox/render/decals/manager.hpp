@@ -22,9 +22,9 @@ namespace rawrbox {
 		static std::vector<rawrbox::Decal> _decals;
 
 	public:
-		static void addInstance(rawrbox::TextureBase* atlas, const rawrbox::Vector3f& pos, const rawrbox::Vector3f& ang, uint16_t atlasId = 0);
+		static void init();
 
-		static void upload();
+		static void addInstance(rawrbox::TextureBase* atlas, const rawrbox::Vector3f& pos, const rawrbox::Vector3f& ang, uint16_t atlasId = 0);
 		static void draw();
 	};
 } // namespace rawrbox

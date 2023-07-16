@@ -69,7 +69,7 @@ namespace rawrbox {
 
 		uint64_t culling = BGFX_STATE_CULL_CW;
 		uint64_t blending = BGFX_STATE_BLEND_NORMAL;
-		uint64_t depthTest = BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS;
+		uint64_t depthTest = BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LEQUAL;
 
 		rawrbox::BBOX bbox = {};
 		// --------------

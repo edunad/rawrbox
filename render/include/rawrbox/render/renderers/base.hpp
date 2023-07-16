@@ -1,5 +1,6 @@
 #pragma once
 #include <rawrbox/math/vector2.hpp>
+#include <rawrbox/render/texture/render.hpp>
 
 #include <bgfx/bgfx.h>
 
@@ -10,8 +11,9 @@
 namespace rawrbox {
 	class RendererBase {
 	protected:
+		std::unique_ptr<rawrbox::TextureRender> _render = nullptr;
+
 		rawrbox::Vector2i _size = {};
-		bgfx::FrameBufferHandle _frameBuffer = BGFX_INVALID_HANDLE; // Used for getting the depth
 
 		virtual void frame();
 
@@ -20,9 +22,9 @@ namespace rawrbox {
 		std::function<void()> overlayRender = nullptr;
 
 		RendererBase() = default;
-		RendererBase(const RendererBase&) = default;
+		RendererBase(const RendererBase&) = delete;
 		RendererBase(RendererBase&&) = delete;
-		RendererBase& operator=(const RendererBase&) = default;
+		RendererBase& operator=(const RendererBase&) = delete;
 		RendererBase& operator=(RendererBase&&) = delete;
 		virtual ~RendererBase();
 

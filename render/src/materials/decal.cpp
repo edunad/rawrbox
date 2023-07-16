@@ -11,14 +11,14 @@ const bgfx::EmbeddedShader model_decal_shaders[] = {
 namespace rawrbox {
 	MaterialDecal::~MaterialDecal() {
 		RAWRBOX_DESTROY(this->_s_depth);
-		RAWRBOX_DESTROY(this->_u_invModel);
+		RAWRBOX_DESTROY(this->_u_decalMatrix);
 	}
 
 	void MaterialDecal::registerUniforms() {
 		rawrbox::MaterialBase::registerUniforms();
 
 		this->_s_depth = bgfx::createUniform("s_depth", bgfx::UniformType::Sampler);
-		this->_u_invModel = bgfx::createUniform("u_invModel", bgfx::UniformType::Mat4);
+		this->_u_decalMatrix = bgfx::createUniform("u_decalMatrix", bgfx::UniformType::Mat4);
 	}
 
 	void MaterialDecal::upload() {
@@ -26,13 +26,13 @@ namespace rawrbox {
 	}
 
 	void MaterialDecal::process(const rawrbox::Mesh& mesh) {
-		if (rawrbox::RENDERER == nullptr) return;
+		/*if (rawrbox::RENDERER == nullptr) return;
 		rawrbox::MaterialBase::process(mesh);
 
-		rawrbox::Matrix4x4 invModelMtx = mesh.matrix;
-		invModelMtx.inverse();
+		auto inv = mesh.vertexPos;
+		// inv.inverse();
 
-		bgfx::setUniform(this->_u_invModel, invModelMtx.data());
-		bgfx::setTexture(rawrbox::SAMPLE_DEPTH, this->_s_depth, rawrbox::RENDERER->getDepth());
+		bgfx::setUniform(this->_u_decalMatrix, inv.data());
+		bgfx::setTexture(rawrbox::SAMPLE_DEPTH, this->_s_depth, rawrbox::RENDERER->getDepth());*/
 	}
 } // namespace rawrbox

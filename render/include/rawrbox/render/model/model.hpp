@@ -5,6 +5,7 @@
 #include <rawrbox/render/model/animation.hpp>
 #include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/skeleton.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/anim.hpp>
 
 #define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
@@ -413,11 +414,11 @@ namespace rawrbox {
 			this->preDraw();
 
 			for (auto& mesh : this->_meshes) {
-				this->_material->process(*mesh);
-
 				// Process animations ---
 				this->animate(*mesh);
 				// ---
+
+				this->_material->process(*mesh);
 
 				if (this->isDynamicBuffer()) {
 					bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);

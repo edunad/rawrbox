@@ -15,7 +15,6 @@ namespace rawrbox {
 	// ---------
 
 	bool BGFX_INITIALIZED = false;
-	uint32_t BGFX_FRAME = 0;
 
 	// TEXTURE FALLBACKS ---
 	std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE = nullptr;
@@ -51,6 +50,8 @@ namespace rawrbox {
 	// -----
 
 	// QUICK ACCESS ---
+	uint32_t BGFX_FRAME = 0;
+
 	rawrbox::CameraBase* MAIN_CAMERA = nullptr;
 	rawrbox::RendererBase* RENDERER = nullptr;
 

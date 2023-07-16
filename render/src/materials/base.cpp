@@ -1,5 +1,6 @@
 
 #include <rawrbox/render/materials/base.hpp>
+#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/utils/render.hpp>
 
 // NOLINTBEGIN(*)

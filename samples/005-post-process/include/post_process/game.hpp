@@ -36,6 +36,8 @@ namespace post_process {
 
 		void loadContent();
 		void contentLoaded();
+
 		void drawWorld();
+		void drawOverlay();
 	};
 } // namespace post_process

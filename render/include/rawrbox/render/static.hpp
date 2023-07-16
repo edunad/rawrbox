@@ -1,6 +1,5 @@
 #pragma once
 #include <rawrbox/render/camera/base.hpp>
-#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/texture/flat.hpp>
 #include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/render/texture/missing.hpp>
@@ -18,6 +17,8 @@
 // NOLINTEND(*)
 
 namespace rawrbox {
+	class RendererBase;
+
 	enum RENDER_DEBUG_MODE {
 		DEBUG_OFF,
 		DEBUG_CLUSTER_Z,
@@ -29,7 +30,6 @@ namespace rawrbox {
 	constexpr auto MAX_LIGHTS = 1000;
 
 	extern bool BGFX_INITIALIZED;
-	extern uint32_t BGFX_FRAME;
 
 	// VIEW IDS ---
 	extern bgfx::ViewId MAIN_WORLD_VIEW;
@@ -77,6 +77,8 @@ namespace rawrbox {
 	// -----
 
 	// QUICK ACCESS ---
+	extern uint32_t BGFX_FRAME;
+
 	extern rawrbox::CameraBase* MAIN_CAMERA;
 	extern rawrbox::RendererBase* RENDERER;
 
