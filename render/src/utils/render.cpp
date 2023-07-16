@@ -68,13 +68,14 @@ namespace rawrbox {
 
 		bgfx::touch(rawrbox::CURRENT_VIEW_ID);
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
+
 		bgfx::setTexture(0, _s_texColor, handle);
 		bgfx::setVertexBuffer(0, &tvb);
 		bgfx::setIndexBuffer(&tib);
 		bgfx::setState(BGFX_STATE_DEFAULT_QUAD);
 
-		if (useQuadProgram) bgfx::submit(rawrbox::CURRENT_VIEW_ID, _quadHandle);
-		bgfx::discard(BGFX_DISCARD_ALL);
+		if (useQuadProgram)
+			bgfx::submit(rawrbox::CURRENT_VIEW_ID, _quadHandle);
 	}
 
 	// NOLINTBEGIN(*)

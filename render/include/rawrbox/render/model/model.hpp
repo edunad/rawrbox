@@ -37,12 +37,16 @@ namespace rawrbox {
 
 				for (size_t i1 = 0; i1 < this->_meshes.size(); i1++) {
 					auto& mesh1 = this->_meshes[i1];
-					for (size_t i2 = this->_meshes.size() - 1; i2 > i1; i2--) {
+					for (size_t i2 = 0; i2 < this->_meshes.size(); i2++) {
+						if (i1 == i2) continue;
+
 						auto& mesh2 = this->_meshes[i2];
 						if (!mesh1->canOptimize(*mesh2)) continue;
 
 						mesh1->merge(*mesh2);
+
 						this->_meshes.erase(this->_meshes.begin() + i2);
+						i2--;
 					}
 				}
 
@@ -414,11 +418,11 @@ namespace rawrbox {
 			this->preDraw();
 
 			for (auto& mesh : this->_meshes) {
+				this->_material->process(*mesh);
+
 				// Process animations ---
 				this->animate(*mesh);
 				// ---
-
-				this->_material->process(*mesh);
 
 				if (this->isDynamicBuffer()) {
 					bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
@@ -439,7 +443,6 @@ namespace rawrbox {
 			}
 
 			this->postDraw();
-			bgfx::discard(BGFX_DISCARD_ALL);
 		}
 	};
 } // namespace rawrbox

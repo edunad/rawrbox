@@ -65,19 +65,14 @@ namespace rawrbox {
 	void PostProcessManager::render(const bgfx::TextureHandle& renderTexture) {
 		bgfx::ViewId prevID = rawrbox::CURRENT_VIEW_ID;
 		for (size_t pass = 0; pass < this->_postProcesses.size(); pass++) {
-			bgfx::ViewId id = rawrbox::POST_PROCESSING_ID + static_cast<bgfx::ViewId>(pass);
-			rawrbox::CURRENT_VIEW_ID = id;
-
+			rawrbox::CURRENT_VIEW_ID = rawrbox::POST_PROCESSING_ID + static_cast<bgfx::ViewId>(pass);
 			rawrbox::RenderUtils::drawQUAD(pass == 0 ? renderTexture : bgfx::getTexture(this->_samples[pass - 1]), this->_windowSize, false);
 			this->_postProcesses[pass]->applyEffect();
 		}
 
-		bgfx::discard(BGFX_DISCARD_ALL);
-
 		// Draw final texture
 		rawrbox::CURRENT_VIEW_ID = prevID;
 		rawrbox::RenderUtils::drawQUAD(bgfx::getTexture(this->_samples.back()), this->_windowSize);
-		bgfx::discard(BGFX_DISCARD_ALL);
 	}
 
 } // namespace rawrbox

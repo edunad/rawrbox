@@ -10,7 +10,7 @@
 namespace rawrbox {
 	RendererBase::~RendererBase() {
 		this->_render.reset();
-		bgfx::discard();
+		bgfx::discard(BGFX_DISCARD_ALL);
 	}
 
 	void RendererBase::init(const rawrbox::Vector2i& size) {
