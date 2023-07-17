@@ -45,7 +45,7 @@ namespace decal_test {
 
 	void Game::loadContent() {
 		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("content/textures/decals.bmp", 64),
+		    std::make_pair<std::string, uint32_t>("content/textures/decals.png", 64),
 		};
 
 		for (auto& f : initialContentFiles) {
@@ -63,8 +63,19 @@ namespace decal_test {
 	}
 
 	void Game::contentLoaded() {
-		auto atlas = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/decals.bmp")->get();
+		auto atlas = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/decals.png")->get();
 		// rawrbox::DECALS::addInstance(atlas, {0, 1.0F, 0.F}, {0, 0, 0});
+		// rawrbox::DECALS::addInstance(atlas, {0.0F, 0.5F, 0.0F}, {0, 0, 0});
+
+		std::random_device prng;
+		std::uniform_int_distribution<int> dist(0, 4);
+		std::uniform_real_distribution<float> distRot(-1.F, 1.F);
+
+		/*for (int i = 0; i < 1; i++) {
+			rawrbox::DECALS::addInstance({distRot(prng), 0, -1.}, dist(prng));
+		}*/
+
+		rawrbox::DECALS::addInstance(atlas, {0, 0, -1.}, {0, 0, 0});
 		rawrbox::DECALS::addInstance(atlas, {0.0F, 0.5F, 0.0F}, {0, 0, 0});
 
 		// Setup
@@ -86,7 +97,7 @@ namespace decal_test {
 		}
 		// ----
 
-		this->_model->setPos({0, -1, 0});
+		this->_model->setPos({0, 0, 0});
 		this->_model->upload();
 		this->_ready = true;
 	}

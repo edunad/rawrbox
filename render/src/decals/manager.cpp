@@ -17,6 +17,7 @@ namespace rawrbox {
 		auto tmp = rawrbox::MeshUtils::generateCube(pos, {1.0, 1.0, 1.0});
 		tmp.setAngle(rawrbox::Vector4f::toQuat(ang));
 		tmp.setTexture(atlas);
+		tmp.setOptimizable(false);
 
 		_model->addMesh(tmp);
 	}
