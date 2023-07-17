@@ -293,6 +293,10 @@ namespace rawrbox {
 		this->_title = title;
 	}
 
+	void Window::overridePostWorld(std::function<void()> fnc) {
+		this->_renderer->overridePostWorld(fnc);
+	}
+
 	// CURSOR ------
 	void Window::hideCursor(bool hidden) {
 		if (GLFWHANDLE == nullptr) return;

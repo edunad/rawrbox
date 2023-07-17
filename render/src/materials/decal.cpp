@@ -1,5 +1,8 @@
 #include <rawrbox/render/materials/decal.hpp>
+#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/utils/render.hpp>
+
+#include "bx/math.h"
 
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader model_decal_shaders[] = {
@@ -26,13 +29,13 @@ namespace rawrbox {
 	}
 
 	void MaterialDecal::process(const rawrbox::Mesh& mesh) {
-		/*if (rawrbox::RENDERER == nullptr) return;
+		if (rawrbox::RENDERER == nullptr) return;
 		rawrbox::MaterialBase::process(mesh);
 
-		auto inv = mesh.vertexPos;
-		// inv.inverse();
+		rawrbox::Matrix4x4 inv = mesh.vertexPos;
+		inv.inverse();
 
 		bgfx::setUniform(this->_u_decalMatrix, inv.data());
-		bgfx::setTexture(rawrbox::SAMPLE_DEPTH, this->_s_depth, rawrbox::RENDERER->getDepth());*/
+		bgfx::setTexture(rawrbox::SAMPLE_DEPTH, this->_s_depth, rawrbox::RENDERER->getDepth());
 	}
 } // namespace rawrbox

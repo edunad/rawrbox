@@ -72,6 +72,7 @@ namespace rawrbox {
 
 		// Draw final texture
 		rawrbox::CURRENT_VIEW_ID = prevID;
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
 		rawrbox::RenderUtils::drawQUAD(bgfx::getTexture(this->_samples.back()), this->_windowSize);
 	}
 

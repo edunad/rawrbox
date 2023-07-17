@@ -169,6 +169,8 @@ namespace rawrbox {
 			rawrbox::RENDERER = this->_renderer.get();
 		}
 
+		void overridePostWorld(std::function<void()> fnc);
+
 		// CURSOR ------
 		void hideCursor(bool hidden);
 		void setCursor(uint32_t cursor);

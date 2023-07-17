@@ -50,7 +50,6 @@ namespace rawrbox {
 
 		// Initialize light engine
 		rawrbox::LIGHTS::init();
-		rawrbox::DECALS::init();
 	}
 
 	void RendererCluster::resize(const rawrbox::Vector2i& size) {
@@ -118,38 +117,8 @@ namespace rawrbox {
 		    ClusterUniforms::CLUSTERS_Z / ClusterUniforms::CLUSTERS_Z_THREADS);
 		// --------
 
-		// Final Pass ---------------------
-
-		// Record world ---
-		this->_render->startRecord();
-		this->worldRender();
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, rawrbox::MAIN_CAMERA->getViewMtx().data(), rawrbox::MAIN_CAMERA->getProjMtx().data());
-		this->_render->stopRecord();
-		// ----------------
-
-		// Render world ---
-		bgfx::ViewId prevId = rawrbox::CURRENT_VIEW_ID;
-		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_WORLD_VIEW;
-		// ---
-		rawrbox::RenderUtils::drawQUAD(this->_render->getHandle(), this->_size);
-		// -----------------
-
-		// Restore id -----
-		rawrbox::CURRENT_VIEW_ID = prevId;
-		bgfx::discard(BGFX_DISCARD_ALL);
-		// ------------------------
-
-		// Render overlay ---
-		prevId = rawrbox::CURRENT_VIEW_ID;
-		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_OVERLAY_VIEW;
-		// ---
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
-		this->overlayRender();
-		// ----------------
-
-		// Restore id -----
-		rawrbox::CURRENT_VIEW_ID = prevId;
-		bgfx::discard(BGFX_DISCARD_ALL);
+		// Final Pass -------------
+		this->finalRender();
 		// ------------------------
 
 		this->frame(); // Submit ---

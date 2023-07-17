@@ -14,10 +14,8 @@ namespace rawrbox {
 	void DECALS::addInstance(rawrbox::TextureBase* atlas, const rawrbox::Vector3f& pos, const rawrbox::Vector3f& ang, uint16_t atlasId) {
 		if (_model == nullptr) return;
 
-		auto tmp = rawrbox::MeshUtils::generateCube(pos, {0.5, 0.5, 0.5});
-		// tmp.setEulerAngle(ang);
-		// tmp.setDepthTest(BGFX_STATE_DEPTH_TEST_LESS);
-		tmp.setCulling(0);
+		auto tmp = rawrbox::MeshUtils::generateCube(pos, {1.0, 1.0, 1.0});
+		tmp.setAngle(rawrbox::Vector4f::toQuat(ang));
 		tmp.setTexture(atlas);
 
 		_model->addMesh(tmp);

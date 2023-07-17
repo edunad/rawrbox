@@ -49,12 +49,7 @@ namespace rawrbox {
 		bgfx::setName(this->_handle, fmt::format("RAWR-RENDER-TARGET-{}", this->_handle.idx).c_str());
 
 		if (_depth) {
-			bgfx::TextureFormat::Enum depthFormat =
-			    bgfx::isTextureValid(0, false, 1, bgfx::TextureFormat::D32, BGFX_TEXTURE_RT_WRITE_ONLY | this->_flags)
-				? bgfx::TextureFormat::D32
-				: bgfx::TextureFormat::D16;
-
-			this->_depthHandle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 1, depthFormat, BGFX_TEXTURE_RT_WRITE_ONLY | this->_flags);
+			this->_depthHandle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 1, bgfx::TextureFormat::D24, BGFX_TEXTURE_RT | this->_flags);
 			bgfx::setName(this->_depthHandle, fmt::format("RAWR-RENDER-TARGET-DEPTH-{}", this->_depthHandle.idx).c_str());
 
 			std::array<bgfx::TextureHandle, 2> texHandles = {this->_handle, this->_depthHandle};

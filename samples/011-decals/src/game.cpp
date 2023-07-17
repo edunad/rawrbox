@@ -64,7 +64,8 @@ namespace decal_test {
 
 	void Game::contentLoaded() {
 		auto atlas = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/decals.bmp")->get();
-		rawrbox::DECALS::addInstance(atlas, {0, 1.0F, 0.F}, {0, 0, 0});
+		// rawrbox::DECALS::addInstance(atlas, {0, 1.0F, 0.F}, {0, 0, 0});
+		rawrbox::DECALS::addInstance(atlas, {0.0F, 0.5F, 0.0F}, {0, 0, 0});
 
 		// Setup
 		{
@@ -85,6 +86,7 @@ namespace decal_test {
 		}
 		// ----
 
+		this->_model->setPos({0, -1, 0});
 		this->_model->upload();
 		this->_ready = true;
 	}
