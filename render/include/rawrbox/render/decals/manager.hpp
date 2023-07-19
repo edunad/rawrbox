@@ -2,7 +2,7 @@
 
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/materials/decal.hpp>
-#include <rawrbox/render/model/model.hpp>
+#include <rawrbox/render/model/instanced.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
 #include <vector>
@@ -18,13 +18,16 @@ namespace rawrbox {
 
 	class DECALS {
 	protected:
-		static std::unique_ptr<rawrbox::Model<rawrbox::MaterialDecal>> _model;
+		static std::unique_ptr<rawrbox::InstancedModel<rawrbox::MaterialDecal>> _model;
 		static std::vector<rawrbox::Decal> _decals;
 
 	public:
-		static void init();
+		static void setAtlasTexture(rawrbox::TextureBase* atlas);
+		static void addInstance(const rawrbox::Vector3f& pos, float direction = 0, const rawrbox::Colorf& color = rawrbox::Colors::White, uint16_t atlasId = 0);
 
-		static void addInstance(rawrbox::TextureBase* atlas, const rawrbox::Vector3f& pos, const rawrbox::Vector3f& ang, uint16_t atlasId = 0);
+		static void init();
+		static void shutdown();
+
 		static void draw();
 	};
 } // namespace rawrbox

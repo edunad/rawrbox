@@ -17,7 +17,7 @@
 namespace decal_test {
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
+		this->_window->setMonitor(1);
 		this->_window->setTitle("DECALS TEST");
 		this->_window->setRenderer<rawrbox::RendererBase>(
 		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
@@ -63,20 +63,20 @@ namespace decal_test {
 	}
 
 	void Game::contentLoaded() {
-		auto atlas = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/decals.png")->get();
-		// rawrbox::DECALS::addInstance(atlas, {0, 1.0F, 0.F}, {0, 0, 0});
-		// rawrbox::DECALS::addInstance(atlas, {0.0F, 0.5F, 0.0F}, {0, 0, 0});
+		rawrbox::DECALS::setAtlasTexture(rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/decals.png")->get());
 
 		std::random_device prng;
 		std::uniform_int_distribution<int> dist(0, 4);
 		std::uniform_real_distribution<float> distRot(-1.F, 1.F);
+		std::uniform_real_distribution<float> a(0.F, 0.1F);
 
-		/*for (int i = 0; i < 1; i++) {
-			rawrbox::DECALS::addInstance({distRot(prng), 0, -1.}, dist(prng));
-		}*/
+		for (int i = 0; i < 10; i++) {
+			rawrbox::DECALS::addInstance({distRot(prng), a(prng), distRot(prng) - 1.F}, 90, rawrbox::Colors::Red, dist(prng));
+		}
 
-		rawrbox::DECALS::addInstance(atlas, {0, 0, -1.}, {0, 0, 0});
-		rawrbox::DECALS::addInstance(atlas, {0.0F, 0.5F, 0.0F}, {0, 0, 0});
+		for (int i = 0; i < 10; i++) {
+			rawrbox::DECALS::addInstance({distRot(prng), distRot(prng) + 1.F, 0.F}, 0, rawrbox::Colors::Red, dist(prng));
+		}
 
 		// Setup
 		{
@@ -85,7 +85,7 @@ namespace decal_test {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane({0, -1.0F, 0.F}, {3.F, 2.F}, rawrbox::Colors::Gray);
+			auto mesh = rawrbox::MeshUtils::generateCube({0, -1.0F, 0.F}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray);
 			mesh.setEulerAngle({bx::toRad(90), 0, 0});
 
 			this->_model->addMesh(mesh);
@@ -97,7 +97,6 @@ namespace decal_test {
 		}
 		// ----
 
-		this->_model->setPos({0, 0, 0});
 		this->_model->upload();
 		this->_ready = true;
 	}

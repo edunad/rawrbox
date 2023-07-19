@@ -10,6 +10,8 @@
 
 namespace rawrbox {
 	RendererBase::~RendererBase() {
+		rawrbox::DECALS::shutdown();
+
 		this->_render.reset();
 		bgfx::discard(BGFX_DISCARD_ALL);
 	}
@@ -28,7 +30,7 @@ namespace rawrbox {
 		this->_render = std::make_unique<rawrbox::TextureRender>(size, true);
 		this->_render->upload();
 
-		this->_decals = std::make_unique<rawrbox::TextureRender>(size, false);
+		this->_decals = std::make_unique<rawrbox::TextureRender>(size, true);
 		this->_decals->upload();
 
 		// Setup view ---
