@@ -1,7 +1,6 @@
 $input v_color0, v_texcoord0, v_model_0, v_model_1, v_model_2, v_model_3
 
 #include <bgfx_shader.sh>
-#include <bgfx_compute.sh>
 #include "../../include/defs.sh"
 #include "../../include/shaderlib.sh"
 
@@ -10,16 +9,6 @@ uniform vec4 u_camPos;
 
 SAMPLER2DARRAY(s_albedo, SAMPLE_MAT_ALBEDO);
 SAMPLER2D(s_depth, SAMPLE_DEPTH);
-
-// For each mesh
-// 1 to 4 = Matrix position
-// 5 = color
-// 6 = UV override
-BUFFER_RO(u_instanceData, vec4, SAMPLE_INSTANCE_DATA);
-
-vec4 getInstanceData(int id, int index) {
-	return u_instanceData[id * 6 + index];
-}
 
 mat4 inverse(mat4 m) {
   float
@@ -88,9 +77,10 @@ void main() {
 
 	vec2 decalTexCoord = vec2(0.5 + objectPosition.y, objectPosition.x - 0.5);
 	decalTexCoord = objectPosition.xy + 0.5;
+    decalTexCoord.xy = 1.0 - decalTexCoord.xy; // Flip textures
 
-    vec4 albedo = texture2DArray(s_albedo, vec3(decalTexCoord.xy, v_texcoord0.z)) * v_color0 * u_colorOffset;
+    vec4 albedo = texture2DArray(s_albedo, vec3(decalTexCoord.xy, v_texcoord0.z));
     if(albedo.a <= 0.0) discard;
 
-    gl_FragColor = albedo;
+    gl_FragColor = albedo * v_color0;
 }

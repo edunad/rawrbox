@@ -7,7 +7,6 @@
 namespace rawrbox {
 	// PRIVATE ----
 	std::unique_ptr<rawrbox::InstancedModel<rawrbox::MaterialDecal>> DECALS::_model = nullptr;
-	std::vector<rawrbox::Decal> DECALS::_decals = {};
 	// -----
 
 	// PUBLIC ----
@@ -16,7 +15,7 @@ namespace rawrbox {
 		_model->getTemplate().setTexture(atlas);
 	}
 
-	void DECALS::addInstance(const rawrbox::Vector3f& pos, float direction, const rawrbox::Colorf& color, uint16_t atlasId) {
+	void DECALS::add(const rawrbox::Vector3f& pos, float direction, const rawrbox::Colorf& color, uint16_t atlasId) {
 		if (_model == nullptr) return;
 
 		rawrbox::Matrix4x4 m;
@@ -24,11 +23,23 @@ namespace rawrbox {
 		_model->addInstance({m, color, {static_cast<float>(atlasId), 0, 0, 0}});
 	}
 
+	void DECALS::remove(size_t i) {
+		if (_model == nullptr) return;
+		_model->removeInstance(i);
+	}
+
+	const rawrbox::Instance& DECALS::get(size_t i) {
+		if (_model == nullptr) throw std::runtime_error("[RawrBox-DECALS] Model template not initialized! Did you call 'init'");
+		return _model->getInstance(i);
+	}
+
+	const size_t DECALS::count() { return _model->count(); }
+
 	void DECALS::init() {
 		if (_model != nullptr) return;
 		_model = std::make_unique<rawrbox::InstancedModel<rawrbox::MaterialDecal>>();
 
-		auto mdlTemp = rawrbox::MeshUtils::generateCube({0, 0, 0}, {1.0F, 1.0F, 0.10F});
+		auto mdlTemp = rawrbox::MeshUtils::generateCube({0, 0, 0}, {1.0F, 1.0F, 0.05F});
 		mdlTemp.setBlend(BGFX_STATE_BLEND_ALPHA);
 		mdlTemp.setDepthTest(0);
 

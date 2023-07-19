@@ -83,6 +83,7 @@ namespace rawrbox {
 		}
 
 		std::vector<rawrbox::Instance>& instances() { return this->_instances; }
+		size_t count() { return this->_instances.size(); }
 
 		void upload(bool dynamic = false) override {
 			rawrbox::ModelBase<M>::upload(false);

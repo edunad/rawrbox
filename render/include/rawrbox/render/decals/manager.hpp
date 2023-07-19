@@ -9,21 +9,19 @@
 
 // https://github.com/diharaw/deferred-decals/blob/master/src/main.cpp
 namespace rawrbox {
-	struct Decal {
-		rawrbox::Vector3f pos = {};
-		rawrbox::Vector3f dir = {0, 1, 0};
-
-		uint16_t textureId = 0;
-	};
-
 	class DECALS {
 	protected:
 		static std::unique_ptr<rawrbox::InstancedModel<rawrbox::MaterialDecal>> _model;
-		static std::vector<rawrbox::Decal> _decals;
 
 	public:
 		static void setAtlasTexture(rawrbox::TextureBase* atlas);
-		static void addInstance(const rawrbox::Vector3f& pos, float direction = 0, const rawrbox::Colorf& color = rawrbox::Colors::White, uint16_t atlasId = 0);
+
+		// UTILS -----
+		static void add(const rawrbox::Vector3f& pos, float direction = 0, const rawrbox::Colorf& color = rawrbox::Colors::White, uint16_t atlasId = 0);
+		static void remove(size_t i);
+		static const rawrbox::Instance& get(size_t i);
+		static const size_t count();
+		// -----
 
 		static void init();
 		static void shutdown();
