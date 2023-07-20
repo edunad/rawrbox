@@ -22,7 +22,8 @@ namespace rawrbox {
 	enum RENDER_DEBUG_MODE {
 		DEBUG_OFF,
 		DEBUG_CLUSTER_Z,
-		DEBUG_CLUSTER_COUNT
+		DEBUG_CLUSTER_COUNT,
+		DEBUG_DECALS
 	};
 
 	constexpr auto MAX_BONES_PER_VERTEX = 4;

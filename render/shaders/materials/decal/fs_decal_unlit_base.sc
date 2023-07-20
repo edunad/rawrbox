@@ -7,6 +7,9 @@ $input v_color0, v_texcoord0, v_model_0, v_model_1, v_model_2, v_model_3
 uniform vec4 u_colorOffset;
 uniform vec4 u_camPos;
 
+uniform vec4 u_decalSettings;
+
+
 SAMPLER2DARRAY(s_albedo, SAMPLE_MAT_ALBEDO);
 SAMPLER2D(s_depth, SAMPLE_DEPTH);
 
@@ -73,7 +76,14 @@ void main() {
 	mat4 model = mtxFromCols(v_model_0, v_model_1, v_model_2, v_model_3);
 
 	vec4 objectPosition = mul(inverse(model), vec4(worldPosition, 1.0));
-	if(any(greaterThan(abs(objectPosition.xyz), vec3_splat(0.5)))) discard;
+	if(any(greaterThan(abs(objectPosition.xyz), vec3_splat(0.5)))) {
+        if(u_decalSettings.x == 0.0) discard;
+        gl_FragColor = vec4(0.8, 0.0, 0.0, 0.25);
+        return;
+    }else if(u_decalSettings.x == 1.0) { // Show debug
+        gl_FragColor = vec4(0.8, 0.8, 0.0, 1.0);
+        return;
+    }
 
 	vec2 decalTexCoord = vec2(0.5 + objectPosition.y, objectPosition.x - 0.5);
 	decalTexCoord = objectPosition.xy + 0.5;

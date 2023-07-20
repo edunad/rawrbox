@@ -7,6 +7,7 @@ namespace rawrbox {
 	class MaterialDecal : public rawrbox::MaterialInstanced {
 	protected:
 		bgfx::UniformHandle _s_depth = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _u_decalSettings = BGFX_INVALID_HANDLE;
 
 	public:
 		MaterialDecal() = default;

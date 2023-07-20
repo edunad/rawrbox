@@ -14,11 +14,14 @@ const bgfx::EmbeddedShader model_decal_shaders[] = {
 namespace rawrbox {
 	MaterialDecal::~MaterialDecal() {
 		RAWRBOX_DESTROY(this->_s_depth);
+		RAWRBOX_DESTROY(this->_u_decalSettings);
 	}
 
 	void MaterialDecal::registerUniforms() {
 		rawrbox::MaterialInstanced::registerUniforms();
+
 		this->_s_depth = bgfx::createUniform("s_depth", bgfx::UniformType::Sampler);
+		this->_u_decalSettings = bgfx::createUniform("u_decalSettings", bgfx::UniformType::Vec4);
 	}
 
 	void MaterialDecal::upload() {
@@ -30,5 +33,8 @@ namespace rawrbox {
 
 		rawrbox::MaterialInstanced::process(mesh);
 		bgfx::setTexture(rawrbox::SAMPLE_DEPTH, this->_s_depth, rawrbox::RENDERER->getDepth());
+
+		std::array<float, 4> settings = {rawrbox::RENDERER_DEBUG == rawrbox::DEBUG_DECALS ? 1.F : 0.F};
+		bgfx::setUniform(this->_u_decalSettings, settings.data());
 	}
 } // namespace rawrbox
