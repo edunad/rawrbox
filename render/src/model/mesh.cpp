@@ -71,11 +71,6 @@ namespace rawrbox {
 		this->emissionIntensity = intensity;
 	}
 
-	const rawrbox::TextureBase* Mesh::getOpacityTexture() const { return this->opacityTexture; }
-	void Mesh::setOpacityTexture(rawrbox::TextureBase* ptr) {
-		this->opacityTexture = ptr;
-	}
-
 	const rawrbox::TextureBase* Mesh::getSpecularTexture() const { return this->specularTexture; }
 	void Mesh::setSpecularTexture(rawrbox::TextureBase* ptr, float shininess) {
 		this->specularTexture = ptr;
@@ -101,6 +96,10 @@ namespace rawrbox {
 
 	void Mesh::setBlend(uint64_t blend) {
 		this->blending = blend;
+	}
+
+	void Mesh::setRecieveDecals(bool decals) {
+		this->addData("mask", {decals ? 1.0F : 0.0F, 0, 0, 0});
 	}
 
 	void Mesh::setColor(const rawrbox::Color& color) {

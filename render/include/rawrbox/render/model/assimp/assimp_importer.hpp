@@ -49,8 +49,6 @@ namespace rawrbox {
 		rawrbox::Colorf diffuseColor = rawrbox::Colors::White;
 
 		std::unique_ptr<rawrbox::TextureBase> normal = nullptr;
-		std::unique_ptr<rawrbox::TextureBase> opacity = nullptr;
-
 		std::unique_ptr<rawrbox::TextureBase> specular = nullptr;
 		rawrbox::Colorf specularColor = rawrbox::Colors::White;
 		float shininess = 25.F;

@@ -53,12 +53,6 @@ namespace rawrbox {
 					mesh.setEmissionTexture(mat->emissive.get(), mat->intensity);
 				}
 				// --------
-
-				// OPACITY -----
-				if (mat->opacity != nullptr) {
-					mesh.setOpacityTexture(mat->opacity.get());
-				}
-				// --------
 			}
 			// ------------
 

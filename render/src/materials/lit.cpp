@@ -29,7 +29,6 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_s_normal);
 		RAWRBOX_DESTROY(this->_s_specular);
 		RAWRBOX_DESTROY(this->_s_emission);
-		RAWRBOX_DESTROY(this->_s_opacity);
 
 		RAWRBOX_DESTROY(this->u_texMatData);
 	}
@@ -40,7 +39,6 @@ namespace rawrbox {
 		this->_s_normal = bgfx::createUniform("s_normal", bgfx::UniformType::Sampler);
 		this->_s_specular = bgfx::createUniform("s_specular", bgfx::UniformType::Sampler);
 		this->_s_emission = bgfx::createUniform("s_emission", bgfx::UniformType::Sampler);
-		this->_s_opacity = bgfx::createUniform("s_opacity", bgfx::UniformType::Sampler);
 
 		this->u_texMatData = bgfx::createUniform("u_texMatData", bgfx::UniformType::Vec4);
 	}
@@ -64,12 +62,6 @@ namespace rawrbox {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_EMISSION, this->_s_emission, rawrbox::BLACK_TEXTURE->getHandle());
 		}
 
-		if (mesh.opacityTexture != nullptr && mesh.opacityTexture->valid() && !mesh.lineMode && !mesh.wireframe) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_OPACITY, this->_s_opacity, mesh.opacityTexture->getHandle());
-		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_OPACITY, this->_s_opacity, rawrbox::WHITE_TEXTURE->getHandle());
-		}
-
 		std::array<float, 2> matData = {mesh.specularShininess, mesh.emissionIntensity};
 		bgfx::setUniform(this->u_texMatData, matData.data());
 
@@ -78,6 +70,7 @@ namespace rawrbox {
 
 	void MaterialLit::postProcess() {
 		switch (rawrbox::RENDERER_DEBUG) {
+			default:
 			case DEBUG_OFF:
 				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);
 				break;

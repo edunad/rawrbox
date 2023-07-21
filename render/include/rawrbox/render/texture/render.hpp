@@ -12,17 +12,15 @@ namespace rawrbox {
 
 	private:
 		bgfx::FrameBufferHandle _renderView = BGFX_INVALID_HANDLE;
-		bgfx::TextureHandle _depthHandle = BGFX_INVALID_HANDLE;
+		std::vector<bgfx::TextureHandle> _textureHandles = {};
 
 		rawrbox::Vector2i _size;
 
 		bgfx::ViewId _prevViewId;
 		bgfx::ViewId _renderId;
 
-		bool _depth;
-
 	public:
-		explicit TextureRender(const rawrbox::Vector2i& size, bool depth = true, bgfx::ViewId id = (rawrbox::RENDERER_VIEW_ID + ++TextureRender::renderID));
+		explicit TextureRender(const rawrbox::Vector2i& size, bgfx::ViewId id = (rawrbox::RENDERER_VIEW_ID + ++TextureRender::renderID));
 
 		TextureRender(TextureRender&&) = delete;
 		TextureRender& operator=(TextureRender&&) = delete;
@@ -32,7 +30,10 @@ namespace rawrbox {
 		~TextureRender() override;
 
 		// ------UTILS
-		[[nodiscard]] virtual const bgfx::TextureHandle& getDepth() const;
+		virtual void addTexture(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::BGRA8, uint64_t flags = BGFX_TEXTURE_RT);
+
+		[[nodiscard]] virtual const bgfx::TextureHandle getDepth() const;
+		[[nodiscard]] virtual bgfx::TextureHandle getTexture(uint8_t i) const;
 		[[nodiscard]] virtual const bgfx::FrameBufferHandle& getBuffer() const;
 		// ------------
 
@@ -40,7 +41,7 @@ namespace rawrbox {
 		virtual void startRecord(bool clear = true);
 		virtual void stopRecord();
 
-		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
+		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::BGRA8) override;
 		// --------------------
 
 		virtual const bgfx::ViewId id();

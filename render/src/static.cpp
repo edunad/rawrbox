@@ -3,6 +3,8 @@
 
 namespace rawrbox {
 	// VIEW IDS ---
+	bgfx::ViewId BLIT_VIEW = 99;
+
 	bgfx::ViewId MAIN_WORLD_VIEW = 100;
 	bgfx::ViewId MAIN_OVERLAY_VIEW = 101;
 
@@ -15,7 +17,6 @@ namespace rawrbox {
 	// ---------
 
 	bool BGFX_INITIALIZED = false;
-	uint32_t BGFX_FRAME = 0;
 
 	// TEXTURE FALLBACKS ---
 	std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE = nullptr;
@@ -29,17 +30,19 @@ namespace rawrbox {
 	uint8_t SAMPLE_MAT_NORMAL = 1;
 	uint8_t SAMPLE_MAT_SPECULAR = 2;
 	uint8_t SAMPLE_MAT_EMISSION = 3;
-	uint8_t SAMPLE_MAT_OPACITY = 4;
-	uint8_t SAMPLE_MAT_DISPLACEMENT = 5;
+	uint8_t SAMPLE_MAT_DISPLACEMENT = 4;
 
-	uint8_t SAMPLE_LIGHTS = 6;
+	uint8_t SAMPLE_LIGHTS = 5;
 
-	uint8_t SAMPLE_CLUSTERS = 7;
-	uint8_t SAMPLE_LIGHTINDICES = 8;
-	uint8_t SAMPLE_LIGHTGRID = 9;
-	uint8_t SAMPLE_ATOMIC_INDEX = 10;
+	uint8_t SAMPLE_DEPTH = 6;
+	uint8_t SAMPLE_MASK = 7;
 
-	uint8_t SAMPLE_INSTANCE_DATA = 11;
+	uint8_t SAMPLE_CLUSTERS = 8;
+	uint8_t SAMPLE_LIGHTINDICES = 9;
+	uint8_t SAMPLE_LIGHTGRID = 10;
+	uint8_t SAMPLE_ATOMIC_INDEX = 11;
+
+	uint8_t SAMPLE_INSTANCE_DATA = 12;
 	// ---------
 
 	// ID GENERATION
@@ -49,6 +52,8 @@ namespace rawrbox {
 	// -----
 
 	// QUICK ACCESS ---
+	uint32_t BGFX_FRAME = 0;
+
 	rawrbox::CameraBase* MAIN_CAMERA = nullptr;
 	rawrbox::RendererBase* RENDERER = nullptr;
 

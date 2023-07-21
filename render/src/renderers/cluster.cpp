@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/light/manager.hpp>
 #include <rawrbox/render/renderers/cluster.hpp>
 #include <rawrbox/render/utils/render.hpp>
@@ -64,20 +65,10 @@ namespace rawrbox {
 		if (this->_uniforms == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Render uniforms not set! Did you call 'init' ?");
 		if (this->worldRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] World render method not set! Did you call 'setWorldRender' ?");
 		if (this->overlayRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Overlay render method not set! Did you call 'setOverlayRender' ?");
+
 		// No world / overlay only
 		if (rawrbox::MAIN_CAMERA == nullptr) {
-			auto prevId = rawrbox::CURRENT_VIEW_ID;
-			rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_OVERLAY_VIEW;
-
-			bgfx::touch(rawrbox::MAIN_OVERLAY_VIEW); // Make sure we draw on the view
-			bgfx::setViewTransform(rawrbox::MAIN_OVERLAY_VIEW, nullptr, nullptr);
-
-			// Render overlay ---
-			this->overlayRender();
-			// ----------------
-
-			rawrbox::CURRENT_VIEW_ID = prevId;
-			rawrbox::RendererBase::frame(); // No camera, prob just stencil?
+			rawrbox::RendererBase::render();
 			return;
 		}
 
@@ -102,6 +93,7 @@ namespace rawrbox {
 			    ClusterUniforms::CLUSTERS_Y / ClusterUniforms::CLUSTERS_Y_THREADS,
 			    ClusterUniforms::CLUSTERS_Z / ClusterUniforms::CLUSTERS_Z_THREADS);
 		}
+		// ------
 
 		// reset atomic counter for light grid generation
 		// buffers created with BGFX_BUFFER_COMPUTE_WRITE can't be updated from the CPU
@@ -125,29 +117,11 @@ namespace rawrbox {
 		    ClusterUniforms::CLUSTERS_Z / ClusterUniforms::CLUSTERS_Z_THREADS);
 		// --------
 
-		// Final Pass ---------------------
-		auto prevId = rawrbox::CURRENT_VIEW_ID;
-		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_WORLD_VIEW;
-		bgfx::touch(rawrbox::CURRENT_VIEW_ID); // Make sure we draw on the view
+		// Final Pass -------------
+		this->finalRender();
+		// ------------------------
 
-		// Render world ---
-		this->worldRender();
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, view.data(), proj.data());
-		// ----------------
-
-		rawrbox::CURRENT_VIEW_ID = prevId;
-		bgfx::discard(BGFX_DISCARD_ALL);
-
-		prevId = rawrbox::CURRENT_VIEW_ID;
-		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_OVERLAY_VIEW;
-
-		// Render overlay ---
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
-		this->overlayRender();
-		// ----------------
-
-		rawrbox::CURRENT_VIEW_ID = prevId;
-		rawrbox::RendererBase::frame();
+		this->frame(); // Submit ---
 	}
 
 	void RendererCluster::bindRenderUniforms() {

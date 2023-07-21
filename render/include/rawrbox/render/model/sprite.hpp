@@ -60,8 +60,6 @@ namespace rawrbox {
 				bgfx::setState(flags, 0);
 				this->_material->postProcess();
 			}
-
-			bgfx::discard(BGFX_DISCARD_ALL);
 		}
 	};
 } // namespace rawrbox

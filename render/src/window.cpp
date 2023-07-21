@@ -293,6 +293,10 @@ namespace rawrbox {
 		this->_title = title;
 	}
 
+	void Window::overridePostWorld(std::function<void()> fnc) {
+		this->_renderer->overridePostWorld(fnc);
+	}
+
 	// CURSOR ------
 	void Window::hideCursor(bool hidden) {
 		if (GLFWHANDLE == nullptr) return;
@@ -328,6 +332,9 @@ namespace rawrbox {
 
 	void Window::shutdown() {
 		if (this->_handle == nullptr) return;
+
+		rawrbox::RENDERER = nullptr;
+		rawrbox::MAIN_CAMERA = nullptr;
 
 		glfwDestroyWindow(GLFWHANDLE); // Optional
 		glfwTerminate();

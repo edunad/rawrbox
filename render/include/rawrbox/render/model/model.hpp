@@ -5,6 +5,7 @@
 #include <rawrbox/render/model/animation.hpp>
 #include <rawrbox/render/model/base.hpp>
 #include <rawrbox/render/model/skeleton.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/anim.hpp>
 
 #define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
@@ -33,6 +34,7 @@ namespace rawrbox {
 			// Merge same meshes to reduce calls
 			if (this->_canOptimize) {
 				size_t old = this->_meshes.size();
+
 				for (size_t i1 = 0; i1 < this->_meshes.size(); i1++) {
 					auto& mesh1 = this->_meshes[i1];
 					for (size_t i2 = 0; i2 < this->_meshes.size(); i2++) {
@@ -309,7 +311,6 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const { return this->_bbox; }
-
 		[[nodiscard]] virtual const size_t totalMeshes() const {
 			return this->_meshes.size();
 		}
@@ -401,6 +402,13 @@ namespace rawrbox {
 			}
 		}
 
+		virtual void setRecieveDecals(bool recieve, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->setRecieveDecals(recieve);
+			}
+		}
+
 		virtual std::vector<std::unique_ptr<rawrbox::Mesh>>& meshes() {
 			return this->_meshes;
 		}
@@ -441,7 +449,6 @@ namespace rawrbox {
 			}
 
 			this->postDraw();
-			bgfx::discard(BGFX_DISCARD_ALL);
 		}
 	};
 } // namespace rawrbox

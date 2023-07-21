@@ -1,6 +1,5 @@
 #pragma once
 #include <rawrbox/render/camera/base.hpp>
-#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/texture/flat.hpp>
 #include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/render/texture/missing.hpp>
@@ -18,10 +17,13 @@
 // NOLINTEND(*)
 
 namespace rawrbox {
+	class RendererBase;
+
 	enum RENDER_DEBUG_MODE {
 		DEBUG_OFF,
 		DEBUG_CLUSTER_Z,
-		DEBUG_CLUSTER_COUNT
+		DEBUG_CLUSTER_COUNT,
+		DEBUG_DECALS
 	};
 
 	constexpr auto MAX_BONES_PER_VERTEX = 4;
@@ -29,9 +31,10 @@ namespace rawrbox {
 	constexpr auto MAX_LIGHTS = 1000;
 
 	extern bool BGFX_INITIALIZED;
-	extern uint32_t BGFX_FRAME;
 
 	// VIEW IDS ---
+	extern bgfx::ViewId BLIT_VIEW;
+
 	extern bgfx::ViewId MAIN_WORLD_VIEW;
 	extern bgfx::ViewId MAIN_OVERLAY_VIEW;
 
@@ -48,10 +51,12 @@ namespace rawrbox {
 	extern uint8_t SAMPLE_MAT_NORMAL;
 	extern uint8_t SAMPLE_MAT_SPECULAR;
 	extern uint8_t SAMPLE_MAT_EMISSION;
-	extern uint8_t SAMPLE_MAT_OPACITY;
 	extern uint8_t SAMPLE_MAT_DISPLACEMENT;
 
 	extern uint8_t SAMPLE_LIGHTS;
+
+	extern uint8_t SAMPLE_MASK;
+	extern uint8_t SAMPLE_DEPTH;
 
 	extern uint8_t SAMPLE_CLUSTERS;
 	extern uint8_t SAMPLE_LIGHTINDICES;
@@ -75,6 +80,8 @@ namespace rawrbox {
 	// -----
 
 	// QUICK ACCESS ---
+	extern uint32_t BGFX_FRAME;
+
 	extern rawrbox::CameraBase* MAIN_CAMERA;
 	extern rawrbox::RendererBase* RENDERER;
 

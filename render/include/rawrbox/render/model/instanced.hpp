@@ -83,9 +83,10 @@ namespace rawrbox {
 		}
 
 		std::vector<rawrbox::Instance>& instances() { return this->_instances; }
+		size_t count() { return this->_instances.size(); }
 
 		void upload(bool dynamic = false) override {
-			rawrbox::ModelBase<M>::upload(dynamic);
+			rawrbox::ModelBase<M>::upload(false);
 
 			this->_dataBuffer = bgfx::createDynamicVertexBuffer(
 			    1, rawrbox::Instance::vLayout(), BGFX_BUFFER_COMPUTE_READ | BGFX_BUFFER_ALLOW_RESIZE);
@@ -94,6 +95,7 @@ namespace rawrbox {
 		}
 
 		void updateInstance() {
+			if (this->_instances.empty()) return;
 			if (!bgfx::isValid(this->_dataBuffer)) throw std::runtime_error("[RawrBox-InstancedModel] Data buffer not valid! Did you call upload()?");
 
 			const bgfx::Memory* mem = bgfx::makeRef(this->_instances.data(), static_cast<uint32_t>(this->_instances.size()) * rawrbox::Instance::vLayout().getStride());
@@ -127,7 +129,6 @@ namespace rawrbox {
 
 			bgfx::setState(flags, 0);
 			this->_material->postProcess();
-			bgfx::discard();
 		}
 	};
 } // namespace rawrbox
