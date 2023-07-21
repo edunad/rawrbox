@@ -20,9 +20,9 @@ namespace rawrbox {
 	}
 
 	// ------ UTILS
-	void TextureRender::addTexture(bgfx::TextureFormat::Enum format) {
+	void TextureRender::addTexture(bgfx::TextureFormat::Enum format, uint64_t flags) {
 		if (bgfx::isValid(this->_renderView)) throw std::runtime_error("[RAWRBOX-RenderTarget] Texture already uploaded, cannot add extra textures");
-		this->_textureHandles.push_back(bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 1, format, BGFX_TEXTURE_RT | this->_flags));
+		this->_textureHandles.push_back(bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 1, format, flags | this->_flags));
 	}
 
 	bgfx::TextureHandle TextureRender::getTexture(uint8_t i) const {

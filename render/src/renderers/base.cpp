@@ -94,11 +94,9 @@ namespace rawrbox {
 		// ----------------
 
 		// Record decals ---
-		// bgfx::blit(vFullscreenLight, lightDepthTexture, 0, 0, bgfx::getTexture(gBuffer, GBufferAttachment::Depth));
-
 		this->_decals->startRecord();
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, rawrbox::MAIN_CAMERA->getViewMtx().data(), rawrbox::MAIN_CAMERA->getProjMtx().data());
 		rawrbox::DECALS::draw();
+		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, rawrbox::MAIN_CAMERA->getViewMtx().data(), rawrbox::MAIN_CAMERA->getProjMtx().data());
 		this->_decals->stopRecord();
 		// -------------------
 

@@ -30,7 +30,7 @@ namespace rawrbox {
 		~TextureRender() override;
 
 		// ------UTILS
-		virtual void addTexture(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::BGRA8);
+		virtual void addTexture(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::BGRA8, uint64_t flags = BGFX_TEXTURE_RT);
 
 		[[nodiscard]] virtual const bgfx::TextureHandle getDepth() const;
 		[[nodiscard]] virtual bgfx::TextureHandle getTexture(uint8_t i) const;

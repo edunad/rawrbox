@@ -3,6 +3,8 @@
 
 namespace rawrbox {
 	// VIEW IDS ---
+	bgfx::ViewId BLIT_VIEW = 99;
+
 	bgfx::ViewId MAIN_WORLD_VIEW = 100;
 	bgfx::ViewId MAIN_OVERLAY_VIEW = 101;
 

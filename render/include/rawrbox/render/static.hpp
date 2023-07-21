@@ -33,6 +33,8 @@ namespace rawrbox {
 	extern bool BGFX_INITIALIZED;
 
 	// VIEW IDS ---
+	extern bgfx::ViewId BLIT_VIEW;
+
 	extern bgfx::ViewId MAIN_WORLD_VIEW;
 	extern bgfx::ViewId MAIN_OVERLAY_VIEW;
 

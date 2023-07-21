@@ -11,8 +11,6 @@ const bgfx::EmbeddedShader model_decal_shaders[] = {
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
-// https://github.com/NeoAxis/NeoAxisEngine/blob/master/Project/Assets/Base/Shaders/MaterialStandard_DeferredDecal_fs.sc
-
 namespace rawrbox {
 	MaterialDecal::~MaterialDecal() {
 		RAWRBOX_DESTROY(this->_s_depth);
