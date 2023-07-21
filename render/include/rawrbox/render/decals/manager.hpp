@@ -20,6 +20,7 @@ namespace rawrbox {
 		static void add(const rawrbox::Vector3f& pos, float direction = 0, const rawrbox::Colorf& color = rawrbox::Colors::White, uint16_t atlasId = 0);
 		static void remove(size_t i);
 		static const rawrbox::Instance& get(size_t i);
+		static const rawrbox::Mesh& getTemplate();
 		static const size_t count();
 		// -----
 

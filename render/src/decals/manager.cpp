@@ -34,6 +34,8 @@ namespace rawrbox {
 		return _model->getInstance(i);
 	}
 
+	const rawrbox::Mesh& DECALS::getTemplate() { return _model->getTemplate(); }
+
 	const size_t DECALS::count() { return _model->count(); }
 
 	void DECALS::init() {
