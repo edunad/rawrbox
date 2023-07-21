@@ -11,6 +11,7 @@ uniform vec4 u_data[MAX_DATA];
 #define billboard u_data[0].xyz
 #define vertexSnap u_data[1].x
 #define displacement_power u_data[2].x
+#define recieve_decals u_data[3].x
 
 uniform vec3 u_mesh_pos;
 

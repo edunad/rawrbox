@@ -8,12 +8,12 @@ $input v_normal, v_tangent, v_texcoord0, v_color0, v_worldPos
 
 #include "../../include/clusters.sh"
 #include "../../include/lights.sh"
+#include "../../include/model_transforms.sh"
 
 SAMPLER2DARRAY(s_albedo, SAMPLE_MAT_ALBEDO);
 SAMPLER2DARRAY(s_normal, SAMPLE_MAT_NORMAL);
 SAMPLER2DARRAY(s_specular, SAMPLE_MAT_SPECULAR);
 SAMPLER2DARRAY(s_emission, SAMPLE_MAT_EMISSION);
-SAMPLER2DARRAY(s_opacity, SAMPLE_MAT_OPACITY);
 
 uniform vec4 u_colorOffset;
 uniform vec4 u_camPos;
@@ -27,7 +27,6 @@ void main() {
 	vec4 normal = texture2DArray(s_normal, vec3(v_texcoord0.xy, v_texcoord0.z));
 	vec4 specular = texture2DArray(s_specular, vec3(v_texcoord0.xy, v_texcoord0.z)) * v_color0;
 	vec4 emission = texture2DArray(s_emission, vec3(v_texcoord0.xy, v_texcoord0.z)) * v_color0 * u_colorOffset;
-	vec4 opacity = texture2DArray(s_opacity, vec3(v_texcoord0.xy, v_texcoord0.z)).a;
 
 	// ----
 	vec3 norm = normalize(v_normal);
@@ -36,7 +35,15 @@ void main() {
 
     vec3 viewDir = normalize(u_camPos - v_worldPos);
 
+
 	// Apply lights ----
+	vec3 radianceOut = applyLight(gl_FragCoord, v_worldPos, norm, viewDir, specular.r, u_texMatData.x);
+
+	radianceOut += emission;
+	gl_FragData[0].rgb = albedo * radianceOut;
+	// --------
+
+/*
 	if(u_fullbright == 0.0) {
 		vec3 radianceOut = vec3_splat(0.0);
 
@@ -95,12 +102,13 @@ void main() {
 		radianceOut += getAmbientLight();
 		radianceOut += emission;
 
-		gl_FragColor.rgb = albedo * radianceOut;
+		gl_FragData[0].rgb = albedo * radianceOut;
 		// --------
 	} else {
-		gl_FragColor.rgb = albedo;
+		gl_FragData[0].rgb = albedo;
 	}
-	// -------
+	// -------*/
 
-    gl_FragColor.a = albedo.a * opacity;
+    gl_FragData[0].a = albedo.a; // COLOR
+	gl_FragData[1].r = 1.F - recieve_decals; // DECALS
 }

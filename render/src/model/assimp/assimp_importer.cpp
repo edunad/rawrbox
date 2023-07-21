@@ -198,14 +198,7 @@ namespace rawrbox {
 			}
 			// ----------------------
 
-			// TEXTURE OPACITY
-			auto opacity = this->importTexture(pMaterial, aiTextureType_OPACITY, bgfx::TextureFormat::D32);
-			if (!opacity.empty()) {
-				mat->opacity = std::move(opacity[0].value()); // Only support one for the moment
-			}
-			// ----------------------
-
-			if (alpha != 1.F || mat->opacity != nullptr) {
+			if (alpha != 1.F) {
 				mat->blending = BGFX_STATE_BLEND_ALPHA;
 			}
 

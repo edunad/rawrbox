@@ -7,20 +7,25 @@
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader model_decal_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_decal_base),
-    BGFX_EMBEDDED_SHADER(fs_decal_unlit_base),
+    BGFX_EMBEDDED_SHADER(fs_decal_base),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
+
+// https://github.com/NeoAxis/NeoAxisEngine/blob/master/Project/Assets/Base/Shaders/MaterialStandard_DeferredDecal_fs.sc
 
 namespace rawrbox {
 	MaterialDecal::~MaterialDecal() {
 		RAWRBOX_DESTROY(this->_s_depth);
+		RAWRBOX_DESTROY(this->_s_mask);
+
 		RAWRBOX_DESTROY(this->_u_decalSettings);
 	}
 
 	void MaterialDecal::registerUniforms() {
-		rawrbox::MaterialInstanced::registerUniforms();
+		rawrbox::MaterialInstancedLit::registerUniforms();
 
 		this->_s_depth = bgfx::createUniform("s_depth", bgfx::UniformType::Sampler);
+		this->_s_mask = bgfx::createUniform("s_mask", bgfx::UniformType::Sampler);
 		this->_u_decalSettings = bgfx::createUniform("u_decalSettings", bgfx::UniformType::Vec4);
 	}
 
@@ -31,8 +36,10 @@ namespace rawrbox {
 	void MaterialDecal::process(const rawrbox::Mesh& mesh) {
 		if (rawrbox::RENDERER == nullptr) return;
 
-		rawrbox::MaterialInstanced::process(mesh);
+		rawrbox::MaterialInstancedLit::process(mesh);
+
 		bgfx::setTexture(rawrbox::SAMPLE_DEPTH, this->_s_depth, rawrbox::RENDERER->getDepth());
+		bgfx::setTexture(rawrbox::SAMPLE_MASK, this->_s_mask, rawrbox::RENDERER->getMask());
 
 		std::array<float, 4> settings = {rawrbox::RENDERER_DEBUG == rawrbox::DEBUG_DECALS ? 1.F : 0.F};
 		bgfx::setUniform(this->_u_decalSettings, settings.data());

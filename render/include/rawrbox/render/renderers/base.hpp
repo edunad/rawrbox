@@ -36,7 +36,6 @@ namespace rawrbox {
 
 		virtual void setWorldRender(std::function<void()> render);
 		virtual void setOverlayRender(std::function<void()> render);
-
 		virtual void overridePostWorld(std::function<void()> post);
 
 		virtual void render();
@@ -44,8 +43,9 @@ namespace rawrbox {
 		virtual void bindRenderUniforms();
 
 		// Utils ----
-		virtual bgfx::TextureHandle getDepth();
-		virtual bgfx::TextureHandle getColor();
+		[[nodiscard]] virtual const bgfx::TextureHandle getDepth() const;
+		[[nodiscard]] virtual const bgfx::TextureHandle getColor() const;
+		[[nodiscard]] virtual const bgfx::TextureHandle getMask() const;
 		// ------
 
 		static bool supported();

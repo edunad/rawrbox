@@ -311,7 +311,6 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const { return this->_bbox; }
-
 		[[nodiscard]] virtual const size_t totalMeshes() const {
 			return this->_meshes.size();
 		}
@@ -400,6 +399,13 @@ namespace rawrbox {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
 				if (id != -1 && i != id) continue;
 				this->_meshes[i]->setColor(color);
+			}
+		}
+
+		virtual void setRecieveDecals(bool recieve, int id = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (id != -1 && i != id) continue;
+				this->_meshes[i]->setRecieveDecals(recieve);
 			}
 		}
 

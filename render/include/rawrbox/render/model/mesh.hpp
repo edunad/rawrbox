@@ -47,7 +47,6 @@ namespace rawrbox {
 		// TEXTURES ---
 		rawrbox::TextureBase* texture = nullptr;
 		rawrbox::TextureBase* normalTexture = nullptr;
-		rawrbox::TextureBase* opacityTexture = nullptr;
 
 		rawrbox::TextureBase* specularTexture = nullptr;
 		rawrbox::TextureBase* emissionTexture = nullptr;
@@ -125,9 +124,6 @@ namespace rawrbox {
 		[[nodiscard]] const rawrbox::TextureBase* getEmissionTexture() const;
 		void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity);
 
-		[[nodiscard]] const rawrbox::TextureBase* getOpacityTexture() const;
-		void setOpacityTexture(rawrbox::TextureBase* ptr);
-
 		[[nodiscard]] const rawrbox::TextureBase* getSpecularTexture() const;
 		void setSpecularTexture(rawrbox::TextureBase* ptr, float shininess);
 
@@ -140,6 +136,8 @@ namespace rawrbox {
 		void setDepthTest(uint64_t depthTest);
 
 		void setBlend(uint64_t blend);
+
+		void setRecieveDecals(bool status);
 
 		void setColor(const rawrbox::Color& color);
 

@@ -1,12 +1,14 @@
 #pragma once
 
-#include <rawrbox/render/materials/instanced.hpp>
+#include <rawrbox/render/materials/instanced_lit.hpp>
 
 namespace rawrbox {
 
-	class MaterialDecal : public rawrbox::MaterialInstanced {
+	class MaterialDecal : public rawrbox::MaterialInstancedLit {
 	protected:
 		bgfx::UniformHandle _s_depth = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _s_mask = BGFX_INVALID_HANDLE;
+
 		bgfx::UniformHandle _u_decalSettings = BGFX_INVALID_HANDLE;
 
 	public:

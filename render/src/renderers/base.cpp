@@ -30,6 +30,7 @@ namespace rawrbox {
 
 	void RendererBase::resize(const rawrbox::Vector2i& size) {
 		this->_render = std::make_unique<rawrbox::TextureRender>(size);
+		this->_render->addTexture(bgfx::TextureFormat::R8); // Decal stencil
 		this->_render->upload();
 
 		this->_decals = std::make_unique<rawrbox::TextureRender>(size);
@@ -93,6 +94,8 @@ namespace rawrbox {
 		// ----------------
 
 		// Record decals ---
+		// bgfx::blit(vFullscreenLight, lightDepthTexture, 0, 0, bgfx::getTexture(gBuffer, GBufferAttachment::Depth));
+
 		this->_decals->startRecord();
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, rawrbox::MAIN_CAMERA->getViewMtx().data(), rawrbox::MAIN_CAMERA->getProjMtx().data());
 		rawrbox::DECALS::draw();
@@ -139,19 +142,25 @@ namespace rawrbox {
 	void RendererBase::bindRenderUniforms() {}
 
 	// Utils ----
-	bgfx::TextureHandle RendererBase::getDepth() {
+	const bgfx::TextureHandle RendererBase::getDepth() const {
 		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
 		return this->_render->getDepth();
 	}
 
-	bgfx::TextureHandle RendererBase::getColor() {
+	const bgfx::TextureHandle RendererBase::getColor() const {
 		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
 		return this->_render->getHandle();
+	}
+
+	const bgfx::TextureHandle RendererBase::getMask() const {
+		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
+		return this->_render->getTexture(0);
 	}
 	// ------
 
 	// Is it supported by the GPU?
 	bool RendererBase::supported() {
-		return true;
+		const bgfx::Caps* caps = bgfx::getCaps();
+		return (caps->supported & BGFX_CAPS_INSTANCING) != 0;
 	}
 } // namespace rawrbox

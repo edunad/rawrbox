@@ -12,7 +12,7 @@ namespace rawrbox {
 
 	private:
 		bgfx::FrameBufferHandle _renderView = BGFX_INVALID_HANDLE;
-		bgfx::TextureHandle _depthHandle = BGFX_INVALID_HANDLE;
+		std::vector<bgfx::TextureHandle> _textureHandles = {};
 
 		rawrbox::Vector2i _size;
 
@@ -30,7 +30,10 @@ namespace rawrbox {
 		~TextureRender() override;
 
 		// ------UTILS
-		[[nodiscard]] virtual const bgfx::TextureHandle& getDepth() const;
+		virtual void addTexture(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::BGRA8);
+
+		[[nodiscard]] virtual const bgfx::TextureHandle getDepth() const;
+		[[nodiscard]] virtual bgfx::TextureHandle getTexture(uint8_t i) const;
 		[[nodiscard]] virtual const bgfx::FrameBufferHandle& getBuffer() const;
 		// ------------
 

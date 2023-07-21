@@ -41,7 +41,6 @@ namespace rawrbox {
 
 		auto mdlTemp = rawrbox::MeshUtils::generateCube({0, 0, 0}, {1.0F, 1.0F, 0.05F});
 		mdlTemp.setBlend(BGFX_STATE_BLEND_ALPHA);
-		mdlTemp.setCulling(0);
 		mdlTemp.setDepthTest(0);
 
 		_model->setTemplate(mdlTemp);

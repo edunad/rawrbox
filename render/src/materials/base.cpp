@@ -77,6 +77,10 @@ namespace rawrbox {
 			data[2] = mesh.getData("displacement_strength").data();
 		}
 
+		if (mesh.hasData("mask")) {
+			data[3] = mesh.getData("mask").data();
+		}
+
 		bgfx::setUniform(this->_u_data, data.front().data(), MAX_DATA);
 		// ---
 

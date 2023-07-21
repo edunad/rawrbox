@@ -19,8 +19,6 @@ namespace rawrbox {
 		bgfx::UniformHandle _s_specular = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle _s_emission = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle _s_opacity = BGFX_INVALID_HANDLE;
-
 		//------
 	public:
 		bgfx::UniformHandle u_texMatData = BGFX_INVALID_HANDLE;

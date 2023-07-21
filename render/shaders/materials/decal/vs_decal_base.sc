@@ -1,5 +1,5 @@
-$input a_position, a_color0, a_texcoord0
-$output v_texcoord0, v_color0, v_model_0, v_model_1, v_model_2, v_model_3
+$input a_position, a_color0, a_texcoord0, a_normal, a_tangent
+$output v_texcoord0, v_color0, v_model_0, v_model_1, v_model_2, v_model_3, v_normal, v_tangent, v_worldPos
 
 #include <bgfx_shader.sh>
 #include <bgfx_compute.sh>
@@ -31,7 +31,17 @@ void main() {
 	v_texcoord0.xy = a_texcoord0.xy;
 	v_texcoord0.z = getInstanceData(id, 5).x;
 
-	gl_Position = mul(u_viewProj, mul(model, vec4(a_position, 1.)));
+	vec4 normal = a_normal * 2.0 - 1.0;
+	vec4 tangent = a_tangent * 2.0 - 1.0;
+
+	vec3 wnormal = mul(model, vec4(normal.xyz, 0.0)).xyz;
+	vec3 wtangent = mul(model, vec4(tangent.xyz, 0.0)).xyz;
+
+	v_normal = normalize(wnormal);
+	v_tangent = normalize(wtangent);
+	v_worldPos = mul(model, vec4(a_position, 1.)).xyz;
+
+	gl_Position = mul(u_viewProj, vec4(v_worldPos, 1.));
 }
 
 
