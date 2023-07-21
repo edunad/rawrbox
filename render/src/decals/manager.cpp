@@ -20,6 +20,7 @@ namespace rawrbox {
 
 		rawrbox::Matrix4x4 m;
 		m.mtxSRT({1.F, 1.F, 1.F}, rawrbox::Vector4f::toQuat({bx::toRad(direction), 0, 0}), pos);
+
 		_model->addInstance({m, color, {static_cast<float>(atlasId), 0, 0, 0}});
 	}
 
@@ -39,7 +40,7 @@ namespace rawrbox {
 		if (_model != nullptr) return;
 		_model = std::make_unique<rawrbox::InstancedModel<rawrbox::MaterialDecal>>();
 
-		auto mdlTemp = rawrbox::MeshUtils::generateCube({0, 0, 0}, {1.0F, 1.0F, 0.05F});
+		auto mdlTemp = rawrbox::MeshUtils::generateCube({0, 0, 0}, {1.0F, 1.0F, 0.25F});
 		mdlTemp.setBlend(BGFX_STATE_BLEND_ALPHA);
 		mdlTemp.setDepthTest(0);
 
