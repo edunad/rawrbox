@@ -1,10 +1,9 @@
-$input a_position, a_color0, a_texcoord0, a_indices, a_weight
+$input a_position, a_color0, a_texcoord0
 $output v_texcoord0, v_color0
 
 #include <bgfx_shader.sh>
 #include <bgfx_compute.sh>
 #include "../../include/model_transforms.sh"
-#include "../../include/model_skinned.sh"
 
 // For each mesh
 // 1 to 4 = Matrix position

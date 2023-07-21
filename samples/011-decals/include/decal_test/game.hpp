@@ -12,9 +12,9 @@
 namespace decal_test {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
+
 		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
-		std::unique_ptr<rawrbox::AssimpModel<>> _model2 = std::make_unique<rawrbox::AssimpModel<>>();
-		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialLit>> _model3 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialLit>>();
+		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialLit>> _model2 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialLit>>();
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;

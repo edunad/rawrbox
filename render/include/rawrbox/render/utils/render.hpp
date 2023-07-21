@@ -30,7 +30,7 @@ namespace rawrbox {
 		static bgfx::UniformHandle _s_texColor;
 
 	public:
-		static void drawQUAD(const bgfx::TextureHandle handle, const rawrbox::Vector2i& wSize, bool useQuadProgram = true);
+		static void drawQUAD(const bgfx::TextureHandle handle, const rawrbox::Vector2i& wSize, bool useQuadProgram = true, uint64_t flags = 0);
 
 		// NOLINTBEGIN(*)
 		static void buildShader(const bgfx::EmbeddedShader shaders[], bgfx::ProgramHandle& program);

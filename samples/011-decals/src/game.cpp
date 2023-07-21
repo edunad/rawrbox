@@ -7,6 +7,7 @@
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
+#include <rawrbox/utils/keys.hpp>
 
 #include <decal_test/game.hpp>
 
@@ -39,6 +40,16 @@ namespace decal_test {
 		// Setup loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
+		// ----------
+
+		// Setup binds ---
+		this->_window->onKey += [](rawrbox::Window& w, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) {
+			if (action != KEY_ACTION_UP) return;
+			if (key == KEY_F1) {
+				rawrbox::RENDERER_DEBUG = rawrbox::RENDERER_DEBUG == rawrbox::RENDER_DEBUG_MODE::DEBUG_OFF ? rawrbox::RENDER_DEBUG_MODE::DEBUG_DECALS : rawrbox::RENDER_DEBUG_MODE::DEBUG_OFF;
+			}
+		};
+		// ----------
 
 		// Load content ---
 		this->loadContent();
@@ -72,16 +83,9 @@ namespace decal_test {
 		std::uniform_real_distribution<float> distRot(-1.5F, 1.5F);
 		std::uniform_real_distribution<float> a(0.F, 0.1F);
 
-		float x = -3.F;
 		for (int i = 0; i < 30; i++) {
-			rawrbox::DECALS::add({distRot(prng) + x, a(prng), distRot(prng) - 1.55F}, 90, rawrbox::Colors::Green, dist(prng));
-			rawrbox::DECALS::add({distRot(prng) + x, distRot(prng) + 1.25F, 0.F}, 0, rawrbox::Colors::Red, dist(prng));
-		}
-
-		x = 3.F;
-		for (int i = 0; i < 30; i++) {
-			rawrbox::DECALS::add({distRot(prng) + x, a(prng), distRot(prng) - 1.55F}, 90, rawrbox::Colors::Green, dist(prng));
-			rawrbox::DECALS::add({distRot(prng) + x, distRot(prng) + 1.25F, 0.F}, 0, rawrbox::Colors::Red, dist(prng));
+			rawrbox::DECALS::add({distRot(prng), a(prng), distRot(prng) - 1.55F}, 90, rawrbox::Colors::Green, dist(prng));
+			rawrbox::DECALS::add({distRot(prng), distRot(prng) + 1.25F, 0.F}, 0, rawrbox::Colors::Red, dist(prng));
 		}
 
 		// Setup
@@ -91,22 +95,13 @@ namespace decal_test {
 
 		this->_model2->load(*mdl);
 		this->_model2->setRecieveDecals(true);
-		this->_model2->setPos({-3, 0, 0});
-
-		this->_model3->load(*mdl);
-		this->_model3->setRecieveDecals(true);
-		this->_model3->setPos({3, 0, 0});
+		this->_model2->setPos({0, 0, 0});
 		//   -----
 
 		this->_model->setOptimizable(false);
 
 		{
-			auto mesh = rawrbox::MeshUtils::generateSphere({-3.F, 0.F, -1.F}, 0.5F);
-			this->_model->addMesh(mesh);
-		}
-
-		{
-			auto mesh = rawrbox::MeshUtils::generateSphere({3.F, 0.F, -1.F}, 0.5F);
+			auto mesh = rawrbox::MeshUtils::generateSphere({0.F, 0.F, -1.F}, 0.5F);
 			this->_model->addMesh(mesh);
 		}
 
@@ -142,7 +137,6 @@ namespace decal_test {
 
 		if (this->_ready && this->_model != nullptr) {
 			this->_model->getMesh()->setPos({std::sin(rawrbox::BGFX_FRAME * 0.01F) * 0.5F - 1.F, -0.05F, -0.55F - std::cos(rawrbox::BGFX_FRAME * 0.01F) * 0.5F});
-			this->_model->getMesh(1)->setPos({std::sin(rawrbox::BGFX_FRAME * 0.01F) * 0.5F + 1.F, -0.05F, -0.55F - std::cos(rawrbox::BGFX_FRAME * 0.01F) * 0.5F});
 		}
 	}
 
@@ -156,13 +150,14 @@ namespace decal_test {
 		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
 
 		bgfx::dbgTextPrintf(1, 11, 0x5f, fmt::format("TOTAL DECALS: {}", rawrbox::DECALS::count()).c_str());
+
+		bgfx::dbgTextPrintf(1, 13, 0x1f, "F1 to toggle debug decals");
 	}
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 
 		this->_model->draw();
 		this->_model2->draw();
-		this->_model3->draw();
 	}
 
 	void Game::draw() {

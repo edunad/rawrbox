@@ -109,7 +109,7 @@ namespace rawrbox {
 
 		if (this->postRender == nullptr) {
 			rawrbox::RenderUtils::drawQUAD(this->_render->getHandle(), this->_size);
-			rawrbox::RenderUtils::drawQUAD(this->_decals->getHandle(), this->_size);
+			rawrbox::RenderUtils::drawQUAD(this->_decals->getHandle(), this->_size, true, BGFX_STATE_BLEND_ALPHA);
 		} else {
 			this->postRender();
 		}
@@ -154,7 +154,7 @@ namespace rawrbox {
 
 	const bgfx::TextureHandle RendererBase::getMask() const {
 		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
-		return this->_render->getTexture(0);
+		return this->_render->getTexture(1);
 	}
 	// ------
 

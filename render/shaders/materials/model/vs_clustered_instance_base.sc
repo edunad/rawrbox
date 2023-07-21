@@ -18,7 +18,6 @@ vec4 getInstanceData(int id, int index) {
 
 void main() {
 	int id = gl_InstanceID;
-
 	mat4 model = mtxFromCols(getInstanceData(id, 0), getInstanceData(id, 1), getInstanceData(id, 2), getInstanceData(id, 3));
 
 	vec4 normal = a_normal * 2.0 - 1.0;

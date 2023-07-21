@@ -70,6 +70,7 @@ namespace rawrbox {
 
 	void MaterialLit::postProcess() {
 		switch (rawrbox::RENDERER_DEBUG) {
+			default:
 			case DEBUG_OFF:
 				bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);
 				break;

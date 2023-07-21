@@ -1,15 +1,17 @@
-$input v_texcoord0, v_color0, v_model_0, v_model_1, v_model_2, v_model_3, v_normal, v_tangent, v_worldPos
+$input v_texcoord0, v_color0, v_model_0, v_model_1, v_model_2, v_model_3, v_normal, v_worldPos
+
+#define READ_LIGHT_INDICES
+#define READ_LIGHT_GRID
 
 #include <bgfx_shader.sh>
 
-#include "../../include/defs.sh"
+#include "../../include/clusters.sh"
+#include "../../include/lights.sh"
+#include "../../include/model_transforms.sh"
 #include "../../include/shaderlib.sh"
 #include "../../include/utils.sh"
 
 SAMPLER2DARRAY(s_albedo, SAMPLE_MAT_ALBEDO);
-SAMPLER2DARRAY(s_normal, SAMPLE_MAT_NORMAL);
-SAMPLER2DARRAY(s_specular, SAMPLE_MAT_SPECULAR);
-SAMPLER2DARRAY(s_emission, SAMPLE_MAT_EMISSION);
 
 SAMPLER2D(s_depth, SAMPLE_DEPTH);
 SAMPLER2D(s_mask, SAMPLE_MASK);
@@ -48,24 +50,18 @@ void main() {
 	decalTexCoord = objectPosition.xy + 0.5;
     decalTexCoord.xy = 1.0 - decalTexCoord.xy; // Flip textures
 
-
     // Apply materials -----
     vec4 albedo = texture2DArray(s_albedo, vec3(decalTexCoord.xy, v_texcoord0.z));
     if(albedo.a <= 0.0) discard;
-/*
-	vec4 normal = texture2DArray(s_normal, vec3(v_texcoord0.xy, v_texcoord0.z));
-	vec4 specular = texture2DArray(s_specular, vec3(v_texcoord0.xy, v_texcoord0.z)) * v_color0;
-	vec4 emission = texture2DArray(s_emission, vec3(v_texcoord0.xy, v_texcoord0.z)) * v_color0 * u_colorOffset;
 
 	// ----
 	vec3 norm = normalize(v_normal);
-    vec3 modelNormal = convertTangentNormal(v_normal, v_tangent, normal);
 	// -----
 
-    vec3 viewDir = normalize(u_camPos - v_worldPos);
     // Apply light ----
+	vec3 radianceOut = applyLight(gl_FragCoord, v_worldPos, norm);
 
-    // ----*/
-
-    gl_FragColor = albedo * v_color0;
+	gl_FragColor.rgb = albedo * radianceOut * v_color0;
+    gl_FragColor.a = albedo.a; // COLOR
+    // ----
 }

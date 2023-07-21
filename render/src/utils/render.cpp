@@ -17,7 +17,7 @@ namespace rawrbox {
 	bgfx::ProgramHandle RenderUtils::_quadHandle = BGFX_INVALID_HANDLE; // Won't be clean tough, maybe add a shutdown?
 	bgfx::UniformHandle RenderUtils::_s_texColor = BGFX_INVALID_HANDLE; // Won't be clean tough, maybe add a shutdown?
 
-	void RenderUtils::drawQUAD(const bgfx::TextureHandle handle, const rawrbox::Vector2i& wSize, bool useQuadProgram) {
+	void RenderUtils::drawQUAD(const bgfx::TextureHandle handle, const rawrbox::Vector2i& wSize, bool useQuadProgram, uint64_t flags) {
 		// Setup ----
 		if (!bgfx::isValid(_quadHandle)) {
 			buildShader(quad_shaders, _quadHandle);
@@ -72,7 +72,7 @@ namespace rawrbox {
 		bgfx::setTexture(0, _s_texColor, handle);
 		bgfx::setVertexBuffer(0, &tvb);
 		bgfx::setIndexBuffer(&tib);
-		bgfx::setState(BGFX_STATE_DEFAULT_QUAD);
+		bgfx::setState(BGFX_STATE_DEFAULT_QUAD | flags);
 
 		if (useQuadProgram)
 			bgfx::submit(rawrbox::CURRENT_VIEW_ID, _quadHandle);
