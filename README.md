@@ -27,28 +27,28 @@
 
 # FEATURES (so far)
 
--   Model loading (animations, light, texture import) using assimp
--   Light support (point, directional)
--   Clustered rendering
--   3D text
--   2D stencil drawing
--   Fonts
--   Images (png, jpeg, tga, bitmap)
--   Sounds (using BASS lib)
--   Custom UI
--   Material system (similar to unity)
--   GIF loading & animation
--   Vulkan / DirectX / OpenGL support
--   Linux Wayland support + steam deck support
--   Physics system using [JoltPhysics](https://github.com/jrouwe/JoltPhysics)
+- Model loading (animations, light, texture import) using assimp
+- Light support (point, directional)
+- Clustered rendering
+- 3D text
+- 2D stencil drawing
+- Fonts
+- Images (png, jpeg, tga, bitmap)
+- Sounds (using BASS lib)
+- Custom UI
+- Material system (similar to unity)
+- GIF loading & animation
+- Vulkan / DirectX / OpenGL support
+- Linux Wayland support + steam deck support
+- Physics system using [JoltPhysics](https://github.com/jrouwe/JoltPhysics)
+- Decal system
 
 # TODO LIST
 
--   Decal system
--   Add animation blending
--   Add shadow maps to lights
--   Add scripting lib (with lua support)
--   Add steam networking lib
+- Add animation blending
+- Add shadow maps to lights
+- Add scripting lib (with lua support)
+- Add steam networking lib
 
 # LIBS
 
@@ -114,25 +114,25 @@
 
 ### REQUIRED SOFTWARE
 
--   [GIT](https://git-scm.com/) or something similar to GIT
--   Download and install **C++ Build Tools** (2022 is recommended)
--   Download and install a IDE, [Visual Code](https://code.visualstudio.com/) is **recommended**.
--   Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)
+- [GIT](https://git-scm.com/) or something similar to GIT
+- Download and install **C++ Build Tools** (2022 is recommended)
+- Download and install a IDE, [Visual Code](https://code.visualstudio.com/) is **recommended**.
+- Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)
 
 ### IDE SETUP (Visual Code)
 
--   Open the workspace file and install the recommended extensions (at least the C++, CMAKE)
--   Run cmake configure
--   Select `[Visual Studio Build Tools <version> Release - amd64]` on the kit popup (for all of the projects)
--   Run the compiler by hitting F5
--   Hope it builds fine 🙏
+- Open the workspace file and install the recommended extensions (at least the C++, CMAKE)
+- Run cmake configure
+- Select `[Visual Studio Build Tools <version> Release - amd64]` on the kit popup (for all of the projects)
+- Run the compiler by hitting F5
+- Hope it builds fine 🙏
 
 ## LINUX
 
 ### REQUIRED SOFTWARE
 
--   [PODMAN](https://podman.io/)
+- [PODMAN](https://podman.io/)
 
 ### IDE SETUP
 
--   TODO
+- TODO
