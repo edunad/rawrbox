@@ -86,7 +86,7 @@ namespace rawrbox {
 		if (!bgfx::isValid(_buffer)) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
 		update(); // Update all lights
 
-		std::array<float, 4> total = {fullbright ? 1.0F : 0.0F, static_cast<float>(rawrbox::LIGHTS::count())}; // other light settings
+		std::array<float, 4> total = {fullbright ? 1.0F : 0.0F}; // other light settings
 		bgfx::setUniform(_u_lightSettings, total.data());
 
 		bgfx::setUniform(_u_ambientLight, _ambient.data().data());

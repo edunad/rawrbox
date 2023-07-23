@@ -39,7 +39,7 @@ namespace rawrbox {
 		bgfx::TextureHandle _accTexture = BGFX_INVALID_HANDLE;
 
 		bgfx::ProgramHandle _worldLightProgram = BGFX_INVALID_HANDLE;
-		bgfx::ProgramHandle _pointLightProgram = BGFX_INVALID_HANDLE;
+		bgfx::ProgramHandle _lightProgram = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _light_index = BGFX_INVALID_HANDLE;
 
 		bgfx::VertexBufferHandle _bbox_vb = BGFX_INVALID_HANDLE;

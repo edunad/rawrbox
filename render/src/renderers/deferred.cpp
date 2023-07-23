@@ -10,9 +10,9 @@ const bgfx::EmbeddedShader world_light[] = {
     BGFX_EMBEDDED_SHADER(fs_world_light),
     BGFX_EMBEDDED_SHADER_END()};
 
-const bgfx::EmbeddedShader point_light[] = {
+const bgfx::EmbeddedShader light[] = {
     BGFX_EMBEDDED_SHADER(vs_light_base),
-    BGFX_EMBEDDED_SHADER(fs_point_light),
+    BGFX_EMBEDDED_SHADER(fs_light_base),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
@@ -56,7 +56,7 @@ namespace rawrbox {
 
 		// Load shaders --
 		rawrbox::RenderUtils::buildShader(world_light, this->_worldLightProgram);
-		rawrbox::RenderUtils::buildShader(point_light, this->_pointLightProgram);
+		rawrbox::RenderUtils::buildShader(light, this->_lightProgram);
 		// ---
 
 		// axis-aligned bounding box used as light geometry for light culling
@@ -198,7 +198,7 @@ namespace rawrbox {
 		this->bindRenderUniforms();
 		rawrbox::LIGHTS::bindUniforms();
 
-		rawrbox::RenderUtils::drawQUAD(this->_size, false, BGFX_STATE_WRITE_RGB | BGFX_STATE_DEPTH_TEST_GREATER | BGFX_STATE_CULL_CW);
+		rawrbox::RenderUtils::drawQUAD(BGFX_INVALID_HANDLE, this->_size, false, BGFX_STATE_WRITE_RGB | BGFX_STATE_DEPTH_TEST_GREATER | BGFX_STATE_CULL_CW);
 		bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_worldLightProgram, 0, ~BGFX_DISCARD_BINDINGS);
 		// ---
 
@@ -227,7 +227,10 @@ namespace rawrbox {
 		}
 		// ------
 
-		// ---------------------
+		// Restore id -----
+		rawrbox::CURRENT_VIEW_ID = prevId;
+		bgfx::discard(BGFX_DISCARD_ALL);
+		// ------------------------
 
 		this->finalRender();
 		this->frame(); // Submit ---
@@ -235,7 +238,7 @@ namespace rawrbox {
 
 	void RendererDeferred::applyLight(size_t indx) {
 		auto light = rawrbox::LIGHTS::getLight(indx);
-		if (light == nullptr || light->getType() != rawrbox::LightType::LIGHT_POINT) return; // TODO: SPOT LIGHT
+		if (light == nullptr) return;
 
 		float radius = light->getRadius();
 
@@ -250,7 +253,7 @@ namespace rawrbox {
 			       BGFX_STATE_BLEND_ADD);
 
 		bgfx::submit(rawrbox::CURRENT_VIEW_ID,
-		    this->_pointLightProgram,
+		    this->_lightProgram,
 		    0,
 		    ~(BGFX_DISCARD_VERTEX_STREAMS | BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_BINDINGS));
 	}
@@ -260,7 +263,7 @@ namespace rawrbox {
 		bgfx::touch(CURRENT_VIEW_ID);
 
 		rawrbox::RenderUtils::drawQUAD(this->_accTexture, this->_size);
-		bgfx::discard();
+		bgfx::discard(BGFX_DISCARD_ALL);
 	}
 
 	void RendererDeferred::bindRenderUniforms() {

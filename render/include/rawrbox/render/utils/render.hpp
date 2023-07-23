@@ -48,7 +48,6 @@ namespace rawrbox {
 		static bgfx::UniformHandle _s_texColor;
 
 	public:
-		static void drawQUAD(const rawrbox::Vector2i& wSize, bool useQuadProgram = true, uint64_t flags = BGFX_STATE_DEFAULT_QUAD);
 		static void drawQUAD(const bgfx::TextureHandle handle, const rawrbox::Vector2i& wSize, bool useQuadProgram = true, uint64_t flags = BGFX_STATE_DEFAULT_QUAD);
 
 		// NOLINTBEGIN(*)
