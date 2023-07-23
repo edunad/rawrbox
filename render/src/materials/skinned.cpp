@@ -1,12 +1,12 @@
 #include <rawrbox/render/materials/skinned.hpp>
 #include <rawrbox/render/utils/render.hpp>
-
+/*
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader model_skinned_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_clustered_skinned_unlit_base),
     BGFX_EMBEDDED_SHADER(fs_clustered_unlit_base),
     BGFX_EMBEDDED_SHADER_END()};
-// NOLINTEND(*)
+// NOLINTEND(*)*/
 
 namespace rawrbox {
 	MaterialSkinned::~MaterialSkinned() {
@@ -26,6 +26,6 @@ namespace rawrbox {
 	}
 
 	void MaterialSkinned::upload() {
-		rawrbox::RenderUtils::buildShader(model_skinned_shaders, this->_program);
+		// rawrbox::RenderUtils::buildShader(model_skinned_shaders, this->_program);
 	}
 } // namespace rawrbox

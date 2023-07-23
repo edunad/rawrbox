@@ -1,13 +1,13 @@
 #include <rawrbox/render/materials/skinned_lit.hpp>
 #include <rawrbox/render/utils/render.hpp>
-
+/*
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader model_skinned_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_clustered_skinned_base),
     BGFX_EMBEDDED_SHADER(fs_clustered_unlit_base),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
-
+*/
 namespace rawrbox {
 	MaterialSkinnedLit::~MaterialSkinnedLit() {
 		RAWRBOX_DESTROY(u_bones);
@@ -26,6 +26,6 @@ namespace rawrbox {
 	}
 
 	void MaterialSkinnedLit::upload() {
-		rawrbox::RenderUtils::buildShader(model_skinned_shaders, this->_program);
+		// rawrbox::RenderUtils::buildShader(model_skinned_shaders, this->_program);
 	}
 } // namespace rawrbox

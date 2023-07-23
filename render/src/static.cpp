@@ -32,17 +32,15 @@ namespace rawrbox {
 	uint8_t SAMPLE_MAT_EMISSION = 3;
 	uint8_t SAMPLE_MAT_DISPLACEMENT = 4;
 
-	uint8_t SAMPLE_LIGHTS = 5;
+	uint8_t DEFERRED_DIFFUSE = 0;
+	uint8_t DEFERRED_NORMAL = 1;
+	uint8_t DEFERRED_EMISSION_SPEC = 2;
+	uint8_t DEFERRED_BITMASK = 3;
+	uint8_t DEFERRED_DEPTH = 4;
 
-	uint8_t SAMPLE_DEPTH = 6;
-	uint8_t SAMPLE_MASK = 7;
+	uint8_t SAMPLE_INSTANCE_DATA = 5;
 
-	uint8_t SAMPLE_CLUSTERS = 8;
-	uint8_t SAMPLE_LIGHTINDICES = 9;
-	uint8_t SAMPLE_LIGHTGRID = 10;
-	uint8_t SAMPLE_ATOMIC_INDEX = 11;
-
-	uint8_t SAMPLE_INSTANCE_DATA = 12;
+	uint8_t SAMPLE_LIGHTS = 6;
 	// ---------
 
 	// ID GENERATION

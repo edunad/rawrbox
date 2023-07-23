@@ -4,9 +4,9 @@
 #include <rawrbox/render/utils/render.hpp>
 
 // NOLINTBEGIN(*)
-const bgfx::EmbeddedShader clustered_unlit_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_clustered_unlit_base),
-    BGFX_EMBEDDED_SHADER(fs_clustered_unlit_base),
+const bgfx::EmbeddedShader unlit_shaders[] = {
+    BGFX_EMBEDDED_SHADER(vs_model_unlit_base),
+    BGFX_EMBEDDED_SHADER(fs_model_unlit_base),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 
@@ -20,7 +20,6 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_s_displacement);
 
 		// Uniforms -----
-		RAWRBOX_DESTROY(this->_u_camPos);
 		RAWRBOX_DESTROY(this->_u_colorOffset);
 		RAWRBOX_DESTROY(this->_u_mesh_pos);
 		RAWRBOX_DESTROY(this->_u_data);
@@ -30,7 +29,6 @@ namespace rawrbox {
 		this->_s_albedo = bgfx::createUniform("s_albedo", bgfx::UniformType::Sampler);
 		this->_s_displacement = bgfx::createUniform("s_displacement", bgfx::UniformType::Sampler);
 
-		this->_u_camPos = bgfx::createUniform("u_camPos", bgfx::UniformType::Vec4);
 		this->_u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 
 		this->_u_mesh_pos = bgfx::createUniform("u_mesh_pos", bgfx::UniformType::Vec4);
@@ -49,10 +47,6 @@ namespace rawrbox {
 		} else {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->_s_displacement, rawrbox::BLACK_TEXTURE->getHandle());
 		}
-
-		// Camera setup
-		bgfx::setUniform(this->_u_camPos, rawrbox::MAIN_CAMERA->getPos().data().data());
-		// -------
 
 		// Color override
 		bgfx::setUniform(this->_u_colorOffset, mesh.color.data().data());
@@ -83,9 +77,6 @@ namespace rawrbox {
 
 		bgfx::setUniform(this->_u_data, data.front().data(), MAX_DATA);
 		// ---
-
-		// bind extra renderer uniforms ---
-		rawrbox::RENDERER->bindRenderUniforms();
 	}
 
 	void MaterialBase::process(const bgfx::TextureHandle& texture) {
@@ -101,7 +92,7 @@ namespace rawrbox {
 	}
 
 	void MaterialBase::upload() {
-		rawrbox::RenderUtils::buildShader(clustered_unlit_shaders, this->_program);
+		rawrbox::RenderUtils::buildShader(unlit_shaders, this->_program);
 	}
 
 } // namespace rawrbox

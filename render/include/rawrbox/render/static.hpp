@@ -53,17 +53,15 @@ namespace rawrbox {
 	extern uint8_t SAMPLE_MAT_EMISSION;
 	extern uint8_t SAMPLE_MAT_DISPLACEMENT;
 
-	extern uint8_t SAMPLE_LIGHTS;
-
-	extern uint8_t SAMPLE_MASK;
-	extern uint8_t SAMPLE_DEPTH;
-
-	extern uint8_t SAMPLE_CLUSTERS;
-	extern uint8_t SAMPLE_LIGHTINDICES;
-	extern uint8_t SAMPLE_LIGHTGRID;
-	extern uint8_t SAMPLE_ATOMIC_INDEX;
+	extern uint8_t DEFERRED_DIFFUSE;
+	extern uint8_t DEFERRED_NORMAL;
+	extern uint8_t DEFERRED_EMISSION_SPEC;
+	extern uint8_t DEFERRED_BITMASK;
+	extern uint8_t DEFERRED_DEPTH;
 
 	extern uint8_t SAMPLE_INSTANCE_DATA;
+
+	extern uint8_t SAMPLE_LIGHTS;
 	// ---------
 
 	// TEXTURE FALLBACKS ---

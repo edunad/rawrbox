@@ -6,6 +6,8 @@
 
 #include <bgfx/bgfx.h>
 
+#define BGFX_STATE_DEFAULT_QUAD (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_CULL_CW)
+
 namespace rawrbox {
 	struct PosUVVertexData {
 		rawrbox::Vector3f pos = {};
@@ -25,12 +27,29 @@ namespace rawrbox {
 		}
 	};
 
+	struct PosVertexData {
+		rawrbox::Vector3f pos = {};
+
+		PosVertexData() = default;
+		PosVertexData(const rawrbox::Vector3f& _pos) : pos(_pos) {}
+
+		static bgfx::VertexLayout vLayout() {
+			static bgfx::VertexLayout layout;
+			layout
+			    .begin()
+			    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+			    .end();
+			return layout;
+		}
+	};
+
 	class RenderUtils {
 		static bgfx::ProgramHandle _quadHandle;
 		static bgfx::UniformHandle _s_texColor;
 
 	public:
-		static void drawQUAD(const bgfx::TextureHandle handle, const rawrbox::Vector2i& wSize, bool useQuadProgram = true, uint64_t flags = 0);
+		static void drawQUAD(const rawrbox::Vector2i& wSize, bool useQuadProgram = true, uint64_t flags = BGFX_STATE_DEFAULT_QUAD);
+		static void drawQUAD(const bgfx::TextureHandle handle, const rawrbox::Vector2i& wSize, bool useQuadProgram = true, uint64_t flags = BGFX_STATE_DEFAULT_QUAD);
 
 		// NOLINTBEGIN(*)
 		static void buildShader(const bgfx::EmbeddedShader shaders[], bgfx::ProgramHandle& program);

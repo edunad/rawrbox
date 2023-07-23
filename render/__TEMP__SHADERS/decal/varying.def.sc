@@ -12,4 +12,3 @@ vec4 v_model_0     : POSITION1 = vec4(0.0, 0.0, 0.0, 0.0);
 vec4 v_model_1     : POSITION2 = vec4(0.0, 0.0, 0.0, 0.0);
 vec4 v_model_2     : POSITION3 = vec4(0.0, 0.0, 0.0, 0.0);
 vec4 v_model_3     : POSITION4 = vec4(0.0, 0.0, 0.0, 0.0);
-vec3 v_worldPos    : POSITION5 = vec3(0.0, 0.0, 0.0);

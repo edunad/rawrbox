@@ -11,9 +11,6 @@ namespace rawrbox {
 
 	class MaterialLit : public rawrbox::MaterialBase {
 	protected:
-		bgfx::ProgramHandle _debug_z_program = BGFX_INVALID_HANDLE;
-		bgfx::ProgramHandle _debug_program = BGFX_INVALID_HANDLE;
-
 		// LIT DATA ---
 		bgfx::UniformHandle _s_normal = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _s_specular = BGFX_INVALID_HANDLE;

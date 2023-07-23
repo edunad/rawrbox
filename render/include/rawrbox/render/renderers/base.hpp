@@ -1,6 +1,5 @@
 #pragma once
 #include <rawrbox/math/vector2.hpp>
-#include <rawrbox/render/texture/render.hpp>
 
 #include <bgfx/bgfx.h>
 
@@ -11,10 +10,8 @@
 namespace rawrbox {
 	class RendererBase {
 	protected:
-		std::unique_ptr<rawrbox::TextureRender> _render = nullptr;
-		std::unique_ptr<rawrbox::TextureRender> _decals = nullptr;
-
 		rawrbox::Vector2i _size = {};
+		bgfx::UniformHandle _u_camPos = BGFX_INVALID_HANDLE;
 
 		virtual void frame();
 
@@ -40,7 +37,9 @@ namespace rawrbox {
 
 		virtual void render();
 		virtual void finalRender();
+
 		virtual void bindRenderUniforms();
+		virtual void bindCamera();
 
 		// Utils ----
 		[[nodiscard]] virtual const bgfx::TextureHandle getDepth() const;

@@ -55,6 +55,7 @@ namespace rawrbox {
 		static void shutdown();
 
 		static void bindUniforms();
+		static void bindBuffer();
 
 		// UTILS ----
 		static void setEnabled(bool fb);

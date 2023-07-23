@@ -12,30 +12,25 @@ namespace rawrbox {
 	RendererBase::~RendererBase() {
 		rawrbox::DECALS::shutdown();
 
-		this->_render.reset();
-		this->_decals.reset();
-
+		RAWRBOX_DESTROY(this->_u_camPos);
 		bgfx::discard(BGFX_DISCARD_ALL);
 	}
 
 	void RendererBase::init(const rawrbox::Vector2i& size) {
 		if (!this->supported()) throw std::runtime_error(fmt::format("[RawrBox-Renderer] Renderer not supported by GPU!"));
-		this->resize(size);
+
+		// Setup uniforms ---
+		this->_u_camPos = bgfx::createUniform("u_camPos", bgfx::UniformType::Vec4);
+		// ----
 
 		rawrbox::DECALS::init();
+		this->resize(size);
 
 		// finish any queued precomputations before rendering the scene
 		bgfx::frame();
 	}
 
 	void RendererBase::resize(const rawrbox::Vector2i& size) {
-		this->_render = std::make_unique<rawrbox::TextureRender>(size);
-		this->_render->addTexture(bgfx::TextureFormat::R8); // Decal stencil
-		this->_render->upload();
-
-		this->_decals = std::make_unique<rawrbox::TextureRender>(size);
-		this->_decals->upload();
-
 		// Setup view ---
 		bgfx::setViewName(rawrbox::MAIN_WORLD_VIEW, "RAWRBOX-MAIN-WORLD");
 		bgfx::setViewClear(rawrbox::MAIN_WORLD_VIEW, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 1.0F, 0, 0);
@@ -86,7 +81,7 @@ namespace rawrbox {
 	}
 
 	void RendererBase::finalRender() {
-		// Record world ---
+		/*// Record world ---
 		this->_render->startRecord();
 		this->worldRender();
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, rawrbox::MAIN_CAMERA->getViewMtx().data(), rawrbox::MAIN_CAMERA->getProjMtx().data());
@@ -130,7 +125,7 @@ namespace rawrbox {
 		// Restore id -----
 		rawrbox::CURRENT_VIEW_ID = prevId;
 		bgfx::discard(BGFX_DISCARD_ALL);
-		// ------------------------
+		// ------------------------*/
 	}
 
 	void RendererBase::frame() {
@@ -138,21 +133,22 @@ namespace rawrbox {
 	}
 
 	void RendererBase::bindRenderUniforms() {}
+	void RendererBase::bindCamera() {
+		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("[RawrBox-Renderer] Failed to bind camera, MAIN_CAMERA not set!");
+		bgfx::setUniform(this->_u_camPos, rawrbox::MAIN_CAMERA->getPos().data().data());
+	}
 
 	// Utils ----
 	const bgfx::TextureHandle RendererBase::getDepth() const {
-		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
-		return this->_render->getDepth();
+		return BGFX_INVALID_HANDLE;
 	}
 
 	const bgfx::TextureHandle RendererBase::getColor() const {
-		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
-		return this->_render->getHandle();
+		return BGFX_INVALID_HANDLE;
 	}
 
 	const bgfx::TextureHandle RendererBase::getMask() const {
-		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
-		return this->_render->getTexture(1);
+		return BGFX_INVALID_HANDLE;
 	}
 	// ------
 

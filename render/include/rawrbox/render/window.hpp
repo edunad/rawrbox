@@ -3,7 +3,7 @@
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/camera/base.hpp>
-#include <rawrbox/render/renderers/cluster.hpp>
+#include <rawrbox/render/renderers/deferred.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/utils/event.hpp>
@@ -157,7 +157,7 @@ namespace rawrbox {
 			return dynamic_cast<T*>(this->_camera.get());
 		}
 
-		template <class T = RendererCluster, typename... CallbackArgs>
+		template <class T = RendererDeferred, typename... CallbackArgs>
 		void setRenderer(bgfx::RendererType::Enum render, std::function<void()> overlay, std::function<void()> world, CallbackArgs&&... args) {
 			if (!this->isRendererSupported(render)) throw std::runtime_error(fmt::format("[RawrBox-Window] RenderType {} is not supported by your GPU", bgfx::getRendererName(render)));
 

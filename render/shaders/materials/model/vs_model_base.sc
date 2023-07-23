@@ -1,5 +1,5 @@
 $input a_position, a_color0, a_normal, a_tangent, a_texcoord0
-$output v_normal, v_tangent, v_texcoord0, v_color0, v_worldPos
+$output v_normal, v_tangent, v_texcoord0, v_color0
 
 #include <bgfx_shader.sh>
 #include "../../include/model_transforms.sh"
@@ -15,11 +15,8 @@ void main() {
 	v_tangent = normalize(wtangent);
 
     v_color0 = a_color0;
+	v_texcoord0 = a_texcoord0.xyz;
 
-	v_texcoord0.xyz = a_texcoord0.xyz;
-
-    TransformedData transform = applyPosTransforms(a_position, a_texcoord0.xy);
-    v_worldPos = mul(u_model[0], transform.pos).xyz;
-	gl_Position = transform.final;
+	gl_Position = applyPosTransforms(a_position, a_texcoord0.xy).final;
 }
 

@@ -3,14 +3,14 @@
 #include <rawrbox/render/utils/render.hpp>
 
 #include "bx/math.h"
-
+/*
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader model_decal_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_decal_base),
     BGFX_EMBEDDED_SHADER(fs_decal_base),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
-
+*/
 namespace rawrbox {
 	MaterialDecal::~MaterialDecal() {
 		RAWRBOX_DESTROY(this->_s_depth);
@@ -28,18 +28,18 @@ namespace rawrbox {
 	}
 
 	void MaterialDecal::upload() {
-		rawrbox::RenderUtils::buildShader(model_decal_shaders, this->_program);
+		// rawrbox::RenderUtils::buildShader(model_decal_shaders, this->_program);
 	}
 
 	void MaterialDecal::process(const rawrbox::Mesh& mesh) {
 		if (rawrbox::RENDERER == nullptr) return;
+		/*
+				rawrbox::MaterialInstancedLit::process(mesh);
 
-		rawrbox::MaterialInstancedLit::process(mesh);
+				bgfx::setTexture(rawrbox::SAMPLE_DEPTH, this->_s_depth, rawrbox::RENDERER->getDepth());
+				bgfx::setTexture(rawrbox::SAMPLE_MASK, this->_s_mask, rawrbox::RENDERER->getMask());
 
-		bgfx::setTexture(rawrbox::SAMPLE_DEPTH, this->_s_depth, rawrbox::RENDERER->getDepth());
-		bgfx::setTexture(rawrbox::SAMPLE_MASK, this->_s_mask, rawrbox::RENDERER->getMask());
-
-		std::array<float, 4> settings = {rawrbox::RENDERER_DEBUG == rawrbox::DEBUG_DECALS ? 1.F : 0.F};
-		bgfx::setUniform(this->_u_decalSettings, settings.data());
+				std::array<float, 4> settings = {rawrbox::RENDERER_DEBUG == rawrbox::DEBUG_DECALS ? 1.F : 0.F};
+				bgfx::setUniform(this->_u_decalSettings, settings.data());*/
 	}
 } // namespace rawrbox

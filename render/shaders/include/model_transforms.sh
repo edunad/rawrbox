@@ -3,18 +3,12 @@
 #ifndef INCLUDED_MODEL_TRANSFORMS
 #define INCLUDED_MODEL_TRANSFORMS
 
-#define MAX_DATA 4
+#define VERTEX_DATA
+
 #include "defs.sh"
-
-uniform vec4 u_data[MAX_DATA];
-
-#define billboard u_data[0].xyz
-#define vertexSnap u_data[1].x
-#define displacement_power u_data[2].x
-#define recieve_decals u_data[3].x
+#include "material.sh"
 
 uniform vec3 u_mesh_pos;
-
 SAMPLER2D(s_displacement, SAMPLE_MAT_DISPLACEMENT);
 
 struct TransformedData {

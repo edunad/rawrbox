@@ -1,5 +1,5 @@
-$input a_position, a_color0, a_texcoord0, a_normal
-$output v_texcoord0, v_color0, v_model_0, v_model_1, v_model_2, v_model_3, v_normal, v_worldPos
+$input a_position, a_color0, a_texcoord0, a_normal, a_tangent
+$output v_texcoord0, v_color0, v_model_0, v_model_1, v_model_2, v_model_3, v_normal
 
 #include <bgfx_shader.sh>
 #include <bgfx_compute.sh>
