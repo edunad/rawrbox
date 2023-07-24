@@ -15,6 +15,8 @@ namespace rawrbox {
 		bgfx::ProgramHandle _debug_program = BGFX_INVALID_HANDLE;
 
 		// LIT DATA ---
+		bgfx::UniformHandle _u_camPos = BGFX_INVALID_HANDLE;
+
 		bgfx::UniformHandle _s_normal = BGFX_INVALID_HANDLE;
 		bgfx::UniformHandle _s_specular = BGFX_INVALID_HANDLE;
 

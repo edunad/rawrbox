@@ -83,8 +83,8 @@ namespace decal_test {
 		std::uniform_real_distribution<float> distRot(-1.5F, 1.5F);
 
 		for (int i = 0; i < 30; i++) {
-			rawrbox::DECALS::add({distRot(prng), 0.F, distRot(prng) - 1.55F}, 90, rawrbox::Colors::Green, dist(prng));
-			rawrbox::DECALS::add({distRot(prng), distRot(prng) + 1.25F, 0.F}, 0, rawrbox::Colors::Red, dist(prng));
+			rawrbox::DECALS::add({distRot(prng), 0.F, distRot(prng) - 1.55F}, {1, 1, 1}, 90, rawrbox::Colors::Green, dist(prng));
+			rawrbox::DECALS::add({distRot(prng), distRot(prng) + 1.25F, 0.F}, {1, 1, 1}, 0, rawrbox::Colors::Red, dist(prng));
 		}
 
 		// Setup

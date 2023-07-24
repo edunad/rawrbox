@@ -11,18 +11,14 @@ vec4 GetBloom ( in vec2 uv, in vec4 inColor ) {
 	float numSamples = 1.0;
     vec4 color = inColor;
 
-	for (float x = -8.0; x <= 8.0; x += 1.0)
-	{
-		for (float y = -8.0; y <= 8.0; y += 1.0)
-		{
+	for (float x = -8.0; x <= 8.0; x += 1.0) {
+		for (float y = -8.0; y <= 8.0; y += 1.0) {
 			vec4 addColor = texture2D(s_texColor, uv + (vec2(x, y) * px));
-			if (max(addColor.r, max(addColor.g, addColor.b)) > 0.3)
-			{
+			if (max(addColor.r, max(addColor.g, addColor.b)) > 0.3) {
 				float dist = length(vec2(x,y))+1.0;
 				vec4 glowColor = max((addColor * 128.0) / pow(dist, 2.0), vec4(0,0,0,0));
 
-				if (max(glowColor.r, max(glowColor.g, glowColor.b)) > 0.0)
-				{
+				if (max(glowColor.r, max(glowColor.g, glowColor.b)) > 0.0) {
 					color += glowColor;
 					numSamples += 1.0;
 				}

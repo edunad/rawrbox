@@ -3,23 +3,21 @@ $input v_texcoord0, v_color0, v_model_0, v_model_1, v_model_2, v_model_3, v_norm
 #define READ_LIGHT_INDICES
 #define READ_LIGHT_GRID
 
+#define READ_MATERIAL
+#define READ_DEPTH
+#define READ_MASK
+
 #include <bgfx_shader.sh>
 
 #include "../../include/clusters.sh"
 #include "../../include/lights.sh"
-#include "../../include/model_transforms.sh"
 #include "../../include/shaderlib.sh"
 #include "../../include/utils.sh"
-
-SAMPLER2DARRAY(s_albedo, SAMPLE_MAT_ALBEDO);
-
-SAMPLER2D(s_depth, SAMPLE_DEPTH);
-SAMPLER2D(s_mask, SAMPLE_MASK);
+#include "../../include/material.sh"
 
 uniform vec4 u_colorOffset;
 uniform vec4 u_camPos;
 
-uniform vec4 u_texMatData;
 uniform vec4 u_decalSettings;
 
 void main() {
@@ -59,7 +57,7 @@ void main() {
 	// -----
 
     // Apply light ----
-	vec3 radianceOut = applyLight(gl_FragCoord, v_worldPos, norm);
+	vec3 radianceOut = applyLight(gl_FragCoord, v_worldPos, norm, vec3(0.0, 0.0, 0.0), 0.0, 0.0);
 
 	gl_FragColor.rgb = albedo * radianceOut * v_color0;
     gl_FragColor.a = albedo.a; // COLOR

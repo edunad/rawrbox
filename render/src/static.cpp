@@ -42,7 +42,7 @@ namespace rawrbox {
 	uint8_t SAMPLE_LIGHTGRID = 10;
 	uint8_t SAMPLE_ATOMIC_INDEX = 11;
 
-	uint8_t SAMPLE_INSTANCE_DATA = 12;
+	uint8_t SAMPLE_INSTANCE_DATA = 8; // RE-USE CLUSTERS, NOT USED ON MODEL
 	// ---------
 
 	// ID GENERATION

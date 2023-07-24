@@ -26,6 +26,8 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_debug_z_program);
 		RAWRBOX_DESTROY(this->_debug_program);
 
+		RAWRBOX_DESTROY(this->_u_camPos);
+
 		RAWRBOX_DESTROY(this->_s_normal);
 		RAWRBOX_DESTROY(this->_s_specular);
 		RAWRBOX_DESTROY(this->_s_emission);
@@ -39,6 +41,8 @@ namespace rawrbox {
 		this->_s_normal = bgfx::createUniform("s_normal", bgfx::UniformType::Sampler);
 		this->_s_specular = bgfx::createUniform("s_specular", bgfx::UniformType::Sampler);
 		this->_s_emission = bgfx::createUniform("s_emission", bgfx::UniformType::Sampler);
+
+		this->_u_camPos = bgfx::createUniform("u_camPos", bgfx::UniformType::Vec4);
 
 		this->u_texMatData = bgfx::createUniform("u_texMatData", bgfx::UniformType::Vec4);
 	}
@@ -64,6 +68,10 @@ namespace rawrbox {
 
 		std::array<float, 2> matData = {mesh.specularShininess, mesh.emissionIntensity};
 		bgfx::setUniform(this->u_texMatData, matData.data());
+
+		// Camera setup
+		bgfx::setUniform(this->_u_camPos, rawrbox::MAIN_CAMERA->getPos().data().data());
+		// -------
 
 		rawrbox::MaterialBase::process(mesh);
 	}
