@@ -61,7 +61,7 @@ namespace rawrbox {
 		if (rawrbox::MAIN_CAMERA == nullptr) {
 			// Render overlay ---
 			auto prevId = rawrbox::CURRENT_VIEW_ID;
-			rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_OVERLAY_VIEW;
+			rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_WORLD_VIEW; // Use world instead of overlay, since there is none
 
 			// ---
 			bgfx::touch(rawrbox::CURRENT_VIEW_ID);
