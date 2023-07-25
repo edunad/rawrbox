@@ -1,9 +1,10 @@
 
-$input v_texcoord0, v_color0
+$input v_texcoord0, v_color0, v_worldPos
 
 #include <bgfx_shader.sh>
 #include "../../include/defs.sh"
 #include "../../include/model_transforms.sh"
+#include "../../include/fog.sh"
 
 SAMPLER2DARRAY(s_albedo, SAMPLE_MAT_ALBEDO);
 
@@ -15,5 +16,10 @@ void main() {
 	if (albedo.a <= 0.0) discard;
 
     gl_FragData[0] = albedo; // COLOR
+
+	// Apply Fog ----
+	gl_FragData[0] = applyFog(gl_FragData[0], v_worldPos, u_camPos);
+	// -------
+
 	gl_FragData[1].r = 1.F - recieve_decals; // DECALS
 }

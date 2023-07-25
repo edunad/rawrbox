@@ -53,6 +53,8 @@ namespace light {
 		// Load content ---
 		this->loadContent();
 		// -----
+
+		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 20.F, 0.8F);
 	}
 
 	void Game::loadContent() {

@@ -29,6 +29,11 @@ namespace rawrbox {
 		};
 	};
 
+	enum class FOG_TYPE {
+		FOG_LINEAR = 0,
+		FOG_EXP = 1
+	};
+
 	class LIGHTS {
 	protected:
 		static std::vector<std::unique_ptr<rawrbox::LightBase>> _lights;
@@ -41,10 +46,18 @@ namespace rawrbox {
 		static bgfx::UniformHandle _u_sunDirection;
 		static bgfx::UniformHandle _u_sunColor;
 
+		static bgfx::UniformHandle _u_fogColor;
+		static bgfx::UniformHandle _u_fogSettings;
+
 		static rawrbox::Colorf _ambient;
 
 		static rawrbox::Colorf _sun_color;
 		static rawrbox::Vector3f _sun_direction;
+
+		static rawrbox::Colorf _fog_color;
+		static rawrbox::FOG_TYPE _fog_type;
+		static float _fog_density;
+		static float _fog_end;
 
 		static void update();
 
@@ -58,10 +71,23 @@ namespace rawrbox {
 
 		// UTILS ----
 		static void setEnabled(bool fb);
+
+		// SUN
 		static void setSun(const rawrbox::Vector3f& dir, const rawrbox::Colorf& col);
 		static const rawrbox::Colorf& getSunColor();
 		static const rawrbox::Vector3f& getSunDir();
+		// ----
 
+		// FOG
+		static void setFog(rawrbox::FOG_TYPE type, float end, float density, const rawrbox::Colorf& col = rawrbox::Colors::Black);
+
+		static const rawrbox::FOG_TYPE getFogType();
+		static const rawrbox::Colorf& getFogColor();
+		static const float getFogEnd();
+		static const float getFogDensity();
+		// ----
+
+		// AMBIENT
 		static void setAmbient(const rawrbox::Colorf& col);
 		static const rawrbox::Colorf& getAmbient();
 		// -------
