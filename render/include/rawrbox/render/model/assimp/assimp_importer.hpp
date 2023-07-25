@@ -61,7 +61,7 @@ namespace rawrbox {
 	};
 
 	struct AssimpLight {
-		rawrbox::LightType type = rawrbox::LightType::LIGHT_UNKNOWN;
+		rawrbox::LightType type = rawrbox::LightType::UNKNOWN;
 		std::string name = "light";
 		std::string parentID = "";
 

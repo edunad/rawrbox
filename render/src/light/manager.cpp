@@ -67,7 +67,7 @@ namespace rawrbox {
 			light->direction = rawrbox::Vector3f(dir.x, dir.y, dir.z);
 			light->radius = l->getRadius();
 
-			if (l->getType() == rawrbox::LightType::LIGHT_SPOT) {
+			if (l->getType() == rawrbox::LightType::SPOT) {
 				auto data = l->getData();
 				light->innerCone = data.x;
 				light->outerCone = data.y;

@@ -50,7 +50,7 @@ namespace rawrbox {
 	}
 
 	const rawrbox::Vector3f LightBase::getWorldPos() const { return this->getPos() + this->getOffsetPos(); }
-	const rawrbox::LightType LightBase::getType() const { return rawrbox::LightType::LIGHT_UNKNOWN; }
+	const rawrbox::LightType LightBase::getType() const { return rawrbox::LightType::UNKNOWN; }
 
 	const rawrbox::Vector3f& LightBase::getDirection() const { return this->_direction; };
 	void LightBase::setDirection(const rawrbox::Vector3f& dir) {

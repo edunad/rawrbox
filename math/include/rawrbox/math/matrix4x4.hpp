@@ -202,6 +202,17 @@ namespace rawrbox {
 			std::memcpy(this->mtx.data(), _result.data(), sizeof(float) * this->mtx.size());
 		}
 
+		void add(const rawrbox::Matrix4x4& other) {
+			for (size_t i = 0; i < this->mtx.size(); ++i)
+				this->mtx[i] += other[i];
+		}
+
+		void add(const rawrbox::Vector3f& other) {
+			this->mtx[12] += other.x;
+			this->mtx[13] += other.y;
+			this->mtx[14] += other.z;
+		}
+
 		[[nodiscard]] rawrbox::Vector3f const mulVec(const rawrbox::Vector3f& other) const {
 			rawrbox::Vector3f result = {};
 
@@ -344,6 +355,18 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 operator*(rawrbox::Vector3f other) const {
 			rawrbox::Matrix4x4 res{this->data()};
 			res.mul(other);
+
+			return res;
+		}
+
+		rawrbox::Matrix4x4 operator+(rawrbox::Matrix4x4 other) const {
+			other.add(*this);
+			return other;
+		}
+
+		rawrbox::Matrix4x4 operator+(rawrbox::Vector3f other) const {
+			rawrbox::Matrix4x4 res{this->data()};
+			res.add(other);
 
 			return res;
 		}

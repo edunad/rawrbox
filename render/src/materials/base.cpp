@@ -21,7 +21,6 @@ namespace rawrbox {
 
 		// Uniforms -----
 		RAWRBOX_DESTROY(this->_u_colorOffset);
-		RAWRBOX_DESTROY(this->_u_mesh_pos);
 		RAWRBOX_DESTROY(this->_u_data);
 	}
 
@@ -30,8 +29,6 @@ namespace rawrbox {
 		this->_s_displacement = bgfx::createUniform("s_displacement", bgfx::UniformType::Sampler);
 
 		this->_u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
-
-		this->_u_mesh_pos = bgfx::createUniform("u_mesh_pos", bgfx::UniformType::Vec4);
 		this->_u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4, MAX_DATA);
 	}
 
@@ -50,11 +47,6 @@ namespace rawrbox {
 
 		// Color override
 		bgfx::setUniform(this->_u_colorOffset, mesh.color.data().data());
-		// -------
-
-		// Mesh pos
-		std::array offset = {mesh.vertexPos[12], mesh.vertexPos[13], mesh.vertexPos[14]};
-		bgfx::setUniform(this->_u_mesh_pos, offset.data());
 		// -------
 
 		// Pass "special" data ---

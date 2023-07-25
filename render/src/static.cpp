@@ -63,6 +63,6 @@ namespace rawrbox {
 
 	// INTERNAL, DO NOT USE
 	size_t __OPEN_WINDOWS__ = 0;
-	bool __LIGHT_DIRTY__ = false;
+	bool __LIGHT_DIRTY__ = true;
 	// -------
 } // namespace rawrbox

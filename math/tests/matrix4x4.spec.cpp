@@ -144,4 +144,46 @@ TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 		REQUIRE_THAT(q2[8], Catch::Matchers::WithinAbs(q[8], 0.0001F));
 		REQUIRE_THAT(q2[12], Catch::Matchers::WithinAbs(q[12], 0.0001F));
 	}
+
+	SECTION("rawrbox::Matrix4x4::add") {
+		rawrbox::Matrix4x4 q = {};
+		rawrbox::Matrix4x4 other(std::array<float, 16>{2.F, 4.F, 1.F, 2.F, 4.F, 6.F, 7.F, 4.F, 3.F, 2.F, 5.F, 9.F, 1.F, 2.F, 3.F, 3.F});
+
+		rawrbox::Matrix4x4 q2 = q + other;
+		rawrbox::Matrix4x4 q3 = q + rawrbox::Vector3f(10, 2, 3);
+
+		REQUIRE_THAT(q2[0], Catch::Matchers::WithinAbs(3.0F, 0.0001F));
+		REQUIRE_THAT(q2[1], Catch::Matchers::WithinAbs(4.0F, 0.0001F));
+		REQUIRE_THAT(q2[2], Catch::Matchers::WithinAbs(1.0F, 0.0001F));
+		REQUIRE_THAT(q2[3], Catch::Matchers::WithinAbs(2.0F, 0.0001F));
+		REQUIRE_THAT(q2[4], Catch::Matchers::WithinAbs(4.0F, 0.0001F));
+		REQUIRE_THAT(q2[5], Catch::Matchers::WithinAbs(7.0F, 0.0001F));
+		REQUIRE_THAT(q2[6], Catch::Matchers::WithinAbs(7.0F, 0.0001F));
+		REQUIRE_THAT(q2[7], Catch::Matchers::WithinAbs(4.0F, 0.0001F));
+		REQUIRE_THAT(q2[8], Catch::Matchers::WithinAbs(3.0F, 0.0001F));
+		REQUIRE_THAT(q2[9], Catch::Matchers::WithinAbs(2.0F, 0.0001F));
+		REQUIRE_THAT(q2[10], Catch::Matchers::WithinAbs(6.0F, 0.0001F));
+		REQUIRE_THAT(q2[11], Catch::Matchers::WithinAbs(9.0F, 0.0001F));
+		REQUIRE_THAT(q2[12], Catch::Matchers::WithinAbs(1.0F, 0.0001F));
+		REQUIRE_THAT(q2[13], Catch::Matchers::WithinAbs(2.0F, 0.0001F));
+		REQUIRE_THAT(q2[14], Catch::Matchers::WithinAbs(3.0F, 0.0001F));
+		REQUIRE_THAT(q2[15], Catch::Matchers::WithinAbs(4.0F, 0.0001F));
+
+		REQUIRE_THAT(q3[0], Catch::Matchers::WithinAbs(1.0F, 0.0001F));
+		REQUIRE_THAT(q3[1], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+		REQUIRE_THAT(q3[2], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+		REQUIRE_THAT(q3[3], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+		REQUIRE_THAT(q3[4], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+		REQUIRE_THAT(q3[5], Catch::Matchers::WithinAbs(1.0F, 0.0001F));
+		REQUIRE_THAT(q3[6], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+		REQUIRE_THAT(q3[7], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+		REQUIRE_THAT(q3[8], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+		REQUIRE_THAT(q3[9], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+		REQUIRE_THAT(q3[10], Catch::Matchers::WithinAbs(1.0F, 0.0001F));
+		REQUIRE_THAT(q3[11], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+		REQUIRE_THAT(q3[12], Catch::Matchers::WithinAbs(10.0F, 0.0001F));
+		REQUIRE_THAT(q3[13], Catch::Matchers::WithinAbs(2.0F, 0.0001F));
+		REQUIRE_THAT(q3[14], Catch::Matchers::WithinAbs(3.0F, 0.0001F));
+		REQUIRE_THAT(q3[15], Catch::Matchers::WithinAbs(1.0F, 0.0001F));
+	}
 }

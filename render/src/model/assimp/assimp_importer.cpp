@@ -457,13 +457,13 @@ namespace rawrbox {
 
 			switch (aiLight.mType) {
 				case aiLightSource_DIRECTIONAL:
-					light.type = rawrbox::LightType::LIGHT_DIR;
+					light.type = rawrbox::LightType::DIR;
 					break;
 				case aiLightSource_SPOT:
-					light.type = rawrbox::LightType::LIGHT_SPOT;
+					light.type = rawrbox::LightType::SPOT;
 					break;
 				case aiLightSource_POINT:
-					light.type = rawrbox::LightType::LIGHT_POINT;
+					light.type = rawrbox::LightType::POINT;
 					break;
 				default:
 					break;

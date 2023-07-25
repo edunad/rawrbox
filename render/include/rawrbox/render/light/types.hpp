@@ -2,10 +2,10 @@
 
 namespace rawrbox {
 	enum class LightType {
-		LIGHT_UNKNOWN = 0,
+		UNKNOWN = 0,
 
-		LIGHT_POINT,
-		LIGHT_SPOT,
-		LIGHT_DIR,
+		POINT,
+		SPOT,
+		DIR,
 	};
 }
