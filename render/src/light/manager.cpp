@@ -103,7 +103,11 @@ namespace rawrbox {
 		_sun_color = col;
 	}
 
+	const rawrbox::Colorf& LIGHTS::getSunColor() { return _sun_color; }
+	const rawrbox::Vector3f& LIGHTS::getSunDir() { return _sun_direction; }
+
 	void LIGHTS::setAmbient(const rawrbox::Colorf& col) { _ambient = col; }
+	const rawrbox::Colorf& LIGHTS::getAmbient() { return _ambient; }
 	// ---------
 
 	// Light ----

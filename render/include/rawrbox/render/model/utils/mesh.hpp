@@ -46,8 +46,6 @@ namespace rawrbox {
 
 		static inline rawrbox::Mesh generateTriangle(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector3f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector3f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC) {
 			rawrbox::Mesh mesh;
-
-			auto size = a + b + c;
 			mesh.setPos(pos);
 
 			std::array<rawrbox::VertexData, 3> buff = {
@@ -390,11 +388,11 @@ namespace rawrbox {
 			std::vector<rawrbox::VertexData> buff = {};
 
 			std::function<void(const rawrbox::Vector3f& _v0, const rawrbox::Vector3f& _v1, const rawrbox::Vector3f& _v2, float _scale, uint8_t ratio)> triangle;
-			triangle = [&triangle, &buff, pos](const rawrbox::Vector3f& _v0, const rawrbox::Vector3f& _v1, const rawrbox::Vector3f& _v2, float _scale, uint8_t ratio) {
+			triangle = [&triangle, &buff, &cl](const rawrbox::Vector3f& _v0, const rawrbox::Vector3f& _v1, const rawrbox::Vector3f& _v2, float _scale, uint8_t ratio) {
 				if (0 == ratio) {
-					buff.push_back(rawrbox::VertexData(_v0, {1, 1}, rawrbox::Colors::White));
-					buff.push_back(rawrbox::VertexData(_v2, {1, 0}, rawrbox::Colors::White));
-					buff.push_back(rawrbox::VertexData(_v1, {0, 1}, rawrbox::Colors::White));
+					buff.push_back(rawrbox::VertexData(_v0, {1, 1}, cl));
+					buff.push_back(rawrbox::VertexData(_v2, {1, 0}, cl));
+					buff.push_back(rawrbox::VertexData(_v1, {0, 1}, cl));
 				} else {
 					const rawrbox::Vector3f v01 = (_v0 + _v1).normalized() * _scale;
 					const rawrbox::Vector3f v12 = (_v1 + _v2).normalized() * _scale;
@@ -470,6 +468,7 @@ namespace rawrbox {
 
 		static inline rawrbox::Mesh generateMesh(const rawrbox::Vector3f& pos, int size = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
 			rawrbox::Mesh mesh;
+			mesh.setPos(pos);
 
 			std::vector<rawrbox::VertexData> buff = {};
 			auto ps = static_cast<float>(size / 2);

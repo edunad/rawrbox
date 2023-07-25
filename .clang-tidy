@@ -1,6 +1,4 @@
 ---
-# Enable all by default, then disable some that have either too many warnings
-# at the moment or ones that don't make sense for our codebase
 Checks: clang-diagnostic-*
   clang-analyzer-*
   cppcoreguidelines-*
@@ -18,11 +16,8 @@ Checks: clang-diagnostic-*
   -cppcoreguidelines-non-private-member-variables-in-classes
   -cppcoreguidelines-avoid-magic-numbers
   -cppcoreguidelines-pro-type-vararg
-  -modernize-avoid-c-arrays
-  -cppcoreguidelines-avoid-c-arrays
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay
   -cppcoreguidelines-narrowing-conversions
-  -clang-analyzer-deadcode.DeadStores
   -hicpp-explicit-conversions
 WarningsAsErrors: "*"
 HeaderFilterRegex: ""
