@@ -3,17 +3,9 @@
 #ifndef INCLUDED_MODEL_TRANSFORMS
 #define INCLUDED_MODEL_TRANSFORMS
 
-#define MAX_DATA 4
-#include "defs.sh"
+#define VERTEX_DATA
 
-uniform vec4 u_data[MAX_DATA];
-
-#define billboard u_data[0].xyz
-#define vertexSnap u_data[1].x
-#define displacement_power u_data[2].x
-#define recieve_decals u_data[3].x
-
-uniform vec3 u_mesh_pos;
+#include "material.sh"
 
 SAMPLER2D(s_displacement, SAMPLE_MAT_DISPLACEMENT);
 
@@ -50,7 +42,7 @@ TransformedData applyPosTransforms(mat4 proj, vec4 a_position, vec2 a_texcoord0)
         vec3 right = vec3(u_invView[0][0], u_invView[1][0], u_invView[2][0]);
         vec3 up = vec3(u_invView[0][1], u_invView[1][1], u_invView[2][1]);
 
-        data.pos = vec4(u_mesh_pos.xyz + (right * (data.pos.x - u_mesh_pos.x)) + (up * (data.pos.y - u_mesh_pos.y)), 1.);
+        data.pos = vec4((right * data.pos.x) + (up * data.pos.y), 1.);
     }
     // ----
 

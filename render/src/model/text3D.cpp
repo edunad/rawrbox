@@ -14,7 +14,7 @@ namespace rawrbox {
 	uint32_t Text3D::addText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl, rawrbox::Alignment alignX, rawrbox::Alignment alignY, bool billboard) {
 		float screenSize = font.getScale() * this->_scaleMul;
 
-		rawrbox::Vector3f startpos = pos;
+		rawrbox::Vector3f startpos = {};
 		rawrbox::Vector2f tsize = font.getStringSize(text) * screenSize;
 		if (alignX != Alignment::Left || alignY != Alignment::Left) {
 			switch (alignX) {
@@ -43,7 +43,7 @@ namespace rawrbox {
 		uint32_t id = ++Text3D::ID;
 		font.render(text, startpos.xy(), true, [this, &font, billboard, pos, startpos, cl, screenSize, id](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
 			rawrbox::Mesh mesh;
-			mesh.vertexPos.translate(pos);
+			mesh.setPos(pos);
 
 			mesh.setTexture(font.getPackTexture(glyph)); // Set the atlas
 			mesh.setOptimizable(!billboard);

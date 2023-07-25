@@ -37,12 +37,13 @@ namespace rawrbox {
 	uint8_t SAMPLE_DEPTH = 6;
 	uint8_t SAMPLE_MASK = 7;
 
-	uint8_t SAMPLE_CLUSTERS = 8;
-	uint8_t SAMPLE_LIGHTINDICES = 9;
-	uint8_t SAMPLE_LIGHTGRID = 10;
-	uint8_t SAMPLE_ATOMIC_INDEX = 11;
+	uint8_t SAMPLE_CLUSTERS = 0;
+	uint8_t SAMPLE_ATOMIC_INDEX = 1;
 
-	uint8_t SAMPLE_INSTANCE_DATA = 12;
+	uint8_t SAMPLE_LIGHTINDICES = 8; // Light data used on models
+	uint8_t SAMPLE_LIGHTGRID = 9;
+
+	uint8_t SAMPLE_INSTANCE_DATA = 10;
 	// ---------
 
 	// ID GENERATION
@@ -62,6 +63,6 @@ namespace rawrbox {
 
 	// INTERNAL, DO NOT USE
 	size_t __OPEN_WINDOWS__ = 0;
-	bool __LIGHT_DIRTY__ = false;
+	bool __LIGHT_DIRTY__ = true;
 	// -------
 } // namespace rawrbox

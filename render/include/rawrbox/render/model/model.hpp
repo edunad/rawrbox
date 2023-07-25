@@ -213,12 +213,11 @@ namespace rawrbox {
 			// Update lights ---
 			if constexpr (supportsNormals<M>) {
 				for (auto& mesh : this->meshes()) {
-					rawrbox::Vector3f meshPos = {mesh->matrix[12], mesh->matrix[13], mesh->matrix[14]};
 					// auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle()); // TODO
 
 					for (auto light : mesh->lights) {
 						if (light == nullptr) continue;
-						light->setOffsetPos(meshPos);
+						light->setOffsetPos(mesh->getPos() + this->getPos());
 					}
 				}
 			}
@@ -284,7 +283,7 @@ namespace rawrbox {
 				}
 
 				auto light = rawrbox::LIGHTS::addLight<T>(std::forward<CallbackArgs>(args)...);
-				light->setOffsetPos(parent->getPos());
+				light->setOffsetPos(parent->getPos() + this->getPos());
 				parent->lights.push_back(light);
 			}
 		}
@@ -438,7 +437,7 @@ namespace rawrbox {
 					bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
 				}
 
-				bgfx::setTransform((this->getMatrix() * mesh->matrix).data());
+				bgfx::setTransform((this->getMatrix() * mesh->getMatrix()).data());
 
 				uint64_t flags = BGFX_STATE_DEFAULT_3D | mesh->culling | mesh->blending | mesh->depthTest;
 				flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP

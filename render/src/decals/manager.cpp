@@ -15,11 +15,11 @@ namespace rawrbox {
 		_model->getTemplate().setTexture(atlas);
 	}
 
-	void DECALS::add(const rawrbox::Vector3f& pos, float direction, const rawrbox::Colorf& color, uint16_t atlasId) {
+	void DECALS::add(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& scale, float direction, const rawrbox::Colorf& color, uint16_t atlasId) {
 		if (_model == nullptr) return;
 
 		rawrbox::Matrix4x4 m;
-		m.mtxSRT({1.F, 1.F, 1.F}, rawrbox::Vector4f::toQuat({bx::toRad(direction), 0, 0}), pos);
+		m.mtxSRT(scale, rawrbox::Vector4f::toQuat({bx::toRad(direction), 0, 0}), pos);
 
 		_model->addInstance({m, color, {static_cast<float>(atlasId), 0, 0, 0}});
 	}
@@ -35,7 +35,6 @@ namespace rawrbox {
 	}
 
 	const rawrbox::Mesh& DECALS::getTemplate() { return _model->getTemplate(); }
-
 	const size_t DECALS::count() { return _model->count(); }
 
 	void DECALS::init() {

@@ -25,9 +25,7 @@ namespace rawrbox {
 		return this->indices.empty() || this->vertices.empty();
 	}
 
-	void Mesh::setMatrix(const rawrbox::Matrix4x4& matrix) {
-		this->matrix = matrix;
-	}
+	const rawrbox::Matrix4x4& Mesh::getMatrix() { return this->matrix; }
 
 	const rawrbox::Vector3f& Mesh::getPos() const { return this->_pos; }
 	void Mesh::setPos(const rawrbox::Vector3f& pos) {

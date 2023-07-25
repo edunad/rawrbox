@@ -59,7 +59,11 @@ namespace rawrbox {
 		// UTILS ----
 		static void setEnabled(bool fb);
 		static void setSun(const rawrbox::Vector3f& dir, const rawrbox::Colorf& col);
+		static const rawrbox::Colorf& getSunColor();
+		static const rawrbox::Vector3f& getSunDir();
+
 		static void setAmbient(const rawrbox::Colorf& col);
+		static const rawrbox::Colorf& getAmbient();
 		// -------
 
 		// Light ----

@@ -36,18 +36,18 @@ namespace rawrbox {
 			for (auto& assimpLights : model.lights) {
 
 				switch (assimpLights.type) {
-					case rawrbox::LightType::LIGHT_POINT:
-						this->template addLight<rawrbox::LightPoint>(assimpLights.parentID, assimpLights.pos, assimpLights.diffuse, assimpLights.angleInnerCone);
+					case rawrbox::LightType::POINT:
+						this->template addLight<rawrbox::PointLight>(assimpLights.parentID, assimpLights.pos, assimpLights.diffuse, assimpLights.angleInnerCone);
 						break;
-					case rawrbox::LightType::LIGHT_SPOT:
-						this->template addLight<rawrbox::LightSpot>(assimpLights.parentID, assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, 100.F);
+					case rawrbox::LightType::SPOT:
+						this->template addLight<rawrbox::SpotLight>(assimpLights.parentID, assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, 100.F);
 						break;
-					case rawrbox::LightType::LIGHT_DIR:
+					case rawrbox::LightType::DIR:
 						rawrbox::LIGHTS::setSun(assimpLights.direction, assimpLights.diffuse);
 						break;
 
 					default:
-					case rawrbox::LightType::LIGHT_UNKNOWN:
+					case rawrbox::LightType::UNKNOWN:
 						fmt::print("[RawrBox-Assimp] Failed to create unknown light '{}'\n", assimpLights.name);
 						break;
 				}

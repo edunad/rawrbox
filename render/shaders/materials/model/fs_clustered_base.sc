@@ -3,22 +3,17 @@ $input v_normal, v_tangent, v_texcoord0, v_color0, v_worldPos
 
 #define READ_LIGHT_INDICES
 #define READ_LIGHT_GRID
+#define READ_MATERIAL
 
 #include <bgfx_shader.sh>
 
 #include "../../include/clusters.sh"
 #include "../../include/lights.sh"
 #include "../../include/model_transforms.sh"
-
-SAMPLER2DARRAY(s_albedo, SAMPLE_MAT_ALBEDO);
-SAMPLER2DARRAY(s_normal, SAMPLE_MAT_NORMAL);
-SAMPLER2DARRAY(s_specular, SAMPLE_MAT_SPECULAR);
-SAMPLER2DARRAY(s_emission, SAMPLE_MAT_EMISSION);
+#include "../../include/material.sh"
 
 uniform vec4 u_colorOffset;
 uniform vec4 u_camPos;
-
-uniform vec4 u_texMatData;
 
 void main() {
 	vec4 albedo = texture2DArray(s_albedo, vec3(v_texcoord0.xy, v_texcoord0.z)) * v_color0 * u_colorOffset;

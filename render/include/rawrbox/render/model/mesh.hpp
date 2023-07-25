@@ -59,8 +59,6 @@ namespace rawrbox {
 
 		// RENDERING ---
 		rawrbox::Matrix4x4 matrix = {};
-		rawrbox::Matrix4x4 vertexPos = {};
-
 		rawrbox::Color color = rawrbox::Colors::White;
 
 		bool wireframe = false;
@@ -93,8 +91,7 @@ namespace rawrbox {
 		[[nodiscard]] const rawrbox::BBOX& getBBOX() const;
 
 		[[nodiscard]] const bool empty() const;
-
-		void setMatrix(const rawrbox::Matrix4x4& matrix);
+		[[nodiscard]] const rawrbox::Matrix4x4& getMatrix();
 
 		[[nodiscard]] const rawrbox::Vector3f& getPos() const;
 		void setPos(const rawrbox::Vector3f& pos);

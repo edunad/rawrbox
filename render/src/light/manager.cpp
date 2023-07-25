@@ -67,7 +67,7 @@ namespace rawrbox {
 			light->direction = rawrbox::Vector3f(dir.x, dir.y, dir.z);
 			light->radius = l->getRadius();
 
-			if (l->getType() == rawrbox::LightType::LIGHT_SPOT) {
+			if (l->getType() == rawrbox::LightType::SPOT) {
 				auto data = l->getData();
 				light->innerCone = data.x;
 				light->outerCone = data.y;
@@ -103,7 +103,11 @@ namespace rawrbox {
 		_sun_color = col;
 	}
 
+	const rawrbox::Colorf& LIGHTS::getSunColor() { return _sun_color; }
+	const rawrbox::Vector3f& LIGHTS::getSunDir() { return _sun_direction; }
+
 	void LIGHTS::setAmbient(const rawrbox::Colorf& col) { _ambient = col; }
+	const rawrbox::Colorf& LIGHTS::getAmbient() { return _ambient; }
 	// ---------
 
 	// Light ----
