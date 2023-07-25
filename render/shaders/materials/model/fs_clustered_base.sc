@@ -11,6 +11,7 @@ $input v_normal, v_tangent, v_texcoord0, v_color0, v_worldPos
 #include "../../include/lights.sh"
 #include "../../include/model_transforms.sh"
 #include "../../include/material.sh"
+#include "../../include/fog.sh"
 
 uniform vec4 u_colorOffset;
 uniform vec4 u_camPos;
@@ -36,6 +37,12 @@ void main() {
 
 	gl_FragData[0].rgb = albedo * radianceOut;
     gl_FragData[0].a = albedo.a; // COLOR
+	// -------
+
+	// Apply Fog ----
+	gl_FragData[0] = applyFog(gl_FragData[0], v_worldPos, u_camPos);
+	// -------
+
 	gl_FragData[1].r = 1.F - recieve_decals; // DECALS
 	// --------
 }

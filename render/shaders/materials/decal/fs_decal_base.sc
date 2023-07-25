@@ -14,6 +14,7 @@ $input v_texcoord0, v_color0, v_model_0, v_model_1, v_model_2, v_model_3, v_norm
 #include "../../include/shaderlib.sh"
 #include "../../include/utils.sh"
 #include "../../include/material.sh"
+#include "../../include/fog.sh"
 
 uniform vec4 u_colorOffset;
 uniform vec4 u_camPos;
@@ -62,4 +63,8 @@ void main() {
 	gl_FragColor.rgb = albedo * radianceOut * v_color0;
     gl_FragColor.a = albedo.a; // COLOR
     // ----
+
+	// Apply Fog ----
+	gl_FragColor = applyFog(gl_FragColor, v_worldPos, u_camPos);
+	// -------
 }
