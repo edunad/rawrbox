@@ -34,7 +34,7 @@ namespace rawrbox {
 		}
 
 		static inline float sample(const std::vector<float>& samples, float t) {
-			int count = samples.size();
+			int count = static_cast<int>(samples.size());
 			if (count == 0) return 0;
 			if (count == 1) return samples[0];
 

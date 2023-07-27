@@ -1,10 +1,10 @@
-﻿project("003-assimp-loading")
+﻿project("003-assimp")
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_SAMPLE_SOURCES "include/*.hpp" "src/*.cpp")
 
 # Project setup
-set(output_target 003-assimp-loading)
+set(output_target 003-assimp)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE})
 
 add_executable(${output_target} ${RAWRBOX_SAMPLE_SOURCES})

@@ -41,6 +41,7 @@ endif()
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
 option(RAWRBOX_ENABLE_ASSIMP_SUPPORT "Build assimp & add model loading support" ON)
 option(RAWRBOX_ENABLE_BASS_SUPPORT "Build bass & add sound loading support" ON)
+option(RAWRBOX_ENABLE_WEBM_SUPPORT "Build libwebm & add video loading support" ON)
 # -----
 
 # OTHER SETTINGS ----

@@ -34,6 +34,7 @@
 - 2D stencil drawing
 - Fonts
 - Images (png, jpeg, tga, bitmap)
+- Video (webm)
 - Sounds (using BASS lib)
 - Custom UI
 - Material system (similar to unity)
@@ -80,6 +81,7 @@
 | `RAWRBOX_ENABLE_QHULL`                     | Enables QHull util                                                                                 |
 | `RAWRBOX_ENABLE_ASSIMP_SUPPORT`            | Enables assimp model loading                                                                       |
 | `RAWRBOX_ENABLE_BASS_SUPPORT`              | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
+| `RAWRBOX_ENABLE_WEBM_SUPPORT`              | Enables WEBM support.                                                                              |
 |                                            |                                                                                                    |
 | `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          |
 | `RAWRBOX_BUILD_TESTING`                    | Builds and runs tests                                                                              |
@@ -87,7 +89,7 @@
 | `RAWRBOX_BUILD_RESOURCES_MANAGER`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
 | `RAWRBOX_BUILD_PHYSICS`                    | Builds the physics engine                                                                          |
 |                                            |                                                                                                    |
-| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime                                                   |
+| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Enabled if jolt is used)                         |
 
 # DEPENCENDIES
 

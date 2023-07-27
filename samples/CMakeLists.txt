@@ -9,7 +9,7 @@ add_subdirectory("001-stencil")
 add_subdirectory("002-generated-models")
 
 if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
-    add_subdirectory("003-assimp-loading")
+    add_subdirectory("003-assimp")
     add_subdirectory("004-light-support")
     add_subdirectory("005-post-process")
 endif()
@@ -30,3 +30,7 @@ endif()
 
 add_subdirectory("010-instancing")
 add_subdirectory("011-decals")
+
+if(RAWRBOX_ENABLE_WEBM_SUPPORT)
+    add_subdirectory("012-webm")
+endif()

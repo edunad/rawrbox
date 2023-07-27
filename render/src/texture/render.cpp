@@ -63,5 +63,5 @@ namespace rawrbox {
 		this->_handle = this->_textureHandles.front();
 	} // ------------
 
-	const bgfx::ViewId TextureRender::id() { return this->_renderId; }
+	bgfx::ViewId TextureRender::id() { return this->_renderId; }
 } // namespace rawrbox

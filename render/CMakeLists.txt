@@ -93,6 +93,53 @@ endif()
 
 # ----
 
+if(RAWRBOX_ENABLE_WEBM_SUPPORT)
+    message(STATUS "Enabled WEBM & VPX")
+
+    CPMAddPackage(
+        NAME
+        libwebm
+        GIT_TAG
+        libwebm-1.0.0.30
+        GITHUB_REPOSITORY
+        webmproject/libwebm
+        OPTIONS
+        "BUILD_SHARED_LIBS OFF"
+        "ENABLE_WEBMTS OFF"
+        "ENABLE_WEBMINFO OFF"
+        "ENABLE_WEBM_PARSER OFF"
+        "ENABLE_TESTS OFF"
+        "ENABLE_SAMPLE_PROGRAMS OFF")
+
+    if(libwebm_ADDED)
+        target_include_directories(webm PUBLIC ${libwebm_SOURCE_DIR})
+        set_lib_runtime_mt(webm)
+        set_lib_runtime_mt(mkvparser)
+
+        list(APPEND RAWRBOX_EXTRA_LIBS webm)
+    endif()
+
+    # Add codec
+    CPMAddPackage(
+        NAME
+        libvpx
+        GIT_TAG
+        v1.13.0
+        GITHUB_REPOSITORY
+        webmproject/libvpx
+        DOWNLOAD_ONLY
+        ON)
+
+    if(libvpx_ADDED)
+        add_library(vpx INTERFACE IMPORTED)
+        target_include_directories(vpx INTERFACE ${libvpx_SOURCE_DIR})
+
+        list(APPEND RAWRBOX_EXTRA_LIBS vpx)
+    endif()
+
+endif()
+# ----
+
 if(RAWRBOX_BUILD_RESOURCES_MANAGER)
     list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.RESOURCES)
 endif()
@@ -114,6 +161,15 @@ endif()
 if(NOT RAWRBOX_BUILD_RESOURCES_MANAGER)
     foreach(TMP_PATH ${RAWRBOX_RENDER_SOURCES})
         string(FIND ${TMP_PATH} "/resources/" EXCLUDE_DIR_FOUND)
+        if(NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
+            list(REMOVE_ITEM RAWRBOX_RENDER_SOURCES ${TMP_PATH})
+        endif()
+    endforeach(TMP_PATH)
+endif()
+
+if(NOT RAWRBOX_ENABLE_WEBM_SUPPORT OR NOT RAWRBOX_BUILD_RESOURCES_MANAGER)
+    foreach(TMP_PATH ${RAWRBOX_RENDER_SOURCES})
+        string(FIND ${TMP_PATH} "/webm/" EXCLUDE_DIR_FOUND)
         if(NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
             list(REMOVE_ITEM RAWRBOX_RENDER_SOURCES ${TMP_PATH})
         endif()

@@ -179,7 +179,7 @@ namespace assimp {
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "003-assimp-loading");
+		bgfx::dbgTextPrintf(1, 1, 0x1f, "003-assimp");
 		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: ASSIMP model loading test");
 		printFrames();
 		// -----------

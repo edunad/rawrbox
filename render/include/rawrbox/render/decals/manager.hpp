@@ -7,7 +7,6 @@
 
 #include <vector>
 
-// https://github.com/diharaw/deferred-decals/blob/master/src/main.cpp
 namespace rawrbox {
 	class DECALS {
 	protected:

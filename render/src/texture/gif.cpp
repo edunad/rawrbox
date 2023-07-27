@@ -4,7 +4,6 @@
 
 #include <stb/gif.hpp>
 
-#include <bgfx/bgfx.h>
 #include <fmt/format.h>
 
 namespace rawrbox {
@@ -73,7 +72,7 @@ namespace rawrbox {
 		stbi_image_free(delays);
 	}
 
-	const bool TextureGIF::hasTransparency() const {
+	bool TextureGIF::hasTransparency() const {
 		return this->_channels == 4 && this->_transparent;
 	}
 
@@ -86,7 +85,7 @@ namespace rawrbox {
 	void TextureGIF::step() {
 		if (this->_failedToLoad || !bgfx::isValid(this->_handle)) return; // Not bound
 
-		if (!this->_loop && this->_currentFrame >= this->_frames.size() - 1) return;
+		if (!this->_loop && static_cast<size_t>(this->_currentFrame) >= this->_frames.size() - 1) return;
 		if (this->_cooldown >= rawrbox::TimeUtils::curtime()) return;
 
 		this->_cooldown = static_cast<int64_t>(this->_frames[this->_currentFrame].delay * this->_speed) + rawrbox::TimeUtils::curtime(); // TODO: FIX SPEED
