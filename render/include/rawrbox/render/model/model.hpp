@@ -310,11 +310,11 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const { return this->_bbox; }
-		[[nodiscard]] virtual const size_t totalMeshes() const {
+		[[nodiscard]] virtual size_t totalMeshes() const {
 			return this->_meshes.size();
 		}
 
-		[[nodiscard]] virtual const bool empty() const {
+		[[nodiscard]] virtual bool empty() const {
 			return this->_meshes.empty();
 		}
 
@@ -368,42 +368,42 @@ namespace rawrbox {
 
 		virtual void setCulling(uint64_t cull, int id = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != id) continue;
+				if (id != -1 && i != static_cast<size_t>(id)) continue;
 				this->_meshes[i]->setCulling(cull);
 			}
 		}
 
 		virtual void setWireframe(bool wireframe, int id = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != id) continue;
+				if (id != -1 && i != static_cast<size_t>(id)) continue;
 				this->_meshes[i]->setWireframe(wireframe);
 			}
 		}
 
 		virtual void setBlend(uint64_t blend, int id = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != id) continue;
+				if (id != -1 && i != static_cast<size_t>(id)) continue;
 				this->_meshes[i]->setBlend(blend);
 			}
 		}
 
 		virtual void setDepthTest(uint64_t depth, int id = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != id) continue;
+				if (id != -1 && i != static_cast<size_t>(id)) continue;
 				this->_meshes[i]->setDepthTest(depth);
 			}
 		}
 
 		virtual void setColor(const rawrbox::Color& color, int id = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != id) continue;
+				if (id != -1 && i != static_cast<size_t>(id)) continue;
 				this->_meshes[i]->setColor(color);
 			}
 		}
 
 		virtual void setRecieveDecals(bool recieve, int id = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != id) continue;
+				if (id != -1 && i != static_cast<size_t>(id)) continue;
 				this->_meshes[i]->setRecieveDecals(recieve);
 			}
 		}

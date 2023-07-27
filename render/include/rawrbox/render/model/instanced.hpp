@@ -85,7 +85,7 @@ namespace rawrbox {
 		std::vector<rawrbox::Instance>& instances() { return this->_instances; }
 		size_t count() { return this->_instances.size(); }
 
-		void upload(bool dynamic = false) override {
+		void upload(bool /*dynamic*/ = false) override {
 			rawrbox::ModelBase<M>::upload(false);
 
 			this->_dataBuffer = bgfx::createDynamicVertexBuffer(
@@ -120,7 +120,7 @@ namespace rawrbox {
 			// Set instance data buffer.
 			bgfx::setTransform((this->getMatrix()).data());
 			bgfx::setBuffer(rawrbox::SAMPLE_INSTANCE_DATA, this->_dataBuffer, bgfx::Access::Read);
-			bgfx::setInstanceDataBuffer(this->_dataBuffer, 0, this->_instances.size());
+			bgfx::setInstanceDataBuffer(this->_dataBuffer, 0, static_cast<uint32_t>(this->_instances.size()));
 			// ----
 
 			uint64_t flags = BGFX_STATE_DEFAULT_3D | this->_mesh->culling | this->_mesh->blending | this->_mesh->depthTest;

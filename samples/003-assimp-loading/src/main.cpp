@@ -5,7 +5,7 @@
 
 #include <assimp/game.hpp>
 
-int main(int argc, char* argv[]) {
+int main(int  /*argc*/, char*  /*argv*/[]) {
 #ifdef _WIN32
 	SetConsoleTitle("Assimp test");
 	SetConsoleCP(CP_UTF8);
