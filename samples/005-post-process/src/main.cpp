@@ -5,7 +5,7 @@
 
 #include <post_process/game.hpp>
 
-int main(int  /*argc*/, char*  /*argv*/[]) {
+int main(int /*argc*/, char* /*argv*/[]) {
 #ifdef _WIN32
 	SetConsoleTitle("Post-process test");
 	SetConsoleCP(CP_UTF8);

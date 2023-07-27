@@ -21,7 +21,7 @@ namespace physics_test {
 		this->_window->setRenderer(
 		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto&  /*w*/) { this->shutdown(); };
+		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {
@@ -123,7 +123,7 @@ namespace physics_test {
 		// --------
 
 		// BINDS ----
-		this->_window->onMouseKey += [this](auto&  /*w*/, const rawrbox::Vector2i&  /*mousePos*/, int button, int action, int  /*mods*/) {
+		this->_window->onMouseKey += [this](auto& /*w*/, const rawrbox::Vector2i& /*mousePos*/, int button, int action, int /*mods*/) {
 			const bool isDown = action == 1;
 			if (!isDown || button != MOUSE_BUTTON_1) return;
 

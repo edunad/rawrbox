@@ -509,12 +509,12 @@ extern "C" {
 	#endif
 
 // private structure
-typedef struct
+using stbtt__buf = struct
 {
 	unsigned char *data;
 	int cursor;
 	int size;
-} stbtt__buf;
+};
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -523,11 +523,11 @@ typedef struct
 // If you use this API, you only have to call two functions ever.
 //
 
-typedef struct
+using stbtt_bakedchar = struct
 {
 	unsigned short x0, y0, x1, y1; // coordinates of bbox in bitmap
 	float xoff, yoff, xadvance;
-} stbtt_bakedchar;
+};
 
 STBTT_DEF int stbtt_BakeFontBitmap(const unsigned char *data, int offset, // font location (use offset=0 for plain .ttf)
     float pixel_height,                                                   // height of font in pixels
@@ -539,11 +539,11 @@ STBTT_DEF int stbtt_BakeFontBitmap(const unsigned char *data, int offset, // fon
 // if return is 0, no characters fit and no rows were used
 // This uses a very crappy packing.
 
-typedef struct
+using stbtt_aligned_quad = struct
 {
 	float x0, y0, s0, t0; // top-left
 	float x1, y1, s1, t1; // bottom-right
-} stbtt_aligned_quad;
+};
 
 STBTT_DEF void stbtt_GetBakedQuad(const stbtt_bakedchar *chardata, int pw, int ph, // same data as above
     int char_index,                                                                // character to display
@@ -570,17 +570,17 @@ STBTT_DEF void stbtt_GetScaledFontVMetrics(const unsigned char *fontdata, int in
 // This provides options for packing multiple fonts into one atlas, not
 // perfectly but better than nothing.
 
-typedef struct
+using stbtt_packedchar = struct
 {
 	unsigned short x0, y0, x1, y1; // coordinates of bbox in bitmap
 	float xoff, yoff, xadvance;
 	float xoff2, yoff2;
-} stbtt_packedchar;
+};
 
-typedef struct stbtt_pack_context stbtt_pack_context;
-typedef struct stbtt_fontinfo stbtt_fontinfo;
+using stbtt_pack_context = struct stbtt_pack_context;
+using stbtt_fontinfo = struct stbtt_fontinfo;
 	#ifndef STB_RECT_PACK_VERSION
-typedef struct stbrp_rect stbrp_rect;
+using stbrp_rect = struct stbrp_rect;
 	#endif
 
 STBTT_DEF int stbtt_PackBegin(stbtt_pack_context *spc, unsigned char *pixels, int width, int height, int stride_in_bytes, int padding, void *alloc_context);
@@ -614,7 +614,7 @@ STBTT_DEF int stbtt_PackFontRange(stbtt_pack_context *spc, const unsigned char *
 //       ...,                  20 , ... // font max minus min y is 20 pixels tall
 //       ..., STBTT_POINT_SIZE(20), ... // 'M' is 20 pixels tall
 
-typedef struct
+using stbtt_pack_range = struct
 {
 	float font_size;
 	int first_unicode_codepoint_in_range; // if non-zero, then the chars are continuous, and this is the first codepoint
@@ -622,7 +622,7 @@ typedef struct
 	int num_chars;
 	stbtt_packedchar *chardata_for_range;     // output
 	unsigned char h_oversample, v_oversample; // don't set these, they're used internally
-} stbtt_pack_range;
+};
 
 STBTT_DEF int stbtt_PackFontRanges(stbtt_pack_context *spc, const unsigned char *fontdata, int font_index, stbtt_pack_range *ranges, int num_ranges);
 // Creates character bitmaps from multiple ranges of characters stored in
@@ -796,11 +796,11 @@ STBTT_DEF int stbtt_GetGlyphKernAdvance(const stbtt_fontinfo *info, int glyph1, 
 STBTT_DEF int stbtt_GetGlyphBox(const stbtt_fontinfo *info, int glyph_index, int *x0, int *y0, int *x1, int *y1);
 // as above, but takes one or more glyph indices for greater efficiency
 
-typedef struct stbtt_kerningentry {
+using stbtt_kerningentry = struct stbtt_kerningentry {
 	int glyph1; // use stbtt_FindGlyphIndex
 	int glyph2;
 	int advance;
-} stbtt_kerningentry;
+};
 
 STBTT_DEF int stbtt_GetKerningTableLength(const stbtt_fontinfo *info);
 STBTT_DEF int stbtt_GetKerningTable(const stbtt_fontinfo *info, stbtt_kerningentry *table, int table_length);
@@ -826,11 +826,11 @@ enum {
 	#ifndef stbtt_vertex                    // you can predefine this to use different values
 						// (we share this with other code at RAD)
 		#define stbtt_vertex_type short // can't use stbtt_int16 because that's not visible in the header file
-typedef struct
+using stbtt_vertex = struct
 {
 	stbtt_vertex_type x, y, cx, cy, cx1, cy1;
 	unsigned char type, padding;
-} stbtt_vertex;
+};
 	#endif
 
 STBTT_DEF int stbtt_IsGlyphEmpty(const stbtt_fontinfo *info, int glyph_index);
@@ -914,11 +914,11 @@ STBTT_DEF void stbtt_GetGlyphBitmapBox(const stbtt_fontinfo *font, int glyph, fl
 STBTT_DEF void stbtt_GetGlyphBitmapBoxSubpixel(const stbtt_fontinfo *font, int glyph, float scale_x, float scale_y, float shift_x, float shift_y, int *ix0, int *iy0, int *ix1, int *iy1);
 
 // @TODO: don't expose this structure
-typedef struct
+using stbtt__bitmap = struct
 {
 	int w, h, stride;
 	unsigned char *pixels;
-} stbtt__bitmap;
+};
 
 // rasterize a shape with quadratic beziers into a bitmap
 STBTT_DEF void stbtt_Rasterize(stbtt__bitmap *result, // 1-channel bitmap to draw into

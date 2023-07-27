@@ -6,7 +6,7 @@
 
 namespace rawrbox {
 	// FOCUS HANDLE ---
-	bool UILabel::hitTest(const rawrbox::Vector2f&  /*point*/) const { return false; }
+	bool UILabel::hitTest(const rawrbox::Vector2f& /*point*/) const { return false; }
 	// -----
 
 	// UTILS ----

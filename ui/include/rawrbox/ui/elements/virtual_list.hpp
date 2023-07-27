@@ -114,7 +114,7 @@ namespace rawrbox {
 			if (renderAfter != nullptr) renderAfter(stencil);
 		}
 
-		void mouseUp(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) override {
+		void mouseUp(const rawrbox::Vector2i&  /*mousePos*/, uint32_t button, uint32_t  /*mods*/) override {
 			if (button != 0 || hoverIndex < 0 || hoverIndex > static_cast<int>(this->items.size())) return;
 			this->onItemClick(hoverIndex, this->items[hoverIndex]);
 		}
@@ -123,7 +123,7 @@ namespace rawrbox {
 			this->mousePos = mousePos;
 		}
 
-		void mouseScroll(const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset) override {
+		void mouseScroll(const rawrbox::Vector2i&  /*mousePos*/, const rawrbox::Vector2i& offset) override {
 			if (offset.y == 0) return;
 
 			int newVal = mouseScrollY + offset.y * 2;

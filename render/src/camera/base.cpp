@@ -70,11 +70,11 @@ namespace rawrbox {
 		throw std::runtime_error("Not implemented");
 	}
 
-	const rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f&  /*pos*/) const {
+	const rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f& /*pos*/) const {
 		throw std::runtime_error("Not implemented");
 	}
 
-	const rawrbox::Vector3f CameraBase::screenToWorld(const rawrbox::Vector2f&  /*screen_pos*/) const {
+	const rawrbox::Vector3f CameraBase::screenToWorld(const rawrbox::Vector2f& /*screen_pos*/) const {
 		throw std::runtime_error("Not implemented");
 	}
 

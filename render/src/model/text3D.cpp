@@ -77,7 +77,7 @@ namespace rawrbox {
 		return id;
 	}
 
-	void Text3D::upload(bool  /*dynamic*/) {
+	void Text3D::upload(bool /*dynamic*/) {
 		Model<rawrbox::MaterialText3D>::upload(true); // Always force dynamic, since we can remove text
 	}
 

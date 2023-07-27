@@ -37,7 +37,7 @@ namespace rawrbox {
 		_gizmos->removeMeshByName(fmt::format("GIZMO-{}", id));
 	}
 
-	void GIZMOS::updateGizmo(uint32_t id, const rawrbox::Vector3f&  /*pos*/) {
+	void GIZMOS::updateGizmo(uint32_t id, const rawrbox::Vector3f& /*pos*/) {
 		_gizmos->getMeshByName(fmt::format("GIZMO-{}", id));
 	}
 
