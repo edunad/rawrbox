@@ -49,7 +49,7 @@ namespace rawrbox {
 		fmt::print("[RawrBox-Window] GLFW error {}: {}\n", error, description);
 	}
 
-	void BgfxCallbacks::fatal(const char* filePath, uint16_t line, bgfx::Fatal::Enum code, const char* str) {
+	void BgfxCallbacks::fatal(const char*  /*filePath*/, uint16_t line, bgfx::Fatal::Enum  /*code*/, const char* str) {
 		fmt::print("[RawrBox-Window] BGFX fatal error {}: {}\n", line, str);
 		abort();
 	}

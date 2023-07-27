@@ -25,7 +25,7 @@ namespace model {
 		this->_window->setRenderer<>(
 		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
+		this->_window->onWindowClose += [this](auto&  /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {

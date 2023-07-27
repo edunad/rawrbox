@@ -19,7 +19,7 @@ namespace rawrbox {
 		}
 	}
 
-	const bool TextureFlat::hasTransparency() const {
+	bool TextureFlat::hasTransparency() const {
 		return this->_channels == 4 && this->_transparent;
 	}
 

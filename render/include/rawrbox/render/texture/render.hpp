@@ -44,6 +44,6 @@ namespace rawrbox {
 		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::BGRA8) override;
 		// --------------------
 
-		virtual const bgfx::ViewId id();
+		virtual bgfx::ViewId id();
 	};
 } // namespace rawrbox

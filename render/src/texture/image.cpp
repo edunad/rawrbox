@@ -62,7 +62,7 @@ namespace rawrbox {
 		this->_name = name;
 	}
 
-	const bool TextureImage::hasTransparency() const {
+	bool TextureImage::hasTransparency() const {
 		return this->_channels == 4 && this->_transparent;
 	}
 	// --------------------

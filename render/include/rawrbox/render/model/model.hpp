@@ -239,7 +239,7 @@ namespace rawrbox {
 		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
 
 		// Animations ----
-		virtual bool blendAnimation(const std::string& otherAnim, float blend) {
+		virtual bool blendAnimation(const std::string& /*otherAnim*/, float /*blend*/) {
 			throw std::runtime_error("TODO");
 		}
 

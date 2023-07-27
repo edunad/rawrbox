@@ -14,7 +14,7 @@ namespace rawrbox {
 
 	public:
 		TextureFlat(const rawrbox::Vector2i& initsize, const rawrbox::Color& bgcol);
-		[[nodiscard]] const bool hasTransparency() const override;
+		[[nodiscard]] bool hasTransparency() const override;
 
 		// ------RENDER
 		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;

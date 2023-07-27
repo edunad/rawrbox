@@ -56,7 +56,7 @@ namespace rawrbox {
 	}
 
 	// FOCUS HANDLE ---
-	bool UIProgressBar::hitTest(const rawrbox::Vector2f& point) const { return false; }
+	bool UIProgressBar::hitTest(const rawrbox::Vector2f&  /*point*/) const { return false; }
 	// -----
 
 	void UIProgressBar::afterDraw(Stencil& stencil) {
