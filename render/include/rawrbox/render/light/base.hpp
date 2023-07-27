@@ -39,24 +39,24 @@ namespace rawrbox {
 		[[nodiscard]] virtual const rawrbox::Vector4f getData() const;
 
 		virtual void setRadius(float radius);
-		[[nodiscard]] virtual const float getRadius() const;
+		[[nodiscard]] virtual float getRadius() const;
 
 		virtual void setId(size_t id);
-		[[nodiscard]] virtual const size_t id() const;
+		[[nodiscard]] virtual size_t id() const;
 
-		[[nodiscard]] virtual const bool isOn() const;
+		[[nodiscard]] virtual bool isOn() const;
 		virtual void setStatus(bool on);
 
-		[[nodiscard]] const rawrbox::Vector3f& getPos() const;
+		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const;
 		virtual void setPos(const rawrbox::Vector3f& pos);
 
-		[[nodiscard]] const rawrbox::Vector3f& getOffsetPos() const;
+		[[nodiscard]] virtual const rawrbox::Vector3f& getOffsetPos() const;
 		virtual void setOffsetPos(const rawrbox::Vector3f& pos);
 
 		[[nodiscard]] virtual const rawrbox::Vector3f getWorldPos() const;
-		[[nodiscard]] virtual const rawrbox::LightType getType() const;
+		[[nodiscard]] virtual rawrbox::LightType getType() const;
 
-		[[nodiscard]] const rawrbox::Vector3f& getDirection() const;
+		[[nodiscard]] virtual const rawrbox::Vector3f& getDirection() const;
 		virtual void setDirection(const rawrbox::Vector3f& dir);
 	};
 } // namespace rawrbox

@@ -120,8 +120,8 @@ namespace rawrbox {
 		this->_rng.reset();
 	}
 
-	const size_t Emitter::id() const { return this->_id; }
-	const size_t Emitter::totalParticles() const { return this->_particles.size(); }
+	size_t Emitter::id() const { return this->_id; }
+	size_t Emitter::totalParticles() const { return this->_particles.size(); }
 	const rawrbox::EmitterSettings& Emitter::getSettings() const { return this->_settings; }
 	const rawrbox::Vector3f& Emitter::getPos() const { return this->_pos; }
 

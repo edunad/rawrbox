@@ -48,20 +48,20 @@ namespace rawrbox {
 		virtual void remove();
 
 		virtual void setVisible(bool visible);
-		[[nodiscard]] virtual const bool visible() const;
+		[[nodiscard]] virtual bool visible() const;
 
 		virtual void setFocused(bool visible);
-		[[nodiscard]] virtual const bool focused() const;
+		[[nodiscard]] virtual bool focused() const;
 
 		virtual void setHovering(bool hovering);
-		[[nodiscard]] virtual const bool hovering() const;
+		[[nodiscard]] virtual bool hovering() const;
 
 		[[nodiscard]] virtual const rawrbox::UIRoot* getRoot() const;
 		[[nodiscard]] virtual const rawrbox::Vector2f getPosAbsolute() const;
 		// ---
 
 		// SORTING -----
-		[[nodiscard]] virtual const bool alwaysOnTop() const;
+		[[nodiscard]] virtual bool alwaysOnTop() const;
 		virtual void bringToFront();
 		// -------
 

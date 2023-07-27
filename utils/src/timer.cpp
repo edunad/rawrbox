@@ -59,7 +59,7 @@ namespace rawrbox {
 		return timers[id].get();
 	}
 
-	const bool Timer::isRunning(const std::string& id) {
+	bool Timer::isRunning(const std::string& id) {
 		return timers.find(id) != timers.end();
 	}
 

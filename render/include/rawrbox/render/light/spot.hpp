@@ -18,10 +18,10 @@ namespace rawrbox {
 		SpotLight& operator=(SpotLight&&) = delete;
 		~SpotLight() override = default;
 
-		[[nodiscard]] const rawrbox::LightType getType() const override { return LightType::SPOT; };
+		[[nodiscard]] rawrbox::LightType getType() const override { return LightType::SPOT; };
 		[[nodiscard]] const rawrbox::Vector4f getData() const override { return {_innerCone, _outerCone, 0, 0}; }
 
-		[[nodiscard]] const float getInnerCone() const { return _innerCone; };
-		[[nodiscard]] const float getOuterCone() const { return _outerCone; };
+		[[nodiscard]] float getInnerCone() const { return _innerCone; };
+		[[nodiscard]] float getOuterCone() const { return _outerCone; };
 	};
 } // namespace rawrbox

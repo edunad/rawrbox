@@ -146,10 +146,10 @@ namespace rawrbox {
 		_fog_end = end;
 	}
 
-	const rawrbox::FOG_TYPE LIGHTS::getFogType() { return _fog_type; }
+	rawrbox::FOG_TYPE LIGHTS::getFogType() { return _fog_type; }
 	const rawrbox::Colorf& LIGHTS::getFogColor() { return _fog_color; }
-	const float LIGHTS::getFogDensity() { return _fog_density; }
-	const float LIGHTS::getFogEnd() { return _fog_end; }
+	float LIGHTS::getFogDensity() { return _fog_density; }
+	float LIGHTS::getFogEnd() { return _fog_end; }
 	// ---------
 
 	// Light ----

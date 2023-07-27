@@ -27,8 +27,8 @@ namespace rawrbox {
 		return this->_angle;
 	}
 
-	const float CameraBase::getZFar() const { return this->_z_far; }
-	const float CameraBase::getZNear() const { return this->_z_near; }
+	float CameraBase::getZFar() const { return this->_z_far; }
+	float CameraBase::getZNear() const { return this->_z_near; }
 
 	rawrbox::Vector3f CameraBase::getForward() const {
 		return {

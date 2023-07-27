@@ -42,13 +42,13 @@ namespace rawrbox {
 	}
 
 	void UIContainer::setVisible(bool visible) { this->_visible = visible; }
-	const bool UIContainer::visible() const { return this->_visible; }
+	bool UIContainer::visible() const { return this->_visible; }
 
 	void UIContainer::setFocused(bool focused) { this->_focused = focused; }
-	const bool UIContainer::focused() const { return this->_focused; }
+	bool UIContainer::focused() const { return this->_focused; }
 
 	void UIContainer::setHovering(bool hovering) { this->_hovering = hovering; }
-	const bool UIContainer::hovering() const { return this->_hovering; }
+	bool UIContainer::hovering() const { return this->_hovering; }
 
 	const rawrbox::UIRoot* UIContainer::getRoot() const { return this->_root; }
 
@@ -77,7 +77,7 @@ namespace rawrbox {
 	// --------------
 
 	// SORTING -----
-	const bool UIContainer::alwaysOnTop() const { return this->_alwaysOnTop; }
+	bool UIContainer::alwaysOnTop() const { return this->_alwaysOnTop; }
 	void UIContainer::bringToFront() {
 
 		auto& children = this->_root->getChildren();

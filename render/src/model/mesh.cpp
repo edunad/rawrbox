@@ -21,7 +21,7 @@ namespace rawrbox {
 		return this->bbox;
 	}
 
-	const bool Mesh::empty() const {
+	bool Mesh::empty() const {
 		return this->indices.empty() || this->vertices.empty();
 	}
 

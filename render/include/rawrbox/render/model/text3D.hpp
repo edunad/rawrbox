@@ -21,7 +21,7 @@ namespace rawrbox {
 
 		// UTILS ----
 		void setScaleMul(float mul);
-		[[nodiscard]] const float getScaleMul() const;
+		[[nodiscard]] float getScaleMul() const;
 
 		uint32_t addText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White, rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center, bool billboard = false);
 		void removeText(uint32_t indx);
