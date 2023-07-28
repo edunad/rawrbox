@@ -26,7 +26,7 @@ namespace ui_test {
 		this->_window->setRenderer<>(
 		    bgfx::RendererType::Count, [this]() { if(this->_ROOT_UI == nullptr) return; this->_ROOT_UI->render(); }, []() {});
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
+		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {
@@ -144,8 +144,8 @@ namespace ui_test {
 			auto vlist = frame->createChild<rawrbox::UIVirtualList<float>>();
 			vlist->setPos({279, 96});
 			vlist->setSize({64, 64});
-			vlist->renderItem = [](size_t indx, float& msg, bool isHovering, rawrbox::Stencil& stencil) { stencil.drawBox({msg, 0}, {1, 10}); };
-			vlist->getItemSize = [](size_t indx) {
+			vlist->renderItem = [](size_t /*indx*/, float& msg, bool /*isHovering*/, rawrbox::Stencil& stencil) { stencil.drawBox({msg, 0}, {1, 10}); };
+			vlist->getItemSize = [](size_t /*indx*/) {
 				return 9;
 			};
 

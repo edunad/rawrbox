@@ -5,7 +5,7 @@
 
 #include <light/game.hpp>
 
-int main(int argc, char* argv[]) {
+int main(int /*argc*/, char* /*argv*/[]) {
 #ifdef _WIN32
 	SetConsoleTitle("Light test");
 	SetConsoleCP(CP_UTF8);

@@ -19,13 +19,13 @@ namespace rawrbox {
 		rawrbox::__LIGHT_DIRTY__ = true;
 	}
 
-	const float LightBase::getRadius() const { return this->_radius; }
+	float LightBase::getRadius() const { return this->_radius; }
 	const rawrbox::Vector4f LightBase::getData() const { return {}; }
 
 	void LightBase::setId(size_t id) { this->_id = id; };
-	const size_t LightBase::id() const { return this->_id; };
+	size_t LightBase::id() const { return this->_id; };
 
-	const bool LightBase::isOn() const { return this->_isOn; }
+	bool LightBase::isOn() const { return this->_isOn; }
 	void LightBase::setStatus(bool on) {
 		if (this->_isOn == on) return;
 
@@ -50,7 +50,7 @@ namespace rawrbox {
 	}
 
 	const rawrbox::Vector3f LightBase::getWorldPos() const { return this->getPos() + this->getOffsetPos(); }
-	const rawrbox::LightType LightBase::getType() const { return rawrbox::LightType::UNKNOWN; }
+	rawrbox::LightType LightBase::getType() const { return rawrbox::LightType::UNKNOWN; }
 
 	const rawrbox::Vector3f& LightBase::getDirection() const { return this->_direction; };
 	void LightBase::setDirection(const rawrbox::Vector3f& dir) {

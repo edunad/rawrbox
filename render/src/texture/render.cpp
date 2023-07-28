@@ -53,7 +53,7 @@ namespace rawrbox {
 		bgfx::touch(this->_prevViewId);
 	}
 
-	void TextureRender::upload(bgfx::TextureFormat::Enum format) {
+	void TextureRender::upload(bgfx::TextureFormat::Enum /*format*/) {
 		if (bgfx::isValid(this->_renderView)) throw std::runtime_error("[RAWRBOX-RenderTarget] Already uploaded");
 
 		this->_textureHandles.insert(this->_textureHandles.begin(), bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | this->_flags)); // COLOR

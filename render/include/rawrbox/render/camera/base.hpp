@@ -40,8 +40,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual rawrbox::Vector3f getRight() const;
 		[[nodiscard]] virtual rawrbox::Vector3f getUp() const;
 
-		[[nodiscard]] virtual const float getZFar() const;
-		[[nodiscard]] virtual const float getZNear() const;
+		[[nodiscard]] virtual float getZFar() const;
+		[[nodiscard]] virtual float getZNear() const;
 
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getViewMtx() const;
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getProjMtx() const;

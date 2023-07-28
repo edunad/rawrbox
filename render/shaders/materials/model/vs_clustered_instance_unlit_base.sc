@@ -1,5 +1,5 @@
 $input a_position, a_color0, a_texcoord0
-$output v_texcoord0, v_color0
+$output v_texcoord0, v_color0, v_worldPos
 
 #include <bgfx_shader.sh>
 #include <bgfx_compute.sh>
@@ -24,6 +24,8 @@ void main() {
 	v_texcoord0.xy = a_texcoord0.xy;
 	v_texcoord0.z = getInstanceData(id, 5).x;
 
-	gl_Position = applyPosTransforms(u_viewProj, mul(model, vec4(a_position, 1.)), a_texcoord0.xy).final;
+    TransformedData transform = applyPosTransforms(u_viewProj, mul(model, vec4(a_position, 1.)), a_texcoord0.xy);
+    v_worldPos = mul(model, transform.pos).xyz;
+	gl_Position = transform.final;
 }
 

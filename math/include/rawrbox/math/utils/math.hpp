@@ -147,5 +147,21 @@ namespace rawrbox {
 
 			return out;
 		}
+
+		static inline Vector2f toRad(const Vector2f& vec) {
+			return {toRad(vec.x), toRad(vec.y)};
+		}
+
+		static inline Vector2f toDeg(const Vector2f& vec) {
+			return {toDeg(vec.x), toDeg(vec.y)};
+		}
+
+		static inline Vector3f toRad(const Vector3f& vec) {
+			return {toRad(vec.x), toRad(vec.y), toRad(vec.z)};
+		}
+
+		static inline Vector3f toDeg(const Vector3f& vec) {
+			return {toDeg(vec.x), toDeg(vec.y), toDeg(vec.z)};
+		}
 	};
 } // namespace rawrbox

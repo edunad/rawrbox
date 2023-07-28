@@ -26,7 +26,7 @@ namespace rawrbox {
 	// ---------------
 
 	// FOCUS HANDLE ---
-	bool UIImage::hitTest(const rawrbox::Vector2f& point) const { return false; }
+	bool UIImage::hitTest(const rawrbox::Vector2f& /*point*/) const { return false; }
 	// -----
 
 	// DRAW ----

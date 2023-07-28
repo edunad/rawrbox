@@ -24,7 +24,7 @@ namespace bass_test {
 		this->_window->setRenderer<>(
 		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
+		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {
@@ -80,7 +80,7 @@ namespace bass_test {
 		this->_sound->setTempo(0.8F);
 		this->_sound->play();
 
-		this->_sound->onBEAT += [this](double pos) {
+		this->_sound->onBEAT += [this](double /*pos*/) {
 			this->_beat = 0.5F;
 		};
 

@@ -4,7 +4,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Run clang-tidy",
+      "label": "Run multi-threaded clang-tidy",
       "type": "shell",
       "command": "python run-clang-tidy.py -fix -p \"build\" -j 12 -filter build -filter bin -filter tests",
       "group": "build",
@@ -17,9 +17,9 @@
       }
     },
     {
-      "label": "Run include-what-you-use",
+      "label": "Run clang-tidy",
       "type": "shell",
-      "command": "python iwyu_tool.py -p .",
+      "command": "clang-tidy -p \"build\" `find -not -path \"*build*\" -not -path \"*deps*\" -not -path \"*.cache*\" \\( -name *.cpp -o -name *.h -o -name *.hpp \\)` --fix-errors",
       "group": "build",
       "options": {
         "cwd": "${workspaceFolder}"

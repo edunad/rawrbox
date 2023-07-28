@@ -9,7 +9,7 @@ namespace rawrbox {
 	// UTILS ----
 
 	void Text3D::setScaleMul(float mul) { this->_scaleMul = mul; }
-	const float Text3D::getScaleMul() const { return this->_scaleMul; }
+	float Text3D::getScaleMul() const { return this->_scaleMul; }
 
 	uint32_t Text3D::addText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl, rawrbox::Alignment alignX, rawrbox::Alignment alignY, bool billboard) {
 		float screenSize = font.getScale() * this->_scaleMul;
@@ -77,7 +77,7 @@ namespace rawrbox {
 		return id;
 	}
 
-	void Text3D::upload(bool dynamic) {
+	void Text3D::upload(bool /*dynamic*/) {
 		Model<rawrbox::MaterialText3D>::upload(true); // Always force dynamic, since we can remove text
 	}
 

@@ -32,6 +32,13 @@ namespace rawrbox {
 		rawrbox::Vector4f _angle = {};
 
 	public:
+		Mesh() = default;
+		Mesh(const Mesh&) = default;
+		Mesh(Mesh&&) = default;
+		Mesh& operator=(const Mesh&) = default;
+		Mesh& operator=(Mesh&&) = default;
+		virtual ~Mesh() = default;
+
 		std::string name = "mesh";
 
 		// OFFSETS ---
@@ -83,25 +90,25 @@ namespace rawrbox {
 		std::unordered_map<std::string, rawrbox::Vector4f> data = {}; // Other data
 
 		// UTILS ----
-		[[nodiscard]] const std::string& getName() const;
-		void setName(const std::string& name);
+		[[nodiscard]] virtual const std::string& getName() const;
+		virtual void setName(const std::string& name);
 
-		[[nodiscard]] const std::vector<rawrbox::VertexData>& getVertices() const;
-		[[nodiscard]] const std::vector<uint16_t>& getIndices() const;
-		[[nodiscard]] const rawrbox::BBOX& getBBOX() const;
+		[[nodiscard]] virtual const std::vector<rawrbox::VertexData>& getVertices() const;
+		[[nodiscard]] virtual const std::vector<uint16_t>& getIndices() const;
+		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const;
 
-		[[nodiscard]] const bool empty() const;
-		[[nodiscard]] const rawrbox::Matrix4x4& getMatrix();
+		[[nodiscard]] virtual bool empty() const;
+		[[nodiscard]] virtual const rawrbox::Matrix4x4& getMatrix();
 
-		[[nodiscard]] const rawrbox::Vector3f& getPos() const;
-		void setPos(const rawrbox::Vector3f& pos);
+		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const;
+		virtual void setPos(const rawrbox::Vector3f& pos);
 
-		[[nodiscard]] const rawrbox::Vector4f& getAngle() const;
-		void setAngle(const rawrbox::Vector4f& ang);
-		void setEulerAngle(const rawrbox::Vector3f& ang);
+		[[nodiscard]] virtual const rawrbox::Vector4f& getAngle() const;
+		virtual void setAngle(const rawrbox::Vector4f& ang);
+		virtual void setEulerAngle(const rawrbox::Vector3f& ang);
 
-		[[nodiscard]] const rawrbox::Vector3f& getScale() const;
-		void setScale(const rawrbox::Vector3f& scale);
+		[[nodiscard]] virtual const rawrbox::Vector3f& getScale() const;
+		virtual void setScale(const rawrbox::Vector3f& scale);
 
 		template <typename B>
 		B* getOwner() {
@@ -109,45 +116,45 @@ namespace rawrbox {
 			return std::bit_cast<B*>(this->owner);
 		}
 
-		[[nodiscard]] const rawrbox::TextureBase* getTexture() const;
-		void setTexture(rawrbox::TextureBase* ptr);
+		[[nodiscard]] virtual const rawrbox::TextureBase* getTexture() const;
+		virtual void setTexture(rawrbox::TextureBase* ptr);
 
-		[[nodiscard]] const rawrbox::TextureBase* getNormalTexture() const;
-		void setNormalTexture(rawrbox::TextureBase* ptr);
+		[[nodiscard]] virtual const rawrbox::TextureBase* getNormalTexture() const;
+		virtual void setNormalTexture(rawrbox::TextureBase* ptr);
 
-		[[nodiscard]] const rawrbox::TextureBase* getDisplacementTexture() const;
-		void setDisplacementTexture(rawrbox::TextureBase* ptr, float power);
+		[[nodiscard]] virtual const rawrbox::TextureBase* getDisplacementTexture() const;
+		virtual void setDisplacementTexture(rawrbox::TextureBase* ptr, float power);
 
-		[[nodiscard]] const rawrbox::TextureBase* getEmissionTexture() const;
-		void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity);
+		[[nodiscard]] virtual const rawrbox::TextureBase* getEmissionTexture() const;
+		virtual void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity);
 
-		[[nodiscard]] const rawrbox::TextureBase* getSpecularTexture() const;
-		void setSpecularTexture(rawrbox::TextureBase* ptr, float shininess);
+		[[nodiscard]] virtual const rawrbox::TextureBase* getSpecularTexture() const;
+		virtual void setSpecularTexture(rawrbox::TextureBase* ptr, float shininess);
 
-		void setVertexSnap(float power = 2.F);
+		virtual void setVertexSnap(float power = 2.F);
 
-		void setWireframe(bool wireframe);
+		virtual void setWireframe(bool wireframe);
 
-		void setCulling(uint64_t culling);
+		virtual void setCulling(uint64_t culling);
 
-		void setDepthTest(uint64_t depthTest);
+		virtual void setDepthTest(uint64_t depthTest);
 
-		void setBlend(uint64_t blend);
+		virtual void setBlend(uint64_t blend);
 
-		void setRecieveDecals(bool status);
+		virtual void setRecieveDecals(bool status);
 
-		void setColor(const rawrbox::Color& color);
+		virtual void setColor(const rawrbox::Color& color);
 
-		void addData(const std::string& id, rawrbox::Vector4f data);
-		[[nodiscard]] const rawrbox::Vector4f& getData(const std::string& id) const;
-		[[nodiscard]] bool hasData(const std::string& id) const;
+		virtual void addData(const std::string& id, rawrbox::Vector4f data);
+		[[nodiscard]] virtual const rawrbox::Vector4f& getData(const std::string& id) const;
+		[[nodiscard]] virtual bool hasData(const std::string& id) const;
 
-		[[nodiscard]] rawrbox::Skeleton* getSkeleton() const;
+		[[nodiscard]] virtual rawrbox::Skeleton* getSkeleton() const;
 
-		void clear();
+		virtual void clear();
 
-		void merge(const rawrbox::Mesh& other);
-		void setOptimizable(bool status);
-		[[nodiscard]] bool canOptimize(const rawrbox::Mesh& other) const;
+		virtual void merge(const rawrbox::Mesh& other);
+		virtual void setOptimizable(bool status);
+		[[nodiscard]] virtual bool canOptimize(const rawrbox::Mesh& other) const;
 	};
 } // namespace rawrbox
