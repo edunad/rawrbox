@@ -21,7 +21,7 @@ namespace rawrbox {
 		static void remove(size_t i);
 		static const rawrbox::Instance& get(size_t i);
 		static const rawrbox::Mesh& getTemplate();
-		static const size_t count();
+		static size_t count();
 		// -----
 
 		static void init();

@@ -34,7 +34,7 @@ namespace rawrbox {
 		}
 
 		static inline float sample(const std::vector<float>& samples, float t) {
-			int count = samples.size();
+			int count = static_cast<int>(samples.size());
 			if (count == 0) return 0;
 			if (count == 1) return samples[0];
 
@@ -146,6 +146,22 @@ namespace rawrbox {
 			out.z = res.z;
 
 			return out;
+		}
+
+		static inline Vector2f toRad(const Vector2f& vec) {
+			return {toRad(vec.x), toRad(vec.y)};
+		}
+
+		static inline Vector2f toDeg(const Vector2f& vec) {
+			return {toDeg(vec.x), toDeg(vec.y)};
+		}
+
+		static inline Vector3f toRad(const Vector3f& vec) {
+			return {toRad(vec.x), toRad(vec.y), toRad(vec.z)};
+		}
+
+		static inline Vector3f toDeg(const Vector3f& vec) {
+			return {toDeg(vec.x), toDeg(vec.y), toDeg(vec.z)};
 		}
 	};
 } // namespace rawrbox

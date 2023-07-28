@@ -49,7 +49,7 @@ namespace rawrbox {
 		fmt::print("[RawrBox-Window] GLFW error {}: {}\n", error, description);
 	}
 
-	void BgfxCallbacks::fatal(const char* filePath, uint16_t line, bgfx::Fatal::Enum code, const char* str) {
+	void BgfxCallbacks::fatal(const char* /*filePath*/, uint16_t line, bgfx::Fatal::Enum /*code*/, const char* str) {
 		fmt::print("[RawrBox-Window] BGFX fatal error {}: {}\n", line, str);
 		abort();
 	}
@@ -105,7 +105,7 @@ namespace rawrbox {
 		int count = 0;
 		auto monitors = glfwGetMonitors(&count);
 
-		for (size_t i = 0; i < count; i++) {
+		for (size_t i = 0; i < static_cast<size_t>(count); i++) {
 			const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
 			this->_screenSizes[i] = {mode->width, mode->height};
 		}
@@ -443,13 +443,11 @@ namespace rawrbox {
 	bool Window::isRendererSupported(bgfx::RendererType::Enum render) const {
 		if (render == bgfx::RendererType::Count) return true;
 
-		// NOLINTBEGIN(hicpp-avoid-c-arrays)
-		bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
-		uint8_t num = bgfx::getSupportedRenderers(BX_COUNTOF(supportedRenderers), supportedRenderers);
+		std::array<bgfx::RendererType::Enum, bgfx::RendererType::Count> supportedRenderers = {};
+		uint8_t num = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers.data());
 		for (uint8_t i = 0; i < num; ++i) {
 			if (supportedRenderers[i] == render) return true;
 		}
-		// NOLINTEND(hicpp-avoid-c-arrays)
 
 		return false;
 	}

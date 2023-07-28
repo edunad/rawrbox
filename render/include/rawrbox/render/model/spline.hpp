@@ -19,8 +19,8 @@ namespace rawrbox {
 			std::vector<int> segments = {};
 
 			for (size_t i = 0; i < this->vertex.size() - 1; i++) {
-				segments.push_back(i);
-				segments.push_back(i + 1);
+				segments.push_back(static_cast<int>(i));
+				segments.push_back(static_cast<int>(i) + 1);
 			}
 
 			return segments;
@@ -74,11 +74,11 @@ namespace rawrbox {
 				auto path = curve->generatePath();
 				if (path.empty()) return;
 
-				int vertsInShape = this->_shape->vertex.size();
-				int segments = path.size() - 1;
-				int edgeLoops = path.size();
+				int vertsInShape = static_cast<int>(this->_shape->vertex.size());
+				int edgeLoops = static_cast<int>(path.size());
+				int segments = edgeLoops - 1;
 				int vertCount = vertsInShape * edgeLoops;
-				int triCount = shapeSegments.size() * segments;
+				int triCount = static_cast<int>(shapeSegments.size()) * segments;
 				int triIndexCount = triCount * 3;
 
 				rawrbox::Mesh mesh;
@@ -103,10 +103,10 @@ namespace rawrbox {
 				for (int i = 0; i < segments; i++) {
 					int offset = i * vertsInShape;
 					for (int l = 0; l < shapeSegments.size(); l += 2) {
-						int a = offset + shapeSegments[l];
-						int b = offset + shapeSegments[l] + vertsInShape;
-						int c = offset + shapeSegments[l + 1] + vertsInShape;
-						int d = offset + shapeSegments[l + 1];
+						auto a = static_cast<uint16_t>(offset + shapeSegments[l]);
+						auto b = static_cast<uint16_t>(offset + shapeSegments[l] + vertsInShape);
+						auto c = static_cast<uint16_t>(offset + shapeSegments[l + 1] + vertsInShape);
+						auto d = static_cast<uint16_t>(offset + shapeSegments[l + 1]);
 
 						triangleIndices[ti++] = a; // 0
 						triangleIndices[ti++] = b; // 1
@@ -118,8 +118,8 @@ namespace rawrbox {
 					}
 				}
 
-				mesh.totalIndex = triIndexCount;
-				mesh.totalVertex = vertCount;
+				mesh.totalIndex = static_cast<uint16_t>(triIndexCount);
+				mesh.totalVertex = static_cast<uint16_t>(vertCount);
 				mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
 				mesh.indices.insert(mesh.indices.end(), triangleIndices.begin(), triangleIndices.end());
 

@@ -73,7 +73,7 @@ namespace rawrbox {
 		stbi_image_free(delays);
 	}
 
-	const bool TextureGIF::hasTransparency() const {
+	bool TextureGIF::hasTransparency() const {
 		return this->_channels == 4 && this->_transparent;
 	}
 

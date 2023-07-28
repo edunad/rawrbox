@@ -27,8 +27,8 @@ namespace rawrbox {
 		return this->_angle;
 	}
 
-	const float CameraBase::getZFar() const { return this->_z_far; }
-	const float CameraBase::getZNear() const { return this->_z_near; }
+	float CameraBase::getZFar() const { return this->_z_far; }
+	float CameraBase::getZNear() const { return this->_z_near; }
 
 	rawrbox::Vector3f CameraBase::getForward() const {
 		return {
@@ -70,11 +70,11 @@ namespace rawrbox {
 		throw std::runtime_error("Not implemented");
 	}
 
-	const rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f& pos) const {
+	const rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f& /*pos*/) const {
 		throw std::runtime_error("Not implemented");
 	}
 
-	const rawrbox::Vector3f CameraBase::screenToWorld(const rawrbox::Vector2f& screen_pos) const {
+	const rawrbox::Vector3f CameraBase::screenToWorld(const rawrbox::Vector2f& /*screen_pos*/) const {
 		throw std::runtime_error("Not implemented");
 	}
 

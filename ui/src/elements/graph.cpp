@@ -23,7 +23,7 @@ namespace rawrbox {
 	// ---------
 
 	// FOCUS HANDLE ---
-	bool UIGraph::hitTest(const rawrbox::Vector2f& point) const { return false; }
+	bool UIGraph::hitTest(const rawrbox::Vector2f& /*point*/) const { return false; }
 	// -----
 
 	// DRAW ----

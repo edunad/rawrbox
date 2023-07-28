@@ -227,7 +227,7 @@ namespace rawrbox {
 
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L687
 		// Does not support UV :( / normals
-		static inline rawrbox::Mesh generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, int ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+		static inline rawrbox::Mesh generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, uint32_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
 			rawrbox::Mesh mesh;
 			mesh.setPos(pos);
 
@@ -290,7 +290,7 @@ namespace rawrbox {
 
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L750
 		// Does not support UV :( / normals
-		static inline rawrbox::Mesh generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, int ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+		static inline rawrbox::Mesh generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, uint32_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
 			rawrbox::Mesh mesh;
 			mesh.setPos(pos);
 
@@ -358,7 +358,7 @@ namespace rawrbox {
 
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L640
 		// Does not support UV :( / normals
-		static inline rawrbox::Mesh generateSphere(const rawrbox::Vector3f& pos, float size, int ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+		static inline rawrbox::Mesh generateSphere(const rawrbox::Vector3f& pos, float size, uint32_t ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
 			rawrbox::Mesh mesh;
 			mesh.setPos(pos);
 
@@ -387,8 +387,8 @@ namespace rawrbox {
 
 			std::vector<rawrbox::VertexData> buff = {};
 
-			std::function<void(const rawrbox::Vector3f& _v0, const rawrbox::Vector3f& _v1, const rawrbox::Vector3f& _v2, float _scale, uint8_t ratio)> triangle;
-			triangle = [&triangle, &buff, &cl](const rawrbox::Vector3f& _v0, const rawrbox::Vector3f& _v1, const rawrbox::Vector3f& _v2, float _scale, uint8_t ratio) {
+			std::function<void(const rawrbox::Vector3f& _v0, const rawrbox::Vector3f& _v1, const rawrbox::Vector3f& _v2, float _scale, uint32_t ratio)> triangle;
+			triangle = [&triangle, &buff, &cl](const rawrbox::Vector3f& _v0, const rawrbox::Vector3f& _v1, const rawrbox::Vector3f& _v2, float _scale, uint32_t ratio) {
 				if (0 == ratio) {
 					buff.push_back(rawrbox::VertexData(_v0, {1, 1}, cl));
 					buff.push_back(rawrbox::VertexData(_v2, {1, 0}, cl));
@@ -466,32 +466,33 @@ namespace rawrbox {
 			return mesh;
 		}
 
-		static inline rawrbox::Mesh generateMesh(const rawrbox::Vector3f& pos, int size = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+		static inline rawrbox::Mesh generateMesh(const rawrbox::Vector3f& pos, uint32_t subDivs = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
 			rawrbox::Mesh mesh;
 			mesh.setPos(pos);
 
 			std::vector<rawrbox::VertexData> buff = {};
-			auto ps = static_cast<float>(size / 2);
+			auto ps = static_cast<float>(subDivs / 2);
 
-			for (uint32_t y = 0; y < size; y++) {
-				for (uint32_t x = 0; x < size; x++) {
+			for (uint32_t y = 0; y < subDivs; y++) {
+				for (uint32_t x = 0; x < subDivs; x++) {
 					auto xF = static_cast<float>(x);
 					auto yF = static_cast<float>(y);
 
-					buff.push_back(rawrbox::VertexData(rawrbox::Vector3f(ps - xF, 0, ps - yF), {(x + 0.5F) / size, (y + 0.5F) / size}, {rawrbox::PackUtils::packNormal(0, 1, 0), 0}, cl));
+					buff.push_back(rawrbox::VertexData(rawrbox::Vector3f(ps - xF, 0, ps - yF), {(x + 0.5F) / subDivs, (y + 0.5F) / subDivs}, {rawrbox::PackUtils::packNormal(0, 1, 0), 0}, cl));
 				}
 			}
 
 			std::vector<uint16_t> inds = {};
-			for (uint16_t y = 0; y < (size - 1); y++) {
-				uint16_t y_offset = (y * size);
+			for (uint16_t y = 0; y < (subDivs - 1); y++) {
+				auto s = static_cast<uint16_t>(subDivs);
+				uint16_t y_offset = (y * s);
 
-				for (uint16_t x = 0; x < (size - 1); x++) {
+				for (uint16_t x = 0; x < (s - 1); x++) {
 					inds.push_back(y_offset + x + 1);
-					inds.push_back(y_offset + x + size);
+					inds.push_back(y_offset + x + s);
 					inds.push_back(y_offset + x);
-					inds.push_back(y_offset + x + size + 1);
-					inds.push_back(y_offset + x + size);
+					inds.push_back(y_offset + x + s + 1);
+					inds.push_back(y_offset + x + s);
 					inds.push_back(y_offset + x + 1);
 				}
 			}
@@ -508,7 +509,7 @@ namespace rawrbox {
 		}
 
 		// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
-		static inline rawrbox::Mesh generateGrid(uint32_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::DarkGray, const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent) {
+		static inline rawrbox::Mesh generateGrid(uint16_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::DarkGray, const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent) {
 			rawrbox::Mesh mesh;
 			mesh.setPos(pos);
 
@@ -516,23 +517,23 @@ namespace rawrbox {
 			std::vector<uint16_t> inds = {};
 
 			float step = 1.F;
-			for (uint32_t j = 0; j <= size; ++j) {
-				for (uint32_t i = 0; i <= size; ++i) {
+			for (uint16_t j = 0; j <= size; ++j) {
+				for (uint16_t i = 0; i <= size; ++i) {
 					float x = static_cast<float>(i) / static_cast<float>(step);
 					float y = 0;
 					float z = static_cast<float>(j) / static_cast<float>(step);
 					auto col = cl;
 
 					if (j == 0 || i == 0 || j >= size || i >= size) col = borderCl;
-					buff.emplace_back(rawrbox::VertexData{rawrbox::Vector3f(pos.x - static_cast<uint32_t>(size / 2), pos.y, pos.z - static_cast<uint32_t>(size / 2)) + rawrbox::Vector3f(x, y, z), {0, 0}, col});
+					buff.emplace_back(rawrbox::VertexData{rawrbox::Vector3f(pos.x - static_cast<float>(size / 2), pos.y, pos.z - static_cast<float>(size / 2)) + rawrbox::Vector3f(x, y, z), {0, 0}, col});
 				}
 			}
 
-			for (uint32_t j = 0; j < size; ++j) {
-				for (uint32_t i = 0; i < size; ++i) {
+			for (uint16_t j = 0; j < size; ++j) {
+				for (uint16_t i = 0; i < size; ++i) {
 
-					uint32_t row1 = j * (size + 1);
-					uint32_t row2 = (j + 1) * (size + 1);
+					uint16_t row1 = j * (size + 1);
+					uint16_t row2 = (j + 1) * (size + 1);
 
 					inds.push_back(row1 + i);
 					inds.push_back(row1 + i + 1);

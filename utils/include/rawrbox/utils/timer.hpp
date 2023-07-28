@@ -32,7 +32,7 @@ namespace rawrbox {
 		static void update();
 		static rawrbox::Timer* simple(int msDelay, std::function<void()> func, std::function<void()> onComplete = nullptr);
 		static rawrbox::Timer* create(int reps, int msDelay, std::function<void()> func, std::function<void()> onComplete = nullptr);
-		static const bool isRunning(const std::string& id);
+		static bool isRunning(const std::string& id);
 		static void clear();
 		// ----
 

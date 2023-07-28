@@ -56,7 +56,7 @@ namespace rawrbox {
 		}
 
 		template <class T>
-		T* createResource(const std::filesystem::path& filePath, uint32_t flags = 0) {
+		T* createResource(const std::filesystem::path& filePath, uint32_t /*flags*/ = 0) {
 			auto obj = this->createEntry();
 			obj->status = rawrbox::LoadStatus::UNLOADED;
 			obj->filePath = filePath;

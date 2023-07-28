@@ -619,7 +619,7 @@ namespace rawrbox {
 		}
 	}
 
-	void AssimpImporter::load(const std::filesystem::path& path, uint32_t loadFlags, uint32_t assimpFlags) {
+	void AssimpImporter::load(const std::filesystem::path& path, uint32_t /*loadFlags*/, uint32_t /*assimpFlags*/) {
 		this->fileName = path;
 		this->internalLoad(aiImportFile(path.generic_string().c_str(), this->assimpFlags));
 	}

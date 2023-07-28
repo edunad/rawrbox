@@ -25,9 +25,9 @@ namespace rawrbox {
 		virtual ~TextureBase();
 
 		// UTILS----
-		[[nodiscard]] const virtual bool hasTransparency() const;
+		[[nodiscard]] virtual bool hasTransparency() const;
 		[[nodiscard]] const virtual rawrbox::Vector2i& getSize() const;
-		[[nodiscard]] const virtual bool valid() const;
+		[[nodiscard]] virtual bool valid() const;
 		[[nodiscard]] const virtual bgfx::TextureHandle& getHandle() const;
 		// -----
 

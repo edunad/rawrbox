@@ -44,30 +44,30 @@ namespace rawrbox {
 		void initialize() override;
 
 		// UTILS -----
-		void setTextureSize(const rawrbox::Vector2& size);
-		void setTextureColor(const rawrbox::Color& color);
-		[[nodiscard]] const rawrbox::Color& getTextureColor() const;
+		virtual void setTextureSize(const rawrbox::Vector2& size);
+		virtual void setTextureColor(const rawrbox::Color& color);
+		[[nodiscard]] virtual const rawrbox::Color& getTextureColor() const;
 
-		void setTextColor(const rawrbox::Color& color);
-		[[nodiscard]] const rawrbox::Color& getTextColor() const;
+		virtual void setTextColor(const rawrbox::Color& color);
+		[[nodiscard]] virtual const rawrbox::Color& getTextColor() const;
 
-		void setBackgroundColor(const rawrbox::Color& color);
-		[[nodiscard]] const rawrbox::Color& getBackgroundColor() const;
+		virtual void setBackgroundColor(const rawrbox::Color& color);
+		[[nodiscard]] virtual const rawrbox::Color& getBackgroundColor() const;
 
-		void setText(const std::string& text, int size = 16);
-		[[nodiscard]] const std::string& getText() const;
+		virtual void setText(const std::string& text, int size = 16);
+		[[nodiscard]] virtual const std::string& getText() const;
 
-		void setTooltip(const std::string& text);
-		[[nodiscard]] const std::string& getTooltip() const;
+		virtual void setTooltip(const std::string& text);
+		[[nodiscard]] virtual const std::string& getTooltip() const;
 
-		void setTexture(rawrbox::TextureBase* texture);
-		void setTexture(const std::string& path);
+		virtual void setTexture(rawrbox::TextureBase* texture);
+		virtual void setTexture(const std::string& path);
 
-		void setEnabled(bool enabled);
-		[[nodiscard]] const bool isEnabled() const;
+		virtual void setEnabled(bool enabled);
+		[[nodiscard]] bool isEnabled() const;
 
 		virtual void setBorder(bool enabled);
-		[[nodiscard]] virtual const bool borderEnabled() const;
+		[[nodiscard]] virtual bool borderEnabled() const;
 		// -------
 
 		// INPUTS ---

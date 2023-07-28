@@ -50,7 +50,8 @@ namespace rawrbox {
 		static constexpr uint32_t MAX_LIGHTS_PER_CLUSTER = 100;
 
 		ClusterUniforms() {
-			if (CLUSTERS_Z % CLUSTERS_Z_THREADS != 0) throw std::runtime_error("number of cluster depth slices must be divisible by thread count z-dimension");
+			auto check = CLUSTERS_Z % CLUSTERS_Z_THREADS != 0;
+			if (check) throw std::runtime_error("number of cluster depth slices must be divisible by thread count z-dimension");
 		}
 
 		ClusterUniforms(const ClusterUniforms &) = default;

@@ -21,10 +21,10 @@ namespace rawrbox {
 	const rawrbox::Color& UIButton::getTextColor() const { return this->_textColor; }
 
 	void UIButton::setBorder(bool enabled) { this->_border = enabled; }
-	const bool UIButton::borderEnabled() const { return this->_border; }
+	bool UIButton::borderEnabled() const { return this->_border; }
 
 	void UIButton::setEnabled(bool enabled) { this->_enabled = enabled; }
-	const bool UIButton::isEnabled() const { return this->_enabled; }
+	bool UIButton::isEnabled() const { return this->_enabled; }
 
 	void UIButton::setText(const std::string& text, int size) {
 		this->_consola = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(size);
@@ -43,7 +43,7 @@ namespace rawrbox {
 	// ---------
 
 	// INPUTS ---
-	void UIButton::mouseUp(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) {
+	void UIButton::mouseUp(const rawrbox::Vector2i& /*mousePos*/, uint32_t button, uint32_t /*mods*/) {
 		if (!this->_enabled || button != MOUSE_BUTTON_1) return;
 		onClick();
 	}

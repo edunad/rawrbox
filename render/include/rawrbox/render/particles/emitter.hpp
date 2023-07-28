@@ -110,8 +110,8 @@ namespace rawrbox {
 		// UTILS -----
 		void clear();
 
-		[[nodiscard]] const size_t id() const;
-		[[nodiscard]] const size_t totalParticles() const;
+		[[nodiscard]] size_t id() const;
+		[[nodiscard]] size_t totalParticles() const;
 		[[nodiscard]] const EmitterSettings& getSettings() const;
 
 		[[nodiscard]] const rawrbox::Vector3f& getPos() const;

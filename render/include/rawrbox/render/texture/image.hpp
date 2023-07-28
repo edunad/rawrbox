@@ -41,7 +41,7 @@ namespace rawrbox {
 
 		// ------ PIXEL-UTILS
 		virtual void setName(const std::string& name);
-		[[nodiscard]] const bool hasTransparency() const override;
+		[[nodiscard]] bool hasTransparency() const override;
 		// --------------------
 
 		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count) override;
