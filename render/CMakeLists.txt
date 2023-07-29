@@ -121,14 +121,18 @@ if(RAWRBOX_ENABLE_WEBM_SUPPORT)
 
     # Add codec
     set(VPX_VERSION v1.13.0)
-
     find_package(VPX REQUIRED)
-    add_custom_target(
-        copy_dll_vpx ALL COMMAND ${CMAKE_COMMAND} -E copy ${VPX_BINARY} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
-        COMMENT "Copying VPX DLL into binary directory")
+
+    if(WIN32)
+        add_custom_target(
+            copy_dll_vpx ALL COMMAND ${CMAKE_COMMAND} -E copy ${VPX_BINARY}
+                                     ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
+            COMMENT "Copying VPX DLL into binary directory")
+
+        list(APPEND RAWRBOX_EXTRA_DEPS copy_dll_vpx)
+    endif()
 
     list(APPEND RAWRBOX_EXTRA_LIBS VPX::VPX)
-    list(APPEND RAWRBOX_EXTRA_DEPS copy_dll_vpx)
     # --------------
 
 endif()
