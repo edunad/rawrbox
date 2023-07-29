@@ -5,7 +5,7 @@
 
 #include <webm_test/game.hpp>
 
-int main(int argc, char* argv[]) {
+int main(int  /*argc*/, char*  /*argv*/[]) {
 #ifdef _WIN32
 	SetConsoleTitle("WEBM TEST");
 	SetConsoleCP(CP_UTF8);

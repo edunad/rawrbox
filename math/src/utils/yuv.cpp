@@ -132,6 +132,7 @@ namespace rawrbox {
 			}
 
 			dst -= yWidth * 4 + dstPitch * 2;
+
 			ySrc += (yPitch << 1) - yWidth;
 			aSrc += (yPitch << 1) - yWidth;
 			uSrc += uvPitch - halfWidth;

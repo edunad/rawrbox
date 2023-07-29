@@ -22,6 +22,7 @@ namespace rawrbox {
 		// Uniforms -----
 		RAWRBOX_DESTROY(this->_u_colorOffset);
 		RAWRBOX_DESTROY(this->_u_data);
+		RAWRBOX_DESTROY(this->_u_tex_flags);
 	}
 
 	void MaterialBase::registerUniforms() {
@@ -30,11 +31,15 @@ namespace rawrbox {
 
 		this->_u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
 		this->_u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4, MAX_DATA);
+
+		this->_u_tex_flags = bgfx::createUniform("u_tex_flags", bgfx::UniformType::Vec4);
 	}
 
 	void MaterialBase::process(const rawrbox::Mesh& mesh) {
 		if (mesh.texture != nullptr && mesh.texture->valid() && !mesh.lineMode && !mesh.wireframe) {
 			mesh.texture->update(); // Update texture
+
+			bgfx::setUniform(this->_u_tex_flags, mesh.texture->getData().data());
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, mesh.texture->getHandle());
 		} else {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, rawrbox::WHITE_TEXTURE->getHandle());
@@ -51,7 +56,8 @@ namespace rawrbox {
 		// -------
 
 		// Pass "special" data ---
-		std::array<std::array<float, 4>, MAX_DATA> data = {std::array<float, 4>{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
+		std::array<std::array<float, 4>, MAX_DATA>
+		    data = {std::array<float, 4>{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
 		if (mesh.hasData("billboard_mode")) {
 			data[0] = mesh.getData("billboard_mode").data();
 		}

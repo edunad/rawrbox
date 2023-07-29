@@ -15,7 +15,10 @@ namespace rawrbox {
 		ResourceWEBM& operator=(ResourceWEBM&&) = delete;
 		~ResourceWEBM() override;
 
-		[[nodiscard]] rawrbox::TextureBase* get() const;
+		template <typename T = rawrbox::TextureBase>
+		[[nodiscard]] T* get() const {
+			return dynamic_cast<T*>(this->_texture.get());
+		}
 
 		bool load(const std::vector<uint8_t>& buffer) override;
 		void upload() override;

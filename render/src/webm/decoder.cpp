@@ -67,6 +67,8 @@ namespace rawrbox {
 		rawrbox::WEBMImage image = {};
 
 		if (vpx_image_t* img = vpx_codec_get_frame(_ctx.get(), &_iter)) {
+			if ((img->fmt & VPX_IMG_FMT_PLANAR) == 0) throw std::runtime_error("[WEBMDecoder] Failed to get image! Image not in FMT_PLANAR!");
+
 			rawrbox::YUVLuminanceScale scale = rawrbox::YUVLuminanceScale::UNKNOWN;
 			int channels = 4;
 
@@ -86,7 +88,11 @@ namespace rawrbox {
 
 			switch (img->fmt) {
 				case VPX_IMG_FMT_I420:
-					rawrbox::YUVUtils::convert420(scale, image.pixels.data(), image.size.x * channels, img->planes[0], img->planes[1], img->planes[2], img->d_w, img->d_h, img->stride[0], img->stride[1]);
+					if ((img->fmt & VPX_IMG_FMT_HAS_ALPHA) != 0) {
+						rawrbox::YUVUtils::convert420(scale, image.pixels.data(), image.size.x * channels, img->planes[0], img->planes[1], img->planes[2], img->planes[3], img->d_w, img->d_h, img->stride[0], img->stride[1]);
+					} else {
+						rawrbox::YUVUtils::convert420(scale, image.pixels.data(), image.size.x * channels, img->planes[0], img->planes[1], img->planes[2], img->d_w, img->d_h, img->stride[0], img->stride[1]);
+					}
 					break;
 				default:
 					throw std::runtime_error("[WEBMDecoder] Format not supported, video not in I420 format");

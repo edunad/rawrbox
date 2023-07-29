@@ -52,7 +52,7 @@ namespace rawrbox {
 		int count = mat->GetTextureCount(type);
 		if (count <= 0) return _textures;
 
-		for (size_t i = 0; i < count; i++) {
+		for (int i = 0; i < count; i++) {
 			aiString matPath;
 			std::array<aiTextureMapMode, 3> matMode = {};
 
@@ -244,7 +244,7 @@ namespace rawrbox {
 					printBone = [&printBone](std::unique_ptr<Bone>& bn, int deep) -> void {
 						for (auto& c : bn->children) {
 							std::string d = "";
-							for (size_t i = 0; i < deep; i++)
+							for (int i = 0; i < deep; i++)
 								d += "\t";
 
 							fmt::print("{}[{}] {}\n", d, c->boneId, c->name);

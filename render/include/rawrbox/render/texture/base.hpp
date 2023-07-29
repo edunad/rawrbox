@@ -6,6 +6,14 @@
 #include <bgfx/bgfx.h>
 
 namespace rawrbox {
+
+	enum class TEXTURE_UV {
+		UV_NONE = 0,
+		UV_FLIP_U,
+		UV_FLIP_V,
+		UV_FLIP_UV
+	};
+
 	class TextureBase {
 	protected:
 		bgfx::TextureHandle _handle = BGFX_INVALID_HANDLE;
@@ -13,6 +21,8 @@ namespace rawrbox {
 
 		int _channels = 0;
 		uint64_t _flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
+
+		rawrbox::TEXTURE_UV _textureUV = rawrbox::TEXTURE_UV::UV_NONE;
 
 	public:
 		TextureBase() = default;
@@ -35,5 +45,6 @@ namespace rawrbox {
 		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count) = 0;
 
 		virtual void update();
+		virtual std::array<float, 4> getData();
 	};
 } // namespace rawrbox

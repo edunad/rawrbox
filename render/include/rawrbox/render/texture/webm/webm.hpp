@@ -36,10 +36,11 @@ namespace rawrbox {
 		void setPaused(bool paused);
 
 		void seek(uint64_t timeMS);
+		void reset();
 		// ----
 
 		// ------RENDER
-		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
+		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::BGRA8) override;
 		// --------------------
 	};
 } // namespace rawrbox

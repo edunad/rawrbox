@@ -31,6 +31,6 @@ endif()
 add_subdirectory("010-instancing")
 add_subdirectory("011-decals")
 
-if(RAWRBOX_ENABLE_WEBM_SUPPORT)
+if(RAWRBOX_ENABLE_WEBM_SUPPORT AND RAWRBOX_ENABLE_BASS_SUPPORT)
     add_subdirectory("012-webm")
 endif()

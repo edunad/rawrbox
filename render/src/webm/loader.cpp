@@ -19,7 +19,7 @@ namespace rawrbox {
 	void WEBM::load(const std::filesystem::path& filePath) {
 		this->_reader = std::make_unique<mkvparser::MkvReader>();
 
-		if (this->_reader->Open(filePath.string().c_str()) != 0)
+		if (this->_reader->Open(filePath.string().c_str()))
 			throw std::runtime_error("[WEBM] Filename is invalid or error while opening");
 
 		// Get the file info

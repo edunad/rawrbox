@@ -13,4 +13,7 @@ namespace rawrbox {
 
 	void TextureBase::setFlags(uint64_t flags) { this->_flags = flags; }
 	void TextureBase::update() {}
+
+	std::array<float, 4> TextureBase::getData() { return {static_cast<float>(this->_textureUV)}; }
+
 } // namespace rawrbox

@@ -18,6 +18,7 @@ namespace rawrbox {
 
 		this->_channels = 4;
 		this->_size = this->_webm->getSize();
+		this->_textureUV = rawrbox::TEXTURE_UV::UV_FLIP_V;
 	}
 
 	TextureWEBM::~TextureWEBM() {
@@ -72,6 +73,11 @@ namespace rawrbox {
 	void TextureWEBM::seek(uint64_t timeMS) {
 		if (this->_webm == nullptr) return;
 		this->_webm->seek(timeMS);
+	}
+
+	void TextureWEBM::reset() {
+		if (this->_webm == nullptr) return;
+		this->_webm->reset();
 	}
 	// ------
 

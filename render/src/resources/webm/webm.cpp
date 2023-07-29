@@ -14,10 +14,6 @@ namespace rawrbox {
 		if (this->_texture == nullptr) return;
 		this->_texture->upload();
 	}
-
-	[[nodiscard]] rawrbox::TextureBase* ResourceWEBM::get() const {
-		return this->_texture.get();
-	}
 	// -------
 
 	// Loader ----

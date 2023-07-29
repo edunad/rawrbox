@@ -20,6 +20,7 @@ namespace rawrbox {
 		bgfx::UniformHandle _u_colorOffset = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle _u_data = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _u_tex_flags = BGFX_INVALID_HANDLE;
 
 	public:
 		MaterialBase() = default;
