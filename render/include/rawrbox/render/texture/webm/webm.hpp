@@ -11,17 +11,10 @@ namespace rawrbox {
 		std::filesystem::path _filePath = "";
 		std::unique_ptr<rawrbox::WEBM> _webm = nullptr;
 
-		/*
-		int _currentFrame = 0;
-		int _maxFrames = 0;
-		bool _loop = true;
-
-		int64_t _cooldown = 0;
-		float _speed = 1.F;*/
-
 		uint32_t _trackId = 0;
+		int64_t _cooldown = 0;
 
-		void update();
+		void internalUpdate();
 		void internalLoad();
 
 	public:
@@ -33,7 +26,17 @@ namespace rawrbox {
 		TextureWEBM& operator=(TextureWEBM&&) = delete;
 		~TextureWEBM() override;
 
-		void step();
+		void update() override;
+
+		// UTILS ------
+		bool getLoop();
+		void setLoop(bool loop);
+
+		bool getPaused();
+		void setPaused(bool paused);
+
+		void seek(uint64_t timeMS);
+		// ----
 
 		// ------RENDER
 		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;

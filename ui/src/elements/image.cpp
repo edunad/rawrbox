@@ -32,10 +32,7 @@ namespace rawrbox {
 	// DRAW ----
 	void UIImage::update() {
 		if (!this->_isAnimated || this->_texture == nullptr) return;
-		auto t = dynamic_cast<rawrbox::TextureGIF*>(this->_texture);
-		if (t == nullptr) return;
-
-		t->step();
+		this->_texture->update();
 	}
 
 	void UIImage::draw(rawrbox::Stencil& stencil) {

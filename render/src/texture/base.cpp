@@ -12,5 +12,5 @@ namespace rawrbox {
 	// ----
 
 	void TextureBase::setFlags(uint64_t flags) { this->_flags = flags; }
-
+	void TextureBase::update() {}
 } // namespace rawrbox

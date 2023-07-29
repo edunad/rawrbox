@@ -29,7 +29,7 @@ namespace rawrbox {
 			this->_preLoadFiles.emplace_back(path, loadFlags);
 		}
 
-		[[nodiscard]] virtual const bool hasFile(const std::filesystem::path& filePath) const {
+		[[nodiscard]] virtual bool hasFile(const std::filesystem::path& filePath) const {
 			for (auto& file : this->_files) {
 				std::error_code err;
 				if (!rawrbox::PathUtils::isSame(filePath, file->filePath)) continue;

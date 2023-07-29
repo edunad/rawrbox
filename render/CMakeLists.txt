@@ -94,7 +94,7 @@ endif()
 # ----
 
 if(RAWRBOX_ENABLE_WEBM_SUPPORT)
-    message(STATUS "Enabled WEBM & VPX")
+    message(STATUS "Enabled WEBM & VPX codec")
 
     CPMAddPackage(
         NAME
@@ -120,22 +120,16 @@ if(RAWRBOX_ENABLE_WEBM_SUPPORT)
     endif()
 
     # Add codec
-    CPMAddPackage(
-        NAME
-        libvpx
-        GIT_TAG
-        v1.13.0
-        GITHUB_REPOSITORY
-        webmproject/libvpx
-        DOWNLOAD_ONLY
-        ON)
+    set(VPX_VERSION v1.13.0)
 
-    if(libvpx_ADDED)
-        add_library(vpx INTERFACE IMPORTED)
-        target_include_directories(vpx INTERFACE ${libvpx_SOURCE_DIR})
+    find_package(VPX REQUIRED)
+    add_custom_target(
+        copy_dll_vpx ALL COMMAND ${CMAKE_COMMAND} -E copy ${VPX_BINARY} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
+        COMMENT "Copying VPX DLL into binary directory")
 
-        list(APPEND RAWRBOX_EXTRA_LIBS vpx)
-    endif()
+    list(APPEND RAWRBOX_EXTRA_LIBS VPX::VPX)
+    list(APPEND RAWRBOX_EXTRA_DEPS copy_dll_vpx)
+    # --------------
 
 endif()
 # ----
@@ -198,7 +192,7 @@ add_custom_target(
 
 # Project setup
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RENDER_SOURCES})
-add_dependencies(${output_target} copy_resources_render)
+add_dependencies(${output_target} copy_resources_render ${RAWRBOX_EXTRA_DEPS})
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_RENDER)
 target_include_directories(${output_target} PUBLIC "include")

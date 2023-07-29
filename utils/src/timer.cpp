@@ -26,7 +26,7 @@ namespace rawrbox {
 
 			// Life
 			if (!timer->_infinite) timer->_ticks++;
-			if (timer->_ticks >= timer->_iterations) {
+			if (!timer->_infinite && timer->_ticks >= timer->_iterations) {
 				if (timer->_onComplete) timer->_onComplete();
 				it2 = timers.erase(it2);
 				continue;

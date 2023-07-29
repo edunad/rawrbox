@@ -28,15 +28,16 @@ namespace rawrbox {
 		int64_t _cooldown = 0;
 		float _speed = 1.F;
 
-		void update();
+		void internalUpdate();
 		void internalLoad(const std::vector<uint8_t>& data, bool useFallback = true);
 
 	public:
 		explicit TextureGIF(const std::filesystem::path& filePath, bool useFallback = true);
 		explicit TextureGIF(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback = true);
 
-		// ------ANIMATION
-		virtual void step();
+		void update() override;
+
+		// ANIMATION
 		virtual void reset();
 		// --------------------
 

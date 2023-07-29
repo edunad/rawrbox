@@ -76,13 +76,13 @@ namespace rawrbox {
 		return this->_channels == 4 && this->_transparent;
 	}
 
-	void TextureGIF::update() {
+	void TextureGIF::internalUpdate() {
 		auto& frame = this->_frames[this->_currentFrame];
 		bgfx::updateTexture2D(this->_handle, 0, 0, 0, 0, static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), bgfx::makeRef(frame.pixels.data(), static_cast<uint32_t>(frame.pixels.size())));
 	}
 
 	// ------ANIMATION
-	void TextureGIF::step() {
+	void TextureGIF::update() {
 		if (this->_failedToLoad || !bgfx::isValid(this->_handle)) return; // Not bound
 
 		if (!this->_loop && static_cast<size_t>(this->_currentFrame) >= this->_frames.size() - 1) return;
@@ -91,7 +91,7 @@ namespace rawrbox {
 		this->_cooldown = static_cast<int64_t>(this->_frames[this->_currentFrame].delay * this->_speed) + rawrbox::TimeUtils::curtime(); // TODO: FIX SPEED
 		this->_currentFrame = MathUtils::repeat<int>(this->_currentFrame + 1, 0, static_cast<int>(this->_frames.size()) - 1);
 
-		this->update();
+		this->internalUpdate();
 	}
 
 	void TextureGIF::reset() {

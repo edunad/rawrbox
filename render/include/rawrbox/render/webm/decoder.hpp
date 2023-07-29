@@ -4,39 +4,42 @@
 
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 struct vpx_codec_ctx;
 
 namespace rawrbox {
+	enum class VIDEO_CODEC {
+		UNKNOWN = 0,
+		VIDEO_VP8,
+		VIDEO_VP9
+	};
 
 	struct WEBMFrame {
-		uint32_t bufferSize;
-		unsigned char* buffer;
+		std::vector<uint8_t> buffer = {};
+		rawrbox::VIDEO_CODEC codec = rawrbox::VIDEO_CODEC::UNKNOWN;
 
-		inline bool valid() { return bufferSize > 0; }
+		inline bool valid() { return buffer.size() > 0; }
 	};
 
 	struct WEBMImage {
-		unsigned char* pixels = nullptr;
+		std::vector<unsigned char> pixels = {};
 		rawrbox::Vector2i size = {};
-	};
 
-	enum class WEBMImageSTATUS {
-		OK,
-		ERR_UNSUPPORTED,
-		ERR_NO_FRAME
+		inline bool valid() { return pixels.size() > 0; }
 	};
 
 	class WEBMDecoder {
 	private:
+		static rawrbox::VIDEO_CODEC _codec;
 		static std::unique_ptr<vpx_codec_ctx> _ctx;
 		static const void* _iter;
 
 	public:
-		static void init();
+		static void init(uint32_t threads = 3, rawrbox::VIDEO_CODEC codec = rawrbox::VIDEO_CODEC::VIDEO_VP9);
 		static void shutdown();
 
 		static bool decode(const rawrbox::WEBMFrame& frame);
-		static rawrbox::WEBMImageSTATUS getImageFrame(rawrbox::WEBMImage& image);
+		static rawrbox::WEBMImage getImageFrame();
 	};
 } // namespace rawrbox

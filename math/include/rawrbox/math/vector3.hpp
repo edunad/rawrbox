@@ -34,7 +34,7 @@ namespace rawrbox {
 		static VecType forward() { return VecType(0, 0, 1); }
 		static VecType back() { return VecType(0, 0, -1); }
 
-		[[nodiscard]] const int size() const { return 3; }
+		[[nodiscard]] int size() const { return 3; }
 
 		[[nodiscard]] Vector3_t<NumberType> xyz() const { return Vector3_t<NumberType>(x, y, z); }
 		[[nodiscard]] Vector3_t<NumberType> yxz() const { return Vector3_t<NumberType>(y, x, z); }

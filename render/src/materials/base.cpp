@@ -34,6 +34,7 @@ namespace rawrbox {
 
 	void MaterialBase::process(const rawrbox::Mesh& mesh) {
 		if (mesh.texture != nullptr && mesh.texture->valid() && !mesh.lineMode && !mesh.wireframe) {
+			mesh.texture->update(); // Update texture
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, mesh.texture->getHandle());
 		} else {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, rawrbox::WHITE_TEXTURE->getHandle());
@@ -70,8 +71,9 @@ namespace rawrbox {
 		bgfx::setUniform(this->_u_data, data.front().data(), MAX_DATA);
 		// ---
 
-		// bind extra renderer uniforms ---
+		// Bind extra renderer uniforms ---
 		rawrbox::RENDERER->bindRenderUniforms();
+		// ---
 	}
 
 	void MaterialBase::process(const bgfx::TextureHandle& texture) {

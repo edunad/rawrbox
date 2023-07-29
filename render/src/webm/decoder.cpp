@@ -1,5 +1,8 @@
 
+#include <rawrbox/math/utils/yuv.hpp>
 #include <rawrbox/render/webm/decoder.hpp>
+
+#include <magic_enum.hpp>
 
 #include <fmt/format.h>
 #include <vpx/vp8dx.h>
@@ -9,15 +12,29 @@ namespace rawrbox {
 	// PRIVATE -----
 	std::unique_ptr<vpx_codec_ctx> WEBMDecoder::_ctx = nullptr;
 	const void* WEBMDecoder::_iter = nullptr;
+
+	rawrbox::VIDEO_CODEC WEBMDecoder::_codec;
 	// ------
 
-	void WEBMDecoder::init() {
+	void WEBMDecoder::init(uint32_t threads, rawrbox::VIDEO_CODEC codec) {
 		const vpx_codec_dec_cfg_t codecCfg = {
-		    3,
+		    threads,
 		    0,
 		    0};
 
-		vpx_codec_iface_t* codecIface = vpx_codec_vp8_dx();
+		vpx_codec_iface_t* codecIface = nullptr;
+		switch (codec) {
+			case rawrbox::VIDEO_CODEC::VIDEO_VP8:
+				codecIface = vpx_codec_vp8_dx();
+				break;
+			case rawrbox::VIDEO_CODEC::VIDEO_VP9:
+				codecIface = vpx_codec_vp9_dx();
+				break;
+			default:
+				throw std::runtime_error("[WEBMDecoder] Invalid vpx codec");
+		}
+
+		_codec = codec;
 		_ctx = std::make_unique<vpx_codec_ctx>();
 
 		if (vpx_codec_dec_init(_ctx.get(), codecIface, &codecCfg, VPX_CODEC_USE_FRAME_THREADING)) {
@@ -35,48 +52,47 @@ namespace rawrbox {
 		if (_ctx == nullptr)
 			throw std::runtime_error("[WEBMDecoder] Codec not initialized, did you call 'init' ?");
 
-		_iter = nullptr;
-		return !vpx_codec_decode(_ctx.get(), frame.buffer, frame.bufferSize, nullptr, 0);
-	}
+		if (frame.codec != _codec) {
+			auto badname = magic_enum::enum_name(static_cast<rawrbox::VIDEO_CODEC>(frame.codec)).data();
+			auto name = magic_enum::enum_name(static_cast<rawrbox::VIDEO_CODEC>(_codec)).data();
 
-	rawrbox::WEBMImageSTATUS WEBMDecoder::getImageFrame(rawrbox::WEBMImage& image) {
-		rawrbox::WEBMImageSTATUS err = rawrbox::WEBMImageSTATUS::OK;
-
-		if (vpx_image_t* img = vpx_codec_get_frame(_ctx.get(), &_iter)) {
-
-			image.size = {11, 11};
-			// It seems to be a common problem that UNKNOWN comes up a lot, yet FFMPEG is somehow getting accurate colour-space information.
-			// After checking FFMPEG code, *they're* getting colour-space information, so I'm assuming something like this is going on.
-			// It appears to work, at least.
-			/*if (img->cs != VPX_CS_UNKNOWN)
-				m_last_space = img->cs;
-
-			if ((img->fmt & VPX_IMG_FMT_PLANAR) && !(img->fmt & (VPX_IMG_FMT_HAS_ALPHA | VPX_IMG_FMT_HIGHBITDEPTH))) {
-				if (img->stride[0] && img->stride[1] && img->stride[2]) {
-					const int uPlane = !!(img->fmt & VPX_IMG_FMT_UV_FLIP) + 1;
-					const int vPlane = !(img->fmt & VPX_IMG_FMT_UV_FLIP) + 1;
-
-					image.w = img->d_w;
-					image.h = img->d_h;
-					image.cs = m_last_space;
-					image.chromaShiftW = img->x_chroma_shift;
-					image.chromaShiftH = img->y_chroma_shift;
-
-					image.planes[0] = img->planes[0];
-					image.planes[1] = img->planes[uPlane];
-					image.planes[2] = img->planes[vPlane];
-
-					image.linesize[0] = img->stride[0];
-					image.linesize[1] = img->stride[uPlane];
-					image.linesize[2] = img->stride[vPlane];
-
-					err = NO_ERROR;
-				}
-			} else {
-				err = UNSUPPORTED_FRAME;
-			}*/
+			throw std::runtime_error(fmt::format("[WEBMDecoder] Codec '{}' not set as config! '{}' was loaded instead", badname, name));
 		}
 
-		return err;
+		_iter = nullptr;
+		return !vpx_codec_decode(_ctx.get(), frame.buffer.data(), static_cast<uint32_t>(frame.buffer.size()), nullptr, 0);
+	}
+
+	rawrbox::WEBMImage WEBMDecoder::getImageFrame() {
+		rawrbox::WEBMImage image = {};
+
+		if (vpx_image_t* img = vpx_codec_get_frame(_ctx.get(), &_iter)) {
+			rawrbox::YUVLuminanceScale scale = rawrbox::YUVLuminanceScale::UNKNOWN;
+			int channels = 4;
+
+			image.size = {static_cast<int>(img->d_w), static_cast<int>(img->d_h)};
+			image.pixels.resize(image.size.x * image.size.y * channels);
+
+			switch (img->range) {
+				case VPX_CR_STUDIO_RANGE:
+					scale = rawrbox::YUVLuminanceScale::ITU;
+					break;
+				case VPX_CR_FULL_RANGE:
+					scale = rawrbox::YUVLuminanceScale::FULL;
+					break;
+				default:
+					throw std::runtime_error("[WEBMDecoder] Unknown luminance format");
+			}
+
+			switch (img->fmt) {
+				case VPX_IMG_FMT_I420:
+					rawrbox::YUVUtils::convert420(scale, image.pixels.data(), image.size.x * channels, img->planes[0], img->planes[1], img->planes[2], img->d_w, img->d_h, img->stride[0], img->stride[1]);
+					break;
+				default:
+					throw std::runtime_error("[WEBMDecoder] Format not supported, video not in I420 format");
+			}
+		}
+
+		return image;
 	}
 } // namespace rawrbox

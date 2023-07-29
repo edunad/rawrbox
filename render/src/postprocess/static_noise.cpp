@@ -36,7 +36,7 @@ namespace rawrbox {
 	}
 
 	void PostProcessStaticNoise::applyEffect() {
-		rawrbox::UniformUtils::setUniform(this->_settings, rawrbox::Vector2f(rawrbox::TimeUtils::time(),
+		rawrbox::UniformUtils::setUniform(this->_settings, rawrbox::Vector2f(static_cast<float>(rawrbox::TimeUtils::time()),
 								       this->_strength));
 		bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);
 	}

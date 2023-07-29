@@ -1,10 +1,11 @@
 
 
 #include <rawrbox/render/camera/orbital.hpp>
+#include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render/resources/webm/webm.hpp>
 #include <rawrbox/render/static.hpp>
-// #include <rawrbox/render/texture/webm.hpp>
 #include <rawrbox/resources/manager.hpp>
 
 #include <webm_test/game.hpp>
@@ -22,7 +23,7 @@ namespace webm_test {
 		this->_window->setRenderer<>(
 		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto& w) { this->shutdown(); };
+		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {
@@ -37,18 +38,18 @@ namespace webm_test {
 
 		// Setup loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::WEBMLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
 		// ----------
 
 		// Load content ---
-		// rawrbox::WEBMDecoder::init();
-		// rawrbox::TextureWEBM a("./content/video/webm_test.webm", false);
-		// this->loadContent();
-		//  -----
+		this->loadContent();
+		//   -----
 	}
 
 	void Game::loadContent() {
-		std::array<std::pair<std::string, uint32_t>, 2> initialContentFiles = {};
+		std::array initialContentFiles = {
+		    std::make_pair<std::string, uint32_t>("./content/video/webm_test.webm", 0)};
 
 		for (auto& f : initialContentFiles) {
 			this->_loadingFiles++;
@@ -66,6 +67,23 @@ namespace webm_test {
 
 	void Game::contentLoaded() {
 		this->_ready = true;
+
+		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./content/video/webm_test.webm")->get();
+		this->_model->setOptimizable(false);
+
+		{
+			auto mesh = rawrbox::MeshUtils::generateCube({0.F, 2.F, 0.F}, {3.0F, 3.0F, 3.0F});
+			mesh.setTexture(tex);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
+			this->_model->addMesh(mesh);
+		}
+		// ----
+
+		this->_model->upload();
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
@@ -98,7 +116,8 @@ namespace webm_test {
 		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
 	}
 	void Game::drawWorld() {
-		if (!this->_ready) return;
+		if (!this->_ready || this->_model == nullptr) return;
+		this->_model->draw();
 	}
 
 	void Game::draw() {

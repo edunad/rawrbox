@@ -71,7 +71,6 @@ else()
 endif()
 
 # LIBS ---
-
 CPMAddPackage("gh:bshoshany/thread-pool@3.5.0")
 if(thread-pool_ADDED)
     add_library(thread-pool INTERFACE IMPORTED)
