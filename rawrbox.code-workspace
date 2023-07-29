@@ -55,6 +55,7 @@
       "DCCACHE_OPTIONS": "CCACHE_CPP2=true;CCACHE_SLOPPINESS=clang_index_store",
       "DCMAKE_EXPORT_COMPILE_COMMANDS": "ON",
       "DRAWRBOX_OUTPUT_BIN": "bin"
+      //"DCMAKE_CXX_INCLUDE_WHAT_YOU_USE": "../include-what-you-use.exe"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "workbench.editor.pinnedTabSizing": "shrink",

@@ -16,6 +16,7 @@
         "panel": "shared"
       }
     },
+
     {
       "label": "Run clang-tidy",
       "type": "shell",
@@ -29,12 +30,28 @@
         "panel": "shared"
       }
     },
+
+    {
+      "label": "Run iwyu",
+      "type": "shell",
+      "command": "python iwyu_tool.py -p \"build\" `find -not -path \"*build*\" -not -path \"*deps*\" -not -path \"*.cache*\" \\( -name *.cpp -o -name *.h -o -name *.hpp \\)` -j 5",
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+
     {
       "label": "Build tests",
       "type": "cmake",
       "command": "build",
       "group": "build"
     },
+
     {
       "label": "Clean project",
       "type": "shell",
