@@ -2,7 +2,7 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/vector4.hpp>
 
-#include <stdexcept>
+#include <array>
 #include <vector>
 
 // Based off https://pastebin.com/raw/vJhXxfH9

@@ -118,13 +118,15 @@
 ### REQUIRED SOFTWARE
 
 - [GIT](https://git-scm.com/) or something similar to GIT
-- Download and install **C++ Build Tools** (2022 is recommended)
+- Download and install **C++ Build Tools** (2022 is recommended)<br/>
+  - ![](https://i.rawr.dev/KcTNzFJZhZ.png)
 - Download and install a IDE, [Visual Code](https://code.visualstudio.com/) is **recommended**.
-- Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)
+- Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)<br/>
+  - `pip install ninja` if you have python3 installed
 
 ### IDE SETUP (Visual Code)
 
-- Open the workspace file and install the recommended extensions (at least the C++, CMAKE)
+- Open the workspace file (`.code-workspace`) and install the recommended extensions (at least the C++, CMAKE)
 - Run cmake configure
 - Select `[Visual Studio Build Tools <version> Release - amd64]` on the kit popup (for all of the projects)
 - Run the compiler by hitting F5
