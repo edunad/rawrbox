@@ -25,7 +25,7 @@ namespace rawrbox {
 
 		// SKINNING ----
 		std::unordered_map<std::string, rawrbox::Mesh*> _animatedMeshes = {}; // Map for quick lookup
-										      // --------
+		// --------
 
 		bool _canOptimize = true;
 		virtual void flattenMeshes() {
@@ -33,24 +33,7 @@ namespace rawrbox {
 
 			// Merge same meshes to reduce calls
 			if (this->_canOptimize) {
-				size_t old = this->_meshes.size();
-
-				for (size_t i1 = 0; i1 < this->_meshes.size(); i1++) {
-					auto& mesh1 = this->_meshes[i1];
-					for (size_t i2 = 0; i2 < this->_meshes.size(); i2++) {
-						if (i1 == i2) continue;
-
-						auto& mesh2 = this->_meshes[i2];
-						if (!mesh1->canOptimize(*mesh2)) continue;
-
-						mesh1->merge(*mesh2);
-
-						this->_meshes.erase(this->_meshes.begin() + i2);
-						i2--;
-					}
-				}
-
-				if (old != this->_meshes.size()) fmt::print("[RawrBox-Model] Optimized mesh for rendering (Before {} | After {})\n", old, this->_meshes.size());
+				optimize();
 			}
 			// ----------------------
 
@@ -237,6 +220,42 @@ namespace rawrbox {
 		}
 
 		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
+
+		virtual void optimize() {
+			// 32000 seems to behave sane without errors
+			size_t verticeLimit = 32000;
+
+			for (size_t i1 = 0; i1 < this->_meshes.size(); i1++) {
+				auto& mesh1 = this->_meshes[i1];
+
+				// figure out how big our buffers will get
+				size_t reserveVertices = mesh1->vertices.size();
+				size_t reserveIndices = mesh1->indices.size();
+				for (size_t i2 = this->_meshes.size() - 1; i2 > i1; i2--) {
+					auto& mesh2 = this->_meshes[i2];
+					if (!mesh1->canOptimize(*mesh2)) continue;
+					if (mesh1->vertices.size() + mesh2->vertices.size() > verticeLimit) break;
+
+					reserveVertices += mesh2->vertices.size();
+					reserveIndices += mesh2->indices.size();
+				}
+
+				if (reserveVertices == mesh1->vertices.size()) continue;
+				mesh1->vertices.reserve(reserveVertices);
+				mesh1->indices.reserve(reserveIndices);
+
+				// merge what it can
+				for (size_t i2 = this->_meshes.size() - 1; i2 > i1; i2--) {
+					auto& mesh2 = this->_meshes[i2];
+					if (!mesh1->canOptimize(*mesh2)) continue;
+					if (mesh1->vertices.size() + mesh2->vertices.size() > verticeLimit) break;
+
+					mesh1->merge(*mesh2);
+
+					this->_meshes.erase(this->_meshes.begin() + i2);
+				}
+			}
+		}
 
 		// Animations ----
 		virtual bool blendAnimation(const std::string& /*otherAnim*/, float /*blend*/) {
