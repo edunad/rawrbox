@@ -44,8 +44,7 @@ namespace rawrbox {
 		// --------------------
 
 		if (this->_font != nullptr && this->_percent) {
-			auto val = std::to_string(static_cast<int>(this->_value));
-			stencil.drawText(*this->_font, val, {5, size.y / 2.F}, this->_progressColor * 0.35F, rawrbox::Alignment::Left, rawrbox::Alignment::Center);
+			stencil.drawText(*this->_font, std::to_string(static_cast<int>(this->_value)), {5, size.y / 2.F}, this->_progressColor * 0.35F, rawrbox::Alignment::Left, rawrbox::Alignment::Center);
 		}
 
 		// BORDER--

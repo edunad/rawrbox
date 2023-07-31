@@ -119,8 +119,8 @@ namespace rawrbox {
 			this->onItemClick(hoverIndex, this->items[hoverIndex]);
 		}
 
-		void mouseMove(const rawrbox::Vector2i& mousePos) override {
-			this->mousePos = mousePos;
+		void mouseMove(const rawrbox::Vector2i& pos) override {
+			this->mousePos = pos;
 		}
 
 		void mouseScroll(const rawrbox::Vector2i& /*mousePos*/, const rawrbox::Vector2i& offset) override {

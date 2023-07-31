@@ -20,6 +20,7 @@
     ],
     "clangd.restartAfterCrash": true,
     "clangd.checkUpdates": true,
+    "clangd.arguments": ["--header-insertion=never"],
     "git.autoRepositoryDetection": false,
     "testMate.cpp.test.advancedExecutables": [
       {

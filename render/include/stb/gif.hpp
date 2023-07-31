@@ -34,8 +34,8 @@ uint8_t *stbi_xload(stbi__context *s, int *x, int *y, int *frames, int **delays)
 uint8_t *stbi_xload_file(char const *filename, int *x, int *y, int *frames, int **delays) {
 	stbi__context s;
 
-	FILE *f = nullptr;
-	if (!(f = stbi__fopen(filename, "rb"))) throw std::runtime_error("Failed to open file");
+	FILE *f = stbi__fopen(filename, "rb");
+	if (f == nullptr) throw std::runtime_error("Failed to open file");
 	stbi__start_file(&s, f);
 
 	if (!stbi__gif_test(&s)) {

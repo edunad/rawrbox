@@ -382,7 +382,6 @@ enum {
 	STBI_rgb_alpha = 4
 };
 
-#include <cstdlib>
 using stbi_uc = unsigned char;
 using stbi_us = unsigned short;
 
@@ -945,8 +944,8 @@ static
     STBI_THREAD_LOCAL
 #endif
     const char *stbi__g_failure_reason;
-
 STBIDEF const char *stbi_failure_reason(void) {
+
 	return stbi__g_failure_reason;
 }
 

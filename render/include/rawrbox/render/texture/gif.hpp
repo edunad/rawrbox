@@ -24,7 +24,7 @@ namespace rawrbox {
 		bool _failedToLoad = false;
 		bool _transparent = false;
 
-		int64_t _cooldown = 0;
+		uint64_t _cooldown = 0;
 		float _speed = 1.F;
 
 		void internalUpdate();

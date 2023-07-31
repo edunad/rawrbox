@@ -16,7 +16,7 @@ namespace rawrbox {
 	// -----
 
 	// NOLINTBEGIN(clang-diagnostic-unused-function)
-	static void runOnRenderThread(std::function<void()> func) {
+	static inline void runOnRenderThread(std::function<void()> func) {
 		if (RENDER_THREAD_ID != std::this_thread::get_id()) {
 			RENDER_THREAD_INVOKES.insert(std::move(func));
 			return;
@@ -26,7 +26,7 @@ namespace rawrbox {
 	}
 
 	// ⚠️ INTERNAL - DO NOT CALL UNLESS YOU KNOW WHAT YOU ARE DOING ⚠️
-	static void ___runThreadInvokes() {
+	static inline void ___runThreadInvokes() {
 		while (!rawrbox::RENDER_THREAD_INVOKES.isEmpty()) {
 			std::function<void()> fnc;
 			rawrbox::RENDER_THREAD_INVOKES.remove(fnc);

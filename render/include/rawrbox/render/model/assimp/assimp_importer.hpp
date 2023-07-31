@@ -148,8 +148,8 @@ namespace rawrbox {
 		explicit AssimpImporter(uint32_t loadFlags = ModelLoadFlags::NONE, uint32_t assimpFlags = DEFAULT_ASSIMP_FLAGS);
 
 		// Loading ----
-		void load(const std::filesystem::path& path, const std::vector<uint8_t>& buffer, uint32_t loadFlags = ModelLoadFlags::NONE, uint32_t assimpFlags = DEFAULT_ASSIMP_FLAGS);
-		void load(const std::filesystem::path& path, uint32_t loadFlags = ModelLoadFlags::NONE, uint32_t assimpFlags = DEFAULT_ASSIMP_FLAGS);
+		void load(const std::filesystem::path& path, const std::vector<uint8_t>& buffer);
+		void load(const std::filesystem::path& path);
 		// ---
 	};
 } // namespace rawrbox
