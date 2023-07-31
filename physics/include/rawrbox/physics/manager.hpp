@@ -74,24 +74,9 @@ namespace rawrbox {
 #endif
 	};
 
-	class BPLayerFilter : public JPH::ObjectVsBroadPhaseLayerFilter {
-	public:
-		[[nodiscard]] bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override {
-			auto a = static_cast<uint8_t>(inLayer2);
-
-			switch (static_cast<rawrbox::PHYS_LAYERS>(inLayer1)) {
-				case rawrbox::PHYS_LAYERS::STATIC:
-					return static_cast<PHYS_LAYERS>(a) == rawrbox::PHYS_LAYERS::DYNAMIC;
-				case rawrbox::PHYS_LAYERS::DYNAMIC:
-					return true;
-				default:
-					return false;
-			}
-		}
-	};
-
 	class BodyActivationListener;
 	class ContactListener;
+	class BPLayerFilter;
 
 	class PHYSICS {
 	protected:
@@ -114,6 +99,7 @@ namespace rawrbox {
 
 		static rawrbox::Event<const JPH::BodyID &, uint64_t> onBodyAwake;
 		static rawrbox::Event<const JPH::BodyID &, uint64_t> onBodySleep;
+		static std::function<bool(rawrbox::PHYS_LAYERS, rawrbox::PHYS_LAYERS)> shouldCollide;
 
 		static std::function<JPH::ValidateResult(const JPH::Body &, const JPH::Body &, JPH::RVec3Arg, const JPH::CollideShapeResult &)> onContactValidate;
 
@@ -127,6 +113,27 @@ namespace rawrbox {
 
 		static void tick();     // Should be tick based update
 		static void optimize(); // Call only when a lot of bodies are added at a single time
+	};
+
+	class BPLayerFilter : public JPH::ObjectVsBroadPhaseLayerFilter {
+	public:
+		[[nodiscard]] bool ShouldCollide(JPH::ObjectLayer inLayer1, JPH::BroadPhaseLayer inLayer2) const override {
+			auto layer1 = static_cast<rawrbox::PHYS_LAYERS>(inLayer1);
+			auto layer2 = static_cast<rawrbox::PHYS_LAYERS>(static_cast<uint8_t>(inLayer2));
+
+			if (PHYSICS::shouldCollide == nullptr) {
+				switch (layer1) {
+					case rawrbox::PHYS_LAYERS::STATIC:
+						return layer2 == rawrbox::PHYS_LAYERS::DYNAMIC;
+					case rawrbox::PHYS_LAYERS::DYNAMIC:
+						return true;
+					default:
+						return false;
+				}
+			} else {
+				return PHYSICS::shouldCollide(layer1, layer2);
+			}
+		}
 	};
 
 	class BodyActivationListener : public JPH::BodyActivationListener {
