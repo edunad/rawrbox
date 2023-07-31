@@ -1,9 +1,11 @@
 
 #pragma once
 #include <rawrbox/math/color.hpp>
+#include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/ui/container.hpp>
 
 #include <chrono>
+#include <string>
 
 namespace rawrbox {
 	enum class UIGraphStyle {
@@ -62,10 +64,22 @@ namespace rawrbox {
 		size_t _smoothSize = 10;
 
 		bool _autoScale = false;
+		bool _showLegend = false;
 		rawrbox::UIGraphStyle _style = rawrbox::UIGraphStyle::BLOCK;
+
+		rawrbox::Color _textLineColor = rawrbox::Colors::Gray;
+		rawrbox::Color _textColor = rawrbox::Colors::White;
+		rawrbox::Color _textShadowColor = rawrbox::Colors::Black;
+		rawrbox::Vector2f _textShadow = {1, 1};
+
+		// RESOURCES ---
+		rawrbox::Font* _font = nullptr;
+		rawrbox::Font* _fontLegend = nullptr;
+		// -----------------
 
 		std::array<float, rawrbox::UIGraphCategory::ENTRY_COUNT> _totalTimes = {};
 		std::vector<std::array<rawrbox::Vector2f, rawrbox::UIGraphCategory::ENTRY_COUNT>> _vertCats = {};
+		std::vector<std::pair<std::string, float>> texts;
 
 	public:
 		~UIGraph() override = default;
@@ -85,6 +99,33 @@ namespace rawrbox {
 		virtual void setSmoothing(size_t frames);
 		virtual void setAutoScale(bool val);
 		virtual void setHighest(float val);
+		// ---------
+
+		// TEXT ----
+		virtual void setShowLegend(bool mode);
+		[[nodiscard]] virtual bool getShowLegend() const;
+
+		virtual void addText(const std::string& text, float val);
+
+		virtual void setTextLineColor(const rawrbox::Color& col);
+		[[nodiscard]] virtual const rawrbox::Color& getTextLineColor() const;
+
+		virtual void setTextColor(const rawrbox::Color& col);
+		[[nodiscard]] virtual const rawrbox::Color& getTextColor() const;
+
+		virtual void setTextShadowPos(const rawrbox::Vector2f& pos);
+		[[nodiscard]] virtual const rawrbox::Vector2f& getTextShadowPos() const;
+
+		virtual void setTextShadowColor(const rawrbox::Color& col);
+		[[nodiscard]] virtual const rawrbox::Color& getTextShadowColor() const;
+
+		virtual void setFont(rawrbox::Font* font);
+		virtual void setFont(const std::filesystem::path& font, int size = 11);
+		[[nodiscard]] virtual rawrbox::Font* getFont() const;
+
+		virtual void setFontLegend(rawrbox::Font* font);
+		virtual void setFontLegend(const std::filesystem::path& font, int size = 11);
+		[[nodiscard]] virtual rawrbox::Font* getFontLegend() const;
 		// ---------
 
 		// FOCUS HANDLE ---
