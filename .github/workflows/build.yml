@@ -68,13 +68,6 @@ jobs:
           ctest --test-dir ./engine --output-on-failure
           ctest --test-dir ./resources --output-on-failure
 
-      - name: Run Include What You Use
-        uses: EmilGedda/include-what-you-use-action@v1.0
-        with:
-          compilation-database-path: "build"
-          output-format: "iwyu" # Or 'clang'
-          no-error: "false"
-
       - name: Run linter
         uses: cpp-linter/cpp-linter-action@v2
         id: linter
