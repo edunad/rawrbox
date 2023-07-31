@@ -2,8 +2,6 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <string>
-
 TEST_CASE("QHull should behave as expected", "[rawrbox::QHull]") {
 	SECTION("rawrbox::QHull") {
 		std::vector<rawrbox::QHullPoint2D> points{{0, 1}, {1, 1}, {1, 2}, {3, 4}, {2, 4}, {0, 4}, {4, 2}, {2, 2}};

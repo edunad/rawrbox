@@ -21,7 +21,6 @@
 #include <fmt/format.h>
 
 #include <memory>
-#include <thread>
 
 using namespace JPH::literals; // If you want your code to compile using single or double precision write 0.0_r to get a Real value that compiles to double or float depending if JPH_DOUBLE_PRECISION is set or not.
 

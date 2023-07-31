@@ -1,7 +1,5 @@
 
 #include <rawrbox/math/matrix4x4.hpp>
-#include <rawrbox/math/vector3.hpp> // for Vector3f, Vector3_t
-#include <rawrbox/math/vector4.hpp> // for Vector4f, Vector4i
 
 #include <algorithm> // for equal
 #include <cmath>     // for cos, sin

@@ -6,8 +6,6 @@
 #include <bgfx/bgfx.h>
 #include <fmt/format.h>
 
-#include <stdexcept>
-
 namespace rawrbox {
 
 	class MaterialBase {

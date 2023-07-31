@@ -3,8 +3,6 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <memory>
-
 TEST_CASE("Mesh should behave as expected", "[rawrbox::Mesh]") {
 	rawrbox::Mesh base;
 

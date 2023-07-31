@@ -6,7 +6,6 @@
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include <memory>
 #include <string>
 
 TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {

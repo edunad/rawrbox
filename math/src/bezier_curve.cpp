@@ -1,10 +1,6 @@
 
 #include <rawrbox/math/bezier_curve.hpp>
 #include <rawrbox/math/utils/math.hpp>
-#include <rawrbox/math/vector3.hpp> // for Vector3f, Vector3_t, Vector3
-#include <rawrbox/math/vector4.hpp> // for Vector4f
-
-#include <algorithm> // for max
 
 namespace rawrbox {
 	BezierCurve::BezierCurve(const std::array<rawrbox::Vector3f, 4>& points, float subDivisions) : _subDivisions(subDivisions), _points(points) {

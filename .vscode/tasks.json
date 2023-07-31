@@ -34,14 +34,14 @@
     {
       "label": "Run iwyu",
       "type": "shell",
-      "command": "export iwyu=../${workspaceFolder} && python iwyu_tool.py -p \"build\" `find -not -path \"*build*\" -not -path \"*deps*\" -not -path \"*.cache*\" \\( -name *.cpp -o -name *.h -o -name *.hpp \\)` -j 5",
+      "command": "export iwyu=../${workspaceFolder} && python3 iwyu_tool.py ./engine ./math ./physics ./render ./resources ./ui ./utils -p build -j 8 > .iwyu && python3 fix_includes.py --comments < .iwyu",
       "group": "build",
       "options": {
         "cwd": "${workspaceFolder}"
       },
       "presentation": {
         "reveal": "always",
-        "panel": "shared"
+        "panel": "dedicated"
       }
     },
 

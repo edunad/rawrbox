@@ -11,9 +11,6 @@
 
 #include <fmt/format.h>
 
-#include <random>
-#include <vector>
-
 namespace webm_test {
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();

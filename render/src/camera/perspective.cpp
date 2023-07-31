@@ -4,8 +4,6 @@
 
 #include <bx/math.h>
 
-#include <stdexcept>
-
 namespace rawrbox {
 	// NOLINTBEGIN(clang-analyzer-optin.cplusplus.VirtualCall)
 	CameraPerspective::CameraPerspective(const rawrbox::Vector2i& _wsize, float FOV, float near, float far) : _winSize(_wsize), _FOV(FOV) {

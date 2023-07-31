@@ -3,8 +3,6 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <string>
-
 TEST_CASE("RESOURCES should behave as expected", "[rawrbox::RESOURCES]") {
 	SECTION("rawrbox::RESOURCES::getLoaders") {
 		REQUIRE(rawrbox::RESOURCES::getLoaders().size() == 1);

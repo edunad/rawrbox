@@ -33,6 +33,7 @@ option(RAWRBOX_BUILD_UI "Build ui" ON)
 option(RAWRBOX_BUILD_RESOURCES_MANAGER "Build resources manager" ON)
 option(RAWRBOX_BUILD_PHYSICS "Build physics support" ON)
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" ON)
+
 if(RAWRBOX_BUILD_PHYSICS)
     set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Jolt requires msvc multithreaded runtime
     message(STATUS "JoltPhysics is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")

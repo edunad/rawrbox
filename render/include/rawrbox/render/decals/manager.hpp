@@ -5,8 +5,6 @@
 #include <rawrbox/render/model/instanced.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
-#include <vector>
-
 namespace rawrbox {
 	class DECALS {
 	protected:

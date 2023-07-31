@@ -1,13 +1,10 @@
 #pragma once
 
-#include <algorithm>
 #include <atomic>
 #include <functional>
 #include <map>
 #include <memory>
 #include <string>
-#include <type_traits>
-#include <utility>
 
 namespace rawrbox {
 	template <typename... CallbackArgs>

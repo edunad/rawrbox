@@ -14,8 +14,6 @@
 #include <bx/math.h>
 #include <fmt/printf.h>
 
-#include <vector>
-
 namespace bass_test {
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();

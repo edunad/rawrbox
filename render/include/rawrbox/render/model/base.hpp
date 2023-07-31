@@ -2,7 +2,6 @@
 
 #include <rawrbox/render/materials/base.hpp>
 
-#include <functional>
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>

@@ -5,7 +5,6 @@
 #include <fmt/printf.h>
 
 #include <chrono>
-#include <functional>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -33,7 +32,7 @@ namespace rawrbox {
 	void Engine::update() {}
 	void Engine::draw() {}
 
-	void Engine::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {}
+	void Engine::onThreadShutdown(rawrbox::ENGINE_THREADS /*_thread*/) {}
 	// -----
 
 	void Engine::shutdown() {

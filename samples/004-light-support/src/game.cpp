@@ -13,8 +13,6 @@
 #include <bx/bx.h>
 #include <bx/math.h>
 
-#include <vector>
-
 namespace light {
 
 	void Game::setupGLFW() {

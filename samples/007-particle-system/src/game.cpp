@@ -16,7 +16,6 @@
 #include <fmt/printf.h>
 
 #include <memory>
-#include <vector>
 
 namespace particle_test {
 	void Game::setupGLFW() {

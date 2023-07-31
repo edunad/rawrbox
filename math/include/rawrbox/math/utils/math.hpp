@@ -3,7 +3,6 @@
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/pi.hpp>
 
-#include <array>
 #include <cmath>
 #include <vector>
 

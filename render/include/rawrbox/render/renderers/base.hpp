@@ -4,9 +4,7 @@
 
 #include <bgfx/bgfx.h>
 
-#include <array>
 #include <functional>
-#include <string>
 
 namespace rawrbox {
 	class RendererBase {

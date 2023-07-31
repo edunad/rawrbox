@@ -13,8 +13,6 @@
 #include <bx/bx.h>
 #include <bx/math.h>
 
-#include <vector>
-
 namespace assimp {
 
 	void Game::setupGLFW() {

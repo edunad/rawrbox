@@ -1,9 +1,6 @@
 #pragma once
 
-#include <algorithm>
 #include <array>
-#include <complex>
-#include <vector>
 
 namespace rawrbox {
 	template <class NumberType>
@@ -104,7 +101,7 @@ namespace rawrbox {
 		[[nodiscard]] const std::array<NumberType, 4> data() const { return {r, g, b, a}; }
 
 		[[nodiscard]] const NumberType max() const {
-			return std::fmaxf(std::fmaxf(r, g), b);
+			return std::max(std::max(r, g), b);
 		}
 
 		[[nodiscard]] bool isTransparent() const { return a == 0; }

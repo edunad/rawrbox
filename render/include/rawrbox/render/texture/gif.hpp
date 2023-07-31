@@ -6,7 +6,6 @@
 #include <bgfx/bgfx.h>
 
 #include <filesystem>
-#include <string>
 #include <vector>
 
 namespace rawrbox {

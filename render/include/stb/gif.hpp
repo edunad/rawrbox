@@ -16,7 +16,6 @@
 #include <stb/image_write.hpp>
 
 #include <stdexcept>
-#include <vector>
 
 // NOLINTBEGIN(*)
 const int defaultFrameDelayCentiseconds = 4;

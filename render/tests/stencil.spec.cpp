@@ -7,8 +7,6 @@
 
 #include <bx/math.h>
 
-#include <string>
-
 TEST_CASE("Stencil should behave as expected", "[rawrbox::Stencil]") {
 	rawrbox::Stencil base({100, 100});
 

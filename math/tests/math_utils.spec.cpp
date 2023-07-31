@@ -4,8 +4,6 @@
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include <string>
-
 TEST_CASE("MathUtils should behave as expected", "[rawrbox::MathUtils]") {
 	SECTION("rawrbox::MathUtils::repeat") {
 		REQUIRE(rawrbox::MathUtils::repeat(2, 0, 10) == 2);

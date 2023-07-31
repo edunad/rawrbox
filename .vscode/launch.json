@@ -1,32 +1,32 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Launch (Debug)",
-            "type": "cppvsdbg",
-            "request": "launch",
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch (Debug)",
+      "type": "cppvsdbg",
+      "request": "launch",
 
-            "program": "${command:cmake.launchTargetPath}",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bin/Debug",
-            "environment": [],
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Launch (Release)",
-            "type": "cppvsdbg",
-            "request": "launch",
+      "program": "${command:cmake.launchTargetPath}",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/bin/Debug",
+      "environment": [],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Launch (Release)",
+      "type": "cppvsdbg",
+      "request": "launch",
 
-            "program": "${command:cmake.launchTargetPath}",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bin/Release",
-            "environment": [],
-            "console": "integratedTerminal"
-        }
-    ]
+      "program": "${command:cmake.launchTargetPath}",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/bin/Release",
+      "environment": [],
+      "console": "integratedTerminal"
+    }
+  ]
 }

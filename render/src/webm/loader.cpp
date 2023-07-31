@@ -34,13 +34,13 @@ namespace rawrbox {
 
 		this->_segment = std::unique_ptr<mkvparser::Segment>(pSegment);
 
-		if (this->_segment->Load() < 0)
+		if (this->_segment == nullptr || this->_segment->Load() < 0)
 			throw std::runtime_error("[WEBM] Failed to load segment");
 
 		const mkvparser::Tracks* tracks = this->_segment->GetTracks();
 		const unsigned long tracksCount = tracks->GetTracksCount();
 
-		const mkvparser::SegmentInfo* const segmentInfo = pSegment->GetInfo();
+		const mkvparser::SegmentInfo* const segmentInfo = this->_segment->GetInfo();
 		if (segmentInfo == nullptr)
 			throw std::runtime_error("[WEBM] Failed to load segment info");
 

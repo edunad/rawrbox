@@ -4,8 +4,6 @@
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include <string>
-
 TEST_CASE("PathUtils should behave as expected", "[rawrbox::PathUtils]") {
 	SECTION("rawrbox::PathUtils::stripRootPath") {
 #ifdef WIN32

@@ -4,6 +4,8 @@
 
 #include <bgfx/bgfx.h>
 
+#include <vector>
+
 namespace rawrbox {
 	class TextureMissing : public TextureBase {
 	public:

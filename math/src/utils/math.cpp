@@ -30,7 +30,7 @@ namespace rawrbox {
 	}
 
 	float MathUtils::angleLerp(float a, float b, float lerpFactor) {
-		float result = NAN;
+		float result = 0.F;
 		float diff = b - a;
 
 		if (diff < -180.F) {

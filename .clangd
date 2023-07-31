@@ -1,7 +1,9 @@
 Diagnostics:
   UnusedIncludes: Strict
 InlayHints:
-  Designators: Yes
+  Designators: No
   Enabled: Yes
   ParameterNames: Yes
   DeducedTypes: Yes
+Completion:
+  AllScopes: No

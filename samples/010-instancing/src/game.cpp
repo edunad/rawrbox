@@ -14,7 +14,6 @@
 #include <fmt/format.h>
 
 #include <random>
-#include <vector>
 
 namespace instance_test {
 	void Game::setupGLFW() {

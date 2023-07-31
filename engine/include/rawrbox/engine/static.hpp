@@ -2,7 +2,6 @@
 #include <rawrbox/utils/ringbuffer.hpp>
 
 #include <functional>
-#include <memory>
 #include <thread>
 
 namespace rawrbox {
