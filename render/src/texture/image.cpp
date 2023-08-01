@@ -1,12 +1,20 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/image.hpp>
 
+#define STB_IMAGE_STATIC
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_PNG
+#define STBI_ONLY_JPEG
+#define STBI_ONLY_BMP
+#define STBI_ONLY_TGA
+#include <stb/image.hpp>
+
 #include <fmt/format.h>
 
 namespace rawrbox {
 	// NOLINTBEGIN(modernize-pass-by-value)
 	TextureImage::TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, int forceChannels, bool useFallback) : _filePath(filePath) {
-		stbi_uc* image = stbi_load_from_memory(buffer.data(), static_cast<int>(buffer.size()) * sizeof(uint8_t), &this->_size.x, &this->_size.y, &this->_channels, forceChannels);
+		uint8_t* image = stbi_load_from_memory(buffer.data(), static_cast<int>(buffer.size()) * sizeof(uint8_t), &this->_size.x, &this->_size.y, &this->_channels, forceChannels);
 		if (forceChannels != 0) {
 			this->_channels = forceChannels;
 		}
@@ -23,7 +31,7 @@ namespace rawrbox {
 	}
 	// NOLINTEND(modernize-pass-by-value)
 
-	void TextureImage::internalLoad(stbi_uc* image, bool useFallback) {
+	void TextureImage::internalLoad(uint8_t* image, bool useFallback) {
 		if (image == nullptr) {
 			stbi_image_free(image);
 
