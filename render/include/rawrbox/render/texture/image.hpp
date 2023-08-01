@@ -8,6 +8,7 @@
 
 #include <filesystem>
 #include <string>
+#include <vector>
 
 namespace rawrbox {
 	class TextureImage : public rawrbox::TextureBase {
