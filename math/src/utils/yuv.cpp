@@ -1,12 +1,14 @@
 
 #include <rawrbox/math/utils/yuv.hpp>
 
+// NOLINTBEGIN(cppcoreguidelines-macro-usage)
 #define PUT_PIXEL(s, a, d) \
 	L = &rgbToPix[(s)]; \
 	*((d)) = L[cb_b]; \
 	*((d) + 1) = L[crb_g]; \
 	*((d) + 2) = L[cr_r]; \
 	*((d) + 3) = (a)
+// NOLINTEND(cppcoreguidelines-macro-usage)
 
 namespace rawrbox {
 
