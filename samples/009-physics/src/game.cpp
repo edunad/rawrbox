@@ -255,4 +255,4 @@ namespace physics_test {
 
 		this->_window->render(); // Commit primitives
 	}
-};; // namespace physics_test
+}; // namespace physics_test
