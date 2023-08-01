@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   label:
-    runs-on: [self-hosted]
+    runs-on: ubuntu-latest
     steps:
       - name: Label PR
         uses: actions/labeler@v5.0.0-alpha.1
