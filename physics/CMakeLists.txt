@@ -1,10 +1,6 @@
 # Project setup
-project(
-    "RAWRBOX.PHYSICS"
-    VERSION ${RAWRBOX_VERSION}
-    DESCRIPTION "RawrBox - PHYSICS lib"
-    LANGUAGES CXX)
-set(output_target RAWRBOX.PHYSICS)
+project("RAWRBOX.3DPHYSICS" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - 3D PHYSICS lib" LANGUAGES CXX)
+set(output_target RAWRBOX.3DPHYSICS)
 
 # LIBS ---
 CPMAddPackage(

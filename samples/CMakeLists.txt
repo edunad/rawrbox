@@ -14,23 +14,23 @@ if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
     add_subdirectory("005-post-process")
 endif()
 
-if(RAWRBOX_ENABLE_BASS_SUPPORT)
+if(RAWRBOX_BUILD_RAWRBOX_BASS)
     add_subdirectory("006-bass-loading")
 endif()
 
 add_subdirectory("007-particle-system")
 
-if(RAWRBOX_BUILD_UI)
+if(RAWRBOX_BUILD_RAWRBOX_UI)
     add_subdirectory("008-ui")
 endif()
 
-if(RAWRBOX_BUILD_PHYSICS)
+if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
     add_subdirectory("009-physics")
 endif()
 
 add_subdirectory("010-instancing")
 add_subdirectory("011-decals")
 
-if(RAWRBOX_ENABLE_WEBM_SUPPORT AND RAWRBOX_ENABLE_BASS_SUPPORT)
+if(RAWRBOX_ENABLE_WEBM_SUPPORT)
     add_subdirectory("012-webm")
 endif()

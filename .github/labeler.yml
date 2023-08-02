@@ -1,35 +1,38 @@
-'📷 RENDERER':
-    - changed-files: 'render/**/*'
+"📷 RENDERER":
+  - changed-files: "render/**/*"
 
-'🧮 MATH':
-    - changed-files: 'math/**/*'
+"🧮 MATH":
+  - changed-files: "math/**/*"
 
-'🖼️ UI':
-    - changed-files: 'ui/**/*'
+"🖼️ UI":
+  - changed-files: "ui/**/*"
 
-'⚒️ UTILS':
-    - changed-files: 'utils/**/*'
+"⚒️ UTILS":
+  - changed-files: "utils/**/*"
 
-'🐲 SAMPLES':
-    - changed-files: 'samples/**/*'
+"🐲 SAMPLES":
+  - changed-files: "samples/**/*"
 
-'🧱 PHYSICS':
-    - changed-files: 'physics/**/*'
+"🧱 PHYSICS":
+  - changed-files: "physics/**/*"
 
-'🎺 BASS':
-    - changed-files: 'bass/**/*'
+"🎺 BASS":
+  - changed-files: "bass/**/*"
 
-'💼 RESOURCES':
-    - changed-files: 'resources/**/*'
+"💼 RESOURCES":
+  - changed-files: "resources/**/*"
 
-'💽 ENGINE':
-    - changed-files: 'engine/**/*'
+"💽 ENGINE":
+  - changed-files: "engine/**/*"
 
-'🧪 TESTS':
-    - changed-files: '**/tests/**/*.cpp'
+"🧪 TESTS":
+  - changed-files: "**/tests/**/*.cpp"
 
-'FEATURE':
-    - head-branch: '^features/'
+"FEATURE":
+  - head-branch: "^features/"
 
-'BUG':
-    - head-branch: '^bugfixes/'
+"BUG":
+  - head-branch: "^bugfixes/"
+
+"IMPROVEMENTS":
+  - head-branch: "^improvements/"

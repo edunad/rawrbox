@@ -47,11 +47,11 @@
 
 # TODO LIST
 
-- Add animation blending
-- Add shadow maps to lights
-- Add scripting lib (with lua support)
-- Add steam networking lib
 - Add 2D Physics
+- Add animation blending
+- Add lights shadow maps
+- Add scripting lib (lua)
+- Add steam networking lib
 
 # LIBS
 
@@ -64,7 +64,7 @@
 | `RAWRBOX.ENGINE`    | Engine lib (aka game loop)                         | The engine it self, contains the game loop mechanism                                       |        `UTILS`         |
 | `RAWRBOX.UI`        | UI lib                                             | UI components lib                                                                          | `RENDER` & `RESOURCES` |
 | `RAWRBOX.RESOURCES` | Resources manager lib                              | Resource manager. Handles loading and stores the pointers for easy access                  |        `UTILS`         |
-| `RAWRBOX.PHYSICS`   | Physics lib                                        | Physics lib                                                                                |   `ENGINE` & `MATH`    |
+| `RAWRBOX.3DPHYSICS` | Physics lib                                        | Physics lib                                                                                |   `ENGINE` & `MATH`    |
 
 <p align="center">
   <img src="./RAWBOX%20-%20Dependencies.png" />
@@ -74,6 +74,8 @@
 
 | OPTION NAME                                | NOTE                                                                                               |
 | :----------------------------------------- | :------------------------------------------------------------------------------------------------- |
+| `BUILD_TESTING`                            | Builds & enables project tests                                                                     |
+| --                                         | --                                                                                                 |
 | `RAWRBOX_OUTPUT_BIN`                       | The output build folder. Default is `bin`                                                          |
 | `RAWRBOX_CONTENT_FOLDER`                   | The content folder to output resources. Default is `content`                                       |
 | --                                         | --                                                                                                 |
@@ -81,15 +83,14 @@
 | --                                         | --                                                                                                 |
 | `RAWRBOX_ENABLE_QHULL`                     | Enables QHull util                                                                                 |
 | `RAWRBOX_ENABLE_ASSIMP_SUPPORT`            | Enables assimp model loading                                                                       |
-| `RAWRBOX_ENABLE_BASS_SUPPORT`              | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
 | `RAWRBOX_ENABLE_WEBM_SUPPORT`              | Enables WEBM support.                                                                              |
-|                                            |                                                                                                    |
+| --                                         | --                                                                                                 |
 | `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          |
-| `RAWRBOX_BUILD_TESTING`                    | Builds and runs tests                                                                              |
-| `RAWRBOX_BUILD_UI`                         | Builds and includes ui                                                                             |
-| `RAWRBOX_BUILD_RESOURCES_MANAGER`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
-| `RAWRBOX_BUILD_PHYSICS`                    | Builds the physics engine                                                                          |
-|                                            |                                                                                                    |
+| `RAWRBOX_BUILD_RAWRBOX_UI`                 | Builds and includes ui                                                                             |
+| `RAWRBOX_BUILD_RAWRBOX_RESOURCES`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
+| `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`         | Builds the 3D physics engine                                                                       |
+| `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
+| --                                         | --                                                                                                 |
 | `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Enabled if jolt is used)                         |
 
 # DEPENCENDIES

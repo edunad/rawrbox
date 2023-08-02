@@ -1,9 +1,5 @@
 # Project setup
-project(
-    "RAWRBOX.BASS"
-    VERSION ${RAWRBOX_VERSION}
-    DESCRIPTION "RawrBox - BASS lib"
-    LANGUAGES CXX)
+project("RAWRBOX.BASS" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - BASS lib" LANGUAGES CXX)
 set(output_target RAWRBOX.BASS)
 set(BASS_VERSION 24)
 # --------------
@@ -16,25 +12,23 @@ find_package(BASS REQUIRED)
 file(GLOB_RECURSE RAWRBOX_BASS_SOURCES "src/*.cpp" "include/*.hpp")
 # -----------------
 
-if(RAWRBOX_BUILD_RESOURCES_MANAGER)
+if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.RESOURCES)
 endif()
 
 # Copy content - BASS
 add_custom_target(
-    copy_resources_bass ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/${RAWRBOX_CONTENT_FOLDER}
-            ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
+    copy_resources_bass ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/${RAWRBOX_CONTENT_FOLDER}
+                                    ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
     COMMENT "Copying BASS resources into binary directory")
 
 add_custom_target(
-    copy_dll_bass ALL
-    COMMAND ${CMAKE_COMMAND} -E copy ${BASS_BINARY} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
+    copy_dll_bass ALL COMMAND ${CMAKE_COMMAND} -E copy ${BASS_BINARY} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
     COMMENT "Copying BASS DLL into binary directory")
 
 add_custom_target(
-    copy_dll_bass_fx ALL
-    COMMAND ${CMAKE_COMMAND} -E copy ${BASS_BINARY_FX} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
+    copy_dll_bass_fx ALL COMMAND ${CMAKE_COMMAND} -E copy ${BASS_BINARY_FX}
+                                 ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
     COMMENT "Copying BASS FX DLL into binary directory")
 # ------------------
 

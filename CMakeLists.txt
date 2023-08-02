@@ -27,21 +27,21 @@ list(PREPEND CONAN_GENERATORS_FOLDER ${CMAKE_BINARY_DIR})
 option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 
 option(RAWRBOX_BUILD_SAMPLES "Build samples" ON)
-option(RAWRBOX_BUILD_TESTING "Build tests" ON)
-option(RAWRBOX_BUILD_UI "Build ui" ON)
+option(BUILD_TESTING "Build tests" ON)
 
-option(RAWRBOX_BUILD_RESOURCES_MANAGER "Build resources manager" ON)
-option(RAWRBOX_BUILD_PHYSICS "Build physics support" ON)
+option(RAWRBOX_BUILD_RAWRBOX_UI "Build RAWRBOX.UI" ON)
+option(RAWRBOX_BUILD_RAWRBOX_RESOURCES "Build RAWRBOX.RESOURCES" ON)
+option(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS "Build 3D physics support" ON)
+option(RAWRBOX_BUILD_RAWRBOX_BASS "Build bass & add sound loading support" ON)
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" ON)
 
-if(RAWRBOX_BUILD_PHYSICS)
+if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
     set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Jolt requires msvc multithreaded runtime
     message(STATUS "JoltPhysics is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
 endif()
 
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
 option(RAWRBOX_ENABLE_ASSIMP_SUPPORT "Build assimp & add model loading support" ON)
-option(RAWRBOX_ENABLE_BASS_SUPPORT "Build bass & add sound loading support" ON)
 option(RAWRBOX_ENABLE_WEBM_SUPPORT "Build libwebm & add video loading support" ON)
 # -----
 
@@ -112,24 +112,24 @@ add_subdirectory("math")
 add_subdirectory("utils")
 add_subdirectory("engine")
 
-if(RAWRBOX_BUILD_RESOURCES_MANAGER)
+if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     message(STATUS "Enabled RESOURCES support")
     add_subdirectory("resources")
 endif()
 
 add_subdirectory("render")
 
-if(RAWRBOX_BUILD_UI)
+if(RAWRBOX_BUILD_RAWRBOX_UI)
     message(STATUS "Enabled UI support")
     add_subdirectory("ui")
 endif()
 
-if(RAWRBOX_ENABLE_BASS_SUPPORT)
+if(RAWRBOX_BUILD_RAWRBOX_BASS)
     message(STATUS "Enabled BASS support")
     add_subdirectory("bass")
 endif()
 
-if(RAWRBOX_BUILD_PHYSICS)
+if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
     message(STATUS "Enabled PHYSICS support")
     add_subdirectory("physics")
 endif()
