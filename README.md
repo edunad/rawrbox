@@ -150,7 +150,7 @@
 
 ### 001-stencil
 
-<a href='/samples/001-stencil'><img src="https://i.rawr.dev/iyEFYmakPt.png" width=512 /></a>
+<a href='/samples/001-stencil'><img src="https://i.rawr.dev/ycW6AgfHss.gif" width=512 /></a>
 
 ### 002-generated-models
 
@@ -162,11 +162,11 @@
 
 ### 004-light-support
 
-<a href='/samples/004-light-support'><img src="https://i.rawr.dev/gTCFiIrDPZ.png" width=512 /></a>
+<a href='/samples/004-light-support'><img src="https://i.rawr.dev/Xvk5DpQPUd.gif" width=512 /></a>
 
 ### 005-post-process
 
-<a href='/samples/005-post-process'><img src="https://i.rawr.dev/RsGBCOMewb.png" width=512 /></a>
+<a href='/samples/005-post-process'><img src="https://i.rawr.dev/4YBkWan9pe.gif" width=512 /></a>
 
 ### 006-bass-loading
 
@@ -174,15 +174,15 @@
 
 ### 007-particle-system
 
-<a href='/samples/007-particle-system'><img src="https://i.rawr.dev/4aJuzrDpXW.png" width=512 /></a>
+<a href='/samples/007-particle-system'><img src="https://i.rawr.dev/55dUuFJqKR.gif" width=512 /></a>
 
 ### 008-ui
 
-<a href='/samples/008-ui'><img src="https://i.rawr.dev/jimJzpVQRM.png" width=512 /></a>
+<a href='/samples/008-ui'><img src="https://i.rawr.dev/V1tcdCTckT.gif" width=512 /></a>
 
 ### 009-physics
 
-<a href='/samples/009-physics'><img src="https://i.rawr.dev/UDLyLuONyC.png" width=512 /></a>
+<a href='/samples/009-physics'><img src="https://i.rawr.dev/Ir57QELn6F.gif" width=512 /></a>
 
 ### 010-instancing
 
@@ -190,8 +190,8 @@
 
 ### 011-decals
 
-<a href='/samples/011-decals'><img src="https://i.rawr.dev/C85dTE6QQq.png" width=512 /></a>
+<a href='/samples/011-decals'><img src="https://i.rawr.dev/2eGdHosOfa.gif" width=512 /></a>
 
 ### 012-webm
 
-<a href='/samples/012-webm'><img src="https://i.rawr.dev/SfANPEU0TY.png" width=512 /></a>
+<a href='/samples/012-webm'><img src="https://i.rawr.dev/089L83mo4f.gif" width=512 /></a>

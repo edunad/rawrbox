@@ -108,16 +108,24 @@ namespace light {
 		}
 		// ----
 
+		// Text test ----
+		this->_text->addText(*this->_font, "POINT LIGHT", {2.5F, 0.5F, 0});
+		this->_text->addText(*this->_font, "SPOT LIGHT", {-2.5F, 0.5F, 0});
+		// ------
+
 		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{2.5F, 0.F, 0}, rawrbox::Colors::Blue, 6.2F);
 		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{-2.5F, 0.F, 0}, rawrbox::Vector3f{0.F, 1.F, 0.F}, rawrbox::Colors::Red, 0.602F, 0.708F, 100.F);
 
 		this->_model->upload();
+		this->_text->upload();
+
 		this->_ready = true;
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 		this->_model.reset();
+		this->_text.reset();
 
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
@@ -153,8 +161,9 @@ namespace light {
 	}
 
 	void Game::drawWorld() {
-		if (!this->_ready || this->_model == nullptr) return;
+		if (!this->_ready || this->_model == nullptr || this->_text == nullptr) return;
 		this->_model->draw();
+		this->_text->draw();
 	}
 
 	void Game::printFrames() {
