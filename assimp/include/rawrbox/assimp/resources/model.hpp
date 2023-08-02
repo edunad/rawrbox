@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrbox/render/model/assimp/assimp_importer.hpp>
+#include <rawrbox/assimp/importer.hpp>
 #include <rawrbox/resources/loader.hpp>
 
 namespace rawrbox {

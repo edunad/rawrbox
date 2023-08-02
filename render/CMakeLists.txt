@@ -50,47 +50,6 @@ if(bgfx_ADDED)
 endif()
 
 CPMAddPackage("gh:nemtrif/utfcpp@3.2.3")
-
-if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
-    message(STATUS "Enabled assimp")
-
-    CPMAddPackage(
-        NAME
-        assimp
-        VERSION
-        5.2.5
-        GITHUB_REPOSITORY
-        assimp/assimp
-        OPTIONS
-        "BUILD_SHARED_LIBS OFF"
-        "ASSIMP_NO_EXPORT ON"
-        "ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF"
-        "ASSIMP_INSTALL ON"
-        "ASSIMP_BUILD_ASSIMP_TOOLS OFF"
-        "ASSIMP_BUILD_TESTS OFF"
-        "ASSIMP_BUILD_SAMPLES OFF"
-        "ASSIMP_BUILD_DOCS OFF"
-        "USE_STATIC_CRT ON"
-        "ASSIMP_BUILD_ASSIMP_VIEW OFF"
-        "ASSIMP_BUILD_ZLIB TRUE"
-        "ASSIMP_WARNINGS_AS_ERRORS OFF"
-        "ASSIMP_INSTALL_PDB OFF"
-        "ASSIMP_BUILD_DRACO OFF"
-        "ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF"
-        "ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF"
-        # IMPORT SUPPORTS
-        "ASSIMP_BUILD_OBJ_IMPORTER ON"
-        "ASSIMP_BUILD_FBX_IMPORTER ON"
-        "ASSIMP_BUILD_DAE_IMPORTER ON"
-        "ASSIMP_BUILD_STL_IMPORTER ON"
-        "ASSIMP_BUILD_GLTF_IMPORTER ON"
-        "ASSIMP_BUILD_3DS_IMPORTER ON"
-        # "ASSIMP_BUILD_MDL_IMPORTER ON"
-        "ASSIMP_BUILD_MD5_IMPORTER ON")
-
-    list(APPEND RAWRBOX_EXTRA_LIBS assimp::assimp)
-endif()
-
 # ----
 
 if(RAWRBOX_ENABLE_WEBM_SUPPORT)
@@ -146,15 +105,6 @@ endif()
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
-
-if(NOT RAWRBOX_ENABLE_ASSIMP_SUPPORT)
-    foreach(TMP_PATH ${RAWRBOX_RENDER_SOURCES})
-        string(FIND ${TMP_PATH} "/assimp/" EXCLUDE_DIR_FOUND)
-        if(NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
-            list(REMOVE_ITEM RAWRBOX_RENDER_SOURCES ${TMP_PATH})
-        endif()
-    endforeach(TMP_PATH)
-endif()
 
 if(NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     foreach(TMP_PATH ${RAWRBOX_RENDER_SOURCES})

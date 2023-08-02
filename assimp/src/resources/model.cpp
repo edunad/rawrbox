@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/resources/assimp/model.hpp>
+#include <rawrbox/assimp/resources/model.hpp>
 
 namespace rawrbox {
 	// Resource ----
@@ -25,7 +25,7 @@ namespace rawrbox {
 		       fileExtention == ".fbx" ||
 		       fileExtention == ".dae" ||
 		       fileExtention == ".3ds" ||
-		       fileExtention == ".mdl" ||
+		       // fileExtention == ".mdl" ||
 		       fileExtention == ".gltf" ||
 		       fileExtention == ".md5mesh";
 	}

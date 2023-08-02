@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/model/assimp/assimp_importer.hpp>
+#include <rawrbox/assimp/importer.hpp>
 #include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/utils/pack.hpp>
 #include <rawrbox/utils/string.hpp>

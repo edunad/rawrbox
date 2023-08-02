@@ -1,7 +1,7 @@
 #pragma once
 
+#include <rawrbox/assimp/model/model.hpp>
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/model/assimp/assimp_model.hpp>
 #include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/window.hpp>
 

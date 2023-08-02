@@ -1,10 +1,10 @@
 #pragma once
 
+#include <rawrbox/assimp/importer.hpp>
+#include <rawrbox/assimp/utils/model.hpp>
 #include <rawrbox/render/light/point.hpp>
 #include <rawrbox/render/light/spot.hpp>
-#include <rawrbox/render/model/assimp/assimp_importer.hpp>
 #include <rawrbox/render/model/model.hpp>
-#include <rawrbox/render/utils/assimp/model.hpp>
 
 namespace rawrbox {
 	template <typename M = rawrbox::MaterialBase>
