@@ -13,7 +13,6 @@
 #include <bgfx/bgfx.h>
 
 #include <memory>
-#include <queue>
 
 namespace rawrbox {
 	struct PosUVColorVertexData {

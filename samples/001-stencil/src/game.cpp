@@ -265,7 +265,7 @@ namespace stencil {
 		stencil.render();
 
 		// TEST ---
-		this->_texture2->step();
+		this->_texture2->update();
 		// ---
 	}
 

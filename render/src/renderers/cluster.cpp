@@ -55,9 +55,12 @@ namespace rawrbox {
 	void RendererCluster::resize(const rawrbox::Vector2i& size) {
 		RendererBase::resize(size);
 
+		auto w = static_cast<uint16_t>(size.x);
+		auto h = static_cast<uint16_t>(size.y);
+
 		// Setup views -----
-		bgfx::setViewRect(CLUSTER_BUILD_VIEW_ID, 0, 0, size.x, size.y);
-		bgfx::setViewRect(LIGHT_CULL_VIEW_ID, 0, 0, size.x, size.y);
+		bgfx::setViewRect(CLUSTER_BUILD_VIEW_ID, 0, 0, w, h);
+		bgfx::setViewRect(LIGHT_CULL_VIEW_ID, 0, 0, w, h);
 		// ----
 	}
 

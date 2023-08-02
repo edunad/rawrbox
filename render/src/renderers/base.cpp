@@ -36,14 +36,17 @@ namespace rawrbox {
 		this->_decals = std::make_unique<rawrbox::TextureRender>(size);
 		this->_decals->upload();
 
+		auto w = static_cast<uint16_t>(size.x);
+		auto h = static_cast<uint16_t>(size.y);
+
 		// Setup view ---
 		bgfx::setViewName(rawrbox::MAIN_WORLD_VIEW, "RAWRBOX-MAIN-WORLD");
 		bgfx::setViewClear(rawrbox::MAIN_WORLD_VIEW, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 1.0F, 0, 0);
-		bgfx::setViewRect(rawrbox::MAIN_WORLD_VIEW, 0, 0, size.x, size.y);
+		bgfx::setViewRect(rawrbox::MAIN_WORLD_VIEW, 0, 0, w, h);
 
 		bgfx::setViewName(rawrbox::MAIN_OVERLAY_VIEW, "RAWRBOX-MAIN-OVERLAY");
 		bgfx::setViewClear(rawrbox::MAIN_OVERLAY_VIEW, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00000000, 1.0F, 0);
-		bgfx::setViewRect(rawrbox::MAIN_OVERLAY_VIEW, 0, 0, size.x, size.y);
+		bgfx::setViewRect(rawrbox::MAIN_OVERLAY_VIEW, 0, 0, w, h);
 		// -----
 
 		this->_size = size;

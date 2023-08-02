@@ -4,7 +4,6 @@
 #include <rawrbox/utils/pack.hpp>
 
 #include <functional>
-#include <limits>
 
 namespace rawrbox {
 	class MeshUtils {

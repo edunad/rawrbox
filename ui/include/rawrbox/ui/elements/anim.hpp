@@ -168,8 +168,9 @@ namespace rawrbox {
 		virtual void update() {
 			if (!this->_active) return;
 
+			int keySize = static_cast<int>(this->_keyframes.size());
 			int nextIndx = this->_index + (this->_reverse ? -1 : 1);
-			if (nextIndx < 0 || nextIndx >= this->_keyframes.size()) {
+			if (nextIndx < 0 || nextIndx >= keySize) {
 				this->stop();
 				return;
 			}
@@ -187,8 +188,8 @@ namespace rawrbox {
 
 				if (this->_reverse && this->_index <= 0) {
 					if (!this->_loop) return;
-					this->_index = static_cast<int>(this->_keyframes.size()) - 1;
-				} else if (this->_index >= this->_keyframes.size() - 1) {
+					this->_index = keySize - 1;
+				} else if (this->_index >= keySize - 1) {
 					if (!this->_loop) return;
 					this->_index = 0;
 				}

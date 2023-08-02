@@ -5,8 +5,6 @@
 #include <rawrbox/render/camera/perspective.hpp>
 #include <rawrbox/render/window.hpp>
 
-#include <memory>
-
 namespace rawrbox {
 	class CameraOrbital : public rawrbox::CameraPerspective {
 	protected:

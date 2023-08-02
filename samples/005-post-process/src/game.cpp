@@ -14,8 +14,6 @@
 #include <bx/bx.h>
 #include <bx/math.h>
 
-#include <vector>
-
 namespace post_process {
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();

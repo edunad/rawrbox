@@ -52,7 +52,7 @@ namespace rawrbox {
 		int count = mat->GetTextureCount(type);
 		if (count <= 0) return _textures;
 
-		for (size_t i = 0; i < count; i++) {
+		for (int i = 0; i < count; i++) {
 			aiString matPath;
 			std::array<aiTextureMapMode, 3> matMode = {};
 
@@ -172,7 +172,7 @@ namespace rawrbox {
 			if (!emission.empty()) {
 				mat->emissive = std::move(emission[0].value()); // Only support one for the moment
 			} else {
-				auto emission = this->importTexture(pMaterial, aiTextureType_EMISSIVE);
+				emission = this->importTexture(pMaterial, aiTextureType_EMISSIVE);
 				if (!emission.empty()) mat->emissive = std::move(emission[0].value()); // Only support one for the moment
 			}
 
@@ -244,7 +244,7 @@ namespace rawrbox {
 					printBone = [&printBone](std::unique_ptr<Bone>& bn, int deep) -> void {
 						for (auto& c : bn->children) {
 							std::string d = "";
-							for (size_t i = 0; i < deep; i++)
+							for (int i = 0; i < deep; i++)
 								d += "\t";
 
 							fmt::print("{}[{}] {}\n", d, c->boneId, c->name);
@@ -320,7 +320,7 @@ namespace rawrbox {
 		while (true) {
 			if (aiNode->mParent == nullptr) return nullptr;
 
-			auto fnd = this->skeletons.find(aiNode->mParent->mName.data);
+			fnd = this->skeletons.find(aiNode->mParent->mName.data);
 			if (fnd != this->skeletons.end()) return aiNode->mParent;
 
 			aiNode = aiNode->mParent;
@@ -384,8 +384,8 @@ namespace rawrbox {
 					pNode = sc->mRootNode->FindNode(meshName.c_str());
 					if (pNode == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Failed to find animated mesh '{}'", meshName));
 
-					for (size_t i = 0; i < pNode->mNumChildren; i++) {
-						this->markMeshAnimated(meshName, pNode->mChildren[i]->mName.data);
+					for (size_t p = 0; p < pNode->mNumChildren; i++) {
+						this->markMeshAnimated(meshName, pNode->mChildren[p]->mName.data);
 					}
 
 					for (size_t n = 0; n < pNode->mNumMeshes; ++n) {
@@ -537,7 +537,7 @@ namespace rawrbox {
 				if (face.mNumIndices != 3) continue; // we only do triangles
 
 				for (size_t i = 0; i < face.mNumIndices; i++) {
-					mesh.indices.push_back(face.mIndices[i]);
+					mesh.indices.push_back(static_cast<uint16_t>(face.mIndices[i]));
 				}
 			}
 
@@ -600,7 +600,7 @@ namespace rawrbox {
 	}
 
 	// Loading ----
-	void AssimpImporter::load(const std::filesystem::path& path, const std::vector<uint8_t>& buffer, uint32_t loadFlags, uint32_t assimpFlags) {
+	void AssimpImporter::load(const std::filesystem::path& path, const std::vector<uint8_t>& buffer) {
 		this->fileName = path;
 
 		auto b = buffer;
@@ -608,7 +608,7 @@ namespace rawrbox {
 			const char* bah = std::bit_cast<const char*>(b.data());
 
 			if (path.extension() == ".gltf") {
-				this->load(path, loadFlags, assimpFlags); // GLTF has external dependencies, not sure how to load them using file from memory
+				this->load(path); // GLTF has external dependencies, not sure how to load them using file from memory
 			} else {
 				this->internalLoad(aiImportFileFromMemory(bah, static_cast<uint32_t>(b.size() * sizeof(char)), this->assimpFlags, nullptr));
 			}
@@ -619,7 +619,7 @@ namespace rawrbox {
 		}
 	}
 
-	void AssimpImporter::load(const std::filesystem::path& path, uint32_t /*loadFlags*/, uint32_t /*assimpFlags*/) {
+	void AssimpImporter::load(const std::filesystem::path& path) {
 		this->fileName = path;
 		this->internalLoad(aiImportFile(path.generic_string().c_str(), this->assimpFlags));
 	}

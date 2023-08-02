@@ -8,8 +8,6 @@
 
 #include <fmt/format.h>
 
-#include <array>
-
 namespace rawrbox {
 
 	class LightBase {

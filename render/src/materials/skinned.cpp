@@ -22,7 +22,7 @@ namespace rawrbox {
 	}
 
 	void MaterialSkinned::setBoneData(const std::vector<rawrbox::Matrix4x4>& data) {
-		bgfx::setUniform(this->u_bones, &data.front(), static_cast<uint32_t>(data.size()));
+		bgfx::setUniform(this->u_bones, &data.front(), static_cast<uint16_t>(data.size()));
 	}
 
 	void MaterialSkinned::upload() {

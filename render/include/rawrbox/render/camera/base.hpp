@@ -4,8 +4,6 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/vector4.hpp>
 
-#include <array>
-
 namespace rawrbox {
 	class CameraBase {
 	protected:

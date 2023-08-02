@@ -2,8 +2,6 @@
 
 #include <bgfx/bgfx.h>
 
-#include <memory>
-
 namespace rawrbox {
 	class PostProcessBase {
 	protected:

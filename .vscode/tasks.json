@@ -16,6 +16,7 @@
         "panel": "shared"
       }
     },
+
     {
       "label": "Run clang-tidy",
       "type": "shell",
@@ -26,15 +27,31 @@
       },
       "presentation": {
         "reveal": "always",
-        "panel": "new"
+        "panel": "shared"
       }
     },
+
+    {
+      "label": "Run iwyu",
+      "type": "shell",
+      "command": "export iwyu=../${workspaceFolder} && python3 iwyu_tool.py ./engine ./math ./physics ./render ./resources ./ui ./utils -p build -j 8 > .iwyu && python3 fix_includes.py --comments < .iwyu",
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+
     {
       "label": "Build tests",
       "type": "cmake",
       "command": "build",
       "group": "build"
     },
+
     {
       "label": "Clean project",
       "type": "shell",

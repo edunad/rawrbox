@@ -1,10 +1,13 @@
 $input a_position, a_color0, a_normal, a_tangent, a_texcoord0
 $output v_normal, v_tangent, v_texcoord0, v_color0, v_worldPos
 
+#define TEXTURE_DATA
+
 #include <bgfx_shader.sh>
 #include <bgfx_compute.sh>
 #include "../../include/model_transforms.sh"
 #include "../../include/defs.sh"
+#include "../../include/material.sh"
 
 // For each mesh
 // 1 to 4 = Matrix position
@@ -30,7 +33,7 @@ void main() {
 	v_tangent = normalize(mul(u_view, vec4(wtangent, 0.0) ).xyz);
 	v_color0 = getInstanceData(id, 4);
 
-	v_texcoord0.xy = a_texcoord0.xy;
+	v_texcoord0 = applyUVTransform(a_texcoord0.xyz);
 	v_texcoord0.z = getInstanceData(id, 5).x;
 
     TransformedData transform = applyPosTransforms(u_viewProj, mul(model, vec4(a_position, 1.)), a_texcoord0.xy);

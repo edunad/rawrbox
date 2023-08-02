@@ -1,8 +1,8 @@
 #pragma once
+
 #include <BS_thread_pool.hpp>
 
 #include <future>
-#include <stdexcept>
 
 namespace rawrbox {
 	class ASYNC {

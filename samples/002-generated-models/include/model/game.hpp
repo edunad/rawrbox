@@ -5,7 +5,6 @@
 #include <rawrbox/render/model/spline.hpp>
 #include <rawrbox/render/model/sprite.hpp>
 #include <rawrbox/render/model/text3D.hpp>
-#include <rawrbox/render/texture/gif.hpp>
 #include <rawrbox/render/window.hpp>
 
 #include <memory>
@@ -13,8 +12,6 @@
 namespace model {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
-
-		rawrbox::TextureGIF* _texture2 = nullptr;
 
 		std::unique_ptr<rawrbox::Model<>> _displacement = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();

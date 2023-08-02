@@ -10,12 +10,10 @@
  * \date 22 Jun 2017
  */
 
-#ifndef RINGBUFFER_HPP
-#define RINGBUFFER_HPP
+#pragma once
 
 #include <atomic>
 #include <cstddef>
-#include <cstdint>
 #include <limits>
 
 namespace jnk0le {
@@ -451,7 +449,5 @@ namespace jnk0le {
 	}
 
 } // namespace jnk0le
-
-#endif // RINGBUFFER_HPP
 
 // NOLINTEND(*)

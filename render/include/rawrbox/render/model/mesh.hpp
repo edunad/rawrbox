@@ -12,10 +12,7 @@
 #include <bgfx/bgfx.h>
 #include <fmt/printf.h>
 
-#include <array>
 #include <cstdint>
-#include <memory>
-#include <stdexcept>
 #include <string>
 #include <unordered_map>
 

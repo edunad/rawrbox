@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.16.3 FATAL_ERROR)
 
 # SETUP UTILS
 include("cmake/rawrbox_utils.cmake")
@@ -33,6 +33,7 @@ option(RAWRBOX_BUILD_UI "Build ui" ON)
 option(RAWRBOX_BUILD_RESOURCES_MANAGER "Build resources manager" ON)
 option(RAWRBOX_BUILD_PHYSICS "Build physics support" ON)
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" ON)
+
 if(RAWRBOX_BUILD_PHYSICS)
     set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Jolt requires msvc multithreaded runtime
     message(STATUS "JoltPhysics is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
@@ -41,6 +42,7 @@ endif()
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
 option(RAWRBOX_ENABLE_ASSIMP_SUPPORT "Build assimp & add model loading support" ON)
 option(RAWRBOX_ENABLE_BASS_SUPPORT "Build bass & add sound loading support" ON)
+option(RAWRBOX_ENABLE_WEBM_SUPPORT "Build libwebm & add video loading support" ON)
 # -----
 
 # OTHER SETTINGS ----
@@ -53,6 +55,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSPDLOG_FMT_EXTERNAL -DNOMINMAX")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(BUILD_SHARED_LIBS OFF)
 
 # Apple needs this flag to compile mixed objective/c++

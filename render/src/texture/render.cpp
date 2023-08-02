@@ -3,8 +3,6 @@
 
 #include <fmt/format.h>
 
-#include <array>
-
 namespace rawrbox {
 	uint32_t TextureRender::renderID = 0;
 	TextureRender::TextureRender(const rawrbox::Vector2i& size, bgfx::ViewId id) : _size(size), _prevViewId(rawrbox::CURRENT_VIEW_ID), _renderId(id) {

@@ -21,11 +21,11 @@ namespace rawrbox {
 		Sprite& operator=(Sprite&&) = delete;
 		~Sprite() override = default;
 
-		[[nodiscard]] const bool xAxisEnabled() const { return this->_xAxis; }
+		[[nodiscard]] bool xAxisEnabled() const { return this->_xAxis; }
 		void lockXAxix(bool locked) { this->_xAxis = !locked; }
-		[[nodiscard]] const bool yAxisEnabled() const { return this->_yAxis; }
+		[[nodiscard]] bool yAxisEnabled() const { return this->_yAxis; }
 		void lockYAxix(bool locked) { this->_yAxis = !locked; }
-		[[nodiscard]] const bool zAxisEnabled() const { return this->_zAxis; }
+		[[nodiscard]] bool zAxisEnabled() const { return this->_zAxis; }
 		void lockZAxix(bool locked) { this->_zAxis = !locked; }
 
 		rawrbox::Mesh* addMesh(rawrbox::Mesh mesh) override {

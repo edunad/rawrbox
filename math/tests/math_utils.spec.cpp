@@ -4,8 +4,6 @@
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include <string>
-
 TEST_CASE("MathUtils should behave as expected", "[rawrbox::MathUtils]") {
 	SECTION("rawrbox::MathUtils::repeat") {
 		REQUIRE(rawrbox::MathUtils::repeat(2, 0, 10) == 2);
@@ -48,5 +46,35 @@ TEST_CASE("MathUtils should behave as expected", "[rawrbox::MathUtils]") {
 		REQUIRE(rawrbox::MathUtils::angleDistance(179, -180) == 1);
 		REQUIRE(rawrbox::MathUtils::angleDistance(0, -90) == 90);
 		REQUIRE(rawrbox::MathUtils::angleDistance(-90, 90) == 180);
+	}
+
+	SECTION("rawrbox::MathUtils::toRad") {
+		rawrbox::Vector3f t = {90, 0, 180};
+		rawrbox::Vector3f tRad = rawrbox::MathUtils::toRad(t);
+
+		rawrbox::Vector2f t2 = {90, 180};
+		rawrbox::Vector2f t2Rad = rawrbox::MathUtils::toRad(t2);
+
+		REQUIRE_THAT(tRad.x, Catch::Matchers::WithinAbs(1.5708F, 0.0001F));
+		REQUIRE_THAT(tRad.y, Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+		REQUIRE_THAT(tRad.z, Catch::Matchers::WithinAbs(3.14159F, 0.0001F));
+
+		REQUIRE_THAT(t2Rad.x, Catch::Matchers::WithinAbs(1.5708F, 0.0001F));
+		REQUIRE_THAT(t2Rad.y, Catch::Matchers::WithinAbs(3.14159F, 0.0001F));
+	}
+
+	SECTION("rawrbox::MathUtils::toDeg") {
+		rawrbox::Vector3f t = {1.5708F, 0, 3.14159F};
+		rawrbox::Vector3f tDeg = rawrbox::MathUtils::toDeg(t);
+
+		rawrbox::Vector2f t2 = {1.5708F, 3.14159F};
+		rawrbox::Vector2f t2Deg = rawrbox::MathUtils::toDeg(t2);
+
+		REQUIRE_THAT(tDeg.x, Catch::Matchers::WithinAbs(90.00021F, 0.0001F));
+		REQUIRE_THAT(tDeg.y, Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+		REQUIRE_THAT(tDeg.z, Catch::Matchers::WithinAbs(179.99985F, 0.0001F));
+
+		REQUIRE_THAT(t2Deg.x, Catch::Matchers::WithinAbs(90.00021F, 0.0001F));
+		REQUIRE_THAT(t2Deg.y, Catch::Matchers::WithinAbs(179.99985F, 0.0001F));
 	}
 }

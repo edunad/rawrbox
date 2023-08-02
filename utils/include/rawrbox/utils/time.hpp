@@ -4,7 +4,7 @@
 namespace rawrbox {
 	class TimeUtils {
 	public:
-		static int64_t time();
-		static int64_t curtime();
+		static uint64_t time();
+		static uint64_t curtime();
 	};
 } // namespace rawrbox

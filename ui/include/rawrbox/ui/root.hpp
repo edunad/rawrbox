@@ -3,7 +3,6 @@
 #include <rawrbox/ui/container.hpp>
 #include <rawrbox/utils/event.hpp>
 
-#include <array>
 #include <memory>
 
 namespace rawrbox {

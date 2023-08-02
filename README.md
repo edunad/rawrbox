@@ -34,6 +34,7 @@
 - 2D stencil drawing
 - Fonts
 - Images (png, jpeg, tga, bitmap)
+- Video (webm)
 - Sounds (using BASS lib)
 - Custom UI
 - Material system (similar to unity)
@@ -80,6 +81,7 @@
 | `RAWRBOX_ENABLE_QHULL`                     | Enables QHull util                                                                                 |
 | `RAWRBOX_ENABLE_ASSIMP_SUPPORT`            | Enables assimp model loading                                                                       |
 | `RAWRBOX_ENABLE_BASS_SUPPORT`              | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
+| `RAWRBOX_ENABLE_WEBM_SUPPORT`              | Enables WEBM support.                                                                              |
 |                                            |                                                                                                    |
 | `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          |
 | `RAWRBOX_BUILD_TESTING`                    | Builds and runs tests                                                                              |
@@ -87,7 +89,7 @@
 | `RAWRBOX_BUILD_RESOURCES_MANAGER`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
 | `RAWRBOX_BUILD_PHYSICS`                    | Builds the physics engine                                                                          |
 |                                            |                                                                                                    |
-| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime                                                   |
+| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Enabled if jolt is used)                         |
 
 # DEPENCENDIES
 
@@ -116,13 +118,15 @@
 ### REQUIRED SOFTWARE
 
 - [GIT](https://git-scm.com/) or something similar to GIT
-- Download and install **C++ Build Tools** (2022 is recommended)
+- Download and install **C++ Build Tools** (2022 is recommended)<br/>
+  - ![](https://i.rawr.dev/KcTNzFJZhZ.png)
 - Download and install a IDE, [Visual Code](https://code.visualstudio.com/) is **recommended**.
-- Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)
+- Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)<br/>
+  - `pip install ninja` if you have python3 installed
 
 ### IDE SETUP (Visual Code)
 
-- Open the workspace file and install the recommended extensions (at least the C++, CMAKE)
+- Open the workspace file (`.code-workspace`) and install the recommended extensions (at least the C++, CMAKE)
 - Run cmake configure
 - Select `[Visual Studio Build Tools <version> Release - amd64]` on the kit popup (for all of the projects)
 - Run the compiler by hitting F5

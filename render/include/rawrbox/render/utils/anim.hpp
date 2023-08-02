@@ -3,8 +3,6 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/vector4.hpp>
 
-#include <cmath>
-
 namespace rawrbox {
 
 	class AnimUtils {
