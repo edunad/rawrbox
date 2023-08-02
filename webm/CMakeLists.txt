@@ -36,8 +36,6 @@ if(libwebm_ADDED)
             copy_dll_vpx ALL COMMAND ${CMAKE_COMMAND} -E copy ${VPX_BINARY}
                                      ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
             COMMENT "Copying VPX DLL into binary directory")
-
-        list(APPEND RAWRBOX_EXTRA_DEPS copy_dll_vpx)
     endif()
     # ----
 endif()
@@ -60,7 +58,9 @@ endif()
 # ----
 
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_WEBM_IMPORTS})
-add_dependencies(${output_target} ${RAWRBOX_EXTRA_DEPS})
+if(WIN32)
+    add_dependencies(${output_target} copy_dll_vpx)
+endif()
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_WEBM)
 target_include_directories(${output_target} PUBLIC "include")
