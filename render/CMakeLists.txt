@@ -52,61 +52,12 @@ endif()
 CPMAddPackage("gh:nemtrif/utfcpp@3.2.3")
 # ----
 
-if(RAWRBOX_ENABLE_WEBM_SUPPORT)
-    message(STATUS "Enabled WEBM & VPX codec")
-
-    CPMAddPackage(
-        NAME
-        libwebm
-        GIT_TAG
-        libwebm-1.0.0.30
-        GITHUB_REPOSITORY
-        webmproject/libwebm
-        OPTIONS
-        "BUILD_SHARED_LIBS OFF"
-        "ENABLE_WEBMTS OFF"
-        "ENABLE_WEBMINFO OFF"
-        "ENABLE_WEBM_PARSER OFF"
-        "ENABLE_TESTS OFF"
-        "ENABLE_SAMPLE_PROGRAMS OFF")
-
-    if(libwebm_ADDED)
-        target_include_directories(webm PUBLIC ${libwebm_SOURCE_DIR})
-        set_lib_runtime_mt(webm)
-        set_lib_runtime_mt(mkvparser)
-
-        list(APPEND RAWRBOX_EXTRA_LIBS webm)
-    endif()
-
-    # Add codec
-    set(VPX_VERSION v1.13.0)
-    find_package(VPX REQUIRED)
-
-    if(WIN32)
-        add_custom_target(
-            copy_dll_vpx ALL COMMAND ${CMAKE_COMMAND} -E copy ${VPX_BINARY}
-                                     ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
-            COMMENT "Copying VPX DLL into binary directory")
-
-        list(APPEND RAWRBOX_EXTRA_DEPS copy_dll_vpx)
-    endif()
-
-    list(APPEND RAWRBOX_EXTRA_LIBS VPX::VPX)
-    # --------------
-
-endif()
-# ----
-
-if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
-    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.RESOURCES)
-endif()
-
-# --------------
-
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
 
-if(NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.RESOURCES)
+else()
     foreach(TMP_PATH ${RAWRBOX_RENDER_SOURCES})
         string(FIND ${TMP_PATH} "/resources/" EXCLUDE_DIR_FOUND)
         if(NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
@@ -114,16 +65,6 @@ if(NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
         endif()
     endforeach(TMP_PATH)
 endif()
-
-if(NOT RAWRBOX_ENABLE_WEBM_SUPPORT)
-    foreach(TMP_PATH ${RAWRBOX_RENDER_SOURCES})
-        string(FIND ${TMP_PATH} "/webm/" EXCLUDE_DIR_FOUND)
-        if(NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
-            list(REMOVE_ITEM RAWRBOX_RENDER_SOURCES ${TMP_PATH})
-        endif()
-    endforeach(TMP_PATH)
-endif()
-
 # -----------------
 
 # Compile shaders
@@ -146,7 +87,7 @@ add_custom_target(
 
 # Project setup
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RENDER_SOURCES})
-add_dependencies(${output_target} copy_resources_render ${RAWRBOX_EXTRA_DEPS})
+add_dependencies(${output_target} copy_resources_render)
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_RENDER)
 target_include_directories(${output_target} PUBLIC "include")

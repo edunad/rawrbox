@@ -83,7 +83,6 @@
 | `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 |
 | --                                         | --                                                                                                 |
 | `RAWRBOX_ENABLE_QHULL`                     | Enables QHull util                                                                                 |
-| `RAWRBOX_ENABLE_WEBM_SUPPORT`              | Enables WEBM support.                                                                              |
 | --                                         | --                                                                                                 |
 | `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          |
 | `RAWRBOX_BUILD_RAWRBOX_UI`                 | Builds and includes ui                                                                             |
@@ -91,6 +90,7 @@
 | `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`         | Builds the 3D physics engine                                                                       |
 | `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
 | `RAWRBOX_BUILD_RAWRBOX_ASSIMP`             | Enables assimp model loading                                                                       |
+| `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM support.                                                                              |
 | --                                         | --                                                                                                 |
 | `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Enabled if jolt is used)                         |
 

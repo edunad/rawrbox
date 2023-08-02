@@ -1,11 +1,10 @@
 
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
-#include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/render/resources/webm/webm.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
+#include <rawrbox/webm/resources/webm.hpp>
 
 #include <webm_test/game.hpp>
 
@@ -35,7 +34,6 @@ namespace webm_test {
 		// Setup loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::WEBMLoader>();
-		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
 		// ----------
 
 		// Load content ---
@@ -45,8 +43,7 @@ namespace webm_test {
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./content/video/webm_test.webm", 0),
-		    std::make_pair<std::string, uint32_t>("./content/models/blade_runner/scene.gltf", 0 | rawrbox::ModelLoadFlags::IMPORT_TEXTURES)};
+		    std::make_pair<std::string, uint32_t>("./content/video/webm_test.webm", 0)};
 
 		for (auto& f : initialContentFiles) {
 			this->_loadingFiles++;
@@ -63,17 +60,11 @@ namespace webm_test {
 	}
 
 	void Game::contentLoaded() {
-
-		// Assimp test ---
-		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/blade_runner/scene.gltf")->get();
-		this->_model2->load(*mdl);
-		//  ----
-
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./content/video/webm_test.webm")->get();
 		this->_model->setOptimizable(false);
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane({0.F, 1.18F, -0.065F}, {0.25F, 0.2F});
+			auto mesh = rawrbox::MeshUtils::generatePlane({0.F, 4.0F, 0.F}, {4.F, 3.F});
 			mesh.setTexture(tex);
 			this->_model->addMesh(mesh);
 		}
@@ -95,7 +86,6 @@ namespace webm_test {
 		rawrbox::ASYNC::shutdown();
 
 		this->_model.reset();
-		this->_model2.reset();
 
 		this->_window->unblockPoll();
 		this->_window.reset();
@@ -122,9 +112,7 @@ namespace webm_test {
 	}
 	void Game::drawWorld() {
 		if (!this->_ready) return;
-
 		if (this->_model != nullptr) this->_model->draw();
-		if (this->_model2 != nullptr) this->_model2->draw();
 	}
 
 	void Game::draw() {

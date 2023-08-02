@@ -36,14 +36,25 @@ CPMAddPackage(
     "ASSIMP_BUILD_3DS_IMPORTER ON"
     # "ASSIMP_BUILD_MDL_IMPORTER ON"
     "ASSIMP_BUILD_MD5_IMPORTER ON")
+# ----
+
+# Grab source files
+file(GLOB_RECURSE RAWRBOX_ASSIMP_IMPORTS "src/*.cpp" "include/*.hpp")
 
 if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     set(RAWRBOX_EXTRA_LIBS RAWRBOX.RESOURCES)
+else()
+    if(NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+        foreach(TMP_PATH ${RAWRBOX_ASSIMP_IMPORTS})
+            string(FIND ${TMP_PATH} "/resources/" EXCLUDE_DIR_FOUND)
+            if(NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
+                list(REMOVE_ITEM RAWRBOX_ASSIMP_IMPORTS ${TMP_PATH})
+            endif()
+        endforeach(TMP_PATH)
+    endif()
 endif()
 # ----
 
-# LIB ----
-file(GLOB_RECURSE RAWRBOX_ASSIMP_IMPORTS "src/*.cpp" "include/*.hpp")
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_ASSIMP_IMPORTS})
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_ASSIMP)

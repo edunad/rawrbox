@@ -8,10 +8,16 @@ else()
     message("Selected VPX Version: ${VPX_VERSION}")
 endif()
 
-set(VPX_WIN_URL "https://github.com/ShiftMediaProject/libvpx/releases/download/${VPX_VERSION}/libvpx_${VPX_VERSION}_msvc17.zip")
-set(VPX_STATIC_MULTITHREADED ON)
+if(VPX_MSC_VERSION EQUAL 0)
+    message(STATUS "No MSC version selected, set `VPX_MSC_VERSION` to 17")
+    set(VPX_MSC_VERSION 17)
+else()
+    message("Selected MSC VPX Version: ${VPX_MSC_VERSION}")
+endif()
 
-set(VPX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libvpx_${VPX_VERSION}_msvc17)
+set(VPX_WIN_URL
+    "https://github.com/ShiftMediaProject/libvpx/releases/download/${VPX_VERSION}/libvpx_${VPX_VERSION}_msvc${VPX_MSC_VERSION}.zip")
+set(VPX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/libvpx_${VPX_VERSION}_msvc${VPX_MSC_VERSION})
 # -------------------------------------------
 
 if(NOT VPXSDK_FOUND AND NOT TARGET VPX::VPX)
@@ -19,7 +25,7 @@ if(NOT VPXSDK_FOUND AND NOT TARGET VPX::VPX)
     if(WIN32)
         message(STATUS "VPX-CMake: Setting vpx to WINDOWS")
         set(VPX_URL ${VPX_WIN_URL})
-        set(VPX_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/deps/libvpx_${VPX_VERSION}_msvc17.zip)
+        set(VPX_ARCHIVE ${CMAKE_CURRENT_SOURCE_DIR}/deps/libvpx_${VPX_VERSION}_msvc${VPX_MSC_VERSION}.zip)
 
         if(NOT EXISTS ${VPX_ARCHIVE})
             message(STATUS "VPX-CMake: Downloading VPX ${VPX_WIN_URL}")

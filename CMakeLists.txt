@@ -34,6 +34,7 @@ option(RAWRBOX_BUILD_RAWRBOX_RESOURCES "Build RAWRBOX.RESOURCES" ON)
 option(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS "Build 3D physics support" ON)
 option(RAWRBOX_BUILD_RAWRBOX_BASS "Build bass & add sound loading support" ON)
 option(RAWRBOX_BUILD_RAWRBOX_ASSIMP "Build assimp & add model loading support" ON)
+option(RAWRBOX_BUILD_RAWRBOX_WEBM "Build libwebm & add video loading support" ON)
 
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" ON)
 
@@ -43,7 +44,6 @@ if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
 endif()
 
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
-option(RAWRBOX_ENABLE_WEBM_SUPPORT "Build libwebm & add video loading support" ON)
 # -----
 
 # OTHER SETTINGS ----
@@ -113,17 +113,22 @@ add_subdirectory("math")
 add_subdirectory("utils")
 add_subdirectory("engine")
 
-if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
-    message(STATUS "Enabled ASSIMP support")
-    add_subdirectory("assimp")
-endif()
-
 if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     message(STATUS "Enabled RESOURCES support")
     add_subdirectory("resources")
 endif()
 
 add_subdirectory("render")
+
+if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
+    message(STATUS "Enabled ASSIMP support")
+    add_subdirectory("assimp")
+endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_WEBM)
+    message(STATUS "Enabled WEBM support")
+    add_subdirectory("webm")
+endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_UI)
     message(STATUS "Enabled UI support")
