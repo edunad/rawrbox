@@ -45,7 +45,7 @@ jobs:
         id: build
         run: |
           mkdir -p build && cd build
-          CXX=clang++ cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON"
+          cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON" -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang
           ninja
 
       - name: Cache build
