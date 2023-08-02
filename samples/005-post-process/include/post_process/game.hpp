@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/model/assimp/assimp_model.hpp>
+#include <rawrbox/render/model/model.hpp>
 #include <rawrbox/render/postprocess/manager.hpp>
 #include <rawrbox/render/window.hpp>
 
@@ -12,7 +12,7 @@ namespace post_process {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
 		std::unique_ptr<rawrbox::PostProcessManager> _postProcess = nullptr;
 
-		std::unique_ptr<rawrbox::AssimpModel<>> _model = std::make_unique<rawrbox::AssimpModel<>>();
+		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;

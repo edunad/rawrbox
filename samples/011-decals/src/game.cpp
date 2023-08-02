@@ -84,7 +84,7 @@ namespace decal_test {
 			rawrbox::DECALS::add({distRot(prng), distRot(prng) + 1.25F, 0.F}, {1, 1, 1}, 0, rawrbox::Colors::Red, dist(prng));
 		}
 
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, -1.F}, rawrbox::Colors::Orange, 5.F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, -1.F}, rawrbox::Colors::Orange * 0.5F, 5.F);
 
 		// Setup
 		this->_model->setOptimizable(false);
@@ -96,7 +96,7 @@ namespace decal_test {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generateCube({0, -1.0F, 0.F}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray);
+			auto mesh = rawrbox::MeshUtils::generateCube({0, 0.0F, -1.F}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray);
 			mesh.setRecieveDecals(true);
 			mesh.setEulerAngle({bx::toRad(90), 0, 0});
 

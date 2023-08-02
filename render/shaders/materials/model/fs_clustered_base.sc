@@ -32,7 +32,7 @@ void main() {
     vec3 viewDir = normalize(u_camPos - v_worldPos);
 
 	// Apply lights ----
-	vec3 radianceOut = applyLight(gl_FragCoord, v_worldPos, norm, viewDir, specular.r, u_texMatData.x);
+	vec3 radianceOut = applyLight(gl_FragCoord, v_worldPos, norm, viewDir, specular.r, specularPower);
 	radianceOut += emission;
 
 	gl_FragData[0].rgb = albedo * radianceOut;
