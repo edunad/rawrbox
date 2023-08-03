@@ -42,5 +42,7 @@ namespace rawrbox {
 
 		std::vector<std::unique_ptr<rawrbox::Bone>> children = {};
 		// ----
+
+		Bone(const std::string& id) : name(id) {}
 	};
 } // namespace rawrbox
