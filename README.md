@@ -14,9 +14,6 @@
 
 <h4>
 	<p align="center">
-		Similar to <a href="https://github.com/Goofy-Penguin/Mainframe">Mainframe</a> but with focus on games (and so i can practice some C++)
-	</p>
-	<p align="center">
 		<a href="#features">Features</a> -
 		<a href="#libs">Libs</a> -
 		<a href="#cmake">Settings</a> -
@@ -151,7 +148,7 @@
 
 ### 001-stencil
 
-<a href='/samples/001-stencil'><img src="https://i.rawr.dev/ycW6AgfHss.gif" width=512 /></a>
+<a href='/samples/001-stencil'><img src="https://i.rawr.dev/ycW6AgfHss-min.gif" width=512 /></a>
 
 ### 002-generated-models
 
@@ -159,11 +156,11 @@
 
 ### 003-assimp
 
-<a href='/samples/003-assimp'><img src="https://i.rawr.dev/Uv2x1reRIn.png" width=512 /></a>
+<a href='/samples/003-assimp'><img src="https://i.rawr.dev/q2rTPxPdJc-min.gif" width=512 /></a>
 
 ### 004-light-support
 
-<a href='/samples/004-light-support'><img src="https://i.rawr.dev/Xvk5DpQPUd.gif" width=512 /></a>
+<a href='/samples/004-light-support'><img src="https://i.rawr.dev/Xvk5DpQPUd-min.gif" width=512 /></a>
 
 ### 005-post-process
 
@@ -175,15 +172,15 @@
 
 ### 007-particle-system
 
-<a href='/samples/007-particle-system'><img src="https://i.rawr.dev/55dUuFJqKR.gif" width=512 /></a>
+<a href='/samples/007-particle-system'><img src="https://i.rawr.dev/55dUuFJqKR-min.gif" width=512 /></a>
 
 ### 008-ui
 
-<a href='/samples/008-ui'><img src="https://i.rawr.dev/V1tcdCTckT.gif" width=512 /></a>
+<a href='/samples/008-ui'><img src="https://i.rawr.dev/V1tcdCTckT-min.gif" width=512 /></a>
 
 ### 009-physics
 
-<a href='/samples/009-physics'><img src="https://i.rawr.dev/Ir57QELn6F-min.gif" width=512 /></a>
+<a href='/samples/009-physics'><img src="https://i.rawr.dev/Ir57QELn6F-min3.gif" width=512 /></a>
 
 ### 010-instancing
 
@@ -191,7 +188,7 @@
 
 ### 011-decals
 
-<a href='/samples/011-decals'><img src="https://i.rawr.dev/2eGdHosOfa.gif" width=512 /></a>
+<a href='/samples/011-decals'><img src="https://i.rawr.dev/2eGdHosOfa-min.gif" width=512 /></a>
 
 ### 012-webm
 
