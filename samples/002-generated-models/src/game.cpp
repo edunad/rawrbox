@@ -53,9 +53,8 @@ namespace model {
 		    std::make_pair<std::string, uint32_t>("content/textures/spline_tex.png", 0),
 		};
 
+		this->_loadingFiles = initialContentFiles.size();
 		for (auto& f : initialContentFiles) {
-			this->_loadingFiles++;
-
 			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
 				this->_loadingFiles--;
 				if (this->_loadingFiles <= 0) {

@@ -65,7 +65,8 @@
 | `RAWRBOX.UI`        | UI lib                                             | UI components lib                                                                          | `RENDER` & `RESOURCES` |
 | `RAWRBOX.RESOURCES` | Resources manager lib                              | Resource manager. Handles loading and stores the pointers for easy access                  |        `UTILS`         |
 | `RAWRBOX.3DPHYSICS` | 3D Physics lib                                     | Handles 3D physics                                                                         |   `ENGINE` & `MATH`    |
-| `RAWRBOX.ASSIMP`    | Assimp lib                                         | Handles assimp load support                                                                | `RENDER` & `RESOURCES` |
+| `RAWRBOX.ASSIMP`    | Assimp lib                                         | Handles assimp model loading                                                               | `RENDER` & `RESOURCES` |
+| `RAWRBOX.WEBM`      | WEBM lib                                           | Handles webm loading                                                                       | `RENDER` & `RESOURCES` |
 
 <p align="center">
   <img src="./RAWBOX%20-%20Dependencies.png" />
@@ -90,7 +91,7 @@
 | `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`         | Builds the 3D physics engine                                                                       |
 | `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
 | `RAWRBOX_BUILD_RAWRBOX_ASSIMP`             | Enables assimp model loading                                                                       |
-| `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM support.                                                                              |
+| `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM loading                                                                               |
 | --                                         | --                                                                                                 |
 | `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Enabled if jolt is used)                         |
 
@@ -166,7 +167,7 @@
 
 ### 005-post-process
 
-<a href='/samples/005-post-process'><img src="https://i.rawr.dev/4YBkWan9pe.gif" width=512 /></a>
+<a href='/samples/005-post-process'><img src="https://i.rawr.dev/4YBkWan9pe-min.gif" width=512 /></a>
 
 ### 006-bass-loading
 
@@ -182,7 +183,7 @@
 
 ### 009-physics
 
-<a href='/samples/009-physics'><img src="https://i.rawr.dev/Ir57QELn6F.gif" width=512 /></a>
+<a href='/samples/009-physics'><img src="https://i.rawr.dev/Ir57QELn6F-min.gif" width=512 /></a>
 
 ### 010-instancing
 
@@ -194,4 +195,4 @@
 
 ### 012-webm
 
-<a href='/samples/012-webm'><img src="https://i.rawr.dev/089L83mo4f.gif" width=512 /></a>
+<a href='/samples/012-webm'><img src="https://i.rawr.dev/089L83mo4f-min2.gif" width=512 /></a>

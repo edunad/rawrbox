@@ -48,9 +48,8 @@ namespace bass_test {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/sounds/clownmusic.ogg", 0 | rawrbox::SoundFlags::SOUND_3D)};
 
+		this->_loadingFiles = initialContentFiles.size();
 		for (auto& f : initialContentFiles) {
-			this->_loadingFiles++;
-
 			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
 				this->_loadingFiles--;
 				if (this->_loadingFiles <= 0) {

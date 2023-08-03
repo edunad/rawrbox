@@ -9,7 +9,7 @@ namespace rawrbox {
 
 	public:
 		SpotLight(const rawrbox::Vector3f& posMatrix, const rawrbox::Vector3f& direction, const rawrbox::Colorf& color, float innerCone, float outerCone, float power) : rawrbox::LightBase(posMatrix, color, power), _innerCone(innerCone), _outerCone(outerCone) {
-			this->_direction = direction;
+			this->_direction = direction.normalized();
 		};
 
 		SpotLight(const SpotLight&) = default;
