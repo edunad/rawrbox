@@ -82,4 +82,4 @@ jobs:
           version: "16"
           database: "./build/"
           thread-comments: true
-          ignore: build | .github | render/include/stb | engine/tests | math/tests | render/tests | resources/tests | utils/tests | physics/tests
+          ignore: build | build/_deps | .github | render/include/stb | engine/tests | math/tests | render/tests | resources/tests | utils/tests | physics/tests
