@@ -222,7 +222,7 @@ namespace rawrbox {
 		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
 
 		virtual void optimize() {
-      #ifn NDEBUG
+      #ifndef NDEBUG
 			size_t old = this->_meshes.size();
       #endif
 
@@ -255,7 +255,7 @@ namespace rawrbox {
 				}
 			}
       
-      #ifn NDEBUG
+      #ifndef NDEBUG
 			if (old != this->_meshes.size()) fmt::print("[RawrBox-Model] Optimized mesh for rendering (Before {} | After {})\n", old, this->_meshes.size());
       #endif
 		}
