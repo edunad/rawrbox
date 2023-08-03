@@ -1,5 +1,10 @@
 #include <rawrbox/render/stencil.hpp>
+#include <rawrbox/render/text/font.hpp>
+#include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/graph.hpp>
+
+#include <string>
+#include <utility>
 
 namespace rawrbox {
 	// CATEGORY --
@@ -20,6 +25,46 @@ namespace rawrbox {
 	void UIGraph::setSmoothing(size_t frames) { this->_smoothSize = frames; }
 	void UIGraph::setAutoScale(bool val) { this->_autoScale = val; }
 	void UIGraph::setHighest(float val) { this->_highestValue = val; }
+	// ---------
+
+	// TEXT ----
+	void UIGraph::addText(const std::string& text, float val) {
+		texts.emplace_back(text, val);
+	}
+
+	void UIGraph::setTextLineColor(const rawrbox::Color& col) { this->_textLineColor = col; }
+	const rawrbox::Color& UIGraph::getTextLineColor() const { return this->_textLineColor; }
+
+	void UIGraph::setTextColor(const rawrbox::Color& col) { this->_textColor = col; }
+	const rawrbox::Color& UIGraph::getTextColor() const { return this->_textColor; }
+
+	void UIGraph::setTextShadowPos(const rawrbox::Vector2f& pos) { this->_textShadow = pos; }
+	const rawrbox::Vector2f& UIGraph::getTextShadowPos() const { return this->_textShadow; }
+
+	void UIGraph::setTextShadowColor(const rawrbox::Color& col) { this->_textShadowColor = col; }
+	const rawrbox::Color& UIGraph::getTextShadowColor() const { return this->_textShadowColor; }
+
+	void UIGraph::setFont(const std::filesystem::path& font, int size) {
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>(font)->getSize(size);
+	}
+
+	void UIGraph::setFont(rawrbox::Font* font) {
+		if (font == nullptr) throw std::runtime_error("[RawrBox-UI] Invalid font");
+		this->_font = font;
+	}
+
+	rawrbox::Font* UIGraph::getFont() const { return this->_font; }
+
+	void UIGraph::setFontLegend(const std::filesystem::path& font, int size) {
+		this->_fontLegend = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>(font)->getSize(size);
+	}
+
+	void UIGraph::setFontLegend(rawrbox::Font* font) {
+		if (font == nullptr) throw std::runtime_error("[RawrBox-UI] Invalid font");
+		this->_fontLegend = font;
+	}
+
+	rawrbox::Font* UIGraph::getFontLegend() const { return this->_fontLegend; }
 	// ---------
 
 	// FOCUS HANDLE ---
@@ -90,6 +135,14 @@ namespace rawrbox {
 	}
 
 	bool UIGraph::clipOverflow() const { return true; };
+
+	void UIGraph::setShowLegend(bool mode) {
+		_showLegend = mode;
+	}
+	bool UIGraph::getShowLegend() const {
+		return _showLegend;
+	}
+
 	void UIGraph::draw(rawrbox::Stencil& stencil) {
 		if (this->_categories.empty()) return;
 
@@ -98,6 +151,25 @@ namespace rawrbox {
 		// BG ---
 		stencil.drawBox({}, size, rawrbox::Colors::DarkGray * 0.2F);
 		//---
+
+		if (_showLegend) {
+			float y = 5;
+			for (auto& cat : _categories) {
+				Vector2f tpos = {size.x - _fontLegend->getStringSize(cat->name).x - 5 - 4 - 5, y};
+				stencil.drawText(*_fontLegend, cat->name, tpos + _textShadow, _textShadowColor);
+				stencil.drawText(*_fontLegend, cat->name, tpos, _textColor);
+				stencil.drawBox({size.x - 5 - 4, y + 1}, {4, _font->getLineHeight() - 2}, cat->color);
+				y += _fontLegend->getLineHeight();
+			}
+		}
+
+		for (auto& pair : texts) {
+			float stepHeight = size.y / this->_highestValue;
+			float y = size.y - (pair.second * stepHeight);
+			stencil.drawText(*_font, pair.first, _textShadow + Vector2f(0, y), _textShadowColor);
+			stencil.drawText(*_font, pair.first, {0, y}, _textColor);
+			stencil.drawBox({0, y + _font->getLineHeight()}, {size.x, 2});
+		}
 
 		// Draw lines ---
 		for (size_t indexEntry = 0; indexEntry < rawrbox::UIGraphCategory::ENTRY_COUNT - 1; indexEntry++) {

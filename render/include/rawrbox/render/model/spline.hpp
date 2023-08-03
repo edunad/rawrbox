@@ -53,6 +53,18 @@ namespace rawrbox {
 			this->_mesh->setTexture(texture);
 		}
 
+		virtual void setColor(const rawrbox::Color& col) {
+			this->_mesh->setColor(col);
+		}
+
+		virtual rawrbox::Mesh& getMesh() {
+			return *this->_mesh.get();
+		}
+
+		const std::vector<std::unique_ptr<rawrbox::BezierCurve>>& getCurves() {
+			return this->_curves;
+		}
+
 		virtual void addPoint(const rawrbox::Vector3f& p1, const rawrbox::Vector3f& p2, const rawrbox::Vector3f& p3, const rawrbox::Vector3f& p4) {
 			this->addBezier({p1, p2, p3, p4});
 		}
