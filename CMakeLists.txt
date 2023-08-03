@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.16.3 FATAL_ERROR)
 
 # SETUP UTILS
 include("cmake/rawrbox_utils.cmake")
@@ -27,20 +27,23 @@ list(PREPEND CONAN_GENERATORS_FOLDER ${CMAKE_BINARY_DIR})
 option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 
 option(RAWRBOX_BUILD_SAMPLES "Build samples" ON)
-option(RAWRBOX_BUILD_TESTING "Build tests" ON)
-option(RAWRBOX_BUILD_UI "Build ui" ON)
+option(BUILD_TESTING "Build tests" ON)
 
-option(RAWRBOX_BUILD_RESOURCES_MANAGER "Build resources manager" ON)
-option(RAWRBOX_BUILD_PHYSICS "Build physics support" ON)
+option(RAWRBOX_BUILD_RAWRBOX_UI "Build RAWRBOX.UI" ON)
+option(RAWRBOX_BUILD_RAWRBOX_RESOURCES "Build RAWRBOX.RESOURCES" ON)
+option(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS "Build 3D physics support" ON)
+option(RAWRBOX_BUILD_RAWRBOX_BASS "Build bass & add sound loading support" ON)
+option(RAWRBOX_BUILD_RAWRBOX_ASSIMP "Build assimp & add model loading support" ON)
+option(RAWRBOX_BUILD_RAWRBOX_WEBM "Build libwebm & add video loading support" ON)
+
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" ON)
-if(RAWRBOX_BUILD_PHYSICS)
+
+if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
     set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Jolt requires msvc multithreaded runtime
     message(STATUS "JoltPhysics is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
 endif()
 
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
-option(RAWRBOX_ENABLE_ASSIMP_SUPPORT "Build assimp & add model loading support" ON)
-option(RAWRBOX_ENABLE_BASS_SUPPORT "Build bass & add sound loading support" ON)
 # -----
 
 # OTHER SETTINGS ----
@@ -53,6 +56,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSPDLOG_FMT_EXTERNAL -DNOMINMAX")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(BUILD_SHARED_LIBS OFF)
 
 # Apple needs this flag to compile mixed objective/c++
@@ -109,24 +113,34 @@ add_subdirectory("math")
 add_subdirectory("utils")
 add_subdirectory("engine")
 
-if(RAWRBOX_BUILD_RESOURCES_MANAGER)
+if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     message(STATUS "Enabled RESOURCES support")
     add_subdirectory("resources")
 endif()
 
 add_subdirectory("render")
 
-if(RAWRBOX_BUILD_UI)
+if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
+    message(STATUS "Enabled ASSIMP support")
+    add_subdirectory("assimp")
+endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_WEBM)
+    message(STATUS "Enabled WEBM support")
+    add_subdirectory("webm")
+endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_UI)
     message(STATUS "Enabled UI support")
     add_subdirectory("ui")
 endif()
 
-if(RAWRBOX_ENABLE_BASS_SUPPORT)
+if(RAWRBOX_BUILD_RAWRBOX_BASS)
     message(STATUS "Enabled BASS support")
     add_subdirectory("bass")
 endif()
 
-if(RAWRBOX_BUILD_PHYSICS)
+if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
     message(STATUS "Enabled PHYSICS support")
     add_subdirectory("physics")
 endif()

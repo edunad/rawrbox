@@ -83,8 +83,6 @@ namespace rawrbox {
 #elif BX_PLATFORM_WINDOWS
 		return glfwGetWin32Window(_window);
 #endif // BX_PLATFORM_
-
-		throw std::runtime_error("[RawrBox-Window] Failed to detect platform");
 	}
 
 	static void* getNativeDisplayHandle() {

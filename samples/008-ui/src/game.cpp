@@ -229,8 +229,8 @@ namespace ui_test {
 	void Game::printFrames() {
 		const bgfx::Stats* stats = bgfx::getStats();
 
-		double gpu = static_cast<double>(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq;
-		double cpu = static_cast<double>(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq;
+		float gpu = static_cast<float>(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0F / stats->gpuTimerFreq;
+		float cpu = static_cast<float>(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0F / stats->cpuTimerFreq;
 
 		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", gpu);
 		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", cpu);

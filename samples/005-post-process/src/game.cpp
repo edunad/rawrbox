@@ -1,11 +1,10 @@
 
 #include <rawrbox/render/camera/orbital.hpp>
-#include <rawrbox/render/model/assimp/assimp_importer.hpp>
+#include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/postprocess/bloom.hpp>
 #include <rawrbox/render/postprocess/dither_psx.hpp>
 #include <rawrbox/render/postprocess/static_noise.hpp>
-#include <rawrbox/render/resources/assimp/model.hpp>
-#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -13,8 +12,6 @@
 
 #include <bx/bx.h>
 #include <bx/math.h>
-
-#include <vector>
 
 namespace post_process {
 	void Game::setupGLFW() {
@@ -47,17 +44,16 @@ namespace post_process {
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
-		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
+		// Add loaders ----
+		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+		// ---
 
-		// Load content ---
 		this->loadContent();
-		// -----
 	}
 
 	void Game::loadContent() {
 		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("content/models/ps1_road/scene.gltf", 0 | rawrbox::ModelLoadFlags::IMPORT_TEXTURES)};
+		    std::make_pair<std::string, uint32_t>("./content/textures/crate_hl1.png", 0)};
 
 		for (auto& f : initialContentFiles) {
 			this->_loadingFiles++;
@@ -75,13 +71,17 @@ namespace post_process {
 	}
 
 	void Game::contentLoaded() {
-		// Assimp test ---
-		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_road/scene.gltf")->get();
+		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/crate_hl1.png")->get();
 
-		this->_model->load(*mdl);
-		this->_model->setScale({0.01F, 0.01F, 0.01F});
-		//   -----
+		// Setup
+		{
+			auto mesh = rawrbox::MeshUtils::generateCube({0.F, 0.F, 0}, {3.F, 3.F, 3.F}, rawrbox::Colors::White);
+			mesh.setTexture(tex);
+			this->_model->addMesh(mesh);
+		}
+		// ----
 
+		this->_model->upload();
 		this->_ready = true;
 	}
 
@@ -104,6 +104,10 @@ namespace post_process {
 
 	void Game::update() {
 		if (this->_window == nullptr) return;
+		if (this->_model != nullptr) {
+			this->_model->setEulerAngle({std::cos(rawrbox::BGFX_FRAME * 0.01F) * 2.5F, std::sin(rawrbox::BGFX_FRAME * 0.01F) * 2.5F, 0});
+		}
+
 		this->_window->update();
 	}
 

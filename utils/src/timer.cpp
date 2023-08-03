@@ -3,7 +3,7 @@
 
 namespace rawrbox {
 	uint32_t Timer::ID = 0;
-	std::unordered_map<std::string, std::unique_ptr<rawrbox::Timer>> Timer::timers = {};
+	std::unordered_map<uint32_t, std::unique_ptr<rawrbox::Timer>> Timer::timers = {};
 
 	// STATIC -----
 	void Timer::update() {
@@ -26,40 +26,40 @@ namespace rawrbox {
 
 			// Life
 			if (!timer->_infinite) timer->_ticks++;
-			if (timer->_ticks >= timer->_iterations) {
+			if (!timer->_infinite && timer->_ticks >= timer->_iterations) {
 				if (timer->_onComplete) timer->_onComplete();
 				it2 = timers.erase(it2);
 				continue;
 			} else {
-				timer->_nextTick = time + timer->_delay;
+				timer->_nextTick = time + timer->_msDelay;
 			}
 
 			++it2;
 		}
 	}
 
-	rawrbox::Timer* Timer::simple(int msDelay, std::function<void()> func, std::function<void()> onComplete) {
+	rawrbox::Timer* Timer::simple(uint64_t msDelay, std::function<void()> func, std::function<void()> onComplete) {
 		return create(1, msDelay, func, onComplete);
 	}
 
-	rawrbox::Timer* Timer::create(int reps, int msDelay, std::function<void()> func, std::function<void()> onComplete) {
+	rawrbox::Timer* Timer::create(int reps, uint64_t msDelay, std::function<void()> func, std::function<void()> onComplete) {
 		auto t = std::make_unique<rawrbox::Timer>();
-		auto id = std::to_string(ID++);
+		auto id = ID++;
 
-		t->_delay = msDelay;
+		t->_msDelay = msDelay;
 		t->_func = func;
 		t->_onComplete = onComplete;
 		t->_iterations = reps;
 		t->_ticks = 0;
 		t->_id = id;
 		t->_infinite = reps <= 0;
-		t->_nextTick = rawrbox::TimeUtils::time() + t->_delay;
+		t->_nextTick = rawrbox::TimeUtils::time() + t->_msDelay;
 
 		timers[id] = std::move(t);
 		return timers[id].get();
 	}
 
-	bool Timer::isRunning(const std::string& id) {
+	bool Timer::isRunning(uint32_t id) {
 		return timers.find(id) != timers.end();
 	}
 
@@ -73,7 +73,7 @@ namespace rawrbox {
 		if (isRunning(this->_id)) return;
 
 		this->_ticks = 0; // Reset timer
-		this->_nextTick = rawrbox::TimeUtils::time() + this->_delay;
+		this->_nextTick = rawrbox::TimeUtils::time() + this->_msDelay;
 
 		this->setPaused(false);
 	}

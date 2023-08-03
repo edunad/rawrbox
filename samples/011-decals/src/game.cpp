@@ -2,8 +2,8 @@
 
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/decals/manager.hpp>
+#include <rawrbox/render/light/point.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
-#include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -14,7 +14,6 @@
 #include <fmt/format.h>
 
 #include <random>
-#include <vector>
 
 namespace decal_test {
 	void Game::setupGLFW() {
@@ -39,7 +38,6 @@ namespace decal_test {
 
 		// Setup loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
-		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
 		// ----------
 
 		// Setup binds ---
@@ -57,9 +55,8 @@ namespace decal_test {
 	}
 
 	void Game::loadContent() {
-		std::array<std::pair<std::string, uint32_t>, 2> initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("content/textures/decals.png", 64),
-		    std::make_pair<std::string, uint32_t>("content/models/decal_test/test.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT)};
+		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
+		    std::make_pair<std::string, uint32_t>("content/textures/decals.png", 64)};
 
 		for (auto& f : initialContentFiles) {
 			this->_loadingFiles++;
@@ -79,7 +76,7 @@ namespace decal_test {
 		rawrbox::DECALS::setAtlasTexture(rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/decals.png")->get());
 
 		std::random_device prng;
-		std::uniform_int_distribution<int> dist(0, 4);
+		std::uniform_int_distribution<uint16_t> dist(0, 4);
 		std::uniform_real_distribution<float> distRot(-1.5F, 1.5F);
 
 		for (int i = 0; i < 30; i++) {
@@ -87,17 +84,24 @@ namespace decal_test {
 			rawrbox::DECALS::add({distRot(prng), distRot(prng) + 1.25F, 0.F}, {1, 1, 1}, 0, rawrbox::Colors::Red, dist(prng));
 		}
 
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, -1.F}, rawrbox::Colors::Orange * 0.5F, 5.F);
+
 		// Setup
-
-		// Assimp test ---
-		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/decal_test/test.fbx")->get();
-
-		this->_model2->load(*mdl);
-		this->_model2->setRecieveDecals(true);
-		this->_model2->setPos({0, 0, 0});
-		//   -----
-
 		this->_model->setOptimizable(false);
+
+		{
+			auto mesh = rawrbox::MeshUtils::generateCube({0, 1.0F, 0}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray);
+			mesh.setRecieveDecals(true);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generateCube({0, 0.0F, -1.F}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray);
+			mesh.setRecieveDecals(true);
+			mesh.setEulerAngle({bx::toRad(90), 0, 0});
+
+			this->_model->addMesh(mesh);
+		}
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateSphere({0.F, 0.F, -1.F}, 0.5F);
@@ -135,7 +139,7 @@ namespace decal_test {
 		this->_window->update();
 
 		if (this->_ready && this->_model != nullptr) {
-			this->_model->getMesh()->setPos({std::sin(rawrbox::BGFX_FRAME * 0.01F) * 0.5F - 1.F, -0.05F, -0.55F - std::cos(rawrbox::BGFX_FRAME * 0.01F) * 0.5F});
+			this->_model->getMesh(2)->setPos({std::sin(rawrbox::BGFX_FRAME * 0.01F) * 0.5F - 1.F, -0.05F, -0.55F - std::cos(rawrbox::BGFX_FRAME * 0.01F) * 0.5F});
 		}
 	}
 
@@ -154,9 +158,7 @@ namespace decal_test {
 	}
 	void Game::drawWorld() {
 		if (!this->_ready) return;
-
 		this->_model->draw();
-		this->_model2->draw();
 	}
 
 	void Game::draw() {

@@ -21,7 +21,8 @@
 		<a href="#libs">Libs</a> -
 		<a href="#cmake">Settings</a> -
 		<a href="#dependencies">Dependencies</a> -
-		<a href="#building">Building</a>
+		<a href="#building">Building</a> -
+		<a href="#samples">Samples</a>
 	</p>
 </h4>
 
@@ -34,6 +35,7 @@
 - 2D stencil drawing
 - Fonts
 - Images (png, jpeg, tga, bitmap)
+- Video (webm)
 - Sounds (using BASS lib)
 - Custom UI
 - Material system (similar to unity)
@@ -45,11 +47,11 @@
 
 # TODO LIST
 
-- Add animation blending
-- Add shadow maps to lights
-- Add scripting lib (with lua support)
-- Add steam networking lib
 - Add 2D Physics
+- Add animation blending
+- Add lights shadow maps
+- Add scripting lib (lua)
+- Add steam networking lib
 
 # LIBS
 
@@ -62,7 +64,8 @@
 | `RAWRBOX.ENGINE`    | Engine lib (aka game loop)                         | The engine it self, contains the game loop mechanism                                       |        `UTILS`         |
 | `RAWRBOX.UI`        | UI lib                                             | UI components lib                                                                          | `RENDER` & `RESOURCES` |
 | `RAWRBOX.RESOURCES` | Resources manager lib                              | Resource manager. Handles loading and stores the pointers for easy access                  |        `UTILS`         |
-| `RAWRBOX.PHYSICS`   | Physics lib                                        | Physics lib                                                                                |   `ENGINE` & `MATH`    |
+| `RAWRBOX.3DPHYSICS` | 3D Physics lib                                     | Handles 3D physics                                                                         |   `ENGINE` & `MATH`    |
+| `RAWRBOX.ASSIMP`    | Assimp lib                                         | Handles assimp load support                                                                | `RENDER` & `RESOURCES` |
 
 <p align="center">
   <img src="./RAWBOX%20-%20Dependencies.png" />
@@ -72,22 +75,24 @@
 
 | OPTION NAME                                | NOTE                                                                                               |
 | :----------------------------------------- | :------------------------------------------------------------------------------------------------- |
+| `BUILD_TESTING`                            | Builds & enables project tests                                                                     |
+| --                                         | --                                                                                                 |
 | `RAWRBOX_OUTPUT_BIN`                       | The output build folder. Default is `bin`                                                          |
 | `RAWRBOX_CONTENT_FOLDER`                   | The content folder to output resources. Default is `content`                                       |
 | --                                         | --                                                                                                 |
 | `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 |
 | --                                         | --                                                                                                 |
 | `RAWRBOX_ENABLE_QHULL`                     | Enables QHull util                                                                                 |
-| `RAWRBOX_ENABLE_ASSIMP_SUPPORT`            | Enables assimp model loading                                                                       |
-| `RAWRBOX_ENABLE_BASS_SUPPORT`              | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
-|                                            |                                                                                                    |
+| --                                         | --                                                                                                 |
 | `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          |
-| `RAWRBOX_BUILD_TESTING`                    | Builds and runs tests                                                                              |
-| `RAWRBOX_BUILD_UI`                         | Builds and includes ui                                                                             |
-| `RAWRBOX_BUILD_RESOURCES_MANAGER`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
-| `RAWRBOX_BUILD_PHYSICS`                    | Builds the physics engine                                                                          |
-|                                            |                                                                                                    |
-| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime                                                   |
+| `RAWRBOX_BUILD_RAWRBOX_UI`                 | Builds and includes ui                                                                             |
+| `RAWRBOX_BUILD_RAWRBOX_RESOURCES`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
+| `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`         | Builds the 3D physics engine                                                                       |
+| `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
+| `RAWRBOX_BUILD_RAWRBOX_ASSIMP`             | Enables assimp model loading                                                                       |
+| `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM support.                                                                              |
+| --                                         | --                                                                                                 |
+| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Enabled if jolt is used)                         |
 
 # DEPENCENDIES
 
@@ -108,6 +113,7 @@
 | catch2          |    ✖️    | Used for testing                                    |
 | bass            |    ✖️    | Used for loading sounds                             |
 | JoltPhysics     |    ✖️    | Used for managing physics                           |
+| webmlib & vpx   |    ✖️    | Used for loading webm                               |
 
 # BUILDING
 
@@ -116,13 +122,15 @@
 ### REQUIRED SOFTWARE
 
 - [GIT](https://git-scm.com/) or something similar to GIT
-- Download and install **C++ Build Tools** (2022 is recommended)
+- Download and install **C++ Build Tools** (2022 is recommended)<br/>
+  - ![](https://i.rawr.dev/KcTNzFJZhZ.png)
 - Download and install a IDE, [Visual Code](https://code.visualstudio.com/) is **recommended**.
-- Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)
+- Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)<br/>
+  - `pip install ninja` if you have python3 installed
 
 ### IDE SETUP (Visual Code)
 
-- Open the workspace file and install the recommended extensions (at least the C++, CMAKE)
+- Open the workspace file (`.code-workspace`) and install the recommended extensions (at least the C++, CMAKE)
 - Run cmake configure
 - Select `[Visual Studio Build Tools <version> Release - amd64]` on the kit popup (for all of the projects)
 - Run the compiler by hitting F5
@@ -137,3 +145,53 @@
 ### IDE SETUP
 
 - TODO
+
+# SAMPLES
+
+### 001-stencil
+
+<a href='/samples/001-stencil'><img src="https://i.rawr.dev/ycW6AgfHss.gif" width=512 /></a>
+
+### 002-generated-models
+
+<a href='/samples/002-generated-models'><img src="https://i.rawr.dev/Jm1JLz48at.png" width=512 /></a>
+
+### 003-assimp
+
+<a href='/samples/003-assimp'><img src="https://i.rawr.dev/Uv2x1reRIn.png" width=512 /></a>
+
+### 004-light-support
+
+<a href='/samples/004-light-support'><img src="https://i.rawr.dev/Xvk5DpQPUd.gif" width=512 /></a>
+
+### 005-post-process
+
+<a href='/samples/005-post-process'><img src="https://i.rawr.dev/4YBkWan9pe.gif" width=512 /></a>
+
+### 006-bass-loading
+
+<a href='/samples/006-bass-loading'><img src="https://i.rawr.dev/6vTnpv39Tj.png" width=512 /></a>
+
+### 007-particle-system
+
+<a href='/samples/007-particle-system'><img src="https://i.rawr.dev/55dUuFJqKR.gif" width=512 /></a>
+
+### 008-ui
+
+<a href='/samples/008-ui'><img src="https://i.rawr.dev/V1tcdCTckT.gif" width=512 /></a>
+
+### 009-physics
+
+<a href='/samples/009-physics'><img src="https://i.rawr.dev/Ir57QELn6F.gif" width=512 /></a>
+
+### 010-instancing
+
+<a href='/samples/010-instancing'><img src="https://i.rawr.dev/7KJOpESdZN.png" width=512 /></a>
+
+### 011-decals
+
+<a href='/samples/011-decals'><img src="https://i.rawr.dev/2eGdHosOfa.gif" width=512 /></a>
+
+### 012-webm
+
+<a href='/samples/012-webm'><img src="https://i.rawr.dev/089L83mo4f.gif" width=512 /></a>

@@ -1,84 +1,85 @@
 name: CI/CD - BUILD
 
 on:
-    pull_request:
-    workflow_dispatch:
-    push:
-        branches: master
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches: master
 
 permissions:
-    contents: write
-    actions: write
-    checks: write
-    pull-requests: write
-    discussions: write
-    issues: write
+  contents: write
+  actions: write
+  checks: write
+  pull-requests: write
+  discussions: write
+  issues: write
 
 concurrency:
-    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-    cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
-    build-linux:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v3
-              with:
-                  fetch-depth: 0
+  build-linux:
+    runs-on: [self-hosted]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-            - name: Install dependencies
-              run: |
-                  sudo apt update
-                  sudo apt install build-essential gcc-12 libgl1-mesa-glx libgl1-mesa-dev libglew-dev ninja-build python3-pip libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev libxcomposite-dev libxcursor-dev libxdamage-dev libxdmcp-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxinerama-dev libxkbfile-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev libxrender-dev libxres-dev libxss-dev libxt-dev libxtst-dev libxv-dev libxvmc-dev libxxf86vm-dev xtrans-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-xkb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev xkb-data libxcb-dri3-dev uuid-dev libxcb-util-dev
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt upgrade -y
+          sudo apt install -y build-essential wget cmake libvpx-dev gcc-11 libgl1-mesa-glx libgl1-mesa-dev libglew-dev ninja-build python3-pip libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev libxcomposite-dev libxcursor-dev libxdamage-dev libxdmcp-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxinerama-dev libxkbfile-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev libxrender-dev libxres-dev libxss-dev libxt-dev libxtst-dev libxv-dev libxvmc-dev libxxf86vm-dev xtrans-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-xkb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev xkb-data libxcb-dri3-dev uuid-dev libxcb-util-dev
 
-            - name: Restore cache
-              id: cache
-              uses: actions/cache/restore@v3
-              with:
-                  path: |
-                      ./build
-                      ~/cpm-cache
-                  key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics/CMakeLists.txt') }}
+      - name: Restore cache
+        id: cache
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            ./build
+            ~/cpm-cache
+          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt') }}
 
-            - name: Build
-              id: build
-              run: |
-                  mkdir -p build && cd build
-                  CXX=g++-12 cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON"
-                  ninja
+      - name: Build
+        id: build
+        run: |
+          mkdir -p build && cd build
+          CXX=g++ cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON"
+          ninja
 
-            - name: Cache build
-              uses: actions/cache/save@v3
-              if: steps.build.outputs.exit_code == 0 && steps.cache.outputs.cache-hit != 'true'
-              env:
-                  cache-name: cache-build
-              with:
-                  path: |
-                      ./build
-                      ~/cpm-cache
-                  key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics/CMakeLists.txt') }}
+      - name: Cache build
+        uses: actions/cache/save@v3
+        if: steps.build.outputs.exit_code == 0 && steps.cache.outputs.cache-hit != 'true'
+        env:
+          cache-name: cache-build
+        with:
+          path: |
+            ./build
+            ~/cpm-cache
+          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt') }}
 
-            - name: Run tests
-              run: |
-                  cd build
-                  ctest --test-dir ./math --output-on-failure
-                  ctest --test-dir ./utils --output-on-failure
-                  ctest --test-dir ./render --output-on-failure
-                  ctest --test-dir ./engine --output-on-failure
-                  ctest --test-dir ./resources --output-on-failure
+      - name: Run tests
+        run: |
+          cd build
+          ctest --test-dir ./math --output-on-failure
+          ctest --test-dir ./utils --output-on-failure
+          ctest --test-dir ./render --output-on-failure
+          ctest --test-dir ./engine --output-on-failure
+          ctest --test-dir ./resources --output-on-failure
 
-            - name: Run linter
-              uses: cpp-linter/cpp-linter-action@v2
-              id: linter
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              with:
-                  style: file
-                  files-changed-only: true
-                  tidy-checks: ''
-                  extra-args: '-std=c++20 -Wall'
-                  version: '16'
-                  database: './build/'
-                  thread-comments: true
-                  ignore: build | .github | render/include/stb | engine/tests | math/tests | render/tests | resources/tests | utils/tests | physics/tests
+      - name: Run linter
+        uses: cpp-linter/cpp-linter-action@v2
+        id: linter
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          style: file
+          files-changed-only: true
+          tidy-checks: ""
+          extra-args: "-std=c++20 -Wall"
+          version: "16"
+          database: "./build/"
+          thread-comments: true
+          ignore: build | build/_deps | .github | render/include/stb | engine/tests | math/tests | render/tests | resources/tests | utils/tests | physics/tests

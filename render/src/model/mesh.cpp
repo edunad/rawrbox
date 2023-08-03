@@ -144,6 +144,7 @@ namespace rawrbox {
 	void Mesh::setOptimizable(bool status) { this->_canOptimize = status; }
 	bool Mesh::canOptimize(const rawrbox::Mesh& other) const {
 		if (!this->_canOptimize || !other._canOptimize) return false;
+		if (this->vertices.size() + other.vertices.size() >= 32000) return false; // Max vertice limit
 
 		return this->texture == other.texture &&
 		       this->color == other.color &&

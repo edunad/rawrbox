@@ -1,5 +1,6 @@
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/ui/elements/group.hpp>
+
 namespace rawrbox {
 
 	// UTILS ----

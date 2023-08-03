@@ -98,7 +98,8 @@ namespace rawrbox {
 				std::vector<rawrbox::VertexData> buff(vertCount);
 
 				// Generate all of the vertices and normals
-				for (int i = 0; i < path.size(); i++) {
+				int size = static_cast<int>(path.size());
+				for (int i = 0; i < size; i++) {
 					int offset = i * vertsInShape;
 					for (int j = 0; j < vertsInShape; j++) {
 						int id = offset + j;

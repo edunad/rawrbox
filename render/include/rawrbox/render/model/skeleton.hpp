@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace rawrbox {
@@ -42,5 +43,7 @@ namespace rawrbox {
 
 		std::vector<std::unique_ptr<rawrbox::Bone>> children = {};
 		// ----
+
+		Bone(std::string id) : name(std::move(id)) {}
 	};
 } // namespace rawrbox

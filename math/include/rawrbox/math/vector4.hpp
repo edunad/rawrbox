@@ -7,8 +7,6 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <concepts>
-#include <type_traits>
 
 namespace rawrbox {
 	template <class NumberType>
@@ -32,7 +30,7 @@ namespace rawrbox {
 
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1, 1); }
-		[[nodiscard]] const int size() const { return 4; }
+		[[nodiscard]] int size() const { return 4; }
 
 		[[nodiscard]] Vector3_t<NumberType> xyz() const { return Vector3_t<NumberType>(x, y, z); }
 		[[nodiscard]] Vector3_t<NumberType> yxz() const { return Vector3_t<NumberType>(y, x, z); }

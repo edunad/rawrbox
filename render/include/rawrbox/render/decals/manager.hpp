@@ -5,9 +5,6 @@
 #include <rawrbox/render/model/instanced.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
-#include <vector>
-
-// https://github.com/diharaw/deferred-decals/blob/master/src/main.cpp
 namespace rawrbox {
 	class DECALS {
 	protected:

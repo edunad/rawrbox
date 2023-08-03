@@ -4,11 +4,6 @@
 
 #include <nlohmann/json.hpp>
 
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-
 namespace rawrbox {
 	class ResourceJSON : public rawrbox::Resource {
 		std::unique_ptr<nlohmann::json> _json = nullptr;

@@ -6,6 +6,8 @@
 
 #include <bgfx/bgfx.h>
 
+#include <vector>
+
 namespace rawrbox {
 	class TextureFlat : public TextureBase {
 	private:

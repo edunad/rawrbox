@@ -21,6 +21,8 @@ namespace rawrbox {
 	rawrbox::Event<const JPH::BodyID &, uint64_t> PHYSICS::onBodyAwake;
 	rawrbox::Event<const JPH::BodyID &, uint64_t> PHYSICS::onBodySleep;
 
+	std::function<bool(rawrbox::PHYS_LAYERS, rawrbox::PHYS_LAYERS)> PHYSICS::shouldCollide = nullptr;
+
 	std::function<JPH::ValidateResult(const JPH::Body &, const JPH::Body &, JPH::RVec3Arg, const JPH::CollideShapeResult &)> PHYSICS::onContactValidate = nullptr;
 
 	rawrbox::Event<const JPH::Body &, const JPH::Body &, const JPH::ContactManifold &, JPH::ContactSettings &> PHYSICS::onContactAdded;

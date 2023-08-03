@@ -2,7 +2,6 @@
 
 #include <rawrbox/render/materials/base.hpp>
 
-#include <functional>
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
@@ -72,11 +71,11 @@ namespace rawrbox {
 			return this->_mesh->matrix;
 		}
 
-		[[nodiscard]] virtual const bool isDynamicBuffer() const {
+		[[nodiscard]] virtual bool isDynamicBuffer() const {
 			return this->_isDynamic;
 		}
 
-		[[nodiscard]] virtual const bool isUploaded() const {
+		[[nodiscard]] virtual bool isUploaded() const {
 			if (this->isDynamicBuffer()) return bgfx::isValid(this->_ibdh) && bgfx::isValid(this->_vbdh);
 			return bgfx::isValid(this->_ibh) && bgfx::isValid(this->_vbh);
 		}

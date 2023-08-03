@@ -2,8 +2,6 @@
 #include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/utils/render.hpp>
 
-#include "bx/math.h"
-
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader model_decal_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_decal_base),

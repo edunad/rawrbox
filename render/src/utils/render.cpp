@@ -1,7 +1,6 @@
 
 #include <rawrbox/render/utils/render.hpp>
 
-#include <bit>
 #include <stdexcept>
 
 // NOLINTBEGIN(*)

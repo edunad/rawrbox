@@ -6,8 +6,6 @@
 #include <bgfx/bgfx.h>
 #include <fmt/format.h>
 
-#include <stdexcept>
-
 namespace rawrbox {
 
 	class MaterialBase {
@@ -20,6 +18,7 @@ namespace rawrbox {
 		bgfx::UniformHandle _u_colorOffset = BGFX_INVALID_HANDLE;
 
 		bgfx::UniformHandle _u_data = BGFX_INVALID_HANDLE;
+		bgfx::UniformHandle _u_tex_flags = BGFX_INVALID_HANDLE;
 
 	public:
 		MaterialBase() = default;

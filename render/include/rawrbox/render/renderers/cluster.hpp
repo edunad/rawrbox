@@ -4,8 +4,6 @@
 
 #include <stdexcept>
 
-// https://github.com/pezcode/Cluster/blob/master/src/Renderer/Renderer.h
-
 namespace rawrbox {
 
 	struct ClusterVertex {

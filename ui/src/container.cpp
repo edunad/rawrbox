@@ -118,9 +118,9 @@ namespace rawrbox {
 		stencil.popOffset();
 	}
 
-	void UIContainer::beforeDraw(rawrbox::Stencil& stencil) {}
-	void UIContainer::afterDraw(rawrbox::Stencil& stencil) {}
-	void UIContainer::draw(rawrbox::Stencil& stencil) {}
+	void UIContainer::beforeDraw(rawrbox::Stencil& /*_stencil*/) {}
+	void UIContainer::afterDraw(rawrbox::Stencil& /*_stencil*/) {}
+	void UIContainer::draw(rawrbox::Stencil& /*_stencil*/) {}
 
 	void UIContainer::drawChildren(rawrbox::Stencil& stencil) {
 		this->internalDraw(this, stencil);
@@ -136,12 +136,12 @@ namespace rawrbox {
 	// --
 
 	// INPUTS ----
-	void UIContainer::mouseDown(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) {}
-	void UIContainer::mouseUp(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods) {}
-	void UIContainer::mouseScroll(const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset) {}
-	void UIContainer::mouseMove(const rawrbox::Vector2i& mousePos) {}
-	void UIContainer::key(uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) {}
-	void UIContainer::keyChar(uint32_t key) {}
+	void UIContainer::mouseDown(const rawrbox::Vector2i& /*_mousePos*/, uint32_t /*_button*/, uint32_t /*_mods*/) {}
+	void UIContainer::mouseUp(const rawrbox::Vector2i& /*_mousePos*/, uint32_t /*_button*/, uint32_t /*_mods*/) {}
+	void UIContainer::mouseScroll(const rawrbox::Vector2i& /*_mousePos*/, const rawrbox::Vector2i& /*_offset*/) {}
+	void UIContainer::mouseMove(const rawrbox::Vector2i& /*_mousePos*/) {}
+	void UIContainer::key(uint32_t /*_key*/, uint32_t /*_scancode*/, uint32_t /*_action*/, uint32_t /*_mods*/) {}
+	void UIContainer::keyChar(uint32_t /*_key*/) {}
 	// ---
 
 	void UIContainer::updateChildren() {

@@ -2,10 +2,8 @@
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
-#include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/render/utils/assimp/model.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -40,7 +38,6 @@ namespace model {
 
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
-		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
 
 		// Load content ---
 		this->loadContent();
@@ -72,10 +69,10 @@ namespace model {
 
 	void Game::contentLoaded() {
 		this->_ready = true;
-		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get<rawrbox::TextureGIF>();
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(24);
 
-		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
+		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get();
+		auto texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
 		auto texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/displacement_test.png")->get();
 		auto texture4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/spline_tex.png")->get();
 
@@ -99,7 +96,7 @@ namespace model {
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({-2, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
-			mesh.setTexture(this->_texture2);
+			mesh.setTexture(texture);
 
 			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-2, 0, 0}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
@@ -112,7 +109,7 @@ namespace model {
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({-3, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White);
-			mesh.setTexture(this->_texture2);
+			mesh.setTexture(texture);
 			mesh.setVertexSnap(24.F);
 
 			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-3, 0, 0}, mesh.getBBOX()));
@@ -199,7 +196,7 @@ namespace model {
 		// Sprite test ----
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({0, 1, 0}, {0.2F, 0.2F});
-			mesh.setTexture(texture);
+			mesh.setTexture(texture2);
 			this->_sprite->addMesh(mesh);
 		}
 		// -----
@@ -276,7 +273,6 @@ namespace model {
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-		this->_texture2 = nullptr;
 
 		this->_displacement.reset();
 		this->_model.reset();
@@ -300,8 +296,6 @@ namespace model {
 	void Game::update() {
 		if (this->_window == nullptr) return;
 		this->_window->update();
-
-		if (this->_texture2 != nullptr) this->_texture2->step();
 	}
 
 	void Game::drawWorld() {

@@ -229,8 +229,6 @@ namespace rawrbox {
 			default:
 				return "?";
 		}
-
-		return "?";
 	}
 
 	uint32_t KeyUtils::strToKey(const std::string& rawKey) {
