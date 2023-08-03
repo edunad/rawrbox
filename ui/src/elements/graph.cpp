@@ -29,7 +29,7 @@ namespace rawrbox {
 
 	// TEXT ----
 	void UIGraph::addText(const std::string& text, float val) {
-		texts.push_back(std::make_pair(text, val));
+		texts.emplace_back(text, val);
 	}
 
 	void UIGraph::setTextLineColor(const rawrbox::Color& col) { this->_textLineColor = col; }

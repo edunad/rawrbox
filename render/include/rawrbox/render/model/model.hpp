@@ -222,9 +222,9 @@ namespace rawrbox {
 		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
 
 		virtual void optimize() {
-      #ifndef NDEBUG
+#ifndef NDEBUG
 			size_t old = this->_meshes.size();
-      #endif
+#endif
 
 			for (size_t i1 = 0; i1 < this->_meshes.size(); i1++) {
 				auto& mesh1 = this->_meshes[i1];
@@ -232,7 +232,7 @@ namespace rawrbox {
 				// figure out how big our buffers will get
 				size_t reserveVertices = mesh1->vertices.size();
 				size_t reserveIndices = mesh1->indices.size();
-        
+
 				for (size_t i2 = this->_meshes.size() - 1; i2 > i1; i2--) {
 					auto& mesh2 = this->_meshes[i2];
 					if (!mesh1->canOptimize(*mesh2)) continue;
@@ -254,10 +254,10 @@ namespace rawrbox {
 					this->_meshes.erase(this->_meshes.begin() + i2);
 				}
 			}
-      
-      #ifndef NDEBUG
+
+#ifndef NDEBUG
 			if (old != this->_meshes.size()) fmt::print("[RawrBox-Model] Optimized mesh for rendering (Before {} | After {})\n", old, this->_meshes.size());
-      #endif
+#endif
 		}
 
 		// Animations ----
