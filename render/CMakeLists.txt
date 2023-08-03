@@ -68,10 +68,12 @@ endif()
 # -----------------
 
 # Compile shaders
-if(LINUX)
-    set(PROFILES 120 300_es spirv)
-else()
+if(WIN32)
     set(PROFILES 120 300_es spirv s_5_0)
+    message(STATUS "Setting shader compilation to WIN")
+else()
+    set(PROFILES 120 300_es spirv)
+    message(STATUS "Setting shader compilation to LINUX")
 endif()
 
 add_shaders_directory(./shaders RAWRBOX_SHADERS_TARGET_NAME)
