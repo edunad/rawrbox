@@ -1,6 +1,7 @@
 
 #include <rawrbox/utils/path.hpp>
 
+#include <bit>
 #include <fstream>
 #include <iostream>
 

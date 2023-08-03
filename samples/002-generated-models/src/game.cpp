@@ -2,10 +2,8 @@
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/mesh.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
-#include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/render/utils/assimp/model.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -40,7 +38,6 @@ namespace model {
 
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
-		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
 
 		// Load content ---
 		this->loadContent();

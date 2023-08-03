@@ -1,9 +1,9 @@
 #pragma once
 
+#include <rawrbox/assimp/model.hpp>
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/materials/lit.hpp>
 #include <rawrbox/render/materials/skinned.hpp>
-#include <rawrbox/render/model/assimp/assimp_model.hpp>
 #include <rawrbox/render/model/text3D.hpp>
 #include <rawrbox/render/window.hpp>
 

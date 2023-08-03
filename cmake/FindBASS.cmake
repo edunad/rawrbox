@@ -10,7 +10,6 @@ endif()
 
 set(BASS_URL "http://uk.un4seen.com/files/bass${BASS_VERSION}")
 set(BASS_FX_URL "http://www.un4seen.com/files/z/0/bass_fx${BASS_VERSION}")
-set(BASS_STATIC_MULTITHREADED ON)
 
 set(BASS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/bass${BASS_VERSION})
 set(BASS_FX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps/bass_fx${BASS_VERSION})
@@ -112,17 +111,9 @@ if(NOT BASSSDK_FOUND AND NOT TARGET BASS::BASS)
         message(STATUS "Bass-CMake: 64 bit bass")
     endif()
 
-    find_library(
-        BASS_LIBRARY
-        NAMES bass
-        PATHS "${BASS_DIR}/${BASS_LIB_PATH}"
-        NO_DEFAULT_PATH)
+    find_library(BASS_LIBRARY NAMES bass PATHS "${BASS_DIR}/${BASS_LIB_PATH}" NO_DEFAULT_PATH)
 
-    find_library(
-        BASS_LIBRARY_FX
-        NAMES bass_fx
-        PATHS "${BASS_FX_DIR}/${BASS_LIB_PATH}/"
-        NO_DEFAULT_PATH)
+    find_library(BASS_LIBRARY_FX NAMES bass_fx PATHS "${BASS_FX_DIR}/${BASS_LIB_PATH}/" NO_DEFAULT_PATH)
 
     find_path(BASS_LIBRARY_INCLUDE_DIR bass.h ${BASS_DIR}/ ${BASS_DIR}/c/ DOC "Include path for Bass")
 
@@ -131,19 +122,12 @@ if(NOT BASSSDK_FOUND AND NOT TARGET BASS::BASS)
     add_library(BASS::BASS SHARED IMPORTED)
     add_library(BASS::FX SHARED IMPORTED)
 
-    set_target_properties(
-        BASS::BASS
-        PROPERTIES IMPORTED_NO_SONAME TRUE
-                   IMPORTED_IMPLIB "${BASS_LIBRARY}"
-                   IMPORTED_LOCATION "${BASS_BINARY}"
-                   INTERFACE_INCLUDE_DIRECTORIES "${BASS_LIBRARY_INCLUDE_DIR}")
+    set_target_properties(BASS::BASS PROPERTIES IMPORTED_NO_SONAME TRUE IMPORTED_IMPLIB "${BASS_LIBRARY}" IMPORTED_LOCATION "${BASS_BINARY}"
+                                                INTERFACE_INCLUDE_DIRECTORIES "${BASS_LIBRARY_INCLUDE_DIR}")
 
     set_target_properties(
-        BASS::FX
-        PROPERTIES IMPORTED_NO_SONAME TRUE
-                   IMPORTED_IMPLIB "${BASS_LIBRARY_FX}"
-                   IMPORTED_LOCATION "${BASS_BINARY_FX}"
-                   INTERFACE_INCLUDE_DIRECTORIES "${BASS_LIBRARY_FX_INCLUDE_DIR}")
+        BASS::FX PROPERTIES IMPORTED_NO_SONAME TRUE IMPORTED_IMPLIB "${BASS_LIBRARY_FX}" IMPORTED_LOCATION "${BASS_BINARY_FX}"
+                            INTERFACE_INCLUDE_DIRECTORIES "${BASS_LIBRARY_FX_INCLUDE_DIR}")
 
     if(BASS_STATIC_MULTITHREADED)
         if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)

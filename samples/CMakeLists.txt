@@ -8,11 +8,12 @@ add_custom_target(
 add_subdirectory("001-stencil")
 add_subdirectory("002-generated-models")
 
-if(RAWRBOX_ENABLE_ASSIMP_SUPPORT)
+if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
     add_subdirectory("003-assimp")
-    add_subdirectory("004-light-support")
-    add_subdirectory("005-post-process")
 endif()
+
+add_subdirectory("004-light-support")
+add_subdirectory("005-post-process")
 
 if(RAWRBOX_BUILD_RAWRBOX_BASS)
     add_subdirectory("006-bass-loading")
@@ -31,6 +32,6 @@ endif()
 add_subdirectory("010-instancing")
 add_subdirectory("011-decals")
 
-if(RAWRBOX_ENABLE_WEBM_SUPPORT)
+if(RAWRBOX_BUILD_RAWRBOX_WEBM)
     add_subdirectory("012-webm")
 endif()

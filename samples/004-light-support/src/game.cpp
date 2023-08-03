@@ -1,10 +1,12 @@
 
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/gizmos.hpp>
-#include <rawrbox/render/model/assimp/assimp_importer.hpp>
+#include <rawrbox/render/light/point.hpp>
+#include <rawrbox/render/light/spot.hpp>
+#include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/renderers/cluster.hpp>
-#include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -35,8 +37,10 @@ namespace light {
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
+		// Add loaders ----
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
-		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+		// -----
 
 		// Setup binds ---
 		this->_window->onKey += [](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
@@ -52,13 +56,14 @@ namespace light {
 		this->loadContent();
 		// -----
 
-		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 20.F, 0.8F);
+		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 40.F, 0.8F);
 	}
 
 	void Game::loadContent() {
-		std::array<std::pair<std::string, uint32_t>, 2> initialContentFiles = {
+		std::array<std::pair<std::string, uint32_t>, 3> initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("content/models/light_test/test.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS)};
+		    std::make_pair<std::string, uint32_t>("./content/textures/light_test/planks.png", 0),
+		    std::make_pair<std::string, uint32_t>("./content/textures/light_test/planksSpec.png", 0)};
 
 		for (auto& f : initialContentFiles) {
 			this->_loadingFiles++;
@@ -77,12 +82,42 @@ namespace light {
 	void Game::contentLoaded() {
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(24);
 
-		// Assimp test ---
-		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/light_test/test.fbx")->get();
+		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/light_test/planks.png")->get();
+		auto texSpec = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/light_test/planksSpec.png")->get();
 
-		this->_model->load(*mdl);
-		this->_model->setPos({0, 0, 0});
-		//   -----
+		// Setup
+		{
+			auto mesh = rawrbox::MeshUtils::generatePlane({2.5F, 0.F, 0}, {3.F, 3.F}, rawrbox::Colors::White);
+			mesh.setTexture(tex);
+			mesh.setSpecularTexture(texSpec, 25.F);
+			mesh.setEulerAngle({bx::toRad(90), 0, 0});
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generatePlane({-2.5F, 0.F, 0}, {3.F, 3.F}, rawrbox::Colors::White);
+			mesh.setTexture(tex);
+			mesh.setSpecularTexture(texSpec, 25.F);
+			mesh.setEulerAngle({bx::toRad(90), 0, 0});
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
+			this->_model->addMesh(mesh);
+		}
+		// ----
+
+		// Text test ----
+		this->_text->addText(*this->_font, "POINT LIGHT", {2.5F, 0.5F, 0});
+		this->_text->addText(*this->_font, "SPOT LIGHT", {-2.5F, 0.5F, 0});
+		// ------
+
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{2.5F, 0.F, 0}, rawrbox::Colors::Blue, 6.2F);
+		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{-2.5F, 0.F, 0}, rawrbox::Vector3f{0.F, 1.F, 0.F}, rawrbox::Colors::Red, 0.602F, 0.708F, 100.F);
+
+		this->_model->upload();
+		this->_text->upload();
 
 		this->_ready = true;
 	}
@@ -90,6 +125,7 @@ namespace light {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 		this->_model.reset();
+		this->_text.reset();
 
 		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
@@ -116,12 +152,18 @@ namespace light {
 			if (light != nullptr) {
 				light->setOffsetPos({0, std::cos(rawrbox::BGFX_FRAME * 0.01F) * 1.F, 0});
 			}
+
+			light = rawrbox::LIGHTS::getLight(1);
+			if (light != nullptr) {
+				light->setOffsetPos({0, std::cos(rawrbox::BGFX_FRAME * 0.01F) * 1.F, 0});
+			}
 		}
 	}
 
 	void Game::drawWorld() {
-		if (!this->_ready || this->_model == nullptr) return;
+		if (!this->_ready || this->_model == nullptr || this->_text == nullptr) return;
 		this->_model->draw();
+		this->_text->draw();
 	}
 
 	void Game::printFrames() {

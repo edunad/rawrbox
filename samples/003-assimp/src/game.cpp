@@ -1,8 +1,8 @@
+#include <rawrbox/assimp/importer.hpp>
+#include <rawrbox/assimp/resources/model.hpp>
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/gizmos.hpp>
-#include <rawrbox/render/model/assimp/assimp_importer.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
-#include <rawrbox/render/resources/assimp/model.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>

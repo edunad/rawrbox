@@ -40,6 +40,7 @@
     SAMPLER2DARRAY(s_emission, SAMPLE_MAT_EMISSION);
 
     uniform vec4 u_texMatData;
+    #define specularPower u_texMatData.x
 #endif
 
 #ifdef READ_DEPTH

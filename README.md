@@ -64,7 +64,8 @@
 | `RAWRBOX.ENGINE`    | Engine lib (aka game loop)                         | The engine it self, contains the game loop mechanism                                       |        `UTILS`         |
 | `RAWRBOX.UI`        | UI lib                                             | UI components lib                                                                          | `RENDER` & `RESOURCES` |
 | `RAWRBOX.RESOURCES` | Resources manager lib                              | Resource manager. Handles loading and stores the pointers for easy access                  |        `UTILS`         |
-| `RAWRBOX.3DPHYSICS` | Physics lib                                        | Physics lib                                                                                |   `ENGINE` & `MATH`    |
+| `RAWRBOX.3DPHYSICS` | 3D Physics lib                                     | Handles 3D physics                                                                         |   `ENGINE` & `MATH`    |
+| `RAWRBOX.ASSIMP`    | Assimp lib                                         | Handles assimp load support                                                                | `RENDER` & `RESOURCES` |
 
 <p align="center">
   <img src="./RAWBOX%20-%20Dependencies.png" />
@@ -82,14 +83,14 @@
 | `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 |
 | --                                         | --                                                                                                 |
 | `RAWRBOX_ENABLE_QHULL`                     | Enables QHull util                                                                                 |
-| `RAWRBOX_ENABLE_ASSIMP_SUPPORT`            | Enables assimp model loading                                                                       |
-| `RAWRBOX_ENABLE_WEBM_SUPPORT`              | Enables WEBM support.                                                                              |
 | --                                         | --                                                                                                 |
 | `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          |
 | `RAWRBOX_BUILD_RAWRBOX_UI`                 | Builds and includes ui                                                                             |
 | `RAWRBOX_BUILD_RAWRBOX_RESOURCES`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
 | `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`         | Builds the 3D physics engine                                                                       |
 | `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
+| `RAWRBOX_BUILD_RAWRBOX_ASSIMP`             | Enables assimp model loading                                                                       |
+| `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM support.                                                                              |
 | --                                         | --                                                                                                 |
 | `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Enabled if jolt is used)                         |
 
@@ -149,7 +150,7 @@
 
 ### 001-stencil
 
-<a href='/samples/001-stencil'><img src="https://i.rawr.dev/iyEFYmakPt.png" width=512 /></a>
+<a href='/samples/001-stencil'><img src="https://i.rawr.dev/ycW6AgfHss.gif" width=512 /></a>
 
 ### 002-generated-models
 
@@ -161,11 +162,11 @@
 
 ### 004-light-support
 
-<a href='/samples/004-light-support'><img src="https://i.rawr.dev/gTCFiIrDPZ.png" width=512 /></a>
+<a href='/samples/004-light-support'><img src="https://i.rawr.dev/Xvk5DpQPUd.gif" width=512 /></a>
 
 ### 005-post-process
 
-<a href='/samples/005-post-process'><img src="https://i.rawr.dev/RsGBCOMewb.png" width=512 /></a>
+<a href='/samples/005-post-process'><img src="https://i.rawr.dev/4YBkWan9pe.gif" width=512 /></a>
 
 ### 006-bass-loading
 
@@ -173,15 +174,15 @@
 
 ### 007-particle-system
 
-<a href='/samples/007-particle-system'><img src="https://i.rawr.dev/4aJuzrDpXW.png" width=512 /></a>
+<a href='/samples/007-particle-system'><img src="https://i.rawr.dev/55dUuFJqKR.gif" width=512 /></a>
 
 ### 008-ui
 
-<a href='/samples/008-ui'><img src="https://i.rawr.dev/jimJzpVQRM.png" width=512 /></a>
+<a href='/samples/008-ui'><img src="https://i.rawr.dev/V1tcdCTckT.gif" width=512 /></a>
 
 ### 009-physics
 
-<a href='/samples/009-physics'><img src="https://i.rawr.dev/UDLyLuONyC.png" width=512 /></a>
+<a href='/samples/009-physics'><img src="https://i.rawr.dev/Ir57QELn6F.gif" width=512 /></a>
 
 ### 010-instancing
 
@@ -189,8 +190,8 @@
 
 ### 011-decals
 
-<a href='/samples/011-decals'><img src="https://i.rawr.dev/C85dTE6QQq.png" width=512 /></a>
+<a href='/samples/011-decals'><img src="https://i.rawr.dev/2eGdHosOfa.gif" width=512 /></a>
 
 ### 012-webm
 
-<a href='/samples/012-webm'><img src="https://i.rawr.dev/SfANPEU0TY.png" width=512 /></a>
+<a href='/samples/012-webm'><img src="https://i.rawr.dev/089L83mo4f.gif" width=512 /></a>
