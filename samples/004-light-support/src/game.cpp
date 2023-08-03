@@ -65,9 +65,8 @@ namespace light {
 		    std::make_pair<std::string, uint32_t>("./content/textures/light_test/planks.png", 0),
 		    std::make_pair<std::string, uint32_t>("./content/textures/light_test/planksSpec.png", 0)};
 
+		this->_loadingFiles = initialContentFiles.size();
 		for (auto& f : initialContentFiles) {
-			this->_loadingFiles++;
-
 			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
 				this->_loadingFiles--;
 				if (this->_loadingFiles <= 0) {
@@ -114,7 +113,7 @@ namespace light {
 		// ------
 
 		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{2.5F, 0.F, 0}, rawrbox::Colors::Blue, 6.2F);
-		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{-2.5F, 0.F, 0}, rawrbox::Vector3f{0.F, 1.F, 0.F}, rawrbox::Colors::Red, 0.602F, 0.708F, 100.F);
+		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{-2.5F, 0.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Red, 0.602F, 0.708F, 100.F);
 
 		this->_model->upload();
 		this->_text->upload();

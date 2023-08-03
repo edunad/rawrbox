@@ -58,9 +58,8 @@ namespace decal_test {
 		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("content/textures/decals.png", 64)};
 
+		this->_loadingFiles = initialContentFiles.size();
 		for (auto& f : initialContentFiles) {
-			this->_loadingFiles++;
-
 			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
 				this->_loadingFiles--;
 				if (this->_loadingFiles <= 0) {
