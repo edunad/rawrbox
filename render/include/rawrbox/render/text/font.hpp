@@ -91,7 +91,7 @@ namespace rawrbox {
 
 	class Font {
 	private:
-		std::unique_ptr<stbtt_fontinfo> _font = nullptr;
+		std::shared_ptr<stbtt_fontinfo> _font = nullptr; // unique_ptr does not like incomplete types
 		std::unordered_map<uint16_t, std::unique_ptr<rawrbox::Glyph>> _glyphs = {};
 
 		float _scale = 0.F;

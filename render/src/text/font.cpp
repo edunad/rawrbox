@@ -21,7 +21,7 @@ namespace rawrbox {
 		int offset = stbtt_GetFontOffsetForIndex(buffer.data(), fontIndex); // Get the offset for `otf` fonts
 
 		// Load
-		this->_font = std::make_unique<stbtt_fontinfo>();
+		this->_font = std::make_shared<stbtt_fontinfo>();
 		if (!stbtt_InitFont(this->_font.get(), buffer.data(), offset)) throw std::runtime_error("[RawrBox-Font] Failed to load font");
 		this->_scale = stbtt_ScaleForMappingEmToPixels(this->_font.get(), static_cast<float>(pixelHeight));
 		this->_pixelSize = static_cast<float>(pixelHeight);
