@@ -12,6 +12,8 @@ CPMAddPackage(
     master
     OPTIONS
     "MULI_BUILD_DEMO OFF")
+
+set_lib_runtime_mt(muli)
 # ----
 
 # LIB ----

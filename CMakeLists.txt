@@ -147,7 +147,7 @@ endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
     message(STATUS "Enabled 3D PHYSICS support")
-    add_subdirectory("physics")
+    add_subdirectory("physics_3d")
 endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)

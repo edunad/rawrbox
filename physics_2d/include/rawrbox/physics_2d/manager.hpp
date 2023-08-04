@@ -11,15 +11,17 @@
 namespace rawrbox {
 	class PHYSICS_2D {
 	protected:
+		static void checkContacts();
+
 	public:
+		static std::unique_ptr<muli::WorldSettings> physSettings;
 		static std::unique_ptr<muli::World> physWorld;
 
-		// VARS ----
-		static int velocitySteps;
-		static int positionSteps;
-		//  ----
+		// EVENTS -----
+		static rawrbox::Event<const muli::ContactManifold&> onContact;
+		// ----
 
-		static void init(const muli::Vec2& gravity = {0.0F, -10.0F});
+		static void init();
 		static void shutdown();
 
 		static void tick(); // Should be tick based update

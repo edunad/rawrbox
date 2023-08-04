@@ -22,6 +22,7 @@ namespace rawrbox {
 		Func& operator[](int i) { return calls[i]; }
 
 		size_t size() { return calls.size(); }
+		bool empty() { return calls.empty(); }
 
 		void clear() {
 			calls.clear();

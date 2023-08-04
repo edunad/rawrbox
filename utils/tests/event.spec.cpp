@@ -7,6 +7,7 @@
 TEST_CASE("Event should behave as expected", "[rawrbox::Event]") {
 	SECTION("rawrbox::Event::size") {
 		rawrbox::Event<std::string> a;
+		REQUIRE(a.empty() == true);
 		REQUIRE(a.size() == 0);
 
 		a += [](std::string /*_t*/) {};
