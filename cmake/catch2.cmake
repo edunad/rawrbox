@@ -1,5 +1,5 @@
 # Packages ----
-if(RAWRBOX_BUILD_TESTING)
+if(BUILD_TESTING)
     message(STATUS "Enabled testing for ${output_target}")
     enable_testing()
 
@@ -26,7 +26,7 @@ endif()
 # --------------
 
 # TESTING ----
-if(RAWRBOX_BUILD_TESTING)
+if(BUILD_TESTING)
     file(GLOB_RECURSE RAWRBOX_TESTS_IMPORTS "tests/*.spec.cpp")
 
     add_executable(${output_target}-TESTS ${RAWRBOX_TESTS_IMPORTS})

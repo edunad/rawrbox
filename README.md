@@ -39,12 +39,12 @@
 - GIF loading & animation
 - Vulkan / DirectX / OpenGL support
 - Linux Wayland support + steam deck support
-- Physics system using [JoltPhysics](https://github.com/jrouwe/JoltPhysics)
+- 3D Physics system using [JoltPhysics](https://github.com/jrouwe/JoltPhysics)
+- 2D Physics system using [Muli](https://github.com/Sopiro/Muli)
 - Decal system
 
 # TODO LIST
 
-- Add 2D Physics
 - Add animation blending
 - Add lights shadow maps
 - Add scripting lib (lua)
@@ -52,18 +52,19 @@
 
 # LIBS
 
-| LIB                 | DESCRIPTION                                        | USAGE                                                                                      |      DEPENDENCIES      |
-| :------------------ | :------------------------------------------------- | :----------------------------------------------------------------------------------------- | :--------------------: |
-| `RAWRBOX.RENDER`    | Rendering lib (aka, contains window, stencil, etc) | Contains window, stencil, model / texture loading. Basically anything related to rendering |   `ENGINE` & `MATH`    |
-| `RAWRBOX.MATH`      | Math lib                                           | Contains vector, color and other math related classes                                      |                        |
-| `RAWRBOX.BASS`      | Bass lib (aka sound loading)                       | Loads sounds using the BASS lib, supports 3D & http sound streaming                        |   `ENGINE` & `MATH`    |
-| `RAWRBOX.UTILS`     | Utils lib                                          | Utils for game development                                                                 |                        |
-| `RAWRBOX.ENGINE`    | Engine lib (aka game loop)                         | The engine it self, contains the game loop mechanism                                       |        `UTILS`         |
-| `RAWRBOX.UI`        | UI lib                                             | UI components lib                                                                          | `RENDER` & `RESOURCES` |
-| `RAWRBOX.RESOURCES` | Resources manager lib                              | Resource manager. Handles loading and stores the pointers for easy access                  |        `UTILS`         |
-| `RAWRBOX.3DPHYSICS` | 3D Physics lib                                     | Handles 3D physics                                                                         |   `ENGINE` & `MATH`    |
-| `RAWRBOX.ASSIMP`    | Assimp lib                                         | Handles assimp model loading                                                               | `RENDER` & `RESOURCES` |
-| `RAWRBOX.WEBM`      | WEBM lib                                           | Handles webm loading                                                                       | `RENDER` & `RESOURCES` |
+| LIB                  | DESCRIPTION                                        | USAGE                                                                                      |      DEPENDENCIES      |
+| :------------------- | :------------------------------------------------- | :----------------------------------------------------------------------------------------- | :--------------------: |
+| `RAWRBOX.RENDER`     | Rendering lib (aka, contains window, stencil, etc) | Contains window, stencil, model / texture loading. Basically anything related to rendering |   `ENGINE` & `MATH`    |
+| `RAWRBOX.MATH`       | Math lib                                           | Contains vector, color and other math related classes                                      |                        |
+| `RAWRBOX.BASS`       | Bass lib (aka sound loading)                       | Loads sounds using the BASS lib, supports 3D & http sound streaming                        |   `ENGINE` & `MATH`    |
+| `RAWRBOX.UTILS`      | Utils lib                                          | Utils for game development                                                                 |                        |
+| `RAWRBOX.ENGINE`     | Engine lib (aka game loop)                         | The engine it self, contains the game loop mechanism                                       |        `UTILS`         |
+| `RAWRBOX.UI`         | UI lib                                             | UI components lib                                                                          | `RENDER` & `RESOURCES` |
+| `RAWRBOX.RESOURCES`  | Resources manager lib                              | Resource manager. Handles loading and stores the pointers for easy access                  |        `UTILS`         |
+| `RAWRBOX.PHYSICS.3D` | 3D Physics lib                                     | Handles 3D physics                                                                         |   `ENGINE` & `MATH`    |
+| `RAWRBOX.PHYSICS.2D` | 2D Physics lib                                     | Handles 2D physics                                                                         |   `ENGINE` & `MATH`    |
+| `RAWRBOX.ASSIMP`     | Assimp lib                                         | Handles assimp model loading                                                               | `RENDER` & `RESOURCES` |
+| `RAWRBOX.WEBM`       | WEBM lib                                           | Handles webm loading                                                                       | `RENDER` & `RESOURCES` |
 
 <p align="center">
   <img src="./RAWBOX%20-%20Dependencies.png" />
@@ -86,11 +87,12 @@
 | `RAWRBOX_BUILD_RAWRBOX_UI`                 | Builds and includes ui                                                                             |
 | `RAWRBOX_BUILD_RAWRBOX_RESOURCES`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
 | `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`         | Builds the 3D physics engine                                                                       |
+| `RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS`         | Builds the 2D physics engine                                                                       |
 | `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
 | `RAWRBOX_BUILD_RAWRBOX_ASSIMP`             | Enables assimp model loading                                                                       |
 | `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM loading                                                                               |
 | --                                         | --                                                                                                 |
-| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Enabled if jolt is used)                         |
+| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Auto-enabled if jolt is used)                    |
 
 # DEPENCENDIES
 
@@ -110,7 +112,8 @@
 | assimp          |    ✖️    | Used for loading models                             |
 | catch2          |    ✖️    | Used for testing                                    |
 | bass            |    ✖️    | Used for loading sounds                             |
-| JoltPhysics     |    ✖️    | Used for managing physics                           |
+| JoltPhysics     |    ✖️    | Used for managing 3D physics                        |
+| muli            |    ✖️    | Used for managing 2D physics                        |
 | webmlib & vpx   |    ✖️    | Used for loading webm                               |
 
 # BUILDING
@@ -193,3 +196,7 @@
 ### 012-webm
 
 <a href='/samples/012-webm'><img src="https://i.rawr.dev/089L83mo4f-min2.gif" width=512 /></a>
+
+### 013-physics-2d
+
+TODO

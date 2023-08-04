@@ -35,3 +35,7 @@ add_subdirectory("011-decals")
 if(RAWRBOX_BUILD_RAWRBOX_WEBM)
     add_subdirectory("012-webm")
 endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
+    add_subdirectory("013-physics-2d")
+endif()
