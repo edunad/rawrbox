@@ -40,7 +40,7 @@ jobs:
           path: |
             ./build
             ~/cpm-cache
-          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt') }}
+          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt') }}
 
       - name: Build
         id: build
@@ -58,7 +58,7 @@ jobs:
           path: |
             ./build
             ~/cpm-cache
-          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt') }}
+          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt') }}
 
       - name: Run tests
         run: |
@@ -82,4 +82,4 @@ jobs:
           version: "16"
           database: "./build/"
           thread-comments: true
-          ignore: build | build/_deps | .github | render/include/stb | engine/tests | math/tests | render/tests | resources/tests | utils/tests | physics/tests
+          ignore: build | _deps | .github | render/include/stb | engine/tests | math/tests | render/tests | resources/tests | utils/tests

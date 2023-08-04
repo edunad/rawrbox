@@ -218,6 +218,7 @@ namespace physics_test {
 
 	void Game::drawWorld() {
 		if (!this->_ready) return;
+		if (this->_modelGrid != nullptr) this->_modelGrid->draw();
 
 		for (auto& b : this->_boxes) {
 			auto body = b->body;
@@ -232,8 +233,6 @@ namespace physics_test {
 
 			b->mdl->draw();
 		}
-
-		this->_modelGrid->draw();
 	}
 
 	void Game::draw() {
