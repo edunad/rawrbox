@@ -1,6 +1,10 @@
 #include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/text/font.hpp>
 
+#define STBTT_STATIC
+#define STB_TRUETYPE_IMPLEMENTATION
+#include <stb/stb_truetype.hpp>
+
 #include <fmt/format.h>
 #include <utf8.h>
 

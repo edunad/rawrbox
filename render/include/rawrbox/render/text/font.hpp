@@ -4,15 +4,13 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/texture/pack.hpp>
 
-#define STBTT_STATIC
-#define STB_TRUETYPE_IMPLEMENTATION
-#include <stb/stb_truetype.hpp>
-
 #include <bgfx/bgfx.h>
 
 #include <memory>
 #include <string>
 #include <unordered_map>
+
+struct stbtt_fontinfo;
 
 namespace rawrbox {
 	enum class Alignment {
@@ -90,6 +88,7 @@ namespace rawrbox {
 	};
 
 	class TextEngine;
+
 	class Font {
 	private:
 		std::unique_ptr<stbtt_fontinfo> _font = nullptr;
