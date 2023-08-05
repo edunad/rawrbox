@@ -42,12 +42,12 @@
 - 3D Physics system using [JoltPhysics](https://github.com/jrouwe/JoltPhysics)
 - 2D Physics system using [Muli](https://github.com/Sopiro/Muli)
 - Decal system
+- Scripting / modding support with LUA
 
 # TODO LIST
 
 - Add animation blending
 - Add lights shadow maps
-- Add scripting lib (lua)
 - Add steam networking lib
 
 # LIBS
@@ -65,6 +65,7 @@
 | `RAWRBOX.PHYSICS.2D` | 2D Physics lib                                     | Handles 2D physics                                                                         |   `ENGINE` & `MATH`    |
 | `RAWRBOX.ASSIMP`     | Assimp lib                                         | Handles assimp model loading                                                               | `RENDER` & `RESOURCES` |
 | `RAWRBOX.WEBM`       | WEBM lib                                           | Handles webm loading                                                                       | `RENDER` & `RESOURCES` |
+| `RAWRBOX.SCRIPTING`  | Scripting lib                                      | Handles lua & mod loading                                                                  |                        |
 
 <p align="center">
   <img src="./RAWBOX%20-%20Dependencies.png" />
@@ -91,6 +92,7 @@
 | `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
 | `RAWRBOX_BUILD_RAWRBOX_ASSIMP`             | Enables assimp model loading                                                                       |
 | `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM loading                                                                               |
+| `RAWRBOX_BUILD_RAWRBOX_SCRIPTING`          | Enables lua & modding support                                                                      |
 | --                                         | --                                                                                                 |
 | `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Auto-enabled if jolt is used)                    |
 
@@ -115,6 +117,7 @@
 | JoltPhysics     |    ✖️    | Used for managing 3D physics                        |
 | muli            |    ✖️    | Used for managing 2D physics                        |
 | webmlib & vpx   |    ✖️    | Used for loading webm                               |
+| lua & sol2      |    ✖️    | Used for loading & managing lua scripting           |
 
 # BUILDING
 

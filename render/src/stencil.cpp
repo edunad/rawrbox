@@ -400,7 +400,7 @@ namespace rawrbox {
 
 			if (canMerge) {
 				for (auto& ind : this->_currentDraw.indices) {
-					oldCall.indices.push_back(static_cast<uint32_t>(oldCall.vertices.size()) + ind);
+					oldCall.indices.push_back(static_cast<uint16_t>(oldCall.vertices.size()) + ind);
 				}
 
 				oldCall.vertices.insert(oldCall.vertices.end(), this->_currentDraw.vertices.begin(), this->_currentDraw.vertices.end());

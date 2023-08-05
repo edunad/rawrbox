@@ -39,3 +39,7 @@ endif()
 if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
     add_subdirectory("013-physics-2d")
 endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    add_subdirectory("014-scripting")
+endif()
