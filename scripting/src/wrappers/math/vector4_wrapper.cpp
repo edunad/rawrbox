@@ -39,6 +39,6 @@ namespace rawrbox {
 		    sol::meta_function::addition, sol::overload(sol::resolve<Vector4f(const Vector4f&) const>(&Vector4f::operator+), sol::resolve<Vector4f(float) const>(&Vector4f::operator+)),
 		    sol::meta_function::subtraction, sol::overload(sol::resolve<Vector4f(const Vector4f&) const>(&Vector4f::operator-), sol::resolve<Vector4f(float) const>(&Vector4f::operator-)),
 		    sol::meta_function::division, sol::overload(sol::resolve<Vector4f(const Vector4f&) const>(&Vector4f::operator/), sol::resolve<Vector4f(float) const>(&Vector4f::operator/)),
-		    sol::meta_function::multiplication, sol::overload(sol::resolve<Vector4f(const Vector4f&) const>(&Vector4f::operator*), sol::resolve<Vector4f(float) const>(&Vector4f::operator*)));
-	}*/
-	} // namespace rawrbox
+		    sol::meta_function::multiplication, sol::overload(sol::resolve<Vector4f(const Vector4f&) const>(&Vector4f::operator*), sol::resolve<Vector4f(float) const>(&Vector4f::operator*)));*/
+	}
+} // namespace rawrbox

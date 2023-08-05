@@ -1,4 +1,3 @@
-#pragma once
 
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/scripting/mod.hpp>
