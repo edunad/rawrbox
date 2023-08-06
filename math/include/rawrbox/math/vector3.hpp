@@ -116,37 +116,37 @@ namespace rawrbox {
 
 		// UTILS - FLOAT ---
 		[[nodiscard]] VecType normalized() const
-			requires(std::is_same<NumberType, float>::value)
+			requires(std::is_same_v<NumberType, float>)
 		{
 			return (*this) / length();
 		}
 
 		[[nodiscard]] float dot(const Vector3_t<float>& other) const
-			requires(std::is_same<NumberType, float>::value)
+			requires(std::is_same_v<NumberType, float>)
 		{
 			return x * other.x + y * other.y + z * other.z;
 		}
 
 		[[nodiscard]] VecType floor() const
-			requires(std::is_same<NumberType, float>::value)
+			requires(std::is_same_v<NumberType, float>)
 		{
 			return {std::floor(x), std::floor(y), std::floor(z)};
 		}
 
 		[[nodiscard]] VecType round() const
-			requires(std::is_same<NumberType, float>::value)
+			requires(std::is_same_v<NumberType, float>)
 		{
 			return {std::round(x), std::round(y), std::round(z)};
 		}
 
 		[[nodiscard]] VecType ceil() const
-			requires(std::is_same<NumberType, float>::value)
+			requires(std::is_same_v<NumberType, float>)
 		{
 			return {std::ceil(x), std::ceil(y), std::ceil(z)};
 		}
 
 		[[nodiscard]] VecType cross(const VecType& other) const
-			requires(std::is_same<NumberType, float>::value)
+			requires(std::is_same_v<NumberType, float>)
 		{
 			VecType retVal;
 			retVal.x = y * other.z - z * other.y;

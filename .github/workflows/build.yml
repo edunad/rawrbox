@@ -71,7 +71,7 @@ jobs:
           ctest --test-dir ./scripting --output-on-failure
 
       - name: Run linter
-        uses: cpp-linter/cpp-linter-action@v2.6.0
+        uses: cpp-linter/cpp-linter-action@main
         id: linter
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

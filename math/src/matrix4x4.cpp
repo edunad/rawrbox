@@ -1,8 +1,10 @@
 
 #include <rawrbox/math/matrix4x4.hpp>
 
-#include <algorithm> // for equal
-#include <cmath>     // for cos, sin
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <cstring>
 
 namespace rawrbox {
 	// PRIVATE -----
