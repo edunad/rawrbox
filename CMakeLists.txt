@@ -60,10 +60,12 @@ set(RAWRBOX_CONTENT_FOLDER "content" CACHE STRING "the content folder (aka where
 set(RAWRBOX_LIBRARY_TYPE "STATIC" CACHE STRING "Linking type for library")
 # ----------------
 
-list(APPEND CMAKE_CXX_FLAGS "-DSPDLOG_FMT_EXTERNAL -DNOMINMAX")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSPDLOG_FMT_EXTERNAL -DNOMINMAX")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+set(BUILD_SHARED_LIBS OFF)
 
 # Apple needs this flag to compile mixed objective/c++
 if(APPLE AND NOT XCODE)
