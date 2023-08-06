@@ -65,11 +65,15 @@
 | `RAWRBOX.PHYSICS.2D` | 2D Physics lib                                     | Handles 2D physics                                                                         |   `ENGINE` & `MATH`    |
 | `RAWRBOX.ASSIMP`     | Assimp lib                                         | Handles assimp model loading                                                               | `RENDER` & `RESOURCES` |
 | `RAWRBOX.WEBM`       | WEBM lib                                           | Handles webm loading                                                                       | `RENDER` & `RESOURCES` |
-| `RAWRBOX.SCRIPTING`  | Scripting lib                                      | Handles lua & mod loading                                                                  |                        |
+| `RAWRBOX.SCRIPTING`  | Scripting lib                                      | Handles lua & mod loading                                                                  |   `ENGINE` & `MATH`    |
+
+<br/><br/>
 
 <p align="center">
-  <img src="./RAWBOX%20-%20Dependencies.png" />
-</p><br/>
+  <img src="./RAWBOX%20-%20Dependencies.svg" />
+</p>
+
+<br/><br/><br/>
 
 # CMAKE OPTIONS
 
@@ -208,4 +212,4 @@
 
 ### 014-scripting
 
-<a href='/samples/014-scripting'>TODO</a>
+<a href='/samples/014-scripting'><img src="https://i.rawr.dev/SyCR4YmWMW.png" width=512 /></a>
