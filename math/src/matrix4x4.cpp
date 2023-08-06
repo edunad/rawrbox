@@ -1,5 +1,7 @@
 
 #include <rawrbox/math/matrix4x4.hpp>
+#include <rawrbox/math/vector3.hpp>
+#include <rawrbox/math/vector4.hpp>
 
 #include <algorithm>
 #include <array>

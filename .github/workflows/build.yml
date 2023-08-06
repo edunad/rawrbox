@@ -71,7 +71,7 @@ jobs:
           ctest --test-dir ./scripting --output-on-failure
 
       - name: Run linter
-        uses: cpp-linter/cpp-linter-action@main
+        uses: cpp-linter/cpp-linter-action@v2.6.0
         id: linter
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -80,7 +80,7 @@ jobs:
           files-changed-only: true
           tidy-checks: ""
           extra-args: "-std=c++20 -Wall"
-          version: "17"
+          version: "16"
           database: "./build/"
           thread-comments: true
           ignore: build | _deps | .github | render/include/stb | engine/tests | math/tests | render/tests | resources/tests | utils/tests | scripting/tests
