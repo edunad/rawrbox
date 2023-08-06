@@ -35,6 +35,7 @@
 
 #include <map>
 #include <stdexcept>
+#include <string>
 
 #define GLFWHANDLE (std::bit_cast<GLFWwindow*>(_handle))
 #define GLFWCURSOR (std::bit_cast<GLFWcursor*>(_cursor))
@@ -46,11 +47,11 @@ namespace rawrbox {
 	}
 
 	static void glfw_errorCallback(int error, const char* description) {
-		fmt::print("[RawrBox-Window] GLFW error {}: {}\n", error, description);
+		fmt::print("[RawrBox-Window] GLFW error {}: {}\n", error, std::string(description));
 	}
 
 	void BgfxCallbacks::fatal(const char* /*filePath*/, uint16_t line, bgfx::Fatal::Enum /*code*/, const char* str) {
-		fmt::print("[RawrBox-Window] BGFX fatal error {}: {}\n", line, str);
+		fmt::print("[RawrBox-Window] BGFX fatal error {}: {}\n", line, std::string(str));
 		abort();
 	}
 

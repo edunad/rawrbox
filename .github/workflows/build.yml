@@ -83,4 +83,4 @@ jobs:
           version: "16"
           database: "./build/"
           thread-comments: true
-          ignore: build | build/_deps/fmt-src/include/fmt/core.h | _deps | .github | render/include/stb | engine/tests | math/tests | render/tests | resources/tests | utils/tests | scripting/tests
+          ignore: build | _deps | .github | render/include/stb | engine/tests | math/tests | render/tests | resources/tests | utils/tests | scripting/tests
