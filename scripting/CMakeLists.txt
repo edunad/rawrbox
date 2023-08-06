@@ -9,7 +9,6 @@ if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT)
         NAME
         luajit
         GITHUB_REPOSITORY
-        #9chu/LuaJIT-cmake
         edunad/LuaJIT-cmake
         GIT_TAG
         master
