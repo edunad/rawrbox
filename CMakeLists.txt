@@ -60,22 +60,20 @@ set(RAWRBOX_CONTENT_FOLDER "content" CACHE STRING "the content folder (aka where
 set(RAWRBOX_LIBRARY_TYPE "STATIC" CACHE STRING "Linking type for library")
 # ----------------
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSPDLOG_FMT_EXTERNAL -DNOMINMAX")
+list(APPEND CMAKE_CXX_FLAGS "-DSPDLOG_FMT_EXTERNAL -DNOMINMAX")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(BUILD_SHARED_LIBS OFF)
-
 # Apple needs this flag to compile mixed objective/c++
 if(APPLE AND NOT XCODE)
-    set(CMAKE_CXX_FLAGS "-ObjC++")
+    list(APPEND CMAKE_CXX_FLAGS "-ObjC++")
 endif()
 
 # Linux and Wayland support
 if(NOT WIN32)
     set(RAWRBOX_EXTRA_LIBS pthread GL X11)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
+    list(APPEND CMAKE_CXX_FLAGS "-Wno-psabi")
 
     if(RAWRBOX_USE_WAYLAND)
         list(APPEND RAWRBOX_EXTRA_LIBS wayland-egl)
@@ -90,7 +88,7 @@ else()
     set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4099")
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")
+    list(APPEND CMAKE_CXX_FLAGS "/permissive-")
 endif()
 
 set(CMAKE_SKIP_RPATH TRUE)

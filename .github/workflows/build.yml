@@ -80,7 +80,7 @@ jobs:
           files-changed-only: true
           tidy-checks: ""
           extra-args: "-std=c++20 -Wall"
-          version: "16"
+          version: "17"
           database: "./build/"
           thread-comments: true
           ignore: build | _deps | .github | render/include/stb | engine/tests | math/tests | render/tests | resources/tests | utils/tests | scripting/tests

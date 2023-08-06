@@ -1,6 +1,8 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/image.hpp>
 
+#pragma warning(push)
+#pragma warning(disable : 4505)
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
@@ -8,6 +10,7 @@
 #define STBI_ONLY_BMP
 #define STBI_ONLY_TGA
 #include <stb/image.hpp>
+#pragma warning(pop)
 
 #include <fmt/format.h>
 

@@ -70,5 +70,6 @@ target_link_libraries(${output_target} PUBLIC RAWRBOX.RENDER ${RAWRBOX_EXTRA_LIB
 set_lib_runtime_mt(${output_target})
 # --------------
 
-# TEST ---- include(../cmake/catch2.cmake)
+# TEST ----
+#include(../cmake/catch2.cmake)
 # --------------

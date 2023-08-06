@@ -92,7 +92,7 @@ namespace rawrbox {
 			this->_pausedTime = rawrbox::TimeUtils::time();
 		} else {
 			this->_nextTick += (rawrbox::TimeUtils::time() - this->_pausedTime);
-			this->_pausedTime = 0.F;
+			this->_pausedTime = 0;
 		}
 	}
 } // namespace rawrbox

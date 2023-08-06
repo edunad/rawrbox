@@ -1,10 +1,11 @@
 // From: https://gist.github.com/urraka/685d9a6340b26b830d49
 #pragma once
 
+#pragma warning(push)
+#pragma warning(disable : 4505)
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#define STB_IMAGE_RESIZE_IMPLEMENTATION
 
 #define STBI_ONLY_PNG
 #define STBI_ONLY_JPEG
@@ -14,6 +15,7 @@
 
 #include <stb/image.hpp>
 #include <stb/image_write.hpp>
+#pragma warning(pop)
 
 #include <stdexcept>
 
