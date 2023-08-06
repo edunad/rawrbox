@@ -69,13 +69,13 @@ set(BUILD_SHARED_LIBS OFF)
 
 # Apple needs this flag to compile mixed objective/c++
 if(APPLE AND NOT XCODE)
-    list(APPEND CMAKE_CXX_FLAGS "-ObjC++")
+    set(CMAKE_CXX_FLAGS "-ObjC++")
 endif()
 
 # Linux and Wayland support
 if(NOT WIN32)
     set(RAWRBOX_EXTRA_LIBS pthread GL X11)
-    list(APPEND CMAKE_CXX_FLAGS "-Wno-psabi")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
     if(RAWRBOX_USE_WAYLAND)
         list(APPEND RAWRBOX_EXTRA_LIBS wayland-egl)
@@ -90,7 +90,7 @@ else()
     set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4099")
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
-    list(APPEND CMAKE_CXX_FLAGS "/permissive-")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")
 endif()
 
 set(CMAKE_SKIP_RPATH TRUE)
