@@ -1,4 +1,6 @@
 function MOD:init()
+    if type(jit) == 'table' then print(jit.version) end
+
     print("\nTEST Mod initialized!\n")
 
     local v2 = Vector2:new(23, 43)

@@ -61,11 +61,6 @@ namespace rawrbox {
 			fmt::print("{}\n", fmt::join(prtData, " "));
 		};
 
-		// Override require
-		env["require"] = [&env](const std::string& path) {
-			return env["include"](path);
-		};
-
 		// TODO: Handle relative paths (aka ./test/ui.lua inside of ./src/cl/init.lua, it should append this path, instead of requiring full path)
 		env["include"] = [&env, &mod, this](const std::string& path) {
 			auto old = this->_includePathPrefix;
@@ -123,12 +118,15 @@ namespace rawrbox {
 	void Scripting::loadLibraries() {
 		this->_lua.open_libraries(sol::lib::base);
 		// lua.open_libraries(sol::lib::io); -> Use our own IO instead
-		// lua.open_libraries(sol::lib::package); -> Use our own package instead
+		this->_lua.open_libraries(sol::lib::package);
 		this->_lua.open_libraries(sol::lib::math);
 		this->_lua.open_libraries(sol::lib::table);
 		this->_lua.open_libraries(sol::lib::debug);
 		this->_lua.open_libraries(sol::lib::string);
 		this->_lua.open_libraries(sol::lib::coroutine);
+		this->_lua.open_libraries(sol::lib::bit32);
+
+		this->_lua.open_libraries(sol::lib::jit);
 	}
 
 	void Scripting::loadTypes() {

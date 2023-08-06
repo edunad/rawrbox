@@ -36,7 +36,9 @@ option(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS "Build 2D physics support" ON)
 option(RAWRBOX_BUILD_RAWRBOX_BASS "Build bass & add sound loading support" ON)
 option(RAWRBOX_BUILD_RAWRBOX_ASSIMP "Build assimp & add model loading support" ON)
 option(RAWRBOX_BUILD_RAWRBOX_WEBM "Build libwebm & add video loading support" ON)
+
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING "Build lua & mod support" ON)
+option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT "Enable scripting LuaJIT support" ON)
 
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" ON)
 
@@ -124,6 +126,11 @@ if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     add_subdirectory("resources")
 endif()
 
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    message(STATUS "Enabled SCRIPTING support")
+    add_subdirectory("scripting")
+endif()
+
 add_subdirectory("render")
 
 if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
@@ -154,11 +161,6 @@ endif()
 if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
     message(STATUS "Enabled 2D PHYSICS support")
     add_subdirectory("physics_2d")
-endif()
-
-if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-    message(STATUS "Enabled SCRIPTING support")
-    add_subdirectory("scripting")
 endif()
 
 if(RAWRBOX_BUILD_SAMPLES)
