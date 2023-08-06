@@ -1,4 +1,3 @@
-#pragma once
 
 #include <rawrbox/scripting/utils/lua.hpp>
 
