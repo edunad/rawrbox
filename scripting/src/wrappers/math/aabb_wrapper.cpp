@@ -14,8 +14,9 @@ namespace rawrbox {
 		    "empty", &AABBf::empty,
 		    "contains", &AABBf::contains,
 
-		    "surfaceArea", &AABBf::surfaceArea
-		    // sol::meta_function::equal_to, sol::overload(sol::resolve<rawrbox::AABBf(const rawrbox::AABBf&) const>(&rawrbox::AABBf::operator=))
-		);
+		    "surfaceArea", &AABBf::surfaceArea,
+
+		    sol::meta_function::equal_to, &rawrbox::AABBf::operator==,
+		    sol::meta_function::multiplication, &rawrbox::AABBf::operator*);
 	}
 } // namespace rawrbox

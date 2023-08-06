@@ -31,6 +31,6 @@ function string.trim(str)
 end
 
 string.luaFormat = string.format
-function string.format(str, ...)
+function string.fmt(str, ...)
 	return fmt:format(str, ...)
 end

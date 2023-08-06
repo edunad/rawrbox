@@ -32,7 +32,7 @@ static const bgfx::EmbeddedShader stencil_text_shaders[] = {
 // NOLINTEND(*)
 
 namespace rawrbox {
-	uint32_t Stencil::renderID = 0;
+	bgfx::ViewId Stencil::renderID = 0;
 
 	Stencil::Stencil(const rawrbox::Vector2i& size) : _windowSize(size), _renderId(rawrbox::STENCIL_VIEW_ID + ++Stencil::renderID) {
 		// Shader layout
@@ -44,7 +44,7 @@ namespace rawrbox {
 
 		if (rawrbox::BGFX_INITIALIZED) {
 			// SETUP STENCIL ---
-			bgfx::setViewRect(this->_renderId, 0, 0, this->_windowSize.x, this->_windowSize.y);
+			bgfx::setViewRect(this->_renderId, 0, 0, static_cast<uint16_t>(this->_windowSize.x), static_cast<uint16_t>(this->_windowSize.y));
 			bgfx::setViewMode(this->_renderId, bgfx::ViewMode::Sequential);
 			bgfx::setViewName(this->_renderId, fmt::format("RawrBox-RENDERER-STENCIL-{}", this->_renderId).c_str());
 			bgfx::setViewClear(this->_renderId, BGFX_DEFAULT_CLEAR, 0x00000000, 1.0F, 0);
@@ -81,7 +81,7 @@ namespace rawrbox {
 	void Stencil::resize(const rawrbox::Vector2i& size) {
 		this->_windowSize = size;
 
-		bgfx::setViewRect(this->_renderId, 0, 0, size.x, size.y);
+		bgfx::setViewRect(this->_renderId, 0, 0, static_cast<uint16_t>(size.x), static_cast<uint16_t>(size.y));
 		bgfx::setViewClear(this->_renderId, BGFX_DEFAULT_CLEAR, 0x00000000, 1.0F, 0);
 	}
 

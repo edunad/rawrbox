@@ -11,7 +11,7 @@ namespace rawrbox {
 
 		    "size", &Matrix4x4::size,
 
-		    //"transpose", &Matrix4x4::transpose,
+		    "transpose", sol::overload(sol::resolve<void(const float*)>(&Matrix4x4::transpose), sol::resolve<void(const std::array<float, 16>&)>(&Matrix4x4::transpose)),
 
 		    "translate", &Matrix4x4::translate,
 		    "scale", &Matrix4x4::scale,
@@ -22,11 +22,19 @@ namespace rawrbox {
 		    "rotateZ", &Matrix4x4::rotateZ,
 		    "rotateXYZ", &Matrix4x4::rotateXYZ,
 		    "mtxSRT", &Matrix4x4::mtxSRT,
-		    //"mul", &Matrix4x4::mul,
-		    //"add", &Matrix4x4::add,
-		    //"mulVec", &Matrix4x4::mulVec,
+
+		    "mul", sol::overload(sol::resolve<void(const rawrbox::Matrix4x4&)>(&Matrix4x4::mul), sol::resolve<void(const rawrbox::Vector3f&)>(&Matrix4x4::mul)),
+		    "add", sol::overload(sol::resolve<void(const rawrbox::Matrix4x4&)>(&Matrix4x4::add), sol::resolve<void(const rawrbox::Vector3f&)>(&Matrix4x4::add)),
+
+		    "mulVec", sol::overload(sol::resolve<rawrbox::Vector3f(const rawrbox::Vector3f&) const>(&Matrix4x4::mulVec), sol::resolve<rawrbox::Vector4f(const rawrbox::Vector4f&) const>(&Matrix4x4::mulVec)),
+
 		    "inverse", &Matrix4x4::inverse,
 		    "lookAt", &Matrix4x4::lookAt,
-		    "project", &Matrix4x4::project);
+		    "project", &Matrix4x4::project,
+
+		    sol::meta_function::equal_to, &Matrix4x4::operator==,
+		    sol::meta_function::index, &Matrix4x4::operator[],
+		    sol::meta_function::addition, sol::overload(sol::resolve<rawrbox::Matrix4x4(rawrbox::Matrix4x4) const>(&Matrix4x4::operator+), sol::resolve<rawrbox::Matrix4x4(rawrbox::Vector3f) const>(&Matrix4x4::operator+)),
+		    sol::meta_function::multiplication, sol::overload(sol::resolve<rawrbox::Matrix4x4(rawrbox::Matrix4x4) const>(&Matrix4x4::operator*), sol::resolve<rawrbox::Matrix4x4(rawrbox::Vector3f) const>(&Matrix4x4::operator*)));
 	}
 } // namespace rawrbox

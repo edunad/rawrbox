@@ -203,7 +203,7 @@ namespace rawrbox {
 		this->mtx[14] += other.z;
 	}
 
-	[[nodiscard]] rawrbox::Vector3f const Matrix4x4::mulVec(const rawrbox::Vector3f& other) const {
+	[[nodiscard]] rawrbox::Vector3f Matrix4x4::mulVec(const rawrbox::Vector3f& other) const {
 		rawrbox::Vector3f result = {};
 
 		result.x = other.x * this->mtx[0] + other.y * this->mtx[4] + other.z * this->mtx[8] + this->mtx[12];
@@ -213,7 +213,7 @@ namespace rawrbox {
 		return result;
 	}
 
-	[[nodiscard]] rawrbox::Vector4f const Matrix4x4::mulVec(const rawrbox::Vector4f& other) const {
+	[[nodiscard]] rawrbox::Vector4f Matrix4x4::mulVec(const rawrbox::Vector4f& other) const {
 		rawrbox::Vector4f result = {};
 
 		result.x = other.x * this->mtx[0] + other.y * this->mtx[4] + other.z * this->mtx[8] + other.w * this->mtx[12];

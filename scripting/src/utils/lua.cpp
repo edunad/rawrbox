@@ -5,7 +5,6 @@
 #include <filesystem>
 
 namespace rawrbox {
-
 	// @/ == Root content
 	// @cats/ == `cats` mod
 	// normal_path == current mod

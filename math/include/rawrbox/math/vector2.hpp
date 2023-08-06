@@ -95,8 +95,8 @@ namespace rawrbox {
 			}
 
 			return {
-			    std::numeric_limits<double>::quiet_NaN(),
-			    std::numeric_limits<double>::quiet_NaN()};
+			    std::numeric_limits<float>::quiet_NaN(),
+			    std::numeric_limits<float>::quiet_NaN()};
 		}
 
 		[[nodiscard]] VecType rotateAroundOrigin(NumberType rads, const VecType& origin) const {

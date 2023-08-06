@@ -4,7 +4,7 @@
 namespace rawrbox {
 	void Vector3Wrapper::registerLua(sol::state& lua) {
 		lua.new_usertype<rawrbox::Vector3f>("Vector3",
-		    sol::constructors<rawrbox::Vector3f(), rawrbox::Vector3f(rawrbox::Vector3f), rawrbox::Vector3f(float, float), rawrbox::Vector3f(float, float, float)>(),
+		    sol::constructors<rawrbox::Vector3f(), rawrbox::Vector3f(rawrbox::Vector3f), rawrbox::Vector3f(rawrbox::Vector2f, float), rawrbox::Vector3f(float), rawrbox::Vector3f(float, float), rawrbox::Vector3f(float, float, float)>(),
 
 		    "x", &Vector3f::x,
 		    "y", &Vector3f::y,
@@ -21,7 +21,7 @@ namespace rawrbox {
 
 		    "data", &Vector3f::data,
 
-		    //"clamp", &Vector3f::clamp,
+		    "clamp", sol::overload(sol::resolve<Vector3f(float, float) const>(&Vector3f::clamp), sol::resolve<Vector3f(Vector3f, Vector3f) const>(&Vector3f::clamp)),
 
 		    "distance", &Vector3f::distance,
 		    "length", &Vector3f::length,
@@ -37,6 +37,10 @@ namespace rawrbox {
 		    "round", &Vector3f::round,
 		    "ceil", &Vector3f::ceil,
 		    "cross", &Vector3f::cross,
+
+		    sol::meta_function::less_than, sol::overload(sol::resolve<bool(const Vector3f&) const>(&Vector3f::operator<), sol::resolve<bool(float) const>(&Vector3f::operator<)),
+		    sol::meta_function::less_than_or_equal_to, sol::overload(sol::resolve<bool(const Vector3f&) const>(&Vector3f::operator<=), sol::resolve<bool(float) const>(&Vector3f::operator<=)),
+		    sol::meta_function::equal_to, sol::overload(sol::resolve<bool(const Vector3f&) const>(&Vector3f::operator==), sol::resolve<bool(float) const>(&Vector3f::operator==)),
 
 		    sol::meta_function::addition, sol::overload(sol::resolve<Vector3f(const Vector3f&) const>(&Vector3f::operator+), sol::resolve<Vector3f(float) const>(&Vector3f::operator+)),
 		    sol::meta_function::subtraction, sol::overload(sol::resolve<Vector3f(const Vector3f&) const>(&Vector3f::operator-), sol::resolve<Vector3f(float) const>(&Vector3f::operator-)),

@@ -15,12 +15,13 @@ namespace rawrbox {
 		    "size", &Vector2f::size,
 		    "data", &Vector2f::data,
 
+		    "clamp", sol::overload(sol::resolve<Vector2f(float, float) const>(&Vector2f::clamp), sol::resolve<Vector2f(Vector2f, Vector2f) const>(&Vector2f::clamp)),
+
 		    "distance", &Vector2f::distance,
 		    "length", &Vector2f::length,
 		    "angle", &Vector2f::angle,
 		    "abs", &Vector2f::abs,
 		    "lerp", &Vector2f::lerp,
-		    //"clamp", &Vector2f::clamp,
 		    "atan2", &Vector2f::atan2,
 		    "sinCos", &Vector2f::sinCos,
 		    "cosSin", &Vector2f::cosSin,
@@ -32,6 +33,10 @@ namespace rawrbox {
 		    "floor", &Vector2f::floor,
 		    "round", &Vector2f::round,
 		    "ceil", &Vector2f::ceil,
+
+		    sol::meta_function::less_than, sol::overload(sol::resolve<bool(const Vector2f&) const>(&Vector2f::operator<), sol::resolve<bool(float) const>(&Vector2f::operator<)),
+		    sol::meta_function::less_than_or_equal_to, sol::overload(sol::resolve<bool(const Vector2f&) const>(&Vector2f::operator<=), sol::resolve<bool(float) const>(&Vector2f::operator<=)),
+		    sol::meta_function::equal_to, sol::overload(sol::resolve<bool(const Vector2f&) const>(&Vector2f::operator==), sol::resolve<bool(float) const>(&Vector2f::operator==)),
 
 		    sol::meta_function::addition, sol::overload(sol::resolve<Vector2f(const Vector2f&) const>(&Vector2f::operator+), sol::resolve<Vector2f(float) const>(&Vector2f::operator+)),
 		    sol::meta_function::subtraction, sol::overload(sol::resolve<Vector2f(const Vector2f&) const>(&Vector2f::operator-), sol::resolve<Vector2f(float) const>(&Vector2f::operator-)),

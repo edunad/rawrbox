@@ -20,16 +20,10 @@ namespace rawrbox {
 		    "hasTransparency", &Colori::hasTransparency,
 		    "isTransparent", &Colori::isTransparent,
 
-		    sol::meta_function::addition, sol::resolve<Colori(const Colori&) const>(&Colori::operator+),
-		    sol::meta_function::addition, sol::resolve<Colori(int) const>(&Colori::operator+),
-
-		    sol::meta_function::subtraction, sol::resolve<Colori(const Colori&) const>(&Colori::operator-),
-		    sol::meta_function::subtraction, sol::resolve<Colori(int) const>(&Colori::operator-),
-
-		    sol::meta_function::division, sol::resolve<Colori(const Colori&) const>(&Colori::operator/),
-		    sol::meta_function::division, sol::resolve<Colori(int) const>(&Colori::operator/),
-
-		    sol::meta_function::multiplication, sol::resolve<Colori(const Colori&) const>(&Colori::operator*),
-		    sol::meta_function::multiplication, sol::resolve<Colori(int) const>(&Colori::operator*));
+		    sol::meta_function::equal_to, &Colori::operator==,
+		    sol::meta_function::addition, sol::overload(sol::resolve<Colori(const Colori&) const>(&Colori::operator+), sol::resolve<Colori(int) const>(&Colori::operator+)),
+		    sol::meta_function::subtraction, sol::overload(sol::resolve<Colori(const Colori&) const>(&Colori::operator-), sol::resolve<Colori(int) const>(&Colori::operator-)),
+		    sol::meta_function::division, sol::overload(sol::resolve<Colori(const Colori&) const>(&Colori::operator/), sol::resolve<Colori(int) const>(&Colori::operator/)),
+		    sol::meta_function::multiplication, sol::overload(sol::resolve<Colori(const Colori&) const>(&Colori::operator*), sol::resolve<Colori(int) const>(&Colori::operator*)));
 	}
 } // namespace rawrbox

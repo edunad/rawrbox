@@ -41,9 +41,9 @@ namespace scripting_test {
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("", 0)};
+		    std::make_pair<std::string, uint32_t>("./content/textures/crate_hl1.png", 0)};
 
-		this->_loadingFiles = initialContentFiles.size();
+		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
 			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
 				this->_loadingFiles--;

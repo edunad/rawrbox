@@ -53,7 +53,7 @@ namespace stencil {
 		    "content/textures/meow3.gif",
 		};
 
-		this->_loadingFiles = initialContentFiles.size();
+		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
 			rawrbox::RESOURCES::loadFileAsync(f, 0, [this]() {
 				this->_loadingFiles--;

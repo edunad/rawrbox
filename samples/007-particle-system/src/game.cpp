@@ -51,7 +51,7 @@ namespace particle_test {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/particles/particles.png", 32)};
 
-		this->_loadingFiles = initialContentFiles.size();
+		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
 			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
 				this->_loadingFiles--;

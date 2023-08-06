@@ -13,7 +13,6 @@
 #include <string>
 
 namespace rawrbox {
-
 	void Scripting::init() {
 		this->_mods.clear();
 
@@ -24,23 +23,25 @@ namespace rawrbox {
 
 		// Load mods ---
 		// TODO: Do we need mod load ordering?
-		for (auto& p : std::filesystem::directory_iterator("./mods")) {
-			if (!p.is_directory()) continue;
+		if (std::filesystem::exists("./mods")) {
+			for (auto& p : std::filesystem::directory_iterator("./mods")) {
+				if (!p.is_directory()) continue;
 
-			auto id = p.path().filename().string();
-			auto folderPath = fmt::format("mods/{}", id);
+				auto id = p.path().filename().string();
+				auto folderPath = fmt::format("mods/{}", id);
 
-			// Done
-			auto mod = std::make_unique<rawrbox::Mod>(id, folderPath);
-			this->_mods.emplace(id, std::move(mod));
+				// Done
+				auto mod = std::make_unique<rawrbox::Mod>(id, folderPath);
+				this->_mods.emplace(id, std::move(mod));
+			}
+
+			// Initialize
+			for (auto& mod : this->_mods) {
+				mod.second->init(*this);
+				if (!mod.second->load()) fmt::print("[RawrBox-Scripting] Failed to load mod '{}'\n", mod.first);
+			}
+			// -----
 		}
-
-		// Initialize
-		for (auto& mod : this->_mods) {
-			mod.second->init(*this);
-			if (!mod.second->load()) fmt::print("[RawrBox-Scripting] Failed to load mod '{}'\n", mod.first);
-		}
-		// -----
 
 		this->call("init");
 	}
@@ -118,14 +119,6 @@ namespace rawrbox {
 		// ----
 	}
 
-	void Scripting::update() {
-		this->call("update");
-	}
-
-	void Scripting::fixedUpdate() {
-		this->call("fixedUpdate");
-	}
-
 	// LOAD -----
 	void Scripting::loadLibraries() {
 		this->_lua.open_libraries(sol::lib::base);
@@ -159,13 +152,13 @@ namespace rawrbox {
 	}
 
 	void Scripting::loadLuaExtensions(sol::environment& env, sol::state& lua) {
-		this->loadLuaFile("./lua/extensions/table.lua", env, lua);
-		this->loadLuaFile("./lua/extensions/string.lua", env, lua);
-		this->loadLuaFile("./lua/extensions/math.lua", env, lua);
-		this->loadLuaFile("./lua/extensions/json.lua", env, lua);
-		this->loadLuaFile("./lua/extensions/sha2.lua", env, lua);
-		this->loadLuaFile("./lua/extensions/util.lua", env, lua);
-		this->loadLuaFile("./lua/extensions/input.lua", env, lua);
+		this->loadLuaFile("./lua/table.lua", env, lua);
+		this->loadLuaFile("./lua/string.lua", env, lua);
+		this->loadLuaFile("./lua/math.lua", env, lua);
+		this->loadLuaFile("./lua/json.lua", env, lua);
+		this->loadLuaFile("./lua/sha2.lua", env, lua);
+		this->loadLuaFile("./lua/util.lua", env, lua);
+		this->loadLuaFile("./lua/input.lua", env, lua);
 	}
 
 	bool Scripting::loadLuaFile(const std::string& path, const sol::environment& env, sol::state& lua, bool setIncludeDirectory) {
@@ -179,6 +172,8 @@ namespace rawrbox {
 
 		if (!std::filesystem::exists(path)) {
 			if (setIncludeDirectory) this->_includePathPrefix = oldIncludeDir;
+			fmt::print("[RawrBox-Scripting] Failed to load lua : {}\n", path);
+
 			return false;
 		}
 

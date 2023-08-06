@@ -42,10 +42,13 @@ namespace rawrbox {
 			RAWRBOX_DESTROY(sample);
 
 		// Prepare new samples
+		auto w = static_cast<uint16_t>(this->_windowSize.x);
+		auto h = static_cast<uint16_t>(this->_windowSize.y);
+
 		this->_samples.clear();
 		for (size_t i = 0; i < this->_postProcesses.size(); i++) {
 			bgfx::ViewId id = rawrbox::POST_PROCESSING_ID + static_cast<bgfx::ViewId>(i);
-			this->_samples.push_back(bgfx::createFrameBuffer(this->_windowSize.x, this->_windowSize.y, bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_RT));
+			this->_samples.push_back(bgfx::createFrameBuffer(w, h, bgfx::TextureFormat::RGBA8, BGFX_TEXTURE_RT));
 
 			bgfx::touch(id);
 			bgfx::setViewRect(id, 0, 0, bgfx::BackbufferRatio::Equal);

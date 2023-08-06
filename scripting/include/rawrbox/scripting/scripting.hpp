@@ -38,9 +38,6 @@ namespace rawrbox {
 		virtual void init();
 		virtual void addGlobals(Mod& mod);
 
-		virtual void update();
-		virtual void fixedUpdate();
-
 		// LOAD -----
 		virtual bool loadLuaFile(const std::string& path, const sol::environment& env, sol::state& lua, bool setIncludeDirectory = true);
 		virtual void loadLuaExtensions(sol::environment& env, sol::state& lua);
