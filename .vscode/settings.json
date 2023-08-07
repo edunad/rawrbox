@@ -6,6 +6,11 @@
     "Color",
     "Matrix",
     "MOD",
-    "jit"
+    "jit",
+    "isNumber",
+    "isTable",
+    "isString",
+    "json",
+    "fmt"
   ]
 }

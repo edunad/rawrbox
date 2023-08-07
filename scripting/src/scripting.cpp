@@ -33,14 +33,15 @@ namespace rawrbox {
 		this->_mods.clear();
 
 		// Loading initial libs ---
+		// NOLINTBEGIN(optin.cplusplus.VirtualCall)
 		this->loadLibraries();
 		this->loadTypes();
-		// ----
+		// NOLINTEND(optin.cplusplus.VirtualCall)
+		//  ----
 	}
 
 	Scripting::~Scripting() {
 		this->_watcher.reset();
-
 		this->_mods.clear();
 
 		this->_lua->collect_garbage();
