@@ -29,7 +29,7 @@
   - changed-files: "engine/**/*"
 
 "🧪 TESTS":
-  - changed-files: "**/tests/**/*.  cpp"
+  - changed-files: "**/tests/**/*.cpp"
 
 "📜 SCRIPTING":
   - changed-files: "scripting/**/*"
