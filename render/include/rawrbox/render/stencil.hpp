@@ -135,7 +135,7 @@ namespace rawrbox {
 	};
 
 	class Stencil {
-		static uint32_t renderID;
+		static bgfx::ViewId renderID;
 
 	private:
 		bgfx::VertexLayout _vLayout;
@@ -161,7 +161,7 @@ namespace rawrbox {
 		// ----------
 
 		// Clip handling ----
-		std::vector<uint32_t> _clips = {};
+		std::vector<uint16_t> _clips = {};
 		// ----------
 
 		// Outline handling ----

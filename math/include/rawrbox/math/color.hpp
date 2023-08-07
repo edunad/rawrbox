@@ -16,7 +16,7 @@ namespace rawrbox {
 		Color_t(NumberType _r, NumberType _g, NumberType _b, NumberType _a) : r(_r), g(_g), b(_b), a(_a) {}
 
 		static Color_t<NumberType> RGBAHex(uint32_t x) {
-			if constexpr (std::is_same<NumberType, float>::value) {
+			if constexpr (std::is_same_v<NumberType, float>) {
 				return {
 				    ((x >> 24) & 0xFF) / 255.0F,
 				    ((x >> 16) & 0xFF) / 255.0F,
@@ -32,7 +32,7 @@ namespace rawrbox {
 		}
 
 		static Color_t<NumberType> RGBHex(uint32_t x) {
-			if constexpr (std::is_same<NumberType, float>::value) {
+			if constexpr (std::is_same_v<NumberType, float>) {
 				return {
 				    ((x >> 16) & 0xFF) / 255.0F,
 				    ((x >> 8) & 0xFF) / 255.0F,
@@ -49,7 +49,7 @@ namespace rawrbox {
 
 		template <class ReturnType>
 		[[nodiscard]] Color_t<ReturnType> cast() const {
-			if constexpr (std::is_same<NumberType, int>::value) {
+			if constexpr (std::is_same_v<NumberType, int>) {
 				return Color_t<float>(
 				    static_cast<ReturnType>(r) / 255.0F,
 				    static_cast<ReturnType>(g) / 255.0F,
@@ -80,7 +80,7 @@ namespace rawrbox {
 			};
 
 			auto col = cols[index % cols.size()];
-			if constexpr (std::is_same<NumberType, int>::value) {
+			if constexpr (std::is_same_v<NumberType, int>) {
 				return col;
 			} else {
 				return col / 255.0F;
@@ -107,7 +107,7 @@ namespace rawrbox {
 
 		[[nodiscard]] bool isTransparent() const { return a == 0; }
 		[[nodiscard]] bool hasTransparency() const {
-			if constexpr (std::is_same<NumberType, int>::value) {
+			if constexpr (std::is_same_v<NumberType, int>) {
 				return a != 255;
 			} else {
 				return a != 1.F;
@@ -119,7 +119,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] uint32_t pack() const {
-			if constexpr (std::is_same<NumberType, int>::value) {
+			if constexpr (std::is_same_v<NumberType, int>) {
 				return 0 | (static_cast<uint8_t>(this->r) << 0) | (static_cast<uint8_t>(this->g) << 8) | (static_cast<uint8_t>(this->b) << 16) | (static_cast<uint8_t>(this->a) << 24);
 			} else {
 				return 0 | (static_cast<uint8_t>(this->r * 255.0F) << 0) | (static_cast<uint8_t>(this->g * 255.0F) << 8) | (static_cast<uint8_t>(this->b * 255.0F) << 16) | (static_cast<uint8_t>(this->a * 255.0F) << 24);

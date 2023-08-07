@@ -58,7 +58,7 @@ namespace physics_test {
 		    "content/textures/crate_hl1.png",
 		};
 
-		this->_loadingFiles = initialContentFiles.size();
+		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
 			rawrbox::RESOURCES::loadFileAsync(f, 0, [this]() {
 				this->_loadingFiles--;

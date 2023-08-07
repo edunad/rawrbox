@@ -194,8 +194,8 @@ namespace phys_2d_test {
 
 		// DEBUG ----
 		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "012-webm");
-		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: WEBM test");
+		bgfx::dbgTextPrintf(1, 1, 0x1f, "013-2d-physics");
+		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: 2D PHYSICS test");
 		this->printFrames();
 		// -----------
 

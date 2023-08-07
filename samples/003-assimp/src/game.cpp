@@ -51,7 +51,7 @@ namespace assimp {
 		    std::make_pair<std::string, uint32_t>("content/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE),
 		    std::make_pair<std::string, uint32_t>("content/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS)};
 
-		this->_loadingFiles = initialContentFiles.size();
+		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
 			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
 				this->_loadingFiles--;

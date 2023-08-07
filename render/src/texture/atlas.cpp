@@ -67,7 +67,7 @@ namespace rawrbox {
 		}
 
 		rawrbox::Vector2i totalSprites = this->_size / this->_spriteSize;
-		this->_handle = bgfx::createTexture2D(this->_spriteSize, this->_spriteSize, false, (totalSprites.x * totalSprites.y), format,
+		this->_handle = bgfx::createTexture2D(this->_spriteSize, this->_spriteSize, false, static_cast<uint16_t>(totalSprites.x * totalSprites.y), format,
 		    0 | this->_flags | BGFX_SAMPLER_V_CLAMP | BGFX_SAMPLER_U_CLAMP, bgfx::copy(this->_pixels.data(), static_cast<uint32_t>(this->_pixels.size())));
 
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureAtlas] Failed to bind texture");

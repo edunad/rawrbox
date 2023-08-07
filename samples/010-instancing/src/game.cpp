@@ -49,7 +49,7 @@ namespace instance_test {
 		    std::make_pair<std::string, uint32_t>("content/textures/instance_test.png", 64),
 		};
 
-		this->_loadingFiles = initialContentFiles.size();
+		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
 			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
 				this->_loadingFiles--;

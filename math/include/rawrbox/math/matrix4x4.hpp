@@ -54,8 +54,8 @@ namespace rawrbox {
 		void add(const rawrbox::Matrix4x4& other);
 		void add(const rawrbox::Vector3f& other);
 
-		[[nodiscard]] rawrbox::Vector3f const mulVec(const rawrbox::Vector3f& other) const;
-		[[nodiscard]] rawrbox::Vector4f const mulVec(const rawrbox::Vector4f& other) const;
+		[[nodiscard]] rawrbox::Vector3f mulVec(const rawrbox::Vector3f& other) const;
+		[[nodiscard]] rawrbox::Vector4f mulVec(const rawrbox::Vector4f& other) const;
 
 		void inverse();
 		void lookAt(const rawrbox::Vector3f& _eye, const rawrbox::Vector3f& _at, const rawrbox::Vector3f& _up);

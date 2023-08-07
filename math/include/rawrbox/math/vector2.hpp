@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <limits>
 #include <type_traits>
 
 namespace rawrbox {
@@ -95,8 +96,8 @@ namespace rawrbox {
 			}
 
 			return {
-			    std::numeric_limits<double>::quiet_NaN(),
-			    std::numeric_limits<double>::quiet_NaN()};
+			    std::numeric_limits<float>::quiet_NaN(),
+			    std::numeric_limits<float>::quiet_NaN()};
 		}
 
 		[[nodiscard]] VecType rotateAroundOrigin(NumberType rads, const VecType& origin) const {
@@ -120,38 +121,38 @@ namespace rawrbox {
 
 		// UTILS - FLOAT ---
 		[[nodiscard]] float dot(const Vector2_t<float>& other) const
-			requires(std::is_same<NumberType, float>::value)
+			requires(std::is_same_v<NumberType, float>)
 		{
 			return x * other.x + y * other.y;
 		}
 
 		[[nodiscard]] Vector2_t<float> normalized() const
-			requires(std::is_same<NumberType, float>::value)
+			requires(std::is_same_v<NumberType, float>)
 		{
 			float l = length();
 			return l == 0 ? Vector2_t<float>() : (*this) / l;
 		}
 
 		[[nodiscard]] float cross(const Vector2_t<float>& other) const
-			requires(std::is_same<NumberType, float>::value)
+			requires(std::is_same_v<NumberType, float>)
 		{
 			return x * other.y - y * other.x;
 		}
 
 		[[nodiscard]] Vector2_t<float> floor() const
-			requires(std::is_same<NumberType, float>::value)
+			requires(std::is_same_v<NumberType, float>)
 		{
 			return {std::floor(x), std::floor(y)};
 		}
 
 		[[nodiscard]] Vector2_t<float> round() const
-			requires(std::is_same<NumberType, float>::value)
+			requires(std::is_same_v<NumberType, float>)
 		{
 			return {std::round(x), std::round(y)};
 		}
 
 		[[nodiscard]] Vector2_t<float> ceil() const
-			requires(std::is_same<NumberType, float>::value)
+			requires(std::is_same_v<NumberType, float>)
 		{
 			return {std::ceil(x), std::ceil(y)};
 		}

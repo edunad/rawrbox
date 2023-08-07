@@ -21,6 +21,7 @@ Checks: clang-diagnostic-*
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay
   -cppcoreguidelines-narrowing-conversions
   -hicpp-explicit-conversions
+  -clang-analyzer-optin.cplusplus.UninitializedObject
 WarningsAsErrors: "*"
 HeaderFilterRegex: ""
 AnalyzeTemporaryDtors: false

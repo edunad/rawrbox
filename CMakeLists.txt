@@ -24,10 +24,10 @@ list(PREPEND CONAN_GENERATORS_FOLDER ${CMAKE_BINARY_DIR})
 # ---
 
 # OPTIONS ---
+option(BUILD_TESTING "Build tests" ON)
 option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 
 option(RAWRBOX_BUILD_SAMPLES "Build samples" ON)
-option(BUILD_TESTING "Build tests" ON)
 
 option(RAWRBOX_BUILD_RAWRBOX_UI "Build RAWRBOX.UI" ON)
 option(RAWRBOX_BUILD_RAWRBOX_RESOURCES "Build RAWRBOX.RESOURCES" ON)
@@ -37,6 +37,9 @@ option(RAWRBOX_BUILD_RAWRBOX_BASS "Build bass & add sound loading support" ON)
 option(RAWRBOX_BUILD_RAWRBOX_ASSIMP "Build assimp & add model loading support" ON)
 option(RAWRBOX_BUILD_RAWRBOX_WEBM "Build libwebm & add video loading support" ON)
 
+option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING "Build lua & mod support" ON)
+option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT "Enable scripting LuaJIT support" ON)
+
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" ON)
 
 if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
@@ -45,7 +48,7 @@ if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
     endif()
 
     set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Jolt requires msvc multithreaded runtime
-    message(STATUS "JoltPhysics is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
+    message(WARNING "JoltPhysics is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
 endif()
 
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
@@ -121,6 +124,11 @@ add_subdirectory("engine")
 if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     message(STATUS "Enabled RESOURCES support")
     add_subdirectory("resources")
+endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    message(STATUS "Enabled SCRIPTING support")
+    add_subdirectory("scripting")
 endif()
 
 add_subdirectory("render")

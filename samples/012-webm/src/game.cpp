@@ -45,7 +45,7 @@ namespace webm_test {
 		std::array initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("./content/video/webm_test.webm", 0)};
 
-		this->_loadingFiles = initialContentFiles.size();
+		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
 			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
 				this->_loadingFiles--;

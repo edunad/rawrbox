@@ -8,7 +8,7 @@ namespace rawrbox {
 	TextureRender::TextureRender(const rawrbox::Vector2i& size, bgfx::ViewId id) : _size(size), _prevViewId(rawrbox::CURRENT_VIEW_ID), _renderId(id) {
 		// Setup texture target view
 		bgfx::setViewName(this->_renderId, fmt::format("RAWR-RENDER-VIEW-{}", this->_renderId).c_str());
-		bgfx::setViewRect(this->_renderId, 0, 0, this->_size.x, this->_size.y);
+		bgfx::setViewRect(this->_renderId, 0, 0, static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y));
 		bgfx::setViewMode(this->_renderId, bgfx::ViewMode::Default);
 		//   ------
 	}
@@ -57,7 +57,7 @@ namespace rawrbox {
 		this->_textureHandles.insert(this->_textureHandles.begin(), bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 1, bgfx::TextureFormat::BGRA8, BGFX_TEXTURE_RT | this->_flags)); // COLOR
 		this->addTexture(bgfx::TextureFormat::D24);                                                                                                                                                                                           // DEPTH
 
-		this->_renderView = bgfx::createFrameBuffer(this->_textureHandles.size(), this->_textureHandles.data(), false);
+		this->_renderView = bgfx::createFrameBuffer(static_cast<uint8_t>(this->_textureHandles.size()), this->_textureHandles.data(), false);
 		this->_handle = this->_textureHandles.front();
 	} // ------------
 

@@ -103,7 +103,7 @@ namespace rawrbox {
 		int count = 0;
 		auto monitors = glfwGetMonitors(&count);
 
-		for (size_t i = 0; i < static_cast<size_t>(count); i++) {
+		for (int i = 0; i < count; i++) {
 			const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
 			this->_screenSizes[i] = {mode->width, mode->height};
 		}

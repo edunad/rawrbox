@@ -1,0 +1,16 @@
+{
+  "Lua.diagnostics.globals": [
+    "Vector2",
+    "Vector3",
+    "Vector4",
+    "Color",
+    "Matrix",
+    "MOD",
+    "jit",
+    "isNumber",
+    "isTable",
+    "isString",
+    "json",
+    "fmt"
+  ]
+}
