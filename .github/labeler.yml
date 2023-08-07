@@ -37,6 +37,9 @@
 "🎞 WEBM":
   - changed-files: "webm/**/*"
 
+"🧙‍♂️ ASSIMP":
+  - changed-files: "assimp/**/*"
+
 "FEATURE":
   - head-branch: "^features/"
 
