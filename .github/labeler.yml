@@ -13,8 +13,11 @@
 "🐲 SAMPLES":
   - changed-files: "samples/**/*"
 
-"🧱 PHYSICS":
-  - changed-files: "physics/**/*"
+"🧱 3D PHYSICS":
+  - changed-files: "physics_3d/**/*"
+
+"🏀 2D PHYSICS":
+  - changed-files: "physics_2d/**/*"
 
 "🎺 BASS":
   - changed-files: "bass/**/*"
@@ -26,7 +29,13 @@
   - changed-files: "engine/**/*"
 
 "🧪 TESTS":
-  - changed-files: "**/tests/**/*.cpp"
+  - changed-files: "**/tests/**/*.  cpp"
+
+"📜 SCRIPTING":
+  - changed-files: "scripting/**/*"
+
+"🎞 WEBM":
+  - changed-files: "webm/**/*"
 
 "FEATURE":
   - head-branch: "^features/"
