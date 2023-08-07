@@ -9,13 +9,13 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE
 
 # Copy content - MODS
 add_custom_target(
-    copy_mods_samples ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/mods
+    link_mods_samples ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/mods
                                   ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/mods
-    COMMENT "Copying MODS resources into binary directory")
+    COMMENT "Linking MODS resources into binary directory")
 # ------------------
 
 add_executable(${output_target} ${RAWRBOX_SAMPLE_SOURCES})
-add_dependencies(${output_target} copy_resources_samples copy_mods_samples)
+add_dependencies(${output_target} copy_resources_samples link_mods_samples)
 
 target_compile_features(${output_target} PUBLIC cxx_std_20)
 target_include_directories(${output_target} PRIVATE "include")

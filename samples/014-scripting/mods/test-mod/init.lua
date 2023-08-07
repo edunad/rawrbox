@@ -21,3 +21,5 @@ function MOD:init()
         print(string.fmt("[{}] = {}", i, m[i]))
     end
 end
+
+print(test:hello("hot reload"))

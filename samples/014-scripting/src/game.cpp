@@ -6,6 +6,7 @@
 #include <rawrbox/resources/manager.hpp>
 
 #include <scripting_test/game.hpp>
+#include <scripting_test/wrapper_test.hpp>
 
 #include <fmt/format.h>
 
@@ -53,15 +54,24 @@ namespace scripting_test {
 			});
 		}
 
-		// Setup & load lua scripting
-		this->_script->init();
+		// Setup scripting
+		this->_script = std::make_unique<rawrbox::Scripting>(2000); // Check files every 2 seconds
+		this->_script->registerType<rawrbox::TestWrapper>();
+		this->_script->onRegisterGlobals += [](rawrbox::Mod* mod) {
+			mod->getEnvironment()["test"] = rawrbox::TestWrapper();
+		};
+		// -----
+
+		// Load lua mods
+		this->_script->load();
+		this->_script->call("init");
 		// -----
 
 		this->_window->upload();
 	}
 
 	void Game::contentLoaded() {
-		// auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./content/video/webm_test.webm")->get();
+		// auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./content/textures/crate_hl1.png")->get();
 		this->_model->setOptimizable(false);
 
 		/*{

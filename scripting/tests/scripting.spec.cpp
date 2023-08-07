@@ -8,14 +8,8 @@ TEST_CASE("Scripting should behave as expected", "[rawrbox::Scripting]") {
 	std::unique_ptr<rawrbox::Scripting> script = std::make_unique<rawrbox::Scripting>();
 
 	SECTION("rawrbox::Scripting::init") {
-		script->init();
-
 		REQUIRE(script->getMods().empty() == true);
 		REQUIRE(script->getModsIds().empty() == true);
-
-		REQUIRE(script->getIncludePath() == "");
-		REQUIRE_NOTHROW(script->setIncludePath("src"));
-		REQUIRE(script->getIncludePath() == "src");
 
 		REQUIRE(static_cast<bool>(script->getLua().script("return true")) == true);
 
@@ -28,5 +22,9 @@ TEST_CASE("Scripting should behave as expected", "[rawrbox::Scripting]") {
 		REQUIRE_NOTHROW(script->getLua().script("local t = Matrix:new()"));
 
 		REQUIRE_THROWS(script->getLua().script("local t = Vector6:new(23, 43)"));
+	}
+
+	SECTION("rawrbox::Scripting::load") {
+		REQUIRE_THROWS(script->load());
 	}
 }

@@ -8,7 +8,7 @@ namespace rawrbox {
 	// @cats/ == `cats` mod
 	// normal_path == current mod
 	std::string LuaUtils::getContent(const std::string& path, const std::string& modName) {
-		if (path.empty()) return fmt::format("{}", modName);
+		if (path.empty()) return modName;
 		if (path.starts_with("mods/")) return path; // Already has the mod
 
 		std::string fixedPath = path;

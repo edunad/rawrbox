@@ -1,9 +1,12 @@
 #include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/text/font.hpp>
 
+#pragma warning(push)
+#pragma warning(disable : 4505)
 #define STBTT_STATIC
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <stb/stb_truetype.hpp>
+#pragma warning(pop)
 
 #include <fmt/format.h>
 #include <utf8.h>
@@ -53,7 +56,7 @@ namespace rawrbox {
 		this->_info.underlineThickness = (x1 - x0) * this->_scale / 24.F;
 	}
 
-	std::unique_ptr<rawrbox::Glyph> Font::bakeGlyphAlpha(uint16_t codePoint) {
+	std::unique_ptr<rawrbox::Glyph> Font::bakeGlyphAlpha(uint32_t codePoint) {
 		if (this->_font == nullptr) throw std::runtime_error("[RawrBox-Font] Font not loaded");
 
 		int32_t ascent = 0, descent = 0, lineGap = 0;
@@ -102,7 +105,7 @@ namespace rawrbox {
 		return glyph;
 	}
 
-	void Font::generateGlyph(uint16_t codePoint) {
+	void Font::generateGlyph(uint32_t codePoint) {
 		if (this->hasGlyph(codePoint)) return;
 		this->_glyphs[codePoint] = this->bakeGlyphAlpha(codePoint);
 	}
@@ -120,11 +123,11 @@ namespace rawrbox {
 	// UTILS ---
 	const rawrbox::FontInfo Font::getFontInfo() const { return this->_info; }
 
-	bool Font::hasGlyph(uint16_t codepoint) const {
+	bool Font::hasGlyph(uint32_t codepoint) const {
 		return this->_glyphs.find(codepoint) != this->_glyphs.end();
 	}
 
-	rawrbox::Glyph* Font::getGlyph(uint16_t codepoint) const {
+	rawrbox::Glyph* Font::getGlyph(uint32_t codepoint) const {
 		auto fnd = this->_glyphs.find(codepoint);
 		if (fnd == this->_glyphs.end()) return this->_glyphs.find(65533)->second.get(); // �
 		return fnd->second.get();
@@ -133,7 +136,7 @@ namespace rawrbox {
 	float Font::getSize() const { return this->_pixelSize; }
 	float Font::getScale() const { return this->_scale; }
 	float Font::getLineHeight() const { return this->_info.ascender - this->_info.descender + this->_info.lineGap; }
-	float Font::getKerning(uint16_t prevCodePoint, uint16_t nextCodePoint) const {
+	float Font::getKerning(uint32_t prevCodePoint, uint32_t nextCodePoint) const {
 		if (this->_font == nullptr || (!this->_font->kern && !this->_font->gpos)) return 0; // no kerning
 		return this->_info.scale * static_cast<float>(stbtt__GetGlyphKernInfoAdvance(this->_font.get(), prevCodePoint, nextCodePoint));
 	}
@@ -147,14 +150,14 @@ namespace rawrbox {
 
 		if (text.empty()) return size;
 
-		uint16_t prevCodePoint = 0;
+		uint32_t prevCodePoint = 0;
 		float cursorX = 0.F;
 
 		auto beginIter = text.begin();
 		auto endIter = utf8::find_invalid(text.begin(), text.end()); // Find invalid utf8
 
 		while (beginIter != endIter) {
-			uint16_t point = utf8::next(beginIter, endIter); // get codepoint
+			uint32_t point = utf8::next(beginIter, endIter); // get codepoint
 
 			const auto glyph = this->getGlyph(point);
 			if (glyph == nullptr) continue;
@@ -188,12 +191,12 @@ namespace rawrbox {
 		const float lineHeight = this->getLineHeight();
 
 		rawrbox::Vector2f cursor = {pos.x, pos.y + lineHeight + info.descender};
-		uint16_t prevCodePoint = 0;
+		uint32_t prevCodePoint = 0;
 
 		auto beginIter = text.begin();
 		auto endIter = utf8::find_invalid(text.begin(), text.end()); // Find invalid utf8
 		while (beginIter != endIter) {
-			uint16_t point = utf8::next(beginIter, endIter); // get codepoint
+			uint32_t point = utf8::next(beginIter, endIter); // get codepoint
 			if (point == L'\n') {
 				if (!yIsUp) {
 					cursor.y += lineHeight;

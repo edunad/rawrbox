@@ -5,8 +5,8 @@ namespace rawrbox {
 		return this->name;
 	}
 
-	void Mesh::setName(const std::string& name) {
-		this->name = name;
+	void Mesh::setName(const std::string& _name) {
+		this->name = _name;
 	}
 
 	const std::vector<rawrbox::VertexData>& Mesh::getVertices() const {
@@ -80,16 +80,16 @@ namespace rawrbox {
 		this->setOptimizable(false);
 	}
 
-	void Mesh::setWireframe(bool wireframe) {
-		this->wireframe = wireframe;
+	void Mesh::setWireframe(bool _wireframe) {
+		this->wireframe = _wireframe;
 	}
 
-	void Mesh::setCulling(uint64_t culling) {
-		this->culling = culling;
+	void Mesh::setCulling(uint64_t _culling) {
+		this->culling = _culling;
 	}
 
-	void Mesh::setDepthTest(uint64_t depthTest) {
-		this->depthTest = depthTest;
+	void Mesh::setDepthTest(uint64_t _depthTest) {
+		this->depthTest = _depthTest;
 	}
 
 	void Mesh::setBlend(uint64_t blend) {
@@ -100,12 +100,12 @@ namespace rawrbox {
 		this->addData("mask", {decals ? 1.0F : 0.0F, 0, 0, 0});
 	}
 
-	void Mesh::setColor(const rawrbox::Color& color) {
-		this->color = color;
+	void Mesh::setColor(const rawrbox::Color& _color) {
+		this->color = _color;
 	}
 
-	void Mesh::addData(const std::string& id, rawrbox::Vector4f data) { // BGFX shaders only accept vec4, so.. yea
-		this->data[id] = data;
+	void Mesh::addData(const std::string& id, rawrbox::Vector4f _data) { // BGFX shaders only accept vec4, so.. yea
+		this->data[id] = _data;
 	}
 
 	const rawrbox::Vector4f& Mesh::getData(const std::string& id) const {

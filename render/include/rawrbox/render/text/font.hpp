@@ -75,7 +75,7 @@ namespace rawrbox {
 
 	struct Glyph {
 		uint32_t packID = 0;
-		uint16_t codePoint = 0;
+		uint32_t codePoint = 0;
 
 		float scale = 0.F;
 
@@ -92,7 +92,7 @@ namespace rawrbox {
 	class Font {
 	private:
 		std::shared_ptr<stbtt_fontinfo> _font = nullptr; // unique_ptr does not like incomplete types
-		std::unordered_map<uint16_t, std::unique_ptr<rawrbox::Glyph>> _glyphs = {};
+		std::unordered_map<uint32_t, std::unique_ptr<rawrbox::Glyph>> _glyphs = {};
 
 		float _scale = 0.F;
 		float _pixelSize = 0.F;
@@ -104,8 +104,8 @@ namespace rawrbox {
 		// INTERNAL ---
 		void loadFontInfo();
 
-		std::unique_ptr<rawrbox::Glyph> bakeGlyphAlpha(uint16_t codePoint);
-		void generateGlyph(uint16_t codePoint);
+		std::unique_ptr<rawrbox::Glyph> bakeGlyphAlpha(uint32_t codePoint);
+		void generateGlyph(uint32_t codePoint);
 		// ----
 
 	public:
@@ -124,13 +124,13 @@ namespace rawrbox {
 		// UTILS ---
 		[[nodiscard]] const rawrbox::FontInfo getFontInfo() const;
 
-		[[nodiscard]] bool hasGlyph(uint16_t codepoint) const;
-		[[nodiscard]] rawrbox::Glyph* getGlyph(uint16_t codepoint) const;
+		[[nodiscard]] bool hasGlyph(uint32_t codepoint) const;
+		[[nodiscard]] rawrbox::Glyph* getGlyph(uint32_t codepoint) const;
 
 		[[nodiscard]] float getSize() const;
 		[[nodiscard]] float getScale() const;
 		[[nodiscard]] float getLineHeight() const;
-		[[nodiscard]] float getKerning(uint16_t prevCodePoint, uint16_t nextCodePoint) const;
+		[[nodiscard]] float getKerning(uint32_t prevCodePoint, uint32_t nextCodePoint) const;
 
 		[[nodiscard]] rawrbox::Vector2f getStringSize(const std::string& text) const;
 		[[nodiscard]] rawrbox::TexturePack* getPackTexture(rawrbox::Glyph* g) const;
