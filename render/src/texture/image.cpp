@@ -1,6 +1,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/image.hpp>
 
+// NOLINTBEGIN(clang-diagnostic-unknown-pragmas)
 #pragma warning(push)
 #pragma warning(disable : 4505)
 #define STB_IMAGE_STATIC
@@ -11,6 +12,7 @@
 #define STBI_ONLY_TGA
 #include <stb/image.hpp>
 #pragma warning(pop)
+// NOLINTEND(clang-diagnostic-unknown-pragmas)
 
 #include <fmt/format.h>
 

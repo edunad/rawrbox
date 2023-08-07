@@ -1,12 +1,14 @@
 #include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/text/font.hpp>
 
+// NOLINTBEGIN(clang-diagnostic-unknown-pragmas)
 #pragma warning(push)
 #pragma warning(disable : 4505)
 #define STBTT_STATIC
 #define STB_TRUETYPE_IMPLEMENTATION
 #include <stb/stb_truetype.hpp>
 #pragma warning(pop)
+// NOLINTEND(clang-diagnostic-unknown-pragmas)
 
 #include <fmt/format.h>
 #include <utf8.h>

@@ -33,10 +33,10 @@ namespace rawrbox {
 		this->_mods.clear();
 
 		// Loading initial libs ---
-		// NOLINTBEGIN(optin.cplusplus.VirtualCall)
+		// NOLINTBEGIN(clang-analyzer-optin.cplusplus.UninitializedObject)
 		this->loadLibraries();
 		this->loadTypes();
-		// NOLINTEND(optin.cplusplus.VirtualCall)
+		// NOLINTEND(clang-analyzer-optin.cplusplus.UninitializedObject)
 		//  ----
 	}
 

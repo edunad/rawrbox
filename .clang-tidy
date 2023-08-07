@@ -22,7 +22,6 @@ Checks: clang-diagnostic-*
   -cppcoreguidelines-narrowing-conversions
   -hicpp-explicit-conversions
   -clang-analyzer-optin.cplusplus.UninitializedObject
-  -clang-diagnostic-unknown-pragmas
 WarningsAsErrors: "*"
 HeaderFilterRegex: ""
 AnalyzeTemporaryDtors: false
