@@ -36,8 +36,8 @@ void main() {
 	v_texcoord0.xy = applyUVTransform(a_texcoord0.xy);
 	v_texcoord0.z = getInstanceData(id, 5).x;
 
-    TransformedData transform = applyPosTransforms(u_viewProj, mul(model, vec4(a_position, 1.)), a_texcoord0.xy);
-    v_worldPos = mul(model, transform.pos).xyz;
+	TransformedData transform = applyPosTransforms(u_viewProj, mul(model, vec4(a_position, 1.)), a_texcoord0.xy);
+	v_worldPos = mul(model, transform.pos).xyz;
 	gl_Position = transform.final;
-}
+	}
 

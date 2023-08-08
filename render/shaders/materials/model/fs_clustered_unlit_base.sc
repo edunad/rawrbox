@@ -15,7 +15,7 @@ void main() {
 	vec4 albedo = texture2DArray(s_albedo, vec3(v_texcoord0.xy, v_texcoord0.z)) * v_color0 * u_colorOffset;
 	if (albedo.a <= 0.0) discard;
 
-    gl_FragData[0] = albedo; // COLOR
+	gl_FragData[0] = albedo; // COLOR
 
 	// Apply Fog ----
 	gl_FragData[0] = applyFog(gl_FragData[0], v_worldPos, u_camPos);

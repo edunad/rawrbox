@@ -10,12 +10,12 @@ $output v_texcoord0, v_color0, v_worldPos
 
 void main() {
     v_color0 = a_color0;
-	v_texcoord0.xy = applyUVTransform(a_texcoord0.xy);
-	v_texcoord0.z = atlasID;
+    v_texcoord0.xy = applyUVTransform(a_texcoord0.xy);
+    v_texcoord0.z = atlasID;
 
-	vec4 pos = boneTransform(a_indices, a_weight, a_position);
+    vec4 pos = boneTransform(a_indices, a_weight, a_position);
     TransformedData transform = applyPosTransforms(pos, a_texcoord0.xy);
 
     v_worldPos = mul(u_model[0], transform.pos).xyz;
-	gl_Position = transform.final;
+    gl_Position = transform.final;
 }
