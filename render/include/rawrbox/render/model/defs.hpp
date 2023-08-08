@@ -24,18 +24,18 @@ namespace rawrbox {
 
 		VertexData() = default;
 		explicit VertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos), uv(_uv), abgr(cl.pack()) {}
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), abgr(cl.pack()) {}
 
 		explicit VertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos), uv(_uv), abgr(cl.pack()) {}
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), abgr(cl.pack()) {}
 
 		explicit VertexData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector2f& _uv = {},
-		    const std::array<uint32_t, 2>& _normal = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos), uv(_uv), abgr(cl.pack()), normal(_normal) {}
+		    const std::array<uint32_t, 2>& _normal = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), abgr(cl.pack()), normal(_normal) {}
 
 		explicit VertexData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {},
-		    const std::array<uint32_t, 2>& _normal = {}, const rawrbox::Color cl = rawrbox::Colors::White) : position(_pos), uv(_uv), abgr(cl.pack()), normal(_normal) {}
+		    const std::array<uint32_t, 2>& _normal = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), abgr(cl.pack()), normal(_normal) {}
 
 		static bgfx::VertexLayout vLayout(bool normals = false, bool bones = false) {
 			bgfx::VertexLayout l;

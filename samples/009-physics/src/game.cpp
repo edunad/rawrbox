@@ -229,7 +229,7 @@ namespace physics_test {
 
 			b->mdl->setPos(pos);
 			b->mdl->setAngle(ang);
-			b->mdl->setColor(body->IsActive() ? rawrbox::Colors::White : rawrbox::Colors::DarkGray);
+			b->mdl->setColor(body->IsActive() ? rawrbox::Colors::White() : rawrbox::Colors::DarkGray());
 
 			b->mdl->draw();
 		}

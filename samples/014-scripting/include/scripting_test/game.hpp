@@ -32,6 +32,7 @@ namespace scripting_test {
 		~Game() override = default;
 
 		void drawWorld();
+		void drawOverlay();
 		void printFrames();
 
 		void loadContent();

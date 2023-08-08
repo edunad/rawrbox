@@ -84,7 +84,7 @@ namespace rawrbox {
 			return mesh;
 		}
 
-		static inline rawrbox::Mesh generatePlane(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+		static inline rawrbox::Mesh generatePlane(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			rawrbox::Mesh mesh;
 			mesh.setPos(pos);
 
@@ -117,7 +117,7 @@ namespace rawrbox {
 			return mesh;
 		}
 
-		static inline rawrbox::Mesh generateCube(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+		static inline rawrbox::Mesh generateCube(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			rawrbox::Mesh mesh;
 			mesh.setPos(pos);
 
@@ -208,9 +208,9 @@ namespace rawrbox {
 			mesh.setPos(pos);
 
 			float hSize = size / 2.F;
-			mesh.merge(generateCube(pos, {hSize * 2, 0.01F, 0.01F}, Colors::Red));   // x
-			mesh.merge(generateCube(pos, {0.01F, hSize * 2, 0.01F}, Colors::Green)); // y
-			mesh.merge(generateCube(pos, {0.01F, 0.01F, hSize * 2}, Colors::Blue));  // z
+			mesh.merge(generateCube(pos, {hSize * 2, 0.01F, 0.01F}, rawrbox::Colors::Red()));   // x
+			mesh.merge(generateCube(pos, {0.01F, hSize * 2, 0.01F}, rawrbox::Colors::Green())); // y
+			mesh.merge(generateCube(pos, {0.01F, 0.01F, hSize * 2}, rawrbox::Colors::Blue()));  // z
 
 			// AABB ---
 			mesh.bbox.m_min = {-hSize, -hSize, -hSize};
@@ -226,7 +226,7 @@ namespace rawrbox {
 
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L687
 		// Does not support UV :( / normals
-		static inline rawrbox::Mesh generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, uint32_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+		static inline rawrbox::Mesh generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, uint32_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			rawrbox::Mesh mesh;
 			mesh.setPos(pos);
 
@@ -289,7 +289,7 @@ namespace rawrbox {
 
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L750
 		// Does not support UV :( / normals
-		static inline rawrbox::Mesh generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, uint32_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+		static inline rawrbox::Mesh generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, uint32_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			rawrbox::Mesh mesh;
 			mesh.setPos(pos);
 
@@ -357,7 +357,7 @@ namespace rawrbox {
 
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L640
 		// Does not support UV :( / normals
-		static inline rawrbox::Mesh generateSphere(const rawrbox::Vector3f& pos, float size, uint32_t ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+		static inline rawrbox::Mesh generateSphere(const rawrbox::Vector3f& pos, float size, uint32_t ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			rawrbox::Mesh mesh;
 			mesh.setPos(pos);
 
@@ -465,7 +465,7 @@ namespace rawrbox {
 			return mesh;
 		}
 
-		static inline rawrbox::Mesh generateMesh(const rawrbox::Vector3f& pos, uint32_t subDivs = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White) {
+		static inline rawrbox::Mesh generateMesh(const rawrbox::Vector3f& pos, uint32_t subDivs = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			rawrbox::Mesh mesh;
 			mesh.setPos(pos);
 
@@ -508,7 +508,7 @@ namespace rawrbox {
 		}
 
 		// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
-		static inline rawrbox::Mesh generateGrid(uint16_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::DarkGray, const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent) {
+		static inline rawrbox::Mesh generateGrid(uint16_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::DarkGray(), const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent()) {
 			rawrbox::Mesh mesh;
 			mesh.setPos(pos);
 

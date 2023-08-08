@@ -74,7 +74,7 @@ namespace rawrbox {
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 
-		this->_pixelTexture = std::make_unique<rawrbox::TextureFlat>(rawrbox::Vector2i(1, 1), Colors::White);
+		this->_pixelTexture = std::make_unique<rawrbox::TextureFlat>(rawrbox::Vector2i(1, 1), Colors::White());
 		this->_pixelTexture->upload();
 	}
 

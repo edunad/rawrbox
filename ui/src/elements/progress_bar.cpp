@@ -49,7 +49,7 @@ namespace rawrbox {
 
 		// BORDER--
 		stencil.pushOutline({1});
-		stencil.drawBox({0, 0}, {size.x, size.y}, rawrbox::Colors::Black);
+		stencil.drawBox({0, 0}, {size.x, size.y}, rawrbox::Colors::Black());
 		stencil.popOutline();
 		//----
 	}

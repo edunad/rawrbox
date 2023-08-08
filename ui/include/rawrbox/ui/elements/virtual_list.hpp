@@ -22,7 +22,7 @@ namespace rawrbox {
 		int maxYOffset = 0;
 		// ----
 
-		rawrbox::Color backgroundColor = rawrbox::Colors::Transparent;
+		rawrbox::Color backgroundColor = rawrbox::Colors::Transparent();
 
 	public:
 		UIVirtualList() = default;

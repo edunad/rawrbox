@@ -95,7 +95,7 @@ namespace ui_test {
 				label->setPos({10, 18});
 				label->setFont("cour.ttf", 14);
 				label->setText("Label: shadow mew!");
-				label->setShadowColor(rawrbox::Colors::Black);
+				label->setShadowColor(rawrbox::Colors::Black());
 				label->sizeToContents();
 			}
 
@@ -157,7 +157,7 @@ namespace ui_test {
 				prog->setPos({10, 130});
 				prog->setSize({200, 16});
 				prog->setValue(50);
-				prog->setBarColor(rawrbox::Colors::Orange);
+				prog->setBarColor(rawrbox::Colors::Orange());
 			}
 
 			{
@@ -191,8 +191,8 @@ namespace ui_test {
 			this->_graph = frame->createChild<rawrbox::UIGraph>();
 			this->_graph->setPos({10, 10});
 			this->_graph->setSize({380, 160});
-			this->_graph->addCategory("Cats /s", rawrbox::Colors::Orange);
-			this->_graph->addCategory("Meows /s", rawrbox::Colors::Purple);
+			this->_graph->addCategory("Cats /s", rawrbox::Colors::Orange());
+			this->_graph->addCategory("Meows /s", rawrbox::Colors::Purple());
 			this->_graph->setAutoScale(true);
 			this->_graph->setSmoothing(20);
 		}

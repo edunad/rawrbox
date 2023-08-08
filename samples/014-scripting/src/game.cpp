@@ -10,13 +10,15 @@
 
 #include <fmt/format.h>
 
+#include "rawrbox/render/scripting/wrapper/stencil_wrapper.hpp"
+
 namespace scripting_test {
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("SCRIPTING TEST");
 		this->_window->setRenderer<>(
-		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
+		    bgfx::RendererType::Count, [this]() { this->drawOverlay(); }, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
@@ -57,8 +59,11 @@ namespace scripting_test {
 		// Setup scripting
 		this->_script = std::make_unique<rawrbox::Scripting>(2000); // Check files every 2 seconds
 		this->_script->registerType<rawrbox::TestWrapper>();
-		this->_script->onRegisterGlobals += [](rawrbox::Mod* mod) {
+		this->_script->registerType<rawrbox::StencilWrapper>();
+
+		this->_script->onRegisterGlobals += [this](rawrbox::Mod* mod) {
 			mod->getEnvironment()["test"] = rawrbox::TestWrapper();
+			mod->getEnvironment()["stencil"] = rawrbox::StencilWrapper(&this->_window->getStencil());
 		};
 		// -----
 
@@ -121,9 +126,15 @@ namespace scripting_test {
 		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
 		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
 	}
+
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 		if (this->_model != nullptr) this->_model->draw();
+	}
+
+	void Game::drawOverlay() {
+		if (!this->_ready || this->_script == nullptr) return;
+		this->_script->call("drawOverlay");
 	}
 
 	void Game::draw() {

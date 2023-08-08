@@ -61,6 +61,13 @@ else()
     remove_folder("${RAWRBOX_RENDER_SOURCES}" "/resources/")
     set(RAWRBOX_RENDER_SOURCES "${CLEAN_SOURCES}")
 endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.SCRIPTING)
+else()
+    remove_folder("${RAWRBOX_RENDER_SOURCES}" "/scripting/")
+    set(RAWRBOX_RENDER_SOURCES "${CLEAN_SOURCES}")
+endif()
 # -----------------
 
 # Compile shaders

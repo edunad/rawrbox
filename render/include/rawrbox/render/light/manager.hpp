@@ -79,7 +79,7 @@ namespace rawrbox {
 		// ----
 
 		// FOG
-		static void setFog(rawrbox::FOG_TYPE type, float end, float density, const rawrbox::Colorf& col = rawrbox::Colors::Black);
+		static void setFog(rawrbox::FOG_TYPE type, float end, float density, const rawrbox::Colorf& col = rawrbox::Colors::Black());
 
 		static rawrbox::FOG_TYPE getFogType();
 		static const rawrbox::Colorf& getFogColor();

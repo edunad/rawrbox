@@ -11,8 +11,8 @@
 namespace rawrbox {
 	class UIInput : public rawrbox::UIContainer {
 		rawrbox::Color _backgroundColor = {0.15F, 0.15F, 0.15F, 1.F};
-		rawrbox::Color _border = rawrbox::Colors::Transparent;
-		rawrbox::Color _textColor = rawrbox::Colors::White;
+		rawrbox::Color _border = rawrbox::Colors::Transparent();
+		rawrbox::Color _textColor = rawrbox::Colors::White();
 
 		// RESOURCES ---
 		rawrbox::Font* _font = nullptr;

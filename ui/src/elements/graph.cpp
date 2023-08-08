@@ -149,7 +149,7 @@ namespace rawrbox {
 		auto size = this->getSize();
 
 		// BG ---
-		stencil.drawBox({}, size, rawrbox::Colors::DarkGray * 0.2F);
+		stencil.drawBox({}, size, rawrbox::Colors::DarkGray() * 0.2F);
 		//---
 
 		if (_showLegend) {

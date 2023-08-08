@@ -7,10 +7,10 @@ namespace rawrbox {
 
 	struct Instance {
 		rawrbox::Matrix4x4 matrix = {};
-		rawrbox::Colorf color = rawrbox::Colors::White;
+		rawrbox::Colorf color = rawrbox::Colors::White();
 		rawrbox::Vector4f extraData = {}; // AtlasID, etc..
 
-		Instance(const rawrbox::Matrix4x4& mat, const rawrbox::Colorf& col = rawrbox::Colors::White, rawrbox::Vector4f data = {}) : matrix(mat), color(col), extraData(data) {}
+		Instance(const rawrbox::Matrix4x4& mat, const rawrbox::Colorf& col = rawrbox::Colors::White(), rawrbox::Vector4f data = {}) : matrix(mat), color(col), extraData(data) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;

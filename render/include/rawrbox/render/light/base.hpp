@@ -19,7 +19,7 @@ namespace rawrbox {
 		rawrbox::Vector3f _offset = {};
 		rawrbox::Vector3f _direction = {};
 
-		rawrbox::Colorf _color = rawrbox::Colors::White;
+		rawrbox::Colorf _color = rawrbox::Colors::White();
 
 		float _radius = 5.F;
 

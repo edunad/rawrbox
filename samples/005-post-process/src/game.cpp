@@ -74,7 +74,7 @@ namespace post_process {
 
 		// Setup
 		{
-			auto mesh = rawrbox::MeshUtils::generateCube({0.F, 0.F, 0}, {3.F, 3.F, 3.F}, rawrbox::Colors::White);
+			auto mesh = rawrbox::MeshUtils::generateCube({0.F, 0.F, 0}, {3.F, 3.F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
 			this->_model->addMesh(mesh);
 		}

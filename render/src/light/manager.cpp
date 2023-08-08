@@ -21,7 +21,7 @@ namespace rawrbox {
 	rawrbox::Colorf LIGHTS::_ambient = {0.01F, 0.01F, 0.01F, 1.F};
 
 	// Sun --
-	rawrbox::Colorf LIGHTS::_sun_color = rawrbox::Colors::Transparent; // No sun by default
+	rawrbox::Colorf LIGHTS::_sun_color = rawrbox::Colors::Transparent(); // No sun by default
 	rawrbox::Vector3f LIGHTS::_sun_direction = {0, 0, 0};
 
 	// Fog --

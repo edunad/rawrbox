@@ -12,7 +12,7 @@ namespace rawrbox {
 	class UIButton : public rawrbox::UIContainer {
 		rawrbox::Color _backgroundColor = rawrbox::Color::RGBHex(0x36393f);
 		rawrbox::Color _textColor = rawrbox::Color::RGBHex(0xf5f6fa);
-		rawrbox::Color _textureColor = rawrbox::Colors::White;
+		rawrbox::Color _textureColor = rawrbox::Colors::White();
 
 		std::string _text;
 		rawrbox::Vector2 _textureSize = {12, 12};

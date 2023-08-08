@@ -245,20 +245,89 @@ namespace rawrbox {
 		using ColorType = Color_t<NumberType>;
 
 	public:
-		inline const static ColorType Black = ColorType(0, 0, 0, 1);
-		inline const static ColorType White = ColorType(1, 1, 1, 1);
+		[[nodiscard]] static inline ColorType Black() {
+			if constexpr (std::is_same_v<NumberType, int>) {
+				return ColorType(0, 0, 0, 255);
+			} else {
+				return ColorType(0, 0, 0, 1);
+			}
+		}
 
-		inline const static ColorType Gray = ColorType(0.81F, 0.8F, 0.75F, 1);
-		inline const static ColorType DarkGray = ColorType(0.51F, 0.50F, 0.47F, 1);
+		[[nodiscard]] static inline ColorType White() {
+			if constexpr (std::is_same_v<NumberType, int>) {
+				return ColorType(255, 255, 255, 255);
+			} else {
+				return ColorType(1, 1, 1, 1);
+			}
+		}
 
-		inline const static ColorType Red = ColorType(1, 0.32F, 0.32F, 1);
-		inline const static ColorType Green = ColorType(0.14F, 0.87F, 0.50F, 1);
-		inline const static ColorType Blue = ColorType(0.2F, 0.67F, 0.87F, 1);
-		inline const static ColorType Orange = ColorType(1, 0.47F, 0.24F, 1);
-		inline const static ColorType Yellow = ColorType(1, 0.69F, 0.25F, 1);
-		inline const static ColorType Purple = ColorType(1.F, 0.F, 1.F, 1);
+		[[nodiscard]] static inline ColorType Gray() {
+			if constexpr (std::is_same_v<NumberType, int>) {
+				return ColorType(206, 204, 191, 255);
+			} else {
+				return ColorType(0.81F, 0.8F, 0.75F, 1);
+			}
+		}
 
-		inline const static ColorType Transparent = ColorType(0, 0, 0, 0);
+		[[nodiscard]] static inline ColorType DarkGray() {
+			if constexpr (std::is_same_v<NumberType, int>) {
+				return ColorType(130, 127, 119, 255);
+			} else {
+				return ColorType(0.51F, 0.50F, 0.47F, 1);
+			}
+		}
+
+		[[nodiscard]] static inline ColorType Red() {
+			if constexpr (std::is_same_v<NumberType, int>) {
+				return ColorType(255, 82, 82, 255);
+			} else {
+				return ColorType(1, 0.32F, 0.32F, 1);
+			}
+		}
+
+		[[nodiscard]] static inline ColorType Green() {
+			if constexpr (std::is_same_v<NumberType, int>) {
+				return ColorType(36, 222, 128, 255);
+			} else {
+				return ColorType(0.14F, 0.87F, 0.50F, 1);
+			}
+		}
+
+		[[nodiscard]] static inline ColorType Blue() {
+			if constexpr (std::is_same_v<NumberType, int>) {
+				return ColorType(51, 171, 222, 255);
+			} else {
+				return ColorType(0.2F, 0.67F, 0.87F, 1);
+			}
+		}
+
+		[[nodiscard]] static inline ColorType Orange() {
+			if constexpr (std::is_same_v<NumberType, int>) {
+				return ColorType(255, 120, 61, 255);
+			} else {
+				return ColorType(1, 0.47F, 0.24F, 1);
+			}
+		}
+
+		[[nodiscard]] static inline ColorType Yellow() {
+			if constexpr (std::is_same_v<NumberType, int>) {
+				return ColorType(255, 230, 64, 255);
+			} else {
+				return ColorType(1, 0.9F, 0.25F, 1);
+			}
+		}
+
+		[[nodiscard]] static inline ColorType Purple() {
+			if constexpr (std::is_same_v<NumberType, int>) {
+				return ColorType(255, 0, 255, 255);
+			} else {
+				return ColorType(1.F, 0.F, 1.F, 1);
+			}
+		}
+
+		[[nodiscard]] static inline ColorType Transparent() {
+			return ColorType(0, 0, 0, 0);
+		}
 	};
 
 	using Colorsf = Colors_t<float>;

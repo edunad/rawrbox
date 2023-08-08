@@ -4,10 +4,6 @@ set(output_target RAWRBOX.RESOURCES)
 
 # LIB ----
 file(GLOB_RECURSE RAWRBOX_RESOURCES_IMPORTS "src/*.cpp" "include/*.hpp")
-if(NOT RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-    remove_folder("${RAWRBOX_RESOURCES_IMPORTS}" "/scripting/")
-    set(RAWRBOX_RESOURCES_IMPORTS "${CLEAN_SOURCES}")
-endif()
 
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RESOURCES_IMPORTS})
 

@@ -183,7 +183,7 @@ namespace phys_2d_test {
 
 			b->mdl->setPos(pos);
 			b->mdl->setEulerAngle({0, 0, body->GetAngle()});
-			b->mdl->setColor(body->IsSleeping() ? rawrbox::Colors::DarkGray : rawrbox::Colors::White);
+			b->mdl->setColor(body->IsSleeping() ? rawrbox::Colors::DarkGray() : rawrbox::Colors::White());
 
 			b->mdl->draw();
 		}

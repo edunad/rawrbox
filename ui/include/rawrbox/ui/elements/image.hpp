@@ -10,7 +10,7 @@ namespace rawrbox {
 	protected:
 		rawrbox::TextureBase* _texture = nullptr;
 
-		rawrbox::Color _color = rawrbox::Colors::White;
+		rawrbox::Color _color = rawrbox::Colors::White();
 		bool _isAnimated = false;
 
 	public:

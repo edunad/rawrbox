@@ -46,15 +46,15 @@ namespace rawrbox {
 		uint64_t blending = BGFX_STATE_BLEND_NORMAL;
 
 		OptionalTexture diffuse = std::nullopt;
-		rawrbox::Colorf diffuseColor = rawrbox::Colors::White;
+		rawrbox::Colorf diffuseColor = rawrbox::Colors::White();
 
 		std::unique_ptr<rawrbox::TextureBase> normal = nullptr;
 		std::unique_ptr<rawrbox::TextureBase> specular = nullptr;
-		rawrbox::Colorf specularColor = rawrbox::Colors::White;
+		rawrbox::Colorf specularColor = rawrbox::Colors::White();
 		float shininess = 25.F;
 
 		std::unique_ptr<rawrbox::TextureBase> emissive = nullptr;
-		rawrbox::Colorf emissionColor = rawrbox::Colors::White;
+		rawrbox::Colorf emissionColor = rawrbox::Colors::White();
 		float intensity = 1.F;
 
 		explicit AssimpMaterial(std::string _name) : name(std::move(_name)){};
@@ -65,9 +65,9 @@ namespace rawrbox {
 		std::string name = "light";
 		std::string parentID = "";
 
-		rawrbox::Colorf diffuse = rawrbox::Colors::White;
-		rawrbox::Colorf specular = rawrbox::Colors::White;
-		rawrbox::Colorf ambient = rawrbox::Colors::Black;
+		rawrbox::Colorf diffuse = rawrbox::Colors::White();
+		rawrbox::Colorf specular = rawrbox::Colors::White();
+		rawrbox::Colorf ambient = rawrbox::Colors::Black();
 
 		rawrbox::Vector3f pos = {};
 		rawrbox::Vector3f direction = {};

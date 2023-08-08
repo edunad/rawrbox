@@ -30,7 +30,7 @@ namespace rawrbox {
 		size_t id = 0;
 		std::string name = "";
 		size_t smoothSize = 0;
-		rawrbox::Color color = rawrbox::Colors::White;
+		rawrbox::Color color = rawrbox::Colors::White();
 
 		std::array<float, ENTRY_COUNT> entries = {0};
 		std::array<float, ENTRY_COUNT> smoothed = {0};
@@ -67,9 +67,9 @@ namespace rawrbox {
 		bool _showLegend = false;
 		rawrbox::UIGraphStyle _style = rawrbox::UIGraphStyle::BLOCK;
 
-		rawrbox::Color _textLineColor = rawrbox::Colors::Gray;
-		rawrbox::Color _textColor = rawrbox::Colors::White;
-		rawrbox::Color _textShadowColor = rawrbox::Colors::Black;
+		rawrbox::Color _textLineColor = rawrbox::Colors::Gray();
+		rawrbox::Color _textColor = rawrbox::Colors::White();
+		rawrbox::Color _textShadowColor = rawrbox::Colors::Black();
 		rawrbox::Vector2f _textShadow = {1, 1};
 
 		// RESOURCES ---
