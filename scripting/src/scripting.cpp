@@ -2,7 +2,7 @@
 #include <rawrbox/scripting/scripting.hpp>
 #include <rawrbox/scripting/utils/lua.hpp>
 #include <rawrbox/scripting/wrappers/fmt_wrapper.hpp>
-#include <rawrbox/scripting/wrappers/hook_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/hooks_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/io_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/aabb_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/color_wrapper.hpp>
@@ -155,7 +155,7 @@ namespace rawrbox {
 		// Global types ------------------------------------
 		env["fmt"] = rawrbox::FMTWrapper();
 		env["io"] = rawrbox::IOWrapper();
-		env["hooks"] = rawrbox::HookWrapper(this->_hooks.get());
+		env["hooks"] = rawrbox::HooksWrapper(this->_hooks.get());
 		env["scripting"] = rawrbox::ScriptingWrapper(this);
 		// -------------------
 
@@ -228,7 +228,7 @@ namespace rawrbox {
 		rawrbox::FMTWrapper::registerLua(*this->_lua);
 		rawrbox::ScriptingWrapper::registerLua(*this->_lua);
 		rawrbox::ModWrapper::registerLua(*this->_lua);
-		rawrbox::HookWrapper::registerLua(*this->_lua);
+		rawrbox::HooksWrapper::registerLua(*this->_lua);
 		// ----
 
 		// Custom ----

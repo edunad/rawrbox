@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrbox/scripting/hook.hpp>
+#include <rawrbox/scripting/hooks.hpp>
 #include <rawrbox/scripting/mod.hpp>
 #include <rawrbox/utils/event.hpp>
 #include <rawrbox/utils/file_watcher.hpp>

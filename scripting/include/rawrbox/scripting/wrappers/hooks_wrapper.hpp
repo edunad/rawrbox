@@ -5,17 +5,17 @@
 namespace rawrbox {
 	class Hooks;
 
-	class HookWrapper {
+	class HooksWrapper {
 	protected:
 		rawrbox::Hooks* _hooks = nullptr;
 
 	public:
-		HookWrapper(rawrbox::Hooks* hooks_);
-		HookWrapper(const HookWrapper&) = default;
-		HookWrapper(HookWrapper&&) = default;
-		HookWrapper& operator=(const HookWrapper&) = default;
-		HookWrapper& operator=(HookWrapper&&) = default;
-		virtual ~HookWrapper() = default;
+		HooksWrapper(rawrbox::Hooks* hooks_);
+		HooksWrapper(const HooksWrapper&) = default;
+		HooksWrapper(HooksWrapper&&) = default;
+		HooksWrapper& operator=(const HooksWrapper&) = default;
+		HooksWrapper& operator=(HooksWrapper&&) = default;
+		virtual ~HooksWrapper() = default;
 
 		virtual void listen(const std::string& hook, const std::string& name, sol::function callback);
 		virtual void call(const std::string& hook, sol::variadic_args args);
