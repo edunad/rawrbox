@@ -29,8 +29,8 @@ namespace rawrbox {
 			auto obj = lua.create_table();
 			unsigned long i = 1;
 
-			for (nlohmann::json::const_iterator it = j.begin(); it != j.end(); ++it) {
-				obj[i++] = jsonToLuaObject(*it, lua);
+			for (const auto& it : j) {
+				obj[i++] = jsonToLuaObject(it, lua);
 			}
 
 			return obj;
