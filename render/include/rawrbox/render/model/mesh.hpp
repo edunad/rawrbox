@@ -57,6 +57,8 @@ namespace rawrbox {
 
 		rawrbox::TextureBase* displacementTexture = nullptr;
 
+		uint16_t atlasId = 0;
+
 		float specularShininess = 25.0F;
 		float emissionIntensity = 1.F;
 		// -------
@@ -115,6 +117,9 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual const rawrbox::TextureBase* getTexture() const;
 		virtual void setTexture(rawrbox::TextureBase* ptr);
+
+		[[nodiscard]] virtual uint16_t getAtlasID() const;
+		virtual void setAtlasID(uint16_t atlasID);
 
 		[[nodiscard]] virtual const rawrbox::TextureBase* getNormalTexture() const;
 		virtual void setNormalTexture(rawrbox::TextureBase* ptr);

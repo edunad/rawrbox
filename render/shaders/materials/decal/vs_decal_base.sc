@@ -26,7 +26,7 @@ void main() {
 
 	mat4 model = mtxFromCols(v_model_0, v_model_1, v_model_2, v_model_3);
 
-    v_color0 = a_color0 * getInstanceData(id, 4);
+	v_color0 = a_color0 * getInstanceData(id, 4);
 
 	v_texcoord0.xy = a_texcoord0.xy;
 	v_texcoord0.z = getInstanceData(id, 5).x;

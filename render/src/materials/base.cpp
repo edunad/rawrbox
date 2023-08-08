@@ -62,6 +62,8 @@ namespace rawrbox {
 			data[0] = mesh.getData("billboard_mode").data();
 		}
 
+		data[0][3] = mesh.getAtlasID(); // Re-use billboard mode, since w is unused
+
 		if (mesh.hasData("vertex_snap")) {
 			data[1] = mesh.getData("vertex_snap").data();
 		}

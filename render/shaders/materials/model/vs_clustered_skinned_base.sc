@@ -18,12 +18,13 @@ void main() {
 	v_normal = normalize(mul(u_view, vec4(wnormal, 0.0) ).xyz);
 	v_tangent = normalize(mul(u_view, vec4(wtangent, 0.0) ).xyz);
 
-    v_color0 = a_color0;
-	v_texcoord0 = applyUVTransform(a_texcoord0.xyz);
+	v_color0 = a_color0;
+	v_texcoord0.xy = applyUVTransform(a_texcoord0.xy);
+	v_texcoord0.z = atlasID;
 
 	vec4 pos = boneTransform(a_indices, a_weight, a_position);
-    TransformedData transform = applyPosTransforms(pos, a_texcoord0.xy);
+	TransformedData transform = applyPosTransforms(pos, a_texcoord0.xy);
 
-    v_worldPos = mul(u_model[0], transform.pos).xyz;
+	v_worldPos = mul(u_model[0], transform.pos).xyz;
 	gl_Position = transform.final;
 }

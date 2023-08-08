@@ -17,12 +17,13 @@ void main() {
 	v_normal = normalize(wnormal);
 	v_tangent = normalize(wtangent);
 
-    v_color0 = a_color0;
+	v_color0 = a_color0;
 
-	v_texcoord0 = applyUVTransform(a_texcoord0.xyz);
+	v_texcoord0.xy = applyUVTransform(a_texcoord0.xy);
+	v_texcoord0.z = atlasID;
 
-    TransformedData transform = applyPosTransforms(a_position, a_texcoord0.xy);
-    v_worldPos = mul(u_model[0], transform.pos).xyz;
+	TransformedData transform = applyPosTransforms(a_position, a_texcoord0.xy);
+	v_worldPos = mul(u_model[0], transform.pos).xyz;
 	gl_Position = transform.final;
 }
 

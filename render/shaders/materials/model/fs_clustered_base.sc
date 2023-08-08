@@ -26,17 +26,17 @@ void main() {
 
 	// ----
 	vec3 norm = normalize(v_normal);
-    //vec3 modelNormal = convertTangentNormal(v_normal, v_tangent, normal);
+	//vec3 modelNormal = convertTangentNormal(v_normal, v_tangent, normal);
 	// -----
 
-    vec3 viewDir = normalize(u_camPos - v_worldPos);
+	vec3 viewDir = normalize(u_camPos - v_worldPos);
 
 	// Apply lights ----
 	vec3 radianceOut = applyLight(gl_FragCoord, v_worldPos, norm, viewDir, specular.r, specularPower);
 	radianceOut += emission;
 
 	gl_FragData[0].rgb = albedo * radianceOut;
-    gl_FragData[0].a = albedo.a; // COLOR
+	gl_FragData[0].a = albedo.a; // COLOR
 	// -------
 
 	// Apply Fog ----
