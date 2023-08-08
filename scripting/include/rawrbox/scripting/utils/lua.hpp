@@ -1,5 +1,6 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
 #include <sol/sol.hpp>
 
 #include <fmt/printf.h>
@@ -49,9 +50,13 @@ namespace rawrbox {
 			return arr;
 		}
 
+		static sol::object jsonToLuaObject(const nlohmann::json j, sol::state& lua);
+		static sol::object jsonToLuaObject(const nlohmann::json j, sol::state_view& lua);
+		static nlohmann::json luaToJsonObject(const sol::object& l, bool filterNull = false);
+
 		// @/ == Root content
 		// @cats/ == `cats` mod
 		// normal_path == current mod
-		static std::string getContent(const std::string& path, const std::string& modName = "");
+		static std::string getContent(const std::filesystem::path& path, const std::string& modPath = "");
 	};
 } // namespace rawrbox

@@ -11,6 +11,8 @@
     "isTable",
     "isString",
     "json",
-    "fmt"
+    "fmt",
+    "printTable",
+    "scripting"
   ]
 }

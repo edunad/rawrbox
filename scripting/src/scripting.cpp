@@ -9,6 +9,8 @@
 #include <rawrbox/scripting/wrappers/math/vector2_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/vector3_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/vector4_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/mod_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/scripting_wrapper.hpp>
 #include <rawrbox/utils/time.hpp>
 
 #include <filesystem>
@@ -97,14 +99,20 @@ namespace rawrbox {
 			fmt::print("{}\n", fmt::join(prtData, " "));
 		};
 
+		env["printTable"] = [](sol::table table) {
+			auto json = rawrbox::LuaUtils::luaToJsonObject(table);
+			fmt::print("{}\n", json.dump(1, ' ', false));
+		};
+
 		env["include"] = [&env, &mod, this](const std::string& path) {
 			auto modFolder = mod->getFolder().generic_string();
+			auto fixedPath = LuaUtils::getContent(path, modFolder);
 
-			bool loaded = loadLuaFile(LuaUtils::getContent(path, modFolder), env, this->getLua());
-			if (!loaded) fmt::print("[RawrBox-Scripting] Failed to load '{}'\n", path);
+			bool loaded = this->loadLuaFile(fixedPath, env, this->getLua());
+			if (!loaded) fmt::print("[RawrBox-Scripting] Failed to load '{}'\n", fixedPath);
 
 			// Register file for hot-reloading
-			this->registerLoadedFile(mod->getID(), path);
+			this->registerLoadedFile(mod->getID(), fixedPath);
 			// ----
 
 			return loaded ? 1 : 0;
@@ -144,6 +152,7 @@ namespace rawrbox {
 		// Global types ------------------------------------
 		env["fmt"] = rawrbox::FMTWrapper();
 		env["io"] = rawrbox::IOWrapper();
+		env["scripting"] = rawrbox::ScriptingWrapper(this);
 		// -------------------
 
 		// Custom global types ---
@@ -201,11 +210,6 @@ namespace rawrbox {
 	void Scripting::loadTypes() {
 		if (this->_lua == nullptr) throw std::runtime_error("[RawrBox-Scripting] LUA is not set! Reference got destroyed?");
 
-		// Default ----
-		rawrbox::IOWrapper::registerLua(*this->_lua);
-		rawrbox::FMTWrapper::registerLua(*this->_lua);
-		// ----
-
 		// Math ----
 		rawrbox::AABBWrapper::registerLua(*this->_lua);
 		rawrbox::ColorWrapper::registerLua(*this->_lua);
@@ -213,6 +217,13 @@ namespace rawrbox {
 		rawrbox::Vector2Wrapper::registerLua(*this->_lua);
 		rawrbox::Vector3Wrapper::registerLua(*this->_lua);
 		rawrbox::Vector4Wrapper::registerLua(*this->_lua);
+		// ----
+
+		// Default ----
+		rawrbox::IOWrapper::registerLua(*this->_lua);
+		rawrbox::FMTWrapper::registerLua(*this->_lua);
+		rawrbox::ScriptingWrapper::registerLua(*this->_lua);
+		rawrbox::ModWrapper::registerLua(*this->_lua);
 		// ----
 
 		// Custom ----
@@ -247,21 +258,18 @@ namespace rawrbox {
 
 		std::string errStr;
 		// try to load the file while handling exceptions
-		try {
-			auto ret = lua.safe_script_file(path, env, sol::load_mode::text);
-			if (!ret.valid()) {
-				sol::error err = ret;
-				errStr = err.what();
-			}
-
-		} catch (const std::exception& err) {
-			errStr = err.what();
-		}
+		auto ret = lua.safe_script_file(
+		    path, env, [&errStr](lua_State*, sol::protected_function_result pfr) {
+			    sol::error err = pfr;
+			    errStr = err.what();
+			    return pfr;
+		    },
+		    sol::load_mode::text);
 
 		// check if we loaded the file
 		if (errStr.empty()) return true;
 
-		fmt::print("[RawrBox-Scripting] Failed to load '{}'\n  └── Lua error  : {}\n", path, errStr);
+		fmt::print("[RawrBox-Scripting] Failed to load '{}'\n  └── Lua error : {}\n", path, errStr);
 		return false;
 	}
 

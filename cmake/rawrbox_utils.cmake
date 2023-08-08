@@ -7,3 +7,16 @@ function(set_lib_runtime_mt target)
         endif()
     endif()
 endfunction()
+
+# From : https://stackoverflow.com/questions/24491129/excluding-directory-somewhere-in-file-structure-from-cmake-sourcefile-list
+function(remove_folder glob_sources folderName)
+    message(STATUS "Removing ${folderName} from sources")
+
+    foreach(ITR ${glob_sources})
+        if("${ITR}" MATCHES "(.*)${folderName}(.*)")
+            list(REMOVE_ITEM glob_sources ${ITR})
+        endif("${ITR}" MATCHES "(.*)${folderName}(.*)")
+    endforeach(ITR)
+
+    set(CLEAN_SOURCES "${glob_sources}" PARENT_SCOPE)
+endfunction()

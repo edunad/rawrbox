@@ -21,6 +21,11 @@ TEST_CASE("StrUtils should behave as expected", "[rawrbox::StrUtils]") {
 		REQUIRE(rawrbox::StrUtils::extractNumbers("A3B4") == "34");
 	}
 
+	SECTION("rawrbox::StrUtils::replace") {
+		REQUIRE(rawrbox::StrUtils::replace("AVI STOP PLAYING BAD GAMES", "AVI", "BROM") == "BROM STOP PLAYING BAD GAMES");
+		REQUIRE(rawrbox::StrUtils::replace("AVI STOP PLAYING BAD GAMES", "NYA", "BROM") == "AVI STOP PLAYING BAD GAMES");
+	}
+
 	SECTION("rawrbox::StrUtils::split") {
 		auto spl = rawrbox::StrUtils::split("a|bC|C", '|');
 		auto spl2 = rawrbox::StrUtils::split("abc", '|');

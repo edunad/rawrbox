@@ -58,12 +58,8 @@ file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "in
 if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.RESOURCES)
 else()
-    foreach(TMP_PATH ${RAWRBOX_RENDER_SOURCES})
-        string(FIND ${TMP_PATH} "/resources/" EXCLUDE_DIR_FOUND)
-        if(NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
-            list(REMOVE_ITEM RAWRBOX_RENDER_SOURCES ${TMP_PATH})
-        endif()
-    endforeach(TMP_PATH)
+    remove_folder("${RAWRBOX_RENDER_SOURCES}" "/resources/")
+    set(RAWRBOX_RENDER_SOURCES "${CLEAN_SOURCES}")
 endif()
 # -----------------
 

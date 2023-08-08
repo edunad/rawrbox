@@ -15,6 +15,16 @@ namespace rawrbox {
 		return str;
 	}
 
+	std::string StrUtils::replace(std::string str, const std::string& find, const std::string& replace) {
+		if (str.empty()) return str;
+
+		auto fnd = str.find(find);
+		if (fnd == std::string::npos) return str;
+
+		str.replace(fnd, find.size(), replace);
+		return str;
+	}
+
 	bool StrUtils::isNumeric(const std::string& str) {
 		std::string::const_iterator it = str.begin();
 
