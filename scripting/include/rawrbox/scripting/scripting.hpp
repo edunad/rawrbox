@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rawrbox/scripting/hook.hpp>
 #include <rawrbox/scripting/mod.hpp>
 #include <rawrbox/utils/event.hpp>
 #include <rawrbox/utils/file_watcher.hpp>
@@ -23,6 +24,7 @@ namespace rawrbox {
 		std::unordered_map<std::string, std::vector<std::string>> _loadedLuaFiles = {};
 
 		std::unique_ptr<rawrbox::FileWatcher> _watcher = nullptr;
+		std::unique_ptr<rawrbox::Hooks> _hooks = nullptr;
 		std::unique_ptr<sol::state> _lua = nullptr;
 
 		bool _hotReloadEnabled = false;

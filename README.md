@@ -25,24 +25,25 @@
 
 # FEATURES (so far)
 
-- Model loading (animations, light, texture import) using assimp
+- Model loading (animations, light, texture import) using [assimp](https://github.com/assimp/assimp)
 - Light support (point, spot, directional)
-- Clustered rendering
+- Clustered rendering & support for other type of rendering
 - 3D text
 - 2D stencil drawing
-- Fonts
-- Images (png, jpeg, tga, bitmap)
-- Video (webm)
-- Sounds (using BASS lib)
+- Fonts (ttf) using [stb](https://github.com/nothings/stb)
+- JSON loading using [nlohmann json](https://github.com/nlohmann/json)
+- Images (png, jpeg, tga, bitmap, gif) using [stb](https://github.com/nothings/stb)
+- Video ([webm](https://github.com/webmproject/libwebm))
+- Sounds (using [BASS](https://www.un4seen.com/) lib)
 - Custom UI
 - Material system (similar to unity)
-- GIF loading & animation
-- Vulkan / DirectX / OpenGL support
+- Vulkan / DirectX / OpenGL support using [BGFX](https://github.com/bkaradzic/bgfx)
 - Linux Wayland support + steam deck support
 - 3D Physics system using [JoltPhysics](https://github.com/jrouwe/JoltPhysics)
 - 2D Physics system using [Muli](https://github.com/Sopiro/Muli)
 - Decal system
-- Scripting / modding support with LUA
+- Scripting / modding support with LUA using [sol2](https://github.com/ThePhD/sol2) and [luajit2](https://github.com/openresty/luajit2)
+- Post-processing effects support
 
 # TODO LIST
 
@@ -160,7 +161,7 @@
 
 ### 001-stencil
 
-<a href='/samples/001-stencil'><img src="https://i.rawr.dev/ycW6AgfHss-min.gif" width=512 /></a>
+<a href='/samples/001-stencil'><img src="https://i.rawr.dev/Pu8XDzsdXt-min.gif" width=512 /></a>
 
 ### 002-generated-models
 

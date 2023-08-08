@@ -5,7 +5,7 @@
 namespace rawrbox {
 	class ModWrapper {
 	protected:
-		rawrbox::Mod* _mod;
+		rawrbox::Mod* _mod = nullptr;
 
 	public:
 		ModWrapper(rawrbox::Mod* mod);

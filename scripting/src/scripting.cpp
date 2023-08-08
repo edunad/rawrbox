@@ -2,6 +2,7 @@
 #include <rawrbox/scripting/scripting.hpp>
 #include <rawrbox/scripting/utils/lua.hpp>
 #include <rawrbox/scripting/wrappers/fmt_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/hook_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/io_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/aabb_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/color_wrapper.hpp>
@@ -19,6 +20,7 @@
 namespace rawrbox {
 	Scripting::Scripting(int hotReloadMs) : _hotReloadEnabled(hotReloadMs > 0) {
 		this->_lua = std::make_unique<sol::state>();
+		this->_hooks = std::make_unique<rawrbox::Hooks>();
 
 		if (this->hotReloadEnabled()) {
 			fmt::print("[RawrBox-Scripting] Enabled lua hot-reloading\n  └── Delay: {}ms\n", hotReloadMs);
@@ -44,6 +46,7 @@ namespace rawrbox {
 
 	Scripting::~Scripting() {
 		this->_watcher.reset();
+		this->_hooks.reset();
 		this->_mods.clear();
 
 		this->_lua->collect_garbage();
@@ -152,6 +155,7 @@ namespace rawrbox {
 		// Global types ------------------------------------
 		env["fmt"] = rawrbox::FMTWrapper();
 		env["io"] = rawrbox::IOWrapper();
+		env["hooks"] = rawrbox::HookWrapper(this->_hooks.get());
 		env["scripting"] = rawrbox::ScriptingWrapper(this);
 		// -------------------
 
@@ -224,6 +228,7 @@ namespace rawrbox {
 		rawrbox::FMTWrapper::registerLua(*this->_lua);
 		rawrbox::ScriptingWrapper::registerLua(*this->_lua);
 		rawrbox::ModWrapper::registerLua(*this->_lua);
+		rawrbox::HookWrapper::registerLua(*this->_lua);
 		// ----
 
 		// Custom ----
