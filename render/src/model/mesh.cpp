@@ -51,7 +51,14 @@ namespace rawrbox {
 	}
 
 	const rawrbox::TextureBase* Mesh::getTexture() const { return this->texture; }
-	void Mesh::setTexture(rawrbox::TextureBase* ptr) { this->texture = ptr; }
+	void Mesh::setTexture(rawrbox::TextureBase* ptr) {
+		this->texture = ptr;
+	}
+
+	uint16_t Mesh::getAtlasID() const { return this->atlasId; }
+	void Mesh::setAtlasID(uint16_t _atlasId) {
+		this->atlasId = _atlasId;
+	}
 
 	const rawrbox::TextureBase* Mesh::getNormalTexture() const { return this->normalTexture; }
 	void Mesh::setNormalTexture(rawrbox::TextureBase* ptr) { this->normalTexture = ptr; }

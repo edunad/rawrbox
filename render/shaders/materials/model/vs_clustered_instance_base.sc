@@ -33,7 +33,7 @@ void main() {
 	v_tangent = normalize(mul(u_view, vec4(wtangent, 0.0) ).xyz);
 	v_color0 = getInstanceData(id, 4);
 
-	v_texcoord0 = applyUVTransform(a_texcoord0.xyz);
+	v_texcoord0.xy = applyUVTransform(a_texcoord0.xy);
 	v_texcoord0.z = getInstanceData(id, 5).x;
 
     TransformedData transform = applyPosTransforms(u_viewProj, mul(model, vec4(a_position, 1.)), a_texcoord0.xy);

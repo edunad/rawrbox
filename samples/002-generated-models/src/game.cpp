@@ -45,6 +45,7 @@ namespace model {
 	}
 
 	void Game::loadContent() {
+
 		std::array initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/screem.png", 0),

@@ -9,6 +9,7 @@
     uniform vec4 u_data[MAX_DATA];
 
     #define billboard u_data[0].xyz
+    #define atlasID u_data[0].w
     #define vertexSnap u_data[1].x
     #define displacement_power u_data[2].x
     #define recieve_decals u_data[3].x
@@ -23,7 +24,7 @@
     #define UV_FLAG_FLIP_V 2.0
     #define UV_FLAG_FLIP_UV 3.0
 
-    vec3 applyUVTransform(vec3 uv) {
+    vec2 applyUVTransform(vec2 uv) {
         if(uvFlags == UV_FLAG_FLIP_U) uv.x = -uv.x;
         if(uvFlags == UV_FLAG_FLIP_V) uv.y = -uv.y;
         if(uvFlags == UV_FLAG_FLIP_UV) uv.xy = -uv.xy;

@@ -45,17 +45,18 @@ namespace stencil {
 	}
 
 	void Game::loadContent() {
-		std::array<std::string, 5> initialContentFiles = {
-		    "content/fonts/droidsans.ttf",
-		    "content/fonts/visitor1.ttf",
-		    "cour.ttf",
-		    "content/textures/screem.png",
-		    "content/textures/meow3.gif",
+		std::array initialContentFiles = {
+		    std::make_pair<std::string, uint32_t>("content/fonts/droidsans.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("content/fonts/visitor1.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("content/textures/screem.png", 0),
+		    std::make_pair<std::string, uint32_t>("content/textures/meow3.gif", 0),
+		    std::make_pair<std::string, uint32_t>("content/textures/instance_test.png", 64),
 		};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f, 0, [this]() {
+			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
 				this->_loadingFiles--;
 				if (this->_loadingFiles <= 0) {
 					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
@@ -70,6 +71,7 @@ namespace stencil {
 		// Textures ---
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
 		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get<rawrbox::TextureGIF>();
+		this->_texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/instance_test.png")->get();
 
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/droidsans.ttf")->getSize(28);
 		this->_font2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/visitor1.ttf")->getSize(18);
@@ -78,7 +80,8 @@ namespace stencil {
 
 		// Textures ---
 		auto mesh = rawrbox::MeshUtils::generateCube({0, 0, 0}, {2.F, 2.F, 2.F});
-		mesh.setTexture(this->_texture);
+		mesh.setTexture(this->_texture3);
+		mesh.setAtlasID(0);
 
 		this->_model->addMesh(mesh);
 		this->_model->upload();
@@ -93,6 +96,7 @@ namespace stencil {
 
 		this->_texture = nullptr;
 		this->_texture2 = nullptr;
+		this->_texture3 = nullptr;
 
 		this->_font = nullptr;
 		this->_font2 = nullptr;
@@ -279,8 +283,13 @@ namespace stencil {
 	}
 
 	void Game::update() {
-		if (this->_model != nullptr)
+		if (!this->_ready) return;
+
+		if (this->_model != nullptr) {
 			this->_model->setEulerAngle({0, bx::toRad(this->_counter * 20.F), 0});
+			this->_model->getMesh()->setAtlasID(static_cast<int>(this->_counter) % 4);
+		}
+
 		this->_counter += 0.1F;
 	}
 
