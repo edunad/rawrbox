@@ -414,16 +414,6 @@ namespace rawrbox {
 		return {static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y))};
 	}
 
-	bool Window::getShouldClose() const {
-		if (this->_handle == nullptr) return false;
-		return glfwWindowShouldClose(GLFWHANDLE);
-	}
-
-	void Window::setShouldClose(bool close) const {
-		if (this->_handle == nullptr) return;
-		glfwSetWindowShouldClose(GLFWHANDLE, close ? 1 : 0);
-	}
-
 	uint32_t Window::getWindowFlags() const { return this->_windowFlags; }
 
 	rawrbox::Stencil& Window::getStencil() const { return *this->_stencil; }

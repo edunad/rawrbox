@@ -5,6 +5,7 @@
 #include <rawrbox/scripting/wrappers/hooks_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/io_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/aabb_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/math/bbox_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/color_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/matrix_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/vector2_wrapper.hpp>
@@ -35,6 +36,22 @@ namespace rawrbox {
 		}
 
 		this->_mods.clear();
+	}
+
+	Scripting::~Scripting() {
+		this->_watcher.reset();
+		this->_hooks.reset();
+
+		this->_mods.clear();
+		this->_plugins.clear();
+
+		this->_lua->collect_garbage();
+		this->_lua.reset();
+	}
+
+	// LOAD ---
+	void Scripting::load() {
+		if (!std::filesystem::exists("./mods")) throw std::runtime_error("[RawrBox-Scripting] Failed to locate folder './mods'");
 
 		// Loading initial libs ---
 		// NOLINTBEGIN(clang-analyzer-optin.cplusplus.VirtualCall)
@@ -42,19 +59,6 @@ namespace rawrbox {
 		this->loadTypes();
 		// NOLINTEND(clang-analyzer-optin.cplusplus.VirtualCall)
 		//  ----
-	}
-
-	Scripting::~Scripting() {
-		this->_watcher.reset();
-		this->_hooks.reset();
-		this->_mods.clear();
-
-		this->_lua->collect_garbage();
-		this->_lua.reset();
-	}
-
-	void Scripting::load() {
-		if (!std::filesystem::exists("./mods")) throw std::runtime_error("[RawrBox-Scripting] Failed to locate folder './mods'");
 
 		// TODO: Do we need mod load ordering?
 		for (auto& p : std::filesystem::directory_iterator("./mods")) {
@@ -159,7 +163,12 @@ namespace rawrbox {
 		env["scripting"] = rawrbox::ScriptingWrapper(this);
 		// -------------------
 
-		// Custom global types ---
+		// Register plugins env types ---
+		for (auto& p : this->_plugins)
+			p->registerGlobal(env);
+		//  -----
+
+		// Custom global env types ---
 		this->onRegisterGlobals(mod);
 		// ----
 	}
@@ -216,6 +225,7 @@ namespace rawrbox {
 
 		// Math ----
 		rawrbox::AABBWrapper::registerLua(*this->_lua);
+		rawrbox::BBOXWrapper::registerLua(*this->_lua);
 		rawrbox::ColorWrapper::registerLua(*this->_lua);
 		rawrbox::MatrixWrapper::registerLua(*this->_lua);
 		rawrbox::Vector2Wrapper::registerLua(*this->_lua);
@@ -230,6 +240,11 @@ namespace rawrbox {
 		rawrbox::ModWrapper::registerLua(*this->_lua);
 		rawrbox::HooksWrapper::registerLua(*this->_lua);
 		// ----
+
+		// Register plugins types ---
+		for (auto& p : this->_plugins)
+			p->registerTypes(*this->_lua);
+		//  -----
 
 		// Custom ----
 		this->onRegisterTypes();

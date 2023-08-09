@@ -191,8 +191,6 @@ namespace rawrbox {
 
 		// UTILS ---------------
 		void close();
-		[[nodiscard]] virtual bool getShouldClose() const;
-		virtual void setShouldClose(bool close) const;
 
 		[[nodiscard]] virtual rawrbox::Vector2i getSize() const;
 		[[nodiscard]] virtual float getAspectRatio() const;

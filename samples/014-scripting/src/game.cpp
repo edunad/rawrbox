@@ -2,6 +2,7 @@
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render/scripting/plugin.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 
@@ -9,8 +10,6 @@
 #include <scripting_test/wrapper_test.hpp>
 
 #include <fmt/format.h>
-
-#include "rawrbox/render/scripting/wrapper/stencil_wrapper.hpp"
 
 namespace scripting_test {
 	void Game::setupGLFW() {
@@ -58,14 +57,14 @@ namespace scripting_test {
 
 		// Setup scripting
 		this->_script = std::make_unique<rawrbox::Scripting>(2000); // Check files every 2 seconds
-		this->_script->registerType<rawrbox::TestWrapper>();
-		this->_script->registerType<rawrbox::StencilWrapper>();
+		this->_script->registerPlugin<rawrbox::RenderPlugin>(this->_window.get());
 
-		this->_script->onRegisterGlobals += [this](rawrbox::Mod* mod) {
+		// Custom non-plugin ---
+		this->_script->registerType<rawrbox::TestWrapper>();
+		this->_script->onRegisterGlobals += [](rawrbox::Mod* mod) {
 			mod->getEnvironment()["test"] = rawrbox::TestWrapper();
-			mod->getEnvironment()["stencil"] = rawrbox::StencilWrapper(&this->_window->getStencil());
 		};
-		// -----
+		// ----
 
 		// Load lua mods
 		this->_script->load();
@@ -135,6 +134,7 @@ namespace scripting_test {
 	void Game::drawOverlay() {
 		if (!this->_ready || this->_script == nullptr) return;
 		this->_script->call("drawOverlay");
+		this->_window->getStencil().render();
 	}
 
 	void Game::draw() {

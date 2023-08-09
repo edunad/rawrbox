@@ -145,7 +145,7 @@ namespace rawrbox {
 	// --------------------
 
 	// ------UTILS
-	void Stencil::drawPolygon(rawrbox::Polygon poly) {
+	void Stencil::drawPolygon(const rawrbox::Polygon& poly) {
 		// Setup --------
 		bgfx::TextureHandle handl = BGFX_INVALID_HANDLE;
 		if (this->_pixelTexture != nullptr) handl = this->_pixelTexture->getHandle();

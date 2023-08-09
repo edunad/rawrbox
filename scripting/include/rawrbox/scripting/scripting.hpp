@@ -2,12 +2,14 @@
 
 #include <rawrbox/scripting/hooks.hpp>
 #include <rawrbox/scripting/mod.hpp>
+#include <rawrbox/scripting/plugin.hpp>
 #include <rawrbox/utils/event.hpp>
 #include <rawrbox/utils/file_watcher.hpp>
 
 #include <sol/sol.hpp>
 
 #include <string>
+#include <typeinfo>
 #include <unordered_map>
 #include <vector>
 
@@ -26,6 +28,8 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::FileWatcher> _watcher = nullptr;
 		std::unique_ptr<rawrbox::Hooks> _hooks = nullptr;
 		std::unique_ptr<sol::state> _lua = nullptr;
+
+		std::vector<std::unique_ptr<rawrbox::Plugin>> _plugins = {};
 
 		bool _hotReloadEnabled = false;
 
@@ -53,6 +57,15 @@ namespace rawrbox {
 		rawrbox::Event<rawrbox::Mod*> onLoadExtensions;
 		rawrbox::Event<rawrbox::Mod*> onModHotReload;
 		// -------
+
+		// PLUGINS ---
+		template <typename T = rawrbox::Plugin, typename... CallbackArgs>
+		void registerPlugin(CallbackArgs&&... args) {
+			auto plugin = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
+			fmt::print("[RawrBox-Scripting] Registered lua plugin '{}'\n", typeid(T).name());
+			this->_plugins.push_back(std::move(plugin));
+		}
+		// -----
 
 		// LOAD -----
 		virtual void load();
