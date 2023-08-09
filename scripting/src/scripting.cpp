@@ -49,16 +49,16 @@ namespace rawrbox {
 		this->_lua.reset();
 	}
 
+	void Scripting::init() {
+		// Loading initial libs ---
+		this->loadLibraries();
+		this->loadTypes();
+		//  ----
+	}
+
 	// LOAD ---
 	void Scripting::load() {
 		if (!std::filesystem::exists("./mods")) throw std::runtime_error("[RawrBox-Scripting] Failed to locate folder './mods'");
-
-		// Loading initial libs ---
-		// NOLINTBEGIN(clang-analyzer-optin.cplusplus.VirtualCall)
-		this->loadLibraries();
-		this->loadTypes();
-		// NOLINTEND(clang-analyzer-optin.cplusplus.VirtualCall)
-		//  ----
 
 		// TODO: Do we need mod load ordering?
 		for (auto& p : std::filesystem::directory_iterator("./mods")) {

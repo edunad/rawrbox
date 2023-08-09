@@ -69,6 +69,8 @@ namespace rawrbox {
 		}
 		// -----
 
+		virtual void init();
+
 		// LOAD -----
 		virtual void load();
 		virtual bool loadLuaFile(const std::string& path, const sol::environment& env, sol::state& lua);

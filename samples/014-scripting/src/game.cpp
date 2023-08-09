@@ -36,6 +36,18 @@ namespace scripting_test {
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// ----------
 
+		// Setup scripting
+		this->_script = std::make_unique<rawrbox::Scripting>(2000); // Check files every 2 seconds
+		this->_script->registerPlugin<rawrbox::RenderPlugin>(this->_window.get());
+
+		// Custom non-plugin ---
+		this->_script->registerType<rawrbox::TestWrapper>();
+		this->_script->onRegisterGlobals += [](rawrbox::Mod* mod) {
+			mod->getEnvironment()["test"] = rawrbox::TestWrapper();
+		};
+		this->_script->init();
+		// ----
+
 		// Load content ---
 		this->loadContent();
 		//   -----
@@ -54,17 +66,6 @@ namespace scripting_test {
 				}
 			});
 		}
-
-		// Setup scripting
-		this->_script = std::make_unique<rawrbox::Scripting>(2000); // Check files every 2 seconds
-		this->_script->registerPlugin<rawrbox::RenderPlugin>(this->_window.get());
-
-		// Custom non-plugin ---
-		this->_script->registerType<rawrbox::TestWrapper>();
-		this->_script->onRegisterGlobals += [](rawrbox::Mod* mod) {
-			mod->getEnvironment()["test"] = rawrbox::TestWrapper();
-		};
-		// ----
 
 		// Load lua mods
 		this->_script->load();

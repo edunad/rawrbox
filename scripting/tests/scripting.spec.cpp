@@ -8,6 +8,8 @@ TEST_CASE("Scripting should behave as expected", "[rawrbox::Scripting]") {
 	std::unique_ptr<rawrbox::Scripting> script = std::make_unique<rawrbox::Scripting>();
 
 	SECTION("rawrbox::Scripting::init") {
+		REQUIRE_NOTHROW(script->init());
+
 		REQUIRE(script->getMods().empty() == true);
 		REQUIRE(script->getModsIds().empty() == true);
 
