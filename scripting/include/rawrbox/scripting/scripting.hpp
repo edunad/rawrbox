@@ -5,6 +5,7 @@
 #include <rawrbox/scripting/plugin.hpp>
 #include <rawrbox/utils/event.hpp>
 #include <rawrbox/utils/file_watcher.hpp>
+#include <rawrbox/utils/string.hpp>
 
 #include <sol/sol.hpp>
 
@@ -62,7 +63,8 @@ namespace rawrbox {
 		template <typename T = rawrbox::Plugin, typename... CallbackArgs>
 		void registerPlugin(CallbackArgs&&... args) {
 			auto plugin = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
-			fmt::print("[RawrBox-Scripting] Registered lua plugin '{}'\n", typeid(T).name());
+
+			fmt::print("[RawrBox-Scripting] Registered lua plugin '{}'\n", rawrbox::StrUtils::replace(typeid(T).name(), "class rawrbox::", ""));
 			this->_plugins.push_back(std::move(plugin));
 		}
 		// -----
