@@ -94,7 +94,7 @@ namespace rawrbox {
 
 			bgfx::setTransform((this->getMatrix() * mesh->matrix).data());
 
-			if (this->isDynamicBuffer()) {
+			if (this->isDynamic()) {
 				bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
 				bgfx::setIndexBuffer(this->_ibdh, mesh->baseIndex, mesh->totalIndex);
 			} else {

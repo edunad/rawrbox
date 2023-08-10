@@ -1,5 +1,6 @@
 #pragma once
 #include <rawrbox/render/scripting/wrapper/camera_wrapper.hpp>
+#include <rawrbox/render/scripting/wrapper/model_wrapper.hpp>
 #include <rawrbox/render/scripting/wrapper/stencil_wrapper.hpp>
 #include <rawrbox/render/scripting/wrapper/window_wrapper.hpp>
 #include <rawrbox/render/window.hpp>
@@ -17,6 +18,7 @@ namespace rawrbox {
 			rawrbox::WindowWrapper::registerLua(lua);
 			rawrbox::CameraWrapper::registerLua(lua);
 			rawrbox::StencilWrapper::registerLua(lua);
+			rawrbox::ModelWrapper<>::registerLua(lua);
 		}
 
 		void registerGlobal(sol::environment& env) override {

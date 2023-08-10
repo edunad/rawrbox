@@ -350,14 +350,14 @@ namespace rawrbox {
 				++it2;
 			}
 
-			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
+			if (this->isUploaded() && this->isDynamic()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 		}
 
 		virtual void removeMesh(size_t index) {
 			if (index >= this->_meshes.size()) return;
 			this->_meshes.erase(this->_meshes.begin() + index);
 
-			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
+			if (this->isUploaded() && this->isDynamic()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 		}
 
 		virtual rawrbox::Mesh* addMesh(rawrbox::Mesh mesh) {
@@ -365,7 +365,7 @@ namespace rawrbox {
 			mesh.owner = this;
 
 			auto& a = this->_meshes.emplace_back(std::make_unique<rawrbox::Mesh>(mesh));
-			if (this->isUploaded() && this->isDynamicBuffer()) {
+			if (this->isUploaded() && this->isDynamic()) {
 				this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 			}
 
@@ -451,7 +451,7 @@ namespace rawrbox {
 				this->animate(*mesh);
 				// ---
 
-				if (this->isDynamicBuffer()) {
+				if (this->isDynamic()) {
 					bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
 					bgfx::setIndexBuffer(this->_ibdh, mesh->baseIndex, mesh->totalIndex);
 				} else {

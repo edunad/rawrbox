@@ -54,7 +54,7 @@ namespace rawrbox {
 			if (mesh.empty()) throw std::runtime_error("[RawrBox-InstancedModel] Invalid mesh! Missing vertices / indices!");
 			this->_mesh = std::make_unique<rawrbox::Mesh>(mesh);
 
-			if (this->isUploaded() && this->isDynamicBuffer()) {
+			if (this->isUploaded() && this->isDynamic()) {
 				this->updateBuffers();
 			}
 		}
@@ -108,7 +108,7 @@ namespace rawrbox {
 			ModelBase<M>::draw();
 			this->_material->process(*this->_mesh); // Set atlas
 
-			if (this->isDynamicBuffer()) {
+			if (this->isDynamic()) {
 				bgfx::setVertexBuffer(0, this->_vbdh);
 				bgfx::setIndexBuffer(this->_ibdh);
 			} else {

@@ -144,7 +144,7 @@ namespace rawrbox {
 			ModelBase<M>::draw();
 			this->_material->process(*this->_mesh);
 
-			if (this->isDynamicBuffer()) {
+			if (this->isDynamic()) {
 				bgfx::setVertexBuffer(0, this->_vbdh);
 				bgfx::setIndexBuffer(this->_ibdh);
 			} else {
