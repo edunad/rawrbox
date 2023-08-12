@@ -38,7 +38,6 @@ namespace scripting_test {
 		// ----------
 
 		// Setup scripting
-		rawrbox::SCRIPTING::init(2000); // Check files every 2 seconds
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::RenderPlugin>(this->_window.get());
 
 		// Custom non-plugin ---
@@ -50,6 +49,9 @@ namespace scripting_test {
 				return this->_model->getScriptingWrapper();
 			};
 		};
+		// ----
+
+		rawrbox::SCRIPTING::init(2000); // Check files every 2 seconds
 		// ----
 
 		// Load content ---

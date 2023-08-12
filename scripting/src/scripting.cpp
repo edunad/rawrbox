@@ -24,8 +24,8 @@ namespace rawrbox {
 	std::unordered_map<std::string, std::vector<std::string>> SCRIPTING::_loadedLuaFiles = {};
 
 	std::unique_ptr<rawrbox::FileWatcher> SCRIPTING::_watcher = nullptr;
-	std::unique_ptr<rawrbox::Hooks> SCRIPTING::_hooks = nullptr;
-	std::unique_ptr<sol::state> SCRIPTING::_lua = nullptr;
+	std::unique_ptr<rawrbox::Hooks> SCRIPTING::_hooks = std::make_unique<rawrbox::Hooks>();
+	std::unique_ptr<sol::state> SCRIPTING::_lua = std::make_unique<sol::state>();
 
 	std::vector<std::unique_ptr<rawrbox::Plugin>> SCRIPTING::_plugins = {};
 
@@ -42,9 +42,6 @@ namespace rawrbox {
 	// ------
 
 	void SCRIPTING::init(int hotReloadMs) {
-		_lua = std::make_unique<sol::state>();
-		_hooks = std::make_unique<rawrbox::Hooks>();
-
 		_hotReloadEnabled = hotReloadMs > 0;
 		if (hotReloadEnabled()) {
 			fmt::print("[RawrBox-Scripting] Enabled lua hot-reloading\n  └── Delay: {}ms\n", hotReloadMs);
@@ -59,6 +56,12 @@ namespace rawrbox {
 		}
 
 		_mods.clear();
+
+		// Loading initial libs ---
+		loadLibraries();
+		loadTypes();
+		//  ----
+
 		initialized = true;
 	}
 
@@ -75,10 +78,6 @@ namespace rawrbox {
 
 	// LOAD ---
 	void SCRIPTING::load() {
-		// Loading initial libs ---
-		loadLibraries();
-		loadTypes();
-		//  ----
 
 		if (!std::filesystem::exists("./mods")) throw std::runtime_error("[RawrBox-Scripting] Failed to locate folder './mods'");
 
