@@ -52,6 +52,10 @@ namespace rawrbox {
 			return Reference<T>(ref);
 		}
 
+		ReferenceContainer(const ReferenceContainer&) = delete;
+		ReferenceContainer(ReferenceContainer&&) = delete;
+		ReferenceContainer& operator=(const ReferenceContainer&) = delete;
+		ReferenceContainer& operator=(ReferenceContainer&&) = delete;
 		ReferenceContainer(T* thisPtr) : ref(std::make_shared<T*>()) {
 			*ref = thisPtr;
 		}
