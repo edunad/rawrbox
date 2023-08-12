@@ -1,99 +1,50 @@
 #pragma once
 
-#include <rawrbox/render/model/model.hpp>
+#include <rawrbox/math/matrix4x4.hpp>
+#include <rawrbox/math/vector3.hpp>
+#include <rawrbox/math/vector4.hpp>
+#include <rawrbox/render/materials/base.hpp>
+#include <rawrbox/render/scripting/wrapper/model_base_wrapper.hpp>
+#include <rawrbox/utils/reference.hpp>
 
 #include <sol/sol.hpp>
 
 namespace rawrbox {
-	template <typename M = rawrbox::MaterialBase>
-	class ModelWrapper {
-		std::weak_ptr<rawrbox::ModelBase<M>> _ref;
+	class ModelWrapper : public rawrbox::ModelBaseWrapper {
 
 	public:
-		ModelWrapper(rawrbox::ModelBase<M>& ref) : _ref(ref.weak_from_this()) {}
+		ModelWrapper(rawrbox::ModelBase<rawrbox::MaterialBase>* ref);
 		ModelWrapper(const ModelWrapper&) = default;
-		ModelWrapper(ModelWrapper&&) noexcept = default;
+		ModelWrapper(ModelWrapper&&) = default;
 		ModelWrapper& operator=(const ModelWrapper&) = default;
-		ModelWrapper& operator=(ModelWrapper&&) noexcept = default;
-		virtual ~ModelWrapper() { this->_ref.reset(); }
+		ModelWrapper& operator=(ModelWrapper&&) = default;
+		~ModelWrapper() override = default;
 
-		// UTILS ----
-		[[nodiscard]] virtual const rawrbox::Vector3f getPos() const {
-			if (!this->isValid()) return {};
-			return this->_ref.lock()->getPos();
-		}
+		// ANIMS ---
+		virtual void playAnimation(const std::string& name, sol::optional<bool> loop, sol::optional<float> speed);
+		virtual void stopAnimation(const std::string& name);
+		// ---
 
-		virtual void setPos(const rawrbox::Vector3f& pos) {
-			if (!this->isValid()) return;
-			this->_ref.lock()->setPos(pos);
-		}
+		// UTILS ---
+		virtual void setOptimizable(bool optimize);
+		virtual void optimize();
 
-		[[nodiscard]] virtual const rawrbox::Vector3f getScale() const {
-			if (!this->isValid()) return {};
-			return this->_ref.lock()->getScale();
-		}
+		void setPos(const rawrbox::Vector3f& pos) override;
+		void setAngle(const rawrbox::Vector4f& angle) override;
+		void setEulerAngle(const rawrbox::Vector3f& angle) override;
+		void setScale(const rawrbox::Vector3f& size) override;
 
-		virtual void setScale(const rawrbox::Vector3f& scale) {
-			if (!this->isValid()) return;
-			this->_ref.lock()->setScale(scale);
-		}
+		[[nodiscard]] virtual const rawrbox::BBOX getBBOX() const;
+		[[nodiscard]] virtual size_t totalMeshes() const;
+		[[nodiscard]] virtual bool empty() const;
 
-		[[nodiscard]] virtual const rawrbox::Vector4f getAngle() const {
-			if (!this->isValid()) return {};
-			return this->_ref.lock()->getAngle();
-		}
+		virtual void removeMeshByName(const std::string& id);
+		virtual void removeMesh(size_t index);
 
-		virtual void setAngle(const rawrbox::Vector4f& ang) {
-			if (!this->isValid()) return;
-			this->_ref.lock()->setAngle(ang);
-		}
+		virtual rawrbox::Mesh* getMeshByName(const std::string& id);
+		virtual rawrbox::Mesh* getMesh(sol::optional<size_t> id);
+		// ---
 
-		virtual void setEulerAngle(const rawrbox::Vector3f& ang) {
-			if (!this->isValid()) return;
-			this->_ref.lock()->setEulerAngle(ang);
-		}
-
-		[[nodiscard]] virtual const rawrbox::Matrix4x4 getMatrix() const {
-			if (!this->isValid()) return {};
-			return this->_ref.lock()->getMatrix();
-		}
-
-		[[nodiscard]] virtual bool isDynamic() const {
-			if (!this->isValid()) return false;
-			return this->_ref.lock()->isDynamic();
-		}
-
-		[[nodiscard]] virtual bool isUploaded() const {
-			if (!this->isValid()) return false;
-			return this->_ref.lock()->isUploaded();
-		}
-		// ------
-
-		[[nodiscard]] bool isValid() const {
-			return !this->_ref.expired();
-		}
-
-		static void registerLua(sol::state& lua) {
-			lua.new_usertype<ModelWrapper<M>>("ModelBase<>",
-			    sol::no_constructor,
-
-			    // UTILS ----
-			    "getPos", &ModelWrapper<M>::getPos,
-			    "setPos", &ModelWrapper<M>::setPos,
-
-			    "getScale", &ModelWrapper<M>::getScale,
-			    "setScale", &ModelWrapper<M>::setScale,
-
-			    "getAngle", &ModelWrapper<M>::getAngle,
-			    "setAngle", &ModelWrapper<M>::setAngle,
-			    "setEulerAngle", &ModelWrapper<M>::setEulerAngle,
-
-			    "getMatrix", &ModelWrapper<M>::getMatrix,
-			    "isDynamic", &ModelWrapper<M>::isDynamic,
-			    "isUploaded", &ModelWrapper<M>::isUploaded,
-			    // --------------
-
-			    "isValid", &ModelWrapper<M>::isValid);
-		}
+		static void registerLua(sol::state& lua);
 	};
 } // namespace rawrbox

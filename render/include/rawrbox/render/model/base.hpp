@@ -3,14 +3,16 @@
 #include <rawrbox/render/materials/base.hpp>
 
 #ifdef RAWRBOX_SCRIPTING
-	// #include <rawrbox/render/scripting/wrapper/model_wrapper.hpp>
+	#include <rawrbox/render/scripting/wrapper/model_base_wrapper.hpp>
+	#include <rawrbox/scripting/scripting.hpp>
 	#include <sol/sol.hpp>
 #endif
+
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
 #ifdef RAWRBOX_SCRIPTING
-	class ModelBase : public std::enable_shared_from_this<rawrbox::ModelBase<M>> {
+	class ModelBase : public rawrbox::ReferenceContainer<rawrbox::ModelBase<M>> {
 #else
 	class ModelBase {
 #endif
@@ -25,14 +27,19 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::Mesh> _mesh = std::make_unique<rawrbox::Mesh>();
 		std::unique_ptr<M> _material = std::make_unique<M>();
 
-#ifdef RAWRBOX_SCRIPTING
-		sol::table _table;
-		sol::object _luaWrapper;
-#endif
-
 		// BGFX DYNAMIC SUPPORT ---
 		bool _isDynamic = false;
 		// ----
+
+#ifdef RAWRBOX_SCRIPTING
+		sol::object _luaWrapper;
+
+		virtual void initializeLua() {
+			if (!SCRIPTING::initialized) return;
+			auto ptr = dynamic_cast<rawrbox::ModelBase<>*>(this);
+			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelBaseWrapper(ptr));
+		}
+#endif
 
 		virtual void updateBuffers() {
 			if (!this->isDynamic() || !this->isUploaded()) return;
@@ -45,7 +52,11 @@ namespace rawrbox {
 		}
 
 	public:
+#ifdef RAWRBOX_SCRIPTING
+		ModelBase() : rawrbox::ReferenceContainer<rawrbox::ModelBase<M>>(this) {}
+#else
 		ModelBase() = default;
+#endif
 		ModelBase(ModelBase&&) = delete;
 		ModelBase& operator=(ModelBase&&) = delete;
 		ModelBase(const ModelBase&) = delete;
@@ -61,7 +72,6 @@ namespace rawrbox {
 
 #ifdef RAWRBOX_SCRIPTING
 			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
-			this->_table = {};
 #endif
 		}
 
@@ -134,19 +144,9 @@ namespace rawrbox {
 		}
 
 #ifdef RAWRBOX_SCRIPTING
-		virtual void initializeLua(sol::state_view lua) {
-			this->_table = lua.create_table();
-
-			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
-			// this->_luaWrapper = sol::make_object(lua, rawrbox::ModelWrapper<M>(this));
-		}
-
-		sol::object& getScriptingWrapper() {
+		virtual sol::object& getScriptingWrapper() {
+			if (!this->_luaWrapper.valid()) this->initializeLua();
 			return this->_luaWrapper;
-		}
-
-		sol::table& getScriptingTable() {
-			return this->_table;
 		}
 #endif
 	};

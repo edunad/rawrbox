@@ -20,11 +20,7 @@ namespace rawrbox {
 	struct Skeleton;
 	class LightBase;
 
-#ifdef RAWRBOX_SCRIPTING
-	class Mesh : public std::enable_shared_from_this<rawrbox::Mesh> {
-#else
 	class Mesh {
-#endif
 	private:
 		bool _canOptimize = true;
 

@@ -10,6 +10,12 @@
 
 #define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/render/scripting/wrapper/model_wrapper.hpp>
+	#include <rawrbox/utils/reference.hpp>
+	#include <sol/sol.hpp>
+#endif
+
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
@@ -205,6 +211,15 @@ namespace rawrbox {
 				}
 			}
 		}
+
+#ifdef RAWRBOX_SCRIPTING
+		void initializeLua() override {
+			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
+
+			auto ptr = dynamic_cast<rawrbox::Model<>*>(this);
+			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelWrapper(ptr));
+		}
+#endif
 
 	public:
 		Model() = default;

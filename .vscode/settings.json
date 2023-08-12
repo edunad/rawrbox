@@ -13,6 +13,7 @@
     "json",
     "fmt",
     "printTable",
-    "scripting"
+    "scripting",
+    "stencil"
   ]
 }

@@ -19,45 +19,67 @@
 #include <string>
 
 namespace rawrbox {
-	Scripting::Scripting(int hotReloadMs) : _hotReloadEnabled(hotReloadMs > 0) {
-		this->_lua = std::make_unique<sol::state>();
-		this->_hooks = std::make_unique<rawrbox::Hooks>();
+	// PROTECTED -----
+	std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>> SCRIPTING::_mods = {};
+	std::unordered_map<std::string, std::vector<std::string>> SCRIPTING::_loadedLuaFiles = {};
 
-		if (this->hotReloadEnabled()) {
+	std::unique_ptr<rawrbox::FileWatcher> SCRIPTING::_watcher = nullptr;
+	std::unique_ptr<rawrbox::Hooks> SCRIPTING::_hooks = nullptr;
+	std::unique_ptr<sol::state> SCRIPTING::_lua = nullptr;
+
+	std::vector<std::unique_ptr<rawrbox::Plugin>> SCRIPTING::_plugins = {};
+
+	bool SCRIPTING::_hotReloadEnabled = false;
+	// -----
+
+	// PUBLIC ----
+	rawrbox::Event<> SCRIPTING::onRegisterTypes;
+	rawrbox::Event<rawrbox::Mod*> SCRIPTING::onRegisterGlobals;
+	rawrbox::Event<rawrbox::Mod*> SCRIPTING::onLoadExtensions;
+	rawrbox::Event<rawrbox::Mod*> SCRIPTING::onModHotReload;
+
+	bool SCRIPTING::initialized = false;
+	// ------
+
+	void SCRIPTING::init(int hotReloadMs) {
+		_lua = std::make_unique<sol::state>();
+		_hooks = std::make_unique<rawrbox::Hooks>();
+
+		_hotReloadEnabled = hotReloadMs > 0;
+		if (hotReloadEnabled()) {
 			fmt::print("[RawrBox-Scripting] Enabled lua hot-reloading\n  └── Delay: {}ms\n", hotReloadMs);
 
-			this->_watcher = std::make_unique<rawrbox::FileWatcher>(
-			    [this](std::filesystem::path pth, rawrbox::FileStatus status) {
+			_watcher = std::make_unique<rawrbox::FileWatcher>(
+			    [](std::filesystem::path pth, rawrbox::FileStatus status) {
 				    if (status != rawrbox::FileStatus::modified) return;
-				    this->hotReload(pth.generic_string());
+				    hotReload(pth.generic_string());
 			    },
 			    std::chrono::milliseconds(hotReloadMs));
-			this->_watcher->start();
+			_watcher->start();
 		}
 
-		this->_mods.clear();
+		_mods.clear();
+		initialized = true;
 	}
 
-	Scripting::~Scripting() {
-		this->_watcher.reset();
-		this->_hooks.reset();
+	void SCRIPTING::shutdown() {
+		_watcher.reset();
+		_hooks.reset();
 
-		this->_mods.clear();
-		this->_plugins.clear();
+		_mods.clear();
+		_plugins.clear();
 
-		this->_lua->collect_garbage();
-		this->_lua.reset();
-	}
-
-	void Scripting::init() {
-		// Loading initial libs ---
-		this->loadLibraries();
-		this->loadTypes();
-		//  ----
+		_lua->collect_garbage();
+		_lua.reset();
 	}
 
 	// LOAD ---
-	void Scripting::load() {
+	void SCRIPTING::load() {
+		// Loading initial libs ---
+		loadLibraries();
+		loadTypes();
+		//  ----
+
 		if (!std::filesystem::exists("./mods")) throw std::runtime_error("[RawrBox-Scripting] Failed to locate folder './mods'");
 
 		// TODO: Do we need mod load ordering?
@@ -69,37 +91,37 @@ namespace rawrbox {
 
 			// Done
 			auto mod = std::make_unique<rawrbox::Mod>(id, folderPath);
-			this->_mods.emplace(id, std::move(mod));
+			_mods.emplace(id, std::move(mod));
 		}
 
 		// Initialize
-		for (auto& mod : this->_mods) {
-			mod.second->init(*this);
+		for (auto& mod : _mods) {
+			mod.second->init();
 
-			this->loadLuaExtensions(mod.second.get());
-			this->loadGlobals(mod.second.get());
+			loadLuaExtensions(mod.second.get());
+			loadGlobals(mod.second.get());
 
 			if (!mod.second->load()) {
 				fmt::print("[RawrBox-Scripting] Failed to load mod '{}'\n", mod.first);
 			} else {
 				// Register file for hot-reloading
-				this->registerLoadedFile(mod.first, mod.second->getEntryFilePath());
+				registerLoadedFile(mod.first, mod.second->getEntryFilePath());
 				// ----
 			}
 		}
 		// -----
 	}
 
-	void Scripting::loadGlobals(rawrbox::Mod* mod) {
+	void SCRIPTING::loadGlobals(rawrbox::Mod* mod) {
 		if (mod == nullptr) return;
 
 		auto& env = mod->getEnvironment();
-		env["print"] = [this](sol::variadic_args va) {
+		env["print"] = [](sol::variadic_args va) {
 			auto vars = std::vector<sol::object>(va.begin(), va.end());
 
 			std::vector<std::string> prtData;
 			for (auto& var : vars) {
-				prtData.push_back((*this->_lua)["tostring"](var));
+				prtData.push_back((*_lua)["tostring"](var));
 			}
 
 			if (prtData.empty()) return;
@@ -111,15 +133,15 @@ namespace rawrbox {
 			fmt::print("{}\n", json.dump(1, ' ', false));
 		};
 
-		env["include"] = [&env, &mod, this](const std::string& path) {
+		env["include"] = [&env, &mod](const std::string& path) {
 			auto modFolder = mod->getFolder().generic_string();
 			auto fixedPath = LuaUtils::getContent(path, modFolder);
 
-			bool loaded = this->loadLuaFile(fixedPath, env, this->getLua());
+			bool loaded = loadLuaFile(fixedPath, env);
 			if (!loaded) fmt::print("[RawrBox-Scripting] Failed to load '{}'\n", fixedPath);
 
 			// Register file for hot-reloading
-			this->registerLoadedFile(mod->getID(), fixedPath);
+			registerLoadedFile(mod->getID(), fixedPath);
 			// ----
 
 			return loaded ? 1 : 0;
@@ -159,118 +181,118 @@ namespace rawrbox {
 		// Global types ------------------------------------
 		env["fmt"] = rawrbox::FMTWrapper();
 		env["io"] = rawrbox::IOWrapper();
-		env["hooks"] = rawrbox::HooksWrapper(this->_hooks.get());
-		env["scripting"] = rawrbox::ScriptingWrapper(this);
+		env["hooks"] = rawrbox::HooksWrapper(_hooks.get());
+		env["scripting"] = rawrbox::ScriptingWrapper();
 		// -------------------
 
 		// Register plugins env types ---
-		for (auto& p : this->_plugins)
+		for (auto& p : _plugins)
 			p->registerGlobal(env);
 		//  -----
 
 		// Custom global env types ---
-		this->onRegisterGlobals(mod);
+		onRegisterGlobals(mod);
 		// ----
 	}
 
-	void Scripting::registerLoadedFile(const std::string& modId, const std::string& filePath) {
-		auto mdFnd = this->_loadedLuaFiles.find(modId);
-		if (mdFnd != this->_loadedLuaFiles.end()) {
+	void SCRIPTING::registerLoadedFile(const std::string& modId, const std::string& filePath) {
+		auto mdFnd = _loadedLuaFiles.find(modId);
+		if (mdFnd != _loadedLuaFiles.end()) {
 			auto fileFnd = std::find(mdFnd->second.begin(), mdFnd->second.end(), filePath);
 			if (fileFnd != mdFnd->second.end()) return; // Already registered
 			mdFnd->second.push_back(filePath);
 		} else {
-			this->_loadedLuaFiles[modId] = {filePath};
+			_loadedLuaFiles[modId] = {filePath};
 		}
 
-		if (this->hotReloadEnabled()) {
-			this->_watcher->watchFile(filePath);
+		if (hotReloadEnabled()) {
+			_watcher->watchFile(filePath);
 		}
 	}
 
-	void Scripting::hotReload(const std::string& filePath) {
+	void SCRIPTING::hotReload(const std::string& filePath) {
 		// Find the owner
-		for (auto& pt : this->_loadedLuaFiles) {
+		for (auto& pt : _loadedLuaFiles) {
 			auto fnd = std::find(pt.second.begin(), pt.second.end(), filePath) != pt.second.end();
 			if (!fnd) continue;
 
-			auto md = this->_mods.find(pt.first);
-			if (md == this->_mods.end()) return;
+			auto md = _mods.find(pt.first);
+			if (md == _mods.end()) return;
 
 			fmt::print("[RawrBox-Scripting] Hot-reloading lua file '{}'\n", filePath);
-			this->loadLuaFile(filePath, md->second->getEnvironment(), this->getLua());
-			this->onModHotReload(md->second.get());
+			loadLuaFile(filePath, md->second->getEnvironment());
+			onModHotReload(md->second.get());
 			break;
 		};
 	}
 
 	// LOAD -----
-	void Scripting::loadLibraries() {
-		if (this->_lua == nullptr) throw std::runtime_error("[RawrBox-Scripting] LUA is not set! Reference got destroyed?");
+	void SCRIPTING::loadLibraries() {
+		if (_lua == nullptr) throw std::runtime_error("[RawrBox-Scripting] LUA is not set! Reference got destroyed?");
 
-		this->_lua->open_libraries(sol::lib::base);
-		this->_lua->open_libraries(sol::lib::package);
-		this->_lua->open_libraries(sol::lib::math);
-		this->_lua->open_libraries(sol::lib::table);
-		this->_lua->open_libraries(sol::lib::debug);
-		this->_lua->open_libraries(sol::lib::string);
-		this->_lua->open_libraries(sol::lib::coroutine);
-		this->_lua->open_libraries(sol::lib::bit32);
+		_lua->open_libraries(sol::lib::base);
+		_lua->open_libraries(sol::lib::package);
+		_lua->open_libraries(sol::lib::math);
+		_lua->open_libraries(sol::lib::table);
+		_lua->open_libraries(sol::lib::debug);
+		_lua->open_libraries(sol::lib::string);
+		_lua->open_libraries(sol::lib::coroutine);
+		_lua->open_libraries(sol::lib::bit32);
 
-		this->_lua->open_libraries(sol::lib::jit);
+		_lua->open_libraries(sol::lib::jit);
 	}
 
-	void Scripting::loadTypes() {
-		if (this->_lua == nullptr) throw std::runtime_error("[RawrBox-Scripting] LUA is not set! Reference got destroyed?");
+	void SCRIPTING::loadTypes() {
+		if (_lua == nullptr) throw std::runtime_error("[RawrBox-Scripting] LUA is not set! Reference got destroyed?");
 
 		// Math ----
-		rawrbox::AABBWrapper::registerLua(*this->_lua);
-		rawrbox::BBOXWrapper::registerLua(*this->_lua);
-		rawrbox::ColorWrapper::registerLua(*this->_lua);
-		rawrbox::MatrixWrapper::registerLua(*this->_lua);
-		rawrbox::Vector2Wrapper::registerLua(*this->_lua);
-		rawrbox::Vector3Wrapper::registerLua(*this->_lua);
-		rawrbox::Vector4Wrapper::registerLua(*this->_lua);
+		rawrbox::AABBWrapper::registerLua(*_lua);
+		rawrbox::BBOXWrapper::registerLua(*_lua);
+		rawrbox::ColorWrapper::registerLua(*_lua);
+		rawrbox::MatrixWrapper::registerLua(*_lua);
+		rawrbox::Vector2Wrapper::registerLua(*_lua);
+		rawrbox::Vector3Wrapper::registerLua(*_lua);
+		rawrbox::Vector4Wrapper::registerLua(*_lua);
 		// ----
 
 		// Default ----
-		rawrbox::IOWrapper::registerLua(*this->_lua);
-		rawrbox::FMTWrapper::registerLua(*this->_lua);
-		rawrbox::ScriptingWrapper::registerLua(*this->_lua);
-		rawrbox::ModWrapper::registerLua(*this->_lua);
-		rawrbox::HooksWrapper::registerLua(*this->_lua);
+		rawrbox::IOWrapper::registerLua(*_lua);
+		rawrbox::FMTWrapper::registerLua(*_lua);
+		rawrbox::ScriptingWrapper::registerLua(*_lua);
+		rawrbox::ModWrapper::registerLua(*_lua);
+		rawrbox::HooksWrapper::registerLua(*_lua);
 		// ----
 
 		// Register plugins types ---
-		for (auto& p : this->_plugins)
-			p->registerTypes(*this->_lua);
+		for (auto& p : _plugins)
+			p->registerTypes(*_lua);
 		//  -----
 
 		// Custom ----
-		this->onRegisterTypes();
+		onRegisterTypes();
 		// ----
 	}
 
-	void Scripting::loadLuaExtensions(rawrbox::Mod* mod) {
-		if (this->_lua == nullptr) throw std::runtime_error("[RawrBox-Scripting] LUA is not set! Reference got destroyed?");
+	void SCRIPTING::loadLuaExtensions(rawrbox::Mod* mod) {
+		if (_lua == nullptr) throw std::runtime_error("[RawrBox-Scripting] LUA is not set! Reference got destroyed?");
 		if (mod == nullptr) return;
 
 		auto& env = mod->getEnvironment();
 
-		this->loadLuaFile("./lua/table.lua", env, *this->_lua);
-		this->loadLuaFile("./lua/string.lua", env, *this->_lua);
-		this->loadLuaFile("./lua/math.lua", env, *this->_lua);
-		this->loadLuaFile("./lua/json.lua", env, *this->_lua);
-		this->loadLuaFile("./lua/sha2.lua", env, *this->_lua);
-		this->loadLuaFile("./lua/util.lua", env, *this->_lua);
-		this->loadLuaFile("./lua/input.lua", env, *this->_lua);
+		loadLuaFile("./lua/table.lua", env);
+		loadLuaFile("./lua/string.lua", env);
+		loadLuaFile("./lua/math.lua", env);
+		loadLuaFile("./lua/json.lua", env);
+		loadLuaFile("./lua/sha2.lua", env);
+		loadLuaFile("./lua/util.lua", env);
+		loadLuaFile("./lua/input.lua", env);
 
 		// Custom ----
-		this->onLoadExtensions(mod);
+		onLoadExtensions(mod);
 		// ----
 	}
 
-	bool Scripting::loadLuaFile(const std::string& path, const sol::environment& env, sol::state& lua) {
+	bool SCRIPTING::loadLuaFile(const std::string& path, const sol::environment& env) {
 		if (!std::filesystem::exists(path)) {
 			fmt::print("[RawrBox-Scripting] Failed to load lua : {}\n", path);
 			return false;
@@ -278,7 +300,7 @@ namespace rawrbox {
 
 		std::string errStr;
 		// try to load the file while handling exceptions
-		auto ret = lua.safe_script_file(
+		auto ret = _lua->safe_script_file(
 		    path, env, [&errStr](lua_State*, sol::protected_function_result pfr) {
 			    sol::error err = pfr;
 			    errStr = err.what();
@@ -293,8 +315,8 @@ namespace rawrbox {
 		return false;
 	}
 
-	bool Scripting::isLuaFileMounted(const std::string& path) const {
-		for (auto& pt : this->_loadedLuaFiles) {
+	bool SCRIPTING::isLuaFileMounted(const std::string& path) {
+		for (auto& pt : _loadedLuaFiles) {
 			auto fnd = std::find(pt.second.begin(), pt.second.end(), path) != pt.second.end();
 			if (fnd) return true;
 		};
@@ -304,25 +326,23 @@ namespace rawrbox {
 	//  -----
 
 	// UTILS -----
-	sol::state& Scripting::getLua() {
-		return *this->_lua;
+	sol::state& SCRIPTING::getLUA() { return *_lua; }
+
+	const std::unordered_map<std::string, std::unique_ptr<Mod>>& SCRIPTING::getMods() {
+		return _mods;
 	}
 
-	const std::unordered_map<std::string, std::unique_ptr<Mod>>& Scripting::getMods() const {
-		return this->_mods;
-	}
-
-	const std::vector<std::string> Scripting::getModsIds() const {
+	const std::vector<std::string> SCRIPTING::getModsIds() {
 		std::vector<std::string> modNames = {};
-		for (auto& mod : this->_mods) {
+		for (auto& mod : _mods) {
 			modNames.push_back(mod.second->getID());
 		}
 
 		return modNames;
 	}
 
-	bool Scripting::hotReloadEnabled() const {
-		return this->_hotReloadEnabled;
+	bool SCRIPTING::hotReloadEnabled() {
+		return _hotReloadEnabled;
 	}
 	// -----
 

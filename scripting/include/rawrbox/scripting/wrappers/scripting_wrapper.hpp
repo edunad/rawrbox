@@ -4,11 +4,8 @@
 
 namespace rawrbox {
 	class ScriptingWrapper {
-	protected:
-		rawrbox::Scripting* _scripting = nullptr;
-
 	public:
-		ScriptingWrapper(rawrbox::Scripting* script);
+		ScriptingWrapper() = default;
 		ScriptingWrapper(const ScriptingWrapper&) = default;
 		ScriptingWrapper(ScriptingWrapper&&) = default;
 		ScriptingWrapper& operator=(const ScriptingWrapper&) = default;
