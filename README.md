@@ -44,6 +44,7 @@
 - Decal system
 - Scripting / modding support with LUA using [sol2](https://github.com/ThePhD/sol2) and [luajit2](https://github.com/openresty/luajit2)
 - Post-processing effects support
+- HTTP / HTTPS requests using curl + [libcpr](https://github.com/libcpr/cpr)
 
 # TODO LIST
 
@@ -88,7 +89,7 @@
 | `RAWRBOX_USE_WAYLAND`                        | Enables WAYLAND compiling on LINUX                                                                 |
 | --                                           | --                                                                                                 |
 | `RAWRBOX_ENABLE_QHULL`                       | Enables QHull util                                                                                 |
-| `RAWRBOX_ENABLE_HTTP_REQUEST`                | Enables HTTP requests util                                                                         |
+| `RAWRBOX_ENABLE_HTTP_REQUEST`                | Enables HTTP / HTTPS requests util                                                                 |
 | --                                           | --                                                                                                 |
 | `RAWRBOX_BUILD_SAMPLES`                      | Builds the project sample                                                                          |
 | `RAWRBOX_BUILD_RAWRBOX_UI`                   | Builds and includes ui                                                                             |
@@ -126,7 +127,7 @@
 | muli                |    ✖️    | Used for managing 2D physics                        |
 | webmlib & vpx       |    ✖️    | Used for loading webm                               |
 | lua & sol2 & luajit |    ✖️    | Used for loading & managing lua scripting           |
-| cpr                 |    ✖️    | Used for http requests                              |
+| curl + libcpr       |    ✖️    | Used for HTTP / HTTPS requests                      |
 
 # BUILDING
 
