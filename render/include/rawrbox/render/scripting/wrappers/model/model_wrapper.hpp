@@ -4,7 +4,7 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/materials/base.hpp>
-#include <rawrbox/render/scripting/wrapper/model_base_wrapper.hpp>
+#include <rawrbox/render/scripting/wrappers/model/base_wrapper.hpp>
 #include <rawrbox/utils/reference.hpp>
 
 #include <sol/sol.hpp>

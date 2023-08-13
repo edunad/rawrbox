@@ -1,8 +1,6 @@
 
 #include <rawrbox/render/model/model.hpp>
-#include <rawrbox/render/scripting/wrapper/model_wrapper.hpp>
-
-#include "rawrbox/render/scripting/wrapper/mesh_wrapper.hpp"
+#include <rawrbox/render/scripting/wrappers/model/model_wrapper.hpp>
 
 namespace rawrbox {
 	ModelWrapper::ModelWrapper(rawrbox::ModelBase<rawrbox::MaterialBase>* ref) : rawrbox::ModelBaseWrapper(ref) {}

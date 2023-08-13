@@ -14,6 +14,8 @@
     "fmt",
     "printTable",
     "scripting",
-    "stencil"
+    "stencil",
+    "http",
+    "curtime"
   ]
 }

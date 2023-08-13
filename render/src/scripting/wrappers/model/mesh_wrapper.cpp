@@ -1,6 +1,6 @@
 
 #include <rawrbox/render/model/model.hpp>
-#include <rawrbox/render/scripting/wrapper/mesh_wrapper.hpp>
+#include <rawrbox/render/scripting/wrappers/model/mesh_wrapper.hpp>
 
 namespace rawrbox {
 	void MeshWrapper::registerLua(sol::state& lua) {

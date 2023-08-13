@@ -1,4 +1,4 @@
-#include <rawrbox/render/scripting/wrapper/stencil_wrapper.hpp>
+#include <rawrbox/render/scripting/wrappers/stencil_wrapper.hpp>
 
 namespace rawrbox {
 	StencilWrapper::StencilWrapper(rawrbox::Stencil* stencil) : _stencil(stencil) {}
@@ -9,19 +9,19 @@ namespace rawrbox {
 		this->_stencil->drawTriangle(a, aUV, colA.cast<float>(), b, bUV, colB.cast<float>(), c, cUV, colC.cast<float>());
 	}
 
-	void StencilWrapper::drawBox(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Colori& col) {
+	void StencilWrapper::drawBox(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, sol::optional<rawrbox::Colori> col) {
 		if (this->_stencil == nullptr) return;
-		this->_stencil->drawBox(pos, size, col.cast<float>());
+		this->_stencil->drawBox(pos, size, col.value_or(rawrbox::Colorsi::White()).cast<float>());
 	}
 
-	void StencilWrapper::drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Colori& col, size_t roundness, float angleStart, float angleEnd) {
+	void StencilWrapper::drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, sol::optional<rawrbox::Colori> col, sol::optional<size_t> roundness, sol::optional<float> angleStart, sol::optional<float> angleEnd) {
 		if (this->_stencil == nullptr) return;
-		this->_stencil->drawCircle(pos, size, col.cast<float>(), roundness, angleStart, angleEnd);
+		this->_stencil->drawCircle(pos, size, col.value_or(rawrbox::Colorsi::White()).cast<float>(), roundness.value_or(32), angleEnd.value_or(0.F), angleStart.value_or(360.F));
 	}
 
-	void StencilWrapper::drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const rawrbox::Colori& col) {
+	void StencilWrapper::drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const sol::optional<rawrbox::Colori> col) {
 		if (this->_stencil == nullptr) return;
-		this->_stencil->drawLine(from, to, col.cast<float>());
+		this->_stencil->drawLine(from, to, col.value_or(rawrbox::Colorsi::White()).cast<float>());
 	}
 	// -------
 

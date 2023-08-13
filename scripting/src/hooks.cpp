@@ -1,7 +1,6 @@
 #include <rawrbox/scripting/hooks.hpp>
 
 namespace rawrbox {
-
 	void Hooks::listen(const std::string& id, const std::string& name, sol::function func) {
 		hooks[id].emplace_back(name, func);
 	}

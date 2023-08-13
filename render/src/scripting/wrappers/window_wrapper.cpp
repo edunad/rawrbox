@@ -1,4 +1,4 @@
-#include <rawrbox/render/scripting/wrapper/window_wrapper.hpp>
+#include <rawrbox/render/scripting/wrappers/window_wrapper.hpp>
 
 namespace rawrbox {
 	WindowWrapper::WindowWrapper(rawrbox::Window* window) : _window(window) {}

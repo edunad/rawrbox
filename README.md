@@ -80,7 +80,7 @@
 
 | OPTION NAME                                  | NOTE                                                                                               |
 | :------------------------------------------- | :------------------------------------------------------------------------------------------------- |
-| `BUILD_TESTING`                              | Builds & enables project tests                                                                     |
+| `RAWRBOX_BUILD_TESTING`                      | Builds & enables project tests                                                                     |
 | --                                           | --                                                                                                 |
 | `RAWRBOX_OUTPUT_BIN`                         | The output build folder. Default is `bin`                                                          |
 | `RAWRBOX_CONTENT_FOLDER`                     | The content folder to output resources. Default is `content`                                       |
@@ -88,6 +88,7 @@
 | `RAWRBOX_USE_WAYLAND`                        | Enables WAYLAND compiling on LINUX                                                                 |
 | --                                           | --                                                                                                 |
 | `RAWRBOX_ENABLE_QHULL`                       | Enables QHull util                                                                                 |
+| `RAWRBOX_ENABLE_HTTP_REQUEST`                | Enables HTTP requests util                                                                         |
 | --                                           | --                                                                                                 |
 | `RAWRBOX_BUILD_SAMPLES`                      | Builds the project sample                                                                          |
 | `RAWRBOX_BUILD_RAWRBOX_UI`                   | Builds and includes ui                                                                             |
@@ -125,6 +126,7 @@
 | muli                |    ✖️    | Used for managing 2D physics                        |
 | webmlib & vpx       |    ✖️    | Used for loading webm                               |
 | lua & sol2 & luajit |    ✖️    | Used for loading & managing lua scripting           |
+| cpr                 |    ✖️    | Used for http requests                              |
 
 # BUILDING
 

@@ -21,7 +21,7 @@ namespace rawrbox {
 	class LightBase;
 
 	class Mesh {
-	private:
+	protected:
 		bool _canOptimize = true;
 
 		rawrbox::Vector3f _scale = {1, 1, 1};

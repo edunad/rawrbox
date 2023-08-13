@@ -5,6 +5,7 @@ set(output_target RAWRBOX.UTILS)
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_UTILS_IMPORTS "src/*.c" "src/*.cpp" "include/*.hpp" "include/*.h")
 
+# LIBS ---
 if(NOT RAWRBOX_ENABLE_QHULL)
     list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "include/rawrbox/utils/qhull.h")
     list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "tests/qhull.spec.cpp")
@@ -63,14 +64,34 @@ else()
             target_link_libraries(${qhull_STATICR} m)
         endif(UNIX)
 
-        set(EXTRA_UTIL_LIBS ${qhull_STATICR})
+        list(APPEND EXTRA_UTIL_LIBS ${qhull_STATICR})
         set(EXTRA_UTIL_INCLUDES "${qhull_SOURCE_DIR}/src/libqhull_r")
 
         set_lib_runtime_mt(${qhull_STATICR})
     endif()
 endif()
 
-# LIBS ---
+if(NOT RAWRBOX_ENABLE_HTTP_REQUEST)
+    list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "include/rawrbox/utils/http.hpp")
+    list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "tests/http.spec.cpp")
+else()
+    CPMAddPackage(
+        NAME
+        libcpr
+        GIT_TAG
+        1.10.4
+        GITHUB_REPOSITORY
+        libcpr/cpr
+        OPTIONS
+        "BUILD_SHARED_LIBS OFF"
+        "CPR_ENABLE_SSL ON"
+        "CURL_ZLIB OFF")
+
+    list(APPEND EXTRA_UTIL_LIBS cpr::cpr)
+    set_lib_runtime_mt(libcurl)
+    set_lib_runtime_mt(cpr)
+endif()
+
 CPMAddPackage("gh:bshoshany/thread-pool@3.5.0")
 if(thread-pool_ADDED)
     add_library(thread-pool INTERFACE IMPORTED)

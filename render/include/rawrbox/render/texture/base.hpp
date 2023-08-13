@@ -36,15 +36,15 @@ namespace rawrbox {
 
 		// UTILS----
 		[[nodiscard]] virtual bool hasTransparency() const;
-		[[nodiscard]] const virtual rawrbox::Vector2i& getSize() const;
+		[[nodiscard]] virtual const rawrbox::Vector2i& getSize() const;
 		[[nodiscard]] virtual bool valid() const;
-		[[nodiscard]] const virtual bgfx::TextureHandle& getHandle() const;
+		[[nodiscard]] virtual const bgfx::TextureHandle& getHandle() const;
+		[[nodiscard]] virtual std::array<float, 4> getData() const;
 		// -----
 
 		virtual void setFlags(uint64_t flags);
 		virtual void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count) = 0;
 
 		virtual void update();
-		virtual std::array<float, 4> getData();
 	};
 } // namespace rawrbox

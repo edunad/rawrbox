@@ -24,7 +24,7 @@ list(PREPEND CONAN_GENERATORS_FOLDER ${CMAKE_BINARY_DIR})
 # ---
 
 # OPTIONS ---
-option(BUILD_TESTING "Build tests" ON)
+option(RAWRBOX_BUILD_TESTING "Build tests" ON)
 option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 
 option(RAWRBOX_BUILD_SAMPLES "Build samples" ON)
@@ -52,6 +52,7 @@ if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
 endif()
 
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
+option(RAWRBOX_ENABLE_HTTP_REQUEST "Include HTTP requests on utils" ON)
 # -----
 
 # OTHER SETTINGS ----

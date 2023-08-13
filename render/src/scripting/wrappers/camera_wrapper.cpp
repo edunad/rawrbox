@@ -1,4 +1,4 @@
-#include <rawrbox/render/scripting/wrapper/camera_wrapper.hpp>
+#include <rawrbox/render/scripting/wrappers/camera_wrapper.hpp>
 #include <rawrbox/render/static.hpp>
 
 namespace rawrbox {

@@ -3,7 +3,7 @@
 #include <rawrbox/render/materials/base.hpp>
 
 #ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/render/scripting/wrapper/model_base_wrapper.hpp>
+	#include <rawrbox/render/scripting/wrappers/model/base_wrapper.hpp>
 	#include <rawrbox/scripting/scripting.hpp>
 	#include <sol/sol.hpp>
 #endif

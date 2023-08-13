@@ -1,5 +1,13 @@
-_G.TEST = function()
+function TEST()
     print("You called test! On test-mod-2")
+
+    --[[http:request("https://ams3.digitaloceanspaces.com/failcake/public/badapple/caw.txt", HTTP.GET, {},
+        function(err, data)
+            if err then
+                print("ERROR: ", data)
+                return
+            end
+        end)]]
 end
 
 function MOD:drawOverlay()

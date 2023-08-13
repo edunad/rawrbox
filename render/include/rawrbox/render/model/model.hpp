@@ -11,7 +11,7 @@
 #define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 
 #ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/render/scripting/wrapper/model_wrapper.hpp>
+	#include <rawrbox/render/scripting/wrappers/model/model_wrapper.hpp>
 	#include <rawrbox/utils/reference.hpp>
 	#include <sol/sol.hpp>
 #endif
