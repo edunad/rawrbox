@@ -1,10 +1,10 @@
-﻿project("009-physics")
+﻿project("009-physics-3d")
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_SAMPLE_SOURCES "include/*.hpp" "src/*.cpp")
 
 # Project setup
-set(output_target 009-physics)
+set(output_target 009-physics-3d)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE})
 
 add_executable(${output_target} ${RAWRBOX_SAMPLE_SOURCES})

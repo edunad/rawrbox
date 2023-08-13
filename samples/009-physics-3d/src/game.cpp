@@ -118,7 +118,7 @@ namespace physics_test {
 			    rawrbox::PHYSICS::optimize(); // Only need to be called after adding a lot of bodies in one go
 		    });
 
-		this->_timer->setPaused(this->_paused);
+		this->_timer->pause(this->_paused);
 		// --------
 
 		// BINDS ----
@@ -127,7 +127,7 @@ namespace physics_test {
 			if (!isDown || button != MOUSE_BUTTON_1) return;
 
 			this->_paused = !this->_paused;
-			if (this->_timer != nullptr) this->_timer->setPaused(this->_paused);
+			if (this->_timer != nullptr) this->_timer->pause(this->_paused);
 		};
 		// -----
 

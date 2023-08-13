@@ -85,7 +85,7 @@ namespace phys_2d_test {
 		// TIMER ---
 		this->_timer = rawrbox::Timer::create(
 		    600, 25, [this]() { this->createBox({0, 5, 0}, {0.5F, 0.5F}); });
-		this->_timer->setPaused(this->_paused);
+		this->_timer->pause(this->_paused);
 		// --------
 
 		// BINDS ----
@@ -94,7 +94,7 @@ namespace phys_2d_test {
 			if (!isDown || button != MOUSE_BUTTON_1) return;
 
 			this->_paused = !this->_paused;
-			if (this->_timer != nullptr) this->_timer->setPaused(this->_paused);
+			if (this->_timer != nullptr) this->_timer->pause(this->_paused);
 		};
 		// -----
 

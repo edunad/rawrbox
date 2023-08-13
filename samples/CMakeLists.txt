@@ -26,7 +26,7 @@ if(RAWRBOX_BUILD_RAWRBOX_UI)
 endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
-    add_subdirectory("009-physics")
+    add_subdirectory("009-physics-3d")
 endif()
 
 add_subdirectory("010-instancing")

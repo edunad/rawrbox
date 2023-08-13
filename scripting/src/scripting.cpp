@@ -14,6 +14,7 @@
 #include <rawrbox/scripting/wrappers/math/vector4_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/mod_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/scripting_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/timer_wrapper.hpp>
 #include <rawrbox/utils/time.hpp>
 
 #include <filesystem>
@@ -184,6 +185,7 @@ namespace rawrbox {
 		env["hooks"] = rawrbox::HooksWrapper(_hooks.get());
 		env["scripting"] = rawrbox::ScriptingWrapper();
 		env["http"] = rawrbox::HTTPWrapper();
+		env["timer"] = rawrbox::TimerWrapper();
 		// -------------------
 
 		// Register plugins env types ---
@@ -263,6 +265,7 @@ namespace rawrbox {
 		rawrbox::ModWrapper::registerLua(*_lua);
 		rawrbox::HooksWrapper::registerLua(*_lua);
 		rawrbox::HTTPWrapper::registerLua(*_lua);
+		rawrbox::TimerWrapper::registerLua(*_lua);
 		// ----
 
 		// Register plugins types ---

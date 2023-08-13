@@ -196,7 +196,7 @@
 
 ### 009-physics
 
-<a href='/samples/009-physics'><img src="https://i.rawr.dev/Ir57QELn6F-min3.gif" width=512 /></a>
+<a href='/samples/009-physics-3d'><img src="https://i.rawr.dev/Ir57QELn6F-min3.gif" width=512 /></a>
 
 ### 010-instancing
 
