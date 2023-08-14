@@ -75,8 +75,6 @@ if(NOT RAWRBOX_ENABLE_HTTP_REQUEST)
     list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "include/rawrbox/utils/http.hpp")
     list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "tests/http.spec.cpp")
 else()
-    set(CURL_ZLIB CACHE BOOL OFF "")
-
     CPMAddPackage(
         NAME
         libcpr
@@ -85,9 +83,9 @@ else()
         GITHUB_REPOSITORY
         libcpr/cpr
         OPTIONS
-        "BUILD_SHARED_LIBS OFF"
-        "CPR_ENABLE_SSL ON"
-        "CURL_ZLIB OFF")
+        "BUILD_SHARED_LIBS 0"
+        "CPR_ENABLE_SSL 1"
+        "CURL_ZLIB 0")
 
     list(APPEND EXTRA_UTIL_LIBS cpr::cpr)
     set_lib_runtime_mt(libcurl)
