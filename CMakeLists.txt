@@ -117,30 +117,6 @@ if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
     CPMAddPackage("gl:wayland/weston@12.0.1")
 endif()
 
-#CPMFindPackage(NAME ZLIB GITHUB_REPOSITORY madler/zlib VERSION 1.2.13)
-#if(ZLIB_ADDED)
-#    set(ZLIB_INCLUDE_DIR ZLIB_SOURCE_DIR)
-#    add_library(ZLIB::ZLIB ALIAS zlibstatic)
-#endif()
-#
-
-#CPMAddPackage(
-#    NAME
-#    ZLIB
-#    GITHUB_REPOSITORY
-#    madler/zlib
-#    VERSION
-#    "1.2.13"
-#    OPTIONS
-#    "CMAKE_POSITION_INDEPENDENT_CODE True")
-#if(ZLIB_ADDED)
-#    set(ZLIB_INCLUDE_DIR ZLIB_SOURCE_DIR)
-#    target_include_directories(zlib PUBLIC $<BUILD_INTERFACE:${ZLIB_BINARY_DIR}> PUBLIC $<INSTALL_INTERFACE:include>)
-#    target_include_directories(zlibstatic PUBLIC $<BUILD_INTERFACE:${ZLIB_BINARY_DIR}> PUBLIC $<INSTALL_INTERFACE:include>)
-#
-#    message(STATUS "Cmake added local zlib: ${ZLIB_SOURCE_DIR}")
-#endif()
-
 CPMAddPackage(
     NAME
     nlohmann_json

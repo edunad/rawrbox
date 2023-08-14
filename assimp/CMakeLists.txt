@@ -3,6 +3,12 @@ project("RAWRBOX.ASSIMP" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - ASSIM
 set(output_target RAWRBOX.ASSIMP)
 
 # LIBS ---
+if(TARGET zlibstatic)
+    set(BUILD_ZLIB 0)
+else()
+    set(BUILD_ZLIB 1)
+endif()
+
 CPMAddPackage(
     NAME
     assimp
@@ -21,7 +27,7 @@ CPMAddPackage(
     "ASSIMP_BUILD_DOCS 0"
     "USE_STATIC_CRT 1"
     "ASSIMP_BUILD_ASSIMP_VIEW 0"
-    "ASSIMP_BUILD_ZLIB 1"
+    "ASSIMP_BUILD_ZLIB ${BUILD_ZLIB}"
     "ASSIMP_WARNINGS_AS_ERRORS 0"
     "ASSIMP_INSTALL_PDB 0"
     "ASSIMP_BUILD_DRACO 0"
