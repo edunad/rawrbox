@@ -75,6 +75,8 @@ if(NOT RAWRBOX_ENABLE_HTTP_REQUEST)
     list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "include/rawrbox/utils/http.hpp")
     list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "tests/http.spec.cpp")
 else()
+    set(CURL_ZLIB CACHE BOOL OFF "")
+
     CPMAddPackage(
         NAME
         libcpr
