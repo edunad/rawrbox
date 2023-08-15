@@ -98,10 +98,6 @@ set(CMAKE_SKIP_RPATH TRUE)
 set(CMAKE_SKIP_BUILD_RPATH TRUE)
 # ---------------------------------
 
-# SETUP CCACHE ---
-CPMAddPackage("gh:TheLartians/Ccache.cmake@1.2.4")
-# --------------
-
 # GLOBAL PACKAGES ------
 CPMAddPackage("gh:fmtlib/fmt#10.0.0")
 if(fmt_ADDED)

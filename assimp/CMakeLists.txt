@@ -3,11 +3,12 @@ project("RAWRBOX.ASSIMP" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - ASSIM
 set(output_target RAWRBOX.ASSIMP)
 
 # LIBS ---
-if(TARGET zlibstatic)
+find_library(ZLIB_FOUND ZLIB QUIET)
+if(ZLIB_FOUND)
     message(STATUS "Found zlib, turning off build zlib on assimp")
-    set(BUILD_ZLIB 0 CACHE BOOL "")
+    set(BUILD_ZLIB 0)
 else()
-    set(BUILD_ZLIB 1 CACHE BOOL "")
+    set(BUILD_ZLIB 1)
 endif()
 
 CPMAddPackage(

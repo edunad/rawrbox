@@ -1,15 +1,15 @@
 #pragma once
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <sol/sol.hpp>
+#endif
+
 #include <rawrbox/bass/sound/flags.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <cmath>
 #include <vector>
-
-#ifdef RAWRBOX_SCRIPTING
-	#include <sol/sol.hpp>
-#endif
 
 namespace rawrbox {
 

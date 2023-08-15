@@ -2,9 +2,18 @@
 project("RAWRBOX.SCRIPTING" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - SCRIPTING lib" LANGUAGES C CXX)
 set(output_target RAWRBOX.SCRIPTING)
 
-## LIBS ---
+# LIBS ---
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT)
     message(STATUS "Enabled LuaJIT support")
+
+    #CPMAddPackage(NAME luajit GITHUB_REPOSITORY WohlSoft/LuaJIT GIT_TAG v2.1)
+    #if(luajit_ADDED)
+    #    set_lib_runtime_mt(luajit)
+    #    set_lib_runtime_mt(libluajit)
+    #    list(APPEND RAWRBOX_SCRIPTING_EXTRA_LIB libluajit)
+    #    set(SOL2_LUA_VERSION "LuaJIT" CACHE STRING "" FORCE)
+    #endif()
+
     CPMAddPackage(
         NAME
         luajit
@@ -22,6 +31,7 @@ if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT)
         set(SOL2_LUA_VERSION "LuaJIT" CACHE STRING "" FORCE)
     endif()
 else()
+    message(STATUS "LuaJIT support disabled, using normal LUA")
     CPMAddPackage(
         NAME
         lua
@@ -33,16 +43,15 @@ else()
         YES)
 
     if(lua_ADDED)
-        file(GLOB lua_sources ${lua_SOURCE_DIR}/*.c)
-        list(REMOVE_ITEM lua_sources "${lua_SOURCE_DIR}/lua.c" "${lua_SOURCE_DIR}/luac.c")
-
+        FILE(GLOB lua_sources ${lua_SOURCE_DIR}/*.c)
+        list(REMOVE_ITEM lua_sources "${lua_SOURCE_DIR}/lua.c" "${lua_SOURCE_DIR}/luac.c" "${lua_SOURCE_DIR}/onelua.c")
         add_library(lua STATIC ${lua_sources})
-        target_include_directories(lua SYSTEM PUBLIC $<BUILD_INTERFACE:${lua_SOURCE_DIR}>)
 
+        target_include_directories(lua PUBLIC $<BUILD_INTERFACE:${lua_SOURCE_DIR}>)
         set_lib_runtime_mt(lua)
     endif()
 
-    set(RAWRBOX_SCRIPTING_EXTRA_LIB lua)
+    list(APPEND RAWRBOX_SCRIPTING_EXTRA_LIB lua)
 endif()
 
 # SOL -----------
@@ -68,9 +77,10 @@ add_dependencies(${output_target} copy_resources_lua)
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING SOL_ALL_SAFETIES_ON=1)
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT)
-    target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING_LUAJIT)
+    target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING_LUAJIT SOL_LUAJIT=1)
 endif()
-target_include_directories(${output_target} PUBLIC "include")
+
+target_include_directories(${output_target} PUBLIC "include" ${luajit_SOURCE_DIR}/src)
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC RAWRBOX.ENGINE RAWRBOX.MATH ${RAWRBOX_SCRIPTING_EXTRA_LIB} sol2::sol2 nlohmann_json)
 
