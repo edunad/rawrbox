@@ -21,8 +21,8 @@ function MOD:update()
         if not mesh1 then return end
 
         local p = mesh1:getPos()
-        p.x = math.cos(curtime() * 0.001) * 2.
-        p.z = math.sin(curtime() * 0.001) * 2.
+        p.x = math.cos(BGFX_FRAME() * 0.01) * 2.
+        p.z = math.sin(BGFX_FRAME() * 0.01) * 2.
 
         mesh1:setPos(p)
     end

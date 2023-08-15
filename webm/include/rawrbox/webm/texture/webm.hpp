@@ -12,7 +12,7 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::WEBM> _webm = nullptr;
 
 		uint32_t _trackId = 0;
-		int64_t _cooldown = 0;
+		uint64_t _cooldown = 0;
 
 		void internalUpdate();
 		void internalLoad();

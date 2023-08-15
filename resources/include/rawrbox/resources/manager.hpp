@@ -15,6 +15,7 @@
 namespace rawrbox {
 	class RESOURCES {
 	protected:
+		static std::vector<std::filesystem::path> _loadedFiles;
 		static std::vector<std::unique_ptr<rawrbox::Loader>> _loaders;
 
 		// LOADS ---
@@ -62,6 +63,10 @@ namespace rawrbox {
 				if (!ret->load(buffer)) throw std::runtime_error(fmt::format("[RawrBox-Resources] Failed to load file '{}'", filePath.generic_string()));
 				ret->upload();
 				ret->status = rawrbox::LoadStatus::LOADED;
+
+				// Add to the list for later on easy access
+				_loadedFiles.push_back(filePath);
+				// ---
 
 				return ret;
 			}
@@ -140,6 +145,18 @@ namespace rawrbox {
 			}
 		}
 
+		static void startPreLoadQueueAsync(std::function<void(std::string, uint32_t)> startLoad = nullptr, std::function<void(std::string, uint32_t)> endLoad = nullptr) {
+			for (auto& loader : _loaders) {
+				for (auto& file : loader->getPreload()) {
+					rawrbox::ASYNC::run([startLoad, &file, endLoad]() {
+						if (startLoad != nullptr) startLoad(file.first.generic_string(), file.second);
+						loadFile(file.first, file.second);
+						if (endLoad != nullptr) endLoad(file.first.generic_string(), file.second);
+					});
+				}
+			}
+		}
+
 		static void startPreLoadQueue(std::function<void(std::string, uint32_t)> startLoad = nullptr, std::function<void(std::string, uint32_t)> endLoad = nullptr) {
 			for (auto& loader : _loaders) {
 				for (auto& file : loader->getPreload()) {
@@ -148,6 +165,23 @@ namespace rawrbox {
 					if (endLoad != nullptr) endLoad(file.first.generic_string(), file.second);
 				}
 			}
+		}
+
+		static size_t getTotalPreload() {
+			size_t total = 0;
+			for (auto& loader : _loaders) {
+				total += loader->getPreload().size();
+			}
+
+			return total;
+		}
+
+		static size_t filesLoaded() {
+			return _loadedFiles.size();
+		}
+
+		static bool isLoaded(const std::filesystem::path& filePath) {
+			return std::find(_loadedFiles.begin(), _loadedFiles.end(), filePath) != _loadedFiles.end();
 		}
 
 		// -----

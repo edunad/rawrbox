@@ -37,7 +37,7 @@ namespace rawrbox {
 		// UTILS----
 		[[nodiscard]] virtual bool hasTransparency() const;
 		[[nodiscard]] virtual const rawrbox::Vector2i& getSize() const;
-		[[nodiscard]] virtual bool valid() const;
+		[[nodiscard]] virtual bool isValid() const;
 		[[nodiscard]] virtual const bgfx::TextureHandle& getHandle() const;
 		[[nodiscard]] virtual std::array<float, 4> getData() const;
 		// -----

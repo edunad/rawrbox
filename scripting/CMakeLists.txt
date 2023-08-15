@@ -43,7 +43,6 @@ else()
     endif()
 
     set(RAWRBOX_SCRIPTING_EXTRA_LIB lua)
-    set(RAWRBOX_SCRIPTING_EXTRA_DEFS SOL_LUAJIT=1)
 endif()
 
 # SOL -----------
@@ -67,7 +66,10 @@ add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_SCRIPTING_IMPORTS
 add_dependencies(${output_target} copy_resources_lua)
 
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
-target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING SOL_ALL_SAFETIES_ON=1 ${RAWRBOX_SCRIPTING_EXTRA_DEFS})
+target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING SOL_ALL_SAFETIES_ON=1)
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT)
+    target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING_LUAJIT)
+endif()
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC RAWRBOX.ENGINE RAWRBOX.MATH ${RAWRBOX_SCRIPTING_EXTRA_LIB} sol2::sol2 nlohmann_json)

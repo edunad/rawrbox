@@ -190,7 +190,7 @@ namespace rawrbox {
 
 		// Register plugins env types ---
 		for (auto& p : _plugins)
-			p->registerGlobal(env);
+			p->registerGlobal(mod);
 		//  -----
 
 		// Custom global env types ---
@@ -242,7 +242,9 @@ namespace rawrbox {
 		_lua->open_libraries(sol::lib::coroutine);
 		_lua->open_libraries(sol::lib::bit32);
 
+#ifdef RAWRBOX_SCRIPTING_LUAJIT
 		_lua->open_libraries(sol::lib::jit);
+#endif
 	}
 
 	void SCRIPTING::loadTypes() {
@@ -292,6 +294,11 @@ namespace rawrbox {
 		loadLuaFile("./lua/util.lua", env);
 		loadLuaFile("./lua/input.lua", env);
 		loadLuaFile("./lua/http.lua", env);
+
+		// Register plugins types ---
+		for (auto& p : _plugins)
+			p->loadLuaExtensions(mod);
+		//  -----
 
 		// Custom ----
 		onLoadExtensions(mod);

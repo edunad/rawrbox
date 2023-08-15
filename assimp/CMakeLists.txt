@@ -4,9 +4,10 @@ set(output_target RAWRBOX.ASSIMP)
 
 # LIBS ---
 if(TARGET zlibstatic)
-    set(BUILD_ZLIB 0)
+    message(STATUS "Found zlib, turning off build zlib on assimp")
+    set(BUILD_ZLIB 0 CACHE BOOL "")
 else()
-    set(BUILD_ZLIB 1)
+    set(BUILD_ZLIB 1 CACHE BOOL "")
 endif()
 
 CPMAddPackage(

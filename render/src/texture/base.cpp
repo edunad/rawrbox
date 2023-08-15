@@ -7,7 +7,7 @@ namespace rawrbox {
 	// UTILS ---
 	bool TextureBase::hasTransparency() const { return false; }
 	const rawrbox::Vector2i& TextureBase::getSize() const { return this->_size; }
-	bool TextureBase::valid() const { return bgfx::isValid(this->_handle); }
+	bool TextureBase::isValid() const { return bgfx::isValid(this->_handle); }
 	const bgfx::TextureHandle& TextureBase::getHandle() const { return this->_handle; }
 	// ----
 

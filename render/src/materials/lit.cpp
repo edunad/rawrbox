@@ -48,19 +48,19 @@ namespace rawrbox {
 	}
 
 	void MaterialLit::process(const rawrbox::Mesh& mesh) {
-		if (mesh.normalTexture != nullptr && mesh.normalTexture->valid() && !mesh.lineMode && !mesh.wireframe) {
+		if (mesh.normalTexture != nullptr && mesh.normalTexture->isValid() && !mesh.lineMode && !mesh.wireframe) {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_NORMAL, this->_s_normal, mesh.normalTexture->getHandle());
 		} else {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_NORMAL, this->_s_normal, rawrbox::NORMAL_TEXTURE->getHandle());
 		}
 
-		if (mesh.specularTexture != nullptr && mesh.specularTexture->valid() && !mesh.lineMode && !mesh.wireframe) {
+		if (mesh.specularTexture != nullptr && mesh.specularTexture->isValid() && !mesh.lineMode && !mesh.wireframe) {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, this->_s_specular, mesh.specularTexture->getHandle());
 		} else {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, this->_s_specular, rawrbox::BLACK_TEXTURE->getHandle());
 		}
 
-		if (mesh.emissionTexture != nullptr && mesh.emissionTexture->valid() && !mesh.lineMode && !mesh.wireframe) {
+		if (mesh.emissionTexture != nullptr && mesh.emissionTexture->isValid() && !mesh.lineMode && !mesh.wireframe) {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_EMISSION, this->_s_emission, mesh.emissionTexture->getHandle());
 		} else {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_EMISSION, this->_s_emission, rawrbox::BLACK_TEXTURE->getHandle());

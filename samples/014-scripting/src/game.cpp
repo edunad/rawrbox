@@ -5,6 +5,7 @@
 #include <rawrbox/render/scripting/plugin.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
+#include <rawrbox/resources/scripting/plugin.hpp>
 #include <rawrbox/scripting/scripting.hpp>
 
 #include <scripting_test/game.hpp>
@@ -39,6 +40,7 @@ namespace scripting_test {
 
 		// Setup scripting
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::RenderPlugin>(this->_window.get());
+		rawrbox::SCRIPTING::registerPlugin<rawrbox::ResourcesPlugin>();
 
 		// Custom non-plugin ---
 		rawrbox::SCRIPTING::registerType<rawrbox::TestWrapper>();
@@ -52,6 +54,12 @@ namespace scripting_test {
 		// ----
 
 		rawrbox::SCRIPTING::init(2000); // Check files every 2 seconds
+
+		// Load lua mods
+		rawrbox::SCRIPTING::load();
+		rawrbox::SCRIPTING::call("init");
+		// -----
+
 		// ----
 
 		// Load content ---
@@ -63,19 +71,23 @@ namespace scripting_test {
 		std::array initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("./content/textures/crate_hl1.png", 0)};
 
-		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
-				this->_loadingFiles--;
-				if (this->_loadingFiles <= 0) {
-					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
-				}
-			});
+			rawrbox::RESOURCES::preLoadFile(f.first, f.second);
 		}
 
-		// Load lua mods
-		rawrbox::SCRIPTING::load();
-		rawrbox::SCRIPTING::call("init");
+		// Load pre-content mod stuff ---
+		rawrbox::SCRIPTING::call("load");
+		// ---
+
+		// Start loading ----
+		this->_loadingFiles = static_cast<int>(rawrbox::RESOURCES::getTotalPreload());
+		rawrbox::RESOURCES::startPreLoadQueueAsync(nullptr, [this](std::string f, uint32_t) {
+			fmt::print("Loaded {}!\n", f);
+			this->_loadingFiles--;
+			if (this->_loadingFiles <= 0) {
+				rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
+			}
+		});
 		// -----
 
 		this->_window->upload();

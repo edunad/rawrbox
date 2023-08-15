@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rawrbox/scripting/mod.hpp>
+
 #include <sol/sol.hpp>
 
 namespace rawrbox {
@@ -15,6 +17,7 @@ namespace rawrbox {
 		virtual ~Plugin() = default;
 
 		virtual void registerTypes(sol::state & /*_lua*/) {}
-		virtual void registerGlobal(sol::environment & /*_env*/) {}
+		virtual void registerGlobal(rawrbox::Mod * /*_mod*/) {}
+		virtual void loadLuaExtensions(rawrbox::Mod * /*_mod*/) {}
 	};
 } // namespace rawrbox

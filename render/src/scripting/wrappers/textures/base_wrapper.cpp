@@ -3,6 +3,7 @@
 #include <rawrbox/render/scripting/wrappers/textures/base_wrapper.hpp>
 namespace rawrbox {
 	TextureWrapper::TextureWrapper(rawrbox::TextureBase* texture) : _texture(texture) {}
+	rawrbox::TextureBase* TextureWrapper::getRef() const { return this->_texture; }
 
 	// UTILS----
 	bool TextureWrapper::hasTransparency() const {
@@ -15,9 +16,9 @@ namespace rawrbox {
 		return this->_texture->getSize();
 	}
 
-	bool TextureWrapper::valid() const {
+	bool TextureWrapper::isValid() const {
 		if (this->_texture == nullptr) return false;
-		return this->_texture->valid();
+		return this->_texture->isValid();
 	}
 
 	std::array<float, 4> TextureWrapper::getData() const {
@@ -33,7 +34,7 @@ namespace rawrbox {
 		    // UTILS----
 		    "hasTransparency", &TextureWrapper::hasTransparency,
 		    "getSize", &TextureWrapper::getSize,
-		    "valid", &TextureWrapper::valid,
+		    "isValid", &TextureWrapper::isValid,
 		    "getData", &TextureWrapper::getData
 		    // -----
 		);

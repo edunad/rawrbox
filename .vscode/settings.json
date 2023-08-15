@@ -16,6 +16,7 @@
     "scripting",
     "stencil",
     "http",
-    "curtime"
+    "curtime",
+    "BGFX_FRAME"
   ]
 }

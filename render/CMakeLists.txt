@@ -63,7 +63,9 @@ else()
 endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.SCRIPTING)
+    if(NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES) # RAWRBOX.RESOURCES already includes scripting if RAWRBOX_BUILD_RAWRBOX_SCRIPTING is enabled
+        list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.SCRIPTING)
+    endif()
 else()
     remove_folder("${RAWRBOX_RENDER_SOURCES}" "/scripting/")
     set(RAWRBOX_RENDER_SOURCES "${CLEAN_SOURCES}")
@@ -90,9 +92,13 @@ add_custom_target(
     COMMENT "Copying RENDERER resources into binary directory")
 # ------------------
 
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    set(RAWRBOX_RENDER_DEPS copy_resources_lua)
+endif()
+
 # Project setup
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RENDER_SOURCES})
-add_dependencies(${output_target} copy_resources_render)
+add_dependencies(${output_target} copy_resources_render ${RAWRBOX_RENDER_DEPS})
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_RENDER)
 target_include_directories(${output_target} PUBLIC "include")
@@ -103,7 +109,6 @@ target_link_libraries(
            RAWRBOX.MATH
            RAWRBOX.ENGINE
            ${RAWRBOX_EXTRA_LIBS}
-           fmt::fmt
            magic_enum::magic_enum
            utf8cpp
            bgfx

@@ -5,12 +5,13 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/light/types.hpp>
 #include <rawrbox/render/model/mesh.hpp>
+#include <rawrbox/utils/reference.hpp>
 
 #include <fmt/format.h>
 
 namespace rawrbox {
 
-	class LightBase {
+	class LightBase : public rawrbox::ReferenceContainer<LightBase> {
 	protected:
 		bool _isOn = true;
 		size_t _id = 0;
@@ -25,9 +26,9 @@ namespace rawrbox {
 
 	public:
 		LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius);
-		LightBase(const LightBase&) = default;
-		LightBase(LightBase&&) = default;
-		LightBase& operator=(const LightBase&) = default;
+		LightBase(const LightBase&) = delete;
+		LightBase(LightBase&&) = delete;
+		LightBase& operator=(const LightBase&) = delete;
 		LightBase& operator=(LightBase&&) = delete;
 		virtual ~LightBase() = default;
 

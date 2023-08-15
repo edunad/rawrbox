@@ -102,14 +102,14 @@ namespace rawrbox {
 		rawrbox::FontInfo _info = {};
 
 		// INTERNAL ---
-		void loadFontInfo();
+		virtual void loadFontInfo();
 
 		std::unique_ptr<rawrbox::Glyph> bakeGlyphAlpha(uint32_t codePoint);
-		void generateGlyph(uint32_t codePoint);
+		virtual void generateGlyph(uint32_t codePoint);
 		// ----
 
 	public:
-		~Font();
+		virtual ~Font();
 
 		Font(const std::vector<uint8_t>& buffer, uint32_t pixelHeight, int32_t fontIndex = 0, int16_t widthPadding = 6, int16_t heightPadding = 6);
 		Font(Font&&) = delete;
@@ -118,24 +118,24 @@ namespace rawrbox {
 		Font& operator=(const Font&) = delete;
 
 		// LOADING ---
-		void addChars(const std::string& chars);
+		virtual void addChars(const std::string& chars);
 		// ----
 
 		// UTILS ---
-		[[nodiscard]] const rawrbox::FontInfo getFontInfo() const;
+		[[nodiscard]] virtual const rawrbox::FontInfo getFontInfo() const;
 
-		[[nodiscard]] bool hasGlyph(uint32_t codepoint) const;
-		[[nodiscard]] rawrbox::Glyph* getGlyph(uint32_t codepoint) const;
+		[[nodiscard]] virtual bool hasGlyph(uint32_t codepoint) const;
+		[[nodiscard]] virtual rawrbox::Glyph* getGlyph(uint32_t codepoint) const;
 
-		[[nodiscard]] float getSize() const;
-		[[nodiscard]] float getScale() const;
-		[[nodiscard]] float getLineHeight() const;
-		[[nodiscard]] float getKerning(uint32_t prevCodePoint, uint32_t nextCodePoint) const;
+		[[nodiscard]] virtual float getSize() const;
+		[[nodiscard]] virtual float getScale() const;
+		[[nodiscard]] virtual float getLineHeight() const;
+		[[nodiscard]] virtual float getKerning(uint32_t prevCodePoint, uint32_t nextCodePoint) const;
 
-		[[nodiscard]] rawrbox::Vector2f getStringSize(const std::string& text) const;
-		[[nodiscard]] rawrbox::TexturePack* getPackTexture(rawrbox::Glyph* g) const;
+		[[nodiscard]] virtual rawrbox::Vector2f getStringSize(const std::string& text) const;
+		[[nodiscard]] virtual rawrbox::TexturePack* getPackTexture(rawrbox::Glyph* g) const;
 
-		void render(const std::string& text, const rawrbox::Vector2f& pos, bool yIsUp, std::function<void(rawrbox::Glyph*, float, float, float, float)> render) const;
+		virtual void render(const std::string& text, const rawrbox::Vector2f& pos, bool yIsUp, std::function<void(rawrbox::Glyph*, float, float, float, float)> render) const;
 		// ----
 
 		// GLOBAL UTILS ---

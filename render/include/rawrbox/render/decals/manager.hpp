@@ -14,8 +14,8 @@ namespace rawrbox {
 		static void setAtlasTexture(rawrbox::TextureBase* atlas);
 
 		// UTILS -----
-		static void add(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& scale = {1, 1, 1}, float direction = 0, const rawrbox::Colorf& color = rawrbox::Colors::White(), uint16_t atlasId = 0);
-		static void remove(size_t i);
+		static bool add(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& scale = {1, 1, 1}, float direction = 0, const rawrbox::Colorf& color = rawrbox::Colors::White(), uint16_t atlasId = 0);
+		static bool remove(size_t i);
 		static const rawrbox::Instance& get(size_t i);
 		static const rawrbox::Mesh& getTemplate();
 		static size_t count();
