@@ -1,17 +1,16 @@
 #pragma once
 
 #include <rawrbox/render/light/base.hpp>
-#include <rawrbox/utils/reference.hpp>
 
 #include <sol/sol.hpp>
 
 namespace rawrbox {
 	class LightBaseWrapper {
 	protected:
-		rawrbox::Reference<rawrbox::LightBase> _ref;
+		std::weak_ptr<rawrbox::LightBase> _ref;
 
 	public:
-		LightBaseWrapper(rawrbox::LightBase* ref);
+		LightBaseWrapper(const std::shared_ptr<rawrbox::LightBase>& ref);
 		LightBaseWrapper(const LightBaseWrapper&) = default;
 		LightBaseWrapper(LightBaseWrapper&&) = default;
 		LightBaseWrapper& operator=(const LightBaseWrapper&) = default;

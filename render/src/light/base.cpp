@@ -1,7 +1,7 @@
 #include <rawrbox/render/light/manager.hpp>
 
 namespace rawrbox {
-	LightBase::LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius) : rawrbox::ReferenceContainer<rawrbox::LightBase>(this), _pos(pos), _color(color), _radius(radius){};
+	LightBase::LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius) : _pos(pos), _color(color), _radius(radius){};
 
 	void LightBase::setColor(const rawrbox::Colorf& col) {
 		if (this->_color == col) return;

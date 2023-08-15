@@ -12,7 +12,6 @@
 
 #ifdef RAWRBOX_SCRIPTING
 	#include <rawrbox/render/scripting/wrappers/model/model_wrapper.hpp>
-	#include <rawrbox/utils/reference.hpp>
 	#include <sol/sol.hpp>
 #endif
 
@@ -216,7 +215,7 @@ namespace rawrbox {
 		void initializeLua() override {
 			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
 
-			auto ptr = dynamic_cast<rawrbox::Model<>*>(this);
+			auto ptr = std::dynamic_pointer_cast<rawrbox::ModelBase<>>(this->shared_from_this());
 			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelWrapper(ptr));
 		}
 #endif

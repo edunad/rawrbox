@@ -3,63 +3,63 @@
 #include <rawrbox/render/scripting/wrappers/model/base_wrapper.hpp>
 
 namespace rawrbox {
-	ModelBaseWrapper::ModelBaseWrapper(rawrbox::ModelBase<rawrbox::MaterialBase>* ref) : _ref(ref->getReference()) {}
+	ModelBaseWrapper::ModelBaseWrapper(const std::shared_ptr<rawrbox::ModelBase<rawrbox::MaterialBase>>& ref) : _ref(ref) {}
 	ModelBaseWrapper::~ModelBaseWrapper() { this->_ref.reset(); }
 
 	// UTILS ----
 	const rawrbox::Vector3f ModelBaseWrapper::getPos() const {
 		if (!this->isValid()) return {};
-		return this->_ref.get().getPos();
+		return this->_ref.lock()->getPos();
 	}
 
 	void ModelBaseWrapper::setPos(const rawrbox::Vector3f& pos) {
 		if (!this->isValid()) return;
-		this->_ref.get().setPos(pos);
+		this->_ref.lock()->setPos(pos);
 	}
 
 	const rawrbox::Vector3f ModelBaseWrapper::getScale() const {
 		if (!this->isValid()) return {};
-		return this->_ref.get().getScale();
+		return this->_ref.lock()->getScale();
 	}
 
 	void ModelBaseWrapper::setScale(const rawrbox::Vector3f& scale) {
 		if (!this->isValid()) return;
-		this->_ref.get().setScale(scale);
+		this->_ref.lock()->setScale(scale);
 	}
 
 	const rawrbox::Vector4f ModelBaseWrapper::getAngle() const {
 		if (!this->isValid()) return {};
-		return this->_ref.get().getAngle();
+		return this->_ref.lock()->getAngle();
 	}
 
 	void ModelBaseWrapper::setAngle(const rawrbox::Vector4f& ang) {
 		if (!this->isValid()) return;
-		this->_ref.get().setAngle(ang);
+		this->_ref.lock()->setAngle(ang);
 	}
 
 	void ModelBaseWrapper::setEulerAngle(const rawrbox::Vector3f& ang) {
 		if (!this->isValid()) return;
-		this->_ref.get().setEulerAngle(ang);
+		this->_ref.lock()->setEulerAngle(ang);
 	}
 
 	const rawrbox::Matrix4x4 ModelBaseWrapper::getMatrix() const {
 		if (!this->isValid()) return {};
-		return this->_ref.get().getMatrix();
+		return this->_ref.lock()->getMatrix();
 	}
 
 	bool ModelBaseWrapper::isDynamic() const {
 		if (!this->isValid()) return false;
-		return this->_ref.get().isDynamic();
+		return this->_ref.lock()->isDynamic();
 	}
 
 	bool ModelBaseWrapper::isUploaded() const {
 		if (!this->isValid()) return false;
-		return this->_ref.get().isUploaded();
+		return this->_ref.lock()->isUploaded();
 	}
 	// ------
 
 	bool ModelBaseWrapper::isValid() const {
-		return this->_ref.valid();
+		return !this->_ref.expired();
 	}
 
 	void ModelBaseWrapper::registerLua(sol::state& lua) {

@@ -4,7 +4,6 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/materials/base.hpp>
-#include <rawrbox/utils/reference.hpp>
 
 #include <sol/sol.hpp>
 
@@ -14,10 +13,10 @@ namespace rawrbox {
 
 	class ModelBaseWrapper {
 	protected:
-		rawrbox::Reference<rawrbox::ModelBase<rawrbox::MaterialBase>> _ref;
+		std::weak_ptr<rawrbox::ModelBase<rawrbox::MaterialBase>> _ref;
 
 	public:
-		ModelBaseWrapper(rawrbox::ModelBase<rawrbox::MaterialBase>* ref);
+		ModelBaseWrapper(const std::shared_ptr<rawrbox::ModelBase<rawrbox::MaterialBase>>& ref);
 		ModelBaseWrapper(const ModelBaseWrapper&) = default;
 		ModelBaseWrapper(ModelBaseWrapper&&) = default;
 		ModelBaseWrapper& operator=(const ModelBaseWrapper&) = default;

@@ -2,96 +2,99 @@
 #include <rawrbox/render/scripting/wrappers/light/base_wrapper.hpp>
 
 namespace rawrbox {
-	LightBaseWrapper::LightBaseWrapper(rawrbox::LightBase* ref) : _ref(ref->getReference()) {}
+	LightBaseWrapper::LightBaseWrapper(const std::shared_ptr<rawrbox::LightBase>& ref) : _ref(ref) {}
 	LightBaseWrapper::~LightBaseWrapper() { this->_ref.reset(); }
 
 	// UTILS ----
 	const rawrbox::Colori LightBaseWrapper::getColor() const {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		return this->_ref.get().getColor().cast<int>();
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		return this->_ref.lock()->getColor().cast<int>();
 	}
 
 	void LightBaseWrapper::setColor(const rawrbox::Colori& col) {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		this->_ref.get().setColor(col.cast<float>());
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		this->_ref.lock()->setColor(col.cast<float>());
 	}
 
 	const rawrbox::Vector4f LightBaseWrapper::getData() const {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		return this->_ref.get().getData();
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		return this->_ref.lock()->getData();
 	}
 
 	void LightBaseWrapper::setRadius(float radius) {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		this->_ref.get().setRadius(radius);
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		this->_ref.lock()->setRadius(radius);
 	}
 
 	float LightBaseWrapper::getRadius() const {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		return this->_ref.get().getRadius();
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		return this->_ref.lock()->getRadius();
 	}
 
 	size_t LightBaseWrapper::id() const {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		return this->_ref.get().id();
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		return this->_ref.lock()->id();
 	}
 
 	bool LightBaseWrapper::isOn() const {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		return this->_ref.get().isOn();
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		return this->_ref.lock()->isOn();
 	}
 
 	void LightBaseWrapper::setStatus(bool on) {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		this->_ref.get().setStatus(on);
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		this->_ref.lock()->setStatus(on);
 	}
 
 	const rawrbox::Vector3f& LightBaseWrapper::getPos() const {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		return this->_ref.get().getPos();
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		return this->_ref.lock()->getPos();
 	}
 
 	void LightBaseWrapper::setPos(const rawrbox::Vector3f& pos) {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		this->_ref.get().setPos(pos);
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		this->_ref.lock()->setPos(pos);
 	}
 
 	const rawrbox::Vector3f& LightBaseWrapper::getOffsetPos() const {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		return this->_ref.get().getOffsetPos();
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		return this->_ref.lock()->getOffsetPos();
 	}
 
 	void LightBaseWrapper::setOffsetPos(const rawrbox::Vector3f& pos) {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		this->_ref.get().setOffsetPos(pos);
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		this->_ref.lock()->setOffsetPos(pos);
 	}
 
 	const rawrbox::Vector3f LightBaseWrapper::getWorldPos() const {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		return this->_ref.get().getWorldPos();
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		return this->_ref.lock()->getWorldPos();
 	}
 
 	rawrbox::LightType LightBaseWrapper::getType() const {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		return this->_ref.get().getType();
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		return this->_ref.lock()->getType();
 	}
 
 	const rawrbox::Vector3f& LightBaseWrapper::getDirection() const {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		return this->_ref.get().getDirection();
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		return this->_ref.lock()->getDirection();
 	}
 
 	void LightBaseWrapper::setDirection(const rawrbox::Vector3f& dir) {
-		if (this->_ref.valid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
-		this->_ref.get().setDirection(dir);
+		if (this->isValid()) throw std::runtime_error("[RawrBox-LightBase] Light reference not set!");
+		this->_ref.lock()->setDirection(dir);
 	}
 	// ------
 
 	bool LightBaseWrapper::isValid() const {
-		return this->_ref.valid();
+		return !this->_ref.expired();
 	}
 
-	rawrbox::LightBase* LightBaseWrapper::getRef() const { return &_ref.get(); }
+	rawrbox::LightBase* LightBaseWrapper::getRef() const {
+		return nullptr;
+		// return &_ref.lock();
+	}
 
 	void LightBaseWrapper::registerLua(sol::state& lua) {
 		lua.new_usertype<LightBaseWrapper>("LightBase",

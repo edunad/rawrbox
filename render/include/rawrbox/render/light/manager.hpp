@@ -36,7 +36,7 @@ namespace rawrbox {
 
 	class LIGHTS {
 	protected:
-		static std::vector<std::unique_ptr<rawrbox::LightBase>> _lights;
+		static std::vector<std::shared_ptr<rawrbox::LightBase>> _lights;
 
 		static bgfx::DynamicVertexBufferHandle _buffer;
 		static bgfx::UniformHandle _u_lightSettings;
@@ -95,7 +95,7 @@ namespace rawrbox {
 		// Light ----
 		template <typename T = rawrbox::LightBase, typename... CallbackArgs>
 		static rawrbox::LightBase* addLight(CallbackArgs&&... args) {
-			auto light = _lights.emplace_back(std::make_unique<T>(std::forward<CallbackArgs>(args)...)).get();
+			auto light = _lights.emplace_back(std::make_shared<T>(std::forward<CallbackArgs>(args)...)).get();
 			light->setId(++rawrbox::LIGHT_ID);
 			rawrbox::__LIGHT_DIRTY__ = true;
 

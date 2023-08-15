@@ -12,7 +12,7 @@ namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
 #ifdef RAWRBOX_SCRIPTING
-	class ModelBase : public rawrbox::ReferenceContainer<rawrbox::ModelBase<M>> {
+	class ModelBase : public std::enable_shared_from_this<rawrbox::ModelBase<M>> {
 #else
 	class ModelBase {
 #endif
@@ -36,7 +36,8 @@ namespace rawrbox {
 
 		virtual void initializeLua() {
 			if (!SCRIPTING::initialized) return;
-			auto ptr = dynamic_cast<rawrbox::ModelBase<>*>(this);
+
+			auto ptr = std::dynamic_pointer_cast<rawrbox::ModelBase<>>(this->shared_from_this());
 			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelBaseWrapper(ptr));
 		}
 #endif
@@ -52,11 +53,7 @@ namespace rawrbox {
 		}
 
 	public:
-#ifdef RAWRBOX_SCRIPTING
-		ModelBase() : rawrbox::ReferenceContainer<rawrbox::ModelBase<M>>(this) {}
-#else
 		ModelBase() = default;
-#endif
 		ModelBase(ModelBase&&) = delete;
 		ModelBase& operator=(ModelBase&&) = delete;
 		ModelBase(const ModelBase&) = delete;

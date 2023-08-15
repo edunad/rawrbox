@@ -12,11 +12,7 @@
 #endif
 
 namespace rawrbox {
-#ifdef RAWRBOX_SCRIPTING
-	SoundInstance::SoundInstance(uint32_t audioSample, bool isStream, uint32_t flags) : rawrbox::ReferenceContainer<rawrbox::SoundInstance>(this), _sample(audioSample), _flags(flags), _stream(isStream) {
-#else
 	SoundInstance::SoundInstance(uint32_t audioSample, bool isStream, uint32_t flags) : _sample(audioSample), _flags(flags), _stream(isStream) {
-#endif
 		rawrbox::BASS::onBEAT.add(std::to_string(this->_sample), [this](std::pair<uint32_t, double> data) {
 			if (this->_sample == data.first || this->_channel == data.first) this->onBEAT(data.second);
 		});

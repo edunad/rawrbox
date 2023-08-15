@@ -5,7 +5,7 @@
 
 namespace rawrbox {
 	// PRIVATE ----
-	std::vector<std::unique_ptr<rawrbox::LightBase>> LIGHTS::_lights = {};
+	std::vector<std::shared_ptr<rawrbox::LightBase>> LIGHTS::_lights = {};
 
 	bgfx::DynamicVertexBufferHandle LIGHTS::_buffer = BGFX_INVALID_HANDLE;
 	bgfx::UniformHandle LIGHTS::_u_lightSettings = BGFX_INVALID_HANDLE;

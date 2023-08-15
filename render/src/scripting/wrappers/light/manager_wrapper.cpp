@@ -72,8 +72,9 @@ namespace rawrbox {
 
 	// Light utils ----
 	rawrbox::LightBaseWrapper LightsWrapper::getLight(size_t indx) {
-		auto light = rawrbox::LIGHTS::getLight(indx);
-		return {light};
+		// auto light = rawrbox::LIGHTS::getLight(indx);
+		// return {light};
+		throw std::runtime_error("AAAAAAAAAAA");
 	}
 
 	size_t LightsWrapper::count() {

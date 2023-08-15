@@ -9,13 +9,12 @@
 
 #ifdef RAWRBOX_SCRIPTING
 	#include <sol/sol.hpp>
-	#include <rawrbox/utils/reference.hpp>
 #endif
 
 namespace rawrbox {
 
 #ifdef RAWRBOX_SCRIPTING
-	class SoundInstance : public rawrbox::ReferenceContainer<SoundInstance> {
+	class SoundInstance : public std::enable_shared_from_this<SoundInstance> {
 #else
 	class SoundInstance {
 #endif
