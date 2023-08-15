@@ -61,7 +61,7 @@ namespace rawrbox {
 		}
 
 		void registerGlobal(rawrbox::Mod* mod) override {
-			if (mod == nullptr) throw std::runtime_error("[RawrBox-ResourcesPlugin] Tried to register plugin on invalid mod!");
+			if (mod == nullptr) throw std::runtime_error("[RawrBox-RenderPlugin] Tried to register plugin on invalid mod!");
 			if (this->_window == nullptr) throw std::runtime_error("[RawrBox-RenderPlugin] Window not set!");
 
 			auto& env = mod->getEnvironment();
@@ -90,7 +90,7 @@ namespace rawrbox {
 		}
 
 		void loadLuaExtensions(rawrbox::Mod* mod) override {
-			if (mod == nullptr) throw std::runtime_error("[RawrBox-ResourcesPlugin] Tried to register plugin on invalid mod!");
+			if (mod == nullptr) throw std::runtime_error("[RawrBox-RenderPlugin] Tried to register plugin on invalid mod!");
 			rawrbox::SCRIPTING::loadLuaFile("./lua/render_enums.lua", mod->getEnvironment());
 		}
 	};

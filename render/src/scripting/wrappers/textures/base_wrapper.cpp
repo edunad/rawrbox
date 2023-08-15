@@ -1,6 +1,6 @@
-#pragma once
 
 #include <rawrbox/render/scripting/wrappers/textures/base_wrapper.hpp>
+
 namespace rawrbox {
 	TextureWrapper::TextureWrapper(rawrbox::TextureBase* texture) : _texture(texture) {}
 	rawrbox::TextureBase* TextureWrapper::getRef() const { return this->_texture; }

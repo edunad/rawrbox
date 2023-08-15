@@ -1,4 +1,3 @@
-#pragma once
 
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/resources/scripting/resources_wrapper.hpp>
@@ -9,13 +8,15 @@ namespace rawrbox {
 	ResourcesWrapper::ResourcesWrapper(rawrbox::Mod* mod) : _mod(mod) {}
 
 	void ResourcesWrapper::preLoadFolder(const std::string& path) {
-		if (this->_mod == nullptr) std::runtime_error("[RawrBox-Resources] MOD not set!");
+		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-Resources] MOD not set!");
+
 		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder().generic_string());
 		rawrbox::RESOURCES::preLoadFolder(fixedPath);
 	}
 
 	void ResourcesWrapper::preLoad(const std::string& path, sol::optional<uint32_t> loadFlags) {
-		if (this->_mod == nullptr) std::runtime_error("[RawrBox-Resources] MOD not set!");
+		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-Resources] MOD not set!");
+
 		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder().generic_string());
 		rawrbox::RESOURCES::preLoadFile(fixedPath, loadFlags.value_or(0));
 	}

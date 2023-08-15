@@ -7,9 +7,18 @@
 #include <cmath>
 #include <vector>
 
-namespace rawrbox {
-	class SoundInstance {
+#ifdef RAWRBOX_SCRIPTING
+	#include <sol/sol.hpp>
+	#include <rawrbox/utils/reference.hpp>
+#endif
 
+namespace rawrbox {
+
+#ifdef RAWRBOX_SCRIPTING
+	class SoundInstance : public rawrbox::ReferenceContainer<SoundInstance> {
+#else
+	class SoundInstance {
+#endif
 	protected:
 		uint32_t _sample = 0;
 		uint32_t _channel = 0;
@@ -28,7 +37,11 @@ namespace rawrbox {
 		bool _looping = false;
 		bool _stream = false;
 
-	protected:
+#ifdef RAWRBOX_SCRIPTING
+		sol::object _luaWrapper;
+		virtual void initializeLua();
+#endif
+
 		[[nodiscard]] uint32_t getNextAvailableChannel() const;
 
 	public:
@@ -36,44 +49,46 @@ namespace rawrbox {
 		rawrbox::Event<float> onBPM;
 		rawrbox::Event<> onEnd;
 
-		SoundInstance() = default;
 		SoundInstance(uint32_t audioSample, bool isStream, uint32_t flags);
-
-		virtual ~SoundInstance();
 		SoundInstance(SoundInstance&&) = delete;
 		SoundInstance& operator=(SoundInstance&&) = delete;
 		SoundInstance(const SoundInstance&) = delete;
 		SoundInstance& operator=(const SoundInstance&) = delete;
+		virtual ~SoundInstance();
 
-		void play();
-		void stop();
+		virtual void play();
+		virtual void stop();
 
 		// UTILS ----
-		[[nodiscard]] uint32_t id() const;
-		[[nodiscard]] bool isValid() const;
-		[[nodiscard]] bool isCreated() const;
-		[[nodiscard]] bool is3D() const;
+		[[nodiscard]] virtual uint32_t id() const;
+		[[nodiscard]] virtual bool isValid() const;
+		[[nodiscard]] virtual bool isCreated() const;
+		[[nodiscard]] virtual bool is3D() const;
 
-		[[nodiscard]] float getTempo() const;
-		[[nodiscard]] float getVolume() const;
-		[[nodiscard]] double getSeek() const;
+		[[nodiscard]] virtual float getTempo() const;
+		[[nodiscard]] virtual float getVolume() const;
+		[[nodiscard]] virtual double getSeek() const;
 
-		[[nodiscard]] bool isLooping() const;
-		[[nodiscard]] bool isPlaying() const;
-		[[nodiscard]] bool isPaused() const;
-		[[nodiscard]] bool isHTTPStream() const;
+		[[nodiscard]] virtual bool isLooping() const;
+		[[nodiscard]] virtual bool isPlaying() const;
+		[[nodiscard]] virtual bool isPaused() const;
+		[[nodiscard]] virtual bool isHTTPStream() const;
 
-		[[nodiscard]] const std::vector<float> getFFT(int bass_length) const;
+		[[nodiscard]] virtual const std::vector<float> getFFT(int bass_length) const;
 
-		[[nodiscard]] const rawrbox::Vector3f& getPosition() const;
+		[[nodiscard]] virtual const rawrbox::Vector3f& getPosition() const;
 		// ------------------
 
-		void setBeatSettings(float bandwidth, float center_freq, float release_time);
-		void setVolume(float volume);
-		void setTempo(float tempo);
-		void seek(double seek);
-		void setLooping(bool loop);
-		void setPosition(const rawrbox::Vector3f& location);
-		void set3D(float maxDistance, float minDistance = 0.F);
+		virtual void setBeatSettings(float bandwidth, float center_freq, float release_time);
+		virtual void setVolume(float volume);
+		virtual void setTempo(float tempo);
+		virtual void seek(double seek);
+		virtual void setLooping(bool loop);
+		virtual void setPosition(const rawrbox::Vector3f& location);
+		virtual void set3D(float maxDistance, float minDistance = 0.F);
+
+#ifdef RAWRBOX_SCRIPTING
+		virtual sol::object& getScriptingWrapper();
+#endif
 	};
 } // namespace rawrbox

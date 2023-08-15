@@ -1,4 +1,3 @@
-#pragma once
 
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/scripting/wrappers/resources/texture_loader_wrapper.hpp>
@@ -9,7 +8,7 @@ namespace rawrbox {
 	TextureLoaderWrapper::TextureLoaderWrapper(rawrbox::Mod* mod) : _mod(mod) {}
 
 	rawrbox::TextureWrapper TextureLoaderWrapper::get(const std::string& path, sol::optional<uint32_t> loadFlags) {
-		if (this->_mod == nullptr) std::runtime_error("[RawrBox-TextureLoader] MOD not set!");
+		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-TextureLoader] MOD not set!");
 		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder().generic_string());
 
 		if (!rawrbox::RESOURCES::isLoaded(fixedPath)) {

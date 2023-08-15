@@ -21,6 +21,15 @@ else()
     remove_folder("${RAWRBOX_BASS_SOURCES}" "/resources/")
     set(RAWRBOX_BASS_SOURCES "${CLEAN_SOURCES}")
 endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    if(NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES) # RAWRBOX.RESOURCES already includes scripting if RAWRBOX_BUILD_RAWRBOX_SCRIPTING is enabled
+        list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.SCRIPTING)
+    endif()
+else()
+    remove_folder("${RAWRBOX_BASS_SOURCES}" "/scripting/")
+    set(RAWRBOX_BASS_SOURCES "${CLEAN_SOURCES}")
+endif()
 # ----
 
 # Copy content - BASS

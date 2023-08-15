@@ -1,5 +1,4 @@
 
-
 #include <rawrbox/render/scripting/wrappers/light/base_wrapper.hpp>
 
 namespace rawrbox {

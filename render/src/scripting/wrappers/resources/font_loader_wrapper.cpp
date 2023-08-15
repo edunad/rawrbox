@@ -1,4 +1,3 @@
-#pragma once
 
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/scripting/wrappers/resources/font_loader_wrapper.hpp>
@@ -9,7 +8,7 @@ namespace rawrbox {
 	FontLoaderWrapper::FontLoaderWrapper(rawrbox::Mod* mod) : _mod(mod) {}
 
 	rawrbox::FontWrapper FontLoaderWrapper::get(const std::string& path, sol::optional<uint32_t> size) {
-		if (this->_mod == nullptr) std::runtime_error("[RawrBox-FontLoader] MOD not set!");
+		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-FontLoader] MOD not set!");
 		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder().generic_string());
 
 		if (!rawrbox::RESOURCES::isLoaded(fixedPath)) {
