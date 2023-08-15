@@ -55,7 +55,7 @@
     {
       "label": "Clean project",
       "type": "shell",
-      "command": "rm -rf build bin .cache",
+      "command": "rm -rf build bin .cache bass/deps webm/deps",
       "group": "build",
       "options": {
         "cwd": "${workspaceFolder}"

@@ -75,6 +75,7 @@ if(NOT RAWRBOX_ENABLE_HTTP_REQUEST)
     list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "include/rawrbox/utils/http.hpp")
     list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "tests/http.spec.cpp")
 else()
+    SET(CURL_ZLIB OFF CACHE STRING "" FORCE)
     CPMAddPackage(
         NAME
         libcpr
@@ -85,6 +86,7 @@ else()
         OPTIONS
         "BUILD_SHARED_LIBS 0"
         "CPR_ENABLE_SSL 1"
+        "CPR_ENABLE_CURL_HTTP_ONLY 1"
         "CURL_ZLIB 0")
 
     list(APPEND EXTRA_UTIL_LIBS cpr::cpr)

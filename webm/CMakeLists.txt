@@ -25,6 +25,7 @@ if(libwebm_ADDED)
 
     # Add codec
     set(VPX_VERSION v1.13.0)
+    set(VPX_MSC_VERSION 17)
     if(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME)
         set(VPX_STATIC_MULTITHREADED ON)
     endif()
