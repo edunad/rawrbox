@@ -80,8 +80,11 @@ namespace rawrbox {
 	// NOLINTBEGIN(*)
 	void RenderUtils::buildShader(const bgfx::EmbeddedShader shaders[], bgfx::ProgramHandle& program) {
 		bgfx::RendererType::Enum type = bgfx::getRendererType();
+
 		bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(shaders, type, shaders[0].name);
+		if (!bgfx::isValid(vsh)) throw std::runtime_error("[RawrBox-Renderer] Failed to create compute shader");
 		bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(shaders, type, shaders[1].name);
+		if (!bgfx::isValid(fsh)) throw std::runtime_error("[RawrBox-Renderer] Failed to create compute shader");
 
 		program = bgfx::createProgram(vsh, fsh, true);
 		if (!bgfx::isValid(program)) throw std::runtime_error("[RawrBox-Renderer] Failed to create shader");
@@ -89,7 +92,9 @@ namespace rawrbox {
 
 	void RenderUtils::buildComputeShader(const bgfx::EmbeddedShader shaders[], bgfx::ProgramHandle& program) {
 		bgfx::RendererType::Enum type = bgfx::getRendererType();
+
 		bgfx::ShaderHandle csh = bgfx::createEmbeddedShader(shaders, type, shaders[0].name);
+		if (!bgfx::isValid(csh)) throw std::runtime_error("[RawrBox-Renderer] Failed to create compute shader");
 
 		program = bgfx::createProgram(csh, true);
 		if (!bgfx::isValid(program)) throw std::runtime_error("[RawrBox-Renderer] Failed to create compute shader");
