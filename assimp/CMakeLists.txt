@@ -3,10 +3,11 @@ project("RAWRBOX.ASSIMP" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - ASSIM
 set(output_target RAWRBOX.ASSIMP)
 
 # LIBS ---
-find_package(zlib QUIET)
+find_package(ZLIB QUIET)
 if(ZLIB_FOUND)
     message(STATUS "Found zlib, turning off build zlib on assimp")
     set(BUILD_ZLIB 0)
+    set(ZLIB_FOUND 0) # Because assimp will then try to install invalid targets
 else()
     set(BUILD_ZLIB 1)
 endif()
