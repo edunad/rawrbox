@@ -3,7 +3,6 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 #include <rawrbox/scripting/wrappers/fmt_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/hooks_wrapper.hpp>
-#include <rawrbox/scripting/wrappers/http_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/io_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/aabb_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/bbox_wrapper.hpp>
@@ -184,7 +183,6 @@ namespace rawrbox {
 		env["io"] = rawrbox::IOWrapper();
 		env["hooks"] = rawrbox::HooksWrapper(_hooks.get());
 		env["scripting"] = rawrbox::ScriptingWrapper();
-		env["http"] = rawrbox::HTTPWrapper();
 		env["timer"] = rawrbox::TimerWrapper();
 		// -------------------
 
@@ -266,7 +264,6 @@ namespace rawrbox {
 		rawrbox::ScriptingWrapper::registerLua(*_lua);
 		rawrbox::ModWrapper::registerLua(*_lua);
 		rawrbox::HooksWrapper::registerLua(*_lua);
-		rawrbox::HTTPWrapper::registerLua(*_lua);
 		rawrbox::TimerWrapper::registerLua(*_lua);
 		// ----
 
@@ -293,7 +290,6 @@ namespace rawrbox {
 		loadLuaFile("./lua/sha2.lua", env);
 		loadLuaFile("./lua/util.lua", env);
 		loadLuaFile("./lua/input.lua", env);
-		loadLuaFile("./lua/http.lua", env);
 
 		// Register plugins types ---
 		for (auto& p : _plugins)

@@ -3,6 +3,8 @@
 
 #include <cpr/cpr.h>
 
+#include <functional>
+#include <map>
 #include <string>
 
 namespace rawrbox {

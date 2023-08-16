@@ -1,11 +1,4 @@
-﻿# Copy content - SAMPLES
-add_custom_target(
-    copy_resources_samples ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/${RAWRBOX_CONTENT_FOLDER}
-                                       ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
-    COMMENT "Copying SAMPLES resources into binary directory")
-# ------------------
-
-add_subdirectory("001-stencil")
+﻿add_subdirectory("001-stencil")
 add_subdirectory("002-generated-models")
 
 if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)

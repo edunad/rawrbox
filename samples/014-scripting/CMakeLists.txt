@@ -1,4 +1,5 @@
 ﻿project("014-scripting")
+# --------------
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_SAMPLE_SOURCES "include/*.hpp" "src/*.cpp")
@@ -15,12 +16,12 @@ add_custom_target(
 # ------------------
 
 add_executable(${output_target} ${RAWRBOX_SAMPLE_SOURCES})
-add_dependencies(${output_target} copy_resources_samples link_mods_samples)
-
+add_dependencies(${output_target} link_mods_samples)
+copy_resources(TARGET ${output_target} SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/..)
 target_compile_features(${output_target} PUBLIC cxx_std_20)
 target_include_directories(${output_target} PRIVATE "include")
 target_compile_features(${output_target} PRIVATE cxx_std_${CMAKE_CXX_STANDARD})
-target_link_libraries(${output_target} PRIVATE RAWRBOX.RENDER RAWRBOX.SCRIPTING)
+target_link_libraries(${output_target} PRIVATE RAWRBOX.RENDER RAWRBOX.NETWORK)
 
 set_lib_runtime_mt(${output_target})
 

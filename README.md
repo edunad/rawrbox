@@ -68,6 +68,7 @@
 | `RAWRBOX.ASSIMP`     | Assimp lib                                         | Handles assimp model loading                                                               | `RENDER` & `RESOURCES` |
 | `RAWRBOX.WEBM`       | WEBM lib                                           | Handles webm loading                                                                       | `RENDER` & `RESOURCES` |
 | `RAWRBOX.SCRIPTING`  | Scripting lib                                      | Handles lua & mod loading                                                                  |   `ENGINE` & `MATH`    |
+| `RAWRBOX.NETWORK`    | Networking lib                                     | Handles networking                                                                         |                        |
 
 <br/><br/>
 
@@ -89,13 +90,13 @@
 | `RAWRBOX_USE_WAYLAND`                        | Enables WAYLAND compiling on LINUX                                                                 |
 | --                                           | --                                                                                                 |
 | `RAWRBOX_ENABLE_QHULL`                       | Enables QHull util                                                                                 |
-| `RAWRBOX_ENABLE_HTTP_REQUEST`                | Enables HTTP / HTTPS requests util                                                                 |
 | --                                           | --                                                                                                 |
 | `RAWRBOX_BUILD_SAMPLES`                      | Builds the project sample                                                                          |
 | `RAWRBOX_BUILD_RAWRBOX_UI`                   | Builds and includes ui                                                                             |
 | `RAWRBOX_BUILD_RAWRBOX_RESOURCES`            | Builds and resouces manager (aka handling and storing loaded resources)                            |
 | `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`           | Builds the 3D physics engine                                                                       |
 | `RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS`           | Builds the 2D physics engine                                                                       |
+| `RAWRBOX_BUILD_RAWRBOX_NETWORK`              | Builds network support                                                                             |
 | `RAWRBOX_BUILD_RAWRBOX_BASS`                 | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
 | `RAWRBOX_BUILD_RAWRBOX_ASSIMP`               | Enables assimp model loading                                                                       |
 | `RAWRBOX_BUILD_RAWRBOX_WEBM`                 | Enables WEBM loading                                                                               |
@@ -107,27 +108,27 @@
 
 # DEPENCENDIES
 
-| LIB                 | REQUIRED | NOTE                                                |
-| :------------------ | :------: | :-------------------------------------------------- |
-| bgfx                |    ✔️    |                                                     |
-| bx                  |    ✔️    | Required by `bgfx`                                  |
-| glfw                |    ✔️    |                                                     |
-| nlohmann_json       |    ✔️    | Used for loading JSON files                         |
-| fmt                 |    ✔️    | Used for formatting                                 |
-| utfcpp              |    ✔️    | Used for text rendering                             |
-| stb/image           |    ✔️    | Used for loading images                             |
-| stb/image_write     |    ✔️    | Used for writting images                            |
-| stb/freetype        |    ✔️    | Used for loading fonts                              |
-| thread-pool         |    ✔️    | Used for managing async threading                   |
-| qhull               |    ✖️    | Used for calculating convex hulls from given points |
-| assimp              |    ✖️    | Used for loading models                             |
-| catch2              |    ✖️    | Used for testing                                    |
-| bass                |    ✖️    | Used for loading sounds                             |
-| JoltPhysics         |    ✖️    | Used for managing 3D physics                        |
-| muli                |    ✖️    | Used for managing 2D physics                        |
-| webmlib & vpx       |    ✖️    | Used for loading webm                               |
-| lua & sol2 & luajit |    ✖️    | Used for loading & managing lua scripting           |
-| curl + libcpr       |    ✖️    | Used for HTTP / HTTPS requests                      |
+| LIB                 | NOTE                                                |
+| :------------------ | :-------------------------------------------------- |
+| bgfx                |                                                     |
+| bx                  | Required by `bgfx`                                  |
+| glfw                |                                                     |
+| nlohmann_json       | Used for loading JSON files                         |
+| fmt                 | Used for formatting                                 |
+| utfcpp              | Used for text rendering                             |
+| stb/image           | Used for loading images                             |
+| stb/image_write     | Used for writting images                            |
+| stb/freetype        | Used for loading fonts                              |
+| thread-pool         | Used for managing async threading                   |
+| qhull               | Used for calculating convex hulls from given points |
+| assimp              | Used for loading models                             |
+| catch2              | Used for testing                                    |
+| bass                | Used for loading sounds                             |
+| JoltPhysics         | Used for managing 3D physics                        |
+| muli                | Used for managing 2D physics                        |
+| webmlib & vpx       | Used for loading webm                               |
+| lua & sol2 & luajit | Used for loading & managing lua scripting           |
+| curl + libcpr       | Used for HTTP / HTTPS requests                      |
 
 # BUILDING
 

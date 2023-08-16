@@ -1,6 +1,6 @@
 
 #include <rawrbox/resources/manager.hpp>
-#include <rawrbox/resources/scripting/resources_wrapper.hpp>
+#include <rawrbox/resources/scripting/wrappers/resources_wrapper.hpp>
 #include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {

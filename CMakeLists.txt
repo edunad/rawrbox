@@ -36,6 +36,7 @@ option(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS "Build 2D physics support" ON)
 option(RAWRBOX_BUILD_RAWRBOX_BASS "Build bass & add sound loading support" ON)
 option(RAWRBOX_BUILD_RAWRBOX_ASSIMP "Build assimp & add model loading support" ON)
 option(RAWRBOX_BUILD_RAWRBOX_WEBM "Build libwebm & add video loading support" ON)
+option(RAWRBOX_BUILD_RAWRBOX_NETWORK "Build network support" ON)
 
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING "Build lua & mod support" ON)
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT "Enable scripting LuaJIT support" ON)
@@ -52,7 +53,6 @@ if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
 endif()
 
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
-option(RAWRBOX_ENABLE_HTTP_REQUEST "Include HTTP requests on utils" ON)
 # -----
 
 # OTHER SETTINGS ----
@@ -137,6 +137,11 @@ add_subdirectory("engine")
 if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     message(STATUS "Enabled RESOURCES support")
     add_subdirectory("resources")
+endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
+    message(STATUS "Enabled NETWORK support")
+    add_subdirectory("network")
 endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)

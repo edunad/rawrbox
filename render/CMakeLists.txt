@@ -1,5 +1,6 @@
 project("RAWRBOX.RENDER" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - Render lib" LANGUAGES CXX)
 set(output_target RAWRBOX.RENDER)
+# --------------
 
 # Packages ----
 CPMAddPackage(
@@ -84,21 +85,14 @@ endif()
 add_shaders_directory(./shaders RAWRBOX_SHADERS_TARGET_NAME)
 message(STATUS "SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
 # ------------------
-
-# Copy content - RENDER
-add_custom_target(
-    copy_resources_render ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/${RAWRBOX_CONTENT_FOLDER}
-                                      ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
-    COMMENT "Copying RENDERER resources into binary directory")
-# ------------------
-
-if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-    set(RAWRBOX_RENDER_DEPS copy_resources_lua)
-endif()
-
 # Project setup
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RENDER_SOURCES})
-add_dependencies(${output_target} copy_resources_render ${RAWRBOX_RENDER_DEPS})
+
+copy_resources(TARGET ${output_target})
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    copy_lua_libs(TARGET ${output_target})
+endif()
+
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_RENDER)
 target_include_directories(${output_target} PUBLIC "include")

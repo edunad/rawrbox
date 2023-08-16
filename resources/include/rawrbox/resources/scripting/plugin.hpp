@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrbox/resources/scripting/resources_wrapper.hpp>
+#include <rawrbox/resources/scripting/wrappers/resources_wrapper.hpp>
 #include <rawrbox/scripting/plugin.hpp>
 
 namespace rawrbox {
