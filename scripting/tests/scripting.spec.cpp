@@ -5,26 +5,26 @@
 #include <string>
 
 TEST_CASE("Scripting should behave as expected", "[rawrbox::Scripting]") {
-	std::unique_ptr<rawrbox::Scripting> script = std::make_unique<rawrbox::Scripting>();
-
 	SECTION("rawrbox::Scripting::init") {
-		REQUIRE(script->getMods().empty() == true);
-		REQUIRE(script->getModsIds().empty() == true);
+		REQUIRE_NOTHROW(rawrbox::SCRIPTING::init());
 
-		REQUIRE(static_cast<bool>(script->getLua().script("return true")) == true);
+		REQUIRE(rawrbox::SCRIPTING::getMods().empty() == true);
+		REQUIRE(rawrbox::SCRIPTING::getModsIds().empty() == true);
 
-		REQUIRE(script->isLuaFileMounted("./test.lua") == false);
+		REQUIRE(static_cast<bool>(rawrbox::SCRIPTING::getLUA().script("return true")) == true);
 
-		REQUIRE_NOTHROW(script->getLua().script("local t = Vector2:new(23, 43)"));
-		REQUIRE_NOTHROW(script->getLua().script("local t = Vector3:new(23, 43, 53)"));
-		REQUIRE_NOTHROW(script->getLua().script("local t = Vector4:new(23, 43, 53, 12)"));
-		REQUIRE_NOTHROW(script->getLua().script("local t = Color:new(255, 0, 0, 255)"));
-		REQUIRE_NOTHROW(script->getLua().script("local t = Matrix:new()"));
+		REQUIRE(rawrbox::SCRIPTING::isLuaFileMounted("./test.lua") == false);
 
-		REQUIRE_THROWS(script->getLua().script("local t = Vector6:new(23, 43)"));
+		REQUIRE_NOTHROW(rawrbox::SCRIPTING::getLUA().script("local t = Vector2:new(23, 43)"));
+		REQUIRE_NOTHROW(rawrbox::SCRIPTING::getLUA().script("local t = Vector3:new(23, 43, 53)"));
+		REQUIRE_NOTHROW(rawrbox::SCRIPTING::getLUA().script("local t = Vector4:new(23, 43, 53, 12)"));
+		REQUIRE_NOTHROW(rawrbox::SCRIPTING::getLUA().script("local t = Color:new(255, 0, 0, 255)"));
+		REQUIRE_NOTHROW(rawrbox::SCRIPTING::getLUA().script("local t = Matrix:new()"));
+
+		REQUIRE_THROWS(rawrbox::SCRIPTING::getLUA().script("local t = Vector6:new(23, 43)"));
 	}
 
 	SECTION("rawrbox::Scripting::load") {
-		REQUIRE_THROWS(script->load());
+		REQUIRE_THROWS(rawrbox::SCRIPTING::load());
 	}
 }

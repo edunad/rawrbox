@@ -25,24 +25,26 @@
 
 # FEATURES (so far)
 
-- Model loading (animations, light, texture import) using assimp
+- Model loading (animations, light, texture import) using [assimp](https://github.com/assimp/assimp)
 - Light support (point, spot, directional)
-- Clustered rendering
+- Clustered rendering & support for other type of rendering
 - 3D text
 - 2D stencil drawing
-- Fonts
-- Images (png, jpeg, tga, bitmap)
-- Video (webm)
-- Sounds (using BASS lib)
+- Fonts (ttf) using [stb](https://github.com/nothings/stb)
+- JSON loading using [nlohmann json](https://github.com/nlohmann/json)
+- Images (png, jpeg, tga, bitmap, gif) using [stb](https://github.com/nothings/stb)
+- Video ([webm](https://github.com/webmproject/libwebm))
+- Sounds (using [BASS](https://www.un4seen.com/) lib)
 - Custom UI
 - Material system (similar to unity)
-- GIF loading & animation
-- Vulkan / DirectX / OpenGL support
+- Vulkan / DirectX / OpenGL support using [BGFX](https://github.com/bkaradzic/bgfx)
 - Linux Wayland support + steam deck support
 - 3D Physics system using [JoltPhysics](https://github.com/jrouwe/JoltPhysics)
 - 2D Physics system using [Muli](https://github.com/Sopiro/Muli)
 - Decal system
-- Scripting / modding support with LUA
+- Scripting / modding support with LUA using [sol2](https://github.com/ThePhD/sol2) and [luajit2](https://github.com/openresty/luajit2)
+- Post-processing effects support
+- HTTP / HTTPS requests using curl + [libcpr](https://github.com/libcpr/cpr)
 
 # TODO LIST
 
@@ -79,7 +81,7 @@
 
 | OPTION NAME                                  | NOTE                                                                                               |
 | :------------------------------------------- | :------------------------------------------------------------------------------------------------- |
-| `BUILD_TESTING`                              | Builds & enables project tests                                                                     |
+| `RAWRBOX_BUILD_TESTING`                      | Builds & enables project tests                                                                     |
 | --                                           | --                                                                                                 |
 | `RAWRBOX_OUTPUT_BIN`                         | The output build folder. Default is `bin`                                                          |
 | `RAWRBOX_CONTENT_FOLDER`                     | The content folder to output resources. Default is `content`                                       |
@@ -87,6 +89,7 @@
 | `RAWRBOX_USE_WAYLAND`                        | Enables WAYLAND compiling on LINUX                                                                 |
 | --                                           | --                                                                                                 |
 | `RAWRBOX_ENABLE_QHULL`                       | Enables QHull util                                                                                 |
+| `RAWRBOX_ENABLE_HTTP_REQUEST`                | Enables HTTP / HTTPS requests util                                                                 |
 | --                                           | --                                                                                                 |
 | `RAWRBOX_BUILD_SAMPLES`                      | Builds the project sample                                                                          |
 | `RAWRBOX_BUILD_RAWRBOX_UI`                   | Builds and includes ui                                                                             |
@@ -124,6 +127,7 @@
 | muli                |    ✖️    | Used for managing 2D physics                        |
 | webmlib & vpx       |    ✖️    | Used for loading webm                               |
 | lua & sol2 & luajit |    ✖️    | Used for loading & managing lua scripting           |
+| curl + libcpr       |    ✖️    | Used for HTTP / HTTPS requests                      |
 
 # BUILDING
 
@@ -160,7 +164,7 @@
 
 ### 001-stencil
 
-<a href='/samples/001-stencil'><img src="https://i.rawr.dev/ycW6AgfHss-min.gif" width=512 /></a>
+<a href='/samples/001-stencil'><img src="https://i.rawr.dev/Pu8XDzsdXt-min.gif" width=512 /></a>
 
 ### 002-generated-models
 
@@ -192,7 +196,7 @@
 
 ### 009-physics
 
-<a href='/samples/009-physics'><img src="https://i.rawr.dev/Ir57QELn6F-min3.gif" width=512 /></a>
+<a href='/samples/009-physics-3d'><img src="https://i.rawr.dev/Ir57QELn6F-min3.gif" width=512 /></a>
 
 ### 010-instancing
 

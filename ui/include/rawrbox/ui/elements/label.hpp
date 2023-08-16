@@ -8,8 +8,8 @@
 
 namespace rawrbox {
 	class UILabel : public rawrbox::UIContainer {
-		rawrbox::Color _color = rawrbox::Colors::White;
-		rawrbox::Color _shadowColor = rawrbox::Colors::Transparent;
+		rawrbox::Color _color = rawrbox::Colors::White();
+		rawrbox::Color _shadowColor = rawrbox::Colors::Transparent();
 
 		// RESOURCES ---
 		rawrbox::Font* _font = nullptr;

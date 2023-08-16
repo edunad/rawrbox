@@ -2,10 +2,20 @@
 
 #include <rawrbox/render/materials/base.hpp>
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/render/scripting/wrappers/model/base_wrapper.hpp>
+	#include <rawrbox/scripting/scripting.hpp>
+	#include <sol/sol.hpp>
+#endif
+
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
+#ifdef RAWRBOX_SCRIPTING
+	class ModelBase : public std::enable_shared_from_this<rawrbox::ModelBase<M>> {
+#else
 	class ModelBase {
+#endif
 
 	protected:
 		bgfx::DynamicVertexBufferHandle _vbdh = BGFX_INVALID_HANDLE; // Vertices - Dynamic
@@ -21,8 +31,19 @@ namespace rawrbox {
 		bool _isDynamic = false;
 		// ----
 
+#ifdef RAWRBOX_SCRIPTING
+		sol::object _luaWrapper;
+
+		virtual void initializeLua() {
+			if (!SCRIPTING::initialized) return;
+
+			auto ptr = std::dynamic_pointer_cast<rawrbox::ModelBase<>>(this->shared_from_this());
+			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelBaseWrapper(ptr));
+		}
+#endif
+
 		virtual void updateBuffers() {
-			if (!this->isDynamicBuffer() || !this->isUploaded()) return;
+			if (!this->isDynamic() || !this->isUploaded()) return;
 
 			const bgfx::Memory* vertMem = bgfx::makeRef(this->_mesh->vertices.data(), static_cast<uint32_t>(this->_mesh->vertices.size()) * M::vLayout().getStride());
 			const bgfx::Memory* indexMem = bgfx::makeRef(this->_mesh->indices.data(), static_cast<uint32_t>(this->_mesh->indices.size()) * sizeof(uint16_t));
@@ -45,6 +66,10 @@ namespace rawrbox {
 			RAWRBOX_DESTROY(this->_ibdh);
 
 			this->_mesh.reset();
+
+#ifdef RAWRBOX_SCRIPTING
+			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
+#endif
 		}
 
 		// UTIL ---
@@ -71,12 +96,12 @@ namespace rawrbox {
 			return this->_mesh->matrix;
 		}
 
-		[[nodiscard]] virtual bool isDynamicBuffer() const {
+		[[nodiscard]] virtual bool isDynamic() const {
 			return this->_isDynamic;
 		}
 
 		[[nodiscard]] virtual bool isUploaded() const {
-			if (this->isDynamicBuffer()) return bgfx::isValid(this->_ibdh) && bgfx::isValid(this->_vbdh);
+			if (this->isDynamic()) return bgfx::isValid(this->_ibdh) && bgfx::isValid(this->_vbdh);
 			return bgfx::isValid(this->_ibh) && bgfx::isValid(this->_vbh);
 		}
 
@@ -114,5 +139,12 @@ namespace rawrbox {
 		virtual void draw() {
 			if (!this->isUploaded()) throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not uploaded");
 		}
+
+#ifdef RAWRBOX_SCRIPTING
+		virtual sol::object& getScriptingWrapper() {
+			if (!this->_luaWrapper.valid()) this->initializeLua();
+			return this->_luaWrapper;
+		}
+#endif
 	};
 } // namespace rawrbox

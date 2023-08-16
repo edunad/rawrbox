@@ -4,13 +4,16 @@
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/light/types.hpp>
-#include <rawrbox/render/model/mesh.hpp>
 
 #include <fmt/format.h>
 
 namespace rawrbox {
 
+#ifdef RAWRBOX_SCRIPTING
+	class LightBase : public std::enable_shared_from_this<rawrbox::LightBase> {
+#else
 	class LightBase {
+#endif
 	protected:
 		bool _isOn = true;
 		size_t _id = 0;
@@ -19,15 +22,15 @@ namespace rawrbox {
 		rawrbox::Vector3f _offset = {};
 		rawrbox::Vector3f _direction = {};
 
-		rawrbox::Colorf _color = rawrbox::Colors::White;
+		rawrbox::Colorf _color = rawrbox::Colors::White();
 
 		float _radius = 5.F;
 
 	public:
 		LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius);
-		LightBase(const LightBase&) = default;
-		LightBase(LightBase&&) = default;
-		LightBase& operator=(const LightBase&) = default;
+		LightBase(const LightBase&) = delete;
+		LightBase(LightBase&&) = delete;
+		LightBase& operator=(const LightBase&) = delete;
 		LightBase& operator=(LightBase&&) = delete;
 		virtual ~LightBase() = default;
 

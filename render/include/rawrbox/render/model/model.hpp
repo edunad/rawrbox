@@ -10,6 +10,11 @@
 
 #define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/render/scripting/wrappers/model/model_wrapper.hpp>
+	#include <sol/sol.hpp>
+#endif
+
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialBase>
@@ -206,6 +211,15 @@ namespace rawrbox {
 			}
 		}
 
+#ifdef RAWRBOX_SCRIPTING
+		void initializeLua() override {
+			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
+
+			auto ptr = std::dynamic_pointer_cast<rawrbox::ModelBase<>>(this->shared_from_this());
+			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelWrapper(ptr));
+		}
+#endif
+
 	public:
 		Model() = default;
 		Model(const Model&) = delete;
@@ -350,14 +364,14 @@ namespace rawrbox {
 				++it2;
 			}
 
-			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
+			if (this->isUploaded() && this->isDynamic()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 		}
 
 		virtual void removeMesh(size_t index) {
 			if (index >= this->_meshes.size()) return;
 			this->_meshes.erase(this->_meshes.begin() + index);
 
-			if (this->isUploaded() && this->isDynamicBuffer()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
+			if (this->isUploaded() && this->isDynamic()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 		}
 
 		virtual rawrbox::Mesh* addMesh(rawrbox::Mesh mesh) {
@@ -365,7 +379,7 @@ namespace rawrbox {
 			mesh.owner = this;
 
 			auto& a = this->_meshes.emplace_back(std::make_unique<rawrbox::Mesh>(mesh));
-			if (this->isUploaded() && this->isDynamicBuffer()) {
+			if (this->isUploaded() && this->isDynamic()) {
 				this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
 			}
 
@@ -451,7 +465,7 @@ namespace rawrbox {
 				this->animate(*mesh);
 				// ---
 
-				if (this->isDynamicBuffer()) {
+				if (this->isDynamic()) {
 					bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
 					bgfx::setIndexBuffer(this->_ibdh, mesh->baseIndex, mesh->totalIndex);
 				} else {

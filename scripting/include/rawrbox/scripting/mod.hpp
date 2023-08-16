@@ -14,8 +14,6 @@ namespace rawrbox {
 		sol::environment _environment;
 		sol::table _modTable;
 
-		rawrbox::Scripting* _scripting = nullptr;
-
 		std::filesystem::path _folder;
 		std::string _id;
 
@@ -29,7 +27,7 @@ namespace rawrbox {
 		Mod& operator=(Mod&&) = delete;
 		virtual ~Mod();
 
-		virtual void init(Scripting& scripting_);
+		virtual void init();
 		virtual bool load();
 		virtual void preLoad();
 
@@ -38,7 +36,6 @@ namespace rawrbox {
 		[[nodiscard]] virtual const std::string getEntryFilePath() const;
 		[[nodiscard]] virtual const std::filesystem::path& getFolder() const;
 
-		[[nodiscard]] virtual const rawrbox::Scripting& getScripting() const;
 		virtual sol::environment& getEnvironment();
 		// -----
 

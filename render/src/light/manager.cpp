@@ -5,7 +5,7 @@
 
 namespace rawrbox {
 	// PRIVATE ----
-	std::vector<std::unique_ptr<rawrbox::LightBase>> LIGHTS::_lights = {};
+	std::vector<std::shared_ptr<rawrbox::LightBase>> LIGHTS::_lights = {};
 
 	bgfx::DynamicVertexBufferHandle LIGHTS::_buffer = BGFX_INVALID_HANDLE;
 	bgfx::UniformHandle LIGHTS::_u_lightSettings = BGFX_INVALID_HANDLE;
@@ -21,7 +21,7 @@ namespace rawrbox {
 	rawrbox::Colorf LIGHTS::_ambient = {0.01F, 0.01F, 0.01F, 1.F};
 
 	// Sun --
-	rawrbox::Colorf LIGHTS::_sun_color = rawrbox::Colors::Transparent; // No sun by default
+	rawrbox::Colorf LIGHTS::_sun_color = rawrbox::Colors::Transparent(); // No sun by default
 	rawrbox::Vector3f LIGHTS::_sun_direction = {0, 0, 0};
 
 	// Fog --

@@ -28,7 +28,6 @@ namespace rawrbox {
 
 	constexpr auto MAX_BONES_PER_VERTEX = 4;
 	constexpr auto MAX_BONES_PER_MODEL = 200;
-	constexpr auto MAX_LIGHTS = 1000;
 
 	extern bool BGFX_INITIALIZED;
 

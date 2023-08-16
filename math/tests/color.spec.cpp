@@ -16,7 +16,7 @@ TEST_CASE("Color should behave as expected", "[rawrbox::Color]") {
 	}
 
 	SECTION("rawrbox::Colors") {
-		auto red = rawrbox::Colors::Red;
+		auto red = rawrbox::Colors::Red();
 
 		REQUIRE(red.r == 1.F);
 		REQUIRE(red.g == 0.32F);
@@ -25,7 +25,7 @@ TEST_CASE("Color should behave as expected", "[rawrbox::Color]") {
 	}
 
 	SECTION("rawrbox::Color::cast") {
-		auto red = rawrbox::Colors::Red.cast<int>();
+		auto red = rawrbox::Colors::Red().cast<int>();
 		rawrbox::Colori col = rawrbox::Colori{255, 255, 0, 255};
 		auto clCast = col.cast<float>();
 

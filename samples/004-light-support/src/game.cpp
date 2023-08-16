@@ -86,7 +86,7 @@ namespace light {
 
 		// Setup
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane({2.5F, 0.F, 0}, {3.F, 3.F}, rawrbox::Colors::White);
+			auto mesh = rawrbox::MeshUtils::generatePlane({2.5F, 0.F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
 			mesh.setSpecularTexture(texSpec, 25.F);
 			mesh.setEulerAngle({bx::toRad(90), 0, 0});
@@ -94,7 +94,7 @@ namespace light {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane({-2.5F, 0.F, 0}, {3.F, 3.F}, rawrbox::Colors::White);
+			auto mesh = rawrbox::MeshUtils::generatePlane({-2.5F, 0.F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
 			mesh.setSpecularTexture(texSpec, 25.F);
 			mesh.setEulerAngle({bx::toRad(90), 0, 0});
@@ -112,8 +112,8 @@ namespace light {
 		this->_text->addText(*this->_font, "SPOT LIGHT", {-2.5F, 0.5F, 0});
 		// ------
 
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{2.5F, 0.F, 0}, rawrbox::Colors::Blue, 6.2F);
-		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{-2.5F, 0.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Red, 0.602F, 0.708F, 100.F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{2.5F, 0.F, 0}, rawrbox::Colors::Blue(), 6.2F);
+		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{-2.5F, 0.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Red(), 0.602F, 0.708F, 100.F);
 
 		this->_model->upload();
 		this->_text->upload();

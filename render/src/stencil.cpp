@@ -74,7 +74,7 @@ namespace rawrbox {
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
 
-		this->_pixelTexture = std::make_unique<rawrbox::TextureFlat>(rawrbox::Vector2i(1, 1), Colors::White);
+		this->_pixelTexture = std::make_unique<rawrbox::TextureFlat>(rawrbox::Vector2i(1, 1), Colors::White());
 		this->_pixelTexture->upload();
 	}
 
@@ -145,7 +145,7 @@ namespace rawrbox {
 	// --------------------
 
 	// ------UTILS
-	void Stencil::drawPolygon(rawrbox::Polygon poly) {
+	void Stencil::drawPolygon(const rawrbox::Polygon& poly) {
 		// Setup --------
 		bgfx::TextureHandle handl = BGFX_INVALID_HANDLE;
 		if (this->_pixelTexture != nullptr) handl = this->_pixelTexture->getHandle();

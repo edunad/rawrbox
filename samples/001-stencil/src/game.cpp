@@ -128,11 +128,11 @@ namespace stencil {
 		// Box + clipping --
 		stencil.pushRotation({this->_counter * 50.5F, {50, 50}});
 		stencil.pushClipping({-20, -20, 50, 140});
-		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Green);
+		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Green());
 		stencil.popClipping();
 
 		stencil.pushClipping({50, -20, 50, 140});
-		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Red);
+		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Red());
 		stencil.popClipping();
 		stencil.popRotation();
 		// --
@@ -140,7 +140,7 @@ namespace stencil {
 		// Inverted box ---
 		stencil.pushOffset({100, 0});
 		stencil.pushScale({1.F, -1.F});
-		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Red);
+		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Red());
 		stencil.popScale();
 		stencil.popOffset();
 		// ---
@@ -148,63 +148,63 @@ namespace stencil {
 		// Outline box ---
 		stencil.pushOffset({200, 0});
 		stencil.pushOutline({1.F, 2.F});
-		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Purple);
+		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Purple());
 		stencil.popOutline();
 
 		stencil.pushOutline({2.F});
-		stencil.drawBox({25, 25}, {50, 50}, rawrbox::Colors::Purple);
+		stencil.drawBox({25, 25}, {50, 50}, rawrbox::Colors::Purple());
 		stencil.popOutline();
 		stencil.popOffset();
 		// ---
 
 		// Triangle ---
 		stencil.pushOffset({300, 0});
-		stencil.drawTriangle({0, 0}, {0, 0}, rawrbox::Colors::Blue, {0, 100}, {0, 1}, rawrbox::Colors::Blue, {100, 0}, {0, 1}, rawrbox::Colors::Blue);
+		stencil.drawTriangle({0, 0}, {0, 0}, rawrbox::Colors::Blue(), {0, 100}, {0, 1}, rawrbox::Colors::Blue(), {100, 0}, {0, 1}, rawrbox::Colors::Blue());
 		stencil.popOffset();
 		// ---
 
 		// Outline triangle ---
 		stencil.pushOffset({400, 0});
 		stencil.pushOutline({2.F});
-		stencil.drawTriangle({15, 15}, {0, 0}, rawrbox::Colors::Blue, {15, 65}, {0, 1}, rawrbox::Colors::Blue, {65, 15}, {0, 1}, rawrbox::Colors::Blue);
+		stencil.drawTriangle({15, 15}, {0, 0}, rawrbox::Colors::Blue(), {15, 65}, {0, 1}, rawrbox::Colors::Blue(), {65, 15}, {0, 1}, rawrbox::Colors::Blue());
 		stencil.popOutline();
 
 		stencil.pushOutline({1.F, 1.F});
-		stencil.drawTriangle({0, 0}, {0, 0}, rawrbox::Colors::Blue, {0, 100}, {0, 1}, rawrbox::Colors::Blue, {100, 0}, {0, 1}, rawrbox::Colors::Blue);
+		stencil.drawTriangle({0, 0}, {0, 0}, rawrbox::Colors::Blue(), {0, 100}, {0, 1}, rawrbox::Colors::Blue(), {100, 0}, {0, 1}, rawrbox::Colors::Blue());
 		stencil.popOutline();
 		stencil.popOffset();
 		// ---
 
 		// Circle ---
 		stencil.pushOffset({500, 0});
-		stencil.drawCircle({0, 0}, {100, 100}, rawrbox::Colors::Orange, 16, 0, std::fmod(this->_counter * 50.5F, 360.F));
+		stencil.drawCircle({0, 0}, {100, 100}, rawrbox::Colors::Orange(), 16, 0, std::fmod(this->_counter * 50.5F, 360.F));
 		stencil.popOffset();
 		// ---
 
 		// Outline circle ---
 		stencil.pushOffset({600, 0});
 		stencil.pushOutline({1.F, 0.25F});
-		stencil.drawCircle({0, 0}, {100, 100}, rawrbox::Colors::Red, 16, 0.F, std::fmod(this->_counter * 50.5F, 360.F));
+		stencil.drawCircle({0, 0}, {100, 100}, rawrbox::Colors::Red(), 16, 0.F, std::fmod(this->_counter * 50.5F, 360.F));
 		stencil.popOutline();
 
 		stencil.pushOutline({2.F});
-		stencil.drawCircle({25, 25}, {50, 50}, rawrbox::Colors::Red, 32, 0.F, std::fmod(this->_counter * 50.5F, 360.F));
+		stencil.drawCircle({25, 25}, {50, 50}, rawrbox::Colors::Red(), 32, 0.F, std::fmod(this->_counter * 50.5F, 360.F));
 		stencil.popOutline();
 		stencil.popOffset();
 		// ---
 
 		// Line ---
 		stencil.pushOffset({700, 0});
-		stencil.drawLine({0, 0}, {100, 100}, rawrbox::Colors::Red);
+		stencil.drawLine({0, 0}, {100, 100}, rawrbox::Colors::Red());
 		// ---
 
 		// Outline line ---
 		stencil.pushOutline({1.F, 2.F});
-		stencil.drawLine({100, 0}, {0, 100}, rawrbox::Colors::Blue);
+		stencil.drawLine({100, 0}, {0, 100}, rawrbox::Colors::Blue());
 		stencil.popOutline();
 
 		stencil.pushOutline({3.F, 2.F});
-		stencil.drawLine({50, 0}, {50, 100}, rawrbox::Colors::Purple);
+		stencil.drawLine({50, 0}, {50, 100}, rawrbox::Colors::Purple());
 		stencil.popOutline();
 		stencil.popOffset();
 		// ---
@@ -222,10 +222,10 @@ namespace stencil {
 		// POLYGON ---
 		rawrbox::Polygon poly;
 		poly.verts = {
-		    {{0, 0}, {0, 0}, rawrbox::Colors::White},
-		    {{0, 100}, {1, 0}, rawrbox::Colors::White},
-		    {{100, 0}, {0, 1}, rawrbox::Colors::White},
-		    {{80, 80}, {1, 1}, rawrbox::Colors::White}};
+		    {{0, 0}, {0, 0}, rawrbox::Colors::White()},
+		    {{0, 100}, {1, 0}, rawrbox::Colors::White()},
+		    {{100, 0}, {0, 1}, rawrbox::Colors::White()},
+		    {{80, 80}, {1, 1}, rawrbox::Colors::White()}};
 		poly.indices = {0, 1, 2,
 		    1, 3, 2};
 
@@ -243,8 +243,8 @@ namespace stencil {
 
 		// Z-INDEX TEST ---
 		stencil.pushOffset({270, 260});
-		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Purple);
-		stencil.drawBox({25, 25}, {50, 50}, rawrbox::Colors::Red);
+		stencil.drawBox({0, 0}, {100, 100}, rawrbox::Colors::Purple());
+		stencil.drawBox({25, 25}, {50, 50}, rawrbox::Colors::Red());
 		stencil.popOffset();
 		// -----
 

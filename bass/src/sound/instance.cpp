@@ -7,6 +7,10 @@
 #include <bass_fx.h>
 #include <fmt/printf.h>
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/scripting/scripting.hpp>
+#endif
+
 namespace rawrbox {
 	SoundInstance::SoundInstance(uint32_t audioSample, bool isStream, uint32_t flags) : _sample(audioSample), _flags(flags), _stream(isStream) {
 		rawrbox::BASS::onBEAT.add(std::to_string(this->_sample), [this](std::pair<uint32_t, double> data) {
@@ -34,7 +38,23 @@ namespace rawrbox {
 		// CLEANUP CALLBACKS
 		rawrbox::BASS::onBEAT.remove(std::to_string(this->_sample));
 		rawrbox::BASS::onSoundEnd.remove(std::to_string(this->_sample));
+
+#ifdef RAWRBOX_SCRIPTING
+		if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
+#endif
 	}
+
+#ifdef RAWRBOX_SCRIPTING
+	void SoundInstance::initializeLua() {
+		if (!SCRIPTING::initialized) return;
+		// this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::LightBaseWrapper(this));
+	}
+
+	sol::object& SoundInstance::getScriptingWrapper() {
+		if (!this->_luaWrapper.valid()) this->initializeLua();
+		return this->_luaWrapper;
+	}
+#endif
 
 	uint32_t SoundInstance::getNextAvailableChannel() const {
 		if (!isValid()) return 0;
@@ -106,7 +126,7 @@ namespace rawrbox {
 		if (!this->isCreated()) return 0.;
 
 		QWORD pos = BASS_ChannelGetPosition(this->_channel, BASS_POS_BYTE);
-		return pos != -1 ? BASS_ChannelBytes2Seconds(this->_channel, pos) : 0.;
+		return pos != -1. ? BASS_ChannelBytes2Seconds(this->_channel, pos) : 0.;
 	}
 
 	bool SoundInstance::isLooping() const {

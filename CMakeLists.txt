@@ -24,7 +24,7 @@ list(PREPEND CONAN_GENERATORS_FOLDER ${CMAKE_BINARY_DIR})
 # ---
 
 # OPTIONS ---
-option(BUILD_TESTING "Build tests" ON)
+option(RAWRBOX_BUILD_TESTING "Build tests" ON)
 option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 
 option(RAWRBOX_BUILD_SAMPLES "Build samples" ON)
@@ -52,6 +52,7 @@ if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
 endif()
 
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
+option(RAWRBOX_ENABLE_HTTP_REQUEST "Include HTTP requests on utils" ON)
 # -----
 
 # OTHER SETTINGS ----
@@ -97,11 +98,7 @@ set(CMAKE_SKIP_RPATH TRUE)
 set(CMAKE_SKIP_BUILD_RPATH TRUE)
 # ---------------------------------
 
-# SETUP CCACHE ---
-CPMAddPackage("gh:TheLartians/Ccache.cmake@1.2.4")
-# --------------
-
-# PACKAGES ------
+# GLOBAL PACKAGES ------
 CPMAddPackage("gh:fmtlib/fmt#10.0.0")
 if(fmt_ADDED)
     set_lib_runtime_mt(fmt)
@@ -114,6 +111,22 @@ endif()
 
 if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
     CPMAddPackage("gl:wayland/weston@12.0.1")
+endif()
+
+CPMAddPackage(
+    NAME
+    nlohmann_json
+    VERSION
+    3.11.2
+    # the git repo is incredibly large, so we download the archived include directory
+    URL
+    https://github.com/nlohmann/json/releases/download/v3.11.2/include.zip
+    URL_HASH
+    SHA256=e5c7a9f49a16814be27e4ed0ee900ecd0092bfb7dbfca65b5a421b774dccaaed)
+
+if(nlohmann_json_ADDED)
+    add_library(nlohmann_json INTERFACE IMPORTED)
+    target_include_directories(nlohmann_json INTERFACE ${nlohmann_json_SOURCE_DIR}/include)
 endif()
 # --------------------
 
@@ -164,6 +177,10 @@ if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
 endif()
 
 if(RAWRBOX_BUILD_SAMPLES)
-    message(STATUS "Enabled SAMPLES building")
-    add_subdirectory("samples")
+    if(NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+        message(WARNING "Samples require RAWRBOX.RESOURCES to be enabled")
+    else()
+        message(STATUS "Enabled SAMPLES building")
+        add_subdirectory("samples")
+    endif()
 endif()

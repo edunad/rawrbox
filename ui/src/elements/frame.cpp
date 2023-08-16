@@ -19,10 +19,10 @@ namespace rawrbox {
 		this->_closeButton->setSize({30, this->_titleSize - 1});
 		this->_closeButton->setPos({size.x - 30, -this->_titleSize});
 		this->_closeButton->setTextureSize({8, 8});
-		this->_closeButton->setTextureColor(Colors::Black);
+		this->_closeButton->setTextureColor(Colors::Black());
 		this->_closeButton->setEnabled(true);
 		this->_closeButton->setBorder(false);
-		this->_closeButton->setBackgroundColor(Colors::Transparent);
+		this->_closeButton->setBackgroundColor(Colors::Transparent());
 		this->_closeButton->setVisible(this->_closable);
 		this->_closeButton->initialize();
 

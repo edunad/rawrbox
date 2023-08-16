@@ -12,9 +12,9 @@ namespace rawrbox {
 			this->_direction = direction.normalized();
 		};
 
-		SpotLight(const SpotLight&) = default;
+		SpotLight(const SpotLight&) = delete;
 		SpotLight(SpotLight&&) = delete;
-		SpotLight& operator=(const SpotLight&) = default;
+		SpotLight& operator=(const SpotLight&) = delete;
 		SpotLight& operator=(SpotLight&&) = delete;
 		~SpotLight() override = default;
 

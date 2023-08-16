@@ -30,9 +30,9 @@ TEST_CASE("Mesh should behave as expected", "[rawrbox::Mesh]") {
 	}
 
 	SECTION("rawrbox::Mesh::setColor") {
-		REQUIRE(base.color == rawrbox::Colors::White);
-		base.setColor(rawrbox::Colors::Orange);
-		REQUIRE(base.color == rawrbox::Colors::Orange);
+		REQUIRE(base.color == rawrbox::Colors::White());
+		base.setColor(rawrbox::Colors::Orange());
+		REQUIRE(base.color == rawrbox::Colors::Orange());
 	}
 
 	SECTION("rawrbox::Mesh::getBBOX") {

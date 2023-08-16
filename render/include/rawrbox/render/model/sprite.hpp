@@ -43,7 +43,7 @@ namespace rawrbox {
 
 				this->_material->process(*mesh);
 
-				if (this->isDynamicBuffer()) {
+				if (this->isDynamic()) {
 					bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
 					bgfx::setIndexBuffer(this->_ibdh, mesh->baseIndex, mesh->totalIndex);
 				} else {

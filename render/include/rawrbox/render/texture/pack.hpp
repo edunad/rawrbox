@@ -20,7 +20,7 @@ namespace rawrbox {
 		std::unique_ptr<PackNode> right = nullptr;
 
 		bool canInsertNode(int insertedWidth, int insertedHeight);
-		std::optional<std::reference_wrapper<PackNode>> InsertNode(int width, int height);
+		std::optional<std::reference_wrapper<rawrbox::PackNode>> InsertNode(int width, int height);
 
 		PackNode() = default;
 		PackNode(int _x, int _y, int _w, int _h) : x(_x), y(_y), width(_w), height(_h){};

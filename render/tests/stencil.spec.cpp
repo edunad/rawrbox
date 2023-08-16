@@ -14,7 +14,7 @@ TEST_CASE("Stencil should behave as expected", "[rawrbox::Stencil]") {
 		base.clear();
 
 		REQUIRE(base.getDrawCalls().size() == 0);
-		base.drawTriangle({0, 0}, {0, 0}, rawrbox::Colors::Black, {0, 10}, {0, 1}, rawrbox::Colors::Black, {10, 0}, {1, 0}, rawrbox::Colors::Black);
+		base.drawTriangle({0, 0}, {0, 0}, rawrbox::Colors::Black(), {0, 10}, {0, 1}, rawrbox::Colors::Black(), {10, 0}, {1, 0}, rawrbox::Colors::Black());
 		REQUIRE(base.getDrawCalls().size() == 1);
 		REQUIRE(base.getDrawCalls().front().vertices.size() == 3);
 	}
@@ -23,7 +23,7 @@ TEST_CASE("Stencil should behave as expected", "[rawrbox::Stencil]") {
 		base.clear();
 
 		REQUIRE(base.getDrawCalls().size() == 0);
-		base.drawCircle({0, 0}, {10, 10}, rawrbox::Colors::Black);
+		base.drawCircle({0, 0}, {10, 10}, rawrbox::Colors::Black());
 		REQUIRE(base.getDrawCalls().size() == 1);
 		REQUIRE(base.getDrawCalls().front().vertices.size() == 96);
 	}
@@ -32,7 +32,7 @@ TEST_CASE("Stencil should behave as expected", "[rawrbox::Stencil]") {
 		base.clear();
 
 		REQUIRE(base.getDrawCalls().size() == 0);
-		base.drawLine({0, 0}, {10, 10}, rawrbox::Colors::Black);
+		base.drawLine({0, 0}, {10, 10}, rawrbox::Colors::Black());
 		REQUIRE(base.getDrawCalls().size() == 1);
 		REQUIRE(base.getDrawCalls().front().vertices.size() == 2);
 	}
@@ -43,7 +43,7 @@ TEST_CASE("Stencil should behave as expected", "[rawrbox::Stencil]") {
 		REQUIRE(base.getDrawCalls().size() == 0);
 
 		base.pushOutline({1.F}); // Draw box uses texture, so we need to draw outline instead, since bgfx is not active
-		base.drawBox({0, 0}, {10, 10}, rawrbox::Colors::Black);
+		base.drawBox({0, 0}, {10, 10}, rawrbox::Colors::Black());
 		base.popOutline();
 
 		REQUIRE(base.getDrawCalls().size() == 1);

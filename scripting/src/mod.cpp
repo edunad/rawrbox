@@ -8,19 +8,16 @@
 namespace rawrbox {
 	Mod::Mod(std::string id, std::filesystem::path folderPath) : _folder(std::move(folderPath)), _id(std::move(id)) {}
 	Mod::~Mod() {
-		this->_scripting = nullptr;
 		this->_environment.reset();
 	}
 
-	void Mod::init(rawrbox::Scripting& scripting_) {
-		this->_scripting = &scripting_;
-
-		auto& lua = this->_scripting->getLua();
+	void Mod::init() {
+		auto& lua = rawrbox::SCRIPTING::getLUA();
 		this->_environment = {lua, sol::create, lua.globals()};
 	}
 
 	bool Mod::load() {
-		auto& lua = this->_scripting->getLua();
+		auto& lua = rawrbox::SCRIPTING::getLUA();
 
 		this->_modTable = lua.create_table();
 		this->_environment["MOD"] = this->_modTable;
@@ -28,7 +25,7 @@ namespace rawrbox {
 		// Load init script
 		auto pth = this->getEntryFilePath();
 		if (std::filesystem::exists(pth)) {
-			if (!this->_scripting->loadLuaFile(pth, this->_environment, lua)) {
+			if (!rawrbox::SCRIPTING::loadLuaFile(pth, this->_environment)) {
 				return false;
 			}
 		} else {
@@ -47,7 +44,6 @@ namespace rawrbox {
 	const std::string Mod::getEntryFilePath() const { return fmt::format("{}/init.lua", this->_folder.generic_string()); }
 	const std::filesystem::path& Mod::getFolder() const { return this->_folder; }
 
-	const rawrbox::Scripting& Mod::getScripting() const { return *this->_scripting; }
 	sol::environment& Mod::getEnvironment() { return this->_environment; }
 	// -----
 } // namespace rawrbox

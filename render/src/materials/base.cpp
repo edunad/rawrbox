@@ -36,7 +36,7 @@ namespace rawrbox {
 	}
 
 	void MaterialBase::process(const rawrbox::Mesh& mesh) {
-		if (mesh.texture != nullptr && mesh.texture->valid() && !mesh.lineMode && !mesh.wireframe) {
+		if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.lineMode && !mesh.wireframe) {
 			mesh.texture->update(); // Update texture
 
 			bgfx::setUniform(this->_u_tex_flags, mesh.texture->getData().data());
@@ -45,7 +45,7 @@ namespace rawrbox {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, rawrbox::WHITE_TEXTURE->getHandle());
 		}
 
-		if (mesh.displacementTexture != nullptr && mesh.displacementTexture->valid()) {
+		if (mesh.displacementTexture != nullptr && mesh.displacementTexture->isValid()) {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->_s_displacement, mesh.displacementTexture->getHandle());
 		} else {
 			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->_s_displacement, rawrbox::BLACK_TEXTURE->getHandle());

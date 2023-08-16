@@ -272,10 +272,10 @@ namespace rawrbox {
 			rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
 
 		if (rawrbox::WHITE_TEXTURE == nullptr)
-			rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White);
+			rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White());
 
 		if (rawrbox::BLACK_TEXTURE == nullptr)
-			rawrbox::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black);
+			rawrbox::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black());
 
 		if (rawrbox::NORMAL_TEXTURE == nullptr)
 			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0xbcbcff));
@@ -412,16 +412,6 @@ namespace rawrbox {
 
 		glfwGetCursorPos(GLFWHANDLE, &x, &y);
 		return {static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y))};
-	}
-
-	bool Window::getShouldClose() const {
-		if (this->_handle == nullptr) return false;
-		return glfwWindowShouldClose(GLFWHANDLE);
-	}
-
-	void Window::setShouldClose(bool close) const {
-		if (this->_handle == nullptr) return;
-		glfwSetWindowShouldClose(GLFWHANDLE, close ? 1 : 0);
 	}
 
 	uint32_t Window::getWindowFlags() const { return this->_windowFlags; }

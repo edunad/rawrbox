@@ -7,9 +7,9 @@ namespace rawrbox {
 	public:
 		using rawrbox::LightBase::LightBase;
 
-		PointLight(const PointLight&) = default;
+		PointLight(const PointLight&) = delete;
 		PointLight(PointLight&&) = delete;
-		PointLight& operator=(const PointLight&) = default;
+		PointLight& operator=(const PointLight&) = delete;
 		PointLight& operator=(PointLight&&) = delete;
 		~PointLight() override = default;
 

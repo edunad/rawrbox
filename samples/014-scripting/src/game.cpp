@@ -2,8 +2,11 @@
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render/scripting/plugin.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
+#include <rawrbox/resources/scripting/plugin.hpp>
+#include <rawrbox/scripting/scripting.hpp>
 
 #include <scripting_test/game.hpp>
 #include <scripting_test/wrapper_test.hpp>
@@ -16,7 +19,7 @@ namespace scripting_test {
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("SCRIPTING TEST");
 		this->_window->setRenderer<>(
-		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
+		    bgfx::RendererType::Count, [this]() { this->drawOverlay(); }, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
@@ -35,6 +38,30 @@ namespace scripting_test {
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// ----------
 
+		// Setup scripting
+		rawrbox::SCRIPTING::registerPlugin<rawrbox::RenderPlugin>(this->_window.get());
+		rawrbox::SCRIPTING::registerPlugin<rawrbox::ResourcesPlugin>();
+
+		// Custom non-plugin ---
+		rawrbox::SCRIPTING::registerType<rawrbox::TestWrapper>();
+		rawrbox::SCRIPTING::onRegisterGlobals += [this](rawrbox::Mod* mod) {
+			mod->getEnvironment()["test"] = rawrbox::TestWrapper();
+			mod->getEnvironment()["test_model"] = [this]() -> sol::object {
+				if (this->_model == nullptr) return sol::nil;
+				return this->_model->getScriptingWrapper();
+			};
+		};
+		// ----
+
+		rawrbox::SCRIPTING::init(2000); // Check files every 2 seconds
+
+		// Load lua mods
+		rawrbox::SCRIPTING::load();
+		rawrbox::SCRIPTING::call("init");
+		// -----
+
+		// ----
+
 		// Load content ---
 		this->loadContent();
 		//   -----
@@ -44,41 +71,37 @@ namespace scripting_test {
 		std::array initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("./content/textures/crate_hl1.png", 0)};
 
-		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
-				this->_loadingFiles--;
-				if (this->_loadingFiles <= 0) {
-					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
-				}
-			});
+			rawrbox::RESOURCES::preLoadFile(f.first, f.second);
 		}
 
-		// Setup scripting
-		this->_script = std::make_unique<rawrbox::Scripting>(2000); // Check files every 2 seconds
-		this->_script->registerType<rawrbox::TestWrapper>();
-		this->_script->onRegisterGlobals += [](rawrbox::Mod* mod) {
-			mod->getEnvironment()["test"] = rawrbox::TestWrapper();
-		};
-		// -----
+		// Load pre-content mod stuff ---
+		rawrbox::SCRIPTING::call("load");
+		// ---
 
-		// Load lua mods
-		this->_script->load();
-		this->_script->call("init");
+		// Start loading ----
+		this->_loadingFiles = static_cast<int>(rawrbox::RESOURCES::getTotalPreload());
+		rawrbox::RESOURCES::startPreLoadQueueAsync(nullptr, [this](std::string f, uint32_t) {
+			fmt::print("Loaded {}!\n", f);
+			this->_loadingFiles--;
+			if (this->_loadingFiles <= 0) {
+				rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
+			}
+		});
 		// -----
 
 		this->_window->upload();
 	}
 
 	void Game::contentLoaded() {
-		// auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./content/textures/crate_hl1.png")->get();
+		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->get();
 		this->_model->setOptimizable(false);
 
-		/*{
-			auto mesh = rawrbox::MeshUtils::generatePlane({0.F, 4.0F, 0.F}, {4.F, 3.F});
+		{
+			auto mesh = rawrbox::MeshUtils::generateCube({0.F, 1.0F, 0.F}, {1.F, 1.F, 1.F});
 			mesh.setTexture(tex);
 			this->_model->addMesh(mesh);
-		}*/
+		}
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
@@ -95,6 +118,7 @@ namespace scripting_test {
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
+		rawrbox::SCRIPTING::shutdown();
 
 		this->_model.reset();
 
@@ -110,6 +134,9 @@ namespace scripting_test {
 	void Game::update() {
 		if (this->_window == nullptr) return;
 		this->_window->update();
+
+		if (!this->_ready) return;
+		rawrbox::SCRIPTING::call("update");
 	}
 
 	void Game::printFrames() {
@@ -121,9 +148,17 @@ namespace scripting_test {
 		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
 		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
 	}
+
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 		if (this->_model != nullptr) this->_model->draw();
+	}
+
+	void Game::drawOverlay() {
+		if (!this->_ready) return;
+
+		rawrbox::SCRIPTING::call("drawOverlay");
+		this->_window->getStencil().render();
 	}
 
 	void Game::draw() {

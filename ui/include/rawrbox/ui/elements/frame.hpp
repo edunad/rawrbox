@@ -13,7 +13,7 @@ namespace rawrbox {
 		float _titleSize = 18.F;
 
 		std::string _title;
-		rawrbox::Color _titleColor = rawrbox::Colors::White;
+		rawrbox::Color _titleColor = rawrbox::Colors::White();
 
 		bool _draggable = true;
 		bool _closable = true;

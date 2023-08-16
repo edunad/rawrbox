@@ -2,13 +2,13 @@
 
 include(FindPackageHandleStandardArgs)
 
-if(VPX_VERSION EQUAL 0)
+if(NOT DEFINED VPX_VERSION)
     message(FATAL_ERROR "No VPX version selected, set `VPX_VERSION`")
 else()
     message("Selected VPX Version: ${VPX_VERSION}")
 endif()
 
-if(VPX_MSC_VERSION EQUAL 0)
+if(NOT DEFINED VPX_MSC_VERSION)
     message(STATUS "No MSC version selected, set `VPX_MSC_VERSION` to 17")
     set(VPX_MSC_VERSION 17)
 else()

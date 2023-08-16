@@ -11,6 +11,12 @@
     "isTable",
     "isString",
     "json",
-    "fmt"
+    "fmt",
+    "printTable",
+    "scripting",
+    "stencil",
+    "http",
+    "curtime",
+    "BGFX_FRAME"
   ]
 }

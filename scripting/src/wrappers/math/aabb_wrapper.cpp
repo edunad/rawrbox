@@ -3,20 +3,20 @@
 
 namespace rawrbox {
 	void AABBWrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<rawrbox::AABBf>("AABB",
-		    sol::constructors<rawrbox::AABBf(), rawrbox::AABBf(rawrbox::AABBf), rawrbox::AABBf(float, float, float, float)>(),
+		lua.new_usertype<rawrbox::AABB>("AABB",
+		    sol::constructors<rawrbox::AABB(), rawrbox::AABB(rawrbox::AABB), rawrbox::AABB(float, float, float, float)>(),
 
-		    "top", &AABBf::top,
-		    "left", &AABBf::left,
-		    "bottom", &AABBf::bottom,
-		    "right", &AABBf::right,
+		    "top", &AABB::top,
+		    "left", &AABB::left,
+		    "bottom", &AABB::bottom,
+		    "right", &AABB::right,
 
-		    "empty", &AABBf::empty,
-		    "contains", &AABBf::contains,
+		    "empty", &AABB::empty,
+		    "contains", &AABB::contains,
 
-		    "surfaceArea", &AABBf::surfaceArea,
+		    "surfaceArea", &AABB::surfaceArea,
 
-		    sol::meta_function::equal_to, &rawrbox::AABBf::operator==,
-		    sol::meta_function::multiplication, &rawrbox::AABBf::operator*);
+		    sol::meta_function::equal_to, &rawrbox::AABB::operator==,
+		    sol::meta_function::multiplication, &rawrbox::AABB::operator*);
 	}
 } // namespace rawrbox

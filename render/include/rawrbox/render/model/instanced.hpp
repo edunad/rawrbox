@@ -7,10 +7,10 @@ namespace rawrbox {
 
 	struct Instance {
 		rawrbox::Matrix4x4 matrix = {};
-		rawrbox::Colorf color = rawrbox::Colors::White;
+		rawrbox::Colorf color = rawrbox::Colors::White();
 		rawrbox::Vector4f extraData = {}; // AtlasID, etc..
 
-		Instance(const rawrbox::Matrix4x4& mat, const rawrbox::Colorf& col = rawrbox::Colors::White, rawrbox::Vector4f data = {}) : matrix(mat), color(col), extraData(data) {}
+		Instance(const rawrbox::Matrix4x4& mat, const rawrbox::Colorf& col = rawrbox::Colors::White(), rawrbox::Vector4f data = {}) : matrix(mat), color(col), extraData(data) {}
 
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
@@ -54,7 +54,7 @@ namespace rawrbox {
 			if (mesh.empty()) throw std::runtime_error("[RawrBox-InstancedModel] Invalid mesh! Missing vertices / indices!");
 			this->_mesh = std::make_unique<rawrbox::Mesh>(mesh);
 
-			if (this->isUploaded() && this->isDynamicBuffer()) {
+			if (this->isUploaded() && this->isDynamic()) {
 				this->updateBuffers();
 			}
 		}
@@ -108,7 +108,7 @@ namespace rawrbox {
 			ModelBase<M>::draw();
 			this->_material->process(*this->_mesh); // Set atlas
 
-			if (this->isDynamicBuffer()) {
+			if (this->isDynamic()) {
 				bgfx::setVertexBuffer(0, this->_vbdh);
 				bgfx::setIndexBuffer(this->_ibdh);
 			} else {
