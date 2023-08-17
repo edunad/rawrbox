@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Label PR
+        if: github.ref != 'refs/heads/master'
         uses: actions/labeler@v5.0.0-alpha.1
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
