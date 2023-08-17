@@ -46,8 +46,9 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         id: setup
         run: |
-          mkdir -p build
-          CXX=g++ cmake . -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON"
+          mkdir -p build && cd build
+          CXX=g++ cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON"
+          cd ../
 
       - name: Build
         id: build
