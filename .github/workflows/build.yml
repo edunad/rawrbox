@@ -37,7 +37,9 @@ jobs:
         id: cache
         uses: actions/cache/restore@v3
         with:
-          path: ./build
+          path: |
+            ./build
+            .cache/cpm
           key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt', './scripting/CMakeLists.txt') }}
 
       - name: CMAKE Setup
@@ -57,7 +59,9 @@ jobs:
         env:
           cache-name: cache-build
         with:
-          path: ./build
+          path: |
+            ./build
+            .cache/cpm
           key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt', './scripting/CMakeLists.txt') }}
 
       - name: Run tests
