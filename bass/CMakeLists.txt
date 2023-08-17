@@ -50,9 +50,11 @@ endif()
 # Project setup
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_BASS_SOURCES})
 
-add_dependencies(${output_target} ${RAWRBOX_EXTRA_DEPS})
-copy_resources(TARGET ${output_target})
+if(WIN32)
+    add_dependencies(${output_target} ${RAWRBOX_EXTRA_DEPS})
+endif()
 
+copy_resources(TARGET ${output_target})
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_BASS)
 target_include_directories(${output_target} PUBLIC "include")
