@@ -7,8 +7,7 @@ CPMAddPackage(
     NAME
     muli
     GITHUB_REPOSITORY
-    #Sopiro/Muli
-    edunad/Muli
+    Sopiro/Muli
     GIT_TAG
     master
     OPTIONS

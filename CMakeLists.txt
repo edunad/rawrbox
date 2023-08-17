@@ -5,6 +5,7 @@ include("cmake/rawrbox_utils.cmake")
 # -----
 
 # SETUP CPM -----
+set(CPM_SOURCE_CACHE "${CMAKE_CURRENT_SOURCE_DIR}/.cache/cpm")
 include("cmake/cpm.cmake")
 # ---------------
 
@@ -127,6 +128,35 @@ CPMAddPackage(
 if(nlohmann_json_ADDED)
     add_library(nlohmann_json INTERFACE IMPORTED)
     target_include_directories(nlohmann_json INTERFACE ${nlohmann_json_SOURCE_DIR}/include)
+endif()
+
+# ---
+CPMFindPackage(
+    NAME
+    zlib
+    GITHUB_REPOSITORY
+    madler/zlib
+    GIT_TAG
+    "v1.2.13"
+    OPTIONS
+    "ASM686 FALSE"
+    "AMD64 FALSE"
+    "POSITION_INDEPENDENT_CODE TRUE")
+
+if(zlib_ADDED)
+    set(ZLIB_FOUND 1)
+    set(ZLIB_LIBRARIES zlibstatic)
+    set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
+
+    add_library(ZLIB::ZLIB ALIAS zlibstatic)
+
+    message(STATUS "==== ZLIB")
+    message(STATUS "LIBRARY: ${ZLIB_LIBRARY}")
+    message(STATUS "INCLUDE_DIR: ${ZLIB_INCLUDE_DIR}")
+    message(STATUS "BINARY_DIR: ${zlib_BINARY_DIR}")
+    message(STATUS "==== ====")
+
+    include_directories(${ZLIB_INCLUDE_DIR})
 endif()
 # --------------------
 

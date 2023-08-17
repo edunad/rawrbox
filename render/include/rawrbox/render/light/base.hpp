@@ -5,9 +5,9 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/light/types.hpp>
 
-#ifdef RAWRBOX_SCRIPTING
-	#include <sol/sol.hpp>
-#endif
+// #ifdef RAWRBOX_SCRIPTING
+//	#include <sol/sol.hpp>
+// #endif
 
 #include <fmt/format.h>
 

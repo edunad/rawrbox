@@ -15,7 +15,7 @@ CPMAddPackage(
     "BUILD_SHARED_LIBS 0"
     "CPR_ENABLE_SSL 1"
     "CPR_ENABLE_CURL_HTTP_ONLY 1"
-    "CURL_ZLIB 0")
+    "CURL_ZLIB 1")
 
 if(libcpr_ADDED)
     set_lib_runtime_mt(libcurl)
