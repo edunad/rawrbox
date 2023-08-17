@@ -72,6 +72,7 @@ jobs:
 
       - name: Run linter
         uses: cpp-linter/cpp-linter-action@v2.6.0
+        if: github.ref != 'refs/heads/master'
         id: linter
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
