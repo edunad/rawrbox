@@ -54,7 +54,7 @@ jobs:
         id: build
         run: cd build && ninja
 
-      - name: Cache build
+      - name: Save cache
         uses: actions/cache/save@v3
         if: steps.build.outputs.exit_code == 0 && steps.cache.outputs.cache-hit != 'true'
         env:
