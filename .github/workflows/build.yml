@@ -37,16 +37,19 @@ jobs:
         id: cache
         uses: actions/cache/restore@v3
         with:
-          path: |
-            ./build
+          path: ./build
           key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt', './scripting/CMakeLists.txt') }}
 
-      - name: Build
-        id: build
+      - name: CMAKE Setup
+        if: steps.cache.outputs.cache-hit != 'true'
+        id: setup
         run: |
           mkdir -p build && cd build
           CXX=g++ cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON"
-          ninja
+
+      - name: Build
+        id: build
+        run: ninja
 
       - name: Cache build
         uses: actions/cache/save@v3
@@ -54,8 +57,7 @@ jobs:
         env:
           cache-name: cache-build
         with:
-          path: |
-            ./build
+          path: ./build
           key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt', './scripting/CMakeLists.txt') }}
 
       - name: Run tests
