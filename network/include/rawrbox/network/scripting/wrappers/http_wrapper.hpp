@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrbox/utils/http.hpp>
+#include <rawrbox/network/http.hpp>
 
 #include <sol/sol.hpp>
 

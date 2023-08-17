@@ -1,6 +1,6 @@
+#include <rawrbox/network/scripting/wrappers/http_wrapper.hpp>
 #include <rawrbox/scripting/scripting.hpp>
 #include <rawrbox/scripting/utils/lua.hpp>
-#include <rawrbox/scripting/wrappers/http_wrapper.hpp>
 
 namespace rawrbox {
 	void HTTPWrapper::request(const std::string& url, const rawrbox::HTTPMethod method, sol::table headers, sol::function callback, sol::optional<int> timeout) {

@@ -1,6 +1,7 @@
 # Project setup
 project("RAWRBOX.WEBM" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - WEBM lib" LANGUAGES CXX)
 set(output_target RAWRBOX.WEBM)
+# --------------
 
 # LIBS ---
 CPMAddPackage(

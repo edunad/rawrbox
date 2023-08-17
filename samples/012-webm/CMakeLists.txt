@@ -1,4 +1,5 @@
 ﻿project("012-webm")
+# --------------
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_SAMPLE_SOURCES "include/*.hpp" "src/*.cpp")
@@ -9,7 +10,6 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE
 
 add_executable(${output_target} ${RAWRBOX_SAMPLE_SOURCES})
 add_dependencies(${output_target} copy_resources_samples)
-
 target_compile_features(${output_target} PUBLIC cxx_std_20)
 target_include_directories(${output_target} PRIVATE "include")
 target_compile_features(${output_target} PRIVATE cxx_std_${CMAKE_CXX_STANDARD})

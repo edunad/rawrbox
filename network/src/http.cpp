@@ -1,4 +1,4 @@
-#include <rawrbox/utils/http.hpp>
+#include <rawrbox/network/http.hpp>
 
 namespace rawrbox {
 	void HTTP::request(const std::string& url, const rawrbox::HTTPMethod method, const std::map<std::string, std::string>& headers, std::function<void(int, std::map<std::string, std::string>, std::string)> callback, int timeout) {

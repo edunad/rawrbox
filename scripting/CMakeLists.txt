@@ -1,6 +1,7 @@
 # Project setup
 project("RAWRBOX.SCRIPTING" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - SCRIPTING lib" LANGUAGES C CXX)
 set(output_target RAWRBOX.SCRIPTING)
+# --------------
 
 # LIBS ---
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT)
@@ -62,18 +63,10 @@ if(sol2_ADDED)
 endif()
 # --------------
 
-# Copy content - lua
-add_custom_target(
-    copy_resources_lua ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/lua
-                                   ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/lua
-    COMMENT "Copying LUA resources into binary directory")
-# ------------------
-
 file(GLOB_RECURSE RAWRBOX_SCRIPTING_IMPORTS "src/*.cpp" "include/*.hpp")
 
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_SCRIPTING_IMPORTS})
-add_dependencies(${output_target} copy_resources_lua)
-
+copy_lua_libs(TARGET ${output_target})
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING SOL_ALL_SAFETIES_ON=1)
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT)

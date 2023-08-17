@@ -20,3 +20,42 @@ function(remove_folder glob_sources folderName)
 
     set(CLEAN_SOURCES "${glob_sources}" PARENT_SCOPE)
 endfunction()
+
+function(copy_resources)
+    set(oneValueArgs TARGET SRC_DIR)
+    set(options "")
+    set(multiValueArgs "")
+
+    cmake_parse_arguments(COPY_RESOURCES "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT DEFINED COPY_RESOURCES_SRC_DIR)
+        set(COPY_RESOURCES_SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
+    endif()
+
+    add_custom_target(
+        copy_resources_${COPY_RESOURCES_TARGET} ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${COPY_RESOURCES_SRC_DIR}/content
+                ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
+        COMMENT "Copying ${COPY_RESOURCES_TARGET}'s resources into binary directory")
+
+    add_dependencies(${COPY_RESOURCES_TARGET} copy_resources_${COPY_RESOURCES_TARGET})
+endfunction()
+
+function(copy_lua_libs)
+    set(oneValueArgs TARGET SRC_DIR)
+    set(options "")
+    set(multiValueArgs "")
+
+    cmake_parse_arguments(COPY_LUA_LIBS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT DEFINED COPY_LUA_LIBS_SRC_DIR)
+        set(COPY_LUA_SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
+    endif()
+
+    add_custom_target(
+        copy_lua_libs_${COPY_LUA_LIBS_TARGET} ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${COPY_LUA_SRC_DIR}/lua
+                                                     ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/lua
+        COMMENT "Copying ${COPY_LUA_LIBS_TARGET}'s LUA libs into binary directory")
+
+    add_dependencies(${COPY_LUA_LIBS_TARGET} copy_lua_libs_${COPY_LUA_LIBS_TARGET})
+endfunction()
