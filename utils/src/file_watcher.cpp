@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 namespace rawrbox {
-	FileWatcher::FileWatcher(const std::function<void(std::filesystem::path, rawrbox::FileStatus)>& action, std::chrono::duration<int, std::milli> delay) : _delay{delay}, _action(action) {}
+	FileWatcher::FileWatcher(const std::function<void(std::string, rawrbox::FileStatus)>& action, std::chrono::duration<int, std::milli> delay) : _delay{delay}, _action(action) {}
 	FileWatcher::~FileWatcher() { this->stop(); }
 
 	void FileWatcher::stop() {
@@ -19,7 +19,7 @@ namespace rawrbox {
 	}
 
 	void FileWatcher::watchFile(const std::filesystem::path& path) {
-		this->_files[path] = std::filesystem::last_write_time(path);
+		this->_files[path.generic_string()] = std::filesystem::last_write_time(path);
 	}
 
 	void FileWatcher::start() {

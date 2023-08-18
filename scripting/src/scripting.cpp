@@ -48,9 +48,9 @@ namespace rawrbox {
 			fmt::print("[RawrBox-Scripting] Enabled lua hot-reloading\n  └── Delay: {}ms\n", hotReloadMs);
 
 			_watcher = std::make_unique<rawrbox::FileWatcher>(
-			    [](std::filesystem::path pth, rawrbox::FileStatus status) {
+			    [](std::string pth, rawrbox::FileStatus status) {
 				    if (status != rawrbox::FileStatus::modified) return;
-				    hotReload(pth.generic_string());
+				    hotReload(pth);
 			    },
 			    std::chrono::milliseconds(hotReloadMs));
 			_watcher->start();

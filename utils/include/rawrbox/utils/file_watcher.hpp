@@ -1,4 +1,5 @@
 #pragma once
+
 #include <chrono>
 #include <filesystem>
 #include <functional>
@@ -17,15 +18,15 @@ namespace rawrbox {
 		std::thread* _thread = nullptr;
 		std::chrono::duration<int, std::milli> _delay;
 
-		std::function<void(std::filesystem::path, rawrbox::FileStatus)> _action = nullptr;
-		std::unordered_map<std::filesystem::path, std::filesystem::file_time_type> _files = {};
+		std::function<void(std::string, rawrbox::FileStatus)> _action = nullptr;
+		std::unordered_map<std::string, std::filesystem::file_time_type> _files = {};
 
 	public:
 		FileWatcher(const FileWatcher&) = default;
 		FileWatcher(FileWatcher&&) = delete;
 		FileWatcher& operator=(const FileWatcher&) = default;
 		FileWatcher& operator=(FileWatcher&&) = delete;
-		FileWatcher(const std::function<void(std::filesystem::path, rawrbox::FileStatus)>& action, std::chrono::duration<int, std::milli> delay);
+		FileWatcher(const std::function<void(std::string, rawrbox::FileStatus)>& action, std::chrono::duration<int, std::milli> delay);
 		~FileWatcher();
 
 		void watchFile(const std::filesystem::path& path);
