@@ -1,4 +1,4 @@
-name: Cleanup branch cache
+name: CI/CD - CACHE CLEANUP
 on:
   pull_request:
     types:

@@ -1,4 +1,4 @@
-name: CI/CD - Labeler
+name: CI/CD - LABELER
 
 on:
   pull_request_target:
