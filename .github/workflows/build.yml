@@ -32,37 +32,21 @@ jobs:
           sudo apt update
           sudo apt install -y build-essential wget cmake libssl-dev libvpx-dev gcc-11 libgl1-mesa-glx libgl1-mesa-dev libglew-dev ninja-build python3-pip libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev libxcomposite-dev libxcursor-dev libxdamage-dev libxdmcp-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxinerama-dev libxkbfile-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev libxrender-dev libxres-dev libxss-dev libxt-dev libxtst-dev libxv-dev libxvmc-dev libxxf86vm-dev xtrans-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-xkb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev xkb-data libxcb-dri3-dev uuid-dev libxcb-util-dev
 
-      - name: Restore cache
-        id: cache
-        uses: actions/cache/restore@v3
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.1
         with:
-          path: |
-            ./build
-            .cache/cpm
           key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt', './scripting/CMakeLists.txt', './network/CMakeLists.txt') }}
 
       - name: CMAKE Setup
-        if: steps.cache.outputs.cache-hit != 'true'
         id: setup
         run: |
           mkdir -p build && cd build
-          CXX=g++ cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON"
+          CXX=g++ cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DRAWRBOX_OUTPUT_BIN="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON" -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cd ../
 
       - name: Build
         id: build
         run: cd build && ninja
-
-      - name: Save cache
-        uses: actions/cache/save@v3
-        if: steps.build.outputs.exit_code == 0 && steps.cache.outputs.cache-hit != 'true'
-        env:
-          cache-name: cache-build
-        with:
-          path: |
-            ./build
-            .cache/cpm
-          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt', './scripting/CMakeLists.txt', './network/CMakeLists.txt') }}
 
       - name: Run tests
         run: |
