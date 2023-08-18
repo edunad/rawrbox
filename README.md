@@ -73,7 +73,7 @@
 <br/><br/>
 
 <p align="center">
-  <img src="./RAWBOX%20-%20Dependencies.svg" />
+  <img src="./RAWBOX%20-%20Dependencies.png" />
 </p>
 
 <br/><br/><br/>
