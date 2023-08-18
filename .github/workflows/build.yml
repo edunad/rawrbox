@@ -21,6 +21,22 @@ concurrency:
 jobs:
   build-linux:
     runs-on: [self-hosted]
+    env:
+      CACHE_FILES: |
+        './CMakeLists.txt'
+        './bass/CMakeLists.txt'
+        './engine/CMakeLists.txt'
+        './math/CMakeLists.txt'
+        './render/CMakeLists.txt'
+        './resources/CMakeLists.txt'
+        './ui/CMakeLists.txt'
+        './utils/CMakeLists.txt'
+        './physics_3d/CMakeLists.txt'
+        './physics_2d/CMakeLists.txt'
+        './webm/CMakeLists.txt'
+        './assimp/CMakeLists.txt'
+        './scripting/CMakeLists.txt'
+        './network/CMakeLists.txt'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -33,10 +49,11 @@ jobs:
           sudo apt install -y build-essential wget cmake libssl-dev libvpx-dev gcc-11 libgl1-mesa-glx libgl1-mesa-dev libglew-dev ninja-build python3-pip libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev libxcomposite-dev libxcursor-dev libxdamage-dev libxdmcp-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxinerama-dev libxkbfile-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev libxrender-dev libxres-dev libxss-dev libxt-dev libxtst-dev libxv-dev libxvmc-dev libxxf86vm-dev xtrans-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-xkb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev xkb-data libxcb-dri3-dev uuid-dev libxcb-util-dev
 
       - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.1
+        uses: hendrikmuhs/ccache-action@v1.2.10
         with:
-          restore-keys: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt', './scripting/CMakeLists.txt', './network/CMakeLists.txt') }}
-          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt', './scripting/CMakeLists.txt', './network/CMakeLists.txt') }}
+          restore-keys: |
+            host-${{ runner.os }}-${{hashFiles(env.CACHE_FILES)}}
+          key: host-${{ runner.os }}-${{hashFiles(env.CACHE_FILES)}}
 
       - name: CMAKE Setup
         id: setup
