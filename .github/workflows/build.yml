@@ -21,22 +21,6 @@ concurrency:
 jobs:
   build-linux:
     runs-on: [self-hosted]
-    env:
-      CACHE_FILES: |
-        './CMakeLists.txt'
-        './bass/CMakeLists.txt'
-        './engine/CMakeLists.txt'
-        './math/CMakeLists.txt'
-        './render/CMakeLists.txt'
-        './resources/CMakeLists.txt'
-        './ui/CMakeLists.txt'
-        './utils/CMakeLists.txt'
-        './physics_3d/CMakeLists.txt'
-        './physics_2d/CMakeLists.txt'
-        './webm/CMakeLists.txt'
-        './assimp/CMakeLists.txt'
-        './scripting/CMakeLists.txt'
-        './network/CMakeLists.txt'
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -51,9 +35,10 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2.10
         with:
+          append-timestamp: false
           restore-keys: |
-            host-${{ runner.os }}-${{hashFiles(env.CACHE_FILES)}}
-          key: host-${{ runner.os }}-${{hashFiles(env.CACHE_FILES)}}
+            host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt', './scripting/CMakeLists.txt', './network/CMakeLists.txt') }}
+          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt', './scripting/CMakeLists.txt', './network/CMakeLists.txt') }}
 
       - name: CMAKE Setup
         id: setup
