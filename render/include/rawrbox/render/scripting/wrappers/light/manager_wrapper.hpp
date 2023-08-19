@@ -46,7 +46,7 @@ namespace rawrbox {
 		// ---------
 
 		// Light utils ----
-		virtual rawrbox::LightBaseWrapper getLight(size_t indx);
+		virtual sol::object getLight(size_t indx);
 		virtual size_t count();
 		// ---------
 

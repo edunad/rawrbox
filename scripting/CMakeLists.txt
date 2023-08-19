@@ -6,6 +6,7 @@ set(output_target RAWRBOX.SCRIPTING)
 # LIBS ---
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT)
     message(STATUS "Enabled LuaJIT support")
+    message(WARNING "LuaJIT should not be used right now, check issue https://github.com/edunad/rawrbox/issues/73")
 
     #CPMAddPackage(NAME luajit GITHUB_REPOSITORY WohlSoft/LuaJIT GIT_TAG v2.1)
     #if(luajit_ADDED)
@@ -23,7 +24,8 @@ if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT)
         GIT_TAG
         master
         OPTIONS
-        "LUAJIT_DISABLE_BUFFER ON")
+        "LUAJIT_DISABLE_BUFFER ON"
+        "LUA_USE_APICHECK ON")
 
     if(luajit_ADDED)
         set_lib_runtime_mt(liblua-static)
@@ -68,7 +70,7 @@ file(GLOB_RECURSE RAWRBOX_SCRIPTING_IMPORTS "src/*.cpp" "include/*.hpp")
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_SCRIPTING_IMPORTS})
 copy_lua_libs(TARGET ${output_target})
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
-target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING SOL_ALL_SAFETIES_ON=1)
+target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING SOL_ALL_SAFETIES_ON=1 SOL_EXCEPTIONS_SAFE_PROPAGATION=1)
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT)
     target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING_LUAJIT SOL_LUAJIT=1)
 endif()
