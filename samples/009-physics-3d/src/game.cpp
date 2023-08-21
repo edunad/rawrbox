@@ -112,7 +112,7 @@ namespace physics_test {
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->get();
 
 		// TIMER ---
-		this->_timer = rawrbox::Timer::create(
+		this->_timer = rawrbox::TIMER::create(
 		    600, 25, [this]() { this->createBox({0, 5, 0}, {0.5F, 0.5F, 0.5F}); }, [this] {
 			    this->_timer = nullptr;
 			    rawrbox::PHYSICS::optimize(); // Only need to be called after adding a lot of bodies in one go
@@ -193,7 +193,6 @@ namespace physics_test {
 	void Game::update() {
 		if (this->_window == nullptr) return;
 		this->_window->update();
-		rawrbox::Timer::update();
 	}
 
 	void Game::fixedUpdate() {

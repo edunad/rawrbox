@@ -28,7 +28,7 @@ namespace rawrbox {
 	}
 
 	bool SoundInstanceWrapper::isValid() const {
-		return !this->_ref.expired() && this->_ref.lock()->isValid();
+		return !this->_ref.expired();
 	}
 
 	bool SoundInstanceWrapper::isCreated() const {

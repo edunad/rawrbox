@@ -1,4 +1,6 @@
 
+#include <rawrbox/bass/resources/sound.hpp>
+#include <rawrbox/bass/scripting/plugin.hpp>
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
@@ -7,6 +9,7 @@
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/resources/scripting/plugin.hpp>
 #include <rawrbox/scripting/scripting.hpp>
+#include <rawrbox/utils/timer.hpp>
 
 #include <scripting_test/game.hpp>
 #include <scripting_test/wrapper_test.hpp>
@@ -36,11 +39,13 @@ namespace scripting_test {
 
 		// Setup loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
 		// ----------
 
 		// Setup scripting
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::RenderPlugin>(this->_window.get());
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::ResourcesPlugin>();
+		rawrbox::SCRIPTING::registerPlugin<rawrbox::BASSPlugin>();
 
 		// Custom non-plugin ---
 		rawrbox::SCRIPTING::registerType<rawrbox::TestWrapper>();
@@ -76,7 +81,7 @@ namespace scripting_test {
 		}
 
 		// Load pre-content mod stuff ---
-		rawrbox::SCRIPTING::call("load");
+		rawrbox::SCRIPTING::call("onLoad");
 		// ---
 
 		// Start loading ----
@@ -111,6 +116,8 @@ namespace scripting_test {
 
 		this->_model->upload();
 		this->_ready = true;
+
+		rawrbox::SCRIPTING::call("onReady");
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
