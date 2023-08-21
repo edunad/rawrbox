@@ -1,18 +1,39 @@
 #pragma once
-#include <rawrbox/scripting/plugin.hpp>
+
+#include <rawrbox/bass/scripting/wrapper/bass_wrapper.hpp>
+#include <rawrbox/bass/scripting/wrapper/instance_wrapper.hpp>
+#ifdef RAWRBOX_RESOURCES
+	#include <rawrbox/bass/scripting/wrapper/resources/sound_loader_wrapper.hpp>
+#endif
+
+#include <rawrbox/scripting/scripting.hpp>
 
 namespace rawrbox {
 	class BASSPlugin : public rawrbox::Plugin {
 	public:
 		void registerTypes(sol::state& lua) override {
+			rawrbox::SoundInstanceWrapper::registerLua(lua);
+			rawrbox::BASSWrapper::registerLua(lua);
+
+#ifdef RAWRBOX_RESOURCES
+			rawrbox::SoundLoaderWrapper::registerLua(lua);
+#endif
 		}
 
 		void registerGlobal(rawrbox::Mod* mod) override {
 			if (mod == nullptr) throw std::runtime_error("[RawrBox-BASSPlugin] Tried to register plugin on invalid mod!");
+			auto& env = mod->getEnvironment();
+
+			env["BASS"] = rawrbox::BASSWrapper();
+
+#ifdef RAWRBOX_RESOURCES
+			env["sound"] = rawrbox::SoundLoaderWrapper(mod);
+#endif
 		}
 
 		void loadLuaExtensions(rawrbox::Mod* mod) override {
-			if (mod == nullptr) throw std::runtime_error("[RawrBox-BASSPlugin] Tried to register plugin on invalid mod!");
+			if (mod == nullptr) throw std::runtime_error("[RawrBox-RenderPlugin] Tried to register plugin on invalid mod!");
+			rawrbox::SCRIPTING::loadLuaFile("./lua/bass_enums.lua", mod->getEnvironment());
 		}
 	};
 } // namespace rawrbox

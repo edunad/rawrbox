@@ -9,14 +9,7 @@ namespace rawrbox {
 
 	public:
 		bool load(const std::vector<uint8_t>& buffer) override;
-		[[nodiscard]] rawrbox::SoundBase* get() const;
-
-		ResourceBASS() = default;
-		~ResourceBASS() override;
-		ResourceBASS(const ResourceBASS&) = default;
-		ResourceBASS(ResourceBASS&&) = delete;
-		ResourceBASS& operator=(const ResourceBASS&) = default;
-		ResourceBASS& operator=(ResourceBASS&&) = delete;
+		[[nodiscard]] std::weak_ptr<rawrbox::SoundInstance> createInstance() const;
 	};
 
 	class BASSLoader : public rawrbox::Loader {

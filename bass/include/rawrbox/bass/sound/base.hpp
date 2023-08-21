@@ -29,6 +29,6 @@ namespace rawrbox {
 		[[nodiscard]] virtual uint32_t getSample() const;
 		[[nodiscard]] virtual uint32_t getFXSample() const;
 
-		virtual std::unique_ptr<rawrbox::SoundInstance> createInstance();
+		virtual std::shared_ptr<rawrbox::SoundInstance> createInstance();
 	};
 } // namespace rawrbox

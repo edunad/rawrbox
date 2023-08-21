@@ -20,8 +20,8 @@ namespace rawrbox {
 
 		return true;
 	}
-	rawrbox::SoundBase* ResourceBASS::get() const { return this->_sound; }
-	ResourceBASS::~ResourceBASS() { this->_sound = nullptr; }
+
+	std::weak_ptr<rawrbox::SoundInstance> ResourceBASS::createInstance() const { return this->_sound->createInstance(); }
 	// -------
 
 	// Loader ----

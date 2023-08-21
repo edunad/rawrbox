@@ -20,9 +20,9 @@ namespace rawrbox {
 		}
 	}
 
-	std::unique_ptr<rawrbox::SoundInstance> SoundBase::createInstance() {
+	std::shared_ptr<rawrbox::SoundInstance> SoundBase::createInstance() {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-BASS] Sound sample not valid!");
-		return std::make_unique<rawrbox::SoundInstance>(this->_sample, this->_isStream, this->_flags);
+		return std::make_shared<rawrbox::SoundInstance>(this->_sample, this->_isStream, this->_flags);
 	}
 
 	bool SoundBase::isValid() const {
