@@ -2,13 +2,17 @@
 
 #include <rawrbox/bass/manager.hpp>
 #include <rawrbox/bass/scripting/wrapper/instance_wrapper.hpp>
+#include <rawrbox/scripting/mod.hpp>
 
 #include <sol/sol.hpp>
 
 namespace rawrbox {
 	class BASSWrapper {
+	protected:
+		rawrbox::Mod* _mod = nullptr;
+
 	public:
-		BASSWrapper() = default;
+		BASSWrapper(rawrbox::Mod* mod);
 		BASSWrapper(const BASSWrapper&) = default;
 		BASSWrapper(BASSWrapper&&) = default;
 		BASSWrapper& operator=(const BASSWrapper&) = default;
@@ -16,14 +20,14 @@ namespace rawrbox {
 		virtual ~BASSWrapper() = default;
 
 		// UTILS -----
-		float getMasterVolume();
-		void setMasterVolume(float volume, sol::optional<bool> set);
-		void setListenerLocation(const rawrbox::Vector3f& location, sol::optional<rawrbox::Vector3f> front, sol::optional<rawrbox::Vector3f> top);
+		virtual float getMasterVolume();
+		virtual void setMasterVolume(float volume, sol::optional<bool> set);
+		virtual void setListenerLocation(const rawrbox::Vector3f& location, sol::optional<rawrbox::Vector3f> front, sol::optional<rawrbox::Vector3f> top);
 		// -----
 
 		// LOAD -----
-		rawrbox::SoundInstanceWrapper loadSound(const std::string& path, sol::optional<uint32_t> flags);
-		rawrbox::SoundInstanceWrapper loadHTTPSound(const std::string& url, sol::optional<uint32_t> flags);
+		virtual rawrbox::SoundInstanceWrapper loadSound(const std::string& path, sol::optional<uint32_t> flags);
+		virtual rawrbox::SoundInstanceWrapper loadHTTPSound(const std::string& url, sol::optional<uint32_t> flags);
 		// -----
 
 		static void registerLua(sol::state& lua);

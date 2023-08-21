@@ -1,9 +1,16 @@
 
 #include <rawrbox/bass/scripting/wrapper/bass_wrapper.hpp>
+#include <rawrbox/scripting/utils/lua.hpp>
+
+#ifdef RAWRBOX_RESOURCES
+	#include <rawrbox/resources/manager.hpp>
+#endif
 
 #include <fmt/format.h>
 
 namespace rawrbox {
+	BASSWrapper::BASSWrapper(rawrbox::Mod* mod) : _mod(mod) {}
+
 	// UTILS -----
 	float BASSWrapper::getMasterVolume() {
 		return BASS::getMasterVolume();
@@ -20,7 +27,15 @@ namespace rawrbox {
 
 	// LOAD -----
 	rawrbox::SoundInstanceWrapper BASSWrapper::loadSound(const std::string& path, sol::optional<uint32_t> flags) {
-		auto sound = BASS::loadSound(path, flags.value_or(0));
+		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-FontLoader] MOD not set!");
+		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder().generic_string());
+
+#ifdef RAWRBOX_RESOURCES
+		if (!rawrbox::RESOURCES::isLoaded(fixedPath)) {
+			fmt::print("[Resources] Loading '{}' RUNTIME! You should load content on the 'MOD:onLoad' stage instead!", fixedPath);
+		}
+#endif
+		auto sound = BASS::loadSound(fixedPath, flags.value_or(0));
 		if (sound == nullptr) throw std::runtime_error(fmt::format("[RawrBox-BASSWrapper] Failed to load sound '{}'", path));
 
 		return {sound->createInstance()};

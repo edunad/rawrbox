@@ -31,10 +31,11 @@ namespace rawrbox {
 		if (!this->isCreated()) return;
 
 		BASS_ChannelStop(this->_channel);
-		if (!this->_stream)
+		if (!this->_stream) {
 			BASS_ChannelFree(this->_channel);
-		else
+		} else {
 			BASS_StreamFree(this->_channel);
+		}
 
 		// CLEANUP CALLBACKS
 		rawrbox::BASS::onBEAT.remove(std::to_string(this->_sample));
@@ -96,7 +97,11 @@ namespace rawrbox {
 	void SoundInstance::stop() {
 		if (!this->isCreated()) return;
 		BASS_ChannelStop(this->_channel);
-		BASS_ChannelFree(this->_channel);
+		if (!this->_stream) {
+			BASS_ChannelFree(this->_channel);
+		} else {
+			BASS_StreamFree(this->_channel);
+		}
 
 		rawrbox::BASSUtils::checkBASSError();
 		this->_channel = 0;

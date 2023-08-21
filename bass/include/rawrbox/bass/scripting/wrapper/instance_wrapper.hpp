@@ -7,14 +7,14 @@
 namespace rawrbox {
 	class SoundInstanceWrapper {
 	protected:
-		std::shared_ptr<rawrbox::SoundInstance> _ref; // Sound wrapper needs someone to own it
+		std::weak_ptr<rawrbox::SoundInstance> _ref;
 
 	public:
 		SoundInstanceWrapper(const std::shared_ptr<rawrbox::SoundInstance>& instance);
 		SoundInstanceWrapper(const SoundInstanceWrapper&) = default;
-		SoundInstanceWrapper(SoundInstanceWrapper&&) = delete;
+		SoundInstanceWrapper(SoundInstanceWrapper&&) = default;
 		SoundInstanceWrapper& operator=(const SoundInstanceWrapper&) = default;
-		SoundInstanceWrapper& operator=(SoundInstanceWrapper&&) = delete;
+		SoundInstanceWrapper& operator=(SoundInstanceWrapper&&) = default;
 		virtual ~SoundInstanceWrapper();
 
 		virtual void play();

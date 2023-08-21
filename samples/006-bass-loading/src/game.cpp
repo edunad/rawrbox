@@ -85,7 +85,7 @@ namespace bass_test {
 			fmt::print("BPM: {}\n", bpm);
 		};
 
-		this->_sound2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceBASS>("content/sounds/clownmusic.ogg")->createInstance();
+		this->_sound2 = rawrbox::BASS::loadSound("content/sounds/clownmusic.ogg")->createInstance();
 		this->_sound2.lock()->setLooping(true);
 		this->_sound2.lock()->set3D(10.F);
 		this->_sound2.lock()->setPosition({3.F, 1.F, 0});

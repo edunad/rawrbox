@@ -7,7 +7,7 @@
 
 namespace rawrbox {
 	class TextureLoaderWrapper {
-		rawrbox::Mod* _mod;
+		rawrbox::Mod* _mod = nullptr;
 
 	public:
 		TextureLoaderWrapper(rawrbox::Mod* mod_);
