@@ -185,7 +185,7 @@
 
 ### 006-bass-loading
 
-<a href='/samples/006-bass-loading'><img src="https://i.rawr.dev/6vTnpv39Tj.png" width=512 /></a>
+<a href='/samples/006-bass-loading'><img src="https://i.rawr.dev/a0AeGGNQ7A-min.gif" width=512 /></a>
 
 ### 007-particle-system
 
@@ -201,7 +201,7 @@
 
 ### 010-instancing
 
-<a href='/samples/010-instancing'><img src="https://i.rawr.dev/7KJOpESdZN.png" width=512 /></a>
+<a href='/samples/010-instancing'><img src="https://i.rawr.dev/dwPPjtAdzr-min.gif" width=512 /></a>
 
 ### 011-decals
 
@@ -217,4 +217,4 @@
 
 ### 014-scripting
 
-<a href='/samples/014-scripting'><img src="https://i.rawr.dev/SyCR4YmWMW.png" width=512 /></a>
+<a href='/samples/014-scripting'><img src="https://i.rawr.dev/EgZILBUsED-min.gif" width=512 /></a>

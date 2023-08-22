@@ -92,12 +92,12 @@ namespace rawrbox {
 			}
 
 			fmt::print("[RawrBox-Engine] Thread 'rawrbox:render' shutdown\n");
+			rawrbox::TIMER::clear();
 			this->onThreadShutdown(rawrbox::ENGINE_THREADS::THREAD_RENDER);
 
 			this->_shutdown = rawrbox::ENGINE_THREADS::THREAD_INPUT; // Done killing bgfx, now destroy glfw
 		});
 
-		rawrbox::TIMER::clear();
 		// ----
 
 		// GLFW needs to run on main thread

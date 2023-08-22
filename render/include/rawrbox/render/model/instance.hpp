@@ -14,6 +14,15 @@ namespace rawrbox {
 		Instance() = default;
 		Instance(const rawrbox::Matrix4x4& mat, const rawrbox::Colorf& col = rawrbox::Colors::White(), rawrbox::Vector4f data = {}) : matrix(mat), color(col), extraData(data) {}
 
+		rawrbox::Colori getColor() { return color.cast<int>(); }
+		void setColor(const rawrbox::Colori& cl) { color = cl.cast<float>(); }
+
+		const rawrbox::Matrix4x4& getMatrix() { return matrix; }
+		void setMatrix(const rawrbox::Matrix4x4& mtrx) { matrix = mtrx; }
+
+		const rawrbox::Vector4f& getExtraData() { return extraData; }
+		void setExtraData(const rawrbox::Vector4f& data) { extraData = data; }
+
 		static bgfx::VertexLayout vLayout() {
 			static bgfx::VertexLayout l;
 			l.begin()

@@ -1,10 +1,19 @@
 local apple = apple or {}
 apple.frames = {}
 apple.buffer = {}
-apple.width = 60  -- 128 -- 60
-apple.height = 40 -- 96 -- 40
-apple.frameRate = 15
+apple.width = 96   -- 96 -- 40
+apple.height = 128 -- 128 -- 60
+apple.frameRate = 1000 / 15
 apple.snd = {}
+
+local tonumber = tonumber
+local Color = Color
+local stringSplit = string.split
+local tableRemove = table.remove
+
+local instances = {}
+local colWhite = Color:new(255, 255, 255, 255)
+local colBlack = Color:new(1, 1, 1, 255)
 
 local function parse(data)
     apple.data = data
@@ -17,17 +26,7 @@ local function parse(data)
 
     -- Setup first buffer
     apple.buffer = {}
-    for y = 1, apple.height - 1 do
-        for x = 1, apple.width - 1 do
-            apple.buffer[x + y * apple.width] = false
-        end
-    end
-
     print("=== Done")
-end
-
-local function getBuffer(x, y)
-    return apple.buffer[x + y * apple.width]
 end
 
 local function stopAnimation()
@@ -42,40 +41,37 @@ local function playAnimation()
     stopAnimation()
 
     if apple.snd:isValid() then
+        apple.snd:setVolume(0.2)
         apple.snd:play()
     end
 
-    timer:create("badApple", 1 / apple.frameRate, -1, function()
-        local message = ""
-        local rawData = table.remove(apple.frames, 1)
-        local data = string.split(rawData, ":")
+    local currentFrame = 1
+    timer:create("badApple", -1, apple.frameRate, function()
+        local data = stringSplit(apple.frames[currentFrame], ":")
+
+        local mdl = test_model2()
+        if not mdl:isValid() then return end
 
         -- Insert into buffer
-        for i, v in pairs(data) do
+        for i, v in ipairs(data) do
             if v == "" then goto loop_end end
-            local x, y = tonumber(v) % apple.width, math.floor(tonumber(v) / apple.width)
-            local key = x + y * apple.width
-
-            apple.buffer[key] = not apple.buffer[key]
+            apple.buffer[tonumber(v)] = not apple.buffer[tonumber(v)]
             ::loop_end::
         end
 
-        -- Render
-        for y = 1, apple.height - 1 do
-            for x = 1, apple.width - 1 do
-                local char = " "
-                if getBuffer(x, y) then char = "#" end
-                message = message .. char
+        -- render
+        for k, v in ipairs(instances) do
+            if apple.buffer[k - 1] then
+                v:setColor(colWhite)
+            else
+                v:setColor(colBlack)
             end
-
-            message = message .. "\n"
         end
 
-        if apple.label and apple.label:isValid() then
-            apple.label:setText(message)
-        end
+        mdl:updateInstance()
 
-        if #apple.frames <= 0 then stopAnimation() end
+        currentFrame = currentFrame + 1
+        if currentFrame > #apple.frames then stopAnimation() end
     end)
 end
 
@@ -88,20 +84,36 @@ function MOD:onReady()
     print("Loading bad apple...")
 
     local mdl = test_model2()
-    if mdl:isValid() then
-        local ins = Instance:new()
 
-        local mtx = Matrix:new()
-        mtx:mtxSRT(Vector3:new(1, 1, 1), Vector4:new(0, 0, 0, 0), Vector3:new(1, 1, 1))
+    if not mdl or mdl:isValid() then
+        mdl:setAutoUpload(false)
 
-        ins:setMatrix(mtx)
-        mdl:addInstance(ins)
+        for x = 1, apple.width do
+            for y = 1, apple.height do
+                local ins = Instance:new()
+                local mtx = Matrix:new()
+                mtx:mtxSRT(Vector3:new(1, 1, 1), Vector4:new(0, 0, 0, 0), Vector3:new(y * 0.1, 1, -x * 0.1))
+
+                ins:setMatrix(mtx)
+                ins:setColor(colBlack)
+
+                mdl:addInstance(ins)
+            end
+        end
+
+        mdl:updateInstance()
+        mdl:setPos(Vector3:new(-2, 0, 2))
+
+        for i = 1, apple.width * apple.height do
+            table.insert(instances, mdl:getInstance(i - 1));
+        end
     end
 
-    --[[apple.snd = BASS:loadSound("./content/apple.ogg")
+
+    ------------------------------------------------------
+    apple.snd = BASS:loadSound("./content/apple.ogg")
     if apple.snd:isValid() then
-        print("Loading bad apple")
-        http:request("https://ams3.digitaloceanspaces.com/failcake/public/badapple/caw.txt", HTTP.GET, {},
+        http:request("https://ams3.digitaloceanspaces.com/failcake/public/badapple/badapple.txt", HTTP.GET, {},
             function(err, data)
                 if err then
                     print("ERROR: ", data)
@@ -109,7 +121,7 @@ function MOD:onReady()
                 end
 
                 parse(data.data)
-                timer:simple("apple", 5000, function() playAnimation() end)
-            end)
-    end]]
+                playAnimation()
+            end, 50000)
+    end
 end

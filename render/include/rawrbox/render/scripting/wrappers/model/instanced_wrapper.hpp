@@ -17,9 +17,9 @@ namespace rawrbox {
 		~InstancedModelWrapper() override = default;
 
 		// UTILS ----
-		virtual void addInstance(const rawrbox::InstanceWrapper& instance);
+		virtual void addInstance(const rawrbox::Instance& instance);
 		virtual void removeInstance(size_t i = 0);
-		virtual rawrbox::InstanceWrapper getInstance(size_t i = 0);
+		virtual rawrbox::Instance& getInstance(size_t i = 0);
 		// --------
 
 		[[nodiscard]] virtual size_t count() const;

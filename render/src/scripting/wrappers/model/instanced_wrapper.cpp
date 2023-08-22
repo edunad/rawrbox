@@ -6,11 +6,11 @@ namespace rawrbox {
 	InstancedModelWrapper::InstancedModelWrapper(const std::shared_ptr<rawrbox::ModelBase>& ref) : rawrbox::ModelBaseWrapper(ref) {}
 
 	// UTILS ----
-	void InstancedModelWrapper::addInstance(const rawrbox::InstanceWrapper& instance) {
+	void InstancedModelWrapper::addInstance(const rawrbox::Instance& instance) {
 		if (!this->isValid()) return;
 
 		std::weak_ptr<rawrbox::InstancedModel> ptr = std::dynamic_pointer_cast<rawrbox::InstancedModel>(this->_ref.lock());
-		ptr.lock()->addInstance(instance.ref);
+		ptr.lock()->addInstance(instance);
 	}
 
 	void InstancedModelWrapper::removeInstance(size_t i) {
@@ -20,11 +20,11 @@ namespace rawrbox {
 		ptr.lock()->removeInstance(i);
 	}
 
-	rawrbox::InstanceWrapper InstancedModelWrapper::getInstance(size_t i) {
+	rawrbox::Instance& InstancedModelWrapper::getInstance(size_t i) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InstancedModelWrapper] Invalid instanced model, reference is not set!");
 
 		std::weak_ptr<rawrbox::InstancedModel> ptr = std::dynamic_pointer_cast<rawrbox::InstancedModel>(this->_ref.lock());
-		return {ptr.lock()->getInstance(i)};
+		return ptr.lock()->getInstance(i);
 	}
 	// --------
 

@@ -18,7 +18,7 @@ namespace rawrbox {
 		// UTILS -----
 		virtual bool add(const rawrbox::Vector3f& pos, const sol::optional<rawrbox::Vector3f> scale, const sol::optional<float> direction, const sol::optional<rawrbox::Colori> color, const sol::optional<uint16_t> atlasId);
 		virtual bool remove(size_t i);
-		virtual const rawrbox::InstanceWrapper get(size_t i);
+		virtual const rawrbox::Instance& get(size_t i);
 		virtual size_t count();
 		// -----
 

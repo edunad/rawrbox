@@ -38,8 +38,6 @@ namespace scripting_test {
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		// this->_model->setMaterial<rawrbox::MaterialLit>();
-
 		// Setup loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
@@ -72,8 +70,6 @@ namespace scripting_test {
 		// Load lua mods
 		rawrbox::SCRIPTING::load();
 		rawrbox::SCRIPTING::call("init");
-		// -----
-
 		// ----
 
 		// Load content ---
@@ -140,6 +136,7 @@ namespace scripting_test {
 		rawrbox::SCRIPTING::shutdown();
 
 		this->_model.reset();
+		this->_instance.reset();
 
 		this->_window->unblockPoll();
 		this->_window.reset();
@@ -171,6 +168,7 @@ namespace scripting_test {
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 		if (this->_model != nullptr) this->_model->draw();
+		if (this->_instance != nullptr) this->_instance->draw();
 	}
 
 	void Game::drawOverlay() {

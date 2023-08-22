@@ -78,7 +78,7 @@ namespace rawrbox {
 			if (this->isUploaded() && this->_autoUpload) this->updateInstance();
 		}
 
-		[[nodiscard]] const rawrbox::Instance& getInstance(size_t i = 0) const {
+		[[nodiscard]] rawrbox::Instance& getInstance(size_t i = 0) {
 			if (i < 0 || i >= this->_instances.size()) throw std::runtime_error("[RawrBox-InstancedModel] Failed to find instance");
 			return this->_instances[i];
 		}

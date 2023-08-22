@@ -4,7 +4,7 @@
 
 namespace rawrbox {
 	// CREATE ---
-	bool TimerWrapper::create(const std::string& id, int reps, uint64_t delay, sol::function callback, sol::optional<sol::function> onComplete) {
+	bool TimerWrapper::create(const std::string& id, int reps, float delay, sol::function callback, sol::optional<sol::function> onComplete) {
 		auto timer = rawrbox::TIMER::create(
 		    id, reps, delay, [callback]() { rawrbox::LuaUtils::runCallback(callback); },
 		    [onComplete]() {
@@ -14,7 +14,7 @@ namespace rawrbox {
 		return timer != nullptr;
 	}
 
-	bool TimerWrapper::simple(const std::string& id, uint64_t delay, sol::function callback, sol::optional<sol::function> onComplete) {
+	bool TimerWrapper::simple(const std::string& id, float delay, sol::function callback, sol::optional<sol::function> onComplete) {
 		auto timer = rawrbox::TIMER::simple(
 		    id, delay, [callback]() { rawrbox::LuaUtils::runCallback(callback); },
 		    [onComplete]() {

@@ -11,8 +11,8 @@ namespace rawrbox {
 		return rawrbox::DECALS::remove(i);
 	}
 
-	const rawrbox::InstanceWrapper DecalsWrapper::get(size_t i) {
-		return {rawrbox::DECALS::get(i)};
+	const rawrbox::Instance& DecalsWrapper::get(size_t i) {
+		return rawrbox::DECALS::get(i);
 	}
 
 	size_t DecalsWrapper::count() {
