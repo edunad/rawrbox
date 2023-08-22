@@ -1,7 +1,28 @@
 #include <rawrbox/render/light/manager.hpp>
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/scripting/scripting.hpp>
+	#include <rawrbox/render/scripting/wrappers/light/base_wrapper.hpp>
+#endif
+
 namespace rawrbox {
 	LightBase::LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius) : _pos(pos), _color(color), _radius(radius){};
+
+#ifdef RAWRBOX_SCRIPTING
+	LightBase::~LightBase() {
+		if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
+	}
+
+	void LightBase::initializeLua() {
+		if (!SCRIPTING::initialized) return;
+		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::LightBaseWrapper(shared_from_this()));
+	}
+
+	sol::object& LightBase::getScriptingWrapper() {
+		if (!this->_luaWrapper.valid()) this->initializeLua();
+		return this->_luaWrapper;
+	}
+#endif
 
 	void LightBase::setColor(const rawrbox::Colorf& col) {
 		if (this->_color == col) return;

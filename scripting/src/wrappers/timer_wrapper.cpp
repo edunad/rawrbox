@@ -4,21 +4,21 @@
 
 namespace rawrbox {
 	// CREATE ---
-	bool TimerWrapper::create(const std::string& id, int reps, uint64_t delay, sol::function callback, sol::function onComplete) {
-		auto timer = rawrbox::Timer::create(
+	bool TimerWrapper::create(const std::string& id, int reps, float delay, sol::function callback, sol::optional<sol::function> onComplete) {
+		auto timer = rawrbox::TIMER::create(
 		    id, reps, delay, [callback]() { rawrbox::LuaUtils::runCallback(callback); },
 		    [onComplete]() {
-			    rawrbox::LuaUtils::runCallback(onComplete);
+			    if (onComplete.has_value()) rawrbox::LuaUtils::runCallback(onComplete.value());
 		    });
 
 		return timer != nullptr;
 	}
 
-	bool TimerWrapper::simple(const std::string& id, uint64_t delay, sol::function callback, sol::function onComplete) {
-		auto timer = rawrbox::Timer::simple(
+	bool TimerWrapper::simple(const std::string& id, float delay, sol::function callback, sol::optional<sol::function> onComplete) {
+		auto timer = rawrbox::TIMER::simple(
 		    id, delay, [callback]() { rawrbox::LuaUtils::runCallback(callback); },
 		    [onComplete]() {
-			    rawrbox::LuaUtils::runCallback(onComplete);
+			    if (onComplete.has_value()) rawrbox::LuaUtils::runCallback(onComplete.value());
 		    });
 
 		return timer != nullptr;
@@ -27,20 +27,20 @@ namespace rawrbox {
 
 	// UTILS ---
 	bool TimerWrapper::destroy(const std::string& id) {
-		return rawrbox::Timer::destroy(id);
+		return rawrbox::TIMER::destroy(id);
 	}
 
 	bool TimerWrapper::exists(const std::string& id) {
-		return rawrbox::Timer::exists(id);
+		return rawrbox::TIMER::exists(id);
 	}
 
 	bool TimerWrapper::pause(const std::string& id, bool pause) {
-		return rawrbox::Timer::pause(id, pause);
+		return rawrbox::TIMER::pause(id, pause);
 	}
 	// ----
 
 	void TimerWrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<rawrbox::TimerWrapper>("Timer",
+		lua.new_usertype<rawrbox::TimerWrapper>("TIMER",
 		    sol::no_constructor,
 		    // CREATE -----
 		    "create", &TimerWrapper::create,

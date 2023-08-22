@@ -9,6 +9,7 @@
 
 #ifdef RAWRBOX_SCRIPTING
 	#include <rawrbox/scripting/scripting.hpp>
+	#include <rawrbox/bass/scripting/wrapper/instance_wrapper.hpp>
 #endif
 
 namespace rawrbox {
@@ -30,10 +31,11 @@ namespace rawrbox {
 		if (!this->isCreated()) return;
 
 		BASS_ChannelStop(this->_channel);
-		if (!this->_stream)
+		if (!this->_stream) {
 			BASS_ChannelFree(this->_channel);
-		else
+		} else {
 			BASS_StreamFree(this->_channel);
+		}
 
 		// CLEANUP CALLBACKS
 		rawrbox::BASS::onBEAT.remove(std::to_string(this->_sample));
@@ -47,7 +49,7 @@ namespace rawrbox {
 #ifdef RAWRBOX_SCRIPTING
 	void SoundInstance::initializeLua() {
 		if (!SCRIPTING::initialized) return;
-		// this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::LightBaseWrapper(this));
+		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::SoundInstanceWrapper(this->shared_from_this()));
 	}
 
 	sol::object& SoundInstance::getScriptingWrapper() {
@@ -68,6 +70,12 @@ namespace rawrbox {
 	}
 
 	void SoundInstance::play() {
+		if (this->isCreated() && this->isPaused()) {
+			BASS_ChannelPlay(this->_channel, false);
+			rawrbox::BASSUtils::checkBASSError();
+			return;
+		}
+
 		this->_channel = this->getNextAvailableChannel();
 		if (this->_channel == 0) return;
 
@@ -88,12 +96,22 @@ namespace rawrbox {
 
 	void SoundInstance::stop() {
 		if (!this->isCreated()) return;
-
-		BASS_ChannelPause(this->_channel);
-		BASS_ChannelSetPosition(this->_channel, 0, 0);
+		BASS_ChannelStop(this->_channel);
+		if (!this->_stream) {
+			BASS_ChannelFree(this->_channel);
+		} else {
+			BASS_StreamFree(this->_channel);
+		}
 
 		rawrbox::BASSUtils::checkBASSError();
 		this->_channel = 0;
+	}
+
+	void SoundInstance::pause() {
+		if (!this->isCreated()) return;
+
+		BASS_ChannelPause(this->_channel);
+		rawrbox::BASSUtils::checkBASSError();
 	}
 
 	// UTILS ----

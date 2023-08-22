@@ -6,8 +6,11 @@
 
 namespace rawrbox {
 	uint32_t Text3D::ID = 0;
-	// UTILS ----
+	Text3D::Text3D() {
+		this->setMaterial<rawrbox::MaterialText3D>();
+	}
 
+	// UTILS ----
 	void Text3D::setScaleMul(float mul) { this->_scaleMul = mul; }
 	float Text3D::getScaleMul() const { return this->_scaleMul; }
 
@@ -78,7 +81,7 @@ namespace rawrbox {
 	}
 
 	void Text3D::upload(bool /*dynamic*/) {
-		Model<rawrbox::MaterialText3D>::upload(true); // Always force dynamic, since we can remove text
+		Model::upload(true); // Always force dynamic, since we can remove text
 	}
 
 	void Text3D::removeText(uint32_t id) {
@@ -87,7 +90,7 @@ namespace rawrbox {
 	// ----------
 
 	void Text3D::draw() {
-		ModelBase<rawrbox::MaterialText3D>::draw();
+		ModelBase::draw();
 
 		for (auto& mesh : this->_meshes) {
 			this->_material->process(*mesh);

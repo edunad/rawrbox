@@ -7,7 +7,7 @@
 
 namespace rawrbox {
 	class FontLoaderWrapper {
-		rawrbox::Mod* _mod;
+		rawrbox::Mod* _mod = nullptr;
 
 	public:
 		FontLoaderWrapper(rawrbox::Mod* mod_);

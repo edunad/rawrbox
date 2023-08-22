@@ -6,22 +6,24 @@ namespace rawrbox {
 	// Resource ----
 	bool ResourceBASS::load(const std::vector<uint8_t>& /*buffer*/) {
 		auto p = this->filePath.generic_string();
-		if (p.starts_with("https://") || p.starts_with("http://")) throw std::runtime_error("[RawrBox-BASS] Use 'rawrbox::BASS::loadSoundHTPP' instead!\n");
+		bool http = p.starts_with("https://") || p.starts_with("http://");
 
+		rawrbox::SoundBase* loaded = nullptr;
 		try {
-			this->_sound = rawrbox::BASS::loadSound(this->filePath, this->flags);
+			if (http) {
+				loaded = rawrbox::BASS::loadHTTPSound(this->filePath.generic_string(), this->flags);
+			} else {
+				loaded = rawrbox::BASS::loadSound(this->filePath, this->flags);
+			}
 		} catch (const std::exception& e) {
 			fmt::print("{}\n", e.what());
 			fmt::print("  └── Loading fallback sound!\n");
 
-			this->_sound = rawrbox::BASS::loadSound("./content/sound/error.ogg", this->flags);
-			if (this->_sound == nullptr) return false;
+			loaded = rawrbox::BASS::loadSound("./content/sound/error.ogg", this->flags);
 		}
 
-		return true;
+		return loaded != nullptr;
 	}
-	rawrbox::SoundBase* ResourceBASS::get() const { return this->_sound; }
-	ResourceBASS::~ResourceBASS() { this->_sound = nullptr; }
 	// -------
 
 	// Loader ----

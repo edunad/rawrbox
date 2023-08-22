@@ -3,7 +3,7 @@
 #include <rawrbox/render/scripting/wrappers/model/base_wrapper.hpp>
 
 namespace rawrbox {
-	ModelBaseWrapper::ModelBaseWrapper(const std::shared_ptr<rawrbox::ModelBase<rawrbox::MaterialBase>>& ref) : _ref(ref) {}
+	ModelBaseWrapper::ModelBaseWrapper(const std::shared_ptr<rawrbox::ModelBase>& ref) : _ref(ref) {}
 	ModelBaseWrapper::~ModelBaseWrapper() { this->_ref.reset(); }
 
 	// UTILS ----

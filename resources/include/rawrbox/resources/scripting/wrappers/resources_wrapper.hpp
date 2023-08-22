@@ -6,7 +6,7 @@
 
 namespace rawrbox {
 	class ResourcesWrapper {
-		rawrbox::Mod* _mod;
+		rawrbox::Mod* _mod = nullptr;
 
 	public:
 		ResourcesWrapper(rawrbox::Mod* mod_);

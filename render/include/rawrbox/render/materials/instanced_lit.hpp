@@ -5,6 +5,7 @@
 namespace rawrbox {
 
 	class MaterialInstancedLit : public rawrbox::MaterialLit {
+
 	public:
 		MaterialInstancedLit() = default;
 		MaterialInstancedLit(MaterialInstancedLit&&) = delete;
@@ -13,6 +14,7 @@ namespace rawrbox {
 		MaterialInstancedLit& operator=(const MaterialInstancedLit&) = delete;
 		~MaterialInstancedLit() override = default;
 
+		[[nodiscard]] uint32_t supports() const override;
 		void upload() override;
 	};
 

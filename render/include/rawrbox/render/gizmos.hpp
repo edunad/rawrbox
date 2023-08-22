@@ -7,7 +7,7 @@
 namespace rawrbox {
 	class GIZMOS {
 	protected:
-		static std::unique_ptr<rawrbox::Sprite<>> _gizmos;
+		static std::unique_ptr<rawrbox::Sprite> _gizmos;
 		static std::unordered_map<std::string, std::unique_ptr<rawrbox::TextureImage>> _textures;
 		static uint32_t _ID;
 

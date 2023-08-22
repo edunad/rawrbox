@@ -3,6 +3,7 @@
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/light/point.hpp>
+#include <rawrbox/render/materials/lit.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
@@ -39,6 +40,10 @@ namespace decal_test {
 		// Setup loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// ----------
+
+		// Setup materials ---
+		this->_model->setMaterial<rawrbox::MaterialLit>();
+		// ----
 
 		// Setup binds ---
 		this->_window->onKey += [](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {

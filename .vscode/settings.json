@@ -17,6 +17,9 @@
     "stencil",
     "http",
     "curtime",
-    "BGFX_FRAME"
+    "BGFX_FRAME",
+    "resources",
+    "timer",
+    "Instance"
   ]
 }

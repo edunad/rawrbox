@@ -70,27 +70,27 @@ namespace bass_test {
 		// https://i.rawr.dev/Mystery%20Skulls%20-%20Freaking%20Out.mp3
 		// https://i.rawr.dev/Just_a_Bit_Crazy.ogg
 		this->_sound = rawrbox::BASS::loadHTTPSound("https://i.rawr.dev/Just_a_Bit_Crazy.ogg", rawrbox::SoundFlags::SOUND_3D | rawrbox::SoundFlags::BEAT_DETECTION | rawrbox::SoundFlags::BPM_DETECTION)->createInstance();
-		this->_sound->setVolume(1.F);
-		this->_sound->setLooping(true);
-		this->_sound->set3D(10.F);
-		this->_sound->setPosition({-3.F, 1.F, 0});
-		this->_sound->setTempo(0.8F);
-		this->_sound->play();
+		this->_sound.lock()->setVolume(1.F);
+		this->_sound.lock()->setLooping(true);
+		this->_sound.lock()->set3D(10.F);
+		this->_sound.lock()->setPosition({-3.F, 1.F, 0});
+		this->_sound.lock()->setTempo(0.8F);
+		this->_sound.lock()->play();
 
-		this->_sound->onBEAT += [this](double /*pos*/) {
+		this->_sound.lock()->onBEAT += [this](double /*pos*/) {
 			this->_beat = 0.5F;
 		};
 
-		this->_sound->onBPM += [](float bpm) {
+		this->_sound.lock()->onBPM += [](float bpm) {
 			fmt::print("BPM: {}\n", bpm);
 		};
 
-		this->_sound2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceBASS>("content/sounds/clownmusic.ogg")->get()->createInstance();
-		this->_sound2->setLooping(true);
-		this->_sound2->set3D(10.F);
-		this->_sound2->setPosition({3.F, 1.F, 0});
-		this->_sound2->setTempo(1.2F);
-		this->_sound2->play();
+		this->_sound2 = rawrbox::BASS::loadSound("content/sounds/clownmusic.ogg")->createInstance();
+		this->_sound2.lock()->setLooping(true);
+		this->_sound2.lock()->set3D(10.F);
+		this->_sound2.lock()->setPosition({3.F, 1.F, 0});
+		this->_sound2.lock()->setTempo(1.2F);
+		this->_sound2.lock()->play();
 
 		// Text test ----
 		{

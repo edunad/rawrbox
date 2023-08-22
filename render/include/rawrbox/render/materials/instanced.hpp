@@ -3,7 +3,6 @@
 #include <rawrbox/render/materials/base.hpp>
 
 namespace rawrbox {
-
 	class MaterialInstanced : public rawrbox::MaterialBase {
 	public:
 		MaterialInstanced() = default;
@@ -13,6 +12,7 @@ namespace rawrbox {
 		MaterialInstanced& operator=(const MaterialInstanced&) = delete;
 		~MaterialInstanced() override = default;
 
+		[[nodiscard]] uint32_t supports() const override;
 		void upload() override;
 	};
 

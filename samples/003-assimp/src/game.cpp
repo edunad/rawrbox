@@ -2,6 +2,8 @@
 #include <rawrbox/assimp/resources/model.hpp>
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/gizmos.hpp>
+#include <rawrbox/render/materials/lit.hpp>
+#include <rawrbox/render/materials/skinned.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -37,6 +39,13 @@ namespace assimp {
 
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
+
+		// Setup materials ---
+		this->_model2->setMaterial<rawrbox::MaterialLit>();
+		this->_model3->setMaterial<rawrbox::MaterialSkinned>();
+		this->_model4->setMaterial<rawrbox::MaterialSkinned>();
+		this->_model5->setMaterial<rawrbox::MaterialSkinned>();
+		//-----
 
 		// Load content ---
 		this->loadContent();

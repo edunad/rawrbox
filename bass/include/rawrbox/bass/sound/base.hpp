@@ -16,6 +16,8 @@ namespace rawrbox {
 
 		bool _isStream = false;
 
+		std::vector<std::shared_ptr<rawrbox::SoundInstance>> _instances = {};
+
 	public:
 		virtual ~SoundBase();
 
@@ -29,6 +31,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual uint32_t getSample() const;
 		[[nodiscard]] virtual uint32_t getFXSample() const;
 
-		virtual std::unique_ptr<rawrbox::SoundInstance> createInstance();
+		virtual std::shared_ptr<rawrbox::SoundInstance> createInstance();
+		virtual std::shared_ptr<rawrbox::SoundInstance> getInstance(size_t i);
 	};
 } // namespace rawrbox

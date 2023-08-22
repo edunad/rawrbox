@@ -20,9 +20,9 @@ vec4 getInstanceData(int id, int index) {
 
 void main() {
 	int id = gl_InstanceID;
-	mat4 model = mtxFromCols(getInstanceData(id, 0), getInstanceData(id, 1), getInstanceData(id, 2), getInstanceData(id, 3));
+	mat4 model = mul(u_model[0], mtxFromCols(getInstanceData(id, 0), getInstanceData(id, 1), getInstanceData(id, 2), getInstanceData(id, 3)));
 
-	v_color0 = a_color0;
+	v_color0 = a_color0 * getInstanceData(id, 4);
 
 	v_texcoord0.xy = applyUVTransform(a_texcoord0.xy);
 	v_texcoord0.z = getInstanceData(id, 5).x;

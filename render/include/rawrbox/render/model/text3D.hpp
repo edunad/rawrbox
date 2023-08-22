@@ -5,12 +5,12 @@
 #include <rawrbox/render/text/font.hpp>
 
 namespace rawrbox {
-	class Text3D : public rawrbox::Model<rawrbox::MaterialText3D> {
+	class Text3D : public rawrbox::Model {
 	protected:
 		float _scaleMul = 0.25F;
 
 	public:
-		Text3D() = default;
+		Text3D();
 		Text3D(const Text3D&) = delete;
 		Text3D(Text3D&&) = delete;
 		Text3D& operator=(const Text3D&) = delete;
@@ -18,6 +18,12 @@ namespace rawrbox {
 		~Text3D() override = default;
 
 		static uint32_t ID;
+
+		template <typename M = rawrbox::MaterialBase>
+		void setMaterial() {
+			this->_material = std::make_unique<M>();
+			if ((this->_material->supports() & rawrbox::MaterialFlags::TEXT) == 0) throw std::runtime_error("[RawrBox-Text3D] Invalid material! Text3D only supports `text` materials!");
+		}
 
 		// UTILS ----
 		void setScaleMul(float mul);

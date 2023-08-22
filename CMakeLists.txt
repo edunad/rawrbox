@@ -40,7 +40,7 @@ option(RAWRBOX_BUILD_RAWRBOX_WEBM "Build libwebm & add video loading support" ON
 option(RAWRBOX_BUILD_RAWRBOX_NETWORK "Build network support" ON)
 
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING "Build lua & mod support" ON)
-option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT "Enable scripting LuaJIT support" ON)
+option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT "Enable scripting LuaJIT support (CURRENTLY BROKEN)" OFF)
 
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" ON)
 

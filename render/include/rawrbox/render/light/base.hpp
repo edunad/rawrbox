@@ -5,11 +5,11 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/light/types.hpp>
 
-// #ifdef RAWRBOX_SCRIPTING
-//	#include <sol/sol.hpp>
-// #endif
-
 #include <fmt/format.h>
+
+#ifdef RAWRBOX_SCRIPTING
+	#include <sol/sol.hpp>
+#endif
 
 namespace rawrbox {
 
@@ -30,13 +30,23 @@ namespace rawrbox {
 
 		float _radius = 5.F;
 
+#ifdef RAWRBOX_SCRIPTING
+		sol::object _luaWrapper;
+		virtual void initializeLua();
+#endif
+
 	public:
 		LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius);
 		LightBase(const LightBase&) = delete;
 		LightBase(LightBase&&) = delete;
 		LightBase& operator=(const LightBase&) = delete;
 		LightBase& operator=(LightBase&&) = delete;
+
+#ifdef RAWRBOX_SCRIPTING
+		virtual ~LightBase();
+#else
 		virtual ~LightBase() = default;
+#endif
 
 		[[nodiscard]] virtual const rawrbox::Colorf getColor() const;
 		virtual void setColor(const rawrbox::Colorf& col);
@@ -63,5 +73,9 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual const rawrbox::Vector3f& getDirection() const;
 		virtual void setDirection(const rawrbox::Vector3f& dir);
+
+#ifdef RAWRBOX_SCRIPTING
+		virtual sol::object& getScriptingWrapper();
+#endif
 	};
 } // namespace rawrbox

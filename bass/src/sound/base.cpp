@@ -10,19 +10,30 @@
 namespace rawrbox {
 	SoundBase::SoundBase(uint32_t sample, uint32_t fx, uint32_t flags, bool stream) : _sample(sample), _fxSample(fx), _flags(flags), _isStream(stream) {}
 	SoundBase::~SoundBase() {
-		if (this->isValid()) return;
-		if (this->_flags & SoundFlags::BEAT_DETECTION) BASS_FX_BPM_BeatFree(this->_sample);
+		this->_instances.clear();
 
-		if (this->_isStream) {
-			BASS_StreamFree(this->_sample);
-		} else {
-			BASS_SampleFree(this->_sample);
+		if (!this->isValid()) {
+			if (this->_flags & SoundFlags::BEAT_DETECTION) BASS_FX_BPM_BeatFree(this->_sample);
+
+			if (this->_isStream) {
+				BASS_StreamFree(this->_sample);
+			} else {
+				BASS_SampleFree(this->_sample);
+			}
 		}
 	}
 
-	std::unique_ptr<rawrbox::SoundInstance> SoundBase::createInstance() {
+	std::shared_ptr<rawrbox::SoundInstance> SoundBase::createInstance() {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-BASS] Sound sample not valid!");
-		return std::make_unique<rawrbox::SoundInstance>(this->_sample, this->_isStream, this->_flags);
+		auto ptr = std::make_shared<rawrbox::SoundInstance>(this->_sample, this->_isStream, this->_flags);
+
+		this->_instances.push_back(std::move(ptr));
+		return this->_instances.front();
+	}
+
+	std::shared_ptr<rawrbox::SoundInstance> SoundBase::getInstance(size_t i) {
+		if (i >= this->_instances.size()) throw std::runtime_error(fmt::format("[RawrBox-BASS] Sound instance '{}' not found!", i));
+		return this->_instances[i];
 	}
 
 	bool SoundBase::isValid() const {

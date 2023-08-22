@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/render/decals/manager.hpp>
+#include <rawrbox/render/scripting/wrappers/model/instance_wrapper.hpp>
 
 #include <sol/sol.hpp>
 

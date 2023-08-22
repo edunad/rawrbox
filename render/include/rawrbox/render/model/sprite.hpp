@@ -6,8 +6,7 @@
 
 namespace rawrbox {
 
-	template <typename M = rawrbox::MaterialBase>
-	class Sprite : public rawrbox::Model<M> {
+	class Sprite : public rawrbox::Model {
 	protected:
 		bool _xAxis = true;
 		bool _yAxis = true;
@@ -30,11 +29,11 @@ namespace rawrbox {
 
 		rawrbox::Mesh* addMesh(rawrbox::Mesh mesh) override {
 			mesh.setOptimizable(false);
-			return Model<M>::addMesh(mesh);
+			return Model::addMesh(mesh);
 		}
 
 		void draw() override {
-			ModelBase<M>::draw();
+			rawrbox::ModelBase::draw();
 
 			for (auto& mesh : this->_meshes) {
 				// Set billboard ----

@@ -12,10 +12,10 @@ namespace bass_test {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
 
-		std::unique_ptr<rawrbox::SoundInstance> _sound = nullptr;
-		std::unique_ptr<rawrbox::SoundInstance> _sound2 = nullptr;
+		std::weak_ptr<rawrbox::SoundInstance> _sound;
+		std::weak_ptr<rawrbox::SoundInstance> _sound2;
 
-		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::Model> _modelGrid = std::make_unique<rawrbox::Model>();
 
 		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 		std::unique_ptr<rawrbox::Text3D> _beatText = std::make_unique<rawrbox::Text3D>();

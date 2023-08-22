@@ -27,8 +27,7 @@ namespace rawrbox {
 		}
 	};
 
-	template <typename M = rawrbox::MaterialBase>
-	class Spline : public rawrbox::ModelBase<M> {
+	class Spline : public rawrbox::ModelBase {
 		std::vector<std::unique_ptr<rawrbox::BezierCurve>> _curves = {};
 		std::unique_ptr<rawrbox::Mesh2DShape> _shape = nullptr;
 		float _subDivisions = 8.F;
@@ -115,7 +114,7 @@ namespace rawrbox {
 				int ti = 0;
 				for (int i = 0; i < segments; i++) {
 					int offset = i * vertsInShape;
-					for (int l = 0; l < shapeSegments.size(); l += 2) {
+					for (int l = 0; l < static_cast<int>(shapeSegments.size()); l += 2) {
 						auto a = static_cast<uint16_t>(offset + shapeSegments[l]);
 						auto b = static_cast<uint16_t>(offset + shapeSegments[l] + vertsInShape);
 						auto c = static_cast<uint16_t>(offset + shapeSegments[l + 1] + vertsInShape);
@@ -141,7 +140,7 @@ namespace rawrbox {
 		};
 
 		void draw() override {
-			ModelBase<M>::draw();
+			rawrbox::ModelBase::draw();
 			this->_material->process(*this->_mesh);
 
 			if (this->isDynamic()) {

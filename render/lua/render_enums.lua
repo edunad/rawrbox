@@ -7,6 +7,6 @@ LightType = {
 }
 
 FogType = {
-    FOG_LINEAR = 0,
-    FOG_EXP = 1
+    LINEAR = 0,
+    EXP = 1
 }

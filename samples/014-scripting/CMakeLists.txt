@@ -21,7 +21,7 @@ add_dependencies(${output_target} copy_resources_samples)
 target_compile_features(${output_target} PUBLIC cxx_std_20)
 target_include_directories(${output_target} PRIVATE "include")
 target_compile_features(${output_target} PRIVATE cxx_std_${CMAKE_CXX_STANDARD})
-target_link_libraries(${output_target} PRIVATE RAWRBOX.RENDER RAWRBOX.NETWORK)
+target_link_libraries(${output_target} PRIVATE RAWRBOX.RENDER RAWRBOX.NETWORK RAWRBOX.BASS)
 
 set_lib_runtime_mt(${output_target})
 

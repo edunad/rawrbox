@@ -71,7 +71,7 @@ namespace particle_test {
 
 		// Setup Engine
 		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/particles/particles.png")->get<rawrbox::TextureAtlas>();
-		this->_ps = std::make_unique<rawrbox::ParticleSystem<>>(*texture);
+		this->_ps = std::make_unique<rawrbox::ParticleSystem>(*texture);
 
 		{
 			rawrbox::Emitter m;

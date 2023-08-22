@@ -9,7 +9,12 @@ const bgfx::EmbeddedShader model_instanced_lit_shaders[] = {
 // NOLINTEND(*)
 
 namespace rawrbox {
+	uint32_t MaterialInstancedLit::supports() const {
+		return rawrbox::MaterialLit::supports() | rawrbox::MaterialFlags::INSTANCED;
+	}
+
 	void MaterialInstancedLit::upload() {
+		this->setupUniforms();
 		rawrbox::RenderUtils::buildShader(model_instanced_lit_shaders, this->_program);
 	}
 } // namespace rawrbox

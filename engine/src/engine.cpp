@@ -1,6 +1,7 @@
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/utils/thread_utils.hpp>
+#include <rawrbox/utils/timer.hpp>
 
 #include <fmt/printf.h>
 
@@ -80,6 +81,7 @@ namespace rawrbox {
 				// ---------------------------
 
 				// VARIABLE-TIME
+				rawrbox::TIMER::update();
 				this->update();
 				// ----
 
@@ -90,10 +92,12 @@ namespace rawrbox {
 			}
 
 			fmt::print("[RawrBox-Engine] Thread 'rawrbox:render' shutdown\n");
+			rawrbox::TIMER::clear();
 			this->onThreadShutdown(rawrbox::ENGINE_THREADS::THREAD_RENDER);
 
 			this->_shutdown = rawrbox::ENGINE_THREADS::THREAD_INPUT; // Done killing bgfx, now destroy glfw
 		});
+
 		// ----
 
 		// GLFW needs to run on main thread

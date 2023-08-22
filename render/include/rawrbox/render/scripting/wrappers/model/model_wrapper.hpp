@@ -12,7 +12,7 @@ namespace rawrbox {
 	class ModelWrapper : public rawrbox::ModelBaseWrapper {
 
 	public:
-		ModelWrapper(const std::shared_ptr<rawrbox::ModelBase<rawrbox::MaterialBase>>& ref);
+		ModelWrapper(const std::shared_ptr<rawrbox::ModelBase>& ref);
 		ModelWrapper(const ModelWrapper&) = default;
 		ModelWrapper(ModelWrapper&&) = default;
 		ModelWrapper& operator=(const ModelWrapper&) = default;

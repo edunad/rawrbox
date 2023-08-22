@@ -7,8 +7,7 @@
 #include <rawrbox/render/model/model.hpp>
 
 namespace rawrbox {
-	template <typename M = rawrbox::MaterialBase>
-	class AssimpModel : public rawrbox::Model<M> {
+	class AssimpModel : public rawrbox::Model {
 		void loadMeshes(const rawrbox::AssimpImporter& model) {
 			for (size_t i = 0; i < model.meshes.size(); i++) {
 				this->addMesh(rawrbox::AssimpUtils::extractMesh(model, i));
@@ -65,11 +64,11 @@ namespace rawrbox {
 		void load(const rawrbox::AssimpImporter& model) {
 			this->loadMeshes(model);
 
-			if constexpr (supportsBones<M>) {
+			if ((this->_material->supports() & rawrbox::MaterialFlags::BONES) != 0) {
 				this->loadAnimations(model);
 			}
 
-			if constexpr (supportsNormals<M>) {
+			if ((this->_material->supports() & rawrbox::MaterialFlags::NORMALS) != 0) {
 				this->loadLights(model);
 			}
 

@@ -1,4 +1,7 @@
 
+#include <rawrbox/bass/resources/sound.hpp>
+#include <rawrbox/bass/scripting/plugin.hpp>
+#include <rawrbox/network/scripting/plugin.hpp>
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
@@ -7,6 +10,7 @@
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/resources/scripting/plugin.hpp>
 #include <rawrbox/scripting/scripting.hpp>
+#include <rawrbox/utils/timer.hpp>
 
 #include <scripting_test/game.hpp>
 #include <scripting_test/wrapper_test.hpp>
@@ -36,19 +40,27 @@ namespace scripting_test {
 
 		// Setup loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
 		// ----------
 
 		// Setup scripting
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::RenderPlugin>(this->_window.get());
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::ResourcesPlugin>();
+		rawrbox::SCRIPTING::registerPlugin<rawrbox::BASSPlugin>();
+		rawrbox::SCRIPTING::registerPlugin<rawrbox::NetworkPlugin>();
 
 		// Custom non-plugin ---
 		rawrbox::SCRIPTING::registerType<rawrbox::TestWrapper>();
 		rawrbox::SCRIPTING::onRegisterGlobals += [this](rawrbox::Mod* mod) {
 			mod->getEnvironment()["test"] = rawrbox::TestWrapper();
 			mod->getEnvironment()["test_model"] = [this]() -> sol::object {
-				if (this->_model == nullptr) return sol::nil;
+				if (!this->_ready || this->_model == nullptr) return sol::nil;
 				return this->_model->getScriptingWrapper();
+			};
+
+			mod->getEnvironment()["test_model2"] = [this]() -> sol::object {
+				if (!this->_ready || this->_instance == nullptr) return sol::nil;
+				return this->_instance->getScriptingWrapper();
 			};
 		};
 		// ----
@@ -58,8 +70,6 @@ namespace scripting_test {
 		// Load lua mods
 		rawrbox::SCRIPTING::load();
 		rawrbox::SCRIPTING::call("init");
-		// -----
-
 		// ----
 
 		// Load content ---
@@ -76,7 +86,7 @@ namespace scripting_test {
 		}
 
 		// Load pre-content mod stuff ---
-		rawrbox::SCRIPTING::call("load");
+		rawrbox::SCRIPTING::call("onLoad");
 		// ---
 
 		// Start loading ----
@@ -109,8 +119,13 @@ namespace scripting_test {
 		}
 		// ----
 
+		this->_instance->setTemplate(rawrbox::MeshUtils::generateCube({0.F, 0.0F, 0.F}, {0.1F, 0.1F, 0.1F}));
+		this->_instance->upload();
+
 		this->_model->upload();
 		this->_ready = true;
+
+		rawrbox::SCRIPTING::call("onReady");
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
@@ -121,6 +136,7 @@ namespace scripting_test {
 		rawrbox::SCRIPTING::shutdown();
 
 		this->_model.reset();
+		this->_instance.reset();
 
 		this->_window->unblockPoll();
 		this->_window.reset();
@@ -152,6 +168,7 @@ namespace scripting_test {
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 		if (this->_model != nullptr) this->_model->draw();
+		if (this->_instance != nullptr) this->_instance->draw();
 	}
 
 	void Game::drawOverlay() {

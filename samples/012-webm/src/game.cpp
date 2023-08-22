@@ -27,8 +27,8 @@ namespace webm_test {
 
 		// Setup camera
 		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
-		cam->setPos({0.F, 5.F, -5.F});
-		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		cam->setPos({0.F, 4.F, -5.F});
+		cam->setAngle({0.F, 0.F, 0.F, 0.F});
 		// --------------
 
 		// Setup loaders

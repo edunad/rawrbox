@@ -10,9 +10,8 @@
 
 namespace rawrbox {
 
-	template <typename M = rawrbox::MaterialBase>
 #ifdef RAWRBOX_SCRIPTING
-	class ModelBase : public std::enable_shared_from_this<rawrbox::ModelBase<M>> {
+	class ModelBase : public std::enable_shared_from_this<rawrbox::ModelBase> {
 #else
 	class ModelBase {
 #endif
@@ -25,7 +24,7 @@ namespace rawrbox {
 		bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;         // Indices - Static
 
 		std::unique_ptr<rawrbox::Mesh> _mesh = std::make_unique<rawrbox::Mesh>();
-		std::unique_ptr<M> _material = std::make_unique<M>();
+		std::unique_ptr<rawrbox::MaterialBase> _material = std::make_unique<rawrbox::MaterialBase>();
 
 		// BGFX DYNAMIC SUPPORT ---
 		bool _isDynamic = false;
@@ -36,16 +35,14 @@ namespace rawrbox {
 
 		virtual void initializeLua() {
 			if (!SCRIPTING::initialized) return;
-
-			auto ptr = std::dynamic_pointer_cast<rawrbox::ModelBase<>>(this->shared_from_this());
-			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelBaseWrapper(ptr));
+			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelBaseWrapper(this->shared_from_this()));
 		}
 #endif
 
 		virtual void updateBuffers() {
 			if (!this->isDynamic() || !this->isUploaded()) return;
 
-			const bgfx::Memory* vertMem = bgfx::makeRef(this->_mesh->vertices.data(), static_cast<uint32_t>(this->_mesh->vertices.size()) * M::vLayout().getStride());
+			const bgfx::Memory* vertMem = bgfx::makeRef(this->_mesh->vertices.data(), static_cast<uint32_t>(this->_mesh->vertices.size()) * this->_material->vLayout().getStride());
 			const bgfx::Memory* indexMem = bgfx::makeRef(this->_mesh->indices.data(), static_cast<uint32_t>(this->_mesh->indices.size()) * sizeof(uint16_t));
 
 			bgfx::update(this->_vbdh, 0, vertMem);
@@ -70,6 +67,11 @@ namespace rawrbox {
 #ifdef RAWRBOX_SCRIPTING
 			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
 #endif
+		}
+
+		template <typename M = rawrbox::MaterialBase>
+		void setMaterial() {
+			this->_material = std::make_unique<M>();
 		}
 
 		// UTIL ---
@@ -112,7 +114,7 @@ namespace rawrbox {
 			// Generate buffers ----
 			this->_isDynamic = dynamic;
 
-			const auto layout = M::vLayout();
+			const auto layout = this->_material->vLayout();
 			const bgfx::Memory* vertMem = bgfx::makeRef(this->_mesh->vertices.data(), static_cast<uint32_t>(this->_mesh->vertices.size()) * layout.getStride());
 			const bgfx::Memory* indexMem = bgfx::makeRef(this->_mesh->indices.data(), static_cast<uint32_t>(this->_mesh->indices.size()) * sizeof(uint16_t));
 
@@ -133,7 +135,6 @@ namespace rawrbox {
 			// -----------------
 
 			this->_material->upload();
-			this->_material->registerUniforms();
 		}
 
 		virtual void draw() {

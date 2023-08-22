@@ -71,10 +71,9 @@ namespace rawrbox {
 	// ---------
 
 	// Light utils ----
-	rawrbox::LightBaseWrapper LightsWrapper::getLight(size_t indx) {
-		// auto light = rawrbox::LIGHTS::getLight(indx);
-		// return {light};
-		throw std::runtime_error("AAAAAAAAAAA");
+	sol::object LightsWrapper::getLight(size_t indx) {
+		auto light = rawrbox::LIGHTS::getLight(indx);
+		return light->getScriptingWrapper();
 	}
 
 	size_t LightsWrapper::count() {
@@ -110,11 +109,14 @@ namespace rawrbox {
 		    // ---------
 
 		    // Light
+		    "addPoint", &LightsWrapper::addPoint,
+		    "addSpot", &LightsWrapper::addSpot,
+
+		    "getLight", &LightsWrapper::getLight,
 		    "removeLight", &LightsWrapper::removeLight,
 		    // ---------
 
 		    // Light utils
-		    "getLight", &LightsWrapper::getLight,
 		    "count", &LightsWrapper::count
 		    // ---------
 		);

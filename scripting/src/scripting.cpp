@@ -67,6 +67,11 @@ namespace rawrbox {
 	}
 
 	void SCRIPTING::shutdown() {
+		for (auto& mod : _mods) {
+			auto& env = mod.second->getEnvironment();
+			env.clear();
+		}
+
 		_watcher.reset();
 		_hooks.reset();
 

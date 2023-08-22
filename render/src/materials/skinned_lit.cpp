@@ -9,23 +9,21 @@ const bgfx::EmbeddedShader model_skinned_shaders[] = {
 // NOLINTEND(*)
 
 namespace rawrbox {
-	MaterialSkinnedLit::~MaterialSkinnedLit() {
-		RAWRBOX_DESTROY(u_bones);
-	}
-
-	void MaterialSkinnedLit::registerUniforms() {
-		MaterialBase::registerUniforms();
-
-		// BONES ----
-		u_bones = bgfx::createUniform("u_bones", bgfx::UniformType::Mat4, rawrbox::MAX_BONES_PER_MODEL);
-		// ---
-	}
-
-	void MaterialSkinnedLit::setBoneData(const std::vector<rawrbox::Matrix4x4>& data) {
-		bgfx::setUniform(this->u_bones, &data.front(), static_cast<uint16_t>(data.size()));
+	void MaterialSkinnedLit::setupUniforms() {
+		rawrbox::MaterialLit::setupUniforms();
+		this->registerUniform("u_bones", bgfx::UniformType::Mat4, rawrbox::MAX_BONES_PER_MODEL);
 	}
 
 	void MaterialSkinnedLit::upload() {
+		this->setupUniforms();
 		rawrbox::RenderUtils::buildShader(model_skinned_shaders, this->_program);
+	}
+
+	uint32_t MaterialSkinnedLit::supports() const {
+		return rawrbox::MaterialLit::supports() | rawrbox::MaterialFlags::BONES;
+	}
+
+	const bgfx::VertexLayout MaterialSkinnedLit::vLayout() const {
+		return rawrbox::VertexData::vLayout(true, true);
 	}
 } // namespace rawrbox

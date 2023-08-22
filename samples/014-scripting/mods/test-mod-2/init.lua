@@ -1,13 +1,5 @@
 function TEST()
     print("You called test! On test-mod-2")
-
-    --[[http:request("https://ams3.digitaloceanspaces.com/failcake/public/badapple/caw.txt", HTTP.GET, {},
-        function(err, data)
-            if err then
-                print("ERROR: ", data)
-                return
-            end
-        end)]]
 end
 
 function MOD:drawOverlay()
@@ -16,13 +8,13 @@ end
 
 function MOD:update()
     local mdl = test_model()
-    if mdl:isValid() then
+    if not mdl or mdl:isValid() then
         local mesh1 = mdl:getMesh(0)
         if not mesh1 then return end
 
         local p = mesh1:getPos()
-        p.x = math.cos(BGFX_FRAME() * 0.01) * 2.
         p.z = math.sin(BGFX_FRAME() * 0.01) * 2.
+        p.x = -5.
 
         mesh1:setPos(p)
     end

@@ -1,3 +1,4 @@
+#include <rawrbox/engine/static.hpp>
 #include <rawrbox/network/scripting/wrappers/http_wrapper.hpp>
 #include <rawrbox/scripting/scripting.hpp>
 #include <rawrbox/scripting/utils/lua.hpp>
@@ -25,26 +26,28 @@ namespace rawrbox {
 
 		rawrbox::HTTP::request(
 		    url, method, headerMap, [callback](int code, std::map<std::string, std::string> headerResp, std::string resp) {
-			    if (code == 0) {
-				    rawrbox::LuaUtils::runCallback(callback, true, resp); // curl error
-				    return;
-			    }
+			    rawrbox::runOnRenderThread([resp, code, callback, headerResp]() {
+				    if (code == 0 || (code == 200 && resp.starts_with("Operation timed out after"))) {
+					    rawrbox::LuaUtils::runCallback(callback, true, resp); // curl error
+					    return;
+				    }
 
-			    auto& lua = rawrbox::SCRIPTING::getLUA();
-			    sol::table tbl = lua.create_table();
-			    sol::table headerTbl = lua.create_table();
+				    auto& lua = rawrbox::SCRIPTING::getLUA();
+				    sol::table tbl = lua.create_table();
+				    sol::table headerTbl = lua.create_table();
 
-			    for (auto& pair : headerResp) {
-				    headerTbl[pair.first] = pair.second;
-			    }
+				    for (auto& pair : headerResp) {
+					    headerTbl[pair.first] = pair.second;
+				    }
 
-			    tbl["status"] = code;
-			    tbl["data"] = resp;
-			    tbl["headers"] = headerTbl;
+				    tbl["status"] = code;
+				    tbl["data"] = resp;
+				    tbl["headers"] = headerTbl;
 
-			    rawrbox::LuaUtils::runCallback(callback, false, tbl);
+				    rawrbox::LuaUtils::runCallback(callback, false, tbl);
+			    });
 		    },
-		    timeout.value_or(5000));
+		    timeout.value_or(10000));
 	}
 
 	void HTTPWrapper::registerLua(sol::state& lua) {

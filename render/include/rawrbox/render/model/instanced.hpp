@@ -1,44 +1,36 @@
 #pragma once
 
 #include <rawrbox/render/materials/instanced.hpp>
+#include <rawrbox/render/model/instance.hpp>
 #include <rawrbox/render/model/model.hpp>
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/render/scripting/wrappers/model/instanced_wrapper.hpp>
+	#include <sol/sol.hpp>
+#endif
+
 namespace rawrbox {
-
-	struct Instance {
-		rawrbox::Matrix4x4 matrix = {};
-		rawrbox::Colorf color = rawrbox::Colors::White();
-		rawrbox::Vector4f extraData = {}; // AtlasID, etc..
-
-		Instance(const rawrbox::Matrix4x4& mat, const rawrbox::Colorf& col = rawrbox::Colors::White(), rawrbox::Vector4f data = {}) : matrix(mat), color(col), extraData(data) {}
-
-		static bgfx::VertexLayout vLayout() {
-			static bgfx::VertexLayout l;
-			l.begin()
-			    .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float) // Position
-			    .add(bgfx::Attrib::TexCoord1, 4, bgfx::AttribType::Float)
-			    .add(bgfx::Attrib::TexCoord2, 4, bgfx::AttribType::Float)
-			    .add(bgfx::Attrib::TexCoord3, 4, bgfx::AttribType::Float)
-			    .add(bgfx::Attrib::TexCoord4, 4, bgfx::AttribType::Float) // Color
-			    .add(bgfx::Attrib::TexCoord5, 4, bgfx::AttribType::Float) // ExtraData
-			    .end();
-			return l;
-		};
-	};
-
-	template <typename M = rawrbox::MaterialInstanced>
-	class InstancedModel : public rawrbox::ModelBase<M> {
+	class InstancedModel : public rawrbox::ModelBase {
 		bgfx::DynamicVertexBufferHandle _dataBuffer = BGFX_INVALID_HANDLE;
 		std::vector<rawrbox::Instance> _instances = {};
+		bool _autoUpload = true;
 
 		void updateBuffers() override {
-			rawrbox::ModelBase<M>::updateBuffers();
+			rawrbox::ModelBase::updateBuffers();
 			this->updateInstance();
 		}
+
+#ifdef RAWRBOX_SCRIPTING
+		void initializeLua() override {
+			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
+			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::InstancedModelWrapper(this->shared_from_this()));
+		}
+#endif
 
 	public:
 		explicit InstancedModel(size_t instanceSize = 0) {
 			if (instanceSize != 0) this->_instances.reserve(instanceSize);
+			this->setMaterial<rawrbox::MaterialInstanced>();
 		}
 
 		InstancedModel(const InstancedModel&) = delete;
@@ -50,6 +42,16 @@ namespace rawrbox {
 			this->_instances.clear();
 		}
 
+		template <typename M = rawrbox::MaterialBase>
+		void setMaterial() {
+			this->_material = std::make_unique<M>();
+			if ((this->_material->supports() & rawrbox::MaterialFlags::INSTANCED) == 0) throw std::runtime_error("[RawrBox-InstancedModel] Invalid material! InstancedModel only supports `instanced` materials!");
+		}
+
+		virtual void setAutoUpload(bool enabled) {
+			this->_autoUpload = enabled;
+		}
+
 		virtual void setTemplate(rawrbox::Mesh mesh) {
 			if (mesh.empty()) throw std::runtime_error("[RawrBox-InstancedModel] Invalid mesh! Missing vertices / indices!");
 			this->_mesh = std::make_unique<rawrbox::Mesh>(mesh);
@@ -59,33 +61,33 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] rawrbox::Mesh& getTemplate() const {
+		[[nodiscard]] virtual rawrbox::Mesh& getTemplate() const {
 			if (this->_mesh == nullptr) throw std::runtime_error("[RawrBox-InstancedModel] Invalid mesh! Missing vertices / indices!");
 			return *this->_mesh;
 		}
 
 		virtual void addInstance(const rawrbox::Instance& instance) {
 			this->_instances.push_back(instance);
-			if (this->isUploaded()) this->updateInstance();
+			if (this->isUploaded() && this->_autoUpload) this->updateInstance();
 		}
 
 		virtual void removeInstance(size_t i = 0) {
 			if (i < 0 || i >= this->_instances.size()) throw std::runtime_error("[RawrBox-InstancedModel] Failed to find instance");
 			this->_instances.erase(this->_instances.begin() + i);
 
-			if (this->isUploaded()) this->updateInstance();
+			if (this->isUploaded() && this->_autoUpload) this->updateInstance();
 		}
 
-		[[nodiscard]] const rawrbox::Instance& getInstance(size_t i = 0) const {
+		[[nodiscard]] rawrbox::Instance& getInstance(size_t i = 0) {
 			if (i < 0 || i >= this->_instances.size()) throw std::runtime_error("[RawrBox-InstancedModel] Failed to find instance");
 			return this->_instances[i];
 		}
 
-		std::vector<rawrbox::Instance>& instances() { return this->_instances; }
-		size_t count() { return this->_instances.size(); }
+		virtual std::vector<rawrbox::Instance>& instances() { return this->_instances; }
+		[[nodiscard]] virtual size_t count() const { return this->_instances.size(); }
 
 		void upload(bool /*dynamic*/ = false) override {
-			rawrbox::ModelBase<M>::upload(false);
+			rawrbox::ModelBase::upload(false);
 
 			this->_dataBuffer = bgfx::createDynamicVertexBuffer(
 			    1, rawrbox::Instance::vLayout(), BGFX_BUFFER_COMPUTE_READ | BGFX_BUFFER_ALLOW_RESIZE);
@@ -93,7 +95,7 @@ namespace rawrbox {
 			this->updateInstance();
 		}
 
-		void updateInstance() {
+		virtual void updateInstance() {
 			if (this->_instances.empty()) return;
 			if (!bgfx::isValid(this->_dataBuffer)) throw std::runtime_error("[RawrBox-InstancedModel] Data buffer not valid! Did you call upload()?");
 
@@ -105,7 +107,7 @@ namespace rawrbox {
 			if (this->_instances.empty()) return;
 			if ((BGFX_CAPS_INSTANCING & bgfx::getCaps()->supported) == 0) throw std::runtime_error("[RawrBox-InstancedModel] Instancing not supported by the graphics card!");
 
-			ModelBase<M>::draw();
+			rawrbox::ModelBase::draw();
 			this->_material->process(*this->_mesh); // Set atlas
 
 			if (this->isDynamic()) {
