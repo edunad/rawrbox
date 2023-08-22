@@ -11,6 +11,7 @@ namespace rawrbox {
 		MaterialParticle &operator=(MaterialParticle &&) = delete;
 		~MaterialParticle() override = default;
 
+		[[nodiscard]] uint32_t supports() const override;
 		void upload() override;
 	};
 } // namespace rawrbox

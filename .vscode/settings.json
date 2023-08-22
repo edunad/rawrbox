@@ -19,6 +19,7 @@
     "curtime",
     "BGFX_FRAME",
     "resources",
-    "timer"
+    "timer",
+    "Instance"
   ]
 }

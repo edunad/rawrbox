@@ -156,7 +156,7 @@ namespace physics_test {
 		body_interface.AddBody(box->body->GetID(), JPH::EActivation::Activate);
 
 		// Create model
-		box->mdl = std::make_unique<rawrbox::Model<>>();
+		box->mdl = std::make_unique<rawrbox::Model>();
 
 		auto mesh = rawrbox::MeshUtils::generateCube({}, size);
 		mesh.setTexture(this->_texture);

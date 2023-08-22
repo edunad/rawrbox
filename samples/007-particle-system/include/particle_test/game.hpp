@@ -11,10 +11,10 @@
 namespace particle_test {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::Model> _modelGrid = std::make_unique<rawrbox::Model>();
 
 		rawrbox::Emitter* _em = nullptr;
-		std::unique_ptr<rawrbox::ParticleSystem<>> _ps = nullptr;
+		std::unique_ptr<rawrbox::ParticleSystem> _ps = nullptr;
 
 		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 		rawrbox::Font* _font = nullptr;

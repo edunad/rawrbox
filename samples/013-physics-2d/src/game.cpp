@@ -110,7 +110,7 @@ namespace phys_2d_test {
 		box->body->SetPosition(rawrbox::Phys2DUtils::vecToPos(pos.xy()));
 
 		// Create model
-		box->mdl = std::make_unique<rawrbox::Model<>>();
+		box->mdl = std::make_unique<rawrbox::Model>();
 
 		auto mesh = rawrbox::MeshUtils::generatePlane({}, size);
 		mesh.setTexture(this->_texture);

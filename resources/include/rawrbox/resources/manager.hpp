@@ -15,6 +15,7 @@
 namespace rawrbox {
 	class RESOURCES {
 	protected:
+		static std::mutex _threadLock;
 		static std::vector<std::filesystem::path> _loadedFiles;
 		static std::vector<std::unique_ptr<rawrbox::Loader>> _loaders;
 
@@ -63,11 +64,12 @@ namespace rawrbox {
 				if (!ret->load(buffer)) throw std::runtime_error(fmt::format("[RawrBox-Resources] Failed to load file '{}'", filePath.generic_string()));
 				ret->upload();
 				ret->status = rawrbox::LoadStatus::LOADED;
-
 				// Add to the list for later on easy access
-				_loadedFiles.push_back(filePath);
+				{
+					const std::lock_guard<std::mutex> mutexGuard(_threadLock);
+					_loadedFiles.push_back(filePath);
+				}
 				// ---
-
 				return ret;
 			}
 

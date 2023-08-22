@@ -18,8 +18,7 @@
 
 struct GLFWwindow;
 namespace rawrbox {
-	// ------FLAGS
-
+	// FLAGS ------
 	// NOLINTBEGIN{unused-const-variable}
 	namespace WindowFlags {
 		const uint32_t NONE = 0;

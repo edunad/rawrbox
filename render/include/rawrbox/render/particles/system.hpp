@@ -6,12 +6,11 @@
 #define BGFX_STATE_DEFAULT_PARTICLE (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_CULL_CW | BGFX_STATE_BLEND_NORMAL)
 
 namespace rawrbox {
-	template <typename M = rawrbox::MaterialParticle>
 	class ParticleSystem {
 	protected:
 		// Drawing ----
 		std::vector<std::unique_ptr<rawrbox::Emitter>> _emitters = {};
-		std::unique_ptr<M> _material = std::make_unique<M>();
+		std::unique_ptr<rawrbox::MaterialParticle> _material = std::make_unique<rawrbox::MaterialParticle>();
 		// ---
 
 		// TEXTURE ---
@@ -34,7 +33,12 @@ namespace rawrbox {
 
 		void upload() {
 			this->_material->upload();
-			this->_material->registerUniforms();
+		}
+
+		template <typename M = rawrbox::MaterialBase>
+		void setMaterial() {
+			this->_material = std::make_unique<M>();
+			if ((this->_material->supports() & rawrbox::MaterialFlags::PARTICLE) == 0) throw std::runtime_error("[RawrBox-ParticleSystem] Invalid material! ParticleSystem only supports `particle` materials!");
 		}
 
 		rawrbox::Emitter& addEmitter(rawrbox::Emitter em) {
@@ -70,7 +74,7 @@ namespace rawrbox {
 			int vertCount = 4; // Plane
 			int indxCount = 6;
 
-			const auto layout = M::vLayout();
+			const auto layout = this->_material->vLayout();
 			const uint32_t numVertices = bgfx::getAvailTransientVertexBuffer(this->_totalParticles * vertCount, layout);
 			const uint32_t numIndices = bgfx::getAvailTransientIndexBuffer(this->_totalParticles * indxCount);
 			const uint32_t max = std::min(numVertices / vertCount, numIndices / indxCount);

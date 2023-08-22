@@ -4,6 +4,8 @@
 #include <rawrbox/render/scripting/wrappers/light/base_wrapper.hpp>
 #include <rawrbox/render/scripting/wrappers/light/manager_wrapper.hpp>
 #include <rawrbox/render/scripting/wrappers/model/base_wrapper.hpp>
+#include <rawrbox/render/scripting/wrappers/model/instance_wrapper.hpp>
+#include <rawrbox/render/scripting/wrappers/model/instanced_wrapper.hpp>
 #include <rawrbox/render/scripting/wrappers/model/mesh_wrapper.hpp>
 #include <rawrbox/render/scripting/wrappers/model/model_wrapper.hpp>
 #ifdef RAWRBOX_RESOURCES
@@ -36,6 +38,8 @@ namespace rawrbox {
 			// MODEL --
 			rawrbox::ModelBaseWrapper::registerLua(lua);
 			rawrbox::ModelWrapper::registerLua(lua);
+			rawrbox::InstanceWrapper::registerLua(lua);
+			rawrbox::InstancedModelWrapper::registerLua(lua);
 			rawrbox::MeshWrapper::registerLua(lua);
 			// ----
 

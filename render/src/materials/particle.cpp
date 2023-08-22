@@ -10,7 +10,12 @@ const bgfx::EmbeddedShader particle_shaders[] = {
 // NOLINTEND(*)
 
 namespace rawrbox {
+	uint32_t MaterialParticle::supports() const {
+		return rawrbox::MaterialBase::supports() | rawrbox::MaterialFlags::PARTICLE;
+	}
+
 	void MaterialParticle::upload() {
+		this->setupUniforms();
 		rawrbox::RenderUtils::buildShader(particle_shaders, this->_program);
 	}
 } // namespace rawrbox

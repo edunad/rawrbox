@@ -8,10 +8,10 @@
 
 #include <string>
 
-TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
+TEST_CASE("Model should behave as expected", "[rawrbox::Model]") {
 
 	SECTION("rawrbox::Model::addMesh / rawrbox::Model::removeMesh") {
-		rawrbox::Model<> mdl;
+		rawrbox::Model mdl;
 
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 		REQUIRE(mdl.getMesh(0) != nullptr);
@@ -24,7 +24,7 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 	}
 
 	SECTION("rawrbox::Model::getMeshByName") {
-		rawrbox::Model<> mdl;
+		rawrbox::Model mdl;
 
 		REQUIRE(mdl.getMesh(0) == nullptr);
 
@@ -38,7 +38,7 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 	}
 
 	SECTION("rawrbox::ModelBase::merge") {
-		rawrbox::ModelBase<> base;
+		rawrbox::ModelBase base;
 
 		auto m1 = rawrbox::MeshUtils::generatePlane({}, {1, 1});
 		auto m2 = rawrbox::MeshUtils::generatePlane({}, {1, 1});
@@ -57,7 +57,7 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 	}
 
 	SECTION("rawrbox::Model::getBBOX") {
-		rawrbox::Model<> mdl;
+		rawrbox::Model mdl;
 
 		auto& b = mdl.getBBOX();
 		REQUIRE(b.isEmpty() == true);
@@ -78,7 +78,7 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 	}
 
 	SECTION("rawrbox::ModelBase::setPos / rawrbox::ModelBase::getPos") {
-		rawrbox::ModelBase<> base;
+		rawrbox::ModelBase base;
 
 		REQUIRE(base.getPos().x == 0);
 		REQUIRE(base.getPos().y == 0);
@@ -92,7 +92,7 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 	}
 
 	SECTION("rawrbox::ModelBase::setAngle / rawrbox::ModelBase::getAngle") {
-		rawrbox::ModelBase<> base;
+		rawrbox::ModelBase base;
 		REQUIRE(base.getAngle().x == 0);
 		REQUIRE(base.getAngle().y == 0);
 		REQUIRE(base.getAngle().z == 0);
@@ -107,7 +107,7 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 	}
 
 	SECTION("rawrbox::ModelBase::setEulerAngle / rawrbox::ModelBase::getAngle") {
-		rawrbox::ModelBase<> base;
+		rawrbox::ModelBase base;
 		REQUIRE(base.getAngle().x == 0);
 		REQUIRE(base.getAngle().y == 0);
 		REQUIRE(base.getAngle().z == 0);
@@ -122,7 +122,7 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 	}
 
 	SECTION("rawrbox::ModelBase::setScale / rawrbox::ModelBase::getScale") {
-		rawrbox::ModelBase<> base;
+		rawrbox::ModelBase base;
 		REQUIRE(base.getScale().x == 1);
 		REQUIRE(base.getScale().y == 1);
 		REQUIRE(base.getScale().z == 1);
@@ -135,7 +135,7 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 	}
 
 	SECTION("rawrbox::Model::setCulling") {
-		rawrbox::Model<> mdl;
+		rawrbox::Model mdl;
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 
@@ -150,7 +150,7 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 	}
 
 	SECTION("rawrbox::Model::setWireframe") {
-		rawrbox::Model<> mdl;
+		rawrbox::Model mdl;
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 
@@ -165,7 +165,7 @@ TEST_CASE("ModelBase should behave as expected", "[rawrbox::ModelBase]") {
 	}
 
 	SECTION("rawrbox::Model::setBlend") {
-		rawrbox::Model<> mdl;
+		rawrbox::Model mdl;
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 		mdl.addMesh(rawrbox::MeshUtils::generatePlane({}, {1, 1}));
 

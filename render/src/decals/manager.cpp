@@ -1,12 +1,13 @@
 
 #include <rawrbox/render/decals/manager.hpp>
+#include <rawrbox/render/materials/decal.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 
 #include <fmt/format.h>
 
 namespace rawrbox {
 	// PRIVATE ----
-	std::unique_ptr<rawrbox::InstancedModel<rawrbox::MaterialDecal>> DECALS::_model = nullptr;
+	std::unique_ptr<rawrbox::InstancedModel> DECALS::_model = nullptr;
 	// -----
 
 	// PUBLIC ----
@@ -40,8 +41,10 @@ namespace rawrbox {
 	size_t DECALS::count() { return _model->count(); }
 
 	void DECALS::init() {
-		if (_model != nullptr) return;
-		_model = std::make_unique<rawrbox::InstancedModel<rawrbox::MaterialDecal>>();
+		if (_model != nullptr) throw std::runtime_error("[RawrBox-DECALS] Already initialized");
+
+		_model = std::make_unique<rawrbox::InstancedModel>();
+		_model->setMaterial<rawrbox::MaterialDecal>();
 
 		auto mdlTemp = rawrbox::MeshUtils::generateCube({0, 0, 0}, {1.0F, 1.0F, 0.25F});
 		mdlTemp.setBlend(BGFX_STATE_BLEND_ALPHA);

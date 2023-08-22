@@ -8,15 +8,13 @@
 #include <sol/sol.hpp>
 
 namespace rawrbox {
-	template <typename T>
 	class ModelBase;
-
 	class ModelBaseWrapper {
 	protected:
-		std::weak_ptr<rawrbox::ModelBase<rawrbox::MaterialBase>> _ref;
+		std::weak_ptr<rawrbox::ModelBase> _ref;
 
 	public:
-		ModelBaseWrapper(const std::shared_ptr<rawrbox::ModelBase<rawrbox::MaterialBase>>& ref);
+		ModelBaseWrapper(const std::shared_ptr<rawrbox::ModelBase>& ref);
 		ModelBaseWrapper(const ModelBaseWrapper&) = default;
 		ModelBaseWrapper(ModelBaseWrapper&&) = default;
 		ModelBaseWrapper& operator=(const ModelBaseWrapper&) = default;

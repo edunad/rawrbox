@@ -4,22 +4,20 @@
 namespace rawrbox {
 
 	class MaterialSkinned : public rawrbox::MaterialBase {
-	public:
-		bgfx::UniformHandle u_bones = BGFX_INVALID_HANDLE;
+	protected:
+		void setupUniforms() override;
 
+	public:
 		MaterialSkinned() = default;
 		MaterialSkinned(MaterialSkinned&&) = delete;
 		MaterialSkinned& operator=(MaterialSkinned&&) = delete;
 		MaterialSkinned(const MaterialSkinned&) = delete;
 		MaterialSkinned& operator=(const MaterialSkinned&) = delete;
-		~MaterialSkinned() override;
+		~MaterialSkinned() override = default;
 
-		void setBoneData(const std::vector<rawrbox::Matrix4x4>& data);
-		void registerUniforms() override;
 		void upload() override;
 
-		static const bgfx::VertexLayout vLayout() {
-			return rawrbox::VertexData::vLayout(false, true);
-		}
+		[[nodiscard]] uint32_t supports() const override;
+		[[nodiscard]] const bgfx::VertexLayout vLayout() const override;
 	};
 } // namespace rawrbox

@@ -17,8 +17,7 @@
 
 namespace rawrbox {
 
-	template <typename M = rawrbox::MaterialBase>
-	class Model : public rawrbox::ModelBase<M> {
+	class Model : public rawrbox::ModelBase {
 
 	protected:
 		std::unordered_map<std::string, rawrbox::Animation> _animations = {};
@@ -75,7 +74,7 @@ namespace rawrbox {
 			// ------------
 
 			// BONE ANIMATION ----
-			if constexpr (supportsBones<M>) {
+			if ((this->_material->supports() & rawrbox::MaterialFlags::BONES) != 0) {
 				std::vector<rawrbox::Matrix4x4> boneTransforms = {};
 				boneTransforms.resize(rawrbox::MAX_BONES_PER_MODEL);
 
@@ -88,7 +87,7 @@ namespace rawrbox {
 					}
 				}
 
-				this->_material->setBoneData(boneTransforms);
+				this->_material->setUniformData("u_bones", boneTransforms);
 			}
 			// -----
 		}
@@ -199,7 +198,7 @@ namespace rawrbox {
 
 		void updateLights() {
 			// Update lights ---
-			if constexpr (supportsNormals<M>) {
+			if ((this->_material->supports() & rawrbox::MaterialFlags::NORMALS) != 0) {
 				for (auto& mesh : this->meshes()) {
 					// auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle()); // TODO
 
@@ -214,9 +213,7 @@ namespace rawrbox {
 #ifdef RAWRBOX_SCRIPTING
 		void initializeLua() override {
 			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
-
-			auto ptr = std::dynamic_pointer_cast<rawrbox::ModelBase<>>(this->shared_from_this());
-			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelWrapper(ptr));
+			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelWrapper(this->shared_from_this()));
 		}
 #endif
 
@@ -308,7 +305,7 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::LightBase, typename... CallbackArgs>
 		void addLight(const std::string& parentMesh = "", CallbackArgs&&... args) {
-			if constexpr (supportsNormals<M>) {
+			if ((this->_material->supports() & rawrbox::MaterialFlags::NORMALS) != 0) {
 				auto parent = this->_meshes.back().get();
 				if (!parentMesh.empty()) {
 					auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
@@ -326,22 +323,22 @@ namespace rawrbox {
 		// -----
 
 		void setPos(const rawrbox::Vector3f& pos) override {
-			rawrbox::ModelBase<M>::setPos(pos);
+			rawrbox::ModelBase::setPos(pos);
 			this->updateLights();
 		}
 
 		void setAngle(const rawrbox::Vector4f& angle) override {
-			rawrbox::ModelBase<M>::setAngle(angle);
+			rawrbox::ModelBase::setAngle(angle);
 			this->updateLights();
 		}
 
 		void setEulerAngle(const rawrbox::Vector3f& angle) override {
-			rawrbox::ModelBase<M>::setEulerAngle(angle);
+			rawrbox::ModelBase::setEulerAngle(angle);
 			this->updateLights();
 		}
 
 		void setScale(const rawrbox::Vector3f& size) override {
-			rawrbox::ModelBase<M>::setScale(size);
+			rawrbox::ModelBase::setScale(size);
 			this->updateLights();
 		}
 
@@ -450,11 +447,11 @@ namespace rawrbox {
 
 		void upload(bool dynamic = false) override {
 			this->flattenMeshes(); // Merge and optimize meshes for drawing
-			ModelBase<M>::upload(dynamic);
+			ModelBase::upload(dynamic);
 		}
 
 		void draw() override {
-			ModelBase<M>::draw();
+			ModelBase::draw();
 
 			this->preDraw();
 

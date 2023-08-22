@@ -14,12 +14,12 @@ namespace phys_2d_test {
 	struct BoxOfDoom {
 	public:
 		muli::RigidBody* body = nullptr;
-		std::unique_ptr<rawrbox::Model<>> mdl = nullptr;
+		std::unique_ptr<rawrbox::Model> mdl = nullptr;
 	};
 
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::Model> _modelGrid = std::make_unique<rawrbox::Model>();
 
 		std::vector<std::unique_ptr<BoxOfDoom>> _boxes = std::vector<std::unique_ptr<BoxOfDoom>>();
 

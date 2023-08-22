@@ -3,6 +3,7 @@
 #include <rawrbox/render/gizmos.hpp>
 #include <rawrbox/render/light/point.hpp>
 #include <rawrbox/render/light/spot.hpp>
+#include <rawrbox/render/materials/lit.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/renderers/cluster.hpp>
 #include <rawrbox/render/resources/font.hpp>
@@ -41,6 +42,10 @@ namespace light {
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// -----
+
+		// Setup materials ---
+		this->_model->setMaterial<rawrbox::MaterialLit>();
+		// ----
 
 		// Setup binds ---
 		this->_window->onKey += [](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {

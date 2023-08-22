@@ -10,7 +10,12 @@ const bgfx::EmbeddedShader text3D_shaders[] = {
 // NOLINTEND(*)
 
 namespace rawrbox {
+	uint32_t MaterialText3D::supports() const {
+		return rawrbox::MaterialBase::supports() | rawrbox::MaterialFlags::TEXT;
+	}
+
 	void MaterialText3D::upload() {
+		this->setupUniforms();
 		rawrbox::RenderUtils::buildShader(text3D_shaders, this->_program);
 	}
 } // namespace rawrbox

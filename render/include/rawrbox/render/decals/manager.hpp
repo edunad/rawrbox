@@ -1,14 +1,13 @@
 #pragma once
 
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/materials/decal.hpp>
 #include <rawrbox/render/model/instanced.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
 namespace rawrbox {
 	class DECALS {
 	protected:
-		static std::unique_ptr<rawrbox::InstancedModel<rawrbox::MaterialDecal>> _model;
+		static std::unique_ptr<rawrbox::InstancedModel> _model;
 
 	public:
 		static void setAtlasTexture(rawrbox::TextureBase* atlas);

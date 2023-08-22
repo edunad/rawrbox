@@ -9,7 +9,7 @@
 namespace webm_test {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::Model> _model = std::make_unique<rawrbox::Model>();
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;

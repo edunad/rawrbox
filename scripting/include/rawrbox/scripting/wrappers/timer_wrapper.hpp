@@ -13,8 +13,8 @@ namespace rawrbox {
 		virtual ~TimerWrapper() = default;
 
 		// CREATE ---
-		virtual bool create(const std::string& id, int reps, uint64_t delay, sol::function callback, sol::function onComplete);
-		virtual bool simple(const std::string& id, uint64_t delay, sol::function callback, sol::function onComplete);
+		virtual bool create(const std::string& id, int reps, uint64_t delay, sol::function callback, sol::optional<sol::function> onComplete);
+		virtual bool simple(const std::string& id, uint64_t delay, sol::function callback, sol::optional<sol::function> onComplete);
 		// ----
 
 		// UTILS ---

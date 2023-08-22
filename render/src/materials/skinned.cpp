@@ -9,23 +9,21 @@ const bgfx::EmbeddedShader model_skinned_shaders[] = {
 // NOLINTEND(*)
 
 namespace rawrbox {
-	MaterialSkinned::~MaterialSkinned() {
-		RAWRBOX_DESTROY(u_bones);
-	}
-
-	void MaterialSkinned::registerUniforms() {
-		MaterialBase::registerUniforms();
-
-		// BONES ----
-		u_bones = bgfx::createUniform("u_bones", bgfx::UniformType::Mat4, rawrbox::MAX_BONES_PER_MODEL);
-		// ---
-	}
-
-	void MaterialSkinned::setBoneData(const std::vector<rawrbox::Matrix4x4>& data) {
-		bgfx::setUniform(this->u_bones, &data.front(), static_cast<uint16_t>(data.size()));
+	void MaterialSkinned::setupUniforms() {
+		rawrbox::MaterialBase::setupUniforms();
+		this->registerUniform("u_bones", bgfx::UniformType::Mat4, rawrbox::MAX_BONES_PER_MODEL);
 	}
 
 	void MaterialSkinned::upload() {
+		this->setupUniforms();
 		rawrbox::RenderUtils::buildShader(model_skinned_shaders, this->_program);
+	}
+
+	uint32_t MaterialSkinned::supports() const {
+		return rawrbox::MaterialBase::supports() | rawrbox::MaterialFlags::BONES;
+	}
+
+	const bgfx::VertexLayout MaterialSkinned::vLayout() const {
+		return rawrbox::VertexData::vLayout(false, true);
 	}
 } // namespace rawrbox

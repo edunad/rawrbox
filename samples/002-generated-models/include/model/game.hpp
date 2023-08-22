@@ -13,11 +13,11 @@ namespace model {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
 
-		std::unique_ptr<rawrbox::Model<>> _displacement = std::make_unique<rawrbox::Model<>>();
-		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
-		std::unique_ptr<rawrbox::Model<>> _bboxes = std::make_unique<rawrbox::Model<>>();
-		std::unique_ptr<rawrbox::Sprite<>> _sprite = std::make_unique<rawrbox::Sprite<>>();
-		std::unique_ptr<rawrbox::Spline<>> _spline = std::make_unique<rawrbox::Spline<>>();
+		std::unique_ptr<rawrbox::Model> _displacement = std::make_unique<rawrbox::Model>();
+		std::unique_ptr<rawrbox::Model> _model = std::make_unique<rawrbox::Model>();
+		std::unique_ptr<rawrbox::Model> _bboxes = std::make_unique<rawrbox::Model>();
+		std::unique_ptr<rawrbox::Sprite> _sprite = std::make_unique<rawrbox::Sprite>();
+		std::unique_ptr<rawrbox::Spline> _spline = std::make_unique<rawrbox::Spline>();
 		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 
 		rawrbox::Font* _font = nullptr;

@@ -10,21 +10,14 @@
 namespace rawrbox {
 
 	class MaterialLit : public rawrbox::MaterialBase {
+
 	protected:
 		bgfx::ProgramHandle _debug_z_program = BGFX_INVALID_HANDLE;
 		bgfx::ProgramHandle _debug_program = BGFX_INVALID_HANDLE;
 
-		// LIT DATA ---
-		bgfx::UniformHandle _u_camPos = BGFX_INVALID_HANDLE;
+		void setupUniforms() override;
 
-		bgfx::UniformHandle _s_normal = BGFX_INVALID_HANDLE;
-		bgfx::UniformHandle _s_specular = BGFX_INVALID_HANDLE;
-
-		bgfx::UniformHandle _s_emission = BGFX_INVALID_HANDLE;
-		//------
 	public:
-		bgfx::UniformHandle u_texMatData = BGFX_INVALID_HANDLE;
-
 		MaterialLit() = default;
 		MaterialLit(MaterialLit&&) = delete;
 		MaterialLit& operator=(MaterialLit&&) = delete;
@@ -32,14 +25,11 @@ namespace rawrbox {
 		MaterialLit& operator=(const MaterialLit&) = delete;
 		~MaterialLit() override;
 
-		void registerUniforms() override;
 		void process(const rawrbox::Mesh& mesh) override;
-
 		void postProcess() override;
 		void upload() override;
 
-		static const bgfx::VertexLayout vLayout() {
-			return rawrbox::VertexData::vLayout(true);
-		}
+		[[nodiscard]] uint32_t supports() const override;
+		[[nodiscard]] const bgfx::VertexLayout vLayout() const override;
 	};
 } // namespace rawrbox

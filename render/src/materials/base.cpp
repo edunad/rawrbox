@@ -13,46 +13,53 @@ const bgfx::EmbeddedShader clustered_unlit_shaders[] = {
 namespace rawrbox {
 	constexpr auto MAX_DATA = 4;
 
-	MaterialBase::~MaterialBase() {
-		RAWRBOX_DESTROY(this->_program);
+	void MaterialBase::setupUniforms() {
+		this->registerUniform("s_albedo", bgfx::UniformType::Sampler);
+		this->registerUniform("s_displacement", bgfx::UniformType::Sampler);
 
-		RAWRBOX_DESTROY(this->_s_albedo);
-		RAWRBOX_DESTROY(this->_s_displacement);
-
-		// Uniforms -----
-		RAWRBOX_DESTROY(this->_u_colorOffset);
-		RAWRBOX_DESTROY(this->_u_data);
-		RAWRBOX_DESTROY(this->_u_tex_flags);
+		this->registerUniform("u_colorOffset", bgfx::UniformType::Vec4);
+		this->registerUniform("u_data", bgfx::UniformType::Vec4, MAX_DATA);
+		this->registerUniform("u_tex_flags", bgfx::UniformType::Vec4);
 	}
 
-	void MaterialBase::registerUniforms() {
-		this->_s_albedo = bgfx::createUniform("s_albedo", bgfx::UniformType::Sampler);
-		this->_s_displacement = bgfx::createUniform("s_displacement", bgfx::UniformType::Sampler);
+	MaterialBase::~MaterialBase() {
+		RAWRBOX_DESTROY(this->_program);
+		for (auto& handle : this->_uniforms) {
+			RAWRBOX_DESTROY(handle.second);
+		}
+	}
 
-		this->_u_colorOffset = bgfx::createUniform("u_colorOffset", bgfx::UniformType::Vec4);
-		this->_u_data = bgfx::createUniform("u_data", bgfx::UniformType::Vec4, MAX_DATA);
+	void MaterialBase::registerUniform(const std::string& name, bgfx::UniformType::Enum type, uint16_t num) {
+		auto handl = bgfx::createUniform(name.c_str(), type, num);
+		if (!bgfx::isValid(handl)) throw std::runtime_error(fmt::format("[RawrBox-MaterialBase] Failed to create uniform '{}'", name));
+		this->_uniforms[name] = handl;
+	}
 
-		this->_u_tex_flags = bgfx::createUniform("u_tex_flags", bgfx::UniformType::Vec4);
+	void MaterialBase::setUniformData(const std::string& name, const std::vector<rawrbox::Matrix4x4>& data) {
+		auto fnd = this->_uniforms.find(name);
+		if (fnd == this->_uniforms.end()) return;
+
+		bgfx::setUniform(fnd->second, &data.front(), static_cast<uint16_t>(data.size()));
 	}
 
 	void MaterialBase::process(const rawrbox::Mesh& mesh) {
 		if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.lineMode && !mesh.wireframe) {
 			mesh.texture->update(); // Update texture
 
-			bgfx::setUniform(this->_u_tex_flags, mesh.texture->getData().data());
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, mesh.texture->getHandle());
+			bgfx::setUniform(this->_uniforms["u_tex_flags"], mesh.texture->getData().data());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_uniforms["s_albedo"], mesh.texture->getHandle());
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, rawrbox::WHITE_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_uniforms["s_albedo"], rawrbox::WHITE_TEXTURE->getHandle());
 		}
 
 		if (mesh.displacementTexture != nullptr && mesh.displacementTexture->isValid()) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->_s_displacement, mesh.displacementTexture->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->_uniforms["s_displacement"], mesh.displacementTexture->getHandle());
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->_s_displacement, rawrbox::BLACK_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->_uniforms["s_displacement"], rawrbox::BLACK_TEXTURE->getHandle());
 		}
 
 		// Color override
-		bgfx::setUniform(this->_u_colorOffset, mesh.color.data().data());
+		bgfx::setUniform(this->_uniforms["u_colorOffset"], mesh.color.data().data());
 		// -------
 
 		// Pass "special" data ---
@@ -76,7 +83,7 @@ namespace rawrbox {
 			data[3] = mesh.getData("mask").data();
 		}
 
-		bgfx::setUniform(this->_u_data, data.front().data(), MAX_DATA);
+		bgfx::setUniform(this->_uniforms["u_data"], data.front().data(), MAX_DATA);
 		// ---
 
 		// Bind extra renderer uniforms ---
@@ -86,18 +93,27 @@ namespace rawrbox {
 
 	void MaterialBase::process(const bgfx::TextureHandle& texture) {
 		if (bgfx::isValid(texture)) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, texture);
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_uniforms["s_albedo"], texture);
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_s_albedo, rawrbox::WHITE_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_uniforms["s_albedo"], rawrbox::WHITE_TEXTURE->getHandle());
 		}
 	}
 
 	void MaterialBase::postProcess() {
+		if (!bgfx::isValid(this->_program)) throw std::runtime_error("[RawrBox-MaterialBase] Invalid program, did you call 'upload'?");
 		bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);
 	}
 
 	void MaterialBase::upload() {
+		this->setupUniforms();
 		rawrbox::RenderUtils::buildShader(clustered_unlit_shaders, this->_program);
 	}
 
+	uint32_t MaterialBase::supports() const {
+		return rawrbox::MaterialFlags::NONE;
+	}
+
+	const bgfx::VertexLayout MaterialBase::vLayout() const {
+		return rawrbox::VertexData::vLayout();
+	}
 } // namespace rawrbox

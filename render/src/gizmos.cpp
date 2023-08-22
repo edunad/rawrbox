@@ -5,7 +5,7 @@
 
 namespace rawrbox {
 
-	std::unique_ptr<rawrbox::Sprite<>> GIZMOS::_gizmos = std::make_unique<rawrbox::Sprite<>>();
+	std::unique_ptr<rawrbox::Sprite> GIZMOS::_gizmos = std::make_unique<rawrbox::Sprite>();
 	std::unordered_map<std::string, std::unique_ptr<rawrbox::TextureImage>> GIZMOS::_textures = {};
 	uint32_t GIZMOS::_ID = 0;
 

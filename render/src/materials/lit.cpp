@@ -21,56 +21,47 @@ const bgfx::EmbeddedShader clustered_lit_debug_z[] = {
 // NOLINTEND(*)
 
 namespace rawrbox {
+	void MaterialLit::setupUniforms() {
+		rawrbox::MaterialBase::setupUniforms();
+
+		this->registerUniform("s_normal", bgfx::UniformType::Sampler);
+		this->registerUniform("s_specular", bgfx::UniformType::Sampler);
+		this->registerUniform("s_emission", bgfx::UniformType::Sampler);
+
+		this->registerUniform("u_camPos", bgfx::UniformType::Vec4);
+		this->registerUniform("u_texMatData", bgfx::UniformType::Vec4);
+	}
+
 	MaterialLit::~MaterialLit() {
 		RAWRBOX_DESTROY(this->_program);
 		RAWRBOX_DESTROY(this->_debug_z_program);
 		RAWRBOX_DESTROY(this->_debug_program);
-
-		RAWRBOX_DESTROY(this->_u_camPos);
-
-		RAWRBOX_DESTROY(this->_s_normal);
-		RAWRBOX_DESTROY(this->_s_specular);
-		RAWRBOX_DESTROY(this->_s_emission);
-
-		RAWRBOX_DESTROY(this->u_texMatData);
-	}
-
-	void MaterialLit::registerUniforms() {
-		rawrbox::MaterialBase::registerUniforms();
-
-		this->_s_normal = bgfx::createUniform("s_normal", bgfx::UniformType::Sampler);
-		this->_s_specular = bgfx::createUniform("s_specular", bgfx::UniformType::Sampler);
-		this->_s_emission = bgfx::createUniform("s_emission", bgfx::UniformType::Sampler);
-
-		this->_u_camPos = bgfx::createUniform("u_camPos", bgfx::UniformType::Vec4);
-
-		this->u_texMatData = bgfx::createUniform("u_texMatData", bgfx::UniformType::Vec4);
 	}
 
 	void MaterialLit::process(const rawrbox::Mesh& mesh) {
 		if (mesh.normalTexture != nullptr && mesh.normalTexture->isValid() && !mesh.lineMode && !mesh.wireframe) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_NORMAL, this->_s_normal, mesh.normalTexture->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_NORMAL, this->_uniforms["s_normal"], mesh.normalTexture->getHandle());
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_NORMAL, this->_s_normal, rawrbox::NORMAL_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_NORMAL, this->_uniforms["s_normal"], rawrbox::NORMAL_TEXTURE->getHandle());
 		}
 
 		if (mesh.specularTexture != nullptr && mesh.specularTexture->isValid() && !mesh.lineMode && !mesh.wireframe) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, this->_s_specular, mesh.specularTexture->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, this->_uniforms["s_specular"], mesh.specularTexture->getHandle());
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, this->_s_specular, rawrbox::BLACK_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, this->_uniforms["s_specular"], rawrbox::BLACK_TEXTURE->getHandle());
 		}
 
 		if (mesh.emissionTexture != nullptr && mesh.emissionTexture->isValid() && !mesh.lineMode && !mesh.wireframe) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_EMISSION, this->_s_emission, mesh.emissionTexture->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_EMISSION, this->_uniforms["s_emission"], mesh.emissionTexture->getHandle());
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_EMISSION, this->_s_emission, rawrbox::BLACK_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_EMISSION, this->_uniforms["s_emission"], rawrbox::BLACK_TEXTURE->getHandle());
 		}
 
 		std::array<float, 2> matData = {mesh.specularShininess, mesh.emissionIntensity};
-		bgfx::setUniform(this->u_texMatData, matData.data());
+		bgfx::setUniform(this->_uniforms["u_texMatData"], matData.data());
 
 		// Camera setup
-		bgfx::setUniform(this->_u_camPos, rawrbox::MAIN_CAMERA->getPos().data().data());
+		bgfx::setUniform(this->_uniforms["u_camPos"], rawrbox::MAIN_CAMERA->getPos().data().data());
 		// -------
 
 		rawrbox::MaterialBase::process(mesh);
@@ -92,6 +83,8 @@ namespace rawrbox {
 	}
 
 	void MaterialLit::upload() {
+		this->setupUniforms();
+
 		// Load programs ---
 		rawrbox::RenderUtils::buildShader(clustered_lit_shaders, this->_program);
 		rawrbox::RenderUtils::buildShader(clustered_lit_debug, this->_debug_program);
@@ -99,4 +92,11 @@ namespace rawrbox {
 		// -----
 	}
 
+	uint32_t MaterialLit::supports() const {
+		return rawrbox::MaterialBase::supports() | rawrbox::MaterialFlags::NORMALS;
+	}
+
+	const bgfx::VertexLayout MaterialLit::vLayout() const {
+		return rawrbox::VertexData::vLayout(true);
+	}
 } // namespace rawrbox
