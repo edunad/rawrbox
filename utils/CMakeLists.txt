@@ -84,7 +84,7 @@ target_include_directories(${output_target} PUBLIC "include" ${EXTRA_UTIL_INCLUD
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_UTILS)
-target_link_libraries(${output_target} PUBLIC ${EXTRA_UTIL_LIBS} thread-pool fmt::fmt)
+target_link_libraries(${output_target} PUBLIC ${EXTRA_UTIL_LIBS} thread-pool fmt::fmt nlohmann_json)
 
 set_lib_runtime_mt(${output_target})
 # --------------

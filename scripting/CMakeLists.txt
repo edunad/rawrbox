@@ -77,7 +77,7 @@ endif()
 
 target_include_directories(${output_target} PUBLIC "include" ${luajit_SOURCE_DIR}/src)
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
-target_link_libraries(${output_target} PUBLIC RAWRBOX.ENGINE RAWRBOX.MATH ${RAWRBOX_SCRIPTING_EXTRA_LIB} sol2::sol2 nlohmann_json)
+target_link_libraries(${output_target} PUBLIC RAWRBOX.ENGINE RAWRBOX.MATH ${RAWRBOX_SCRIPTING_EXTRA_LIB} sol2::sol2)
 
 set_lib_runtime_mt(${output_target})
 # --------------
