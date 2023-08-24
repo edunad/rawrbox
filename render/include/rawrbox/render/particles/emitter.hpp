@@ -96,100 +96,29 @@ namespace rawrbox {
 		std::vector<rawrbox::Particle> _particles = {};
 		// -------
 
-		void spawnParticle();
-
-		template <typename M = rawrbox::MaterialParticle>
-		void write_vertex(rawrbox::VertexData*& dest, rawrbox::VertexData vertex) {
-			*dest = vertex;
-			++dest;
-		}
+		virtual void spawnParticle();
+		virtual void write_vertex(rawrbox::VertexData*& dest, rawrbox::VertexData vertex);
 
 	public:
 		explicit Emitter(EmitterSettings settings = {});
+		Emitter(const Emitter&) = default;
+		Emitter(Emitter&&) = delete;
+		Emitter& operator=(const Emitter&) = default;
+		Emitter& operator=(Emitter&&) = delete;
+		virtual ~Emitter() = default;
 
 		// UTILS -----
-		void clear();
+		virtual void clear();
 
-		[[nodiscard]] size_t id() const;
-		[[nodiscard]] size_t totalParticles() const;
-		[[nodiscard]] const EmitterSettings& getSettings() const;
+		[[nodiscard]] virtual size_t id() const;
+		[[nodiscard]] virtual size_t totalParticles() const;
+		[[nodiscard]] virtual const EmitterSettings& getSettings() const;
 
-		[[nodiscard]] const rawrbox::Vector3f& getPos() const;
-		void setPos(const rawrbox::Vector3f& pos);
+		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const;
+		virtual void setPos(const rawrbox::Vector3f& pos);
 		// ------
 
-		void update();
-
-		template <typename M = rawrbox::MaterialParticle>
-		uint32_t draw(const rawrbox::CameraBase& camera, uint32_t first, uint32_t max, rawrbox::ParticleSort* outSort, rawrbox::VertexData* outVert) {
-			bx::EaseFn easeRgba = bx::getEaseFunc(this->_settings.easeRgba);
-			bx::EaseFn easePos = bx::getEaseFunc(this->_settings.easePos);
-			bx::EaseFn easeScale = bx::getEaseFunc(this->_settings.easeScale);
-			bx::EaseFn easeBlend = bx::getEaseFunc(this->_settings.easeBlend);
-			// bx::EaseFn easeRotation = bx::getEaseFunc(this->_settings.easeRotation);
-
-			uint32_t index = first;
-			for (const auto& p : this->_particles) {
-				if (index + 1 >= max) break;
-
-				const float ttPos = easePos(p.life);
-				const float ttScale = easeScale(p.life);
-				const float ttBlend = easeBlend(p.life);
-				// const float ttRotation = easeRotation(p.life);
-				const float ttRgba = std::clamp(easeRgba(p.life), 0.F, 1.F);
-
-				float scale = bx::lerp(p.scaleStart, p.scaleEnd, ttScale);
-				// float rotation = bx::lerp(p.rotationStart, p.rotationEnd, ttRotation);
-				float blend = bx::lerp(p.blendStart, p.blendEnd, ttBlend);
-
-				// POSITION -----
-				const bx::Vec3 p0 = bx::lerp({p.posStart.x, p.posStart.y, p.posStart.z}, {p.posEnd[0].x, p.posEnd[0].y, p.posEnd[0].z}, ttPos);
-				const bx::Vec3 p1 = bx::lerp({p.posEnd[0].x, p.posEnd[0].y, p.posEnd[0].z}, {p.posEnd[1].x, p.posEnd[1].y, p.posEnd[1].z}, ttPos);
-				const bx::Vec3 pf = bx::lerp(p0, p1, ttPos);
-
-				rawrbox::Matrix4x4 rot = {};
-				// rot.rotateZ(bx::toRad(rotation)); // TODO: FIX ME
-
-				auto rotatedView = camera.getViewMtx() * rot;
-
-				rawrbox::Vector3f udir = rawrbox::Vector3f(rotatedView[0], rotatedView[4], rotatedView[8]) * scale;
-				rawrbox::Vector3f vdir = rawrbox::Vector3f(rotatedView[1], rotatedView[5], rotatedView[9]) * scale;
-
-				const rawrbox::Vector3f pos = rawrbox::Vector3f(pf.x, pf.y, pf.z);
-				// -------
-
-				// SORTING --
-				ParticleSort& sort = outSort[index];
-				sort.dist = pos.distance(camera.getPos());
-				sort.idx = index;
-				// ----
-
-				auto idx = static_cast<uint32_t>(ttRgba * 4);
-				float ttmod = bx::mod(ttRgba, 0.25F) / 0.25F;
-
-				uint32_t rgbaStart = p.rgba[idx];
-				uint32_t rgbaEnd = idx + 1 >= p.rgba.size() ? 0x00FFFFFF : p.rgba[idx + 1];
-
-				auto clStart = std::bit_cast<uint8_t*>(&rgbaStart);
-				auto clEnd = std::bit_cast<uint8_t*>(&rgbaEnd);
-				rawrbox::Colorf color = rawrbox::Colorf(
-				    bx::lerp(clStart[0], clEnd[0], ttmod) / 255.F,
-				    bx::lerp(clStart[1], clEnd[1], ttmod) / 255.F,
-				    bx::lerp(clStart[2], clEnd[2], ttmod) / 255.F,
-				    bx::lerp(clStart[3], clEnd[3], ttmod) / 255.F);
-
-				auto atlasId = static_cast<float>(p.textureLayer);
-				rawrbox::VertexData* vertex = &outVert[index * 4];
-
-				this->write_vertex(vertex, rawrbox::VertexData(pos - udir - vdir, {0, 1, blend, atlasId}, color));
-				this->write_vertex(vertex, rawrbox::VertexData(pos + udir + vdir, {1, 0, blend, atlasId}, color));
-				this->write_vertex(vertex, rawrbox::VertexData(pos - udir + vdir, {0, 0, blend, atlasId}, color));
-				this->write_vertex(vertex, rawrbox::VertexData(pos + udir - vdir, {1, 1, blend, atlasId}, color));
-
-				++index;
-			}
-
-			return static_cast<uint32_t>(this->_particles.size());
-		}
+		virtual void update();
+		virtual uint32_t draw(uint32_t first, uint32_t max, rawrbox::ParticleSort* outSort, rawrbox::VertexData* outVert);
 	};
 } // namespace rawrbox
