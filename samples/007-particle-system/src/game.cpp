@@ -149,7 +149,7 @@ namespace particle_test {
 		if (!this->_ready) return;
 
 		this->_modelGrid->draw();
-		this->_ps->draw(*rawrbox::MAIN_CAMERA);
+		this->_ps->draw();
 		this->_text->draw();
 	}
 
