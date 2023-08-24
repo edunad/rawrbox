@@ -13,6 +13,6 @@ namespace rawrbox {
 		PointLight& operator=(PointLight&&) = delete;
 		~PointLight() override = default;
 
-		[[nodiscard]] rawrbox::LightType getType() const override { return LightType::POINT; };
+		[[nodiscard]] rawrbox::LightType getType() const override;
 	};
 } // namespace rawrbox
