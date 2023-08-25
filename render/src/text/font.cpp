@@ -32,7 +32,7 @@ namespace rawrbox {
 		this->_pixelSize = static_cast<float>(pixelHeight);
 
 		this->loadFontInfo();
-		this->addChars("�~!@#$%^&*()_+`1234567890-=QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm|<>?,./:;\"'}{][ \\░▒▓█");
+		this->addChars("�~!@#$%^&*()_+`1234567890-=QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm|<>?,./:;\"'}{][ \\§°Ø");
 	}
 
 	// INTERNAL ---

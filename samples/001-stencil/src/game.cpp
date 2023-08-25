@@ -49,6 +49,8 @@ namespace stencil {
 		    std::make_pair<std::string, uint32_t>("content/fonts/droidsans.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/fonts/visitor1.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("courbd.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("couri.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/screem.png", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/meow3.gif", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/instance_test.png", 64),
@@ -76,6 +78,13 @@ namespace stencil {
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/droidsans.ttf")->getSize(28);
 		this->_font2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/visitor1.ttf")->getSize(18);
 		this->_font3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(12);
+		// ----
+
+		// Setup markdown ----
+		this->_markdown->fontRegular = this->_font3;
+		this->_markdown->fontBold = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("courbd.ttf")->getSize(12);
+		this->_markdown->fontItalic = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("couri.ttf")->getSize(12);
+		this->_markdown->parse("Markdown test [#ff0000]red color[/], *italic text*, **bold text**, ~corrupt text~");
 		// ----
 
 		// Textures ---
@@ -262,6 +271,10 @@ namespace stencil {
 
 		stencil.drawText(*this->_font3, "MeW MeW MeW! I am a cat, nya.", {0, 75});
 		// ---
+
+		// Markdown ---
+		_markdown->render(stencil, {0, 90});
+		// -----
 
 		stencil.popOffset();
 

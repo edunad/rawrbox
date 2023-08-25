@@ -50,6 +50,7 @@ namespace rawrbox {
 		virtual void setVisible(bool visible);
 		[[nodiscard]] virtual bool visible() const;
 
+		virtual void focus();
 		virtual void setFocused(bool visible);
 		[[nodiscard]] virtual bool focused() const;
 
@@ -62,6 +63,7 @@ namespace rawrbox {
 
 		// SORTING -----
 		[[nodiscard]] virtual bool alwaysOnTop() const;
+		virtual void setAlwaysTop(bool top);
 		virtual void bringToFront();
 		// -------
 

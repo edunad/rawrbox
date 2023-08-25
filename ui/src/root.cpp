@@ -9,12 +9,12 @@ namespace rawrbox {
 
 		// BINDS ---
 		window.onChar += [this](Window& /*win*/, uint32_t character) mutable {
-			if (this->focusedElement == nullptr) return;
+			if (this->focusedElement == nullptr || !this->focusedElement->visible()) return;
 			this->focusedElement->keyChar(character);
 		};
 
 		window.onKey += [this](Window& /*win*/, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) mutable {
-			if (this->focusedElement == nullptr) return;
+			if (this->focusedElement == nullptr || !this->focusedElement->visible()) return;
 			this->focusedElement->key(key, scancode, action, mods);
 		};
 
@@ -27,7 +27,7 @@ namespace rawrbox {
 		};
 
 		window.onMouseScroll += [this](Window& /*win*/, const rawrbox::Vector2i& location, const rawrbox::Vector2i& offset) mutable {
-			if (this->focusedElement == nullptr) return;
+			if (this->focusedElement == nullptr || !this->focusedElement->visible()) return;
 			this->focusedElement->mouseScroll(location, offset);
 		};
 

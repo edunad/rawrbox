@@ -18,7 +18,7 @@ namespace rawrbox {
 
 			    std::string helper = "";
 			    for (auto& cmd : cmds) {
-				    helper += fmt::format("{}: {}\n", cmd.first, cmd.second.description);
+				    helper += fmt::format("[#1abc9c] **{}** [/][#ffffff]-> {}[/]\n", cmd.first, cmd.second.description);
 			    }
 
 			    this->print(helper, PrintType::LOG);

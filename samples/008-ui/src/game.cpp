@@ -11,6 +11,7 @@
 #include <rawrbox/ui/elements/progress_bar.hpp>
 #include <rawrbox/ui/elements/virtual_list.hpp>
 #include <rawrbox/ui/static.hpp>
+#include <rawrbox/utils/keys.hpp>
 
 #include <ui_test/game.hpp>
 
@@ -46,6 +47,10 @@ namespace ui_test {
 		};
 		// ----
 
+		this->_console = std::make_unique<rawrbox::Console>();
+		this->_console->registerCommand(
+		    "test", [](const std::vector<std::string>& /*args*/) { return std::make_pair<bool, std::string>(true, "OK!"); }, "TEST DESCRIPTION", rawrbox::ConsoleFlags::CHEAT);
+
 		// Load content ---
 		this->loadContent();
 		// -----
@@ -73,6 +78,22 @@ namespace ui_test {
 
 	void Game::contentLoaded() {
 		// SETUP UI
+
+		// Setup binds ---
+		auto winSize = this->_window->getSize().cast<float>();
+
+		this->_consoleUI = this->_ROOT_UI->createChild<rawrbox::UIConsole>(this->_console.get());
+		this->_consoleUI->setAlwaysTop(true);
+		this->_consoleUI->setPos({0, winSize.y - 240});
+		this->_consoleUI->setSize({winSize.x, 240});
+		this->_consoleUI->setVisible(false);
+
+		this->_window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
+			if (action != KEY_ACTION_UP || key != KEY_F1 || this->_consoleUI == nullptr) return;
+			this->_consoleUI->setVisible(!this->_consoleUI->visible());
+		};
+		// ----------
+
 		this->_anim = std::make_unique<rawrbox::UIAnim<rawrbox::UIImage>>();
 		this->_anim->setAnimation(*rawrbox::RESOURCES::getFile<rawrbox::ResourceJSON>("./content/json/test.json")->get());
 
@@ -206,8 +227,10 @@ namespace ui_test {
 
 		this->_anim->reset();
 		this->_graph = nullptr;
+		this->_consoleUI = nullptr;
 
 		this->_ROOT_UI.reset();
+		this->_console.reset();
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
@@ -238,6 +261,7 @@ namespace ui_test {
 		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
 		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
 		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
+		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
 
 		if (this->_graph != nullptr) {
 			this->_graph->getCategory(0).addEntry(gpu);
@@ -252,6 +276,7 @@ namespace ui_test {
 		bgfx::dbgTextClear();
 		bgfx::dbgTextPrintf(1, 1, 0x1f, "008-ui");
 		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: UI test");
+		bgfx::dbgTextPrintf(1, 11, 0x4f, "F1 toggle console");
 		printFrames();
 		// -----------
 
