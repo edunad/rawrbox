@@ -8,30 +8,30 @@ namespace rawrbox {
 		this->_aabb = {0, 0, static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)};
 
 		// BINDS ---
-		window.onChar += [this](Window& /*win*/, uint32_t character) mutable {
+		window.onChar += [this](Window& /*win*/, uint32_t character) {
 			if (this->focusedElement == nullptr || !this->focusedElement->visible()) return;
 			this->focusedElement->keyChar(character);
 		};
 
-		window.onKey += [this](Window& /*win*/, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) mutable {
+		window.onKey += [this](Window& /*win*/, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) {
 			if (this->focusedElement == nullptr || !this->focusedElement->visible()) return;
 			this->focusedElement->key(key, scancode, action, mods);
 		};
 
-		window.onMouseKey += [this](Window& /*win*/, const rawrbox::Vector2i& location, uint32_t button, uint32_t action, uint32_t mods) mutable {
+		window.onMouseKey += [this](Window& /*win*/, const rawrbox::Vector2i& location, uint32_t button, uint32_t action, uint32_t mods) {
 			this->onMousePress(location, button, action, mods);
 		};
 
-		window.onMouseMove += [this](Window& /*win*/, const rawrbox::Vector2i& location) mutable {
+		window.onMouseMove += [this](Window& /*win*/, const rawrbox::Vector2i& location) {
 			this->onMouseMove(location);
 		};
 
-		window.onMouseScroll += [this](Window& /*win*/, const rawrbox::Vector2i& location, const rawrbox::Vector2i& offset) mutable {
+		window.onMouseScroll += [this](Window& /*win*/, const rawrbox::Vector2i& location, const rawrbox::Vector2i& offset) {
 			if (this->focusedElement == nullptr || !this->focusedElement->visible()) return;
 			this->focusedElement->mouseScroll(location, offset);
 		};
 
-		window.onResize += [this](Window& /*win*/, const rawrbox::Vector2i& size) mutable {
+		window.onResize += [this](Window& /*win*/, const rawrbox::Vector2i& size) {
 			this->_aabb = {0, 0, static_cast<float>(size.x), static_cast<float>(size.y)};
 		};
 		/// ----
