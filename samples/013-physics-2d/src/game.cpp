@@ -38,7 +38,6 @@ namespace phys_2d_test {
 		// ----------
 
 		// Setup physics
-		rawrbox::PHYSICS_2D::physSettings->sleeping_treshold = 0.8F;
 		rawrbox::PHYSICS_2D::physSettings->apply_gravity = false;
 		rawrbox::PHYSICS_2D::init();
 		/*rawrbox::PHYSICS_2D::onContact += [](const muli::ContactManifold& contact) {
