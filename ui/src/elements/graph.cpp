@@ -136,12 +136,8 @@ namespace rawrbox {
 
 	bool UIGraph::clipOverflow() const { return true; };
 
-	void UIGraph::setShowLegend(bool mode) {
-		_showLegend = mode;
-	}
-	bool UIGraph::getShowLegend() const {
-		return _showLegend;
-	}
+	void UIGraph::setShowLegend(bool mode) { _showLegend = mode; }
+	bool UIGraph::getShowLegend() const { return _showLegend; }
 
 	void UIGraph::draw(rawrbox::Stencil& stencil) {
 		if (this->_categories.empty()) return;
@@ -151,25 +147,6 @@ namespace rawrbox {
 		// BG ---
 		stencil.drawBox({}, size, rawrbox::Colors::DarkGray() * 0.2F);
 		//---
-
-		if (_showLegend) {
-			float y = 5;
-			for (auto& cat : _categories) {
-				Vector2f tpos = {size.x - _fontLegend->getStringSize(cat->name).x - 5 - 4 - 5, y};
-				stencil.drawText(*_fontLegend, cat->name, tpos + _textShadow, _textShadowColor);
-				stencil.drawText(*_fontLegend, cat->name, tpos, _textColor);
-				stencil.drawBox({size.x - 5 - 4, y + 1}, {4, _font->getLineHeight() - 2}, cat->color);
-				y += _fontLegend->getLineHeight();
-			}
-		}
-
-		for (auto& pair : texts) {
-			float stepHeight = size.y / this->_highestValue;
-			float y = size.y - (pair.second * stepHeight);
-			stencil.drawText(*_font, pair.first, _textShadow + Vector2f(0, y), _textShadowColor);
-			stencil.drawText(*_font, pair.first, {0, y}, _textColor);
-			stencil.drawBox({0, y + _font->getLineHeight()}, {size.x, 2});
-		}
 
 		// Draw lines ---
 		for (size_t indexEntry = 0; indexEntry < rawrbox::UIGraphCategory::ENTRY_COUNT - 1; indexEntry++) {
@@ -215,6 +192,27 @@ namespace rawrbox {
 			}
 		}
 		// ---------
+
+		// Draw legends ---
+		if (_showLegend) {
+			float y = 5;
+			for (auto& cat : _categories) {
+				Vector2f tpos = {size.x - this->_fontLegend->getStringSize(cat->name).x - 5 - 4 - 5, y};
+				stencil.drawText(*this->_fontLegend, cat->name, tpos + this->_textShadow, this->_textShadowColor);
+				stencil.drawText(*this->_fontLegend, cat->name, tpos, this->_textColor);
+				stencil.drawBox({size.x - 5 - 4, y + 1}, {4, this->_fontLegend->getLineHeight() - 2}, cat->color);
+				y += _fontLegend->getLineHeight();
+			}
+		}
+
+		for (auto& pair : texts) {
+			float stepHeight = size.y / this->_highestValue;
+			float y = size.y - (pair.second * stepHeight);
+			stencil.drawText(*this->_font, pair.first, this->_textShadow + Vector2f(0, y), this->_textShadowColor);
+			stencil.drawText(*this->_font, pair.first, {0, y}, this->_textColor);
+			stencil.drawBox({0, y + this->_font->getLineHeight()}, {size.x, 2});
+		}
+		// ----------------
 	}
 	// -------
 } // namespace rawrbox

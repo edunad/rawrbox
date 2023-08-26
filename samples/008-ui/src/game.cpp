@@ -212,10 +212,12 @@ namespace ui_test {
 			this->_graph = frame->createChild<rawrbox::UIGraph>();
 			this->_graph->setPos({10, 10});
 			this->_graph->setSize({380, 160});
-			this->_graph->addCategory("Cats /s", rawrbox::Colors::Orange());
-			this->_graph->addCategory("Meows /s", rawrbox::Colors::Purple());
+			this->_graph->addCategory("GPU", rawrbox::Colors::Orange());
+			this->_graph->addCategory("CPU", rawrbox::Colors::Purple());
 			this->_graph->setAutoScale(true);
 			this->_graph->setSmoothing(20);
+			this->_graph->setShowLegend(true);
+			this->_graph->setFontLegend("cour.ttf");
 		}
 		// ---
 

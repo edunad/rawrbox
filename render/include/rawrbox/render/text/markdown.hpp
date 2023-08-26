@@ -44,7 +44,7 @@ namespace rawrbox {
 		std::vector<rawrbox::MarkdownElement> _elements;
 
 		void parseChunk(const std::string& text);
-		void pushTextSoFar(const std::string& text, size_t textStart, size_t endPos);
+		void pushTextSoFar(const std::string& text, size_t& textStart, size_t endPos);
 
 	public:
 		rawrbox::Font* fontItalic = nullptr;

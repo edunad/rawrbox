@@ -3,7 +3,7 @@
 #include <array>
 
 namespace rawrbox {
-	void Markdown::pushTextSoFar(const std::string& text, size_t textStart, size_t endPos) {
+	void Markdown::pushTextSoFar(const std::string& text, size_t& textStart, size_t endPos) {
 		MarkdownElement elm = _currentStyle;
 
 		// skip empty entries

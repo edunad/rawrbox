@@ -83,7 +83,9 @@ namespace rawrbox {
 		auto bytes = rawrbox::PathUtils::getRawData(pth);
 		if (bytes.empty()) throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load font '{}'", filename.generic_string()));
 
-		_fonts[key] = std::make_unique<rawrbox::Font>(bytes, size, index);
+		_fonts[key] = std::make_unique<rawrbox::Font>();
+		_fonts[key]->load(bytes, size, index);
+
 		return _fonts[key].get();
 	}
 } // namespace rawrbox
