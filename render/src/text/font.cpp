@@ -18,22 +18,12 @@
 namespace rawrbox {
 	Font::~Font() {
 		if (this->_font == nullptr) return;
+
 		this->_font.reset();
 		this->_glyphs.clear();
 	}
 
-	Font::Font(const std::vector<uint8_t>& buffer, uint32_t pixelHeight, int32_t fontIndex, int16_t widthPadding, int16_t heightPadding) : _widthPadding(widthPadding), _heightPadding(heightPadding), _info({}) {
-		int offset = stbtt_GetFontOffsetForIndex(buffer.data(), fontIndex); // Get the offset for `otf` fonts
-
-		// Load
-		this->_font = std::make_shared<stbtt_fontinfo>();
-		if (!stbtt_InitFont(this->_font.get(), buffer.data(), offset)) throw std::runtime_error("[RawrBox-Font] Failed to load font");
-		this->_scale = stbtt_ScaleForMappingEmToPixels(this->_font.get(), static_cast<float>(pixelHeight));
-		this->_pixelSize = static_cast<float>(pixelHeight);
-
-		this->loadFontInfo();
-		this->addChars("�~!@#$%^&*()_+`1234567890-=QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm|<>?,./:;\"'}{][ \\░▒▓█");
-	}
+	Font::Font(int16_t widthPadding, int16_t heightPadding) : _widthPadding(widthPadding), _heightPadding(heightPadding), _info({}) {}
 
 	// INTERNAL ---
 	void Font::loadFontInfo() {
@@ -114,6 +104,19 @@ namespace rawrbox {
 	// ----
 
 	// LOADING ---
+	void Font::load(const std::vector<uint8_t>& buffer, uint32_t pixelHeight, int32_t fontIndex) {
+		int offset = stbtt_GetFontOffsetForIndex(buffer.data(), fontIndex); // Get the offset for `otf` fonts
+
+		// Load
+		this->_font = std::make_shared<stbtt_fontinfo>();
+		if (!stbtt_InitFont(this->_font.get(), buffer.data(), offset)) throw std::runtime_error("[RawrBox-Font] Failed to load font");
+		this->_scale = stbtt_ScaleForMappingEmToPixels(this->_font.get(), static_cast<float>(pixelHeight));
+		this->_pixelSize = static_cast<float>(pixelHeight);
+
+		this->loadFontInfo();
+		this->addChars("�~!@#$%^&*()_+`1234567890-=QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm|<>?,./:;\"'}{][ \\§°Ø");
+	}
+
 	void Font::addChars(const std::string& chars) {
 		auto charsIter = chars.begin();
 		while (charsIter < chars.end()) {

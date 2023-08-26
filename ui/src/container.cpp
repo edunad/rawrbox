@@ -41,8 +41,28 @@ namespace rawrbox {
 		}
 	}
 
-	void UIContainer::setVisible(bool visible) { this->_visible = visible; }
-	bool UIContainer::visible() const { return this->_visible; }
+	void UIContainer::setVisible(bool visible) {
+		this->_visible = visible;
+		if (!visible) {
+			if (this->_root->focusedElement == this) this->_root->focusedElement = nullptr;
+			if (this->_root->hoveredElement == this) this->_root->hoveredElement = nullptr;
+		}
+
+		if (this->hasChildren()) {
+			for (auto& c : this->_children) {
+				c->setVisible(visible); // Propagate to children so we can unfocus the elements
+			}
+		}
+	}
+
+	bool UIContainer::visible() const {
+		return this->_visible;
+	}
+
+	void UIContainer::focus() {
+		if (this->_root == nullptr) return;
+		this->_root->setFocus(this);
+	}
 
 	void UIContainer::setFocused(bool focused) { this->_focused = focused; }
 	bool UIContainer::focused() const { return this->_focused; }
@@ -77,6 +97,8 @@ namespace rawrbox {
 	// --------------
 
 	// SORTING -----
+
+	void UIContainer::setAlwaysTop(bool top) { this->_alwaysOnTop = top; }
 	bool UIContainer::alwaysOnTop() const { return this->_alwaysOnTop; }
 	void UIContainer::bringToFront() {
 

@@ -111,13 +111,14 @@ namespace rawrbox {
 	public:
 		virtual ~Font();
 
-		Font(const std::vector<uint8_t>& buffer, uint32_t pixelHeight, int32_t fontIndex = 0, int16_t widthPadding = 6, int16_t heightPadding = 6);
+		Font(int16_t widthPadding = 6, int16_t heightPadding = 6);
 		Font(Font&&) = delete;
 		Font& operator=(Font&&) = delete;
 		Font(const Font&) = delete;
 		Font& operator=(const Font&) = delete;
 
 		// LOADING ---
+		virtual void load(const std::vector<uint8_t>& buffer, uint32_t pixelHeight, int32_t fontIndex = 0);
 		virtual void addChars(const std::string& chars);
 		// ----
 

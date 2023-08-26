@@ -4,6 +4,8 @@
 	#include <windows.h>
 #endif
 
+#include <bit>
+
 namespace rawrbox {
 #ifdef _WIN32
 	#pragma pack(push, 8)

@@ -3,6 +3,7 @@
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/window.hpp>
 #include <rawrbox/ui/elements/anim.hpp>
+#include <rawrbox/ui/elements/console.hpp>
 #include <rawrbox/ui/elements/graph.hpp>
 #include <rawrbox/ui/elements/group.hpp>
 #include <rawrbox/ui/elements/image.hpp>
@@ -14,10 +15,12 @@ namespace ui_test {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
 		std::unique_ptr<rawrbox::UIRoot> _ROOT_UI = nullptr;
+		std::unique_ptr<rawrbox::Console> _console = nullptr;
 
 		std::unique_ptr<rawrbox::UIAnim<rawrbox::UIImage>> _anim = nullptr;
 		rawrbox::UIGraph* _graph = nullptr;
 		rawrbox::UIGroup* _group = nullptr;
+		rawrbox::UIConsole* _consoleUI = nullptr;
 
 		bool _ready = false;
 		std::atomic<int> _loadingFiles = 0;
