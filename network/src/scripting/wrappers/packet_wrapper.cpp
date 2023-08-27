@@ -2,8 +2,10 @@
 #include <rawrbox/network/scripting/wrappers/packet_wrapper.hpp>
 #include <rawrbox/scripting/utils/lua.hpp>
 
+#include <utility>
+
 namespace rawrbox {
-	PacketWrapper::PacketWrapper(rawrbox::Packet& packet) : data(std::move(packet)) {}
+	PacketWrapper::PacketWrapper(rawrbox::Packet packet) : data(std::move(packet)) {}
 
 	// UTILS -----
 	void PacketWrapper::seek(size_t offset) { data.seek(offset - 1); }
