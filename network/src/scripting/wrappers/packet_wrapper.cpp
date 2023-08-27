@@ -3,7 +3,7 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
-	PacketWrapper::PacketWrapper(const rawrbox::Packet& packet) : data(packet) {}
+	PacketWrapper::PacketWrapper(rawrbox::Packet& packet) : data(std::move(packet)) {}
 
 	// UTILS -----
 	void PacketWrapper::seek(size_t offset) { data.seek(offset - 1); }

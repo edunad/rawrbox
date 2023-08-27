@@ -15,7 +15,7 @@ namespace rawrbox {
 		PacketWrapper(PacketWrapper&&) = delete;
 		PacketWrapper& operator=(const PacketWrapper&) = default;
 		PacketWrapper& operator=(PacketWrapper&&) = delete;
-		PacketWrapper(const rawrbox::Packet& packet);
+		PacketWrapper(rawrbox::Packet& packet);
 		virtual ~PacketWrapper() = default;
 
 		// UTILS ---
