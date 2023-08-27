@@ -1,6 +1,4 @@
 #pragma once
-#include <rawrbox/render/model/instance.hpp>
-
 #include <sol/sol.hpp>
 
 namespace rawrbox {

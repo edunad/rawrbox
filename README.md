@@ -45,12 +45,12 @@
 - Scripting / modding support with LUA using [sol2](https://github.com/ThePhD/sol2) and [luajit2](https://github.com/openresty/luajit2)
 - Post-processing effects support
 - HTTP / HTTPS requests using curl + [libcpr](https://github.com/libcpr/cpr)
+- Packet networking support
 
 # TODO LIST
 
 - Add animation blending
 - Add lights shadow maps
-- Add steam networking lib
 
 # LIBS
 

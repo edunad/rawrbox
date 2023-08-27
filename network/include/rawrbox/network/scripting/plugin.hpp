@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/network/scripting/wrappers/http_wrapper.hpp>
+#include <rawrbox/network/scripting/wrappers/packet_wrapper.hpp>
 #include <rawrbox/scripting/scripting.hpp>
 
 namespace rawrbox {
@@ -8,6 +9,7 @@ namespace rawrbox {
 	public:
 		void registerTypes(sol::state& lua) override {
 			rawrbox::HTTPWrapper::registerLua(lua);
+			rawrbox::PacketWrapper::registerLua(lua);
 		}
 
 		void registerGlobal(rawrbox::Mod* mod) override {
