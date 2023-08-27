@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <bit>
 #include <cstdint>
+#include <cstring>
 #include <map>
 #include <optional>
 #include <stdexcept>
