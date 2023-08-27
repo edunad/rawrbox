@@ -50,8 +50,8 @@ namespace rawrbox {
 	// ----------
 
 	void PacketWrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<Packet>("Packet",
-		    sol::constructors<rawrbox::Packet(), rawrbox::Packet(rawrbox::Packet)>(),
+		lua.new_usertype<PacketWrapper>("Packet",
+		    sol::constructors<rawrbox::PacketWrapper(), rawrbox::PacketWrapper(rawrbox::PacketWrapper)>(),
 
 		    // UTILS -----
 		    "seek", &PacketWrapper::seek,
