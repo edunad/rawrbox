@@ -40,9 +40,9 @@ namespace rawrbox {
 	public:
 		Packet() = default;
 		Packet(const Packet&) = default;
-		Packet(Packet&&) = delete;
+		Packet(Packet&&) = default;
 		Packet& operator=(const Packet&) = default;
-		Packet& operator=(Packet&&) = delete;
+		Packet& operator=(Packet&&) = default;
 		virtual ~Packet() = default;
 
 		// Reads ----
