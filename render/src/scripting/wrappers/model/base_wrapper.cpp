@@ -63,7 +63,7 @@ namespace rawrbox {
 	}
 
 	void ModelBaseWrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<ModelBaseWrapper>("ModelBase<>",
+		lua.new_usertype<ModelBaseWrapper>("ModelBase",
 		    sol::no_constructor,
 
 		    // UTILS ----

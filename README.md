@@ -193,7 +193,7 @@
 
 ### 008-ui
 
-<a href='/samples/008-ui'><img src="https://i.rawr.dev/V1tcdCTckT-min.gif" width=512 /></a>
+<a href='/samples/008-ui'><img src="https://i.rawr.dev/otAM4cyFtH-min.gif" width=512 /></a>
 
 ### 009-physics
 

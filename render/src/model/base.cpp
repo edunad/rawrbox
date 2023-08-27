@@ -1,5 +1,10 @@
 #include <rawrbox/render/model/base.hpp>
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/render/scripting/wrappers/model/base_wrapper.hpp>
+	#include <rawrbox/scripting/scripting.hpp>
+#endif
+
 namespace rawrbox {
 
 #ifdef RAWRBOX_SCRIPTING

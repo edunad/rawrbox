@@ -3,13 +3,23 @@
 #include <rawrbox/math/aabb.hpp>
 #include <rawrbox/math/vector2.hpp>
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/scripting/scripting.hpp>
+	#include <sol/sol.hpp>
+#endif
+
 #include <memory>
 #include <vector>
 
 namespace rawrbox {
 	class Stencil;
 	class UIRoot;
+
+#ifdef RAWRBOX_SCRIPTING
+	class UIContainer : public std::enable_shared_from_this<UIContainer> {
+#else
 	class UIContainer {
+#endif
 	protected:
 		bool _hovering = false;
 		bool _focused = false;
@@ -18,7 +28,7 @@ namespace rawrbox {
 		rawrbox::UIContainer* _parent = nullptr;
 		rawrbox::UIRoot* _root = nullptr;
 
-		std::vector<std::unique_ptr<rawrbox::UIContainer>> _children = {};
+		std::vector<std::shared_ptr<rawrbox::UIContainer>> _children = {};
 
 		bool _alwaysOnTop = false;
 		rawrbox::AABBf _aabb = {};
@@ -26,8 +36,18 @@ namespace rawrbox {
 		void internalUpdate(rawrbox::UIContainer* elm);
 		void internalDraw(rawrbox::UIContainer* elm, rawrbox::Stencil& stencil);
 
+#ifdef RAWRBOX_SCRIPTING
+		sol::object _luaWrapper;
+		virtual void initializeLua();
+#endif
+
 	public:
+#ifdef RAWRBOX_SCRIPTING
+		virtual ~UIContainer();
+#else
 		virtual ~UIContainer() = default;
+#endif
+
 		UIContainer() = default;
 		UIContainer(const UIContainer&) = default;
 		UIContainer(UIContainer&&) noexcept;
@@ -70,7 +90,7 @@ namespace rawrbox {
 		// CHILD HANDLING --
 		template <class T, typename... CallbackArgs>
 		T* createChild(CallbackArgs&&... args) {
-			auto elm = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
+			auto elm = std::make_shared<T>(std::forward<CallbackArgs>(args)...);
 			elm->setRoot(this->_root);
 			elm->setParent(this);
 			elm->initialize();
@@ -85,8 +105,8 @@ namespace rawrbox {
 			return dynamic_cast<T*>(this->getChildren().back().get());
 		}
 
-		std::vector<std::unique_ptr<rawrbox::UIContainer>>& getChildren();
-		[[nodiscard]] const std::vector<std::unique_ptr<rawrbox::UIContainer>>& getChildren() const;
+		std::vector<std::shared_ptr<rawrbox::UIContainer>>& getChildren();
+		[[nodiscard]] const std::vector<std::shared_ptr<rawrbox::UIContainer>>& getChildren() const;
 
 		[[nodiscard]] virtual bool hasChildren() const;
 		[[nodiscard]] virtual bool hasParent() const;
@@ -120,5 +140,11 @@ namespace rawrbox {
 
 		virtual void update();
 		virtual void updateChildren();
+
+		// SCRIPTING ----
+#ifdef RAWRBOX_SCRIPTING
+		virtual sol::object& getScriptingWrapper();
+#endif
+		// ---------
 	};
 } // namespace rawrbox

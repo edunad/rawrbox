@@ -3,9 +3,27 @@
 #include <rawrbox/ui/container.hpp>
 #include <rawrbox/ui/root.hpp>
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/ui/scripting/ui_container_wrapper.hpp>
+	#include <rawrbox/scripting/scripting.hpp>
+#endif
+
 namespace rawrbox {
 	UIContainer::UIContainer(rawrbox::UIContainer&& other) noexcept : _parent(other._parent), _children(std::move(other._children)), _alwaysOnTop(other._alwaysOnTop), _aabb(other._aabb) {}
+#ifdef RAWRBOX_SCRIPTING
+	UIContainer::~UIContainer() {
+		if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
+	}
+#endif
+
 	void UIContainer::initialize() {}
+
+#ifdef RAWRBOX_SCRIPTING
+	void UIContainer::initializeLua() {
+		if (!SCRIPTING::initialized) return;
+		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::UIContainerWrapper(this->shared_from_this()));
+	}
+#endif
 
 	// UTILS ---
 	const rawrbox::Vector2f UIContainer::getDrawOffset() const { return {}; };
@@ -86,8 +104,8 @@ namespace rawrbox {
 	// ---
 
 	// PARENTING ---
-	std::vector<std::unique_ptr<rawrbox::UIContainer>>& UIContainer::getChildren() { return this->_children; }
-	const std::vector<std::unique_ptr<rawrbox::UIContainer>>& UIContainer::getChildren() const { return this->_children; }
+	std::vector<std::shared_ptr<rawrbox::UIContainer>>& UIContainer::getChildren() { return this->_children; }
+	const std::vector<std::shared_ptr<rawrbox::UIContainer>>& UIContainer::getChildren() const { return this->_children; }
 
 	bool UIContainer::hasParent() const { return this->_parent != nullptr; }
 	bool UIContainer::hasChildren() const { return !this->_children.empty(); }
@@ -181,4 +199,13 @@ namespace rawrbox {
 	}
 
 	void UIContainer::update() {}
+
+	// SCRIPTING ----
+#ifdef RAWRBOX_SCRIPTING
+	sol::object& UIContainer::getScriptingWrapper() {
+		if (!this->_luaWrapper.valid()) this->initializeLua();
+		return this->_luaWrapper;
+	}
+#endif
+	// ---------
 } // namespace rawrbox
