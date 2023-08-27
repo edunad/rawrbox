@@ -1,3 +1,4 @@
+#include <rawrbox/render/model/instance.hpp>
 #include <rawrbox/render/scripting/wrappers/model/instance_wrapper.hpp>
 
 namespace rawrbox {
