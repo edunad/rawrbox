@@ -10,6 +10,7 @@
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/resources/scripting/plugin.hpp>
 #include <rawrbox/scripting/scripting.hpp>
+#include <rawrbox/ui/scripting/plugin.hpp>
 #include <rawrbox/utils/timer.hpp>
 
 #include <scripting_test/game.hpp>
@@ -38,6 +39,10 @@ namespace scripting_test {
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
+		// SETUP UI
+		this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*this->_window);
+		// ----
+
 		// Setup loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
@@ -48,6 +53,7 @@ namespace scripting_test {
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::ResourcesPlugin>();
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::BASSPlugin>();
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::NetworkPlugin>();
+		rawrbox::SCRIPTING::registerPlugin<rawrbox::UIPlugin>(this->_ROOT_UI.get());
 
 		// Custom non-plugin ---
 		rawrbox::SCRIPTING::registerType<rawrbox::TestWrapper>();

@@ -92,8 +92,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::LightBase* LightBaseWrapper::getRef() const {
-		return nullptr;
-		// return &_ref.lock();
+		return _ref.lock().get();
 	}
 
 	void LightBaseWrapper::registerLua(sol::state& lua) {

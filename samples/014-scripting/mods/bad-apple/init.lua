@@ -9,7 +9,6 @@ apple.snd = {}
 local tonumber = tonumber
 local Color = Color
 local stringSplit = string.split
-local tableRemove = table.remove
 
 local instances = {}
 local colWhite = Color:new(255, 255, 255, 255)
@@ -81,7 +80,7 @@ function MOD:onLoad()
 end
 
 function MOD:onReady()
-    print("Loading bad apple...")
+    --[[print("Loading bad apple...")
 
     local mdl = test_model2()
 
@@ -123,5 +122,5 @@ function MOD:onReady()
                 parse(data.data)
                 playAnimation()
             end, 50000)
-    end
+    end]]
 end

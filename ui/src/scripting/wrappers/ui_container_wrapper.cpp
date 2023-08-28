@@ -1,9 +1,13 @@
 #include <rawrbox/ui/container.hpp>
-#include <rawrbox/ui/scripting/ui_container_wrapper.hpp>
+#include <rawrbox/ui/scripting/wrappers/ui_container_wrapper.hpp>
 
 namespace rawrbox {
 	UIContainerWrapper::UIContainerWrapper(const std::shared_ptr<rawrbox::UIContainer>& ref) : _ref(ref) {}
 	UIContainerWrapper::~UIContainerWrapper() { this->_ref.reset(); }
+
+	rawrbox::UIContainer* UIContainerWrapper::getRef() const {
+		return this->_ref.lock().get();
+	}
 
 	// UTILS ---
 	void UIContainerWrapper::setPos(const rawrbox::Vector2f& pos) {

@@ -4,7 +4,7 @@
 #include <rawrbox/ui/root.hpp>
 
 #ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/ui/scripting/ui_container_wrapper.hpp>
+	#include <rawrbox/ui/scripting/wrappers/ui_container_wrapper.hpp>
 	#include <rawrbox/scripting/scripting.hpp>
 #endif
 
@@ -19,7 +19,7 @@ namespace rawrbox {
 	void UIContainer::initialize() {}
 
 #ifdef RAWRBOX_SCRIPTING
-	void UIContainer::initializeLua() {
+	void UIContainer::initializeLua(rawrbox::Mod* /*mod*/) {
 		if (!SCRIPTING::initialized) return;
 		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::UIContainerWrapper(this->shared_from_this()));
 	}
@@ -202,8 +202,8 @@ namespace rawrbox {
 
 	// SCRIPTING ----
 #ifdef RAWRBOX_SCRIPTING
-	sol::object& UIContainer::getScriptingWrapper() {
-		if (!this->_luaWrapper.valid()) this->initializeLua();
+	sol::object& UIContainer::getScriptingWrapper(rawrbox::Mod* mod) {
+		if (!this->_luaWrapper.valid()) this->initializeLua(mod);
 		return this->_luaWrapper;
 	}
 #endif

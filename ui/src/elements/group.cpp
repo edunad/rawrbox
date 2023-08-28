@@ -1,7 +1,18 @@
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/ui/elements/group.hpp>
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/ui/scripting/wrappers/elements/group_wrapper.hpp>
+#endif
+
 namespace rawrbox {
+
+#ifdef RAWRBOX_SCRIPTING
+	void UIGroup::initializeLua(rawrbox::Mod* /*mod*/) {
+		if (!SCRIPTING::initialized) return;
+		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::GroupWrapper(this->shared_from_this()));
+	}
+#endif
 
 	// UTILS ----
 	void UIGroup::setBorder(float border) { this->_border = border; }

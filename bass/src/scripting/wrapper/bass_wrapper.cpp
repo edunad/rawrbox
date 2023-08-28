@@ -28,7 +28,7 @@ namespace rawrbox {
 	// LOAD -----
 	rawrbox::SoundInstanceWrapper BASSWrapper::loadSound(const std::string& path, sol::optional<uint32_t> flags) {
 		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-FontLoader] MOD not set!");
-		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder().generic_string());
+		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder());
 
 #ifdef RAWRBOX_RESOURCES
 		if (!rawrbox::RESOURCES::isLoaded(fixedPath)) {

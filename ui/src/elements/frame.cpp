@@ -4,7 +4,19 @@
 #include <rawrbox/ui/elements/frame.hpp>
 #include <rawrbox/ui/root.hpp>
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/ui/scripting/wrappers/elements/frame_wrapper.hpp>
+#endif
+
 namespace rawrbox {
+
+#ifdef RAWRBOX_SCRIPTING
+	void UIFrame::initializeLua(rawrbox::Mod* /*mod*/) {
+		if (!SCRIPTING::initialized) return;
+		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::FrameWrapper(this->shared_from_this()));
+	}
+#endif
+
 	void UIFrame::initialize() {
 		this->_stripes = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/stripe.png")->get();
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->get();

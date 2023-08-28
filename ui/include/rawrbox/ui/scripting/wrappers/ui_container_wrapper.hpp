@@ -19,6 +19,8 @@ namespace rawrbox {
 		UIContainerWrapper& operator=(UIContainerWrapper&&) = default;
 		virtual ~UIContainerWrapper();
 
+		[[nodiscard]] virtual rawrbox::UIContainer* getRef() const;
+
 		// UTILS ---
 		virtual void setPos(const rawrbox::Vector2f& pos);
 		[[nodiscard]] virtual const rawrbox::Vector2f getPos() const;

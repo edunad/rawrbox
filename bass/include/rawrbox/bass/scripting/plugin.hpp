@@ -19,7 +19,7 @@ namespace rawrbox {
 		}
 
 		void loadLuaExtensions(rawrbox::Mod* mod) override {
-			if (mod == nullptr) throw std::runtime_error("[RawrBox-RenderPlugin] Tried to register plugin on invalid mod!");
+			if (mod == nullptr) throw std::runtime_error("[RawrBox-BASSPlugin] Tried to register plugin on invalid mod!");
 			rawrbox::SCRIPTING::loadLuaFile("./lua/bass_enums.lua", mod->getEnvironment());
 		}
 	};

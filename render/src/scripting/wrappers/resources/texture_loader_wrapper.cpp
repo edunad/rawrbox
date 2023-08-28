@@ -9,7 +9,7 @@ namespace rawrbox {
 
 	rawrbox::TextureWrapper TextureLoaderWrapper::get(const std::string& path, sol::optional<uint32_t> loadFlags) {
 		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-TextureLoader] MOD not set!");
-		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder().generic_string());
+		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder());
 
 		if (!rawrbox::RESOURCES::isLoaded(fixedPath)) {
 			fmt::print("[Resources] Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath);

@@ -17,7 +17,7 @@
 #include <rawrbox/render/scripting/wrappers/textures/base_wrapper.hpp>
 #include <rawrbox/render/scripting/wrappers/window_wrapper.hpp>
 #include <rawrbox/render/window.hpp>
-#include <rawrbox/scripting/plugin.hpp>
+#include <rawrbox/scripting/scripting.hpp>
 
 namespace rawrbox {
 	class RenderPlugin : public rawrbox::Plugin {

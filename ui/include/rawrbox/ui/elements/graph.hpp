@@ -6,6 +6,7 @@
 
 #include <chrono>
 #include <string>
+#include <utility>
 
 namespace rawrbox {
 	enum class UIGraphStyle {
@@ -22,18 +23,26 @@ namespace rawrbox {
 	};
 
 	struct UIGraphCategory {
-		std::chrono::high_resolution_clock::time_point timer;
+	protected:
+		std::chrono::high_resolution_clock::time_point _timer;
+		std::string _name = "";
+		rawrbox::Color _color = rawrbox::Colors::White();
 
 	public:
 		static constexpr size_t ENTRY_COUNT = 128;
 
-		size_t id = 0;
-		std::string name = "";
-		size_t smoothSize = 0;
-		rawrbox::Color color = rawrbox::Colors::White();
+		UIGraphCategory() = default;
+		UIGraphCategory(std::string name, const rawrbox::Colorf& cl) : _name(std::move(name)), _color(cl) {}
+		UIGraphCategory(std::string name, const rawrbox::Colori& cl) : _name(std::move(name)), _color(cl.cast<float>()) {}
 
 		std::array<float, ENTRY_COUNT> entries = {0};
 		std::array<float, ENTRY_COUNT> smoothed = {0};
+
+		const std::string& getName() { return this->_name; }
+		void setName(const std::string& name) { this->_name = name; }
+
+		const rawrbox::Colorf& getColor() { return this->_color; }
+		void setColor(const rawrbox::Colorf& color) { this->_color = color; }
 
 		void addEntry(float data) {
 			// move times one to the right
@@ -47,11 +56,11 @@ namespace rawrbox {
 		}
 
 		void startTimer() {
-			this->timer = std::chrono::high_resolution_clock::now();
+			this->_timer = std::chrono::high_resolution_clock::now();
 		}
 
 		void stopTimer() {
-			auto time = std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - this->timer).count() * 1000;
+			auto time = std::chrono::duration<float>(std::chrono::high_resolution_clock::now() - this->_timer).count() * 1000;
 			this->addEntry(time);
 		}
 	};
@@ -80,6 +89,10 @@ namespace rawrbox {
 		std::array<float, rawrbox::UIGraphCategory::ENTRY_COUNT> _totalTimes = {};
 		std::vector<std::array<rawrbox::Vector2f, rawrbox::UIGraphCategory::ENTRY_COUNT>> _vertCats = {};
 		std::vector<std::pair<std::string, float>> texts;
+
+#ifdef RAWRBOX_SCRIPTING
+		void initializeLua(rawrbox::Mod* mod) override;
+#endif
 
 	public:
 		~UIGraph() override = default;

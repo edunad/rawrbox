@@ -28,7 +28,13 @@ namespace rawrbox {
 		rawrbox::Font* _consola = nullptr;
 		// -----------------
 
+#ifdef RAWRBOX_SCRIPTING
+		void initializeLua(rawrbox::Mod* mod) override;
+#endif
+
 	public:
+		rawrbox::Event<> onClick;
+
 		UIButton() = default;
 		UIButton(const UIButton&) = default;
 		UIButton(UIButton&&) = delete;
@@ -40,7 +46,6 @@ namespace rawrbox {
 			this->_consola = nullptr;
 		}
 
-		rawrbox::Event<> onClick;
 		void initialize() override;
 
 		// UTILS -----

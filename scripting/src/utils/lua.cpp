@@ -103,9 +103,9 @@ namespace rawrbox {
 	// @/ == Root content
 	// @cats/ == `cats` mod
 	// normal_path == current mod
-	std::string LuaUtils::getContent(const std::filesystem::path& path, const std::string& modPath) {
-		if (path.empty()) return modPath;                               // Invalid path
-		if (path.generic_string().starts_with("mods/")) return modPath; // Already has the mod
+	std::string LuaUtils::getContent(const std::filesystem::path& path, const std::filesystem::path& modPath) {
+		if (path.empty()) return modPath.generic_string();                               // Invalid path
+		if (path.generic_string().starts_with("mods/")) return modPath.generic_string(); // Already has the mod
 
 		auto fixedPath = path.generic_string();
 		fixedPath = rawrbox::StrUtils::replace(fixedPath, "./", "");
@@ -113,7 +113,7 @@ namespace rawrbox {
 
 		// content/blabalba.png = my current mod
 		if (!modPath.empty() && fixedPath.front() != '@') {
-			return std::filesystem::path(fmt::format("{}/{}", modPath, fixedPath)).string(); // Becomes mods/mymod/content/blabalba.png
+			return std::filesystem::path(fmt::format("{}/{}", modPath.generic_string(), fixedPath)).string(); // Becomes mods/mymod/content/blabalba.png
 		} else if (fixedPath.front() == '@') {
 			auto slashPos = fixedPath.find("/"); // Find the first /
 			std::string cleanPath = fixedPath.substr(slashPos + 1);

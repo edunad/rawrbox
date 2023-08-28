@@ -139,8 +139,7 @@ namespace rawrbox {
 		};
 
 		env["include"] = [&env, &mod](const std::string& path) {
-			auto modFolder = mod->getFolder().generic_string();
-			auto fixedPath = LuaUtils::getContent(path, modFolder);
+			auto fixedPath = LuaUtils::getContent(path, mod->getFolder());
 
 			bool loaded = loadLuaFile(fixedPath, env);
 			if (!loaded) fmt::print("[RawrBox-Scripting] Failed to load '{}'\n", fixedPath);

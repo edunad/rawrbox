@@ -10,19 +10,19 @@ namespace rawrbox {
 	void ResourcesWrapper::preLoadFolder(const std::string& path) {
 		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-Resources] MOD not set!");
 
-		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder().generic_string());
+		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder());
 		rawrbox::RESOURCES::preLoadFolder(fixedPath);
 	}
 
 	void ResourcesWrapper::preLoad(const std::string& path, sol::optional<uint32_t> loadFlags) {
 		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-Resources] MOD not set!");
 
-		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder().generic_string());
+		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder());
 		rawrbox::RESOURCES::preLoadFile(fixedPath, loadFlags.value_or(0));
 	}
 
 	std::string ResourcesWrapper::getContent(sol::optional<std::string> path) {
-		return rawrbox::LuaUtils::getContent(path.value_or(""), this->_mod->getFolder().generic_string());
+		return rawrbox::LuaUtils::getContent(path.value_or(""), this->_mod->getFolder());
 	}
 
 	void ResourcesWrapper::registerLua(sol::state& lua) {

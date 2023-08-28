@@ -5,16 +5,24 @@
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/image.hpp>
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/ui/scripting/wrappers/elements/image_wrapper.hpp>
+#endif
+
 namespace rawrbox {
+#ifdef RAWRBOX_SCRIPTING
+	void UIImage::initializeLua(rawrbox::Mod* mod) {
+		if (!SCRIPTING::initialized) return;
+		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ImageWrapper(this->shared_from_this(), mod));
+	}
+#endif
+
 	// UTILS ----
-	const rawrbox::TextureBase* UIImage::getTexture() const { return this->_texture; }
+	rawrbox::TextureBase* UIImage::getTexture() const { return this->_texture; }
 	void UIImage::setTexture(rawrbox::TextureBase* texture) { this->_texture = texture; }
 	void UIImage::setTexture(const std::filesystem::path& path) {
-		this->_isAnimated = path.extension() == ".gif";
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->get();
 	}
-
-	void UIImage::setAnimated(bool animated) { this->_isAnimated = animated; }
 
 	const rawrbox::Color& UIImage::getColor() const { return this->_color; }
 	void UIImage::setColor(const rawrbox::Color& cl) { this->_color = cl; }
@@ -31,7 +39,7 @@ namespace rawrbox {
 
 	// DRAW ----
 	void UIImage::update() {
-		if (!this->_isAnimated || this->_texture == nullptr) return;
+		if (this->_texture == nullptr) return;
 		this->_texture->update();
 	}
 

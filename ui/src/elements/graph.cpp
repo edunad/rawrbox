@@ -6,16 +6,23 @@
 #include <string>
 #include <utility>
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/ui/scripting/wrappers/elements/graph_wrapper.hpp>
+#endif
+
 namespace rawrbox {
+
+#ifdef RAWRBOX_SCRIPTING
+	void UIGraph::initializeLua(rawrbox::Mod* mod) {
+		if (!SCRIPTING::initialized) return;
+		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::GraphWrapper(this->shared_from_this(), mod));
+	}
+#endif
+
 	// CATEGORY --
 	rawrbox::UIGraphCategory& UIGraph::getCategory(size_t id) { return *this->_categories[id].get(); }
 	rawrbox::UIGraphCategory& UIGraph::addCategory(const std::string& name, const rawrbox::Color& color) {
-		auto cat = std::make_unique<rawrbox::UIGraphCategory>();
-		cat->color = color;
-		cat->name = name;
-		cat->smoothSize = this->_smoothSize;
-
-		this->_categories.push_back(std::move(cat));
+		this->_categories.push_back(std::make_unique<rawrbox::UIGraphCategory>(name, color));
 		return *this->_categories.back().get();
 	}
 	// ----------
@@ -120,7 +127,7 @@ namespace rawrbox {
 
 		// force new frame, even if they didn't push times
 		for (auto& cat : this->_categories) {
-			if (cat->smoothSize > 0) {
+			if (this->_smoothSize > 0) {
 				// use double to allow for bigger numbers
 				double total = 0;
 				for (size_t i = 0; i < this->_smoothSize; i++) {
@@ -159,7 +166,7 @@ namespace rawrbox {
 				rawrbox::UIGraphData l;
 				l.a = this->_vertCats[indexCat][indexEntry];
 				l.b = this->_vertCats[indexCat][indexEntry + 1];
-				l.col = cat->color;
+				l.col = cat->getColor();
 				l.height = cat->smoothed[indexEntry + 1];
 				lines.push_back(l);
 			}
@@ -197,10 +204,12 @@ namespace rawrbox {
 		if (_showLegend) {
 			float y = 5;
 			for (auto& cat : _categories) {
-				Vector2f tpos = {size.x - this->_fontLegend->getStringSize(cat->name).x - 5 - 4 - 5, y};
-				stencil.drawText(*this->_fontLegend, cat->name, tpos + this->_textShadow, this->_textShadowColor);
-				stencil.drawText(*this->_fontLegend, cat->name, tpos, this->_textColor);
-				stencil.drawBox({size.x - 5 - 4, y + 1}, {4, this->_fontLegend->getLineHeight() - 2}, cat->color);
+				Vector2f tpos = {size.x - this->_fontLegend->getStringSize(cat->getName()).x - 5 - 4 - 5, y};
+
+				stencil.drawText(*this->_fontLegend, cat->getName(), tpos + this->_textShadow, this->_textShadowColor);
+				stencil.drawText(*this->_fontLegend, cat->getName(), tpos, this->_textColor);
+				stencil.drawBox({size.x - 5 - 4, y + 1}, {4, this->_fontLegend->getLineHeight() - 2}, cat->getColor());
+
 				y += _fontLegend->getLineHeight();
 			}
 		}
