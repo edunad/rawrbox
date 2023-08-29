@@ -6,14 +6,13 @@
 
 namespace rawrbox {
 	class ResourcesWrapper {
-		rawrbox::Mod* _mod = nullptr;
 
 	public:
-		ResourcesWrapper(rawrbox::Mod* mod_);
+		ResourcesWrapper() = default;
 
-		void preLoadFolder(const std::string& path);
-		void preLoad(const std::string& path, sol::optional<uint32_t> loadFlags);
-		std::string getContent(sol::optional<std::string> path);
+		void preLoadFolder(const std::string& path, sol::this_environment modEnv);
+		void preLoad(const std::string& path, sol::optional<uint32_t> loadFlags, sol::this_environment modEnv);
+		std::string getContent(sol::optional<std::string> path, sol::this_environment modEnv);
 
 		static void registerLua(sol::state& lua);
 	};

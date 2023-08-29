@@ -100,33 +100,40 @@ namespace rawrbox {
 		}
 	}
 
+	// #/ == System content
 	// @/ == Root content
 	// @cats/ == `cats` mod
 	// normal_path == current mod
 	std::string LuaUtils::getContent(const std::filesystem::path& path, const std::filesystem::path& modPath) {
-		if (path.empty()) return modPath.generic_string();                               // Invalid path
-		if (path.generic_string().starts_with("mods/")) return modPath.generic_string(); // Already has the mod
+		if (path.empty()) return modPath.generic_string(); // Invalid path
 
-		auto fixedPath = path.generic_string();
-		fixedPath = rawrbox::StrUtils::replace(fixedPath, "./", "");
-		fixedPath = rawrbox::StrUtils::replace(fixedPath, "../", "");
+		auto pth = path.generic_string();
+		if (pth.starts_with("#")) {
+			auto slashPos = pth.find("/"); // Find the first /
+			return pth.substr(slashPos + 1);
+		} // System path
+
+		if (pth.starts_with("mods/")) return modPath.generic_string(); // Already has the mod
+		pth = rawrbox::StrUtils::replace(pth, "\\", "/");
+		pth = rawrbox::StrUtils::replace(pth, "./", "");
+		pth = rawrbox::StrUtils::replace(pth, "../", "");
 
 		// content/blabalba.png = my current mod
-		if (!modPath.empty() && fixedPath.front() != '@') {
-			return std::filesystem::path(fmt::format("{}/{}", modPath.generic_string(), fixedPath)).string(); // Becomes mods/mymod/content/blabalba.png
-		} else if (fixedPath.front() == '@') {
-			auto slashPos = fixedPath.find("/"); // Find the first /
-			std::string cleanPath = fixedPath.substr(slashPos + 1);
+		if (!modPath.empty() && pth.front() != '@') {
+			return std::filesystem::path(fmt::format("{}/{}", modPath.generic_string(), pth)).string(); // Becomes mods/mymod/content/blabalba.png
+		} else if (pth.front() == '@') {
+			auto slashPos = pth.find("/"); // Find the first /
+			std::string cleanPath = pth.substr(slashPos + 1);
 
 			// @/textures/blabalba.png = c++ content
-			if (fixedPath.rfind("@/", 0) == 0) { // C++
+			if (pth.rfind("@/", 0) == 0) { // C++
 				return std::filesystem::path(fmt::format("content/{}", cleanPath)).string();
 			} else { // @otherMod/textures/blabalba.png = @othermod content
-				return std::filesystem::path(fmt::format("{}/{}", fixedPath.substr(1, slashPos - 1), cleanPath)).string();
+				return std::filesystem::path(fmt::format("{}/{}", pth.substr(1, slashPos - 1), cleanPath)).string();
 			}
 		}
 
-		return fixedPath;
+		return pth;
 	}
 
 } // namespace rawrbox

@@ -1,50 +1,38 @@
 #include <rawrbox/ui/elements/progress_bar.hpp>
 #include <rawrbox/ui/scripting/wrappers/elements/progress_bar_wrapper.hpp>
+#include <rawrbox/utils/memory.hpp>
 
 namespace rawrbox {
-	ProgressBarWrapper::ProgressBarWrapper(const std::shared_ptr<rawrbox::UIContainer>& element) : rawrbox::UIContainerWrapper(element) {}
 
 	// UTILS -----
 	void ProgressBarWrapper::showPercent(bool show) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-ProgressBarWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIProgressBar> ptr = std::dynamic_pointer_cast<rawrbox::UIProgressBar>(this->_ref.lock());
-
-		ptr.lock()->showPercent(show);
+		rawrbox::cast<rawrbox::UIProgressBar>(this->_ref).lock()->showPercent(show);
 	}
 
 	bool ProgressBarWrapper::isPercentVisible() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-ProgressBarWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIProgressBar> ptr = std::dynamic_pointer_cast<rawrbox::UIProgressBar>(this->_ref.lock());
-
-		return ptr.lock()->isPercentVisible();
+		return rawrbox::cast<rawrbox::UIProgressBar>(this->_ref).lock()->isPercentVisible();
 	}
 
 	void ProgressBarWrapper::setBarColor(const rawrbox::Colori& color) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-ProgressBarWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIProgressBar> ptr = std::dynamic_pointer_cast<rawrbox::UIProgressBar>(this->_ref.lock());
-
-		ptr.lock()->setBarColor(color.cast<float>());
+		rawrbox::cast<rawrbox::UIProgressBar>(this->_ref).lock()->setBarColor(color.cast<float>());
 	}
 
 	rawrbox::Colori ProgressBarWrapper::getBarColor() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-ProgressBarWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIProgressBar> ptr = std::dynamic_pointer_cast<rawrbox::UIProgressBar>(this->_ref.lock());
-
-		return ptr.lock()->getBarColor().cast<int>();
+		return rawrbox::cast<rawrbox::UIProgressBar>(this->_ref).lock()->getBarColor().cast<int>();
 	}
 
 	void ProgressBarWrapper::setValue(float value) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-ProgressBarWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIProgressBar> ptr = std::dynamic_pointer_cast<rawrbox::UIProgressBar>(this->_ref.lock());
-
-		return ptr.lock()->setValue(value);
+		return rawrbox::cast<rawrbox::UIProgressBar>(this->_ref).lock()->setValue(value);
 	}
 
 	float ProgressBarWrapper::getValue() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-ProgressBarWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIProgressBar> ptr = std::dynamic_pointer_cast<rawrbox::UIProgressBar>(this->_ref.lock());
-
-		return ptr.lock()->getValue();
+		return rawrbox::cast<rawrbox::UIProgressBar>(this->_ref).lock()->getValue();
 	}
 	// ----
 

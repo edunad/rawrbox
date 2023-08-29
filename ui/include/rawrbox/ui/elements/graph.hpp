@@ -91,7 +91,7 @@ namespace rawrbox {
 		std::vector<std::pair<std::string, float>> texts;
 
 #ifdef RAWRBOX_SCRIPTING
-		void initializeLua(rawrbox::Mod* mod) override;
+		void initializeLua() override;
 #endif
 
 	public:

@@ -1,197 +1,146 @@
 #include <rawrbox/ui/elements/input.hpp>
 #include <rawrbox/ui/scripting/wrappers/elements/input_wrapper.hpp>
+#include <rawrbox/utils/memory.hpp>
 
 namespace rawrbox {
-	InputWrapper::InputWrapper(const std::shared_ptr<rawrbox::UIContainer>& element, rawrbox::Mod* mod) : rawrbox::UIContainerWrapper(element), _mod(mod) {}
 
 	// UTILS -----
 	void InputWrapper::setHints(const sol::table& hints) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->setHints(rawrbox::LuaUtils::luaToVector<std::string>(hints));
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setHints(rawrbox::LuaUtils::luaToVector<std::string>(hints));
 	}
 
 	void InputWrapper::setText(const std::string& text, sol::optional<bool> updateCharet, sol::optional<bool> preventEvent) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->setText(text, updateCharet.value_or(false), preventEvent.value_or(false));
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setText(text, updateCharet.value_or(false), preventEvent.value_or(false));
 	}
 
 	const std::string& InputWrapper::getText() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		return ptr.lock()->getText();
+		return rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->getText();
 	}
 
 	void InputWrapper::setPlaceholder(const std::string& text) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->setPlaceholder(text);
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setPlaceholder(text);
 	}
 
 	const std::string& InputWrapper::getPlaceholder() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		return ptr.lock()->getPlaceholder();
+		return rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->getPlaceholder();
 	}
 
 	void InputWrapper::setLimit(uint32_t limit) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->setLimit(limit);
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setLimit(limit);
 	}
 
 	uint32_t InputWrapper::getLimit() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		return ptr.lock()->getLimit();
+		return rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->getLimit();
 	}
 
 	void InputWrapper::setFill(const std::string& fill) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->setFill(fill);
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setFill(fill);
 	}
 
 	void InputWrapper::setNumericOnly(bool numeric) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->setNumericOnly(numeric);
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setNumericOnly(numeric);
 	}
 
 	bool InputWrapper::getNumericOnly() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		return ptr.lock()->getNumericOnly();
+		return rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->getNumericOnly();
 	}
 
 	void InputWrapper::setReadOnly(bool read) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->setReadOnly(read);
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setReadOnly(read);
 	}
 
 	bool InputWrapper::getReadOnly() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		return ptr.lock()->getReadOnly();
+		return rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->getReadOnly();
 	}
 
 	void InputWrapper::setPadding(float padding) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->setPadding(padding);
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setPadding(padding);
 	}
 
 	float InputWrapper::getPadding() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		return ptr.lock()->getPadding();
+		return rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->getPadding();
 	}
 
 	void InputWrapper::setColor(const rawrbox::Colori& col) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->setColor(col.cast<float>());
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setColor(col.cast<float>());
 	}
 
 	rawrbox::Colori InputWrapper::getColor() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		return ptr.lock()->getColor().cast<int>();
+		return rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->getColor().cast<int>();
 	}
 
 	void InputWrapper::setBorderSize(float size) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->setBorderSize(size);
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setBorderSize(size);
 	}
 
 	void InputWrapper::setBorderColor(const rawrbox::Colori& col) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->setBorderColor(col.cast<float>());
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setBorderColor(col.cast<float>());
 	}
 
 	rawrbox::Colori InputWrapper::getBorderColor() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		return ptr.lock()->getBorderColor().cast<int>();
+		return rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->getBorderColor().cast<int>();
 	}
 
 	void InputWrapper::setBackgroundColor(const rawrbox::Colori& col) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->setBackgroundColor(col.cast<float>());
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setBackgroundColor(col.cast<float>());
 	}
 
 	rawrbox::Colori InputWrapper::getBackgroundColor() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		return ptr.lock()->getBackgroundColor().cast<int>();
+		return rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->getBackgroundColor().cast<int>();
 	}
 
 	void InputWrapper::setFont(const rawrbox::FontWrapper& font) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->setFont(font.getRef());
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setFont(font.getRef());
 	}
 
-	void InputWrapper::setFont(const std::string& font, sol::optional<int> size) {
+	void InputWrapper::setFont(const std::string& font, sol::optional<int> size, sol::this_environment modEnv) {
+		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-InputWrapper] MOD not set!");
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
 
-		ptr.lock()->setFont(rawrbox::LuaUtils::getContent(font, this->_mod->getFolder()), size.value_or(11));
+		std::string modFolder = modEnv.env.value()["__mod_folder"];
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setFont(rawrbox::LuaUtils::getContent(font, modFolder), size.value_or(11));
 	}
 
 	rawrbox::FontWrapper InputWrapper::getFont() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		return {ptr.lock()->getFont()};
+		return {rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->getFont()};
 	}
 
 	bool InputWrapper::empty() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		return ptr.lock()->empty();
+		return rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->empty();
 	}
 
 	size_t InputWrapper::size() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		return ptr.lock()->size();
+		return rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->size();
 	}
 
 	void InputWrapper::clear() {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UIInput> ptr = std::dynamic_pointer_cast<rawrbox::UIInput>(this->_ref.lock());
-
-		ptr.lock()->clear();
+		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->clear();
 	}
 
 	// ----
@@ -231,7 +180,7 @@ namespace rawrbox {
 		    "setBackgroundColor", &InputWrapper::setBackgroundColor,
 		    "getBackgroundColor", &InputWrapper::getBackgroundColor,
 
-		    "setFont", sol::overload(sol::resolve<void(const std::string&, sol::optional<int>)>(&InputWrapper::setFont), sol::resolve<void(const rawrbox::FontWrapper&)>(&InputWrapper::setFont)),
+		    "setFont", sol::overload(sol::resolve<void(const std::string&, sol::optional<int>, sol::this_environment)>(&InputWrapper::setFont), sol::resolve<void(const rawrbox::FontWrapper&)>(&InputWrapper::setFont)),
 		    "getFont", &InputWrapper::getFont,
 
 		    "empty", &InputWrapper::empty,

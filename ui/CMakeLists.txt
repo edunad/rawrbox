@@ -33,6 +33,10 @@ endif()
 # LIB ----
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_UI_IMPORTS})
 copy_resources(TARGET ${output_target})
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    copy_lua_libs(TARGET ${output_target})
+endif()
+
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_UI)
 target_include_directories(${output_target} PUBLIC "include")

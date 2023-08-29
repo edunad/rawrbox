@@ -11,6 +11,7 @@
 #include <rawrbox/resources/scripting/plugin.hpp>
 #include <rawrbox/scripting/scripting.hpp>
 #include <rawrbox/ui/scripting/plugin.hpp>
+#include <rawrbox/ui/static.hpp>
 #include <rawrbox/utils/timer.hpp>
 
 #include <scripting_test/game.hpp>
@@ -46,6 +47,7 @@ namespace scripting_test {
 		// Setup loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		// ----------
 
 		// Setup scripting
@@ -84,8 +86,9 @@ namespace scripting_test {
 	}
 
 	void Game::loadContent() {
-		std::array initialContentFiles = {
+		std::vector initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("./content/textures/crate_hl1.png", 0)};
+		initialContentFiles.insert(initialContentFiles.begin(), rawrbox::UI_RESOURCES.begin(), rawrbox::UI_RESOURCES.end()); // Insert the UI resources
 
 		for (auto& f : initialContentFiles) {
 			rawrbox::RESOURCES::preLoadFile(f.first, f.second);
@@ -141,6 +144,7 @@ namespace scripting_test {
 		rawrbox::ASYNC::shutdown();
 		rawrbox::SCRIPTING::shutdown();
 
+		this->_ROOT_UI.reset();
 		this->_model.reset();
 		this->_instance.reset();
 
@@ -158,6 +162,7 @@ namespace scripting_test {
 		this->_window->update();
 
 		if (!this->_ready) return;
+		this->_ROOT_UI->update();
 		rawrbox::SCRIPTING::call("update");
 	}
 
@@ -181,7 +186,7 @@ namespace scripting_test {
 		if (!this->_ready) return;
 
 		rawrbox::SCRIPTING::call("drawOverlay");
-		this->_window->getStencil().render();
+		this->_ROOT_UI->render();
 	}
 
 	void Game::draw() {

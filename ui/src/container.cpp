@@ -19,7 +19,7 @@ namespace rawrbox {
 	void UIContainer::initialize() {}
 
 #ifdef RAWRBOX_SCRIPTING
-	void UIContainer::initializeLua(rawrbox::Mod* /*mod*/) {
+	void UIContainer::initializeLua() {
 		if (!SCRIPTING::initialized) return;
 		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::UIContainerWrapper(this->shared_from_this()));
 	}
@@ -202,8 +202,8 @@ namespace rawrbox {
 
 	// SCRIPTING ----
 #ifdef RAWRBOX_SCRIPTING
-	sol::object& UIContainer::getScriptingWrapper(rawrbox::Mod* mod) {
-		if (!this->_luaWrapper.valid()) this->initializeLua(mod);
+	sol::object& UIContainer::getScriptingWrapper() {
+		if (!this->_luaWrapper.valid()) this->initializeLua();
 		return this->_luaWrapper;
 	}
 #endif

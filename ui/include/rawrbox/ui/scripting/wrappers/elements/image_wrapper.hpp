@@ -9,15 +9,12 @@
 
 namespace rawrbox {
 	class ImageWrapper : public rawrbox::UIContainerWrapper {
-	protected:
-		rawrbox::Mod* _mod = nullptr;
-
 	public:
-		ImageWrapper(const std::shared_ptr<rawrbox::UIContainer>& element, rawrbox::Mod* mod);
+		using UIContainerWrapper::UIContainerWrapper;
 
 		[[nodiscard]] virtual rawrbox::TextureWrapper getTexture() const;
 		virtual void setTexture(const rawrbox::TextureWrapper& texture);
-		virtual void setTexture(const std::string& path);
+		virtual void setTexture(const std::string& path, sol::this_environment modEnv);
 
 		[[nodiscard]] virtual rawrbox::Colori getColor() const;
 		virtual void setColor(const rawrbox::Colori& col);

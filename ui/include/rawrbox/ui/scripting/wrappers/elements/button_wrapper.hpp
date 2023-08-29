@@ -9,11 +9,9 @@
 
 namespace rawrbox {
 	class ButtonWrapper : public rawrbox::UIContainerWrapper {
-	protected:
-		rawrbox::Mod* _mod = nullptr;
 
 	public:
-		ButtonWrapper(const std::shared_ptr<rawrbox::UIContainer>& element, rawrbox::Mod* mod);
+		using UIContainerWrapper::UIContainerWrapper;
 
 		virtual void setTextureSize(const rawrbox::Vector2i& size);
 		virtual void setTextureColor(const rawrbox::Colori& col);
@@ -31,7 +29,7 @@ namespace rawrbox {
 		virtual void setTooltip(const std::string& text);
 		[[nodiscard]] virtual const std::string& getTooltip() const;
 
-		virtual void setTexture(const std::string& path);
+		virtual void setTexture(const std::string& path, sol::this_environment modEnv);
 		virtual void setTexture(const rawrbox::TextureWrapper& texture);
 
 		virtual void setEnabled(bool enabled);

@@ -11,7 +11,7 @@
 namespace rawrbox {
 
 #ifdef RAWRBOX_SCRIPTING
-	void UIProgressBar::initializeLua(rawrbox::Mod* /*mod*/) {
+	void UIProgressBar::initializeLua() {
 		if (!SCRIPTING::initialized) return;
 		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ProgressBarWrapper(this->shared_from_this()));
 	}

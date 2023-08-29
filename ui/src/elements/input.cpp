@@ -121,9 +121,9 @@ namespace rawrbox {
 	}
 
 #ifdef RAWRBOX_SCRIPTING
-	void UIInput::initializeLua(rawrbox::Mod* mod) {
+	void UIInput::initializeLua() {
 		if (!SCRIPTING::initialized) return;
-		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::InputWrapper(this->shared_from_this(), mod));
+		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::InputWrapper(this->shared_from_this()));
 	}
 #endif
 	// -----

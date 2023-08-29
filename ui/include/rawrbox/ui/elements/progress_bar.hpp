@@ -22,7 +22,7 @@ namespace rawrbox {
 		float _value = 0;
 
 #ifdef RAWRBOX_SCRIPTING
-		void initializeLua(rawrbox::Mod* mod) override;
+		void initializeLua() override;
 #endif
 
 	public:

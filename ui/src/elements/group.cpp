@@ -8,7 +8,7 @@
 namespace rawrbox {
 
 #ifdef RAWRBOX_SCRIPTING
-	void UIGroup::initializeLua(rawrbox::Mod* /*mod*/) {
+	void UIGroup::initializeLua() {
 		if (!SCRIPTING::initialized) return;
 		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::GroupWrapper(this->shared_from_this()));
 	}

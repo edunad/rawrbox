@@ -10,7 +10,7 @@ namespace rawrbox {
 	class ProgressBarWrapper : public rawrbox::UIContainerWrapper {
 
 	public:
-		ProgressBarWrapper(const std::shared_ptr<rawrbox::UIContainer>& element);
+		using UIContainerWrapper::UIContainerWrapper;
 
 		// UTILS -----
 		virtual void showPercent(bool show);

@@ -22,5 +22,6 @@
     "timer",
     "Instance",
     "ui"
-  ]
+  ],
+  "Lua.diagnostics.disable": ["lowercase-global"]
 }

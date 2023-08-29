@@ -10,11 +10,9 @@
 
 namespace rawrbox {
 	class GraphWrapper : public rawrbox::UIContainerWrapper {
-	protected:
-		rawrbox::Mod* _mod = nullptr;
 
 	public:
-		GraphWrapper(const std::shared_ptr<rawrbox::UIContainer>& element, rawrbox::Mod* mod);
+		using UIContainerWrapper::UIContainerWrapper;
 
 		// CATEGORY --
 		virtual rawrbox::UIGraphCategory& getCategory(size_t id);
@@ -47,11 +45,11 @@ namespace rawrbox {
 		[[nodiscard]] virtual rawrbox::Colori getTextShadowColor() const;
 
 		virtual void setFont(const rawrbox::FontWrapper& font);
-		virtual void setFont(const std::string& font, sol::optional<int> size);
+		virtual void setFont(const std::string& font, sol::optional<int> size, sol::this_environment modEnv);
 		[[nodiscard]] virtual rawrbox::FontWrapper getFont() const;
 
 		virtual void setFontLegend(const rawrbox::FontWrapper& font);
-		virtual void setFontLegend(const std::string& font, sol::optional<int> size);
+		virtual void setFontLegend(const std::string& font, sol::optional<int> size, sol::this_environment modEnv);
 		[[nodiscard]] virtual rawrbox::FontWrapper getFontLegend() const;
 		// ----
 

@@ -14,9 +14,9 @@ namespace rawrbox {
 	}
 
 #ifdef RAWRBOX_SCRIPTING
-	void UIButton::initializeLua(rawrbox::Mod* mod) {
+	void UIButton::initializeLua() {
 		if (!SCRIPTING::initialized) return;
-		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ButtonWrapper(this->shared_from_this(), mod));
+		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ButtonWrapper(this->shared_from_this()));
 	}
 #endif
 

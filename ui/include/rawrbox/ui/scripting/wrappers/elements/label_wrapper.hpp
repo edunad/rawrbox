@@ -9,11 +9,8 @@
 
 namespace rawrbox {
 	class LabelWrapper : public rawrbox::UIContainerWrapper {
-	protected:
-		rawrbox::Mod* _mod = nullptr;
-
 	public:
-		LabelWrapper(const std::shared_ptr<rawrbox::UIContainer>& element, rawrbox::Mod* mod);
+		using UIContainerWrapper::UIContainerWrapper;
 
 		// UTILS -----
 		virtual void setColor(const rawrbox::Colori& col);
@@ -29,7 +26,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual const std::string& getText() const;
 
 		virtual void setFont(const rawrbox::FontWrapper& font);
-		virtual void setFont(const std::string& font, sol::optional<int> size);
+		virtual void setFont(const std::string& font, sol::optional<int> size, sol::this_environment modEnv);
 		[[nodiscard]] virtual rawrbox::FontWrapper getFont() const;
 
 		virtual void sizeToContents();

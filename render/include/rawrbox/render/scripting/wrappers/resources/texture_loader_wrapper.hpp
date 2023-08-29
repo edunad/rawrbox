@@ -7,17 +7,16 @@
 
 namespace rawrbox {
 	class TextureLoaderWrapper {
-		rawrbox::Mod* _mod = nullptr;
 
 	public:
-		TextureLoaderWrapper(rawrbox::Mod* mod_);
+		TextureLoaderWrapper() = default;
 		TextureLoaderWrapper(const TextureLoaderWrapper&) = default;
 		TextureLoaderWrapper(TextureLoaderWrapper&&) = default;
 		TextureLoaderWrapper& operator=(const TextureLoaderWrapper&) = default;
 		TextureLoaderWrapper& operator=(TextureLoaderWrapper&&) = default;
 		virtual ~TextureLoaderWrapper() = default;
 
-		virtual rawrbox::TextureWrapper get(const std::string& path, sol::optional<uint32_t> loadFlags);
+		virtual rawrbox::TextureWrapper get(const std::string& path, sol::optional<uint32_t> loadFlags, sol::this_environment modEnv);
 
 		static void registerLua(sol::state& lua);
 	};

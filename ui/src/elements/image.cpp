@@ -11,9 +11,9 @@
 
 namespace rawrbox {
 #ifdef RAWRBOX_SCRIPTING
-	void UIImage::initializeLua(rawrbox::Mod* mod) {
+	void UIImage::initializeLua() {
 		if (!SCRIPTING::initialized) return;
-		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ImageWrapper(this->shared_from_this(), mod));
+		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ImageWrapper(this->shared_from_this()));
 	}
 #endif
 

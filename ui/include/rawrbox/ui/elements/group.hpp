@@ -8,7 +8,7 @@ namespace rawrbox {
 		float _border = 0.F;
 
 #ifdef RAWRBOX_SCRIPTING
-		void initializeLua(rawrbox::Mod* mod) override;
+		void initializeLua() override;
 #endif
 	public:
 		~UIGroup() override = default;

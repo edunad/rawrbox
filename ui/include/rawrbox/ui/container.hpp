@@ -38,7 +38,7 @@ namespace rawrbox {
 
 #ifdef RAWRBOX_SCRIPTING
 		sol::object _luaWrapper;
-		virtual void initializeLua(rawrbox::Mod* mod);
+		virtual void initializeLua();
 #endif
 
 	public:
@@ -143,7 +143,7 @@ namespace rawrbox {
 
 		// SCRIPTING ----
 #ifdef RAWRBOX_SCRIPTING
-		virtual sol::object& getScriptingWrapper(rawrbox::Mod* mod);
+		virtual sol::object& getScriptingWrapper();
 #endif
 		// ---------
 	};

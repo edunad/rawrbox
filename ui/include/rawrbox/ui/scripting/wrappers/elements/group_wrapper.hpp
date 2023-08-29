@@ -8,7 +8,7 @@ namespace rawrbox {
 	class GroupWrapper : public rawrbox::UIContainerWrapper {
 
 	public:
-		GroupWrapper(const std::shared_ptr<rawrbox::UIContainer>& element);
+		using UIContainerWrapper::UIContainerWrapper;
 
 		virtual void setBorder(float border);
 		[[nodiscard]] virtual float getBorder() const;

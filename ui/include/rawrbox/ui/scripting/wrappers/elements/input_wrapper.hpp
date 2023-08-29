@@ -9,11 +9,9 @@
 
 namespace rawrbox {
 	class InputWrapper : public rawrbox::UIContainerWrapper {
-	protected:
-		rawrbox::Mod* _mod = nullptr;
 
 	public:
-		InputWrapper(const std::shared_ptr<rawrbox::UIContainer>& element, rawrbox::Mod* mod);
+		using UIContainerWrapper::UIContainerWrapper;
 
 		// UTILS -----
 		virtual void setHints(const sol::table& hints);
@@ -49,7 +47,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual rawrbox::Colori getBackgroundColor() const;
 
 		virtual void setFont(const rawrbox::FontWrapper& font);
-		virtual void setFont(const std::string& font, sol::optional<int> size);
+		virtual void setFont(const std::string& font, sol::optional<int> size, sol::this_environment modEnv);
 		[[nodiscard]] virtual rawrbox::FontWrapper getFont() const;
 
 		[[nodiscard]] virtual bool empty() const;

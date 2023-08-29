@@ -138,7 +138,7 @@ namespace rawrbox {
 			fmt::print("{}\n", json.dump(1, ' ', false));
 		};
 
-		env["include"] = [&env, &mod](const std::string& path) {
+		env["include"] = [&env, mod](const std::string& path) {
 			auto fixedPath = LuaUtils::getContent(path, mod->getFolder());
 
 			bool loaded = loadLuaFile(fixedPath, env);
@@ -190,6 +190,11 @@ namespace rawrbox {
 		env["timer"] = rawrbox::TimerWrapper();
 		// -------------------
 
+		// ID ------------------
+		env["__mod_folder"] = mod->getFolder().generic_string();
+		env["__mod_id"] = mod->getID();
+		// ---------------------
+
 		// Register plugins env types ---
 		for (auto& p : _plugins)
 			p->registerGlobal(mod);
@@ -225,6 +230,7 @@ namespace rawrbox {
 			if (md == _mods.end()) return;
 
 			fmt::print("[RawrBox-Scripting] Hot-reloading lua file '{}'\n", filePath);
+			getLUA().collect_garbage();
 			loadLuaFile(filePath, md->second->getEnvironment());
 			onModHotReload(md->second.get());
 			break;

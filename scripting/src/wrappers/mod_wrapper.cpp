@@ -4,23 +4,23 @@
 namespace rawrbox {
 	ModWrapper::ModWrapper(rawrbox::Mod* mod_) : _mod(mod_) {}
 
-	sol::environment ModWrapper::getENV() const {
-		if (this->_mod == nullptr) return sol::nil;
+	const sol::environment& ModWrapper::getENV() const {
+		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-ModWrapper] Invalid mod reference");
 		return this->_mod->getEnvironment();
 	}
 
 	std::string ModWrapper::getID() const {
-		if (this->_mod == nullptr) return "";
+		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-ModWrapper] Invalid mod reference");
 		return this->_mod->getID();
 	}
 
 	std::string ModWrapper::getFolder() const {
-		if (this->_mod == nullptr) return "";
+		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-ModWrapper] Invalid mod reference");
 		return this->_mod->getFolder().generic_string();
 	}
 
 	std::string ModWrapper::getEntryFilePath() const {
-		if (this->_mod == nullptr) return "";
+		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-ModWrapper] Invalid mod reference");
 		return this->_mod->getEntryFilePath();
 	}
 

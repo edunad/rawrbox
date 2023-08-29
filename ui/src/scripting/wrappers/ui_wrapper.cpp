@@ -14,65 +14,65 @@ namespace rawrbox {
 	// CREATE ------
 	sol::object UIWrapper::createFrame(sol::optional<rawrbox::UIContainerWrapper> parent) {
 		if (parent.has_value()) {
-			return parent->getRef()->createChild<rawrbox::UIFrame>()->getScriptingWrapper(this->_mod);
+			return parent->getRef()->createChild<rawrbox::UIFrame>()->getScriptingWrapper();
 		} else {
-			return this->_root->createChild<rawrbox::UIFrame>()->getScriptingWrapper(this->_mod);
+			return this->_root->createChild<rawrbox::UIFrame>()->getScriptingWrapper();
 		}
 	}
 
 	sol::object UIWrapper::createGroup(sol::optional<rawrbox::UIContainerWrapper> parent) {
 		if (parent.has_value()) {
-			return parent->getRef()->createChild<rawrbox::UIGroup>()->getScriptingWrapper(this->_mod);
+			return parent->getRef()->createChild<rawrbox::UIGroup>()->getScriptingWrapper();
 		} else {
-			return this->_root->createChild<rawrbox::UIGroup>()->getScriptingWrapper(this->_mod);
+			return this->_root->createChild<rawrbox::UIGroup>()->getScriptingWrapper();
 		}
 	}
 
 	sol::object UIWrapper::createButton(sol::optional<rawrbox::UIContainerWrapper> parent) {
 		if (parent.has_value()) {
-			return parent->getRef()->createChild<rawrbox::UIGroup>()->getScriptingWrapper(this->_mod);
+			return parent->getRef()->createChild<rawrbox::UIButton>()->getScriptingWrapper();
 		} else {
-			return this->_root->createChild<rawrbox::UIGroup>()->getScriptingWrapper(this->_mod);
+			return this->_root->createChild<rawrbox::UIButton>()->getScriptingWrapper();
 		}
 	}
 
 	sol::object UIWrapper::createProgressBar(sol::optional<rawrbox::UIContainerWrapper> parent) {
 		if (parent.has_value()) {
-			return parent->getRef()->createChild<rawrbox::UIProgressBar>()->getScriptingWrapper(this->_mod);
+			return parent->getRef()->createChild<rawrbox::UIProgressBar>()->getScriptingWrapper();
 		} else {
-			return this->_root->createChild<rawrbox::UIProgressBar>()->getScriptingWrapper(this->_mod);
+			return this->_root->createChild<rawrbox::UIProgressBar>()->getScriptingWrapper();
 		}
 	}
 
 	sol::object UIWrapper::createLabel(sol::optional<rawrbox::UIContainerWrapper> parent) {
 		if (parent.has_value()) {
-			return parent->getRef()->createChild<rawrbox::UILabel>()->getScriptingWrapper(this->_mod);
+			return parent->getRef()->createChild<rawrbox::UILabel>()->getScriptingWrapper();
 		} else {
-			return this->_root->createChild<rawrbox::UILabel>()->getScriptingWrapper(this->_mod);
+			return this->_root->createChild<rawrbox::UILabel>()->getScriptingWrapper();
 		}
 	}
 
 	sol::object UIWrapper::createInput(sol::optional<rawrbox::UIContainerWrapper> parent) {
 		if (parent.has_value()) {
-			return parent->getRef()->createChild<rawrbox::UIInput>()->getScriptingWrapper(this->_mod);
+			return parent->getRef()->createChild<rawrbox::UIInput>()->getScriptingWrapper();
 		} else {
-			return this->_root->createChild<rawrbox::UIInput>()->getScriptingWrapper(this->_mod);
+			return this->_root->createChild<rawrbox::UIInput>()->getScriptingWrapper();
 		}
 	}
 
 	sol::object UIWrapper::createImage(sol::optional<rawrbox::UIContainerWrapper> parent) {
 		if (parent.has_value()) {
-			return parent->getRef()->createChild<rawrbox::UIImage>()->getScriptingWrapper(this->_mod);
+			return parent->getRef()->createChild<rawrbox::UIImage>()->getScriptingWrapper();
 		} else {
-			return this->_root->createChild<rawrbox::UIImage>()->getScriptingWrapper(this->_mod);
+			return this->_root->createChild<rawrbox::UIImage>()->getScriptingWrapper();
 		}
 	}
 
 	sol::object UIWrapper::createGraph(sol::optional<rawrbox::UIContainerWrapper> parent) {
 		if (parent.has_value()) {
-			return parent->getRef()->createChild<rawrbox::UIGraph>()->getScriptingWrapper(this->_mod);
+			return parent->getRef()->createChild<rawrbox::UIGraph>()->getScriptingWrapper();
 		} else {
-			return this->_root->createChild<rawrbox::UIGraph>()->getScriptingWrapper(this->_mod);
+			return this->_root->createChild<rawrbox::UIGraph>()->getScriptingWrapper();
 		}
 	}
 	// ----------------

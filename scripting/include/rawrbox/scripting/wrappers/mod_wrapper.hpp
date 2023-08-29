@@ -15,7 +15,7 @@ namespace rawrbox {
 		ModWrapper& operator=(ModWrapper&&) = default;
 		virtual ~ModWrapper() = default;
 
-		[[nodiscard]] virtual sol::environment getENV() const;
+		[[nodiscard]] virtual const sol::environment& getENV() const;
 		[[nodiscard]] virtual std::string getID() const;
 		[[nodiscard]] virtual std::string getFolder() const;
 		[[nodiscard]] virtual std::string getEntryFilePath() const;

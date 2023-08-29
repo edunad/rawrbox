@@ -12,7 +12,7 @@ namespace rawrbox {
 		rawrbox::Color _color = rawrbox::Colors::White();
 
 #ifdef RAWRBOX_SCRIPTING
-		void initializeLua(rawrbox::Mod* mod) override;
+		void initializeLua() override;
 #endif
 	public:
 		UIImage() = default;

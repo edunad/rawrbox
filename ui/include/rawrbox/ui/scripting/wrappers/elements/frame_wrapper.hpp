@@ -9,7 +9,7 @@ namespace rawrbox {
 	class FrameWrapper : public rawrbox::UIContainerWrapper {
 
 	public:
-		FrameWrapper(const std::shared_ptr<rawrbox::UIContainer>& element);
+		using UIContainerWrapper::UIContainerWrapper;
 
 		void setTitle(const std::string& title);
 		[[nodiscard]] const std::string& getTitle() const;

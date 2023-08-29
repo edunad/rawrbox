@@ -13,9 +13,9 @@
 namespace rawrbox {
 
 #ifdef RAWRBOX_SCRIPTING
-	void UIGraph::initializeLua(rawrbox::Mod* mod) {
+	void UIGraph::initializeLua() {
 		if (!SCRIPTING::initialized) return;
-		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::GraphWrapper(this->shared_from_this(), mod));
+		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::GraphWrapper(this->shared_from_this()));
 	}
 #endif
 

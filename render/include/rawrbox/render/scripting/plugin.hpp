@@ -80,8 +80,8 @@ namespace rawrbox {
 
 #ifdef RAWRBOX_RESOURCES
 			// Loaders ----
-			env["texture"] = rawrbox::TextureLoaderWrapper(mod);
-			env["font"] = rawrbox::FontLoaderWrapper(mod);
+			env["texture"] = rawrbox::TextureLoaderWrapper();
+			env["font"] = rawrbox::FontLoaderWrapper();
 			//-----
 #endif
 

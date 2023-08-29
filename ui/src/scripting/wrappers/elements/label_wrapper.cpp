@@ -1,92 +1,71 @@
 #include <rawrbox/ui/elements/label.hpp>
 #include <rawrbox/ui/scripting/wrappers/elements/label_wrapper.hpp>
+#include <rawrbox/utils/memory.hpp>
 
 namespace rawrbox {
-	LabelWrapper::LabelWrapper(const std::shared_ptr<rawrbox::UIContainer>& element, rawrbox::Mod* mod) : rawrbox::UIContainerWrapper(element), _mod(mod) {}
 
 	// UTILS -----
 	void LabelWrapper::setColor(const rawrbox::Colori& col) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-LabelWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UILabel> ptr = std::dynamic_pointer_cast<rawrbox::UILabel>(this->_ref.lock());
-
-		ptr.lock()->setColor(col.cast<float>());
+		rawrbox::cast<rawrbox::UILabel>(this->_ref).lock()->setColor(col.cast<float>());
 	}
 
 	rawrbox::Colori LabelWrapper::getColor() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-LabelWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UILabel> ptr = std::dynamic_pointer_cast<rawrbox::UILabel>(this->_ref.lock());
-
-		return ptr.lock()->getColor().cast<int>();
+		return rawrbox::cast<rawrbox::UILabel>(this->_ref).lock()->getColor().cast<int>();
 	}
 
 	void LabelWrapper::setShadowPos(const rawrbox::Vector2f& pos) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-LabelWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UILabel> ptr = std::dynamic_pointer_cast<rawrbox::UILabel>(this->_ref.lock());
-
-		ptr.lock()->setShadowPos(pos);
+		rawrbox::cast<rawrbox::UILabel>(this->_ref).lock()->setShadowPos(pos);
 	}
 
 	const rawrbox::Vector2f& LabelWrapper::getShadowPos() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-LabelWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UILabel> ptr = std::dynamic_pointer_cast<rawrbox::UILabel>(this->_ref.lock());
-
-		return ptr.lock()->getShadowPos();
+		return rawrbox::cast<rawrbox::UILabel>(this->_ref).lock()->getShadowPos();
 	}
 
 	void LabelWrapper::setShadowColor(const rawrbox::Colori& col) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-LabelWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UILabel> ptr = std::dynamic_pointer_cast<rawrbox::UILabel>(this->_ref.lock());
-
-		ptr.lock()->setShadowColor(col.cast<float>());
+		rawrbox::cast<rawrbox::UILabel>(this->_ref).lock()->setShadowColor(col.cast<float>());
 	}
 
 	rawrbox::Colori LabelWrapper::getShadowColor() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-LabelWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UILabel> ptr = std::dynamic_pointer_cast<rawrbox::UILabel>(this->_ref.lock());
-
-		return ptr.lock()->getShadowColor().cast<int>();
+		return rawrbox::cast<rawrbox::UILabel>(this->_ref).lock()->getShadowColor().cast<int>();
 	}
 
 	void LabelWrapper::setText(const std::string& text) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-LabelWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UILabel> ptr = std::dynamic_pointer_cast<rawrbox::UILabel>(this->_ref.lock());
-
-		ptr.lock()->setText(text);
+		rawrbox::cast<rawrbox::UILabel>(this->_ref).lock()->setText(text);
 	}
 
 	const std::string& LabelWrapper::getText() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-LabelWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UILabel> ptr = std::dynamic_pointer_cast<rawrbox::UILabel>(this->_ref.lock());
-
-		return ptr.lock()->getText();
+		return rawrbox::cast<rawrbox::UILabel>(this->_ref).lock()->getText();
 	}
 
 	void LabelWrapper::setFont(const rawrbox::FontWrapper& font) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-LabelWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UILabel> ptr = std::dynamic_pointer_cast<rawrbox::UILabel>(this->_ref.lock());
-
-		ptr.lock()->setFont(font.getRef());
+		rawrbox::cast<rawrbox::UILabel>(this->_ref).lock()->setFont(font.getRef());
 	}
 
-	void LabelWrapper::setFont(const std::string& font, sol::optional<int> size) {
+	void LabelWrapper::setFont(const std::string& font, sol::optional<int> size, sol::this_environment modEnv) {
+		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-LabelWrapper] MOD not set!");
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-LabelWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UILabel> ptr = std::dynamic_pointer_cast<rawrbox::UILabel>(this->_ref.lock());
 
-		ptr.lock()->setFont(rawrbox::LuaUtils::getContent(font, this->_mod->getFolder()), size.value_or(11));
+		std::string modFolder = modEnv.env.value()["__mod_folder"];
+		rawrbox::cast<rawrbox::UILabel>(this->_ref).lock()->setFont(rawrbox::LuaUtils::getContent(font, modFolder), size.value_or(11));
 	}
 
 	rawrbox::FontWrapper LabelWrapper::getFont() const {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-LabelWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UILabel> ptr = std::dynamic_pointer_cast<rawrbox::UILabel>(this->_ref.lock());
-
-		return {ptr.lock()->getFont()};
+		return {rawrbox::cast<rawrbox::UILabel>(this->_ref).lock()->getFont()};
 	}
 
 	void LabelWrapper::sizeToContents() {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-LabelWrapper] Invalid ui reference");
-		std::weak_ptr<rawrbox::UILabel> ptr = std::dynamic_pointer_cast<rawrbox::UILabel>(this->_ref.lock());
-
-		ptr.lock()->sizeToContents();
+		rawrbox::cast<rawrbox::UILabel>(this->_ref).lock()->sizeToContents();
 	}
 	// ----
 
@@ -106,7 +85,7 @@ namespace rawrbox {
 		    "setText", &LabelWrapper::setText,
 		    "getText", &LabelWrapper::getText,
 
-		    "setFont", sol::overload(sol::resolve<void(const std::string&, sol::optional<int>)>(&LabelWrapper::setFont), sol::resolve<void(const rawrbox::FontWrapper&)>(&LabelWrapper::setFont)),
+		    "setFont", sol::overload(sol::resolve<void(const std::string&, sol::optional<int>, sol::this_environment)>(&LabelWrapper::setFont), sol::resolve<void(const rawrbox::FontWrapper&)>(&LabelWrapper::setFont)),
 		    "getFont", &LabelWrapper::getFont,
 
 		    "sizeToContents", &LabelWrapper::sizeToContents,

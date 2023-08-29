@@ -14,7 +14,7 @@ namespace rawrbox {
 			if (mod == nullptr) throw std::runtime_error("[RawrBox-ResourcesPlugin] Tried to register plugin on invalid mod!");
 
 			auto& env = mod->getEnvironment();
-			env["resources"] = rawrbox::ResourcesWrapper(mod);
+			env["resources"] = rawrbox::ResourcesWrapper();
 		}
 	};
 } // namespace rawrbox

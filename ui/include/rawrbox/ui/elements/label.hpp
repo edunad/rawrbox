@@ -19,7 +19,7 @@ namespace rawrbox {
 		rawrbox::Vector2f _shadow = {1, 1};
 
 #ifdef RAWRBOX_SCRIPTING
-		void initializeLua(rawrbox::Mod* mod) override;
+		void initializeLua() override;
 #endif
 
 	public:

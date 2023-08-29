@@ -9,8 +9,6 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-	BASSWrapper::BASSWrapper(rawrbox::Mod* mod) : _mod(mod) {}
-
 	// UTILS -----
 	float BASSWrapper::getMasterVolume() {
 		return BASS::getMasterVolume();
@@ -26,24 +24,26 @@ namespace rawrbox {
 	// -----
 
 	// LOAD -----
-	rawrbox::SoundInstanceWrapper BASSWrapper::loadSound(const std::string& path, sol::optional<uint32_t> flags) {
-		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-FontLoader] MOD not set!");
-		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder());
+	rawrbox::SoundInstanceWrapper BASSWrapper::loadSound(const std::string& path, sol::optional<uint32_t> flags, sol::this_environment modEnv) {
+		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-BASSWrapper] MOD not set!");
+
+		std::string modFolder = modEnv.env.value()["__mod_folder"];
+		auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
 
 #ifdef RAWRBOX_RESOURCES
 		if (!rawrbox::RESOURCES::isLoaded(fixedPath)) {
-			fmt::print("[Resources] Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath);
+			fmt::print("[RawrBox-Resources] Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath);
 		}
 #endif
 		auto sound = BASS::loadSound(fixedPath, flags.value_or(0));
-		if (sound == nullptr) throw std::runtime_error(fmt::format("[RawrBox-BASSWrapper] Failed to load sound '{}'", path));
+		if (sound == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] Failed to load sound '{}'", path));
 
 		return {sound->createInstance()};
 	}
 
 	rawrbox::SoundInstanceWrapper BASSWrapper::loadHTTPSound(const std::string& url, sol::optional<uint32_t> flags) {
 		auto sound = BASS::loadHTTPSound(url, flags.value_or(0));
-		if (sound == nullptr) throw std::runtime_error(fmt::format("[RawrBox-BASSWrapper] Failed to load http sound '{}'", url));
+		if (sound == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] Failed to load http sound '{}'", url));
 
 		return {sound->createInstance()};
 	}

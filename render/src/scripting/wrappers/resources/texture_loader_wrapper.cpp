@@ -5,22 +5,22 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
-	TextureLoaderWrapper::TextureLoaderWrapper(rawrbox::Mod* mod) : _mod(mod) {}
+	rawrbox::TextureWrapper TextureLoaderWrapper::get(const std::string& path, sol::optional<uint32_t> loadFlags, sol::this_environment modEnv) {
+		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-TextureWrapper] MOD not set!");
 
-	rawrbox::TextureWrapper TextureLoaderWrapper::get(const std::string& path, sol::optional<uint32_t> loadFlags) {
-		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-TextureLoader] MOD not set!");
-		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder());
+		std::string modFolder = modEnv.env.value()["__mod_folder"];
+		auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
 
 		if (!rawrbox::RESOURCES::isLoaded(fixedPath)) {
-			fmt::print("[Resources] Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath);
+			fmt::print("[RawrBox-Resources] Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath);
 
 			auto ptr = rawrbox::RESOURCES::loadFile<rawrbox::ResourceTexture>(fixedPath, loadFlags.value_or(0));
-			if (ptr == nullptr) throw std::runtime_error(fmt::format("[Resources] '{}' not found!", fixedPath));
+			if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] '{}' not found!", fixedPath));
 
 			return {ptr->get()};
 		} else {
 			auto ptr = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(fixedPath);
-			if (ptr == nullptr) throw std::runtime_error(fmt::format("[Resources] '{}' not found!", fixedPath));
+			if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] '{}' not found!", fixedPath));
 
 			return {ptr->get()};
 		}
