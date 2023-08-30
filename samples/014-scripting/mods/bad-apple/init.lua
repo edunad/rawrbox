@@ -82,7 +82,7 @@ end
 function MOD:onReady()
     print("Loading bad apple...")
 
-    --[[local mdl = test_model2()
+    local mdl = test_model2()
 
     if not mdl or mdl:isValid() then
         mdl:setAutoUpload(false)
@@ -122,5 +122,5 @@ function MOD:onReady()
                 parse(data.data)
                 playAnimation()
             end, 50000)
-    end]]
+    end
 end
