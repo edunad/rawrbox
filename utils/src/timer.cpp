@@ -79,8 +79,8 @@ namespace rawrbox {
 	bool TIMER::destroy(const std::string& id) {
 		auto fnd = timers.find(id);
 		if (fnd == timers.end()) return false;
+		fnd->second = nullptr; // Update will clean it
 
-		timers.erase(fnd);
 		return true;
 	}
 

@@ -140,13 +140,13 @@ namespace scripting_test {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
-		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
-		rawrbox::SCRIPTING::shutdown();
-
 		this->_ROOT_UI.reset();
 		this->_model.reset();
 		this->_instance.reset();
+
+		rawrbox::RESOURCES::shutdown();
+		rawrbox::ASYNC::shutdown();
+		rawrbox::SCRIPTING::shutdown();
 
 		this->_window->unblockPoll();
 		this->_window.reset();
