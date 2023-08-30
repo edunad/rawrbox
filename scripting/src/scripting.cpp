@@ -5,6 +5,7 @@
 #include <rawrbox/scripting/wrappers/console_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/fmt_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/hooks_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/i18n_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/io_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/aabb_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/math/bbox_wrapper.hpp>
@@ -16,6 +17,7 @@
 #include <rawrbox/scripting/wrappers/mod_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/scripting_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/timer_wrapper.hpp>
+#include <rawrbox/utils/i18n.hpp>
 #include <rawrbox/utils/time.hpp>
 
 #include <filesystem>
@@ -111,6 +113,7 @@ namespace rawrbox {
 
 			loadLuaExtensions(mod.second.get());
 			loadGlobals(mod.second.get());
+			loadI18N(mod.second.get());
 
 			if (!mod.second->load()) {
 				fmt::print("[RawrBox-Scripting] Failed to load mod '{}'\n", mod.first);
@@ -194,6 +197,7 @@ namespace rawrbox {
 		env["hooks"] = rawrbox::HooksWrapper(_hooks.get());
 		env["scripting"] = rawrbox::ScriptingWrapper();
 		env["timer"] = rawrbox::TimerWrapper();
+		env["i18n"] = rawrbox::I18NWrapper();
 		if (_console != nullptr) {
 			env["console"] = rawrbox::ConsoleWrapper(_console);
 		}
@@ -212,6 +216,13 @@ namespace rawrbox {
 		// Custom global env types ---
 		onRegisterGlobals(mod);
 		// ----
+	}
+
+	void SCRIPTING::loadI18N(rawrbox::Mod* mod) {
+		auto i18nPath = fmt::format("{}/i18n", mod->getFolder().generic_string());
+		if (!std::filesystem::exists(i18nPath)) return;
+
+		rawrbox::I18N::loadLanguagePack(mod->getID(), i18nPath);
 	}
 
 	void SCRIPTING::registerLoadedFile(const std::string& modId, const std::string& filePath) {
@@ -284,6 +295,8 @@ namespace rawrbox {
 		rawrbox::ModWrapper::registerLua(*_lua);
 		rawrbox::HooksWrapper::registerLua(*_lua);
 		rawrbox::TimerWrapper::registerLua(*_lua);
+		rawrbox::I18NWrapper::registerLua(*_lua);
+
 		if (_console != nullptr) {
 			rawrbox::ConsoleCommandWrapper::registerLua(*_lua);
 			rawrbox::ConsoleWrapper::registerLua(*_lua);
