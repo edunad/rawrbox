@@ -41,6 +41,7 @@ namespace rawrbox {
 		static void loadTypes();
 		static void loadLuaExtensions(rawrbox::Mod* mod);
 		static void loadGlobals(rawrbox::Mod* mod);
+		static void loadI18N(rawrbox::Mod* mod);
 		// ----
 
 		static void registerLoadedFile(const std::string& modId, const std::string& filePath);

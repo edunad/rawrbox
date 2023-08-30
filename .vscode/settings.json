@@ -21,7 +21,8 @@
     "resources",
     "timer",
     "Instance",
-    "ui"
+    "ui",
+    "i18n"
   ],
   "Lua.diagnostics.disable": ["lowercase-global"]
 }

@@ -50,7 +50,7 @@ function drawUI()
 
     local label = ui:create("label", data.frame)
     if not label or not label:isValid() then return end
-    label:setText("A mew nyaaaaaaaaaaa")
+    label:setText(i18n:get("", "test"))
     label:setFont("#/consola.ttf")
     label:setPos(Vector2:new(20, 3))
     label:sizeToContents()
@@ -59,13 +59,24 @@ function drawUI()
     local button = ui:create("button", data.frame)
     if not button or not button:isValid() then return end
     button:setPos(Vector2:new(20, 40))
-    button:setSize(Vector2:new(200, 24))
-    button:setText("NYA")
+    button:setSize(Vector2:new(100, 24))
+    button:setText("NYA PT")
     button:setEnabled(true)
     button:onClick(function()
-        print("nya")
+        i18n:setLanguage("pt")
+        label:setText(i18n:get("", "test"))
     end)
 
+    local button2 = ui:create("button", data.frame)
+    if not button2 or not button2:isValid() then return end
+    button2:setPos(Vector2:new(110, 40))
+    button2:setSize(Vector2:new(100, 24))
+    button2:setText("NYA EN")
+    button2:setEnabled(true)
+    button2:onClick(function()
+        i18n:setLanguage("en")
+        label:setText(i18n:get("", "test"))
+    end)
 
     local image = ui:create("image", data.frame)
     if not image or not image:isValid() then return end
