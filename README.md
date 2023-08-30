@@ -46,6 +46,9 @@
 - Post-processing effects support
 - HTTP / HTTPS requests using curl + [libcpr](https://github.com/libcpr/cpr)
 - Packet networking support
+- Settings support
+- Custom dev console (with support for custom commands)
+- I18N (internationalization) support
 
 # TODO LIST
 
