@@ -33,8 +33,8 @@
 - Fonts (ttf) using [stb](https://github.com/nothings/stb)
 - JSON loading using [nlohmann json](https://github.com/nlohmann/json)
 - Images (png, jpeg, tga, bitmap, gif) using [stb](https://github.com/nothings/stb)
-- Video only (using [webm](https://github.com/webmproject/libwebm) tech)
-- Sounds (using [BASS](https://www.un4seen.com/) lib)
+- Video only using [webm](https://github.com/webmproject/libwebm)
+- Sounds using [BASS](https://www.un4seen.com/) lib
 - Custom UI
 - Material system (similar to unity)
 - Vulkan / DirectX / OpenGL support using [BGFX](https://github.com/bkaradzic/bgfx)
