@@ -1,6 +1,8 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/scripting/scripting.hpp>
 #include <rawrbox/scripting/utils/lua.hpp>
+#include <rawrbox/scripting/wrappers/console_command_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/console_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/fmt_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/hooks_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/io_wrapper.hpp>
@@ -31,6 +33,7 @@ namespace rawrbox {
 	std::vector<std::unique_ptr<rawrbox::Plugin>> SCRIPTING::_plugins = {};
 
 	bool SCRIPTING::_hotReloadEnabled = false;
+	rawrbox::Console* SCRIPTING::_console = nullptr;
 	// -----
 
 	// PUBLIC ----
@@ -82,9 +85,12 @@ namespace rawrbox {
 		_lua.reset();
 	}
 
+	void SCRIPTING::setConsole(rawrbox::Console* console) {
+		_console = console;
+	}
+
 	// LOAD ---
 	void SCRIPTING::load() {
-
 		if (!std::filesystem::exists("./mods")) throw std::runtime_error("[RawrBox-Scripting] Failed to locate folder './mods'");
 
 		// TODO: Do we need mod load ordering?
@@ -188,6 +194,9 @@ namespace rawrbox {
 		env["hooks"] = rawrbox::HooksWrapper(_hooks.get());
 		env["scripting"] = rawrbox::ScriptingWrapper();
 		env["timer"] = rawrbox::TimerWrapper();
+		if (_console != nullptr) {
+			env["console"] = rawrbox::ConsoleWrapper(_console);
+		}
 		// -------------------
 
 		// ID ------------------
@@ -275,6 +284,10 @@ namespace rawrbox {
 		rawrbox::ModWrapper::registerLua(*_lua);
 		rawrbox::HooksWrapper::registerLua(*_lua);
 		rawrbox::TimerWrapper::registerLua(*_lua);
+		if (_console != nullptr) {
+			rawrbox::ConsoleCommandWrapper::registerLua(*_lua);
+			rawrbox::ConsoleWrapper::registerLua(*_lua);
+		}
 		// ----
 
 		// Register plugins types ---
@@ -292,7 +305,6 @@ namespace rawrbox {
 		if (mod == nullptr) return;
 
 		auto& env = mod->getEnvironment();
-
 		loadLuaFile("./lua/table.lua", env);
 		loadLuaFile("./lua/string.lua", env);
 		loadLuaFile("./lua/math.lua", env);
@@ -300,6 +312,10 @@ namespace rawrbox {
 		loadLuaFile("./lua/sha2.lua", env);
 		loadLuaFile("./lua/util.lua", env);
 		loadLuaFile("./lua/input.lua", env);
+
+		if (_console != nullptr) {
+			loadLuaFile("./lua/console_enums.lua", env);
+		}
 
 		// Register plugins types ---
 		for (auto& p : _plugins)
