@@ -30,19 +30,19 @@ option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 
 option(RAWRBOX_BUILD_SAMPLES "Build samples" ON)
 
-option(RAWRBOX_BUILD_RAWRBOX_UI "Build RAWRBOX.UI" ON)
-option(RAWRBOX_BUILD_RAWRBOX_RESOURCES "Build RAWRBOX.RESOURCES" ON)
-option(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS "Build 3D physics support" ON)
-option(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS "Build 2D physics support" ON)
-option(RAWRBOX_BUILD_RAWRBOX_BASS "Build bass & add sound loading support" ON)
-option(RAWRBOX_BUILD_RAWRBOX_ASSIMP "Build assimp & add model loading support" ON)
-option(RAWRBOX_BUILD_RAWRBOX_WEBM "Build libwebm & add video loading support" ON)
-option(RAWRBOX_BUILD_RAWRBOX_NETWORK "Build network support" ON)
+option(RAWRBOX_BUILD_RAWRBOX_UI "Build RAWRBOX.UI" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_RESOURCES "Build RAWRBOX.RESOURCES" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS "Build 3D physics support" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS "Build 2D physics support" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_BASS "Build bass & add sound loading support" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_ASSIMP "Build assimp & add model loading support" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_WEBM "Build libwebm & add video loading support" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_NETWORK "Build network support" OFF)
 
-option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING "Build lua & mod support" ON)
+option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING "Build lua & mod support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT "Enable scripting LuaJIT support (CURRENTLY BROKEN)" OFF)
 
-option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" ON)
+option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" OFF)
 
 if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
     if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
@@ -53,7 +53,7 @@ if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
     message(WARNING "JoltPhysics is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
 endif()
 
-option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" ON)
+option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" OFF)
 # -----
 
 # OTHER SETTINGS ----
@@ -160,6 +160,13 @@ if(zlib_ADDED)
 endif()
 # --------------------
 
+## CHECKS ---
+if(RAWRBOX_BUILD_SAMPLES AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+    message(WARNING "Samples require RAWRBOX.RESOURCES to be enabled, enabling...")
+    set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
+endif()
+# -------------------------
+
 add_subdirectory("math")
 add_subdirectory("utils")
 add_subdirectory("engine")
@@ -212,10 +219,6 @@ if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
 endif()
 
 if(RAWRBOX_BUILD_SAMPLES)
-    if(NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
-        message(WARNING "Samples require RAWRBOX.RESOURCES to be enabled")
-    else()
-        message(STATUS "Enabled SAMPLES building")
-        add_subdirectory("samples")
-    endif()
+    message(STATUS "Enabled SAMPLES building")
+    add_subdirectory("samples")
 endif()
