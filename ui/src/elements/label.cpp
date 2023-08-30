@@ -4,7 +4,19 @@
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/label.hpp>
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/ui/scripting/wrappers/elements/label_wrapper.hpp>
+#endif
+
 namespace rawrbox {
+
+#ifdef RAWRBOX_SCRIPTING
+	void UILabel::initializeLua() {
+		if (!SCRIPTING::initialized) return;
+		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::LabelWrapper(this->shared_from_this()));
+	}
+#endif
+
 	// FOCUS HANDLE ---
 	bool UILabel::hitTest(const rawrbox::Vector2f& /*point*/) const { return false; }
 	// -----

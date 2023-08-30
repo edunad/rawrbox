@@ -20,6 +20,8 @@
     "BGFX_FRAME",
     "resources",
     "timer",
-    "Instance"
-  ]
+    "Instance",
+    "ui"
+  ],
+  "Lua.diagnostics.disable": ["lowercase-global"]
 }

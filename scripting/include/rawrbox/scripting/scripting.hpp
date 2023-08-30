@@ -3,6 +3,7 @@
 #include <rawrbox/scripting/hooks.hpp>
 #include <rawrbox/scripting/mod.hpp>
 #include <rawrbox/scripting/plugin.hpp>
+#include <rawrbox/utils/console.hpp>
 #include <rawrbox/utils/event.hpp>
 #include <rawrbox/utils/file_watcher.hpp>
 #include <rawrbox/utils/string.hpp>
@@ -33,6 +34,7 @@ namespace rawrbox {
 		static std::vector<std::unique_ptr<rawrbox::Plugin>> _plugins;
 
 		static bool _hotReloadEnabled;
+		static rawrbox::Console* _console;
 
 		// LOAD ----
 		static void loadLibraries();
@@ -49,6 +51,8 @@ namespace rawrbox {
 
 		static void init(int hotReloadMs = 0);
 		static void shutdown();
+
+		static void setConsole(rawrbox::Console* console);
 
 		// EVENTS ----
 		static rawrbox::Event<> onRegisterTypes;

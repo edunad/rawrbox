@@ -11,7 +11,7 @@ namespace rawrbox {
 	protected:
 		rawrbox::Window* _window = nullptr;
 
-		std::vector<std::unique_ptr<rawrbox::UIContainer>> _children = {};
+		std::vector<std::shared_ptr<rawrbox::UIContainer>> _children = {};
 		rawrbox::AABBf _aabb = {};
 
 		// INTERNAL UTILS
@@ -43,11 +43,11 @@ namespace rawrbox {
 
 		// CHILDREN
 		void removeChild(rawrbox::UIContainer* elm);
-		std::vector<std::unique_ptr<rawrbox::UIContainer>>& getChildren();
+		std::vector<std::shared_ptr<rawrbox::UIContainer>>& getChildren();
 
 		template <class T, typename... CallbackArgs>
 		T* createChild(CallbackArgs&&... args) {
-			auto elm = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
+			auto elm = std::make_shared<T>(std::forward<CallbackArgs>(args)...);
 			elm->setRoot(this);
 			elm->initialize();
 

@@ -31,6 +31,10 @@ namespace rawrbox {
 		rawrbox::Font* _consola = nullptr;
 		// -----------------
 
+#ifdef RAWRBOX_SCRIPTING
+		void initializeLua() override;
+#endif
+
 	public:
 		~UIFrame() override = default;
 		UIFrame() = default;

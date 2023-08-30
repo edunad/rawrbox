@@ -92,7 +92,7 @@ namespace rawrbox {
 		}));
 	}
 
-	std::vector<std::unique_ptr<rawrbox::UIContainer>>& UIRoot::getChildren() {
+	std::vector<std::shared_ptr<rawrbox::UIContainer>>& UIRoot::getChildren() {
 		return this->_children;
 	}
 	// -----

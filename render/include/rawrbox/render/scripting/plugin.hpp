@@ -17,7 +17,7 @@
 #include <rawrbox/render/scripting/wrappers/textures/base_wrapper.hpp>
 #include <rawrbox/render/scripting/wrappers/window_wrapper.hpp>
 #include <rawrbox/render/window.hpp>
-#include <rawrbox/scripting/plugin.hpp>
+#include <rawrbox/scripting/scripting.hpp>
 
 namespace rawrbox {
 	class RenderPlugin : public rawrbox::Plugin {
@@ -80,8 +80,8 @@ namespace rawrbox {
 
 #ifdef RAWRBOX_RESOURCES
 			// Loaders ----
-			env["texture"] = rawrbox::TextureLoaderWrapper(mod);
-			env["font"] = rawrbox::FontLoaderWrapper(mod);
+			env["texture"] = rawrbox::TextureLoaderWrapper();
+			env["font"] = rawrbox::FontLoaderWrapper();
 			//-----
 #endif
 

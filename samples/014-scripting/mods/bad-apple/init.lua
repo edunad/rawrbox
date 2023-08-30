@@ -9,7 +9,6 @@ apple.snd = {}
 local tonumber = tonumber
 local Color = Color
 local stringSplit = string.split
-local tableRemove = table.remove
 
 local instances = {}
 local colWhite = Color:new(255, 255, 255, 255)

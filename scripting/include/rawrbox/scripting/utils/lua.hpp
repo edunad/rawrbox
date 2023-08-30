@@ -34,7 +34,7 @@ namespace rawrbox {
 		}
 
 		template <typename T>
-		static std::vector<T> luaToVector(sol::table& table) {
+		static std::vector<T> luaToVector(const sol::table& table) {
 			std::vector<T> arr;
 			arr.resize(table.size());
 
@@ -57,6 +57,6 @@ namespace rawrbox {
 		// @/ == Root content
 		// @cats/ == `cats` mod
 		// normal_path == current mod
-		static std::string getContent(const std::filesystem::path& path, const std::string& modPath = "");
+		static std::string getContent(const std::filesystem::path& path, const std::filesystem::path& modPath = "");
 	};
 } // namespace rawrbox

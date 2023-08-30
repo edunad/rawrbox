@@ -4,25 +4,27 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
+	void ResourcesWrapper::preLoadFolder(const std::string& path, sol::this_environment modEnv) {
+		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-ResourcesWrapper] MOD not set!");
+		std::string modFolder = modEnv.env.value()["__mod_folder"];
 
-	ResourcesWrapper::ResourcesWrapper(rawrbox::Mod* mod) : _mod(mod) {}
-
-	void ResourcesWrapper::preLoadFolder(const std::string& path) {
-		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-Resources] MOD not set!");
-
-		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder().generic_string());
+		auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
 		rawrbox::RESOURCES::preLoadFolder(fixedPath);
 	}
 
-	void ResourcesWrapper::preLoad(const std::string& path, sol::optional<uint32_t> loadFlags) {
-		if (this->_mod == nullptr) throw std::runtime_error("[RawrBox-Resources] MOD not set!");
+	void ResourcesWrapper::preLoad(const std::string& path, sol::optional<uint32_t> loadFlags, sol::this_environment modEnv) {
+		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-ResourcesWrapper] MOD not set!");
+		std::string modFolder = modEnv.env.value()["__mod_folder"];
 
-		auto fixedPath = rawrbox::LuaUtils::getContent(path, this->_mod->getFolder().generic_string());
+		auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
 		rawrbox::RESOURCES::preLoadFile(fixedPath, loadFlags.value_or(0));
 	}
 
-	std::string ResourcesWrapper::getContent(sol::optional<std::string> path) {
-		return rawrbox::LuaUtils::getContent(path.value_or(""), this->_mod->getFolder().generic_string());
+	std::string ResourcesWrapper::getContent(sol::optional<std::string> path, sol::this_environment modEnv) {
+		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-ResourcesWrapper] MOD not set!");
+
+		std::string modFolder = modEnv.env.value()["__mod_folder"];
+		return rawrbox::LuaUtils::getContent(path.value_or(""), modFolder);
 	}
 
 	void ResourcesWrapper::registerLua(sol::state& lua) {

@@ -9,10 +9,11 @@ namespace rawrbox {
 	class UIImage : public rawrbox::UIContainer {
 	protected:
 		rawrbox::TextureBase* _texture = nullptr;
-
 		rawrbox::Color _color = rawrbox::Colors::White();
-		bool _isAnimated = false;
 
+#ifdef RAWRBOX_SCRIPTING
+		void initializeLua() override;
+#endif
 	public:
 		UIImage() = default;
 		UIImage(const UIImage&) = default;
@@ -24,11 +25,9 @@ namespace rawrbox {
 		}
 
 		// UTILS ----
-		[[nodiscard]] virtual const rawrbox::TextureBase* getTexture() const;
+		[[nodiscard]] virtual rawrbox::TextureBase* getTexture() const;
 		virtual void setTexture(rawrbox::TextureBase* texture);
 		virtual void setTexture(const std::filesystem::path& path);
-
-		virtual void setAnimated(bool animated);
 
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const;
 		virtual void setColor(const rawrbox::Color& col);

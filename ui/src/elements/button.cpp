@@ -4,10 +4,21 @@
 #include <rawrbox/ui/elements/button.hpp>
 #include <rawrbox/utils/keys.hpp>
 
+#ifdef RAWRBOX_SCRIPTING
+	#include <rawrbox/ui/scripting/wrappers/elements/button_wrapper.hpp>
+#endif
+
 namespace rawrbox {
 	void UIButton::initialize() {
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->get();
 	}
+
+#ifdef RAWRBOX_SCRIPTING
+	void UIButton::initializeLua() {
+		if (!SCRIPTING::initialized) return;
+		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ButtonWrapper(this->shared_from_this()));
+	}
+#endif
 
 	// UTILS -----
 	void UIButton::setTextureSize(const rawrbox::Vector2& size) { this->_textureSize = size; }

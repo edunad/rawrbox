@@ -7,17 +7,16 @@
 
 namespace rawrbox {
 	class FontLoaderWrapper {
-		rawrbox::Mod* _mod = nullptr;
 
 	public:
-		FontLoaderWrapper(rawrbox::Mod* mod_);
+		FontLoaderWrapper() = default;
 		FontLoaderWrapper(const FontLoaderWrapper&) = default;
 		FontLoaderWrapper(FontLoaderWrapper&&) = default;
 		FontLoaderWrapper& operator=(const FontLoaderWrapper&) = default;
 		FontLoaderWrapper& operator=(FontLoaderWrapper&&) = default;
 		virtual ~FontLoaderWrapper() = default;
 
-		virtual rawrbox::FontWrapper get(const std::string& path, sol::optional<uint32_t> size);
+		virtual rawrbox::FontWrapper get(const std::string& path, sol::optional<uint32_t> size, sol::this_environment modEnv);
 
 		static void registerLua(sol::state& lua);
 	};

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rawrbox/render/model/instance.hpp>
 #include <rawrbox/render/scripting/wrappers/model/base_wrapper.hpp>
 #include <rawrbox/render/scripting/wrappers/model/instance_wrapper.hpp>
 

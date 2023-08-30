@@ -8,11 +8,9 @@
 
 namespace rawrbox {
 	class BASSWrapper {
-	protected:
-		rawrbox::Mod* _mod = nullptr;
 
 	public:
-		BASSWrapper(rawrbox::Mod* mod);
+		BASSWrapper() = default;
 		BASSWrapper(const BASSWrapper&) = default;
 		BASSWrapper(BASSWrapper&&) = default;
 		BASSWrapper& operator=(const BASSWrapper&) = default;
@@ -26,7 +24,7 @@ namespace rawrbox {
 		// -----
 
 		// LOAD -----
-		virtual rawrbox::SoundInstanceWrapper loadSound(const std::string& path, sol::optional<uint32_t> flags);
+		virtual rawrbox::SoundInstanceWrapper loadSound(const std::string& path, sol::optional<uint32_t> flags, sol::this_environment modEnv);
 		virtual rawrbox::SoundInstanceWrapper loadHTTPSound(const std::string& url, sol::optional<uint32_t> flags);
 		// -----
 

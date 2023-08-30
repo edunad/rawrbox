@@ -21,6 +21,10 @@ namespace rawrbox {
 		bool _percent = true;
 		float _value = 0;
 
+#ifdef RAWRBOX_SCRIPTING
+		void initializeLua() override;
+#endif
+
 	public:
 		rawrbox::Event<float> onValueChange;
 

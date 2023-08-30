@@ -49,6 +49,10 @@ namespace rawrbox {
 		void moveCharet(bool forward);
 		// ---------------
 
+#ifdef RAWRBOX_SCRIPTING
+		void initializeLua() override;
+#endif
+
 	public:
 		~UIInput() override = default;
 		UIInput() = default;
