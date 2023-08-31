@@ -40,28 +40,28 @@ namespace rawrbox {
 
 	void MaterialLit::process(const rawrbox::Mesh& mesh) {
 		if (mesh.normalTexture != nullptr && mesh.normalTexture->isValid() && !mesh.lineMode && !mesh.wireframe) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_NORMAL, this->_uniforms["s_normal"], mesh.normalTexture->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_NORMAL, this->getUniform("s_normal"), mesh.normalTexture->getHandle());
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_NORMAL, this->_uniforms["s_normal"], rawrbox::NORMAL_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_NORMAL, this->getUniform("s_normal"), rawrbox::NORMAL_TEXTURE->getHandle());
 		}
 
 		if (mesh.specularTexture != nullptr && mesh.specularTexture->isValid() && !mesh.lineMode && !mesh.wireframe) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, this->_uniforms["s_specular"], mesh.specularTexture->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, this->getUniform("s_specular"), mesh.specularTexture->getHandle());
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, this->_uniforms["s_specular"], rawrbox::BLACK_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_SPECULAR, this->getUniform("s_specular"), rawrbox::BLACK_TEXTURE->getHandle());
 		}
 
 		if (mesh.emissionTexture != nullptr && mesh.emissionTexture->isValid() && !mesh.lineMode && !mesh.wireframe) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_EMISSION, this->_uniforms["s_emission"], mesh.emissionTexture->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_EMISSION, this->getUniform("s_emission"), mesh.emissionTexture->getHandle());
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_EMISSION, this->_uniforms["s_emission"], rawrbox::BLACK_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_EMISSION, this->getUniform("s_emission"), rawrbox::BLACK_TEXTURE->getHandle());
 		}
 
 		std::array<float, 2> matData = {mesh.specularShininess, mesh.emissionIntensity};
-		bgfx::setUniform(this->_uniforms["u_texMatData"], matData.data());
+		bgfx::setUniform(this->getUniform("u_texMatData"), matData.data());
 
 		// Camera setup
-		bgfx::setUniform(this->_uniforms["u_camPos"], rawrbox::MAIN_CAMERA->getPos().data().data());
+		bgfx::setUniform(this->getUniform("u_camPos"), rawrbox::MAIN_CAMERA->getPos().data().data());
 		// -------
 
 		rawrbox::MaterialBase::process(mesh);

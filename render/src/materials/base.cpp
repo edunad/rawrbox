@@ -35,6 +35,12 @@ namespace rawrbox {
 		this->_uniforms[name] = handl;
 	}
 
+	bgfx::UniformHandle& MaterialBase::getUniform(const std::string& name) {
+		auto fnd = this->_uniforms.find(name);
+		if (fnd == this->_uniforms.end()) throw std::runtime_error(fmt::format("[RawrBox-MaterialBase] Failed to find uniform {}, did you call upload()?", name));
+		return fnd->second;
+	}
+
 	void MaterialBase::setUniformData(const std::string& name, const std::vector<rawrbox::Matrix4x4>& data) {
 		auto fnd = this->_uniforms.find(name);
 		if (fnd == this->_uniforms.end()) return;
@@ -46,20 +52,20 @@ namespace rawrbox {
 		if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.lineMode && !mesh.wireframe) {
 			mesh.texture->update(); // Update texture
 
-			bgfx::setUniform(this->_uniforms["u_tex_flags"], mesh.texture->getData().data());
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_uniforms["s_albedo"], mesh.texture->getHandle());
+			bgfx::setUniform(this->getUniform("u_tex_flags"), mesh.texture->getData().data());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->getUniform("s_albedo"), mesh.texture->getHandle());
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_uniforms["s_albedo"], rawrbox::WHITE_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->getUniform("s_albedo"), rawrbox::WHITE_TEXTURE->getHandle());
 		}
 
 		if (mesh.displacementTexture != nullptr && mesh.displacementTexture->isValid()) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->_uniforms["s_displacement"], mesh.displacementTexture->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->getUniform("s_displacement"), mesh.displacementTexture->getHandle());
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->_uniforms["s_displacement"], rawrbox::BLACK_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->getUniform("s_displacement"), rawrbox::BLACK_TEXTURE->getHandle());
 		}
 
 		// Color override
-		bgfx::setUniform(this->_uniforms["u_colorOffset"], mesh.color.data().data());
+		bgfx::setUniform(this->getUniform("u_colorOffset"), mesh.color.data().data());
 		// -------
 
 		// Pass "special" data ---
@@ -83,7 +89,7 @@ namespace rawrbox {
 			data[3] = mesh.getData("mask").data();
 		}
 
-		bgfx::setUniform(this->_uniforms["u_data"], data.front().data(), MAX_DATA);
+		bgfx::setUniform(this->getUniform("u_data"), data.front().data(), MAX_DATA);
 		// ---
 
 		// Bind extra renderer uniforms ---
@@ -93,9 +99,9 @@ namespace rawrbox {
 
 	void MaterialBase::process(const bgfx::TextureHandle& texture) {
 		if (bgfx::isValid(texture)) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_uniforms["s_albedo"], texture);
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->getUniform("s_albedo"), texture);
 		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->_uniforms["s_albedo"], rawrbox::WHITE_TEXTURE->getHandle());
+			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->getUniform("s_albedo"), rawrbox::WHITE_TEXTURE->getHandle());
 		}
 	}
 
