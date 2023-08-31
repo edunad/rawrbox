@@ -7,22 +7,22 @@ CPMAddPackage(
     NAME
     assimp
     GIT_TAG
-    master
+    kimkulling/prepare_version_5.2.6_rc1
     GITHUB_REPOSITORY
     assimp/assimp
     OPTIONS
     "BUILD_SHARED_LIBS OFF"
     "ASSIMP_NO_EXPORT ON"
+    "ASSIMP_BUILD_ZLIB OFF"
     "ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF"
-    "ASSIMP_INSTALL ON"
     "ASSIMP_BUILD_ASSIMP_TOOLS OFF"
     "ASSIMP_BUILD_TESTS OFF"
     "ASSIMP_BUILD_SAMPLES OFF"
     "ASSIMP_BUILD_DOCS OFF"
     "USE_STATIC_CRT ON"
     "ASSIMP_BUILD_ASSIMP_VIEW OFF"
-    "ASSIMP_BUILD_ZLIB OFF"
     "ASSIMP_WARNINGS_AS_ERRORS OFF"
+    "ASSIMP_INSTALL OFF"
     "ASSIMP_INSTALL_PDB OFF"
     "ASSIMP_BUILD_DRACO OFF"
     "ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF"
@@ -59,5 +59,6 @@ target_link_libraries(${output_target} PUBLIC RAWRBOX.RENDER assimp::assimp ${RA
 set_lib_runtime_mt(${output_target})
 # --------------
 
-# TEST ---- include(../cmake/catch2.cmake)
+# TEST ----
+# include(../cmake/catch2.cmake)
 # --------------

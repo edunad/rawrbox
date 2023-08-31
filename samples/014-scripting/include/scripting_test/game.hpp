@@ -4,14 +4,21 @@
 #include <rawrbox/render/materials/lit.hpp>
 #include <rawrbox/render/model/instanced.hpp>
 #include <rawrbox/render/window.hpp>
-#include <rawrbox/ui/root.hpp>
+
+#ifdef RAWRBOX_UI
+	#include <rawrbox/ui/root.hpp>
+#endif
 
 #include <memory>
 
 namespace scripting_test {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
+
+#ifdef RAWRBOX_UI
 		std::unique_ptr<rawrbox::UIRoot> _ROOT_UI = nullptr;
+#endif
+
 		std::shared_ptr<rawrbox::Model> _model = std::make_shared<rawrbox::Model>();
 		std::shared_ptr<rawrbox::InstancedModel> _instance = std::make_shared<rawrbox::InstancedModel>();
 

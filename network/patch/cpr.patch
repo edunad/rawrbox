@@ -1,0 +1,60 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 62e0070..d44cf39 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -211,7 +211,9 @@ else()
+     # * from CMake script:
+     #     SET(CURL_ZLIB OFF CACHE STRING "" FORCE)
+     if (CURL_ZLIB OR CURL_ZLIB STREQUAL AUTO OR NOT DEFINED CACHE{CURL_ZLIB})
+-        include(cmake/zlib_external.cmake)
++        if(NOT ZLIB_FOUND)
++            include(cmake/zlib_external.cmake)
++        endif()
+     endif()
+
+     if (CPR_ENABLE_CURL_HTTP_ONLY)
+@@ -275,8 +277,8 @@ else()
+         cmake_policy(SET CMP0135 NEW)
+     endif()
+     FetchContent_Declare(curl
+-                         URL                    https://github.com/curl/curl/releases/download/curl-7_80_0/curl-7.80.0.tar.xz
+-                         URL_HASH               SHA256=a132bd93188b938771135ac7c1f3ac1d3ce507c1fcbef8c471397639214ae2ab # the file hash for curl-7.80.0.tar.xz
++                         GIT_REPOSITORY         https://github.com/edunad/curl.git
++                         GIT_TAG                origin/curl-7_80_0
+                          USES_TERMINAL_DOWNLOAD TRUE)   # <---- This is needed only for Ninja to show download progress
+     FetchContent_MakeAvailable(curl)
+
+@@ -286,8 +288,6 @@ else()
+     if(BUILD_CURL_EXE)
+         set_property(TARGET curl PROPERTY FOLDER "external")
+     endif()
+-
+-    set_property(TARGET libcurl PROPERTY FOLDER "external")
+ endif()
+
+ # GTest configuration
+@@ -314,13 +314,13 @@ if(CPR_BUILD_TESTS)
+         FetchContent_MakeAvailable(googletest)
+
+         restore_variable(DESTINATION CMAKE_CXX_CLANG_TIDY BACKUP CMAKE_CXX_CLANG_TIDY_BKP)
+-
++
+         add_library(gtest_int INTERFACE)
+         target_link_libraries(gtest_int INTERFACE gtest)
+         target_include_directories(gtest_int INTERFACE ${googletest_SOURCE_DIR}/include)
+
+         add_library(GTest::GTest ALIAS gtest_int)
+-
++
+         # Group under the "tests/gtest" project folder in IDEs such as Visual Studio.
+     set_property(TARGET gtest PROPERTY FOLDER "tests/gtest")
+     set_property(TARGET gtest_main PROPERTY FOLDER "tests/gtest")
+@@ -349,7 +349,7 @@ if(CPR_BUILD_TESTS)
+     # Disable linting for mongoose
+     clear_variable(DESTINATION CMAKE_CXX_CLANG_TIDY BACKUP CMAKE_CXX_CLANG_TIDY_BKP)
+
+-    FetchContent_Declare(mongoose
++    FetchContent_Declare(mongoose
+                          URL                    https://github.com/cesanta/mongoose/archive/7.7.tar.gz
+                          URL_HASH               SHA256=4e5733dae31c3a81156af63ca9aa3a6b9b736547f21f23c3ab2f8e3f1ecc16c0 # the hash for 7.7.tar.gz
+                          USES_TERMINAL_DOWNLOAD TRUE)   # <---- This is needed only for Ninja to show download progress

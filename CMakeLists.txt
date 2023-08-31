@@ -7,6 +7,7 @@ include("cmake/rawrbox_utils.cmake")
 # SETUP CPM -----
 set(CPM_SOURCE_CACHE "${CMAKE_CURRENT_SOURCE_DIR}/.cache/cpm")
 include("cmake/cpm.cmake")
+CPMUsePackageLock(package-lock.cmake)
 # ---------------
 
 # Versioning
@@ -43,16 +44,6 @@ option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING "Build lua & mod support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT "Enable scripting LuaJIT support (CURRENTLY BROKEN)" OFF)
 
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" OFF)
-
-if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
-    if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
-        message(WARNING "Both 3D & 2D Physics are enabled, make sure you either use 2D or 3D")
-    endif()
-
-    set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Jolt requires msvc multithreaded runtime
-    message(WARNING "JoltPhysics is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
-endif()
-
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" OFF)
 # -----
 
@@ -99,6 +90,28 @@ set(CMAKE_SKIP_RPATH TRUE)
 set(CMAKE_SKIP_BUILD_RPATH TRUE)
 # ---------------------------------
 
+## CHECKS ---
+if(RAWRBOX_BUILD_SAMPLES AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+    message(WARNING "Samples require RAWRBOX.RESOURCES to be enabled, enabling...")
+    set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
+endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_UI AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+    message(WARNING "RAWRBOX.UI requires RAWRBOX.RESOURCES to be enabled, enabling...")
+    set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
+endif()
+
+if(NOT RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME AND RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
+    set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Jolt requires msvc multithreaded runtime
+    message(WARNING "JoltPhysics is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
+endif()
+
+if(NOT RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME AND RAWRBOX_BUILD_RAWRBOX_ASSIMP)
+    set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Assimp requires msvc multithreaded runtime
+    message(WARNING "Assimp is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
+endif()
+# -------------------------
+
 # GLOBAL PACKAGES ------
 CPMAddPackage("gh:fmtlib/fmt#10.0.0")
 if(fmt_ADDED)
@@ -131,41 +144,43 @@ if(nlohmann_json_ADDED)
 endif()
 
 # ---
-CPMFindPackage(
-    NAME
-    zlib
-    GITHUB_REPOSITORY
-    madler/zlib
-    GIT_TAG
-    "v1.2.13"
-    OPTIONS
-    "ASM686 FALSE"
-    "AMD64 FALSE"
-    "POSITION_INDEPENDENT_CODE TRUE")
+# libcurl keeps complaining it can't find zlibstatic, but when assimp is enabled, this works..
+if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
+    CPMFindPackage(
+        NAME
+        zlib
+        GITHUB_REPOSITORY
+        madler/zlib
+        GIT_TAG
+        "v1.2.13"
+        CONFIG
+        REQUIRED
+        OPTIONS
+        "ASM686 FALSE"
+        "AMD64 FALSE"
+        "POSITION_INDEPENDENT_CODE TRUE")
 
-if(zlib_ADDED)
-    set(ZLIB_FOUND 1)
-    set(ZLIB_LIBRARIES zlibstatic)
-    set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
+    if(zlib_ADDED)
+        set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR})
+        set(ZLIB_LIBRARY zlibstatic CACHE STRING "")
+        set(ZLIB_LIBRARIES zlibstatic)
+        set(ZLIB_FOUND 1)
 
-    add_library(ZLIB::ZLIB ALIAS zlibstatic)
+        file(RENAME ${zlib_SOURCE_DIR}/zconf.h.included ${zlib_SOURCE_DIR}/zconf.h)
+        set_target_properties(zlib PROPERTIES EXCLUDE_FROM_ALL ON)
 
-    message(STATUS "==== ZLIB")
-    message(STATUS "LIBRARY: ${ZLIB_LIBRARY}")
-    message(STATUS "INCLUDE_DIR: ${ZLIB_INCLUDE_DIR}")
-    message(STATUS "BINARY_DIR: ${zlib_BINARY_DIR}")
-    message(STATUS "==== ====")
+        add_library(ZLIB::ZLIB ALIAS zlibstatic)
 
-    include_directories(${ZLIB_INCLUDE_DIR})
+        message(STATUS "==== ZLIB")
+        message(STATUS "LIBRARY: ${ZLIB_LIBRARY}")
+        message(STATUS "INCLUDE_DIR: ${ZLIB_INCLUDE_DIR}")
+        message(STATUS "BINARY_DIR: ${zlib_BINARY_DIR}")
+        message(STATUS "==== ====")
+
+        include_directories(${ZLIB_INCLUDE_DIR})
+    endif()
 endif()
 # --------------------
-
-## CHECKS ---
-if(RAWRBOX_BUILD_SAMPLES AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
-    message(WARNING "Samples require RAWRBOX.RESOURCES to be enabled, enabling...")
-    set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
-endif()
-# -------------------------
 
 add_subdirectory("math")
 add_subdirectory("utils")

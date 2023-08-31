@@ -75,11 +75,26 @@ local function playAnimation()
 end
 
 function MOD:onLoad()
+    if not resources then
+        print("resources module not available, cannot continue")
+        return
+    end
+
     print("---- MOD LOADING")
     resources:preLoad("./content/apple.ogg")
 end
 
 function MOD:onReady()
+    if not BASS then
+        print("BASS plugin not available, cannot continue")
+        return
+    end
+
+    if not http then
+        print("http plugin not available, cannot continue")
+        return
+    end
+
     print("Loading bad apple...")
 
     local mdl = test_model2()

@@ -4,6 +4,10 @@ set(output_target RAWRBOX.NETWORK)
 # --------------
 
 # LIBS ---
+if(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME)
+    set(CURL_STATIC_CRT ON)
+endif()
+
 CPMAddPackage(
     NAME
     libcpr
@@ -11,14 +15,13 @@ CPMAddPackage(
     1.10.4
     GITHUB_REPOSITORY
     libcpr/cpr
+    #PATCH_COMMAND git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/cpr.patch
     OPTIONS
-    "BUILD_SHARED_LIBS 0"
-    "CPR_ENABLE_SSL 1"
-    "CPR_ENABLE_CURL_HTTP_ONLY 1"
-    "CURL_ZLIB 1")
+    "BUILD_SHARED_LIBS OFF"
+    "CPR_ENABLE_CURL_HTTP_ONLY ON"
+    "CPR_ENABLE_SSL ON")
 
 if(libcpr_ADDED)
-    set_lib_runtime_mt(libcurl)
     set_lib_runtime_mt(cpr)
 endif()
 # --------------
@@ -35,6 +38,7 @@ endif()
 
 # Project setup
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_NETWORK_IMPORTS})
+
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
     copy_lua_libs(TARGET ${output_target})
 endif()
@@ -43,6 +47,7 @@ target_compile_definitions(${output_target} PUBLIC RAWRBOX_NETWORK)
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC cpr::cpr ${RAWRBOX_EXTRA_LIBS})
+
 
 set_lib_runtime_mt(${output_target})
 # --------------

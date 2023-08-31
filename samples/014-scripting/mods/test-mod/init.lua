@@ -19,10 +19,19 @@ function MOD:init()
 end
 
 function MOD:onLoad()
+    if not resources then
+        print("resources module not available, cannot continue")
+        return
+    end
+
     resources:preLoad("./content/gumball_wink.gif")
 end
 
 function drawUI()
+    if not ui then
+        print("UI module not available, cannot continue")
+        return
+    end
     if not data.ready then return end
 
     if data.frame and data.frame:isValid() then

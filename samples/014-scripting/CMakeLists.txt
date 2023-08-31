@@ -15,13 +15,25 @@ add_custom_target(
     COMMENT "Linking MODS resources into binary directory")
 # ------------------
 
+if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
+    list(APPEND EXTRA_LIBS RAWRBOX.NETWORK)
+endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_BASS)
+    list(APPEND EXTRA_LIBS RAWRBOX.BASS)
+endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_UI)
+    list(APPEND EXTRA_LIBS RAWRBOX.UI)
+endif()
+
 add_executable(${output_target} ${RAWRBOX_SAMPLE_SOURCES})
 add_dependencies(${output_target} link_mods_samples)
 add_dependencies(${output_target} copy_resources_samples)
 target_compile_features(${output_target} PUBLIC cxx_std_20)
 target_include_directories(${output_target} PRIVATE "include")
 target_compile_features(${output_target} PRIVATE cxx_std_${CMAKE_CXX_STANDARD})
-target_link_libraries(${output_target} PRIVATE RAWRBOX.RENDER RAWRBOX.NETWORK RAWRBOX.BASS RAWRBOX.UI)
+target_link_libraries(${output_target} PRIVATE RAWRBOX.RENDER ${EXTRA_LIBS})
 
 set_lib_runtime_mt(${output_target})
 

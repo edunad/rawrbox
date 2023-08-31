@@ -1,17 +1,29 @@
 
-#include <rawrbox/bass/resources/sound.hpp>
-#include <rawrbox/bass/scripting/plugin.hpp>
-#include <rawrbox/network/scripting/plugin.hpp>
+
+#ifdef RAWRBOX_BASS
+	#include <rawrbox/bass/resources/sound.hpp>
+	#include <rawrbox/bass/scripting/plugin.hpp>
+#endif
+
+#ifdef RAWRBOX_NETWORK
+	#include <rawrbox/network/scripting/plugin.hpp>
+#endif
+
 #include <rawrbox/render/camera/orbital.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
+#include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/scripting/plugin.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/resources/scripting/plugin.hpp>
 #include <rawrbox/scripting/scripting.hpp>
-#include <rawrbox/ui/scripting/plugin.hpp>
-#include <rawrbox/ui/static.hpp>
+
+#ifdef RAWRBOX_UI
+	#include <rawrbox/ui/scripting/plugin.hpp>
+	#include <rawrbox/ui/static.hpp>
+#endif
+
 #include <rawrbox/utils/timer.hpp>
 
 #include <scripting_test/game.hpp>
@@ -40,22 +52,35 @@ namespace scripting_test {
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
+#ifdef RAWRBOX_UI
 		// SETUP UI
 		this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*this->_window);
 		// ----
+#endif
 
 		// Setup loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+#ifdef RAWRBOX_BASS
 		rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
+#endif
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		// ----------
 
 		// Setup scripting
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::RenderPlugin>(this->_window.get());
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::ResourcesPlugin>();
+
+#ifdef RAWRBOX_BASS
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::BASSPlugin>();
+#endif
+
+#ifdef RAWRBOX_NETWORK
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::NetworkPlugin>();
+#endif
+
+#ifdef RAWRBOX_UI
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::UIPlugin>(this->_ROOT_UI.get());
+#endif
 
 		// Custom non-plugin ---
 		rawrbox::SCRIPTING::registerType<rawrbox::TestWrapper>();
@@ -88,7 +113,10 @@ namespace scripting_test {
 	void Game::loadContent() {
 		std::vector initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("./content/textures/crate_hl1.png", 0)};
+
+#ifdef RAWRBOX_UI
 		initialContentFiles.insert(initialContentFiles.begin(), rawrbox::UI_RESOURCES.begin(), rawrbox::UI_RESOURCES.end()); // Insert the UI resources
+#endif
 
 		for (auto& f : initialContentFiles) {
 			rawrbox::RESOURCES::preLoadFile(f.first, f.second);
@@ -140,7 +168,10 @@ namespace scripting_test {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
+#ifdef RAWRBOX_UI
 		this->_ROOT_UI.reset();
+#endif
+
 		this->_model.reset();
 		this->_instance.reset();
 
@@ -162,7 +193,11 @@ namespace scripting_test {
 		this->_window->update();
 
 		if (!this->_ready) return;
+
+#ifdef RAWRBOX_UI
 		this->_ROOT_UI->update();
+#endif
+
 		rawrbox::SCRIPTING::call("update");
 	}
 
@@ -186,7 +221,10 @@ namespace scripting_test {
 		if (!this->_ready) return;
 
 		rawrbox::SCRIPTING::call("drawOverlay");
+
+#ifdef RAWRBOX_UI
 		this->_ROOT_UI->render();
+#endif
 	}
 
 	void Game::draw() {
