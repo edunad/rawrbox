@@ -153,7 +153,6 @@
 - Run cmake configure
 - Select `[Visual Studio Build Tools <version> Release - amd64]` on the kit popup (for all of the projects)
 - Run the compiler by hitting F5
-- Hope it builds fine 🙏
 
 ## LINUX
 
