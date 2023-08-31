@@ -26,9 +26,9 @@ list(PREPEND CONAN_GENERATORS_FOLDER ${CMAKE_BINARY_DIR})
 # ---
 
 # OPTIONS ---
-option(RAWRBOX_BUILD_TESTING "Build tests" ON)
 option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 
+option(RAWRBOX_BUILD_TESTING "Build tests" ON)
 option(RAWRBOX_BUILD_SAMPLES "Build samples" ON)
 
 option(RAWRBOX_BUILD_RAWRBOX_UI "Build RAWRBOX.UI" OFF)
@@ -39,25 +39,28 @@ option(RAWRBOX_BUILD_RAWRBOX_BASS "Build bass & add sound loading support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_ASSIMP "Build assimp & add model loading support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_WEBM "Build libwebm & add video loading support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_NETWORK "Build network support" OFF)
-
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING "Build lua & mod support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT "Enable scripting LuaJIT support (CURRENTLY BROKEN)" OFF)
-
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" OFF)
-option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" OFF)
+option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
+
+option(RAWRBOX_DEV_MODE "Builds all modules, used for developing rawrbox" OFF)
 # -----
 
 # Uncomment for package.lock generation
+if(RAWRBOX_DEV_MODE)
+    message(WARNING "RAWRBOX Dev mode enabled!")
 
-#set(RAWRBOX_BUILD_RAWRBOX_UI ON)
-#set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
-#set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
-#set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS ON)
-#set(RAWRBOX_BUILD_RAWRBOX_BASS ON)
-#set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
-#set(RAWRBOX_BUILD_RAWRBOX_WEBM ON)
-#set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
-#set(RAWRBOX_ENABLE_QHULL ON)
+    set(RAWRBOX_BUILD_RAWRBOX_UI ON)
+    set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
+    set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
+    set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS ON)
+    set(RAWRBOX_BUILD_RAWRBOX_BASS ON)
+    set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
+    set(RAWRBOX_BUILD_RAWRBOX_WEBM ON)
+    set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
+    set(RAWRBOX_BUILD_QHULL ON)
+endif()
 
 # OTHER SETTINGS ----
 set(RAWRBOX_OUTPUT_BIN "bin" CACHE STRING "the target directory of where the output of the build will be stored for use by artifacts")

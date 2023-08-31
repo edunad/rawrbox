@@ -5,6 +5,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/webm/resources/webm.hpp>
+#include <rawrbox/webm/texture/webm.hpp>
 
 #include <webm_test/game.hpp>
 
@@ -59,7 +60,13 @@ namespace webm_test {
 	}
 
 	void Game::contentLoaded() {
-		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./content/video/webm_test.webm")->get();
+		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./content/video/webm_test.webm")->get<rawrbox::TextureWEBM>();
+		tex->setTextureUV(rawrbox::TEXTURE_UV::UV_FLIP_V);
+		// tex->setLoop(false);
+		// tex->onEnd += []() {
+		//	fmt::print("[RawrBox] WEBM reached end\n");
+		// };
+
 		this->_model->setOptimizable(false);
 
 		{

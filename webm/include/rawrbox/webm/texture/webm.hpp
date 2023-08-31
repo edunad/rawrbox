@@ -1,12 +1,13 @@
 #pragma once
 
 #include <rawrbox/render/texture/base.hpp>
+#include <rawrbox/utils/event.hpp>
 #include <rawrbox/webm/loader.hpp>
 
 #include <filesystem>
 
 namespace rawrbox {
-	class TextureWEBM : public TextureBase {
+	class TextureWEBM : public rawrbox::TextureBase {
 	private:
 		std::filesystem::path _filePath = "";
 		std::unique_ptr<rawrbox::WEBM> _webm = nullptr;
@@ -18,8 +19,9 @@ namespace rawrbox {
 		void internalLoad();
 
 	public:
-		explicit TextureWEBM(const std::filesystem::path& filePath, uint32_t videoTrack = 0);
+		rawrbox::Event<> onEnd;
 
+		explicit TextureWEBM(const std::filesystem::path& filePath, uint32_t videoTrack = 0);
 		TextureWEBM(const TextureWEBM&) = delete;
 		TextureWEBM(TextureWEBM&&) = delete;
 		TextureWEBM& operator=(const TextureWEBM&) = delete;

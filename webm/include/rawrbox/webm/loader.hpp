@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rawrbox/utils/event.hpp>
 #include <rawrbox/webm/decoder.hpp>
 
 #include <mkvparser/mkvparser.h>
@@ -43,6 +44,8 @@ namespace rawrbox {
 		const mkvparser::VideoTrack* _video = nullptr;
 
 	public:
+		rawrbox::Event<> onEnd;
+
 		WEBM() = default;
 		WEBM(const WEBM&) = delete;
 		WEBM(WEBM&&) = delete;

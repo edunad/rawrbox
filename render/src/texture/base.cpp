@@ -9,6 +9,8 @@ namespace rawrbox {
 	const rawrbox::Vector2i& TextureBase::getSize() const { return this->_size; }
 	bool TextureBase::isValid() const { return bgfx::isValid(this->_handle); }
 	const bgfx::TextureHandle& TextureBase::getHandle() const { return this->_handle; }
+	void TextureBase::setTextureUV(rawrbox::TEXTURE_UV mode) { this->_textureUV = mode; }
+	rawrbox::TEXTURE_UV TextureBase::getTextureUV() const { return this->_textureUV; }
 	// ----
 
 	void TextureBase::setFlags(uint64_t flags) { this->_flags = flags; }

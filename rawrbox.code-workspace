@@ -48,8 +48,9 @@
     "cmake.generator": "Ninja",
     "cmake.configureArgs": ["-Wno-dev"],
     "cmake.configureSettings": {
-      "DCMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-      "DRAWRBOX_OUTPUT_BIN": "bin"
+      "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+      "RAWRBOX_DEV_MODE": true,
+      "RAWRBOX_OUTPUT_BIN": "bin"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "workbench.editor.pinnedTabSizing": "shrink",

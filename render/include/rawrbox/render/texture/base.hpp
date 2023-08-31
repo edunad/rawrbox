@@ -27,11 +27,9 @@ namespace rawrbox {
 	public:
 		TextureBase() = default;
 		TextureBase(const TextureBase&) = default;
-
 		TextureBase(TextureBase&&) = delete;
 		TextureBase& operator=(TextureBase&&) = delete;
 		TextureBase& operator=(const TextureBase&) = delete;
-
 		virtual ~TextureBase();
 
 		// UTILS----
@@ -40,6 +38,9 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool isValid() const;
 		[[nodiscard]] virtual const bgfx::TextureHandle& getHandle() const;
 		[[nodiscard]] virtual std::array<float, 4> getData() const;
+
+		virtual void setTextureUV(rawrbox::TEXTURE_UV mode);
+		[[nodiscard]] virtual rawrbox::TEXTURE_UV getTextureUV() const;
 		// -----
 
 		virtual void setFlags(uint64_t flags);
