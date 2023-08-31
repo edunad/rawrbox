@@ -15,10 +15,10 @@ namespace rawrbox {
 		this->_webm = std::make_unique<rawrbox::WEBM>();
 		this->_webm->load(this->_filePath);
 		this->_webm->setLoop(true);
+		this->_webm->onEnd += [this]() { this->onEnd(); };
 
 		this->_channels = 4;
 		this->_size = this->_webm->getSize();
-		this->_textureUV = rawrbox::TEXTURE_UV::UV_FLIP_V;
 	}
 
 	TextureWEBM::~TextureWEBM() {
@@ -29,7 +29,7 @@ namespace rawrbox {
 		if (this->_webm == nullptr) throw std::runtime_error("[RawrBox-TextureWEBM] WEBM loader not initialized!");
 
 		bool success = this->_webm->advance();
-		if (!success) return; // Reached end
+		if (!success) return;
 
 		auto frame = this->_webm->getFrame();
 		if (!frame.valid()) throw std::runtime_error("[RawrBox-TextureWEBM] Failed to find frame");

@@ -71,8 +71,6 @@ namespace rawrbox {
 			if ((this->_material->supports() & rawrbox::MaterialFlags::NORMALS) != 0) {
 				this->loadLights(model);
 			}
-
-			this->upload();
 		}
 	};
 } // namespace rawrbox

@@ -27,10 +27,10 @@ namespace rawrbox {
 		if (rawrbox::RENDERER == nullptr) return;
 		rawrbox::MaterialInstancedLit::process(mesh);
 
-		bgfx::setTexture(rawrbox::SAMPLE_DEPTH, this->_uniforms["s_depth"], rawrbox::RENDERER->getDepth());
-		bgfx::setTexture(rawrbox::SAMPLE_MASK, this->_uniforms["s_mask"], rawrbox::RENDERER->getMask());
+		bgfx::setTexture(rawrbox::SAMPLE_DEPTH, this->getUniform("s_depth"), rawrbox::RENDERER->getDepth());
+		bgfx::setTexture(rawrbox::SAMPLE_MASK, this->getUniform("s_mask"), rawrbox::RENDERER->getMask());
 
 		std::array<float, 4> settings = {rawrbox::RENDERER_DEBUG == rawrbox::DEBUG_DECALS ? 1.F : 0.F};
-		bgfx::setUniform(this->_uniforms["u_decalSettings"], settings.data());
+		bgfx::setUniform(this->getUniform("u_decalSettings"), settings.data());
 	}
 } // namespace rawrbox

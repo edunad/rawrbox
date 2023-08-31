@@ -81,15 +81,18 @@ namespace assimp {
 
 		this->_model->load(*mdl);
 		this->_model->setPos({7, 1.1F, 0.F});
+		this->_model->upload();
 
 		this->_model2->load(*mdl);
 		this->_model2->setPos({-6, 1.1F, 0.F});
+		this->_model2->upload();
 
 		// ANIMATIONS ---
 		auto mdl2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/wolf/wolfman_animated.fbx")->get();
 		this->_model3->load(*mdl2);
 		this->_model3->playAnimation("Scene", true, 1.F);
 		this->_model3->setPos({0, 0, 0});
+		this->_model3->upload();
 
 		auto mdl3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/multiple_skeleton/twocubestest.gltf")->get();
 		this->_model4->load(*mdl3);
@@ -97,6 +100,7 @@ namespace assimp {
 		this->_model4->playAnimation("MewAction.001", true, 0.5F);
 		this->_model4->setPos({0, 0, 2.5F});
 		this->_model4->setScale({0.25F, 0.25F, 0.25F});
+		this->_model4->upload();
 
 		auto mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/grandma_tv/scene.gltf")->get();
 		this->_model5->load(*mdl4);
@@ -104,6 +108,7 @@ namespace assimp {
 		this->_model5->setPos({0, 0, -3.5F});
 		this->_model5->setScale({0.35F, 0.35F, 0.35F});
 		this->_model5->setEulerAngle({0, bx::toRad(90.F), 0});
+		this->_model5->upload();
 
 		//   -----
 

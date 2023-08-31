@@ -92,8 +92,7 @@
 | --                                               | --                                                                                                        |
 | `RAWRBOX_USE_WAYLAND`                            | Enables WAYLAND compiling on LINUX                                                                        |
 | --                                               | --                                                                                                        |
-| `RAWRBOX_ENABLE_QHULL`                           | Enables QHull util                                                                                        |
-| --                                               | --                                                                                                        |
+| `RAWRBOX_BUILD_QHULL`                            | Builds QHull util                                                                                         |
 | `RAWRBOX_BUILD_SAMPLES`                          | Builds the project sample                                                                                 |
 | `RAWRBOX_BUILD_RAWRBOX_UI`                       | Builds and includes ui                                                                                    |
 | `RAWRBOX_BUILD_RAWRBOX_RESOURCES`                | Builds and resouces manager (aka handling and storing loaded resources)                                   |
@@ -103,6 +102,8 @@
 | `RAWRBOX_BUILD_RAWRBOX_BASS`                     | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️        |
 | `RAWRBOX_BUILD_RAWRBOX_ASSIMP`                   | Enables assimp model loading                                                                              |
 | `RAWRBOX_BUILD_RAWRBOX_WEBM`                     | Enables WEBM loading                                                                                      |
+| --                                               | --                                                                                                        |
+| `RAWRBOX_DEV_MODE`                               | Enables all the modules, used for rawrbox development                                                     |
 | --                                               | --                                                                                                        |
 | `RAWRBOX_BUILD_RAWRBOX_SCRIPTING`                | Enables lua & modding support                                                                             |
 | ~~`RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT`~~ | ~~Enable scripting LuaJIT support~~ (Currently broken [#73](https://github.com/edunad/rawrbox/issues/73)) |
@@ -152,7 +153,6 @@
 - Run cmake configure
 - Select `[Visual Studio Build Tools <version> Release - amd64]` on the kit popup (for all of the projects)
 - Run the compiler by hitting F5
-- Hope it builds fine 🙏
 
 ## LINUX
 

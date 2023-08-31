@@ -8,7 +8,6 @@ file(GLOB_RECURSE RAWRBOX_UTILS_IMPORTS "src/*.c" "src/*.cpp" "include/*.hpp" "i
 # LIBS ---
 if(NOT RAWRBOX_ENABLE_QHULL)
     list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "include/rawrbox/utils/qhull.h")
-    list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "tests/qhull.spec.cpp")
 else()
     CPMAddPackage(
         NAME

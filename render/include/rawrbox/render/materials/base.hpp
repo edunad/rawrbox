@@ -37,6 +37,7 @@ namespace rawrbox {
 		virtual ~MaterialBase();
 
 		virtual void registerUniform(const std::string& name, bgfx::UniformType::Enum type, uint16_t num = 0);
+		[[nodiscard]] virtual bgfx::UniformHandle& getUniform(const std::string& name);
 
 		// SET ----
 		virtual void setUniformData(const std::string& id, const std::vector<rawrbox::Matrix4x4>& data);

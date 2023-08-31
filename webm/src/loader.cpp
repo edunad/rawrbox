@@ -91,9 +91,12 @@ namespace rawrbox {
 		if (this->_paused) return false;
 
 		if (this->eos()) {
-			if (_loop) {
+			if (this->_loop) {
 				this->reset();
 			} else {
+				this->onEnd();
+				this->setPaused(true);
+
 				return false; // Reached the end
 			}
 		}

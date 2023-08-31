@@ -28,6 +28,10 @@ if(NOT RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
     remove_folder("${RAWRBOX_UI_IMPORTS}" "/scripting/")
     set(RAWRBOX_UI_IMPORTS "${CLEAN_SOURCES}")
 endif()
+
+if(NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+    message(FATAL "RAWRBOX.UI elements require RAWRBOX.RESOURCES to be enabled!")
+endif()
 # -----------------
 
 # LIB ----
@@ -46,5 +50,6 @@ target_link_libraries(${output_target} PUBLIC RAWRBOX.RENDER ${RAWRBOX_EXTRA_LIB
 set_lib_runtime_mt(${output_target})
 # --------------
 
-# TEST ---- include(../cmake/catch2.cmake)
+# TEST ----
+#include(../cmake/catch2.cmake)
 # --------------
