@@ -47,6 +47,9 @@ option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading"
 option(RAWRBOX_ENABLE_QHULL "Include QHull on utils" OFF)
 # -----
 
+set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
+set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
+
 # OTHER SETTINGS ----
 set(RAWRBOX_OUTPUT_BIN "bin" CACHE STRING "the target directory of where the output of the build will be stored for use by artifacts")
 set(RAWRBOX_CONTENT_FOLDER "content" CACHE STRING "the content folder (aka where shaders, textures, etc are)")
@@ -153,21 +156,15 @@ if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
         madler/zlib
         GIT_TAG
         "v1.2.13"
-        CONFIG
-        REQUIRED
         OPTIONS
         "ASM686 FALSE"
         "AMD64 FALSE"
         "POSITION_INDEPENDENT_CODE TRUE")
 
     if(zlib_ADDED)
-        set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR})
-        set(ZLIB_LIBRARY zlibstatic CACHE STRING "")
-        set(ZLIB_LIBRARIES zlibstatic)
         set(ZLIB_FOUND 1)
-
-        file(RENAME ${zlib_SOURCE_DIR}/zconf.h.included ${zlib_SOURCE_DIR}/zconf.h)
-        set_target_properties(zlib PROPERTIES EXCLUDE_FROM_ALL ON)
+        set(ZLIB_LIBRARIES zlibstatic)
+        set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
 
         add_library(ZLIB::ZLIB ALIAS zlibstatic)
 
