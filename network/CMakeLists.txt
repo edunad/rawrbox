@@ -4,10 +4,6 @@ set(output_target RAWRBOX.NETWORK)
 # --------------
 
 # LIBS ---
-if(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME)
-    set(CURL_STATIC_CRT ON)
-endif()
-
 CPMAddPackage(
     NAME
     libcpr
@@ -19,9 +15,11 @@ CPMAddPackage(
     OPTIONS
     "BUILD_SHARED_LIBS OFF"
     "CPR_ENABLE_CURL_HTTP_ONLY ON"
-    "CPR_ENABLE_SSL ON")
+    "CPR_ENABLE_SSL ON"
+    "CURL_ZLIB ON")
 
 if(libcpr_ADDED)
+    set_lib_runtime_mt(libcurl)
     set_lib_runtime_mt(cpr)
 endif()
 # --------------
