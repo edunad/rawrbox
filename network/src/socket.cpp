@@ -216,7 +216,7 @@ namespace rawrbox {
 		int client_length = static_cast<int>(sizeof(struct sockaddr_in));
 		return recvfrom(this->sock, std::bit_cast<char*>(buffer), size, 0, std::bit_cast<struct sockaddr*>(from), &client_length);
 #else
-		uint32_t client_length = static_cast<uint32_t>(sizeof(struct sockaddr_in));
+		auto client_length = static_cast<uint32_t>(sizeof(struct sockaddr_in));
 		return recvfrom(this->sock, std::bit_cast<char*>(buffer), size, 0, std::bit_cast<struct sockaddr*>(from), &client_length);
 #endif
 	}
