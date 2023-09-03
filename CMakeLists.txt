@@ -5,7 +5,6 @@ include("cmake/rawrbox_utils.cmake")
 # -----
 
 # SETUP CPM -----
-set(CPM_SOURCE_CACHE "${CMAKE_CURRENT_SOURCE_DIR}/.cache/cpm")
 include("cmake/cpm.cmake")
 CPMUsePackageLock(package-lock.cmake)
 # ---------------
