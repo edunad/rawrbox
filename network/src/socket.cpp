@@ -216,8 +216,8 @@ namespace rawrbox {
 		int client_length = static_cast<int>(sizeof(struct sockaddr_in));
 		return recvfrom(this->sock, std::bit_cast<char*>(buffer), size, 0, std::bit_cast<struct sockaddr*>(from), &client_length);
 #else
-		unsigned int client_length = static_cast<unsigned int>(sizeof(struct sockaddr_in));
-		return recvfrom(this->sock, reinterpret_cast<char*>(buffer), size, 0, reinterpret_cast<struct sockaddr*>(from), &client_length);
+		uint8_t client_length = static_cast<uint8_t>(sizeof(struct sockaddr_in));
+		return recvfrom(this->sock, std::bit_cast<char*>(buffer), size, 0, std::bit_cast<struct sockaddr*>(from), &client_length);
 #endif
 	}
 
@@ -226,7 +226,7 @@ namespace rawrbox {
 		DWORD timeout = miliseconds;
 		setsockopt(this->sock, SOL_SOCKET, SO_RCVTIMEO, std::bit_cast<char*>(&timeout), sizeof(timeout));
 #else
-		struct timeval timeout;
+		struct timeval timeout = {};
 		timeout.tv_sec = miliseconds / 1000;
 		timeout.tv_usec = (miliseconds - timeout.tv_sec * 1000) * 1000;
 		setsockopt(this->sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
