@@ -75,10 +75,10 @@ namespace rawrbox {
 		bool create();
 		bool create(int Protocol);
 		bool create(int Protocol, int Type);
-		bool bind(unsigned short port);
+		bool bind(uint16_t port);
 		bool listen();
 		bool accept(Socket* socket);
-		[[nodiscard]] rawrbox::SocketError connect(const std::string& host, unsigned short port);
+		[[nodiscard]] rawrbox::SocketError connect(const std::string& host, uint16_t port);
 		void close();
 
 		uint64_t uAddr();

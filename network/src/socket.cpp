@@ -40,6 +40,8 @@ namespace rawrbox {
 
 		this->_times.tv_sec = 0;
 		this->_times.tv_usec = 0;
+
+		this->create();
 	}
 
 	Socket::~Socket() {
@@ -74,7 +76,7 @@ namespace rawrbox {
 		return sock > SOCKET_NONE;
 	}
 
-	bool Socket::bind(unsigned short port) {
+	bool Socket::bind(uint16_t port) {
 		if (!check()) return false;
 
 		if (ipv6) {
@@ -143,7 +145,7 @@ namespace rawrbox {
 		return addr.sin_addr.s_addr;
 	}
 
-	SocketError Socket::connect(const std::string& host, unsigned short port) {
+	SocketError Socket::connect(const std::string& host, uint16_t port) {
 		if (!check())
 			return SocketError::invalidSocket;
 
