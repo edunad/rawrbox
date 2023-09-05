@@ -583,7 +583,19 @@ namespace rawrbox {
 			}
 		}
 
+		// load models
 		if (onMetadata != nullptr) onMetadata(scene->mMetaData); // Allow metadata to be parsed outside, used on vrm for example
+		if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_METADATA) > 0) {
+			fmt::print("==== DUMP FOR {} METADATA\n", this->fileName.generic_string());
+			for (uint8_t i = 0; i < scene->mMetaData->mNumProperties; i++) {
+				aiString str;
+				scene->mMetaData->Get(i, str);
+
+				fmt::print("{}: {}\n", scene->mMetaData->mKeys[i].C_Str(), str.C_Str());
+			}
+			fmt::print("=== ====================\n");
+		}
+		// ------------
 
 		// load models
 		this->loadSubmeshes(scene, scene->mRootNode);
