@@ -34,6 +34,32 @@ namespace rawrbox {
 
 		this->internalLoad(image, useFallback);
 	}
+
+	TextureImage::TextureImage(uint8_t* buffer, int bufferSize, int forceChannels, bool useFallback) {
+		uint8_t* image = stbi_load_from_memory(buffer, bufferSize, &this->_size.x, &this->_size.y, &this->_channels, forceChannels);
+		if (forceChannels != 0) {
+			this->_channels = forceChannels;
+		}
+		this->internalLoad(image, useFallback);
+	}
+
+	TextureImage::TextureImage(const rawrbox::Vector2i& size, uint8_t* buffer, int channels) {
+		this->_size = size;
+		this->_channels = channels;
+
+		this->_pixels.resize(static_cast<uint32_t>(this->_size.x * this->_size.y * channels));
+		std::memcpy(this->_pixels.data(), buffer, static_cast<uint32_t>(this->_pixels.size()));
+
+		// Check for transparency ----
+		if (this->_channels == 4) {
+			for (size_t i = 0; i < this->_pixels.size(); i += this->_channels) {
+				if (this->_pixels[i + 3] == 1.F) continue;
+				_transparent = true;
+				break;
+			}
+		}
+		// ---------------------------
+	}
 	// NOLINTEND(modernize-pass-by-value)
 
 	void TextureImage::internalLoad(uint8_t* image, bool useFallback) {

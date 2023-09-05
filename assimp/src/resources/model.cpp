@@ -25,6 +25,7 @@ namespace rawrbox {
 		       fileExtention == ".fbx" ||
 		       fileExtention == ".dae" ||
 		       fileExtention == ".3ds" ||
+		       fileExtention == ".glb" ||
 		       // fileExtention == ".mdl" ||
 		       fileExtention == ".gltf" ||
 		       fileExtention == ".md5mesh";
