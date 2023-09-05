@@ -103,7 +103,7 @@ namespace rawrbox {
 		// TEXTURE LOADING -----
 		uint64_t assimpSamplerToBGFX(const std::array<aiTextureMapMode, 3>& mode, int axis);
 
-		std::vector<OptionalTexture> importTexture(const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count);
+		std::vector<OptionalTexture> importTexture(const aiScene* scene, const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count);
 		void loadTextures(const aiScene* sc, aiMesh& assimp, rawrbox::AssimpMesh& mesh);
 		/// -------
 

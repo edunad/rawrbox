@@ -26,6 +26,9 @@ namespace rawrbox {
 	public:
 		explicit TextureImage(const std::filesystem::path& filePath, int forceChannels = 0, bool useFallback = true);
 		explicit TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, int forceChannels = 0, bool useFallback = true);
+		explicit TextureImage(uint8_t* buffer, int bufferSize, int forceChannels = 0, bool useFallback = true);
+		explicit TextureImage(const rawrbox::Vector2i& size, uint8_t* buffer, int channels = 4);
+
 		TextureImage(const TextureImage&) = default;
 		TextureImage(TextureImage&&) = delete;
 		TextureImage& operator=(const TextureImage&) = delete;
