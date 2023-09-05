@@ -73,13 +73,13 @@ namespace assimp {
 		// Assimp test ---
 		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx")->get();
 
-		this->_model->load(*mdl);
 		this->_model->setPos({7, 1.1F, 0.F});
+		this->_model->load(*mdl);
 		this->_model->upload();
 
-		this->_model2->load(*mdl);
-		this->_model2->setPos({-6, 1.1F, 0.F});
 		this->_model2->setMaterial<rawrbox::MaterialLit>();
+		this->_model2->setPos({-6, 1.1F, 0.F});
+		this->_model2->load(*mdl);
 		this->_model2->upload();
 
 		// ANIMATIONS ---
