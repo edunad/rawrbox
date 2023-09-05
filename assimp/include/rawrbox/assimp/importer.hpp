@@ -14,6 +14,7 @@
 #include <assimp/scene.h>
 
 #include <filesystem>
+#include <functional>
 #include <optional>
 
 #define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_GlobalScale)
@@ -134,6 +135,8 @@ namespace rawrbox {
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::AssimpMaterial>> materials = {};
 		std::vector<rawrbox::AssimpMesh> meshes = {};
 
+		std::function<void(aiMetadata*)> onMetadata = nullptr;
+
 		uint32_t loadFlags = 0;
 		uint32_t assimpFlags = 0;
 
@@ -148,7 +151,7 @@ namespace rawrbox {
 		explicit AssimpImporter(uint32_t loadFlags = ModelLoadFlags::NONE, uint32_t assimpFlags = DEFAULT_ASSIMP_FLAGS);
 
 		// Loading ----
-		void load(const std::filesystem::path& path, const std::vector<uint8_t>& buffer);
+		void load(const std::filesystem::path& path, const std::vector<uint8_t>& buffer, const std::string& hint = "");
 		void load(const std::filesystem::path& path);
 		// ---
 	};

@@ -583,6 +583,8 @@ namespace rawrbox {
 			}
 		}
 
+		if (onMetadata != nullptr) onMetadata(scene->mMetaData); // Allow metadata to be parsed outside, used on vrm for example
+
 		// load models
 		this->loadSubmeshes(scene, scene->mRootNode);
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_LIGHT) > 0) this->loadLights(scene);
@@ -607,7 +609,7 @@ namespace rawrbox {
 	}
 
 	// Loading ----
-	void AssimpImporter::load(const std::filesystem::path& path, const std::vector<uint8_t>& buffer) {
+	void AssimpImporter::load(const std::filesystem::path& path, const std::vector<uint8_t>& buffer, const std::string& hint) {
 		this->fileName = path;
 
 		auto b = buffer;
@@ -617,7 +619,7 @@ namespace rawrbox {
 			if (path.extension() == ".gltf") {
 				this->load(path); // GLTF has external dependencies, not sure how to load them using file from memory
 			} else {
-				this->internalLoad(aiImportFileFromMemory(bah, static_cast<uint32_t>(b.size() * sizeof(char)), this->assimpFlags, nullptr));
+				this->internalLoad(aiImportFileFromMemory(bah, static_cast<uint32_t>(b.size() * sizeof(char)), this->assimpFlags, hint.c_str()));
 			}
 		} else {
 			// Fallback
