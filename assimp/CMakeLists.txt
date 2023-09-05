@@ -7,7 +7,7 @@ CPMAddPackage(
     NAME
     assimp
     GIT_TAG
-    kimkulling/prepare_version_5.2.6_rc1
+    master
     GITHUB_REPOSITORY
     assimp/assimp
     OPTIONS
