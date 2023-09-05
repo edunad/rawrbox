@@ -583,7 +583,7 @@ namespace rawrbox {
 			}
 		}
 
-		// load models
+		// Parse metadata
 		if (onMetadata != nullptr) onMetadata(scene->mMetaData); // Allow metadata to be parsed outside, used on vrm for example
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_METADATA) > 0) {
 			fmt::print("==== DUMP FOR {} METADATA\n", this->fileName.generic_string());
