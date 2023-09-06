@@ -2,12 +2,15 @@
 #include <rawrbox/utils/ringbuffer.hpp>
 
 #include <functional>
+#include <mutex>
+#include <queue>
 #include <thread>
 
 namespace rawrbox {
 	// THREADING ----
 	extern std::thread::id RENDER_THREAD_ID;
-	extern jnk0le::Ringbuffer<std::function<void()>> RENDER_THREAD_INVOKES;
+	extern std::queue<std::function<void()>> RENDER_THREAD_INVOKES;
+	extern std::mutex RENDER_THREAD_LOCK;
 
 	// TIMING ---
 	extern float DELTA_TIME;
@@ -18,7 +21,8 @@ namespace rawrbox {
 	// NOLINTBEGIN(clang-diagnostic-unused-function)
 	static inline void runOnRenderThread(std::function<void()> func) {
 		if (RENDER_THREAD_ID != std::this_thread::get_id()) {
-			RENDER_THREAD_INVOKES.insert(std::move(func));
+			std::lock_guard<std::mutex> lock(RENDER_THREAD_LOCK);
+			RENDER_THREAD_INVOKES.push(std::move(func));
 			return;
 		}
 
@@ -27,9 +31,10 @@ namespace rawrbox {
 
 	// ⚠️ INTERNAL - DO NOT CALL UNLESS YOU KNOW WHAT YOU ARE DOING ⚠️
 	static inline void ___runThreadInvokes() {
-		while (!rawrbox::RENDER_THREAD_INVOKES.isEmpty()) {
-			std::function<void()> fnc;
-			rawrbox::RENDER_THREAD_INVOKES.remove(fnc);
+		while (!rawrbox::RENDER_THREAD_INVOKES.empty()) {
+			std::function<void()> fnc = std::move(rawrbox::RENDER_THREAD_INVOKES.front());
+			rawrbox::RENDER_THREAD_INVOKES.pop();
+
 			fnc();
 		}
 	}

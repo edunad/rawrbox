@@ -7,7 +7,8 @@ namespace rawrbox {
 
 	// THREADING -------
 	std::thread::id RENDER_THREAD_ID;
-	jnk0le::Ringbuffer<std::function<void()>> RENDER_THREAD_INVOKES = {512};
+	std::queue<std::function<void()>> RENDER_THREAD_INVOKES = {};
+	std::mutex RENDER_THREAD_LOCK;
 	// -------
 
 } // namespace rawrbox

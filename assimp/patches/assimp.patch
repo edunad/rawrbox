@@ -1,0 +1,13 @@
+diff --git a/contrib/draco/CMakeLists.txt b/contrib/draco/CMakeLists.txt
+index a93267d25..deba97931 100644
+--- a/contrib/draco/CMakeLists.txt
++++ b/contrib/draco/CMakeLists.txt
+@@ -21,7 +21,7 @@ endif()
+ 
+ set(draco_root "${CMAKE_CURRENT_SOURCE_DIR}")
+ set(draco_src_root "${draco_root}/src/draco")
+-set(draco_build "${CMAKE_BINARY_DIR}")
++set(draco_build "${Assimp_BINARY_DIR}")
+ 
+ if("${draco_root}" STREQUAL "${draco_build}")
+   message(

@@ -103,33 +103,33 @@ namespace rawrbox {
 	class AssimpImporter {
 
 		// TEXTURE LOADING -----
-		uint64_t assimpSamplerToBGFX(const std::array<aiTextureMapMode, 3>& mode, int axis);
+		virtual uint64_t assimpSamplerToBGFX(const std::array<aiTextureMapMode, 3>& mode, int axis);
 
-		std::vector<OptionalTexture> importTexture(const aiScene* scene, const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count);
-		void loadTextures(const aiScene* sc, aiMesh& assimp, rawrbox::AssimpMesh& mesh);
+		virtual std::vector<OptionalTexture> importTexture(const aiScene* scene, const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count);
+		virtual void loadTextures(const aiScene* sc, aiMesh& assimp, rawrbox::AssimpMesh& mesh);
 		/// -------
 
 		// SKELETON LOADING -----
-		void loadSkeleton(const aiScene* sc, rawrbox::AssimpMesh& mesh, const aiMesh& aiMesh);
+		virtual void loadSkeleton(const aiScene* sc, rawrbox::AssimpMesh& mesh, const aiMesh& aiMesh);
 
-		void generateSkeleton(rawrbox::Skeleton& skeleton, const aiNode* pNode, rawrbox::Bone& parent);
-		aiNode* findRootSkeleton(const aiScene* sc, const std::string& meshName);
+		virtual void generateSkeleton(rawrbox::Skeleton& skeleton, const aiNode* pNode, rawrbox::Bone& parent);
+		virtual aiNode* findRootSkeleton(const aiScene* sc, const std::string& meshName);
 
-		bx::Easing::Enum assimpBehavior(aiAnimBehaviour b);
+		virtual bx::Easing::Enum assimpBehavior(aiAnimBehaviour b);
 
-		void markMeshAnimated(const std::string& meshName, const std::string& search);
-		void loadAnimations(const aiScene* sc);
+		virtual void markMeshAnimated(const std::string& meshName, const std::string& search);
+		virtual void loadAnimations(const aiScene* sc);
 		/// -------
 
 		// LIGHT LOADING -----
-		void loadLights(const aiScene* sc);
+		virtual void loadLights(const aiScene* sc);
 		/// -------
 
 		// MESH LOADING -----
-		void loadSubmeshes(const aiScene* sc, const aiNode* root);
+		virtual void loadSubmeshes(const aiScene* sc, const aiNode* root);
 		/// -------
 
-		void internalLoad(const aiScene* scene, bool attemptedFallback = false);
+		virtual void internalLoad(const aiScene* scene, bool attemptedFallback = false);
 
 	public:
 		std::filesystem::path fileName;
@@ -150,10 +150,15 @@ namespace rawrbox {
 		// --------
 
 		explicit AssimpImporter(uint32_t loadFlags = ModelLoadFlags::NONE, uint32_t assimpFlags = DEFAULT_ASSIMP_FLAGS);
+		AssimpImporter(const AssimpImporter&) = default;
+		AssimpImporter(AssimpImporter&&) = delete;
+		AssimpImporter& operator=(const AssimpImporter&) = default;
+		AssimpImporter& operator=(AssimpImporter&&) = delete;
+		virtual ~AssimpImporter() = default;
 
 		// Loading ----
-		void load(const std::filesystem::path& path, const std::vector<uint8_t>& buffer, const std::string& hint = "");
-		void load(const std::filesystem::path& path);
+		virtual void load(const std::filesystem::path& path, const std::vector<uint8_t>& buffer, const std::string& hint = "");
+		virtual void load(const std::filesystem::path& path);
 		// ---
 	};
 } // namespace rawrbox
