@@ -9,25 +9,7 @@
 
 namespace rawrbox {
 
-	struct Bone;
-	struct Skeleton {
-		uint8_t boneIndex = 0;
-
-		std::string name = "Armature";
-		std::unique_ptr<rawrbox::Bone> rootBone = nullptr;
-
-		std::unordered_map<std::string, rawrbox::Bone*> boneMap = {}; // Map for quick lookup
-		rawrbox::Matrix4x4 invTransformationMtx = {};
-
-		[[nodiscard]] rawrbox::Bone* getBone(const std::string& boneName) const {
-			auto fnd = boneMap.find(boneName);
-			if (fnd == boneMap.end()) return nullptr;
-			return fnd->second;
-		}
-
-		explicit Skeleton(std::string _name) : name(std::move(_name)) {}
-	};
-
+	struct Skeleton;
 	struct Bone {
 		std::string name;
 		uint8_t boneId = 0;
@@ -45,5 +27,29 @@ namespace rawrbox {
 		// ----
 
 		Bone(std::string id) : name(std::move(id)) {}
+	};
+
+	struct Skeleton {
+		std::string name = "Armature";
+		std::unique_ptr<rawrbox::Bone> rootBone = nullptr;
+
+		std::unordered_map<std::string, rawrbox::Bone*> boneMap = {}; // Map for quick lookup
+		rawrbox::Matrix4x4 invTransformationMtx = {};
+
+		[[nodiscard]] rawrbox::Bone* getBone(const std::string& boneName) const {
+			auto fnd = boneMap.find(boneName);
+			if (fnd == boneMap.end()) return nullptr;
+			return fnd->second;
+		}
+
+		[[nodiscard]] rawrbox::Bone* getBone(size_t indx) const {
+			for (auto& i : this->boneMap) {
+				if (i.second->boneId == indx) return i.second;
+			}
+
+			return nullptr;
+		}
+
+		explicit Skeleton(std::string _name) : name(std::move(_name)) {}
 	};
 } // namespace rawrbox
