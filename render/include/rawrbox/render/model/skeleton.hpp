@@ -11,12 +11,19 @@ namespace rawrbox {
 
 	struct Skeleton;
 	struct Bone {
-		std::string name;
+	private:
+		rawrbox::Vector3f _scale = {1, 1, 1};
+		rawrbox::Vector3f _pos = {};
+		rawrbox::Vector4f _angle = {};
+
+	public:
+		std::string name = "";
 		uint8_t boneId = 0;
 
 		// Rendering ---
 		rawrbox::Matrix4x4 transformationMtx = {};
 		rawrbox::Matrix4x4 offsetMtx = {};
+		rawrbox::Matrix4x4 overrideMtx = {};
 		// ----
 
 		// Lookup ----
@@ -27,6 +34,29 @@ namespace rawrbox {
 		// ----
 
 		Bone(std::string id) : name(std::move(id)) {}
+
+		[[nodiscard]] const rawrbox::Vector3f& getPos() const { return this->_pos; }
+		void setPos(const rawrbox::Vector3f& pos) {
+			this->_pos = pos;
+			this->overrideMtx.mtxSRT(this->_scale, this->_angle, this->_pos);
+		}
+
+		[[nodiscard]] const rawrbox::Vector4f& getAngle() const { return this->_angle; }
+		void setAngle(const rawrbox::Vector4f& ang) {
+			this->_angle = ang;
+			this->overrideMtx.mtxSRT(this->_scale, this->_angle, this->_pos);
+		}
+
+		void setEulerAngle(const rawrbox::Vector3f& ang) {
+			this->_angle = rawrbox::Vector4f::toQuat(ang);
+			this->overrideMtx.mtxSRT(this->_scale, this->_angle, this->_pos);
+		}
+
+		[[nodiscard]] const rawrbox::Vector3f& getScale() const { return this->_scale; }
+		void setScale(const rawrbox::Vector3f& scale) {
+			this->_scale = scale;
+			this->overrideMtx.mtxSRT(this->_scale, this->_angle, this->_pos);
+		}
 	};
 
 	struct Skeleton {

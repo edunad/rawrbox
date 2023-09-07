@@ -34,6 +34,8 @@ namespace model {
 		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		cam->onMovementStart = []() { fmt::print("Camera start\n"); };
+		cam->onMovementStop = []() { fmt::print("Camera stop\n"); };
 		// --------------
 
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();

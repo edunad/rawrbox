@@ -5,6 +5,8 @@
 #include <rawrbox/render/camera/perspective.hpp>
 #include <rawrbox/render/window.hpp>
 
+#include <functional>
+
 namespace rawrbox {
 	class CameraOrbital : public rawrbox::CameraPerspective {
 	protected:
@@ -16,6 +18,9 @@ namespace rawrbox {
 		rawrbox::Vector2i _oldMousePos = {};
 		// ------------
 	public:
+		std::function<void()> onMovementStop = nullptr;
+		std::function<void()> onMovementStart = nullptr;
+
 		CameraOrbital(const CameraOrbital& other) = default;
 		CameraOrbital(CameraOrbital&& other) = default;
 		CameraOrbital& operator=(const CameraOrbital&) = default;

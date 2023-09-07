@@ -13,6 +13,9 @@ namespace rawrbox {
 
 			this->_rightClick = isDown;
 			this->_oldMousePos = mousePos;
+
+			if (isDown && this->onMovementStart) this->onMovementStart();
+			if (!isDown && this->onMovementStop) this->onMovementStop();
 		};
 
 		this->_window->onMouseMove += [this](auto& /*w*/, const rawrbox::Vector2i& mousePos) {
