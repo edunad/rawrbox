@@ -163,7 +163,7 @@ endif()
 if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
     CPMFindPackage(
         NAME
-        zlib
+        ZLIB
         GITHUB_REPOSITORY
         madler/zlib
         GIT_TAG
@@ -173,20 +173,22 @@ if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
         "AMD64 FALSE"
         "POSITION_INDEPENDENT_CODE TRUE")
 
-    if(zlib_ADDED)
+    if(ZLIB_ADDED)
         set(ZLIB_FOUND 1)
         set(ZLIB_LIBRARIES zlibstatic)
         set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
 
         add_library(ZLIB::ZLIB ALIAS zlibstatic)
+        set_lib_runtime_mt(zlibstatic)
 
         message(STATUS "==== ZLIB")
-        message(STATUS "LIBRARY: ${ZLIB_LIBRARY}")
+        message(STATUS "LIBRARY: ${ZLIB_LIBRARIES}")
         message(STATUS "INCLUDE_DIR: ${ZLIB_INCLUDE_DIR}")
         message(STATUS "BINARY_DIR: ${zlib_BINARY_DIR}")
         message(STATUS "==== ====")
 
         include_directories(${ZLIB_INCLUDE_DIR})
+
     endif()
 endif()
 # --------------------
