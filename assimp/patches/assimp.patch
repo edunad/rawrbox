@@ -9,17 +9,17 @@ index 0fed11cef..994d05eb9 100644
 -    "gltf glb"
 +    "gltf glb vrm"
  };
- 
+
  glTF2Importer::glTF2Importer() :
 @@ -106,17 +106,17 @@ const aiImporterDesc *glTF2Importer::GetInfo() const {
- 
+
  bool glTF2Importer::CanRead(const std::string &filename, IOSystem *pIOHandler, bool checkSig) const {
      const std::string extension = GetExtension(filename);
 -    if (!checkSig && (extension != "gltf") && (extension != "glb")) {
 +    if (!checkSig && (extension != "gltf") && (extension != "glb") && (extension != "vrm")) {
          return false;
      }
- 
+
      if (pIOHandler) {
          glTF2::Asset asset(pIOHandler);
          return asset.CanRead(
@@ -32,13 +32,13 @@ index 0fed11cef..994d05eb9 100644
 +                        pIOHandler, filename, AI_GLB_MAGIC_NUMBER, 1, 0,
 +                        static_cast<unsigned int>(strlen(AI_GLB_MAGIC_NUMBER))));
      }
- 
+
      return false;
 @@ -498,7 +498,7 @@ void glTF2Importer::ImportMeshes(glTF2::Asset &r) {
              // Extract used vertices:
              bool useIndexBuffer = prim.indices;
              std::vector<unsigned int> *vertexRemappingTable = nullptr;
--            
+-
 +
              if (useIndexBuffer) {
                  size_t count = prim.indices->count;
@@ -47,14 +47,14 @@ index 0fed11cef..994d05eb9 100644
                      if (index >= numAllVertices) {
                          // Out-of-range indices will be filtered out when adding the faces and then lead to a warning. At this stage, we just keep them.
                          indexBuffer[i] = index;
--                        continue; 
+-                        continue;
 +                        continue;
                      }
                      if (index >= reverseMappingIndices.size()) {
                          reverseMappingIndices.resize(index + 1, unusedIndex);
 @@ -565,7 +565,7 @@ void glTF2Importer::ImportMeshes(glTF2::Asset &r) {
              }
- 
+
              if (!attr.normal.empty() && attr.normal[0]) {
 -                    if (attr.normal[0]->count != numAllVertices) {
 +                if (attr.normal[0]->count != numAllVertices) {
@@ -64,10 +64,10 @@ index 0fed11cef..994d05eb9 100644
 @@ -1016,7 +1016,7 @@ static void GetNodeTransform(aiMatrix4x4 &matrix, const glTF2::Node &node) {
      }
  }
- 
+
 -static void BuildVertexWeightMapping(Mesh::Primitive &primitive, std::vector<std::vector<aiVertexWeight>> &map, std::vector<unsigned int>* vertexRemappingTablePtr) {
 +static void BuildVertexWeightMapping(Mesh::Primitive &primitive, std::vector<std::vector<aiVertexWeight>> &map, std::vector<unsigned int> *vertexRemappingTablePtr) {
- 
+
      Mesh::Primitive::Attributes &attr = primitive.attributes;
      if (attr.weight.empty() || attr.joint.empty()) {
 @@ -1031,7 +1031,7 @@ static void BuildVertexWeightMapping(Mesh::Primitive &primitive, std::vector<std
@@ -89,7 +89,7 @@ index 0fed11cef..994d05eb9 100644
              attr.joint[j]->ExtractData(indices8[j], vertexRemappingTablePtr);
          }
 @@ -1077,7 +1077,7 @@ static void BuildVertexWeightMapping(Mesh::Primitive &primitive, std::vector<std
- 
+
      for (size_t w = 0; w < attr.weight.size(); ++w) {
          delete[] weights[w];
 -        if(indices8)
@@ -100,7 +100,7 @@ index 0fed11cef..994d05eb9 100644
 @@ -1111,7 +1111,7 @@ void ParseExtensions(aiMetadata *metadata, const CustomExtension &extension) {
      }
  }
- 
+
 -void ParseExtras(aiMetadata* metadata, const Extras& extras) {
 +void ParseExtras(aiMetadata *metadata, const Extras &extras) {
      for (auto const &value : extras.mValues) {
@@ -124,11 +124,11 @@ index a93267d25..deba97931 100644
 --- a/contrib/draco/CMakeLists.txt
 +++ b/contrib/draco/CMakeLists.txt
 @@ -21,7 +21,7 @@ endif()
- 
+
  set(draco_root "${CMAKE_CURRENT_SOURCE_DIR}")
  set(draco_src_root "${draco_root}/src/draco")
 -set(draco_build "${CMAKE_BINARY_DIR}")
 +set(draco_build "${Assimp_BINARY_DIR}")
- 
+
  if("${draco_root}" STREQUAL "${draco_build}")
    message(
