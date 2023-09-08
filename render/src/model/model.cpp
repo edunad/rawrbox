@@ -75,7 +75,7 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 globalTransformation = parentTransform * nodeTransform;
 		auto fnd = skeleton.boneMap.find(parentBone.name);
 		if (fnd != skeleton.boneMap.end()) {
-			calcs[fnd->second->boneId] = skeleton.invTransformationMtx * globalTransformation;
+			calcs[fnd->second->boneId] = skeleton.invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
 		}
 
 		for (auto& child : parentBone.children) {
