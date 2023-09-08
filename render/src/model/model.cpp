@@ -68,7 +68,7 @@ namespace rawrbox {
 	}
 
 	void Model::animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, const rawrbox::Skeleton& skeleton, const rawrbox::Bone& parentBone, const rawrbox::Matrix4x4& parentTransform) const {
-		auto nodeTransform = parentBone.transformationMtx;
+		auto nodeTransform = parentBone.transformationMtx * parentBone.overrideMtx;
 		this->readAnims(nodeTransform, parentBone.name);
 
 		// store the result of our parent bone and our current node

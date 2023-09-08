@@ -31,6 +31,7 @@ namespace rawrbox {
 
 	// ⚠️ INTERNAL - DO NOT CALL UNLESS YOU KNOW WHAT YOU ARE DOING ⚠️
 	static inline void ___runThreadInvokes() {
+		std::lock_guard<std::mutex> lock(RENDER_THREAD_LOCK);
 		while (!rawrbox::RENDER_THREAD_INVOKES.empty()) {
 			std::function<void()> fnc = std::move(rawrbox::RENDER_THREAD_INVOKES.front());
 			rawrbox::RENDER_THREAD_INVOKES.pop();
