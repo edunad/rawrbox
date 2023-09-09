@@ -33,7 +33,7 @@ namespace rawrbox {
 			const uint32_t PRINT_MATERIALS = 1 << 11;
 			const uint32_t PRINT_ANIMATIONS = 1 << 12;
 			const uint32_t PRINT_METADATA = 1 << 13;
-			const uint32_t PRINT_BLENDSHAPES = 1 << 13;
+			const uint32_t PRINT_BLENDSHAPES = 1 << 14;
 		} // namespace Debug
 
 	}; // namespace ModelLoadFlags

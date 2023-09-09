@@ -148,20 +148,6 @@ namespace rawrbox {
 	}
 	// -----------
 
-	// Blendshapes ---
-	void Model::setBlendShape(rawrbox::BlendShape blend) {
-		//_blendShapes[blend.mesh.] = std::make_unique<rawrbox::BlendShape>(blend);
-	}
-
-	rawrbox::BlendShape* Model::getBlendShape(const std::string& id) {
-		/*auto fnd = _blendShapes.find(id);
-		if (fnd == _blendShapes.end()) return nullptr;
-
-		return fnd->second.get();*/
-		return nullptr;
-	}
-	// --------------
-
 	void Model::preDraw() {
 		for (auto& anim : this->_playingAnimations) {
 			float timeToAdd = rawrbox::DELTA_TIME * anim.speed;

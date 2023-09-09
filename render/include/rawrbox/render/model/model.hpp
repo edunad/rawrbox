@@ -15,20 +15,12 @@
 
 namespace rawrbox {
 
-	struct BlendShape {
-		std::string id = "";
-		rawrbox ::Mesh* mesh = nullptr;
-		float weight = 0.F;
-	};
-
 	class Model : public rawrbox::ModelBase {
 
 	protected:
 		std::unordered_map<std::string, rawrbox::Animation> _animations = {};
 		std::vector<rawrbox::PlayingAnimationData> _playingAnimations = {};
 		std::vector<rawrbox::LightBase> _lights = {};
-
-		std::unordered_map<size_t, std::unique_ptr<rawrbox::BlendShape>> _blendShapes = {};
 
 		std::vector<std::unique_ptr<rawrbox::Mesh>> _meshes = {};
 		rawrbox::BBOX _bbox = {};
@@ -70,11 +62,6 @@ namespace rawrbox {
 		virtual bool blendAnimation(const std::string& /*otherAnim*/, float /*blend*/);
 		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F);
 		virtual bool stopAnimation(const std::string& name);
-		// --------------
-
-		// Blendshapes ---
-		virtual void setBlendShape(rawrbox::BlendShape blend);
-		virtual rawrbox::BlendShape* getBlendShape(const std::string& id);
 		// --------------
 
 		// LIGHTS ------

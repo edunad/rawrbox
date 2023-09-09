@@ -48,7 +48,7 @@ namespace assimp {
 	void Game::loadContent() {
 		std::array initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("content/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES),
+		    std::make_pair<std::string, uint32_t>("content/models/shape_keys/shape_keys.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES),
 		    /*std::make_pair<std::string, uint32_t>("content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT),
 		    std::make_pair<std::string, uint32_t>("content/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS),
 		    std::make_pair<std::string, uint32_t>("content/models/vrm/MonoCat.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_METADATA),
@@ -117,7 +117,7 @@ namespace assimp {
 				this->_model6->setPos({0.F, 0.F, -6.F});
 				this->_model6->upload();*/
 
-		auto mdl6 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/shape_keys/shape_keys.glb")->get();
+		auto mdl6 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/shape_keys/shape_keys.fbx")->get();
 		this->_model7->setMaterial<rawrbox::MaterialSkinned>();
 		this->_model7->load(*mdl6);
 		this->_model7->setScale({1.2F, 1.2F, 1.2F});
