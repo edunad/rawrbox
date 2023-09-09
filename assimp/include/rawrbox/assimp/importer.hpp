@@ -26,12 +26,14 @@ namespace rawrbox {
 		const uint32_t IMPORT_LIGHT = 1 << 1;
 		const uint32_t IMPORT_TEXTURES = 1 << 2;
 		const uint32_t IMPORT_ANIMATIONS = 1 << 3;
+		const uint32_t IMPORT_BLEND_SHAPES = 1 << 4;
 
 		namespace Debug {
 			const uint32_t PRINT_BONE_STRUCTURE = 1 << 10;
 			const uint32_t PRINT_MATERIALS = 1 << 11;
 			const uint32_t PRINT_ANIMATIONS = 1 << 12;
 			const uint32_t PRINT_METADATA = 1 << 13;
+			const uint32_t PRINT_BLENDSHAPES = 1 << 13;
 		} // namespace Debug
 
 	}; // namespace ModelLoadFlags
@@ -83,6 +85,19 @@ namespace rawrbox {
 		float angleOuterCone = 0.F;
 	};
 
+	struct BlendShapes {
+		rawrbox::Vector3f position = {};
+		rawrbox::Vector3f normal = {};
+		rawrbox::Vector2f uv = {};
+	};
+
+	struct AssimpBlendShapes {
+		std::string name = "";
+		float maxWeight = 0.F;
+
+		std::vector<rawrbox::BlendShapes> vertices = {};
+	};
+
 	struct AssimpMesh {
 	public:
 		std::string name;
@@ -96,6 +111,7 @@ namespace rawrbox {
 
 		std::vector<rawrbox::VertexData> vertices = {};
 		std::vector<uint16_t> indices = {};
+		std::unordered_map<std::string, rawrbox::AssimpBlendShapes> blend_shapes = {};
 
 		explicit AssimpMesh(std::string _name) : name(std::move(_name)){};
 	};
@@ -106,7 +122,7 @@ namespace rawrbox {
 		virtual uint64_t assimpSamplerToBGFX(const std::array<aiTextureMapMode, 3>& mode, int axis);
 
 		virtual std::vector<OptionalTexture> importTexture(const aiScene* scene, const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count);
-		virtual void loadTextures(const aiScene* sc, aiMesh& assimp, rawrbox::AssimpMesh& mesh);
+		virtual void loadTextures(const aiScene* sc, const aiMesh& assimp, rawrbox::AssimpMesh& mesh);
 		/// -------
 
 		// SKELETON LOADING -----
@@ -119,6 +135,7 @@ namespace rawrbox {
 
 		virtual void markMeshAnimated(const std::string& meshName, const std::string& search);
 		virtual void loadAnimations(const aiScene* sc);
+		virtual void loadBlendShapes(const aiMesh& assimp, rawrbox::AssimpMesh& mesh);
 		/// -------
 
 		// LIGHT LOADING -----
@@ -144,8 +161,10 @@ namespace rawrbox {
 		// SKINNING ----
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::Skeleton>> skeletons = {};
 
-		std::unordered_map<std::string, rawrbox::AssimpMesh*> animatedMeshes = {}; // Map for quick lookup
+		std::unordered_map<std::string, rawrbox::AssimpMesh*> animatedMeshes = {};   // Map for quick lookup
+		std::unordered_map<std::string, rawrbox::AssimpMesh*> blendShapeMeshes = {}; // Map for quick lookup
 		std::unordered_map<std::string, rawrbox::Animation> animations = {};
+
 		std::vector<rawrbox::AssimpLight> lights = {};
 		// --------
 

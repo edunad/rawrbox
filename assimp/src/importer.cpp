@@ -102,7 +102,7 @@ namespace rawrbox {
 		return _textures;
 	}
 
-	void AssimpImporter::loadTextures(const aiScene* sc, aiMesh& assimp, rawrbox::AssimpMesh& mesh) {
+	void AssimpImporter::loadTextures(const aiScene* sc, const aiMesh& assimp, rawrbox::AssimpMesh& mesh) {
 		if (sc->mNumMaterials <= 0 || assimp.mMaterialIndex > sc->mNumMaterials) return;
 		const aiMaterial* pMaterial = sc->mMaterials[assimp.mMaterialIndex];
 
@@ -426,6 +426,51 @@ namespace rawrbox {
 			}
 		}
 	}
+
+	void AssimpImporter::loadBlendShapes(const aiMesh& assimp, rawrbox::AssimpMesh& mesh) {
+		if (assimp.mNumAnimMeshes == 0) return;
+
+		for (size_t n = 0; n < assimp.mNumAnimMeshes; ++n) {
+			auto& aiMesh = *assimp.mAnimMeshes[n];
+
+			rawrbox::AssimpBlendShapes shape;
+			shape.name = aiMesh.mName.data;
+			shape.maxWeight = aiMesh.mWeight;
+			shape.vertices = {};
+
+			for (size_t i = 0; i < aiMesh.mNumVertices; i++) {
+				rawrbox::BlendShapes v;
+
+				if (aiMesh.HasNormals()) {
+					auto& normal = aiMesh.mNormals[i];
+					v.normal = {normal.x, normal.y, normal.z};
+				}
+
+				if (aiMesh.HasPositions()) {
+					auto& vert = aiMesh.mVertices[i];
+					v.position = {vert.x, vert.y, vert.z};
+				}
+
+				if (aiMesh.HasTextureCoords(0)) {
+					auto& uv = aiMesh.mTextureCoords[0][i];
+					v.uv = {uv.x, uv.y};
+				}
+
+				shape.vertices.push_back(v);
+			}
+
+			mesh.blend_shapes[shape.name] = shape;
+			this->blendShapeMeshes[shape.name] = &mesh; // For quick access
+		}
+
+		if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES) > 0) {
+			fmt::print("==== '{}' BLEND SHAPES\n", this->fileName.generic_string());
+			for (auto& s : this->blendShapeMeshes) {
+				fmt::print("{}\n", s.first);
+			}
+			fmt::print("=== ====================\n");
+		}
+	}
 	/// -------
 
 	// LIGHT LOADING -----
@@ -504,6 +549,11 @@ namespace rawrbox {
 			// Textures
 			if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
 				this->loadTextures(sc, aiMesh, mesh);
+			}
+
+			// Blendshapes
+			if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) > 0) {
+				this->loadBlendShapes(aiMesh, mesh);
 			}
 
 			// Vertices
@@ -587,12 +637,52 @@ namespace rawrbox {
 		if (onMetadata != nullptr) onMetadata(scene->mMetaData); // Allow metadata to be parsed outside, used on vrm for example
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_METADATA) > 0) {
 			fmt::print("==== DUMP FOR {} METADATA\n", this->fileName.generic_string());
-			for (uint8_t i = 0; i < scene->mMetaData->mNumProperties; i++) {
-				aiString str;
-				scene->mMetaData->Get(i, str);
 
-				fmt::print("{}: {}\n", scene->mMetaData->mKeys[i].C_Str(), str.C_Str());
+			for (uint8_t i = 0; i < scene->mMetaData->mNumProperties; i++) {
+				auto data = scene->mMetaData->mValues[i];
+				std::string str = "";
+
+				switch (data.mType) {
+					case AI_AISTRING:
+						str = fmt::format("{}", static_cast<aiString*>(data.mData)->data);
+						break;
+					case AI_BOOL:
+						str = fmt::format("{}", std::to_string(*static_cast<bool*>(data.mData)));
+						break;
+					case AI_INT32:
+						str = fmt::format("{}", std::to_string(*static_cast<int32_t*>(data.mData)));
+						break;
+					case AI_UINT64:
+						str = fmt::format("{}", std::to_string(*static_cast<uint64_t*>(data.mData)));
+						break;
+					case AI_FLOAT:
+						str = fmt::format("{}", std::to_string(*static_cast<float*>(data.mData)));
+						break;
+					case AI_DOUBLE:
+						str = fmt::format("{}", std::to_string(*static_cast<double*>(data.mData)));
+						break;
+					case AI_AIVECTOR3D:
+						{
+							auto vec = static_cast<aiVector3D*>(data.mData);
+							str = fmt::format("{},{},{}", vec->x, vec->y, vec->z);
+						}
+						break;
+					case AI_INT64:
+						str = fmt::format("{}", std::to_string(*static_cast<int64_t*>(data.mData)));
+						break;
+
+					case AI_UINT32:
+						str = fmt::format("{}", std::to_string(*static_cast<uint32_t*>(data.mData)));
+						break;
+					default:
+					case AI_AIMETADATA:
+					case AI_META_MAX:
+					case FORCE_32BIT: break;
+				}
+
+				fmt::print("{}: {}\n", scene->mMetaData->mKeys[i].C_Str(), str);
 			}
+
 			fmt::print("=== ====================\n");
 		}
 		// ------------

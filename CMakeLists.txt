@@ -163,17 +163,18 @@ endif()
 if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
     CPMFindPackage(
         NAME
-        zlib
+            ZLIB
         GITHUB_REPOSITORY
-        madler/zlib
+            madler/zlib # zlib-ng/zlib-ng
         GIT_TAG
-        "v1.2.13"
+            "v1.2.13" # "2.1.3"
         OPTIONS
-        "ASM686 FALSE"
-        "AMD64 FALSE"
-        "POSITION_INDEPENDENT_CODE TRUE")
+            "ASM686 FALSE"
+            "AMD64 FALSE"
+            "POSITION_INDEPENDENT_CODE TRUE"
+    )
 
-    if(zlib_ADDED)
+    if(ZLIB_ADDED)
         set(ZLIB_FOUND 1)
         set(ZLIB_LIBRARIES zlibstatic)
         set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
