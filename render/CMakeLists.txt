@@ -94,6 +94,7 @@ endif()
 # ------------------
 
 # ------------------
+
 # Project setup
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RENDER_SOURCES})
 

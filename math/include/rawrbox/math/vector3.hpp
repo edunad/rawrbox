@@ -32,6 +32,7 @@ namespace rawrbox {
 		static VecType up() { return VecType(0, 1, 0); }
 		static VecType forward() { return VecType(0, 0, 1); }
 		static VecType back() { return VecType(0, 0, -1); }
+		static VecType nan() { return VecType(std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN()); }
 
 		[[nodiscard]] int size() const { return 3; }
 

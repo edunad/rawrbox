@@ -24,6 +24,11 @@ TEST_CASE("MathUtils should behave as expected", "[rawrbox::MathUtils]") {
 		REQUIRE(std::round(rawrbox::MathUtils::toDeg(1.5708F)) == 90);
 	}
 
+	SECTION("rawrbox::MathUtils::round") {
+		REQUIRE_THAT(rawrbox::MathUtils::round(0.0332F), Catch::Matchers::WithinAbs(0.03F, 0.0001F));
+		REQUIRE_THAT(rawrbox::MathUtils::round(0.432F, 1), Catch::Matchers::WithinAbs(0.4F, 0.0001F));
+	}
+
 	SECTION("rawrbox::MathUtils::lerp") {
 		REQUIRE(rawrbox::MathUtils::lerp(0, 10, 0.5F) == 5.0F);
 	}

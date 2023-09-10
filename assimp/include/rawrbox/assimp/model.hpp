@@ -10,6 +10,7 @@ namespace rawrbox {
 		// INTERNAL -------
 		void loadMeshes(const rawrbox::AssimpImporter& model);
 		void loadAnimations(const rawrbox::AssimpImporter& model);
+		void loadBlendShapes(const rawrbox::AssimpImporter& model);
 		void loadLights(const rawrbox::AssimpImporter& model);
 		// -------------------
 

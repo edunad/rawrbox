@@ -7,12 +7,12 @@
 #define BGFX_STATE_DEFAULT_3D (0 | BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A)
 
 namespace rawrbox {
-	void Model::flattenMeshes() {
+	void Model::flattenMeshes(bool optimize, bool sort) {
 		this->_mesh->clear();
 
 		// Merge same meshes to reduce calls
-		if (this->_canOptimize) {
-			optimize();
+		if (this->_canOptimize && optimize) {
+			this->optimize();
 		}
 		// ----------------------
 
@@ -31,12 +31,12 @@ namespace rawrbox {
 		// --------
 
 		// Sort alpha
-		std::sort(this->_meshes.begin(), this->_meshes.end(), [](auto& a, auto& b) {
-			return a->blending != BGFX_STATE_BLEND_ALPHA && b->blending == BGFX_STATE_BLEND_ALPHA;
-		});
+		if (sort) {
+			std::sort(this->_meshes.begin(), this->_meshes.end(), [](auto& a, auto& b) {
+				return a->blending != BGFX_STATE_BLEND_ALPHA && b->blending == BGFX_STATE_BLEND_ALPHA;
+			});
+		}
 		// --------
-
-		this->updateBuffers();
 	}
 
 	// ANIMATIONS ----
@@ -146,6 +146,7 @@ namespace rawrbox {
 			}
 		}
 	}
+	// -----------
 
 	void Model::preDraw() {
 		for (auto& anim : this->_playingAnimations) {
@@ -184,6 +185,15 @@ namespace rawrbox {
 			}
 		}
 	}
+
+	// BLEND SHAPES ---
+	void Model::applyBlendShapes() {
+		rawrbox::ModelBase::applyBlendShapes();
+
+		this->flattenMeshes(false, false); // No need to optimize & sort, it's just vertex changes
+		rawrbox::ModelBase::updateBuffers();
+	}
+	// --------------
 
 #ifdef RAWRBOX_SCRIPTING
 	void Model::initializeLua() {
@@ -237,6 +247,11 @@ namespace rawrbox {
 #ifndef NDEBUG
 		if (old != this->_meshes.size()) fmt::print("[RawrBox-Model] Optimized mesh for rendering (Before {} | After {})\n", old, this->_meshes.size());
 #endif
+	}
+
+	void Model::updateBuffers() {
+		this->flattenMeshes();
+		rawrbox::ModelBase::updateBuffers();
 	}
 
 	// Animations ----
@@ -308,14 +323,14 @@ namespace rawrbox {
 			++it2;
 		}
 
-		if (this->isUploaded() && this->isDynamic()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
+		if (this->isUploaded() && this->isDynamic()) this->updateBuffers(); // Already uploaded? And dynamic? Then update vertices
 	}
 
 	void Model::removeMesh(size_t index) {
 		if (index >= this->_meshes.size()) return;
 		this->_meshes.erase(this->_meshes.begin() + index);
 
-		if (this->isUploaded() && this->isDynamic()) this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
+		if (this->isUploaded() && this->isDynamic()) this->updateBuffers(); // Already uploaded? And dynamic? Then update vertices
 	}
 
 	rawrbox::Mesh* Model::addMesh(rawrbox::Mesh mesh) {
@@ -323,9 +338,7 @@ namespace rawrbox {
 		mesh.owner = this;
 
 		auto& a = this->_meshes.emplace_back(std::make_unique<rawrbox::Mesh>(mesh));
-		if (this->isUploaded() && this->isDynamic()) {
-			this->flattenMeshes(); // Already uploaded? And dynamic? Then update vertices
-		}
+		if (this->isUploaded() && this->isDynamic()) this->updateBuffers(); // Already uploaded? And dynamic? Then update vertices
 
 		return a.get();
 	}
