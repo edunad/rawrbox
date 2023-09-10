@@ -77,7 +77,7 @@ namespace rawrbox {
 		virtual void setHovering(bool hovering);
 		[[nodiscard]] virtual bool hovering() const;
 
-		[[nodiscard]] virtual const rawrbox::UIRoot* getRoot() const;
+		[[nodiscard]] virtual rawrbox::UIRoot* getRoot() const;
 		[[nodiscard]] virtual const rawrbox::Vector2f getPosAbsolute() const;
 		// ---
 

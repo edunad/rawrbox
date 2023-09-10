@@ -424,8 +424,6 @@ namespace rawrbox {
 			if (!bgfx::isValid(group.stencilProgram) || !bgfx::isValid(group.textureHandle)) continue;
 			if (group.vertices.empty() || group.indices.empty()) continue;
 
-			bgfx::setTexture(0, this->_texColor, group.textureHandle);
-
 			auto vertSize = static_cast<uint32_t>(group.vertices.size());
 			auto indSize = static_cast<uint32_t>(group.indices.size());
 
@@ -437,6 +435,7 @@ namespace rawrbox {
 			bx::memCopy(tvb.data, group.vertices.data(), vertSize * this->_vLayout.getStride());
 			bx::memCopy(tib.data, group.indices.data(), indSize * sizeof(uint16_t));
 
+			bgfx::setTexture(0, this->_texColor, group.textureHandle);
 			bgfx::setVertexBuffer(0, &tvb);
 			bgfx::setIndexBuffer(&tib);
 

@@ -88,7 +88,7 @@ namespace rawrbox {
 	void UIContainer::setHovering(bool hovering) { this->_hovering = hovering; }
 	bool UIContainer::hovering() const { return this->_hovering; }
 
-	const rawrbox::UIRoot* UIContainer::getRoot() const { return this->_root; }
+	rawrbox::UIRoot* UIContainer::getRoot() const { return this->_root; }
 
 	const rawrbox::Vector2f UIContainer::getPosAbsolute() const {
 		if (!this->hasParent()) return this->getPos();

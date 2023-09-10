@@ -43,6 +43,8 @@ option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT "Enable scripting LuaJIT suppo
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" OFF)
 option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
 
+option(RAWRBOX_COPY_SHADER_INCLUDES "Copy rawrbox shaders includes" OFF)
+
 option(RAWRBOX_DEV_MODE "Builds all modules, used for developing rawrbox" OFF)
 # -----
 
@@ -64,7 +66,8 @@ endif()
 
 # OTHER SETTINGS ----
 set(RAWRBOX_OUTPUT_BIN "bin" CACHE STRING "the target directory of where the output of the build will be stored for use by artifacts")
-set(RAWRBOX_CONTENT_FOLDER "content" CACHE STRING "the content folder (aka where shaders, textures, etc are)")
+set(RAWRBOX_CONTENT_FOLDER "content" CACHE STRING "the content folder (aka where models, textures, etc are)")
+set(RAWRBOX_SHADERS_FOLDER "shaders" CACHE STRING "the shaders folder")
 set(RAWRBOX_LIBRARY_TYPE "STATIC" CACHE STRING "Linking type for library")
 # ----------------
 

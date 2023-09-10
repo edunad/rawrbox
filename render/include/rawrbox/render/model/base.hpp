@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/render/materials/base.hpp>
+
 #ifdef RAWRBOX_SCRIPTING
 	#include <sol/sol.hpp>
 #endif
@@ -62,6 +63,8 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual bool isDynamic() const;
 		[[nodiscard]] virtual bool isUploaded() const;
+
+		virtual rawrbox::Mesh* mesh();
 
 		// ----
 		virtual void upload(bool dynamic = false);
