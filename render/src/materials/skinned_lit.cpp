@@ -4,7 +4,7 @@
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader model_skinned_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_clustered_skinned_base),
-    BGFX_EMBEDDED_SHADER(fs_clustered_unlit_base),
+    BGFX_EMBEDDED_SHADER(fs_clustered_base),
     BGFX_EMBEDDED_SHADER_END()};
 // NOLINTEND(*)
 

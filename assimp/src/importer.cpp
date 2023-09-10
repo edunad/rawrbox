@@ -389,7 +389,7 @@ namespace rawrbox {
 				if (ourChannel.nodeName.empty()) {
 					// Mark meshes as animated for quick lookup ----
 					pNode = sc->mRootNode->FindNode(meshName.c_str());
-					if (pNode == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Failed to find animated mesh '{}'", meshName));
+					if (pNode == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to find animated mesh '{}'", meshName));
 
 					for (size_t p = 0; p < pNode->mNumChildren; i++) {
 						this->markMeshAnimated(meshName, pNode->mChildren[p]->mName.data);
@@ -435,40 +435,27 @@ namespace rawrbox {
 
 			rawrbox::AssimpBlendShapes shape;
 			shape.name = aiMesh.mName.data;
-			shape.maxWeight = aiMesh.mWeight;
-			shape.vertices = {};
+			shape.weight = aiMesh.mWeight;
+			shape.mesh_index = this->meshes.size();
+
+			if (aiMesh.mNumVertices != mesh.vertices.size()) {
+				fmt::print("[RawrBox-Assimp] Failed to load blend shape '{}'! Vertex sizes do not match!", shape.name);
+				return;
+			}
 
 			for (size_t i = 0; i < aiMesh.mNumVertices; i++) {
-				rawrbox::BlendShapes v;
-
-				if (aiMesh.HasNormals()) {
-					auto& normal = aiMesh.mNormals[i];
-					v.normal = {normal.x, normal.y, normal.z};
-				}
-
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
-					v.position = {vert.x, vert.y, vert.z};
+					shape.pos.emplace_back(vert.x, vert.y, vert.z);
 				}
 
-				if (aiMesh.HasTextureCoords(0)) {
-					auto& uv = aiMesh.mTextureCoords[0][i];
-					v.uv = {uv.x, uv.y};
+				if (aiMesh.HasNormals()) {
+					auto& norm = aiMesh.mNormals[i];
+					shape.norms.emplace_back(norm.x, norm.y, norm.z);
 				}
-
-				shape.vertices.push_back(v);
 			}
 
-			mesh.blend_shapes[shape.name] = shape;
-			this->blendShapeMeshes[shape.name] = &mesh; // For quick access
-		}
-
-		if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES) > 0) {
-			fmt::print("==== '{}' BLEND SHAPES\n", this->fileName.generic_string());
-			for (auto& s : this->blendShapeMeshes) {
-				fmt::print("{}\n", s.first);
-			}
-			fmt::print("=== ====================\n");
+			this->blendShapes[fmt::format("{}-{}", mesh.name, shape.name)] = shape;
 		}
 	}
 	/// -------
@@ -550,11 +537,7 @@ namespace rawrbox {
 			if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
 				this->loadTextures(sc, aiMesh, mesh);
 			}
-
-			// Blendshapes
-			if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) > 0) {
-				this->loadBlendShapes(aiMesh, mesh);
-			}
+			// -------------------
 
 			// Vertices
 			for (size_t i = 0; i < aiMesh.mNumVertices; i++) {
@@ -563,6 +546,7 @@ namespace rawrbox {
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
 					v.position = {vert.x, vert.y, vert.z};
+					v._ori_pos = v.position;
 				}
 
 				if (aiMesh.HasTextureCoords(0)) {
@@ -578,6 +562,7 @@ namespace rawrbox {
 				if (aiMesh.HasNormals()) {
 					auto& normal = aiMesh.mNormals[i];
 					v.normal[0] = rawrbox::PackUtils::packNormal(normal.x, normal.y, normal.z);
+					v._ori_norm = v.normal[0];
 				}
 
 				if (aiMesh.HasTangentsAndBitangents()) {
@@ -587,6 +572,7 @@ namespace rawrbox {
 
 				mesh.vertices.push_back(v);
 			}
+			// -------------------
 
 			// Indices
 			for (size_t t = 0; t < aiMesh.mNumFaces; ++t) {
@@ -597,10 +583,17 @@ namespace rawrbox {
 					mesh.indices.push_back(static_cast<uint16_t>(face.mIndices[i]));
 				}
 			}
+			// -------------------
 
 			// Bones
 			if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0 && aiMesh.HasBones()) {
 				this->loadSkeleton(sc, mesh, aiMesh);
+			}
+			// -------------------
+
+			// Blendshapes
+			if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) > 0) {
+				this->loadBlendShapes(aiMesh, mesh);
 			}
 			// -------------------
 
@@ -693,6 +686,25 @@ namespace rawrbox {
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) this->loadAnimations(scene);
 		// ----
 
+		// Parse metadata
+		if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES) > 0) {
+			fmt::print("==== '{}' BLEND SHAPES\n", this->fileName.generic_string());
+
+			std::string old = "";
+			for (auto& s : this->blendShapes) {
+				auto split = rawrbox::StrUtils::split(s.first, '-');
+
+				if (old.empty() || old != split[0]) {
+					old = split[0];
+					fmt::print("{} --->\n", split[0]);
+				}
+
+				fmt::print("\t{}\n", split[1]);
+			}
+
+			fmt::print("=== ====================\n");
+		} // ----
+
 		aiReleaseImport(scene);
 	}
 
@@ -701,7 +713,7 @@ namespace rawrbox {
 
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {
 			this->assimpFlags |= aiProcess_PopulateArmatureData | aiProcess_LimitBoneWeights; // Enable armature & limit bones
-		} else {
+		} else if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) == 0) {
 			this->assimpFlags |= aiProcess_PreTransformVertices; // Enable PreTransformVertices for optimization
 		}
 

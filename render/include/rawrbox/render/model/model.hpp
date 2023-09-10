@@ -19,6 +19,7 @@ namespace rawrbox {
 
 	protected:
 		std::unordered_map<std::string, rawrbox::Animation> _animations = {};
+
 		std::vector<rawrbox::PlayingAnimationData> _playingAnimations = {};
 		std::vector<rawrbox::LightBase> _lights = {};
 
@@ -30,7 +31,7 @@ namespace rawrbox {
 		// --------
 
 		bool _canOptimize = true;
-		virtual void flattenMeshes();
+		virtual void flattenMeshes(bool optimize = true, bool sort = true);
 
 		// ANIMATIONS ----
 		void animate(const rawrbox::Mesh& mesh) const;
@@ -42,6 +43,10 @@ namespace rawrbox {
 		// --------------
 
 		void updateLights();
+
+		// BLEND SHAPES ---
+		void applyBlendShapes() override;
+		// --------------
 
 #ifdef RAWRBOX_SCRIPTING
 		void initializeLua() override;
@@ -58,10 +63,26 @@ namespace rawrbox {
 		virtual void setOptimizable(bool status);
 		virtual void optimize();
 
-		// Animations ----
+		void updateBuffers() override;
+
+		// ANIMATIONS ----
 		virtual bool blendAnimation(const std::string& /*otherAnim*/, float /*blend*/);
 		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F);
 		virtual bool stopAnimation(const std::string& name);
+		// --------------
+
+		// BLEND SHAPES ---	template <typename T = rawrbox::BlendShapes>
+		void createBlendShape(size_t mesh, const std::string& id, const std::vector<rawrbox::Vector3f>& newVertexPos, const std::vector<rawrbox::Vector3f>& newNormPos, float weight = 0.F) {
+			if (mesh >= this->_meshes.size()) throw std::runtime_error(fmt::format("[RawrBox-ModelBase] Mesh '{}' not found!", mesh));
+
+			auto blend = std::make_unique<rawrbox::BlendShapes>();
+			blend->pos = newVertexPos;
+			blend->normals = newNormPos;
+			blend->weight = weight;
+			blend->mesh = this->_meshes[mesh].get();
+
+			this->_blend_shapes[id] = std::move(blend);
+		}
 		// --------------
 
 		// LIGHTS ------

@@ -85,17 +85,14 @@ namespace rawrbox {
 		float angleOuterCone = 0.F;
 	};
 
-	struct BlendShapes {
-		rawrbox::Vector3f position = {};
-		rawrbox::Vector3f normal = {};
-		rawrbox::Vector2f uv = {};
-	};
-
 	struct AssimpBlendShapes {
 		std::string name = "";
-		float maxWeight = 0.F;
+		float weight = 0.F;
 
-		std::vector<rawrbox::BlendShapes> vertices = {};
+		size_t mesh_index = 0;
+
+		std::vector<rawrbox::Vector3f> pos = {};
+		std::vector<rawrbox::Vector3f> norms = {};
 	};
 
 	struct AssimpMesh {
@@ -111,7 +108,6 @@ namespace rawrbox {
 
 		std::vector<rawrbox::VertexData> vertices = {};
 		std::vector<uint16_t> indices = {};
-		std::unordered_map<std::string, rawrbox::AssimpBlendShapes> blend_shapes = {};
 
 		explicit AssimpMesh(std::string _name) : name(std::move(_name)){};
 	};
@@ -161,8 +157,8 @@ namespace rawrbox {
 		// SKINNING ----
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::Skeleton>> skeletons = {};
 
-		std::unordered_map<std::string, rawrbox::AssimpMesh*> animatedMeshes = {};   // Map for quick lookup
-		std::unordered_map<std::string, rawrbox::AssimpMesh*> blendShapeMeshes = {}; // Map for quick lookup
+		std::unordered_map<std::string, rawrbox::AssimpMesh*> animatedMeshes = {};    // Map for quick lookup
+		std::unordered_map<std::string, rawrbox::AssimpBlendShapes> blendShapes = {}; // Map for quick lookup
 		std::unordered_map<std::string, rawrbox::Animation> animations = {};
 
 		std::vector<rawrbox::AssimpLight> lights = {};

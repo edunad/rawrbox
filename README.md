@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://i.rawr.dev/caw_sleep.png" width=215 /><br/>
+  <img src="./rawrbox.svg" width=215 /><br/>
 </p>
 
 <h2>
@@ -25,7 +25,7 @@
 
 # FEATURES (so far)
 
-- Model loading (animations, light, texture import) using [assimp](https://github.com/assimp/assimp)
+- Model loading (animations, light, texture, blend shapes) using [assimp](https://github.com/assimp/assimp)
 - Light support (point, spot, directional)
 - Clustered rendering & support for other type of rendering
 - 3D text
@@ -54,6 +54,7 @@
 
 - Add animation blending
 - Add lights shadow maps
+- Add svg support
 
 # LIBS
 

@@ -23,6 +23,8 @@ namespace rawrbox {
 		static float toRad(float val);
 		static float toDeg(float val);
 
+		static float round(float val, int precision = 2);
+
 		static float lerp(float a, float b, float lerpFactor);
 
 		static float sample(const std::vector<float>& samples, float t);
