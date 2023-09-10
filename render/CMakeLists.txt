@@ -85,6 +85,7 @@ endif()
 add_shaders_directory(./shaders RAWRBOX_SHADERS_TARGET_NAME)
 message(STATUS "SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
 # ------------------
+
 # Project setup
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RENDER_SOURCES})
 

@@ -1,4 +1,5 @@
 #include <rawrbox/render/model/base.hpp>
+#include <rawrbox/utils/pack.hpp>
 
 #ifdef RAWRBOX_SCRIPTING
 	#include <rawrbox/render/scripting/wrappers/model/base_wrapper.hpp>
@@ -36,6 +37,75 @@ namespace rawrbox {
 		if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
 #endif
 	}
+
+	// BLEND SHAPES ---
+	void ModelBase::applyBlendShapes() {
+
+		// Reset vertex ---------
+		for (auto& shape : this->_blend_shapes) {
+			if (!shape.second->isActive() || shape.second->mesh == nullptr) continue;
+
+			auto& verts = shape.second->mesh->vertices;
+			for (auto& v : verts)
+				v.reset();
+		}
+		// --------
+
+		for (auto& shape : this->_blend_shapes) {
+			if (!shape.second->isActive() || shape.second->mesh == nullptr) continue;
+
+			auto& verts = shape.second->mesh->vertices;
+
+			auto& blendPos = shape.second->pos;
+			auto& blendNormals = shape.second->normals;
+
+			if (!blendPos.empty() && blendPos.size() != verts.size()) {
+				fmt::print("[RawrBox-ModelBase] Blendshape verts do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendPos.size());
+				return;
+			}
+
+			if (!blendNormals.empty() && blendNormals.size() != verts.size()) {
+				fmt::print("[RawrBox-ModelBase] Blendshape normals do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendNormals.size());
+				return;
+			}
+
+			float step = std::clamp(shape.second->weight, 0.F, 1.F);
+
+			// Apply vertices ----
+			for (size_t i = 0; i < blendPos.size(); i++) {
+				verts[i].position = verts[i].position.lerp(blendPos[i], step);
+			}
+			// -------------------
+
+			// Apply normal ----
+			for (size_t i = 0; i < blendNormals.size(); i++) {
+				auto unmap = rawrbox::Vector4f(rawrbox::PackUtils::fromNormal(verts[i].normal[0])).xyz();
+				auto lerp = unmap.lerp(blendNormals[i], step);
+
+				verts[i].normal[0] = rawrbox::PackUtils::packNormal(lerp.x, lerp.y, lerp.z);
+			}
+			// -------------------
+		}
+	}
+
+	bool ModelBase::removeBlendShape(const std::string& id) {
+		auto fnd = this->_blend_shapes.find(id);
+		if (fnd == this->_blend_shapes.end()) return false;
+
+		this->_blend_shapes.erase(id);
+		this->applyBlendShapes();
+		return true;
+	}
+
+	bool ModelBase::setBlendShape(const std::string& id, float weight) {
+		auto fnd = this->_blend_shapes.find(id);
+		if (fnd == this->_blend_shapes.end()) return false;
+
+		fnd->second->weight = weight;
+		this->applyBlendShapes();
+		return true;
+	}
+	// --------------
 
 	// UTIL ---
 	const rawrbox::Vector3f& ModelBase::getPos() const { return this->_mesh->getPos(); }

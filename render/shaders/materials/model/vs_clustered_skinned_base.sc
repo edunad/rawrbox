@@ -22,8 +22,8 @@ void main() {
 	v_texcoord0.xy = applyUVTransform(a_texcoord0.xy);
 	v_texcoord0.z = atlasID;
 
-	vec4 pos = boneTransform(a_indices, a_weight, a_position);
-	TransformedData transform = applyPosTransforms(pos, a_texcoord0.xy);
+    vec4 pos = boneTransform(a_indices, a_weight, a_position);
+    TransformedData transform = applyPosTransforms(pos, a_texcoord0.xy);
 
 	v_worldPos = mul(u_model[0], transform.pos).xyz;
 	gl_Position = transform.final;

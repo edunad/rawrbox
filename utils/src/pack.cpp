@@ -7,6 +7,11 @@
 #include <cmath>
 
 namespace rawrbox {
+	float round(float val, int precision) {
+		int c = static_cast<int>(val * std::pow(10, precision) + .5F);
+		return c / std::pow(10.F, static_cast<float>(precision));
+	}
+
 	uint32_t PackUtils::packUint32(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) {
 		return std::bit_cast<uint32_t>(std::array<uint8_t, 4>{_x, _y, _z, _w});
 	}
@@ -36,12 +41,30 @@ namespace rawrbox {
 		    _w * 0.5F + 0.5F);
 	}
 
+	std::array<float, 4> PackUtils::fromNormal(uint32_t val) {
+		auto arr = std::bit_cast<std::array<uint8_t, 4>>(val);
+
+		float x = PackUtils::fromUnorm(arr[0], 255.0F);
+		x = (x - 0.5F) * 2.F;
+
+		float y = PackUtils::fromUnorm(arr[1], 255.0F);
+		y = (y - 0.5F) * 2.F;
+
+		float z = PackUtils::fromUnorm(arr[2], 255.0F);
+		z = (z - 0.5F) * 2.F;
+
+		float w = PackUtils::fromUnorm(arr[3], 255.0F);
+		w = (w - 0.5F) * 2.F;
+
+		return {round(x, 2), round(y, 2), round(z, 2), round(w, 2)};
+	}
+
 	uint32_t PackUtils::toUnorm(float _value, float _scale) {
 		return uint32_t(std::round(std::clamp(_value, 0.0F, 1.0F) * _scale));
 	}
 
 	float PackUtils::fromUnorm(uint32_t _value, float _scale) {
-		return float(_value) / _scale;
+		return static_cast<float>(_value) / _scale;
 	}
 
 	int32_t PackUtils::toSnorm(float _value, float _scale) {

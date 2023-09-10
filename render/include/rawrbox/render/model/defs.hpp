@@ -22,20 +22,25 @@ namespace rawrbox {
 		std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
+		// BLEND HELPERS ---
+		rawrbox::Vector3f _ori_pos = {};
+		uint32_t _ori_norm = {};
+		// -----------------
+
 		VertexData() = default;
 		explicit VertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), abgr(cl.pack()) {}
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), abgr(cl.pack()), _ori_pos(position) {}
 
 		explicit VertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), abgr(cl.pack()) {}
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), abgr(cl.pack()), _ori_pos(position) {}
 
 		explicit VertexData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector2f& _uv = {},
-		    const std::array<uint32_t, 2>& _normal = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), abgr(cl.pack()), normal(_normal) {}
+		    const std::array<uint32_t, 2>& _normal = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), abgr(cl.pack()), normal(_normal), _ori_pos(position), _ori_norm(normal[0]) {}
 
 		explicit VertexData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {},
-		    const std::array<uint32_t, 2>& _normal = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), abgr(cl.pack()), normal(_normal) {}
+		    const std::array<uint32_t, 2>& _normal = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), abgr(cl.pack()), normal(_normal), _ori_pos(position), _ori_norm(normal[0]) {}
 
 		static bgfx::VertexLayout vLayout(bool normals = false, bool bones = false) {
 			bgfx::VertexLayout l;
@@ -60,11 +65,18 @@ namespace rawrbox {
 				l.skip(sizeof(bone_weights));
 			}
 
-			l.skip(sizeof(int)); // skip index helper for bones
+			l.skip(sizeof(int)).skip(sizeof(_ori_pos)).skip(sizeof(_ori_norm)); // skip helpers
 			l.end();
 
 			return l;
 		}
+
+		// BLEND SHAPE UTILS ---
+		void reset() {
+			this->position = this->_ori_pos;
+			this->normal[0] = this->_ori_norm;
+		}
+		// ---------------------
 
 		// BONES UTILS -----
 		int index = 0;

@@ -29,6 +29,27 @@ namespace rawrbox {
 		// -----------------------
 	}
 
+	void AssimpModel::loadBlendShapes(const rawrbox::AssimpImporter& model) {
+		this->_blend_shapes.clear();
+
+		for (auto& blend : model.blendShapes) {
+			if (blend.second.mesh_index >= this->_meshes.size()) {
+				fmt::print("[RawrBox-Assimp] Failed to find mesh {}", blend.second.mesh_index);
+				continue;
+			}
+
+			auto s = std::make_unique<rawrbox::BlendShapes>();
+			s->normals = blend.second.norms;
+			s->pos = blend.second.pos;
+			s->weight = blend.second.weight;
+
+			s->mesh = this->_meshes[blend.second.mesh_index].get();
+			s->mesh->setOptimizable(false);
+
+			_blend_shapes[blend.first] = std::move(s);
+		}
+	}
+
 	void AssimpModel::loadLights(const rawrbox::AssimpImporter& model) {
 		for (auto& assimpLights : model.lights) {
 
@@ -57,6 +78,7 @@ namespace rawrbox {
 
 		if ((this->_material->supports() & rawrbox::MaterialFlags::BONES) != 0) {
 			this->loadAnimations(model);
+			this->loadBlendShapes(model);
 		}
 
 		if ((this->_material->supports() & rawrbox::MaterialFlags::NORMALS) != 0) {

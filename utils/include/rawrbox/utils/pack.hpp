@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 
 // From https://github.com/bkaradzic/bgfx/blob/master/examples/33-pom/pom.cpp#L56
@@ -10,6 +11,7 @@ namespace rawrbox {
 		static uint32_t packF4u(float _x, float _y = 0.0F, float _z = 0.0F, float _w = 0.0F);
 		static uint32_t packRgba8(float x, float y, float z, float w);
 		static uint32_t packNormal(float _x, float _y = 0.0F, float _z = 0.0F, float _w = 0.0F);
+		static std::array<float, 4> fromNormal(uint32_t val);
 
 		static uint32_t toUnorm(float _value, float _scale);
 		static float fromUnorm(uint32_t _value, float _scale);
