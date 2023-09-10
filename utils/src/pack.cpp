@@ -9,7 +9,7 @@
 namespace rawrbox {
 	float round(float val, int precision) {
 		int c = static_cast<int>(val * std::pow(10, precision) + .5F);
-		return c / std::powf(10.F, static_cast<float>(precision));
+		return c / std::pow(10.F, static_cast<float>(precision));
 	}
 
 	uint32_t PackUtils::packUint32(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) {

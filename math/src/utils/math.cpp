@@ -12,7 +12,7 @@ namespace rawrbox {
 
 	float MathUtils::round(float val, int precision) {
 		int c = static_cast<int>(val * std::pow(10, precision) + .5F);
-		return c / std::powf(10.F, static_cast<float>(precision));
+		return c / std::pow(10.F, static_cast<float>(precision));
 	}
 
 	float MathUtils::lerp(float a, float b, float lerpFactor) {
