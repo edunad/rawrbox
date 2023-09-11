@@ -17,10 +17,10 @@ namespace rawrbox {
 	}
 
 	uint32_t PackUtils::packF4u(float _x, float _y, float _z, float _w) {
-		const auto xx = uint8_t(_x * 127.0F + 128.0F);
-		const auto yy = uint8_t(_y * 127.0F + 128.0F);
-		const auto zz = uint8_t(_z * 127.0F + 128.0F);
-		const auto ww = uint8_t(_w * 127.0F + 128.0F);
+		const auto xx = static_cast<uint8_t>(_x * 127.0F + 128.0F);
+		const auto yy = static_cast<uint8_t>(_y * 127.0F + 128.0F);
+		const auto zz = static_cast<uint8_t>(_z * 127.0F + 128.0F);
+		const auto ww = static_cast<uint8_t>(_w * 127.0F + 128.0F);
 
 		return PackUtils::packUint32(xx, yy, zz, ww);
 	}

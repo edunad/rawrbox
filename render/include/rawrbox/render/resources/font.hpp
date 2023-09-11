@@ -7,7 +7,7 @@ namespace rawrbox {
 	class ResourceFont : public rawrbox::Resource {
 
 	public:
-		rawrbox::Font* getSize(int size, uint32_t flags = 0);
+		rawrbox::Font* getSize(uint16_t size, uint32_t flags = 0);
 	};
 
 	class FontLoader : public rawrbox::Loader {
