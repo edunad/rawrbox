@@ -464,7 +464,6 @@ namespace rawrbox {
 		mesh.setPos(pos);
 
 		std::vector<rawrbox::VertexData> buff = {};
-		auto ps = static_cast<float>(subDivs / 2);
 		auto uvScale = 1.0F / static_cast<float>(subDivs - 1);
 
 		for (int y = 0; y < subDivs; y++) {
