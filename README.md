@@ -90,6 +90,9 @@
 | --                                               | --                                                                                                        |
 | `RAWRBOX_OUTPUT_BIN`                             | The output build folder. Default is `bin`                                                                 |
 | `RAWRBOX_CONTENT_FOLDER`                         | The content folder to output resources. Default is `content`                                              |
+| `RAWRBOX_SHADERS_FOLDER`                         | The content folder to output shaders. Default is `shaders`                                                |
+| --                                               | --                                                                                                        |
+| `RAWRBOX_COPY_SHADER_INCLUDES`                   | Copy shader includes into your `RAWRBOX_SHADERS_FOLDER` folder (useful if overriding rawrbox shaders)     |
 | --                                               | --                                                                                                        |
 | `RAWRBOX_USE_WAYLAND`                            | Enables WAYLAND compiling on LINUX                                                                        |
 | --                                               | --                                                                                                        |
@@ -119,8 +122,8 @@
 | bx                  | Required by `bgfx`                                  |
 | glfw                |                                                     |
 | nlohmann_json       | Used for loading JSON files                         |
-| fmt                 | Used for formatting                                 |
-| utfcpp              | Used for text rendering                             |
+| fmt                 | Used for text formatting                            |
+| utfcpp              | Used for utf support                                |
 | stb/image           | Used for loading images                             |
 | stb/image_write     | Used for writting images                            |
 | stb/freetype        | Used for loading fonts                              |
@@ -142,6 +145,7 @@
 ### REQUIRED SOFTWARE
 
 - [GIT](https://git-scm.com/) or something similar to GIT
+- [CMAKE](https://cmake.org/download/) at least > 3.16.3
 - Download and install **C++ Build Tools** (2022 is recommended)<br/>
   - ![](https://i.rawr.dev/KcTNzFJZhZ.png)
 - Download and install a IDE, [Visual Code](https://code.visualstudio.com/) is **recommended**.
@@ -150,8 +154,8 @@
 
 ### IDE SETUP (Visual Code)
 
-- Open the workspace file (`.code-workspace`) and install the recommended extensions (at least the C++, CMAKE)
-- Run cmake configure
+- Open the workspace file (`.code-workspace`) and install the recommended extensions (at least **C++** & **CMAKE**)
+- Run **cmake configure**
 - Select `[Visual Studio Build Tools <version> Release - amd64]` on the kit popup (for all of the projects)
 - Run the compiler by hitting F5
 
