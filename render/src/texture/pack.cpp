@@ -5,7 +5,7 @@
 #include <memory>
 
 namespace rawrbox {
-	TexturePack::TexturePack(uint32_t _size) : size(_size) {
+	TexturePack::TexturePack(uint16_t _size) : size(_size) {
 		this->_root = std::make_unique<PackNode>(0, 0, size, size);
 	}
 
@@ -15,7 +15,7 @@ namespace rawrbox {
 		return this->_spriteCount;
 	}
 
-	PackNode& TexturePack::addSprite(int width, int height, const std::vector<uint8_t>& data) {
+	rawrbox::PackNode& TexturePack::addSprite(uint16_t width, uint16_t height, const std::vector<uint8_t>& data) {
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TexturePack] Texture not bound");
 
 		auto nodeOpt = this->_root->InsertNode(width, height);
@@ -28,11 +28,11 @@ namespace rawrbox {
 		return node;
 	}
 
-	bool TexturePack::canInsertNode(int width, int height) {
+	bool TexturePack::canInsertNode(uint16_t width, uint16_t height) {
 		return this->_root->canInsertNode(width, height);
 	}
 
-	bool PackNode::canInsertNode(int insertedWidth, int insertedHeight) {
+	bool PackNode::canInsertNode(uint16_t insertedWidth, uint16_t insertedHeight) {
 		if (!empty) return false;
 		if (left && right) {
 			if (left->canInsertNode(insertedWidth, insertedHeight)) return true;
@@ -53,17 +53,17 @@ namespace rawrbox {
 		bool isRemainderWiderThanHigh = remainingWidth > remainingHeight;
 
 		if (isRemainderWiderThanHigh) { // if wider than high, split verticallly
-			left = std::make_unique<PackNode>(x, y, insertedWidth, height);
-			right = std::make_unique<PackNode>(x + insertedWidth, y, remainingWidth, height);
+			left = std::make_unique<rawrbox::PackNode>(x, y, insertedWidth, height);
+			right = std::make_unique<rawrbox::PackNode>(x + insertedWidth, y, remainingWidth, height);
 		} else { // That'd make the remainder higher than it's wide, split horizontally
-			left = std::make_unique<PackNode>(x, y, width, insertedHeight);
-			right = std::make_unique<PackNode>(x, y + insertedHeight, width, remainingHeight);
+			left = std::make_unique<rawrbox::PackNode>(x, y, width, insertedHeight);
+			right = std::make_unique<rawrbox::PackNode>(x, y + insertedHeight, width, remainingHeight);
 		}
 
 		return left->canInsertNode(insertedWidth, insertedHeight);
 	}
 
-	std::optional<std::reference_wrapper<PackNode>> PackNode::InsertNode(int insertedWidth, int insertedHeight) {
+	std::optional<std::reference_wrapper<rawrbox::PackNode>> PackNode::InsertNode(uint16_t insertedWidth, uint16_t insertedHeight) {
 		if (!empty) return std::nullopt;
 
 		if (left && right) {
@@ -99,11 +99,11 @@ namespace rawrbox {
 		bool isRemainderWiderThanHigh = remainingWidth > remainingHeight;
 
 		if (isRemainderWiderThanHigh) { // if wider than high, split verticallly
-			left = std::make_unique<PackNode>(x, y, insertedWidth, height);
-			right = std::make_unique<PackNode>(x + insertedWidth, y, remainingWidth, height);
+			left = std::make_unique<rawrbox::PackNode>(x, y, insertedWidth, height);
+			right = std::make_unique<rawrbox::PackNode>(x + insertedWidth, y, remainingWidth, height);
 		} else { // That'd make the remainder higher than it's wide, split horizontally
-			left = std::make_unique<PackNode>(x, y, width, insertedHeight);
-			right = std::make_unique<PackNode>(x, y + insertedHeight, width, remainingHeight);
+			left = std::make_unique<rawrbox::PackNode>(x, y, width, insertedHeight);
+			right = std::make_unique<rawrbox::PackNode>(x, y + insertedHeight, width, remainingHeight);
 		}
 
 		return left->InsertNode(insertedWidth, insertedHeight);
@@ -111,7 +111,7 @@ namespace rawrbox {
 
 	void TexturePack::upload(bgfx::TextureFormat::Enum format) {
 		if (bgfx::isValid(this->_handle)) return; // Already bound
-		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->size), static_cast<uint16_t>(this->size), false, 0, format, 0 | this->_flags);
+		this->_handle = bgfx::createTexture2D(this->size, this->size, false, 0, format, 0 | this->_flags);
 
 		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TexturePack] Failed to bind texture");
 		bgfx::setName(this->_handle, fmt::format("RAWR-PACK-TEXTURE-{}", this->_handle.idx).c_str());

@@ -61,8 +61,8 @@ namespace rawrbox {
 		int32_t x0 = 0, y0 = 0, x1 = 0, y1 = 0;
 		stbtt_GetCodepointBitmapBox(this->_font.get(), codePoint, scale, scale, &x0, &y0, &x1, &y1);
 
-		const int32_t ww = x1 - x0;
-		const int32_t hh = y1 - y0;
+		const auto ww = static_cast<int16_t>(x1 - x0);
+		const auto hh = static_cast<int16_t>(y1 - y0);
 
 		std::unique_ptr<rawrbox::Glyph> glyph = std::make_unique<rawrbox::Glyph>();
 		glyph->codePoint = codePoint;
@@ -71,8 +71,8 @@ namespace rawrbox {
 		glyph->advance = {std::round(static_cast<float>(advance) * scale), std::round((static_cast<float>(ascent + descent + lineGap)) * scale)};
 
 		// Bitmap ----
-		uint32_t bpp = 1;
-		uint32_t dstPitch = ww * bpp;
+		uint16_t bpp = 1;
+		uint16_t dstPitch = ww * bpp;
 
 		std::vector<uint8_t> buffer = {};
 		buffer.resize(ww * hh * sizeof(uint8_t));

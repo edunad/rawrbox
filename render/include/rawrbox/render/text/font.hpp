@@ -74,7 +74,7 @@ namespace rawrbox {
 	//              |------------- advance_x ---------->|
 
 	struct Glyph {
-		uint32_t packID = 0;
+		uint16_t packID = 0;
 		uint32_t codePoint = 0;
 
 		float scale = 0.F;

@@ -14,10 +14,10 @@
 namespace rawrbox {
 	// VARS ----
 	std::map<std::string, std::unique_ptr<rawrbox::Font>> TextEngine::_fonts = {};
-	std::map<uint32_t, std::unique_ptr<rawrbox::TexturePack>> TextEngine::_packs = {};
+	std::map<uint16_t, std::unique_ptr<rawrbox::TexturePack>> TextEngine::_packs = {};
 
 	// PUBLIC ----
-	uint32_t TextEngine::packID = 0;
+	uint16_t TextEngine::packID = 0;
 	// ----------
 
 	std::string TextEngine::getFontInSystem(const std::filesystem::path& path) {
@@ -38,7 +38,7 @@ namespace rawrbox {
 		TextEngine::packID = 0;
 	}
 
-	std::pair<uint32_t, rawrbox::TexturePack*> TextEngine::requestPack(int width, int height, bgfx::TextureFormat::Enum format) {
+	std::pair<uint16_t, rawrbox::TexturePack*> TextEngine::requestPack(uint16_t width, uint16_t height, bgfx::TextureFormat::Enum format) {
 		// Try to find a spot
 		for (auto& at : _packs) {
 			if (at.second->canInsertNode(width, height)) return {at.first, at.second.get()};
@@ -53,13 +53,13 @@ namespace rawrbox {
 		return {id, _packs[id].get()};
 	}
 
-	rawrbox::TexturePack* TextEngine::getPack(uint32_t id) {
+	rawrbox::TexturePack* TextEngine::getPack(uint16_t id) {
 		auto fnd = _packs.find(id);
 		if (fnd == _packs.end()) throw std::runtime_error(fmt::format("[RawrBox-Freetype] Failed to find pack id '{}'", id));
 		return fnd->second.get();
 	}
 
-	rawrbox::Font* TextEngine::load(const std::filesystem::path& filename, uint32_t size, uint32_t index) {
+	rawrbox::Font* TextEngine::load(const std::filesystem::path& filename, uint16_t size, uint16_t index) {
 		std::string key = fmt::format("{}-{}", filename.generic_string(), size);
 		// Check cache
 		auto fnd = _fonts.find(key);

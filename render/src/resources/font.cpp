@@ -3,7 +3,7 @@
 
 namespace rawrbox {
 	// Resource ----
-	rawrbox::Font* ResourceFont::getSize(int size, uint32_t /*flags*/) {
+	rawrbox::Font* ResourceFont::getSize(uint16_t size, uint32_t /*flags*/) {
 		return rawrbox::TextEngine::load(filePath.generic_string(), size);
 	}
 	// -------
