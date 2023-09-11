@@ -459,34 +459,49 @@ namespace rawrbox {
 		return mesh;
 	}
 
-	rawrbox::Mesh MeshUtils::generateMesh(const rawrbox::Vector3f& pos, uint32_t subDivs, const rawrbox::Colorf& cl) {
+	rawrbox::Mesh MeshUtils::generateMesh(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, uint32_t subDivs, const rawrbox::Colorf& cl) {
 		rawrbox::Mesh mesh;
 		mesh.setPos(pos);
 
 		std::vector<rawrbox::VertexData> buff = {};
-		auto ps = static_cast<float>(subDivs / 2);
+		auto uvScale = 1.0F / static_cast<float>(subDivs - 1);
 
-		for (uint32_t y = 0; y < subDivs; y++) {
-			for (uint32_t x = 0; x < subDivs; x++) {
+		for (int y = 0; y < subDivs; y++) {
+			for (int x = 0; x < subDivs; x++) {
 				auto xF = static_cast<float>(x);
 				auto yF = static_cast<float>(y);
 
-				buff.push_back(rawrbox::VertexData(rawrbox::Vector3f(ps - xF, 0, ps - yF), {(x + 0.5F) / subDivs, (y + 0.5F) / subDivs}, {rawrbox::PackUtils::packNormal(0, 1, 0), 0}, cl));
+				rawrbox::Vector2f posDiv = {xF, yF};
+				posDiv /= static_cast<float>(subDivs - 1);
+				posDiv *= size;
+
+				posDiv -= size / 2;
+
+				buff.push_back(rawrbox::VertexData(
+				    pos + Vector3f{posDiv.x, 0, posDiv.y},
+				    {uvScale * xF,
+					uvScale * yF},
+				    {rawrbox::PackUtils::packNormal(0, 1, 0), 0},
+				    cl));
 			}
 		}
 
 		std::vector<uint16_t> inds = {};
-		for (uint16_t y = 0; y < (subDivs - 1); y++) {
-			auto s = static_cast<uint16_t>(subDivs);
-			uint16_t y_offset = (y * s);
+		auto subDivsUI16 = static_cast<uint16_t>(subDivs);
+		inds.reserve(buff.size() / 4 * 6);
+		for (size_t y = 0; y < subDivs - 1; y++) {
+			auto yOffset = static_cast<uint16_t>(y * subDivsUI16);
 
-			for (uint16_t x = 0; x < (s - 1); x++) {
-				inds.push_back(y_offset + x + 1);
-				inds.push_back(y_offset + x + s);
-				inds.push_back(y_offset + x);
-				inds.push_back(y_offset + x + s + 1);
-				inds.push_back(y_offset + x + s);
-				inds.push_back(y_offset + x + 1);
+			for (size_t x = 0; x < subDivs - 1; x++) {
+				uint16_t index = yOffset + static_cast<uint16_t>(x);
+
+				inds.push_back(index + 1);
+				inds.push_back(index + subDivsUI16);
+				inds.push_back(index);
+
+				inds.push_back(index + subDivsUI16 + 1);
+				inds.push_back(index + subDivsUI16);
+				inds.push_back(index + 1);
 			}
 		}
 
