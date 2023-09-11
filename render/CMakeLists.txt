@@ -51,6 +51,14 @@ if(bgfx_ADDED)
 endif()
 
 CPMAddPackage("gh:nemtrif/utfcpp@3.2.3")
+if(utfcpp_ADDED)
+    set_lib_runtime_mt(utf8cpp)
+endif()
+
+CPMAddPackage("gh:sammycage/lunasvg@2.3.8")
+if(lunasvg_ADDED)
+    set_lib_runtime_mt(lunasvg)
+endif()
 # ----
 
 # Grab source files
@@ -117,6 +125,7 @@ target_link_libraries(
            utf8cpp
            bgfx
            bx
+           lunasvg
            glfw)
 
 set_lib_runtime_mt(${output_target})

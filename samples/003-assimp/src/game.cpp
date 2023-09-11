@@ -52,8 +52,7 @@ namespace assimp {
 		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES),
 		    std::make_pair<std::string, uint32_t>("content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT),
-		    std::make_pair<std::string, uint32_t>("content/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS),
-		    std::make_pair<std::string, uint32_t>("content/models/vrm/MonoCat.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_METADATA),
+		    std::make_pair<std::string, uint32_t>("content/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_METADATA),
 		    std::make_pair<std::string, uint32_t>("content/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE),
 		    std::make_pair<std::string, uint32_t>("content/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS)};
 
@@ -111,19 +110,12 @@ namespace assimp {
 		this->_model5->setEulerAngle({0, bx::toRad(90.F), 0});
 		this->_model5->upload();
 
-		auto mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/vrm/MonoCat.glb")->get();
-		this->_model6->setMaterial<rawrbox::MaterialSkinned>();
+		auto mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/shape_keys/shape_keys.glb")->get();
+		this->_model6->setMaterial<rawrbox::MaterialSkinnedLit>();
 		this->_model6->load(*mdl5);
-		this->_model6->setScale({1.2F, 1.2F, 1.2F});
-		this->_model6->setPos({-2.F, 0.F, -6.F});
-		this->_model6->upload();
-
-		auto mdl6 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/shape_keys/shape_keys.glb")->get();
-		this->_model7->setMaterial<rawrbox::MaterialSkinnedLit>();
-		this->_model7->load(*mdl6);
-		this->_model7->setScale({0.4F, 0.4F, 0.4F});
-		this->_model7->setPos({2.F, 0.4F, -6.F});
-		this->_model7->upload(true);
+		this->_model6->setScale({0.4F, 0.4F, 0.4F});
+		this->_model6->setPos({2.F, 0.4F, -6.F});
+		this->_model6->upload(true);
 		//   -----
 
 		// Text test ----
@@ -133,8 +125,7 @@ namespace assimp {
 			this->_text->addText(*this->_font, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
 			this->_text->addText(*this->_font, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.F, 2.5F});
 			this->_text->addText(*this->_font, "VERTEX ANIMATIONS", {0.F, 1.8F, -3.5F});
-			this->_text->addText(*this->_font, "EMBEDDED TEXTURES", {-2.F, 1.8F, -6.F});
-			this->_text->addText(*this->_font, "BLEND SHAPES", {2.F, 1.8F, -6.F});
+			this->_text->addText(*this->_font, "EMBEDDED TEXTURES +\nBLEND SHAPES", {2.F, 1.8F, -6.F});
 			this->_text->upload();
 		}
 		// ------
@@ -161,7 +152,6 @@ namespace assimp {
 		this->_model4.reset();
 		this->_model5.reset();
 		this->_model6.reset();
-		this->_model7.reset();
 		this->_modelGrid.reset();
 
 		this->_text.reset();
@@ -193,12 +183,11 @@ namespace assimp {
 		this->_model3->draw();
 		this->_model4->draw();
 		this->_model5->draw();
-		this->_model6->draw();
 
-		this->_model7->setBlendShape("Cheese-Melt", std::abs(std::cos(rawrbox::BGFX_FRAME * 0.005F) * 1.F));
-		this->_model7->setBlendShape("Other-Nya", std::abs(std::cos(rawrbox::BGFX_FRAME * 0.008F) * 1.F));
-		this->_model7->setBlendShape("Other-Melt", std::abs(std::cos(rawrbox::BGFX_FRAME * 0.002F) * 1.F));
-		this->_model7->draw();
+		this->_model6->setBlendShape("Cheese-Melt", std::abs(std::cos(rawrbox::BGFX_FRAME * 0.005F) * 1.F));
+		this->_model6->setBlendShape("Other-Nya", std::abs(std::cos(rawrbox::BGFX_FRAME * 0.008F) * 1.F));
+		this->_model6->setBlendShape("Other-Melt", std::abs(std::cos(rawrbox::BGFX_FRAME * 0.002F) * 1.F));
+		this->_model6->draw();
 
 		this->_text->draw();
 	}

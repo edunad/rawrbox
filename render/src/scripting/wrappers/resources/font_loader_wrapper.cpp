@@ -5,7 +5,7 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
-	rawrbox::FontWrapper FontLoaderWrapper::get(const std::string& path, sol::optional<uint32_t> size, sol::this_environment modEnv) {
+	rawrbox::FontWrapper FontLoaderWrapper::get(const std::string& path, sol::optional<uint16_t> size, sol::this_environment modEnv) {
 		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-FontWrapper] MOD not set!");
 
 		std::string modFolder = modEnv.env.value()["__mod_folder"];

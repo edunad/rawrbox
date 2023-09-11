@@ -17,9 +17,9 @@ namespace stencil {
 		std::unique_ptr<rawrbox::Markdown> _markdown = std::make_unique<rawrbox::Markdown>();
 
 		rawrbox::TextureBase* _texture = nullptr;
-		rawrbox::TextureBase* _texture3 = nullptr;
-
 		rawrbox::TextureGIF* _texture2 = nullptr;
+		rawrbox::TextureBase* _texture3 = nullptr;
+		rawrbox::TextureBase* _texture4 = nullptr;
 
 		rawrbox::Font* _font = nullptr;
 		rawrbox::Font* _font2 = nullptr;

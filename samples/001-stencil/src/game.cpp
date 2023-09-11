@@ -3,6 +3,7 @@
 #include <rawrbox/render/camera/perspective.hpp>
 #include <rawrbox/render/model/utils/mesh.hpp>
 #include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/render/resources/svg.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -32,12 +33,13 @@ namespace stencil {
 
 		// Setup camera
 		auto cam = this->_window->setupCamera<rawrbox::CameraPerspective>(this->_window->getSize());
-		cam->setPos({0.F, 5.F, -5.F});
+		cam->setPos({-2.F, 5.F, -3.5F});
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::SVGLoader>();
 
 		// Load content ---
 		this->loadContent();
@@ -53,6 +55,7 @@ namespace stencil {
 		    std::make_pair<std::string, uint32_t>("couri.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/screem.png", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/meow3.gif", 0),
+		    std::make_pair<std::string, uint32_t>("content/textures/rawrbox.svg", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/instance_test.png", 64),
 		};
 
@@ -74,6 +77,7 @@ namespace stencil {
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
 		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get<rawrbox::TextureGIF>();
 		this->_texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/instance_test.png")->get();
+		this->_texture4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceSVG>("./content/textures/rawrbox.svg")->get({256, 256});
 
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/droidsans.ttf")->getSize(28);
 		this->_font2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/visitor1.ttf")->getSize(18);
@@ -106,6 +110,7 @@ namespace stencil {
 		this->_texture = nullptr;
 		this->_texture2 = nullptr;
 		this->_texture3 = nullptr;
+		this->_texture4 = nullptr;
 
 		this->_font = nullptr;
 		this->_font2 = nullptr;
@@ -238,7 +243,7 @@ namespace stencil {
 		poly.indices = {0, 1, 2,
 		    1, 3, 2};
 
-		stencil.pushOffset({0, 260});
+		stencil.pushOffset({0, 270});
 		stencil.drawPolygon(poly);
 
 		stencil.pushOutline({1.F, 2.F});
@@ -277,6 +282,12 @@ namespace stencil {
 		// -----
 
 		stencil.popOffset();
+
+		// Z-INDEX TEST ---
+		stencil.pushOffset({50, 450});
+		stencil.drawTexture({0, 0}, {256, 256}, *this->_texture4);
+		stencil.popOffset();
+		// -----
 
 		stencil.render();
 
