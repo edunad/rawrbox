@@ -3,6 +3,13 @@ project("RAWRBOX.ASSIMP" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - ASSIM
 set(output_target RAWRBOX.ASSIMP)
 
 # LIBS ---
+if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    set(ASSIMP_BUILD_DRACO OFF)
+    message(WARNING "RelWithDebInfo is set, turning off ASSIMP_DRACO support")
+else()
+    set(ASSIMP_BUILD_DRACO ON)
+endif()
+
 CPMAddPackage(
     NAME
         assimp
@@ -16,17 +23,16 @@ CPMAddPackage(
         "BUILD_SHARED_LIBS OFF"
         "ASSIMP_NO_EXPORT ON"
         "ASSIMP_BUILD_ZLIB OFF"
-        "ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF"
         "ASSIMP_BUILD_ASSIMP_TOOLS OFF"
         "ASSIMP_BUILD_TESTS OFF"
         "ASSIMP_BUILD_SAMPLES OFF"
         "ASSIMP_BUILD_DOCS OFF"
-        "USE_STATIC_CRT ON"
+        "USE_STATIC_CRT ${ASSIMP_BUILD_DRACO}"
         "ASSIMP_BUILD_ASSIMP_VIEW OFF"
         "ASSIMP_WARNINGS_AS_ERRORS OFF"
         "ASSIMP_INSTALL OFF"
         "ASSIMP_INSTALL_PDB OFF"
-        "ASSIMP_BUILD_DRACO ON"
+        "ASSIMP_BUILD_DRACO ${ASSIMP_BUILD_DRACO}"
         "ASSIMP_BUILD_ALL_IMPORTERS_BY_DEFAULT OFF"
         "ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF"
         # IMPORT SUPPORTS
@@ -38,6 +44,10 @@ CPMAddPackage(
         "ASSIMP_BUILD_3DS_IMPORTER ON"
         # "ASSIMP_BUILD_MDL_IMPORTER ON"
         "ASSIMP_BUILD_MD5_IMPORTER ON")
+
+if(assimp_ADDED AND NOT ASSIMP_BUILD_DRACO)
+    set_lib_runtime_mt(assimp)
+endif()
 # ----
 
 # Grab source files
