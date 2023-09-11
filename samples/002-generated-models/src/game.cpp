@@ -176,7 +176,7 @@ namespace model {
 
 		// Displacement test ----
 		{
-			auto mesh = rawrbox::MeshUtils::generateMesh({0, 0, 0}, 64, rawrbox::Colors::White());
+			auto mesh = rawrbox::MeshUtils::generateMesh({0, 0, 0}, {64, 64}, 64, rawrbox::Colors::White());
 			mesh.setTexture(texture3);
 			mesh.setDisplacementTexture(texture3, 24.F);
 
@@ -184,7 +184,7 @@ namespace model {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generateMesh({0, 0.5F, 0}, 64, rawrbox::Colors::Black());
+			auto mesh = rawrbox::MeshUtils::generateMesh({0, 0.5F, 0}, {64, 64}, 64, rawrbox::Colors::Black());
 			mesh.setDisplacementTexture(texture3, 24.F);
 			mesh.lineMode = true;
 
