@@ -16,7 +16,7 @@ namespace rawrbox {
 		FontLoaderWrapper& operator=(FontLoaderWrapper&&) = default;
 		virtual ~FontLoaderWrapper() = default;
 
-		virtual rawrbox::FontWrapper get(const std::string& path, sol::optional<uint32_t> size, sol::this_environment modEnv);
+		virtual rawrbox::FontWrapper get(const std::string& path, sol::optional<uint16_t> size, sol::this_environment modEnv);
 
 		static void registerLua(sol::state& lua);
 	};

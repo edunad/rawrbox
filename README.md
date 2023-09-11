@@ -33,6 +33,7 @@
 - Fonts (ttf) using [stb](https://github.com/nothings/stb)
 - JSON loading using [nlohmann json](https://github.com/nlohmann/json)
 - Images (png, jpeg, tga, bitmap, gif) using [stb](https://github.com/nothings/stb)
+- SVG using [lunasvg](https://github.com/sammycage/lunasvg)
 - Video only using [webm](https://github.com/webmproject/libwebm)
 - Sounds using [BASS](https://www.un4seen.com/) lib
 - Custom UI
@@ -54,7 +55,6 @@
 
 - Add animation blending
 - Add lights shadow maps
-- Add svg support
 
 # LIBS
 
@@ -137,6 +137,7 @@
 | webmlib & vpx       | Used for loading webm                               |
 | lua & sol2 & luajit | Used for loading & managing lua scripting           |
 | curl + libcpr       | Used for HTTP / HTTPS requests                      |
+| lunasvg             | Used for loading SVG's                              |
 
 # BUILDING
 

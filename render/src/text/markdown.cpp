@@ -69,7 +69,7 @@ namespace rawrbox {
 				// push linebreak element
 				MarkdownElement elm;
 				elm.type = MarkdownType::linebreak;
-				elm.size.y = static_cast<int>(fontRegular->getLineHeight());
+				elm.size.y = fontRegular->getLineHeight();
 				_elements.push_back(elm);
 
 				continue;
