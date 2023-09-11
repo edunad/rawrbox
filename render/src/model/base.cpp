@@ -140,6 +140,10 @@ namespace rawrbox {
 		return bgfx::isValid(this->_ibh) && bgfx::isValid(this->_vbh);
 	}
 
+	rawrbox::Mesh* ModelBase::mesh() {
+		return this->_mesh.get();
+	}
+
 	// ----
 	void ModelBase::upload(bool dynamic) {
 		if (this->isUploaded()) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");

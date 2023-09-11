@@ -84,6 +84,15 @@ endif()
 
 add_shaders_directory(./shaders RAWRBOX_SHADERS_TARGET_NAME)
 message(STATUS "SHADERS: ${RAWRBOX_SHADERS_TARGET_NAME}")
+
+
+# ------------------
+# Copy custom shaders includes
+if(RAWRBOX_COPY_SHADER_INCLUDES)
+    file(COPY ${CMAKE_CURRENT_LIST_DIR}/shaders/include/ DESTINATION ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_SHADERS_FOLDER}/include/rawrbox/)
+endif()
+# ------------------
+
 # ------------------
 
 # Project setup

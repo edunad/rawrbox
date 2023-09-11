@@ -32,11 +32,19 @@ function(copy_resources)
         set(COPY_RESOURCES_SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
     endif()
 
-    add_custom_target(
-        copy_resources_${COPY_RESOURCES_TARGET} ALL
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${COPY_RESOURCES_SRC_DIR}/content
-                ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
-        COMMENT "Copying ${COPY_RESOURCES_TARGET}'s resources into binary directory")
+    if(${CMAKE_VERSION} VERSION_LESS "3.26.0")
+        add_custom_target(
+            copy_resources_${COPY_RESOURCES_TARGET} ALL
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${COPY_RESOURCES_SRC_DIR}/content
+                    ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
+            COMMENT "Copying ${COPY_RESOURCES_TARGET}'s resources into binary directory")
+    else()
+        add_custom_target(
+            copy_resources_${COPY_RESOURCES_TARGET} ALL
+            COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${COPY_RESOURCES_SRC_DIR}/content
+                    ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/${RAWRBOX_CONTENT_FOLDER}
+            COMMENT "Copying ${COPY_RESOURCES_TARGET}'s resources into binary directory")
+    endif()
 
     add_dependencies(${COPY_RESOURCES_TARGET} copy_resources_${COPY_RESOURCES_TARGET})
 endfunction()
@@ -52,10 +60,17 @@ function(copy_lua_libs)
         set(COPY_LUA_SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
     endif()
 
-    add_custom_target(
-        copy_lua_libs_${COPY_LUA_LIBS_TARGET} ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${COPY_LUA_SRC_DIR}/lua
-                                                     ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/lua
-        COMMENT "Copying ${COPY_LUA_LIBS_TARGET}'s LUA libs into binary directory")
+    if(${CMAKE_VERSION} VERSION_LESS "3.26.0")
+        add_custom_target(
+            copy_lua_libs_${COPY_LUA_LIBS_TARGET} ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${COPY_LUA_SRC_DIR}/lua
+                                                        ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/lua
+            COMMENT "Copying ${COPY_LUA_LIBS_TARGET}'s LUA libs into binary directory")
+    else()
+        add_custom_target(
+            copy_lua_libs_${COPY_LUA_LIBS_TARGET} ALL COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${COPY_LUA_SRC_DIR}/lua
+                                                        ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/lua
+            COMMENT "Copying ${COPY_LUA_LIBS_TARGET}'s LUA libs into binary directory")
+    endif()
 
     add_dependencies(${COPY_LUA_LIBS_TARGET} copy_lua_libs_${COPY_LUA_LIBS_TARGET})
 endfunction()
