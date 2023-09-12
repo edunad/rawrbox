@@ -1,19 +1,17 @@
-<p align="center">
-  <img src="./rawrbox.svg" width=215 /><br/>
-</p>
-
 <h2>
 	<p align="center">
-		<a href="https://github.com/edunad/rawrbox">RawrBox</a> - PSX..ish game engine made with <a href="https://github.com/bkaradzic/bgfx">BGFX</a>
+		<img src="./rawrbox.svg" width=300 /><br/>
+		<a href="https://github.com/edunad/rawrbox">RawrBox</a> - PSX..ish game engine made with <a href="https://github.com/bkaradzic/bgfx">BGFX</a><br/>
 	</p>
 </h2>
 
-<p align="center">
-	<img src="https://github.com/edunad/rawrbox/actions/workflows/build.yml/badge.svg?branch=master&event=push"/>
-</p>
-
 <h4>
 	<p align="center">
+		<img src="https://github.com/edunad/rawrbox/actions/workflows/build.yml/badge.svg?branch=master&event=push"/>
+		<img src="https://img.shields.io/github/license/edunad/rawrbox.svg"/>
+		<img src="https://img.shields.io/github/issues/edunad/rawrbox/BUG.svg"/>
+		<img src="https://img.shields.io/github/last-commit/edunad/rawrbox.svg"/>
+		<br/><br/>
 		<a href="#features">Features</a> -
 		<a href="#libs">Libs</a> -
 		<a href="#cmake">Settings</a> -
@@ -23,7 +21,7 @@
 	</p>
 </h4>
 
-# FEATURES (so far)
+# FEATURES
 
 - Model loading (animations, light, texture, blend shapes) using [assimp](https://github.com/assimp/assimp)
 - Light support (point, spot, directional)
@@ -32,8 +30,7 @@
 - 2D stencil drawing
 - Fonts (ttf) using [stb](https://github.com/nothings/stb)
 - JSON loading using [nlohmann json](https://github.com/nlohmann/json)
-- Images (png, jpeg, tga, bitmap, gif) using [stb](https://github.com/nothings/stb)
-- SVG using [lunasvg](https://github.com/sammycage/lunasvg)
+- Images loading (png, jpeg, tga, bitmap, gif) using [stb](https://github.com/nothings/stb) and SVG using [lunasvg](https://github.com/sammycage/lunasvg)
 - Video only using [webm](https://github.com/webmproject/libwebm)
 - Sounds using [BASS](https://www.un4seen.com/) lib
 - Custom UI
@@ -43,6 +40,7 @@
 - 3D Physics system using [JoltPhysics](https://github.com/jrouwe/JoltPhysics)
 - 2D Physics system using [Muli](https://github.com/Sopiro/Muli)
 - Decal system
+- Instancing support
 - Scripting / modding support with LUA using [sol2](https://github.com/ThePhD/sol2) and [luajit2](https://github.com/openresty/luajit2)
 - Post-processing effects support
 - HTTP / HTTPS requests using curl + [libcpr](https://github.com/libcpr/cpr)
@@ -121,10 +119,10 @@
 | bgfx                |                                                     |
 | bx                  | Required by `bgfx`                                  |
 | glfw                |                                                     |
-| nlohmann_json       | Used for loading JSON files                         |
+| nlohmann_json       | Used for JSON loading                               |
 | fmt                 | Used for text formatting                            |
 | utfcpp              | Used for utf support                                |
-| stb/image           | Used for loading images                             |
+| stb/image           | Used for loading images (png,gif,jpeg)              |
 | stb/image_write     | Used for writting images                            |
 | stb/freetype        | Used for loading fonts                              |
 | thread-pool         | Used for managing async threading                   |
@@ -137,7 +135,7 @@
 | webmlib & vpx       | Used for loading webm                               |
 | lua & sol2 & luajit | Used for loading & managing lua scripting           |
 | curl + libcpr       | Used for HTTP / HTTPS requests                      |
-| lunasvg             | Used for loading SVG's                              |
+| lunasvg             | Used for SVG loading                                |
 
 # BUILDING
 
@@ -174,7 +172,7 @@
 
 ### 001-stencil
 
-<a href='/samples/001-stencil'><img src="https://i.rawr.dev/Pu8XDzsdXt-min.gif" width=512 /></a>
+<a href='/samples/001-stencil'><img src="https://i.rawr.dev/KCnFrd7J2d-min.gif" width=512 /></a>
 
 ### 002-generated-models
 
@@ -182,7 +180,7 @@
 
 ### 003-assimp
 
-<a href='/samples/003-assimp'><img src="https://i.rawr.dev/q2rTPxPdJc-min.gif" width=512 /></a>
+<a href='/samples/003-assimp'><img src="https://i.rawr.dev/L0rZ8jYwkH-min.gif" width=512 /></a>
 
 ### 004-light-support
 

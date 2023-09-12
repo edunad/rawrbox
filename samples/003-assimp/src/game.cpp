@@ -137,7 +137,7 @@ namespace assimp {
 		}
 
 		// LIGHT ----
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{2.F, 1.8F, -6.F}, rawrbox::Colors::Orange(), 6.2F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{2.F, 1.8F, -6.F}, rawrbox::Colors::White(), 6.2F);
 		// -----------
 
 		this->_ready = true;
