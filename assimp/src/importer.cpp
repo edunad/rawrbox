@@ -435,6 +435,8 @@ namespace rawrbox {
 
 			rawrbox::AssimpBlendShapes shape;
 			shape.name = aiMesh.mName.data;
+			if (shape.name.empty()) shape.name = n;
+
 			shape.weight = aiMesh.mWeight;
 			shape.mesh_index = this->meshes.size();
 
