@@ -71,11 +71,14 @@ add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_SCRIPTING_IMPORTS
 copy_lua_libs(TARGET ${output_target})
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING SOL_ALL_SAFETIES_ON=1 SOL_EXCEPTIONS_SAFE_PROPAGATION=1)
+
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT)
     target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING_LUAJIT SOL_LUAJIT=1)
+    target_include_directories(${output_target} PUBLIC "include" ${luajit_SOURCE_DIR}/src)
+else()
+    target_include_directories(${output_target} PUBLIC "include")
 endif()
 
-target_include_directories(${output_target} PUBLIC "include" ${luajit_SOURCE_DIR}/src)
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC RAWRBOX.ENGINE RAWRBOX.MATH ${RAWRBOX_SCRIPTING_EXTRA_LIB} sol2::sol2)
 

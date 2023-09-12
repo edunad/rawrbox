@@ -176,7 +176,7 @@
 
 ### 002-generated-models
 
-<a href='/samples/002-generated-models'><img src="https://i.rawr.dev/Jm1JLz48at.png" width=512 /></a>
+<a href='/samples/002-generated-models'><img src="https://i.rawr.dev/mNdKngnDC7-min.gif" width=512 /></a>
 
 ### 003-assimp
 

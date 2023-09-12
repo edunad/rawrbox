@@ -3,8 +3,8 @@ project("RAWRBOX.ASSIMP" VERSION ${RAWRBOX_VERSION} DESCRIPTION "RawrBox - ASSIM
 set(output_target RAWRBOX.ASSIMP)
 
 # LIBS ---
-if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    set(ASSIMP_BUILD_DRACO OFF)
+if(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo" AND RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME)
+    set(ASSIMP_BUILD_DRACO OFF) # Draco does not work correctly with RelWithDebInfo
     message(WARNING "RelWithDebInfo is set, turning off ASSIMP_DRACO support")
 else()
     set(ASSIMP_BUILD_DRACO ON)
@@ -27,7 +27,7 @@ CPMAddPackage(
         "ASSIMP_BUILD_TESTS OFF"
         "ASSIMP_BUILD_SAMPLES OFF"
         "ASSIMP_BUILD_DOCS OFF"
-        "USE_STATIC_CRT ${ASSIMP_BUILD_DRACO}"
+        "USE_STATIC_CRT ${RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME}"
         "ASSIMP_BUILD_ASSIMP_VIEW OFF"
         "ASSIMP_WARNINGS_AS_ERRORS OFF"
         "ASSIMP_INSTALL OFF"
@@ -45,7 +45,7 @@ CPMAddPackage(
         # "ASSIMP_BUILD_MDL_IMPORTER ON"
         "ASSIMP_BUILD_MD5_IMPORTER ON")
 
-if(assimp_ADDED AND NOT ASSIMP_BUILD_DRACO)
+if(assimp_ADDED)
     set_lib_runtime_mt(assimp)
 endif()
 # ----

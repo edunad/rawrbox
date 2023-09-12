@@ -466,8 +466,8 @@ namespace rawrbox {
 		std::vector<rawrbox::VertexData> buff = {};
 		auto uvScale = 1.0F / static_cast<float>(subDivs - 1);
 
-		for (int y = 0; y < subDivs; y++) {
-			for (int x = 0; x < subDivs; x++) {
+		for (uint32_t y = 0; y < subDivs; y++) {
+			for (uint32_t x = 0; x < subDivs; x++) {
 				auto xF = static_cast<float>(x);
 				auto yF = static_cast<float>(y);
 

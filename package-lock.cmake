@@ -21,9 +21,9 @@ CPMDeclarePackage(nlohmann_json
   VERSION 3.11.2
   URL https://github.com/nlohmann/json/releases/download/v3.11.2/include.zip URL_HASH SHA256=e5c7a9f49a16814be27e4ed0ee900ecd0092bfb7dbfca65b5a421b774dccaaed
 )
-# zlib
-CPMDeclarePackage(zlib
-  NAME zlib
+# ZLIB
+CPMDeclarePackage(ZLIB
+  NAME ZLIB
   GIT_TAG v1.2.13
   GITHUB_REPOSITORY madler/zlib
   OPTIONS
@@ -39,13 +39,6 @@ CPMDeclarePackage(Catch2
   OPTIONS
     "CATCH_INSTALL_DOCS OFF"
     "CATCH_INSTALL_EXTRAS ON"
-)
-# qhull
-CPMDeclarePackage(qhull
-  NAME qhull
-  GIT_TAG 2020.2
-  DOWNLOAD_ONLY ON
-  GITHUB_REPOSITORY qhull/qhull
 )
 # thread-pool
 CPMDeclarePackage(thread-pool
@@ -63,6 +56,19 @@ CPMDeclarePackage(libcpr
     "BUILD_SHARED_LIBS OFF"
     "CPR_ENABLE_CURL_HTTP_ONLY ON"
     "CPR_ENABLE_SSL ON"
+)
+# lua
+CPMDeclarePackage(lua
+  NAME lua
+  GIT_TAG v5.4.6
+  DOWNLOAD_ONLY YES
+  GITHUB_REPOSITORY lua/lua
+)
+# sol2
+CPMDeclarePackage(sol2
+  NAME sol2
+  VERSION 3.3.0
+  GITHUB_REPOSITORY ThePhD/sol2
 )
 # glfw
 CPMDeclarePackage(glfw
@@ -105,16 +111,22 @@ CPMDeclarePackage(utfcpp
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
 )
+# lunasvg
+CPMDeclarePackage(lunasvg
+  VERSION 2.3.8
+  GITHUB_REPOSITORY sammycage/lunasvg
+  SYSTEM YES
+  EXCLUDE_FROM_ALL YES
+)
 # assimp (unversioned)
 # CPMDeclarePackage(assimp
 #  NAME assimp
-#  GIT_TAG kimkulling/prepare_version_5.2.6_rc1
-#  GITHUB_REPOSITORY assimp/assimp
+#  GIT_TAG master
+#  GITHUB_REPOSITORY edunad/assimp
 #  OPTIONS
 #    "BUILD_SHARED_LIBS OFF"
 #    "ASSIMP_NO_EXPORT ON"
 #    "ASSIMP_BUILD_ZLIB OFF"
-#    "ASSIMP_BUILD_ALL_EXPORTERS_BY_DEFAULT OFF"
 #    "ASSIMP_BUILD_ASSIMP_TOOLS OFF"
 #    "ASSIMP_BUILD_TESTS OFF"
 #    "ASSIMP_BUILD_SAMPLES OFF"

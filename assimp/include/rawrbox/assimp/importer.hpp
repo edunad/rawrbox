@@ -113,6 +113,8 @@ namespace rawrbox {
 	};
 
 	class AssimpImporter {
+	protected:
+		uint32_t _aiAnimMeshIndex = 0;
 
 		// TEXTURE LOADING -----
 		virtual uint64_t assimpSamplerToBGFX(const std::array<aiTextureMapMode, 3>& mode, int axis);

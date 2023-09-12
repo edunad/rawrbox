@@ -10,7 +10,6 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-
 	// TEXTURE LOADING -----
 	uint64_t AssimpImporter::assimpSamplerToBGFX(const std::array<aiTextureMapMode, 3>& mode, int axis) {
 		uint64_t flags = 0;
@@ -432,10 +431,12 @@ namespace rawrbox {
 
 		for (size_t n = 0; n < assimp.mNumAnimMeshes; ++n) {
 			auto& aiMesh = *assimp.mAnimMeshes[n];
-
 			rawrbox::AssimpBlendShapes shape;
+
 			shape.name = aiMesh.mName.data;
-			if (shape.name.empty()) shape.name = n;
+			if (shape.name.empty()) {
+				shape.name = std::to_string(++this->_aiAnimMeshIndex); // Fix name with a global model index
+			}
 
 			shape.weight = aiMesh.mWeight;
 			shape.mesh_index = this->meshes.size();
@@ -633,53 +634,63 @@ namespace rawrbox {
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_METADATA) > 0) {
 			fmt::print("==== DUMP FOR {} METADATA\n", this->fileName.generic_string());
 
-			for (uint8_t i = 0; i < scene->mMetaData->mNumProperties; i++) {
-				auto data = scene->mMetaData->mValues[i];
-				std::string str = "";
+			std::function<void(aiMetadata*)> printMetaData;
+			printMetaData = [&printMetaData](aiMetadata* meta) -> void {
+				for (uint8_t i = 0; i < meta->mNumProperties; i++) {
+					auto data = meta->mValues[i];
+					std::string str = "";
 
-				switch (data.mType) {
-					case AI_AISTRING:
-						str = fmt::format("{}", static_cast<aiString*>(data.mData)->data);
-						break;
-					case AI_BOOL:
-						str = fmt::format("{}", std::to_string(*static_cast<bool*>(data.mData)));
-						break;
-					case AI_INT32:
-						str = fmt::format("{}", std::to_string(*static_cast<int32_t*>(data.mData)));
-						break;
-					case AI_UINT64:
-						str = fmt::format("{}", std::to_string(*static_cast<uint64_t*>(data.mData)));
-						break;
-					case AI_FLOAT:
-						str = fmt::format("{}", std::to_string(*static_cast<float*>(data.mData)));
-						break;
-					case AI_DOUBLE:
-						str = fmt::format("{}", std::to_string(*static_cast<double*>(data.mData)));
-						break;
-					case AI_AIVECTOR3D:
-						{
-							auto vec = static_cast<aiVector3D*>(data.mData);
-							str = fmt::format("{},{},{}", vec->x, vec->y, vec->z);
-						}
-						break;
-					case AI_INT64:
-						str = fmt::format("{}", std::to_string(*static_cast<int64_t*>(data.mData)));
-						break;
+					switch (data.mType) {
+						case AI_AISTRING:
+							str = fmt::format("{}", static_cast<aiString*>(data.mData)->data);
+							break;
+						case AI_BOOL:
+							str = fmt::format("{}", std::to_string(*static_cast<bool*>(data.mData)));
+							break;
+						case AI_INT32:
+							str = fmt::format("{}", std::to_string(*static_cast<int32_t*>(data.mData)));
+							break;
+						case AI_UINT64:
+							str = fmt::format("{}", std::to_string(*static_cast<uint64_t*>(data.mData)));
+							break;
+						case AI_FLOAT:
+							str = fmt::format("{}", std::to_string(*static_cast<float*>(data.mData)));
+							break;
+						case AI_DOUBLE:
+							str = fmt::format("{}", std::to_string(*static_cast<double*>(data.mData)));
+							break;
+						case AI_AIVECTOR3D:
+							{
+								auto vec = static_cast<aiVector3D*>(data.mData);
+								str = fmt::format("{},{},{}", vec->x, vec->y, vec->z);
+							}
+							break;
+						case AI_INT64:
+							str = fmt::format("{}", std::to_string(*static_cast<int64_t*>(data.mData)));
+							break;
 
-					case AI_UINT32:
-						str = fmt::format("{}", std::to_string(*static_cast<uint32_t*>(data.mData)));
-						break;
-					default:
-					case AI_AIMETADATA:
-					case AI_META_MAX:
-					case FORCE_32BIT: break;
+						case AI_UINT32:
+							str = fmt::format("{}", std::to_string(*static_cast<uint32_t*>(data.mData)));
+							break;
+						case AI_AIMETADATA:
+							printMetaData(static_cast<aiMetadata*>(data.mData));
+							break;
+						default:
+						case AI_META_MAX:
+						case FORCE_32BIT: break;
+					}
+
+					fmt::print("{}: {}\n", meta->mKeys[i].C_Str(), str);
 				}
+			};
 
-				fmt::print("{}: {}\n", scene->mMetaData->mKeys[i].C_Str(), str);
-			}
-
+			printMetaData(scene->mMetaData);
 			fmt::print("=== ====================\n");
 		}
+		// ------------
+
+		// Reset index for aiAnimMeshes with no names
+		this->_aiAnimMeshIndex = 0;
 		// ------------
 
 		// load models

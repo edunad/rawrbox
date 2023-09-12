@@ -123,20 +123,15 @@ if(NOT RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME AND RAWRBOX_BUILD_RAWRBOX_3D_PHY
     set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Jolt requires msvc multithreaded runtime
     message(WARNING "JoltPhysics is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
 endif()
-
-if(NOT RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME AND RAWRBOX_BUILD_RAWRBOX_ASSIMP)
-    set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Assimp requires msvc multithreaded runtime
-    message(WARNING "Assimp is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
-endif()
 # -------------------------
 
 # GLOBAL PACKAGES ------
-CPMAddPackage("gh:fmtlib/fmt#10.0.0")
+CPMAddPackage("gh:fmtlib/fmt#10.1.1")
 if(fmt_ADDED)
     set_lib_runtime_mt(fmt)
 endif()
 
-CPMAddPackage("gh:Neargye/magic_enum@0.9.0")
+CPMAddPackage("gh:Neargye/magic_enum@0.9.3")
 if(magic_enum_ADDED)
     set_lib_runtime_mt(magic_enum)
 endif()

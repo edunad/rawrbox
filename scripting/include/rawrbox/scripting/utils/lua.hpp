@@ -54,6 +54,7 @@ namespace rawrbox {
 		static sol::object jsonToLuaObject(const nlohmann::json j, sol::state_view& lua);
 		static nlohmann::json luaToJsonObject(const sol::object& l, bool filterNull = false);
 
+		// #/ == System content
 		// @/ == Root content
 		// @cats/ == `cats` mod
 		// normal_path == current mod

@@ -27,6 +27,18 @@
       "cwd": "${workspaceFolder}/bin/Release",
       "environment": [],
       "console": "integratedTerminal"
+    },
+    {
+      "name": "Launch (Release with debug)",
+      "type": "cppvsdbg",
+      "request": "launch",
+
+      "program": "${command:cmake.launchTargetPath}",
+      "args": [],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/bin/RelWithDebInfo",
+      "environment": [],
+      "console": "integratedTerminal"
     }
   ]
 }

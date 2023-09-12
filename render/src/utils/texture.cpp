@@ -2,7 +2,7 @@
 #include <rawrbox/render/utils/texture.hpp>
 
 namespace rawrbox {
-	rawrbox::Vector4f TextureUtils::atlasToUV(const rawrbox::Vector2i& atlasSize, uint32_t spriteSize, size_t id) {
+	rawrbox::Vector4f TextureUtils::atlasToUV(const rawrbox::Vector2i& atlasSize, uint32_t spriteSize, uint32_t id) {
 		// UV -------
 		rawrbox::Vector2i totalSprites = atlasSize / spriteSize;
 		rawrbox::Vector2f spriteSizeInUV = {static_cast<float>(spriteSize) / atlasSize.x, static_cast<float>(spriteSize) / atlasSize.y};

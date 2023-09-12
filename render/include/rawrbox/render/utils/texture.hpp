@@ -9,6 +9,6 @@ namespace rawrbox {
 	class TextureUtils {
 	public:
 		// ---
-		static rawrbox::Vector4f atlasToUV(const rawrbox::Vector2i& atlasSize, uint32_t spriteSize, size_t id);
+		static rawrbox::Vector4f atlasToUV(const rawrbox::Vector2i& atlasSize, uint32_t spriteSize, uint32_t id);
 	};
 } // namespace rawrbox

@@ -50,7 +50,7 @@ if(bgfx_ADDED)
     set_lib_runtime_mt(bgfx)
 endif()
 
-CPMAddPackage("gh:nemtrif/utfcpp@3.2.3")
+CPMAddPackage("gh:nemtrif/utfcpp@3.2.4")
 if(utfcpp_ADDED)
     set_lib_runtime_mt(utf8cpp)
 endif()
