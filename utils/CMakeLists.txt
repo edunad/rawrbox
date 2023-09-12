@@ -6,7 +6,7 @@ set(output_target RAWRBOX.UTILS)
 file(GLOB_RECURSE RAWRBOX_UTILS_IMPORTS "src/*.c" "src/*.cpp" "include/*.hpp" "include/*.h")
 
 # LIBS ---
-if(NOT RAWRBOX_ENABLE_QHULL)
+if(NOT RAWRBOX_BUILD_QHULL)
     list(REMOVE_ITEM RAWRBOX_UTILS_IMPORTS "include/rawrbox/utils/qhull.h")
 else()
     CPMAddPackage(
