@@ -21,15 +21,18 @@ namespace stencil {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("STENCIL TEST");
+		// this->_window->skipIntro(true);
 		this->_window->setRenderer<rawrbox::RendererBase>(
 		    bgfx::RendererType::Count, [this]() { this->drawOverlay(); }, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
+		this->_window->onIntroCompleted = [this]() {
+			this->loadContent();
+		};
 	}
 
 	void Game::init() {
 		if (this->_window == nullptr) return;
-		this->_window->initializeBGFX(0x443355FF);
 
 		// Setup camera
 		auto cam = this->_window->setupCamera<rawrbox::CameraPerspective>(this->_window->getSize());
@@ -37,13 +40,13 @@ namespace stencil {
 		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
 		// --------------
 
+		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::SVGLoader>();
+		// --------------
 
-		// Load content ---
-		this->loadContent();
-		// -----
+		this->_window->initializeBGFX(0x443355FF);
 	}
 
 	void Game::loadContent() {
@@ -69,8 +72,6 @@ namespace stencil {
 				}
 			});
 		}
-
-		this->_window->upload();
 	}
 
 	void Game::contentLoaded() {
@@ -315,14 +316,17 @@ namespace stencil {
 	}
 
 	void Game::update() {
-		if (!this->_ready) return;
+		if (this->_window == nullptr) return;
+		this->_window->update();
 
-		if (this->_model != nullptr) {
-			this->_model->setEulerAngle({0, bx::toRad(this->_counter * 20.F), 0});
-			this->_model->getMesh()->setAtlasID(static_cast<int>(this->_counter) % 4);
+		if (this->_ready) {
+			if (this->_model != nullptr) {
+				this->_model->setEulerAngle({0, bx::toRad(this->_counter * 20.F), 0});
+				this->_model->getMesh()->setAtlasID(static_cast<int>(this->_counter) % 4);
+			}
+
+			this->_counter += 0.1F;
 		}
-
-		this->_counter += 0.1F;
 	}
 
 	void Game::draw() {

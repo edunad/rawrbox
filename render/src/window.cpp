@@ -1,6 +1,7 @@
 
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/texture/webp.hpp>
 #include <rawrbox/render/window.hpp>
 
 #include <bgfx/bgfx.h>
@@ -260,27 +261,73 @@ namespace rawrbox {
 		this->_renderer->init(this->_size);
 		// ------------------
 
+		// Setup global util textures ---
+		if (rawrbox::MISSING_TEXTURE == nullptr) {
+			rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
+			rawrbox::MISSING_TEXTURE->upload();
+		}
+
+		if (rawrbox::WHITE_TEXTURE == nullptr) {
+			rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White());
+			rawrbox::WHITE_TEXTURE->upload();
+		}
+
+		if (rawrbox::BLACK_TEXTURE == nullptr) {
+			rawrbox::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black());
+			rawrbox::BLACK_TEXTURE->upload();
+		}
+
+		if (rawrbox::NORMAL_TEXTURE == nullptr) {
+			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0xbcbcff));
+			rawrbox::NORMAL_TEXTURE->upload();
+		}
+		// ------------------
+
 		// Setup main renderer ----
 		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
+		this->_stencil->upload();
+		// ------------------
+
+		// INTRO ----
+		if (this->_skipIntro) {
+			this->_renderer->setOverlayRender(this->_overlay);
+			this->_renderer->setWorldRender(this->_world);
+
+			if (this->onIntroCompleted != nullptr) this->onIntroCompleted();
+		} else {
+			this->_intro_webp = std::make_shared<rawrbox::TextureWEBP>("./content/textures/rawrbox.webp");
+			this->_intro_webp->setLoop(false);
+			this->_intro_webp->setSpeed(1.4F);
+			this->_intro_webp->upload();
+			this->_intro_webp->onEnd += [this]() {
+				// Done, continue gameeeee
+				this->_renderer->setOverlayRender(this->_overlay);
+				this->_renderer->setWorldRender(this->_world);
+				this->_intro_webp->reset(); // Kill it, we don't need it anymore
+
+				if (this->onIntroCompleted != nullptr) this->onIntroCompleted();
+			};
+
+			this->_renderer->setWorldRender([]() {});
+			this->_renderer->setOverlayRender([this]() {
+				bgfx::dbgTextClear(); // Prevent debug text being rendered on top
+
+				auto size = this->_intro_webp->getSize().cast<float>();
+				auto screenSize = this->_size.cast<float>();
+
+				this->_stencil->drawBox({}, this->_size.cast<float>(), rawrbox::Colors::Black());
+				this->_stencil->drawTexture({screenSize.x / 2.F - size.x / 2.F, screenSize.y / 2.F - size.y / 2.F}, {size.x, size.y}, *this->_intro_webp);
+				this->_stencil->render();
+			});
+		}
+		// ---------
+
+		// Setup resize events ---
 		this->onResize += [this](auto&, auto& size) {
 			if (this->_stencil != nullptr) this->_stencil->resize(size);
 			this->_renderer->resize(this->_size);
 		};
-
-		// Setup global util textures ---
-		if (rawrbox::MISSING_TEXTURE == nullptr)
-			rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
-
-		if (rawrbox::WHITE_TEXTURE == nullptr)
-			rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White());
-
-		if (rawrbox::BLACK_TEXTURE == nullptr)
-			rawrbox::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black());
-
-		if (rawrbox::NORMAL_TEXTURE == nullptr)
-			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0xbcbcff));
-
-		// ------------------
+		// ------------------------
 	}
 
 	void Window::setMonitor(int monitor) {
@@ -339,9 +386,24 @@ namespace rawrbox {
 	}
 
 	void Window::update() {
-		if (this->_camera == nullptr) return;
-		this->_camera->update();
+		if (this->_intro_webp != nullptr) {
+			this->_intro_webp->update();
+		} else {
+			if (this->_camera != nullptr) {
+				this->_camera->update();
+			}
+		}
 	}
+
+	// INTRO ------
+	void Window::skipIntro(bool skip) {
+		this->_skipIntro = skip;
+
+		fmt::print("===============\n");
+		fmt::print("Skipping RawrBox intro :(\n");
+		fmt::print("===============\n");
+	}
+	// ----------------
 
 	void Window::unblockPoll() {
 		glfwPostEmptyEvent();
@@ -353,18 +415,6 @@ namespace rawrbox {
 	}
 
 	// DRAW ------
-	void Window::upload() {
-		// MISSING TEXTURES ------
-		rawrbox::MISSING_TEXTURE->upload();
-		rawrbox::WHITE_TEXTURE->upload();
-		rawrbox::BLACK_TEXTURE->upload();
-		rawrbox::NORMAL_TEXTURE->upload();
-		// ------------------
-
-		this->_stencil->upload();
-		// -----
-	}
-
 	void Window::render() const {
 		if (!rawrbox::BGFX_INITIALIZED) return;
 		this->_renderer->render();

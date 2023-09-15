@@ -15,7 +15,6 @@
 #include <vector>
 
 namespace model {
-
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
@@ -24,6 +23,9 @@ namespace model {
 		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
+		this->_window->onIntroCompleted = [this]() {
+			this->loadContent();
+		};
 	}
 
 	void Game::init() {
@@ -38,12 +40,12 @@ namespace model {
 		cam->onMovementStop = []() { fmt::print("Camera stop\n"); };
 		// --------------
 
+		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
+		// --------------
 
-		// Load content ---
-		this->loadContent();
-		// -----
+		this->_window->initializeBGFX(0x443355FF);
 	}
 
 	void Game::loadContent() {
@@ -65,8 +67,6 @@ namespace model {
 				}
 			});
 		}
-
-		this->_window->upload();
 	}
 
 	void Game::contentLoaded() {

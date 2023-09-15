@@ -26,11 +26,13 @@ namespace light {
 		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
+		this->_window->onIntroCompleted = [this]() {
+			this->loadContent();
+		};
 	}
 
 	void Game::init() {
 		if (this->_window == nullptr) return;
-		this->_window->initializeBGFX();
 
 		// Setup camera
 		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
@@ -57,11 +59,9 @@ namespace light {
 		};
 		// ----------
 
-		// Load content ---
-		this->loadContent();
-		// -----
-
 		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 40.F, 0.8F);
+
+		this->_window->initializeBGFX();
 	}
 
 	void Game::loadContent() {
@@ -79,8 +79,6 @@ namespace light {
 				}
 			});
 		}
-
-		this->_window->upload();
 	}
 
 	void Game::contentLoaded() {

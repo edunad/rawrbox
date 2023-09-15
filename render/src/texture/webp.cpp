@@ -42,7 +42,7 @@ namespace rawrbox {
 			this->_size = {static_cast<int>(info.canvas_width), static_cast<int>(info.canvas_height)};
 			this->_channels = 4;
 
-			int prevTime = 0;
+			float prevTime = 0.F;
 			while (WebPAnimDecoderHasMoreFrames(decoder)) {
 				uint8_t* buf = nullptr;
 				int delay = 0;
@@ -52,14 +52,13 @@ namespace rawrbox {
 				}
 
 				Frame frame;
-
-				frame.delay = delay - prevTime;
-				prevTime = delay;
-
+				frame.delay = static_cast<float>(delay) - prevTime;
 				frame.pixels.resize(this->_size.x * this->_size.y * this->_channels);
 				std::memcpy(frame.pixels.data(), buf, this->_size.x * this->_size.y * this->_channels);
 
 				this->_frames.push_back(frame);
+
+				prevTime = static_cast<float>(delay);
 			}
 
 			WebPAnimDecoderDelete(decoder);

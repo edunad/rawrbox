@@ -42,7 +42,7 @@ namespace rawrbox {
 			this->_frames.push_back({});
 
 			rawrbox::Frame& frame = this->_frames.back();
-			frame.delay = delays[i]; // in ms
+			frame.delay = static_cast<float>(delays[i]); // in ms
 			frame.pixels.resize(framePixelCount);
 
 			auto pixelsOffset = gifPixels + i * framePixelCount;

@@ -11,7 +11,7 @@
 
 namespace rawrbox {
 	struct Frame {
-		int delay;
+		float delay;
 		std::vector<uint8_t> pixels;
 	};
 
