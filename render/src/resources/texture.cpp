@@ -3,6 +3,7 @@
 #include <rawrbox/render/texture/atlas.hpp>
 #include <rawrbox/render/texture/gif.hpp>
 #include <rawrbox/render/texture/image.hpp>
+#include <rawrbox/render/texture/webp.hpp>
 
 namespace rawrbox {
 	// Resource ----
@@ -12,6 +13,12 @@ namespace rawrbox {
 		const bool isGIF = this->filePath.extension() == ".gif";
 		if (isGIF) {
 			this->_texture = std::make_unique<rawrbox::TextureGIF>(this->filePath, buffer);
+			return true;
+		}
+
+		const bool isWEBP = this->filePath.extension() == ".webp";
+		if (isWEBP) {
+			this->_texture = std::make_unique<rawrbox::TextureWEBP>(this->filePath, buffer);
 			return true;
 		}
 
@@ -41,6 +48,7 @@ namespace rawrbox {
 		       fileExtention == ".bmp" ||
 		       fileExtention == ".jpg" ||
 		       fileExtention == ".gif" ||
+		       fileExtention == ".webp" ||
 		       fileExtention == ".jpeg";
 	}
 	// -------

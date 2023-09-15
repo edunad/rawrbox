@@ -24,6 +24,9 @@ namespace rawrbox {
 
 		rawrbox::TEXTURE_UV _textureUV = rawrbox::TEXTURE_UV::UV_NONE;
 
+		bool _failedToLoad = false;
+		virtual void loadFallback();
+
 	public:
 		TextureBase() = default;
 		TextureBase(const TextureBase&) = default;

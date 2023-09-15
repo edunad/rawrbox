@@ -5,41 +5,41 @@ set(output_target RAWRBOX.RENDER)
 # Packages ----
 CPMAddPackage(
     NAME
-    glfw
+        glfw
     GITHUB_REPOSITORY
-    glfw/glfw
+        glfw/glfw
     GIT_TAG
-    3.3.8
+        3.3.8
     OPTIONS
-    "GLFW_BUILD_DOCS OFF"
-    "GLFW_BUILD_EXAMPLES OFF"
-    "GLFW_BUILD_TESTS OFF"
-    "GLFW_INSTALL OFF"
-    "GLFW_USE_OSMESA OFF"
-    "GLFW_VULKAN_STATIC OFF"
-    "USE_MSVC_RUNTIME_LIBRARY_DLL OFF")
+        "GLFW_BUILD_DOCS OFF"
+        "GLFW_BUILD_EXAMPLES OFF"
+        "GLFW_BUILD_TESTS OFF"
+        "GLFW_INSTALL OFF"
+        "GLFW_USE_OSMESA OFF"
+        "GLFW_VULKAN_STATIC OFF"
+        "USE_MSVC_RUNTIME_LIBRARY_DLL OFF")
 
 CPMAddPackage(
     NAME
-    bgfx
+        bgfx
     GITHUB_REPOSITORY
-    edunad/bgfx.cmake
+        edunad/bgfx.cmake
     GIT_TAG
-    master
+        master
     OPTIONS
-    "BGFX_BUILD_TOOLS ON"
-    "BGFX_BUILD_TOOLS_SHADER ON"
-    "BGFX_BUILD_TOOLS_GEOMETRY OFF"
-    "BGFX_BUILD_TOOLS_BIN2C OFF"
-    "BGFX_BUILD_TOOLS_TEXTURE OFF"
-    "BGFX_BUILD_EXAMPLES OFF"
-    "BGFX_INSTALL_EXAMPLES OFF"
-    "BGFX_DEAR_IMGUI OFF"
-    "BGFX_BUILD_TESTS OFF"
-    "BGFX_OPENGLES_VERSION 43"
-    "BGFX_OPENGL_VERSION 43"
-    "BGFX_AMALGAMATED ON"
-    "BX_AMALGAMATED ON")
+        "BGFX_BUILD_TOOLS ON"
+        "BGFX_BUILD_TOOLS_SHADER ON"
+        "BGFX_BUILD_TOOLS_GEOMETRY OFF"
+        "BGFX_BUILD_TOOLS_BIN2C OFF"
+        "BGFX_BUILD_TOOLS_TEXTURE OFF"
+        "BGFX_BUILD_EXAMPLES OFF"
+        "BGFX_INSTALL_EXAMPLES OFF"
+        "BGFX_DEAR_IMGUI OFF"
+        "BGFX_BUILD_TESTS OFF"
+        "BGFX_OPENGLES_VERSION 43"
+        "BGFX_OPENGL_VERSION 43"
+        "BGFX_AMALGAMATED ON"
+        "BX_AMALGAMATED ON")
 
 if(bgfx_ADDED)
     message(STATUS "Including bgfx utils")
@@ -58,6 +58,30 @@ endif()
 CPMAddPackage("gh:sammycage/lunasvg@2.3.8")
 if(lunasvg_ADDED)
     set_lib_runtime_mt(lunasvg)
+endif()
+
+
+CPMAddPackage(
+    NAME
+        libwebp
+    GITHUB_REPOSITORY
+        webmproject/libwebp
+    GIT_TAG
+        main
+    OPTIONS
+        "BUILD_SHARED_LIBS OFF"
+        "WEBP_BUILD_ANIM_UTILS OFF"
+        "WEBP_BUILD_CWEBP OFF"
+        "WEBP_BUILD_DWEBP OFF"
+        "WEBP_BUILD_GIF2WEBP OFF"
+        "WEBP_BUILD_IMG2WEBP OFF"
+        "WEBP_BUILD_VWEBP OFF"
+        "WEBP_BUILD_WEBPINFO OFF"
+        "WEBP_BUILD_WEBPMUX OFF"
+        "WEBP_BUILD_EXTRAS OFF")
+
+if(libwebp_ADDED)
+    set_lib_runtime_mt(webpdemux)
 endif()
 # ----
 
@@ -113,7 +137,7 @@ endif()
 
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_RENDER)
-target_include_directories(${output_target} PUBLIC "include")
+target_include_directories(${output_target} PUBLIC "include" ${libwebp_SOURCE_DIR}/src)
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(
     ${output_target}
@@ -126,6 +150,7 @@ target_link_libraries(
            bgfx
            bx
            lunasvg
+           webpdemux
            glfw)
 
 set_lib_runtime_mt(${output_target})

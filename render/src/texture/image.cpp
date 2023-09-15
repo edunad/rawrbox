@@ -69,12 +69,8 @@ namespace rawrbox {
 			auto failure = stbi_failure_reason();
 
 			if (useFallback) {
-				this->_pixels = rawrbox::MISSING_TEXTURE->pixels;
-				this->_channels = 3;
-				this->_size = {2, 2};
-				this->_failedToLoad = true;
-
-				fmt::print("[TextureImage] Error loading image '{}' | Error: {} --- > Using fallback image\n", this->_filePath.generic_string(), failure);
+				this->loadFallback();
+				fmt::print("[TextureImage] Failed to load '{}' ──> {}\n  └── Loading fallback texture!\n", this->_filePath.generic_string(), failure);
 				return;
 			} else {
 				throw std::runtime_error(fmt::format("[TextureImage] Error loading image: {}", failure));
