@@ -126,7 +126,7 @@ namespace rawrbox {
 		std::unordered_map<int, rawrbox::Vector2i> _screenSizes = {};
 		// --------
 
-		// ------CALLBACKS
+		// CALLBACKS ------
 		static void callbacks_focus(GLFWwindow* whandle, int focus);
 		static void callbacks_char(GLFWwindow* whandle, unsigned int ch);
 		static void callbacks_scroll(GLFWwindow* whandle, double x, double y);
@@ -135,6 +135,10 @@ namespace rawrbox {
 		static void callbacks_mouseKey(GLFWwindow* whandle, int button, int action, int mods);
 		static void callbacks_key(GLFWwindow* whandle, int key, int scancode, int action, int mods);
 		static void callbacks_windowClose(GLFWwindow* whandle);
+		// --------------------
+
+		// INTRO ------
+		void playIntro();
 		// --------------------
 
 	public:

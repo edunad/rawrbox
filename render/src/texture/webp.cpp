@@ -25,9 +25,16 @@ namespace rawrbox {
 			}
 
 			WebPData webp_data = {buffer.data(), buffer.size()};
-			auto decoder = WebPAnimDecoderNew(&webp_data, nullptr);
+
+			WebPAnimDecoderOptions options;
+			if (!WebPAnimDecoderOptionsInit(&options)) {
+				throw std::runtime_error(fmt::format("Error initializing image '{}'!", this->_filePath.generic_string()));
+			}
+
+			options.use_threads = true;
+			auto decoder = WebPAnimDecoderNew(&webp_data, &options);
 			if (decoder == nullptr) {
-				throw std::runtime_error(fmt::format("Error reading image '{}'!", this->_filePath.generic_string()));
+				throw std::runtime_error(fmt::format("Error initializing image '{}'!", this->_filePath.generic_string()));
 			}
 
 			WebPAnimInfo info;

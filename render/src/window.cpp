@@ -3,6 +3,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/webp.hpp>
 #include <rawrbox/render/window.hpp>
+#include <rawrbox/utils/threading.hpp>
 
 #include <bgfx/bgfx.h>
 #include <bx/bx.h>
@@ -108,6 +109,51 @@ namespace rawrbox {
 			const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
 			this->_screenSizes[i] = {mode->width, mode->height};
 		}
+	}
+
+	void Window::playIntro() {
+		if (this->_skipIntro) {
+			this->_renderer->setOverlayRender(this->_overlay);
+			this->_renderer->setWorldRender(this->_world);
+
+			if (this->onIntroCompleted != nullptr) this->onIntroCompleted();
+			return;
+		}
+
+		// Load webp -----------------------
+		rawrbox::ASYNC::run([this]() {
+			this->_intro_webp = std::make_shared<rawrbox::TextureWEBP>("./content/textures/rawrbox.webp");
+			this->_intro_webp->upload();
+			this->_intro_webp->setLoop(false);
+			this->_intro_webp->setSpeed(1.4F);
+			this->_intro_webp->onEnd += [this]() {
+				// Done, continue gameeeee
+				this->_renderer->setOverlayRender(this->_overlay);
+				this->_renderer->setWorldRender(this->_world);
+				this->_intro_webp->reset(); // Kill it, we don't need it anymore
+
+				if (this->onIntroCompleted != nullptr) {
+					rawrbox::runOnRenderThread([this]() { this->onIntroCompleted(); });
+				}
+			};
+		});
+		// -------------------------
+
+		this->_renderer->setWorldRender([]() {});
+		this->_renderer->setOverlayRender([this]() {
+			bgfx::dbgTextClear(); // Prevent debug text being rendered on top
+
+			this->_stencil->drawBox({}, this->_size.cast<float>(), rawrbox::Colors::Black());
+
+			if (this->_intro_webp != nullptr) {
+				auto size = this->_intro_webp->getSize().cast<float>();
+				auto screenSize = this->_size.cast<float>();
+
+				this->_stencil->drawTexture({screenSize.x / 2.F - size.x / 2.F, screenSize.y / 2.F - size.y / 2.F}, {size.x, size.y}, *this->_intro_webp);
+			}
+
+			this->_stencil->render();
+		});
 	}
 
 	void Window::create(int width, int height, uint32_t flags) {
@@ -289,37 +335,7 @@ namespace rawrbox {
 		// ------------------
 
 		// INTRO ----
-		if (this->_skipIntro) {
-			this->_renderer->setOverlayRender(this->_overlay);
-			this->_renderer->setWorldRender(this->_world);
-
-			if (this->onIntroCompleted != nullptr) this->onIntroCompleted();
-		} else {
-			this->_intro_webp = std::make_shared<rawrbox::TextureWEBP>("./content/textures/rawrbox.webp");
-			this->_intro_webp->setLoop(false);
-			this->_intro_webp->setSpeed(1.4F);
-			this->_intro_webp->upload();
-			this->_intro_webp->onEnd += [this]() {
-				// Done, continue gameeeee
-				this->_renderer->setOverlayRender(this->_overlay);
-				this->_renderer->setWorldRender(this->_world);
-				this->_intro_webp->reset(); // Kill it, we don't need it anymore
-
-				if (this->onIntroCompleted != nullptr) this->onIntroCompleted();
-			};
-
-			this->_renderer->setWorldRender([]() {});
-			this->_renderer->setOverlayRender([this]() {
-				bgfx::dbgTextClear(); // Prevent debug text being rendered on top
-
-				auto size = this->_intro_webp->getSize().cast<float>();
-				auto screenSize = this->_size.cast<float>();
-
-				this->_stencil->drawBox({}, this->_size.cast<float>(), rawrbox::Colors::Black());
-				this->_stencil->drawTexture({screenSize.x / 2.F - size.x / 2.F, screenSize.y / 2.F - size.y / 2.F}, {size.x, size.y}, *this->_intro_webp);
-				this->_stencil->render();
-			});
-		}
+		this->playIntro();
 		// ---------
 
 		// Setup resize events ---
