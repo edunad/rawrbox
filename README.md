@@ -30,7 +30,7 @@
 - 2D stencil drawing
 - Fonts (ttf) using [stb](https://github.com/nothings/stb)
 - JSON loading using [nlohmann json](https://github.com/nlohmann/json)
-- Images loading (png, jpeg, tga, bitmap, gif) using [stb](https://github.com/nothings/stb) and SVG using [lunasvg](https://github.com/sammycage/lunasvg)
+- Images loading (png, jpeg, tga, bitmap, gif) using [stb](https://github.com/nothings/stb), SVG using [lunasvg](https://github.com/sammycage/lunasvg), WEBP using [libwebp](https://github.com/webmproject/libwebp)
 - Video only using [webm](https://github.com/webmproject/libwebm)
 - Sounds using [BASS](https://www.un4seen.com/) lib
 - Custom UI
@@ -136,6 +136,7 @@
 | lua & sol2 & luajit | Used for loading & managing lua scripting           |
 | curl + libcpr       | Used for HTTP / HTTPS requests                      |
 | lunasvg             | Used for SVG loading                                |
+| libwebp             | Used for WEBP loading                               |
 
 # BUILDING
 
@@ -172,7 +173,7 @@
 
 ### 001-stencil
 
-<a href='/samples/001-stencil'><img src="https://i.rawr.dev/KCnFrd7J2d-min.gif" width=512 /></a>
+<a href='/samples/001-stencil'><img src="https://i.rawr.dev/wBpBiDBvCt-min.gif" width=512 /></a>
 
 ### 002-generated-models
 

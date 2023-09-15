@@ -2,7 +2,15 @@
 #include <rawrbox/render/texture/base.hpp>
 
 namespace rawrbox {
-	TextureBase::~TextureBase() { RAWRBOX_DESTROY(this->_handle); }
+	TextureBase::~TextureBase() {
+		if (this->_failedToLoad) return; // Don't delete the fallback
+		RAWRBOX_DESTROY(this->_handle);
+	}
+
+	void TextureBase::loadFallback() {
+		this->_failedToLoad = true;
+		this->_handle = rawrbox::MISSING_TEXTURE->getHandle();
+	}
 
 	// UTILS ---
 	bool TextureBase::hasTransparency() const { return false; }

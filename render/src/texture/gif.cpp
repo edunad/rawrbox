@@ -1,21 +1,13 @@
-#include <rawrbox/math/utils/math.hpp>
+
 #include <rawrbox/render/texture/gif.hpp>
-#include <rawrbox/utils/time.hpp>
 
 #include <stb/gif.hpp>
 
 #include <fmt/format.h>
 
 namespace rawrbox {
-	// NOLINTBEGIN(modernize-pass-by-value)
-	TextureGIF::TextureGIF(const std::filesystem::path& filePath, bool useFallback) : _filePath(filePath) {
-		this->internalLoad({}, useFallback);
-	}
-
-	TextureGIF::TextureGIF(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback) : _filePath(filePath) {
-		this->internalLoad(buffer, useFallback);
-	}
-	// NOLINTEND(modernize-pass-by-value)
+	TextureGIF::TextureGIF(const std::filesystem::path& filePath, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, useFallback) { this->internalLoad({}, useFallback); }
+	TextureGIF::TextureGIF(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, buffer, useFallback) { this->internalLoad(buffer, useFallback); }
 
 	void TextureGIF::internalLoad(const std::vector<uint8_t>& buffer, bool useFallback) {
 		this->_frames.clear();
@@ -29,15 +21,15 @@ namespace rawrbox {
 		if (buffer.empty()) {
 			gifPixels = stbi_xload_file(this->_filePath.generic_string().c_str(), &this->_size.x, &this->_size.y, &frames_n, &delays);
 		} else {
-			gifPixels = stbi_xload_mem(buffer.data(), static_cast<int>(buffer.size()) * sizeof(uint8_t), &this->_size.x, &this->_size.y, &frames_n, &delays);
+			gifPixels = stbi_xload_mem(buffer.data(), static_cast<int>(buffer.size()), &this->_size.x, &this->_size.y, &frames_n, &delays);
 		}
 
 		if (gifPixels == nullptr || delays == nullptr) {
 			auto failure = stbi_failure_reason();
 
 			if (useFallback) {
-				this->_failedToLoad = true;
-				fmt::print("[TextureGIF] Error loading gif image '{}' | Error: {} --- > Using fallback image\n", this->_filePath.generic_string(), failure);
+				fmt::print("[TextureGIF] Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), failure);
+				this->loadFallback();
 				return;
 			} else {
 				throw std::runtime_error(fmt::format("[TextureGIF] Error loading image: {}", failure));
@@ -49,7 +41,7 @@ namespace rawrbox {
 			// first push it, then allocate to prevent double copy of memory
 			this->_frames.push_back({});
 
-			GIFFrame& frame = this->_frames.back();
+			rawrbox::Frame& frame = this->_frames.back();
 			frame.delay = delays[i]; // in ms
 			frame.pixels.resize(framePixelCount);
 
@@ -71,75 +63,4 @@ namespace rawrbox {
 		stbi_image_free(gifPixels);
 		stbi_image_free(delays);
 	}
-
-	bool TextureGIF::hasTransparency() const {
-		return this->_channels == 4 && this->_transparent;
-	}
-
-	void TextureGIF::internalUpdate() {
-		auto& frame = this->_frames[this->_currentFrame];
-		bgfx::updateTexture2D(this->_handle, 0, 0, 0, 0, static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), bgfx::makeRef(frame.pixels.data(), static_cast<uint32_t>(frame.pixels.size())));
-	}
-
-	// ------ANIMATION
-	void TextureGIF::update() {
-		if (this->_failedToLoad || !bgfx::isValid(this->_handle)) return; // Not bound
-
-		if (!this->_loop && static_cast<size_t>(this->_currentFrame) >= this->_frames.size() - 1) return;
-		if (this->_cooldown >= rawrbox::TimeUtils::curtime()) return;
-
-		this->_cooldown = static_cast<int64_t>(this->_frames[this->_currentFrame].delay * this->_speed) + rawrbox::TimeUtils::curtime(); // TODO: FIX SPEED
-		this->_currentFrame = MathUtils::repeat<int>(this->_currentFrame + 1, 0, static_cast<int>(this->_frames.size()) - 1);
-
-		this->internalUpdate();
-	}
-
-	void TextureGIF::reset() {
-		if (this->_failedToLoad || !bgfx::isValid(this->_handle)) return; // Not bound
-
-		this->_cooldown = 0;
-		this->_currentFrame = 0;
-		this->update();
-	}
-	// --------------------
-
-	// ------UTILS
-	void TextureGIF::setLoop(bool loop) {
-		this->_loop = loop;
-	}
-
-	void TextureGIF::setSpeed(float speed) {
-		this->_speed = speed;
-	}
-	// --------------------
-
-	// ------RENDER
-	void TextureGIF::upload(bgfx::TextureFormat::Enum format) {
-		if (this->_failedToLoad || bgfx::isValid(this->_handle)) return; // Failed texture is already bound, so skip it
-
-		// Try to determine
-		if (format == bgfx::TextureFormat::Count) {
-			switch (this->_channels) {
-				case 1:
-					format = bgfx::TextureFormat::R8;
-					break;
-				case 2:
-					format = bgfx::TextureFormat::RG8;
-					break;
-				case 3:
-					format = bgfx::TextureFormat::RGB8;
-					break;
-				default:
-				case 4:
-					format = bgfx::TextureFormat::RGBA8;
-					break;
-			}
-		}
-
-		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 0, format, 0 | this->_flags);
-
-		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureGIF] Failed to bind texture");
-		bgfx::setName(this->_handle, fmt::format("RAWR-GIF-TEXTURE-{}", this->_handle.idx).c_str());
-	}
-	// --------------------
 } // namespace rawrbox

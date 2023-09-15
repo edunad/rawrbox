@@ -56,6 +56,7 @@ namespace stencil {
 		    std::make_pair<std::string, uint32_t>("content/textures/screem.png", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/meow3.gif", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/rawrbox.svg", 0),
+		    std::make_pair<std::string, uint32_t>("content/textures/cawt.webp", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/instance_test.png", 64),
 		};
 
@@ -75,9 +76,13 @@ namespace stencil {
 	void Game::contentLoaded() {
 		// Textures ---
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
-		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get<rawrbox::TextureGIF>();
+		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get();
 		this->_texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/instance_test.png")->get();
 		this->_texture4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceSVG>("./content/textures/rawrbox.svg")->get({256, 256});
+		this->_texture5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/cawt.webp")->get<rawrbox::TextureAnimatedBase>();
+		this->_texture5->onEnd += []() {
+			fmt::print("end\n");
+		};
 
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/droidsans.ttf")->getSize(28);
 		this->_font2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./content/fonts/visitor1.ttf")->getSize(18);
@@ -231,6 +236,10 @@ namespace stencil {
 		stencil.pushOffset({900, 0});
 		stencil.drawTexture({0, 0}, {100, 100}, *this->_texture2);
 		stencil.popOffset();
+
+		stencil.pushOffset({820, 110});
+		stencil.drawTexture({0, 0}, {509 * 0.35F, 404 * 0.35F}, *this->_texture5);
+		stencil.popOffset();
 		// ---
 
 		// POLYGON ---
@@ -266,7 +275,7 @@ namespace stencil {
 
 		// Text ---
 		stencil.pushOffset({20, 200});
-		stencil.drawText(*this->_font, "Cat ipsum dolor sit amet, steal raw zucchini off kitchen counter. $£%&", {});
+		stencil.drawText(*this->_font, "Cat ipsum dolor sit amet, steal raw zucchini. $£%&", {});
 
 		auto size = this->_font2->getStringSize("Cat!!");
 
@@ -283,17 +292,16 @@ namespace stencil {
 
 		stencil.popOffset();
 
-		// Z-INDEX TEST ---
+		// SVG ---
 		stencil.pushOffset({50, 450});
 		stencil.drawTexture({0, 0}, {256, 256}, *this->_texture4);
 		stencil.popOffset();
 		// -----
 
-		stencil.render();
-
-		// TEST ---
 		this->_texture2->update();
-		// ---
+		this->_texture5->update();
+
+		stencil.render();
 	}
 
 	void Game::printFrames() {
