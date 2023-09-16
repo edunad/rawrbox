@@ -99,7 +99,17 @@ namespace rawrbox {
 			return ret;
 		}
 
-		[[nodiscard]] const std::array<NumberType, 4> data() const { return {r, g, b, a}; }
+		[[nodiscard]] ColorType strength(float strength) const {
+			if constexpr (std::is_same_v<NumberType, int>) {
+				return {static_cast<int>(r * strength), static_cast<int>(g * strength), static_cast<int>(b * strength), 255};
+			} else {
+				return {r * strength, g * strength, b * strength, 1.F};
+			}
+		}
+
+		[[nodiscard]] const std::array<NumberType, 4> data() const {
+			return {r, g, b, a};
+		}
 
 		[[nodiscard]] const NumberType max() const {
 			return std::max(std::max(r, g), b);
@@ -269,14 +279,6 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] static inline ColorType DarkGray() {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return ColorType(130, 127, 119, 255);
-			} else {
-				return ColorType(0.51F, 0.50F, 0.47F, 1);
-			}
-		}
-
 		[[nodiscard]] static inline ColorType Red() {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(255, 82, 82, 255);
@@ -322,6 +324,14 @@ namespace rawrbox {
 				return ColorType(255, 0, 255, 255);
 			} else {
 				return ColorType(1.F, 0.F, 1.F, 1);
+			}
+		}
+
+		[[nodiscard]] static inline ColorType Brown() {
+			if constexpr (std::is_same_v<NumberType, int>) {
+				return ColorType(133, 88, 49, 255);
+			} else {
+				return ColorType(0.52F, 0.35F, 0.19F, 1);
 			}
 		}
 

@@ -52,14 +52,14 @@ namespace rawrbox {
 	class Window;
 
 	// ------EVENTS
-	using OnFocusCallback = Event<Window&, bool>;
-	using OnCharCallback = Event<Window&, uint32_t>;
-	using OnResizeCallback = Event<Window&, const Vector2i&>;
-	using OnScrollCallback = Event<Window&, const Vector2i&, const Vector2i&>;
-	using OnMouseMoveCallback = Event<Window&, const Vector2i&>;
-	using OnKeyCallback = Event<Window&, uint32_t, uint32_t, uint32_t, uint32_t>;
-	using OnMouseKeyCallback = Event<Window&, const Vector2i&, uint32_t, uint32_t, uint32_t>;
-	using OnWindowClose = Event<Window&>;
+	using OnFocusCallback = rawrbox::Event<Window&, bool>;
+	using OnCharCallback = rawrbox::Event<Window&, uint32_t>;
+	using OnResizeCallback = rawrbox::Event<Window&, const Vector2i&>;
+	using OnScrollCallback = rawrbox::Event<Window&, const Vector2i&, const Vector2i&>;
+	using OnMouseMoveCallback = rawrbox::Event<Window&, const Vector2i&>;
+	using OnKeyCallback = rawrbox::Event<Window&, uint32_t, uint32_t, uint32_t, uint32_t>;
+	using OnMouseKeyCallback = rawrbox::Event<Window&, const Vector2i&, uint32_t, uint32_t, uint32_t>;
+	using OnWindowClose = rawrbox::Event<Window&>;
 	// --------------------
 
 	class BgfxCallbacks : public bgfx::CallbackI {
@@ -103,6 +103,8 @@ namespace rawrbox {
 		uint32_t _resetFlags = BGFX_RESET_NONE;
 		uint32_t _debugFlags = BGFX_DEBUG_NONE;
 
+		bool _hasFocus = true;
+
 		// Intro -----
 		bool _skipIntro = false;
 		bool _introComplete = false;
@@ -143,8 +145,7 @@ namespace rawrbox {
 		// --------------------
 
 	public:
-		std::function<void()> onIntroCompleted = nullptr;
-		bool hasFocus = true;
+		rawrbox::Event<> onIntroCompleted;
 
 		// ------CALLBACKS
 		OnKeyCallback onKey;
@@ -224,6 +225,8 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual bool isRendererSupported(bgfx::RendererType::Enum render) const;
 		[[nodiscard]] virtual const std::unordered_map<int, rawrbox::Vector2i>& getScreenSizes() const;
+
+		[[nodiscard]] virtual bool hasFocus() const;
 		// --------------------
 
 		virtual ~Window();

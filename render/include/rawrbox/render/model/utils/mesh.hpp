@@ -25,6 +25,6 @@ namespace rawrbox {
 		static rawrbox::Mesh generateSphere(const rawrbox::Vector3f& pos, float size, uint32_t ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White());
 		static rawrbox::Mesh generateMesh(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, uint32_t subDivs = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White());
 		// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
-		static rawrbox::Mesh generateGrid(uint16_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::DarkGray(), const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent());
+		static rawrbox::Mesh generateGrid(uint16_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::Gray(), const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent());
 	};
 } // namespace rawrbox

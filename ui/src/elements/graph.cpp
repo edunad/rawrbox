@@ -152,7 +152,7 @@ namespace rawrbox {
 		auto size = this->getSize();
 
 		// BG ---
-		stencil.drawBox({}, size, rawrbox::Colors::DarkGray() * 0.2F);
+		stencil.drawBox({}, size, rawrbox::Colors::Gray() * 0.2F);
 		//---
 
 		// Draw lines ---

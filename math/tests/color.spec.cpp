@@ -40,6 +40,15 @@ TEST_CASE("Color should behave as expected", "[rawrbox::Color]") {
 		REQUIRE(clCast.a == 1.F);
 	}
 
+	SECTION("rawrbox::Color::strength") {
+		auto red = rawrbox::Colors::Red().cast<int>().strength(0.5F);
+
+		REQUIRE(red.r == 127);
+		REQUIRE(red.g == 40);
+		REQUIRE(red.b == 40);
+		REQUIRE(red.a == 255);
+	}
+
 	SECTION("rawrbox::Color::debug") {
 		auto cl1 = rawrbox::Colori::debug(2);
 		auto cl2 = rawrbox::Colorf::debug(13);

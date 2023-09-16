@@ -117,7 +117,7 @@ namespace rawrbox {
 			this->_renderer->setWorldRender(this->_world);
 
 			this->_introComplete = true;
-			if (this->onIntroCompleted != nullptr) this->onIntroCompleted();
+			this->onIntroCompleted();
 			return;
 		}
 
@@ -132,12 +132,10 @@ namespace rawrbox {
 				this->_renderer->setOverlayRender(this->_overlay);
 				this->_renderer->setWorldRender(this->_world);
 
-				if (this->onIntroCompleted != nullptr) {
-					rawrbox::runOnRenderThread([this]() {
-						this->_introComplete = true;
-						this->onIntroCompleted();
-					});
-				}
+				rawrbox::runOnRenderThread([this]() {
+					this->_introComplete = true;
+					this->onIntroCompleted();
+				});
 			};
 		});
 		// -------------------------
@@ -521,6 +519,10 @@ namespace rawrbox {
 	const std::unordered_map<int, rawrbox::Vector2i>& Window::getScreenSizes() const {
 		return this->_screenSizes;
 	}
+
+	bool Window::hasFocus() const {
+		return this->_hasFocus;
+	}
 	// --------------------
 
 	// ------EVENTS
@@ -597,7 +599,7 @@ namespace rawrbox {
 		rawrbox::runOnRenderThread([whandle, focus]() {
 			auto& window = glfwHandleToRenderer(whandle);
 
-			window.hasFocus = (focus == 1);
+			window._hasFocus = (focus == 1);
 			window.onFocus(window, focus);
 		});
 	}

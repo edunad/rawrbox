@@ -21,7 +21,7 @@ namespace phys_2d_test {
 		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
-		this->_window->onIntroCompleted = [this]() {
+		this->_window->onIntroCompleted += [this]() {
 			this->loadContent();
 		};
 	}
@@ -178,7 +178,7 @@ namespace phys_2d_test {
 
 			b->mdl->setPos(pos);
 			b->mdl->setEulerAngle({0, 0, body->GetAngle()});
-			b->mdl->setColor(body->IsSleeping() ? rawrbox::Colors::DarkGray() : rawrbox::Colors::White());
+			b->mdl->setColor(body->IsSleeping() ? rawrbox::Colors::Gray() : rawrbox::Colors::White());
 
 			b->mdl->draw();
 		}

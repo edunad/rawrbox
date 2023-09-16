@@ -30,7 +30,7 @@ namespace rawrbox {
 
 		namespace Optimization {
 			const uint32_t DISABLE = 1 << 10;
-		}
+		} // namespace Optimization
 
 		namespace Debug {
 			const uint32_t PRINT_BONE_STRUCTURE = 1 << 20;
