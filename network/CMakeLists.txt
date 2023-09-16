@@ -19,6 +19,16 @@ CPMAddPackage(
     "CURL_ZLIB ON")
 
 if(libcpr_ADDED)
+    if(NOT WIN32)
+        find_package(OpenSSL REQUIRED)
+        if(OpenSSL_FOUND)
+            add_custom_target(
+                copy_openssl ALL COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_LIBRARIES}
+                                        ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
+                COMMENT "Copying OpenSSL DLL into binary directory")
+        endif()
+    endif()
+
     set_lib_runtime_mt(libcurl)
     set_lib_runtime_mt(cpr)
 endif()
@@ -45,6 +55,9 @@ target_compile_definitions(${output_target} PUBLIC RAWRBOX_NETWORK)
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC cpr::cpr ${RAWRBOX_EXTRA_LIBS})
+if(NOT WIN32)
+    add_dependencies(${output_target} copy_openssl)
+endif()
 
 
 set_lib_runtime_mt(${output_target})
