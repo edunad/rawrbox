@@ -27,11 +27,13 @@ namespace post_process {
 
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
+		this->_window->onIntroCompleted = [this]() {
+			this->loadContent();
+		};
 	}
 
 	void Game::init() {
 		if (this->_window == nullptr) return;
-		this->_window->initializeBGFX();
 
 		this->_postProcess = std::make_unique<rawrbox::PostProcessManager>(this->_window->getSize());
 		this->_postProcess->add<rawrbox::PostProcessBloom>(0.015F);
@@ -48,7 +50,7 @@ namespace post_process {
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// ---
 
-		this->loadContent();
+		this->_window->initializeBGFX();
 	}
 
 	void Game::loadContent() {
@@ -65,7 +67,6 @@ namespace post_process {
 			});
 		}
 
-		this->_window->upload();
 		this->_postProcess->upload();
 	}
 

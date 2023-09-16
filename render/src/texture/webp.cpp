@@ -25,9 +25,16 @@ namespace rawrbox {
 			}
 
 			WebPData webp_data = {buffer.data(), buffer.size()};
-			auto decoder = WebPAnimDecoderNew(&webp_data, nullptr);
+
+			WebPAnimDecoderOptions options;
+			if (!WebPAnimDecoderOptionsInit(&options)) {
+				throw std::runtime_error(fmt::format("Error initializing image '{}'!", this->_filePath.generic_string()));
+			}
+
+			options.use_threads = true;
+			auto decoder = WebPAnimDecoderNew(&webp_data, &options);
 			if (decoder == nullptr) {
-				throw std::runtime_error(fmt::format("Error reading image '{}'!", this->_filePath.generic_string()));
+				throw std::runtime_error(fmt::format("Error initializing image '{}'!", this->_filePath.generic_string()));
 			}
 
 			WebPAnimInfo info;
@@ -42,7 +49,7 @@ namespace rawrbox {
 			this->_size = {static_cast<int>(info.canvas_width), static_cast<int>(info.canvas_height)};
 			this->_channels = 4;
 
-			int prevTime = 0;
+			float prevTime = 0.F;
 			while (WebPAnimDecoderHasMoreFrames(decoder)) {
 				uint8_t* buf = nullptr;
 				int delay = 0;
@@ -52,14 +59,13 @@ namespace rawrbox {
 				}
 
 				Frame frame;
-
-				frame.delay = delay - prevTime;
-				prevTime = delay;
-
+				frame.delay = static_cast<float>(delay) - prevTime;
 				frame.pixels.resize(this->_size.x * this->_size.y * this->_channels);
 				std::memcpy(frame.pixels.data(), buf, this->_size.x * this->_size.y * this->_channels);
 
 				this->_frames.push_back(frame);
+
+				prevTime = static_cast<float>(delay);
 			}
 
 			WebPAnimDecoderDelete(decoder);

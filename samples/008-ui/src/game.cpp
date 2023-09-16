@@ -28,14 +28,18 @@ namespace ui_test {
 		    bgfx::RendererType::Count, [this]() { if(this->_ROOT_UI == nullptr) return; this->_ROOT_UI->render(); }, []() {});
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
+		this->_window->onIntroCompleted = [this]() {
+			this->loadContent();
+		};
 	}
 
 	void Game::init() {
 		if (this->_window == nullptr) return;
-		this->_window->initializeBGFX(0x443355FF);
 
+		// Add loaders ----
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+		// ---
 
 		// SETUP UI
 		this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*this->_window);
@@ -51,9 +55,7 @@ namespace ui_test {
 		this->_console->registerCommand(
 		    "test", [](const std::vector<std::string>& /*args*/) { return std::make_pair<bool, std::string>(true, "OK!"); }, "TEST DESCRIPTION", rawrbox::ConsoleFlags::CHEAT);
 
-		// Load content ---
-		this->loadContent();
-		// -----
+		this->_window->initializeBGFX(0x443355FF);
 	}
 
 	void Game::loadContent() {
@@ -72,8 +74,6 @@ namespace ui_test {
 				}
 			});
 		}
-
-		this->_window->upload();
 	}
 
 	void Game::contentLoaded() {

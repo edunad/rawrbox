@@ -87,8 +87,12 @@ namespace rawrbox {
 		void screenShot(const char* /*_filePath*/, uint32_t /*_width*/, uint32_t /*_height*/, uint32_t /*_pitch*/, const void* /*_data*/, uint32_t /*_size*/, bool /*_yflip*/) override {}
 	};
 
+	class TextureWEBP;
 	class Window {
 	private:
+		std::function<void()> _overlay = nullptr;
+		std::function<void()> _world = nullptr;
+
 		void* _handle = nullptr;
 		void* _cursor = nullptr;
 		std::array<uint8_t, 16 * 16 * 4> _cursorPixels = {};
@@ -98,6 +102,11 @@ namespace rawrbox {
 		uint32_t _windowFlags = 0;
 		uint32_t _resetFlags = BGFX_RESET_NONE;
 		uint32_t _debugFlags = BGFX_DEBUG_NONE;
+
+		// Intro -----
+		bool _skipIntro = false;
+		std::shared_ptr<rawrbox::TextureWEBP> _intro_webp = nullptr;
+		// ---
 
 		// Data ---
 		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
@@ -117,7 +126,7 @@ namespace rawrbox {
 		std::unordered_map<int, rawrbox::Vector2i> _screenSizes = {};
 		// --------
 
-		// ------CALLBACKS
+		// CALLBACKS ------
 		static void callbacks_focus(GLFWwindow* whandle, int focus);
 		static void callbacks_char(GLFWwindow* whandle, unsigned int ch);
 		static void callbacks_scroll(GLFWwindow* whandle, double x, double y);
@@ -128,7 +137,12 @@ namespace rawrbox {
 		static void callbacks_windowClose(GLFWwindow* whandle);
 		// --------------------
 
+		// INTRO ------
+		void playIntro();
+		// --------------------
+
 	public:
+		std::function<void()> onIntroCompleted = nullptr;
 		bool hasFocus = true;
 
 		// ------CALLBACKS
@@ -161,10 +175,10 @@ namespace rawrbox {
 			if (!this->isRendererSupported(render)) throw std::runtime_error(fmt::format("[RawrBox-Window] RenderType {} is not supported by your GPU", bgfx::getRendererName(render)));
 
 			this->_renderType = render;
-			this->_renderer = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
-			this->_renderer->setOverlayRender(overlay);
-			this->_renderer->setWorldRender(world);
+			this->_overlay = overlay;
+			this->_world = world;
 
+			this->_renderer = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
 			rawrbox::RENDERER = this->_renderer.get();
 		}
 
@@ -179,12 +193,16 @@ namespace rawrbox {
 		void shutdown();
 		void update();
 
+		// INTRO ------
+		void skipIntro(bool skip); // :(
+		// ----------------
+
 		// UPDATE ------
 		void pollEvents();
 		void unblockPoll();
 		// --------------------
+
 		// DRAW -----
-		void upload();
 		void render() const;
 		// -----------
 

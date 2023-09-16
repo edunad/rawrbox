@@ -22,11 +22,13 @@ namespace physics_test {
 		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
+		this->_window->onIntroCompleted = [this]() {
+			this->loadContent();
+		};
 	}
 
 	void Game::init() {
 		if (this->_window == nullptr) return;
-		this->_window->initializeBGFX();
 
 		// Setup camera
 		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
@@ -36,6 +38,7 @@ namespace physics_test {
 
 		// Setup loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+		// ----
 
 		// Initialize physics
 		rawrbox::PHYSICS::init(20, 2048, 2048, 2048, 2048, 5);
@@ -48,9 +51,7 @@ namespace physics_test {
 		// rawrbox::PHYSICS::onBodyAwake += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body awake \n"); };
 		// rawrbox::PHYSICS::onBodySleep += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body sleep \n"); };
 
-		// Load content ---
-		this->loadContent();
-		// -----
+		this->_window->initializeBGFX();
 	}
 
 	void Game::loadContent() {
@@ -67,8 +68,6 @@ namespace physics_test {
 				}
 			});
 		}
-
-		this->_window->upload();
 	}
 
 	void Game::contentLoaded() {

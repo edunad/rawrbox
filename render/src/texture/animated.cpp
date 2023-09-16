@@ -42,7 +42,7 @@ namespace rawrbox {
 			}
 		}
 
-		this->_cooldown = static_cast<int64_t>(this->_frames[this->_currentFrame].delay * this->_speed) + rawrbox::TimeUtils::curtime(); // TODO: FIX SPEED // std::chrono::microseconds(1000000) * frame.delay_num / frame.delay_den;
+		this->_cooldown = static_cast<int64_t>(this->_frames[this->_currentFrame].delay / this->_speed) + rawrbox::TimeUtils::curtime();
 		this->internalUpdate();
 
 		this->_currentFrame++;

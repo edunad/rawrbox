@@ -60,11 +60,10 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_texColor);
 
 		this->_drawCalls.clear();
-		this->_pixelTexture.reset();
 	}
 
 	void Stencil::upload() {
-		if (this->_pixelTexture != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
+		if (bgfx::isValid(this->_2dprogram)) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
 
 		// Load Shaders --------
 		rawrbox::RenderUtils::buildShader(stencil_shaders, this->_2dprogram);
@@ -73,9 +72,6 @@ namespace rawrbox {
 		// ------------------
 
 		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);
-
-		this->_pixelTexture = std::make_unique<rawrbox::TextureFlat>(rawrbox::Vector2i(1, 1), Colors::White());
-		this->_pixelTexture->upload();
 	}
 
 	void Stencil::resize(const rawrbox::Vector2i& size) {
@@ -148,7 +144,7 @@ namespace rawrbox {
 	void Stencil::drawPolygon(const rawrbox::Polygon& poly) {
 		// Setup --------
 		bgfx::TextureHandle handl = BGFX_INVALID_HANDLE;
-		if (this->_pixelTexture != nullptr) handl = this->_pixelTexture->getHandle();
+		if (rawrbox::WHITE_TEXTURE != nullptr) handl = rawrbox::WHITE_TEXTURE->getHandle();
 
 		this->setupDrawCall(
 		    this->_2dprogram,
@@ -185,7 +181,7 @@ namespace rawrbox {
 
 		// Setup --------
 		bgfx::TextureHandle handl = BGFX_INVALID_HANDLE;
-		if (this->_pixelTexture != nullptr) handl = this->_pixelTexture->getHandle();
+		if (rawrbox::WHITE_TEXTURE != nullptr) handl = rawrbox::WHITE_TEXTURE->getHandle();
 
 		this->setupDrawCall(
 		    this->_2dprogram,
@@ -220,8 +216,8 @@ namespace rawrbox {
 			this->drawLine({pos.x + size.x, pos.y - thick}, {pos.x + size.x, pos.y + size.y}, col);
 			this->drawLine({pos.x + size.x + (thick > 1.F ? thick : 0.F), pos.y + size.y}, {pos.x - thick, pos.y + size.y}, col);
 		} else {
-			if (this->_pixelTexture == nullptr) return;
-			this->drawTexture(pos, size, *this->_pixelTexture, col);
+			if (rawrbox::WHITE_TEXTURE == nullptr) return;
+			this->drawTexture(pos, size, *rawrbox::WHITE_TEXTURE, col);
 		}
 	}
 
@@ -287,7 +283,7 @@ namespace rawrbox {
 
 		// Setup --------
 		bgfx::TextureHandle handl = BGFX_INVALID_HANDLE;
-		if (this->_pixelTexture != nullptr) handl = this->_pixelTexture->getHandle();
+		if (rawrbox::WHITE_TEXTURE != nullptr) handl = rawrbox::WHITE_TEXTURE->getHandle();
 
 		this->setupDrawCall(
 		    (usePTLines || outline.stipple > 0.F) ? this->_lineprogram : this->_2dprogram,

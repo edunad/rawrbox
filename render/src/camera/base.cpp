@@ -66,9 +66,7 @@ namespace rawrbox {
 		return this->_projection * this->_view;
 	}
 
-	void CameraBase::update() {
-		throw std::runtime_error("Not implemented");
-	}
+	void CameraBase::update() {}
 
 	const rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f& /*pos*/) const {
 		throw std::runtime_error("Not implemented");

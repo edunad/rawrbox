@@ -146,8 +146,6 @@ namespace rawrbox {
 
 		bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 
-		std::unique_ptr<rawrbox::TextureFlat> _pixelTexture = nullptr;
-
 		// WINDOW ----
 		rawrbox::Vector2i _windowSize = {};
 		bgfx::ViewId _prevViewId = 0;
