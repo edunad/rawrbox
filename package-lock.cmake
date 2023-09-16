@@ -125,6 +125,23 @@ CPMDeclarePackage(lunasvg
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
 )
+# libwebp
+CPMDeclarePackage(libwebp
+  NAME libwebp
+  VERSION 1.3.2
+  GITHUB_REPOSITORY webmproject/libwebp
+  OPTIONS
+    "BUILD_SHARED_LIBS OFF"
+    "WEBP_BUILD_ANIM_UTILS OFF"
+    "WEBP_BUILD_CWEBP OFF"
+    "WEBP_BUILD_DWEBP OFF"
+    "WEBP_BUILD_GIF2WEBP OFF"
+    "WEBP_BUILD_IMG2WEBP OFF"
+    "WEBP_BUILD_VWEBP OFF"
+    "WEBP_BUILD_WEBPINFO OFF"
+    "WEBP_BUILD_WEBPMUX OFF"
+    "WEBP_BUILD_EXTRAS OFF"
+)
 # assimp (unversioned)
 # CPMDeclarePackage(assimp
 #  NAME assimp
