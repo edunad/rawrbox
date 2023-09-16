@@ -4,6 +4,9 @@
 
 #include <fmt/format.h>
 
+#include <memory>
+#include <thread>
+
 namespace rawrbox {
 	// NOLINTBEGIN(modernize-pass-by-value)
 	TextureWEBM::TextureWEBM(const std::filesystem::path& filePath, uint32_t videoTrack) : _filePath(filePath), _trackId(videoTrack) {
@@ -28,6 +31,21 @@ namespace rawrbox {
 	void TextureWEBM::internalUpdate() {
 		if (this->_webm == nullptr) throw std::runtime_error("[RawrBox-TextureWEBM] WEBM loader not initialized!");
 
+		if (preloadMode) {
+			if (preloadedFrames.empty()) return;
+
+			auto& img = preloadedFrames[preloadedFrame];
+			bgfx::updateTexture2D(this->_handle, 0, 0, 0, 0, static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), bgfx::copy(img.pixels.data(), static_cast<uint32_t>(img.pixels.size())));
+
+			preloadedFrame++;
+			if (preloadedFrame == preloadedFrames.size()) {
+				preloadedFrame = 0;
+				this->_webm->onEnd();
+			}
+
+			return;
+		}
+
 		bool success = this->_webm->advance();
 		if (!success) return;
 
@@ -40,6 +58,25 @@ namespace rawrbox {
 		if (!img.valid()) throw std::runtime_error("[RawrBox-TextureWEBM] Failed to decode frame");
 
 		bgfx::updateTexture2D(this->_handle, 0, 0, 0, 0, static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), bgfx::copy(img.pixels.data(), static_cast<uint32_t>(img.pixels.size())));
+	}
+
+	std::mutex webmDecoderLock;
+	void TextureWEBM::preload() {
+		preloadMode = true;
+		preloadThread = std::make_unique<std::jthread>([this]() {
+			std::lock_guard<std::mutex> lock(webmDecoderLock);
+			while (this->_webm->advance()) {
+				auto frame = this->_webm->getFrame();
+				if (!frame.valid()) throw std::runtime_error("[RawrBox-TextureWEBM] Failed to find frame");
+
+				if (!rawrbox::WEBMDecoder::decode(frame)) throw std::runtime_error("[RawrBox-TextureWEBM] Failed to decode frame");
+
+				rawrbox::WEBMImage img = rawrbox::WEBMDecoder::getImageFrame();
+				if (!img.valid()) throw std::runtime_error("[RawrBox-TextureWEBM] Failed to decode frame");
+
+				preloadedFrames.push_back(img);
+			}
+		});
 	}
 
 	void TextureWEBM::update() {
@@ -78,6 +115,7 @@ namespace rawrbox {
 	void TextureWEBM::reset() {
 		if (this->_webm == nullptr) return;
 		this->_webm->reset();
+		this->_cooldown = rawrbox::TimeUtils::curtime() + 20;
 	}
 	// ------
 

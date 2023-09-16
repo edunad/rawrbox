@@ -5,6 +5,9 @@
 #include <rawrbox/webm/loader.hpp>
 
 #include <filesystem>
+#include <memory>
+#include <thread>
+#include <vector>
 
 namespace rawrbox {
 	class TextureWEBM : public rawrbox::TextureBase {
@@ -14,6 +17,11 @@ namespace rawrbox {
 
 		uint32_t _trackId = 0;
 		uint64_t _cooldown = 0;
+
+		std::unique_ptr<std::jthread> preloadThread;
+		std::vector<rawrbox::WEBMImage> preloadedFrames;
+		size_t preloadedFrame = 0;
+		bool preloadMode = false;
 
 		void internalUpdate();
 		void internalLoad();
@@ -39,6 +47,8 @@ namespace rawrbox {
 
 		void seek(uint64_t timeMS);
 		void reset();
+
+		void preload();
 		// ----
 
 		// ------RENDER

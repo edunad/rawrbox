@@ -94,8 +94,8 @@ namespace rawrbox {
 			if (this->_loop) {
 				this->reset();
 			} else {
-				this->onEnd();
 				this->setPaused(true);
+				this->onEnd();
 
 				return false; // Reached the end
 			}
@@ -176,6 +176,7 @@ namespace rawrbox {
 
 		this->_blockFrameIndex = 0;
 		this->_eos = false;
+		this->_paused = false;
 	}
 
 	void WEBM::seek(uint64_t timeMS) {
