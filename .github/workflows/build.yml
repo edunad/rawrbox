@@ -91,3 +91,9 @@ jobs:
           database: "./build/"
           thread-comments: true
           ignore: build | _deps | .github | render/include/stb | engine/tests | math/tests | render/tests | resources/tests | utils/tests | scripting/tests
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: build
