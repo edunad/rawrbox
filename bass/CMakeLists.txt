@@ -33,18 +33,16 @@ endif()
 # ----
 
 # Copy content - BASS
-if(WIN32)
-    add_custom_target(
-        copy_dll_bass ALL COMMAND ${CMAKE_COMMAND} -E copy ${BASS_BINARY} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
-        COMMENT "Copying BASS DLL into binary directory")
+add_custom_target(
+    copy_lib_bass ALL COMMAND ${CMAKE_COMMAND} -E copy ${BASS_BINARY} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
+    COMMENT "Copying BASS lib into binary directory")
 
-    add_custom_target(
-        copy_dll_bass_fx ALL COMMAND ${CMAKE_COMMAND} -E copy ${BASS_BINARY_FX}
-                                     ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
-        COMMENT "Copying BASS FX DLL into binary directory")
+add_custom_target(
+    copy_lib_bass_fx ALL COMMAND ${CMAKE_COMMAND} -E copy ${BASS_BINARY_FX}
+                                    ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
+    COMMENT "Copying BASS FX lib into binary directory")
 
-    set(RAWRBOX_EXTRA_DEPS copy_dll_bass copy_dll_bass_fx)
-endif()
+set(RAWRBOX_EXTRA_DEPS copy_lib_bass copy_lib_bass_fx)
 # ------------------
 
 # Project setup
