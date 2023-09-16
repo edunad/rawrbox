@@ -105,6 +105,7 @@ namespace rawrbox {
 
 		// Intro -----
 		bool _skipIntro = false;
+		bool _introComplete = false;
 		std::shared_ptr<rawrbox::TextureWEBP> _intro_webp = nullptr;
 		// ---
 

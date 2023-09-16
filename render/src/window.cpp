@@ -116,6 +116,7 @@ namespace rawrbox {
 			this->_renderer->setOverlayRender(this->_overlay);
 			this->_renderer->setWorldRender(this->_world);
 
+			this->_introComplete = true;
 			if (this->onIntroCompleted != nullptr) this->onIntroCompleted();
 			return;
 		}
@@ -130,10 +131,12 @@ namespace rawrbox {
 				// Done, continue gameeeee
 				this->_renderer->setOverlayRender(this->_overlay);
 				this->_renderer->setWorldRender(this->_world);
-				this->_intro_webp->reset(); // Kill it, we don't need it anymore
 
 				if (this->onIntroCompleted != nullptr) {
-					rawrbox::runOnRenderThread([this]() { this->onIntroCompleted(); });
+					rawrbox::runOnRenderThread([this]() {
+						this->_introComplete = true;
+						this->onIntroCompleted();
+					});
 				}
 			};
 		});
@@ -403,6 +406,11 @@ namespace rawrbox {
 
 	void Window::update() {
 		if (this->_intro_webp != nullptr) {
+			if (this->_introComplete) {
+				this->_intro_webp.reset(); // Kill it, don't need it anymore
+				return;
+			}
+
 			this->_intro_webp->update();
 		} else {
 			if (this->_camera != nullptr) {
@@ -480,9 +488,13 @@ namespace rawrbox {
 		return {static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y))};
 	}
 
-	uint32_t Window::getWindowFlags() const { return this->_windowFlags; }
+	uint32_t Window::getWindowFlags() const {
+		return this->_windowFlags;
+	}
 
-	rawrbox::Stencil& Window::getStencil() const { return *this->_stencil; }
+	rawrbox::Stencil& Window::getStencil() const {
+		return *this->_stencil;
+	}
 
 	bool Window::isKeyDown(int key) const {
 		if (this->_handle == nullptr) return false;
@@ -506,7 +518,9 @@ namespace rawrbox {
 		return false;
 	}
 
-	const std::unordered_map<int, rawrbox::Vector2i>& Window::getScreenSizes() const { return this->_screenSizes; }
+	const std::unordered_map<int, rawrbox::Vector2i>& Window::getScreenSizes() const {
+		return this->_screenSizes;
+	}
 	// --------------------
 
 	// ------EVENTS

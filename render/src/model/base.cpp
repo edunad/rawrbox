@@ -1,5 +1,6 @@
 #include <rawrbox/render/model/base.hpp>
 #include <rawrbox/utils/pack.hpp>
+#include <rawrbox/utils/string.hpp>
 
 #ifdef RAWRBOX_SCRIPTING
 	#include <rawrbox/render/scripting/wrappers/model/base_wrapper.hpp>
@@ -104,6 +105,25 @@ namespace rawrbox {
 		fnd->second->weight = weight;
 		this->applyBlendShapes();
 		return true;
+	}
+
+	bool ModelBase::setBlendShapeByKey(const std::string& id, float weight) {
+		bool found = false;
+
+		for (auto& s : this->_blend_shapes) {
+			auto split = rawrbox::StrUtils::split(s.first, '-');
+			auto shapeId = split[split.size() - 1];
+			if (shapeId == id) {
+				s.second->weight = weight;
+				found = true;
+			}
+		}
+
+		if (found) {
+			this->applyBlendShapes();
+		}
+
+		return found;
 	}
 	// --------------
 

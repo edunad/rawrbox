@@ -81,6 +81,7 @@ namespace rawrbox {
 
 		virtual bool removeBlendShape(const std::string& id);
 		virtual bool setBlendShape(const std::string& id, float weight);
+		virtual bool setBlendShapeByKey(const std::string& id, float weight);
 		// --------------
 
 		// UTIL ---
