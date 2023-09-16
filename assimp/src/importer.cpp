@@ -706,17 +706,20 @@ namespace rawrbox {
 			std::string old = "";
 			for (auto& s : this->blendShapes) {
 				auto split = rawrbox::StrUtils::split(s.first, '-');
+				auto shapeId = split[split.size() - 1];
+				auto shapeName = rawrbox::StrUtils::replace(s.first, fmt::format("-{}", shapeId), "");
 
-				if (old.empty() || old != split[0]) {
-					old = split[0];
-					fmt::print("{} --->\n", split[0]);
+				if (old.empty() || old != shapeName) {
+					old = shapeName;
+					fmt::print("{} --->\n", shapeName);
 				}
 
-				fmt::print("\t{}\n", split[1]);
+				fmt::print("\t{}\n", shapeId);
 			}
 
 			fmt::print("=== ====================\n");
-		} // ----
+		}
+		// ----
 
 		aiReleaseImport(scene);
 	}
