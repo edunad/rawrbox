@@ -724,19 +724,18 @@ namespace rawrbox {
 		aiReleaseImport(scene);
 	}
 
-	AssimpImporter::AssimpImporter(uint32_t loadFlags, uint32_t assimpFlags) : loadFlags(loadFlags), assimpFlags(assimpFlags) {
+	AssimpImporter::AssimpImporter(uint32_t loadFlags_, uint32_t assimpFlags_) : loadFlags(loadFlags_), assimpFlags(assimpFlags_) {
 		this->meshes.clear(); // Clear old meshes
 
 		bool optimize = (this->loadFlags & rawrbox::ModelLoadFlags::Optimization::DISABLE) == 0;
+		if (optimize) {
+			this->assimpFlags |= aiProcessPreset_TargetRealtime_Fast | aiProcess_GlobalScale | aiProcess_TransformUVCoords;
+		}
 
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {
 			this->assimpFlags |= aiProcess_PopulateArmatureData | aiProcess_LimitBoneWeights; // Enable armature & limit bones
 		} else if (optimize && (this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) == 0) {
 			this->assimpFlags |= aiProcess_PreTransformVertices; // Enable PreTransformVertices for optimization
-		}
-
-		if (optimize && (this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
-			this->assimpFlags |= aiProcess_RemoveRedundantMaterials; // Enable armature & limit bones
 		}
 	}
 

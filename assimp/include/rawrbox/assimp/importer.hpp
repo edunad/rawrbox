@@ -17,7 +17,7 @@
 #include <functional>
 #include <optional>
 
-#define DEFAULT_ASSIMP_FLAGS (aiProcessPreset_TargetRealtime_Fast | aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded | aiProcess_GlobalScale)
+#define DEFAULT_ASSIMP_FLAGS (aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded)
 
 namespace rawrbox {
 	// NOLINTBEGIN{unused-const-variable}
