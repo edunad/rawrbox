@@ -5,9 +5,6 @@
 #include <rawrbox/webm/loader.hpp>
 
 #include <filesystem>
-#include <memory>
-#include <thread>
-#include <vector>
 
 namespace rawrbox {
 	class TextureWEBM : public rawrbox::TextureBase {
