@@ -8,8 +8,6 @@
 #include <vpx/vp8dx.h>
 #include <vpx/vpx_decoder.h>
 
-#include <mutex>
-
 namespace rawrbox {
 	// PRIVATE -----
 	std::unique_ptr<vpx_codec_ctx> WEBMDecoder::_ctx = nullptr;
