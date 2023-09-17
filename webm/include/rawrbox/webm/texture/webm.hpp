@@ -13,15 +13,10 @@ namespace rawrbox {
 	class TextureWEBM : public rawrbox::TextureBase {
 	private:
 		std::filesystem::path _filePath = "";
+		uint32_t _flags = 0;
+
 		std::unique_ptr<rawrbox::WEBM> _webm = nullptr;
-
-		uint32_t _trackId = 0;
 		uint64_t _cooldown = 0;
-
-		std::unique_ptr<std::jthread> preloadThread;
-		std::vector<rawrbox::WEBMImage> preloadedFrames;
-		size_t preloadedFrame = 0;
-		bool preloadMode = false;
 
 		void internalUpdate();
 		void internalLoad();
@@ -29,7 +24,7 @@ namespace rawrbox {
 	public:
 		rawrbox::Event<> onEnd;
 
-		explicit TextureWEBM(const std::filesystem::path& filePath, uint32_t videoTrack = 0);
+		explicit TextureWEBM(const std::filesystem::path& filePath, uint32_t flags = 0);
 		TextureWEBM(const TextureWEBM&) = delete;
 		TextureWEBM(TextureWEBM&&) = delete;
 		TextureWEBM& operator=(const TextureWEBM&) = delete;
@@ -47,8 +42,6 @@ namespace rawrbox {
 
 		void seek(uint64_t timeMS);
 		void reset();
-
-		void preload();
 		// ----
 
 		// ------RENDER

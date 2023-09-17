@@ -16,6 +16,8 @@ namespace rawrbox {
 	};
 
 	struct WEBMFrame {
+		long long pos = 0;
+
 		std::vector<uint8_t> buffer = {};
 		rawrbox::VIDEO_CODEC codec = rawrbox::VIDEO_CODEC::UNKNOWN;
 

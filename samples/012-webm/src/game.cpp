@@ -44,7 +44,7 @@ namespace webm_test {
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./content/video/webm_test.webm", 0)};
+		    std::make_pair<std::string, uint32_t>("./content/video/webm_test.webm", 0 | rawrbox::WEBMLoadFlags::PRELOAD)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
@@ -61,9 +61,10 @@ namespace webm_test {
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./content/video/webm_test.webm")->get<rawrbox::TextureWEBM>();
 		tex->setTextureUV(rawrbox::TEXTURE_UV::UV_FLIP_V);
 		// tex->setLoop(false);
-		// tex->onEnd += []() {
-		//	fmt::print("[RawrBox] WEBM reached end\n");
-		// };
+		tex->onEnd += [tex]() {
+			fmt::print("[RawrBox] WEBM reached end\n");
+			tex->seek(6500);
+		};
 
 		this->_model->setOptimizable(false);
 
