@@ -31,7 +31,6 @@ namespace rawrbox {
 		// --------
 
 		bool _canOptimize = true;
-		virtual void flattenMeshes(bool optimize = true, bool sort = true);
 
 		// ANIMATIONS ----
 		void animate(const rawrbox::Mesh& mesh) const;
@@ -60,6 +59,7 @@ namespace rawrbox {
 		Model& operator=(Model&&) = delete;
 		~Model() override;
 
+		virtual void flattenMeshes(bool optimize = true, bool sort = true);
 		virtual void setOptimizable(bool status);
 		virtual void optimize();
 

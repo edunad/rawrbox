@@ -6,7 +6,7 @@ namespace rawrbox {
 	// Resource ----
 	ResourceWEBM::~ResourceWEBM() { this->_texture.reset(); }
 	bool ResourceWEBM::load(const std::vector<uint8_t>& /*buffer*/) {
-		this->_texture = std::make_unique<rawrbox::TextureWEBM>(this->filePath);
+		this->_texture = std::make_unique<rawrbox::TextureWEBM>(this->filePath, this->flags);
 		return true;
 	}
 

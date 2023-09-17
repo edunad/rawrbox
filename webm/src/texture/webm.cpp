@@ -4,16 +4,19 @@
 
 #include <fmt/format.h>
 
+#include <memory>
+#include <thread>
+
 namespace rawrbox {
 	// NOLINTBEGIN(modernize-pass-by-value)
-	TextureWEBM::TextureWEBM(const std::filesystem::path& filePath, uint32_t videoTrack) : _filePath(filePath), _trackId(videoTrack) {
+	TextureWEBM::TextureWEBM(const std::filesystem::path& filePath, uint32_t flags) : _filePath(filePath), _flags(flags) {
 		this->internalLoad();
 	}
 	// NOLINTEND(modernize-pass-by-value)
 
 	void TextureWEBM::internalLoad() {
 		this->_webm = std::make_unique<rawrbox::WEBM>();
-		this->_webm->load(this->_filePath);
+		this->_webm->load(this->_filePath, this->_flags);
 		this->_webm->setLoop(true);
 		this->_webm->onEnd += [this]() { this->onEnd(); };
 
@@ -28,16 +31,9 @@ namespace rawrbox {
 	void TextureWEBM::internalUpdate() {
 		if (this->_webm == nullptr) throw std::runtime_error("[RawrBox-TextureWEBM] WEBM loader not initialized!");
 
-		bool success = this->_webm->advance();
+		rawrbox::WEBMImage img;
+		bool success = this->_webm->getNextFrame(img);
 		if (!success) return;
-
-		auto frame = this->_webm->getFrame();
-		if (!frame.valid()) throw std::runtime_error("[RawrBox-TextureWEBM] Failed to find frame");
-
-		if (!rawrbox::WEBMDecoder::decode(frame)) throw std::runtime_error("[RawrBox-TextureWEBM] Failed to decode frame");
-
-		rawrbox::WEBMImage img = rawrbox::WEBMDecoder::getImageFrame();
-		if (!img.valid()) throw std::runtime_error("[RawrBox-TextureWEBM] Failed to decode frame");
 
 		bgfx::updateTexture2D(this->_handle, 0, 0, 0, 0, static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), bgfx::copy(img.pixels.data(), static_cast<uint32_t>(img.pixels.size())));
 	}
@@ -77,7 +73,9 @@ namespace rawrbox {
 
 	void TextureWEBM::reset() {
 		if (this->_webm == nullptr) return;
+
 		this->_webm->reset();
+		this->_cooldown = rawrbox::TimeUtils::curtime() + 20;
 	}
 	// ------
 

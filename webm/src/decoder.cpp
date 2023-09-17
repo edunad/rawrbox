@@ -8,6 +8,8 @@
 #include <vpx/vp8dx.h>
 #include <vpx/vpx_decoder.h>
 
+#include <mutex>
+
 namespace rawrbox {
 	// PRIVATE -----
 	std::unique_ptr<vpx_codec_ctx> WEBMDecoder::_ctx = nullptr;
@@ -49,6 +51,7 @@ namespace rawrbox {
 	}
 
 	bool WEBMDecoder::decode(const rawrbox::WEBMFrame& frame) {
+
 		if (_ctx == nullptr)
 			throw std::runtime_error("[WEBMDecoder] Codec not initialized, did you call 'init' ?");
 
