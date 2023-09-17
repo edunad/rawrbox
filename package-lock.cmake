@@ -3,14 +3,14 @@
 
 # fmt
 CPMDeclarePackage(fmt
-  GIT_TAG 10.0.0
+  GIT_TAG 10.1.1
   GITHUB_REPOSITORY fmtlib/fmt
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
 )
 # magic_enum
 CPMDeclarePackage(magic_enum
-  VERSION 0.9.0
+  VERSION 0.9.3
   GITHUB_REPOSITORY Neargye/magic_enum
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -63,6 +63,7 @@ CPMDeclarePackage(libcpr
     "BUILD_SHARED_LIBS OFF"
     "CPR_ENABLE_CURL_HTTP_ONLY ON"
     "CPR_ENABLE_SSL ON"
+    "CURL_ZLIB ON"
 )
 # lua
 CPMDeclarePackage(lua
@@ -113,7 +114,7 @@ CPMDeclarePackage(glfw
 #)
 # utfcpp
 CPMDeclarePackage(utfcpp
-  VERSION 3.2.3
+  VERSION 3.2.4
   GITHUB_REPOSITORY nemtrif/utfcpp
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
