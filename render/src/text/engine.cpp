@@ -74,7 +74,7 @@ namespace rawrbox {
 			// Not found on content & system? Load fallback
 			if (!std::filesystem::exists(pth)) {
 				fmt::print("  └── Loading fallback font!\n");
-				pth = "./content/fonts/Hack-Regular.ttf"; // Fallback
+				pth = "./content/fonts/LiberationMono-Regular.ttf"; // Fallback
 
 				if (!std::filesystem::exists(pth)) throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load fallback font '{}'", pth.generic_string()));
 			}
