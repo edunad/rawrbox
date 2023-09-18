@@ -12,6 +12,8 @@
 #include <fmt/format.h>
 
 #include <cstdint>
+#include <filesystem>
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -88,6 +90,13 @@ namespace rawrbox {
 	};
 
 	class TextureWEBP;
+	struct RawrboxIntro {
+	public:
+		std::shared_ptr<rawrbox::TextureWEBP> texture;
+		float speed;
+		bool cover;
+	};
+
 	class Window {
 	private:
 		std::function<void()> _overlay = nullptr;
@@ -106,9 +115,10 @@ namespace rawrbox {
 		bool _hasFocus = true;
 
 		// Intro -----
-		bool _skipIntro = false;
 		bool _introComplete = false;
-		std::shared_ptr<rawrbox::TextureWEBP> _intro_webp = nullptr;
+		bool _skipIntros = false;
+		rawrbox::RawrboxIntro* _currentIntro = nullptr;
+		std::map<std::string, rawrbox::RawrboxIntro> _introList = {{"./content/textures/rawrbox.webp", {nullptr, 1.4F, false}}}; // rawrbox intro, always the first
 		// ---
 
 		// Data ---
@@ -196,7 +206,8 @@ namespace rawrbox {
 		void update();
 
 		// INTRO ------
-		void skipIntro(bool skip); // :(
+		void skipIntros(bool skip); // :(
+		void addIntro(const std::filesystem::path& webpPath, float speed = 1.F, bool cover = false);
 		// ----------------
 
 		// UPDATE ------

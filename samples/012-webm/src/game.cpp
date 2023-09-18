@@ -44,7 +44,8 @@ namespace webm_test {
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./content/video/webm_test.webm", 0 | rawrbox::WEBMLoadFlags::PRELOAD)};
+		    std::make_pair<std::string, uint32_t>("./content/video/webm_test.webm", 0 | rawrbox::WEBMLoadFlags::PRELOAD),
+		    std::make_pair<std::string, uint32_t>("./content/video/webm_test_2.webm", 0 | rawrbox::WEBMLoadFlags::PRELOAD)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
@@ -59,6 +60,8 @@ namespace webm_test {
 
 	void Game::contentLoaded() {
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./content/video/webm_test.webm")->get<rawrbox::TextureWEBM>();
+		auto tex2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./content/video/webm_test_2.webm")->get<rawrbox::TextureWEBM>();
+		tex2->setTextureUV(rawrbox::TEXTURE_UV::UV_FLIP_V);
 		tex->setTextureUV(rawrbox::TEXTURE_UV::UV_FLIP_V);
 		// tex->setLoop(false);
 		tex->onEnd += [tex]() {
@@ -69,8 +72,14 @@ namespace webm_test {
 		this->_model->setOptimizable(false);
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane({0.F, 4.0F, 0.F}, {4.F, 3.F});
+			auto mesh = rawrbox::MeshUtils::generatePlane({2.F, 4.0F, 0.F}, {4.F, 3.F});
 			mesh.setTexture(tex);
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generatePlane({-2.F, 4.0F, 0.F}, {4.F, 3.F});
+			mesh.setTexture(tex2);
 			this->_model->addMesh(mesh);
 		}
 

@@ -59,14 +59,17 @@ namespace rawrbox {
 	// --------------------
 
 	// UTILS ------
+	bool TextureAnimatedBase::getPaused() { return this->_pause; }
 	void TextureAnimatedBase::setPaused(bool paused) {
 		this->_pause = paused;
 	}
 
+	bool TextureAnimatedBase::getLoop() { return this->_loop; }
 	void TextureAnimatedBase::setLoop(bool loop) {
 		this->_loop = loop;
 	}
 
+	bool TextureAnimatedBase::getSpeed() { return this->_speed; }
 	void TextureAnimatedBase::setSpeed(float speed) {
 		this->_speed = speed;
 	}

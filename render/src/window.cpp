@@ -112,31 +112,34 @@ namespace rawrbox {
 	}
 
 	void Window::playIntro() {
-		if (this->_skipIntro) {
+		if (this->_skipIntros) {
 			this->_renderer->setOverlayRender(this->_overlay);
 			this->_renderer->setWorldRender(this->_world);
 
+			this->_introList.clear();
+			this->_currentIntro = nullptr;
 			this->_introComplete = true;
+
 			this->onIntroCompleted();
 			return;
 		}
 
-		// Load webp -----------------------
+		// Load webp intros -----------------------
 		rawrbox::ASYNC::run([this]() {
-			this->_intro_webp = std::make_shared<rawrbox::TextureWEBP>("./content/textures/rawrbox.webp");
-			this->_intro_webp->upload();
-			this->_intro_webp->setLoop(false);
-			this->_intro_webp->setSpeed(1.4F);
-			this->_intro_webp->onEnd += [this]() {
-				// Done, continue gameeeee
-				this->_renderer->setOverlayRender(this->_overlay);
-				this->_renderer->setWorldRender(this->_world);
-
-				rawrbox::runOnRenderThread([this]() {
+			// Load ----
+			for (auto& intro : this->_introList) {
+				intro.second.texture = std::make_shared<rawrbox::TextureWEBP>(intro.first);
+				intro.second.texture->setLoop(false);
+				intro.second.texture->setSpeed(intro.second.speed);
+				intro.second.texture->onEnd += [this]() {
 					this->_introComplete = true;
-					this->onIntroCompleted();
-				});
-			};
+				};
+
+				intro.second.texture->upload();
+			}
+
+			// First intro on the list
+			this->_currentIntro = &this->_introList.begin()->second;
 		});
 		// -------------------------
 
@@ -146,11 +149,15 @@ namespace rawrbox {
 
 			this->_stencil->drawBox({}, this->_size.cast<float>(), rawrbox::Colors::Black());
 
-			if (this->_intro_webp != nullptr) {
-				auto size = this->_intro_webp->getSize().cast<float>();
-				auto screenSize = this->_size.cast<float>();
+			if (this->_currentIntro != nullptr) {
+				auto size = this->_currentIntro->texture->getSize().cast<float>();
 
-				this->_stencil->drawTexture({screenSize.x / 2.F - size.x / 2.F, screenSize.y / 2.F - size.y / 2.F}, {size.x, size.y}, *this->_intro_webp);
+				if (this->_currentIntro->cover) {
+					this->_stencil->drawTexture({0, 0}, {size.x, size.y}, *this->_currentIntro->texture);
+				} else {
+					auto screenSize = this->_size.cast<float>();
+					this->_stencil->drawTexture({screenSize.x / 2.F - size.x / 2.F, screenSize.y / 2.F - size.y / 2.F}, {size.x, size.y}, *this->_currentIntro->texture);
+				}
 			}
 
 			this->_stencil->render();
@@ -403,13 +410,26 @@ namespace rawrbox {
 	}
 
 	void Window::update() {
-		if (this->_intro_webp != nullptr) {
+		if (this->_currentIntro != nullptr) {
 			if (this->_introComplete) {
-				this->_intro_webp.reset(); // Kill it, don't need it anymore
+				this->_introList.erase(this->_introList.begin());
+
+				// Done?
+				if (this->_introList.empty()) {
+					this->_renderer->setOverlayRender(this->_overlay);
+					this->_renderer->setWorldRender(this->_world);
+
+					this->_currentIntro = nullptr;
+					this->onIntroCompleted();
+				} else {
+					this->_currentIntro = &this->_introList.begin()->second;
+					this->_introComplete = false;
+				}
+
 				return;
 			}
 
-			this->_intro_webp->update();
+			this->_currentIntro->texture->update();
 		} else {
 			if (this->_camera != nullptr) {
 				this->_camera->update();
@@ -418,12 +438,20 @@ namespace rawrbox {
 	}
 
 	// INTRO ------
-	void Window::skipIntro(bool skip) {
-		this->_skipIntro = skip;
+	void Window::skipIntros(bool skip) {
+		if (skip) fmt::print("[RawrBox] Skipping intros :(\n");
+		this->_skipIntros = skip;
+	}
 
-		fmt::print("===============\n");
-		fmt::print("Skipping RawrBox intro :(\n");
-		fmt::print("===============\n");
+	void Window::addIntro(const std::filesystem::path& webpPath, float speed, bool cover) {
+		if (webpPath.extension() != ".webp") throw std::runtime_error(fmt::format("[RawrBox-Window] Invalid intro '{}', format needs to be .webp!", webpPath.generic_string()));
+
+		rawrbox::RawrboxIntro intro;
+		intro.cover = cover;
+		intro.speed = speed;
+		intro.texture = nullptr;
+
+		this->_introList[webpPath.generic_string()] = intro;
 	}
 	// ----------------
 

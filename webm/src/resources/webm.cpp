@@ -18,7 +18,7 @@ namespace rawrbox {
 
 	// Loader ----
 	WEBMLoader::WEBMLoader() {
-		rawrbox::WEBMDecoder::init();
+		rawrbox::WEBMDecoder::init(rawrbox::VIDEO_CODEC::VIDEO_VP9);
 	}
 
 	WEBMLoader::~WEBMLoader() {

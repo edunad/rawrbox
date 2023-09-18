@@ -46,8 +46,11 @@ namespace rawrbox {
 		// --------------------
 
 		// ------UTILS
+		virtual bool getLoop();
 		virtual void setLoop(bool loop);
+		virtual bool getPaused();
 		virtual void setPaused(bool paused);
+		virtual bool getSpeed();
 		virtual void setSpeed(float speed);
 		[[nodiscard]] bool hasTransparency() const override;
 		// --------------------

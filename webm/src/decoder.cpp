@@ -16,7 +16,7 @@ namespace rawrbox {
 	rawrbox::VIDEO_CODEC WEBMDecoder::_codec;
 	// ------
 
-	void WEBMDecoder::init(uint32_t threads, rawrbox::VIDEO_CODEC codec) {
+	void WEBMDecoder::init(rawrbox::VIDEO_CODEC codec, uint32_t threads) {
 		const vpx_codec_dec_cfg_t codecCfg = {
 		    threads,
 		    0,
@@ -37,7 +37,7 @@ namespace rawrbox {
 		_codec = codec;
 		_ctx = std::make_unique<vpx_codec_ctx>();
 
-		if (vpx_codec_dec_init(_ctx.get(), codecIface, &codecCfg, VPX_CODEC_USE_FRAME_THREADING)) {
+		if (vpx_codec_dec_init(_ctx.get(), codecIface, &codecCfg, 0 | VPX_CODEC_USE_FRAME_THREADING)) {
 			_ctx.reset();
 			throw std::runtime_error("[WEBMDecoder] Failed to initialize vpx codec");
 		}
@@ -48,8 +48,7 @@ namespace rawrbox {
 		_ctx.reset();
 	}
 
-	bool WEBMDecoder::decode(const rawrbox::WEBMFrame& frame) {
-
+	bool WEBMDecoder::decode(const rawrbox::WEBMFrame& frame, rawrbox::WEBMImage& image) {
 		if (_ctx == nullptr)
 			throw std::runtime_error("[WEBMDecoder] Codec not initialized, did you call 'init' ?");
 
@@ -61,11 +60,7 @@ namespace rawrbox {
 		}
 
 		_iter = nullptr;
-		return !vpx_codec_decode(_ctx.get(), frame.buffer.data(), static_cast<uint32_t>(frame.buffer.size()), nullptr, 0);
-	}
-
-	rawrbox::WEBMImage WEBMDecoder::getImageFrame() {
-		rawrbox::WEBMImage image = {};
+		if (vpx_codec_decode(_ctx.get(), frame.buffer.data(), static_cast<uint32_t>(frame.buffer.size()), nullptr, 0)) return false;
 
 		if (vpx_image_t* img = vpx_codec_get_frame(_ctx.get(), &_iter)) {
 			if ((img->fmt & VPX_IMG_FMT_PLANAR) == 0) throw std::runtime_error("[WEBMDecoder] Failed to get image! Image not in FMT_PLANAR!");
@@ -100,6 +95,6 @@ namespace rawrbox {
 			}
 		}
 
-		return image;
+		return true;
 	}
 } // namespace rawrbox

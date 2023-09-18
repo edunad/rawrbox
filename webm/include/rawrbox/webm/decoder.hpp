@@ -38,10 +38,9 @@ namespace rawrbox {
 		static const void* _iter;
 
 	public:
-		static void init(uint32_t threads = 3, rawrbox::VIDEO_CODEC codec = rawrbox::VIDEO_CODEC::VIDEO_VP9);
+		static void init(rawrbox::VIDEO_CODEC codec, uint32_t threads = 6);
 		static void shutdown();
 
-		static bool decode(const rawrbox::WEBMFrame& frame);
-		static rawrbox::WEBMImage getImageFrame();
+		static bool decode(const rawrbox::WEBMFrame& frame, rawrbox::WEBMImage& image);
 	};
 } // namespace rawrbox

@@ -96,16 +96,17 @@ namespace rawrbox {
 		// -----
 	}
 
+	static std::mutex RENDER_THREAD_LOCK;
 	void WEBM::preloadVideo() {
+		std::lock_guard<std::mutex> lock(RENDER_THREAD_LOCK);
 		fmt::print("[RawrBox-WEBM] Pre-loading video '{}'\n", this->_filePath.generic_string());
 
 		while (this->advance()) {
 			auto frame = this->getFrame();
 			if (!frame.valid()) throw std::runtime_error("[RawrBox-WEBM] Failed to find frame");
 
-			if (!rawrbox::WEBMDecoder::decode(frame)) throw std::runtime_error("[RawrBox-WEBM] Failed to decode frame");
-
-			rawrbox::WEBMImage img = rawrbox::WEBMDecoder::getImageFrame();
+			rawrbox::WEBMImage img;
+			if (!rawrbox::WEBMDecoder::decode(frame, img)) throw std::runtime_error("[RawrBox-WEBM] Failed to decode frame");
 			if (!img.valid()) throw std::runtime_error("[RawrBox-WEBM] Failed to decode frame");
 
 			this->_preloadedFrames[frame.pos] = img;
@@ -233,11 +234,11 @@ namespace rawrbox {
 		if (this->isPreLoaded()) {
 			img = this->_preloadedFrames[frame.pos];
 		} else {
-			if (!rawrbox::WEBMDecoder::decode(frame)) return false;
-			img = rawrbox::WEBMDecoder::getImageFrame();
+			std::lock_guard<std::mutex> lock(RENDER_THREAD_LOCK);
+			rawrbox::WEBMDecoder::decode(frame, img);
 		}
 
-		return true;
+		return img.valid();
 	}
 
 	// UTILS ------
