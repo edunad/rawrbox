@@ -60,9 +60,9 @@ namespace ui_test {
 
 	void Game::loadContent() {
 		std::vector initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("./content/textures/meow3.gif", 0),
-		    std::make_pair<std::string, uint32_t>("./content/json/test.json", 0)};
+		    std::make_pair<std::string, uint32_t>("content/fonts/LiberationMono-Regular.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("content/textures/meow3.gif", 0),
+		    std::make_pair<std::string, uint32_t>("content/json/test.json", 0)};
 		initialContentFiles.insert(initialContentFiles.begin(), rawrbox::UI_RESOURCES.begin(), rawrbox::UI_RESOURCES.end()); // Insert the UI resources
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
@@ -106,7 +106,7 @@ namespace ui_test {
 			{
 				auto label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({10, 5});
-				label->setFont("cour.ttf", 14);
+				label->setFont("content/fonts/LiberationMono-Regular.ttf", 14);
 				label->setText("Label: mew!");
 				label->sizeToContents();
 			}
@@ -114,7 +114,7 @@ namespace ui_test {
 			{
 				auto label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({10, 18});
-				label->setFont("cour.ttf", 14);
+				label->setFont("content/fonts/LiberationMono-Regular.ttf", 14);
 				label->setText("Label: shadow mew!");
 				label->setShadowColor(rawrbox::Colors::Black());
 				label->sizeToContents();
@@ -124,7 +124,7 @@ namespace ui_test {
 				auto input = frame->createChild<rawrbox::UIInput>();
 				input->setPos({10, 36});
 				input->setSize({380, 22});
-				input->setFont("cour.ttf", 14);
+				input->setFont("content/fonts/LiberationMono-Regular.ttf", 14);
 				input->setPlaceholder("cour.taaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaatf");
 			}
 
@@ -132,7 +132,7 @@ namespace ui_test {
 				auto input = frame->createChild<rawrbox::UIInput>();
 				input->setPos({10, 64});
 				input->setSize({380, 22});
-				input->setFont("cour.ttf", 14);
+				input->setFont("content/fonts/LiberationMono-Regular.ttf", 14);
 				input->setText("readonly");
 				input->setReadOnly(true);
 			}
@@ -217,7 +217,7 @@ namespace ui_test {
 			this->_graph->setAutoScale(true);
 			this->_graph->setSmoothing(20);
 			this->_graph->setShowLegend(true);
-			this->_graph->setFontLegend("cour.ttf");
+			this->_graph->setFontLegend("content/fonts/LiberationMono-Regular.ttf");
 		}
 		// ---
 
@@ -247,6 +247,9 @@ namespace ui_test {
 	}
 
 	void Game::update() {
+		if (this->_window == nullptr) return;
+		this->_window->update();
+
 		this->_ROOT_UI->update();
 		if (this->_anim != nullptr) this->_anim->update();
 	}

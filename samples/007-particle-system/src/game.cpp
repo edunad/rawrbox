@@ -49,7 +49,7 @@ namespace particle_test {
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("content/fonts/LiberationMono-Regular.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/particles/particles.png", 32)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
@@ -65,7 +65,7 @@ namespace particle_test {
 
 	void Game::contentLoaded() {
 		// Fonts -----
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(24);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/LiberationMono-Regular.ttf")->getSize(24);
 		// ------
 
 		// Setup Engine

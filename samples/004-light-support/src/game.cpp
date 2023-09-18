@@ -66,7 +66,7 @@ namespace light {
 
 	void Game::loadContent() {
 		std::array<std::pair<std::string, uint32_t>, 3> initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("content/fonts/LiberationMono-Regular.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("./content/textures/light_test/planks.png", 0),
 		    std::make_pair<std::string, uint32_t>("./content/textures/light_test/planksSpec.png", 0)};
 
@@ -82,7 +82,7 @@ namespace light {
 	}
 
 	void Game::contentLoaded() {
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(24);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/LiberationMono-Regular.ttf")->getSize(24);
 
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/light_test/planks.png")->get();
 		auto texSpec = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/light_test/planksSpec.png")->get();

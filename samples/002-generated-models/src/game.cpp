@@ -51,7 +51,7 @@ namespace model {
 	void Game::loadContent() {
 
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("cour.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("content/fonts/LiberationMono-Regular.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/screem.png", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/meow3.gif", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/displacement_test.png", 0),
@@ -71,7 +71,7 @@ namespace model {
 
 	void Game::contentLoaded() {
 		this->_ready = true;
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("cour.ttf")->getSize(24);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/LiberationMono-Regular.ttf")->getSize(24);
 
 		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get();
 		auto texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
