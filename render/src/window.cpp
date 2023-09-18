@@ -150,12 +150,12 @@ namespace rawrbox {
 			this->_stencil->drawBox({}, this->_size.cast<float>(), rawrbox::Colors::Black());
 
 			if (this->_currentIntro != nullptr) {
-				auto size = this->_currentIntro->texture->getSize().cast<float>();
+				auto screenSize = this->_size.cast<float>();
 
 				if (this->_currentIntro->cover) {
-					this->_stencil->drawTexture({0, 0}, {size.x, size.y}, *this->_currentIntro->texture);
+					this->_stencil->drawTexture({0, 0}, {screenSize.x, screenSize.y}, *this->_currentIntro->texture);
 				} else {
-					auto screenSize = this->_size.cast<float>();
+					auto size = this->_currentIntro->texture->getSize().cast<float>();
 					this->_stencil->drawTexture({screenSize.x / 2.F - size.x / 2.F, screenSize.y / 2.F - size.y / 2.F}, {size.x, size.y}, *this->_currentIntro->texture);
 				}
 			}
