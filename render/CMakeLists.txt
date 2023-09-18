@@ -81,6 +81,7 @@ CPMAddPackage(
         "WEBP_BUILD_EXTRAS OFF")
 
 if(libwebp_ADDED)
+    set_lib_runtime_mt(webp)
     set_lib_runtime_mt(webpdemux)
 endif()
 # ----
