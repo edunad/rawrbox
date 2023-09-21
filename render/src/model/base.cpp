@@ -19,8 +19,8 @@ namespace rawrbox {
 	void ModelBase::updateBuffers() {
 		if (!this->isDynamic() || !this->isUploaded()) return;
 
-		const bgfx::Memory* vertMem = bgfx::makeRef(this->_mesh->vertices.data(), static_cast<uint32_t>(this->_mesh->vertices.size()) * this->_material->vLayout().getStride());
-		const bgfx::Memory* indexMem = bgfx::makeRef(this->_mesh->indices.data(), static_cast<uint32_t>(this->_mesh->indices.size()) * sizeof(uint16_t));
+		const bgfx::Memory* vertMem = bgfx::copy(this->_mesh->vertices.data(), static_cast<uint32_t>(this->_mesh->vertices.size()) * this->_material->vLayout().getStride());
+		const bgfx::Memory* indexMem = bgfx::copy(this->_mesh->indices.data(), static_cast<uint32_t>(this->_mesh->indices.size()) * sizeof(uint16_t));
 
 		bgfx::update(this->_vbdh, 0, vertMem);
 		bgfx::update(this->_ibdh, 0, indexMem);

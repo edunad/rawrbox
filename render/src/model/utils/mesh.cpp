@@ -1,5 +1,8 @@
 
 #include <rawrbox/render/model/utils/mesh.hpp>
+#include <rawrbox/utils/pack.hpp>
+
+#include <functional>
 
 namespace rawrbox {
 	rawrbox::Mesh MeshUtils::generateBBOX(const rawrbox::Vector3f& pos, const rawrbox::BBOXf& bbox) {

@@ -1,9 +1,6 @@
 #pragma once
 
 #include <rawrbox/render/materials/base.hpp>
-#include <rawrbox/utils/pack.hpp>
-
-#include <functional>
 
 namespace rawrbox {
 	class MeshUtils {

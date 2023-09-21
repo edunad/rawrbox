@@ -28,9 +28,8 @@ namespace rawrbox {
 		return rawrbox::Matrix4x4::project(pos, this->_view, this->_projection, {0, 0, this->_winSize.x, this->_winSize.y});
 	}
 
-	const rawrbox::Vector3f CameraPerspective::screenToWorld(const rawrbox::Vector2f& screen_pos) const {
-		rawrbox::Vector3f plane_origin{0, 0, 0};
-		rawrbox::Vector3f plane_normal{0, 1, 0};
+	const rawrbox::Vector3f CameraPerspective::screenToWorld(const rawrbox::Vector2f& screen_pos, const rawrbox::Vector3f& origin) const {
+		rawrbox::Vector3f plane_normal = {0, 1, 0};
 
 		auto screenPos = screen_pos.cast<float>();
 
@@ -53,7 +52,7 @@ namespace rawrbox {
 		rawrbox::Vector3f mouse_point_world = {world_pos.x, world_pos.y, world_pos.z};
 		rawrbox::Vector3f camera_forward_world = mouse_point_world - campos;
 
-		float numerator = (plane_origin - campos).dot(plane_normal);
+		float numerator = (origin - campos).dot(plane_normal);
 		float denumerator = camera_forward_world.dot(plane_normal);
 
 		float delta = numerator / denumerator;

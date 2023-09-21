@@ -401,6 +401,13 @@ namespace rawrbox {
 		}
 	}
 
+	void Model::setTexture(rawrbox::TextureBase* tex, int id) {
+		for (size_t i = 0; i < this->_meshes.size(); i++) {
+			if (id != -1 && i != static_cast<size_t>(id)) continue;
+			this->_meshes[i]->setTexture(tex);
+		}
+	}
+
 	std::vector<std::unique_ptr<rawrbox::Mesh>>& Model::meshes() {
 		return this->_meshes;
 	}

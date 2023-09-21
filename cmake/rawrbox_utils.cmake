@@ -74,3 +74,60 @@ function(copy_lua_libs)
 
     add_dependencies(${COPY_LUA_LIBS_TARGET} copy_lua_libs_${COPY_LUA_LIBS_TARGET})
 endfunction()
+
+function(mute_dependencies_warnings FILTER)
+    if(WIN32)
+        function (_get_all_cmake_targets out_var current_dir)
+            get_property(targets DIRECTORY ${current_dir} PROPERTY BUILDSYSTEM_TARGETS)
+            get_property(subdirs DIRECTORY ${current_dir} PROPERTY SUBDIRECTORIES)
+
+            foreach(subdir ${subdirs})
+                _get_all_cmake_targets(subdir_targets ${subdir})
+                list(APPEND targets ${subdir_targets})
+            endforeach()
+
+            set(${out_var} ${targets} PARENT_SCOPE)
+        endfunction()
+
+        _get_all_cmake_targets(all_targets ${CMAKE_CURRENT_LIST_DIR})
+        foreach(target ${all_targets})
+            get_target_property(target_type ${target} TYPE)
+
+            if(target MATCHES ${FILTER})
+                message(STATUS "Ignoring target ${target}")
+            else()
+                if (
+                    #target_type STREQUAL "EXECUTABLE" OR
+                    target_type STREQUAL "SHARED_LIBRARY" OR
+                    target_type STREQUAL "STATIC_LIBRARY")
+
+                    message(STATUS "Disabling warnings for ${target}: ${target_type}")
+                    target_compile_options(${target} PRIVATE
+                        /wd4100
+                        /wd4456
+                        /wd4458
+                        /wd4459
+                        /wd4189
+                        /wd4505
+                        /wd4324
+                        /wd4244
+                        /wd4701
+                        /wd4703
+                        /wd4127
+                        /wd4291
+                        /wd4201
+                        /wd4702
+                        /wd4706
+                        /wd4245
+                        /wd5054
+                        /wd4457
+                        /wd4389
+                        /wd4018
+                        /wd4267
+                    )
+                endif()
+            endif()
+
+        endforeach()
+    endif()
+endfunction()

@@ -48,6 +48,7 @@ namespace rawrbox {
 		       fileExtention == ".bmp" ||
 		       fileExtention == ".jpg" ||
 		       fileExtention == ".gif" ||
+		       fileExtention == ".tga" ||
 		       fileExtention == ".webp" ||
 		       fileExtention == ".jpeg";
 	}

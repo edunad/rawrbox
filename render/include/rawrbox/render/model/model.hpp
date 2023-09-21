@@ -131,6 +131,7 @@ namespace rawrbox {
 		virtual void setDepthTest(uint64_t depth, int id = -1);
 		virtual void setColor(const rawrbox::Color& color, int id = -1);
 		virtual void setRecieveDecals(bool recieve, int id = -1);
+		virtual void setTexture(rawrbox::TextureBase* tex, int id = -1);
 
 		virtual std::vector<std::unique_ptr<rawrbox::Mesh>>& meshes();
 

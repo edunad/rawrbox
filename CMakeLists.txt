@@ -243,7 +243,12 @@ if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
     add_subdirectory("physics_2d")
 endif()
 
+# Shhhhh windows... shhhh....
+# mute_dependencies_warnings("RAWRBOX")
+# --------------------
+
 if(RAWRBOX_BUILD_SAMPLES)
     message(STATUS "Enabled SAMPLES building")
     add_subdirectory("samples")
 endif()
+

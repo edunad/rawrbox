@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <string>
 #include <type_traits>
 
 namespace rawrbox {
@@ -25,7 +26,7 @@ namespace rawrbox {
 		Vector3_t(Vector2_t<NumberType> xy, NumberType _z = 0) : x(xy.x), y(xy.y), z(_z) {}
 		// NOLINTEND(hicpp-explicit-conversions)
 
-		Vector3_t(NumberType _x, NumberType _y, NumberType _z = 0) : x(_x), y(_y), z(_z) {}
+		constexpr Vector3_t(NumberType _x, NumberType _y, NumberType _z = 0) : x(_x), y(_y), z(_z) {}
 
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1); }
@@ -34,6 +35,7 @@ namespace rawrbox {
 		static VecType back() { return VecType(0, 0, -1); }
 		static VecType nan() { return VecType(std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN()); }
 
+		[[nodiscard]] std::string toString() const { return std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z); }
 		[[nodiscard]] int size() const { return 3; }
 
 		[[nodiscard]] Vector3_t<NumberType> xyz() const { return Vector3_t<NumberType>(x, y, z); }
