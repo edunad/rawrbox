@@ -381,10 +381,9 @@ namespace rawrbox {
 	}
 
 	void Window::setCursor(const std::array<uint8_t, 1024>& pixels) {
-		size_t size = pixels.size() * sizeof(uint8_t);
-		if (size == 0) return;
+		if (pixels.empty()) return;
 
-		std::memcpy(this->_cursorPixels.data(), pixels.data(), size);
+		std::memcpy(this->_cursorPixels.data(), pixels.data(), pixels.size() * sizeof(uint8_t));
 		if (GLFWCURSOR != nullptr) glfwDestroyCursor(GLFWCURSOR); // Delete old one
 
 		GLFWimage image = {};

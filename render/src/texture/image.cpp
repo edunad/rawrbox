@@ -48,7 +48,7 @@ namespace rawrbox {
 		this->_channels = channels;
 
 		this->_pixels.resize(static_cast<uint32_t>(this->_size.x * this->_size.y * channels));
-		std::memcpy(this->_pixels.data(), buffer, static_cast<uint32_t>(this->_pixels.size()));
+		std::memcpy(this->_pixels.data(), buffer, static_cast<uint32_t>(this->_pixels.size()) * sizeof(uint8_t));
 
 		// Check for transparency ----
 		if (this->_channels == 4) {
@@ -67,7 +67,7 @@ namespace rawrbox {
 		this->_channels = channels;
 
 		this->_pixels.resize(static_cast<uint32_t>(this->_size.x * this->_size.y * channels));
-		std::memset(this->_pixels.data(), 255, this->_pixels.size());
+		std::memset(this->_pixels.data(), 255, this->_pixels.size() * sizeof(uint8_t));
 	}
 
 	// NOLINTEND(modernize-pass-by-value)
@@ -86,7 +86,7 @@ namespace rawrbox {
 		}
 
 		this->_pixels.resize(static_cast<uint32_t>(this->_size.x * this->_size.y) * this->_channels);
-		std::memcpy(this->_pixels.data(), image, static_cast<uint32_t>(this->_pixels.size()));
+		std::memcpy(this->_pixels.data(), image, static_cast<uint32_t>(this->_pixels.size()) * sizeof(uint8_t));
 
 		// Check for transparency ----
 		if (this->_channels == 4) {
@@ -103,7 +103,7 @@ namespace rawrbox {
 
 	// UTILS --------------------
 	void TextureImage::updatePixels(const std::vector<uint8_t>& buffer) {
-		this->updatePixels(buffer.data(), buffer.size());
+		this->updatePixels(buffer.data(), buffer.size() * sizeof(uint8_t));
 	}
 
 	void TextureImage::updatePixels(const uint8_t* buffer, size_t size) {
