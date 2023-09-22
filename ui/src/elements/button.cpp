@@ -37,7 +37,7 @@ namespace rawrbox {
 	void UIButton::setEnabled(bool enabled) { this->_enabled = enabled; }
 	bool UIButton::isEnabled() const { return this->_enabled; }
 
-	void UIButton::setText(const std::string& text, int size) {
+	void UIButton::setText(const std::string& text, uint16_t size) {
 		this->_consola = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(size);
 		this->_text = text;
 	}

@@ -182,6 +182,7 @@ namespace rawrbox {
 			return dynamic_cast<T*>(this->_camera.get());
 		}
 
+		// RENDERER -----
 		template <class T = RendererCluster, typename... CallbackArgs>
 		void setRenderer(bgfx::RendererType::Enum render, std::function<void()> overlay, std::function<void()> world, CallbackArgs&&... args) {
 			if (!this->isRendererSupported(render)) throw std::runtime_error(fmt::format("[RawrBox-Window] RenderType {} is not supported by your GPU", bgfx::getRendererName(render)));
@@ -193,6 +194,7 @@ namespace rawrbox {
 			this->_renderer = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
 			rawrbox::RENDERER = this->_renderer.get();
 		}
+		// ----------
 
 		void overridePostWorld(std::function<void()> fnc);
 

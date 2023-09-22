@@ -107,6 +107,14 @@ namespace rawrbox {
 		this->addData("mask", {decals ? 1.0F : 0.0F, 0, 0, 0});
 	}
 
+	uint32_t Mesh::getId() const {
+		return this->meshId;
+	}
+
+	void Mesh::setId(uint32_t id) {
+		this->meshId = (id << 8) | 0xFF;
+	}
+
 	void Mesh::setColor(const rawrbox::Color& _color) {
 		this->color = _color;
 	}
@@ -130,12 +138,29 @@ namespace rawrbox {
 	}
 
 	void Mesh::merge(const rawrbox::Mesh& other) {
-		for (uint16_t i : other.indices)
+		rawrbox::Vector3f offset = (other._pos != this->_pos) ? other._pos - this->_pos : rawrbox::Vector3f(0, 0, 0);
+
+		for (uint16_t i : other.indices) {
 			this->indices.push_back(this->totalVertex + i);
-		this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
+		}
+
+		if (offset == rawrbox::Vector3f::zero()) {
+			this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
+		} else {
+			for (auto v : other.vertices) {
+				v.position += offset;
+				this->vertices.push_back(v);
+			}
+		}
 
 		this->totalVertex += other.totalVertex;
 		this->totalIndex += other.totalIndex;
+	}
+
+	void Mesh::rotateVertices(float rad, rawrbox::Vector3f axis) {
+		for (auto& v : vertices) {
+			v.position = v.position.rotate(axis, rad);
+		}
 	}
 
 	void Mesh::clear() {

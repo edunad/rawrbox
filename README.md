@@ -48,6 +48,7 @@
 - Settings support
 - Custom dev console (with support for custom commands)
 - I18N (internationalization) support
+- GPU picking
 
 # TODO LIST
 
@@ -177,7 +178,7 @@
 
 ### 002-generated-models
 
-<a href='/samples/002-generated-models'><img src="https://i.rawr.dev/mNdKngnDC7-min.gif" width=512 /></a>
+<a href='/samples/002-generated-models'><img src="https://i.rawr.dev/XelPGoCABW-min.gif" width=512 /></a>
 
 ### 003-assimp
 
@@ -213,11 +214,11 @@
 
 ### 011-decals
 
-<a href='/samples/011-decals'><img src="https://i.rawr.dev/2eGdHosOfa-min.gif" width=512 /></a>
+<a href='/samples/011-decals'><img src="https://i.rawr.dev/x4ekTeLHzu-min.gif" width=512 /></a>
 
 ### 012-webm
 
-<a href='/samples/012-webm'><img src="https://i.rawr.dev/089L83mo4f-min2.gif" width=512 /></a>
+<a href='/samples/012-webm'><img src="https://i.rawr.dev/sH0bFsxJhp-min.gif" width=512 /></a>
 
 ### 013-physics-2d
 

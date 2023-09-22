@@ -177,7 +177,7 @@ namespace rawrbox {
 			const bx::Vec3 pf = bx::lerp(p0, p1, ttPos);
 
 			rawrbox::Matrix4x4 rot = {};
-			// rot.rotateZ(bx::toRad(rotation)); // TODO: FIX ME
+			// rot.rotateZ(rawrbox::MathUtils::toRad(rotation)); // TODO: FIX ME
 
 			auto rotatedView = rawrbox::MAIN_CAMERA->getViewMtx() * rot;
 			auto camPos = rawrbox::MAIN_CAMERA->getPos();

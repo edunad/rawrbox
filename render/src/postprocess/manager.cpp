@@ -66,6 +66,8 @@ namespace rawrbox {
 	}
 
 	void PostProcessManager::render(const bgfx::TextureHandle& renderTexture) {
+		if (this->_samples.empty()) return;
+
 		bgfx::ViewId prevID = rawrbox::CURRENT_VIEW_ID;
 		for (size_t pass = 0; pass < this->_postProcesses.size(); pass++) {
 			rawrbox::CURRENT_VIEW_ID = rawrbox::POST_PROCESSING_ID + static_cast<bgfx::ViewId>(pass);

@@ -10,9 +10,6 @@
 
 #include <post_process/game.hpp>
 
-#include <bx/bx.h>
-#include <bx/math.h>
-
 namespace post_process {
 	void Game::setupGLFW() {
 		this->_window = std::make_unique<rawrbox::Window>();
@@ -35,15 +32,10 @@ namespace post_process {
 	void Game::init() {
 		if (this->_window == nullptr) return;
 
-		this->_postProcess = std::make_unique<rawrbox::PostProcessManager>(this->_window->getSize());
-		this->_postProcess->add<rawrbox::PostProcessBloom>(0.015F);
-		this->_postProcess->add<rawrbox::PostProcessPSXDither>(rawrbox::DITHER_SIZE::SLOW_MODE);
-		this->_postProcess->add<rawrbox::PostProcessStaticNoise>(0.1F);
-
 		// Setup camera
 		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
 		cam->setPos({0.F, 5.F, -5.F});
-		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		// Add loaders ----
@@ -54,6 +46,12 @@ namespace post_process {
 	}
 
 	void Game::loadContent() {
+		this->_postProcess = std::make_unique<rawrbox::PostProcessManager>(this->_window->getSize());
+		this->_postProcess->add<rawrbox::PostProcessBloom>(0.015F);
+		this->_postProcess->add<rawrbox::PostProcessPSXDither>(rawrbox::DITHER_SIZE::SLOW_MODE);
+		this->_postProcess->add<rawrbox::PostProcessStaticNoise>(0.1F);
+		this->_postProcess->upload();
+
 		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("./content/textures/crate_hl1.png", 0)};
 
@@ -66,8 +64,6 @@ namespace post_process {
 				}
 			});
 		}
-
-		this->_postProcess->upload();
 	}
 
 	void Game::contentLoaded() {

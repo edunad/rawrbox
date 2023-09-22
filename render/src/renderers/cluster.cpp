@@ -124,6 +124,10 @@ namespace rawrbox {
 		this->finalRender();
 		// ------------------------
 
+		// Check GPU Picking -----
+		this->gpuCheck();
+		// -------------------
+
 		this->frame(); // Submit ---
 	}
 

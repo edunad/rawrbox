@@ -35,7 +35,7 @@ namespace rawrbox {
 		this->internalLoad(image, useFallback);
 	}
 
-	TextureImage::TextureImage(uint8_t* buffer, int bufferSize, int forceChannels, bool useFallback) {
+	TextureImage::TextureImage(const uint8_t* buffer, int bufferSize, int forceChannels, bool useFallback) {
 		uint8_t* image = stbi_load_from_memory(buffer, bufferSize, &this->_size.x, &this->_size.y, &this->_channels, forceChannels);
 		if (forceChannels != 0) {
 			this->_channels = forceChannels;
@@ -43,7 +43,7 @@ namespace rawrbox {
 		this->internalLoad(image, useFallback);
 	}
 
-	TextureImage::TextureImage(const rawrbox::Vector2i& size, uint8_t* buffer, int channels) {
+	TextureImage::TextureImage(const rawrbox::Vector2i& size, const uint8_t* buffer, int channels) {
 		this->_size = size;
 		this->_channels = channels;
 
@@ -60,20 +60,28 @@ namespace rawrbox {
 		}
 		// ---------------------------
 	}
-	// NOLINTEND(modernize-pass-by-value)
 
+	TextureImage::TextureImage(const rawrbox::Vector2i& size, const std::vector<uint8_t>& buffer, int channels) : TextureImage(size, buffer.data(), channels) {}
+	TextureImage::TextureImage(const rawrbox::Vector2i& size, int channels) {
+		this->_size = size;
+		this->_channels = channels;
+
+		this->_pixels.resize(static_cast<uint32_t>(this->_size.x * this->_size.y * channels));
+		std::memset(this->_pixels.data(), 255, this->_pixels.size());
+	}
+
+	// NOLINTEND(modernize-pass-by-value)
 	void TextureImage::internalLoad(uint8_t* image, bool useFallback) {
 		if (image == nullptr) {
 			stbi_image_free(image);
 
 			auto failure = stbi_failure_reason();
-
 			if (useFallback) {
 				this->loadFallback();
-				fmt::print("[TextureImage] Failed to load '{}' ──> {}\n  └── Loading fallback texture!\n", this->_filePath.generic_string(), failure);
+				fmt::print("[RawrBox-TextureImage] Failed to load '{}' ──> {}\n  └── Loading fallback texture!\n", this->_filePath.generic_string(), failure);
 				return;
 			} else {
-				throw std::runtime_error(fmt::format("[TextureImage] Error loading image: {}", failure));
+				throw std::runtime_error(fmt::format("[RawrBox-TextureImage] Error loading image: {}", failure));
 			}
 		}
 
@@ -91,6 +99,18 @@ namespace rawrbox {
 		// ---------------------------
 
 		stbi_image_free(image);
+	}
+
+	// UTILS --------------------
+	void TextureImage::updatePixels(const std::vector<uint8_t>& buffer) {
+		this->updatePixels(buffer.data(), buffer.size());
+	}
+
+	void TextureImage::updatePixels(const uint8_t* buffer, size_t size) {
+		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[RawrBox-TextureImage] Failed to bind texture");
+
+		std::memcpy(this->_pixels.data(), buffer, size);
+		bgfx::updateTexture2D(this->_handle, 0, 0, 0, 0, static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), bgfx::makeRef(this->_pixels.data(), static_cast<uint32_t>(this->_pixels.size())));
 	}
 
 	void TextureImage::setName(const std::string& name) {
@@ -127,7 +147,7 @@ namespace rawrbox {
 		this->_handle = bgfx::createTexture2D(static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), false, 0, format,
 		    0 | this->_flags, bgfx::copy(this->_pixels.data(), static_cast<uint32_t>(this->_pixels.size())));
 
-		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[TextureImage] Failed to bind texture");
+		if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[RawrBox-TextureImage] Failed to bind texture");
 		bgfx::setName(this->_handle, fmt::format("RAWR-{}-{}", this->_name, this->_handle.idx).c_str());
 	}
 } // namespace rawrbox

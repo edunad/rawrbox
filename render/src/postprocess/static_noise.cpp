@@ -5,8 +5,6 @@
 #include <rawrbox/render/utils/uniforms.hpp>
 #include <rawrbox/utils/time.hpp>
 
-#include <bx/math.h>
-
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader noise_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_post_base),

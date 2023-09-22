@@ -11,8 +11,6 @@
 
 #include <particle_test/game.hpp>
 
-#include <bx/bx.h>
-#include <bx/math.h>
 #include <fmt/printf.h>
 
 #include <memory>
@@ -33,10 +31,11 @@ namespace particle_test {
 
 	void Game::init() {
 		if (this->_window == nullptr) return;
+
 		// Setup camera
 		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
 		cam->setPos({0.F, 5.F, -5.F});
-		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		// Add loaders ----
@@ -136,8 +135,10 @@ namespace particle_test {
 
 	float move = 0.F;
 	void Game::update() {
-		if (this->_window == nullptr || this->_ps == nullptr) return;
+		if (this->_window == nullptr) return;
 		this->_window->update();
+
+		if (this->_ps == nullptr) return;
 		this->_ps->update();
 
 		this->_em->setPos({2.F + std::cos(move) * 0.5F, 0.5F, std::sin(move) * 0.5F});

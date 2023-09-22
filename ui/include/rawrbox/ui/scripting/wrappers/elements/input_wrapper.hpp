@@ -47,7 +47,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual rawrbox::Colori getBackgroundColor() const;
 
 		virtual void setFont(const rawrbox::FontWrapper& font);
-		virtual void setFont(const std::string& font, sol::optional<int> size, sol::this_environment modEnv);
+		virtual void setFont(const std::string& font, sol::optional<uint16_t> size, sol::this_environment modEnv);
 		[[nodiscard]] virtual rawrbox::FontWrapper getFont() const;
 
 		[[nodiscard]] virtual bool empty() const;

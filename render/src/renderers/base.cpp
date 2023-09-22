@@ -3,6 +3,7 @@
 #include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/render.hpp>
+#include <rawrbox/utils/pack.hpp>
 
 #include <fmt/format.h>
 
@@ -30,11 +31,15 @@ namespace rawrbox {
 
 	void RendererBase::resize(const rawrbox::Vector2i& size) {
 		this->_render = std::make_unique<rawrbox::TextureRender>(size);
-		this->_render->addTexture(bgfx::TextureFormat::R8); // Decal stencil
+		this->_render->addTexture(bgfx::TextureFormat::R8);    // Decal stencil
+		this->_render->addTexture(bgfx::TextureFormat::RGBA8); // GPU PICKING
 		this->_render->upload();
 
 		this->_decals = std::make_unique<rawrbox::TextureRender>(size);
 		this->_decals->upload();
+
+		this->_GPUBlitTex = bgfx::createTexture2D(8, 8, false, 1, bgfx::TextureFormat::RGBA8, 0 | BGFX_TEXTURE_BLIT_DST | BGFX_TEXTURE_READ_BACK | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP);
+		bgfx::setName(this->_GPUBlitTex, "RAWRBOX-BLIT-GPU-PICK");
 
 		auto w = static_cast<uint16_t>(size.x);
 		auto h = static_cast<uint16_t>(size.y);
@@ -85,7 +90,49 @@ namespace rawrbox {
 		this->finalRender();
 		// ------------------------
 
+		// Check GPU Picking -----
+		this->gpuCheck();
+		// -------------------
+
 		this->frame(); // Submit ---
+	}
+
+	void RendererBase::gpuCheck() {
+		if (this->_gpuReadFrame == rawrbox::BGFX_FRAME) {
+			std::unordered_map<uint32_t, uint32_t> ids = {};
+			const bgfx::Caps* caps = bgfx::getCaps();
+
+			uint32_t max = 0;
+			uint32_t id = 0;
+
+			// ----------
+			for (uint8_t* x = this->_gpuPixelData.data(); x < this->_gpuPixelData.data() + rawrbox::GPU_PICK_SAMPLE_SIZE;) {
+				uint8_t rr = *x++;
+				uint8_t gg = *x++;
+				uint8_t bb = *x++;
+				x++; // A is unused
+
+				if ((rr | gg | bb) == 0) continue;
+				if (caps->rendererType == bgfx::RendererType::Direct3D9) {
+					std::swap(rr, bb);
+				}
+
+				uint32_t hashKey = rawrbox::PackUtils::toRGBA(rr / 255.F, gg / 255.F, bb / 255.F, 1.F);
+				auto& v = ids[hashKey];
+				v++;
+
+				if (v > max) {
+					max = v;
+					id = hashKey;
+				}
+			}
+			// --------------
+			for (auto& p : this->_gpuPickCallbacks) {
+				p(id);
+			}
+
+			this->_gpuPickCallbacks.clear();
+		}
 	}
 
 	void RendererBase::finalRender() {
@@ -156,6 +203,22 @@ namespace rawrbox {
 	const bgfx::TextureHandle RendererBase::getMask() const {
 		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
 		return this->_render->getTexture(1);
+	}
+
+	const bgfx::TextureHandle RendererBase::getGPUPick() const {
+		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
+		return this->_render->getTexture(2);
+	}
+
+	void RendererBase::gpuPick(const rawrbox::Vector2i& pos, std::function<void(uint32_t)> callback) {
+		if (this->_render == nullptr || pos.x < 0 || pos.y < 0) return;
+
+		auto tex = this->getGPUPick();
+		if (!bgfx::isValid(tex)) return;
+
+		bgfx::blit(rawrbox::BLIT_VIEW, this->_GPUBlitTex, 0, 0, tex, static_cast<uint16_t>(pos.x), static_cast<uint16_t>(pos.y));
+		this->_gpuReadFrame = bgfx::readTexture(this->_GPUBlitTex, this->_gpuPixelData.data());
+		this->_gpuPickCallbacks.emplace_back(callback);
 	}
 	// ------
 

@@ -45,11 +45,11 @@ namespace rawrbox {
 		[[nodiscard]] virtual rawrbox::Colori getTextShadowColor() const;
 
 		virtual void setFont(const rawrbox::FontWrapper& font);
-		virtual void setFont(const std::string& font, sol::optional<int> size, sol::this_environment modEnv);
+		virtual void setFont(const std::string& font, sol::optional<uint16_t> size, sol::this_environment modEnv);
 		[[nodiscard]] virtual rawrbox::FontWrapper getFont() const;
 
 		virtual void setFontLegend(const rawrbox::FontWrapper& font);
-		virtual void setFontLegend(const std::string& font, sol::optional<int> size, sol::this_environment modEnv);
+		virtual void setFontLegend(const std::string& font, sol::optional<uint16_t> size, sol::this_environment modEnv);
 		[[nodiscard]] virtual rawrbox::FontWrapper getFontLegend() const;
 		// ----
 

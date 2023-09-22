@@ -4,8 +4,6 @@
 #include <rawrbox/render/model/base.hpp>
 #include <rawrbox/utils/pack.hpp>
 
-#include <bx/math.h>
-
 namespace rawrbox {
 	struct Mesh2DShape {
 		std::vector<rawrbox::Vector2f> vertex = {};

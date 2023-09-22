@@ -45,6 +45,10 @@ namespace rawrbox {
 	extern bgfx::ViewId CURRENT_VIEW_ID;
 	// ---------
 
+	// GPU PICKING ---
+	constexpr size_t GPU_PICK_SAMPLE_SIZE = 8 * 8 * 4;
+	// ---------
+
 	// GLOBAL UNIFORMS ---
 	extern uint8_t SAMPLE_MAT_ALBEDO;
 	extern uint8_t SAMPLE_MAT_NORMAL;

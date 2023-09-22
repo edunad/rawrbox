@@ -4,8 +4,6 @@
 #include <rawrbox/render/utils/render.hpp>
 #include <rawrbox/render/utils/uniforms.hpp>
 
-#include <bx/math.h>
-
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader dither_shaders[] = {
     BGFX_EMBEDDED_SHADER(vs_post_base),

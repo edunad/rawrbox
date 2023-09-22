@@ -58,6 +58,7 @@ namespace rawrbox {
 		rawrbox::TextureBase* displacementTexture = nullptr;
 
 		uint16_t atlasId = 0;
+		uint32_t meshId = 0x000000;
 
 		float specularShininess = 25.0F;
 		float emissionIntensity = 1.F;
@@ -145,6 +146,9 @@ namespace rawrbox {
 
 		virtual void setRecieveDecals(bool status);
 
+		[[nodiscard]] virtual uint32_t getId() const;
+		virtual void setId(uint32_t id);
+
 		virtual void setColor(const rawrbox::Color& color);
 
 		virtual void addData(const std::string& id, rawrbox::Vector4f data);
@@ -156,6 +160,8 @@ namespace rawrbox {
 		virtual void clear();
 
 		virtual void merge(const rawrbox::Mesh& other);
+		virtual void rotateVertices(float rad, rawrbox::Vector3f axis = {0, 1, 0});
+
 		virtual void setOptimizable(bool status);
 		[[nodiscard]] virtual bool canOptimize(const rawrbox::Mesh& other) const;
 	};

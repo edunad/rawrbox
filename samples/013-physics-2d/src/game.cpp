@@ -73,7 +73,7 @@ namespace phys_2d_test {
 		}
 
 		this->_modelGrid->setPos({0, 5.F, 0.1F});
-		this->_modelGrid->setEulerAngle({bx::toRad(90), 0, 0});
+		this->_modelGrid->setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 		this->_modelGrid->upload();
 		// ----
 
