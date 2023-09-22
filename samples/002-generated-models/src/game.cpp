@@ -23,7 +23,6 @@ namespace model {
 		this->_window->onIntroCompleted += [this]() {
 			this->loadContent();
 		};
-		this->_window->skipIntros(true);
 	}
 
 	void Game::init() {
