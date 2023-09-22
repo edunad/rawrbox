@@ -1,13 +1,11 @@
 
 #include <rawrbox/math/matrix4x4.hpp>
+#include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/render/utils/render.hpp>
 
-// Compiled shaders
-
-#include <bx/math.h>
 #include <fmt/format.h>
 #include <utf8.h>
 
@@ -112,7 +110,7 @@ namespace rawrbox {
 		translationMatrix.translate({-_rotation.origin.x, -_rotation.origin.y, 0});
 
 		rawrbox::Matrix4x4 rotationMatrix = {};
-		rotationMatrix.rotateZ(-bx::toRad(_rotation.rotation));
+		rotationMatrix.rotateZ(-rawrbox::MathUtils::toRad(_rotation.rotation));
 
 		rawrbox::Matrix4x4 reverseTranslationMatrix = {};
 		reverseTranslationMatrix.translate({_rotation.origin.x, _rotation.origin.y, 0});
@@ -221,13 +219,13 @@ namespace rawrbox {
 		}
 	}
 
-	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd) {
+	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const bgfx::TextureHandle& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd) {
 		if (col.isTransparent()) return;
 
 		// Setup --------
 		this->setupDrawCall(
 		    this->_2dprogram,
-		    tex.getHandle());
+		    tex);
 		// ----
 
 		this->pushVertice({pos.x, pos.y}, uvStart, col);
@@ -243,14 +241,18 @@ namespace rawrbox {
 		// ----
 	}
 
+	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd) {
+		this->drawTexture(pos, size, tex.getHandle(), col, uvStart, uvEnd);
+	}
+
 	void Stencil::drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col, size_t roundness, float angleStart, float angleEnd) {
 		if (col.isTransparent()) return;
 
 		auto radius = size / 2;
 		auto targetPos = pos + radius;
 
-		float angStartRad = bx::toRad(angleStart);
-		float angEndRad = bx::toRad(angleEnd);
+		float angStartRad = rawrbox::MathUtils::toRad(angleStart);
+		float angEndRad = rawrbox::MathUtils::toRad(angleEnd);
 
 		float space = rawrbox::pi<float> / roundness * 2;
 
@@ -428,8 +430,8 @@ namespace rawrbox {
 
 			if (!bgfx::allocTransientBuffers(&tvb, this->_vLayout, vertSize, &tib, indSize)) continue;
 
-			bx::memCopy(tvb.data, group.vertices.data(), vertSize * this->_vLayout.getStride());
-			bx::memCopy(tib.data, group.indices.data(), indSize * sizeof(uint16_t));
+			std::memcpy(tvb.data, group.vertices.data(), vertSize * this->_vLayout.getStride());
+			std::memcpy(tib.data, group.indices.data(), indSize * sizeof(uint16_t));
 
 			bgfx::setTexture(0, this->_texColor, group.textureHandle);
 			bgfx::setVertexBuffer(0, &tvb);

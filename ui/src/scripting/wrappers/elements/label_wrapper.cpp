@@ -50,7 +50,7 @@ namespace rawrbox {
 		rawrbox::cast<rawrbox::UILabel>(this->_ref).lock()->setFont(font.getRef());
 	}
 
-	void LabelWrapper::setFont(const std::string& font, sol::optional<int> size, sol::this_environment modEnv) {
+	void LabelWrapper::setFont(const std::string& font, sol::optional<uint16_t> size, sol::this_environment modEnv) {
 		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-LabelWrapper] MOD not set!");
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-LabelWrapper] Invalid ui reference");
 
@@ -85,7 +85,7 @@ namespace rawrbox {
 		    "setText", &LabelWrapper::setText,
 		    "getText", &LabelWrapper::getText,
 
-		    "setFont", sol::overload(sol::resolve<void(const std::string&, sol::optional<int>, sol::this_environment)>(&LabelWrapper::setFont), sol::resolve<void(const rawrbox::FontWrapper&)>(&LabelWrapper::setFont)),
+		    "setFont", sol::overload(sol::resolve<void(const std::string&, sol::optional<uint16_t>, sol::this_environment)>(&LabelWrapper::setFont), sol::resolve<void(const rawrbox::FontWrapper&)>(&LabelWrapper::setFont)),
 		    "getFont", &LabelWrapper::getFont,
 
 		    "sizeToContents", &LabelWrapper::sizeToContents,

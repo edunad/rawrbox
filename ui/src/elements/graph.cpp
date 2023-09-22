@@ -51,7 +51,7 @@ namespace rawrbox {
 	void UIGraph::setTextShadowColor(const rawrbox::Color& col) { this->_textShadowColor = col; }
 	const rawrbox::Color& UIGraph::getTextShadowColor() const { return this->_textShadowColor; }
 
-	void UIGraph::setFont(const std::filesystem::path& font, int size) {
+	void UIGraph::setFont(const std::filesystem::path& font, uint16_t size) {
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>(font)->getSize(size);
 	}
 
@@ -62,7 +62,7 @@ namespace rawrbox {
 
 	rawrbox::Font* UIGraph::getFont() const { return this->_font; }
 
-	void UIGraph::setFontLegend(const std::filesystem::path& font, int size) {
+	void UIGraph::setFontLegend(const std::filesystem::path& font, uint16_t size) {
 		this->_fontLegend = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>(font)->getSize(size);
 	}
 

@@ -23,7 +23,7 @@ namespace rawrbox {
 		virtual void setBackgroundColor(const rawrbox::Colori& col);
 		[[nodiscard]] virtual rawrbox::Colori getBackgroundColor() const;
 
-		virtual void setText(const std::string& text, sol::optional<int> size);
+		virtual void setText(const std::string& text, sol::optional<uint16_t> size);
 		[[nodiscard]] virtual const std::string& getText() const;
 
 		virtual void setTooltip(const std::string& text);

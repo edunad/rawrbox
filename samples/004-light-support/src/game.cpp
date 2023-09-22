@@ -13,9 +13,6 @@
 
 #include <light/game.hpp>
 
-#include <bx/bx.h>
-#include <bx/math.h>
-
 namespace light {
 
 	void Game::setupGLFW() {
@@ -37,7 +34,7 @@ namespace light {
 		// Setup camera
 		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
 		cam->setPos({0.F, 5.F, -5.F});
-		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		// Add loaders ----
@@ -92,7 +89,7 @@ namespace light {
 			auto mesh = rawrbox::MeshUtils::generatePlane({2.5F, 0.F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
 			mesh.setSpecularTexture(texSpec, 25.F);
-			mesh.setEulerAngle({bx::toRad(90), 0, 0});
+			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 			this->_model->addMesh(mesh);
 		}
 
@@ -100,7 +97,7 @@ namespace light {
 			auto mesh = rawrbox::MeshUtils::generatePlane({-2.5F, 0.F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
 			mesh.setSpecularTexture(texSpec, 25.F);
-			mesh.setEulerAngle({bx::toRad(90), 0, 0});
+			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 			this->_model->addMesh(mesh);
 		}
 

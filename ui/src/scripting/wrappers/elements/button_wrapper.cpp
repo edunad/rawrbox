@@ -39,7 +39,7 @@ namespace rawrbox {
 		return rawrbox::cast<rawrbox::UIButton>(this->_ref).lock()->getBackgroundColor().cast<int>();
 	}
 
-	void ButtonWrapper::setText(const std::string& text, sol::optional<int> size) {
+	void ButtonWrapper::setText(const std::string& text, sol::optional<uint16_t> size) {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-ButtonWrapper] Invalid ui reference");
 		rawrbox::cast<rawrbox::UIButton>(this->_ref).lock()->setText(text, size.value_or(16));
 	}

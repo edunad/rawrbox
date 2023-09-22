@@ -5,8 +5,6 @@
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include <bx/math.h>
-
 TEST_CASE("Stencil should behave as expected", "[rawrbox::Stencil]") {
 	rawrbox::Stencil base({100, 100});
 

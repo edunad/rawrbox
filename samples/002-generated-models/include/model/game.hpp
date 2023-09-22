@@ -21,6 +21,7 @@ namespace model {
 		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 
 		rawrbox::Font* _font = nullptr;
+		rawrbox::Mesh* _lastPicked = nullptr;
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;
@@ -45,6 +46,7 @@ namespace model {
 		void loadContent();
 		void contentLoaded();
 
+		void drawOverlay();
 		void drawWorld();
 	};
 } // namespace model

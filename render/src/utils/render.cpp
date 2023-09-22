@@ -62,8 +62,8 @@ namespace rawrbox {
 
 		if (!bgfx::allocTransientBuffers(&tvb, rawrbox::PosUVVertexData::vLayout(), vertSize, &tib, indSize)) return;
 
-		bx::memCopy(tvb.data, buff.data(), vertSize * rawrbox::PosUVVertexData::vLayout().getStride());
-		bx::memCopy(tib.data, indc.data(), indSize * sizeof(uint16_t));
+		std::memcpy(tvb.data, buff.data(), vertSize * rawrbox::PosUVVertexData::vLayout().getStride());
+		std::memcpy(tib.data, indc.data(), indSize * sizeof(uint16_t));
 
 		bgfx::touch(rawrbox::CURRENT_VIEW_ID);
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);

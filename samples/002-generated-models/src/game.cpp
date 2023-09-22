@@ -9,9 +9,6 @@
 
 #include <model/game.hpp>
 
-#include <bx/bx.h>
-#include <bx/math.h>
-
 #include <vector>
 
 namespace model {
@@ -20,7 +17,7 @@ namespace model {
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("GENERATED MODEL TEST");
 		this->_window->setRenderer<>(
-		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
+		    bgfx::RendererType::Count, [this]() { this->drawOverlay(); }, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 		this->_window->onIntroCompleted += [this]() {
@@ -30,12 +27,11 @@ namespace model {
 
 	void Game::init() {
 		if (this->_window == nullptr) return;
-		this->_window->initializeBGFX();
 
 		// Setup camera
 		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
 		cam->setPos({0.F, 5.F, -5.F});
-		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		cam->onMovementStart = []() { fmt::print("Camera start\n"); };
 		cam->onMovementStop = []() { fmt::print("Camera stop\n"); };
 		// --------------
@@ -45,11 +41,10 @@ namespace model {
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		// --------------
 
-		this->_window->initializeBGFX(0x443355FF);
+		this->_window->initializeBGFX();
 	}
 
 	void Game::loadContent() {
-
 		std::array initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("content/fonts/LiberationMono-Regular.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/screem.png", 0),
@@ -70,7 +65,6 @@ namespace model {
 	}
 
 	void Game::contentLoaded() {
-		this->_ready = true;
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/LiberationMono-Regular.ttf")->getSize(24);
 
 		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get();
@@ -118,9 +112,17 @@ namespace model {
 			this->_model->addMesh(mesh);
 		}
 
+		// ARROW ------
+		{
+			auto mesh = rawrbox::MeshUtils::generateArrow(0.5F, {-4.F, 0.F, 0.F}, rawrbox::Colors::White());
+
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-4.F, 0.F, 0.F}, mesh.getBBOX()));
+			this->_model->addMesh(mesh);
+		}
+		// ----
+
 		{
 			auto mesh = rawrbox::MeshUtils::generateAxis(1, {0.F, 0.F, 0.F});
-
 			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({0, 0, 0}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
@@ -160,6 +162,7 @@ namespace model {
 			this->_model->addMesh(mesh);
 		}
 
+		// CONE ------
 		{
 			auto mesh = rawrbox::MeshUtils::generateCone({-3.5F, 0.F, -2.F}, {0.5F, 1.F, 0.5F}, 12);
 
@@ -173,6 +176,7 @@ namespace model {
 			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-5.F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
+		// ----
 
 		// Displacement test ----
 		{
@@ -202,6 +206,11 @@ namespace model {
 			this->_sprite->addMesh(mesh);
 		}
 		// -----
+
+		uint32_t id = 0;
+		for (auto& mesh : _model->meshes()) {
+			mesh->setId(++id);
+		}
 
 		// Spline test ----
 
@@ -243,7 +252,25 @@ namespace model {
 
 			this->_spline->setPos({0, 0, 2.F});
 		}
+		// -----
 
+		// BINDS ----
+		this->_window->onMouseKey += [this](auto& /*w*/, const rawrbox::Vector2i& mousePos, int button, int action, int /*mods*/) {
+			const bool isDown = action == 1;
+			if (!isDown || button != MOUSE_BUTTON_1) return;
+
+			rawrbox::RENDERER->gpuPick(mousePos, [this](uint32_t id) {
+				if (_lastPicked != nullptr) _lastPicked->setColor(rawrbox::Colors::White());
+
+				for (auto& mesh : this->_model->meshes()) {
+					if (mesh->getId() == id) {
+						mesh->setColor(rawrbox::Colors::Red());
+						_lastPicked = mesh.get();
+						break;
+					}
+				}
+			});
+		};
 		// -----
 
 		// Text test ----
@@ -251,13 +278,14 @@ namespace model {
 		this->_text->addText(*this->_font, "TRIANGLE", {3.5F, 0.5F, 0});
 		this->_text->addText(*this->_font, "CUBE", {-2.F, 0.55F, 0});
 		this->_text->addText(*this->_font, "CUBE\nVertex snap", {-3.F, 0.55F, 0});
-		this->_text->addText(*this->_font, "AXIS", {0.F, 0.5F, 0});
+		this->_text->addText(*this->_font, "AXIS", {0.F, 0.8F, 0});
 		this->_text->addText(*this->_font, "SPRITE", {0.F, 1.2F, 0});
 		this->_text->addText(*this->_font, "DISPLACEMENT", {0.F, 1.2F, -2});
 		this->_text->addText(*this->_font, "SPHERES", {3.5F, 0.55F, -2.F});
 		this->_text->addText(*this->_font, "CYLINDER", {-2.F, 0.55F, -2});
 		this->_text->addText(*this->_font, "CONE", {-3.5F, 0.55F, -2});
 		this->_text->addText(*this->_font, "PYRAMID", {-5.0F, 0.55F, -2});
+		this->_text->addText(*this->_font, "ARROW", {-4.0F, 0.55F, 0.F});
 
 		this->_text->addText(*this->_font, "SPLINE", {-1.5F, 0.55F, 2});
 
@@ -271,6 +299,8 @@ namespace model {
 		this->_spline->upload();
 		this->_bboxes->upload();
 		this->_text->upload();
+
+		this->_ready = true;
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
@@ -298,6 +328,16 @@ namespace model {
 	void Game::update() {
 		if (this->_window == nullptr) return;
 		this->_window->update();
+	}
+
+	void Game::drawOverlay() {
+		if (!this->_ready) return;
+
+		auto& stencil = this->_window->getStencil();
+		auto wSize = this->_window->getSize().cast<float>();
+
+		stencil.drawTexture({wSize.x - 138, 10}, {128, 128}, rawrbox::RENDERER->getGPUPick());
+		stencil.render();
 	}
 
 	void Game::drawWorld() {

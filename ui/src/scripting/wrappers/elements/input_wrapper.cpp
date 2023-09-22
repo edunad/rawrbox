@@ -115,7 +115,7 @@ namespace rawrbox {
 		rawrbox::cast<rawrbox::UIInput>(this->_ref).lock()->setFont(font.getRef());
 	}
 
-	void InputWrapper::setFont(const std::string& font, sol::optional<int> size, sol::this_environment modEnv) {
+	void InputWrapper::setFont(const std::string& font, sol::optional<uint16_t> size, sol::this_environment modEnv) {
 		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-InputWrapper] MOD not set!");
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-InputWrapper] Invalid ui reference");
 
@@ -180,7 +180,7 @@ namespace rawrbox {
 		    "setBackgroundColor", &InputWrapper::setBackgroundColor,
 		    "getBackgroundColor", &InputWrapper::getBackgroundColor,
 
-		    "setFont", sol::overload(sol::resolve<void(const std::string&, sol::optional<int>, sol::this_environment)>(&InputWrapper::setFont), sol::resolve<void(const rawrbox::FontWrapper&)>(&InputWrapper::setFont)),
+		    "setFont", sol::overload(sol::resolve<void(const std::string&, sol::optional<uint16_t>, sol::this_environment)>(&InputWrapper::setFont), sol::resolve<void(const rawrbox::FontWrapper&)>(&InputWrapper::setFont)),
 		    "getFont", &InputWrapper::getFont,
 
 		    "empty", &InputWrapper::empty,

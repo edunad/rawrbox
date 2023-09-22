@@ -1,8 +1,6 @@
 
 #include <rawrbox/render/camera/base.hpp>
 
-#include <bx/math.h>
-
 #include <stdexcept>
 
 namespace rawrbox {
@@ -32,17 +30,17 @@ namespace rawrbox {
 
 	rawrbox::Vector3f CameraBase::getForward() const {
 		return {
-		    bx::cos(this->_angle.y) * bx::sin(this->_angle.x),
-		    bx::sin(this->_angle.y),
-		    bx::cos(this->_angle.y) * bx::cos(this->_angle.x),
+		    std::cos(this->_angle.y) * std::sin(this->_angle.x),
+		    std::sin(this->_angle.y),
+		    std::cos(this->_angle.y) * std::cos(this->_angle.x),
 		};
 	}
 
 	rawrbox::Vector3f CameraBase::getRight() const {
 		return {
-		    bx::sin(this->_angle.x - bx::kPiHalf),
+		    std::sin(this->_angle.x - rawrbox::piHalf<float>),
 		    0.0F,
-		    bx::cos(this->_angle.x - bx::kPiHalf),
+		    std::cos(this->_angle.x - rawrbox::piHalf<float>),
 		};
 	}
 
@@ -50,7 +48,7 @@ namespace rawrbox {
 		auto right = this->getRight();
 		auto forward = this->getForward();
 
-		auto up = bx::cross({right.x, right.y, right.z}, {forward.x, forward.y, forward.z});
+		auto up = right.cross(forward);
 		return {up.x, up.y, up.z};
 	}
 

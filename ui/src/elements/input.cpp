@@ -189,7 +189,7 @@ namespace rawrbox {
 	void UIInput::setBackgroundColor(const rawrbox::Color& col) { this->_backgroundColor = col; }
 	const rawrbox::Color& UIInput::getBackgroundColor() const { return this->_backgroundColor; }
 
-	void UIInput::setFont(const std::filesystem::path& font, int size) {
+	void UIInput::setFont(const std::filesystem::path& font, uint16_t size) {
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>(font)->getSize(size);
 
 		this->_charSize = this->_font->getStringSize("W");              // Tallest character possible, usually it's W

@@ -1,11 +1,10 @@
+#include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/camera/base.hpp>
 #include <rawrbox/render/camera/perspective.hpp>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-
-#include <bx/math.h>
 
 TEST_CASE("Camera should behave as expected", "[rawrbox::Camera]") {
 	rawrbox::CameraBase base;
@@ -21,7 +20,7 @@ TEST_CASE("Camera should behave as expected", "[rawrbox::Camera]") {
 	}
 
 	SECTION("rawrbox::Camera::setAngle / rawrbox::Camera::getAngle") {
-		base.setAngle({0, bx::toRad(90), 0, 0});
+		base.setAngle({0, rawrbox::MathUtils::toRad(90), 0, 0});
 
 		auto p = base.getAngle();
 		REQUIRE(p.x == 0.F);
@@ -31,7 +30,7 @@ TEST_CASE("Camera should behave as expected", "[rawrbox::Camera]") {
 	}
 
 	SECTION("rawrbox::Camera::getForward") {
-		base.setAngle({0, bx::toRad(90), 0, 0});
+		base.setAngle({0, rawrbox::MathUtils::toRad(90), 0, 0});
 
 		auto p = base.getForward();
 		REQUIRE_THAT(p.x, Catch::Matchers::WithinAbs(0.0F, 0.0001F));
@@ -40,7 +39,7 @@ TEST_CASE("Camera should behave as expected", "[rawrbox::Camera]") {
 	}
 
 	SECTION("rawrbox::Camera::getUp") {
-		base.setAngle({0, bx::toRad(90), 0, 0});
+		base.setAngle({0, rawrbox::MathUtils::toRad(90), 0, 0});
 
 		auto p = base.getUp();
 		REQUIRE_THAT(p.x, Catch::Matchers::WithinAbs(0.0F, 0.0001F));
@@ -49,7 +48,7 @@ TEST_CASE("Camera should behave as expected", "[rawrbox::Camera]") {
 	}
 
 	SECTION("rawrbox::Camera::getRight") {
-		base.setAngle({0, bx::toRad(90), 0, 0});
+		base.setAngle({0, rawrbox::MathUtils::toRad(90), 0, 0});
 
 		auto p = base.getRight();
 		REQUIRE_THAT(p.x, Catch::Matchers::WithinAbs(-1.0F, 0.0001F));
@@ -59,7 +58,7 @@ TEST_CASE("Camera should behave as expected", "[rawrbox::Camera]") {
 
 	SECTION("rawrbox::Camera::worldToScreen") {
 		REQUIRE_THROWS(base.worldToScreen({0, 0, 0}));
-		pers.setAngle({0, bx::toRad(90), 0, 0});
+		pers.setAngle({0, rawrbox::MathUtils::toRad(90), 0, 0});
 
 		auto scr = pers.worldToScreen({0, 3, 0});
 		REQUIRE_THAT(scr.x, Catch::Matchers::WithinAbs(540.0F, 0.0001F));

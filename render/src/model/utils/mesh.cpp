@@ -129,59 +129,51 @@ namespace rawrbox {
 
 		std::array<rawrbox::VertexData, 24> buff = {
 		    // Back
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), {0, 0}, {nmrlB, nmrlB}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), {1, 1}, {nmrlB, nmrlB}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, hSize.z), {1, 0}, {nmrlB, nmrlB}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), {0, 1}, {nmrlB, nmrlB}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), {0, 0}, {nmrlB, nmrlB}, cl),   // A
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), {1, 1}, {nmrlB, nmrlB}, cl), // B
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, hSize.z), {1, 0}, {nmrlB, nmrlB}, cl),  // C
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), {0, 1}, {nmrlB, nmrlB}, cl),  // D
 
 		    // Front
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, -hSize.z), {1, 0}, {nmrlF, nmrlF}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, -hSize.z), {0, 1}, {nmrlF, nmrlF}, cl),
 		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, -hSize.z), {0, 0}, {nmrlF, nmrlF}, cl),
 		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, -hSize.z), {1, 1}, {nmrlF, nmrlF}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, -hSize.z), {1, 0}, {nmrlF, nmrlF}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, -hSize.z), {0, 1}, {nmrlF, nmrlF}, cl),
 
 		    // Right
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, -hSize.z), {0, 0}, {nmrlR, nmrlR}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), {1, 1}, {nmrlR, nmrlR}, cl),
 		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), {1, 0}, {nmrlR, nmrlR}, cl),
 		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, -hSize.z), {0, 1}, {nmrlR, nmrlR}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), {1, 1}, {nmrlR, nmrlR}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, -hSize.z), {0, 0}, {nmrlR, nmrlR}, cl),
 
 		    // Left
 		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, hSize.z), {0, 0}, {nmrlL, nmrlL}, cl),
 		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, -hSize.z), {1, 1}, {nmrlL, nmrlL}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), {0, 1}, {nmrlL, nmrlL}, cl),
 		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, -hSize.z), {1, 0}, {nmrlL, nmrlL}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), {0, 1}, {nmrlL, nmrlL}, cl),
 
 		    // Top
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), {1, 0}, {nmrlT, nmrlT}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, -hSize.z), {0, 1}, {nmrlT, nmrlT}, cl),
 		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, hSize.z), {0, 0}, {nmrlT, nmrlT}, cl),
 		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, -hSize.z), {1, 1}, {nmrlT, nmrlT}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), {1, 0}, {nmrlT, nmrlT}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, -hSize.z), {0, 1}, {nmrlT, nmrlT}, cl),
 
 		    // Bottom
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), {1, 1}, {nmrlBT, nmrlBT}, cl),
 		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, -hSize.z), {0, 0}, {nmrlBT, nmrlBT}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), {0, 1}, {nmrlBT, nmrlBT}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, -hSize.z), {1, 0}, {nmrlBT, nmrlBT}, cl)};
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), {1, 1}, {nmrlBT, nmrlBT}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, -hSize.z), {1, 0}, {nmrlBT, nmrlBT}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), {0, 1}, {nmrlBT, nmrlBT}, cl)};
 
-		std::array<uint16_t, 36> inds{
+		std::vector<uint16_t> inds = {};
+		constexpr std::array<uint16_t, 6> cubeInd = {
 		    0, 1, 2,
-		    0, 3, 1,
+		    0, 3, 1};
 
-		    4, 6, 5,
-		    4, 5, 7,
-
-		    8, 9, 10,
-		    8, 11, 9,
-
-		    12, 14, 13,
-		    12, 13, 15,
-
-		    16, 18, 17,
-		    16, 17, 19,
-
-		    20, 21, 22,
-		    20, 23, 21};
+		for (uint16_t v = 0; v < 24; v += 4) {
+			for (auto& ind : cubeInd) {
+				inds.push_back(ind + v);
+			}
+		}
 
 		mesh.baseVertex = 0;
 		mesh.baseIndex = 0;
@@ -205,13 +197,46 @@ namespace rawrbox {
 		mesh.setPos(pos);
 
 		float hSize = size / 2.F;
-		mesh.merge(generateCube(pos, {hSize * 2, 0.01F, 0.01F}, rawrbox::Colors::Red()));   // x
-		mesh.merge(generateCube(pos, {0.01F, hSize * 2, 0.01F}, rawrbox::Colors::Green())); // y
-		mesh.merge(generateCube(pos, {0.01F, 0.01F, hSize * 2}, rawrbox::Colors::Blue()));  // z
+		mesh.merge(generateCube(pos, {hSize * 2, 0.01F, 0.01F}, rawrbox::Colors::Red())); // x
+
+		auto xCone = generateCone(pos + rawrbox::Vector3f(hSize, 0, 0), {0.08F, 0.1F, 0.08F}, 6, rawrbox::Colors::Red());
+		xCone.rotateVertices(rawrbox::MathUtils::toRad(90.F), {0, 0, 1});
+		mesh.merge(xCone);
+
+		mesh.merge(generateCube(pos, {0.01F, hSize * 2, 0.01F}, rawrbox::Colors::Green()));                                // y
+		mesh.merge(generateCone(pos + rawrbox::Vector3f(0, hSize, 0), {0.08F, 0.1F, 0.08F}, 6, rawrbox::Colors::Green())); // y
+
+		auto zCone = generateCone(pos + rawrbox::Vector3f(0, 0, hSize), {0.08F, 0.1F, 0.08F}, 6, rawrbox::Colors::Blue());
+		zCone.rotateVertices(rawrbox::MathUtils::toRad(-90.F), {1, 0, 0});
+		mesh.merge(zCone);
+
+		mesh.merge(generateCube(pos, {0.01F, 0.01F, hSize * 2}, rawrbox::Colors::Blue())); // z
 
 		// AABB ---
 		mesh.bbox.m_min = {-hSize, -hSize, -hSize};
 		mesh.bbox.m_max = {hSize, hSize, hSize};
+		mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
+		// -----
+
+		mesh.setCulling(0);
+		mesh.setTexture(rawrbox::WHITE_TEXTURE.get());
+
+		return mesh;
+	}
+
+	rawrbox::Mesh MeshUtils::generateArrow(float size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl) {
+		rawrbox::Mesh mesh;
+		mesh.setPos(pos);
+
+		float hSize = 0.5F;
+		auto offset = rawrbox::Vector3f(0, hSize / 2.F, 0) * size;
+
+		mesh.merge(generateCone(pos + offset, rawrbox::Vector3f(hSize, 1.F, hSize) * size, 6, cl));
+		mesh.merge(generateCube(pos - offset, rawrbox::Vector3f(0.15F, hSize, 0.15F) * size, cl));
+
+		// AABB ---
+		mesh.bbox.m_min = rawrbox::Vector3f(-hSize, -hSize, -hSize) * size;
+		mesh.bbox.m_max = rawrbox::Vector3f(hSize, hSize, hSize) * size;
 		mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
 		// -----
 

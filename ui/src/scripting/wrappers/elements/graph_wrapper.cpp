@@ -99,7 +99,7 @@ namespace rawrbox {
 		rawrbox::cast<rawrbox::UIGraph>(this->_ref).lock()->setFont(font.getRef());
 	}
 
-	void GraphWrapper::setFont(const std::string& font, sol::optional<int> size, sol::this_environment modEnv) {
+	void GraphWrapper::setFont(const std::string& font, sol::optional<uint16_t> size, sol::this_environment modEnv) {
 		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-GraphWrapper] MOD not set!");
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-GraphWrapper] Invalid ui reference");
 
@@ -117,7 +117,7 @@ namespace rawrbox {
 		rawrbox::cast<rawrbox::UIGraph>(this->_ref).lock()->setFontLegend(font.getRef());
 	}
 
-	void GraphWrapper::setFontLegend(const std::string& font, sol::optional<int> size, sol::this_environment modEnv) {
+	void GraphWrapper::setFontLegend(const std::string& font, sol::optional<uint16_t> size, sol::this_environment modEnv) {
 		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-GraphWrapper] MOD not set!");
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-GraphWrapper] Invalid ui reference");
 
@@ -166,10 +166,10 @@ namespace rawrbox {
 		    "setTextShadowColor", &GraphWrapper::setTextShadowColor,
 		    "getTextShadowColor", &GraphWrapper::getTextShadowColor,
 
-		    "setFont", sol::overload(sol::resolve<void(const std::string&, sol::optional<int>, sol::this_environment)>(&GraphWrapper::setFont), sol::resolve<void(const rawrbox::FontWrapper&)>(&GraphWrapper::setFont)),
+		    "setFont", sol::overload(sol::resolve<void(const std::string&, sol::optional<uint16_t>, sol::this_environment)>(&GraphWrapper::setFont), sol::resolve<void(const rawrbox::FontWrapper&)>(&GraphWrapper::setFont)),
 		    "getFont", &GraphWrapper::getFont,
 
-		    "setFontLegend", sol::overload(sol::resolve<void(const std::string&, sol::optional<int>, sol::this_environment)>(&GraphWrapper::setFontLegend), sol::resolve<void(const rawrbox::FontWrapper&)>(&GraphWrapper::setFontLegend)),
+		    "setFontLegend", sol::overload(sol::resolve<void(const std::string&, sol::optional<uint16_t>, sol::this_environment)>(&GraphWrapper::setFontLegend), sol::resolve<void(const rawrbox::FontWrapper&)>(&GraphWrapper::setFontLegend)),
 		    "getFontLegend", &GraphWrapper::getFontLegend,
 		    // ----
 

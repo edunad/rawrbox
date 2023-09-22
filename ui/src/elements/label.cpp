@@ -34,7 +34,7 @@ namespace rawrbox {
 	void UILabel::setText(const std::string& text) { this->_text = text; }
 	const std::string& UILabel::getText() const { return this->_text; }
 
-	void UILabel::setFont(const std::filesystem::path& font, int size) {
+	void UILabel::setFont(const std::filesystem::path& font, uint16_t size) {
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>(font)->getSize(size);
 	}
 

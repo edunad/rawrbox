@@ -26,8 +26,12 @@ namespace rawrbox {
 	public:
 		explicit TextureImage(const std::filesystem::path& filePath, int forceChannels = 0, bool useFallback = true);
 		explicit TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, int forceChannels = 0, bool useFallback = true);
-		explicit TextureImage(uint8_t* buffer, int bufferSize, int forceChannels = 0, bool useFallback = true);
-		explicit TextureImage(const rawrbox::Vector2i& size, uint8_t* buffer, int channels = 4);
+		explicit TextureImage(const uint8_t* buffer, int bufferSize, int forceChannels = 0, bool useFallback = true); // TO BE DECODED
+
+		explicit TextureImage(const rawrbox::Vector2i& size, const uint8_t* buffer, int channels = 4);
+		explicit TextureImage(const rawrbox::Vector2i& size, const std::vector<uint8_t>& buffer, int channels = 4);
+
+		explicit TextureImage(const rawrbox::Vector2i& size, int channels = 4);
 
 		TextureImage(const TextureImage&) = default;
 		TextureImage(TextureImage&&) = delete;
@@ -36,6 +40,9 @@ namespace rawrbox {
 		~TextureImage() override = default;
 
 		// ------ PIXEL-UTILS
+		virtual void updatePixels(const std::vector<uint8_t>& buffer);
+		virtual void updatePixels(const uint8_t* buffer, size_t size);
+
 		virtual void setName(const std::string& name);
 		[[nodiscard]] bool hasTransparency() const override;
 		// --------------------

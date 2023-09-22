@@ -14,9 +14,6 @@
 
 #include <assimp/game.hpp>
 
-#include <bx/bx.h>
-#include <bx/math.h>
-
 namespace assimp {
 
 	void Game::setupGLFW() {
@@ -38,7 +35,7 @@ namespace assimp {
 		// Setup camera
 		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
 		cam->setPos({0.F, 5.F, -5.F});
-		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		// Add loaders
@@ -107,7 +104,7 @@ namespace assimp {
 		this->_model5->playAnimation("Scene", true, 1.F);
 		this->_model5->setPos({0, 0, -3.5F});
 		this->_model5->setScale({0.35F, 0.35F, 0.35F});
-		this->_model5->setEulerAngle({0, bx::toRad(90.F), 0});
+		this->_model5->setEulerAngle({0, rawrbox::MathUtils::toRad(90.F), 0});
 		this->_model5->upload();
 
 		auto mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/shape_keys/shape_keys.glb")->get();

@@ -133,11 +133,11 @@ namespace rawrbox {
 		[[nodiscard]] virtual const rawrbox::Color& getTextShadowColor() const;
 
 		virtual void setFont(rawrbox::Font* font);
-		virtual void setFont(const std::filesystem::path& font, int size = 11);
+		virtual void setFont(const std::filesystem::path& font, uint16_t size = 11);
 		[[nodiscard]] virtual rawrbox::Font* getFont() const;
 
 		virtual void setFontLegend(rawrbox::Font* font);
-		virtual void setFontLegend(const std::filesystem::path& font, int size = 11);
+		virtual void setFontLegend(const std::filesystem::path& font, uint16_t size = 11);
 		[[nodiscard]] virtual rawrbox::Font* getFontLegend() const;
 		// ---------
 

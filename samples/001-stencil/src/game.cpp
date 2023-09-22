@@ -10,8 +10,6 @@
 
 #include <stencil/game.hpp>
 
-#include <bx/bx.h>
-#include <bx/math.h>
 #include <fmt/format.h>
 
 #include <vector>
@@ -37,7 +35,7 @@ namespace stencil {
 		// Setup camera
 		auto cam = this->_window->setupCamera<rawrbox::CameraPerspective>(this->_window->getSize());
 		cam->setPos({-2.F, 5.F, -3.5F});
-		cam->setAngle({0.F, bx::toRad(-45), 0.F, 0.F});
+		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
 
 		// Add loaders
@@ -321,7 +319,7 @@ namespace stencil {
 
 		if (this->_ready) {
 			if (this->_model != nullptr) {
-				this->_model->setEulerAngle({0, bx::toRad(this->_counter * 20.F), 0});
+				this->_model->setEulerAngle({0, rawrbox::MathUtils::toRad(this->_counter * 20.F), 0});
 				this->_model->getMesh()->setAtlasID(static_cast<int>(this->_counter) % 4);
 			}
 
