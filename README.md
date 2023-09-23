@@ -7,10 +7,10 @@
 
 <h4>
 	<p align="center">
-		<img src="https://github.com/edunad/rawrbox/actions/workflows/build.yml/badge.svg?branch=master&event=push"/>
-		<img src="https://img.shields.io/github/license/edunad/rawrbox.svg"/>
-		<img src="https://img.shields.io/github/issues/edunad/rawrbox/BUG.svg"/>
-		<img src="https://img.shields.io/github/last-commit/edunad/rawrbox.svg"/>
+		<img src="https://github.com/edunad/rawrbox/actions/workflows/build.yml/badge.svg?branch=master&event=push"/>&nbsp;
+		<img src="https://img.shields.io/github/license/edunad/rawrbox.svg"/>&nbsp;
+		<img src="https://img.shields.io/github/issues/edunad/rawrbox/BUG.svg"/>&nbsp;
+		<img src="https://img.shields.io/github/last-commit/edunad/rawrbox.svg"/>&nbsp;
 		<br/><br/>
 		<a href="#features">Features</a> -
 		<a href="#libs">Libs</a> -
@@ -110,7 +110,9 @@
 <br/><br/>
 
 # INTERNAL DEPENDENCIES
+
 <br/><br/>
+
 <p align="center">
   <img src="./RAWBOX%20-%20Dependencies.png" />
 </p>

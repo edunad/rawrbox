@@ -263,3 +263,5 @@ bin/*
 deps/
 captures/
 .iwyu
+.docusaurus/
+.yarn/
