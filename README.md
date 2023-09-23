@@ -1,7 +1,7 @@
 <h2>
 	<p align="center">
 		<img src="./rawrbox.svg" width=300 /><br/>
-		<a href="https://github.com/edunad/rawrbox">RawrBox</a> - PSX..ish game engine made with <a href="https://github.com/bkaradzic/bgfx">BGFX</a><br/>
+		<a href="https://github.com/edunad/rawrbox">RawrBox</a> - PSX..ish game engine
 	</p>
 </h2>
 
