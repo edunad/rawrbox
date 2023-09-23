@@ -11,6 +11,7 @@
 		<img src="https://img.shields.io/github/license/edunad/rawrbox.svg"/>&nbsp;
 		<img src="https://img.shields.io/github/issues/edunad/rawrbox/BUG.svg"/>&nbsp;
 		<img src="https://img.shields.io/github/last-commit/edunad/rawrbox.svg"/>&nbsp;
+		<a href="https://box.rawr.dev"><img src="https://img.shields.io/badge/wiki-%F0%9F%90%B2-black"/></a>
 		<br/><br/>
 		<a href="#features">Features</a> -
 		<a href="#libs">Libs</a> -
