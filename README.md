@@ -75,12 +75,6 @@
 
 <br/><br/>
 
-<p align="center">
-  <img src="./RAWBOX%20-%20Dependencies.png" />
-</p>
-
-<br/><br/><br/>
-
 # CMAKE OPTIONS
 
 | OPTION NAME                                      | NOTE                                                                                                      |
@@ -113,7 +107,17 @@
 | --                                               | --                                                                                                        |
 | `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME`       | Builds libraries with MSVC Multithreaded runtime (Auto-enabled if jolt is used)                           |
 
-# DEPENCENDIES
+<br/><br/>
+
+# INTERNAL DEPENDENCIES
+<br/><br/>
+<p align="center">
+  <img src="./RAWBOX%20-%20Dependencies.png" />
+</p>
+
+<br/><br/><br/>
+
+# EXTERNAL DEPENDENCIES
 
 | LIB                 | NOTE                                                |
 | :------------------ | :-------------------------------------------------- |
