@@ -10,7 +10,6 @@ namespace rawrbox {
 		    "y", &Vector3f::y,
 		    "z", &Vector3f::z,
 
-		    "xyz", &Vector3f::xyz,
 		    "yxz", &Vector3f::yxz,
 		    "yzx", &Vector3f::yzx,
 		    "xzy", &Vector3f::xzy,
