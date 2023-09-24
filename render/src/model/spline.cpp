@@ -35,8 +35,8 @@ namespace rawrbox {
 	}
 
 	void Spline::addPoint(const rawrbox::Vector4f& start, const rawrbox::Vector4f& end, float distance) {
-		auto axisS = Vector3f::forward().rotate(rawrbox::Vector3f::up(), rawrbox::MathUtils::toRad(start.w)) * distance;
-		auto axisE = Vector3f::back().rotate(rawrbox::Vector3f::up(), rawrbox::MathUtils::toRad(end.w)) * distance;
+		auto axisS = Vector3f::forward().rotateAroundOrigin(rawrbox::Vector3f::up(), rawrbox::MathUtils::toRad(start.w)) * distance;
+		auto axisE = (-Vector3f::forward()).rotateAroundOrigin(rawrbox::Vector3f::up(), rawrbox::MathUtils::toRad(end.w)) * distance;
 
 		this->addBezier({start.xyz(), start.xyz() + axisS, end.xyz() + axisE, end.xyz()});
 	}

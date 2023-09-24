@@ -48,7 +48,7 @@ namespace rawrbox {
 			return static_cast<NumberType>(std::sqrt(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2) + std::pow(w, 2)));
 		}
 
-		NumberType lengthSquared() const {
+		NumberType sqrMagnitude() const {
 			return static_cast<NumberType>(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2) + std::pow(w, 2));
 		}
 
@@ -212,7 +212,7 @@ namespace rawrbox {
 		}
 
 		VecType inverse() {
-			float lengthSq = this->lengthSquared();
+			float lengthSq = this->sqrMagnitude();
 			if (lengthSq == 0.0F) return *this;
 
 			float i = 1.0F / lengthSq;

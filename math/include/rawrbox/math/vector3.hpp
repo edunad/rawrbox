@@ -32,7 +32,7 @@ namespace rawrbox {
 		static VecType one() { return VecType(1, 1, 1); }
 		static VecType up() { return VecType(0, 1, 0); }
 		static VecType forward() { return VecType(0, 0, 1); }
-		static VecType back() { return VecType(0, 0, -1); }
+		static VecType left() { return VecType(1, 0, 0); }
 		static VecType nan() { return VecType(std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN()); }
 
 		[[nodiscard]] std::string toString() const { return std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z); }
@@ -80,7 +80,7 @@ namespace rawrbox {
 			return std::acos(dot) * (1.F / (rawrbox::pi<float> * 2.F / 360.F));
 		}
 
-		[[nodiscard]] VecType rotate(const VecType& axis, float theta) const {
+		[[nodiscard]] VecType rotateAroundOrigin(const VecType& axis, float theta) const {
 			float cos_theta = std::cos(theta);
 			float sin_theta = std::sin(theta);
 
@@ -116,8 +116,6 @@ namespace rawrbox {
 		Vector3_t<ReturnType> cast() const {
 			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y), static_cast<ReturnType>(z)};
 		}
-
-		[[nodiscard]] std::array<NumberType, 3> toArray() const { return {x, y, z}; }
 		// ------
 
 		// UTILS - FLOAT ---

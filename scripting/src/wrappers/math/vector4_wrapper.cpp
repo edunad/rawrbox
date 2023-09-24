@@ -23,7 +23,8 @@ namespace rawrbox {
 		    "data", &Vector4f::data,
 
 		    "length", &Vector4f::length,
-		    "lengthSquared", &Vector4f::lengthSquared,
+		    "size", &Vector4f::size,
+		    "sqrMagnitude", &Vector4f::sqrMagnitude,
 		    "normalized", &Vector4f::normalized,
 
 		    "clamp", sol::overload(sol::resolve<Vector4f(float, float) const>(&Vector4f::clamp), sol::resolve<Vector4f(Vector4f, Vector4f) const>(&Vector4f::clamp)),
