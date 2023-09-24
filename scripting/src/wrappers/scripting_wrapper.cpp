@@ -13,7 +13,7 @@ namespace rawrbox {
 	}
 
 	void ScriptingWrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<rawrbox::ScriptingWrapper>("Scripting",
+		lua.new_usertype<rawrbox::ScriptingWrapper>("scripting",
 		    sol::no_constructor,
 		    "getMod", &ScriptingWrapper::getMod);
 	}

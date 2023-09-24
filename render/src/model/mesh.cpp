@@ -159,7 +159,7 @@ namespace rawrbox {
 
 	void Mesh::rotateVertices(float rad, rawrbox::Vector3f axis) {
 		for (auto& v : vertices) {
-			v.position = v.position.rotate(axis, rad);
+			v.position = v.position.rotateAroundOrigin(axis, rad);
 		}
 	}
 

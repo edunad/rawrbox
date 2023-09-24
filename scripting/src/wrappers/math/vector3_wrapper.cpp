@@ -18,7 +18,14 @@ namespace rawrbox {
 		    "xy", &Vector3f::xy,
 		    "yx", &Vector3f::yx,
 
+		    "zero", &Vector3f::zero,
+		    "one", &Vector3f::one,
+		    "up", &Vector3f::up,
+		    "forward", &Vector3f::forward,
+		    "left", &Vector3f::forward,
+
 		    "data", &Vector3f::data,
+		    "size", &Vector3f::size,
 
 		    "clamp", sol::overload(sol::resolve<Vector3f(float, float) const>(&Vector3f::clamp), sol::resolve<Vector3f(Vector3f, Vector3f) const>(&Vector3f::clamp)),
 
@@ -27,9 +34,8 @@ namespace rawrbox {
 		    "sqrMagnitude", &Vector3f::sqrMagnitude,
 		    "abs", &Vector3f::abs,
 		    "angle", &Vector3f::angle,
-		    "rotate", &Vector3f::rotate,
+		    "rotateAroundOrigin", &Vector3f::rotateAroundOrigin,
 		    "lerp", &Vector3f::lerp,
-		    "toArray", &Vector3f::toArray,
 		    "normalized", &Vector3f::normalized,
 		    "dot", &Vector3f::dot,
 		    "floor", &Vector3f::floor,
