@@ -72,6 +72,18 @@ namespace rawrbox {
 			    std::clamp(y, min.y, max.y)};
 		}
 
+		[[nodiscard]] VecType min(const VecType& other) const
+			requires(std::is_same_v<NumberType, float>)
+		{
+			return {std::min(x, other.x), std::min(y, other.y)};
+		}
+
+		[[nodiscard]] VecType max(const VecType& other) const
+			requires(std::is_same_v<NumberType, float>)
+		{
+			return {std::max(x, other.x), std::max(y, other.y)};
+		}
+
 		[[nodiscard]] NumberType atan2() const {
 			return std::atan2(y, x);
 		}
