@@ -26,5 +26,5 @@ jobs:
                   issue-number: ${{ github.event.pull_request.number }}
                   body: |
                       ## NOTICE  - A LUA API change was detected ⚠
-                      - Ensure [**wiki** / **ias-lib**](https://github.com/edunad/rawrbox-wiki) is up to date.
+                      - Ensure [**wiki** / **rawrbox-lib**](https://github.com/edunad/rawrbox-wiki) is up to date.
                   edit-mode: replace
