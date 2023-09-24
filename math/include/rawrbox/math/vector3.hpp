@@ -161,6 +161,18 @@ namespace rawrbox {
 
 			return retVal;
 		}
+
+		[[nodiscard]] VecType min(const VecType& other) const
+			requires(std::is_same_v<NumberType, float>)
+		{
+			return {std::min(x, other.x), std::min(y, other.y), std::min(z, other.z)};
+		}
+
+		[[nodiscard]] VecType max(const VecType& other) const
+			requires(std::is_same_v<NumberType, float>)
+		{
+			return {std::max(x, other.x), std::max(y, other.y), std::max(z, other.z)};
+		}
 		// ----
 
 		// OPERATORS ---
