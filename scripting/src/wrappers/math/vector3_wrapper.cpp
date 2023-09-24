@@ -42,6 +42,8 @@ namespace rawrbox {
 		    "round", &Vector3f::round,
 		    "ceil", &Vector3f::ceil,
 		    "cross", &Vector3f::cross,
+		    "min", &Vector3f::min,
+		    "max", &Vector3f::max,
 
 		    sol::meta_function::less_than, sol::overload(sol::resolve<bool(const Vector3f&) const>(&Vector3f::operator<), sol::resolve<bool(float) const>(&Vector3f::operator<)),
 		    sol::meta_function::less_than_or_equal_to, sol::overload(sol::resolve<bool(const Vector3f&) const>(&Vector3f::operator<=), sol::resolve<bool(float) const>(&Vector3f::operator<=)),

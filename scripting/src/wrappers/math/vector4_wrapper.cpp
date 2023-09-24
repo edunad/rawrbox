@@ -36,6 +36,8 @@ namespace rawrbox {
 		    "lookRotation", &Vector4f::lookRotation,
 		    "inverse", &Vector4f::inverse,
 		    "interpolate", &Vector4f::interpolate,
+		    "min", &Vector4f::min,
+		    "max", &Vector4f::max,
 
 		    sol::meta_function::less_than, sol::overload(sol::resolve<bool(const Vector4f&) const>(&Vector4f::operator<), sol::resolve<bool(float) const>(&Vector4f::operator<)),
 		    sol::meta_function::less_than_or_equal_to, sol::overload(sol::resolve<bool(const Vector4f&) const>(&Vector4f::operator<=), sol::resolve<bool(float) const>(&Vector4f::operator<=)),
