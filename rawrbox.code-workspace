@@ -3,6 +3,10 @@
     {
       "name": "RawrBox",
       "path": "."
+    },
+    {
+      "name": "RawrBox - WIKI",
+      "path": "../rawrbox-wiki"
     }
   ],
   "settings": {
