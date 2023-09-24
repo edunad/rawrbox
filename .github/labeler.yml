@@ -32,7 +32,16 @@
   - changed-files: "**/tests/**/*.cpp"
 
 "📜 SCRIPTING":
-  - changed-files: "scripting/**/*"
+  - changed-files:
+      [
+        "scripting/**/*",
+        "bass/**/scripting/*",
+        "network/**/scripting/*",
+        "render/**/scripting/*",
+        "resources/**/scripting/*",
+        "ui/**/scripting/*",
+        "**/*.lua",
+      ]
 
 "🎞 WEBM":
   - changed-files: "webm/**/*"
