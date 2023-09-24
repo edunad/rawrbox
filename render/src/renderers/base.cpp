@@ -211,7 +211,7 @@ namespace rawrbox {
 	}
 
 	void RendererBase::gpuPick(const rawrbox::Vector2i& pos, std::function<void(uint32_t)> callback) {
-		if (this->_render == nullptr || pos.x < 0 || pos.y < 0) return;
+		if (this->_render == nullptr || pos.x < 0 || pos.y < 0 || pos.x >= this->_size.x || pos.y >= this->_size.y) return;
 
 		auto tex = this->getGPUPick();
 		if (!bgfx::isValid(tex)) return;
