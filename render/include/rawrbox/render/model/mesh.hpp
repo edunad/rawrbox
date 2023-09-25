@@ -57,9 +57,6 @@ namespace rawrbox {
 
 		rawrbox::TextureBase* displacementTexture = nullptr;
 
-		uint16_t atlasId = 0;
-		uint32_t meshId = 0x000000;
-
 		float specularShininess = 25.0F;
 		float emissionIntensity = 1.F;
 		// -------
@@ -119,8 +116,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual const rawrbox::TextureBase* getTexture() const;
 		virtual void setTexture(rawrbox::TextureBase* ptr);
 
-		[[nodiscard]] virtual uint16_t getAtlasID() const;
-		virtual void setAtlasID(uint16_t atlasID);
+		[[nodiscard]] virtual uint16_t getAtlasID(int index = -1) const;
+		virtual void setAtlasID(uint16_t atlasID, int index = -1);
 
 		[[nodiscard]] virtual const rawrbox::TextureBase* getNormalTexture() const;
 		virtual void setNormalTexture(rawrbox::TextureBase* ptr);
@@ -146,8 +143,8 @@ namespace rawrbox {
 
 		virtual void setRecieveDecals(bool status);
 
-		[[nodiscard]] virtual uint32_t getId() const;
-		virtual void setId(uint32_t id);
+		[[nodiscard]] virtual uint32_t getId(int index = -1) const;
+		virtual void setId(uint32_t id, int index = -1);
 
 		virtual void setColor(const rawrbox::Color& color);
 

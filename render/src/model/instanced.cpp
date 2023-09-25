@@ -81,8 +81,7 @@ namespace rawrbox {
 		if (this->_instances.empty()) return;
 		if (!bgfx::isValid(this->_dataBuffer)) throw std::runtime_error("[RawrBox-InstancedModel] Data buffer not valid! Did you call upload()?");
 
-		const bgfx::Memory* mem = bgfx::makeRef(this->_instances.data(), static_cast<uint32_t>(this->_instances.size()) * rawrbox::Instance::vLayout().getStride());
-		bgfx::update(this->_dataBuffer, 0, mem);
+		bgfx::update(this->_dataBuffer, 0, bgfx::copy(this->_instances.data(), static_cast<uint32_t>(this->_instances.size()) * rawrbox::Instance::vLayout().getStride()));
 	}
 
 	void InstancedModel::draw() {

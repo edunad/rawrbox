@@ -117,7 +117,7 @@ namespace rawrbox {
 					std::swap(rr, bb);
 				}
 
-				uint32_t hashKey = rawrbox::PackUtils::toRGBA(rr / 255.F, gg / 255.F, bb / 255.F, 1.F);
+				uint32_t hashKey = rawrbox::PackUtils::toABGR(rr / 255.F, gg / 255.F, bb / 255.F, 1.F);
 				auto& v = ids[hashKey];
 				v++;
 

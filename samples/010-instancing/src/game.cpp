@@ -72,14 +72,14 @@ namespace instance_test {
 		this->_model->setTemplate(mesh);
 
 		std::random_device prng;
-		std::uniform_int_distribution<int> dist(0, 4);
+		std::uniform_int_distribution<uint16_t> dist(0, 4);
 		std::uniform_real_distribution<float> distRot(0, 360);
 
 		for (int z = 0; z < total; z++) {
 			for (int x = 0; x < total; x++) {
 				rawrbox::Matrix4x4 m;
 				m.mtxSRT({1.F, 1.F, 1.F}, rawrbox::Vector4f::toQuat({0, distRot(prng), 0}), {x * spacing, 0, z * spacing});
-				this->_model->addInstance({m, rawrbox::Colors::White(), {static_cast<float>(dist(prng)), 0, 0, 0}});
+				this->_model->addInstance({m, rawrbox::Colors::White(), dist(prng)});
 			}
 		}
 

@@ -1,5 +1,5 @@
 
-$input v_normal, v_tangent, v_texcoord0, v_color0, v_worldPos
+$input v_normal, v_tangent, v_texcoord0, v_gpuPick, v_color0, v_worldPos
 
 #define READ_LIGHT_INDICES
 #define READ_LIGHT_GRID
@@ -15,7 +15,6 @@ $input v_normal, v_tangent, v_texcoord0, v_color0, v_worldPos
 
 uniform vec4 u_colorOffset;
 uniform vec4 u_camPos;
-uniform vec4 u_gpu_id;
 
 void main() {
 	vec4 albedo = texture2DArray(s_albedo, vec3(v_texcoord0.xy, v_texcoord0.z)) * v_color0 * u_colorOffset;
@@ -45,5 +44,9 @@ void main() {
 	// -------
 
 	gl_FragData[1].r = 1.F - recieve_decals; // DECALS
-	gl_FragData[2].rgba = vec4(u_gpu_id.xyz, 1.); // GPU PICKING
+
+ 	// GPU PICKING -----
+	bool alpha = v_gpuPick.r == 0. && v_gpuPick.g == 0. && v_gpuPick.b == 0.;
+	gl_FragData[2].rgba = vec4(v_gpuPick.rgb, alpha ? 0. : 1.);
+	// -----------------
 }

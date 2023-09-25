@@ -1,26 +1,26 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
+#include <rawrbox/render/model/instanced.hpp>
 #include <rawrbox/render/model/model.hpp>
-#include <rawrbox/render/model/spline.hpp>
-#include <rawrbox/render/model/sprite.hpp>
 #include <rawrbox/render/model/text3D.hpp>
+#include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/window.hpp>
 
 #include <memory>
 
-namespace model {
+namespace gpu {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
-
-		std::unique_ptr<rawrbox::Model> _displacement = std::make_unique<rawrbox::Model>();
 		std::unique_ptr<rawrbox::Model> _model = std::make_unique<rawrbox::Model>();
-		std::unique_ptr<rawrbox::Model> _bboxes = std::make_unique<rawrbox::Model>();
-		std::unique_ptr<rawrbox::Sprite> _sprite = std::make_unique<rawrbox::Sprite>();
-		std::unique_ptr<rawrbox::Spline> _spline = std::make_unique<rawrbox::Spline>();
+		std::unique_ptr<rawrbox::InstancedModel> _instance = std::make_unique<rawrbox::InstancedModel>();
 		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 
 		rawrbox::Font* _font = nullptr;
+
+		rawrbox::VertexData* _lastPicked_vert = nullptr;
+		rawrbox::Mesh* _lastPicked_mesh = nullptr;
+		rawrbox::Instance* _lastPicked_instance = nullptr;
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;
@@ -46,5 +46,6 @@ namespace model {
 		void contentLoaded();
 
 		void drawWorld();
+		void drawOverlay();
 	};
-} // namespace model
+} // namespace gpu

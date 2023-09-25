@@ -16,6 +16,7 @@ namespace rawrbox {
 		rawrbox::Vector3f position = {};
 		rawrbox::Vector4f uv = {};
 		uint32_t abgr = 0xFFFFFFFF;
+		uint32_t id = 0x00000000;
 
 		std::array<uint32_t, 2> normal = {0, 0}; // normal, tangent
 
@@ -48,7 +49,8 @@ namespace rawrbox {
 			l.begin()
 			    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
 			    .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float)
-			    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true, true);
+			    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true, true)
+			    .add(bgfx::Attrib::Color1, 4, bgfx::AttribType::Uint8, true, true);
 
 			if (normals) {
 				l.add(bgfx::Attrib::Normal, 4, bgfx::AttribType::Uint8, true, true)
@@ -58,7 +60,7 @@ namespace rawrbox {
 			}
 
 			if (bones) {
-				l.add(bgfx::Attrib::Indices, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Uint8, false, true)
+				l.add(bgfx::Attrib::Indices, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Uint8, true, true)
 				    .add(bgfx::Attrib::Weight, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Float);
 			} else {
 				l.skip(sizeof(bone_indices));
@@ -75,6 +77,18 @@ namespace rawrbox {
 		void reset() {
 			this->position = this->_ori_pos;
 			this->normal[0] = this->_ori_norm;
+		}
+		// ---------------------
+
+		// GPU Picker ---
+		void setId(uint32_t _id) {
+			this->id = 0xFF000000 | _id; // Alpha is not supported;
+		}
+		// ---------------------
+
+		// Atlas ---
+		void setAtlasId(uint32_t _id) {
+			this->uv.z = static_cast<float>(_id);
 		}
 		// ---------------------
 

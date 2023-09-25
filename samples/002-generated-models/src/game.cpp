@@ -17,7 +17,7 @@ namespace model {
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("GENERATED MODEL TEST");
 		this->_window->setRenderer<>(
-		    bgfx::RendererType::Count, [this]() { this->drawOverlay(); }, [this]() { this->drawWorld(); });
+		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 		this->_window->onIntroCompleted += [this]() {
@@ -207,11 +207,6 @@ namespace model {
 		}
 		// -----
 
-		uint32_t id = 0;
-		for (auto& mesh : _model->meshes()) {
-			mesh->setId(++id);
-		}
-
 		// Spline test ----
 
 		{
@@ -254,25 +249,6 @@ namespace model {
 		}
 		// -----
 
-		// BINDS ----
-		this->_window->onMouseKey += [this](auto& /*w*/, const rawrbox::Vector2i& mousePos, int button, int action, int /*mods*/) {
-			const bool isDown = action == 1;
-			if (!isDown || button != MOUSE_BUTTON_1) return;
-
-			rawrbox::RENDERER->gpuPick(mousePos, [this](uint32_t id) {
-				if (_lastPicked != nullptr) _lastPicked->setColor(rawrbox::Colors::White());
-
-				for (auto& mesh : this->_model->meshes()) {
-					if (mesh->getId() == id) {
-						mesh->setColor(rawrbox::Colors::Red());
-						_lastPicked = mesh.get();
-						break;
-					}
-				}
-			});
-		};
-		// -----
-
 		// Text test ----
 		this->_text->addText(*this->_font, "PLANE", {2.F, 0.5F, 0});
 		this->_text->addText(*this->_font, "TRIANGLE", {3.5F, 0.5F, 0});
@@ -293,7 +269,7 @@ namespace model {
 		this->_text->addText(*this->_font, "HALF UNIT", {1.5F, 0.55F, 2.5F});
 		// ------
 
-		this->_model->upload();
+		this->_model->upload(true);
 		this->_displacement->upload();
 		this->_sprite->upload();
 		this->_spline->upload();
@@ -328,16 +304,6 @@ namespace model {
 	void Game::update() {
 		if (this->_window == nullptr) return;
 		this->_window->update();
-	}
-
-	void Game::drawOverlay() {
-		if (!this->_ready) return;
-
-		auto& stencil = this->_window->getStencil();
-		auto wSize = this->_window->getSize().cast<float>();
-
-		stencil.drawTexture({wSize.x - 138, 10}, {128, 128}, rawrbox::RENDERER->getGPUPick());
-		stencil.render();
 	}
 
 	void Game::drawWorld() {

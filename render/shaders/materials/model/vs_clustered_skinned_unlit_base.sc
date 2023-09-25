@@ -1,5 +1,5 @@
-$input a_position, a_color0, a_texcoord0, a_indices, a_weight
-$output v_texcoord0, v_color0, v_worldPos
+$input a_position, a_color0, a_texcoord0, a_color1, a_indices, a_weight
+$output v_texcoord0, v_gpuPick, v_color0, v_worldPos
 
 #define TEXTURE_DATA
 
@@ -10,8 +10,10 @@ $output v_texcoord0, v_color0, v_worldPos
 
 void main() {
     v_color0 = a_color0;
+	v_gpuPick = a_color1; //  GPU PICKING
+
     v_texcoord0.xy = applyUVTransform(a_texcoord0.xy);
-    v_texcoord0.z = atlasID;
+	v_texcoord0.z = a_texcoord0.z; // ATLAS ID
 
     vec4 pos = boneTransform(a_indices, a_weight, a_position);
     TransformedData transform = applyPosTransforms(pos, a_texcoord0.xy);
