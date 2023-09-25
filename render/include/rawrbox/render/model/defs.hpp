@@ -60,7 +60,7 @@ namespace rawrbox {
 			}
 
 			if (bones) {
-				l.add(bgfx::Attrib::Indices, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Uint8, true, true)
+				l.add(bgfx::Attrib::Indices, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Uint8, false, true)
 				    .add(bgfx::Attrib::Weight, rawrbox::MAX_BONES_PER_VERTEX, bgfx::AttribType::Float);
 			} else {
 				l.skip(sizeof(bone_indices));
