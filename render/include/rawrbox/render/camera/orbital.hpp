@@ -4,17 +4,29 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/camera/perspective.hpp>
 #include <rawrbox/render/window.hpp>
+#include <rawrbox/utils/keys.hpp>
 
 #include <functional>
 
 namespace rawrbox {
+
+	struct CameraControls {
+		int rotate = MOUSE_BUTTON_2;
+
+		int forward = KEY_W;
+		int backwards = KEY_S;
+		int left = KEY_A;
+		int right = KEY_D;
+	};
+
 	class CameraOrbital : public rawrbox::CameraPerspective {
 	protected:
 		rawrbox::Window* _window = nullptr;
 
 		// Camera control ---
 		float _speed = 0.F;
-		bool _rightClick = false;
+		bool _enableLook = false;
+		rawrbox::CameraControls _controls = {};
 		rawrbox::Vector2i _oldMousePos = {};
 		// ------------
 	public:
@@ -28,6 +40,8 @@ namespace rawrbox {
 		~CameraOrbital() override = default;
 
 		explicit CameraOrbital(rawrbox::Window& window, float speed = 8.F, float FOV = 60.F, float near = 0.1F, float far = 100.F);
+
+		void setControls(rawrbox::CameraControls controls);
 		void update() override;
 	};
 } // namespace rawrbox

@@ -1,7 +1,6 @@
 
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/camera/orbital.hpp>
-#include <rawrbox/utils/keys.hpp>
 
 #include <bx/math.h>
 
@@ -9,9 +8,9 @@ namespace rawrbox {
 	CameraOrbital::CameraOrbital(rawrbox::Window& window, float speed, float FOV, float near, float far) : CameraPerspective(window.getSize(), FOV, near, far), _window(&window), _speed(speed) {
 		this->_window->onMouseKey += [this](auto& /*w*/, const rawrbox::Vector2i& mousePos, int button, int action, int /*mods*/) {
 			const bool isDown = action == 1;
-			if (button != MOUSE_BUTTON_2) return;
+			if (button != this->_controls.rotate) return;
 
-			this->_rightClick = isDown;
+			this->_enableLook = isDown;
 			this->_oldMousePos = mousePos;
 
 			if (isDown && this->onMovementStart) this->onMovementStart();
@@ -19,7 +18,7 @@ namespace rawrbox {
 		};
 
 		this->_window->onMouseMove += [this](auto& /*w*/, const rawrbox::Vector2i& mousePos) {
-			if (!this->_rightClick) return;
+			if (!this->_enableLook) return;
 			float m_mouseSpeed = 0.0015F;
 
 			auto deltaX = mousePos.x - this->_oldMousePos.x;
@@ -33,6 +32,8 @@ namespace rawrbox {
 			this->_oldMousePos = mousePos;
 		};
 	}
+
+	void CameraOrbital::setControls(rawrbox::CameraControls controls) { this->_controls = controls; }
 
 	void CameraOrbital::update() {
 		if (this->_window == nullptr) return;
@@ -49,22 +50,22 @@ namespace rawrbox {
 			sp *= 2.F;
 		}
 
-		if (this->_window->isKeyDown(KEY_W)) {
+		if (this->_window->isKeyDown(this->_controls.forward)) {
 			m_eye = bx::mad(m_dir, rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 
-		if (this->_window->isKeyDown(KEY_S)) {
+		if (this->_window->isKeyDown(this->_controls.backwards)) {
 			m_eye = bx::mad(m_dir, -rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 
-		if (this->_window->isKeyDown(KEY_A)) {
+		if (this->_window->isKeyDown(this->_controls.left)) {
 			m_eye = bx::mad({right.x, right.y, right.z}, rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
 
-		if (this->_window->isKeyDown(KEY_D)) {
+		if (this->_window->isKeyDown(this->_controls.right)) {
 			m_eye = bx::mad({right.x, right.y, right.z}, -rawrbox::DELTA_TIME * sp, m_eye);
 			this->setPos({m_eye.x, m_eye.y, m_eye.z});
 		}
