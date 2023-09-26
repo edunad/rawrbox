@@ -82,6 +82,7 @@ namespace rawrbox {
 
 		// GPU Picker ---
 		void setId(uint32_t _id) {
+			if (id > 0x00FFFFFF) throw std::runtime_error("[RawrBox-Mesh] Invalid id");
 			this->id = 0xFF000000 | _id; // Alpha is not supported;
 		}
 		// ---------------------
