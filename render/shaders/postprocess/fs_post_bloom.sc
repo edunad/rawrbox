@@ -1,4 +1,4 @@
-$input v_texcoord0
+$input v_texcoord
 
 #include <bgfx_shader.sh>
 
@@ -31,8 +31,8 @@ vec4 GetBloom ( in vec2 uv, in vec4 inColor ) {
 
 // Adapted from https://www.shadertoy.com/view/4tlBWH
 void main() {
-    vec4 color =  texture2D(s_texColor, v_texcoord0.xy);
+    vec4 color =  texture2D(s_texColor, v_texcoord.xy);
 	if(color.a <= 0.0) discard;
 
-    gl_FragColor = mix(color, GetBloom(v_texcoord0.xy, color), u_intensity.x);
+    gl_FragColor = mix(color, GetBloom(v_texcoord.xy, color), u_intensity.x);
 }

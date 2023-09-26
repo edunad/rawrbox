@@ -98,7 +98,12 @@ namespace stencil {
 		// Textures ---
 		auto mesh = rawrbox::MeshUtils::generateCube({0, 0, 0}, {2.F, 2.F, 2.F});
 		mesh.setTexture(this->_texture3);
-		mesh.setAtlasID(0);
+
+		std::random_device prng;
+		std::uniform_int_distribution<uint16_t> dist(0, 4);
+		for (auto& vertice : mesh.vertices) {
+			vertice.setAtlasId(dist(prng));
+		}
 
 		this->_model->addMesh(mesh);
 		this->_model->upload();
@@ -319,7 +324,7 @@ namespace stencil {
 
 		if (this->_ready) {
 			if (this->_model != nullptr) {
-				this->_model->setEulerAngle({0, rawrbox::MathUtils::toRad(this->_counter * 20.F), 0});
+				this->_model->setEulerAngle({0, rawrbox::MathUtils::toRad(this->_counter * 20.F), rawrbox::MathUtils::toRad(this->_counter * 10.F)});
 				this->_model->getMesh()->setAtlasID(static_cast<int>(this->_counter) % 4);
 			}
 

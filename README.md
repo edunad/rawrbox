@@ -234,3 +234,7 @@
 ### 014-scripting
 
 <a href='/samples/014-scripting'><img src="https://i.rawr.dev/EgZILBUsED-min.gif" width=512 /></a>
+
+### 015-gpu-picking
+
+<a href='/samples/015-gpu-picking'><img src="https://i.rawr.dev/Ib7spZI19Y-min.gif" width=512 /></a>

@@ -21,8 +21,6 @@ namespace rawrbox {
 		this->registerUniform("u_colorOffset", bgfx::UniformType::Vec4);
 		this->registerUniform("u_data", bgfx::UniformType::Vec4, MAX_DATA);
 		this->registerUniform("u_tex_flags", bgfx::UniformType::Vec4);
-
-		this->registerUniform("u_gpu_id", bgfx::UniformType::Vec4);
 	}
 
 	MaterialBase::~MaterialBase() {
@@ -78,8 +76,6 @@ namespace rawrbox {
 			data[0] = mesh.getData("billboard_mode").data();
 		}
 
-		data[0][3] = mesh.getAtlasID(); // Re-use billboard mode, since w is unused
-
 		if (mesh.hasData("vertex_snap")) {
 			data[1] = mesh.getData("vertex_snap").data();
 		}
@@ -92,12 +88,6 @@ namespace rawrbox {
 			data[3] = mesh.getData("mask").data();
 		}
 
-		std::array<float, 4> id = {0, 0, 0, 0};
-		if (mesh.meshId != 0x00000000) {
-			id = rawrbox::PackUtils::fromRGBA(mesh.meshId);
-		}
-
-		bgfx::setUniform(this->getUniform("u_gpu_id"), id.data());
 		bgfx::setUniform(this->getUniform("u_data"), data.front().data(), MAX_DATA);
 		// ---
 

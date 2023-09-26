@@ -55,9 +55,23 @@ namespace rawrbox {
 		this->texture = ptr;
 	}
 
-	uint16_t Mesh::getAtlasID() const { return this->atlasId; }
-	void Mesh::setAtlasID(uint16_t _atlasId) {
-		this->atlasId = _atlasId;
+	uint16_t Mesh::getAtlasID(int index) const {
+		if (this->vertices.empty()) return 0;
+		if (index < 0) return static_cast<uint16_t>(this->vertices.front().uv.z);
+
+		return static_cast<uint16_t>(this->vertices[std::clamp(index, 0, static_cast<int>(this->vertices.size() - 1))].uv.z);
+	}
+
+	void Mesh::setAtlasID(uint16_t _atlasId, int index) {
+		auto vSize = static_cast<int>(this->vertices.size());
+		for (int i = 0; i < vSize; i++) {
+			if (index != -1 && i == index) {
+				this->vertices[i].setAtlasId(_atlasId);
+				break;
+			}
+
+			this->vertices[i].setAtlasId(_atlasId);
+		}
 	}
 
 	const rawrbox::TextureBase* Mesh::getNormalTexture() const { return this->normalTexture; }
@@ -107,12 +121,23 @@ namespace rawrbox {
 		this->addData("mask", {decals ? 1.0F : 0.0F, 0, 0, 0});
 	}
 
-	uint32_t Mesh::getId() const {
-		return this->meshId;
+	uint32_t Mesh::getId(int index) const {
+		if (this->vertices.empty()) return 0;
+		if (index < 0) return this->vertices.front().id;
+
+		return this->vertices[std::clamp(index, 0, static_cast<int>(this->vertices.size() - 1))].id;
 	}
 
-	void Mesh::setId(uint32_t id) {
-		this->meshId = (id << 8) | 0xFF;
+	void Mesh::setId(uint32_t id, int index) {
+		auto vSize = static_cast<int>(this->vertices.size());
+		for (int i = 0; i < vSize; i++) {
+			if (index != -1 && i == index) {
+				this->vertices[i].setId(id);
+				break;
+			}
+
+			this->vertices[i].setId(id);
+		}
 	}
 
 	void Mesh::setColor(const rawrbox::Color& _color) {

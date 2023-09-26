@@ -84,6 +84,10 @@ namespace rawrbox {
 		return 0 | (static_cast<uint8_t>(_aa * 255.0F) << 0) | (static_cast<uint8_t>(_bb * 255.0F) << 8) | (static_cast<uint8_t>(_gg * 255.0F) << 16) | (static_cast<uint8_t>(_rr * 255.0F) << 24);
 	}
 
+	std::array<float, 4> PackUtils::fromABGR(uint32_t val) {
+		return {((val)&0xFF) / 255.0F, ((val >> 8) & 0xFF) / 255.0F, ((val >> 16) & 0xFF) / 255.0F, ((val >> 24) & 0xFF) / 255.0F};
+	}
+
 	std::array<float, 4> PackUtils::fromRGBA(uint32_t val) {
 		return {
 		    ((val >> 24) & 0xFF) / 255.0F,

@@ -112,11 +112,14 @@ namespace rawrbox {
 
 		template <class T = rawrbox::Resource>
 		static T* loadFile(const std::filesystem::path& filePath, uint32_t loadFlags = 0) {
+			if (filePath.empty()) throw std::runtime_error("[RawrBox-Resources] Attempted to load empty path");
 			return loadFileImpl<T>(filePath, loadFlags);
 		}
 
 		template <class T = rawrbox::Resource>
 		static void loadFileAsync(const std::filesystem::path& filePath, uint32_t loadFlags = 0, std::function<void()> onComplete = nullptr) {
+			if (filePath.empty()) throw std::runtime_error("[RawrBox-Resources] Attempted to load empty path");
+
 			rawrbox::ASYNC::run([filePath, loadFlags, onComplete]() {
 				loadFileImpl<T>(filePath, loadFlags);
 				if (onComplete != nullptr) onComplete();

@@ -21,6 +21,7 @@ namespace rawrbox {
 
 		static uint32_t toABGR(float _rr, float _gg, float _bb, float _aa);
 		static uint32_t toRGBA(float _rr, float _gg, float _bb, float _aa);
+		static std::array<float, 4> fromABGR(uint32_t val);
 		static std::array<float, 4> fromRGBA(uint32_t val);
 		static std::array<float, 4> fromRGB(uint32_t val);
 	};
