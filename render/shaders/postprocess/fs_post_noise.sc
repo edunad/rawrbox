@@ -1,4 +1,4 @@
-$input v_texcoord0
+$input v_texcoord
 
 #include <bgfx_shader.sh>
 #include <../include/hash.sh>
@@ -16,10 +16,10 @@ uvec3 hash(vec2 s) {
 }
 
 void main() {
-	vec4 col = texture2D(s_texColor, v_texcoord0.xy);
+	vec4 col = texture2D(s_texColor, v_texcoord.xy);
 	if(col.a <= 0.0) discard;
 
-	uvec3 h = hash(v_texcoord0 * 3000.0 * timer);
+	uvec3 h = hash(v_texcoord * 3000.0 * timer);
 	float a = float(h.x) * (1.0 / float(0xffffffffu));
     vec3 noise = vec3(a, a, a) * strength;
 

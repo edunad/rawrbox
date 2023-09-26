@@ -1,5 +1,5 @@
 $input a_position, a_color0, a_texcoord0, a_color1
-$output v_texcoord0, v_gpuPick, v_color0, v_worldPos
+$output v_texcoord, v_gpuPick, v_color0, v_worldPos, v_data
 
 #define TEXTURE_DATA
 
@@ -25,10 +25,10 @@ void main() {
 	v_color0 = a_color0 * getInstanceData(id, 4);
 	v_gpuPick = a_color1; //  GPU PICKING
 
-	v_texcoord0.xy = applyUVTransform(a_texcoord0.xy);
+	v_texcoord.xy = applyUVTransform(a_texcoord0.xy);
 
 	vec4 extra = getInstanceData(id, 5);
-	v_texcoord0.z = extra.x; // Atlas
+	v_data.x = extra.x; // Atlas
 	v_gpuPick.rgb = extra.yzw; // GPU PICKING
 
 	TransformedData transform = applyPosTransforms(u_viewProj, mul(model, vec4(a_position, 1.)), a_texcoord0.xy);

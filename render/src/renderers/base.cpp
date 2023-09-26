@@ -110,9 +110,9 @@ namespace rawrbox {
 				uint8_t rr = *x++;
 				uint8_t gg = *x++;
 				uint8_t bb = *x++;
-				x++; // A is unused
+				uint8_t aa = *x++;
 
-				if ((rr | gg | bb) == 0) continue;
+				if (aa == 0) continue;
 				if (caps->rendererType == bgfx::RendererType::Direct3D9) {
 					std::swap(rr, bb);
 				}
@@ -126,6 +126,7 @@ namespace rawrbox {
 					id = hashKey;
 				}
 			}
+
 			// --------------
 			for (auto& p : this->_gpuPickCallbacks) {
 				p(id);

@@ -13,6 +13,7 @@ namespace gpu {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
 		std::unique_ptr<rawrbox::Model> _model = std::make_unique<rawrbox::Model>();
+		std::unique_ptr<rawrbox::Model> _model2 = std::make_unique<rawrbox::Model>();
 		std::unique_ptr<rawrbox::InstancedModel> _instance = std::make_unique<rawrbox::InstancedModel>();
 		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
 

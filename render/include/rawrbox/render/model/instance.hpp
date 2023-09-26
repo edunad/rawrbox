@@ -32,11 +32,11 @@ namespace rawrbox {
 		}
 
 		void setId(uint32_t id) {
-			auto pack = rawrbox::PackUtils::fromRGBA(0xFF000000 | id);
+			auto pack = rawrbox::PackUtils::fromABGR(0xFF000000 | id);
 
-			extraData.y = pack[1];
-			extraData.z = pack[2];
-			extraData.w = pack[3];
+			extraData.y = pack[0];
+			extraData.z = pack[1];
+			extraData.w = pack[2];
 		}
 
 		static bgfx::VertexLayout vLayout() {

@@ -1,4 +1,4 @@
-$input v_texcoord0, v_color0, v_model_0, v_model_1, v_model_2, v_model_3, v_normal, v_worldPos
+$input v_texcoord, v_color0, v_model_0, v_model_1, v_model_2, v_model_3, v_normal, v_worldPos
 
 #define READ_LIGHT_INDICES
 #define READ_LIGHT_GRID
@@ -50,7 +50,7 @@ void main() {
 	decalTexCoord.xy = 1.0 - decalTexCoord.xy; // Flip textures
 
 	// Apply materials -----
-	vec4 albedo = texture2DArray(s_albedo, vec3(decalTexCoord.xy, v_texcoord0.z));
+	vec4 albedo = texture2DArray(s_albedo, vec3(decalTexCoord.xy, v_texcoord.z));
 	if(albedo.a <= 0.0) discard;
 
 	// ----

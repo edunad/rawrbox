@@ -67,15 +67,16 @@ namespace gpu {
 			auto mesh = rawrbox::MeshUtils::generateCube({1.0F, 0, 0}, {0.5F, 0.5F, 0.5F});
 			mesh.setId(1);
 
-			this->_model->addMesh(mesh);
+			this->_model2->addMesh(mesh);
 		}
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({-1.0F, 0, 0}, {0.5F, 0.5F, 0.5F});
 
-			uint32_t ids = 5;
-			for (auto& v : mesh.vertices)
-				v.setId(++ids);
+			uint32_t ids = 8000;
+			for (auto& v : mesh.vertices) {
+				v.setId(ids++);
+			}
 
 			this->_model->addMesh(mesh);
 		}
@@ -119,15 +120,18 @@ namespace gpu {
 
 				if (this->_lastPicked_vert != nullptr) {
 					this->_lastPicked_vert->abgr = rawrbox::Colors::White().pack();
+					this->_lastPicked_vert = nullptr;
 					updateModel = true;
 				}
 
 				if (this->_lastPicked_mesh != nullptr) {
 					this->_lastPicked_mesh->setColor(rawrbox::Colors::White());
+					this->_lastPicked_mesh = nullptr;
 				}
 
 				if (this->_lastPicked_instance != nullptr) {
 					this->_lastPicked_instance->setColor(rawrbox::Colors::White());
+					this->_lastPicked_instance = nullptr;
 					updateInstance = true;
 				}
 
@@ -141,18 +145,24 @@ namespace gpu {
 						}
 					}
 
-					for (auto& mesh : this->_model->meshes()) {
-						if (mesh->getId() == id) {
-							mesh->setColor(rawrbox::Colors::Red());
-							this->_lastPicked_mesh = mesh.get();
-							break;
+					if (_lastPicked_instance == nullptr) {
+						for (auto& mesh : this->_model->meshes()) {
+							for (auto& v : mesh->vertices) {
+								if (v.id == id) {
+									v.abgr = rawrbox::Colors::Red().pack();
+									this->_lastPicked_vert = &v;
+									updateModel = true;
+									break;
+								}
+							}
 						}
+					}
 
-						for (auto& v : mesh->vertices) {
-							if (v.id == id) {
-								v.abgr = rawrbox::Colors::Red().pack();
-								this->_lastPicked_vert = &v;
-								updateModel = true;
+					if (this->_lastPicked_vert == nullptr) {
+						for (auto& mesh : this->_model2->meshes()) {
+							if (mesh->getId() == id) {
+								mesh->setColor(rawrbox::Colors::Red());
+								this->_lastPicked_mesh = mesh.get();
 								break;
 							}
 						}
@@ -171,6 +181,7 @@ namespace gpu {
 		// -----
 
 		this->_model->upload(true);
+		this->_model2->upload();
 		this->_instance->upload();
 		this->_text->upload();
 
@@ -180,6 +191,7 @@ namespace gpu {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 		this->_model.reset();
+		this->_model2.reset();
 		this->_instance.reset();
 		this->_text.reset();
 
@@ -214,6 +226,7 @@ namespace gpu {
 		if (!this->_ready) return;
 
 		this->_model->draw();
+		this->_model2->draw();
 		this->_instance->draw();
 		this->_text->draw();
 	}

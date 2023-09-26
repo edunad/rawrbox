@@ -1,5 +1,5 @@
 $input a_position, a_color0, a_texcoord0, a_normal
-$output v_texcoord0, v_color0, v_model_0, v_model_1, v_model_2, v_model_3, v_normal, v_worldPos
+$output v_texcoord, v_color0, v_model_0, v_model_1, v_model_2, v_model_3, v_normal, v_worldPos
 
 #include <bgfx_shader.sh>
 #include <bgfx_compute.sh>
@@ -28,8 +28,8 @@ void main() {
 
 	v_color0 = a_color0 * getInstanceData(id, 4);
 
-	v_texcoord0.xy = a_texcoord0.xy;
-	v_texcoord0.z = getInstanceData(id, 5).x;
+	v_texcoord.xy = a_texcoord0.xy;
+	v_texcoord.z = getInstanceData(id, 5).x;
 
 	vec4 normal = a_normal * 2.0 - 1.0;
 
