@@ -18,6 +18,9 @@ namespace rawrbox {
 		~TextureAtlas() override = default;
 
 		// ------ PIXEL-UTILS
+		[[nodiscard]] uint16_t total() const;
+		[[nodiscard]] uint16_t getSpriteSize() const;
+		[[nodiscard]] std::vector<uint8_t> getSprite(uint16_t id) const;
 		// --------------------
 
 		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count) override;

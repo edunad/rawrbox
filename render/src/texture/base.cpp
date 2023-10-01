@@ -15,6 +15,7 @@ namespace rawrbox {
 	// UTILS ---
 	bool TextureBase::hasTransparency() const { return false; }
 	const rawrbox::Vector2i& TextureBase::getSize() const { return this->_size; }
+	int TextureBase::getChannels() const { return this->_channels; }
 	bool TextureBase::isValid() const { return bgfx::isValid(this->_handle); }
 	const bgfx::TextureHandle& TextureBase::getHandle() const { return this->_handle; }
 	void TextureBase::setTextureUV(rawrbox::TEXTURE_UV mode) { this->_textureUV = mode; }
