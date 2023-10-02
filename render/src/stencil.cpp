@@ -36,7 +36,7 @@ namespace rawrbox {
 		// Shader layout
 		this->_vLayout.begin()
 		    .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-		    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
+		    .add(bgfx::Attrib::TexCoord0, 3, bgfx::AttribType::Float)
 		    .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
 		    .end();
 
@@ -79,7 +79,7 @@ namespace rawrbox {
 		bgfx::setViewClear(this->_renderId, BGFX_DEFAULT_CLEAR, 0x00000000, 1.0F, 0);
 	}
 
-	void Stencil::pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv, const rawrbox::Color& col) {
+	void Stencil::pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector3f& uv, const rawrbox::Color& col) {
 		auto wSize = this->_windowSize.cast<float>();
 
 		this->applyScale(pos);
@@ -94,6 +94,7 @@ namespace rawrbox {
 		    // uv
 		    uv.x,
 		    uv.y,
+		    uv.z,
 
 		    // color
 		    col.pack());
@@ -219,7 +220,7 @@ namespace rawrbox {
 		}
 	}
 
-	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const bgfx::TextureHandle& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd) {
+	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const bgfx::TextureHandle& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd, uint32_t atlas) {
 		if (col.isTransparent()) return;
 
 		// Setup --------
@@ -228,10 +229,12 @@ namespace rawrbox {
 		    tex);
 		// ----
 
-		this->pushVertice({pos.x, pos.y}, uvStart, col);
-		this->pushVertice({pos.x, pos.y + size.y}, {uvStart.x, uvEnd.y}, col);
-		this->pushVertice({pos.x + size.x, pos.y}, {uvEnd.x, uvStart.y}, col);
-		this->pushVertice({pos.x + size.x, pos.y + size.y}, uvEnd, col);
+		auto a = static_cast<float>(atlas);
+
+		this->pushVertice({pos.x, pos.y}, {uvStart.x, uvStart.y, a}, col);
+		this->pushVertice({pos.x, pos.y + size.y}, {uvStart.x, uvEnd.y, a}, col);
+		this->pushVertice({pos.x + size.x, pos.y}, {uvEnd.x, uvStart.y, a}, col);
+		this->pushVertice({pos.x + size.x, pos.y + size.y}, {uvEnd.x, uvEnd.y, a}, col);
 
 		this->pushIndices({0, 1, 2,
 		    1, 3, 2});
@@ -241,8 +244,8 @@ namespace rawrbox {
 		// ----
 	}
 
-	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd) {
-		this->drawTexture(pos, size, tex.getHandle(), col, uvStart, uvEnd);
+	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd, uint32_t atlas) {
+		this->drawTexture(pos, size, tex.getHandle(), col, uvStart, uvEnd, atlas);
 	}
 
 	void Stencil::drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col, size_t roundness, float angleStart, float angleEnd) {

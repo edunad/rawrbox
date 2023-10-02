@@ -241,6 +241,10 @@ namespace stencil {
 		stencil.drawTexture({0, 0}, {100, 100}, *this->_texture2);
 		stencil.popOffset();
 
+		stencil.pushOffset({750, 110});
+		stencil.drawTexture({0, 0}, {64, 64}, *this->_texture3, rawrbox::Colors::White(), {}, {1, 1}, static_cast<uint32_t>(this->_counter) % 4);
+		stencil.popOffset();
+
 		stencil.pushOffset({820, 110});
 		stencil.drawTexture({0, 0}, {509 * 0.35F, 404 * 0.35F}, *this->_texture5);
 		stencil.popOffset();
@@ -325,7 +329,6 @@ namespace stencil {
 		if (this->_ready) {
 			if (this->_model != nullptr) {
 				this->_model->setEulerAngle({0, rawrbox::MathUtils::toRad(this->_counter * 20.F), rawrbox::MathUtils::toRad(this->_counter * 10.F)});
-				this->_model->getMesh()->setAtlasID(static_cast<int>(this->_counter) % 4);
 			}
 
 			this->_counter += 0.1F;

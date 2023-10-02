@@ -22,12 +22,13 @@ namespace rawrbox {
 
 		float u = 0;
 		float v = 0;
+		float atlas = 0;
 
 		uint32_t abgr = 0xFFFFFFFF;
 
 		PosUVColorVertexData() = default;
-		PosUVColorVertexData(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& uv, const rawrbox::Color& cl) : x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y), abgr(cl.pack()) {}
-		PosUVColorVertexData(float _x, float _y, float _z, float _u, float _v, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v), abgr(_abgr) {}
+		PosUVColorVertexData(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& uv, const rawrbox::Color& cl) : x(pos.x), y(pos.y), z(pos.z), u(uv.x), v(uv.y), atlas(uv.z), abgr(cl.pack()) {}
+		PosUVColorVertexData(float _x, float _y, float _z, float _u, float _v, float _atlas, uint32_t _abgr) : x(_x), y(_y), z(_z), u(_u), v(_v), atlas(_atlas), abgr(_abgr) {}
 	};
 
 	struct PolygonVertice {
@@ -187,7 +188,7 @@ namespace rawrbox {
 		// -------------
 
 		// ------ UTILS
-		void pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector2f& uv, const rawrbox::Color& col);
+		void pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector3f& uv, const rawrbox::Color& col);
 		void pushIndices(std::vector<uint16_t> ind);
 
 		void applyRotation(rawrbox::Vector2f& vert);
@@ -217,8 +218,8 @@ namespace rawrbox {
 		virtual void drawPolygon(const rawrbox::Polygon& poly);
 		virtual void drawTriangle(const rawrbox::Vector2f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector2f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector2f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC);
 		virtual void drawBox(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White());
-		virtual void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const bgfx::TextureHandle& tex, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1});
-		virtual void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1});
+		virtual void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const bgfx::TextureHandle& tex, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1}, uint32_t atlasId = 0);
+		virtual void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1}, uint32_t atlasId = 0);
 		virtual void drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White(), size_t roundness = 32, float angleStart = 0.F, float angleEnd = 360.F);
 		virtual void drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const rawrbox::Color& col = rawrbox::Colors::White());
 		virtual void drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White(), rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
