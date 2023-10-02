@@ -27,7 +27,7 @@ IncludeCategories:
     Priority: 5
 
 IncludeBlocks: Regroup
-DerivePointerAlignment: true
+DerivePointerAlignment: false
 PointerAlignment: Left
 ReferenceAlignment: Left
 AllowShortCaseLabelsOnASingleLine: true

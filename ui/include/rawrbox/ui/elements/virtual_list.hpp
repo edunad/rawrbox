@@ -74,6 +74,7 @@ namespace rawrbox {
 			return std::find(this->_items.begin(), this->_items.end(), index) != this->_items.end();
 		};
 
+		std::vector<T>& getItems() { return this->_items; }
 		T& getItem(size_t index) {
 			return this->_items[index];
 		};
@@ -99,7 +100,7 @@ namespace rawrbox {
 			stencil.drawBox({}, size, this->_backgroundColor);
 
 			for (size_t indx = 0; indx < this->_items.size(); indx++) {
-				auto itm = this->_items[indx];
+				auto& itm = this->_items[indx];
 
 				if (this->shouldRender != nullptr && !this->shouldRender(indx, itm)) continue;
 				auto itemSize = this->getItemSize(indx);
