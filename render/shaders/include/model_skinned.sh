@@ -13,7 +13,7 @@ vec4 boneTransform(ivec4 indices, vec4 weight, vec3 position) {
 
 	for (int idx = 0; idx < NUM_BONES_PER_VERTEX; idx++) {
 		if (weight[idx] > 0.0) {
-			BoneTransform += u_bones[indices[idx]] * weight[idx];
+			BoneTransform += u_bones[int(indices[idx])] * weight[idx];
 			skinned = true;
 		}
 	}

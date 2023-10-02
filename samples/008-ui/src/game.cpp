@@ -78,6 +78,7 @@ namespace ui_test {
 
 	void Game::contentLoaded() {
 		// SETUP UI
+		auto fnt = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/LiberationMono-Regular.ttf")->getSize(12);
 
 		// Setup binds ---
 		auto winSize = this->_window->getSize().cast<float>();
@@ -162,17 +163,6 @@ namespace ui_test {
 				img->setSize({128, 128});
 			}
 
-			auto vlist = frame->createChild<rawrbox::UIVirtualList<float>>();
-			vlist->setPos({279, 96});
-			vlist->setSize({64, 64});
-			vlist->renderItem = [](size_t /*indx*/, float& msg, bool /*isHovering*/, rawrbox::Stencil& stencil) { stencil.drawBox({msg, 0}, {1, 10}); };
-			vlist->getItemSize = [](size_t /*indx*/) {
-				return 9;
-			};
-
-			for (size_t i = 0; i < 64; i++)
-				vlist->addItem(static_cast<float>(i));
-
 			{
 				auto prog = frame->createChild<rawrbox::UIProgressBar>();
 				prog->setPos({10, 130});
@@ -197,6 +187,64 @@ namespace ui_test {
 				this->_anim->setElement(img);
 				this->_anim->setLoop(true);
 				this->_anim->play();
+			}
+		}
+
+		{
+			auto frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
+			frame->setTitle("Virtual lists");
+			frame->setSize({400, 250});
+			frame->setPos({100, 450});
+			{
+				auto label = frame->createChild<rawrbox::UILabel>();
+				label->setPos({5, 3});
+				label->setFont("content/fonts/LiberationMono-Regular.ttf", 11);
+				label->setText("LIST MODE");
+				label->sizeToContents();
+			}
+
+			// LIST
+			{
+				auto vlist = frame->createChild<rawrbox::UIVirtualList<std::string>>();
+				vlist->setPos({0, 16});
+				vlist->setSize({400, 100});
+				vlist->renderItem = [fnt](size_t indx, std::string& msg, bool isHovering, rawrbox::Stencil& stencil) {
+					stencil.drawBox({}, {400, 12}, isHovering ? rawrbox::Colors::Black() : rawrbox::Colors::Gray().strength(indx % 2 == 1 ? 0.25F : 0.5F));
+					stencil.drawText(*fnt, msg, {0, 0});
+				};
+
+				vlist->getItemSize = [](size_t /*indx*/) {
+					return rawrbox::Vector2i(400, 12);
+				};
+
+				for (size_t i = 0; i < 64; i++)
+					vlist->addItem(fmt::format("Item #{}", i));
+			}
+
+			{
+				auto label = frame->createChild<rawrbox::UILabel>();
+				label->setPos({5, 120});
+				label->setFont("content/fonts/LiberationMono-Regular.ttf", 11);
+				label->setText("GRID MODE");
+				label->sizeToContents();
+			}
+			// GRID
+			{
+				auto vlist = frame->createChild<rawrbox::UIVirtualList<std::string>>();
+				vlist->setPos({0, 136});
+				vlist->setSize({400, 100});
+				vlist->setMode(rawrbox::VirtualListMode::GRID);
+				vlist->renderItem = [fnt](size_t indx, std::string& msg, bool isHovering, rawrbox::Stencil& stencil) {
+					stencil.drawBox({}, {24, 24}, isHovering ? rawrbox::Colors::Black() : rawrbox::Colors::Gray().strength(indx % 2 == 1 ? 0.25F : 0.5F));
+					stencil.drawText(*fnt, msg, {0, 0});
+				};
+
+				vlist->getItemSize = [](size_t /*indx*/) {
+					return rawrbox::Vector2i(24, 24);
+				};
+
+				for (size_t i = 0; i < 256; i++)
+					vlist->addItem(fmt::format("#{}", i));
 			}
 		}
 
