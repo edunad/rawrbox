@@ -185,7 +185,7 @@
 
 ### 002-generated-models
 
-<a href='/samples/002-generated-models'><img src="https://i.rawr.dev/XelPGoCABW-min.gif" width=512 /></a>
+<a href='/samples/002-generated-models'><img src="https://i.rawr.dev/g2y8DbaiCt-min.gif" width=512 /></a>
 
 ### 003-assimp
 
@@ -209,7 +209,7 @@
 
 ### 008-ui
 
-<a href='/samples/008-ui'><img src="https://i.rawr.dev/otAM4cyFtH-min.gif" width=512 /></a>
+<a href='/samples/008-ui'><img src="https://i.rawr.dev/nsV1zTUAr1-min.gif" width=512 /></a>
 
 ### 009-physics
 

@@ -15,22 +15,22 @@ AlignConsecutiveMacros: true
 NamespaceIndentation: All
 AccessModifierOffset: -8
 IncludeCategories:
-    - Regex: '^<rawrbox/.*>'
-      Priority: 1
-    - Regex: '^<.*\.hpp>'
-      Priority: 2
-    - Regex: '^<.*\.h>'
-      Priority: 3
-    - Regex: '^<.*'
-      Priority: 4
-    - Regex: '.*'
-      Priority: 5
+  - Regex: "^<rawrbox/.*>"
+    Priority: 1
+  - Regex: '^<.*\.hpp>'
+    Priority: 2
+  - Regex: '^<.*\.h>'
+    Priority: 3
+  - Regex: "^<.*"
+    Priority: 4
+  - Regex: ".*"
+    Priority: 5
 
 IncludeBlocks: Regroup
 DerivePointerAlignment: true
 PointerAlignment: Left
+ReferenceAlignment: Left
 AllowShortCaseLabelsOnASingleLine: true
 IndentCaseBlocks: true
 IndentCaseLabels: true
 IndentPPDirectives: BeforeHash
-
