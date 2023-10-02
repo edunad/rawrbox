@@ -45,7 +45,7 @@ namespace rawrbox {
 		std::function<void(rawrbox::Stencil&)> renderAfter = nullptr;
 		std::function<rawrbox::Vector2i(size_t)> getItemSize = nullptr;
 
-		rawrbox::Event<size_t, T&> onItemClick;
+		rawrbox::Event<size_t, T&, bool> onItemClick;
 
 		const rawrbox::VirtualListMode& getMode() const { return this->_mode; }
 		void setMode(rawrbox::VirtualListMode mode) {
@@ -154,7 +154,12 @@ namespace rawrbox {
 
 		void mouseUp(const rawrbox::Vector2i& /*mousePos*/, uint32_t button, uint32_t /*mods*/) override {
 			if (button != 0 || _hoverIndex < 0 || _hoverIndex > static_cast<int>(this->_items.size())) return;
-			this->onItemClick(_hoverIndex, this->_items[_hoverIndex]);
+			this->onItemClick(_hoverIndex, this->_items[_hoverIndex], false);
+		}
+
+		void mouseDown(const rawrbox::Vector2i& /*mousePos*/, uint32_t button, uint32_t /*mods*/) override {
+			if (button != 0 || _hoverIndex < 0 || _hoverIndex > static_cast<int>(this->_items.size())) return;
+			this->onItemClick(_hoverIndex, this->_items[_hoverIndex], true);
 		}
 
 		void mouseMove(const rawrbox::Vector2i& pos) override {
