@@ -119,7 +119,6 @@ namespace rawrbox {
 	void UIContainer::setAlwaysTop(bool top) { this->_alwaysOnTop = top; }
 	bool UIContainer::alwaysOnTop() const { return this->_alwaysOnTop; }
 	void UIContainer::bringToFront() {
-
 		auto& children = this->_root->getChildren();
 		auto pivot = std::find_if(children.begin(), children.end(), [this](auto& el) -> bool {
 			return el.get() == this;

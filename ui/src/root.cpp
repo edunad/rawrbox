@@ -27,8 +27,13 @@ namespace rawrbox {
 		};
 
 		window.onMouseScroll += [this](Window& /*win*/, const rawrbox::Vector2i& location, const rawrbox::Vector2i& offset) {
-			if (this->focusedElement == nullptr || !this->focusedElement->visible()) return;
-			this->focusedElement->mouseScroll(location, offset);
+			if (this->focusedElement != nullptr && this->focusedElement->visible()) {
+				this->focusedElement->mouseScroll(location, offset);
+			}
+
+			if (this->hoveredElement != nullptr && this->hoveredElement->visible()) {
+				this->hoveredElement->mouseScroll(location, offset);
+			}
 		};
 
 		window.onResize += [this](Window& /*win*/, const rawrbox::Vector2i& size) {
@@ -125,7 +130,7 @@ namespace rawrbox {
 
 	void UIRoot::onMouseMove(const rawrbox::Vector2i& location) {
 		rawrbox::Vector2i offsetOut = {};
-		auto target = findElement(location, offsetOut);
+		auto target = this->findElement(location, offsetOut);
 
 		// were holding our mouse on something, like dragging?
 		rawrbox::UIContainer* focused = nullptr;

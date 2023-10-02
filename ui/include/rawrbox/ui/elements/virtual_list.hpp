@@ -52,6 +52,8 @@ namespace rawrbox {
 			this->_mode = mode;
 		}
 
+		bool lockScroll() const override { return true; }
+
 		void clear() {
 			this->_items.clear();
 			this->_mouseScrollY = 0;
