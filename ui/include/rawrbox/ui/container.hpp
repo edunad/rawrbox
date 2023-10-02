@@ -126,6 +126,7 @@ namespace rawrbox {
 		// FOCUS HANDLING ------
 		[[nodiscard]] virtual bool lockKeyboard() const;
 		[[nodiscard]] virtual bool lockScroll() const;
+		[[nodiscard]] virtual bool lockMouse() const;
 		[[nodiscard]] virtual bool hitTest(const rawrbox::Vector2f& point) const;
 		// --
 

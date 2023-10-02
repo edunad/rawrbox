@@ -172,6 +172,8 @@ namespace rawrbox {
 	// FOCUS HANDLING ------
 	bool UIContainer::lockKeyboard() const { return false; }
 	bool UIContainer::lockScroll() const { return false; }
+	bool UIContainer::lockMouse() const { return false; }
+
 	[[nodiscard]] bool UIContainer::hitTest(const rawrbox::Vector2f& point) const { return this->_aabb.contains(point); }
 	// --
 
