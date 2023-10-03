@@ -181,7 +181,7 @@
 
 ### 001-stencil
 
-<a href='/samples/001-stencil'><img src="https://i.rawr.dev/wBpBiDBvCt-min.gif" width=512 /></a>
+<a href='/samples/001-stencil'><img src="https://i.rawr.dev/ovBhNPVOh6-min.gif" width=512 /></a>
 
 ### 002-generated-models
 
