@@ -9,12 +9,12 @@
 	#include <rawrbox/network/scripting/plugin.hpp>
 #endif
 
-#include <rawrbox/render/camera/orbital.hpp>
-#include <rawrbox/render/model/utils/mesh.hpp>
-#include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/render/scripting/plugin.hpp>
-#include <rawrbox/render/static.hpp>
+#include <rawrbox/render_temp/camera/orbital.hpp>
+#include <rawrbox/render_temp/model/utils/mesh.hpp>
+#include <rawrbox/render_temp/resources/font.hpp>
+#include <rawrbox/render_temp/resources/texture.hpp>
+#include <rawrbox/render_temp/scripting/plugin.hpp>
+#include <rawrbox/render_temp/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/resources/scripting/plugin.hpp>
 #include <rawrbox/scripting/scripting.hpp>

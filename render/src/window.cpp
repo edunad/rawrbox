@@ -1,14 +1,47 @@
 
-#include <rawrbox/engine/static.hpp>
-#include <rawrbox/render/static.hpp>
-#include <rawrbox/render/texture/webp.hpp>
-#include <rawrbox/render/window.hpp>
-#include <rawrbox/utils/threading.hpp>
+#ifndef ENGINE_DLL
+	#define ENGINE_DLL 1
+#endif
 
-#include <bgfx/bgfx.h>
-#include <bx/bx.h>
+#ifndef D3D11_SUPPORTED
+	#define D3D11_SUPPORTED 0
+#endif
 
-#include <cmath>
+#ifndef D3D12_SUPPORTED
+	#define D3D12_SUPPORTED 0
+#endif
+
+#ifndef GL_SUPPORTED
+	#define GL_SUPPORTED 0
+#endif
+
+#ifndef VULKAN_SUPPORTED
+	#define VULKAN_SUPPORTED 0
+#endif
+
+#ifndef METAL_SUPPORTED
+	#define METAL_SUPPORTED 0
+#endif
+
+#if D3D11_SUPPORTED
+	#include <Graphics/GraphicsEngineD3D11/interface/EngineFactoryD3D11.h>
+#endif
+
+#if D3D12_SUPPORTED
+	#include <Graphics/GraphicsEngineD3D12/interface/EngineFactoryD3D12.h>
+#endif
+
+#if GL_SUPPORTED
+	#include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
+#endif
+
+#if VULKAN_SUPPORTED
+	#include <Graphics/GraphicsEngineVulkan/interface/EngineFactoryVk.h>
+#endif
+
+#if METAL_SUPPORTED
+	#include <Graphics/GraphicsEngineMetal/interface/EngineFactoryMtl.h>
+#endif
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
@@ -17,7 +50,7 @@
 	#error "GLFW 3.2 or later is required"
 #endif // GLFW_VERSION_MINOR < 2
 
-#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+#if PLATFORM_LINUX
 	#if RAWRBOX_USE_WAYLAND
 		#include <wayland-egl.h>
 		#define GLFW_EXPOSE_NATIVE_WAYLAND
@@ -25,16 +58,24 @@
 		#define GLFW_EXPOSE_NATIVE_X11
 		#define GLFW_EXPOSE_NATIVE_GLX
 	#endif
-#elif BX_PLATFORM_OSX
+#elif PLATFORM_MACOS
 	#define GLFW_EXPOSE_NATIVE_COCOA
 	#define GLFW_EXPOSE_NATIVE_NSGL
-#elif BX_PLATFORM_WINDOWS
+#elif PLATFORM_WIN32
 	#define GLFW_EXPOSE_NATIVE_WIN32
 	#define GLFW_EXPOSE_NATIVE_WGL
-#endif //
+#endif
+
 #include <GLFW/glfw3native.h>
+
+// #include <rawrbox/render_temp/texture/webp.hpp>
+#include <rawrbox/engine/static.hpp>
+#include <rawrbox/render/window.hpp>
+#include <rawrbox/utils/threading.hpp>
+
 #include <fmt/printf.h>
 
+#include <cmath>
 #include <map>
 #include <stdexcept>
 
@@ -50,54 +91,6 @@ namespace rawrbox {
 	static void glfw_errorCallback(int error, const char* description) {
 		fmt::print("[RawrBox-Window] GLFW error {}: {}\n", error, description);
 	}
-
-	void BgfxCallbacks::fatal(const char* /*filePath*/, uint16_t line, bgfx::Fatal::Enum /*code*/, const char* str) {
-		fmt::print("[RawrBox-Window] BGFX fatal error {}: {}\n", line, str);
-		abort();
-	}
-
-	// only called when compiled as debug
-	void BgfxCallbacks::traceVargs(const char* filePath, uint16_t line, const char* format, va_list args) {
-		bx::debugPrintf("%s (%d): ", filePath, line);
-		bx::debugPrintfVargs(format, args);
-	}
-
-	static void* glfwNativeWindowHandle(GLFWwindow* _window) {
-#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-	#if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
-		wl_egl_window* win_impl = static_cast<wl_egl_window*>(glfwGetWindowUserPointer(_window));
-		if (!win_impl) {
-			int width, height;
-			glfwGetWindowSize(_window, &width, &height);
-			struct wl_surface* surface = (struct wl_surface*)glfwGetWaylandWindow(_window);
-			if (!surface)
-				return nullptr;
-			win_impl = wl_egl_window_create(surface, width, height);
-			glfwSetWindowUserPointer(_window, (void*)(uintptr_t)win_impl);
-		}
-
-		return (void*)(uintptr_t)win_impl;
-	#else
-		return (void*)(uintptr_t)glfwGetX11Window(_window);
-	#endif
-#elif BX_PLATFORM_OSX
-		return glfwGetCocoaWindow(_window);
-#elif BX_PLATFORM_WINDOWS
-		return glfwGetWin32Window(_window);
-#endif // BX_PLATFORM_
-	}
-
-	static void* getNativeDisplayHandle() {
-#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-	#if defined(GLFW_EXPOSE_NATIVE_WAYLAND)
-		return glfwGetWaylandDisplay();
-	#else
-		return glfwGetX11Display();
-	#endif
-#else
-		return nullptr;
-#endif // BX_PLATFORM_*
-	}
 	// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
 
 	Window::~Window() { this->close(); }
@@ -112,7 +105,10 @@ namespace rawrbox {
 	}
 
 	void Window::playIntro() {
-		if (this->_skipIntros) {
+		this->_renderer->setOverlayRender(this->_overlay);
+		this->_renderer->setWorldRender(this->_world);
+
+		/*if (this->_skipIntros) {
 			this->_renderer->setOverlayRender(this->_overlay);
 			this->_renderer->setWorldRender(this->_world);
 
@@ -161,16 +157,30 @@ namespace rawrbox {
 			}
 
 			this->_stencil->render();
-		});
+		});*/
 	}
 
 	void Window::create(int width, int height, uint32_t flags) {
 		if (rawrbox::RENDER_THREAD_ID == std::this_thread::get_id()) throw std::runtime_error("[RawrBox-Window] 'create' should be called inside engine's 'setupGLFW'!");
 
+		int APIHint = GLFW_NO_API;
+#if !PLATFORM_WIN32
+		if (this->getRenderDeviceType() == Diligent::RENDER_DEVICE_TYPE_GL) {
+			// On platforms other than Windows Diligent Engine
+			// attaches to existing OpenGL context
+			APIHint = GLFW_OPENGL_API;
+		}
+#endif
+
 		glfwSetErrorCallback(glfw_errorCallback);
 		if (!glfwInit()) throw std::runtime_error("[RawrBox-Window] Failed to initialize glfw");
-		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);  // Disable opengl
-		glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_FALSE); // Disable v-sync, it's handled by bgfx
+
+		glfwWindowHint(GLFW_CLIENT_API, APIHint); // Disable opengl
+		if (APIHint == GLFW_OPENGL_API) {
+			// We need compute shaders, so request OpenGL 4.2 at least
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+		}
 		// -------------
 
 		std::map<int, int> properties = {};
@@ -275,48 +285,140 @@ namespace rawrbox {
 		rawrbox::__OPEN_WINDOWS__++;
 	}
 
-	// Should be ran on main render thread!
-	void Window::initializeBGFX(uint32_t clearColor) {
-		if (rawrbox::RENDER_THREAD_ID != std::this_thread::get_id()) throw std::runtime_error("[RawrBox-Window] 'initializeBGFX' should be called inside 'init'. Aka the main render thread!");
-		if ((this->_windowFlags & WindowFlags::Features::MULTI_THREADED) == 0) bgfx::renderFrame(); // Disable multi-threading
+	Diligent::RENDER_DEVICE_TYPE Window::getRenderDeviceType() {
+		if (this->_renderType != Diligent::RENDER_DEVICE_TYPE_COUNT) return this->_renderType;
+#if PLATFORM_LINUX
+	#if VULKAN_SUPPORTED
+		this->_renderType = Diligent::RENDER_DEVICE_TYPE_VULKAN;
+	#else
+		this->_renderType = Diligent::RENDER_DEVICE_TYPE_GL;
+	#endif
+#else
+	#if D3D12_SUPPORTED
+		this->_renderType = Diligent::RENDER_DEVICE_TYPE_D3D12;
+	#elif D3D11_SUPPORTED
+		this->_renderType = Diligent::RENDER_DEVICE_TYPE_D3D11;
+	#elif VULKAN_SUPPORTED
+		this->_renderType = Diligent::RENDER_DEVICE_TYPE_VULKAN;
+	#else
+		this->_renderType = Diligent::RENDER_DEVICE_TYPE_GL;
+	#endif
+#endif
 
+		return this->_renderType;
+	}
+
+	// Should be ran on main render thread!
+	void Window::initializeEngine() {
+		if (rawrbox::RENDER_THREAD_ID != std::this_thread::get_id()) throw std::runtime_error("[RawrBox-Window] 'initializeBGFX' should be called inside 'init'. Aka the main render thread!");
 		if (this->_renderer == nullptr) throw std::runtime_error("[RawrBox-Window] missing renderer! Did you call 'setRenderer' ?");
 
-		bgfx::Init init;
-		if (this->_renderType == bgfx::RendererType::Vulkan && (this->_windowFlags & WindowFlags::Features::MULTI_THREADED) == 0) {
-			fmt::print("[RawrBox-Window] WARNING: VULKAN SHOULD HAVE THE 'WindowFlags::Features::MULTI_THREADED' SET FOR BETTER PERFORMANCE!\n");
+			// Get native window ----
+#if PLATFORM_WIN32
+		Diligent::Win32NativeWindow Window{glfwGetWin32Window(GLFWHANDLE)};
+#endif
+
+#if PLATFORM_LINUX
+		Diligent::LinuxNativeWindow Window;
+		Window.WindowId = glfwGetX11Window(GLFWHANDLE);
+		Window.pDisplay = glfwGetX11Display();
+		if (type == Diligent::RENDER_DEVICE_TYPE_GL)
+			glfwMakeContextCurrent(GLFWHANDLE);
+#endif
+
+#if PLATFORM_MACOS
+		Diligent::MacOSNativeWindow Window;
+		if (type == Diligent::RENDER_DEVICE_TYPE_GL)
+			glfwMakeContextCurrent(GLFWHANDLE);
+		else
+			Window.pNSView = GetNSWindowView(GLFWHANDLE);
+#endif
+		// ------------
+
+		Diligent::SwapChainDesc SCDesc;
+		switch (this->getRenderDeviceType()) {
+#if D3D11_SUPPORTED
+			case Diligent::RENDER_DEVICE_TYPE_D3D11:
+				{
+	#if ENGINE_DLL
+					auto* GetEngineFactoryD3D11 = Diligent::LoadGraphicsEngineD3D11(); // Load the dll and import GetEngineFactoryD3D11() function
+	#endif
+					auto* pFactoryD3D11 = GetEngineFactoryD3D11();
+					this->_pEngineFactory = pFactoryD3D11;
+
+					Diligent::EngineD3D11CreateInfo EngineCI;
+					pFactoryD3D11->CreateDeviceAndContextsD3D11(EngineCI, &this->_pDevice, &this->_renderer->context);
+					pFactoryD3D11->CreateSwapChainD3D11(this->_pDevice, this->_renderer->context, SCDesc, Diligent::FullScreenModeDesc{}, Window, &this->_renderer->swapChain);
+				}
+				break;
+#endif
+
+#if D3D12_SUPPORTED
+			case Diligent::RENDER_DEVICE_TYPE_D3D12:
+				{
+	#if ENGINE_DLL
+					// Load the dll and import GetEngineFactoryD3D12() function
+					auto* GetEngineFactoryD3D12 = Diligent::LoadGraphicsEngineD3D12();
+	#endif
+					auto* pFactoryD3D12 = GetEngineFactoryD3D12();
+					this->_pEngineFactory = pFactoryD3D12;
+
+					Diligent::EngineD3D12CreateInfo EngineCI;
+					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_pDevice, &this->_renderer->context);
+					pFactoryD3D12->CreateSwapChainD3D12(this->_pDevice, this->_renderer->context, SCDesc, Diligent::FullScreenModeDesc{}, Window, &this->_renderer->swapChain);
+				}
+				break;
+#endif // D3D12_SUPPORTED
+
+#if GL_SUPPORTED
+			case Diligent::RENDER_DEVICE_TYPE_GL:
+				{
+	#if EXPLICITLY_LOAD_ENGINE_GL_DLL
+					// Load the dll and import GetEngineFactoryOpenGL() function
+					auto GetEngineFactoryOpenGL = Diligent::LoadGraphicsEngineOpenGL();
+					auto* pFactoryOpenGL = GetEngineFactoryOpenGL();
+	#else
+					auto* pFactoryOpenGL = Diligent::GetEngineFactoryOpenGL();
+	#endif
+					this->_pEngineFactory = pFactoryOpenGL;
+
+					Diligent::EngineGLCreateInfo EngineCI;
+					EngineCI.Window = Window;
+					pFactoryOpenGL->CreateDeviceAndSwapChainGL(EngineCI, &this->_pDevice, &this->_renderer->context, SCDesc, &this->_renderer->swapChain);
+				}
+				break;
+#endif // GL_SUPPORTED
+
+#if VULKAN_SUPPORTED
+			case Diligent::RENDER_DEVICE_TYPE_VULKAN:
+				{
+	#if EXPLICITLY_LOAD_ENGINE_GL_DLL
+					// Load the dll and import GetEngineFactoryVk() function
+					auto* GetEngineFactoryVk = Diligent::LoadGraphicsEngineVk();
+					auto* pFactoryVk = GetEngineFactoryVk();
+	#else
+					auto* pFactoryVk = Diligent::GetEngineFactoryVk();
+	#endif
+					this->_pEngineFactory = pFactoryVk;
+
+					Diligent::EngineVkCreateInfo EngineCI;
+					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_pDevice, &this->_renderer->context);
+					pFactoryVk->CreateSwapChainVk(this->_pDevice, this->_renderer->context, SCDesc, Window, &this->_renderer->swapChain);
+				}
+				break;
+#endif // VULKAN_SUPPORTED
+			default: throw std::runtime_error("[RawrBox-Window] Invalid diligent engine");
 		}
 
-		init.type = this->_renderType;
-		init.resolution.width = static_cast<uint32_t>(this->_size.x);
-		init.resolution.height = static_cast<uint32_t>(this->_size.y);
-
-		if ((this->_windowFlags & WindowFlags::Features::VSYNC) > 0) this->_resetFlags |= BGFX_RESET_VSYNC;
-		if ((this->_windowFlags & WindowFlags::Features::MSAA) > 0) this->_resetFlags |= BGFX_RESET_MAXANISOTROPY;
-		if ((this->_windowFlags & WindowFlags::Features::TRANSPARENT_BUFFER) > 0) this->_resetFlags |= BGFX_RESET_TRANSPARENT_BACKBUFFER;
-
-		init.resolution.reset = this->_resetFlags;
-		init.platformData.nwh = glfwNativeWindowHandle(GLFWHANDLE);
-		init.platformData.ndt = getNativeDisplayHandle();
-		init.callback = &this->_callbacks;
-
-		if (!bgfx::init(init)) throw std::runtime_error("[RawrBox-Window] Failed to initialize bgfx");
-		rawrbox::BGFX_INITIALIZED = true;
-
-		if ((this->_windowFlags & WindowFlags::Debug::WIREFRAME) > 0) this->_debugFlags |= BGFX_DEBUG_WIREFRAME;
-		if ((this->_windowFlags & WindowFlags::Debug::STATS) > 0) this->_debugFlags |= BGFX_DEBUG_STATS;
-		if ((this->_windowFlags & WindowFlags::Debug::TEXT) > 0) this->_debugFlags |= BGFX_DEBUG_TEXT;
-		if ((this->_windowFlags & WindowFlags::Debug::PROFILER) > 0) this->_debugFlags |= BGFX_DEBUG_PROFILER;
-
-		bgfx::setDebug(this->_debugFlags);
-		bgfx::setPaletteColor(0, clearColor);
+		if (this->_pDevice == nullptr || this->_pEngineFactory == nullptr) throw std::runtime_error("[RawrBox-Window] Failed to initialize engine");
+		rawrbox::ENGINE_INITIALIZED = true;
 
 		// Setup renderer
 		this->_renderer->init(this->_size);
 		// ------------------
 
 		// Setup global util textures ---
-		if (rawrbox::MISSING_TEXTURE == nullptr) {
+		/*if (rawrbox::MISSING_TEXTURE == nullptr) {
 			rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
 			rawrbox::MISSING_TEXTURE->upload();
 		}
@@ -334,24 +436,17 @@ namespace rawrbox {
 		if (rawrbox::NORMAL_TEXTURE == nullptr) {
 			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0xbcbcff));
 			rawrbox::NORMAL_TEXTURE->upload();
-		}
+		}*/
 		// ------------------
 
-		// Setup main renderer ----
-		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
-		this->_stencil->upload();
+		// Setup stencil ----
+		// this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
+		// this->_stencil->upload();
 		// ------------------
 
 		// INTRO ----
 		this->playIntro();
 		// ---------
-
-		// Setup resize events ---
-		this->onResize += [this](auto&, auto& size) {
-			if (this->_stencil != nullptr) this->_stencil->resize(size);
-			this->_renderer->resize(this->_size);
-		};
-		// ------------------------
 	}
 
 	void Window::setMonitor(int monitor) {
@@ -400,16 +495,15 @@ namespace rawrbox {
 
 	void Window::shutdown() {
 		if (this->_handle == nullptr) return;
-
 		rawrbox::RENDERER = nullptr;
-		rawrbox::MAIN_CAMERA = nullptr;
+		// rawrbox::MAIN_CAMERA = nullptr;
 
 		glfwDestroyWindow(GLFWHANDLE); // Optional
 		glfwTerminate();
 	}
 
 	void Window::update() {
-		if (this->_currentIntro != nullptr) {
+		/*if (this->_currentIntro != nullptr) {
 			if (this->_introComplete) {
 				this->_introList.erase(this->_introList.begin());
 
@@ -433,7 +527,7 @@ namespace rawrbox {
 			if (this->_camera != nullptr) {
 				this->_camera->update();
 			}
-		}
+		}*/
 	}
 
 	// INTRO ------
@@ -443,14 +537,14 @@ namespace rawrbox {
 	}
 
 	void Window::addIntro(const std::filesystem::path& webpPath, float speed, bool cover) {
-		if (webpPath.extension() != ".webp") throw std::runtime_error(fmt::format("[RawrBox-Window] Invalid intro '{}', format needs to be .webp!", webpPath.generic_string()));
+		/*if (webpPath.extension() != ".webp") throw std::runtime_error(fmt::format("[RawrBox-Window] Invalid intro '{}', format needs to be .webp!", webpPath.generic_string()));
 
 		rawrbox::RawrboxIntro intro;
 		intro.cover = cover;
 		intro.speed = speed;
 		intro.texture = nullptr;
 
-		this->_introList[webpPath.generic_string()] = intro;
+		this->_introList[webpPath.generic_string()] = intro;*/
 	}
 	// ----------------
 
@@ -465,7 +559,7 @@ namespace rawrbox {
 
 	// DRAW ------
 	void Window::render() const {
-		if (!rawrbox::BGFX_INITIALIZED) return;
+		if (!rawrbox::ENGINE_INITIALIZED) return;
 		this->_renderer->render();
 	}
 
@@ -473,7 +567,7 @@ namespace rawrbox {
 
 	// ------UTILS
 	void Window::close() {
-		if (rawrbox::__OPEN_WINDOWS__-- <= 0) {
+		/*if (rawrbox::__OPEN_WINDOWS__-- <= 0) {
 			rawrbox::MISSING_TEXTURE.reset();
 			rawrbox::WHITE_TEXTURE.reset();
 			rawrbox::BLACK_TEXTURE.reset();
@@ -481,7 +575,7 @@ namespace rawrbox {
 		}
 
 		this->_stencil.reset();
-		this->_camera.reset();
+		this->_camera.reset();*/
 		this->_renderer.reset();
 
 		if (GLFWHANDLE != nullptr) glfwDestroyWindow(GLFWHANDLE);
@@ -517,9 +611,9 @@ namespace rawrbox {
 		return this->_windowFlags;
 	}
 
-	rawrbox::Stencil& Window::getStencil() const {
+	/*rawrbox::Stencil& Window::getStencil() const {
 		return *this->_stencil;
-	}
+	}*/
 
 	bool Window::isKeyDown(int key) const {
 		if (this->_handle == nullptr) return false;
@@ -529,18 +623,6 @@ namespace rawrbox {
 	bool Window::isMouseDown(int key) const {
 		if (this->_handle == nullptr) return false;
 		return glfwGetMouseButton(GLFWHANDLE, key) == GLFW_PRESS;
-	}
-
-	bool Window::isRendererSupported(bgfx::RendererType::Enum render) const {
-		if (render == bgfx::RendererType::Count) return true;
-
-		std::array<bgfx::RendererType::Enum, bgfx::RendererType::Count> supportedRenderers = {};
-		uint8_t num = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers.data());
-		for (uint8_t i = 0; i < num; ++i) {
-			if (supportedRenderers[i] == render) return true;
-		}
-
-		return false;
 	}
 
 	const std::unordered_map<int, rawrbox::Vector2i>& Window::getScreenSizes() const {
@@ -561,8 +643,13 @@ namespace rawrbox {
 	void Window::callbacks_resize(GLFWwindow* whandle, int width, int height) {
 		rawrbox::runOnRenderThread([whandle, width, height]() {
 			auto& window = glfwHandleToRenderer(whandle);
+			if (window._renderer->swapChain != nullptr) {
+				window._renderer->swapChain->Resize(width, height);
+			}
 
-			bgfx::reset(static_cast<uint32_t>(width), static_cast<uint32_t>(height), window._resetFlags);
+			// if (this->_stencil != nullptr) this->_stencil->resize(size);
+			window._size = {width, height};
+			window._renderer->resize(window._size);
 			window.onResize(window, {width, height});
 		});
 	}

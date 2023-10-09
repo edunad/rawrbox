@@ -1,8 +1,8 @@
-
-#include <rawrbox/render/decals/manager.hpp>
-#include <rawrbox/render/light/manager.hpp>
-#include <rawrbox/render/renderers/cluster.hpp>
-#include <rawrbox/render/utils/render.hpp>
+/*
+#include <rawrbox/render_temp/decals/manager.hpp>
+#include <rawrbox/render_temp/light/manager.hpp>
+#include <rawrbox/render_temp/renderers/cluster.hpp>
+#include <rawrbox/render_temp/utils/render.hpp>
 
 // NOLINTBEGIN(*)
 const bgfx::EmbeddedShader clustered_clusterbuilding[] = {
@@ -146,3 +146,4 @@ namespace rawrbox {
 		       (caps->supported & BGFX_CAPS_INDEX32) != 0;
 	}
 } // namespace rawrbox
+*/

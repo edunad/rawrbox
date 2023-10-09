@@ -1,9 +1,9 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/materials/lit.hpp>
-#include <rawrbox/render/model/instanced.hpp>
-#include <rawrbox/render/window.hpp>
+#include <rawrbox/render_temp/materials/lit.hpp>
+#include <rawrbox/render_temp/model/instanced.hpp>
+#include <rawrbox/render_temp/window.hpp>
 
 #ifdef RAWRBOX_UI
 	#include <rawrbox/ui/root.hpp>

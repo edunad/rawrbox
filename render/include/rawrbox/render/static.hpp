@@ -1,19 +1,19 @@
 #pragma once
-#include <rawrbox/render/camera/base.hpp>
-#include <rawrbox/render/texture/flat.hpp>
-#include <rawrbox/render/texture/image.hpp>
-#include <rawrbox/render/texture/missing.hpp>
 
-#include <bgfx/bgfx.h>
+// #include <rawrbox/render_temp/camera/base.hpp>
+// #include <rawrbox/render_temp/texture/flat.hpp>
+// #include <rawrbox/render_temp/texture/image.hpp>
+// #include <rawrbox/render_temp/texture/missing.hpp>
 
 #include <memory>
 
 // NOLINTBEGIN(*)
 #define RAWRBOX_DESTROY(HANDLE) \
-	if (bgfx::isValid(HANDLE)) { \
-		bgfx::destroy(HANDLE); \
-		(HANDLE) = BGFX_INVALID_HANDLE; \
-	}
+	fmt::print("todo\n");
+//if (bgfx::isValid(HANDLE)) { \
+	//	bgfx::destroy(HANDLE); \
+	//	(HANDLE) = BGFX_INVALID_HANDLE; \
+	//}
 // NOLINTEND(*)
 
 namespace rawrbox {
@@ -29,20 +29,20 @@ namespace rawrbox {
 	constexpr auto MAX_BONES_PER_VERTEX = 4;
 	constexpr auto MAX_BONES_PER_MODEL = 200;
 
-	extern bool BGFX_INITIALIZED;
+	extern bool ENGINE_INITIALIZED;
 
 	// VIEW IDS ---
-	extern bgfx::ViewId BLIT_VIEW;
-
-	extern bgfx::ViewId MAIN_WORLD_VIEW;
-	extern bgfx::ViewId MAIN_OVERLAY_VIEW;
-
-	extern bgfx::ViewId STENCIL_VIEW_ID;
-
-	extern bgfx::ViewId POST_PROCESSING_ID;
-	extern bgfx::ViewId RENDERER_VIEW_ID;
-
-	extern bgfx::ViewId CURRENT_VIEW_ID;
+	// extern bgfx::ViewId BLIT_VIEW;
+	//
+	// extern bgfx::ViewId MAIN_WORLD_VIEW;
+	// extern bgfx::ViewId MAIN_OVERLAY_VIEW;
+	//
+	// extern bgfx::ViewId STENCIL_VIEW_ID;
+	//
+	// extern bgfx::ViewId POST_PROCESSING_ID;
+	// extern bgfx::ViewId RENDERER_VIEW_ID;
+	//
+	// extern bgfx::ViewId CURRENT_VIEW_ID;
 	// ---------
 
 	// GPU PICKING ---
@@ -70,10 +70,10 @@ namespace rawrbox {
 	// ---------
 
 	// TEXTURE FALLBACKS ---
-	extern std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE;
-	extern std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE;
-	extern std::shared_ptr<rawrbox::TextureFlat> BLACK_TEXTURE;
-	extern std::shared_ptr<rawrbox::TextureFlat> NORMAL_TEXTURE;
+	// extern std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE;
+	// extern std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE;
+	// extern std::shared_ptr<rawrbox::TextureFlat> BLACK_TEXTURE;
+	// extern std::shared_ptr<rawrbox::TextureFlat> NORMAL_TEXTURE;
 	// ----
 
 	// ID GENERATION
@@ -83,12 +83,12 @@ namespace rawrbox {
 	// -----
 
 	// QUICK ACCESS ---
-	extern uint32_t BGFX_FRAME;
-
-	extern rawrbox::CameraBase* MAIN_CAMERA;
+	// extern uint32_t BGFX_FRAME;
+	//
+	// extern rawrbox::CameraBase* MAIN_CAMERA;
 	extern rawrbox::RendererBase* RENDERER;
-
-	extern rawrbox::RENDER_DEBUG_MODE RENDERER_DEBUG;
+	//
+	// extern rawrbox::RENDER_DEBUG_MODE RENDERER_DEBUG;
 	// ----
 
 	// INTERNAL, DO NOT USE

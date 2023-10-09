@@ -1,6 +1,6 @@
-#include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/render/stencil.hpp>
+#include <rawrbox/render_temp/resources/font.hpp>
+#include <rawrbox/render_temp/resources/texture.hpp>
+#include <rawrbox/render_temp/stencil.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/progress_bar.hpp>
 

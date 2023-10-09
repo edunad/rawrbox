@@ -1,7 +1,7 @@
 
-#include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/render/static.hpp>
+#include <rawrbox/render_temp/resources/font.hpp>
+#include <rawrbox/render_temp/resources/texture.hpp>
+#include <rawrbox/render_temp/static.hpp>
 #include <rawrbox/resources/loaders/json.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/frame.hpp>

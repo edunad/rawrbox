@@ -1,7 +1,7 @@
 #include <rawrbox/assimp/model.hpp>
 #include <rawrbox/assimp/utils/model.hpp>
-#include <rawrbox/render/light/point.hpp>
-#include <rawrbox/render/light/spot.hpp>
+#include <rawrbox/render_temp/light/point.hpp>
+#include <rawrbox/render_temp/light/spot.hpp>
 
 namespace rawrbox {
 

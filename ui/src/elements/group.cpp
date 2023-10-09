@@ -1,4 +1,4 @@
-#include <rawrbox/render/stencil.hpp>
+#include <rawrbox/render_temp/stencil.hpp>
 #include <rawrbox/ui/elements/group.hpp>
 
 #ifdef RAWRBOX_SCRIPTING

@@ -1,10 +1,10 @@
 
 
-#include <rawrbox/render/camera/orbital.hpp>
-#include <rawrbox/render/model/utils/mesh.hpp>
-#include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/render/static.hpp>
-#include <rawrbox/render/utils/texture.hpp>
+#include <rawrbox/render_temp/camera/orbital.hpp>
+#include <rawrbox/render_temp/model/utils/mesh.hpp>
+#include <rawrbox/render_temp/resources/texture.hpp>
+#include <rawrbox/render_temp/static.hpp>
+#include <rawrbox/render_temp/utils/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 #include <rawrbox/utils/timer.hpp>

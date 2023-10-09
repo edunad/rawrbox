@@ -54,7 +54,7 @@
     "cmake.configureSettings": {
       "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
       "RAWRBOX_DEV_MODE": true,
-      "RAWRBOX_OUTPUT_BIN": "bin"
+      "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "bin"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "workbench.editor.pinnedTabSizing": "shrink",

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/model/model.hpp>
-#include <rawrbox/render/window.hpp>
+#include <rawrbox/render_temp/model/model.hpp>
+#include <rawrbox/render_temp/window.hpp>
 
 #include <memory>
 

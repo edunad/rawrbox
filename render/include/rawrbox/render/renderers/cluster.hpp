@@ -1,6 +1,6 @@
-#pragma once
-#include <rawrbox/render/renderers/base.hpp>
-#include <rawrbox/render/static.hpp>
+/*#pragma once
+#include <rawrbox/render_temp/renderers/base.hpp>
+#include <rawrbox/render_temp/static.hpp>
 
 #include <stdexcept>
 
@@ -142,3 +142,4 @@ namespace rawrbox {
 		void bindRenderUniforms() override;
 	};
 } // namespace rawrbox
+*/

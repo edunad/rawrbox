@@ -2,8 +2,8 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/render/text/font.hpp>
-#include <rawrbox/render/text/markdown.hpp>
+#include <rawrbox/render_temp/text/font.hpp>
+#include <rawrbox/render_temp/text/markdown.hpp>
 #include <rawrbox/ui/elements/input.hpp>
 #include <rawrbox/utils/console.hpp>
 

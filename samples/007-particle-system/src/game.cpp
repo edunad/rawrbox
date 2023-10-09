@@ -1,12 +1,12 @@
 
-#include <rawrbox/render/camera/orbital.hpp>
-#include <rawrbox/render/gizmos.hpp>
-#include <rawrbox/render/model/utils/mesh.hpp>
-#include <rawrbox/render/particles/emitter.hpp>
-#include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/render/static.hpp>
-#include <rawrbox/render/texture/atlas.hpp>
+#include <rawrbox/render_temp/camera/orbital.hpp>
+#include <rawrbox/render_temp/gizmos.hpp>
+#include <rawrbox/render_temp/model/utils/mesh.hpp>
+#include <rawrbox/render_temp/particles/emitter.hpp>
+#include <rawrbox/render_temp/resources/font.hpp>
+#include <rawrbox/render_temp/resources/texture.hpp>
+#include <rawrbox/render_temp/static.hpp>
+#include <rawrbox/render_temp/texture/atlas.hpp>
 #include <rawrbox/resources/manager.hpp>
 
 #include <particle_test/game.hpp>

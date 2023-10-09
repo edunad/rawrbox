@@ -1,11 +1,11 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/model/model.hpp>
-#include <rawrbox/render/model/spline.hpp>
-#include <rawrbox/render/model/sprite.hpp>
-#include <rawrbox/render/model/text3D.hpp>
-#include <rawrbox/render/window.hpp>
+#include <rawrbox/render_temp/model/model.hpp>
+#include <rawrbox/render_temp/model/spline.hpp>
+#include <rawrbox/render_temp/model/sprite.hpp>
+#include <rawrbox/render_temp/model/text3D.hpp>
+#include <rawrbox/render_temp/window.hpp>
 
 #include <memory>
 

@@ -1,6 +1,6 @@
 
 #include <rawrbox/assimp/importer.hpp>
-#include <rawrbox/render/texture/image.hpp>
+#include <rawrbox/render_temp/texture/image.hpp>
 #include <rawrbox/utils/pack.hpp>
 #include <rawrbox/utils/string.hpp>
 

@@ -1,12 +1,12 @@
 
 
-#include <rawrbox/render/camera/orbital.hpp>
-#include <rawrbox/render/decals/manager.hpp>
-#include <rawrbox/render/light/point.hpp>
-#include <rawrbox/render/materials/lit.hpp>
-#include <rawrbox/render/model/utils/mesh.hpp>
-#include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/render/static.hpp>
+#include <rawrbox/render_temp/camera/orbital.hpp>
+#include <rawrbox/render_temp/decals/manager.hpp>
+#include <rawrbox/render_temp/light/point.hpp>
+#include <rawrbox/render_temp/materials/lit.hpp>
+#include <rawrbox/render_temp/model/utils/mesh.hpp>
+#include <rawrbox/render_temp/resources/texture.hpp>
+#include <rawrbox/render_temp/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 

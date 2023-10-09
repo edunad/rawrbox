@@ -1,8 +1,8 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render_temp/resources/font.hpp>
+#include <rawrbox/render_temp/resources/texture.hpp>
 #include <rawrbox/ui/container.hpp>
 #include <rawrbox/utils/event.hpp>
 

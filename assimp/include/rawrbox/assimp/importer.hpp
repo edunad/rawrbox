@@ -2,11 +2,11 @@
 
 #include <rawrbox/math/bbox.hpp>
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/light/types.hpp>
-#include <rawrbox/render/model/animation.hpp>
-#include <rawrbox/render/model/defs.hpp>
-#include <rawrbox/render/model/skeleton.hpp>
-#include <rawrbox/render/texture/base.hpp>
+#include <rawrbox/render_temp/light/types.hpp>
+#include <rawrbox/render_temp/model/animation.hpp>
+#include <rawrbox/render_temp/model/defs.hpp>
+#include <rawrbox/render_temp/model/skeleton.hpp>
+#include <rawrbox/render_temp/texture/base.hpp>
 
 #include <assimp/material.h>
 #include <assimp/mesh.h>

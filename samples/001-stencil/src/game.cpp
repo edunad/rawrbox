@@ -1,11 +1,11 @@
 
 #include <rawrbox/engine/static.hpp>
-#include <rawrbox/render/camera/perspective.hpp>
-#include <rawrbox/render/model/utils/mesh.hpp>
-#include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/resources/svg.hpp>
-#include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/render/static.hpp>
+// #include <rawrbox/render_temp/camera/perspective.hpp>
+// #include <rawrbox/render_temp/model/utils/mesh.hpp>
+// #include <rawrbox/render_temp/resources/font.hpp>
+// #include <rawrbox/render_temp/resources/svg.hpp>
+// #include <rawrbox/render_temp/resources/texture.hpp>
+// #include <rawrbox/render_temp/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 
 #include <stencil/game.hpp>
@@ -19,10 +19,10 @@ namespace stencil {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("STENCIL TEST");
-		// this->_window->skipIntro(true);
 		this->_window->setRenderer<rawrbox::RendererBase>(
-		    bgfx::RendererType::Count, [this]() { this->drawOverlay(); }, [this]() { this->drawWorld(); });
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
+		    rawrbox::Colors::Black(),
+		    Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_COUNT, [this]() { this->drawOverlay(); }, [this]() { this->drawWorld(); });
+		this->_window->create(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 		this->_window->onIntroCompleted += [this]() {
 			this->loadContent();
@@ -31,24 +31,25 @@ namespace stencil {
 
 	void Game::init() {
 		if (this->_window == nullptr) return;
+		/*
+				// Setup camera
+				auto cam = this->_window->setupCamera<rawrbox::CameraPerspective>(this->_window->getSize());
+				cam->setPos({-2.F, 5.F, -3.5F});
+				cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
+				// --------------
 
-		// Setup camera
-		auto cam = this->_window->setupCamera<rawrbox::CameraPerspective>(this->_window->getSize());
-		cam->setPos({-2.F, 5.F, -3.5F});
-		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
-		// --------------
+				// Add loaders
+				rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+				rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
+				rawrbox::RESOURCES::addLoader<rawrbox::SVGLoader>();
+				// --------------
 
-		// Add loaders
-		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
-		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
-		rawrbox::RESOURCES::addLoader<rawrbox::SVGLoader>();
-		// --------------
-
-		this->_window->initializeBGFX(0x443355FF);
+				this->_window->initializeBGFX(0x443355FF);*/
+		this->_window->initializeEngine();
 	}
 
 	void Game::loadContent() {
-		std::array initialContentFiles = {
+		/*std::array initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("content/fonts/droidsans.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/fonts/visitor1.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/fonts/LiberationMono-Regular.ttf", 0),
@@ -69,12 +70,12 @@ namespace stencil {
 					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
 				}
 			});
-		}
+		}*/
 	}
 
 	void Game::contentLoaded() {
 		// Textures ---
-		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
+		/*this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
 		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get();
 		this->_texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/instance_test.png")->get();
 		this->_texture4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceSVG>("./content/textures/rawrbox.svg")->get({256, 256});
@@ -107,14 +108,14 @@ namespace stencil {
 
 		this->_model->addMesh(mesh);
 		this->_model->upload();
-		// ----
+		// ----*/
 
 		this->_ready = true;
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-		this->_model.reset();
+		/*this->_model.reset();
 
 		this->_texture = nullptr;
 		this->_texture2 = nullptr;
@@ -126,7 +127,7 @@ namespace stencil {
 		this->_font3 = nullptr;
 
 		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
+		rawrbox::ASYNC::shutdown();*/
 
 		this->_window->unblockPoll();
 		this->_window.reset();
@@ -138,12 +139,13 @@ namespace stencil {
 	}
 
 	void Game::drawWorld() {
-		if (!this->_ready || this->_model == nullptr) return;
-		this->_model->draw();
+		/*if (!this->_ready || this->_model == nullptr) return;
+		this->_model->draw();*/
 	}
 
 	void Game::drawOverlay() {
 		if (!this->_ready) return;
+		/*
 		auto& stencil = this->_window->getStencil();
 
 		stencil.pushOffset({20, 50});
@@ -309,21 +311,21 @@ namespace stencil {
 		this->_texture2->update();
 		this->_texture5->update();
 
-		stencil.render();
+		stencil.render();*/
 	}
 
 	void Game::printFrames() {
-		const bgfx::Stats* stats = bgfx::getStats();
+		/*const bgfx::Stats* stats = bgfx::getStats();
 
 		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
 		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
 		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
 		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
-		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
+		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());*/
 	}
 
 	void Game::update() {
-		if (this->_window == nullptr) return;
+		/*if (this->_window == nullptr) return;
 		this->_window->update();
 
 		if (this->_ready) {
@@ -332,25 +334,25 @@ namespace stencil {
 			}
 
 			this->_counter += 0.1F;
-		}
+		}*/
 	}
 
 	void Game::draw() {
 		if (this->_window == nullptr) return;
+		/*
+				// DEBUG ----
+				bgfx::dbgTextClear();
+				bgfx::dbgTextPrintf(1, 1, 0x1f, "001-stencil");
+				bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: 2D Stencil test");
+				printFrames();
+				// -----------
 
-		// DEBUG ----
-		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "001-stencil");
-		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: 2D Stencil test");
-		printFrames();
-		// -----------
-
-		if (!this->_ready) {
-			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
-			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
-			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
-		}
-
-		this->_window->render(); // Draw world, overlay & commit primitives
+				if (!this->_ready) {
+					bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
+					bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
+					bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
+				}
+		*/
+		this->_window->render(); // Draw world, overlay & commit primitives*/
 	}
 } // namespace stencil
