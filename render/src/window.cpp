@@ -1,4 +1,5 @@
 
+#include "rawrbox/utils/path.hpp"
 #ifndef ENGINE_DLL
 	#define ENGINE_DLL 1
 #endif
@@ -76,6 +77,7 @@
 #include <fmt/printf.h>
 
 #include <cmath>
+#include <filesystem>
 #include <map>
 #include <stdexcept>
 
@@ -83,6 +85,7 @@
 #define GLFWCURSOR (std::bit_cast<GLFWcursor*>(_cursor))
 
 namespace rawrbox {
+
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
 	static Window& glfwHandleToRenderer(GLFWwindow* ptr) {
 		return *static_cast<Window*>(glfwGetWindowUserPointer(ptr));
@@ -107,6 +110,8 @@ namespace rawrbox {
 	void Window::playIntro() {
 		this->_renderer->setOverlayRender(this->_overlay);
 		this->_renderer->setWorldRender(this->_world);
+
+		this->onIntroCompleted();
 
 		/*if (this->_skipIntros) {
 			this->_renderer->setOverlayRender(this->_overlay);
@@ -347,8 +352,8 @@ namespace rawrbox {
 					this->_pEngineFactory = pFactoryD3D11;
 
 					Diligent::EngineD3D11CreateInfo EngineCI;
-					pFactoryD3D11->CreateDeviceAndContextsD3D11(EngineCI, &this->_pDevice, &this->_renderer->context);
-					pFactoryD3D11->CreateSwapChainD3D11(this->_pDevice, this->_renderer->context, SCDesc, Diligent::FullScreenModeDesc{}, Window, &this->_renderer->swapChain);
+					pFactoryD3D11->CreateDeviceAndContextsD3D11(EngineCI, &this->_renderer->device, &this->_renderer->context);
+					pFactoryD3D11->CreateSwapChainD3D11(this->_renderer->device, this->_renderer->context, SCDesc, Diligent::FullScreenModeDesc{}, Window, &this->_renderer->swapChain);
 				}
 				break;
 #endif
@@ -364,8 +369,8 @@ namespace rawrbox {
 					this->_pEngineFactory = pFactoryD3D12;
 
 					Diligent::EngineD3D12CreateInfo EngineCI;
-					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_pDevice, &this->_renderer->context);
-					pFactoryD3D12->CreateSwapChainD3D12(this->_pDevice, this->_renderer->context, SCDesc, Diligent::FullScreenModeDesc{}, Window, &this->_renderer->swapChain);
+					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_renderer->device, &this->_renderer->context);
+					pFactoryD3D12->CreateSwapChainD3D12(this->_renderer->device, this->_renderer->context, SCDesc, Diligent::FullScreenModeDesc{}, Window, &this->_renderer->swapChain);
 				}
 				break;
 #endif // D3D12_SUPPORTED
@@ -384,7 +389,7 @@ namespace rawrbox {
 
 					Diligent::EngineGLCreateInfo EngineCI;
 					EngineCI.Window = Window;
-					pFactoryOpenGL->CreateDeviceAndSwapChainGL(EngineCI, &this->_pDevice, &this->_renderer->context, SCDesc, &this->_renderer->swapChain);
+					pFactoryOpenGL->CreateDeviceAndSwapChainGL(EngineCI, &this->_renderer->device, &this->_renderer->context, SCDesc, &this->_renderer->swapChain);
 				}
 				break;
 #endif // GL_SUPPORTED
@@ -402,16 +407,25 @@ namespace rawrbox {
 					this->_pEngineFactory = pFactoryVk;
 
 					Diligent::EngineVkCreateInfo EngineCI;
-					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_pDevice, &this->_renderer->context);
-					pFactoryVk->CreateSwapChainVk(this->_pDevice, this->_renderer->context, SCDesc, Window, &this->_renderer->swapChain);
+					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_renderer->device, &this->_renderer->context);
+					pFactoryVk->CreateSwapChainVk(this->_renderer->device, this->_renderer->context, SCDesc, Window, &this->_renderer->swapChain);
 				}
 				break;
 #endif // VULKAN_SUPPORTED
 			default: throw std::runtime_error("[RawrBox-Window] Invalid diligent engine");
 		}
 
-		if (this->_pDevice == nullptr || this->_pEngineFactory == nullptr) throw std::runtime_error("[RawrBox-Window] Failed to initialize engine");
+		if (this->_pEngineFactory == nullptr) throw std::runtime_error("[RawrBox-Window] Failed to initialize engine");
 		rawrbox::ENGINE_INITIALIZED = true;
+
+		// Setup shader pipeline
+		if (rawrbox::SHADER_FACTORY == nullptr) {
+			auto dirs = rawrbox::PathUtils::glob("assets/shaders", true);
+			auto paths = fmt::format("{}", fmt::join(dirs, ","));
+
+			this->_pEngineFactory->CreateDefaultShaderSourceStreamFactory(paths.c_str(), &rawrbox::SHADER_FACTORY);
+		}
+		// -----------
 
 		// Setup renderer
 		this->_renderer->init(this->_size);
@@ -440,13 +454,20 @@ namespace rawrbox {
 		// ------------------
 
 		// Setup stencil ----
-		// this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
-		// this->_stencil->upload();
+		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
+		this->_stencil->upload();
 		// ------------------
 
 		// INTRO ----
 		this->playIntro();
 		// ---------
+
+		// Setup resize events ---
+		this->onResize += [this](auto&, auto& size) {
+			if (this->_stencil != nullptr) this->_stencil->resize(size);
+			this->_renderer->resize(this->_size);
+		};
+		// ------------------------
 	}
 
 	void Window::setMonitor(int monitor) {
@@ -495,8 +516,9 @@ namespace rawrbox {
 
 	void Window::shutdown() {
 		if (this->_handle == nullptr) return;
+
 		rawrbox::RENDERER = nullptr;
-		// rawrbox::MAIN_CAMERA = nullptr;
+		rawrbox::MAIN_CAMERA = nullptr;
 
 		glfwDestroyWindow(GLFWHANDLE); // Optional
 		glfwTerminate();
@@ -528,6 +550,10 @@ namespace rawrbox {
 				this->_camera->update();
 			}
 		}*/
+
+		if (this->_camera != nullptr) {
+			this->_camera->update();
+		}
 	}
 
 	// INTRO ------
@@ -572,10 +598,10 @@ namespace rawrbox {
 			rawrbox::WHITE_TEXTURE.reset();
 			rawrbox::BLACK_TEXTURE.reset();
 			rawrbox::NORMAL_TEXTURE.reset();
-		}
+		}*/
 
 		this->_stencil.reset();
-		this->_camera.reset();*/
+		this->_camera.reset();
 		this->_renderer.reset();
 
 		if (GLFWHANDLE != nullptr) glfwDestroyWindow(GLFWHANDLE);
@@ -611,9 +637,9 @@ namespace rawrbox {
 		return this->_windowFlags;
 	}
 
-	/*rawrbox::Stencil& Window::getStencil() const {
+	rawrbox::Stencil& Window::getStencil() const {
 		return *this->_stencil;
-	}*/
+	}
 
 	bool Window::isKeyDown(int key) const {
 		if (this->_handle == nullptr) return false;
@@ -643,13 +669,8 @@ namespace rawrbox {
 	void Window::callbacks_resize(GLFWwindow* whandle, int width, int height) {
 		rawrbox::runOnRenderThread([whandle, width, height]() {
 			auto& window = glfwHandleToRenderer(whandle);
-			if (window._renderer->swapChain != nullptr) {
-				window._renderer->swapChain->Resize(width, height);
-			}
-
-			// if (this->_stencil != nullptr) this->_stencil->resize(size);
 			window._size = {width, height};
-			window._renderer->resize(window._size);
+
 			window.onResize(window, {width, height});
 		});
 	}

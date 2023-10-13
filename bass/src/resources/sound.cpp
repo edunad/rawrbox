@@ -19,7 +19,7 @@ namespace rawrbox {
 			fmt::print("{}\n", e.what());
 			fmt::print("  └── Loading fallback sound!\n");
 
-			loaded = rawrbox::BASS::loadSound("./content/sound/error.ogg", this->flags);
+			loaded = rawrbox::BASS::loadSound("./assets/sound/error.ogg", this->flags);
 		}
 
 		return loaded != nullptr;

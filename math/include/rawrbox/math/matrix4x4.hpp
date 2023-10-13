@@ -62,6 +62,8 @@ namespace rawrbox {
 		// ------
 
 		// STATIC UTILS ----
+		static rawrbox::Matrix4x4 mtxLookAt(const rawrbox::Vector3f& eye, const rawrbox::Vector3f& at, const rawrbox::Vector3f& up, bool rightHand = false);
+		static rawrbox::Matrix4x4 mtxProj(float FOV, float aspect, float near, float far, bool homogeneous, bool rightHand = false);
 		static rawrbox::Vector3f project(const rawrbox::Vector3f& pos, const rawrbox::Matrix4x4& view, const rawrbox::Matrix4x4& proj, const rawrbox::Vector4i& viewport);
 		// ------
 

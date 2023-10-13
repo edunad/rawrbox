@@ -620,11 +620,11 @@ namespace rawrbox {
 			} else {
 
 				fmt::print("[RawrBox-Assimp] Failed to load '{}'\n", this->fileName.generic_string());
-				scene = aiImportFile("./content/models/error.gltf", this->assimpFlags); // fallback
+				scene = aiImportFile("./assets/models/error.gltf", this->assimpFlags); // fallback
 
 				if (scene == nullptr) {
 					error = aiGetErrorString(); // Because vscode doesn't print the error bellow
-					throw std::runtime_error(fmt::format("[RawrBox-Assimp] Content '{}' error : '{}'\n", this->fileName.generic_string(), error));
+					throw std::runtime_error(fmt::format("[RawrBox-Assimp] Asset '{}' error : '{}'\n", this->fileName.generic_string(), error));
 				}
 			}
 		}
@@ -755,7 +755,7 @@ namespace rawrbox {
 		} else {
 			// Fallback
 			fmt::print("[RawrBox-Assimp] Failed to load '{}'\n  └── Loading fallback model!\n", this->fileName.generic_string());
-			this->internalLoad(aiImportFile("./content/models/error.gltf", this->assimpFlags), true);
+			this->internalLoad(aiImportFile("./assets/models/error.gltf", this->assimpFlags), true);
 		}
 	}
 

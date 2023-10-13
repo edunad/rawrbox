@@ -66,7 +66,7 @@ endif()
 
 # OTHER SETTINGS ----
 set(RAWRBOX_OUTPUT_BIN "bin" CACHE STRING "the target directory of where the output of the build will be stored for use by artifacts")
-set(RAWRBOX_CONTENT_FOLDER "content" CACHE STRING "the content folder (aka where models, textures, etc are)")
+set(RAWRBOX_CONTENT_FOLDER "assets" CACHE STRING "the assets folder (aka where models, textures, etc are)")
 set(RAWRBOX_SHADERS_FOLDER "shaders" CACHE STRING "the shaders folder")
 set(RAWRBOX_LIBRARY_TYPE "STATIC" CACHE STRING "Linking type for library")
 # ----------------

@@ -20,7 +20,7 @@ namespace rawrbox {
 		this->_consolas = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(11);
 		this->_consolasb = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consolab.ttf")->getSize(11);
 
-		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->get();
+		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/overlay/overlay.png")->get();
 
 		this->_md = std::make_unique<rawrbox::Markdown>();
 		this->_md->fontRegular = this->_consolas;

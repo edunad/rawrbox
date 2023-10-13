@@ -1,6 +1,12 @@
 #pragma once
 
-// #include <rawrbox/render_temp/camera/base.hpp>
+#include <rawrbox/render/camera/base.hpp>
+
+#include <Common/interface/RefCntAutoPtr.hpp>
+
+#include <Graphics\GraphicsEngine\interface\Shader.h>
+
+//
 // #include <rawrbox/render_temp/texture/flat.hpp>
 // #include <rawrbox/render_temp/texture/image.hpp>
 // #include <rawrbox/render_temp/texture/missing.hpp>
@@ -85,8 +91,9 @@ namespace rawrbox {
 	// QUICK ACCESS ---
 	// extern uint32_t BGFX_FRAME;
 	//
-	// extern rawrbox::CameraBase* MAIN_CAMERA;
+	extern rawrbox::CameraBase* MAIN_CAMERA;
 	extern rawrbox::RendererBase* RENDERER;
+	extern Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> SHADER_FACTORY;
 	//
 	// extern rawrbox::RENDER_DEBUG_MODE RENDERER_DEBUG;
 	// ----

@@ -118,16 +118,16 @@ namespace rawrbox {
 		pth = rawrbox::StrUtils::replace(pth, "./", "");
 		pth = rawrbox::StrUtils::replace(pth, "../", "");
 
-		// content/blabalba.png = my current mod
+		// assets/blabalba.png = my current mod
 		if (!modPath.empty() && pth.front() != '@') {
-			return std::filesystem::path(fmt::format("{}/{}", modPath.generic_string(), pth)).string(); // Becomes mods/mymod/content/blabalba.png
+			return std::filesystem::path(fmt::format("{}/{}", modPath.generic_string(), pth)).string(); // Becomes mods/mymod/assets/blabalba.png
 		} else if (pth.front() == '@') {
 			auto slashPos = pth.find("/"); // Find the first /
 			std::string cleanPath = pth.substr(slashPos + 1);
 
 			// @/textures/blabalba.png = c++ content
 			if (pth.rfind("@/", 0) == 0) { // C++
-				return std::filesystem::path(fmt::format("content/{}", cleanPath)).string();
+				return std::filesystem::path(fmt::format("assets/{}", cleanPath)).string();
 			} else { // @otherMod/textures/blabalba.png = @othermod content
 				return std::filesystem::path(fmt::format("{}/{}", pth.substr(1, slashPos - 1), cleanPath)).string();
 			}

@@ -3,6 +3,7 @@
 
 #include <bit>
 #include <fstream>
+#include <functional>
 #include <iostream>
 
 namespace rawrbox {
@@ -35,6 +36,25 @@ namespace rawrbox {
 		}
 
 		return file;
+	}
+
+	std::vector<std::string> PathUtils::glob(const std::filesystem::path& root, bool ignoreFiles) {
+		std::vector<std::string> dirs = {};
+
+		std::function<void(const std::filesystem::path& path)> globSearch;
+		globSearch = [&globSearch, &dirs, ignoreFiles](const std::filesystem::path& path) -> void {
+			for (const auto& entry : std::filesystem::directory_iterator(path)) {
+				if (!ignoreFiles) dirs.push_back(entry.path().generic_string());
+
+				if (std::filesystem::is_directory(entry)) {
+					if (ignoreFiles) dirs.push_back(entry.path().generic_string());
+					globSearch(entry);
+				}
+			}
+		};
+
+		globSearch(root);
+		return dirs;
 	}
 
 } // namespace rawrbox

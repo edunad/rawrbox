@@ -9,5 +9,7 @@ namespace rawrbox {
 		static std::filesystem::path normalizePath(const std::filesystem::path& messyPath);
 		static bool isSame(const std::filesystem::path& path1, const std::filesystem::path& path2);
 		static std::vector<uint8_t> getRawData(const std::filesystem::path& filePath);
+
+		static std::vector<std::string> glob(const std::filesystem::path& root, bool ignoreFiles = false);
 	};
 } // namespace rawrbox

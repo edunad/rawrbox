@@ -2,16 +2,11 @@
 
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector2.hpp>
+#include <rawrbox/render/camera/base.hpp>
 #include <rawrbox/render/renderers/base.hpp>
-
-// #include <rawrbox/render_temp/camera/base.hpp>
-//
-//
-// #include <rawrbox/render_temp/stencil.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/stencil.hpp>
 #include <rawrbox/utils/event.hpp>
-
-#include <Common/interface/RefCntAutoPtr.hpp>
 
 #include <Graphics/GraphicsEngine/interface/EngineFactory.h>
 #include <Graphics/GraphicsEngine/interface/RenderDevice.h>
@@ -86,7 +81,6 @@ namespace rawrbox {
 		GLFWwindow* _handle = nullptr;
 
 		// HANDLES -----
-		Diligent::RefCntAutoPtr<Diligent::IRenderDevice> _pDevice;
 		Diligent::RefCntAutoPtr<Diligent::IEngineFactory> _pEngineFactory;
 		// -------------
 
@@ -103,12 +97,12 @@ namespace rawrbox {
 		bool _introComplete = false;
 		bool _skipIntros = false;
 		rawrbox::RawrboxIntro* _currentIntro = nullptr;
-		// std::map<std::string, rawrbox::RawrboxIntro> _introList = {{"./content/textures/rawrbox.webp", {nullptr, 1.4F, false}}}; // rawrbox intro, always the first
+		// std::map<std::string, rawrbox::RawrboxIntro> _introList = {{"./assets/textures/rawrbox.webp", {nullptr, 1.4F, false}}}; // rawrbox intro, always the first
 		//  ---
 
 		// Data ---
-		// std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
-		// std::unique_ptr<rawrbox::CameraBase> _camera = nullptr;
+		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
+		std::unique_ptr<rawrbox::CameraBase> _camera = nullptr;
 		std::unique_ptr<rawrbox::RendererBase> _renderer = nullptr;
 		// -------
 
@@ -163,14 +157,14 @@ namespace rawrbox {
 		void setMonitor(int monitor);
 		void setTitle(const std::string& title);
 
-		/*template <class T = rawrbox::CameraBase, typename... CallbackArgs>
+		template <class T = rawrbox::CameraBase, typename... CallbackArgs>
 		T* setupCamera(CallbackArgs&&... args) {
 			this->_camera = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
 			rawrbox::MAIN_CAMERA = this->_camera.get();
 
 			return dynamic_cast<T*>(this->_camera.get());
 		}
-*/
+
 		// RENDERER -----
 		template <class T = RendererBase, typename... CallbackArgs>
 		void setRenderer(const rawrbox::Colorf& clearColor, Diligent::RENDER_DEVICE_TYPE render, std::function<void()> overlay, std::function<void()> world, CallbackArgs&&... args) {
@@ -219,7 +213,7 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual uint32_t getWindowFlags() const;
 
-		//[[nodiscard]] virtual rawrbox::Stencil& getStencil() const;
+		[[nodiscard]] virtual rawrbox::Stencil& getStencil() const;
 
 		[[nodiscard]] virtual bool isKeyDown(int key) const;
 		[[nodiscard]] virtual bool isMouseDown(int key) const;

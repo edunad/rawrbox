@@ -35,6 +35,9 @@ namespace rawrbox {
 		static VecType left() { return VecType(1, 0, 0); }
 		static VecType nan() { return VecType(std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN()); }
 
+		static VecType mad(const VecType& a, const VecType& b, const VecType& c) { return (a * b) + c; }
+		static VecType mad(const VecType& a, const NumberType b, const VecType& c) { return (a * b) + c; }
+
 		[[nodiscard]] std::string toString() const { return std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z); }
 		[[nodiscard]] int size() const { return 3; }
 

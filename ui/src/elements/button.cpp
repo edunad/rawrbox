@@ -10,7 +10,7 @@
 
 namespace rawrbox {
 	void UIButton::initialize() {
-		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->get();
+		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/overlay/overlay.png")->get();
 	}
 
 #ifdef RAWRBOX_SCRIPTING

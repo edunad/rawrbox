@@ -18,8 +18,8 @@ namespace rawrbox {
 #endif
 
 	void UIFrame::initialize() {
-		this->_stripes = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/stripe.png")->get();
-		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->get();
+		this->_stripes = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/stripe.png")->get();
+		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/overlay/overlay.png")->get();
 
 		this->_consola = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(11);
 
@@ -27,7 +27,7 @@ namespace rawrbox {
 		auto size = this->getSize();
 
 		this->_closeButton = this->createChild<rawrbox::UIButton>();
-		this->_closeButton->setTexture("content/textures/ui/icons/close.png");
+		this->_closeButton->setTexture("assets/textures/ui/icons/close.png");
 		this->_closeButton->setSize({30, this->_titleSize - 1});
 		this->_closeButton->setPos({size.x - 30, -this->_titleSize});
 		this->_closeButton->setTextureSize({8, 8});

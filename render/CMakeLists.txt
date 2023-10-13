@@ -78,14 +78,11 @@ else()
 endif()
 # -----------------
 
-## RESOURCES -----
-file(GLOB_RECURSE RAWRBOX_RENDER_SHADERS "content/*.psh" "content/*.vsh")
-# ----------------
 
 # Project setup
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RENDER_SOURCES})
+copy_resources(TARGET ${output_target})
 
-#copy_resources(TARGET ${output_target})
 #if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
 #    copy_lua_libs(TARGET ${output_target})
 #endif()
@@ -97,7 +94,7 @@ target_include_directories(${output_target} PUBLIC "include" "${libwebp_SOURCE_D
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(
     ${output_target}
-    PUBLIC ${RAWRBOX_RENDER_SHADERS}
+    PUBLIC
            Diligent-GraphicsTools
            #Diligent-ShaderTools
            RAWRBOX.MATH

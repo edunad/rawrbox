@@ -118,7 +118,7 @@ namespace rawrbox {
 		bool _introComplete = false;
 		bool _skipIntros = false;
 		rawrbox::RawrboxIntro* _currentIntro = nullptr;
-		std::map<std::string, rawrbox::RawrboxIntro> _introList = {{"./content/textures/rawrbox.webp", {nullptr, 1.4F, false}}}; // rawrbox intro, always the first
+		std::map<std::string, rawrbox::RawrboxIntro> _introList = {{"./assets/textures/rawrbox.webp", {nullptr, 1.4F, false}}}; // rawrbox intro, always the first
 		// ---
 
 		// Data ---

@@ -25,6 +25,7 @@
     "clangd.restartAfterCrash": true,
     "clangd.checkUpdates": true,
     "clangd.arguments": ["--header-insertion=never"],
+    "git.detectSubmodules": false,
     "git.autoRepositoryDetection": false,
     "testMate.cpp.test.advancedExecutables": [
       {

@@ -19,8 +19,8 @@ namespace rawrbox {
 
 	// UTILS ----
 	void UIProgressBar::initialize() {
-		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/overlay/overlay.png")->get();
-		this->_bg = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/ui/background_grid.png")->get();
+		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/overlay/overlay.png")->get();
+		this->_bg = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/background_grid.png")->get();
 
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(11);
 	}

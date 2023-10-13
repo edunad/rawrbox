@@ -1,5 +1,6 @@
 
 #include <rawrbox/math/matrix4x4.hpp>
+#include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/vector4.hpp>
 
@@ -301,6 +302,71 @@ namespace rawrbox {
 	// ------
 
 	// STATIC UTILS ----
+	// Based off bx
+	rawrbox::Matrix4x4 Matrix4x4::mtxLookAt(const rawrbox::Vector3f& _eye, const rawrbox::Vector3f& _at, const rawrbox::Vector3f& _up, bool rightHand) {
+		rawrbox::Matrix4x4 ret;
+		const auto eye = !rightHand ? _eye : -_eye;
+		const auto view = (_at - eye).normalized();
+
+		rawrbox::Vector3f right = {};
+		rawrbox::Vector3f up = {};
+
+		const auto uxv = _up.cross(view);
+
+		if (uxv.dot(uxv) == 0.0F) {
+			right = {!rightHand ? -1.0F : 1.0F, 0.0F, 0.0F};
+		} else {
+			right = uxv.normalized();
+		}
+
+		up = view.cross(right);
+
+		ret.mtx[0] = right.x;
+		ret.mtx[1] = up.x;
+		ret.mtx[2] = view.x;
+		ret.mtx[3] = 0.0F;
+
+		ret.mtx[4] = right.y;
+		ret.mtx[5] = up.y;
+		ret.mtx[6] = view.y;
+		ret.mtx[7] = 0.0F;
+
+		ret.mtx[8] = right.z;
+		ret.mtx[9] = up.z;
+		ret.mtx[10] = view.z;
+		ret.mtx[11] = 0.F;
+
+		ret.mtx[12] = -right.dot(eye);
+		ret.mtx[13] = -up.dot(eye);
+		ret.mtx[14] = -up.dot(eye);
+		ret.mtx[15] = 1.0F;
+
+		return ret;
+	}
+
+	rawrbox::Matrix4x4 Matrix4x4::mtxProj(float FOV, float aspect, float near, float far, bool homogeneous, bool rightHand) {
+		rawrbox::Matrix4x4 ret;
+		ret.zero();
+
+		const float height = 1.0F / std::tan(rawrbox::MathUtils::toRad(FOV) * 0.5F);
+		const float width = height * 1.0F / aspect;
+
+		// ----
+		const float diff = far - near;
+		const float aa = homogeneous ? (far + near) / diff : far / diff;
+		const float bb = homogeneous ? (2.0F * far * near) / diff : near * aa;
+
+		ret.mtx[0] = width;
+		ret.mtx[5] = height;
+		ret.mtx[8] = rightHand ? 0.F : -0.F;
+		ret.mtx[9] = rightHand ? 0.F : -0.F;
+		ret.mtx[10] = rightHand ? -aa : aa;
+		ret.mtx[11] = rightHand ? -1.0F : 1.0F;
+		ret.mtx[14] = -bb;
+
+		return ret;
+	}
+
 	rawrbox::Vector3f Matrix4x4::project(const rawrbox::Vector3f& pos, const rawrbox::Matrix4x4& view, const rawrbox::Matrix4x4& proj, const rawrbox::Vector4i& viewport) {
 		std::array<float, 12> fTempo = {};
 		// Modelview transform

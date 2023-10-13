@@ -33,6 +33,9 @@ namespace rawrbox {
 	}
 
 	void RendererBase::resize(const rawrbox::Vector2i& size) {
+		if (this->swapChain == nullptr) return;
+		this->swapChain->Resize(size.x, size.y);
+
 		/*this->_render = std::make_unique<rawrbox::TextureRender>(size);
 		this->_render->addTexture(bgfx::TextureFormat::R8);    // Decal stencil
 		this->_render->addTexture(bgfx::TextureFormat::RGBA8); // GPU PICKING
@@ -65,6 +68,8 @@ namespace rawrbox {
 	void RendererBase::overridePostWorld(std::function<void()> post) { this->postRender = post; }
 
 	void RendererBase::render() {
+		if (this->swapChain == nullptr || this->context == nullptr || this->device == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Failed to bind swapChain/context/device! Did you call 'init' ?");
+
 		if (this->worldRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] World render method not set! Did you call 'setWorldRender' ?");
 		if (this->overlayRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Overlay render method not set! Did you call 'setOverlayRender' ?");
 
@@ -72,37 +77,28 @@ namespace rawrbox {
 		this->clear();
 		// ---------------------
 
-		/*
-				// No world / overlay only
-				if (rawrbox::MAIN_CAMERA == nullptr) {
-					// Render overlay ---
-					auto prevId = rawrbox::CURRENT_VIEW_ID;
-					rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_WORLD_VIEW; // Use world instead of overlay, since there is none
+		// No world / overlay only
+		if (rawrbox::MAIN_CAMERA == nullptr) {
+			this->overlayRender();
+			this->frame();
+			return;
+		}
 
-					// ---
-					bgfx::touch(rawrbox::CURRENT_VIEW_ID);
-					bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
-					this->overlayRender();
-					// ----------------
+		// Set camera variables buffer ----
+		{
+			// Map the buffer and write current world-view-projection matrix
+			// Diligent::MapHelper<Diligent::float4x4> CBConstants(this->_pImmediateContext, this->_VSConstants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			//*CBConstants = this->_WorldViewProjMatrix.Transpose();
+		}
+		// --------------------------------
 
-					// Restore id -----
-					rawrbox::CURRENT_VIEW_ID = prevId;
-					bgfx::discard(BGFX_DISCARD_ALL);
-					// ------------------------
+		// Final Pass -------------
+		this->finalRender();
+		// ------------------------
 
-					this->frame(); // No camera, prob just stencil?
-					return;
-				}
-
-				// Final Pass -------------
-				this->finalRender();
-				// ------------------------
-
-				// Check GPU Picking -----
-				this->gpuCheck();
-				// -------------------
-
-				*/
+		// Check GPU Picking -----
+		this->gpuCheck();
+		// -------------------
 
 		// Submit ---
 		this->frame();
@@ -149,6 +145,10 @@ namespace rawrbox {
 	}
 
 	void RendererBase::finalRender() {
+
+		this->worldRender();
+		this->overlayRender();
+
 		/*// Record world ---
 		this->_render->startRecord();
 		this->worldRender();
@@ -197,6 +197,8 @@ namespace rawrbox {
 	}
 
 	void RendererBase::clear() {
+		if (this->swapChain == nullptr) return;
+
 		auto* pRTV = this->swapChain->GetCurrentBackBufferRTV();
 		auto* pDSV = this->swapChain->GetDepthBufferDSV();
 
@@ -209,7 +211,7 @@ namespace rawrbox {
 	}
 
 	void RendererBase::frame() {
-		this->swapChain->Present(); // Submit
+		this->swapChain->Present(this->_vsync ? 1 : 0); // Submit
 	}
 
 	void RendererBase::bindRenderUniforms() {}
@@ -235,6 +237,8 @@ namespace rawrbox {
 		return this->_render->getTexture(2);
 	}*/
 
+	void RendererBase::setVSync(bool vsync) { this->_vsync = vsync; }
+
 	void RendererBase::gpuPick(const rawrbox::Vector2i& pos, std::function<void(uint32_t)> callback) {
 		/*if (this->_render == nullptr || pos.x < 0 || pos.y < 0 || pos.x >= this->_size.x || pos.y >= this->_size.y) return;
 
@@ -249,8 +253,7 @@ namespace rawrbox {
 
 	// Is it supported by the GPU?
 	bool RendererBase::supported() {
-		/*const bgfx::Caps* caps = bgfx::getCaps();
-		return (caps->supported & BGFX_CAPS_INSTANCING) != 0;*/
+		// const auto& Features = m_pDevice->GetDeviceInfo().Features;
 		return true;
 	}
 } // namespace rawrbox

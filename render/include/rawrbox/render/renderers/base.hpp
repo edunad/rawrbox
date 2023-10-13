@@ -5,6 +5,7 @@
 #include <Common/interface/RefCntAutoPtr.hpp>
 
 #include <Graphics/GraphicsEngine/interface/DeviceContext.h>
+#include <Graphics/GraphicsEngine/interface/RenderDevice.h>
 #include <Graphics/GraphicsEngine/interface/SwapChain.h>
 // #include <rawrbox/render_temp/texture/render.hpp>
 
@@ -22,6 +23,8 @@ namespace rawrbox {
 
 		rawrbox::Colorf _clearColor = rawrbox::Colors::Black();
 		rawrbox::Vector2i _size = {};
+
+		bool _vsync = false;
 
 		// GPU PICKING ----
 		// uint32_t _gpuReadFrame = 0;
@@ -41,6 +44,7 @@ namespace rawrbox {
 		// HANDLES ---
 		Diligent::RefCntAutoPtr<Diligent::IDeviceContext> context;
 		Diligent::RefCntAutoPtr<Diligent::ISwapChain> swapChain;
+		Diligent::RefCntAutoPtr<Diligent::IRenderDevice> device;
 		// ----
 
 		RendererBase(const rawrbox::Colorf& clearColor = rawrbox::Colors::Black());
@@ -67,9 +71,10 @@ namespace rawrbox {
 		//[[nodiscard]] virtual const bgfx::TextureHandle getMask() const;
 		//[[nodiscard]] virtual const bgfx::TextureHandle getGPUPick() const;
 
+		virtual void setVSync(bool vsync);
 		virtual void gpuPick(const rawrbox::Vector2i& pos, std::function<void(uint32_t)> callback);
 		// ------
 
-		static bool supported();
+		virtual bool supported();
 	};
 } // namespace rawrbox

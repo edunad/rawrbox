@@ -55,8 +55,9 @@ namespace rawrbox {
 	// QUICK ACCESS ---
 	// uint32_t BGFX_FRAME = 0;
 	//
-	// rawrbox::CameraBase* MAIN_CAMERA = nullptr;
+	rawrbox::CameraBase* MAIN_CAMERA = nullptr;
 	rawrbox::RendererBase* RENDERER = nullptr;
+	Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> SHADER_FACTORY = {};
 	//
 	// rawrbox::RENDER_DEBUG_MODE RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_OFF;
 	// ----
