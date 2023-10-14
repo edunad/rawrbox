@@ -49,7 +49,7 @@ namespace rawrbox {
 		this->_drawCalls.clear();
 	}
 
-	Diligent::GraphicsPipelineStateCreateInfo Stencil::createPipelines(const std::string& name, const std::string& vsh, const std::string& psh, Diligent::PRIMITIVE_TOPOLOGY topology, Diligent::IPipelineState** pipe) {
+	void Stencil::createPipelines(const std::string& name, const std::string& vsh, const std::string& psh, Diligent::PRIMITIVE_TOPOLOGY topology, Diligent::IPipelineState** pipe) {
 		// Create pipe info ----
 		Diligent::GraphicsPipelineStateCreateInfo info;
 		info.PSODesc.Name = fmt::format("RawrBox::Stencil::{}", name).c_str();
@@ -61,7 +61,7 @@ namespace rawrbox {
 		info.GraphicsPipeline.DSVFormat = desc.DepthBufferFormat;
 
 		info.GraphicsPipeline.PrimitiveTopology = topology;
-		info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_FRONT;
+		info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
 		info.GraphicsPipeline.DepthStencilDesc.DepthEnable = false; // No depth test
 		info.GraphicsPipeline.RasterizerDesc.ScissorEnable = true;
 
@@ -109,33 +109,20 @@ namespace rawrbox {
 		info.GraphicsPipeline.InputLayout.NumElements = static_cast<uint32_t>(layout.size());
 
 		rawrbox::RENDERER->device->CreateGraphicsPipelineState(info, pipe);
-
-		return info;
 	}
 
 	void Stencil::upload() {
-		if (this->_2dPipeline != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
+		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
 
 		this->createPipelines("2D", "stencil.vsh", "stencil.psh", Diligent::PRIMITIVE_TOPOLOGY::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, &this->_2dPipeline);
-		this->createPipelines("2DLineBoxStipple", "stencil.vsh", "stencil_line_stipple.psh", Diligent::PRIMITIVE_TOPOLOGY::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, &this->_lineBoxPipeline);
-		this->createPipelines("2DLineStipple", "stencil.vsh", "stencil_line_stipple.psh", Diligent::PRIMITIVE_TOPOLOGY::PRIMITIVE_TOPOLOGY_LINE_LIST, &this->_linePipeline);
-
-		/*if (bgfx::isValid(this->_2dprogram)) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
-
-		// Load Shaders --------
-		rawrbox::RenderUtils::buildShader(stencil_shaders, this->_2dprogram);
-		rawrbox::RenderUtils::buildShader(stencil_line_shaders, this->_lineprogram);
-		rawrbox::RenderUtils::buildShader(stencil_text_shaders, this->_textprogram);
-		// ------------------
-
-		this->_texColor = bgfx::createUniform("s_texColor", bgfx::UniformType::Sampler);*/
+		this->createPipelines("2DLine", "stencil.vsh", "stencil_stipple.psh", Diligent::PRIMITIVE_TOPOLOGY::PRIMITIVE_TOPOLOGY_LINE_LIST, &this->_linePipeline);
 	}
 
 	void Stencil::resize(const rawrbox::Vector2i& size) {
 		this->_windowSize = size;
 	}
 
-	void Stencil::pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector3f& uv, const rawrbox::Color& col) {
+	void Stencil::pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col) {
 		auto wSize = this->_windowSize.cast<float>();
 
 		this->applyScale(pos);
@@ -346,6 +333,7 @@ namespace rawrbox {
 		if (outline.thickness <= 0.F) return;
 
 		bool usePTLines = outline.thickness == 1.F;
+		float enableStipple = outline.stipple > 0.F ? 1.F : 0.F;
 
 		// Setup --------
 		/*bgfx::TextureHandle handl = BGFX_INVALID_HANDLE;
@@ -358,14 +346,14 @@ namespace rawrbox {
 */
 
 		this->setupDrawCall(
-		    (usePTLines || outline.stipple > 0.F) ? usePTLines ? this->_linePipeline : this->_lineBoxPipeline : this->_2dPipeline,
+		    usePTLines ? this->_linePipeline : this->_2dPipeline,
 		    nullptr);
 
 		// ----
 
 		if (usePTLines) {
-			this->pushVertice(from, {0, 0}, col);
-			this->pushVertice(to, {outline.stipple, outline.stipple}, col);
+			this->pushVertice(from, {0, 0, 0, enableStipple}, col);
+			this->pushVertice(to, {outline.stipple, outline.stipple, 0, enableStipple}, col);
 			this->pushIndices({0, 1});
 		} else {
 			float angle = -from.angle(to);
@@ -376,10 +364,10 @@ namespace rawrbox {
 			auto vertC = to + rawrbox::Vector2::cosSin(angle) * outline.thickness;
 			auto vertD = to + rawrbox::Vector2::cosSin(angle) * -outline.thickness;
 
-			this->pushVertice(vertA, {0, 0}, col);
-			this->pushVertice(vertB, {0, uvEnd}, col);
-			this->pushVertice(vertC, {uvEnd, 0}, col);
-			this->pushVertice(vertD, {uvEnd, uvEnd}, col);
+			this->pushVertice(vertA, {0, 0, 0, enableStipple}, col);
+			this->pushVertice(vertB, {0, uvEnd, 0, enableStipple}, col);
+			this->pushVertice(vertC, {uvEnd, 0, 0, enableStipple}, col);
+			this->pushVertice(vertD, {uvEnd, uvEnd, 0, enableStipple}, col);
 
 			this->pushIndices({0, 1, 2,
 			    1, 3, 2});
@@ -452,7 +440,6 @@ namespace rawrbox {
 		this->_currentDraw.stencilProgram = program;
 		this->_currentDraw.textureHandle = texture;
 		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::AABBf(0, 0, static_cast<float>(this->_windowSize.x), static_cast<float>(this->_windowSize.y)) : this->_clips.back();
-		this->_currentDraw.cull = this->_culling && this->_scale.x >= 0.F && this->_scale.y >= 0.F;
 	}
 
 	void Stencil::pushDrawCall() {
@@ -490,7 +477,6 @@ namespace rawrbox {
 			auto indSize = static_cast<uint32_t>(group.indices.size());
 
 			// Allocate data -----
-
 			auto VBOffset = this->_streamingVB->allocate(vertSize * sizeof(rawrbox::PosUVColorVertexData), contextID);
 			auto IBOffset = this->_streamingIB->allocate(indSize * sizeof(uint32_t), contextID);
 
@@ -505,7 +491,6 @@ namespace rawrbox {
 			// -------------------
 
 			// Render ------------
-
 			const std::array<uint64_t, 1> offsets = {VBOffset};
 			std::array<Diligent::IBuffer*, 1> pBuffs = {this->_streamingVB->buffer()};
 
@@ -513,7 +498,6 @@ namespace rawrbox {
 			context->SetIndexBuffer(this->_streamingIB->buffer(), IBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 			context->SetPipelineState(group.stencilProgram);
-			// context->CommitShaderResources(m_SRB[CurrInstData.TextureInd], RESOURCE_STATE_TRANSITION_MODE_VERIFY); // TEXTURE
 
 			// SCISSOR ---
 			Diligent::Rect scissor;
@@ -626,16 +610,6 @@ namespace rawrbox {
 
 		this->_scale -= this->_scales.back();
 		this->_scales.pop_back();
-	}
-	// --------------------
-
-	// ------ CULLING
-	void Stencil::pushDisableCulling() {
-		this->_culling = false;
-	}
-
-	void Stencil::popDisableCulling() {
-		this->_culling = true;
 	}
 	// --------------------
 

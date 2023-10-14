@@ -3,8 +3,7 @@
 #include <rawrbox/math/aabb.hpp>
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/pi.hpp>
-#include <rawrbox/math/vector2.hpp>
-#include <rawrbox/math/vector3.hpp>
+#include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/buffer/streaming.hpp>
 
 // #include <rawrbox/render_temp/static.hpp>
@@ -25,18 +24,18 @@
 namespace rawrbox {
 	struct PosUVColorVertexData {
 		rawrbox::Vector2f pos = {};
-		rawrbox::Vector3f uv = {};
+		rawrbox::Vector4f uv = {};
 		rawrbox::Colorf color = {};
 
 		PosUVColorVertexData() = default;
-		PosUVColorVertexData(const rawrbox::Vector2f& _pos, const rawrbox::Vector3f& _uv, const rawrbox::Color& _cl) : pos(_pos), uv(_uv), color(_cl) {}
+		PosUVColorVertexData(const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, const rawrbox::Color& _cl) : pos(_pos), uv(_uv), color(_cl) {}
 
 		static std::array<Diligent::LayoutElement, 3> vLayout() {
 			return {
 			    // Attribute 0 - Position
 			    Diligent::LayoutElement{0, 0, 2, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX},
 			    // Attribute 1 - UV
-			    Diligent::LayoutElement{1, 0, 3, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX},
+			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX},
 			    // Attribute 2 - Color
 			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX}};
 		}
@@ -157,7 +156,6 @@ namespace rawrbox {
 
 		// HANDLES ----
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> _2dPipeline;
-		Diligent::RefCntAutoPtr<Diligent::IPipelineState> _lineBoxPipeline;
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> _linePipeline;
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> _textPipeline;
 
@@ -202,12 +200,8 @@ namespace rawrbox {
 		std::vector<rawrbox::StencilDraw> _drawCalls = {};
 		// ----------
 
-		// Culling ----- Just for you brom
-		bool _culling = true;
-		// -------------
-
 		// ------ UTILS
-		void pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector3f& uv, const rawrbox::Color& col);
+		void pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col);
 		void pushIndices(std::vector<uint32_t> ind);
 
 		void applyRotation(rawrbox::Vector2f& vert);
@@ -220,7 +214,7 @@ namespace rawrbox {
 		void internalDraw();
 		// --------------------
 
-		Diligent::GraphicsPipelineStateCreateInfo createPipelines(const std::string& name, const std::string& vsh, const std::string& psh, Diligent::PRIMITIVE_TOPOLOGY topology, Diligent::IPipelineState** pipe);
+		void createPipelines(const std::string& name, const std::string& vsh, const std::string& psh, Diligent::PRIMITIVE_TOPOLOGY topology, Diligent::IPipelineState** pipe);
 
 	public:
 		Stencil() = default;
@@ -276,11 +270,6 @@ namespace rawrbox {
 		// ------ SCALE
 		virtual void pushScale(const rawrbox::Vector2f& scale);
 		virtual void popScale();
-		// --------------------
-
-		// ------ CULLING
-		virtual void pushDisableCulling();
-		virtual void popDisableCulling();
 		// --------------------
 
 		// ------ OTHER
