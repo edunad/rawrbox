@@ -1,25 +1,20 @@
 #pragma once
 
 #include <rawrbox/render/camera/base.hpp>
+#include <rawrbox/render/texture/flat.hpp>
+#include <rawrbox/render/texture/missing.hpp>
 
 #include <Common/interface/RefCntAutoPtr.hpp>
 
 #include <Graphics\GraphicsEngine\interface\Shader.h>
 
-//
-// #include <rawrbox/render_temp/texture/flat.hpp>
-// #include <rawrbox/render_temp/texture/image.hpp>
-// #include <rawrbox/render_temp/texture/missing.hpp>
-
 #include <memory>
 
 // NOLINTBEGIN(*)
 #define RAWRBOX_DESTROY(HANDLE) \
-	fmt::print("todo\n");
-//if (bgfx::isValid(HANDLE)) { \
-	//	bgfx::destroy(HANDLE); \
-	//	(HANDLE) = BGFX_INVALID_HANDLE; \
-	//}
+	if (HANDLE != nullptr) { \
+		HANDLE->Release(); \
+	}
 // NOLINTEND(*)
 
 namespace rawrbox {
@@ -36,20 +31,6 @@ namespace rawrbox {
 	constexpr auto MAX_BONES_PER_MODEL = 200;
 
 	extern bool ENGINE_INITIALIZED;
-
-	// VIEW IDS ---
-	// extern bgfx::ViewId BLIT_VIEW;
-	//
-	// extern bgfx::ViewId MAIN_WORLD_VIEW;
-	// extern bgfx::ViewId MAIN_OVERLAY_VIEW;
-	//
-	// extern bgfx::ViewId STENCIL_VIEW_ID;
-	//
-	// extern bgfx::ViewId POST_PROCESSING_ID;
-	// extern bgfx::ViewId RENDERER_VIEW_ID;
-	//
-	// extern bgfx::ViewId CURRENT_VIEW_ID;
-	// ---------
 
 	// GPU PICKING ---
 	constexpr size_t GPU_PICK_SAMPLE_SIZE = 8 * 8 * 4;
@@ -76,10 +57,10 @@ namespace rawrbox {
 	// ---------
 
 	// TEXTURE FALLBACKS ---
-	// extern std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE;
-	// extern std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE;
-	// extern std::shared_ptr<rawrbox::TextureFlat> BLACK_TEXTURE;
-	// extern std::shared_ptr<rawrbox::TextureFlat> NORMAL_TEXTURE;
+	extern std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE;
+	extern std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE;
+	extern std::shared_ptr<rawrbox::TextureFlat> BLACK_TEXTURE;
+	extern std::shared_ptr<rawrbox::TextureFlat> NORMAL_TEXTURE;
 	// ----
 
 	// ID GENERATION

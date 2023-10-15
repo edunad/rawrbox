@@ -5,6 +5,7 @@
 #include <rawrbox/math/pi.hpp>
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/buffer/streaming.hpp>
+#include <rawrbox/render/texture/flat.hpp>
 
 // #include <rawrbox/render_temp/static.hpp>
 // #include <rawrbox/render_temp/text/font.hpp>
@@ -16,6 +17,7 @@
 #include <Common/interface/RefCntAutoPtr.hpp>
 
 #include <Graphics/GraphicsEngine/interface/PipelineState.h>
+#include <Graphics/GraphicsEngine/interface/ShaderResourceBinding.h>
 #include <Graphics/GraphicsEngine/interface/Texture.h>
 
 #include <memory>
@@ -54,7 +56,7 @@ namespace rawrbox {
 
 	struct StencilDraw {
 		Diligent::IPipelineState* stencilProgram = nullptr;
-		Diligent::ITexture* textureHandle = nullptr;
+		Diligent::ITextureView* textureHandle = nullptr;
 
 		std::vector<rawrbox::PosUVColorVertexData> vertices = {};
 		std::vector<uint32_t> indices = {};
@@ -143,21 +145,15 @@ namespace rawrbox {
 	};
 
 	class Stencil {
-		// static bgfx::ViewId renderID;
-
 	private:
-		// bgfx::VertexLayout _vLayout;
-		//
-		// bgfx::ProgramHandle _2dprogram = BGFX_INVALID_HANDLE;
-		// bgfx::ProgramHandle _lineprogram = BGFX_INVALID_HANDLE;
-		// bgfx::ProgramHandle _textprogram = BGFX_INVALID_HANDLE;
-		//
 		// bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
 
 		// HANDLES ----
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> _2dPipeline;
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> _linePipeline;
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> _textPipeline;
+
+		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _SRB;
 
 		static constexpr const int MaxVertsInStreamingBuffer = 4096;
 		std::unique_ptr<rawrbox::StreamingBuffer> _streamingVB = nullptr;
@@ -209,7 +205,7 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ RENDERING
-		void setupDrawCall(Diligent::IPipelineState* program, Diligent::ITexture* texture = nullptr);
+		void setupDrawCall(Diligent::IPipelineState* program, Diligent::ITextureView* texture);
 		void pushDrawCall();
 		void internalDraw();
 		// --------------------
@@ -234,8 +230,8 @@ namespace rawrbox {
 		virtual void drawPolygon(const rawrbox::Polygon& poly);
 		virtual void drawTriangle(const rawrbox::Vector2f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector2f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector2f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC);
 		virtual void drawBox(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White());
-		virtual void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const Diligent::ITexture* tex, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1}, uint32_t atlasId = 0);
-		// virtual void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1}, uint32_t atlasId = 0);
+		virtual void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, Diligent::ITextureView* tex, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1}, uint32_t atlasId = 0);
+		virtual void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1}, uint32_t atlasId = 0);
 		virtual void drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White(), size_t roundness = 32, float angleStart = 0.F, float angleEnd = 360.F);
 		virtual void drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const rawrbox::Color& col = rawrbox::Colors::White());
 		// virtual void drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White(), rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);

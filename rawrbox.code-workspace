@@ -173,7 +173,8 @@
       }
     },
 
-    "debug.terminal.clearBeforeReusing": true
+    "debug.terminal.clearBeforeReusing": true,
+    "dotnet.defaultSolution": "disable"
   },
   "extensions": {
     "recommendations": [

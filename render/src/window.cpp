@@ -432,7 +432,7 @@ namespace rawrbox {
 		// ------------------
 
 		// Setup global util textures ---
-		/*if (rawrbox::MISSING_TEXTURE == nullptr) {
+		if (rawrbox::MISSING_TEXTURE == nullptr) {
 			rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
 			rawrbox::MISSING_TEXTURE->upload();
 		}
@@ -450,7 +450,7 @@ namespace rawrbox {
 		if (rawrbox::NORMAL_TEXTURE == nullptr) {
 			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0xbcbcff));
 			rawrbox::NORMAL_TEXTURE->upload();
-		}*/
+		}
 		// ------------------
 
 		// Setup stencil ----
@@ -593,12 +593,12 @@ namespace rawrbox {
 
 	// ------UTILS
 	void Window::close() {
-		/*if (rawrbox::__OPEN_WINDOWS__-- <= 0) {
+		if (rawrbox::__OPEN_WINDOWS__-- <= 0) {
 			rawrbox::MISSING_TEXTURE.reset();
 			rawrbox::WHITE_TEXTURE.reset();
 			rawrbox::BLACK_TEXTURE.reset();
 			rawrbox::NORMAL_TEXTURE.reset();
-		}*/
+		}
 
 		this->_stencil.reset();
 		this->_camera.reset();

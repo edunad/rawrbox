@@ -1,5 +1,5 @@
-//Texture2D    g_Texture;
-//SamplerState g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
+Texture2D    g_Texture;
+SamplerState g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
 
 struct PSInput {
     float4 Pos    : SV_POSITION;
@@ -12,9 +12,10 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    if (PSIn.Color.a <= 0.0 || (0.125 < fmod(PSIn.UV.x, 0.25) && PSIn.UV.w == 1.)) {
+    float4 color = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV.xy, PSIn.UV.z)) * PSIn.Color;
+    if (color.a <= 0.0 || (0.125 < fmod(PSIn.UV.x, 0.25) && PSIn.UV.w == 1.)) {
 		discard;
 	}
 
-    PSOut.Color = PSIn.Color;
+    PSOut.Color = color;
 }

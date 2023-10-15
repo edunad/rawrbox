@@ -2,27 +2,13 @@
 #include <rawrbox/render/static.hpp>
 
 namespace rawrbox {
-	// VIEW IDS ---
-	// bgfx::ViewId BLIT_VIEW = 99;
-	//
-	// bgfx::ViewId MAIN_WORLD_VIEW = 100;
-	// bgfx::ViewId MAIN_OVERLAY_VIEW = 101;
-	//
-	// bgfx::ViewId STENCIL_VIEW_ID = 110; // 10 Views reserved for stencil rendering
-	//
-	// bgfx::ViewId POST_PROCESSING_ID = 120; // 10 Views for post processing rendering
-	// bgfx::ViewId RENDERER_VIEW_ID = 130;   // Rest of the views for textureRendering and etc
-	//
-	// bgfx::ViewId CURRENT_VIEW_ID = MAIN_WORLD_VIEW; // Default -
-	// ---------
-
 	bool ENGINE_INITIALIZED = false;
 
 	// TEXTURE FALLBACKS ---
-	// std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE = nullptr;
-	// std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE = nullptr;
-	// std::shared_ptr<rawrbox::TextureFlat> BLACK_TEXTURE = nullptr;
-	// std::shared_ptr<rawrbox::TextureFlat> NORMAL_TEXTURE = nullptr;
+	std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE = nullptr;
+	std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE = nullptr;
+	std::shared_ptr<rawrbox::TextureFlat> BLACK_TEXTURE = nullptr;
+	std::shared_ptr<rawrbox::TextureFlat> NORMAL_TEXTURE = nullptr;
 	// ---------
 
 	// GLOBAL UNIFORMS ---

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
+#include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/render/window.hpp>
 
 // #include <rawrbox/render_temp/model/model.hpp>
@@ -18,7 +19,7 @@ namespace stencil {
 		// std::unique_ptr<rawrbox::Model> _model = std::make_unique<rawrbox::Model>();
 		// std::unique_ptr<rawrbox::Markdown> _markdown = std::make_unique<rawrbox::Markdown>();
 		//
-		// rawrbox::TextureBase* _texture = nullptr;
+		rawrbox::TextureBase* _texture = nullptr;
 		// rawrbox::TextureBase* _texture2 = nullptr;
 		// rawrbox::TextureBase* _texture3 = nullptr;
 		// rawrbox::TextureBase* _texture4 = nullptr;
