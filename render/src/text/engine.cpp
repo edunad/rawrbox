@@ -22,11 +22,9 @@ namespace rawrbox {
 	std::string TextEngine::getFontInSystem(const std::filesystem::path& path) {
 #if WIN32
 		std::array<TCHAR, MAX_PATH> windir = {};
-		GetWindowsDirectory(windir.data(), MAX_PATH);
 
-		// std::string test(windir.begin(), windir.end());
-		// return fmt::format("{}\\Fonts\\{}", test, path.generic_string());
-		return "";
+		GetWindowsDirectory(windir.data(), MAX_PATH);
+		return fmt::format("{}\\Fonts\\{}", windir.data(), path.generic_string());
 #else
 		return fmt::format("/usr/share/fonts/{}", path.generic_string());
 #endif

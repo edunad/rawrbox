@@ -68,7 +68,7 @@ namespace rawrbox {
 	class TextureWEBP;
 	struct RawrboxIntro {
 	public:
-		// std::shared_ptr<rawrbox::TextureWEBP> texture;
+		std::shared_ptr<rawrbox::TextureWEBP> texture;
 		float speed;
 		bool cover;
 	};
@@ -97,7 +97,7 @@ namespace rawrbox {
 		bool _introComplete = false;
 		bool _skipIntros = false;
 		rawrbox::RawrboxIntro* _currentIntro = nullptr;
-		// std::map<std::string, rawrbox::RawrboxIntro> _introList = {{"./assets/textures/rawrbox.webp", {nullptr, 1.4F, false}}}; // rawrbox intro, always the first
+		std::map<std::string, rawrbox::RawrboxIntro> _introList = {{"./assets/textures/rawrbox.webp", {nullptr, 1.4F, false}}}; // rawrbox intro, always the first
 		//  ---
 
 		// Data ---

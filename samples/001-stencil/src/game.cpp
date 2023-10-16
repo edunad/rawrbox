@@ -23,6 +23,7 @@ namespace stencil {
 		    Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_COUNT, [this]() { this->drawOverlay(); }, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
+		this->_window->skipIntros(true);
 		this->_window->onIntroCompleted += [this]() {
 			this->loadContent();
 		};

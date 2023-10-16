@@ -87,7 +87,7 @@ copy_resources(TARGET ${output_target})
 #    copy_lua_libs(TARGET ${output_target})
 #endif()
 
-target_compile_options(${output_target} PRIVATE -DUNICODE -DENGINE_DLL)
+target_compile_options(${output_target} PRIVATE -DENGINE_DLL)
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_RENDER)
 target_include_directories(${output_target} PUBLIC "include" "${libwebp_SOURCE_DIR}/src" "./DiligentCore")

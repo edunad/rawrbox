@@ -31,6 +31,7 @@ namespace rawrbox {
 
 		bool _failedToLoad = false;
 		bool _transparent = false;
+		bool _sRGB = true;
 
 		std::string _name = "";
 		virtual void loadFallback();
@@ -54,7 +55,10 @@ namespace rawrbox {
 		virtual void setTextureUV(rawrbox::TEXTURE_UV mode);
 		[[nodiscard]] virtual rawrbox::TEXTURE_UV getTextureUV() const;
 
+		[[nodiscard]] virtual const std::string& getName() const;
 		virtual void setName(const std::string& name);
+
+		virtual void setSRGB(bool set);
 		// -----
 
 		virtual void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false);

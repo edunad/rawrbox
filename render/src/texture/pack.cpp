@@ -1,6 +1,9 @@
+
 #include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/pack.hpp>
+
+#include <Common/interface/Align.hpp>
 
 #include <fmt/format.h>
 
@@ -34,7 +37,7 @@ namespace rawrbox {
 			UpdateBox.MaxY = node.y + node.height;
 
 			Diligent::TextureSubResData SubresData;
-			SubresData.Stride = node.width * this->_channels;
+			SubresData.Stride = static_cast<uint64_t>(node.width * this->_channels);
 			SubresData.pData = data.data();
 
 			rawrbox::RENDERER->context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);

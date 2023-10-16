@@ -1,3 +1,4 @@
+#include <rawrbox/math/utils/color.hpp>
 #include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/text/font.hpp>
 
@@ -77,12 +78,11 @@ namespace rawrbox {
 		std::vector<uint8_t> buffer = {};
 		buffer.resize(ww * hh * sizeof(uint8_t));
 		stbtt_MakeCodepointBitmap(this->_font.get(), buffer.data(), ww, hh, dstPitch, scale, scale, codePoint);
-		// ----
 
-		auto pack = rawrbox::TextEngine::requestPack(ww, hh, Diligent::TEXTURE_FORMAT::TEX_FORMAT_R8_UNORM); // FONT_TYPE_ALPHA
+		auto pack = rawrbox::TextEngine::requestPack(ww, hh, Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM); // FONT_TYPE_ALPHA
 		if (pack.second == nullptr) throw std::runtime_error("[RawrBox-FONT] Failed to generate / get atlas texture");
 
-		auto& packNode = pack.second->addSprite(ww, hh, buffer);
+		auto& packNode = pack.second->addSprite(ww, hh, rawrbox::ColorUtils::setChannels(1, 4, ww, hh, buffer));
 		auto size = pack.second->getSize();
 
 		glyph->packID = pack.first;

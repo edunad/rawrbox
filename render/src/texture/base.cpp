@@ -17,14 +17,22 @@ namespace rawrbox {
 
 	// UTILS ---
 	bool TextureBase::hasTransparency() const { return this->_channels == 4 && this->_transparent; }
+
 	const rawrbox::Vector2i& TextureBase::getSize() const { return this->_size; }
+
 	int TextureBase::getChannels() const { return this->_channels; }
+
 	bool TextureBase::isValid() const { return this->_handle != nullptr; }
+
 	Diligent::ITextureView* TextureBase::getHandle() const { return this->_handle; }
+
 	void TextureBase::setTextureUV(rawrbox::TEXTURE_UV mode) { this->_textureUV = mode; }
 	rawrbox::TEXTURE_UV TextureBase::getTextureUV() const { return this->_textureUV; }
 
+	const std::string& TextureBase::getName() const { return this->_name; }
 	void TextureBase::setName(const std::string& name) { this->_name = fmt::format("RawrBox::Texture::{}", name); }
+
+	void TextureBase::setSRGB(bool set) { this->_sRGB = set; }
 	// ----
 
 	void TextureBase::update() {}
@@ -43,7 +51,7 @@ namespace rawrbox {
 				default:
 				case 3:
 				case 4:
-					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM;
+					format = this->_sRGB ? Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB : Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM;
 			}
 		} else if (this->_channels == 0) {
 			switch (format) {
@@ -56,6 +64,7 @@ namespace rawrbox {
 					break;
 				default:
 				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM:
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB:
 					this->_channels = 4;
 					break;
 			}

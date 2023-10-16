@@ -1,5 +1,5 @@
 
-#include "rawrbox/utils/path.hpp"
+
 #ifndef ENGINE_DLL
 	#define ENGINE_DLL 1
 #endif
@@ -67,13 +67,13 @@
 	#define GLFW_EXPOSE_NATIVE_WGL
 #endif
 
-#include <GLFW/glfw3native.h>
-
-// #include <rawrbox/render_temp/texture/webp.hpp>
 #include <rawrbox/engine/static.hpp>
+#include <rawrbox/render/texture/webp.hpp>
 #include <rawrbox/render/window.hpp>
+#include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/threading.hpp>
 
+#include <GLFW/glfw3native.h>
 #include <fmt/printf.h>
 
 #include <cmath>
@@ -108,12 +108,7 @@ namespace rawrbox {
 	}
 
 	void Window::playIntro() {
-		this->_renderer->setOverlayRender(this->_overlay);
-		this->_renderer->setWorldRender(this->_world);
-
-		this->onIntroCompleted();
-
-		/*if (this->_skipIntros) {
+		if (this->_skipIntros) {
 			this->_renderer->setOverlayRender(this->_overlay);
 			this->_renderer->setWorldRender(this->_world);
 
@@ -146,8 +141,6 @@ namespace rawrbox {
 
 		this->_renderer->setWorldRender([]() {});
 		this->_renderer->setOverlayRender([this]() {
-			bgfx::dbgTextClear(); // Prevent debug text being rendered on top
-
 			this->_stencil->drawBox({}, this->_size.cast<float>(), rawrbox::Colors::Black());
 
 			if (this->_currentIntro != nullptr) {
@@ -162,7 +155,7 @@ namespace rawrbox {
 			}
 
 			this->_stencil->render();
-		});*/
+		});
 	}
 
 	void Window::create(int width, int height, uint32_t flags) {
@@ -525,7 +518,7 @@ namespace rawrbox {
 	}
 
 	void Window::update() {
-		/*if (this->_currentIntro != nullptr) {
+		if (this->_currentIntro != nullptr) {
 			if (this->_introComplete) {
 				this->_introList.erase(this->_introList.begin());
 
@@ -549,10 +542,6 @@ namespace rawrbox {
 			if (this->_camera != nullptr) {
 				this->_camera->update();
 			}
-		}*/
-
-		if (this->_camera != nullptr) {
-			this->_camera->update();
 		}
 	}
 
@@ -563,14 +552,14 @@ namespace rawrbox {
 	}
 
 	void Window::addIntro(const std::filesystem::path& webpPath, float speed, bool cover) {
-		/*if (webpPath.extension() != ".webp") throw std::runtime_error(fmt::format("[RawrBox-Window] Invalid intro '{}', format needs to be .webp!", webpPath.generic_string()));
+		if (webpPath.extension() != ".webp") throw std::runtime_error(fmt::format("[RawrBox-Window] Invalid intro '{}', format needs to be .webp!", webpPath.generic_string()));
 
 		rawrbox::RawrboxIntro intro;
 		intro.cover = cover;
 		intro.speed = speed;
 		intro.texture = nullptr;
 
-		this->_introList[webpPath.generic_string()] = intro;*/
+		this->_introList[webpPath.generic_string()] = intro;
 	}
 	// ----------------
 

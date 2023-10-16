@@ -4,7 +4,7 @@
 namespace rawrbox {
 	class TextureAtlas : public rawrbox::TextureImage {
 	protected:
-		std::vector<Diligent::TextureSubResData> _res = {};
+		std::vector<std::vector<uint8_t>> _tiles = {};
 
 		uint16_t _spriteSize = 32;
 		void processAtlas();
@@ -20,9 +20,9 @@ namespace rawrbox {
 		~TextureAtlas() override = default;
 
 		// ------ PIXEL-UTILS
-		[[nodiscard]] uint16_t total() const;
+		[[nodiscard]] size_t total() const;
 		[[nodiscard]] uint16_t getSpriteSize() const;
-		[[nodiscard]] std::vector<uint8_t> getSprite(uint16_t id) const;
+		[[nodiscard]] std::vector<uint8_t> getSprite(size_t id) const;
 		// --------------------
 
 		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false) override;
