@@ -1,10 +1,8 @@
 #pragma once
 
 #include <rawrbox/math/vector2.hpp>
-#include <rawrbox/render_temp/texture/base.hpp>
+#include <rawrbox/render/texture/base.hpp>
 #include <rawrbox/utils/event.hpp>
-
-#include <bgfx/bgfx.h>
 
 #include <filesystem>
 #include <vector>
@@ -50,11 +48,10 @@ namespace rawrbox {
 		virtual void setPaused(bool paused);
 		virtual bool getSpeed();
 		virtual void setSpeed(float speed);
-		[[nodiscard]] bool hasTransparency() const override;
 		// --------------------
 
 		// ------RENDER
-		void upload(bgfx::TextureFormat::Enum format = bgfx::TextureFormat::RGBA8) override;
+		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false) override;
 		// --------------------
 	};
 } // namespace rawrbox

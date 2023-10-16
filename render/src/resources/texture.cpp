@@ -1,7 +1,7 @@
 
 #include <rawrbox/render/resources/texture.hpp>
-// #include <rawrbox/render/texture/atlas.hpp>
-// #include <rawrbox/render/texture/gif.hpp>
+#include <rawrbox/render/texture/atlas.hpp>
+#include <rawrbox/render/texture/gif.hpp>
 #include <rawrbox/render/texture/image.hpp>
 // #include <rawrbox/render/texture/webp.hpp>
 
@@ -12,7 +12,7 @@ namespace rawrbox {
 	bool ResourceTexture::load(const std::vector<uint8_t>& buffer) {
 		const bool isGIF = this->filePath.extension() == ".gif";
 		if (isGIF) {
-			// this->_texture = std::make_unique<rawrbox::TextureGIF>(this->filePath, buffer);
+			this->_texture = std::make_unique<rawrbox::TextureGIF>(this->filePath, buffer);
 			return true;
 		}
 
@@ -23,7 +23,7 @@ namespace rawrbox {
 		}
 
 		if (flags) {
-			// this->_texture = std::make_unique<rawrbox::TextureAtlas>(this->filePath, buffer, flags); // Use flags for sprite size
+			this->_texture = std::make_unique<rawrbox::TextureAtlas>(this->filePath, buffer, flags); // Use flags for sprite size
 		} else {
 			this->_texture = std::make_unique<rawrbox::TextureImage>(this->filePath, buffer);
 		}

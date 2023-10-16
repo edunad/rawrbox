@@ -1,3 +1,4 @@
+#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/image.hpp>
 
@@ -36,7 +37,7 @@ namespace rawrbox {
 	TextureImage::TextureImage(const rawrbox::Vector2i& size, const uint8_t* buffer, int channels) {
 		this->_size = size;
 		this->_channels = channels;
-		this->_name = "Image";
+		this->_name = "RawrBox::Texture::Image";
 
 		this->_pixels.resize(static_cast<uint32_t>(this->_size.x * this->_size.y * channels));
 		std::memcpy(this->_pixels.data(), buffer, static_cast<uint32_t>(this->_pixels.size()) * sizeof(uint8_t));
@@ -56,7 +57,7 @@ namespace rawrbox {
 	TextureImage::TextureImage(const rawrbox::Vector2i& size, int channels) {
 		this->_size = size;
 		this->_channels = channels;
-		this->_name = "Image";
+		this->_name = "RawrBox::Texture::Image";
 
 		this->_pixels.resize(static_cast<uint32_t>(this->_size.x * this->_size.y * channels));
 		std::memset(this->_pixels.data(), 255, this->_pixels.size() * sizeof(uint8_t));
@@ -64,7 +65,7 @@ namespace rawrbox {
 
 	// NOLINTEND(modernize-pass-by-value)
 	void TextureImage::internalLoad(uint8_t* image, bool useFallback) {
-		this->_name = "Image";
+		this->_name = "RawrBox::Texture::Image";
 
 		if (image == nullptr) {
 			stbi_image_free(image);
@@ -94,17 +95,4 @@ namespace rawrbox {
 
 		stbi_image_free(image);
 	}
-
-	// UTILS --------------------
-	void TextureImage::updatePixels(const std::vector<uint8_t>& buffer) {
-		this->updatePixels(buffer.data(), buffer.size() * sizeof(uint8_t));
-	}
-
-	void TextureImage::updatePixels(const uint8_t* buffer, size_t size) {
-		/*if (!bgfx::isValid(this->_handle)) throw std::runtime_error("[RawrBox-TextureImage] Failed to bind texture");
-
-		std::memcpy(this->_pixels.data(), buffer, size);
-		bgfx::updateTexture2D(this->_handle, 0, 0, 0, 0, static_cast<uint16_t>(this->_size.x), static_cast<uint16_t>(this->_size.y), bgfx::makeRef(this->_pixels.data(), static_cast<uint32_t>(this->_pixels.size())));*/
-	}
-	// --------------------
 } // namespace rawrbox

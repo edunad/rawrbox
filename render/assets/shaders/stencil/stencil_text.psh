@@ -12,10 +12,8 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    float4 color = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV.xy, PSIn.UV.z)) * PSIn.Color;
-    if (color.a <= 0.0 || (0.125 < fmod(PSIn.UV.x, 0.25) && PSIn.UV.w == 1.)) {
-		discard;
-	}
+    float a = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV.xy, PSIn.UV.z)).r * PSIn.Color.a;
+	if(a <= 0.0) discard;
 
-    PSOut.Color = color;
+	PSOut.Color = float4(PSIn.Color.rgb, a);
 }

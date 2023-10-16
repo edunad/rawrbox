@@ -57,7 +57,7 @@ namespace rawrbox {
 		virtual void setName(const std::string& name);
 		// -----
 
-		virtual void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN);
+		virtual void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false);
 		virtual void update();
 	};
 } // namespace rawrbox

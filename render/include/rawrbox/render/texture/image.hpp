@@ -29,10 +29,5 @@ namespace rawrbox {
 		TextureImage& operator=(const TextureImage&) = delete;
 		TextureImage& operator=(TextureImage&&) = delete;
 		~TextureImage() override = default;
-
-		// ------ PIXEL-UTILS
-		virtual void updatePixels(const std::vector<uint8_t>& buffer);
-		virtual void updatePixels(const uint8_t* buffer, size_t size);
-		// --------------------
 	};
 } // namespace rawrbox

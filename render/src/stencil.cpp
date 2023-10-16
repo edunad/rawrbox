@@ -6,8 +6,6 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 
-// #include <rawrbox/render_temp/utils/render.hpp>
-
 #include <fmt/format.h>
 #include <utf8.h>
 
@@ -117,6 +115,7 @@ namespace rawrbox {
 
 		this->createPipelines("2D", "stencil.vsh", "stencil.psh", Diligent::PRIMITIVE_TOPOLOGY::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, &this->_2dPipeline);
 		this->createPipelines("2DLine", "stencil.vsh", "stencil.psh", Diligent::PRIMITIVE_TOPOLOGY::PRIMITIVE_TOPOLOGY_LINE_LIST, &this->_linePipeline);
+		this->createPipelines("2DText", "stencil.vsh", "stencil_text.psh", Diligent::PRIMITIVE_TOPOLOGY::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, &this->_textPipeline);
 	}
 
 	void Stencil::resize(const rawrbox::Vector2i& size) {
@@ -350,7 +349,7 @@ namespace rawrbox {
 		// ----
 	}
 
-	/*void Stencil::drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, rawrbox::Alignment alignX, rawrbox::Alignment alignY) {
+	void Stencil::drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, rawrbox::Alignment alignX, rawrbox::Alignment alignY) {
 		if (col.isTransparent() || text.empty()) return;
 
 		rawrbox::Vector2f startpos = pos;
@@ -386,7 +385,7 @@ namespace rawrbox {
 		font.render(text, startpos, false, [this, &font, col](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
 			// Setup --------
 			this->setupDrawCall(
-			    this->_textprogram,
+			    this->_textPipeline,
 			    font.getPackTexture(glyph)->getHandle());
 			// ----
 
@@ -402,7 +401,7 @@ namespace rawrbox {
 			this->pushDrawCall();
 			// ----
 		});
-	}*/
+	}
 	// --------------------
 
 	// ------RENDERING

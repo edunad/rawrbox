@@ -24,13 +24,13 @@ namespace rawrbox {
 	void TextureBase::setTextureUV(rawrbox::TEXTURE_UV mode) { this->_textureUV = mode; }
 	rawrbox::TEXTURE_UV TextureBase::getTextureUV() const { return this->_textureUV; }
 
-	void TextureBase::setName(const std::string& name) { this->_name = name; }
+	void TextureBase::setName(const std::string& name) { this->_name = fmt::format("RawrBox::Texture::{}", name); }
 	// ----
 
 	void TextureBase::update() {}
 	std::array<float, 4> TextureBase::getData() const { return {static_cast<float>(this->_textureUV)}; }
 
-	void TextureBase::upload(Diligent::TEXTURE_FORMAT format) {
+	void TextureBase::upload(Diligent::TEXTURE_FORMAT format, bool dynamic) {
 		if (this->_failedToLoad || this->_handle != nullptr) return; // Failed texture is already bound, so skip it
 
 		// Try to determine texture format
@@ -45,18 +45,37 @@ namespace rawrbox {
 				case 4:
 					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM;
 			}
+		} else if (this->_channels == 0) {
+			switch (format) {
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_A8_UNORM:
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_R8_UNORM:
+					this->_channels = 1;
+					break;
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RG8_UNORM:
+					this->_channels = 2;
+					break;
+				default:
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM:
+					this->_channels = 4;
+					break;
+			}
+		}
+
+		if (this->_pixels.empty()) {
+			this->_pixels.resize(this->_size.x * this->_size.y * this->_channels);
+			std::memset(this->_pixels.data(), 0, this->_pixels.size());
 		}
 
 		Diligent::TextureDesc desc;
-		desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+		desc.Type = Diligent::RESOURCE_DIM_TEX_2D_ARRAY;
 		desc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
-		desc.Usage = Diligent::USAGE_IMMUTABLE;
+		desc.Usage = dynamic ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE;
 		desc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
 		desc.Width = this->_size.x;
 		desc.Height = this->_size.y;
 		desc.MipLevels = 1;
 		desc.Format = format;
-		desc.Name = fmt::format("RawrBox::Texture::{}", this->_name).c_str();
+		desc.Name = this->_name.c_str();
 
 		Diligent::TextureSubResData pSubResource;
 		pSubResource.pData = this->_pixels.data();

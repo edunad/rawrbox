@@ -5,14 +5,8 @@
 #include <rawrbox/math/pi.hpp>
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/buffer/streaming.hpp>
+#include <rawrbox/render/text/font.hpp>
 #include <rawrbox/render/texture/flat.hpp>
-
-// #include <rawrbox/render_temp/static.hpp>
-// #include <rawrbox/render_temp/text/font.hpp>
-// #include <rawrbox/render_temp/texture/flat.hpp>
-// #include <rawrbox/render_temp/texture/render.hpp>
-
-// #include <bgfx/bgfx.h>
 
 #include <Common/interface/RefCntAutoPtr.hpp>
 
@@ -146,8 +140,6 @@ namespace rawrbox {
 
 	class Stencil {
 	private:
-		// bgfx::UniformHandle _texColor = BGFX_INVALID_HANDLE;
-
 		// HANDLES ----
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> _2dPipeline;
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> _linePipeline;
@@ -162,8 +154,6 @@ namespace rawrbox {
 
 		// WINDOW ----
 		rawrbox::Vector2i _windowSize = {};
-		// bgfx::ViewId _prevViewId = 0;
-		// bgfx::ViewId _renderId = 0;
 		//  ----------
 
 		// Offset handling ----
@@ -234,7 +224,7 @@ namespace rawrbox {
 		virtual void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1}, uint32_t atlasId = 0);
 		virtual void drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White(), size_t roundness = 32, float angleStart = 0.F, float angleEnd = 360.F);
 		virtual void drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const rawrbox::Color& col = rawrbox::Colors::White());
-		// virtual void drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White(), rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
+		virtual void drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White(), rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
 		//  --------------------
 
 		// ------ RENDERING

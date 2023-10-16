@@ -2,13 +2,8 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/camera/perspective.hpp>
+#include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
-
-//
-// #include <rawrbox/render_temp/resources/font.hpp>
-// #include <rawrbox/render_temp/resources/svg.hpp>
-//
-// #include <rawrbox/render_temp/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 
 #include <stencil/game.hpp>
@@ -43,7 +38,7 @@ namespace stencil {
 
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
-		// rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		// rawrbox::RESOURCES::addLoader<rawrbox::SVGLoader>();
 		//  --------------
 
@@ -53,16 +48,15 @@ namespace stencil {
 	void Game::loadContent() {
 		std::array initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("assets/textures/screem.png", 0),
-		    // std::make_pair<std::string, uint32_t>("assets/fonts/droidsans.ttf", 0),
-		    // std::make_pair<std::string, uint32_t>("assets/fonts/visitor1.ttf", 0),
-		    // std::make_pair<std::string, uint32_t>("assets/fonts/LiberationMono-Regular.ttf", 0),
-		    // std::make_pair<std::string, uint32_t>("assets/fonts/LiberationMono-Bold.ttf", 0),
-		    // std::make_pair<std::string, uint32_t>("assets/fonts/LiberationMono-Italic.ttf", 0),
-		    // std::make_pair<std::string, uint32_t>("assets/textures/screem.png", 0),
-		    // std::make_pair<std::string, uint32_t>("assets/textures/meow3.gif", 0),
+		    std::make_pair<std::string, uint32_t>("assets/fonts/droidsans.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("assets/fonts/visitor1.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("assets/fonts/LiberationMono-Regular.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("assets/fonts/LiberationMono-Bold.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("assets/fonts/LiberationMono-Italic.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("assets/textures/meow3.gif", 0),
 		    // std::make_pair<std::string, uint32_t>("assets/textures/rawrbox.svg", 0),
 		    // std::make_pair<std::string, uint32_t>("assets/textures/cawt.webp", 0),
-		    // std::make_pair<std::string, uint32_t>("assets/textures/instance_test.png", 64),
+		    std::make_pair<std::string, uint32_t>("assets/textures/instance_test.png", 64),
 		};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
@@ -79,14 +73,14 @@ namespace stencil {
 	void Game::contentLoaded() {
 		// Textures ---
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
-		/*this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
 		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/meow3.gif")->get();
 		this->_texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/instance_test.png")->get();
-		this->_texture4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceSVG>("./assets/textures/rawrbox.svg")->get({256, 256});
-		this->_texture5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/cawt.webp")->get<rawrbox::TextureAnimatedBase>();
-		this->_texture5->onEnd += []() {
-			fmt::print("end\n");
-		};
+		/*
+				this->_texture4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceSVG>("./assets/textures/rawrbox.svg")->get({256, 256});
+				this->_texture5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/cawt.webp")->get<rawrbox::TextureAnimatedBase>();
+				this->_texture5->onEnd += []() {
+					fmt::print("end\n");
+				};*/
 
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/droidsans.ttf")->getSize(28);
 		this->_font2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/visitor1.ttf")->getSize(18);
@@ -101,7 +95,7 @@ namespace stencil {
 		// ----
 
 		// Textures ---
-		auto mesh = rawrbox::MeshUtils::generateCube({0, 0, 0}, {2.F, 2.F, 2.F});
+		/*auto mesh = rawrbox::MeshUtils::generateCube({0, 0, 0}, {2.F, 2.F, 2.F});
 		mesh.setTexture(this->_texture3);
 
 		std::random_device prng;
@@ -121,17 +115,18 @@ namespace stencil {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
 		this->_texture = nullptr;
+		this->_texture2 = nullptr;
+		this->_texture3 = nullptr;
 
 		/*this->_model.reset();
 
-		this->_texture = nullptr;
-		this->_texture2 = nullptr;
-		this->_texture3 = nullptr;
-		this->_texture4 = nullptr;
+		this->_texture4 = nullptr;*/
 
 		this->_font = nullptr;
 		this->_font2 = nullptr;
-		this->_font3 = nullptr;*/
+		this->_font3 = nullptr;
+
+		this->_markdown.reset();
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
@@ -245,18 +240,18 @@ namespace stencil {
 		stencil.pushOffset({800, 0});
 		stencil.drawTexture({0, 0}, {100, 100}, *this->_texture);
 		stencil.popOffset();
+
+		stencil.pushOffset({900, 0});
+		stencil.drawTexture({0, 0}, {100, 100}, *this->_texture2);
+		stencil.popOffset();
+
+		stencil.pushOffset({750, 110});
+		stencil.drawTexture({0, 0}, {64, 64}, *this->_texture3, rawrbox::Colors::White(), {}, {1, 1}, static_cast<uint32_t>(this->_counter) % 4);
+		stencil.popOffset();
 		/*
-				stencil.pushOffset({900, 0});
-				stencil.drawTexture({0, 0}, {100, 100}, *this->_texture2);
-				stencil.popOffset();
-
-				stencil.pushOffset({750, 110});
-				stencil.drawTexture({0, 0}, {64, 64}, *this->_texture3, rawrbox::Colors::White(), {}, {1, 1}, static_cast<uint32_t>(this->_counter) % 4);
-				stencil.popOffset();
-
-				stencil.pushOffset({820, 110});
-				stencil.drawTexture({0, 0}, {509 * 0.35F, 404 * 0.35F}, *this->_texture5);
-				stencil.popOffset();*/
+								stencil.pushOffset({820, 110});
+								stencil.drawTexture({0, 0}, {509 * 0.35F, 404 * 0.35F}, *this->_texture5);
+								stencil.popOffset();*/
 		// ---
 
 		// POLYGON ---
@@ -291,7 +286,7 @@ namespace stencil {
 		stencil.popOffset();
 
 		// Text ---
-		/*stencil.pushOffset({20, 200});
+		stencil.pushOffset({20, 200});
 		stencil.drawText(*this->_font, "Cat ipsum dolor sit amet, steal raw zucchini. $£%&", {});
 
 		auto size = this->_font2->getStringSize("Cat!!");
@@ -307,7 +302,7 @@ namespace stencil {
 		_markdown->render(stencil, {0, 90});
 		// -----
 
-		stencil.popOffset();*/
+		stencil.popOffset();
 		/*
 				// SVG ---
 				stencil.pushOffset({50, 450});
@@ -317,6 +312,7 @@ namespace stencil {
 
 				this->_texture2->update();
 				this->_texture5->update();*/
+		this->_texture2->update();
 
 		stencil.render();
 	}
