@@ -3,6 +3,7 @@
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/text/font.hpp>
 #include <rawrbox/render/text/markdown.hpp>
+#include <rawrbox/render/texture/animated.hpp>
 #include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/render/window.hpp>
 
@@ -22,9 +23,9 @@ namespace stencil {
 		rawrbox::TextureBase* _texture = nullptr;
 		rawrbox::TextureBase* _texture2 = nullptr;
 		rawrbox::TextureBase* _texture3 = nullptr;
-		// rawrbox::TextureBase* _texture4 = nullptr;
-		// rawrbox::TextureAnimatedBase* _texture5 = nullptr;
-		//
+		rawrbox::TextureBase* _texture4 = nullptr;
+		rawrbox::TextureAnimatedBase* _texture5 = nullptr;
+
 		rawrbox::Font* _font = nullptr;
 		rawrbox::Font* _font2 = nullptr;
 		rawrbox::Font* _font3 = nullptr;
