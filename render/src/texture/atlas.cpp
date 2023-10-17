@@ -35,15 +35,13 @@ namespace rawrbox {
 
 	// Adapted from : https://stackoverflow.com/questions/59260533/using-texture-atlas-as-texture-array-in-opengl
 	void TextureAtlas::processAtlas() {
-		// Setup --
-		this->_tiles.clear();
-		// -----
-
-		int totalPixels = this->_spriteSize * this->_spriteSize * this->_channels;
+		/*int totalPixels = this->_spriteSize * this->_spriteSize * this->_channels;
 		std::vector<uint8_t> tile(totalPixels);
 
 		int tilesX = this->_size.x / this->_spriteSize;
 		int tilesY = this->_size.y / this->_spriteSize;
+
+		std::vector<uint8_t> finalPixels = {};
 
 		int tileSizeX = this->_spriteSize * this->_channels;
 		int rowLen = tilesX * tileSizeX;
@@ -57,8 +55,20 @@ namespace rawrbox {
 					    tile.begin() + row * tileSizeX);
 				}
 
-				this->_tiles.push_back(tile);
+				finalPixels.insert(finalPixels.end(), tile.begin(), tile.end());
 			}
+		}
+
+		// this->_pixels = finalPixels;*/
+		this->_tiles.clear();
+		this->_tiles.resize(this->total());
+
+		for (size_t i = 0; i < this->total(); ++i) {
+			auto& pix = this->_tiles[i];
+			pix.resize(this->_spriteSize * this->_spriteSize * this->_channels);
+
+			auto offset = i * pix.size();
+			std::copy(this->_pixels.begin() + offset, this->_pixels.begin() + offset + pix.size(), pix.begin());
 		}
 
 		this->_name = "RawrBox::Texture::ATLAS";
@@ -68,7 +78,7 @@ namespace rawrbox {
 		if (this->_failedToLoad || this->_handle != nullptr) return; // Failed texture is already bound, so skip it
 
 		// Try to determine texture format
-		/*if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) {
+		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) {
 			switch (this->_channels) {
 				case 1:
 					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_R8_UNORM;
@@ -90,15 +100,15 @@ namespace rawrbox {
 		desc.Height = this->_spriteSize;
 		desc.MipLevels = 1;
 		desc.Format = format;
-		desc.ArraySize = this->total();
+		// desc.ArraySize = this->total();
 		desc.Name = this->_name.c_str();
 
 		std::vector<Diligent::TextureSubResData> subresData(this->total());
-		for (uint32_t slice = 0; slice < subresData.size(); ++slice) {
+		for (uint32_t slice = 0; slice < subresData.size(); slice++) {
 			auto& res = subresData[slice];
 
-			res.pData = this->getSprite(slice).data();
-			res.Stride = this->_spriteSize * this->_channels;
+			res.pData = this->_tiles[slice].data();
+			res.Stride = this->_spriteSize * 4;
 		}
 
 		Diligent::TextureData data;
@@ -106,6 +116,6 @@ namespace rawrbox {
 		data.NumSubresources = subresData.size();
 
 		rawrbox::RENDERER->device->CreateTexture(desc, &data, &this->_tex);
-		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);*/
+		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 	}
 } // namespace rawrbox
