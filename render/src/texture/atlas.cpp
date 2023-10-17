@@ -33,33 +33,15 @@ namespace rawrbox {
 	}
 	// --------------------
 
-	// Adapted from : https://stackoverflow.com/questions/59260533/using-texture-atlas-as-texture-array-in-opengl
 	void TextureAtlas::processAtlas() {
-		/*int totalPixels = this->_spriteSize * this->_spriteSize * this->_channels;
-		std::vector<uint8_t> tile(totalPixels);
+		int totalPixels = this->_spriteSize * this->_spriteSize * this->_channels;
 
 		int tilesX = this->_size.x / this->_spriteSize;
 		int tilesY = this->_size.y / this->_spriteSize;
 
-		std::vector<uint8_t> finalPixels = {};
-
 		int tileSizeX = this->_spriteSize * this->_channels;
 		int rowLen = tilesX * tileSizeX;
 
-		auto data = this->_pixels.data();
-		for (int iy = 0; iy < tilesY; ++iy) {
-			for (int ix = 0; ix < tilesX; ++ix) {
-				uint8_t* ptr = data + iy * rowLen * this->_spriteSize + ix * tileSizeX;
-				for (int row = 0; row < this->_spriteSize; ++row) {
-					std::copy(ptr + row * rowLen, ptr + row * rowLen + tileSizeX,
-					    tile.begin() + row * tileSizeX);
-				}
-
-				finalPixels.insert(finalPixels.end(), tile.begin(), tile.end());
-			}
-		}
-
-		// this->_pixels = finalPixels;*/
 		this->_tiles.clear();
 		this->_tiles.resize(this->total());
 
@@ -67,8 +49,15 @@ namespace rawrbox {
 			auto& pix = this->_tiles[i];
 			pix.resize(this->_spriteSize * this->_spriteSize * this->_channels);
 
-			auto offset = i * pix.size();
-			std::copy(this->_pixels.begin() + offset, this->_pixels.begin() + offset + pix.size(), pix.begin());
+			auto y = i / tilesX;
+			auto x = i - y * tilesY;
+
+			for (int iy = 0; iy < this->_spriteSize; iy++) {
+				auto offset = (iy + y * this->_spriteSize) * this->_size.x * _channels;
+				offset += x * this->_spriteSize * this->_channels;
+
+				std::copy(this->_pixels.begin() + offset, this->_pixels.begin() + offset + tileSizeX, pix.begin() + iy * tileSizeX);
+			}
 		}
 
 		this->_name = "RawrBox::Texture::ATLAS";
@@ -89,6 +78,21 @@ namespace rawrbox {
 				case 4:
 					format = this->_sRGB ? Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB : Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM;
 			}
+		} else if (this->_channels == 0) {
+			switch (format) {
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_A8_UNORM:
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_R8_UNORM:
+					this->_channels = 1;
+					break;
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RG8_UNORM:
+					this->_channels = 2;
+					break;
+				default:
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM:
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB:
+					this->_channels = 4;
+					break;
+			}
 		}
 
 		Diligent::TextureDesc desc;
@@ -100,15 +104,20 @@ namespace rawrbox {
 		desc.Height = this->_spriteSize;
 		desc.MipLevels = 1;
 		desc.Format = format;
-		// desc.ArraySize = this->total();
+		// NOLINTBEGIN(cppcoreguidelines-pro-type-union-access)
+		desc.ArraySize = this->total();
+		// NOLINTEND(cppcoreguidelines-pro-type-union-access)
 		desc.Name = this->_name.c_str();
 
-		std::vector<Diligent::TextureSubResData> subresData(this->total());
+		// NOLINTBEGIN(cppcoreguidelines-pro-type-union-access)
+		std::vector<Diligent::TextureSubResData> subresData(desc.ArraySize);
+		// NOLINTEND(cppcoreguidelines-pro-type-union-access)
+
 		for (uint32_t slice = 0; slice < subresData.size(); slice++) {
 			auto& res = subresData[slice];
 
 			res.pData = this->_tiles[slice].data();
-			res.Stride = this->_spriteSize * 4;
+			res.Stride = this->_spriteSize * this->_channels;
 		}
 
 		Diligent::TextureData data;
