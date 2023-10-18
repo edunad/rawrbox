@@ -8,7 +8,7 @@ namespace rawrbox {
 		this->_z_near = near;
 		this->_z_far = far;
 
-		this->_projection = rawrbox::Matrix4x4::mtxProj(FOV, static_cast<float>(_wsize.x) / static_cast<float>(_wsize.y), this->_z_near, this->_z_far, false, false); // todo: get homogeneous
+		this->_projection = rawrbox::Matrix4x4::mtxProj(FOV, static_cast<float>(_wsize.x) / static_cast<float>(_wsize.y), this->_z_near, this->_z_far, rawrbox::RENDERER->rightHanded());
 		this->updateMtx();
 	}
 	// NOLINTEND(clang-analyzer-optin.cplusplus.VirtualCall)
@@ -19,7 +19,7 @@ namespace rawrbox {
 		auto at = this->_pos + dir;
 		auto up = this->getUp();
 
-		this->_view = rawrbox::Matrix4x4::mtxLookAt({_pos.x, _pos.y, _pos.z}, {at.x, at.y, at.z}, {up.x, up.y, up.z}, false);
+		this->_view = rawrbox::Matrix4x4::mtxLookAt(this->_pos, at, up, rawrbox::RENDERER->rightHanded());
 	}
 
 	const rawrbox::Vector3f CameraPerspective::worldToScreen(const rawrbox::Vector3f& pos) const {

@@ -26,7 +26,7 @@ namespace rawrbox {
 		PosUVColorVertexData() = default;
 		PosUVColorVertexData(const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, const rawrbox::Color& _cl) : pos(_pos), uv(_uv), color(_cl) {}
 
-		static std::array<Diligent::LayoutElement, 3> vLayout() {
+		static std::vector<Diligent::LayoutElement> vLayout() {
 			return {
 			    // Attribute 0 - Position
 			    Diligent::LayoutElement{0, 0, 2, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX},
@@ -199,8 +199,6 @@ namespace rawrbox {
 		void pushDrawCall();
 		void internalDraw();
 		// --------------------
-
-		void createPipelines(const std::string& name, const std::string& vsh, const std::string& psh, Diligent::PRIMITIVE_TOPOLOGY topology, Diligent::IPipelineState** pipe);
 
 	public:
 		Stencil() = default;

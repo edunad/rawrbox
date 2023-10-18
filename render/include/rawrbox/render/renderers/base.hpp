@@ -75,6 +75,7 @@ namespace rawrbox {
 		virtual void gpuPick(const rawrbox::Vector2i& pos, std::function<void(uint32_t)> callback);
 		// ------
 
-		virtual bool supported();
+		[[nodiscard]] virtual bool supported() const;
+		[[nodiscard]] virtual bool rightHanded() const;
 	};
 } // namespace rawrbox

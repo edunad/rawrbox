@@ -74,6 +74,7 @@ namespace rawrbox {
 	//
 	extern rawrbox::CameraBase* MAIN_CAMERA;
 	extern rawrbox::RendererBase* RENDERER;
+	extern rawrbox::Matrix4x4 TRANSFORM;
 	extern Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> SHADER_FACTORY;
 	//
 	// extern rawrbox::RENDER_DEBUG_MODE RENDERER_DEBUG;

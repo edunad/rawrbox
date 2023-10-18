@@ -2,6 +2,7 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/camera/perspective.hpp>
+#include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/svg.hpp>
 #include <rawrbox/render/resources/texture.hpp>
@@ -23,7 +24,7 @@ namespace stencil {
 		    Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_COUNT, [this]() { this->drawOverlay(); }, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
-		this->_window->skipIntros(true);
+		// this->_window->skipIntros(true);
 		this->_window->onIntroCompleted += [this]() {
 			this->loadContent();
 		};
@@ -32,12 +33,6 @@ namespace stencil {
 	void Game::init() {
 		if (this->_window == nullptr) return;
 
-		// Setup camera
-		auto cam = this->_window->setupCamera<rawrbox::CameraPerspective>(this->_window->getSize());
-		cam->setPos({-2.F, 5.F, -3.5F});
-		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
-		// --------------
-
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
@@ -45,6 +40,12 @@ namespace stencil {
 		//  --------------
 
 		this->_window->initializeEngine();
+
+		// Setup camera
+		auto cam = this->_window->setupCamera<rawrbox::CameraPerspective>(this->_window->getSize());
+		cam->setPos({-2.F, 5.F, -3.5F});
+		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
+		//   --------------
 	}
 
 	void Game::loadContent() {
@@ -97,18 +98,18 @@ namespace stencil {
 		// ----
 
 		// Textures ---
-		/*auto mesh = rawrbox::MeshUtils::generateCube({0, 0, 0}, {2.F, 2.F, 2.F});
+		auto mesh = rawrbox::MeshUtils::generateCube({0, 0, 0}, {2.F, 2.F, 2.F});
 		mesh.setTexture(this->_texture3);
 
-		std::random_device prng;
+		/*std::random_device prng;
 		std::uniform_int_distribution<uint16_t> dist(0, 4);
 		for (auto& vertice : mesh.vertices) {
 			vertice.setAtlasId(dist(prng));
-		}
+		}*/
 
 		this->_model->addMesh(mesh);
 		this->_model->upload();
-		// ----*/
+		// ----
 
 		this->_ready = true;
 	}
@@ -121,9 +122,7 @@ namespace stencil {
 		this->_texture3 = nullptr;
 		this->_texture4 = nullptr;
 
-		/*this->_model.reset();
-
-		*/
+		this->_model.reset();
 
 		this->_font = nullptr;
 		this->_font2 = nullptr;
@@ -144,8 +143,8 @@ namespace stencil {
 	}
 
 	void Game::drawWorld() {
-		/*if (!this->_ready || this->_model == nullptr) return;
-		this->_model->draw();*/
+		if (!this->_ready || this->_model == nullptr) return;
+		this->_model->draw();
 	}
 
 	void Game::drawOverlay() {
@@ -334,9 +333,9 @@ namespace stencil {
 		this->_window->update();
 
 		if (this->_ready) {
-			/*if (this->_model != nullptr) {
+			if (this->_model != nullptr) {
 				this->_model->setEulerAngle({0, rawrbox::MathUtils::toRad(this->_counter * 20.F), rawrbox::MathUtils::toRad(this->_counter * 10.F)});
-			}*/
+			}
 
 			this->_counter += 0.1F;
 		}

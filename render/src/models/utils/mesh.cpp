@@ -19,8 +19,8 @@ namespace rawrbox {
 		mesh.setPos(a);
 
 		std::array<rawrbox::VertexData, 2> buff = {
-		    rawrbox::VertexData(a, {0, 0}, {}, col),
-		    rawrbox::VertexData(b, {0, 0}, {}, col),
+		    rawrbox::VertexData(a, rawrbox::Vector2f(), {}, col),
+		    rawrbox::VertexData(b, rawrbox::Vector2f(), {}, col),
 		};
 
 		std::array<uint16_t, 2>
@@ -87,10 +87,10 @@ namespace rawrbox {
 
 		rawrbox::Vector2f hSize = size / 2.F;
 		std::array<rawrbox::VertexData, 4> buff = {
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, 0), {0, 1}, {rawrbox::PackUtils::packNormal(1, 0, 0), 0}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, 0), {1, 0}, {rawrbox::PackUtils::packNormal(1, 0, 0), 0}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, 0), {0, 0}, {rawrbox::PackUtils::packNormal(1, 0, 0), 0}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, 0), {1, 1}, {rawrbox::PackUtils::packNormal(1, 0, 0), 0}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, 0), rawrbox::Vector2f(0, 1), {rawrbox::PackUtils::packNormal(1, 0, 0), 0}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, 0), rawrbox::Vector2f(1, 0), {rawrbox::PackUtils::packNormal(1, 0, 0), 0}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, 0), rawrbox::Vector2f(0, 0), {rawrbox::PackUtils::packNormal(1, 0, 0), 0}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, 0), rawrbox::Vector2f(1, 1), {rawrbox::PackUtils::packNormal(1, 0, 0), 0}, cl),
 		};
 
 		std::array<uint16_t, 6> inds{
@@ -129,40 +129,40 @@ namespace rawrbox {
 
 		std::array<rawrbox::VertexData, 24> buff = {
 		    // Back
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), {0, 0}, {nmrlB, nmrlB}, cl),   // A
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), {1, 1}, {nmrlB, nmrlB}, cl), // B
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, hSize.z), {1, 0}, {nmrlB, nmrlB}, cl),  // C
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), {0, 1}, {nmrlB, nmrlB}, cl),  // D
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), rawrbox::Vector2f(0, 0), {nmrlB, nmrlB}, cl),   // A
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), rawrbox::Vector2f(1, 1), {nmrlB, nmrlB}, cl), // B
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, hSize.z), rawrbox::Vector2f(1, 0), {nmrlB, nmrlB}, cl),  // C
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), rawrbox::Vector2f(0, 1), {nmrlB, nmrlB}, cl),  // D
 
 		    // Front
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, -hSize.z), {0, 0}, {nmrlF, nmrlF}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, -hSize.z), {1, 1}, {nmrlF, nmrlF}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, -hSize.z), {1, 0}, {nmrlF, nmrlF}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, -hSize.z), {0, 1}, {nmrlF, nmrlF}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, -hSize.z), rawrbox::Vector2f(0, 0), {nmrlF, nmrlF}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, -hSize.z), rawrbox::Vector2f(1, 1), {nmrlF, nmrlF}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, -hSize.z), rawrbox::Vector2f(1, 0), {nmrlF, nmrlF}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, -hSize.z), rawrbox::Vector2f(0, 1), {nmrlF, nmrlF}, cl),
 
 		    // Right
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, -hSize.z), {0, 0}, {nmrlR, nmrlR}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), {1, 1}, {nmrlR, nmrlR}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), {1, 0}, {nmrlR, nmrlR}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, -hSize.z), {0, 1}, {nmrlR, nmrlR}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, -hSize.z), rawrbox::Vector2f(0, 0), {nmrlR, nmrlR}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), rawrbox::Vector2f(1, 1), {nmrlR, nmrlR}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), rawrbox::Vector2f(1, 0), {nmrlR, nmrlR}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, -hSize.z), rawrbox::Vector2f(0, 1), {nmrlR, nmrlR}, cl),
 
 		    // Left
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, hSize.z), {0, 0}, {nmrlL, nmrlL}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, -hSize.z), {1, 1}, {nmrlL, nmrlL}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, -hSize.z), {1, 0}, {nmrlL, nmrlL}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), {0, 1}, {nmrlL, nmrlL}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, hSize.z), rawrbox::Vector2f(0, 0), {nmrlL, nmrlL}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, -hSize.z), rawrbox::Vector2f(1, 1), {nmrlL, nmrlL}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, -hSize.z), rawrbox::Vector2f(1, 0), {nmrlL, nmrlL}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), rawrbox::Vector2f(0, 1), {nmrlL, nmrlL}, cl),
 
 		    // Top
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, hSize.z), {0, 0}, {nmrlT, nmrlT}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, -hSize.z), {1, 1}, {nmrlT, nmrlT}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), {1, 0}, {nmrlT, nmrlT}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, -hSize.z), {0, 1}, {nmrlT, nmrlT}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, hSize.z), rawrbox::Vector2f(0, 0), {nmrlT, nmrlT}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, -hSize.z), rawrbox::Vector2f(1, 1), {nmrlT, nmrlT}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), rawrbox::Vector2f(1, 0), {nmrlT, nmrlT}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, -hSize.z), rawrbox::Vector2f(0, 1), {nmrlT, nmrlT}, cl),
 
 		    // Bottom
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, -hSize.z), {0, 0}, {nmrlBT, nmrlBT}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), {1, 1}, {nmrlBT, nmrlBT}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, -hSize.z), {1, 0}, {nmrlBT, nmrlBT}, cl),
-		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), {0, 1}, {nmrlBT, nmrlBT}, cl)};
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, -hSize.z), rawrbox::Vector2f(0, 0), {nmrlBT, nmrlBT}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), rawrbox::Vector2f(1, 1), {nmrlBT, nmrlBT}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, -hSize.z), rawrbox::Vector2f(1, 0), {nmrlBT, nmrlBT}, cl),
+		    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), rawrbox::Vector2f(0, 1), {nmrlBT, nmrlBT}, cl)};
 
 		std::vector<uint16_t> inds = {};
 		constexpr std::array<uint16_t, 6> cubeInd = {
@@ -267,7 +267,7 @@ namespace rawrbox {
 		auto hSize = size / 2.F;
 		hSize.y /= 2.F;
 
-		buff[ratio] = rawrbox::VertexData(rawrbox::Vector3f(0, hSize.y, 0), {0, 0}, cl);
+		buff[ratio] = rawrbox::VertexData(rawrbox::Vector3f(0, hSize.y, 0), rawrbox::Vector2f(0, 0), cl);
 
 		for (uint32_t ii = 0; ii < ratio; ++ii) {
 			const float angle = step * ii;
@@ -275,7 +275,7 @@ namespace rawrbox {
 			const float angX = std::cos(angle) * hSize.x;
 			const float angZ = std::sin(angle) * hSize.z;
 
-			buff[ii] = rawrbox::VertexData(rawrbox::Vector3f(angZ, -hSize.y, angX), {0, 0}, cl);
+			buff[ii] = rawrbox::VertexData(rawrbox::Vector3f(angZ, -hSize.y, angX), rawrbox::Vector2f(0, 0), cl);
 
 			index[ii * 3 + 0] = uint16_t(ratio);
 			index[ii * 3 + 1] = uint16_t((ii + 1) % ratio);
@@ -333,8 +333,8 @@ namespace rawrbox {
 			const float angX = std::cos(angle) * hSize.x;
 			const float angZ = std::sin(angle) * hSize.z;
 
-			buff[ii] = rawrbox::VertexData(rawrbox::Vector3f(angX, hSize.y, angZ), {0, 0}, cl);
-			buff[ii + ratio] = rawrbox::VertexData(rawrbox::Vector3f(angX, -hSize.y, angZ), {0, 0}, cl);
+			buff[ii] = rawrbox::VertexData(rawrbox::Vector3f(angX, hSize.y, angZ), rawrbox::Vector2f(0, 0), cl);
+			buff[ii + ratio] = rawrbox::VertexData(rawrbox::Vector3f(angX, -hSize.y, angZ), rawrbox::Vector2f(0, 0), cl);
 
 			index[ii * 6 + 0] = uint16_t(ii + ratio);
 			index[ii * 6 + 1] = uint16_t((ii + 1) % ratio);
@@ -383,7 +383,7 @@ namespace rawrbox {
 		rawrbox::Mesh mesh;
 		mesh.setPos(pos);
 
-		const float golden = 1.6180339887F;
+		/*const float golden = 1.6180339887F;
 		const float len = std::sqrt(golden * golden + 1.0F);
 		const float hSize = size / 2.F;
 		const float ss = 1.0F / len * hSize;
@@ -460,14 +460,14 @@ namespace rawrbox {
 			trilist[ii] = uint16_t(ii);
 		}
 
-		uint32_t numLineListIndices = bgfx::topologyConvert(
-		    bgfx::TopologyConvert::TriListToLineList, nullptr, 0, trilist.data(), numIndices, false);
+			uint32_t numLineListIndices = bgfx::topologyConvert(
+			    bgfx::TopologyConvert::TriListToLineList, nullptr, 0, trilist.data(), numIndices, false);
 
-		std::vector<uint16_t> inds = {};
-		inds.resize(numLineListIndices * sizeof(uint16_t));
+			std::vector<uint16_t> inds = {};
+			inds.resize(numLineListIndices * sizeof(uint16_t));
 
-		bgfx::topologyConvert(
-		    bgfx::TopologyConvert::TriListToLineList, inds.data(), numLineListIndices * sizeof(uint16_t), trilist.data(), numIndices, false);
+			bgfx::topologyConvert(
+			    bgfx::TopologyConvert::TriListToLineList, inds.data(), numLineListIndices * sizeof(uint16_t), trilist.data(), numIndices, false);
 
 		mesh.baseVertex = 0;
 		mesh.baseIndex = 0;
@@ -483,7 +483,7 @@ namespace rawrbox {
 		// -----
 
 		mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
-		mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
+		mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());*/
 		return mesh;
 	}
 
@@ -491,7 +491,7 @@ namespace rawrbox {
 		rawrbox::Mesh mesh;
 		mesh.setPos(pos);
 
-		std::vector<rawrbox::VertexData> buff = {};
+		/*std::vector<rawrbox::VertexData> buff = {};
 		auto uvScale = 1.0F / static_cast<float>(subDivs - 1);
 
 		for (uint32_t y = 0; y < subDivs; y++) {
@@ -540,7 +540,7 @@ namespace rawrbox {
 
 		mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
 		mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
-
+*/
 		return mesh;
 	}
 
@@ -561,7 +561,7 @@ namespace rawrbox {
 				auto col = cl;
 
 				if (j == 0 || i == 0 || j >= size || i >= size) col = borderCl;
-				buff.emplace_back(rawrbox::VertexData{rawrbox::Vector3f(pos.x - static_cast<float>(size / 2), pos.y, pos.z - static_cast<float>(size / 2)) + rawrbox::Vector3f(x, y, z), {0, 0}, col});
+				buff.emplace_back(rawrbox::Vector3f(pos.x - static_cast<float>(size / 2), pos.y, pos.z - static_cast<float>(size / 2)) + rawrbox::Vector3f(x, y, z), rawrbox::Vector2f(0, 0), col);
 			}
 		}
 

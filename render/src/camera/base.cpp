@@ -61,7 +61,10 @@ namespace rawrbox {
 	}
 
 	const rawrbox::Matrix4x4 CameraBase::getProjViewMtx() const {
-		return this->_projection * this->_view;
+		rawrbox::Matrix4x4 mtx = this->_projection * this->_view;
+		mtx.transpose();
+
+		return mtx;
 	}
 
 	void CameraBase::update() {}

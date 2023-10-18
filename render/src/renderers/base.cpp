@@ -252,8 +252,13 @@ namespace rawrbox {
 	// ------
 
 	// Is it supported by the GPU?
-	bool RendererBase::supported() {
+	bool RendererBase::supported() const {
 		// const auto& Features = m_pDevice->GetDeviceInfo().Features;
 		return true;
+	}
+
+	bool RendererBase::rightHanded() const {
+		if (this->device == nullptr) throw std::runtime_error("[RawrBox-RendererBase] Device not initialized");
+		return this->device->GetDeviceInfo().IsGLDevice();
 	}
 } // namespace rawrbox

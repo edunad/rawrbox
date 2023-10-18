@@ -414,7 +414,7 @@ namespace rawrbox {
 		// Setup shader pipeline
 		if (rawrbox::SHADER_FACTORY == nullptr) {
 			auto dirs = rawrbox::PathUtils::glob("assets/shaders", true);
-			auto paths = fmt::format("{}", fmt::join(dirs, ","));
+			auto paths = fmt::format("{}", fmt::join(dirs, ";"));
 
 			this->_pEngineFactory->CreateDefaultShaderSourceStreamFactory(paths.c_str(), &rawrbox::SHADER_FACTORY);
 		}

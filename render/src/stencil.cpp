@@ -9,6 +9,8 @@
 #include <fmt/format.h>
 #include <utf8.h>
 
+#include "rawrbox/render/utils/pipeline.hpp"
+
 namespace rawrbox {
 	Stencil::Stencil(const rawrbox::Vector2i& size) : _windowSize(size) {
 		this->_streamingVB = std::make_unique<rawrbox::StreamingBuffer>("RawrBox::Stencil::VertexBuffer", Diligent::BIND_VERTEX_BUFFER, MaxVertsInStreamingBuffer * static_cast<uint32_t>(sizeof(rawrbox::PosUVColorVertexData)), 1);
@@ -24,98 +26,30 @@ namespace rawrbox {
 		this->_drawCalls.clear();
 	}
 
-	void Stencil::createPipelines(const std::string& name, const std::string& vsh, const std::string& psh, Diligent::PRIMITIVE_TOPOLOGY topology, Diligent::IPipelineState** pipe) {
-		// Create pipe info ----
-		Diligent::GraphicsPipelineStateCreateInfo info;
-		info.PSODesc.Name = fmt::format("RawrBox::Stencil::{}", name).c_str();
-		info.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
-		info.GraphicsPipeline.NumRenderTargets = 1;
-
-		auto desc = rawrbox::RENDERER->swapChain->GetDesc();
-		info.GraphicsPipeline.RTVFormats[0] = desc.ColorBufferFormat;
-		info.GraphicsPipeline.DSVFormat = desc.DepthBufferFormat;
-
-		info.GraphicsPipeline.PrimitiveTopology = topology;
-		info.GraphicsPipeline.RasterizerDesc.CullMode = Diligent::CULL_MODE_NONE;
-		info.GraphicsPipeline.DepthStencilDesc.DepthEnable = false; // No depth test
-		info.GraphicsPipeline.RasterizerDesc.ScissorEnable = true;
-
-		Diligent::BlendStateDesc BlendState;
-		BlendState.RenderTargets[0].BlendEnable = true;
-		BlendState.RenderTargets[0].SrcBlend = Diligent::BLEND_FACTOR_SRC_ALPHA;
-		BlendState.RenderTargets[0].DestBlend = Diligent::BLEND_FACTOR_INV_SRC_ALPHA;
-		info.GraphicsPipeline.BlendDesc = BlendState;
-		// -----
-
-		// Create the shaders (move this to a loader) ----
-		Diligent::ShaderCreateInfo ShaderCI;
-		ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
-		ShaderCI.Desc.UseCombinedTextureSamplers = true; // (g_Texture + g_Texture_sampler combination)
-		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
-
-		Diligent::RefCntAutoPtr<Diligent::IShader> pVS;
-		{
-			ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
-			ShaderCI.EntryPoint = "main";
-			ShaderCI.Desc.Name = fmt::format("RawrBox::Stencil::{}::VS", name).c_str();
-			ShaderCI.FilePath = vsh.c_str();
-
-			rawrbox::RENDERER->device->CreateShader(ShaderCI, &pVS);
-		}
-
-		// Create a pixel shader
-		Diligent::RefCntAutoPtr<Diligent::IShader> pPS;
-		{
-			ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
-			ShaderCI.EntryPoint = "main";
-			ShaderCI.Desc.Name = fmt::format("RawrBox::Stencil::{}::PS", name).c_str();
-			ShaderCI.FilePath = psh.c_str();
-
-			rawrbox::RENDERER->device->CreateShader(ShaderCI, &pPS);
-		}
-		// ----------------------
-
-		info.pVS = pVS;
-		info.pPS = pPS;
-
-		// Layout
-		auto layout = PosUVColorVertexData::vLayout();
-		info.GraphicsPipeline.InputLayout.LayoutElements = layout.data();
-		info.GraphicsPipeline.InputLayout.NumElements = static_cast<uint32_t>(layout.size());
-		// ----
-
-		// Resources ----
-		std::array<Diligent::ShaderResourceVariableDesc, 1> vars =
-		    {
-			Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
-
-		info.PSODesc.ResourceLayout.Variables = vars.data();
-		info.PSODesc.ResourceLayout.NumVariables = static_cast<uint32_t>(vars.size());
-
-		Diligent::SamplerDesc SamLinearClampDesc{
-		    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,
-		    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
-
-		std::array<Diligent::ImmutableSamplerDesc, 1> samplers =
-		    {
-			Diligent::ImmutableSamplerDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", SamLinearClampDesc}};
-
-		info.PSODesc.ResourceLayout.ImmutableSamplers = samplers.data();
-		info.PSODesc.ResourceLayout.NumImmutableSamplers = static_cast<uint32_t>(samplers.size());
-		info.PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
-		// ---------------------
-
-		rawrbox::RENDERER->device->CreateGraphicsPipelineState(info, pipe);
-		(*pipe)->CreateShaderResourceBinding(&this->_SRB, true);
-		// ----------------
-	}
-
 	void Stencil::upload() {
 		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
 
-		this->createPipelines("2D", "stencil.vsh", "stencil.psh", Diligent::PRIMITIVE_TOPOLOGY::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, &this->_2dPipeline);
-		this->createPipelines("2DLine", "stencil.vsh", "stencil.psh", Diligent::PRIMITIVE_TOPOLOGY::PRIMITIVE_TOPOLOGY_LINE_LIST, &this->_linePipeline);
-		this->createPipelines("2DText", "stencil.vsh", "stencil_text.psh", Diligent::PRIMITIVE_TOPOLOGY::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, &this->_textPipeline);
+		rawrbox::PipeSettings settings;
+		settings.depth = false;
+		settings.cull = Diligent::CULL_MODE_NONE;
+		settings.psh = "stencil.psh";
+		settings.vsh = "stencil.vsh";
+		settings.scissors = true;
+		settings.layout = rawrbox::PosUVColorVertexData::vLayout();
+		settings.resources = {
+		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
+
+		rawrbox::PipelineUtils::createPipelines("Stencil::2D", settings, &this->_2dPipeline);
+		this->_2dPipeline->CreateShaderResourceBinding(&this->_SRB, true);
+
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
+		rawrbox::PipelineUtils::createPipelines("Stencil::2DLine", settings, &this->_linePipeline);
+		this->_linePipeline->CreateShaderResourceBinding(&this->_SRB, true);
+
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		settings.psh = "stencil_text.psh";
+		rawrbox::PipelineUtils::createPipelines("Stencil::2DText", settings, &this->_textPipeline);
+		this->_textPipeline->CreateShaderResourceBinding(&this->_SRB, true);
 	}
 
 	void Stencil::resize(const rawrbox::Vector2i& size) {

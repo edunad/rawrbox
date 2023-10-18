@@ -56,6 +56,14 @@ namespace rawrbox {
 		this->mtx[15] = other[15];
 	}
 
+	void Matrix4x4::transpose() {
+		this->mtx = {
+		    this->mtx[0], this->mtx[4], this->mtx[8], this->mtx[12],
+		    this->mtx[1], this->mtx[5], this->mtx[9], this->mtx[13],
+		    this->mtx[2], this->mtx[6], this->mtx[10], this->mtx[14],
+		    this->mtx[3], this->mtx[7], this->mtx[11], this->mtx[15]};
+	}
+
 	void Matrix4x4::transpose(const std::array<float, 16>& other) {
 		this->transpose(other.data());
 	}
@@ -302,17 +310,31 @@ namespace rawrbox {
 	// ------
 
 	// STATIC UTILS ----
-	// Based off bx
+
+	// T _11 = 0;
+	// T _12 = 1;
+	// T _13 = 2;
+	// T _14 = 3;
+	// T _21 = 4;
+	// T _22 = 5;
+	// T _23 = 6;
+	// T _24 = 7;
+	// T _31 = 8;
+	// T _32 = 9;
+	// T _33= 10;
+	// T _34 = 11;
+	// T _41 = 12;
+	// T _42 = 13;
+	// T _43 = 14;
+	// T _44 = 15;
 	rawrbox::Matrix4x4 Matrix4x4::mtxLookAt(const rawrbox::Vector3f& _eye, const rawrbox::Vector3f& _at, const rawrbox::Vector3f& _up, bool rightHand) {
 		rawrbox::Matrix4x4 ret;
-		const auto eye = !rightHand ? _eye : -_eye;
-		const auto view = (_at - eye).normalized();
+		const auto view = (rightHand ? _eye - _at : _at - _eye).normalized();
 
 		rawrbox::Vector3f right = {};
 		rawrbox::Vector3f up = {};
 
 		const auto uxv = _up.cross(view);
-
 		if (uxv.dot(uxv) == 0.0F) {
 			right = {!rightHand ? -1.0F : 1.0F, 0.0F, 0.0F};
 		} else {
@@ -336,33 +358,33 @@ namespace rawrbox {
 		ret.mtx[10] = view.z;
 		ret.mtx[11] = 0.F;
 
-		ret.mtx[12] = -right.dot(eye);
-		ret.mtx[13] = -up.dot(eye);
-		ret.mtx[14] = -up.dot(eye);
+		ret.mtx[12] = -right.dot(_eye);
+		ret.mtx[13] = -up.dot(_eye);
+		ret.mtx[14] = -view.dot(_eye);
 		ret.mtx[15] = 1.0F;
 
 		return ret;
 	}
 
-	rawrbox::Matrix4x4 Matrix4x4::mtxProj(float FOV, float aspect, float near, float far, bool homogeneous, bool rightHand) {
+	rawrbox::Matrix4x4 Matrix4x4::mtxProj(float FOV, float aspect, float near, float far, bool rightHand) {
 		rawrbox::Matrix4x4 ret;
 		ret.zero();
 
 		const float height = 1.0F / std::tan(rawrbox::MathUtils::toRad(FOV) * 0.5F);
 		const float width = height * 1.0F / aspect;
 
-		// ----
-		const float diff = far - near;
-		const float aa = homogeneous ? (far + near) / diff : far / diff;
-		const float bb = homogeneous ? (2.0F * far * near) / diff : near * aa;
-
 		ret.mtx[0] = width;
 		ret.mtx[5] = height;
-		ret.mtx[8] = rightHand ? 0.F : -0.F;
-		ret.mtx[9] = rightHand ? 0.F : -0.F;
-		ret.mtx[10] = rightHand ? -aa : aa;
-		ret.mtx[11] = rightHand ? -1.0F : 1.0F;
-		ret.mtx[14] = -bb;
+
+		if (rightHand) {
+			ret.mtx[10] = -(-(far + near) / (far - near));
+			ret.mtx[14] = -2 * near * far / (far - near);
+			ret.mtx[11] = -(-1);
+		} else {
+			ret.mtx[10] = far / (far - near);
+			ret.mtx[14] = -near * far / (far - near);
+			ret.mtx[11] = 1;
+		}
 
 		return ret;
 	}
