@@ -1,6 +1,6 @@
 
 #include <rawrbox/engine/static.hpp>
-#include <rawrbox/render/camera/orbital.hpp>
+#include <rawrbox/render/cameras/orbital.hpp>
 
 namespace rawrbox {
 	CameraOrbital::CameraOrbital(rawrbox::Window& window, float speed, float FOV, float near, float far) : CameraPerspective(window.getSize(), FOV, near, far), _window(&window), _speed(speed) {

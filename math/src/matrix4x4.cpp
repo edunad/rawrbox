@@ -56,12 +56,15 @@ namespace rawrbox {
 		this->mtx[15] = other[15];
 	}
 
-	void Matrix4x4::transpose() {
-		this->mtx = {
+	rawrbox::Matrix4x4 Matrix4x4::transpose() {
+		Matrix4x4 ret = {};
+		ret.mtx = {
 		    this->mtx[0], this->mtx[4], this->mtx[8], this->mtx[12],
 		    this->mtx[1], this->mtx[5], this->mtx[9], this->mtx[13],
 		    this->mtx[2], this->mtx[6], this->mtx[10], this->mtx[14],
 		    this->mtx[3], this->mtx[7], this->mtx[11], this->mtx[15]};
+
+		return ret;
 	}
 
 	void Matrix4x4::transpose(const std::array<float, 16>& other) {

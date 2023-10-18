@@ -30,12 +30,6 @@ namespace rawrbox {
 #endif
 
 	protected:
-		// bgfx::DynamicVertexBufferHandle _vbdh = BGFX_INVALID_HANDLE; // Vertices - Dynamic
-		// bgfx::VertexBufferHandle _vbh = BGFX_INVALID_HANDLE;         // Vertices - Static
-		//
-		// bgfx::DynamicIndexBufferHandle _ibdh = BGFX_INVALID_HANDLE; // Indices - Dynamic
-		// bgfx::IndexBufferHandle _ibh = BGFX_INVALID_HANDLE;         // Indices - Static
-
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _vbh; // Vertices
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _ibh; // Indices
 

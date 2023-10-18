@@ -10,6 +10,7 @@
 #include <rawrbox/render/texture/base.hpp>
 
 // #include <bgfx/bgfx.h>
+#include <RasterizerState.h>
 #include <fmt/printf.h>
 
 #include <cstdint>
@@ -44,7 +45,7 @@ namespace rawrbox {
 		uint16_t totalVertex = 0;
 		uint16_t totalIndex = 0;
 
-		std::vector<rawrbox::VertexData> vertices = {};
+		std::vector<rawrbox::ModelVertexData> vertices = {};
 		std::vector<uint16_t> indices = {};
 		// -------
 
@@ -66,9 +67,8 @@ namespace rawrbox {
 		rawrbox::Color color = rawrbox::Colors::White();
 
 		bool wireframe = false;
-		bool lineMode = false;
 
-		// uint64_t culling = BGFX_STATE_CULL_CW;
+		Diligent::CULL_MODE culling = Diligent::CULL_MODE_FRONT;
 		// uint64_t blending = BGFX_STATE_BLEND_NORMAL;
 		// uint64_t depthTest = BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS;
 
@@ -90,7 +90,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual const std::string& getName() const;
 		virtual void setName(const std::string& name);
 
-		[[nodiscard]] virtual const std::vector<rawrbox::VertexData>& getVertices() const;
+		[[nodiscard]] virtual const std::vector<rawrbox::ModelVertexData>& getVertices() const;
 		[[nodiscard]] virtual const std::vector<uint16_t>& getIndices() const;
 		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const;
 
@@ -135,7 +135,7 @@ namespace rawrbox {
 
 		virtual void setWireframe(bool wireframe);
 
-		virtual void setCulling(uint64_t culling);
+		virtual void setCulling(Diligent::CULL_MODE culling);
 
 		virtual void setDepthTest(uint64_t depthTest);
 

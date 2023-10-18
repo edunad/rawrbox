@@ -125,7 +125,7 @@ namespace rawrbox {
 
 		virtual bool hasMesh(size_t id);
 
-		virtual void setCulling(uint64_t cull, int id = -1);
+		virtual void setCulling(Diligent::CULL_MODE cull, int id = -1);
 		virtual void setWireframe(bool wireframe, int id = -1);
 		virtual void setBlend(uint64_t blend, int id = -1);
 		virtual void setDepthTest(uint64_t depth, int id = -1);

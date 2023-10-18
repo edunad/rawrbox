@@ -44,6 +44,7 @@ namespace rawrbox {
 	rawrbox::CameraBase* MAIN_CAMERA = nullptr;
 	rawrbox::RendererBase* RENDERER = nullptr;
 	rawrbox::Matrix4x4 TRANSFORM = {};
+	bool MTX_RIGHT_HANDED = false;
 
 	Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> SHADER_FACTORY = {};
 	//

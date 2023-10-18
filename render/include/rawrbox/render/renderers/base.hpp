@@ -76,6 +76,5 @@ namespace rawrbox {
 		// ------
 
 		[[nodiscard]] virtual bool supported() const;
-		[[nodiscard]] virtual bool rightHanded() const;
 	};
 } // namespace rawrbox

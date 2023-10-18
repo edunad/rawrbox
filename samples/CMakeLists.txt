@@ -6,7 +6,7 @@ add_custom_target(
 # ------------------
 
 add_subdirectory("001-stencil")
-#add_subdirectory("002-generated-models")
+add_subdirectory("002-generated-models")
 #
 #if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
 #    add_subdirectory("003-assimp")

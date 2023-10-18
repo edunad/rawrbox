@@ -8,17 +8,10 @@
 #include <Graphics/GraphicsTools/interface/MapHelper.hpp>
 #include <Platforms/Basic/interface/DebugUtilities.hpp>
 
-// NOLINTBEGIN(*)
-/*const bgfx::EmbeddedShader clustered_unlit_shaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_clustered_unlit_base),
-    BGFX_EMBEDDED_SHADER(fs_clustered_unlit_base),
-    BGFX_EMBEDDED_SHADER_END()};*/
-// NOLINTEND(*)
-
 namespace rawrbox {
 	constexpr auto MAX_DATA = 4;
 
-	void MaterialBase::setupUniforms() {
+	void MaterialBase::init() {
 		Diligent::BufferDesc CBDesc;
 		CBDesc.Name = "rawrbox::MaterialBase::Uniforms";
 		CBDesc.Size = sizeof(rawrbox::MaterialUniforms);
@@ -32,14 +25,29 @@ namespace rawrbox {
 		rawrbox::PipeSettings settings;
 		settings.psh = "unlit.psh";
 		settings.vsh = "unlit.vsh";
-		settings.cull = Diligent::CULL_MODE_NONE;
-		settings.layout = this->vLayout();
+		settings.cull = Diligent::CULL_MODE_FRONT;
+		settings.layout = this->vLayout().first;
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
-		rawrbox::PipelineUtils::createPipelines("Model::Base", settings, &this->_pipeline);
-		this->_pipeline->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(this->_uniforms);
-		this->_pipeline->CreateShaderResourceBinding(&this->_SRB, true);
+		rawrbox::PipelineUtils::createPipelines("Model::Base", settings, &this->_pipelines["base"]);
+
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
+		settings.cull = Diligent::CULL_MODE_NONE;
+		rawrbox::PipelineUtils::createPipelines("Model::Base::Line", settings, &this->_pipelines["line"]);
+
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		settings.cull = Diligent::CULL_MODE_BACK;
+		rawrbox::PipelineUtils::createPipelines("Model::Base::CullBack", settings, &this->_pipelines["base-back-cull"]);
+
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		settings.cull = Diligent::CULL_MODE_NONE;
+		rawrbox::PipelineUtils::createPipelines("Model::Base::CullNone", settings, &this->_pipelines["base-no-cull"]);
+
+		for (auto& pipe : this->_pipelines) {
+			pipe.second->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(this->_uniforms);
+			pipe.second->CreateShaderResourceBinding(&this->_SRB, true);
+		}
 		// -----
 
 		/*this->registerUniform("s_albedo", bgfx::UniformType::Sampler);
@@ -51,110 +59,36 @@ namespace rawrbox {
 	}
 
 	MaterialBase::~MaterialBase() {
-		/*RAWRBOX_DESTROY(this->_program);
-		for (auto& handle : this->_uniforms) {
-			RAWRBOX_DESTROY(handle.second);
-		}*/
-	}
-
-	/*void MaterialBase::registerUniform(const std::string& name, bgfx::UniformType::Enum type, uint16_t num) {
-		auto handl = bgfx::createUniform(name.c_str(), type, num);
-		if (!bgfx::isValid(handl)) throw std::runtime_error(fmt::format("[RawrBox-MaterialBase] Failed to create uniform '{}'", name));
-		this->_uniforms[name] = handl;
-	}
-
-	bgfx::UniformHandle& MaterialBase::getUniform(const std::string& name) {
-		auto fnd = this->_uniforms.find(name);
-		if (fnd == this->_uniforms.end()) throw std::runtime_error(fmt::format("[RawrBox-MaterialBase] Failed to find uniform {}, did you call upload()?", name));
-		return fnd->second;
-	}*/
-
-	void MaterialBase::setUniformData(const std::string& name, const std::vector<rawrbox::Matrix4x4>& data) {
-		/*auto fnd = this->_uniforms.find(name);
-		if (fnd == this->_uniforms.end()) return;
-
-		bgfx::setUniform(fnd->second, &data.front(), static_cast<uint16_t>(data.size()));*/
-	}
-
-	Diligent::float4x4 GetAdjustedProjectionMatrix(float FOV, float NearPlane, float FarPlane) {
-		const auto& SCDesc = rawrbox::RENDERER->swapChain->GetDesc();
-
-		float AspectRatio = static_cast<float>(SCDesc.Width) / static_cast<float>(SCDesc.Height);
-		float XScale = 0, YScale = 0;
-
-		if (SCDesc.PreTransform == Diligent::SURFACE_TRANSFORM_ROTATE_90 ||
-		    SCDesc.PreTransform == Diligent::SURFACE_TRANSFORM_ROTATE_270 ||
-		    SCDesc.PreTransform == Diligent::SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_90 ||
-		    SCDesc.PreTransform == Diligent::SURFACE_TRANSFORM_HORIZONTAL_MIRROR_ROTATE_270) {
-			// When the screen is rotated, vertical FOV becomes horizontal FOV
-			XScale = 1.F / std::tan(FOV / 2.F);
-			// Aspect ratio is inversed
-			YScale = XScale * AspectRatio;
-		} else {
-			YScale = 1.F / std::tan(FOV / 2.F);
-			XScale = YScale / AspectRatio;
+		for (auto& pipes : this->_pipelines) {
+			RAWRBOX_DESTROY(pipes.second);
 		}
 
-		Diligent::float4x4 Proj;
-		Proj._11 = XScale;
-		Proj._22 = YScale;
-		Proj.SetNearFarClipPlanes(NearPlane, FarPlane, rawrbox::RENDERER->device->GetDeviceInfo().IsGLDevice());
-		return Proj;
+		this->_pipelines.clear();
 	}
 
-	void MaterialBase::bind(const rawrbox::Mesh& mesh) {
+	void MaterialBase::bindUniforms(const rawrbox::Mesh& mesh) {
 		auto context = rawrbox::RENDERER->context;
-
-		Diligent::float4x4 CubeModelTransform;
-
-		// Camera is at (0, 0, -5) looking along the Z axis
-		Diligent::float4x4 View = Diligent::float4x4::Translation(0.F, 0.0F, 5.0F);
-
-		// Get projection matrix adjusted to the current screen orientation
-		auto Proj = GetAdjustedProjectionMatrix(Diligent::PI_F / 4.0F, 0.1F, 100.F);
 
 		// SETUP UNIFORMS ----------------------------
 		Diligent::MapHelper<rawrbox::MaterialUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 		// Map the buffer and write current world-view-projection matrix
 
+		auto tTransform = rawrbox::TRANSFORM.transpose();
+		auto tProj = rawrbox::MAIN_CAMERA->getProjMtx().transpose();
+		auto tView = rawrbox::MAIN_CAMERA->getViewMtx().transpose();
+		auto tWorldView = rawrbox::MAIN_CAMERA->getProjViewMtx().transpose();
+
 		*CBConstants = {
-		    rawrbox::TRANSFORM,
-		    rawrbox::MAIN_CAMERA->getProjMtx(),
-		    rawrbox::MAIN_CAMERA->getViewMtx(),
-		    rawrbox::TRANSFORM * rawrbox::MAIN_CAMERA->getProjViewMtx(),
-		};
+		    // CAMERA -------
+		    tTransform,
+		    tProj,
+		    tView,
+		    tTransform * tWorldView,
+		    // --------------
+		    mesh.color};
 		// ----------------------------
-
-		if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.lineMode && !mesh.wireframe) {
-			mesh.texture->update(); // Update texture
-
-			this->_SRB->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(mesh.texture->getHandle());
-			// bgfx::setUniform(this->getUniform("u_tex_flags"), mesh.texture->getData().data());
-		} else {
-			this->_SRB->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(rawrbox::WHITE_TEXTURE->getHandle());
-		}
-
-		// Bind extra renderer uniforms ---
-		rawrbox::RENDERER->bindRenderUniforms();
-		// ---
-
-		context->SetPipelineState(this->_pipeline);
-		context->CommitShaderResources(this->_SRB, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-		/*if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.lineMode && !mesh.wireframe) {
-			mesh.texture->update(); // Update texture
-
-			bgfx::setUniform(this->getUniform("u_tex_flags"), mesh.texture->getData().data());
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->getUniform("s_albedo"), mesh.texture->getHandle());
-		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_ALBEDO, this->getUniform("s_albedo"), rawrbox::WHITE_TEXTURE->getHandle());
-		}
-
-		if (mesh.displacementTexture != nullptr && mesh.displacementTexture->isValid()) {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->getUniform("s_displacement"), mesh.displacementTexture->getHandle());
-		} else {
-			bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->getUniform("s_displacement"), rawrbox::BLACK_TEXTURE->getHandle());
-		}
+		/*
+		// bgfx::setUniform(this->getUniform("u_tex_flags"), mesh.texture->getData().data());
 
 		// Color override
 		bgfx::setUniform(this->getUniform("u_colorOffset"), mesh.color.data().data());
@@ -187,6 +121,42 @@ namespace rawrbox {
 		// ---*/
 	}
 
+	void MaterialBase::bindPipeline(const rawrbox::Mesh& mesh) {
+		auto context = rawrbox::RENDERER->context;
+
+		if (mesh.wireframe) {
+			context->SetPipelineState(this->_pipelines["line"]);
+		} else {
+			if (mesh.culling == Diligent::CULL_MODE_NONE) {
+				context->SetPipelineState(this->_pipelines["base-no-cull"]);
+			} else {
+				context->SetPipelineState(mesh.culling == Diligent::CULL_MODE_FRONT ? this->_pipelines["base"] : this->_pipelines["base-back-cull"]);
+			}
+		}
+	}
+
+	void MaterialBase::bind(const rawrbox::Mesh& mesh) {
+		auto context = rawrbox::RENDERER->context;
+
+		if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
+			mesh.texture->update(); // Update texture
+			this->_SRB->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(mesh.texture->getHandle());
+		} else {
+			this->_SRB->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(rawrbox::WHITE_TEXTURE->getHandle());
+		}
+
+		/*if (mesh.displacementTexture != nullptr && mesh.displacementTexture->isValid()) {
+					bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->getUniform("s_displacement"), mesh.displacementTexture->getHandle());
+				} else {
+					bgfx::setTexture(rawrbox::SAMPLE_MAT_DISPLACEMENT, this->getUniform("s_displacement"), rawrbox::BLACK_TEXTURE->getHandle());
+				}*/
+
+		this->bindPipeline(mesh);
+		this->bindUniforms(mesh);
+
+		context->CommitShaderResources(this->_SRB, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	}
+
 	void MaterialBase::bind(Diligent::ITextureView* texture) {
 		if (texture != nullptr) {
 			this->_SRB->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(texture);
@@ -195,21 +165,11 @@ namespace rawrbox {
 		}
 	}
 
-	void MaterialBase::postProcess() {
-		/*if (!bgfx::isValid(this->_program)) throw std::runtime_error("[RawrBox-MaterialBase] Invalid program, did you call 'upload'?");
-		bgfx::submit(rawrbox::CURRENT_VIEW_ID, this->_program);*/
-	}
-
-	void MaterialBase::upload() {
-		this->setupUniforms();
-		// rawrbox::RenderUtils::buildShader(clustered_unlit_shaders, this->_program);
-	}
-
 	uint32_t MaterialBase::supports() const {
 		return rawrbox::MaterialFlags::NONE;
 	}
 
-	const std::vector<Diligent::LayoutElement> MaterialBase::vLayout() const {
-		return rawrbox::VertexData::vLayout();
+	const std::pair<std::vector<Diligent::LayoutElement>, uint32_t> MaterialBase::vLayout() const {
+		return {rawrbox::VertexData::vLayout(), rawrbox::VertexData::getSizeOf()};
 	}
 } // namespace rawrbox

@@ -169,26 +169,35 @@ namespace rawrbox {
 		if (this->isUploaded()) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
 
 		auto device = rawrbox::RENDERER->device;
+		auto context = rawrbox::RENDERER->context;
 
 		// Generate buffers ----
 		this->_isDynamic = dynamic;
 
 		auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
 		auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
+		auto layout = this->_material->vLayout();
 
 		// VERT ----
-
 		Diligent::BufferDesc VertBuffDesc;
 		VertBuffDesc.Name = "RawrBox::Buffer::Vertex";
 		VertBuffDesc.Usage = dynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_IMMUTABLE;
 		VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-		VertBuffDesc.Size = vertSize * sizeof(this->_mesh->vertices[0]);
+		VertBuffDesc.Size = dynamic ? 16000 : vertSize * layout.second;
+		VertBuffDesc.CPUAccessFlags = dynamic ? Diligent::CPU_ACCESS_WRITE : Diligent::CPU_ACCESS_NONE;
 
-		Diligent::BufferData VBData;
-		VBData.pData = this->_mesh->vertices.data();
-		VBData.DataSize = VertBuffDesc.Size;
+		if (dynamic) {
+			device->CreateBuffer(VertBuffDesc, nullptr, &this->_vbh);
+			// context->UpdateBuffer(this->_vbh, 0, VertBuffDesc.Size, this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		} else {
+			if (vertSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Vertices cannot be empty on non-dynamic buffer!");
 
-		device->CreateBuffer(VertBuffDesc, &VBData, &this->_vbh);
+			Diligent::BufferData VBData;
+			VBData.pData = this->_mesh->vertices.data();
+			VBData.DataSize = VertBuffDesc.Size;
+
+			device->CreateBuffer(VertBuffDesc, &VBData, &this->_vbh);
+		}
 		// ---------------------
 
 		// INDC ----
@@ -196,16 +205,24 @@ namespace rawrbox {
 		IndcBuffDesc.Name = "RawrBox::Buffer::Indices";
 		IndcBuffDesc.Usage = dynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_IMMUTABLE;
 		IndcBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
-		IndcBuffDesc.Size = indcSize * sizeof(this->_mesh->indices[0]);
+		IndcBuffDesc.Size = dynamic ? 16000 : indcSize * sizeof(this->_mesh->indices[0]);
+		IndcBuffDesc.CPUAccessFlags = dynamic ? Diligent::CPU_ACCESS_WRITE : Diligent::CPU_ACCESS_NONE;
 
-		Diligent::BufferData IBData;
-		IBData.pData = this->_mesh->indices.data();
-		IBData.DataSize = IndcBuffDesc.Size;
+		if (dynamic) {
+			device->CreateBuffer(IndcBuffDesc, nullptr, &this->_ibh);
+			// context->UpdateBuffer(this->_ibh, 0, IndcBuffDesc.Size, this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		} else {
+			if (indcSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Indices cannot be empty on non-dynamic buffer!");
 
-		device->CreateBuffer(IndcBuffDesc, &IBData, &this->_ibh);
+			Diligent::BufferData IBData;
+			IBData.pData = this->_mesh->indices.data();
+			IBData.DataSize = IndcBuffDesc.Size;
+
+			device->CreateBuffer(IndcBuffDesc, &IBData, &this->_ibh);
+		}
 		// ---------------------
 
-		this->_material->upload();
+		this->_material->init();
 	}
 
 	void ModelBase::draw() {

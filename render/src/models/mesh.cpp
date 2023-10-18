@@ -9,7 +9,7 @@ namespace rawrbox {
 		this->name = _name;
 	}
 
-	const std::vector<rawrbox::VertexData>& Mesh::getVertices() const {
+	const std::vector<rawrbox::ModelVertexData>& Mesh::getVertices() const {
 		return this->vertices;
 	}
 
@@ -57,20 +57,20 @@ namespace rawrbox {
 
 	uint16_t Mesh::getAtlasID(int index) const {
 		if (this->vertices.empty()) return 0;
-		if (index < 0) return static_cast<uint16_t>(this->vertices.front().uv.z);
+		if (index < 0) return static_cast<uint16_t>(this->vertices.front().data.uv.z);
 
-		return static_cast<uint16_t>(this->vertices[std::clamp(index, 0, static_cast<int>(this->vertices.size() - 1))].uv.z);
+		return static_cast<uint16_t>(this->vertices[std::clamp(index, 0, static_cast<int>(this->vertices.size() - 1))].data.uv.z);
 	}
 
 	void Mesh::setAtlasID(uint16_t _atlasId, int index) {
 		auto vSize = static_cast<int>(this->vertices.size());
 		for (int i = 0; i < vSize; i++) {
 			if (index != -1 && i == index) {
-				// this->vertices[i].setAtlasId(_atlasId);
+				this->vertices[i].setAtlasId(_atlasId);
 				break;
 			}
 
-			// this->vertices[i].setAtlasId(_atlasId);
+			this->vertices[i].setAtlasId(_atlasId);
 		}
 	}
 
@@ -105,8 +105,8 @@ namespace rawrbox {
 		this->wireframe = _wireframe;
 	}
 
-	void Mesh::setCulling(uint64_t _culling) {
-		// this->culling = _culling;
+	void Mesh::setCulling(Diligent::CULL_MODE _culling) {
+		this->culling = _culling;
 	}
 
 	void Mesh::setDepthTest(uint64_t _depthTest) {
@@ -174,7 +174,7 @@ namespace rawrbox {
 			this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
 		} else {
 			for (auto v : other.vertices) {
-				v.position += offset;
+				v.data.position += offset;
 				this->vertices.push_back(v);
 			}
 		}
@@ -185,7 +185,7 @@ namespace rawrbox {
 
 	void Mesh::rotateVertices(float rad, rawrbox::Vector3f axis) {
 		for (auto& v : vertices) {
-			v.position = v.position.rotateAroundOrigin(axis, rad);
+			v.data.position = v.data.position.rotateAroundOrigin(axis, rad);
 		}
 	}
 
@@ -207,7 +207,7 @@ namespace rawrbox {
 
 		return this->texture == other.texture &&
 		       this->color == other.color &&
-		       this->lineMode == other.lineMode &&
+		       this->wireframe == other.wireframe &&
 		       this->matrix == other.matrix;
 	}
 } // namespace rawrbox

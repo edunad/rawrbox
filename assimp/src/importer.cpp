@@ -544,7 +544,7 @@ namespace rawrbox {
 
 			// Vertices
 			for (size_t i = 0; i < aiMesh.mNumVertices; i++) {
-				rawrbox::VertexData v;
+				rawrbox::ModelVertexData v;
 
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];

@@ -31,7 +31,7 @@ namespace rawrbox {
 		void zero();
 		void identity();
 
-		void transpose();
+		rawrbox::Matrix4x4 transpose();
 		void transpose(const float* other);
 		void transpose(const std::array<float, 16>& other);
 

@@ -1,9 +1,9 @@
 
-#include <rawrbox/render_temp/camera/orbital.hpp>
-#include <rawrbox/render_temp/model/mesh.hpp>
-#include <rawrbox/render_temp/model/utils/mesh.hpp>
-#include <rawrbox/render_temp/resources/font.hpp>
-#include <rawrbox/render_temp/resources/texture.hpp>
+#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/models/mesh.hpp>
+#include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -16,10 +16,12 @@ namespace model {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("GENERATED MODEL TEST");
-		this->_window->setRenderer<>(
-		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
+		this->_window->setRenderer<rawrbox::RendererBase>(
+		    rawrbox::Colors::Black(),
+		    Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_COUNT, [this]() {}, [this]() { this->drawWorld(); });
+		this->_window->create(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
+		this->_window->skipIntros(true);
 		this->_window->onIntroCompleted += [this]() {
 			this->loadContent();
 		};
@@ -41,16 +43,16 @@ namespace model {
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		// --------------
 
-		this->_window->initializeBGFX();
+		this->_window->initializeEngine();
 	}
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("content/fonts/LiberationMono-Regular.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("content/textures/screem.png", 0),
-		    std::make_pair<std::string, uint32_t>("content/textures/meow3.gif", 0),
-		    std::make_pair<std::string, uint32_t>("content/textures/displacement_test.png", 0),
-		    std::make_pair<std::string, uint32_t>("content/textures/spline_tex.png", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/screem.png", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/meow3.gif", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/displacement_test.png", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/spline_tex.png", 0),
 		};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
@@ -65,14 +67,32 @@ namespace model {
 	}
 
 	void Game::contentLoaded() {
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/LiberationMono-Regular.ttf")->getSize(24);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(24);
 
-		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/meow3.gif")->get();
-		auto texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/screem.png")->get();
-		auto texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/displacement_test.png")->get();
-		auto texture4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/spline_tex.png")->get();
+		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/meow3.gif")->get();
+		auto texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
+		auto texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement_test.png")->get();
+		auto texture4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/spline_tex.png")->get();
 
 		// Model test ----
+
+		{
+			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generateCube({-2, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White());
+			mesh.setTexture(texture);
+
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			this->_model->addMesh(rawrbox::MeshUtils::generateCube({3.5F, 0, 2.5F}, {1.0F, 1.0F, 1.0F}, rawrbox::Colors::White()));
+			this->_model->addMesh(rawrbox::MeshUtils::generateCube({1.5F, 0, 2.5F}, {.5F, .5F, .5F}, rawrbox::Colors::White()));
+		}
+
 		{
 			auto mesh = rawrbox::MeshUtils::generatePlane({2, 0, 0}, {0.5F, 0.5F});
 			mesh.setTexture(texture);
@@ -127,34 +147,31 @@ namespace model {
 			this->_model->addMesh(mesh);
 		}
 
-		{
-			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
-			this->_model->addMesh(mesh);
-		}
+		/*
+						// Sphere
+						{
+							auto mesh = rawrbox::MeshUtils::generateSphere({2.F, 0.F, -2.F}, 0.5F, 0);
 
-		// Sphere
-		{
-			auto mesh = rawrbox::MeshUtils::generateSphere({2.F, 0.F, -2.F}, 0.5F, 0);
+							this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({2.F, 0.F, -2.F}, mesh.getBBOX()));
+							this->_model->addMesh(mesh);
+						}
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({2.F, 0.F, -2.F}, mesh.getBBOX()));
-			this->_model->addMesh(mesh);
-		}
+						{
+							auto mesh = rawrbox::MeshUtils::generateSphere({3.5F, 0.F, -2.F}, 0.5F, 1);
 
-		{
-			auto mesh = rawrbox::MeshUtils::generateSphere({3.5F, 0.F, -2.F}, 0.5F, 1);
+							this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({3.5F, 0.F, -2.F}, mesh.getBBOX()));
+							this->_model->addMesh(mesh);
+						}
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({3.5F, 0.F, -2.F}, mesh.getBBOX()));
-			this->_model->addMesh(mesh);
-		}
+						{
+							auto mesh = rawrbox::MeshUtils::generateSphere({5.F, 0.F, -2.F}, 0.5F, 2);
 
-		{
-			auto mesh = rawrbox::MeshUtils::generateSphere({5.F, 0.F, -2.F}, 0.5F, 2);
-
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({5.F, 0.F, -2.F}, mesh.getBBOX()));
-			this->_model->addMesh(mesh);
-		}
-		// -----
-
+							this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({5.F, 0.F, -2.F}, mesh.getBBOX()));
+							this->_model->addMesh(mesh);
+						}
+						// -----
+*/
+		// CYLINDER ------
 		{
 			auto mesh = rawrbox::MeshUtils::generateCylinder({-2.F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 12);
 
@@ -190,7 +207,7 @@ namespace model {
 		{
 			auto mesh = rawrbox::MeshUtils::generateMesh({0, 0.5F, 0}, {64, 64}, 64, rawrbox::Colors::Black());
 			mesh.setDisplacementTexture(texture3, 24.F);
-			mesh.lineMode = true;
+			mesh.setWireframe(true);
 
 			this->_displacement->addMesh(mesh);
 		}
@@ -200,53 +217,53 @@ namespace model {
 		// -----
 
 		// Sprite test ----
-		{
+		/*{
 			auto mesh = rawrbox::MeshUtils::generateCube({0, 1, 0}, {0.2F, 0.2F});
 			mesh.setTexture(texture2);
 			this->_sprite->addMesh(mesh);
-		}
+		}*/
 		// -----
 
 		// Spline test ----
+		/*
+				{
+					// Curve example
+					rawrbox::Mesh2DShape shape;
+					shape.vertex = {
+					    {-0.15F, 0.025F},
+					    {-0.1F, 0.025F},
+					    {-0.1F, 0},
 
-		{
-			// Curve example
-			rawrbox::Mesh2DShape shape;
-			shape.vertex = {
-			    {-0.15F, 0.025F},
-			    {-0.1F, 0.025F},
-			    {-0.1F, 0},
+					    {0.1F, 0},
+					    {0.1F, 0.025F},
+					    {0.15F, 0.025F},
+					};
 
-			    {0.1F, 0},
-			    {0.1F, 0.025F},
-			    {0.15F, 0.025F},
-			};
+					shape.normal = {{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}};
+					shape.u = {
+					    0,
+					    0.08F,
+					    0.09375,
 
-			shape.normal = {{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}};
-			shape.u = {
-			    0,
-			    0.08F,
-			    0.09375,
+					    0.9140625F,
 
-			    0.9140625F,
+					    0.92F,
+					    1.F};
 
-			    0.92F,
-			    1.F};
+					this->_spline->setExtrudeVerts(shape);
+					this->_spline->setTexture(texture4);
 
-			this->_spline->setExtrudeVerts(shape);
-			this->_spline->setTexture(texture4);
+					this->_spline->addPoint({0, 0, 0, 0.F}, {-1.F, 0.F, 1.F, 90.F});
+					this->_spline->addPoint({-1.F, 0.F, 1.F, 90.F}, {-2.F, 0.F, 1.F, 90.F}, 0.1F);
+					this->_spline->addPoint({-2.F, 0.F, 1.F, 90.F}, {-3.F, 0.F, 0.F, -180.F});
+					this->_spline->addPoint({-3.F, 0.F, 0.F, -180.F}, {-2.F, 0.F, -1.F, -90.F});
+					this->_spline->addPoint({-2.F, 0.F, -1.F, -90.F}, {-1.F, 0.F, -1.F, -90.F}, 0.1F);
+					this->_spline->addPoint({-1.F, 0.F, -1.F, -90.F}, {0, 0.F, 0, 0.F});
 
-			this->_spline->addPoint({0, 0, 0, 0.F}, {-1.F, 0.F, 1.F, 90.F});
-			this->_spline->addPoint({-1.F, 0.F, 1.F, 90.F}, {-2.F, 0.F, 1.F, 90.F}, 0.1F);
-			this->_spline->addPoint({-2.F, 0.F, 1.F, 90.F}, {-3.F, 0.F, 0.F, -180.F});
-			this->_spline->addPoint({-3.F, 0.F, 0.F, -180.F}, {-2.F, 0.F, -1.F, -90.F});
-			this->_spline->addPoint({-2.F, 0.F, -1.F, -90.F}, {-1.F, 0.F, -1.F, -90.F}, 0.1F);
-			this->_spline->addPoint({-1.F, 0.F, -1.F, -90.F}, {0, 0.F, 0, 0.F});
+					this->_spline->generateMesh();
 
-			this->_spline->generateMesh();
-
-			this->_spline->setPos({0, 0, 2.F});
-		}
+					this->_spline->setPos({0, 0, 2.F});
+				}
 		// -----
 
 		// Text test ----
@@ -266,15 +283,15 @@ namespace model {
 		this->_text->addText(*this->_font, "SPLINE", {-1.5F, 0.55F, 2});
 
 		this->_text->addText(*this->_font, "1 UNIT", {3.5F, 1.0F, 2.5F});
-		this->_text->addText(*this->_font, "HALF UNIT", {1.5F, 0.55F, 2.5F});
+		this->_text->addText(*this->_font, "HALF UNIT", {1.5F, 0.55F, 2.5F});*/
 		// ------
 
-		this->_model->upload(true);
-		this->_displacement->upload();
-		this->_sprite->upload();
-		this->_spline->upload();
+		this->_model->upload(false);
 		this->_bboxes->upload();
-		this->_text->upload();
+		this->_displacement->upload();
+		//  this->_sprite->upload();
+		//  this->_spline->upload();
+		// this->_text->upload();
 
 		this->_ready = true;
 	}
@@ -282,12 +299,12 @@ namespace model {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
-		this->_displacement.reset();
 		this->_model.reset();
-		this->_sprite.reset();
 		this->_bboxes.reset();
-		this->_spline.reset();
-		this->_text.reset();
+		this->_displacement.reset();
+		//  this->_sprite.reset();
+		//  this->_spline.reset();
+		//  this->_text.reset();
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
@@ -308,41 +325,41 @@ namespace model {
 
 	void Game::drawWorld() {
 		if (!this->_ready) return;
-		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr || this->_spline == nullptr) return;
+		// if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr || this->_spline == nullptr) return;
 
 		this->_model->draw();
 		this->_displacement->draw();
-		this->_sprite->draw();
-		this->_spline->draw();
+		//  this->_sprite->draw();
+		//  this->_spline->draw();
 		this->_bboxes->draw();
-		this->_text->draw();
+		// this->_text->draw();
 	}
 
 	void Game::printFrames() {
-		const bgfx::Stats* stats = bgfx::getStats();
+		/*const bgfx::Stats* stats = bgfx::getStats();
 
 		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
 		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
 		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
 		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
-		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
+		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());*/
 	}
 
 	void Game::draw() {
 		if (this->_window == nullptr) return;
+		/*
+				// DEBUG ----
+				bgfx::dbgTextClear();
+				bgfx::dbgTextPrintf(1, 1, 0x1f, "002-generated-models");
+				bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: Generated models test");
+				printFrames();
+				// -----------
 
-		// DEBUG ----
-		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "002-generated-models");
-		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: Generated models test");
-		printFrames();
-		// -----------
-
-		if (!this->_ready) {
-			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
-			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
-			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
-		}
+				if (!this->_ready) {
+					bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
+					bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
+					bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
+				}*/
 
 		this->_window->render(); // Commit primitives
 	}

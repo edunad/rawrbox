@@ -1,6 +1,6 @@
 
 
-#include <rawrbox/render/camera/perspective.hpp>
+#include <rawrbox/render/cameras/perspective.hpp>
 
 namespace rawrbox {
 	// NOLINTBEGIN(clang-analyzer-optin.cplusplus.VirtualCall)
@@ -8,7 +8,7 @@ namespace rawrbox {
 		this->_z_near = near;
 		this->_z_far = far;
 
-		this->_projection = rawrbox::Matrix4x4::mtxProj(FOV, static_cast<float>(_wsize.x) / static_cast<float>(_wsize.y), this->_z_near, this->_z_far, rawrbox::RENDERER->rightHanded());
+		this->_projection = rawrbox::Matrix4x4::mtxProj(FOV, static_cast<float>(_wsize.x) / static_cast<float>(_wsize.y), this->_z_near, this->_z_far, rawrbox::MTX_RIGHT_HANDED);
 		this->updateMtx();
 	}
 	// NOLINTEND(clang-analyzer-optin.cplusplus.VirtualCall)
@@ -19,7 +19,7 @@ namespace rawrbox {
 		auto at = this->_pos + dir;
 		auto up = this->getUp();
 
-		this->_view = rawrbox::Matrix4x4::mtxLookAt(this->_pos, at, up, rawrbox::RENDERER->rightHanded());
+		this->_view = rawrbox::Matrix4x4::mtxLookAt(this->_pos, at, up, rawrbox::MTX_RIGHT_HANDED);
 	}
 
 	const rawrbox::Vector3f CameraPerspective::worldToScreen(const rawrbox::Vector3f& pos) const {

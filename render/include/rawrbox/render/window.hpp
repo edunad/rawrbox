@@ -2,7 +2,7 @@
 
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector2.hpp>
-#include <rawrbox/render/camera/base.hpp>
+#include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
@@ -171,6 +171,10 @@ namespace rawrbox {
 			this->_renderType = render;
 			this->_overlay = overlay;
 			this->_world = world;
+
+			if (render == Diligent::RENDER_DEVICE_TYPE_GL || render == Diligent::RENDER_DEVICE_TYPE_GLES) {
+				rawrbox::MTX_RIGHT_HANDED = true;
+			}
 
 			this->_renderer = std::make_unique<T>(clearColor, std::forward<CallbackArgs>(args)...);
 			rawrbox::RENDERER = this->_renderer.get();

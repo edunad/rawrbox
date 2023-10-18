@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/camera/base.hpp>
+#include <rawrbox/render/cameras/base.hpp>
 
 #include <stdexcept>
 
@@ -52,19 +52,16 @@ namespace rawrbox {
 		return {up.x, up.y, up.z};
 	}
 
-	const rawrbox::Matrix4x4& CameraBase::getViewMtx() const {
+	rawrbox::Matrix4x4 CameraBase::getViewMtx() const {
 		return this->_view;
 	}
 
-	const rawrbox::Matrix4x4& CameraBase::getProjMtx() const {
+	rawrbox::Matrix4x4 CameraBase::getProjMtx() const {
 		return this->_projection;
 	}
 
-	const rawrbox::Matrix4x4 CameraBase::getProjViewMtx() const {
-		rawrbox::Matrix4x4 mtx = this->_projection * this->_view;
-		mtx.transpose();
-
-		return mtx;
+	rawrbox::Matrix4x4 CameraBase::getProjViewMtx() const {
+		return this->_projection * this->_view;
 	}
 
 	void CameraBase::update() {}

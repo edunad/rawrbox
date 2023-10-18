@@ -30,7 +30,7 @@ namespace rawrbox {
 		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
 
 		rawrbox::PipeSettings settings;
-		settings.depth = false;
+		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
 		settings.cull = Diligent::CULL_MODE_NONE;
 		settings.psh = "stencil.psh";
 		settings.vsh = "stencil.vsh";

@@ -30,17 +30,23 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 _gProj;
 		rawrbox::Matrix4x4 _gView;
 		rawrbox::Matrix4x4 _gWorldViewModel;
-		// Diligent::float4x4 _gWorldViewModel;
 		//  --------
+
+		// OTHER ----
+		rawrbox::Colorf _gColorOverride;
+		// std::array<rawrbox::Vector4f, 4> _gData;
+		//  ----------
 	};
 
 	class MaterialBase {
 	protected:
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-		Diligent::RefCntAutoPtr<Diligent::IPipelineState> _pipeline;
+		std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IPipelineState>> _pipelines = {};
+
 		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _SRB;
 
-		virtual void setupUniforms();
+		virtual void bindUniforms(const rawrbox::Mesh& mesh);
+		virtual void bindPipeline(const rawrbox::Mesh& mesh);
 
 	public:
 		MaterialBase() = default;
@@ -50,20 +56,12 @@ namespace rawrbox {
 		MaterialBase& operator=(const MaterialBase&) = delete;
 		virtual ~MaterialBase();
 
-		// virtual void registerUniform(const std::string& name, bgfx::UniformType::Enum type, uint16_t num = 0);
-		//[[nodiscard]] virtual bgfx::UniformHandle& getUniform(const std::string& name);
-
-		// SET ----
-		virtual void setUniformData(const std::string& id, const std::vector<rawrbox::Matrix4x4>& data);
-		// -----
+		virtual void init();
 
 		virtual void bind(const rawrbox::Mesh& mesh);
 		virtual void bind(Diligent::ITextureView* texture);
 
-		virtual void postProcess();
-		virtual void upload();
-
 		[[nodiscard]] virtual uint32_t supports() const;
-		[[nodiscard]] virtual const std::vector<Diligent::LayoutElement> vLayout() const;
+		[[nodiscard]] virtual const std::pair<std::vector<Diligent::LayoutElement>, uint32_t> vLayout() const;
 	};
 } // namespace rawrbox

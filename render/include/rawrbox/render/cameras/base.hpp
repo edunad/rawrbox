@@ -41,9 +41,9 @@ namespace rawrbox {
 		[[nodiscard]] virtual float getZFar() const;
 		[[nodiscard]] virtual float getZNear() const;
 
-		[[nodiscard]] virtual const rawrbox::Matrix4x4& getViewMtx() const;
-		[[nodiscard]] virtual const rawrbox::Matrix4x4& getProjMtx() const;
-		[[nodiscard]] virtual const rawrbox::Matrix4x4 getProjViewMtx() const;
+		[[nodiscard]] virtual rawrbox::Matrix4x4 getViewMtx() const;
+		[[nodiscard]] virtual rawrbox::Matrix4x4 getProjMtx() const;
+		[[nodiscard]] virtual rawrbox::Matrix4x4 getProjViewMtx() const;
 
 		[[nodiscard]] virtual const rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const;
 		[[nodiscard]] virtual const rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screen_pos, const rawrbox::Vector3f& origin = {0, 0, 0}) const;

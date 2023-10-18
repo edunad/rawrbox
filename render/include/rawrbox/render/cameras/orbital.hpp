@@ -2,7 +2,7 @@
 
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/camera/perspective.hpp>
+#include <rawrbox/render/cameras/perspective.hpp>
 #include <rawrbox/render/window.hpp>
 #include <rawrbox/utils/keys.hpp>
 

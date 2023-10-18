@@ -18,7 +18,9 @@ namespace rawrbox {
 
 		info.GraphicsPipeline.PrimitiveTopology = settings.topology;
 		info.GraphicsPipeline.RasterizerDesc.CullMode = settings.cull;
-		info.GraphicsPipeline.DepthStencilDesc.DepthEnable = settings.depth;
+		info.GraphicsPipeline.DepthStencilDesc.DepthEnable = settings.depth == Diligent::COMPARISON_FUNC_UNKNOWN ? false : true;
+		info.GraphicsPipeline.DepthStencilDesc.DepthFunc = settings.depth;
+		info.GraphicsPipeline.DepthStencilDesc.DepthWriteEnable = settings.depthWrite;
 		info.GraphicsPipeline.RasterizerDesc.ScissorEnable = settings.scissors;
 
 		Diligent::BlendStateDesc BlendState;

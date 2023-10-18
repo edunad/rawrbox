@@ -110,7 +110,7 @@ namespace rawrbox {
 
 		bool animated = false;
 
-		std::vector<rawrbox::VertexData> vertices = {};
+		std::vector<rawrbox::ModelVertexData> vertices = {};
 		std::vector<uint16_t> indices = {};
 
 		explicit AssimpMesh(std::string _name) : name(std::move(_name)){};

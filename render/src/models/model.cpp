@@ -49,7 +49,7 @@ namespace rawrbox {
 		// ------------
 
 		// BONE ANIMATION ----
-		if ((this->_material->supports() & rawrbox::MaterialFlags::BONES) != 0) {
+		/*if ((this->_material->supports() & rawrbox::MaterialFlags::BONES) != 0) {
 			std::vector<rawrbox::Matrix4x4> boneTransforms = {};
 			boneTransforms.resize(rawrbox::MAX_BONES_PER_MODEL);
 
@@ -63,7 +63,7 @@ namespace rawrbox {
 			}
 
 			this->_material->setUniformData("u_bones", boneTransforms);
-		}
+		}*/
 		// -----
 	}
 
@@ -359,7 +359,7 @@ namespace rawrbox {
 		return id >= 0 && id < this->_meshes.size();
 	}
 
-	void Model::setCulling(uint64_t cull, int id) {
+	void Model::setCulling(Diligent::CULL_MODE cull, int id) {
 		for (size_t i = 0; i < this->_meshes.size(); i++) {
 			if (id != -1 && i != static_cast<size_t>(id)) continue;
 			this->_meshes[i]->setCulling(cull);
@@ -418,49 +418,35 @@ namespace rawrbox {
 	}
 
 	void Model::draw() {
-		auto context = rawrbox::RENDERER->context;
 		ModelBase::draw();
 		this->preDraw();
+
+		// Bind vertex and index buffers
+		const uint64_t offset = 0;
+		Diligent::IBuffer* pBuffs[] = {this->_vbh};
+
+		auto context = rawrbox::RENDERER->context;
+		context->SetVertexBuffers(0, 1, pBuffs, &offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+		context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		// ----
 
 		for (auto& mesh : this->_meshes) {
 			// Process animations ---
 			this->animate(*mesh);
 			// ---
 
-			// Bind vertex and index buffers
-			const uint64_t offset = 0;
-			Diligent::IBuffer* pBuffs[] = {this->_vbh};
-			context->SetVertexBuffers(0, 1, pBuffs, &offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-			/*if (this->isDynamic()) {
-				bgfx::setVertexBuffer(0, this->_vbdh, mesh->baseVertex, mesh->totalVertex);
-				bgfx::setIndexBuffer(this->_ibdh, mesh->baseIndex, mesh->totalIndex);
-			} else {
-				bgfx::setVertexBuffer(0, this->_vbh, mesh->baseVertex, mesh->totalVertex);
-				bgfx::setIndexBuffer(this->_ibh, mesh->baseIndex, mesh->totalIndex);
-			}
-
-			bgfx::setTransform((this->getMatrix() * mesh->getMatrix()).data());
-
-			uint64_t flags = BGFX_STATE_DEFAULT_3D | mesh->culling | mesh->blending | mesh->depthTest;
-			flags |= mesh->lineMode ? BGFX_STATE_PT_LINES : mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
-											: 0;
-
-			bgfx::setState(flags, 0);*/
-
+			// Bind materials uniforms & textures ----
 			rawrbox::TRANSFORM = this->getMatrix() * mesh->getMatrix();
 			this->_material->bind(*mesh);
+			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;    // This is an indexed draw call
 			DrawAttrs.IndexType = Diligent::VT_UINT16; // Index type
+			DrawAttrs.FirstIndexLocation = mesh->baseIndex;
 			DrawAttrs.BaseVertex = mesh->baseVertex;
 			DrawAttrs.NumIndices = mesh->totalIndex;
-			// Verify the state of vertex and index buffers
-			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
+			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL; // Verify the state of vertex and index buffers
 			context->DrawIndexed(DrawAttrs);
-
-			this->_material->postProcess();
 		}
 
 		this->postDraw();

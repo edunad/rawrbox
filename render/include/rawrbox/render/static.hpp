@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrbox/render/camera/base.hpp>
+#include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/texture/flat.hpp>
 #include <rawrbox/render/texture/missing.hpp>
 
@@ -75,6 +75,8 @@ namespace rawrbox {
 	extern rawrbox::CameraBase* MAIN_CAMERA;
 	extern rawrbox::RendererBase* RENDERER;
 	extern rawrbox::Matrix4x4 TRANSFORM;
+	extern bool MTX_RIGHT_HANDED;
+
 	extern Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> SHADER_FACTORY;
 	//
 	// extern rawrbox::RENDER_DEBUG_MODE RENDERER_DEBUG;
