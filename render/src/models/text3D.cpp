@@ -41,7 +41,7 @@ namespace rawrbox {
 			}
 		}
 
-		uint32_t id = ++Text3D::ID;
+		uint32_t id = Text3D::ID++;
 		font.render(text, startpos.xy(), true, [this, &font, billboard, pos, startpos, cl, screenSize, id](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
 			rawrbox::Mesh mesh;
 			mesh.setPos(pos);
@@ -78,8 +78,7 @@ namespace rawrbox {
 	}
 
 	void Text3D::upload(bool /*dynamic*/) {
-		// Model::upload(true); // Always force dynamic, since we can remove text
-		Model::upload(false);
+		Model::upload(true); // Always force dynamic, since we can remove text
 	}
 
 	void Text3D::removeText(uint32_t id) {

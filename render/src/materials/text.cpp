@@ -22,7 +22,7 @@ namespace rawrbox {
 		settings.psh = "3dtext_unlit.psh";
 		settings.vsh = "3dtext_unlit.vsh";
 		settings.cull = Diligent::CULL_MODE_FRONT;
-		settings.layout = this->vLayout();
+		settings.layout = this->vLayout().first;
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 

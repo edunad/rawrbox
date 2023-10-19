@@ -25,7 +25,7 @@ namespace rawrbox {
 		settings.psh = "unlit.psh";
 		settings.vsh = "unlit.vsh";
 		settings.cull = Diligent::CULL_MODE_FRONT;
-		settings.layout = this->vLayout();
+		settings.layout = this->vLayout().first;
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
@@ -171,7 +171,7 @@ namespace rawrbox {
 		return rawrbox::MaterialFlags::NONE;
 	}
 
-	const std::vector<Diligent::LayoutElement> MaterialBase::vLayout() const {
-		return rawrbox::VertexData::vLayout();
+	const std::pair<std::vector<Diligent::LayoutElement>, uint32_t> MaterialBase::vLayout() const {
+		return {rawrbox::VertexData::vLayout(), rawrbox::VertexData::vLayoutSize()};
 	}
 } // namespace rawrbox

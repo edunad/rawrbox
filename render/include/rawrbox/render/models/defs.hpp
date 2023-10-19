@@ -27,6 +27,10 @@ namespace rawrbox {
 			    // Attribute 2 - Color
 			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false}};
 		}
+
+		static uint32_t vLayoutSize() {
+			return sizeof(VertexData);
+		}
 	};
 
 	struct VertexNormData : public virtual VertexData {
@@ -42,6 +46,10 @@ namespace rawrbox {
 			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 3 - Normals
 			    Diligent::LayoutElement{3, 0, 2, Diligent::VT_FLOAT32, false}};
+		}
+
+		static uint32_t vLayoutSize() {
+			return sizeof(VertexNormData);
 		}
 	};
 
@@ -62,6 +70,10 @@ namespace rawrbox {
 			    // Attribute 4 - BONE-WEIGHTS
 			    Diligent::LayoutElement{4, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}};
 		}
+
+		static uint32_t vLayoutSize() {
+			return sizeof(VertexBoneData);
+		}
 	};
 
 	struct VertexNormBoneData : public VertexNormData, public VertexBoneData {
@@ -79,6 +91,10 @@ namespace rawrbox {
 			    Diligent::LayoutElement{3, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
 			    // Attribute 5 - BONE-WEIGHTS
 			    Diligent::LayoutElement{4, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}};
+		}
+
+		static uint32_t vLayoutSize() {
+			return sizeof(VertexNormBoneData);
 		}
 	};
 
@@ -132,7 +148,7 @@ namespace rawrbox {
 	};*/
 
 	struct ModelVertexData {
-		VertexData data = {};
+		rawrbox::VertexData data = {};
 
 		// BLEND HELPERS ---
 		// rawrbox::Vector3f ori_pos = {};

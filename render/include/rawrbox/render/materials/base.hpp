@@ -62,6 +62,6 @@ namespace rawrbox {
 		virtual void bind(const rawrbox::Mesh& mesh);
 
 		[[nodiscard]] virtual uint32_t supports() const;
-		[[nodiscard]] virtual const std::vector<Diligent::LayoutElement> vLayout() const;
+		[[nodiscard]] virtual const std::pair<std::vector<Diligent::LayoutElement>, uint32_t> vLayout() const;
 	};
 } // namespace rawrbox
