@@ -177,6 +177,9 @@ namespace rawrbox {
 		auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
 		auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
 
+		if (!dynamic && vertSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Vertices cannot be empty on non-dynamic buffer!");
+		if (!dynamic && indcSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Indices cannot be empty on non-dynamic buffer!");
+
 		// VERT ----
 		Diligent::BufferDesc VertBuffDesc;
 		VertBuffDesc.Name = "RawrBox::Buffer::Vertex";
@@ -188,8 +191,6 @@ namespace rawrbox {
 		if (dynamic) {
 			device->CreateBuffer(VertBuffDesc, nullptr, &this->_vbh);
 		} else {
-			if (vertSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Vertices cannot be empty on non-dynamic buffer!");
-
 			Diligent::BufferData VBData;
 			VBData.pData = this->_mesh->vertices.data();
 			VBData.DataSize = VertBuffDesc.Size;
@@ -209,8 +210,6 @@ namespace rawrbox {
 		if (dynamic) {
 			device->CreateBuffer(IndcBuffDesc, nullptr, &this->_ibh);
 		} else {
-			if (indcSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Indices cannot be empty on non-dynamic buffer!");
-
 			Diligent::BufferData IBData;
 			IBData.pData = this->_mesh->indices.data();
 			IBData.DataSize = IndcBuffDesc.Size;
