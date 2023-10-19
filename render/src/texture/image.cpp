@@ -19,18 +19,18 @@
 
 namespace rawrbox {
 	// NOLINTBEGIN(modernize-pass-by-value)
-	TextureImage::TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, int forceChannels, bool useFallback) : _filePath(filePath) {
-		uint8_t* image = stbi_load_from_memory(buffer.data(), static_cast<int>(buffer.size()) * sizeof(uint8_t), &this->_size.x, &this->_size.y, &this->_channels, forceChannels);
+	TextureImage::TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback) : _filePath(filePath) {
+		uint8_t* image = stbi_load_from_memory(buffer.data(), static_cast<int>(buffer.size()) * sizeof(uint8_t), &this->_size.x, &this->_size.y, &this->_channels, 0);
 		this->internalLoad(image, useFallback);
 	}
 
-	TextureImage::TextureImage(const std::filesystem::path& filePath, int forceChannels, bool useFallback) : _filePath(filePath) {
-		stbi_uc* image = stbi_load(filePath.generic_string().c_str(), &this->_size.x, &this->_size.y, &this->_channels, forceChannels);
+	TextureImage::TextureImage(const std::filesystem::path& filePath, bool useFallback) : _filePath(filePath) {
+		stbi_uc* image = stbi_load(filePath.generic_string().c_str(), &this->_size.x, &this->_size.y, &this->_channels, 0);
 		this->internalLoad(image, useFallback);
 	}
 
-	TextureImage::TextureImage(const uint8_t* buffer, int bufferSize, int forceChannels, bool useFallback) {
-		uint8_t* image = stbi_load_from_memory(buffer, bufferSize, &this->_size.x, &this->_size.y, &this->_channels, forceChannels);
+	TextureImage::TextureImage(const uint8_t* buffer, int bufferSize, bool useFallback) {
+		uint8_t* image = stbi_load_from_memory(buffer, bufferSize, &this->_size.x, &this->_size.y, &this->_channels, 0);
 		this->internalLoad(image, useFallback);
 	}
 

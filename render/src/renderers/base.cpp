@@ -237,6 +237,9 @@ namespace rawrbox {
 		return this->_render->getTexture(2);
 	}*/
 
+	const rawrbox::Vector2i RendererBase::getSize() const { return this->_size; }
+
+	bool RendererBase::getVSync() const { return this->_vsync; }
 	void RendererBase::setVSync(bool vsync) { this->_vsync = vsync; }
 
 	void RendererBase::gpuPick(const rawrbox::Vector2i& pos, std::function<void(uint32_t)> callback) {

@@ -7,11 +7,11 @@
 
 namespace rawrbox {
 	// NOLINTBEGIN(modernize-pass-by-value)
-	TextureAtlas::TextureAtlas(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, uint16_t spriteSize, int forceChannels, bool useFallback) : TextureImage::TextureImage(filePath, buffer, forceChannels, useFallback), _spriteSize(spriteSize) {
+	TextureAtlas::TextureAtlas(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, uint16_t spriteSize, bool useFallback) : TextureImage::TextureImage(filePath, buffer, useFallback), _spriteSize(spriteSize) {
 		this->processAtlas();
 	}
 
-	TextureAtlas::TextureAtlas(const std::filesystem::path& filePath, uint16_t spriteSize, int forceChannels, bool useFallback) : TextureImage::TextureImage(filePath, forceChannels, useFallback), _spriteSize(spriteSize) {
+	TextureAtlas::TextureAtlas(const std::filesystem::path& filePath, uint16_t spriteSize, bool useFallback) : TextureImage::TextureImage(filePath, useFallback), _spriteSize(spriteSize) {
 		this->processAtlas();
 	}
 	// NOLINTEND(modernize-pass-by-value)

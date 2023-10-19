@@ -67,6 +67,7 @@ namespace rawrbox {
 		rawrbox::Color color = rawrbox::Colors::White();
 
 		bool wireframe = false;
+		bool lineMode = false;
 
 		Diligent::CULL_MODE culling = Diligent::CULL_MODE_FRONT;
 		// uint64_t blending = BGFX_STATE_BLEND_NORMAL;

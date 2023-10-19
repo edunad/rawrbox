@@ -75,7 +75,6 @@ namespace model {
 		auto texture4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/spline_tex.png")->get();
 
 		// Model test ----
-
 		{
 			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
 			this->_model->addMesh(mesh);
@@ -83,7 +82,7 @@ namespace model {
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({-2, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White());
-			mesh.setTexture(texture);
+			mesh.setTexture(texture2);
 
 			this->_model->addMesh(mesh);
 		}
@@ -111,19 +110,6 @@ namespace model {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generateCube({-2, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White());
-			mesh.setTexture(texture);
-
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-2, 0, 0}, mesh.getBBOX()));
-			this->_model->addMesh(mesh);
-		}
-
-		{
-			this->_model->addMesh(rawrbox::MeshUtils::generateCube({3.5F, 0, 2.5F}, {1.0F, 1.0F, 1.0F}, rawrbox::Colors::White()));
-			this->_model->addMesh(rawrbox::MeshUtils::generateCube({1.5F, 0, 2.5F}, {.5F, .5F, .5F}, rawrbox::Colors::White()));
-		}
-
-		{
 			auto mesh = rawrbox::MeshUtils::generateCube({-3, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White());
 			mesh.setTexture(texture);
 			mesh.setVertexSnap(24.F);
@@ -147,30 +133,29 @@ namespace model {
 			this->_model->addMesh(mesh);
 		}
 
-		/*
-						// Sphere
-						{
-							auto mesh = rawrbox::MeshUtils::generateSphere({2.F, 0.F, -2.F}, 0.5F, 0);
+		// Sphere
+		{
+			auto mesh = rawrbox::MeshUtils::generateSphere({2.F, 0.F, -2.F}, 0.5F, 0);
 
-							this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({2.F, 0.F, -2.F}, mesh.getBBOX()));
-							this->_model->addMesh(mesh);
-						}
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({2.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_model->addMesh(mesh);
+		}
 
-						{
-							auto mesh = rawrbox::MeshUtils::generateSphere({3.5F, 0.F, -2.F}, 0.5F, 1);
+		{
+			auto mesh = rawrbox::MeshUtils::generateSphere({3.5F, 0.F, -2.F}, 0.5F, 1);
 
-							this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({3.5F, 0.F, -2.F}, mesh.getBBOX()));
-							this->_model->addMesh(mesh);
-						}
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({3.5F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_model->addMesh(mesh);
+		}
 
-						{
-							auto mesh = rawrbox::MeshUtils::generateSphere({5.F, 0.F, -2.F}, 0.5F, 2);
+		{
+			auto mesh = rawrbox::MeshUtils::generateSphere({5.F, 0.F, -2.F}, 0.5F, 2);
 
-							this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({5.F, 0.F, -2.F}, mesh.getBBOX()));
-							this->_model->addMesh(mesh);
-						}
-						// -----
-*/
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({5.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_model->addMesh(mesh);
+		}
+		// -----
+
 		// CYLINDER ------
 		{
 			auto mesh = rawrbox::MeshUtils::generateCylinder({-2.F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 12);
@@ -204,66 +189,58 @@ namespace model {
 			this->_displacement->addMesh(mesh);
 		}
 
-		{
-			auto mesh = rawrbox::MeshUtils::generateMesh({0, 0.5F, 0}, {64, 64}, 64, rawrbox::Colors::Black());
-			mesh.setDisplacementTexture(texture3, 24.F);
-			mesh.setWireframe(true);
-
-			this->_displacement->addMesh(mesh);
-		}
-
 		this->_displacement->setPos({0, 0.1F, -2});
 		this->_displacement->setScale({0.025F, 0.025F, 0.025F});
 		// -----
 
 		// Sprite test ----
-		/*{
+		{
 			auto mesh = rawrbox::MeshUtils::generateCube({0, 1, 0}, {0.2F, 0.2F});
 			mesh.setTexture(texture2);
 			this->_sprite->addMesh(mesh);
-		}*/
+		}
 		// -----
 
 		// Spline test ----
-		/*
-				{
-					// Curve example
-					rawrbox::Mesh2DShape shape;
-					shape.vertex = {
-					    {-0.15F, 0.025F},
-					    {-0.1F, 0.025F},
-					    {-0.1F, 0},
 
-					    {0.1F, 0},
-					    {0.1F, 0.025F},
-					    {0.15F, 0.025F},
-					};
+		{
+			// Curve example
+			rawrbox::Mesh2DShape shape;
+			shape.vertex = {
+			    {-0.15F, 0.025F},
+			    {-0.1F, 0.025F},
+			    {-0.1F, 0},
 
-					shape.normal = {{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}};
-					shape.u = {
-					    0,
-					    0.08F,
-					    0.09375,
+			    {0.1F, 0},
+			    {0.1F, 0.025F},
+			    {0.15F, 0.025F},
+			};
 
-					    0.9140625F,
+			shape.normal = {{0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}, {0, 1}};
+			shape.u = {
+			    0,
+			    0.08F,
+			    0.09375,
 
-					    0.92F,
-					    1.F};
+			    0.9140625F,
 
-					this->_spline->setExtrudeVerts(shape);
-					this->_spline->setTexture(texture4);
+			    0.92F,
+			    1.F};
 
-					this->_spline->addPoint({0, 0, 0, 0.F}, {-1.F, 0.F, 1.F, 90.F});
-					this->_spline->addPoint({-1.F, 0.F, 1.F, 90.F}, {-2.F, 0.F, 1.F, 90.F}, 0.1F);
-					this->_spline->addPoint({-2.F, 0.F, 1.F, 90.F}, {-3.F, 0.F, 0.F, -180.F});
-					this->_spline->addPoint({-3.F, 0.F, 0.F, -180.F}, {-2.F, 0.F, -1.F, -90.F});
-					this->_spline->addPoint({-2.F, 0.F, -1.F, -90.F}, {-1.F, 0.F, -1.F, -90.F}, 0.1F);
-					this->_spline->addPoint({-1.F, 0.F, -1.F, -90.F}, {0, 0.F, 0, 0.F});
+			this->_spline->setExtrudeVerts(shape);
+			this->_spline->setTexture(texture4);
 
-					this->_spline->generateMesh();
+			this->_spline->addPoint({0, 0, 0, 0.F}, {-1.F, 0.F, 1.F, 90.F});
+			this->_spline->addPoint({-1.F, 0.F, 1.F, 90.F}, {-2.F, 0.F, 1.F, 90.F}, 0.1F);
+			this->_spline->addPoint({-2.F, 0.F, 1.F, 90.F}, {-3.F, 0.F, 0.F, -180.F});
+			this->_spline->addPoint({-3.F, 0.F, 0.F, -180.F}, {-2.F, 0.F, -1.F, -90.F});
+			this->_spline->addPoint({-2.F, 0.F, -1.F, -90.F}, {-1.F, 0.F, -1.F, -90.F}, 0.1F);
+			this->_spline->addPoint({-1.F, 0.F, -1.F, -90.F}, {0, 0.F, 0, 0.F});
 
-					this->_spline->setPos({0, 0, 2.F});
-				}
+			this->_spline->generateMesh();
+
+			this->_spline->setPos({0, 0, 2.F});
+		}
 		// -----
 
 		// Text test ----
@@ -283,15 +260,15 @@ namespace model {
 		this->_text->addText(*this->_font, "SPLINE", {-1.5F, 0.55F, 2});
 
 		this->_text->addText(*this->_font, "1 UNIT", {3.5F, 1.0F, 2.5F});
-		this->_text->addText(*this->_font, "HALF UNIT", {1.5F, 0.55F, 2.5F});*/
+		this->_text->addText(*this->_font, "HALF UNIT", {1.5F, 0.55F, 2.5F});
 		// ------
 
 		this->_model->upload(false);
 		this->_bboxes->upload();
 		this->_displacement->upload();
-		//  this->_sprite->upload();
-		//  this->_spline->upload();
-		// this->_text->upload();
+		this->_sprite->upload();
+		this->_spline->upload();
+		this->_text->upload();
 
 		this->_ready = true;
 	}
@@ -302,9 +279,9 @@ namespace model {
 		this->_model.reset();
 		this->_bboxes.reset();
 		this->_displacement.reset();
-		//  this->_sprite.reset();
-		//  this->_spline.reset();
-		//  this->_text.reset();
+		this->_sprite.reset();
+		this->_spline.reset();
+		this->_text.reset();
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
@@ -325,14 +302,14 @@ namespace model {
 
 	void Game::drawWorld() {
 		if (!this->_ready) return;
-		// if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr || this->_spline == nullptr) return;
+		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr || this->_spline == nullptr) return;
 
 		this->_model->draw();
 		this->_displacement->draw();
-		//  this->_sprite->draw();
-		//  this->_spline->draw();
+		this->_sprite->draw();
+		this->_spline->draw();
 		this->_bboxes->draw();
-		// this->_text->draw();
+		this->_text->draw();
 	}
 
 	void Game::printFrames() {

@@ -9,6 +9,7 @@ namespace rawrbox {
 	struct PipeSettings {
 		Diligent::PRIMITIVE_TOPOLOGY topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		Diligent::CULL_MODE cull = Diligent::CULL_MODE_BACK;
+		Diligent::FILL_MODE fill = Diligent::FILL_MODE_SOLID;
 
 		Diligent::COMPARISON_FUNCTION depth = Diligent::COMPARISON_FUNC_LESS;
 		bool depthWrite = true;

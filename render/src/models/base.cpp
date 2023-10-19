@@ -176,19 +176,17 @@ namespace rawrbox {
 
 		auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
 		auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
-		auto layout = this->_material->vLayout();
 
 		// VERT ----
 		Diligent::BufferDesc VertBuffDesc;
 		VertBuffDesc.Name = "RawrBox::Buffer::Vertex";
 		VertBuffDesc.Usage = dynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_IMMUTABLE;
 		VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-		VertBuffDesc.Size = dynamic ? 16000 : vertSize * layout.second;
+		VertBuffDesc.Size = dynamic ? 16000 : vertSize * sizeof(rawrbox::VertexData);
 		VertBuffDesc.CPUAccessFlags = dynamic ? Diligent::CPU_ACCESS_WRITE : Diligent::CPU_ACCESS_NONE;
 
 		if (dynamic) {
 			device->CreateBuffer(VertBuffDesc, nullptr, &this->_vbh);
-			// context->UpdateBuffer(this->_vbh, 0, VertBuffDesc.Size, this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		} else {
 			if (vertSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Vertices cannot be empty on non-dynamic buffer!");
 
@@ -205,12 +203,11 @@ namespace rawrbox {
 		IndcBuffDesc.Name = "RawrBox::Buffer::Indices";
 		IndcBuffDesc.Usage = dynamic ? Diligent::USAGE_DYNAMIC : Diligent::USAGE_IMMUTABLE;
 		IndcBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
-		IndcBuffDesc.Size = dynamic ? 16000 : indcSize * sizeof(this->_mesh->indices[0]);
+		IndcBuffDesc.Size = dynamic ? 16000 : indcSize * sizeof(uint32_t);
 		IndcBuffDesc.CPUAccessFlags = dynamic ? Diligent::CPU_ACCESS_WRITE : Diligent::CPU_ACCESS_NONE;
 
 		if (dynamic) {
 			device->CreateBuffer(IndcBuffDesc, nullptr, &this->_ibh);
-			// context->UpdateBuffer(this->_ibh, 0, IndcBuffDesc.Size, this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		} else {
 			if (indcSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Indices cannot be empty on non-dynamic buffer!");
 
@@ -227,6 +224,17 @@ namespace rawrbox {
 
 	void ModelBase::draw() {
 		if (!this->isUploaded()) throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not uploaded");
+
+		// Bind vertex and index buffers
+		const uint64_t offset = 0;
+		// NOLINTBEGIN(*)
+		Diligent::IBuffer* pBuffs[] = {this->_vbh};
+		// NOLINTEND(*)
+
+		auto context = rawrbox::RENDERER->context;
+		context->SetVertexBuffers(0, 1, pBuffs, &offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+		context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		// ----
 	}
 
 #ifdef RAWRBOX_SCRIPTING

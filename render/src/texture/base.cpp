@@ -1,3 +1,4 @@
+#include <rawrbox/math/utils/color.hpp>
 #include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/base.hpp>
@@ -53,7 +54,9 @@ namespace rawrbox {
 				case 4:
 					format = this->_sRGB ? Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB : Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM;
 			}
-		} else if (this->_channels == 0) {
+		}
+
+		if (this->_channels == 0) {
 			switch (format) {
 				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_A8_UNORM:
 				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_R8_UNORM:
@@ -68,6 +71,11 @@ namespace rawrbox {
 					this->_channels = 4;
 					break;
 			}
+		}
+
+		if (this->_channels == 3) { // No RGB8
+			this->_channels = 4;
+			this->_pixels = rawrbox::ColorUtils::setChannels(3, 4, this->_size.x, this->_size.y, this->_pixels);
 		}
 
 		if (this->_pixels.empty()) {

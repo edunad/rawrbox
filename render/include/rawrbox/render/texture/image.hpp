@@ -15,9 +15,9 @@ namespace rawrbox {
 		void internalLoad(uint8_t* image, bool useFallback = true);
 
 	public:
-		explicit TextureImage(const std::filesystem::path& filePath, int forceChannels = 4, bool useFallback = true);
-		explicit TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, int forceChannels = 4, bool useFallback = true);
-		explicit TextureImage(const uint8_t* buffer, int bufferSize, int forceChannels = 4, bool useFallback = true); // TO BE DECODED
+		explicit TextureImage(const std::filesystem::path& filePath, bool useFallback = true);
+		explicit TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback = true);
+		explicit TextureImage(const uint8_t* buffer, int bufferSize, bool useFallback = true); // TO BE DECODED
 
 		explicit TextureImage(const rawrbox::Vector2i& size, const uint8_t* buffer, int channels = 4);
 		explicit TextureImage(const rawrbox::Vector2i& size, const std::vector<uint8_t>& buffer, int channels = 4);

@@ -208,6 +208,7 @@ namespace rawrbox {
 		return this->texture == other.texture &&
 		       this->color == other.color &&
 		       this->wireframe == other.wireframe &&
+		       this->lineMode == other.lineMode &&
 		       this->matrix == other.matrix;
 	}
 } // namespace rawrbox

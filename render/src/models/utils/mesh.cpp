@@ -1,15 +1,16 @@
 
 #include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/utils/topology.hpp>
 #include <rawrbox/utils/pack.hpp>
 
 #include <functional>
 
 namespace rawrbox {
 	rawrbox::Mesh MeshUtils::generateBBOX(const rawrbox::Vector3f& pos, const rawrbox::BBOXf& bbox) {
-		rawrbox::Mesh mesh = generateCube(pos, bbox.size(), rawrbox::Colorf(0.1F, 0.1F, 0.1F, 0.1F));
+		rawrbox::Mesh mesh = generateCube(pos, bbox.size(), rawrbox::Colorf(1.0F, 0.1F, 0.1F, 1.0F));
 
 		mesh.setPos(pos);
-		mesh.setCulling(Diligent::CULL_MODE_BACK);
+		mesh.setWireframe(true);
 
 		return mesh;
 	}
@@ -31,7 +32,7 @@ namespace rawrbox {
 		mesh.totalVertex = 2;
 		mesh.totalIndex = 2;
 
-		mesh.setWireframe(true);
+		mesh.lineMode = true;
 		mesh.setOptimizable(false);
 
 		mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
@@ -377,11 +378,12 @@ namespace rawrbox {
 
 	// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L640
 	// Does not support UV :( / normals
+	// TODO: REPLACE WITH A BETTER ONE THAT SUPPORTS UV
 	rawrbox::Mesh MeshUtils::generateSphere(const rawrbox::Vector3f& pos, float size, uint32_t ratio, const rawrbox::Colorf& cl) {
 		rawrbox::Mesh mesh;
 		mesh.setPos(pos);
 
-		/*const float golden = 1.6180339887F;
+		const float golden = 1.6180339887F;
 		const float len = std::sqrt(golden * golden + 1.0F);
 		const float hSize = size / 2.F;
 		const float ss = 1.0F / len * hSize;
@@ -409,9 +411,9 @@ namespace rawrbox {
 		std::function<void(const rawrbox::Vector3f& _v0, const rawrbox::Vector3f& _v1, const rawrbox::Vector3f& _v2, float _scale, uint32_t ratio)> triangle;
 		triangle = [&triangle, &buff, &cl](const rawrbox::Vector3f& _v0, const rawrbox::Vector3f& _v1, const rawrbox::Vector3f& _v2, float _scale, uint32_t ratio) {
 			if (0 == ratio) {
-				buff.push_back(rawrbox::ModelVertexData(_v0, {1, 1}, cl));
-				buff.push_back(rawrbox::ModelVertexData(_v2, {1, 0}, cl));
-				buff.push_back(rawrbox::ModelVertexData(_v1, {0, 1}, cl));
+				buff.emplace_back(_v0, rawrbox::Vector2f(1, 1), cl);
+				buff.emplace_back(_v2, rawrbox::Vector2f(1, 0), cl);
+				buff.emplace_back(_v1, rawrbox::Vector2f(0, 1), cl);
 			} else {
 				const rawrbox::Vector3f v01 = (_v0 + _v1).normalized() * _scale;
 				const rawrbox::Vector3f v12 = (_v1 + _v2).normalized() * _scale;
@@ -458,14 +460,12 @@ namespace rawrbox {
 			trilist[ii] = uint16_t(ii);
 		}
 
-			uint32_t numLineListIndices = bgfx::topologyConvert(
-			    bgfx::TopologyConvert::TriListToLineList, nullptr, 0, trilist.data(), numIndices, false);
+		uint32_t numLineListIndices = rawrbox::TopologyUtils::triToLine(nullptr, 0, trilist.data(), numIndices, false);
 
-			std::vector<uint16_t> inds = {};
-			inds.resize(numLineListIndices * sizeof(uint16_t));
+		std::vector<uint16_t> inds = {};
+		inds.resize(numLineListIndices * sizeof(uint16_t));
 
-			bgfx::topologyConvert(
-			    bgfx::TopologyConvert::TriListToLineList, inds.data(), numLineListIndices * sizeof(uint16_t), trilist.data(), numIndices, false);
+		rawrbox::TopologyUtils::triToLine(inds.data(), numLineListIndices * sizeof(uint16_t), trilist.data(), numIndices, false);
 
 		mesh.baseVertex = 0;
 		mesh.baseIndex = 0;
@@ -481,7 +481,7 @@ namespace rawrbox {
 		// -----
 
 		mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
-		mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());*/
+		mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
 		return mesh;
 	}
 
@@ -589,7 +589,7 @@ namespace rawrbox {
 		mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
 		mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
 
-		mesh.setWireframe(true);
+		mesh.lineMode = true;
 		return mesh;
 	}
 } // namespace rawrbox

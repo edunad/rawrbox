@@ -22,6 +22,7 @@ namespace rawrbox {
 		info.GraphicsPipeline.DepthStencilDesc.DepthFunc = settings.depth;
 		info.GraphicsPipeline.DepthStencilDesc.DepthWriteEnable = settings.depthWrite;
 		info.GraphicsPipeline.RasterizerDesc.ScissorEnable = settings.scissors;
+		info.GraphicsPipeline.RasterizerDesc.FillMode = settings.fill;
 
 		Diligent::BlendStateDesc BlendState;
 		BlendState.RenderTargets[0].BlendEnable = true;
@@ -93,7 +94,7 @@ namespace rawrbox {
 			    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
 
 			for (auto& res : settings.resources) {
-				samplers.emplace_back(Diligent::SHADER_TYPE_PIXEL, res.Name, SamLinearClampDesc);
+				samplers.emplace_back(res.ShaderStages, res.Name, SamLinearClampDesc);
 			}
 
 			info.PSODesc.ResourceLayout.ImmutableSamplers = samplers.data();

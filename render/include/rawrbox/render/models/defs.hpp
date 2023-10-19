@@ -18,6 +18,75 @@ namespace rawrbox {
 		rawrbox::Vector4f uv = {};
 		rawrbox::Colorf color = {};
 
+		static std::vector<Diligent::LayoutElement> vLayout() {
+			return {
+			    // Attribute 0 - Position
+			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
+			    // Attribute 1 - UV
+			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
+			    // Attribute 2 - Color
+			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false}};
+		}
+	};
+
+	struct VertexNormData : public virtual VertexData {
+		std::array<uint32_t, 2> normal = {0, 0}; // normal, tangent
+
+		static std::vector<Diligent::LayoutElement> vLayout() {
+			return {
+			    // Attribute 0 - Position
+			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
+			    // Attribute 1 - UV
+			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
+			    // Attribute 2 - Color
+			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false},
+			    // Attribute 3 - Normals
+			    Diligent::LayoutElement{3, 0, 2, Diligent::VT_FLOAT32, false}};
+		}
+	};
+
+	struct VertexBoneData : public virtual VertexData {
+		std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
+		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
+
+		static std::vector<Diligent::LayoutElement> vLayout() {
+			return {
+			    // Attribute 0 - Position
+			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
+			    // Attribute 1 - UV
+			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
+			    // Attribute 2 - Color
+			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false},
+			    // Attribute 3 - BONE-INDICES
+			    Diligent::LayoutElement{3, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
+			    // Attribute 4 - BONE-WEIGHTS
+			    Diligent::LayoutElement{4, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}};
+		}
+	};
+
+	struct VertexNormBoneData : public VertexNormData, public VertexBoneData {
+		static std::vector<Diligent::LayoutElement> vLayout() {
+			return {
+			    // Attribute 0 - Position
+			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
+			    // Attribute 1 - UV
+			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
+			    // Attribute 2 - Color
+			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false},
+			    // Attribute 3 - Normals
+			    Diligent::LayoutElement{3, 0, 2, Diligent::VT_FLOAT32, false},
+			    // Attribute 4 - BONE-INDICES
+			    Diligent::LayoutElement{3, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
+			    // Attribute 5 - BONE-WEIGHTS
+			    Diligent::LayoutElement{4, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}};
+		}
+	};
+
+	/*struct VertexData {
+		rawrbox::Vector3f position = {};
+		rawrbox::Vector4f uv = {};
+		rawrbox::Colorf color = {};
+
 		// /std::array<uint32_t, 2> normal = {0, 0}; // normal, tangent
 		// /
 		// /std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
@@ -40,7 +109,7 @@ namespace rawrbox {
 			    // Attribute 2 - Color
 			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false}};
 
-			/*uint32_t indx = 2;
+			uint32_t indx = 2;
 			uint32_t offset = 0;
 			if (normals) {
 				// Attribute 3 - NORMALS
@@ -56,14 +125,14 @@ namespace rawrbox {
 				v.emplace_back(++indx, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false, offset + sizeof(bone_indices));
 			} else {
 				offset = sizeof(bone_indices) + sizeof(bone_weights);
-			}*/
+			}
 
 			return v;
 		}
-	};
+	};*/
 
 	struct ModelVertexData {
-		rawrbox::VertexData data = {};
+		VertexData data = {};
 
 		// BLEND HELPERS ---
 		// rawrbox::Vector3f ori_pos = {};
@@ -91,6 +160,7 @@ namespace rawrbox {
 			data.position = _pos;
 			data.color = cl;
 			data.uv = _uv;
+			// data.normal = _normal;
 		}
 
 		explicit ModelVertexData(const rawrbox::Vector3f& _pos,
@@ -99,6 +169,7 @@ namespace rawrbox {
 			data.position = _pos;
 			data.color = cl;
 			data.uv = _uv;
+			// data.normal = _normal;
 		}
 
 		// BLEND SHAPE UTILS ---

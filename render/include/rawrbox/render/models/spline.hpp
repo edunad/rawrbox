@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rawrbox/math/bezier_curve.hpp>
-#include <rawrbox/render/model/base.hpp>
+#include <rawrbox/render/models/base.hpp>
 #include <rawrbox/utils/pack.hpp>
 
 namespace rawrbox {

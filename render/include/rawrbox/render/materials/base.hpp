@@ -29,12 +29,14 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 _gModel;
 		rawrbox::Matrix4x4 _gProj;
 		rawrbox::Matrix4x4 _gView;
+		rawrbox::Matrix4x4 _gInvView;
 		rawrbox::Matrix4x4 _gWorldViewModel;
+		rawrbox::Vector4f _gScreenSize;
 		//  --------
 
 		// OTHER ----
 		rawrbox::Colorf _gColorOverride;
-		// std::array<rawrbox::Vector4f, 4> _gData;
+		std::array<rawrbox::Vector4f, 4> _gData;
 		//  ----------
 	};
 
@@ -57,11 +59,9 @@ namespace rawrbox {
 		virtual ~MaterialBase();
 
 		virtual void init();
-
 		virtual void bind(const rawrbox::Mesh& mesh);
-		virtual void bind(Diligent::ITextureView* texture);
 
 		[[nodiscard]] virtual uint32_t supports() const;
-		[[nodiscard]] virtual const std::pair<std::vector<Diligent::LayoutElement>, uint32_t> vLayout() const;
+		[[nodiscard]] virtual const std::vector<Diligent::LayoutElement> vLayout() const;
 	};
 } // namespace rawrbox

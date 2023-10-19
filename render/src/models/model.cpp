@@ -421,15 +421,7 @@ namespace rawrbox {
 		ModelBase::draw();
 		this->preDraw();
 
-		// Bind vertex and index buffers
-		const uint64_t offset = 0;
-		Diligent::IBuffer* pBuffs[] = {this->_vbh};
-
 		auto context = rawrbox::RENDERER->context;
-		context->SetVertexBuffers(0, 1, pBuffs, &offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-		context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-		// ----
-
 		for (auto& mesh : this->_meshes) {
 			// Process animations ---
 			this->animate(*mesh);

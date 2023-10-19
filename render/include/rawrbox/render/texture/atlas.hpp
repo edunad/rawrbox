@@ -10,8 +10,8 @@ namespace rawrbox {
 		void processAtlas();
 
 	public:
-		explicit TextureAtlas(const std::filesystem::path& filePath, uint16_t spriteSize = 32, int forceChannels = 0, bool useFallback = true);
-		explicit TextureAtlas(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, uint16_t spriteSize = 32, int forceChannels = 0, bool useFallback = true);
+		explicit TextureAtlas(const std::filesystem::path& filePath, uint16_t spriteSize = 32, bool useFallback = true);
+		explicit TextureAtlas(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, uint16_t spriteSize = 32, bool useFallback = true);
 
 		TextureAtlas(const TextureAtlas&) = default;
 		TextureAtlas(TextureAtlas&&) = delete;

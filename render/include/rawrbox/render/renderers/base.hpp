@@ -71,6 +71,8 @@ namespace rawrbox {
 		//[[nodiscard]] virtual const bgfx::TextureHandle getMask() const;
 		//[[nodiscard]] virtual const bgfx::TextureHandle getGPUPick() const;
 
+		[[nodiscard]] virtual const rawrbox::Vector2i getSize() const;
+		[[nodiscard]] virtual bool getVSync() const;
 		virtual void setVSync(bool vsync);
 		virtual void gpuPick(const rawrbox::Vector2i& pos, std::function<void(uint32_t)> callback);
 		// ------
