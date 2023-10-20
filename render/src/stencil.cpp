@@ -18,38 +18,34 @@ namespace rawrbox {
 	}
 
 	Stencil::~Stencil() {
-		// CLEANUP BUFFERS & PROGRAMS
-		RAWRBOX_DESTROY(this->_2dPipeline);
-		RAWRBOX_DESTROY(this->_linePipeline);
-		RAWRBOX_DESTROY(this->_textPipeline);
-
 		this->_drawCalls.clear();
 	}
 
 	void Stencil::upload() {
 		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
 
+		// PIPELINE ----
 		rawrbox::PipeSettings settings;
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
 		settings.cull = Diligent::CULL_MODE_NONE;
-		settings.psh = "stencil.psh";
-		settings.vsh = "stencil.vsh";
+		settings.pVS = "stencil.vsh";
+		settings.pPS = "stencil.psh";
 		settings.scissors = true;
 		settings.layout = rawrbox::PosUVColorVertexData::vLayout();
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
-		rawrbox::PipelineUtils::createPipelines("Stencil::2D", settings, &this->_2dPipeline);
-		this->_2dPipeline->CreateShaderResourceBinding(&this->_SRB, true);
+		this->_2dPipeline = rawrbox::PipelineUtils::createPipelines("Stencil::2D", "Stencil::2D", settings);
 
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
-		rawrbox::PipelineUtils::createPipelines("Stencil::2DLine", settings, &this->_linePipeline);
-		this->_linePipeline->CreateShaderResourceBinding(&this->_SRB, true);
+		this->_linePipeline = rawrbox::PipelineUtils::createPipelines("Stencil::2DLine", "Stencil::2D", settings);
 
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		settings.psh = "stencil_text.psh";
-		rawrbox::PipelineUtils::createPipelines("Stencil::2DText", settings, &this->_textPipeline);
-		this->_textPipeline->CreateShaderResourceBinding(&this->_SRB, true);
+		settings.pPS = "stencil_text.psh";
+		this->_textPipeline = rawrbox::PipelineUtils::createPipelines("Stencil::2DText", "Stencil::2D", settings);
+		// -------------
+
+		this->_SRB = rawrbox::PipelineUtils::getBind("Stencil::2D");
 	}
 
 	void Stencil::resize(const rawrbox::Vector2i& size) {

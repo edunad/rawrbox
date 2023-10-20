@@ -1,10 +1,11 @@
 
 
-#include <rawrbox/render_temp/camera/orbital.hpp>
-#include <rawrbox/render_temp/model/utils/mesh.hpp>
-#include <rawrbox/render_temp/resources/texture.hpp>
-#include <rawrbox/render_temp/static.hpp>
-#include <rawrbox/render_temp/utils/texture.hpp>
+#include <rawrbox/engine/static.hpp>
+#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 #include <rawrbox/utils/timer.hpp>
@@ -20,9 +21,10 @@ namespace instance_test {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("INSTANCE TEST");
-		this->_window->setRenderer(
-		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
+		this->_window->setRenderer<rawrbox::RendererBase>(
+		    rawrbox::Colors::Black(),
+		    Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_COUNT, [this]() {}, [this]() { this->drawWorld(); });
+		this->_window->create(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 		this->_window->onIntroCompleted += [this]() {
 			this->loadContent();
@@ -42,12 +44,12 @@ namespace instance_test {
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// ----
 
-		this->_window->initializeBGFX();
+		this->_window->initializeEngine();
 	}
 
 	void Game::loadContent() {
 		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("content/textures/instance_test.png", 64),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/instance_test.png", 64),
 		};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
@@ -62,10 +64,10 @@ namespace instance_test {
 	}
 
 	void Game::contentLoaded() {
-		int total = 1000;
+		/*int total = 1000;
 		float spacing = 0.85F;
 
-		auto t = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/instance_test.png")->get();
+		auto t = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/instance_test.png")->get();
 		auto mesh = rawrbox::MeshUtils::generateCube({0, 0, 0}, {0.5F, 0.5F, 0.5F});
 		mesh.setTexture(t);
 
@@ -83,13 +85,13 @@ namespace instance_test {
 			}
 		}
 
-		this->_model->upload();
+		this->_model->upload();*/
 		this->_ready = true;
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-		this->_model.reset();
+		// this->_model.reset();
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
@@ -109,25 +111,25 @@ namespace instance_test {
 	}
 
 	void Game::printFrames() {
-		const bgfx::Stats* stats = bgfx::getStats();
+		/*const bgfx::Stats* stats = bgfx::getStats();
 
 		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
 		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
 		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
 		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
-		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
+		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());*/
 	}
 
 	void Game::drawWorld() {
-		if (!this->_ready || this->_model == nullptr) return;
-		this->_model->draw();
+		/*if (!this->_ready || this->_model == nullptr) return;
+		this->_model->draw();*/
 	}
 
 	void Game::draw() {
 		if (this->_window == nullptr) return;
 
 		// DEBUG ----
-		bgfx::dbgTextClear();
+		/*bgfx::dbgTextClear();
 		bgfx::dbgTextPrintf(1, 1, 0x1f, "010-instancing-test");
 		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: INSTANCING test");
 		this->printFrames();
@@ -137,7 +139,7 @@ namespace instance_test {
 			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
 			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
 			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
-		}
+		}*/
 
 		this->_window->render(); // Commit primitives
 	}

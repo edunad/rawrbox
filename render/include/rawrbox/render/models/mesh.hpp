@@ -138,10 +138,6 @@ namespace rawrbox {
 
 		virtual void setCulling(Diligent::CULL_MODE culling);
 
-		virtual void setDepthTest(uint64_t depthTest);
-
-		virtual void setBlend(uint64_t blend);
-
 		virtual void setRecieveDecals(bool status);
 
 		[[nodiscard]] virtual uint32_t getId(int index = -1) const;

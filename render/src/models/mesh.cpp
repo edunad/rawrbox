@@ -109,14 +109,6 @@ namespace rawrbox {
 		this->culling = _culling;
 	}
 
-	void Mesh::setDepthTest(uint64_t _depthTest) {
-		// this->depthTest = _depthTest;
-	}
-
-	void Mesh::setBlend(uint64_t blend) {
-		// this->blending = blend;
-	}
-
 	void Mesh::setRecieveDecals(bool decals) {
 		this->addData("mask", {decals ? 1.0F : 0.0F, 0, 0, 0});
 	}

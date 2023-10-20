@@ -1,8 +1,13 @@
 #pragma once
 
+#include <Common/interface/RefCntAutoPtr.hpp>
+
+#include <Graphics/GraphicsEngine/interface/Buffer.h>
 #include <Graphics/GraphicsEngine/interface/PipelineState.h>
+#include <Graphics/GraphicsEngine/interface/Shader.h>
 #include <Graphics/GraphicsEngine/interface/ShaderResourceVariable.h>
 
+#include <unordered_map>
 #include <vector>
 
 namespace rawrbox {
@@ -17,17 +22,23 @@ namespace rawrbox {
 		bool scissors = false;
 		uint8_t renderTargets = 1;
 
-		std::string vsh = "";
-		std::string psh = "";
-		std::string gsh = "";
+		std::string pVS = "";
+		std::string pPS = "";
+		std::string pGS = "";
 
 		std::vector<Diligent::LayoutElement> layout = {};
 		std::vector<Diligent::ShaderResourceVariableDesc> resources = {};
 	};
 
 	class PipelineUtils {
+		static std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IPipelineState>> _pipelines;
+		static std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> _binds;
+		static std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShader>> _shaders;
+
 	public:
 		// ---
-		static void createPipelines(const std::string& name, const rawrbox::PipeSettings settings, Diligent::IPipelineState** pipe);
+		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type);
+		static Diligent::IPipelineState* createPipelines(const std::string& name, const std::string& bindName, const rawrbox::PipeSettings settings, Diligent::IBuffer* uniforms = nullptr);
+		[[nodiscard]] static Diligent::IShaderResourceBinding* getBind(const std::string& bindName);
 	};
 } // namespace rawrbox

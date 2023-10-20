@@ -5,7 +5,49 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-	void PipelineUtils::createPipelines(const std::string& name, const rawrbox::PipeSettings settings, Diligent::IPipelineState** pipe) {
+	// STATICS ------
+	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IPipelineState>> PipelineUtils::_pipelines = {};
+	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> PipelineUtils::_binds = {};
+	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShader>> PipelineUtils::_shaders = {};
+	// -----------------
+
+	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type) {
+		if (name.empty()) return nullptr;
+
+		auto fnd = _shaders.find(name);
+		if (fnd != _shaders.end()) {
+			return fnd->second;
+		}
+
+		Diligent::ShaderCreateInfo ShaderCI;
+		ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
+		ShaderCI.Desc.UseCombinedTextureSamplers = true; // (g_Texture + g_Texture_sampler combination)
+		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
+
+		ShaderCI.Desc.ShaderType = type;
+		ShaderCI.EntryPoint = "main";
+		ShaderCI.Desc.Name = fmt::format("RawrBox::{}", name).c_str();
+		ShaderCI.FilePath = name.c_str();
+
+		Diligent::RefCntAutoPtr<Diligent::IShader> shader;
+		Diligent::RefCntAutoPtr<Diligent::IDataBlob> output;
+		rawrbox::RENDERER->device->CreateShader(ShaderCI, &shader, &output);
+		if (shader == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create shader '{}'", name));
+
+		std::string_view compilerOutput = output != nullptr ? std::bit_cast<const char*>(output->GetConstDataPtr()) : "";
+		fmt::print("[RawrBox-Shader] Compiled shader '{}'\n", name);
+		if (!compilerOutput.empty()) fmt::print("  └── {}\n", compilerOutput);
+
+		_shaders[name] = std::move(shader);
+		return _shaders[name];
+	}
+
+	Diligent::IPipelineState* PipelineUtils::createPipelines(const std::string& name, const std::string& bindName, const rawrbox::PipeSettings settings, Diligent::IBuffer* uniforms) {
+		auto fnd = _pipelines.find(name);
+		if (fnd != _pipelines.end()) return fnd->second;
+
+		Diligent::RefCntAutoPtr<Diligent::IPipelineState> pipe;
+
 		// Create pipe info ----
 		Diligent::GraphicsPipelineStateCreateInfo info;
 		info.PSODesc.Name = fmt::format("RawrBox::{}", name).c_str();
@@ -37,45 +79,11 @@ namespace rawrbox {
 		ShaderCI.Desc.UseCombinedTextureSamplers = true; // (g_Texture + g_Texture_sampler combination)
 		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
 
-		Diligent::RefCntAutoPtr<Diligent::IShader> pVS;
-		if (!settings.vsh.empty()) {
-			ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_VERTEX;
-			ShaderCI.EntryPoint = "main";
-			ShaderCI.Desc.Name = fmt::format("RawrBox::{}::VS", name).c_str();
-			ShaderCI.FilePath = settings.vsh.c_str();
-
-			rawrbox::RENDERER->device->CreateShader(ShaderCI, &pVS);
-			if (pVS == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create VERTEX shader '{}'", settings.vsh));
-			info.pVS = pVS;
-		}
-
-		// Create a pixel shader
-		Diligent::RefCntAutoPtr<Diligent::IShader> pPS;
-		if (!settings.psh.empty()) {
-			ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_PIXEL;
-			ShaderCI.EntryPoint = "main";
-			ShaderCI.Desc.Name = fmt::format("RawrBox::{}::PS", name).c_str();
-			ShaderCI.FilePath = settings.psh.c_str();
-
-			rawrbox::RENDERER->device->CreateShader(ShaderCI, &pPS);
-			if (pPS == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create PIXEL shader '{}'", settings.psh));
-			info.pPS = pPS;
-		}
-		// ----------------------
-
-		// Create a geometry shader
-		Diligent::RefCntAutoPtr<Diligent::IShader> pGEO;
-		if (!settings.gsh.empty()) {
-			ShaderCI.Desc.ShaderType = Diligent::SHADER_TYPE_GEOMETRY;
-			ShaderCI.EntryPoint = "main";
-			ShaderCI.Desc.Name = fmt::format("RawrBox::{}::GEO", name).c_str();
-			ShaderCI.FilePath = settings.gsh.c_str();
-
-			rawrbox::RENDERER->device->CreateShader(ShaderCI, &pGEO);
-			if (pGEO == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create GEOMETRY shader '{}'", settings.gsh));
-			info.pGS = pGEO;
-		}
-		// ----------------------
+		// SHADERS ----
+		info.pVS = rawrbox::PipelineUtils::compileShader(settings.pVS, Diligent::SHADER_TYPE_VERTEX);
+		info.pPS = rawrbox::PipelineUtils::compileShader(settings.pPS, Diligent::SHADER_TYPE_PIXEL);
+		info.pGS = rawrbox::PipelineUtils::compileShader(settings.pGS, Diligent::SHADER_TYPE_PIXEL);
+		// -------------
 
 		// Layout
 		info.GraphicsPipeline.InputLayout.LayoutElements = settings.layout.data();
@@ -102,7 +110,22 @@ namespace rawrbox {
 			info.PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 		}
 		// ---------------------
-		rawrbox::RENDERER->device->CreateGraphicsPipelineState(info, pipe);
+		rawrbox::RENDERER->device->CreateGraphicsPipelineState(info, &pipe);
 		if (pipe == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}'", name));
+
+		if (uniforms != nullptr) {
+			pipe->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(uniforms);
+		}
+
+		pipe->CreateShaderResourceBinding(&_binds[bindName], true);
+		_pipelines[name] = std::move(pipe);
+		return _pipelines[name];
+	}
+
+	Diligent::IShaderResourceBinding* PipelineUtils::getBind(const std::string& bindName) {
+		auto fnd = _binds.find(bindName);
+		if (fnd == _binds.end()) return nullptr;
+
+		return fnd->second;
 	}
 } // namespace rawrbox

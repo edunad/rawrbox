@@ -7,8 +7,6 @@
 #include <Graphics/GraphicsEngine/interface/PipelineState.h>
 #include <fmt/format.h>
 
-#include "Common/interface/BasicMath.hpp"
-
 namespace rawrbox {
 	// FLAGS ------
 	// NOLINTBEGIN{unused-const-variable}
@@ -24,11 +22,10 @@ namespace rawrbox {
 	// NOLINTEND{unused-const-variable}
 	//  --------------------
 
-	struct MaterialUniforms {
+	struct MaterialBaseUniforms {
 		//  CAMERA -----
 		rawrbox::Matrix4x4 _gModel;
-		rawrbox::Matrix4x4 _gProj;
-		rawrbox::Matrix4x4 _gView;
+		rawrbox::Matrix4x4 _gViewProj;
 		rawrbox::Matrix4x4 _gInvView;
 		rawrbox::Matrix4x4 _gWorldViewModel;
 		rawrbox::Vector4f _gScreenSize;
@@ -36,17 +33,23 @@ namespace rawrbox {
 
 		// OTHER ----
 		rawrbox::Colorf _gColorOverride;
+		rawrbox::Vector4f _gTextureFlags;
 		std::array<rawrbox::Vector4f, 4> _gData;
 		//  ----------
 	};
 
 	class MaterialBase {
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
+
+		static Diligent::IPipelineState* _base;
+		static Diligent::IPipelineState* _line;
+		static Diligent::IPipelineState* _cullback;
+		static Diligent::IPipelineState* _wireframe;
+		static Diligent::IPipelineState* _cullnone;
+
+		static Diligent::IShaderResourceBinding* _bind;
+
 	protected:
-		Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-		std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IPipelineState>> _pipelines = {};
-
-		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _SRB;
-
 		virtual void bindUniforms(const rawrbox::Mesh& mesh);
 		virtual void bindPipeline(const rawrbox::Mesh& mesh);
 
@@ -56,12 +59,12 @@ namespace rawrbox {
 		MaterialBase& operator=(MaterialBase&&) = delete;
 		MaterialBase(const MaterialBase&) = delete;
 		MaterialBase& operator=(const MaterialBase&) = delete;
-		virtual ~MaterialBase();
+		virtual ~MaterialBase() = default;
 
-		virtual void init();
+		static void init();
 		virtual void bind(const rawrbox::Mesh& mesh);
 
 		[[nodiscard]] virtual uint32_t supports() const;
-		[[nodiscard]] virtual const std::pair<std::vector<Diligent::LayoutElement>, uint32_t> vLayout() const;
+		[[nodiscard]] static const std::pair<std::vector<Diligent::LayoutElement>, uint32_t> vLayout();
 	};
 } // namespace rawrbox

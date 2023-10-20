@@ -13,7 +13,7 @@
 // NOLINTBEGIN(*)
 #define RAWRBOX_DESTROY(HANDLE) \
 	if (HANDLE != nullptr) { \
-		HANDLE->Release(); \
+		HANDLE.Release(); \
 	}
 // NOLINTEND(*)
 

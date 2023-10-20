@@ -1,16 +1,16 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render_temp/model/instanced.hpp>
-#include <rawrbox/render_temp/texture/atlas.hpp>
-#include <rawrbox/render_temp/window.hpp>
+// #include <rawrbox/render/models/instanced.hpp>
+#include <rawrbox/render/texture/atlas.hpp>
+#include <rawrbox/render/window.hpp>
 
 #include <memory>
 
 namespace instance_test {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::InstancedModel> _model = std::make_unique<rawrbox::InstancedModel>();
+		// std::unique_ptr<rawrbox::InstancedModel> _model = std::make_unique<rawrbox::InstancedModel>();
 
 		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;

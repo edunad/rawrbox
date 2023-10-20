@@ -127,8 +127,6 @@ namespace rawrbox {
 
 		virtual void setCulling(Diligent::CULL_MODE cull, int id = -1);
 		virtual void setWireframe(bool wireframe, int id = -1);
-		virtual void setBlend(uint64_t blend, int id = -1);
-		virtual void setDepthTest(uint64_t depth, int id = -1);
 		virtual void setColor(const rawrbox::Color& color, int id = -1);
 		virtual void setRecieveDecals(bool recieve, int id = -1);
 		virtual void setTexture(rawrbox::TextureBase* tex, int id = -1);

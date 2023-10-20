@@ -7,35 +7,43 @@
 #include <Platforms/Basic/interface/DebugUtilities.hpp>
 
 namespace rawrbox {
+	// STATIC DATA ----
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialText3D::_uniforms;
+
+	Diligent::IPipelineState* MaterialText3D::_base = nullptr;
+	Diligent::IPipelineState* MaterialText3D::_wireframe = nullptr;
+
+	Diligent::IShaderResourceBinding* MaterialText3D::_bind = nullptr;
+	// ----------------
+
 	void MaterialText3D::init() {
+		// Uniforms -------
 		Diligent::BufferDesc CBDesc;
-		CBDesc.Name = "rawrbox::MaterialText::Uniforms";
+		CBDesc.Name = "rawrbox::MaterialText3D::Uniforms";
 		CBDesc.Size = sizeof(rawrbox::MaterialTextUniforms);
 		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
 		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-		rawrbox::RENDERER->device->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+		rawrbox::RENDERER->device->CreateBuffer(CBDesc, nullptr, &_uniforms);
+		// ------------
 
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
-		settings.psh = "3dtext_unlit.psh";
-		settings.vsh = "3dtext_unlit.vsh";
+		settings.pVS = "3dtext_unlit.vsh";
+		settings.pPS = "3dtext_unlit.psh";
 		settings.cull = Diligent::CULL_MODE_FRONT;
-		settings.layout = this->vLayout().first;
+		settings.layout = vLayout().first;
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
-		rawrbox::PipelineUtils::createPipelines("3DText::Base", settings, &this->_pipelines["base"]);
+		_base = rawrbox::PipelineUtils::createPipelines("3DText::Base", "3DText", settings, _uniforms);
 
 		settings.fill = Diligent::FILL_MODE_WIREFRAME;
-		rawrbox::PipelineUtils::createPipelines("3DText::Base::Wireframe", settings, &this->_pipelines["base-wireframe"]);
+		_wireframe = rawrbox::PipelineUtils::createPipelines("3DText::Base::Wireframe", "3DText", settings, _uniforms);
 		// ----
 
-		for (auto& pipe : this->_pipelines) {
-			pipe.second->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(this->_uniforms);
-			pipe.second->CreateShaderResourceBinding(&this->_SRB, true);
-		}
+		_bind = rawrbox::PipelineUtils::getBind("3DText");
 	}
 
 	void MaterialText3D::bindUniforms(const rawrbox::Mesh& mesh) {
@@ -61,9 +69,9 @@ namespace rawrbox {
 	void MaterialText3D::bindPipeline(const rawrbox::Mesh& mesh) {
 		auto context = rawrbox::RENDERER->context;
 		if (mesh.wireframe) {
-			context->SetPipelineState(this->_pipelines["base-wireframe"]);
+			context->SetPipelineState(_wireframe);
 		} else {
-			context->SetPipelineState(this->_pipelines["base"]);
+			context->SetPipelineState(_base);
 		}
 	}
 
@@ -72,15 +80,15 @@ namespace rawrbox {
 
 		if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
 			mesh.texture->update(); // Update texture
-			this->_SRB->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(mesh.texture->getHandle());
+			_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(mesh.texture->getHandle());
 		} else {
-			this->_SRB->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(rawrbox::WHITE_TEXTURE->getHandle());
+			_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(rawrbox::WHITE_TEXTURE->getHandle());
 		}
 
 		this->bindPipeline(mesh);
 		this->bindUniforms(mesh);
 
-		context->CommitShaderResources(this->_SRB, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		context->CommitShaderResources(_bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
 	uint32_t MaterialText3D::supports() const {

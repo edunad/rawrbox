@@ -18,14 +18,26 @@ namespace rawrbox {
 		rawrbox::Vector4f uv = {};
 		rawrbox::Colorf color = {};
 
-		static std::vector<Diligent::LayoutElement> vLayout() {
-			return {
+		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
+			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
 			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 2 - Color
 			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false}};
+
+			if (instanced) {
+				v.emplace_back(3, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 1
+				v.emplace_back(4, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 2
+				v.emplace_back(5, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
+				v.emplace_back(6, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
+
+				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Color
+				v.emplace_back(8, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
+			}
+
+			return v;
 		}
 
 		static uint32_t vLayoutSize() {
@@ -36,8 +48,8 @@ namespace rawrbox {
 	struct VertexNormData : public virtual VertexData {
 		std::array<uint32_t, 2> normal = {0, 0}; // normal, tangent
 
-		static std::vector<Diligent::LayoutElement> vLayout() {
-			return {
+		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
+			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
 			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
 			    // Attribute 1 - UV
@@ -46,6 +58,18 @@ namespace rawrbox {
 			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 3 - Normals
 			    Diligent::LayoutElement{3, 0, 2, Diligent::VT_FLOAT32, false}};
+
+			if (instanced) {
+				v.emplace_back(4, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 1
+				v.emplace_back(5, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 2
+				v.emplace_back(6, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
+				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
+
+				v.emplace_back(8, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Color
+				v.emplace_back(9, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
+			}
+
+			return v;
 		}
 
 		static uint32_t vLayoutSize() {
@@ -57,8 +81,8 @@ namespace rawrbox {
 		std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
-		static std::vector<Diligent::LayoutElement> vLayout() {
-			return {
+		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
+			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
 			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
 			    // Attribute 1 - UV
@@ -69,6 +93,18 @@ namespace rawrbox {
 			    Diligent::LayoutElement{3, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
 			    // Attribute 4 - BONE-WEIGHTS
 			    Diligent::LayoutElement{4, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}};
+
+			if (instanced) {
+				v.emplace_back(5, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 1
+				v.emplace_back(6, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 2
+				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
+				v.emplace_back(8, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
+
+				v.emplace_back(9, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);  // Color
+				v.emplace_back(10, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
+			}
+
+			return v;
 		}
 
 		static uint32_t vLayoutSize() {
@@ -77,8 +113,8 @@ namespace rawrbox {
 	};
 
 	struct VertexNormBoneData : public VertexNormData, public VertexBoneData {
-		static std::vector<Diligent::LayoutElement> vLayout() {
-			return {
+		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
+			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
 			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
 			    // Attribute 1 - UV
@@ -88,9 +124,21 @@ namespace rawrbox {
 			    // Attribute 3 - Normals
 			    Diligent::LayoutElement{3, 0, 2, Diligent::VT_FLOAT32, false},
 			    // Attribute 4 - BONE-INDICES
-			    Diligent::LayoutElement{3, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
+			    Diligent::LayoutElement{4, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
 			    // Attribute 5 - BONE-WEIGHTS
-			    Diligent::LayoutElement{4, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}};
+			    Diligent::LayoutElement{5, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}};
+
+			if (instanced) {
+				v.emplace_back(6, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 1
+				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 2
+				v.emplace_back(8, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
+				v.emplace_back(9, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
+
+				v.emplace_back(10, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Color
+				v.emplace_back(11, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
+			}
+
+			return v;
 		}
 
 		static uint32_t vLayoutSize() {

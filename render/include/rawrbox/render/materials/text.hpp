@@ -13,6 +13,14 @@ namespace rawrbox {
 	};
 
 	class MaterialText3D : public rawrbox::MaterialBase {
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
+
+		static Diligent::IPipelineState* _base;
+		static Diligent::IPipelineState* _wireframe;
+
+		static Diligent::IShaderResourceBinding* _bind;
+
+	protected:
 		void bindUniforms(const rawrbox::Mesh& mesh) override;
 		void bindPipeline(const rawrbox::Mesh& mesh) override;
 
@@ -24,7 +32,7 @@ namespace rawrbox {
 		MaterialText3D& operator=(MaterialText3D&&) = delete;
 		~MaterialText3D() override = default;
 
-		void init() override;
+		static void init();
 		void bind(const rawrbox::Mesh& mesh) override;
 
 		[[nodiscard]] uint32_t supports() const override;

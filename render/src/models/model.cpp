@@ -373,20 +373,6 @@ namespace rawrbox {
 		}
 	}
 
-	void Model::setBlend(uint64_t blend, int id) {
-		for (size_t i = 0; i < this->_meshes.size(); i++) {
-			if (id != -1 && i != static_cast<size_t>(id)) continue;
-			this->_meshes[i]->setBlend(blend);
-		}
-	}
-
-	void Model::setDepthTest(uint64_t depth, int id) {
-		for (size_t i = 0; i < this->_meshes.size(); i++) {
-			if (id != -1 && i != static_cast<size_t>(id)) continue;
-			this->_meshes[i]->setDepthTest(depth);
-		}
-	}
-
 	void Model::setColor(const rawrbox::Color& color, int id) {
 		for (size_t i = 0; i < this->_meshes.size(); i++) {
 			if (id != -1 && i != static_cast<size_t>(id)) continue;

@@ -3,6 +3,9 @@
 //
 //
 // #include <rawrbox/render_temp/utils/render.hpp>
+#include <rawrbox/render/materials/base.hpp>
+#include <rawrbox/render/materials/instanced.hpp>
+#include <rawrbox/render/materials/text.hpp>
 #include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/utils/pack.hpp>
@@ -26,10 +29,13 @@ namespace rawrbox {
 		if (!this->supported()) throw std::runtime_error(fmt::format("[RawrBox-Renderer] Renderer not supported by GPU!"));
 		this->resize(size);
 
-		// rawrbox::DECALS::init();
+		// Init materials ---
+		rawrbox::MaterialBase::init();
+		rawrbox::MaterialText3D::init();
+		rawrbox::MaterialInstanced::init();
+		// -----
 
-		// finish any queued precomputations before rendering the scene
-		// bgfx::frame();
+		// rawrbox::DECALS::init();
 	}
 
 	void RendererBase::resize(const rawrbox::Vector2i& size) {
@@ -83,14 +89,6 @@ namespace rawrbox {
 			this->frame();
 			return;
 		}
-
-		// Set camera variables buffer ----
-		{
-			// Map the buffer and write current world-view-projection matrix
-			// Diligent::MapHelper<Diligent::float4x4> CBConstants(this->_pImmediateContext, this->_VSConstants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			//*CBConstants = this->_WorldViewProjMatrix.Transpose();
-		}
-		// --------------------------------
 
 		// Final Pass -------------
 		this->finalRender();

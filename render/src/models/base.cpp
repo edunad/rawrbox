@@ -188,9 +188,7 @@ namespace rawrbox {
 		VertBuffDesc.Name = "RawrBox::Buffer::Vertex";
 		VertBuffDesc.Usage = dynamic ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE;
 		VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-		// VertBuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 		VertBuffDesc.Size = vertSize * this->_material->vLayout().second;
-		// VertBuffDesc.ElementByteStride = 22;
 
 		Diligent::BufferData VBData;
 		VBData.pData = this->_mesh->vertices.data();
@@ -210,8 +208,6 @@ namespace rawrbox {
 		IBData.DataSize = IndcBuffDesc.Size;
 		device->CreateBuffer(IndcBuffDesc, indcSize > 0 ? &IBData : nullptr, &this->_ibh);
 		// ---------------------
-
-		this->_material->init();
 	}
 
 	void ModelBase::draw() {
