@@ -11,6 +11,10 @@
 #include <vector>
 
 namespace rawrbox {
+	struct PipeUniforms {
+		Diligent::SHADER_TYPE type = Diligent::SHADER_TYPE_VERTEX;
+		Diligent::IBuffer* uniform = nullptr;
+	};
 	struct PipeSettings {
 		Diligent::PRIMITIVE_TOPOLOGY topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		Diligent::CULL_MODE cull = Diligent::CULL_MODE_BACK;
@@ -26,6 +30,7 @@ namespace rawrbox {
 		std::string pPS = "";
 		std::string pGS = "";
 
+		std::vector<rawrbox::PipeUniforms> uniforms = {};
 		std::vector<Diligent::LayoutElement> layout = {};
 		std::vector<Diligent::ShaderResourceVariableDesc> resources = {};
 	};
@@ -38,7 +43,7 @@ namespace rawrbox {
 	public:
 		// ---
 		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type);
-		static Diligent::IPipelineState* createPipelines(const std::string& name, const std::string& bindName, const rawrbox::PipeSettings settings, Diligent::IBuffer* uniforms = nullptr);
+		static Diligent::IPipelineState* createPipelines(const std::string& name, const std::string& bindName, const rawrbox::PipeSettings settings);
 		[[nodiscard]] static Diligent::IShaderResourceBinding* getBind(const std::string& bindName);
 	};
 } // namespace rawrbox

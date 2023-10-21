@@ -34,13 +34,14 @@ namespace rawrbox {
 		settings.pPS = "3dtext_unlit.psh";
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.layout = vLayout().first;
+		settings.uniforms = {{Diligent::SHADER_TYPE_VERTEX, _uniforms}};
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
-		_base = rawrbox::PipelineUtils::createPipelines("3DText::Base", "3DText", settings, _uniforms);
+		_base = rawrbox::PipelineUtils::createPipelines("3DText::Base", "3DText", settings);
 
 		settings.fill = Diligent::FILL_MODE_WIREFRAME;
-		_wireframe = rawrbox::PipelineUtils::createPipelines("3DText::Base::Wireframe", "3DText", settings, _uniforms);
+		_wireframe = rawrbox::PipelineUtils::createPipelines("3DText::Base::Wireframe", "3DText", settings);
 		// ----
 
 		_bind = rawrbox::PipelineUtils::getBind("3DText");

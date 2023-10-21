@@ -65,8 +65,8 @@ namespace rawrbox {
 		virtual void bindRenderUniforms();
 
 		// Utils ----
-		//[[nodiscard]] virtual const bgfx::TextureHandle getDepth() const;
-		//[[nodiscard]] virtual const bgfx::TextureHandle getColor() const;
+		[[nodiscard]] virtual Diligent::ITextureView* getDepth() const;
+		[[nodiscard]] virtual Diligent::ITextureView* getColor() const;
 		//[[nodiscard]] virtual const bgfx::TextureHandle getMask() const;
 		//[[nodiscard]] virtual const bgfx::TextureHandle getGPUPick() const;
 

@@ -43,24 +43,25 @@ namespace rawrbox {
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
+		settings.uniforms = {{Diligent::SHADER_TYPE_VERTEX, _uniforms}};
 
-		_base = rawrbox::PipelineUtils::createPipelines("Model::Base", "Model::Base", settings, _uniforms);
+		_base = rawrbox::PipelineUtils::createPipelines("Model::Base", "Model::Base", settings);
 
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
 		settings.cull = Diligent::CULL_MODE_NONE;
-		_line = rawrbox::PipelineUtils::createPipelines("Model::Line", "Model::Base", settings, _uniforms);
+		_line = rawrbox::PipelineUtils::createPipelines("Model::Line", "Model::Base", settings);
 
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		settings.cull = Diligent::CULL_MODE_BACK;
-		_cullback = rawrbox::PipelineUtils::createPipelines("Model::Base::CullBack", "Model::Base", settings, _uniforms);
+		_cullback = rawrbox::PipelineUtils::createPipelines("Model::Base::CullBack", "Model::Base", settings);
 
 		settings.fill = Diligent::FILL_MODE_WIREFRAME;
-		_wireframe = rawrbox::PipelineUtils::createPipelines("Model::Base::Wireframe", "Model::Base", settings, _uniforms);
+		_wireframe = rawrbox::PipelineUtils::createPipelines("Model::Base::Wireframe", "Model::Base", settings);
 
 		settings.fill = Diligent::FILL_MODE_SOLID;
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		settings.cull = Diligent::CULL_MODE_NONE;
-		_cullnone = rawrbox::PipelineUtils::createPipelines("Model::Base::CullNone", "Model::Base", settings, _uniforms);
+		_cullnone = rawrbox::PipelineUtils::createPipelines("Model::Base::CullNone", "Model::Base", settings);
 		// -----
 
 		_bind = rawrbox::PipelineUtils::getBind("Model::Base");

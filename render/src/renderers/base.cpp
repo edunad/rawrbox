@@ -231,17 +231,15 @@ namespace rawrbox {
 	void RendererBase::bindRenderUniforms() {}
 
 	// Utils ----
-	/*const bgfx::TextureHandle RendererBase::getDepth() const {
-		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
+	Diligent::ITextureView* RendererBase::getDepth() const {
 		return this->_render->getDepth();
 	}
 
-	const bgfx::TextureHandle RendererBase::getColor() const {
-		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
+	Diligent::ITextureView* RendererBase::getColor() const {
 		return this->_render->getHandle();
 	}
 
-	const bgfx::TextureHandle RendererBase::getMask() const {
+	/*const bgfx::TextureHandle RendererBase::getMask() const {
 		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
 		return this->_render->getTexture(1);
 	}

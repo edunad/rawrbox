@@ -12,12 +12,12 @@ namespace rawrbox {
 	}
 
 	// ------ UTILS
-	const Diligent::ITextureView* TextureRender::getDepth() const { return this->_depthHandle; }
+	Diligent::ITextureView* TextureRender::getDepth() const { return this->_depthHandle; }
 	// ------------
 
 	// ------ RENDER
 	void TextureRender::startRecord(bool clear) {
-		const std::array<float, 4> ClearColor = {0.0F, 0.0F, 0.0F, 1.0F};
+		const std::array<float, 4> ClearColor = {0.0F, 0.0F, 0.0F, 0.0F};
 		rawrbox::RENDERER->context->SetRenderTargets(1, &this->_rtHandle, this->_depthHandle, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		if (clear) {
@@ -49,7 +49,7 @@ namespace rawrbox {
 		desc.ClearValue.Color[0] = 0.F;
 		desc.ClearValue.Color[1] = 0.F;
 		desc.ClearValue.Color[2] = 0.F;
-		desc.ClearValue.Color[3] = 1.F;
+		desc.ClearValue.Color[3] = 0.F;
 
 		rawrbox::RENDERER->device->CreateTexture(desc, nullptr, &this->_tex);
 		this->_rtHandle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);

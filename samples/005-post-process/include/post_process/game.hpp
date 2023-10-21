@@ -1,9 +1,9 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render_temp/model/model.hpp>
-#include <rawrbox/render_temp/postprocess/manager.hpp>
-#include <rawrbox/render_temp/window.hpp>
+#include <rawrbox/render/models/model.hpp>
+#include <rawrbox/render/post_process/manager.hpp>
+#include <rawrbox/render/window.hpp>
 
 #include <memory>
 

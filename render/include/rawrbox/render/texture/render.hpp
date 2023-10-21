@@ -24,7 +24,7 @@ namespace rawrbox {
 		~TextureRender() override;
 
 		// ------UTILS
-		[[nodiscard]] virtual const Diligent::ITextureView* getDepth() const;
+		[[nodiscard]] virtual Diligent::ITextureView* getDepth() const;
 		// ------------
 
 		// ------RENDER

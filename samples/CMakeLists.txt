@@ -13,7 +13,7 @@ add_subdirectory("002-generated-models")
 #endif()
 #
 add_subdirectory("004-light-support")
-#add_subdirectory("005-post-process")
+add_subdirectory("005-post-process")
 #
 #if(RAWRBOX_BUILD_RAWRBOX_BASS)
 #    add_subdirectory("006-bass-loading")

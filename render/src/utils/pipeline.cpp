@@ -42,7 +42,7 @@ namespace rawrbox {
 		return _shaders[name];
 	}
 
-	Diligent::IPipelineState* PipelineUtils::createPipelines(const std::string& name, const std::string& bindName, const rawrbox::PipeSettings settings, Diligent::IBuffer* uniforms) {
+	Diligent::IPipelineState* PipelineUtils::createPipelines(const std::string& name, const std::string& bindName, const rawrbox::PipeSettings settings) {
 		auto fnd = _pipelines.find(name);
 		if (fnd != _pipelines.end()) return fnd->second;
 
@@ -115,8 +115,9 @@ namespace rawrbox {
 		rawrbox::RENDERER->device->CreateGraphicsPipelineState(info, &pipe);
 		if (pipe == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}'", name));
 
-		if (uniforms != nullptr) {
-			pipe->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(uniforms);
+		for (auto& uni : settings.uniforms) {
+			if (uni.uniform == nullptr) continue;
+			pipe->GetStaticVariableByName(uni.type, "Constants")->Set(uni.uniform);
 		}
 
 		pipe->CreateShaderResourceBinding(&_binds[bindName], true);
