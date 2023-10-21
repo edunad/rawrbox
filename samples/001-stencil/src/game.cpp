@@ -49,16 +49,16 @@ namespace stencil {
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("assets/textures/screem.png", 0),
-		    std::make_pair<std::string, uint32_t>("assets/fonts/droidsans.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("assets/fonts/visitor1.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("assets/fonts/LiberationMono-Regular.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("assets/fonts/LiberationMono-Bold.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("assets/fonts/LiberationMono-Italic.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("assets/textures/meow3.gif", 0),
-		    std::make_pair<std::string, uint32_t>("assets/textures/rawrbox.svg", 0),
-		    std::make_pair<std::string, uint32_t>("assets/textures/cawt.webp", 0),
-		    std::make_pair<std::string, uint32_t>("assets/textures/instance_test.png", 64),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/screem.png", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/fonts/droidsans.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/fonts/visitor1.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Bold.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Italic.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/meow3.gif", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/rawrbox.svg", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/cawt.webp", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/instance_test.png", 64),
 		};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());

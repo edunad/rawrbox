@@ -1,13 +1,13 @@
 
-#include <rawrbox/render_temp/camera/orbital.hpp>
-#include <rawrbox/render_temp/gizmos.hpp>
-#include <rawrbox/render_temp/light/point.hpp>
-#include <rawrbox/render_temp/light/spot.hpp>
-#include <rawrbox/render_temp/materials/lit.hpp>
-#include <rawrbox/render_temp/model/utils/mesh.hpp>
-#include <rawrbox/render_temp/renderers/cluster.hpp>
-#include <rawrbox/render_temp/resources/font.hpp>
-#include <rawrbox/render_temp/resources/texture.hpp>
+#include <rawrbox/render/cameras/orbital.hpp>
+// #include <rawrbox/render/gizmos.hpp>
+#include <rawrbox/render/light/point.hpp>
+#include <rawrbox/render/light/spot.hpp>
+// #include <rawrbox/render/materials/lit.hpp>
+#include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/renderers/cluster.hpp>
+#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -19,10 +19,12 @@ namespace light {
 		this->_window = std::make_unique<rawrbox::Window>();
 		this->_window->setMonitor(-1);
 		this->_window->setTitle("LIGHT TEST");
-		this->_window->setRenderer(
-		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
+		this->_window->setRenderer<rawrbox::RendererBase>(
+		    rawrbox::Colors::Black(),
+		    Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_COUNT, [this]() {}, [this]() { this->drawWorld(); });
+		this->_window->create(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
 		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
+		this->_window->skipIntros(true);
 		this->_window->onIntroCompleted += [this]() {
 			this->loadContent();
 		};
@@ -43,29 +45,29 @@ namespace light {
 		// -----
 
 		// Setup materials ---
-		this->_model->setMaterial<rawrbox::MaterialLit>();
+		// this->_model->setMaterial<rawrbox::MaterialLit>();
 		// ----
 
 		// Setup binds ---
-		this->_window->onKey += [](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
+		/*this->_window->onKey += [](rawrbox::Window& w, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) {
 			if (action != KEY_ACTION_UP) return;
 
 			if (key == KEY_F1) rawrbox::RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_OFF;
 			if (key == KEY_F2) rawrbox::RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_CLUSTER_Z;
 			if (key == KEY_F3) rawrbox::RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_CLUSTER_COUNT;
-		};
+		};*/
 		// ----------
 
 		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 40.F, 0.8F);
 
-		this->_window->initializeBGFX();
+		this->_window->initializeEngine();
 	}
 
 	void Game::loadContent() {
 		std::array<std::pair<std::string, uint32_t>, 3> initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("content/fonts/LiberationMono-Regular.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("./content/textures/light_test/planks.png", 0),
-		    std::make_pair<std::string, uint32_t>("./content/textures/light_test/planksSpec.png", 0)};
+		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planks.png", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planksSpec.png", 0)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
@@ -79,10 +81,10 @@ namespace light {
 	}
 
 	void Game::contentLoaded() {
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/LiberationMono-Regular.ttf")->getSize(24);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(24);
 
-		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/light_test/planks.png")->get();
-		auto texSpec = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/light_test/planksSpec.png")->get();
+		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planks.png")->get();
+		auto texSpec = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksSpec.png")->get();
 
 		// Setup
 		{
@@ -126,7 +128,6 @@ namespace light {
 		this->_model.reset();
 		this->_text.reset();
 
-		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
 
@@ -144,7 +145,7 @@ namespace light {
 		this->_window->update();
 
 		if (this->_ready) {
-			this->_sunDir = {std::cos(rawrbox::BGFX_FRAME * 0.01F) * 1.F, 1.F, std::sin(rawrbox::BGFX_FRAME * 0.01F) * 1.F};
+			/*this->_sunDir = {std::cos(rawrbox::BGFX_FRAME * 0.01F) * 1.F, 1.F, std::sin(rawrbox::BGFX_FRAME * 0.01F) * 1.F};
 			rawrbox::LIGHTS::setSun(this->_sunDir, {0.2F, 0.2F, 0.2F, 1.F});
 
 			auto light = rawrbox::LIGHTS::getLight(0);
@@ -155,7 +156,7 @@ namespace light {
 			light = rawrbox::LIGHTS::getLight(1);
 			if (light != nullptr) {
 				light->setOffsetPos({0, std::cos(rawrbox::BGFX_FRAME * 0.01F) * 1.F, 0});
-			}
+			}*/
 		}
 	}
 
@@ -166,21 +167,21 @@ namespace light {
 	}
 
 	void Game::printFrames() {
-		const bgfx::Stats* stats = bgfx::getStats();
+		/*const bgfx::Stats* stats = bgfx::getStats();
 
 		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
 		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
 
 		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
 		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
-		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
+		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());*/
 	}
 
 	void Game::draw() {
 		if (this->_window == nullptr) return;
 
 		// DEBUG ----
-		bgfx::dbgTextClear();
+		/*bgfx::dbgTextClear();
 		bgfx::dbgTextPrintf(1, 1, 0x1f, "004-light-support");
 		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: Light test");
 		printFrames();
@@ -197,7 +198,7 @@ namespace light {
 
 			bgfx::dbgTextPrintf(1, 15, 0x2f, fmt::format("SUN ANGLE: {},{},{}", this->_sunDir.x, this->_sunDir.y, this->_sunDir.z).c_str());
 		}
-
+*/
 		this->_window->render(); // Draw world & commit primitives
 	}
 } // namespace light

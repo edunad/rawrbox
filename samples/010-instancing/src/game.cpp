@@ -71,7 +71,6 @@ namespace instance_test {
 		auto mesh = rawrbox::MeshUtils::generateCube({0, 0, 0}, {0.5F, 0.5F, 0.5F});
 		mesh.setTexture(t);
 
-		this->_model->setMaterial<rawrbox::MaterialInstanced>();
 		this->_model->setTemplate(mesh);
 
 		std::random_device prng;
