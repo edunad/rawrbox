@@ -39,7 +39,7 @@ namespace rawrbox {
 		settings.pVS = "unlit.vsh";
 		settings.pPS = "unlit.psh";
 		settings.cull = Diligent::CULL_MODE_FRONT;
-		settings.layout = vLayout().first;
+		settings.layout = rawrbox::MaterialBase::vLayout().first;
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
@@ -64,6 +64,10 @@ namespace rawrbox {
 		// -----
 
 		_bind = rawrbox::PipelineUtils::getBind("Model::Base");
+	}
+
+	std::vector<rawrbox::VertexData> MaterialBase::convert(const std::vector<rawrbox::VertexNormBoneData>& v) {
+		return {v.begin(), v.end()};
 	}
 
 	void MaterialBase::bindUniforms(const rawrbox::Mesh& mesh) {

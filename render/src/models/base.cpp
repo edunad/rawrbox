@@ -3,6 +3,8 @@
 #include <rawrbox/utils/pack.hpp>
 #include <rawrbox/utils/string.hpp>
 
+#include <typeinfo>
+
 #ifdef RAWRBOX_SCRIPTING
 	#include <rawrbox/render/scripting/wrappers/model/base_wrapper.hpp>
 	#include <rawrbox/scripting/scripting.hpp>
@@ -26,7 +28,10 @@ namespace rawrbox {
 		auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
 		auto empty = vertSize <= 0 || indcSize <= 0;
 
-		context->UpdateBuffer(this->_vbh, 0, vertSize * this->_material->vLayout().second, empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		// ----------------------------------------
+
+		std::vector<rawrbox::VertexData> data = {this->_mesh->vertices.begin(), this->_mesh->vertices.end()};
+		context->UpdateBuffer(this->_vbh, 0, vertSize * this->_material->vLayout().second, empty ? nullptr : data.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
@@ -188,15 +193,14 @@ namespace rawrbox {
 		VertBuffDesc.Name = "RawrBox::Buffer::Vertex";
 		VertBuffDesc.Usage = dynamic ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE;
 		VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-		VertBuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
-		VertBuffDesc.Size = vertSize * this->_material->vLayout().second;
+		VertBuffDesc.Size = vertSize * layout.second;
 
-		// std::vector<rawrbox::VertexData> data = {};
-		// data.resize(vertSize);
-		// std::transform(this->_mesh->vertices.begin(), this->_mesh->vertices.end(), data.begin(), [](auto x) { return x; });
+		// Convert buffer into material layout ----
+		auto conv = this->_material->convert(this->_mesh->vertices);
+		// --------------------------------
 
 		Diligent::BufferData VBData;
-		VBData.pData = this->_mesh->vertices.data();
+		VBData.pData = conv.data();
 		VBData.DataSize = VertBuffDesc.Size;
 		device->CreateBuffer(VertBuffDesc, vertSize > 0 ? &VBData : nullptr, &this->_vbh);
 		// ---------------------

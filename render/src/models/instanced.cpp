@@ -78,10 +78,10 @@ namespace rawrbox {
 		InstBuffDesc.Name = "RawrBox::Buffer::Instance";
 		InstBuffDesc.Usage = Diligent::USAGE_DEFAULT;
 		InstBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-		InstBuffDesc.Size = sizeof(rawrbox::Instance) * instSize;
+		InstBuffDesc.Size = instSize * sizeof(rawrbox::Instance);
 
 		Diligent::BufferData VBData;
-		VBData.pData = this->_mesh->vertices.data();
+		VBData.pData = this->_instances.data();
 		VBData.DataSize = InstBuffDesc.Size;
 
 		device->CreateBuffer(InstBuffDesc, this->_instances.empty() ? nullptr : &VBData, &this->_dataBuffer);
