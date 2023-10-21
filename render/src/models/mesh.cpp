@@ -9,7 +9,7 @@ namespace rawrbox {
 		this->name = _name;
 	}
 
-	const std::vector<rawrbox::ModelVertexData>& Mesh::getVertices() const {
+	const std::vector<rawrbox::VertexNormBoneData>& Mesh::getVertices() const {
 		return this->vertices;
 	}
 
@@ -57,9 +57,9 @@ namespace rawrbox {
 
 	uint16_t Mesh::getAtlasID(int index) const {
 		if (this->vertices.empty()) return 0;
-		if (index < 0) return static_cast<uint16_t>(this->vertices.front().data.uv.z);
+		if (index < 0) return static_cast<uint16_t>(this->vertices.front().uv.z);
 
-		return static_cast<uint16_t>(this->vertices[std::clamp(index, 0, static_cast<int>(this->vertices.size() - 1))].data.uv.z);
+		return static_cast<uint16_t>(this->vertices[std::clamp(index, 0, static_cast<int>(this->vertices.size() - 1))].uv.z);
 	}
 
 	void Mesh::setAtlasID(uint16_t _atlasId, int index) {
@@ -166,7 +166,7 @@ namespace rawrbox {
 			this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
 		} else {
 			for (auto v : other.vertices) {
-				v.data.position += offset;
+				v.position += offset;
 				this->vertices.push_back(v);
 			}
 		}
@@ -177,7 +177,7 @@ namespace rawrbox {
 
 	void Mesh::rotateVertices(float rad, rawrbox::Vector3f axis) {
 		for (auto& v : vertices) {
-			v.data.position = v.data.position.rotateAroundOrigin(axis, rad);
+			v.position = v.position.rotateAroundOrigin(axis, rad);
 		}
 	}
 

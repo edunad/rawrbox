@@ -5,9 +5,14 @@
 namespace rawrbox {
 
 	class MaterialInstanced : public rawrbox::MaterialBase {
-		static std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IPipelineState>> _pipelines;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _SRB;
+
+		static Diligent::IPipelineState* _base;
+		static Diligent::IPipelineState* _cullback;
+		static Diligent::IPipelineState* _wireframe;
+		static Diligent::IPipelineState* _cullnone;
+
+		static Diligent::IShaderResourceBinding* _bind;
 
 		void bindPipeline(const rawrbox::Mesh& mesh) override;
 

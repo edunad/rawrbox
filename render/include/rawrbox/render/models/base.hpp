@@ -61,6 +61,7 @@ namespace rawrbox {
 
 		template <typename M = rawrbox::MaterialBase>
 		void setMaterial() {
+			if (this->isUploaded()) throw std::runtime_error("[RawrBox-ModelBase] Model already uploaded, cannot change material!");
 			this->_material = std::make_unique<M>();
 		}
 

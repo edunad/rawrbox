@@ -61,7 +61,7 @@ namespace rawrbox {
 
 			rawrbox::Mesh mesh;
 			std::vector<uint16_t> triangleIndices(triIndexCount);
-			std::vector<rawrbox::ModelVertexData> buff(vertCount);
+			std::vector<rawrbox::VertexNormBoneData> buff(vertCount);
 
 			// Generate all of the vertices and normals
 			int size = static_cast<int>(path.size());
@@ -74,7 +74,7 @@ namespace rawrbox {
 					auto norm = rawrbox::Vector3f(this->_shape->normal[j].x, this->_shape->normal[j].y, 0.F);
 					auto uv = rawrbox::Vector2f(this->_shape->u[j], path[i].vCoordinate);
 
-					buff[id] = rawrbox::ModelVertexData(path[i].LocalToWorld(pos), uv, {rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z), 0}, rawrbox::Colors::White());
+					buff[id] = rawrbox::VertexNormBoneData(path[i].LocalToWorld(pos), uv, norm, {}, rawrbox::Colors::White());
 				}
 			}
 

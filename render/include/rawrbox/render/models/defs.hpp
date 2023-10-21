@@ -18,6 +18,35 @@ namespace rawrbox {
 		rawrbox::Vector4f uv = {};
 		rawrbox::Colorf color = {};
 
+		VertexData() = default;
+		explicit VertexData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), color(cl) {
+		}
+
+		explicit VertexData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), color(cl), uv(_uv) {
+		}
+
+		// BLEND SHAPE UTILS ---
+		void reset() {
+			// this->data.position = this->ori_pos;
+			// this->data.normal[0] = this->ori_norm;
+		}
+		// ---------------------
+
+		// GPU Picker ---
+		void setId(uint32_t _id) {
+			// if (id > 0x00FFFFFF) throw std::runtime_error("[RawrBox-Mesh] Invalid id");
+			// this->id = 0xFF000000 | _id; // Alpha is not supported;
+		}
+		// ---------------------
+
+		// Atlas ---
+		void setAtlasId(uint32_t _id) {
+			this->uv.z = static_cast<float>(_id);
+		}
+		// ---------------------
+
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
@@ -46,7 +75,17 @@ namespace rawrbox {
 	};
 
 	struct VertexNormData : public virtual VertexData {
-		std::array<uint32_t, 2> normal = {0, 0}; // normal, tangent
+		rawrbox::Vector3f normal = {};
+		rawrbox::Vector3f tangent = {};
+
+		VertexNormData() = default;
+		explicit VertexNormData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexData(_pos, _uv, cl), normal(norm), tangent(tang) {
+		}
+
+		explicit VertexNormData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexData(_pos, _uv, cl), normal(norm), tangent(tang) {
+		}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
@@ -56,17 +95,20 @@ namespace rawrbox {
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 2 - Color
 			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false},
-			    // Attribute 3 - Normals
-			    Diligent::LayoutElement{3, 0, 2, Diligent::VT_FLOAT32, false}};
+			    // Attribute 3 - Normal
+			    Diligent::LayoutElement{3, 0, 3, Diligent::VT_FLOAT32, false},
+			    // Attribute 4 - Tangent
+			    Diligent::LayoutElement{4, 0, 3, Diligent::VT_FLOAT32, false},
+			};
 
 			if (instanced) {
-				v.emplace_back(4, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 1
-				v.emplace_back(5, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 2
-				v.emplace_back(6, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
-				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
+				v.emplace_back(5, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 1
+				v.emplace_back(6, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 2
+				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
+				v.emplace_back(8, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
 
-				v.emplace_back(8, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Color
-				v.emplace_back(9, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
+				v.emplace_back(9, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);  // Color
+				v.emplace_back(10, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
 			}
 
 			return v;
@@ -80,6 +122,15 @@ namespace rawrbox {
 	struct VertexBoneData : public virtual VertexData {
 		std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
+
+		VertexBoneData() = default;
+		explicit VertexBoneData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexData(_pos, _uv, cl) {
+		}
+
+		explicit VertexBoneData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexData(_pos, _uv, cl) {
+		}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
@@ -113,6 +164,24 @@ namespace rawrbox {
 	};
 
 	struct VertexNormBoneData : public VertexNormData, public VertexBoneData {
+
+		VertexNormBoneData() = default;
+		explicit VertexNormBoneData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexData(_pos, _uv, cl), rawrbox::VertexNormData(norm, tang) {
+		}
+
+		explicit VertexNormBoneData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexData(_pos, _uv, cl), rawrbox::VertexNormData(norm, tang) {
+		}
+
+		explicit VertexNormBoneData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexData(_pos, _uv, cl), rawrbox::VertexNormData() {
+		}
+
+		explicit VertexNormBoneData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexData(_pos, _uv, cl), rawrbox::VertexNormData() {
+		}
+
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
@@ -121,21 +190,23 @@ namespace rawrbox {
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 2 - Color
 			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false},
-			    // Attribute 3 - Normals
-			    Diligent::LayoutElement{3, 0, 2, Diligent::VT_FLOAT32, false},
-			    // Attribute 4 - BONE-INDICES
-			    Diligent::LayoutElement{4, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
-			    // Attribute 5 - BONE-WEIGHTS
-			    Diligent::LayoutElement{5, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}};
+			    // Attribute 3 - Normal
+			    Diligent::LayoutElement{3, 0, 3, Diligent::VT_FLOAT32, false},
+			    // Attribute 4 - Tangent
+			    Diligent::LayoutElement{4, 0, 3, Diligent::VT_FLOAT32, false},
+			    // Attribute 5 - BONE-INDICES
+			    Diligent::LayoutElement{5, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
+			    // Attribute 6 - BONE-WEIGHTS
+			    Diligent::LayoutElement{6, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}};
 
 			if (instanced) {
-				v.emplace_back(6, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 1
-				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 2
-				v.emplace_back(8, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
-				v.emplace_back(9, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
+				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);  // Matrix - 1
+				v.emplace_back(8, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);  // Matrix - 2
+				v.emplace_back(9, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);  // Matrix - 3
+				v.emplace_back(10, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
 
-				v.emplace_back(10, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Color
-				v.emplace_back(11, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
+				v.emplace_back(11, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Color
+				v.emplace_back(12, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
 			}
 
 			return v;
@@ -195,8 +266,8 @@ namespace rawrbox {
 		}
 	};*/
 
-	struct ModelVertexData {
-		rawrbox::VertexData data = {};
+	/*struct ModelVertexData {
+		rawrbox::VertexNormBoneData data = {};
 
 		// BLEND HELPERS ---
 		// rawrbox::Vector3f ori_pos = {};
@@ -224,7 +295,7 @@ namespace rawrbox {
 			data.position = _pos;
 			data.color = cl;
 			data.uv = _uv;
-			// data.normal = _normal;
+			data.normal = _normal;
 		}
 
 		explicit ModelVertexData(const rawrbox::Vector3f& _pos,
@@ -233,7 +304,7 @@ namespace rawrbox {
 			data.position = _pos;
 			data.color = cl;
 			data.uv = _uv;
-			// data.normal = _normal;
+			data.normal = _normal;
 		}
 
 		// BLEND SHAPE UTILS ---
@@ -257,7 +328,7 @@ namespace rawrbox {
 		// ---------------------
 
 		// BONES UTILS -----
-		/*int index = 0;
+		int index = 0;
 		void addBoneData(uint8_t boneId, float weight) {
 			if (index < rawrbox::MAX_BONES_PER_VERTEX) {
 				this->data.bone_indices[index] = boneId;
@@ -281,6 +352,6 @@ namespace rawrbox {
 					this->data.bone_weights[minIndex] = weight;
 				}
 			}
-		}*/
-	};
+		}*
+	};*/
 } // namespace rawrbox

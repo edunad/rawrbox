@@ -64,13 +64,14 @@ namespace instance_test {
 	}
 
 	void Game::contentLoaded() {
-		/*int total = 1000;
+		int total = 1000;
 		float spacing = 0.85F;
 
 		auto t = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/instance_test.png")->get();
 		auto mesh = rawrbox::MeshUtils::generateCube({0, 0, 0}, {0.5F, 0.5F, 0.5F});
 		mesh.setTexture(t);
 
+		this->_model->setMaterial<rawrbox::MaterialInstanced>();
 		this->_model->setTemplate(mesh);
 
 		std::random_device prng;
@@ -85,13 +86,13 @@ namespace instance_test {
 			}
 		}
 
-		this->_model->upload();*/
+		this->_model->upload();
 		this->_ready = true;
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-		// this->_model.reset();
+		this->_model.reset();
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
@@ -121,8 +122,8 @@ namespace instance_test {
 	}
 
 	void Game::drawWorld() {
-		/*if (!this->_ready || this->_model == nullptr) return;
-		this->_model->draw();*/
+		if (!this->_ready || this->_model == nullptr) return;
+		this->_model->draw();
 	}
 
 	void Game::draw() {

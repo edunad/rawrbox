@@ -24,12 +24,10 @@ namespace rawrbox {
 
 		auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
 		auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
+		auto empty = vertSize <= 0 || indcSize <= 0;
 
-		if (vertSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Cannot update empty vertices on dynamic buffer!");
-		if (indcSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Cannot update empty indices on dynamic buffer!");
-
-		context->UpdateBuffer(this->_vbh, 0, vertSize * this->_material->vLayout().second, this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-		context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		context->UpdateBuffer(this->_vbh, 0, vertSize * this->_material->vLayout().second, empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
 	ModelBase::~ModelBase() {
@@ -184,11 +182,18 @@ namespace rawrbox {
 		if (!dynamic && indcSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Indices cannot be empty on non-dynamic buffer!");
 
 		// VERT ----
+		auto layout = this->_material->vLayout();
+
 		Diligent::BufferDesc VertBuffDesc;
 		VertBuffDesc.Name = "RawrBox::Buffer::Vertex";
 		VertBuffDesc.Usage = dynamic ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE;
 		VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
+		VertBuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
 		VertBuffDesc.Size = vertSize * this->_material->vLayout().second;
+
+		// std::vector<rawrbox::VertexData> data = {};
+		// data.resize(vertSize);
+		// std::transform(this->_mesh->vertices.begin(), this->_mesh->vertices.end(), data.begin(), [](auto x) { return x; });
 
 		Diligent::BufferData VBData;
 		VBData.pData = this->_mesh->vertices.data();

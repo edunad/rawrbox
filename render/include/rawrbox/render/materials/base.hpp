@@ -61,6 +61,8 @@ namespace rawrbox {
 		MaterialBase& operator=(const MaterialBase&) = delete;
 		virtual ~MaterialBase() = default;
 
+		using VertexLayout = rawrbox::VertexData;
+
 		static void init();
 		virtual void bind(const rawrbox::Mesh& mesh);
 

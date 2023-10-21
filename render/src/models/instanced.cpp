@@ -1,5 +1,6 @@
 
 #include <rawrbox/render/models/instanced.hpp>
+#include <rawrbox/render/renderers/base.hpp>
 
 #ifdef RAWRBOX_SCRIPTING
 	#include <rawrbox/scripting/scripting.hpp>
@@ -24,7 +25,7 @@ namespace rawrbox {
 	}
 
 	InstancedModel::~InstancedModel() {
-		// RAWRBOX_DESTROY(this->_dataBuffer);
+		RAWRBOX_DESTROY(this->_dataBuffer);
 		this->_instances.clear();
 	}
 
@@ -66,48 +67,64 @@ namespace rawrbox {
 	std::vector<rawrbox::Instance>& InstancedModel::instances() { return this->_instances; }
 	size_t InstancedModel::count() const { return this->_instances.size(); }
 
-	void InstancedModel::upload(bool /*dynamic*/) {
-		/*rawrbox::ModelBase::upload(false);
+	void InstancedModel::upload(bool dynamic) {
+		rawrbox::ModelBase::upload(dynamic);
+		auto device = rawrbox::RENDERER->device;
 
-		this->_dataBuffer = bgfx::createDynamicVertexBuffer(
-		    1, rawrbox::Instance::vLayout(), BGFX_BUFFER_COMPUTE_READ | BGFX_BUFFER_ALLOW_RESIZE);
+		auto instSize = static_cast<uint32_t>(this->_instances.size());
 
-		this->updateInstance();*/
+		// INSTANCE BUFFER ----
+		Diligent::BufferDesc InstBuffDesc;
+		InstBuffDesc.Name = "RawrBox::Buffer::Instance";
+		InstBuffDesc.Usage = Diligent::USAGE_DEFAULT;
+		InstBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
+		InstBuffDesc.Size = sizeof(rawrbox::Instance) * instSize;
+
+		Diligent::BufferData VBData;
+		VBData.pData = this->_mesh->vertices.data();
+		VBData.DataSize = InstBuffDesc.Size;
+
+		device->CreateBuffer(InstBuffDesc, this->_instances.empty() ? nullptr : &VBData, &this->_dataBuffer);
+		// ---------------------
 	}
 
 	void InstancedModel::updateInstance() {
-		/*if (this->_instances.empty()) return;
-		if (!bgfx::isValid(this->_dataBuffer)) throw std::runtime_error("[RawrBox-InstancedModel] Data buffer not valid! Did you call upload()?");
+		if (this->_dataBuffer == nullptr) throw std::runtime_error("[RawrBox-InstancedModel] Data buffer not valid! Did you call upload()?");
 
-		bgfx::update(this->_dataBuffer, 0, bgfx::copy(this->_instances.data(), static_cast<uint32_t>(this->_instances.size()) * rawrbox::Instance::vLayout().getStride()));*/
+		auto context = rawrbox::RENDERER->context;
+		auto instSize = static_cast<uint32_t>(this->_instances.size());
+
+		context->UpdateBuffer(this->_vbh, 0, sizeof(rawrbox::Instance) * instSize, this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
 	void InstancedModel::draw() {
-		/*if (this->_instances.empty()) return;
-		if ((BGFX_CAPS_INSTANCING & bgfx::getCaps()->supported) == 0) throw std::runtime_error("[RawrBox-InstancedModel] Instancing not supported by the graphics card!");
+		if (!this->isUploaded()) throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not uploaded");
+		if (this->_instances.empty()) return;
 
-		rawrbox::ModelBase::draw();
-		this->_material->process(*this->_mesh); // Set atlas
+		auto context = rawrbox::RENDERER->context;
 
-		if (this->isDynamic()) {
-			bgfx::setVertexBuffer(0, this->_vbdh);
-			bgfx::setIndexBuffer(this->_ibdh);
-		} else {
-			bgfx::setVertexBuffer(0, this->_vbh);
-			bgfx::setIndexBuffer(this->_ibh);
-		}
+		// Bind vertex and index buffers
+		// NOLINTBEGIN(*)
+		const uint64_t offset[] = {0, 0};
+		Diligent::IBuffer* pBuffs[] = {this->_vbh, this->_dataBuffer};
+		// NOLINTEND(*)
 
-		// Set instance data buffer.
-		bgfx::setTransform((this->getMatrix()).data());
-		bgfx::setBuffer(rawrbox::SAMPLE_INSTANCE_DATA, this->_dataBuffer, bgfx::Access::Read);
-		bgfx::setInstanceDataBuffer(this->_dataBuffer, 0, static_cast<uint32_t>(this->_instances.size()));
+		context->SetVertexBuffers(0, 2, pBuffs, offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+		context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		// ----
 
-		uint64_t flags = BGFX_STATE_DEFAULT_3D | this->_mesh->culling | this->_mesh->blending | this->_mesh->depthTest;
-		flags |= this->_mesh->lineMode ? BGFX_STATE_PT_LINES : this->_mesh->wireframe ? BGFX_STATE_PT_LINESTRIP
-											      : 0;
+		// Bind materials uniforms & textures ----
+		rawrbox::TRANSFORM = this->getMatrix() * this->_mesh->getMatrix();
+		this->_material->bind(*this->_mesh);
+		// -----------
 
-		bgfx::setState(flags, 0);
-		this->_material->postProcess();*/
+		Diligent::DrawIndexedAttribs DrawAttrs;    // This is an indexed draw call
+		DrawAttrs.IndexType = Diligent::VT_UINT16; // Index type
+		DrawAttrs.FirstIndexLocation = this->_mesh->baseIndex;
+		DrawAttrs.BaseVertex = this->_mesh->baseVertex;
+		DrawAttrs.NumIndices = this->_mesh->totalIndex;
+		DrawAttrs.NumInstances = static_cast<uint32_t>(this->_instances.size());
+		DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL; // Verify the state of vertex and index buffers
+		context->DrawIndexed(DrawAttrs);
 	}
 } // namespace rawrbox

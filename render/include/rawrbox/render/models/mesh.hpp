@@ -45,7 +45,7 @@ namespace rawrbox {
 		uint16_t totalVertex = 0;
 		uint16_t totalIndex = 0;
 
-		std::vector<rawrbox::ModelVertexData> vertices = {};
+		std::vector<rawrbox::VertexNormBoneData> vertices = {};
 		std::vector<uint16_t> indices = {};
 		// -------
 
@@ -70,9 +70,6 @@ namespace rawrbox {
 		bool lineMode = false;
 
 		Diligent::CULL_MODE culling = Diligent::CULL_MODE_FRONT;
-		// uint64_t blending = BGFX_STATE_BLEND_NORMAL;
-		// uint64_t depthTest = BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS;
-
 		rawrbox::BBOX bbox = {};
 		// --------------
 
@@ -91,7 +88,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual const std::string& getName() const;
 		virtual void setName(const std::string& name);
 
-		[[nodiscard]] virtual const std::vector<rawrbox::ModelVertexData>& getVertices() const;
+		[[nodiscard]] virtual const std::vector<rawrbox::VertexNormBoneData>& getVertices() const;
 		[[nodiscard]] virtual const std::vector<uint16_t>& getIndices() const;
 		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const;
 

@@ -12,7 +12,7 @@
 namespace rawrbox {
 	class InstancedModel : public rawrbox::ModelBase {
 	protected:
-		// bgfx::DynamicVertexBufferHandle _dataBuffer = BGFX_INVALID_HANDLE;
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _dataBuffer; // Data
 		std::vector<rawrbox::Instance> _instances = {};
 		bool _autoUpload = true;
 
@@ -48,7 +48,7 @@ namespace rawrbox {
 		virtual std::vector<rawrbox::Instance>& instances();
 		[[nodiscard]] virtual size_t count() const;
 
-		void upload(bool /*dynamic*/ = false) override;
+		void upload(bool dynamic = false) override;
 
 		virtual void updateInstance();
 
