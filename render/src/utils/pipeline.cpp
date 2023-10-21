@@ -86,8 +86,10 @@ namespace rawrbox {
 		// -------------
 
 		// Layout
-		info.GraphicsPipeline.InputLayout.LayoutElements = settings.layout.data();
-		info.GraphicsPipeline.InputLayout.NumElements = static_cast<uint32_t>(settings.layout.size());
+		if (!settings.layout.empty()) {
+			info.GraphicsPipeline.InputLayout.LayoutElements = settings.layout.data();
+			info.GraphicsPipeline.InputLayout.NumElements = static_cast<uint32_t>(settings.layout.size());
+		}
 		// ----
 
 		// Resources ----

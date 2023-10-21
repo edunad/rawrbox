@@ -1,15 +1,14 @@
 #pragma once
 
+#include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector2.hpp>
+#include <rawrbox/render/texture/render.hpp>
 
 #include <Common/interface/RefCntAutoPtr.hpp>
 
 #include <Graphics/GraphicsEngine/interface/DeviceContext.h>
 #include <Graphics/GraphicsEngine/interface/RenderDevice.h>
 #include <Graphics/GraphicsEngine/interface/SwapChain.h>
-// #include <rawrbox/render_temp/texture/render.hpp>
-
-#include <rawrbox/math/color.hpp>
 
 #include <functional>
 
@@ -17,7 +16,7 @@ namespace rawrbox {
 
 	class RendererBase {
 	protected:
-		// std::unique_ptr<rawrbox::TextureRender> _render = nullptr;
+		std::unique_ptr<rawrbox::TextureRender> _render = nullptr;
 		// std::unique_ptr<rawrbox::TextureRender> _decals = nullptr;
 		// bgfx::TextureHandle _GPUBlitTex = BGFX_INVALID_HANDLE;
 

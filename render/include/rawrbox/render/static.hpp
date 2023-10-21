@@ -36,26 +36,6 @@ namespace rawrbox {
 	constexpr size_t GPU_PICK_SAMPLE_SIZE = 8 * 8 * 4;
 	// ---------
 
-	// GLOBAL UNIFORMS ---
-	extern uint8_t SAMPLE_MAT_ALBEDO;
-	extern uint8_t SAMPLE_MAT_NORMAL;
-	extern uint8_t SAMPLE_MAT_SPECULAR;
-	extern uint8_t SAMPLE_MAT_EMISSION;
-	extern uint8_t SAMPLE_MAT_DISPLACEMENT;
-
-	extern uint8_t SAMPLE_LIGHTS;
-
-	extern uint8_t SAMPLE_MASK;
-	extern uint8_t SAMPLE_DEPTH;
-
-	extern uint8_t SAMPLE_CLUSTERS;
-	extern uint8_t SAMPLE_LIGHTINDICES;
-	extern uint8_t SAMPLE_LIGHTGRID;
-	extern uint8_t SAMPLE_ATOMIC_INDEX;
-
-	extern uint8_t SAMPLE_INSTANCE_DATA;
-	// ---------
-
 	// TEXTURE FALLBACKS ---
 	extern std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE;
 	extern std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE;
@@ -70,8 +50,7 @@ namespace rawrbox {
 	// -----
 
 	// QUICK ACCESS ---
-	// extern uint32_t BGFX_FRAME;
-	//
+	extern uint32_t FRAME;
 	extern rawrbox::CameraBase* MAIN_CAMERA;
 	extern rawrbox::RendererBase* RENDERER;
 	extern rawrbox::Matrix4x4 TRANSFORM;

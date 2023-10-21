@@ -11,27 +11,6 @@ namespace rawrbox {
 	std::shared_ptr<rawrbox::TextureFlat> NORMAL_TEXTURE = nullptr;
 	// ---------
 
-	// GLOBAL UNIFORMS ---
-	uint8_t SAMPLE_MAT_ALBEDO = 0;
-	uint8_t SAMPLE_MAT_NORMAL = 1;
-	uint8_t SAMPLE_MAT_SPECULAR = 2;
-	uint8_t SAMPLE_MAT_EMISSION = 3;
-	uint8_t SAMPLE_MAT_DISPLACEMENT = 4;
-
-	uint8_t SAMPLE_LIGHTS = 5;
-
-	uint8_t SAMPLE_DEPTH = 6;
-	uint8_t SAMPLE_MASK = 7;
-
-	uint8_t SAMPLE_CLUSTERS = 0;
-	uint8_t SAMPLE_ATOMIC_INDEX = 1;
-
-	uint8_t SAMPLE_LIGHTINDICES = 8; // Light data used on models
-	uint8_t SAMPLE_LIGHTGRID = 9;
-
-	uint8_t SAMPLE_INSTANCE_DATA = 10;
-	// ---------
-
 	// ID GENERATION
 	size_t SOUND_ID = 0;
 	size_t LIGHT_ID = 0;
@@ -39,8 +18,7 @@ namespace rawrbox {
 	// -----
 
 	// QUICK ACCESS ---
-	// uint32_t BGFX_FRAME = 0;
-	//
+	uint32_t FRAME = 0;
 	rawrbox::CameraBase* MAIN_CAMERA = nullptr;
 	rawrbox::RendererBase* RENDERER = nullptr;
 	rawrbox::Matrix4x4 TRANSFORM = {};
