@@ -11,6 +11,6 @@ namespace rawrbox {
 		static void init();
 
 	public:
-		static void renderQUAD(Diligent::ITextureView* texture);
+		static void renderQUAD(Diligent::ITextureView* texture, bool transition = true);
 	};
 } // namespace rawrbox

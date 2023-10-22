@@ -1,7 +1,6 @@
 #pragma once
 
 #include <rawrbox/math/vector2.hpp>
-#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
 namespace rawrbox {
@@ -25,6 +24,7 @@ namespace rawrbox {
 
 		// ------UTILS
 		[[nodiscard]] virtual Diligent::ITextureView* getDepth() const;
+		[[nodiscard]] virtual Diligent::ITextureView* getRT() const;
 		// ------------
 
 		// ------RENDER

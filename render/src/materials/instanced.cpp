@@ -1,5 +1,4 @@
 #include <rawrbox/render/materials/instanced.hpp>
-#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
 namespace rawrbox {
@@ -24,7 +23,7 @@ namespace rawrbox {
 		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-		rawrbox::RENDERER->device->CreateBuffer(CBDesc, nullptr, &_uniforms);
+		rawrbox::render::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &_uniforms);
 		// ------------
 
 		// PIPELINE ----
@@ -55,7 +54,7 @@ namespace rawrbox {
 	}
 
 	void MaterialInstanced::bindPipeline(const rawrbox::Mesh& mesh) {
-		auto context = rawrbox::RENDERER->context;
+		auto context = rawrbox::render::RENDERER->context();
 
 		if (mesh.wireframe) {
 			context->SetPipelineState(_wireframe);

@@ -10,45 +10,58 @@
 
 #include <post_process/game.hpp>
 
+#include "rawrbox/render/post_process/test_1.hpp"
+#include "rawrbox/render/post_process/test_2.hpp"
+
 namespace post_process {
 	void Game::setupGLFW() {
-		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
-		this->_window->setTitle("POST-PROCESS TEST");
-		this->_window->setRenderer<rawrbox::RendererBase>(
-		    rawrbox::Colors::Black(),
-		    Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_COUNT, [this]() {}, [this]() { this->drawWorld(); });
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
-		this->_window->overridePostWorld([this]() {
-			if (!this->_ready) return;
-			this->_postProcess->render(rawrbox::RENDERER->getColor());
-		});
-		this->_window->skipIntros(true);
-
-		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
-		this->_window->onIntroCompleted += [this]() {
-			this->loadContent();
-		};
+		auto window = rawrbox::render::createWindow();
+		window->setMonitor(-1);
+		window->setTitle("POST-PROCESS TEST");
+		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
+		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {
-		if (this->_window == nullptr) return;
+		auto window = rawrbox::render::getWindow();
+
+		// Setup renderer
+		auto render = rawrbox::render::createRenderer(window);
+		render->setOverlayRender([this]() {});
+		render->setWorldRender([this]() { this->drawWorld(); });
+		render->skipIntros(true);
+		render->overridePostWorld([this]() {
+			if (!this->_ready) return;
+			this->_postProcess->render(rawrbox::render::RENDERER->getColor());
+		});
+		render->onIntroCompleted = [this]() {
+			this->loadContent();
+		};
+		// ---------------
 
 		// Setup camera
-		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		auto cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		// Add loaders ----
+		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
-		// ---
+		// --------------
 
-		this->_window->initializeEngine();
+		render->init();
 	}
 
 	void Game::loadContent() {
-		this->_postProcess = std::make_unique<rawrbox::PostProcessManager>(this->_window->getSize());
+		this->_postProcess = std::make_unique<rawrbox::PostProcessManager>();
+		this->_postProcess->add<rawrbox::Test1>();
+		this->_postProcess->add<rawrbox::Test1>();
+		// this->_postProcess->add<rawrbox::Test1>();
+		// this->_postProcess->add<rawrbox::Test1>();
+		//  this->_postProcess->add<rawrbox::Test1>();
+
+		// this->_postProcess->add<rawrbox::Test2>();
+
 		/*this->_postProcess->add<rawrbox::PostProcessBloom>(0.015F);
 		this->_postProcess->add<rawrbox::PostProcessPSXDither>(rawrbox::DITHER_SIZE::SLOW_MODE);
 		this->_postProcess->add<rawrbox::PostProcessStaticNoise>(0.1F);*/
@@ -87,27 +100,23 @@ namespace post_process {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 
 		this->_model.reset();
-		// this->_postProcess.reset();
+		this->_postProcess.reset();
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
-
-		this->_window->unblockPoll();
-		this->_window.reset();
+		rawrbox::render::shutdown();
 	}
 
 	void Game::pollEvents() {
-		if (this->_window == nullptr) return;
-		this->_window->pollEvents();
+		rawrbox::render::pollEvents();
 	}
 
 	void Game::update() {
-		if (this->_window == nullptr) return;
-		if (this->_model != nullptr) {
-			this->_model->setEulerAngle({std::cos(rawrbox::FRAME * 0.01F) * 2.5F, std::sin(rawrbox::FRAME * 0.01F) * 2.5F, 0});
-		}
+		rawrbox::render::update();
 
-		this->_window->update();
+		if (this->_model != nullptr) {
+			this->_model->setEulerAngle({std::cos(rawrbox::render::FRAME * 0.01F) * 2.5F, std::sin(rawrbox::render::FRAME * 0.01F) * 2.5F, 0});
+		}
 	}
 
 	void Game::drawWorld() {
@@ -115,32 +124,7 @@ namespace post_process {
 		this->_model->draw();
 	}
 
-	void Game::printFrames() {
-		/*const bgfx::Stats* stats = bgfx::getStats();
-
-		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
-		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
-		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());*/
-	}
-
 	void Game::draw() {
-		if (this->_window == nullptr) return;
-		/*
-				// DEBUG ----
-				bgfx::dbgTextClear();
-				bgfx::dbgTextPrintf(1, 1, 0x1f, "005-post-process");
-				bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: Post-processing test");
-				printFrames();
-				// -----------
-
-				if (!this->_ready) {
-					bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
-					bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
-					bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
-				}
-		*/
-		this->_window->render(); // Commit primitives
+		rawrbox::render::render();
 	}
 } // namespace post_process

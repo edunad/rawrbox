@@ -2,14 +2,12 @@
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector4.hpp>
-#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
+#include <rawrbox/render/utils/pipeline.hpp>
 
 #include <fmt/format.h>
 #include <utf8.h>
-
-#include "rawrbox/render/utils/pipeline.hpp"
 
 namespace rawrbox {
 	Stencil::Stencil(const rawrbox::Vector2i& size) : _windowSize(size) {
@@ -108,7 +106,7 @@ namespace rawrbox {
 		// Setup --------
 		this->setupDrawCall(
 		    this->_2dPipeline,
-		    rawrbox::WHITE_TEXTURE->getHandle());
+		    rawrbox::render::WHITE_TEXTURE->getHandle());
 		// ----
 
 		if (this->_outline.isSet()) {
@@ -142,7 +140,7 @@ namespace rawrbox {
 		// Setup --------
 		this->setupDrawCall(
 		    this->_2dPipeline,
-		    rawrbox::WHITE_TEXTURE->getHandle());
+		    rawrbox::render::WHITE_TEXTURE->getHandle());
 		// ----
 
 		if (this->_outline.isSet()) {
@@ -173,8 +171,7 @@ namespace rawrbox {
 			this->drawLine({pos.x + size.x, pos.y - thick}, {pos.x + size.x, pos.y + size.y}, col);
 			this->drawLine({pos.x + size.x + (thick > 1.F ? thick : 0.F), pos.y + size.y}, {pos.x - thick, pos.y + size.y}, col);
 		} else {
-			if (rawrbox::WHITE_TEXTURE == nullptr) return;
-			this->drawTexture(pos, size, *rawrbox::WHITE_TEXTURE, col);
+			this->drawTexture(pos, size, *rawrbox::render::WHITE_TEXTURE, col);
 		}
 	}
 
@@ -248,7 +245,7 @@ namespace rawrbox {
 		// Setup --------
 		this->setupDrawCall(
 		    usePTLines ? this->_linePipeline : this->_2dPipeline,
-		    rawrbox::WHITE_TEXTURE->getHandle());
+		    rawrbox::render::WHITE_TEXTURE->getHandle());
 
 		// ----
 
@@ -367,7 +364,7 @@ namespace rawrbox {
 	void Stencil::internalDraw() {
 		if (this->_drawCalls.empty()) return;
 
-		auto context = rawrbox::RENDERER->context;
+		auto context = rawrbox::render::RENDERER->context();
 		size_t contextID = 0;
 
 		for (auto& group : this->_drawCalls) {

@@ -5,22 +5,35 @@
 #include <rawrbox/render/post_process/base.hpp>
 #include <rawrbox/render/texture/render.hpp>
 
+#include <Graphics\GraphicsEngine\interface\Framebuffer.h>
+#include <Graphics\GraphicsEngine\interface\RenderPass.h>
+
 #include <memory>
+#include <unordered_map>
 
 namespace rawrbox {
 
 	class PostProcessManager {
 	protected:
 		std::vector<std::unique_ptr<rawrbox::PostProcessBase>> _postProcesses = {};
-		rawrbox::Vector2i _windowSize = {};
+		Diligent::RefCntAutoPtr<Diligent::IRenderPass> _renderPass;
 
-		// POS-PROCESS SAMPLES
-		// std::vector<bgfx::FrameBufferHandle> _samples = {};
-		// ----
+		// TEST ----
+		// Diligent::RefCntAutoPtr<Diligent::ITexture> _aaa;
+		// Diligent::ITextureView* _pDstRenderTarget = nullptr;
+		// Diligent::RefCntAutoPtr<Diligent::IFramebuffer> _frameBuffer;
+
+		std::unordered_map<Diligent::ITextureView*, Diligent::RefCntAutoPtr<Diligent::IFramebuffer>> m_FramebufferCache;
+		Diligent::RefCntAutoPtr<Diligent::ITexture> pOpenGLOffsreenColorBuffer;
+		Diligent::RefCntAutoPtr<Diligent::ITexture> pColorBuffer;
+		// --------------
+
+		void buildRenderPass();
+		Diligent::RefCntAutoPtr<Diligent::IFramebuffer> createFramebuffer(Diligent::ITextureView* renderTarget);
+		Diligent::IFramebuffer* getCurrentFramebuffer();
 
 	public:
 		PostProcessManager() = default;
-		explicit PostProcessManager(const rawrbox::Vector2i& size);
 		virtual ~PostProcessManager();
 
 		PostProcessManager(PostProcessManager&&) = delete;

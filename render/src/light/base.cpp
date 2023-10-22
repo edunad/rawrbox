@@ -28,7 +28,7 @@ namespace rawrbox {
 		if (this->_color == col) return;
 
 		this->_color = col;
-		rawrbox::__LIGHT_DIRTY__ = true;
+		rawrbox::render::__LIGHT_DIRTY__ = true;
 	}
 
 	const rawrbox::Colorf LightBase::getColor() const { return this->_color; }
@@ -37,7 +37,7 @@ namespace rawrbox {
 		if (this->_radius == radius) return;
 
 		this->_radius = radius;
-		rawrbox::__LIGHT_DIRTY__ = true;
+		rawrbox::render::__LIGHT_DIRTY__ = true;
 	}
 
 	float LightBase::getRadius() const { return this->_radius; }
@@ -51,7 +51,7 @@ namespace rawrbox {
 		if (this->_isOn == on) return;
 
 		this->_isOn = on;
-		rawrbox::__LIGHT_DIRTY__ = true;
+		rawrbox::render::__LIGHT_DIRTY__ = true;
 	};
 
 	const rawrbox::Vector3f& LightBase::getPos() const { return this->_pos; }
@@ -59,7 +59,7 @@ namespace rawrbox {
 		if (this->_pos == pos) return;
 
 		this->_pos = pos;
-		rawrbox::__LIGHT_DIRTY__ = true;
+		rawrbox::render::__LIGHT_DIRTY__ = true;
 	}
 
 	const rawrbox::Vector3f& LightBase::getOffsetPos() const { return this->_offset; }
@@ -67,7 +67,7 @@ namespace rawrbox {
 		if (this->_offset == pos) return;
 
 		this->_offset = pos;
-		rawrbox::__LIGHT_DIRTY__ = true;
+		rawrbox::render::__LIGHT_DIRTY__ = true;
 	}
 
 	const rawrbox::Vector3f LightBase::getWorldPos() const { return this->getPos() + this->getOffsetPos(); }
@@ -78,7 +78,7 @@ namespace rawrbox {
 		if (this->_direction == dir) return;
 
 		this->_direction = dir;
-		rawrbox::__LIGHT_DIRTY__ = true;
+		rawrbox::render::__LIGHT_DIRTY__ = true;
 	}
 
 } // namespace rawrbox

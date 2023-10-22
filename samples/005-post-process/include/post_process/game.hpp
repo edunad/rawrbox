@@ -3,15 +3,12 @@
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/models/model.hpp>
 #include <rawrbox/render/post_process/manager.hpp>
-#include <rawrbox/render/window.hpp>
 
 #include <memory>
 
 namespace post_process {
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Window> _window = nullptr;
 		std::unique_ptr<rawrbox::PostProcessManager> _postProcess = nullptr;
-
 		std::unique_ptr<rawrbox::Model> _model = std::make_unique<rawrbox::Model>();
 
 		std::atomic<int> _loadingFiles = 0;
@@ -31,8 +28,6 @@ namespace post_process {
 		Game& operator=(const Game&) = delete;
 		Game& operator=(Game&&) = delete;
 		~Game() override = default;
-
-		void printFrames();
 
 		void loadContent();
 		void contentLoaded();

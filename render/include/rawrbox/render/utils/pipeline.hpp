@@ -15,6 +15,12 @@ namespace rawrbox {
 		Diligent::SHADER_TYPE type = Diligent::SHADER_TYPE_VERTEX;
 		Diligent::IBuffer* uniform = nullptr;
 	};
+
+	struct PipePass {
+		Diligent::IRenderPass* pass = nullptr;
+		uint32_t index = 0;
+	};
+
 	struct PipeSettings {
 		Diligent::PRIMITIVE_TOPOLOGY topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		Diligent::CULL_MODE cull = Diligent::CULL_MODE_BACK;
@@ -22,9 +28,10 @@ namespace rawrbox {
 
 		Diligent::COMPARISON_FUNCTION depth = Diligent::COMPARISON_FUNC_LESS;
 		bool depthWrite = true;
-
 		bool scissors = false;
+
 		uint8_t renderTargets = 1;
+		rawrbox::PipePass renderPass = {};
 
 		std::string pVS = "";
 		std::string pPS = "";

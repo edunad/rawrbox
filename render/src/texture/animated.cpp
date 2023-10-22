@@ -1,5 +1,4 @@
 #include <rawrbox/math/utils/math.hpp>
-#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/animated.hpp>
 #include <rawrbox/utils/time.hpp>
@@ -31,7 +30,7 @@ namespace rawrbox {
 		SubresData.Stride = this->_size.x * this->_channels;
 		SubresData.pData = frame.pixels.data();
 
-		rawrbox::RENDERER->context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::render::RENDERER->context()->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
 	// ANIMATION ------

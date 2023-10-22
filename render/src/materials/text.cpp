@@ -1,6 +1,5 @@
 
 #include <rawrbox/render/materials/text.hpp>
-#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
 #include <Graphics/GraphicsTools/interface/MapHelper.hpp>
@@ -25,7 +24,7 @@ namespace rawrbox {
 		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-		rawrbox::RENDERER->device->CreateBuffer(CBDesc, nullptr, &_uniforms);
+		rawrbox::render::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &_uniforms);
 		// ------------
 
 		// PIPELINE ----
@@ -48,15 +47,16 @@ namespace rawrbox {
 	}
 
 	void MaterialText3D::bindUniforms(const rawrbox::Mesh& mesh) {
-		auto context = rawrbox::RENDERER->context;
+		auto renderer = rawrbox::render::RENDERER;
+		auto context = renderer->context();
 
 		// SETUP UNIFORMS ----------------------------
 		Diligent::MapHelper<rawrbox::MaterialTextUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 		// Map the buffer and write current world-view-projection matrix
 
-		auto tTransform = rawrbox::TRANSFORM.transpose();
-		auto tWorldView = rawrbox::MAIN_CAMERA->getProjViewMtx().transpose();
-		auto tInvView = rawrbox::MAIN_CAMERA->getViewMtx();
+		auto tTransform = rawrbox::render::TRANSFORM.transpose();
+		auto tWorldView = renderer->camera()->getProjViewMtx().transpose();
+		auto tInvView = renderer->camera()->getViewMtx();
 		tInvView.inverse();
 
 		*CBConstants = {
@@ -68,7 +68,7 @@ namespace rawrbox {
 	}
 
 	void MaterialText3D::bindPipeline(const rawrbox::Mesh& mesh) {
-		auto context = rawrbox::RENDERER->context;
+		auto context = rawrbox::render::RENDERER->context();
 		if (mesh.wireframe) {
 			context->SetPipelineState(_wireframe);
 		} else {
@@ -77,13 +77,13 @@ namespace rawrbox {
 	}
 
 	void MaterialText3D::bind(const rawrbox::Mesh& mesh) {
-		auto context = rawrbox::RENDERER->context;
+		auto context = rawrbox::render::RENDERER->context();
 
 		if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
 			mesh.texture->update(); // Update texture
 			_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(mesh.texture->getHandle());
 		} else {
-			_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(rawrbox::WHITE_TEXTURE->getHandle());
+			_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(rawrbox::render::WHITE_TEXTURE->getHandle());
 		}
 
 		this->bindPipeline(mesh);

@@ -1,5 +1,4 @@
 #include <rawrbox/math/utils/color.hpp>
-#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
@@ -13,7 +12,7 @@ namespace rawrbox {
 
 	void TextureBase::loadFallback() {
 		this->_failedToLoad = true;
-		this->_handle = rawrbox::MISSING_TEXTURE->getHandle();
+		this->_handle = rawrbox::render::MISSING_TEXTURE->getHandle();
 	}
 
 	// UTILS ---
@@ -102,7 +101,7 @@ namespace rawrbox {
 		data.pSubResources = &pSubResource;
 		data.NumSubresources = 1;
 
-		rawrbox::RENDERER->device->CreateTexture(desc, &data, &this->_tex);
+		rawrbox::render::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 	}
 } // namespace rawrbox

@@ -1,51 +1,208 @@
 
-// #include <rawrbox/render_temp/decals/manager.hpp>
-//
-//
-// #include <rawrbox/render_temp/utils/render.hpp>
+#ifndef ENGINE_DLL
+	#define ENGINE_DLL 1
+#endif
+
+#ifndef D3D11_SUPPORTED
+	#define D3D11_SUPPORTED 0
+#endif
+
+#ifndef D3D12_SUPPORTED
+	#define D3D12_SUPPORTED 0
+#endif
+
+#ifndef GL_SUPPORTED
+	#define GL_SUPPORTED 0
+#endif
+
+#ifndef VULKAN_SUPPORTED
+	#define VULKAN_SUPPORTED 0
+#endif
+
+#ifndef METAL_SUPPORTED
+	#define METAL_SUPPORTED 0
+#endif
+
+#if D3D11_SUPPORTED
+	#include <Graphics/GraphicsEngineD3D11/interface/EngineFactoryD3D11.h>
+#endif
+
+#if D3D12_SUPPORTED
+	#include <Graphics/GraphicsEngineD3D12/interface/EngineFactoryD3D12.h>
+#endif
+
+#if GL_SUPPORTED
+	#include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
+#endif
+
+#if VULKAN_SUPPORTED
+	#include <Graphics/GraphicsEngineVulkan/interface/EngineFactoryVk.h>
+#endif
+
+#if METAL_SUPPORTED
+	#include <Graphics/GraphicsEngineMetal/interface/EngineFactoryMtl.h>
+#endif
+
 #include <rawrbox/render/materials/base.hpp>
 #include <rawrbox/render/materials/instanced.hpp>
 #include <rawrbox/render/materials/text.hpp>
-#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/texture/webp.hpp>
 #include <rawrbox/render/utils/render.hpp>
-#include <rawrbox/utils/pack.hpp>
-
-#include <fmt/format.h>
-
-// #define BGFX_DEFAULT_CLEAR (0 | BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH)
+#include <rawrbox/utils/path.hpp>
+#include <rawrbox/utils/threading.hpp>
+// #include <rawrbox/render_temp/decals/manager.hpp>
 
 namespace rawrbox {
-	RendererBase::RendererBase(const rawrbox::Colorf& clearColor) : _clearColor(clearColor) {}
+	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Colorf& clearColor) : _window(window), _type(type), _size(size), _clearColor(clearColor) {}
 	RendererBase::~RendererBase() {
 		this->_render.reset();
+		this->_stencil.reset();
+
+		RAWRBOX_DESTROY(this->_device);
+		RAWRBOX_DESTROY(this->_context);
+		RAWRBOX_DESTROY(this->_swapChain);
 
 		/*rawrbox::DECALS::shutdown();
 		this->_decals.reset();
 		bgfx::discard(BGFX_DISCARD_ALL);*/
 	}
 
-	void RendererBase::init(const rawrbox::Vector2i& size) {
+	void RendererBase::init() {
 		if (!this->supported()) throw std::runtime_error(fmt::format("[RawrBox-Renderer] Renderer not supported by GPU!"));
-		this->resize(size);
 
-		// Init materials ---
-		rawrbox::MaterialBase::init();
-		rawrbox::MaterialText3D::init();
-		rawrbox::MaterialInstanced::init();
-		// -----
+		Diligent::SwapChainDesc SCDesc;
+		switch (this->_type) {
+#if D3D11_SUPPORTED
+			case Diligent::RENDER_DEVICE_TYPE_D3D11:
+				{
+	#if ENGINE_DLL
+					auto* GetEngineFactoryD3D11 = Diligent::LoadGraphicsEngineD3D11(); // Load the dll and import GetEngineFactoryD3D11() function
+	#endif
+					auto* pFactoryD3D11 = GetEngineFactoryD3D11();
+					this->_engineFactory = pFactoryD3D11;
 
-		// rawrbox::DECALS::init();
+					Diligent::EngineD3D11CreateInfo EngineCI;
+					pFactoryD3D11->CreateDeviceAndContextsD3D11(EngineCI, &this->_device, &this->_context);
+					pFactoryD3D11->CreateSwapChainD3D11(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc{}, this->_window, &this->_swapChain);
+				}
+				break;
+#endif
+
+#if D3D12_SUPPORTED
+			case Diligent::RENDER_DEVICE_TYPE_D3D12:
+				{
+	#if ENGINE_DLL
+					// Load the dll and import GetEngineFactoryD3D12() function
+					auto* GetEngineFactoryD3D12 = Diligent::LoadGraphicsEngineD3D12();
+	#endif
+					auto* pFactoryD3D12 = GetEngineFactoryD3D12();
+					this->_engineFactory = pFactoryD3D12;
+
+					Diligent::EngineD3D12CreateInfo EngineCI;
+					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
+					pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc{}, this->_window, &this->_swapChain);
+				}
+				break;
+#endif // D3D12_SUPPORTED
+
+#if GL_SUPPORTED
+			case Diligent::RENDER_DEVICE_TYPE_GL:
+				{
+	#if EXPLICITLY_LOAD_ENGINE_GL_DLL
+					// Load the dll and import GetEngineFactoryOpenGL() function
+					auto GetEngineFactoryOpenGL = Diligent::LoadGraphicsEngineOpenGL();
+					auto* pFactoryOpenGL = GetEngineFactoryOpenGL();
+	#else
+					auto* pFactoryOpenGL = Diligent::GetEngineFactoryOpenGL();
+	#endif
+					this->_engineFactory = pFactoryOpenGL;
+
+					Diligent::EngineGLCreateInfo EngineCI;
+					EngineCI.Window = this->_window;
+					pFactoryOpenGL->CreateDeviceAndSwapChainGL(EngineCI, &this->_device, &this->_context, SCDesc, &this->_swapChain);
+				}
+				break;
+#endif // GL_SUPPORTED
+
+#if VULKAN_SUPPORTED
+			case Diligent::RENDER_DEVICE_TYPE_VULKAN:
+				{
+	#if EXPLICITLY_LOAD_ENGINE_GL_DLL
+					// Load the dll and import GetEngineFactoryVk() function
+					auto* GetEngineFactoryVk = Diligent::LoadGraphicsEngineVk();
+					auto* pFactoryVk = GetEngineFactoryVk();
+	#else
+					auto* pFactoryVk = Diligent::GetEngineFactoryVk();
+	#endif
+					this->_engineFactory = pFactoryVk;
+
+					Diligent::EngineVkCreateInfo EngineCI;
+					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_device, &this->_context);
+					pFactoryVk->CreateSwapChainVk(this->_device, this->_context, SCDesc, this->_window, &this->_swapChain);
+				}
+				break;
+#endif // VULKAN_SUPPORTED
+			default: throw std::runtime_error("[RawrBox-Window] Invalid diligent engine");
+		}
+
+		// Setup shader pipeline if not exists
+		if (rawrbox::render::SHADER_FACTORY == nullptr) {
+			auto dirs = rawrbox::PathUtils::glob("assets/shaders", true);
+			auto paths = fmt::format("{}", fmt::join(dirs, ";"));
+
+			this->_engineFactory->CreateDefaultShaderSourceStreamFactory(paths.c_str(), &rawrbox::render::SHADER_FACTORY);
+		}
+		// -----------
+
+		if (this->_engineFactory == nullptr) throw std::runtime_error("[RawrBox-Renderer] Failed to initialize");
+
+		// Init default textures ---
+		if (rawrbox::render::MISSING_TEXTURE == nullptr) {
+			rawrbox::render::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
+			rawrbox::render::MISSING_TEXTURE->upload();
+		}
+
+		if (rawrbox::render::WHITE_TEXTURE == nullptr) {
+			rawrbox::render::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White());
+			rawrbox::render::WHITE_TEXTURE->upload();
+		}
+
+		if (rawrbox::render::BLACK_TEXTURE == nullptr) {
+			rawrbox::render::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black());
+			rawrbox::render::BLACK_TEXTURE->upload();
+		}
+
+		if (rawrbox::render::NORMAL_TEXTURE == nullptr) {
+			rawrbox::render::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0xbcbcff));
+			rawrbox::render::NORMAL_TEXTURE->upload();
+		}
+		// -------------------------
+
+		// Setup stencil ----
+		this->_stencil = std::make_unique<rawrbox::Stencil>(this->_size);
+		this->_stencil->upload();
+		// ------------------
+
+		// Setup renderer --
+		this->_render = std::make_unique<rawrbox::TextureRender>(this->_size); // TODO: RESCALE
+		this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
+		// --------
+
+		this->playIntro();
+		// rawrbox::ENGINE_INITIALIZED = true;
+		//  rawrbox::DECALS::init();
 	}
 
 	void RendererBase::resize(const rawrbox::Vector2i& size) {
-		if (this->swapChain == nullptr) return;
-		this->swapChain->Resize(size.x, size.y);
+		if (this->_swapChain == nullptr) return;
 
-		this->_render = std::make_unique<rawrbox::TextureRender>(size);
-		// this->_render->addTexture(bgfx::TextureFormat::R8);    // Decal stencil
-		// this->_render->addTexture(bgfx::TextureFormat::RGBA8); // GPU PICKING
-		this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
+		this->_swapChain->Resize(size.x, size.y);
+		if (this->_stencil != nullptr) this->_stencil->resize(size);
+
+		//  this->_render->addTexture(bgfx::TextureFormat::R8);    // Decal stencil
+		//  this->_render->addTexture(bgfx::TextureFormat::RGBA8); // GPU PICKING
+		// this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
 
 		/*
 				this->_decals = std::make_unique<rawrbox::TextureRender>(size);
@@ -74,8 +231,34 @@ namespace rawrbox {
 	void RendererBase::setOverlayRender(std::function<void()> render) { this->overlayRender = render; }
 	void RendererBase::overridePostWorld(std::function<void()> post) { this->postRender = post; }
 
+	void RendererBase::update() {
+		if (this->_currentIntro != nullptr) {
+			if (this->_introComplete) {
+				this->_introList.erase(this->_introList.begin());
+
+				// Done?
+				if (this->_introList.empty()) {
+					this->setOverlayRender(this->_tempOverlayRender);
+					this->setWorldRender(this->_tempWorldRender);
+					this->completeIntro();
+				} else {
+					this->_currentIntro = &this->_introList.begin()->second;
+					this->_introComplete = false;
+				}
+
+				return;
+			}
+
+			this->_currentIntro->texture->update();
+		} else {
+			if (this->_camera != nullptr) {
+				this->_camera->update();
+			}
+		}
+	}
+
 	void RendererBase::render() {
-		if (this->swapChain == nullptr || this->context == nullptr || this->device == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Failed to bind swapChain/context/device! Did you call 'init' ?");
+		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Failed to bind swapChain/context/device! Did you call 'init' ?");
 
 		if (this->worldRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] World render method not set! Did you call 'setWorldRender' ?");
 		if (this->overlayRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Overlay render method not set! Did you call 'setOverlayRender' ?");
@@ -85,7 +268,7 @@ namespace rawrbox {
 		// ---------------------
 
 		// No world / overlay only
-		if (rawrbox::MAIN_CAMERA == nullptr) {
+		if (this->_camera == nullptr) {
 			this->overlayRender();
 			this->frame();
 			return;
@@ -96,7 +279,7 @@ namespace rawrbox {
 		// ------------------------
 
 		// Check GPU Picking -----
-		this->gpuCheck();
+		// this->gpuCheck();
 		// -------------------
 
 		// Submit ---
@@ -104,8 +287,8 @@ namespace rawrbox {
 		// ----------
 	}
 
-	void RendererBase::gpuCheck() {
-		/*if (this->_gpuReadFrame == rawrbox::BGFX_FRAME) {
+	/*void RendererBase::gpuCheck() {
+		if (this->_gpuReadFrame == rawrbox::BGFX_FRAME) {
 			std::unordered_map<uint32_t, uint32_t> ids = {};
 			const bgfx::Caps* caps = bgfx::getCaps();
 
@@ -140,16 +323,17 @@ namespace rawrbox {
 			}
 
 			this->_gpuPickCallbacks.clear();
-		}*/
-	}
+		}
+	}*/
 
 	void RendererBase::finalRender() {
+		// this->worldRender();
 
 		// Record world ---
 		this->_render->startRecord();
 		this->worldRender();
 		this->_render->stopRecord();
-		// ----------------
+		//  ----------------
 
 		// Render world ---
 		if (this->postRender == nullptr) {
@@ -158,7 +342,10 @@ namespace rawrbox {
 		} else {
 			this->postRender();
 		}
-		// ----------------
+
+		// rawrbox::RenderUtils::renderQUAD(this->_render->getHandle());
+		// this->postRender();
+		//  ----------------
 
 		this->overlayRender();
 
@@ -210,33 +397,119 @@ namespace rawrbox {
 	}
 
 	void RendererBase::clear() {
-		if (this->swapChain == nullptr) return;
+		if (this->_swapChain == nullptr || this->_context == nullptr) return;
 
-		auto* pRTV = this->swapChain->GetCurrentBackBufferRTV();
-		auto* pDSV = this->swapChain->GetDepthBufferDSV();
+		auto* pRTV = this->_swapChain->GetCurrentBackBufferRTV();
+		auto* pDSV = this->_swapChain->GetDepthBufferDSV();
 
 		// Reset render target
-		this->context->SetRenderTargets(1, &pRTV, pDSV, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		this->_context->SetRenderTargets(1, &pRTV, pDSV, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		// Clear the back buffer
-		this->context->ClearRenderTarget(pRTV, this->_clearColor.data().data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-		this->context->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG, 1.F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		this->_context->ClearRenderTarget(pRTV, this->_clearColor.data().data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		this->_context->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG, 1.F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
 	void RendererBase::frame() {
-		this->swapChain->Present(this->_vsync ? 1 : 0); // Submit
-		rawrbox::FRAME++;
+		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
+		rawrbox::render::FRAME++;
 	}
 
-	void RendererBase::bindRenderUniforms() {}
+	// INTRO ------
+	void RendererBase::playIntro() {
+		if (this->_skipIntros) {
+			this->completeIntro();
+			return;
+		}
+
+		// Temp store renders for overriding ---
+		this->_tempOverlayRender = this->overlayRender;
+		this->_tempWorldRender = this->worldRender;
+		// -------------
+
+		this->worldRender = []() {};
+		this->overlayRender = [this]() {
+			this->_stencil->drawBox({}, this->_size.cast<float>(), rawrbox::Colors::Black());
+
+			if (this->_currentIntro != nullptr) {
+				auto screenSize = this->_size.cast<float>();
+
+				if (this->_currentIntro->cover) {
+					this->_stencil->drawTexture({0, 0}, {screenSize.x, screenSize.y}, *this->_currentIntro->texture);
+				} else {
+					auto size = this->_currentIntro->texture->getSize().cast<float>();
+					this->_stencil->drawTexture({screenSize.x / 2.F - size.x / 2.F, screenSize.y / 2.F - size.y / 2.F}, {size.x, size.y}, *this->_currentIntro->texture);
+				}
+			}
+
+			this->_stencil->render();
+		};
+
+		// Load webp intros -----------------------
+		rawrbox::ASYNC::run([this]() {
+			// Load ----
+			for (auto& intro : this->_introList) {
+				intro.second.texture = std::make_shared<rawrbox::TextureWEBP>(intro.first);
+				intro.second.texture->setLoop(false);
+				intro.second.texture->setSpeed(intro.second.speed);
+				intro.second.texture->onEnd += [this]() {
+					this->_introComplete = true;
+				};
+
+				intro.second.texture->upload();
+			}
+
+			// First intro on the list
+			this->_currentIntro = &this->_introList.begin()->second;
+		});
+		// -------------------------
+	}
+
+	void RendererBase::completeIntro() {
+		// Init & load materials ---
+		rawrbox::MaterialBase::init();
+		rawrbox::MaterialText3D::init();
+		rawrbox::MaterialInstanced::init();
+		// -----
+
+		this->_introList.clear();
+		this->_currentIntro = nullptr;
+		this->_introComplete = true;
+
+		this->onIntroCompleted();
+	}
+
+	void RendererBase::skipIntros(bool skip) {
+		if (skip) fmt::print("[RawrBox] Skipping intros :(\n");
+		this->_skipIntros = skip;
+	}
+
+	void RendererBase::addIntro(const std::filesystem::path& webpPath, float speed, bool cover) {
+		if (webpPath.extension() != ".webp") throw std::runtime_error(fmt::format("[RawrBox-RenderBase] Invalid intro '{}', format needs to be .webp!", webpPath.generic_string()));
+
+		rawrbox::RawrboxIntro intro;
+		intro.cover = cover;
+		intro.speed = speed;
+		intro.texture = nullptr;
+
+		this->_introList[webpPath.generic_string()] = intro;
+	}
+	//-------------------------
 
 	// Utils ----
+	rawrbox::CameraBase* RendererBase::camera() const { return this->_camera.get(); }
+	rawrbox::Stencil* RendererBase::stencil() const { return this->_stencil.get(); }
+
+	Diligent::IDeviceContext* RendererBase::context() const { return this->_context; }
+	Diligent::ISwapChain* RendererBase::swapChain() const { return this->_swapChain; }
+	Diligent::IRenderDevice* RendererBase::device() const { return this->_device; }
+
 	Diligent::ITextureView* RendererBase::getDepth() const {
 		return this->_render->getDepth();
 	}
 
-	Diligent::ITextureView* RendererBase::getColor() const {
-		return this->_render->getHandle();
+	Diligent::ITextureView* RendererBase::getColor(bool rt) const {
+		return rt ? this->_render->getRT() : this->_render->getHandle();
 	}
 
 	/*const bgfx::TextureHandle RendererBase::getMask() const {
@@ -254,21 +527,21 @@ namespace rawrbox {
 	bool RendererBase::getVSync() const { return this->_vsync; }
 	void RendererBase::setVSync(bool vsync) { this->_vsync = vsync; }
 
-	void RendererBase::gpuPick(const rawrbox::Vector2i& pos, std::function<void(uint32_t)> callback) {
-		/*if (this->_render == nullptr || pos.x < 0 || pos.y < 0 || pos.x >= this->_size.x || pos.y >= this->_size.y) return;
+	/*void RendererBase::gpuPick(const rawrbox::Vector2i& pos, std::function<void(uint32_t)> callback) {
+		if (this->_render == nullptr || pos.x < 0 || pos.y < 0 || pos.x >= this->_size.x || pos.y >= this->_size.y) return;
 
 		auto tex = this->getGPUPick();
 		if (!bgfx::isValid(tex)) return;
 
 		bgfx::blit(rawrbox::BLIT_VIEW, this->_GPUBlitTex, 0, 0, tex, static_cast<uint16_t>(pos.x), static_cast<uint16_t>(pos.y));
 		this->_gpuReadFrame = bgfx::readTexture(this->_GPUBlitTex, this->_gpuPixelData.data());
-		this->_gpuPickCallbacks.emplace_back(callback);*/
-	}
+		this->_gpuPickCallbacks.emplace_back(callback);
+	}*/
 	// ------
 
 	// Is it supported by the GPU?
 	bool RendererBase::supported() const {
-		// const auto& Features = m_pDevice->GetDeviceInfo().Features;
+		// const auto& features = this->_device->GetDeviceInfo().Features;
 		return true;
 	}
 } // namespace rawrbox

@@ -18,33 +18,36 @@
 
 namespace instance_test {
 	void Game::setupGLFW() {
-		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
-		this->_window->setTitle("INSTANCE TEST");
-		this->_window->setRenderer<rawrbox::RendererBase>(
-		    rawrbox::Colors::Black(),
-		    Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_COUNT, [this]() {}, [this]() { this->drawWorld(); });
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
-		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
-		this->_window->onIntroCompleted += [this]() {
-			this->loadContent();
-		};
+		auto window = rawrbox::render::createWindow();
+		window->setMonitor(-1);
+		window->setTitle("INSTANCE TEST");
+		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
+		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {
-		if (this->_window == nullptr) return;
+		auto window = rawrbox::render::getWindow();
+
+		// Setup renderer
+		auto render = rawrbox::render::createRenderer(window);
+		render->setOverlayRender([this]() {});
+		render->setWorldRender([this]() { this->drawWorld(); });
+		render->onIntroCompleted = [this]() {
+			this->loadContent();
+		};
+		// ---------------
 
 		// Setup camera
-		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		auto cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		// Setup loaders
+		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
-		// ----
+		// --------------
 
-		this->_window->initializeEngine();
+		render->init();
 	}
 
 	void Game::loadContent() {
@@ -95,29 +98,15 @@ namespace instance_test {
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
-
-		this->_window->unblockPoll();
-		this->_window.reset();
+		rawrbox::render::shutdown();
 	}
 
 	void Game::pollEvents() {
-		if (this->_window == nullptr) return;
-		this->_window->pollEvents();
+		rawrbox::render::pollEvents();
 	}
 
 	void Game::update() {
-		if (this->_window == nullptr) return;
-		this->_window->update();
-	}
-
-	void Game::printFrames() {
-		/*const bgfx::Stats* stats = bgfx::getStats();
-
-		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
-		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
-		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());*/
+		rawrbox::render::update();
 	}
 
 	void Game::drawWorld() {
@@ -126,21 +115,6 @@ namespace instance_test {
 	}
 
 	void Game::draw() {
-		if (this->_window == nullptr) return;
-
-		// DEBUG ----
-		/*bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "010-instancing-test");
-		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: INSTANCING test");
-		this->printFrames();
-		// -----------
-
-		if (!this->_ready) {
-			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
-			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
-			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
-		}*/
-
-		this->_window->render(); // Commit primitives
+		rawrbox::render::render(); // Commit primitives
 	}
 } // namespace instance_test

@@ -1,4 +1,4 @@
-#include <rawrbox/render/renderers/base.hpp>
+
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/atlas.hpp>
 #include <rawrbox/render/utils/texture.hpp>
@@ -124,7 +124,7 @@ namespace rawrbox {
 		data.pSubResources = subresData.data();
 		data.NumSubresources = subresData.size();
 
-		rawrbox::RENDERER->device->CreateTexture(desc, &data, &this->_tex);
+		rawrbox::render::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 	}
 } // namespace rawrbox

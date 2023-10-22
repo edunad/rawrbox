@@ -13,6 +13,8 @@ namespace rawrbox {
 		void vec4MulMtx(float* _result, const float* _vec, const float* _mat);
 
 	public:
+		static bool MTX_RIGHT_HANDED;
+
 		std::array<float, 16> mtx = {
 		    1, 0, 0, 0,
 		    0, 1, 0, 0,
@@ -63,8 +65,8 @@ namespace rawrbox {
 		// ------
 
 		// STATIC UTILS ----
-		static rawrbox::Matrix4x4 mtxLookAt(const rawrbox::Vector3f& eye, const rawrbox::Vector3f& at, const rawrbox::Vector3f& up, bool rightHand = false);
-		static rawrbox::Matrix4x4 mtxProj(float FOV, float aspect, float near, float far, bool rightHand = false);
+		static rawrbox::Matrix4x4 mtxLookAt(const rawrbox::Vector3f& eye, const rawrbox::Vector3f& at, const rawrbox::Vector3f& up);
+		static rawrbox::Matrix4x4 mtxProj(float FOV, float aspect, float near, float far);
 		static rawrbox::Vector3f project(const rawrbox::Vector3f& pos, const rawrbox::Matrix4x4& view, const rawrbox::Matrix4x4& proj, const rawrbox::Vector4i& viewport);
 		// ------
 

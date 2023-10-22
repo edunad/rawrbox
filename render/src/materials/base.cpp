@@ -1,6 +1,6 @@
 
 #include <rawrbox/render/materials/base.hpp>
-#include <rawrbox/render/renderers/base.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 #include <rawrbox/utils/pack.hpp>
 
@@ -31,7 +31,7 @@ namespace rawrbox {
 		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-		rawrbox::RENDERER->device->CreateBuffer(CBDesc, nullptr, &_uniforms);
+		rawrbox::render::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &_uniforms);
 		// ------------
 
 		// PIPELINE ----
@@ -72,20 +72,21 @@ namespace rawrbox {
 	}
 
 	void MaterialBase::bindUniforms(const rawrbox::Mesh& mesh) {
-		auto context = rawrbox::RENDERER->context;
+		auto renderer = rawrbox::render::RENDERER;
+		auto context = renderer->context();
 
 		// SETUP UNIFORMS ----------------------------
 		Diligent::MapHelper<rawrbox::MaterialBaseUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 		// Map the buffer and write current world-view-projection matrix
 
-		auto size = rawrbox::RENDERER->getSize().cast<float>();
-		auto tTransform = rawrbox::TRANSFORM.transpose();
-		auto tProj = rawrbox::MAIN_CAMERA->getProjMtx().transpose();
-		auto tView = rawrbox::MAIN_CAMERA->getViewMtx().transpose();
-		auto tInvView = rawrbox::MAIN_CAMERA->getViewMtx();
+		auto size = renderer->getSize().cast<float>();
+		auto tTransform = rawrbox::render::TRANSFORM.transpose();
+		auto tProj = renderer->camera()->getProjMtx().transpose();
+		auto tView = renderer->camera()->getViewMtx().transpose();
+		auto tInvView = renderer->camera()->getViewMtx();
 		tInvView.inverse();
 
-		auto tWorldView = rawrbox::MAIN_CAMERA->getProjViewMtx().transpose();
+		auto tWorldView = renderer->camera()->getProjViewMtx().transpose();
 
 		std::array<rawrbox::Vector4f, MAX_DATA>
 		    data = {rawrbox::Vector4f{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
@@ -125,7 +126,7 @@ namespace rawrbox {
 	}
 
 	void MaterialBase::bindPipeline(const rawrbox::Mesh& mesh) {
-		auto context = rawrbox::RENDERER->context;
+		auto context = rawrbox::render::RENDERER->context();
 
 		if (mesh.wireframe) {
 			context->SetPipelineState(_wireframe);
@@ -141,19 +142,19 @@ namespace rawrbox {
 	}
 
 	void MaterialBase::bind(const rawrbox::Mesh& mesh) {
-		auto context = rawrbox::RENDERER->context;
+		auto context = rawrbox::render::RENDERER->context();
 
 		if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
 			mesh.texture->update(); // Update texture
 			_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(mesh.texture->getHandle());
 		} else {
-			_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(rawrbox::WHITE_TEXTURE->getHandle());
+			_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(rawrbox::render::WHITE_TEXTURE->getHandle());
 		}
 
 		if (mesh.displacementTexture != nullptr && mesh.displacementTexture->isValid()) {
 			_bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Displacement")->Set(mesh.displacementTexture->getHandle());
 		} else {
-			_bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Displacement")->Set(rawrbox::BLACK_TEXTURE->getHandle());
+			_bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Displacement")->Set(rawrbox::render::BLACK_TEXTURE->getHandle());
 		}
 
 		this->bindPipeline(mesh);

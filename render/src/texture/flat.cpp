@@ -1,4 +1,3 @@
-#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/flat.hpp>
 

@@ -1,5 +1,4 @@
 
-#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/pack.hpp>
 
@@ -40,7 +39,7 @@ namespace rawrbox {
 			SubresData.Stride = static_cast<uint64_t>(node.width * this->_channels);
 			SubresData.pData = data.data();
 
-			rawrbox::RENDERER->context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			rawrbox::render::RENDERER->context()->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		}
 
 		return node;

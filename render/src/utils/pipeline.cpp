@@ -1,4 +1,3 @@
-#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
@@ -22,7 +21,7 @@ namespace rawrbox {
 		Diligent::ShaderCreateInfo ShaderCI;
 		ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
 		ShaderCI.Desc.UseCombinedTextureSamplers = true; // (g_Texture + g_Texture_sampler combination)
-		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
+		ShaderCI.pShaderSourceStreamFactory = rawrbox::render::SHADER_FACTORY;
 
 		ShaderCI.Desc.ShaderType = type;
 		ShaderCI.EntryPoint = "main";
@@ -31,7 +30,7 @@ namespace rawrbox {
 
 		Diligent::RefCntAutoPtr<Diligent::IShader> shader;
 		Diligent::RefCntAutoPtr<Diligent::IDataBlob> output;
-		rawrbox::RENDERER->device->CreateShader(ShaderCI, &shader, &output);
+		rawrbox::render::RENDERER->device()->CreateShader(ShaderCI, &shader, &output);
 		if (shader == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create shader '{}'", name));
 
 		std::string_view compilerOutput = output != nullptr ? std::bit_cast<const char*>(output->GetConstDataPtr()) : "";
@@ -46,6 +45,7 @@ namespace rawrbox {
 		auto fnd = _pipelines.find(name);
 		if (fnd != _pipelines.end()) return fnd->second;
 
+		auto desc = rawrbox::render::RENDERER->swapChain()->GetDesc();
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> pipe;
 
 		// Create pipe info ----
@@ -54,10 +54,6 @@ namespace rawrbox {
 		info.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
 		info.GraphicsPipeline.NumRenderTargets = settings.renderTargets;
 
-		auto desc = rawrbox::RENDERER->swapChain->GetDesc();
-		info.GraphicsPipeline.RTVFormats[0] = desc.ColorBufferFormat;
-		info.GraphicsPipeline.DSVFormat = desc.DepthBufferFormat;
-
 		info.GraphicsPipeline.PrimitiveTopology = settings.topology;
 		info.GraphicsPipeline.RasterizerDesc.CullMode = settings.cull;
 		info.GraphicsPipeline.DepthStencilDesc.DepthEnable = settings.depth == Diligent::COMPARISON_FUNC_UNKNOWN ? false : true;
@@ -65,6 +61,19 @@ namespace rawrbox {
 		info.GraphicsPipeline.DepthStencilDesc.DepthWriteEnable = settings.depthWrite;
 		info.GraphicsPipeline.RasterizerDesc.ScissorEnable = settings.scissors;
 		info.GraphicsPipeline.RasterizerDesc.FillMode = settings.fill;
+
+		if (info.GraphicsPipeline.DepthStencilDesc.DepthEnable) {
+			info.GraphicsPipeline.DSVFormat = desc.DepthBufferFormat;
+		}
+
+		// When using render pass, renderTargets must be 0 and Depth unknown
+		if (settings.renderPass.pass != nullptr) {
+			info.GraphicsPipeline.pRenderPass = settings.renderPass.pass;
+			info.GraphicsPipeline.SubpassIndex = settings.renderPass.index;
+			info.GraphicsPipeline.NumRenderTargets = 0;
+		} else {
+			info.GraphicsPipeline.RTVFormats[0] = desc.ColorBufferFormat;
+		}
 
 		Diligent::BlendStateDesc BlendState;
 		BlendState.RenderTargets[0].BlendEnable = true;
@@ -77,7 +86,7 @@ namespace rawrbox {
 		Diligent::ShaderCreateInfo ShaderCI;
 		ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
 		ShaderCI.Desc.UseCombinedTextureSamplers = true; // (g_Texture + g_Texture_sampler combination)
-		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
+		ShaderCI.pShaderSourceStreamFactory = rawrbox::render::SHADER_FACTORY;
 
 		// SHADERS ----
 		info.pVS = rawrbox::PipelineUtils::compileShader(settings.pVS, Diligent::SHADER_TYPE_VERTEX);
@@ -104,15 +113,19 @@ namespace rawrbox {
 			    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
 
 			for (auto& res : settings.resources) {
+				if (res.Type == Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE) continue;
 				samplers.emplace_back(res.ShaderStages, res.Name, SamLinearClampDesc);
 			}
 
-			info.PSODesc.ResourceLayout.ImmutableSamplers = samplers.data();
-			info.PSODesc.ResourceLayout.NumImmutableSamplers = static_cast<uint32_t>(samplers.size());
+			if (!samplers.empty()) {
+				info.PSODesc.ResourceLayout.ImmutableSamplers = samplers.data();
+				info.PSODesc.ResourceLayout.NumImmutableSamplers = static_cast<uint32_t>(samplers.size());
+			}
+
 			info.PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 		}
 		// ---------------------
-		rawrbox::RENDERER->device->CreateGraphicsPipelineState(info, &pipe);
+		rawrbox::render::RENDERER->device()->CreateGraphicsPipelineState(info, &pipe);
 		if (pipe == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}'", name));
 
 		for (auto& uni : settings.uniforms) {
@@ -120,7 +133,10 @@ namespace rawrbox {
 			pipe->GetStaticVariableByName(uni.type, "Constants")->Set(uni.uniform);
 		}
 
-		pipe->CreateShaderResourceBinding(&_binds[bindName], true);
+		if (!bindName.empty()) {
+			pipe->CreateShaderResourceBinding(&_binds[bindName], true);
+		}
+
 		_pipelines[name] = std::move(pipe);
 		return _pipelines[name];
 	}

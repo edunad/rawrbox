@@ -10,6 +10,8 @@
 #include <cstring>
 
 namespace rawrbox {
+	bool Matrix4x4::MTX_RIGHT_HANDED = false;
+
 	// PRIVATE -----
 	void Matrix4x4::vec4MulMtx(float* _result, const float* _vec, const float* _mat) {
 		_result[0] = _vec[0] * _mat[0] + _vec[1] * _mat[4] + _vec[2] * _mat[8] + _vec[3] * _mat[12];
@@ -330,16 +332,16 @@ namespace rawrbox {
 	// T _42 = 13;
 	// T _43 = 14;
 	// T _44 = 15;
-	rawrbox::Matrix4x4 Matrix4x4::mtxLookAt(const rawrbox::Vector3f& _eye, const rawrbox::Vector3f& _at, const rawrbox::Vector3f& _up, bool rightHand) {
+	rawrbox::Matrix4x4 Matrix4x4::mtxLookAt(const rawrbox::Vector3f& _eye, const rawrbox::Vector3f& _at, const rawrbox::Vector3f& _up) {
 		rawrbox::Matrix4x4 ret;
-		const auto view = (rightHand ? _eye - _at : _at - _eye).normalized();
+		const auto view = (Matrix4x4::MTX_RIGHT_HANDED ? _eye - _at : _at - _eye).normalized();
 
 		rawrbox::Vector3f right = {};
 		rawrbox::Vector3f up = {};
 
 		const auto uxv = _up.cross(view);
 		if (uxv.dot(uxv) == 0.0F) {
-			right = {!rightHand ? -1.0F : 1.0F, 0.0F, 0.0F};
+			right = {Matrix4x4::MTX_RIGHT_HANDED ? 1.0F : -1.0F, 0.0F, 0.0F};
 		} else {
 			right = uxv.normalized();
 		}
@@ -369,7 +371,7 @@ namespace rawrbox {
 		return ret;
 	}
 
-	rawrbox::Matrix4x4 Matrix4x4::mtxProj(float FOV, float aspect, float near, float far, bool rightHand) {
+	rawrbox::Matrix4x4 Matrix4x4::mtxProj(float FOV, float aspect, float near, float far) {
 		rawrbox::Matrix4x4 ret;
 		ret.zero();
 
@@ -379,7 +381,7 @@ namespace rawrbox {
 		ret.mtx[0] = width;
 		ret.mtx[5] = height;
 
-		if (rightHand) {
+		if (Matrix4x4::MTX_RIGHT_HANDED) {
 			ret.mtx[10] = -(-(far + near) / (far - near));
 			ret.mtx[14] = -2 * near * far / (far - near);
 			ret.mtx[11] = -(-1);
