@@ -24,6 +24,7 @@
 #endif
 
 #include <rawrbox/engine/static.hpp>
+#include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/render/window.hpp>
 
 #include <GLFW/glfw3native.h>
@@ -33,6 +34,73 @@
 #define GLFWCURSOR (std::bit_cast<GLFWcursor*>(_cursor))
 
 namespace rawrbox {
+	// STATIC -----
+	std::vector<std::unique_ptr<rawrbox::Window>> Window::__WINDOWS = {};
+	Diligent::RENDER_DEVICE_TYPE Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_UNDEFINED;
+
+	rawrbox::Window* Window::createWindow(Diligent::RENDER_DEVICE_TYPE render) {
+		if (render == Diligent::RENDER_DEVICE_TYPE_UNDEFINED) {
+#if PLATFORM_LINUX
+	#if VULKAN_SUPPORTED
+			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_VULKAN;
+	#else
+			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_GL;
+	#endif
+#else
+	#if D3D12_SUPPORTED
+			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_D3D12;
+	#elif D3D11_SUPPORTED
+			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_D3D11;
+	#elif VULKAN_SUPPORTED
+			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_VULKAN;
+	#else
+			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_GL;
+	#endif
+#endif
+		} else {
+			Window::__RENDER_TYPE = render;
+		}
+
+		if (render == Diligent::RENDER_DEVICE_TYPE_GL || render == Diligent::RENDER_DEVICE_TYPE_GLES) {
+			rawrbox::Matrix4x4::MTX_RIGHT_HANDED = true;
+		}
+
+		Window::__WINDOWS.push_back(std::unique_ptr<rawrbox::Window>(new Window(Window::__RENDER_TYPE)));
+		return Window::__WINDOWS.front().get();
+	}
+
+	rawrbox::Window* Window::getWindow(size_t indx) {
+		if (indx > Window::__WINDOWS.size()) throw std::runtime_error(fmt::format("[RawrBox] Invalid window index '{}'", indx));
+		return Window::__WINDOWS[indx].get();
+	}
+
+	void Window::pollEvents() {
+		glfwWaitEvents();
+	}
+
+	void Window::shutdown() {
+		glfwPostEmptyEvent();
+		glfwTerminate();
+	}
+
+	void Window::update() {
+		for (auto& win : __WINDOWS) {
+			setActiveRenderer(win->_renderer.get());
+			win->_renderer->update();
+		}
+	}
+
+	void Window::render() {
+		for (auto& win : __WINDOWS) {
+			setActiveRenderer(win->_renderer.get());
+			win->_renderer->render();
+		}
+	}
+
+	void Window::setActiveRenderer(rawrbox::RendererBase* r) {
+		rawrbox::RENDERER = r;
+	}
+
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-cstyle-cast)
 	static Window& glfwHandleToRenderer(GLFWwindow* ptr) {
 		return *static_cast<Window*>(glfwGetWindowUserPointer(ptr));
@@ -42,6 +110,7 @@ namespace rawrbox {
 		fmt::print("[RawrBox-Window] GLFW error {}: {}\n", error, description);
 	}
 	// NOLINTEND(cppcoreguidelines-pro-type-cstyle-cast)
+	// --------------------------
 
 	Window::~Window() { this->close(); }
 	Window::Window(Diligent::RENDER_DEVICE_TYPE type) : _renderType(type) {
@@ -216,21 +285,6 @@ namespace rawrbox {
 		glfwSetCursor(GLFWHANDLE, cursor);
 	}
 	// -------------------
-
-	void Window::shutdown() {
-		if (this->_handle == nullptr) return;
-		glfwDestroyWindow(GLFWHANDLE); // Optional
-		glfwTerminate();
-	}
-
-	void Window::unblockPoll() {
-		glfwPostEmptyEvent();
-	}
-
-	void Window::pollEvents() {
-		if (this->_handle == nullptr) return;
-		glfwWaitEvents();
-	}
 
 	// ------UTILS
 	void Window::close() {

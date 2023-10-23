@@ -23,7 +23,7 @@ namespace rawrbox {
 		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-		rawrbox::render::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &_uniforms);
+		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &_uniforms);
 		// ------------
 
 		// PIPELINE ----
@@ -54,7 +54,7 @@ namespace rawrbox {
 	}
 
 	void MaterialInstanced::bindPipeline(const rawrbox::Mesh& mesh) {
-		auto context = rawrbox::render::RENDERER->context();
+		auto context = rawrbox::RENDERER->context();
 
 		if (mesh.wireframe) {
 			context->SetPipelineState(_wireframe);

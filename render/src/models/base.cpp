@@ -20,7 +20,7 @@ namespace rawrbox {
 	void ModelBase::updateBuffers() {
 		if (!this->isDynamic() || !this->isUploaded()) return;
 
-		auto context = rawrbox::render::RENDERER->context();
+		auto context = rawrbox::RENDERER->context();
 
 		auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
 		auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
@@ -172,8 +172,8 @@ namespace rawrbox {
 	void ModelBase::upload(bool dynamic) {
 		if (this->isUploaded()) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
 
-		auto device = rawrbox::render::RENDERER->device();
-		auto context = rawrbox::render::RENDERER->context();
+		auto device = rawrbox::RENDERER->device();
+		auto context = rawrbox::RENDERER->context();
 
 		// Generate buffers ----
 		this->_isDynamic = dynamic;
@@ -226,7 +226,7 @@ namespace rawrbox {
 		Diligent::IBuffer* pBuffs[] = {this->_vbh};
 		// NOLINTEND(*)
 
-		auto context = rawrbox::render::RENDERER->context();
+		auto context = rawrbox::RENDERER->context();
 		context->SetVertexBuffers(0, 1, pBuffs, &offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 		context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		// ----

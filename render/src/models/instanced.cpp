@@ -70,7 +70,7 @@ namespace rawrbox {
 	void InstancedModel::upload(bool dynamic) {
 		rawrbox::ModelBase::upload(dynamic);
 
-		auto device = rawrbox::render::RENDERER->device();
+		auto device = rawrbox::RENDERER->device();
 		auto instSize = static_cast<uint32_t>(this->_instances.size());
 
 		// INSTANCE BUFFER ----
@@ -91,7 +91,7 @@ namespace rawrbox {
 	void InstancedModel::updateInstance() {
 		if (this->_dataBuffer == nullptr) throw std::runtime_error("[RawrBox-InstancedModel] Data buffer not valid! Did you call upload()?");
 
-		auto context = rawrbox::render::RENDERER->context();
+		auto context = rawrbox::RENDERER->context();
 		auto instSize = static_cast<uint32_t>(this->_instances.size());
 
 		context->UpdateBuffer(this->_vbh, 0, sizeof(rawrbox::Instance) * instSize, this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
@@ -101,7 +101,7 @@ namespace rawrbox {
 		if (!this->isUploaded()) throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not uploaded");
 		if (this->_instances.empty()) return;
 
-		auto context = rawrbox::render::RENDERER->context();
+		auto context = rawrbox::RENDERER->context();
 
 		// Bind vertex and index buffers
 		// NOLINTBEGIN(*)
@@ -114,7 +114,7 @@ namespace rawrbox {
 		// ----
 
 		// Bind materials uniforms & textures ----
-		rawrbox::render::TRANSFORM = this->getMatrix() * this->_mesh->getMatrix();
+		rawrbox::TRANSFORM = this->getMatrix() * this->_mesh->getMatrix();
 		this->_material->bind(*this->_mesh);
 		// -----------
 

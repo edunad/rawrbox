@@ -12,7 +12,7 @@
 
 namespace post_process {
 	void Game::setupGLFW() {
-		auto window = rawrbox::render::createWindow();
+		auto window = rawrbox::Window::createWindow();
 		window->setMonitor(-1);
 		window->setTitle("POST-PROCESS TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
@@ -20,16 +20,16 @@ namespace post_process {
 	}
 
 	void Game::init() {
-		auto window = rawrbox::render::getWindow();
+		auto window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto render = rawrbox::render::createRenderer(window);
+		auto render = window->createRenderer();
 		render->setOverlayRender([this]() {});
 		render->setWorldRender([this]() { this->drawWorld(); });
 		render->skipIntros(true);
 		render->overridePostWorld([this]() {
 			if (!this->_ready) return;
-			this->_postProcess->render(rawrbox::render::RENDERER->getColor());
+			this->_postProcess->render(rawrbox::RENDERER->getColor());
 		});
 		render->onIntroCompleted = [this]() {
 			this->loadContent();
@@ -93,18 +93,18 @@ namespace post_process {
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
-		rawrbox::render::shutdown();
+		rawrbox::Window::shutdown();
 	}
 
 	void Game::pollEvents() {
-		rawrbox::render::pollEvents();
+		rawrbox::Window::pollEvents();
 	}
 
 	void Game::update() {
-		rawrbox::render::update();
+		rawrbox::Window::update();
 
 		if (this->_model != nullptr) {
-			this->_model->setEulerAngle({std::cos(rawrbox::render::FRAME * 0.01F) * 2.5F, std::sin(rawrbox::render::FRAME * 0.01F) * 2.5F, 0});
+			this->_model->setEulerAngle({std::cos(rawrbox::FRAME * 0.01F) * 2.5F, std::sin(rawrbox::FRAME * 0.01F) * 2.5F, 0});
 		}
 	}
 
@@ -114,6 +114,6 @@ namespace post_process {
 	}
 
 	void Game::draw() {
-		rawrbox::render::render();
+		rawrbox::Window::render();
 	}
 } // namespace post_process

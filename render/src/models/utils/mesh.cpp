@@ -219,7 +219,7 @@ namespace rawrbox {
 		mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
 		// -----
 
-		mesh.setTexture(rawrbox::render::WHITE_TEXTURE.get());
+		mesh.setTexture(rawrbox::WHITE_TEXTURE.get());
 
 		return mesh;
 	}
@@ -240,7 +240,7 @@ namespace rawrbox {
 		mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
 		// -----
 
-		mesh.setTexture(rawrbox::render::WHITE_TEXTURE.get());
+		mesh.setTexture(rawrbox::WHITE_TEXTURE.get());
 
 		return mesh;
 	}

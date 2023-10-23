@@ -12,7 +12,7 @@ namespace rawrbox {
 
 	void TextureBase::loadFallback() {
 		this->_failedToLoad = true;
-		this->_handle = rawrbox::render::MISSING_TEXTURE->getHandle();
+		this->_handle = rawrbox::MISSING_TEXTURE->getHandle();
 	}
 
 	// UTILS ---
@@ -101,7 +101,7 @@ namespace rawrbox {
 		data.pSubResources = &pSubResource;
 		data.NumSubresources = 1;
 
-		rawrbox::render::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
+		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 	}
 } // namespace rawrbox

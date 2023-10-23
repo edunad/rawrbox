@@ -46,6 +46,7 @@
 #include <rawrbox/render/materials/base.hpp>
 #include <rawrbox/render/materials/instanced.hpp>
 #include <rawrbox/render/materials/text.hpp>
+#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/webp.hpp>
 #include <rawrbox/render/utils/render.hpp>
@@ -148,35 +149,35 @@ namespace rawrbox {
 		}
 
 		// Setup shader pipeline if not exists
-		if (rawrbox::render::SHADER_FACTORY == nullptr) {
+		if (rawrbox::SHADER_FACTORY == nullptr) {
 			auto dirs = rawrbox::PathUtils::glob("assets/shaders", true);
 			auto paths = fmt::format("{}", fmt::join(dirs, ";"));
 
-			this->_engineFactory->CreateDefaultShaderSourceStreamFactory(paths.c_str(), &rawrbox::render::SHADER_FACTORY);
+			this->_engineFactory->CreateDefaultShaderSourceStreamFactory(paths.c_str(), &rawrbox::SHADER_FACTORY);
 		}
 		// -----------
 
 		if (this->_engineFactory == nullptr) throw std::runtime_error("[RawrBox-Renderer] Failed to initialize");
 
 		// Init default textures ---
-		if (rawrbox::render::MISSING_TEXTURE == nullptr) {
-			rawrbox::render::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
-			rawrbox::render::MISSING_TEXTURE->upload();
+		if (rawrbox::MISSING_TEXTURE == nullptr) {
+			rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
+			rawrbox::MISSING_TEXTURE->upload();
 		}
 
-		if (rawrbox::render::WHITE_TEXTURE == nullptr) {
-			rawrbox::render::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White());
-			rawrbox::render::WHITE_TEXTURE->upload();
+		if (rawrbox::WHITE_TEXTURE == nullptr) {
+			rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White());
+			rawrbox::WHITE_TEXTURE->upload();
 		}
 
-		if (rawrbox::render::BLACK_TEXTURE == nullptr) {
-			rawrbox::render::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black());
-			rawrbox::render::BLACK_TEXTURE->upload();
+		if (rawrbox::BLACK_TEXTURE == nullptr) {
+			rawrbox::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black());
+			rawrbox::BLACK_TEXTURE->upload();
 		}
 
-		if (rawrbox::render::NORMAL_TEXTURE == nullptr) {
-			rawrbox::render::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0xbcbcff));
-			rawrbox::render::NORMAL_TEXTURE->upload();
+		if (rawrbox::NORMAL_TEXTURE == nullptr) {
+			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0xbcbcff));
+			rawrbox::NORMAL_TEXTURE->upload();
 		}
 		// -------------------------
 
@@ -197,7 +198,7 @@ namespace rawrbox {
 		// --------
 
 		this->playIntro();
-		rawrbox::render::ENGINE_INITIALIZED = true;
+		rawrbox::ENGINE_INITIALIZED = true;
 	}
 
 	void RendererBase::resize(const rawrbox::Vector2i& size) {
@@ -413,7 +414,7 @@ namespace rawrbox {
 
 	void RendererBase::frame() {
 		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
-		rawrbox::render::FRAME++;
+		rawrbox::FRAME++;
 	}
 
 	// INTRO ------

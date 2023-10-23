@@ -21,7 +21,7 @@ namespace rawrbox {
 		Diligent::ShaderCreateInfo ShaderCI;
 		ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
 		ShaderCI.Desc.UseCombinedTextureSamplers = true; // (g_Texture + g_Texture_sampler combination)
-		ShaderCI.pShaderSourceStreamFactory = rawrbox::render::SHADER_FACTORY;
+		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
 
 		ShaderCI.Desc.ShaderType = type;
 		ShaderCI.EntryPoint = "main";
@@ -30,7 +30,7 @@ namespace rawrbox {
 
 		Diligent::RefCntAutoPtr<Diligent::IShader> shader;
 		Diligent::RefCntAutoPtr<Diligent::IDataBlob> output;
-		rawrbox::render::RENDERER->device()->CreateShader(ShaderCI, &shader, &output);
+		rawrbox::RENDERER->device()->CreateShader(ShaderCI, &shader, &output);
 		if (shader == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create shader '{}'", name));
 
 		std::string_view compilerOutput = output != nullptr ? std::bit_cast<const char*>(output->GetConstDataPtr()) : "";
@@ -45,7 +45,7 @@ namespace rawrbox {
 		auto fnd = _pipelines.find(name);
 		if (fnd != _pipelines.end()) return fnd->second;
 
-		auto desc = rawrbox::render::RENDERER->swapChain()->GetDesc();
+		auto desc = rawrbox::RENDERER->swapChain()->GetDesc();
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> pipe;
 
 		// Create pipe info ----
@@ -86,7 +86,7 @@ namespace rawrbox {
 		Diligent::ShaderCreateInfo ShaderCI;
 		ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
 		ShaderCI.Desc.UseCombinedTextureSamplers = true; // (g_Texture + g_Texture_sampler combination)
-		ShaderCI.pShaderSourceStreamFactory = rawrbox::render::SHADER_FACTORY;
+		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
 
 		// SHADERS ----
 		info.pVS = rawrbox::PipelineUtils::compileShader(settings.pVS, Diligent::SHADER_TYPE_VERTEX);
@@ -125,7 +125,7 @@ namespace rawrbox {
 			info.PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 		}
 		// ---------------------
-		rawrbox::render::RENDERER->device()->CreateGraphicsPipelineState(info, &pipe);
+		rawrbox::RENDERER->device()->CreateGraphicsPipelineState(info, &pipe);
 		if (pipe == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}'", name));
 
 		for (auto& uni : settings.uniforms) {

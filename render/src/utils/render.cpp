@@ -27,7 +27,7 @@ namespace rawrbox {
 			RenderUtils::init(); // Upload if not uploaded before
 		}
 
-		auto context = rawrbox::render::RENDERER->context();
+		auto context = rawrbox::RENDERER->context();
 		_SRB->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(texture);
 
 		context->SetPipelineState(_pipe);

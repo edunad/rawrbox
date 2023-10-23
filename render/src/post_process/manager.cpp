@@ -30,7 +30,7 @@ namespace rawrbox {
 	// ----
 
 	void PostProcessManager::upload() {
-		this->_rt = std::make_unique<rawrbox::TextureRender>(rawrbox::render::RENDERER->getSize(), false);
+		this->_rt = std::make_unique<rawrbox::TextureRender>(rawrbox::RENDERER->getSize(), false);
 		this->_rt->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
 
 		for (const auto& _postProcess : this->_postProcesses) {

@@ -16,7 +16,7 @@
 
 namespace stencil {
 	void Game::setupGLFW() {
-		auto window = rawrbox::render::createWindow();
+		auto window = rawrbox::Window::createWindow();
 		window->setMonitor(-1);
 		window->setTitle("STENCIL TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
@@ -24,10 +24,10 @@ namespace stencil {
 	}
 
 	void Game::init() {
-		auto window = rawrbox::render::getWindow();
+		auto window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto render = rawrbox::render::createRenderer(window, rawrbox::Color::RGBAHex(0x443355FF));
+		auto render = window->createRenderer(rawrbox::Color::RGBAHex(0x443355FF));
 		render->setOverlayRender([this]() { this->drawOverlay(); });
 		render->setWorldRender([this]() { this->drawWorld(); });
 		render->onIntroCompleted = [this]() {
@@ -134,11 +134,11 @@ namespace stencil {
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
-		rawrbox::render::shutdown();
+		rawrbox::Window::shutdown();
 	}
 
 	void Game::pollEvents() {
-		rawrbox::render::pollEvents();
+		rawrbox::Window::pollEvents();
 	}
 
 	void Game::drawWorld() {
@@ -149,7 +149,7 @@ namespace stencil {
 	void Game::drawOverlay() {
 		if (!this->_ready) return;
 
-		auto stencil = rawrbox::render::RENDERER->stencil();
+		auto stencil = rawrbox::RENDERER->stencil();
 		stencil->pushOffset({20, 50});
 
 		// Box + clipping --
@@ -317,7 +317,7 @@ namespace stencil {
 	}
 
 	void Game::update() {
-		rawrbox::render::update();
+		rawrbox::Window::update();
 
 		if (this->_ready) {
 			if (this->_model != nullptr) {
@@ -329,6 +329,6 @@ namespace stencil {
 	}
 
 	void Game::draw() {
-		rawrbox::render::render(); // Draw world, overlay & commit primitives
+		rawrbox::Window::render(); // Draw world, overlay & commit primitives
 	}
 } // namespace stencil

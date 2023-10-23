@@ -162,7 +162,7 @@ namespace rawrbox {
 			}
 		}
 
-		rawrbox::render::__LIGHT_DIRTY__ = true;
+		rawrbox::__LIGHT_DIRTY__ = true;
 	}
 
 	rawrbox::LightBase* LIGHTS::getLight(size_t indx) {

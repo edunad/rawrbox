@@ -106,7 +106,7 @@ namespace rawrbox {
 		// Setup --------
 		this->setupDrawCall(
 		    this->_2dPipeline,
-		    rawrbox::render::WHITE_TEXTURE->getHandle());
+		    rawrbox::WHITE_TEXTURE->getHandle());
 		// ----
 
 		if (this->_outline.isSet()) {
@@ -140,7 +140,7 @@ namespace rawrbox {
 		// Setup --------
 		this->setupDrawCall(
 		    this->_2dPipeline,
-		    rawrbox::render::WHITE_TEXTURE->getHandle());
+		    rawrbox::WHITE_TEXTURE->getHandle());
 		// ----
 
 		if (this->_outline.isSet()) {
@@ -171,7 +171,7 @@ namespace rawrbox {
 			this->drawLine({pos.x + size.x, pos.y - thick}, {pos.x + size.x, pos.y + size.y}, col);
 			this->drawLine({pos.x + size.x + (thick > 1.F ? thick : 0.F), pos.y + size.y}, {pos.x - thick, pos.y + size.y}, col);
 		} else {
-			this->drawTexture(pos, size, *rawrbox::render::WHITE_TEXTURE, col);
+			this->drawTexture(pos, size, *rawrbox::WHITE_TEXTURE, col);
 		}
 	}
 
@@ -245,7 +245,7 @@ namespace rawrbox {
 		// Setup --------
 		this->setupDrawCall(
 		    usePTLines ? this->_linePipeline : this->_2dPipeline,
-		    rawrbox::render::WHITE_TEXTURE->getHandle());
+		    rawrbox::WHITE_TEXTURE->getHandle());
 
 		// ----
 
@@ -364,7 +364,7 @@ namespace rawrbox {
 	void Stencil::internalDraw() {
 		if (this->_drawCalls.empty()) return;
 
-		auto context = rawrbox::render::RENDERER->context();
+		auto context = rawrbox::RENDERER->context();
 		size_t contextID = 0;
 
 		for (auto& group : this->_drawCalls) {

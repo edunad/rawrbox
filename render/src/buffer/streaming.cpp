@@ -10,7 +10,7 @@ namespace rawrbox {
 		buff.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 		buff.Size = size;
 
-		rawrbox::render::RENDERER->device()->CreateBuffer(buff, nullptr, &this->_buffer);
+		rawrbox::RENDERER->device()->CreateBuffer(buff, nullptr, &this->_buffer);
 	}
 
 	// UTILS ----
@@ -29,7 +29,7 @@ namespace rawrbox {
 		if (map.mappedData == nullptr) {
 			// If current offset is zero, we are mapping the buffer for the first time after it has been flushed. Use MAP_FLAG_DISCARD flag.
 			// Otherwise use MAP_FLAG_NO_OVERWRITE flag.
-			map.mappedData.Map(rawrbox::render::RENDERER->context(), this->_buffer, Diligent::MAP_WRITE, map.currOffset == 0 ? Diligent::MAP_FLAG_DISCARD : Diligent::MAP_FLAG_NO_OVERWRITE);
+			map.mappedData.Map(rawrbox::RENDERER->context(), this->_buffer, Diligent::MAP_WRITE, map.currOffset == 0 ? Diligent::MAP_FLAG_DISCARD : Diligent::MAP_FLAG_NO_OVERWRITE);
 		}
 
 		auto Offset = map.currOffset;

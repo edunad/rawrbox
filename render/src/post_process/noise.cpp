@@ -17,7 +17,7 @@ namespace rawrbox {
 	}
 
 	void PostProcessNoise::upload() {
-		auto size = rawrbox::render::RENDERER->getSize().cast<float>();
+		auto size = rawrbox::RENDERER->getSize().cast<float>();
 		this->_settings.g_ScreenSize = {0, 0, size.x, size.y};
 
 		// Uniforms -------
@@ -28,7 +28,7 @@ namespace rawrbox {
 		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 
-		rawrbox::render::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
 		// ------------
 
 		rawrbox::PipeSettings settings;
@@ -47,10 +47,10 @@ namespace rawrbox {
 	}
 
 	void PostProcessNoise::applyEffect(Diligent::ITextureView* texture) {
-		auto context = rawrbox::render::RENDERER->context();
+		auto context = rawrbox::RENDERER->context();
 
 		// Bind uniforms ---
-		this->_settings.g_NoiseTimer = static_cast<float>(rawrbox::render::FRAME);
+		this->_settings.g_NoiseTimer = static_cast<float>(rawrbox::FRAME);
 
 		Diligent::MapHelper<rawrbox::NoiseSettings> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 		*CBConstants = this->_settings;

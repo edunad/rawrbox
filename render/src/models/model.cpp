@@ -406,14 +406,14 @@ namespace rawrbox {
 		ModelBase::draw();
 		this->preDraw();
 
-		auto context = rawrbox::render::RENDERER->context();
+		auto context = rawrbox::RENDERER->context();
 		for (auto& mesh : this->_meshes) {
 			// Process animations ---
 			this->animate(*mesh);
 			// ---
 
 			// Bind materials uniforms & textures ----
-			rawrbox::render::TRANSFORM = this->getMatrix() * mesh->getMatrix();
+			rawrbox::TRANSFORM = this->getMatrix() * mesh->getMatrix();
 			this->_material->bind(*mesh);
 			// -----------
 

@@ -109,7 +109,7 @@ namespace rawrbox {
 		rawrbox::ModelBase::draw();
 
 		// Bind materials uniforms & textures ----
-		rawrbox::render::TRANSFORM = this->getMatrix();
+		rawrbox::TRANSFORM = this->getMatrix();
 		this->_material->bind(*this->_mesh);
 		// -----------
 
@@ -117,6 +117,6 @@ namespace rawrbox {
 		DrawAttrs.IndexType = Diligent::VT_UINT16; // Index type
 		DrawAttrs.NumIndices = this->_mesh->totalIndex;
 		DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL; // Verify the state of vertex and index buffers
-		rawrbox::render::RENDERER->context()->DrawIndexed(DrawAttrs);
+		rawrbox::RENDERER->context()->DrawIndexed(DrawAttrs);
 	}
 } // namespace rawrbox

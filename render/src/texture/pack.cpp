@@ -39,7 +39,7 @@ namespace rawrbox {
 			SubresData.Stride = static_cast<uint64_t>(node.width * this->_channels);
 			SubresData.pData = data.data();
 
-			rawrbox::render::RENDERER->context()->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			rawrbox::RENDERER->context()->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		}
 
 		return node;

@@ -96,7 +96,6 @@ target_link_libraries(
     ${output_target}
     PUBLIC
            Diligent-GraphicsTools
-           #Diligent-ShaderTools
            RAWRBOX.MATH
            RAWRBOX.ENGINE
            ${RAWRBOX_EXTRA_LIBS}
@@ -106,7 +105,7 @@ target_link_libraries(
            webpdemux
            glfw)
 
-#set_lib_runtime_mt(${output_target})
+set_lib_runtime_mt(${output_target})
 
 if(WIN32)
     set(DILIGENT_LINK_MODE shared)

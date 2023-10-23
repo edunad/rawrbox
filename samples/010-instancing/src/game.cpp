@@ -18,7 +18,7 @@
 
 namespace instance_test {
 	void Game::setupGLFW() {
-		auto window = rawrbox::render::createWindow();
+		auto window = rawrbox::Window::createWindow();
 		window->setMonitor(-1);
 		window->setTitle("INSTANCE TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
@@ -26,10 +26,10 @@ namespace instance_test {
 	}
 
 	void Game::init() {
-		auto window = rawrbox::render::getWindow();
+		auto window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto render = rawrbox::render::createRenderer(window);
+		auto render = window->createRenderer();
 		render->setOverlayRender([this]() {});
 		render->setWorldRender([this]() { this->drawWorld(); });
 		render->onIntroCompleted = [this]() {
@@ -98,15 +98,15 @@ namespace instance_test {
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
-		rawrbox::render::shutdown();
+		rawrbox::Window::shutdown();
 	}
 
 	void Game::pollEvents() {
-		rawrbox::render::pollEvents();
+		rawrbox::Window::pollEvents();
 	}
 
 	void Game::update() {
-		rawrbox::render::update();
+		rawrbox::Window::update();
 	}
 
 	void Game::drawWorld() {
@@ -115,6 +115,6 @@ namespace instance_test {
 	}
 
 	void Game::draw() {
-		rawrbox::render::render(); // Commit primitives
+		rawrbox::Window::render(); // Commit primitives
 	}
 } // namespace instance_test

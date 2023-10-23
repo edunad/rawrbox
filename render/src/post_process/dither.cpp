@@ -15,7 +15,7 @@ namespace rawrbox {
 	void PostProcessDither::updateUniforms() {
 		if (this->_uniforms == nullptr) return;
 
-		auto context = rawrbox::render::RENDERER->context();
+		auto context = rawrbox::RENDERER->context();
 		context->UpdateBuffer(this->_uniforms, 0, sizeof(rawrbox::DitherSettings), &this->_settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
@@ -45,7 +45,7 @@ namespace rawrbox {
 	}
 
 	void PostProcessDither::upload() {
-		auto size = rawrbox::render::RENDERER->getSize().cast<float>();
+		auto size = rawrbox::RENDERER->getSize().cast<float>();
 		this->_settings.g_ScreenSize = {0, 0, size.x, size.y};
 
 		// Uniforms -------
@@ -58,7 +58,7 @@ namespace rawrbox {
 		Diligent::BufferData data;
 		data.DataSize = CBDesc.Size;
 		data.pData = &this->_settings;
-		rawrbox::render::RENDERER->device()->CreateBuffer(CBDesc, &data, &this->_uniforms);
+		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, &data, &this->_uniforms);
 		// ------------
 
 		rawrbox::PipeSettings settings;
@@ -77,7 +77,7 @@ namespace rawrbox {
 	}
 
 	void PostProcessDither::applyEffect(Diligent::ITextureView* texture) {
-		auto context = rawrbox::render::RENDERER->context();
+		auto context = rawrbox::RENDERER->context();
 		this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(texture);
 
 		context->SetPipelineState(this->_pipeline);

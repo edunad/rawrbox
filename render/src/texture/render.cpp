@@ -18,21 +18,21 @@ namespace rawrbox {
 
 	// ------ RENDER
 	void TextureRender::startRecord(bool clear) {
-		rawrbox::render::RENDERER->context()->SetRenderTargets(1, &this->_rtHandle, this->_depthHandle, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::RENDERER->context()->SetRenderTargets(1, &this->_rtHandle, this->_depthHandle, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		if (clear) {
 			const std::array<float, 4> ClearColor = {0.0F, 0.0F, 0.0F, 0.0F};
 
-			rawrbox::render::RENDERER->context()->ClearRenderTarget(this->_rtHandle, ClearColor.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-			rawrbox::render::RENDERER->context()->ClearDepthStencil(this->_depthHandle, Diligent::CLEAR_DEPTH_FLAG, 1.0F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			rawrbox::RENDERER->context()->ClearRenderTarget(this->_rtHandle, ClearColor.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			rawrbox::RENDERER->context()->ClearDepthStencil(this->_depthHandle, Diligent::CLEAR_DEPTH_FLAG, 1.0F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		}
 	}
 
 	void TextureRender::stopRecord() {
-		auto* pRTV = rawrbox::render::RENDERER->swapChain()->GetCurrentBackBufferRTV();
-		auto* depth = rawrbox::render::RENDERER->swapChain()->GetDepthBufferDSV();
+		auto* pRTV = rawrbox::RENDERER->swapChain()->GetCurrentBackBufferRTV();
+		auto* depth = rawrbox::RENDERER->swapChain()->GetDepthBufferDSV();
 
-		rawrbox::render::RENDERER->context()->SetRenderTargets(1, &pRTV, depth, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::RENDERER->context()->SetRenderTargets(1, &pRTV, depth, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
 	void TextureRender::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
@@ -54,7 +54,7 @@ namespace rawrbox {
 		desc.ClearValue.Color[2] = 0.F;
 		desc.ClearValue.Color[3] = 0.F;
 
-		rawrbox::render::RENDERER->device()->CreateTexture(desc, nullptr, &this->_tex);
+		rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_tex);
 		this->_rtHandle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 		// --------------
@@ -68,7 +68,7 @@ namespace rawrbox {
 			desc.ClearValue.DepthStencil.Depth = 1;
 			desc.ClearValue.DepthStencil.Stencil = 0;
 
-			rawrbox::render::RENDERER->device()->CreateTexture(desc, nullptr, &this->_depthTex);
+			rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_depthTex);
 			this->_depthHandle = this->_depthTex->GetDefaultView(Diligent::TEXTURE_VIEW_DEPTH_STENCIL);
 		}
 		// ----------

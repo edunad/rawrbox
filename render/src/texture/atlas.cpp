@@ -124,7 +124,7 @@ namespace rawrbox {
 		data.pSubResources = subresData.data();
 		data.NumSubresources = subresData.size();
 
-		rawrbox::render::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
+		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 	}
 } // namespace rawrbox

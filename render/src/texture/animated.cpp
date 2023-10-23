@@ -30,7 +30,7 @@ namespace rawrbox {
 		SubresData.Stride = this->_size.x * this->_channels;
 		SubresData.pData = frame.pixels.data();
 
-		rawrbox::render::RENDERER->context()->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::RENDERER->context()->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
 	// ANIMATION ------

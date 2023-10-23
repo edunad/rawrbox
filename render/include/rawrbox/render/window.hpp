@@ -1,6 +1,8 @@
 #pragma once
 
 #include <rawrbox/math/vector2.hpp>
+#include <rawrbox/render/renderers/base.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <Graphics/GraphicsEngine/interface/GraphicsTypes.h>
@@ -49,8 +51,10 @@ namespace rawrbox {
 	};
 
 	class Window {
+
 	private:
 		GLFWwindow* _handle = nullptr;
+		std::unique_ptr<rawrbox::RendererBase> _renderer = nullptr;
 
 		// CURSOR ------
 		void* _cursor = nullptr;
@@ -76,13 +80,44 @@ namespace rawrbox {
 		static void callbacks_windowClose(GLFWwindow* whandle);
 		// --------------------
 
-	public:
-		virtual ~Window();
 		Window(Diligent::RENDER_DEVICE_TYPE renderType = Diligent::RENDER_DEVICE_TYPE_UNDEFINED);
+		static void setActiveRenderer(rawrbox::RendererBase* r);
+
+	public:
 		Window(Window&&) = delete;
 		Window& operator=(Window&&) = delete;
 		Window(const Window&) = delete;
 		Window& operator=(const Window&) = delete;
+		virtual ~Window();
+
+		// STATIC ---
+		static std::vector<std::unique_ptr<rawrbox::Window>> __WINDOWS;
+		static Diligent::RENDER_DEVICE_TYPE __RENDER_TYPE;
+
+		static rawrbox::Window* createWindow(Diligent::RENDER_DEVICE_TYPE render = Diligent::RENDER_DEVICE_TYPE_UNDEFINED);
+		static rawrbox::Window* getWindow(size_t indx = 0);
+
+		static void pollEvents();
+		static void update();
+		static void render();
+		static void shutdown();
+		// --------
+
+		// Renderer ------
+		template <class T = RendererBase, typename... CallbackArgs>
+		T* createRenderer(CallbackArgs&&... args) {
+			_renderer = std::make_unique<T>(this->__RENDER_TYPE, this->getHandle(), this->getSize(), std::forward<CallbackArgs>(args)...);
+
+			// Setup resize ----
+			this->onResize += [this](auto&, auto& size) {
+				_renderer->resize(size);
+			};
+			// -----------------
+
+			setActiveRenderer(_renderer.get());
+			return _renderer.get();
+		};
+		// ---------------
 
 		// ------CALLBACKS
 		OnKeyCallback onKey;
@@ -104,13 +139,6 @@ namespace rawrbox {
 		void hideCursor(bool hidden);
 		void setCursor(uint32_t cursor);
 		void setCursor(const std::array<uint8_t, 1024>& cursor); // Max size 16x16 (4 pixel channel)
-		// --------------------
-
-		void shutdown();
-
-		// UPDATE ------
-		void pollEvents();
-		void unblockPoll();
 		// --------------------
 
 		// UTILS ---------------
