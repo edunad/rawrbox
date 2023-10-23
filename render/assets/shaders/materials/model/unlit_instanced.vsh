@@ -40,8 +40,8 @@ struct PSInput {
 #define TRANSFORM_PSX
 #define TRANSFORM_BILLBOARD
 #define TEXTURE_DATA
-#include "../../include/material.fxh"
-#include "../../include/model_transforms.fxh"
+#include "material.fxh"
+#include "model_transforms.fxh"
 
 void main(in VSInput VSIn, out PSInput PSIn) {
     float4x4 InstanceMatr = MatrixFromRows(VSIn.MtrxRow0, VSIn.MtrxRow1, VSIn.MtrxRow2, VSIn.MtrxRow3);

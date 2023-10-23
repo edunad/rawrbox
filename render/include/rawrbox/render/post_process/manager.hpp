@@ -16,21 +16,7 @@ namespace rawrbox {
 	class PostProcessManager {
 	protected:
 		std::vector<std::unique_ptr<rawrbox::PostProcessBase>> _postProcesses = {};
-		Diligent::RefCntAutoPtr<Diligent::IRenderPass> _renderPass;
-
-		// TEST ----
-		// Diligent::RefCntAutoPtr<Diligent::ITexture> _aaa;
-		// Diligent::ITextureView* _pDstRenderTarget = nullptr;
-		// Diligent::RefCntAutoPtr<Diligent::IFramebuffer> _frameBuffer;
-
-		std::unordered_map<Diligent::ITextureView*, Diligent::RefCntAutoPtr<Diligent::IFramebuffer>> m_FramebufferCache;
-		Diligent::RefCntAutoPtr<Diligent::ITexture> pOpenGLOffsreenColorBuffer;
-		Diligent::RefCntAutoPtr<Diligent::ITexture> pColorBuffer;
-		// --------------
-
-		void buildRenderPass();
-		Diligent::RefCntAutoPtr<Diligent::IFramebuffer> createFramebuffer(Diligent::ITextureView* renderTarget);
-		Diligent::IFramebuffer* getCurrentFramebuffer();
+		std::unique_ptr<rawrbox::TextureRender> _rt = {};
 
 	public:
 		PostProcessManager() = default;

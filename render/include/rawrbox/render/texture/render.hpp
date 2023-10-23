@@ -11,9 +11,10 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::ITexture> _depthTex;
 
 		rawrbox::Vector2i _size = {};
+		bool _depth;
 
 	public:
-		explicit TextureRender(const rawrbox::Vector2i& size);
+		explicit TextureRender(const rawrbox::Vector2i& size, bool depth = true);
 
 		TextureRender(TextureRender&&) = delete;
 		TextureRender& operator=(TextureRender&&) = delete;

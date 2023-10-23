@@ -58,6 +58,7 @@ namespace rawrbox {
 	RendererBase::~RendererBase() {
 		this->_render.reset();
 		this->_stencil.reset();
+		this->_decals.reset();
 
 		RAWRBOX_DESTROY(this->_device);
 		RAWRBOX_DESTROY(this->_context);
@@ -189,9 +190,14 @@ namespace rawrbox {
 		this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
 		// --------
 
-		this->playIntro();
-		// rawrbox::ENGINE_INITIALIZED = true;
+		// Setup decals --
+		this->_decals = std::make_unique<rawrbox::TextureRender>(this->_size); // TODO: RESCALE
+		this->_decals->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
 		//  rawrbox::DECALS::init();
+		// --------
+
+		this->playIntro();
+		rawrbox::render::ENGINE_INITIALIZED = true;
 	}
 
 	void RendererBase::resize(const rawrbox::Vector2i& size) {
@@ -327,8 +333,6 @@ namespace rawrbox {
 	}*/
 
 	void RendererBase::finalRender() {
-		// this->worldRender();
-
 		// Record world ---
 		this->_render->startRecord();
 		this->worldRender();
@@ -338,13 +342,10 @@ namespace rawrbox {
 		// Render world ---
 		if (this->postRender == nullptr) {
 			rawrbox::RenderUtils::renderQUAD(this->_render->getHandle());
-			// rawrbox::RenderUtils::drawQUAD(this->_decals->getHandle(), this->_size, true, BGFX_STATE_BLEND_ALPHA);
 		} else {
 			this->postRender();
 		}
-
-		// rawrbox::RenderUtils::renderQUAD(this->_render->getHandle());
-		// this->postRender();
+		// rawrbox::RenderUtils::drawQUAD(this->_decals->getHandle(), this->_size, true, BGFX_STATE_BLEND_ALPHA);
 		//  ----------------
 
 		this->overlayRender();

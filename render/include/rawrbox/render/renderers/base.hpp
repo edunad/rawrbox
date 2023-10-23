@@ -27,8 +27,7 @@ namespace rawrbox {
 	class RendererBase {
 	protected:
 		std::unique_ptr<rawrbox::TextureRender> _render = nullptr;
-		//  std::unique_ptr<rawrbox::TextureRender> _decals = nullptr;
-		//  bgfx::TextureHandle _GPUBlitTex = BGFX_INVALID_HANDLE;
+		std::unique_ptr<rawrbox::TextureRender> _decals = nullptr;
 
 		// INTRO ---
 		std::function<void()> _tempWorldRender = nullptr;

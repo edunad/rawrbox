@@ -62,7 +62,7 @@ namespace rawrbox {
 		info.GraphicsPipeline.RasterizerDesc.ScissorEnable = settings.scissors;
 		info.GraphicsPipeline.RasterizerDesc.FillMode = settings.fill;
 
-		if (info.GraphicsPipeline.DepthStencilDesc.DepthEnable) {
+		if (settings.depthFormat) {
 			info.GraphicsPipeline.DSVFormat = desc.DepthBufferFormat;
 		}
 

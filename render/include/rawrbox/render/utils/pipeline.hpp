@@ -28,6 +28,7 @@ namespace rawrbox {
 
 		Diligent::COMPARISON_FUNCTION depth = Diligent::COMPARISON_FUNC_LESS;
 		bool depthWrite = true;
+		bool depthFormat = true;
 		bool scissors = false;
 
 		uint8_t renderTargets = 1;

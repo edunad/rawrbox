@@ -22,7 +22,7 @@ struct PSInput {
 
 
 #define TRANSFORM_BILLBOARD
-#include "../../include/model_transforms.fxh"
+#include "model_transforms.fxh"
 
 void main(in VSInput VSIn, out PSInput PSIn) {
     TransformedData transform = applyPosTransforms(VSIn.Pos, VSIn.UV.xy);

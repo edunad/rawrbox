@@ -1,8 +1,5 @@
-Texture2D    g_Texture;
-SamplerState g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
-
-Texture2D    g_Dither;
-SamplerState g_Dither_sampler; // By convention, texture samplers must use the '_sampler' suffix
+Texture2D      g_Texture;
+SamplerState   g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
 
 cbuffer Constants {
     // GLOBAL ----
@@ -10,16 +7,13 @@ cbuffer Constants {
     // ------------
 
     // UNIFORMS ----
-    float4   g_DitherSettings;
+    float   g_ditherMode;
+    float   g_ditherIntensity;
+    float   g_ditherDepth;
+    float   g_ditherColorDepth;
+    float   g_DitherThreshold;
     // ------------
 };
-
-#define ditherSize g_DitherSettings.x
-#define ditherThreshold g_DitherSettings.y
-#define ditherDepth g_DitherSettings.z
-#define ditherIntensity g_DitherSettings.w
-
-#define ditherColorDepth 2.
 
 struct PSInput {
     float4 Pos   : SV_POSITION;
@@ -29,6 +23,8 @@ struct PSInput {
 struct PSOutput {
     float4 Color : SV_TARGET;
 };
+
+#include <dither.fxh>
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
 #if defined(DESKTOP_GL) || defined(GL_ES)
@@ -40,16 +36,12 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     float4 Color = g_Texture.Sample(g_Texture_sampler, UV);
 
     // Dither -----
-	float luma = dot(Color.rgb, float3(0.21267290f, 0.71515220f, 0.07217500f));
-
-    if(ditherSize!= 0.0) { // FAST MODE
-		float4 ditherTex = g_Dither.Sample(g_Dither_sampler, UV.xy * ditherSize * g_ScreenSize.zw);
-		float dither = (ditherTex.a - 0.5) * 2.0 / ditherThreshold;
-
-	    Color.rgb *= 1.0f + (luma < dither ? (1.0 - luma) * (1.0 - (ditherColorDepth / 24.0)) * ditherIntensity * 10.0 : 0.0) * (1.0 / ditherDepth);
+    if(g_ditherMode == 0.0) { // SLOW MODE
+		Color.rgb = getDither(UV * g_ScreenSize.zw, Color.rgb, g_ditherIntensity * g_ditherDepth / 3.0);
 	} else {
-		Color.rgb = getDither(UV.xy * g_ScreenSize.zw, Color.rgb, ditherIntensity * ditherDepth * 1.0 / 3.0);
+		Color.rgb += getDitherFast(UV * g_ScreenSize.zw, 1) * g_ditherIntensity * g_ditherDepth / 3.0;
 	}
 
-    PSOut.Color = Color;
+	// Posterize
+	PSOut.Color = saturate(floor(Color * g_ditherColorDepth) / g_ditherColorDepth);
 }

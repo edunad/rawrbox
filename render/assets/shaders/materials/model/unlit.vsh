@@ -32,8 +32,8 @@ struct PSInput {
 #define TRANSFORM_PSX
 #define TRANSFORM_BILLBOARD
 #define TEXTURE_DATA
-#include "../../include/material.fxh"
-#include "../../include/model_transforms.fxh"
+#include "material.fxh"
+#include "model_transforms.fxh"
 
 void main(in VSInput VSIn, out PSInput PSIn) {
     TransformedData transform = applyPosTransforms(VSIn.Pos, VSIn.UV.xy);

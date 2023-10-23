@@ -19,8 +19,7 @@ namespace rawrbox {
 
 		virtual ~PostProcessBase() = default;
 
-		virtual void upload(Diligent::IRenderPass* pass, uint32_t passIndex) = 0;
-		virtual void setRTTexture(Diligent::ITextureView* texture) = 0;
-		virtual void applyEffect() = 0;
+		virtual void upload() = 0;
+		virtual void applyEffect(Diligent::ITextureView* texture) = 0;
 	};
 } // namespace rawrbox
