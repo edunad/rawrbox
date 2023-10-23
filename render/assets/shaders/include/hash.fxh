@@ -9,7 +9,7 @@ uint pcg(uint v) {
 	return (word >> 22u) ^ word;
 }
 
-float2 pcg2d(float2 v) {
+uint2 pcg2d(uint2 v) {
 	v = v * 1664525u + 1013904223u;
 
 	v.x += v.y * 1664525u;
@@ -26,7 +26,7 @@ float2 pcg2d(float2 v) {
 }
 
 // http://www.jcgt.org/published/0009/03/02/
-float3 pcg3d(float3 v) {
+uint3 pcg3d(uint3 v) {
 
 	v = v * 1664525u + 1013904223u;
 
@@ -45,7 +45,7 @@ float3 pcg3d(float3 v) {
 }
 
 // http://www.jcgt.org/published/0009/03/02/
-float3 pcg3d16(float3 v) {
+uint3 pcg3d16(uint3 v) {
 	v = v * 12829u + 47989u;
 
 	v.x += v.y * v.z;
@@ -62,7 +62,7 @@ float3 pcg3d16(float3 v) {
 }
 
 // http://www.jcgt.org/published/0009/03/02/
-float4 pcg4d(float4 v) {
+uint4 pcg4d(uint4 v) {
 	v = v * 1664525u + 1013904223u;
 
 	v.x += v.y * v.w;

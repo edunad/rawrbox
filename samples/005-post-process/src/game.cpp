@@ -1,10 +1,9 @@
 
 #include <rawrbox/render/cameras/orbital.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
-// #include <rawrbox/render/post_process/bloom.hpp>
-// #include <rawrbox/render/post_process/dither_psx.hpp>
-// #include <rawrbox/render/post_process/static_noise.hpp>
 #include <rawrbox/render/post_process/dither.hpp>
+#include <rawrbox/render/post_process/noise.hpp>
+#include <rawrbox/render/post_process/quick_bloom.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
@@ -52,9 +51,9 @@ namespace post_process {
 
 	void Game::loadContent() {
 		this->_postProcess = std::make_unique<rawrbox::PostProcessManager>();
-		this->_postProcess->add<rawrbox::Dither>(rawrbox::DITHER_MODE::FAST_MODE);
-		/*this->_postProcess->add<rawrbox::PostProcessBloom>(0.015F);
-		this->_postProcess->add<rawrbox::PostProcessStaticNoise>(0.1F);*/
+		this->_postProcess->add<rawrbox::PostProcessDither>(rawrbox::DITHER_MODE::FAST_MODE);
+		this->_postProcess->add<rawrbox::PostProcessQuickBloom>(0.015F);
+		this->_postProcess->add<rawrbox::PostProcessNoise>(0.1F);
 		this->_postProcess->upload();
 
 		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
@@ -105,7 +104,7 @@ namespace post_process {
 		rawrbox::render::update();
 
 		if (this->_model != nullptr) {
-			// this->_model->setEulerAngle({std::cos(rawrbox::render::FRAME * 0.01F) * 2.5F, std::sin(rawrbox::render::FRAME * 0.01F) * 2.5F, 0});
+			this->_model->setEulerAngle({std::cos(rawrbox::render::FRAME * 0.01F) * 2.5F, std::sin(rawrbox::render::FRAME * 0.01F) * 2.5F, 0});
 		}
 	}
 

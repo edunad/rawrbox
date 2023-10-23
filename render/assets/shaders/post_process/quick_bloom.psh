@@ -1,0 +1,59 @@
+Texture2D      g_Texture;
+SamplerState   g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
+
+cbuffer Constants {
+    // GLOBAL ----
+    float4   g_ScreenSize;
+    // ------------
+
+    // UNIFORMS ----
+    float   g_bloomIntensity;
+    // ------------
+};
+
+#define px (float2(1.0, 1.0) / g_ScreenSize.zw)
+
+struct PSInput {
+    float4 Pos   : SV_POSITION;
+    float2 UV    : TEX_COORD;
+};
+
+struct PSOutput {
+    float4 Color : SV_TARGET;
+};
+
+
+// Adapted from https://www.shadertoy.com/view/4tlBWH
+float4 GetBloom ( in float2 uv, in float4 inColor ) {
+	float numSamples = 1.0;
+    float4 color = inColor;
+
+	for (float x = -8.0; x <= 8.0; x += 1.0) {
+		for (float y = -8.0; y <= 8.0; y += 1.0) {
+            float4 addColor = g_Texture.Sample(g_Texture_sampler, uv + (float2(x, y) * px));
+
+			if (max(addColor.r, max(addColor.g, addColor.b)) > 0.3) {
+				float dist = length(float2(x,y))+1.0;
+				float4 glowColor = max((addColor * 128.0) / pow(dist, 2.0), float4(0,0,0,0));
+
+				if (max(glowColor.r, max(glowColor.g, glowColor.b)) > 0.0) {
+					color += glowColor;
+					numSamples += 1.0;
+				}
+			}
+		}
+	}
+
+	return color / numSamples;
+}
+
+void main(in PSInput PSIn, out PSOutput PSOut) {
+#if defined(DESKTOP_GL) || defined(GL_ES)
+    float2 UV = float2(PSIn.UV.x, 1.0 - PSIn.UV.y);
+#else
+    float2 UV = PSIn.UV;
+#endif
+
+    float4 Color = g_Texture.Sample(g_Texture_sampler, UV);
+	PSOut.Color = lerp(Color, GetBloom(UV, Color), g_bloomIntensity);
+}
