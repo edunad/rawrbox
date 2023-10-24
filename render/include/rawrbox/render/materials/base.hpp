@@ -61,7 +61,7 @@ namespace rawrbox {
 		MaterialBase& operator=(const MaterialBase&) = delete;
 		virtual ~MaterialBase() = default;
 
-		static std::vector<rawrbox::VertexData> convert(const std::vector<rawrbox::VertexNormBoneData>& v);
+		static std::vector<rawrbox::VertexData> convert(const std::vector<rawrbox::ModelVertexData>& v);
 		static void init();
 
 		virtual void bind(const rawrbox::Mesh& mesh);

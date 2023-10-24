@@ -1,13 +1,12 @@
 #include <rawrbox/assimp/importer.hpp>
 #include <rawrbox/assimp/resources/model.hpp>
-#include <rawrbox/render_temp/camera/orbital.hpp>
-#include <rawrbox/render_temp/gizmos.hpp>
-#include <rawrbox/render_temp/light/point.hpp>
-#include <rawrbox/render_temp/materials/lit.hpp>
-#include <rawrbox/render_temp/materials/skinned.hpp>
-#include <rawrbox/render_temp/materials/skinned_lit.hpp>
-#include <rawrbox/render_temp/model/utils/mesh.hpp>
-#include <rawrbox/render_temp/resources/font.hpp>
+#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/light/point.hpp>
+// #include <rawrbox/render/materials/lit.hpp>
+// #include <rawrbox/render/materials/skinned.hpp>
+// #include <rawrbox/render/materials/skinned_lit.hpp>
+#include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 #include <rawrbox/utils/threading.hpp>
@@ -17,43 +16,49 @@
 namespace assimp {
 
 	void Game::setupGLFW() {
-		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
-		this->_window->setTitle("ASSIMP TEST");
-		this->_window->setRenderer<>(
-		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
-		this->_window->onIntroCompleted += [this]() {
-			this->loadContent();
-		};
+		auto window = rawrbox::Window::createWindow();
+		window->setMonitor(-1);
+		window->setTitle("ASSIMP TEST");
+		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
+		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {
-		if (this->_window == nullptr) return;
+		auto window = rawrbox::Window::getWindow();
+
+		// Setup renderer
+		auto render = window->createRenderer();
+		render->setOverlayRender([this]() {});
+		render->setWorldRender([this]() { this->drawWorld(); });
+		render->onIntroCompleted = [this]() {
+			this->loadContent();
+		};
+		// ---------------
 
 		// Setup camera
-		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		auto cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
+		cam->onMovementStart = []() { fmt::print("Camera start\n"); };
+		cam->onMovementStop = []() { fmt::print("Camera stop\n"); };
 		// --------------
 
 		// Add loaders
-		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::AssimpLoader>();
+		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		// --------------
 
-		this->_window->initializeBGFX();
+		render->init();
 	}
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("content/fonts/LiberationMono-Regular.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("content/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES),
-		    std::make_pair<std::string, uint32_t>("content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT),
-		    std::make_pair<std::string, uint32_t>("content/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_METADATA),
-		    std::make_pair<std::string, uint32_t>("content/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE),
-		    std::make_pair<std::string, uint32_t>("content/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS)};
+		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES),
+		    std::make_pair<std::string, uint32_t>("./assets/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT),
+		    std::make_pair<std::string, uint32_t>("./assets/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_METADATA),
+		    std::make_pair<std::string, uint32_t>("./assets/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE),
+		    std::make_pair<std::string, uint32_t>("./assets/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
@@ -67,48 +72,48 @@ namespace assimp {
 	}
 
 	void Game::contentLoaded() {
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/LiberationMono-Regular.ttf")->getSize(24);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(24);
 
 		// Assimp test ---
-		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx")->get();
+		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx")->get();
 
 		this->_model->setPos({7, 1.1F, 0.F});
 		this->_model->load(*mdl);
 		this->_model->upload();
 
-		this->_model2->setMaterial<rawrbox::MaterialLit>();
+		// this->_model2->setMaterial<rawrbox::MaterialLit>();
 		this->_model2->setPos({-6, 1.1F, 0.F});
 		this->_model2->load(*mdl);
 		this->_model2->upload();
 
 		// ANIMATIONS ---
-		auto mdl2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/wolf/wolfman_animated.fbx")->get();
-		this->_model3->setMaterial<rawrbox::MaterialSkinned>();
+		auto mdl2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/wolf/wolfman_animated.fbx")->get();
+		// this->_model3->setMaterial<rawrbox::MaterialSkinned>();
 		this->_model3->load(*mdl2);
-		this->_model3->playAnimation("Scene", true, 1.F);
+		// this->_model3->playAnimation("Scene", true, 1.F);
 		this->_model3->setPos({0, 0, 0});
 		this->_model3->upload();
 
-		auto mdl3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/multiple_skeleton/twocubestest.gltf")->get();
-		this->_model4->setMaterial<rawrbox::MaterialSkinned>();
+		auto mdl3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/multiple_skeleton/twocubestest.gltf")->get();
+		// this->_model4->setMaterial<rawrbox::MaterialSkinned>();
 		this->_model4->load(*mdl3);
-		this->_model4->playAnimation("MewAction", true, 0.8F);
-		this->_model4->playAnimation("MewAction.001", true, 0.5F);
+		// this->_model4->playAnimation("MewAction", true, 0.8F);
+		// this->_model4->playAnimation("MewAction.001", true, 0.5F);
 		this->_model4->setPos({0, 0, 2.5F});
 		this->_model4->setScale({0.25F, 0.25F, 0.25F});
 		this->_model4->upload();
 
-		auto mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/grandma_tv/scene.gltf")->get();
-		this->_model5->setMaterial<rawrbox::MaterialSkinned>();
+		auto mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/grandma_tv/scene.gltf")->get();
+		// this->_model5->setMaterial<rawrbox::MaterialSkinned>();
 		this->_model5->load(*mdl4);
-		this->_model5->playAnimation("Scene", true, 1.F);
+		// this->_model5->playAnimation("Scene", true, 1.F);
 		this->_model5->setPos({0, 0, -3.5F});
 		this->_model5->setScale({0.35F, 0.35F, 0.35F});
 		this->_model5->setEulerAngle({0, rawrbox::MathUtils::toRad(90.F), 0});
 		this->_model5->upload();
 
-		auto mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./content/models/shape_keys/shape_keys.glb")->get();
-		this->_model6->setMaterial<rawrbox::MaterialSkinnedLit>();
+		auto mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/shape_keys/shape_keys.glb")->get();
+		// this->_model6->setMaterial<rawrbox::MaterialSkinnedLit>();
 		this->_model6->load(*mdl5);
 		this->_model6->setScale({0.4F, 0.4F, 0.4F});
 		this->_model6->setPos({2.F, 0.4F, -6.F});
@@ -153,22 +158,17 @@ namespace assimp {
 
 		this->_text.reset();
 
-		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
-
-		this->_window->unblockPoll();
-		this->_window.reset();
+		rawrbox::Window::shutdown();
 	}
 
 	void Game::pollEvents() {
-		if (this->_window == nullptr) return;
-		this->_window->pollEvents();
+		rawrbox::Window::pollEvents();
 	}
 
 	void Game::update() {
-		if (this->_window == nullptr) return;
-		this->_window->update();
+		rawrbox::Window::update();
 	}
 
 	void Game::drawWorld() {
@@ -181,44 +181,15 @@ namespace assimp {
 		this->_model4->draw();
 		this->_model5->draw();
 
-		this->_model6->setBlendShape("Cheese-Melt", std::abs(std::cos(rawrbox::BGFX_FRAME * 0.005F) * 1.F));
-		this->_model6->setBlendShape("Other-Nya", std::abs(std::cos(rawrbox::BGFX_FRAME * 0.008F) * 1.F));
-		this->_model6->setBlendShape("Other-Melt", std::abs(std::cos(rawrbox::BGFX_FRAME * 0.002F) * 1.F));
+		this->_model6->setBlendShape("Cheese-Melt", std::abs(std::cos(rawrbox::FRAME * 0.005F) * 1.F));
+		this->_model6->setBlendShape("Other-Nya", std::abs(std::cos(rawrbox::FRAME * 0.008F) * 1.F));
+		this->_model6->setBlendShape("Other-Melt", std::abs(std::cos(rawrbox::FRAME * 0.002F) * 1.F));
 		this->_model6->draw();
 
 		this->_text->draw();
 	}
 
-	void Game::printFrames() {
-		const bgfx::Stats* stats = bgfx::getStats();
-
-		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
-		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
-		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
-	}
-
 	void Game::draw() {
-		if (this->_window == nullptr) return;
-
-		// DEBUG ----
-		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "003-assimp");
-		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: ASSIMP model loading test");
-		printFrames();
-		// -----------
-
-		if (!this->_ready) {
-			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
-			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
-			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
-		}
-
-		// Draw DEBUG ---
-		rawrbox::GIZMOS::draw();
-		// -----------
-
-		this->_window->render(); // Commit primitives
+		rawrbox::Window::render(); // Commit primitives
 	}
 } // namespace assimp

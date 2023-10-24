@@ -2,15 +2,12 @@
 
 #include <rawrbox/assimp/model.hpp>
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render_temp/model/text3D.hpp>
-#include <rawrbox/render_temp/window.hpp>
+#include <rawrbox/render/models/text3D.hpp>
 
 #include <memory>
 
 namespace assimp {
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Window> _window = nullptr;
-
 		std::unique_ptr<rawrbox::AssimpModel> _model = std::make_unique<rawrbox::AssimpModel>();
 		std::unique_ptr<rawrbox::AssimpModel> _model2 = std::make_unique<rawrbox::AssimpModel>();
 		std::unique_ptr<rawrbox::AssimpModel> _model3 = std::make_unique<rawrbox::AssimpModel>();
@@ -40,8 +37,6 @@ namespace assimp {
 		Game& operator=(const Game&) = delete;
 		Game& operator=(Game&&) = delete;
 		~Game() override = default;
-
-		void printFrames();
 
 		void loadContent();
 		void contentLoaded();

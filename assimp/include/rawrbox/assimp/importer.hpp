@@ -2,11 +2,11 @@
 
 #include <rawrbox/math/bbox.hpp>
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render_temp/light/types.hpp>
-#include <rawrbox/render_temp/model/animation.hpp>
-#include <rawrbox/render_temp/model/defs.hpp>
-#include <rawrbox/render_temp/model/skeleton.hpp>
-#include <rawrbox/render_temp/texture/base.hpp>
+#include <rawrbox/render/light/types.hpp>
+#include <rawrbox/render/models/animation.hpp>
+#include <rawrbox/render/models/defs.hpp>
+#include <rawrbox/render/models/skeleton.hpp>
+#include <rawrbox/render/texture/base.hpp>
 
 #include <assimp/material.h>
 #include <assimp/mesh.h>
@@ -46,12 +46,11 @@ namespace rawrbox {
 	using OptionalTexture = std::optional<std::unique_ptr<rawrbox::TextureBase>>;
 
 	struct AssimpMaterial {
-	public:
 		std::string name = "";
 
 		bool wireframe = false;
 		bool doubleSided = false;
-		uint64_t blending = BGFX_STATE_BLEND_NORMAL;
+		// uint64_t blending = Diligent::BLEND_FACTOR_SRC_ALPHA;
 
 		OptionalTexture diffuse = std::nullopt;
 		rawrbox::Colorf diffuseColor = rawrbox::Colors::White();
@@ -100,7 +99,6 @@ namespace rawrbox {
 	};
 
 	struct AssimpMesh {
-	public:
 		std::string name;
 		rawrbox::BBOX bbox = {};
 		rawrbox::Matrix4x4 matrix = {};
@@ -121,9 +119,9 @@ namespace rawrbox {
 		uint32_t _aiAnimMeshIndex = 0;
 
 		// TEXTURE LOADING -----
-		virtual uint64_t assimpSamplerToBGFX(const std::array<aiTextureMapMode, 3>& mode, int axis);
+		virtual void assimpSamplerToDiligent(Diligent::SamplerDesc& desc, const std::array<aiTextureMapMode, 3>& mode, int axis);
 
-		virtual std::vector<OptionalTexture> importTexture(const aiScene* scene, const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format = bgfx::TextureFormat::Count);
+		virtual std::vector<OptionalTexture> importTexture(const aiScene* scene, const aiMaterial* mat, aiTextureType type, Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN);
 		virtual void loadTextures(const aiScene* sc, const aiMesh& assimp, rawrbox::AssimpMesh& mesh);
 		/// -------
 
@@ -133,7 +131,7 @@ namespace rawrbox {
 		virtual void generateSkeleton(rawrbox::Skeleton& skeleton, const aiNode* pNode, rawrbox::Bone& parent);
 		virtual aiNode* findRootSkeleton(const aiScene* sc, const std::string& meshName);
 
-		virtual bx::Easing::Enum assimpBehavior(aiAnimBehaviour b);
+		virtual rawrbox::Easing assimpBehavior(aiAnimBehaviour b);
 
 		virtual void markMeshAnimated(const std::string& meshName, const std::string& search);
 		virtual void loadAnimations(const aiScene* sc);

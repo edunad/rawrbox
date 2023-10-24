@@ -3,7 +3,7 @@ set(output_target RAWRBOX.RENDER)
 # --------------
 
 # Packages ----
-add_subdirectory(DiligentCore)
+add_subdirectory(DiligentCore) # Does not seem to work properly as a CPM package
 
 CPMAddPackage(
     NAME

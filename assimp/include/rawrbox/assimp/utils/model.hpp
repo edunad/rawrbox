@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rawrbox/assimp/importer.hpp>
-#include <rawrbox/render_temp/materials/base.hpp>
+#include <rawrbox/render/materials/base.hpp>
 
 namespace rawrbox {
 

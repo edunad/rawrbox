@@ -1,6 +1,6 @@
 
 #include <rawrbox/assimp/importer.hpp>
-#include <rawrbox/render_temp/texture/image.hpp>
+#include <rawrbox/render/texture/image.hpp>
 #include <rawrbox/utils/pack.hpp>
 #include <rawrbox/utils/string.hpp>
 
@@ -11,41 +11,37 @@
 
 namespace rawrbox {
 	// TEXTURE LOADING -----
-	uint64_t AssimpImporter::assimpSamplerToBGFX(const std::array<aiTextureMapMode, 3>& mode, int axis) {
-		uint64_t flags = 0;
-
+	void AssimpImporter::assimpSamplerToDiligent(Diligent::SamplerDesc& desc, const std::array<aiTextureMapMode, 3>& mode, int axis) {
 		switch (mode[axis]) {
 			case aiTextureMapMode_Clamp:
 				if (axis == 0)
-					flags |= BGFX_SAMPLER_U_CLAMP;
+					desc.AddressU = Diligent::TEXTURE_ADDRESS_CLAMP;
 				else if (axis == 1)
-					flags |= BGFX_SAMPLER_V_CLAMP;
+					desc.AddressV = Diligent::TEXTURE_ADDRESS_CLAMP;
 				else if (axis == 2)
-					flags |= BGFX_SAMPLER_W_CLAMP;
+					desc.AddressW = Diligent::TEXTURE_ADDRESS_CLAMP;
 				break;
 			case aiTextureMapMode_Decal:
 				if (axis == 0)
-					flags |= BGFX_SAMPLER_U_BORDER;
+					desc.AddressU = Diligent::TEXTURE_ADDRESS_BORDER;
 				else if (axis == 1)
-					flags |= BGFX_SAMPLER_V_BORDER;
+					desc.AddressV = Diligent::TEXTURE_ADDRESS_BORDER;
 				else if (axis == 2)
-					flags |= BGFX_SAMPLER_W_BORDER;
+					desc.AddressW = Diligent::TEXTURE_ADDRESS_BORDER;
 				break;
 			case aiTextureMapMode_Mirror:
 				if (axis == 0)
-					flags |= BGFX_SAMPLER_U_MIRROR;
+					desc.AddressU = Diligent::TEXTURE_ADDRESS_MIRROR;
 				else if (axis == 1)
-					flags |= BGFX_SAMPLER_V_MIRROR;
+					desc.AddressV = Diligent::TEXTURE_ADDRESS_MIRROR;
 				else if (axis == 2)
-					flags |= BGFX_SAMPLER_W_MIRROR;
+					desc.AddressW = Diligent::TEXTURE_ADDRESS_MIRROR;
 				break;
 			default: break; // WRAP
 		}
-
-		return flags;
 	}
 
-	std::vector<OptionalTexture> AssimpImporter::importTexture(const aiScene* scene, const aiMaterial* mat, aiTextureType type, bgfx::TextureFormat::Enum format) {
+	std::vector<OptionalTexture> AssimpImporter::importTexture(const aiScene* scene, const aiMaterial* mat, aiTextureType type, Diligent::TEXTURE_FORMAT format) {
 		std::vector<OptionalTexture> _textures = {};
 
 		int count = mat->GetTextureCount(type);
@@ -82,12 +78,14 @@ namespace rawrbox {
 				}
 
 				// Setup flags ----
-				auto flags = BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT;
-				flags |= assimpSamplerToBGFX(matMode, 0); // u
-				flags |= assimpSamplerToBGFX(matMode, 1); // v
-				flags |= assimpSamplerToBGFX(matMode, 2); // w
+				Diligent::SamplerDesc flags{
+				    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT};
 
-				texture->setFlags(flags);
+				this->assimpSamplerToDiligent(flags, matMode, 0); // u
+				this->assimpSamplerToDiligent(flags, matMode, 1); // v
+				this->assimpSamplerToDiligent(flags, matMode, 2); // w
+
+				texture->setDesc(flags);
 				// ----
 
 				// ----
@@ -204,10 +202,6 @@ namespace rawrbox {
 			}
 			// ----------------------
 
-			if (alpha != 1.F) {
-				mat->blending = BGFX_STATE_BLEND_ALPHA;
-			}
-
 			this->materials[matName.data] = std::move(mat);
 		}
 
@@ -306,12 +300,12 @@ namespace rawrbox {
 		}
 	}
 
-	bx::Easing::Enum AssimpImporter::assimpBehavior(aiAnimBehaviour b) {
+	rawrbox::Easing AssimpImporter::assimpBehavior(aiAnimBehaviour b) {
 		switch (b) {
 			case aiAnimBehaviour_CONSTANT:
-				return bx::Easing::Step;
+				return rawrbox::Easing::STEP;
 			default:
-				return bx::Easing::Linear;
+				return rawrbox::Easing::LINEAR;
 		}
 	}
 
@@ -403,8 +397,8 @@ namespace rawrbox {
 				}
 				// -------------------------
 
-				ourChannel.stateStart = assimpBehavior(aChannel->mPreState);
-				ourChannel.stateEnd = assimpBehavior(aChannel->mPostState);
+				ourChannel.stateStart = this->assimpBehavior(aChannel->mPreState);
+				ourChannel.stateEnd = this->assimpBehavior(aChannel->mPostState);
 
 				for (size_t positionIndex = 0; positionIndex < aChannel->mNumPositionKeys; positionIndex++) {
 					auto aPos = aChannel->mPositionKeys[positionIndex];
@@ -549,7 +543,7 @@ namespace rawrbox {
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
 					v.position = {vert.x, vert.y, vert.z};
-					v._ori_pos = v.position;
+					v.ori_pos = v.position;
 				}
 
 				if (aiMesh.HasTextureCoords(0)) {
@@ -559,18 +553,18 @@ namespace rawrbox {
 
 				if (aiMesh.HasVertexColors(0)) {
 					auto& col = aiMesh.mColors[0][i];
-					v.abgr = Colorf{col.r, col.g, col.b, col.a}.pack();
+					v.color = rawrbox::Colorf{col.r, col.g, col.b, col.a};
 				}
 
 				if (aiMesh.HasNormals()) {
 					auto& normal = aiMesh.mNormals[i];
-					v.normal[0] = rawrbox::PackUtils::packNormal(normal.x, normal.y, normal.z);
-					v._ori_norm = v.normal[0];
+					v.normal = {normal.x, normal.y, normal.z};
+					v.ori_norm = v.normal;
 				}
 
 				if (aiMesh.HasTangentsAndBitangents()) {
 					auto& tangents = aiMesh.mTangents[i];
-					v.normal[1] = rawrbox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
+					v.tangent = {tangents.x, tangents.y, tangents.z};
 				}
 
 				mesh.vertices.push_back(v);

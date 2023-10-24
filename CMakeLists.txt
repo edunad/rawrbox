@@ -213,12 +213,11 @@ endif()
 #endif()
 
 add_subdirectory("render")
-#add_subdirectory("render_temp")
 
-#if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
-#    message(STATUS "Enabled ASSIMP support")
-#    add_subdirectory("assimp")
-#endif()
+if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
+    message(STATUS "Enabled ASSIMP support")
+    add_subdirectory("assimp")
+endif()
 
 #if(RAWRBOX_BUILD_RAWRBOX_WEBM)
 #    message(STATUS "Enabled WEBM support")

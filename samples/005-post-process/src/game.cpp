@@ -26,7 +26,6 @@ namespace post_process {
 		auto render = window->createRenderer();
 		render->setOverlayRender([this]() {});
 		render->setWorldRender([this]() { this->drawWorld(); });
-		render->skipIntros(true);
 		render->overridePostWorld([this]() {
 			if (!this->_ready) return;
 			this->_postProcess->render(rawrbox::RENDERER->getColor());

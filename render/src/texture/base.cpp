@@ -26,6 +26,8 @@ namespace rawrbox {
 
 	Diligent::ITextureView* TextureBase::getHandle() const { return this->_handle; }
 
+	void TextureBase::setDesc(Diligent::SamplerDesc desc) { this->_desc = desc; }
+
 	void TextureBase::setTextureUV(rawrbox::TEXTURE_UV mode) { this->_textureUV = mode; }
 	rawrbox::TEXTURE_UV TextureBase::getTextureUV() const { return this->_textureUV; }
 

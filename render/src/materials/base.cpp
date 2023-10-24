@@ -67,7 +67,7 @@ namespace rawrbox {
 		_bind = rawrbox::PipelineUtils::getBind("Model::Base");
 	}
 
-	std::vector<rawrbox::VertexData> MaterialBase::convert(const std::vector<rawrbox::VertexNormBoneData>& v) {
+	std::vector<rawrbox::VertexData> MaterialBase::convert(const std::vector<rawrbox::ModelVertexData>& v) {
 		return {v.begin(), v.end()};
 	}
 

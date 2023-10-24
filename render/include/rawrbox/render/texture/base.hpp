@@ -5,6 +5,7 @@
 
 #include <Common/interface/RefCntAutoPtr.hpp>
 
+#include <Graphics/GraphicsEngine/interface/Sampler.h>
 #include <Graphics/GraphicsEngine/interface/Texture.h>
 #include <Graphics/GraphicsEngine/interface/TextureView.h>
 
@@ -27,7 +28,9 @@ namespace rawrbox {
 
 		int _channels = 0;
 		std::vector<uint8_t> _pixels = {};
+
 		rawrbox::TEXTURE_UV _textureUV = rawrbox::TEXTURE_UV::UV_NONE;
+		Diligent::SamplerDesc _desc;
 
 		bool _failedToLoad = false;
 		bool _transparent = false;
@@ -51,6 +54,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool isValid() const;
 		[[nodiscard]] virtual Diligent::ITextureView* getHandle() const;
 		[[nodiscard]] virtual std::array<float, 4> getData() const;
+
+		virtual void setDesc(Diligent::SamplerDesc desc);
 
 		virtual void setTextureUV(rawrbox::TEXTURE_UV mode);
 		[[nodiscard]] virtual rawrbox::TEXTURE_UV getTextureUV() const;

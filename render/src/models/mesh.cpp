@@ -9,7 +9,7 @@ namespace rawrbox {
 		this->name = _name;
 	}
 
-	const std::vector<rawrbox::VertexNormBoneData>& Mesh::getVertices() const {
+	const std::vector<rawrbox::ModelVertexData>& Mesh::getVertices() const {
 		return this->vertices;
 	}
 

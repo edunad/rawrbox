@@ -48,7 +48,7 @@ namespace rawrbox {
 		// ------------
 
 		// BONE ANIMATION ----
-		/*if ((this->_material->supports() & rawrbox::MaterialFlags::BONES) != 0) {
+		if ((this->_material->supports() & rawrbox::MaterialFlags::BONES) != 0) {
 			std::vector<rawrbox::Matrix4x4> boneTransforms = {};
 			boneTransforms.resize(rawrbox::MAX_BONES_PER_MODEL);
 
@@ -61,8 +61,8 @@ namespace rawrbox {
 				}
 			}
 
-			this->_material->setUniformData("u_bones", boneTransforms);
-		}*/
+			// this->_material->setUniformData("u_bones", boneTransforms);
+		}
 		// -----
 	}
 
@@ -83,7 +83,7 @@ namespace rawrbox {
 	}
 
 	void Model::readAnims(rawrbox::Matrix4x4& nodeTransform, const std::string& nodeName) const {
-		/*for (auto& anim : this->_playingAnimations) {
+		for (auto& anim : this->_playingAnimations) {
 			auto animChannel = std::find_if(anim.data->frames.begin(), anim.data->frames.end(), [&](AnimationFrame& x) {
 				return x.nodeName == nodeName;
 			});
@@ -124,8 +124,7 @@ namespace rawrbox {
 				Vector4f rotation = nextRot.second;
 				Vector3f scale = nextScl.second;
 
-				bx::EaseFn ease = bx::getEaseFunc(animChannel->stateEnd);
-				float t = ease(timeInTicks);
+				float t = rawrbox::EasingUtils::ease(animChannel->stateEnd, timeInTicks);
 
 				position = rawrbox::AnimUtils::lerpVector3(t, currPos, nextPos);
 				rotation = rawrbox::AnimUtils::lerpRotation(t, currRot, nextRot);
@@ -143,7 +142,7 @@ namespace rawrbox {
 
 				nodeTransform = mt * mr * ms;
 			}
-		}*/
+		}
 	}
 	// -----------
 

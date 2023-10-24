@@ -1,14 +1,14 @@
 #pragma once
 
+#include <rawrbox/math/easing.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/vector4.hpp>
-
-// #include <bx/easing.h>
 
 #include <string>
 #include <vector>
 
 namespace rawrbox {
+
 	template <typename T>
 	using AnimKey = std::pair<float, T>;
 
@@ -19,8 +19,8 @@ namespace rawrbox {
 		std::vector<AnimKey<rawrbox::Vector3f>> scale;
 		std::vector<AnimKey<rawrbox::Vector4f>> rotation;
 
-		// bx::Easing::Enum stateStart = bx::Easing::Linear;
-		// bx::Easing::Enum stateEnd = bx::Easing::Linear;
+		rawrbox::Easing stateStart = rawrbox::Easing::LINEAR;
+		rawrbox::Easing stateEnd = rawrbox::Easing::LINEAR;
 	};
 
 	struct Animation {

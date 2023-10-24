@@ -9,8 +9,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
-// #include <bgfx/bgfx.h>
-#include <RasterizerState.h>
+#include <Graphics/GraphicsEngine/interface/RasterizerState.h>
 #include <fmt/printf.h>
 
 #include <cstdint>
@@ -45,7 +44,7 @@ namespace rawrbox {
 		uint16_t totalVertex = 0;
 		uint16_t totalIndex = 0;
 
-		std::vector<rawrbox::VertexNormBoneData> vertices = {};
+		std::vector<rawrbox::ModelVertexData> vertices = {};
 		std::vector<uint16_t> indices = {};
 		// -------
 
@@ -88,7 +87,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual const std::string& getName() const;
 		virtual void setName(const std::string& name);
 
-		[[nodiscard]] virtual const std::vector<rawrbox::VertexNormBoneData>& getVertices() const;
+		[[nodiscard]] virtual const std::vector<rawrbox::ModelVertexData>& getVertices() const;
 		[[nodiscard]] virtual const std::vector<uint16_t>& getIndices() const;
 		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const;
 
