@@ -18,15 +18,6 @@ namespace rawrbox {
 		rawrbox::Vector4f uv = {};
 		rawrbox::Colorf color = {};
 
-		VertexData() = default;
-		explicit VertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), color(cl) {
-		}
-
-		explicit VertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), color(cl), uv(_uv) {
-		}
-
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
@@ -58,15 +49,6 @@ namespace rawrbox {
 	struct VertexNormData : public virtual VertexData {
 		rawrbox::Vector3f normal = {};
 		rawrbox::Vector3f tangent = {};
-
-		VertexNormData() = default;
-		explicit VertexNormData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexData(_pos, _uv, cl), normal(norm), tangent(tang) {
-		}
-
-		explicit VertexNormData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexData(_pos, _uv, cl), normal(norm), tangent(tang) {
-		}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
@@ -105,15 +87,6 @@ namespace rawrbox {
 		std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
-		VertexBoneData() = default;
-		explicit VertexBoneData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexData(_pos, _uv, cl) {
-		}
-
-		explicit VertexBoneData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexData(_pos, _uv, cl) {
-		}
-
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
@@ -150,19 +123,35 @@ namespace rawrbox {
 
 		VertexNormBoneData() = default;
 		explicit VertexNormBoneData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexBoneData(_pos, _uv, cl), rawrbox::VertexNormData(norm, tang) {
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) {
+			this->position = _pos;
+			this->uv = _uv;
+			this->normal = norm;
+			this->tangent = tang;
+			this->color = cl;
 		}
 
 		explicit VertexNormBoneData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexBoneData(_pos, _uv, cl), rawrbox::VertexNormData(norm, tang) {
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) {
+			this->position = _pos;
+			this->uv = _uv;
+			this->normal = norm;
+			this->tangent = tang;
+			this->color = cl;
 		}
 
 		explicit VertexNormBoneData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexBoneData(_pos, _uv, cl), rawrbox::VertexNormData() {
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) {
+			this->position = _pos;
+			this->uv = _uv;
+			this->color = cl;
 		}
 
 		explicit VertexNormBoneData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexBoneData(_pos, _uv, cl), rawrbox::VertexNormData() {
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) {
+			this->position = _pos;
+			this->uv = _uv;
+			this->color = cl;
 		}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
