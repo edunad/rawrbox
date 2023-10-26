@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <bit>
 #include <cstdint>
@@ -118,13 +120,13 @@ namespace rawrbox {
 
 		template <class T = size_t>
 		T readLength() {
-			constexpr auto maskNum = 0x7F;
-			constexpr auto maskFlag = 0x80;
+			constexpr uint64_t maskNum = 0x7F;
+			constexpr uint64_t maskFlag = 0x80;
 
-			size_t ret = 0;
-			size_t bitsReceived = 0;
+			uint64_t ret = 0;
+			uint64_t bitsReceived = 0;
 			while (true) {
-				auto byte = read<uint8_t>();
+				uint64_t byte = read<uint8_t>();
 
 				ret = ret | ((byte & maskNum) << bitsReceived);
 				bitsReceived += 7;
@@ -216,21 +218,20 @@ namespace rawrbox {
 				return;
 			}
 
-			auto maxLen = static_cast<size_t>(size);
-			uint8_t maskNum = 0x7F;
-			uint8_t maskFlag = 0x80;
-			while (maxLen > 0) {
-				bool hasMore = (maxLen >> 7) > 0;
-				write(static_cast<uint8_t>((maxLen & maskNum) | (hasMore ? maskFlag : 0x00)));
+			auto remaining = static_cast<size_t>(size);
+			constexpr uint64_t maskNum = 0x7F;
+			constexpr uint64_t maskFlag = 0x80;
 
-				maxLen >>= 7;
+			while (remaining > 0) {
+				bool hasMore = (remaining >> 7) > 0;
+				write(static_cast<uint8_t>((remaining & maskNum) | (hasMore ? maskFlag : 0x00ULL)));
+
+				remaining >>= 7;
 			}
 		}
 		// -----------------
 
 		// UTILS -----
-		void setlengthFormat(LengthType format);
-
 		bool seek(size_t offset);
 		bool seek(std::vector<uint8_t>::iterator offset);
 

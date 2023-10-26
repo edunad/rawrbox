@@ -50,10 +50,6 @@ namespace rawrbox {
 	// --------
 
 	// UTILS -----
-	void Packet::setlengthFormat(LengthType format) {
-		this->lengthFormat = format;
-	}
-
 	bool Packet::seek(size_t offset) {
 		if (offset > size()) return false;
 		this->pos = offset;
