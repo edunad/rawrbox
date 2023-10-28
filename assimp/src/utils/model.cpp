@@ -17,7 +17,7 @@ namespace rawrbox {
 		if (assimpMesh.material != nullptr) {
 			auto mat = assimpMesh.material;
 			mesh.setWireframe(mat->wireframe);
-			// mesh.setBlend(mat->blending);
+			mesh.setTransparentBlending(mat->alpha);
 			mesh.setCulling(mat->doubleSided ? Diligent::CULL_MODE::CULL_MODE_NONE : Diligent::CULL_MODE::CULL_MODE_BACK);
 
 			// DIFFUSE -----

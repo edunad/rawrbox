@@ -39,10 +39,6 @@ namespace rawrbox {
 
 			return v;
 		}
-
-		static uint32_t vLayoutSize() {
-			return sizeof(VertexData);
-		}
 	};
 
 	// Supports light ---
@@ -76,15 +72,11 @@ namespace rawrbox {
 
 			return v;
 		}
-
-		static uint32_t vLayoutSize() {
-			return sizeof(VertexNormData);
-		}
 	};
 
 	// Supports bones ---
 	struct VertexBoneData : public virtual VertexData {
-		std::array<uint8_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
+		std::array<uint32_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
@@ -112,48 +104,10 @@ namespace rawrbox {
 
 			return v;
 		}
-
-		static uint32_t vLayoutSize() {
-			return sizeof(VertexBoneData);
-		}
 	};
 
 	// Supports light && bones ---
 	struct VertexNormBoneData : public VertexNormData, public VertexBoneData {
-
-		VertexNormBoneData() = default;
-		explicit VertexNormBoneData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) {
-			this->position = _pos;
-			this->uv = _uv;
-			this->normal = norm;
-			this->tangent = tang;
-			this->color = cl;
-		}
-
-		explicit VertexNormBoneData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) {
-			this->position = _pos;
-			this->uv = _uv;
-			this->normal = norm;
-			this->tangent = tang;
-			this->color = cl;
-		}
-
-		explicit VertexNormBoneData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) {
-			this->position = _pos;
-			this->uv = _uv;
-			this->color = cl;
-		}
-
-		explicit VertexNormBoneData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) {
-			this->position = _pos;
-			this->uv = _uv;
-			this->color = cl;
-		}
-
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
@@ -183,10 +137,6 @@ namespace rawrbox {
 
 			return v;
 		}
-
-		static uint32_t vLayoutSize() {
-			return sizeof(VertexNormBoneData);
-		}
 	};
 
 	// Supports light && bones ---
@@ -198,23 +148,38 @@ namespace rawrbox {
 		// -----------------
 
 		using VertexNormBoneData::vLayout;
-		using VertexNormBoneData::vLayoutSize;
 
 		ModelVertexData() = default;
 		explicit ModelVertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexNormBoneData(_pos, _uv, norm, tang, cl), ori_pos(_pos), ori_norm(norm) {
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : ori_norm(norm) {
+			this->position = _pos;
+			this->uv = _uv;
+			this->normal = norm;
+			this->tangent = tang;
+			this->color = cl;
 		}
 
 		explicit ModelVertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexNormBoneData(_pos, _uv, norm, tang, cl), ori_pos(_pos), ori_norm(norm) {
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : ori_pos(_pos), ori_norm(norm) {
+			this->position = _pos;
+			this->uv = _uv;
+			this->normal = norm;
+			this->tangent = tang;
+			this->color = cl;
 		}
 
 		explicit ModelVertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexNormBoneData(_pos, _uv, cl), ori_pos(_pos) {
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : ori_pos(_pos) {
+			this->position = _pos;
+			this->uv = _uv;
+			this->color = cl;
 		}
 
 		explicit ModelVertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexNormBoneData(_pos, _uv, cl), ori_pos(_pos) {
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : ori_pos(_pos) {
+			this->position = _pos;
+			this->uv = _uv;
+			this->color = cl;
 		}
 
 		// GPU Picker ---
@@ -232,7 +197,7 @@ namespace rawrbox {
 
 		// BONES UTILS -----
 		int index = 0;
-		void addBoneData(uint8_t boneId, float weight) {
+		void addBoneData(uint32_t boneId, float weight) {
 			if (index < rawrbox::MAX_BONES_PER_VERTEX) {
 				this->bone_indices[index] = boneId;
 				this->bone_weights[index] = weight;

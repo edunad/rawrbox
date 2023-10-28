@@ -67,6 +67,7 @@ namespace rawrbox {
 
 		bool wireframe = false;
 		bool lineMode = false;
+		bool alphaBlend = false;
 
 		Diligent::CULL_MODE culling = Diligent::CULL_MODE_FRONT;
 		rawrbox::BBOX bbox = {};
@@ -103,6 +104,8 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual const rawrbox::Vector3f& getScale() const;
 		virtual void setScale(const rawrbox::Vector3f& scale);
+
+		virtual void setTransparentBlending(bool _transparent);
 
 		template <typename B>
 		B* getOwner() {

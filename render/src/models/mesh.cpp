@@ -50,6 +50,8 @@ namespace rawrbox {
 		this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
 	}
 
+	void Mesh::setTransparentBlending(bool _transparent) { this->alphaBlend = _transparent; }
+
 	const rawrbox::TextureBase* Mesh::getTexture() const { return this->texture; }
 	void Mesh::setTexture(rawrbox::TextureBase* ptr) {
 		this->texture = ptr;
@@ -113,7 +115,7 @@ namespace rawrbox {
 		this->addData("mask", {decals ? 1.0F : 0.0F, 0, 0, 0});
 	}
 
-	uint32_t Mesh::getId(int index) const {
+	uint32_t Mesh::getId(int /*index*/) const {
 		/*if (this->vertices.empty()) return 0;
 		if (index < 0) return this->vertices.front().id;
 

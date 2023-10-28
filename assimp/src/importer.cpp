@@ -41,8 +41,8 @@ namespace rawrbox {
 		}
 	}
 
-	std::vector<OptionalTexture> AssimpImporter::importTexture(const aiScene* scene, const aiMaterial* mat, aiTextureType type, Diligent::TEXTURE_FORMAT format) {
-		std::vector<OptionalTexture> _textures = {};
+	std::vector<rawrbox::OptionalTexture> AssimpImporter::importTexture(const aiScene* scene, const aiMaterial* mat, aiTextureType type, Diligent::TEXTURE_FORMAT format) {
+		std::vector<rawrbox::OptionalTexture> _textures = {};
 
 		int count = mat->GetTextureCount(type);
 		if (count <= 0) return _textures;
@@ -85,7 +85,7 @@ namespace rawrbox {
 				this->assimpSamplerToDiligent(flags, matMode, 1); // v
 				this->assimpSamplerToDiligent(flags, matMode, 2); // w
 
-				texture->setDesc(flags);
+				texture->setSampler(flags);
 				// ----
 
 				// ----
@@ -136,8 +136,10 @@ namespace rawrbox {
 
 					if (count > 0) {
 						aiString matPath;
-						if (mat->GetTexture(type, 0, &matPath, nullptr, nullptr, nullptr, nullptr, nullptr) == AI_SUCCESS) {
-							fmt::print("[RawrBox-Assimp] Found {} texture(s) '{}' of type '{}'\n", count, matPath.C_Str(), magic_enum::enum_name(type));
+						ai_real matBlend = 0;
+
+						if (mat->GetTexture(type, 0, &matPath, nullptr, nullptr, &matBlend, nullptr, nullptr) == AI_SUCCESS) {
+							fmt::print("[RawrBox-Assimp] Found {} texture(s) '{}' of type '{}', blend: {}\n", count, matPath.C_Str(), magic_enum::enum_name(type), matBlend);
 						}
 					}
 				};
@@ -158,9 +160,9 @@ namespace rawrbox {
 
 			aiColor3D flatColor;
 			if (pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, flatColor) == AI_SUCCESS) {
-				mat->diffuseColor = rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, alpha);
+				mat->diffuseColor = rawrbox::Colorf(flatColor.r, flatColor.g, flatColor.b, alpha);
 			} else if (pMaterial->Get(AI_MATKEY_BASE_COLOR, flatColor) == AI_SUCCESS) {
-				mat->diffuseColor = rawrbox::Color(flatColor.r, flatColor.g, flatColor.b, alpha);
+				mat->diffuseColor = rawrbox::Colorf(flatColor.r, flatColor.g, flatColor.b, alpha);
 			}
 			// ----------------------
 
@@ -202,6 +204,7 @@ namespace rawrbox {
 			}
 			// ----------------------
 
+			mat->alpha = alpha != 1.F;
 			this->materials[matName.data] = std::move(mat);
 		}
 
@@ -554,6 +557,8 @@ namespace rawrbox {
 				if (aiMesh.HasVertexColors(0)) {
 					auto& col = aiMesh.mColors[0][i];
 					v.color = rawrbox::Colorf{col.r, col.g, col.b, col.a};
+				} else {
+					v.color = rawrbox::Colors::White();
 				}
 
 				if (aiMesh.HasNormals()) {

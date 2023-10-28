@@ -8,11 +8,6 @@
 namespace rawrbox {
 	// STATIC DATA ----
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialText3D::_uniforms;
-
-	Diligent::IPipelineState* MaterialText3D::_base = nullptr;
-	Diligent::IPipelineState* MaterialText3D::_wireframe = nullptr;
-
-	Diligent::IShaderResourceBinding* MaterialText3D::_bind = nullptr;
 	// ----------------
 
 	void MaterialText3D::init() {
@@ -31,19 +26,19 @@ namespace rawrbox {
 		rawrbox::PipeSettings settings;
 		settings.pVS = "3dtext_unlit.vsh";
 		settings.pPS = "3dtext_unlit.psh";
+		settings.immutableSamplers = {true};
 		settings.cull = Diligent::CULL_MODE_FRONT;
-		settings.layout = vLayout().first;
+		settings.layout = rawrbox::VertexData::vLayout();
 		settings.uniforms = {{Diligent::SHADER_TYPE_VERTEX, _uniforms}};
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
-		_base = rawrbox::PipelineUtils::createPipelines("3DText::Base", "3DText", settings);
-
 		settings.fill = Diligent::FILL_MODE_WIREFRAME;
-		_wireframe = rawrbox::PipelineUtils::createPipelines("3DText::Base::Wireframe", "3DText", settings);
-		// ----
+		rawrbox::PipelineUtils::createPipelines("3DText::Base::Wireframe", "3DText", settings);
 
-		_bind = rawrbox::PipelineUtils::getBind("3DText");
+		settings.fill = Diligent::FILL_MODE_SOLID;
+		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+		rawrbox::PipelineUtils::createPipelines("3DText::Base", "3DText", settings); // ALPHA by default on text
 	}
 
 	void MaterialText3D::bindUniforms(const rawrbox::Mesh& mesh) {
@@ -67,29 +62,42 @@ namespace rawrbox {
 		    mesh.getData("billboard_mode")};
 	}
 
+	void MaterialText3D::prepareMaterial() {
+		// Not a fan, but had to move it away from static, since we want to override them
+		if (this->_base == nullptr) this->_base = rawrbox::PipelineUtils::getPipeline("3DText::Base");
+		if (this->_base_alpha == nullptr) this->_base_alpha = rawrbox::PipelineUtils::getPipeline("3DText::Base");
+
+		if (this->_wireframe == nullptr) this->_wireframe = rawrbox::PipelineUtils::getPipeline("3DText::Base::Wireframe");
+
+		if (this->_bind == nullptr) this->_bind = rawrbox::PipelineUtils::getBind("3DText");
+	}
+
 	void MaterialText3D::bindPipeline(const rawrbox::Mesh& mesh) {
 		auto context = rawrbox::RENDERER->context();
+
 		if (mesh.wireframe) {
-			context->SetPipelineState(_wireframe);
+			context->SetPipelineState(this->_wireframe);
 		} else {
-			context->SetPipelineState(_base);
+			context->SetPipelineState(this->_base);
 		}
 	}
 
 	void MaterialText3D::bind(const rawrbox::Mesh& mesh) {
+		this->prepareMaterial();
+
 		auto context = rawrbox::RENDERER->context();
 
 		if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
 			mesh.texture->update(); // Update texture
-			_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(mesh.texture->getHandle());
+			this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(mesh.texture->getHandle());
 		} else {
-			_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(rawrbox::WHITE_TEXTURE->getHandle());
+			this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(rawrbox::WHITE_TEXTURE->getHandle());
 		}
 
 		this->bindPipeline(mesh);
 		this->bindUniforms(mesh);
 
-		context->CommitShaderResources(_bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		context->CommitShaderResources(this->_bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
 	uint32_t MaterialText3D::supports() const {

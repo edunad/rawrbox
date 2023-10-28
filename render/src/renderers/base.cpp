@@ -45,6 +45,7 @@
 
 #include <rawrbox/render/materials/base.hpp>
 #include <rawrbox/render/materials/instanced.hpp>
+#include <rawrbox/render/materials/skinned.hpp>
 #include <rawrbox/render/materials/text.hpp>
 #include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
@@ -178,6 +179,10 @@ namespace rawrbox {
 		if (rawrbox::NORMAL_TEXTURE == nullptr) {
 			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0xbcbcff));
 			rawrbox::NORMAL_TEXTURE->upload();
+		}
+
+		if (!rawrbox::PipelineUtils::initialized) {
+			rawrbox::PipelineUtils::init();
 		}
 		// -------------------------
 
@@ -472,6 +477,7 @@ namespace rawrbox {
 		rawrbox::MaterialBase::init();
 		rawrbox::MaterialText3D::init();
 		rawrbox::MaterialInstanced::init();
+		rawrbox::MaterialSkinned::init();
 		// -----
 
 		this->_introList.clear();

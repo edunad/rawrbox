@@ -2,6 +2,7 @@
 
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector2.hpp>
+#include <rawrbox/render/utils/pipeline.hpp>
 
 #include <Common/interface/RefCntAutoPtr.hpp>
 
@@ -30,7 +31,7 @@ namespace rawrbox {
 		std::vector<uint8_t> _pixels = {};
 
 		rawrbox::TEXTURE_UV _textureUV = rawrbox::TEXTURE_UV::UV_NONE;
-		Diligent::SamplerDesc _desc;
+		Diligent::ISampler* _sampler = nullptr;
 
 		bool _failedToLoad = false;
 		bool _transparent = false;
@@ -55,7 +56,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual Diligent::ITextureView* getHandle() const;
 		[[nodiscard]] virtual std::array<float, 4> getData() const;
 
-		virtual void setDesc(Diligent::SamplerDesc desc);
+		[[nodiscard]] virtual Diligent::ISampler* getSampler();
+		virtual void setSampler(Diligent::SamplerDesc desc);
 
 		virtual void setTextureUV(rawrbox::TEXTURE_UV mode);
 		[[nodiscard]] virtual rawrbox::TEXTURE_UV getTextureUV() const;

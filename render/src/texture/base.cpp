@@ -4,6 +4,8 @@
 
 #include <fmt/format.h>
 
+#include "rawrbox/render/utils/pipeline.hpp"
+
 namespace rawrbox {
 	TextureBase::~TextureBase() {
 		if (this->_failedToLoad) return; // Don't delete the fallback
@@ -26,7 +28,13 @@ namespace rawrbox {
 
 	Diligent::ITextureView* TextureBase::getHandle() const { return this->_handle; }
 
-	void TextureBase::setDesc(Diligent::SamplerDesc desc) { this->_desc = desc; }
+	Diligent::ISampler* TextureBase::getSampler() {
+		return this->_sampler == nullptr ? rawrbox::PipelineUtils::defaultSampler : this->_sampler;
+	}
+	void TextureBase::setSampler(Diligent::SamplerDesc desc) {
+		uint32_t id = desc.AddressU << 6 | desc.AddressV << 3 | desc.AddressW;
+		this->_sampler = rawrbox::PipelineUtils::registerSampler(id, desc);
+	}
 
 	void TextureBase::setTextureUV(rawrbox::TEXTURE_UV mode) { this->_textureUV = mode; }
 	rawrbox::TEXTURE_UV TextureBase::getTextureUV() const { return this->_textureUV; }

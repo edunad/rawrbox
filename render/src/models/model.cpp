@@ -32,7 +32,7 @@ namespace rawrbox {
 		// Sort alpha
 		if (sort) {
 			/*std::sort(this->_meshes.begin(), this->_meshes.end(), [](auto& a, auto& b) {
-				return a->blending != BGFX_STATE_BLEND_ALPHA && b->blending == BGFX_STATE_BLEND_ALPHA;
+				return a->alphaBlend != b->alphaBlend;
 			});*/
 		}
 		// --------

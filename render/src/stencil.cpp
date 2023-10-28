@@ -29,6 +29,8 @@ namespace rawrbox {
 		settings.pVS = "stencil.vsh";
 		settings.pPS = "stencil.psh";
 		settings.scissors = true;
+		settings.immutableSamplers = {true};
+		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		settings.layout = rawrbox::PosUVColorVertexData::vLayout();
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};

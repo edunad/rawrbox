@@ -29,7 +29,7 @@ namespace rawrbox {
 		// ----------------------------------------
 
 		std::vector<rawrbox::VertexData> data = {this->_mesh->vertices.begin(), this->_mesh->vertices.end()};
-		context->UpdateBuffer(this->_vbh, 0, vertSize * this->_material->vLayout().second, empty ? nullptr : data.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		context->UpdateBuffer(this->_vbh, 0, vertSize * this->_material->vLayoutSize(), empty ? nullptr : data.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
@@ -185,20 +185,14 @@ namespace rawrbox {
 		if (!dynamic && indcSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Indices cannot be empty on non-dynamic buffer!");
 
 		// VERT ----
-		auto layout = this->_material->vLayout();
-
 		Diligent::BufferDesc VertBuffDesc;
 		VertBuffDesc.Name = "RawrBox::Buffer::Vertex";
 		VertBuffDesc.Usage = dynamic ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE;
 		VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-		VertBuffDesc.Size = vertSize * layout.second;
-
-		// Convert buffer into material layout ----
-		auto conv = this->_material->convert(this->_mesh->vertices);
-		// --------------------------------
+		VertBuffDesc.Size = vertSize * this->_material->vLayoutSize();
 
 		Diligent::BufferData VBData;
-		VBData.pData = conv.data();
+		VBData.pData = this->_material->convert(this->_mesh->vertices); // Convert buffer into material layout ----
 		VBData.DataSize = VertBuffDesc.Size;
 		device->CreateBuffer(VertBuffDesc, vertSize > 0 ? &VBData : nullptr, &this->_vbh);
 		// ---------------------

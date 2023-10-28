@@ -36,18 +36,5 @@ namespace rawrbox {
 			// extraData.z = pack[1];
 			// extraData.w = pack[2];
 		}
-
-		/*static bgfx::VertexLayout vLayout() {
-			static bgfx::VertexLayout l;
-			l.begin()
-			    .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float) // Position
-			    .add(bgfx::Attrib::TexCoord1, 4, bgfx::AttribType::Float)
-			    .add(bgfx::Attrib::TexCoord2, 4, bgfx::AttribType::Float)
-			    .add(bgfx::Attrib::TexCoord3, 4, bgfx::AttribType::Float)
-			    .add(bgfx::Attrib::TexCoord4, 4, bgfx::AttribType::Float) // Color
-			    .add(bgfx::Attrib::TexCoord5, 4, bgfx::AttribType::Float) // Atlas & GPU picking
-			    .end();
-			return l;
-		};*/
 	};
 } // namespace rawrbox

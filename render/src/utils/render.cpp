@@ -13,6 +13,7 @@ namespace rawrbox {
 		settings.pVS = "rt.vsh";
 		settings.pPS = "rt.psh";
 		settings.depthWrite = false;
+		settings.immutableSamplers = {true};
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;              // Disable depth
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP; // Disable cull
 		settings.resources = {

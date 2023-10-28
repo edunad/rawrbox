@@ -50,7 +50,7 @@ namespace rawrbox {
 
 		bool wireframe = false;
 		bool doubleSided = false;
-		// uint64_t blending = Diligent::BLEND_FACTOR_SRC_ALPHA;
+		bool alpha = false;
 
 		OptionalTexture diffuse = std::nullopt;
 		rawrbox::Colorf diffuseColor = rawrbox::Colors::White();

@@ -5,10 +5,39 @@
 
 namespace rawrbox {
 	// STATICS ------
+	// PRIVATE ----
 	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IPipelineState>> PipelineUtils::_pipelines = {};
 	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> PipelineUtils::_binds = {};
 	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShader>> PipelineUtils::_shaders = {};
+	std::unordered_map<uint32_t, Diligent::RefCntAutoPtr<Diligent::ISampler>> PipelineUtils::_samplers = {};
+	// -------------
+
+	Diligent::ISampler* PipelineUtils::defaultSampler = nullptr;
+	bool PipelineUtils::initialized = false;
 	// -----------------
+
+	void PipelineUtils::init() {
+		uint32_t id = Diligent::TEXTURE_ADDRESS_WRAP << 6 | Diligent::TEXTURE_ADDRESS_WRAP << 3 | Diligent::TEXTURE_ADDRESS_WRAP;
+		Diligent::SamplerDesc desc{
+		    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,
+		    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
+
+		defaultSampler = registerSampler(id, desc);
+		initialized = true;
+	}
+
+	Diligent::ISampler* PipelineUtils::registerSampler(uint32_t id, Diligent::SamplerDesc desc) {
+		auto fnd = _samplers.find(id);
+		if (fnd != _samplers.end()) {
+			return fnd->second;
+		}
+
+		Diligent::RefCntAutoPtr<Diligent::ISampler> sampler;
+		rawrbox::RENDERER->device()->CreateSampler(desc, &sampler);
+
+		_samplers[id] = std::move(sampler);
+		return _samplers[id];
+	}
 
 	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type) {
 		if (name.empty()) return nullptr;
@@ -75,11 +104,14 @@ namespace rawrbox {
 			info.GraphicsPipeline.RTVFormats[0] = desc.ColorBufferFormat;
 		}
 
-		Diligent::BlendStateDesc BlendState;
-		BlendState.RenderTargets[0].BlendEnable = true;
-		BlendState.RenderTargets[0].SrcBlend = Diligent::BLEND_FACTOR_SRC_ALPHA;
-		BlendState.RenderTargets[0].DestBlend = Diligent::BLEND_FACTOR_INV_SRC_ALPHA;
-		info.GraphicsPipeline.BlendDesc = BlendState;
+		if (settings.blending.src != Diligent::BLEND_FACTOR_UNDEFINED && settings.blending.dest != Diligent::BLEND_FACTOR_UNDEFINED) {
+			Diligent::BlendStateDesc BlendState;
+			BlendState.RenderTargets[0].BlendEnable = true;
+			BlendState.RenderTargets[0].SrcBlend = settings.blending.src;
+			BlendState.RenderTargets[0].DestBlend = settings.blending.dest;
+
+			info.GraphicsPipeline.BlendDesc = BlendState;
+		}
 		// -----
 
 		// Create the shaders (move this to a loader) ----
@@ -108,13 +140,18 @@ namespace rawrbox {
 			info.PSODesc.ResourceLayout.Variables = settings.resources.data();
 			info.PSODesc.ResourceLayout.NumVariables = static_cast<uint32_t>(settings.resources.size());
 
+			if (settings.immutableSamplers.size() != settings.resources.size())
+				throw std::runtime_error("[RawrBox-PipelineUtils] ImmutableSamplers size must match resources size!");
+
 			Diligent::SamplerDesc SamLinearClampDesc{
 			    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,
 			    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
 
-			for (auto& res : settings.resources) {
-				if (res.Type == Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE) continue;
-				samplers.emplace_back(res.ShaderStages, res.Name, SamLinearClampDesc);
+			for (size_t i = 0; i < settings.resources.size(); i++) {
+				if (!settings.immutableSamplers[i]) continue;
+				auto& sampler = settings.resources[i];
+
+				samplers.emplace_back(sampler.ShaderStages, sampler.Name, SamLinearClampDesc);
 			}
 
 			if (!samplers.empty()) {
@@ -144,7 +181,19 @@ namespace rawrbox {
 	Diligent::IShaderResourceBinding* PipelineUtils::getBind(const std::string& bindName) {
 		auto fnd = _binds.find(bindName);
 		if (fnd == _binds.end()) return nullptr;
-
 		return fnd->second;
 	}
+
+	Diligent::ISampler* PipelineUtils::getSampler(uint32_t id) {
+		auto fnd = _samplers.find(id);
+		if (fnd == _samplers.end()) return nullptr;
+		return fnd->second;
+	}
+
+	Diligent::IPipelineState* PipelineUtils::getPipeline(const std::string& pipe) {
+		auto fnd = _pipelines.find(pipe);
+		if (fnd == _pipelines.end()) return nullptr;
+		return fnd->second;
+	}
+
 } // namespace rawrbox

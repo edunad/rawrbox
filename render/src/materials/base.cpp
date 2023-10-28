@@ -8,18 +8,9 @@
 #include <Platforms/Basic/interface/DebugUtilities.hpp>
 
 namespace rawrbox {
-	constexpr auto MAX_DATA = 4;
 
 	// STATIC DATA ----
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialBase::_uniforms;
-
-	Diligent::IPipelineState* MaterialBase::_base = nullptr;
-	Diligent::IPipelineState* MaterialBase::_line = nullptr;
-	Diligent::IPipelineState* MaterialBase::_cullback = nullptr;
-	Diligent::IPipelineState* MaterialBase::_wireframe = nullptr;
-	Diligent::IPipelineState* MaterialBase::_cullnone = nullptr;
-
-	Diligent::IShaderResourceBinding* MaterialBase::_bind = nullptr;
 	// ----------------
 
 	void MaterialBase::init() {
@@ -39,36 +30,61 @@ namespace rawrbox {
 		settings.pVS = "unlit.vsh";
 		settings.pPS = "unlit.psh";
 		settings.cull = Diligent::CULL_MODE_FRONT;
-		settings.layout = rawrbox::MaterialBase::vLayout().first;
+		settings.layout = rawrbox::VertexData::vLayout();
+		settings.immutableSamplers = {false, true};
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 		settings.uniforms = {{Diligent::SHADER_TYPE_VERTEX, _uniforms}};
 
-		_base = rawrbox::PipelineUtils::createPipelines("Model::Base", "Model::Base", settings);
+		rawrbox::PipelineUtils::createPipelines("Model::Base", "Model::Base", settings);
 
+		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+		rawrbox::PipelineUtils::createPipelines("Model::Base::Alpha", "Model::Base", settings);
+
+		settings.blending = {};
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
 		settings.cull = Diligent::CULL_MODE_NONE;
-		_line = rawrbox::PipelineUtils::createPipelines("Model::Line", "Model::Base", settings);
+		rawrbox::PipelineUtils::createPipelines("Model::Line", "Model::Base", settings);
 
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		settings.cull = Diligent::CULL_MODE_BACK;
-		_cullback = rawrbox::PipelineUtils::createPipelines("Model::Base::CullBack", "Model::Base", settings);
+		rawrbox::PipelineUtils::createPipelines("Model::Base::CullBack", "Model::Base", settings);
 
-		settings.fill = Diligent::FILL_MODE_WIREFRAME;
-		_wireframe = rawrbox::PipelineUtils::createPipelines("Model::Base::Wireframe", "Model::Base", settings);
+		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+		rawrbox::PipelineUtils::createPipelines("Model::Base::CullBack::Alpha", "Model::Base", settings);
 
-		settings.fill = Diligent::FILL_MODE_SOLID;
-		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		settings.cull = Diligent::CULL_MODE_NONE;
-		_cullnone = rawrbox::PipelineUtils::createPipelines("Model::Base::CullNone", "Model::Base", settings);
-		// -----
+		rawrbox::PipelineUtils::createPipelines("Model::Base::CullNone::Alpha", "Model::Base", settings);
 
-		_bind = rawrbox::PipelineUtils::getBind("Model::Base");
+		settings.blending = {};
+		rawrbox::PipelineUtils::createPipelines("Model::Base::CullNone", "Model::Base", settings);
+
+		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+		rawrbox::PipelineUtils::createPipelines("Model::Base::CullNone::Alpha", "Model::Base", settings);
+
+		settings.blending = {};
+		settings.fill = Diligent::FILL_MODE_WIREFRAME;
+		rawrbox::PipelineUtils::createPipelines("Model::Base::Wireframe", "Model::Base", settings);
+		// -----
 	}
 
-	std::vector<rawrbox::VertexData> MaterialBase::convert(const std::vector<rawrbox::ModelVertexData>& v) {
-		return {v.begin(), v.end()};
+	void MaterialBase::prepareMaterial() {
+		// Not a fan, but had to move it away from static, since we want to override them
+		if (this->_base == nullptr) this->_base = rawrbox::PipelineUtils::getPipeline("Model::Base");
+		if (this->_base_alpha == nullptr) this->_base_alpha = rawrbox::PipelineUtils::getPipeline("Model::Base::Alpha");
+
+		if (this->_line == nullptr) this->_line = rawrbox::PipelineUtils::getPipeline("Model::Line");
+
+		if (this->_cullback == nullptr) this->_cullback = rawrbox::PipelineUtils::getPipeline("Model::Base::CullBack");
+		if (this->_cullback_alpha == nullptr) this->_cullback_alpha = rawrbox::PipelineUtils::getPipeline("Model::Base::CullBack::Alpha");
+
+		if (this->_wireframe == nullptr) this->_wireframe = rawrbox::PipelineUtils::getPipeline("Model::Base::Wireframe");
+
+		if (this->_cullnone == nullptr) this->_cullnone = rawrbox::PipelineUtils::getPipeline("Model::Base::CullNone");
+		if (this->_cullnone_alpha == nullptr) this->_cullnone_alpha = rawrbox::PipelineUtils::getPipeline("Model::Base::CullNone::Alpha");
+
+		if (this->_bind == nullptr) this->_bind = rawrbox::PipelineUtils::getBind("Model::Base");
 	}
 
 	void MaterialBase::bindUniforms(const rawrbox::Mesh& mesh) {
@@ -77,97 +93,83 @@ namespace rawrbox {
 
 		// SETUP UNIFORMS ----------------------------
 		Diligent::MapHelper<rawrbox::MaterialBaseUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-		// Map the buffer and write current world-view-projection matrix
-
-		auto size = renderer->getSize().cast<float>();
-		auto tTransform = rawrbox::TRANSFORM.transpose();
-		auto tProj = renderer->camera()->getProjMtx().transpose();
-		auto tView = renderer->camera()->getViewMtx().transpose();
-		auto tInvView = renderer->camera()->getViewMtx();
-		tInvView.inverse();
-
-		auto tWorldView = renderer->camera()->getProjViewMtx().transpose();
-
-		std::array<rawrbox::Vector4f, MAX_DATA>
-		    data = {rawrbox::Vector4f{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
-		if (mesh.hasData("billboard_mode")) {
-			data[0] = mesh.getData("billboard_mode").data();
-		}
-
-		if (mesh.hasData("vertex_snap")) {
-			data[1] = mesh.getData("vertex_snap").data();
-		}
-
-		if (mesh.hasData("displacement_strength")) {
-			data[2] = mesh.getData("displacement_strength").data();
-		}
-
-		if (mesh.hasData("mask")) {
-			data[3] = mesh.getData("mask").data();
-		}
-
-		*CBConstants = {
-		    // CAMERA -------
-		    tTransform,
-		    tView * tProj,
-		    tInvView,
-		    tTransform * tWorldView,
-		    size,
-		    // --------------
-		    mesh.color,
-		    mesh.texture == nullptr ? rawrbox::Vector4f() : mesh.texture->getData(),
-		    data};
-		// ----------------------------
-
-		/*
-		// Bind extra renderer uniforms ---
-		rawrbox::RENDERER->bindRenderUniforms();
-		// ---*/
+		this->bindBaseUniforms(mesh, CBConstants);
+		// ------------
 	}
 
 	void MaterialBase::bindPipeline(const rawrbox::Mesh& mesh) {
 		auto context = rawrbox::RENDERER->context();
 
 		if (mesh.wireframe) {
-			context->SetPipelineState(_wireframe);
+			if (this->_line == nullptr) throw std::runtime_error("[RawrBox-Material] Wireframe not supported on material");
+			context->SetPipelineState(this->_wireframe);
 		} else if (mesh.lineMode) {
-			context->SetPipelineState(_line);
+			if (this->_line == nullptr) throw std::runtime_error("[RawrBox-Material] Line not supported on material");
+			context->SetPipelineState(this->_line);
 		} else {
 			if (mesh.culling == Diligent::CULL_MODE_NONE) {
-				context->SetPipelineState(_cullnone);
+				if (this->_cullnone == nullptr) throw std::runtime_error("[RawrBox-Material] Disabled cull not supported on material");
+				if (this->_cullnone_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Disabled alpha cull not supported on material");
+				context->SetPipelineState(mesh.alphaBlend ? this->_cullnone_alpha : this->_cullnone);
+			} else if (mesh.culling == Diligent::CULL_MODE_BACK) {
+				if (this->_cullback == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back not supported on material");
+				if (this->_cullback_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back alpha not supported on material");
+				context->SetPipelineState(mesh.alphaBlend ? this->_cullback_alpha : this->_cullback);
 			} else {
-				context->SetPipelineState(mesh.culling == Diligent::CULL_MODE_FRONT ? _base : _cullback);
+				if (this->_cullback == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back not supported on material");
+				if (this->_cullback_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back alpha cull not supported on material");
+				if (this->_base_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back alpha cull not supported on material");
+
+				context->SetPipelineState(mesh.culling == Diligent::CULL_MODE_FRONT ? this->_base : this->_cullback);
 			}
 		}
 	}
 
+	void MaterialBase::bindShaderResources() {
+		if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialBase] Bind not set!");
+
+		auto context = rawrbox::RENDERER->context();
+		context->CommitShaderResources(this->_bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	}
+
 	void MaterialBase::bind(const rawrbox::Mesh& mesh) {
 		auto context = rawrbox::RENDERER->context();
+		this->prepareMaterial();
+
+		rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
+		rawrbox::TextureBase* textureDisplacement = rawrbox::BLACK_TEXTURE.get();
 
 		if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
 			mesh.texture->update(); // Update texture
-			_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(mesh.texture->getHandle());
-		} else {
-			_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(rawrbox::WHITE_TEXTURE->getHandle());
+			textureColor = mesh.texture;
 		}
 
 		if (mesh.displacementTexture != nullptr && mesh.displacementTexture->isValid()) {
-			_bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Displacement")->Set(mesh.displacementTexture->getHandle());
-		} else {
-			_bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Displacement")->Set(rawrbox::BLACK_TEXTURE->getHandle());
+			mesh.displacementTexture->update(); // Update texture
+			textureDisplacement = mesh.displacementTexture;
 		}
+
+		auto handle = textureColor->getHandle();
+		handle->SetSampler(textureColor->getSampler());
+
+		this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(handle);
+		this->_bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Displacement")->Set(textureDisplacement->getHandle());
 
 		this->bindPipeline(mesh);
 		this->bindUniforms(mesh);
-
-		context->CommitShaderResources(_bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		this->bindShaderResources();
 	}
 
 	uint32_t MaterialBase::supports() const {
 		return rawrbox::MaterialFlags::NONE;
 	}
 
-	const std::pair<std::vector<Diligent::LayoutElement>, uint32_t> MaterialBase::vLayout() {
-		return {rawrbox::VertexData::vLayout(), rawrbox::VertexData::vLayoutSize()};
+	void* MaterialBase::convert(const std::vector<rawrbox::ModelVertexData>& v) {
+		this->_temp = {v.begin(), v.end()};
+		return this->_temp.data();
+	}
+
+	const uint32_t MaterialBase::vLayoutSize() {
+		return sizeof(rawrbox::VertexData);
 	}
 } // namespace rawrbox
