@@ -45,8 +45,8 @@ struct PSInput {
 #include "model_transforms.fxh"
 
 void main(in VSInput VSIn, out PSInput PSIn) {
-   // float4 pos = boneTransform(VSIn.BoneIndex, VSIn.BoneWeight, VSIn.Pos);
-    TransformedData transform = applyPosTransforms(VSIn.Pos, VSIn.UV.xy);
+    float4 pos = boneTransform(VSIn.BoneIndex, VSIn.BoneWeight, VSIn.Pos);
+    TransformedData transform = applyPosTransforms(pos, VSIn.UV.xy);
 
     PSIn.Pos      = transform.final;
     PSIn.UV       = VSIn.UV.xy;

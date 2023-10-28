@@ -165,7 +165,11 @@ namespace rawrbox {
 	}
 
 	void* MaterialBase::convert(const std::vector<rawrbox::ModelVertexData>& v) {
-		this->_temp = {v.begin(), v.end()};
+		this->_temp.reserve(v.size());
+		std::transform(v.begin(), v.end(),
+		    std::back_inserter(this->_temp),
+		    [](const rawrbox::ModelVertexData& data) -> rawrbox::VertexData { return {data.position, data.uv, data.color}; });
+
 		return this->_temp.data();
 	}
 

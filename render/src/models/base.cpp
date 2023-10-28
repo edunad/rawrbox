@@ -28,8 +28,8 @@ namespace rawrbox {
 
 		// ----------------------------------------
 
-		std::vector<rawrbox::VertexData> data = {this->_mesh->vertices.begin(), this->_mesh->vertices.end()};
-		context->UpdateBuffer(this->_vbh, 0, vertSize * this->_material->vLayoutSize(), empty ? nullptr : data.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		auto data = this->_material->convert(this->_mesh->vertices);
+		context->UpdateBuffer(this->_vbh, 0, vertSize * this->_material->vLayoutSize(), empty ? nullptr : data, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
@@ -189,7 +189,7 @@ namespace rawrbox {
 		VertBuffDesc.Name = "RawrBox::Buffer::Vertex";
 		VertBuffDesc.Usage = dynamic ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE;
 		VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-		VertBuffDesc.Size = vertSize * this->_material->vLayoutSize();
+		VertBuffDesc.Size = vertSize * static_cast<uint32_t>(this->_material->vLayoutSize());
 
 		Diligent::BufferData VBData;
 		VBData.pData = this->_material->convert(this->_mesh->vertices); // Convert buffer into material layout ----

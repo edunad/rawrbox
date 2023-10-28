@@ -42,7 +42,11 @@ namespace rawrbox {
 	};
 
 	// Supports light ---
-	struct VertexNormData : public virtual VertexData {
+	struct VertexNormData {
+		rawrbox::Vector3f position = {};
+		rawrbox::Vector4f uv = {};
+		rawrbox::Colorf color = {};
+
 		rawrbox::Vector3f normal = {};
 		rawrbox::Vector3f tangent = {};
 
@@ -75,7 +79,11 @@ namespace rawrbox {
 	};
 
 	// Supports bones ---
-	struct VertexBoneData : public virtual VertexData {
+	struct VertexBoneData {
+		rawrbox::Vector3f position = {};
+		rawrbox::Vector4f uv = {};
+		rawrbox::Colorf color = {};
+
 		std::array<uint32_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
@@ -107,7 +115,17 @@ namespace rawrbox {
 	};
 
 	// Supports light && bones ---
-	struct VertexNormBoneData : public VertexNormData, public VertexBoneData {
+	struct VertexNormBoneData {
+		rawrbox::Vector3f position = {};
+		rawrbox::Vector4f uv = {};
+		rawrbox::Colorf color = {};
+
+		rawrbox::Vector3f normal = {};
+		rawrbox::Vector3f tangent = {};
+
+		std::array<uint32_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
+		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
+
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
