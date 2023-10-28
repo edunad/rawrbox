@@ -46,52 +46,49 @@ namespace rawrbox {
 
 	// BLEND SHAPES ---
 	void ModelBase::applyBlendShapes() {
-		/*
-				// Reset vertex ---------
-				for (auto& shape : this->_blend_shapes) {
-					if (!shape.second->isActive() || shape.second->mesh == nullptr) continue;
 
-					auto& verts = shape.second->mesh->vertices;
-					for (auto& v : verts)
-						v.reset();
-				}
-				// --------
+		// Reset vertex ---------
+		for (auto& shape : this->_blend_shapes) {
+			if (!shape.second->isActive() || shape.second->mesh == nullptr) continue;
 
-				for (auto& shape : this->_blend_shapes) {
-					if (!shape.second->isActive() || shape.second->mesh == nullptr) continue;
+			auto& verts = shape.second->mesh->vertices;
+			for (auto& v : verts)
+				v.reset();
+		}
+		// --------
 
-					auto& verts = shape.second->mesh->vertices;
+		for (auto& shape : this->_blend_shapes) {
+			if (!shape.second->isActive() || shape.second->mesh == nullptr) continue;
 
-					auto& blendPos = shape.second->pos;
-					auto& blendNormals = shape.second->normals;
+			auto& verts = shape.second->mesh->vertices;
 
-					if (!blendPos.empty() && blendPos.size() != verts.size()) {
-						fmt::print("[RawrBox-ModelBase] Blendshape verts do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendPos.size());
-						return;
-					}
+			auto& blendPos = shape.second->pos;
+			auto& blendNormals = shape.second->normals;
 
-					if (!blendNormals.empty() && blendNormals.size() != verts.size()) {
-						fmt::print("[RawrBox-ModelBase] Blendshape normals do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendNormals.size());
-						return;
-					}
+			if (!blendPos.empty() && blendPos.size() != verts.size()) {
+				fmt::print("[RawrBox-ModelBase] Blendshape verts do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendPos.size());
+				return;
+			}
 
-					float step = std::clamp(shape.second->weight, 0.F, 1.F);
+			if (!blendNormals.empty() && blendNormals.size() != verts.size()) {
+				fmt::print("[RawrBox-ModelBase] Blendshape normals do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendNormals.size());
+				return;
+			}
 
-					// Apply vertices ----
-					for (size_t i = 0; i < blendPos.size(); i++) {
-						verts[i].position = verts[i].position.lerp(blendPos[i], step);
-					}
-					// -------------------
+			float step = std::clamp(shape.second->weight, 0.F, 1.F);
 
-					// Apply normal ----
-					for (size_t i = 0; i < blendNormals.size(); i++) {
-						auto unmap = rawrbox::Vector4f(rawrbox::PackUtils::fromNormal(verts[i].normal[0])).xyz();
-						auto lerp = unmap.lerp(blendNormals[i], step);
+			// Apply vertices ----
+			for (size_t i = 0; i < blendPos.size(); i++) {
+				verts[i].position = verts[i].position.lerp(blendPos[i], step);
+			}
+			// -------------------
 
-						verts[i].normal[0] = rawrbox::PackUtils::packNormal(lerp.x, lerp.y, lerp.z);
-					}
-					// -------------------
-				}*/
+			// Apply normal ----
+			for (size_t i = 0; i < blendNormals.size(); i++) {
+				verts[i].normal = verts[i].normal.lerp(blendNormals[i], step);
+			}
+			// -------------------
+		}
 	}
 
 	bool ModelBase::removeBlendShape(const std::string& id) {
