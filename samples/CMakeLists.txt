@@ -13,7 +13,7 @@ if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
 endif()
 #
 #add_subdirectory("004-light-support")
-add_subdirectory("005-post-process")
+#add_subdirectory("005-post-process")
 #
 #if(RAWRBOX_BUILD_RAWRBOX_BASS)
 #    add_subdirectory("006-bass-loading")
@@ -29,7 +29,7 @@ add_subdirectory("005-post-process")
 #    add_subdirectory("009-physics-3d")
 #endif()
 #
-add_subdirectory("010-instancing")
+#add_subdirectory("010-instancing")
 #add_subdirectory("011-decals")
 #
 #if(RAWRBOX_BUILD_RAWRBOX_WEBM)

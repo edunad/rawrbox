@@ -41,7 +41,7 @@ namespace rawrbox {
 		rawrbox::PipelineUtils::createPipelines("3DText::Base", "3DText", settings); // ALPHA by default on text
 	}
 
-	void MaterialText3D::bindUniforms(const rawrbox::Mesh& mesh) {
+	void MaterialText3D::bindUniforms(const rawrbox::Mesh<rawrbox::VertexData>& mesh) {
 		auto renderer = rawrbox::RENDERER;
 		auto context = renderer->context();
 
@@ -72,7 +72,7 @@ namespace rawrbox {
 		if (this->_bind == nullptr) this->_bind = rawrbox::PipelineUtils::getBind("3DText");
 	}
 
-	void MaterialText3D::bindPipeline(const rawrbox::Mesh& mesh) {
+	void MaterialText3D::bindPipeline(const rawrbox::Mesh<rawrbox::VertexData>& mesh) {
 		auto context = rawrbox::RENDERER->context();
 
 		if (mesh.wireframe) {
@@ -82,7 +82,7 @@ namespace rawrbox {
 		}
 	}
 
-	void MaterialText3D::bind(const rawrbox::Mesh& mesh) {
+	void MaterialText3D::bind(const rawrbox::Mesh<rawrbox::VertexData>& mesh) {
 		this->prepareMaterial();
 
 		auto context = rawrbox::RENDERER->context();
@@ -98,9 +98,5 @@ namespace rawrbox {
 		this->bindUniforms(mesh);
 
 		context->CommitShaderResources(this->_bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-	}
-
-	uint32_t MaterialText3D::supports() const {
-		return rawrbox::MaterialBase::supports() | rawrbox::MaterialFlags::TEXT;
 	}
 } // namespace rawrbox

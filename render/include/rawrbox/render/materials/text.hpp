@@ -18,10 +18,12 @@ namespace rawrbox {
 	protected:
 		void prepareMaterial() override;
 
-		void bindUniforms(const rawrbox::Mesh& mesh) override;
-		void bindPipeline(const rawrbox::Mesh& mesh) override;
+		void bindUniforms(const rawrbox::Mesh<VertexData>& mesh) override;
+		void bindPipeline(const rawrbox::Mesh<VertexData>& mesh) override;
 
 	public:
+		using vertexBufferType = rawrbox::VertexData;
+
 		MaterialText3D() = default;
 		MaterialText3D(const MaterialText3D&) = delete;
 		MaterialText3D(MaterialText3D&&) = delete;
@@ -30,9 +32,7 @@ namespace rawrbox {
 		~MaterialText3D() override = default;
 
 		static void init();
-		void bind(const rawrbox::Mesh& mesh) override;
-
-		[[nodiscard]] uint32_t supports() const override;
+		void bind(const rawrbox::Mesh<VertexData>& mesh) override;
 	};
 
 } // namespace rawrbox

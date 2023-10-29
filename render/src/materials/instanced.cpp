@@ -72,8 +72,4 @@ namespace rawrbox {
 
 		if (this->_bind == nullptr) this->_bind = rawrbox::PipelineUtils::getBind("Model::Instanced");
 	}
-
-	uint32_t MaterialInstanced::supports() const {
-		return rawrbox::MaterialBase::supports() | rawrbox::MaterialFlags::INSTANCED;
-	}
 } // namespace rawrbox

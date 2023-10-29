@@ -87,7 +87,7 @@ namespace rawrbox {
 		if (this->_bind == nullptr) this->_bind = rawrbox::PipelineUtils::getBind("Model::Base");
 	}
 
-	void MaterialBase::bindUniforms(const rawrbox::Mesh& mesh) {
+	void MaterialBase::bindUniforms(const rawrbox::Mesh<vertexBufferType>& mesh) {
 		auto renderer = rawrbox::RENDERER;
 		auto context = renderer->context();
 
@@ -97,7 +97,7 @@ namespace rawrbox {
 		// ------------
 	}
 
-	void MaterialBase::bindPipeline(const rawrbox::Mesh& mesh) {
+	void MaterialBase::bindPipeline(const rawrbox::Mesh<vertexBufferType>& mesh) {
 		auto context = rawrbox::RENDERER->context();
 
 		if (mesh.wireframe) {
@@ -132,7 +132,7 @@ namespace rawrbox {
 		context->CommitShaderResources(this->_bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
-	void MaterialBase::bind(const rawrbox::Mesh& mesh) {
+	void MaterialBase::bind(const rawrbox::Mesh<vertexBufferType>& mesh) {
 		auto context = rawrbox::RENDERER->context();
 		this->prepareMaterial();
 
@@ -158,19 +158,6 @@ namespace rawrbox {
 		this->bindPipeline(mesh);
 		this->bindUniforms(mesh);
 		this->bindShaderResources();
-	}
-
-	uint32_t MaterialBase::supports() const {
-		return rawrbox::MaterialFlags::NONE;
-	}
-
-	void* MaterialBase::convert(const std::vector<rawrbox::ModelVertexData>& v) {
-		this->_temp.reserve(v.size());
-		std::transform(v.begin(), v.end(),
-		    std::back_inserter(this->_temp),
-		    [](const rawrbox::ModelVertexData& data) -> rawrbox::VertexData { return {data.position, data.uv, data.color}; });
-
-		return this->_temp.data();
 	}
 
 	const uint32_t MaterialBase::vLayoutSize() {

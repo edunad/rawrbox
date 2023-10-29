@@ -4,7 +4,8 @@
 
 namespace rawrbox {
 
-	class Sprite : public rawrbox::Model {
+	template <typename M = rawrbox::MaterialBase>
+	class Sprite : public rawrbox::Model<M> {
 	protected:
 		bool _xAxis = true;
 		bool _yAxis = true;
@@ -18,13 +19,18 @@ namespace rawrbox {
 		Sprite& operator=(Sprite&&) = delete;
 		~Sprite() override = default;
 
-		[[nodiscard]] virtual bool xAxisEnabled() const;
-		virtual void lockXAxix(bool locked);
-		[[nodiscard]] virtual bool yAxisEnabled() const;
-		virtual void lockYAxix(bool locked);
-		[[nodiscard]] virtual bool zAxisEnabled() const;
-		virtual void lockZAxix(bool locked);
+		[[nodiscard]] virtual bool xAxisEnabled() const { return this->_xAxis; }
+		virtual void lockXAxix(bool locked) { this->_xAxis = !locked; }
+		[[nodiscard]] virtual bool yAxisEnabled() const { return this->_yAxis; }
+		virtual void lockYAxix(bool locked) { this->_yAxis = !locked; }
+		[[nodiscard]] virtual bool zAxisEnabled() const { return this->_zAxis; }
+		virtual void lockZAxix(bool locked) { this->_zAxis = !locked; }
 
-		rawrbox::Mesh* addMesh(rawrbox::Mesh mesh) override;
+		rawrbox::Mesh<typename M::vertexBufferType>* addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) override {
+			mesh.setOptimizable(false);
+			mesh.addData("billboard_mode", {this->_xAxis ? 1.F : 0.F, this->_yAxis ? 1.F : 0.F, this->_zAxis ? 1.F : 0.F, 0.F}); // Force billboard for sprites
+
+			return Model<M>::addMesh(mesh);
+		}
 	};
 } // namespace rawrbox

@@ -5,7 +5,7 @@
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/models/defs.hpp>
+#include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
@@ -20,6 +20,7 @@ namespace rawrbox {
 	struct Skeleton;
 	class LightBase;
 
+	template <typename T = VertexData>
 	class Mesh {
 	protected:
 		bool _canOptimize = true;
@@ -31,9 +32,9 @@ namespace rawrbox {
 	public:
 		Mesh() = default;
 		Mesh(const Mesh&) = default;
-		Mesh(Mesh&&) = default;
+		Mesh(Mesh&&) noexcept = default;
 		Mesh& operator=(const Mesh&) = default;
-		Mesh& operator=(Mesh&&) = default;
+		Mesh& operator=(Mesh&&) noexcept = default;
 		virtual ~Mesh() = default;
 
 		std::string name = "mesh";
@@ -44,7 +45,7 @@ namespace rawrbox {
 		uint16_t totalVertex = 0;
 		uint16_t totalIndex = 0;
 
-		std::vector<rawrbox::ModelVertexData> vertices = {};
+		std::vector<T> vertices = {};
 		std::vector<uint16_t> indices = {};
 		// -------
 
@@ -85,27 +86,55 @@ namespace rawrbox {
 		std::unordered_map<std::string, rawrbox::Vector4f> data = {}; // Other data
 
 		// UTILS ----
-		[[nodiscard]] virtual const std::string& getName() const;
-		virtual void setName(const std::string& name);
+		[[nodiscard]] virtual const std::string& getName() const {
+			return this->name;
+		}
 
-		[[nodiscard]] virtual const std::vector<rawrbox::ModelVertexData>& getVertices() const;
-		[[nodiscard]] virtual const std::vector<uint16_t>& getIndices() const;
-		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const;
+		virtual void setName(const std::string& _name) {
+			this->name = _name;
+		}
 
-		[[nodiscard]] virtual bool empty() const;
-		[[nodiscard]] virtual const rawrbox::Matrix4x4& getMatrix();
+		[[nodiscard]] virtual const std::vector<T>& getVertices() const {
+			return this->vertices;
+		}
 
-		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const;
-		virtual void setPos(const rawrbox::Vector3f& pos);
+		[[nodiscard]] virtual const std::vector<uint16_t>& getIndices() const {
+			return this->indices;
+		}
 
-		[[nodiscard]] virtual const rawrbox::Vector4f& getAngle() const;
-		virtual void setAngle(const rawrbox::Vector4f& ang);
-		virtual void setEulerAngle(const rawrbox::Vector3f& ang);
+		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const {
+			return this->bbox;
+		}
 
-		[[nodiscard]] virtual const rawrbox::Vector3f& getScale() const;
-		virtual void setScale(const rawrbox::Vector3f& scale);
+		[[nodiscard]] virtual bool empty() const {
+			return this->indices.empty() || this->vertices.empty();
+		}
+		[[nodiscard]] virtual const rawrbox::Matrix4x4& getMatrix() { return this->matrix; }
 
-		virtual void setTransparentBlending(bool _transparent);
+		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_pos; }
+		virtual void setPos(const rawrbox::Vector3f& pos) {
+			this->_pos = pos;
+			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+		}
+
+		[[nodiscard]] virtual const rawrbox::Vector4f& getAngle() const { return this->_angle; }
+		virtual void setAngle(const rawrbox::Vector4f& ang) {
+			this->_angle = ang;
+			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+		}
+
+		virtual void setEulerAngle(const rawrbox::Vector3f& ang) {
+			this->_angle = rawrbox::Vector4f::toQuat(ang);
+			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+		}
+
+		[[nodiscard]] virtual const rawrbox::Vector3f& getScale() const { return this->_scale; }
+		virtual void setScale(const rawrbox::Vector3f& scale) {
+			this->_scale = scale;
+			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+		}
+
+		virtual void setTransparentBlending(bool _transparent) { this->alphaBlend = _transparent; }
 
 		template <typename B>
 		B* getOwner() {
@@ -113,49 +142,142 @@ namespace rawrbox {
 			return std::bit_cast<B*>(this->owner);
 		}
 
-		[[nodiscard]] virtual const rawrbox::TextureBase* getTexture() const;
-		virtual void setTexture(rawrbox::TextureBase* ptr);
+		[[nodiscard]] virtual const rawrbox::TextureBase* getTexture() const { return this->texture; }
+		virtual void setTexture(rawrbox::TextureBase* ptr) {
+			this->texture = ptr;
+		}
 
-		[[nodiscard]] virtual uint16_t getAtlasID(int index = -1) const;
-		virtual void setAtlasID(uint16_t atlasID, int index = -1);
+		[[nodiscard]] virtual uint16_t getAtlasID(int index = -1) const {
+			if (this->vertices.empty()) return 0;
+			if (index < 0) return static_cast<uint16_t>(this->vertices.front().uv.z);
 
-		[[nodiscard]] virtual const rawrbox::TextureBase* getNormalTexture() const;
-		virtual void setNormalTexture(rawrbox::TextureBase* ptr);
+			return static_cast<uint16_t>(this->vertices[std::clamp(index, 0, static_cast<int>(this->vertices.size() - 1))].uv.z);
+		}
 
-		[[nodiscard]] virtual const rawrbox::TextureBase* getDisplacementTexture() const;
-		virtual void setDisplacementTexture(rawrbox::TextureBase* ptr, float power);
+		virtual void setAtlasID(uint16_t _atlasId, int index = -1) {
+			auto vSize = static_cast<int>(this->vertices.size());
+			for (int i = 0; i < vSize; i++) {
+				if (index != -1 && i == index) {
+					this->vertices[i].setAtlasId(_atlasId);
+					break;
+				}
 
-		[[nodiscard]] virtual const rawrbox::TextureBase* getEmissionTexture() const;
-		virtual void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity);
+				this->vertices[i].setAtlasId(_atlasId);
+			}
+		}
 
-		[[nodiscard]] virtual const rawrbox::TextureBase* getSpecularTexture() const;
-		virtual void setSpecularTexture(rawrbox::TextureBase* ptr, float shininess);
+		[[nodiscard]] virtual const rawrbox::TextureBase* getNormalTexture() const { return this->normalTexture; }
+		virtual void setNormalTexture(rawrbox::TextureBase* ptr) { this->normalTexture = ptr; }
 
-		virtual void setVertexSnap(float power = 2.F);
+		[[nodiscard]] virtual const rawrbox::TextureBase* getDisplacementTexture() const { return this->displacementTexture; }
+		virtual void setDisplacementTexture(rawrbox::TextureBase* ptr, float power) {
+			this->displacementTexture = ptr;
+			this->addData("displacement_strength", {power, 0, 0, 0});
+			this->setOptimizable(false);
+		}
 
-		virtual void setWireframe(bool wireframe);
+		[[nodiscard]] virtual const rawrbox::TextureBase* getEmissionTexture() const { return this->emissionTexture; }
+		virtual void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity) {
+			this->emissionTexture = ptr;
+			this->emissionIntensity = intensity;
+		}
 
-		virtual void setCulling(Diligent::CULL_MODE culling);
+		[[nodiscard]] virtual const rawrbox::TextureBase* getSpecularTexture() const { return this->specularTexture; }
+		virtual void setSpecularTexture(rawrbox::TextureBase* ptr, float shininess) {
+			this->specularTexture = ptr;
+			this->specularShininess = shininess;
+		}
 
-		virtual void setRecieveDecals(bool status);
+		virtual void setVertexSnap(float power = 2.F) {
+			this->addData("vertex_snap", {power, 0, 0, 0});
+			this->setOptimizable(false);
+		}
 
-		[[nodiscard]] virtual uint32_t getId(int index = -1) const;
-		virtual void setId(uint32_t id, int index = -1);
+		virtual void setWireframe(bool _wireframe) {
+			this->wireframe = _wireframe;
+		}
 
-		virtual void setColor(const rawrbox::Color& color);
+		virtual void setCulling(Diligent::CULL_MODE _culling) {
+			this->culling = _culling;
+		}
 
-		virtual void addData(const std::string& id, rawrbox::Vector4f data);
-		[[nodiscard]] virtual const rawrbox::Vector4f& getData(const std::string& id) const;
-		[[nodiscard]] virtual bool hasData(const std::string& id) const;
+		virtual void setRecieveDecals(bool decals) {
+			this->addData("mask", {decals ? 1.0F : 0.0F, 0, 0, 0});
+		}
 
-		[[nodiscard]] virtual rawrbox::Skeleton* getSkeleton() const;
+		[[nodiscard]] virtual uint32_t getId(int /*index*/ = -1) const { return 0; }
+		virtual void setId(uint32_t id, int index = -1) {}
 
-		virtual void clear();
+		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->color; }
+		virtual void setColor(const rawrbox::Color& _color) {
+			this->color = _color;
+		}
 
-		virtual void merge(const rawrbox::Mesh& other);
-		virtual void rotateVertices(float rad, rawrbox::Vector3f axis = {0, 1, 0});
+		virtual void addData(const std::string& id, rawrbox::Vector4f _data) {
+			this->data[id] = _data;
+		}
 
-		virtual void setOptimizable(bool status);
-		[[nodiscard]] virtual bool canOptimize(const rawrbox::Mesh& other) const;
+		[[nodiscard]] virtual const rawrbox::Vector4f& getData(const std::string& id) const {
+			auto fnd = this->data.find(id);
+			if (fnd == this->data.end()) throw std::runtime_error(fmt::format("[RawrBox-Mesh] Data '{}' not found", id));
+			return fnd->second;
+		}
+
+		[[nodiscard]] virtual bool hasData(const std::string& id) const {
+			return this->data.find(id) != this->data.end();
+		}
+
+		[[nodiscard]] virtual rawrbox::Skeleton* getSkeleton() const {
+			return this->skeleton;
+		}
+
+		virtual void clear() {
+			this->vertices.clear();
+			this->indices.clear();
+
+			this->totalIndex = 0;
+			this->totalVertex = 0;
+			this->baseIndex = 0;
+			this->baseVertex = 0;
+		}
+
+		virtual void merge(const rawrbox::Mesh<T>& other) {
+			rawrbox::Vector3f offset = (other._pos != this->_pos) ? other._pos - this->_pos : rawrbox::Vector3f(0, 0, 0);
+
+			for (uint16_t i : other.indices) {
+				this->indices.push_back(this->totalVertex + i);
+			}
+
+			if (offset == rawrbox::Vector3f::zero()) {
+				this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
+			} else {
+				for (auto v : other.vertices) {
+					v.position += offset;
+					this->vertices.push_back(v);
+				}
+			}
+
+			this->totalVertex += other.totalVertex;
+			this->totalIndex += other.totalIndex;
+		}
+
+		virtual void rotateVertices(float rad, rawrbox::Vector3f axis = {0, 1, 0}) {
+			for (auto& v : vertices) {
+				v.position = v.position.rotateAroundOrigin(axis, rad);
+			}
+		}
+
+		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
+		[[nodiscard]] virtual bool canOptimize(const rawrbox::Mesh<T>& other) const {
+			if (!this->_canOptimize || !other._canOptimize) return false;
+			if (this->vertices.size() + other.vertices.size() >= 16000) return false; // Max vertice limit
+			if (this->indices.size() + other.indices.size() >= 16000) return false;   // Max indice limit
+
+			return this->texture == other.texture &&
+			       this->color == other.color &&
+			       this->wireframe == other.wireframe &&
+			       this->lineMode == other.lineMode &&
+			       this->matrix == other.matrix;
+		}
 	};
 } // namespace rawrbox

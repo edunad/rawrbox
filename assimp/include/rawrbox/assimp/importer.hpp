@@ -4,8 +4,8 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/light/types.hpp>
 #include <rawrbox/render/models/animation.hpp>
-#include <rawrbox/render/models/defs.hpp>
 #include <rawrbox/render/models/skeleton.hpp>
+#include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/render/texture/base.hpp>
 
 #include <assimp/material.h>
@@ -108,7 +108,7 @@ namespace rawrbox {
 
 		bool animated = false;
 
-		std::vector<rawrbox::ModelVertexData> vertices = {};
+		std::vector<rawrbox::VertexNormBoneData> vertices = {};
 		std::vector<uint16_t> indices = {};
 
 		explicit AssimpMesh(std::string _name) : name(std::move(_name)){};

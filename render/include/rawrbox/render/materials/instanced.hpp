@@ -7,6 +7,9 @@ namespace rawrbox {
 	class MaterialInstanced : public rawrbox::MaterialBase {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 
+	public:
+		using vertexBufferType = rawrbox::VertexData;
+
 	protected:
 		void prepareMaterial() override;
 
@@ -19,7 +22,6 @@ namespace rawrbox {
 		~MaterialInstanced() override = default;
 
 		static void init();
-		[[nodiscard]] uint32_t supports() const override;
 	};
 
 } // namespace rawrbox

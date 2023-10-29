@@ -6,14 +6,12 @@
 #include <rawrbox/render/text/markdown.hpp>
 #include <rawrbox/render/texture/animated.hpp>
 #include <rawrbox/render/texture/image.hpp>
-// #include <rawrbox/render/window.hpp>
 
 #include <memory>
 
 namespace stencil {
 	class Game : public rawrbox::Engine {
-		// std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::Model> _model = std::make_unique<rawrbox::Model>();
+		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Markdown> _markdown = std::make_unique<rawrbox::Markdown>();
 
 		rawrbox::TextureBase* _texture = nullptr;

@@ -541,12 +541,12 @@ namespace rawrbox {
 
 			// Vertices
 			for (size_t i = 0; i < aiMesh.mNumVertices; i++) {
-				rawrbox::ModelVertexData v;
+				rawrbox::VertexNormBoneData v;
 
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
 					v.position = {vert.x, vert.y, vert.z};
-					v.ori_pos = v.position;
+					// v.ori_pos = v.position;
 				}
 
 				if (aiMesh.HasTextureCoords(0)) {
@@ -564,7 +564,7 @@ namespace rawrbox {
 				if (aiMesh.HasNormals()) {
 					auto& normal = aiMesh.mNormals[i];
 					v.normal = {normal.x, normal.y, normal.z};
-					v.ori_norm = v.normal;
+					// v.ori_norm = v.normal;
 				}
 
 				if (aiMesh.HasTangentsAndBitangents()) {

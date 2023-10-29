@@ -57,6 +57,20 @@
       "RAWRBOX_DEV_MODE": true,
       "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "bin"
     },
+    "clangd.fallbackFlags": [
+      "-I${workspaceFolder}/render/include",
+      "-I${workspaceFolder}/resources/include",
+      "-I${workspaceFolder}/math/include",
+      "-I${workspaceFolder}/engine/include",
+      "-I${workspaceFolder}/network/include",
+      "-I${workspaceFolder}/physics_3d/include",
+      "-I${workspaceFolder}/physics_2d/include",
+      "-I${workspaceFolder}/assimp/include",
+      "-I${workspaceFolder}/webm/include",
+      "-I${workspaceFolder}/ui/include",
+      "-I${workspaceFolder}/scripting/include",
+      "-I${workspaceFolder}/bass/include"
+    ],
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "workbench.editor.pinnedTabSizing": "shrink",
     "workbench.editor.wrapTabs": true,

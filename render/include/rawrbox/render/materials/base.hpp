@@ -1,7 +1,7 @@
 #pragma once
 
-#include <rawrbox/render/models/defs.hpp>
 #include <rawrbox/render/models/mesh.hpp>
+#include <rawrbox/render/models/vertex.hpp>
 
 #include <Graphics/GraphicsEngine/interface/InputLayout.h>
 #include <Graphics/GraphicsEngine/interface/PipelineState.h>
@@ -9,20 +9,6 @@
 
 namespace rawrbox {
 	constexpr auto MAX_DATA = 4;
-
-	// FLAGS ------
-	// NOLINTBEGIN{unused-const-variable}
-	namespace MaterialFlags {
-		const uint32_t NONE = 0;
-		const uint32_t NORMALS = 1 << 1;
-		const uint32_t BONES = 1 << 2;
-		const uint32_t INSTANCED = 1 << 3;
-		const uint32_t TEXT = 1 << 4;
-		const uint32_t PARTICLE = 1 << 5;
-	}; // namespace MaterialFlags
-
-	// NOLINTEND{unused-const-variable}
-	//  --------------------
 
 	struct MaterialBaseUniforms {
 		//  CAMERA -----
@@ -42,7 +28,6 @@ namespace rawrbox {
 
 	class MaterialBase {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-		std::vector<rawrbox::VertexData> _temp = {};
 
 	protected:
 		Diligent::IPipelineState* _base = nullptr;
@@ -57,7 +42,7 @@ namespace rawrbox {
 		Diligent::IShaderResourceBinding* _bind = nullptr;
 
 		template <typename T = MaterialBaseUniforms>
-		void bindBaseUniforms(const rawrbox::Mesh& mesh, Diligent::MapHelper<T>& helper) {
+		void bindBaseUniforms(const rawrbox::Mesh<rawrbox::VertexData>& mesh, Diligent::MapHelper<T>& helper) {
 			auto renderer = rawrbox::RENDERER;
 
 			auto size = renderer->getSize().cast<float>();
@@ -103,11 +88,13 @@ namespace rawrbox {
 
 		virtual void prepareMaterial();
 
-		virtual void bindUniforms(const rawrbox::Mesh& mesh);
-		virtual void bindPipeline(const rawrbox::Mesh& mesh);
+		virtual void bindUniforms(const rawrbox::Mesh<rawrbox::VertexData>& mesh);
+		virtual void bindPipeline(const rawrbox::Mesh<rawrbox::VertexData>& mesh);
 		virtual void bindShaderResources();
 
 	public:
+		using vertexBufferType = rawrbox::VertexData;
+
 		MaterialBase() = default;
 		MaterialBase(MaterialBase&&) = delete;
 		MaterialBase& operator=(MaterialBase&&) = delete;
@@ -116,11 +103,8 @@ namespace rawrbox {
 		virtual ~MaterialBase() = default;
 
 		static void init();
-		virtual void bind(const rawrbox::Mesh& mesh);
+		virtual void bind(const rawrbox::Mesh<rawrbox::VertexData>& mesh);
 
-		virtual void* convert(const std::vector<rawrbox::ModelVertexData>& v);
-
-		[[nodiscard]] virtual uint32_t supports() const;
 		[[nodiscard]] virtual const uint32_t vLayoutSize();
 	};
 } // namespace rawrbox
