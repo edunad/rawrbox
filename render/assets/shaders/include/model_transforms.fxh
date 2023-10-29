@@ -55,7 +55,7 @@ float4 boneTransform(uint4 indices, float4 weight, float3 position) {
 		}
 	}
 
-	return skinned ? mul(float4(position, 1.f), BoneTransform) : float4(position, 1.f);
+	return skinned ? mul(BoneTransform, float4(position, 1.f)) : float4(position, 1.f);
 }
 
 #endif

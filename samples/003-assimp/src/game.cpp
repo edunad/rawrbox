@@ -164,22 +164,22 @@ namespace assimp {
 
 	void Game::drawWorld() {
 		if (!this->_ready) return;
-		// this->_modelGrid->draw();
+		this->_modelGrid->draw();
 
 		//
-		// this->_model->draw();
-		// this->_model2->draw();
-		// this->_model3->draw();
+		this->_model->draw();
+		this->_model2->draw();
+		this->_model3->draw();
 		this->_model4->draw();
-		// this->_model5->draw();
+		this->_model5->draw();
 		////
 
-		// this->_model6->setBlendShape("Cheese-Melt", std::abs(std::cos(rawrbox::FRAME * 0.005F) * 1.F));
-		// this->_model6->setBlendShape("Other-Nya", std::abs(std::cos(rawrbox::FRAME * 0.008F) * 1.F));
-		// this->_model6->setBlendShape("Other-Melt", std::abs(std::cos(rawrbox::FRAME * 0.002F) * 1.F));
-		// this->_model6->draw();
+		this->_model6->setBlendShape("Cheese-Melt", std::abs(std::cos(rawrbox::FRAME * 0.005F) * 1.F));
+		this->_model6->setBlendShape("Other-Nya", std::abs(std::cos(rawrbox::FRAME * 0.008F) * 1.F));
+		this->_model6->setBlendShape("Other-Melt", std::abs(std::cos(rawrbox::FRAME * 0.002F) * 1.F));
+		this->_model6->draw();
 		//
-		// this->_text->draw();
+		this->_text->draw();
 	}
 
 	void Game::draw() {
