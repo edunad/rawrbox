@@ -106,34 +106,6 @@ namespace rawrbox {
 		explicit VertexBoneData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexData(_pos, _uv, cl) {}
 
-		// BONES UTILS -----
-		int index = 0;
-		void addBoneData(uint32_t boneId, float weight) {
-			if (index < rawrbox::MAX_BONES_PER_VERTEX) {
-				this->bone_indices[index] = boneId;
-				this->bone_weights[index] = weight;
-
-				index++;
-			} else {
-				// find the bone with the smallest weight
-				int minIndex = 0;
-				float minWeight = this->bone_weights[0];
-				for (int i = 1; i < rawrbox::MAX_BONES_PER_VERTEX; i++) {
-					if (this->bone_weights[i] < minWeight) {
-						minIndex = i;
-						minWeight = this->bone_weights[i];
-					}
-				}
-
-				// replace with new bone if the new bone has greater weight
-				if (weight > minWeight) {
-					this->bone_indices[minIndex] = boneId;
-					this->bone_weights[minIndex] = weight;
-				}
-			}
-		}
-		// ------------------
-
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
@@ -172,34 +144,6 @@ namespace rawrbox {
 
 		explicit VertexNormBoneData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : rawrbox::VertexNormData(_pos, _uv, norm, tang, cl) {}
-
-		// BONES UTILS -----
-		int index = 0;
-		void addBoneData(uint32_t boneId, float weight) {
-			if (index < rawrbox::MAX_BONES_PER_VERTEX) {
-				this->bone_indices[index] = boneId;
-				this->bone_weights[index] = weight;
-
-				index++;
-			} else {
-				// find the bone with the smallest weight
-				int minIndex = 0;
-				float minWeight = this->bone_weights[0];
-				for (int i = 1; i < rawrbox::MAX_BONES_PER_VERTEX; i++) {
-					if (this->bone_weights[i] < minWeight) {
-						minIndex = i;
-						minWeight = this->bone_weights[i];
-					}
-				}
-
-				// replace with new bone if the new bone has greater weight
-				if (weight > minWeight) {
-					this->bone_indices[minIndex] = boneId;
-					this->bone_weights[minIndex] = weight;
-				}
-			}
-		}
-		// ------------------
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
@@ -301,9 +245,6 @@ namespace rawrbox {
 		*/
 
 	// UTILS ---
-	template <typename T>
-	concept noSupport = requires(T t) { !t.bone_indices && !t.normal; };
-
 	template <typename T>
 	concept supportsBones = requires(T t) { t.bone_indices; };
 

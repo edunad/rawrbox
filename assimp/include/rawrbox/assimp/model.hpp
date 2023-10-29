@@ -91,11 +91,11 @@ namespace rawrbox {
 			this->loadMeshes(model);
 			this->loadBlendShapes(model);
 
-			if constexpr (supportsBones<M>) {
+			if constexpr (supportsBones<typename M::vertexBufferType>) {
 				this->loadAnimations(model);
 			}
 
-			if constexpr (supportsNormals<M>) {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				this->loadLights(model);
 			}
 		}

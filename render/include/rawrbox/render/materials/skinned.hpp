@@ -12,7 +12,6 @@ namespace rawrbox {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 
 	protected:
-		void bindUniforms(const rawrbox::Mesh<rawrbox::VertexData>& mesh) override;
 		void prepareMaterial() override;
 
 	public:
@@ -26,7 +25,18 @@ namespace rawrbox {
 		~MaterialSkinned() override = default;
 
 		static void init();
-		[[nodiscard]] const uint32_t vLayoutSize() override;
+
+		template <typename T = rawrbox::VertexData>
+		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
+			auto context = rawrbox::RENDERER->context();
+
+			// SETUP UNIFORMS ----------------------------
+			Diligent::MapHelper<rawrbox::MaterialSkinnedUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			this->bindBaseUniforms<T, rawrbox::MaterialSkinnedUniforms>(mesh, CBConstants);
+			// ------------
+
+			(*CBConstants).g_bones = {};
+		}
 	};
 
 } // namespace rawrbox

@@ -77,19 +77,18 @@ namespace assimp {
 
 		this->_model->setPos({7, 1.1F, 0.F});
 		this->_model->load(*mdl);
-		// this->_model->upload();
+		this->_model->upload();
 
-		// this->_model2->setMaterial<rawrbox::MaterialLit>();
 		this->_model2->setPos({-6, 1.1F, 0.F});
 		this->_model2->load(*mdl);
-		// this->_model2->upload();
+		this->_model2->upload();
 
 		// ANIMATIONS ---
 		auto mdl2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/wolf/wolfman_animated.fbx")->get();
 		this->_model3->load(*mdl2);
 		this->_model3->playAnimation("Scene", true, 1.F);
 		this->_model3->setPos({0, 0, 0});
-		// this->_model3->upload();
+		this->_model3->upload();
 
 		auto mdl3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/multiple_skeleton/twocubestest.gltf")->get();
 		this->_model4->load(*mdl3);
@@ -101,17 +100,17 @@ namespace assimp {
 
 		auto mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/grandma_tv/scene.gltf")->get();
 		this->_model5->load(*mdl4);
-		// this->_model5->playAnimation("Scene", true, 1.F);
+		this->_model5->playAnimation("Scene", true, 1.F);
 		this->_model5->setPos({0, 0, -3.5F});
 		this->_model5->setScale({0.35F, 0.35F, 0.35F});
 		this->_model5->setEulerAngle({0, rawrbox::MathUtils::toRad(90.F), 0});
-		// this->_model5->upload();
+		this->_model5->upload();
 
 		auto mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/shape_keys/shape_keys.glb")->get();
 		this->_model6->load(*mdl5);
 		this->_model6->setScale({0.4F, 0.4F, 0.4F});
 		this->_model6->setPos({2.F, 0.4F, -6.F});
-		// this->_model6->upload(true);
+		this->_model6->upload(true);
 		//    -----
 
 		// Text test ----
@@ -122,14 +121,14 @@ namespace assimp {
 			this->_text->addText(*this->_font, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.F, 2.5F});
 			this->_text->addText(*this->_font, "VERTEX ANIMATIONS", {0.F, 1.8F, -3.5F});
 			this->_text->addText(*this->_font, "EMBEDDED TEXTURES +\nBLEND SHAPES", {2.F, 1.8F, -6.F});
-			// this->_text->upload();
+			this->_text->upload();
 		}
 		// ------
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateGrid(24, {0.F, 0.F, 0.F});
 			this->_modelGrid->addMesh(mesh);
-			// this->_modelGrid->upload();
+			this->_modelGrid->upload();
 		}
 
 		// LIGHT ----
@@ -167,20 +166,22 @@ namespace assimp {
 
 	void Game::drawWorld() {
 		if (!this->_ready) return;
-		// this->_modelGrid->draw();
+		this->_modelGrid->draw();
 
-		// this->_model->draw();
-		// this->_model2->draw();
-		// this->_model3->draw();
-		this->_model4->draw();
-		// this->_model5->draw();
 		//
-		//  this->_model6->setBlendShape("Cheese-Melt", std::abs(std::cos(rawrbox::FRAME * 0.005F) * 1.F));
-		//  this->_model6->setBlendShape("Other-Nya", std::abs(std::cos(rawrbox::FRAME * 0.008F) * 1.F));
-		//  this->_model6->setBlendShape("Other-Melt", std::abs(std::cos(rawrbox::FRAME * 0.002F) * 1.F));
-		//  this->_model6->draw();
+		this->_model->draw();
+		this->_model2->draw();
+		this->_model3->draw();
+		this->_model4->draw();
+		this->_model5->draw();
+		////
 
-		// this->_text->draw();
+		this->_model6->setBlendShape("Cheese-Melt", std::abs(std::cos(rawrbox::FRAME * 0.005F) * 1.F));
+		this->_model6->setBlendShape("Other-Nya", std::abs(std::cos(rawrbox::FRAME * 0.008F) * 1.F));
+		this->_model6->setBlendShape("Other-Melt", std::abs(std::cos(rawrbox::FRAME * 0.002F) * 1.F));
+		this->_model6->draw();
+
+		this->_text->draw();
 	}
 
 	void Game::draw() {

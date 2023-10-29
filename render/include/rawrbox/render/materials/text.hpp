@@ -18,9 +18,6 @@ namespace rawrbox {
 	protected:
 		void prepareMaterial() override;
 
-		void bindUniforms(const rawrbox::Mesh<VertexData>& mesh) override;
-		void bindPipeline(const rawrbox::Mesh<VertexData>& mesh) override;
-
 	public:
 		using vertexBufferType = rawrbox::VertexData;
 
@@ -32,7 +29,41 @@ namespace rawrbox {
 		~MaterialText3D() override = default;
 
 		static void init();
-		void bind(const rawrbox::Mesh<VertexData>& mesh) override;
+
+		template <typename T = rawrbox::VertexData>
+		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
+			auto renderer = rawrbox::RENDERER;
+			auto context = renderer->context();
+
+			// SETUP UNIFORMS ----------------------------
+			Diligent::MapHelper<rawrbox::MaterialTextUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			// Map the buffer and write current world-view-projection matrix
+
+			auto tTransform = rawrbox::TRANSFORM.transpose();
+			auto tWorldView = renderer->camera()->getProjViewMtx().transpose();
+			auto tInvView = renderer->camera()->getViewMtx();
+			tInvView.inverse();
+
+			*CBConstants = {
+			    // CAMERA -------
+			    tTransform * tWorldView,
+			    tInvView,
+			    // --------------
+			    mesh.getData("billboard_mode")};
+		}
+
+		template <typename T = rawrbox::VertexData>
+		void bindTexture(const rawrbox::Mesh<T>& mesh) {
+			this->prepareMaterial();
+			auto context = rawrbox::RENDERER->context();
+
+			if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
+				mesh.texture->update(); // Update texture
+				this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(mesh.texture->getHandle());
+			} else {
+				this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(rawrbox::WHITE_TEXTURE->getHandle());
+			}
+		}
 	};
 
 } // namespace rawrbox

@@ -39,7 +39,7 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _ibh; // Indices
 
 		std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>> _mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>();
-		std::unique_ptr<M> _material = std::make_unique<M>(); // todo::
+		std::unique_ptr<M> _material = std::make_unique<M>();
 
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::BlendShapes<M>>> _blend_shapes = {};
 
@@ -95,7 +95,7 @@ namespace rawrbox {
 				// -------------------
 
 				// Apply normal ----
-				if constexpr (supportsNormals<M>) {
+				if constexpr (supportsNormals<typename M::vertexBufferType>) {
 					for (size_t i = 0; i < blendNormals.size(); i++) {
 						verts[i].normal = verts[i].normal.lerp(blendNormals[i], step);
 					}
@@ -185,7 +185,7 @@ namespace rawrbox {
 
 			// ----------------------------------------
 
-			context->UpdateBuffer(this->_vbh, 0, vertSize * this->_material->vLayoutSize(), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		}
 
@@ -243,7 +243,7 @@ namespace rawrbox {
 			VertBuffDesc.Name = "RawrBox::Buffer::Vertex";
 			VertBuffDesc.Usage = dynamic ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE;
 			VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-			VertBuffDesc.Size = vertSize * static_cast<uint32_t>(this->_material->vLayoutSize());
+			VertBuffDesc.Size = vertSize * static_cast<uint32_t>(sizeof(typename M::vertexBufferType));
 
 			Diligent::BufferData VBData;
 			VBData.pData = this->_mesh->vertices.data();

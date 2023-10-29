@@ -274,10 +274,47 @@ namespace rawrbox {
 			fnd->second->offsetMtx.transpose(&bone->mOffsetMatrix.a1);
 			fnd->second->offsetMtx.mul(mesh.matrix);
 
+			auto addBoneData = [](int& indx, uint32_t boneId, float weight, rawrbox::VertexNormBoneData& m) {
+				if (indx < rawrbox::MAX_BONES_PER_VERTEX) {
+					m.bone_indices[indx] = boneId;
+					m.bone_weights[indx] = weight;
+
+					indx++;
+				}
+			};
+
 			// Calculate object weights
 			for (size_t j = 0; j < bone->mNumWeights; j++) {
 				auto& weightobj = bone->mWeights[j];
-				mesh.vertices[weightobj.mVertexId].addBoneData(fnd->second->boneId, weightobj.mWeight); // Global vertices
+				auto& v = mesh.vertices[weightobj.mVertexId];
+				auto& indx = mesh.bone_index[weightobj.mVertexId];
+
+				uint32_t boneId = fnd->second->boneId;
+				float boneWeight = weightobj.mWeight;
+
+				if (indx < rawrbox::MAX_BONES_PER_VERTEX) {
+					v.bone_indices[indx] = boneId;
+					v.bone_weights[indx] = boneWeight;
+
+					indx++;
+				} else {
+					// find the bone with the smallest weight
+					int minIndex = 0;
+					float minWeight = v.bone_weights[0];
+
+					for (int i = 1; i < rawrbox::MAX_BONES_PER_VERTEX; i++) {
+						if (v.bone_weights[i] < minWeight) {
+							minIndex = i;
+							minWeight = v.bone_weights[i];
+						}
+					}
+
+					// replace with new bone if the new bone has greater weight
+					if (boneWeight > minWeight) {
+						v.bone_indices[minIndex] = boneId;
+						v.bone_weights[minIndex] = boneWeight;
+					}
+				}
 			}
 			// ------
 		}

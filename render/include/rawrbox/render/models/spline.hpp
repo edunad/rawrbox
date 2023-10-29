@@ -109,7 +109,7 @@ namespace rawrbox {
 						auto norm = rawrbox::Vector3f(this->_shape->normal[j].x, this->_shape->normal[j].y, 0.F);
 						auto uv = rawrbox::Vector2f(this->_shape->u[j], path[i].vCoordinate);
 
-						if constexpr (supportsNormals<M>) {
+						if constexpr (supportsNormals<typename M::vertexBufferType>) {
 							buff[id] = rawrbox::VertexNormData(path[i].LocalToWorld(pos), uv, norm, {}, rawrbox::Colors::White());
 						} else {
 							buff[id] = rawrbox::VertexData(path[i].LocalToWorld(pos), uv, rawrbox::Colors::White());
@@ -150,7 +150,10 @@ namespace rawrbox {
 
 			// Bind materials uniforms & textures ----
 			rawrbox::TRANSFORM = this->getMatrix();
-			this->_material->bind(*this->_mesh);
+			this->_material->bindTexture(*this->_mesh);
+			this->_material->bindPipeline(*this->_mesh);
+			this->_material->bindUniforms(*this->_mesh);
+			this->_material->bindShaderResources();
 			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;    // This is an indexed draw call

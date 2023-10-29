@@ -87,80 +87,10 @@ namespace rawrbox {
 		if (this->_bind == nullptr) this->_bind = rawrbox::PipelineUtils::getBind("Model::Base");
 	}
 
-	void MaterialBase::bindUniforms(const rawrbox::Mesh<vertexBufferType>& mesh) {
-		auto renderer = rawrbox::RENDERER;
-		auto context = renderer->context();
-
-		// SETUP UNIFORMS ----------------------------
-		Diligent::MapHelper<rawrbox::MaterialBaseUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-		this->bindBaseUniforms(mesh, CBConstants);
-		// ------------
-	}
-
-	void MaterialBase::bindPipeline(const rawrbox::Mesh<vertexBufferType>& mesh) {
-		auto context = rawrbox::RENDERER->context();
-
-		if (mesh.wireframe) {
-			if (this->_line == nullptr) throw std::runtime_error("[RawrBox-Material] Wireframe not supported on material");
-			context->SetPipelineState(this->_wireframe);
-		} else if (mesh.lineMode) {
-			if (this->_line == nullptr) throw std::runtime_error("[RawrBox-Material] Line not supported on material");
-			context->SetPipelineState(this->_line);
-		} else {
-			if (mesh.culling == Diligent::CULL_MODE_NONE) {
-				if (this->_cullnone == nullptr) throw std::runtime_error("[RawrBox-Material] Disabled cull not supported on material");
-				if (this->_cullnone_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Disabled alpha cull not supported on material");
-				context->SetPipelineState(mesh.alphaBlend ? this->_cullnone_alpha : this->_cullnone);
-			} else if (mesh.culling == Diligent::CULL_MODE_BACK) {
-				if (this->_cullback == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back not supported on material");
-				if (this->_cullback_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back alpha not supported on material");
-				context->SetPipelineState(mesh.alphaBlend ? this->_cullback_alpha : this->_cullback);
-			} else {
-				if (this->_cullback == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back not supported on material");
-				if (this->_cullback_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back alpha cull not supported on material");
-				if (this->_base_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back alpha cull not supported on material");
-
-				context->SetPipelineState(mesh.culling == Diligent::CULL_MODE_FRONT ? this->_base : this->_cullback);
-			}
-		}
-	}
-
 	void MaterialBase::bindShaderResources() {
 		if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialBase] Bind not set!");
 
 		auto context = rawrbox::RENDERER->context();
 		context->CommitShaderResources(this->_bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-	}
-
-	void MaterialBase::bind(const rawrbox::Mesh<vertexBufferType>& mesh) {
-		auto context = rawrbox::RENDERER->context();
-		this->prepareMaterial();
-
-		rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
-		rawrbox::TextureBase* textureDisplacement = rawrbox::BLACK_TEXTURE.get();
-
-		if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
-			mesh.texture->update(); // Update texture
-			textureColor = mesh.texture;
-		}
-
-		if (mesh.displacementTexture != nullptr && mesh.displacementTexture->isValid()) {
-			mesh.displacementTexture->update(); // Update texture
-			textureDisplacement = mesh.displacementTexture;
-		}
-
-		auto handle = textureColor->getHandle();
-		handle->SetSampler(textureColor->getSampler());
-
-		this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(handle);
-		this->_bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Displacement")->Set(textureDisplacement->getHandle());
-
-		this->bindPipeline(mesh);
-		this->bindUniforms(mesh);
-		this->bindShaderResources();
-	}
-
-	const uint32_t MaterialBase::vLayoutSize() {
-		return sizeof(rawrbox::VertexData);
 	}
 } // namespace rawrbox

@@ -32,7 +32,7 @@ namespace rawrbox {
 			mesh.lineMode = true;
 			mesh.setOptimizable(false);
 
-			if constexpr (supportsNormals<M>) {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				std::array<rawrbox::VertexNormData, 2> buff = {
 				    rawrbox::VertexNormData(a, rawrbox::Vector2f(), {}, {}, col),
 				    rawrbox::VertexNormData(b, rawrbox::Vector2f(), {}, {}, col),
@@ -57,7 +57,7 @@ namespace rawrbox {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 			mesh.setPos(pos);
 
-			if constexpr (supportsNormals<M>) {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				std::array<rawrbox::VertexNormData, 3> buff = {
 				    rawrbox::VertexNormData(a, aUV, rawrbox::Vector3f::forward(), {}, colA),
 				    rawrbox::VertexNormData(b, bUV, rawrbox::Vector3f::forward(), {}, colB),
@@ -112,7 +112,7 @@ namespace rawrbox {
 
 			rawrbox::Vector2f hSize = size / 2.F;
 
-			if constexpr (supportsNormals<M>) {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				std::array<rawrbox::VertexNormData, 4> buff = {
 				    rawrbox::VertexNormData(rawrbox::Vector3f(-hSize.x, -hSize.y, 0), rawrbox::Vector2f(0, 1), {1, 0, 0}, {}, cl),
 				    rawrbox::VertexNormData(rawrbox::Vector3f(hSize.x, hSize.y, 0), rawrbox::Vector2f(1, 0), {1, 0, 0}, {}, cl),
@@ -166,7 +166,7 @@ namespace rawrbox {
 			auto nmrlT = rawrbox::Vector3f(0, -1, 0);
 			auto nmrlBT = rawrbox::Vector3f(0, 1, 0);
 
-			if constexpr (supportsNormals<M>) {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				std::array<rawrbox::VertexNormData, 24> buff = {
 				    // Back
 				    rawrbox::VertexNormData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), rawrbox::Vector2f(0, 0), nmrlB, nmrlB, cl),   // A
@@ -331,7 +331,7 @@ namespace rawrbox {
 		// Does not support UV :( / normals
 		template <typename M = rawrbox::MaterialBase>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, uint32_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
-			if constexpr (supportsNormals<M>) {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate cone does not support normals");
 			}
 
@@ -399,7 +399,7 @@ namespace rawrbox {
 		// Does not support UV :( / normals
 		template <typename M = rawrbox::MaterialBase>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, uint32_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
-			if constexpr (supportsNormals<M>) {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate cylinder does not support normals");
 			}
 
@@ -472,7 +472,7 @@ namespace rawrbox {
 		// Does not support UV :( / normals
 		template <typename M = rawrbox::MaterialBase>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateSphere(const rawrbox::Vector3f& pos, float size, uint32_t ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
-			if constexpr (supportsNormals<M>) {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate sphere does not support normals");
 			}
 
@@ -600,7 +600,7 @@ namespace rawrbox {
 
 					posDiv -= size / 2;
 
-					if constexpr (supportsNormals<M>) {
+					if constexpr (supportsNormals<typename M::vertexBufferType>) {
 						buff.push_back(rawrbox::VertexNormData(
 						    pos + Vector3f{posDiv.x, 0, posDiv.y},
 						    rawrbox::Vector2(uvScale * xF,
@@ -650,7 +650,7 @@ namespace rawrbox {
 		// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
 		template <typename M = rawrbox::MaterialBase>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateGrid(uint16_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::Gray().strength(0.4F), const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent()) {
-			if constexpr (supportsNormals<M>) {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate grid does not support normals");
 			}
 

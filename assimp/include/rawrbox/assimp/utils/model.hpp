@@ -57,20 +57,23 @@ namespace rawrbox {
 			// ------------
 
 			mesh.indices = assimpMesh.indices;
-			if constexpr (supportsNormals<M> && supportsBones<M>) {
+
+			if constexpr (supportsNormals<typename M::vertexBufferType> && supportsBones<typename M::vertexBufferType>) {
 				mesh.vertices = assimpMesh.vertices;
 			} else {
 				mesh.vertices.reserve(assimpMesh.vertices.size());
 				for (auto& v : assimpMesh.vertices) {
-					if constexpr (supportsNormals<M>) {
+					if constexpr (supportsNormals<typename M::vertexBufferType>) {
 						mesh.vertices.push_back(rawrbox::VertexNormData(v.position, v.uv, v.normal, v.tangent, v.color));
-					} else if constexpr (supportsBones<M>) {
+					} else if constexpr (supportsBones<typename M::vertexBufferType>) {
 						mesh.vertices.push_back(rawrbox::VertexBoneData(v.position, v.uv, v.color));
-					} else if constexpr (noSupport<M>) {
+					} else {
 						mesh.vertices.push_back(rawrbox::VertexData(v.position, v.uv, v.color));
 					}
 				}
 			}
+
+			if (mesh.vertices.empty()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to extract model '{}'", model.fileName.generic_string()));
 
 			// Bones
 			if (assimpMesh.skeleton != nullptr) {

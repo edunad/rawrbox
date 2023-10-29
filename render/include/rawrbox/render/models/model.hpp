@@ -165,7 +165,7 @@ namespace rawrbox {
 
 		void updateLights() {
 			// Update lights ---
-			if constexpr (supportsNormals<M>) {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				for (auto& mesh : this->meshes()) {
 					// auto p = rawrbox::MathUtils::applyRotation(meshPos + this->getPos(), this->getAngle()); // TODO
 
@@ -330,7 +330,7 @@ namespace rawrbox {
 		// LIGHTS ------
 		template <typename T = rawrbox::LightBase, typename... CallbackArgs>
 		void addLight(const std::string& parentMesh = "", CallbackArgs&&... args) {
-			if constexpr (supportsNormals<M>) {
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				auto parent = this->_meshes.back().get();
 				if (!parentMesh.empty()) {
 					auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
@@ -476,7 +476,10 @@ namespace rawrbox {
 
 				// Bind materials uniforms & textures ----
 				rawrbox::TRANSFORM = this->getMatrix() * mesh->getMatrix();
-				// this->_material->bind(*mesh);
+				this->_material->bindTexture(*mesh);
+				this->_material->bindPipeline(*mesh);
+				this->_material->bindUniforms(*mesh);
+				this->_material->bindShaderResources();
 				//  -----------
 
 				Diligent::DrawIndexedAttribs DrawAttrs;    // This is an indexed draw call
