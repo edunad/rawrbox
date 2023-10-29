@@ -18,6 +18,9 @@ namespace rawrbox {
 		std::vector<std::unique_ptr<rawrbox::PostProcessBase>> _postProcesses = {};
 		std::unique_ptr<rawrbox::TextureRender> _rt = {};
 
+		Diligent::RefCntAutoPtr<Diligent::ITexture> _cpRT;
+		Diligent::ITextureView* _cpRTView = nullptr;
+
 	public:
 		PostProcessManager() = default;
 		virtual ~PostProcessManager();

@@ -53,6 +53,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual const rawrbox::Vector2i& getSize() const;
 		[[nodiscard]] virtual int getChannels() const;
 		[[nodiscard]] virtual bool isValid() const;
+
+		[[nodiscard]] virtual Diligent::ITexture* getTexture() const;
 		[[nodiscard]] virtual Diligent::ITextureView* getHandle() const;
 		[[nodiscard]] virtual std::array<float, 4> getData() const;
 
