@@ -111,7 +111,7 @@ namespace rawrbox {
 		std::vector<rawrbox::VertexNormBoneData> vertices = {};
 		std::vector<uint16_t> indices = {};
 
-		std::unordered_map<int, int> bone_index = {};
+		std::unordered_map<size_t, int> bone_index = {};
 		explicit AssimpMesh(std::string _name) : name(std::move(_name)){};
 	};
 

@@ -48,12 +48,12 @@ float4 boneTransform(uint4 indices, float4 weight, float3 position) {
 	float4x4 BoneTransform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	bool skinned = false;
 
-	/*for (uint idx = 0; idx < NUM_BONES_PER_VERTEX; idx++) {
+	for (uint idx = 0; idx < NUM_BONES_PER_VERTEX; idx++) {
 		if (weight[idx] > 0.0) {
 			BoneTransform += g_bones[indices[idx]] * weight[idx];
 			skinned = true;
 		}
-	}*/
+	}
 
 	return skinned ? mul(float4(position, 1.f), BoneTransform) : float4(position, 1.f);
 }

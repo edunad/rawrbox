@@ -76,6 +76,7 @@ namespace rawrbox {
 
 		// ANIMATION ------
 		rawrbox::Skeleton* skeleton = nullptr;
+		std::array<rawrbox::Matrix4x4, rawrbox::MAX_BONES_PER_MODEL> boneTransforms = {};
 		// -----------------
 
 		// LIGHTS ------

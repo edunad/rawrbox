@@ -274,15 +274,6 @@ namespace rawrbox {
 			fnd->second->offsetMtx.transpose(&bone->mOffsetMatrix.a1);
 			fnd->second->offsetMtx.mul(mesh.matrix);
 
-			auto addBoneData = [](int& indx, uint32_t boneId, float weight, rawrbox::VertexNormBoneData& m) {
-				if (indx < rawrbox::MAX_BONES_PER_VERTEX) {
-					m.bone_indices[indx] = boneId;
-					m.bone_weights[indx] = weight;
-
-					indx++;
-				}
-			};
-
 			// Calculate object weights
 			for (size_t j = 0; j < bone->mNumWeights; j++) {
 				auto& weightobj = bone->mWeights[j];

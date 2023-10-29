@@ -35,7 +35,7 @@ namespace rawrbox {
 			this->bindBaseUniforms<T, rawrbox::MaterialSkinnedUniforms>(mesh, CBConstants);
 			// ------------
 
-			(*CBConstants).g_bones = {};
+			(*CBConstants).g_bones = mesh.boneTransforms;
 		}
 	};
 

@@ -27,6 +27,11 @@ namespace rawrbox {
 		BlendShapes() = default;
 	};
 
+	struct ModelOriginalData {
+		rawrbox::Vector3f pos = {};
+		rawrbox::Vector3f normal = {};
+	};
+
 #ifdef RAWRBOX_SCRIPTING
 	class ModelBase : public std::enable_shared_from_this<rawrbox::ModelBase> {
 #else
@@ -42,6 +47,7 @@ namespace rawrbox {
 		std::unique_ptr<M> _material = std::make_unique<M>();
 
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::BlendShapes<M>>> _blend_shapes = {};
+		std::vector<ModelOriginalData> _original_data = {};
 
 		// BGFX DYNAMIC SUPPORT ---
 		bool _isDynamic = false;
@@ -62,8 +68,13 @@ namespace rawrbox {
 				if (!shape.second->isActive() || shape.second->mesh == nullptr) continue;
 
 				auto& verts = shape.second->mesh->vertices;
-				for (auto& v : verts) {
-					// v.reset(); // TODO::
+				for (size_t i = 0; i < verts.size(); i++) {
+					auto& data = this->_original_data[i];
+					verts[i].position = data.pos;
+
+					if constexpr (supportsNormals<typename M::vertexBufferType>) {
+						verts[i].normal = data.normal;
+					}
 				}
 			}
 			// --------
@@ -77,12 +88,12 @@ namespace rawrbox {
 				auto& blendNormals = shape.second->normals;
 
 				if (!blendPos.empty() && blendPos.size() != verts.size()) {
-					fmt::print("[RawrBox-ModelBase] Blendshape verts do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendPos.size());
+					fmt::print("[RawrBox-ModelBase] Blendshape verts do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}\n", shape.first, verts.size(), blendPos.size());
 					return;
 				}
 
 				if (!blendNormals.empty() && blendNormals.size() != verts.size()) {
-					fmt::print("[RawrBox-ModelBase] Blendshape normals do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendNormals.size());
+					fmt::print("[RawrBox-ModelBase] Blendshape normals do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}\n", shape.first, verts.size(), blendNormals.size());
 					return;
 				}
 
@@ -183,7 +194,20 @@ namespace rawrbox {
 			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
 			auto empty = vertSize <= 0 || indcSize <= 0;
 
-			// ----------------------------------------
+			// Store original positions for blendstates
+			if (!empty && _original_data.size() != vertSize) {
+				_original_data.clear();
+				_original_data.reserve(vertSize);
+
+				for (auto& v : this->_mesh->vertices) {
+					if constexpr (supportsNormals<typename M::vertexBufferType>) {
+						_original_data.push_back({v.position, v.normal});
+					} else {
+						_original_data.push_back({v.position, {}});
+					}
+				}
+			}
+			// -----------
 
 			context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
@@ -237,6 +261,20 @@ namespace rawrbox {
 
 			if (!dynamic && vertSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Vertices cannot be empty on non-dynamic buffer!");
 			if (!dynamic && indcSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Indices cannot be empty on non-dynamic buffer!");
+
+			// Store original positions for blendstates
+			if (vertSize > 0) {
+				_original_data.reserve(vertSize);
+
+				for (auto& v : this->_mesh->vertices) {
+					if constexpr (supportsNormals<typename M::vertexBufferType>) {
+						_original_data.push_back({v.position, v.normal});
+					} else {
+						_original_data.push_back({v.position, {}});
+					}
+				}
+			}
+			// -----------
 
 			// VERT ----
 			Diligent::BufferDesc VertBuffDesc;

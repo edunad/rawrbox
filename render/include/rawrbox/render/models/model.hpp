@@ -34,7 +34,7 @@ namespace rawrbox {
 		bool _canOptimize = true;
 
 		// ANIMATIONS ----
-		void animate(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
+		void animate(rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
 			// VERTEX ANIMATION ----
 			for (auto& anim : this->_animatedMeshes) {
 				if (anim.second == nullptr) continue;
@@ -43,9 +43,8 @@ namespace rawrbox {
 			// ------------
 
 			// BONE ANIMATION ----
-			if constexpr (supportsBones<M>) {
-				std::vector<rawrbox::Matrix4x4> boneTransforms = {};
-				boneTransforms.resize(rawrbox::MAX_BONES_PER_MODEL);
+			if constexpr (supportsBones<typename M::vertexBufferType>) {
+				std::array<rawrbox::Matrix4x4, rawrbox::MAX_BONES_PER_MODEL> boneTransforms = {};
 
 				if (mesh.skeleton != nullptr) {
 					auto calcs = std::unordered_map<uint8_t, rawrbox::Matrix4x4>();
@@ -56,7 +55,7 @@ namespace rawrbox {
 					}
 				}
 
-				// this->_material->setUniformData("u_bones", boneTransforms);
+				mesh.boneTransforms = boneTransforms;
 			}
 			// -----
 		}
@@ -231,9 +230,9 @@ namespace rawrbox {
 
 			// Sort alpha
 			if (sort) {
-				/*std::sort(this->_meshes.begin(), this->_meshes.end(), [](auto& a, auto& b) {
-					return a->alphaBlend != b->alphaBlend;
-				});*/
+				std::sort(this->_meshes.begin(), this->_meshes.end(), [](auto& a, auto& b) {
+					return !a->alphaBlend && b->alphaBlend;
+				});
 			}
 			// --------
 		}
