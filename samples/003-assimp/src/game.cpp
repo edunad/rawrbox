@@ -179,6 +179,7 @@ namespace assimp {
 		this->_model6->setBlendShape("Other-Melt", std::abs(std::cos(rawrbox::FRAME * 0.002F) * 1.F));
 		this->_model6->draw();
 		//
+
 		this->_text->draw();
 	}
 
