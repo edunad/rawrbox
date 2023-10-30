@@ -1,22 +1,22 @@
 #pragma once
 
-#include <rawrbox/render/materials/base.hpp>
+#include <rawrbox/render/materials/unlit.hpp>
 
 namespace rawrbox {
 
-	struct MaterialSkinnedUniforms : public rawrbox::MaterialBaseUniforms {
+	struct MaterialSkinnedUniforms : public rawrbox::MaterialUnlitUniforms {
 		std::array<rawrbox::Matrix4x4, rawrbox::MAX_BONES_PER_MODEL> g_bones;
 	};
 
-	class MaterialSkinned : public rawrbox::MaterialBase {
+	class MaterialSkinned : public rawrbox::MaterialUnlit {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-		std::vector<rawrbox::VertexBoneData> _temp = {};
 
 	protected:
-		void bindUniforms(const rawrbox::Mesh& mesh) override;
 		void prepareMaterial() override;
 
 	public:
+		using vertexBufferType = rawrbox::VertexBoneData;
+
 		MaterialSkinned() = default;
 		MaterialSkinned(MaterialSkinned&&) = delete;
 		MaterialSkinned& operator=(MaterialSkinned&&) = delete;
@@ -26,10 +26,17 @@ namespace rawrbox {
 
 		static void init();
 
-		void* convert(const std::vector<rawrbox::ModelVertexData>& v) override;
+		template <typename T = rawrbox::VertexData>
+		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
+			auto context = rawrbox::RENDERER->context();
 
-		[[nodiscard]] uint32_t supports() const override;
-		[[nodiscard]] const uint32_t vLayoutSize() override;
+			// SETUP UNIFORMS ----------------------------
+			Diligent::MapHelper<rawrbox::MaterialSkinnedUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			this->bindBaseUniforms<T, rawrbox::MaterialSkinnedUniforms>(mesh, CBConstants);
+			// ------------
+
+			(*CBConstants).g_bones = mesh.boneTransforms;
+		}
 	};
 
 } // namespace rawrbox

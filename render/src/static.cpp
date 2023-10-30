@@ -21,6 +21,7 @@ namespace rawrbox {
 	size_t SOUND_ID = 0;
 	size_t LIGHT_ID = 0;
 	size_t EMITTER_ID = 0;
+	size_t TEXT_ID = 0;
 	// -----
 
 	// OTHER INTERNAL

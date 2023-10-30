@@ -72,32 +72,4 @@ namespace rawrbox {
 
 		if (this->_bind == nullptr) this->_bind = rawrbox::PipelineUtils::getBind("Model::Skinned");
 	}
-
-	void MaterialSkinned::bindUniforms(const rawrbox::Mesh& mesh) {
-		auto context = rawrbox::RENDERER->context();
-
-		// SETUP UNIFORMS ----------------------------
-		Diligent::MapHelper<rawrbox::MaterialSkinnedUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-		this->bindBaseUniforms<rawrbox::MaterialSkinnedUniforms>(mesh, CBConstants);
-		// ------------
-
-		(*CBConstants).g_bones = {};
-	}
-
-	uint32_t MaterialSkinned::supports() const {
-		return rawrbox::MaterialBase::supports() | rawrbox::MaterialFlags::BONES;
-	}
-
-	void* MaterialSkinned::convert(const std::vector<rawrbox::ModelVertexData>& v) {
-		this->_temp.reserve(v.size());
-		std::transform(v.begin(), v.end(),
-		    std::back_inserter(this->_temp),
-		    [](const rawrbox::ModelVertexData& data) -> rawrbox::VertexBoneData { return {data.position, data.uv, data.color, data.bone_indices, data.bone_weights}; });
-
-		return this->_temp.data();
-	}
-
-	const uint32_t MaterialSkinned::vLayoutSize() {
-		return sizeof(rawrbox::VertexBoneData);
-	}
 } // namespace rawrbox

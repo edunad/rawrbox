@@ -11,7 +11,7 @@ namespace rawrbox {
 		// Uniforms -------
 		Diligent::BufferDesc CBDesc;
 		CBDesc.Name = "rawrbox::Material::Uniforms";
-		CBDesc.Size = sizeof(rawrbox::MaterialBaseUniforms);
+		CBDesc.Size = sizeof(rawrbox::MaterialUnlitUniforms);
 		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
 		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
@@ -71,9 +71,5 @@ namespace rawrbox {
 		if (this->_cullnone_alpha == nullptr) this->_cullnone_alpha = rawrbox::PipelineUtils::getPipeline("Model::Instanced::CullNone::Alpha");
 
 		if (this->_bind == nullptr) this->_bind = rawrbox::PipelineUtils::getBind("Model::Instanced");
-	}
-
-	uint32_t MaterialInstanced::supports() const {
-		return rawrbox::MaterialBase::supports() | rawrbox::MaterialFlags::INSTANCED;
 	}
 } // namespace rawrbox

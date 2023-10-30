@@ -13,6 +13,14 @@ namespace rawrbox {
 	// TEXTURE LOADING -----
 	void AssimpImporter::assimpSamplerToDiligent(Diligent::SamplerDesc& desc, const std::array<aiTextureMapMode, 3>& mode, int axis) {
 		switch (mode[axis]) {
+			case aiTextureMapMode_Wrap:
+				if (axis == 0)
+					desc.AddressU = Diligent::TEXTURE_ADDRESS_WRAP;
+				else if (axis == 1)
+					desc.AddressV = Diligent::TEXTURE_ADDRESS_WRAP;
+				else if (axis == 2)
+					desc.AddressW = Diligent::TEXTURE_ADDRESS_WRAP;
+				break;
 			case aiTextureMapMode_Clamp:
 				if (axis == 0)
 					desc.AddressU = Diligent::TEXTURE_ADDRESS_CLAMP;
@@ -216,6 +224,7 @@ namespace rawrbox {
 	void AssimpImporter::loadSkeleton(const aiScene* sc, rawrbox::AssimpMesh& mesh, const aiMesh& aiMesh) {
 		if (!aiMesh.HasBones()) return;
 
+		std::unordered_map<size_t, int> bone_index = {};
 		for (size_t i = 0; i < aiMesh.mNumBones; i++) {
 			aiBone* bone = aiMesh.mBones[i];
 			if (bone->mArmature == nullptr) continue;
@@ -277,7 +286,37 @@ namespace rawrbox {
 			// Calculate object weights
 			for (size_t j = 0; j < bone->mNumWeights; j++) {
 				auto& weightobj = bone->mWeights[j];
-				mesh.vertices[weightobj.mVertexId].addBoneData(fnd->second->boneId, weightobj.mWeight); // Global vertices
+				auto& v = mesh.vertices[weightobj.mVertexId];
+				auto& indx = bone_index[weightobj.mVertexId];
+
+				uint32_t boneId = fnd->second->boneId;
+				float boneWeight = weightobj.mWeight;
+
+				if (indx < rawrbox::MAX_BONES_PER_VERTEX) {
+					v.bone_indices[indx] = boneId;
+					v.bone_weights[indx] = boneWeight;
+
+					indx++;
+				} else {
+					// find the bone with the smallest weight
+					int minIndex = 0;
+					float minWeight = v.bone_weights[0];
+
+					for (int i = 1; i < rawrbox::MAX_BONES_PER_VERTEX; i++) {
+						if (v.bone_weights[i] < minWeight) {
+							minIndex = i;
+							minWeight = v.bone_weights[i];
+						}
+					}
+
+					// replace with new bone if the new bone has greater weight
+					if (boneWeight > minWeight) {
+						fmt::print("[RawrBox-Assimp] Model bone past max limit of '{}', replacing bone '{}' with bone '{}'", rawrbox::MAX_BONES_PER_VERTEX, v.bone_indices[minIndex], boneId);
+
+						v.bone_indices[minIndex] = boneId;
+						v.bone_weights[minIndex] = boneWeight;
+					}
+				}
 			}
 			// ------
 		}
@@ -541,12 +580,11 @@ namespace rawrbox {
 
 			// Vertices
 			for (size_t i = 0; i < aiMesh.mNumVertices; i++) {
-				rawrbox::ModelVertexData v;
+				rawrbox::VertexNormBoneData v;
 
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
 					v.position = {vert.x, vert.y, vert.z};
-					v.ori_pos = v.position;
 				}
 
 				if (aiMesh.HasTextureCoords(0)) {
@@ -564,7 +602,6 @@ namespace rawrbox {
 				if (aiMesh.HasNormals()) {
 					auto& normal = aiMesh.mNormals[i];
 					v.normal = {normal.x, normal.y, normal.z};
-					v.ori_norm = v.normal;
 				}
 
 				if (aiMesh.HasTangentsAndBitangents()) {

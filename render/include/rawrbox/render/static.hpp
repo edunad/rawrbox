@@ -40,6 +40,7 @@ namespace rawrbox {
 	extern size_t SOUND_ID;
 	extern size_t LIGHT_ID;
 	extern size_t EMITTER_ID;
+	extern size_t TEXT_ID;
 	// -----
 
 	// OTHER INTERNAL

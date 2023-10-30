@@ -13,11 +13,12 @@ namespace rawrbox {
 		settings.pVS = "rt.vsh";
 		settings.pPS = "rt.psh";
 		settings.depthWrite = false;
+		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		settings.immutableSamplers = {true};
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;              // Disable depth
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP; // Disable cull
 		settings.resources = {
-		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
+		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}};
 
 		_pipe = rawrbox::PipelineUtils::createPipelines("Utils::QUAD", "Utils::QUAD", settings);
 		_SRB = rawrbox::PipelineUtils::getBind("Utils::QUAD");

@@ -26,6 +26,7 @@ namespace rawrbox {
 
 	bool TextureBase::isValid() const { return this->_handle != nullptr; }
 
+	Diligent::ITexture* TextureBase::getTexture() const { return this->_tex; }
 	Diligent::ITextureView* TextureBase::getHandle() const { return this->_handle; }
 
 	Diligent::ISampler* TextureBase::getSampler() {

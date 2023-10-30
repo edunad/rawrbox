@@ -18,21 +18,29 @@ namespace rawrbox {
 
 	// ------ RENDER
 	void TextureRender::startRecord(bool clear) {
-		rawrbox::RENDERER->context()->SetRenderTargets(1, &this->_rtHandle, this->_depthHandle, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		if (this->_recording) throw std::runtime_error("[RawrBox-TextureRender] Already recording");
+		auto context = rawrbox::RENDERER->context();
+		context->SetRenderTargets(1, &this->_rtHandle, this->_depthHandle, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		if (clear) {
 			const std::array<float, 4> ClearColor = {0.0F, 0.0F, 0.0F, 0.0F};
+			context->ClearRenderTarget(this->_rtHandle, ClearColor.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-			rawrbox::RENDERER->context()->ClearRenderTarget(this->_rtHandle, ClearColor.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-			rawrbox::RENDERER->context()->ClearDepthStencil(this->_depthHandle, Diligent::CLEAR_DEPTH_FLAG, 1.0F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			if (this->_depthHandle != nullptr) {
+				context->ClearDepthStencil(this->_depthHandle, Diligent::CLEAR_DEPTH_FLAG, 1.0F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			}
 		}
+
+		this->_recording = true;
 	}
 
 	void TextureRender::stopRecord() {
+		if (!this->_recording) throw std::runtime_error("[RawrBox-TextureRender] Not recording");
 		auto* pRTV = rawrbox::RENDERER->swapChain()->GetCurrentBackBufferRTV();
 		auto* depth = rawrbox::RENDERER->swapChain()->GetDepthBufferDSV();
 
 		rawrbox::RENDERER->context()->SetRenderTargets(1, &pRTV, depth, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		this->_recording = false;
 	}
 
 	void TextureRender::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
@@ -55,6 +63,7 @@ namespace rawrbox {
 		desc.ClearValue.Color[3] = 0.F;
 
 		rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_tex);
+
 		this->_rtHandle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 		// --------------

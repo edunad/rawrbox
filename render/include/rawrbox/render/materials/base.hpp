@@ -1,28 +1,13 @@
 #pragma once
 
-#include <rawrbox/render/models/defs.hpp>
 #include <rawrbox/render/models/mesh.hpp>
+#include <rawrbox/render/models/vertex.hpp>
 
 #include <Graphics/GraphicsEngine/interface/InputLayout.h>
 #include <Graphics/GraphicsEngine/interface/PipelineState.h>
 #include <fmt/format.h>
 
 namespace rawrbox {
-	constexpr auto MAX_DATA = 4;
-
-	// FLAGS ------
-	// NOLINTBEGIN{unused-const-variable}
-	namespace MaterialFlags {
-		const uint32_t NONE = 0;
-		const uint32_t NORMALS = 1 << 1;
-		const uint32_t BONES = 1 << 2;
-		const uint32_t INSTANCED = 1 << 3;
-		const uint32_t TEXT = 1 << 4;
-		const uint32_t PARTICLE = 1 << 5;
-	}; // namespace MaterialFlags
-
-	// NOLINTEND{unused-const-variable}
-	//  --------------------
 
 	struct MaterialBaseUniforms {
 		//  CAMERA -----
@@ -32,18 +17,9 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 _gWorldViewModel;
 		rawrbox::Vector4f _gScreenSize;
 		//  --------
-
-		// OTHER ----
-		rawrbox::Colorf _gColorOverride;
-		rawrbox::Vector4f _gTextureFlags;
-		std::array<rawrbox::Vector4f, 4> _gData;
-		//  ----------
 	};
 
 	class MaterialBase {
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-		std::vector<rawrbox::VertexData> _temp = {};
-
 	protected:
 		Diligent::IPipelineState* _base = nullptr;
 		Diligent::IPipelineState* _base_alpha = nullptr;
@@ -56,8 +32,20 @@ namespace rawrbox {
 
 		Diligent::IShaderResourceBinding* _bind = nullptr;
 
-		template <typename T = MaterialBaseUniforms>
-		void bindBaseUniforms(const rawrbox::Mesh& mesh, Diligent::MapHelper<T>& helper) {
+		virtual void prepareMaterial() = 0;
+
+	public:
+		using vertexBufferType = rawrbox::VertexData;
+
+		MaterialBase() = default;
+		MaterialBase(MaterialBase&&) = delete;
+		MaterialBase& operator=(MaterialBase&&) = delete;
+		MaterialBase(const MaterialBase&) = delete;
+		MaterialBase& operator=(const MaterialBase&) = delete;
+		virtual ~MaterialBase() = default;
+
+		template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBaseUniforms>
+		void bindBaseUniforms(const rawrbox::Mesh<T>& /*mesh*/, Diligent::MapHelper<P>& helper) {
 			auto renderer = rawrbox::RENDERER;
 
 			auto size = renderer->getSize().cast<float>();
@@ -69,58 +57,52 @@ namespace rawrbox {
 
 			auto tWorldView = renderer->camera()->getProjViewMtx().transpose();
 
-			std::array<rawrbox::Vector4f, MAX_DATA>
-			    data = {rawrbox::Vector4f{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
-			if (mesh.hasData("billboard_mode")) {
-				data[0] = mesh.getData("billboard_mode").data();
-			}
-
-			if (mesh.hasData("vertex_snap")) {
-				data[1] = mesh.getData("vertex_snap").data();
-			}
-
-			if (mesh.hasData("displacement_strength")) {
-				data[2] = mesh.getData("displacement_strength").data();
-			}
-
-			if (mesh.hasData("mask")) {
-				data[3] = mesh.getData("mask").data();
-			}
-
 			*helper = {
 			    // CAMERA -------
 			    tTransform,
 			    tView * tProj,
 			    tInvView,
 			    tTransform * tWorldView,
-			    size,
-			    // --------------
-			    mesh.color,
-			    mesh.texture == nullptr ? rawrbox::Vector4f() : mesh.texture->getData(),
-			    data};
+			    size};
 			// ----------------------------
 		}
 
-		virtual void prepareMaterial();
+		template <typename T = rawrbox::VertexData>
+		void bindUniforms(const rawrbox::Mesh<T>& /*mesh*/) {
+			throw std::runtime_error("Missing implementation");
+		}
 
-		virtual void bindUniforms(const rawrbox::Mesh& mesh);
-		virtual void bindPipeline(const rawrbox::Mesh& mesh);
-		virtual void bindShaderResources();
+		template <typename T = rawrbox::VertexData>
+		void bindPipeline(const rawrbox::Mesh<T>& mesh) {
+			auto context = rawrbox::RENDERER->context();
 
-	public:
-		MaterialBase() = default;
-		MaterialBase(MaterialBase&&) = delete;
-		MaterialBase& operator=(MaterialBase&&) = delete;
-		MaterialBase(const MaterialBase&) = delete;
-		MaterialBase& operator=(const MaterialBase&) = delete;
-		virtual ~MaterialBase() = default;
+			if (mesh.wireframe) {
+				if (this->_line == nullptr) throw std::runtime_error("[RawrBox-Material] Wireframe not supported on material");
+				context->SetPipelineState(this->_wireframe);
+			} else if (mesh.lineMode) {
+				if (this->_line == nullptr) throw std::runtime_error("[RawrBox-Material] Line not supported on material");
+				context->SetPipelineState(this->_line);
+			} else {
+				if (mesh.culling == Diligent::CULL_MODE_NONE) {
+					if (this->_cullnone == nullptr) throw std::runtime_error("[RawrBox-Material] Disabled cull not supported on material");
+					if (this->_cullnone_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Disabled alpha cull not supported on material");
+					context->SetPipelineState(mesh.alphaBlend ? this->_cullnone_alpha : this->_cullnone);
+				} else if (mesh.culling == Diligent::CULL_MODE_BACK) {
+					if (this->_cullback == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back not supported on material");
+					if (this->_cullback_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back alpha not supported on material");
+					context->SetPipelineState(mesh.alphaBlend ? this->_cullback_alpha : this->_cullback);
+				} else {
+					if (this->_base_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Alpha not supported on material");
+					context->SetPipelineState(mesh.alphaBlend ? this->_base_alpha : this->_base);
+				}
+			}
+		}
 
-		static void init();
-		virtual void bind(const rawrbox::Mesh& mesh);
+		template <typename T = rawrbox::VertexData>
+		void bindTexture(const rawrbox::Mesh<T>& /*mesh*/) {
+			throw std::runtime_error("Missing implementation");
+		}
 
-		virtual void* convert(const std::vector<rawrbox::ModelVertexData>& v);
-
-		[[nodiscard]] virtual uint32_t supports() const;
-		[[nodiscard]] virtual const uint32_t vLayoutSize();
+		virtual void bindShaderResources() = 0;
 	};
 } // namespace rawrbox

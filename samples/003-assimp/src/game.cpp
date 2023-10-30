@@ -2,9 +2,6 @@
 #include <rawrbox/assimp/resources/model.hpp>
 #include <rawrbox/render/cameras/orbital.hpp>
 #include <rawrbox/render/light/point.hpp>
-// #include <rawrbox/render/materials/lit.hpp>
-#include <rawrbox/render/materials/skinned.hpp>
-// #include <rawrbox/render/materials/skinned_lit.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -80,21 +77,18 @@ namespace assimp {
 		this->_model->load(*mdl);
 		this->_model->upload();
 
-		// this->_model2->setMaterial<rawrbox::MaterialLit>();
 		this->_model2->setPos({-6, 1.1F, 0.F});
 		this->_model2->load(*mdl);
 		this->_model2->upload();
 
 		// ANIMATIONS ---
 		auto mdl2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/wolf/wolfman_animated.fbx")->get();
-		this->_model3->setMaterial<rawrbox::MaterialSkinned>();
 		this->_model3->load(*mdl2);
 		this->_model3->playAnimation("Scene", true, 1.F);
 		this->_model3->setPos({0, 0, 0});
 		this->_model3->upload();
 
 		auto mdl3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/multiple_skeleton/twocubestest.gltf")->get();
-		this->_model4->setMaterial<rawrbox::MaterialSkinned>();
 		this->_model4->load(*mdl3);
 		this->_model4->playAnimation("MewAction", true, 0.8F);
 		this->_model4->playAnimation("MewAction.001", true, 0.5F);
@@ -103,7 +97,6 @@ namespace assimp {
 		this->_model4->upload();
 
 		auto mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/grandma_tv/scene.gltf")->get();
-		this->_model5->setMaterial<rawrbox::MaterialSkinned>();
 		this->_model5->load(*mdl4);
 		this->_model5->playAnimation("Scene", true, 1.F);
 		this->_model5->setPos({0, 0, -3.5F});
@@ -112,8 +105,6 @@ namespace assimp {
 		this->_model5->upload();
 
 		auto mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/shape_keys/shape_keys.glb")->get();
-		// this->_model6->setMaterial<rawrbox::MaterialSkinnedLit>();
-		this->_model6->setMaterial<rawrbox::MaterialSkinned>();
 		this->_model6->load(*mdl5);
 		this->_model6->setScale({0.4F, 0.4F, 0.4F});
 		this->_model6->setPos({2.F, 0.4F, -6.F});
@@ -175,16 +166,19 @@ namespace assimp {
 		if (!this->_ready) return;
 		this->_modelGrid->draw();
 
+		//
 		this->_model->draw();
 		this->_model2->draw();
 		this->_model3->draw();
 		this->_model4->draw();
 		this->_model5->draw();
-		//
+		////
+
 		this->_model6->setBlendShape("Cheese-Melt", std::abs(std::cos(rawrbox::FRAME * 0.005F) * 1.F));
 		this->_model6->setBlendShape("Other-Nya", std::abs(std::cos(rawrbox::FRAME * 0.008F) * 1.F));
 		this->_model6->setBlendShape("Other-Melt", std::abs(std::cos(rawrbox::FRAME * 0.002F) * 1.F));
 		this->_model6->draw();
+		//
 
 		this->_text->draw();
 	}
