@@ -13,6 +13,14 @@ namespace rawrbox {
 	// TEXTURE LOADING -----
 	void AssimpImporter::assimpSamplerToDiligent(Diligent::SamplerDesc& desc, const std::array<aiTextureMapMode, 3>& mode, int axis) {
 		switch (mode[axis]) {
+			case aiTextureMapMode_Wrap:
+				if (axis == 0)
+					desc.AddressU = Diligent::TEXTURE_ADDRESS_WRAP;
+				else if (axis == 1)
+					desc.AddressV = Diligent::TEXTURE_ADDRESS_WRAP;
+				else if (axis == 2)
+					desc.AddressW = Diligent::TEXTURE_ADDRESS_WRAP;
+				break;
 			case aiTextureMapMode_Clamp:
 				if (axis == 0)
 					desc.AddressU = Diligent::TEXTURE_ADDRESS_CLAMP;
@@ -216,6 +224,7 @@ namespace rawrbox {
 	void AssimpImporter::loadSkeleton(const aiScene* sc, rawrbox::AssimpMesh& mesh, const aiMesh& aiMesh) {
 		if (!aiMesh.HasBones()) return;
 
+		std::unordered_map<size_t, int> bone_index = {};
 		for (size_t i = 0; i < aiMesh.mNumBones; i++) {
 			aiBone* bone = aiMesh.mBones[i];
 			if (bone->mArmature == nullptr) continue;
@@ -278,7 +287,7 @@ namespace rawrbox {
 			for (size_t j = 0; j < bone->mNumWeights; j++) {
 				auto& weightobj = bone->mWeights[j];
 				auto& v = mesh.vertices[weightobj.mVertexId];
-				auto& indx = mesh.bone_index[weightobj.mVertexId];
+				auto& indx = bone_index[weightobj.mVertexId];
 
 				uint32_t boneId = fnd->second->boneId;
 				float boneWeight = weightobj.mWeight;
@@ -302,6 +311,8 @@ namespace rawrbox {
 
 					// replace with new bone if the new bone has greater weight
 					if (boneWeight > minWeight) {
+						fmt::print("[RawrBox-Assimp] Model bone past max limit of '{}', replacing bone '{}' with bone '{}'", rawrbox::MAX_BONES_PER_VERTEX, v.bone_indices[minIndex], boneId);
+
 						v.bone_indices[minIndex] = boneId;
 						v.bone_weights[minIndex] = boneWeight;
 					}
