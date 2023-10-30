@@ -1,7 +1,5 @@
 #pragma once
 
-#include <stdint.h>
-
 #include <algorithm>
 #include <bit>
 #include <cstdint>
