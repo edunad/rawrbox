@@ -585,7 +585,6 @@ namespace rawrbox {
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
 					v.position = {vert.x, vert.y, vert.z};
-					// v.ori_pos = v.position;
 				}
 
 				if (aiMesh.HasTextureCoords(0)) {
@@ -603,7 +602,6 @@ namespace rawrbox {
 				if (aiMesh.HasNormals()) {
 					auto& normal = aiMesh.mNormals[i];
 					v.normal = {normal.x, normal.y, normal.z};
-					// v.ori_norm = v.normal;
 				}
 
 				if (aiMesh.HasTangentsAndBitangents()) {
