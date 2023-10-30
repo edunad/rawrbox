@@ -24,7 +24,7 @@ namespace rawrbox {
 		}
 	};
 
-	template <typename M = rawrbox::MaterialBase>
+	template <typename M = rawrbox::MaterialUnlit>
 	class Spline : public rawrbox::ModelBase<M> {
 	protected:
 		std::vector<std::unique_ptr<rawrbox::BezierCurve>> _curves = {};

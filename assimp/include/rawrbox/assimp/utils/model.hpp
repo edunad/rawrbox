@@ -1,13 +1,13 @@
 #pragma once
 
 #include <rawrbox/assimp/importer.hpp>
-#include <rawrbox/render/materials/base.hpp>
+#include <rawrbox/render/materials/unlit.hpp>
 
 namespace rawrbox {
 
 	class AssimpUtils {
 	public:
-		template <typename M = MaterialBase>
+		template <typename M = MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> extractMesh(const rawrbox::AssimpImporter& model, size_t indx) {
 			auto& meshes = model.meshes;
 			if (meshes.empty() || indx < 0 || indx >= meshes.size()) throw std::runtime_error(fmt::format("[RawrBox-AssimpUtils] Failed to extract mesh '{}'!", indx));

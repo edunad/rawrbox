@@ -15,7 +15,7 @@
 
 namespace rawrbox {
 
-	template <typename M = rawrbox::MaterialBase>
+	template <typename M = rawrbox::MaterialUnlit>
 	class Model : public rawrbox::ModelBase<M> {
 
 	protected:

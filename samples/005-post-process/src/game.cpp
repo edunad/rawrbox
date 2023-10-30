@@ -52,7 +52,7 @@ namespace post_process {
 		this->_postProcess = std::make_unique<rawrbox::PostProcessManager>();
 		this->_postProcess->add<rawrbox::PostProcessDither>(rawrbox::DITHER_MODE::FAST_MODE);
 		this->_postProcess->add<rawrbox::PostProcessQuickBloom>(0.015F);
-		// this->_postProcess->add<rawrbox::PostProcessNoise>(0.1F);
+		this->_postProcess->add<rawrbox::PostProcessNoise>(0.1F);
 		this->_postProcess->upload();
 
 		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {

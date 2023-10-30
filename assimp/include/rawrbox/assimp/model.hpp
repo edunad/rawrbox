@@ -8,7 +8,7 @@
 
 namespace rawrbox {
 
-	template <typename M = MaterialBase>
+	template <typename M = MaterialUnlit>
 	class AssimpModel : public rawrbox::Model<M> {
 	protected:
 		// INTERNAL -------

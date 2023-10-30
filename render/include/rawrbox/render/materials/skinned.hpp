@@ -1,14 +1,14 @@
 #pragma once
 
-#include <rawrbox/render/materials/base.hpp>
+#include <rawrbox/render/materials/unlit.hpp>
 
 namespace rawrbox {
 
-	struct MaterialSkinnedUniforms : public rawrbox::MaterialBaseUniforms {
+	struct MaterialSkinnedUniforms : public rawrbox::MaterialUnlitUniforms {
 		std::array<rawrbox::Matrix4x4, rawrbox::MAX_BONES_PER_MODEL> g_bones;
 	};
 
-	class MaterialSkinned : public rawrbox::MaterialBase {
+	class MaterialSkinned : public rawrbox::MaterialUnlit {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 
 	protected:

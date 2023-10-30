@@ -1,12 +1,12 @@
 #pragma once
 
-#include <rawrbox/render/materials/base.hpp>
+#include <rawrbox/render/materials/unlit.hpp>
 #include <rawrbox/render/utils/topology.hpp>
 
 namespace rawrbox {
 	class MeshUtils {
 	public:
-		template <typename M = rawrbox::MaterialBase>
+		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateBBOX(const rawrbox::Vector3f& pos, const rawrbox::BBOXf& bbox) {
 			auto mesh = generateCube<M>(pos, bbox.size(), rawrbox::Colorf(1.0F, 0.1F, 0.1F, 1.0F));
 
@@ -16,7 +16,7 @@ namespace rawrbox {
 			return mesh;
 		}
 
-		template <typename M = rawrbox::MaterialBase>
+		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateLine(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Color& col) {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 			mesh.setPos(a);
@@ -52,7 +52,7 @@ namespace rawrbox {
 			return mesh;
 		}
 
-		template <typename M = rawrbox::MaterialBase>
+		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateTriangle(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector3f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector3f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC) {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 			mesh.setPos(pos);
@@ -105,7 +105,7 @@ namespace rawrbox {
 			return mesh;
 		}
 
-		template <typename M = rawrbox::MaterialBase>
+		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generatePlane(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 			mesh.setPos(pos);
@@ -152,7 +152,7 @@ namespace rawrbox {
 			return mesh;
 		}
 
-		template <typename M = rawrbox::MaterialBase>
+		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateCube(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 			mesh.setPos(pos);
@@ -273,7 +273,7 @@ namespace rawrbox {
 			return mesh;
 		}
 
-		template <typename M = rawrbox::MaterialBase>
+		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateAxis(float size, const rawrbox::Vector3f& pos) {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 			mesh.setPos(pos);
@@ -305,7 +305,7 @@ namespace rawrbox {
 			return mesh;
 		}
 
-		template <typename M = rawrbox::MaterialBase>
+		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateArrow(float size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 			mesh.setPos(pos);
@@ -329,7 +329,7 @@ namespace rawrbox {
 
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L687
 		// Does not support UV :( / normals
-		template <typename M = rawrbox::MaterialBase>
+		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, uint32_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate cone does not support normals");
@@ -397,7 +397,7 @@ namespace rawrbox {
 
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L750
 		// Does not support UV :( / normals
-		template <typename M = rawrbox::MaterialBase>
+		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, uint32_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate cylinder does not support normals");
@@ -470,7 +470,7 @@ namespace rawrbox {
 
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L640
 		// Does not support UV :( / normals
-		template <typename M = rawrbox::MaterialBase>
+		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateSphere(const rawrbox::Vector3f& pos, float size, uint32_t ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate sphere does not support normals");
@@ -581,7 +581,7 @@ namespace rawrbox {
 			return mesh;
 		}
 
-		template <typename M = rawrbox::MaterialBase>
+		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateMesh(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, uint32_t subDivs = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 			mesh.setPos(pos);
@@ -648,7 +648,7 @@ namespace rawrbox {
 		}
 
 		// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
-		template <typename M = rawrbox::MaterialBase>
+		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateGrid(uint16_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::Gray().strength(0.4F), const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent()) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate grid does not support normals");

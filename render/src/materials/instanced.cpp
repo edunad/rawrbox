@@ -11,7 +11,7 @@ namespace rawrbox {
 		// Uniforms -------
 		Diligent::BufferDesc CBDesc;
 		CBDesc.Name = "rawrbox::Material::Uniforms";
-		CBDesc.Size = sizeof(rawrbox::MaterialBaseUniforms);
+		CBDesc.Size = sizeof(rawrbox::MaterialUnlitUniforms);
 		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
 		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;

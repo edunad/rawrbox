@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrbox/render/materials/base.hpp>
+#include <rawrbox/render/materials/unlit.hpp>
 #include <rawrbox/utils/string.hpp>
 
 #include <Graphics/GraphicsEngine/interface/Buffer.h>
@@ -13,7 +13,7 @@
 
 namespace rawrbox {
 
-	template <typename M = rawrbox::MaterialBase>
+	template <typename M = rawrbox::MaterialUnlit>
 	struct BlendShapes {
 	public:
 		float weight = 0.F;
@@ -33,9 +33,10 @@ namespace rawrbox {
 	};
 
 #ifdef RAWRBOX_SCRIPTING
-	class ModelBase : public std::enable_shared_from_this<rawrbox::ModelBase> {
+	template <typename M = rawrbox::MaterialUnlit>
+	class ModelBase : public std::enable_shared_from_this<rawrbox::ModelBase<M>> {
 #else
-	template <typename M = rawrbox::MaterialBase>
+	template <typename M = rawrbox::MaterialUnlit>
 	class ModelBase {
 #endif
 

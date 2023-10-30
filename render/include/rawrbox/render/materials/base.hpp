@@ -8,7 +8,6 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-	constexpr auto MAX_DATA = 4;
 
 	struct MaterialBaseUniforms {
 		//  CAMERA -----
@@ -18,17 +17,9 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 _gWorldViewModel;
 		rawrbox::Vector4f _gScreenSize;
 		//  --------
-
-		// OTHER ----
-		rawrbox::Colorf _gColorOverride;
-		rawrbox::Vector4f _gTextureFlags;
-		std::array<rawrbox::Vector4f, 4> _gData;
-		//  ----------
 	};
 
 	class MaterialBase {
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-
 	protected:
 		Diligent::IPipelineState* _base = nullptr;
 		Diligent::IPipelineState* _base_alpha = nullptr;
@@ -41,7 +32,7 @@ namespace rawrbox {
 
 		Diligent::IShaderResourceBinding* _bind = nullptr;
 
-		virtual void prepareMaterial();
+		virtual void prepareMaterial() = 0;
 
 	public:
 		using vertexBufferType = rawrbox::VertexData;
@@ -53,10 +44,8 @@ namespace rawrbox {
 		MaterialBase& operator=(const MaterialBase&) = delete;
 		virtual ~MaterialBase() = default;
 
-		static void init();
-
-		template <typename T = rawrbox::VertexData, typename P = MaterialBaseUniforms>
-		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<P>& helper) {
+		template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBaseUniforms>
+		void bindBaseUniforms(const rawrbox::Mesh<T>& /*mesh*/, Diligent::MapHelper<P>& helper) {
 			auto renderer = rawrbox::RENDERER;
 
 			auto size = renderer->getSize().cast<float>();
@@ -68,47 +57,19 @@ namespace rawrbox {
 
 			auto tWorldView = renderer->camera()->getProjViewMtx().transpose();
 
-			std::array<rawrbox::Vector4f, MAX_DATA>
-			    data = {rawrbox::Vector4f{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
-			if (mesh.hasData("billboard_mode")) {
-				data[0] = mesh.getData("billboard_mode").data();
-			}
-
-			if (mesh.hasData("vertex_snap")) {
-				data[1] = mesh.getData("vertex_snap").data();
-			}
-
-			if (mesh.hasData("displacement_strength")) {
-				data[2] = mesh.getData("displacement_strength").data();
-			}
-
-			if (mesh.hasData("mask")) {
-				data[3] = mesh.getData("mask").data();
-			}
-
 			*helper = {
 			    // CAMERA -------
 			    tTransform,
 			    tView * tProj,
 			    tInvView,
 			    tTransform * tWorldView,
-			    size,
-			    // --------------
-			    mesh.color,
-			    mesh.texture == nullptr ? rawrbox::Vector4f() : mesh.texture->getData(),
-			    data};
+			    size};
 			// ----------------------------
 		}
 
 		template <typename T = rawrbox::VertexData>
-		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
-			auto renderer = rawrbox::RENDERER;
-			auto context = renderer->context();
-
-			// SETUP UNIFORMS ----------------------------
-			Diligent::MapHelper<rawrbox::MaterialBaseUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			this->bindBaseUniforms<T, rawrbox::MaterialBaseUniforms>(mesh, CBConstants);
-			// ------------
+		void bindUniforms(const rawrbox::Mesh<T>& /*mesh*/) {
+			throw std::runtime_error("Missing implementation");
 		}
 
 		template <typename T = rawrbox::VertexData>
@@ -138,30 +99,10 @@ namespace rawrbox {
 		}
 
 		template <typename T = rawrbox::VertexData>
-		void bindTexture(const rawrbox::Mesh<T>& mesh) {
-			auto context = rawrbox::RENDERER->context();
-			this->prepareMaterial();
-
-			rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
-			rawrbox::TextureBase* textureDisplacement = rawrbox::BLACK_TEXTURE.get();
-
-			if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
-				mesh.texture->update(); // Update texture
-				textureColor = mesh.texture;
-			}
-
-			if (mesh.displacementTexture != nullptr && mesh.displacementTexture->isValid()) {
-				mesh.displacementTexture->update(); // Update texture
-				textureDisplacement = mesh.displacementTexture;
-			}
-
-			auto handle = textureColor->getHandle();
-			handle->SetSampler(textureColor->getSampler());
-
-			this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(handle);
-			this->_bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Displacement")->Set(textureDisplacement->getHandle());
+		void bindTexture(const rawrbox::Mesh<T>& /*mesh*/) {
+			throw std::runtime_error("Missing implementation");
 		}
 
-		virtual void bindShaderResources();
+		virtual void bindShaderResources() = 0;
 	};
 } // namespace rawrbox

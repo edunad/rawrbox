@@ -1,10 +1,10 @@
 #pragma once
-#include <rawrbox/render/materials/base.hpp>
+#include <rawrbox/render/materials/unlit.hpp>
 #include <rawrbox/render/models/model.hpp>
 
 namespace rawrbox {
 
-	template <typename M = rawrbox::MaterialBase>
+	template <typename M = rawrbox::MaterialUnlit>
 	class Sprite : public rawrbox::Model<M> {
 	protected:
 		bool _xAxis = true;

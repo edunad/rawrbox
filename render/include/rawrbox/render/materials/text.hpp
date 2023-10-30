@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrbox/render/materials/base.hpp>
+#include <rawrbox/render/materials/unlit.hpp>
 
 namespace rawrbox {
 	struct MaterialTextUniforms {
@@ -12,7 +12,7 @@ namespace rawrbox {
 		rawrbox::Vector4f _gBillboard;
 	};
 
-	class MaterialText3D : public rawrbox::MaterialBase {
+	class MaterialText3D : public rawrbox::MaterialUnlit {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 
 	protected:

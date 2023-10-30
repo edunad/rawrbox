@@ -1,10 +1,10 @@
 #pragma once
 
-#include <rawrbox/render/materials/base.hpp>
+#include <rawrbox/render/materials/unlit.hpp>
 
 namespace rawrbox {
 
-	class MaterialInstanced : public rawrbox::MaterialBase {
+	class MaterialInstanced : public rawrbox::MaterialUnlit {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 
 	public:
@@ -26,8 +26,8 @@ namespace rawrbox {
 			auto context = rawrbox::RENDERER->context();
 
 			// SETUP UNIFORMS ----------------------------
-			Diligent::MapHelper<rawrbox::MaterialBaseUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			this->bindBaseUniforms<T, rawrbox::MaterialBaseUniforms>(mesh, CBConstants);
+			Diligent::MapHelper<rawrbox::MaterialUnlitUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			this->bindBaseUniforms<T, rawrbox::MaterialUnlitUniforms>(mesh, CBConstants);
 			// ------------
 		}
 

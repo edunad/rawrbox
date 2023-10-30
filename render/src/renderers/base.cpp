@@ -474,7 +474,7 @@ namespace rawrbox {
 
 	void RendererBase::completeIntro() {
 		// Init & load materials ---
-		rawrbox::MaterialBase::init();
+		rawrbox::MaterialUnlit::init();
 		rawrbox::MaterialText3D::init();
 		rawrbox::MaterialInstanced::init();
 		rawrbox::MaterialSkinned::init();
