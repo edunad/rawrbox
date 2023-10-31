@@ -27,7 +27,6 @@ namespace assimp {
 		auto render = window->createRenderer();
 		render->setOverlayRender([this]() {});
 		render->setWorldRender([this]() { this->drawWorld(); });
-		render->skipIntros(true);
 		render->onIntroCompleted = [this]() {
 			this->loadContent();
 		};

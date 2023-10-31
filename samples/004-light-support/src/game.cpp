@@ -16,25 +16,28 @@
 namespace light {
 
 	void Game::setupGLFW() {
-		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
-		this->_window->setTitle("LIGHT TEST");
-		this->_window->setRenderer<rawrbox::RendererBase>(
-		    rawrbox::Colors::Black(),
-		    Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_COUNT, [this]() {}, [this]() { this->drawWorld(); });
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
-		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
-		this->_window->skipIntros(true);
-		this->_window->onIntroCompleted += [this]() {
-			this->loadContent();
-		};
+		auto window = rawrbox::Window::createWindow();
+		window->setMonitor(-1);
+		window->setTitle("LIGHT TEST");
+		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
+		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {
-		if (this->_window == nullptr) return;
+		auto window = rawrbox::Window::getWindow();
+
+		// Setup renderer
+		auto render = window->createRenderer();
+		render->setOverlayRender([this]() {});
+		render->setWorldRender([this]() { this->drawWorld(); });
+		render->skipIntros(true);
+		render->onIntroCompleted = [this]() {
+			this->loadContent();
+		};
+		// ---------------
 
 		// Setup camera
-		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		auto cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
@@ -60,7 +63,7 @@ namespace light {
 
 		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 40.F, 0.8F);
 
-		this->_window->initializeEngine();
+		render->init();
 	}
 
 	void Game::loadContent() {
@@ -88,7 +91,7 @@ namespace light {
 
 		// Setup
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane({2.5F, 0.F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
+			auto mesh = rawrbox::MeshUtils::generatePlane<>({2.5F, 0.01F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
 			mesh.setSpecularTexture(texSpec, 25.F);
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
@@ -96,7 +99,7 @@ namespace light {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane({-2.5F, 0.F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
+			auto mesh = rawrbox::MeshUtils::generatePlane<>({-2.5F, 0.01F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
 			mesh.setSpecularTexture(texSpec, 25.F);
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
@@ -104,7 +107,7 @@ namespace light {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
+			auto mesh = rawrbox::MeshUtils::generateGrid<>(12, {0.F, 0.F, 0.F});
 			this->_model->addMesh(mesh);
 		}
 		// ----
@@ -130,75 +133,40 @@ namespace light {
 
 		rawrbox::RESOURCES::shutdown();
 		rawrbox::ASYNC::shutdown();
-
-		this->_window->unblockPoll();
-		this->_window.reset();
+		rawrbox::Window::shutdown();
 	}
 
 	void Game::pollEvents() {
-		if (this->_window == nullptr) return;
-		this->_window->pollEvents();
+		rawrbox::Window::pollEvents();
 	}
 
 	void Game::update() {
-		if (this->_window == nullptr) return;
-		this->_window->update();
+		rawrbox::Window::update();
 
 		if (this->_ready) {
-			/*this->_sunDir = {std::cos(rawrbox::BGFX_FRAME * 0.01F) * 1.F, 1.F, std::sin(rawrbox::BGFX_FRAME * 0.01F) * 1.F};
+			this->_sunDir = {std::cos(rawrbox::FRAME * 0.01F) * 1.F, 1.F, std::sin(rawrbox::FRAME * 0.01F) * 1.F};
 			rawrbox::LIGHTS::setSun(this->_sunDir, {0.2F, 0.2F, 0.2F, 1.F});
 
 			auto light = rawrbox::LIGHTS::getLight(0);
 			if (light != nullptr) {
-				light->setOffsetPos({0, std::cos(rawrbox::BGFX_FRAME * 0.01F) * 1.F, 0});
+				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
 			}
 
 			light = rawrbox::LIGHTS::getLight(1);
 			if (light != nullptr) {
-				light->setOffsetPos({0, std::cos(rawrbox::BGFX_FRAME * 0.01F) * 1.F, 0});
-			}*/
+				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
+			}
 		}
 	}
 
 	void Game::drawWorld() {
 		if (!this->_ready || this->_model == nullptr || this->_text == nullptr) return;
+
 		this->_model->draw();
 		this->_text->draw();
 	}
 
-	void Game::printFrames() {
-		/*const bgfx::Stats* stats = bgfx::getStats();
-
-		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
-
-		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
-		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
-		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());*/
-	}
-
 	void Game::draw() {
-		if (this->_window == nullptr) return;
-
-		// DEBUG ----
-		/*bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "004-light-support");
-		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: Light test");
-		printFrames();
-		// -----------
-
-		if (!this->_ready) {
-			bgfx::dbgTextPrintf(1, 11, 0x70, "                                   ");
-			bgfx::dbgTextPrintf(1, 12, 0x70, "          LOADING CONTENT          ");
-			bgfx::dbgTextPrintf(1, 13, 0x70, "                                   ");
-		} else {
-			bgfx::dbgTextPrintf(1, 11, 0x4f, "F1 to hide cluster debug");
-			bgfx::dbgTextPrintf(1, 12, 0x4f, "F2 to show z cluster debug");
-			bgfx::dbgTextPrintf(1, 13, 0x4f, "F3 to show cluster light debug");
-
-			bgfx::dbgTextPrintf(1, 15, 0x2f, fmt::format("SUN ANGLE: {},{},{}", this->_sunDir.x, this->_sunDir.y, this->_sunDir.z).c_str());
-		}
-*/
-		this->_window->render(); // Draw world & commit primitives
+		rawrbox::Window::render(); // Commit primitives
 	}
 } // namespace light

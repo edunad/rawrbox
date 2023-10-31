@@ -4,15 +4,13 @@
 #include <rawrbox/render/models/model.hpp>
 #include <rawrbox/render/models/text3D.hpp>
 #include <rawrbox/render/text/engine.hpp>
-#include <rawrbox/render/window.hpp>
 
 #include <memory>
 
 namespace light {
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::Model> _model = std::make_unique<rawrbox::Model>();
-		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
+		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::Text3D<>> _text = std::make_unique<rawrbox::Text3D<>>();
 
 		rawrbox::Font* _font = nullptr;
 
@@ -35,8 +33,6 @@ namespace light {
 		Game& operator=(const Game&) = delete;
 		Game& operator=(Game&&) = delete;
 		~Game() override = default;
-
-		void printFrames();
 
 		void loadContent();
 		void contentLoaded();
