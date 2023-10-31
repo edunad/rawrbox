@@ -17,6 +17,7 @@ Thank you for your interest in contributing to RawrBox ♥!
 - Use comments to explain complex sections of your code.
 - Write meaningful commit messages that describe the purpose of your changes.
 - Keep each pull request focused on a single bug fix or feature.
+- Make sure your files are formated, using clang-format 16.
 
 ## Reporting Issues
 
