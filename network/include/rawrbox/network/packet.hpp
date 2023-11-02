@@ -16,13 +16,13 @@ namespace rawrbox {
 	// CONCEPTS ----
 	template <typename T>
 	concept isNetworkReadable = requires(T t, rawrbox::Packet p) {
-					    { t.networkRead(p) };
-				    };
+		{ t.networkRead(p) };
+	};
 
 	template <typename T>
 	concept isNetworkWritable = requires(T t, rawrbox::Packet p) {
-					    { t.networkWrite(p) };
-				    };
+		{ t.networkWrite(p) };
+	};
 	// ----------------
 
 	class Packet {
