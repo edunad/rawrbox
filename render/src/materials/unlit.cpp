@@ -31,35 +31,35 @@ namespace rawrbox {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 		settings.uniforms = {{Diligent::SHADER_TYPE_VERTEX, _uniforms}};
 
-		rawrbox::PipelineUtils::createPipelines("Model::Unlit", "Model::Unlit", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Unlit", "Model::Unlit", settings);
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipelines("Model::Unlit::Alpha", "Model::Unlit", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Unlit::Alpha", "Model::Unlit", settings);
 
 		settings.blending = {};
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
 		settings.cull = Diligent::CULL_MODE_NONE;
-		rawrbox::PipelineUtils::createPipelines("Model::Line", "Model::Unlit", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Line", "Model::Unlit", settings);
 
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		settings.cull = Diligent::CULL_MODE_BACK;
-		rawrbox::PipelineUtils::createPipelines("Model::Unlit::CullBack", "Model::Unlit", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Unlit::CullBack", "Model::Unlit", settings);
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipelines("Model::Unlit::CullBack::Alpha", "Model::Unlit", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Unlit::CullBack::Alpha", "Model::Unlit", settings);
 
 		settings.cull = Diligent::CULL_MODE_NONE;
-		rawrbox::PipelineUtils::createPipelines("Model::Unlit::CullNone::Alpha", "Model::Unlit", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Unlit::CullNone::Alpha", "Model::Unlit", settings);
 
 		settings.blending = {};
-		rawrbox::PipelineUtils::createPipelines("Model::Unlit::CullNone", "Model::Unlit", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Unlit::CullNone", "Model::Unlit", settings);
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipelines("Model::Unlit::CullNone::Alpha", "Model::Unlit", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Unlit::CullNone::Alpha", "Model::Unlit", settings);
 
 		settings.blending = {};
 		settings.fill = Diligent::FILL_MODE_WIREFRAME;
-		rawrbox::PipelineUtils::createPipelines("Model::Unlit::Wireframe", "Model::Unlit", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Unlit::Wireframe", "Model::Unlit", settings);
 		// -----
 	}
 

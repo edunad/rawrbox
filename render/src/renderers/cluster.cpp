@@ -1,52 +1,114 @@
-/*
-#include <rawrbox/render_temp/decals/manager.hpp>
-#include <rawrbox/render_temp/light/manager.hpp>
-#include <rawrbox/render_temp/renderers/cluster.hpp>
-#include <rawrbox/render_temp/utils/render.hpp>
 
-// NOLINTBEGIN(*)
-const bgfx::EmbeddedShader clustered_clusterbuilding[] = {
-    BGFX_EMBEDDED_SHADER(cs_clustered_clusterbuilding),
-    BGFX_EMBEDDED_SHADER_END()};
-
-const bgfx::EmbeddedShader clustered_reset_counter[] = {
-    BGFX_EMBEDDED_SHADER(cs_clustered_reset_counter),
-    BGFX_EMBEDDED_SHADER_END()};
-
-const bgfx::EmbeddedShader clustered_lightculling[] = {
-    BGFX_EMBEDDED_SHADER(cs_clustered_lightculling),
-    BGFX_EMBEDDED_SHADER_END()};
-// NOLINTEND(*)
-
-constexpr bgfx::ViewId CLUSTER_BUILD_VIEW_ID = 0;
-constexpr bgfx::ViewId LIGHT_CULL_VIEW_ID = 1;
+// #include <rawrbox/render/decals/manager.hpp>
+#include <rawrbox/render/light/manager.hpp>
+#include <rawrbox/render/renderers/cluster.hpp>
+#include <rawrbox/render/utils/render.hpp>
 
 namespace rawrbox {
+
+	RendererCluster::RendererCluster(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Colorf& clearColor) : rawrbox::RendererBase(type, window, size, clearColor) {}
 	RendererCluster::~RendererCluster() {
 		rawrbox::LIGHTS::shutdown(); // Shutdown light system
 
-		RAWRBOX_DESTROY(this->_clusterBuildingComputeProgram);
-		RAWRBOX_DESTROY(this->_lightCullingComputeProgram);
-		RAWRBOX_DESTROY(this->_resetCounterComputeProgram);
-
-		this->_uniforms.reset();
+		// RAWRBOX_DESTROY(this->_clusterBuildingComputeProgram);
+		// RAWRBOX_DESTROY(this->_lightCullingComputeProgram);
+		// RAWRBOX_DESTROY(this->_resetCounterComputeProgram);
 	}
 
 	// -------------------------------------------
-	void RendererCluster::init(const rawrbox::Vector2i& size) {
-		RendererBase::init(size);
+	void RendererCluster::init(Diligent::DeviceFeatures features) {
+		auto check = CLUSTERS_Z % CLUSTERS_Z_THREADS != 0;
+		if (check) throw std::runtime_error("[RawrBox-Renderer] Number of cluster depth slices must be divisible by thread count z-dimension");
 
-		this->_uniforms = std::make_unique<rawrbox::ClusterUniforms>();
-		this->_uniforms->initialize();
+		features.ComputeShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		RendererBase::init(features);
+
+		// Init uniforms
+		Diligent::BufferDesc BuffDesc;
+		BuffDesc.Name = "rawrbox::Cluster::Uniforms";
+		BuffDesc.Usage = Diligent::USAGE_DYNAMIC;
+		BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+		BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+		BuffDesc.Size = sizeof(rawrbox::ClusterConstants);
+
+		this->_device->CreateBuffer(BuffDesc, nullptr, &this->_uniforms);
+		// -----------------------------------------
+
+		// Create buffers --
+
+		// Atomic index --
+		{
+			Diligent::BufferDesc BuffDesc;
+			BuffDesc.ElementByteStride = sizeof(uint32_t);
+			BuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
+			BuffDesc.Size = static_cast<uint32_t>(BuffDesc.ElementByteStride) * rawrbox::CLUSTER_COUNT; // Maybe?
+			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
+
+			this->_device->CreateBuffer(BuffDesc, nullptr, &this->_atomicIndexBuffer);
+
+			Diligent::BufferViewDesc ViewDesc;
+			ViewDesc.ViewType = Diligent::BUFFER_VIEW_UNORDERED_ACCESS;
+			ViewDesc.Format.ValueType = Diligent::VT_UINT32;
+			ViewDesc.Format.NumComponents = 1;
+
+			this->_atomicIndexBuffer->CreateView(ViewDesc, &this->_atomicIndexBufferWrite); // Write / Read
+
+			ViewDesc.ViewType = Diligent::BUFFER_VIEW_SHADER_RESOURCE;
+			this->_atomicIndexBuffer->CreateView(ViewDesc, &this->_atomicIndexBufferRead); // Read only
+		}
+		// --------------
+
+		// Clusters  --
+		{
+			Diligent::BufferDesc BuffDesc;
+			BuffDesc.ElementByteStride = sizeof(rawrbox::Cluster);
+			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
+			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
+			BuffDesc.Size = static_cast<uint32_t>(BuffDesc.ElementByteStride) * rawrbox::CLUSTER_COUNT;
+			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
+
+			this->_device->CreateBuffer(BuffDesc, nullptr, &this->_clusterBuffer);
+
+			this->_clusterBufferWrite = this->_clusterBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS); // Write / Read
+			this->_clusterBufferRead = this->_clusterBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);   //  Read only
+		}
+		// --------------
+
+		// -----------------
 
 		// Load shader programs ---
-		rawrbox::RenderUtils::buildComputeShader(clustered_clusterbuilding, this->_clusterBuildingComputeProgram);
-		rawrbox::RenderUtils::buildComputeShader(clustered_reset_counter, this->_resetCounterComputeProgram);
-		rawrbox::RenderUtils::buildComputeShader(clustered_lightculling, this->_lightCullingComputeProgram);
-		// ----
+		rawrbox::PipeComputeSettings settings;
 
-		bgfx::setViewName(CLUSTER_BUILD_VIEW_ID, "RAWRBOX-CLUSTER-COMPUTE");
-		bgfx::setViewName(LIGHT_CULL_VIEW_ID, "RAWRBOX-LIGHT-CULL-COMPUTE");
+		settings.macros.AddShaderMacro("THREAD_GROUP_SIZE", rawrbox::CLUSTER_COUNT);
+		settings.macros.AddShaderMacro("CLUSTERS_X_THREADS", rawrbox::CLUSTERS_X_THREADS);
+		settings.macros.AddShaderMacro("CLUSTERS_Y_THREADS", rawrbox::CLUSTERS_Y_THREADS);
+		settings.macros.AddShaderMacro("CLUSTERS_Z_THREADS", rawrbox::CLUSTERS_Z_THREADS);
+		settings.macros.AddShaderMacro("CLUSTERS_X", rawrbox::CLUSTERS_X);
+		settings.macros.AddShaderMacro("CLUSTERS_Y", rawrbox::CLUSTERS_Y);
+		settings.macros.AddShaderMacro("CLUSTERS_Z", rawrbox::CLUSTERS_Z);
+		settings.macros.AddShaderMacro("MAX_LIGHTS_PER_CLUSTER", rawrbox::MAX_LIGHTS_PER_CLUSTER);
+
+		settings.pCS = "reset.csh";
+		this->_resetCounterComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Clustered::Reset", "Clustered::Reset", settings);
+
+		// Bind ---
+		this->_resetCounterComputeBind = rawrbox::PipelineUtils::getBind("Clustered::Reset");
+		this->_resetCounterComputeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "g_globalIndex")->Set(this->_atomicIndexBufferWrite);
+		// --------
+
+		settings.resources = {{Diligent::SHADER_TYPE_COMPUTE, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC}};
+		settings.uniforms = {{Diligent::SHADER_TYPE_COMPUTE, this->_uniforms}};
+		settings.pCS = "cluster.csh";
+		this->_clusterBuildingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Clustered::Building", "Clustered::Building", settings);
+
+		// Bind ----
+		this->_clusterBuildingComputeBind = rawrbox::PipelineUtils::getBind("Clustered::Building");
+		this->_clusterBuildingComputeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "g_Clusters")->Set(this->_clusterBufferWrite);
+		// ---------
+
+		// settings.pCS = "";
+		// this->_lightCullingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Clustered::LightCull", "Clustered::LightCull", settings);
+		//  ----
 
 		// Initialize light engine
 		rawrbox::LIGHTS::init();
@@ -54,18 +116,87 @@ namespace rawrbox {
 
 	void RendererCluster::resize(const rawrbox::Vector2i& size) {
 		RendererBase::resize(size);
-
-		auto w = static_cast<uint16_t>(size.x);
-		auto h = static_cast<uint16_t>(size.y);
-
-		// Setup views -----
-		bgfx::setViewRect(CLUSTER_BUILD_VIEW_ID, 0, 0, w, h);
-		bgfx::setViewRect(LIGHT_CULL_VIEW_ID, 0, 0, w, h);
-		// ----
 	}
 
 	void RendererCluster::render() {
 		if (this->_uniforms == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Render uniforms not set! Did you call 'init' ?");
+		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Failed to bind swapChain/context/device! Did you call 'init' ?");
+
+		if (this->worldRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] World render method not set! Did you call 'setWorldRender' ?");
+		if (this->overlayRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Overlay render method not set! Did you call 'setOverlayRender' ?");
+
+		// Clear backbuffer ----
+		this->clear();
+		// ---------------------
+
+		// No world / overlay only
+		if (this->_camera == nullptr) {
+			this->overlayRender();
+			this->frame();
+			return;
+		}
+
+		// SETUP CLUSTER UNIFORMS ----------------------------
+		{
+			Diligent::MapHelper<rawrbox::ClusterConstants> CBConstants(this->_context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+
+			auto size = this->_size.cast<float>();
+			auto tInvProj = this->_camera->getProjMtx();
+			tInvProj.inverse();
+
+			*CBConstants = {
+			    {0, 0, size.x, size.y},
+			    tInvProj};
+
+			this->bindUniforms<rawrbox::ClusterConstants>(CBConstants);
+		}
+		// ------------
+
+		// Only rebuild cluster if view changed
+		auto proj = this->_camera->getProjMtx();
+
+		if (this->_oldProj != proj) {
+			// this->_oldProj = proj;
+
+			// Rebuild clusters ---
+
+			Diligent::DispatchComputeAttribs DispatchAttribs;
+			DispatchAttribs.ThreadGroupCountX = CLUSTERS_X / CLUSTERS_X_THREADS;
+			DispatchAttribs.ThreadGroupCountY = CLUSTERS_Y / CLUSTERS_Y_THREADS;
+			DispatchAttribs.ThreadGroupCountZ = CLUSTERS_Z / CLUSTERS_Z_THREADS;
+
+			this->_context->SetPipelineState(this->_clusterBuildingComputeProgram);
+			this->_context->CommitShaderResources(this->_clusterBuildingComputeBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			this->_context->DispatchCompute(DispatchAttribs);
+		}
+		// ------
+
+		// reset atomic counter for light grid generation
+		{
+			Diligent::DispatchComputeAttribs DispatchAttribs;
+			DispatchAttribs.ThreadGroupCountX = 1;
+			DispatchAttribs.ThreadGroupCountY = 1;
+			DispatchAttribs.ThreadGroupCountZ = 1;
+
+			this->_context->SetPipelineState(this->_resetCounterComputeProgram);
+			this->_context->CommitShaderResources(this->_resetCounterComputeBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			this->_context->DispatchCompute(DispatchAttribs);
+		}
+		//  --------
+
+		// Final Pass -------------
+		this->finalRender();
+		// ------------------------
+
+		// Check GPU Picking -----
+		// this->gpuCheck();
+		// -------------------
+
+		// Submit ---
+		this->frame();
+		// ----------
+
+		/*if (this->_uniforms == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Render uniforms not set! Did you call 'init' ?");
 		if (this->worldRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] World render method not set! Did you call 'setWorldRender' ?");
 		if (this->overlayRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Overlay render method not set! Did you call 'setOverlayRender' ?");
 
@@ -85,18 +216,7 @@ namespace rawrbox {
 
 		this->_uniforms->setUniforms(this->_size);
 
-		// Only rebuild cluster if view changed
-		if (this->_oldProj != proj) {
-			this->_oldProj = proj;
 
-			this->_uniforms->bindCluster();
-			bgfx::dispatch(CLUSTER_BUILD_VIEW_ID,
-			    this->_clusterBuildingComputeProgram,
-			    ClusterUniforms::CLUSTERS_X / ClusterUniforms::CLUSTERS_X_THREADS,
-			    ClusterUniforms::CLUSTERS_Y / ClusterUniforms::CLUSTERS_Y_THREADS,
-			    ClusterUniforms::CLUSTERS_Z / ClusterUniforms::CLUSTERS_Z_THREADS);
-		}
-		// ------
 
 		// reset atomic counter for light grid generation
 		// buffers created with BGFX_BUFFER_COMPUTE_WRITE can't be updated from the CPU
@@ -128,22 +248,18 @@ namespace rawrbox {
 		this->gpuCheck();
 		// -------------------
 
-		this->frame(); // Submit ---
+		this->frame(); // Submit ---*/
 	}
 
-	void RendererCluster::bindRenderUniforms() {
+	/*void RendererCluster::bindRenderUniforms() {
 		rawrbox::LIGHTS::bindUniforms();
 
 		this->_uniforms->bindLightIndices(true);
 		this->_uniforms->bindLightGrid(true);
-	}
+	}*/
 
-	bool RendererCluster::supported() {
-		const bgfx::Caps* caps = bgfx::getCaps();
-
-		return RendererBase::supported() &&
-		       (caps->supported & BGFX_CAPS_COMPUTE) != 0 &&
-		       (caps->supported & BGFX_CAPS_INDEX32) != 0;
-	}
+	// UTILS ----
+	Diligent::IBufferView* RendererCluster::getAtomicIndexBuffer(bool readOnly) { return readOnly ? this->_atomicIndexBufferRead : this->_atomicIndexBufferWrite; }
+	Diligent::IBufferView* RendererCluster::getClustersBuffer(bool readOnly) { return readOnly ? this->_clusterBufferRead : this->_clusterBufferWrite; }
+	// ----------
 } // namespace rawrbox
-*/

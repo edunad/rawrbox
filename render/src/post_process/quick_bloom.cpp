@@ -53,7 +53,7 @@ namespace rawrbox {
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
-		this->_pipeline = rawrbox::PipelineUtils::createPipelines("PostProcess::QuickBloom", "PostProcess::QuickBloom", settings);
+		this->_pipeline = rawrbox::PipelineUtils::createPipeline("PostProcess::QuickBloom", "PostProcess::QuickBloom", settings);
 		this->_bind = rawrbox::PipelineUtils::getBind("PostProcess::QuickBloom");
 	}
 

@@ -34,11 +34,11 @@ namespace rawrbox {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
 		settings.fill = Diligent::FILL_MODE_WIREFRAME;
-		rawrbox::PipelineUtils::createPipelines("3DText::Base::Wireframe", "3DText", settings);
+		rawrbox::PipelineUtils::createPipeline("3DText::Base::Wireframe", "3DText", settings);
 
 		settings.fill = Diligent::FILL_MODE_SOLID;
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipelines("3DText::Base", "3DText", settings); // ALPHA by default on text
+		rawrbox::PipelineUtils::createPipeline("3DText::Base", "3DText", settings); // ALPHA by default on text
 	}
 
 	void MaterialText3D::prepareMaterial() {

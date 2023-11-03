@@ -31,28 +31,28 @@ namespace rawrbox {
 		settings.uniforms = {{Diligent::SHADER_TYPE_VERTEX, _uniforms}};
 
 		settings.fill = Diligent::FILL_MODE_WIREFRAME;
-		rawrbox::PipelineUtils::createPipelines("Model::Skinned::Wireframe", "Model::Skinned", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Skinned::Wireframe", "Model::Skinned", settings);
 
 		settings.fill = Diligent::FILL_MODE_SOLID;
-		rawrbox::PipelineUtils::createPipelines("Model::Skinned", "Model::Skinned", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Skinned", "Model::Skinned", settings);
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipelines("Model::Skinned::Alpha", "Model::Skinned", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Skinned::Alpha", "Model::Skinned", settings);
 
 		settings.fill = Diligent::FILL_MODE_SOLID;
 		settings.cull = Diligent::CULL_MODE_BACK;
 		settings.blending = {};
-		rawrbox::PipelineUtils::createPipelines("Model::Skinned::CullBack", "Model::Skinned", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Skinned::CullBack", "Model::Skinned", settings);
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipelines("Model::Skinned::CullBack::Alpha", "Model::Skinned", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Skinned::CullBack::Alpha", "Model::Skinned", settings);
 
 		settings.cull = Diligent::CULL_MODE_NONE;
 		settings.blending = {};
-		rawrbox::PipelineUtils::createPipelines("Model::Skinned::CullNone", "Model::Skinned", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Skinned::CullNone", "Model::Skinned", settings);
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipelines("Model::Skinned::CullNone::Alpha", "Model::Skinned", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Skinned::CullNone::Alpha", "Model::Skinned", settings);
 
 		// -----
 	}

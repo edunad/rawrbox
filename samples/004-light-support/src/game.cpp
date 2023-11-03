@@ -27,7 +27,7 @@ namespace light {
 		auto window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto render = window->createRenderer();
+		auto render = window->createRenderer<rawrbox::RendererCluster>();
 		render->setOverlayRender([this]() {});
 		render->setWorldRender([this]() { this->drawWorld(); });
 		render->skipIntros(true);

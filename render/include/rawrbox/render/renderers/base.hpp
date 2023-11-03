@@ -89,7 +89,7 @@ namespace rawrbox {
 		RendererBase& operator=(RendererBase&&) = delete;
 		virtual ~RendererBase();
 
-		virtual void init();
+		virtual void init(Diligent::DeviceFeatures features = {});
 		virtual void resize(const rawrbox::Vector2i& size);
 
 		virtual void setWorldRender(std::function<void()> render);
@@ -103,9 +103,6 @@ namespace rawrbox {
 		void skipIntros(bool skip); // :(
 		void addIntro(const std::filesystem::path& webpPath, float speed = 1.F, bool cover = false);
 		// ----------------
-
-		// virtual void finalRender();
-		// virtual void bindRenderUniforms();
 
 		template <class T = rawrbox::CameraBase, typename... CallbackArgs>
 		T* setupCamera(CallbackArgs&&... args) {
@@ -132,6 +129,9 @@ namespace rawrbox {
 		// virtual void gpuPick(const rawrbox::Vector2i& pos, std::function<void(uint32_t)> callback);
 		//  ------
 
-		[[nodiscard]] virtual bool supported() const;
+		template <typename T>
+		void bindUniforms(Diligent::MapHelper<T>& /*helper*/) {
+			throw std::runtime_error("[RawrBox-Renderer] bindUniforms not implemented");
+		}
 	};
 } // namespace rawrbox

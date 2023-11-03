@@ -62,8 +62,7 @@
     "workbench.editor.wrapTabs": true,
     "files.insertFinalNewline": true,
     "files.associations": {
-      "*.sc": "hlsl",
-      "*.sh": "hlsl",
+      "*.csh": "hlsl",
       "xstring": "cpp",
       "functional": "cpp",
       "map": "cpp",

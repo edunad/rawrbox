@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Common/interface/RefCntAutoPtr.hpp>
+#include <Graphics/GraphicsTools/interface/ShaderMacroHelper.hpp>
 
 #include <Graphics/GraphicsEngine/interface/Buffer.h>
 #include <Graphics/GraphicsEngine/interface/PipelineState.h>
@@ -14,6 +15,8 @@ namespace rawrbox {
 	struct PipeUniforms {
 		Diligent::SHADER_TYPE type = Diligent::SHADER_TYPE_VERTEX;
 		Diligent::IBuffer* uniform = nullptr;
+
+		std::string name = "Constants";
 	};
 
 	struct PipePass {
@@ -45,10 +48,18 @@ namespace rawrbox {
 		std::string pPS = "";
 		std::string pGS = "";
 
-		// std::vector<rawrbox::PipeSamplers> samplers = {};
 		std::vector<rawrbox::PipeUniforms> uniforms = {};
 		std::vector<Diligent::LayoutElement> layout = {};
 		std::vector<Diligent::ShaderResourceVariableDesc> resources = {};
+	};
+
+	struct PipeComputeSettings {
+		std::string pCS = "";
+
+		std::vector<rawrbox::PipeUniforms> uniforms = {};
+		std::vector<Diligent::ShaderResourceVariableDesc> resources = {};
+
+		Diligent::ShaderMacroHelper macros = {};
 	};
 
 	class PipelineUtils {
@@ -65,8 +76,10 @@ namespace rawrbox {
 		static void init();
 
 		static Diligent::ISampler* registerSampler(uint32_t id, Diligent::SamplerDesc type);
-		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type);
-		static Diligent::IPipelineState* createPipelines(const std::string& name, const std::string& bindName, const rawrbox::PipeSettings settings);
+		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::ShaderMacroArray macros = {});
+
+		static Diligent::IPipelineState* createComputePipeline(const std::string& name, const std::string& bindName, const rawrbox::PipeComputeSettings settings);
+		static Diligent::IPipelineState* createPipeline(const std::string& name, const std::string& bindName, const rawrbox::PipeSettings settings);
 
 		[[nodiscard]] static Diligent::ISampler* getSampler(uint32_t id);
 		[[nodiscard]] static Diligent::IShaderResourceBinding* getBind(const std::string& bindName);

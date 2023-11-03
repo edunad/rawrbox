@@ -35,14 +35,14 @@ namespace rawrbox {
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
-		this->_2dPipeline = rawrbox::PipelineUtils::createPipelines("Stencil::2D", "Stencil::2D", settings);
+		this->_2dPipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2D", "Stencil::2D", settings);
 
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
-		this->_linePipeline = rawrbox::PipelineUtils::createPipelines("Stencil::2DLine", "Stencil::2D", settings);
+		this->_linePipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2DLine", "Stencil::2D", settings);
 
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		settings.pPS = "stencil_text.psh";
-		this->_textPipeline = rawrbox::PipelineUtils::createPipelines("Stencil::2DText", "Stencil::2D", settings);
+		this->_textPipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2DText", "Stencil::2D", settings);
 		// -------------
 
 		this->_SRB = rawrbox::PipelineUtils::getBind("Stencil::2D");

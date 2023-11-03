@@ -39,7 +39,7 @@ namespace rawrbox {
 		return _samplers[id];
 	}
 
-	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type) {
+	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::ShaderMacroArray macros) {
 		if (name.empty()) return nullptr;
 
 		auto fnd = _shaders.find(name);
@@ -56,6 +56,7 @@ namespace rawrbox {
 		ShaderCI.EntryPoint = "main";
 		ShaderCI.Desc.Name = fmt::format("RawrBox::{}", name).c_str();
 		ShaderCI.FilePath = name.c_str();
+		ShaderCI.Macros = macros;
 
 		Diligent::RefCntAutoPtr<Diligent::IShader> shader;
 		Diligent::RefCntAutoPtr<Diligent::IDataBlob> output;
@@ -70,7 +71,48 @@ namespace rawrbox {
 		return _shaders[name];
 	}
 
-	Diligent::IPipelineState* PipelineUtils::createPipelines(const std::string& name, const std::string& bindName, const rawrbox::PipeSettings settings) {
+	Diligent::IPipelineState* PipelineUtils::createComputePipeline(const std::string& name, const std::string& bindName, const rawrbox::PipeComputeSettings settings) {
+		if (settings.pCS.empty()) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create shader {}, pCS shader cannot be empty!", name));
+
+		auto fnd = _pipelines.find(name);
+		if (fnd != _pipelines.end()) return fnd->second;
+
+		auto desc = rawrbox::RENDERER->swapChain()->GetDesc();
+		Diligent::RefCntAutoPtr<Diligent::IPipelineState> pipe;
+
+		Diligent::ComputePipelineStateCreateInfo PSOCreateInfo;
+		Diligent::PipelineStateDesc& PSODesc = PSOCreateInfo.PSODesc;
+
+		PSODesc.Name = fmt::format("RawrBox::COMPUTE::{}", name).c_str();
+		PSODesc.PipelineType = Diligent::PIPELINE_TYPE_COMPUTE;
+		PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE;
+
+		if (!settings.resources.empty()) {
+			PSODesc.ResourceLayout.Variables = settings.resources.data();
+			PSODesc.ResourceLayout.NumVariables = static_cast<uint32_t>(settings.resources.size());
+		}
+
+		PSOCreateInfo.pCS = rawrbox::PipelineUtils::compileShader(settings.pCS, Diligent::SHADER_TYPE_COMPUTE, settings.macros);
+
+		rawrbox::RENDERER->device()->CreateComputePipelineState(PSOCreateInfo, &pipe);
+		if (pipe == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}'", name));
+
+		for (auto& uni : settings.uniforms) {
+			if (uni.uniform == nullptr) continue;
+			pipe->GetStaticVariableByName(uni.type, uni.name.c_str())->Set(uni.uniform);
+		}
+
+		// Bind ----
+		if (!bindName.empty()) {
+			pipe->CreateShaderResourceBinding(&_binds[bindName], true);
+		}
+		//-----
+
+		_pipelines[name] = std::move(pipe);
+		return _pipelines[name];
+	}
+
+	Diligent::IPipelineState* PipelineUtils::createPipeline(const std::string& name, const std::string& bindName, const rawrbox::PipeSettings settings) {
 		auto fnd = _pipelines.find(name);
 		if (fnd != _pipelines.end()) return fnd->second;
 
@@ -114,12 +156,6 @@ namespace rawrbox {
 		}
 		// -----
 
-		// Create the shaders (move this to a loader) ----
-		Diligent::ShaderCreateInfo ShaderCI;
-		ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
-		ShaderCI.Desc.UseCombinedTextureSamplers = true; // (g_Texture + g_Texture_sampler combination)
-		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
-
 		// SHADERS ----
 		info.pVS = rawrbox::PipelineUtils::compileShader(settings.pVS, Diligent::SHADER_TYPE_VERTEX);
 		info.pPS = rawrbox::PipelineUtils::compileShader(settings.pPS, Diligent::SHADER_TYPE_PIXEL);
@@ -161,13 +197,14 @@ namespace rawrbox {
 
 			info.PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 		}
+
 		// ---------------------
 		rawrbox::RENDERER->device()->CreateGraphicsPipelineState(info, &pipe);
 		if (pipe == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}'", name));
 
 		for (auto& uni : settings.uniforms) {
 			if (uni.uniform == nullptr) continue;
-			pipe->GetStaticVariableByName(uni.type, "Constants")->Set(uni.uniform);
+			pipe->GetStaticVariableByName(uni.type, uni.name.c_str())->Set(uni.uniform);
 		}
 
 		if (!bindName.empty()) {

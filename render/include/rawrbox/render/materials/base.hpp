@@ -15,6 +15,7 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 _gViewProj;
 		rawrbox::Matrix4x4 _gInvView;
 		rawrbox::Matrix4x4 _gWorldViewModel;
+
 		rawrbox::Vector4f _gScreenSize;
 		//  --------
 	};
@@ -63,7 +64,8 @@ namespace rawrbox {
 			    tView * tProj,
 			    tInvView,
 			    tTransform * tWorldView,
-			    size};
+			    {0, 0, size.x, size.y},
+			};
 			// ----------------------------
 		}
 

@@ -73,7 +73,7 @@ namespace rawrbox {
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
-		this->_pipeline = rawrbox::PipelineUtils::createPipelines("PostProcess::Dither", "PostProcess::Dither", settings);
+		this->_pipeline = rawrbox::PipelineUtils::createPipeline("PostProcess::Dither", "PostProcess::Dither", settings);
 		this->_bind = rawrbox::PipelineUtils::getBind("PostProcess::Dither");
 	}
 

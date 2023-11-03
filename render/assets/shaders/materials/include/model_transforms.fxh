@@ -82,7 +82,7 @@ TransformedData applyPosTransforms(float4x4 proj, float4 a_position, float2 a_te
 	// vertex_snap mode
 #ifdef TRANSFORM_PSX
     if(g_VertexSnap != 0.) {
-        data.final = psx_snap(mul(data.pos, proj), g_ScreenSize.xy / g_VertexSnap);
+        data.final = psx_snap(mul(data.pos, proj), g_ScreenSize.zw / g_VertexSnap);
     } else {
         data.final = mul(data.pos, proj);
     }

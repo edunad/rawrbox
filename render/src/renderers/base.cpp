@@ -53,7 +53,6 @@
 #include <rawrbox/render/utils/render.hpp>
 #include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/threading.hpp>
-// #include <rawrbox/render_temp/decals/manager.hpp>
 
 namespace rawrbox {
 	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Colorf& clearColor) : _window(window), _type(type), _size(size), _clearColor(clearColor) {}
@@ -67,13 +66,10 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_swapChain);
 
 		/*rawrbox::DECALS::shutdown();
-		this->_decals.reset();
 		bgfx::discard(BGFX_DISCARD_ALL);*/
 	}
 
-	void RendererBase::init() {
-		if (!this->supported()) throw std::runtime_error(fmt::format("[RawrBox-Renderer] Renderer not supported by GPU!"));
-
+	void RendererBase::init(Diligent::DeviceFeatures features) {
 		Diligent::SwapChainDesc SCDesc;
 		switch (this->_type) {
 #if D3D11_SUPPORTED
@@ -86,6 +82,7 @@ namespace rawrbox {
 					this->_engineFactory = pFactoryD3D11;
 
 					Diligent::EngineD3D11CreateInfo EngineCI;
+					EngineCI.Features = features;
 					pFactoryD3D11->CreateDeviceAndContextsD3D11(EngineCI, &this->_device, &this->_context);
 					pFactoryD3D11->CreateSwapChainD3D11(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc{}, this->_window, &this->_swapChain);
 				}
@@ -103,6 +100,7 @@ namespace rawrbox {
 					this->_engineFactory = pFactoryD3D12;
 
 					Diligent::EngineD3D12CreateInfo EngineCI;
+					EngineCI.Features = features;
 					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
 					pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc{}, this->_window, &this->_swapChain);
 				}
@@ -122,6 +120,7 @@ namespace rawrbox {
 					this->_engineFactory = pFactoryOpenGL;
 
 					Diligent::EngineGLCreateInfo EngineCI;
+					EngineCI.Features = features;
 					EngineCI.Window = this->_window;
 					pFactoryOpenGL->CreateDeviceAndSwapChainGL(EngineCI, &this->_device, &this->_context, SCDesc, &this->_swapChain);
 				}
@@ -141,6 +140,7 @@ namespace rawrbox {
 					this->_engineFactory = pFactoryVk;
 
 					Diligent::EngineVkCreateInfo EngineCI;
+					EngineCI.Features = features;
 					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_device, &this->_context);
 					pFactoryVk->CreateSwapChainVk(this->_device, this->_context, SCDesc, this->_window, &this->_swapChain);
 				}
@@ -345,6 +345,11 @@ namespace rawrbox {
 		this->_render->stopRecord();
 		//  ----------------
 
+		// Record decals ---
+		// this->_decals->startRecord();
+		// rawrbox::DECALS::draw();
+		// this->_decals->stopRecord();
+
 		// Render world ---
 		if (this->postRender == nullptr) {
 			rawrbox::RenderUtils::renderQUAD(this->_render->getHandle());
@@ -546,10 +551,4 @@ namespace rawrbox {
 		this->_gpuPickCallbacks.emplace_back(callback);
 	}*/
 	// ------
-
-	// Is it supported by the GPU?
-	bool RendererBase::supported() const {
-		// const auto& features = this->_device->GetDeviceInfo().Features;
-		return true;
-	}
 } // namespace rawrbox

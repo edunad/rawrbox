@@ -32,28 +32,28 @@ namespace rawrbox {
 		settings.uniforms = {{Diligent::SHADER_TYPE_VERTEX, _uniforms}};
 
 		settings.fill = Diligent::FILL_MODE_WIREFRAME;
-		rawrbox::PipelineUtils::createPipelines("Model::Instanced::Wireframe", "Model::Instanced", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Instanced::Wireframe", "Model::Instanced", settings);
 
 		settings.fill = Diligent::FILL_MODE_SOLID;
-		rawrbox::PipelineUtils::createPipelines("Model::Instanced", "Model::Instanced", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Instanced", "Model::Instanced", settings);
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipelines("Model::Instanced::Alpha", "Model::Instanced", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Instanced::Alpha", "Model::Instanced", settings);
 
 		settings.fill = Diligent::FILL_MODE_SOLID;
 		settings.cull = Diligent::CULL_MODE_BACK;
 		settings.blending = {};
-		rawrbox::PipelineUtils::createPipelines("Model::Instanced::CullBack", "Model::Instanced", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Instanced::CullBack", "Model::Instanced", settings);
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipelines("Model::Instanced::CullBack::Alpha", "Model::Instanced", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Instanced::CullBack::Alpha", "Model::Instanced", settings);
 
 		settings.cull = Diligent::CULL_MODE_NONE;
 		settings.blending = {};
-		rawrbox::PipelineUtils::createPipelines("Model::Instanced::CullNone", "Model::Instanced", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Instanced::CullNone", "Model::Instanced", settings);
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipelines("Model::Instanced::CullNone::Alpha", "Model::Instanced", settings);
+		rawrbox::PipelineUtils::createPipeline("Model::Instanced::CullNone::Alpha", "Model::Instanced", settings);
 		// -----
 	}
 

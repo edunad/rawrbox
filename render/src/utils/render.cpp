@@ -20,7 +20,7 @@ namespace rawrbox {
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}};
 
-		_pipe = rawrbox::PipelineUtils::createPipelines("Utils::QUAD", "Utils::QUAD", settings);
+		_pipe = rawrbox::PipelineUtils::createPipeline("Utils::QUAD", "Utils::QUAD", settings);
 		_SRB = rawrbox::PipelineUtils::getBind("Utils::QUAD");
 	}
 
