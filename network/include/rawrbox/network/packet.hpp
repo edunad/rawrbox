@@ -25,18 +25,10 @@ namespace rawrbox {
 	};
 	// ----------------
 
-	enum class LengthType {
-		UInt8,
-		UInt16,
-		UInt32,
-		UInt64
-	};
-
 	class Packet {
 	protected:
 		std::vector<uint8_t> buffer = {};
 		size_t pos = 0;
-		LengthType lengthFormat = LengthType::UInt16;
 
 	public:
 		Packet() = default;
@@ -124,15 +116,23 @@ namespace rawrbox {
 			}
 		}
 
-		template <class T>
+		template <class T = size_t>
 		T readLength() {
-			switch (this->lengthFormat) {
-				case LengthType::UInt8: return static_cast<T>(this->read<uint8_t>());
-				case LengthType::UInt16: return static_cast<T>(this->read<uint16_t>());
-				case LengthType::UInt32: return static_cast<T>(this->read<uint32_t>());
-				case LengthType::UInt64: return static_cast<T>(this->read<uint64_t>());
-				default: throw std::runtime_error("[RawrBox-Packet] Unknown lengthFormat");
+			constexpr uint64_t maskNum = 0x7F;
+			constexpr uint64_t maskFlag = 0x80;
+
+			uint64_t ret = 0;
+			uint64_t bitsReceived = 0;
+			while (true) {
+				uint64_t byte = read<uint8_t>();
+
+				ret = ret | ((byte & maskNum) << bitsReceived);
+				bitsReceived += 7;
+
+				if ((byte & maskFlag) == 0) break;
 			}
+
+			return static_cast<T>(ret);
 		}
 
 		virtual void read(std::string& ret);
@@ -208,21 +208,28 @@ namespace rawrbox {
 
 		void write(const std::string& obj, bool shouldWriteLength = true);
 
-		template <class T>
+		template <class T = size_t>
 		void writeLength(T size) {
-			switch (this->lengthFormat) {
-				case LengthType::UInt8: this->write(static_cast<uint8_t>(size)); break;
-				case LengthType::UInt16: this->write(static_cast<uint16_t>(size)); break;
-				case LengthType::UInt32: this->write(static_cast<uint32_t>(size)); break;
-				case LengthType::UInt64: this->write(static_cast<uint64_t>(size)); break;
-				default: throw std::runtime_error("[RawrBox-Packet] Unknown lengthFormat");
+			if (size < 0) throw std::runtime_error("[RawrBox-Packet] invalid length");
+			if (size == 0) {
+				write<uint8_t>(0);
+				return;
+			}
+
+			auto remaining = static_cast<size_t>(size);
+			constexpr uint64_t maskNum = 0x7F;
+			constexpr uint64_t maskFlag = 0x80;
+
+			while (remaining > 0) {
+				bool hasMore = (remaining >> 7) > 0;
+				write(static_cast<uint8_t>((remaining & maskNum) | (hasMore ? maskFlag : 0x00ULL)));
+
+				remaining >>= 7;
 			}
 		}
 		// -----------------
 
 		// UTILS -----
-		void setlengthFormat(LengthType format);
-
 		bool seek(size_t offset);
 		bool seek(std::vector<uint8_t>::iterator offset);
 
