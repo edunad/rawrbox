@@ -7,16 +7,6 @@ namespace rawrbox {
 	// PRIVATE ----
 	std::vector<std::shared_ptr<rawrbox::LightBase>> LIGHTS::_lights = {};
 
-	/*bgfx::DynamicVertexBufferHandle LIGHTS::_buffer = BGFX_INVALID_HANDLE;
-	bgfx::UniformHandle LIGHTS::_u_lightSettings = BGFX_INVALID_HANDLE;
-	bgfx::UniformHandle LIGHTS::_u_ambientLight = BGFX_INVALID_HANDLE;
-
-	bgfx::UniformHandle LIGHTS::_u_sunDirection = BGFX_INVALID_HANDLE;
-	bgfx::UniformHandle LIGHTS::_u_sunColor = BGFX_INVALID_HANDLE;
-
-	bgfx::UniformHandle LIGHTS::_u_fogColor = BGFX_INVALID_HANDLE;
-	bgfx::UniformHandle LIGHTS::_u_fogSettings = BGFX_INVALID_HANDLE;*/
-
 	// Ambient --
 	rawrbox::Colorf LIGHTS::_ambient = {0.01F, 0.01F, 0.01F, 1.F};
 
@@ -33,91 +23,97 @@ namespace rawrbox {
 
 	// PUBLIC ----
 	bool LIGHTS::fullbright = false;
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> LIGHTS::uniforms;
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> LIGHTS::buffer;
 	// -------
 
 	void LIGHTS::init() {
-		/*_buffer = bgfx::createDynamicVertexBuffer(
-		    1, LightDataVertex::vLayout(), BGFX_BUFFER_COMPUTE_READ | BGFX_BUFFER_ALLOW_RESIZE);
+		// Init uniforms
+		{
+			Diligent::BufferDesc BuffDesc;
+			BuffDesc.Name = "rawrbox::Light::Uniforms";
+			BuffDesc.Usage = Diligent::USAGE_DYNAMIC;
+			BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+			BuffDesc.Size = sizeof(rawrbox::LightConstants);
 
-		_u_lightSettings = bgfx::createUniform("u_lightSettings", bgfx::UniformType::Vec4);
-		_u_ambientLight = bgfx::createUniform("u_ambientLight", bgfx::UniformType::Vec4);
+			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &uniforms);
+		}
+		// -----------------------------------------
 
-		_u_sunDirection = bgfx::createUniform("u_sunDirection", bgfx::UniformType::Vec4);
-		_u_sunColor = bgfx::createUniform("u_sunColor", bgfx::UniformType::Vec4);
+		{
+			Diligent::BufferDesc BuffDesc;
+			BuffDesc.ElementByteStride = sizeof(rawrbox::LightDataVertex);
+			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
+			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
+			BuffDesc.Size = BuffDesc.ElementByteStride * 1000; // Max lights //static_cast<uint32_t>(_lights.size());
+			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
 
-		_u_fogColor = bgfx::createUniform("u_fogColor", bgfx::UniformType::Vec4);
-		_u_fogSettings = bgfx::createUniform("u_fogSettings", bgfx::UniformType::Vec4);*/
+			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &buffer);
+		}
+
+		update();
 	}
 
 	void LIGHTS::shutdown() {
-		/*RAWRBOX_DESTROY(_buffer);
-		RAWRBOX_DESTROY(_u_lightSettings);
-		RAWRBOX_DESTROY(_u_ambientLight);
-		RAWRBOX_DESTROY(_u_sunDirection);
-		RAWRBOX_DESTROY(_u_sunColor);
-		RAWRBOX_DESTROY(_u_fogColor);
-		RAWRBOX_DESTROY(_u_fogSettings);*/
+		RAWRBOX_DESTROY(buffer);
+		RAWRBOX_DESTROY(uniforms);
 
 		_lights.clear();
 	}
 
 	void LIGHTS::update() {
-		/*if (!bgfx::isValid(_buffer)) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
+		if (buffer == nullptr) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__LIGHT_DIRTY__ || _lights.empty()) return;
 
 		// Update lights ---
-		auto stride = rawrbox::LightDataVertex::vLayout().getStride();
-		const bgfx::Memory* mem = bgfx::alloc(uint32_t(stride * _lights.size()));
+		std::vector<rawrbox::LightDataVertex> lights = {};
+		lights.reserve(_lights.size());
 
-		for (size_t i = 0; i < _lights.size(); i++) {
-			auto& l = _lights[i];
+		for (auto& l : _lights) {
 			if (!l->isOn()) continue;
 
-			auto light = std::bit_cast<rawrbox::LightDataVertex*>(mem->data + (i * stride));
+			rawrbox::LightDataVertex light = {};
 
 			auto cl = l->getColor();
 			auto pos = l->getWorldPos();
 			auto dir = l->getDirection();
 
-			light->position = rawrbox::Vector3f(pos.x, pos.y, pos.z);
-			light->intensity = rawrbox::Vector3f(cl.r, cl.g, cl.b);
-			light->direction = rawrbox::Vector3f(dir.x, dir.y, dir.z);
-			light->radius = l->getRadius();
+			light.position = rawrbox::Vector3f(pos.x, pos.y, pos.z);
+			light.intensity = rawrbox::Vector3f(cl.r, cl.g, cl.b);
+			light.direction = rawrbox::Vector3f(dir.x, dir.y, dir.z);
+			light.radius = l->getRadius();
 
 			if (l->getType() == rawrbox::LightType::SPOT) {
 				auto data = l->getData();
-				light->innerCone = data.x;
-				light->outerCone = data.y;
+				light.innerCone = data.x;
+				light.outerCone = data.y;
 			} else {
-				light->innerCone = 0.F;
-				light->outerCone = 0.F;
+				light.innerCone = 0.F;
+				light.outerCone = 0.F;
 			}
+
+			lights.push_back(light);
 		}
 
-		bgfx::update(_buffer, 0, mem);
+		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, static_cast<uint64_t>(lights.size()) * sizeof(rawrbox::LightDataVertex), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		rawrbox::__LIGHT_DIRTY__ = false;
-		// -------*/
+		// -------
 	}
 
 	void LIGHTS::bindUniforms() {
-		/*if (!bgfx::isValid(_buffer)) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
-		update(); // Update all lights
+		if (uniforms == nullptr) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
+		update(); // Update all lights if dirty
 
-		std::array<float, 4> total = {fullbright ? 1.0F : 0.0F, static_cast<float>(rawrbox::LIGHTS::count())}; // other light settings
-		bgfx::setUniform(_u_lightSettings, total.data());
+		Diligent::MapHelper<rawrbox::LightConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 
-		bgfx::setUniform(_u_ambientLight, _ambient.data().data());
-
-		bgfx::setUniform(_u_sunColor, _sun_color.data().data());
-		bgfx::setUniform(_u_sunDirection, _sun_direction.data().data());
-
-		// 0 = type
-		std::array<float, 4> fogSettings = {static_cast<float>(_fog_type), _fog_end, _fog_density}; // other fog settings
-		bgfx::setUniform(_u_fogSettings, fogSettings.data());
-		bgfx::setUniform(_u_fogColor, _fog_color.data().data());
-
-		bgfx::setBuffer(rawrbox::SAMPLE_LIGHTS, _buffer, bgfx::Access::Read);*/
-	}
+		CBConstants->g_LightSettings = {fullbright ? 1U : 0U, static_cast<uint32_t>(rawrbox::LIGHTS::count()), 0, 0}; // other light settings
+		CBConstants->g_AmbientColor = _ambient.rgb();
+		CBConstants->g_SunColor = _sun_color.rgb();
+		CBConstants->g_SunDirection = _sun_direction;
+		CBConstants->g_FogColor = _fog_color.rgb();
+		CBConstants->g_FogSettings = {static_cast<float>(_fog_type), _fog_end, _fog_density, 0.F};
+	} // namespace rawrbox
 
 	// UTILS ----
 	void LIGHTS::setEnabled(bool fb) { fullbright = fb; }

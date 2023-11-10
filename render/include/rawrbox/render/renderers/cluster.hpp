@@ -5,6 +5,8 @@
 #include <stdexcept>
 
 namespace rawrbox {
+	// taken from Doom
+	// http://advances.realtimerendering.com/s2016/Siggraph2016_idTech6.pdf
 	static constexpr uint32_t CLUSTERS_X = 16;
 	static constexpr uint32_t CLUSTERS_Y = 8;
 	static constexpr uint32_t CLUSTERS_Z = 24;
@@ -16,20 +18,21 @@ namespace rawrbox {
 	static constexpr uint32_t CLUSTERS_Z_THREADS = 4;
 
 	static constexpr uint32_t CLUSTER_COUNT = CLUSTERS_X * CLUSTERS_Y * CLUSTERS_Z;
+	static constexpr uint32_t THREAD_CLUSTER_COUNT = CLUSTERS_X_THREADS * CLUSTERS_Y_THREADS * CLUSTERS_Z_THREADS;
 
 	static constexpr uint32_t MAX_LIGHTS_PER_CLUSTER = 100;
 
 	struct Cluster {
 		// w is padding
-		std::array<float, 4> minBounds = {};
-		std::array<float, 4> maxBounds = {};
+		rawrbox::Vector3f minBounds = {};
+		rawrbox::Vector3f maxBounds = {};
 
 		static std::array<Diligent::LayoutElement, 2> vLayout() {
 			return {
 			    // Attribute 0 - MinBounds
-			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
 			    // Attribute 1 - MaxBounds
-			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{1, 0, 3, Diligent::VT_FLOAT32, false},
 			};
 		}
 	};
@@ -38,10 +41,13 @@ namespace rawrbox {
 		// CAMERA ------
 		rawrbox::Vector4f g_ScreenSize = {};
 		rawrbox::Matrix4x4 g_InvProj = {};
+		rawrbox::Matrix4x4 g_View = {};
 		// --------------
 
+		// CLUSTER ------
 		rawrbox::Vector2f g_ClusterSize = {};
 		rawrbox::Vector2f g_zNearFarVec = {};
+		// --------------
 	};
 
 	class RendererCluster : public rawrbox::RendererBase {
@@ -65,6 +71,14 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _clusterBuffer;
 		Diligent::RefCntAutoPtr<Diligent::IBufferView> _clusterBufferWrite;
 		Diligent::RefCntAutoPtr<Diligent::IBufferView> _clusterBufferRead;
+
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _lightIndicesBuffer;
+		Diligent::RefCntAutoPtr<Diligent::IBufferView> _lightIndicesBufferWrite;
+		Diligent::RefCntAutoPtr<Diligent::IBufferView> _lightIndicesBufferRead;
+
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _lightGridsBuffer;
+		Diligent::RefCntAutoPtr<Diligent::IBufferView> _lightGridsBufferWrite;
+		Diligent::RefCntAutoPtr<Diligent::IBufferView> _lightGridsBufferRead;
 		// -----------
 
 		rawrbox::Matrix4x4 _oldProj = {};

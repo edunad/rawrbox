@@ -1,8 +1,8 @@
 
-#include <cluster_constants.fxh>
-#include <utils.fxh>
-
+#include <cluster_uniforms.fxh>
 RWStructuredBuffer<Cluster> g_Clusters;
+
+#include <utils.fxh>
 
 [numthreads(CLUSTERS_X_THREADS, CLUSTERS_Y_THREADS, CLUSTERS_Z_THREADS)]
 void main(uint3 GIid: SV_DispatchThreadID) {
@@ -37,12 +37,10 @@ void main(uint3 GIid: SV_DispatchThreadID) {
 
     // get extent of the cluster in all dimensions (axis-aligned bounding box)
     // there is some overlap here but it's easier to calculate intersections with AABB
-    float3 minBounds = min(min(minNear, minFar), min(maxNear, maxFar));
-    float3 maxBounds = max(max(minNear, minFar), max(maxNear, maxFar));
 
     Cluster cl = g_Clusters[clusterIndex];
-    cl.minBounds = float4(minBounds, 1.0);
-    cl.maxBounds = float4(maxBounds, 1.0);
+    cl.minBounds =  min(min(minNear, minFar), min(maxNear, maxFar));
+    cl.maxBounds = max(max(minNear, minFar), max(maxNear, maxFar));
 
     g_Clusters[clusterIndex] = cl;
 }

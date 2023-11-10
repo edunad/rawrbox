@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/light/base.hpp>
 #include <rawrbox/render/static.hpp>
 
@@ -18,15 +19,26 @@ namespace rawrbox {
 		rawrbox::Vector3f direction = {};
 		float innerCone = 0.F;
 
-		/*static bgfx::VertexLayout vLayout() {
-			static bgfx::VertexLayout l;
-			l.begin()
-			    .add(bgfx::Attrib::TexCoord0, 4, bgfx::AttribType::Float) // Position
-			    .add(bgfx::Attrib::TexCoord1, 4, bgfx::AttribType::Float) // Intensity
-			    .add(bgfx::Attrib::TexCoord2, 4, bgfx::AttribType::Float) // Direction
-			    .end();
-			return l;
-		};*/
+		uint32_t type = 0;
+
+		static std::array<Diligent::LayoutElement, 7> vLayout() {
+			return {
+			    // Attribute 0 - Position
+			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
+			    // Attribute 1 - Outer Cone
+			    Diligent::LayoutElement{1, 0, 1, Diligent::VT_FLOAT32, false},
+			    // Attribute 2 - Intensity
+			    Diligent::LayoutElement{2, 0, 3, Diligent::VT_FLOAT32, false},
+			    // Attribute 3 - Radius
+			    Diligent::LayoutElement{3, 0, 1, Diligent::VT_FLOAT32, false},
+			    // Attribute 4 - Direction
+			    Diligent::LayoutElement{4, 0, 3, Diligent::VT_FLOAT32, false},
+			    // Attribute 5 - InnerCone
+			    Diligent::LayoutElement{5, 0, 1, Diligent::VT_FLOAT32, false},
+			    // Attribute 6 - Type
+			    Diligent::LayoutElement{6, 0, 1, Diligent::VT_UINT32, false},
+			};
+		}
 	};
 
 	enum class FOG_TYPE {
@@ -34,20 +46,29 @@ namespace rawrbox {
 		FOG_EXP = 1
 	};
 
+	struct LightConstants {
+		// Light ---------
+		std::array<uint32_t, 4> g_LightSettings = {};
+		// ------
+
+		// Sun ----
+		rawrbox::Vector3f g_SunDirection = {};
+		rawrbox::Vector3f g_SunColor = {};
+		// ----
+
+		// Ambient ---
+		rawrbox::Vector3f g_AmbientColor = {};
+		// -----
+
+		// Fog ----
+		rawrbox::Vector3f g_FogColor = {};
+		rawrbox::Vector4f g_FogSettings = {};
+		// --------
+	};
+
 	class LIGHTS {
 	protected:
 		static std::vector<std::shared_ptr<rawrbox::LightBase>> _lights;
-
-		/*static bgfx::DynamicVertexBufferHandle _buffer;
-		static bgfx::UniformHandle _u_lightSettings;
-
-		static bgfx::UniformHandle _u_ambientLight;
-
-		static bgfx::UniformHandle _u_sunDirection;
-		static bgfx::UniformHandle _u_sunColor;
-
-		static bgfx::UniformHandle _u_fogColor;
-		static bgfx::UniformHandle _u_fogSettings;*/
 
 		static rawrbox::Colorf _ambient;
 
@@ -62,6 +83,9 @@ namespace rawrbox {
 		static void update();
 
 	public:
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> buffer;
+
 		static bool fullbright;
 
 		static void init();

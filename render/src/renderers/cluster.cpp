@@ -10,9 +10,23 @@ namespace rawrbox {
 	RendererCluster::~RendererCluster() {
 		rawrbox::LIGHTS::shutdown(); // Shutdown light system
 
-		// RAWRBOX_DESTROY(this->_clusterBuildingComputeProgram);
-		// RAWRBOX_DESTROY(this->_lightCullingComputeProgram);
-		// RAWRBOX_DESTROY(this->_resetCounterComputeProgram);
+		RAWRBOX_DESTROY(this->_uniforms);
+
+		RAWRBOX_DESTROY(this->_atomicIndexBuffer);
+		RAWRBOX_DESTROY(this->_atomicIndexBufferWrite);
+		RAWRBOX_DESTROY(this->_atomicIndexBufferRead);
+
+		RAWRBOX_DESTROY(this->_clusterBuffer);
+		RAWRBOX_DESTROY(this->_clusterBufferWrite);
+		RAWRBOX_DESTROY(this->_clusterBufferRead);
+
+		RAWRBOX_DESTROY(this->_lightIndicesBuffer);
+		RAWRBOX_DESTROY(this->_lightIndicesBufferWrite);
+		RAWRBOX_DESTROY(this->_lightIndicesBufferRead);
+
+		RAWRBOX_DESTROY(this->_lightGridsBuffer);
+		RAWRBOX_DESTROY(this->_lightGridsBufferWrite);
+		RAWRBOX_DESTROY(this->_lightGridsBufferRead);
 	}
 
 	// -------------------------------------------
@@ -22,6 +36,9 @@ namespace rawrbox {
 
 		features.ComputeShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		RendererBase::init(features);
+
+		// Initialize light engine
+		rawrbox::LIGHTS::init();
 
 		// Init uniforms
 		Diligent::BufferDesc BuffDesc;
@@ -41,7 +58,7 @@ namespace rawrbox {
 			Diligent::BufferDesc BuffDesc;
 			BuffDesc.ElementByteStride = sizeof(uint32_t);
 			BuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
-			BuffDesc.Size = static_cast<uint32_t>(BuffDesc.ElementByteStride) * rawrbox::CLUSTER_COUNT; // Maybe?
+			BuffDesc.Size = BuffDesc.ElementByteStride * rawrbox::CLUSTER_COUNT; // Maybe?
 			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
 
 			this->_device->CreateBuffer(BuffDesc, nullptr, &this->_atomicIndexBuffer);
@@ -64,7 +81,7 @@ namespace rawrbox {
 			BuffDesc.ElementByteStride = sizeof(rawrbox::Cluster);
 			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
-			BuffDesc.Size = static_cast<uint32_t>(BuffDesc.ElementByteStride) * rawrbox::CLUSTER_COUNT;
+			BuffDesc.Size = BuffDesc.ElementByteStride * rawrbox::CLUSTER_COUNT;
 			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
 
 			this->_device->CreateBuffer(BuffDesc, nullptr, &this->_clusterBuffer);
@@ -74,12 +91,57 @@ namespace rawrbox {
 		}
 		// --------------
 
+		// Light indices ---
+		{
+			Diligent::BufferDesc BuffDesc;
+			BuffDesc.ElementByteStride = sizeof(uint32_t);
+			BuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
+			BuffDesc.Size = BuffDesc.ElementByteStride * rawrbox::CLUSTER_COUNT * rawrbox::MAX_LIGHTS_PER_CLUSTER;
+			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
+
+			this->_device->CreateBuffer(BuffDesc, nullptr, &this->_lightIndicesBuffer);
+
+			Diligent::BufferViewDesc ViewDesc;
+			ViewDesc.ViewType = Diligent::BUFFER_VIEW_UNORDERED_ACCESS;
+			ViewDesc.Format.ValueType = Diligent::VT_UINT32;
+			ViewDesc.Format.NumComponents = 1;
+
+			this->_atomicIndexBuffer->CreateView(ViewDesc, &this->_lightIndicesBufferWrite); // Write / Read
+
+			ViewDesc.ViewType = Diligent::BUFFER_VIEW_SHADER_RESOURCE;
+			this->_atomicIndexBuffer->CreateView(ViewDesc, &this->_lightIndicesBufferRead); // Read only
+		}
+		// ------------------
+
+		// Light grid ---
+		{
+			Diligent::BufferDesc BuffDesc;
+			BuffDesc.ElementByteStride = sizeof(std::array<uint32_t, 2>);
+			BuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
+			BuffDesc.Size = BuffDesc.ElementByteStride * rawrbox::CLUSTER_COUNT;
+			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
+
+			this->_device->CreateBuffer(BuffDesc, nullptr, &this->_lightGridsBuffer);
+
+			Diligent::BufferViewDesc ViewDesc;
+			ViewDesc.ViewType = Diligent::BUFFER_VIEW_UNORDERED_ACCESS;
+			ViewDesc.Format.ValueType = Diligent::VT_UINT32;
+			ViewDesc.Format.NumComponents = 1;
+
+			this->_atomicIndexBuffer->CreateView(ViewDesc, &this->_lightGridsBufferWrite); // Write / Read
+
+			ViewDesc.ViewType = Diligent::BUFFER_VIEW_SHADER_RESOURCE;
+			this->_atomicIndexBuffer->CreateView(ViewDesc, &this->_lightGridsBufferRead); // Read only
+		}
+		// ------------------
+
 		// -----------------
 
 		// Load shader programs ---
 		rawrbox::PipeComputeSettings settings;
 
-		settings.macros.AddShaderMacro("THREAD_GROUP_SIZE", rawrbox::CLUSTER_COUNT);
+		settings.macros.AddShaderMacro("THREAD_GROUP_SIZE", rawrbox::THREAD_CLUSTER_COUNT);
+		settings.macros.AddShaderMacro("GROUP_SIZE", rawrbox::CLUSTER_COUNT);
 		settings.macros.AddShaderMacro("CLUSTERS_X_THREADS", rawrbox::CLUSTERS_X_THREADS);
 		settings.macros.AddShaderMacro("CLUSTERS_Y_THREADS", rawrbox::CLUSTERS_Y_THREADS);
 		settings.macros.AddShaderMacro("CLUSTERS_Z_THREADS", rawrbox::CLUSTERS_Z_THREADS);
@@ -106,12 +168,20 @@ namespace rawrbox {
 		this->_clusterBuildingComputeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "g_Clusters")->Set(this->_clusterBufferWrite);
 		// ---------
 
-		// settings.pCS = "";
-		// this->_lightCullingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Clustered::LightCull", "Clustered::LightCull", settings);
+		settings.resources = {{Diligent::SHADER_TYPE_COMPUTE, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC}, {Diligent::SHADER_TYPE_COMPUTE, "LightConstants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC}};
+		settings.uniforms = {{Diligent::SHADER_TYPE_COMPUTE, this->_uniforms, "Constants"}, {Diligent::SHADER_TYPE_COMPUTE, rawrbox::LIGHTS::uniforms, "LightConstants"}};
+		settings.pCS = "culling.csh";
+		this->_lightCullingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Clustered::LightCull", "Clustered::LightCull", settings);
 		//  ----
 
-		// Initialize light engine
-		rawrbox::LIGHTS::init();
+		// Bind ----
+		this->_lightCullingComputeBind = rawrbox::PipelineUtils::getBind("Clustered::LightCull");
+		this->_lightCullingComputeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "g_clusterLightGrid")->Set(this->_lightGridsBufferWrite);
+		this->_lightCullingComputeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "g_clusterLightIndices")->Set(this->_lightIndicesBufferWrite);
+		this->_lightCullingComputeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "g_globalIndex")->Set(this->_atomicIndexBufferWrite);
+		this->_lightCullingComputeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "g_Clusters")->Set(this->_clusterBufferRead);
+		this->_lightCullingComputeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "g_Lights")->Set(rawrbox::LIGHTS::buffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
+		// ---------
 	}
 
 	void RendererCluster::resize(const rawrbox::Vector2i& size) {
@@ -142,24 +212,28 @@ namespace rawrbox {
 
 			auto size = this->_size.cast<float>();
 			auto tInvProj = this->_camera->getProjMtx();
+			auto tView = this->_camera->getViewMtx().transpose();
 			tInvProj.inverse();
 
 			*CBConstants = {
 			    {0, 0, size.x, size.y},
-			    tInvProj};
+			    tInvProj,
+			    tView};
 
 			this->bindUniforms<rawrbox::ClusterConstants>(CBConstants);
 		}
+
+		// Setup light uniforms
+		rawrbox::LIGHTS::bindUniforms();
 		// ------------
 
 		// Only rebuild cluster if view changed
 		auto proj = this->_camera->getProjMtx();
 
 		if (this->_oldProj != proj) {
-			// this->_oldProj = proj;
+			this->_oldProj = proj;
 
 			// Rebuild clusters ---
-
 			Diligent::DispatchComputeAttribs DispatchAttribs;
 			DispatchAttribs.ThreadGroupCountX = CLUSTERS_X / CLUSTERS_X_THREADS;
 			DispatchAttribs.ThreadGroupCountY = CLUSTERS_Y / CLUSTERS_Y_THREADS;
@@ -183,6 +257,18 @@ namespace rawrbox {
 			this->_context->DispatchCompute(DispatchAttribs);
 		}
 		//  --------
+
+		// Perform light / decal culling
+		{
+			Diligent::DispatchComputeAttribs DispatchAttribs;
+			DispatchAttribs.ThreadGroupCountX = CLUSTERS_X / CLUSTERS_X_THREADS;
+			DispatchAttribs.ThreadGroupCountY = CLUSTERS_Y / CLUSTERS_Y_THREADS;
+			DispatchAttribs.ThreadGroupCountZ = CLUSTERS_Z / CLUSTERS_Z_THREADS;
+
+			this->_context->SetPipelineState(this->_lightCullingComputeProgram);
+			this->_context->CommitShaderResources(this->_lightCullingComputeBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			this->_context->DispatchCompute(DispatchAttribs);
+		}
 
 		// Final Pass -------------
 		this->finalRender();

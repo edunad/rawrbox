@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rawrbox/math/vector3.hpp>
+
 #include <array>
 #include <cstdint>
 
@@ -109,6 +111,18 @@ namespace rawrbox {
 
 		[[nodiscard]] const std::array<NumberType, 4> data() const {
 			return {r, g, b, a};
+		}
+
+		[[nodiscard]] const rawrbox::Vector3_t<NumberType> rgb() const {
+			return {r, g, b};
+		}
+
+		[[nodiscard]] const rawrbox::Vector3_t<NumberType> bgr() const {
+			return {b, g, r};
+		}
+
+		[[nodiscard]] const ColorType bgra() const {
+			return {b, g, r, a};
 		}
 
 		[[nodiscard]] const NumberType max() const {

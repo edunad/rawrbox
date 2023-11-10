@@ -25,5 +25,5 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     };
 
     uint cluster = getClusterZIndex(Pos.z);
-    PSOut.Color = vec4(colors[cluster % 6], 1.0);
+    PSOut.Color = float4(colors[cluster % 6], 1.0);
 }
