@@ -29,6 +29,9 @@ namespace model {
 		void update() override;
 		void draw() override;
 
+		void createModels();
+		void createSpline();
+
 	public:
 		Game() = default;
 		Game(const Game&) = delete;

@@ -6,10 +6,12 @@ namespace rawrbox {
 	constexpr auto MAX_DATA = 4;
 
 	struct MaterialUnlitUniforms : public rawrbox::MaterialBaseUniforms {
+		// Model ----
 		rawrbox::Colorf _gColorOverride;
 		rawrbox::Vector4f _gTextureFlags;
 
 		std::array<rawrbox::Vector4f, 4> _gData; // Other mesh data, like vertex / displacement / billboard / masks
+							 // ----------
 	};
 
 	class MaterialUnlit : public rawrbox::MaterialBase {

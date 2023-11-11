@@ -30,13 +30,6 @@ namespace rawrbox {
 		rawrbox::Vector4f _angle = {};
 
 	public:
-		Mesh() = default;
-		Mesh(const Mesh&) = default;
-		Mesh(Mesh&&) noexcept = default;
-		Mesh& operator=(const Mesh&) = default;
-		Mesh& operator=(Mesh&&) noexcept = default;
-		virtual ~Mesh() = default;
-
 		std::string name = "mesh";
 
 		// OFFSETS ---
@@ -85,6 +78,13 @@ namespace rawrbox {
 
 		void* owner = nullptr;                                        // Eeeehhhh
 		std::unordered_map<std::string, rawrbox::Vector4f> data = {}; // Other data
+
+		Mesh() = default;
+		Mesh(const Mesh&) = default;
+		Mesh(Mesh&&) noexcept = default;
+		Mesh& operator=(const Mesh&) = default;
+		Mesh& operator=(Mesh&&) noexcept = default;
+		virtual ~Mesh() = default;
 
 		// UTILS ----
 		[[nodiscard]] virtual const std::string& getName() const {

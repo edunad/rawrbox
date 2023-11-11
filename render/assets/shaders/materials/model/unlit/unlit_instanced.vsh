@@ -1,18 +1,13 @@
-cbuffer Constants {
-    // GLOBAL ----
-    float4x4 g_Model;
-    float4x4 g_ViewProj;
-    float4x4 g_InvView;
-    float4x4 g_WorldViewProj;
-    float4   g_ScreenSize;
-    // ------------
 
-    // UNIFORMS ----
-    float4   g_ColorOverride;
-    float4   g_TextureFlags;
-    float4   g_Data[4];
-    // ------------
-};
+#include <unlit_uniforms.fxh>
+
+#define TEXTURE_DATA
+#include <material.fxh>
+
+#define TRANSFORM_DISPLACEMENT
+#define TRANSFORM_PSX
+#define TRANSFORM_BILLBOARD
+#include <model_transforms.fxh>
 
 struct VSInput {
     float3 Pos   : ATTRIB0;
@@ -36,21 +31,12 @@ struct PSInput {
     nointerpolation float  TexIndex : TEX_ARRAY_INDEX;
 };
 
-#define TRANSFORM_DISPLACEMENT
-#define TRANSFORM_PSX
-#define TRANSFORM_BILLBOARD
-#define TEXTURE_DATA
-#include "material.fxh"
-#include "model_transforms.fxh"
-
 void main(in VSInput VSIn, out PSInput PSIn) {
     float4x4 InstanceMatr = MatrixFromRows(VSIn.MtrxRow0, VSIn.MtrxRow1, VSIn.MtrxRow2, VSIn.MtrxRow3);
-    TransformedData transform = applyPosTransforms(g_ViewProj, mul(float4(VSIn.Pos, 1.), InstanceMatr), VSIn.UV);
-    //v_worldPos = mul(u_model[0], transform.pos).xyz;
-    PSIn.Pos = transform.final;
+    TransformedData transform = applyPosTransforms(g_Camera.viewProj, mul(float4(VSIn.Pos, 1.), InstanceMatr), VSIn.UV);
 
-    PSIn.Color    = VSIn.Color * VSIn.ColorOverride * g_ColorOverride;
-
+    PSIn.Pos      = transform.final;
+    PSIn.Color    = VSIn.Color * VSIn.ColorOverride * g_Model.colorOverride;
     PSIn.UV       = VSIn.UV;
     PSIn.TexIndex = VSIn.Extra.x;
 }

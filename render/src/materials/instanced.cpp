@@ -23,7 +23,6 @@ namespace rawrbox {
 		rawrbox::PipeSettings settings;
 		settings.pVS = "unlit_instanced.vsh";
 		settings.pPS = "unlit.psh";
-		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.layout = rawrbox::VertexData::vLayout(true);
 		settings.immutableSamplers = {false, true};
 		settings.resources = {

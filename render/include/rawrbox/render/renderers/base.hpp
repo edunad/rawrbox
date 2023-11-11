@@ -45,6 +45,7 @@ namespace rawrbox {
 		Diligent::NativeWindow _window = {};
 
 		bool _vsync = false;
+
 		Diligent::RENDER_DEVICE_TYPE _type = Diligent::RENDER_DEVICE_TYPE_UNDEFINED;
 
 		// HANDLES ---
@@ -76,6 +77,10 @@ namespace rawrbox {
 		// virtual void gpuCheck();
 
 	public:
+#ifdef _DEBUG
+		static uint32_t DEBUG_LEVEL;
+#endif
+
 		std::function<void()> worldRender = nullptr;
 		std::function<void()> overlayRender = nullptr;
 		std::function<void()> postRender = nullptr;

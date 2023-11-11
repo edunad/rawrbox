@@ -1,6 +1,7 @@
 
 // #include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/light/manager.hpp>
+#include <rawrbox/render/materials/lit.hpp>
 #include <rawrbox/render/renderers/cluster.hpp>
 #include <rawrbox/render/utils/render.hpp>
 
@@ -27,6 +28,14 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_lightGridsBuffer);
 		RAWRBOX_DESTROY(this->_lightGridsBufferWrite);
 		RAWRBOX_DESTROY(this->_lightGridsBufferRead);
+	}
+
+	void RendererCluster::completeIntro() {
+		// Init & load materials ---
+		rawrbox::MaterialLit::init();
+		// -----
+
+		rawrbox::RendererBase::completeIntro();
 	}
 
 	// -------------------------------------------
@@ -215,10 +224,9 @@ namespace rawrbox {
 			auto tView = this->_camera->getViewMtx().transpose();
 			tInvProj.inverse();
 
-			*CBConstants = {
-			    {0, 0, size.x, size.y},
-			    tInvProj,
-			    tView};
+			CBConstants->g_ScreenSize = {0, 0, size.x, size.y};
+			CBConstants->g_InvProj = tInvProj;
+			CBConstants->g_View = tView;
 
 			this->bindUniforms<rawrbox::ClusterConstants>(CBConstants);
 		}

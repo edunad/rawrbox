@@ -22,9 +22,11 @@ namespace rawrbox {
 		rawrbox::PipeSettings settings;
 		settings.pVS = "unlit_skinned.vsh";
 		settings.pPS = "unlit.psh";
-		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.layout = rawrbox::VertexBoneData::vLayout();
 		settings.immutableSamplers = {false, true};
+		settings.macros.AddShaderMacro("MAX_BONES", rawrbox::MAX_BONES_PER_MODEL);
+		settings.macros.AddShaderMacro("NUM_BONES_PER_VERTEX", rawrbox::MAX_BONES_PER_VERTEX);
+
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};

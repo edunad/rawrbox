@@ -1,0 +1,22 @@
+Texture2DArray g_Texture;
+SamplerState   g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
+
+struct PSInput {
+    float4 Pos                      : SV_POSITION;
+    //float4 WorldPos                 : POSITION1;
+    float2 UV                       : TEX_COORD;
+    float4 Color                    : COLOR0;
+
+    nointerpolation float  TexIndex : TEX_ARRAY_INDEX;
+};
+
+struct PSOutput {
+    float4 Color : SV_TARGET;
+};
+
+void main(in PSInput PSIn, out PSOutput PSOut) {
+    float4 color = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+    if (color.a <= 0.0) discard;
+
+    PSOut.Color = color;
+}

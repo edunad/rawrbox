@@ -55,6 +55,11 @@
 #include <rawrbox/utils/threading.hpp>
 
 namespace rawrbox {
+
+#ifdef _DEBUG
+	uint32_t RendererBase::DEBUG_LEVEL = 0;
+#endif
+
 	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Colorf& clearColor) : _window(window), _type(type), _size(size), _clearColor(clearColor) {}
 	RendererBase::~RendererBase() {
 		this->_render.reset();

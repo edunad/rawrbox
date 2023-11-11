@@ -1,23 +1,14 @@
-#define MAX_BONES 200 // TODO: MOVE IT TO MACROS
-#define NUM_BONES_PER_VERTEX 4 // TODO: MOVE IT TO MACROS
 
-cbuffer Constants {
-    // GLOBAL ----
-    float4x4 g_Model;
-    float4x4 g_ViewProj;
-    float4x4 g_InvView;
-    float4x4 g_WorldViewProj;
-    float4   g_ScreenSize;
-    // ------------
+#include <unlit_skinned_uniforms.fxh>
 
-    // UNIFORMS ----
-    float4   g_ColorOverride;
-    float4   g_TextureFlags;
-    float4   g_Data[4];
+#define TEXTURE_DATA
+#include <material.fxh>
 
-    float4x4 g_bones[MAX_BONES];
-    // ------------
-};
+#define TRANSFORM_DISPLACEMENT
+#define TRANSFORM_PSX
+#define TRANSFORM_BILLBOARD
+#define TRANSFORM_BONES
+#include <model_transforms.fxh>
 
 struct VSInput {
     float3 Pos        : ATTRIB0;
@@ -36,14 +27,6 @@ struct PSInput {
     nointerpolation float  TexIndex : TEX_ARRAY_INDEX;
 };
 
-#define TRANSFORM_DISPLACEMENT
-#define TRANSFORM_PSX
-#define TRANSFORM_BILLBOARD
-#define TRANSFORM_BONES
-#define TEXTURE_DATA
-#include "material.fxh"
-#include "model_transforms.fxh"
-
 void main(in VSInput VSIn, out PSInput PSIn) {
     float4 pos = boneTransform(VSIn.BoneIndex, VSIn.BoneWeight, VSIn.Pos);
     TransformedData transform = applyPosTransforms(pos, VSIn.UV.xy);
@@ -51,6 +34,5 @@ void main(in VSInput VSIn, out PSInput PSIn) {
     PSIn.Pos      = transform.final;
     PSIn.UV       = VSIn.UV.xy;
     PSIn.TexIndex = VSIn.UV.z;
-
-    PSIn.Color    = VSIn.Color * g_ColorOverride;
+    PSIn.Color    = VSIn.Color * g_Model.colorOverride;
 }

@@ -37,16 +37,16 @@ namespace rawrbox {
 		}
 	};
 
-	struct ClusterConstants {
+	struct ClusterUniforms {
+		rawrbox::Vector2f g_ClusterSize = {};
+		rawrbox::Vector2f g_zNearFarVec = {};
+	};
+
+	struct ClusterConstants : public rawrbox::ClusterUniforms {
 		// CAMERA ------
 		rawrbox::Vector4f g_ScreenSize = {};
 		rawrbox::Matrix4x4 g_InvProj = {};
 		rawrbox::Matrix4x4 g_View = {};
-		// --------------
-
-		// CLUSTER ------
-		rawrbox::Vector2f g_ClusterSize = {};
-		rawrbox::Vector2f g_zNearFarVec = {};
 		// --------------
 	};
 
@@ -82,6 +82,8 @@ namespace rawrbox {
 		// -----------
 
 		rawrbox::Matrix4x4 _oldProj = {};
+
+		void completeIntro() override;
 
 	public:
 		RendererCluster(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Colorf& clearColor = rawrbox::Colors::Black());

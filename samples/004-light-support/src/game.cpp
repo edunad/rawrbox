@@ -47,18 +47,14 @@ namespace light {
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// -----
 
-		// Setup materials ---
-		// this->_model->setMaterial<rawrbox::MaterialLit>();
-		// ----
-
 		// Setup binds ---
-		/*this->_window->onKey += [](rawrbox::Window& w, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) {
+		window->onKey += [](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
 			if (action != KEY_ACTION_UP) return;
 
-			if (key == KEY_F1) rawrbox::RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_OFF;
-			if (key == KEY_F2) rawrbox::RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_CLUSTER_Z;
-			if (key == KEY_F3) rawrbox::RENDERER_DEBUG = rawrbox::RENDER_DEBUG_MODE::DEBUG_CLUSTER_COUNT;
-		};*/
+			if (key == KEY_F1) rawrbox::RendererBase::DEBUG_LEVEL = 0;
+			if (key == KEY_F2) rawrbox::RendererBase::DEBUG_LEVEL = 1;
+			if (key == KEY_F3) rawrbox::RendererBase::DEBUG_LEVEL = 2;
+		};
 		// ----------
 
 		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 40.F, 0.8F);
@@ -91,25 +87,26 @@ namespace light {
 
 		// Setup
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane<>({2.5F, 0.01F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
-			mesh.setTexture(tex);
-			mesh.setSpecularTexture(texSpec, 25.F);
-			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
-			this->_model->addMesh(mesh);
-		}
-
-		{
-			auto mesh = rawrbox::MeshUtils::generatePlane<>({-2.5F, 0.01F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
-			mesh.setTexture(tex);
-			mesh.setSpecularTexture(texSpec, 25.F);
-			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
-			this->_model->addMesh(mesh);
-		}
-
-		{
 			auto mesh = rawrbox::MeshUtils::generateGrid<>(12, {0.F, 0.F, 0.F});
 			this->_model->addMesh(mesh);
 		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({2.5F, 0.01F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
+			mesh.setTexture(tex);
+			mesh.setSpecularTexture(texSpec, 25.F);
+			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
+			this->_model2->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({-2.5F, 0.01F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
+			mesh.setTexture(tex);
+			mesh.setSpecularTexture(texSpec, 25.F);
+			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
+			this->_model2->addMesh(mesh);
+		}
+
 		// ----
 
 		// Text test ----
@@ -121,6 +118,7 @@ namespace light {
 		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{-2.5F, 0.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Red(), 0.602F, 0.708F, 100.F);
 
 		this->_model->upload();
+		this->_model2->upload();
 		this->_text->upload();
 
 		this->_ready = true;
@@ -129,6 +127,7 @@ namespace light {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
 		this->_model.reset();
+		this->_model2.reset();
 		this->_text.reset();
 
 		rawrbox::RESOURCES::shutdown();
@@ -160,9 +159,10 @@ namespace light {
 	}
 
 	void Game::drawWorld() {
-		if (!this->_ready || this->_model == nullptr || this->_text == nullptr) return;
+		if (!this->_ready || this->_model == nullptr || this->_model2 == nullptr || this->_text == nullptr) return;
 
 		this->_model->draw();
+		this->_model2->draw();
 		this->_text->draw();
 	}
 

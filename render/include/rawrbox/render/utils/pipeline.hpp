@@ -31,7 +31,7 @@ namespace rawrbox {
 
 	struct PipeSettings {
 		Diligent::PRIMITIVE_TOPOLOGY topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-		Diligent::CULL_MODE cull = Diligent::CULL_MODE_BACK;
+		Diligent::CULL_MODE cull = Diligent::CULL_MODE_FRONT;
 		Diligent::FILL_MODE fill = Diligent::FILL_MODE_SOLID;
 
 		Diligent::COMPARISON_FUNCTION depth = Diligent::COMPARISON_FUNC_LESS;
@@ -43,6 +43,7 @@ namespace rawrbox {
 		uint8_t renderTargets = 1;
 		rawrbox::PipePass renderPass = {};
 		rawrbox::PipeBlending blending = {};
+		Diligent::ShaderMacroHelper macros = {};
 
 		std::string pVS = "";
 		std::string pPS = "";

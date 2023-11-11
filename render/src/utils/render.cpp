@@ -12,6 +12,7 @@ namespace rawrbox {
 		rawrbox::PipeSettings settings;
 		settings.pVS = "rt.vsh";
 		settings.pPS = "rt.psh";
+		settings.cull = Diligent::CULL_MODE_BACK;
 		settings.depthWrite = false;
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		settings.immutableSamplers = {true};

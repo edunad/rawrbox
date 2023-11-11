@@ -8,7 +8,6 @@ RWBuffer<uint /*format=r32i*/> g_globalIndex; // Read-Write
 RWBuffer<uint /*format=r32i*/> g_clusterLightIndices; // Read-Write
 RWBuffer<uint2 /*format=r32i*/> g_clusterLightGrid; // Read-Write
 
-#include <cluster_utils.fxh>
 #include <light_utils.fxh>
 
 bool lightIntersectsCluster(Light light, Cluster cluster);
@@ -35,7 +34,7 @@ void main(uint3 GIid: SV_DispatchThreadID, uint GIndx: SV_GroupIndex) {
     uint lightCount = totalLights();
     uint lightOffset = 0;
 
-    float3 lightDir = mul(float4(0, 0, 0, 1.0), g_View).xyz;
+    float3 lightDir = mul(float4(0, 0, 0, 1.0), g_Camera.view).xyz;
 
     while(lightOffset < lightCount) {
         // read THREAD_GROUP_SIZE lights into shared memory
@@ -47,10 +46,10 @@ void main(uint3 GIid: SV_DispatchThreadID, uint GIndx: SV_GroupIndex) {
             Light light = getLight(lightIndex);
             // transform to view space (expected by pointLightAffectsCluster)
             // do it here once rather than for each cluster later
-            light.position = mul(float4(light.position, 1.0), g_View).xyz;
+            light.position = mul(float4(light.position, 1.0), g_Camera.view).xyz;
 
             if(light.type == LIGHT_SPOT) {
-                light.direction = mul(float4(light.direction, 1.0), g_View).xyz;
+                light.direction = mul(float4(light.direction, 1.0), g_Camera.view).xyz;
                 light.direction.xyz = normalize(light.direction - lightDir);
             }
 

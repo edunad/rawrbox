@@ -1,8 +1,10 @@
-Texture2DArray g_Texture;
-SamplerState   g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
+
+#include <lit_uniforms.fxh>
+#include <cluster_utils.fxh>
 
 struct PSInput {
     float4 Pos                      : SV_POSITION;
+    //float4 WorldPos                 : POSITION1;
     float2 UV                       : TEX_COORD;
     float4 Color                    : COLOR0;
 
@@ -24,6 +26,6 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
         float3(1.0, 0.0, 1.0)
     };
 
-    uint cluster = getClusterZIndex(Pos.z);
+    uint cluster = getClusterZIndex(PSIn.Pos.z);
     PSOut.Color = float4(colors[cluster % 6], 1.0);
 }

@@ -21,34 +21,28 @@ namespace rawrbox {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 			mesh.setPos(a);
 
-			std::array<uint16_t, 2>
-			    inds{0, 1};
+			mesh.lineMode = true;
+			mesh.setOptimizable(false);
+
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
+				mesh.vertices = {
+				    rawrbox::VertexNormData(a, rawrbox::Vector2f(), {}, {}, col),
+				    rawrbox::VertexNormData(b, rawrbox::Vector2f(), {}, {}, col),
+				};
+			} else {
+				mesh.vertices = {
+				    rawrbox::VertexData(a, rawrbox::Vector2f(), col),
+				    rawrbox::VertexData(b, rawrbox::Vector2f(), col),
+				};
+			}
+
+			mesh.indices = {0, 1};
 
 			mesh.baseVertex = 0;
 			mesh.baseIndex = 0;
 			mesh.totalVertex = 2;
 			mesh.totalIndex = 2;
 
-			mesh.lineMode = true;
-			mesh.setOptimizable(false);
-
-			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				std::array<rawrbox::VertexNormData, 2> buff = {
-				    rawrbox::VertexNormData(a, rawrbox::Vector2f(), {}, {}, col),
-				    rawrbox::VertexNormData(b, rawrbox::Vector2f(), {}, {}, col),
-				};
-
-				mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
-			} else {
-				std::array<rawrbox::VertexData, 2> buff = {
-				    rawrbox::VertexData(a, rawrbox::Vector2f(), col),
-				    rawrbox::VertexData(b, rawrbox::Vector2f(), col),
-				};
-
-				mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
-			}
-
-			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
 			return mesh;
 		}
 
@@ -58,24 +52,20 @@ namespace rawrbox {
 			mesh.setPos(pos);
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				std::array<rawrbox::VertexNormData, 3> buff = {
+				mesh.vertices = {
 				    rawrbox::VertexNormData(a, aUV, rawrbox::Vector3f::forward(), {}, colA),
 				    rawrbox::VertexNormData(b, bUV, rawrbox::Vector3f::forward(), {}, colB),
 				    rawrbox::VertexNormData(c, cUV, rawrbox::Vector3f::forward(), {}, colC),
 				};
-
-				mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
 			} else {
-				std::array<rawrbox::VertexData, 3> buff = {
+				mesh.vertices = {
 				    rawrbox::VertexData(a, aUV, colA),
 				    rawrbox::VertexData(b, bUV, colB),
 				    rawrbox::VertexData(c, cUV, colC),
 				};
-
-				mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
 			};
 
-			std::array<uint16_t, 3> inds{0, 1, 2};
+			mesh.indices = {0, 1, 2};
 
 			mesh.baseVertex = 0;
 			mesh.baseIndex = 0;
@@ -100,8 +90,6 @@ namespace rawrbox {
 			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
 			// -----
 
-			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
-
 			return mesh;
 		}
 
@@ -113,26 +101,22 @@ namespace rawrbox {
 			rawrbox::Vector2f hSize = size / 2.F;
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				std::array<rawrbox::VertexNormData, 4> buff = {
+				mesh.vertices = {
 				    rawrbox::VertexNormData(rawrbox::Vector3f(-hSize.x, -hSize.y, 0), rawrbox::Vector2f(0, 1), {1, 0, 0}, {}, cl),
 				    rawrbox::VertexNormData(rawrbox::Vector3f(hSize.x, hSize.y, 0), rawrbox::Vector2f(1, 0), {1, 0, 0}, {}, cl),
 				    rawrbox::VertexNormData(rawrbox::Vector3f(-hSize.x, hSize.y, 0), rawrbox::Vector2f(0, 0), {1, 0, 0}, {}, cl),
 				    rawrbox::VertexNormData(rawrbox::Vector3f(hSize.x, -hSize.y, 0), rawrbox::Vector2f(1, 1), {1, 0, 0}, {}, cl),
 				};
-
-				mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
 			} else {
-				std::array<rawrbox::VertexData, 4> buff = {
+				mesh.vertices = {
 				    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, 0), rawrbox::Vector2f(0, 1), cl),
 				    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, 0), rawrbox::Vector2f(1, 0), cl),
 				    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, hSize.y, 0), rawrbox::Vector2f(0, 0), cl),
 				    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, 0), rawrbox::Vector2f(1, 1), cl),
 				};
-
-				mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
 			}
 
-			std::array<uint16_t, 6> inds{
+			mesh.indices = {
 			    0, 1, 2,
 			    0, 3, 1};
 
@@ -141,7 +125,6 @@ namespace rawrbox {
 
 			mesh.totalVertex = 4;
 			mesh.totalIndex = 6;
-			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
 
 			// AABB ---
 			mesh.bbox.m_min = {-hSize.x, -hSize.y, 0};
@@ -167,7 +150,7 @@ namespace rawrbox {
 			auto nmrlBT = rawrbox::Vector3f(0, 1, 0);
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				std::array<rawrbox::VertexNormData, 24> buff = {
+				mesh.vertices = {
 				    // Back
 				    rawrbox::VertexNormData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), rawrbox::Vector2f(0, 0), nmrlB, nmrlB, cl),   // A
 				    rawrbox::VertexNormData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), rawrbox::Vector2f(1, 1), nmrlB, nmrlB, cl), // B
@@ -203,10 +186,8 @@ namespace rawrbox {
 				    rawrbox::VertexNormData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), rawrbox::Vector2f(1, 1), nmrlBT, nmrlBT, cl),
 				    rawrbox::VertexNormData(rawrbox::Vector3f(hSize.x, -hSize.y, -hSize.z), rawrbox::Vector2f(1, 0), nmrlBT, nmrlBT, cl),
 				    rawrbox::VertexNormData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), rawrbox::Vector2f(0, 1), nmrlBT, nmrlBT, cl)};
-
-				mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
 			} else {
-				std::array<rawrbox::VertexData, 24> buff = {
+				mesh.vertices = {
 				    // Back
 				    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, hSize.y, hSize.z), rawrbox::Vector2f(0, 0), cl),   // A
 				    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), rawrbox::Vector2f(1, 1), cl), // B
@@ -242,8 +223,6 @@ namespace rawrbox {
 				    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, hSize.z), rawrbox::Vector2f(1, 1), cl),
 				    rawrbox::VertexData(rawrbox::Vector3f(hSize.x, -hSize.y, -hSize.z), rawrbox::Vector2f(1, 0), cl),
 				    rawrbox::VertexData(rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z), rawrbox::Vector2f(0, 1), cl)};
-
-				mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
 			}
 
 			std::vector<uint16_t> inds = {};
@@ -344,16 +323,13 @@ namespace rawrbox {
 			const uint32_t numIndices = ratio * 6;
 			const uint32_t numLineListIndices = ratio * 4;
 
-			std::vector<typename M::vertexBufferType> buff = {};
-			buff.resize(numVertices);
-
-			std::vector<uint16_t> index = {};
-			index.resize(numIndices + numLineListIndices);
+			mesh.vertices.resize(numVertices);
+			mesh.indices.resize(numIndices + numLineListIndices);
 
 			auto hSize = size / 2.F;
 			hSize.y /= 2.F;
 
-			buff[ratio] = rawrbox::VertexData(rawrbox::Vector3f(0, hSize.y, 0), rawrbox::Vector2f(0, 0), cl);
+			mesh.vertices[ratio] = rawrbox::VertexData(rawrbox::Vector3f(0, hSize.y, 0), rawrbox::Vector2f(0, 0), cl);
 
 			for (uint32_t ii = 0; ii < ratio; ++ii) {
 				const float angle = step * ii;
@@ -361,36 +337,33 @@ namespace rawrbox {
 				const float angX = std::cos(angle) * hSize.x;
 				const float angZ = std::sin(angle) * hSize.z;
 
-				buff[ii] = rawrbox::VertexData(rawrbox::Vector3f(angZ, -hSize.y, angX), rawrbox::Vector2f(0, 0), cl);
+				mesh.vertices[ii] = rawrbox::VertexData(rawrbox::Vector3f(angZ, -hSize.y, angX), rawrbox::Vector2f(0, 0), cl);
 
-				index[ii * 3 + 0] = uint16_t(ratio);
-				index[ii * 3 + 1] = uint16_t((ii + 1) % ratio);
-				index[ii * 3 + 2] = uint16_t(ii);
+				mesh.indices[ii * 3 + 0] = uint16_t(ratio);
+				mesh.indices[ii * 3 + 1] = uint16_t((ii + 1) % ratio);
+				mesh.indices[ii * 3 + 2] = uint16_t(ii);
 
-				index[ratio * 3 + ii * 3 + 0] = 0;
-				index[ratio * 3 + ii * 3 + 1] = uint16_t(ii);
-				index[ratio * 3 + ii * 3 + 2] = uint16_t((ii + 1) % ratio);
+				mesh.indices[ratio * 3 + ii * 3 + 0] = 0;
+				mesh.indices[ratio * 3 + ii * 3 + 1] = uint16_t(ii);
+				mesh.indices[ratio * 3 + ii * 3 + 2] = uint16_t((ii + 1) % ratio);
 
-				index[numIndices + ii * 2 + 0] = uint16_t(ii);
-				index[numIndices + ii * 2 + 1] = uint16_t(ratio);
+				mesh.indices[numIndices + ii * 2 + 0] = uint16_t(ii);
+				mesh.indices[numIndices + ii * 2 + 1] = uint16_t(ratio);
 
-				index[numIndices + ratio * 2 + ii * 2 + 0] = uint16_t(ii);
-				index[numIndices + ratio * 2 + ii * 2 + 1] = uint16_t((ii + 1) % ratio);
+				mesh.indices[numIndices + ratio * 2 + ii * 2 + 0] = uint16_t(ii);
+				mesh.indices[numIndices + ratio * 2 + ii * 2 + 1] = uint16_t((ii + 1) % ratio);
 			}
 
 			mesh.baseVertex = 0;
 			mesh.baseIndex = 0;
-			mesh.totalVertex = static_cast<uint16_t>(buff.size());
-			mesh.totalIndex = static_cast<uint16_t>(index.size());
+			mesh.totalVertex = numVertices;
+			mesh.totalIndex = numIndices + numLineListIndices;
 
 			// AABB ---
 			mesh.bbox.m_min = -hSize;
 			mesh.bbox.m_max = hSize;
 			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
 			// -----
-
-			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
-			mesh.indices.insert(mesh.indices.end(), index.begin(), index.end());
 
 			return mesh;
 		}
@@ -407,63 +380,57 @@ namespace rawrbox {
 			mesh.setPos(pos);
 
 			const float step = rawrbox::pi<float> * 2.0F / ratio;
-			const uint32_t numVertices = ratio * 2;
-			const uint32_t numIndices = ratio * 12;
-			const uint32_t numLineListIndices = ratio * 6;
+			const uint16_t numVertices = ratio * 2;
+			const uint16_t numIndices = ratio * 12;
+			const uint16_t numLineListIndices = ratio * 6;
 			const rawrbox::Vector3f hSize = size / 2.F;
 
-			std::vector<typename M::vertexBufferType> buff = {};
-			buff.resize(numVertices);
+			mesh.vertices.resize(numVertices);
+			mesh.indices.resize(numIndices + numLineListIndices);
 
-			std::vector<uint16_t> index = {};
-			index.resize(numIndices + numLineListIndices);
-
-			for (uint32_t ii = 0; ii < ratio; ++ii) {
+			for (uint16_t ii = 0; ii < ratio; ++ii) {
 				const float angle = step * ii;
 
 				const float angX = std::cos(angle) * hSize.x;
 				const float angZ = std::sin(angle) * hSize.z;
 
-				buff[ii] = rawrbox::VertexData(rawrbox::Vector3f(angX, hSize.y, angZ), rawrbox::Vector2f(0, 0), cl);
-				buff[ii + ratio] = rawrbox::VertexData(rawrbox::Vector3f(angX, -hSize.y, angZ), rawrbox::Vector2f(0, 0), cl);
+				mesh.vertices[ii] = rawrbox::VertexData(rawrbox::Vector3f(angX, hSize.y, angZ), rawrbox::Vector2f(0, 0), cl);
+				mesh.vertices[ii + ratio] = rawrbox::VertexData(rawrbox::Vector3f(angX, -hSize.y, angZ), rawrbox::Vector2f(0, 0), cl);
 
-				index[ii * 6 + 0] = uint16_t(ii + ratio);
-				index[ii * 6 + 1] = uint16_t((ii + 1) % ratio);
-				index[ii * 6 + 2] = uint16_t(ii);
-				index[ii * 6 + 3] = uint16_t(ii + ratio);
-				index[ii * 6 + 4] = uint16_t((ii + 1) % ratio + ratio);
-				index[ii * 6 + 5] = uint16_t((ii + 1) % ratio);
+				mesh.indices[ii * 6 + 0] = static_cast<uint16_t>(ii + ratio);
+				mesh.indices[ii * 6 + 1] = static_cast<uint16_t>((ii + 1) % ratio);
+				mesh.indices[ii * 6 + 2] = static_cast<uint16_t>(ii);
+				mesh.indices[ii * 6 + 3] = static_cast<uint16_t>(ii + ratio);
+				mesh.indices[ii * 6 + 4] = static_cast<uint16_t>((ii + 1) % ratio + ratio);
+				mesh.indices[ii * 6 + 5] = static_cast<uint16_t>((ii + 1) % ratio);
 
-				index[ratio * 6 + ii * 6 + 0] = uint16_t(0);
-				index[ratio * 6 + ii * 6 + 1] = uint16_t(ii);
-				index[ratio * 6 + ii * 6 + 2] = uint16_t((ii + 1) % ratio);
-				index[ratio * 6 + ii * 6 + 3] = uint16_t(ratio);
-				index[ratio * 6 + ii * 6 + 4] = uint16_t((ii + 1) % ratio + ratio);
-				index[ratio * 6 + ii * 6 + 5] = uint16_t(ii + ratio);
+				mesh.indices[ratio * 6 + ii * 6 + 0] = static_cast<uint16_t>(0);
+				mesh.indices[ratio * 6 + ii * 6 + 1] = static_cast<uint16_t>(ii);
+				mesh.indices[ratio * 6 + ii * 6 + 2] = static_cast<uint16_t>((ii + 1) % ratio);
+				mesh.indices[ratio * 6 + ii * 6 + 3] = static_cast<uint16_t>(ratio);
+				mesh.indices[ratio * 6 + ii * 6 + 4] = static_cast<uint16_t>((ii + 1) % ratio + ratio);
+				mesh.indices[ratio * 6 + ii * 6 + 5] = static_cast<uint16_t>(ii + ratio);
 
-				index[numIndices + ii * 2 + 0] = uint16_t(ii);
-				index[numIndices + ii * 2 + 1] = uint16_t(ii + ratio);
+				mesh.indices[numIndices + ii * 2 + 0] = static_cast<uint16_t>(ii);
+				mesh.indices[numIndices + ii * 2 + 1] = static_cast<uint16_t>(ii + ratio);
 
-				index[numIndices + ratio * 2 + ii * 2 + 0] = uint16_t(ii);
-				index[numIndices + ratio * 2 + ii * 2 + 1] = uint16_t((ii + 1) % ratio);
+				mesh.indices[numIndices + ratio * 2 + ii * 2 + 0] = static_cast<uint16_t>(ii);
+				mesh.indices[numIndices + ratio * 2 + ii * 2 + 1] = static_cast<uint16_t>((ii + 1) % ratio);
 
-				index[numIndices + ratio * 4 + ii * 2 + 0] = uint16_t(ratio + ii);
-				index[numIndices + ratio * 4 + ii * 2 + 1] = uint16_t(ratio + (ii + 1) % ratio);
+				mesh.indices[numIndices + ratio * 4 + ii * 2 + 0] = static_cast<uint16_t>(ratio + ii);
+				mesh.indices[numIndices + ratio * 4 + ii * 2 + 1] = static_cast<uint16_t>(ratio + (ii + 1) % ratio);
 			}
 
 			mesh.baseVertex = 0;
 			mesh.baseIndex = 0;
-			mesh.totalVertex = static_cast<uint16_t>(buff.size());
-			mesh.totalIndex = static_cast<uint16_t>(index.size());
+			mesh.totalVertex = numVertices;
+			mesh.totalIndex = numIndices + numLineListIndices;
 
 			// AABB ---
 			mesh.bbox.m_min = -hSize;
 			mesh.bbox.m_max = hSize;
 			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
 			// -----
-
-			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
-			mesh.indices.insert(mesh.indices.end(), index.begin(), index.end());
 
 			return mesh;
 		}
@@ -582,12 +549,13 @@ namespace rawrbox {
 		}
 
 		template <typename M = rawrbox::MaterialUnlit>
-		static rawrbox::Mesh<typename M::vertexBufferType> generateMesh(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, uint32_t subDivs = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
+		static rawrbox::Mesh<typename M::vertexBufferType> generateMesh(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, uint16_t subDivs = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 			mesh.setPos(pos);
 
-			std::vector<typename M::vertexBufferType> buff = {};
 			auto uvScale = 1.0F / static_cast<float>(subDivs - 1);
+			const uint16_t vertSize = subDivs * subDivs * 4;
+			mesh.vertices.reserve(vertSize);
 
 			for (uint32_t y = 0; y < subDivs; y++) {
 				for (uint32_t x = 0; x < subDivs; x++) {
@@ -601,14 +569,14 @@ namespace rawrbox {
 					posDiv -= size / 2;
 
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
-						buff.push_back(rawrbox::VertexNormData(
+						mesh.vertices.push_back(rawrbox::VertexNormData(
 						    pos + Vector3f{posDiv.x, 0, posDiv.y},
 						    rawrbox::Vector2(uvScale * xF,
 							uvScale * yF),
 						    rawrbox::Vector3f(0, 1, 0), {},
 						    cl));
 					} else {
-						buff.push_back(rawrbox::VertexData(
+						mesh.vertices.push_back(rawrbox::VertexData(
 						    pos + Vector3f{posDiv.x, 0, posDiv.y},
 						    rawrbox::Vector2(uvScale * xF,
 							uvScale * yF),
@@ -617,32 +585,30 @@ namespace rawrbox {
 				}
 			}
 
-			std::vector<uint16_t> inds = {};
 			auto subDivsUI16 = static_cast<uint16_t>(subDivs);
-			inds.reserve(buff.size() / 4 * 6);
+			const uint16_t indcSize = vertSize / 4 * 6;
+			mesh.indices.reserve(indcSize);
+
 			for (size_t y = 0; y < subDivs - 1; y++) {
 				auto yOffset = static_cast<uint16_t>(y * subDivsUI16);
 
 				for (size_t x = 0; x < subDivs - 1; x++) {
 					uint16_t index = yOffset + static_cast<uint16_t>(x);
 
-					inds.push_back(index + 1);
-					inds.push_back(index + subDivsUI16);
-					inds.push_back(index);
+					mesh.indices.push_back(index + 1);
+					mesh.indices.push_back(index + subDivsUI16);
+					mesh.indices.push_back(index);
 
-					inds.push_back(index + subDivsUI16 + 1);
-					inds.push_back(index + subDivsUI16);
-					inds.push_back(index + 1);
+					mesh.indices.push_back(index + subDivsUI16 + 1);
+					mesh.indices.push_back(index + subDivsUI16);
+					mesh.indices.push_back(index + 1);
 				}
 			}
 
 			mesh.baseVertex = 0;
 			mesh.baseIndex = 0;
-			mesh.totalVertex = static_cast<uint16_t>(buff.size());
-			mesh.totalIndex = static_cast<uint16_t>(inds.size());
-
-			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
-			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
+			mesh.totalVertex = vertSize;
+			mesh.totalIndex = indcSize;
 
 			return mesh;
 		}
@@ -657,8 +623,8 @@ namespace rawrbox {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 			mesh.setPos(pos);
 
-			std::vector<typename M::vertexBufferType> buff = {};
-			std::vector<uint16_t> inds = {};
+			const uint16_t vertSize = size * size;
+			mesh.vertices.reserve(vertSize);
 
 			float step = 1.F;
 			for (uint16_t j = 0; j <= size; ++j) {
@@ -669,9 +635,12 @@ namespace rawrbox {
 					auto col = cl;
 
 					if (j == 0 || i == 0 || j >= size || i >= size) col = borderCl;
-					buff.push_back(rawrbox::VertexData(rawrbox::Vector3f(pos.x - static_cast<float>(size / 2), pos.y, pos.z - static_cast<float>(size / 2)) + rawrbox::Vector3f(x, y, z), rawrbox::Vector2f(0, 0), col));
+					mesh.vertices.push_back(rawrbox::VertexData(rawrbox::Vector3f(pos.x - static_cast<float>(size / 2), pos.y, pos.z - static_cast<float>(size / 2)) + rawrbox::Vector3f(x, y, z), rawrbox::Vector2f(0, 0), col));
 				}
 			}
+
+			const uint16_t indcSize = vertSize * 8;
+			mesh.indices.reserve(indcSize);
 
 			for (uint16_t j = 0; j < size; ++j) {
 				for (uint16_t i = 0; i < size; ++i) {
@@ -679,27 +648,24 @@ namespace rawrbox {
 					uint16_t row1 = j * (size + 1);
 					uint16_t row2 = (j + 1) * (size + 1);
 
-					inds.push_back(row1 + i);
-					inds.push_back(row1 + i + 1);
-					inds.push_back(row1 + i + 1);
-					inds.push_back(row2 + i + 1);
+					mesh.indices.push_back(row1 + i);
+					mesh.indices.push_back(row1 + i + 1);
+					mesh.indices.push_back(row1 + i + 1);
+					mesh.indices.push_back(row2 + i + 1);
 
-					inds.push_back(row2 + i + 1);
-					inds.push_back(row2 + i);
-					inds.push_back(row2 + i);
-					inds.push_back(row1 + i);
+					mesh.indices.push_back(row2 + i + 1);
+					mesh.indices.push_back(row2 + i);
+					mesh.indices.push_back(row2 + i);
+					mesh.indices.push_back(row1 + i);
 				}
 			}
 
 			mesh.baseVertex = 0;
 			mesh.baseIndex = 0;
-			mesh.totalVertex = static_cast<uint16_t>(buff.size());
-			mesh.totalIndex = static_cast<uint16_t>(inds.size());
-
-			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
-			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
-
+			mesh.totalVertex = vertSize;
+			mesh.totalIndex = indcSize;
 			mesh.lineMode = true;
+
 			return mesh;
 		}
 	};

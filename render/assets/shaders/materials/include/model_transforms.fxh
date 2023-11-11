@@ -16,7 +16,7 @@ struct TransformedData {
 
 // Snap vertex to achieve PSX look
 #ifdef TRANSFORM_PSX
-float4 psx_snap(float4 vertex, float2 resolution) {
+float4 PSXTransform(float4 vertex, float2 resolution) {
 	float4 snappedPos = vertex;
 	snappedPos.xyz = vertex.xyz / vertex.w;                         // convert to normalised device coordinates (NDC)
 	snappedPos.xy = floor(resolution * snappedPos.xy) / resolution; // snap the vertex to the lower-resolution grid
@@ -28,13 +28,13 @@ float4 psx_snap(float4 vertex, float2 resolution) {
 // ----------------------
 
 #ifdef TRANSFORM_BILLBOARD
-float4 billboard(float4 vertex, float4 billboard) {
+float4 billboardTransform(float4 vertex, float4 billboard) {
     float4 vOut = vertex;
 
     // TOOD: Lock X Y Z using billboard
     if(billboard.x != 0. || billboard.y != 0. || billboard.z != 0.) {
-        float3 right = float3(g_InvView[0][0], g_InvView[1][0], g_InvView[2][0]);
-        float3 up = float3(g_InvView[0][1], g_InvView[1][1], g_InvView[2][1]);
+        float3 right = float3(g_Camera.invView[0][0], g_Camera.invView[1][0], g_Camera.invView[2][0]);
+        float3 up = float3(g_Camera.invView[0][1], g_Camera.invView[1][1], g_Camera.invView[2][1]);
 
         vOut = float4((right * vertex.x) + (up * vertex.y), 1.);
     }
@@ -50,7 +50,7 @@ float4 boneTransform(uint4 indices, float4 weight, float3 position) {
 
 	for (uint idx = 0; idx < NUM_BONES_PER_VERTEX; idx++) {
 		if (weight[idx] > 0.0) {
-			BoneTransform += g_bones[indices[idx]] * weight[idx];
+			BoneTransform += g_Bones[indices[idx]] * weight[idx];
 			skinned = true;
 		}
 	}
@@ -67,22 +67,22 @@ TransformedData applyPosTransforms(float4x4 proj, float4 a_position, float2 a_te
 
     // displacement mode
 #ifdef TRANSFORM_DISPLACEMENT
-    if(g_DisplacementPower != 0.) {
-	    data.pos.y += g_Displacement.SampleLevel(g_Displacement_sampler, float3(a_texcoord0, 0), 0).x * g_DisplacementPower;
+    if(DisplacementPower != 0.) {
+	    data.pos.y += g_Displacement.SampleLevel(g_Displacement_sampler, float3(a_texcoord0, 0), 0).x * DisplacementPower;
     }
 #endif
     // ----
 
     // Billboard mode
 #ifdef TRANSFORM_BILLBOARD
-    data.pos = billboard(data.pos, g_Billboard);
+    data.pos = billboardTransform(data.pos, Billboard);
 #endif
     // ----
 
 	// vertex_snap mode
 #ifdef TRANSFORM_PSX
-    if(g_VertexSnap != 0.) {
-        data.final = psx_snap(mul(data.pos, proj), g_ScreenSize.zw / g_VertexSnap);
+    if(VertexSnap != 0.) {
+        data.final = PSXTransform(mul(data.pos, proj), g_Camera.screenSize.zw / VertexSnap);
     } else {
         data.final = mul(data.pos, proj);
     }
@@ -95,11 +95,11 @@ TransformedData applyPosTransforms(float4x4 proj, float4 a_position, float2 a_te
 }
 
 TransformedData applyPosTransforms(float4 a_position, float2 a_texcoord0) {
-    return applyPosTransforms(g_WorldViewProj, a_position, a_texcoord0);
+    return applyPosTransforms(g_Camera.worldViewProj, a_position, a_texcoord0);
 }
 
 TransformedData applyPosTransforms(float3 a_position, float2 a_texcoord0) {
-    return applyPosTransforms(g_WorldViewProj, float4(a_position, 1.0), a_texcoord0);
+    return applyPosTransforms(g_Camera.worldViewProj, float4(a_position, 1.0), a_texcoord0);
 }
 
 TransformedData applyPosTransforms(float4x4 proj, float3 a_position, float2 a_texcoord0) {

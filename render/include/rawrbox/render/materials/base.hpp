@@ -14,6 +14,7 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 _gModel;
 		rawrbox::Matrix4x4 _gViewProj;
 		rawrbox::Matrix4x4 _gInvView;
+		rawrbox::Matrix4x4 _gInvProj;
 		rawrbox::Matrix4x4 _gWorldViewModel;
 
 		rawrbox::Vector4f _gScreenSize;
@@ -51,7 +52,11 @@ namespace rawrbox {
 
 			auto size = renderer->getSize().cast<float>();
 			auto tTransform = rawrbox::TRANSFORM.transpose();
+
 			auto tProj = renderer->camera()->getProjMtx().transpose();
+			auto tInvProj = renderer->camera()->getProjMtx();
+			tInvProj.inverse();
+
 			auto tView = renderer->camera()->getViewMtx().transpose();
 			auto tInvView = renderer->camera()->getViewMtx();
 			tInvView.inverse();
@@ -63,6 +68,7 @@ namespace rawrbox {
 			    tTransform,
 			    tView * tProj,
 			    tInvView,
+			    tInvProj,
 			    tTransform * tWorldView,
 			    {0, 0, size.x, size.y},
 			};
@@ -76,6 +82,7 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData>
 		void bindPipeline(const rawrbox::Mesh<T>& mesh) {
+			if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-Material] Material not initialized!");
 			auto context = rawrbox::RENDERER->context();
 
 			if (mesh.wireframe) {
@@ -87,14 +94,14 @@ namespace rawrbox {
 			} else {
 				if (mesh.culling == Diligent::CULL_MODE_NONE) {
 					if (this->_cullnone == nullptr) throw std::runtime_error("[RawrBox-Material] Disabled cull not supported on material");
-					if (this->_cullnone_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Disabled alpha cull not supported on material");
+					if (mesh.alphaBlend && this->_cullnone_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Disabled alpha cull not supported on material");
 					context->SetPipelineState(mesh.alphaBlend ? this->_cullnone_alpha : this->_cullnone);
 				} else if (mesh.culling == Diligent::CULL_MODE_BACK) {
 					if (this->_cullback == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back not supported on material");
-					if (this->_cullback_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back alpha not supported on material");
+					if (mesh.alphaBlend && this->_cullback_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back alpha not supported on material");
 					context->SetPipelineState(mesh.alphaBlend ? this->_cullback_alpha : this->_cullback);
 				} else {
-					if (this->_base_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Alpha not supported on material");
+					if (mesh.alphaBlend && this->_base_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Alpha not supported on material");
 					context->SetPipelineState(mesh.alphaBlend ? this->_base_alpha : this->_base);
 				}
 			}

@@ -35,12 +35,14 @@
 #ifndef INCLUDED_CLUSTER_UNIFORMS
 #define INCLUDED_CLUSTER_UNIFORMS
 
+struct Camera {
+    float4   screenSize;
+    float4x4 invProj;
+    float4x4 view;
+};
+
 cbuffer Constants {
-    // CAMERA ------
-    float4   g_ScreenSize;
-    float4x4 g_InvProj;
-    float4x4 g_View;
-    // --------------
+    Camera   g_Camera;
 
     float2   g_ClusterSize;
     float2   g_zNearFarVec;
