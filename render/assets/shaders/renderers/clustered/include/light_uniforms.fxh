@@ -40,12 +40,9 @@ struct DirectionalLight {
     float3 radiance;
 };
 
-struct LightGrid {
-    uint offset;
-    uint lights;
-};
 
 #define LIGHT_POINT 1
 #define LIGHT_SPOT 2
+#define LIGHT_UNIFORMS
 
 #endif

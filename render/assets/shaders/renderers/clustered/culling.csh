@@ -2,11 +2,12 @@
 #include <cluster_uniforms.fxh>
 #include <light_uniforms.fxh>
 
-StructuredBuffer<Light> g_Lights; // Read-only
-StructuredBuffer<Cluster> g_Clusters; // Read-only
-RWBuffer<uint /*format=r32i*/> g_globalIndex; // Read-Write
-RWBuffer<uint /*format=r32i*/> g_clusterLightIndices; // Read-Write
-RWBuffer<uint2 /*format=r32i*/> g_clusterLightGrid; // Read-Write
+#define READ_CLUSTERS
+#define READ_LIGHTS
+#define WRITE_ATOMIC
+#define WRITE_LIGHT_INDICES
+#define WRITE_LIGHT_GRID
+#include <cluster.fxh>
 
 #include <light_utils.fxh>
 

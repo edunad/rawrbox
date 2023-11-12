@@ -8,4 +8,6 @@ cbuffer Constants {
     Model g_Model;
 };
 
+#define CAMERA_UNIFORMS
+#define MODEL_UNIFORMS
 #endif

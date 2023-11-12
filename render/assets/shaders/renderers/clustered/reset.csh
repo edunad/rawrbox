@@ -1,4 +1,5 @@
-RWBuffer<uint /*format=r32i*/> g_globalIndex;
+#define WRITE_ATOMIC
+#include <cluster.fxh>
 
 [numthreads(1, 1, 1)]
 void main(uint3 GIid: SV_DispatchThreadID) {

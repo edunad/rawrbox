@@ -13,7 +13,6 @@ struct TransformedData {
     float4 final;
 };
 
-
 // Snap vertex to achieve PSX look
 #ifdef TRANSFORM_PSX
 float4 PSXTransform(float4 vertex, float2 resolution) {

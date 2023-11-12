@@ -10,4 +10,6 @@ cbuffer Constants {
     float4x4 g_Bones[MAX_BONES];
 };
 
+#define CAMERA_UNIFORMS
+#define MODEL_UNIFORMS
 #endif

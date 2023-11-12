@@ -114,8 +114,8 @@ namespace light {
 		this->_text->addText(*this->_font, "SPOT LIGHT", {-2.5F, 0.5F, 0});
 		// ------
 
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{2.5F, 0.F, 0}, rawrbox::Colors::Blue(), 6.2F);
-		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{-2.5F, 0.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Red(), 0.602F, 0.708F, 100.F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{2.5F, 0.2F, 0}, rawrbox::Colors::Blue(), 6.2F);
+		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{-2.5F, 0.2F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Red(), 0.602F, 0.708F, 100.F);
 
 		this->_model->upload();
 		this->_model2->upload();

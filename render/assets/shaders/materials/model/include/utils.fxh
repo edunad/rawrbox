@@ -1,6 +1,7 @@
 #ifndef UTIL_HEADER_GUARD
 #define UTIL_HEADER_GUARD
 
+#ifdef CAMERA_UNIFORMS
 float4 screen2Eye(float4 coord) {
     float3 ndc = float3(
         2.0 * (coord.x - g_Camera.screenSize.x) / g_Camera.screenSize.z - 1.0,
@@ -13,7 +14,7 @@ float4 screen2Eye(float4 coord) {
     eye = eye / eye.w;
     return eye;
 }
-
+#endif
 
 // https://stackoverflow.com/a/45710371/862300
 float screen2EyeDepth(float depth, float near, float far) {

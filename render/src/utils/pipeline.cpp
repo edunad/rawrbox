@@ -123,6 +123,7 @@ namespace rawrbox {
 		Diligent::GraphicsPipelineStateCreateInfo info;
 		info.PSODesc.Name = fmt::format("RawrBox::{}", name).c_str();
 		info.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
+		info.PSODesc.ResourceLayout.DefaultVariableType = settings.resourceType;
 		info.GraphicsPipeline.NumRenderTargets = settings.renderTargets;
 
 		info.GraphicsPipeline.PrimitiveTopology = settings.topology;
@@ -176,26 +177,23 @@ namespace rawrbox {
 			info.PSODesc.ResourceLayout.Variables = settings.resources.data();
 			info.PSODesc.ResourceLayout.NumVariables = static_cast<uint32_t>(settings.resources.size());
 
-			if (settings.immutableSamplers.size() != settings.resources.size())
-				throw std::runtime_error("[RawrBox-PipelineUtils] ImmutableSamplers size must match resources size!");
+			if (!settings.immutableSamplers.empty() && settings.immutableSamplers.size() == settings.resources.size()) {
+				Diligent::SamplerDesc SamLinearClampDesc{
+				    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,
+				    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
 
-			Diligent::SamplerDesc SamLinearClampDesc{
-			    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,
-			    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
+				for (size_t i = 0; i < settings.resources.size(); i++) {
+					if (!settings.immutableSamplers[i]) continue;
+					auto& sampler = settings.resources[i];
 
-			for (size_t i = 0; i < settings.resources.size(); i++) {
-				if (!settings.immutableSamplers[i]) continue;
-				auto& sampler = settings.resources[i];
+					samplers.emplace_back(sampler.ShaderStages, sampler.Name, SamLinearClampDesc);
+				}
 
-				samplers.emplace_back(sampler.ShaderStages, sampler.Name, SamLinearClampDesc);
+				if (!samplers.empty()) {
+					info.PSODesc.ResourceLayout.ImmutableSamplers = samplers.data();
+					info.PSODesc.ResourceLayout.NumImmutableSamplers = static_cast<uint32_t>(samplers.size());
+				}
 			}
-
-			if (!samplers.empty()) {
-				info.PSODesc.ResourceLayout.ImmutableSamplers = samplers.data();
-				info.PSODesc.ResourceLayout.NumImmutableSamplers = static_cast<uint32_t>(samplers.size());
-			}
-
-			info.PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 		}
 
 		// ---------------------
@@ -204,6 +202,7 @@ namespace rawrbox {
 
 		for (auto& uni : settings.uniforms) {
 			if (uni.uniform == nullptr) continue;
+			size_t aaa = pipe->GetStaticVariableCount(uni.type);
 			pipe->GetStaticVariableByName(uni.type, uni.name.c_str())->Set(uni.uniform);
 		}
 

@@ -1,8 +1,8 @@
 
 #include <cluster_uniforms.fxh>
-RWStructuredBuffer<Cluster> g_Clusters;
 
-#include <utils.fxh>
+#define WRITE_CLUSTERS
+#include <cluster.fxh>
 
 [numthreads(CLUSTERS_X_THREADS, CLUSTERS_Y_THREADS, CLUSTERS_Z_THREADS)]
 void main(uint3 GIid: SV_DispatchThreadID) {

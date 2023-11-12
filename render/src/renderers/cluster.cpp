@@ -115,17 +115,17 @@ namespace rawrbox {
 			ViewDesc.Format.ValueType = Diligent::VT_UINT32;
 			ViewDesc.Format.NumComponents = 1;
 
-			this->_atomicIndexBuffer->CreateView(ViewDesc, &this->_lightIndicesBufferWrite); // Write / Read
+			this->_lightIndicesBuffer->CreateView(ViewDesc, &this->_lightIndicesBufferWrite); // Write / Read
 
 			ViewDesc.ViewType = Diligent::BUFFER_VIEW_SHADER_RESOURCE;
-			this->_atomicIndexBuffer->CreateView(ViewDesc, &this->_lightIndicesBufferRead); // Read only
+			this->_lightIndicesBuffer->CreateView(ViewDesc, &this->_lightIndicesBufferRead); // Read only
 		}
 		// ------------------
 
 		// Light grid ---
 		{
 			Diligent::BufferDesc BuffDesc;
-			BuffDesc.ElementByteStride = sizeof(std::array<uint32_t, 2>);
+			BuffDesc.ElementByteStride = sizeof(rawrbox::Vector2_t<uint32_t>);
 			BuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
 			BuffDesc.Size = BuffDesc.ElementByteStride * rawrbox::CLUSTER_COUNT;
 			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
@@ -135,12 +135,12 @@ namespace rawrbox {
 			Diligent::BufferViewDesc ViewDesc;
 			ViewDesc.ViewType = Diligent::BUFFER_VIEW_UNORDERED_ACCESS;
 			ViewDesc.Format.ValueType = Diligent::VT_UINT32;
-			ViewDesc.Format.NumComponents = 1;
+			ViewDesc.Format.NumComponents = 2;
 
-			this->_atomicIndexBuffer->CreateView(ViewDesc, &this->_lightGridsBufferWrite); // Write / Read
+			this->_lightGridsBuffer->CreateView(ViewDesc, &this->_lightGridsBufferWrite); // Write / Read
 
 			ViewDesc.ViewType = Diligent::BUFFER_VIEW_SHADER_RESOURCE;
-			this->_atomicIndexBuffer->CreateView(ViewDesc, &this->_lightGridsBufferRead); // Read only
+			this->_lightGridsBuffer->CreateView(ViewDesc, &this->_lightGridsBufferRead); // Read only
 		}
 		// ------------------
 
@@ -189,7 +189,7 @@ namespace rawrbox {
 		this->_lightCullingComputeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "g_clusterLightIndices")->Set(this->_lightIndicesBufferWrite);
 		this->_lightCullingComputeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "g_globalIndex")->Set(this->_atomicIndexBufferWrite);
 		this->_lightCullingComputeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "g_Clusters")->Set(this->_clusterBufferRead);
-		this->_lightCullingComputeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "g_Lights")->Set(rawrbox::LIGHTS::buffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE));
+		this->_lightCullingComputeBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "g_Lights")->Set(rawrbox::LIGHTS::getBuffer());
 		// ---------
 	}
 
@@ -355,5 +355,7 @@ namespace rawrbox {
 	// UTILS ----
 	Diligent::IBufferView* RendererCluster::getAtomicIndexBuffer(bool readOnly) { return readOnly ? this->_atomicIndexBufferRead : this->_atomicIndexBufferWrite; }
 	Diligent::IBufferView* RendererCluster::getClustersBuffer(bool readOnly) { return readOnly ? this->_clusterBufferRead : this->_clusterBufferWrite; }
+	Diligent::IBufferView* RendererCluster::getLightIndicesBuffer(bool readOnly) { return readOnly ? this->_lightIndicesBufferRead : this->_lightIndicesBufferWrite; }
+	Diligent::IBufferView* RendererCluster::getLightGridBuffer(bool readOnly) { return readOnly ? this->_lightGridsBufferRead : this->_lightGridsBufferWrite; }
 	// ----------
 } // namespace rawrbox

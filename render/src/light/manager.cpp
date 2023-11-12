@@ -7,6 +7,9 @@ namespace rawrbox {
 	// PRIVATE ----
 	std::vector<std::shared_ptr<rawrbox::LightBase>> LIGHTS::_lights = {};
 
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> LIGHTS::_buffer;
+	Diligent::IBufferView* LIGHTS::_bufferRead = nullptr;
+
 	// Ambient --
 	rawrbox::Colorf LIGHTS::_ambient = {0.01F, 0.01F, 0.01F, 1.F};
 
@@ -24,7 +27,6 @@ namespace rawrbox {
 	// PUBLIC ----
 	bool LIGHTS::fullbright = false;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> LIGHTS::uniforms;
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> LIGHTS::buffer;
 	// -------
 
 	void LIGHTS::init() {
@@ -49,21 +51,22 @@ namespace rawrbox {
 			BuffDesc.Size = BuffDesc.ElementByteStride * 1000; // Max lights //static_cast<uint32_t>(_lights.size());
 			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
 
-			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &buffer);
+			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &_buffer);
+			_bufferRead = _buffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
 		}
 
 		update();
 	}
 
 	void LIGHTS::shutdown() {
-		RAWRBOX_DESTROY(buffer);
+		RAWRBOX_DESTROY(_buffer);
 		RAWRBOX_DESTROY(uniforms);
 
 		_lights.clear();
 	}
 
 	void LIGHTS::update() {
-		if (buffer == nullptr) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
+		if (_buffer == nullptr) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__LIGHT_DIRTY__ || _lights.empty()) return;
 
 		// Update lights ---
@@ -96,7 +99,7 @@ namespace rawrbox {
 			lights.push_back(light);
 		}
 
-		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, static_cast<uint64_t>(lights.size()) * sizeof(rawrbox::LightDataVertex), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::RENDERER->context()->UpdateBuffer(_buffer, 0, static_cast<uint64_t>(lights.size()) * sizeof(rawrbox::LightDataVertex), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		rawrbox::__LIGHT_DIRTY__ = false;
 		// -------
 	}
@@ -117,6 +120,7 @@ namespace rawrbox {
 
 	// UTILS ----
 	void LIGHTS::setEnabled(bool fb) { fullbright = fb; }
+	Diligent::IBufferView* LIGHTS::getBuffer() { return _bufferRead; }
 	// ----
 
 	// SUN ---

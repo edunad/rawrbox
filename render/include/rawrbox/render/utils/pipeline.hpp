@@ -52,6 +52,8 @@ namespace rawrbox {
 		std::vector<rawrbox::PipeUniforms> uniforms = {};
 		std::vector<Diligent::LayoutElement> layout = {};
 		std::vector<Diligent::ShaderResourceVariableDesc> resources = {};
+
+		Diligent::SHADER_RESOURCE_VARIABLE_TYPE resourceType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 	};
 
 	struct PipeComputeSettings {

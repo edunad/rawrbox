@@ -98,8 +98,10 @@ namespace rawrbox {
 		void render() override;
 
 		// UTILS ----
-		Diligent::IBufferView* getAtomicIndexBuffer(bool readOnly = false);
-		Diligent::IBufferView* getClustersBuffer(bool readOnly = false);
+		Diligent::IBufferView* getAtomicIndexBuffer(bool readOnly = true);
+		Diligent::IBufferView* getClustersBuffer(bool readOnly = true);
+		Diligent::IBufferView* getLightIndicesBuffer(bool readOnly = true);
+		Diligent::IBufferView* getLightGridBuffer(bool readOnly = true);
 		// ----------
 
 		template <typename T>

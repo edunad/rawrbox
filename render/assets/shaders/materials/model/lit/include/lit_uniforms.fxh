@@ -13,4 +13,7 @@ cbuffer Constants {
     // ------------
 };
 
+#define CAMERA_UNIFORMS
+#define MODEL_UNIFORMS
+#define CLUSTER_UNIFORMS
 #endif

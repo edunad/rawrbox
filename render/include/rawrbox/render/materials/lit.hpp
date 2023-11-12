@@ -13,7 +13,10 @@ namespace rawrbox {
 	protected:
 #ifdef _DEBUG
 		Diligent::IPipelineState* _debug_z = nullptr;
-		Diligent::IShaderResourceBinding* _bind_debug = nullptr;
+		Diligent::IPipelineState* _debug_light = nullptr;
+
+		Diligent::IShaderResourceBinding* _bind_debug_z = nullptr;
+		Diligent::IShaderResourceBinding* _bind_debug_light = nullptr;
 #endif
 
 		void prepareMaterial() override;
@@ -113,6 +116,8 @@ namespace rawrbox {
 
 			if (rawrbox::RendererBase::DEBUG_LEVEL == 1) {
 				context->SetPipelineState(this->_debug_z);
+			} else if (rawrbox::RendererBase::DEBUG_LEVEL == 2) {
+				context->SetPipelineState(this->_debug_light);
 			} else {
 				rawrbox::MaterialBase::bindPipeline<T>(mesh);
 			}

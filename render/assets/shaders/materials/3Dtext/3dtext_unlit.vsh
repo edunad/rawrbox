@@ -27,8 +27,6 @@ struct PSInput {
     float4 Color                    : COLOR0;
 };
 
-
-
 void main(in VSInput VSIn, out PSInput PSIn) {
     TransformedData transform = applyPosTransforms(VSIn.Pos, VSIn.UV.xy);
     PSIn.Pos = transform.final;

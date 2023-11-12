@@ -80,11 +80,13 @@ namespace rawrbox {
 		static float _fog_density;
 		static float _fog_end;
 
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _buffer;
+		static Diligent::IBufferView* _bufferRead;
+
 		static void update();
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> buffer;
 
 		static bool fullbright;
 
@@ -95,6 +97,7 @@ namespace rawrbox {
 
 		// UTILS ----
 		static void setEnabled(bool fb);
+		static Diligent::IBufferView* getBuffer();
 
 		// SUN
 		static void setSun(const rawrbox::Vector3f& dir, const rawrbox::Colorf& col);
