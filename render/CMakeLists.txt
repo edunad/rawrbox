@@ -111,24 +111,30 @@ if(WIN32)
     set(DILIGENT_LINK_MODE shared)
     message(STATUS "Setting deligent mode to: shared")
 
-    if(D3D11_SUPPORTED)
+    if(D3D12_SUPPORTED AND RAWRBOX_SUPPORT_DX12)
+        message(STATUS "Enabling DX12 support")
+        target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineD3D12-${DILIGENT_LINK_MODE})
+    endif()
+
+    if(D3D11_SUPPORTED AND RAWRBOX_SUPPORT_DX11)
+    message(STATUS "Enabling DX11 support")
         target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineD3D11-${DILIGENT_LINK_MODE})
     endif()
 
-    if(D3D12_SUPPORTED)
-        target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineD3D12-${DILIGENT_LINK_MODE})
-    endif()
 else()
     set(DILIGENT_LINK_MODE static)
     message(STATUS "Setting deligent mode to: static")
 endif()
 
-if(GL_SUPPORTED)
-    target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineOpenGL-${DILIGENT_LINK_MODE})
+
+if(VULKAN_SUPPORTED AND RAWRBOX_SUPPORT_VULKAN)
+    message(STATUS "Enabling VULKAN support")
+    target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineVk-${DILIGENT_LINK_MODE})
 endif()
 
-if(VULKAN_SUPPORTED)
-    target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineVk-${DILIGENT_LINK_MODE})
+if(GL_SUPPORTED AND RAWRBOX_SUPPORT_OPENGL)
+    message(STATUS "Enabling OPENGL support")
+    target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineOpenGL-${DILIGENT_LINK_MODE})
 endif()
 
 if(WIN32)

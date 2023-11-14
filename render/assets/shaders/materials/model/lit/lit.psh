@@ -1,9 +1,33 @@
+#include <lit_pixel_uniforms.fxh>
+#include <light_uniforms.fxh>
+
+#define READ_CLUSTERS
+#define READ_LIGHTS
+#define READ_CLUSTER_DATA_GRID
+#define READ_LIGHT_INDICES
+#include <cluster.fxh>
+
+#include <light_utils.fxh>
+
 Texture2DArray g_Texture;
-SamplerState   g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
+SamplerState   g_Texture_sampler;
+
+Texture2DArray g_Normal;
+SamplerState   g_Normal_sampler;
+
+Texture2DArray g_Specular;
+SamplerState   g_Specular_sampler;
+
+Texture2DArray g_Emission;
+SamplerState   g_Emission_sampler;
 
 struct PSInput {
     float4 Pos                      : SV_POSITION;
     float4 WorldPos                 : POSITION1;
+
+    float3 Normal                   : NORMAL0;
+    float3 Tangent                  : TANGENT0;
+
     float2 UV                       : TEX_COORD;
     float4 Color                    : COLOR0;
 
@@ -15,8 +39,18 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    float4 color = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
-    if (color.a <= 0.0) discard;
+    float4 albedo = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+    if (albedo.a <= 0.0) discard;
 
-    PSOut.Color = color;
+	float4 normal =   g_Normal.Sample(g_Normal_sampler, float3(PSIn.UV, PSIn.TexIndex));
+	float4 specular = g_Specular.Sample(g_Specular_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+	float4 emission = g_Emission.Sample(g_Emission_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+
+    // LIGHT ------
+	float3 viewDir = normalize(g_CameraPos - PSIn.WorldPos).xyz;
+    float3 radianceOut = applyLight(PSIn.Pos, PSIn.WorldPos.xyz, PSIn.Normal, viewDir, specular.r, g_SpecularPower);
+    // ------------
+
+    PSOut.Color.rgb = albedo.rgb * radianceOut;
+    PSOut.Color.a = albedo.a;
 }

@@ -61,7 +61,7 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IShader> shader;
 		Diligent::RefCntAutoPtr<Diligent::IDataBlob> output;
 		rawrbox::RENDERER->device()->CreateShader(ShaderCI, &shader, &output);
-		if (shader == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create shader '{}'", name));
+		if (shader == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to compile shader '{}'", name));
 
 		std::string_view compilerOutput = output != nullptr ? std::bit_cast<const char*>(output->GetConstDataPtr()) : "";
 		fmt::print("[RawrBox-Shader] Compiled shader '{}'\n", name);
@@ -85,7 +85,7 @@ namespace rawrbox {
 
 		PSODesc.Name = fmt::format("RawrBox::COMPUTE::{}", name).c_str();
 		PSODesc.PipelineType = Diligent::PIPELINE_TYPE_COMPUTE;
-		PSODesc.ResourceLayout.DefaultVariableType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE;
+		PSODesc.ResourceLayout.DefaultVariableType = settings.resourceType;
 
 		if (!settings.resources.empty()) {
 			PSODesc.ResourceLayout.Variables = settings.resources.data();
@@ -99,7 +99,10 @@ namespace rawrbox {
 
 		for (auto& uni : settings.uniforms) {
 			if (uni.uniform == nullptr) continue;
-			pipe->GetStaticVariableByName(uni.type, uni.name.c_str())->Set(uni.uniform);
+			auto var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
+
+			if (var == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}', could not find variable '{}'", name, uni.name));
+			var->Set(uni.uniform);
 		}
 
 		// Bind ----
@@ -177,22 +180,17 @@ namespace rawrbox {
 			info.PSODesc.ResourceLayout.Variables = settings.resources.data();
 			info.PSODesc.ResourceLayout.NumVariables = static_cast<uint32_t>(settings.resources.size());
 
-			if (!settings.immutableSamplers.empty() && settings.immutableSamplers.size() == settings.resources.size()) {
+			if (!settings.immutableSamplers.empty()) {
 				Diligent::SamplerDesc SamLinearClampDesc{
 				    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,
 				    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
 
-				for (size_t i = 0; i < settings.resources.size(); i++) {
-					if (!settings.immutableSamplers[i]) continue;
-					auto& sampler = settings.resources[i];
-
-					samplers.emplace_back(sampler.ShaderStages, sampler.Name, SamLinearClampDesc);
+				for (auto& sampler : settings.immutableSamplers) {
+					samplers.emplace_back(sampler.type, sampler.name.c_str(), SamLinearClampDesc);
 				}
 
-				if (!samplers.empty()) {
-					info.PSODesc.ResourceLayout.ImmutableSamplers = samplers.data();
-					info.PSODesc.ResourceLayout.NumImmutableSamplers = static_cast<uint32_t>(samplers.size());
-				}
+				info.PSODesc.ResourceLayout.ImmutableSamplers = samplers.data();
+				info.PSODesc.ResourceLayout.NumImmutableSamplers = static_cast<uint32_t>(samplers.size());
 			}
 		}
 
@@ -202,8 +200,10 @@ namespace rawrbox {
 
 		for (auto& uni : settings.uniforms) {
 			if (uni.uniform == nullptr) continue;
-			size_t aaa = pipe->GetStaticVariableCount(uni.type);
-			pipe->GetStaticVariableByName(uni.type, uni.name.c_str())->Set(uni.uniform);
+			auto var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
+
+			if (var == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}', could not find variable '{}'", name, uni.name));
+			var->Set(uni.uniform);
 		}
 
 		if (!bindName.empty()) {

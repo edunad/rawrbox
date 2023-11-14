@@ -43,6 +43,13 @@ option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT "Enable scripting LuaJIT suppo
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" OFF)
 option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
 
+# Supports -----
+option(RAWRBOX_SUPPORT_DX12   "Enable dx12 support (if the build system supports it)" ON)
+option(RAWRBOX_SUPPORT_DX11   "Enable dx11 support (if the build system supports it)" ON)
+option(RAWRBOX_SUPPORT_VULKAN "Enable vulkan support (if the build system supports it)" ON)
+option(RAWRBOX_SUPPORT_OPENGL "Enable opengl support (if the build system supports it, vulkan is recommended instead)" OFF)
+# ---------------
+
 option(RAWRBOX_COPY_SHADER_INCLUDES "Copy rawrbox shaders includes" OFF)
 
 option(RAWRBOX_DEV_MODE "Builds all modules, used for developing rawrbox" OFF)

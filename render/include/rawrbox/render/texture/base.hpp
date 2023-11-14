@@ -39,6 +39,7 @@ namespace rawrbox {
 
 		std::string _name = "";
 		virtual void loadFallback();
+		virtual void updateSampler();
 
 	public:
 		TextureBase() = default;

@@ -7,7 +7,7 @@ namespace rawrbox {
 	// PRIVATE ----
 	std::vector<std::shared_ptr<rawrbox::LightBase>> LIGHTS::_lights = {};
 
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> LIGHTS::_buffer;
+	std::unique_ptr<Diligent::DynamicBuffer> LIGHTS::_buffer = nullptr;
 	Diligent::IBufferView* LIGHTS::_bufferRead = nullptr;
 
 	// Ambient --
@@ -27,6 +27,7 @@ namespace rawrbox {
 	// PUBLIC ----
 	bool LIGHTS::fullbright = false;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> LIGHTS::uniforms;
+	rawrbox::Event<> LIGHTS::onBufferResize = {};
 	// -------
 
 	void LIGHTS::init() {
@@ -46,28 +47,33 @@ namespace rawrbox {
 		{
 			Diligent::BufferDesc BuffDesc;
 			BuffDesc.ElementByteStride = sizeof(rawrbox::LightDataVertex);
+			BuffDesc.Name = "rawrbox::Light::Buffer";
 			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
-			BuffDesc.Size = BuffDesc.ElementByteStride * 1000; // Max lights //static_cast<uint32_t>(_lights.size());
+			BuffDesc.Size = BuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(_lights.size(), 1));
 			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
 
-			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &_buffer);
-			_bufferRead = _buffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
+			Diligent::DynamicBufferCreateInfo dynamicBuff;
+			dynamicBuff.Desc = BuffDesc;
+
+			_buffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
+			_bufferRead = _buffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
 		}
 
 		update();
 	}
 
 	void LIGHTS::shutdown() {
-		RAWRBOX_DESTROY(_buffer);
 		RAWRBOX_DESTROY(uniforms);
-
 		_lights.clear();
 	}
 
 	void LIGHTS::update() {
 		if (_buffer == nullptr) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__LIGHT_DIRTY__ || _lights.empty()) return;
+
+		auto context = rawrbox::RENDERER->context();
+		auto device = rawrbox::RENDERER->device();
 
 		// Update lights ---
 		std::vector<rawrbox::LightDataVertex> lights = {};
@@ -86,6 +92,7 @@ namespace rawrbox {
 			light.intensity = rawrbox::Vector3f(cl.r, cl.g, cl.b);
 			light.direction = rawrbox::Vector3f(dir.x, dir.y, dir.z);
 			light.radius = l->getRadius();
+			light.type = l->getType();
 
 			if (l->getType() == rawrbox::LightType::SPOT) {
 				auto data = l->getData();
@@ -99,7 +106,16 @@ namespace rawrbox {
 			lights.push_back(light);
 		}
 
-		rawrbox::RENDERER->context()->UpdateBuffer(_buffer, 0, static_cast<uint64_t>(lights.size()) * sizeof(rawrbox::LightDataVertex), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		// Update buffer ----
+		uint64_t size = sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(std::max<size_t>(_lights.size(), 1)); // Always keep 1
+		if (size > _buffer->GetDesc().Size) {
+			_buffer->Resize(device, context, size, true);
+			_bufferRead = _buffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
+
+			onBufferResize();
+		}
+
+		rawrbox::RENDERER->context()->UpdateBuffer(_buffer->GetBuffer(), 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size()), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		rawrbox::__LIGHT_DIRTY__ = false;
 		// -------
 	}

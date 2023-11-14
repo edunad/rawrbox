@@ -207,6 +207,13 @@ namespace rawrbox {
 		//  rawrbox::DECALS::init();
 		// --------
 
+		// Init & load materials ---
+		rawrbox::MaterialUnlit::init();
+		rawrbox::MaterialText3D::init();
+		rawrbox::MaterialInstanced::init();
+		rawrbox::MaterialSkinned::init();
+		// -----
+
 		this->playIntro();
 		rawrbox::ENGINE_INITIALIZED = true;
 	}
@@ -483,13 +490,6 @@ namespace rawrbox {
 	}
 
 	void RendererBase::completeIntro() {
-		// Init & load materials ---
-		rawrbox::MaterialUnlit::init();
-		rawrbox::MaterialText3D::init();
-		rawrbox::MaterialInstanced::init();
-		rawrbox::MaterialSkinned::init();
-		// -----
-
 		this->_introList.clear();
 		this->_currentIntro = nullptr;
 		this->_introComplete = true;

@@ -17,6 +17,11 @@ namespace rawrbox {
 		this->_handle = rawrbox::MISSING_TEXTURE->getHandle();
 	}
 
+	void TextureBase::updateSampler() {
+		if (this->_handle == nullptr) return;
+		this->_handle->SetSampler(this->getSampler());
+	}
+
 	// UTILS ---
 	bool TextureBase::hasTransparency() const { return this->_channels == 4 && this->_transparent; }
 
@@ -35,6 +40,8 @@ namespace rawrbox {
 	void TextureBase::setSampler(Diligent::SamplerDesc desc) {
 		uint32_t id = desc.AddressU << 6 | desc.AddressV << 3 | desc.AddressW;
 		this->_sampler = rawrbox::PipelineUtils::registerSampler(id, desc);
+
+		this->updateSampler();
 	}
 
 	void TextureBase::setTextureUV(rawrbox::TEXTURE_UV mode) { this->_textureUV = mode; }
@@ -114,5 +121,6 @@ namespace rawrbox {
 
 		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+		this->updateSampler();
 	}
 } // namespace rawrbox

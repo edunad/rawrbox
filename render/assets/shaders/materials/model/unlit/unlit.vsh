@@ -28,7 +28,7 @@ void main(in VSInput VSIn, out PSInput PSIn) {
     TransformedData transform = applyPosTransforms(VSIn.Pos, VSIn.UV.xy);
 
     PSIn.Pos      = transform.final;
-    PSIn.UV       = VSIn.UV.xy;
+    PSIn.UV       = applyUVTransform(VSIn.UV.xy);
     PSIn.TexIndex = VSIn.UV.z;
     PSIn.Color    = VSIn.Color * g_Model.colorOverride;
 }

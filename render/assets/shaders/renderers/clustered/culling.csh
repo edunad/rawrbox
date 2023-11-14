@@ -6,7 +6,7 @@
 #define READ_LIGHTS
 #define WRITE_ATOMIC
 #define WRITE_LIGHT_INDICES
-#define WRITE_LIGHT_GRID
+#define WRITE_CLUSTER_DATA_GRID
 #include <cluster.fxh>
 
 #include <light_utils.fxh>
@@ -78,15 +78,15 @@ void main(uint3 GIid: SV_DispatchThreadID, uint GIndx: SV_GroupIndex) {
 
     // get a unique index into the light index list where we can write this cluster's lights
     uint offset = 0;
-    InterlockedAdd(g_globalIndex[0], visibleCount, offset);
+    InterlockedAdd(g_AtomicIndex[0], visibleCount, offset);
 
     // copy indices of lights
     for(uint i = 0; i < visibleCount; i++) {
-        g_clusterLightIndices[offset + i] = visibleLights[i];
+        g_ClusterLightIndices[offset + i] = visibleLights[i];
     }
 
     // write light grid for this cluster
-    g_clusterLightGrid[clusterIndex] = uint2(offset, visibleCount);
+    g_ClusterGrid[clusterIndex] = uint2(offset, visibleCount);
 }
 
 

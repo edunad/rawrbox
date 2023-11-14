@@ -14,7 +14,7 @@
 namespace rawrbox {
 	struct PipeUniforms {
 		Diligent::SHADER_TYPE type = Diligent::SHADER_TYPE_VERTEX;
-		Diligent::IBuffer* uniform = nullptr;
+		Diligent::IDeviceObject* uniform = nullptr;
 
 		std::string name = "Constants";
 	};
@@ -29,6 +29,11 @@ namespace rawrbox {
 		Diligent::BLEND_FACTOR dest = Diligent::BLEND_FACTOR_INV_SRC_ALPHA;
 	};
 
+	struct PipeSampler {
+		Diligent::SHADER_TYPE type = Diligent::SHADER_TYPE_VERTEX;
+		std::string name = "Constants";
+	};
+
 	struct PipeSettings {
 		Diligent::PRIMITIVE_TOPOLOGY topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		Diligent::CULL_MODE cull = Diligent::CULL_MODE_FRONT;
@@ -38,7 +43,7 @@ namespace rawrbox {
 		bool depthWrite = true;
 		bool depthFormat = true;
 		bool scissors = false;
-		std::vector<bool> immutableSamplers = {};
+		std::vector<PipeSampler> immutableSamplers = {};
 
 		uint8_t renderTargets = 1;
 		rawrbox::PipePass renderPass = {};
@@ -62,6 +67,7 @@ namespace rawrbox {
 		std::vector<rawrbox::PipeUniforms> uniforms = {};
 		std::vector<Diligent::ShaderResourceVariableDesc> resources = {};
 
+		Diligent::SHADER_RESOURCE_VARIABLE_TYPE resourceType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 		Diligent::ShaderMacroHelper macros = {};
 	};
 

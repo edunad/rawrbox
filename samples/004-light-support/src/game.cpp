@@ -142,7 +142,7 @@ namespace light {
 	void Game::update() {
 		rawrbox::Window::update();
 
-		if (this->_ready) {
+		/*if (this->_ready) {
 			this->_sunDir = {std::cos(rawrbox::FRAME * 0.01F) * 1.F, 1.F, std::sin(rawrbox::FRAME * 0.01F) * 1.F};
 			rawrbox::LIGHTS::setSun(this->_sunDir, {0.2F, 0.2F, 0.2F, 1.F});
 
@@ -155,7 +155,7 @@ namespace light {
 			if (light != nullptr) {
 				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
 			}
-		}
+		}*/
 	}
 
 	void Game::drawWorld() {

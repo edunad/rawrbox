@@ -13,8 +13,8 @@ void main(uint3 GIid: SV_DispatchThreadID) {
 
 
     // calculate min (bottom left) and max (top right) xy in screen coordinates
-    float4 minScreen = float4(GIid.xy                  * g_ClusterSize, 1.0, 1.0);
-    float4 maxScreen = float4((GIid.xy + float2(1, 1)) * g_ClusterSize, 1.0, 1.0);
+    float4 minScreen = float4(GIid.xy                  * g_Cluster.clusterSize, 1.0, 1.0);
+    float4 maxScreen = float4((GIid.xy + float2(1, 1)) * g_Cluster.clusterSize, 1.0, 1.0);
 
     // -> eye coordinates
     // z is the camera far plane (1 in screen coordinates)
@@ -23,8 +23,8 @@ void main(uint3 GIid: SV_DispatchThreadID) {
 
 
     // calculate near and far depth edges of the cluster
-    float clusterFar  = g_zNearFarVec.x * pow(abs(g_zNearFarVec.y / g_zNearFarVec.x), (GIid.z + 1) / float(CLUSTERS_Z));
-    float clusterNear = g_zNearFarVec.x * pow(abs(g_zNearFarVec.y / g_zNearFarVec.x),  GIid.z      / float(CLUSTERS_Z));
+    float clusterNear = g_Cluster.zNearFarVec.x * pow(abs(g_Cluster.zNearFarVec.y / g_Cluster.zNearFarVec.x),  GIid.z      / float(CLUSTERS_Z));
+    float clusterFar  = g_Cluster.zNearFarVec.x * pow(abs(g_Cluster.zNearFarVec.y / g_Cluster.zNearFarVec.x), (GIid.z + 1) / float(CLUSTERS_Z));
 
     // this calculates the intersection between:
     // - a line from the camera (origin) to the eye point (at the camera's far plane)

@@ -23,7 +23,7 @@ namespace rawrbox {
 		settings.pVS = "unlit_skinned.vsh";
 		settings.pPS = "unlit.psh";
 		settings.layout = rawrbox::VertexBoneData::vLayout();
-		settings.immutableSamplers = {false, true};
+		settings.immutableSamplers = {{Diligent::SHADER_TYPE_VERTEX, "g_Displacement"}};
 		settings.macros.AddShaderMacro("MAX_BONES", rawrbox::MAX_BONES_PER_MODEL);
 		settings.macros.AddShaderMacro("NUM_BONES_PER_VERTEX", rawrbox::MAX_BONES_PER_VERTEX);
 

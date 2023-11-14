@@ -4,6 +4,8 @@
 #include <rawrbox/render/light/base.hpp>
 #include <rawrbox/render/static.hpp>
 
+#include <Graphics/GraphicsTools/interface/DynamicBuffer.hpp>
+
 #include <memory>
 #include <vector>
 
@@ -19,7 +21,7 @@ namespace rawrbox {
 		rawrbox::Vector3f direction = {};
 		float innerCone = 0.F;
 
-		uint32_t type = 0;
+		rawrbox::LightType type = rawrbox::LightType::UNKNOWN;
 
 		static std::array<Diligent::LayoutElement, 7> vLayout() {
 			return {
@@ -80,13 +82,14 @@ namespace rawrbox {
 		static float _fog_density;
 		static float _fog_end;
 
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _buffer;
+		static std::unique_ptr<Diligent::DynamicBuffer> _buffer;
 		static Diligent::IBufferView* _bufferRead;
 
 		static void update();
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
+		static rawrbox::Event<> onBufferResize;
 
 		static bool fullbright;
 

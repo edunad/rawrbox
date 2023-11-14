@@ -39,7 +39,7 @@ namespace rawrbox {
 
 	struct ClusterUniforms {
 		rawrbox::Vector2f g_ClusterSize = {};
-		rawrbox::Vector2f g_zNearFarVec = {};
+		rawrbox::Vector2f g_ZNearFarVec = {};
 	};
 
 	struct ClusterConstants : public rawrbox::ClusterUniforms {
@@ -76,14 +76,12 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IBufferView> _lightIndicesBufferWrite;
 		Diligent::RefCntAutoPtr<Diligent::IBufferView> _lightIndicesBufferRead;
 
-		Diligent::RefCntAutoPtr<Diligent::IBuffer> _lightGridsBuffer;
-		Diligent::RefCntAutoPtr<Diligent::IBufferView> _lightGridsBufferWrite;
-		Diligent::RefCntAutoPtr<Diligent::IBufferView> _lightGridsBufferRead;
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _dataGridBuffer;
+		Diligent::RefCntAutoPtr<Diligent::IBufferView> _dataGridBufferWrite;
+		Diligent::RefCntAutoPtr<Diligent::IBufferView> _dataGridBufferRead;
 		// -----------
 
 		rawrbox::Matrix4x4 _oldProj = {};
-
-		void completeIntro() override;
 
 	public:
 		RendererCluster(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Colorf& clearColor = rawrbox::Colors::Black());
@@ -101,7 +99,7 @@ namespace rawrbox {
 		Diligent::IBufferView* getAtomicIndexBuffer(bool readOnly = true);
 		Diligent::IBufferView* getClustersBuffer(bool readOnly = true);
 		Diligent::IBufferView* getLightIndicesBuffer(bool readOnly = true);
-		Diligent::IBufferView* getLightGridBuffer(bool readOnly = true);
+		Diligent::IBufferView* getDataGridBuffer(bool readOnly = true);
 		// ----------
 
 		template <typename T>
@@ -110,7 +108,7 @@ namespace rawrbox {
 
 			(*helper).g_ClusterSize = {std::ceil((float)size.x / CLUSTERS_X),
 			    std::ceil((float)size.y / CLUSTERS_Y)};
-			(*helper).g_zNearFarVec = {this->_camera->getZNear(), this->_camera->getZFar()};
+			(*helper).g_ZNearFarVec = {this->_camera->getZNear(), this->_camera->getZFar()};
 		}
 	};
 } // namespace rawrbox

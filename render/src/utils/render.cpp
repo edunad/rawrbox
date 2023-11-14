@@ -15,7 +15,7 @@ namespace rawrbox {
 		settings.cull = Diligent::CULL_MODE_BACK;
 		settings.depthWrite = false;
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		settings.immutableSamplers = {true};
+		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;              // Disable depth
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP; // Disable cull
 		settings.resources = {

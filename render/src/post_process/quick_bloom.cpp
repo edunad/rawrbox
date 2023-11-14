@@ -48,7 +48,7 @@ namespace rawrbox {
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 		settings.pVS = "post_process_base.vsh";
 		settings.pPS = "quick_bloom.psh";
-		settings.immutableSamplers = {true};
+		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 		settings.uniforms = {{Diligent::SHADER_TYPE_PIXEL, this->_uniforms}};
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};

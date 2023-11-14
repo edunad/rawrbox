@@ -1,6 +1,8 @@
 #ifndef INCLUDED_CLUSTER_UNIFORMS
 #define INCLUDED_CLUSTER_UNIFORMS
 
+#include <cluster_structs.fxh>
+
 struct Camera {
     float4   screenSize;
     float4x4 invProj;
@@ -8,10 +10,8 @@ struct Camera {
 };
 
 cbuffer Constants {
-    Camera   g_Camera;
-
-    float2   g_ClusterSize;
-    float2   g_zNearFarVec;
+    ClusterData g_Cluster;
+    Camera      g_Camera;
 };
 
 #define CAMERA_UNIFORMS

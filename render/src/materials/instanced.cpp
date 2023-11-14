@@ -24,7 +24,8 @@ namespace rawrbox {
 		settings.pVS = "unlit_instanced.vsh";
 		settings.pPS = "unlit.psh";
 		settings.layout = rawrbox::VertexData::vLayout(true);
-		settings.immutableSamplers = {false, true};
+		settings.immutableSamplers = {{Diligent::SHADER_TYPE_VERTEX, "g_Displacement"}};
+
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};

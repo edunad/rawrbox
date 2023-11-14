@@ -26,7 +26,7 @@ namespace rawrbox {
 		rawrbox::PipeSettings settings;
 		settings.pVS = "3dtext_unlit.vsh";
 		settings.pPS = "3dtext_unlit.psh";
-		settings.immutableSamplers = {true};
+		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.layout = rawrbox::VertexData::vLayout();
 		settings.uniforms = {{Diligent::SHADER_TYPE_VERTEX, _uniforms}};

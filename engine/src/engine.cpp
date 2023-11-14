@@ -41,61 +41,75 @@ namespace rawrbox {
 	}
 
 	void Engine::run() {
+
 		rawrbox::ThreadUtils::setName("rawrbox:input");
 		this->setupGLFW();
 
 		// Setup render threading
 		new std::jthread([this]() {
-			rawrbox::RENDER_THREAD_ID = std::this_thread::get_id();
-			this->init();
+			try {
+				rawrbox::RENDER_THREAD_ID = std::this_thread::get_id();
+				this->init();
 
-			rawrbox::ThreadUtils::setName("rawrbox:render");
-			while (this->_shutdown != ENGINE_THREADS::THREAD_RENDER) {
-				rawrbox::DELTA_TIME = float(std::max(0.0, this->_timer.record_elapsed_seconds()));
+				rawrbox::ThreadUtils::setName("rawrbox:render");
+				while (this->_shutdown != ENGINE_THREADS::THREAD_RENDER) {
+					rawrbox::DELTA_TIME = float(std::max(0.0, this->_timer.record_elapsed_seconds()));
 
-				const float target_deltaTime = 1.0F / this->_fps;
-				if (rawrbox::DELTA_TIME < target_deltaTime) {
-					sleep((target_deltaTime - rawrbox::DELTA_TIME) * 1000);
-					rawrbox::DELTA_TIME += float(std::max(0.0, this->_timer.record_elapsed_seconds()));
-				}
+					const float target_deltaTime = 1.0F / this->_fps;
+					if (rawrbox::DELTA_TIME < target_deltaTime) {
+						sleep((target_deltaTime - rawrbox::DELTA_TIME) * 1000);
+						rawrbox::DELTA_TIME += float(std::max(0.0, this->_timer.record_elapsed_seconds()));
+					}
 
-				// THREADING ----
-				rawrbox::___runThreadInvokes();
-				// -------
+					// THREADING ----
+					rawrbox::___runThreadInvokes();
+					// -------
 
-				// Fixed time update --------
-				this->_deltaTimeAccumulator += rawrbox::DELTA_TIME;
-				if (this->_deltaTimeAccumulator > 10.F) this->_deltaTimeAccumulator = 0; // Prevent dead loop
+					// Fixed time update --------
+					this->_deltaTimeAccumulator += rawrbox::DELTA_TIME;
+					if (this->_deltaTimeAccumulator > 10.F) this->_deltaTimeAccumulator = 0; // Prevent dead loop
 
-				const float targetFrameRateInv = 1.0F / this->_tps;
-				rawrbox::FIXED_DELTA_TIME = targetFrameRateInv;
+					const float targetFrameRateInv = 1.0F / this->_tps;
+					rawrbox::FIXED_DELTA_TIME = targetFrameRateInv;
 
-				while (this->_deltaTimeAccumulator >= targetFrameRateInv) {
-					this->fixedUpdate();
+					while (this->_deltaTimeAccumulator >= targetFrameRateInv) {
+						this->fixedUpdate();
 
-					this->_deltaTimeAccumulator -= targetFrameRateInv;
+						this->_deltaTimeAccumulator -= targetFrameRateInv;
+						if (this->_shutdown != ENGINE_THREADS::NONE) break;
+					}
+
 					if (this->_shutdown != ENGINE_THREADS::NONE) break;
+					// ---------------------------
+
+					// VARIABLE-TIME
+					rawrbox::TIMER::update();
+					this->update();
+					// ----
+
+					// ACTUAL DRAWING
+					rawrbox::FRAME_ALPHA = this->_deltaTimeAccumulator / rawrbox::DELTA_TIME;
+					this->draw();
+					// ----------
 				}
 
-				if (this->_shutdown != ENGINE_THREADS::NONE) break;
-				// ---------------------------
+				fmt::print("[RawrBox-Engine] Thread 'rawrbox:render' shutdown\n");
+				rawrbox::TIMER::clear();
+				this->onThreadShutdown(rawrbox::ENGINE_THREADS::THREAD_RENDER);
 
-				// VARIABLE-TIME
-				rawrbox::TIMER::update();
-				this->update();
-				// ----
+				this->_shutdown = rawrbox::ENGINE_THREADS::THREAD_INPUT; // Done killing bgfx, now destroy glfw
+			} catch (std::exception err) {
+				std::string wat = err.what();
 
-				// ACTUAL DRAWING
-				rawrbox::FRAME_ALPHA = this->_deltaTimeAccumulator / rawrbox::DELTA_TIME;
-				this->draw();
-				// ----------
+				std::string title = " FATAL ENGINE ERROR ";
+				std::string hLine = std::string(((wat.size() / 2) - title.size() / 2), '-');
+				std::string errMsg = fmt::format("│ {} │", wat);
+
+				fmt::print("\n┌{}{}{}┐\n", hLine, title, hLine);
+				fmt::print(" {}\n", wat);
+				fmt::print("└{}{}{}┘\n\n", hLine, title, hLine);
+				throw err;
 			}
-
-			fmt::print("[RawrBox-Engine] Thread 'rawrbox:render' shutdown\n");
-			rawrbox::TIMER::clear();
-			this->onThreadShutdown(rawrbox::ENGINE_THREADS::THREAD_RENDER);
-
-			this->_shutdown = rawrbox::ENGINE_THREADS::THREAD_INPUT; // Done killing bgfx, now destroy glfw
 		});
 
 		// ----
