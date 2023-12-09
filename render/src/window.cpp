@@ -26,6 +26,9 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/render/window.hpp>
+#include <rawrbox/utils/string.hpp>
+
+#include <magic_enum.hpp>
 
 #include <GLFW/glfw3native.h>
 #include <fmt/printf.h>
@@ -197,6 +200,11 @@ namespace rawrbox {
 		}
 		// ------
 
+#ifdef _DEBUG
+		std::string renderTypeName = std::string(magic_enum::enum_name(this->_renderType));
+		this->_settings.title += fmt::format(" - {}", rawrbox::StrUtils::replace(renderTypeName, "RENDER_DEVICE_TYPE_", ""));
+#endif
+
 		auto glfwHandle = glfwCreateWindow(width, height, this->_settings.title.c_str(), windowed || borderless ? nullptr : mon, nullptr);
 		if (glfwHandle == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Window] Failed to initialize window [{} - {}x{}]", this->_settings.title, width, height));
 
@@ -294,12 +302,18 @@ namespace rawrbox {
 		this->_cursor = nullptr;
 	}
 
-	Vector2i Window::getSize() const {
-		if (this->_handle == nullptr) throw std::runtime_error("[RawrBox-Render] Window not initialized, handle not found");
-		Vector2i ret;
-		glfwGetWindowSize(GLFWHANDLE, &ret.x, &ret.y);
+	rawrbox::Vector2i Window::getSize() const {
+		return this->_settings.size;
+	}
 
-		return ret;
+	rawrbox::Vector2i Window::getMonitorSize() const {
+		if (this->_handle == nullptr) throw std::runtime_error("[RawrBox-Render] Window not initialized, handle not found");
+
+		GLFWmonitor* w = getWindowMonitor();
+		if (w == nullptr) throw std::runtime_error("[RawrBox-Render] Failed to find screen dimensions");
+
+		auto vidmode = glfwGetVideoMode(w);
+		return {vidmode->width, vidmode->height};
 	}
 
 	float Window::getAspectRatio() const {
@@ -375,7 +389,8 @@ namespace rawrbox {
 		rawrbox::runOnRenderThread([whandle, width, height]() {
 			auto& window = glfwHandleToRenderer(whandle);
 			window._settings.size = {width, height};
-			window.onResize(window, window._settings.size);
+
+			window.onResize(window, window._settings.size, window.getMonitorSize());
 		});
 	}
 
@@ -441,6 +456,55 @@ namespace rawrbox {
 			window._hasFocus = (focus == 1);
 			window.onFocus(window, focus);
 		});
+	}
+
+	// Adapted from : https://github.com/glfw/glfw/pull/2220/files
+	GLFWmonitor* Window::getWindowMonitor() const {
+		int monitorCount = 0;
+		GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
+		if (monitorCount == 1) return monitors[0];
+
+		GLFWmonitor* result = nullptr;
+		const GLFWvidmode* vidmode = nullptr;
+
+		rawrbox::AABBi windowRect = {};
+		glfwGetWindowPos(this->_handle, &windowRect.pos.x, &windowRect.pos.y);
+		glfwGetWindowSize(this->_handle, &windowRect.size.x, &windowRect.size.y);
+
+		rawrbox::AABBi scratchRect = {};
+		rawrbox::AABBi overlapRect = {};
+		glfwGetWindowFrameSize(this->_handle, &scratchRect.pos.x, &scratchRect.pos.y,
+		    &scratchRect.size.x, &scratchRect.size.y);
+
+		windowRect.pos.x -= scratchRect.pos.x;
+		windowRect.pos.y -= scratchRect.pos.y;
+		windowRect.size.x += scratchRect.pos.x + scratchRect.size.x;
+		windowRect.size.y += scratchRect.pos.y + scratchRect.size.y;
+
+		int overlapMonitor = -1;
+		uint32_t currentDim = 0, overlapDim = 0;
+
+		for (size_t i = 0; i < monitorCount; i++) {
+			rawrbox::AABBi monitorRect = {};
+			glfwGetMonitorPos(monitors[i], &monitorRect.pos.x, &monitorRect.pos.y);
+
+			vidmode = glfwGetVideoMode(monitors[i]);
+			monitorRect.size.x = vidmode->width;
+			monitorRect.size.y = vidmode->height;
+
+			scratchRect = rawrbox::AABBi::intersects(windowRect, monitorRect);
+
+			currentDim = scratchRect.size.x * scratchRect.size.y;
+			overlapDim = overlapRect.size.x * overlapRect.size.y;
+
+			if (currentDim > 0 && currentDim > overlapDim) {
+				overlapRect = scratchRect;
+				overlapMonitor = i;
+			}
+		}
+
+		if (overlapMonitor >= 0) result = monitors[overlapMonitor];
+		return result;
 	}
 	// --------------------
 

@@ -51,17 +51,23 @@ namespace rawrbox {
 			auto renderer = rawrbox::RENDERER;
 
 			auto size = renderer->getSize().cast<float>();
-			auto tTransform = rawrbox::TRANSFORM.transpose();
+			auto tTransform = rawrbox::TRANSFORM;
+			tTransform.transpose();
 
-			auto tProj = renderer->camera()->getProjMtx().transpose();
+			auto tProj = renderer->camera()->getProjMtx();
+			tProj.transpose();
+
 			auto tInvProj = renderer->camera()->getProjMtx();
 			tInvProj.inverse();
 
-			auto tView = renderer->camera()->getViewMtx().transpose();
+			auto tView = renderer->camera()->getViewMtx();
+			tView.transpose();
+
 			auto tInvView = renderer->camera()->getViewMtx();
 			tInvView.inverse();
 
-			auto tWorldView = renderer->camera()->getProjViewMtx().transpose();
+			auto tWorldView = renderer->camera()->getProjViewMtx();
+			tWorldView.transpose();
 
 			*helper = {
 			    // CAMERA -------
@@ -70,6 +76,7 @@ namespace rawrbox {
 			    tInvView,
 			    tInvProj,
 			    tTransform * tWorldView,
+
 			    {0, 0, size.x, size.y},
 			};
 			// ----------------------------

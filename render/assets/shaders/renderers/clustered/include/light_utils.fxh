@@ -30,7 +30,7 @@ DirectionalLight getSunLight() {
     return light;
 }
 
-float3 getAmbientLight() {
+float4 getAmbientLight() {
     return g_AmbientColor;
 }
 
@@ -39,15 +39,15 @@ float3 getAmbientLight() {
 #ifdef LIGHT_INDICES
 
 float3 applyLight(float4 position, float3 worldPos, float3 norm, float3 viewDir, float specular, float reflection) {
-    if(g_LightSettings.x == 0.0) {
+    /*if(g_LightSettings.x == 0.0) {
 		float3 radianceOut = float3(0.0, 0.0, 0.0);
 
-		uint cluster = getClusterIndex(position);
-    	ClusterDataGrid grid = getClusterDataGrid(cluster);
+    	uint cluster = GetClusterIndex(position.z, g_ZNearFarVec, g_ClusterSize, position);
+    	ClusterDataGrid grid = GetClusterDataGrid(cluster);
 
 		// Lights ----
-		for(uint i = 0; i < grid.lights; i++) {
-			uint lightIndex = getGridLightIndex(grid.offset, i);
+		for(uint i = 0; i < grid.lightCount; i++) {
+			uint lightIndex = GetGridLightIndex(grid.lightOffset, i);
 			Light light = getLight(lightIndex);
 
 			float3 lightDir = normalize(light.position - worldPos);
@@ -99,7 +99,9 @@ float3 applyLight(float4 position, float3 worldPos, float3 norm, float3 viewDir,
     	return radianceOut;
 	} else {
 		return float3(1.0, 1.0, 1.0);
-	}
+	}*/
+
+		return float3(1.0, 1.0, 1.0);
 }
 #endif
 #endif

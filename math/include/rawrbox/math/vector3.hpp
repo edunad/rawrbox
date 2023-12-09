@@ -115,6 +115,21 @@ namespace rawrbox {
 			    std::clamp(z, min.z, max.z)};
 		}
 
+		[[nodiscard]] VecType clampMagnitude(float max) const {
+			float mag = this->sqrMagnitude();
+			if (mag > max * max) {
+				float m = std::sqrt(mag);
+
+				float x = this->x / m;
+				float y = this->y / m;
+				float z = this->z / m;
+
+				return {x * max, y * max, z * max};
+			}
+
+			return this;
+		}
+
 		template <class ReturnType>
 		Vector3_t<ReturnType> cast() const {
 			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y), static_cast<ReturnType>(z)};

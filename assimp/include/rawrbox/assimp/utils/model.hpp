@@ -3,6 +3,8 @@
 #include <rawrbox/assimp/importer.hpp>
 #include <rawrbox/render/materials/unlit.hpp>
 
+#include <cpptrace/cpptrace.hpp>
+
 namespace rawrbox {
 
 	class AssimpUtils {
@@ -10,7 +12,7 @@ namespace rawrbox {
 		template <typename M = MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> extractMesh(const rawrbox::AssimpImporter& model, size_t indx) {
 			auto& meshes = model.meshes;
-			if (meshes.empty() || indx < 0 || indx >= meshes.size()) throw std::runtime_error(fmt::format("[RawrBox-AssimpUtils] Failed to extract mesh '{}'!", indx));
+			if (meshes.empty() || indx < 0 || indx >= meshes.size()) throw cpptrace::logic_error(fmt::format("[RawrBox-AssimpUtils] Failed to extract mesh '{}'!", indx));
 
 			auto& assimpMesh = meshes[indx];
 
@@ -77,7 +79,7 @@ namespace rawrbox {
 				}
 			}
 
-			if (mesh.vertices.empty()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to extract model '{}'", model.fileName.generic_string()));
+			if (mesh.vertices.empty()) throw cpptrace::logic_error(fmt::format("[RawrBox-Assimp] Failed to extract model '{}'", model.fileName.generic_string()));
 
 			// Bones
 			if (assimpMesh.skeleton != nullptr) {

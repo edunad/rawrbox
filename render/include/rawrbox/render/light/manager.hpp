@@ -23,7 +23,7 @@ namespace rawrbox {
 
 		rawrbox::LightType type = rawrbox::LightType::UNKNOWN;
 
-		static std::array<Diligent::LayoutElement, 7> vLayout() {
+		/*static std::array<Diligent::LayoutElement, 7> vLayout() {
 			return {
 			    // Attribute 0 - Position
 			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
@@ -40,7 +40,7 @@ namespace rawrbox {
 			    // Attribute 6 - Type
 			    Diligent::LayoutElement{6, 0, 1, Diligent::VT_UINT32, false},
 			};
-		}
+		}*/
 	};
 
 	enum class FOG_TYPE {
@@ -54,16 +54,16 @@ namespace rawrbox {
 		// ------
 
 		// Sun ----
-		rawrbox::Vector3f g_SunDirection = {};
-		rawrbox::Vector3f g_SunColor = {};
+		rawrbox::Vector4f g_SunDirection = {};
+		rawrbox::Colorf g_SunColor = {};
 		// ----
 
 		// Ambient ---
-		rawrbox::Vector3f g_AmbientColor = {};
+		rawrbox::Colorf g_AmbientColor = {};
 		// -----
 
 		// Fog ----
-		rawrbox::Vector3f g_FogColor = {};
+		rawrbox::Colorf g_FogColor = {};
 		rawrbox::Vector4f g_FogSettings = {};
 		// --------
 	};
@@ -89,7 +89,6 @@ namespace rawrbox {
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
-		static rawrbox::Event<> onBufferResize;
 
 		static bool fullbright;
 
@@ -132,7 +131,8 @@ namespace rawrbox {
 			return light;
 		}
 
-		static void removeLight(rawrbox::LightBase* light);
+		static bool removeLight(size_t indx);
+		static bool removeLight(rawrbox::LightBase* light);
 		// ---------
 
 		// Light utils ----

@@ -1,7 +1,7 @@
 #ifndef INCLUDED_UNLIT_UNIFORMS_GUARD
 #define INCLUDED_UNLIT_UNIFORMS_GUARD
 
-#include <structs.fxh>
+#include <model_vertex_structs.fxh>
 
 cbuffer Constants {
     Camera g_Camera;

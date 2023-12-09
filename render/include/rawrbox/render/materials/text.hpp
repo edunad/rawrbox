@@ -39,9 +39,14 @@ namespace rawrbox {
 			Diligent::MapHelper<rawrbox::MaterialTextUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 			// Map the buffer and write current world-view-projection matrix
 
-			auto tTransform = rawrbox::TRANSFORM.transpose();
-			auto tWorldView = renderer->camera()->getProjViewMtx().transpose();
+			auto tTransform = rawrbox::TRANSFORM;
+			tTransform.transpose();
+
+			auto tWorldView = renderer->camera()->getProjViewMtx();
+			tWorldView.transpose();
+
 			auto tInvView = renderer->camera()->getViewMtx();
+			tInvView.transpose();
 			tInvView.inverse();
 
 			*CBConstants = {

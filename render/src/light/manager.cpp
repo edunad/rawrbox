@@ -27,7 +27,6 @@ namespace rawrbox {
 	// PUBLIC ----
 	bool LIGHTS::fullbright = false;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> LIGHTS::uniforms;
-	rawrbox::Event<> LIGHTS::onBufferResize = {};
 	// -------
 
 	void LIGHTS::init() {
@@ -48,7 +47,7 @@ namespace rawrbox {
 			Diligent::BufferDesc BuffDesc;
 			BuffDesc.ElementByteStride = sizeof(rawrbox::LightDataVertex);
 			BuffDesc.Name = "rawrbox::Light::Buffer";
-			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
+			BuffDesc.Usage = Diligent::USAGE_SPARSE;
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 			BuffDesc.Size = BuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(_lights.size(), 1));
 			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
@@ -94,7 +93,7 @@ namespace rawrbox {
 			light.radius = l->getRadius();
 			light.type = l->getType();
 
-			if (l->getType() == rawrbox::LightType::SPOT) {
+			if (light.type == rawrbox::LightType::SPOT) {
 				auto data = l->getData();
 				light.innerCone = data.x;
 				light.outerCone = data.y;
@@ -110,9 +109,6 @@ namespace rawrbox {
 		uint64_t size = sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(std::max<size_t>(_lights.size(), 1)); // Always keep 1
 		if (size > _buffer->GetDesc().Size) {
 			_buffer->Resize(device, context, size, true);
-			_bufferRead = _buffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
-
-			onBufferResize();
 		}
 
 		rawrbox::RENDERER->context()->UpdateBuffer(_buffer->GetBuffer(), 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size()), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
@@ -127,10 +123,10 @@ namespace rawrbox {
 		Diligent::MapHelper<rawrbox::LightConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 
 		CBConstants->g_LightSettings = {fullbright ? 1U : 0U, static_cast<uint32_t>(rawrbox::LIGHTS::count()), 0, 0}; // other light settings
-		CBConstants->g_AmbientColor = _ambient.rgb();
-		CBConstants->g_SunColor = _sun_color.rgb();
+		CBConstants->g_AmbientColor = _ambient;
+		CBConstants->g_SunColor = _sun_color;
 		CBConstants->g_SunDirection = _sun_direction;
-		CBConstants->g_FogColor = _fog_color.rgb();
+		CBConstants->g_FogColor = _fog_color;
 		CBConstants->g_FogSettings = {static_cast<float>(_fog_type), _fog_end, _fog_density, 0.F};
 	} // namespace rawrbox
 
@@ -169,16 +165,28 @@ namespace rawrbox {
 	// ---------
 
 	// Light ----
-	void LIGHTS::removeLight(rawrbox::LightBase* light) {
-		if (light == nullptr || _lights.empty()) return;
+	bool LIGHTS::removeLight(size_t indx) {
+		if (indx > _lights.size()) return false;
+
+		_lights.erase(_lights.begin() + indx);
+		rawrbox::__LIGHT_DIRTY__ = true;
+		return true;
+	}
+
+	bool LIGHTS::removeLight(rawrbox::LightBase* light) {
+		bool removed = false;
+
+		if (light == nullptr || _lights.empty()) return removed;
 		for (size_t i = 0; i < _lights.size(); i++) {
 			if (_lights[i].get() == light) {
 				_lights.erase(_lights.begin() + i);
-				return;
+				removed = true;
+				break;
 			}
 		}
 
 		rawrbox::__LIGHT_DIRTY__ = true;
+		return removed;
 	}
 
 	rawrbox::LightBase* LIGHTS::getLight(size_t indx) {

@@ -57,10 +57,10 @@
 namespace rawrbox {
 
 #ifdef _DEBUG
-	uint32_t RendererBase::DEBUG_LEVEL = 0;
+	uint32_t RendererBase::DEBUG_LEVEL = 2;
 #endif
 
-	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Colorf& clearColor) : _window(window), _type(type), _size(size), _clearColor(clearColor) {}
+	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& screenSize, const rawrbox::Colorf& clearColor) : _window(window), _type(type), _size(size), _monitorSize(screenSize), _clearColor(clearColor) {}
 	RendererBase::~RendererBase() {
 		this->_render.reset();
 		this->_stencil.reset();
@@ -76,6 +76,10 @@ namespace rawrbox {
 
 	void RendererBase::init(Diligent::DeviceFeatures features) {
 		Diligent::SwapChainDesc SCDesc;
+
+		features.WireframeFill = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		features.GeometryShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+
 		switch (this->_type) {
 #if D3D11_SUPPORTED
 			case Diligent::RENDER_DEVICE_TYPE_D3D11:
@@ -218,7 +222,7 @@ namespace rawrbox {
 		rawrbox::ENGINE_INITIALIZED = true;
 	}
 
-	void RendererBase::resize(const rawrbox::Vector2i& size) {
+	void RendererBase::resize(const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize) {
 		if (this->_swapChain == nullptr) return;
 
 		this->_swapChain->Resize(size.x, size.y);
@@ -249,6 +253,7 @@ namespace rawrbox {
 				// -----*/
 
 		this->_size = size;
+		this->_monitorSize = monitorSize;
 	}
 
 	void RendererBase::setWorldRender(std::function<void()> render) { this->worldRender = render; }

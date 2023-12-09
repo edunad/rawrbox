@@ -10,7 +10,7 @@
 #include <cstring>
 
 namespace rawrbox {
-	bool Matrix4x4::MTX_RIGHT_HANDED = false;
+	bool Matrix4x4::MTX_RIGHT_HANDED = false; // OpenGL
 
 	// PRIVATE -----
 	void Matrix4x4::vec4MulMtx(float* _result, const float* _vec, const float* _mat) {
@@ -18,6 +18,40 @@ namespace rawrbox {
 		_result[1] = _vec[0] * _mat[1] + _vec[1] * _mat[5] + _vec[2] * _mat[9] + _vec[3] * _mat[13];
 		_result[2] = _vec[0] * _mat[2] + _vec[1] * _mat[6] + _vec[2] * _mat[10] + _vec[3] * _mat[14];
 		_result[3] = _vec[0] * _mat[3] + _vec[1] * _mat[7] + _vec[2] * _mat[11] + _vec[3] * _mat[15];
+	}
+
+	void Matrix4x4::mul(const rawrbox::Matrix4x4& other) {
+		rawrbox::Matrix4x4 _result;
+
+		vec4MulMtx(&_result.mtx[0], &this->mtx[0], other.data());
+		vec4MulMtx(&_result.mtx[4], &this->mtx[4], other.data());
+		vec4MulMtx(&_result.mtx[8], &this->mtx[8], other.data());
+		vec4MulMtx(&_result.mtx[12], &this->mtx[12], other.data());
+
+		std::memcpy(this->mtx.data(), _result.data(), sizeof(float) * this->mtx.size());
+	}
+
+	void Matrix4x4::mul(const rawrbox::Vector3f& other) {
+		rawrbox::Matrix4x4 _result;
+		std::array<float, 4> m = {other.x, other.y, other.z, 1.F};
+
+		vec4MulMtx(&_result.mtx[0], m.data(), this->data());
+		vec4MulMtx(&_result.mtx[4], m.data(), this->data());
+		vec4MulMtx(&_result.mtx[8], m.data(), this->data());
+		vec4MulMtx(&_result.mtx[12], m.data(), this->data());
+
+		std::memcpy(this->mtx.data(), _result.data(), sizeof(float) * this->mtx.size());
+	}
+
+	void Matrix4x4::add(const rawrbox::Matrix4x4& other) {
+		for (size_t i = 0; i < this->mtx.size(); i++)
+			this->mtx[i] += other[i];
+	}
+
+	void Matrix4x4::add(const rawrbox::Vector3f& other) {
+		this->mtx[12] += other.x;
+		this->mtx[13] += other.y;
+		this->mtx[14] += other.z;
 	}
 	// -----------
 
@@ -40,36 +74,18 @@ namespace rawrbox {
 	}
 
 	void Matrix4x4::transpose(const float* other) {
-		this->mtx[0] = other[0];
-		this->mtx[4] = other[1];
-		this->mtx[8] = other[2];
-		this->mtx[12] = other[3];
-		this->mtx[1] = other[4];
-		this->mtx[5] = other[5];
-		this->mtx[9] = other[6];
-		this->mtx[13] = other[7];
-		this->mtx[2] = other[8];
-		this->mtx[6] = other[9];
-		this->mtx[10] = other[10];
-		this->mtx[14] = other[11];
-		this->mtx[3] = other[12];
-		this->mtx[7] = other[13];
-		this->mtx[11] = other[14];
-		this->mtx[15] = other[15];
+		this->mtx = {
+		    other[0], other[4], other[8], other[12],
+		    other[1], other[5], other[9], other[13],
+		    other[2], other[6], other[10], other[14],
+		    other[3], other[7], other[11], other[15]};
 	}
 
-	rawrbox::Matrix4x4 Matrix4x4::transpose() {
-		Matrix4x4 ret = {};
-		ret.mtx = {
-		    this->mtx[0], this->mtx[4], this->mtx[8], this->mtx[12],
-		    this->mtx[1], this->mtx[5], this->mtx[9], this->mtx[13],
-		    this->mtx[2], this->mtx[6], this->mtx[10], this->mtx[14],
-		    this->mtx[3], this->mtx[7], this->mtx[11], this->mtx[15]};
-
-		return ret;
+	void Matrix4x4::transpose() {
+		this->transpose(this->data());
 	}
 
-	void Matrix4x4::transpose(const std::array<float, 16>& other) {
+	void Matrix4x4::transpose(const Matrix4x4& other) {
 		this->transpose(other.data());
 	}
 
@@ -131,9 +147,9 @@ namespace rawrbox {
 		this->mtx[10] = 1.0F - (x2x + y2y);
 	}
 
-	void Matrix4x4::rotateX(float _ax) {
-		const float sx = sin(_ax);
-		const float cx = cos(_ax);
+	void Matrix4x4::rotateX(float x) {
+		const float sx = sin(x);
+		const float cx = cos(x);
 
 		this->mtx[5] = cx;
 		this->mtx[6] = -sx;
@@ -141,9 +157,9 @@ namespace rawrbox {
 		this->mtx[10] = cx;
 	}
 
-	void Matrix4x4::rotateY(float _ay) {
-		const float sy = sin(_ay);
-		const float cy = cos(_ay);
+	void Matrix4x4::rotateY(float y) {
+		const float sy = sin(y);
+		const float cy = cos(y);
 
 		this->mtx[0] = cy;
 		this->mtx[2] = sy;
@@ -151,9 +167,9 @@ namespace rawrbox {
 		this->mtx[10] = cy;
 	}
 
-	void Matrix4x4::rotateZ(float _az) {
-		const float sz = sin(_az);
-		const float cz = cos(_az);
+	void Matrix4x4::rotateZ(float z) {
+		const float sz = sin(z);
+		const float cz = cos(z);
 
 		this->mtx[0] = cz;
 		this->mtx[1] = -sz;
@@ -162,16 +178,9 @@ namespace rawrbox {
 	}
 
 	void Matrix4x4::rotateXYZ(const rawrbox::Vector3f& rot) {
-		Matrix4x4 x = {};
-		x.rotateX(rot.x);
-
-		Matrix4x4 y = {};
-		y.rotateY(rot.y);
-
-		Matrix4x4 z = {};
-		z.rotateZ(rot.z);
-
-		this->mtx = (x * y * z).mtx;
+		this->rotateX(rot.x);
+		this->rotateY(rot.y);
+		this->rotateZ(rot.z);
 	}
 
 	void Matrix4x4::mtxSRT(const rawrbox::Vector3f& scale, const rawrbox::Vector4f& angle, const rawrbox::Vector3f& pos) {
@@ -185,40 +194,6 @@ namespace rawrbox {
 		mr.rotate(angle); // Angle should be in world coords
 
 		this->mtx = (mt * mr * ms).mtx;
-	}
-
-	void Matrix4x4::mul(const rawrbox::Matrix4x4& other) {
-		rawrbox::Matrix4x4 _result;
-
-		vec4MulMtx(&_result.mtx[0], &this->mtx[0], other.data());
-		vec4MulMtx(&_result.mtx[4], &this->mtx[4], other.data());
-		vec4MulMtx(&_result.mtx[8], &this->mtx[8], other.data());
-		vec4MulMtx(&_result.mtx[12], &this->mtx[12], other.data());
-
-		std::memcpy(this->mtx.data(), _result.data(), sizeof(float) * this->mtx.size());
-	}
-
-	void Matrix4x4::mul(const rawrbox::Vector3f& other) {
-		rawrbox::Matrix4x4 _result;
-		std::array<float, 4> m = {other.x, other.y, other.z, 1.F};
-
-		vec4MulMtx(&_result.mtx[0], m.data(), this->data());
-		vec4MulMtx(&_result.mtx[4], m.data(), this->data());
-		vec4MulMtx(&_result.mtx[8], m.data(), this->data());
-		vec4MulMtx(&_result.mtx[12], m.data(), this->data());
-
-		std::memcpy(this->mtx.data(), _result.data(), sizeof(float) * this->mtx.size());
-	}
-
-	void Matrix4x4::add(const rawrbox::Matrix4x4& other) {
-		for (size_t i = 0; i < this->mtx.size(); ++i)
-			this->mtx[i] += other[i];
-	}
-
-	void Matrix4x4::add(const rawrbox::Vector3f& other) {
-		this->mtx[12] += other.x;
-		this->mtx[13] += other.y;
-		this->mtx[14] += other.z;
 	}
 
 	[[nodiscard]] rawrbox::Vector3f Matrix4x4::mulVec(const rawrbox::Vector3f& other) const {
@@ -290,105 +265,70 @@ namespace rawrbox {
 	}
 
 	void Matrix4x4::lookAt(const rawrbox::Vector3f& _eye, const rawrbox::Vector3f& _at, const rawrbox::Vector3f& _up) {
-		const rawrbox::Vector3f view = (_at - _eye).normalized();
+		rawrbox::Vector3f const f = (Matrix4x4::MTX_RIGHT_HANDED ? _eye - _at : _at - _eye).normalized();
+		rawrbox::Vector3f const s = _up.cross(f).normalized();
+		rawrbox::Vector3f const u = f.cross(s);
 
-		const rawrbox::Vector3f uxv = _up.cross(view);
-		const rawrbox::Vector3f right = uxv.normalized();
-		const rawrbox::Vector3f up = view.cross(right);
-
-		this->mtx[0] = right.x;
-		this->mtx[1] = up.x;
-		this->mtx[2] = view.x;
-
-		this->mtx[4] = right.y;
-		this->mtx[5] = up.y;
-		this->mtx[6] = view.y;
-
-		this->mtx[8] = right.z;
-		this->mtx[9] = up.z;
-		this->mtx[10] = view.z;
-
-		this->mtx[12] = -right.dot(_eye);
-		this->mtx[13] = -up.dot(_eye);
-		this->mtx[14] = -view.dot(_eye);
+		this->mtx[0] = s.x;
+		this->mtx[4] = s.y;
+		this->mtx[8] = s.z;
+		this->mtx[1] = u.x;
+		this->mtx[5] = u.y;
+		this->mtx[9] = u.z;
+		this->mtx[2] = f.x;
+		this->mtx[6] = f.y;
+		this->mtx[10] = f.z;
+		this->mtx[12] = -s.dot(_eye);
+		this->mtx[13] = -u.dot(_eye);
+		this->mtx[14] = -f.dot(_eye);
 	}
 	// ------
 
 	// STATIC UTILS ----
-
-	// T _11 = 0;
-	// T _12 = 1;
-	// T _13 = 2;
-	// T _14 = 3;
-	// T _21 = 4;
-	// T _22 = 5;
-	// T _23 = 6;
-	// T _24 = 7;
-	// T _31 = 8;
-	// T _32 = 9;
-	// T _33= 10;
-	// T _34 = 11;
-	// T _41 = 12;
-	// T _42 = 13;
-	// T _43 = 14;
-	// T _44 = 15;
 	rawrbox::Matrix4x4 Matrix4x4::mtxLookAt(const rawrbox::Vector3f& _eye, const rawrbox::Vector3f& _at, const rawrbox::Vector3f& _up) {
-		rawrbox::Matrix4x4 ret;
-		const auto view = (Matrix4x4::MTX_RIGHT_HANDED ? _eye - _at : _at - _eye).normalized();
-
-		rawrbox::Vector3f right = {};
-		rawrbox::Vector3f up = {};
-
-		const auto uxv = _up.cross(view);
-		if (uxv.dot(uxv) == 0.0F) {
-			right = {Matrix4x4::MTX_RIGHT_HANDED ? 1.0F : -1.0F, 0.0F, 0.0F};
-		} else {
-			right = uxv.normalized();
-		}
-
-		up = view.cross(right);
-
-		ret.mtx[0] = right.x;
-		ret.mtx[1] = up.x;
-		ret.mtx[2] = view.x;
-		ret.mtx[3] = 0.0F;
-
-		ret.mtx[4] = right.y;
-		ret.mtx[5] = up.y;
-		ret.mtx[6] = view.y;
-		ret.mtx[7] = 0.0F;
-
-		ret.mtx[8] = right.z;
-		ret.mtx[9] = up.z;
-		ret.mtx[10] = view.z;
-		ret.mtx[11] = 0.F;
-
-		ret.mtx[12] = -right.dot(_eye);
-		ret.mtx[13] = -up.dot(_eye);
-		ret.mtx[14] = -view.dot(_eye);
-		ret.mtx[15] = 1.0F;
+		rawrbox::Matrix4x4 ret = {};
+		ret.lookAt(_eye, _at, _up);
 
 		return ret;
 	}
 
+	// Create a ortographic projection
+	rawrbox::Matrix4x4 Matrix4x4::mtxOrtho(float left, float right, float bottom, float top, float near, float far) {
+		rawrbox::Matrix4x4 ret = {};
+
+		ret.mtx[0] = 2.0F / (right - left);
+		ret.mtx[5] = 2.0F / (top - bottom);
+
+		if (Matrix4x4::MTX_RIGHT_HANDED) {
+			ret.mtx[10] = -2.0F / (far - near);
+		} else {
+			ret.mtx[10] = 2.0F / (far - near);
+		}
+
+		ret.mtx[12] = -(right + left) / (right - left);
+		ret.mtx[13] = -(top + bottom) / (top - bottom);
+		ret.mtx[14] = -(far + near) / (far - near);
+
+		return ret;
+	}
+
+	// Create a projection matrix
 	rawrbox::Matrix4x4 Matrix4x4::mtxProj(float FOV, float aspect, float near, float far) {
 		rawrbox::Matrix4x4 ret;
 		ret.zero();
 
-		const float height = 1.0F / std::tan(rawrbox::MathUtils::toRad(FOV) * 0.5F);
-		const float width = height * 1.0F / aspect;
+		float const tanHalfFovy = std::tan(rawrbox::MathUtils::toRad(FOV) / 2.F);
 
-		ret.mtx[0] = width;
-		ret.mtx[5] = height;
+		ret.mtx[0] = 1.F / (aspect * tanHalfFovy);
+		ret.mtx[5] = 1.F / (tanHalfFovy);
+		ret.mtx[14] = -(2.F * far * near) / (far - near);
 
 		if (Matrix4x4::MTX_RIGHT_HANDED) {
-			ret.mtx[10] = -(-(far + near) / (far - near));
-			ret.mtx[14] = -2 * near * far / (far - near);
-			ret.mtx[11] = -(-1);
+			ret.mtx[10] = -(far + near) / (far - near);
+			ret.mtx[11] = -1.F;
 		} else {
-			ret.mtx[10] = far / (far - near);
-			ret.mtx[14] = -near * far / (far - near);
-			ret.mtx[11] = 1;
+			ret.mtx[10] = (far + near) / (far - near);
+			ret.mtx[11] = 1.F;
 		}
 
 		return ret;
@@ -435,13 +375,36 @@ namespace rawrbox {
 		return this->mtx[indx];
 	}
 
+	float Matrix4x4::operator[](size_t indx) {
+		return this->mtx[indx];
+	}
+
+	void Matrix4x4::operator/=(float other) {
+		for (float& i : this->mtx) {
+			i /= other;
+		}
+	}
+
+	void Matrix4x4::operator/=(rawrbox::Matrix4x4 other) {
+		other.inverse();
+		this->mul(other);
+	}
+
+	void Matrix4x4::operator*=(const rawrbox::Matrix4x4& other) {
+		this->mul(other);
+	}
+
+	void Matrix4x4::operator*=(const rawrbox::Vector3f& other) {
+		this->mul(other);
+	}
+
 	rawrbox::Matrix4x4 Matrix4x4::operator*(rawrbox::Matrix4x4 other) const {
 		other.mul(*this);
 		return other;
 	}
 
 	rawrbox::Matrix4x4 Matrix4x4::operator*(rawrbox::Vector3f other) const {
-		rawrbox::Matrix4x4 res{this->data()};
+		rawrbox::Matrix4x4 res = *this;
 		res.mul(other);
 
 		return res;
@@ -453,7 +416,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::Matrix4x4 Matrix4x4::operator+(rawrbox::Vector3f other) const {
-		rawrbox::Matrix4x4 res{this->data()};
+		rawrbox::Matrix4x4 res = *this;
 		res.add(other);
 
 		return res;

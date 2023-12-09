@@ -45,6 +45,24 @@ namespace rawrbox {
 			       pos_.y <= this->pos.y + this->size.y;   // bottom
 		}
 
+		[[nodiscard]] bool contains(const AABB_t<NumberType>& b) const {
+			return (this->pos.x <= (b.pos.x + b.size.x) && (this->pos.x + this->size.x) >= b.pos.x &&
+				this->pos.y <= (b.pos.y + b.size.y) && (this->pos.y + this->size.y) >= b.pos.y);
+		}
+
+		[[nodiscard]] static AABB_t<NumberType> intersects(const AABB_t<NumberType>& a, const AABB_t<NumberType>& b) {
+			AABB_t<NumberType> result;
+
+			if (a.contains(b)) {
+				result.pos.x = std::max(a.pos.x, b.pos.x);
+				result.size.x = std::min(a.pos.x + a.size.x, b.pos.x + b.size.x) - result.pos.x;
+				result.pos.y = std::max(a.pos.y, b.pos.y);
+				result.size.y = std::min(a.pos.y + a.size.y, b.pos.y + b.size.y) - result.pos.y;
+			}
+
+			return result;
+		}
+
 		[[nodiscard]] AABB_t<NumberType> mask(const AABB_t<NumberType>& other) const {
 			auto masked = *this;
 

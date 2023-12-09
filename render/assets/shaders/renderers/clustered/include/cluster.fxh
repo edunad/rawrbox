@@ -1,16 +1,15 @@
 #ifndef INCLUDED_CLUSTER
 #define INCLUDED_CLUSTER
 
-#include <cluster_macros.fxh>
 #include <utils.fxh>
 
 struct Cluster {
-    float3 minBounds;
-    float3 maxBounds;
+    float4 minBounds;
+    float4 maxBounds;
 };
 
 #if defined(WRITE_CLUSTERS)
-RWStructuredBuffer<Cluster> g_Clusters;
+RWStructuredBuffer<Cluster> g_Clusters; // Read-Write
 #define CLUSTERS
 #elif defined(READ_CLUSTERS)
 StructuredBuffer<Cluster> g_Clusters; // Read-only
@@ -24,77 +23,79 @@ StructuredBuffer<Light> g_Lights; // Read-only
 
 #if defined(WRITE_CLUSTER_DATA_GRID)
 #define CLUSTER_DATA_GRID
-RWBuffer<uint2 /*format=r32i*/> g_ClusterGrid; // Read-Write
+RWBuffer<uint4 /*format=rgba32ui*/> g_ClusterDataGrid; // Read-Write
 #elif defined(READ_CLUSTER_DATA_GRID)
 #define CLUSTER_DATA_GRID
-Buffer<uint2 /*format=r32i*/> g_ClusterGrid; // Read-only
+Buffer<uint4 /*format=rgba32ui*/> g_ClusterDataGrid; // Read-only
 #endif
 
 // light indices belonging to clusters
 #if defined(WRITE_LIGHT_INDICES)
-RWBuffer<uint /*format=r32i*/> g_ClusterLightIndices; // Read-Write
+RWBuffer<uint /*format=r32ui*/> g_ClusterLightIndices; // Read-Write
 #define LIGHT_INDICES
 #elif defined(READ_LIGHT_INDICES)
-Buffer<uint /*format=r32i*/> g_ClusterLightIndices; // Read-only
+Buffer<uint /*format=r32ui*/> g_ClusterLightIndices; // Read-only
 #define LIGHT_INDICES
 #endif
 
 
 // atomic index
 #if defined(WRITE_ATOMIC)
-RWBuffer<uint /*format=r32i*/> g_AtomicIndex; // Read-Write
+RWBuffer<uint /*format=r32ui*/> g_AtomicIndex; // Read-Write
 #define ATOMIC
 #elif defined(READ_ATOMIC)
-Buffer<uint /*format=r32i*/> g_AtomicIndex; // Read-only
+Buffer<uint /*format=r32ui*/> g_AtomicIndex; // Read-only
 #define ATOMIC
 #endif
 
 
-#ifdef CLUSTER_DATA_GRID
-struct ClusterDataGrid {
-    uint offset;
-    uint lights;
-};
-
 #ifdef READ_CLUSTER_DATA_GRID
-ClusterDataGrid getClusterDataGrid(uint cluster) {
-    uint2 gridvec = g_ClusterGrid[cluster];
-
-    ClusterDataGrid grid;
-    grid.offset = gridvec.x;
-    grid.lights = gridvec.y;
-
-    return grid;
+uint4 GetClusterDataGrid(uint cluster) {
+    return g_ClusterDataGrid[cluster];
 }
 #endif
 
-#endif
-
 #ifdef LIGHT_INDICES
-uint getGridLightIndex(uint start, uint offset) {
+uint GetGridLightIndex(uint start, uint offset) {
     return g_ClusterLightIndices[start + offset];
 }
 #endif
 
 #ifdef CLUSTER_UNIFORMS
-// cluster depth index from depth in screen coordinates (gl_FragCoord.z)
-uint getClusterZIndex(float screenDepth) {
-    // this can be calculated on the CPU and passed as a uniform
-    // only leaving it here to keep most of the relevant code in the shaders for learning purposes
-    float scale = float(CLUSTERS_Z) / log(g_Cluster.zNearFarVec.y / g_Cluster.zNearFarVec.x);
-    float bias = -(float(CLUSTERS_Z) * log(g_Cluster.zNearFarVec.x) / log(g_Cluster.zNearFarVec.y / g_Cluster.zNearFarVec.x));
+uint GetClusterZIndex(float depth, float2 camNearFar) {
 
-    float eyeDepth = screen2EyeDepth(screenDepth, g_Cluster.zNearFarVec.x, g_Cluster.zNearFarVec.y);
-    uint zIndex = uint(max(log(eyeDepth) * scale + bias, 0.0));
+    // TODO: pre-compute on cpu
+    float scale = float(CLUSTERS_Z) / log2(camNearFar.y / camNearFar.x);
+    float bias = -(float(CLUSTERS_Z) * log2(camNearFar.x) / log2(camNearFar.y / camNearFar.x));
+
+    float linearDepth = GetLinearDepth(depth, camNearFar);
+    uint zIndex = uint(max(log(linearDepth) * scale + bias, 0.0));
 
     return zIndex;
 }
 
-uint getClusterIndex(float4 position) {
-    uint zIndex = getClusterZIndex(position.z);
-    uint3 indices = uint3(uint2(position.xy / g_Cluster.clusterSize), zIndex);
+uint GetClusterIndex(float depth, float2 camNearFar, float2 clusterSize, float4 pos) {
+    // // linear depth
+    // float linearDepth = GetLinearDepth(depth, camNearFar);
 
-    return (CLUSTERS_X * CLUSTERS_Y) * indices.z + CLUSTERS_X * indices.y + indices.x;
+    // // could be pre computed on cpu.
+    // float scale = CLUSTERS_Z / log2(camNearFar.y / camNearFar.x);
+    // float bias = -(CLUSTERS_Z * log2(camNearFar.x) / log2(camNearFar.y / camNearFar.x));
+
+    // uint zTile = uint(max(log2(linearDepth) * scale + bias, 0.0));
+    // uint3 tiles = uint3(uint2(pos.xy / (uint)clusterSize.x), zTile);
+
+    // uint tileIndex = tiles.x + CLUSTERS_X * tiles.y + (CLUSTERS_X * CLUSTERS_Y) * tiles.z;
+    // return tileIndex;
+
+    uint zIndex = GetClusterZIndex(depth, camNearFar);
+    uint3 indices = uint3(uint2(pos.xy / clusterSize.xy), zIndex);
+
+    uint cluster = (CLUSTERS_X * CLUSTERS_Y) * indices.z +
+                   CLUSTERS_X * indices.y +
+                   indices.x;
+    return cluster;
+
 }
 #endif
 

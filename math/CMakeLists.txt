@@ -6,6 +6,11 @@ project(
     LANGUAGES CXX)
 set(output_target RAWRBOX.MATH)
 
+
+## TEST ----------------------------
+CPMAddPackage("gh:g-truc/glm#0.9.9.8")
+## ---------------------------------
+
 # LIB ----
 file(GLOB_RECURSE RAWRBOX_MATH_IMPORTS "src/*.c" "src/*.cpp" "include/*.hpp" "include/*.h")
 
@@ -14,6 +19,10 @@ target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_MATH)
+target_link_libraries(
+    ${output_target}
+    PUBLIC
+           glm::glm)
 
 set_lib_runtime_mt(${output_target})
 # --------------

@@ -16,7 +16,7 @@
 namespace light {
 
 	void Game::setupGLFW() {
-		auto window = rawrbox::Window::createWindow();
+		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_VULKAN);
 		window->setMonitor(-1);
 		window->setTitle("LIGHT TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
@@ -63,7 +63,7 @@ namespace light {
 	}
 
 	void Game::loadContent() {
-		std::array<std::pair<std::string, uint32_t>, 3> initialContentFiles = {
+		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planks.png", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planksSpec.png", 0)};
@@ -92,7 +92,7 @@ namespace light {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({2.5F, 0.01F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
+			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({3.5F, 0.01F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
 			mesh.setSpecularTexture(texSpec, 25.F);
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
@@ -100,7 +100,7 @@ namespace light {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({-2.5F, 0.01F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
+			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({-3.5F, 0.01F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
 			mesh.setSpecularTexture(texSpec, 25.F);
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
@@ -110,12 +110,13 @@ namespace light {
 		// ----
 
 		// Text test ----
-		this->_text->addText(*this->_font, "POINT LIGHT", {2.5F, 0.5F, 0});
-		this->_text->addText(*this->_font, "SPOT LIGHT", {-2.5F, 0.5F, 0});
+		this->_text->addText(*this->_font, "POINT LIGHT", {3.5F, 0.5F, 0});
+		this->_text->addText(*this->_font, "SPOT LIGHT", {-3.5F, 0.5F, 0});
 		// ------
 
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{2.5F, 0.2F, 0}, rawrbox::Colors::Blue(), 6.2F);
-		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{-2.5F, 0.2F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Red(), 0.602F, 0.708F, 100.F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{3.5F, 0.2F, 0}, rawrbox::Colors::Blue(), 1.2F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue(), 6.2F);
+		//  rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Red(), 0.602F, 0.708F, 100.F);
 
 		this->_model->upload();
 		this->_model2->upload();

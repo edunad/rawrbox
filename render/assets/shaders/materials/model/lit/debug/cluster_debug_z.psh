@@ -30,6 +30,6 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
         float3(1.0, 0.0, 1.0)
     };
 
-    uint cluster = getClusterZIndex(PSIn.Pos.z);
-    PSOut.Color = float4(colors[cluster % 6], 1.0);
+    uint zTile = GetClusterZIndex(PSIn.Pos.z, g_ZNearFarVec);
+    PSOut.Color = float4(colors[zTile % 6], 1.0);
 }

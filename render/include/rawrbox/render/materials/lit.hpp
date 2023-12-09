@@ -7,8 +7,8 @@ namespace rawrbox {
 
 	struct MaterialLitUniforms : public rawrbox::MaterialUnlitUniforms, public rawrbox::ClusterUniforms {};
 	struct MaterialLitPixelUniforms : public rawrbox::ClusterUniforms {
-		rawrbox::Vector3f g_CameraPosition = {};
-		float g_SpecularPower = 0.F;
+		rawrbox::Vector4f g_LitData = {};
+		rawrbox::Vector4f g_CameraPosition = {}; // Needs to be aligned
 	};
 
 	class MaterialLit : public rawrbox::MaterialBase {
@@ -59,7 +59,7 @@ namespace rawrbox {
 			{
 				Diligent::MapHelper<rawrbox::MaterialLitPixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 				CBConstants->g_CameraPosition = rawrbox::RENDERER->camera()->getPos();
-				CBConstants->g_SpecularPower = mesh.specularShininess;
+				CBConstants->g_LitData = {mesh.specularShininess, mesh.emissionIntensity};
 
 				cluster->bindUniforms<rawrbox::MaterialLitPixelUniforms>(CBConstants);
 			}
@@ -99,9 +99,7 @@ namespace rawrbox {
 			this->prepareMaterial();
 
 #ifdef _DEBUG
-			if (rawrbox::RendererBase::DEBUG_LEVEL != 0) {
-				return;
-			}
+			if (rawrbox::RendererBase::DEBUG_LEVEL != 0) return; // Debug does not have textures
 #endif
 
 			rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();

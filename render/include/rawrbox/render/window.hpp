@@ -9,6 +9,8 @@
 #include <fmt/format.h>
 
 struct GLFWwindow;
+struct GLFWmonitor;
+
 namespace rawrbox {
 	// FLAGS ------
 	// NOLINTBEGIN{unused-const-variable}
@@ -35,7 +37,7 @@ namespace rawrbox {
 	// ------EVENTS
 	using OnFocusCallback = rawrbox::Event<Window&, bool>;
 	using OnCharCallback = rawrbox::Event<Window&, uint32_t>;
-	using OnResizeCallback = rawrbox::Event<Window&, const Vector2i&>;
+	using OnResizeCallback = rawrbox::Event<Window&, const Vector2i&, const Vector2i&>;
 	using OnScrollCallback = rawrbox::Event<Window&, const Vector2i&, const Vector2i&>;
 	using OnMouseMoveCallback = rawrbox::Event<Window&, const Vector2i&>;
 	using OnKeyCallback = rawrbox::Event<Window&, uint32_t, uint32_t, uint32_t, uint32_t>;
@@ -94,7 +96,7 @@ namespace rawrbox {
 		static std::vector<std::unique_ptr<rawrbox::Window>> __WINDOWS;
 		static Diligent::RENDER_DEVICE_TYPE __RENDER_TYPE;
 
-		static rawrbox::Window* createWindow(Diligent::RENDER_DEVICE_TYPE render = Diligent::RENDER_DEVICE_TYPE_UNDEFINED);
+		static rawrbox::Window* createWindow(Diligent::RENDER_DEVICE_TYPE render = Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_VULKAN);
 		static rawrbox::Window* getWindow(size_t indx = 0);
 
 		static void pollEvents();
@@ -106,11 +108,11 @@ namespace rawrbox {
 		// Renderer ------
 		template <class T = rawrbox::RendererBase, typename... CallbackArgs>
 		rawrbox::RendererBase* createRenderer(CallbackArgs&&... args) {
-			_renderer = std::make_unique<T>(this->__RENDER_TYPE, this->getHandle(), this->getSize(), std::forward<CallbackArgs>(args)...);
+			_renderer = std::make_unique<T>(this->__RENDER_TYPE, this->getHandle(), this->getSize(), this->getMonitorSize(), std::forward<CallbackArgs>(args)...);
 
 			// Setup resize ----
-			this->onResize += [this](auto&, auto& size) {
-				_renderer->resize(size);
+			this->onResize += [this](auto&, auto& size, auto& monitorSize) {
+				_renderer->resize(size, monitorSize);
 			};
 			// -----------------
 
@@ -145,6 +147,8 @@ namespace rawrbox {
 		void close();
 
 		[[nodiscard]] virtual rawrbox::Vector2i getSize() const;
+		[[nodiscard]] virtual rawrbox::Vector2i getMonitorSize() const;
+
 		[[nodiscard]] virtual float getAspectRatio() const;
 		[[nodiscard]] virtual rawrbox::Vector2i getMousePos() const;
 		[[nodiscard]] virtual uint32_t getWindowFlags() const;
@@ -156,6 +160,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual const std::unordered_map<int, rawrbox::Vector2i>& getScreenSizes() const;
 
 		[[nodiscard]] virtual bool hasFocus() const;
+
+		[[nodiscard]] virtual GLFWmonitor* getWindowMonitor() const;
 		// --------------------
 	};
 } // namespace rawrbox

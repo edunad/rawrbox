@@ -172,6 +172,8 @@ namespace model {
 			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-5.F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
+
+		this->_model->upload(false);
 	}
 
 	void Game::createSpline() {
@@ -222,7 +224,7 @@ namespace model {
 		auto texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement_test.png")->get();
 
 		// Model test ----
-		this->createModels();
+		// this->createModels();
 		// ----
 
 		// Displacement test ----
@@ -245,15 +247,16 @@ namespace model {
 			this->_sprite->addMesh(mesh);
 		}
 		// -----
+		/*
+				// AXIS ------
+				{
+					auto mesh = rawrbox::MeshUtils::generateAxis(1, {0.F, 0.F, 0.F});
 
-		// AXIS ------
-		{
-			auto mesh = rawrbox::MeshUtils::generateAxis(1, {0.F, 0.F, 0.F});
-
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({0, 0, 0}, mesh.getBBOX()));
-			this->_model->addMesh(mesh);
-		}
-		// ----
+					this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({0, 0, 0}, mesh.getBBOX()));
+					this->_model->addMesh(mesh);
+				}
+				// ----
+				*/
 
 		// Spline test ----
 		this->createSpline();
@@ -279,7 +282,6 @@ namespace model {
 		this->_text->addText(*this->_font, "HALF UNIT", {1.5F, 0.55F, 2.5F});
 		// ------
 
-		this->_model->upload(false);
 		this->_bboxes->upload();
 		this->_displacement->upload();
 		this->_sprite->upload();

@@ -3,6 +3,8 @@
 #include <rawrbox/utils/thread_utils.hpp>
 #include <rawrbox/utils/timer.hpp>
 
+#include <cpptrace/cpptrace.hpp>
+
 #include <fmt/printf.h>
 
 #include <chrono>
@@ -108,6 +110,8 @@ namespace rawrbox {
 				fmt::print("\n┌{}{}{}┐\n", hLine, title, hLine);
 				fmt::print(" {}\n", wat);
 				fmt::print("└{}{}{}┘\n\n", hLine, title, hLine);
+
+				cpptrace::generate_trace().print();
 				throw err;
 			}
 		});

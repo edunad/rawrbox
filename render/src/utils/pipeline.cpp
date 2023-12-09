@@ -52,9 +52,11 @@ namespace rawrbox {
 		ShaderCI.Desc.UseCombinedTextureSamplers = true; // (g_Texture + g_Texture_sampler combination)
 		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
 
+		std::string shaderName = fmt::format("RawrBox::SHADER::{}", name);
+
 		ShaderCI.Desc.ShaderType = type;
 		ShaderCI.EntryPoint = "main";
-		ShaderCI.Desc.Name = fmt::format("RawrBox::{}", name).c_str();
+		ShaderCI.Desc.Name = shaderName.c_str();
 		ShaderCI.FilePath = name.c_str();
 		ShaderCI.Macros = macros;
 
@@ -83,7 +85,9 @@ namespace rawrbox {
 		Diligent::ComputePipelineStateCreateInfo PSOCreateInfo;
 		Diligent::PipelineStateDesc& PSODesc = PSOCreateInfo.PSODesc;
 
-		PSODesc.Name = fmt::format("RawrBox::COMPUTE::{}", name).c_str();
+		std::string pipeName = fmt::format("RawrBox::COMPUTE::{}", name);
+
+		PSODesc.Name = pipeName.c_str();
 		PSODesc.PipelineType = Diligent::PIPELINE_TYPE_COMPUTE;
 		PSODesc.ResourceLayout.DefaultVariableType = settings.resourceType;
 
@@ -122,9 +126,11 @@ namespace rawrbox {
 		auto desc = rawrbox::RENDERER->swapChain()->GetDesc();
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> pipe;
 
+		std::string pipeName = fmt::format("RawrBox::{}", name);
+
 		// Create pipe info ----
 		Diligent::GraphicsPipelineStateCreateInfo info;
-		info.PSODesc.Name = fmt::format("RawrBox::{}", name).c_str();
+		info.PSODesc.Name = pipeName.c_str();
 		info.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
 		info.PSODesc.ResourceLayout.DefaultVariableType = settings.resourceType;
 		info.GraphicsPipeline.NumRenderTargets = settings.renderTargets;

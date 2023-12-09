@@ -37,17 +37,11 @@ namespace rawrbox {
 		// ------------
 
 		// PIPELINE ----
-		Diligent::ShaderMacroHelper macro;
-		macro.AddShaderMacro("CLUSTERS_X", rawrbox::CLUSTERS_X);
-		macro.AddShaderMacro("CLUSTERS_Y", rawrbox::CLUSTERS_Y);
-		macro.AddShaderMacro("CLUSTERS_Z", rawrbox::CLUSTERS_Z);
-		macro.AddShaderMacro("MAX_LIGHTS_PER_CLUSTER", rawrbox::MAX_LIGHTS_PER_CLUSTER);
-
+/*
 		rawrbox::PipeSettings settings;
-		settings.resourceType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE;
 		settings.pVS = "lit.vsh";
 		settings.pPS = "lit.psh";
-		settings.macros = macro;
+		settings.macros = cluster->getClusterMacros();
 		settings.layout = rawrbox::VertexNormData::vLayout();
 		settings.immutableSamplers = {{Diligent::SHADER_TYPE_VERTEX, "g_Displacement"}, {Diligent::SHADER_TYPE_PIXEL, "g_Normal"}, {Diligent::SHADER_TYPE_PIXEL, "g_Specular"}};
 
@@ -93,17 +87,18 @@ namespace rawrbox {
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		rawrbox::PipelineUtils::createPipeline("Model::Lit::CullNone::Alpha", "Model::Lit", settings);
-
+*/
 #ifdef _DEBUG
 		rawrbox::PipeSettings debugSettings;
 		debugSettings.layout = rawrbox::VertexNormData::vLayout();
-		debugSettings.macros = macro;
+		debugSettings.macros = cluster->getClusterMacros();
 		debugSettings.pVS = "lit_debug.vsh";
 		debugSettings.pPS = "cluster_debug_z.psh";
 
 		debugSettings.resources = {
 		    {Diligent::SHADER_TYPE_VERTEX, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC}};
+		    {Diligent::SHADER_TYPE_PIXEL, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		};
 
 		debugSettings.uniforms = {
 		    {Diligent::SHADER_TYPE_VERTEX, _uniforms, "Constants"},
@@ -115,13 +110,11 @@ namespace rawrbox {
 		    {Diligent::SHADER_TYPE_VERTEX, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 		    {Diligent::SHADER_TYPE_PIXEL, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
-		    {Diligent::SHADER_TYPE_PIXEL, "g_ClusterGrid", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC}};
+		    {Diligent::SHADER_TYPE_PIXEL, "g_ClusterDataGrid", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}};
 
 		debugSettings.uniforms = {
 		    {Diligent::SHADER_TYPE_VERTEX, _uniforms, "Constants"},
-		    {Diligent::SHADER_TYPE_PIXEL, _uniforms_pixel, "Constants"},
-
-		    {Diligent::SHADER_TYPE_PIXEL, cluster->getDataGridBuffer(), "g_ClusterGrid"}};
+		    {Diligent::SHADER_TYPE_PIXEL, _uniforms_pixel, "Constants"}};
 
 		debugSettings.pVS = "lit_debug.vsh";
 		debugSettings.pPS = "cluster_debug_light.psh";
@@ -147,28 +140,19 @@ namespace rawrbox {
 		if (this->_debug_light == nullptr) this->_debug_light = rawrbox::PipelineUtils::getPipeline("Model::Lit::Debug::Light");
 
 		if (this->_bind_debug_z == nullptr) this->_bind_debug_z = rawrbox::PipelineUtils::getBind("Model::Lit::Debug");
-		if (this->_bind_debug_light == nullptr) this->_bind_debug_light = rawrbox::PipelineUtils::getBind("Model::Lit::Debug::Light");
-#endif
+		if (this->_bind_debug_light == nullptr) {
+			auto cluster = dynamic_cast<rawrbox::RendererCluster*>(rawrbox::RENDERER);
+			if (cluster == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] This material requires the `clustered` renderer");
 
-		if (this->_bind == nullptr) {
-			this->_bind = rawrbox::PipelineUtils::getBind("Model::Lit");
-
-			auto l = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Lights");
-
-			if (l != nullptr) {
-				l->Set(rawrbox::LIGHTS::getBuffer());
-
-				rawrbox::LIGHTS::onBufferResize += [this, l]() {
-					if (l != nullptr) l->Set(rawrbox::LIGHTS::getBuffer());
-				};
-			}
+			this->_bind_debug_light = rawrbox::PipelineUtils::getBind("Model::Lit::Debug::Light");
+			this->_bind_debug_light->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_ClusterDataGrid")->Set(cluster->getDataGridBuffer());
 		}
+#endif
+		if (this->_bind == nullptr) this->_bind = rawrbox::PipelineUtils::getBind("Model::Lit");
 	}
 
 	void MaterialLit::bindShaderResources() {
 		auto context = rawrbox::RENDERER->context();
-		if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] Bind not set!");
-
 #ifdef _DEBUG
 		switch (rawrbox::RENDERER->DEBUG_LEVEL) {
 			case 1:
@@ -180,6 +164,7 @@ namespace rawrbox {
 		}
 #endif
 
+		if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] Bind not set!");
 		context->CommitShaderResources(this->_bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 } // namespace rawrbox

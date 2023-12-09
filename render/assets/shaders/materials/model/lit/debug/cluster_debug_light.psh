@@ -24,15 +24,15 @@ struct PSOutput {
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
     // show light count per cluster
-    uint cluster = getClusterIndex(PSIn.Pos);
-    ClusterDataGrid grid = getClusterDataGrid(cluster);
+    uint cluster = GetClusterIndex(PSIn.Pos.z, g_ZNearFarVec, g_ClusterSize, PSIn.Pos);
+    uint4 grid = GetClusterDataGrid(cluster);
 
-    int lights = int(grid.lights);
+    uint lights = grid.y;
 
     // show possible clipping
     if(lights == 0) {
         lights--;
-    } else if(lights == int(MAX_LIGHTS_PER_CLUSTER)) {
+    } else if(lights == MAX_LIGHTS_PER_CLUSTER) {
         lights++;
     }
 

@@ -63,13 +63,16 @@ namespace rawrbox {
 		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) {
 			switch (this->_channels) {
 				case 1:
-					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_R8_UNORM;
+					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_A8_UNORM;
+					break;
 				case 2:
 					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_RG8_UNORM;
+					break;
 				default:
 				case 3:
 				case 4:
 					format = this->_sRGB ? Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB : Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM;
+					break;
 			}
 		}
 
@@ -82,9 +85,9 @@ namespace rawrbox {
 				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RG8_UNORM:
 					this->_channels = 2;
 					break;
-				default:
 				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM:
 				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB:
+				default:
 					this->_channels = 4;
 					break;
 			}
@@ -120,6 +123,8 @@ namespace rawrbox {
 		data.NumSubresources = 1;
 
 		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
+		if (this->_tex == nullptr) throw std::runtime_error(fmt::format("[RawrBox-TextureBase] Failed to create texture '{}'", this->_name));
+
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 		this->updateSampler();
 	}

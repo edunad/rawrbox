@@ -51,6 +51,7 @@
     "cmake.configureOnOpen": false,
     "cmake.autoSelectActiveFolder": false,
     "cmake.generator": "Ninja",
+    "cmake.touchbar.visibility": "default",
     "cmake.configureArgs": ["-Wno-dev"],
     "cmake.configureSettings": {
       "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",

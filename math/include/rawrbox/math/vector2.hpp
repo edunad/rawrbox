@@ -72,6 +72,20 @@ namespace rawrbox {
 			    std::clamp(y, min.y, max.y)};
 		}
 
+		[[nodiscard]] VecType clampMagnitude(float max) const {
+			float mag = this->sqrMagnitude();
+			if (mag > max * max) {
+				float m = std::sqrt(mag);
+
+				float x = this->x / m;
+				float y = this->y / m;
+
+				return {x * max, y * max};
+			}
+
+			return this;
+		}
+
 		[[nodiscard]] VecType min(const VecType& other) const
 			requires(std::is_same_v<NumberType, float>)
 		{

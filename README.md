@@ -144,6 +144,7 @@
 | lua & sol2 & luajit | Used for loading & managing lua scripting           |
 | curl + libcpr       | Used for HTTP / HTTPS requests                      |
 | lunasvg             | Used for SVG loading                                |
+| cpptrace            | Used for easy error tracing                         |
 | libwebp             | Used for WEBP loading                               |
 
 # BUILDING

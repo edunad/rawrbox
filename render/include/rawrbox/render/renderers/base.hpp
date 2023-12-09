@@ -41,7 +41,10 @@ namespace rawrbox {
 		//----
 
 		rawrbox::Colorf _clearColor = rawrbox::Colors::Black();
+
 		rawrbox::Vector2i _size = {};
+		rawrbox::Vector2i _monitorSize = {};
+
 		Diligent::NativeWindow _window = {};
 
 		bool _vsync = false;
@@ -87,7 +90,7 @@ namespace rawrbox {
 
 		std::function<void()> onIntroCompleted = nullptr;
 
-		RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Colorf& clearColor = rawrbox::Colors::Black());
+		RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize, const rawrbox::Colorf& clearColor = rawrbox::Colors::Black());
 		RendererBase(const RendererBase&) = delete;
 		RendererBase(RendererBase&&) = delete;
 		RendererBase& operator=(const RendererBase&) = delete;
@@ -95,7 +98,7 @@ namespace rawrbox {
 		virtual ~RendererBase();
 
 		virtual void init(Diligent::DeviceFeatures features = {});
-		virtual void resize(const rawrbox::Vector2i& size);
+		virtual void resize(const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize);
 
 		virtual void setWorldRender(std::function<void()> render);
 		virtual void setOverlayRender(std::function<void()> render);

@@ -72,7 +72,9 @@ namespace rawrbox {
 		if (_depth) {
 			desc.BindFlags = Diligent::BIND_SHADER_RESOURCE | Diligent::BIND_DEPTH_STENCIL;
 			desc.Format = Diligent::TEX_FORMAT_D32_FLOAT;
-			desc.Name = (this->_name + "::DEPTH").c_str();
+
+			std::string depthName = fmt::format("{}::DEPTH", this->_name);
+			desc.Name = depthName.c_str();
 			desc.ClearValue.Format = desc.Format;
 			desc.ClearValue.DepthStencil.Depth = 1;
 			desc.ClearValue.DepthStencil.Stencil = 0;
