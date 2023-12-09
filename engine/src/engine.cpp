@@ -8,7 +8,6 @@
 #include <fmt/printf.h>
 
 #include <chrono>
-#include <stdexcept>
 #include <string>
 #include <thread>
 
@@ -28,7 +27,7 @@ namespace rawrbox {
 	}
 
 	// Create the GLFW window
-	void Engine::setupGLFW() { throw std::runtime_error("[RawrBox-Engine] Method 'setupGLFW' not implemented"); }
+	void Engine::setupGLFW() { throw cpptrace::logic_error("[RawrBox-Engine] Method 'setupGLFW' not implemented"); }
 	void Engine::init() {}
 	void Engine::pollEvents() {}
 	void Engine::fixedUpdate() {}
@@ -100,12 +99,11 @@ namespace rawrbox {
 				this->onThreadShutdown(rawrbox::ENGINE_THREADS::THREAD_RENDER);
 
 				this->_shutdown = rawrbox::ENGINE_THREADS::THREAD_INPUT; // Done killing bgfx, now destroy glfw
-			} catch (std::exception err) {
+			} catch (std::exception& err) {
 				std::string wat = err.what();
 
 				std::string title = " FATAL ENGINE ERROR ";
 				std::string hLine = std::string(((wat.size() / 2) - title.size() / 2), '-');
-				std::string errMsg = fmt::format("│ {} │", wat);
 
 				fmt::print("\n┌{}{}{}┐\n", hLine, title, hLine);
 				fmt::print(" {}\n", wat);

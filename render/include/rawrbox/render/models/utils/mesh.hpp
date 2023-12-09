@@ -554,7 +554,7 @@ namespace rawrbox {
 			mesh.setPos(pos);
 
 			auto uvScale = 1.0F / static_cast<float>(subDivs - 1);
-			const uint16_t vertSize = subDivs * subDivs * 4;
+			const uint16_t vertSize = subDivs * subDivs;
 			mesh.vertices.reserve(vertSize);
 
 			for (uint32_t y = 0; y < subDivs; y++) {
@@ -565,7 +565,6 @@ namespace rawrbox {
 					rawrbox::Vector2f posDiv = {xF, yF};
 					posDiv /= static_cast<float>(subDivs - 1);
 					posDiv *= size;
-
 					posDiv -= size / 2;
 
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
@@ -585,22 +584,21 @@ namespace rawrbox {
 				}
 			}
 
-			auto subDivsUI16 = static_cast<uint16_t>(subDivs);
-			const uint16_t indcSize = vertSize / 4 * 6;
+			const uint16_t indcSize = ((subDivs - 1) * (subDivs - 1)) * 6;
 			mesh.indices.reserve(indcSize);
 
 			for (size_t y = 0; y < subDivs - 1; y++) {
-				auto yOffset = static_cast<uint16_t>(y * subDivsUI16);
+				auto yOffset = static_cast<uint16_t>(y * subDivs);
 
 				for (size_t x = 0; x < subDivs - 1; x++) {
 					uint16_t index = yOffset + static_cast<uint16_t>(x);
 
 					mesh.indices.push_back(index + 1);
-					mesh.indices.push_back(index + subDivsUI16);
+					mesh.indices.push_back(index + subDivs);
 					mesh.indices.push_back(index);
 
-					mesh.indices.push_back(index + subDivsUI16 + 1);
-					mesh.indices.push_back(index + subDivsUI16);
+					mesh.indices.push_back(index + subDivs + 1);
+					mesh.indices.push_back(index + subDivs);
 					mesh.indices.push_back(index + 1);
 				}
 			}

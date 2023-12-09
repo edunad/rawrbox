@@ -173,7 +173,17 @@ namespace model {
 			this->_model->addMesh(mesh);
 		}
 
+		// AXIS ------
+		{
+			auto mesh = rawrbox::MeshUtils::generateAxis(1, {0.F, 0.F, 0.F});
+
+			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({0, 0, 0}, mesh.getBBOX()));
+			this->_model->addMesh(mesh);
+		}
+		// ----
+
 		this->_model->upload(false);
+		this->_bboxes->upload();
 	}
 
 	void Game::createSpline() {
@@ -215,54 +225,35 @@ namespace model {
 		this->_spline->generateMesh();
 
 		this->_spline->setPos({0, 0, 2.F});
+		this->_spline->upload();
 	}
 
-	void Game::contentLoaded() {
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(24);
-
-		auto texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
+	void Game::createDisplacement() {
 		auto texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement_test.png")->get();
 
-		// Model test ----
-		// this->createModels();
-		// ----
+		auto mesh = rawrbox::MeshUtils::generateMesh({0, 0, 0}, {64, 64}, 64, rawrbox::Colors::White());
+		mesh.setTexture(texture3);
+		mesh.setDisplacementTexture(texture3, 24.F);
 
-		// Displacement test ----
-		{
-			auto mesh = rawrbox::MeshUtils::generateMesh({0, 0, 0}, {64, 64}, 64, rawrbox::Colors::White());
-			mesh.setTexture(texture3);
-			mesh.setDisplacementTexture(texture3, 24.F);
+		this->_displacement->addMesh(mesh);
 
-			this->_displacement->addMesh(mesh);
+		this->_displacement->setPos({0, 0.1F, -2});
+		this->_displacement->setScale({0.025F, 0.025F, 0.025F});
+		this->_displacement->upload();
+	}
 
-			this->_displacement->setPos({0, 0.1F, -2});
-			this->_displacement->setScale({0.025F, 0.025F, 0.025F});
-		}
-		// -----
+	void Game::createSprite() {
+		auto texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
 
-		// Sprite test ----
-		{
-			auto mesh = rawrbox::MeshUtils::generateCube({0, 1, 0}, {0.2F, 0.2F});
-			mesh.setTexture(texture2);
-			this->_sprite->addMesh(mesh);
-		}
-		// -----
-		/*
-				// AXIS ------
-				{
-					auto mesh = rawrbox::MeshUtils::generateAxis(1, {0.F, 0.F, 0.F});
+		auto mesh = rawrbox::MeshUtils::generateCube({0, 1, 0}, {0.2F, 0.2F});
+		mesh.setTexture(texture2);
+		this->_sprite->addMesh(mesh);
+		this->_sprite->upload();
+	}
 
-					this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({0, 0, 0}, mesh.getBBOX()));
-					this->_model->addMesh(mesh);
-				}
-				// ----
-				*/
+	void Game::createText() {
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(24);
 
-		// Spline test ----
-		this->createSpline();
-		// -----
-
-		// Text test ----
 		this->_text->addText(*this->_font, "PLANE", {2.F, 0.5F, 0});
 		this->_text->addText(*this->_font, "TRIANGLE", {3.5F, 0.5F, 0});
 		this->_text->addText(*this->_font, "CUBE", {-2.F, 0.55F, 0});
@@ -280,13 +271,29 @@ namespace model {
 
 		this->_text->addText(*this->_font, "1 UNIT", {3.5F, 1.0F, 2.5F});
 		this->_text->addText(*this->_font, "HALF UNIT", {1.5F, 0.55F, 2.5F});
-		// ------
-
-		this->_bboxes->upload();
-		this->_displacement->upload();
-		this->_sprite->upload();
-		this->_spline->upload();
 		this->_text->upload();
+	}
+
+	void Game::contentLoaded() {
+		// Model test ----
+		this->createModels();
+		// ----
+
+		// Displacement test ----
+		this->createDisplacement();
+		// -----
+
+		// Sprite test ----
+		this->createSprite();
+		// -----
+
+		// Spline test ----
+		this->createSpline();
+		// -----
+
+		// Text test ----
+		this->createText();
+		// ------
 
 		this->_ready = true;
 	}
@@ -318,12 +325,12 @@ namespace model {
 		if (!this->_ready) return;
 		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr || this->_spline == nullptr) return;
 
-		this->_model->draw();
-		this->_displacement->draw();
-		this->_sprite->draw();
-		this->_spline->draw();
-		this->_bboxes->draw();
-		this->_text->draw();
+		if (this->_model->isUploaded()) this->_model->draw();
+		if (this->_displacement->isUploaded()) this->_displacement->draw();
+		if (this->_sprite->isUploaded()) this->_sprite->draw();
+		if (this->_spline->isUploaded()) this->_spline->draw();
+		if (this->_bboxes->isUploaded()) this->_bboxes->draw();
+		if (this->_text->isUploaded()) this->_text->draw();
 	}
 
 	void Game::draw() {

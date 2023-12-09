@@ -31,6 +31,9 @@ namespace model {
 
 		void createModels();
 		void createSpline();
+		void createDisplacement();
+		void createSprite();
+		void createText();
 
 	public:
 		Game() = default;
