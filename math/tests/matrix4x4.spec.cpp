@@ -5,12 +5,6 @@
 #include <catch2/matchers/catch_matchers.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-// TEST ------------------------------------
-#define GLM_COORDINATE_SYSTEM 0x00000001
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-// -----------------------------------------
-
 TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 
 	SECTION("rawrbox::Matrix4x4") {
