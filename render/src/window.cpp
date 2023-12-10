@@ -130,8 +130,8 @@ namespace rawrbox {
 		if (rawrbox::RENDER_THREAD_ID == std::this_thread::get_id()) throw std::runtime_error("[RawrBox-Window] 'init' should be called inside engine's 'setupGLFW'!");
 
 		int APIHint = GLFW_NO_API;
-#if !PLATFORM_WIN32
-		if (this->getRenderDeviceType() == Diligent::RENDER_DEVICE_TYPE_GL) {
+#ifndef _WIN32
+		if (this->_renderType == Diligent::RENDER_DEVICE_TYPE_GL) {
 			// On platforms other than Windows Diligent Engine
 			// attaches to existing OpenGL context
 			APIHint = GLFW_OPENGL_API;
