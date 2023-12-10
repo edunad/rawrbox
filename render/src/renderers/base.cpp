@@ -70,8 +70,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_context);
 		RAWRBOX_DESTROY(this->_swapChain);
 
-		/*rawrbox::DECALS::shutdown();
-		bgfx::discard(BGFX_DISCARD_ALL);*/
+		// rawrbox::DECALS::shutdown();
 	}
 
 	void RendererBase::init(Diligent::DeviceFeatures features) {

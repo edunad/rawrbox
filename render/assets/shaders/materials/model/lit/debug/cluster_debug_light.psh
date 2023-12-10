@@ -31,9 +31,8 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
     // show possible clipping
     if(lights == 0) {
-        lights--;
-    } else if(lights == MAX_LIGHTS_PER_CLUSTER) {
-        lights++;
+        PSOut.Color = float4(0.01, 0.01, 0.01, 1.0);
+        return;
     }
 
     float3 lightCountColor = turboColormap(float(lights) / MAX_LIGHTS_PER_CLUSTER);
