@@ -47,6 +47,7 @@ namespace light {
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		// -----
 
+#ifdef _DEBUG
 		// Setup binds ---
 		window->onKey += [](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
 			if (action != KEY_ACTION_UP) return;
@@ -56,6 +57,7 @@ namespace light {
 			if (key == KEY_F3) rawrbox::RendererBase::DEBUG_LEVEL = 2;
 		};
 		// ----------
+#endif
 
 		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 40.F, 0.8F);
 
