@@ -98,7 +98,7 @@ namespace rawrbox {
 #if RAWRBOX_SUPPORT_GL
 			case Diligent::RENDER_DEVICE_TYPE_GL:
 				{
-	#if ENGINE_DLL
+	#if EXPLICITLY_LOAD_ENGINE_GL_DLL
 					// Load the dll and import GetEngineFactoryOpenGL() function
 					auto GetEngineFactoryOpenGL = Diligent::LoadGraphicsEngineOpenGL();
 					auto* pFactoryOpenGL = GetEngineFactoryOpenGL();
@@ -118,7 +118,7 @@ namespace rawrbox {
 #if RAWRBOX_SUPPORT_VULKAN
 			case Diligent::RENDER_DEVICE_TYPE_VULKAN:
 				{
-	#if ENGINE_DLL
+	#if EXPLICITLY_LOAD_ENGINE_VK_DLL
 					// Load the dll and import GetEngineFactoryVk() function
 					auto* GetEngineFactoryVk = Diligent::LoadGraphicsEngineVk();
 					auto* pFactoryVk = GetEngineFactoryVk();
