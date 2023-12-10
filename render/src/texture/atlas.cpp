@@ -34,13 +34,10 @@ namespace rawrbox {
 	// --------------------
 
 	void TextureAtlas::processAtlas() {
-		int totalPixels = this->_spriteSize * this->_spriteSize * this->_channels;
-
 		int tilesX = this->_size.x / this->_spriteSize;
 		int tilesY = this->_size.y / this->_spriteSize;
 
 		int tileSizeX = this->_spriteSize * this->_channels;
-		int rowLen = tilesX * tileSizeX;
 
 		this->_tiles.clear();
 		this->_tiles.resize(this->total());
@@ -71,12 +68,15 @@ namespace rawrbox {
 			switch (this->_channels) {
 				case 1:
 					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_R8_UNORM;
+					break;
 				case 2:
 					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_RG8_UNORM;
+					break;
 				default:
 				case 3:
 				case 4:
 					format = this->_sRGB ? Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB : Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM;
+					break;
 			}
 		} else if (this->_channels == 0) {
 			switch (format) {

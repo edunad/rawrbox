@@ -79,7 +79,6 @@ namespace rawrbox {
 		auto fnd = _pipelines.find(name);
 		if (fnd != _pipelines.end()) return fnd->second;
 
-		auto desc = rawrbox::RENDERER->swapChain()->GetDesc();
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> pipe;
 
 		Diligent::ComputePipelineStateCreateInfo PSOCreateInfo;
@@ -123,9 +122,9 @@ namespace rawrbox {
 		auto fnd = _pipelines.find(name);
 		if (fnd != _pipelines.end()) return fnd->second;
 
-		auto desc = rawrbox::RENDERER->swapChain()->GetDesc();
-		Diligent::RefCntAutoPtr<Diligent::IPipelineState> pipe;
+		auto& desc = rawrbox::RENDERER->swapChain()->GetDesc();
 
+		Diligent::RefCntAutoPtr<Diligent::IPipelineState> pipe;
 		std::string pipeName = fmt::format("RawrBox::{}", name);
 
 		// Create pipe info ----

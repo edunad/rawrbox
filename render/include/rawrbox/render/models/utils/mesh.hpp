@@ -18,7 +18,7 @@ namespace rawrbox {
 
 		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateLine(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Color& col) {
-			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			mesh.setPos(a);
 
 			mesh.lineMode = true;
@@ -48,7 +48,7 @@ namespace rawrbox {
 
 		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateTriangle(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector3f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector3f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC) {
-			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			mesh.setPos(pos);
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
@@ -95,7 +95,7 @@ namespace rawrbox {
 
 		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generatePlane(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
-			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			mesh.setPos(pos);
 
 			rawrbox::Vector2f hSize = size / 2.F;
@@ -137,7 +137,7 @@ namespace rawrbox {
 
 		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateCube(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
-			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			mesh.setPos(pos);
 
 			rawrbox::Vector3f hSize = size / 2.F;
@@ -254,7 +254,7 @@ namespace rawrbox {
 
 		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateAxis(float size, const rawrbox::Vector3f& pos) {
-			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			mesh.setPos(pos);
 
 			float hSize = size / 2.F;
@@ -286,7 +286,7 @@ namespace rawrbox {
 
 		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateArrow(float size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
-			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			mesh.setPos(pos);
 
 			float hSize = 0.5F;
@@ -314,7 +314,7 @@ namespace rawrbox {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate cone does not support normals");
 			}
 
-			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			mesh.setPos(pos);
 
 			const float step = rawrbox::pi<float> * 2.0F / ratio;
@@ -376,7 +376,7 @@ namespace rawrbox {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate cylinder does not support normals");
 			}
 
-			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			mesh.setPos(pos);
 
 			const float step = rawrbox::pi<float> * 2.0F / ratio;
@@ -443,7 +443,7 @@ namespace rawrbox {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate sphere does not support normals");
 			}
 
-			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			mesh.setPos(pos);
 
 			const float golden = 1.6180339887F;
@@ -550,7 +550,7 @@ namespace rawrbox {
 
 		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateMesh(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, uint16_t subDivs = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
-			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			mesh.setPos(pos);
 
 			auto uvScale = 1.0F / static_cast<float>(subDivs - 1);
@@ -618,7 +618,7 @@ namespace rawrbox {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate grid does not support normals");
 			}
 
-			rawrbox::Mesh<typename M::vertexBufferType> mesh;
+			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			mesh.setPos(pos);
 
 			const uint16_t vertSize = size * size;

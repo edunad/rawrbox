@@ -17,9 +17,9 @@ namespace rawrbox {
 	struct UIGraphData {
 		float height = 0.F;
 
-		rawrbox::Vector2f a;
-		rawrbox::Vector2f b;
-		rawrbox::Color col;
+		rawrbox::Vector2f a = {};
+		rawrbox::Vector2f b = {};
+		rawrbox::Color col = {};
 	};
 
 	struct UIGraphCategory {
@@ -88,7 +88,7 @@ namespace rawrbox {
 
 		std::array<float, rawrbox::UIGraphCategory::ENTRY_COUNT> _totalTimes = {};
 		std::vector<std::array<rawrbox::Vector2f, rawrbox::UIGraphCategory::ENTRY_COUNT>> _vertCats = {};
-		std::vector<std::pair<std::string, float>> texts;
+		std::vector<std::pair<std::string, float>> texts = {};
 
 #ifdef RAWRBOX_SCRIPTING
 		void initializeLua() override;
