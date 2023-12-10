@@ -1,3 +1,0 @@
-[submodule "render/DiligentCore"]
-	path = render/DiligentCore
-	url = https://github.com/DiligentGraphics/DiligentCore
