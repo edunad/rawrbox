@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Graphics/GraphicsEngine/interface/PipelineState.h>
-#include <Graphics/GraphicsEngine/interface/ShaderResourceBinding.h>
-#include <Graphics/GraphicsEngine/interface/TextureView.h>
+#include <PipelineState.h>
+#include <ShaderResourceBinding.h>
+#include <TextureView.h>
 
 namespace rawrbox {
 	class PostProcessBase {

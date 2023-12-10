@@ -3,8 +3,6 @@ set(output_target RAWRBOX.RENDER)
 # --------------
 
 # Packages ----
-add_subdirectory(DiligentCore) # Does not seem to work properly as a CPM package
-
 CPMAddPackage(
     NAME
         glfw
@@ -21,6 +19,18 @@ CPMAddPackage(
         "GLFW_VULKAN_STATIC OFF"
         "USE_MSVC_RUNTIME_LIBRARY_DLL OFF")
 
+CPMAddPackage(
+    NAME
+        DiligentCore
+    GITHUB_REPOSITORY
+        DiligentGraphics/DiligentCore
+    GIT_TAG
+        master
+    PATCH_COMMAND
+        git restore Graphics/HLSL2GLSLConverterLib/src/HLSL2GLSLConverterImpl.cpp
+    COMMAND
+        git restore Graphics/GraphicsEngineVulkan/src/VulkanUtilities/VulkanInstance.cpp
+)
 
 CPMAddPackage("gh:nemtrif/utfcpp@3.2.4")
 if(utfcpp_ADDED)
@@ -90,20 +100,30 @@ copy_resources(TARGET ${output_target})
 target_compile_options(${output_target} PRIVATE -DENGINE_DLL)
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_RENDER)
-target_include_directories(${output_target} PUBLIC "include" "${libwebp_SOURCE_DIR}/src" "./DiligentCore")
+target_include_directories(${output_target} PUBLIC "include" "${libwebp_SOURCE_DIR}/src")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(
     ${output_target}
     PUBLIC
-           Diligent-GraphicsTools
-           RAWRBOX.MATH
-           RAWRBOX.ENGINE
-           ${RAWRBOX_EXTRA_LIBS}
-           magic_enum::magic_enum
-           utf8cpp
-           lunasvg
-           webpdemux
-           glfw)
+            # Diligent -------------------
+            Diligent-Common
+            Diligent-GraphicsAccessories
+            Diligent-GraphicsTools
+            Diligent-TargetPlatform
+            Diligent-PublicBuildSettings
+            # ----------------------------
+
+            # RAWRBOX --------------------
+            RAWRBOX.MATH
+            RAWRBOX.ENGINE
+            ${RAWRBOX_EXTRA_LIBS}
+            # ----------------------------
+
+            magic_enum::magic_enum
+            utf8cpp
+            lunasvg
+            webpdemux
+            glfw)
 
 set_lib_runtime_mt(${output_target})
 
@@ -114,11 +134,13 @@ if(WIN32)
     if(D3D12_SUPPORTED AND RAWRBOX_SUPPORT_DX12)
         message(STATUS "Enabling DX12 support")
         target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineD3D12-${DILIGENT_LINK_MODE})
+        target_compile_definitions(${output_target} PUBLIC RAWRBOX_SUPPORT_DX12)
     endif()
 
     if(D3D11_SUPPORTED AND RAWRBOX_SUPPORT_DX11)
-    message(STATUS "Enabling DX11 support")
+        message(STATUS "Enabling DX11 support")
         target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineD3D11-${DILIGENT_LINK_MODE})
+        target_compile_definitions(${output_target} PUBLIC RAWRBOX_SUPPORT_DX11)
     endif()
 
 else()
@@ -130,11 +152,13 @@ endif()
 if(VULKAN_SUPPORTED AND RAWRBOX_SUPPORT_VULKAN)
     message(STATUS "Enabling VULKAN support")
     target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineVk-${DILIGENT_LINK_MODE})
+    target_compile_definitions(${output_target} PUBLIC RAWRBOX_SUPPORT_VULKAN)
 endif()
 
 if(GL_SUPPORTED AND RAWRBOX_SUPPORT_OPENGL)
     message(STATUS "Enabling OPENGL support")
     target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineOpenGL-${DILIGENT_LINK_MODE})
+    target_compile_definitions(${output_target} PUBLIC RAWRBOX_SUPPORT_OPENGL)
 endif()
 
 if(WIN32)

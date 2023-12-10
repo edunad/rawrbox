@@ -3,7 +3,7 @@
 #include <rawrbox/render/materials/unlit.hpp>
 #include <rawrbox/utils/string.hpp>
 
-#include <Graphics/GraphicsEngine/interface/Buffer.h>
+#include <Buffer.h>
 
 #ifdef RAWRBOX_SCRIPTING
 	#include <sol/sol.hpp>

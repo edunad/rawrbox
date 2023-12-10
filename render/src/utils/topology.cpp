@@ -1,6 +1,10 @@
 #include <rawrbox/render/utils/topology.hpp>
 
+#include <memory>
+
 // Adapted from https://github.com/bkaradzic/bgfx/blob/master/src/topology.cpp && https://github.com/bkaradzic/bx/blob/97332257ff86e7c35203b9d34a337d1cbb4466bc/include/bx/inline/sort.inl#L126
+
+// NOLINTBEGIN{*}
 namespace rawrbox {
 	namespace radix_sort_detail {
 		constexpr uint32_t kBits = 11;
@@ -227,3 +231,4 @@ namespace rawrbox {
 		return topologyConvertTriListToLineList<uint16_t, uint32_t>(dest, destSize, (const uint16_t*)indc, indcSize);
 	}
 } // namespace rawrbox
+  // NOLINTEND{*}

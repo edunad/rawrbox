@@ -3,44 +3,24 @@
 	#define ENGINE_DLL 1
 #endif
 
-#ifndef D3D11_SUPPORTED
-	#define D3D11_SUPPORTED 0
+#if RAWRBOX_SUPPORT_DX11
+	#include <EngineFactoryD3D11.h>
 #endif
 
-#ifndef D3D12_SUPPORTED
-	#define D3D12_SUPPORTED 0
+#if RAWRBOX_SUPPORT_DX12
+	#include <EngineFactoryD3D12.h>
 #endif
 
-#ifndef GL_SUPPORTED
-	#define GL_SUPPORTED 0
+#if RAWRBOX_SUPPORT_GL
+	#include <EngineFactoryOpenGL.h>
 #endif
 
-#ifndef VULKAN_SUPPORTED
-	#define VULKAN_SUPPORTED 0
+#if RAWRBOX_SUPPORT_VULKAN
+	#include <EngineFactoryVk.h>
 #endif
 
-#ifndef METAL_SUPPORTED
-	#define METAL_SUPPORTED 0
-#endif
-
-#if D3D11_SUPPORTED
-	#include <Graphics/GraphicsEngineD3D11/interface/EngineFactoryD3D11.h>
-#endif
-
-#if D3D12_SUPPORTED
-	#include <Graphics/GraphicsEngineD3D12/interface/EngineFactoryD3D12.h>
-#endif
-
-#if GL_SUPPORTED
-	#include <Graphics/GraphicsEngineOpenGL/interface/EngineFactoryOpenGL.h>
-#endif
-
-#if VULKAN_SUPPORTED
-	#include <Graphics/GraphicsEngineVulkan/interface/EngineFactoryVk.h>
-#endif
-
-#if METAL_SUPPORTED
-	#include <Graphics/GraphicsEngineMetal/interface/EngineFactoryMtl.h>
+#if RAWRBOX_SUPPORT_METAL
+	#include <EngineFactoryMtl.h>
 #endif
 
 #include <rawrbox/render/materials/base.hpp>
@@ -80,7 +60,7 @@ namespace rawrbox {
 		features.GeometryShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 
 		switch (this->_type) {
-#if D3D11_SUPPORTED
+#if RAWRBOX_SUPPORT_DX11
 			case Diligent::RENDER_DEVICE_TYPE_D3D11:
 				{
 	#if ENGINE_DLL
@@ -97,7 +77,7 @@ namespace rawrbox {
 				break;
 #endif
 
-#if D3D12_SUPPORTED
+#if RAWRBOX_SUPPORT_DX12
 			case Diligent::RENDER_DEVICE_TYPE_D3D12:
 				{
 	#if ENGINE_DLL
@@ -115,10 +95,10 @@ namespace rawrbox {
 				break;
 #endif // D3D12_SUPPORTED
 
-#if GL_SUPPORTED
+#if RAWRBOX_SUPPORT_GL
 			case Diligent::RENDER_DEVICE_TYPE_GL:
 				{
-	#if EXPLICITLY_LOAD_ENGINE_GL_DLL
+	#if ENGINE_DLL
 					// Load the dll and import GetEngineFactoryOpenGL() function
 					auto GetEngineFactoryOpenGL = Diligent::LoadGraphicsEngineOpenGL();
 					auto* pFactoryOpenGL = GetEngineFactoryOpenGL();
@@ -135,10 +115,10 @@ namespace rawrbox {
 				break;
 #endif // GL_SUPPORTED
 
-#if VULKAN_SUPPORTED
+#if RAWRBOX_SUPPORT_VULKAN
 			case Diligent::RENDER_DEVICE_TYPE_VULKAN:
 				{
-	#if EXPLICITLY_LOAD_ENGINE_GL_DLL
+	#if ENGINE_DLL
 					// Load the dll and import GetEngineFactoryVk() function
 					auto* GetEngineFactoryVk = Diligent::LoadGraphicsEngineVk();
 					auto* pFactoryVk = GetEngineFactoryVk();

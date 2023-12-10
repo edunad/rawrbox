@@ -2,8 +2,8 @@
 #include <rawrbox/render/materials/text.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
-#include <Graphics/GraphicsTools/interface/MapHelper.hpp>
-#include <Platforms/Basic/interface/DebugUtilities.hpp>
+#include <MapHelper.hpp>
+// #include <Platforms/Basic/interface/DebugUtilities.hpp>
 
 namespace rawrbox {
 	// STATIC DATA ----

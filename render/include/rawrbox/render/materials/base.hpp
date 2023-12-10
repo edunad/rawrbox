@@ -3,8 +3,8 @@
 #include <rawrbox/render/models/mesh.hpp>
 #include <rawrbox/render/models/vertex.hpp>
 
-#include <Graphics/GraphicsEngine/interface/InputLayout.h>
-#include <Graphics/GraphicsEngine/interface/PipelineState.h>
+#include <InputLayout.h>
+#include <PipelineState.h>
 #include <fmt/format.h>
 
 namespace rawrbox {

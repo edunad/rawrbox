@@ -1,7 +1,7 @@
 #pragma once
 
-#include <Graphics/GraphicsEngine/interface/PipelineState.h>
-#include <Graphics/GraphicsEngine/interface/Texture.h>
+#include <PipelineState.h>
+#include <Texture.h>
 
 namespace rawrbox {
 	class RenderUtils {

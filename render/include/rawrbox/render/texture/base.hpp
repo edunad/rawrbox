@@ -4,11 +4,11 @@
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
-#include <Common/interface/RefCntAutoPtr.hpp>
+#include <RefCntAutoPtr.hpp>
 
-#include <Graphics/GraphicsEngine/interface/Sampler.h>
-#include <Graphics/GraphicsEngine/interface/Texture.h>
-#include <Graphics/GraphicsEngine/interface/TextureView.h>
+#include <Sampler.h>
+#include <Texture.h>
+#include <TextureView.h>
 
 #include <vector>
 

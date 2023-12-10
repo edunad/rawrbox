@@ -1,12 +1,12 @@
 #pragma once
 
-#include <Common/interface/RefCntAutoPtr.hpp>
-#include <Graphics/GraphicsTools/interface/ShaderMacroHelper.hpp>
+#include <RefCntAutoPtr.hpp>
+#include <ShaderMacroHelper.hpp>
 
-#include <Graphics/GraphicsEngine/interface/Buffer.h>
-#include <Graphics/GraphicsEngine/interface/PipelineState.h>
-#include <Graphics/GraphicsEngine/interface/Shader.h>
-#include <Graphics/GraphicsEngine/interface/ShaderResourceVariable.h>
+#include <Buffer.h>
+#include <PipelineState.h>
+#include <Shader.h>
+#include <ShaderResourceVariable.h>
 
 #include <unordered_map>
 #include <vector>

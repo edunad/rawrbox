@@ -2,9 +2,9 @@
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/post_process/base.hpp>
 
-#include <Common/interface/RefCntAutoPtr.hpp>
+#include <RefCntAutoPtr.hpp>
 
-#include <Graphics/GraphicsEngine/interface/Buffer.h>
+#include <Buffer.h>
 
 namespace rawrbox {
 	enum class DITHER_MODE {

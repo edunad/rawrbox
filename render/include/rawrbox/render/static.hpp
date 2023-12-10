@@ -6,7 +6,7 @@
 #include <rawrbox/render/texture/missing.hpp>
 #include <rawrbox/render/window.hpp>
 
-#include <Graphics/GraphicsEngine/interface/Shader.h>
+#include <Shader.h>
 
 #include <memory>
 

@@ -4,7 +4,7 @@
 #include <rawrbox/render/light/base.hpp>
 #include <rawrbox/render/static.hpp>
 
-#include <Graphics/GraphicsTools/interface/DynamicBuffer.hpp>
+#include <DynamicBuffer.hpp>
 
 #include <memory>
 #include <vector>

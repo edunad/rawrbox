@@ -1,8 +1,6 @@
 #pragma once
 
-#include <Graphics/GraphicsEngine/interface/GraphicsTypes.h>
-
-#include <vector>
+#include <cstdint>
 
 namespace rawrbox {
 	class TopologyUtils {

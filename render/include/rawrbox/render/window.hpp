@@ -5,7 +5,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/utils/event.hpp>
 
-#include <Graphics/GraphicsEngine/interface/GraphicsTypes.h>
+#include <GraphicsTypes.h>
 #include <fmt/format.h>
 
 struct GLFWwindow;
@@ -63,7 +63,7 @@ namespace rawrbox {
 		std::array<uint8_t, 16 * 16 * 4> _cursorPixels = {};
 		// -----------
 
-		Diligent::RENDER_DEVICE_TYPE _renderType = Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_COUNT;
+		Diligent::RENDER_DEVICE_TYPE _renderType = Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_UNDEFINED;
 		rawrbox::WindowSettings _settings = {};
 		bool _hasFocus = false;
 
@@ -96,7 +96,7 @@ namespace rawrbox {
 		static std::vector<std::unique_ptr<rawrbox::Window>> __WINDOWS;
 		static Diligent::RENDER_DEVICE_TYPE __RENDER_TYPE;
 
-		static rawrbox::Window* createWindow(Diligent::RENDER_DEVICE_TYPE render = Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_VULKAN);
+		static rawrbox::Window* createWindow(Diligent::RENDER_DEVICE_TYPE render = Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_D3D11);
 		static rawrbox::Window* getWindow(size_t indx = 0);
 
 		static void pollEvents();

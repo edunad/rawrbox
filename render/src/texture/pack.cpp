@@ -2,7 +2,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/texture/pack.hpp>
 
-#include <Common/interface/Align.hpp>
+#include <Align.hpp>
 
 #include <fmt/format.h>
 

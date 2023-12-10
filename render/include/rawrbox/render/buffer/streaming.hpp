@@ -1,10 +1,8 @@
 #pragma once
 
-#include <Common/interface/RefCntAutoPtr.hpp>
-#include <Graphics/GraphicsTools/interface/MapHelper.hpp>
-#include <Platforms/Basic/interface/DebugUtilities.hpp>
+#include <MapHelper.hpp>
 
-#include <Graphics/GraphicsEngine/interface/Buffer.h>
+#include <Buffer.h>
 
 #include <cstdint>
 #include <vector>

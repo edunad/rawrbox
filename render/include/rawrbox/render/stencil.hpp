@@ -8,11 +8,11 @@
 #include <rawrbox/render/text/font.hpp>
 #include <rawrbox/render/texture/flat.hpp>
 
-#include <Common/interface/RefCntAutoPtr.hpp>
+#include <RefCntAutoPtr.hpp>
 
-#include <Graphics/GraphicsEngine/interface/PipelineState.h>
-#include <Graphics/GraphicsEngine/interface/ShaderResourceBinding.h>
-#include <Graphics/GraphicsEngine/interface/Texture.h>
+#include <PipelineState.h>
+#include <ShaderResourceBinding.h>
+#include <Texture.h>
 
 #include <memory>
 #include <vector>

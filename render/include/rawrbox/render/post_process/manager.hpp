@@ -5,8 +5,8 @@
 #include <rawrbox/render/post_process/base.hpp>
 #include <rawrbox/render/texture/render.hpp>
 
-#include <Graphics\GraphicsEngine\interface\Framebuffer.h>
-#include <Graphics\GraphicsEngine\interface\RenderPass.h>
+#include <Framebuffer.h>
+#include <RenderPass.h>
 
 #include <memory>
 #include <unordered_map>

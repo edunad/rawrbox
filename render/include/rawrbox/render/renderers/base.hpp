@@ -6,11 +6,11 @@
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/render/texture/render.hpp>
 
-#include <Common/interface/RefCntAutoPtr.hpp>
+#include <RefCntAutoPtr.hpp>
 
-#include <Graphics/GraphicsEngine/interface/DeviceContext.h>
-#include <Graphics/GraphicsEngine/interface/RenderDevice.h>
-#include <Graphics/GraphicsEngine/interface/SwapChain.h>
+#include <DeviceContext.h>
+#include <RenderDevice.h>
+#include <SwapChain.h>
 
 #include <filesystem>
 #include <functional>

@@ -7,7 +7,7 @@
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/static.hpp>
 
-#include <Graphics/GraphicsEngine/interface/InputLayout.h>
+#include <InputLayout.h>
 
 #include <array>
 

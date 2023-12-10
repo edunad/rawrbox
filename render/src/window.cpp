@@ -44,17 +44,17 @@ namespace rawrbox {
 	rawrbox::Window* Window::createWindow(Diligent::RENDER_DEVICE_TYPE render) {
 		if (render == Diligent::RENDER_DEVICE_TYPE_UNDEFINED) {
 #if PLATFORM_LINUX
-	#if VULKAN_SUPPORTED
+	#if RAWRBOX_SUPPORT_VULKAN
 			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_VULKAN;
 	#else
 			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_GL;
 	#endif
 #else
-	#if D3D12_SUPPORTED
+	#if RAWRBOX_SUPPORT_DX12
 			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_D3D12;
-	#elif D3D11_SUPPORTED
+	#elif RAWRBOX_SUPPORT_DX11
 			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_D3D11;
-	#elif VULKAN_SUPPORTED
+	#elif RAWRBOX_SUPPORT_VULKAN
 			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_VULKAN;
 	#else
 			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_GL;
