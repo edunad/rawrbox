@@ -345,13 +345,13 @@ namespace rawrbox {
 		Diligent::LinuxNativeWindow window;
 		Window.WindowId = glfwGetX11Window(GLFWHANDLE);
 		Window.pDisplay = glfwGetX11Display();
-		if (type == Diligent::RENDER_DEVICE_TYPE_GL)
+		if (this->_renderType == Diligent::RENDER_DEVICE_TYPE_GL)
 			glfwMakeContextCurrent(GLFWHANDLE);
 #endif
 
 #if PLATFORM_MACOS
 		Diligent::MacOSNativeWindow window;
-		if (type == Diligent::RENDER_DEVICE_TYPE_GL)
+		if (this->_renderType == Diligent::RENDER_DEVICE_TYPE_GL)
 			glfwMakeContextCurrent(GLFWHANDLE);
 		else
 			Window.pNSView = GetNSWindowView(GLFWHANDLE);

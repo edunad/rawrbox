@@ -1,6 +1,7 @@
 #include <rawrbox/render/utils/topology.hpp>
 
-#include <memory>
+#include <algorithm>
+#include <cstring>
 
 // Adapted from https://github.com/bkaradzic/bgfx/blob/master/src/topology.cpp && https://github.com/bkaradzic/bx/blob/97332257ff86e7c35203b9d34a337d1cbb4466bc/include/bx/inline/sort.inl#L126
 
