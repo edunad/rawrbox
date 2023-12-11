@@ -42,7 +42,7 @@ namespace rawrbox {
 	Diligent::RENDER_DEVICE_TYPE Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_UNDEFINED;
 
 	rawrbox::Window* Window::createWindow(Diligent::RENDER_DEVICE_TYPE render) {
-		if (render == Diligent::RENDER_DEVICE_TYPE_UNDEFINED) {
+		if (render == Diligent::RENDER_DEVICE_TYPE_UNDEFINED || render == Diligent::RENDER_DEVICE_TYPE_COUNT) {
 #if PLATFORM_LINUX
 	#if RAWRBOX_SUPPORT_VULKAN
 			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_VULKAN;

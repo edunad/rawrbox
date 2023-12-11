@@ -1,9 +1,7 @@
 
 #include <rawrbox/render/cameras/orbital.hpp>
-// #include <rawrbox/render/gizmos.hpp>
 #include <rawrbox/render/light/point.hpp>
 #include <rawrbox/render/light/spot.hpp>
-// #include <rawrbox/render/materials/lit.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/renderers/cluster.hpp>
 #include <rawrbox/render/resources/font.hpp>
@@ -16,7 +14,7 @@
 namespace light {
 
 	void Game::setupGLFW() {
-		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_VULKAN);
+		auto window = rawrbox::Window::createWindow();
 		window->setMonitor(-1);
 		window->setTitle("LIGHT TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);

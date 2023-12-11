@@ -96,7 +96,7 @@ namespace rawrbox {
 		static std::vector<std::unique_ptr<rawrbox::Window>> __WINDOWS;
 		static Diligent::RENDER_DEVICE_TYPE __RENDER_TYPE;
 
-		static rawrbox::Window* createWindow(Diligent::RENDER_DEVICE_TYPE render = Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_D3D11);
+		static rawrbox::Window* createWindow(Diligent::RENDER_DEVICE_TYPE render = Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_UNDEFINED);
 		static rawrbox::Window* getWindow(size_t indx = 0);
 
 		static void pollEvents();
