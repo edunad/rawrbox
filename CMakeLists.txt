@@ -200,55 +200,55 @@ if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
 endif()
 # --------------------
 
-add_subdirectory("math")
-add_subdirectory("utils")
-add_subdirectory("engine")
+add_subdirectory("rawrbox.math")
+add_subdirectory("rawrbox.utils")
+add_subdirectory("rawrbox.engine")
 
 if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
-    message(STATUS "Enabled RESOURCES support")
-    add_subdirectory("resources")
+    message(STATUS "Enabled RAWRBOX.RESOURCES support")
+    add_subdirectory("rawrbox.resources")
 endif()
 #
 #if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
-#    message(STATUS "Enabled NETWORK support")
-#    add_subdirectory("network")
+#    message(STATUS "Enabled RAWRBOX.NETWORK support")
+#    add_subdirectory("rawrbox.network")
 #endif()
 #
 #if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-#    message(STATUS "Enabled SCRIPTING support")
-#    add_subdirectory("scripting")
+#    message(STATUS "Enabled RAWRBOX.SCRIPTING support")
+#    add_subdirectory("rawrbox.scripting")
 #endif()
 
-add_subdirectory("render")
+add_subdirectory("rawrbox.render")
 
 if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
-    message(STATUS "Enabled ASSIMP support")
-    add_subdirectory("assimp")
+    message(STATUS "Enabled RAWRBOX.ASSIMP support")
+    add_subdirectory("rawrbox.assimp")
 endif()
 
 #if(RAWRBOX_BUILD_RAWRBOX_WEBM)
-#    message(STATUS "Enabled WEBM support")
-#    add_subdirectory("webm")
+#    message(STATUS "Enabled RAWRBOX.WEBM support")
+#    add_subdirectory("rawrbox.webm")
 #endif()#
 
 #if(RAWRBOX_BUILD_RAWRBOX_UI)
-#    message(STATUS "Enabled UI support")
-#    add_subdirectory("ui")
+#    message(STATUS "Enabled RAWRBOX.UI support")
+#    add_subdirectory("rawrbox.ui")
 #endif()
 
 #if(RAWRBOX_BUILD_RAWRBOX_BASS)
-#    message(STATUS "Enabled BASS support")
-#    add_subdirectory("bass")
+#    message(STATUS "Enabled RAWRBOX.BASS support")
+#    add_subdirectory("rawrbox.bass")
 #endif()
 
 #if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
-#    message(STATUS "Enabled 3D PHYSICS support")
-#    add_subdirectory("physics_3d")
+#    message(STATUS "Enabled RAWRBOX.3D_PHYSICS support")
+#    add_subdirectory("rawrbox.physics_3d")
 #endif()
 
 #if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
-#    message(STATUS "Enabled 2D PHYSICS support")
-#    add_subdirectory("physics_2d")
+#    message(STATUS "Enabled RAWRBOX.2D_PHYSICS support")
+#    add_subdirectory("rawrbox.physics_2d")
 #endif()
 
 # Shhhhh windows... shhhh....

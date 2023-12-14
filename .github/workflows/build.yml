@@ -34,8 +34,8 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2.10
         with:
           append-timestamp: false
-          restore-keys: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt', './scripting/CMakeLists.txt', './network/CMakeLists.txt') }}-
-          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './bass/CMakeLists.txt', './engine/CMakeLists.txt', './math/CMakeLists.txt', './render/CMakeLists.txt', './resources/CMakeLists.txt', './ui/CMakeLists.txt', './utils/CMakeLists.txt', './physics_3d/CMakeLists.txt', './physics_2d/CMakeLists.txt', './webm/CMakeLists.txt', './assimp/CMakeLists.txt', './scripting/CMakeLists.txt', './network/CMakeLists.txt') }}
+          restore-keys: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './rawrbox.bass/CMakeLists.txt', './rawrbox.engine/CMakeLists.txt', './rawrbox.math/CMakeLists.txt', './rawrbox.render/CMakeLists.txt', './rawrbox.resources/CMakeLists.txt', './ui/rawrbox.CMakeLists.txt', './utils/rawrbox.CMakeLists.txt', './rawrbox.physics_3d/CMakeLists.txt', './rawrbox.physics_2d/CMakeLists.txt', './rawrbox.webm/CMakeLists.txt', './rawrbox.assimp/CMakeLists.txt', './rawrbox.scripting/CMakeLists.txt', './rawrbox.network/CMakeLists.txt') }}-
+          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './rawrbox.bass/CMakeLists.txt', './rawrbox.engine/CMakeLists.txt', './rawrbox.math/CMakeLists.txt', './rawrbox.render/CMakeLists.txt', './rawrbox.resources/CMakeLists.txt', './ui/rawrbox.CMakeLists.txt', './utils/rawrbox.CMakeLists.txt', './rawrbox.physics_3d/CMakeLists.txt', './rawrbox.physics_2d/CMakeLists.txt', './rawrbox.webm/CMakeLists.txt', './rawrbox.assimp/CMakeLists.txt', './rawrbox.scripting/CMakeLists.txt', './rawrbox.network/CMakeLists.txt') }}
 
       - name: CMAKE Setup
         id: setup
@@ -51,12 +51,12 @@ jobs:
       - name: Run tests
         run: |
           cd build
-          ctest --test-dir ./math --output-on-failure
-          ctest --test-dir ./utils --output-on-failure
-          ctest --test-dir ./render --output-on-failure
-          ctest --test-dir ./engine --output-on-failure
-          ctest --test-dir ./resources --output-on-failure
-        #  ctest --test-dir ./scripting --output-on-failure
+          ctest --test-dir ./rawrbox.math --output-on-failure
+          ctest --test-dir ./rawrbox.utils --output-on-failure
+          ctest --test-dir ./rawrbox.render --output-on-failure
+          ctest --test-dir ./rawrbox.engine --output-on-failure
+          ctest --test-dir ./rawrbox.resources --output-on-failure
+        #  ctest --test-dir ./rawrbox.scripting --output-on-failure
 
       - name: Run linter
         uses: cpp-linter/cpp-linter-action@v2.6.0
@@ -72,7 +72,7 @@ jobs:
           version: "16"
           database: "./build/"
           thread-comments: true
-          ignore: build | _deps | .github | render/include/stb | engine/tests | math/tests | render/tests | resources/tests | utils/tests | scripting/tests
+          ignore: build | _deps | .github | rawrbox.render/include/stb | rawrbox.engine/tests | rawrbox.math/tests | rawrbox.render/tests | rawrbox.resources/tests | rawrbox.utils/tests | rawrbox.scripting/tests
 
       - name: Upload build artifacts
         if: github.ref == 'refs/heads/master'
