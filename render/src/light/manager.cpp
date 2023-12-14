@@ -1,6 +1,7 @@
 
 #include <rawrbox/render/light/manager.hpp>
 
+#include <DirectXMath.h>
 #include <fmt/format.h>
 
 namespace rawrbox {
@@ -73,6 +74,7 @@ namespace rawrbox {
 
 		auto context = rawrbox::RENDERER->context();
 		auto device = rawrbox::RENDERER->device();
+		auto camera = rawrbox::RENDERER->camera();
 
 		// Update lights ---
 		std::vector<rawrbox::LightDataVertex> lights = {};
@@ -82,14 +84,32 @@ namespace rawrbox {
 			if (!l->isOn()) continue;
 
 			rawrbox::LightDataVertex light = {};
+			/*auto view = camera->getViewMtx();
+			view.transpose();*/
 
-			auto cl = l->getColor();
 			auto pos = l->getWorldPos();
-			auto dir = l->getDirection();
 
-			light.position = rawrbox::Vector3f(pos.x, pos.y, pos.z);
-			light.intensity = rawrbox::Vector3f(cl.r, cl.g, cl.b);
-			light.direction = rawrbox::Vector3f(dir.x, dir.y, dir.z);
+			/*DirectX::XMFLOAT3 dxPos = {pos.x, pos.y, pos.z};
+			DirectX::XMFLOAT4X4 dxView = {
+			    view[0], view[1], view[2], view[3],
+			    view[4], view[5], view[6], view[7],
+			    view[8], view[9], view[10], view[11],
+			    view[12], view[13], view[14], view[15]};
+
+			const DirectX::XMVECTOR v1 = DirectX::XMLoadFloat3(&dxPos);
+			const DirectX::XMMATRIX M = DirectX::XMLoadFloat4x4(&dxView);
+
+			const DirectX::XMVECTOR X = DirectX::XMVector3TransformCoord(v1, M);
+			DirectX::XMFLOAT3 outDX = {};
+			DirectX::XMStoreFloat3(&outDX, X);
+
+			light.position = {outDX.x, outDX.y, outDX.z};*/
+			light.position = l->getWorldPos();
+			// light.position = view.mulVec(l->getWorldPos()); // temp
+
+			light.intensity = l->getColor().rgb();
+			light.direction = l->getDirection();
+			// light.direction = view.mulVec(l->getWorldPos()); // temp
 			light.radius = l->getRadius();
 			light.type = l->getType();
 

@@ -115,24 +115,24 @@ namespace rawrbox {
 		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_pos; }
 		virtual void setPos(const rawrbox::Vector3f& pos) {
 			this->_pos = pos;
-			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->matrix.SRT(this->_scale, this->_angle, this->_pos);
 		}
 
 		[[nodiscard]] virtual const rawrbox::Vector4f& getAngle() const { return this->_angle; }
 		virtual void setAngle(const rawrbox::Vector4f& ang) {
 			this->_angle = ang;
-			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->matrix.SRT(this->_scale, this->_angle, this->_pos);
 		}
 
 		virtual void setEulerAngle(const rawrbox::Vector3f& ang) {
 			this->_angle = rawrbox::Vector4f::toQuat(ang);
-			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->matrix.SRT(this->_scale, this->_angle, this->_pos);
 		}
 
 		[[nodiscard]] virtual const rawrbox::Vector3f& getScale() const { return this->_scale; }
 		virtual void setScale(const rawrbox::Vector3f& scale) {
 			this->_scale = scale;
-			this->matrix.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->matrix.SRT(this->_scale, this->_angle, this->_pos);
 		}
 
 		virtual void setTransparentBlending(bool _transparent) { this->alphaBlend = _transparent; }

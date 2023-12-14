@@ -22,19 +22,25 @@ struct PSOutput {
     float4 Color : SV_TARGET;
 };
 
+uint GetSliceFromDepth(float depth) {
+	return floor(log(depth) * g_LightGridParams.x - g_LightGridParams.y);
+}
+
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    // show light count per cluster
-    uint cluster = GetClusterIndex(PSIn.Pos.z, g_ZNearFarVec, g_ClusterSize, PSIn.Pos);
-    uint4 grid = GetClusterDataGrid(cluster);
+    uint3 clusterIndex3D = uint3(floor(PSIn.Pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(PSIn.Pos.w));
+    uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
 
-    uint lights = grid.y;
+	uint lightGridOffset = tileIndex * CLUSTERED_LIGHTING_NUM_BUCKETS;
 
-    // show possible clipping
-    if(lights == 0) {
+    uint lightCount = 0;
+	for(uint i = 0; i < CLUSTERED_LIGHTING_NUM_BUCKETS; ++i)
+		lightCount += countbits(g_ClusterDataGrid[lightGridOffset + i]);
+
+    if(lightCount == 0) {
         PSOut.Color = float4(0.01, 0.01, 0.01, 1.0);
         return;
     }
 
-    float3 lightCountColor = turboColormap(float(lights) / MAX_LIGHTS_PER_CLUSTER);
+    float3 lightCountColor = turboColormap(float(lightCount) / MAX_LIGHTS_PER_CLUSTER);
     PSOut.Color = float4(lightCountColor, 1.0);
 }

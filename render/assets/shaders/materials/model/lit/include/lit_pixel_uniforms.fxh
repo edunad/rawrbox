@@ -3,8 +3,8 @@
 
 cbuffer Constants {
     float2  g_ZNearFarVec;
-    float2  g_ClusterSize;
-// --------
+    float2  g_LightGridParams;
+    // --------
     float4  g_LitData;
     float4  g_CameraPos;
 };

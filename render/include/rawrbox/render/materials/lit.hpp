@@ -7,6 +7,8 @@ namespace rawrbox {
 
 	struct MaterialLitUniforms : public rawrbox::MaterialUnlitUniforms, public rawrbox::ClusterUniforms {};
 	struct MaterialLitPixelUniforms : public rawrbox::ClusterUniforms {
+		rawrbox::Vector2f g_LightGridParams = {};
+
 		rawrbox::Vector4f g_LitData = {};
 		rawrbox::Vector4f g_CameraPosition = {}; // Needs to be aligned
 	};
@@ -17,11 +19,8 @@ namespace rawrbox {
 
 	protected:
 #ifdef _DEBUG
-		Diligent::IPipelineState* _debug_z = nullptr;
-		Diligent::IPipelineState* _debug_light = nullptr;
-
-		Diligent::IShaderResourceBinding* _bind_debug_z = nullptr;
-		Diligent::IShaderResourceBinding* _bind_debug_light = nullptr;
+		Diligent::IPipelineState* _debug_cluster = nullptr;
+		Diligent::IShaderResourceBinding* _bind_debug_cluster = nullptr;
 #endif
 
 		void prepareMaterial() override;
@@ -40,10 +39,11 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
-
 			auto context = rawrbox::RENDERER->context();
 			auto cluster = dynamic_cast<rawrbox::RendererCluster*>(rawrbox::RENDERER);
 			if (cluster == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] This material requires the `clustered` renderer");
+
+			auto camera = rawrbox::RENDERER->camera();
 
 			{
 				// SETUP UNIFORMS ----------------------------
@@ -58,39 +58,23 @@ namespace rawrbox {
 
 			{
 				Diligent::MapHelper<rawrbox::MaterialLitPixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				CBConstants->g_CameraPosition = rawrbox::RENDERER->camera()->getPos();
+
+				float nearZ = camera->getZNear();
+				float farZ = camera->getZFar();
+
+				float n = std::min(farZ, nearZ);
+				float f = std::max(farZ, nearZ);
+				auto gLightClustersNumZz = static_cast<float>(rawrbox::CLUSTERS_Z);
+
+				CBConstants->g_LightGridParams = {
+				    gLightClustersNumZz / std::log(f / n),
+				    (gLightClustersNumZz * std::log(n)) / std::log(f / n)};
+
+				CBConstants->g_CameraPosition = camera->getPos();
 				CBConstants->g_LitData = {mesh.specularShininess, mesh.emissionIntensity};
 
 				cluster->bindUniforms<rawrbox::MaterialLitPixelUniforms>(CBConstants);
 			}
-		}
-
-		template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBaseUniforms>
-		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<P>& helper) {
-			rawrbox::MaterialBase::bindBaseUniforms<T, P>(mesh, helper); // Bind camera
-
-			std::array<rawrbox::Vector4f, MAX_DATA>
-			    data = {rawrbox::Vector4f{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
-
-			if (mesh.hasData("billboard_mode")) {
-				data[0] = mesh.getData("billboard_mode").data();
-			}
-
-			if (mesh.hasData("vertex_snap")) {
-				data[1] = mesh.getData("vertex_snap").data();
-			}
-
-			if (mesh.hasData("displacement_strength")) {
-				data[2] = mesh.getData("displacement_strength").data();
-			}
-
-			if (mesh.hasData("mask")) {
-				data[3] = mesh.getData("mask").data();
-			}
-
-			(*helper)._gColorOverride = mesh.color;
-			(*helper)._gTextureFlags = mesh.texture == nullptr ? rawrbox::Vector4f() : mesh.texture->getData();
-			(*helper)._gData = data;
 		}
 
 		template <typename T = rawrbox::VertexData>
@@ -155,9 +139,7 @@ namespace rawrbox {
 			auto context = rawrbox::RENDERER->context();
 
 			if (rawrbox::RendererBase::DEBUG_LEVEL == 1) {
-				context->SetPipelineState(this->_debug_z);
-			} else if (rawrbox::RendererBase::DEBUG_LEVEL == 2) {
-				context->SetPipelineState(this->_debug_light);
+				context->SetPipelineState(this->_debug_cluster);
 			} else {
 				rawrbox::MaterialBase::bindPipeline<T>(mesh);
 			}

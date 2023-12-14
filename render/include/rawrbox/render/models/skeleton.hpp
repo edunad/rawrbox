@@ -38,24 +38,24 @@ namespace rawrbox {
 		[[nodiscard]] const rawrbox::Vector3f& getPos() const { return this->_pos; }
 		void setPos(const rawrbox::Vector3f& pos) {
 			this->_pos = pos;
-			this->overrideMtx.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->overrideMtx.SRT(this->_scale, this->_angle, this->_pos);
 		}
 
 		[[nodiscard]] const rawrbox::Vector4f& getAngle() const { return this->_angle; }
 		void setAngle(const rawrbox::Vector4f& ang) {
 			this->_angle = ang;
-			this->overrideMtx.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->overrideMtx.SRT(this->_scale, this->_angle, this->_pos);
 		}
 
 		void setEulerAngle(const rawrbox::Vector3f& ang) {
 			this->_angle = rawrbox::Vector4f::toQuat(ang);
-			this->overrideMtx.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->overrideMtx.SRT(this->_scale, this->_angle, this->_pos);
 		}
 
 		[[nodiscard]] const rawrbox::Vector3f& getScale() const { return this->_scale; }
 		void setScale(const rawrbox::Vector3f& scale) {
 			this->_scale = scale;
-			this->overrideMtx.mtxSRT(this->_scale, this->_angle, this->_pos);
+			this->overrideMtx.SRT(this->_scale, this->_angle, this->_pos);
 		}
 	};
 

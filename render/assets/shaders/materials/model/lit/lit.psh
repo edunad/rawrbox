@@ -4,7 +4,6 @@
 #define READ_CLUSTERS
 #define READ_LIGHTS
 #define READ_CLUSTER_DATA_GRID
-#define READ_LIGHT_INDICES
 #include <cluster.fxh>
 
 #include <light_utils.fxh>
@@ -48,7 +47,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
     // LIGHT ------
 	float3 viewDir = normalize(g_CameraPos - PSIn.WorldPos).xyz;
-    float3 radianceOut = applyLight(PSIn.Pos, PSIn.WorldPos.xyz, PSIn.Normal, viewDir, specular.r, SpecularPower);
+    float3 radianceOut = ApplyLight(PSIn.Pos, PSIn.WorldPos, PSIn.Normal, viewDir, specular.r, SpecularPower);
     // ------------
 
     PSOut.Color.rgb = albedo.rgb * radianceOut;

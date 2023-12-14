@@ -1,28 +1,44 @@
 #ifndef UTIL_HEADER_GUARD
 #define UTIL_HEADER_GUARD
 
-float3 IntersectionZPlane(const float3 a, float z_dist) {
-    float3 normal = float3(0.0, 0.0, -1.0);
-    float t = z_dist / a.z; //dot(normal, d);
-
-    float3 result = t * a;
-    return result;
-
+float LinearizeDepth(float z, float near, float far) {
+	return far / (far + z * (near - far));
 }
 
-float GetLinearDepth(float depth, float2 camNearFar) {
-    float z_b = depth;
-    float z_n = 2.0 * z_b - 1.0;
-    float linearDepth = 2.0 * camNearFar.x * camNearFar.y / (camNearFar.y + camNearFar.x - z_n * (camNearFar.y - camNearFar.x));
+float3 ViewPositionFromDepth(float2 uv, float depth, float2 nearFar, float4x4 invProj) {
+	float4 clip = float4(float2(uv.x, 1.0f - uv.y) * 2.0f - 1.0f, 0.0f, 1.0f) * nearFar.x;
+	float3 viewRay = mul(clip, invProj).xyz;
 
-    return linearDepth;
+	return viewRay * LinearizeDepth(depth, nearFar.x, nearFar.y);
 }
 
-float3 GetViewPosition(float2 texcoord, float depth, float4x4 invProj) {
-	float4 ndc = float4(texcoord * 2.0f - 1.0f, depth, 1.0f);
-    ndc.y *= -1;
-    float4 wp = mul(ndc, invProj);
-    return wp.xyz / wp.w;
+float3 ScreenToView(float4 screen, float2 invScreenSize, float2 nearFar, float4x4 invProj) {
+	float2 screenNormalized = screen.xy * invScreenSize;
+    return ViewPositionFromDepth(screenNormalized, screen.z, nearFar, invProj);
 }
 
-#endif // UTIL_SH_HEADER_GUARD
+uint Flatten2D(uint2 index, uint dimensionsX) {
+	return index.x + index.y * dimensionsX;
+}
+
+uint Flatten3D(uint3 index, uint2 dimensionsXY) {
+	return index.x + index.y * dimensionsXY.x + index.z * dimensionsXY.x * dimensionsXY.y;
+}
+
+uint2 UnFlatten2D(uint index, uint dimensionsX) {
+	return uint2(index % dimensionsX, index / dimensionsX);
+}
+
+uint3 UnFlatten3D(uint index, uint2 dimensionsXY) {
+	uint3 outIndex;
+	outIndex.z = index / (dimensionsXY.x * dimensionsXY.y);
+	index -= (outIndex.z * dimensionsXY.x * dimensionsXY.y);
+	outIndex.y = index / dimensionsXY.x;
+	outIndex.x = index % dimensionsXY.x;
+	return outIndex;
+}
+
+uint DivideAndRoundUp(uint x, uint y) {
+	return (x + y - 1) / y;
+}
+#endif // UTIL_HEADER_GUARD

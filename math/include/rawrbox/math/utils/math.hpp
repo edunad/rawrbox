@@ -25,6 +25,11 @@ namespace rawrbox {
 
 		static float round(float val, int precision = 2);
 
+		template <typename T = float>
+		static T divideRound(T nominator, T denominator) {
+			return (nominator + denominator - static_cast<T>(1)) / denominator;
+		}
+
 		static float lerp(float a, float b, float lerpFactor);
 
 		static float sample(const std::vector<float>& samples, float t);

@@ -6,8 +6,12 @@
 cbuffer Constants {
     Camera  g_Camera;
     Model   g_Model;
+
     float2  g_ZNearFarVec;
 };
+
+#define ZNear g_ZNearFarVec.x
+#define ZFar g_ZNearFarVec.y
 
 #define CAMERA_UNIFORMS
 #define MODEL_UNIFORMS

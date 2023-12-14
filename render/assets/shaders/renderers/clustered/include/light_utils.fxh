@@ -18,11 +18,11 @@ uint totalLights() {
     return g_LightSettings.y;
 }
 
-Light getLight(int id) {
+Light GetLight(uint id) {
     return g_Lights[id];
 }
 
-DirectionalLight getSunLight() {
+DirectionalLight GetSunLight() {
     DirectionalLight light;
     light.direction = g_SunDirection;
     light.radiance = g_SunColor;
@@ -30,80 +30,87 @@ DirectionalLight getSunLight() {
     return light;
 }
 
-float4 getAmbientLight() {
-    return g_AmbientColor;
+float3 GetAmbientLight() {
+    return g_AmbientColor.rgb;
 }
 
 #ifdef CLUSTER_UNIFORMS
 #ifdef CLUSTER_DATA_GRID
-#ifdef LIGHT_INDICES
+uint GetSliceFromDepth(float depth) {
+	return floor(log(depth) * g_LightGridParams.x - g_LightGridParams.y);
+}
 
-float3 applyLight(float4 position, float3 worldPos, float3 norm, float3 viewDir, float specular, float reflection) {
-    /*if(g_LightSettings.x == 0.0) {
+float3 ApplyLight(float4 pos, float4 worldPos, float3 norm, float3 viewDir, float specular, float reflection) {
+	if(g_LightSettings.x == 0.0) {
 		float3 radianceOut = float3(0.0, 0.0, 0.0);
 
-    	uint cluster = GetClusterIndex(position.z, g_ZNearFarVec, g_ClusterSize, position);
-    	ClusterDataGrid grid = GetClusterDataGrid(cluster);
+		uint3 clusterIndex3D = uint3(floor(pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(pos.w));
+		uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
 
-		// Lights ----
-		for(uint i = 0; i < grid.lightCount; i++) {
-			uint lightIndex = GetGridLightIndex(grid.lightOffset, i);
-			Light light = getLight(lightIndex);
+		uint lightGridOffset = tileIndex * CLUSTERED_LIGHTING_NUM_BUCKETS;
+		for(uint bucketIndex = 0; bucketIndex < CLUSTERED_LIGHTING_NUM_BUCKETS; ++bucketIndex)
+		{
+			uint bucket = g_ClusterDataGrid[lightGridOffset + bucketIndex];
+			while(bucket) {
+				uint bitIndex = firstbitlow(bucket);
+				bucket ^= 1u << bitIndex;
 
-			float3 lightDir = normalize(light.position - worldPos);
-			float dist = distance(light.position, worldPos);
-			float NdotL = dot(norm, lightDir);
+				uint lightIndex = bitIndex + bucketIndex * 32;
+				Light light = GetLight(lightIndex);
 
-			// Spotlight
-			if(light.type == LIGHT_SPOT) {
-				float theta = dot(light.direction, -lightDir);
+				// LIGHT -------
+				float3 lightDir = normalize(light.position - worldPos.xyz);
+				float dist = distance(light.position, worldPos.xyz);
+				float NdotL = dot(norm, lightDir);
 
-				if(theta > light.innerCone) {
-					float intensity = clamp((theta - light.innerCone) / (light.outerCone - light.innerCone), 0.0f, 1.0f);
+				// Spotlight
+				if(light.type == LIGHT_SPOT) {
+					float theta = dot(light.direction, -lightDir);
 
-					if (NdotL > 0.0 && reflection > 0.0) {
-						float3 reflectDir = reflect(-lightDir, norm);
-						float spec = pow(max(dot(viewDir, reflectDir), 0.0), reflection);
-						radianceOut += light.intensity * spec * specular; // Specular
+					if(theta > light.innerCone) {
+						float intensity = clamp((theta - light.innerCone) / (light.outerCone - light.innerCone), 0.0f, 1.0f);
+
+						if (NdotL > 0.0 && reflection > 0.0) {
+							float3 reflectDir = reflect(-lightDir, norm);
+							float spec = pow(max(dot(viewDir, reflectDir), 0.0), reflection);
+							radianceOut += light.intensity * spec * specular; // Specular
+						}
+
+						radianceOut += light.intensity * intensity; // Diffuse
 					}
+				} else { // Point light
+					float attenuation = smoothAttenuation(dist, light.radius);
 
-					radianceOut += light.intensity * intensity; // Diffuse
-				}
-			} else { // Point light
-				float attenuation = smoothAttenuation(dist, light.radius);
+					if(attenuation > 0.0) {
+						if (NdotL > 0.0 && reflection > 0.0) {
+							float3 reflectDir = reflect(-lightDir, norm);
+							float spec = pow(max(dot(viewDir, reflectDir), 0.0), reflection);
+							radianceOut += light.intensity * spec * specular; // Specular
+						}
 
-				if(attenuation > 0.0) {
-					if (NdotL > 0.0 && reflection > 0.0) {
-						float3 reflectDir = reflect(-lightDir, norm);
-						float spec = pow(max(dot(viewDir, reflectDir), 0.0), reflection);
-						radianceOut += light.intensity * spec * specular; // Specular
+						radianceOut += light.intensity * attenuation; // Diffuse
 					}
-
-					radianceOut += light.intensity * attenuation; // Diffuse
 				}
+				// -------------
 			}
 		}
-		// --------
 
 		// Sun ----
-		DirectionalLight sun = getSunLight();
+		DirectionalLight sun = GetSunLight();
 		if(sun.radiance.r != 0.0 && sun.radiance.g != 0.0 && sun.radiance.b != 0.0) {
 			radianceOut += sun.radiance * max(dot(norm, -sun.direction), 0.0f); // Diffuse
 		}
 		// --------
 
 		// Final ----
-		radianceOut += getAmbientLight();
+		radianceOut += GetAmbientLight();
 		// --------
 
     	return radianceOut;
 	} else {
 		return float3(1.0, 1.0, 1.0);
-	}*/
-
-		return float3(1.0, 1.0, 1.0);
+	}
 }
-#endif
 #endif
 #endif
 

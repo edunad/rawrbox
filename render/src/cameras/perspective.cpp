@@ -23,7 +23,7 @@ namespace rawrbox {
 	}
 
 	const rawrbox::Vector3f CameraPerspective::worldToScreen(const rawrbox::Vector3f& pos) const {
-		return rawrbox::Matrix4x4::project(pos, this->_view, this->_projection, {0, 0, this->_winSize.x, this->_winSize.y});
+		return rawrbox::Matrix4x4::mtxProject(pos, this->_view, this->_projection, {0, 0, this->_winSize.x, this->_winSize.y});
 	}
 
 	const rawrbox::Vector3f CameraPerspective::screenToWorld(const rawrbox::Vector2f& screen_pos, const rawrbox::Vector3f& origin) const {

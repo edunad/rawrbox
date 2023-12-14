@@ -83,7 +83,7 @@ namespace instance_test {
 		for (int z = 0; z < total; z++) {
 			for (int x = 0; x < total; x++) {
 				rawrbox::Matrix4x4 m;
-				m.mtxSRT({1.F, 1.F, 1.F}, rawrbox::Vector4f::toQuat({0, distRot(prng), 0}), {x * spacing, 0, z * spacing});
+				m.SRT({1.F, 1.F, 1.F}, rawrbox::Vector4f::toQuat({0, distRot(prng), 0}), {x * spacing, 0, z * spacing});
 				this->_model->addInstance({m, rawrbox::Colors::White(), dist(prng)});
 			}
 		}

@@ -52,11 +52,11 @@ namespace rawrbox {
 		return {up.x, up.y, up.z};
 	}
 
-	rawrbox::Matrix4x4 CameraBase::getViewMtx() const {
+	const rawrbox::Matrix4x4& CameraBase::getViewMtx() const {
 		return this->_view;
 	}
 
-	rawrbox::Matrix4x4 CameraBase::getProjMtx() const {
+	const rawrbox::Matrix4x4& CameraBase::getProjMtx() const {
 		return this->_projection;
 	}
 

@@ -22,25 +22,6 @@ namespace rawrbox {
 		float innerCone = 0.F;
 
 		rawrbox::LightType type = rawrbox::LightType::UNKNOWN;
-
-		/*static std::array<Diligent::LayoutElement, 7> vLayout() {
-			return {
-			    // Attribute 0 - Position
-			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
-			    // Attribute 1 - Outer Cone
-			    Diligent::LayoutElement{1, 0, 1, Diligent::VT_FLOAT32, false},
-			    // Attribute 2 - Intensity
-			    Diligent::LayoutElement{2, 0, 3, Diligent::VT_FLOAT32, false},
-			    // Attribute 3 - Radius
-			    Diligent::LayoutElement{3, 0, 1, Diligent::VT_FLOAT32, false},
-			    // Attribute 4 - Direction
-			    Diligent::LayoutElement{4, 0, 3, Diligent::VT_FLOAT32, false},
-			    // Attribute 5 - InnerCone
-			    Diligent::LayoutElement{5, 0, 1, Diligent::VT_FLOAT32, false},
-			    // Attribute 6 - Type
-			    Diligent::LayoutElement{6, 0, 1, Diligent::VT_UINT32, false},
-			};
-		}*/
 	};
 
 	enum class FOG_TYPE {

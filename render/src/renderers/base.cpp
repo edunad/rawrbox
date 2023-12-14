@@ -37,7 +37,7 @@
 namespace rawrbox {
 
 #ifdef _DEBUG
-	uint32_t RendererBase::DEBUG_LEVEL = 2;
+	uint32_t RendererBase::DEBUG_LEVEL = 0;
 #endif
 
 	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& screenSize, const rawrbox::Colorf& clearColor) : _window(window), _type(type), _size(size), _monitorSize(screenSize), _clearColor(clearColor) {}
@@ -71,6 +71,7 @@ namespace rawrbox {
 
 					Diligent::EngineD3D11CreateInfo EngineCI;
 					EngineCI.Features = features;
+
 					pFactoryD3D11->CreateDeviceAndContextsD3D11(EngineCI, &this->_device, &this->_context);
 					pFactoryD3D11->CreateSwapChainD3D11(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc{}, this->_window, &this->_swapChain);
 				}
@@ -174,6 +175,11 @@ namespace rawrbox {
 		}
 		// -------------------------
 
+		// Setup viewport ---
+		Diligent::Viewport VP{static_cast<uint32_t>(this->_size.x), static_cast<uint32_t>(this->_size.x)};
+		this->_context->SetViewports(1, &VP, VP.Width, VP.Height);
+		// ------------------
+
 		// Setup stencil ----
 		this->_stencil = std::make_unique<rawrbox::Stencil>(this->_size);
 		this->_stencil->upload();
@@ -205,6 +211,10 @@ namespace rawrbox {
 		if (this->_swapChain == nullptr) return;
 
 		this->_swapChain->Resize(size.x, size.y);
+
+		Diligent::Viewport VP{static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.x)};
+		this->_context->SetViewports(1, &VP, VP.Width, VP.Height);
+
 		if (this->_stencil != nullptr) this->_stencil->resize(size);
 
 		//  this->_render->addTexture(bgfx::TextureFormat::R8);    // Decal stencil
