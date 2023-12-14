@@ -1,6 +1,6 @@
 
 #include <rawrbox/webm/resources/webm.hpp>
-#include <rawrbox/webm/texture/webm.hpp>
+#include <rawrbox/webm/textures/webm.hpp>
 
 namespace rawrbox {
 	// Resource ----

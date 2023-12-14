@@ -2,7 +2,7 @@
 
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render_temp/model/model.hpp>
-#include <rawrbox/render_temp/texture/atlas.hpp>
+#include <rawrbox/render_temp/textures/atlas.hpp>
 #include <rawrbox/render_temp/window.hpp>
 
 #include <memory>

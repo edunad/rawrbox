@@ -1,5 +1,5 @@
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/texture/flat.hpp>
+#include <rawrbox/render/textures/flat.hpp>
 
 #include <fmt/format.h>
 

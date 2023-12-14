@@ -1,9 +1,9 @@
 
 #include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/render/texture/atlas.hpp>
-#include <rawrbox/render/texture/gif.hpp>
-#include <rawrbox/render/texture/image.hpp>
-#include <rawrbox/render/texture/webp.hpp>
+#include <rawrbox/render/textures/atlas.hpp>
+#include <rawrbox/render/textures/gif.hpp>
+#include <rawrbox/render/textures/image.hpp>
+#include <rawrbox/render/textures/webp.hpp>
 
 namespace rawrbox {
 	// Resource ----

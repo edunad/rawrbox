@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrbox/render/texture/base.hpp>
+#include <rawrbox/render/textures/base.hpp>
 
 #include <optional>
 

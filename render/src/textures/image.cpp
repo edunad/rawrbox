@@ -1,5 +1,5 @@
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/texture/image.hpp>
+#include <rawrbox/render/textures/image.hpp>
 
 // NOLINTBEGIN(clang-diagnostic-unknown-pragmas)
 #pragma warning(push)

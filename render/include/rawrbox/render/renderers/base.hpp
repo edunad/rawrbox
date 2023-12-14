@@ -4,7 +4,7 @@
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/stencil.hpp>
-#include <rawrbox/render/texture/render.hpp>
+#include <rawrbox/render/textures/render.hpp>
 
 #include <RefCntAutoPtr.hpp>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrbox/render_temp/texture/base.hpp>
+#include <rawrbox/render_temp/textures/base.hpp>
 #include <rawrbox/resources/loader.hpp>
 
 namespace rawrbox {

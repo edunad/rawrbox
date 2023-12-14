@@ -4,8 +4,8 @@
 #include <rawrbox/render/models/model.hpp>
 #include <rawrbox/render/text/font.hpp>
 #include <rawrbox/render/text/markdown.hpp>
-#include <rawrbox/render/texture/animated.hpp>
-#include <rawrbox/render/texture/image.hpp>
+#include <rawrbox/render/textures/animated.hpp>
+#include <rawrbox/render/textures/image.hpp>
 
 #include <memory>
 

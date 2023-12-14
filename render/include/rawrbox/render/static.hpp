@@ -2,8 +2,8 @@
 
 #include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/renderers/base.hpp>
-#include <rawrbox/render/texture/flat.hpp>
-#include <rawrbox/render/texture/missing.hpp>
+#include <rawrbox/render/textures/flat.hpp>
+#include <rawrbox/render/textures/missing.hpp>
 #include <rawrbox/render/window.hpp>
 
 #include <Shader.h>

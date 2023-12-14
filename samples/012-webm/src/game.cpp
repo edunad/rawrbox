@@ -5,7 +5,7 @@
 #include <rawrbox/render_temp/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/webm/resources/webm.hpp>
-#include <rawrbox/webm/texture/webm.hpp>
+#include <rawrbox/webm/textures/webm.hpp>
 
 #include <webm_test/game.hpp>
 

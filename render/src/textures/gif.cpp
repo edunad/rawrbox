@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/texture/gif.hpp>
+#include <rawrbox/render/textures/gif.hpp>
 
 #include <stb/gif.hpp>
 

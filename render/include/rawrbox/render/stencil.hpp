@@ -4,9 +4,9 @@
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/pi.hpp>
 #include <rawrbox/math/vector4.hpp>
-#include <rawrbox/render/buffer/streaming.hpp>
 #include <rawrbox/render/text/font.hpp>
-#include <rawrbox/render/texture/flat.hpp>
+#include <rawrbox/render/textures/flat.hpp>
+#include <rawrbox/render/utils/streaming.hpp>
 
 #include <RefCntAutoPtr.hpp>
 

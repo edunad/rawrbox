@@ -1,5 +1,5 @@
-#include <rawrbox/render/buffer/streaming.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/streaming.hpp>
 
 namespace rawrbox {
 	StreamingBuffer::StreamingBuffer(const std::string& name, Diligent::BIND_FLAGS flags, uint32_t size, size_t contexts) : _bufferSize(size), _mapInfo(contexts) {

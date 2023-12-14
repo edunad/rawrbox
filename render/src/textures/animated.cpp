@@ -1,6 +1,6 @@
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/texture/animated.hpp>
+#include <rawrbox/render/textures/animated.hpp>
 #include <rawrbox/utils/time.hpp>
 
 #include <fmt/format.h>

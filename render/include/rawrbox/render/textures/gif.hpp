@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrbox/render/texture/animated.hpp>
+#include <rawrbox/render/textures/animated.hpp>
 
 namespace rawrbox {
 	class TextureGIF : public rawrbox::TextureAnimatedBase {

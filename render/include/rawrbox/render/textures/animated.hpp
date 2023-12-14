@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rawrbox/math/vector2.hpp>
-#include <rawrbox/render/texture/base.hpp>
+#include <rawrbox/render/textures/base.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <filesystem>

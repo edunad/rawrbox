@@ -1,6 +1,6 @@
 
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/texture/atlas.hpp>
+#include <rawrbox/render/textures/atlas.hpp>
 #include <rawrbox/render/utils/texture.hpp>
 
 #include <fmt/format.h>

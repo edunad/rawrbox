@@ -6,7 +6,7 @@
 #include <rawrbox/render_temp/resources/font.hpp>
 #include <rawrbox/render_temp/resources/texture.hpp>
 #include <rawrbox/render_temp/static.hpp>
-#include <rawrbox/render_temp/texture/atlas.hpp>
+#include <rawrbox/render_temp/textures/atlas.hpp>
 #include <rawrbox/resources/manager.hpp>
 
 #include <particle_test/game.hpp>

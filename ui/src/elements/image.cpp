@@ -1,7 +1,7 @@
 
 #include <rawrbox/render_temp/resources/texture.hpp>
 #include <rawrbox/render_temp/stencil.hpp>
-#include <rawrbox/render_temp/texture/gif.hpp>
+#include <rawrbox/render_temp/textures/gif.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/image.hpp>
 

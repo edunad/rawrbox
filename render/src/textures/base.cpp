@@ -1,6 +1,6 @@
 #include <rawrbox/math/utils/color.hpp>
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/texture/base.hpp>
+#include <rawrbox/render/textures/base.hpp>
 
 #include <fmt/format.h>
 

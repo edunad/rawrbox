@@ -6,7 +6,7 @@
 #include <rawrbox/render/models/animation.hpp>
 #include <rawrbox/render/models/skeleton.hpp>
 #include <rawrbox/render/models/vertex.hpp>
-#include <rawrbox/render/texture/base.hpp>
+#include <rawrbox/render/textures/base.hpp>
 
 #include <assimp/material.h>
 #include <assimp/mesh.h>

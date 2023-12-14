@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rawrbox/math/vector2.hpp>
-#include <rawrbox/render/texture/base.hpp>
+#include <rawrbox/render/textures/base.hpp>
 
 namespace rawrbox {
 	class TextureRender : public rawrbox::TextureBase {

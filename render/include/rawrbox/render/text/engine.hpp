@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rawrbox/render/text/font.hpp>
-#include <rawrbox/render/texture/pack.hpp>
+#include <rawrbox/render/textures/pack.hpp>
 
 #include <filesystem>
 #include <map>

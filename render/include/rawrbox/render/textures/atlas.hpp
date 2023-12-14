@@ -1,5 +1,5 @@
 #pragma once
-#include <rawrbox/render/texture/image.hpp>
+#include <rawrbox/render/textures/image.hpp>
 
 namespace rawrbox {
 	class TextureAtlas : public rawrbox::TextureImage {

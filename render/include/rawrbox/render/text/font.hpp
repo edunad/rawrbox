@@ -2,7 +2,7 @@
 
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/texture/pack.hpp>
+#include <rawrbox/render/textures/pack.hpp>
 
 #include <functional>
 #include <memory>

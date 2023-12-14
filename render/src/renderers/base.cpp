@@ -29,7 +29,7 @@
 #include <rawrbox/render/materials/text.hpp>
 #include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/texture/webp.hpp>
+#include <rawrbox/render/textures/webp.hpp>
 #include <rawrbox/render/utils/render.hpp>
 #include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/threading.hpp>
@@ -216,30 +216,6 @@ namespace rawrbox {
 		this->_context->SetViewports(1, &VP, VP.Width, VP.Height);
 
 		if (this->_stencil != nullptr) this->_stencil->resize(size);
-
-		//  this->_render->addTexture(bgfx::TextureFormat::R8);    // Decal stencil
-		//  this->_render->addTexture(bgfx::TextureFormat::RGBA8); // GPU PICKING
-		// this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
-
-		/*
-				this->_decals = std::make_unique<rawrbox::TextureRender>(size);
-				this->_decals->upload();
-
-				this->_GPUBlitTex = bgfx::createTexture2D(8, 8, false, 1, bgfx::TextureFormat::RGBA8, 0 | BGFX_TEXTURE_BLIT_DST | BGFX_TEXTURE_READ_BACK | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT | BGFX_SAMPLER_MIP_POINT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP);
-				bgfx::setName(this->_GPUBlitTex, "RAWRBOX-BLIT-GPU-PICK");
-
-				auto w = static_cast<uint16_t>(size.x);
-				auto h = static_cast<uint16_t>(size.y);
-
-				// Setup view ---
-				bgfx::setViewName(rawrbox::MAIN_WORLD_VIEW, "RAWRBOX-MAIN-WORLD");
-				bgfx::setViewClear(rawrbox::MAIN_WORLD_VIEW, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 1.0F, 0, 0);
-				bgfx::setViewRect(rawrbox::MAIN_WORLD_VIEW, 0, 0, w, h);
-
-				bgfx::setViewName(rawrbox::MAIN_OVERLAY_VIEW, "RAWRBOX-MAIN-OVERLAY");
-				bgfx::setViewClear(rawrbox::MAIN_OVERLAY_VIEW, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x00000000, 1.0F, 0);
-				bgfx::setViewRect(rawrbox::MAIN_OVERLAY_VIEW, 0, 0, w, h);
-				// -----*/
 
 		this->_size = size;
 		this->_monitorSize = monitorSize;
