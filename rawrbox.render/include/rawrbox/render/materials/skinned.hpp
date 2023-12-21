@@ -4,7 +4,7 @@
 
 namespace rawrbox {
 
-	struct MaterialSkinnedUniforms : public rawrbox::MaterialUnlitUniforms {
+	struct MaterialSkinnedUniforms : public rawrbox::MaterialBaseUniforms {
 		std::array<rawrbox::Matrix4x4, rawrbox::MAX_BONES_PER_MODEL> g_bones;
 	};
 

@@ -4,10 +4,13 @@
 namespace rawrbox {
 	// QUICK ACCESS ---
 	uint32_t FRAME = 0;
+
 	bool ENGINE_INITIALIZED = false;
+
 	Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> SHADER_FACTORY;
-	rawrbox::Matrix4x4 TRANSFORM = {};
+
 	rawrbox::RendererBase* RENDERER = nullptr;
+	rawrbox::CameraBase* MAIN_CAMERA = nullptr;
 	// -----------
 
 	// TEXTURE FALLBACKS ---

@@ -4,7 +4,31 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/vector4.hpp>
 
+#include <RefCntAutoPtr.hpp>
+
+#include <Buffer.h>
+
 namespace rawrbox {
+	struct CameraUniforms {
+		rawrbox::Matrix4x4 gView = {};
+		rawrbox::Matrix4x4 gViewInv = {};
+
+		rawrbox::Matrix4x4 gProjection = {};
+		rawrbox::Matrix4x4 gProjectionInv = {};
+
+		rawrbox::Matrix4x4 gViewProj = {};
+		rawrbox::Matrix4x4 gViewProjInv = {};
+
+		rawrbox::Matrix4x4 gModel = {};
+		rawrbox::Matrix4x4 gWorldViewProj = {};
+
+		rawrbox::Vector2f gNearFar = {};
+		rawrbox::Vector2i gScreenSize = {};
+
+		rawrbox::Vector4f gPos = {};
+		rawrbox::Vector4f gAngle = {};
+	};
+
 	class CameraBase {
 	protected:
 		rawrbox::Vector3f _pos = {};
@@ -13,13 +37,18 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 _view = {};
 		rawrbox::Matrix4x4 _projection = {};
 
-		float _z_near = 0.1F;
+		rawrbox::Matrix4x4 _model = {};
+
+		float _z_near = 0.01F;
 		float _z_far = 100.F;
 
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
+
 		virtual void updateMtx();
+		virtual void updateBuffer();
 
 	public:
-		virtual ~CameraBase() = default;
+		virtual ~CameraBase();
 
 		CameraBase() = default;
 		CameraBase(CameraBase&&) = default;
@@ -43,12 +72,18 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getViewMtx() const;
 		[[nodiscard]] virtual const rawrbox::Matrix4x4& getProjMtx() const;
-		[[nodiscard]] virtual rawrbox::Matrix4x4 getProjViewMtx() const;
+		[[nodiscard]] virtual rawrbox::Matrix4x4 getViewProjMtx() const;
+
+		[[nodiscard]] virtual const rawrbox::Matrix4x4& getModelTransform() const;
+		virtual void setModelTransform(const rawrbox::Matrix4x4& transform);
 
 		[[nodiscard]] virtual const rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const;
 		[[nodiscard]] virtual const rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screen_pos, const rawrbox::Vector3f& origin = {0, 0, 0}) const;
 		// ----------------
 
+		[[nodiscard]] virtual Diligent::IBuffer* uniforms() const;
+
+		virtual void initialize();
 		virtual void update();
 	};
 } // namespace rawrbox

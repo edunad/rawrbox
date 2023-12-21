@@ -17,6 +17,8 @@ namespace rawrbox {
 	// -----------------
 
 	void PipelineUtils::init() {
+		if (initialized) return;
+
 		uint32_t id = Diligent::TEXTURE_ADDRESS_WRAP << 6 | Diligent::TEXTURE_ADDRESS_WRAP << 3 | Diligent::TEXTURE_ADDRESS_WRAP;
 		Diligent::SamplerDesc desc{
 		    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,

@@ -10,8 +10,8 @@ namespace rawrbox {
 
 		// Uniforms -------
 		Diligent::BufferDesc CBDesc;
-		CBDesc.Name = "rawrbox::Material::Uniforms";
-		CBDesc.Size = sizeof(rawrbox::MaterialUnlitUniforms);
+		CBDesc.Name = "rawrbox::MaterialInstancedUnlit::Uniforms";
+		CBDesc.Size = sizeof(rawrbox::MaterialBaseUniforms);
 		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
 		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
@@ -29,7 +29,10 @@ namespace rawrbox {
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
-		settings.uniforms = {{Diligent::SHADER_TYPE_VERTEX, _uniforms}};
+
+		settings.uniforms = {
+		    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
+		    {Diligent::SHADER_TYPE_VERTEX, _uniforms, "Constants"}};
 
 		settings.fill = Diligent::FILL_MODE_WIREFRAME;
 		rawrbox::PipelineUtils::createPipeline("Model::Instanced::Wireframe", "Model::Instanced", settings);

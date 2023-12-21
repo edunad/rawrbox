@@ -11,15 +11,12 @@ namespace rawrbox {
 	constexpr auto MAX_DATA = 4;
 
 	struct MaterialBaseUniforms {
-		//  CAMERA -----
-		rawrbox::Matrix4x4 _gModel;
-		rawrbox::Matrix4x4 _gViewProj;
-		rawrbox::Matrix4x4 _gInvView;
-		rawrbox::Matrix4x4 _gInvProj;
-		rawrbox::Matrix4x4 _gWorldViewModel;
+		// Model ----
+		rawrbox::Colorf _gColorOverride = {};
+		rawrbox::Vector4f _gTextureFlags = {};
 
-		rawrbox::Vector4f _gScreenSize;
-		//  --------
+		std::array<rawrbox::Vector4f, 4> _gData; // Other mesh data, like vertex / displacement / billboard / masks
+							 // ----------
 	};
 
 	class MaterialBase {
@@ -49,39 +46,6 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBaseUniforms>
 		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<P>& helper) {
-			auto renderer = rawrbox::RENDERER;
-			auto size = renderer->getSize().cast<float>();
-
-			// CAMERA -------
-			auto tTransform = rawrbox::TRANSFORM;
-			tTransform.transpose();
-
-			auto tProj = renderer->camera()->getProjMtx();
-			tProj.transpose();
-
-			auto tInvProj = renderer->camera()->getProjMtx();
-			tInvProj.inverse();
-
-			auto tView = renderer->camera()->getViewMtx();
-			tView.transpose();
-
-			auto tInvView = renderer->camera()->getViewMtx();
-			tInvView.inverse();
-
-			auto tWorldView = renderer->camera()->getProjViewMtx();
-			tWorldView.transpose();
-
-			*helper = {
-			    tTransform,
-			    tView * tProj,
-			    tInvView,
-			    tInvProj,
-			    tTransform * tWorldView,
-
-			    {0, 0, size.x, size.y},
-			};
-			// ----------------------------
-
 			// MODEL -------
 			std::array<rawrbox::Vector4f, MAX_DATA>
 			    data = {rawrbox::Vector4f{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
@@ -102,15 +66,15 @@ namespace rawrbox {
 				data[3] = mesh.getData("mask").data();
 			}
 
-			(*helper)._gColorOverride = mesh.color;
-			(*helper)._gTextureFlags = mesh.texture == nullptr ? rawrbox::Vector4f() : mesh.texture->getData();
-			(*helper)._gData = data;
+			helper->_gColorOverride = mesh.color;
+			helper->_gTextureFlags = mesh.texture == nullptr ? rawrbox::Vector4f() : mesh.texture->getData();
+			helper->_gData = data;
 			// ----------------------------
 		}
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& /*mesh*/) {
-			throw std::runtime_error("Missing implementation");
+			throw std::runtime_error("[RawrBox-Material] Missing implementation");
 		}
 
 		template <typename T = rawrbox::VertexData>
@@ -142,7 +106,7 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData>
 		void bindTexture(const rawrbox::Mesh<T>& /*mesh*/) {
-			throw std::runtime_error("Missing implementation");
+			throw std::runtime_error("[RawrBox-Material] Missing implementation");
 		}
 
 		virtual void bindShaderResources() = 0;

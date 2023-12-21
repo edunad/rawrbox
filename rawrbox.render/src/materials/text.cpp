@@ -29,7 +29,9 @@ namespace rawrbox {
 		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.layout = rawrbox::VertexData::vLayout();
-		settings.uniforms = {{Diligent::SHADER_TYPE_VERTEX, _uniforms}};
+		settings.uniforms = {
+		    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
+		    {Diligent::SHADER_TYPE_VERTEX, _uniforms, "Constants"}};
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 

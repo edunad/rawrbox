@@ -149,7 +149,8 @@ namespace rawrbox {
 			rawrbox::ModelBase<M>::draw();
 
 			// Bind materials uniforms & textures ----
-			rawrbox::TRANSFORM = this->getMatrix();
+			rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix());
+
 			this->_material->bindTexture(*this->_mesh);
 			this->_material->bindPipeline(*this->_mesh);
 			this->_material->bindUniforms(*this->_mesh);

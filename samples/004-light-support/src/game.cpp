@@ -3,7 +3,7 @@
 #include <rawrbox/render/light/point.hpp>
 #include <rawrbox/render/light/spot.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
-#include <rawrbox/render/renderers/cluster.hpp>
+// #include <rawrbox/render/renderers/cluster.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -25,13 +25,13 @@ namespace light {
 		auto window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto render = window->createRenderer<rawrbox::RendererCluster>();
-		render->setOverlayRender([this]() {});
-		render->setWorldRender([this]() { this->drawWorld(); });
+		auto render = window->createRenderer();
 		render->skipIntros(true);
-		render->onIntroCompleted = [this]() {
-			this->loadContent();
-		};
+		render->onIntroCompleted = [this]() { this->loadContent(); };
+		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
+			this->drawWorld();
+		});
 		// ---------------
 
 		// Setup camera
@@ -47,12 +47,12 @@ namespace light {
 
 #ifdef _DEBUG
 		// Setup binds ---
-		window->onKey += [](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
+		/*window->onKey += [](rawrbox::Window& w, uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods) {
 			if (action != KEY_ACTION_UP) return;
 
 			if (key == KEY_F1) rawrbox::RendererBase::DEBUG_LEVEL = 0;
 			if (key == KEY_F2) rawrbox::RendererBase::DEBUG_LEVEL = 1;
-		};
+		};*/
 		// ----------
 #endif
 
@@ -105,13 +105,13 @@ namespace light {
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 			this->_model2->addMesh(mesh);
 		}*/
-		{
+		/*{
 			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({3.F, 0.01F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
 			mesh.setSpecularTexture(texSpec, 25.F);
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 			this->_model2->addMesh(mesh);
-		}
+		}*/
 		// ----
 
 		// Text test ----
@@ -124,7 +124,7 @@ namespace light {
 		//  rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Red(), 0.602F, 0.708F, 100.F);
 
 		this->_model->upload();
-		this->_model2->upload();
+		// this->_model2->upload();
 		this->_text->upload();
 
 		this->_ready = true;
@@ -168,7 +168,7 @@ namespace light {
 		if (!this->_ready || this->_model == nullptr || this->_model2 == nullptr || this->_text == nullptr) return;
 
 		this->_model->draw();
-		this->_model2->draw();
+		// this->_model2->draw();
 		this->_text->draw();
 	}
 

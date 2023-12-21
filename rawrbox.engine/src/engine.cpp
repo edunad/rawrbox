@@ -103,10 +103,10 @@ namespace rawrbox {
 				std::string wat = err.what();
 
 				std::string title = " FATAL ENGINE ERROR ";
-				std::string hLine = std::string(((wat.size() / 2) - title.size() / 2), '-');
+				std::string hLine = std::string((((wat.size() + 1) / 2) - title.size() / 2), '-');
 
 				fmt::print("\n┌{}{}{}┐\n", hLine, title, hLine);
-				fmt::print(" {}\n", wat);
+				fmt::print(" {} \n", wat);
 				fmt::print("└{}{}{}┘\n\n", hLine, title, hLine);
 
 				cpptrace::generate_trace().print();

@@ -74,7 +74,7 @@ namespace rawrbox {
 
 		auto context = rawrbox::RENDERER->context();
 		auto device = rawrbox::RENDERER->device();
-		auto camera = rawrbox::RENDERER->camera();
+		auto camera = rawrbox::MAIN_CAMERA;
 
 		// Update lights ---
 		std::vector<rawrbox::LightDataVertex> lights = {};

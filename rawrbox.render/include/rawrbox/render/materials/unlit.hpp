@@ -4,15 +4,6 @@
 
 namespace rawrbox {
 
-	struct MaterialUnlitUniforms : public rawrbox::MaterialBaseUniforms {
-		// Model ----
-		rawrbox::Colorf _gColorOverride;
-		rawrbox::Vector4f _gTextureFlags;
-
-		std::array<rawrbox::Vector4f, 4> _gData; // Other mesh data, like vertex / displacement / billboard / masks
-							 // ----------
-	};
-
 	class MaterialUnlit : public rawrbox::MaterialBase {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 
@@ -30,22 +21,15 @@ namespace rawrbox {
 		~MaterialUnlit() override = default;
 
 		static void init();
-
-		/*template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBaseUniforms>
-		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<P>& helper) {
-			rawrbox::MaterialBase::bindBaseUniforms<T, P>(mesh, helper); // Bind camera
-		}*/
-
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
 			auto context = rawrbox::RENDERER->context();
 
 			// SETUP UNIFORMS ----------------------------
-			Diligent::MapHelper<rawrbox::MaterialUnlitUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			this->bindBaseUniforms<T, rawrbox::MaterialUnlitUniforms>(mesh, CBConstants);
+			Diligent::MapHelper<rawrbox::MaterialBaseUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			this->bindBaseUniforms<T, rawrbox::MaterialBaseUniforms>(mesh, CBConstants);
 			// ------------
 		}
-
 		template <typename T = rawrbox::VertexData>
 		void bindTexture(const rawrbox::Mesh<T>& mesh) {
 			auto context = rawrbox::RENDERER->context();

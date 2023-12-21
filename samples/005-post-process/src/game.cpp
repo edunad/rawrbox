@@ -24,12 +24,12 @@ namespace post_process {
 
 		// Setup renderer
 		auto render = window->createRenderer();
-		render->setOverlayRender([this]() {});
+		/*render->setOverlayRender([this]() {});
 		render->setWorldRender([this]() { this->drawWorld(); });
 		render->overridePostWorld([this]() {
 			if (!this->_ready) return;
 			this->_postProcess->render(rawrbox::RENDERER->getColor());
-		});
+		});*/
 		render->onIntroCompleted = [this]() {
 			this->loadContent();
 		};

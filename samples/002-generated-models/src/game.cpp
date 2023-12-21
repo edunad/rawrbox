@@ -25,11 +25,11 @@ namespace model {
 
 		// Setup renderer
 		auto render = window->createRenderer();
-		render->setOverlayRender([this]() {});
-		render->setWorldRender([this]() { this->drawWorld(); });
-		render->onIntroCompleted = [this]() {
-			this->loadContent();
-		};
+		render->onIntroCompleted = [this]() { this->loadContent(); };
+		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
+			this->drawWorld();
+		});
 		// ---------------
 
 		// Setup camera
@@ -77,6 +77,9 @@ namespace model {
 		// --------
 
 		// CUBE ----
+		this->_model->addMesh(rawrbox::MeshUtils::generateCube({3.5F, 0, 2.5F}, {1.0F, 1.0F, 1.0F}, rawrbox::Colors::White()));
+		this->_model->addMesh(rawrbox::MeshUtils::generateCube({1.5F, 0, 2.5F}, {.5F, .5F, .5F}, rawrbox::Colors::White()));
+
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({-2, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White());
 			mesh.setTexture(texture2);
@@ -84,8 +87,6 @@ namespace model {
 			this->_model->addMesh(mesh);
 		}
 
-		this->_model->addMesh(rawrbox::MeshUtils::generateCube({3.5F, 0, 2.5F}, {1.0F, 1.0F, 1.0F}, rawrbox::Colors::White()));
-		this->_model->addMesh(rawrbox::MeshUtils::generateCube({1.5F, 0, 2.5F}, {.5F, .5F, .5F}, rawrbox::Colors::White()));
 		// --------
 
 		// PLANE -----
@@ -109,6 +110,7 @@ namespace model {
 		}
 		// ----------
 
+		// VERTEX SNAP ------
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({-3, 0, 0}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White());
 			mesh.setTexture(texture);
@@ -117,6 +119,7 @@ namespace model {
 			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-3, 0, 0}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
+		// ----------
 
 		// ARROW ------
 		{
@@ -167,7 +170,7 @@ namespace model {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generateCone({-5.F, 0.F, -2.F}, {0.5F, 1.F, 0.5F}, 4);
+			auto mesh = rawrbox::MeshUtils::generateCone({-5.F, 0.F, -2.F}, {0.5F, 1.F, 0.5F}, 3);
 
 			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-5.F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
@@ -231,14 +234,11 @@ namespace model {
 	void Game::createDisplacement() {
 		auto texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement_test.png")->get();
 
-		auto mesh = rawrbox::MeshUtils::generateMesh({0, 0, 0}, {64, 64}, 64, rawrbox::Colors::White());
+		auto mesh = rawrbox::MeshUtils::generateMesh({0, 0, -1.0F}, {2, 2}, 64, rawrbox::Colors::White());
 		mesh.setTexture(texture3);
-		mesh.setDisplacementTexture(texture3, 24.F);
+		mesh.setDisplacementTexture(texture3, 0.5F);
 
 		this->_displacement->addMesh(mesh);
-
-		this->_displacement->setPos({0, 0.1F, -2});
-		this->_displacement->setScale({0.025F, 0.025F, 0.025F});
 		this->_displacement->upload();
 	}
 
@@ -260,7 +260,7 @@ namespace model {
 		this->_text->addText(*this->_font, "CUBE\nVertex snap", {-3.F, 0.55F, 0});
 		this->_text->addText(*this->_font, "AXIS", {0.F, 0.8F, 0});
 		this->_text->addText(*this->_font, "SPRITE", {0.F, 1.2F, 0});
-		this->_text->addText(*this->_font, "DISPLACEMENT", {0.F, 1.2F, -2});
+		this->_text->addText(*this->_font, "DISPLACEMENT", {0.F, 0.75F, -2});
 		this->_text->addText(*this->_font, "SPHERES", {3.5F, 0.55F, -2.F});
 		this->_text->addText(*this->_font, "CYLINDER", {-2.F, 0.55F, -2});
 		this->_text->addText(*this->_font, "CONE", {-3.5F, 0.55F, -2});

@@ -34,7 +34,7 @@ namespace rawrbox {
 		// get our pos and force aim downwards, the getForward() seems to behave odd when aiming full down
 		auto campos = this->getPos();
 
-		rawrbox::Matrix4x4 viewproj_inv = this->getProjViewMtx();
+		rawrbox::Matrix4x4 viewproj_inv = this->getViewProjMtx();
 		viewproj_inv.inverse();
 
 		float screenx_clip = 2 * (screenPos.x / this->_winSize.x) - 1;

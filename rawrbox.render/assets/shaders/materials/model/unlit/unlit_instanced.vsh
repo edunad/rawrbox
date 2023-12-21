@@ -33,7 +33,7 @@ struct PSInput {
 
 void main(in VSInput VSIn, out PSInput PSIn) {
     float4x4 InstanceMatr = MatrixFromRows(VSIn.MtrxRow0, VSIn.MtrxRow1, VSIn.MtrxRow2, VSIn.MtrxRow3);
-    TransformedData transform = applyPosTransforms(g_Camera.viewProj, mul(float4(VSIn.Pos, 1.), InstanceMatr), VSIn.UV);
+    TransformedData transform = applyPosTransforms(g_viewProj, mul(float4(VSIn.Pos, 1.), InstanceMatr), VSIn.UV);
 
     PSIn.Pos      = transform.final;
     PSIn.Color    = VSIn.Color * VSIn.ColorOverride * g_Model.colorOverride;

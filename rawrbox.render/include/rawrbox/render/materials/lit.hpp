@@ -1,5 +1,5 @@
 #pragma once
-
+/*
 #include <rawrbox/render/materials/unlit.hpp>
 #include <rawrbox/render/renderers/cluster.hpp>
 
@@ -7,10 +7,8 @@ namespace rawrbox {
 
 	struct MaterialLitUniforms : public rawrbox::MaterialUnlitUniforms, public rawrbox::ClusterUniforms {};
 	struct MaterialLitPixelUniforms : public rawrbox::ClusterUniforms {
-		rawrbox::Vector2f g_LightGridParams = {};
-
+		rawrbox::Vector4f g_LightGridParams = {};
 		rawrbox::Vector4f g_LitData = {};
-		rawrbox::Vector4f g_CameraPosition = {}; // Needs to be aligned
 	};
 
 	class MaterialLit : public rawrbox::MaterialBase {
@@ -43,7 +41,7 @@ namespace rawrbox {
 			auto cluster = dynamic_cast<rawrbox::RendererCluster*>(rawrbox::RENDERER);
 			if (cluster == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] This material requires the `clustered` renderer");
 
-			auto camera = rawrbox::RENDERER->camera();
+			auto camera = rawrbox::MAIN_CAMERA;
 
 			{
 				// SETUP UNIFORMS ----------------------------
@@ -150,3 +148,4 @@ namespace rawrbox {
 	};
 
 } // namespace rawrbox
+*/

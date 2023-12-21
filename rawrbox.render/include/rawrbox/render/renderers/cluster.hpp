@@ -1,5 +1,5 @@
 #pragma once
-#include <rawrbox/render/renderers/base.hpp>
+/*#include <rawrbox/render/renderers/base.hpp>
 #include <rawrbox/render/static.hpp>
 
 #include <stdexcept>
@@ -93,3 +93,4 @@ namespace rawrbox {
 		}
 	};
 } // namespace rawrbox
+*/

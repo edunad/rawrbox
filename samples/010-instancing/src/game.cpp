@@ -30,11 +30,11 @@ namespace instance_test {
 
 		// Setup renderer
 		auto render = window->createRenderer();
-		render->setOverlayRender([this]() {});
-		render->setWorldRender([this]() { this->drawWorld(); });
-		render->onIntroCompleted = [this]() {
-			this->loadContent();
-		};
+		render->onIntroCompleted = [this]() { this->loadContent(); };
+		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
+			this->drawWorld();
+		});
 		// ---------------
 
 		// Setup camera
@@ -83,7 +83,7 @@ namespace instance_test {
 		for (int z = 0; z < total; z++) {
 			for (int x = 0; x < total; x++) {
 				rawrbox::Matrix4x4 m;
-				m.SRT({1.F, 1.F, 1.F}, rawrbox::Vector4f::toQuat({0, distRot(prng), 0}), {x * spacing, 0, z * spacing});
+				m.SRT({1.F, 1.F, 1.F}, rawrbox::Vector4f::toQuat({0, distRot(prng), 0}), {-500 + x * spacing, dist(prng) * 0.5F, -500 + z * spacing});
 				this->_model->addInstance({m, rawrbox::Colors::White(), dist(prng)});
 			}
 		}

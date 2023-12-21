@@ -4,11 +4,6 @@
 
 namespace rawrbox {
 	struct MaterialTextUniforms {
-		//  CAMERA -----
-		rawrbox::Matrix4x4 _gWorldViewModel;
-		rawrbox::Matrix4x4 _gInvView;
-		//  --------
-
 		rawrbox::Vector4f _gBillboard;
 	};
 
@@ -37,24 +32,7 @@ namespace rawrbox {
 
 			// SETUP UNIFORMS ----------------------------
 			Diligent::MapHelper<rawrbox::MaterialTextUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			// Map the buffer and write current world-view-projection matrix
-
-			auto tTransform = rawrbox::TRANSFORM;
-			tTransform.transpose();
-
-			auto tWorldView = renderer->camera()->getProjViewMtx();
-			tWorldView.transpose();
-
-			auto tInvView = renderer->camera()->getViewMtx();
-			tInvView.transpose();
-			tInvView.inverse();
-
-			*CBConstants = {
-			    // CAMERA -------
-			    tTransform * tWorldView,
-			    tInvView,
-			    // --------------
-			    mesh.getData("billboard_mode")};
+			CBConstants->_gBillboard = mesh.getData("billboard_mode");
 		}
 
 		template <typename T = rawrbox::VertexData>

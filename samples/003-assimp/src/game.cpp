@@ -25,11 +25,11 @@ namespace assimp {
 
 		// Setup renderer
 		auto render = window->createRenderer();
-		render->setOverlayRender([this]() {});
-		render->setWorldRender([this]() { this->drawWorld(); });
-		render->onIntroCompleted = [this]() {
-			this->loadContent();
-		};
+		render->onIntroCompleted = [this]() { this->loadContent(); };
+		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
+			this->drawWorld();
+		});
 		// ---------------
 
 		// Setup camera

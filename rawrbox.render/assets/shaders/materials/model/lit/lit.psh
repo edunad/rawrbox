@@ -46,7 +46,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	float4 emission = g_Emission.Sample(g_Emission_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
 
     // LIGHT ------
-	float3 viewDir = normalize(g_CameraPos - PSIn.WorldPos).xyz;
+	float3 viewDir = normalize(g_cameraPos - PSIn.WorldPos).xyz;
     float3 radianceOut = ApplyLight(PSIn.Pos, PSIn.WorldPos, PSIn.Normal, viewDir, specular.r, SpecularPower);
     // ------------
 

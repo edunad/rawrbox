@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rawrbox/render/cameras/base.hpp>
-#include <rawrbox/render/renderers/base.hpp>
+#include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/textures/flat.hpp>
 #include <rawrbox/render/textures/missing.hpp>
 #include <rawrbox/render/window.hpp>
@@ -18,15 +18,20 @@
 // NOLINTEND(*)
 
 namespace rawrbox {
+	class CameraBase;
+
 	constexpr auto MAX_BONES_PER_VERTEX = 4;
 	constexpr auto MAX_BONES_PER_MODEL = 200;
 
 	// QUICK ACCESS ---
 	extern uint32_t FRAME;
+
 	extern bool ENGINE_INITIALIZED;
+
 	extern Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> SHADER_FACTORY;
-	extern rawrbox::Matrix4x4 TRANSFORM;
+
 	extern rawrbox::RendererBase* RENDERER;
+	extern rawrbox::CameraBase* MAIN_CAMERA;
 	// -----------
 
 	// TEXTURE FALLBACKS ---

@@ -1,5 +1,6 @@
 
 // #include <rawrbox/render/decals/manager.hpp>
+/*
 #include <rawrbox/render/light/manager.hpp>
 #include <rawrbox/render/materials/lit.hpp>
 #include <rawrbox/render/renderers/cluster.hpp>
@@ -233,7 +234,7 @@ namespace rawrbox {
 		}
 		// ------
 
-		/*{
+		{
 			Diligent::DispatchComputeAttribs DispatchAttribs;
 			DispatchAttribs.ThreadGroupCountX = 1;
 			DispatchAttribs.ThreadGroupCountY = 1;
@@ -242,7 +243,7 @@ namespace rawrbox {
 			this->_context->SetPipelineState(this->_clusterResetComputeProgram);
 			this->_context->CommitShaderResources(this->_clusterResetComputeBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			this->_context->DispatchCompute(DispatchAttribs);
-		}*/
+		}
 
 		// Perform light / decal culling
 		{
@@ -300,3 +301,4 @@ namespace rawrbox {
 	Diligent::IBufferView* RendererCluster::getDataGridBuffer(bool readOnly) { return readOnly ? this->_dataGridBufferRead : this->_dataGridBufferWrite; }
 	// ----------
 } // namespace rawrbox
+*/

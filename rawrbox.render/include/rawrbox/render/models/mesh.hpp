@@ -22,6 +22,9 @@ namespace rawrbox {
 
 	template <typename T = VertexData>
 	class Mesh {
+		static constexpr uint16_t MAX_VERTICES = 16000;
+		static constexpr uint16_t MAX_INDICES = 16000;
+
 	protected:
 		bool _canOptimize = true;
 
@@ -171,7 +174,7 @@ namespace rawrbox {
 		virtual void setNormalTexture(rawrbox::TextureBase* ptr) { this->normalTexture = ptr; }
 
 		[[nodiscard]] virtual const rawrbox::TextureBase* getDisplacementTexture() const { return this->displacementTexture; }
-		virtual void setDisplacementTexture(rawrbox::TextureBase* ptr, float power) {
+		virtual void setDisplacementTexture(rawrbox::TextureBase* ptr, float power = 1.F) {
 			this->displacementTexture = ptr;
 			this->addData("displacement_strength", {power, 0, 0, 0});
 			this->setOptimizable(false);
@@ -243,23 +246,13 @@ namespace rawrbox {
 		}
 
 		virtual void merge(const rawrbox::Mesh<T>& other) {
-			rawrbox::Vector3f offset = (other._pos != this->_pos) ? other._pos - this->_pos : rawrbox::Vector3f(0, 0, 0);
+			std::transform(other.indices.begin(), other.indices.end(), std::back_inserter(this->indices), [this](uint16_t val) { return this->totalVertex + val; });
+			this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
 
-			for (uint16_t i : other.indices) {
-				this->indices.push_back(this->totalVertex + i);
-			}
+			this->totalVertex = static_cast<uint16_t>(this->vertices.size());
+			this->totalIndex = static_cast<uint16_t>(this->indices.size());
 
-			if (offset == rawrbox::Vector3f::zero()) {
-				this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
-			} else {
-				for (auto v : other.vertices) {
-					v.position += offset;
-					this->vertices.push_back(v);
-				}
-			}
-
-			this->totalVertex += other.totalVertex;
-			this->totalIndex += other.totalIndex;
+			this->bbox.combine(other.bbox);
 		}
 
 		virtual void rotateVertices(float rad, rawrbox::Vector3f axis = {0, 1, 0}) {
@@ -271,8 +264,9 @@ namespace rawrbox {
 		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
 		[[nodiscard]] virtual bool canOptimize(const rawrbox::Mesh<T>& other) const {
 			if (!this->_canOptimize || !other._canOptimize) return false;
-			if (this->vertices.size() + other.vertices.size() >= 16000) return false; // Max vertice limit
-			if (this->indices.size() + other.indices.size() >= 16000) return false;   // Max indice limit
+
+			if (this->vertices.size() + other.vertices.size() >= MAX_VERTICES) return false; // Max vertice limit
+			if (this->indices.size() + other.indices.size() >= MAX_INDICES) return false;    // Max indice limit
 
 			return this->texture == other.texture &&
 			       this->color == other.color &&

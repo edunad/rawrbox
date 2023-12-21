@@ -39,7 +39,7 @@ namespace rawrbox {
 		CameraOrbital& operator=(CameraOrbital&&) = default;
 		~CameraOrbital() override = default;
 
-		explicit CameraOrbital(rawrbox::Window& window, float speed = 8.F, float FOV = 60.F, float near = 0.1F, float far = 100.F);
+		explicit CameraOrbital(rawrbox::Window& window, float speed = 8.F, float FOV = 60.F, float near = 0.01F, float far = 100.F);
 
 		void setControls(rawrbox::CameraControls controls);
 		void update() override;

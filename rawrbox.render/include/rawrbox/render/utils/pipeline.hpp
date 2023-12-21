@@ -43,7 +43,7 @@ namespace rawrbox {
 		bool depthWrite = true;
 		bool depthFormat = true;
 		bool scissors = false;
-		std::vector<PipeSampler> immutableSamplers = {};
+		std::vector<rawrbox::PipeSampler> immutableSamplers = {};
 
 		uint8_t renderTargets = 1;
 		rawrbox::PipePass renderPass = {};

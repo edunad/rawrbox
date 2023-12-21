@@ -27,7 +27,7 @@
 #include <rawrbox/render/materials/instanced.hpp>
 #include <rawrbox/render/materials/skinned.hpp>
 #include <rawrbox/render/materials/text.hpp>
-#include <rawrbox/render/renderers/base.hpp>
+#include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/webp.hpp>
 #include <rawrbox/render/utils/render.hpp>
@@ -35,11 +35,11 @@
 #include <rawrbox/utils/threading.hpp>
 
 namespace rawrbox {
-
-#ifdef _DEBUG
-	uint32_t RendererBase::DEBUG_LEVEL = 0;
-#endif
-
+	/*
+	#ifdef _DEBUG
+		uint32_t RendererBase::DEBUG_LEVEL = 0;
+	#endif
+	*/
 	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& screenSize, const rawrbox::Colorf& clearColor) : _window(window), _type(type), _size(size), _monitorSize(screenSize), _clearColor(clearColor) {}
 	RendererBase::~RendererBase() {
 		this->_render.reset();
@@ -56,9 +56,11 @@ namespace rawrbox {
 	void RendererBase::init(Diligent::DeviceFeatures features) {
 		Diligent::SwapChainDesc SCDesc;
 
+		// REQUIRED -----
 		features.WireframeFill = Diligent::DEVICE_FEATURE_STATE_ENABLED;
-		features.GeometryShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		// --------------
 
+		// Initialize engine -----
 		switch (this->_type) {
 #if RAWRBOX_SUPPORT_DX11
 			case Diligent::RENDER_DEVICE_TYPE_D3D11:
@@ -149,6 +151,9 @@ namespace rawrbox {
 
 		if (this->_engineFactory == nullptr) throw std::runtime_error("[RawrBox-Renderer] Failed to initialize");
 
+		rawrbox::PipelineUtils::init();
+		// ----------------------
+
 		// Init default textures ---
 		if (rawrbox::MISSING_TEXTURE == nullptr) {
 			rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
@@ -169,11 +174,11 @@ namespace rawrbox {
 			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0xbcbcff));
 			rawrbox::NORMAL_TEXTURE->upload();
 		}
-
-		if (!rawrbox::PipelineUtils::initialized) {
-			rawrbox::PipelineUtils::init();
-		}
 		// -------------------------
+
+		// Setup camera -----
+		if (this->_camera != nullptr) this->_camera->initialize();
+		// ------------------
 
 		// Setup viewport ---
 		Diligent::Viewport VP{static_cast<uint32_t>(this->_size.x), static_cast<uint32_t>(this->_size.x)};
@@ -203,17 +208,32 @@ namespace rawrbox {
 		rawrbox::MaterialSkinned::init();
 		// -----
 
+		// Initialize passes --
+		/*for (auto& passTypes : this->_renderPasses) {
+			for (auto& pass : passTypes.second) {
+				if (pass == nullptr) continue;
+				pass->initialize(this->_size);
+			}
+		}*/
+		this->buildPasses();
+		// --------------------
+
 		this->playIntro();
 		rawrbox::ENGINE_INITIALIZED = true;
 	}
 
 	void RendererBase::resize(const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize) {
 		if (this->_swapChain == nullptr) return;
-
 		this->_swapChain->Resize(size.x, size.y);
 
-		Diligent::Viewport VP{static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.x)};
-		this->_context->SetViewports(1, &VP, VP.Width, VP.Height);
+		// Resize passes --
+		/*for (auto& passTypes : this->_renderPasses) {
+			for (auto& pass : passTypes.second) {
+				if (pass == nullptr) continue;
+				pass->resize(size);
+			}
+		}*/
+		// --------------------
 
 		if (this->_stencil != nullptr) this->_stencil->resize(size);
 
@@ -221,9 +241,7 @@ namespace rawrbox {
 		this->_monitorSize = monitorSize;
 	}
 
-	void RendererBase::setWorldRender(std::function<void()> render) { this->worldRender = render; }
-	void RendererBase::setOverlayRender(std::function<void()> render) { this->overlayRender = render; }
-	void RendererBase::overridePostWorld(std::function<void()> post) { this->postRender = post; }
+	void RendererBase::setDrawCall(std::function<void(const rawrbox::DrawPass& pass)> call) { this->_drawCall = call; }
 
 	void RendererBase::update() {
 		if (this->_currentIntro != nullptr) {
@@ -232,8 +250,7 @@ namespace rawrbox {
 
 				// Done?
 				if (this->_introList.empty()) {
-					this->setOverlayRender(this->_tempOverlayRender);
-					this->setWorldRender(this->_tempWorldRender);
+					this->setDrawCall(this->_tempRender);
 					this->completeIntro();
 				} else {
 					this->_currentIntro = &this->_introList.begin()->second;
@@ -249,10 +266,45 @@ namespace rawrbox {
 				this->_camera->update();
 			}
 		}
+
+		// Update passes --
+		/*for (auto& passTypes : this->_renderPasses) {
+			for (auto& pass : passTypes.second) {
+				if (pass == nullptr || !pass->isEnabled()) continue;
+				pass->update();
+			}
+		}*/
+		// --------------------
 	}
 
 	void RendererBase::render() {
 		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Failed to bind swapChain/context/device! Did you call 'init' ?");
+		if (this->_drawCall == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Missing draw call! Did you call 'setDrawCall' ?");
+
+		// Clear backbuffer ----
+		this->clear();
+		// ---------------------
+
+		// Perform renderpasses --
+		/*for (auto& passTypes : this->_renderPasses) {
+			for (auto& pass : passTypes.second) {
+				if (pass == nullptr || !pass->isEnabled()) continue;
+			}
+		}*/
+		// -----------------------
+
+		// Perform calls --
+		this->_drawCall(rawrbox::DrawPass::PASS_OPAQUE);
+		this->_drawCall(rawrbox::DrawPass::PASS_TRANSPARENT);
+		// -----------------
+
+		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+
+		// Submit ---
+		this->frame();
+		// ---------------------
+
+		/*if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Failed to bind swapChain/context/device! Did you call 'init' ?");
 
 		if (this->worldRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] World render method not set! Did you call 'setWorldRender' ?");
 		if (this->overlayRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Overlay render method not set! Did you call 'setOverlayRender' ?");
@@ -278,8 +330,32 @@ namespace rawrbox {
 
 		// Submit ---
 		this->frame();
-		// ----------
+		// ----------*/
 	}
+
+	void RendererBase::clear() {
+		if (this->_swapChain == nullptr || this->_context == nullptr) return;
+
+		auto* pRTV = this->_swapChain->GetCurrentBackBufferRTV();
+		auto* pDSV = this->_swapChain->GetDepthBufferDSV();
+
+		// Reset render target
+		this->_context->SetRenderTargets(1, &pRTV, pDSV, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+		// Clear the back buffer
+		this->_context->ClearRenderTarget(pRTV, this->_clearColor.data().data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		this->_context->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG, 1.F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+	}
+
+	void RendererBase::frame() {
+		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
+		rawrbox::FRAME++;
+	}
+
+	// PASSES -----
+	void RendererBase::buildPasses() {
+	}
+	// ----------------
 
 	/*void RendererBase::gpuCheck() {
 		if (this->_gpuReadFrame == rawrbox::BGFX_FRAME) {
@@ -320,7 +396,7 @@ namespace rawrbox {
 		}
 	}*/
 
-	void RendererBase::finalRender() {
+	/*void RendererBase::finalRender() {
 		// Record world ---
 		this->_render->startRecord();
 		this->worldRender();
@@ -343,7 +419,7 @@ namespace rawrbox {
 
 		this->overlayRender();
 
-		/*// Record world ---
+		// Record world ---
 		this->_render->startRecord();
 		this->worldRender();
 		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, rawrbox::MAIN_CAMERA->getViewMtx().data(), rawrbox::MAIN_CAMERA->getProjMtx().data());
@@ -387,7 +463,7 @@ namespace rawrbox {
 		// Restore id -----
 		rawrbox::CURRENT_VIEW_ID = prevId;
 		bgfx::discard(BGFX_DISCARD_ALL);
-		// ------------------------*/
+		// ------------------------
 	}
 
 	void RendererBase::clear() {
@@ -407,7 +483,7 @@ namespace rawrbox {
 	void RendererBase::frame() {
 		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
 		rawrbox::FRAME++;
-	}
+	}*/
 
 	// INTRO ------
 	void RendererBase::playIntro() {
@@ -417,12 +493,11 @@ namespace rawrbox {
 		}
 
 		// Temp store renders for overriding ---
-		this->_tempOverlayRender = this->overlayRender;
-		this->_tempWorldRender = this->worldRender;
+		this->_tempRender = this->_drawCall;
 		// -------------
 
-		this->worldRender = []() {};
-		this->overlayRender = [this]() {
+		this->_drawCall = [this](const rawrbox::DrawPass& pass) {
+			if (pass != rawrbox::DrawPass::PASS_OVERLAY) return;
 			this->_stencil->drawBox({}, this->_size.cast<float>(), rawrbox::Colors::Black());
 
 			if (this->_currentIntro != nullptr) {
@@ -485,6 +560,10 @@ namespace rawrbox {
 	//-------------------------
 
 	// Utils ----
+	void RendererBase::setMainCamera(rawrbox::CameraBase* camera) const {
+		rawrbox::MAIN_CAMERA = camera;
+	}
+
 	rawrbox::CameraBase* RendererBase::camera() const { return this->_camera.get(); }
 	rawrbox::Stencil* RendererBase::stencil() const { return this->_stencil.get(); }
 
@@ -492,13 +571,13 @@ namespace rawrbox {
 	Diligent::ISwapChain* RendererBase::swapChain() const { return this->_swapChain; }
 	Diligent::IRenderDevice* RendererBase::device() const { return this->_device; }
 
-	Diligent::ITextureView* RendererBase::getDepth() const {
+	/*Diligent::ITextureView* RendererBase::getDepth() const {
 		return this->_render->getDepth();
 	}
 
 	Diligent::ITextureView* RendererBase::getColor(bool rt) const {
 		return rt ? this->_render->getRT() : this->_render->getHandle();
-	}
+	}*/
 
 	/*const bgfx::TextureHandle RendererBase::getMask() const {
 		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
@@ -510,7 +589,7 @@ namespace rawrbox {
 		return this->_render->getTexture(2);
 	}*/
 
-	const rawrbox::Vector2i RendererBase::getSize() const { return this->_size; }
+	const rawrbox::Vector2i& RendererBase::getSize() const { return this->_size; }
 
 	bool RendererBase::getVSync() const { return this->_vsync; }
 	void RendererBase::setVSync(bool vsync) { this->_vsync = vsync; }

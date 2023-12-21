@@ -15,6 +15,7 @@
 #include <vector>
 
 namespace stencil {
+
 	void Game::setupGLFW() {
 		auto window = rawrbox::Window::createWindow();
 		window->setMonitor(-1);
@@ -28,11 +29,14 @@ namespace stencil {
 
 		// Setup renderer
 		auto render = window->createRenderer(rawrbox::Color::RGBAHex(0x443355FF));
-		render->setOverlayRender([this]() { this->drawOverlay(); });
-		render->setWorldRender([this]() { this->drawWorld(); });
-		render->onIntroCompleted = [this]() {
-			this->loadContent();
-		};
+		render->onIntroCompleted = [this]() { this->loadContent(); };
+		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+			if (pass == rawrbox::DrawPass::PASS_OVERLAY) {
+				this->drawOverlay();
+			} else if (pass == rawrbox::DrawPass::PASS_OPAQUE) {
+				this->drawWorld();
+			}
+		});
 		// ---------------
 
 		// Setup camera --
@@ -76,6 +80,7 @@ namespace stencil {
 	}
 
 	void Game::contentLoaded() {
+
 		// Textures ---
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
 		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/meow3.gif")->get();

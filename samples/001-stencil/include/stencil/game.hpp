@@ -10,6 +10,7 @@
 #include <memory>
 
 namespace stencil {
+
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Markdown> _markdown = std::make_unique<rawrbox::Markdown>();

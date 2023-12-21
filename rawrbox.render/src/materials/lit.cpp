@@ -1,4 +1,4 @@
-#include <rawrbox/render/light/manager.hpp>
+/*#include <rawrbox/render/light/manager.hpp>
 #include <rawrbox/render/materials/lit.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
@@ -143,3 +143,4 @@ namespace rawrbox {
 		context->CommitShaderResources(this->_bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 } // namespace rawrbox
+*/

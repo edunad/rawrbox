@@ -1,12 +1,6 @@
-
-struct Camera {
-    float4x4 worldViewProj;
-    float4x4 invView;
-};
-
+#include <camera.fxh>
 
 cbuffer Constants {
-    Camera g_Camera;
     float4 g_Billboard;
 };
 

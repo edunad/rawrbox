@@ -30,7 +30,10 @@ namespace rawrbox {
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
-		settings.uniforms = {{Diligent::SHADER_TYPE_VERTEX, _uniforms}};
+
+		settings.uniforms = {
+		    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
+		    {Diligent::SHADER_TYPE_VERTEX, _uniforms, "Constants"}};
 
 		settings.fill = Diligent::FILL_MODE_WIREFRAME;
 		rawrbox::PipelineUtils::createPipeline("Model::Skinned::Wireframe", "Model::Skinned", settings);
