@@ -1,7 +1,7 @@
 
 #include <rawrbox/render/light/manager.hpp>
 
-#include <DirectXMath.h>
+// #include <DirectXMath.h>
 #include <fmt/format.h>
 
 namespace rawrbox {
