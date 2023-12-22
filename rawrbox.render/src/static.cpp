@@ -4,9 +4,6 @@
 namespace rawrbox {
 	// QUICK ACCESS ---
 	uint32_t FRAME = 0;
-
-	bool ENGINE_INITIALIZED = false;
-
 	Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> SHADER_FACTORY;
 
 	rawrbox::RendererBase* RENDERER = nullptr;

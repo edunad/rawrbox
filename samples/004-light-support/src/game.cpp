@@ -3,7 +3,7 @@
 #include <rawrbox/render/light/point.hpp>
 #include <rawrbox/render/light/spot.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
-// #include <rawrbox/render/renderers/cluster.hpp>
+#include <rawrbox/render/plugins/clustered_light.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -27,6 +27,7 @@ namespace light {
 		// Setup renderer
 		auto render = window->createRenderer();
 		render->skipIntros(true);
+		render->addPlugin<rawrbox::ClusteredLightPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;

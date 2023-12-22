@@ -96,6 +96,7 @@ namespace rawrbox {
 		auto context = renderer->context();
 
 		auto& screenSize = renderer->getSize();
+		auto screenSizeF = screenSize.cast<float>();
 
 		// SETUP UNIFORMS ----------------------------
 		Diligent::MapHelper<rawrbox::CameraUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
@@ -113,7 +114,9 @@ namespace rawrbox {
 		CBConstants->gWorldViewProj = CBConstants->gModel * CBConstants->gViewProj;
 
 		CBConstants->gNearFar = {this->getZNear(), this->getZFar()};
-		CBConstants->gScreenSize = screenSize;
+
+		CBConstants->gViewport = {0, 0, screenSize.x, screenSize.y};
+		CBConstants->gViewportInv = {0, 0, 1.F / screenSizeF.x, 1.F / screenSizeF.y};
 
 		CBConstants->gPos = this->getPos();
 		CBConstants->gAngle = this->getAngle();

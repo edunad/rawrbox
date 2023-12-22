@@ -4,7 +4,7 @@
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/enums/draw.hpp>
-#include <rawrbox/render/passes/base.hpp>
+#include <rawrbox/render/plugins/base.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/render/textures/render.hpp>
 
@@ -13,6 +13,7 @@
 #include <DeviceContext.h>
 #include <RenderDevice.h>
 #include <SwapChain.h>
+#include <fmt/printf.h>
 
 #include <filesystem>
 #include <functional>
@@ -28,9 +29,9 @@ namespace rawrbox {
 
 	class RendererBase {
 	protected:
-		// PASSES -----
-		std::vector<std::unique_ptr<rawrbox::RenderPass>> _renderPasses = {};
-		Diligent::RefCntAutoPtr<Diligent::IDeviceContext> _renderPass;
+		// PLUGINS -----
+		std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>> _renderPlugins = {};
+		// --------------
 
 		std::unique_ptr<rawrbox::TextureRender> _render = nullptr;
 		std::unique_ptr<rawrbox::TextureRender> _decals = nullptr;
@@ -41,7 +42,7 @@ namespace rawrbox {
 
 		rawrbox::RawrboxIntro* _currentIntro = nullptr;
 		std::map<std::string, rawrbox::RawrboxIntro> _introList = {{"./assets/textures/rawrbox.webp", {nullptr, 1.4F, false}}}; // rawrbox intro, always the first
-																	//----
+		//----
 
 		std::function<void(const rawrbox::DrawPass& pass)> _drawCall = nullptr;
 		std::function<void(const rawrbox::DrawPass& pass)> _tempRender = nullptr;
@@ -54,6 +55,7 @@ namespace rawrbox {
 		Diligent::NativeWindow _window = {};
 
 		bool _vsync = false;
+		bool _initialized = false;
 
 		Diligent::RENDER_DEVICE_TYPE _type = Diligent::RENDER_DEVICE_TYPE_UNDEFINED;
 
@@ -80,10 +82,6 @@ namespace rawrbox {
 		virtual void introComplete();
 		// ----------------
 
-		// PASSES -----
-		virtual void buildPasses();
-		// ----------------
-
 		virtual void clear();
 		virtual void frame();
 		//  virtual void finalRender();
@@ -102,21 +100,23 @@ namespace rawrbox {
 		virtual void init(Diligent::DeviceFeatures features = {});
 		virtual void resize(const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize);
 
-		/*template <typename T = rawrbox::RenderPass, typename... CallbackArgs>
-		T* addRenderPass(CallbackArgs&&... args) {
+		// PLUGINS ---------------------------
+		template <typename T = rawrbox::RenderPlugin, typename... CallbackArgs>
+		T* addPlugin(CallbackArgs&&... args) {
+			if (this->_initialized) throw std::runtime_error("[RawrBox-Renderer] 'addPlugin' must be called before 'init'!");
 			auto renderPass = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
-			auto renderType = renderPass->getType();
 			auto p = renderPass.get();
 
-			this->_renderPasses[renderType].push_back(std::move(renderPass));
+			this->_renderPlugins[p->getID()] = std::move(renderPass);
+			fmt::print("[RawrBox-Renderer] Registered new plugin '{}'\n", p->getID());
+
 			return p;
-		}*/
+		}
+
+		[[nodiscard]] const rawrbox::RenderPlugin* getPlugin(const std::string& id) const;
+		// -----------------------------------
 
 		virtual void setDrawCall(std::function<void(const rawrbox::DrawPass& pass)> call);
-
-		/*virtual void setWorldRender(std::function<void()> render);
-		virtual void setOverlayRender(std::function<void()> render);
-		virtual void overridePostWorld(std::function<void()> post);*/
 
 		virtual void update();
 		virtual void render();
@@ -126,6 +126,7 @@ namespace rawrbox {
 		void addIntro(const std::filesystem::path& webpPath, float speed = 1.F, bool cover = false);
 		// ----------------
 
+		// CAMERA ------
 		template <class T = rawrbox::CameraBase, typename... CallbackArgs>
 		T* setupCamera(CallbackArgs&&... args) {
 			this->_camera = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
@@ -134,18 +135,20 @@ namespace rawrbox {
 			return dynamic_cast<T*>(this->_camera.get());
 		}
 
-		// Utils ----
 		virtual void setMainCamera(rawrbox::CameraBase* camera) const;
-
 		[[nodiscard]] virtual rawrbox::CameraBase* camera() const;
+		// ----------------
+
+		// Utils ----
 		[[nodiscard]] virtual rawrbox::Stencil* stencil() const;
 
 		[[nodiscard]] virtual Diligent::IDeviceContext* context() const;
 		[[nodiscard]] virtual Diligent::ISwapChain* swapChain() const;
 		[[nodiscard]] virtual Diligent::IRenderDevice* device() const;
 
-		//[[nodiscard]] virtual Diligent::ITextureView* getDepth() const;
-		//[[nodiscard]] virtual Diligent::ITextureView* getColor(bool rt = false) const;
+		[[nodiscard]] virtual Diligent::ITextureView* getDepth() const;
+		[[nodiscard]] virtual Diligent::ITextureView* getColor(bool rt = false) const;
+
 		//[[nodiscard]] virtual const bgfx::TextureHandle getMask() const;
 		//[[nodiscard]] virtual const bgfx::TextureHandle getGPUPick() const;
 

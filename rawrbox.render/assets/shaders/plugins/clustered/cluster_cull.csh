@@ -1,8 +1,4 @@
-
-cbuffer Constants {
-    float4x4 g_View;
-};
-
+#include <camera.fxh>
 #include <light_uniforms.fxh>
 
 #define READ_CLUSTERS
@@ -83,7 +79,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
     uint lightCount = totalLights();
 	uint lightIndex = 0;
 
-    float3 lightDir = mul(float4(0, 0, 0, 1.0), g_View).xyz;
+    float3 lightDir = mul(float4(0, 0, 0, 1.0), g_view).xyz;
 
     // https://github.com/simco50/D3D12_Research/blob/master/D3D12/Resources/Shaders/ClusteredLightCulling.hlsl
     [loop]
@@ -93,14 +89,14 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
         [loop]
         for(uint i = 0; i < 32 && lightIndex < lightCount; ++i) {
             Light light = g_Lights[lightIndex];
-            light.position = mul(float4(light.position, 1.0), g_View).xyz;
+            light.position = mul(float4(light.position, 1.0), g_view).xyz;
 
             if(light.type == LIGHT_POINT) {
                 if(SphereInAABB(light, cluster)) {
                     lightMask |= 1u << i;
                 }
             } else if(light.type == LIGHT_SPOT) {
-                light.direction = mul(float4(light.direction, 1.0), g_View).xyz;
+                light.direction = mul(float4(light.direction, 1.0), g_view).xyz;
                 light.direction.xyz = normalize(light.direction - lightDir);
 
                 if(ConeInSphere(light, cluster)) {

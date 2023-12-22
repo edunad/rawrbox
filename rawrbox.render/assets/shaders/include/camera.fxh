@@ -14,8 +14,10 @@
         float4x4 g_model;
         float4x4 g_worldViewProj;
 
-        float2   g_nearFar;
-        int2     g_screenSize;
+        float4   g_nearFar;
+
+        int4     g_viewport;
+        float4   g_viewportInv;
 
         float4   g_cameraPos;
         float4   g_cameraAngle;

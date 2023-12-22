@@ -1,0 +1,41 @@
+#pragma once
+
+#include <rawrbox/math/vector2.hpp>
+#include <rawrbox/render/enums/draw.hpp>
+
+#include <GraphicsTypes.h>
+#include <RenderPass.h>
+#include <TextureView.h>
+
+#include <string>
+
+namespace rawrbox {
+	class RenderPlugin {
+	protected:
+		bool _enabled = true;
+
+	public:
+		RenderPlugin() = default;
+		RenderPlugin(const RenderPlugin&) = default;
+		RenderPlugin(RenderPlugin&&) = delete;
+		RenderPlugin& operator=(const RenderPlugin&) = default;
+		RenderPlugin& operator=(RenderPlugin&&) = delete;
+		virtual ~RenderPlugin() = default;
+
+		// UTILS ----
+		virtual void setEnabled(bool enabled);
+		[[nodiscard]] virtual bool isEnabled() const;
+		[[nodiscard]] virtual const std::string getID() const;
+		// ----------
+
+		virtual void requirements(Diligent::DeviceFeatures& features);
+
+		virtual void initialize(const rawrbox::Vector2i& renderSize);
+		virtual void resize(const rawrbox::Vector2i& renderSize);
+
+		virtual void preRender();
+		virtual void postRender(Diligent::ITextureView* renderTarget);
+
+		virtual void update();
+	};
+} // namespace rawrbox

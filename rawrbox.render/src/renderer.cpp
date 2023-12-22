@@ -60,6 +60,13 @@ namespace rawrbox {
 		features.WireframeFill = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		// --------------
 
+		// PLUGIN REQUIREMENTS ---
+		for (auto& plugin : this->_renderPlugins) {
+			if (plugin.second == nullptr) continue;
+			plugin.second->requirements(features);
+		}
+		// -----------------------
+
 		// Initialize engine -----
 		switch (this->_type) {
 #if RAWRBOX_SUPPORT_DX11
@@ -180,23 +187,18 @@ namespace rawrbox {
 		if (this->_camera != nullptr) this->_camera->initialize();
 		// ------------------
 
-		// Setup viewport ---
-		Diligent::Viewport VP{static_cast<uint32_t>(this->_size.x), static_cast<uint32_t>(this->_size.x)};
-		this->_context->SetViewports(1, &VP, VP.Width, VP.Height);
-		// ------------------
-
 		// Setup stencil ----
-		this->_stencil = std::make_unique<rawrbox::Stencil>(this->_size);
+		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
 		this->_stencil->upload();
 		// ------------------
 
 		// Setup renderer --
-		this->_render = std::make_unique<rawrbox::TextureRender>(this->_size); // TODO: RESCALE
+		this->_render = std::make_unique<rawrbox::TextureRender>(this->getSize()); // TODO: RESCALE
 		this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
 		// --------
 
 		// Setup decals --
-		this->_decals = std::make_unique<rawrbox::TextureRender>(this->_size); // TODO: RESCALE
+		this->_decals = std::make_unique<rawrbox::TextureRender>(this->getSize()); // TODO: RESCALE
 		this->_decals->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
 		//  rawrbox::DECALS::init();
 		// --------
@@ -208,31 +210,26 @@ namespace rawrbox {
 		rawrbox::MaterialSkinned::init();
 		// -----
 
-		// Initialize passes --
-		/*for (auto& passTypes : this->_renderPasses) {
-			for (auto& pass : passTypes.second) {
-				if (pass == nullptr) continue;
-				pass->initialize(this->_size);
-			}
-		}*/
-		this->buildPasses();
-		// --------------------
+		// PLUGIN INITIALIZE ---
+		for (auto& plugin : this->_renderPlugins) {
+			if (plugin.second == nullptr) continue;
+			plugin.second->initialize(this->getSize());
+		}
+		// -----------------------
 
 		this->playIntro();
-		rawrbox::ENGINE_INITIALIZED = true;
+		this->_initialized = true;
 	}
 
 	void RendererBase::resize(const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize) {
 		if (this->_swapChain == nullptr) return;
 		this->_swapChain->Resize(size.x, size.y);
 
-		// Resize passes --
-		/*for (auto& passTypes : this->_renderPasses) {
-			for (auto& pass : passTypes.second) {
-				if (pass == nullptr) continue;
-				pass->resize(size);
-			}
-		}*/
+		// Resize plugins --
+		for (auto& plugin : this->_renderPlugins) {
+			if (plugin.second == nullptr) continue;
+			plugin.second->resize(size);
+		}
 		// --------------------
 
 		if (this->_stencil != nullptr) this->_stencil->resize(size);
@@ -240,6 +237,14 @@ namespace rawrbox {
 		this->_size = size;
 		this->_monitorSize = monitorSize;
 	}
+
+	// PLUGINS ---------------------------
+	const rawrbox::RenderPlugin* RendererBase::getPlugin(const std::string& id) const {
+		auto fnd = this->_renderPlugins.find(id);
+		if (fnd == this->_renderPlugins.end()) return nullptr;
+		return fnd->second.get();
+	}
+	// --------------------
 
 	void RendererBase::setDrawCall(std::function<void(const rawrbox::DrawPass& pass)> call) { this->_drawCall = call; }
 
@@ -265,16 +270,14 @@ namespace rawrbox {
 			if (this->_camera != nullptr) {
 				this->_camera->update();
 			}
-		}
 
-		// Update passes --
-		/*for (auto& passTypes : this->_renderPasses) {
-			for (auto& pass : passTypes.second) {
-				if (pass == nullptr || !pass->isEnabled()) continue;
-				pass->update();
+			// Update plugins --
+			for (auto& plugin : this->_renderPlugins) {
+				if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+				plugin.second->update();
 			}
-		}*/
-		// --------------------
+			// --------------------
+		}
 	}
 
 	void RendererBase::render() {
@@ -285,52 +288,36 @@ namespace rawrbox {
 		this->clear();
 		// ---------------------
 
-		// Perform renderpasses --
-		/*for (auto& passTypes : this->_renderPasses) {
-			for (auto& pass : passTypes.second) {
-				if (pass == nullptr || !pass->isEnabled()) continue;
-			}
-		}*/
+		// Perform pre-render --
+		for (auto& plugin : this->_renderPlugins) {
+			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+			plugin.second->preRender();
+		}
 		// -----------------------
 
+		this->_render->startRecord();
 		// Perform calls --
 		this->_drawCall(rawrbox::DrawPass::PASS_OPAQUE);
-		this->_drawCall(rawrbox::DrawPass::PASS_TRANSPARENT);
-		// -----------------
+		//  -----------------
+		this->_render->stopRecord();
+
+		// Perform post-render --
+		for (auto& plugin : this->_renderPlugins) {
+			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+			plugin.second->postRender(this->_render->getHandle());
+		}
+		// -----------------------
+
+		// Render world ----
+		rawrbox::RenderUtils::renderQUAD(this->_render->getHandle());
+		// rawrbox::RenderUtils::drawQUAD(this->_decals->getHandle(), this->_size, true, BGFX_STATE_BLEND_ALPHA);
+		// ------------------
 
 		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
 
 		// Submit ---
 		this->frame();
 		// ---------------------
-
-		/*if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Failed to bind swapChain/context/device! Did you call 'init' ?");
-
-		if (this->worldRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] World render method not set! Did you call 'setWorldRender' ?");
-		if (this->overlayRender == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Overlay render method not set! Did you call 'setOverlayRender' ?");
-
-		// Clear backbuffer ----
-		this->clear();
-		// ---------------------
-
-		// No world / overlay only
-		if (this->_camera == nullptr) {
-			this->overlayRender();
-			this->frame();
-			return;
-		}
-
-		// Final Pass -------------
-		this->finalRender();
-		// ------------------------
-
-		// Check GPU Picking -----
-		// this->gpuCheck();
-		// -------------------
-
-		// Submit ---
-		this->frame();
-		// ----------*/
 	}
 
 	void RendererBase::clear() {
@@ -351,11 +338,6 @@ namespace rawrbox {
 		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
 		rawrbox::FRAME++;
 	}
-
-	// PASSES -----
-	void RendererBase::buildPasses() {
-	}
-	// ----------------
 
 	/*void RendererBase::gpuCheck() {
 		if (this->_gpuReadFrame == rawrbox::BGFX_FRAME) {
@@ -394,95 +376,6 @@ namespace rawrbox {
 
 			this->_gpuPickCallbacks.clear();
 		}
-	}*/
-
-	/*void RendererBase::finalRender() {
-		// Record world ---
-		this->_render->startRecord();
-		this->worldRender();
-		this->_render->stopRecord();
-		//  ----------------
-
-		// Record decals ---
-		// this->_decals->startRecord();
-		// rawrbox::DECALS::draw();
-		// this->_decals->stopRecord();
-
-		// Render world ---
-		if (this->postRender == nullptr) {
-			rawrbox::RenderUtils::renderQUAD(this->_render->getHandle());
-		} else {
-			this->postRender();
-		}
-		// rawrbox::RenderUtils::drawQUAD(this->_decals->getHandle(), this->_size, true, BGFX_STATE_BLEND_ALPHA);
-		//  ----------------
-
-		this->overlayRender();
-
-		// Record world ---
-		this->_render->startRecord();
-		this->worldRender();
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, rawrbox::MAIN_CAMERA->getViewMtx().data(), rawrbox::MAIN_CAMERA->getProjMtx().data());
-		this->_render->stopRecord();
-		// ----------------
-
-		// Record decals ---
-		this->_decals->startRecord();
-		rawrbox::DECALS::draw();
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, rawrbox::MAIN_CAMERA->getViewMtx().data(), rawrbox::MAIN_CAMERA->getProjMtx().data());
-		this->_decals->stopRecord();
-		// -------------------
-
-		// Render world ---
-		auto prevId = rawrbox::CURRENT_VIEW_ID;
-		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_WORLD_VIEW;
-		// ---
-
-		if (this->postRender == nullptr) {
-			rawrbox::RenderUtils::drawQUAD(this->_render->getHandle(), this->_size);
-			rawrbox::RenderUtils::drawQUAD(this->_decals->getHandle(), this->_size, true, BGFX_STATE_BLEND_ALPHA);
-		} else {
-			this->postRender();
-		}
-
-		// -----------------
-
-		// Restore id -----
-		rawrbox::CURRENT_VIEW_ID = prevId;
-		bgfx::discard(BGFX_DISCARD_ALL);
-		// ------------------------
-
-		// Render overlay ---
-		prevId = rawrbox::CURRENT_VIEW_ID;
-		rawrbox::CURRENT_VIEW_ID = rawrbox::MAIN_OVERLAY_VIEW;
-		// ---
-		bgfx::setViewTransform(rawrbox::CURRENT_VIEW_ID, nullptr, nullptr);
-		this->overlayRender();
-		// ----------------
-
-		// Restore id -----
-		rawrbox::CURRENT_VIEW_ID = prevId;
-		bgfx::discard(BGFX_DISCARD_ALL);
-		// ------------------------
-	}
-
-	void RendererBase::clear() {
-		if (this->_swapChain == nullptr || this->_context == nullptr) return;
-
-		auto* pRTV = this->_swapChain->GetCurrentBackBufferRTV();
-		auto* pDSV = this->_swapChain->GetDepthBufferDSV();
-
-		// Reset render target
-		this->_context->SetRenderTargets(1, &pRTV, pDSV, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-		// Clear the back buffer
-		this->_context->ClearRenderTarget(pRTV, this->_clearColor.data().data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-		this->_context->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG, 1.F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-	}
-
-	void RendererBase::frame() {
-		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
-		rawrbox::FRAME++;
 	}*/
 
 	// INTRO ------
@@ -562,13 +455,13 @@ namespace rawrbox {
 	Diligent::ISwapChain* RendererBase::swapChain() const { return this->_swapChain; }
 	Diligent::IRenderDevice* RendererBase::device() const { return this->_device; }
 
-	/*Diligent::ITextureView* RendererBase::getDepth() const {
+	Diligent::ITextureView* RendererBase::getDepth() const {
 		return this->_render->getDepth();
 	}
 
 	Diligent::ITextureView* RendererBase::getColor(bool rt) const {
 		return rt ? this->_render->getRT() : this->_render->getHandle();
-	}*/
+	}
 
 	/*const bgfx::TextureHandle RendererBase::getMask() const {
 		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;

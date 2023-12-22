@@ -26,8 +26,6 @@ namespace rawrbox {
 	// QUICK ACCESS ---
 	extern uint32_t FRAME;
 
-	extern bool ENGINE_INITIALIZED;
-
 	extern Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> SHADER_FACTORY;
 
 	extern rawrbox::RendererBase* RENDERER;

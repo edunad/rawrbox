@@ -22,8 +22,10 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 gModel = {};
 		rawrbox::Matrix4x4 gWorldViewProj = {};
 
-		rawrbox::Vector2f gNearFar = {};
-		rawrbox::Vector2i gScreenSize = {};
+		rawrbox::Vector4f gNearFar = {};
+
+		rawrbox::Vector4i gViewport = {};
+		rawrbox::Vector4f gViewportInv = {};
 
 		rawrbox::Vector4f gPos = {};
 		rawrbox::Vector4f gAngle = {};

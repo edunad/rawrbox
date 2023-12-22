@@ -1,20 +1,11 @@
 
-cbuffer Constants {
-    float2   g_ZNearFarVec;
-    float2   g_ScreenSizeInv;
-	// ------
-    float4x4 g_InvProj;
-	// ------
-};
-
-#define ZNear g_ZNearFarVec.x
-#define ZFar g_ZNearFarVec.y
+#include <camera.fxh>
 
 #define WRITE_CLUSTERS
 #include <cluster.fxh>
 
 float GetDepthFromSlice(uint slice) {
-	return ZFar * pow(ZNear / ZFar, (float)slice / (float)CLUSTERS_Z);
+	return g_nearFar.y * pow(g_nearFar.x / g_nearFar.y, (float)slice / (float)CLUSTERS_Z);
 }
 
 float3 LineFromOriginZIntersection(float3 lineFromOrigin, float depth) {
@@ -36,8 +27,8 @@ ClusterAABB ComputeCluster(uint3 clusterIndex3D) {
 	float2 minPoint_SS = float2(clusterIndex3D.x * CLUSTER_TEXTEL_SIZE, clusterIndex3D.y * CLUSTER_TEXTEL_SIZE);
 	float2 maxPoint_SS = float2((clusterIndex3D.x + 1) * CLUSTER_TEXTEL_SIZE, (clusterIndex3D.y + 1) * CLUSTER_TEXTEL_SIZE);
 
-	float3 minPoint_VS = ScreenToView(float4(minPoint_SS, 0, 1), g_ScreenSizeInv, g_ZNearFarVec, g_InvProj).xyz;
-	float3 maxPoint_VS = ScreenToView(float4(maxPoint_SS, 0, 1), g_ScreenSizeInv, g_ZNearFarVec, g_InvProj).xyz;
+	float3 minPoint_VS = ScreenToView(float4(minPoint_SS, 0, 1), g_viewportInv, g_nearFar.xy, g_projInv).xyz;
+	float3 maxPoint_VS = ScreenToView(float4(maxPoint_SS, 0, 1), g_viewportInv, g_nearFar.xy, g_projInv).xyz;
 
 	float farZ = GetDepthFromSlice(clusterIndex3D.z);
 	float nearZ = GetDepthFromSlice(clusterIndex3D.z + 1);

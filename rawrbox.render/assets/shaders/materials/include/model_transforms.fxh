@@ -81,7 +81,7 @@
             // vertex_snap mode
             #ifdef TRANSFORM_PSX
                 if(VertexSnap != 0.) {
-                    data.final = PSXTransform(mul(data.pos, proj), g_screenSize.xy / VertexSnap);
+                    data.final = PSXTransform(mul(data.pos, proj), g_viewport.zw / VertexSnap);
                 } else {
                     data.final = mul(data.pos, proj);
                 }
