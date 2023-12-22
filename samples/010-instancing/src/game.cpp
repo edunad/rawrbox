@@ -93,12 +93,14 @@ namespace instance_test {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-		this->_model.reset();
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
+			rawrbox::Window::shutdown();
+		} else {
+			rawrbox::RESOURCES::shutdown();
+			rawrbox::ASYNC::shutdown();
+		}
 
-		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
-		rawrbox::Window::shutdown();
+		this->_model.reset();
 	}
 
 	void Game::pollEvents() {

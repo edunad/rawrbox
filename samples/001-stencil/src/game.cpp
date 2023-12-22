@@ -122,7 +122,12 @@ namespace stencil {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
+			rawrbox::Window::shutdown();
+		} else {
+			rawrbox::RESOURCES::shutdown();
+			rawrbox::ASYNC::shutdown();
+		}
 
 		this->_texture = nullptr;
 		this->_texture2 = nullptr;
@@ -136,10 +141,6 @@ namespace stencil {
 		this->_font3 = nullptr;
 
 		this->_markdown.reset();
-
-		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
-		rawrbox::Window::shutdown();
 	}
 
 	void Game::pollEvents() {

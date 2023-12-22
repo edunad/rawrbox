@@ -77,7 +77,7 @@ namespace rawrbox {
 
 		// INTRO ------
 		virtual void playIntro();
-		virtual void completeIntro();
+		virtual void introComplete();
 		// ----------------
 
 		// PASSES -----

@@ -299,7 +299,12 @@ namespace model {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
+			rawrbox::Window::shutdown();
+		} else {
+			rawrbox::RESOURCES::shutdown();
+			rawrbox::ASYNC::shutdown();
+		}
 
 		this->_model.reset();
 		this->_bboxes.reset();
@@ -307,10 +312,6 @@ namespace model {
 		this->_sprite.reset();
 		this->_spline.reset();
 		this->_text.reset();
-
-		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
-		rawrbox::Window::shutdown();
 	}
 
 	void Game::pollEvents() {

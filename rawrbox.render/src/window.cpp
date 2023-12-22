@@ -82,6 +82,8 @@ namespace rawrbox {
 	}
 
 	void Window::shutdown() {
+		__WINDOWS.clear();
+
 		glfwPostEmptyEvent();
 		glfwTerminate();
 	}

@@ -136,7 +136,12 @@ namespace assimp {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
+			rawrbox::Window::shutdown();
+		} else {
+			rawrbox::RESOURCES::shutdown();
+			rawrbox::ASYNC::shutdown();
+		}
 
 		this->_model.reset();
 		this->_model2.reset();
@@ -147,10 +152,6 @@ namespace assimp {
 		this->_modelGrid.reset();
 
 		this->_text.reset();
-
-		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
-		rawrbox::Window::shutdown();
 	}
 
 	void Game::pollEvents() {

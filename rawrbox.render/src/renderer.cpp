@@ -251,7 +251,7 @@ namespace rawrbox {
 				// Done?
 				if (this->_introList.empty()) {
 					this->setDrawCall(this->_tempRender);
-					this->completeIntro();
+					this->introComplete();
 				} else {
 					this->_currentIntro = &this->_introList.begin()->second;
 					this->_introComplete = false;
@@ -488,7 +488,7 @@ namespace rawrbox {
 	// INTRO ------
 	void RendererBase::playIntro() {
 		if (this->_skipIntros) {
-			this->completeIntro();
+			this->introComplete();
 			return;
 		}
 
@@ -534,7 +534,7 @@ namespace rawrbox {
 		// -------------------------
 	}
 
-	void RendererBase::completeIntro() {
+	void RendererBase::introComplete() {
 		this->_introList.clear();
 		this->_currentIntro = nullptr;
 		this->_introComplete = true;
@@ -549,13 +549,7 @@ namespace rawrbox {
 
 	void RendererBase::addIntro(const std::filesystem::path& webpPath, float speed, bool cover) {
 		if (webpPath.extension() != ".webp") throw std::runtime_error(fmt::format("[RawrBox-RenderBase] Invalid intro '{}', format needs to be .webp!", webpPath.generic_string()));
-
-		rawrbox::RawrboxIntro intro;
-		intro.cover = cover;
-		intro.speed = speed;
-		intro.texture = nullptr;
-
-		this->_introList[webpPath.generic_string()] = intro;
+		this->_introList[webpPath.generic_string()] = {nullptr, speed, cover};
 	}
 	//-------------------------
 
