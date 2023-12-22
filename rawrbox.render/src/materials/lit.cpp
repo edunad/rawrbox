@@ -1,118 +1,138 @@
-/*#include <rawrbox/render/light/manager.hpp>
+#include <rawrbox/render/light/manager.hpp>
 #include <rawrbox/render/materials/lit.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
 namespace rawrbox {
 	// STATIC DATA ----
+#ifdef _DEBUG
+	int MaterialLit::DEBUG_LEVEL = 0;
+#endif
+
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialLit::_uniforms;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialLit::_uniforms_pixel;
+
+	bool MaterialLit::_built = false;
 	// ----------------
 
 	void MaterialLit::init() {
-		auto cluster = dynamic_cast<rawrbox::RendererCluster*>(rawrbox::RENDERER);
-		if (cluster == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] This material requires the `clustered` renderer");
+		if (!_built) {
+			fmt::print("[RawrBox-MaterialLit] Building material..\n");
 
-		// Uniforms -------
-		{
-			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::MaterialLit::Uniforms";
-			CBDesc.Size = sizeof(rawrbox::MaterialLitUniforms);
-			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+			auto cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredLightPlugin>("Clustered::Light");
+			if (cluster == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] This material requires the `ClusteredLightPlugin` renderer plugin");
 
-			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &_uniforms);
-		}
+			// Uniforms -------
+			{
+				Diligent::BufferDesc CBDesc;
+				CBDesc.Name = "rawrbox::MaterialLit::Uniforms";
+				CBDesc.Size = sizeof(rawrbox::MaterialBaseUniforms);
+				CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+				CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+				CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-		{
-			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::MaterialLit::Uniforms::Pixel";
-			CBDesc.Size = sizeof(rawrbox::MaterialLitPixelUniforms);
-			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+				rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &_uniforms);
+			}
 
-			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &_uniforms_pixel);
-		}
-		// ------------
+			{
+				Diligent::BufferDesc CBDesc;
+				CBDesc.Name = "rawrbox::MaterialLit::Uniforms::Pixel";
+				CBDesc.Size = sizeof(rawrbox::MaterialLitPixelUniforms);
+				CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+				CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+				CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-		// PIPELINE ----
-		rawrbox::PipeSettings settings;
-		settings.pVS = "lit.vsh";
-		settings.pPS = "lit.psh";
-		settings.macros = cluster->getClusterMacros();
-		settings.layout = rawrbox::VertexNormData::vLayout();
-		settings.immutableSamplers = {{Diligent::SHADER_TYPE_VERTEX, "g_Displacement"}, {Diligent::SHADER_TYPE_PIXEL, "g_Normal"}, {Diligent::SHADER_TYPE_PIXEL, "g_Specular"}};
+				rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &_uniforms_pixel);
+			}
+			// ------------
 
-		settings.resources = {
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		    {Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Normal", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Specular", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Emission", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+			// PIPELINE ----
+			rawrbox::PipeSettings settings;
+			settings.pVS = "lit.vsh";
+			settings.pPS = "lit.psh";
+			settings.macros = cluster->getClusterMacros();
+			settings.layout = rawrbox::VertexNormData::vLayout();
+			settings.immutableSamplers = {{Diligent::SHADER_TYPE_VERTEX, "g_Displacement"}, {Diligent::SHADER_TYPE_PIXEL, "g_Normal"}, {Diligent::SHADER_TYPE_PIXEL, "g_Specular"}};
 
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Lights", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "g_ClusterDataGrid", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+			settings.resources = {
+			    {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+			    {Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+			    {Diligent::SHADER_TYPE_PIXEL, "g_Normal", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+			    {Diligent::SHADER_TYPE_PIXEL, "g_Specular", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+			    {Diligent::SHADER_TYPE_PIXEL, "g_Emission", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 
-		    {Diligent::SHADER_TYPE_VERTEX, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "LightConstants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC}};
+			    {Diligent::SHADER_TYPE_PIXEL, "g_Lights", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+			    {Diligent::SHADER_TYPE_PIXEL, "g_ClusterDataGrid", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
-		settings.uniforms = {
-		    {Diligent::SHADER_TYPE_VERTEX, _uniforms, "Constants"},
-		    {Diligent::SHADER_TYPE_PIXEL, _uniforms_pixel, "Constants"},
-		    {Diligent::SHADER_TYPE_PIXEL, rawrbox::LIGHTS::uniforms, "LightConstants"},
-		    {Diligent::SHADER_TYPE_PIXEL, rawrbox::LIGHTS::getBuffer(), "g_Lights"},
-		    {Diligent::SHADER_TYPE_PIXEL, cluster->getDataGridBuffer(), "g_ClusterDataGrid"}};
+			    {Diligent::SHADER_TYPE_PIXEL, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+			    {Diligent::SHADER_TYPE_PIXEL, "Camera", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+			    {Diligent::SHADER_TYPE_PIXEL, "LightConstants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
-		settings.fill = Diligent::FILL_MODE_SOLID;
-		rawrbox::PipelineUtils::createPipeline("Model::Lit", "Model::Lit", settings);
+			    {Diligent::SHADER_TYPE_VERTEX, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+			    {Diligent::SHADER_TYPE_VERTEX, "Camera", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+			};
 
-		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipeline("Model::Lit::Alpha", "Model::Lit", settings);
+			settings.uniforms = {
+			    {Diligent::SHADER_TYPE_VERTEX, _uniforms, "Constants"},
+			    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
 
-		settings.fill = Diligent::FILL_MODE_SOLID;
-		settings.cull = Diligent::CULL_MODE_BACK;
-		settings.blending = {};
-		rawrbox::PipelineUtils::createPipeline("Model::Lit::CullBack", "Model::Lit", settings);
+			    {Diligent::SHADER_TYPE_PIXEL, _uniforms_pixel, "Constants"},
+			    {Diligent::SHADER_TYPE_PIXEL, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
 
-		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipeline("Model::Lit::CullBack::Alpha", "Model::Lit", settings);
+			    {Diligent::SHADER_TYPE_PIXEL, rawrbox::LIGHTS::uniforms, "LightConstants"},
+			    {Diligent::SHADER_TYPE_PIXEL, rawrbox::LIGHTS::getBuffer(), "g_Lights"},
+			    {Diligent::SHADER_TYPE_PIXEL, cluster->getDataGridBuffer(), "g_ClusterDataGrid"}};
 
-		settings.cull = Diligent::CULL_MODE_NONE;
-		settings.blending = {};
-		rawrbox::PipelineUtils::createPipeline("Model::Lit::CullNone", "Model::Lit", settings);
+			settings.fill = Diligent::FILL_MODE_SOLID;
+			rawrbox::PipelineUtils::createPipeline("Model::Lit", "Model::Lit", settings);
 
-		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipeline("Model::Lit::CullNone::Alpha", "Model::Lit", settings);
+			settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+			rawrbox::PipelineUtils::createPipeline("Model::Lit::Alpha", "Model::Lit", settings);
+
+			settings.fill = Diligent::FILL_MODE_SOLID;
+			settings.cull = Diligent::CULL_MODE_BACK;
+			settings.blending = {};
+			rawrbox::PipelineUtils::createPipeline("Model::Lit::CullBack", "Model::Lit", settings);
+
+			settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+			rawrbox::PipelineUtils::createPipeline("Model::Lit::CullBack::Alpha", "Model::Lit", settings);
+
+			settings.cull = Diligent::CULL_MODE_NONE;
+			settings.blending = {};
+			rawrbox::PipelineUtils::createPipeline("Model::Lit::CullNone", "Model::Lit", settings);
+
+			settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+			rawrbox::PipelineUtils::createPipeline("Model::Lit::CullNone::Alpha", "Model::Lit", settings);
 
 #ifdef _DEBUG
-		rawrbox::PipeSettings debugSettings;
+			rawrbox::PipeSettings debugSettings;
 
-		debugSettings.layout = rawrbox::VertexNormData::vLayout();
-		debugSettings.macros = cluster->getClusterMacros();
-		debugSettings.pVS = "lit_debug.vsh";
-		debugSettings.pPS = "cluster_debug_clusters.psh";
+			debugSettings.layout = rawrbox::VertexNormData::vLayout();
+			debugSettings.macros = cluster->getClusterMacros();
+			debugSettings.pVS = "lit_debug.vsh";
+			debugSettings.pPS = "cluster_debug_clusters.psh";
 
-		debugSettings.resources = {
-		    {Diligent::SHADER_TYPE_VERTEX, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+			debugSettings.resources = {
+			    {Diligent::SHADER_TYPE_VERTEX, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+			    {Diligent::SHADER_TYPE_PIXEL, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
-		    {Diligent::SHADER_TYPE_PIXEL, "g_ClusterDataGrid", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC}};
+			    {Diligent::SHADER_TYPE_VERTEX, "Camera", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
-		debugSettings.uniforms = {
-		    {Diligent::SHADER_TYPE_VERTEX, _uniforms, "Constants"},
-		    {Diligent::SHADER_TYPE_PIXEL, _uniforms_pixel, "Constants"},
+			    {Diligent::SHADER_TYPE_PIXEL, "g_ClusterDataGrid", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC}};
 
-		    {Diligent::SHADER_TYPE_PIXEL, cluster->getDataGridBuffer(), "g_ClusterDataGrid"}};
+			debugSettings.uniforms = {
+			    {Diligent::SHADER_TYPE_VERTEX, _uniforms, "Constants"},
+			    {Diligent::SHADER_TYPE_PIXEL, _uniforms_pixel, "Constants"},
 
-		rawrbox::PipelineUtils::createPipeline("Model::Lit::Debug::Cluster", "Model::Lit::Debug::Cluster", debugSettings);
+			    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
+
+			    {Diligent::SHADER_TYPE_PIXEL, cluster->getDataGridBuffer(), "g_ClusterDataGrid"}};
+
+			rawrbox::PipelineUtils::createPipeline("Model::Lit::Debug::Cluster", "Model::Lit::Debug::Cluster", debugSettings);
 #endif
-		// -----
-	}
+			// -----
+			_built = true;
+		}
 
-	void MaterialLit::prepareMaterial() {
-		// Not a fan, but had to move it away from static, since we want to override them
 		if (this->_base == nullptr) this->_base = rawrbox::PipelineUtils::getPipeline("Model::Lit");
 		if (this->_base_alpha == nullptr) this->_base_alpha = rawrbox::PipelineUtils::getPipeline("Model::Lit::Alpha");
 
@@ -132,10 +152,9 @@ namespace rawrbox {
 	void MaterialLit::bindShaderResources() {
 		auto context = rawrbox::RENDERER->context();
 #ifdef _DEBUG
-		switch (rawrbox::RENDERER->DEBUG_LEVEL) {
-			case 1:
-				context->CommitShaderResources(this->_bind_debug_cluster, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-				return;
+		if (DEBUG_LEVEL == 1) {
+			context->CommitShaderResources(this->_bind_debug_cluster, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			return;
 		}
 #endif
 
@@ -143,4 +162,3 @@ namespace rawrbox {
 		context->CommitShaderResources(this->_bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 } // namespace rawrbox
-*/

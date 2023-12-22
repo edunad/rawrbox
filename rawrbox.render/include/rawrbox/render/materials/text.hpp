@@ -9,9 +9,7 @@ namespace rawrbox {
 
 	class MaterialText3D : public rawrbox::MaterialUnlit {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-
-	protected:
-		void prepareMaterial() override;
+		static bool _build;
 
 	public:
 		using vertexBufferType = rawrbox::VertexData;
@@ -23,7 +21,7 @@ namespace rawrbox {
 		MaterialText3D& operator=(MaterialText3D&&) = delete;
 		~MaterialText3D() override = default;
 
-		static void init();
+		void init() override;
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
@@ -37,7 +35,7 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData>
 		void bindTexture(const rawrbox::Mesh<T>& mesh) {
-			this->prepareMaterial();
+			if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialText3D] Material not bound, did you call 'init'?");
 			auto context = rawrbox::RENDERER->context();
 
 			if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {

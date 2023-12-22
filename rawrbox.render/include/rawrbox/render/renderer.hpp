@@ -113,7 +113,12 @@ namespace rawrbox {
 			return p;
 		}
 
-		[[nodiscard]] const rawrbox::RenderPlugin* getPlugin(const std::string& id) const;
+		template <typename T = rawrbox::RenderPlugin>
+		[[nodiscard]] T* getPlugin(const std::string& id) const {
+			auto fnd = this->_renderPlugins.find(id);
+			if (fnd == this->_renderPlugins.end()) return nullptr;
+			return dynamic_cast<T*>(fnd->second.get());
+		}
 		// -----------------------------------
 
 		virtual void setDrawCall(std::function<void(const rawrbox::DrawPass& pass)> call);
@@ -158,10 +163,5 @@ namespace rawrbox {
 
 		// virtual void gpuPick(const rawrbox::Vector2i& pos, std::function<void(uint32_t)> callback);
 		//  ------
-
-		/*template <typename T>
-		void bindUniforms(Diligent::MapHelper<T>& helper) {
-			throw std::runtime_error("[RawrBox-Renderer] bindUniforms not implemented");
-		}*/
 	};
 } // namespace rawrbox

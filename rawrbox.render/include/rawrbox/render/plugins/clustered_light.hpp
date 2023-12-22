@@ -50,8 +50,8 @@ namespace rawrbox {
 
 		rawrbox::Matrix4x4 _oldProj = {};
 
-		void buildBuffers();
-		void buildPipelines();
+		virtual void buildBuffers();
+		virtual void buildPipelines();
 
 	public:
 		static uint32_t CLUSTERS_X;
@@ -67,10 +67,10 @@ namespace rawrbox {
 		~ClusteredLightPlugin() override;
 
 		// UTILS ----
-		Diligent::ShaderMacroHelper getClusterMacros();
+		virtual Diligent::ShaderMacroHelper getClusterMacros();
 
-		Diligent::IBufferView* getClustersBuffer(bool readOnly = true);
-		Diligent::IBufferView* getDataGridBuffer(bool readOnly = true);
+		virtual Diligent::IBufferView* getClustersBuffer(bool readOnly = true);
+		virtual Diligent::IBufferView* getDataGridBuffer(bool readOnly = true);
 		// ----------
 
 		[[nodiscard]] const std::string getID() const override;

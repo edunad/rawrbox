@@ -109,7 +109,7 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] const std::array<NumberType, 4> data() const {
+		[[nodiscard]] const std::array<NumberType, 4> array() const {
 			return {r, g, b, a};
 		}
 

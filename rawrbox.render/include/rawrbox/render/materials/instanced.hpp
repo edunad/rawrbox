@@ -6,12 +6,10 @@ namespace rawrbox {
 
 	class MaterialInstanced : public rawrbox::MaterialUnlit {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
+		static bool _built;
 
 	public:
 		using vertexBufferType = rawrbox::VertexData;
-
-	protected:
-		void prepareMaterial() override;
 
 	public:
 		MaterialInstanced() = default;
@@ -20,6 +18,8 @@ namespace rawrbox {
 		MaterialInstanced(const MaterialInstanced&) = delete;
 		MaterialInstanced& operator=(const MaterialInstanced&) = delete;
 		~MaterialInstanced() override = default;
+
+		void init() override;
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
@@ -30,8 +30,6 @@ namespace rawrbox {
 			this->bindBaseUniforms<T, rawrbox::MaterialBaseUniforms>(mesh, CBConstants);
 			// ------------
 		}
-
-		static void init();
 	};
 
 } // namespace rawrbox

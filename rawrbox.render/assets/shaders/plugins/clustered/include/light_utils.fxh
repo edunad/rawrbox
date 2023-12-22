@@ -34,17 +34,15 @@ float3 GetAmbientLight() {
     return g_AmbientColor.rgb;
 }
 
-#ifdef CLUSTER_UNIFORMS
-#ifdef CLUSTER_DATA_GRID
-uint GetSliceFromDepth(float depth) {
-	return floor(log(depth) * g_LightGridParams.x - g_LightGridParams.y);
+uint GetSliceFromDepth(float depth, float2 lightGrid) {
+	return floor(log(depth) * lightGrid.x - lightGrid.y);
 }
 
-float3 ApplyLight(float4 pos, float4 worldPos, float3 norm, float3 viewDir, float specular, float reflection) {
+float3 ApplyLight(float4 pos, float4 worldPos, float3 norm, float3 viewDir, float specular, float reflection, float2 lightGrid) {
 	if(g_LightSettings.x == 0.0) {
 		float3 radianceOut = float3(0.0, 0.0, 0.0);
 
-		uint3 clusterIndex3D = uint3(floor(pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(pos.w));
+		uint3 clusterIndex3D = uint3(floor(pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(pos.w, lightGrid));
 		uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
 
 		uint lightGridOffset = tileIndex * CLUSTERED_LIGHTING_NUM_BUCKETS;
@@ -111,8 +109,4 @@ float3 ApplyLight(float4 pos, float4 worldPos, float3 norm, float3 viewDir, floa
 		return float3(1.0, 1.0, 1.0);
 	}
 }
-#endif
-#endif
-
-
 #endif

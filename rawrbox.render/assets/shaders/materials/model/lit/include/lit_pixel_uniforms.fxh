@@ -1,6 +1,8 @@
 #ifndef INCLUDED_LIT_PIXEL_UNIFORMS_GUARD
 #define INCLUDED_LIT_PIXEL_UNIFORMS_GUARD
 
+#include <camera.fxh>
+
 cbuffer Constants {
     float4  g_LightGridParams;
     // --------
@@ -10,5 +12,4 @@ cbuffer Constants {
 #define SpecularPower g_LitData.x
 #define EmissionPower g_LitData.y
 
-#define CLUSTER_UNIFORMS
 #endif

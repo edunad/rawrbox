@@ -4,64 +4,67 @@
 namespace rawrbox {
 	// STATIC DATA ----
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialInstanced::_uniforms;
+	bool MaterialInstanced::_built = false;
 	// ----------------
 
 	void MaterialInstanced::init() {
+		if (!_built) {
+			fmt::print("[RawrBox-MaterialInstanced] Building material..\n");
 
-		// Uniforms -------
-		Diligent::BufferDesc CBDesc;
-		CBDesc.Name = "rawrbox::MaterialInstancedUnlit::Uniforms";
-		CBDesc.Size = sizeof(rawrbox::MaterialBaseUniforms);
-		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+			// Uniforms -------
+			Diligent::BufferDesc CBDesc;
+			CBDesc.Name = "rawrbox::MaterialInstancedUnlit::Uniforms";
+			CBDesc.Size = sizeof(rawrbox::MaterialBaseUniforms);
+			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &_uniforms);
-		// ------------
+			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &_uniforms);
+			// ------------
 
-		// PIPELINE ----
-		rawrbox::PipeSettings settings;
-		settings.pVS = "unlit_instanced.vsh";
-		settings.pPS = "unlit.psh";
-		settings.layout = rawrbox::VertexData::vLayout(true);
-		settings.immutableSamplers = {{Diligent::SHADER_TYPE_VERTEX, "g_Displacement"}};
+			// PIPELINE ----
+			rawrbox::PipeSettings settings;
+			settings.pVS = "unlit_instanced.vsh";
+			settings.pPS = "unlit.psh";
+			settings.layout = rawrbox::VertexData::vLayout(true);
+			settings.immutableSamplers = {{Diligent::SHADER_TYPE_VERTEX, "g_Displacement"}};
 
-		settings.resources = {
-		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
+			settings.resources = {
+			    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+			    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
-		settings.uniforms = {
-		    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
-		    {Diligent::SHADER_TYPE_VERTEX, _uniforms, "Constants"}};
+			settings.uniforms = {
+			    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
+			    {Diligent::SHADER_TYPE_VERTEX, _uniforms, "Constants"}};
 
-		settings.fill = Diligent::FILL_MODE_WIREFRAME;
-		rawrbox::PipelineUtils::createPipeline("Model::Instanced::Wireframe", "Model::Instanced", settings);
+			settings.fill = Diligent::FILL_MODE_WIREFRAME;
+			rawrbox::PipelineUtils::createPipeline("Model::Instanced::Wireframe", "Model::Instanced", settings);
 
-		settings.fill = Diligent::FILL_MODE_SOLID;
-		rawrbox::PipelineUtils::createPipeline("Model::Instanced", "Model::Instanced", settings);
+			settings.fill = Diligent::FILL_MODE_SOLID;
+			rawrbox::PipelineUtils::createPipeline("Model::Instanced", "Model::Instanced", settings);
 
-		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipeline("Model::Instanced::Alpha", "Model::Instanced", settings);
+			settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+			rawrbox::PipelineUtils::createPipeline("Model::Instanced::Alpha", "Model::Instanced", settings);
 
-		settings.fill = Diligent::FILL_MODE_SOLID;
-		settings.cull = Diligent::CULL_MODE_BACK;
-		settings.blending = {};
-		rawrbox::PipelineUtils::createPipeline("Model::Instanced::CullBack", "Model::Instanced", settings);
+			settings.fill = Diligent::FILL_MODE_SOLID;
+			settings.cull = Diligent::CULL_MODE_BACK;
+			settings.blending = {};
+			rawrbox::PipelineUtils::createPipeline("Model::Instanced::CullBack", "Model::Instanced", settings);
 
-		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipeline("Model::Instanced::CullBack::Alpha", "Model::Instanced", settings);
+			settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+			rawrbox::PipelineUtils::createPipeline("Model::Instanced::CullBack::Alpha", "Model::Instanced", settings);
 
-		settings.cull = Diligent::CULL_MODE_NONE;
-		settings.blending = {};
-		rawrbox::PipelineUtils::createPipeline("Model::Instanced::CullNone", "Model::Instanced", settings);
+			settings.cull = Diligent::CULL_MODE_NONE;
+			settings.blending = {};
+			rawrbox::PipelineUtils::createPipeline("Model::Instanced::CullNone", "Model::Instanced", settings);
 
-		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipeline("Model::Instanced::CullNone::Alpha", "Model::Instanced", settings);
-		// -----
-	}
+			settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+			rawrbox::PipelineUtils::createPipeline("Model::Instanced::CullNone::Alpha", "Model::Instanced", settings);
+			// -----
 
-	void MaterialInstanced::prepareMaterial() {
-		// Not a fan, but had to move it away from static, since we want to override them
+			_built = true;
+		}
+
 		if (this->_base == nullptr) this->_base = rawrbox::PipelineUtils::getPipeline("Model::Instanced");
 		if (this->_base_alpha == nullptr) this->_base_alpha = rawrbox::PipelineUtils::getPipeline("Model::Instanced::Alpha");
 

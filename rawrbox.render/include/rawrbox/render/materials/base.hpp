@@ -32,8 +32,6 @@ namespace rawrbox {
 
 		Diligent::IShaderResourceBinding* _bind = nullptr;
 
-		virtual void prepareMaterial() = 0;
-
 	public:
 		using vertexBufferType = rawrbox::VertexData;
 
@@ -43,6 +41,8 @@ namespace rawrbox {
 		MaterialBase(const MaterialBase&) = delete;
 		MaterialBase& operator=(const MaterialBase&) = delete;
 		virtual ~MaterialBase() = default;
+
+		virtual void init() = 0;
 
 		template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBaseUniforms>
 		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<P>& helper) {

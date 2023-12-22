@@ -34,11 +34,11 @@ struct PSInput {
 void main(in VSInput VSIn, out PSInput PSIn) {
     TransformedData transform = applyPosTransforms(VSIn.Pos, VSIn.UV.xy);
 
-    PSIn.Normal   = normalize(mul(g_Camera.model, float4(VSIn.Normal, 0.0)).xyz);
-    PSIn.Tangent  = normalize(mul(g_Camera.model, float4(VSIn.Tangent, 0.0)).xyz);
+    PSIn.Normal   = normalize(mul(g_model, float4(VSIn.Normal, 0.0)).xyz);
+    PSIn.Tangent  = normalize(mul(g_model, float4(VSIn.Tangent, 0.0)).xyz);
 
     PSIn.Pos      = transform.final;
-    PSIn.WorldPos = mul(transform.pos, g_Camera.model);
+    PSIn.WorldPos = mul(transform.pos, g_model);
     PSIn.UV       = applyUVTransform(VSIn.UV.xy);
     PSIn.TexIndex = VSIn.UV.z;
 

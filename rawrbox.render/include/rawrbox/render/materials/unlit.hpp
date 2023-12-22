@@ -6,9 +6,7 @@ namespace rawrbox {
 
 	class MaterialUnlit : public rawrbox::MaterialBase {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-
-	protected:
-		void prepareMaterial() override;
+		static bool _built;
 
 	public:
 		using vertexBufferType = rawrbox::VertexData;
@@ -20,7 +18,8 @@ namespace rawrbox {
 		MaterialUnlit& operator=(MaterialUnlit&&) = delete;
 		~MaterialUnlit() override = default;
 
-		static void init();
+		void init() override;
+
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
 			auto context = rawrbox::RENDERER->context();
@@ -30,10 +29,12 @@ namespace rawrbox {
 			this->bindBaseUniforms<T, rawrbox::MaterialBaseUniforms>(mesh, CBConstants);
 			// ------------
 		}
+
 		template <typename T = rawrbox::VertexData>
 		void bindTexture(const rawrbox::Mesh<T>& mesh) {
+			if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialUnlit] Material not bound, did you call 'init'?");
+
 			auto context = rawrbox::RENDERER->context();
-			this->prepareMaterial();
 
 			rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
 			rawrbox::TextureBase* textureDisplacement = rawrbox::BLACK_TEXTURE.get();

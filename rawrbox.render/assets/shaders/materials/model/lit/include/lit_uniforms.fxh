@@ -8,5 +8,4 @@ cbuffer Constants {
     Model g_Model;
 };
 
-#define CLUSTER_UNIFORMS
 #endif

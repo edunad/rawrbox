@@ -47,7 +47,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
     // LIGHT ------
 	float3 viewDir = normalize(g_cameraPos - PSIn.WorldPos).xyz;
-    float3 radianceOut = ApplyLight(PSIn.Pos, PSIn.WorldPos, PSIn.Normal, viewDir, specular.r, SpecularPower);
+    float3 radianceOut = ApplyLight(PSIn.Pos, PSIn.WorldPos, PSIn.Normal, viewDir, specular.r, SpecularPower, g_LightGridParams.xy);
     // ------------
 
     PSOut.Color.rgb = albedo.rgb * radianceOut;

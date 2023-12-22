@@ -1,12 +1,10 @@
 #pragma once
-/*
+
 #include <rawrbox/render/materials/unlit.hpp>
-#include <rawrbox/render/renderers/cluster.hpp>
+#include <rawrbox/render/plugins/clustered_light.hpp>
 
 namespace rawrbox {
-
-	struct MaterialLitUniforms : public rawrbox::MaterialUnlitUniforms, public rawrbox::ClusterUniforms {};
-	struct MaterialLitPixelUniforms : public rawrbox::ClusterUniforms {
+	struct MaterialLitPixelUniforms {
 		rawrbox::Vector4f g_LightGridParams = {};
 		rawrbox::Vector4f g_LitData = {};
 	};
@@ -15,15 +13,19 @@ namespace rawrbox {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms_pixel;
 
+		static bool _built;
+
 	protected:
 #ifdef _DEBUG
 		Diligent::IPipelineState* _debug_cluster = nullptr;
 		Diligent::IShaderResourceBinding* _bind_debug_cluster = nullptr;
 #endif
 
-		void prepareMaterial() override;
-
 	public:
+#ifdef _DEBUG
+		static int DEBUG_LEVEL;
+#endif
+
 		using vertexBufferType = rawrbox::VertexNormData;
 
 		MaterialLit() = default;
@@ -33,25 +35,18 @@ namespace rawrbox {
 		MaterialLit& operator=(const MaterialLit&) = delete;
 		~MaterialLit() override = default;
 
-		static void init();
+		void init() override;
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
 			auto context = rawrbox::RENDERER->context();
-			auto cluster = dynamic_cast<rawrbox::RendererCluster*>(rawrbox::RENDERER);
-			if (cluster == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] This material requires the `clustered` renderer");
-
 			auto camera = rawrbox::MAIN_CAMERA;
 
 			{
 				// SETUP UNIFORMS ----------------------------
-				Diligent::MapHelper<rawrbox::MaterialLitUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				this->bindBaseUniforms<T, rawrbox::MaterialLitUniforms>(mesh, CBConstants);
+				Diligent::MapHelper<rawrbox::MaterialBaseUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				this->bindBaseUniforms<T, rawrbox::MaterialBaseUniforms>(mesh, CBConstants);
 				// ------------
-
-				// Bind renderer uniforms ---------
-				cluster->bindUniforms<rawrbox::MaterialLitUniforms>(CBConstants);
-				// --------------------------------
 			}
 
 			{
@@ -68,20 +63,17 @@ namespace rawrbox {
 				    gLightClustersNumZz / std::log(f / n),
 				    (gLightClustersNumZz * std::log(n)) / std::log(f / n)};
 
-				CBConstants->g_CameraPosition = camera->getPos();
 				CBConstants->g_LitData = {mesh.specularShininess, mesh.emissionIntensity};
-
-				cluster->bindUniforms<rawrbox::MaterialLitPixelUniforms>(CBConstants);
 			}
 		}
 
 		template <typename T = rawrbox::VertexData>
 		void bindTexture(const rawrbox::Mesh<T>& mesh) {
+			if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] Material not bound, did you call 'init'?");
 			auto context = rawrbox::RENDERER->context();
-			this->prepareMaterial();
 
 #ifdef _DEBUG
-			if (rawrbox::RendererBase::DEBUG_LEVEL != 0) return; // Debug does not have textures
+			if (DEBUG_LEVEL != 0) return; // Debug does not have textures
 #endif
 
 			rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
@@ -136,7 +128,7 @@ namespace rawrbox {
 		void bindPipeline(const rawrbox::Mesh<T>& mesh) {
 			auto context = rawrbox::RENDERER->context();
 
-			if (rawrbox::RendererBase::DEBUG_LEVEL == 1) {
+			if (DEBUG_LEVEL == 1) {
 				context->SetPipelineState(this->_debug_cluster);
 			} else {
 				rawrbox::MaterialBase::bindPipeline<T>(mesh);
@@ -148,4 +140,3 @@ namespace rawrbox {
 	};
 
 } // namespace rawrbox
-*/

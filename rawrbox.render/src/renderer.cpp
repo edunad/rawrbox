@@ -35,11 +35,6 @@
 #include <rawrbox/utils/threading.hpp>
 
 namespace rawrbox {
-	/*
-	#ifdef _DEBUG
-		uint32_t RendererBase::DEBUG_LEVEL = 0;
-	#endif
-	*/
 	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& screenSize, const rawrbox::Colorf& clearColor) : _window(window), _type(type), _size(size), _monitorSize(screenSize), _clearColor(clearColor) {}
 	RendererBase::~RendererBase() {
 		this->_render.reset();
@@ -203,13 +198,6 @@ namespace rawrbox {
 		//  rawrbox::DECALS::init();
 		// --------
 
-		// Init & load materials ---
-		rawrbox::MaterialUnlit::init();
-		rawrbox::MaterialText3D::init();
-		rawrbox::MaterialInstanced::init();
-		rawrbox::MaterialSkinned::init();
-		// -----
-
 		// PLUGIN INITIALIZE ---
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr) continue;
@@ -237,14 +225,6 @@ namespace rawrbox {
 		this->_size = size;
 		this->_monitorSize = monitorSize;
 	}
-
-	// PLUGINS ---------------------------
-	const rawrbox::RenderPlugin* RendererBase::getPlugin(const std::string& id) const {
-		auto fnd = this->_renderPlugins.find(id);
-		if (fnd == this->_renderPlugins.end()) return nullptr;
-		return fnd->second.get();
-	}
-	// --------------------
 
 	void RendererBase::setDrawCall(std::function<void(const rawrbox::DrawPass& pass)> call) { this->_drawCall = call; }
 
@@ -330,7 +310,7 @@ namespace rawrbox {
 		this->_context->SetRenderTargets(1, &pRTV, pDSV, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		// Clear the back buffer
-		this->_context->ClearRenderTarget(pRTV, this->_clearColor.data().data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		this->_context->ClearRenderTarget(pRTV, this->_clearColor.array().data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		this->_context->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG, 1.F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
