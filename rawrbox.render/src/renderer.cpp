@@ -560,10 +560,7 @@ namespace rawrbox {
 	//-------------------------
 
 	// Utils ----
-	void RendererBase::setMainCamera(rawrbox::CameraBase* camera) const {
-		rawrbox::MAIN_CAMERA = camera;
-	}
-
+	void RendererBase::setMainCamera(rawrbox::CameraBase* camera) const { rawrbox::MAIN_CAMERA = camera; }
 	rawrbox::CameraBase* RendererBase::camera() const { return this->_camera.get(); }
 	rawrbox::Stencil* RendererBase::stencil() const { return this->_stencil.get(); }
 
