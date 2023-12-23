@@ -8,7 +8,7 @@ CPMAddPackage(
     NAME
     libcpr
     GIT_TAG
-    1.10.4
+    1.10.5
     GITHUB_REPOSITORY
     libcpr/cpr
     #PATCH_COMMAND git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/cpr.patch

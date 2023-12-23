@@ -10,7 +10,7 @@ CPMDeclarePackage(fmt
 )
 # magic_enum
 CPMDeclarePackage(magic_enum
-  VERSION 0.9.3
+  VERSION 0.9.5
   GITHUB_REPOSITORY Neargye/magic_enum
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -18,13 +18,16 @@ CPMDeclarePackage(magic_enum
 # nlohmann_json
 CPMDeclarePackage(nlohmann_json
   NAME nlohmann_json
-  VERSION 3.11.2
-  URL https://github.com/nlohmann/json/releases/download/v3.11.2/include.zip URL_HASH SHA256=e5c7a9f49a16814be27e4ed0ee900ecd0092bfb7dbfca65b5a421b774dccaaed
+  VERSION 3.11.3
+  URL
+    "https://github.com/nlohmann/json/releases/download/v3.11.3/include.zip"
+    "URL_HASH"
+    "SHA256=a22461d13119ac5c78f205d3df1db13403e58ce1bb1794edc9313677313f4a9d"
 )
 # ZLIB
 CPMDeclarePackage(ZLIB
   NAME ZLIB
-  GIT_TAG v1.2.13
+  GIT_TAG v1.3
   GITHUB_REPOSITORY madler/zlib
   OPTIONS
     "ASM686 FALSE"
@@ -40,13 +43,6 @@ CPMDeclarePackage(Catch2
     "CATCH_INSTALL_DOCS OFF"
     "CATCH_INSTALL_EXTRAS ON"
 )
-# qhull
-CPMDeclarePackage(qhull
-  NAME qhull
-  GIT_TAG 2020.2
-  DOWNLOAD_ONLY ON
-  GITHUB_REPOSITORY qhull/qhull
-)
 # thread-pool
 CPMDeclarePackage(thread-pool
   VERSION 3.5.0
@@ -54,34 +50,17 @@ CPMDeclarePackage(thread-pool
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
 )
-# libcpr
-CPMDeclarePackage(libcpr
-  NAME libcpr
-  GIT_TAG 1.10.4
-  GITHUB_REPOSITORY libcpr/cpr
-  OPTIONS
-    "BUILD_SHARED_LIBS OFF"
-    "CPR_ENABLE_CURL_HTTP_ONLY ON"
-    "CPR_ENABLE_SSL ON"
-    "CURL_ZLIB ON"
-)
-# lua
-CPMDeclarePackage(lua
-  NAME lua
-  GIT_TAG v5.4.6
-  DOWNLOAD_ONLY YES
-  GITHUB_REPOSITORY lua/lua
-)
-# sol2
-CPMDeclarePackage(sol2
-  NAME sol2
-  VERSION 3.3.0
-  GITHUB_REPOSITORY ThePhD/sol2
+# cpptrace
+CPMDeclarePackage(cpptrace
+  VERSION 0.3.1
+  GITHUB_REPOSITORY jeremy-rifkin/cpptrace
+  SYSTEM YES
+  EXCLUDE_FROM_ALL YES
 )
 # glfw
 CPMDeclarePackage(glfw
   NAME glfw
-  GIT_TAG 3.3.8
+  GIT_TAG 3.3.9
   GITHUB_REPOSITORY glfw/glfw
   OPTIONS
     "GLFW_BUILD_DOCS OFF"
@@ -92,29 +71,16 @@ CPMDeclarePackage(glfw
     "GLFW_VULKAN_STATIC OFF"
     "USE_MSVC_RUNTIME_LIBRARY_DLL OFF"
 )
-# bgfx (unversioned)
-# CPMDeclarePackage(bgfx
-#  NAME bgfx
+# DiligentCore (unversioned)
+# CPMDeclarePackage(DiligentCore
+#  NAME DiligentCore
 #  GIT_TAG master
-#  GITHUB_REPOSITORY edunad/bgfx.cmake
-#  OPTIONS
-#    "BGFX_BUILD_TOOLS ON"
-#    "BGFX_BUILD_TOOLS_SHADER ON"
-#    "BGFX_BUILD_TOOLS_GEOMETRY OFF"
-#    "BGFX_BUILD_TOOLS_BIN2C OFF"
-#    "BGFX_BUILD_TOOLS_TEXTURE OFF"
-#    "BGFX_BUILD_EXAMPLES OFF"
-#    "BGFX_INSTALL_EXAMPLES OFF"
-#    "BGFX_DEAR_IMGUI OFF"
-#    "BGFX_BUILD_TESTS OFF"
-#    "BGFX_OPENGLES_VERSION 43"
-#    "BGFX_OPENGL_VERSION 43"
-#    "BGFX_AMALGAMATED ON"
-#    "BX_AMALGAMATED ON"
+#  GITHUB_REPOSITORY DiligentGraphics/DiligentCore
+#  PATCH_COMMAND git restore Graphics/HLSL2GLSLConverterLib/src/HLSL2GLSLConverterImpl.cpp COMMAND git restore Graphics/GraphicsEngineVulkan/src/VulkanUtilities/VulkanInstance.cpp
 #)
 # utfcpp
 CPMDeclarePackage(utfcpp
-  VERSION 3.2.4
+  VERSION 4.0.4
   GITHUB_REPOSITORY nemtrif/utfcpp
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -156,7 +122,7 @@ CPMDeclarePackage(libwebp
 #    "ASSIMP_BUILD_TESTS OFF"
 #    "ASSIMP_BUILD_SAMPLES OFF"
 #    "ASSIMP_BUILD_DOCS OFF"
-#    "USE_STATIC_CRT ON"
+#    "USE_STATIC_CRT OFF"
 #    "ASSIMP_BUILD_ASSIMP_VIEW OFF"
 #    "ASSIMP_WARNINGS_AS_ERRORS OFF"
 #    "ASSIMP_INSTALL OFF"
@@ -171,47 +137,4 @@ CPMDeclarePackage(libwebp
 #    "ASSIMP_BUILD_GLTF_IMPORTER ON"
 #    "ASSIMP_BUILD_3DS_IMPORTER ON"
 #    "ASSIMP_BUILD_MD5_IMPORTER ON"
-#)
-# libwebm (unversioned)
-# CPMDeclarePackage(libwebm
-#  NAME libwebm
-#  GIT_TAG libwebm-1.0.0.30
-#  GITHUB_REPOSITORY webmproject/libwebm
-#  OPTIONS
-#    "BUILD_SHARED_LIBS OFF"
-#    "ENABLE_WEBMTS OFF"
-#    "ENABLE_WEBMINFO OFF"
-#    "ENABLE_WEBM_PARSER OFF"
-#    "ENABLE_TESTS OFF"
-#    "ENABLE_SAMPLE_PROGRAMS OFF"
-#)
-# clip
-CPMDeclarePackage(clip
-  NAME clip
-  VERSION 1.5
-  GITHUB_REPOSITORY dacap/clip
-  OPTIONS
-    "CLIP_EXAMPLES OFF"
-    "CLIP_TESTS OFF"
-)
-# Jolt
-CPMDeclarePackage(Jolt
-  NAME Jolt
-  VERSION 3.0.1
-  GITHUB_REPOSITORY jrouwe/JoltPhysics
-  OPTIONS
-    "COMPILE_AS_SHARED_LIBRARY OFF"
-    "INTERPROCEDURAL_OPTIMIZATION ON"
-    "USE_STATIC_MSVC_RUNTIME_LIBRARY ON"
-    "ENABLE_ALL_WARNINGS OFF"
-    "SOURCE_SUBDIR"
-    "Build"
-)
-# muli (unversioned)
-# CPMDeclarePackage(muli
-#  NAME muli
-#  GIT_TAG master
-#  GITHUB_REPOSITORY Sopiro/Muli
-#  OPTIONS
-#    "MULI_BUILD_DEMO OFF"
 #)

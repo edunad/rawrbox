@@ -145,19 +145,19 @@ if(magic_enum_ADDED)
 endif()
 
 if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
-    CPMAddPackage("gl:wayland/weston@12.0.1")
+    CPMAddPackage("gl:wayland/weston@12.0.3")
 endif()
 
 CPMAddPackage(
     NAME
     nlohmann_json
     VERSION
-    3.11.2
+    3.11.3
     # the git repo is incredibly large, so we download the archived include directory
     URL
-    https://github.com/nlohmann/json/releases/download/v3.11.2/include.zip
+    https://github.com/nlohmann/json/releases/download/v3.11.3/include.zip
     URL_HASH
-    SHA256=e5c7a9f49a16814be27e4ed0ee900ecd0092bfb7dbfca65b5a421b774dccaaed)
+    SHA256=a22461d13119ac5c78f205d3df1db13403e58ce1bb1794edc9313677313f4a9d)
 
 if(nlohmann_json_ADDED)
     add_library(nlohmann_json INTERFACE IMPORTED)
@@ -173,7 +173,7 @@ if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
         GITHUB_REPOSITORY
             madler/zlib # zlib-ng/zlib-ng
         GIT_TAG
-            "v1.2.13" # "2.1.3"
+            "v1.3" # "2.1.3"
         OPTIONS
             "ASM686 FALSE"
             "AMD64 FALSE"

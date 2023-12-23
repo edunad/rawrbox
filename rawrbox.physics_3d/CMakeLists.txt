@@ -9,7 +9,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY
     jrouwe/JoltPhysics
     VERSION
-    3.0.1
+    4.0.1
     OPTIONS
     # "CROSS_PLATFORM_DETERMINISTIC ON"
     "COMPILE_AS_SHARED_LIBRARY OFF"

@@ -9,7 +9,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY
         glfw/glfw
     GIT_TAG
-        3.3.8
+        3.3.9
     OPTIONS
         "GLFW_BUILD_DOCS OFF"
         "GLFW_BUILD_EXAMPLES OFF"
@@ -32,7 +32,7 @@ CPMAddPackage(
         git restore Graphics/GraphicsEngineVulkan/src/VulkanUtilities/VulkanInstance.cpp
 )
 
-CPMAddPackage("gh:nemtrif/utfcpp@3.2.4")
+CPMAddPackage("gh:nemtrif/utfcpp@4.0.4")
 if(utfcpp_ADDED)
     set_lib_runtime_mt(utf8cpp)
 endif()
