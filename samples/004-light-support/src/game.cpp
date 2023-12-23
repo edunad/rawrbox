@@ -79,7 +79,7 @@ namespace light {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({3.5F, 0.01F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
+			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({3.5F, 0.F, -0.01F}, {3.F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
 			mesh.setSpecularTexture(texSpec, 25.F);
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
@@ -87,7 +87,7 @@ namespace light {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({-3.5F, 0.01F, 0}, {3.F, 3.F}, rawrbox::Colors::White());
+			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({-3.5F, 0.F, -0.01F}, {3.F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
 			mesh.setSpecularTexture(texSpec, 25.F);
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
