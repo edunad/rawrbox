@@ -2,11 +2,11 @@
 #define UTIL_HEADER_GUARD
 
 float LinearizeDepth(float z, float near, float far) {
-	return far / (far + z * (near - far));
+	return near / (near + z * (far - near));
 }
 
 float3 ViewPositionFromDepth(float2 uv, float depth, float2 nearFar, float4x4 invProj) {
-	float4 clip = float4(float2(uv.x, 1.0f - uv.y) * 2.0f - 1.0f, 0.0f, 1.0f) * nearFar.x;
+	float4 clip = float4(float2(uv.x, 1.0f - uv.y) * 2.0f - 1.0f, 0.0f, 1.0f) * nearFar.y;
 	float3 viewRay = mul(clip, invProj).xyz;
 
 	return viewRay * LinearizeDepth(depth, nearFar.x, nearFar.y);

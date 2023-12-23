@@ -1,7 +1,7 @@
 
+#include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/light/manager.hpp>
 
-// #include <DirectXMath.h>
 #include <fmt/format.h>
 
 namespace rawrbox {
@@ -84,42 +84,23 @@ namespace rawrbox {
 			if (!l->isOn()) continue;
 
 			rawrbox::LightDataVertex light = {};
-			/*auto view = camera->getViewMtx();
-			view.transpose();*/
 
-			auto pos = l->getWorldPos();
-
-			/*DirectX::XMFLOAT3 dxPos = {pos.x, pos.y, pos.z};
-			DirectX::XMFLOAT4X4 dxView = {
-			    view[0], view[1], view[2], view[3],
-			    view[4], view[5], view[6], view[7],
-			    view[8], view[9], view[10], view[11],
-			    view[12], view[13], view[14], view[15]};
-
-			const DirectX::XMVECTOR v1 = DirectX::XMLoadFloat3(&dxPos);
-			const DirectX::XMMATRIX M = DirectX::XMLoadFloat4x4(&dxView);
-
-			const DirectX::XMVECTOR X = DirectX::XMVector3TransformCoord(v1, M);
-			DirectX::XMFLOAT3 outDX = {};
-			DirectX::XMStoreFloat3(&outDX, X);
-
-			light.position = {outDX.x, outDX.y, outDX.z};*/
 			light.position = l->getWorldPos();
-			// light.position = view.mulVec(l->getWorldPos()); // temp
+			light.position.w = 1.F;
 
-			light.intensity = l->getColor().rgb();
+			light.intensity = l->getColor();
+
 			light.direction = l->getDirection();
-			// light.direction = view.mulVec(l->getWorldPos()); // temp
+			light.direction.w = 1.F;
+
 			light.radius = l->getRadius();
 			light.type = l->getType();
 
 			if (light.type == rawrbox::LightType::SPOT) {
 				auto data = l->getData();
-				light.innerCone = data.x;
-				light.outerCone = data.y;
-			} else {
-				light.innerCone = 0.F;
-				light.outerCone = 0.F;
+
+				light.penumbra = rawrbox::MathUtils::toRad(data.x) / 2.F;
+				light.umbra = rawrbox::MathUtils::toRad(data.y) / 2.F;
 			}
 
 			lights.push_back(light);

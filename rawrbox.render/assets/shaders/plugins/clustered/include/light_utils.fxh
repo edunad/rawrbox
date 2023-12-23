@@ -14,6 +14,7 @@ float smoothAttenuation(float distance, float radius) {
     return nom * nom * distanceAttenuation(distance);
 }
 
+
 uint totalLights() {
     return g_LightSettings.y;
 }
@@ -44,10 +45,9 @@ float3 ApplyLight(float4 pos, float4 worldPos, float3 norm, float3 viewDir, floa
 
 		uint3 clusterIndex3D = uint3(floor(pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(pos.w, lightGrid));
 		uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
-
 		uint lightGridOffset = tileIndex * CLUSTERED_LIGHTING_NUM_BUCKETS;
-		for(uint bucketIndex = 0; bucketIndex < CLUSTERED_LIGHTING_NUM_BUCKETS; ++bucketIndex)
-		{
+
+		for(uint bucketIndex = 0; bucketIndex < CLUSTERED_LIGHTING_NUM_BUCKETS; ++bucketIndex) {
 			uint bucket = g_ClusterDataGrid[lightGridOffset + bucketIndex];
 			while(bucket) {
 				uint bitIndex = firstbitlow(bucket);
@@ -65,18 +65,22 @@ float3 ApplyLight(float4 pos, float4 worldPos, float3 norm, float3 viewDir, floa
 				if(light.type == LIGHT_SPOT) {
 					float theta = dot(light.direction, -lightDir);
 
-					if(theta > light.innerCone) {
-						float intensity = clamp((theta - light.innerCone) / (light.outerCone - light.innerCone), 0.0f, 1.0f);
+					float cosPenumbra = cos(light.penumbra);
+					float cosUmbra = cos(light.umbra);
+
+					if(theta > cosUmbra) {
+						float intensity = saturate((theta - cosUmbra) / (cosPenumbra - cosUmbra));
 
 						if (NdotL > 0.0 && reflection > 0.0) {
 							float3 reflectDir = reflect(-lightDir, norm);
 							float spec = pow(max(dot(viewDir, reflectDir), 0.0), reflection);
+
 							radianceOut += light.intensity * spec * specular; // Specular
 						}
 
 						radianceOut += light.intensity * intensity; // Diffuse
 					}
-				} else { // Point light
+				} else if(light.type == LIGHT_POINT) { // Point light
 					float attenuation = smoothAttenuation(dist, light.radius);
 
 					if(attenuation > 0.0) {

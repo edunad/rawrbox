@@ -12,14 +12,13 @@
 namespace rawrbox {
 
 	struct LightDataVertex {
-		rawrbox::Vector3f position = {};
-		float outerCone = 0.F;
+		rawrbox::Vector4f position = {};
+		rawrbox::Vector4f direction = {};
+		rawrbox::Colorf intensity = {};
 
-		rawrbox::Vector3f intensity = {};
 		float radius = 0.F;
-
-		rawrbox::Vector3f direction = {};
-		float innerCone = 0.F;
+		float penumbra = 0.F;
+		float umbra = 0.F;
 
 		rawrbox::LightType type = rawrbox::LightType::UNKNOWN;
 	};

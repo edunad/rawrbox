@@ -22,16 +22,17 @@ cbuffer LightConstants {
 };
 
 struct Light {
-    float3 position;
-    float outerCone;
+    float4 position;
+    float4 direction;
+    float4 intensity;
+
     // -------
-    float3 intensity;
     float radius;
-    // -------
-    float3 direction;
-    float innerCone;
-    // -------
+    float penumbra;
+    float umbra;
+
     uint type;
+    // -------
 };
 
 // Aka sun

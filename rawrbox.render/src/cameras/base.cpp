@@ -102,13 +102,13 @@ namespace rawrbox {
 		Diligent::MapHelper<rawrbox::CameraUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 
 		CBConstants->gView = rawrbox::Matrix4x4::mtxTranspose(this->getViewMtx());
-		CBConstants->gViewInv = rawrbox::Matrix4x4::mtxInverse(this->getViewMtx());
+		CBConstants->gViewInv = rawrbox::Matrix4x4::mtxInverse(CBConstants->gView);
 
 		CBConstants->gProjection = rawrbox::Matrix4x4::mtxTranspose(this->getProjMtx());
-		CBConstants->gProjectionInv = rawrbox::Matrix4x4::mtxInverse(this->getProjMtx());
+		CBConstants->gProjectionInv = rawrbox::Matrix4x4::mtxInverse(CBConstants->gProjection);
 
 		CBConstants->gViewProj = CBConstants->gView * CBConstants->gProjection;
-		CBConstants->gViewProjInv = rawrbox::Matrix4x4::mtxInverse(CBConstants->gView * CBConstants->gProjection);
+		CBConstants->gViewProjInv = rawrbox::Matrix4x4::mtxInverse(CBConstants->gViewProj);
 
 		CBConstants->gModel = this->_model;
 		CBConstants->gWorldViewProj = CBConstants->gModel * CBConstants->gViewProj;
