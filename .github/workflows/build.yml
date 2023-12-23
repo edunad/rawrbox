@@ -59,7 +59,7 @@ jobs:
         #  ctest --test-dir ./rawrbox.scripting --output-on-failure
 
       - name: Run linter
-        uses: cpp-linter/cpp-linter-action@v2.7.3
+        uses: cpp-linter/cpp-linter-action@v2.7.2
         if: github.ref != 'refs/heads/master'
         id: linter
         env:
