@@ -19,7 +19,7 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 gViewProj = {};
 		rawrbox::Matrix4x4 gViewProjInv = {};
 
-		rawrbox::Matrix4x4 gModel = {};
+		rawrbox::Matrix4x4 gWorld = {};
 		rawrbox::Matrix4x4 gWorldViewProj = {};
 
 		rawrbox::Vector4f gNearFar = {};
@@ -39,7 +39,7 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 _view = {};
 		rawrbox::Matrix4x4 _projection = {};
 
-		rawrbox::Matrix4x4 _model = {};
+		rawrbox::Matrix4x4 _world = {};
 
 		float _z_near = 0.01F;
 		float _z_far = 100.F;
@@ -47,7 +47,6 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 
 		virtual void updateMtx();
-		virtual void updateBuffer();
 
 	public:
 		virtual ~CameraBase();
@@ -87,5 +86,6 @@ namespace rawrbox {
 
 		virtual void initialize();
 		virtual void update();
+		virtual void updateBuffer();
 	};
 } // namespace rawrbox

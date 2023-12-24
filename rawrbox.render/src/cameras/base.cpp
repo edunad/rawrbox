@@ -18,8 +18,6 @@ namespace rawrbox {
 		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
 		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
-
-		this->updateBuffer();
 	}
 
 	void CameraBase::updateMtx(){};
@@ -83,12 +81,14 @@ namespace rawrbox {
 	}
 
 	const rawrbox::Matrix4x4& CameraBase::getModelTransform() const {
-		return this->_model;
+		return this->_world;
 	}
 
 	void CameraBase::setModelTransform(const rawrbox::Matrix4x4& transform) {
-		this->_model = rawrbox::Matrix4x4::mtxTranspose(transform);
-		this->updateBuffer();
+		if (this->_world == transform) return;
+
+		this->_world = transform;
+		this->updateBuffer(); // TODO: Prob bad idea to keep updating buffer on every model
 	}
 
 	void CameraBase::updateBuffer() {
@@ -110,8 +110,8 @@ namespace rawrbox {
 		CBConstants->gViewProj = CBConstants->gView * CBConstants->gProjection;
 		CBConstants->gViewProjInv = rawrbox::Matrix4x4::mtxInverse(CBConstants->gViewProj);
 
-		CBConstants->gModel = this->_model;
-		CBConstants->gWorldViewProj = CBConstants->gModel * CBConstants->gViewProj;
+		CBConstants->gWorld = rawrbox::Matrix4x4::mtxTranspose(this->_world);
+		CBConstants->gWorldViewProj = CBConstants->gWorld * CBConstants->gViewProj;
 
 		CBConstants->gNearFar = {this->getZNear(), this->getZFar()};
 
@@ -123,7 +123,7 @@ namespace rawrbox {
 		// ------------
 	}
 
-	void CameraBase::update() { this->updateBuffer(); }
+	void CameraBase::update() {}
 
 	const rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f& /*pos*/) const {
 		throw std::runtime_error("Not implemented");

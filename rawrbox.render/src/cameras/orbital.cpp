@@ -34,7 +34,6 @@ namespace rawrbox {
 	void CameraOrbital::setControls(rawrbox::CameraControls controls) { this->_controls = controls; }
 
 	void CameraOrbital::update() {
-		rawrbox::CameraBase::update();
 		if (this->_window == nullptr) return;
 
 		auto dir = this->getForward();

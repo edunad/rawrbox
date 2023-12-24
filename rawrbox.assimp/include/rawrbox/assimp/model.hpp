@@ -2,6 +2,7 @@
 
 #include <rawrbox/assimp/importer.hpp>
 #include <rawrbox/assimp/utils/model.hpp>
+#include <rawrbox/render/light/directional.hpp>
 #include <rawrbox/render/light/point.hpp>
 #include <rawrbox/render/light/spot.hpp>
 #include <rawrbox/render/models/model.hpp>
@@ -61,13 +62,13 @@ namespace rawrbox {
 
 				switch (assimpLights.type) {
 					case rawrbox::LightType::POINT:
-						this->template addLight<rawrbox::PointLight>(assimpLights.parentID, assimpLights.pos, assimpLights.diffuse, assimpLights.angleInnerCone);
+						this->template addLight<rawrbox::PointLight>(assimpLights.parentID, assimpLights.pos, assimpLights.diffuse, assimpLights.intensity, 10.F); // TODO: BROKEN
 						break;
 					case rawrbox::LightType::SPOT:
-						this->template addLight<rawrbox::SpotLight>(assimpLights.parentID, assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, 100.F);
+						this->template addLight<rawrbox::SpotLight>(assimpLights.parentID, assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, assimpLights.intensity, 10.F); // TODO: BROKEN
 						break;
 					case rawrbox::LightType::DIR:
-						rawrbox::LIGHTS::setSun(assimpLights.direction, assimpLights.diffuse);
+						this->template addLight<rawrbox::DirectionalLight>(assimpLights.parentID, assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.intensity);
 						break;
 
 					default:

@@ -54,7 +54,8 @@ namespace rawrbox {
 
 		rawrbox::TextureBase* displacementTexture = nullptr;
 
-		float specularShininess = 25.0F;
+		float roughness = 1.0F;
+		float metalness = 1.0F;
 		float emissionIntensity = 1.F;
 		// -------
 
@@ -187,9 +188,13 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] virtual const rawrbox::TextureBase* getSpecularTexture() const { return this->specularTexture; }
-		virtual void setSpecularTexture(rawrbox::TextureBase* ptr, float shininess) {
+		virtual void setSpecularTexture(rawrbox::TextureBase* ptr, float roughness = 0.5F) {
 			this->specularTexture = ptr;
-			this->specularShininess = shininess;
+			this->roughness = roughness;
+		}
+
+		virtual void setMetalness(float metal) {
+			this->metalness = metal;
 		}
 
 		virtual void setVertexSnap(float power = 2.F) {

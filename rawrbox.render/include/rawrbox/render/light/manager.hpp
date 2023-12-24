@@ -14,7 +14,9 @@ namespace rawrbox {
 	struct LightDataVertex {
 		rawrbox::Vector4f position = {};
 		rawrbox::Vector4f direction = {};
-		rawrbox::Colorf intensity = {};
+
+		rawrbox::Vector3f color = {};
+		float intensity = 10.F;
 
 		float radius = 0.F;
 		float penumbra = 0.F;
@@ -33,11 +35,6 @@ namespace rawrbox {
 		std::array<uint32_t, 4> g_LightSettings = {};
 		// ------
 
-		// Sun ----
-		rawrbox::Vector4f g_SunDirection = {};
-		rawrbox::Colorf g_SunColor = {};
-		// ----
-
 		// Ambient ---
 		rawrbox::Colorf g_AmbientColor = {};
 		// -----
@@ -46,6 +43,8 @@ namespace rawrbox {
 		rawrbox::Colorf g_FogColor = {};
 		rawrbox::Vector4f g_FogSettings = {};
 		// --------
+
+		rawrbox::Vector4f g_LightGridParams = {};
 	};
 
 	class LIGHTS {
@@ -53,10 +52,6 @@ namespace rawrbox {
 		static std::vector<std::shared_ptr<rawrbox::LightBase>> _lights;
 
 		static rawrbox::Colorf _ambient;
-
-		static rawrbox::Colorf _sun_color;
-		static rawrbox::Vector3f _sun_direction;
-
 		static rawrbox::Colorf _fog_color;
 		static rawrbox::FOG_TYPE _fog_type;
 		static float _fog_density;
@@ -80,12 +75,6 @@ namespace rawrbox {
 		// UTILS ----
 		static void setEnabled(bool fb);
 		static Diligent::IBufferView* getBuffer();
-
-		// SUN
-		static void setSun(const rawrbox::Vector3f& dir, const rawrbox::Colorf& col);
-		static const rawrbox::Colorf& getSunColor();
-		static const rawrbox::Vector3f& getSunDir();
-		// ----
 
 		// FOG
 		static void setFog(rawrbox::FOG_TYPE type, float end, float density, const rawrbox::Colorf& col = rawrbox::Colors::Black());

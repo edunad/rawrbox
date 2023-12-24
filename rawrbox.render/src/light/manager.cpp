@@ -1,6 +1,7 @@
 
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/light/manager.hpp>
+#include <rawrbox/render/plugins/clustered_light.hpp>
 
 #include <fmt/format.h>
 
@@ -13,10 +14,6 @@ namespace rawrbox {
 
 	// Ambient --
 	rawrbox::Colorf LIGHTS::_ambient = {0.01F, 0.01F, 0.01F, 1.F};
-
-	// Sun --
-	rawrbox::Colorf LIGHTS::_sun_color = rawrbox::Colors::Transparent(); // No sun by default
-	rawrbox::Vector3f LIGHTS::_sun_direction = {0, 0, 0};
 
 	// Fog --
 	rawrbox::Colorf LIGHTS::_fog_color = {0.F, 0.F, 0.F, 0.F};
@@ -88,7 +85,8 @@ namespace rawrbox {
 			light.position = l->getWorldPos();
 			light.position.w = 1.F;
 
-			light.intensity = l->getColor();
+			light.color = l->getColor().rgb();
+			light.intensity = l->getIntensity();
 
 			light.direction = l->getDirection();
 			light.direction.w = 1.F;
@@ -121,30 +119,32 @@ namespace rawrbox {
 		if (uniforms == nullptr) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
 		update(); // Update all lights if dirty
 
+		auto renderer = rawrbox::RENDERER;
+
+		auto context = renderer->context();
+		auto camera = renderer->camera();
 		Diligent::MapHelper<rawrbox::LightConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 
 		CBConstants->g_LightSettings = {fullbright ? 1U : 0U, static_cast<uint32_t>(rawrbox::LIGHTS::count()), 0, 0}; // other light settings
 		CBConstants->g_AmbientColor = _ambient;
-		CBConstants->g_SunColor = _sun_color;
-		CBConstants->g_SunDirection = _sun_direction;
 		CBConstants->g_FogColor = _fog_color;
 		CBConstants->g_FogSettings = {static_cast<float>(_fog_type), _fog_end, _fog_density, 0.F};
+
+		// Setup light grid ----
+		float nearZ = camera->getZNear();
+		float farZ = camera->getZFar();
+		auto gLightClustersNumZz = static_cast<float>(rawrbox::CLUSTERS_Z);
+
+		CBConstants->g_LightGridParams = {
+		    gLightClustersNumZz / std::log(farZ / nearZ),
+		    (gLightClustersNumZz * std::log(nearZ)) / std::log(farZ / nearZ)};
+		// --------------
 	} // namespace rawrbox
 
 	// UTILS ----
 	void LIGHTS::setEnabled(bool fb) { fullbright = fb; }
 	Diligent::IBufferView* LIGHTS::getBuffer() { return _bufferRead; }
 	// ----
-
-	// SUN ---
-	void LIGHTS::setSun(const rawrbox::Vector3f& dir, const rawrbox::Colorf& col) {
-		_sun_direction = dir.normalized();
-		_sun_color = col;
-	}
-
-	const rawrbox::Colorf& LIGHTS::getSunColor() { return _sun_color; }
-	const rawrbox::Vector3f& LIGHTS::getSunDir() { return _sun_direction; }
-	// -----
 
 	// AMBIENT ----
 	void LIGHTS::setAmbient(const rawrbox::Colorf& col) { _ambient = col; }

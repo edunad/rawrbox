@@ -5,7 +5,6 @@
 
 namespace rawrbox {
 	struct MaterialLitPixelUniforms {
-		rawrbox::Vector4f g_LightGridParams = {};
 		rawrbox::Vector4f g_LitData = {};
 	};
 
@@ -51,19 +50,7 @@ namespace rawrbox {
 
 			{
 				Diligent::MapHelper<rawrbox::MaterialLitPixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-
-				float nearZ = camera->getZNear();
-				float farZ = camera->getZFar();
-
-				float n = std::min(farZ, nearZ);
-				float f = std::max(farZ, nearZ);
-				auto gLightClustersNumZz = static_cast<float>(rawrbox::CLUSTERS_Z);
-
-				CBConstants->g_LightGridParams = {
-				    gLightClustersNumZz / std::log(f / n),
-				    (gLightClustersNumZz * std::log(n)) / std::log(f / n)};
-
-				CBConstants->g_LitData = {mesh.specularShininess, mesh.emissionIntensity};
+				CBConstants->g_LitData = {mesh.roughness, mesh.emissionIntensity, mesh.metalness};
 			}
 		}
 

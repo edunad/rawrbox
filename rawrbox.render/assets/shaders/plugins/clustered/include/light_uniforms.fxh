@@ -6,11 +6,6 @@ cbuffer LightConstants {
     uint4 g_LightSettings;
     // ------
 
-    // Sun ----
-    float4 g_SunDirection;
-    float4 g_SunColor;
-    // ----
-
     // Ambient ---
     float4 g_AmbientColor;
     // -----
@@ -19,12 +14,18 @@ cbuffer LightConstants {
     float4 g_FogColor;
     float4 g_FogSettings;
     // -----
+
+    // GRID ---
+    float4  g_LightGridParams;
+    // -----
 };
 
 struct Light {
     float4 position;
     float4 direction;
-    float4 intensity;
+
+    float3 color;
+    float  intensity;
 
     // -------
     float radius;
@@ -41,8 +42,11 @@ struct DirectionalLight {
     float4 radiance;
 };
 
-#define LIGHT_POINT 1
-#define LIGHT_SPOT 2
-#define LIGHT_UNIFORMS
 
+#define LIGHT_POINT       1
+#define LIGHT_SPOT        2
+#define LIGHT_DIRECTIONAL 3
+
+#define TOTAL_LIGHTS g_LightSettings.y
+#define LIGHT_UNIFORMS
 #endif

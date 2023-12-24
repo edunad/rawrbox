@@ -3,6 +3,7 @@
 #include <rawrbox/render/cameras/orbital.hpp>
 #include <rawrbox/render/light/point.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/plugins/clustered_light.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
@@ -25,7 +26,9 @@ namespace assimp {
 
 		// Setup renderer
 		auto render = window->createRenderer();
+		render->skipIntros(true);
 		render->onIntroCompleted = [this]() { this->loadContent(); };
+		render->addPlugin<rawrbox::ClusteredLightPlugin>();
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
 			this->drawWorld();
@@ -50,7 +53,7 @@ namespace assimp {
 		std::array initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES),
-		    std::make_pair<std::string, uint32_t>("./assets/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT),
+		    std::make_pair<std::string, uint32_t>("./assets/models/ps1_phasmophobia/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT),
 		    std::make_pair<std::string, uint32_t>("./assets/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_METADATA),
 		    std::make_pair<std::string, uint32_t>("./assets/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE),
 		    std::make_pair<std::string, uint32_t>("./assets/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS)};
@@ -70,7 +73,7 @@ namespace assimp {
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(24);
 
 		// Assimp test ---
-		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx")->get();
+		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/ps1_phasmophobia/scene.gltf")->get();
 
 		this->_model->setPos({7, 1.1F, 0.F});
 		this->_model->load(*mdl);
@@ -129,7 +132,7 @@ namespace assimp {
 		}
 
 		// LIGHT ----
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{2.F, 1.8F, -6.F}, rawrbox::Colors::White(), 6.2F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{2.F, 1.3F, -6.F}, rawrbox::Colors::White(), 100.F, 3.F);
 		// -----------
 
 		this->_ready = true;

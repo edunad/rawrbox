@@ -8,7 +8,7 @@ namespace rawrbox {
 		float _penumbra;
 
 	public:
-		SpotLight(const rawrbox::Vector3f& posMatrix, const rawrbox::Vector3f& direction, const rawrbox::Colorf& color, float penumbra, float umbra, float power);
+		SpotLight(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colorf& color, float penumbra, float umbra, float intensity, float radius);
 		SpotLight(const SpotLight&) = delete;
 		SpotLight(SpotLight&&) = delete;
 		SpotLight& operator=(const SpotLight&) = delete;

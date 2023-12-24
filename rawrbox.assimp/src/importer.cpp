@@ -1,5 +1,6 @@
 
 #include <rawrbox/assimp/importer.hpp>
+#include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/textures/image.hpp>
 #include <rawrbox/utils/pack.hpp>
 #include <rawrbox/utils/string.hpp>
@@ -190,7 +191,7 @@ namespace rawrbox {
 				if (!emission.empty()) mat->emissive = std::move(emission[0].value()); // Only support one for the moment
 			}
 
-			pMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, mat->intensity);
+			pMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, mat->emission);
 
 			aiColor3D emissionColor;
 			if (pMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emissionColor) == AI_SUCCESS) {
@@ -204,7 +205,8 @@ namespace rawrbox {
 				mat->specular = std::move(specular[0].value()); // Only support one for the moment
 			}
 
-			pMaterial->Get(AI_MATKEY_SHININESS, mat->shininess);
+			pMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, mat->roughness);
+			pMaterial->Get(AI_MATKEY_METALLIC_FACTOR, mat->metalness);
 
 			aiColor3D specularColor;
 			if (pMaterial->Get(AI_MATKEY_COLOR_SPECULAR, specularColor) == AI_SUCCESS) {
@@ -520,18 +522,24 @@ namespace rawrbox {
 				light.parentID = lightNode->mParent->mName.data; // TODO: Assimp doesn't seem to give the correct parent, will need to manually find it
 			}
 
-			light.diffuse = rawrbox::Colorf(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F);
-			light.specular = rawrbox::Colorf(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F);
-			light.ambient = rawrbox::Colorf(aiLight.mColorAmbient.r, aiLight.mColorAmbient.g, aiLight.mColorAmbient.b, 1.F);
+			if (aiLight.mColorDiffuse != aiLight.mColorSpecular) throw std::runtime_error("[RawrBox-Assimp] Light diffuse and specular do not match");
+			float intensity = std::max(std::max(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g), aiLight.mColorDiffuse.b);
 
+			light.diffuse = rawrbox::Colorf(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F) / intensity;
+			light.specular = rawrbox::Colorf(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F) / intensity;
+			light.ambient = rawrbox::Colorf(aiLight.mColorAmbient.r, aiLight.mColorAmbient.g, aiLight.mColorAmbient.b, 1.F) / intensity;
+
+			light.intensity = intensity * 40.F;
 			light.attenuationConstant = aiLight.mAttenuationConstant;
 			light.attenuationLinear = aiLight.mAttenuationLinear;
 			light.attenuationQuadratic = aiLight.mAttenuationQuadratic;
 
-			light.angleInnerCone = aiLight.mAngleInnerCone;
-			light.angleOuterCone = aiLight.mAngleOuterCone;
+			light.angleInnerCone = rawrbox::MathUtils::toDeg(aiLight.mAngleInnerCone);
+			light.angleOuterCone = rawrbox::MathUtils::toDeg(aiLight.mAngleOuterCone);
 
 			light.up = rawrbox::Vector3f(aiLight.mUp.x, aiLight.mUp.y, aiLight.mUp.z);
+
+			float radius = 1.F / (light.attenuationConstant + light.attenuationLinear * 1 + light.attenuationQuadratic * 1 * 1);
 
 			switch (aiLight.mType) {
 				case aiLightSource_DIRECTIONAL:

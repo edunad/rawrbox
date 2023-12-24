@@ -1,12 +1,13 @@
 #include <lit_pixel_uniforms.fxh>
 #include <light_uniforms.fxh>
+#include <math.fxh>
 
-#define READ_CLUSTERS
 #define READ_LIGHTS
 #define READ_CLUSTER_DATA_GRID
 #include <cluster.fxh>
 
-#include <light_utils.fxh>
+#include <noise.fxh>
+#include <lighting.fxh>
 
 Texture2DArray g_Texture;
 SamplerState   g_Texture_sampler;
@@ -24,8 +25,8 @@ struct PSInput {
     float4 Pos                      : SV_POSITION;
     float4 WorldPos                 : POSITION1;
 
-    float3 Normal                   : NORMAL0;
-    float3 Tangent                  : TANGENT0;
+    float4 Normal                   : NORMAL0;
+    float4 Tangent                  : TANGENT0;
 
     float2 UV                       : TEX_COORD;
     float4 Color                    : COLOR0;
@@ -37,19 +38,63 @@ struct PSOutput {
     float4 Color : SV_TARGET;
 };
 
-void main(in PSInput PSIn, out PSOutput PSOut) {
-    float4 albedo = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
-    if (albedo.a <= 0.0) discard;
+float3x3 CreateTangentToWorld(float3 normal, float4 tangent) {
+	float3 T = tangent.xyz;
+	float3 B = cross(normal, T) * tangent.w;
 
-	float4 normal =   g_Normal.Sample(g_Normal_sampler, float3(PSIn.UV, PSIn.TexIndex));
-	float4 specular = g_Specular.Sample(g_Specular_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
-	float4 emission = g_Emission.Sample(g_Emission_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+	float3x3 TBN = float3x3(T, B, normal);
+	return TBN;
+}
+
+// Unpacks a 2 channel BC5 normal to xyz
+float3 UnpackBC5Normal(float2 packedNormal) {
+	return float3(packedNormal, sqrt(1 - saturate(dot(packedNormal.xy, packedNormal.xy))));
+}
+
+float3 TangentSpaceNormalMapping(float3 sampledNormal, float3x3 TBN) {
+	// Flip Y
+	//sampledNormal.y = 1 - sampledNormal.y;
+
+	float3 normal = UnpackBC5Normal(sampledNormal.xy);
+	normal.xy = sampledNormal.xy * 2.0f - 1.0f;
+	normal = normalize(normal);
+	return mul(normal, TBN);
+}
+
+void main(in PSInput PSIn, out PSOutput PSOut) {
+    float4 diffuseTS = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+    if (diffuseTS.a <= 0.0) discard;
+
+    // NORMAL -----
+	float3 normalTS = g_Normal.Sample(g_Normal_sampler, float3(PSIn.UV, PSIn.TexIndex)).rgb;
+	float3x3 TBN    = CreateTangentToWorld(PSIn.Normal.xyz, float4(normalize(PSIn.Tangent.xyz), PSIn.Tangent.w));
+    float3 normal   = TangentSpaceNormalMapping(normalTS, TBN);
+    // -------------
+
+	float4 specularTS = g_Specular.Sample(g_Specular_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+	float4 emissionTS = g_Emission.Sample(g_Emission_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
 
     // LIGHT ------
-	float3 viewDir = normalize(g_cameraPos - PSIn.WorldPos).xyz;
-    float3 radianceOut = ApplyLight(PSIn.Pos, PSIn.WorldPos, PSIn.Normal, viewDir, specular.r, SpecularPower, g_LightGridParams.xy);
+	float3 V           = normalize(g_cameraPos.xyz - PSIn.WorldPos);
+	float dither       = InterleavedGradientNoise(PSIn.Pos.xy);
+
+    float3 specular    = ComputeF0(specularTS.rgb, diffuseTS.rgb, MetalPower);
+    float3 diffuse     = ComputeDiffuseColor(diffuseTS.rgb, MetalPower);
+
+    LightResult result = ApplyLight(specular, RoughtnessPower, diffuse, normal, V, PSIn.WorldPos.xyz, PSIn.Pos, dither);
+
+	float3 outRadiance = 0;
+	outRadiance += result.Diffuse + result.Specular;
+	outRadiance += emissionTS.rgb * EmissionPower;
+
+    /*
+	outRadiance += ambientOcclusion * Diffuse_Lambert(brdfData.Diffuse) * SampleDDGIIrradiance(input.PositionWS, surface.Normal, -V);
+	outRadiance += lighting.Diffuse + lighting.Specular;
+	outRadiance += ssr * ambientOcclusion;
+	outRadiance += surface.Emissive;
+    */
     // ------------
 
-    PSOut.Color.rgb = albedo.rgb * radianceOut;
-    PSOut.Color.a = albedo.a;
+    PSOut.Color.rgb = outRadiance;
+    PSOut.Color.a = diffuseTS.a;
 }

@@ -138,8 +138,8 @@ namespace rawrbox {
 			auto nmrlF = rawrbox::Vector3f(1, 0, 0);
 			auto nmrlR = rawrbox::Vector3f(0, 0, -1);
 			auto nmrlL = rawrbox::Vector3f(0, 0, 1);
-			auto nmrlT = rawrbox::Vector3f(0, -1, 0);
-			auto nmrlBT = rawrbox::Vector3f(0, 1, 0);
+			auto nmrlT = rawrbox::Vector3f(0, 1, 0);
+			auto nmrlBT = rawrbox::Vector3f(0, -1, 0);
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				mesh.vertices = {

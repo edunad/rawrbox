@@ -4,7 +4,6 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/render.hpp>
 
-// https://github.com/DiligentGraphics/DiligentSamples/blob/master/Tutorials/Tutorial19_RenderPasses/src/Tutorial19_RenderPasses.cpp
 namespace rawrbox {
 	uint32_t ClusteredLightPlugin::CLUSTERS_X = 0;
 	uint32_t ClusteredLightPlugin::CLUSTERS_Y = 0;
@@ -89,17 +88,6 @@ namespace rawrbox {
 		}
 		// ------
 
-		/*{
-			Diligent::DispatchComputeAttribs DispatchAttribs;
-			DispatchAttribs.ThreadGroupCountX = 1;
-			DispatchAttribs.ThreadGroupCountY = 1;
-			DispatchAttribs.ThreadGroupCountZ = 1;
-
-			context->SetPipelineState(this->_clusterResetComputeProgram);
-			context->CommitShaderResources(this->_clusterResetComputeBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-			context->DispatchCompute(DispatchAttribs);
-		}*/
-
 		// Perform light / decal culling
 		{
 			Diligent::DispatchComputeAttribs DispatchAttribs;
@@ -174,17 +162,7 @@ namespace rawrbox {
 		this->_clusterBuildingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Build", "Cluster::Build", settings);
 		this->_clusterBuildingComputeBind = rawrbox::PipelineUtils::getBind("Cluster::Build");
 		// ---------
-		/*
-				// RESET -----
-				settings.resources = {{Diligent::SHADER_TYPE_COMPUTE, "g_ClusterDataGrid", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC}};
-				settings.uniforms = {
-				    {Diligent::SHADER_TYPE_COMPUTE, this->_dataGridBufferWrite, "g_ClusterDataGrid"}};
-				settings.pCS = "cluster_reset.csh";
 
-				this->_clusterResetComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Reset", "Cluster::Reset", settings);
-				this->_clusterResetComputeBind = rawrbox::PipelineUtils::getBind("Cluster::Reset");
-				// ---------
-		*/
 		// CULLING -----
 		settings.resources = {
 		    {Diligent::SHADER_TYPE_COMPUTE, "Camera", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},

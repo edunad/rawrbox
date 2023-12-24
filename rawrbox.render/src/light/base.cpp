@@ -6,7 +6,7 @@
 #endif
 
 namespace rawrbox {
-	LightBase::LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius) : _pos(pos), _color(color), _radius(radius){};
+	LightBase::LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float intensity, float radius) : _pos(pos), _color(color), _intensity(intensity), _radius(radius){};
 
 #ifdef RAWRBOX_SCRIPTING
 	LightBase::~LightBase() {
@@ -24,6 +24,7 @@ namespace rawrbox {
 	}
 #endif
 
+	const rawrbox::Colorf LightBase::getColor() const { return this->_color; }
 	void LightBase::setColor(const rawrbox::Colorf& col) {
 		if (this->_color == col) return;
 
@@ -31,8 +32,7 @@ namespace rawrbox {
 		rawrbox::__LIGHT_DIRTY__ = true;
 	}
 
-	const rawrbox::Colorf LightBase::getColor() const { return this->_color; }
-
+	float LightBase::getRadius() const { return this->_radius; }
 	void LightBase::setRadius(float radius) {
 		if (this->_radius == radius) return;
 
@@ -40,7 +40,14 @@ namespace rawrbox {
 		rawrbox::__LIGHT_DIRTY__ = true;
 	}
 
-	float LightBase::getRadius() const { return this->_radius; }
+	[[nodiscard]] float LightBase::getIntensity() const { return this->_intensity; }
+	void LightBase::setIntensity(float intensity) {
+		if (this->_intensity == intensity) return;
+
+		this->_intensity = intensity;
+		rawrbox::__LIGHT_DIRTY__ = true;
+	}
+
 	const rawrbox::Vector4f LightBase::getData() const { return {}; }
 
 	void LightBase::setId(size_t id) { this->_id = id; };

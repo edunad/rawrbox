@@ -1,8 +1,8 @@
 #ifndef INCLUDED_UNLIT_SKINNED_UNIFORMS_GUARD
 #define INCLUDED_UNLIT_SKINNED_UNIFORMS_GUARD
 
+#include <model.fxh>
 #include <camera.fxh>
-#include <model_vertex_structs.fxh>
 
 cbuffer Constants {
     Model g_Model;

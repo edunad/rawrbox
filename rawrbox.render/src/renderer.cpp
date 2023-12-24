@@ -268,6 +268,10 @@ namespace rawrbox {
 		this->clear();
 		// ---------------------
 
+		// Update camera -------
+		if (this->_camera != nullptr) this->_camera->updateBuffer();
+		// ---------------------
+
 		// Perform pre-render --
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;

@@ -6,8 +6,6 @@
 #define WRITE_CLUSTER_DATA_GRID
 #include <cluster.fxh>
 
-#include <light_utils.fxh>
-
 struct Sphere {
 	float3 Position;
 	float Radius;
@@ -46,17 +44,15 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 
 	float clusterRadius = sqrt(dot(cluster.Extents.xyz, cluster.Extents.xyz));
 
-    uint lightCount = totalLights();
 	uint lightIndex = 0;
-
     float3 lightDir = mul(float4(0, 0, 0, 1.0), g_view).xyz;
 
     [loop]
-    for(uint bucketIndex = 0; bucketIndex < CLUSTERED_LIGHTING_NUM_BUCKETS && lightIndex < lightCount; ++bucketIndex) {
+    for(uint bucketIndex = 0; bucketIndex < CLUSTERED_LIGHTING_NUM_BUCKETS && lightIndex < TOTAL_LIGHTS; ++bucketIndex) {
 		uint lightMask = 0;
 
         [loop]
-        for(uint i = 0; i < 32 && lightIndex < lightCount; ++i) {
+        for(uint i = 0; i < CLUSTERS_Z && lightIndex < TOTAL_LIGHTS; ++i) {
             Light light = g_Lights[lightIndex];
             ++lightIndex;
 
@@ -83,7 +79,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
                     lightMask |= 1u << i;
                 }
             } else {
-                lightMask |= 1u << i; // Unknown, don't calculate cull
+                lightMask |= 1u << i; // Unknown / directional, don't calculate cull
             }
         }
 

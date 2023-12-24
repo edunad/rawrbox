@@ -1,5 +1,6 @@
 
 #include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/light/directional.hpp>
 #include <rawrbox/render/light/point.hpp>
 #include <rawrbox/render/light/spot.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
@@ -53,7 +54,8 @@ namespace light {
 		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planks.png", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planksSpec.png", 0)};
+		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planksSpec.png", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planksNorm.png", 0)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
@@ -71,6 +73,7 @@ namespace light {
 
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planks.png")->get();
 		auto texSpec = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksSpec.png")->get();
+		auto texNorm = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksSpec.png")->get();
 
 		// Setup
 		{
@@ -79,18 +82,20 @@ namespace light {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({3.5F, 0.F, -0.01F}, {3.F, 3.F}, rawrbox::Colors::White());
+			auto mesh = rawrbox::MeshUtils::generateCube<rawrbox::MaterialLit>({3.5F, 0.F, -0.01F}, {3.F, 0.1F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
-			mesh.setSpecularTexture(texSpec, 25.F);
-			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
+			mesh.setSpecularTexture(texSpec, 0.7F);
+			mesh.setNormalTexture(texNorm);
+
 			this->_model2->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({-3.5F, 0.F, -0.01F}, {3.F, 3.F}, rawrbox::Colors::White());
+			auto mesh = rawrbox::MeshUtils::generateCube<rawrbox::MaterialLit>({-3.5F, 0.F, -0.01F}, {3.F, 0.1F, 3.F}, rawrbox::Colors::White());
 			mesh.setTexture(tex);
-			mesh.setSpecularTexture(texSpec, 25.F);
-			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
+			mesh.setSpecularTexture(texSpec, 0.7F);
+			mesh.setNormalTexture(texNorm);
+
 			this->_model2->addMesh(mesh);
 		}
 		// ----
@@ -102,8 +107,9 @@ namespace light {
 
 		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 40.F, 0.8F);
 
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue(), 1.2F);
-		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{3.5F, 1.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Red(), 20.F, 40.F, 100.F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue(), 5.F, 1.2F);
+		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{3.5F, 1.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Purple(), 20.F, 40.F, 5.F, 4.F);
+		rawrbox::LIGHTS::addLight<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White(), 5.F); // SUN
 
 		this->_model->upload();
 		this->_model2->upload();
@@ -143,20 +149,22 @@ namespace light {
 	void Game::update() {
 		rawrbox::Window::update();
 
-		/*if (this->_ready) {
-			this->_sunDir = {std::cos(rawrbox::FRAME * 0.01F) * 1.F, 1.F, std::sin(rawrbox::FRAME * 0.01F) * 1.F};
-			rawrbox::LIGHTS::setSun(this->_sunDir, {0.2F, 0.2F, 0.2F, 1.F});
+		if (this->_ready) {
+			/*auto light = rawrbox::LIGHTS::getLight(0);
+			if (light != nullptr) {
+				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
+			}*/
 
-			auto light = rawrbox::LIGHTS::getLight(0);
+			auto light = rawrbox::LIGHTS::getLight(1);
 			if (light != nullptr) {
 				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
 			}
 
-			light = rawrbox::LIGHTS::getLight(1);
+			light = rawrbox::LIGHTS::getLight(2); // SUN
 			if (light != nullptr) {
-				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
+				light->setDirection({0, std::sin(rawrbox::FRAME * 0.01F) * 1.F, 0});
 			}
-		}*/
+		}
 	}
 
 	void Game::drawWorld() {

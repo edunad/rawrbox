@@ -32,9 +32,6 @@ namespace rawrbox {
 		Diligent::IPipelineState* _clusterBuildingComputeProgram = nullptr;
 		Diligent::IShaderResourceBinding* _clusterBuildingComputeBind = nullptr;
 
-		// Diligent::IShaderResourceBinding* _clusterResetComputeBind = nullptr;
-		// Diligent::IPipelineState* _clusterResetComputeProgram = nullptr;
-
 		Diligent::IPipelineState* _lightCullingComputeProgram = nullptr;
 		Diligent::IShaderResourceBinding* _lightCullingComputeBind = nullptr;
 

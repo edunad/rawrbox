@@ -5,7 +5,7 @@
 #include <cluster.fxh>
 
 float GetDepthFromSlice(uint slice, float2 nearFar) {
-	return nearFar.x * pow(nearFar.y / nearFar.x, (float)slice / (float)CLUSTERS_Z);
+	return nearFar.x * pow(abs(nearFar.y / nearFar.x), (float)slice / (float)CLUSTERS_Z);
 }
 
 float3 LineFromOriginZIntersection(float3 lineFromOrigin, float depth) {

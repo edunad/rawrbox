@@ -1,6 +1,4 @@
 
-#include <lit_pixel_uniforms.fxh>
-
 #define READ_CLUSTER_DATA_GRID
 #include <cluster.fxh>
 #include <colormap.fxh>
@@ -23,7 +21,7 @@ struct PSOutput {
 };
 
 uint GetSliceFromDepth(float depth) {
-	return floor(log(depth) * g_LightGridParams.x - g_LightGridParams.y);
+	return 0;//floor(log(depth) * g_LightGridParams.x - g_LightGridParams.y);
 }
 
 void main(in PSInput PSIn, out PSOutput PSOut) {

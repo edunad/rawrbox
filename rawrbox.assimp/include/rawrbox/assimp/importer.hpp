@@ -58,11 +58,13 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::TextureBase> normal = nullptr;
 		std::unique_ptr<rawrbox::TextureBase> specular = nullptr;
 		rawrbox::Colorf specularColor = rawrbox::Colors::White();
-		float shininess = 25.F;
+
+		float roughness = 1.F;
+		float metalness = 0.F;
+		float emission = 1.F;
 
 		std::unique_ptr<rawrbox::TextureBase> emissive = nullptr;
 		rawrbox::Colorf emissionColor = rawrbox::Colors::White();
-		float intensity = 1.F;
 
 		explicit AssimpMaterial(std::string _name) : name(std::move(_name)){};
 	};
@@ -86,6 +88,9 @@ namespace rawrbox {
 
 		float angleInnerCone = 0.F;
 		float angleOuterCone = 0.F;
+
+		float size = 0.F;
+		float intensity = 0.F;
 	};
 
 	struct AssimpBlendShapes {

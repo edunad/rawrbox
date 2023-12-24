@@ -11,7 +11,7 @@
         float4x4 g_viewProj;
         float4x4 g_viewProjInv;
 
-        float4x4 g_model;
+        float4x4 g_world;
         float4x4 g_worldViewProj;
 
         float4   g_nearFar;

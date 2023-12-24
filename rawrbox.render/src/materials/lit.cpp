@@ -113,7 +113,7 @@ namespace rawrbox {
 
 			debugSettings.resources = {
 			    {Diligent::SHADER_TYPE_VERTEX, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-			    {Diligent::SHADER_TYPE_PIXEL, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+			    //{Diligent::SHADER_TYPE_PIXEL, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
 			    {Diligent::SHADER_TYPE_VERTEX, "Camera", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
@@ -121,7 +121,7 @@ namespace rawrbox {
 
 			debugSettings.uniforms = {
 			    {Diligent::SHADER_TYPE_VERTEX, _uniforms, "Constants"},
-			    {Diligent::SHADER_TYPE_PIXEL, _uniforms_pixel, "Constants"},
+			    //{Diligent::SHADER_TYPE_PIXEL, _uniforms_pixel, "Constants"},
 
 			    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
 
