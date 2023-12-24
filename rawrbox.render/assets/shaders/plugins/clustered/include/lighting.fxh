@@ -140,74 +140,84 @@
 
         LightResult DefaultLitBxDF(float3 specular, float specularRoughness, float3 diffuse, half3 N, half3 V, half3 L, float falloff) {
             LightResult lighting = (LightResult)0;
-            if(falloff <= 0.0f) return lighting;
 
-            float NdotL = saturate(dot(N, L));
-            if(NdotL == 0.0f) return lighting;
+            if(falloff <= 0.0f) {
+                return lighting;
+            } else {
+                float NdotL = saturate(dot(N, L));
 
-            float3 H = normalize(V + L);
-            float NdotV = saturate(abs(dot(N, V)) + 1e-5); // Bias to avoid artifacting
-            float NdotH = saturate(dot(N, H));
-            float VdotH = saturate(dot(V, H));
+                if(NdotL == 0.0f) {
+                    return lighting;
+                } else {
+                    float3 H = normalize(V + L);
+                    float NdotV = saturate(abs(dot(N, V)) + 1e-5); // Bias to avoid artifacting
+                    float NdotH = saturate(dot(N, H));
+                    float VdotH = saturate(dot(V, H));
 
-            // Generalized microfacet Specular BRDF
-            float a = Square(specularRoughness);
-            float a2 = clamp(Square(a), 0.0001f, 1.0f);
-            float D = D_GGX(a2, NdotH);
-            float Vis = Vis_SmithJointApprox(a2, NdotV, NdotL);
-            float3 F = F_Schlick(specular, VdotH);
-            lighting.Specular = (falloff * NdotL) * (D * Vis) * F;
+                    // Generalized microfacet Specular BRDF
+                    float a = Square(specularRoughness);
+                    float a2 = clamp(Square(a), 0.0001f, 1.0f);
+                    float D = D_GGX(a2, NdotH);
+                    float Vis = Vis_SmithJointApprox(a2, NdotV, NdotL);
+                    float3 F = F_Schlick(specular, VdotH);
+                    lighting.Specular = (falloff * NdotL) * (D * Vis) * F;
 
 
-            // Kulla17 - Energy conervation due to multiple scattering
-            /*float gloss = Pow4(1 - specularRoughness);
-            float3 DFG = EnvDFGPolynomial(specular, gloss, NdotV);
-            float3 energyCompensation = 1.0f + specular * (1.0f / DFG.y - 1.0f);
-            lighting.Specular *= energyCompensation;*/
+                    // Kulla17 - Energy conervation due to multiple scattering
+                    /*float gloss = Pow4(1 - specularRoughness);
+                    float3 DFG = EnvDFGPolynomial(specular, gloss, NdotV);
+                    float3 energyCompensation = 1.0f + specular * (1.0f / DFG.y - 1.0f);
+                    lighting.Specular *= energyCompensation;*/
 
-            // Diffuse BRDF
-            lighting.Diffuse = (falloff * NdotL) * Diffuse_Lambert(diffuse);
+                    // Diffuse BRDF
+                    lighting.Diffuse = (falloff * NdotL) * Diffuse_Lambert(diffuse);
 
-            return lighting;
+                    return lighting;
+                }
+            }
         }
 
         LightResult ApplyLight(float3 specular, float R, float3 diffuse, float3 N, float3 V, float3 worldPos, float4 pos, float dither) {
-            if(g_LightSettings.x == 1.0) return (LightResult)1; // FULL BRIGHT
             LightResult lighting = (LightResult)0;
 
-            uint3 clusterIndex3D = uint3(floor(pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(pos.w));
-            uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
-            uint lightGridOffset = tileIndex * CLUSTERED_LIGHTING_NUM_BUCKETS;
+            if(g_LightSettings.x == 1.0) {
+                lighting.Diffuse = diffuse;  // FULL BRIGHT
+                return lighting;
+            } else {
+                uint3 clusterIndex3D = uint3(floor(pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(pos.w));
+                uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
+                uint lightGridOffset = tileIndex * CLUSTERED_LIGHTING_NUM_BUCKETS;
 
-            for(uint bucketIndex = 0; bucketIndex < CLUSTERED_LIGHTING_NUM_BUCKETS; ++bucketIndex) {
-                uint bucket = g_ClusterDataGrid[lightGridOffset + bucketIndex];
+                for(uint bucketIndex = 0; bucketIndex < CLUSTERED_LIGHTING_NUM_BUCKETS; ++bucketIndex) {
+                    uint bucket = g_ClusterDataGrid[lightGridOffset + bucketIndex];
 
-                while(bucket) {
-                    uint bitIndex = firstbitlow(bucket);
-                    bucket ^= 1u << bitIndex;
+                    while(bucket) {
+                        uint bitIndex = firstbitlow(bucket);
+                        bucket ^= 1u << bitIndex;
 
-                    uint lightIndex = bitIndex + bucketIndex * CLUSTERS_Z;
-					Light light = g_Lights[lightIndex];
+                        uint lightIndex = bitIndex + bucketIndex * CLUSTERS_Z;
+                        Light light = g_Lights[lightIndex];
 
-                    // Apply light ------------
-                    float3 L;
-                    float attenuation = GetAttenuation(light, worldPos, L);
-                    LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
+                        // Apply light ------------
+                        float3 L;
+                        float attenuation = GetAttenuation(light, worldPos, L);
+                        LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
 
-                    result.Diffuse *= light.color * light.intensity;
-                    result.Specular *= light.color;
-                    // ------------------------
+                        result.Diffuse *= light.color * light.intensity;
+                        result.Specular *= light.color;
+                        // ------------------------
 
-                    lighting.Diffuse += result.Diffuse;
-                    lighting.Specular += result.Specular;
+                        lighting.Diffuse += result.Diffuse;
+                        lighting.Specular += result.Specular;
+                    }
                 }
+
+                // AMBIENT LIGHT ---
+                lighting.Diffuse *= g_AmbientColor.rgb;
+                // -----------------
+
+                return lighting;
             }
-
-            // AMBIENT LIGHT ---
-            lighting.Diffuse *= g_AmbientColor.rgb;
-            // -----------------
-
-            return lighting;
         }
 
     #endif

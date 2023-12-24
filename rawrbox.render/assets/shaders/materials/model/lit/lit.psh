@@ -75,10 +75,10 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	float4 emissionTS = g_Emission.Sample(g_Emission_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
 
     // LIGHT ------
-	float3 V           = normalize(g_cameraPos.xyz - PSIn.WorldPos);
+	float3 V           = normalize(g_cameraPos.xyz - PSIn.WorldPos.xyz);
 	float dither       = InterleavedGradientNoise(PSIn.Pos.xy);
 
-    float3 specular    = ComputeF0(specularTS.rgb, diffuseTS.rgb, MetalPower);
+    float3 specular    = ComputeF0(specularTS.r, diffuseTS.rgb, MetalPower);
     float3 diffuse     = ComputeDiffuseColor(diffuseTS.rgb, MetalPower);
 
     LightResult result = ApplyLight(specular, RoughtnessPower, diffuse, normal, V, PSIn.WorldPos.xyz, PSIn.Pos, dither);
@@ -86,13 +86,6 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	float3 outRadiance = 0;
 	outRadiance += result.Diffuse + result.Specular;
 	outRadiance += emissionTS.rgb * EmissionPower;
-
-    /*
-	outRadiance += ambientOcclusion * Diffuse_Lambert(brdfData.Diffuse) * SampleDDGIIrradiance(input.PositionWS, surface.Normal, -V);
-	outRadiance += lighting.Diffuse + lighting.Specular;
-	outRadiance += ssr * ambientOcclusion;
-	outRadiance += surface.Emissive;
-    */
     // ------------
 
     PSOut.Color.rgb = outRadiance;

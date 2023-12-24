@@ -428,11 +428,11 @@ namespace rawrbox {
 					pNode = sc->mRootNode->FindNode(meshName.c_str());
 					if (pNode == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to find animated mesh '{}'", meshName));
 
-					for (size_t p = 0; p < pNode->mNumChildren; i++) {
+					for (size_t p = 0; p < pNode->mNumChildren; p++) {
 						this->markMeshAnimated(meshName, pNode->mChildren[p]->mName.data);
 					}
 
-					for (size_t n = 0; n < pNode->mNumMeshes; ++n) {
+					for (size_t n = 0; n < pNode->mNumMeshes; n++) {
 						this->markMeshAnimated(meshName, sc->mMeshes[pNode->mMeshes[n]]->mName.data);
 					}
 
