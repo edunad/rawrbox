@@ -3,10 +3,11 @@
 #include <rawrbox/render/materials/base.hpp>
 
 namespace rawrbox {
-
 	class MaterialUnlit : public rawrbox::MaterialBase {
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 		static bool _built;
+
+	protected:
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 
 	public:
 		using vertexBufferType = rawrbox::VertexData;
@@ -19,6 +20,8 @@ namespace rawrbox {
 		~MaterialUnlit() override = default;
 
 		void init() override;
+		void createUniforms() override;
+		void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::IBuffer* uniforms, Diligent::IBuffer* pixelUniforms = nullptr, Diligent::ShaderMacroHelper helper = {}) override;
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {

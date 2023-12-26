@@ -46,12 +46,13 @@ namespace rawrbox {
 		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateTriangle(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector3f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector3f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC) {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
+			rawrbox::Vector3f norm = -rawrbox::Vector3f::forward();
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				mesh.vertices = {
-				    rawrbox::VertexNormData(pos + a, aUV, rawrbox::Vector3f::forward(), {}, colA),
-				    rawrbox::VertexNormData(pos + b, bUV, rawrbox::Vector3f::forward(), {}, colB),
-				    rawrbox::VertexNormData(pos + c, cUV, rawrbox::Vector3f::forward(), {}, colC),
+				    rawrbox::VertexNormData(pos + a, aUV, norm, norm, colA),
+				    rawrbox::VertexNormData(pos + b, bUV, norm, norm, colB),
+				    rawrbox::VertexNormData(pos + c, cUV, norm, norm, colC),
 				};
 			} else {
 				mesh.vertices = {
@@ -93,13 +94,14 @@ namespace rawrbox {
 		static rawrbox::Mesh<typename M::vertexBufferType> generatePlane(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			rawrbox::Vector2f hSize = size / 2.F;
+			rawrbox::Vector3f norm = -rawrbox::Vector3f::forward();
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				mesh.vertices = {
-				    rawrbox::VertexNormData(pos + rawrbox::Vector3f(-hSize.x, -hSize.y, 0), rawrbox::Vector2f(0, 1), {1, 0, 0}, {}, cl),
-				    rawrbox::VertexNormData(pos + rawrbox::Vector3f(hSize.x, hSize.y, 0), rawrbox::Vector2f(1, 0), {1, 0, 0}, {}, cl),
-				    rawrbox::VertexNormData(pos + rawrbox::Vector3f(-hSize.x, hSize.y, 0), rawrbox::Vector2f(0, 0), {1, 0, 0}, {}, cl),
-				    rawrbox::VertexNormData(pos + rawrbox::Vector3f(hSize.x, -hSize.y, 0), rawrbox::Vector2f(1, 1), {1, 0, 0}, {}, cl),
+				    rawrbox::VertexNormData(pos + rawrbox::Vector3f(-hSize.x, -hSize.y, 0), rawrbox::Vector2f(0, 1), norm, norm, cl),
+				    rawrbox::VertexNormData(pos + rawrbox::Vector3f(hSize.x, hSize.y, 0), rawrbox::Vector2f(1, 0), norm, norm, cl),
+				    rawrbox::VertexNormData(pos + rawrbox::Vector3f(-hSize.x, hSize.y, 0), rawrbox::Vector2f(0, 0), norm, norm, cl),
+				    rawrbox::VertexNormData(pos + rawrbox::Vector3f(hSize.x, -hSize.y, 0), rawrbox::Vector2f(1, 1), norm, norm, cl),
 				};
 			} else {
 				mesh.vertices = {
@@ -134,10 +136,10 @@ namespace rawrbox {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			rawrbox::Vector3f hSize = size / 2.F;
 
-			auto nmrlB = rawrbox::Vector3f(-1, 0, 0);
-			auto nmrlF = rawrbox::Vector3f(1, 0, 0);
-			auto nmrlR = rawrbox::Vector3f(0, 0, -1);
-			auto nmrlL = rawrbox::Vector3f(0, 0, 1);
+			auto nmrlB = rawrbox::Vector3f(0, 0, 1);
+			auto nmrlF = rawrbox::Vector3f(0, 0, -1);
+			auto nmrlR = rawrbox::Vector3f(1, 0, 0);
+			auto nmrlL = rawrbox::Vector3f(-1, 0, 0);
 			auto nmrlT = rawrbox::Vector3f(0, 1, 0);
 			auto nmrlBT = rawrbox::Vector3f(0, -1, 0);
 

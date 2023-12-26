@@ -43,8 +43,9 @@ namespace rawrbox {
 
 	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::ShaderMacroArray macros) {
 		if (name.empty()) return nullptr;
+		std::string id = fmt::format("{}-{}", name, macros.Count);
 
-		auto fnd = _shaders.find(name);
+		auto fnd = _shaders.find(id);
 		if (fnd != _shaders.end()) {
 			return fnd->second;
 		}
@@ -71,8 +72,8 @@ namespace rawrbox {
 		fmt::print("[RawrBox-Shader] Compiled shader '{}'\n", name);
 		if (!compilerOutput.empty()) fmt::print("  └── {}\n", compilerOutput);
 
-		_shaders[name] = std::move(shader);
-		return _shaders[name];
+		_shaders[id] = std::move(shader);
+		return _shaders[id];
 	}
 
 	Diligent::IPipelineState* PipelineUtils::createComputePipeline(const std::string& name, const std::string& bindName, const rawrbox::PipeComputeSettings settings) {

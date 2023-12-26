@@ -43,6 +43,12 @@ namespace rawrbox {
 		virtual ~MaterialBase() = default;
 
 		virtual void init() = 0;
+		virtual void createUniforms() = 0;
+
+		virtual void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::IBuffer* uniforms, Diligent::IBuffer* pixelUniforms = nullptr, Diligent::ShaderMacroHelper helper = {});
+		virtual void setupPipelines(const std::string& id);
+
+		virtual void bindShaderResources();
 
 		template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBaseUniforms>
 		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<P>& helper) {
@@ -108,7 +114,5 @@ namespace rawrbox {
 		void bindTexture(const rawrbox::Mesh<T>& /*mesh*/) {
 			throw std::runtime_error("[RawrBox-Material] Missing implementation");
 		}
-
-		virtual void bindShaderResources() = 0;
 	};
 } // namespace rawrbox

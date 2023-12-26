@@ -1,7 +1,9 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
+#include <rawrbox/render/materials/instancedLit.hpp>
 #include <rawrbox/render/materials/lit.hpp>
+#include <rawrbox/render/models/instanced.hpp>
 #include <rawrbox/render/models/model.hpp>
 #include <rawrbox/render/models/text3D.hpp>
 #include <rawrbox/render/text/engine.hpp>
@@ -12,6 +14,7 @@ namespace light {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Model<rawrbox::MaterialLit>> _model2 = std::make_unique<rawrbox::Model<rawrbox::MaterialLit>>();
+		std::unique_ptr<rawrbox::InstancedModel<rawrbox::MaterialInstancedLit>> _model3 = std::make_unique<rawrbox::InstancedModel<rawrbox::MaterialInstancedLit>>();
 		std::unique_ptr<rawrbox::Text3D<>> _text = std::make_unique<rawrbox::Text3D<>>();
 
 		rawrbox::Font* _font = nullptr;

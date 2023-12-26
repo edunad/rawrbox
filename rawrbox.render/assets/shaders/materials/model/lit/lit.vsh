@@ -1,12 +1,16 @@
 
-#include <lit_uniforms.fxh>
+#include <uniforms.fxh>
+
+#define TEXTURE_DATA
+#include <material.fxh>
 
 #define TRANSFORM_DISPLACEMENT
 #define TRANSFORM_PSX
 #define TRANSFORM_BILLBOARD
-#define TEXTURE_DATA
+#ifdef SKINNED
+    #define TRANSFORM_BONES
+#endif
 
-#include <material.fxh>
 #include <model_transforms.fxh>
 
 struct VSInput {
@@ -17,6 +21,31 @@ struct VSInput {
 
     float3 Normal  : ATTRIB3;
     float3 Tangent : ATTRIB4;
+
+    #ifdef SKINNED
+        uint4 BoneIndex   : ATTRIB5;
+        float4 BoneWeight : ATTRIB6;
+
+        #ifdef INSTANCED
+            // Instance attributes
+            float4 MtrxRow0      : ATTRIB7;
+            float4 MtrxRow1      : ATTRIB8;
+            float4 MtrxRow2      : ATTRIB9;
+            float4 MtrxRow3      : ATTRIB10;
+            float4 ColorOverride : ATTRIB11;
+            float4 Extra         : ATTRIB12;
+        #endif
+    #else
+        #ifdef INSTANCED
+            // Instance attributes
+            float4 MtrxRow0      : ATTRIB5;
+            float4 MtrxRow1      : ATTRIB6;
+            float4 MtrxRow2      : ATTRIB7;
+            float4 MtrxRow3      : ATTRIB8;
+            float4 ColorOverride : ATTRIB9;
+            float4 Extra         : ATTRIB10;
+        #endif
+    #endif
 };
 
 struct PSInput {
@@ -34,7 +63,18 @@ struct PSInput {
 
 
 void main(in VSInput VSIn, out PSInput PSIn) {
-    TransformedData transform = applyPosTransforms(VSIn.Pos, VSIn.UV.xy);
+    #ifdef SKINNED
+        float4 pos = boneTransform(VSIn.BoneIndex, VSIn.BoneWeight, VSIn.Pos);
+    #else
+        float4 pos = float4(VSIn.Pos, 1.);
+    #endif
+
+    #ifdef INSTANCED
+        float4x4 InstanceMatr = MatrixFromRows(VSIn.MtrxRow0, VSIn.MtrxRow1, VSIn.MtrxRow2, VSIn.MtrxRow3);
+        TransformedData transform = applyPosTransforms(mul(pos, InstanceMatr), VSIn.UV.xy);
+    #else
+        TransformedData transform = applyPosTransforms(pos, VSIn.UV.xy);
+    #endif
 
     PSIn.Normal   = mul(float4(VSIn.Normal, 0.0), g_world);
     PSIn.Tangent  = mul(float4(VSIn.Tangent, 0.0), g_world);
@@ -42,7 +82,12 @@ void main(in VSInput VSIn, out PSInput PSIn) {
     PSIn.Pos      = transform.final;
     PSIn.WorldPos = mul(transform.pos, g_world);
     PSIn.UV       = applyUVTransform(VSIn.UV.xy);
-    PSIn.TexIndex = VSIn.UV.z;
 
-    PSIn.Color    = VSIn.Color * g_Model.colorOverride;
+    #ifdef INSTANCED
+        PSIn.Color    = VSIn.Color * VSIn.ColorOverride * g_Model.colorOverride;
+        PSIn.TexIndex = VSIn.Extra.x;
+    #else
+        PSIn.Color    = VSIn.Color * g_Model.colorOverride;
+        PSIn.TexIndex = VSIn.UV.z;
+    #endif
 }

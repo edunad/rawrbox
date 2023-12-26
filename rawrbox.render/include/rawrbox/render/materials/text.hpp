@@ -8,10 +8,11 @@ namespace rawrbox {
 	};
 
 	class MaterialText3D : public rawrbox::MaterialUnlit {
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 		static bool _build;
 
 	public:
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
+
 		using vertexBufferType = rawrbox::VertexData;
 
 		MaterialText3D() = default;
@@ -22,6 +23,7 @@ namespace rawrbox {
 		~MaterialText3D() override = default;
 
 		void init() override;
+		void createUniforms() override;
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
@@ -29,7 +31,7 @@ namespace rawrbox {
 			auto context = renderer->context();
 
 			// SETUP UNIFORMS ----------------------------
-			Diligent::MapHelper<rawrbox::MaterialTextUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			Diligent::MapHelper<rawrbox::MaterialTextUniforms> CBConstants(context, this->uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 			CBConstants->_gBillboard = mesh.getData("billboard_mode");
 		}
 

@@ -27,9 +27,8 @@ namespace rawrbox {
 		rawrbox::Vector3f _direction = {};
 
 		rawrbox::Colorf _color = rawrbox::Colors::White();
-
 		float _radius = 5.F;
-		float _intensity = 10.F;
+		float _intensity = 1.F;
 
 #ifdef RAWRBOX_SCRIPTING
 		sol::object _luaWrapper;
@@ -37,7 +36,7 @@ namespace rawrbox {
 #endif
 
 	public:
-		LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float intensity, float radius);
+		LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius);
 		LightBase(const LightBase&) = delete;
 		LightBase(LightBase&&) = delete;
 		LightBase& operator=(const LightBase&) = delete;

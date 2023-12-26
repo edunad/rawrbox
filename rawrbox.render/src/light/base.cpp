@@ -6,7 +6,7 @@
 #endif
 
 namespace rawrbox {
-	LightBase::LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float intensity, float radius) : _pos(pos), _color(color), _intensity(intensity), _radius(radius){};
+	LightBase::LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius) : _pos(pos), _color(color), _radius(radius){};
 
 #ifdef RAWRBOX_SCRIPTING
 	LightBase::~LightBase() {

@@ -328,7 +328,7 @@ namespace rawrbox {
 
 		// LIGHTS ------
 		template <typename T = rawrbox::LightBase, typename... CallbackArgs>
-		void addLight(const std::string& parentMesh = "", CallbackArgs&&... args) {
+		T* addLight(const std::string& parentMesh = "", CallbackArgs&&... args) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				auto parent = this->_meshes.back().get();
 				if (!parentMesh.empty()) {
@@ -342,7 +342,11 @@ namespace rawrbox {
 				auto light = rawrbox::LIGHTS::addLight<T>(std::forward<CallbackArgs>(args)...);
 				light->setOffsetPos(parent->getPos() + this->getPos());
 				parent->lights.push_back(light);
+
+				return dynamic_cast<T*>(light);
 			}
+
+			return nullptr;
 		}
 		// -----
 

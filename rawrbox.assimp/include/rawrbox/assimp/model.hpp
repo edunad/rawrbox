@@ -59,16 +59,17 @@ namespace rawrbox {
 
 		void loadLights(const rawrbox::AssimpImporter& model) {
 			for (auto& assimpLights : model.lights) {
+				rawrbox::LightBase* light = nullptr;
 
 				switch (assimpLights.type) {
 					case rawrbox::LightType::POINT:
-						this->template addLight<rawrbox::PointLight>(assimpLights.parentID, assimpLights.pos, assimpLights.diffuse, assimpLights.intensity, 10.F); // TODO: BROKEN
+						light = this->template addLight<rawrbox::PointLight>(assimpLights.parentID, assimpLights.pos, assimpLights.diffuse, 10.F); // TODO: BROKEN
 						break;
 					case rawrbox::LightType::SPOT:
-						this->template addLight<rawrbox::SpotLight>(assimpLights.parentID, assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, assimpLights.intensity, 10.F); // TODO: BROKEN
+						light = this->template addLight<rawrbox::SpotLight>(assimpLights.parentID, assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, 10.F); // TODO: BROKEN
 						break;
 					case rawrbox::LightType::DIR:
-						this->template addLight<rawrbox::DirectionalLight>(assimpLights.parentID, assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.intensity);
+						light = this->template addLight<rawrbox::DirectionalLight>(assimpLights.parentID, assimpLights.pos, assimpLights.direction, assimpLights.diffuse);
 						break;
 
 					default:
@@ -76,6 +77,8 @@ namespace rawrbox {
 						fmt::print("[RawrBox-Assimp] Failed to create unknown light '{}'\n", assimpLights.name);
 						break;
 				}
+
+				if (light != nullptr) light->setIntensity(assimpLights.intensity);
 			}
 		}
 		// -------------------

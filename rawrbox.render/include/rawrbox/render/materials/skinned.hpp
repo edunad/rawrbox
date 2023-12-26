@@ -9,8 +9,10 @@ namespace rawrbox {
 	};
 
 	class MaterialSkinned : public rawrbox::MaterialUnlit {
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 		static bool _built;
+
+	protected:
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 
 	public:
 		using vertexBufferType = rawrbox::VertexBoneData;
@@ -23,6 +25,7 @@ namespace rawrbox {
 		~MaterialSkinned() override = default;
 
 		void init() override;
+		void createUniforms() override;
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {

@@ -7,24 +7,29 @@
 
 namespace rawrbox {
 	// STATIC DATA ----
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialText3D::_uniforms;
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialText3D::uniforms;
 	bool MaterialText3D::_build = false;
 	// ----------------
+
+	void MaterialText3D::createUniforms() {
+		if (uniforms != nullptr) return;
+
+		// Uniforms -------
+		Diligent::BufferDesc CBDesc;
+		CBDesc.Name = "rawrbox::MaterialText3D::Uniforms";
+		CBDesc.Size = sizeof(rawrbox::MaterialTextUniforms);
+		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+
+		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &uniforms);
+		// ------------
+	}
 
 	void MaterialText3D::init() {
 		if (!_build) {
 			fmt::print("[RawrBox-MaterialText3D] Building material..\n");
-
-			// Uniforms -------
-			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::MaterialText3D::Uniforms";
-			CBDesc.Size = sizeof(rawrbox::MaterialTextUniforms);
-			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-
-			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &_uniforms);
-			// ------------
+			this->createUniforms();
 
 			// PIPELINE ----
 			rawrbox::PipeSettings settings;
@@ -35,7 +40,7 @@ namespace rawrbox {
 			settings.layout = rawrbox::VertexData::vLayout();
 			settings.uniforms = {
 			    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
-			    {Diligent::SHADER_TYPE_VERTEX, _uniforms, "Constants"}};
+			    {Diligent::SHADER_TYPE_VERTEX, uniforms, "Constants"}};
 			settings.resources = {
 			    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 

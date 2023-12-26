@@ -9,22 +9,13 @@ namespace rawrbox {
 	};
 
 	class MaterialLit : public rawrbox::MaterialBase {
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms_pixel;
-
 		static bool _built;
 
 	protected:
-#ifdef _DEBUG
-		Diligent::IPipelineState* _debug_cluster = nullptr;
-		Diligent::IShaderResourceBinding* _bind_debug_cluster = nullptr;
-#endif
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms_pixel;
 
 	public:
-#ifdef _DEBUG
-		static int DEBUG_LEVEL;
-#endif
-
 		using vertexBufferType = rawrbox::VertexNormData;
 
 		MaterialLit() = default;
@@ -35,33 +26,30 @@ namespace rawrbox {
 		~MaterialLit() override = default;
 
 		void init() override;
+		void createUniforms() override;
+		void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::IBuffer* uniforms, Diligent::IBuffer* pixelUniforms = nullptr, Diligent::ShaderMacroHelper helper = {}) override;
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
 			auto context = rawrbox::RENDERER->context();
 			auto camera = rawrbox::MAIN_CAMERA;
 
+			// SETUP UNIFORMS ----------------------------
 			{
-				// SETUP UNIFORMS ----------------------------
 				Diligent::MapHelper<rawrbox::MaterialBaseUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 				this->bindBaseUniforms<T, rawrbox::MaterialBaseUniforms>(mesh, CBConstants);
-				// ------------
 			}
 
 			{
 				Diligent::MapHelper<rawrbox::MaterialLitPixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 				CBConstants->g_LitData = {mesh.roughness, mesh.emissionIntensity, mesh.metalness};
-			}
+			} // ------------
 		}
 
 		template <typename T = rawrbox::VertexData>
 		void bindTexture(const rawrbox::Mesh<T>& mesh) {
 			if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] Material not bound, did you call 'init'?");
 			auto context = rawrbox::RENDERER->context();
-
-#ifdef _DEBUG
-			if (DEBUG_LEVEL != 0) return; // Debug does not have textures
-#endif
 
 			rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
 			rawrbox::TextureBase* textureDisplacement = rawrbox::BLACK_TEXTURE.get();
@@ -109,21 +97,5 @@ namespace rawrbox {
 			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Displacement");
 			if (texBind != nullptr) texBind->Set(textureDisplacement->getHandle());
 		}
-
-#ifdef _DEBUG
-		template <typename T = rawrbox::VertexData>
-		void bindPipeline(const rawrbox::Mesh<T>& mesh) {
-			auto context = rawrbox::RENDERER->context();
-
-			if (DEBUG_LEVEL == 1) {
-				context->SetPipelineState(this->_debug_cluster);
-			} else {
-				rawrbox::MaterialBase::bindPipeline<T>(mesh);
-			}
-		}
-#endif
-
-		void bindShaderResources() override;
 	};
-
 } // namespace rawrbox

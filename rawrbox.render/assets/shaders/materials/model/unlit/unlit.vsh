@@ -1,5 +1,5 @@
 
-#include <unlit_uniforms.fxh>
+#include <uniforms.fxh>
 
 #define TEXTURE_DATA
 #include <material.fxh>
@@ -7,12 +7,42 @@
 #define TRANSFORM_DISPLACEMENT
 #define TRANSFORM_PSX
 #define TRANSFORM_BILLBOARD
+#ifdef SKINNED
+    #define TRANSFORM_BONES
+#endif
+
 #include <model_transforms.fxh>
 
 struct VSInput {
     float3 Pos   : ATTRIB0;
+
     float4 UV    : ATTRIB1;
     float4 Color : ATTRIB2;
+
+    #ifdef SKINNED
+        uint4 BoneIndex   : ATTRIB3;
+        float4 BoneWeight : ATTRIB4;
+
+        #ifdef INSTANCED
+            // Instance attributes
+            float4 MtrxRow0      : ATTRIB5;
+            float4 MtrxRow1      : ATTRIB6;
+            float4 MtrxRow2      : ATTRIB7;
+            float4 MtrxRow3      : ATTRIB8;
+            float4 ColorOverride : ATTRIB9;
+            float4 Extra         : ATTRIB10;
+        #endif
+    #else
+        #ifdef INSTANCED
+            // Instance attributes
+            float4 MtrxRow0      : ATTRIB3;
+            float4 MtrxRow1      : ATTRIB4;
+            float4 MtrxRow2      : ATTRIB5;
+            float4 MtrxRow3      : ATTRIB6;
+            float4 ColorOverride : ATTRIB7;
+            float4 Extra         : ATTRIB8;
+        #endif
+    #endif
 };
 
 struct PSInput {
@@ -25,10 +55,27 @@ struct PSInput {
 
 
 void main(in VSInput VSIn, out PSInput PSIn) {
-    TransformedData transform = applyPosTransforms(VSIn.Pos, VSIn.UV.xy);
+    #ifdef SKINNED
+        float4 pos = boneTransform(VSIn.BoneIndex, VSIn.BoneWeight, VSIn.Pos);
+    #else
+        float4 pos = float4(VSIn.Pos, 1.);
+    #endif
 
-    PSIn.Pos      = transform.final;
-    PSIn.UV       = applyUVTransform(VSIn.UV.xy);
-    PSIn.TexIndex = VSIn.UV.z;
-    PSIn.Color    = VSIn.Color * g_Model.colorOverride;
+    #ifdef INSTANCED
+        float4x4 InstanceMatr = MatrixFromRows(VSIn.MtrxRow0, VSIn.MtrxRow1, VSIn.MtrxRow2, VSIn.MtrxRow3);
+        TransformedData transform = applyPosTransforms(mul(pos, InstanceMatr), VSIn.UV.xy);
+    #else
+        TransformedData transform = applyPosTransforms(pos, VSIn.UV.xy);
+    #endif
+
+    PSIn.Pos          = transform.final;
+    PSIn.UV           = applyUVTransform(VSIn.UV.xy);
+
+    #ifdef INSTANCED
+        PSIn.Color    = VSIn.Color * VSIn.ColorOverride * g_Model.colorOverride;
+        PSIn.TexIndex = VSIn.Extra.x;
+    #else
+        PSIn.Color    = VSIn.Color * g_Model.colorOverride;
+        PSIn.TexIndex = VSIn.UV.z;
+    #endif
 }

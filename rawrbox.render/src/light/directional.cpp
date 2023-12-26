@@ -1,7 +1,7 @@
 #include <rawrbox/render/light/directional.hpp>
 
 namespace rawrbox {
-	DirectionalLight::DirectionalLight(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colorf& color, float intensity) : rawrbox::LightBase(pos, color, intensity, 0) {
+	DirectionalLight::DirectionalLight(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colorf& color) : rawrbox::LightBase(pos, color, 0) {
 		this->_direction = direction.normalized();
 	};
 

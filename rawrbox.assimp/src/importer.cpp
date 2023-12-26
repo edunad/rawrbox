@@ -205,8 +205,15 @@ namespace rawrbox {
 				mat->specular = std::move(specular[0].value()); // Only support one for the moment
 			}
 
-			pMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, mat->roughness);
-			pMaterial->Get(AI_MATKEY_METALLIC_FACTOR, mat->metalness);
+			ai_real rought = 0.F;
+			if (pMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, rought) == AI_SUCCESS) {
+				mat->roughness = rought;
+			}
+
+			ai_real metal = 0.F;
+			if (pMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metal) == AI_SUCCESS) {
+				mat->metalness = metal;
+			}
 
 			aiColor3D specularColor;
 			if (pMaterial->Get(AI_MATKEY_COLOR_SPECULAR, specularColor) == AI_SUCCESS) {

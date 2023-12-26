@@ -138,7 +138,7 @@
             return baseColor * (1 - metalness);
         }
 
-        LightResult DefaultLitBxDF(float3 specular, float specularRoughness, float3 diffuse, half3 N, half3 V, half3 L, float falloff) {
+        LightResult DefaultLitBxDF(float3 specularColor, float specularRoughness, float3 diffuseColor, half3 N, half3 V, half3 L, float falloff) {
             LightResult lighting = (LightResult)0;
 
             if(falloff <= 0.0f) {
@@ -149,29 +149,30 @@
                 if(NdotL == 0.0f) {
                     return lighting;
                 } else {
-                    float3 H = normalize(V + L);
-                    float NdotV = saturate(abs(dot(N, V)) + 1e-5); // Bias to avoid artifacting
-                    float NdotH = saturate(dot(N, H));
-                    float VdotH = saturate(dot(V, H));
+                    if(specularColor.r != 0.0 && specularColor.g != 0.0 && specularColor.b != 0.0) { // No specular texture?
+                        float3 H = normalize(V + L);
+                        float NdotV = saturate(abs(dot(N, V)) + 1e-5); // Bias to avoid artifacting
+                        float NdotH = saturate(dot(N, H));
+                        float VdotH = saturate(dot(V, H));
 
-                    // Generalized microfacet Specular BRDF
-                    float a = Square(specularRoughness);
-                    float a2 = clamp(Square(a), 0.0001f, 1.0f);
-                    float D = D_GGX(a2, NdotH);
-                    float Vis = Vis_SmithJointApprox(a2, NdotV, NdotL);
-                    float3 F = F_Schlick(specular, VdotH);
-                    lighting.Specular = (falloff * NdotL) * (D * Vis) * F;
+                        // Generalized microfacet Specular BRDF
+                        float a = Square(specularRoughness);
+                        float a2 = clamp(Square(a), 0.0001f, 1.0f);
+                        float D = D_GGX(a2, NdotH);
+                        float Vis = Vis_SmithJointApprox(a2, NdotV, NdotL);
+                        float3 F = F_Schlick(specularColor, VdotH);
 
+                        lighting.Specular = (falloff * NdotL) * (D * Vis) * F;
 
-                    // Kulla17 - Energy conervation due to multiple scattering
-                    /*float gloss = Pow4(1 - specularRoughness);
-                    float3 DFG = EnvDFGPolynomial(specular, gloss, NdotV);
-                    float3 energyCompensation = 1.0f + specular * (1.0f / DFG.y - 1.0f);
-                    lighting.Specular *= energyCompensation;*/
+                        // Kulla17 - Energy conervation due to multiple scattering
+                        /*float gloss = Pow4(1 - specularRoughness);
+                        float3 DFG = EnvDFGPolynomial(specular, gloss, NdotV);
+                        float3 energyCompensation = 1.0f + specular * (1.0f / DFG.y - 1.0f);
+                        lighting.Specular *= energyCompensation;*/
+                    }
 
                     // Diffuse BRDF
-                    lighting.Diffuse = (falloff * NdotL) * Diffuse_Lambert(diffuse);
-
+                    lighting.Diffuse = (falloff * NdotL) * Diffuse_Lambert(diffuseColor);
                     return lighting;
                 }
             }
@@ -201,14 +202,16 @@
                         // Apply light ------------
                         float3 L;
                         float attenuation = GetAttenuation(light, worldPos, L);
-                        LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
+                        if(attenuation > 0.0F) {
+                            LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
 
-                        result.Diffuse *= light.color * light.intensity;
-                        result.Specular *= light.color;
-                        // ------------------------
+                            result.Diffuse *= light.color * light.intensity;
+                            result.Specular *= light.color;
+                            // ------------------------
 
-                        lighting.Diffuse += result.Diffuse;
-                        lighting.Specular += result.Specular;
+                            lighting.Diffuse += result.Diffuse;
+                            lighting.Specular += result.Specular;
+                        }
                     }
                 }
 

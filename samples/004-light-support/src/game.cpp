@@ -27,6 +27,7 @@ namespace light {
 
 		// Setup renderer
 		auto render = window->createRenderer();
+		render->skipIntros(true);
 		render->addPlugin<rawrbox::ClusteredLightPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
@@ -72,7 +73,7 @@ namespace light {
 
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planks.png")->get();
 		auto texSpec = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksSpec.png")->get();
-		auto texNorm = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksSpec.png")->get();
+		auto texNorm = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksNorm.png")->get();
 
 		// Setup
 		{
@@ -81,21 +82,45 @@ namespace light {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generateCube<rawrbox::MaterialLit>({3.5F, 0.F, -0.01F}, {3.F, 0.1F, 3.F}, rawrbox::Colors::White());
+			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({3.5F, 0.F, -0.01F}, {3.F, 3.F}, rawrbox::Colors::White());
+
+			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 			mesh.setTexture(tex);
-			mesh.setSpecularTexture(texSpec, 0.7F);
+			mesh.setSpecularTexture(texSpec, 0.65F);
 			mesh.setNormalTexture(texNorm);
 
 			this->_model2->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generateCube<rawrbox::MaterialLit>({-3.5F, 0.F, -0.01F}, {3.F, 0.1F, 3.F}, rawrbox::Colors::White());
+			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialLit>({-3.5F, 0.F, -0.01F}, {3.F, 3.F}, rawrbox::Colors::White());
+
+			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 			mesh.setTexture(tex);
-			mesh.setSpecularTexture(texSpec, 0.7F);
+			mesh.setSpecularTexture(texSpec, 0.65F);
 			mesh.setNormalTexture(texNorm);
 
 			this->_model2->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generatePlane<rawrbox::MaterialInstancedLit>({0, 0, 0}, {0.25F, 0.25F});
+
+			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
+			mesh.setTexture(tex);
+			mesh.setSpecularTexture(texSpec, 1.F);
+			mesh.setNormalTexture(texNorm);
+
+			this->_model3->setTemplate(mesh);
+		}
+
+		for (size_t y = 0; y < 3; y++) {
+			for (size_t x = 0; x < 3; x++) {
+				rawrbox::Matrix4x4 m;
+				m.SRT({1.F, 1.F, 1.F}, rawrbox::Vector4f::toQuat({0, 0, 0}), {x * 0.5F - 0.5F, y * 0.5F - 0.5F, 0.01});
+
+				this->_model3->addInstance({m, rawrbox::Colors::White(), 0});
+			}
 		}
 		// ----
 
@@ -106,24 +131,17 @@ namespace light {
 
 		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 40.F, 0.8F);
 
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue(), 5.F, 1.2F);
-		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{3.5F, 1.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Purple(), 20.F, 40.F, 5.F, 4.F);
-		rawrbox::LIGHTS::addLight<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White(), 5.F); // SUN
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue() * 10, 1.2F);
+		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{3.5F, 1.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Purple() * 10, 20.F, 40.F, 4.F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{0.2F, 0.2F, 0}, rawrbox::Colors::Orange() * 10, 1.F);
+
+		// rawrbox::LIGHTS::addLight<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White(), 5.F); // SUN
 
 		this->_model->upload();
 		this->_model2->upload();
+		this->_model3->upload();
+
 		this->_text->upload();
-
-#ifdef _DEBUG
-		// Setup binds ---
-		rawrbox::Window::getWindow()->onKey += [](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
-			if (action != KEY_ACTION_UP) return;
-
-			if (key == KEY_F1) rawrbox::MaterialLit::DEBUG_LEVEL = 0;
-			if (key == KEY_F2) rawrbox::MaterialLit::DEBUG_LEVEL = 1;
-		};
-		// ----------
-#endif
 
 		this->_ready = true;
 	}
@@ -138,6 +156,7 @@ namespace light {
 
 		this->_model.reset();
 		this->_model2.reset();
+		this->_model3.reset();
 		this->_text.reset();
 	}
 
@@ -159,10 +178,15 @@ namespace light {
 				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
 			}
 
-			light = rawrbox::LIGHTS::getLight(2); // SUN
+			light = rawrbox::LIGHTS::getLight(2);
+			if (light != nullptr) {
+				light->setOffsetPos({std::sin(rawrbox::FRAME * 0.01F) * 0.5F, 0, std::cos(rawrbox::FRAME * 0.01F) * 0.5F});
+			}
+
+			/*light = rawrbox::LIGHTS::getLight(3); // SUN
 			if (light != nullptr) {
 				light->setDirection({0, std::sin(rawrbox::FRAME * 0.01F) * 1.F, 0});
-			}
+			}*/
 		}
 	}
 
@@ -171,6 +195,7 @@ namespace light {
 
 		this->_model->draw();
 		this->_model2->draw();
+		this->_model3->draw();
 
 		this->_text->draw();
 	}

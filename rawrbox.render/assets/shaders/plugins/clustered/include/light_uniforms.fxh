@@ -28,11 +28,11 @@ struct Light {
     float  intensity;
 
     // -------
-    float radius;
-    float penumbra;
-    float umbra;
+    float  radius;
+    float  penumbra;
+    float  umbra;
 
-    uint type;
+    uint   type;
     // -------
 };
 

@@ -54,9 +54,9 @@ namespace rawrbox {
 
 		rawrbox::TextureBase* displacementTexture = nullptr;
 
-		float roughness = 1.0F;
-		float metalness = 1.0F;
-		float emissionIntensity = 1.F;
+		float roughness = 0.0F;
+		float metalness = 0.0F;
+		float emissionIntensity = 0.F;
 		// -------
 
 		// RENDERING ---

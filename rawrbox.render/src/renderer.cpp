@@ -173,7 +173,7 @@ namespace rawrbox {
 		}
 
 		if (rawrbox::NORMAL_TEXTURE == nullptr) {
-			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0xbcbcff));
+			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0x7f7fff));
 			rawrbox::NORMAL_TEXTURE->upload();
 		}
 		// -------------------------

@@ -75,11 +75,11 @@ namespace assimp {
 		// Assimp test ---
 		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx")->get();
 
-		this->_model->setPos({7, 1.1F, 0.F});
+		this->_model->setPos({7, 1.1F, 2.F});
 		this->_model->load(*mdl);
 		this->_model->upload();
 
-		this->_model2->setPos({-6, 1.1F, 0.F});
+		this->_model2->setPos({-6, 1.1F, -2.F});
 		this->_model2->load(*mdl);
 		this->_model2->upload();
 
@@ -87,42 +87,45 @@ namespace assimp {
 		auto mdl2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/wolf/wolfman_animated.fbx")->get();
 		this->_model3->load(*mdl2);
 		this->_model3->playAnimation("Scene", true, 1.F);
-		this->_model3->setPos({0, 0, 0});
+		this->_model3->setPos({1, 0, 0});
 		this->_model3->upload();
 
-		auto mdl3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/multiple_skeleton/twocubestest.gltf")->get();
-		this->_model4->load(*mdl3);
-		this->_model4->playAnimation("MewAction", true, 0.8F);
-		this->_model4->playAnimation("MewAction.001", true, 0.5F);
-		this->_model4->setPos({0, 0, 2.5F});
-		this->_model4->setScale({0.25F, 0.25F, 0.25F});
+		this->_model4->load(*mdl2);
+		this->_model4->playAnimation("Scene", true, 1.F);
+		this->_model4->setPos({-1, 0, 0});
 		this->_model4->upload();
 
-		auto mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/grandma_tv/scene.gltf")->get();
+		auto mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/multiple_skeleton/twocubestest.gltf")->get();
 		this->_model5->load(*mdl4);
-		this->_model5->playAnimation("Scene", true, 1.F);
-		this->_model5->setPos({0, 0, -3.5F});
-		this->_model5->setScale({0.35F, 0.35F, 0.35F});
-		this->_model5->setEulerAngle({0, rawrbox::MathUtils::toRad(90.F), 0});
+		this->_model5->playAnimation("MewAction", true, 0.8F);
+		this->_model5->playAnimation("MewAction.001", true, 0.5F);
+		this->_model5->setPos({0, 0, 2.5F});
+		this->_model5->setScale({0.25F, 0.25F, 0.25F});
 		this->_model5->upload();
 
-		auto mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/shape_keys/shape_keys.glb")->get();
+		auto mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/grandma_tv/scene.gltf")->get();
 		this->_model6->load(*mdl5);
-		this->_model6->setScale({0.4F, 0.4F, 0.4F});
-		this->_model6->setPos({2.F, 0.4F, -6.F});
-		this->_model6->upload(true);
+		this->_model6->playAnimation("Scene", true, 1.F);
+		this->_model6->setPos({0, 0, -3.5F});
+		this->_model6->setScale({0.35F, 0.35F, 0.35F});
+		this->_model6->setEulerAngle({0, rawrbox::MathUtils::toRad(180.F), 0});
+		this->_model6->upload();
+
+		auto mdl6 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/shape_keys/shape_keys.glb")->get();
+		this->_model7->load(*mdl6);
+		this->_model7->setScale({0.4F, 0.4F, 0.4F});
+		this->_model7->setPos({2.F, 0.4F, -6.F});
+		this->_model7->upload(true);
 		//    -----
 
 		// Text test ----
-		{
-			this->_text->addText(*this->_font, "TEXTURES + LIGHT", {-6.F, 3.0F, 0});
-			this->_text->addText(*this->_font, "TEXTURES", {6.F, 3.0F, 0});
-			this->_text->addText(*this->_font, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
-			this->_text->addText(*this->_font, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.F, 2.5F});
-			this->_text->addText(*this->_font, "VERTEX ANIMATIONS", {0.F, 1.8F, -3.5F});
-			this->_text->addText(*this->_font, "EMBEDDED TEXTURES +\nBLEND SHAPES", {2.F, 1.8F, -6.F});
-			this->_text->upload();
-		}
+		this->_text->addText(*this->_font, "TEXTURES + LIGHT", {-6.F, 3.0F, 0});
+		this->_text->addText(*this->_font, "TEXTURES", {6.F, 3.0F, 0});
+		this->_text->addText(*this->_font, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
+		this->_text->addText(*this->_font, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.F, 2.5F});
+		this->_text->addText(*this->_font, "VERTEX ANIMATIONS", {0.F, 1.8F, -3.5F});
+		this->_text->addText(*this->_font, "EMBEDDED TEXTURES +\nBLEND SHAPES", {2.F, 1.8F, -6.F});
+		this->_text->upload();
 		// ------
 
 		{
@@ -132,7 +135,8 @@ namespace assimp {
 		}
 
 		// LIGHT ----
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{2.F, 1.3F, -6.F}, rawrbox::Colors::White(), 100.F, 3.F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-1, 0.5F, -0.7F}, rawrbox::Colors::White() * 100, 1.6F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-1, 1.3F, -0.7F}, rawrbox::Colors::White() * 100, 1.6F);
 		// -----------
 
 		this->_ready = true;
@@ -152,6 +156,7 @@ namespace assimp {
 		this->_model4.reset();
 		this->_model5.reset();
 		this->_model6.reset();
+		this->_model7.reset();
 		this->_modelGrid.reset();
 
 		this->_text.reset();
@@ -175,12 +180,13 @@ namespace assimp {
 		this->_model3->draw();
 		this->_model4->draw();
 		this->_model5->draw();
+		this->_model6->draw();
 		////
 
-		this->_model6->setBlendShape("Cheese-Melt", std::abs(std::cos(rawrbox::FRAME * 0.005F) * 1.F));
-		this->_model6->setBlendShape("Other-Nya", std::abs(std::cos(rawrbox::FRAME * 0.008F) * 1.F));
-		this->_model6->setBlendShape("Other-Melt", std::abs(std::cos(rawrbox::FRAME * 0.002F) * 1.F));
-		this->_model6->draw();
+		this->_model7->setBlendShape("Cheese-Melt", std::abs(std::cos(rawrbox::FRAME * 0.005F) * 1.F));
+		this->_model7->setBlendShape("Other-Nya", std::abs(std::cos(rawrbox::FRAME * 0.008F) * 1.F));
+		this->_model7->setBlendShape("Other-Melt", std::abs(std::cos(rawrbox::FRAME * 0.002F) * 1.F));
+		this->_model7->draw();
 		//
 
 		this->_text->draw();
