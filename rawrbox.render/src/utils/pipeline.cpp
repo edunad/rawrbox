@@ -10,13 +10,15 @@ namespace rawrbox {
 	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> PipelineUtils::_binds = {};
 	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShader>> PipelineUtils::_shaders = {};
 	std::unordered_map<uint32_t, Diligent::RefCntAutoPtr<Diligent::ISampler>> PipelineUtils::_samplers = {};
+
+	Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> PipelineUtils::_stateCache;
 	// -------------
 
 	Diligent::ISampler* PipelineUtils::defaultSampler = nullptr;
 	bool PipelineUtils::initialized = false;
 	// -----------------
 
-	void PipelineUtils::init() {
+	void PipelineUtils::init(Diligent::IRenderDevice& device) {
 		if (initialized) return;
 
 		uint32_t id = Diligent::TEXTURE_ADDRESS_WRAP << 6 | Diligent::TEXTURE_ADDRESS_WRAP << 3 | Diligent::TEXTURE_ADDRESS_WRAP;
@@ -25,6 +27,17 @@ namespace rawrbox {
 		    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
 
 		defaultSampler = registerSampler(id, desc);
+
+		// Initialize pipeline cache
+		Diligent::RenderStateCacheCreateInfo CacheCI;
+		CacheCI.pDevice = &device;
+#ifdef _DEBUG
+		CacheCI.LogLevel = Diligent::RENDER_STATE_CACHE_LOG_LEVEL_VERBOSE;
+		CacheCI.EnableHotReload = true;
+#endif
+		Diligent::CreateRenderStateCache(CacheCI, &_stateCache);
+		// -------------------------
+
 		initialized = true;
 	}
 

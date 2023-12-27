@@ -113,7 +113,7 @@ namespace light {
 		for (size_t y = 0; y < 3; y++) {
 			for (size_t x = 0; x < 3; x++) {
 				rawrbox::Matrix4x4 m;
-				m.SRT({1.F, 1.F, 1.F}, rawrbox::Vector4f::toQuat({0, 0, 0}), {x * 0.5F - 0.5F, y * 0.5F - 0.5F, 0.01});
+				m.SRT({1.F, 1.F, 1.F}, rawrbox::Vector4f::toQuat({0, 0, 0}), {x * 0.5F - 0.5F, y * 0.5F - 0.5F, -0.01F});
 
 				this->_model3->addInstance({m, rawrbox::Colors::White(), 0});
 			}
@@ -123,6 +123,7 @@ namespace light {
 		// Text test ----
 		this->_text->addText(*this->_font, "POINT LIGHT", {-3.5F, 0.5F, 0});
 		this->_text->addText(*this->_font, "SPOT LIGHT", {3.5F, 0.5F, 0});
+		this->_text->addText(*this->_font, "INSTANCES", {0.F, 0.5F, 0});
 		// ------
 
 		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 40.F, 0.8F);

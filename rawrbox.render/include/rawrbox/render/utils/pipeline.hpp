@@ -1,6 +1,7 @@
 #pragma once
 
 #include <RefCntAutoPtr.hpp>
+#include <RenderStateCache.hpp>
 #include <ShaderMacroHelper.hpp>
 
 #include <Buffer.h>
@@ -77,12 +78,14 @@ namespace rawrbox {
 		static std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShader>> _shaders;
 		static std::unordered_map<uint32_t, Diligent::RefCntAutoPtr<Diligent::ISampler>> _samplers;
 
+		static Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> _stateCache;
+
 	public:
 		static Diligent::ISampler* defaultSampler;
 		static bool initialized;
 
 		// ---
-		static void init();
+		static void init(Diligent::IRenderDevice& device);
 
 		static Diligent::ISampler* registerSampler(uint32_t id, Diligent::SamplerDesc type);
 		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::ShaderMacroArray macros = {});

@@ -153,7 +153,7 @@ namespace rawrbox {
 
 		if (this->_engineFactory == nullptr) throw std::runtime_error("[RawrBox-Renderer] Failed to initialize");
 
-		rawrbox::PipelineUtils::init();
+		rawrbox::PipelineUtils::init(*this->device());
 		// ----------------------
 
 		// Init default textures ---

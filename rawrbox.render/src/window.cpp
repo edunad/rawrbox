@@ -42,7 +42,11 @@ namespace rawrbox {
 	Diligent::RENDER_DEVICE_TYPE Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_UNDEFINED;
 
 	rawrbox::Window* Window::createWindow(Diligent::RENDER_DEVICE_TYPE render) {
-		if (render == Diligent::RENDER_DEVICE_TYPE_UNDEFINED || render == Diligent::RENDER_DEVICE_TYPE_COUNT) {
+		bool autoDetermine = render == Diligent::RENDER_DEVICE_TYPE_UNDEFINED || render == Diligent::RENDER_DEVICE_TYPE_COUNT;
+		if (autoDetermine) {
+			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_COUNT;
+
+			// Prefer newest API's first
 #if PLATFORM_LINUX
 	#if RAWRBOX_SUPPORT_VULKAN
 			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_VULKAN;
@@ -52,14 +56,17 @@ namespace rawrbox {
 #else
 	#if RAWRBOX_SUPPORT_DX12
 			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_D3D12;
-	#elif RAWRBOX_SUPPORT_DX11
-			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_D3D11;
 	#elif RAWRBOX_SUPPORT_VULKAN
 			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_VULKAN;
+	#elif RAWRBOX_SUPPORT_DX11
+			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_D3D11;
 	#else
 			Window::__RENDER_TYPE = Diligent::RENDER_DEVICE_TYPE_GL;
 	#endif
 #endif
+			if (Window::__RENDER_TYPE == Diligent::RENDER_DEVICE_TYPE_COUNT) {
+				throw std::runtime_error("[RawrBox-Window] Failed to automatically determine best renderer type");
+			}
 		} else {
 			Window::__RENDER_TYPE = render;
 		}

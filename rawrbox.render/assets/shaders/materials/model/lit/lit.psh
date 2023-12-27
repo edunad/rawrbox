@@ -9,6 +9,8 @@
 #include <noise.fxh>
 #include <lighting.fxh>
 
+// TODO : REPLACE WITH BINDLESS RESOURCES
+
 Texture2DArray g_Texture;
 SamplerState   g_Texture_sampler;
 
