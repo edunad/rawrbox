@@ -288,7 +288,7 @@ namespace rawrbox {
 		// Perform post-render --
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
-			plugin.second->postRender(this->_render->getHandle());
+			plugin.second->postRender(this->_render.get());
 		}
 		// -----------------------
 

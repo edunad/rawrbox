@@ -2,6 +2,7 @@
 
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/enums/draw.hpp>
+#include <rawrbox/render/textures/render.hpp>
 
 #include <GraphicsTypes.h>
 #include <RenderPass.h>
@@ -34,7 +35,7 @@ namespace rawrbox {
 		virtual void resize(const rawrbox::Vector2i& renderSize);
 
 		virtual void preRender();
-		virtual void postRender(Diligent::ITextureView* renderTarget);
+		virtual void postRender(rawrbox::TextureRender* renderTarget);
 
 		virtual void update();
 	};

@@ -1,6 +1,7 @@
 
 #include <rawrbox/render/cameras/orbital.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/plugins/post_process.hpp>
 #include <rawrbox/render/post_process/dither.hpp>
 #include <rawrbox/render/post_process/noise.hpp>
 #include <rawrbox/render/post_process/quick_bloom.hpp>
@@ -24,12 +25,18 @@ namespace post_process {
 
 		// Setup renderer
 		auto render = window->createRenderer();
-		/*render->setOverlayRender([this]() {});
-		render->setWorldRender([this]() { this->drawWorld(); });
-		render->overridePostWorld([this]() {
-			if (!this->_ready) return;
-			this->_postProcess->render(rawrbox::RENDERER->getColor());
-		});*/
+
+		// Setup post process ----
+		auto postProcess = render->addPlugin<rawrbox::PostProcessPlugin>();
+		postProcess->add<rawrbox::PostProcessDither>(rawrbox::DITHER_MODE::FAST_MODE);
+		postProcess->add<rawrbox::PostProcessQuickBloom>(0.015F);
+		postProcess->add<rawrbox::PostProcessNoise>(0.1F);
+		// -----------------------
+
+		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
+			this->drawWorld();
+		});
 		render->onIntroCompleted = [this]() {
 			this->loadContent();
 		};
@@ -49,12 +56,6 @@ namespace post_process {
 	}
 
 	void Game::loadContent() {
-		this->_postProcess = std::make_unique<rawrbox::PostProcessManager>();
-		this->_postProcess->add<rawrbox::PostProcessDither>(rawrbox::DITHER_MODE::FAST_MODE);
-		this->_postProcess->add<rawrbox::PostProcessQuickBloom>(0.015F);
-		this->_postProcess->add<rawrbox::PostProcessNoise>(0.1F);
-		this->_postProcess->upload();
-
 		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("./assets/textures/crate_hl1.png", 0)};
 
@@ -93,7 +94,6 @@ namespace post_process {
 		}
 
 		this->_model.reset();
-		this->_postProcess.reset();
 	}
 
 	void Game::pollEvents() {

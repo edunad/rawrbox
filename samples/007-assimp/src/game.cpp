@@ -26,7 +26,6 @@ namespace assimp {
 
 		// Setup renderer
 		auto render = window->createRenderer();
-		render->skipIntros(true);
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->addPlugin<rawrbox::ClusteredLightPlugin>();
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {

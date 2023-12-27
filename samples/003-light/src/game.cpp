@@ -27,7 +27,6 @@ namespace light {
 
 		// Setup renderer
 		auto render = window->createRenderer();
-		render->skipIntros(true);
 		render->addPlugin<rawrbox::ClusteredLightPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
@@ -128,9 +127,7 @@ namespace light {
 
 		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 40.F, 0.8F);
 
-		auto l = rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue() * 50, 1.2F);
-		// l->setIntensity(4);
-
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue() * 50, 1.2F);
 		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{3.5F, 1.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Purple() * 50, 20.F, 40.F, 4.F);
 		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{0.2F, 0.2F, 0}, rawrbox::Colors::Orange() * 50, 1.F);
 
@@ -167,12 +164,12 @@ namespace light {
 		rawrbox::Window::update();
 
 		if (this->_ready) {
-			/*auto light = rawrbox::LIGHTS::getLight(0);
+			auto light = rawrbox::LIGHTS::getLight(0);
 			if (light != nullptr) {
 				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
-			}*/
+			}
 
-			auto light = rawrbox::LIGHTS::getLight(1);
+			light = rawrbox::LIGHTS::getLight(1);
 			if (light != nullptr) {
 				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
 			}
