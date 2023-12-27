@@ -1,8 +1,8 @@
 version: 2
 updates:
-- package-ecosystem: "github-actions"
+  - package-ecosystem: "github-actions"
     schedule:
       interval: "daily"
-- package-ecosystem: "gitsubmodule"
-  schedule:
-    interval: "daily"
+  - package-ecosystem: "gitsubmodule"
+    schedule:
+      interval: "daily"
