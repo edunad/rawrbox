@@ -1,11 +1,11 @@
-﻿project("004-light-support")
+﻿project("003-light")
 # --------------
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_SAMPLE_SOURCES "include/*.hpp" "src/*.cpp")
 
 # Project setup
-set(output_target 004-light-support)
+set(output_target 003-light)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE})
 
 add_executable(${output_target} ${RAWRBOX_SAMPLE_SOURCES})

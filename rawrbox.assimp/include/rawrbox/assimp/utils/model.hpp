@@ -35,8 +35,7 @@ namespace rawrbox {
 					mesh.setTexture(rawrbox::WHITE_TEXTURE.get()); // Default
 				}
 
-				mesh.setColor(mat->diffuseColor);
-				mesh.setMetalness(mat->metalness);
+				mesh.setColor(mat->baseColor);
 				// --------
 
 				// NORMAL -----
@@ -45,15 +44,15 @@ namespace rawrbox {
 				}
 				// --------
 
-				// SPECULAR -----
-				if (mat->specular != nullptr) {
-					mesh.setSpecularTexture(mat->specular.get(), mat->roughness);
+				// METAL / ROUGH -----
+				if (mat->metalRough != nullptr) {
+					mesh.setRoughtnessMetalness(mat->metalRough.get(), mat->roughnessFactor, mat->metalnessFactor);
 				}
 				// --------
 
 				// EMISSION -----
 				if (mat->emissive != nullptr) {
-					mesh.setEmissionTexture(mat->emissive.get(), mat->emission);
+					mesh.setEmissionTexture(mat->emissive.get(), mat->emissionFactor);
 				}
 				// --------
 			}

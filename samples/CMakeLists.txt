@@ -7,13 +7,15 @@ add_custom_target(
 
 add_subdirectory("001-stencil")
 add_subdirectory("002-generated-models")
+add_subdirectory("003-light")
+add_subdirectory("004-instancing")
+add_subdirectory("005-post-process")
+#add_subdirectory("006-decals")
 
 if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
-    add_subdirectory("003-assimp")
+    add_subdirectory("007-assimp")
 endif()
 
-add_subdirectory("004-light-support")
-add_subdirectory("005-post-process")
 #
 #if(RAWRBOX_BUILD_RAWRBOX_BASS)
 #    add_subdirectory("006-bass-loading")
@@ -29,7 +31,6 @@ add_subdirectory("005-post-process")
 #    add_subdirectory("009-physics-3d")
 #endif()
 #
-add_subdirectory("010-instancing")
 #add_subdirectory("011-decals")
 #
 #if(RAWRBOX_BUILD_RAWRBOX_WEBM)

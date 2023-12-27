@@ -169,9 +169,9 @@ namespace rawrbox {
 
 			aiColor3D flatColor;
 			if (pMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, flatColor) == AI_SUCCESS) {
-				mat->diffuseColor = rawrbox::Colorf(flatColor.r, flatColor.g, flatColor.b, alpha);
+				mat->baseColor = rawrbox::Colorf(flatColor.r, flatColor.g, flatColor.b, alpha);
 			} else if (pMaterial->Get(AI_MATKEY_BASE_COLOR, flatColor) == AI_SUCCESS) {
-				mat->diffuseColor = rawrbox::Colorf(flatColor.r, flatColor.g, flatColor.b, alpha);
+				mat->baseColor = rawrbox::Colorf(flatColor.r, flatColor.g, flatColor.b, alpha);
 			}
 			// ----------------------
 
@@ -180,6 +180,16 @@ namespace rawrbox {
 			if (!normal.empty()) {
 				mat->normal = std::move(normal[0].value()); // Only support one for the moment
 			}
+			// ----------------------
+
+			// TEXTURE ROUGHT / METAL
+			auto metalR = this->importTexture(sc, pMaterial, aiTextureType_METALNESS); // Merge?
+			if (!metalR.empty()) {
+				mat->metalRough = std::move(metalR[0].value()); // Only support one for the moment
+			}
+
+			pMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, mat->roughnessFactor);
+			pMaterial->Get(AI_MATKEY_METALLIC_FACTOR, mat->metalnessFactor);
 			// ----------------------
 
 			// TEXTURE EMISSION
@@ -191,7 +201,7 @@ namespace rawrbox {
 				if (!emission.empty()) mat->emissive = std::move(emission[0].value()); // Only support one for the moment
 			}
 
-			pMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, mat->emission);
+			pMaterial->Get(AI_MATKEY_EMISSIVE_INTENSITY, mat->emissionFactor);
 
 			aiColor3D emissionColor;
 			if (pMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emissionColor) == AI_SUCCESS) {
@@ -203,16 +213,6 @@ namespace rawrbox {
 			auto specular = this->importTexture(sc, pMaterial, aiTextureType_SPECULAR);
 			if (!specular.empty()) {
 				mat->specular = std::move(specular[0].value()); // Only support one for the moment
-			}
-
-			ai_real rought = 0.F;
-			if (pMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, rought) == AI_SUCCESS) {
-				mat->roughness = rought;
-			}
-
-			ai_real metal = 0.F;
-			if (pMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metal) == AI_SUCCESS) {
-				mat->metalness = metal;
 			}
 
 			aiColor3D specularColor;
@@ -536,7 +536,7 @@ namespace rawrbox {
 			light.specular = rawrbox::Colorf(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F) / intensity;
 			light.ambient = rawrbox::Colorf(aiLight.mColorAmbient.r, aiLight.mColorAmbient.g, aiLight.mColorAmbient.b, 1.F) / intensity;
 
-			light.intensity = intensity * 40.F;
+			light.intensity = intensity;
 			light.attenuationConstant = aiLight.mAttenuationConstant;
 			light.attenuationLinear = aiLight.mAttenuationLinear;
 			light.attenuationQuadratic = aiLight.mAttenuationQuadratic;

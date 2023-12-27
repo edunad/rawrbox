@@ -37,7 +37,7 @@ namespace rawrbox {
 
 			{
 				Diligent::MapHelper<rawrbox::MaterialLitPixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				CBConstants->g_LitData = {mesh.roughness, mesh.emissionIntensity, mesh.metalness};
+				CBConstants->g_LitData = {mesh.roughnessFactor, mesh.metalnessFactor, mesh.specularFactor, mesh.emissionFactor};
 			} // ------------
 		}
 	};

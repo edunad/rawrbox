@@ -53,15 +53,18 @@ namespace rawrbox {
 		bool alpha = false;
 
 		OptionalTexture diffuse = std::nullopt;
-		rawrbox::Colorf diffuseColor = rawrbox::Colors::White();
+		rawrbox::Colorf baseColor = rawrbox::Colors::White();
 
 		std::unique_ptr<rawrbox::TextureBase> normal = nullptr;
 		std::unique_ptr<rawrbox::TextureBase> specular = nullptr;
+		std::unique_ptr<rawrbox::TextureBase> metalRough = nullptr;
+
 		rawrbox::Colorf specularColor = rawrbox::Colors::White();
 
-		float roughness = 1.F;
-		float metalness = 0.F;
-		float emission = 1.F;
+		float roughnessFactor = 0.F;
+		float metalnessFactor = 0.F;
+		float specularFactor = 0.F;
+		float emissionFactor = 1.F;
 
 		std::unique_ptr<rawrbox::TextureBase> emissive = nullptr;
 		rawrbox::Colorf emissionColor = rawrbox::Colors::White();
@@ -90,7 +93,7 @@ namespace rawrbox {
 		float angleOuterCone = 0.F;
 
 		float size = 0.F;
-		float intensity = 0.F;
+		float intensity = 1.F;
 	};
 
 	struct AssimpBlendShapes {

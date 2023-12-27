@@ -202,16 +202,14 @@
                         // Apply light ------------
                         float3 L;
                         float attenuation = GetAttenuation(light, worldPos, L);
+
                         if(attenuation > 0.0F) {
                             LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
 
-                            result.Diffuse *= light.color * light.intensity;
-                            result.Specular *= light.color;
-                            // ------------------------
-
-                            lighting.Diffuse += result.Diffuse;
-                            lighting.Specular += result.Specular;
+                            lighting.Diffuse += result.Diffuse * light.color * light.intensity;
+                            lighting.Specular += result.Specular * light.color * light.intensity;
                         }
+                        // ------------------------
                     }
                 }
 

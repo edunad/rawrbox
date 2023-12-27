@@ -15,7 +15,7 @@ namespace rawrbox {
 		rawrbox::Vector4f position = {};
 		rawrbox::Vector4f direction = {};
 		rawrbox::Vector3f color = {};
-		float intensity = 0.F;
+		float intensity = 1.F;
 
 		float radius = 0.F;
 		float penumbra = 0.F;

@@ -15,8 +15,8 @@ SamplerState   g_Texture_sampler;
 Texture2DArray g_Normal;
 SamplerState   g_Normal_sampler;
 
-Texture2DArray g_Specular;
-SamplerState   g_Specular_sampler;
+Texture2DArray g_RoughMetal;
+SamplerState   g_RoughMetal_sampler;
 
 Texture2DArray g_Emission;
 SamplerState   g_Emission_sampler;
@@ -62,8 +62,8 @@ float3 TangentSpaceNormalMapping(float3 sampledNormal, float3x3 TBN) {
 }
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    float4 diffuseTS = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
-    if (diffuseTS.a <= 0.0) discard;
+    float4 baseColor = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+    if (baseColor.a <= 0.0) discard;
 
     // NORMAL -----
 	float3 normalTS = g_Normal.Sample(g_Normal_sampler, float3(PSIn.UV, PSIn.TexIndex)).rgb;
@@ -71,23 +71,33 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     float3 normal   = TangentSpaceNormalMapping(normalTS, TBN);
     // -------------
 
-	float4 specularTS = g_Specular.Sample(g_Specular_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
 	float4 emissionTS = g_Emission.Sample(g_Emission_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+
+    // ROUGHT / METAL -----
+	float2 roughtMetalTS = g_RoughMetal.Sample(g_RoughMetal_sampler, float3(PSIn.UV, PSIn.TexIndex)).bg;
+    float metal = MetalnessFactor;
+    float rough = RoughnessFactor;
+
+    if(roughtMetalTS.x != 0.0 && roughtMetalTS.y != 0.0) {
+        metal *= roughtMetalTS.x;
+        rough *= roughtMetalTS.y;
+    }
+    // -------------
 
     // LIGHT ------
 	float3 V           = normalize(g_cameraPos.xyz - PSIn.WorldPos.xyz);
 	float dither       = InterleavedGradientNoise(PSIn.Pos.xy);
 
-    float3 specular    = ComputeF0(specularTS.r, diffuseTS.rgb, MetalPower);
-    float3 diffuse     = ComputeDiffuseColor(diffuseTS.rgb, MetalPower);
+    float3 diffuse     = ComputeDiffuseColor(baseColor.rgb, metal);
+    float3 specular    = ComputeF0(SpecularFactor, baseColor.rgb, metal);
 
-    LightResult result = ApplyLight(specular, RoughtnessPower, diffuse, normal, V, PSIn.WorldPos.xyz, PSIn.Pos, dither);
+    LightResult result = ApplyLight(specular, rough, diffuse, normal, V, PSIn.WorldPos.xyz, PSIn.Pos, dither);
 
 	float3 outRadiance = 0;
 	outRadiance += result.Diffuse + result.Specular;
-	outRadiance += emissionTS.rgb * EmissionPower;
+	outRadiance += emissionTS.rgb * EmissionFactor;
     // ------------
 
     PSOut.Color.rgb = outRadiance;
-    PSOut.Color.a = diffuseTS.a;
+    PSOut.Color.a = baseColor.a;
 }

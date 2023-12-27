@@ -7,8 +7,9 @@ cbuffer Constants {
     float4  g_LitData;
 };
 
-#define RoughtnessPower   g_LitData.x
-#define EmissionPower     g_LitData.y
-#define MetalPower        g_LitData.z
+#define RoughnessFactor    g_LitData.x
+#define MetalnessFactor    g_LitData.y
+#define SpecularFactor     g_LitData.z
+#define EmissionFactor     g_LitData.w
 
 #endif

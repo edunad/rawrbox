@@ -49,14 +49,15 @@ namespace rawrbox {
 		rawrbox::TextureBase* texture = nullptr;
 		rawrbox::TextureBase* normalTexture = nullptr;
 
-		rawrbox::TextureBase* specularTexture = nullptr;
 		rawrbox::TextureBase* emissionTexture = nullptr;
+		rawrbox::TextureBase* roughtMetalTexture = nullptr;
 
 		rawrbox::TextureBase* displacementTexture = nullptr;
 
-		float roughness = 0.0F;
-		float metalness = 0.0F;
-		float emissionIntensity = 0.F;
+		float roughnessFactor = 1.0F;
+		float metalnessFactor = 1.0F;
+		float specularFactor = 0.5F;
+		float emissionFactor = 1.0F;
 		// -------
 
 		// RENDERING ---
@@ -182,19 +183,19 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] virtual const rawrbox::TextureBase* getEmissionTexture() const { return this->emissionTexture; }
-		virtual void setEmissionTexture(rawrbox::TextureBase* ptr, float intensity) {
+		virtual void setEmissionTexture(rawrbox::TextureBase* ptr, float factor = 1.0F) {
 			this->emissionTexture = ptr;
-			this->emissionIntensity = intensity;
+			this->emissionFactor = factor;
 		}
 
-		[[nodiscard]] virtual const rawrbox::TextureBase* getSpecularTexture() const { return this->specularTexture; }
-		virtual void setSpecularTexture(rawrbox::TextureBase* ptr, float roughness = 0.5F) {
-			this->specularTexture = ptr;
-			this->roughness = roughness;
+		virtual void setRoughtnessMetalness(rawrbox::TextureBase* ptr, float roughness = 0.5F, float metalness = 0.5F) {
+			this->roughtMetalTexture = ptr;
+			this->roughnessFactor = roughness;
+			this->metalnessFactor = metalness;
 		}
 
-		virtual void setMetalness(float metal) {
-			this->metalness = metal;
+		virtual void setSpecularFactor(float spec) {
+			this->specularFactor = spec;
 		}
 
 		virtual void setVertexSnap(float power = 2.F) {
@@ -274,6 +275,10 @@ namespace rawrbox {
 			if (this->indices.size() + other.indices.size() >= MAX_INDICES) return false;    // Max indice limit
 
 			return this->texture == other.texture &&
+			       this->emissionTexture == other.emissionTexture &&
+			       this->roughtMetalTexture == other.roughtMetalTexture &&
+			       this->metalnessFactor == other.metalnessFactor &&
+			       this->roughnessFactor == other.roughnessFactor &&
 			       this->color == other.color &&
 			       this->wireframe == other.wireframe &&
 			       this->lineMode == other.lineMode &&

@@ -42,7 +42,7 @@ namespace rawrbox {
 
 			{
 				Diligent::MapHelper<rawrbox::MaterialLitPixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				CBConstants->g_LitData = {mesh.roughness, mesh.emissionIntensity, mesh.metalness};
+				CBConstants->g_LitData = {mesh.roughnessFactor, mesh.metalnessFactor, mesh.specularFactor, mesh.emissionFactor};
 			} // ------------
 		}
 
@@ -54,7 +54,7 @@ namespace rawrbox {
 			rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
 			rawrbox::TextureBase* textureDisplacement = rawrbox::BLACK_TEXTURE.get();
 			rawrbox::TextureBase* textureNormal = rawrbox::NORMAL_TEXTURE.get();
-			rawrbox::TextureBase* textureSpecular = rawrbox::BLACK_TEXTURE.get();
+			rawrbox::TextureBase* textureMetalRough = rawrbox::BLACK_TEXTURE.get();
 			rawrbox::TextureBase* textureEmission = rawrbox::BLACK_TEXTURE.get();
 
 			if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
@@ -72,9 +72,9 @@ namespace rawrbox {
 				textureNormal = mesh.normalTexture;
 			}
 
-			if (mesh.specularTexture != nullptr && mesh.specularTexture->isValid() && !mesh.wireframe) {
-				mesh.specularTexture->update(); // Update texture
-				textureSpecular = mesh.specularTexture;
+			if (mesh.roughtMetalTexture != nullptr && mesh.roughtMetalTexture->isValid() && !mesh.wireframe) {
+				mesh.roughtMetalTexture->update(); // Update texture
+				textureMetalRough = mesh.roughtMetalTexture;
 			}
 
 			if (mesh.emissionTexture != nullptr && mesh.emissionTexture->isValid() && !mesh.wireframe) {
@@ -88,11 +88,11 @@ namespace rawrbox {
 			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Normal");
 			if (texBind != nullptr) texBind->Set(textureNormal->getHandle());
 
-			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Specular");
-			if (texBind != nullptr) texBind->Set(textureSpecular->getHandle());
-
 			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Emission");
 			if (texBind != nullptr) texBind->Set(textureEmission->getHandle());
+
+			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_RoughMetal");
+			if (texBind != nullptr) texBind->Set(textureMetalRough->getHandle());
 
 			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Displacement");
 			if (texBind != nullptr) texBind->Set(textureDisplacement->getHandle());

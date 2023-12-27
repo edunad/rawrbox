@@ -72,7 +72,6 @@ namespace light {
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(24);
 
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planks.png")->get();
-		auto texSpec = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksSpec.png")->get();
 		auto texNorm = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksNorm.png")->get();
 
 		// Setup
@@ -86,7 +85,6 @@ namespace light {
 
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 			mesh.setTexture(tex);
-			mesh.setSpecularTexture(texSpec, 0.65F);
 			mesh.setNormalTexture(texNorm);
 
 			this->_model2->addMesh(mesh);
@@ -97,7 +95,6 @@ namespace light {
 
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 			mesh.setTexture(tex);
-			mesh.setSpecularTexture(texSpec, 0.65F);
 			mesh.setNormalTexture(texNorm);
 
 			this->_model2->addMesh(mesh);
@@ -108,7 +105,6 @@ namespace light {
 
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 			mesh.setTexture(tex);
-			mesh.setSpecularTexture(texSpec, 1.F);
 			mesh.setNormalTexture(texNorm);
 
 			this->_model3->setTemplate(mesh);
@@ -131,9 +127,11 @@ namespace light {
 
 		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 40.F, 0.8F);
 
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue() * 10, 1.2F);
-		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{3.5F, 1.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Purple() * 10, 20.F, 40.F, 4.F);
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{0.2F, 0.2F, 0}, rawrbox::Colors::Orange() * 10, 1.F);
+		auto l = rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue() * 50, 1.2F);
+		// l->setIntensity(4);
+
+		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{3.5F, 1.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Purple() * 50, 20.F, 40.F, 4.F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{0.2F, 0.2F, 0}, rawrbox::Colors::Orange() * 50, 1.F);
 
 		// rawrbox::LIGHTS::addLight<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White(), 5.F); // SUN
 
