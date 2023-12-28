@@ -1,52 +1,54 @@
 
 #include <rawrbox/bass/manager.hpp>
 #include <rawrbox/bass/resources/sound.hpp>
-#include <rawrbox/render_temp/camera/orbital.hpp>
-#include <rawrbox/render_temp/gizmos.hpp>
-#include <rawrbox/render_temp/model/utils/mesh.hpp>
-#include <rawrbox/render_temp/resources/font.hpp>
+#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
-#include <rawrbox/utils/keys.hpp>
+#include <rawrbox/utils/threading.hpp>
 
 #include <bass_test/game.hpp>
 
-#include <fmt/printf.h>
-
 namespace bass_test {
+
 	void Game::setupGLFW() {
-		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
-		this->_window->setTitle("BASS TEST");
-		this->_window->setRenderer<>(
-		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
-		this->_window->onIntroCompleted += [this]() {
-			this->loadContent();
-		};
+		auto window = rawrbox::Window::createWindow();
+		window->setMonitor(-1);
+		window->setTitle("BASS AUDIO TEST");
+		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
+		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {
-		if (this->_window == nullptr) return;
+		auto window = rawrbox::Window::getWindow();
+
+		// Setup renderer
+		auto render = window->createRenderer();
+		render->onIntroCompleted = [this]() { this->loadContent(); };
+		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
+			this->drawWorld();
+		});
+		// ---------------
 
 		// Setup camera
-		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		auto cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		// Add loaders ----
+		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
 		rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
-		// ---
+		// --------------
 
-		this->_window->initializeBGFX();
+		render->init();
 	}
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("content/fonts/LiberationMono-Regular.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("content/sounds/clownmusic.ogg", 0 | rawrbox::SoundFlags::SOUND_3D)};
+		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/sounds/clownmusic.ogg", 0 | rawrbox::SoundFlags::SOUND_3D)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
@@ -60,10 +62,9 @@ namespace bass_test {
 	}
 
 	void Game::contentLoaded() {
-		// Fonts -----
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/LiberationMono-Regular.ttf")->getSize(24);
-		//  ------
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(24);
 
+		// SETUP SOUNDS -------------------
 		// SOUND -----
 		// https://i.rawr.dev/Mystery%20Skulls%20-%20Freaking%20Out.mp3
 		// https://i.rawr.dev/Just_a_Bit_Crazy.ogg
@@ -75,7 +76,7 @@ namespace bass_test {
 		this->_sound.lock()->setTempo(0.8F);
 		this->_sound.lock()->play();
 
-		this->_sound.lock()->onBEAT += [this](double /*pos*/) {
+		this->_sound.lock()->onBEAT += [this](double) {
 			this->_beat = 0.5F;
 		};
 
@@ -83,12 +84,21 @@ namespace bass_test {
 			fmt::print("BPM: {}\n", bpm);
 		};
 
-		this->_sound2 = rawrbox::BASS::loadSound("content/sounds/clownmusic.ogg")->createInstance();
+		this->_sound2 = rawrbox::BASS::loadSound("./assets/sounds/clownmusic.ogg")->createInstance();
 		this->_sound2.lock()->setLooping(true);
 		this->_sound2.lock()->set3D(10.F);
 		this->_sound2.lock()->setPosition({3.F, 1.F, 0});
 		this->_sound2.lock()->setTempo(1.2F);
 		this->_sound2.lock()->play();
+		// --------------------------------
+
+		// SETUP MODELS -------------------
+		{
+			auto mesh = rawrbox::MeshUtils::generateGrid(24, {0.F, 0.F, 0.F});
+			this->_modelGrid->addMesh(mesh);
+			this->_modelGrid->upload();
+		}
+		// --------------------------------
 
 		// Text test ----
 		{
@@ -103,86 +113,46 @@ namespace bass_test {
 		}
 		// ------
 
-		// GRID -----
-		{
-			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
-			this->_modelGrid->addMesh(mesh);
-			this->_modelGrid->upload();
-		}
-
 		this->_ready = true;
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-		this->_sound.reset();
-		this->_sound2.reset();
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
+			rawrbox::Window::shutdown();
+		} else {
+			rawrbox::BASS::shutdown();
+			rawrbox::RESOURCES::shutdown();
+			rawrbox::ASYNC::shutdown();
+		}
 
-		this->_modelGrid.reset();
 		this->_beatText.reset();
+		this->_modelGrid.reset();
 		this->_text.reset();
-
-		rawrbox::GIZMOS::shutdown();
-		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
-
-		this->_window->unblockPoll();
-		this->_window.reset();
 	}
 
 	void Game::pollEvents() {
-		if (this->_window == nullptr) return;
-		this->_window->pollEvents();
+		rawrbox::Window::pollEvents();
 	}
 
 	void Game::update() {
-		if (this->_window == nullptr) return;
-		this->_window->update();
+		rawrbox::Window::update();
 
 		auto cam = rawrbox::MAIN_CAMERA;
 		rawrbox::BASS::setListenerLocation(cam->getPos(), cam->getForward(), cam->getUp());
 
-		if (this->_beat > 0.F) this->_beat -= 0.05F;
+		this->_beat = std::max(this->_beat - 0.05F, 0.F);
 		this->_beatText->setPos({0, this->_beat, 0});
 	}
 
 	void Game::drawWorld() {
 		if (!this->_ready) return;
+
 		this->_modelGrid->draw();
 		this->_beatText->draw();
 		this->_text->draw();
 	}
 
-	void Game::printFrames() {
-		const bgfx::Stats* stats = bgfx::getStats();
-
-		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
-		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
-		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
-	}
-
 	void Game::draw() {
-		if (this->_window == nullptr) return;
-
-		// DEBUG ----
-		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "006-bass-loading");
-		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: BASS test");
-		printFrames();
-		// -----------
-
-		if (!this->_ready) {
-			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
-			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
-			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
-		}
-
-		// Draw DEBUG ---
-		rawrbox::GIZMOS::draw();
-		// -----------
-
-		this->_window->render(); // Commit primitives
+		rawrbox::Window::render(); // Commit primitives
 	}
 } // namespace bass_test

@@ -2,29 +2,23 @@
 
 #include <rawrbox/bass/sound/instance.hpp>
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render_temp/model/model.hpp>
-#include <rawrbox/render_temp/model/text3D.hpp>
-#include <rawrbox/render_temp/window.hpp>
-
-#include <memory>
+#include <rawrbox/render/models/text3D.hpp>
 
 namespace bass_test {
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Window> _window = nullptr;
 
 		std::weak_ptr<rawrbox::SoundInstance> _sound;
 		std::weak_ptr<rawrbox::SoundInstance> _sound2;
 
-		std::unique_ptr<rawrbox::Model> _modelGrid = std::make_unique<rawrbox::Model>();
-
-		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
-		std::unique_ptr<rawrbox::Text3D> _beatText = std::make_unique<rawrbox::Text3D>();
+		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::Text3D<>> _text = std::make_unique<rawrbox::Text3D<>>();
+		std::unique_ptr<rawrbox::Text3D<>> _beatText = std::make_unique<rawrbox::Text3D<>>();
 
 		rawrbox::Font* _font = nullptr;
 
-		float _beat = 0;
-		bool _ready = false;
 		std::atomic<int> _loadingFiles = 0;
+		bool _ready = false;
+		float _beat = 0.0F;
 
 		void init() override;
 		void setupGLFW() override;
@@ -41,10 +35,9 @@ namespace bass_test {
 		Game& operator=(Game&&) = delete;
 		~Game() override = default;
 
-		void printFrames();
-
 		void loadContent();
 		void contentLoaded();
+
 		void drawWorld();
 	};
 } // namespace bass_test

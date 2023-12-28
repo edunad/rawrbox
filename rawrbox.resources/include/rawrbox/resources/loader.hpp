@@ -5,6 +5,7 @@
 #include <fmt/printf.h>
 
 #include <memory>
+#include <mutex>
 #include <vector>
 
 namespace rawrbox {

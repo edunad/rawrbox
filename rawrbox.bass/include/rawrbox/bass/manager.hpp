@@ -17,6 +17,7 @@ namespace rawrbox {
 		static rawrbox::Vector3f _oldLocation;
 
 	public:
+		static bool _shutdown;
 		static std::unordered_map<std::string, std::unique_ptr<rawrbox::SoundBase>> sounds; // Keep alive the sounds
 
 		static rawrbox::EventNamed<std::pair<uint32_t, double>> onBEAT;

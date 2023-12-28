@@ -15,6 +15,7 @@ namespace rawrbox {
 
 	// STATIC VARS ----
 	bool rawrbox::BASS::_initialized = false;
+	bool rawrbox::BASS::_shutdown = false;
 	bool rawrbox::BASS::_muteOnUnfocus = true;
 	float rawrbox::BASS::_masterVolume = 1.F;
 	rawrbox::Vector3f rawrbox::BASS::_oldLocation = {};
@@ -29,9 +30,11 @@ namespace rawrbox {
 
 	// BASS CALLBACKS (Not thread safe! We need to run these on the main thread) ------
 	void CALLBACK onHTTPSoundFree(HSYNC /*handle*/, DWORD channel, DWORD /*data*/, void* /*user*/) {
+		if (rawrbox::BASS::_shutdown) return;
+
 		rawrbox::runOnRenderThread([channel]() {
 			for (auto it2 = rawrbox::BASS::sounds.begin(); it2 != rawrbox::BASS::sounds.end();) {
-				if ((*it2).second->getSample() == channel) {
+				if ((*it2).second != nullptr && (*it2).second->getSample() == channel) {
 					it2 = rawrbox::BASS::sounds.erase(it2);
 					continue;
 				} else {
@@ -42,18 +45,24 @@ namespace rawrbox {
 	}
 
 	void CALLBACK soundBEAT(uint32_t channel, double beatpos, void* /*user*/) {
+		if (rawrbox::BASS::_shutdown) return;
+
 		rawrbox::runOnRenderThread([channel, beatpos]() {
 			rawrbox::BASS::onBEAT({channel, beatpos});
 		});
 	}
 
 	void CALLBACK soundBPM(uint32_t channel, float bpm, void* /*user*/) {
+		if (rawrbox::BASS::_shutdown) return;
+
 		rawrbox::runOnRenderThread([channel, bpm]() {
 			rawrbox::BASS::onBPM({channel, bpm});
 		});
 	}
 
 	void CALLBACK soundEnd(HSYNC /*handle*/, DWORD channel, DWORD /*data*/, void* /*user*/) {
+		if (rawrbox::BASS::_shutdown) return;
+
 		rawrbox::runOnRenderThread([channel]() {
 			rawrbox::BASS::onSoundEnd(static_cast<uint32_t>(channel));
 		});
@@ -77,9 +86,13 @@ namespace rawrbox {
 	}
 
 	void BASS::shutdown() {
+		if (!_initialized || _shutdown) return;
+		_shutdown = true;
+
 		sounds.clear();
 		BASS_Free();
 
+		_initialized = false;
 		fmt::print("[RawrBox-BASS] BASS Shutdown \n");
 	}
 

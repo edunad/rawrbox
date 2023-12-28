@@ -5,10 +5,6 @@ set(output_target RAWRBOX.BASS)
 
 # Packages ----
 set(BASS_VERSION 24)
-if(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME)
-    set(VPX_STATIC_MULTITHREADED ON)
-endif()
-
 find_package(BASS REQUIRED)
 # --------------
 
@@ -39,7 +35,7 @@ add_custom_target(
 
 add_custom_target(
     copy_lib_bass_fx ALL COMMAND ${CMAKE_COMMAND} -E copy ${BASS_BINARY_FX}
-                                    ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
+                            ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
     COMMENT "Copying BASS FX lib into binary directory")
 
 set(RAWRBOX_EXTRA_DEPS copy_lib_bass copy_lib_bass_fx)
@@ -56,6 +52,7 @@ copy_resources(TARGET ${output_target})
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
     copy_lua_libs(TARGET ${output_target})
 endif()
+
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_BASS)
 target_include_directories(${output_target} PUBLIC "include")
