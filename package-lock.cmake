@@ -43,6 +43,13 @@ CPMDeclarePackage(Catch2
     "CATCH_INSTALL_DOCS OFF"
     "CATCH_INSTALL_EXTRAS ON"
 )
+# qhull
+CPMDeclarePackage(qhull
+  NAME qhull
+  GIT_TAG 2020.2
+  DOWNLOAD_ONLY ON
+  GITHUB_REPOSITORY qhull/qhull
+)
 # thread-pool
 CPMDeclarePackage(thread-pool
   VERSION 3.5.0
@@ -56,6 +63,17 @@ CPMDeclarePackage(cpptrace
   GITHUB_REPOSITORY jeremy-rifkin/cpptrace
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
+)
+# libcpr
+CPMDeclarePackage(libcpr
+  NAME libcpr
+  GIT_TAG 1.10.4
+  GITHUB_REPOSITORY libcpr/cpr
+  OPTIONS
+    "BUILD_SHARED_LIBS OFF"
+    "CPR_ENABLE_CURL_HTTP_ONLY ON"
+    "CPR_ENABLE_SSL ON"
+    "CURL_ZLIB ON"
 )
 # glfw
 CPMDeclarePackage(glfw

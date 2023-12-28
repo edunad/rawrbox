@@ -66,9 +66,9 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_RAWRBOX_BASS ON)
     set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
     #set(RAWRBOX_BUILD_RAWRBOX_WEBM ON)
-    #set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
+    set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
     #set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING ON)
-    #set(RAWRBOX_BUILD_QHULL ON)
+    set(RAWRBOX_BUILD_QHULL ON)
 endif()
 
 # OTHER SETTINGS ----
@@ -208,12 +208,12 @@ if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     message(STATUS "Enabled RAWRBOX.RESOURCES support")
     add_subdirectory("rawrbox.resources")
 endif()
-#
-#if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
-#    message(STATUS "Enabled RAWRBOX.NETWORK support")
-#    add_subdirectory("rawrbox.network")
-#endif()
-#
+
+if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
+   message(STATUS "Enabled RAWRBOX.NETWORK support")
+   add_subdirectory("rawrbox.network")
+endif()
+
 #if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
 #    message(STATUS "Enabled RAWRBOX.SCRIPTING support")
 #    add_subdirectory("rawrbox.scripting")

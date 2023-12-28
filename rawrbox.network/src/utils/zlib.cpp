@@ -2,8 +2,6 @@
 
 #include <zlib.h>
 
-#include <bit>
-
 namespace rawrbox {
 	std::vector<uint8_t> ZLib::decode(std::vector<uint8_t>::const_iterator begin, std::vector<uint8_t>::const_iterator end) {
 		z_stream infstream;

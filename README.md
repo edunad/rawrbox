@@ -36,7 +36,7 @@
 - Sounds using [BASS](https://www.un4seen.com/) lib
 - Custom UI
 - Material system (similar to unity)
-- Vulkan / DirectX / OpenGL support using [BGFX](https://github.com/bkaradzic/bgfx)
+- Vulkan / DirectX / OpenGL support using [Diligent](https://github.com/DiligentGraphics/DiligentCore)
 - Linux Wayland support + steam deck support
 - 3D Physics system using [JoltPhysics](https://github.com/jrouwe/JoltPhysics)
 - 2D Physics system using [Muli](https://github.com/Sopiro/Muli)
