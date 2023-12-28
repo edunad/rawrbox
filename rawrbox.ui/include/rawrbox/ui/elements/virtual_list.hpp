@@ -1,7 +1,7 @@
 
 #pragma once
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/render_temp/stencil.hpp>
+#include <rawrbox/render/stencil.hpp>
 #include <rawrbox/ui/container.hpp>
 #include <rawrbox/utils/event.hpp>
 
@@ -47,12 +47,12 @@ namespace rawrbox {
 
 		rawrbox::Event<size_t, T&, bool> onItemClick;
 
-		const rawrbox::VirtualListMode& getMode() const { return this->_mode; }
+		[[nodiscard]] const rawrbox::VirtualListMode& getMode() const { return this->_mode; }
 		void setMode(rawrbox::VirtualListMode mode) {
 			this->_mode = mode;
 		}
 
-		bool lockScroll() const override { return true; }
+		[[nodiscard]] bool lockScroll() const override { return true; }
 
 		void clear() {
 			this->_items.clear();

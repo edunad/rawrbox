@@ -85,18 +85,22 @@ namespace rawrbox {
 	}
 
 	void Window::pollEvents() {
+		if (__WINDOWS.empty()) return;
 		glfwWaitEvents();
 	}
 
 	void Window::shutdown() {
 		__WINDOWS.clear();
 
+		glfwWaitEventsTimeout(1);
 		glfwPostEmptyEvent();
 		glfwTerminate();
 	}
 
 	void Window::update() {
 		for (auto& win : __WINDOWS) {
+			if (win->_renderer == nullptr) continue;
+
 			setActiveRenderer(win->_renderer.get());
 			win->_renderer->update();
 		}
@@ -104,6 +108,8 @@ namespace rawrbox {
 
 	void Window::render() {
 		for (auto& win : __WINDOWS) {
+			if (win->_renderer == nullptr) continue;
+
 			setActiveRenderer(win->_renderer.get());
 			win->_renderer->render();
 		}
@@ -368,6 +374,8 @@ namespace rawrbox {
 		// ------------
 		return window;
 	}
+
+	rawrbox::RendererBase& Window::getRenderer() const { return *this->_renderer.get(); }
 
 	bool Window::isKeyDown(int key) const {
 		if (this->_handle == nullptr) return false;

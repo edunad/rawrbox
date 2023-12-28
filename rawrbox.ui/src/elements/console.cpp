@@ -1,6 +1,6 @@
 
 #include <rawrbox/engine/static.hpp>
-#include <rawrbox/render_temp/resources/texture.hpp>
+#include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/console.hpp>
 #include <rawrbox/ui/static.hpp>
@@ -8,7 +8,7 @@
 #include <rawrbox/utils/string.hpp>
 
 namespace rawrbox {
-	UIConsole::UIConsole(rawrbox::Console* console) : _console(console) {}
+	UIConsole::UIConsole(rawrbox::Console& console) : _console(&console) {}
 	UIConsole::~UIConsole() {
 		if (this->_console == nullptr) return;
 		this->_console->onPrint.clear();

@@ -45,7 +45,7 @@ target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMI
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_UI)
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
-target_link_libraries(${output_target} PUBLIC RAWRBOX.RENDER_TEMP ${RAWRBOX_EXTRA_LIBS} clip)
+target_link_libraries(${output_target} PUBLIC RAWRBOX.RENDER ${RAWRBOX_EXTRA_LIBS} clip)
 
 set_lib_runtime_mt(${output_target})
 # --------------

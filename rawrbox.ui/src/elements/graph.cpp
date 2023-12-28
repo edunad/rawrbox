@@ -1,5 +1,5 @@
-#include <rawrbox/render_temp/stencil.hpp>
-#include <rawrbox/render_temp/text/font.hpp>
+#include <rawrbox/render/stencil.hpp>
+#include <rawrbox/render/text/font.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/graph.hpp>
 

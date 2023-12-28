@@ -200,7 +200,7 @@ namespace rawrbox {
 		this->parseChunk(text);
 	}
 
-	void Markdown::render(rawrbox::Stencil* stencil, const rawrbox::Vector2f pos) {
+	void Markdown::render(rawrbox::Stencil& stencil, const rawrbox::Vector2f pos) {
 		auto curpos = pos;
 
 		// go trough every element
@@ -229,11 +229,11 @@ namespace rawrbox {
 				auto midpos = curpos;
 				midpos.x += elm.size.x / 2 - elm.font->getStringSize(corruptedUtf8).x / 2;
 
-				// draw moddified text
-				stencil->drawText(*elm.font, corruptedUtf8, midpos, elm.color, rawrbox::Alignment::Left);
+				// draw modified text
+				stencil.drawText(*elm.font, corruptedUtf8, midpos, elm.color, rawrbox::Alignment::Left);
 			} else {
 				// draw default text
-				stencil->drawText(*elm.font, elm.text, curpos, elm.color, rawrbox::Alignment::Left);
+				stencil.drawText(*elm.font, elm.text, curpos, elm.color, rawrbox::Alignment::Left);
 			}
 
 			curpos.x += elm.size.x;

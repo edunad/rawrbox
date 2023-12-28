@@ -145,7 +145,7 @@ namespace rawrbox {
 		// ----------------
 
 		// Utils ----
-		[[nodiscard]] virtual rawrbox::Stencil* stencil() const;
+		[[nodiscard]] virtual rawrbox::Stencil& stencil() const;
 
 		[[nodiscard]] virtual Diligent::IDeviceContext* context() const;
 		[[nodiscard]] virtual Diligent::ISwapChain* swapChain() const;

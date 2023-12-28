@@ -54,7 +54,7 @@ namespace rawrbox {
 		void clear();
 		void regenFonts();
 		void parse(const std::string& text, rawrbox::Colorf defaultColor = rawrbox::Colors::White());
-		void render(rawrbox::Stencil* stencil, const rawrbox::Vector2f pos);
+		void render(rawrbox::Stencil& stencil, const rawrbox::Vector2f pos);
 
 		[[nodiscard]] const rawrbox::Vector2f getSize() const;
 	};

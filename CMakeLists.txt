@@ -59,7 +59,7 @@ option(RAWRBOX_DEV_MODE "Builds all modules, used for developing rawrbox" OFF)
 if(RAWRBOX_DEV_MODE)
     message(WARNING "RAWRBOX Dev mode enabled!")
 
-    #set(RAWRBOX_BUILD_RAWRBOX_UI ON)
+    set(RAWRBOX_BUILD_RAWRBOX_UI ON)
     set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
     #set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
     #set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS ON)
@@ -231,10 +231,10 @@ endif()
 #    add_subdirectory("rawrbox.webm")
 #endif()#
 
-#if(RAWRBOX_BUILD_RAWRBOX_UI)
-#    message(STATUS "Enabled RAWRBOX.UI support")
-#    add_subdirectory("rawrbox.ui")
-#endif()
+if(RAWRBOX_BUILD_RAWRBOX_UI)
+    message(STATUS "Enabled RAWRBOX.UI support")
+    add_subdirectory("rawrbox.ui")
+endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_BASS)
     message(STATUS "Enabled RAWRBOX.BASS support")

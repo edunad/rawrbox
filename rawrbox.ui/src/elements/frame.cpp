@@ -1,5 +1,5 @@
 
-#include <rawrbox/render_temp/stencil.hpp>
+#include <rawrbox/render/stencil.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
 #include <rawrbox/ui/root.hpp>
@@ -115,11 +115,11 @@ namespace rawrbox {
 		stencil.drawLine({0, this->_titleSize}, {size.x, this->_titleSize}, Color::RGBAHex(0x0000004A));
 	}
 
-	void UIFrame::afterDraw(Stencil& stencil) {
+	void UIFrame::afterDraw(rawrbox::Stencil& stencil) {
 		if (this->_overlay == nullptr) return;
 
 		auto& size = this->getSize();
-		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xFFFFFF0A), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
+		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xFFFFFF0C), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
 	}
 	// -----
 

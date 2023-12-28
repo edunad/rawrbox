@@ -12,9 +12,10 @@ add_subdirectory("004-instancing")
 add_subdirectory("005-post-process")
 #add_subdirectory("006-decals")
 #add_subdirectory("007-particle-system")
-#if(RAWRBOX_BUILD_RAWRBOX_UI)
-#    add_subdirectory("008-ui")
-#endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_UI)
+    add_subdirectory("008-ui")
+endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
     add_subdirectory("009-assimp")

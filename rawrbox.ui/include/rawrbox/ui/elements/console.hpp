@@ -2,8 +2,8 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/render_temp/text/font.hpp>
-#include <rawrbox/render_temp/text/markdown.hpp>
+#include <rawrbox/render/text/font.hpp>
+#include <rawrbox/render/text/markdown.hpp>
 #include <rawrbox/ui/elements/input.hpp>
 #include <rawrbox/utils/console.hpp>
 
@@ -50,7 +50,7 @@ namespace rawrbox {
 		virtual void drawText(rawrbox::Stencil& stencil, const std::vector<ConsoleEntry>& entries);
 
 	public:
-		UIConsole(rawrbox::Console* console);
+		UIConsole(rawrbox::Console& console);
 		UIConsole(const UIConsole&) = delete;
 		UIConsole(UIConsole&&) = delete;
 		UIConsole& operator=(const UIConsole&) = delete;

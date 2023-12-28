@@ -1,10 +1,12 @@
 
 #include <rawrbox/engine/static.hpp>
-#include <rawrbox/render_temp/window.hpp>
+#include <rawrbox/render/window.hpp>
 #include <rawrbox/ui/root.hpp>
 
 namespace rawrbox {
 	UIRoot::UIRoot(rawrbox::Window& window) : _window(&window) {
+		if (this->_window == nullptr) throw std::runtime_error("[RawrBox-UI] Window cannot be null");
+
 		this->_aabb = {0, 0, static_cast<float>(window.getSize().x), static_cast<float>(window.getSize().y)};
 
 		// BINDS ---
@@ -31,7 +33,7 @@ namespace rawrbox {
 			this->hoveredElement->mouseScroll(location, offset);
 		};
 
-		window.onResize += [this](Window& /*win*/, const rawrbox::Vector2i& size) {
+		window.onResize += [this](Window& /*win*/, const rawrbox::Vector2i& size, const rawrbox::Vector2i& /*monitorSize*/) {
 			this->_aabb = {0, 0, static_cast<float>(size.x), static_cast<float>(size.y)};
 		};
 		/// ----
@@ -191,10 +193,13 @@ namespace rawrbox {
 
 	void UIRoot::render() {
 		if (this->_window == nullptr) return;
-		auto& sten = this->_window->getStencil();
+		auto& renderer = this->_window->getRenderer();
+		auto& sten = renderer.stencil();
+
 		for (auto& ch : this->_children) {
 			ch->drawChildren(sten);
 		}
+
 		sten.render();
 	}
 

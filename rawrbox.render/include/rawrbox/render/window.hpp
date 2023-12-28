@@ -153,6 +153,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual rawrbox::Vector2i getMousePos() const;
 		[[nodiscard]] virtual uint32_t getWindowFlags() const;
 		[[nodiscard]] virtual Diligent::NativeWindow getHandle() const;
+		[[nodiscard]] virtual rawrbox::RendererBase& getRenderer() const;
 
 		[[nodiscard]] virtual bool isKeyDown(int key) const;
 		[[nodiscard]] virtual bool isMouseDown(int key) const;
