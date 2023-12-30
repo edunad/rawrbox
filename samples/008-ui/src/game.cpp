@@ -53,7 +53,7 @@ namespace ui_test {
 			if (elm != nullptr)
 				fmt::print("[ROOT_UI] Focusing on element\n");
 			else
-				fmt::print("[ROOT_UI] Not element to focus\n");
+				fmt::print("[ROOT_UI] No element to focus\n");
 		};
 		// ----
 
@@ -66,7 +66,6 @@ namespace ui_test {
 
 	void Game::loadContent() {
 		std::vector initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/meow3.gif", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/json/test.json", 0)};
 
@@ -84,7 +83,6 @@ namespace ui_test {
 	}
 
 	void Game::contentLoaded() {
-		auto fnt = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(12);
 		// Setup binds ---
 		auto window = rawrbox::Window::getWindow();
 		auto winSize = window->getSize().cast<float>();
@@ -113,7 +111,7 @@ namespace ui_test {
 			{
 				auto label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({10, 5});
-				label->setFont("./assets/fonts/LiberationMono-Regular.ttf", 14);
+				// label->setFont("./assets/fonts/PTMono-Bold.ttf", 8);
 				label->setText("Label: mew!");
 				label->sizeToContents();
 			}
@@ -121,7 +119,7 @@ namespace ui_test {
 			{
 				auto label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({10, 18});
-				label->setFont("./assets/fonts/LiberationMono-Regular.ttf", 14);
+				// label->setFont("./assets/fonts/PTMono-Regular.ttf", 14);
 				label->setText("Label: shadow mew!");
 				label->setShadowColor(rawrbox::Colors::Black());
 				label->sizeToContents();
@@ -131,15 +129,15 @@ namespace ui_test {
 				auto input = frame->createChild<rawrbox::UIInput>();
 				input->setPos({10, 36});
 				input->setSize({380, 22});
-				input->setFont("./assets/fonts/LiberationMono-Regular.ttf", 14);
-				input->setPlaceholder("cour.ttf");
+				// input->setFont("./assets/fonts/PTMono-Regular.ttf", 14);
+				input->setPlaceholder("placeholder");
 			}
 
 			{
 				auto input = frame->createChild<rawrbox::UIInput>();
 				input->setPos({10, 64});
 				input->setSize({380, 22});
-				input->setFont("./assets/fonts/LiberationMono-Regular.ttf", 14);
+				// input->setFont("./assets/fonts/PTMono-Regular.ttf", 14);
 				input->setText("readonly");
 				input->setReadOnly(true);
 			}
@@ -194,6 +192,30 @@ namespace ui_test {
 				this->_anim->setLoop(true);
 				this->_anim->play();
 			}
+
+			{
+				auto btn = frame->createChild<rawrbox::UIButton>();
+				btn->setPos({290, 96});
+				btn->setSize({100, 32});
+				btn->setText("LINES");
+				btn->setEnabled(true);
+				btn->onClick += [this]() {
+					if (this->_graph == nullptr) return;
+					this->_graph->setStyle(rawrbox::UIGraphStyle::LINE);
+				};
+			}
+
+			{
+				auto btn = frame->createChild<rawrbox::UIButton>();
+				btn->setPos({290, 140});
+				btn->setSize({100, 32});
+				btn->setText("BLOCK");
+				btn->setEnabled(true);
+				btn->onClick += [this]() {
+					if (this->_graph == nullptr) return;
+					this->_graph->setStyle(rawrbox::UIGraphStyle::BLOCK);
+				};
+			}
 		}
 
 		{
@@ -204,7 +226,6 @@ namespace ui_test {
 			{
 				auto label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({5, 3});
-				label->setFont("./assets/fonts/LiberationMono-Regular.ttf", 11);
 				label->setText("LIST MODE");
 				label->sizeToContents();
 			}
@@ -214,9 +235,9 @@ namespace ui_test {
 				auto vlist = frame->createChild<rawrbox::UIVirtualList<std::string>>();
 				vlist->setPos({0, 16});
 				vlist->setSize({400, 100});
-				vlist->renderItem = [fnt](size_t indx, std::string& msg, bool isHovering, rawrbox::Stencil& stencil) {
+				vlist->renderItem = [](size_t indx, std::string& msg, bool isHovering, rawrbox::Stencil& stencil) {
 					stencil.drawBox({}, {400, 12}, isHovering ? rawrbox::Colors::Black() : rawrbox::Colors::Gray().strength(indx % 2 == 1 ? 0.25F : 0.5F));
-					stencil.drawText(*fnt, msg, {0, 0});
+					stencil.drawText(*rawrbox::DEBUG_FONT_REGULAR, msg, {0, 0});
 				};
 
 				vlist->getItemSize = [](size_t /*indx*/) {
@@ -230,7 +251,6 @@ namespace ui_test {
 			{
 				auto label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({5, 120});
-				label->setFont("./assets/fonts/LiberationMono-Regular.ttf", 11);
 				label->setText("GRID MODE");
 				label->sizeToContents();
 			}
@@ -240,9 +260,9 @@ namespace ui_test {
 				vlist->setPos({0, 136});
 				vlist->setSize({400, 100});
 				vlist->setMode(rawrbox::VirtualListMode::GRID);
-				vlist->renderItem = [fnt](size_t indx, std::string& msg, bool isHovering, rawrbox::Stencil& stencil) {
+				vlist->renderItem = [](size_t indx, std::string& msg, bool isHovering, rawrbox::Stencil& stencil) {
 					stencil.drawBox({}, {24, 24}, isHovering ? rawrbox::Colors::Black() : rawrbox::Colors::Gray().strength(indx % 2 == 1 ? 0.25F : 0.5F));
-					stencil.drawText(*fnt, msg, {0, 0});
+					stencil.drawText(*rawrbox::DEBUG_FONT_REGULAR, msg, {0, 0});
 				};
 
 				vlist->getItemSize = [](size_t /*indx*/) {
@@ -266,12 +286,18 @@ namespace ui_test {
 			this->_graph = frame->createChild<rawrbox::UIGraph>();
 			this->_graph->setPos({10, 10});
 			this->_graph->setSize({380, 160});
-			this->_graph->addCategory("GPU", rawrbox::Colors::Orange());
-			this->_graph->addCategory("CPU", rawrbox::Colors::Purple());
+
+#ifdef _DEBUG
+			this->_graph->addCategory("DURATION", rawrbox::Colors::Orange());
+			this->_graph->addCategory("PRIMITIVES", rawrbox::Colors::Purple());
+			this->_graph->addCategory("VERTICES", rawrbox::Colors::Green());
+#else
+			this->_graph->addCategory("DELTA TIME", rawrbox::Colors::Orange());
+			this->_graph->addCategory("FIXED DELTA TIME", rawrbox::Colors::Purple());
+#endif
 			this->_graph->setAutoScale(true);
 			this->_graph->setSmoothing(20);
 			this->_graph->setShowLegend(true);
-			this->_graph->setFontLegend("./assets/fonts/LiberationMono-Regular.ttf");
 		}
 		// ---
 
@@ -304,7 +330,33 @@ namespace ui_test {
 		if (this->_ready) {
 			if (this->_ROOT_UI != nullptr) this->_ROOT_UI->update();
 			if (this->_anim != nullptr) this->_anim->update();
+
+			if (this->_graph != nullptr) {
+#ifdef _DEBUG
+				auto& pipelineStats = rawrbox::RENDERER->getPipelineStats("OVERLAY");
+				auto& durationStats = rawrbox::RENDERER->getDurationStats("OVERLAY");
+
+				if (durationStats.Frequency > 0) {
+					this->_graph->getCategory(0).addEntry(static_cast<float>(durationStats.Duration) / static_cast<float>(durationStats.Frequency) * 1000000.F);
+				}
+
+				this->_graph->getCategory(1).addEntry(pipelineStats.InputPrimitives);
+				this->_graph->getCategory(2).addEntry(pipelineStats.InputVertices);
+#else
+				this->_graph->getCategory(0).addEntry(rawrbox::DELTA_TIME);
+#endif
+			}
 		}
+	}
+
+	void Game::fixedUpdate() {
+		if (!this->_ready) return;
+
+#ifndef _DEBUG
+		if (this->_graph != nullptr) {
+			this->_graph->getCategory(1).addEntry(rawrbox::FIXED_DELTA_TIME);
+		}
+#endif
 	}
 
 	void Game::draw() {

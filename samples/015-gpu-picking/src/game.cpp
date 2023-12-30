@@ -41,7 +41,7 @@ namespace gpu {
 
 	void Game::loadContent() {
 		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("content/fonts/LiberationMono-Regular.ttf", 0)};
+		    std::make_pair<std::string, uint32_t>("content/fonts/PTMono-Regular.ttf", 0)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
@@ -55,7 +55,7 @@ namespace gpu {
 	}
 
 	void Game::contentLoaded() {
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/LiberationMono-Regular.ttf")->getSize(24);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/PTMono-Regular.ttf")->getSize(24);
 
 		// Setup
 		{

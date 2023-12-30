@@ -25,7 +25,7 @@ namespace rawrbox {
 		// RESOURCES ---
 		rawrbox::TextureBase* _texture = nullptr;
 		rawrbox::TextureBase* _overlay = nullptr;
-		rawrbox::Font* _consola = nullptr;
+		rawrbox::Font* _regular = nullptr;
 		// -----------------
 
 #ifdef RAWRBOX_SCRIPTING
@@ -43,7 +43,7 @@ namespace rawrbox {
 		~UIButton() override {
 			this->_texture = nullptr;
 			this->_overlay = nullptr;
-			this->_consola = nullptr;
+			this->_regular = nullptr;
 		}
 
 		void initialize() override;

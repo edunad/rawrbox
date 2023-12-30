@@ -47,7 +47,6 @@ namespace bass_test {
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/sounds/clownmusic.ogg", 0 | rawrbox::SoundFlags::SOUND_3D)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
@@ -62,8 +61,6 @@ namespace bass_test {
 	}
 
 	void Game::contentLoaded() {
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(24);
-
 		// SETUP SOUNDS -------------------
 		// SOUND -----
 		// https://i.rawr.dev/Mystery%20Skulls%20-%20Freaking%20Out.mp3
@@ -102,13 +99,13 @@ namespace bass_test {
 
 		// Text test ----
 		{
-			this->_beatText->addText(*this->_font, "BEAT", {-3.F, 1.3F, 0});
+			this->_beatText->addText(*rawrbox::DEBUG_FONT_REGULAR, "BEAT", {-3.F, 1.3F, 0});
 			this->_beatText->upload();
 		}
 
 		{
-			this->_text->addText(*this->_font, "HTTP LOADING", {-3.F, 1.1F, 0});
-			this->_text->addText(*this->_font, "LOCAL LOADING", {3.F, 1.1F, 0});
+			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "HTTP LOADING", {-3.F, 1.1F, 0});
+			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "LOCAL LOADING", {3.F, 1.1F, 0});
 			this->_text->upload();
 		}
 		// ------

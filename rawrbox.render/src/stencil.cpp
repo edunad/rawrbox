@@ -318,10 +318,10 @@ namespace rawrbox {
 			    font.getPackTexture(glyph)->getHandle());
 			// ----
 
-			this->pushVertice({x0, y0}, glyph->textureTopLeft, col);
-			this->pushVertice({x0, y1}, {glyph->textureTopLeft.x, glyph->textureBottomRight.y}, col);
-			this->pushVertice({x1, y0}, {glyph->textureBottomRight.x, glyph->textureTopLeft.y}, col);
-			this->pushVertice({x1, y1}, glyph->textureBottomRight, col);
+			this->pushVertice(rawrbox::Vector2f(x0, y0), glyph->textureTopLeft, col);
+			this->pushVertice(rawrbox::Vector2f(x0, y1), {glyph->textureTopLeft.x, glyph->textureBottomRight.y}, col);
+			this->pushVertice(rawrbox::Vector2f(x1, y0), {glyph->textureBottomRight.x, glyph->textureTopLeft.y}, col);
+			this->pushVertice(rawrbox::Vector2f(x1, y1), glyph->textureBottomRight, col);
 
 			this->pushIndices({0, 1, 2,
 			    1, 3, 2});

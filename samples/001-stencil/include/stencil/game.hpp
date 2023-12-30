@@ -23,7 +23,6 @@ namespace stencil {
 
 		rawrbox::Font* _font = nullptr;
 		rawrbox::Font* _font2 = nullptr;
-		rawrbox::Font* _font3 = nullptr;
 
 		bool _ready = false;
 		std::atomic<int> _loadingFiles = 0;

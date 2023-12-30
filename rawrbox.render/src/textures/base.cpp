@@ -22,6 +22,50 @@ namespace rawrbox {
 		this->_handle->SetSampler(this->getSampler());
 	}
 
+	void TextureBase::tryGetFormatChannels(Diligent::TEXTURE_FORMAT& format, int& channels) {
+		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) {
+			switch (channels) {
+				case 1:
+					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_A8_UNORM;
+					break;
+				case 2:
+					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_RG8_UNORM;
+					break;
+				default:
+				case 3:
+				case 4:
+					format = this->_sRGB ? Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB : Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM;
+					break;
+			}
+		}
+
+		if (channels == 0) {
+			switch (format) {
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_A8_UNORM:
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_R8_UNORM:
+					channels = 1;
+					break;
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RG8_UNORM:
+					channels = 2;
+					break;
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM:
+				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB:
+				default:
+					channels = 4;
+					break;
+			}
+		}
+
+		// No RGB8, replace with SRGB
+		if (this->_channels == 3) {
+			this->_channels = 4;
+
+			if (!this->_pixels.empty()) {
+				this->_pixels = rawrbox::ColorUtils::setChannels(3, 4, this->_size.x, this->_size.y, this->_pixels);
+			}
+		}
+	}
+
 	// UTILS ---
 	bool TextureBase::hasTransparency() const { return this->_channels == 4 && this->_transparent; }
 
@@ -60,43 +104,8 @@ namespace rawrbox {
 		if (this->_failedToLoad || this->_handle != nullptr) return; // Failed texture is already bound, so skip it
 
 		// Try to determine texture format
-		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) {
-			switch (this->_channels) {
-				case 1:
-					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_A8_UNORM;
-					break;
-				case 2:
-					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_RG8_UNORM;
-					break;
-				default:
-				case 3:
-				case 4:
-					format = this->_sRGB ? Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB : Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM;
-					break;
-			}
-		}
-
-		if (this->_channels == 0) {
-			switch (format) {
-				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_A8_UNORM:
-				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_R8_UNORM:
-					this->_channels = 1;
-					break;
-				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RG8_UNORM:
-					this->_channels = 2;
-					break;
-				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM:
-				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB:
-				default:
-					this->_channels = 4;
-					break;
-			}
-		}
-
-		if (this->_channels == 3) { // No RGB8
-			this->_channels = 4;
-			this->_pixels = rawrbox::ColorUtils::setChannels(3, 4, this->_size.x, this->_size.y, this->_pixels);
-		}
+		this->tryGetFormatChannels(format, this->_channels);
+		// --------------------------------
 
 		if (this->_pixels.empty()) {
 			this->_pixels.resize(this->_size.x * this->_size.y * this->_channels);

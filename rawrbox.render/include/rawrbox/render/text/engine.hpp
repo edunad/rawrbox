@@ -24,6 +24,6 @@ namespace rawrbox {
 		static std::pair<uint16_t, rawrbox::TexturePack*> requestPack(uint16_t width, uint16_t height, Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM);
 		static rawrbox::TexturePack* getPack(uint16_t id);
 
-		static rawrbox::Font* load(const std::filesystem::path& filename, uint16_t size, uint16_t index = 0);
+		static rawrbox::Font* load(const std::filesystem::path& filename, uint16_t size, uint32_t index = 0);
 	};
 } // namespace rawrbox

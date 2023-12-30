@@ -51,7 +51,6 @@ namespace light {
 
 	void Game::loadContent() {
 		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planks.png", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planksSpec.png", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planksNorm.png", 0)};
@@ -68,8 +67,6 @@ namespace light {
 	}
 
 	void Game::contentLoaded() {
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(24);
-
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planks.png")->get();
 		auto texNorm = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksNorm.png")->get();
 
@@ -120,9 +117,9 @@ namespace light {
 		// ----
 
 		// Text test ----
-		this->_text->addText(*this->_font, "POINT LIGHT", {-3.5F, 0.5F, 0});
-		this->_text->addText(*this->_font, "SPOT LIGHT", {3.5F, 0.5F, 0});
-		this->_text->addText(*this->_font, "INSTANCES", {0.F, 0.5F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "POINT LIGHT", {-3.5F, 0.5F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPOT LIGHT", {3.5F, 0.5F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "INSTANCES", {0.F, 0.5F, 0});
 		// ------
 
 		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 40.F, 0.8F);

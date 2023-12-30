@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/button.hpp>
@@ -38,7 +39,7 @@ namespace rawrbox {
 	bool UIButton::isEnabled() const { return this->_enabled; }
 
 	void UIButton::setText(const std::string& text, uint16_t size) {
-		this->_consola = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(size);
+		this->_regular = rawrbox::DEBUG_FONT_REGULAR->scale(size);
 		this->_text = text;
 	}
 	const std::string& UIButton::getText() const { return this->_text; }
@@ -102,15 +103,15 @@ namespace rawrbox {
 			}
 		}
 
-		if (!this->_text.empty() && this->_consola != nullptr) {
-			auto progSize = this->_consola->getStringSize(this->_text);
+		if (!this->_text.empty() && this->_regular != nullptr) {
+			auto progSize = this->_regular->getStringSize(this->_text);
 
 			// No icon, center text
 			if (this->_texture == nullptr) {
-				stencil.drawText(*this->_consola, this->_text, {(size.x - progSize.x) / 2, (size.y - progSize.y) / 2}, this->_textColor);
+				stencil.drawText(*this->_regular, this->_text, {(size.x - progSize.x) / 2, (size.y - progSize.y) / 2}, this->_textColor);
 			} else {
 				// Text after icon
-				stencil.drawText(*this->_consola, this->_text, {this->_textureSize.x + 4, (size.y - progSize.y) / 2}, this->_textColor);
+				stencil.drawText(*this->_regular, this->_text, {this->_textureSize.x + 4, (size.y - progSize.y) / 2}, this->_textColor);
 			}
 		}
 

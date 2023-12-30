@@ -64,36 +64,8 @@ namespace rawrbox {
 		if (this->_failedToLoad || this->_handle != nullptr) return; // Failed texture is already bound, so skip it
 
 		// Try to determine texture format
-		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) {
-			switch (this->_channels) {
-				case 1:
-					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_R8_UNORM;
-					break;
-				case 2:
-					format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_RG8_UNORM;
-					break;
-				default:
-				case 3:
-				case 4:
-					format = this->_sRGB ? Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB : Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM;
-					break;
-			}
-		} else if (this->_channels == 0) {
-			switch (format) {
-				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_A8_UNORM:
-				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_R8_UNORM:
-					this->_channels = 1;
-					break;
-				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RG8_UNORM:
-					this->_channels = 2;
-					break;
-				default:
-				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM:
-				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB:
-					this->_channels = 4;
-					break;
-			}
-		}
+		this->tryGetFormatChannels(format, this->_channels);
+		// --------------------------------
 
 		Diligent::TextureDesc desc;
 		desc.Type = Diligent::RESOURCE_DIM_TEX_2D_ARRAY;

@@ -49,6 +49,24 @@ namespace rawrbox {
 			}
 		}
 
+		[[nodiscard]] NumberType GammaToLinear(const NumberType& x) const {
+			auto a = static_cast<float>(x);
+			return a <= 0.04045F ? static_cast<NumberType>(a / 12.92F) : static_cast<NumberType>(std::pow((a + 0.055F) / 1.055F, 2.4F));
+		}
+
+		[[nodiscard]] NumberType LinearToGamma(const NumberType& x) const {
+			auto a = static_cast<float>(x);
+			return a <= 0.0031308 ? a * 12.92F : 1.055F * std::pow(a, 1.F / 2.4F) - 0.055F;
+		}
+
+		[[nodiscard]] Color_t<NumberType> toLinear() const {
+			return {GammaToLinear(r), GammaToLinear(g), GammaToLinear(b), a};
+		}
+
+		[[nodiscard]] Color_t<NumberType> toSRGB() const {
+			return {LinearToGamma(r), LinearToGamma(g), LinearToGamma(b), a};
+		}
+
 		template <class ReturnType>
 		[[nodiscard]] Color_t<ReturnType> cast() const {
 			if constexpr (std::is_same_v<NumberType, int>) {

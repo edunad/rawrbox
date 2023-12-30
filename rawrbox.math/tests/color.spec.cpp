@@ -99,4 +99,23 @@ TEST_CASE("Color should behave as expected", "[rawrbox::Color]") {
 		int col = rawrbox::Colori(255, 0, 255, 255).dot({255, 255, 255, 255});
 		REQUIRE(col == 195075);
 	}
+
+	SECTION("rawrbox::Color::toLinear") {
+		auto col = rawrbox::Colors::Blue().toLinear();
+
+		REQUIRE_THAT(col.r, Catch::Matchers::WithinAbs(0.0331F, 0.0001F));
+		REQUIRE_THAT(col.g, Catch::Matchers::WithinAbs(0.40645F, 0.0001F));
+		REQUIRE_THAT(col.b, Catch::Matchers::WithinAbs(0.72935F, 0.0001F));
+		REQUIRE_THAT(col.a, Catch::Matchers::WithinAbs(1.F, 0.0001F));
+	}
+
+	SECTION("rawrbox::Color::toLinear") {
+		auto col = rawrbox::Color(0.0331F, 0.40645F, 0.72935F, 1.F).toSRGB();
+		auto col2 = rawrbox::Colors::Blue();
+
+		REQUIRE_THAT(col.r, Catch::Matchers::WithinAbs(col2.r, 0.0001F));
+		REQUIRE_THAT(col.g, Catch::Matchers::WithinAbs(col2.g, 0.0001F));
+		REQUIRE_THAT(col.b, Catch::Matchers::WithinAbs(col2.b, 0.0001F));
+		REQUIRE_THAT(col.a, Catch::Matchers::WithinAbs(col2.a, 0.0001F));
+	}
 }

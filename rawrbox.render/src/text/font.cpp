@@ -24,7 +24,10 @@ namespace rawrbox {
 		this->_glyphs.clear();
 	}
 
-	Font::Font(int16_t widthPadding, int16_t heightPadding) : _widthPadding(widthPadding), _heightPadding(heightPadding), _info({}) {}
+	// NOLINTBEGIN(modernize-pass-by-value)
+	Font::Font(
+	    const std::filesystem::path& fileName, int16_t widthPadding, int16_t heightPadding) : _fileName(fileName), _widthPadding(widthPadding), _heightPadding(heightPadding), _info({}) {}
+	// NOLINTEND(modernize-pass-by-value)
 
 	// INTERNAL ---
 	void Font::loadFontInfo() {
@@ -105,7 +108,7 @@ namespace rawrbox {
 	// ----
 
 	// LOADING ---
-	void Font::load(const std::vector<uint8_t>& buffer, uint32_t pixelHeight, int32_t fontIndex) {
+	void Font::load(const std::vector<uint8_t>& buffer, uint16_t pixelHeight, uint32_t fontIndex) {
 		int offset = stbtt_GetFontOffsetForIndex(buffer.data(), fontIndex); // Get the offset for `otf` fonts
 
 		// Load
@@ -123,6 +126,11 @@ namespace rawrbox {
 		while (charsIter < chars.end()) {
 			this->generateGlyph(utf8::next(charsIter, chars.end()));
 		}
+	}
+
+	rawrbox::Font* Font::scale(uint16_t size) {
+		if (size == this->getSize()) return this;
+		return rawrbox::TextEngine::load(this->_fileName, size);
 	}
 	// ----
 

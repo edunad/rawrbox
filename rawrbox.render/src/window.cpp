@@ -25,6 +25,7 @@
 
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/matrix4x4.hpp>
+#include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/window.hpp>
 #include <rawrbox/utils/string.hpp>
 
@@ -91,6 +92,23 @@ namespace rawrbox {
 
 	void Window::shutdown() {
 		__WINDOWS.clear();
+
+		// SHUTDOWN FONTS ----
+		rawrbox::TextEngine::shutdown();
+
+		rawrbox::DEBUG_FONT_REGULAR = nullptr;
+		rawrbox::DEBUG_FONT_BOLD = nullptr;
+		rawrbox::DEBUG_FONT_ITALIC = nullptr;
+		// --------------------
+
+		// SHUTDOWN TEXTURES ----
+		rawrbox::MISSING_TEXTURE.reset();
+		rawrbox::WHITE_TEXTURE.reset();
+		rawrbox::BLACK_TEXTURE.reset();
+		rawrbox::NORMAL_TEXTURE.reset();
+		// ----------------------
+
+		// rawrbox::DECALS::shutdown();
 
 		glfwWaitEventsTimeout(1);
 		glfwPostEmptyEvent();

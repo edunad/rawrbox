@@ -1,3 +1,5 @@
+#include <correction.fxh>
+
 Texture2DArray g_Texture;
 SamplerState   g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
 
@@ -15,5 +17,5 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     float a = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV.xy, PSIn.UV.z)).r * PSIn.Color.a;
 	if(a <= 0.0) discard;
 
-	PSOut.Color = float4(PSIn.Color.rgb, a);
+	PSOut.Color = toLinear(float4(PSIn.Color.rgb, a));
 }

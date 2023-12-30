@@ -4,6 +4,7 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/textures/pack.hpp>
 
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <unordered_map>
@@ -92,11 +93,14 @@ namespace rawrbox {
 		std::shared_ptr<stbtt_fontinfo> _font = nullptr; // unique_ptr does not like incomplete types
 		std::unordered_map<uint32_t, std::unique_ptr<rawrbox::Glyph>> _glyphs = {};
 
+		std::filesystem::path _fileName = {};
+
 		float _scale = 0.F;
-		float _pixelSize = 0.F;
+		float _pixelSize = 0;
 
 		int16_t _widthPadding = 0;
 		int16_t _heightPadding = 0;
+
 		rawrbox::FontInfo _info = {};
 
 		// INTERNAL ---
@@ -109,15 +113,16 @@ namespace rawrbox {
 	public:
 		virtual ~Font();
 
-		Font(int16_t widthPadding = 6, int16_t heightPadding = 6);
+		Font(const std::filesystem::path& fileName, int16_t widthPadding = 6, int16_t heightPadding = 6);
 		Font(Font&&) = delete;
 		Font& operator=(Font&&) = delete;
 		Font(const Font&) = delete;
 		Font& operator=(const Font&) = delete;
 
 		// LOADING ---
-		virtual void load(const std::vector<uint8_t>& buffer, uint32_t pixelHeight, int32_t fontIndex = 0);
+		virtual void load(const std::vector<uint8_t>& buffer, uint16_t pixelHeight, uint32_t fontIndex = 0);
 		virtual void addChars(const std::string& chars);
+		virtual rawrbox::Font* scale(uint16_t size);
 		// ----
 
 		// UTILS ---

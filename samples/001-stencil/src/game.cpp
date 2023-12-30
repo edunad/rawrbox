@@ -59,9 +59,8 @@ namespace stencil {
 		    std::make_pair<std::string, uint32_t>("./assets/textures/screem.png", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/fonts/droidsans.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/fonts/visitor1.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Bold.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Italic.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("consolab.ttf", 0),
+		    std::make_pair<std::string, uint32_t>("consolai.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/meow3.gif", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/rawrbox.svg", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/cawt.webp", 0),
@@ -94,13 +93,12 @@ namespace stencil {
 
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/droidsans.ttf")->getSize(28);
 		this->_font2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/visitor1.ttf")->getSize(18);
-		this->_font3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(12);
 		// ----
 
 		// Setup markdown ----
-		this->_markdown->fontRegular = this->_font3;
-		this->_markdown->fontBold = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Bold.ttf")->getSize(12);
-		this->_markdown->fontItalic = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Italic.ttf")->getSize(12);
+		this->_markdown->fontRegular = rawrbox::DEBUG_FONT_REGULAR;
+		this->_markdown->fontBold = rawrbox::DEBUG_FONT_BOLD;
+		this->_markdown->fontItalic = rawrbox::DEBUG_FONT_ITALIC;
 		this->_markdown->parse("Markdown test [#ff0000]red color[/], *italic text*, **bold text**, ~corrupt text~");
 		// ----
 
@@ -138,7 +136,6 @@ namespace stencil {
 
 		this->_font = nullptr;
 		this->_font2 = nullptr;
-		this->_font3 = nullptr;
 
 		this->_markdown.reset();
 	}
@@ -301,7 +298,7 @@ namespace stencil {
 		stencil.drawText(*this->_font2, "Cat!!", {0, 40});
 		stencil.popRotation();
 
-		stencil.drawText(*this->_font3, "MeW MeW MeW! I am a cat, nya.", {0, 75});
+		stencil.drawText(*rawrbox::DEBUG_FONT_BOLD, "MeW MeW MeW! I am a cat, nya.", {0, 75});
 		// ---
 
 		// Markdown ---

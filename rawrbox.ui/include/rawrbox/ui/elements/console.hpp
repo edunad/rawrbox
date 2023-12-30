@@ -23,8 +23,6 @@ namespace rawrbox {
 	};
 
 	class UIConsole : public rawrbox::UIContainer {
-		rawrbox::Font* _consolas = nullptr;
-		rawrbox::Font* _consolasb = nullptr;
 		rawrbox::TextureBase* _overlay = nullptr;
 		rawrbox::UIInput* _input = nullptr;
 		rawrbox::Console* _console = nullptr;

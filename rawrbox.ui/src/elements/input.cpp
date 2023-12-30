@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/input.hpp>
@@ -127,6 +128,13 @@ namespace rawrbox {
 	}
 #endif
 	// -----
+
+	void UIInput::initialize() {
+		this->_font = rawrbox::DEBUG_FONT_REGULAR;
+
+		this->_charSize = this->_font->getStringSize("W");
+		this->_textSize.y = this->_charSize.y;
+	}
 
 	// UTILS ----
 	void UIInput::setHints(const std::vector<std::string>& hints) {
@@ -317,11 +325,12 @@ namespace rawrbox {
 	void UIInput::draw(Stencil& stencil) {
 		if (this->_font == nullptr) return;
 
-		auto& size = this->getSize();
 		auto& text = this->getText();
-		stencil.drawBox({}, size, !(this->focused() || this->hovering()) || this->_readOnly ? getBackgroundColor() : getBackgroundColor() * 0.9F);
-		stencil.drawBox({0, 2}, {2, size.y - 2}, getBackgroundColor() * 0.5F);
-		stencil.drawBox({0, 0}, {size.x, 2}, getBackgroundColor() * 0.5F);
+		auto& size = this->getSize();
+
+		stencil.drawBox({}, size, !(this->focused() || this->hovering()) || this->_readOnly ? this->getBackgroundColor() : this->getBackgroundColor() * 0.9F);
+		stencil.drawBox({0, 2}, {2, size.y - 2}, this->getBackgroundColor() * 0.5F);
+		stencil.drawBox({0, 0}, {size.x, 2}, this->getBackgroundColor() * 0.5F);
 
 		auto pos = Vector2f(this->_padding, (size.y - this->_textSize.y) / 2 + this->_offsetY);
 
@@ -334,16 +343,18 @@ namespace rawrbox {
 		}
 
 		if (!this->_hint.empty()) {
-			stencil.drawText(*this->_font, this->_hint, {size.x - 5, pos.y}, Color::RGBAHex(0x000000A4), rawrbox::Alignment::Right);
+			stencil.drawText(*this->_font, this->_hint, {size.x, pos.y}, Color::RGBAHex(0x000000A4), rawrbox::Alignment::Right);
 		}
 
 		if (text.empty() && !this->_readOnly) {
-			stencil.drawText(*this->_font, this->_placeholder, {pos.x + 5, pos.y}, getColor() * 0.5F);
+			stencil.drawText(*this->_font, this->_placeholder, pos, getColor() * 0.5F);
 		} else {
 			stencil.drawText(*this->_font, text, pos, this->_readOnly ? this->getColor() * 0.65F : this->getColor());
 		}
 
-		if (!this->_fillText.empty()) stencil.drawText(*this->_font, this->_fillText, {pos.x + this->_textSize.x, pos.y}, getColor() * 0.2F);
+		if (!this->_fillText.empty()) {
+			stencil.drawText(*this->_font, this->_fillText, {pos.x + this->_textSize.x, pos.y}, this->getColor() * 0.2F);
+		}
 
 		// Border
 		stencil.pushOutline({this->_borderSize});

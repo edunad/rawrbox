@@ -35,11 +35,13 @@ namespace rawrbox {
 
 		bool _failedToLoad = false;
 		bool _transparent = false;
-		bool _sRGB = true;
+		bool _sRGB = false;
 
 		std::string _name = "";
 		virtual void loadFallback();
 		virtual void updateSampler();
+
+		virtual void tryGetFormatChannels(Diligent::TEXTURE_FORMAT& format, int& channels);
 
 	public:
 		TextureBase() = default;

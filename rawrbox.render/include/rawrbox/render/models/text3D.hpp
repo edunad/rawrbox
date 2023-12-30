@@ -9,7 +9,7 @@ namespace rawrbox {
 	template <typename M = rawrbox::MaterialText3D>
 	class Text3D : public rawrbox::Model<M> {
 	protected:
-		float _scaleMul = 0.25F;
+		float _scaleMul = 0.65F;
 
 	public:
 		Text3D() = default;

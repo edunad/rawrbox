@@ -28,7 +28,6 @@ namespace rawrbox {
 		// RESOURCES ---
 		rawrbox::TextureBase* _stripes = nullptr;
 		rawrbox::TextureBase* _overlay = nullptr;
-		rawrbox::Font* _consola = nullptr;
 		// -----------------
 
 #ifdef RAWRBOX_SCRIPTING

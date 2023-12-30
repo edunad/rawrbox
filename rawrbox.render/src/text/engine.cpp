@@ -1,3 +1,4 @@
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/utils/path.hpp>
 
@@ -58,8 +59,9 @@ namespace rawrbox {
 		return fnd->second.get();
 	}
 
-	rawrbox::Font* TextEngine::load(const std::filesystem::path& filename, uint16_t size, uint16_t index) {
+	rawrbox::Font* TextEngine::load(const std::filesystem::path& filename, uint16_t size, uint32_t index) {
 		std::string key = fmt::format("{}-{}", filename.generic_string(), size);
+
 		// Check cache
 		auto fnd = _fonts.find(key);
 		if (fnd != _fonts.end()) return fnd->second.get();
@@ -72,17 +74,15 @@ namespace rawrbox {
 
 			// Not found on content & system? Load fallback
 			if (!std::filesystem::exists(pth)) {
-				fmt::print("  └── Loading fallback font!\n");
-				pth = "./assets/fonts/LiberationMono-Regular.ttf"; // Fallback
-
-				if (!std::filesystem::exists(pth)) throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load fallback font '{}'", pth.generic_string()));
+				fmt::print("[RawrBox-Font] Failed to load '{}' ──> File not found\n  └── Loading fallback font!\n", filename.generic_string());
+				return rawrbox::DEBUG_FONT_REGULAR;
 			}
 		}
 
 		auto bytes = rawrbox::PathUtils::getRawData(pth);
 		if (bytes.empty()) throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load font '{}'", filename.generic_string()));
 
-		_fonts[key] = std::make_unique<rawrbox::Font>();
+		_fonts[key] = std::make_unique<rawrbox::Font>(filename);
 		_fonts[key]->load(bytes, size, index);
 
 		return _fonts[key].get();

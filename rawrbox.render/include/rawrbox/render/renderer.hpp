@@ -9,6 +9,7 @@
 #include <rawrbox/render/textures/render.hpp>
 
 #include <RefCntAutoPtr.hpp>
+#include <ScopedQueryHelper.hpp>
 
 #include <DeviceContext.h>
 #include <RenderDevice.h>
@@ -35,6 +36,15 @@ namespace rawrbox {
 
 		std::unique_ptr<rawrbox::TextureRender> _render = nullptr;
 		std::unique_ptr<rawrbox::TextureRender> _decals = nullptr;
+
+// QUERIES ---
+#ifdef _DEBUG
+		std::unordered_map<std::string, std::unique_ptr<Diligent::ScopedQueryHelper>> _query = {};
+
+		std::unordered_map<std::string, Diligent::QueryDataPipelineStatistics> _pipelineData = {};
+		std::unordered_map<std::string, Diligent::QueryDataDuration> _durationData = {};
+#endif
+		// -------
 
 		// INTRO ---
 		bool _introComplete = false;
@@ -80,6 +90,13 @@ namespace rawrbox {
 		// INTRO ------
 		virtual void playIntro();
 		virtual void introComplete();
+		// ----------------
+
+		// QUERIES ------
+#ifdef _DEBUG
+		virtual void beginQuery(const std::string& query);
+		virtual void endQuery(const std::string& query);
+#endif
 		// ----------------
 
 		virtual void clear();
@@ -153,6 +170,11 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual Diligent::ITextureView* getDepth() const;
 		[[nodiscard]] virtual Diligent::ITextureView* getColor(bool rt = false) const;
+
+#ifdef _DEBUG
+		[[nodiscard]] virtual const Diligent::QueryDataPipelineStatistics& getPipelineStats(const std::string& query);
+		[[nodiscard]] virtual const Diligent::QueryDataDuration& getDurationStats(const std::string& query);
+#endif
 
 		//[[nodiscard]] virtual const bgfx::TextureHandle getMask() const;
 		//[[nodiscard]] virtual const bgfx::TextureHandle getGPUPick() const;

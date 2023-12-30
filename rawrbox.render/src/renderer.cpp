@@ -29,13 +29,14 @@
 #include <rawrbox/render/materials/text.hpp>
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/textures/webp.hpp>
 #include <rawrbox/render/utils/render.hpp>
 #include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/threading.hpp>
 
 namespace rawrbox {
-	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& screenSize, const rawrbox::Colorf& clearColor) : _window(window), _type(type), _size(size), _monitorSize(screenSize), _clearColor(clearColor) {}
+	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& screenSize, const rawrbox::Colorf& clearColor) : _window(window), _type(type), _size(size), _monitorSize(screenSize), _clearColor(clearColor.toLinear()) {}
 	RendererBase::~RendererBase() {
 		this->_render.reset();
 		this->_stencil.reset();
@@ -44,8 +45,6 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_device);
 		RAWRBOX_DESTROY(this->_context);
 		RAWRBOX_DESTROY(this->_swapChain);
-
-		// rawrbox::DECALS::shutdown();
 	}
 
 	void RendererBase::init(Diligent::DeviceFeatures features) {
@@ -53,6 +52,11 @@ namespace rawrbox {
 
 		// REQUIRED -----
 		features.WireframeFill = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+
+#ifdef _DEBUG
+		features.PipelineStatisticsQueries = Diligent::DEVICE_FEATURE_STATE_OPTIONAL;
+		features.DurationQueries = Diligent::DEVICE_FEATURE_STATE_OPTIONAL;
+#endif
 		// --------------
 
 		// PLUGIN REQUIREMENTS ---
@@ -178,6 +182,20 @@ namespace rawrbox {
 		}
 		// -------------------------
 
+		// Init default fonts ------
+		if (rawrbox::DEBUG_FONT_REGULAR == nullptr) {
+			rawrbox::DEBUG_FONT_REGULAR = rawrbox::TextEngine::load("./assets/fonts/SometypeMono-Regular.ttf", 12);
+		}
+
+		if (rawrbox::DEBUG_FONT_BOLD == nullptr) {
+			rawrbox::DEBUG_FONT_BOLD = rawrbox::TextEngine::load("./assets/fonts/SometypeMono-Bold.ttf", 12);
+		}
+
+		if (rawrbox::DEBUG_FONT_ITALIC == nullptr) {
+			rawrbox::DEBUG_FONT_ITALIC = rawrbox::TextEngine::load("./assets/fonts/SometypeMono-Italic.ttf", 12);
+		}
+		// -------------------------
+
 		// Setup camera -----
 		if (this->_camera != nullptr) this->_camera->initialize();
 		// ------------------
@@ -277,13 +295,21 @@ namespace rawrbox {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 			plugin.second->preRender();
 		}
-		// -----------------------
+// -----------------------
+
+// Perform world --
+#ifdef _DEBUG
+		this->beginQuery("WORLD");
+#endif
 
 		this->_render->startRecord();
-		// Perform calls --
 		this->_drawCall(rawrbox::DrawPass::PASS_OPAQUE);
-		//  -----------------
 		this->_render->stopRecord();
+
+#ifdef _DEBUG
+		this->endQuery("WORLD");
+#endif
+		//  -----------------
 
 		// Perform post-render --
 		for (auto& plugin : this->_renderPlugins) {
@@ -297,7 +323,16 @@ namespace rawrbox {
 		// rawrbox::RenderUtils::drawQUAD(this->_decals->getHandle(), this->_size, true, BGFX_STATE_BLEND_ALPHA);
 		// ------------------
 
+		// Perform overlay --
+#ifdef _DEBUG
+		this->beginQuery("OVERLAY");
+#endif
 		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+
+#ifdef _DEBUG
+		this->endQuery("OVERLAY");
+#endif
+		// ------------------
 
 		// Submit ---
 		this->frame();
@@ -428,7 +463,88 @@ namespace rawrbox {
 		if (webpPath.extension() != ".webp") throw std::runtime_error(fmt::format("[RawrBox-RenderBase] Invalid intro '{}', format needs to be .webp!", webpPath.generic_string()));
 		this->_introList[webpPath.generic_string()] = {nullptr, speed, cover};
 	}
-	//-------------------------
+//-------------------------
+
+// QUERIES ------
+#ifdef _DEBUG
+	void RendererBase::beginQuery(const std::string& query) {
+		const auto& supportedFeatures = this->device()->GetDeviceInfo().Features;
+		if (!supportedFeatures.PipelineStatisticsQueries || !supportedFeatures.DurationQueries) return;
+
+		auto pipeName = fmt::format("{}::PIPELINE", query);
+		auto durationName = fmt::format("{}::DURATION", query);
+
+		Diligent::ScopedQueryHelper* pipelineHelper = nullptr;
+		Diligent::ScopedQueryHelper* durationHelper = nullptr;
+
+		// PIPELINE QUERY -----
+		auto fndPipeline = this->_query.find(pipeName);
+		if (fndPipeline == this->_query.end()) {
+			auto name = fmt::format("RawrBox::STATS::PIPELINE::{}", query);
+
+			Diligent::QueryDesc queryDesc;
+			queryDesc.Name = name.c_str();
+			queryDesc.Type = Diligent::QUERY_TYPE_PIPELINE_STATISTICS;
+
+			auto helper = std::make_unique<Diligent::ScopedQueryHelper>(this->device(), queryDesc, 1);
+			pipelineHelper = helper.get();
+			this->_query[pipeName] = std::move(helper);
+
+			fmt::print("[RawrBox-Renderer] Created query {} -> QUERY_TYPE_PIPELINE_STATISTICS\n", query);
+		} else {
+			pipelineHelper = fndPipeline->second.get();
+		}
+		// --------------
+
+		// DURATION QUERY -----
+		auto fndDuration = this->_query.find(durationName);
+		if (fndDuration == this->_query.end()) {
+			auto name = fmt::format("RawrBox::STATS::DURATION::{}", query);
+
+			Diligent::QueryDesc queryDesc;
+			queryDesc.Name = name.c_str();
+			queryDesc.Type = Diligent::QUERY_TYPE_DURATION;
+
+			auto helper = std::make_unique<Diligent::ScopedQueryHelper>(this->device(), queryDesc, 1);
+			durationHelper = helper.get();
+			this->_query[durationName] = std::move(helper);
+
+			fmt::print("[RawrBox-Renderer] Created query {} -> QUERY_TYPE_DURATION\n", query);
+		} else {
+			durationHelper = fndDuration->second.get();
+		}
+		// --------------
+
+		if (pipelineHelper == nullptr || durationHelper == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Renderer] Failed to create & begin query '{}'", query));
+
+		// Start queries ---
+		pipelineHelper->Begin(this->context());
+		durationHelper->Begin(this->context());
+		// -----------------
+	}
+
+	void RendererBase::endQuery(const std::string& query) {
+		const auto& supportedFeatures = this->device()->GetDeviceInfo().Features;
+		if (!supportedFeatures.PipelineStatisticsQueries || !supportedFeatures.DurationQueries) return;
+
+		auto pipeName = fmt::format("{}::PIPELINE", query);
+		auto durationName = fmt::format("{}::DURATION", query);
+
+		auto fndPipeline = this->_query.find(pipeName);
+		auto fndDuration = this->_query.find(durationName);
+
+		if (fndPipeline->second == nullptr || fndDuration->second == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Renderer] Failed to end query '{}', not found!", query));
+
+		// End queries ---
+		auto pipeData = &this->_pipelineData[pipeName];
+		auto durationData = &this->_durationData[durationName];
+
+		fndPipeline->second->End(this->context(), pipeData, sizeof(Diligent::QueryDataPipelineStatistics));
+		fndDuration->second->End(this->context(), durationData, sizeof(Diligent::QueryDataDuration));
+		// -----------------
+	}
+#endif
+	// ----------------
 
 	// Utils ----
 	void RendererBase::setMainCamera(rawrbox::CameraBase* camera) const { rawrbox::MAIN_CAMERA = camera; }
@@ -446,6 +562,19 @@ namespace rawrbox {
 	Diligent::ITextureView* RendererBase::getColor(bool rt) const {
 		return rt ? this->_render->getRT() : this->_render->getHandle();
 	}
+
+#ifdef _DEBUG
+	// Only available on DEBUG, since it might hit performance :S
+	const Diligent::QueryDataPipelineStatistics& RendererBase::getPipelineStats(const std::string& query) {
+		auto pipeName = fmt::format("{}::PIPELINE", query);
+		return this->_pipelineData[pipeName];
+	}
+	// Only available on DEBUG, since it might hit performance :S
+	const Diligent::QueryDataDuration& RendererBase::getDurationStats(const std::string& query) {
+		auto durationName = fmt::format("{}::DURATION", query);
+		return this->_durationData[durationName];
+	}
+#endif
 
 	/*const bgfx::TextureHandle RendererBase::getMask() const {
 		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;

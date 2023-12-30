@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/render/text/font.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -20,6 +21,10 @@ namespace rawrbox {
 	// FOCUS HANDLE ---
 	bool UILabel::hitTest(const rawrbox::Vector2f& /*point*/) const { return false; }
 	// -----
+
+	void UILabel::initialize() {
+		this->_font = rawrbox::DEBUG_FONT_REGULAR;
+	}
 
 	// UTILS ----
 	void UILabel::setColor(const rawrbox::Color& col) { this->_color = col; }

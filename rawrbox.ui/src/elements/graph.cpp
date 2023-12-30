@@ -1,3 +1,4 @@
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/render/text/font.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -26,6 +27,10 @@ namespace rawrbox {
 		return *this->_categories.back().get();
 	}
 	// ----------
+
+	void UIGraph::initialize() {
+		this->_font = rawrbox::DEBUG_FONT_REGULAR;
+	}
 
 	// UTILS ----
 	void UIGraph::setStyle(rawrbox::UIGraphStyle style) { this->_style = style; }
@@ -61,17 +66,6 @@ namespace rawrbox {
 	}
 
 	rawrbox::Font* UIGraph::getFont() const { return this->_font; }
-
-	void UIGraph::setFontLegend(const std::filesystem::path& font, uint16_t size) {
-		this->_fontLegend = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>(font)->getSize(size);
-	}
-
-	void UIGraph::setFontLegend(rawrbox::Font* font) {
-		if (font == nullptr) throw std::runtime_error("[RawrBox-UI] Invalid font");
-		this->_fontLegend = font;
-	}
-
-	rawrbox::Font* UIGraph::getFontLegend() const { return this->_fontLegend; }
 	// ---------
 
 	// FOCUS HANDLE ---
@@ -204,13 +198,13 @@ namespace rawrbox {
 		if (_showLegend) {
 			float y = 5;
 			for (auto& cat : _categories) {
-				Vector2f tpos = {size.x - this->_fontLegend->getStringSize(cat->getName()).x - 5 - 4 - 5, y};
+				Vector2f tpos = {size.x - this->_font->getStringSize(cat->getName()).x - 5 - 4 - 5, y};
 
-				stencil.drawText(*this->_fontLegend, cat->getName(), tpos + this->_textShadow, this->_textShadowColor);
-				stencil.drawText(*this->_fontLegend, cat->getName(), tpos, this->_textColor);
-				stencil.drawBox({size.x - 5 - 4, y + 1}, {4, this->_fontLegend->getLineHeight() - 2}, cat->getColor());
+				stencil.drawText(*this->_font, cat->getName(), tpos + this->_textShadow, this->_textShadowColor);
+				stencil.drawText(*this->_font, cat->getName(), tpos, this->_textColor);
+				stencil.drawBox({size.x - 5 - 4, y + 1}, {4, this->_font->getLineHeight() - 2}, cat->getColor());
 
-				y += _fontLegend->getLineHeight();
+				y += this->_font->getLineHeight();
 			}
 		}
 

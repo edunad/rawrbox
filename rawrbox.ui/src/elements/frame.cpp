@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
@@ -20,8 +21,6 @@ namespace rawrbox {
 	void UIFrame::initialize() {
 		this->_stripes = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/stripe.png")->get();
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/overlay/overlay.png")->get();
-
-		this->_consola = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(11);
 
 		// Build close button ---
 		auto size = this->getSize();
@@ -103,8 +102,8 @@ namespace rawrbox {
 
 		// Title
 		stencil.drawBox({}, {size.x, this->_titleSize}, this->_titleColor);
-		if (this->_consola != nullptr) {
-			stencil.drawText(*this->_consola, this->_title, {5, 8}, Color::RGBAHex(0x000000BA), rawrbox::Alignment::Left, rawrbox::Alignment::Center);
+		if (rawrbox::DEBUG_FONT_BOLD != nullptr) {
+			stencil.drawText(*rawrbox::DEBUG_FONT_BOLD, this->_title, {4, 8}, Color::RGBAHex(0x000000D9), rawrbox::Alignment::Left, rawrbox::Alignment::Center);
 		}
 
 		if (this->_closable) {
@@ -119,7 +118,9 @@ namespace rawrbox {
 		if (this->_overlay == nullptr) return;
 
 		auto& size = this->getSize();
-		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xFFFFFF0C), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
+		auto overlaySize = this->_overlay->getSize().cast<float>() / 2.F;
+
+		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xffffff01), {}, {size.x / overlaySize.x, size.y / overlaySize.y});
 	}
 	// -----
 

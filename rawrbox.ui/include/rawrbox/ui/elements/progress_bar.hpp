@@ -11,8 +11,6 @@ namespace rawrbox {
 		// RESOURCES ---
 		rawrbox::TextureBase* _bg = nullptr;
 		rawrbox::TextureBase* _overlay = nullptr;
-
-		rawrbox::Font* _font = nullptr;
 		// -----------------
 
 		rawrbox::Vector2f _labelSize = {};
@@ -27,15 +25,6 @@ namespace rawrbox {
 
 	public:
 		rawrbox::Event<float> onValueChange;
-
-		UIProgressBar() = default;
-		UIProgressBar(const UIProgressBar&) = default;
-		UIProgressBar(UIProgressBar&&) = delete;
-		UIProgressBar& operator=(const UIProgressBar&) = default;
-		UIProgressBar& operator=(UIProgressBar&&) = delete;
-		~UIProgressBar() override {
-			this->_font = nullptr;
-		}
 
 		// UTILS ----
 		void initialize() override;

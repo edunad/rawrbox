@@ -31,6 +31,7 @@ namespace ui_test {
 		void onThreadShutdown(rawrbox::ENGINE_THREADS thread) override;
 		void pollEvents() override;
 		void update() override;
+		void fixedUpdate() override;
 		void draw() override;
 
 	public:

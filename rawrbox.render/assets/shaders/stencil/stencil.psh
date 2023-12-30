@@ -1,3 +1,5 @@
+#include <correction.fxh>
+
 Texture2DArray g_Texture;
 SamplerState   g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
 
@@ -17,5 +19,5 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 		discard;
 	}
 
-    PSOut.Color = color;
+    PSOut.Color = toLinear(color);
 }

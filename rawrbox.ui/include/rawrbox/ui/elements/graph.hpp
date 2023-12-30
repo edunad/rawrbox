@@ -83,7 +83,6 @@ namespace rawrbox {
 
 		// RESOURCES ---
 		rawrbox::Font* _font = nullptr;
-		rawrbox::Font* _fontLegend = nullptr;
 		// -----------------
 
 		std::array<float, rawrbox::UIGraphCategory::ENTRY_COUNT> _totalTimes = {};
@@ -101,6 +100,8 @@ namespace rawrbox {
 		UIGraph(UIGraph&&) = delete;
 		UIGraph& operator=(const UIGraph&) = default;
 		UIGraph& operator=(UIGraph&&) = delete;
+
+		void initialize() override;
 
 		// CATEGORY --
 		virtual rawrbox::UIGraphCategory& getCategory(size_t id);
@@ -135,10 +136,6 @@ namespace rawrbox {
 		virtual void setFont(rawrbox::Font* font);
 		virtual void setFont(const std::filesystem::path& font, uint16_t size = 11);
 		[[nodiscard]] virtual rawrbox::Font* getFont() const;
-
-		virtual void setFontLegend(rawrbox::Font* font);
-		virtual void setFontLegend(const std::filesystem::path& font, uint16_t size = 11);
-		[[nodiscard]] virtual rawrbox::Font* getFontLegend() const;
 		// ---------
 
 		// FOCUS HANDLE ---

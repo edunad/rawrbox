@@ -65,6 +65,8 @@ namespace rawrbox {
 		rawrbox::Event<> onTextUpdate;
 		rawrbox::Event<> onEnter;
 
+		void initialize() override;
+
 		// UTILS ----
 		virtual void setHints(const std::vector<std::string>& hints);
 

@@ -20,7 +20,7 @@
 #define DEFAULT_ASSIMP_FLAGS (aiProcess_GenBoundingBoxes | aiProcess_ConvertToLeftHanded)
 
 namespace rawrbox {
-	// NOLINTBEGIN{unused-const-variable}
+	// NOLINTBEGIN(unused-const-variable)
 	namespace ModelLoadFlags {
 		const uint32_t NONE = 0;
 		const uint32_t IMPORT_LIGHT = 1 << 1;
@@ -41,7 +41,7 @@ namespace rawrbox {
 		} // namespace Debug
 
 	}; // namespace ModelLoadFlags
-	   // NOLINTEND{unused-const-variable}
+	   // NOLINTEND(unused-const-variable)
 
 	using OptionalTexture = std::optional<std::unique_ptr<rawrbox::TextureBase>>;
 

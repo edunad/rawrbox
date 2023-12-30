@@ -50,7 +50,6 @@ namespace model {
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/screem.png", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/meow3.gif", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/displacement_test.png", 0),
@@ -252,25 +251,23 @@ namespace model {
 	}
 
 	void Game::createText() {
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(24);
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "PLANE", {2.F, 0.5F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TRIANGLE", {3.5F, 0.5F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CUBE", {-2.F, 0.55F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CUBE\nVertex snap", {-3.F, 0.55F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "AXIS", {0.F, 0.8F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPRITE", {0.F, 1.2F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "DISPLACEMENT", {0.F, 0.75F, -2});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPHERES", {3.5F, 0.55F, -2.F});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CYLINDER", {-2.F, 0.55F, -2});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CONE", {-3.5F, 0.55F, -2});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "PYRAMID", {-5.0F, 0.55F, -2});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "ARROW", {-4.0F, 0.55F, 0.F});
 
-		this->_text->addText(*this->_font, "PLANE", {2.F, 0.5F, 0});
-		this->_text->addText(*this->_font, "TRIANGLE", {3.5F, 0.5F, 0});
-		this->_text->addText(*this->_font, "CUBE", {-2.F, 0.55F, 0});
-		this->_text->addText(*this->_font, "CUBE\nVertex snap", {-3.F, 0.55F, 0});
-		this->_text->addText(*this->_font, "AXIS", {0.F, 0.8F, 0});
-		this->_text->addText(*this->_font, "SPRITE", {0.F, 1.2F, 0});
-		this->_text->addText(*this->_font, "DISPLACEMENT", {0.F, 0.75F, -2});
-		this->_text->addText(*this->_font, "SPHERES", {3.5F, 0.55F, -2.F});
-		this->_text->addText(*this->_font, "CYLINDER", {-2.F, 0.55F, -2});
-		this->_text->addText(*this->_font, "CONE", {-3.5F, 0.55F, -2});
-		this->_text->addText(*this->_font, "PYRAMID", {-5.0F, 0.55F, -2});
-		this->_text->addText(*this->_font, "ARROW", {-4.0F, 0.55F, 0.F});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPLINE", {-1.5F, 0.55F, 2});
 
-		this->_text->addText(*this->_font, "SPLINE", {-1.5F, 0.55F, 2});
-
-		this->_text->addText(*this->_font, "1 UNIT", {3.5F, 1.0F, 2.5F});
-		this->_text->addText(*this->_font, "HALF UNIT", {1.5F, 0.55F, 2.5F});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "1 UNIT", {3.5F, 1.0F, 2.5F});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "HALF UNIT", {1.5F, 0.55F, 2.5F});
 		this->_text->upload();
 	}
 

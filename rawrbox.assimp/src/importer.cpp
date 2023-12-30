@@ -536,7 +536,7 @@ namespace rawrbox {
 			light.specular = rawrbox::Colorf(aiLight.mColorSpecular.r, aiLight.mColorSpecular.g, aiLight.mColorSpecular.b, 1.F) / intensity;
 			light.ambient = rawrbox::Colorf(aiLight.mColorAmbient.r, aiLight.mColorAmbient.g, aiLight.mColorAmbient.b, 1.F) / intensity;
 
-			light.intensity = intensity;
+			light.intensity = intensity * 2;
 			light.attenuationConstant = aiLight.mAttenuationConstant;
 			light.attenuationLinear = aiLight.mAttenuationLinear;
 			light.attenuationQuadratic = aiLight.mAttenuationQuadratic;
@@ -545,8 +545,6 @@ namespace rawrbox {
 			light.angleOuterCone = rawrbox::MathUtils::toDeg(aiLight.mAngleOuterCone);
 
 			light.up = rawrbox::Vector3f(aiLight.mUp.x, aiLight.mUp.y, aiLight.mUp.z);
-
-			float radius = 1.F / (light.attenuationConstant + light.attenuationLinear * 1 + light.attenuationQuadratic * 1 * 1);
 
 			switch (aiLight.mType) {
 				case aiLightSource_DIRECTIONAL:

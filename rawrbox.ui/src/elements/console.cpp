@@ -1,6 +1,7 @@
 
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/console.hpp>
 #include <rawrbox/ui/static.hpp>
@@ -17,20 +18,16 @@ namespace rawrbox {
 	void UIConsole::initialize() {
 		if (this->_console == nullptr) throw std::runtime_error("[RawrBox-UIConsole] Invalid console reference");
 
-		this->_consolas = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(11);
-		this->_consolasb = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consolab.ttf")->getSize(11);
-
-		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/overlay/overlay.png")->get();
+		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/ui/overlay/overlay.png")->get();
 
 		this->_md = std::make_unique<rawrbox::Markdown>();
-		this->_md->fontRegular = this->_consolas;
-		this->_md->fontBold = this->_consolasb;
-		this->_md->fontItalic = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consolai.ttf")->getSize(11);
+		this->_md->fontRegular = rawrbox::DEBUG_FONT_REGULAR;
+		this->_md->fontBold = rawrbox::DEBUG_FONT_BOLD;
 
 		// SETUP UI ---
 		auto& size = this->getSize();
 		this->_input = this->createChild<rawrbox::UIInput>();
-		this->_input->setFont(this->_consolas);
+		this->_input->setFont(rawrbox::DEBUG_FONT_REGULAR);
 		this->_input->setSize({size.x, 18});
 		this->_input->setPos({0, size.y - 18});
 		this->_input->setBackgroundColor(rawrbox::Colors::White());
@@ -164,7 +161,7 @@ namespace rawrbox {
 			entry.type = log.type;
 			entry.colorTag = Color::RGBAHex(0x000000A4);
 			entry.color = Color::RGBHex(0x8465ec);
-			entry.height = this->_consolas->getStringSize(log.log).y;
+			entry.height = rawrbox::DEBUG_FONT_REGULAR->getStringSize(log.log).y;
 
 			switch (log.type) {
 				case rawrbox::PrintType::EXECUTE:
@@ -187,12 +184,12 @@ namespace rawrbox {
 					break;
 			};
 
-			entry.tagWidth = this->_consolasb->getStringSize(entry.tag).x;
+			entry.tagWidth = rawrbox::DEBUG_FONT_BOLD->getStringSize(entry.tag).x;
 
 			// Merge logs
 			if (this->_entries.size() > 0 && this->_entries.back().type == log.type) {
 				this->_entries.back().msg += "\n" + log.log;
-				this->_entries.back().height += this->_consolas->getStringSize(log.log).y;
+				this->_entries.back().height += rawrbox::DEBUG_FONT_BOLD->getStringSize(log.log).y;
 			} else {
 				this->_entries.push_back(entry);
 			}
@@ -246,7 +243,7 @@ namespace rawrbox {
 
 			// Tag drawing
 			if (!log.tag.empty()) {
-				stencil.drawText(*this->_consolasb, log.tag, {this->_textPadding + 2.5F, this->_mouseScrollY + yPos + this->_textPadding}, log.colorTag);
+				stencil.drawText(*rawrbox::DEBUG_FONT_BOLD, log.tag, {this->_textPadding + 2.5F, this->_mouseScrollY + yPos + this->_textPadding}, log.colorTag);
 				offsetX = log.tagWidth + 10 + this->_textPadding;
 			}
 
@@ -258,7 +255,7 @@ namespace rawrbox {
 			this->_md->render(stencil, {offsetX + this->_textPadding, this->_mouseScrollY + yPos + this->_textPadding});
 
 			// Draw timestamp (+ padding)
-			stencil.drawText(*this->_consolas, log.timestamp, {size.x - 5, this->_mouseScrollY + yPos + this->_textPadding}, Color::RGBAHex(0xFFFFFF64), rawrbox::Alignment::Right);
+			stencil.drawText(*rawrbox::DEBUG_FONT_REGULAR, log.timestamp, {size.x - 5, this->_mouseScrollY + yPos + this->_textPadding}, Color::RGBAHex(0xFFFFFF64), rawrbox::Alignment::Right);
 
 			yPos += sizeY + 1; // + offset
 		}
@@ -277,9 +274,11 @@ namespace rawrbox {
 	}
 
 	void UIConsole::afterDraw(rawrbox::Stencil& stencil) {
+		if (this->_overlay == nullptr) return;
+
 		auto& size = this->getSize();
 		auto overlaySize = this->_overlay->getSize().cast<float>() / 2.F;
 
-		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xFFFFFF0A), {}, {size.x / overlaySize.x, size.y / overlaySize.y});
+		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xffffff01), {}, {size.x / overlaySize.x, size.y / overlaySize.y});
 	}
 } // namespace rawrbox

@@ -111,24 +111,6 @@ namespace rawrbox {
 		if (!this->isValid()) throw std::runtime_error("[RawrBox-GraphWrapper] Invalid ui reference");
 		return {rawrbox::cast<rawrbox::UIGraph>(this->_ref).lock()->getFont()};
 	}
-
-	void GraphWrapper::setFontLegend(const rawrbox::FontWrapper& font) {
-		if (!this->isValid()) throw std::runtime_error("[RawrBox-GraphWrapper] Invalid ui reference");
-		rawrbox::cast<rawrbox::UIGraph>(this->_ref).lock()->setFontLegend(font.getRef());
-	}
-
-	void GraphWrapper::setFontLegend(const std::string& font, sol::optional<uint16_t> size, sol::this_environment modEnv) {
-		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-GraphWrapper] MOD not set!");
-		if (!this->isValid()) throw std::runtime_error("[RawrBox-GraphWrapper] Invalid ui reference");
-
-		std::string modFolder = modEnv.env.value()["__mod_folder"];
-		rawrbox::cast<rawrbox::UIGraph>(this->_ref).lock()->setFontLegend(rawrbox::LuaUtils::getContent(font, modFolder), size.value_or(11));
-	}
-
-	rawrbox::FontWrapper GraphWrapper::getFontLegend() const {
-		if (!this->isValid()) throw std::runtime_error("[RawrBox-GraphWrapper] Invalid ui reference");
-		return {rawrbox::cast<rawrbox::UIGraph>(this->_ref).lock()->getFontLegend()};
-	}
 	// ----
 
 	void GraphWrapper::registerLua(sol::state& lua) {
@@ -168,9 +150,6 @@ namespace rawrbox {
 
 		    "setFont", sol::overload(sol::resolve<void(const std::string&, sol::optional<uint16_t>, sol::this_environment)>(&GraphWrapper::setFont), sol::resolve<void(const rawrbox::FontWrapper&)>(&GraphWrapper::setFont)),
 		    "getFont", &GraphWrapper::getFont,
-
-		    "setFontLegend", sol::overload(sol::resolve<void(const std::string&, sol::optional<uint16_t>, sol::this_environment)>(&GraphWrapper::setFontLegend), sol::resolve<void(const rawrbox::FontWrapper&)>(&GraphWrapper::setFontLegend)),
-		    "getFontLegend", &GraphWrapper::getFontLegend,
 		    // ----
 
 		    sol::base_classes, sol::bases<rawrbox::UIContainerWrapper>());

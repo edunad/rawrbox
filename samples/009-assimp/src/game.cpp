@@ -50,7 +50,6 @@ namespace assimp {
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/fonts/LiberationMono-Regular.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES),
 		    std::make_pair<std::string, uint32_t>("./assets/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT),
 		    std::make_pair<std::string, uint32_t>("./assets/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_METADATA),
@@ -69,8 +68,6 @@ namespace assimp {
 	}
 
 	void Game::contentLoaded() {
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/LiberationMono-Regular.ttf")->getSize(24);
-
 		// Assimp test ---
 		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx")->get();
 
@@ -118,12 +115,12 @@ namespace assimp {
 		//    -----
 
 		// Text test ----
-		this->_text->addText(*this->_font, "TEXTURES + LIGHT", {-6.F, 3.0F, 0});
-		this->_text->addText(*this->_font, "TEXTURES", {6.F, 3.0F, 0});
-		this->_text->addText(*this->_font, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
-		this->_text->addText(*this->_font, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.F, 2.5F});
-		this->_text->addText(*this->_font, "VERTEX ANIMATIONS", {0.F, 1.8F, -3.5F});
-		this->_text->addText(*this->_font, "EMBEDDED TEXTURES +\nBLEND SHAPES", {2.F, 1.8F, -6.F});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TEXTURES + LIGHT", {-6.F, 3.0F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TEXTURES", {6.F, 3.0F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.F, 2.5F});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "VERTEX ANIMATIONS", {0.F, 1.8F, -3.5F});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "EMBEDDED TEXTURES +\nBLEND SHAPES", {2.F, 1.8F, -6.F});
 		this->_text->upload();
 		// ------
 
@@ -134,8 +131,8 @@ namespace assimp {
 		}
 
 		// LIGHT ----
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-1, 0.5F, -0.7F}, rawrbox::Colors::White() * 100, 1.6F);
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-1, 1.3F, -0.7F}, rawrbox::Colors::White() * 100, 1.6F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-1, 1.6F, -1.4F}, rawrbox::Colors::White() * 100, 1.6F);
+		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-1, 0.6F, -1.4F}, rawrbox::Colors::White() * 100, 1.6F);
 		// -----------
 
 		this->_ready = true;

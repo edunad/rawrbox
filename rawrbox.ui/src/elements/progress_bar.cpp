@@ -1,5 +1,6 @@
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/progress_bar.hpp>
@@ -19,10 +20,8 @@ namespace rawrbox {
 
 	// UTILS ----
 	void UIProgressBar::initialize() {
-		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/overlay/overlay.png")->get();
-		this->_bg = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/background_grid.png")->get();
-
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("consola.ttf")->getSize(11);
+		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/ui/overlay/overlay.png")->get();
+		this->_bg = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/ui/background_grid.png")->get();
 	}
 
 	void UIProgressBar::showPercent(bool show) { this->_percent = show; }
@@ -55,8 +54,11 @@ namespace rawrbox {
 		stencil.drawLine({0, size.y - 1}, {size.x, size.y - 1}, Color::RGBAHex(0x0000004A));
 		// --------------------
 
-		if (this->_font != nullptr && this->_percent) {
-			stencil.drawText(*this->_font, std::to_string(static_cast<int>(this->_value)), {5, size.y / 2.F}, this->_progressColor * 0.35F, rawrbox::Alignment::Left, rawrbox::Alignment::Center);
+		if (rawrbox::DEBUG_FONT_REGULAR != nullptr && this->_percent) {
+			auto color = this->_progressColor * 0.15F;
+			color.a = 1.F;
+
+			stencil.drawText(*rawrbox::DEBUG_FONT_REGULAR, std::to_string(static_cast<int>(this->_value)), {5, size.y / 2.F}, color, rawrbox::Alignment::Left, rawrbox::Alignment::Center);
 		}
 
 		// BORDER--

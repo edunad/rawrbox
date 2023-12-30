@@ -39,6 +39,12 @@ namespace rawrbox {
 	extern std::shared_ptr<rawrbox::TextureFlat> NORMAL_TEXTURE;
 	// ----
 
+	// FONT FALLBACKS ----
+	extern rawrbox::Font* DEBUG_FONT_REGULAR;
+	extern rawrbox::Font* DEBUG_FONT_BOLD;
+	extern rawrbox::Font* DEBUG_FONT_ITALIC;
+	// -------------------
+
 	// ID GENERATION
 	extern size_t SOUND_ID;
 	extern size_t LIGHT_ID;

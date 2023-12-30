@@ -37,7 +37,7 @@ CPMDeclarePackage(ZLIB
 # Catch2
 CPMDeclarePackage(Catch2
   NAME Catch2
-  VERSION 3.3.2
+  VERSION 3.5.0
   GITHUB_REPOSITORY catchorg/Catch2
   OPTIONS
     "CATCH_INSTALL_DOCS OFF"
@@ -156,3 +156,12 @@ CPMDeclarePackage(libwebp
 #    "ASSIMP_BUILD_3DS_IMPORTER ON"
 #    "ASSIMP_BUILD_MD5_IMPORTER ON"
 #)
+# clip
+CPMDeclarePackage(clip
+  NAME clip
+  VERSION 1.7
+  GITHUB_REPOSITORY dacap/clip
+  OPTIONS
+    "CLIP_EXAMPLES OFF"
+    "CLIP_TESTS OFF"
+)

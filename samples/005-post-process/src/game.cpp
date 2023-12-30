@@ -104,7 +104,7 @@ namespace post_process {
 		rawrbox::Window::update();
 
 		if (this->_model != nullptr) {
-			this->_model->setEulerAngle({std::cos(rawrbox::FRAME * 0.01F) * 2.5F, std::sin(rawrbox::FRAME * 0.01F) * 2.5F, 0});
+			this->_model->setEulerAngle({std::cos(rawrbox::FRAME * 0.001F) * 2.5F, std::sin(rawrbox::FRAME * 0.001F) * 2.5F, 0});
 		}
 	}
 
