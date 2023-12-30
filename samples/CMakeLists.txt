@@ -29,9 +29,9 @@ endif()
 #    add_subdirectory("011-physics-3D")
 #endif()
 
-#if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
-#    add_subdirectory("012-physics-2D")
-#endif()
+if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
+    add_subdirectory("012-physics-2D")
+endif()
 
 #if(RAWRBOX_BUILD_RAWRBOX_WEBM)
 #    add_subdirectory("013-webm")

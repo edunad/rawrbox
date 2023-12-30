@@ -42,7 +42,7 @@ namespace rawrbox {
 			    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
 			    {Diligent::SHADER_TYPE_VERTEX, uniforms, "Constants"}};
 			settings.resources = {
-			    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
+			    {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
 			settings.fill = Diligent::FILL_MODE_WIREFRAME;
 			rawrbox::PipelineUtils::createPipeline("3DText::Base::Wireframe", "3DText", settings);

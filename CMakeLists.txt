@@ -10,7 +10,7 @@ CPMUsePackageLock(package-lock.cmake)
 # ---------------
 
 # Versioning
-set(RAWRBOX_VERSION_MAJOR 1 CACHE STRING "major version" FORCE)
+set(RAWRBOX_VERSION_MAJOR 2 CACHE STRING "major version" FORCE)
 set(RAWRBOX_VERSION_MINOR 0 CACHE STRING "minor version" FORCE)
 set(RAWRBOX_VERSION ${RAWRBOX_VERSION_MAJOR}.${RAWRBOX_VERSION_MINOR} CACHE STRING "version" FORCE)
 
@@ -62,7 +62,7 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_RAWRBOX_UI ON)
     set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
     #set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
-    #set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS ON)
+    set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS ON)
     set(RAWRBOX_BUILD_RAWRBOX_BASS ON)
     set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
     #set(RAWRBOX_BUILD_RAWRBOX_WEBM ON)
@@ -246,10 +246,10 @@ endif()
 #    add_subdirectory("rawrbox.physics_3d")
 #endif()
 
-#if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
-#    message(STATUS "Enabled RAWRBOX.2D_PHYSICS support")
-#    add_subdirectory("rawrbox.physics_2d")
-#endif()
+if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
+    message(STATUS "Enabled RAWRBOX.2D_PHYSICS support")
+    add_subdirectory("rawrbox.physics_2d")
+endif()
 
 # Shhhhh windows... shhhh....
 # mute_dependencies_warnings("RAWRBOX")

@@ -1,8 +1,7 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render_temp/model/model.hpp>
-#include <rawrbox/render_temp/window.hpp>
+#include <rawrbox/render/models/model.hpp>
 #include <rawrbox/utils/timer.hpp>
 
 #include <muli/muli.h>
@@ -10,26 +9,22 @@
 #include <memory>
 
 namespace phys_2d_test {
-
 	struct BoxOfDoom {
 	public:
 		muli::RigidBody* body = nullptr;
-		std::unique_ptr<rawrbox::Model> mdl = nullptr;
+		std::unique_ptr<rawrbox::Model<>> mdl = nullptr;
 	};
 
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::Model> _modelGrid = std::make_unique<rawrbox::Model>();
-
+		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
 		std::vector<std::unique_ptr<BoxOfDoom>> _boxes = std::vector<std::unique_ptr<BoxOfDoom>>();
-
-		std::atomic<int> _loadingFiles = 0;
 
 		rawrbox::TextureBase* _texture = nullptr;
 		rawrbox::TIMER* _timer = nullptr;
 
-		bool _ready = false;
+		std::atomic<int> _loadingFiles = 0;
 		bool _paused = true;
+		bool _ready = false;
 
 		void setupGLFW() override;
 		void init() override;
@@ -48,7 +43,6 @@ namespace phys_2d_test {
 		~Game() override = default;
 
 		void drawWorld();
-		void printFrames();
 
 		void createBox(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size);
 

@@ -31,7 +31,7 @@ namespace rawrbox {
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = helper;
 		settings.layout = layout;
-		settings.immutableSamplers = {{Diligent::SHADER_TYPE_VERTEX, "g_Displacement"}};
+		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}, {Diligent::SHADER_TYPE_VERTEX, "g_Displacement"}};
 
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
