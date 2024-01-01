@@ -1,44 +1,46 @@
 
+#include <rawrbox/engine/static.hpp>
 #include <rawrbox/physics/utils.hpp>
-#include <rawrbox/render_temp/camera/orbital.hpp>
-#include <rawrbox/render_temp/model/utils/mesh.hpp>
-#include <rawrbox/render_temp/resources/texture.hpp>
-#include <rawrbox/render_temp/static.hpp>
+#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
-#include <physics_test/game.hpp>
+#include <phys_3d_test/game.hpp>
 
-#include <fmt/format.h>
-
-#include <vector>
-
-namespace physics_test {
+namespace phys_3d_test {
 	void Game::setupGLFW() {
-		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
-		this->_window->setTitle("PHYSICS TEST");
-		this->_window->setRenderer(
-		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
-		this->_window->onIntroCompleted += [this]() {
-			this->loadContent();
-		};
+		auto window = rawrbox::Window::createWindow();
+		window->setMonitor(-1);
+		window->setTitle("3D PHYSICS TEST");
+		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
+		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {
-		if (this->_window == nullptr) return;
+		auto window = rawrbox::Window::getWindow();
+
+		// Setup renderer
+		auto render = window->createRenderer();
+		render->onIntroCompleted = [this]() { this->loadContent(); };
+		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
+			this->drawWorld();
+		});
+		// ---------------
 
 		// Setup camera
-		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		auto cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		// Setup loaders
+		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
-		// ----
+		// --------------
 
 		// Initialize physics
 		rawrbox::PHYSICS::init(20, 2048, 2048, 2048, 2048, 5);
@@ -50,18 +52,29 @@ namespace physics_test {
 		rawrbox::PHYSICS::physicsSystem->SetPhysicsSettings(settings);
 		// rawrbox::PHYSICS::onBodyAwake += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body awake \n"); };
 		// rawrbox::PHYSICS::onBodySleep += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body sleep \n"); };
+		// ----------------------------
 
-		this->_window->initializeBGFX();
+		// BINDS ----
+		window->onMouseKey += [this](auto&, const rawrbox::Vector2i&, int button, int action, int) {
+			const bool isDown = action == 1;
+			if (!isDown || button != MOUSE_BUTTON_1) return;
+
+			this->_paused = !this->_paused;
+			if (this->_timer != nullptr) this->_timer->pause(this->_paused);
+		};
+		// -----
+
+		render->init();
 	}
 
 	void Game::loadContent() {
-		std::array<std::string, 1> initialContentFiles = {
-		    "content/textures/crate_hl1.png",
+		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
+		    std::make_pair<std::string, uint32_t>("./assets/textures/crate_hl1.png", 64),
 		};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f, 0, [this]() {
+			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
 				this->_loadingFiles--;
 				if (this->_loadingFiles <= 0) {
 					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
@@ -100,15 +113,15 @@ namespace physics_test {
 
 		rawrbox::PHYSICS::optimize(); // Only need to be called after adding a lot of bodies in one go
 
-		// Setup grid
+		// Setup grid --
 		{
 			auto mesh = rawrbox::MeshUtils::generateGrid(24, {0.F, 0.F, 0.F});
 			this->_modelGrid->addMesh(mesh);
 			this->_modelGrid->upload();
 		}
-		// -----
+		// -------------
 
-		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->get();
+		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/crate_hl1.png")->get();
 
 		// TIMER ---
 		this->_timer = rawrbox::TIMER::create(
@@ -119,16 +132,6 @@ namespace physics_test {
 
 		this->_timer->pause(this->_paused);
 		// --------
-
-		// BINDS ----
-		this->_window->onMouseKey += [this](auto& /*w*/, const rawrbox::Vector2i& /*mousePos*/, int button, int action, int /*mods*/) {
-			const bool isDown = action == 1;
-			if (!isDown || button != MOUSE_BUTTON_1) return;
-
-			this->_paused = !this->_paused;
-			if (this->_timer != nullptr) this->_timer->pause(this->_paused);
-		};
-		// -----
 
 		this->_ready = true;
 	}
@@ -155,7 +158,7 @@ namespace physics_test {
 		body_interface.AddBody(box->body->GetID(), JPH::EActivation::Activate);
 
 		// Create model
-		box->mdl = std::make_unique<rawrbox::Model>();
+		box->mdl = std::make_unique<rawrbox::Model<>>();
 
 		auto mesh = rawrbox::MeshUtils::generateCube({}, size);
 		mesh.setTexture(this->_texture);
@@ -168,30 +171,27 @@ namespace physics_test {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
+			rawrbox::Window::shutdown();
+		} else {
+			this->_modelGrid.reset();
+			this->_boxes.clear();
 
-		this->_texture = nullptr;
-		this->_timer = nullptr;
+			this->_texture = nullptr;
+			this->_timer = nullptr;
 
-		this->_modelGrid.reset();
-		this->_boxes.clear();
-
-		rawrbox::PHYSICS::shutdown();
-		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
-
-		this->_window->unblockPoll();
-		this->_window.reset();
+			rawrbox::PHYSICS::shutdown();
+			rawrbox::RESOURCES::shutdown();
+			rawrbox::ASYNC::shutdown();
+		}
 	}
 
 	void Game::pollEvents() {
-		if (this->_window == nullptr) return;
-		this->_window->pollEvents();
+		rawrbox::Window::pollEvents();
 	}
 
 	void Game::update() {
-		if (this->_window == nullptr) return;
-		this->_window->update();
+		rawrbox::Window::update();
 	}
 
 	void Game::fixedUpdate() {
@@ -199,25 +199,11 @@ namespace physics_test {
 		rawrbox::PHYSICS::tick();
 	}
 
-	void Game::printFrames() {
-		const bgfx::Stats* stats = bgfx::getStats();
-
-		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
-		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
-		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
-
-		bgfx::dbgTextPrintf(1, 11, 0x5f, fmt::format("TOTAL BODIES: {}", rawrbox::PHYSICS::physicsSystem->GetBodyStats().mNumBodies).c_str());
-		bgfx::dbgTextPrintf(1, 12, 0x5f, fmt::format("ACTIVE: {}", rawrbox::PHYSICS::physicsSystem->GetNumActiveBodies()).c_str());
-
-		bgfx::dbgTextPrintf(1, 13, 0x4f, fmt::format("Mouse1 to {} simulation", this->_paused ? "unpause" : "pause").c_str());
-	}
-
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 		if (this->_modelGrid != nullptr) this->_modelGrid->draw();
 
+		// Draw boxes ----
 		for (auto& b : this->_boxes) {
 			auto body = b->body;
 			if (body == nullptr) continue;
@@ -231,24 +217,10 @@ namespace physics_test {
 
 			b->mdl->draw();
 		}
+		// ------------------*/
 	}
 
 	void Game::draw() {
-		if (this->_window == nullptr) return;
-
-		// DEBUG ----
-		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "009-physics");
-		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: PHYSICS test");
-		this->printFrames();
-		// -----------
-
-		if (!this->_ready) {
-			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
-			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
-			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
-		}
-
-		this->_window->render(); // Commit primitives
+		rawrbox::Window::render(); // Commit primitives
 	}
-}; // namespace physics_test
+}; // namespace phys_3d_test

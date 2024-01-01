@@ -3,7 +3,7 @@
 	#include <windows.h>
 #endif
 
-#include <physics_test/game.hpp>
+#include <phys_3d_test/game.hpp>
 
 int main(int /*argc*/, char* /*argv*/[]) {
 #ifdef _WIN32
@@ -12,7 +12,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
 	SetConsoleOutputCP(CP_UTF8);
 #endif
 
-	physics_test::Game engine;
+	phys_3d_test::Game engine;
 	engine.setFPS(60);
 	engine.setTPS(66);
 	engine.run();

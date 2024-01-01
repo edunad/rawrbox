@@ -30,7 +30,43 @@ CPMAddPackage(
         git restore Graphics/HLSL2GLSLConverterLib/src/HLSL2GLSLConverterImpl.cpp
     COMMAND
         git restore Graphics/GraphicsEngineVulkan/src/VulkanUtilities/VulkanInstance.cpp
+    OPTIONS
+        "DILIGENT_NO_OPENGL ${RAWRBOX_DISABLE_SUPPORT_OPENGL}"
+        "DILIGENT_NO_VULKAN ${RAWRBOX_DISABLE_SUPPORT_VULKAN}"
+        "DILIGENT_NO_DIRECT3D11 ${RAWRBOX_DISABLE_SUPPORT_DX12}"
+        "DILIGENT_NO_DIRECT3D12 ${RAWRBOX_DISABLE_SUPPORT_DX12}"
 )
+
+if(DiligentCore_ADDED)
+    set_lib_runtime_mt(SPIRV)
+    set_lib_runtime_mt(SPIRV-Tools-static)
+    set_lib_runtime_mt(SPIRV-Tools-opt)
+
+    set_lib_runtime_mt(Diligent-BuildSettings)
+    set_lib_runtime_mt(Diligent-PublicBuildSettings)
+    set_lib_runtime_mt(Diligent-BasicPlatform)
+    set_lib_runtime_mt(Diligent-GraphicsEngine)
+    set_lib_runtime_mt(Diligent-Common)
+    set_lib_runtime_mt(Diligent-ShaderTools)
+    set_lib_runtime_mt(Diligent-GraphicsTools)
+    set_lib_runtime_mt(Diligent-GraphicsEngineD3DBase)
+    set_lib_runtime_mt(Diligent-GraphicsAccessories)
+    set_lib_runtime_mt(Diligent-HLSL2GLSLConverterLib)
+    set_lib_runtime_mt(Diligent-Primitives)
+
+    set_lib_runtime_mt(Diligent-Archiver-static)
+    set_lib_runtime_mt(Diligent-Archiver-shared)
+
+    set_lib_runtime_mt(MachineIndependent)
+    set_lib_runtime_mt(GenericCodeGen)
+    set_lib_runtime_mt(spirv-cross-core)
+
+    if(WIN32)
+        set_lib_runtime_mt(Diligent-Win32Platform)
+    else()
+        set_lib_runtime_mt(Diligent-LinuxPlatform)
+    endif()
+endif()
 
 CPMAddPackage("gh:nemtrif/utfcpp@4.0.4")
 if(utfcpp_ADDED)
@@ -131,16 +167,22 @@ if(WIN32)
     set(DILIGENT_LINK_MODE shared)
     message(STATUS "Setting deligent mode to: shared")
 
-    if(D3D12_SUPPORTED AND RAWRBOX_SUPPORT_DX12)
+    if(D3D12_SUPPORTED)
         message(STATUS "Enabling DX12 support")
         target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineD3D12-${DILIGENT_LINK_MODE})
         target_compile_definitions(${output_target} PUBLIC RAWRBOX_SUPPORT_DX12)
+
+        set_lib_runtime_mt(Diligent-GraphicsEngineD3D12-shared)
+        set_lib_runtime_mt(Diligent-GraphicsEngineD3D12-static)
     endif()
 
-    if(D3D11_SUPPORTED AND RAWRBOX_SUPPORT_DX11)
+    if(D3D11_SUPPORTED)
         message(STATUS "Enabling DX11 support")
         target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineD3D11-${DILIGENT_LINK_MODE})
         target_compile_definitions(${output_target} PUBLIC RAWRBOX_SUPPORT_DX11)
+
+        set_lib_runtime_mt(Diligent-GraphicsEngineD3D11-shared)
+        set_lib_runtime_mt(Diligent-GraphicsEngineD3D11-static)
     endif()
 
 else()
@@ -149,16 +191,22 @@ else()
 endif()
 
 
-if(VULKAN_SUPPORTED AND RAWRBOX_SUPPORT_VULKAN)
+if(VULKAN_SUPPORTED)
     message(STATUS "Enabling VULKAN support")
     target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineVk-${DILIGENT_LINK_MODE})
     target_compile_definitions(${output_target} PUBLIC RAWRBOX_SUPPORT_VULKAN)
+
+    set_lib_runtime_mt(Diligent-GraphicsEngineVk-shared)
+    set_lib_runtime_mt(Diligent-GraphicsEngineVk-static)
 endif()
 
-if(GL_SUPPORTED AND RAWRBOX_SUPPORT_OPENGL)
+if(GL_SUPPORTED)
     message(STATUS "Enabling OPENGL support")
     target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineOpenGL-${DILIGENT_LINK_MODE})
     target_compile_definitions(${output_target} PUBLIC RAWRBOX_SUPPORT_OPENGL)
+
+    set_lib_runtime_mt(Diligent-GraphicsEngineOpenGL-shared)
+    set_lib_runtime_mt(Diligent-GraphicsEngineOpenGL-static)
 endif()
 
 if(WIN32)

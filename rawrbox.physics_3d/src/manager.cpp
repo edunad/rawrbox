@@ -18,21 +18,20 @@ namespace rawrbox {
 	// Public
 	std::unique_ptr<JPH::PhysicsSystem> PHYSICS::physicsSystem = nullptr;
 
-	rawrbox::Event<const JPH::BodyID &, uint64_t> PHYSICS::onBodyAwake;
-	rawrbox::Event<const JPH::BodyID &, uint64_t> PHYSICS::onBodySleep;
+	rawrbox::Event<const JPH::BodyID&, uint64_t> PHYSICS::onBodyAwake;
+	rawrbox::Event<const JPH::BodyID&, uint64_t> PHYSICS::onBodySleep;
 
 	std::function<bool(rawrbox::PHYS_LAYERS, rawrbox::PHYS_LAYERS)> PHYSICS::shouldCollide = nullptr;
 
-	std::function<JPH::ValidateResult(const JPH::Body &, const JPH::Body &, JPH::RVec3Arg, const JPH::CollideShapeResult &)> PHYSICS::onContactValidate = nullptr;
+	std::function<JPH::ValidateResult(const JPH::Body&, const JPH::Body&, JPH::RVec3Arg, const JPH::CollideShapeResult&)> PHYSICS::onContactValidate = nullptr;
 
-	rawrbox::Event<const JPH::Body &, const JPH::Body &, const JPH::ContactManifold &, JPH::ContactSettings &> PHYSICS::onContactAdded;
-	rawrbox::Event<const JPH::Body &, const JPH::Body &, const JPH::ContactManifold &, JPH::ContactSettings &> PHYSICS::onContactPersisted;
-	rawrbox::Event<const JPH::SubShapeIDPair &> PHYSICS::onContactRemoved;
+	rawrbox::Event<const JPH::Body&, const JPH::Body&, const JPH::ContactManifold&, JPH::ContactSettings&> PHYSICS::onContactAdded;
+	rawrbox::Event<const JPH::Body&, const JPH::Body&, const JPH::ContactManifold&, JPH::ContactSettings&> PHYSICS::onContactPersisted;
+	rawrbox::Event<const JPH::SubShapeIDPair&> PHYSICS::onContactRemoved;
 	// ---
 
 	// Default settings ---
 	int PHYSICS::steps = 1;
-	int PHYSICS::subSteps = 1;
 	// ---
 
 	void PHYSICS::init(uint32_t mbAlloc, uint32_t maxBodies, uint32_t maxBodyMutexes, uint32_t maxBodyPairs, uint32_t maxContactConstraints, uint32_t maxThreads) {
@@ -79,7 +78,7 @@ namespace rawrbox {
 
 	void PHYSICS::tick() {
 		if (_factory == nullptr || _allocator == nullptr || _threadPool == nullptr || physicsSystem == nullptr) return;
-		physicsSystem->Update(rawrbox::FIXED_DELTA_TIME, steps, subSteps, _allocator.get(), _threadPool.get());
+		physicsSystem->Update(rawrbox::FIXED_DELTA_TIME, steps, _allocator.get(), _threadPool.get());
 	}
 
 	void PHYSICS::optimize() {

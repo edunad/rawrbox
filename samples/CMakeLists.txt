@@ -25,9 +25,9 @@ if(RAWRBOX_BUILD_RAWRBOX_BASS)
     add_subdirectory("010-bass-audio")
 endif()
 
-#if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
-#    add_subdirectory("011-physics-3D")
-#endif()
+if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
+    add_subdirectory("011-physics-3D")
+endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
     add_subdirectory("012-physics-2D")

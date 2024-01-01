@@ -44,10 +44,10 @@ option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading"
 option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
 
 # Supports -----
-option(RAWRBOX_SUPPORT_DX12   "Enable dx12 support (if the build system supports it)" ON)
-option(RAWRBOX_SUPPORT_DX11   "Enable dx11 support (if the build system supports it)" ON)
-option(RAWRBOX_SUPPORT_VULKAN "Enable vulkan support (if the build system supports it)" ON)
-option(RAWRBOX_SUPPORT_OPENGL "Enable opengl support (if the build system supports it, vulkan is recommended instead)" OFF)
+option(RAWRBOX_DISABLE_SUPPORT_DX12   "Disable dx12 support" OFF)
+option(RAWRBOX_DISABLE_SUPPORT_DX11   "Disable dx11 support" OFF)
+option(RAWRBOX_DISABLE_SUPPORT_VULKAN "Disable vulkan support" OFF)
+option(RAWRBOX_DISABLE_SUPPORT_OPENGL "Disable opengl support" ON)
 # ---------------
 
 option(RAWRBOX_COPY_SHADER_INCLUDES "Copy rawrbox shaders includes" OFF)
@@ -61,7 +61,7 @@ if(RAWRBOX_DEV_MODE)
 
     set(RAWRBOX_BUILD_RAWRBOX_UI ON)
     set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
-    #set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
+    set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
     set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS ON)
     set(RAWRBOX_BUILD_RAWRBOX_BASS ON)
     set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
@@ -83,6 +83,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}")
+
+set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm")
 
 set(BUILD_SHARED_LIBS OFF)
 
@@ -131,6 +133,27 @@ if(NOT RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME AND RAWRBOX_BUILD_RAWRBOX_3D_PHY
     set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Jolt requires msvc multithreaded runtime
     message(WARNING "JoltPhysics is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
 endif()
+
+#if(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME)
+#    set(CompilerFlags
+#        CMAKE_CXX_FLAGS
+#        CMAKE_CXX_FLAGS_DEBUG
+#        CMAKE_CXX_FLAGS_RELEASE
+#        CMAKE_CXX_FLAGS_MINSIZEREL
+#        CMAKE_CXX_FLAGS_RELWITHDEBINFO
+#        CMAKE_C_FLAGS
+#        CMAKE_C_FLAGS_DEBUG
+#        CMAKE_C_FLAGS_RELEASE
+#        CMAKE_C_FLAGS_MINSIZEREL
+#        CMAKE_C_FLAGS_RELWITHDEBINFO
+#    )
+#
+#    foreach(CompilerFlag ${CompilerFlags})
+#        string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+#        set(${CompilerFlag} "${${CompilerFlag}}" CACHE STRING "msvc compiler flags" FORCE)
+#        message("MSVC flags: ${CompilerFlag}:${${CompilerFlag}}")
+#    endforeach()
+#endif()
 # -------------------------
 
 # GLOBAL PACKAGES ------
@@ -241,10 +264,10 @@ if(RAWRBOX_BUILD_RAWRBOX_BASS)
     add_subdirectory("rawrbox.bass")
 endif()
 
-#if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
-#    message(STATUS "Enabled RAWRBOX.3D_PHYSICS support")
-#    add_subdirectory("rawrbox.physics_3d")
-#endif()
+if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
+    message(STATUS "Enabled RAWRBOX.3D_PHYSICS support")
+    add_subdirectory("rawrbox.physics_3d")
+endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
     message(STATUS "Enabled RAWRBOX.2D_PHYSICS support")

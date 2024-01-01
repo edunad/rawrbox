@@ -5,20 +5,21 @@ set(output_target RAWRBOX.PHYSICS.3D)
 # LIBS ---
 CPMAddPackage(
     NAME
-    Jolt
+        Jolt
     GITHUB_REPOSITORY
-    jrouwe/JoltPhysics
+        jrouwe/JoltPhysics
     VERSION
-    4.0.2
+        4.0.2
     OPTIONS
-    # "CROSS_PLATFORM_DETERMINISTIC ON"
-    "COMPILE_AS_SHARED_LIBRARY OFF"
-    "INTERPROCEDURAL_OPTIMIZATION ON"
-    "USE_STATIC_MSVC_RUNTIME_LIBRARY ON"
-    #"TARGET_SAMPLES ON"
-    "ENABLE_ALL_WARNINGS OFF"
+        # "CROSS_PLATFORM_DETERMINISTIC ON"
+        "COMPILE_AS_SHARED_LIBRARY OFF"
+        "INTERPROCEDURAL_OPTIMIZATION ON"
+        "USE_STATIC_MSVC_RUNTIME_LIBRARY ON"
+        #"TARGET_SAMPLES ON"
+        "ENABLE_ALL_WARNINGS OFF"
     SOURCE_SUBDIR
-    "Build")
+        "Build"
+)
 # ----
 
 # LIB ----

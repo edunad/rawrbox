@@ -4,6 +4,9 @@ set(output_target RAWRBOX.ENGINE)
 
 # DEPS ----
 CPMAddPackage("gh:jeremy-rifkin/cpptrace@0.3.1")
+if(cpptrace_ADDED)
+  set_lib_runtime_mt(cpptrace-lib)
+endif()
 # --------------
 
 # LIB ----
