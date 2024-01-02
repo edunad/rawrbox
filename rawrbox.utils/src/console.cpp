@@ -213,7 +213,7 @@ namespace rawrbox {
 
 				if (std::holds_alternative<std::string>(var)) var = args[1];
 				if (std::holds_alternative<std::string*>(var)) *std::get<std::string*>(var) = args[1];
-			} catch (const std::exception&) {
+			} catch (const std::runtime_error&) {
 				if (std::holds_alternative<int>(var) || std::holds_alternative<int*>(var)) return {false, "invalid input, expected non-decimal number"};
 				if (std::holds_alternative<bool>(var) || std::holds_alternative<bool*>(var)) return {false, "invalid input, expected true, false or non-decimal number higher than zero"};
 			}

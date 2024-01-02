@@ -22,7 +22,7 @@ namespace rawrbox {
 				}
 
 				return ret;
-			} catch (const std::exception& err) {
+			} catch (const std::runtime_error& err) {
 				fmt::print("[LUA-ERROR] {}\n", err.what());
 				return {};
 			}

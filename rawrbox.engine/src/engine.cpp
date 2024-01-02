@@ -99,7 +99,7 @@ namespace rawrbox {
 				this->onThreadShutdown(rawrbox::ENGINE_THREADS::THREAD_RENDER);
 
 				this->_shutdown = rawrbox::ENGINE_THREADS::THREAD_INPUT; // Done killing bgfx, now destroy glfw
-			} catch (std::exception& err) {
+			} catch (std::runtime_error& err) {
 				std::string wat = err.what();
 
 				std::string title = " FATAL ENGINE ERROR ";

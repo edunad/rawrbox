@@ -9,7 +9,7 @@ namespace rawrbox {
 		return _pool.submit([job] {
 			try {
 				job();
-			} catch (const std::exception& e) {
+			} catch (const std::runtime_error& e) {
 				fmt::print("[RawrBox-ASYNC] Fatal error\n  └── {}\n", e.what());
 			}
 		});
