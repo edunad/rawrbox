@@ -267,6 +267,7 @@ class Process(object):
     @classmethod
     def start(cls, invocation):
         """ Start a Process for the invocation and capture stdout+stderr. """
+
         outfile = tempfile.TemporaryFile(prefix='iwyu')
         process = subprocess.Popen(
             invocation.command,

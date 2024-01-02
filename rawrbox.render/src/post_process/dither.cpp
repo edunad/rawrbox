@@ -30,7 +30,7 @@ namespace rawrbox {
 	}
 
 	void PostProcessDither::setColorDepth(float dep) {
-		this->_settings.g_DitherColorDepth = std::pow<float>(2, dep);
+		this->_settings.g_DitherColorDepth = std::pow(2.F, dep);
 		this->updateUniforms();
 	}
 

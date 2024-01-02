@@ -36,6 +36,15 @@
         }
       }
     ],
+    "findInCurrentFile": {
+      "fixHeaders": {
+        // this will be the command name to use in the codeActions
+        "title": "fixHeaders", // this is how it will look in the Command Palette
+        "find": "#include \"(.*?)\"",
+        "replace": "#include <$1>",
+        "isRegex": true
+      }
+    },
     "editor.bracketPairColorization.enabled": true,
     "editor.formatOnSave": true,
     "editor.stickyScroll.enabled": true,
@@ -45,6 +54,9 @@
     "[hlsl]": {
       "editor.defaultFormatter": null,
       "editor.formatOnSave": false
+    },
+    "[cpp]": {
+      "editor.codeActionsOnSave": ["source.fixHeaders"]
     },
     "trailing-spaces.trimOnSave": true,
     "C_Cpp.default.compilerArgs": ["-fexceptions"],

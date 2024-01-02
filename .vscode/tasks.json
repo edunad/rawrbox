@@ -34,7 +34,7 @@
     {
       "label": "Run iwyu",
       "type": "shell",
-      "command": "export iwyu=../${workspaceFolder} && python3 iwyu_tool.py ./rawrbox.assimp ./rawrbox.bass ./rawrbox.engine ./rawrbox.math ./rawrbox.network ./rawrbox.physics_2d ./rawrbox.physics_3d ./rawrbox.render ./rawrbox.resources ./rawrbox.scripting ./rawrbox.ui ./rawrbox.utils ./rawrbox.webm -p build -j 8 > .iwyu && python3 fix_includes.py --comments < .iwyu",
+      "command": "export iwyu=../${workspaceFolder} && python3 iwyu_tool.py ./rawrbox.assimp ./rawrbox.bass ./rawrbox.engine ./rawrbox.math ./rawrbox.network ./rawrbox.physics_2d ./rawrbox.physics_3d ./rawrbox.render ./rawrbox.resources ./rawrbox.ui ./rawrbox.utils ./rawrbox.webm -p build -j 8 > .iwyu && python3 fix_includes.py --comments < .iwyu",
       "group": "build",
       "options": {
         "cwd": "${workspaceFolder}"

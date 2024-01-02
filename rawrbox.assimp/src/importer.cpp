@@ -311,10 +311,10 @@ namespace rawrbox {
 					int minIndex = 0;
 					float minWeight = v.bone_weights[0];
 
-					for (int i = 1; i < rawrbox::MAX_BONES_PER_VERTEX; i++) {
-						if (v.bone_weights[i] < minWeight) {
-							minIndex = i;
-							minWeight = v.bone_weights[i];
+					for (int o = 1; o < rawrbox::MAX_BONES_PER_VERTEX; o++) {
+						if (v.bone_weights[o] < minWeight) {
+							minIndex = o;
+							minWeight = v.bone_weights[o];
 						}
 					}
 

@@ -340,8 +340,8 @@ namespace ui_test {
 					this->_graph->getCategory(0).addEntry(static_cast<float>(durationStats.Duration) / static_cast<float>(durationStats.Frequency) * 1000000.F);
 				}
 
-				this->_graph->getCategory(1).addEntry(pipelineStats.InputPrimitives);
-				this->_graph->getCategory(2).addEntry(pipelineStats.InputVertices);
+				this->_graph->getCategory(1).addEntry(static_cast<float>(pipelineStats.InputPrimitives));
+				this->_graph->getCategory(2).addEntry(static_cast<float>(pipelineStats.InputVertices));
 #else
 				this->_graph->getCategory(0).addEntry(rawrbox::DELTA_TIME);
 #endif
