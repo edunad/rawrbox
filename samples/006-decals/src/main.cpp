@@ -12,7 +12,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
 	SetConsoleOutputCP(CP_UTF8);
 #endif
 
-	decal_test::Game engine;
+	decal_test::Game engine = {};
 	engine.setFPS(60);
 	engine.setTPS(66);
 	engine.run();

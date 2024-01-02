@@ -12,7 +12,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
 	SetConsoleOutputCP(CP_UTF8);
 #endif
 
-	gpu::Game engine;
+	gpu::Game engine = {};
 	engine.setFPS(60);
 	engine.setTPS(66);
 	engine.run();

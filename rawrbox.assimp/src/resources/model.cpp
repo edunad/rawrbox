@@ -30,6 +30,8 @@ namespace rawrbox {
 		       fileExtention == ".gltf" ||
 		       fileExtention == ".md5mesh";
 	}
+
+	bool AssimpLoader::supportsBuffer() { return true; }
 	// -------
 
 } // namespace rawrbox

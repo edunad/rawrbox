@@ -7,7 +7,7 @@
 namespace rawrbox {
 	class SoundInstanceWrapper {
 	protected:
-		std::weak_ptr<rawrbox::SoundInstance> _ref;
+		std::weak_ptr<rawrbox::SoundInstance> _ref = {};
 
 	public:
 		SoundInstanceWrapper(const std::shared_ptr<rawrbox::SoundInstance>& instance);

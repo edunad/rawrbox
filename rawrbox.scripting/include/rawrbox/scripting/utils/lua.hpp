@@ -35,7 +35,7 @@ namespace rawrbox {
 
 		template <typename T>
 		static std::vector<T> luaToVector(const sol::table& table) {
-			std::vector<T> arr;
+			std::vector<T> arr = {};
 			arr.resize(table.size());
 
 			for (auto& entry : table) {

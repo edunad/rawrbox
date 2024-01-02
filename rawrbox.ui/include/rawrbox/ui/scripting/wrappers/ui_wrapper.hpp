@@ -15,10 +15,10 @@ namespace rawrbox {
 	class UIRoot;
 	class UIWrapper {
 	protected:
-		rawrbox::Mod* _mod;
+		rawrbox::Mod* _mod = nullptr;
 		rawrbox::UIRoot* _root = nullptr;
 
-		sol::function create;
+		sol::function create = {};
 
 	public:
 		UIWrapper(rawrbox::Mod* mod, rawrbox::UIRoot* root);
