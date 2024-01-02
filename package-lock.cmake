@@ -94,6 +94,11 @@ CPMDeclarePackage(glfw
 #  NAME DiligentCore
 #  GIT_TAG master
 #  GITHUB_REPOSITORY DiligentGraphics/DiligentCore
+#  OPTIONS
+#    "DILIGENT_NO_OPENGL ON"
+#    "DILIGENT_NO_VULKAN OFF"
+#    "DILIGENT_NO_DIRECT3D11 OFF"
+#    "DILIGENT_NO_DIRECT3D12 OFF"
 #  PATCH_COMMAND git restore Graphics/HLSL2GLSLConverterLib/src/HLSL2GLSLConverterImpl.cpp COMMAND git restore Graphics/GraphicsEngineVulkan/src/VulkanUtilities/VulkanInstance.cpp
 #)
 # utfcpp
@@ -127,6 +132,19 @@ CPMDeclarePackage(libwebp
     "WEBP_BUILD_WEBPMUX OFF"
     "WEBP_BUILD_EXTRAS OFF"
 )
+# libwebm (unversioned)
+# CPMDeclarePackage(libwebm
+#  NAME libwebm
+#  GIT_TAG libwebm-1.0.0.31
+#  GITHUB_REPOSITORY webmproject/libwebm
+#  OPTIONS
+#    "BUILD_SHARED_LIBS OFF"
+#    "ENABLE_WEBMTS OFF"
+#    "ENABLE_WEBMINFO OFF"
+#    "ENABLE_WEBM_PARSER OFF"
+#    "ENABLE_TESTS OFF"
+#    "ENABLE_SAMPLE_PROGRAMS OFF"
+#)
 # assimp (unversioned)
 # CPMDeclarePackage(assimp
 #  NAME assimp
@@ -140,7 +158,7 @@ CPMDeclarePackage(libwebp
 #    "ASSIMP_BUILD_TESTS OFF"
 #    "ASSIMP_BUILD_SAMPLES OFF"
 #    "ASSIMP_BUILD_DOCS OFF"
-#    "USE_STATIC_CRT OFF"
+#    "USE_STATIC_CRT ON"
 #    "ASSIMP_BUILD_ASSIMP_VIEW OFF"
 #    "ASSIMP_WARNINGS_AS_ERRORS OFF"
 #    "ASSIMP_INSTALL OFF"
@@ -165,3 +183,23 @@ CPMDeclarePackage(clip
     "CLIP_EXAMPLES OFF"
     "CLIP_TESTS OFF"
 )
+# Jolt
+CPMDeclarePackage(Jolt
+  NAME Jolt
+  VERSION 4.0.2
+  GITHUB_REPOSITORY jrouwe/JoltPhysics
+  SOURCE_SUBDIR Build
+  OPTIONS
+    "COMPILE_AS_SHARED_LIBRARY OFF"
+    "INTERPROCEDURAL_OPTIMIZATION ON"
+    "USE_STATIC_MSVC_RUNTIME_LIBRARY ON"
+    "ENABLE_ALL_WARNINGS OFF"
+)
+# muli (unversioned)
+# CPMDeclarePackage(muli
+#  NAME muli
+#  GIT_TAG master
+#  GITHUB_REPOSITORY Sopiro/Muli
+#  OPTIONS
+#    "MULI_BUILD_DEMO OFF"
+#)
