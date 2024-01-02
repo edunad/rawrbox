@@ -7,6 +7,7 @@ namespace rawrbox {
 	class ResourceSVG : public rawrbox::Resource {
 
 	public:
+		bool load(const std::vector<uint8_t>& buffer) override;
 		rawrbox::TextureBase* get(const rawrbox::Vector2i& size, uint32_t flags = 0);
 	};
 
@@ -21,6 +22,8 @@ namespace rawrbox {
 		~SVGLoader() override;
 
 		std::unique_ptr<rawrbox::Resource> createEntry() override;
+
 		bool canLoad(const std::string& fileExtention) override;
+		bool supportsBuffer() override;
 	};
 } // namespace rawrbox

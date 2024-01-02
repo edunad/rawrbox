@@ -32,7 +32,6 @@ namespace rawrbox {
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
 			auto context = rawrbox::RENDERER->context();
-			auto camera = rawrbox::MAIN_CAMERA;
 
 			// SETUP UNIFORMS ----------------------------
 			{
@@ -49,7 +48,6 @@ namespace rawrbox {
 		template <typename T = rawrbox::VertexData>
 		void bindTexture(const rawrbox::Mesh<T>& mesh) {
 			if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] Material not bound, did you call 'init'?");
-			auto context = rawrbox::RENDERER->context();
 
 			rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
 			rawrbox::TextureBase* textureDisplacement = rawrbox::BLACK_TEXTURE.get();

@@ -6,18 +6,19 @@ set(output_target RAWRBOX.WEBM)
 # LIBS ---
 CPMAddPackage(
     NAME
-    libwebm
+        libwebm
     GIT_TAG
-    libwebm-1.0.0.31
+        libwebm-1.0.0.31
     GITHUB_REPOSITORY
-    webmproject/libwebm
+        webmproject/libwebm
     OPTIONS
-    "BUILD_SHARED_LIBS OFF"
-    "ENABLE_WEBMTS OFF"
-    "ENABLE_WEBMINFO OFF"
-    "ENABLE_WEBM_PARSER OFF"
-    "ENABLE_TESTS OFF"
-    "ENABLE_SAMPLE_PROGRAMS OFF")
+        "BUILD_SHARED_LIBS OFF"
+        "ENABLE_WEBMTS OFF"
+        "ENABLE_WEBMINFO OFF"
+        "ENABLE_WEBM_PARSER OFF"
+        "ENABLE_TESTS OFF"
+        "ENABLE_SAMPLE_PROGRAMS OFF"
+    )
 
 if(libwebm_ADDED)
     target_include_directories(webm PUBLIC ${libwebm_SOURCE_DIR})
@@ -61,7 +62,7 @@ target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMI
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_WEBM)
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
-target_link_libraries(${output_target} PUBLIC RAWRBOX.RENDER_TEMP ${RAWRBOX_EXTRA_LIBS} VPX::VPX webm)
+target_link_libraries(${output_target} PUBLIC RAWRBOX.RENDER ${RAWRBOX_EXTRA_LIBS} VPX::VPX webm)
 
 set_lib_runtime_mt(${output_target})
 # --------------

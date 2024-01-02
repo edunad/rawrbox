@@ -216,7 +216,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] virtual uint32_t getId(int /*index*/ = -1) const { return 0; }
-		virtual void setId(uint32_t id, int index = -1) {}
+		virtual void setId(uint32_t /*id*/, int /*index*/ = -1) {}
 
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->color; }
 		virtual void setColor(const rawrbox::Color& _color) {

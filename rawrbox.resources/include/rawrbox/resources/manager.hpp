@@ -37,8 +37,10 @@ namespace rawrbox {
 
 		template <class T = rawrbox::Resource>
 		static T* loadFileImpl(const std::filesystem::path& filePath, uint32_t loadFlags = 0) {
+			std::string path = filePath.generic_string();
+
 			// check if it's already loaded
-			auto found = getFileImpl<T>(filePath.generic_string());
+			auto found = getFileImpl<T>(path);
 			if (found != nullptr) return found;
 
 			// load file
@@ -53,23 +55,32 @@ namespace rawrbox {
 				ret->flags = loadFlags;
 
 				// try to see if the file exists to make a crc32 of it
-				std::vector<uint8_t> buffer = rawrbox::PathUtils::getRawData(filePath);
-				if (buffer.empty()) {
-					ret->crc32 = 0;
-				} else {
-					ret->crc32 = CRC::Calculate(buffer.data(), buffer.size(), CRC::CRC_32());
+				std::vector<uint8_t> buffer = {};
+
+				if (loader->supportsBuffer()) {
+					buffer = rawrbox::PathUtils::getRawData(filePath);
+
+					if (buffer.empty()) {
+						ret->crc32 = 0;
+					} else {
+						ret->crc32 = CRC::Calculate(buffer.data(), buffer.size(), CRC::CRC_32());
+					}
 				}
 
 				ret->status = rawrbox::LoadStatus::LOADING;
-				if (!ret->load(buffer)) throw std::runtime_error(fmt::format("[RawrBox-Resources] Failed to load file '{}'", filePath.generic_string()));
+
+				if (!ret->load(buffer)) throw std::runtime_error(fmt::format("[RawrBox-Resources] Failed to load file '{}'", path));
 				ret->upload();
+
 				ret->status = rawrbox::LoadStatus::LOADED;
+
 				// Add to the list for later on easy access
 				{
 					const std::lock_guard<std::mutex> mutexGuard(_threadLock);
 					_loadedFiles.push_back(filePath);
 				}
 				// ---
+
 				return ret;
 			}
 

@@ -29,7 +29,7 @@ namespace rawrbox {
 			return rawrbox::PackUtils::toABGR(extraData.y, extraData.z, extraData.w, 1.F);
 		}
 
-		void setId(uint32_t id) {
+		void setId(uint32_t /*id*/) {
 			// auto pack = rawrbox::PackUtils::fromABGR(0xFF000000 | id);
 			//
 			// extraData.y = pack[0];

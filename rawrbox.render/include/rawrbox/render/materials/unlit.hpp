@@ -37,8 +37,6 @@ namespace rawrbox {
 		void bindTexture(const rawrbox::Mesh<T>& mesh) {
 			if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialUnlit] Material not bound, did you call 'init'?");
 
-			auto context = rawrbox::RENDERER->context();
-
 			rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
 			rawrbox::TextureBase* textureDisplacement = rawrbox::BLACK_TEXTURE.get();
 

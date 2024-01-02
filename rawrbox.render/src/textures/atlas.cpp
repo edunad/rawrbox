@@ -77,7 +77,7 @@ namespace rawrbox {
 		desc.MipLevels = 1;
 		desc.Format = format;
 		// NOLINTBEGIN(cppcoreguidelines-pro-type-union-access)
-		desc.ArraySize = this->total();
+		desc.ArraySize = static_cast<uint32_t>(this->total());
 		// NOLINTEND(cppcoreguidelines-pro-type-union-access)
 		desc.Name = this->_name.c_str();
 
@@ -94,7 +94,7 @@ namespace rawrbox {
 
 		Diligent::TextureData data;
 		data.pSubResources = subresData.data();
-		data.NumSubresources = subresData.size();
+		data.NumSubresources = static_cast<uint32_t>(subresData.size());
 
 		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);

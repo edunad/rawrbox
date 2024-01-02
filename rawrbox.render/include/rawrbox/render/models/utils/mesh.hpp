@@ -297,7 +297,7 @@ namespace rawrbox {
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L687
 		// Does not support UV :( / normals
 		template <typename M = rawrbox::MaterialUnlit>
-		static rawrbox::Mesh<typename M::vertexBufferType> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, uint32_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
+		static rawrbox::Mesh<typename M::vertexBufferType> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const uint16_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			if (ratio % 3 != 0) throw std::runtime_error(fmt::format("[RawrBox-MeshUtils] Generate cone ratio '{}' needs to be divisible by 3", ratio));
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate cone does not support normals");
@@ -306,9 +306,9 @@ namespace rawrbox {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			const float step = rawrbox::pi<float> * 2.0F / ratio;
 
-			const uint32_t numVertices = ratio + 1;
-			const uint32_t numIndices = ratio * 6;
-			const uint32_t numLineListIndices = ratio * 4;
+			const uint16_t numVertices = ratio + 1;
+			const uint16_t numIndices = ratio * 6;
+			const uint16_t numLineListIndices = ratio * 4;
 
 			mesh.vertices.resize(numVertices);
 			mesh.indices.resize(numIndices + numLineListIndices);
@@ -318,7 +318,7 @@ namespace rawrbox {
 
 			mesh.vertices[ratio] = rawrbox::VertexData(pos + rawrbox::Vector3f(0, hSize.y, 0), rawrbox::Vector2f(0, 0), cl);
 
-			for (uint32_t ii = 0; ii < ratio; ++ii) {
+			for (uint16_t ii = 0; ii < ratio; ++ii) {
 				const float angle = step * ii;
 
 				const float angX = std::cos(angle) * hSize.x;
@@ -326,19 +326,19 @@ namespace rawrbox {
 
 				mesh.vertices[ii] = rawrbox::VertexData(pos + rawrbox::Vector3f(angZ, -hSize.y, angX), rawrbox::Vector2f(0, 0), cl);
 
-				mesh.indices[ii * 3 + 0] = uint16_t(ratio);
-				mesh.indices[ii * 3 + 1] = uint16_t((ii + 1) % ratio);
-				mesh.indices[ii * 3 + 2] = uint16_t(ii);
+				mesh.indices[ii * 3 + 0] = ratio;
+				mesh.indices[ii * 3 + 1] = (ii + 1) % ratio;
+				mesh.indices[ii * 3 + 2] = ii;
 
 				mesh.indices[ratio * 3 + ii * 3 + 0] = 0;
-				mesh.indices[ratio * 3 + ii * 3 + 1] = uint16_t(ii);
-				mesh.indices[ratio * 3 + ii * 3 + 2] = uint16_t((ii + 1) % ratio);
+				mesh.indices[ratio * 3 + ii * 3 + 1] = ii;
+				mesh.indices[ratio * 3 + ii * 3 + 2] = (ii + 1) % ratio;
 
-				mesh.indices[numIndices + ii * 2 + 0] = uint16_t(ii);
-				mesh.indices[numIndices + ii * 2 + 1] = uint16_t(ratio);
+				mesh.indices[numIndices + ii * 2 + 0] = ii;
+				mesh.indices[numIndices + ii * 2 + 1] = ratio;
 
-				mesh.indices[numIndices + ratio * 2 + ii * 2 + 0] = uint16_t(ii);
-				mesh.indices[numIndices + ratio * 2 + ii * 2 + 1] = uint16_t((ii + 1) % ratio);
+				mesh.indices[numIndices + ratio * 2 + ii * 2 + 0] = ii;
+				mesh.indices[numIndices + ratio * 2 + ii * 2 + 1] = (ii + 1) % ratio;
 			}
 
 			mesh.baseVertex = 0;
@@ -358,7 +358,7 @@ namespace rawrbox {
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L750
 		// Does not support UV :( / normals
 		template <typename M = rawrbox::MaterialUnlit>
-		static rawrbox::Mesh<typename M::vertexBufferType> generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, uint32_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
+		static rawrbox::Mesh<typename M::vertexBufferType> generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const uint16_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				throw std::runtime_error("[RawrBox-MeshUtils] Generate cylinder does not support normals");
 			}
@@ -383,28 +383,28 @@ namespace rawrbox {
 				mesh.vertices[ii] = rawrbox::VertexData(pos + rawrbox::Vector3f(angX, hSize.y, angZ), rawrbox::Vector2f(0, 0), cl);
 				mesh.vertices[ii + ratio] = rawrbox::VertexData(pos + rawrbox::Vector3f(angX, -hSize.y, angZ), rawrbox::Vector2f(0, 0), cl);
 
-				mesh.indices[ii * 6 + 0] = static_cast<uint16_t>(ii + ratio);
-				mesh.indices[ii * 6 + 1] = static_cast<uint16_t>((ii + 1) % ratio);
-				mesh.indices[ii * 6 + 2] = static_cast<uint16_t>(ii);
-				mesh.indices[ii * 6 + 3] = static_cast<uint16_t>(ii + ratio);
-				mesh.indices[ii * 6 + 4] = static_cast<uint16_t>((ii + 1) % ratio + ratio);
-				mesh.indices[ii * 6 + 5] = static_cast<uint16_t>((ii + 1) % ratio);
+				mesh.indices[ii * 6 + 0] = ii + ratio;
+				mesh.indices[ii * 6 + 1] = (ii + 1) % ratio;
+				mesh.indices[ii * 6 + 2] = ii;
+				mesh.indices[ii * 6 + 3] = ii + ratio;
+				mesh.indices[ii * 6 + 4] = (ii + 1) % ratio + ratio;
+				mesh.indices[ii * 6 + 5] = (ii + 1) % ratio;
 
-				mesh.indices[ratio * 6 + ii * 6 + 0] = static_cast<uint16_t>(0);
-				mesh.indices[ratio * 6 + ii * 6 + 1] = static_cast<uint16_t>(ii);
-				mesh.indices[ratio * 6 + ii * 6 + 2] = static_cast<uint16_t>((ii + 1) % ratio);
-				mesh.indices[ratio * 6 + ii * 6 + 3] = static_cast<uint16_t>(ratio);
-				mesh.indices[ratio * 6 + ii * 6 + 4] = static_cast<uint16_t>((ii + 1) % ratio + ratio);
-				mesh.indices[ratio * 6 + ii * 6 + 5] = static_cast<uint16_t>(ii + ratio);
+				mesh.indices[ratio * 6 + ii * 6 + 0] = 0;
+				mesh.indices[ratio * 6 + ii * 6 + 1] = ii;
+				mesh.indices[ratio * 6 + ii * 6 + 2] = (ii + 1) % ratio;
+				mesh.indices[ratio * 6 + ii * 6 + 3] = ratio;
+				mesh.indices[ratio * 6 + ii * 6 + 4] = (ii + 1) % ratio + ratio;
+				mesh.indices[ratio * 6 + ii * 6 + 5] = ii + ratio;
 
-				mesh.indices[numIndices + ii * 2 + 0] = static_cast<uint16_t>(ii);
-				mesh.indices[numIndices + ii * 2 + 1] = static_cast<uint16_t>(ii + ratio);
+				mesh.indices[numIndices + ii * 2 + 0] = ii;
+				mesh.indices[numIndices + ii * 2 + 1] = ii + ratio;
 
-				mesh.indices[numIndices + ratio * 2 + ii * 2 + 0] = static_cast<uint16_t>(ii);
-				mesh.indices[numIndices + ratio * 2 + ii * 2 + 1] = static_cast<uint16_t>((ii + 1) % ratio);
+				mesh.indices[numIndices + ratio * 2 + ii * 2 + 0] = ii;
+				mesh.indices[numIndices + ratio * 2 + ii * 2 + 1] = (ii + 1) % ratio;
 
-				mesh.indices[numIndices + ratio * 4 + ii * 2 + 0] = static_cast<uint16_t>(ratio + ii);
-				mesh.indices[numIndices + ratio * 4 + ii * 2 + 1] = static_cast<uint16_t>(ratio + (ii + 1) % ratio);
+				mesh.indices[numIndices + ratio * 4 + ii * 2 + 0] = ratio + ii;
+				mesh.indices[numIndices + ratio * 4 + ii * 2 + 1] = ratio + (ii + 1) % ratio;
 			}
 
 			mesh.baseVertex = 0;

@@ -213,7 +213,7 @@ namespace rawrbox {
 		return true;
 	}
 
-	int Socket::receiveUDP(unsigned char* buffer, int size, sockaddr_in* from) {
+	int Socket::receiveUDP(uint8_t* buffer, int size, sockaddr_in* from) {
 #ifdef _MSC_VER
 		int client_length = static_cast<int>(sizeof(struct sockaddr_in));
 		return recvfrom(this->sock, std::bit_cast<char*>(buffer), size, 0, std::bit_cast<struct sockaddr*>(from), &client_length);
@@ -235,11 +235,11 @@ namespace rawrbox {
 #endif
 	}
 
-	int Socket::receive(unsigned char* buffer, int size, int spos) {
+	int Socket::receive(uint8_t* buffer, int size, int spos) {
 		return ::recv(this->sock, std::bit_cast<char*>(buffer) + spos, size, 0);
 	}
 
-	bool Socket::receiveAll(unsigned char* buffer, int size, int spos) {
+	bool Socket::receiveAll(uint8_t* buffer, int size, int spos) {
 		int recv = 0;
 
 		while (recv != size) {
@@ -253,15 +253,15 @@ namespace rawrbox {
 		return true;
 	}
 
-	int Socket::sendUDP(const unsigned char* buffer, int size, sockaddr_in* to) {
+	int Socket::sendUDP(const uint8_t* buffer, int size, sockaddr_in* to) {
 		return ::sendto(sock, std::bit_cast<const char*>(buffer), size, 0, std::bit_cast<struct sockaddr*>(&to), sizeof(struct sockaddr_in));
 	}
 
-	int Socket::send(const unsigned char* data, int dataSize) {
+	int Socket::send(const uint8_t* data, int dataSize) {
 		return ::send(sock, std::bit_cast<const char*>(data), dataSize, 0);
 	}
 
-	bool Socket::sendAll(const unsigned char* data, int dataSize) {
+	bool Socket::sendAll(const uint8_t* data, int dataSize) {
 		int sent = 0;
 
 		while (sent != dataSize) {

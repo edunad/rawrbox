@@ -1,8 +1,8 @@
 
-#include <rawrbox/render_temp/camera/orbital.hpp>
-#include <rawrbox/render_temp/model/utils/mesh.hpp>
-#include <rawrbox/render_temp/resources/texture.hpp>
-#include <rawrbox/render_temp/static.hpp>
+#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/webm/resources/webm.hpp>
 #include <rawrbox/webm/textures/webm.hpp>
@@ -13,24 +13,28 @@
 
 namespace webm_test {
 	void Game::setupGLFW() {
-		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
-		this->_window->setTitle("WEBM TEST");
-		this->_window->setRenderer<>(
-		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
-		this->_window->onIntroCompleted += [this]() {
-			this->loadContent();
-		};
+		auto window = rawrbox::Window::createWindow();
+		window->setMonitor(-1);
+		window->setTitle("WEBM TEST");
+		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
+		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {
-		if (this->_window == nullptr) return;
+		auto window = rawrbox::Window::getWindow();
+
+		// Setup renderer
+		auto render = window->createRenderer();
+		render->onIntroCompleted = [this]() { this->loadContent(); };
+		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
+			this->drawWorld();
+		});
+		// ---------------
 
 		// Setup camera
-		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
-		cam->setPos({0.F, 4.F, -5.F});
+		auto cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
+		cam->setPos({0.F, 5.F, -10.F});
 		cam->setAngle({0.F, 0.F, 0.F, 0.F});
 		// --------------
 
@@ -39,13 +43,13 @@ namespace webm_test {
 		rawrbox::RESOURCES::addLoader<rawrbox::WEBMLoader>();
 		// ----------
 
-		this->_window->initializeBGFX();
+		render->init();
 	}
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./content/video/webm_test.webm", 0 | rawrbox::WEBMLoadFlags::PRELOAD),
-		    std::make_pair<std::string, uint32_t>("./content/video/webm_test_2.webm", 0 | rawrbox::WEBMLoadFlags::PRELOAD)};
+		    std::make_pair<std::string, uint32_t>("./assets/video/webm_test.webm", 0 | rawrbox::WEBMLoadFlags::PRELOAD),
+		    std::make_pair<std::string, uint32_t>("./assets/video/webm_test_2.webm", 0 | rawrbox::WEBMLoadFlags::PRELOAD)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
@@ -59,8 +63,8 @@ namespace webm_test {
 	}
 
 	void Game::contentLoaded() {
-		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./content/video/webm_test.webm")->get<rawrbox::TextureWEBM>();
-		auto tex2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./content/video/webm_test_2.webm")->get<rawrbox::TextureWEBM>();
+		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./assets/video/webm_test.webm")->get<rawrbox::TextureWEBM>();
+		auto tex2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./assets/video/webm_test_2.webm")->get<rawrbox::TextureWEBM>();
 		tex2->setTextureUV(rawrbox::TEXTURE_UV::UV_FLIP_V);
 		tex->setTextureUV(rawrbox::TEXTURE_UV::UV_FLIP_V);
 		// tex->setLoop(false);
@@ -78,7 +82,7 @@ namespace webm_test {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane({-2.F, 4.0F, 0.F}, {4.F, 3.F});
+			auto mesh = rawrbox::MeshUtils::generatePlane({-2.F, 4.0F, 0.F}, {4.F, 7.F});
 			mesh.setTexture(tex2);
 			this->_model->addMesh(mesh);
 		}
@@ -94,57 +98,30 @@ namespace webm_test {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
+			rawrbox::Window::shutdown();
+		} else {
+			this->_model.reset();
 
-		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
-
-		this->_model.reset();
-
-		this->_window->unblockPoll();
-		this->_window.reset();
+			rawrbox::RESOURCES::shutdown();
+			rawrbox::ASYNC::shutdown();
+		}
 	}
 
 	void Game::pollEvents() {
-		if (this->_window == nullptr) return;
-		this->_window->pollEvents();
+		rawrbox::Window::pollEvents();
 	}
 
 	void Game::update() {
-		if (this->_window == nullptr) return;
-		this->_window->update();
+		rawrbox::Window::update();
 	}
 
-	void Game::printFrames() {
-		const bgfx::Stats* stats = bgfx::getStats();
-
-		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
-		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
-		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
-	}
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 		if (this->_model != nullptr) this->_model->draw();
 	}
 
 	void Game::draw() {
-		if (this->_window == nullptr) return;
-
-		// DEBUG ----
-		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "012-webm");
-		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: WEBM test");
-		this->printFrames();
-		// -----------
-
-		if (!this->_ready) {
-			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
-			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
-			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
-		}
-
-		this->_window->render(); // Commit primitives
+		rawrbox::Window::render(); // Commit primitives
 	}
 } // namespace webm_test

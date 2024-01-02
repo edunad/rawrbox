@@ -35,7 +35,7 @@ namespace rawrbox {
 		}
 	}
 
-	void PostProcessPlugin::resize(const rawrbox::Vector2i& size) {
+	void PostProcessPlugin::resize(const rawrbox::Vector2i& /*size*/) {
 		// TODO: RESIZE RENDER TEXTURE?
 	}
 

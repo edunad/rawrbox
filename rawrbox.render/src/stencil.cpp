@@ -339,7 +339,7 @@ namespace rawrbox {
 
 		this->_currentDraw.stencilProgram = program;
 		this->_currentDraw.textureHandle = texture;
-		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::AABBf(0, 0, static_cast<float>(this->_windowSize.x), static_cast<float>(this->_windowSize.y)) : this->_clips.back();
+		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::AABBi(0, 0, this->_windowSize.x, this->_windowSize.y) : this->_clips.back();
 	}
 
 	void Stencil::pushDrawCall() {
@@ -492,8 +492,8 @@ namespace rawrbox {
 	// --------------------
 
 	// ------ CLIPPING
-	void Stencil::pushClipping(const rawrbox::AABB& rect) {
-		this->_clips.emplace_back(rect.pos.x + this->_offset.x, rect.pos.y + this->_offset.y, rect.size.x, rect.size.y);
+	void Stencil::pushClipping(const rawrbox::AABBi& rect) {
+		this->_clips.emplace_back(rect.pos.x + static_cast<int>(this->_offset.x), rect.pos.y + static_cast<int>(this->_offset.y), rect.size.x, rect.size.y);
 	}
 
 	void Stencil::popClipping() {

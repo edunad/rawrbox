@@ -250,9 +250,7 @@ namespace rawrbox {
 		// ----
 		virtual void upload(bool dynamic = false) {
 			if (this->isUploaded()) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
-
 			auto device = rawrbox::RENDERER->device();
-			auto context = rawrbox::RENDERER->context();
 
 			// Generate buffers ----
 			this->_isDynamic = dynamic;

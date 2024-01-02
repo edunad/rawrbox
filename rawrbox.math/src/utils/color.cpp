@@ -10,9 +10,9 @@ namespace rawrbox {
 		size_t offset = 0;
 		for (size_t i = 0; i < buffer.size(); i += channels) {
 			for (size_t j = 0; j < target; j++) {
-				int val = j == 3 ? 255 : 1; // A = 255 always
+				uint8_t val = j == 3 ? 255 : 1; // A = 255 always
 				if (j < channels) {
-					val = buffer[i + std::clamp<int>(static_cast<int>(j), 0, channels)];
+					val = buffer[i + std::clamp<size_t>(j, 0, channels)];
 				}
 
 				fixedBuffer[offset + j] = val;

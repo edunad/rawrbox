@@ -7,7 +7,6 @@
 #include <webp/demux.h>
 
 namespace rawrbox {
-
 	TextureWEBP::TextureWEBP(const std::filesystem::path& filePath, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, useFallback) { this->internalLoad(rawrbox::PathUtils::getRawData(this->_filePath), useFallback); }
 	TextureWEBP::TextureWEBP(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, buffer, useFallback) { this->internalLoad(buffer, useFallback); }
 
@@ -15,16 +14,7 @@ namespace rawrbox {
 		this->_name = "RawrBox::Texture::WEBP";
 
 		try {
-			if (buffer.empty()) {
-				if (useFallback) {
-					fmt::print("[TextureWEBP] Failed to load '{}' ──> Image not found\n  └── Loading fallback texture!", this->_filePath.generic_string());
-					this->loadFallback();
-					return;
-				}
-
-				throw std::runtime_error(fmt::format("Could not load image '{}'!", this->_filePath.generic_string()));
-			}
-
+			if (buffer.empty()) throw std::runtime_error("Image not found");
 			WebPData webp_data = {buffer.data(), buffer.size()};
 
 			WebPAnimDecoderOptions options;
@@ -35,7 +25,7 @@ namespace rawrbox {
 			options.use_threads = true;
 			auto decoder = WebPAnimDecoderNew(&webp_data, &options);
 			if (decoder == nullptr) {
-				throw std::runtime_error(fmt::format("Error initializing image '{}'!", this->_filePath.generic_string()));
+				throw std::runtime_error(fmt::format("Error initializing decoder '{}'!", this->_filePath.generic_string()));
 			}
 
 			WebPAnimInfo info;
@@ -72,7 +62,7 @@ namespace rawrbox {
 			WebPAnimDecoderDelete(decoder);
 		} catch (std::runtime_error err) {
 			if (useFallback) {
-				fmt::print("[TextureWEBP] Failed to load '{}' ──> {}\n  └── Loading fallback texture!\n", this->_filePath.generic_string(), err.what());
+				fmt::print("[RawrBox-TextureWEBP] Failed to load '{}' ──> {}\n  └── Loading fallback texture!\n", this->_filePath.generic_string(), err.what());
 				this->loadFallback();
 				return;
 			}

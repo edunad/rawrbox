@@ -15,7 +15,7 @@ namespace rawrbox {
 
 	class TextureAnimatedBase : public rawrbox::TextureBase {
 	protected:
-		std::vector<rawrbox::Frame> _frames;
+		std::vector<rawrbox::Frame> _frames = {};
 		std::filesystem::path _filePath = "";
 
 		int _currentFrame = 0;
@@ -46,7 +46,7 @@ namespace rawrbox {
 		virtual void setLoop(bool loop);
 		virtual bool getPaused();
 		virtual void setPaused(bool paused);
-		virtual bool getSpeed();
+		virtual float getSpeed();
 		virtual void setSpeed(float speed);
 		// --------------------
 

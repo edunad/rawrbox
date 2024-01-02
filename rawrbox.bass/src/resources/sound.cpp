@@ -40,5 +40,7 @@ namespace rawrbox {
 		       fileExtention == ".ogg" ||
 		       fileExtention == ".wav";
 	}
+
+	bool BASSLoader::supportsBuffer() { return false; };
 	// ----
 } // namespace rawrbox

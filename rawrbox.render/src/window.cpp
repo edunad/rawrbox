@@ -516,10 +516,11 @@ namespace rawrbox {
 		windowRect.size.x += scratchRect.pos.x + scratchRect.size.x;
 		windowRect.size.y += scratchRect.pos.y + scratchRect.size.y;
 
-		int overlapMonitor = -1;
+		size_t overlapMonitor = 0;
+		auto totalMonitors = static_cast<size_t>(monitorCount);
 		uint32_t currentDim = 0, overlapDim = 0;
 
-		for (size_t i = 0; i < monitorCount; i++) {
+		for (size_t i = 0; i < totalMonitors; i++) {
 			rawrbox::AABBi monitorRect = {};
 			glfwGetMonitorPos(monitors[i], &monitorRect.pos.x, &monitorRect.pos.y);
 

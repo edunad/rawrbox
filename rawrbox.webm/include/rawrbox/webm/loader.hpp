@@ -30,7 +30,7 @@ namespace rawrbox {
 
 	class WEBM {
 	private:
-		std::filesystem::path _filePath;
+		std::filesystem::path _filePath = {};
 
 		uint32_t _trackId = 0;
 		int _blockFrameIndex = 0;
@@ -55,6 +55,7 @@ namespace rawrbox {
 		const mkvparser::VideoTrack* _video = nullptr;
 
 		void preloadVideo();
+		void internalLoad();
 
 	public:
 		rawrbox::Event<> onEnd;
@@ -67,7 +68,6 @@ namespace rawrbox {
 		~WEBM();
 
 		void load(const std::filesystem::path& filePath, uint32_t flags = 0);
-
 		bool advance();
 		bool eos();
 

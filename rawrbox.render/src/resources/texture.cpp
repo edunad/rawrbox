@@ -52,5 +52,7 @@ namespace rawrbox {
 		       fileExtention == ".webp" ||
 		       fileExtention == ".jpeg";
 	}
+
+	bool TextureLoader::supportsBuffer() { return true; }
 	// -------
 } // namespace rawrbox

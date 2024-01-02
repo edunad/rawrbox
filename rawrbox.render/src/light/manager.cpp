@@ -71,7 +71,6 @@ namespace rawrbox {
 
 		auto context = rawrbox::RENDERER->context();
 		auto device = rawrbox::RENDERER->device();
-		auto camera = rawrbox::MAIN_CAMERA;
 
 		// Update lights ---
 		std::vector<rawrbox::LightDataVertex> lights = {};
@@ -120,8 +119,6 @@ namespace rawrbox {
 		update(); // Update all lights if dirty
 
 		auto renderer = rawrbox::RENDERER;
-
-		auto context = renderer->context();
 		auto camera = renderer->camera();
 		Diligent::MapHelper<rawrbox::LightConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 

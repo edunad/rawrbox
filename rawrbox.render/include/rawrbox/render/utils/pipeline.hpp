@@ -22,7 +22,7 @@ namespace rawrbox {
 
 	struct PipePass {
 		Diligent::IRenderPass* pass = nullptr;
-		uint32_t index = 0;
+		uint8_t index = 0;
 	};
 
 	struct PipeBlending {

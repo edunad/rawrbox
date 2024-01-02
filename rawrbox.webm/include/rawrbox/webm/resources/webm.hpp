@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rawrbox/render_temp/textures/base.hpp>
+#include <rawrbox/render/textures/base.hpp>
 #include <rawrbox/resources/loader.hpp>
 
 namespace rawrbox {
@@ -35,5 +35,6 @@ namespace rawrbox {
 
 		std::unique_ptr<rawrbox::Resource> createEntry() override;
 		bool canLoad(const std::string& fileExtention) override;
+		bool supportsBuffer() override;
 	};
 } // namespace rawrbox

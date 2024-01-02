@@ -30,6 +30,8 @@ namespace rawrbox {
 		~JSONLoader() override = default;
 
 		std::unique_ptr<rawrbox::Resource> createEntry() override;
+
 		bool canLoad(const std::string& fileExtention) override;
+		bool supportsBuffer() override;
 	};
 } // namespace rawrbox

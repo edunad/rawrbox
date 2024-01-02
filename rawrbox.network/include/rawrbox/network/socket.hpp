@@ -88,12 +88,12 @@ namespace rawrbox {
 
 		bool canRead();
 
-		int receive(unsigned char* buffer, int size, int spos = 0);
-		bool receiveAll(unsigned char* buffer, int size, int spos = 0);
-		int send(const unsigned char* data, int dataSize);
-		bool sendAll(const unsigned char* data, int dataSize);
-		int sendUDP(const unsigned char* buffer, int size, sockaddr_in* to);
-		int receiveUDP(unsigned char* buffer, int size, sockaddr_in* from);
+		int receive(uint8_t* buffer, int size, int spos = 0);
+		bool receiveAll(uint8_t* buffer, int size, int spos = 0);
+		int send(const uint8_t* data, int dataSize);
+		bool sendAll(const uint8_t* data, int dataSize);
+		int sendUDP(const uint8_t* buffer, int size, sockaddr_in* to);
+		int receiveUDP(uint8_t* buffer, int size, sockaddr_in* from);
 		void setTimeout(int miliseconds);
 	};
 } // namespace rawrbox

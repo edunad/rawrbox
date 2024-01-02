@@ -15,6 +15,8 @@ namespace rawrbox {
 
 	public:
 		static void shutdown();
+
+		static bool preLoad(const std::filesystem::path& filename, const std::vector<uint8_t>& buffer);
 		static rawrbox::TextureBase* load(const std::filesystem::path& filename, const rawrbox::Vector2i& size);
 	};
 } // namespace rawrbox

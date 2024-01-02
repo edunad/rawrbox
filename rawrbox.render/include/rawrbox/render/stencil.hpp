@@ -55,7 +55,7 @@ namespace rawrbox {
 		std::vector<rawrbox::PosUVColorVertexData> vertices = {};
 		std::vector<uint32_t> indices = {};
 
-		rawrbox::AABB clip = {};
+		rawrbox::AABBi clip = {};
 		bool cull = true;
 
 		void clear() {
@@ -163,7 +163,7 @@ namespace rawrbox {
 		// ----------
 
 		// Clip handling ----
-		std::vector<rawrbox::AABB> _clips = {};
+		std::vector<rawrbox::AABBi> _clips = {};
 		// ----------
 
 		// Outline handling ----
@@ -247,7 +247,7 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ CLIPPING
-		virtual void pushClipping(const rawrbox::AABB& rect);
+		virtual void pushClipping(const rawrbox::AABBi& rect);
 		virtual void popClipping();
 		// --------------------
 

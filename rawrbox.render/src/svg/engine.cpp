@@ -29,6 +29,21 @@ namespace rawrbox {
 		_renderedSVGS.clear();
 	}
 
+	bool SVGEngine::preLoad(const std::filesystem::path& filename, const std::vector<uint8_t>& buffer) {
+		auto name = filename.generic_string();
+
+		auto fnd = _svgs.find(name);
+		if (fnd != _svgs.end()) return true; // Already loaded
+
+		std::string data = {buffer.begin(), buffer.end()};
+
+		auto svg = lunasvg::Document::loadFromData(data);
+		if (svg == nullptr) return false;
+
+		_svgs[name] = std::move(svg);
+		return true;
+	}
+
 	rawrbox::TextureBase* SVGEngine::load(const std::filesystem::path& filename, const rawrbox::Vector2i& size) {
 		auto id = fmt::format("{}-{}x{}", filename.generic_string(), size.x, size.y);
 		auto fnd = _renderedSVGS.find(id);

@@ -4,6 +4,11 @@
 
 namespace rawrbox {
 	// Resource ----
+
+	bool ResourceSVG::load(const std::vector<uint8_t>& buffer) {
+		return rawrbox::SVGEngine::preLoad(filePath.generic_string(), buffer);
+	}
+
 	rawrbox::TextureBase* ResourceSVG::get(const rawrbox::Vector2i& size, uint32_t /*flags*/) {
 		return rawrbox::SVGEngine::load(filePath.generic_string(), size);
 	}
@@ -18,5 +23,7 @@ namespace rawrbox {
 	bool SVGLoader::canLoad(const std::string& fileExtention) {
 		return fileExtention == ".svg";
 	}
+
+	bool SVGLoader::supportsBuffer() { return true; }
 	// -------
 } // namespace rawrbox

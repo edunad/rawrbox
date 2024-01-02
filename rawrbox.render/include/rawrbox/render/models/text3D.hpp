@@ -23,7 +23,7 @@ namespace rawrbox {
 		void setScaleMul(float mul) { this->_scaleMul = mul; }
 		[[nodiscard]] float getScaleMul() const { return this->_scaleMul; }
 
-		uint32_t addText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White(), rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center, bool billboard = false) {
+		size_t addText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White(), rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center, bool billboard = false) {
 			float screenSize = font.getScale() * this->_scaleMul;
 
 			rawrbox::Vector3f startpos = {};
@@ -52,7 +52,7 @@ namespace rawrbox {
 				}
 			}
 
-			uint32_t id = rawrbox::TEXT_ID++;
+			size_t id = rawrbox::TEXT_ID++;
 			font.render(text, startpos.xy(), true, [this, &font, billboard, pos, startpos, cl, screenSize, id](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
 				rawrbox::Mesh<typename M::vertexBufferType> mesh;
 

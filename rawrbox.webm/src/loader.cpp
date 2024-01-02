@@ -3,28 +3,31 @@
 
 #include <fmt/format.h>
 
+#include <mutex>
+
 namespace rawrbox {
-	WEBM::~WEBM() {
-		this->_reader->Close();
-		this->_reader.reset();
 
-		this->_segment.reset();
+	static std::mutex RENDER_THREAD_LOCK;
+	void WEBM::preloadVideo() {
+		std::lock_guard<std::mutex> lock(RENDER_THREAD_LOCK);
+		fmt::print("[RawrBox-WEBM] Pre-loading video '{}'\n", this->_filePath.generic_string());
 
-		this->_preloadedFrames.clear();
+		while (this->advance()) {
+			auto frame = this->getFrame();
+			if (!frame.valid()) throw std::runtime_error("[RawrBox-WEBM] Failed to find frame");
 
-		this->_cluster = nullptr;
-		this->_blockEntry = nullptr;
-		this->_block = nullptr;
-		this->_video = nullptr;
+			rawrbox::WEBMImage img;
+			if (!rawrbox::WEBMDecoder::decode(frame, img)) throw std::runtime_error("[RawrBox-WEBM] Failed to decode frame");
+			if (!img.valid()) throw std::runtime_error("[RawrBox-WEBM] Failed to decode frame");
+
+			this->_preloadedFrames[frame.pos] = img;
+		}
+
+		this->reset();
 	}
 
-	void WEBM::load(const std::filesystem::path& filePath, uint32_t flags) {
-		this->_flags = flags;
-		this->_filePath = filePath;
-		this->_reader = std::make_unique<mkvparser::MkvReader>();
-
-		if (this->_reader->Open(filePath.string().c_str()))
-			throw std::runtime_error("[RawrBox-WEBM] Filename is invalid or error while opening");
+	void WEBM::internalLoad() {
+		if (this->_reader == nullptr) throw std::runtime_error("[RawrBox-WEBM] Reader not initialized!");
 
 		// Get the file info
 		long long pos = 0;
@@ -90,29 +93,35 @@ namespace rawrbox {
 		// -----
 
 		// Start pre-loading video if flag enabled ----
-		if ((flags & rawrbox::WEBMLoadFlags::PRELOAD) > 0) {
+		if ((this->_flags & rawrbox::WEBMLoadFlags::PRELOAD) > 0) {
 			this->preloadVideo();
 		}
 		// -----
 	}
 
-	static std::mutex RENDER_THREAD_LOCK;
-	void WEBM::preloadVideo() {
-		std::lock_guard<std::mutex> lock(RENDER_THREAD_LOCK);
-		fmt::print("[RawrBox-WEBM] Pre-loading video '{}'\n", this->_filePath.generic_string());
+	WEBM::~WEBM() {
+		this->_reader->Close();
+		this->_reader.reset();
 
-		while (this->advance()) {
-			auto frame = this->getFrame();
-			if (!frame.valid()) throw std::runtime_error("[RawrBox-WEBM] Failed to find frame");
+		this->_segment.reset();
 
-			rawrbox::WEBMImage img;
-			if (!rawrbox::WEBMDecoder::decode(frame, img)) throw std::runtime_error("[RawrBox-WEBM] Failed to decode frame");
-			if (!img.valid()) throw std::runtime_error("[RawrBox-WEBM] Failed to decode frame");
+		this->_preloadedFrames.clear();
 
-			this->_preloadedFrames[frame.pos] = img;
-		}
+		this->_cluster = nullptr;
+		this->_blockEntry = nullptr;
+		this->_block = nullptr;
+		this->_video = nullptr;
+	}
 
-		this->reset();
+	void WEBM::load(const std::filesystem::path& filePath, uint32_t flags) {
+		this->_flags = flags;
+		this->_filePath = filePath;
+		this->_reader = std::make_unique<mkvparser::MkvReader>();
+
+		if (this->_reader->Open(filePath.string().c_str()))
+			throw std::runtime_error("[RawrBox-WEBM] Filename is invalid or error while opening");
+
+		this->internalLoad();
 	}
 
 	bool WEBM::advance() {

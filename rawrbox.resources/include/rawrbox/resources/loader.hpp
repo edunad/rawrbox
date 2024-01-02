@@ -75,6 +75,8 @@ namespace rawrbox {
 		// -----------
 
 		virtual bool canLoad(const std::string& fileExtention) = 0;
+		virtual bool supportsBuffer() = 0;
+
 		virtual std::unique_ptr<rawrbox::Resource> createEntry() = 0;
 	};
 } // namespace rawrbox

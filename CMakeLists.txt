@@ -59,14 +59,14 @@ option(RAWRBOX_DEV_MODE "Builds all modules, used for developing rawrbox" OFF)
 if(RAWRBOX_DEV_MODE)
     message(WARNING "RAWRBOX Dev mode enabled!")
 
-    set(RAWRBOX_BUILD_RAWRBOX_UI ON)
+    #set(RAWRBOX_BUILD_RAWRBOX_UI ON)
     set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
-    set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
-    set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS ON)
-    set(RAWRBOX_BUILD_RAWRBOX_BASS ON)
-    set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
-    #set(RAWRBOX_BUILD_RAWRBOX_WEBM ON)
-    set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
+    #set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
+    #set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS ON)
+    #set(RAWRBOX_BUILD_RAWRBOX_BASS ON)
+    #set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
+    set(RAWRBOX_BUILD_RAWRBOX_WEBM ON)
+    #set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
     #set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING ON)
     set(RAWRBOX_BUILD_QHULL ON)
 endif()
@@ -133,27 +133,6 @@ if(NOT RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME AND RAWRBOX_BUILD_RAWRBOX_3D_PHY
     set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Jolt requires msvc multithreaded runtime
     message(WARNING "JoltPhysics is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
 endif()
-
-#if(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME)
-#    set(CompilerFlags
-#        CMAKE_CXX_FLAGS
-#        CMAKE_CXX_FLAGS_DEBUG
-#        CMAKE_CXX_FLAGS_RELEASE
-#        CMAKE_CXX_FLAGS_MINSIZEREL
-#        CMAKE_CXX_FLAGS_RELWITHDEBINFO
-#        CMAKE_C_FLAGS
-#        CMAKE_C_FLAGS_DEBUG
-#        CMAKE_C_FLAGS_RELEASE
-#        CMAKE_C_FLAGS_MINSIZEREL
-#        CMAKE_C_FLAGS_RELWITHDEBINFO
-#    )
-#
-#    foreach(CompilerFlag ${CompilerFlags})
-#        string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
-#        set(${CompilerFlag} "${${CompilerFlag}}" CACHE STRING "msvc compiler flags" FORCE)
-#        message("MSVC flags: ${CompilerFlag}:${${CompilerFlag}}")
-#    endforeach()
-#endif()
 # -------------------------
 
 # GLOBAL PACKAGES ------
@@ -173,14 +152,14 @@ endif()
 
 CPMAddPackage(
     NAME
-    nlohmann_json
+        nlohmann_json
     VERSION
-    3.11.3
+        3.11.3
     # the git repo is incredibly large, so we download the archived include directory
     URL
-    https://github.com/nlohmann/json/releases/download/v3.11.3/include.zip
+        https://github.com/nlohmann/json/releases/download/v3.11.3/include.zip
     URL_HASH
-    SHA256=a22461d13119ac5c78f205d3df1db13403e58ce1bb1794edc9313677313f4a9d)
+        SHA256=a22461d13119ac5c78f205d3df1db13403e58ce1bb1794edc9313677313f4a9d)
 
 if(nlohmann_json_ADDED)
     add_library(nlohmann_json INTERFACE IMPORTED)
@@ -244,15 +223,15 @@ endif()
 
 add_subdirectory("rawrbox.render")
 
+if(RAWRBOX_BUILD_RAWRBOX_WEBM)
+    message(STATUS "Enabled RAWRBOX.WEBM support")
+    add_subdirectory("rawrbox.webm")
+endif()
+
 if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
     message(STATUS "Enabled RAWRBOX.ASSIMP support")
     add_subdirectory("rawrbox.assimp")
 endif()
-
-#if(RAWRBOX_BUILD_RAWRBOX_WEBM)
-#    message(STATUS "Enabled RAWRBOX.WEBM support")
-#    add_subdirectory("rawrbox.webm")
-#endif()#
 
 if(RAWRBOX_BUILD_RAWRBOX_UI)
     message(STATUS "Enabled RAWRBOX.UI support")
