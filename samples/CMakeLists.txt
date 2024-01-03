@@ -10,7 +10,7 @@ add_subdirectory("002-generated-models")
 add_subdirectory("003-light")
 add_subdirectory("004-instancing")
 add_subdirectory("005-post-process")
-#add_subdirectory("006-decals")
+add_subdirectory("006-decals")
 #add_subdirectory("007-particle-system")
 
 if(RAWRBOX_BUILD_RAWRBOX_UI)

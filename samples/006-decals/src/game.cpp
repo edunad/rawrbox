@@ -1,12 +1,10 @@
 
-
-#include <rawrbox/render_temp/camera/orbital.hpp>
-#include <rawrbox/render_temp/decals/manager.hpp>
-#include <rawrbox/render_temp/light/point.hpp>
-#include <rawrbox/render_temp/materials/lit.hpp>
-#include <rawrbox/render_temp/model/utils/mesh.hpp>
-#include <rawrbox/render_temp/resources/texture.hpp>
-#include <rawrbox/render_temp/static.hpp>
+#include <rawrbox/engine/static.hpp>
+#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -18,46 +16,49 @@
 
 namespace decal_test {
 	void Game::setupGLFW() {
-		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
-		this->_window->setTitle("DECALS TEST");
-		this->_window->setRenderer<>(
-		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
-		this->_window->onIntroCompleted += [this]() {
-			this->loadContent();
-		};
+		auto window = rawrbox::Window::createWindow();
+		window->setMonitor(-1);
+		window->setTitle("DECALS TEST");
+		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
+		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {
-		if (this->_window == nullptr) return;
+		auto window = rawrbox::Window::getWindow();
+
+		// Setup renderer
+		auto render = window->createRenderer();
+		render->skipIntros(true);
+		render->onIntroCompleted = [this]() { this->loadContent(); };
+		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
+			this->drawWorld();
+		});
+		// ---------------
 
 		// Setup camera
-		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		auto cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
 
-		// Setup loaders
+		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
-		// ----------
+		// --------------
 
-		// Setup binds ---
-		this->_window->onKey += [](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
-			if (action != KEY_ACTION_UP) return;
-			if (key == KEY_F1) {
-				rawrbox::RENDERER_DEBUG = rawrbox::RENDERER_DEBUG == rawrbox::RENDER_DEBUG_MODE::DEBUG_OFF ? rawrbox::RENDER_DEBUG_MODE::DEBUG_DECALS : rawrbox::RENDER_DEBUG_MODE::DEBUG_OFF;
-			}
+		// BINDS ----
+		window->onMouseKey += [](auto&, const rawrbox::Vector2i&, int button, int action, int) {
+			const bool isDown = action == 1;
+			if (!isDown || button != MOUSE_BUTTON_1) return;
 		};
-		// ----------
+		// -----
 
-		this->_window->initializeBGFX();
+		render->init();
 	}
 
 	void Game::loadContent() {
 		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("content/textures/decals.png", 64)};
+		    std::make_pair<std::string, uint32_t>("./assets/textures/decals.png", 64)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
@@ -71,9 +72,9 @@ namespace decal_test {
 	}
 
 	void Game::contentLoaded() {
-		rawrbox::DECALS::setAtlasTexture(rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/decals.png")->get());
+		// rawrbox::DECALS::setAtlasTexture(rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/decals.png")->get());
 
-		std::random_device prng;
+		/*std::random_device prng;
 		std::uniform_int_distribution<uint16_t> dist(0, 4);
 		std::uniform_real_distribution<float> distRot(-1.5F, 1.5F);
 
@@ -113,69 +114,39 @@ namespace decal_test {
 		}
 		// ----
 
-		this->_model->upload();
+		this->_model->upload();*/
 		this->_ready = true;
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-		this->_model.reset();
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
+			rawrbox::Window::shutdown();
+		} else {
+			this->_model.reset();
 
-		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
-
-		this->_window->unblockPoll();
-		this->_window.reset();
-	}
-
-	void Game::pollEvents() {
-		if (this->_window == nullptr) return;
-		this->_window->pollEvents();
-	}
-
-	void Game::update() {
-		if (this->_window == nullptr) return;
-		this->_window->update();
-
-		if (this->_ready && this->_model != nullptr) {
-			this->_model->getMesh(2)->setPos({std::sin(rawrbox::BGFX_FRAME * 0.01F) * 0.5F - 1.F, -0.05F, -0.55F - std::cos(rawrbox::BGFX_FRAME * 0.01F) * 0.5F});
+			rawrbox::RESOURCES::shutdown();
+			rawrbox::ASYNC::shutdown();
 		}
 	}
 
-	void Game::printFrames() {
-		const bgfx::Stats* stats = bgfx::getStats();
-
-		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
-		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
-		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
-
-		bgfx::dbgTextPrintf(1, 11, 0x5f, fmt::format("TOTAL DECALS: {}", rawrbox::DECALS::count()).c_str());
-
-		bgfx::dbgTextPrintf(1, 13, 0x1f, "F1 to toggle debug decals");
+	void Game::pollEvents() {
+		rawrbox::Window::pollEvents();
 	}
+
+	void Game::update() {
+		rawrbox::Window::update();
+
+		if (this->_ready && this->_model != nullptr) {
+			this->_model->getMesh(2)->setPos({std::sin(rawrbox::FRAME * 0.01F) * 0.5F - 1.F, -0.05F, -0.55F - std::cos(rawrbox::FRAME * 0.01F) * 0.5F});
+		}
+	}
+
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 		this->_model->draw();
 	}
 
 	void Game::draw() {
-		if (this->_window == nullptr) return;
-
-		// DEBUG ----
-		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "011-decals-test");
-		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: DECALS test");
-		this->printFrames();
-		// -----------
-
-		if (!this->_ready) {
-			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
-			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
-			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
-		}
-
-		this->_window->render(); // Commit primitives
+		rawrbox::Window::render(); // Commit primitives
 	}
 } // namespace decal_test
