@@ -73,6 +73,8 @@ namespace rawrbox {
 		static rawrbox::Matrix4x4 mtxTranspose(rawrbox::Matrix4x4 mtx);
 		static rawrbox::Matrix4x4 mtxInverse(rawrbox::Matrix4x4 mtx);
 
+		static rawrbox::Matrix4x4 mtxSRT(const rawrbox::Vector3f& scale, const rawrbox::Vector4f& rotation, const rawrbox::Vector3f& pos);
+
 		static rawrbox::Matrix4x4 mtxLookAt(const rawrbox::Vector3f& eye, const rawrbox::Vector3f& at, const rawrbox::Vector3f& up);
 		static rawrbox::Matrix4x4 mtxOrtho(float left, float right, float bottom, float top, float near, float far);
 		static rawrbox::Matrix4x4 mtxProj(float FOV, float aspect, float near, float far);

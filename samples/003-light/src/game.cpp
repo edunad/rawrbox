@@ -1,8 +1,8 @@
 
 #include <rawrbox/render/cameras/orbital.hpp>
-#include <rawrbox/render/light/directional.hpp>
-#include <rawrbox/render/light/point.hpp>
-#include <rawrbox/render/light/spot.hpp>
+#include <rawrbox/render/lights/directional.hpp>
+#include <rawrbox/render/lights/point.hpp>
+#include <rawrbox/render/lights/spot.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/plugins/clustered_light.hpp>
 #include <rawrbox/render/resources/font.hpp>

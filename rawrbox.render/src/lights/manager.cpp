@@ -1,6 +1,6 @@
 
 #include <rawrbox/math/utils/math.hpp>
-#include <rawrbox/render/light/manager.hpp>
+#include <rawrbox/render/lights/manager.hpp>
 #include <rawrbox/render/plugins/clustered_light.hpp>
 
 #include <fmt/format.h>
@@ -62,6 +62,10 @@ namespace rawrbox {
 
 	void LIGHTS::shutdown() {
 		RAWRBOX_DESTROY(uniforms);
+
+		_bufferRead = nullptr;
+		_buffer.reset();
+
 		_lights.clear();
 	}
 
@@ -115,7 +119,7 @@ namespace rawrbox {
 	}
 
 	void LIGHTS::bindUniforms() {
-		if (uniforms == nullptr) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
+		if (uniforms == nullptr) throw std::runtime_error("[RawrBox-LIGHT] Buffer not initialized! Did you call 'init' ?");
 		update(); // Update all lights if dirty
 
 		auto renderer = rawrbox::RENDERER;
@@ -136,10 +140,16 @@ namespace rawrbox {
 		    gLightClustersNumZz / std::log(farZ / nearZ),
 		    (gLightClustersNumZz * std::log(nearZ)) / std::log(farZ / nearZ)};
 		// --------------
-	} // namespace rawrbox
+	}
 
 	// UTILS ----
 	void LIGHTS::setEnabled(bool fb) { fullbright = fb; }
+	rawrbox::LightBase* LIGHTS::getLight(size_t indx) {
+		if (indx < 0 || indx >= _lights.size()) return nullptr;
+		return _lights[indx].get();
+	}
+
+	size_t LIGHTS::count() { return _lights.size(); }
 	Diligent::IBufferView* LIGHTS::getBuffer() { return _bufferRead; }
 	// ----
 
@@ -162,7 +172,7 @@ namespace rawrbox {
 	float LIGHTS::getFogEnd() { return _fog_end; }
 	// ---------
 
-	// Light ----
+	// LIGHT ----
 	bool LIGHTS::removeLight(size_t indx) {
 		if (indx > _lights.size()) return false;
 
@@ -172,28 +182,17 @@ namespace rawrbox {
 	}
 
 	bool LIGHTS::removeLight(rawrbox::LightBase* light) {
-		bool removed = false;
+		if (light == nullptr || _lights.empty()) return false;
 
-		if (light == nullptr || _lights.empty()) return removed;
 		for (size_t i = 0; i < _lights.size(); i++) {
 			if (_lights[i].get() == light) {
 				_lights.erase(_lights.begin() + i);
-				removed = true;
+				rawrbox::__LIGHT_DIRTY__ = true;
 				break;
 			}
 		}
 
-		rawrbox::__LIGHT_DIRTY__ = true;
-		return removed;
-	}
-
-	rawrbox::LightBase* LIGHTS::getLight(size_t indx) {
-		if (indx < 0 || indx >= _lights.size()) return nullptr;
-		return _lights[indx].get();
-	}
-
-	size_t LIGHTS::count() {
-		return _lights.size();
+		return true;
 	}
 	// ---------
 

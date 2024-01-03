@@ -35,7 +35,6 @@ namespace rawrbox {
 		// --------------
 
 		std::unique_ptr<rawrbox::TextureRender> _render = nullptr;
-		std::unique_ptr<rawrbox::TextureRender> _decals = nullptr;
 
 // QUERIES ---
 #ifdef _DEBUG

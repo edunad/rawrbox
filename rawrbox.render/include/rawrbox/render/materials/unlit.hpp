@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/materials/base.hpp>
 
 namespace rawrbox {
@@ -54,6 +55,8 @@ namespace rawrbox {
 			handle->SetSampler(textureColor->getSampler());
 
 			this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(handle);
+			this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_DecalTexture")->Set(rawrbox::DECALS::getAtlas()->getHandle());
+
 			this->_bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Displacement")->Set(textureDisplacement->getHandle());
 		}
 

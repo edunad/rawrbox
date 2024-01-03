@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/light/base.hpp>
+#include <rawrbox/render/lights/base.hpp>
 #include <rawrbox/render/static.hpp>
 
 #include <DynamicBuffer.hpp>
@@ -10,6 +10,11 @@
 #include <vector>
 
 namespace rawrbox {
+
+	enum class FOG_TYPE {
+		FOG_LINEAR = 0,
+		FOG_EXP = 1
+	};
 
 	struct LightDataVertex {
 		rawrbox::Vector4f position = {};
@@ -22,11 +27,6 @@ namespace rawrbox {
 		float umbra = 0.F;
 
 		rawrbox::LightType type = rawrbox::LightType::UNKNOWN;
-	};
-
-	enum class FOG_TYPE {
-		FOG_LINEAR = 0,
-		FOG_EXP = 1
 	};
 
 	struct LightConstants {
@@ -73,6 +73,10 @@ namespace rawrbox {
 
 		// UTILS ----
 		static void setEnabled(bool fb);
+
+		static rawrbox::LightBase* getLight(size_t indx);
+		static size_t count();
+
 		static Diligent::IBufferView* getBuffer();
 
 		// FOG
@@ -101,11 +105,6 @@ namespace rawrbox {
 
 		static bool removeLight(size_t indx);
 		static bool removeLight(rawrbox::LightBase* light);
-		// ---------
-
-		// Light utils ----
-		static rawrbox::LightBase* getLight(size_t indx);
-		static size_t count();
 		// ---------
 	};
 } // namespace rawrbox

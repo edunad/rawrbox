@@ -1,6 +1,7 @@
 
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
@@ -17,7 +18,7 @@
 namespace decal_test {
 	void Game::setupGLFW() {
 		auto window = rawrbox::Window::createWindow();
-		window->setMonitor(-1);
+		window->setMonitor(1);
 		window->setTitle("DECALS TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
 		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
@@ -72,23 +73,23 @@ namespace decal_test {
 	}
 
 	void Game::contentLoaded() {
-		// rawrbox::DECALS::setAtlasTexture(rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/decals.png")->get());
+		rawrbox::DECALS::setAtlas(rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/decals.png")->get());
 
-		/*std::random_device prng;
+		std::random_device prng;
 		std::uniform_int_distribution<uint16_t> dist(0, 4);
 		std::uniform_real_distribution<float> distRot(-1.5F, 1.5F);
 
 		for (int i = 0; i < 30; i++) {
-			rawrbox::DECALS::add({distRot(prng), 0.F, distRot(prng) - 1.55F}, {1, 1, 1}, 90, rawrbox::Colors::Green(), dist(prng));
-			rawrbox::DECALS::add({distRot(prng), distRot(prng) + 1.25F, 0.F}, {1, 1, 1}, 0, rawrbox::Colors::Red(), dist(prng));
+			rawrbox::Matrix4x4 mtx = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({rawrbox::MathUtils::toRad(90), 0, 0}), {distRot(prng), 0.F, distRot(prng) - 1.55F});
+			rawrbox::DECALS::add(mtx, dist(prng), rawrbox::Colors::Green());
+
+			rawrbox::Matrix4x4 mtx2 = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, {}, {distRot(prng), distRot(prng) + 1.25F, 0.F});
+			rawrbox::DECALS::add(mtx2, dist(prng), rawrbox::Colors::Red());
 		}
 
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, -1.F}, rawrbox::Colors::White() * 0.5F, 5.F);
+		// rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, -1.F}, rawrbox::Colors::White() * 0.5F, 5.F);
 
 		// Setup
-		this->_model->setOptimizable(false);
-		this->_model->setMaterial<rawrbox::MaterialLit>();
-
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({0, 1.0F, 0}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray());
 			mesh.setRecieveDecals(true);
@@ -96,7 +97,7 @@ namespace decal_test {
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generateCube({0, 0.0F, -1.F}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray());
+			auto mesh = rawrbox::MeshUtils::generateCube({0, -1.0F, 0.F}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray());
 			mesh.setRecieveDecals(true);
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 
@@ -105,6 +106,8 @@ namespace decal_test {
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateSphere({0.F, 0.F, -1.F}, 0.5F);
+			mesh.setOptimizable(false);
+
 			this->_model->addMesh(mesh);
 		}
 
@@ -114,7 +117,7 @@ namespace decal_test {
 		}
 		// ----
 
-		this->_model->upload();*/
+		this->_model->upload();
 		this->_ready = true;
 	}
 

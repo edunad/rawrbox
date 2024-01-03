@@ -2,7 +2,7 @@
 
 #include <rawrbox/math/bbox.hpp>
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/light/types.hpp>
+#include <rawrbox/render/lights/types.hpp>
 #include <rawrbox/render/models/animation.hpp>
 #include <rawrbox/render/models/skeleton.hpp>
 #include <rawrbox/render/models/vertex.hpp>

@@ -47,6 +47,8 @@ struct VSInput {
 
 struct PSInput {
     float4 Pos                      : SV_POSITION;
+    float4 WorldPos                 : POSITION1;
+
     float2 UV                       : TEX_COORD;
     float4 Color                    : COLOR0;
 
@@ -69,6 +71,7 @@ void main(in VSInput VSIn, out PSInput PSIn) {
     #endif
 
     PSIn.Pos          = transform.final;
+    PSIn.WorldPos     = mul(transform.pos, g_world);
     PSIn.UV           = applyUVTransform(VSIn.UV.xy);
 
     #ifdef INSTANCED

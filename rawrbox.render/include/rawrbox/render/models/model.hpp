@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rawrbox/engine/static.hpp>
-#include <rawrbox/render/light/manager.hpp>
+#include <rawrbox/render/lights/manager.hpp>
 #include <rawrbox/render/models/animation.hpp>
 #include <rawrbox/render/models/base.hpp>
 #include <rawrbox/render/models/skeleton.hpp>
@@ -344,9 +344,9 @@ namespace rawrbox {
 				parent->lights.push_back(light);
 
 				return dynamic_cast<T*>(light);
+			} else {
+				return nullptr;
 			}
-
-			return nullptr;
 		}
 		// -----
 

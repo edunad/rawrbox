@@ -1,5 +1,5 @@
 #pragma once
-#include <rawrbox/render/light/base.hpp>
+#include <rawrbox/render/lights/base.hpp>
 
 namespace rawrbox {
 	class PointLight : public rawrbox::LightBase {

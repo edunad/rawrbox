@@ -1,4 +1,4 @@
-#include <rawrbox/render/light/point.hpp>
+#include <rawrbox/render/lights/point.hpp>
 
 namespace rawrbox {
 	rawrbox::LightType PointLight::getType() const { return LightType::POINT; };

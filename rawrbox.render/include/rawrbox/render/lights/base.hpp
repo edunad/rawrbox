@@ -3,7 +3,7 @@
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/render/light/types.hpp>
+#include <rawrbox/render/lights/types.hpp>
 
 #include <fmt/format.h>
 

@@ -23,10 +23,7 @@
 	#include <EngineFactoryMtl.h>
 #endif
 
-#include <rawrbox/render/materials/base.hpp>
-#include <rawrbox/render/materials/instanced.hpp>
-#include <rawrbox/render/materials/skinned.hpp>
-#include <rawrbox/render/materials/text.hpp>
+#include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/text/engine.hpp>
@@ -36,11 +33,12 @@
 #include <rawrbox/utils/threading.hpp>
 
 namespace rawrbox {
-	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& screenSize, const rawrbox::Colorf& clearColor) : _window(window), _type(type), _size(size), _monitorSize(screenSize), _clearColor(clearColor.toLinear()) {}
+	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& screenSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor.toLinear()), _size(size), _monitorSize(screenSize), _window(window), _type(type) {}
 	RendererBase::~RendererBase() {
+		rawrbox::DECALS::shutdown();
+
 		this->_render.reset();
 		this->_stencil.reset();
-		this->_decals.reset();
 
 		RAWRBOX_DESTROY(this->_device);
 		RAWRBOX_DESTROY(this->_context);
@@ -210,17 +208,15 @@ namespace rawrbox {
 		this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
 		// --------
 
-		// Setup decals --
-		this->_decals = std::make_unique<rawrbox::TextureRender>(this->getSize()); // TODO: RESCALE
-		this->_decals->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
-		//  rawrbox::DECALS::init();
-		// --------
-
 		// PLUGIN INITIALIZE ---
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr) continue;
 			plugin.second->initialize(this->getSize());
 		}
+		// -----------------------
+
+		// Initialize light & decals engine
+		rawrbox::DECALS::init();
 		// -----------------------
 
 		this->playIntro();
@@ -295,7 +291,11 @@ namespace rawrbox {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 			plugin.second->preRender();
 		}
-// -----------------------
+		// -----------------------
+
+		// Setup decal uniforms --
+		rawrbox::DECALS::bindUniforms();
+		// ----------------
 
 // Perform world --
 #ifdef _DEBUG
@@ -320,7 +320,6 @@ namespace rawrbox {
 
 		// Render world ----
 		rawrbox::RenderUtils::renderQUAD(this->_render->getHandle());
-		// rawrbox::RenderUtils::drawQUAD(this->_decals->getHandle(), this->_size, true, BGFX_STATE_BLEND_ALPHA);
 		// ------------------
 
 		// Perform overlay --

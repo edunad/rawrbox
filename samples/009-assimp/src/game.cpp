@@ -1,7 +1,7 @@
 #include <rawrbox/assimp/importer.hpp>
 #include <rawrbox/assimp/resources/model.hpp>
 #include <rawrbox/render/cameras/orbital.hpp>
-#include <rawrbox/render/light/point.hpp>
+#include <rawrbox/render/lights/point.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/plugins/clustered_light.hpp>
 #include <rawrbox/render/resources/font.hpp>

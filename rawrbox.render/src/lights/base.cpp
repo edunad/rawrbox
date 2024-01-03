@@ -1,4 +1,4 @@
-#include <rawrbox/render/light/manager.hpp>
+#include <rawrbox/render/lights/manager.hpp>
 
 #ifdef RAWRBOX_SCRIPTING
 	#include <rawrbox/scripting/scripting.hpp>

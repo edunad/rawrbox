@@ -1,4 +1,4 @@
-#include <rawrbox/render/light/manager.hpp>
+#include <rawrbox/render/lights/manager.hpp>
 #include <rawrbox/render/materials/instancedLit.hpp>
 #include <rawrbox/render/plugins/clustered_light.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>

@@ -2,9 +2,9 @@
 
 #include <rawrbox/assimp/importer.hpp>
 #include <rawrbox/assimp/utils/model.hpp>
-#include <rawrbox/render/light/directional.hpp>
-#include <rawrbox/render/light/point.hpp>
-#include <rawrbox/render/light/spot.hpp>
+#include <rawrbox/render/lights/directional.hpp>
+#include <rawrbox/render/lights/point.hpp>
+#include <rawrbox/render/lights/spot.hpp>
 #include <rawrbox/render/models/model.hpp>
 
 namespace rawrbox {
