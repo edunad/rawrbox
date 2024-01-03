@@ -1,3 +1,4 @@
+// Based off https://github.com/simco50/D3D12_Research <3
 
 #ifdef LIGHT_UNIFORMS
 #ifdef READ_LIGHTS
