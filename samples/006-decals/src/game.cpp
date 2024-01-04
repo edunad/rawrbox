@@ -18,7 +18,7 @@
 namespace decal_test {
 	void Game::setupGLFW() {
 		auto window = rawrbox::Window::createWindow();
-		window->setMonitor(1);
+		window->setMonitor(-1);
 		window->setTitle("DECALS TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
 		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
