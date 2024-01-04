@@ -27,28 +27,29 @@ namespace rawrbox {
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
 		settings.pVS = "unlit.vsh";
+
 		settings.pPS = "unlit.psh";
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = helper;
 		settings.layout = layout;
 		settings.immutableSamplers = {
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Texture"},
-		    {Diligent::SHADER_TYPE_PIXEL, "g_DecalTexture"},
+		    // {Diligent::SHADER_TYPE_PIXEL, "g_DecalTexture"},
 		    {Diligent::SHADER_TYPE_VERTEX, "g_Displacement"}};
 
 		settings.resources = {
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 
-		    {Diligent::SHADER_TYPE_PIXEL, "g_DecalTexture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Decals", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    //{Diligent::SHADER_TYPE_PIXEL, "g_DecalTexture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+		    //{Diligent::SHADER_TYPE_PIXEL, "g_Decals", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
 		    {Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		};
 		settings.uniforms = {
 		    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
 
-		    {Diligent::SHADER_TYPE_PIXEL, rawrbox::DECALS::uniforms, "Decals"},
-		    {Diligent::SHADER_TYPE_PIXEL, rawrbox::DECALS::getBuffer(), "g_Decals"},
+		    //   {Diligent::SHADER_TYPE_PIXEL, rawrbox::DECALS::uniforms, "Decals"},
+		    // {Diligent::SHADER_TYPE_PIXEL, rawrbox::DECALS::getBuffer(), "g_Decals"},
 
 		    {Diligent::SHADER_TYPE_VERTEX, uniforms, "Constants"}
 

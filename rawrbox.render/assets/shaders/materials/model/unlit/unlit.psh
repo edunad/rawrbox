@@ -1,4 +1,3 @@
-#include <decals.fxh>
 
 Texture2DArray g_Texture;
 SamplerState   g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
@@ -21,7 +20,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     float4 color = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
     if (color.a <= 0.0) discard;
 
-    float4 roughtness = 0;
-    ApplyDecals(PSIn.WorldPos, color, roughtness);
+    /*float4 roughtness = 0;
+    ApplyDecals(PSIn.WorldPos, color, roughtness);*/
     PSOut.Color = color;
 }

@@ -14,10 +14,6 @@
         float4 g_FogColor;
         float4 g_FogSettings;
         // -----
-
-        // GRID ---
-        float4  g_LightGridParams;
-        // -----
     };
 
     struct Light {
@@ -48,5 +44,4 @@
     #define LIGHT_DIRECTIONAL 3
 
     #define TOTAL_LIGHTS g_LightSettings.y
-    #define LIGHT_UNIFORMS
 #endif

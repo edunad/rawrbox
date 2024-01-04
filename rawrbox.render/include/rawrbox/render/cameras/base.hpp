@@ -29,6 +29,8 @@ namespace rawrbox {
 
 		rawrbox::Vector4f gPos = {};
 		rawrbox::Vector4f gAngle = {};
+
+		rawrbox::Vector4f gGridParams = {};
 	};
 
 	class CameraBase {

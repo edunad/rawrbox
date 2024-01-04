@@ -1,16 +1,18 @@
 #include <rawrbox/math/utils/math.hpp>
+#include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/lights/manager.hpp>
-#include <rawrbox/render/plugins/clustered_light.hpp>
+#include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/render.hpp>
 
 namespace rawrbox {
-	uint32_t ClusteredLightPlugin::CLUSTERS_X = 0;
-	uint32_t ClusteredLightPlugin::CLUSTERS_Y = 0;
-	uint32_t ClusteredLightPlugin::GROUP_SIZE = 0;
+	uint32_t ClusteredPlugin::CLUSTERS_X = 0;
+	uint32_t ClusteredPlugin::CLUSTERS_Y = 0;
+	uint32_t ClusteredPlugin::GROUP_SIZE = 0;
 
-	ClusteredLightPlugin::~ClusteredLightPlugin() {
+	ClusteredPlugin::~ClusteredPlugin() {
 		rawrbox::LIGHTS::shutdown(); // Shutdown light system
+		rawrbox::DECALS::shutdown(); // Shutdown decal system
 
 		RAWRBOX_DESTROY(this->_clusterBuffer);
 		RAWRBOX_DESTROY(this->_clusterBufferWrite);
@@ -21,9 +23,9 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_dataGridBufferRead);
 	}
 
-	const std::string ClusteredLightPlugin::getID() const { return "Clustered::Light"; }
+	const std::string ClusteredPlugin::getID() const { return "Clustered::Light"; }
 
-	void ClusteredLightPlugin::requirements(Diligent::DeviceFeatures& features) {
+	void ClusteredPlugin::requirements(Diligent::DeviceFeatures& features) {
 		// Enable required features --------------------------
 		features.ComputeShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
@@ -31,7 +33,7 @@ namespace rawrbox {
 		// ---------------------------------------------------
 	}
 
-	void ClusteredLightPlugin::initialize(const rawrbox::Vector2i& renderSize) {
+	void ClusteredPlugin::initialize(const rawrbox::Vector2i& renderSize) {
 		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, CLUSTER_TEXTEL_SIZE);
 		CLUSTERS_Y = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.y, CLUSTER_TEXTEL_SIZE);
 
@@ -42,13 +44,14 @@ namespace rawrbox {
 
 		// Initialize light engine
 		rawrbox::LIGHTS::init();
+		rawrbox::DECALS::init();
 		// -----------------------
 
 		this->buildBuffers();
 		this->buildPipelines();
 	}
 
-	void ClusteredLightPlugin::resize(const rawrbox::Vector2i& renderSize) {
+	void ClusteredPlugin::resize(const rawrbox::Vector2i& renderSize) {
 		// Re-calculate clusters ----
 		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, CLUSTER_TEXTEL_SIZE);
 		CLUSTERS_Y = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.y, CLUSTER_TEXTEL_SIZE);
@@ -59,7 +62,7 @@ namespace rawrbox {
 		this->_oldProj = {}; // Re-build clusters
 	}
 
-	void ClusteredLightPlugin::preRender() {
+	void ClusteredPlugin::preRender() {
 		auto renderer = rawrbox::RENDERER;
 		if (renderer == nullptr) throw std::runtime_error("[RawrBox-ClusteredLight] Renderer not initialized!");
 		if (this->_clusterBuildingComputeProgram == nullptr || this->_lightCullingComputeBind == nullptr) throw std::runtime_error("[RawrBox-ClusteredLight] Compute pipelines not initialized, did you call 'initialize'");
@@ -67,8 +70,9 @@ namespace rawrbox {
 		auto camera = renderer->camera();
 		auto context = renderer->context();
 
-		// Setup light uniforms
+		// Setup uniforms
 		rawrbox::LIGHTS::bindUniforms();
+		rawrbox::DECALS::bindUniforms();
 		// ------------
 
 		// Only rebuild cluster if view changed
@@ -102,7 +106,7 @@ namespace rawrbox {
 		// ----------------------
 	}
 
-	void ClusteredLightPlugin::buildBuffers() {
+	void ClusteredPlugin::buildBuffers() {
 		auto device = rawrbox::RENDERER->device();
 
 		// Clusters  --
@@ -125,7 +129,7 @@ namespace rawrbox {
 		// Data grid ---
 		{
 			Diligent::BufferDesc BuffDesc;
-			BuffDesc.ElementByteStride = sizeof(uint32_t);
+			BuffDesc.ElementByteStride = sizeof(std::array<uint32_t, 2>);
 			BuffDesc.Mode = Diligent::BUFFER_MODE_FORMATTED;
 			BuffDesc.Name = "rawrbox::Cluster::ClusterDataGrid";
 			BuffDesc.Size = BuffDesc.ElementByteStride * (rawrbox::MAX_LIGHTS_PER_CLUSTER / rawrbox::CLUSTERS_Z * GROUP_SIZE);
@@ -136,7 +140,7 @@ namespace rawrbox {
 			Diligent::BufferViewDesc ViewDesc;
 			ViewDesc.ViewType = Diligent::BUFFER_VIEW_UNORDERED_ACCESS;
 			ViewDesc.Format.ValueType = Diligent::VT_UINT32;
-			ViewDesc.Format.NumComponents = 1;
+			ViewDesc.Format.NumComponents = 2;
 
 			this->_dataGridBuffer->CreateView(ViewDesc, &this->_dataGridBufferWrite); // Write / Read
 
@@ -146,7 +150,7 @@ namespace rawrbox {
 		// ------------------
 	}
 
-	void ClusteredLightPlugin::buildPipelines() {
+	void ClusteredPlugin::buildPipelines() {
 		// Load shader programs ---
 		rawrbox::PipeComputeSettings settings;
 		settings.macros = this->getClusterMacros();
@@ -167,18 +171,24 @@ namespace rawrbox {
 		settings.resources = {
 		    {Diligent::SHADER_TYPE_COMPUTE, "Camera", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 		    {Diligent::SHADER_TYPE_COMPUTE, "LightConstants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    {Diligent::SHADER_TYPE_COMPUTE, "DecalConstants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
 		    {Diligent::SHADER_TYPE_COMPUTE, "g_ClusterDataGrid", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 		    {Diligent::SHADER_TYPE_COMPUTE, "g_Clusters", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    {Diligent::SHADER_TYPE_COMPUTE, "g_Lights", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC}};
+
+		    {Diligent::SHADER_TYPE_COMPUTE, "g_Lights", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    {Diligent::SHADER_TYPE_COMPUTE, "g_Decals", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC}};
 
 		settings.uniforms = {
 		    {Diligent::SHADER_TYPE_COMPUTE, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
 		    {Diligent::SHADER_TYPE_COMPUTE, rawrbox::LIGHTS::uniforms, "LightConstants"},
+		    {Diligent::SHADER_TYPE_COMPUTE, rawrbox::DECALS::uniforms, "DecalConstants"},
 
 		    {Diligent::SHADER_TYPE_COMPUTE, this->_dataGridBufferWrite, "g_ClusterDataGrid"},
 		    {Diligent::SHADER_TYPE_COMPUTE, this->_clusterBufferRead, "g_Clusters"},
+
 		    {Diligent::SHADER_TYPE_COMPUTE, rawrbox::LIGHTS::getBuffer(), "g_Lights"},
+		    {Diligent::SHADER_TYPE_COMPUTE, rawrbox::DECALS::getBuffer(), "g_Decals"},
 		};
 
 		settings.pCS = "cluster_cull.csh";
@@ -188,7 +198,7 @@ namespace rawrbox {
 	}
 
 	// UTILS ----
-	Diligent::ShaderMacroHelper ClusteredLightPlugin::getClusterMacros() {
+	Diligent::ShaderMacroHelper ClusteredPlugin::getClusterMacros() {
 		Diligent::ShaderMacroHelper macro;
 
 		macro.AddShaderMacro("THREAD_GROUP_SIZE", rawrbox::THREAD_GROUP_SIZE);
@@ -201,13 +211,37 @@ namespace rawrbox {
 		macro.AddShaderMacro("CLUSTERS_Z", rawrbox::CLUSTERS_Z);
 		macro.AddShaderMacro("MAX_LIGHTS_PER_CLUSTER", rawrbox::MAX_LIGHTS_PER_CLUSTER);
 		macro.AddShaderMacro("CLUSTER_TEXTEL_SIZE", rawrbox::CLUSTER_TEXTEL_SIZE);
-		macro.AddShaderMacro("CLUSTERED_LIGHTING_NUM_BUCKETS", rawrbox::CLUSTERED_LIGHTING_NUM_BUCKETS);
+		macro.AddShaderMacro("CLUSTERED_NUM_BUCKETS", rawrbox::CLUSTERED_NUM_BUCKETS);
 
 		return macro;
 	}
 
-	Diligent::IBufferView* ClusteredLightPlugin::getClustersBuffer(bool readOnly) { return readOnly ? this->_clusterBufferRead : this->_clusterBufferWrite; }
-	Diligent::IBufferView* ClusteredLightPlugin::getDataGridBuffer(bool readOnly) { return readOnly ? this->_dataGridBufferRead : this->_dataGridBufferWrite; }
+	Diligent::IBufferView* ClusteredPlugin::getClustersBuffer(bool readOnly) { return readOnly ? this->_clusterBufferRead : this->_clusterBufferWrite; }
+	Diligent::IBufferView* ClusteredPlugin::getDataGridBuffer(bool readOnly) { return readOnly ? this->_dataGridBufferRead : this->_dataGridBufferWrite; }
+
+	void ClusteredPlugin::applyPipelineSettings(rawrbox::PipeSettings& settings, bool light) {
+		// RESOURCES ----------
+		settings.resources.emplace_back(Diligent::SHADER_TYPE_PIXEL, "g_ClusterDataGrid", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+
+		if (light) {
+			settings.resources.emplace_back(Diligent::SHADER_TYPE_PIXEL, "g_Lights", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+			settings.resources.emplace_back(Diligent::SHADER_TYPE_PIXEL, "LightConstants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+		}
+
+		settings.resources.emplace_back(Diligent::SHADER_TYPE_PIXEL, "g_Decals", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+		// -------------------
+
+		// UNIFORMS ----------
+		settings.uniforms.emplace_back(Diligent::SHADER_TYPE_PIXEL, this->getDataGridBuffer(), "g_ClusterDataGrid");
+
+		if (light) {
+			settings.uniforms.emplace_back(Diligent::SHADER_TYPE_PIXEL, rawrbox::LIGHTS::uniforms, "LightConstants");
+			settings.uniforms.emplace_back(Diligent::SHADER_TYPE_PIXEL, rawrbox::LIGHTS::getBuffer(), "g_Lights");
+		}
+
+		settings.uniforms.emplace_back(Diligent::SHADER_TYPE_PIXEL, rawrbox::DECALS::getBuffer(), "g_Decals");
+		// -------------------
+	}
 	// ----------
 
 } // namespace rawrbox

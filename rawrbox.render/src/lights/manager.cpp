@@ -1,7 +1,7 @@
 
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/lights/manager.hpp>
-#include <rawrbox/render/plugins/clustered_light.hpp>
+#include <rawrbox/render/plugins/clustered.hpp>
 
 #include <fmt/format.h>
 
@@ -122,24 +122,12 @@ namespace rawrbox {
 		if (uniforms == nullptr) throw std::runtime_error("[RawrBox-LIGHT] Buffer not initialized! Did you call 'init' ?");
 		update(); // Update all lights if dirty
 
-		auto renderer = rawrbox::RENDERER;
-		auto camera = renderer->camera();
 		Diligent::MapHelper<rawrbox::LightConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 
 		CBConstants->g_LightSettings = {fullbright ? 1U : 0U, static_cast<uint32_t>(rawrbox::LIGHTS::count()), 0, 0}; // other light settings
 		CBConstants->g_AmbientColor = _ambient;
 		CBConstants->g_FogColor = _fog_color;
 		CBConstants->g_FogSettings = {static_cast<float>(_fog_type), _fog_end, _fog_density, 0.F};
-
-		// Setup light grid ----
-		float nearZ = camera->getZNear();
-		float farZ = camera->getZFar();
-		auto gLightClustersNumZz = static_cast<float>(rawrbox::CLUSTERS_Z);
-
-		CBConstants->g_LightGridParams = {
-		    gLightClustersNumZz / std::log(farZ / nearZ),
-		    (gLightClustersNumZz * std::log(nearZ)) / std::log(farZ / nearZ)};
-		// --------------
 	}
 
 	// UTILS ----

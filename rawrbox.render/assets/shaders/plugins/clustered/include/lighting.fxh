@@ -1,6 +1,6 @@
 // Based off https://github.com/simco50/D3D12_Research <3
 
-#ifdef LIGHT_UNIFORMS
+#ifdef INCLUDED_LIGHT_UNIFORMS
 #ifdef READ_LIGHTS
 #ifdef READ_CLUSTER_DATA_GRID
 
@@ -86,10 +86,6 @@
 		float3 F_Schlick(float3 f0, float3 f90, float VdotH) {
 			float Fc = Pow5(1.0f - VdotH);
 			return f90 * Fc + (1.0f - Fc) * f0;
-		}
-
-        uint GetSliceFromDepth(float depth) {
-			return floor(log(depth) * g_LightGridParams.x - g_LightGridParams.y);
 		}
 
         // 0.08 is a max F0 we define for dielectrics which matches with Crystalware and gems (0.05 - 0.08)
@@ -179,46 +175,34 @@
             }
         }
 
-        LightResult ApplyLight(float3 specular, float R, float3 diffuse, float3 N, float3 V, float3 worldPos, float4 pos, float dither) {
-            LightResult lighting = (LightResult)0;
+        void ApplyLight(uint lightBucket, uint bucketIndex, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 V, float3 worldPos, float dither) {
+            uint bucket = lightBucket;
 
             if(g_LightSettings.x == 1.0) {
                 lighting.Diffuse = diffuse;  // FULL BRIGHT
-                return lighting;
             } else {
-                uint3 clusterIndex3D = uint3(floor(pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(pos.w));
-                uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
-                uint lightGridOffset = tileIndex * CLUSTERED_LIGHTING_NUM_BUCKETS;
+                while(bucket) {
+                    uint bitIndex = firstbitlow(bucket);
+                    bucket ^= 1u << bitIndex;
 
-                for(uint bucketIndex = 0; bucketIndex < CLUSTERED_LIGHTING_NUM_BUCKETS; ++bucketIndex) {
-                    uint bucket = g_ClusterDataGrid[lightGridOffset + bucketIndex];
+                    // Apply light ------------
+                    Light light = g_Lights[bitIndex + bucketIndex * CLUSTERS_Z];
 
-                    while(bucket) {
-                        uint bitIndex = firstbitlow(bucket);
-                        bucket ^= 1u << bitIndex;
+                    float3 L;
+                    float attenuation = GetAttenuation(light, worldPos, L);
 
-                        uint lightIndex = bitIndex + bucketIndex * CLUSTERS_Z;
-                        Light light = g_Lights[lightIndex];
+                    if(attenuation > 0.0F) {
+                        LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
 
-                        // Apply light ------------
-                        float3 L;
-                        float attenuation = GetAttenuation(light, worldPos, L);
-
-                        if(attenuation > 0.0F) {
-                            LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
-
-                            lighting.Diffuse += result.Diffuse * light.color * light.intensity;
-                            lighting.Specular += result.Specular * light.color * light.intensity;
-                        }
-                        // ------------------------
+                        lighting.Diffuse += result.Diffuse * light.color * light.intensity;
+                        lighting.Specular += result.Specular * light.color * light.intensity;
                     }
+                    // ------------------------
                 }
 
                 // AMBIENT LIGHT ---
                 lighting.Diffuse *= g_AmbientColor.rgb;
                 // -----------------
-
-                return lighting;
             }
         }
 

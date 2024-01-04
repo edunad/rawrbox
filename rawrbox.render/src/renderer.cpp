@@ -23,7 +23,6 @@
 	#include <EngineFactoryMtl.h>
 #endif
 
-#include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/text/engine.hpp>
@@ -35,8 +34,6 @@
 namespace rawrbox {
 	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& screenSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor.toLinear()), _size(size), _monitorSize(screenSize), _window(window), _type(type) {}
 	RendererBase::~RendererBase() {
-		rawrbox::DECALS::shutdown();
-
 		this->_render.reset();
 		this->_stencil.reset();
 
@@ -215,10 +212,6 @@ namespace rawrbox {
 		}
 		// -----------------------
 
-		// Initialize light & decals engine
-		rawrbox::DECALS::init();
-		// -----------------------
-
 		this->playIntro();
 		this->_initialized = true;
 	}
@@ -292,10 +285,6 @@ namespace rawrbox {
 			plugin.second->preRender();
 		}
 		// -----------------------
-
-		// Setup decal uniforms --
-		rawrbox::DECALS::bindUniforms();
-		// ----------------
 
 // Perform world --
 #ifdef _DEBUG

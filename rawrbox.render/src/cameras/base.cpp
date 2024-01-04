@@ -1,5 +1,6 @@
 
 #include <rawrbox/render/cameras/base.hpp>
+#include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/static.hpp>
 
 #include <stdexcept>
@@ -121,6 +122,16 @@ namespace rawrbox {
 		CBConstants->gPos = this->getPos();
 		CBConstants->gAngle = this->getAngle();
 		// ------------
+
+		// Setup grid ----
+		float nearZ = this->getZNear();
+		float farZ = this->getZFar();
+		auto gLightClustersNumZz = static_cast<float>(rawrbox::CLUSTERS_Z);
+
+		CBConstants->gGridParams = {
+		    gLightClustersNumZz / std::log(farZ / nearZ),
+		    (gLightClustersNumZz * std::log(nearZ)) / std::log(farZ / nearZ)};
+		// --------------
 	}
 
 	void CameraBase::update() {}

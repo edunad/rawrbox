@@ -42,8 +42,6 @@ namespace rawrbox {
 		rawrbox::Colorf g_FogColor = {};
 		rawrbox::Vector4f g_FogSettings = {};
 		// --------
-
-		rawrbox::Vector4f g_LightGridParams = {};
 	};
 
 	class LIGHTS {

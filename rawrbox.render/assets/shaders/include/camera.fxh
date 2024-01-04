@@ -21,5 +21,9 @@
 
         float4   g_cameraPos;
         float4   g_cameraAngle;
+
+        // GRID ---
+        float4   g_gridParams;
+        // -----
     };
 #endif

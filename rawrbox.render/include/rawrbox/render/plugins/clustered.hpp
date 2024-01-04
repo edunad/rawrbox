@@ -14,7 +14,8 @@ namespace rawrbox {
 	static constexpr uint32_t CLUSTERS_Z = 32;
 
 	static constexpr uint32_t MAX_LIGHTS_PER_CLUSTER = 256;
-	static constexpr uint32_t CLUSTERED_LIGHTING_NUM_BUCKETS = MAX_LIGHTS_PER_CLUSTER / CLUSTERS_Z;
+
+	static constexpr uint32_t CLUSTERED_NUM_BUCKETS = MAX_LIGHTS_PER_CLUSTER / CLUSTERS_Z;
 
 	static constexpr uint32_t CLUSTERS_X_THREADS = 4;
 	static constexpr uint32_t CLUSTERS_Y_THREADS = 4;
@@ -27,7 +28,7 @@ namespace rawrbox {
 		rawrbox::Vector4f maxBounds = {};
 	};
 
-	class ClusteredLightPlugin : public rawrbox::RenderPlugin {
+	class ClusteredPlugin : public rawrbox::RenderPlugin {
 	protected:
 		Diligent::IPipelineState* _clusterBuildingComputeProgram = nullptr;
 		Diligent::IShaderResourceBinding* _clusterBuildingComputeBind = nullptr;
@@ -56,18 +57,20 @@ namespace rawrbox {
 
 		static uint32_t GROUP_SIZE;
 
-		ClusteredLightPlugin() = default;
-		ClusteredLightPlugin(const ClusteredLightPlugin&) = default;
-		ClusteredLightPlugin(ClusteredLightPlugin&&) = delete;
-		ClusteredLightPlugin& operator=(const ClusteredLightPlugin&) = default;
-		ClusteredLightPlugin& operator=(ClusteredLightPlugin&&) = delete;
-		~ClusteredLightPlugin() override;
+		ClusteredPlugin() = default;
+		ClusteredPlugin(const ClusteredPlugin&) = default;
+		ClusteredPlugin(ClusteredPlugin&&) = delete;
+		ClusteredPlugin& operator=(const ClusteredPlugin&) = default;
+		ClusteredPlugin& operator=(ClusteredPlugin&&) = delete;
+		~ClusteredPlugin() override;
 
 		// UTILS ----
 		virtual Diligent::ShaderMacroHelper getClusterMacros();
 
 		virtual Diligent::IBufferView* getClustersBuffer(bool readOnly = true);
 		virtual Diligent::IBufferView* getDataGridBuffer(bool readOnly = true);
+
+		virtual void applyPipelineSettings(rawrbox::PipeSettings& settings, bool light = false);
 		// ----------
 
 		[[nodiscard]] const std::string getID() const override;

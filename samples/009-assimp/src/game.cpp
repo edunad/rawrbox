@@ -3,7 +3,7 @@
 #include <rawrbox/render/cameras/orbital.hpp>
 #include <rawrbox/render/lights/point.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
-#include <rawrbox/render/plugins/clustered_light.hpp>
+#include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
@@ -27,7 +27,7 @@ namespace assimp {
 		// Setup renderer
 		auto render = window->createRenderer();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
-		render->addPlugin<rawrbox::ClusteredLightPlugin>();
+		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
 			this->drawWorld();

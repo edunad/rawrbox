@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rawrbox/render/materials/unlit.hpp>
-#include <rawrbox/render/plugins/clustered_light.hpp>
+#include <rawrbox/render/plugins/clustered.hpp>
 
 namespace rawrbox {
 	struct MaterialLitPixelUniforms {
@@ -88,6 +88,9 @@ namespace rawrbox {
 
 			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Emission");
 			if (texBind != nullptr) texBind->Set(textureEmission->getHandle());
+
+			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_DecalTexture");
+			if (texBind != nullptr) texBind->Set(rawrbox::DECALS::getAtlas()->getHandle());
 
 			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_RoughMetal");
 			if (texBind != nullptr) texBind->Set(textureMetalRough->getHandle());

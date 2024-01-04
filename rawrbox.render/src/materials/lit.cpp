@@ -54,7 +54,7 @@ namespace rawrbox {
 	}
 
 	void MaterialLit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::IBuffer* uniforms, Diligent::IBuffer* pixelUniforms, Diligent::ShaderMacroHelper helper) {
-		auto cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredLightPlugin>("Clustered::Light");
+		auto cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered::Light");
 		if (cluster == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] This material requires the `ClusteredLightPlugin` renderer plugin");
 
 		// PIPELINE ----
@@ -66,25 +66,29 @@ namespace rawrbox {
 
 		settings.layout = layout;
 		settings.immutableSamplers = {
+		    // TODO : REPLACE WITH BINDLESS ----
 		    {Diligent::SHADER_TYPE_VERTEX, "g_Displacement"},
+
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Texture"},
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Normal"},
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Emission"},
-		    {Diligent::SHADER_TYPE_PIXEL, "g_RoughMetal"}};
+		    {Diligent::SHADER_TYPE_PIXEL, "g_DecalTexture"},
+		    {Diligent::SHADER_TYPE_PIXEL, "g_RoughMetal"}
+		    //---------------------------------
+		};
 
 		settings.resources = {
+		    // TODO : REPLACE WITH BINDLESS ----
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		    {Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Normal", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Emission", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+		    {Diligent::SHADER_TYPE_PIXEL, "g_DecalTexture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		    {Diligent::SHADER_TYPE_PIXEL, "g_RoughMetal", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Lights", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "g_ClusterDataGrid", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    // ----------------------------------
 
 		    {Diligent::SHADER_TYPE_PIXEL, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 		    {Diligent::SHADER_TYPE_PIXEL, "Camera", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "LightConstants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
 		    {Diligent::SHADER_TYPE_VERTEX, "Constants", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 		    {Diligent::SHADER_TYPE_VERTEX, "Camera", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
@@ -95,11 +99,11 @@ namespace rawrbox {
 		    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
 
 		    {Diligent::SHADER_TYPE_PIXEL, pixelUniforms, "Constants"},
-		    {Diligent::SHADER_TYPE_PIXEL, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
+		    {Diligent::SHADER_TYPE_PIXEL, rawrbox::MAIN_CAMERA->uniforms(), "Camera"}};
 
-		    {Diligent::SHADER_TYPE_PIXEL, rawrbox::LIGHTS::uniforms, "LightConstants"},
-		    {Diligent::SHADER_TYPE_PIXEL, rawrbox::LIGHTS::getBuffer(), "g_Lights"},
-		    {Diligent::SHADER_TYPE_PIXEL, cluster->getDataGridBuffer(), "g_ClusterDataGrid"}};
+		// Apply cluster resources
+		cluster->applyPipelineSettings(settings, true);
+		// -------------
 
 		settings.fill = Diligent::FILL_MODE_SOLID;
 		rawrbox::PipelineUtils::createPipeline(id, id, settings);

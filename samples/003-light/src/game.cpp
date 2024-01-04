@@ -4,7 +4,7 @@
 #include <rawrbox/render/lights/point.hpp>
 #include <rawrbox/render/lights/spot.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
-#include <rawrbox/render/plugins/clustered_light.hpp>
+#include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
@@ -27,7 +27,7 @@ namespace light {
 
 		// Setup renderer
 		auto render = window->createRenderer();
-		render->addPlugin<rawrbox::ClusteredLightPlugin>();
+		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
@@ -53,7 +53,8 @@ namespace light {
 		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planks.png", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planksSpec.png", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planksNorm.png", 0)};
+		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planksNorm.png", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/decals.png", 64)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
@@ -67,6 +68,8 @@ namespace light {
 	}
 
 	void Game::contentLoaded() {
+		rawrbox::DECALS::setAtlas(rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/decals.png")->get());
+
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planks.png")->get();
 		auto texNorm = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksNorm.png")->get();
 
@@ -122,6 +125,7 @@ namespace light {
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "INSTANCES", {0.F, 0.5F, 0});
 		// ------
 
+		// Light test ----------
 		rawrbox::LIGHTS::setFog(rawrbox::FOG_TYPE::FOG_EXP, 40.F, 0.8F);
 
 		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue() * 50, 1.2F);
@@ -129,6 +133,12 @@ namespace light {
 		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{0.2F, 0.2F, 0}, rawrbox::Colors::Orange() * 50, 1.F);
 
 		// rawrbox::LIGHTS::addLight<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White(), 5.F); // SUN
+		// -------------------
+
+		// Decal test --------
+		rawrbox::Matrix4x4 mtx = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({rawrbox::MathUtils::toRad(90), 0, 0}), {-3.5F, 0, 0});
+		rawrbox::DECALS::add(mtx, 1, rawrbox::Colors::Green());
+		// -------------------
 
 		this->_model->upload();
 		this->_model2->upload();
@@ -161,12 +171,12 @@ namespace light {
 		rawrbox::Window::update();
 
 		if (this->_ready) {
-			auto light = rawrbox::LIGHTS::getLight(0);
+			/*auto light = rawrbox::LIGHTS::getLight(0);
 			if (light != nullptr) {
 				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
-			}
+			}*/
 
-			light = rawrbox::LIGHTS::getLight(1);
+			auto light = rawrbox::LIGHTS::getLight(1);
 			if (light != nullptr) {
 				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
 			}

@@ -21,12 +21,17 @@ StructuredBuffer<Light> g_Lights; // Read-only
 #define LIGHT
 #endif
 
+#if defined(READ_DECALS)
+StructuredBuffer<Decal> g_Decals; // Read-only
+#define DECALS
+#endif
+
 #if defined(WRITE_CLUSTER_DATA_GRID)
 #define CLUSTER_DATA_GRID
-RWBuffer<uint /*format=rgba32ui*/> g_ClusterDataGrid; // Read-Write
+RWBuffer<uint2 /*format=rgba32ui*/> g_ClusterDataGrid; // Read-Write
 #elif defined(READ_CLUSTER_DATA_GRID)
 #define CLUSTER_DATA_GRID
-Buffer<uint /*format=rgba32ui*/> g_ClusterDataGrid; // Read-only
+Buffer<uint2 /*format=rgba32ui*/> g_ClusterDataGrid; // Read-only
 #endif
 
 #endif

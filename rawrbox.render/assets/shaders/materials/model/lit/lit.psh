@@ -1,16 +1,19 @@
-#include <lit_pixel_uniforms.fxh>
-#include <light_uniforms.fxh>
 #include <math.fxh>
 
+#include <lit_pixel_uniforms.fxh>
+#include <light_uniforms.fxh>
+#include <decal_uniforms.fxh>
+
 #define READ_LIGHTS
+#define READ_DECALS
 #define READ_CLUSTER_DATA_GRID
 #include <cluster.fxh>
 
 #include <noise.fxh>
 #include <lighting.fxh>
+#include <decaling.fxh>
 
 // TODO : REPLACE WITH BINDLESS RESOURCES
-
 Texture2DArray g_Texture;
 SamplerState   g_Texture_sampler;
 
@@ -22,6 +25,7 @@ SamplerState   g_RoughMetal_sampler;
 
 Texture2DArray g_Emission;
 SamplerState   g_Emission_sampler;
+// --------------------
 
 struct PSInput {
     float4 Pos                      : SV_POSITION;
@@ -63,6 +67,10 @@ float3 TangentSpaceNormalMapping(float3 sampledNormal, float3x3 TBN) {
 	return mul(normal, TBN);
 }
 
+uint GetSliceFromDepth(float depth) {
+    return floor(log(depth) * g_gridParams.x - g_gridParams.y);
+}
+
 void main(in PSInput PSIn, out PSOutput PSOut) {
     float4 baseColor = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
     if (baseColor.a <= 0.0) discard;
@@ -90,10 +98,32 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	float3 V           = normalize(g_cameraPos.xyz - PSIn.WorldPos.xyz);
 	float dither       = InterleavedGradientNoise(PSIn.Pos.xy);
 
-    float3 diffuse     = ComputeDiffuseColor(baseColor.rgb, metal);
-    float3 specular    = ComputeF0(SpecularFactor, baseColor.rgb, metal);
 
-    LightResult result = ApplyLight(specular, rough, diffuse, normal, V, PSIn.WorldPos.xyz, PSIn.Pos, dither);
+    // Apply compute data ----
+    uint3 clusterIndex3D = uint3(floor(PSIn.Pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(PSIn.Pos.w));
+    uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
+    uint gridOffset = tileIndex * CLUSTERED_NUM_BUCKETS;
+
+    float3 ddxPos = ddx(PSIn.WorldPos.xyz);
+    float3 ddyPos = ddy(PSIn.WorldPos.xyz);
+
+    LightResult result = (LightResult)0;
+    for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
+        uint2 buckets = g_ClusterDataGrid[gridOffset + bucketIndex];
+
+        // Apply decals ---
+        float4 roughtness = 0;
+        ApplyDecals(buckets.y, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, baseColor, roughtness);
+        // ----------------
+
+        // Apply light ---
+        float3 diffuse     = ComputeDiffuseColor(baseColor.rgb, metal);
+        float3 specular    = ComputeF0(SpecularFactor, baseColor.rgb, metal);
+
+        ApplyLight(buckets.x, bucketIndex, result, specular, rough, diffuse, normal, V, PSIn.WorldPos.xyz, dither);
+        // ----------------
+    }
+    // ----------------
 
 	float3 outRadiance = 0;
 	outRadiance += result.Diffuse + result.Specular;
