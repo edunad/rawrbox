@@ -1,6 +1,7 @@
 
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/atlas.hpp>
+#include <rawrbox/render/textures/manager.hpp>
 #include <rawrbox/render/utils/texture.hpp>
 
 #include <fmt/format.h>
@@ -97,6 +98,10 @@ namespace rawrbox {
 		data.NumSubresources = static_cast<uint32_t>(subresData.size());
 
 		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
+
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+		this->_textureID = rawrbox::TextureManager::registerTexture(this);
+
+		this->updateSampler();
 	}
 } // namespace rawrbox

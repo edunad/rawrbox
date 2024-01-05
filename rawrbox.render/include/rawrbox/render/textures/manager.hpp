@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/render/textures/base.hpp>
+#include <rawrbox/utils/event.hpp>
 
 #include <RefCntAutoPtr.hpp>
 
@@ -14,9 +15,12 @@ namespace rawrbox {
 		static std::vector<Diligent::IDeviceObject*> _textureHandles;
 
 	public:
-		static size_t registerTexture(rawrbox::TextureBase* texture);
-		static void unregisterTexture(size_t indx);
+		static rawrbox::Event<> onUpdate;
 
-		static const std::vector<Diligent::IDeviceObject*> getHandles();
+		static uint32_t registerTexture(rawrbox::TextureBase* texture);
+		static void unregisterTexture(uint32_t indx);
+
+		static const std::vector<Diligent::IDeviceObject*>& getHandles();
+		static size_t total();
 	};
 } // namespace rawrbox

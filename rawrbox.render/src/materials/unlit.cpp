@@ -5,6 +5,8 @@ namespace rawrbox {
 
 	// STATIC DATA ----
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialUnlit::_uniforms;
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialUnlit::_uniforms_pixel;
+
 	bool MaterialUnlit::_built = false;
 	// ----------------
 
@@ -15,7 +17,7 @@ namespace rawrbox {
 			fmt::print("[RawrBox-MaterialUnlit] Building material..\n");
 
 			this->createUniforms();
-			this->createPipelines(id, vertexBufferType::vLayout(), this->_uniforms);
+			this->createPipelines(id, vertexBufferType::vLayout(), this->_uniforms, this->_uniforms_pixel);
 
 			this->_built = true;
 		}
@@ -23,37 +25,55 @@ namespace rawrbox {
 		this->setupPipelines(id);
 	}
 
-	void MaterialUnlit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::IBuffer* uniforms, Diligent::IBuffer* /*pixelUniforms*/, Diligent::ShaderMacroHelper helper) {
+	void MaterialUnlit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::IBuffer* uniforms, Diligent::IBuffer* pixelUniforms, Diligent::ShaderMacroHelper helper) {
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
 		settings.pVS = "unlit.vsh";
-
 		settings.pPS = "unlit.psh";
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = helper;
 		settings.layout = layout;
 		settings.immutableSamplers = {
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Texture"},
+		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures"},
 		    // {Diligent::SHADER_TYPE_PIXEL, "g_DecalTexture"},
-		    {Diligent::SHADER_TYPE_VERTEX, "g_Displacement"}};
+		    //{Diligent::SHADER_TYPE_VERTEX, "g_Displacement"}
+		};
 
-		settings.resources = {
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+		/*settings.resources = {
+		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
 
 		    //{Diligent::SHADER_TYPE_PIXEL, "g_DecalTexture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
 		    //{Diligent::SHADER_TYPE_PIXEL, "g_Decals", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
-		    {Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		};
+		    //{Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
+		};*/
+
 		settings.uniforms = {
 		    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
 
 		    //   {Diligent::SHADER_TYPE_PIXEL, rawrbox::DECALS::uniforms, "Decals"},
 		    // {Diligent::SHADER_TYPE_PIXEL, rawrbox::DECALS::getBuffer(), "g_Decals"},
 
-		    {Diligent::SHADER_TYPE_VERTEX, uniforms, "Constants"}
+		    {Diligent::SHADER_TYPE_VERTEX, uniforms, "Constants"},
+		    {Diligent::SHADER_TYPE_PIXEL, pixelUniforms, "Constants"}
 
 		};
+
+		// Create signatures ---
+		rawrbox::PipeSignatureSettings signature = {};
+		signature.immutableSamplers = settings.immutableSamplers;
+		signature.desc = {
+		    Diligent::PipelineResourceDesc{Diligent::SHADER_TYPE_VERTEX, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    Diligent::PipelineResourceDesc{Diligent::SHADER_TYPE_VERTEX, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+
+		    Diligent::PipelineResourceDesc{Diligent::SHADER_TYPE_PIXEL, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+
+		    Diligent::PipelineResourceDesc{Diligent::SHADER_TYPE_PIXEL, "g_Textures", rawrbox::RENDERER->MAX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
+		    Diligent::PipelineResourceDesc{Diligent::SHADER_TYPE_PIXEL, "g_Textures_sampler", 1, Diligent::SHADER_RESOURCE_TYPE_SAMPLER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
+		};
+
+		settings.signature = rawrbox::PipelineUtils::createSignature(id, signature);
+		// ---------------------
 
 		rawrbox::PipelineUtils::createPipeline(id, id, settings);
 
@@ -85,21 +105,36 @@ namespace rawrbox {
 	}
 
 	void MaterialUnlit::createUniforms() {
-		if (this->_uniforms != nullptr) return;
+		if (this->_uniforms != nullptr || this->_uniforms_pixel != nullptr) return;
 
 		// Uniforms -------
-		Diligent::BufferDesc CBDesc;
-		CBDesc.Name = "rawrbox::MaterialUnlit::Uniforms";
-		CBDesc.Size = sizeof(rawrbox::MaterialBaseUniforms);
-		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+		{
+			Diligent::BufferDesc CBDesc;
+			CBDesc.Name = "rawrbox::MaterialUnlit::Vertex::Uniforms";
+			CBDesc.Size = sizeof(rawrbox::MaterialBaseUniforms);
+			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+		}
+		// ------------
+
+		// Pixel Uniforms -------
+		{
+			Diligent::BufferDesc CBDesc;
+			CBDesc.Name = "rawrbox::MaterialUnlit::Pixel::Uniforms";
+			CBDesc.Size = sizeof(rawrbox::MaterialBasePixelUniforms);
+			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+
+			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms_pixel);
+		}
 		// ------------
 	}
 
-	void MaterialUnlit::bindShaderResources() {
+	void MaterialUnlit::bindShaderResources() const {
 		if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialUnlit] Bind not set!");
 
 		auto context = rawrbox::RENDERER->context();

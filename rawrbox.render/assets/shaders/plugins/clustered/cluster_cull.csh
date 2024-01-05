@@ -60,7 +60,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 	uint lightIndex = 0;
 	uint decalIndex = 0;
 
-    float3 lightDir = mul(float4(0, 0, 0, 1.0), g_view).xyz;
+    float3 lightDir = mul(float4(0, 0, 0, 1.0), Camera.view).xyz;
 
     [loop]
     for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS && (lightIndex < TOTAL_LIGHTS || decalIndex < TOTAL_DECALS); ++bucketIndex) {
@@ -75,14 +75,14 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
             if(light.type == LIGHT_POINT) {
                 Sphere sphere;
                 sphere.Radius = light.radius;
-                sphere.Position = mul(light.position, g_view).xyz;
+                sphere.Position = mul(light.position, Camera.view).xyz;
 
                 if(SphereInAABB(sphere, cluster)) {
                     lightMask |= 1u << i;
                 }
             } else if(light.type == LIGHT_SPOT) {
-                float3 viewSpacePos = mul(light.position, g_view).xyz;
-                float3 viewSpaceDir = mul(light.direction, g_view).xyz;
+                float3 viewSpacePos = mul(light.position, Camera.view).xyz;
+                float3 viewSpaceDir = mul(light.direction, Camera.view).xyz;
                 viewSpaceDir = normalize(viewSpaceDir - lightDir);
 
                 float2 coneAngleSinCos = float2(sin(light.umbra), cos(light.umbra)) + 0.3; // Add a bit of offset to the cull, so when you move the camera you don't notice the delay

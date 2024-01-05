@@ -72,7 +72,7 @@ float3 TangentSpaceNormalMapping(float3 sampledNormal, float3x3 TBN) {
 }
 
 uint GetSliceFromDepth(float depth) {
-    return floor(log(depth) * g_gridParams.x - g_gridParams.y);
+    return floor(log(depth) * Camera.gridParams.x - Camera.gridParams.y);
 }
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
@@ -99,7 +99,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     // -------------
 
     // LIGHT ------
-	float3 V           = normalize(g_cameraPos.xyz - PSIn.WorldPos.xyz);
+	float3 V           = normalize(Camera.cameraPos.xyz - PSIn.WorldPos.xyz);
 	float dither       = InterleavedGradientNoise(PSIn.Pos.xy);
 
 

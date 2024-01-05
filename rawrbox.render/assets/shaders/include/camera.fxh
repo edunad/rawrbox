@@ -1,29 +1,32 @@
 
 #ifndef INCLUDED_CAMERA
     #define INCLUDED_CAMERA
-    cbuffer Camera {
-        float4x4 g_view;
-        float4x4 g_viewInv;
 
-        float4x4 g_proj;
-        float4x4 g_projInv;
+    struct CameraStruct {
+        float4x4 view;
+        float4x4 viewInv;
 
-        float4x4 g_viewProj;
-        float4x4 g_viewProjInv;
+        float4x4 proj;
+        float4x4 projInv;
 
-        float4x4 g_world;
-        float4x4 g_worldViewProj;
+        float4x4 viewProj;
+        float4x4 viewProjInv;
 
-        float4   g_nearFar;
+        float4x4 world;
+        float4x4 worldViewProj;
 
-        int4     g_viewport;
-        float4   g_viewportInv;
+        float4   nearFar;
 
-        float4   g_cameraPos;
-        float4   g_cameraAngle;
+        int4     viewport;
+        float4   viewportInv;
+
+        float4   cameraPos;
+        float4   cameraAngle;
 
         // GRID ---
-        float4   g_gridParams;
+        float4   gridParams;
         // -----
     };
+
+    ConstantBuffer<CameraStruct> Camera;
 #endif

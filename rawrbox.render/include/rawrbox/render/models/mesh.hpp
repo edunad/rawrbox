@@ -25,14 +25,28 @@ namespace rawrbox {
 	public:
 		rawrbox::TextureBase* texture = nullptr;
 		rawrbox::TextureBase* normal = nullptr;
-		rawrbox::TextureBase* emission = nullptr;
 		rawrbox::TextureBase* roughtMetal = nullptr;
+		rawrbox::TextureBase* emission = nullptr;
+
 		rawrbox::TextureBase* displacement = nullptr;
 
 		float roughnessFactor = 1.0F;
 		float metalnessFactor = 1.0F;
 		float specularFactor = 0.5F;
 		float emissionFactor = 1.0F;
+
+		[[nodiscard]] const rawrbox::Vector4f getData() const {
+			return {roughnessFactor, metalnessFactor, specularFactor, emissionFactor};
+		}
+
+		[[nodiscard]] const rawrbox::Vector4_t<uint32_t> getPixelIDs() const {
+			auto base = texture == nullptr ? rawrbox::WHITE_TEXTURE.get() : texture;
+			auto norm = normal == nullptr ? rawrbox::NORMAL_TEXTURE.get() : normal;
+			auto metR = roughtMetal == nullptr ? rawrbox::BLACK_TEXTURE.get() : roughtMetal;
+			auto em = emission == nullptr ? rawrbox::BLACK_TEXTURE.get() : emission;
+
+			return {base->getTextureID(), norm->getTextureID(), metR->getTextureID(), em->getTextureID()};
+		}
 
 		bool operator==(const rawrbox::MeshTextures& other) const { return this->texture == other.texture && this->normal == other.normal && this->emission == other.emission && this->roughtMetal == other.roughtMetal && this->displacement == other.displacement; }
 		bool operator!=(const rawrbox::MeshTextures& other) const { return !operator==(other); }

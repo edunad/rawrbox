@@ -1,6 +1,9 @@
 
-Texture2DArray g_Texture;
-SamplerState   g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
+#include <unlit_pixel_uniforms.fxh>
+
+//Texture2DArray g_Textures[TOTAL_TEXTURES];
+Texture2DArray g_Textures[];
+SamplerState   g_Textures_sampler; // By convention, texture samplers must use the '_sampler' suffix
 
 struct PSInput {
     float4 Pos                      : SV_POSITION;
@@ -17,7 +20,7 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    float4 color = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+    float4 color = g_Textures[Constants.textureIDs.x].Sample(g_Textures_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
     if (color.a <= 0.0) discard;
 
     /*float4 roughtness = 0;

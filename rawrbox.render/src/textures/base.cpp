@@ -9,7 +9,11 @@
 namespace rawrbox {
 	TextureBase::~TextureBase() {
 		if (this->_failedToLoad) return; // Don't delete the fallback
-		if (this->_handle != nullptr) rawrbox::TextureManager::unregisterTexture(this->_textureID);
+		if (this->_handle != nullptr) {
+			rawrbox::TextureManager::unregisterTexture(this->_textureID);
+			this->_textureID = 0;
+		}
+
 		RAWRBOX_DESTROY(this->_handle);
 	}
 
@@ -80,7 +84,7 @@ namespace rawrbox {
 
 	bool TextureBase::isValid() const { return this->_handle != nullptr; }
 
-	size_t TextureBase::getTextureID() const { return this->_textureID; }
+	uint32_t TextureBase::getTextureID() const { return this->_textureID; }
 
 	Diligent::ITexture* TextureBase::getTexture() const { return this->_tex; }
 	Diligent::ITextureView* TextureBase::getHandle() const { return this->_handle; }

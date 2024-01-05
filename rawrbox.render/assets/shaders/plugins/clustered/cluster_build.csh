@@ -28,10 +28,10 @@ ClusterAABB ComputeCluster(uint3 clusterIndex3D) {
 	float2 minPoint_SS = float2(clusterIndex3D.x * CLUSTER_TEXTEL_SIZE, clusterIndex3D.y * CLUSTER_TEXTEL_SIZE);
 	float2 maxPoint_SS = float2((clusterIndex3D.x + 1) * CLUSTER_TEXTEL_SIZE, (clusterIndex3D.y + 1) * CLUSTER_TEXTEL_SIZE);
 
-	float2 nearFar = g_nearFar.xy;
+	float2 nearFar = Camera.nearFar.xy;
 
-	float3 minPoint_VS = ScreenToView(float4(minPoint_SS, 0, 1), g_viewportInv, nearFar, g_projInv).xyz;
-	float3 maxPoint_VS = ScreenToView(float4(maxPoint_SS, 0, 1), g_viewportInv, nearFar, g_projInv).xyz;
+	float3 minPoint_VS = ScreenToView(float4(minPoint_SS, 0, 1), Camera.viewportInv, nearFar, Camera.projInv).xyz;
+	float3 maxPoint_VS = ScreenToView(float4(maxPoint_SS, 0, 1), Camera.viewportInv, nearFar, Camera.projInv).xyz;
 
 	float farZ = GetDepthFromSlice(clusterIndex3D.z, nearFar);
 	float nearZ = GetDepthFromSlice(clusterIndex3D.z + 1, nearFar);

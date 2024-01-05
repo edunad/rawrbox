@@ -1,7 +1,11 @@
 #include <correction.fxh>
 
-Texture2DArray g_Texture;
-SamplerState   g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
+cbuffer Constants {
+    uint  g_TextureID;
+};
+
+Texture2DArray g_Textures[];
+SamplerState   g_Textures_sampler; // By convention, texture samplers must use the '_sampler' suffix
 
 struct PSInput {
     float4 Pos    : SV_POSITION;
@@ -14,7 +18,7 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    float4 color = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV.xy, PSIn.UV.z)) * PSIn.Color;
+    float4 color = g_Texture[g_TextureID].Sample(g_Texture_sampler, float3(PSIn.UV.xy, PSIn.UV.z)) * PSIn.Color;
     if (color.a <= 0.0 || (0.125 < fmod(PSIn.UV.x, 0.25) && PSIn.UV.w == 1.)) {
 		discard;
 	}

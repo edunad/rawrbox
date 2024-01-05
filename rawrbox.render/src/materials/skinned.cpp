@@ -4,6 +4,8 @@
 namespace rawrbox {
 	// STATIC DATA ----
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialSkinned::_uniforms;
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialSkinned::_uniforms_pixel;
+
 	bool MaterialSkinned::_built = false;
 	// ----------------
 
@@ -11,14 +13,29 @@ namespace rawrbox {
 		if (this->_uniforms != nullptr) return;
 
 		// Uniforms -------
-		Diligent::BufferDesc CBDesc;
-		CBDesc.Name = "rawrbox::MaterialSkinned::Uniforms";
-		CBDesc.Size = sizeof(rawrbox::MaterialSkinnedUniforms);
-		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+		{
+			Diligent::BufferDesc CBDesc;
+			CBDesc.Name = "rawrbox::MaterialSkinned::Uniforms";
+			CBDesc.Size = sizeof(rawrbox::MaterialSkinnedUniforms);
+			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+		}
+		// ------------
+
+		// Pixel Uniforms -------
+		{
+			Diligent::BufferDesc CBDesc;
+			CBDesc.Name = "rawrbox::MaterialSkinned::Uniforms::Pixel";
+			CBDesc.Size = sizeof(rawrbox::MaterialBasePixelUniforms);
+			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+
+			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms_pixel);
+		}
 		// ------------
 	}
 
@@ -34,7 +51,7 @@ namespace rawrbox {
 			helper.AddShaderMacro("SKINNED", true);
 
 			this->createUniforms();
-			this->createPipelines(id, vertexBufferType::vLayout(), this->_uniforms, nullptr, helper);
+			this->createPipelines(id, vertexBufferType::vLayout(), this->_uniforms, this->_uniforms_pixel, helper);
 
 			this->_built = true;
 		}

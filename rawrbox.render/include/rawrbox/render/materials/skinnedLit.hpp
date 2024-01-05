@@ -32,13 +32,15 @@ namespace rawrbox {
 				Diligent::MapHelper<rawrbox::MaterialSkinnedUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 				this->bindBaseUniforms<T, rawrbox::MaterialSkinnedUniforms>(mesh, CBConstants);
 
-				(*CBConstants).g_bones = mesh.boneTransforms;
+				CBConstants->g_bones = mesh.boneTransforms;
 			}
 
 			{
 				Diligent::MapHelper<rawrbox::MaterialLitPixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				CBConstants->g_LitData = {}; //{mesh.roughnessFactor, mesh.metalnessFactor, mesh.specularFactor, mesh.emissionFactor};
-			}                                    // ------------
+				this->bindBasePixelUniforms<T, rawrbox::MaterialLitPixelUniforms>(mesh, CBConstants);
+
+				CBConstants->g_LitData = mesh.textures.getData();
+			} // ------------
 		}
 	};
 

@@ -19,6 +19,10 @@ namespace rawrbox {
 							 // ----------
 	};
 
+	struct MaterialBasePixelUniforms {
+		rawrbox::Vector4_t<uint32_t> textureIDs = {};
+	};
+
 	class MaterialBase {
 	protected:
 		Diligent::IPipelineState* _base = nullptr;
@@ -48,7 +52,7 @@ namespace rawrbox {
 		virtual void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::IBuffer* uniforms, Diligent::IBuffer* pixelUniforms = nullptr, Diligent::ShaderMacroHelper helper = {});
 		virtual void setupPipelines(const std::string& id);
 
-		virtual void bindShaderResources();
+		virtual void bindShaderResources() const;
 
 		template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBaseUniforms>
 		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<P>& helper) {
@@ -73,9 +77,14 @@ namespace rawrbox {
 			}
 
 			helper->_gColorOverride = mesh.color;
-			// helper->_gTextureFlags = mesh.texture == nullptr ? rawrbox::Vector4f() : mesh.texture->getData();
+			helper->_gTextureFlags = mesh.textures.texture == nullptr ? rawrbox::Vector4f() : mesh.textures.texture->getData();
 			helper->_gData = data;
 			// ----------------------------
+		}
+
+		template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBasePixelUniforms>
+		void bindBasePixelUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<P>& helper) {
+			helper->textureIDs = mesh.textures.getPixelIDs();
 		}
 
 		template <typename T = rawrbox::VertexData>
@@ -108,11 +117,6 @@ namespace rawrbox {
 					context->SetPipelineState(mesh.alphaBlend ? this->_base_alpha : this->_base);
 				}
 			}
-		}
-
-		template <typename T = rawrbox::VertexData>
-		void bindTexture(const rawrbox::Mesh<T>& /*mesh*/) {
-			throw std::runtime_error("[RawrBox-Material] Missing implementation");
 		}
 	};
 } // namespace rawrbox

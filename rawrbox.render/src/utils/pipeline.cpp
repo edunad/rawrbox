@@ -1,6 +1,8 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
+#include <magic_enum.hpp>
+
 #include <fmt/format.h>
 
 namespace rawrbox {
@@ -10,6 +12,7 @@ namespace rawrbox {
 	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> PipelineUtils::_binds = {};
 	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShader>> PipelineUtils::_shaders = {};
 	std::unordered_map<uint32_t, Diligent::RefCntAutoPtr<Diligent::ISampler>> PipelineUtils::_samplers = {};
+	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature>> PipelineUtils::_signatures = {};
 
 	Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> PipelineUtils::_stateCache;
 	// -------------
@@ -67,6 +70,7 @@ namespace rawrbox {
 		ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
 		ShaderCI.Desc.UseCombinedTextureSamplers = true; // (g_Texture + g_Texture_sampler combination)
 		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
+		ShaderCI.CompileFlags = Diligent::SHADER_COMPILE_FLAG_ENABLE_UNBOUNDED_ARRAYS;
 
 		std::string shaderName = fmt::format("RawrBox::SHADER::{}", name);
 
@@ -89,7 +93,22 @@ namespace rawrbox {
 		return _shaders[id];
 	}
 
-	Diligent::IPipelineState* PipelineUtils::createComputePipeline(const std::string& name, const std::string& bindName, const rawrbox::PipeComputeSettings settings) {
+	std::vector<Diligent::ImmutableSamplerDesc> PipelineUtils::compileSamplers(const std::vector<rawrbox::PipeSampler>& samplers) {
+		std::vector<Diligent::ImmutableSamplerDesc> ret = {};
+		if (samplers.empty()) return ret;
+
+		Diligent::SamplerDesc SamLinearClampDesc{
+		    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,
+		    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
+
+		for (auto& sampler : samplers) {
+			ret.emplace_back(sampler.type, sampler.name.c_str(), SamLinearClampDesc);
+		}
+
+		return ret;
+	}
+
+	Diligent::IPipelineState* PipelineUtils::createComputePipeline(const std::string& name, const std::string& bindName, rawrbox::PipeComputeSettings settings) {
 		if (settings.pCS.empty()) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create shader {}, pCS shader cannot be empty!", name));
 
 		auto fnd = _pipelines.find(name);
@@ -98,13 +117,18 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> pipe;
 
 		Diligent::ComputePipelineStateCreateInfo PSOCreateInfo;
-		Diligent::PipelineStateDesc& PSODesc = PSOCreateInfo.PSODesc;
-
 		std::string pipeName = fmt::format("RawrBox::COMPUTE::{}", name);
 
+		Diligent::PipelineStateDesc& PSODesc = PSOCreateInfo.PSODesc;
 		PSODesc.Name = pipeName.c_str();
 		PSODesc.PipelineType = Diligent::PIPELINE_TYPE_COMPUTE;
 		PSODesc.ResourceLayout.DefaultVariableType = settings.resourceType;
+
+		std::array<Diligent::IPipelineResourceSignature*, 1> signatures = {settings.signature};
+		if (settings.signature != nullptr) {
+			PSOCreateInfo.ppResourceSignatures = signatures.data();
+			PSOCreateInfo.ResourceSignaturesCount = 1U;
+		}
 
 		if (!settings.resources.empty()) {
 			PSODesc.ResourceLayout.Variables = settings.resources.data();
@@ -118,15 +142,26 @@ namespace rawrbox {
 
 		for (auto& uni : settings.uniforms) {
 			if (uni.uniform == nullptr) continue;
-			auto var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
+			if (settings.signature == nullptr) {
+				auto var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
 
-			if (var == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}', could not find variable '{}'", name, uni.name));
-			var->Set(uni.uniform);
+				if (var == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type)));
+				var->Set(uni.uniform);
+			} else {
+				auto var = settings.signature->GetStaticVariableByName(uni.type, uni.name.c_str());
+
+				if (var == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type)));
+				var->Set(uni.uniform);
+			}
 		}
 
 		// Bind ----
 		if (!bindName.empty()) {
-			pipe->CreateShaderResourceBinding(&_binds[bindName], true);
+			if (settings.signature != nullptr) {
+				settings.signature->CreateShaderResourceBinding(&_binds[bindName]);
+			} else {
+				pipe->CreateShaderResourceBinding(&_binds[bindName], true);
+			}
 		}
 		//-----
 
@@ -134,7 +169,7 @@ namespace rawrbox {
 		return _pipelines[name];
 	}
 
-	Diligent::IPipelineState* PipelineUtils::createPipeline(const std::string& name, const std::string& bindName, const rawrbox::PipeSettings settings) {
+	Diligent::IPipelineState* PipelineUtils::createPipeline(const std::string& name, const std::string& bindName, rawrbox::PipeSettings settings) {
 		auto fnd = _pipelines.find(name);
 		if (fnd != _pipelines.end()) return fnd->second;
 
@@ -157,6 +192,12 @@ namespace rawrbox {
 		info.GraphicsPipeline.DepthStencilDesc.DepthWriteEnable = settings.depthWrite;
 		info.GraphicsPipeline.RasterizerDesc.ScissorEnable = settings.scissors;
 		info.GraphicsPipeline.RasterizerDesc.FillMode = settings.fill;
+
+		std::array<Diligent::IPipelineResourceSignature*, 1> signatures = {settings.signature};
+		if (settings.signature != nullptr) {
+			info.ppResourceSignatures = signatures.data();
+			info.ResourceSignaturesCount = 1U;
+		}
 
 		if (settings.depthFormat) {
 			info.GraphicsPipeline.DSVFormat = desc.DepthBufferFormat;
@@ -195,21 +236,13 @@ namespace rawrbox {
 		// ----
 
 		// Resources ----
-		std::vector<Diligent::ImmutableSamplerDesc> samplers = {};
+		auto samplers = compileSamplers(settings.immutableSamplers);
 
 		if (!settings.resources.empty()) {
 			info.PSODesc.ResourceLayout.Variables = settings.resources.data();
 			info.PSODesc.ResourceLayout.NumVariables = static_cast<uint32_t>(settings.resources.size());
 
-			if (!settings.immutableSamplers.empty()) {
-				Diligent::SamplerDesc SamLinearClampDesc{
-				    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,
-				    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
-
-				for (auto& sampler : settings.immutableSamplers) {
-					samplers.emplace_back(sampler.type, sampler.name.c_str(), SamLinearClampDesc);
-				}
-
+			if (!samplers.empty()) {
 				info.PSODesc.ResourceLayout.ImmutableSamplers = samplers.data();
 				info.PSODesc.ResourceLayout.NumImmutableSamplers = static_cast<uint32_t>(samplers.size());
 			}
@@ -221,18 +254,60 @@ namespace rawrbox {
 
 		for (auto& uni : settings.uniforms) {
 			if (uni.uniform == nullptr) continue;
-			auto var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
 
-			if (var == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}', could not find variable '{}'", name, uni.name));
-			var->Set(uni.uniform);
+			if (settings.signature == nullptr) {
+				auto var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
+
+				if (var == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type)));
+				var->Set(uni.uniform);
+			} else {
+				auto var = settings.signature->GetStaticVariableByName(uni.type, uni.name.c_str());
+
+				if (var == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type)));
+				var->Set(uni.uniform);
+			}
 		}
 
+		// Bind ----
 		if (!bindName.empty()) {
-			pipe->CreateShaderResourceBinding(&_binds[bindName], true);
+			if (settings.signature != nullptr) {
+				settings.signature->CreateShaderResourceBinding(&_binds[bindName], true);
+			} else {
+				pipe->CreateShaderResourceBinding(&_binds[bindName], true);
+			}
 		}
+		//-----
 
 		_pipelines[name] = std::move(pipe);
 		return _pipelines[name];
+	}
+
+	Diligent::IPipelineResourceSignature* PipelineUtils::createSignature(const std::string& name, const rawrbox::PipeSignatureSettings settings) {
+		auto fnd = _signatures.find(name);
+		if (fnd != _signatures.end()) return fnd->second;
+
+		std::string pipeName = fmt::format("RawrBox::SIGNATURE::{}", name);
+
+		Diligent::PipelineResourceSignatureDesc PRSDesc;
+		PRSDesc.Name = pipeName.c_str();
+		PRSDesc.BindingIndex = settings.bindingIndex;
+
+		// RESOURCES -----
+		PRSDesc.Resources = settings.desc.data();
+		PRSDesc.NumResources = static_cast<uint8_t>(settings.desc.size());
+		PRSDesc.UseCombinedTextureSamplers = true;
+		// --------------
+
+		// SAMPLERS -----
+		auto samplers = compileSamplers(settings.immutableSamplers);
+		if (!samplers.empty()) {
+			PRSDesc.ImmutableSamplers = samplers.data();
+			PRSDesc.NumImmutableSamplers = static_cast<uint32_t>(samplers.size());
+		}
+		// --------------
+
+		rawrbox::RENDERER->device()->CreatePipelineResourceSignature(PRSDesc, &_signatures[name]);
+		return _signatures[name];
 	}
 
 	Diligent::IShaderResourceBinding* PipelineUtils::getBind(const std::string& bindName) {

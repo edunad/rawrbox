@@ -42,14 +42,16 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_swapChain);
 	}
 
-	void RendererBase::init(Diligent::DeviceFeatures features) {
+	void RendererBase::init(Diligent::DeviceFeatures features, uint32_t HEAP_SIZE) {
 		Diligent::SwapChainDesc SCDesc;
 
 		// Enable required features --------------------------
 		features.WireframeFill = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.SparseResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
-		features.SparseResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+
+		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		features.ShaderResourceRuntimeArray = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		// ---------------------------------------------------
 
 #ifdef _DEBUG
@@ -67,6 +69,47 @@ namespace rawrbox {
 
 		// Initialize engine -----
 		switch (this->_type) {
+#if RAWRBOX_SUPPORT_DX12
+			case Diligent::RENDER_DEVICE_TYPE_D3D12:
+				{
+	#if ENGINE_DLL
+					// Load the dll and import GetEngineFactoryD3D12() function
+					auto* GetEngineFactoryD3D12 = Diligent::LoadGraphicsEngineD3D12();
+	#endif
+					auto* pFactoryD3D12 = GetEngineFactoryD3D12();
+					this->_engineFactory = pFactoryD3D12;
+
+					Diligent::EngineD3D12CreateInfo EngineCI;
+					EngineCI.Features = features;
+					EngineCI.GPUDescriptorHeapDynamicSize[0] = HEAP_SIZE * 4;
+					EngineCI.GPUDescriptorHeapSize[0] = HEAP_SIZE; // For mutable mode
+
+					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
+					pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc{}, this->_window, &this->_swapChain);
+				}
+				break;
+#endif // D3D12_SUPPORTED
+
+#if RAWRBOX_SUPPORT_VULKAN
+			case Diligent::RENDER_DEVICE_TYPE_VULKAN:
+				{
+	#if EXPLICITLY_LOAD_ENGINE_VK_DLL
+					// Load the dll and import GetEngineFactoryVk() function
+					auto* GetEngineFactoryVk = Diligent::LoadGraphicsEngineVk();
+					auto* pFactoryVk = GetEngineFactoryVk();
+	#else
+					auto* pFactoryVk = Diligent::GetEngineFactoryVk();
+	#endif
+					this->_engineFactory = pFactoryVk;
+
+					Diligent::EngineVkCreateInfo EngineCI;
+					EngineCI.Features = features;
+					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_device, &this->_context);
+					pFactoryVk->CreateSwapChainVk(this->_device, this->_context, SCDesc, this->_window, &this->_swapChain);
+				}
+				break;
+#endif // VULKAN_SUPPORTED
+
 #if RAWRBOX_SUPPORT_DX11
 			case Diligent::RENDER_DEVICE_TYPE_D3D11:
 				{
@@ -84,24 +127,6 @@ namespace rawrbox {
 				}
 				break;
 #endif
-
-#if RAWRBOX_SUPPORT_DX12
-			case Diligent::RENDER_DEVICE_TYPE_D3D12:
-				{
-	#if ENGINE_DLL
-					// Load the dll and import GetEngineFactoryD3D12() function
-					auto* GetEngineFactoryD3D12 = Diligent::LoadGraphicsEngineD3D12();
-	#endif
-					auto* pFactoryD3D12 = GetEngineFactoryD3D12();
-					this->_engineFactory = pFactoryD3D12;
-
-					Diligent::EngineD3D12CreateInfo EngineCI;
-					EngineCI.Features = features;
-					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
-					pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc{}, this->_window, &this->_swapChain);
-				}
-				break;
-#endif // D3D12_SUPPORTED
 
 #if RAWRBOX_SUPPORT_GL
 			case Diligent::RENDER_DEVICE_TYPE_GL:
@@ -123,25 +148,6 @@ namespace rawrbox {
 				break;
 #endif // GL_SUPPORTED
 
-#if RAWRBOX_SUPPORT_VULKAN
-			case Diligent::RENDER_DEVICE_TYPE_VULKAN:
-				{
-	#if EXPLICITLY_LOAD_ENGINE_VK_DLL
-					// Load the dll and import GetEngineFactoryVk() function
-					auto* GetEngineFactoryVk = Diligent::LoadGraphicsEngineVk();
-					auto* pFactoryVk = GetEngineFactoryVk();
-	#else
-					auto* pFactoryVk = Diligent::GetEngineFactoryVk();
-	#endif
-					this->_engineFactory = pFactoryVk;
-
-					Diligent::EngineVkCreateInfo EngineCI;
-					EngineCI.Features = features;
-					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_device, &this->_context);
-					pFactoryVk->CreateSwapChainVk(this->_device, this->_context, SCDesc, this->_window, &this->_swapChain);
-				}
-				break;
-#endif // VULKAN_SUPPORTED
 			default: throw std::runtime_error("[RawrBox-Window] Invalid diligent engine");
 		}
 
@@ -292,7 +298,7 @@ namespace rawrbox {
 
 // Perform world --
 #ifdef _DEBUG
-		this->beginQuery("WORLD");
+		// this->beginQuery("WORLD");
 #endif
 
 		this->_render->startRecord();
@@ -300,7 +306,7 @@ namespace rawrbox {
 		this->_render->stopRecord();
 
 #ifdef _DEBUG
-		this->endQuery("WORLD");
+		// this->endQuery("WORLD");
 #endif
 		//  -----------------
 
@@ -317,12 +323,12 @@ namespace rawrbox {
 
 		// Perform overlay --
 #ifdef _DEBUG
-		this->beginQuery("OVERLAY");
+		// this->beginQuery("OVERLAY");
 #endif
 		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
 
 #ifdef _DEBUG
-		this->endQuery("OVERLAY");
+		// this->endQuery("OVERLAY");
 #endif
 		// ------------------
 

@@ -16,7 +16,7 @@ namespace rawrbox {
 		// Uniforms -------
 		{
 			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::MaterialLit::Uniforms";
+			CBDesc.Name = "rawrbox::MaterialLit::Vertex::Uniforms";
 			CBDesc.Size = sizeof(rawrbox::MaterialBaseUniforms);
 			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
 			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
@@ -27,7 +27,7 @@ namespace rawrbox {
 
 		{
 			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::MaterialLit::Uniforms::Pixel";
+			CBDesc.Name = "rawrbox::MaterialLit::Pixel::Uniforms";
 			CBDesc.Size = sizeof(rawrbox::MaterialLitPixelUniforms);
 			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
 			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;

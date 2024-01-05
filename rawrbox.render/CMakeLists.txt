@@ -66,6 +66,8 @@ if(DiligentCore_ADDED)
     else()
         set_lib_runtime_mt(Diligent-LinuxPlatform)
     endif()
+
+    #target_compile_definitions(Diligent-PublicBuildSettings INTERFACE D3DCOMPILE_ENABLE_UNBOUNDED_DESCRIPTOR_TABLES)
 endif()
 
 CPMAddPackage("gh:nemtrif/utfcpp@4.0.4")

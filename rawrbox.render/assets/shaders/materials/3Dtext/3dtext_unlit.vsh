@@ -1,8 +1,10 @@
 #include <camera.fxh>
 
-cbuffer Constants {
+struct ConstantsStruct {
     float4 g_Billboard;
 };
+
+ConstantBuffer<ConstantsStruct> Constants;
 
 #define Billboard g_Billboard
 
