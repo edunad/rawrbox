@@ -12,8 +12,7 @@ struct PSInput {
 };
 
 void main(in VSInput VSIn, out PSInput PSIn) {
-    PSIn.Pos = float4(VSIn.Pos, 0.0, 1.0);
-
-    PSIn.UV  = VSIn.UV;
+    PSIn.Pos   = float4(VSIn.Pos, 0.0, 1.0);
+    PSIn.UV    = VSIn.UV;
     PSIn.Color = VSIn.Color;
 }

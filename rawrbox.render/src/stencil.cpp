@@ -4,6 +4,7 @@
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
+#include <rawrbox/render/textures/manager.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
 #include <fmt/format.h>
@@ -17,36 +18,77 @@ namespace rawrbox {
 
 	Stencil::~Stencil() {
 		this->_drawCalls.clear();
+
+		this->_2dPipeline = nullptr;
+		this->_linePipeline = nullptr;
+		this->_textPipeline = nullptr;
+
+		this->_streamingIB.reset();
+		this->_streamingVB.reset();
+
+		this->_SRB = nullptr;
+
+		RAWRBOX_DESTROY(this->_uniforms);
 	}
 
 	void Stencil::upload() {
-		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
-		/*
-				// PIPELINE ----
-				rawrbox::PipeSettings settings;
-				settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
-				settings.cull = Diligent::CULL_MODE_NONE;
-				settings.pVS = "stencil.vsh";
-				settings.pPS = "stencil.psh";
-				settings.scissors = true;
-				settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Textures"}};
-				settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-				settings.layout = rawrbox::PosUVColorVertexData::vLayout();
-				settings.resources = {
-				    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}};
+		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr || this->_uniforms != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
 
-				this->_2dPipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2D", "Stencil::2D", settings);
+		// Setup buffer ---
+		Diligent::BufferDesc CBDesc;
+		CBDesc.Name = "rawrbox::Stencil::Uniforms";
+		CBDesc.Size = sizeof(rawrbox::StencilUniforms);
+		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-				settings.topology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
-				this->_linePipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2DLine", "Stencil::2D", settings);
+		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+		// -------------------
 
-				settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-				settings.pPS = "stencil_text.psh";
-				this->_textPipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2DText", "Stencil::2D", settings);
-				// -------------
+		// PIPELINE ----
+		rawrbox::PipeSettings settings;
+		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
+		settings.cull = Diligent::CULL_MODE_NONE;
+		settings.pVS = "stencil.vsh";
+		settings.pPS = "stencil.psh";
+		settings.scissors = true;
+		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Textures"}};
+		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+		settings.layout = rawrbox::PosUVColorVertexData::vLayout();
+		settings.uniforms = {
+		    {Diligent::SHADER_TYPE_PIXEL, this->_uniforms, "Constants"}};
 
-				this->_SRB = rawrbox::PipelineUtils::getBind("Stencil::2D");
-				*/
+		// Create signatures ---
+		rawrbox::PipeSignatureSettings signature = {};
+		signature.immutableSamplers = settings.immutableSamplers;
+		signature.desc = {
+		    Diligent::PipelineResourceDesc{Diligent::SHADER_TYPE_PIXEL, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+
+		    Diligent::PipelineResourceDesc{Diligent::SHADER_TYPE_PIXEL, "g_Textures", rawrbox::RENDERER->MAX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
+		    Diligent::PipelineResourceDesc{Diligent::SHADER_TYPE_PIXEL, "g_Textures_sampler", 1, Diligent::SHADER_RESOURCE_TYPE_SAMPLER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
+		};
+
+		settings.signature = rawrbox::PipelineUtils::createSignature("Stencil::2D", signature);
+		// ---------------------
+
+		this->_2dPipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2D", "Stencil::2D", settings);
+
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
+		this->_linePipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2DLine", "Stencil::2D", settings);
+
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		settings.pPS = "stencil_text.psh";
+		this->_textPipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2DText", "Stencil::2D", settings);
+		// -------------
+
+		this->_SRB = rawrbox::PipelineUtils::getBind("Stencil::2D");
+		auto textureVar = this->_SRB->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures");
+		if (textureVar == nullptr) throw std::runtime_error("[RawrBox-Stencil] Variable 'g_Textures' not found on PIXEL_SHADER!");
+
+		textureVar->SetArray(rawrbox::TextureManager::getHandles().data(), 0, static_cast<uint32_t>(rawrbox::TextureManager::total()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+		rawrbox::TextureManager::onUpdate += [textureVar]() {
+			textureVar->SetArray(rawrbox::TextureManager::getHandles().data(), 0, static_cast<uint32_t>(rawrbox::TextureManager::total()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+		};
 	}
 
 	void Stencil::resize(const rawrbox::Vector2i& size) {
@@ -361,7 +403,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::internalDraw() {
-		/*if (this->_drawCalls.empty()) return;
+		if (this->_drawCalls.empty()) return;
 
 		auto context = rawrbox::RENDERER->context();
 		size_t contextID = 0;
@@ -387,11 +429,16 @@ namespace rawrbox {
 			this->_streamingIB->release(contextID);
 			// -------------------
 
+			// SETUP UNIFORMS ----------------------------
+			{
+				Diligent::MapHelper<rawrbox::StencilUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				CBConstants->textureID = group.textureId;
+			}
+			// -----------
+
 			// Render ------------
 			const std::array<uint64_t, 1> offsets = {VBOffset};
 			std::array<Diligent::IBuffer*, 1> pBuffs = {this->_streamingVB->buffer()};
-
-			// this->_SRB->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(group.textureHandle);
 
 			context->SetVertexBuffers(0, 1, pBuffs.data(), offsets.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 			context->SetIndexBuffer(this->_streamingIB->buffer(), IBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
@@ -422,7 +469,7 @@ namespace rawrbox {
 		this->_streamingIB->flush(contextID);
 		this->_streamingVB->flush(contextID);
 
-		this->_drawCalls.clear();*/
+		this->_drawCalls.clear();
 	}
 
 	void Stencil::render() {

@@ -18,6 +18,10 @@
 #include <vector>
 
 namespace rawrbox {
+	struct StencilUniforms {
+		uint32_t textureID;
+	};
+
 	struct PosUVColorVertexData {
 		rawrbox::Vector2f pos = {};
 		rawrbox::Vector4f uv = {};
@@ -150,6 +154,8 @@ namespace rawrbox {
 		static constexpr const int MaxVertsInStreamingBuffer = 4096;
 		std::unique_ptr<rawrbox::StreamingBuffer> _streamingVB = nullptr;
 		std::unique_ptr<rawrbox::StreamingBuffer> _streamingIB = nullptr;
+
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 		// ------------
 
 		// WINDOW ----
