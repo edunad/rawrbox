@@ -41,8 +41,8 @@ namespace rawrbox {
 
 			{
 				Diligent::MapHelper<rawrbox::MaterialLitPixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				CBConstants->g_LitData = {mesh.roughnessFactor, mesh.metalnessFactor, mesh.specularFactor, mesh.emissionFactor};
-			} // ------------
+				CBConstants->g_LitData = {}; //{mesh.roughnessFactor, mesh.metalnessFactor, mesh.specularFactor, mesh.emissionFactor};
+			}                                    // ------------
 		}
 
 		template <typename T = rawrbox::VertexData>
@@ -50,6 +50,12 @@ namespace rawrbox {
 			if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] Material not bound, did you call 'init'?");
 
 			rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
+			rawrbox::TextureBase* textureDisplacement = rawrbox::BLACK_TEXTURE.get();
+			rawrbox::TextureBase* textureNormal = rawrbox::NORMAL_TEXTURE.get();
+			rawrbox::TextureBase* textureMetalRough = rawrbox::BLACK_TEXTURE.get();
+			rawrbox::TextureBase* textureEmission = rawrbox::BLACK_TEXTURE.get();
+
+			/*rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
 			rawrbox::TextureBase* textureDisplacement = rawrbox::BLACK_TEXTURE.get();
 			rawrbox::TextureBase* textureNormal = rawrbox::NORMAL_TEXTURE.get();
 			rawrbox::TextureBase* textureMetalRough = rawrbox::BLACK_TEXTURE.get();
@@ -78,7 +84,7 @@ namespace rawrbox {
 			if (mesh.emissionTexture != nullptr && mesh.emissionTexture->isValid() && !mesh.wireframe) {
 				mesh.emissionTexture->update(); // Update texture
 				textureEmission = mesh.emissionTexture;
-			}
+			}*/
 
 			auto texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture");
 			if (texBind != nullptr) texBind->Set(textureColor->getHandle());

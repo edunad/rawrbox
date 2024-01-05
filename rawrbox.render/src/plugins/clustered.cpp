@@ -25,14 +25,6 @@ namespace rawrbox {
 
 	const std::string ClusteredPlugin::getID() const { return "Clustered::Light"; }
 
-	void ClusteredPlugin::requirements(Diligent::DeviceFeatures& features) {
-		// Enable required features --------------------------
-		features.ComputeShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
-		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
-		features.SparseResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
-		// ---------------------------------------------------
-	}
-
 	void ClusteredPlugin::initialize(const rawrbox::Vector2i& renderSize) {
 		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, CLUSTER_TEXTEL_SIZE);
 		CLUSTERS_Y = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.y, CLUSTER_TEXTEL_SIZE);

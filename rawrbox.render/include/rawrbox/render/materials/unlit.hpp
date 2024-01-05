@@ -41,7 +41,7 @@ namespace rawrbox {
 			rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
 			rawrbox::TextureBase* textureDisplacement = rawrbox::BLACK_TEXTURE.get();
 
-			if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
+			/*if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
 				mesh.texture->update(); // Update texture
 				textureColor = mesh.texture;
 			}
@@ -49,7 +49,7 @@ namespace rawrbox {
 			if (mesh.displacementTexture != nullptr && mesh.displacementTexture->isValid()) {
 				mesh.displacementTexture->update(); // Update texture
 				textureDisplacement = mesh.displacementTexture;
-			}
+			}*/
 
 			auto handle = textureColor->getHandle();
 			handle->SetSampler(textureColor->getSampler());

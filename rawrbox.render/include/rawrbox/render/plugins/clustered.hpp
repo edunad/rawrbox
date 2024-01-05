@@ -75,7 +75,6 @@ namespace rawrbox {
 
 		[[nodiscard]] const std::string getID() const override;
 
-		void requirements(Diligent::DeviceFeatures& features) override;
 		void initialize(const rawrbox::Vector2i& size) override;
 		void resize(const rawrbox::Vector2i& size) override;
 

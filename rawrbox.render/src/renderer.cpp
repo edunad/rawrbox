@@ -45,8 +45,12 @@ namespace rawrbox {
 	void RendererBase::init(Diligent::DeviceFeatures features) {
 		Diligent::SwapChainDesc SCDesc;
 
-		// REQUIRED -----
+		// Enable required features --------------------------
 		features.WireframeFill = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		features.SparseResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		features.SparseResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		// ---------------------------------------------------
 
 #ifdef _DEBUG
 		features.PipelineStatisticsQueries = Diligent::DEVICE_FEATURE_STATE_OPTIONAL;

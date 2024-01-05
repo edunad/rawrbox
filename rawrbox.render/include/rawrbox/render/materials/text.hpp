@@ -39,12 +39,14 @@ namespace rawrbox {
 		void bindTexture(const rawrbox::Mesh<T>& mesh) {
 			if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialText3D] Material not bound, did you call 'init'?");
 
-			if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
+			rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
+			/*if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
 				mesh.texture->update(); // Update texture
-				this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(mesh.texture->getHandle());
-			} else {
-				this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(rawrbox::WHITE_TEXTURE->getHandle());
-			}
+				textureColor = mesh.texture;
+			}*/
+
+			auto texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture");
+			if (texBind != nullptr) texBind->Set(textureColor->getHandle());
 		}
 	};
 

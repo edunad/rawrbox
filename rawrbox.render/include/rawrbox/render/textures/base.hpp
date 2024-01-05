@@ -28,6 +28,8 @@ namespace rawrbox {
 		rawrbox::Vector2i _size = {};
 
 		int _channels = 0;
+
+		size_t _textureID = 0;
 		std::vector<uint8_t> _pixels = {};
 
 		rawrbox::TEXTURE_UV _textureUV = rawrbox::TEXTURE_UV::UV_NONE;
@@ -56,6 +58,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual const rawrbox::Vector2i& getSize() const;
 		[[nodiscard]] virtual int getChannels() const;
 		[[nodiscard]] virtual bool isValid() const;
+		[[nodiscard]] virtual size_t getTextureID() const;
 
 		[[nodiscard]] virtual Diligent::ITexture* getTexture() const;
 		[[nodiscard]] virtual Diligent::ITextureView* getHandle() const;

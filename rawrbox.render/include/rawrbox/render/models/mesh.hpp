@@ -8,6 +8,7 @@
 #include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/base.hpp>
+#include <rawrbox/render/textures/manager.hpp>
 
 #include <RasterizerState.h>
 #include <fmt/printf.h>
@@ -19,6 +20,23 @@
 namespace rawrbox {
 	struct Skeleton;
 	class LightBase;
+
+	struct MeshTextures {
+	public:
+		rawrbox::TextureBase* texture = nullptr;
+		rawrbox::TextureBase* normal = nullptr;
+		rawrbox::TextureBase* emission = nullptr;
+		rawrbox::TextureBase* roughtMetal = nullptr;
+		rawrbox::TextureBase* displacement = nullptr;
+
+		float roughnessFactor = 1.0F;
+		float metalnessFactor = 1.0F;
+		float specularFactor = 0.5F;
+		float emissionFactor = 1.0F;
+
+		bool operator==(const rawrbox::MeshTextures& other) const { return this->texture == other.texture && this->normal == other.normal && this->emission == other.emission && this->roughtMetal == other.roughtMetal && this->displacement == other.displacement; }
+		bool operator!=(const rawrbox::MeshTextures& other) const { return !operator==(other); }
+	};
 
 	template <typename T = VertexData>
 	class Mesh {
@@ -46,18 +64,7 @@ namespace rawrbox {
 		// -------
 
 		// TEXTURES ---
-		rawrbox::TextureBase* texture = nullptr;
-		rawrbox::TextureBase* normalTexture = nullptr;
-
-		rawrbox::TextureBase* emissionTexture = nullptr;
-		rawrbox::TextureBase* roughtMetalTexture = nullptr;
-
-		rawrbox::TextureBase* displacementTexture = nullptr;
-
-		float roughnessFactor = 1.0F;
-		float metalnessFactor = 1.0F;
-		float specularFactor = 0.5F;
-		float emissionFactor = 1.0F;
+		rawrbox::MeshTextures textures = {};
 		// -------
 
 		// RENDERING ---
@@ -148,11 +155,6 @@ namespace rawrbox {
 			return std::bit_cast<B*>(this->owner);
 		}
 
-		[[nodiscard]] virtual const rawrbox::TextureBase* getTexture() const { return this->texture; }
-		virtual void setTexture(rawrbox::TextureBase* ptr) {
-			this->texture = ptr;
-		}
-
 		[[nodiscard]] virtual uint16_t getAtlasID(int index = -1) const {
 			if (this->vertices.empty()) return 0;
 			if (index < 0) return static_cast<uint16_t>(this->vertices.front().uv.z);
@@ -172,30 +174,39 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] virtual const rawrbox::TextureBase* getNormalTexture() const { return this->normalTexture; }
-		virtual void setNormalTexture(rawrbox::TextureBase* ptr) { this->normalTexture = ptr; }
+		[[nodiscard]] virtual const rawrbox::TextureBase* getTexture() const { return this->textures.texture; }
+		virtual void setTexture(rawrbox::TextureBase* ptr) {
+			this->textures.texture = ptr;
+		}
 
-		[[nodiscard]] virtual const rawrbox::TextureBase* getDisplacementTexture() const { return this->displacementTexture; }
+		[[nodiscard]] virtual const rawrbox::TextureBase* getNormalTexture() const { return this->textures.normal; }
+		virtual void setNormalTexture(rawrbox::TextureBase* ptr) {
+			this->textures.normal = ptr;
+		}
+
+		[[nodiscard]] virtual const rawrbox::TextureBase* getDisplacementTexture() const { return this->textures.displacement; }
 		virtual void setDisplacementTexture(rawrbox::TextureBase* ptr, float power = 1.F) {
-			this->displacementTexture = ptr;
+			this->textures.displacement = ptr;
+
 			this->addData("displacement_strength", {power, 0, 0, 0});
 			this->setOptimizable(false);
 		}
 
-		[[nodiscard]] virtual const rawrbox::TextureBase* getEmissionTexture() const { return this->emissionTexture; }
+		[[nodiscard]] virtual const rawrbox::TextureBase* getEmissionTexture() const { return this->textures.emission; }
 		virtual void setEmissionTexture(rawrbox::TextureBase* ptr, float factor = 1.0F) {
-			this->emissionTexture = ptr;
-			this->emissionFactor = factor;
+			this->textures.emission = ptr;
+			this->textures.emissionFactor = factor;
 		}
 
+		[[nodiscard]] virtual const rawrbox::TextureBase* getRoughtMetalTexture() const { return this->textures.roughtMetal; }
 		virtual void setRoughtnessMetalness(rawrbox::TextureBase* ptr, float roughness = 0.5F, float metalness = 0.5F) {
-			this->roughtMetalTexture = ptr;
-			this->roughnessFactor = roughness;
-			this->metalnessFactor = metalness;
+			this->textures.roughtMetal = ptr;
+			this->textures.roughnessFactor = roughness;
+			this->textures.metalnessFactor = metalness;
 		}
 
 		virtual void setSpecularFactor(float spec) {
-			this->specularFactor = spec;
+			this->textures.specularFactor = spec;
 		}
 
 		virtual void setVertexSnap(float power = 2.F) {
@@ -274,11 +285,7 @@ namespace rawrbox {
 			if (this->vertices.size() + other.vertices.size() >= MAX_VERTICES) return false; // Max vertice limit
 			if (this->indices.size() + other.indices.size() >= MAX_INDICES) return false;    // Max indice limit
 
-			return this->texture == other.texture &&
-			       this->emissionTexture == other.emissionTexture &&
-			       this->roughtMetalTexture == other.roughtMetalTexture &&
-			       this->metalnessFactor == other.metalnessFactor &&
-			       this->roughnessFactor == other.roughnessFactor &&
+			return this->textures == other.textures &&
 			       this->color == other.color &&
 			       this->wireframe == other.wireframe &&
 			       this->lineMode == other.lineMode &&

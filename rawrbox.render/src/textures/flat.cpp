@@ -5,6 +5,7 @@
 
 namespace rawrbox {
 	TextureFlat::TextureFlat(const rawrbox::Vector2i& initsize, const rawrbox::Colorf& bgcol) : _transparent(bgcol.a != 1.F) {
+		this->setName("FLAT::" + bgcol.toHEX());
 		this->_channels = 4;
 
 		this->_pixels.resize(static_cast<uint32_t>(initsize.y * initsize.x) * this->_channels);

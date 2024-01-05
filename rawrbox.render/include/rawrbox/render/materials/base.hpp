@@ -73,7 +73,7 @@ namespace rawrbox {
 			}
 
 			helper->_gColorOverride = mesh.color;
-			helper->_gTextureFlags = mesh.texture == nullptr ? rawrbox::Vector4f() : mesh.texture->getData();
+			// helper->_gTextureFlags = mesh.texture == nullptr ? rawrbox::Vector4f() : mesh.texture->getData();
 			helper->_gData = data;
 			// ----------------------------
 		}

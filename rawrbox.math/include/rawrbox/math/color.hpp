@@ -67,6 +67,13 @@ namespace rawrbox {
 			return {LinearToGamma(r), LinearToGamma(g), LinearToGamma(b), a};
 		}
 
+		[[nodiscard]] std::string toHEX() const {
+			std::array<char, 10> hexColor = {};
+			std::snprintf(hexColor.data(), sizeof(hexColor), "#%02x%02x%02x%02x", static_cast<int>(this->r), static_cast<int>(this->g), static_cast<int>(this->b), static_cast<int>(this->a));
+
+			return {hexColor.begin(), hexColor.end()};
+		}
+
 		template <class ReturnType>
 		[[nodiscard]] Color_t<ReturnType> cast() const {
 			if constexpr (std::is_same_v<NumberType, int>) {

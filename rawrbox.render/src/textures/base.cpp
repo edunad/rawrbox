@@ -1,20 +1,25 @@
 #include <rawrbox/math/utils/color.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/base.hpp>
+#include <rawrbox/render/textures/manager.hpp>
+#include <rawrbox/render/utils/pipeline.hpp>
 
 #include <fmt/format.h>
-
-#include "rawrbox/render/utils/pipeline.hpp"
 
 namespace rawrbox {
 	TextureBase::~TextureBase() {
 		if (this->_failedToLoad) return; // Don't delete the fallback
+		if (this->_handle != nullptr) rawrbox::TextureManager::unregisterTexture(this->_textureID);
 		RAWRBOX_DESTROY(this->_handle);
 	}
 
 	void TextureBase::loadFallback() {
 		this->_failedToLoad = true;
-		this->_handle = rawrbox::MISSING_TEXTURE->getHandle();
+
+		auto missing = rawrbox::MISSING_TEXTURE;
+
+		this->_handle = missing->getHandle();
+		this->_textureID = missing->getTextureID();
 	}
 
 	void TextureBase::updateSampler() {
@@ -74,6 +79,8 @@ namespace rawrbox {
 	int TextureBase::getChannels() const { return this->_channels; }
 
 	bool TextureBase::isValid() const { return this->_handle != nullptr; }
+
+	size_t TextureBase::getTextureID() const { return this->_textureID; }
 
 	Diligent::ITexture* TextureBase::getTexture() const { return this->_tex; }
 	Diligent::ITextureView* TextureBase::getHandle() const { return this->_handle; }
@@ -135,6 +142,8 @@ namespace rawrbox {
 		if (this->_tex == nullptr) throw std::runtime_error(fmt::format("[RawrBox-TextureBase] Failed to create texture '{}'", this->_name));
 
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+		this->_textureID = rawrbox::TextureManager::registerTexture(this);
+
 		this->updateSampler();
 	}
 } // namespace rawrbox
