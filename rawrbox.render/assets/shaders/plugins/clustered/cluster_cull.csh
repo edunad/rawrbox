@@ -53,14 +53,14 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 		return;
 
 	uint clusterIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
-    ClusterAABB cluster = g_Clusters[clusterIndex];
+    ClusterAABB cluster = Clusters[clusterIndex];
 
 	float clusterRadius = sqrt(dot(cluster.Extents.xyz, cluster.Extents.xyz));
 
 	uint lightIndex = 0;
 	uint decalIndex = 0;
 
-    float3 lightDir = mul(float4(0, 0, 0, 1.0), g_view).xyz;
+    float3 lightDir = mul(float4(0, 0, 0, 1.0), Camera.view).xyz;
 
     [loop]
     for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS && (lightIndex < TOTAL_LIGHTS || decalIndex < TOTAL_DECALS); ++bucketIndex) {
@@ -69,20 +69,20 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 
         [loop]
         for(uint i = 0; i < CLUSTERS_Z && lightIndex < TOTAL_LIGHTS; ++i) {
-            Light light = g_Lights[lightIndex];
+            Light light = Lights[lightIndex];
             ++lightIndex;
 
             if(light.type == LIGHT_POINT) {
                 Sphere sphere;
                 sphere.Radius = light.radius;
-                sphere.Position = mul(light.position, g_view).xyz;
+                sphere.Position = mul(light.position, Camera.view).xyz;
 
                 if(SphereInAABB(sphere, cluster)) {
                     lightMask |= 1u << i;
                 }
             } else if(light.type == LIGHT_SPOT) {
-                float3 viewSpacePos = mul(light.position, g_view).xyz;
-                float3 viewSpaceDir = mul(light.direction, g_view).xyz;
+                float3 viewSpacePos = mul(light.position, Camera.view).xyz;
+                float3 viewSpaceDir = mul(light.direction, Camera.view).xyz;
                 viewSpaceDir = normalize(viewSpaceDir - lightDir);
 
                 float2 coneAngleSinCos = float2(sin(light.umbra), cos(light.umbra)) + 0.3; // Add a bit of offset to the cull, so when you move the camera you don't notice the delay
@@ -101,10 +101,10 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 
         [loop]
         for(uint o = 0; o < CLUSTERS_Z && decalIndex < TOTAL_DECALS; ++o) {
-            Decal decal = g_Decals[decalIndex];
+            Decal decal = Decals[decalIndex];
             ++decalIndex;
 
-            if(decal.data.y == 1) { //test
+            if(decal.data.w == 1) { //test
                 if(BoxInAABB(decal.worldToLocal, cluster)) {
                     decalMask |= 1u << o;
                 }
@@ -113,6 +113,6 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
             }
         }
 
-	    g_ClusterDataGrid[clusterIndex * CLUSTERED_NUM_BUCKETS + bucketIndex] = uint2(lightMask, decalMask);
+	    ClusterDataGrid[clusterIndex * CLUSTERED_NUM_BUCKETS + bucketIndex] = uint2(lightMask, decalMask);
     }
 }

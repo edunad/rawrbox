@@ -1,7 +1,7 @@
 #include <rawrbox/render/materials/base.hpp>
 
 namespace rawrbox {
-	void MaterialBase::createPipelines(const std::string& /*id*/, const std::vector<Diligent::LayoutElement>& /*layout*/, Diligent::IBuffer* /*uniforms*/, Diligent::IBuffer* /*pixelUniforms*/, Diligent::ShaderMacroHelper /*helper*/) {}
+	void MaterialBase::createPipelines(const std::string& /*id*/, const std::vector<Diligent::LayoutElement>& /*layout*/, Diligent::ShaderMacroHelper /*helper*/) {}
 	void MaterialBase::setupPipelines(const std::string& id) {
 		if (this->_base == nullptr) this->_base = rawrbox::PipelineUtils::getPipeline(id);
 		if (this->_base_alpha == nullptr) this->_base_alpha = rawrbox::PipelineUtils::getPipeline(id + "::Alpha");
@@ -15,15 +15,12 @@ namespace rawrbox {
 
 		if (this->_cullnone == nullptr) this->_cullnone = rawrbox::PipelineUtils::getPipeline(id + "::CullNone");
 		if (this->_cullnone_alpha == nullptr) this->_cullnone_alpha = rawrbox::PipelineUtils::getPipeline(id + "::CullNone::Alpha");
-
-		if (this->_bind == nullptr) this->_bind = rawrbox::PipelineUtils::getBind(id);
 	}
 
-	void MaterialBase::bindShaderResources() {
+	void MaterialBase::bindShaderResources() const {
+		if (rawrbox::PipelineUtils::signatureBind == nullptr) throw std::runtime_error("[RawrBox-MaterialBase] Signature bind not initialized!");
+
 		auto context = rawrbox::RENDERER->context();
-
-		if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialBase] Bind not set!");
-		context->CommitShaderResources(this->_bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		context->CommitShaderResources(rawrbox::PipelineUtils::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
-
 } // namespace rawrbox

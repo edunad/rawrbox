@@ -4,7 +4,7 @@
 #define TEXTURE_DATA
 #include <material.fxh>
 
-#define TRANSFORM_DISPLACEMENT
+//#define TRANSFORM_DISPLACEMENT
 #define TRANSFORM_PSX
 #define TRANSFORM_BILLBOARD
 #ifdef SKINNED
@@ -76,18 +76,18 @@ void main(in VSInput VSIn, out PSInput PSIn) {
         TransformedData transform = applyPosTransforms(pos, VSIn.UV.xy);
     #endif
 
-    PSIn.Normal   = mul(float4(VSIn.Normal, 0.0), g_world);
-    PSIn.Tangent  = mul(float4(VSIn.Tangent, 0.0), g_world);
+    PSIn.Normal   = mul(float4(VSIn.Normal, 0.0), Camera.world);
+    PSIn.Tangent  = mul(float4(VSIn.Tangent, 0.0), Camera.world);
 
     PSIn.Pos      = transform.final;
-    PSIn.WorldPos = mul(transform.pos, g_world);
+    PSIn.WorldPos = mul(transform.pos, Camera.world);
     PSIn.UV       = applyUVTransform(VSIn.UV.xy);
 
     #ifdef INSTANCED
-        PSIn.Color    = VSIn.Color * VSIn.ColorOverride * g_Model.colorOverride;
+        PSIn.Color    = VSIn.Color * VSIn.ColorOverride * Constants.model.colorOverride;
         PSIn.TexIndex = VSIn.Extra.x;
     #else
-        PSIn.Color    = VSIn.Color * g_Model.colorOverride;
+        PSIn.Color    = VSIn.Color * Constants.model.colorOverride;
         PSIn.TexIndex = VSIn.UV.z;
     #endif
 }

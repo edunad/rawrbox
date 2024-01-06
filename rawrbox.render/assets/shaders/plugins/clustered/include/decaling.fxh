@@ -7,16 +7,13 @@
     #ifndef INCLUDED_DECALS
         #define INCLUDED_DECALS
 
-        Texture2DArray g_DecalTexture;
-        SamplerState   g_DecalTexture_sampler;
-
         void ApplyDecals(in uint decalBucket, uint bucketIndex, float4 worldPosition, float3 ddxPos, float3 ddyPos, inout float4 baseColor, inout float4 roughtness) {
             while(decalBucket) {
                 uint bitIndex = firstbitlow(decalBucket);
                 decalBucket ^= 1u << bitIndex;
 
                 // Apply decal ------------
-                Decal decal = g_Decals[bitIndex + bucketIndex * CLUSTERS_Z];
+                Decal decal = Decals[bitIndex + bucketIndex * CLUSTERS_Z];
 
                 float4 dPos = mul(worldPosition, decal.worldToLocal);
                 float3 decalTexCoord = dPos.xyz * float3(0.5f, -0.5f, 0.5f) + 0.5f;
@@ -26,7 +23,7 @@
                     float2 decalDx = mul(ddxPos, (float3x3)decal.worldToLocal).xy;
                     float2 decalDy = mul(ddyPos, (float3x3)decal.worldToLocal).xy;
 
-                    float4 decalColor = g_DecalTexture.SampleGrad(g_DecalTexture_sampler, float3(decalTexCoord.xy, decal.data.x), decalDx, decalDy, 0);
+                    float4 decalColor = g_Textures[decal.data.x].SampleGrad(g_Textures_sampler, float3(decalTexCoord.xy, decal.data.y), decalDx, decalDy, 0) * decal.color;
                     float edge = 1 - pow(saturate(abs(dPos.z)), 8);
                     decalColor.a *= edge;
 

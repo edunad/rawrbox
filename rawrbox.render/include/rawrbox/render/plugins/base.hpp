@@ -31,6 +31,9 @@ namespace rawrbox {
 
 		virtual void requirements(Diligent::DeviceFeatures& features);
 
+		virtual void signatures(std::vector<Diligent::PipelineResourceDesc>& sig);
+		virtual void bind(Diligent::IPipelineResourceSignature& sig);
+
 		virtual void initialize(const rawrbox::Vector2i& renderSize);
 		virtual void resize(const rawrbox::Vector2i& renderSize);
 

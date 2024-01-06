@@ -68,12 +68,13 @@ namespace rawrbox {
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 		settings.pVS = "post_process_base.vsh";
 		settings.pPS = "dither.psh";
+		settings.bind = "PostProcess::Dither";
 		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 		settings.uniforms = {{Diligent::SHADER_TYPE_PIXEL, this->_uniforms}};
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
-		this->_pipeline = rawrbox::PipelineUtils::createPipeline("PostProcess::Dither", "PostProcess::Dither", settings);
+		this->_pipeline = rawrbox::PipelineUtils::createPipeline("PostProcess::Dither", settings);
 		this->_bind = rawrbox::PipelineUtils::getBind("PostProcess::Dither");
 	}
 

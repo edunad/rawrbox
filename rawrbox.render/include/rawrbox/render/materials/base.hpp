@@ -19,6 +19,10 @@ namespace rawrbox {
 							 // ----------
 	};
 
+	struct MaterialBasePixelUniforms {
+		uint32_t textureID = {};
+	};
+
 	class MaterialBase {
 	protected:
 		Diligent::IPipelineState* _base = nullptr;
@@ -29,8 +33,6 @@ namespace rawrbox {
 		Diligent::IPipelineState* _wireframe = nullptr;
 		Diligent::IPipelineState* _cullnone = nullptr;
 		Diligent::IPipelineState* _cullnone_alpha = nullptr;
-
-		Diligent::IShaderResourceBinding* _bind = nullptr;
 
 	public:
 		using vertexBufferType = rawrbox::VertexData;
@@ -45,10 +47,10 @@ namespace rawrbox {
 		virtual void init() = 0;
 		virtual void createUniforms() = 0;
 
-		virtual void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::IBuffer* uniforms, Diligent::IBuffer* pixelUniforms = nullptr, Diligent::ShaderMacroHelper helper = {});
+		virtual void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper = {});
 		virtual void setupPipelines(const std::string& id);
 
-		virtual void bindShaderResources();
+		virtual void bindShaderResources() const;
 
 		template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBaseUniforms>
 		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<P>& helper) {
@@ -73,9 +75,14 @@ namespace rawrbox {
 			}
 
 			helper->_gColorOverride = mesh.color;
-			helper->_gTextureFlags = mesh.texture == nullptr ? rawrbox::Vector4f() : mesh.texture->getData();
+			helper->_gTextureFlags = mesh.textures.texture == nullptr ? rawrbox::Vector4f() : mesh.textures.texture->getData();
 			helper->_gData = data;
 			// ----------------------------
+		}
+
+		template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBasePixelUniforms>
+		void bindBasePixelUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<P>& helper) {
+			helper->textureID = mesh.textures.getPixelIDs().x;
 		}
 
 		template <typename T = rawrbox::VertexData>
@@ -85,7 +92,7 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData>
 		void bindPipeline(const rawrbox::Mesh<T>& mesh) {
-			if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-Material] Material not initialized!");
+			if (this->_base == nullptr) throw std::runtime_error("[RawrBox-Material] Material not initialized!");
 			auto context = rawrbox::RENDERER->context();
 
 			if (mesh.wireframe) {
@@ -108,11 +115,6 @@ namespace rawrbox {
 					context->SetPipelineState(mesh.alphaBlend ? this->_base_alpha : this->_base);
 				}
 			}
-		}
-
-		template <typename T = rawrbox::VertexData>
-		void bindTexture(const rawrbox::Mesh<T>& /*mesh*/) {
-			throw std::runtime_error("[RawrBox-Material] Missing implementation");
 		}
 	};
 } // namespace rawrbox

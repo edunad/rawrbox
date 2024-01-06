@@ -1,7 +1,7 @@
 #include <rawrbox/render/lights/spot.hpp>
 
 namespace rawrbox {
-	SpotLight::SpotLight(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colorf& color, float penumbra, float umbra, float radius) : rawrbox::LightBase(pos, color, radius), _penumbra(penumbra), _umbra(umbra) {
+	SpotLight::SpotLight(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colorf& color, float penumbra, float umbra, float radius) : rawrbox::LightBase(pos, color, radius), _umbra(umbra), _penumbra(penumbra) {
 		this->_direction = direction.normalized();
 	};
 

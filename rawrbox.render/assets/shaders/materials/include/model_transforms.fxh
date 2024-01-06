@@ -33,8 +33,8 @@
 
                 // TOOD: Lock X Y Z using billboard
                 if(billboard.x != 0. || billboard.y != 0. || billboard.z != 0.) {
-                    float3 right = float3(g_viewInv[0][0], g_viewInv[1][0], g_viewInv[2][0]);
-                    float3 up = float3(g_viewInv[0][1], g_viewInv[1][1], g_viewInv[2][1]);
+                    float3 right = float3(Camera.viewInv[0][0], Camera.viewInv[1][0], Camera.viewInv[2][0]);
+                    float3 up = float3(Camera.viewInv[0][1], Camera.viewInv[1][1], Camera.viewInv[2][1]);
 
                     vOut = float4((right * vertex.x) + (up * vertex.y), 1.);
                 }
@@ -50,7 +50,7 @@
 
                 for (uint idx = 0; idx < NUM_BONES_PER_VERTEX; idx++) {
                     if (weight[idx] > 0.0) {
-                        BoneTransform += g_Bones[indices[idx]] * weight[idx];
+                        BoneTransform += Constants.bones[indices[idx]] * weight[idx];
                         skinned = true;
                     }
                 }
@@ -81,7 +81,7 @@
             // vertex_snap mode
             #ifdef TRANSFORM_PSX
                 if(VertexSnap != 0.) {
-                    data.final = PSXTransform(mul(data.pos, proj), g_viewport.zw / VertexSnap);
+                    data.final = PSXTransform(mul(data.pos, proj), Camera.viewport.zw / VertexSnap);
                 } else {
                     data.final = mul(data.pos, proj);
                 }
@@ -94,11 +94,11 @@
         }
 
         TransformedData applyPosTransforms(float4 a_position, float2 a_texcoord0) {
-            return applyPosTransforms(g_worldViewProj, a_position, a_texcoord0);
+            return applyPosTransforms(Camera.worldViewProj, a_position, a_texcoord0);
         }
 
         TransformedData applyPosTransforms(float3 a_position, float2 a_texcoord0) {
-            return applyPosTransforms(g_worldViewProj, float4(a_position, 1.0), a_texcoord0);
+            return applyPosTransforms(Camera.worldViewProj, float4(a_position, 1.0), a_texcoord0);
         }
 
         TransformedData applyPosTransforms(float4x4 proj, float3 a_position, float2 a_texcoord0) {

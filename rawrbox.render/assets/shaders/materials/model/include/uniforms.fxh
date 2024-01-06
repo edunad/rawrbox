@@ -4,10 +4,13 @@
 #include <model.fxh>
 #include <camera.fxh>
 
-cbuffer Constants {
-    Model g_Model;
+struct ConstantsStruct {
+    Model model;
+
     #ifdef SKINNED
-        float4x4 g_Bones[MAX_BONES];
+        float4x4 bones[MAX_BONES];
     #endif
 };
+
+ConstantBuffer<ConstantsStruct> Constants;
 #endif

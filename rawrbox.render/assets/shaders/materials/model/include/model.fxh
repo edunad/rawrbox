@@ -7,8 +7,8 @@
         float4 data[4];
     };
 
-    #define Billboard g_Model.data[0]
-    #define VertexSnap g_Model.data[1].x
-    #define DisplacementPower g_Model.data[2].x
-    #define RecieveDecals g_Model.data[3].x
+    #define Billboard Constants.model.data[0]
+    #define VertexSnap Constants.model.data[1].x
+    #define DisplacementPower Constants.model.data[2].x
+    #define RecieveDecals Constants.model.data[3].x
 #endif

@@ -178,7 +178,7 @@
         void ApplyLight(uint lightBucket, uint bucketIndex, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 V, float3 worldPos, float dither) {
             uint bucket = lightBucket;
 
-            if(g_LightSettings.x == 1.0) {
+            if(LightConstants.lightSettings.x == 1.0) {
                 lighting.Diffuse = diffuse;  // FULL BRIGHT
             } else {
                 while(bucket) {
@@ -186,7 +186,7 @@
                     bucket ^= 1u << bitIndex;
 
                     // Apply light ------------
-                    Light light = g_Lights[bitIndex + bucketIndex * CLUSTERS_Z];
+                    Light light = Lights[bitIndex + bucketIndex * CLUSTERS_Z];
 
                     float3 L;
                     float attenuation = GetAttenuation(light, worldPos, L);
@@ -201,7 +201,7 @@
                 }
 
                 // AMBIENT LIGHT ---
-                lighting.Diffuse *= g_AmbientColor.rgb;
+                lighting.Diffuse *= LightConstants.ambientColor.rgb;
                 // -----------------
             }
         }

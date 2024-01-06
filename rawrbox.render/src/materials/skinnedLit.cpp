@@ -15,7 +15,7 @@ namespace rawrbox {
 		// Uniforms -------
 		{
 			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::MaterialSkinnedLit::Uniforms";
+			CBDesc.Name = "rawrbox::MaterialSkinnedLit::Vertex::Uniforms";
 			CBDesc.Size = sizeof(rawrbox::MaterialSkinnedUniforms);
 			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
 			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
@@ -26,7 +26,7 @@ namespace rawrbox {
 
 		{
 			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::MaterialSkinnedLit::Uniforms::Pixel";
+			CBDesc.Name = "rawrbox::MaterialSkinnedLit::Pixel::Uniforms";
 			CBDesc.Size = sizeof(rawrbox::MaterialLitPixelUniforms);
 			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
 			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
@@ -49,7 +49,7 @@ namespace rawrbox {
 			helper.AddShaderMacro("SKINNED", true);
 
 			this->createUniforms();
-			this->createPipelines(id, vertexBufferType::vLayout(), this->_uniforms, this->_uniforms_pixel, helper);
+			this->createPipelines(id, vertexBufferType::vLayout(), helper);
 
 			this->_built = true;
 		}

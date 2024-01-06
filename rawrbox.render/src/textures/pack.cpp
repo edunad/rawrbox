@@ -127,6 +127,7 @@ namespace rawrbox {
 	}
 
 	void TexturePack::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
+		if (this->_failedToLoad || this->_handle != nullptr) return; // Failed texture is already bound, so skip it
 		rawrbox::TextureBase::upload(format, true);
 	}
 

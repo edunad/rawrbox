@@ -38,12 +38,13 @@ namespace rawrbox {
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 		settings.pVS = "post_process_base.vsh";
 		settings.pPS = "noise.psh";
+		settings.bind = "PostProcess::Noise";
 		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 		settings.uniforms = {{Diligent::SHADER_TYPE_PIXEL, this->_uniforms}};
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
 
-		this->_pipeline = rawrbox::PipelineUtils::createPipeline("PostProcess::Noise", "PostProcess::Noise", settings);
+		this->_pipeline = rawrbox::PipelineUtils::createPipeline("PostProcess::Noise", settings);
 		this->_bind = rawrbox::PipelineUtils::getBind("PostProcess::Noise");
 	}
 

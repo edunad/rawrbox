@@ -49,11 +49,15 @@ namespace rawrbox {
 		uint8_t renderTargets = 1;
 		rawrbox::PipePass renderPass = {};
 		rawrbox::PipeBlending blending = {};
+
 		Diligent::ShaderMacroHelper macros = {};
+		Diligent::IPipelineResourceSignature* signature = nullptr;
 
 		std::string pVS = "";
 		std::string pPS = "";
 		std::string pGS = "";
+
+		std::string bind = "";
 
 		std::vector<rawrbox::PipeUniforms> uniforms = {};
 		std::vector<Diligent::LayoutElement> layout = {};
@@ -64,9 +68,12 @@ namespace rawrbox {
 
 	struct PipeComputeSettings {
 		std::string pCS = "";
+		std::string bind = "";
 
 		std::vector<rawrbox::PipeUniforms> uniforms = {};
 		std::vector<Diligent::ShaderResourceVariableDesc> resources = {};
+
+		Diligent::IPipelineResourceSignature* signature = nullptr;
 
 		Diligent::SHADER_RESOURCE_VARIABLE_TYPE resourceType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 		Diligent::ShaderMacroHelper macros = {};
@@ -81,17 +88,22 @@ namespace rawrbox {
 		static Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> _stateCache;
 
 	public:
+		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> signature;
+		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> signatureBind;
+
 		static Diligent::ISampler* defaultSampler;
 		static bool initialized;
 
 		// ---
 		static void init(Diligent::IRenderDevice& device);
+		static void createSignature();
 
 		static Diligent::ISampler* registerSampler(uint32_t id, Diligent::SamplerDesc type);
 		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::ShaderMacroArray macros = {});
+		static std::vector<Diligent::ImmutableSamplerDesc> compileSamplers(const std::vector<rawrbox::PipeSampler>& samplers);
 
-		static Diligent::IPipelineState* createComputePipeline(const std::string& name, const std::string& bindName, const rawrbox::PipeComputeSettings settings);
-		static Diligent::IPipelineState* createPipeline(const std::string& name, const std::string& bindName, const rawrbox::PipeSettings settings);
+		static Diligent::IPipelineState* createComputePipeline(const std::string& name, rawrbox::PipeComputeSettings settings);
+		static Diligent::IPipelineState* createPipeline(const std::string& name, rawrbox::PipeSettings settings);
 
 		[[nodiscard]] static Diligent::ISampler* getSampler(uint32_t id);
 		[[nodiscard]] static Diligent::IShaderResourceBinding* getBind(const std::string& bindName);

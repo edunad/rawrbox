@@ -8,9 +8,9 @@
     #define UV_FLAG_FLIP_UV 3.0
 
     float2 applyUVTransform(float2 uv) {
-        if(g_Model.textureFlags.x == UV_FLAG_FLIP_U) uv.x = -uv.x;
-        if(g_Model.textureFlags.x == UV_FLAG_FLIP_V) uv.y = -uv.y;
-        if(g_Model.textureFlags.x == UV_FLAG_FLIP_UV) uv.xy = -uv.xy;
+        if(Constants.model.textureFlags.x == UV_FLAG_FLIP_U) uv.x = -uv.x;
+        if(Constants.model.textureFlags.x == UV_FLAG_FLIP_V) uv.y = -uv.y;
+        if(Constants.model.textureFlags.x == UV_FLAG_FLIP_UV) uv.xy = -uv.xy;
 
         return uv;
     }

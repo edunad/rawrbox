@@ -1,7 +1,8 @@
 #include <correction.fxh>
+#include <stencil_pixel_uniforms.fxh>
 
-Texture2DArray g_Texture;
-SamplerState   g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
+Texture2DArray g_Textures[];
+SamplerState   g_Textures_sampler;
 
 struct PSInput {
     float4 Pos    : SV_POSITION;
@@ -14,7 +15,7 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    float a = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV.xy, PSIn.UV.z)).r * PSIn.Color.a;
+    float a = g_Textures[Constants.textureID].Sample(g_Textures_sampler, float3(PSIn.UV.xy, PSIn.UV.z)).r * PSIn.Color.a;
 	if(a <= 0.0) discard;
 
 	PSOut.Color = toLinear(float4(PSIn.Color.rgb, a));

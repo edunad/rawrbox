@@ -7,22 +7,39 @@
 
 namespace rawrbox {
 	// STATIC DATA ----
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialText3D::uniforms;
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialText3D::_uniforms;
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialText3D::_uniforms_pixel;
+
 	bool MaterialText3D::_build = false;
 	// ----------------
 
 	void MaterialText3D::createUniforms() {
-		if (uniforms != nullptr) return;
+		if (_uniforms != nullptr || _uniforms_pixel != nullptr) return;
 
 		// Uniforms -------
-		Diligent::BufferDesc CBDesc;
-		CBDesc.Name = "rawrbox::MaterialText3D::Uniforms";
-		CBDesc.Size = sizeof(rawrbox::MaterialTextUniforms);
-		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+		{
+			Diligent::BufferDesc CBDesc;
+			CBDesc.Name = "rawrbox::MaterialText3D::Vertex::Uniforms";
+			CBDesc.Size = sizeof(rawrbox::MaterialTextUniforms);
+			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &uniforms);
+			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+		}
+		// ------------
+
+		// Pixel Uniforms -------
+		{
+			Diligent::BufferDesc CBDesc;
+			CBDesc.Name = "rawrbox::MaterialText3D::Pixel::Uniforms";
+			CBDesc.Size = sizeof(rawrbox::MaterialBasePixelUniforms);
+			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+
+			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms_pixel);
+		}
 		// ------------
 	}
 
@@ -38,26 +55,20 @@ namespace rawrbox {
 			settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 			settings.cull = Diligent::CULL_MODE_FRONT;
 			settings.layout = rawrbox::VertexData::vLayout();
-			settings.uniforms = {
-			    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
-			    {Diligent::SHADER_TYPE_VERTEX, uniforms, "Constants"}};
-			settings.resources = {
-			    {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
+			settings.signature = rawrbox::PipelineUtils::signature;
 
 			settings.fill = Diligent::FILL_MODE_WIREFRAME;
-			rawrbox::PipelineUtils::createPipeline("3DText::Base::Wireframe", "3DText", settings);
+			rawrbox::PipelineUtils::createPipeline("3DText::Base::Wireframe", settings);
 
 			settings.fill = Diligent::FILL_MODE_SOLID;
 			settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-			rawrbox::PipelineUtils::createPipeline("3DText::Base", "3DText", settings); // ALPHA by default on text
+			rawrbox::PipelineUtils::createPipeline("3DText::Base", settings); // ALPHA by default on text
 
 			_build = true;
 		}
 
 		if (this->_base == nullptr) this->_base = rawrbox::PipelineUtils::getPipeline("3DText::Base");
 		if (this->_base_alpha == nullptr) this->_base_alpha = this->_base;
-
 		if (this->_wireframe == nullptr) this->_wireframe = rawrbox::PipelineUtils::getPipeline("3DText::Base::Wireframe");
-		if (this->_bind == nullptr) this->_bind = rawrbox::PipelineUtils::getBind("3DText");
 	}
 } // namespace rawrbox

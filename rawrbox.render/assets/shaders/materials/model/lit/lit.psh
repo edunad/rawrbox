@@ -9,23 +9,12 @@
 #define READ_CLUSTER_DATA_GRID
 #include <cluster.fxh>
 
+Texture2DArray g_Textures[];
+SamplerState   g_Textures_sampler;
+
 #include <noise.fxh>
 #include <lighting.fxh>
 #include <decaling.fxh>
-
-// TODO : REPLACE WITH BINDLESS RESOURCES
-Texture2DArray g_Texture;
-SamplerState   g_Texture_sampler;
-
-Texture2DArray g_Normal;
-SamplerState   g_Normal_sampler;
-
-Texture2DArray g_RoughMetal;
-SamplerState   g_RoughMetal_sampler;
-
-Texture2DArray g_Emission;
-SamplerState   g_Emission_sampler;
-// --------------------
 
 struct PSInput {
     float4 Pos                      : SV_POSITION;
@@ -58,33 +47,25 @@ float3 UnpackBC5Normal(float2 packedNormal) {
 }
 
 float3 TangentSpaceNormalMapping(float3 sampledNormal, float3x3 TBN) {
-	// Flip Y
-	//sampledNormal.y = 1 - sampledNormal.y;
-
 	float3 normal = UnpackBC5Normal(sampledNormal.xy);
 	normal.xy = sampledNormal.xy * 2.0f - 1.0f;
 	normal = normalize(normal);
+
 	return mul(normal, TBN);
 }
 
-uint GetSliceFromDepth(float depth) {
-    return floor(log(depth) * g_gridParams.x - g_gridParams.y);
-}
-
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    float4 baseColor = g_Texture.Sample(g_Texture_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+    float4 baseColor = g_Textures[Constants.textureIDs.x].Sample(g_Textures_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
     if (baseColor.a <= 0.0) discard;
 
     // NORMAL -----
-	float3 normalTS = g_Normal.Sample(g_Normal_sampler, float3(PSIn.UV, PSIn.TexIndex)).rgb;
+	float3 normalTS = g_Textures[Constants.textureIDs.y].Sample(g_Textures_sampler, float3(PSIn.UV, PSIn.TexIndex)).rgb;
 	float3x3 TBN    = CreateTangentToWorld(PSIn.Normal.xyz, float4(normalize(PSIn.Tangent.xyz), PSIn.Tangent.w));
     float3 normal   = TangentSpaceNormalMapping(normalTS, TBN);
     // -------------
 
-	float4 emissionTS = g_Emission.Sample(g_Emission_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
-
     // ROUGHT / METAL -----
-	float2 roughtMetalTS = g_RoughMetal.Sample(g_RoughMetal_sampler, float3(PSIn.UV, PSIn.TexIndex)).bg;
+	float2 roughtMetalTS = g_Textures[Constants.textureIDs.z].Sample(g_Textures_sampler, float3(PSIn.UV, PSIn.TexIndex)).bg;
     float metal = MetalnessFactor;
     float rough = RoughnessFactor;
 
@@ -94,8 +75,10 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     }
     // -------------
 
+	float4 emissionTS = g_Textures[Constants.textureIDs.w].Sample(g_Textures_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+
     // LIGHT ------
-	float3 V           = normalize(g_cameraPos.xyz - PSIn.WorldPos.xyz);
+	float3 V           = normalize(Camera.cameraPos.xyz - PSIn.WorldPos.xyz);
 	float dither       = InterleavedGradientNoise(PSIn.Pos.xy);
 
 
@@ -109,7 +92,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
     LightResult result = (LightResult)0;
     for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
-        uint2 buckets = g_ClusterDataGrid[gridOffset + bucketIndex];
+        uint2 buckets = ClusterDataGrid[gridOffset + bucketIndex];
 
         // Apply decals ---
         float4 roughtness = 0;

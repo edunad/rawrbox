@@ -68,8 +68,6 @@ namespace light {
 	}
 
 	void Game::contentLoaded() {
-		rawrbox::DECALS::setAtlas(rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/decals.png")->get());
-
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planks.png")->get();
 		auto texNorm = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksNorm.png")->get();
 
@@ -132,12 +130,17 @@ namespace light {
 		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(rawrbox::Vector3f{3.5F, 1.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Purple() * 50, 20.F, 40.F, 4.F);
 		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{0.2F, 0.2F, 0}, rawrbox::Colors::Orange() * 50, 1.F);
 
-		// rawrbox::LIGHTS::addLight<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White(), 5.F); // SUN
+		rawrbox::LIGHTS::addLight<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White()); // SUN
 		// -------------------
 
 		// Decal test --------
-		rawrbox::Matrix4x4 mtx = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({rawrbox::MathUtils::toRad(90), 0, 0}), {-3.5F, 0, 0});
-		rawrbox::DECALS::add(mtx, 1, rawrbox::Colors::Green());
+		auto decalTex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/decals.png")->get();
+
+		rawrbox::Decal d = {};
+		d.setTexture(*decalTex, 3);
+		d.localToWorld = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({rawrbox::MathUtils::toRad(90), 0, 0}), {-3.5F, 0, 0});
+
+		rawrbox::DECALS::add(d);
 		// -------------------
 
 		this->_model->upload();
@@ -171,12 +174,12 @@ namespace light {
 		rawrbox::Window::update();
 
 		if (this->_ready) {
-			/*auto light = rawrbox::LIGHTS::getLight(0);
+			auto light = rawrbox::LIGHTS::getLight(0);
 			if (light != nullptr) {
 				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
-			}*/
+			}
 
-			auto light = rawrbox::LIGHTS::getLight(1);
+			light = rawrbox::LIGHTS::getLight(1);
 			if (light != nullptr) {
 				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
 			}
@@ -186,10 +189,10 @@ namespace light {
 				light->setOffsetPos({std::sin(rawrbox::FRAME * 0.01F) * 0.5F, 0, std::cos(rawrbox::FRAME * 0.01F) * 0.5F});
 			}
 
-			/*light = rawrbox::LIGHTS::getLight(3); // SUN
+			light = rawrbox::LIGHTS::getLight(3); // SUN
 			if (light != nullptr) {
 				light->setDirection({0, std::sin(rawrbox::FRAME * 0.01F) * 1.F, 0});
-			}*/
+			}
 		}
 	}
 

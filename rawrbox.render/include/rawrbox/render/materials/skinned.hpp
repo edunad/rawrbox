@@ -13,6 +13,7 @@ namespace rawrbox {
 
 	protected:
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms_pixel;
 
 	public:
 		using vertexBufferType = rawrbox::VertexBoneData;
@@ -31,12 +32,26 @@ namespace rawrbox {
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
 			auto context = rawrbox::RENDERER->context();
 
-			// SETUP UNIFORMS ----------------------------
-			Diligent::MapHelper<rawrbox::MaterialSkinnedUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			this->bindBaseUniforms<T, rawrbox::MaterialSkinnedUniforms>(mesh, CBConstants);
-			// ------------
+			// SETUP VERTEX UNIFORMS ----------------------------
+			{
+				Diligent::MapHelper<rawrbox::MaterialSkinnedUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				this->bindBaseUniforms<T, rawrbox::MaterialSkinnedUniforms>(mesh, CBConstants);
 
-			(*CBConstants).g_bones = mesh.boneTransforms;
+				(*CBConstants).g_bones = mesh.boneTransforms;
+			}
+			// -----------
+
+			// SETUP PIXEL UNIFORMS ----------------------------
+			{
+				Diligent::MapHelper<rawrbox::MaterialBasePixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				this->bindBasePixelUniforms<T, rawrbox::MaterialBasePixelUniforms>(mesh, CBConstants);
+			}
+			// -----------
+
+			// Bind ---
+			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(this->_uniforms);
+			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(this->_uniforms_pixel);
+			// --------
 		}
 	};
 

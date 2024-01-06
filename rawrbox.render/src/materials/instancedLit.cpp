@@ -18,7 +18,7 @@ namespace rawrbox {
 			helper.AddShaderMacro("INSTANCED", true);
 
 			this->createUniforms();
-			this->createPipelines(id, vertexBufferType::vLayout(true), rawrbox::MaterialLit::_uniforms, rawrbox::MaterialLit::_uniforms_pixel, helper);
+			this->createPipelines(id, vertexBufferType::vLayout(true), helper);
 
 			this->_built = true;
 		}

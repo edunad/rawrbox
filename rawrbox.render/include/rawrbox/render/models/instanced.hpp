@@ -132,19 +132,18 @@ namespace rawrbox {
 			rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix());
 
 			this->_material->init();
-			this->_material->bindTexture(*this->_mesh);
 			this->_material->bindPipeline(*this->_mesh);
 			this->_material->bindUniforms(*this->_mesh);
 			this->_material->bindShaderResources();
 			// -----------
 
-			Diligent::DrawIndexedAttribs DrawAttrs;    // This is an indexed draw call
-			DrawAttrs.IndexType = Diligent::VT_UINT16; // Index type
+			Diligent::DrawIndexedAttribs DrawAttrs;
+			DrawAttrs.IndexType = Diligent::VT_UINT16;
 			DrawAttrs.FirstIndexLocation = this->_mesh->baseIndex;
 			DrawAttrs.BaseVertex = this->_mesh->baseVertex;
 			DrawAttrs.NumIndices = this->_mesh->totalIndex;
 			DrawAttrs.NumInstances = static_cast<uint32_t>(this->_instances.size());
-			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL; // Verify the state of vertex and index buffers
+			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
 			context->DrawIndexed(DrawAttrs);
 		}
 	};

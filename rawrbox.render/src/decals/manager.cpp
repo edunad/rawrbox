@@ -7,8 +7,6 @@ namespace rawrbox {
 
 	std::unique_ptr<Diligent::DynamicBuffer> DECALS::_buffer = nullptr;
 	Diligent::IBufferView* DECALS::_bufferRead = nullptr;
-
-	rawrbox::TextureBase* DECALS::_textureAtlas = nullptr;
 	// -----------
 
 	// PUBLIC ----
@@ -71,7 +69,7 @@ namespace rawrbox {
 		for (auto& d : _decals) {
 			rawrbox::DecalVertex decal = {};
 
-			decal.data = {d->textureIndex, 0, 0, 0};
+			decal.data = {d->textureID, d->textureAtlasIndex, 0, 0};
 			decal.worldToLocal = d->localToWorld.inverse().transpose();
 			decal.color = d->color;
 
@@ -93,15 +91,12 @@ namespace rawrbox {
 		if (uniforms == nullptr) throw std::runtime_error("[RawrBox-DECALS] Buffer not initialized! Did you call 'init' ?");
 		update(); // Update all lights if dirty
 
-		Diligent::MapHelper<rawrbox::DecalConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-		CBConstants->g_DecalSettings = {static_cast<uint32_t>(rawrbox::DECALS::count()), 0, 0, 0};
+		{
+			Diligent::MapHelper<rawrbox::DecalConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			CBConstants->settings = {static_cast<uint32_t>(rawrbox::DECALS::count()), 0, 0, 0};
+		}
 		// --------------
 	}
-
-	// ATLAS ----
-	void DECALS::setAtlas(rawrbox::TextureBase* texture) { _textureAtlas = texture; }
-	rawrbox::TextureBase* DECALS::getAtlas() { return _textureAtlas == nullptr ? rawrbox::MISSING_TEXTURE.get() : _textureAtlas; }
-	//-------------
 
 	// UTILS ----
 	Diligent::IBufferView* DECALS::getBuffer() { return _bufferRead; }
@@ -114,13 +109,11 @@ namespace rawrbox {
 	// ----
 
 	// DECALS ----
-	rawrbox::Decal* DECALS::add(const rawrbox::Matrix4x4& mtx, uint32_t atlasId, const rawrbox::Colorf& color) {
-		auto ptr = std::make_unique<rawrbox::Decal>(mtx, atlasId, color);
-		auto ret = ptr.get();
+	void DECALS::add(rawrbox::Decal decal) {
+		auto ptr = std::make_unique<rawrbox::Decal>(decal);
 		_decals.push_back(std::move(ptr));
 
 		rawrbox::__DECALS_DIRTY__ = true;
-		return ret;
 	}
 
 	bool DECALS::remove(size_t indx) {

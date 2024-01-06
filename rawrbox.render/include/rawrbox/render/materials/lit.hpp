@@ -5,7 +5,8 @@
 
 namespace rawrbox {
 	struct MaterialLitPixelUniforms {
-		rawrbox::Vector4f g_LitData = {};
+		rawrbox::Vector4_t<uint32_t> textureIDs = {};
+		rawrbox::Vector4f litData = {};
 	};
 
 	class MaterialLit : public rawrbox::MaterialBase {
@@ -27,76 +28,32 @@ namespace rawrbox {
 
 		void init() override;
 		void createUniforms() override;
-		void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::IBuffer* uniforms, Diligent::IBuffer* pixelUniforms = nullptr, Diligent::ShaderMacroHelper helper = {}) override;
+		void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper = {}) override;
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
 			auto context = rawrbox::RENDERER->context();
 
-			// SETUP UNIFORMS ----------------------------
+			// SETUP VERTEX UNIFORMS ----------------------------
 			{
 				Diligent::MapHelper<rawrbox::MaterialBaseUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 				this->bindBaseUniforms<T, rawrbox::MaterialBaseUniforms>(mesh, CBConstants);
 			}
+			// -----------
 
+			// SETUP PIXEL UNIFORMS ----------------------------
 			{
 				Diligent::MapHelper<rawrbox::MaterialLitPixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				CBConstants->g_LitData = {mesh.roughnessFactor, mesh.metalnessFactor, mesh.specularFactor, mesh.emissionFactor};
-			} // ------------
-		}
 
-		template <typename T = rawrbox::VertexData>
-		void bindTexture(const rawrbox::Mesh<T>& mesh) {
-			if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] Material not bound, did you call 'init'?");
-
-			rawrbox::TextureBase* textureColor = rawrbox::WHITE_TEXTURE.get();
-			rawrbox::TextureBase* textureDisplacement = rawrbox::BLACK_TEXTURE.get();
-			rawrbox::TextureBase* textureNormal = rawrbox::NORMAL_TEXTURE.get();
-			rawrbox::TextureBase* textureMetalRough = rawrbox::BLACK_TEXTURE.get();
-			rawrbox::TextureBase* textureEmission = rawrbox::BLACK_TEXTURE.get();
-
-			if (mesh.texture != nullptr && mesh.texture->isValid() && !mesh.wireframe) {
-				mesh.texture->update(); // Update texture
-				textureColor = mesh.texture;
+				CBConstants->textureIDs = mesh.textures.getPixelIDs();
+				CBConstants->litData = mesh.textures.getData();
 			}
+			// -----------
 
-			if (mesh.displacementTexture != nullptr && mesh.displacementTexture->isValid()) {
-				mesh.displacementTexture->update(); // Update texture
-				textureDisplacement = mesh.displacementTexture;
-			}
-
-			if (mesh.normalTexture != nullptr && mesh.normalTexture->isValid() && !mesh.wireframe) {
-				mesh.normalTexture->update(); // Update texture
-				textureNormal = mesh.normalTexture;
-			}
-
-			if (mesh.roughtMetalTexture != nullptr && mesh.roughtMetalTexture->isValid() && !mesh.wireframe) {
-				mesh.roughtMetalTexture->update(); // Update texture
-				textureMetalRough = mesh.roughtMetalTexture;
-			}
-
-			if (mesh.emissionTexture != nullptr && mesh.emissionTexture->isValid() && !mesh.wireframe) {
-				mesh.emissionTexture->update(); // Update texture
-				textureEmission = mesh.emissionTexture;
-			}
-
-			auto texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture");
-			if (texBind != nullptr) texBind->Set(textureColor->getHandle());
-
-			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Normal");
-			if (texBind != nullptr) texBind->Set(textureNormal->getHandle());
-
-			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Emission");
-			if (texBind != nullptr) texBind->Set(textureEmission->getHandle());
-
-			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_DecalTexture");
-			if (texBind != nullptr) texBind->Set(rawrbox::DECALS::getAtlas()->getHandle());
-
-			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_RoughMetal");
-			if (texBind != nullptr) texBind->Set(textureMetalRough->getHandle());
-
-			texBind = this->_bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Displacement");
-			if (texBind != nullptr) texBind->Set(textureDisplacement->getHandle());
+			// Bind ---
+			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(this->_uniforms);
+			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(this->_uniforms_pixel);
+			// --------
 		}
 	};
 } // namespace rawrbox

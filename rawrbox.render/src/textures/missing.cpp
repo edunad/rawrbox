@@ -4,6 +4,8 @@
 
 namespace rawrbox {
 	TextureMissing::TextureMissing() {
+		this->setName("MISSING");
+
 		this->_pixels.resize(static_cast<uint32_t>(2 * 2) * 4);
 		this->_size = {2, 2};
 

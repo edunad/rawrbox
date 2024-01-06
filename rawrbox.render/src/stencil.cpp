@@ -4,6 +4,7 @@
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
+#include <rawrbox/render/textures/manager.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
 #include <fmt/format.h>
@@ -17,10 +18,30 @@ namespace rawrbox {
 
 	Stencil::~Stencil() {
 		this->_drawCalls.clear();
+
+		this->_2dPipeline = nullptr;
+		this->_linePipeline = nullptr;
+		this->_textPipeline = nullptr;
+
+		this->_streamingIB.reset();
+		this->_streamingVB.reset();
+
+		RAWRBOX_DESTROY(this->_uniforms);
 	}
 
 	void Stencil::upload() {
-		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
+		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr || this->_uniforms != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
+
+		// Setup buffer ---
+		Diligent::BufferDesc CBDesc;
+		CBDesc.Name = "rawrbox::Stencil::Uniforms";
+		CBDesc.Size = sizeof(rawrbox::StencilUniforms);
+		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+
+		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+		// -------------------
 
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
@@ -29,23 +50,20 @@ namespace rawrbox {
 		settings.pVS = "stencil.vsh";
 		settings.pPS = "stencil.psh";
 		settings.scissors = true;
-		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
+		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Textures"}};
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		settings.layout = rawrbox::PosUVColorVertexData::vLayout();
-		settings.resources = {
-		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
+		settings.signature = rawrbox::PipelineUtils::signature; // Use bindless
 
-		this->_2dPipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2D", "Stencil::2D", settings);
+		this->_2dPipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2D", settings);
 
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
-		this->_linePipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2DLine", "Stencil::2D", settings);
+		this->_linePipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2DLine", settings);
 
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		settings.pPS = "stencil_text.psh";
-		this->_textPipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2DText", "Stencil::2D", settings);
+		this->_textPipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2DText", settings);
 		// -------------
-
-		this->_SRB = rawrbox::PipelineUtils::getBind("Stencil::2D");
 	}
 
 	void Stencil::resize(const rawrbox::Vector2i& size) {
@@ -108,7 +126,7 @@ namespace rawrbox {
 		// Setup --------
 		this->setupDrawCall(
 		    this->_2dPipeline,
-		    rawrbox::WHITE_TEXTURE->getHandle());
+		    rawrbox::WHITE_TEXTURE.get());
 		// ----
 
 		if (this->_outline.isSet()) {
@@ -142,7 +160,7 @@ namespace rawrbox {
 		// Setup --------
 		this->setupDrawCall(
 		    this->_2dPipeline,
-		    rawrbox::WHITE_TEXTURE->getHandle());
+		    rawrbox::WHITE_TEXTURE.get());
 		// ----
 
 		if (this->_outline.isSet()) {
@@ -177,13 +195,13 @@ namespace rawrbox {
 		}
 	}
 
-	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, Diligent::ITextureView* tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd, uint32_t atlas) {
+	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd, uint32_t atlas) {
 		if (col.isTransparent()) return;
 
 		// Setup --------
 		this->setupDrawCall(
 		    this->_2dPipeline,
-		    tex);
+		    &tex);
 		// ----
 
 		auto a = static_cast<float>(atlas);
@@ -199,10 +217,6 @@ namespace rawrbox {
 		// Add to calls
 		this->pushDrawCall();
 		// ----
-	}
-
-	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd, uint32_t atlas) {
-		this->drawTexture(pos, size, tex.getHandle(), col, uvStart, uvEnd, atlas);
 	}
 
 	void Stencil::drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col, size_t roundness, float angleStart, float angleEnd) {
@@ -247,7 +261,7 @@ namespace rawrbox {
 		// Setup --------
 		this->setupDrawCall(
 		    usePTLines ? this->_linePipeline : this->_2dPipeline,
-		    rawrbox::WHITE_TEXTURE->getHandle());
+		    rawrbox::WHITE_TEXTURE.get());
 
 		// ----
 
@@ -315,7 +329,7 @@ namespace rawrbox {
 			// Setup --------
 			this->setupDrawCall(
 			    this->_textPipeline,
-			    font.getPackTexture(glyph)->getHandle());
+			    font.getPackTexture(glyph));
 			// ----
 
 			this->pushVertice(rawrbox::Vector2f(x0, y0), glyph->textureTopLeft, col);
@@ -334,11 +348,11 @@ namespace rawrbox {
 	// --------------------
 
 	// ------RENDERING
-	void Stencil::setupDrawCall(Diligent::IPipelineState* program, Diligent::ITextureView* texture) {
+	void Stencil::setupDrawCall(Diligent::IPipelineState* program, const rawrbox::TextureBase* texture) {
 		this->_currentDraw.clear();
 
 		this->_currentDraw.stencilProgram = program;
-		this->_currentDraw.textureHandle = texture;
+		this->_currentDraw.textureId = texture->getTextureID();
 		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::AABBi(0, 0, this->_windowSize.x, this->_windowSize.y) : this->_clips.back();
 	}
 
@@ -348,7 +362,7 @@ namespace rawrbox {
 			bool canMerge = oldCall.clip == this->_currentDraw.clip &&
 					oldCall.cull == this->_currentDraw.cull &&
 					oldCall.stencilProgram == this->_currentDraw.stencilProgram &&
-					oldCall.textureHandle == this->_currentDraw.textureHandle;
+					oldCall.textureId == this->_currentDraw.textureId;
 
 			if (canMerge) {
 				for (auto& ind : this->_currentDraw.indices) {
@@ -370,7 +384,7 @@ namespace rawrbox {
 		size_t contextID = 0;
 
 		for (auto& group : this->_drawCalls) {
-			if (group.stencilProgram == nullptr || group.textureHandle == nullptr) continue;
+			if (group.stencilProgram == nullptr) continue;
 			if (group.vertices.empty() || group.indices.empty()) continue;
 
 			auto vertSize = static_cast<uint32_t>(group.vertices.size());
@@ -390,17 +404,26 @@ namespace rawrbox {
 			this->_streamingIB->release(contextID);
 			// -------------------
 
+			// SETUP UNIFORMS ----------------------------
+			{
+				Diligent::MapHelper<rawrbox::StencilUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				CBConstants->textureID = group.textureId;
+			}
+			// -----------
+
+			// Bind ---
+			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(this->_uniforms);
+			// --------
+
 			// Render ------------
 			const std::array<uint64_t, 1> offsets = {VBOffset};
 			std::array<Diligent::IBuffer*, 1> pBuffs = {this->_streamingVB->buffer()};
-
-			this->_SRB->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Texture")->Set(group.textureHandle);
 
 			context->SetVertexBuffers(0, 1, pBuffs.data(), offsets.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 			context->SetIndexBuffer(this->_streamingIB->buffer(), IBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 			context->SetPipelineState(group.stencilProgram);
-			context->CommitShaderResources(this->_SRB, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			context->CommitShaderResources(rawrbox::PipelineUtils::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 			// SCISSOR ---
 			Diligent::Rect scissor;
@@ -414,7 +437,7 @@ namespace rawrbox {
 
 			Diligent::DrawIndexedAttribs DrawAttrs;
 			DrawAttrs.IndexType = Diligent::VT_UINT32;
-			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
+			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
 			DrawAttrs.NumIndices = indSize;
 			DrawAttrs.BaseVertex = 0;
 
