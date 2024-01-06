@@ -20,7 +20,7 @@ namespace rawrbox {
 	};
 
 	struct MaterialBasePixelUniforms {
-		rawrbox::Vector4_t<uint32_t> textureIDs = {};
+		uint32_t textureID = {};
 	};
 
 	class MaterialBase {
@@ -82,7 +82,7 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBasePixelUniforms>
 		void bindBasePixelUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<P>& helper) {
-			helper->textureIDs = mesh.textures.getPixelIDs();
+			helper->textureID = mesh.textures.getPixelIDs().x;
 		}
 
 		template <typename T = rawrbox::VertexData>

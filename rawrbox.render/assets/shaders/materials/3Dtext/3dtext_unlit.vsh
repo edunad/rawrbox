@@ -6,7 +6,7 @@ struct ConstantsStruct {
 
 ConstantBuffer<ConstantsStruct> Constants;
 
-#define Billboard g_Billboard
+#define Billboard Constants.g_Billboard
 
 #define TRANSFORM_BILLBOARD
 #include <model_transforms.fxh>

@@ -1,20 +1,22 @@
 #ifndef INCLUDED_LIGHT_UNIFORMS
     #define INCLUDED_LIGHT_UNIFORMS
 
-    cbuffer LightConstants {
+    struct LightConstantsStruct {
         // Light ---------
-        uint4 g_LightSettings;
+        uint4 lightSettings;
         // ------
 
         // Ambient ---
-        float4 g_AmbientColor;
+        float4 ambientColor;
         // -----
 
         // Fog ---
-        float4 g_FogColor;
-        float4 g_FogSettings;
+        float4 fogColor;
+        float4 fogSettings;
         // -----
     };
+
+    ConstantBuffer<LightConstantsStruct> LightConstants;
 
     struct Light {
         float4 position;
@@ -43,5 +45,5 @@
     #define LIGHT_SPOT        2
     #define LIGHT_DIRECTIONAL 3
 
-    #define TOTAL_LIGHTS g_LightSettings.y
+    #define TOTAL_LIGHTS LightConstants.lightSettings.y
 #endif

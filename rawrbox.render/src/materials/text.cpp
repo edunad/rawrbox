@@ -7,22 +7,39 @@
 
 namespace rawrbox {
 	// STATIC DATA ----
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialText3D::uniforms;
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialText3D::_uniforms;
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialText3D::_uniforms_pixel;
+
 	bool MaterialText3D::_build = false;
 	// ----------------
 
 	void MaterialText3D::createUniforms() {
-		if (uniforms != nullptr) return;
+		if (_uniforms != nullptr || _uniforms_pixel != nullptr) return;
 
 		// Uniforms -------
-		Diligent::BufferDesc CBDesc;
-		CBDesc.Name = "rawrbox::MaterialText3D::Uniforms";
-		CBDesc.Size = sizeof(rawrbox::MaterialTextUniforms);
-		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+		{
+			Diligent::BufferDesc CBDesc;
+			CBDesc.Name = "rawrbox::MaterialText3D::Vertex::Uniforms";
+			CBDesc.Size = sizeof(rawrbox::MaterialTextUniforms);
+			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
-		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &uniforms);
+			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+		}
+		// ------------
+
+		// Pixel Uniforms -------
+		{
+			Diligent::BufferDesc CBDesc;
+			CBDesc.Name = "rawrbox::MaterialText3D::Pixel::Uniforms";
+			CBDesc.Size = sizeof(rawrbox::MaterialBasePixelUniforms);
+			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+
+			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms_pixel);
+		}
 		// ------------
 	}
 
@@ -52,7 +69,6 @@ namespace rawrbox {
 
 		if (this->_base == nullptr) this->_base = rawrbox::PipelineUtils::getPipeline("3DText::Base");
 		if (this->_base_alpha == nullptr) this->_base_alpha = this->_base;
-
 		if (this->_wireframe == nullptr) this->_wireframe = rawrbox::PipelineUtils::getPipeline("3DText::Base::Wireframe");
 	}
 } // namespace rawrbox

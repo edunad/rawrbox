@@ -54,5 +54,5 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 		return;
 
 	uint clusterIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
-    g_Clusters[clusterIndex] = ComputeCluster(clusterIndex3D);
+    Clusters[clusterIndex] = ComputeCluster(clusterIndex3D);
 }

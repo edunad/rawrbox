@@ -31,16 +31,16 @@ namespace rawrbox {
 
 	struct LightConstants {
 		// Light ---------
-		std::array<uint32_t, 4> g_LightSettings = {};
+		rawrbox::Vector4_t<uint32_t> lightSettings = {};
 		// ------
 
 		// Ambient ---
-		rawrbox::Colorf g_AmbientColor = {};
+		rawrbox::Colorf ambientColor = {};
 		// -----
 
 		// Fog ----
-		rawrbox::Colorf g_FogColor = {};
-		rawrbox::Vector4f g_FogSettings = {};
+		rawrbox::Colorf fogColor = {};
+		rawrbox::Vector4f fogSettings = {};
 		// --------
 	};
 

@@ -10,9 +10,10 @@ namespace rawrbox {
 	class MaterialText3D : public rawrbox::MaterialUnlit {
 		static bool _build;
 
-	public:
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms_pixel;
 
+	public:
 		using vertexBufferType = rawrbox::VertexData;
 
 		MaterialText3D() = default;
@@ -30,12 +31,19 @@ namespace rawrbox {
 			auto renderer = rawrbox::RENDERER;
 			auto context = renderer->context();
 
-			// SETUP UNIFORMS ----------------------------
+			// SETUP VERTEX UNIFORMS ----------------------------
 			{
-				Diligent::MapHelper<rawrbox::MaterialTextUniforms> CBConstants(context, this->uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				Diligent::MapHelper<rawrbox::MaterialTextUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 				CBConstants->_gBillboard = mesh.getData("billboard_mode");
 			}
-			// --------
+			// -----------
+
+			// SETUP PIXEL UNIFORMS ----------------------------
+			{
+				Diligent::MapHelper<rawrbox::MaterialBasePixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				this->bindBasePixelUniforms<T, rawrbox::MaterialBasePixelUniforms>(mesh, CBConstants);
+			}
+			// -----------
 
 			// Bind ---
 			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(this->_uniforms);

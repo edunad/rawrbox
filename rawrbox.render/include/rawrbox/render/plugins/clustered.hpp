@@ -69,14 +69,15 @@ namespace rawrbox {
 
 		virtual Diligent::IBufferView* getClustersBuffer(bool readOnly = true);
 		virtual Diligent::IBufferView* getDataGridBuffer(bool readOnly = true);
-
-		virtual void applyPipelineSettings(rawrbox::PipeSettings& settings, bool light = false);
 		// ----------
 
 		[[nodiscard]] const std::string getID() const override;
 
 		void initialize(const rawrbox::Vector2i& size) override;
 		void resize(const rawrbox::Vector2i& size) override;
+
+		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig) override;
+		void bind(Diligent::IPipelineResourceSignature& sig) override;
 
 		void preRender() override;
 	};

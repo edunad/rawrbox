@@ -3,6 +3,7 @@
 #include <rawrbox/render/cameras/orbital.hpp>
 #include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/texture.hpp>
@@ -30,6 +31,7 @@ namespace decal_test {
 		// Setup renderer
 		auto render = window->createRenderer();
 		render->skipIntros(true);
+		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
@@ -73,18 +75,23 @@ namespace decal_test {
 	}
 
 	void Game::contentLoaded() {
-		rawrbox::DECALS::setAtlas(rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/decals.png")->get());
-
 		std::random_device prng;
 		std::uniform_int_distribution<uint16_t> dist(0, 4);
 		std::uniform_real_distribution<float> distRot(-1.5F, 1.5F);
 
-		for (int i = 0; i < 30; i++) {
-			rawrbox::Matrix4x4 mtx = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({rawrbox::MathUtils::toRad(90), 0, 0}), {distRot(prng), 0.F, distRot(prng) - 1.55F});
-			rawrbox::DECALS::add(mtx, dist(prng), rawrbox::Colors::Green());
+		auto decalTex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/decals.png")->get();
+		rawrbox::Decal d = {};
 
-			rawrbox::Matrix4x4 mtx2 = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, {}, {distRot(prng), distRot(prng) + 1.25F, 0.F});
-			rawrbox::DECALS::add(mtx2, dist(prng), rawrbox::Colors::Red());
+		for (int i = 0; i < 30; i++) {
+			d.setTexture(*decalTex, dist(prng));
+			d.localToWorld = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({rawrbox::MathUtils::toRad(90), 0, 0}), {distRot(prng), 0.F, distRot(prng) - 1.55F});
+			d.color = rawrbox::Colors::Green();
+			rawrbox::DECALS::add(d);
+
+			d.setTexture(*decalTex, dist(prng));
+			d.localToWorld = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, {}, {distRot(prng), distRot(prng) + 1.25F, 0.F});
+			d.color = rawrbox::Colors::Red();
+			rawrbox::DECALS::add(d);
 		}
 
 		// rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, -1.F}, rawrbox::Colors::White() * 0.5F, 5.F);

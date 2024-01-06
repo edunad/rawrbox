@@ -1,9 +1,8 @@
 #ifndef INCLUDED_UNLIT_PIXEL_UNIFORMS
 #define INCLUDED_UNLIT_PIXEL_UNIFORMS
+    struct ConstantsStruct {
+        uint textureID;
+    };
 
-struct ConstantsStruct {
-    uint4 textureIDs;
-};
-
-ConstantBuffer<ConstantsStruct> Constants;
+    ConstantBuffer<ConstantsStruct> Constants;
 #endif

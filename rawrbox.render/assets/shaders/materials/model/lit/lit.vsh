@@ -4,7 +4,7 @@
 #define TEXTURE_DATA
 #include <material.fxh>
 
-#define TRANSFORM_DISPLACEMENT
+//#define TRANSFORM_DISPLACEMENT
 #define TRANSFORM_PSX
 #define TRANSFORM_BILLBOARD
 #ifdef SKINNED

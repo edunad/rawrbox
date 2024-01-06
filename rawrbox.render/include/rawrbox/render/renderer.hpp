@@ -104,7 +104,7 @@ namespace rawrbox {
 		//   virtual void gpuCheck();
 
 	public:
-		uint32_t MAX_TEXTURES = 2048; // 4096; // NOTE: ON DX12 IF THIS VALUE IS TOO HIGH, YOU MIGHT NEED TO INCREASE THE HEAP MEMORY
+		uint32_t MAX_TEXTURES = 4096; // NOTE: ON DX12 IF THIS VALUE IS TOO HIGH, YOU MIGHT NEED TO INCREASE THE HEAP MEMORY
 		std::function<void()> onIntroCompleted = nullptr;
 
 		RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize, const rawrbox::Colorf& clearColor = rawrbox::Colors::Black());
@@ -114,7 +114,7 @@ namespace rawrbox {
 		RendererBase& operator=(RendererBase&&) = delete;
 		virtual ~RendererBase();
 
-		virtual void init(Diligent::DeviceFeatures features = {}, uint32_t HEAP_SIZE = 65536); // HEAP_SIZE ONLY AVAILABLE ON DX12
+		virtual void init(Diligent::DeviceFeatures features = {}, uint32_t HEAP_SIZE = 0); // HEAP_SIZE ONLY AVAILABLE ON DX12
 		virtual void resize(const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize);
 
 		// PLUGINS ---------------------------
@@ -136,6 +136,8 @@ namespace rawrbox {
 			if (fnd == this->_renderPlugins.end()) return nullptr;
 			return dynamic_cast<T*>(fnd->second.get());
 		}
+
+		[[nodiscard]] virtual const std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>>& getPlugins() const;
 		// -----------------------------------
 
 		virtual void setDrawCall(std::function<void(const rawrbox::DrawPass& pass)> call);

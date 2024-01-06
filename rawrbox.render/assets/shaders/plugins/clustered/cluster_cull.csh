@@ -53,7 +53,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 		return;
 
 	uint clusterIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
-    ClusterAABB cluster = g_Clusters[clusterIndex];
+    ClusterAABB cluster = Clusters[clusterIndex];
 
 	float clusterRadius = sqrt(dot(cluster.Extents.xyz, cluster.Extents.xyz));
 
@@ -69,7 +69,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 
         [loop]
         for(uint i = 0; i < CLUSTERS_Z && lightIndex < TOTAL_LIGHTS; ++i) {
-            Light light = g_Lights[lightIndex];
+            Light light = Lights[lightIndex];
             ++lightIndex;
 
             if(light.type == LIGHT_POINT) {
@@ -101,10 +101,10 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 
         [loop]
         for(uint o = 0; o < CLUSTERS_Z && decalIndex < TOTAL_DECALS; ++o) {
-            Decal decal = g_Decals[decalIndex];
+            Decal decal = Decals[decalIndex];
             ++decalIndex;
 
-            if(decal.data.y == 1) { //test
+            if(decal.data.w == 1) { //test
                 if(BoxInAABB(decal.worldToLocal, cluster)) {
                     decalMask |= 1u << o;
                 }
@@ -113,6 +113,6 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
             }
         }
 
-	    g_ClusterDataGrid[clusterIndex * CLUSTERED_NUM_BUCKETS + bucketIndex] = uint2(lightMask, decalMask);
+	    ClusterDataGrid[clusterIndex * CLUSTERED_NUM_BUCKETS + bucketIndex] = uint2(lightMask, decalMask);
     }
 }

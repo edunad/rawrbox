@@ -125,10 +125,10 @@ namespace rawrbox {
 		{
 			Diligent::MapHelper<rawrbox::LightConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 
-			CBConstants->g_LightSettings = {fullbright ? 1U : 0U, static_cast<uint32_t>(rawrbox::LIGHTS::count()), 0, 0}; // other light settings
-			CBConstants->g_AmbientColor = _ambient;
-			CBConstants->g_FogColor = _fog_color;
-			CBConstants->g_FogSettings = {static_cast<float>(_fog_type), _fog_end, _fog_density, 0.F};
+			CBConstants->lightSettings = {fullbright ? 1U : 0U, static_cast<uint32_t>(rawrbox::LIGHTS::count()), 0, 0}; // other light settings
+			CBConstants->ambientColor = _ambient;
+			CBConstants->fogColor = _fog_color;
+			CBConstants->fogSettings = {static_cast<float>(_fog_type), _fog_end, _fog_density, 0.F};
 		}
 	}
 

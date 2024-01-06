@@ -47,7 +47,6 @@ namespace rawrbox {
 
 		// Enable required features --------------------------
 		features.WireframeFill = Diligent::DEVICE_FEATURE_STATE_ENABLED;
-		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.SparseResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 
 		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
@@ -81,8 +80,10 @@ namespace rawrbox {
 
 					Diligent::EngineD3D12CreateInfo EngineCI;
 					EngineCI.Features = features;
-					// EngineCI.GPUDescriptorHeapDynamicSize[0] = HEAP_SIZE * 4;
-					// EngineCI.GPUDescriptorHeapSize[0] = HEAP_SIZE; // For mutable mode
+					if (HEAP_SIZE != 0) {
+						EngineCI.GPUDescriptorHeapDynamicSize[0] = HEAP_SIZE * 4;
+						EngineCI.GPUDescriptorHeapSize[0] = HEAP_SIZE; // For mutable mode
+					}
 
 					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
 					pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc{}, this->_window, &this->_swapChain);
@@ -162,6 +163,18 @@ namespace rawrbox {
 
 		if (this->_engineFactory == nullptr) throw std::runtime_error("[RawrBox-Renderer] Failed to initialize");
 
+		// Setup camera -----
+		if (this->_camera != nullptr) this->_camera->initialize();
+		// ------------------
+
+		// PLUGIN INITIALIZE ---
+		for (auto& plugin : this->_renderPlugins) {
+			if (plugin.second == nullptr) continue;
+			plugin.second->initialize(this->getSize());
+		}
+		// -----------------------
+
+		// Init pipelines ---
 		rawrbox::PipelineUtils::init(*this->device());
 		// ----------------------
 
@@ -201,11 +214,7 @@ namespace rawrbox {
 		}
 		// -------------------------
 
-		// Setup camera -----
-		if (this->_camera != nullptr) this->_camera->initialize();
-		// ------------------
-
-		// PLUGIN INITIALIZE ---
+		// Setup pipeline bindless signature
 		rawrbox::PipelineUtils::createSignature();
 		// -----------------------
 
@@ -218,13 +227,6 @@ namespace rawrbox {
 		this->_render = std::make_unique<rawrbox::TextureRender>(this->getSize()); // TODO: RESCALE
 		this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
 		// --------
-
-		// PLUGIN INITIALIZE ---
-		for (auto& plugin : this->_renderPlugins) {
-			if (plugin.second == nullptr) continue;
-			plugin.second->initialize(this->getSize());
-		}
-		// -----------------------
 
 		this->playIntro();
 		this->_initialized = true;
@@ -246,6 +248,10 @@ namespace rawrbox {
 		this->_size = size;
 		this->_monitorSize = monitorSize;
 	}
+
+	// PLUGINS ---------------------------
+	const std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>>& RendererBase::getPlugins() const { return this->_renderPlugins; }
+	// -----------------------------------
 
 	void RendererBase::setDrawCall(std::function<void(const rawrbox::DrawPass& pass)> call) { this->_drawCall = call; }
 

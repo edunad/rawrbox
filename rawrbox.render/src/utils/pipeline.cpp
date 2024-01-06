@@ -67,6 +67,13 @@ namespace rawrbox {
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures_sampler", 1, Diligent::SHADER_RESOURCE_TYPE_SAMPLER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
 		};
 
+		// Add extra signatures ----
+		for (auto& plugin : rawrbox::RENDERER->getPlugins()) {
+			if (plugin.second == nullptr) continue;
+			plugin.second->signatures(resources);
+		}
+		// -------------------------
+
 		PRSDesc.Resources = resources.data();
 		PRSDesc.NumResources = static_cast<uint8_t>(resources.size());
 		PRSDesc.UseCombinedTextureSamplers = true;
@@ -91,6 +98,13 @@ namespace rawrbox {
 		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Camera")->Set(rawrbox::RENDERER->camera()->uniforms());
 		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Camera")->Set(rawrbox::RENDERER->camera()->uniforms());
 		// ----------------
+
+		// Add extra signatures ----
+		for (auto& plugin : rawrbox::RENDERER->getPlugins()) {
+			if (plugin.second == nullptr) continue;
+			plugin.second->bind(*signature);
+		}
+		// -------------------------
 
 		signature->CreateShaderResourceBinding(&signatureBind, true);
 

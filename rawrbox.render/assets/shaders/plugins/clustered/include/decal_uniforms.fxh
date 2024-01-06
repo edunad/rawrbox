@@ -2,9 +2,11 @@
     #define INCLUDED_DECAL_UNIFORMS
 
     #ifdef DECAL_CONSTANTS
-        cbuffer DecalConstants {
-            uint4 g_DecalSettings;
+        struct DecalConstantsStruct {
+            uint4 settings;
         };
+
+        ConstantBuffer<DecalConstantsStruct> DecalConstants;
     #endif
 
     struct Decal {
@@ -13,5 +15,5 @@
         float4 color;
     };
 
-    #define TOTAL_DECALS g_DecalSettings.x
+    #define TOTAL_DECALS DecalConstants.settings.x
 #endif

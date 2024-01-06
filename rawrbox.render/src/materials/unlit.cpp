@@ -1,5 +1,6 @@
 
 #include <rawrbox/render/materials/unlit.hpp>
+#include <rawrbox/render/plugins/clustered.hpp>
 
 namespace rawrbox {
 
@@ -35,31 +36,10 @@ namespace rawrbox {
 		settings.layout = layout;
 		settings.signature = rawrbox::PipelineUtils::signature; // Use bindless
 
-		/*settings.uniforms = {
-		    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
-
-		    //   {Diligent::SHADER_TYPE_PIXEL, rawrbox::DECALS::uniforms, "Decals"},
-		    // {Diligent::SHADER_TYPE_PIXEL, rawrbox::DECALS::getBuffer(), "g_Decals"},
-
-		    {Diligent::SHADER_TYPE_VERTEX, uniforms, "Constants"},
-		    {Diligent::SHADER_TYPE_PIXEL, pixelUniforms, "Constants"}
-		};
-
-		// Create signatures ---
-		rawrbox::PipeSignatureSettings signature = {};
-		signature.immutableSamplers = settings.immutableSamplers;
-		signature.desc = {
-		    Diligent::PipelineResourceDesc{Diligent::SHADER_TYPE_VERTEX, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    Diligent::PipelineResourceDesc{Diligent::SHADER_TYPE_VERTEX, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-
-		    Diligent::PipelineResourceDesc{Diligent::SHADER_TYPE_PIXEL, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-
-		    Diligent::PipelineResourceDesc{Diligent::SHADER_TYPE_PIXEL, "g_Textures", rawrbox::RENDERER->MAX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
-		    Diligent::PipelineResourceDesc{Diligent::SHADER_TYPE_PIXEL, "g_Textures_sampler", 1, Diligent::SHADER_RESOURCE_TYPE_SAMPLER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
-		};
-
-		settings.signature = rawrbox::PipelineUtils::createSignature(id, signature);
-		// ---------------------*/
+		auto cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered::Light");
+		if (cluster != nullptr) {
+			settings.macros = cluster->getClusterMacros() + helper;
+		}
 
 		rawrbox::PipelineUtils::createPipeline(id, settings);
 

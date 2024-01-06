@@ -4,8 +4,9 @@
 #include <rawrbox/render/plugins/clustered.hpp>
 
 namespace rawrbox {
-	struct MaterialLitPixelUniforms : public rawrbox::MaterialBasePixelUniforms {
-		rawrbox::Vector4f g_LitData = {};
+	struct MaterialLitPixelUniforms {
+		rawrbox::Vector4_t<uint32_t> textureIDs = {};
+		rawrbox::Vector4f litData = {};
 	};
 
 	class MaterialLit : public rawrbox::MaterialBase {
@@ -43,9 +44,9 @@ namespace rawrbox {
 			// SETUP PIXEL UNIFORMS ----------------------------
 			{
 				Diligent::MapHelper<rawrbox::MaterialLitPixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				this->bindBasePixelUniforms<T, rawrbox::MaterialLitPixelUniforms>(mesh, CBConstants);
 
-				CBConstants->g_LitData = mesh.textures.getData();
+				CBConstants->textureIDs = mesh.textures.getPixelIDs();
+				CBConstants->litData = mesh.textures.getData();
 			}
 			// -----------
 

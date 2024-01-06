@@ -36,14 +36,8 @@ namespace rawrbox {
 
 		// No slot ---
 		auto slot = static_cast<uint32_t>(_textureHandles.size());
-		if (slot == static_cast<uint32_t>(rawrbox::RENDERER->MAX_TEXTURES / 1.2F)) {
-			fmt::print("[RawrBox-TextureManager] Aproaching max texture limit of '{}'\n", rawrbox::RENDERER->MAX_TEXTURES);
-			return slot;
-		}
-
-		if (slot >= rawrbox::RENDERER->MAX_TEXTURES) {
-			throw std::runtime_error(fmt::format("[RawrBox-TextureManager] Max texture limit reached! Cannot allocate texture, remove some unecessary textures or increase MAX_TEXTURES on renderer\n", rawrbox::RENDERER->MAX_TEXTURES));
-		}
+		if (slot == static_cast<uint32_t>(rawrbox::RENDERER->MAX_TEXTURES / 1.2F)) fmt::print("[RawrBox-TextureManager] Aproaching max texture limit of '{}'\n", rawrbox::RENDERER->MAX_TEXTURES);
+		if (slot >= rawrbox::RENDERER->MAX_TEXTURES) throw std::runtime_error(fmt::format("[RawrBox-TextureManager] Max texture limit reached! Cannot allocate texture, remove some unecessary textures or increase MAX_TEXTURES on renderer\n", rawrbox::RENDERER->MAX_TEXTURES));
 
 		_textureHandles.push_back(pTextureSRV);
 		fmt::print("[RawrBox-TextureManager] Registering bindless texture '{}' to slot '{}'\n", texture->getName(), slot);

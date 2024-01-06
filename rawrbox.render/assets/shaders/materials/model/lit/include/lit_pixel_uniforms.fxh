@@ -3,13 +3,16 @@
 
 #include <camera.fxh>
 
-cbuffer Constants {
-    float4  g_LitData;
+struct ConstantsStruct {
+    uint4  textureIDs;
+    float4 litData;
 };
 
-#define RoughnessFactor    g_LitData.x
-#define MetalnessFactor    g_LitData.y
-#define SpecularFactor     g_LitData.z
-#define EmissionFactor     g_LitData.w
+ConstantBuffer<ConstantsStruct> Constants;
+
+#define RoughnessFactor    Constants.litData.x
+#define MetalnessFactor    Constants.litData.y
+#define SpecularFactor     Constants.litData.z
+#define EmissionFactor     Constants.litData.w
 
 #endif

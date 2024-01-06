@@ -37,9 +37,9 @@ namespace rawrbox {
 
 			{
 				Diligent::MapHelper<rawrbox::MaterialLitPixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				this->bindBasePixelUniforms<T, rawrbox::MaterialLitPixelUniforms>(mesh, CBConstants);
 
-				CBConstants->g_LitData = mesh.textures.getData();
+				CBConstants->textureIDs = mesh.textures.getPixelIDs();
+				CBConstants->litData = mesh.textures.getData();
 			} // ------------
 
 			// Bind ---

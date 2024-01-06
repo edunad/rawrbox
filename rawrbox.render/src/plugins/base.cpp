@@ -12,6 +12,8 @@ namespace rawrbox {
 	// --------------
 
 	void RenderPlugin::requirements(Diligent::DeviceFeatures& /*features*/) {}
+	void RenderPlugin::signatures(std::vector<Diligent::PipelineResourceDesc>& /*sig*/) {}
+	void RenderPlugin::bind(Diligent::IPipelineResourceSignature& /*sig*/) {}
 
 	void RenderPlugin::initialize(const rawrbox::Vector2i& /*renderSize*/) {}
 	void RenderPlugin::resize(const rawrbox::Vector2i& /*renderSize*/) {}

@@ -45,6 +45,7 @@ namespace rawrbox {
 	bool ConsoleWrapper::registerVariable(const std::string& /*command*/, sol::object /*variable*/, sol::optional<std::string> /*description*/, sol::optional<uint32_t> /*flags*/) {
 		throw std::runtime_error("TODO");
 	}
+
 	void ConsoleWrapper::registerLua(sol::state& lua) {
 		lua.new_usertype<ConsoleWrapper>("console",
 		    sol::no_constructor,

@@ -11,12 +11,25 @@
 namespace rawrbox {
 	struct Decal {
 		rawrbox::Matrix4x4 localToWorld = {};
-		uint32_t textureIndex = 0;
 		rawrbox::Colorf color = {};
+
+		uint32_t textureID = 0;
+		uint32_t textureAtlasIndex = 0;
+
+		void setTexture(const rawrbox::TextureBase& texture, uint32_t id = 0) {
+			if (!texture.isValid()) throw std::runtime_error("[RawrBox-DECAL] Invalid texture, not uploaded?");
+			this->textureID = texture.getTextureID();
+			this->textureAtlasIndex = id;
+		}
+
+		Decal() = default;
+		Decal(const rawrbox::Matrix4x4& _mtx, const rawrbox::TextureBase& _texture, const rawrbox::Colorf& _color, uint32_t _atlas = 0) : localToWorld(_mtx), color(_color), textureAtlasIndex(_atlas) {
+			this->setTexture(_texture);
+		}
 	};
 
 	struct DecalConstants {
-		rawrbox::Vector4_t<uint32_t> g_DecalSettings = {};
+		rawrbox::Vector4_t<uint32_t> settings = {};
 	};
 
 	struct DecalVertex {
@@ -32,8 +45,6 @@ namespace rawrbox {
 		static std::unique_ptr<Diligent::DynamicBuffer> _buffer;
 		static Diligent::IBufferView* _bufferRead;
 
-		static rawrbox::TextureBase* _textureAtlas;
-
 		static void update();
 
 	public:
@@ -44,11 +55,6 @@ namespace rawrbox {
 
 		static void bindUniforms();
 
-		// ATLAS ----
-		static void setAtlas(rawrbox::TextureBase* texture);
-		static rawrbox::TextureBase* getAtlas();
-		//-------------
-
 		// UTILS ----
 		static Diligent::IBufferView* getBuffer();
 
@@ -57,7 +63,8 @@ namespace rawrbox {
 		// ----------
 
 		// DECALS ----
-		static rawrbox::Decal* add(const rawrbox::Matrix4x4& mtx, uint32_t atlasId, const rawrbox::Colorf& color = rawrbox::Colors::White());
+		static void add(rawrbox::Decal decal);
+
 		static bool remove(size_t indx);
 		static bool remove(rawrbox::Decal* light);
 		// ---------
