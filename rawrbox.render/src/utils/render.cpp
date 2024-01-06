@@ -18,10 +18,11 @@ namespace rawrbox {
 		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;              // Disable depth
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP; // Disable cull
+		settings.bind = "Utils::QUAD";
 		settings.resources = {
 		    Diligent::ShaderResourceVariableDesc{Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE}};
 
-		_pipe = rawrbox::PipelineUtils::createPipeline("Utils::QUAD", "Utils::QUAD", settings);
+		_pipe = rawrbox::PipelineUtils::createPipeline("Utils::QUAD", settings);
 		_SRB = rawrbox::PipelineUtils::getBind("Utils::QUAD");
 	}
 

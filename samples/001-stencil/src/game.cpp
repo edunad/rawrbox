@@ -17,7 +17,7 @@
 namespace stencil {
 
 	void Game::setupGLFW() {
-		auto window = rawrbox::Window::createWindow();
+		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12);
 		window->setMonitor(-1);
 		window->setTitle("STENCIL TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);

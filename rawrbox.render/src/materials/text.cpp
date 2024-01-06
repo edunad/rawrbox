@@ -38,18 +38,14 @@ namespace rawrbox {
 			settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 			settings.cull = Diligent::CULL_MODE_FRONT;
 			settings.layout = rawrbox::VertexData::vLayout();
-			settings.uniforms = {
-			    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
-			    {Diligent::SHADER_TYPE_VERTEX, uniforms, "Constants"}};
-			settings.resources = {
-			    {Diligent::SHADER_TYPE_PIXEL, "g_Texture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC}};
+			settings.signature = rawrbox::PipelineUtils::signature;
 
 			settings.fill = Diligent::FILL_MODE_WIREFRAME;
-			rawrbox::PipelineUtils::createPipeline("3DText::Base::Wireframe", "3DText", settings);
+			rawrbox::PipelineUtils::createPipeline("3DText::Base::Wireframe", settings);
 
 			settings.fill = Diligent::FILL_MODE_SOLID;
 			settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-			rawrbox::PipelineUtils::createPipeline("3DText::Base", "3DText", settings); // ALPHA by default on text
+			rawrbox::PipelineUtils::createPipeline("3DText::Base", settings); // ALPHA by default on text
 
 			_build = true;
 		}
@@ -58,6 +54,5 @@ namespace rawrbox {
 		if (this->_base_alpha == nullptr) this->_base_alpha = this->_base;
 
 		if (this->_wireframe == nullptr) this->_wireframe = rawrbox::PipelineUtils::getPipeline("3DText::Base::Wireframe");
-		if (this->_bind == nullptr) this->_bind = rawrbox::PipelineUtils::getBind("3DText");
 	}
 } // namespace rawrbox

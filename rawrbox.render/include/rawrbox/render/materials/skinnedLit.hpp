@@ -41,6 +41,11 @@ namespace rawrbox {
 
 				CBConstants->g_LitData = mesh.textures.getData();
 			} // ------------
+
+			// Bind ---
+			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(this->_uniforms);
+			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(this->_uniforms_pixel);
+			// --------
 		}
 	};
 

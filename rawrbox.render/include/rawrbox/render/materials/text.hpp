@@ -31,8 +31,16 @@ namespace rawrbox {
 			auto context = renderer->context();
 
 			// SETUP UNIFORMS ----------------------------
-			Diligent::MapHelper<rawrbox::MaterialTextUniforms> CBConstants(context, this->uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			CBConstants->_gBillboard = mesh.getData("billboard_mode");
+			{
+				Diligent::MapHelper<rawrbox::MaterialTextUniforms> CBConstants(context, this->uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				CBConstants->_gBillboard = mesh.getData("billboard_mode");
+			}
+			// --------
+
+			// Bind ---
+			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(this->_uniforms);
+			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(this->_uniforms_pixel);
+			// --------
 		}
 	};
 

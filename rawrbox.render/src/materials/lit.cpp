@@ -45,7 +45,7 @@ namespace rawrbox {
 			fmt::print("[RawrBox-MaterialLit] Building material..\n");
 
 			this->createUniforms();
-			this->createPipelines(id, vertexBufferType::vLayout(), this->_uniforms, this->_uniforms_pixel);
+			this->createPipelines(id, vertexBufferType::vLayout());
 
 			this->_built = true;
 		}
@@ -53,8 +53,8 @@ namespace rawrbox {
 		this->setupPipelines(id);
 	}
 
-	void MaterialLit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::IBuffer* uniforms, Diligent::IBuffer* pixelUniforms, Diligent::ShaderMacroHelper helper) {
-		auto cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered::Light");
+	void MaterialLit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper) {
+		/*auto cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered::Light");
 		if (cluster == nullptr) throw std::runtime_error("[RawrBox-MaterialLit] This material requires the `ClusteredLightPlugin` renderer plugin");
 
 		// PIPELINE ----
@@ -124,7 +124,7 @@ namespace rawrbox {
 		rawrbox::PipelineUtils::createPipeline(id + "::CullNone", id, settings);
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipeline(id + "::CullNone::Alpha", id, settings);
+		rawrbox::PipelineUtils::createPipeline(id + "::CullNone::Alpha", id, settings);*/
 		// -----
 	}
 } // namespace rawrbox

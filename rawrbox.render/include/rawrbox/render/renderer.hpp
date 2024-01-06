@@ -104,7 +104,7 @@ namespace rawrbox {
 		//   virtual void gpuCheck();
 
 	public:
-		uint32_t MAX_TEXTURES = 4096; // NOTE: ON DX12 IF THIS VALUE IS TOO HIGH, YOU MIGHT NEED TO INCREASE THE HEAP MEMORY
+		uint32_t MAX_TEXTURES = 2048; // 4096; // NOTE: ON DX12 IF THIS VALUE IS TOO HIGH, YOU MIGHT NEED TO INCREASE THE HEAP MEMORY
 		std::function<void()> onIntroCompleted = nullptr;
 
 		RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize, const rawrbox::Colorf& clearColor = rawrbox::Colors::Black());

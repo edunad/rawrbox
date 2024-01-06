@@ -23,7 +23,7 @@ namespace rawrbox {
 
 		void init() override;
 		void createUniforms() override;
-		void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::IBuffer* uniforms, Diligent::IBuffer* pixelUniforms = nullptr, Diligent::ShaderMacroHelper helper = {}) override;
+		void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper = {}) override;
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
@@ -42,8 +42,11 @@ namespace rawrbox {
 				this->bindBasePixelUniforms<T, rawrbox::MaterialBasePixelUniforms>(mesh, CBConstants);
 			}
 			// -----------
-		}
 
-		void bindShaderResources() const override;
+			// Bind ---
+			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(this->_uniforms);
+			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(this->_uniforms_pixel);
+			// --------
+		}
 	};
 } // namespace rawrbox

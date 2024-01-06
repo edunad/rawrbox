@@ -51,7 +51,7 @@ namespace rawrbox {
 			helper.AddShaderMacro("SKINNED", true);
 
 			this->createUniforms();
-			this->createPipelines(id, vertexBufferType::vLayout(), this->_uniforms, this->_uniforms_pixel, helper);
+			this->createPipelines(id, vertexBufferType::vLayout(), helper);
 
 			this->_built = true;
 		}

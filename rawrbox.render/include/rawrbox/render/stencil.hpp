@@ -149,8 +149,6 @@ namespace rawrbox {
 		Diligent::IPipelineState* _linePipeline = nullptr;
 		Diligent::IPipelineState* _textPipeline = nullptr;
 
-		Diligent::IShaderResourceBinding* _SRB = nullptr;
-
 		static constexpr const int MaxVertsInStreamingBuffer = 4096;
 		std::unique_ptr<rawrbox::StreamingBuffer> _streamingVB = nullptr;
 		std::unique_ptr<rawrbox::StreamingBuffer> _streamingIB = nullptr;

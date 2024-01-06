@@ -17,7 +17,7 @@ namespace rawrbox {
 			fmt::print("[RawrBox-MaterialUnlit] Building material..\n");
 
 			this->createUniforms();
-			this->createPipelines(id, vertexBufferType::vLayout(), this->_uniforms, this->_uniforms_pixel);
+			this->createPipelines(id, vertexBufferType::vLayout());
 
 			this->_built = true;
 		}
@@ -25,7 +25,7 @@ namespace rawrbox {
 		this->setupPipelines(id);
 	}
 
-	void MaterialUnlit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::IBuffer* uniforms, Diligent::IBuffer* pixelUniforms, Diligent::ShaderMacroHelper helper) {
+	void MaterialUnlit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper) {
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
 		settings.pVS = "unlit.vsh";
@@ -33,22 +33,9 @@ namespace rawrbox {
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = helper;
 		settings.layout = layout;
-		settings.immutableSamplers = {
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures"},
-		    // {Diligent::SHADER_TYPE_PIXEL, "g_DecalTexture"},
-		    //{Diligent::SHADER_TYPE_VERTEX, "g_Displacement"}
-		};
+		settings.signature = rawrbox::PipelineUtils::signature; // Use bindless
 
-		/*settings.resources = {
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
-
-		    //{Diligent::SHADER_TYPE_PIXEL, "g_DecalTexture", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		    //{Diligent::SHADER_TYPE_PIXEL, "g_Decals", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-
-		    //{Diligent::SHADER_TYPE_VERTEX, "g_Displacement", Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		};*/
-
-		settings.uniforms = {
+		/*settings.uniforms = {
 		    {Diligent::SHADER_TYPE_VERTEX, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
 
 		    //   {Diligent::SHADER_TYPE_PIXEL, rawrbox::DECALS::uniforms, "Decals"},
@@ -56,7 +43,6 @@ namespace rawrbox {
 
 		    {Diligent::SHADER_TYPE_VERTEX, uniforms, "Constants"},
 		    {Diligent::SHADER_TYPE_PIXEL, pixelUniforms, "Constants"}
-
 		};
 
 		// Create signatures ---
@@ -73,34 +59,34 @@ namespace rawrbox {
 		};
 
 		settings.signature = rawrbox::PipelineUtils::createSignature(id, signature);
-		// ---------------------
+		// ---------------------*/
 
-		rawrbox::PipelineUtils::createPipeline(id, id, settings);
+		rawrbox::PipelineUtils::createPipeline(id, settings);
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipeline(id + "::Alpha", id, settings);
+		rawrbox::PipelineUtils::createPipeline(id + "::Alpha", settings);
 
 		settings.blending = {};
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
 		settings.cull = Diligent::CULL_MODE_NONE;
-		rawrbox::PipelineUtils::createPipeline(id + "::Line", id, settings);
+		rawrbox::PipelineUtils::createPipeline(id + "::Line", settings);
 
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 		settings.cull = Diligent::CULL_MODE_BACK;
-		rawrbox::PipelineUtils::createPipeline(id + "::CullBack", id, settings);
+		rawrbox::PipelineUtils::createPipeline(id + "::CullBack", settings);
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipeline(id + "::CullBack::Alpha", id, settings);
+		rawrbox::PipelineUtils::createPipeline(id + "::CullBack::Alpha", settings);
 
 		settings.cull = Diligent::CULL_MODE_NONE;
-		rawrbox::PipelineUtils::createPipeline(id + "::CullNone::Alpha", id, settings);
+		rawrbox::PipelineUtils::createPipeline(id + "::CullNone::Alpha", settings);
 
 		settings.blending = {};
-		rawrbox::PipelineUtils::createPipeline(id + "::CullNone", id, settings);
+		rawrbox::PipelineUtils::createPipeline(id + "::CullNone", settings);
 
 		settings.blending = {};
 		settings.fill = Diligent::FILL_MODE_WIREFRAME;
-		rawrbox::PipelineUtils::createPipeline(id + "::Wireframe", id, settings);
+		rawrbox::PipelineUtils::createPipeline(id + "::Wireframe", settings);
 		// -----
 	}
 
@@ -132,12 +118,5 @@ namespace rawrbox {
 			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms_pixel);
 		}
 		// ------------
-	}
-
-	void MaterialUnlit::bindShaderResources() const {
-		if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-MaterialUnlit] Bind not set!");
-
-		auto context = rawrbox::RENDERER->context();
-		context->CommitShaderResources(this->_bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 } // namespace rawrbox

@@ -154,8 +154,9 @@ namespace rawrbox {
 		    {Diligent::SHADER_TYPE_COMPUTE, rawrbox::MAIN_CAMERA->uniforms(), "Camera"},
 		    {Diligent::SHADER_TYPE_COMPUTE, this->_clusterBufferWrite, "g_Clusters"}};
 		settings.pCS = "cluster_build.csh";
+		settings.bind = "Cluster::Build";
 
-		this->_clusterBuildingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Build", "Cluster::Build", settings);
+		this->_clusterBuildingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Build", settings);
 		this->_clusterBuildingComputeBind = rawrbox::PipelineUtils::getBind("Cluster::Build");
 		// ---------
 
@@ -184,7 +185,8 @@ namespace rawrbox {
 		};
 
 		settings.pCS = "cluster_cull.csh";
-		this->_lightCullingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Cull", "Cluster::Cull", settings);
+		settings.bind = "Cluster::Cull";
+		this->_lightCullingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Cull", settings);
 		this->_lightCullingComputeBind = rawrbox::PipelineUtils::getBind("Cluster::Cull");
 		//  ----
 	}

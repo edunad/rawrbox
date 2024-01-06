@@ -93,8 +93,10 @@ namespace rawrbox {
 		if (uniforms == nullptr) throw std::runtime_error("[RawrBox-DECALS] Buffer not initialized! Did you call 'init' ?");
 		update(); // Update all lights if dirty
 
-		Diligent::MapHelper<rawrbox::DecalConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-		CBConstants->g_DecalSettings = {static_cast<uint32_t>(rawrbox::DECALS::count()), 0, 0, 0};
+		{
+			Diligent::MapHelper<rawrbox::DecalConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			CBConstants->g_DecalSettings = {static_cast<uint32_t>(rawrbox::DECALS::count()), 0, 0, 0};
+		}
 		// --------------
 	}
 

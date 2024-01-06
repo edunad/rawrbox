@@ -81,8 +81,8 @@ namespace rawrbox {
 
 					Diligent::EngineD3D12CreateInfo EngineCI;
 					EngineCI.Features = features;
-					EngineCI.GPUDescriptorHeapDynamicSize[0] = HEAP_SIZE * 4;
-					EngineCI.GPUDescriptorHeapSize[0] = HEAP_SIZE; // For mutable mode
+					// EngineCI.GPUDescriptorHeapDynamicSize[0] = HEAP_SIZE * 4;
+					// EngineCI.GPUDescriptorHeapSize[0] = HEAP_SIZE; // For mutable mode
 
 					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
 					pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc{}, this->_window, &this->_swapChain);
@@ -204,6 +204,10 @@ namespace rawrbox {
 		// Setup camera -----
 		if (this->_camera != nullptr) this->_camera->initialize();
 		// ------------------
+
+		// PLUGIN INITIALIZE ---
+		rawrbox::PipelineUtils::createSignature();
+		// -----------------------
 
 		// Setup stencil ----
 		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());

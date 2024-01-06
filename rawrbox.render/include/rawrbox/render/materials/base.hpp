@@ -34,8 +34,6 @@ namespace rawrbox {
 		Diligent::IPipelineState* _cullnone = nullptr;
 		Diligent::IPipelineState* _cullnone_alpha = nullptr;
 
-		Diligent::IShaderResourceBinding* _bind = nullptr;
-
 	public:
 		using vertexBufferType = rawrbox::VertexData;
 
@@ -49,7 +47,7 @@ namespace rawrbox {
 		virtual void init() = 0;
 		virtual void createUniforms() = 0;
 
-		virtual void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::IBuffer* uniforms, Diligent::IBuffer* pixelUniforms = nullptr, Diligent::ShaderMacroHelper helper = {});
+		virtual void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper = {});
 		virtual void setupPipelines(const std::string& id);
 
 		virtual void bindShaderResources() const;
@@ -94,7 +92,7 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData>
 		void bindPipeline(const rawrbox::Mesh<T>& mesh) {
-			if (this->_bind == nullptr) throw std::runtime_error("[RawrBox-Material] Material not initialized!");
+			if (this->_base == nullptr) throw std::runtime_error("[RawrBox-Material] Material not initialized!");
 			auto context = rawrbox::RENDERER->context();
 
 			if (mesh.wireframe) {
