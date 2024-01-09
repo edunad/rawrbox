@@ -3,50 +3,15 @@
 #include <rawrbox/render/utils/pipeline.hpp>
 
 #include <MapHelper.hpp>
-// #include <Platforms/Basic/interface/DebugUtilities.hpp>
 
 namespace rawrbox {
 	// STATIC DATA ----
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialText3D::_uniforms;
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialText3D::_uniforms_pixel;
-
 	bool MaterialText3D::_build = false;
 	// ----------------
-
-	void MaterialText3D::createUniforms() {
-		if (_uniforms != nullptr || _uniforms_pixel != nullptr) return;
-
-		// Uniforms -------
-		{
-			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::MaterialText3D::Vertex::Uniforms";
-			CBDesc.Size = sizeof(rawrbox::MaterialTextUniforms);
-			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-
-			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
-		}
-		// ------------
-
-		// Pixel Uniforms -------
-		{
-			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::MaterialText3D::Pixel::Uniforms";
-			CBDesc.Size = sizeof(rawrbox::MaterialBasePixelUniforms);
-			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-
-			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms_pixel);
-		}
-		// ------------
-	}
 
 	void MaterialText3D::init() {
 		if (!_build) {
 			fmt::print("[RawrBox-MaterialText3D] Building material..\n");
-			this->createUniforms();
 
 			// PIPELINE ----
 			rawrbox::PipeSettings settings;
@@ -55,7 +20,7 @@ namespace rawrbox {
 			settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 			settings.cull = Diligent::CULL_MODE_FRONT;
 			settings.layout = rawrbox::VertexData::vLayout();
-			settings.signature = rawrbox::PipelineUtils::signature;
+			settings.signature = rawrbox::BindlessManager::signature; // Use bindless
 
 			settings.fill = Diligent::FILL_MODE_WIREFRAME;
 			rawrbox::PipelineUtils::createPipeline("3DText::Base::Wireframe", settings);

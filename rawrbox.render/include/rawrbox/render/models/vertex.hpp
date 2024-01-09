@@ -12,7 +12,6 @@
 #include <array>
 
 namespace rawrbox {
-
 	struct VertexData {
 		rawrbox::Vector3f position = {};
 		rawrbox::Vector4f uv = {};

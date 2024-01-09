@@ -13,7 +13,6 @@
 #include <vector>
 
 namespace rawrbox {
-
 	enum class TEXTURE_UV {
 		UV_NONE = 0,
 		UV_FLIP_U,
@@ -77,6 +76,8 @@ namespace rawrbox {
 		// -----
 
 		virtual void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false);
+
 		virtual void update();
+		[[nodiscard]] virtual bool requiresUpdate() const;
 	};
 } // namespace rawrbox

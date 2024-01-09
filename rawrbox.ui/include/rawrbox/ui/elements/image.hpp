@@ -40,7 +40,6 @@ namespace rawrbox {
 		// -----
 
 		// DRAW ----
-		void update() override;
 		void draw(rawrbox::Stencil& stencil) override;
 		// -------
 	};

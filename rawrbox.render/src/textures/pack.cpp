@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/pack.hpp>
 
@@ -29,6 +30,8 @@ namespace rawrbox {
 		auto& node = (*nodeOpt).get();
 
 		if (!data.empty()) {
+			auto context = rawrbox::RENDERER->context();
+
 			Diligent::Box UpdateBox;
 			UpdateBox.MinX = node.x;
 			UpdateBox.MinY = node.y;
@@ -39,7 +42,11 @@ namespace rawrbox {
 			SubresData.Stride = static_cast<uint64_t>(node.width * this->_channels);
 			SubresData.pData = data.data();
 
-			rawrbox::RENDERER->context()->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+			// Barrier ----
+			rawrbox::BindlessManager::barrier(*this);
+			// ------------
 		}
 
 		return node;

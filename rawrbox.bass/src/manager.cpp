@@ -33,12 +33,12 @@ namespace rawrbox {
 		if (rawrbox::BASS::_shutdown) return;
 
 		rawrbox::runOnRenderThread([channel]() {
-			for (auto it2 = rawrbox::BASS::sounds.begin(); it2 != rawrbox::BASS::sounds.end();) {
-				if ((*it2).second != nullptr && (*it2).second->getSample() == channel) {
-					it2 = rawrbox::BASS::sounds.erase(it2);
+			for (auto it = rawrbox::BASS::sounds.begin(); it != rawrbox::BASS::sounds.end();) {
+				if ((*it).second != nullptr && (*it).second->getSample() == channel) {
+					it = rawrbox::BASS::sounds.erase(it);
 					continue;
 				} else {
-					++it2;
+					++it;
 				}
 			}
 		});

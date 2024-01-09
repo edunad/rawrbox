@@ -1,5 +1,6 @@
 
-#include <uniforms.fxh>
+#include <vertex_bindless_uniforms.fxh>
+#include <camera.fxh>
 
 #define TEXTURE_DATA
 #include <material.fxh>
@@ -72,13 +73,13 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 
     PSIn.Pos          = transform.final;
     PSIn.WorldPos     = mul(transform.pos, Camera.world);
-    PSIn.UV           = applyUVTransform(VSIn.UV.xy);
+    PSIn.UV           = VSIn.UV.xy; //applyUVTransform(VSIn.UV.xy);
 
     #ifdef INSTANCED
-        PSIn.Color    = VSIn.Color * VSIn.ColorOverride * Constants.model.colorOverride;
+        PSIn.Color    = VSIn.Color * VSIn.ColorOverride * Constants.colorOverride;
         PSIn.TexIndex = VSIn.Extra.x;
     #else
-        PSIn.Color    = VSIn.Color * Constants.model.colorOverride;
+        PSIn.Color    = VSIn.Color * Constants.colorOverride;
         PSIn.TexIndex = VSIn.UV.z;
     #endif
 }

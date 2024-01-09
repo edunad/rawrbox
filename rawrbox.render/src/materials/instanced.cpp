@@ -15,9 +15,7 @@ namespace rawrbox {
 			Diligent::ShaderMacroHelper helper;
 			helper.AddShaderMacro("INSTANCED", true);
 
-			this->createUniforms();
 			this->createPipelines(id, vertexBufferType::vLayout(true), helper);
-
 			this->_built = true;
 		}
 

@@ -18,26 +18,29 @@
 #include <vector>
 
 namespace rawrbox {
-	struct StencilUniforms {
-		uint32_t textureID;
-	};
-
 	struct PosUVColorVertexData {
+		// ----------
+		uint32_t textureID = {};
 		rawrbox::Vector2f pos = {};
+		uint32_t color = 0xFFFFFFFF;
+		// ----------
+
 		rawrbox::Vector4f uv = {};
-		rawrbox::Colorf color = {};
+		// ----------
 
 		PosUVColorVertexData() = default;
-		PosUVColorVertexData(const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, const rawrbox::Color& _cl) : pos(_pos), uv(_uv), color(_cl) {}
+		PosUVColorVertexData(const uint32_t& _textureID, const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, const rawrbox::Color& _cl) : textureID(_textureID), pos(_pos), color(_cl.pack()), uv(_uv) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout() {
 			return {
-			    // Attribute 0 - Position
-			    Diligent::LayoutElement{0, 0, 2, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX},
-			    // Attribute 1 - UV
-			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX},
+			    // Attribute 0 - TextureID
+			    Diligent::LayoutElement{0, 0, 1, Diligent::VT_UINT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX},
+			    // Attribute 1 - Position
+			    Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX},
 			    // Attribute 2 - Color
-			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX}};
+			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_UINT8, true, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX},
+			    // Attribute 1 - UV
+			    Diligent::LayoutElement{3, 0, 4, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX}};
 		}
 	};
 
@@ -54,7 +57,6 @@ namespace rawrbox {
 
 	struct StencilDraw {
 		Diligent::IPipelineState* stencilProgram = nullptr;
-		uint32_t textureId = 0;
 
 		std::vector<rawrbox::PosUVColorVertexData> vertices = {};
 		std::vector<uint32_t> indices = {};
@@ -67,7 +69,6 @@ namespace rawrbox {
 			this->clip = {}; // NONE
 
 			this->stencilProgram = nullptr;
-			this->textureId = 0;
 
 			this->indices.clear();
 			this->vertices.clear();
@@ -152,8 +153,6 @@ namespace rawrbox {
 		static constexpr const int MaxVertsInStreamingBuffer = 4096;
 		std::unique_ptr<rawrbox::StreamingBuffer> _streamingVB = nullptr;
 		std::unique_ptr<rawrbox::StreamingBuffer> _streamingIB = nullptr;
-
-		Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 		// ------------
 
 		// WINDOW ----
@@ -191,7 +190,7 @@ namespace rawrbox {
 		// ----------
 
 		// ------ UTILS
-		void pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col);
+		void pushVertice(const uint32_t& textureID, rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col);
 		void pushIndices(std::vector<uint32_t> ind);
 
 		void applyRotation(rawrbox::Vector2f& vert);
@@ -199,7 +198,8 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ RENDERING
-		void setupDrawCall(Diligent::IPipelineState* program, const rawrbox::TextureBase* texture);
+		void setupDrawCall(Diligent::IPipelineState* program);
+
 		void pushDrawCall();
 		void internalDraw();
 		// --------------------

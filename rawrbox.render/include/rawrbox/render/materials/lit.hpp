@@ -27,12 +27,11 @@ namespace rawrbox {
 		~MaterialLit() override = default;
 
 		void init() override;
-		void createUniforms() override;
 		void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper = {}) override;
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
-			auto context = rawrbox::RENDERER->context();
+			/*auto context = rawrbox::RENDERER->context();
 
 			// SETUP VERTEX UNIFORMS ----------------------------
 			{
@@ -48,12 +47,7 @@ namespace rawrbox {
 				CBConstants->textureIDs = mesh.textures.getPixelIDs();
 				CBConstants->litData = mesh.textures.getData();
 			}
-			// -----------
-
-			// Bind ---
-			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(this->_uniforms);
-			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(this->_uniforms_pixel);
-			// --------
+			// -----------*/
 		}
 	};
 } // namespace rawrbox

@@ -77,10 +77,11 @@ namespace stencil {
 				}
 			});
 		}
+
+		// this->contentLoaded();
 	}
 
 	void Game::contentLoaded() {
-
 		// Textures ---
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
 		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/meow3.gif")->get();
@@ -313,9 +314,6 @@ namespace stencil {
 		stencil.drawTexture({0, 0}, {256, 256}, *this->_texture4);
 		stencil.popOffset();
 		// -----
-
-		this->_texture5->update();
-		this->_texture2->update();
 
 		stencil.render();
 	}

@@ -38,11 +38,6 @@ namespace rawrbox {
 	// -----
 
 	// DRAW ----
-	void UIImage::update() {
-		if (this->_texture == nullptr) return;
-		this->_texture->update();
-	}
-
 	void UIImage::draw(rawrbox::Stencil& stencil) {
 		if (this->_texture == nullptr) return;
 		stencil.drawTexture({0, 0}, this->getSize(), *this->_texture, this->_color);

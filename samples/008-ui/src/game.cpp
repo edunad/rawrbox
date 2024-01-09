@@ -333,7 +333,7 @@ namespace ui_test {
 
 			if (this->_graph != nullptr) {
 #ifdef _DEBUG
-				auto& pipelineStats = rawrbox::RENDERER->getPipelineStats("OVERLAY");
+				/*auto& pipelineStats = rawrbox::RENDERER->getPipelineStats("OVERLAY");
 				auto& durationStats = rawrbox::RENDERER->getDurationStats("OVERLAY");
 
 				if (durationStats.Frequency > 0) {
@@ -341,10 +341,11 @@ namespace ui_test {
 				}
 
 				this->_graph->getCategory(1).addEntry(static_cast<float>(pipelineStats.InputPrimitives));
-				this->_graph->getCategory(2).addEntry(static_cast<float>(pipelineStats.InputVertices));
+				this->_graph->getCategory(2).addEntry(static_cast<float>(pipelineStats.InputVertices));*/
 #else
 				this->_graph->getCategory(0).addEntry(rawrbox::DELTA_TIME);
 #endif
+				this->_graph->getCategory(0).addEntry(rawrbox::DELTA_TIME);
 			}
 		}
 	}

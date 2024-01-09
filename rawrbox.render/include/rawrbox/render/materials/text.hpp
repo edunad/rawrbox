@@ -10,9 +10,6 @@ namespace rawrbox {
 	class MaterialText3D : public rawrbox::MaterialUnlit {
 		static bool _build;
 
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms_pixel;
-
 	public:
 		using vertexBufferType = rawrbox::VertexData;
 
@@ -24,11 +21,10 @@ namespace rawrbox {
 		~MaterialText3D() override = default;
 
 		void init() override;
-		void createUniforms() override;
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
-			auto renderer = rawrbox::RENDERER;
+			/*auto renderer = rawrbox::RENDERER;
 			auto context = renderer->context();
 
 			// SETUP VERTEX UNIFORMS ----------------------------
@@ -43,12 +39,7 @@ namespace rawrbox {
 				Diligent::MapHelper<rawrbox::MaterialBasePixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 				this->bindBasePixelUniforms<T, rawrbox::MaterialBasePixelUniforms>(mesh, CBConstants);
 			}
-			// -----------
-
-			// Bind ---
-			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(this->_uniforms);
-			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(this->_uniforms_pixel);
-			// --------
+			// -----------*/
 		}
 	};
 

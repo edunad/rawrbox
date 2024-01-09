@@ -2,9 +2,9 @@
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/math/vector4.hpp>
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
-#include <rawrbox/render/textures/manager.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
 #include <fmt/format.h>
@@ -25,23 +25,10 @@ namespace rawrbox {
 
 		this->_streamingIB.reset();
 		this->_streamingVB.reset();
-
-		RAWRBOX_DESTROY(this->_uniforms);
 	}
 
 	void Stencil::upload() {
-		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr || this->_uniforms != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
-
-		// Setup buffer ---
-		Diligent::BufferDesc CBDesc;
-		CBDesc.Name = "rawrbox::Stencil::Uniforms";
-		CBDesc.Size = sizeof(rawrbox::StencilUniforms);
-		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-
-		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
-		// -------------------
+		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
 
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
@@ -53,7 +40,7 @@ namespace rawrbox {
 		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Textures"}};
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		settings.layout = rawrbox::PosUVColorVertexData::vLayout();
-		settings.signature = rawrbox::PipelineUtils::signature; // Use bindless
+		settings.signature = rawrbox::BindlessManager::signature; // Use bindless
 
 		this->_2dPipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2D", settings);
 
@@ -70,13 +57,13 @@ namespace rawrbox {
 		this->_windowSize = size;
 	}
 
-	void Stencil::pushVertice(rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col) {
+	void Stencil::pushVertice(const uint32_t& textureID, rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col) {
 		auto wSize = this->_windowSize.cast<float>();
 
 		this->applyScale(pos);
 		this->applyRotation(pos);
 
-		this->_currentDraw.vertices.emplace_back(
+		this->_currentDraw.vertices.emplace_back(textureID,
 		    rawrbox::Vector2f(((pos.x + this->_offset.x) / wSize.x * 2 - 1), ((pos.y + this->_offset.y) / wSize.y * 2 - 1) * -1),
 		    uv,
 		    col);
@@ -123,10 +110,10 @@ namespace rawrbox {
 
 	// ------UTILS
 	void Stencil::drawPolygon(const rawrbox::Polygon& poly) {
+		uint32_t textureID = rawrbox::WHITE_TEXTURE->getTextureID();
+
 		// Setup --------
-		this->setupDrawCall(
-		    this->_2dPipeline,
-		    rawrbox::WHITE_TEXTURE.get());
+		this->setupDrawCall(this->_2dPipeline);
 		// ----
 
 		if (this->_outline.isSet()) {
@@ -144,7 +131,7 @@ namespace rawrbox {
 
 		} else {
 			for (auto& v : poly.verts)
-				this->pushVertice(v.pos, v.uv, v.col);
+				this->pushVertice(textureID, v.pos, v.uv, v.col);
 
 			this->_currentDraw.indices.insert(this->_currentDraw.indices.end(), poly.indices.begin(), poly.indices.end());
 		}
@@ -156,11 +143,10 @@ namespace rawrbox {
 
 	void Stencil::drawTriangle(const rawrbox::Vector2f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector2f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector2f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC) {
 		if (colA.isTransparent() && colB.isTransparent() && colC.isTransparent()) return;
+		uint32_t textureID = rawrbox::WHITE_TEXTURE->getTextureID();
 
 		// Setup --------
-		this->setupDrawCall(
-		    this->_2dPipeline,
-		    rawrbox::WHITE_TEXTURE.get());
+		this->setupDrawCall(this->_2dPipeline);
 		// ----
 
 		if (this->_outline.isSet()) {
@@ -170,9 +156,9 @@ namespace rawrbox {
 			this->drawLine(b, c, colB);
 			this->drawLine({c.x + thick / 2.F, c.y}, a, colC);
 		} else {
-			this->pushVertice(a, aUV, colA);
-			this->pushVertice(b, bUV, colB);
-			this->pushVertice(c, cUV, colC);
+			this->pushVertice(textureID, a, aUV, colA);
+			this->pushVertice(textureID, b, bUV, colB);
+			this->pushVertice(textureID, c, cUV, colC);
 
 			this->pushIndices({0, 1, 2});
 		}
@@ -199,17 +185,16 @@ namespace rawrbox {
 		if (col.isTransparent()) return;
 
 		// Setup --------
-		this->setupDrawCall(
-		    this->_2dPipeline,
-		    &tex);
+		this->setupDrawCall(this->_2dPipeline);
 		// ----
 
+		uint32_t textureID = tex.getTextureID();
 		auto a = static_cast<float>(atlas);
 
-		this->pushVertice({pos.x, pos.y}, {uvStart.x, uvStart.y, a}, col);
-		this->pushVertice({pos.x, pos.y + size.y}, {uvStart.x, uvEnd.y, a}, col);
-		this->pushVertice({pos.x + size.x, pos.y}, {uvEnd.x, uvStart.y, a}, col);
-		this->pushVertice({pos.x + size.x, pos.y + size.y}, {uvEnd.x, uvEnd.y, a}, col);
+		this->pushVertice(textureID, {pos.x, pos.y}, {uvStart.x, uvStart.y, a}, col);
+		this->pushVertice(textureID, {pos.x, pos.y + size.y}, {uvStart.x, uvEnd.y, a}, col);
+		this->pushVertice(textureID, {pos.x + size.x, pos.y}, {uvEnd.x, uvStart.y, a}, col);
+		this->pushVertice(textureID, {pos.x + size.x, pos.y + size.y}, {uvEnd.x, uvEnd.y, a}, col);
 
 		this->pushIndices({0, 1, 2,
 		    1, 3, 2});
@@ -255,19 +240,18 @@ namespace rawrbox {
 		if (this->_outline.isSet()) outline = this->_outline;
 		if (outline.thickness <= 0.F) return;
 
+		uint32_t textureID = rawrbox::WHITE_TEXTURE->getTextureID();
+
 		bool usePTLines = outline.thickness == 1.F;
 		float enableStipple = outline.stipple > 0.F ? 1.F : 0.F;
 
 		// Setup --------
-		this->setupDrawCall(
-		    usePTLines ? this->_linePipeline : this->_2dPipeline,
-		    rawrbox::WHITE_TEXTURE.get());
-
+		this->setupDrawCall(usePTLines ? this->_linePipeline : this->_2dPipeline);
 		// ----
 
 		if (usePTLines) {
-			this->pushVertice(from, {0, 0, 0, enableStipple}, col);
-			this->pushVertice(to, {outline.stipple, outline.stipple, 0, enableStipple}, col);
+			this->pushVertice(textureID, from, {0, 0, 0, enableStipple}, col);
+			this->pushVertice(textureID, to, {outline.stipple, outline.stipple, 0, enableStipple}, col);
 			this->pushIndices({0, 1});
 		} else {
 			float angle = -from.angle(to);
@@ -278,10 +262,10 @@ namespace rawrbox {
 			auto vertC = to + rawrbox::Vector2::cosSin(angle) * outline.thickness;
 			auto vertD = to + rawrbox::Vector2::cosSin(angle) * -outline.thickness;
 
-			this->pushVertice(vertA, {0, 0, 0, enableStipple}, col);
-			this->pushVertice(vertB, {0, uvEnd, 0, enableStipple}, col);
-			this->pushVertice(vertC, {uvEnd, 0, 0, enableStipple}, col);
-			this->pushVertice(vertD, {uvEnd, uvEnd, 0, enableStipple}, col);
+			this->pushVertice(textureID, vertA, {0, 0, 0, enableStipple}, col);
+			this->pushVertice(textureID, vertB, {0, uvEnd, 0, enableStipple}, col);
+			this->pushVertice(textureID, vertC, {uvEnd, 0, 0, enableStipple}, col);
+			this->pushVertice(textureID, vertD, {uvEnd, uvEnd, 0, enableStipple}, col);
 
 			this->pushIndices({0, 1, 2,
 			    1, 3, 2});
@@ -326,16 +310,16 @@ namespace rawrbox {
 		startpos.y = std::roundf(startpos.y);
 
 		font.render(text, startpos, false, [this, &font, col](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
+			uint32_t textureID = font.getPackTexture(glyph)->getTextureID();
+
 			// Setup --------
-			this->setupDrawCall(
-			    this->_textPipeline,
-			    font.getPackTexture(glyph));
+			this->setupDrawCall(this->_textPipeline);
 			// ----
 
-			this->pushVertice(rawrbox::Vector2f(x0, y0), glyph->textureTopLeft, col);
-			this->pushVertice(rawrbox::Vector2f(x0, y1), {glyph->textureTopLeft.x, glyph->textureBottomRight.y}, col);
-			this->pushVertice(rawrbox::Vector2f(x1, y0), {glyph->textureBottomRight.x, glyph->textureTopLeft.y}, col);
-			this->pushVertice(rawrbox::Vector2f(x1, y1), glyph->textureBottomRight, col);
+			this->pushVertice(textureID, {x0, y0}, glyph->textureTopLeft, col);
+			this->pushVertice(textureID, {x0, y1}, {glyph->textureTopLeft.x, glyph->textureBottomRight.y}, col);
+			this->pushVertice(textureID, {x1, y0}, {glyph->textureBottomRight.x, glyph->textureTopLeft.y}, col);
+			this->pushVertice(textureID, {x1, y1}, glyph->textureBottomRight, col);
 
 			this->pushIndices({0, 1, 2,
 			    1, 3, 2});
@@ -348,11 +332,10 @@ namespace rawrbox {
 	// --------------------
 
 	// ------RENDERING
-	void Stencil::setupDrawCall(Diligent::IPipelineState* program, const rawrbox::TextureBase* texture) {
+	void Stencil::setupDrawCall(Diligent::IPipelineState* program) {
 		this->_currentDraw.clear();
 
 		this->_currentDraw.stencilProgram = program;
-		this->_currentDraw.textureId = texture->getTextureID();
 		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::AABBi(0, 0, this->_windowSize.x, this->_windowSize.y) : this->_clips.back();
 	}
 
@@ -361,8 +344,7 @@ namespace rawrbox {
 			auto& oldCall = this->_drawCalls.back();
 			bool canMerge = oldCall.clip == this->_currentDraw.clip &&
 					oldCall.cull == this->_currentDraw.cull &&
-					oldCall.stencilProgram == this->_currentDraw.stencilProgram &&
-					oldCall.textureId == this->_currentDraw.textureId;
+					oldCall.stencilProgram == this->_currentDraw.stencilProgram;
 
 			if (canMerge) {
 				for (auto& ind : this->_currentDraw.indices) {
@@ -404,17 +386,6 @@ namespace rawrbox {
 			this->_streamingIB->release(contextID);
 			// -------------------
 
-			// SETUP UNIFORMS ----------------------------
-			{
-				Diligent::MapHelper<rawrbox::StencilUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				CBConstants->textureID = group.textureId;
-			}
-			// -----------
-
-			// Bind ---
-			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(this->_uniforms);
-			// --------
-
 			// Render ------------
 			const std::array<uint64_t, 1> offsets = {VBOffset};
 			std::array<Diligent::IBuffer*, 1> pBuffs = {this->_streamingVB->buffer()};
@@ -423,7 +394,6 @@ namespace rawrbox {
 			context->SetIndexBuffer(this->_streamingIB->buffer(), IBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 			context->SetPipelineState(group.stencilProgram);
-			context->CommitShaderResources(rawrbox::PipelineUtils::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 			// SCISSOR ---
 			Diligent::Rect scissor;

@@ -151,13 +151,13 @@ namespace rawrbox {
 			}
 		}
 		void postDraw() {
-			for (auto it2 = this->_playingAnimations.begin(); it2 != this->_playingAnimations.end();) {
-				if ((*it2).time >= (*it2).data->duration && !(*it2).loop) {
-					it2 = this->_playingAnimations.erase(it2);
+			for (auto it = this->_playingAnimations.begin(); it != this->_playingAnimations.end();) {
+				if ((*it).time >= (*it).data->duration && !(*it).loop) {
+					it = this->_playingAnimations.erase(it);
 					continue;
 				}
 
-				++it2;
+				++it;
 			}
 		}
 		// --------------
@@ -379,13 +379,13 @@ namespace rawrbox {
 		}
 
 		virtual void removeMeshByName(const std::string& id) {
-			for (auto it2 = this->_meshes.begin(); it2 != this->_meshes.end();) {
-				if ((*it2)->getName() == id) {
-					it2 = this->_meshes.erase(it2);
+			for (auto it = this->_meshes.begin(); it != this->_meshes.end();) {
+				if ((*it)->getName() == id) {
+					it = this->_meshes.erase(it);
 					continue;
 				}
 
-				++it2;
+				++it;
 			}
 
 			if (this->isUploaded() && this->isDynamic()) this->updateBuffers(); // Already uploaded? And dynamic? Then update vertices
@@ -483,8 +483,7 @@ namespace rawrbox {
 				this->_material->init();
 				this->_material->bindPipeline(*mesh);
 				this->_material->bindUniforms(*mesh);
-				this->_material->bindShaderResources();
-				//  -----------
+				//     -----------
 
 				Diligent::DrawIndexedAttribs DrawAttrs;
 				DrawAttrs.IndexType = Diligent::VT_UINT16;

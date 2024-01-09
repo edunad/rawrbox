@@ -7,9 +7,6 @@ namespace rawrbox {
 	class MaterialSkinnedLit : public rawrbox::MaterialLit {
 		static bool _built;
 
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms_pixel;
-
 	public:
 		using vertexBufferType = rawrbox::VertexNormBoneData;
 
@@ -21,11 +18,10 @@ namespace rawrbox {
 		~MaterialSkinnedLit() override = default;
 
 		void init() override;
-		void createUniforms() override;
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
-			auto context = rawrbox::RENDERER->context();
+			/*auto context = rawrbox::RENDERER->context();
 
 			// SETUP UNIFORMS ----------------------------
 			{
@@ -40,12 +36,7 @@ namespace rawrbox {
 
 				CBConstants->textureIDs = mesh.textures.getPixelIDs();
 				CBConstants->litData = mesh.textures.getData();
-			} // ------------
-
-			// Bind ---
-			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(this->_uniforms);
-			rawrbox::PipelineUtils::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(this->_uniforms_pixel);
-			// --------
+			} // ------------*/
 		}
 	};
 

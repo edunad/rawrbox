@@ -81,13 +81,13 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 
     PSIn.Pos      = transform.final;
     PSIn.WorldPos = mul(transform.pos, Camera.world);
-    PSIn.UV       = applyUVTransform(VSIn.UV.xy);
+    PSIn.UV       = VSIn.UV.xy; //applyUVTransform(VSIn.UV.xy);
 
     #ifdef INSTANCED
-        PSIn.Color    = VSIn.Color * VSIn.ColorOverride * Constants.model.colorOverride;
+        PSIn.Color    = VSIn.Color * VSIn.ColorOverride * Constants.colorOverride;
         PSIn.TexIndex = VSIn.Extra.x;
     #else
-        PSIn.Color    = VSIn.Color * Constants.model.colorOverride;
+        PSIn.Color    = VSIn.Color * Constants.colorOverride;
         PSIn.TexIndex = VSIn.UV.z;
     #endif
 }

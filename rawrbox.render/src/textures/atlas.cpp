@@ -1,7 +1,7 @@
 
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/atlas.hpp>
-#include <rawrbox/render/textures/manager.hpp>
 #include <rawrbox/render/utils/texture.hpp>
 
 #include <fmt/format.h>
@@ -98,10 +98,12 @@ namespace rawrbox {
 		data.NumSubresources = static_cast<uint32_t>(subresData.size());
 
 		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
+		if (this->_tex == nullptr) throw std::runtime_error(fmt::format("[RawrBox-TextureAtlas] Failed to create texture '{}'", this->_name));
 
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
-		this->_textureID = rawrbox::TextureManager::registerTexture(this);
+		this->_textureID = rawrbox::BindlessManager::registerTexture(*this);
 
+		rawrbox::BindlessManager::barrier(*this);
 		this->updateSampler();
 	}
 } // namespace rawrbox

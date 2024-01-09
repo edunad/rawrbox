@@ -1,5 +1,5 @@
+#include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/textures/manager.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
 #include <magic_enum.hpp>
@@ -18,9 +18,6 @@ namespace rawrbox {
 	// -------------
 
 	// PUBLIC ----
-	Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> PipelineUtils::signature;
-	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> PipelineUtils::signatureBind;
-
 	Diligent::ISampler* PipelineUtils::defaultSampler = nullptr;
 	bool PipelineUtils::initialized = false;
 	// -----------------
@@ -48,72 +45,16 @@ namespace rawrbox {
 		initialized = true;
 	}
 
-	void PipelineUtils::createSignature() {
-		if (signature != nullptr) throw std::runtime_error("[RawrBox-Pipeline] Signature already bound!");
+	void PipelineUtils::shutdown() {
+		RAWRBOX_DESTROY(_stateCache);
 
-		Diligent::PipelineResourceSignatureDesc PRSDesc;
-		PRSDesc.Name = "RawrBox::SIGNATURE::BINDLESS";
-		PRSDesc.BindingIndex = 0;
+		_pipelines.clear();
+		_binds.clear();
+		_shaders.clear();
+		_samplers.clear();
 
-		// RESOURCES -----
-		std::vector<Diligent::PipelineResourceDesc> resources = {
-		    {Diligent::SHADER_TYPE_VERTEX, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-
-		    {Diligent::SHADER_TYPE_VERTEX, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", rawrbox::RENDERER->MAX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures_sampler", 1, Diligent::SHADER_RESOURCE_TYPE_SAMPLER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
-		};
-
-		// Add extra signatures ----
-		for (auto& plugin : rawrbox::RENDERER->getPlugins()) {
-			if (plugin.second == nullptr) continue;
-			plugin.second->signatures(resources);
-		}
-		// -------------------------
-
-		PRSDesc.Resources = resources.data();
-		PRSDesc.NumResources = static_cast<uint8_t>(resources.size());
-		PRSDesc.UseCombinedTextureSamplers = true;
-		// --------------
-
-		// SAMPLERS -----
-		Diligent::SamplerDesc SamLinearClampDesc{
-		    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,
-		    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
-
-		std::vector<Diligent::ImmutableSamplerDesc> samplers = {
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", SamLinearClampDesc},
-		};
-
-		PRSDesc.ImmutableSamplers = samplers.data();
-		PRSDesc.NumImmutableSamplers = static_cast<uint32_t>(samplers.size());
-		// --------------
-
-		rawrbox::RENDERER->device()->CreatePipelineResourceSignature(PRSDesc, &signature);
-
-		// Setup binds ---
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Camera")->Set(rawrbox::RENDERER->camera()->uniforms());
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Camera")->Set(rawrbox::RENDERER->camera()->uniforms());
-		// ----------------
-
-		// Add extra signatures ----
-		for (auto& plugin : rawrbox::RENDERER->getPlugins()) {
-			if (plugin.second == nullptr) continue;
-			plugin.second->bind(*signature);
-		}
-		// -------------------------
-
-		signature->CreateShaderResourceBinding(&signatureBind, true);
-
-		// Setup textures ---
-		signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(rawrbox::TextureManager::getHandles().data(), 0, static_cast<uint32_t>(rawrbox::TextureManager::total()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
-		rawrbox::TextureManager::onUpdate += []() {
-			signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(rawrbox::TextureManager::getHandles().data(), 0, static_cast<uint32_t>(rawrbox::TextureManager::total()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
-		};
-		// ------------------
+		defaultSampler = nullptr;
+		initialized = false;
 	}
 
 	Diligent::ISampler* PipelineUtils::registerSampler(uint32_t id, Diligent::SamplerDesc desc) {

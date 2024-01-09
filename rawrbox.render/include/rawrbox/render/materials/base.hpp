@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/models/mesh.hpp>
 #include <rawrbox/render/models/vertex.hpp>
 
@@ -8,21 +9,6 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-	constexpr auto MAX_DATA = 4;
-
-	struct MaterialBaseUniforms {
-		// Model ----
-		rawrbox::Colorf _gColorOverride = {};
-		rawrbox::Vector4f _gTextureFlags = {};
-
-		std::array<rawrbox::Vector4f, 4> _gData; // Other mesh data, like vertex / displacement / billboard / masks
-							 // ----------
-	};
-
-	struct MaterialBasePixelUniforms {
-		uint32_t textureID = {};
-	};
-
 	class MaterialBase {
 	protected:
 		Diligent::IPipelineState* _base = nullptr;
@@ -45,17 +31,14 @@ namespace rawrbox {
 		virtual ~MaterialBase() = default;
 
 		virtual void init() = 0;
-		virtual void createUniforms() = 0;
 
 		virtual void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper = {});
 		virtual void setupPipelines(const std::string& id);
 
-		virtual void bindShaderResources() const;
-
-		template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBaseUniforms>
-		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<P>& helper) {
+		template <typename T = rawrbox::VertexData>
+		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<rawrbox::BindlessVertexBuffer>& helper) {
 			// MODEL -------
-			std::array<rawrbox::Vector4f, MAX_DATA>
+			std::array<rawrbox::Vector4f, rawrbox::MAX_DATA>
 			    data = {rawrbox::Vector4f{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
 
 			if (mesh.hasData("billboard_mode")) {
@@ -74,15 +57,15 @@ namespace rawrbox {
 				data[3] = mesh.getData("mask").data();
 			}
 
-			helper->_gColorOverride = mesh.color;
-			helper->_gTextureFlags = mesh.textures.texture == nullptr ? rawrbox::Vector4f() : mesh.textures.texture->getData();
-			helper->_gData = data;
+			helper->colorOverride = mesh.color;
+			helper->textureFlags = mesh.textures.texture == nullptr ? rawrbox::Vector4f() : mesh.textures.texture->getData();
+			helper->data = data;
 			// ----------------------------
 		}
 
-		template <typename T = rawrbox::VertexData, typename P = rawrbox::MaterialBasePixelUniforms>
-		void bindBasePixelUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<P>& helper) {
-			helper->textureID = mesh.textures.getPixelIDs().x;
+		template <typename T = rawrbox::VertexData>
+		void bindBasePixelUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<rawrbox::BindlessPixelBuffer>& helper) {
+			helper->textureIDs = mesh.textures.getPixelIDs();
 		}
 
 		template <typename T = rawrbox::VertexData>

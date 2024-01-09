@@ -16,11 +16,4 @@ namespace rawrbox {
 		if (this->_cullnone == nullptr) this->_cullnone = rawrbox::PipelineUtils::getPipeline(id + "::CullNone");
 		if (this->_cullnone_alpha == nullptr) this->_cullnone_alpha = rawrbox::PipelineUtils::getPipeline(id + "::CullNone::Alpha");
 	}
-
-	void MaterialBase::bindShaderResources() const {
-		if (rawrbox::PipelineUtils::signatureBind == nullptr) throw std::runtime_error("[RawrBox-MaterialBase] Signature bind not initialized!");
-
-		auto context = rawrbox::RENDERER->context();
-		context->CommitShaderResources(rawrbox::PipelineUtils::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-	}
 } // namespace rawrbox

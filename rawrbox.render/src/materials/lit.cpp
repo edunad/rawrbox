@@ -4,39 +4,8 @@
 
 namespace rawrbox {
 	// STATIC DATA ----
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialLit::_uniforms;
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialLit::_uniforms_pixel;
-
 	bool MaterialLit::_built = false;
 	// ----------------
-
-	void MaterialLit::createUniforms() {
-		if (this->_uniforms != nullptr || this->_uniforms_pixel != nullptr) return;
-
-		// Uniforms -------
-		{
-			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::MaterialLit::Vertex::Uniforms";
-			CBDesc.Size = sizeof(rawrbox::MaterialBaseUniforms);
-			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-
-			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
-		}
-
-		{
-			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::MaterialLit::Pixel::Uniforms";
-			CBDesc.Size = sizeof(rawrbox::MaterialLitPixelUniforms);
-			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-
-			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms_pixel);
-		}
-		// ------------
-	}
 
 	void MaterialLit::init() {
 		const std::string id = "Model::Lit";
@@ -44,9 +13,7 @@ namespace rawrbox {
 		if (!this->_built) {
 			fmt::print("[RawrBox-MaterialLit] Building material..\n");
 
-			this->createUniforms();
 			this->createPipelines(id, vertexBufferType::vLayout());
-
 			this->_built = true;
 		}
 
@@ -63,7 +30,7 @@ namespace rawrbox {
 		settings.pPS = "lit.psh";
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = cluster->getClusterMacros() + helper;
-		settings.signature = rawrbox::PipelineUtils::signature;
+		settings.signature = rawrbox::BindlessManager::signature;
 		settings.layout = layout;
 		// -------------------
 

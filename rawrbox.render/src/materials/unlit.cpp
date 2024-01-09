@@ -5,9 +5,6 @@
 namespace rawrbox {
 
 	// STATIC DATA ----
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialUnlit::_uniforms;
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> MaterialUnlit::_uniforms_pixel;
-
 	bool MaterialUnlit::_built = false;
 	// ----------------
 
@@ -17,9 +14,7 @@ namespace rawrbox {
 		if (!this->_built) {
 			fmt::print("[RawrBox-MaterialUnlit] Building material..\n");
 
-			this->createUniforms();
 			this->createPipelines(id, vertexBufferType::vLayout());
-
 			this->_built = true;
 		}
 
@@ -34,7 +29,7 @@ namespace rawrbox {
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = helper;
 		settings.layout = layout;
-		settings.signature = rawrbox::PipelineUtils::signature; // Use bindless
+		settings.signature = rawrbox::BindlessManager::signature; // Use bindless
 
 		auto cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered::Light");
 		if (cluster != nullptr) {
@@ -68,35 +63,5 @@ namespace rawrbox {
 		settings.fill = Diligent::FILL_MODE_WIREFRAME;
 		rawrbox::PipelineUtils::createPipeline(id + "::Wireframe", settings);
 		// -----
-	}
-
-	void MaterialUnlit::createUniforms() {
-		if (this->_uniforms != nullptr || this->_uniforms_pixel != nullptr) return;
-
-		// Uniforms -------
-		{
-			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::MaterialUnlit::Vertex::Uniforms";
-			CBDesc.Size = sizeof(rawrbox::MaterialBaseUniforms);
-			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-
-			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
-		}
-		// ------------
-
-		// Pixel Uniforms -------
-		{
-			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::MaterialUnlit::Pixel::Uniforms";
-			CBDesc.Size = sizeof(rawrbox::MaterialBasePixelUniforms);
-			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-
-			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms_pixel);
-		}
-		// ------------
 	}
 } // namespace rawrbox

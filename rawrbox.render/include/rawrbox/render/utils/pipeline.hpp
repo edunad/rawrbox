@@ -13,6 +13,7 @@
 #include <vector>
 
 namespace rawrbox {
+
 	struct PipeUniforms {
 		Diligent::SHADER_TYPE type = Diligent::SHADER_TYPE_VERTEX;
 		Diligent::IDeviceObject* uniform = nullptr;
@@ -88,15 +89,12 @@ namespace rawrbox {
 		static Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> _stateCache;
 
 	public:
-		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> signature;
-		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> signatureBind;
-
 		static Diligent::ISampler* defaultSampler;
 		static bool initialized;
 
 		// ---
 		static void init(Diligent::IRenderDevice& device);
-		static void createSignature();
+		static void shutdown();
 
 		static Diligent::ISampler* registerSampler(uint32_t id, Diligent::SamplerDesc type);
 		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::ShaderMacroArray macros = {});

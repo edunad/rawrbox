@@ -1,8 +1,12 @@
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/streaming.hpp>
 
 namespace rawrbox {
 	StreamingBuffer::StreamingBuffer(const std::string& name, Diligent::BIND_FLAGS flags, uint32_t size, size_t contexts) : _bufferSize(size), _mapInfo(contexts) {
+		auto device = rawrbox::RENDERER->device();
+		auto context = rawrbox::RENDERER->context();
+
 		Diligent::BufferDesc buff;
 		buff.Name = name.c_str();
 		buff.Usage = Diligent::USAGE_DYNAMIC;
@@ -10,7 +14,14 @@ namespace rawrbox {
 		buff.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 		buff.Size = size;
 
-		rawrbox::RENDERER->device()->CreateBuffer(buff, nullptr, &this->_buffer);
+		auto state = rawrbox::BufferType::VERTEX;
+		if (flags == Diligent::BIND_INDEX_BUFFER) state = rawrbox::BufferType::INDEX;
+
+		device->CreateBuffer(buff, nullptr, &this->_buffer);
+
+		// Barrier ----
+		rawrbox::BindlessManager::barrier(*this->_buffer, state);
+		// ------------
 	}
 
 	// UTILS ----

@@ -86,6 +86,8 @@ namespace rawrbox {
 			rawrbox::ModelBase<M>::upload(dynamic);
 
 			auto device = rawrbox::RENDERER->device();
+			auto context = rawrbox::RENDERER->context();
+
 			auto instSize = static_cast<uint32_t>(this->_instances.size());
 
 			// INSTANCE BUFFER ----
@@ -101,6 +103,10 @@ namespace rawrbox {
 
 			device->CreateBuffer(InstBuffDesc, this->_instances.empty() ? nullptr : &VBData, &this->_dataBuffer);
 			// ---------------------
+
+			// Barrier ----
+			rawrbox::BindlessManager::barrier(*this->_dataBuffer, rawrbox::BufferType::CONSTANT);
+			// ------------
 		}
 
 		virtual void updateInstance() {
@@ -110,6 +116,7 @@ namespace rawrbox {
 			auto instSize = static_cast<uint32_t>(this->_instances.size());
 
 			context->UpdateBuffer(this->_vbh, 0, sizeof(rawrbox::Instance) * instSize, this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			rawrbox::BindlessManager::barrier(*this->_vbh, rawrbox::BufferType::VERTEX);
 		}
 
 		void draw() override {
@@ -134,7 +141,6 @@ namespace rawrbox {
 			this->_material->init();
 			this->_material->bindPipeline(*this->_mesh);
 			this->_material->bindUniforms(*this->_mesh);
-			this->_material->bindShaderResources();
 			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;

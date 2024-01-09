@@ -250,7 +250,9 @@ namespace rawrbox {
 		// ----
 		virtual void upload(bool dynamic = false) {
 			if (this->isUploaded()) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
+
 			auto device = rawrbox::RENDERER->device();
+			auto context = rawrbox::RENDERER->context();
 
 			// Generate buffers ----
 			this->_isDynamic = dynamic;
@@ -300,6 +302,11 @@ namespace rawrbox {
 			IBData.DataSize = IndcBuffDesc.Size;
 			device->CreateBuffer(IndcBuffDesc, indcSize > 0 ? &IBData : nullptr, &this->_ibh);
 			// ---------------------
+
+			// Barrier ----
+			rawrbox::BindlessManager::barrier(*this->_vbh, rawrbox::BufferType::VERTEX);
+			rawrbox::BindlessManager::barrier(*this->_ibh, rawrbox::BufferType::INDEX);
+			// ------------
 		}
 
 		virtual void draw() {
@@ -312,6 +319,7 @@ namespace rawrbox {
 			// NOLINTEND(*)
 
 			auto context = rawrbox::RENDERER->context();
+
 			context->SetVertexBuffers(0, 1, pBuffs, &offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			// ----

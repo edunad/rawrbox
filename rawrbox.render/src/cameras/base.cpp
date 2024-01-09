@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/static.hpp>
@@ -11,6 +12,9 @@ namespace rawrbox {
 	}
 
 	void CameraBase::initialize() {
+		auto device = rawrbox::RENDERER->device();
+		auto context = rawrbox::RENDERER->context();
+
 		Diligent::BufferDesc CBDesc;
 		CBDesc.Name = "rawrbox::Camera::Uniforms";
 		CBDesc.Size = sizeof(rawrbox::CameraUniforms);
@@ -19,6 +23,10 @@ namespace rawrbox {
 		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 
 		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+
+		// Barrier ----
+		rawrbox::BindlessManager::barrier(*this->_uniforms, rawrbox::BufferType::CONSTANT);
+		// ------------
 	}
 
 	void CameraBase::updateMtx(){};

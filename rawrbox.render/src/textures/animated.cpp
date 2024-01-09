@@ -13,6 +13,8 @@ namespace rawrbox {
 
 	void TextureAnimatedBase::internalLoad(const std::vector<uint8_t>& /*_buffer*/, bool /*_useFallback*/) { throw std::runtime_error("[RawrBox-TextureAnimatedBase] Not implemented"); }
 	void TextureAnimatedBase::internalUpdate() {
+		auto context = rawrbox::RENDERER->context();
+
 		Diligent::Box UpdateBox;
 		UpdateBox.MinX = 0;
 		UpdateBox.MinY = 0;
@@ -23,7 +25,7 @@ namespace rawrbox {
 		SubresData.Stride = this->_size.x * this->_channels;
 		SubresData.pData = this->_frames.empty() ? this->_pixels.data() : this->_frames[this->_currentFrame].pixels.data();
 
-		rawrbox::RENDERER->context()->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
 	// ANIMATION ------
@@ -81,4 +83,6 @@ namespace rawrbox {
 		rawrbox::TextureBase::upload(format, true);
 	}
 	// --------------------
+
+	bool TextureAnimatedBase::requiresUpdate() const { return true; }
 } // namespace rawrbox

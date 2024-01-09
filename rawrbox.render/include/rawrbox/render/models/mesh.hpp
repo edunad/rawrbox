@@ -8,7 +8,6 @@
 #include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/base.hpp>
-#include <rawrbox/render/textures/manager.hpp>
 
 #include <RasterizerState.h>
 #include <fmt/printf.h>

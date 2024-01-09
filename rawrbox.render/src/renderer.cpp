@@ -23,6 +23,7 @@
 	#include <EngineFactoryMtl.h>
 #endif
 
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/text/engine.hpp>
@@ -36,6 +37,9 @@ namespace rawrbox {
 	RendererBase::~RendererBase() {
 		this->_render.reset();
 		this->_stencil.reset();
+
+		rawrbox::BindlessManager::shutdown();
+		rawrbox::PipelineUtils::shutdown();
 
 		RAWRBOX_DESTROY(this->_device);
 		RAWRBOX_DESTROY(this->_context);
@@ -176,6 +180,7 @@ namespace rawrbox {
 
 		// Init pipelines ---
 		rawrbox::PipelineUtils::init(*this->device());
+		rawrbox::BindlessManager::init();
 		// ----------------------
 
 		// Init default textures ---
@@ -213,10 +218,6 @@ namespace rawrbox {
 			rawrbox::DEBUG_FONT_ITALIC = rawrbox::TextEngine::load("./assets/fonts/SometypeMono-Italic.ttf", 12);
 		}
 		// -------------------------
-
-		// Setup pipeline bindless signature
-		rawrbox::PipelineUtils::createSignature();
-		// -----------------------
 
 		// Setup stencil ----
 		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
@@ -271,8 +272,6 @@ namespace rawrbox {
 
 				return;
 			}
-
-			this->_currentIntro->texture->update();
 		} else {
 			if (this->_camera != nullptr) {
 				this->_camera->update();
@@ -299,44 +298,49 @@ namespace rawrbox {
 		if (this->_camera != nullptr) this->_camera->updateBuffer();
 		// ---------------------
 
+		// Update textures -----
+		rawrbox::BindlessManager::update();
+		// ---------------------
+
 		// Perform pre-render --
-		for (auto& plugin : this->_renderPlugins) {
+		/*for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 			plugin.second->preRender();
-		}
+		}*/
+		// -----------------------
+
+		// Commit signature --
+		this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 		// -----------------------
 
 // Perform world --
 #ifdef _DEBUG
 		// this->beginQuery("WORLD");
 #endif
-
-		this->_render->startRecord();
+		// this->_render->startRecord();
 		this->_drawCall(rawrbox::DrawPass::PASS_OPAQUE);
-		this->_render->stopRecord();
-
+		// this->_render->stopRecord();
 #ifdef _DEBUG
 		// this->endQuery("WORLD");
 #endif
 		//  -----------------
 
 		// Perform post-render --
-		for (auto& plugin : this->_renderPlugins) {
+		/*for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 			plugin.second->postRender(this->_render.get());
-		}
+		}*/
 		// -----------------------
 
 		// Render world ----
-		rawrbox::RenderUtils::renderQUAD(this->_render->getHandle());
+		// rawrbox::RenderUtils::renderQUAD(this->_render.get());
 		// ------------------
 
 		// Perform overlay --
 #ifdef _DEBUG
 		// this->beginQuery("OVERLAY");
 #endif
-		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
-
+		// this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
 #ifdef _DEBUG
 		// this->endQuery("OVERLAY");
 #endif
@@ -365,7 +369,6 @@ namespace rawrbox {
 		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
 		rawrbox::FRAME++;
 	}
-
 	/*void RendererBase::gpuCheck() {
 		if (this->_gpuReadFrame == rawrbox::BGFX_FRAME) {
 			std::unordered_map<uint32_t, uint32_t> ids = {};

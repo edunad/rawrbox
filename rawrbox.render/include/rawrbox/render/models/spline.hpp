@@ -154,7 +154,6 @@ namespace rawrbox {
 			this->_material->init();
 			this->_material->bindPipeline(*this->_mesh);
 			this->_material->bindUniforms(*this->_mesh);
-			this->_material->bindShaderResources();
 			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;
