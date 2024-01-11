@@ -54,7 +54,10 @@ namespace rawrbox {
 
 		// BARRIERS -------
 		static void barrier(const rawrbox::TextureBase& texture);
+		static void barrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state = Diligent::RESOURCE_STATE_SHADER_RESOURCE);
 		static void barrier(Diligent::IBuffer& buffer, rawrbox::BufferType type);
+
+		static void immediateBarrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state = Diligent::RESOURCE_STATE_SHADER_RESOURCE);
 		// ----------------
 
 		// TEXTURES -------

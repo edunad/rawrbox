@@ -166,6 +166,7 @@ namespace rawrbox {
 		// Utils ----
 		[[nodiscard]] virtual rawrbox::Stencil& stencil() const;
 
+		// WARNING: NOT THREAD SAFE!!
 		[[nodiscard]] virtual Diligent::IDeviceContext* context() const;
 		[[nodiscard]] virtual Diligent::ISwapChain* swapChain() const;
 		[[nodiscard]] virtual Diligent::IRenderDevice* device() const;

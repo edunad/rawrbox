@@ -217,6 +217,8 @@ namespace rawrbox {
 		if (rawrbox::DEBUG_FONT_ITALIC == nullptr) {
 			rawrbox::DEBUG_FONT_ITALIC = rawrbox::TextEngine::load("./assets/fonts/SometypeMono-Italic.ttf", 12);
 		}
+
+		RenderUtils::init();
 		// -------------------------
 
 		// Setup stencil ----
@@ -317,30 +319,30 @@ namespace rawrbox {
 #ifdef _DEBUG
 		// this->beginQuery("WORLD");
 #endif
-		// this->_render->startRecord();
+		this->_render->startRecord();
 		this->_drawCall(rawrbox::DrawPass::PASS_OPAQUE);
-		// this->_render->stopRecord();
+		this->_render->stopRecord();
 #ifdef _DEBUG
 		// this->endQuery("WORLD");
 #endif
 		//  -----------------
 
 		// Perform post-render --
-		/*for (auto& plugin : this->_renderPlugins) {
+		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 			plugin.second->postRender(this->_render.get());
-		}*/
+		}
 		// -----------------------
 
 		// Render world ----
-		// rawrbox::RenderUtils::renderQUAD(this->_render.get());
+		rawrbox::RenderUtils::renderQUAD(*this->_render);
 		// ------------------
 
 		// Perform overlay --
 #ifdef _DEBUG
 		// this->beginQuery("OVERLAY");
 #endif
-		// this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
 #ifdef _DEBUG
 		// this->endQuery("OVERLAY");
 #endif

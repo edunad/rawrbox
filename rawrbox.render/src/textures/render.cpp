@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/render.hpp>
 
@@ -19,15 +20,20 @@ namespace rawrbox {
 	// ------ RENDER
 	void TextureRender::startRecord(bool clear) {
 		if (this->_recording) throw std::runtime_error("[RawrBox-TextureRender] Already recording");
+
+		// BARRIER ----
+		rawrbox::BindlessManager::immediateBarrier(*this->_tex, Diligent::RESOURCE_STATE_RENDER_TARGET);
+		// --------
+
 		auto context = rawrbox::RENDERER->context();
-		context->SetRenderTargets(1, &this->_rtHandle, this->_depthHandle, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		context->SetRenderTargets(1, &this->_rtHandle, this->_depthHandle, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 		if (clear) {
 			const std::array<float, 4> ClearColor = {0.0F, 0.0F, 0.0F, 0.0F};
-			context->ClearRenderTarget(this->_rtHandle, ClearColor.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			context->ClearRenderTarget(this->_rtHandle, ClearColor.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 			if (this->_depthHandle != nullptr) {
-				context->ClearDepthStencil(this->_depthHandle, Diligent::CLEAR_DEPTH_FLAG, 1.0F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+				context->ClearDepthStencil(this->_depthHandle, Diligent::CLEAR_DEPTH_FLAG, 1.0F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			}
 		}
 
@@ -39,7 +45,12 @@ namespace rawrbox {
 		auto* pRTV = rawrbox::RENDERER->swapChain()->GetCurrentBackBufferRTV();
 		auto* depth = rawrbox::RENDERER->swapChain()->GetDepthBufferDSV();
 
-		rawrbox::RENDERER->context()->SetRenderTargets(1, &pRTV, depth, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::RENDERER->context()->SetRenderTargets(1, &pRTV, depth, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+
+		// BARRIER ----
+		rawrbox::BindlessManager::immediateBarrier(*this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE);
+		// --------
+
 		this->_recording = false;
 	}
 
@@ -66,6 +77,11 @@ namespace rawrbox {
 
 		this->_rtHandle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+
+		this->_textureID = rawrbox::BindlessManager::registerTexture(*this);
+
+		// Immediate barrier
+		rawrbox::BindlessManager::immediateBarrier(*this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE);
 		// --------------
 
 		// Depth ----
@@ -81,6 +97,8 @@ namespace rawrbox {
 
 			rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_depthTex);
 			this->_depthHandle = this->_depthTex->GetDefaultView(Diligent::TEXTURE_VIEW_DEPTH_STENCIL);
+
+			rawrbox::BindlessManager::immediateBarrier(*this->_depthTex, Diligent::RESOURCE_STATE_DEPTH_WRITE);
 		}
 		// ----------
 	}

@@ -149,7 +149,7 @@ namespace rawrbox {
 			DrawAttrs.BaseVertex = this->_mesh->baseVertex;
 			DrawAttrs.NumIndices = this->_mesh->totalIndex;
 			DrawAttrs.NumInstances = static_cast<uint32_t>(this->_instances.size());
-			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
+			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL /*| Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT*/;
 			context->DrawIndexed(DrawAttrs);
 		}
 	};

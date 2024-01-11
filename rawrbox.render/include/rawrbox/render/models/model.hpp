@@ -490,7 +490,7 @@ namespace rawrbox {
 				DrawAttrs.FirstIndexLocation = mesh->baseIndex;
 				DrawAttrs.BaseVertex = mesh->baseVertex;
 				DrawAttrs.NumIndices = mesh->totalIndex;
-				DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
+				DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL /*| Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT*/;
 				context->DrawIndexed(DrawAttrs);
 			}
 

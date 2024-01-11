@@ -169,6 +169,10 @@ namespace rawrbox {
 		_barriers.emplace_back(texture.getTexture(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
 	}
 
+	void BindlessManager::barrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state) {
+		_barriers.emplace_back(&texture, Diligent::RESOURCE_STATE_UNKNOWN, state, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+	}
+
 	void BindlessManager::barrier(Diligent::IBuffer& buffer, rawrbox::BufferType type) {
 		auto state = Diligent::RESOURCE_STATE_UNKNOWN;
 		switch (type) {
@@ -185,6 +189,11 @@ namespace rawrbox {
 
 		if (state == Diligent::RESOURCE_STATE_UNKNOWN) throw std::runtime_error("[RawrBox-BindlessManager] Invalid buffer type! Cannot create barrier");
 		_barriers.emplace_back(&buffer, Diligent::RESOURCE_STATE_UNKNOWN, state, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+	}
+
+	void BindlessManager::immediateBarrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state) {
+		Diligent::StateTransitionDesc barrier = {&texture, Diligent::RESOURCE_STATE_UNKNOWN, state, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE};
+		rawrbox::RENDERER->context()->TransitionResourceStates(1, &barrier);
 	}
 	// ----------------
 

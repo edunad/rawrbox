@@ -1,8 +1,8 @@
 
 
 
-Texture2D      g_Texture;
-SamplerState   g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
+Texture2DArray      g_Texture;
+SamplerState        g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
 
 cbuffer Constants {
     // GLOBAL ----

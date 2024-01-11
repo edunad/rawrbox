@@ -47,7 +47,11 @@ namespace rawrbox {
 			return {base->getTextureID(), norm->getTextureID(), metR->getTextureID(), em->getTextureID()};
 		}
 
-		bool operator==(const rawrbox::MeshTextures& other) const { return this->texture == other.texture && this->normal == other.normal && this->emission == other.emission && this->roughtMetal == other.roughtMetal && this->displacement == other.displacement; }
+		[[nodiscard]] const bool canMerge(const rawrbox::MeshTextures& other) const {
+			return this->roughnessFactor == other.roughnessFactor && this->metalnessFactor == other.metalnessFactor && this->specularFactor == other.specularFactor && this->emissionFactor == other.emissionFactor;
+		}
+
+		bool operator==(const rawrbox::MeshTextures& other) const { return this->texture == other.texture && this->normal == other.normal && this->specularFactor == other.specularFactor && this->roughtMetal == other.roughtMetal && this->emission == other.emission; }
 		bool operator!=(const rawrbox::MeshTextures& other) const { return !operator==(other); }
 	};
 
@@ -298,7 +302,7 @@ namespace rawrbox {
 			if (this->vertices.size() + other.vertices.size() >= MAX_VERTICES) return false; // Max vertice limit
 			if (this->indices.size() + other.indices.size() >= MAX_INDICES) return false;    // Max indice limit
 
-			return this->textures == other.textures &&
+			return this->textures.canMerge(other.textures) &&
 			       this->color == other.color &&
 			       this->wireframe == other.wireframe &&
 			       this->lineMode == other.lineMode &&

@@ -77,8 +77,6 @@ namespace stencil {
 				}
 			});
 		}
-
-		// this->contentLoaded();
 	}
 
 	void Game::contentLoaded() {

@@ -14,6 +14,11 @@ namespace rawrbox {
 	Stencil::Stencil(const rawrbox::Vector2i& size) : _windowSize(size) {
 		this->_streamingVB = std::make_unique<rawrbox::StreamingBuffer>("RawrBox::Stencil::VertexBuffer", Diligent::BIND_VERTEX_BUFFER, MaxVertsInStreamingBuffer * static_cast<uint32_t>(sizeof(rawrbox::PosUVColorVertexData)), 1);
 		this->_streamingIB = std::make_unique<rawrbox::StreamingBuffer>("RawrBox::Stencil::IndexBuffer", Diligent::BIND_INDEX_BUFFER, MaxVertsInStreamingBuffer * 3 * static_cast<uint32_t>(sizeof(uint32_t)), 1);
+
+		// Only supported on DX12 / Vulkan --
+		this->_streamingVB->setPersistent(true);
+		this->_streamingIB->setPersistent(true);
+		// --------------------------
 	}
 
 	Stencil::~Stencil() {
@@ -384,7 +389,7 @@ namespace rawrbox {
 
 			this->_streamingVB->release(contextID);
 			this->_streamingIB->release(contextID);
-			// -------------------
+			//  -------------------
 
 			// Render ------------
 			const std::array<uint64_t, 1> offsets = {VBOffset};

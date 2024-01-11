@@ -10,21 +10,20 @@ namespace rawrbox {
 		if (_pipe != nullptr) throw std::runtime_error("[RawrBox-RenderUtils] Pipeline already initialized!");
 
 		rawrbox::PipeSettings settings;
+		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
+		settings.cull = Diligent::CULL_MODE_BACK;
 		settings.pVS = "rt.vsh";
 		settings.pPS = "rt.psh";
-		settings.cull = Diligent::CULL_MODE_BACK;
-		settings.depthWrite = false;
-		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Textures"}};
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;              // Disable depth
-		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP; // Disable cull
-		settings.signature = rawrbox::BindlessManager::signature;
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP; // Set topology
+		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+		settings.signature = rawrbox::BindlessManager::signature; // Use bindless
 
 		_pipe = rawrbox::PipelineUtils::createPipeline("Utils::QUAD", settings);
 	}
 
-	void RenderUtils::renderQUAD(rawrbox::TextureBase* texture) {
-		if (_pipe == nullptr) RenderUtils::init(); // Upload if not uploaded before
-
+	void RenderUtils::renderQUAD(const rawrbox::TextureBase& texture) {
 		auto context = rawrbox::RENDERER->context();
 		context->SetPipelineState(_pipe);
 
@@ -37,13 +36,13 @@ namespace rawrbox {
 		// SETUP PIXEL UNIFORMS ----------------------------
 		{
 			Diligent::MapHelper<rawrbox::BindlessPixelBuffer> CBConstants(context, rawrbox::BindlessManager::signatureBufferPixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			CBConstants->textureIDs.x = texture->getTextureID();
+			CBConstants->textureIDs = {texture.getTextureID(), 0, 0, 0};
 		}
 		// -----------
 
 		Diligent::DrawAttribs DrawAttrs;
 		DrawAttrs.NumVertices = 4; // QUAD
-		DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
+		DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
 		context->Draw(DrawAttrs);
 	}
 } // namespace rawrbox
