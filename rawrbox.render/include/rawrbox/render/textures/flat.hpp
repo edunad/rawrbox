@@ -4,8 +4,6 @@
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/textures/base.hpp>
 
-#include <vector>
-
 namespace rawrbox {
 	class TextureFlat : public rawrbox::TextureBase {
 	private:

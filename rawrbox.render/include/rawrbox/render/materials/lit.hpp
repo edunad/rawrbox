@@ -4,17 +4,9 @@
 #include <rawrbox/render/plugins/clustered.hpp>
 
 namespace rawrbox {
-	struct MaterialLitPixelUniforms {
-		rawrbox::Vector4_t<uint32_t> textureIDs = {};
-		rawrbox::Vector4f litData = {};
-	};
 
 	class MaterialLit : public rawrbox::MaterialBase {
 		static bool _built;
-
-	protected:
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms_pixel;
 
 	public:
 		using vertexBufferType = rawrbox::VertexNormData;

@@ -5,14 +5,18 @@
 #define TEXTURE_DATA
 #include <material.fxh>
 
-//#define TRANSFORM_DISPLACEMENT
+#define TRANSFORM_DISPLACEMENT
 #define TRANSFORM_PSX
 #define TRANSFORM_BILLBOARD
 #ifdef SKINNED
     #define TRANSFORM_BONES
 #endif
 
+Texture2DArray g_Textures[];
+SamplerState   g_Textures_sampler;
+
 #include <model_transforms.fxh>
+
 
 struct VSInput {
     float3 Pos   : ATTRIB0;
@@ -51,7 +55,7 @@ struct PSInput {
     float4 WorldPos                 : POSITION1;
 
     float2 UV                       : TEX_COORD;
-    float4 Color                    : COLOR0;
+    float4 Color                    : COLOR;
 
     nointerpolation uint   TexIndex : TEX_ARRAY_INDEX;
 };

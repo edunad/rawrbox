@@ -4,7 +4,7 @@
 #define TEXTURE_DATA
 #include <material.fxh>
 
-//#define TRANSFORM_DISPLACEMENT
+#define TRANSFORM_DISPLACEMENT
 #define TRANSFORM_PSX
 #define TRANSFORM_BILLBOARD
 #ifdef SKINNED
@@ -52,11 +52,11 @@ struct PSInput {
     float4 Pos                      : SV_POSITION;
     float4 WorldPos                 : POSITION1;
 
-    float4 Normal                   : NORMAL0;
-    float4 Tangent                  : TANGENT0;
+    float4 Normal                   : NORMAL;
+    float4 Tangent                  : TANGENT;
 
     float2 UV                       : TEX_COORD;
-    float4 Color                    : COLOR0;
+    float4 Color                    : COLOR;
 
     nointerpolation uint   TexIndex : TEX_ARRAY_INDEX;
 };

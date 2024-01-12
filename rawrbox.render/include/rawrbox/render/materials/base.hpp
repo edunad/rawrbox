@@ -49,8 +49,8 @@ namespace rawrbox {
 				data[1] = mesh.getData("vertex_snap").data();
 			}
 
-			if (mesh.hasData("displacement_strength")) {
-				data[2] = mesh.getData("displacement_strength").data();
+			if (mesh.hasData("displacement")) {
+				data[2] = mesh.getData("displacement").data();
 			}
 
 			if (mesh.hasData("mask")) {

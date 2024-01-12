@@ -205,7 +205,7 @@ namespace rawrbox {
 		virtual void setDisplacementTexture(rawrbox::TextureBase* ptr, float power = 1.F) {
 			this->textures.displacement = ptr;
 
-			this->addData("displacement_strength", {power, 0, 0, 0});
+			this->addData("displacement", {static_cast<float>(ptr->getTextureID()), power, 0, 0});
 			this->setOptimizable(false);
 		}
 
@@ -302,7 +302,7 @@ namespace rawrbox {
 			if (this->vertices.size() + other.vertices.size() >= MAX_VERTICES) return false; // Max vertice limit
 			if (this->indices.size() + other.indices.size() >= MAX_INDICES) return false;    // Max indice limit
 
-			return this->textures.canMerge(other.textures) &&
+			return this->textures == other.textures && // TODO: Replace with canMerge and pass textureID down to vertex?
 			       this->color == other.color &&
 			       this->wireframe == other.wireframe &&
 			       this->lineMode == other.lineMode &&

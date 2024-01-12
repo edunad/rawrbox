@@ -7,7 +7,9 @@
 namespace rawrbox {
 	// PROTECTED ---
 	std::vector<Diligent::IDeviceObject*> BindlessManager::_textureHandles = {};
-	std::unordered_map<uint32_t, rawrbox::TextureBase*> BindlessManager::_updateTextures = {};
+	std::vector<Diligent::IDeviceObject*> BindlessManager::_vertexTextureHandles = {};
+
+	std::vector<rawrbox::TextureBase*> BindlessManager::_updateTextures = {};
 
 	std::vector<Diligent::StateTransitionDesc> BindlessManager::_barriers = {};
 	// --------------
@@ -22,8 +24,11 @@ namespace rawrbox {
 	void BindlessManager::init() {
 		if (signature != nullptr) throw std::runtime_error("[RawrBox-BindlessManager] Signature already bound!");
 
-		// Create signature -----
 		auto renderer = rawrbox::RENDERER;
+
+		_textureHandles.reserve(renderer->MAX_TEXTURES);
+		_vertexTextureHandles.reserve(renderer->MAX_VERTEX_TEXTURES);
+		// Create signature -----
 
 		auto camera = renderer->camera();
 		auto context = renderer->context();
@@ -38,6 +43,9 @@ namespace rawrbox {
 
 		    {Diligent::SHADER_TYPE_VERTEX, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 		    {Diligent::SHADER_TYPE_PIXEL, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+
+		    {Diligent::SHADER_TYPE_VERTEX, "g_Textures", renderer->MAX_VERTEX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
+		    {Diligent::SHADER_TYPE_VERTEX, "g_Textures_sampler", 1, Diligent::SHADER_RESOURCE_TYPE_SAMPLER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
 
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", renderer->MAX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures_sampler", 1, Diligent::SHADER_RESOURCE_TYPE_SAMPLER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
@@ -66,6 +74,7 @@ namespace rawrbox {
 		    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
 
 		std::vector<Diligent::ImmutableSamplerDesc> samplers = {
+		    {Diligent::SHADER_TYPE_VERTEX, "g_Textures", SamLinearClampDesc},
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", SamLinearClampDesc},
 		};
 
@@ -120,12 +129,14 @@ namespace rawrbox {
 		signature->CreateShaderResourceBinding(&signatureBind, true);
 
 		// Setup textures ---
+		signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Textures")->SetArray(_vertexTextureHandles.data(), 0, static_cast<uint32_t>(_vertexTextureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 		signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(_textureHandles.data(), 0, static_cast<uint32_t>(_textureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 		// ----------------------
 	}
 
 	void BindlessManager::shutdown() {
 		_textureHandles = {};
+		_vertexTextureHandles = {};
 		_updateTextures = {};
 		_barriers = {};
 
@@ -142,16 +153,28 @@ namespace rawrbox {
 		_barriers.clear();
 	}
 
+	void BindlessManager::registerUpdateTexture(rawrbox::TextureBase& tex) {
+		if (!tex.requiresUpdate()) return;
+		_updateTextures.push_back(&tex);
+	}
+
+	void BindlessManager::unregisterUpdateTexture(rawrbox::TextureBase& tex) {
+		auto fnd = std::find(_updateTextures.begin(), _updateTextures.end(), &tex);
+		if (fnd == _updateTextures.end()) return;
+
+		_updateTextures.erase(fnd);
+	}
+
 	void BindlessManager::update() {
 		if (signature == nullptr) return;
 
 		// UPDATE TEXTURES ---
 		if (!_updateTextures.empty()) {
 			for (auto tex : _updateTextures) {
-				if (tex.second == nullptr) continue;
+				if (tex == nullptr) continue;
 
-				tex.second->update();
-				barrier(*tex.second); // Maybe?
+				tex->update();
+				barrier(*tex); // Maybe?
 			}
 		}
 		// ---------------------
@@ -204,63 +227,74 @@ namespace rawrbox {
 		auto* pTextureSRV = texture.getHandle(); // Get shader resource view from the texture
 		if (pTextureSRV == nullptr) throw std::runtime_error(fmt::format("[RawrBox-BindlessManager] Failed to register texture '{}'! Texture view is null, not uploaded?", texture.getName()));
 
+		bool isVertex = texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX;
+		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;
+
 		// Check if it's already registered --
-		for (size_t slot = 0; slot < _textureHandles.size(); slot++) {
-			if (_textureHandles[slot] == pTextureSRV) {
+		for (size_t slot = 0; slot < handler.size(); slot++) {
+			if (handler[slot] == pTextureSRV) {
 				return static_cast<uint32_t>(slot);
 			}
 		}
 		//-------------------------
 
 		// First find a empty slot -----------
-		for (size_t slot = 0; slot < _textureHandles.size(); slot++) {
-			if (_textureHandles[slot] == nullptr) {
-				_textureHandles[slot] = pTextureSRV;
-				if (texture.requiresUpdate()) _updateTextures[slot] = &texture;
+		for (size_t slot = 0; slot < handler.size(); slot++) {
+			if (handler[slot] == nullptr) {
+				handler[slot] = pTextureSRV;
 
-				fmt::print("[RawrBox-BindlessManager] Re-using slot '{}' for bindless texture '{}'\n", slot, texture.getName());
+				// Register texture for updates --
+				registerUpdateTexture(texture);
+				// ---------
+
+				fmt::print("[RawrBox-BindlessManager] Re-using slot '{}' for bindless {} texture '{}'\n", slot, isVertex ? "vertex" : "pixel", texture.getName());
 				return static_cast<uint32_t>(slot);
 			}
 		}
 		// ----------------------------
 
 		// No slot ---
-		auto slot = static_cast<uint32_t>(_textureHandles.size());
+		auto slot = static_cast<uint32_t>(handler.size());
+
 		if (slot == static_cast<uint32_t>(rawrbox::RENDERER->MAX_TEXTURES / 1.2F)) fmt::print("[RawrBox-BindlessManager] Aproaching max texture limit of '{}'\n", rawrbox::RENDERER->MAX_TEXTURES);
 		if (slot >= rawrbox::RENDERER->MAX_TEXTURES) throw std::runtime_error(fmt::format("[RawrBox-BindlessManager] Max texture limit reached! Cannot allocate texture, remove some unecessary textures or increase MAX_TEXTURES on renderer\n", rawrbox::RENDERER->MAX_TEXTURES));
-		_textureHandles.push_back(pTextureSRV);
+		handler.push_back(pTextureSRV);
 
-		if (texture.requiresUpdate()) _updateTextures[slot] = &texture;
-		fmt::print("[RawrBox-BindlessManager] Registering bindless texture '{}' to slot '{}'\n", texture.getName(), slot);
+		fmt::print("[RawrBox-BindlessManager] Registering bindless {} texture '{}' to slot '{}'\n", isVertex ? "vertex" : "pixel", texture.getName(), slot);
 		// -----
+
+		// Register texture for updates --
+		registerUpdateTexture(texture);
+		// ---------
 
 		// Update signature ---
 		if (signatureBind != nullptr) {
-			signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(_textureHandles.data(), 0, static_cast<uint32_t>(_textureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+			signatureBind->GetVariableByName(isVertex ? Diligent::SHADER_TYPE_VERTEX : Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(handler.data(), 0, static_cast<uint32_t>(handler.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 		}
 		// -----
 
 		return slot;
 	}
 
-	void BindlessManager::unregisterTexture(uint32_t indx) {
+	void BindlessManager::unregisterTexture(rawrbox::TextureBase& texture) {
 		if (signature == nullptr) return;
 
-		if (indx >= _textureHandles.size()) throw std::runtime_error(fmt::format("[RawrBox-TextureManager] Index '{}' not found!", indx));
-		_textureHandles[indx] = nullptr;
+		bool isVertex = texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX;
+		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;
 
-		// Cleanup update textures ----
-		auto fnd = _updateTextures.find(indx);
-		if (fnd != _updateTextures.end()) {
-			_updateTextures.erase(indx);
-		}
+		uint32_t id = texture.getTextureID();
+		if (id >= handler.size()) throw std::runtime_error(fmt::format("[RawrBox-TextureManager] Index '{}' not found!", id));
+
+		// Cleanup  ----
+		unregisterUpdateTexture(texture);
+		handler[id] = nullptr;
 		// --------------------
 
-		fmt::print("[RawrBox-TextureManager] Un-registering bindless texture slot '{}'\n", indx);
+		fmt::print("[RawrBox-TextureManager] Un-registering bindless {} texture slot '{}'\n", isVertex ? "vertex" : "pixel", id);
 
 		// Update signature ---
 		if (signatureBind != nullptr) {
-			signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(_textureHandles.data(), 0, static_cast<uint32_t>(_textureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+			signatureBind->GetVariableByName(isVertex ? Diligent::SHADER_TYPE_VERTEX : Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(handler.data(), 0, static_cast<uint32_t>(handler.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 		}
 		// -----
 	}

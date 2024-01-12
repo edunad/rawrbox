@@ -12,6 +12,8 @@ namespace rawrbox {
 
 	// TEXTURE FALLBACKS ---
 	std::shared_ptr<rawrbox::TextureMissing> MISSING_TEXTURE = nullptr;
+	std::shared_ptr<rawrbox::TextureMissing> MISSING_VERTEX_TEXTURE = nullptr;
+
 	std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE = nullptr;
 	std::shared_ptr<rawrbox::TextureFlat> BLACK_TEXTURE = nullptr;
 	std::shared_ptr<rawrbox::TextureFlat> NORMAL_TEXTURE = nullptr;

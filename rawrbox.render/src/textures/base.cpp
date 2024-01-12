@@ -10,7 +10,7 @@ namespace rawrbox {
 	TextureBase::~TextureBase() {
 		if (this->_failedToLoad) return; // Don't delete the fallback
 		if (this->_handle != nullptr) {
-			rawrbox::BindlessManager::unregisterTexture(this->_textureID);
+			rawrbox::BindlessManager::unregisterTexture(*this);
 			this->_textureID = 0;
 		}
 
@@ -20,8 +20,7 @@ namespace rawrbox {
 	void TextureBase::loadFallback() {
 		this->_failedToLoad = true;
 
-		auto missing = rawrbox::MISSING_TEXTURE;
-
+		auto missing = _type == TEXTURE_TYPE::VERTEX ? rawrbox::MISSING_VERTEX_TEXTURE : rawrbox::MISSING_TEXTURE;
 		this->_handle = missing->getHandle();
 		this->_textureID = missing->getTextureID();
 	}
@@ -102,6 +101,9 @@ namespace rawrbox {
 
 	void TextureBase::setTextureUV(rawrbox::TEXTURE_UV mode) { this->_textureUV = mode; }
 	rawrbox::TEXTURE_UV TextureBase::getTextureUV() const { return this->_textureUV; }
+
+	void TextureBase::setType(rawrbox::TEXTURE_TYPE type) { this->_type = type; }
+	rawrbox::TEXTURE_TYPE TextureBase::getType() const { return this->_type; }
 
 	const std::string& TextureBase::getName() const { return this->_name; }
 	void TextureBase::setName(const std::string& name) { this->_name = fmt::format("RawrBox::Texture::{}", name); }

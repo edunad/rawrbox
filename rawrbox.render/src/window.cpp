@@ -103,12 +103,12 @@ namespace rawrbox {
 
 		// SHUTDOWN TEXTURES ----
 		rawrbox::MISSING_TEXTURE.reset();
+		rawrbox::MISSING_VERTEX_TEXTURE.reset();
+
 		rawrbox::WHITE_TEXTURE.reset();
 		rawrbox::BLACK_TEXTURE.reset();
 		rawrbox::NORMAL_TEXTURE.reset();
 		// ----------------------
-
-		// rawrbox::DECALS::shutdown();
 
 		glfwWaitEventsTimeout(1);
 		glfwPostEmptyEvent();

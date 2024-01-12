@@ -50,9 +50,11 @@ namespace model {
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
+		    std::make_pair<std::string, uint32_t>("./assets/textures/displacement.png", 0),
+		    std::make_pair<std::string, uint32_t>("./assets/textures/displacement.vertex.png", 0),
+
 		    std::make_pair<std::string, uint32_t>("./assets/textures/screem.png", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/meow3.gif", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/displacement_test.png", 0),
 		    std::make_pair<std::string, uint32_t>("./assets/textures/spline_tex.png", 0),
 		};
 
@@ -231,11 +233,12 @@ namespace model {
 	}
 
 	void Game::createDisplacement() {
-		auto texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement_test.png")->get();
+		auto textureDisplacement = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement.vertex.png")->get();
+		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement.png")->get();
 
 		auto mesh = rawrbox::MeshUtils::generateMesh({0, 0, -1.0F}, {2, 2}, 64, rawrbox::Colors::White());
-		mesh.setTexture(texture3);
-		mesh.setDisplacementTexture(texture3, 0.5F);
+		mesh.setTexture(texture);
+		mesh.setDisplacementTexture(textureDisplacement, 0.5F);
 
 		this->_displacement->addMesh(mesh);
 		this->_displacement->upload();
@@ -244,8 +247,10 @@ namespace model {
 	void Game::createSprite() {
 		auto texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
 
-		auto mesh = rawrbox::MeshUtils::generateCube({0, 1, 0}, {0.2F, 0.2F});
+		auto mesh = rawrbox::MeshUtils::generateCube({}, {0.2F, 0.2F});
 		mesh.setTexture(texture2);
+
+		this->_sprite->setPos({0, 1.25F, 0});
 		this->_sprite->addMesh(mesh);
 		this->_sprite->upload();
 	}
@@ -256,7 +261,7 @@ namespace model {
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CUBE", {-2.F, 0.55F, 0});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CUBE\nVertex snap", {-3.F, 0.55F, 0});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "AXIS", {0.F, 0.8F, 0});
-		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPRITE", {0.F, 1.2F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPRITE", {0.F, 1.4F, 0});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "DISPLACEMENT", {0.F, 0.75F, -2});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPHERES", {3.5F, 0.55F, -2.F});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CYLINDER", {-2.F, 0.55F, -2});

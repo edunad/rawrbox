@@ -4,11 +4,6 @@
     #ifdef INCLUDED_CAMERA
         #define INCLUDED_MODEL_TRANSFORMS
 
-        #ifdef TRANSFORM_DISPLACEMENT
-            Texture2DArray g_Displacement;
-            SamplerState   g_Displacement_sampler; // By convention, texture samplers must use the '_sampler' suffix
-        #endif
-
         struct TransformedData {
             float4 pos;
             float4 final;
@@ -33,8 +28,8 @@
 
                 // TOOD: Lock X Y Z using billboard
                 if(billboard.x != 0. || billboard.y != 0. || billboard.z != 0.) {
-                    float3 right = float3(Camera.viewInv[0][0], Camera.viewInv[1][0], Camera.viewInv[2][0]);
-                    float3 up = float3(Camera.viewInv[0][1], Camera.viewInv[1][1], Camera.viewInv[2][1]);
+                    float3 right = float3(Camera.view[0][0], Camera.view[1][0], Camera.view[2][0]);
+                    float3 up = float3(Camera.view[0][1], Camera.view[1][1], Camera.view[2][1]);
 
                     vOut = float4((right * vertex.x) + (up * vertex.y), 1.);
                 }
@@ -66,8 +61,8 @@
 
             // displacement mode
             #ifdef TRANSFORM_DISPLACEMENT
-                if(DisplacementPower != 0.) {
-                    data.pos.y += g_Displacement.SampleLevel(g_Displacement_sampler, float3(a_texcoord0, 0), 0).x * DisplacementPower;
+                if(DisplacementPower != 0. && DisplacementTexture != 0.) {
+                    data.pos.y += g_Textures[DisplacementTexture].SampleLevel(g_Textures_sampler, float3(a_texcoord0, 0), 0).x * DisplacementPower;
                 }
             #endif
             // ----

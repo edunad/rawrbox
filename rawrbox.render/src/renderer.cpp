@@ -189,6 +189,12 @@ namespace rawrbox {
 			rawrbox::MISSING_TEXTURE->upload();
 		}
 
+		if (rawrbox::MISSING_VERTEX_TEXTURE == nullptr) {
+			rawrbox::MISSING_VERTEX_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
+			rawrbox::MISSING_VERTEX_TEXTURE->setType(rawrbox::TEXTURE_TYPE::VERTEX);
+			rawrbox::MISSING_VERTEX_TEXTURE->upload();
+		}
+
 		if (rawrbox::WHITE_TEXTURE == nullptr) {
 			rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White());
 			rawrbox::WHITE_TEXTURE->upload();
@@ -305,10 +311,10 @@ namespace rawrbox {
 		// ---------------------
 
 		// Perform pre-render --
-		/*for (auto& plugin : this->_renderPlugins) {
+		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 			plugin.second->preRender();
-		}*/
+		}
 		// -----------------------
 
 		// Commit signature --

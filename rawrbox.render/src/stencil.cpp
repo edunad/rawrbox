@@ -42,7 +42,6 @@ namespace rawrbox {
 		settings.pVS = "stencil.vsh";
 		settings.pPS = "stencil.psh";
 		settings.scissors = true;
-		settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Textures"}};
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		settings.layout = rawrbox::PosUVColorVertexData::vLayout();
 		settings.signature = rawrbox::BindlessManager::signature; // Use bindless

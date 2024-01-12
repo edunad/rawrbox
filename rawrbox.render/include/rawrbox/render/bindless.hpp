@@ -22,13 +22,14 @@ namespace rawrbox {
 		rawrbox::Colorf colorOverride = {};
 		rawrbox::Vector4f textureFlags = {};
 
-		std::array<rawrbox::Vector4f, MAX_DATA> data; // Other mesh data, like vertex / displacement / billboard settings / masks
-							      // ----------
+		std::array<rawrbox::Vector4f, MAX_DATA> data = {}; // Other mesh data, like vertex / displacement / billboard settings / masks
+								   // ----------
 	};
 	// --------------------------
 
 	struct BindlessPixelBuffer {
 		rawrbox::Vector4_t<uint32_t> textureIDs = {}; // BASE, NORMAL, ROUGHTMETAL, EMISSION
+		rawrbox::Vector4f litData = {};
 	};
 
 	// --------------------------
@@ -36,10 +37,16 @@ namespace rawrbox {
 	class BindlessManager {
 	protected:
 		static std::vector<Diligent::IDeviceObject*> _textureHandles;
-		static std::unordered_map<uint32_t, rawrbox::TextureBase*> _updateTextures;
+		static std::vector<Diligent::IDeviceObject*> _vertexTextureHandles;
+
+		static std::vector<rawrbox::TextureBase*> _updateTextures;
 
 		static std::vector<Diligent::StateTransitionDesc> _barriers;
+
 		static void processBarriers();
+
+		static void registerUpdateTexture(rawrbox::TextureBase& tex);
+		static void unregisterUpdateTexture(rawrbox::TextureBase& tex);
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> signature;
@@ -49,7 +56,6 @@ namespace rawrbox {
 
 		static void init();
 		static void shutdown();
-
 		static void update();
 
 		// BARRIERS -------
@@ -62,7 +68,7 @@ namespace rawrbox {
 
 		// TEXTURES -------
 		static uint32_t registerTexture(rawrbox::TextureBase& texture);
-		static void unregisterTexture(uint32_t indx);
+		static void unregisterTexture(rawrbox::TextureBase& texture);
 		// ----------------
 	};
 } // namespace rawrbox
