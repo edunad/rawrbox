@@ -23,9 +23,14 @@
 namespace rawrbox {
 	class TextureWEBP;
 	struct RawrboxIntro {
-		std::shared_ptr<rawrbox::TextureWEBP> texture;
-		float speed;
-		bool cover;
+	public:
+		std::shared_ptr<rawrbox::TextureWEBP> texture = nullptr;
+
+		float speed = 1.F;
+		bool cover = false;
+		rawrbox::Colorf background = rawrbox::Colors::Black();
+
+		RawrboxIntro(float _speed = 1.F, bool _cover = true, const rawrbox::Colorf& _color = rawrbox::Colors::Black()) : background(_color), speed(_speed), cover(_cover) {}
 	};
 
 	class RendererBase {
@@ -50,7 +55,7 @@ namespace rawrbox {
 		bool _skipIntros = false;
 
 		rawrbox::RawrboxIntro* _currentIntro = nullptr;
-		std::map<std::string, rawrbox::RawrboxIntro> _introList = {{"./assets/textures/rawrbox.webp", {nullptr, 1.4F, false}}}; // rawrbox intro, always the first
+		std::map<std::string, rawrbox::RawrboxIntro> _introList = {{"./assets/textures/rawrbox.webp", {1.4F, false}}}; // rawrbox intro, always the first
 		//----
 
 		std::function<void(const rawrbox::DrawPass& pass)> _drawCall = nullptr;
@@ -149,7 +154,7 @@ namespace rawrbox {
 
 		// INTRO ------
 		void skipIntros(bool skip); // :(
-		void addIntro(const std::filesystem::path& webpPath, float speed = 1.F, bool cover = false);
+		void addIntro(const std::filesystem::path& webpPath, float speed = 1.F, bool cover = false, const rawrbox::Colorf& color = rawrbox::Colors::Black());
 		// ----------------
 
 		// CAMERA ------

@@ -23,23 +23,24 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
-			/*auto context = rawrbox::RENDERER->context();
+
+			auto context = rawrbox::RENDERER->context();
 
 			// SETUP VERTEX UNIFORMS ----------------------------
 			{
-				Diligent::MapHelper<rawrbox::MaterialBaseUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				this->bindBaseUniforms<T, rawrbox::MaterialBaseUniforms>(mesh, CBConstants);
+				Diligent::MapHelper<rawrbox::BindlessVertexBuffer> CBConstants(context, rawrbox::BindlessManager::signatureBufferVertex, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				this->bindBaseUniforms<T>(mesh, CBConstants);
 			}
 			// -----------
 
 			// SETUP PIXEL UNIFORMS ----------------------------
 			{
-				Diligent::MapHelper<rawrbox::MaterialLitPixelUniforms> CBConstants(context, this->_uniforms_pixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				Diligent::MapHelper<rawrbox::BindlessPixelBuffer> CBConstants(context, rawrbox::BindlessManager::signatureBufferPixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				this->bindBasePixelUniforms<T>(mesh, CBConstants);
 
-				CBConstants->textureIDs = mesh.textures.getPixelIDs();
 				CBConstants->litData = mesh.textures.getData();
 			}
-			// -----------*/
+			// -----------
 		}
 	};
 } // namespace rawrbox

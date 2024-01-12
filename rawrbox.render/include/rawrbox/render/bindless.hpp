@@ -13,7 +13,9 @@ namespace rawrbox {
 	enum class BufferType {
 		CONSTANT,
 		INDEX,
-		VERTEX
+		VERTEX,
+		UNORDERED_ACCESS,
+		SHADER
 	};
 
 	// --------------------------
@@ -29,7 +31,7 @@ namespace rawrbox {
 
 	struct BindlessPixelBuffer {
 		rawrbox::Vector4_t<uint32_t> textureIDs = {}; // BASE, NORMAL, ROUGHTMETAL, EMISSION
-		rawrbox::Vector4f litData = {};
+		rawrbox::Vector4f litData = {};               // Texture data
 	};
 
 	// --------------------------
@@ -48,6 +50,8 @@ namespace rawrbox {
 		static void registerUpdateTexture(rawrbox::TextureBase& tex);
 		static void unregisterUpdateTexture(rawrbox::TextureBase& tex);
 
+		static Diligent::RESOURCE_STATE mapResource(rawrbox::BufferType type);
+
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> signature;
 		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> signatureBind;
@@ -64,6 +68,7 @@ namespace rawrbox {
 		static void barrier(Diligent::IBuffer& buffer, rawrbox::BufferType type);
 
 		static void immediateBarrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state = Diligent::RESOURCE_STATE_SHADER_RESOURCE);
+		static void immediateBarrier(Diligent::IBuffer& buffer, rawrbox::BufferType type);
 		// ----------------
 
 		// TEXTURES -------

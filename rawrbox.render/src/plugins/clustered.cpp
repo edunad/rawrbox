@@ -1,9 +1,9 @@
+
 #include <rawrbox/math/utils/math.hpp>
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/lights/manager.hpp>
 #include <rawrbox/render/plugins/clustered.hpp>
-#include <rawrbox/render/static.hpp>
-#include <rawrbox/render/utils/render.hpp>
 
 namespace rawrbox {
 	uint32_t ClusteredPlugin::CLUSTERS_X = 0;
@@ -98,6 +98,8 @@ namespace rawrbox {
 			DispatchAttribs.ThreadGroupCountY = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_Y, CLUSTERS_Y_THREADS);
 			DispatchAttribs.ThreadGroupCountZ = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_Z, CLUSTERS_Z_THREADS);
 
+			rawrbox::BindlessManager::immediateBarrier(*this->_clusterBuffer, rawrbox::BufferType::UNORDERED_ACCESS);
+
 			context->SetPipelineState(this->_clusterBuildingComputeProgram);
 			context->CommitShaderResources(this->_clusterBuildingComputeBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			context->DispatchCompute(DispatchAttribs);
@@ -111,11 +113,19 @@ namespace rawrbox {
 			DispatchAttribs.ThreadGroupCountY = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_Y, CLUSTERS_Y_THREADS);
 			DispatchAttribs.ThreadGroupCountZ = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_Z, CLUSTERS_Z_THREADS);
 
+			rawrbox::BindlessManager::immediateBarrier(*this->_clusterBuffer, rawrbox::BufferType::SHADER);
+			rawrbox::BindlessManager::immediateBarrier(*this->_dataGridBuffer, rawrbox::BufferType::UNORDERED_ACCESS);
+
 			context->SetPipelineState(this->_lightCullingComputeProgram);
 			context->CommitShaderResources(this->_lightCullingComputeBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			context->DispatchCompute(DispatchAttribs);
 		}
 		// ----------------------
+
+		// Barrier ----
+		rawrbox::BindlessManager::immediateBarrier(*this->_dataGridBuffer, rawrbox::BufferType::SHADER);
+		rawrbox::BindlessManager::immediateBarrier(*this->_clusterBuffer, rawrbox::BufferType::SHADER);
+		// ------------
 	}
 
 	void ClusteredPlugin::buildBuffers() {
@@ -135,6 +145,10 @@ namespace rawrbox {
 
 			this->_clusterBufferWrite = this->_clusterBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS); // Write / Read
 			this->_clusterBufferRead = this->_clusterBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);   //  Read only
+
+			// Barrier ----
+			rawrbox::BindlessManager::immediateBarrier(*this->_clusterBuffer, rawrbox::BufferType::UNORDERED_ACCESS);
+			// ------------
 		}
 		// --------------
 
@@ -151,6 +165,10 @@ namespace rawrbox {
 
 			this->_dataGridBufferWrite = this->_dataGridBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS); // Write / Read
 			this->_dataGridBufferRead = this->_dataGridBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);   //  Read only
+
+			// Barrier ----
+			rawrbox::BindlessManager::immediateBarrier(*this->_dataGridBuffer, rawrbox::BufferType::UNORDERED_ACCESS);
+			// ------------
 		}
 		// ------------------
 	}

@@ -1,5 +1,6 @@
 
-#include <uniforms.fxh>
+#include <vertex_bindless_uniforms.fxh>
+#include <camera.fxh>
 
 #define TEXTURE_DATA
 #include <material.fxh>
@@ -10,6 +11,9 @@
 #ifdef SKINNED
     #define TRANSFORM_BONES
 #endif
+
+Texture2DArray g_Textures[];
+SamplerState   g_Textures_sampler;
 
 #include <model_transforms.fxh>
 

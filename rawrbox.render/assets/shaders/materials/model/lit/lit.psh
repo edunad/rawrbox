@@ -1,6 +1,8 @@
 #include <math.fxh>
 
-#include <lit_pixel_uniforms.fxh>
+#include <pixel_bindless_uniforms.fxh>
+#include <camera.fxh>
+
 #include <light_uniforms.fxh>
 #include <decal_uniforms.fxh>
 

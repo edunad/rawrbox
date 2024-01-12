@@ -429,10 +429,10 @@ namespace rawrbox {
 
 		this->_drawCall = [this](const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OVERLAY) return;
-			this->_stencil->drawBox({}, this->_size.cast<float>(), rawrbox::Colors::Black());
+			auto screenSize = this->_size.cast<float>();
 
 			if (this->_currentIntro != nullptr) {
-				auto screenSize = this->_size.cast<float>();
+				this->_stencil->drawBox({}, screenSize, this->_currentIntro->background); // Background
 
 				if (this->_currentIntro->cover) {
 					this->_stencil->drawTexture({0, 0}, {screenSize.x, screenSize.y}, *this->_currentIntro->texture);
@@ -440,6 +440,8 @@ namespace rawrbox {
 					auto size = this->_currentIntro->texture->getSize().cast<float>();
 					this->_stencil->drawTexture({screenSize.x / 2.F - size.x / 2.F, screenSize.y / 2.F - size.y / 2.F}, {size.x, size.y}, *this->_currentIntro->texture);
 				}
+			} else {
+				this->_stencil->drawBox({}, screenSize, rawrbox::Colors::Black()); // Background
 			}
 
 			this->_stencil->render();
@@ -478,9 +480,9 @@ namespace rawrbox {
 		this->_skipIntros = skip;
 	}
 
-	void RendererBase::addIntro(const std::filesystem::path& webpPath, float speed, bool cover) {
-		if (webpPath.extension() != ".webp") throw std::runtime_error(fmt::format("[RawrBox-RenderBase] Invalid intro '{}', format needs to be .webp!", webpPath.generic_string()));
-		this->_introList[webpPath.generic_string()] = {nullptr, speed, cover};
+	void RendererBase::addIntro(const std::filesystem::path& webpPath, float speed, bool cover, const rawrbox::Colorf& color) {
+		if (webpPath.extension() != ".webp") throw std::runtime_error(fmt::format("[RawrBox-RenderBase] Invalid intro '{}', only '.webp' format is supported!", webpPath.generic_string()));
+		this->_introList[webpPath.generic_string()] = {speed, cover, color};
 	}
 //-------------------------
 

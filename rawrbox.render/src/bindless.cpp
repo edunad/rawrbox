@@ -40,7 +40,6 @@ namespace rawrbox {
 
 		// RESOURCES -----
 		std::vector<Diligent::PipelineResourceDesc> resources = {
-
 		    {Diligent::SHADER_TYPE_VERTEX, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 		    {Diligent::SHADER_TYPE_PIXEL, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
@@ -197,25 +196,16 @@ namespace rawrbox {
 	}
 
 	void BindlessManager::barrier(Diligent::IBuffer& buffer, rawrbox::BufferType type) {
-		auto state = Diligent::RESOURCE_STATE_UNKNOWN;
-		switch (type) {
-			case BufferType::CONSTANT:
-				state = Diligent::RESOURCE_STATE_CONSTANT_BUFFER;
-				break;
-			case BufferType::INDEX:
-				state = Diligent::RESOURCE_STATE_INDEX_BUFFER;
-				break;
-			case BufferType::VERTEX:
-				state = Diligent::RESOURCE_STATE_VERTEX_BUFFER;
-				break;
-		}
-
-		if (state == Diligent::RESOURCE_STATE_UNKNOWN) throw std::runtime_error("[RawrBox-BindlessManager] Invalid buffer type! Cannot create barrier");
-		_barriers.emplace_back(&buffer, Diligent::RESOURCE_STATE_UNKNOWN, state, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+		_barriers.emplace_back(&buffer, Diligent::RESOURCE_STATE_UNKNOWN, mapResource(type), Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
 	}
 
 	void BindlessManager::immediateBarrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state) {
 		Diligent::StateTransitionDesc barrier = {&texture, Diligent::RESOURCE_STATE_UNKNOWN, state, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE};
+		rawrbox::RENDERER->context()->TransitionResourceStates(1, &barrier);
+	}
+
+	void BindlessManager::immediateBarrier(Diligent::IBuffer& buffer, rawrbox::BufferType type) {
+		Diligent::StateTransitionDesc barrier = {&buffer, Diligent::RESOURCE_STATE_UNKNOWN, mapResource(type), Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE};
 		rawrbox::RENDERER->context()->TransitionResourceStates(1, &barrier);
 	}
 	// ----------------
@@ -297,6 +287,30 @@ namespace rawrbox {
 			signatureBind->GetVariableByName(isVertex ? Diligent::SHADER_TYPE_VERTEX : Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(handler.data(), 0, static_cast<uint32_t>(handler.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 		}
 		// -----
+	}
+
+	Diligent::RESOURCE_STATE BindlessManager::mapResource(rawrbox::BufferType type) {
+		auto state = Diligent::RESOURCE_STATE_UNKNOWN;
+		switch (type) {
+			case BufferType::CONSTANT:
+				state = Diligent::RESOURCE_STATE_CONSTANT_BUFFER;
+				break;
+			case BufferType::INDEX:
+				state = Diligent::RESOURCE_STATE_INDEX_BUFFER;
+				break;
+			case BufferType::VERTEX:
+				state = Diligent::RESOURCE_STATE_VERTEX_BUFFER;
+				break;
+			case BufferType::UNORDERED_ACCESS:
+				state = Diligent::RESOURCE_STATE_UNORDERED_ACCESS;
+				break;
+			case BufferType::SHADER:
+				state = Diligent::RESOURCE_STATE_SHADER_RESOURCE;
+				break;
+		}
+
+		if (state == Diligent::RESOURCE_STATE_UNKNOWN) throw std::runtime_error("[RawrBox-BindlessManager] Invalid buffer type! Cannot create barrier");
+		return state;
 	}
 	// --------------
 }; // namespace rawrbox
