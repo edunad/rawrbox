@@ -3,13 +3,14 @@
 #include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/models/mesh.hpp>
 #include <rawrbox/render/models/vertex.hpp>
+#include <rawrbox/utils/logger.hpp>
 
 #include <InputLayout.h>
 #include <PipelineState.h>
-#include <fmt/format.h>
 
 namespace rawrbox {
 	class MaterialBase {
+
 	protected:
 		Diligent::IPipelineState* _base = nullptr;
 		Diligent::IPipelineState* _base_alpha = nullptr;
@@ -19,6 +20,8 @@ namespace rawrbox {
 		Diligent::IPipelineState* _wireframe = nullptr;
 		Diligent::IPipelineState* _cullnone = nullptr;
 		Diligent::IPipelineState* _cullnone_alpha = nullptr;
+
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Material");
 
 	public:
 		using vertexBufferType = rawrbox::VertexData;
@@ -70,31 +73,31 @@ namespace rawrbox {
 
 		template <typename T = rawrbox::VertexData>
 		void bindUniforms(const rawrbox::Mesh<T>& /*mesh*/) {
-			throw std::runtime_error("[RawrBox-Material] Missing implementation");
+			throw this->_logger->error("Missing implementation");
 		}
 
 		template <typename T = rawrbox::VertexData>
 		void bindPipeline(const rawrbox::Mesh<T>& mesh) {
-			if (this->_base == nullptr) throw std::runtime_error("[RawrBox-Material] Material not initialized!");
+			if (this->_base == nullptr) throw this->_logger->error("Material not initialized!");
 			auto context = rawrbox::RENDERER->context();
 
 			if (mesh.wireframe) {
-				if (this->_line == nullptr) throw std::runtime_error("[RawrBox-Material] Wireframe not supported on material");
+				if (this->_line == nullptr) throw this->_logger->error("Wireframe not supported on material");
 				context->SetPipelineState(this->_wireframe);
 			} else if (mesh.lineMode) {
-				if (this->_line == nullptr) throw std::runtime_error("[RawrBox-Material] Line not supported on material");
+				if (this->_line == nullptr) throw this->_logger->error("Line not supported on material");
 				context->SetPipelineState(this->_line);
 			} else {
 				if (mesh.culling == Diligent::CULL_MODE_NONE) {
-					if (this->_cullnone == nullptr) throw std::runtime_error("[RawrBox-Material] Disabled cull not supported on material");
-					if (mesh.alphaBlend && this->_cullnone_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Disabled alpha cull not supported on material");
+					if (this->_cullnone == nullptr) throw this->_logger->error("Disabled cull not supported on material");
+					if (mesh.alphaBlend && this->_cullnone_alpha == nullptr) throw this->_logger->error("Disabled alpha cull not supported on material");
 					context->SetPipelineState(mesh.alphaBlend ? this->_cullnone_alpha : this->_cullnone);
 				} else if (mesh.culling == Diligent::CULL_MODE_BACK) {
-					if (this->_cullback == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back not supported on material");
-					if (mesh.alphaBlend && this->_cullback_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Cull back alpha not supported on material");
+					if (this->_cullback == nullptr) throw this->_logger->error("Cull back not supported on material");
+					if (mesh.alphaBlend && this->_cullback_alpha == nullptr) throw this->_logger->error("Cull back alpha not supported on material");
 					context->SetPipelineState(mesh.alphaBlend ? this->_cullback_alpha : this->_cullback);
 				} else {
-					if (mesh.alphaBlend && this->_base_alpha == nullptr) throw std::runtime_error("[RawrBox-Material] Alpha not supported on material");
+					if (mesh.alphaBlend && this->_base_alpha == nullptr) throw this->_logger->error("Alpha not supported on material");
 					context->SetPipelineState(mesh.alphaBlend ? this->_base_alpha : this->_base);
 				}
 			}

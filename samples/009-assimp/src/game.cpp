@@ -142,20 +142,19 @@ namespace assimp {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
 			rawrbox::Window::shutdown();
 		} else {
+			this->_model.reset();
+			this->_model2.reset();
+			this->_model3.reset();
+			this->_model4.reset();
+			this->_model5.reset();
+			this->_model6.reset();
+			this->_model7.reset();
+			this->_modelGrid.reset();
+
+			this->_text.reset();
+
 			rawrbox::RESOURCES::shutdown();
-			rawrbox::ASYNC::shutdown();
 		}
-
-		this->_model.reset();
-		this->_model2.reset();
-		this->_model3.reset();
-		this->_model4.reset();
-		this->_model5.reset();
-		this->_model6.reset();
-		this->_model7.reset();
-		this->_modelGrid.reset();
-
-		this->_text.reset();
 	}
 
 	void Game::pollEvents() {

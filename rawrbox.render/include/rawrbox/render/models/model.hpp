@@ -273,7 +273,7 @@ namespace rawrbox {
 			}
 
 #ifndef NDEBUG
-			if (old != this->_meshes.size()) fmt::print("[RawrBox-Model] Optimized mesh for rendering (Before {} | After {})\n", old, this->_meshes.size());
+			if (old != this->_meshes.size()) this->_logger->info("Optimized mesh for rendering (Before {} | After {})", old, this->_meshes.size());
 #endif
 		}
 
@@ -284,12 +284,12 @@ namespace rawrbox {
 
 		// ANIMATIONS ----
 		virtual bool blendAnimation(const std::string& /*otherAnim*/, float /*blend*/) {
-			throw std::runtime_error("TODO");
+			throw this->_logger->error("TODO");
 		}
 
 		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F) {
 			auto iter = this->_animations.find(name);
-			if (iter == this->_animations.end()) throw std::runtime_error(fmt::format("[RawrBox-Model] Animation {} not found!", name));
+			if (iter == this->_animations.end()) throw this->_logger->error("Animation {} not found!", name);
 
 			// Add it
 			this->_playingAnimations.emplace_back(name,
@@ -314,7 +314,7 @@ namespace rawrbox {
 
 		// BLEND SHAPES ---
 		void createBlendShape(size_t mesh, const std::string& id, const std::vector<rawrbox::Vector3f>& newVertexPos, const std::vector<rawrbox::Vector3f>& newNormPos, float weight = 0.F) {
-			if (mesh >= this->_meshes.size()) throw std::runtime_error(fmt::format("[RawrBox-ModelBase] Mesh '{}' not found!", mesh));
+			if (mesh >= this->_meshes.size()) throw this->_logger->error("Mesh '{}' not found!", mesh);
 
 			auto blend = std::make_unique<rawrbox::BlendShapes<typename M::vertexBufferType>>();
 			blend->pos = newVertexPos;
@@ -480,7 +480,6 @@ namespace rawrbox {
 				// Bind materials uniforms & textures ----
 				rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix() * mesh->getMatrix());
 
-				this->_material->init();
 				this->_material->bindPipeline(*mesh);
 				this->_material->bindUniforms(*mesh);
 				//     -----------

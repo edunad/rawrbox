@@ -101,9 +101,7 @@ if(NOT WIN32)
 
     if(RAWRBOX_USE_WAYLAND)
         list(APPEND RAWRBOX_EXTRA_LIBS wayland-egl)
-
         set(GLFW_BUILD_WAYLAND ON CACHE INTERNAL "")
-        set(BGFX_USE_WAYLAND ON CACHE INTERNAL "")
     endif()
 else()
     # Ignore warnings about missing pdb

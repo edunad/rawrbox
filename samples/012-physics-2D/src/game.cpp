@@ -135,7 +135,6 @@ namespace phys_2d_test {
 
 			rawrbox::PHYSICS_2D::shutdown();
 			rawrbox::RESOURCES::shutdown();
-			rawrbox::ASYNC::shutdown();
 		}
 	}
 

@@ -27,6 +27,7 @@ namespace light {
 
 		// Setup renderer
 		auto render = window->createRenderer();
+		// render->skipIntros(true);
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
@@ -156,14 +157,13 @@ namespace light {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
 			rawrbox::Window::shutdown();
 		} else {
-			rawrbox::RESOURCES::shutdown();
-			rawrbox::ASYNC::shutdown();
-		}
+			this->_model.reset();
+			this->_model2.reset();
+			this->_model3.reset();
+			this->_text.reset();
 
-		this->_model.reset();
-		this->_model2.reset();
-		this->_model3.reset();
-		this->_text.reset();
+			rawrbox::RESOURCES::shutdown();
+		}
 	}
 
 	void Game::pollEvents() {
@@ -176,7 +176,7 @@ namespace light {
 		if (this->_ready) {
 			auto light = rawrbox::LIGHTS::getLight(0);
 			if (light != nullptr) {
-				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
+				light->setOffsetPos({std::sin(rawrbox::FRAME * 0.01F) * 0.5F, 0, std::cos(rawrbox::FRAME * 0.01F) * 0.5F});
 			}
 
 			light = rawrbox::LIGHTS::getLight(1);

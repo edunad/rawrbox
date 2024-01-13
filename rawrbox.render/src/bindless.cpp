@@ -12,6 +12,9 @@ namespace rawrbox {
 	std::vector<rawrbox::TextureBase*> BindlessManager::_updateTextures = {};
 
 	std::vector<Diligent::StateTransitionDesc> BindlessManager::_barriers = {};
+	std::vector<std::function<void()>> BindlessManager::_barriersCallbacks = {};
+
+	std::unique_ptr<rawrbox::Logger> BindlessManager::_logger = std::make_unique<rawrbox::Logger>("RawrBox-BindlessManager");
 	// --------------
 
 	// PUBLIC -------
@@ -22,7 +25,7 @@ namespace rawrbox {
 	// --------------
 
 	void BindlessManager::init() {
-		if (signature != nullptr) throw std::runtime_error("[RawrBox-BindlessManager] Signature already bound!");
+		if (signature != nullptr) throw _logger->error("Signature already bound!");
 
 		auto renderer = rawrbox::RENDERER;
 
@@ -137,7 +140,9 @@ namespace rawrbox {
 		_textureHandles = {};
 		_vertexTextureHandles = {};
 		_updateTextures = {};
+
 		_barriers = {};
+		_barriersCallbacks = {};
 
 		RAWRBOX_DESTROY(signature);
 		RAWRBOX_DESTROY(signatureBind);
@@ -149,7 +154,12 @@ namespace rawrbox {
 		if (_barriers.empty()) return;
 
 		rawrbox::RENDERER->context()->TransitionResourceStates(static_cast<uint32_t>(_barriers.size()), _barriers.data());
+		for (auto& callback : _barriersCallbacks) {
+			callback();
+		}
+
 		_barriers.clear();
+		_barriersCallbacks.clear();
 	}
 
 	void BindlessManager::registerUpdateTexture(rawrbox::TextureBase& tex) {
@@ -184,19 +194,22 @@ namespace rawrbox {
 	}
 
 	// BARRIERS -------
-	void BindlessManager::barrier(const rawrbox::TextureBase& texture) {
+	void BindlessManager::barrier(const rawrbox::TextureBase& texture, std::function<void()> callback) {
 		auto texHandle = texture.getTexture();
-		if (texHandle == nullptr) throw std::runtime_error(fmt::format("[RawrBox-BindlessManager] Texture '{}' not uploaded! Cannot create barrier", texture.getName()));
+		if (texHandle == nullptr) throw _logger->error("Texture '{}' not uploaded! Cannot create barrier", texture.getName());
 
 		_barriers.emplace_back(texture.getTexture(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+		if (callback != nullptr) _barriersCallbacks.push_back(callback);
 	}
 
-	void BindlessManager::barrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state) {
+	void BindlessManager::barrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state, std::function<void()> callback) {
 		_barriers.emplace_back(&texture, Diligent::RESOURCE_STATE_UNKNOWN, state, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+		if (callback != nullptr) _barriersCallbacks.push_back(callback);
 	}
 
-	void BindlessManager::barrier(Diligent::IBuffer& buffer, rawrbox::BufferType type) {
+	void BindlessManager::barrier(Diligent::IBuffer& buffer, rawrbox::BufferType type, std::function<void()> callback) {
 		_barriers.emplace_back(&buffer, Diligent::RESOURCE_STATE_UNKNOWN, mapResource(type), Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+		if (callback != nullptr) _barriersCallbacks.push_back(callback);
 	}
 
 	void BindlessManager::immediateBarrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state) {
@@ -212,12 +225,14 @@ namespace rawrbox {
 
 	// REGISTER TEXTURES -------
 	uint32_t BindlessManager::registerTexture(rawrbox::TextureBase& texture) {
-		if (signature == nullptr) throw std::runtime_error("[RawrBox-BindlessManager] Signature not bound! Did you call init?");
+		if (signature == nullptr) throw _logger->error("Signature not bound! Did you call init?");
 
 		auto* pTextureSRV = texture.getHandle(); // Get shader resource view from the texture
-		if (pTextureSRV == nullptr) throw std::runtime_error(fmt::format("[RawrBox-BindlessManager] Failed to register texture '{}'! Texture view is null, not uploaded?", texture.getName()));
+		if (pTextureSRV == nullptr) throw _logger->error("Failed to register texture '{}'! Texture view is null, not uploaded?", texture.getName());
 
 		bool isVertex = texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX;
+
+		uint32_t max = isVertex ? rawrbox::RENDERER->MAX_VERTEX_TEXTURES : rawrbox::RENDERER->MAX_TEXTURES;
 		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;
 
 		// Check if it's already registered --
@@ -237,7 +252,7 @@ namespace rawrbox {
 				registerUpdateTexture(texture);
 				// ---------
 
-				fmt::print("[RawrBox-BindlessManager] Re-using slot '{}' for bindless {} texture '{}'\n", slot, isVertex ? "vertex" : "pixel", texture.getName());
+				_logger->info("Re-using slot '{}' for bindless {} texture '{}'", fmt::format(fmt::fg(fmt::color::violet), std::to_string(slot)), isVertex ? "vertex" : "pixel", fmt::format(fmt::fg(fmt::color::violet), texture.getName()));
 				return static_cast<uint32_t>(slot);
 			}
 		}
@@ -246,11 +261,11 @@ namespace rawrbox {
 		// No slot ---
 		auto slot = static_cast<uint32_t>(handler.size());
 
-		if (slot == static_cast<uint32_t>(rawrbox::RENDERER->MAX_TEXTURES / 1.2F)) fmt::print("[RawrBox-BindlessManager] Aproaching max texture limit of '{}'\n", rawrbox::RENDERER->MAX_TEXTURES);
-		if (slot >= rawrbox::RENDERER->MAX_TEXTURES) throw std::runtime_error(fmt::format("[RawrBox-BindlessManager] Max texture limit reached! Cannot allocate texture, remove some unecessary textures or increase MAX_TEXTURES on renderer\n", rawrbox::RENDERER->MAX_TEXTURES));
+		if (slot == static_cast<uint32_t>(max / 1.2F)) _logger->warn("Aproaching max texture limit of {}", fmt::format(fmt::fg(fmt::color::red), std::to_string(max)));
+		if (slot >= max) throw _logger->error("Max texture limit reached! Cannot allocate texture, remove some unecessary textures or increase max textures on renderer");
 		handler.push_back(pTextureSRV);
 
-		fmt::print("[RawrBox-BindlessManager] Registering bindless {} texture '{}' to slot '{}'\n", isVertex ? "vertex" : "pixel", texture.getName(), slot);
+		_logger->info("Registering bindless {} texture '{}' to slot '{}'", isVertex ? "vertex" : "pixel", fmt::format(fmt::fg(fmt::color::violet), texture.getName()), fmt::format(fmt::fg(fmt::color::violet), std::to_string(slot)));
 		// -----
 
 		// Register texture for updates --
@@ -273,14 +288,14 @@ namespace rawrbox {
 		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;
 
 		uint32_t id = texture.getTextureID();
-		if (id >= handler.size()) throw std::runtime_error(fmt::format("[RawrBox-TextureManager] Index '{}' not found!", id));
+		if (id >= handler.size()) throw _logger->error("Index '{}' not found!", id);
 
 		// Cleanup  ----
 		unregisterUpdateTexture(texture);
 		handler[id] = nullptr;
 		// --------------------
 
-		fmt::print("[RawrBox-TextureManager] Un-registering bindless {} texture slot '{}'\n", isVertex ? "vertex" : "pixel", id);
+		_logger->info("Un-registering bindless {} texture slot '{}'", isVertex ? "vertex" : "pixel", fmt::format(fmt::fg(fmt::color::violet), std::to_string(id)));
 
 		// Update signature ---
 		if (signatureBind != nullptr) {

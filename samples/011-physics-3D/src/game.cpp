@@ -182,7 +182,6 @@ namespace phys_3d_test {
 
 			rawrbox::PHYSICS::shutdown();
 			rawrbox::RESOURCES::shutdown();
-			rawrbox::ASYNC::shutdown();
 		}
 	}
 

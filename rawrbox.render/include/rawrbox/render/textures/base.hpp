@@ -45,6 +45,10 @@ namespace rawrbox {
 		bool _transparent = false;
 		bool _sRGB = false;
 
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Texture");
+		// -------------
+
 		std::string _name = "";
 		virtual void loadFallback();
 		virtual void updateSampler();
@@ -53,7 +57,7 @@ namespace rawrbox {
 
 	public:
 		TextureBase() = default;
-		TextureBase(const TextureBase&) = default;
+		TextureBase(const TextureBase&) = delete;
 		TextureBase(TextureBase&&) = delete;
 		TextureBase& operator=(TextureBase&&) = delete;
 		TextureBase& operator=(const TextureBase&) = delete;

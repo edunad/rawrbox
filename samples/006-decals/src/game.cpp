@@ -132,9 +132,7 @@ namespace decal_test {
 			rawrbox::Window::shutdown();
 		} else {
 			this->_model.reset();
-
 			rawrbox::RESOURCES::shutdown();
-			rawrbox::ASYNC::shutdown();
 		}
 	}
 

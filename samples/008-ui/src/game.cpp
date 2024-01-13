@@ -316,7 +316,6 @@ namespace ui_test {
 			this->_console.reset();
 
 			rawrbox::RESOURCES::shutdown();
-			rawrbox::ASYNC::shutdown();
 		}
 	}
 

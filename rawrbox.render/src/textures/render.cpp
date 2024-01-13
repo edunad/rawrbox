@@ -60,7 +60,7 @@ namespace rawrbox {
 
 		// Render target -----
 		Diligent::TextureDesc desc;
-		desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+		desc.Type = Diligent::RESOURCE_DIM_TEX_2D_ARRAY;
 		desc.BindFlags = Diligent::BIND_SHADER_RESOURCE | Diligent::BIND_RENDER_TARGET;
 		desc.Width = this->_size.x;
 		desc.Height = this->_size.y;

@@ -57,6 +57,10 @@ namespace rawrbox {
 		static std::unique_ptr<Diligent::DynamicBuffer> _buffer;
 		static Diligent::IBufferView* _bufferRead;
 
+		// LOGGER ------
+		static std::unique_ptr<rawrbox::Logger> _logger;
+		// -------------
+
 		static void update();
 
 	public:

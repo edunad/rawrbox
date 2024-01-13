@@ -115,9 +115,7 @@ namespace particle_test {
 		this->_modelGrid.reset();
 		this->_text.reset();
 
-		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
 
 		this->_window->unblockPoll();
 		this->_window.reset();

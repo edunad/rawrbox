@@ -117,14 +117,13 @@ namespace bass_test {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
 			rawrbox::Window::shutdown();
 		} else {
+			this->_beatText.reset();
+			this->_modelGrid.reset();
+			this->_text.reset();
+
 			rawrbox::BASS::shutdown();
 			rawrbox::RESOURCES::shutdown();
-			rawrbox::ASYNC::shutdown();
 		}
-
-		this->_beatText.reset();
-		this->_modelGrid.reset();
-		this->_text.reset();
 	}
 
 	void Game::pollEvents() {

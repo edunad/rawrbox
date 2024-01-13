@@ -18,6 +18,7 @@ namespace rawrbox {
 
 		void setTexture(const rawrbox::TextureBase& texture, uint32_t id = 0) {
 			if (!texture.isValid()) throw std::runtime_error("[RawrBox-DECAL] Invalid texture, not uploaded?");
+
 			this->textureID = texture.getTextureID();
 			this->textureAtlasIndex = id;
 		}
@@ -44,6 +45,10 @@ namespace rawrbox {
 
 		static std::unique_ptr<Diligent::DynamicBuffer> _buffer;
 		static Diligent::IBufferView* _bufferRead;
+
+		// LOGGER ------
+		static std::unique_ptr<rawrbox::Logger> _logger;
+		// -------------
 
 		static void update();
 

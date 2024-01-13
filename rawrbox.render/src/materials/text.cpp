@@ -11,7 +11,7 @@ namespace rawrbox {
 
 	void MaterialText3D::init() {
 		if (!_build) {
-			fmt::print("[RawrBox-MaterialText3D] Building material..\n");
+			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), "Model::3DText"));
 
 			// PIPELINE ----
 			rawrbox::PipeSettings settings;

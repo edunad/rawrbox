@@ -7,6 +7,7 @@
 #include <rawrbox/render/plugins/base.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/render/textures/render.hpp>
+#include <rawrbox/utils/logger.hpp>
 
 #include <RefCntAutoPtr.hpp>
 #include <ScopedQueryHelper.hpp>
@@ -70,6 +71,7 @@ namespace rawrbox {
 
 		bool _vsync = false;
 		bool _initialized = false;
+		bool _queryWarn = false;
 
 		Diligent::RENDER_DEVICE_TYPE _type = Diligent::RENDER_DEVICE_TYPE_UNDEFINED;
 
@@ -81,6 +83,7 @@ namespace rawrbox {
 		// ----
 
 		// OTHER HANDLES
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Renderer");
 		std::unique_ptr<rawrbox::CameraBase> _camera = nullptr;
 		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
 		// -------------
@@ -97,10 +100,8 @@ namespace rawrbox {
 		// ----------------
 
 		// QUERIES ------
-#ifdef _DEBUG
 		virtual void beginQuery(const std::string& query);
 		virtual void endQuery(const std::string& query);
-#endif
 		// ----------------
 
 		virtual void clear();
@@ -127,12 +128,12 @@ namespace rawrbox {
 		// PLUGINS ---------------------------
 		template <typename T = rawrbox::RenderPlugin, typename... CallbackArgs>
 		T* addPlugin(CallbackArgs&&... args) {
-			if (this->_initialized) throw std::runtime_error("[RawrBox-Renderer] 'addPlugin' must be called before 'init'!");
+			if (this->_initialized) throw this->_logger->error("'addPlugin' must be called before 'init'!");
 			auto renderPass = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
 			auto p = renderPass.get();
 
 			this->_renderPlugins[p->getID()] = std::move(renderPass);
-			fmt::print("[RawrBox-Renderer] Registered new plugin '{}'\n", p->getID());
+			this->_logger->info("Registered new plugin '{}'", p->getID());
 
 			return p;
 		}
@@ -141,6 +142,7 @@ namespace rawrbox {
 		[[nodiscard]] T* getPlugin(const std::string& id) const {
 			auto fnd = this->_renderPlugins.find(id);
 			if (fnd == this->_renderPlugins.end()) return nullptr;
+
 			return dynamic_cast<T*>(fnd->second.get());
 		}
 

@@ -6,12 +6,15 @@
 
 #include <filesystem>
 #include <fstream>
-#include <streambuf>
 
 namespace rawrbox {
 	// PRIVATE ----
 	std::unordered_map<std::string, rawrbox::Language> I18N::_languagePacks = {};
 	std::string I18N::_language = "en"; // Default is ENGLISH
+
+	// LOGGER ------
+	std::unique_ptr<rawrbox::Logger> I18N::_logger = std::make_unique<rawrbox::Logger>("RawrBox-I18N");
+	// -------------
 	// ---------------
 
 	void I18N::initialize() {
@@ -40,7 +43,7 @@ namespace rawrbox {
 			try {
 				addLanguagePack(id, fileCleanName, nlohmann::json::parse(langRawStr));
 			} catch (...) {
-				fmt::print("[RawrBox-I18N] Invalid JSON file: {}\n", filePath);
+				_logger->warn("Invalid JSON file: {}", filePath);
 			}
 		}
 	}
@@ -59,7 +62,7 @@ namespace rawrbox {
 
 		auto lang = pack->second.find(_language);
 		if (lang == pack->second.end()) {
-			fmt::print("[RawrBox-I18N] Could not find language '[#ffffff]{}[/]' on '[#ffffff]{}[/]', falling back to english\n", _language, id);
+			_logger->warn("Could not find language '[#ffffff]{}[/]' on '[#ffffff]{}[/]', falling back to english\n", _language, id);
 
 			lang = pack->second.find("en");
 			if (lang == pack->second.end()) return fmt::format("$I18N FOR LANGUAGE '{}' NOT FOUND$", _language); // Still no language? Bah..

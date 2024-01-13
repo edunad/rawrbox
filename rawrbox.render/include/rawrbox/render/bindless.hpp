@@ -33,7 +33,6 @@ namespace rawrbox {
 		rawrbox::Vector4_t<uint32_t> textureIDs = {}; // BASE, NORMAL, ROUGHTMETAL, EMISSION
 		rawrbox::Vector4f litData = {};               // Texture data
 	};
-
 	// --------------------------
 
 	class BindlessManager {
@@ -44,6 +43,9 @@ namespace rawrbox {
 		static std::vector<rawrbox::TextureBase*> _updateTextures;
 
 		static std::vector<Diligent::StateTransitionDesc> _barriers;
+		static std::vector<std::function<void()>> _barriersCallbacks;
+
+		static std::unique_ptr<rawrbox::Logger> _logger;
 
 		static void processBarriers();
 
@@ -63,9 +65,9 @@ namespace rawrbox {
 		static void update();
 
 		// BARRIERS -------
-		static void barrier(const rawrbox::TextureBase& texture);
-		static void barrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state = Diligent::RESOURCE_STATE_SHADER_RESOURCE);
-		static void barrier(Diligent::IBuffer& buffer, rawrbox::BufferType type);
+		static void barrier(const rawrbox::TextureBase& texture, std::function<void()> callback = nullptr);
+		static void barrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state = Diligent::RESOURCE_STATE_SHADER_RESOURCE, std::function<void()> callback = nullptr);
+		static void barrier(Diligent::IBuffer& buffer, rawrbox::BufferType type, std::function<void()> callback = nullptr);
 
 		static void immediateBarrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state = Diligent::RESOURCE_STATE_SHADER_RESOURCE);
 		static void immediateBarrier(Diligent::IBuffer& buffer, rawrbox::BufferType type);

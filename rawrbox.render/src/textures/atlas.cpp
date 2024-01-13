@@ -100,10 +100,11 @@ namespace rawrbox {
 		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
 		if (this->_tex == nullptr) throw std::runtime_error(fmt::format("[RawrBox-TextureAtlas] Failed to create texture '{}'", this->_name));
 
-		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
-		this->_textureID = rawrbox::BindlessManager::registerTexture(*this);
+		rawrbox::BindlessManager::barrier(*this, [this]() {
+			this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+			this->_textureID = rawrbox::BindlessManager::registerTexture(*this);
 
-		rawrbox::BindlessManager::barrier(*this);
-		this->updateSampler();
+			this->updateSampler();
+		});
 	}
 } // namespace rawrbox

@@ -3,26 +3,25 @@
 #include <fmt/format.h>
 
 #include <fstream>
-#include <streambuf>
 
 namespace rawrbox {
 	nlohmann::json Settings::getDefaults() {
-		throw std::runtime_error("[RawrBox-Settings] Implement getDefaults");
+		throw this->_logger->error("Implement getDefaults");
 	}
 
 	const std::string Settings::getVersion() const {
-		throw std::runtime_error("[RawrBox-Settings] Implement getVersion");
+		throw this->_logger->error("Implement getVersion");
 	}
 
 	const std::string Settings::getFileName() const {
-		throw std::runtime_error("[RawrBox-Settings] Implement getFileName");
+		throw this->_logger->error("Implement getFileName");
 	}
 
 	void Settings::save() {
 		auto& fileName = this->getFileName();
 
 		std::ofstream out(fileName);
-		if (!out.is_open()) throw std::runtime_error(fmt::format("[RawrBox-Settings] Failed to save settings '{}'", fileName));
+		if (!out.is_open()) throw this->_logger->error("Failed to save settings '{}'", fileName);
 
 		out << this->_settings.dump(1, '\t', false);
 		out.close();
@@ -43,7 +42,7 @@ namespace rawrbox {
 			// Validate version
 			auto version = _settings.find("VERSION");
 			if (version == this->_settings.end() || version.value() != this->getVersion()) {
-				fmt::print("[RawrBox-Settings] Migrating settings to version '{}'\n", this->getVersion());
+				this->_logger->warn("Migrating settings to version '{}'\n", this->getVersion());
 
 				auto diff = nlohmann::json::diff(this->_settings, getDefaults());
 				auto fixedDiff = nlohmann::json::array();

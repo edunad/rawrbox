@@ -9,8 +9,6 @@
 	#include <sol/sol.hpp>
 #endif
 
-#include <typeinfo>
-
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialUnlit>
@@ -50,9 +48,13 @@ namespace rawrbox {
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::BlendShapes<M>>> _blend_shapes = {};
 		std::vector<ModelOriginalData> _original_data = {};
 
-		// BGFX DYNAMIC SUPPORT ---
+		// DYNAMIC SUPPORT ---
 		bool _isDynamic = false;
 		// ----
+
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Model");
+		// -------------
 
 #ifdef RAWRBOX_SCRIPTING
 		sol::object _luaWrapper;
@@ -89,12 +91,12 @@ namespace rawrbox {
 				auto& blendNormals = shape.second->normals;
 
 				if (!blendPos.empty() && blendPos.size() != verts.size()) {
-					fmt::print("[RawrBox-ModelBase] Blendshape verts do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}\n", shape.first, verts.size(), blendPos.size());
+					this->_logger->info("Blendshape verts do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendPos.size());
 					return;
 				}
 
 				if (!blendNormals.empty() && blendNormals.size() != verts.size()) {
-					fmt::print("[RawrBox-ModelBase] Blendshape normals do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}\n", shape.first, verts.size(), blendNormals.size());
+					this->_logger->info("Blendshape normals do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendNormals.size());
 					return;
 				}
 
@@ -212,6 +214,9 @@ namespace rawrbox {
 
 			context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+			rawrbox::BindlessManager::barrier(*this->_vbh, rawrbox::BufferType::VERTEX);
+			rawrbox::BindlessManager::barrier(*this->_ibh, rawrbox::BufferType::INDEX);
 		}
 
 		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_mesh->getPos(); }
@@ -306,6 +311,10 @@ namespace rawrbox {
 			// Barrier ----
 			rawrbox::BindlessManager::barrier(*this->_vbh, rawrbox::BufferType::VERTEX);
 			rawrbox::BindlessManager::barrier(*this->_ibh, rawrbox::BufferType::INDEX);
+			// ------------
+
+			// Initialize material ----
+			this->_material->init();
 			// ------------
 		}
 

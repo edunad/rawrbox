@@ -70,11 +70,18 @@ else()
     endif()
 endif()
 
-CPMAddPackage("gh:bshoshany/thread-pool@3.5.0")
+CPMAddPackage("gh:bshoshany/thread-pool@4.0.1")
 if(thread-pool_ADDED)
     add_library(thread-pool INTERFACE IMPORTED)
     target_include_directories(thread-pool INTERFACE ${thread-pool_SOURCE_DIR}/include)
 endif()
+
+# DEPS ----
+CPMAddPackage("gh:jeremy-rifkin/cpptrace@0.3.1")
+if(cpptrace_ADDED)
+  set_lib_runtime_mt(cpptrace-lib)
+endif()
+# --------------
 # ----
 
 # LIB ----
@@ -83,7 +90,7 @@ target_include_directories(${output_target} PUBLIC "include" ${EXTRA_UTIL_INCLUD
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_UTILS)
-target_link_libraries(${output_target} PUBLIC ${EXTRA_UTIL_LIBS} thread-pool fmt::fmt nlohmann_json)
+target_link_libraries(${output_target} PUBLIC ${EXTRA_UTIL_LIBS} thread-pool fmt::fmt nlohmann_json cpptrace::cpptrace)
 
 set_lib_runtime_mt(${output_target})
 # --------------
@@ -91,3 +98,12 @@ set_lib_runtime_mt(${output_target})
 # TEST ----
 include(../cmake/catch2.cmake)
 # --------------
+
+if(WIN32)
+  add_custom_command(
+    TARGET ${output_target} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    $<TARGET_FILE:cpptrace::cpptrace>
+    $<TARGET_FILE_DIR:${output_target}>
+  )
+endif()

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rawrbox/utils/logger.hpp>
+
 #include <RefCntAutoPtr.hpp>
 #include <RenderStateCache.hpp>
 #include <ShaderMacroHelper.hpp>
@@ -87,6 +89,8 @@ namespace rawrbox {
 		static std::unordered_map<uint32_t, Diligent::RefCntAutoPtr<Diligent::ISampler>> _samplers;
 
 		static Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> _stateCache;
+
+		static std::unique_ptr<rawrbox::Logger> _logger;
 
 	public:
 		static Diligent::ISampler* defaultSampler;

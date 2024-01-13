@@ -1,5 +1,6 @@
 
 #include <rawrbox/math/utils/math.hpp>
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/lights/manager.hpp>
 #include <rawrbox/render/plugins/clustered.hpp>
 
@@ -11,6 +12,10 @@ namespace rawrbox {
 
 	std::unique_ptr<Diligent::DynamicBuffer> LIGHTS::_buffer = nullptr;
 	Diligent::IBufferView* LIGHTS::_bufferRead = nullptr;
+
+	// LOGGER ------
+	std::unique_ptr<rawrbox::Logger> LIGHTS::_logger = std::make_unique<rawrbox::Logger>("RawrBox-Lights");
+	// -------------
 
 	// Ambient --
 	rawrbox::Colorf LIGHTS::_ambient = {0.01F, 0.01F, 0.01F, 1.F};
@@ -70,7 +75,7 @@ namespace rawrbox {
 	}
 
 	void LIGHTS::update() {
-		if (_buffer == nullptr) throw std::runtime_error("[Rawrbox-LIGHT] Buffer not initialized! Did you call 'init' ?");
+		if (_buffer == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__LIGHT_DIRTY__ || _lights.empty()) return;
 
 		auto context = rawrbox::RENDERER->context();
@@ -113,13 +118,16 @@ namespace rawrbox {
 			_buffer->Resize(device, context, size, true);
 		}
 
-		rawrbox::RENDERER->context()->UpdateBuffer(_buffer->GetBuffer(), 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size()), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		auto buffer = _buffer->GetBuffer();
+		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size()), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::BindlessManager::barrier(*buffer, rawrbox::BufferType::CONSTANT);
+
 		rawrbox::__LIGHT_DIRTY__ = false;
 		// -------
 	}
 
 	void LIGHTS::bindUniforms() {
-		if (uniforms == nullptr) throw std::runtime_error("[RawrBox-LIGHT] Buffer not initialized! Did you call 'init' ?");
+		if (uniforms == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		update(); // Update all lights if dirty
 
 		{

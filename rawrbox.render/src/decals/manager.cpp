@@ -1,3 +1,4 @@
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/static.hpp>
 
@@ -7,6 +8,10 @@ namespace rawrbox {
 
 	std::unique_ptr<Diligent::DynamicBuffer> DECALS::_buffer = nullptr;
 	Diligent::IBufferView* DECALS::_bufferRead = nullptr;
+
+	// LOGGER ------
+	std::unique_ptr<rawrbox::Logger> DECALS::_logger = std::make_unique<rawrbox::Logger>("RawrBox-Decals");
+	// -------------
 	// -----------
 
 	// PUBLIC ----
@@ -56,7 +61,7 @@ namespace rawrbox {
 	}
 
 	void DECALS::update() {
-		if (_buffer == nullptr) throw std::runtime_error("[RawrBox-DECALS] Buffer not initialized! Did you call 'init' ?");
+		if (_buffer == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__DECALS_DIRTY__ || _decals.empty()) return;
 
 		auto context = rawrbox::RENDERER->context();
@@ -82,14 +87,17 @@ namespace rawrbox {
 			_buffer->Resize(device, context, size, true);
 		}
 
-		rawrbox::RENDERER->context()->UpdateBuffer(_buffer->GetBuffer(), 0, sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(_decals.size()), decals.empty() ? nullptr : decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		auto buffer = _buffer->GetBuffer();
+		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(_decals.size()), decals.empty() ? nullptr : decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::BindlessManager::barrier(*buffer, rawrbox::BufferType::CONSTANT);
+
 		rawrbox::__DECALS_DIRTY__ = false;
 		// -------
 	}
 
 	void DECALS::bindUniforms() {
-		if (uniforms == nullptr) throw std::runtime_error("[RawrBox-DECALS] Buffer not initialized! Did you call 'init' ?");
-		update(); // Update all lights if dirty
+		if (uniforms == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
+		update(); // Update all decals if dirty
 
 		{
 			Diligent::MapHelper<rawrbox::DecalConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);

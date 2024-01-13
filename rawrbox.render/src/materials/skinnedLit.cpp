@@ -10,7 +10,7 @@ namespace rawrbox {
 		const std::string id = "Model::Skinned::Lit";
 
 		if (!this->_built) {
-			fmt::print("[RawrBox-MaterialSkinnedLit] Building material..\n");
+			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), id));
 
 			Diligent::ShaderMacroHelper helper;
 			helper.AddShaderMacro("MAX_BONES", rawrbox::MAX_BONES_PER_MODEL);

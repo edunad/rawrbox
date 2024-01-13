@@ -14,24 +14,24 @@ namespace rawrbox {
 		this->_name = "RawrBox::Texture::WEBP";
 
 		try {
-			if (buffer.empty()) throw std::runtime_error("Image not found");
+			if (buffer.empty()) throw this->_logger->error("Image not found");
 			WebPData webp_data = {buffer.data(), buffer.size()};
 
 			WebPAnimDecoderOptions options;
 			if (!WebPAnimDecoderOptionsInit(&options)) {
-				throw std::runtime_error(fmt::format("Error initializing image '{}'!", this->_filePath.generic_string()));
+				throw this->_logger->error("Error initializing image '{}'!", this->_filePath.generic_string());
 			}
 
 			options.use_threads = true;
 			auto decoder = WebPAnimDecoderNew(&webp_data, &options);
 			if (decoder == nullptr) {
-				throw std::runtime_error(fmt::format("Error initializing decoder '{}'!", this->_filePath.generic_string()));
+				throw this->_logger->error("Error initializing decoder '{}'!", this->_filePath.generic_string());
 			}
 
 			WebPAnimInfo info;
 			if (!WebPAnimDecoderGetInfo(decoder, &info)) {
 				WebPAnimDecoderDelete(decoder);
-				throw std::runtime_error(fmt::format("Error decoding image info '{}'!", this->_filePath.generic_string()));
+				throw this->_logger->error("Error decoding image info '{}'!", this->_filePath.generic_string());
 			}
 
 			this->_frames.clear();
@@ -46,7 +46,7 @@ namespace rawrbox {
 				int delay = 0;
 				if (!WebPAnimDecoderGetNext(decoder, &buf, &delay)) {
 					WebPAnimDecoderDelete(decoder);
-					throw std::runtime_error(fmt::format("Error decoding image '{}'!", this->_filePath.generic_string()));
+					throw this->_logger->error("Error decoding image '{}'!", this->_filePath.generic_string());
 				}
 
 				Frame frame;
@@ -55,14 +55,13 @@ namespace rawrbox {
 				std::memcpy(frame.pixels.data(), buf, this->_size.x * this->_size.y * this->_channels);
 
 				this->_frames.push_back(frame);
-
 				prevTime = static_cast<float>(delay);
 			}
 
 			WebPAnimDecoderDelete(decoder);
 		} catch (std::runtime_error err) {
 			if (useFallback) {
-				fmt::print("[RawrBox-TextureWEBP] Failed to load '{}' ──> {}\n  └── Loading fallback texture!\n", this->_filePath.generic_string(), err.what());
+				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), err.what());
 				this->loadFallback();
 				return;
 			}

@@ -5,16 +5,20 @@
 #include <fmt/format.h>
 
 #include <array>
-#include <stdexcept>
 
 #if WIN32
 	#include <windows.h>
 #endif
 
 namespace rawrbox {
-	// VARS ----
+	// PROTECTED ----
 	std::map<std::string, std::unique_ptr<rawrbox::Font>> TextEngine::_fonts = {};
 	std::map<uint16_t, std::unique_ptr<rawrbox::TexturePack>> TextEngine::_packs = {};
+
+	// LOGGER ------
+	std::unique_ptr<rawrbox::Logger> TextEngine::_logger = std::make_unique<rawrbox::Logger>("RawrBox-TextEngine");
+	// -------------
+	// ------------
 
 	// PUBLIC ----
 	uint16_t TextEngine::packID = 0;
@@ -55,7 +59,7 @@ namespace rawrbox {
 
 	rawrbox::TexturePack* TextEngine::getPack(uint16_t id) {
 		auto fnd = _packs.find(id);
-		if (fnd == _packs.end()) throw std::runtime_error(fmt::format("[RawrBox-Freetype] Failed to find pack id '{}'", id));
+		if (fnd == _packs.end()) throw _logger->error("Failed to find pack id '{}'", id);
 		return fnd->second.get();
 	}
 
@@ -74,13 +78,13 @@ namespace rawrbox {
 
 			// Not found on content & system? Load fallback
 			if (!std::filesystem::exists(pth)) {
-				fmt::print("[RawrBox-Font] Failed to load '{}' ──> File not found\n  └── Loading fallback font!\n", filename.generic_string());
+				_logger->warn("Failed to load '{}' ──> File not found\n  └── Loading fallback font!", filename.generic_string());
 				return rawrbox::DEBUG_FONT_REGULAR;
 			}
 		}
 
 		auto bytes = rawrbox::PathUtils::getRawData(pth);
-		if (bytes.empty()) throw std::runtime_error(fmt::format("[RawrBox-Font] Failed to load font '{}'", filename.generic_string()));
+		if (bytes.empty()) throw _logger->error("Failed to load font '{}'", filename.generic_string());
 
 		_fonts[key] = std::make_unique<rawrbox::Font>(filename);
 		_fonts[key]->load(bytes, size, index);

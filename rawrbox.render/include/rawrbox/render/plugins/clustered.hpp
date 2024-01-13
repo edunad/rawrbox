@@ -48,6 +48,8 @@ namespace rawrbox {
 
 		rawrbox::Matrix4x4 _oldProj = {};
 
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-ClusteredPlugin");
+
 		virtual void buildBuffers();
 		virtual void buildPipelines();
 
@@ -58,9 +60,9 @@ namespace rawrbox {
 		static uint32_t GROUP_SIZE;
 
 		ClusteredPlugin() = default;
-		ClusteredPlugin(const ClusteredPlugin&) = default;
+		ClusteredPlugin(const ClusteredPlugin&) = delete;
 		ClusteredPlugin(ClusteredPlugin&&) = delete;
-		ClusteredPlugin& operator=(const ClusteredPlugin&) = default;
+		ClusteredPlugin& operator=(const ClusteredPlugin&) = delete;
 		ClusteredPlugin& operator=(ClusteredPlugin&&) = delete;
 		~ClusteredPlugin() override;
 

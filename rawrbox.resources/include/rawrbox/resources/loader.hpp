@@ -1,5 +1,6 @@
 #pragma once
 #include <rawrbox/resources/resource.hpp>
+#include <rawrbox/utils/logger.hpp>
 #include <rawrbox/utils/path.hpp>
 
 #include <fmt/printf.h>
@@ -15,6 +16,10 @@ namespace rawrbox {
 		std::vector<std::unique_ptr<rawrbox::Resource>> _files = {};
 		std::vector<std::pair<std::filesystem::path, uint32_t>> _preLoadFiles = {};
 
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Loader");
+		// -------------
+
 	public:
 		Loader() = default;
 		Loader(const Loader&) = delete;
@@ -26,15 +31,13 @@ namespace rawrbox {
 		// UTILS -----
 		[[nodiscard]] virtual const std::vector<std::pair<std::filesystem::path, uint32_t>>& getPreload() const { return this->_preLoadFiles; }
 		virtual void addToPreLoad(const std::filesystem::path& path, uint32_t loadFlags = 0) {
-			fmt::print("[RawrBox-Resources] Content `{}` marked for pre-loading\n", path.generic_string());
+			this->_logger->info("Content `{}` marked for pre-loading", path.generic_string());
 			this->_preLoadFiles.emplace_back(path, loadFlags);
 		}
 
 		[[nodiscard]] virtual bool hasFile(const std::filesystem::path& filePath) const {
 			for (auto& file : this->_files) {
-				std::error_code err;
 				if (!rawrbox::PathUtils::isSame(filePath, file->filePath)) continue;
-
 				return true;
 			}
 
@@ -47,9 +50,7 @@ namespace rawrbox {
 		T* getFile(const std::filesystem::path& filePath) {
 			const std::lock_guard<std::mutex> mutexGuard(_threadLock);
 			for (auto& file : this->_files) {
-				std::error_code err;
 				if (!rawrbox::PathUtils::isSame(filePath, file->filePath)) continue;
-
 				return dynamic_cast<T*>(file.get());
 			}
 

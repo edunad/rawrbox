@@ -23,7 +23,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_dataGridBufferRead);
 	}
 
-	const std::string ClusteredPlugin::getID() const { return "Clustered::Light"; }
+	const std::string ClusteredPlugin::getID() const { return "Clustered"; }
 
 	void ClusteredPlugin::initialize(const rawrbox::Vector2i& renderSize) {
 		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, CLUSTER_TEXTEL_SIZE);
@@ -32,7 +32,7 @@ namespace rawrbox {
 		GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * CLUSTERS_Z;
 
 		auto check = CLUSTERS_Z % CLUSTERS_Z_THREADS != 0;
-		if (check) throw std::runtime_error("[RawrBox-ClusteredLightPlugin] Number of cluster depth slices must be divisible by thread count z-dimension");
+		if (check) throw this->_logger->error("Number of cluster depth slices must be divisible by thread count z-dimension");
 
 		// Initialize light engine
 		rawrbox::LIGHTS::init();
@@ -76,8 +76,8 @@ namespace rawrbox {
 
 	void ClusteredPlugin::preRender() {
 		auto renderer = rawrbox::RENDERER;
-		if (renderer == nullptr) throw std::runtime_error("[RawrBox-ClusteredLight] Renderer not initialized!");
-		if (this->_clusterBuildingComputeProgram == nullptr || this->_lightCullingComputeBind == nullptr) throw std::runtime_error("[RawrBox-ClusteredLight] Compute pipelines not initialized, did you call 'initialize'");
+		if (renderer == nullptr) throw this->_logger->error("Renderer not initialized!");
+		if (this->_clusterBuildingComputeProgram == nullptr || this->_lightCullingComputeBind == nullptr) throw this->_logger->error("Compute pipelines not initialized, did you call 'initialize'");
 
 		auto camera = renderer->camera();
 		auto context = renderer->context();
@@ -221,6 +221,7 @@ namespace rawrbox {
 
 		settings.pCS = "cluster_cull.csh";
 		settings.bind = "Cluster::Cull";
+
 		this->_lightCullingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Cull", settings);
 		this->_lightCullingComputeBind = rawrbox::PipelineUtils::getBind("Cluster::Cull");
 		//  ----

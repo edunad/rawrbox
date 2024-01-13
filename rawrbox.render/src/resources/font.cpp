@@ -22,6 +22,6 @@ namespace rawrbox {
 		       fileExtention == ".ttc";
 	}
 
-	bool FontLoader::supportsBuffer() { return true; }
+	bool FontLoader::supportsBuffer() { return false; }
 	// -------
 } // namespace rawrbox

@@ -304,16 +304,15 @@ namespace model {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
 			rawrbox::Window::shutdown();
 		} else {
-			rawrbox::RESOURCES::shutdown();
-			rawrbox::ASYNC::shutdown();
-		}
+			this->_model.reset();
+			this->_bboxes.reset();
+			this->_displacement.reset();
+			this->_sprite.reset();
+			this->_spline.reset();
+			this->_text.reset();
 
-		this->_model.reset();
-		this->_bboxes.reset();
-		this->_displacement.reset();
-		this->_sprite.reset();
-		this->_spline.reset();
-		this->_text.reset();
+			rawrbox::RESOURCES::shutdown();
+		}
 	}
 
 	void Game::pollEvents() {

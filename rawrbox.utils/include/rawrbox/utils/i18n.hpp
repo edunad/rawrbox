@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rawrbox/utils/logger.hpp>
+
 #include <nlohmann/json.hpp>
 
 #include <string>
@@ -12,6 +14,10 @@ namespace rawrbox {
 	private:
 		static std::unordered_map<std::string, rawrbox::Language> _languagePacks;
 		static std::string _language;
+
+		// LOGGER ------
+		static std::unique_ptr<rawrbox::Logger> _logger;
+		// -------------
 
 	public:
 		static void initialize();

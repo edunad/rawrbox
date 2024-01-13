@@ -89,11 +89,9 @@ namespace post_process {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
 			rawrbox::Window::shutdown();
 		} else {
+			this->_model.reset();
 			rawrbox::RESOURCES::shutdown();
-			rawrbox::ASYNC::shutdown();
 		}
-
-		this->_model.reset();
 	}
 
 	void Game::pollEvents() {

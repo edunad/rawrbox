@@ -37,6 +37,7 @@ namespace rawrbox {
 	RendererBase::~RendererBase() {
 		this->_render.reset();
 		this->_stencil.reset();
+		this->_logger.reset();
 
 		rawrbox::BindlessManager::shutdown();
 		rawrbox::PipelineUtils::shutdown();
@@ -321,16 +322,12 @@ namespace rawrbox {
 		this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 		// -----------------------
 
-// Perform world --
-#ifdef _DEBUG
-		// this->beginQuery("WORLD");
-#endif
+		// Perform world --
 		this->_render->startRecord();
+		// this->beginQuery("WORLD");
 		this->_drawCall(rawrbox::DrawPass::PASS_OPAQUE);
-		this->_render->stopRecord();
-#ifdef _DEBUG
 		// this->endQuery("WORLD");
-#endif
+		this->_render->stopRecord();
 		//  -----------------
 
 		// Perform post-render --
@@ -345,14 +342,10 @@ namespace rawrbox {
 		// ------------------
 
 		// Perform overlay --
-#ifdef _DEBUG
 		// this->beginQuery("OVERLAY");
-#endif
 		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
-#ifdef _DEBUG
 		// this->endQuery("OVERLAY");
-#endif
-		// ------------------
+		//  ------------------
 
 		// Submit ---
 		this->frame();
@@ -377,8 +370,9 @@ namespace rawrbox {
 		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
 		rawrbox::FRAME++;
 	}
+
 	/*void RendererBase::gpuCheck() {
-		if (this->_gpuReadFrame == rawrbox::BGFX_FRAME) {
+		if (this->_gpuReadFrame == rawrbox::FRAME) {
 			std::unordered_map<uint32_t, uint32_t> ids = {};
 			const bgfx::Caps* caps = bgfx::getCaps();
 
@@ -476,19 +470,26 @@ namespace rawrbox {
 	}
 
 	void RendererBase::skipIntros(bool skip) {
-		if (skip) fmt::print("[RawrBox] Skipping intros :(\n");
+		if (skip) this->_logger->info("Skipping intros :(");
 		this->_skipIntros = skip;
 	}
 
 	void RendererBase::addIntro(const std::filesystem::path& webpPath, float speed, bool cover, const rawrbox::Colorf& color) {
-		if (webpPath.extension() != ".webp") throw std::runtime_error(fmt::format("[RawrBox-RenderBase] Invalid intro '{}', only '.webp' format is supported!", webpPath.generic_string()));
+		if (webpPath.extension() != ".webp") throw this->_logger->error("Invalid intro '{}', only '.webp' format is supported!", webpPath.generic_string());
 		this->_introList[webpPath.generic_string()] = {speed, cover, color};
 	}
-//-------------------------
+	//-------------------------
 
-// QUERIES ------
-#ifdef _DEBUG
+	// QUERIES ------
 	void RendererBase::beginQuery(const std::string& query) {
+#ifndef _DEBUG
+		if (!this->_queryWarn) {
+			this->_logger->warn("beginQuery / endQuery is only available on DEBUG for performance reasons!");
+			this->_queryWarn = true;
+		}
+
+		return;
+#endif
 		const auto& supportedFeatures = this->device()->GetDeviceInfo().Features;
 		if (!supportedFeatures.PipelineStatisticsQueries || !supportedFeatures.DurationQueries) return;
 
@@ -511,7 +512,7 @@ namespace rawrbox {
 			pipelineHelper = helper.get();
 			this->_query[pipeName] = std::move(helper);
 
-			fmt::print("[RawrBox-Renderer] Created query {} -> QUERY_TYPE_PIPELINE_STATISTICS\n", query);
+			this->_logger->info("Created query '{}' -> QUERY_TYPE_PIPELINE_STATISTICS", fmt::format(fmt::fg(fmt::color::blue_violet), query));
 		} else {
 			pipelineHelper = fndPipeline->second.get();
 		}
@@ -530,13 +531,15 @@ namespace rawrbox {
 			durationHelper = helper.get();
 			this->_query[durationName] = std::move(helper);
 
-			fmt::print("[RawrBox-Renderer] Created query {} -> QUERY_TYPE_DURATION\n", query);
+			this->_logger->info("Created query '{}' -> QUERY_TYPE_DURATION", fmt::format(fmt::fg(fmt::color::blue_violet), query));
 		} else {
 			durationHelper = fndDuration->second.get();
 		}
 		// --------------
 
-		if (pipelineHelper == nullptr || durationHelper == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Renderer] Failed to create & begin query '{}'", query));
+		if (pipelineHelper == nullptr || durationHelper == nullptr) {
+			throw this->_logger->error("Failed to create & begin query '{}'", query);
+		}
 
 		// Start queries ---
 		pipelineHelper->Begin(this->context());
@@ -545,6 +548,14 @@ namespace rawrbox {
 	}
 
 	void RendererBase::endQuery(const std::string& query) {
+#ifndef _DEBUG
+		if (!this->_queryWarn) {
+			this->_logger->warn("beginQuery / endQuery is only available on DEBUG for performance reasons!");
+			this->_queryWarn = true;
+		}
+
+		return;
+#endif
 		const auto& supportedFeatures = this->device()->GetDeviceInfo().Features;
 		if (!supportedFeatures.PipelineStatisticsQueries || !supportedFeatures.DurationQueries) return;
 
@@ -554,7 +565,9 @@ namespace rawrbox {
 		auto fndPipeline = this->_query.find(pipeName);
 		auto fndDuration = this->_query.find(durationName);
 
-		if (fndPipeline->second == nullptr || fndDuration->second == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Renderer] Failed to end query '{}', not found!", query));
+		if (fndPipeline->second == nullptr || fndDuration->second == nullptr) {
+			throw this->_logger->error("Failed to end query '{}', not found!", query);
+		}
 
 		// End queries ---
 		auto pipeData = &this->_pipelineData[pipeName];
@@ -564,7 +577,6 @@ namespace rawrbox {
 		fndDuration->second->End(this->context(), durationData, sizeof(Diligent::QueryDataDuration));
 		// -----------------
 	}
-#endif
 	// ----------------
 
 	// Utils ----
