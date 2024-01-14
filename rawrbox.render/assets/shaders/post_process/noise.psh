@@ -1,19 +1,13 @@
+#include <hash.fxh>
+#include <pixel_post_process_uniforms.fxh>
 
+// ## MAPPING ----------------
+#define NoiseIntensity  PostProcessConstants.data[0].x
+#define NoiseTimer      PostProcessConstants.data[0].y
+// ========================
 
-
-Texture2DArray      g_Texture;
-SamplerState        g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
-
-cbuffer Constants {
-    // GLOBAL ----
-    float4   g_ScreenSize;
-    // ------------
-
-    // UNIFORMS ----
-    float   g_noiseTimer;
-    float   g_noiseIntensity;
-    // ------------
-};
+Texture2DArray      g_Textures[];
+SamplerState        g_Textures_sampler; // By convention, texture samplers must use the '_sampler' suffix
 
 struct PSInput {
     float4 Pos   : SV_POSITION;
@@ -24,8 +18,6 @@ struct PSOutput {
     float4 Color : SV_TARGET;
 };
 
-#include <hash.fxh>
-
 uint3 hash(float2 s) {
 	uint4 u = uint4(s, uint(s.x) ^ uint(s.y), uint(s.x) + uint(s.y));
     return pcg3d(u.xyz);
@@ -33,15 +25,15 @@ uint3 hash(float2 s) {
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
 #if defined(DESKTOP_GL) || defined(GL_ES)
-    float2 UV = float2(PSIn.UV.x, 1.0 - PSIn.UV.y);
+    float3 UV = float3(PSIn.UV.x, 1.0 - PSIn.UV.y, 0);
 #else
-    float2 UV = PSIn.UV;
+    float3 UV = float3(PSIn.UV.xy, 0);
 #endif
 
-    float4 Color = g_Texture.Sample(g_Texture_sampler, UV);
-	float3 h = hash(UV * 3000.0 * g_noiseTimer);
+    float4 Color = g_Textures[PostProcessConstants.textureID].Sample(g_Textures_sampler, UV);
+	float3 h = hash(UV * 3000.0 * NoiseTimer);
 	float a = float(h.x) * (1.0 / float(0xffffffffu));
-    float3 noise = float3(a, a, a) * g_noiseIntensity;
+    float3 noise = float3(a, a, a) * NoiseIntensity;
 
 	PSOut.Color = float4(Color.rgb - noise.xyz, Color.a);
 }

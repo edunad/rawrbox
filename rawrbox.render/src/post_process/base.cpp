@@ -3,10 +3,6 @@
 #include <rawrbox/render/static.hpp>
 
 namespace rawrbox {
-	std::array<rawrbox::Vector4f, MAX_DATA> PostProcessBase::getData() {
-		return this->_data;
-	}
-
 	void PostProcessBase::applyEffect(const rawrbox::TextureBase& texture) {
 		if (!texture.isValid()) throw this->_logger->error("Effect texture not uploaded!");
 
@@ -16,7 +12,8 @@ namespace rawrbox {
 		// SETUP UNIFORMS ----------------------------
 		{
 			Diligent::MapHelper<rawrbox::BindlessPostProcessBuffer> CBConstants(context, rawrbox::BindlessManager::signatureBufferPostProcess, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			CBConstants->data = this->getData();
+
+			CBConstants->data = this->_data;
 			CBConstants->textureID = texture.getTextureID();
 			CBConstants->depthTextureID = texture.getDepthTextureID();
 		}

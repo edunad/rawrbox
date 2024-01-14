@@ -3,8 +3,8 @@
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/plugins/post_process.hpp>
 #include <rawrbox/render/post_process/dither.hpp>
-// #include <rawrbox/render/post_process/noise.hpp>
-// #include <rawrbox/render/post_process/quick_bloom.hpp>
+#include <rawrbox/render/post_process/noise.hpp>
+#include <rawrbox/render/post_process/quick_bloom.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
@@ -30,8 +30,8 @@ namespace post_process {
 		// Setup post process ----
 		auto postProcess = render->addPlugin<rawrbox::PostProcessPlugin>();
 		postProcess->add<rawrbox::PostProcessDither>(rawrbox::DITHER_MODE::FAST_MODE);
-		// postProcess->add<rawrbox::PostProcessQuickBloom>(0.015F);
-		// postProcess->add<rawrbox::PostProcessNoise>(0.1F);
+		postProcess->add<rawrbox::PostProcessQuickBloom>(0.015F);
+		postProcess->add<rawrbox::PostProcessNoise>(0.1F);
 		//  -----------------------
 
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {

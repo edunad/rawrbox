@@ -7,7 +7,6 @@ namespace rawrbox {
 	class PostProcessPlugin : public rawrbox::RenderPlugin {
 	protected:
 		std::vector<std::unique_ptr<rawrbox::PostProcessBase>> _postProcesses = {};
-		std::unique_ptr<rawrbox::TextureRender> _rt = {};
 
 	public:
 		PostProcessPlugin() = default;
@@ -33,6 +32,6 @@ namespace rawrbox {
 		void initialize(const rawrbox::Vector2i& size) override;
 		void resize(const rawrbox::Vector2i& size) override;
 
-		void postRender(const rawrbox::TextureRender& render) override;
+		void postRender(rawrbox::TextureRender& render) override;
 	};
 } // namespace rawrbox

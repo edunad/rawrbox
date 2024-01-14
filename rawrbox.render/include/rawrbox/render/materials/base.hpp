@@ -41,7 +41,7 @@ namespace rawrbox {
 		template <typename T = rawrbox::VertexData>
 		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<rawrbox::BindlessVertexBuffer>& helper) {
 			// MODEL -------
-			std::array<rawrbox::Vector4f, rawrbox::MAX_DATA>
+			std::array<rawrbox::Vector4f, rawrbox::MAX_PIXEL_DATA>
 			    data = {rawrbox::Vector4f{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
 
 			if (mesh.hasData("billboard_mode")) {

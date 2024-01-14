@@ -1,38 +1,21 @@
-/*#pragma once
-#include <rawrbox/math/vector4.hpp>
+#pragma once
+
 #include <rawrbox/render/post_process/base.hpp>
-
-#include <RefCntAutoPtr.hpp>
-
-#include <Buffer.h>
 
 namespace rawrbox {
 
-	struct NoiseSettings {
-		rawrbox::Vector4f g_ScreenSize = {};
-
-		float g_NoiseTimer = 0.0F;
-		float g_NoiseIntensity = 0.0F;
-	};
-
 	class PostProcessNoise : public rawrbox::PostProcessBase {
-		Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-		rawrbox::NoiseSettings _settings = {};
-
-		void updateUniforms();
-
 	public:
 		explicit PostProcessNoise(float intensity);
 		PostProcessNoise(PostProcessNoise&&) = delete;
 		PostProcessNoise& operator=(PostProcessNoise&&) = delete;
 		PostProcessNoise(const PostProcessNoise&) = delete;
 		PostProcessNoise& operator=(const PostProcessNoise&) = delete;
-		~PostProcessNoise() override;
+		~PostProcessNoise() override = default;
 
 		virtual void setIntensity(float in);
 
-		void upload() override;
-		void applyEffect(Diligent::ITextureView* texture) override;
+		void init() override;
+		void applyEffect(const rawrbox::TextureBase& texture) override;
 	};
 } // namespace rawrbox
-*/

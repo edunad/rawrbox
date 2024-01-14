@@ -9,7 +9,8 @@
 #include <ShaderResourceBinding.h>
 
 namespace rawrbox {
-	constexpr auto MAX_DATA = 4;
+	constexpr auto MAX_PIXEL_DATA = 4;
+	constexpr auto MAX_POST_DATA = 2;
 
 	enum class BufferType {
 		CONSTANT,
@@ -25,8 +26,8 @@ namespace rawrbox {
 		rawrbox::Colorf colorOverride = {};
 		rawrbox::Vector4f textureFlags = {};
 
-		std::array<rawrbox::Vector4f, MAX_DATA> data = {}; // Other mesh data, like vertex / displacement / billboard settings / masks
-								   // ----------
+		std::array<rawrbox::Vector4f, MAX_PIXEL_DATA> data = {}; // Other mesh data, like vertex / displacement / billboard settings / masks
+									 // ----------
 	};
 	// --------------------------
 
@@ -36,7 +37,8 @@ namespace rawrbox {
 	};
 
 	struct BindlessPostProcessBuffer {
-		std::array<rawrbox::Vector4f, MAX_DATA> data = {};
+		std::array<rawrbox::Vector4f, MAX_POST_DATA> data = {};
+
 		uint32_t textureID = 0;
 		uint32_t depthTextureID = 0;
 	};

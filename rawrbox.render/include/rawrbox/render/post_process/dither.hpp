@@ -24,11 +24,10 @@ namespace rawrbox {
 		~PostProcessDither() override = default;
 
 		virtual void setIntensity(float in);
-		virtual void setDepth(float dep);
 		virtual void setColorDepth(float dep);
 		virtual void setThreshold(float th);
 		virtual void setMode(rawrbox::DITHER_MODE mode);
 
-		void upload() override;
+		void init() override;
 	};
 } // namespace rawrbox

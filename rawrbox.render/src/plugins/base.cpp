@@ -17,7 +17,7 @@ namespace rawrbox {
 	void RenderPlugin::resize(const rawrbox::Vector2i& /*renderSize*/) {}
 
 	void RenderPlugin::preRender() {}
-	void RenderPlugin::postRender(const rawrbox::TextureRender& /*renderTarget*/) {}
+	void RenderPlugin::postRender(rawrbox::TextureRender& /*renderTarget*/) {}
 
 	void RenderPlugin::update() {}
 } // namespace rawrbox

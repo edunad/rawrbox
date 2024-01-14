@@ -8,7 +8,7 @@ namespace rawrbox {
 	class PostProcessBase {
 	protected:
 		Diligent::IPipelineState* _pipeline = nullptr;
-		std::array<rawrbox::Vector4f, MAX_DATA> _data = {};
+		std::array<rawrbox::Vector4f, MAX_POST_DATA> _data = {};
 
 		// LOGGER ------
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-PostProcess");
@@ -22,8 +22,7 @@ namespace rawrbox {
 		PostProcessBase& operator=(const PostProcessBase&) = delete;
 		virtual ~PostProcessBase() = default;
 
-		virtual void upload() = 0;
-		virtual std::array<rawrbox::Vector4f, MAX_DATA> getData();
+		virtual void init() = 0;
 		virtual void applyEffect(const rawrbox::TextureBase& texture);
 	};
 } // namespace rawrbox

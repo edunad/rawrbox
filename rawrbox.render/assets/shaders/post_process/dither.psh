@@ -6,9 +6,8 @@
 // ## MAPPING ----------------
 #define DitherMode       PostProcessConstants.data[0].x
 #define DitherIntensity  PostProcessConstants.data[0].y
-#define DitherDepth      PostProcessConstants.data[0].z
-#define DitherColorDepth PostProcessConstants.data[0].w
-#define DitherThreshold  PostProcessConstants.data[1].x
+#define DitherColorDepth PostProcessConstants.data[0].z
+#define DitherThreshold  PostProcessConstants.data[0].w
 // ========================
 
 Texture2DArray      g_Textures[];
@@ -26,19 +25,19 @@ struct PSOutput {
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
 #if defined(DESKTOP_GL) || defined(GL_ES)
-    float2 UV = float2(PSIn.UV.x, 1.0 - PSIn.UV.y);
+    float3 UV = float3(PSIn.UV.x, 1.0 - PSIn.UV.y, 0);
 #else
-    float2 UV = PSIn.UV;
+    float3 UV = float3(PSIn.UV.xy, 0);
 #endif
 
-    float4 color = g_Textures[PostProcessConstants.textureID].Sample(g_Textures_sampler, float3(UV.xy, 0));
-    if(color.a <= 0.0) discard;
+    float4 color = g_Textures[PostProcessConstants.textureID].Sample(g_Textures_sampler, UV);
+    float depth = 1;
 
     // Dither -----
     if(DitherMode == 0.0) { // SLOW MODE
-		color.rgb = getDither(UV * Camera.viewport.zw, color.rgb, DitherIntensity * DitherDepth / 3.0);
+		color.rgb = getDither(UV * Camera.viewport.zw, color.rgb, DitherIntensity * depth / 3.0);
 	} else {
-		color.rgb += getDitherFast(UV * Camera.viewport.zw, 1) * DitherIntensity * DitherDepth / 3.0;
+		color.rgb += getDitherFast(UV * Camera.viewport.zw, 1) * DitherIntensity * depth / 3.0;
 	}
 
 	// Posterize

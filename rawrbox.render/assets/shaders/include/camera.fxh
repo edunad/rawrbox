@@ -29,6 +29,7 @@
     };
 
     ConstantBuffer<CameraStruct> Camera;
+    #define px (float2(1.0, 1.0) / Camera.viewport.zw)
 
     // UTILS -----------------
     uint GetSliceFromDepth(float depth) {

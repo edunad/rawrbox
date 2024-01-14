@@ -7,7 +7,9 @@ namespace rawrbox {
 	class TextureRender : public rawrbox::TextureBase {
 	private:
 		Diligent::RefCntAutoPtr<Diligent::ITextureView> _rtHandle;
+		Diligent::RefCntAutoPtr<Diligent::ITextureView> _depthRTHandle;
 		Diligent::RefCntAutoPtr<Diligent::ITextureView> _depthHandle;
+
 		Diligent::RefCntAutoPtr<Diligent::ITexture> _depthTex;
 
 		rawrbox::Vector2i _size = {};
@@ -26,7 +28,10 @@ namespace rawrbox {
 
 		// ------UTILS
 		[[nodiscard]] virtual Diligent::ITextureView* getDepth() const;
+		[[nodiscard]] virtual Diligent::ITextureView* getRTDepth() const;
 		[[nodiscard]] virtual Diligent::ITextureView* getRT() const;
+
+		[[nodiscard]] virtual Diligent::ITexture* getDepthHandle() const;
 		// ------------
 
 		// ------RENDER

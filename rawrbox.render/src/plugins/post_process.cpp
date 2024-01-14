@@ -24,12 +24,9 @@ namespace rawrbox {
 
 	const std::string PostProcessPlugin::getID() const { return "PostProcess"; }
 
-	void PostProcessPlugin::initialize(const rawrbox::Vector2i& size) {
-		this->_rt = std::make_unique<rawrbox::TextureRender>(size, false);
-		this->_rt->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
-
+	void PostProcessPlugin::initialize(const rawrbox::Vector2i& /*size*/) {
 		for (const auto& _postProcess : this->_postProcesses) {
-			_postProcess->upload();
+			_postProcess->init();
 		}
 	}
 
@@ -37,25 +34,12 @@ namespace rawrbox {
 		// TODO: RESIZE RENDER TEXTURE?
 	}
 
-	void PostProcessPlugin::postRender(const rawrbox::TextureRender& renderTexture) {
-		if (this->_postProcesses.empty()) return;
-		rawrbox::BindlessManager::barrier(renderTexture);
-
-		for (const auto& _postProcesse : this->_postProcesses) {
-			this->_rt->startRecord(false);
-			_postProcesse->applyEffect(renderTexture);
-			this->_rt->stopRecord();
-
-			// Copy texture over
-			Diligent::CopyTextureAttribs CopyAttribs;
-			CopyAttribs.pSrcTexture = this->_rt->getTexture();
-			CopyAttribs.pDstTexture = renderTexture.getTexture();
-
-			rawrbox::RENDERER->context()->CopyTexture(CopyAttribs);
-			// -----------------
+	void PostProcessPlugin::postRender(rawrbox::TextureRender& renderTexture) {
+		for (const auto& process : this->_postProcesses) {
+			renderTexture.startRecord(false);
+			process->applyEffect(renderTexture);
+			renderTexture.stopRecord();
 		}
-
-		rawrbox::BindlessManager::barrier(*this->_rt);
 	}
 
 } // namespace rawrbox

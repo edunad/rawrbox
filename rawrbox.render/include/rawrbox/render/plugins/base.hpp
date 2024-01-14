@@ -42,7 +42,7 @@ namespace rawrbox {
 		virtual void resize(const rawrbox::Vector2i& renderSize);
 
 		virtual void preRender();
-		virtual void postRender(const rawrbox::TextureRender& renderTarget);
+		virtual void postRender(rawrbox::TextureRender& renderTarget);
 
 		virtual void update();
 	};

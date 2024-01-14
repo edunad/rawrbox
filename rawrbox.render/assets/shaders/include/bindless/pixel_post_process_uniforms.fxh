@@ -2,7 +2,7 @@
     #define INCLUDED_PIXEL_POST_PROCESS_UNIFORMS
 
     struct PostProcessConstantsStruct {
-        float4 data[4];
+        float4 data[2];
 
         uint textureID;
         uint textureDepthID;

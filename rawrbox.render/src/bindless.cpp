@@ -264,20 +264,18 @@ namespace rawrbox {
 		if (signature == nullptr) throw _logger->error("Signature not bound! Did you call init?");
 		if (texture.isRegistered()) return; // Check if it's already registered --
 
-		registerTexture(dynamic_cast<rawrbox::TextureBase&>(texture)); // Normal register, horrible i know.
+		auto* pDepthSRV = texture.getDepth(); // Get depth
+		if (pDepthSRV != nullptr) {
+			uint32_t id = internalRegister(pDepthSRV, rawrbox::TEXTURE_TYPE::PIXEL);
+			_logger->info("Registering {} bindless pixel texture slot '{}'", fmt::format(fmt::fg(fmt::color::red), "DEPTH"), fmt::format(fmt::fg(fmt::color::violet), std::to_string(id)));
 
-		/*auto* pDepthSRV = texture.getDepth();                                  // Get depth
-		if (pDepthSRV == nullptr) {                                            // No depth
-			registerTexture(dynamic_cast<rawrbox::TextureBase&>(texture)); // Normal register, horrible i know.
-			return;
+			// Register depth
+			texture.setDepthTextureID(id);
+			//----
 		}
 
-		uint32_t id = internalRegister(pDepthSRV, rawrbox::TEXTURE_TYPE::PIXEL);
-		_logger->info("Registering {} bindless pixel texture slot '{}'", fmt::format(fmt::fg(fmt::color::red), "DEPTH"), fmt::format(fmt::fg(fmt::color::violet), std::to_string(id)));
-
-		// Register depth
-		texture.setDepthTextureID(id);
-		//----*/
+		// Ok, now do normal
+		registerTexture(dynamic_cast<rawrbox::TextureBase&>(texture)); // Normal register, horrible i know.
 	}
 
 	void BindlessManager::registerTexture(rawrbox::TextureBase& texture) {
