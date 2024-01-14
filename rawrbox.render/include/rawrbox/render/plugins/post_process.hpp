@@ -29,8 +29,8 @@ namespace rawrbox {
 
 		[[nodiscard]] const std::string getID() const override;
 
-		void initialize(const rawrbox::Vector2i& size) override;
 		void resize(const rawrbox::Vector2i& size) override;
+		void upload() override;
 
 		void postRender(rawrbox::TextureRender& render) override;
 	};

@@ -54,6 +54,9 @@ namespace rawrbox {
 		this->_oldProj = {}; // Re-build clusters
 	}
 
+	void ClusteredPlugin::upload() {
+	}
+
 	void ClusteredPlugin::signatures(std::vector<Diligent::PipelineResourceDesc>& sig) {
 		sig.emplace_back(Diligent::SHADER_TYPE_PIXEL, "ClusterDataGrid", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 

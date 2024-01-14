@@ -174,17 +174,23 @@ namespace rawrbox {
 
 		// Init pipelines ---
 		rawrbox::PipelineUtils::init(*this->device());
-		rawrbox::BindlessManager::init();
 		// ----------------------
 
-		// PLUGIN INITIALIZE ---
+		// Init plugins ---
+		this->_logger->info("Initializing renderer plugins");
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr) continue;
 			plugin.second->initialize(this->getSize());
 		}
 		// -----------------------
 
+		// Init bindless ---
+		rawrbox::BindlessManager::init();
+		// -----------------
+
 		// Init default textures ---
+		this->_logger->info("Initializing default textures / fonts");
+
 		if (rawrbox::MISSING_TEXTURE == nullptr) {
 			rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
 			rawrbox::MISSING_TEXTURE->upload();
@@ -224,9 +230,20 @@ namespace rawrbox {
 		if (rawrbox::DEBUG_FONT_ITALIC == nullptr) {
 			rawrbox::DEBUG_FONT_ITALIC = rawrbox::TextEngine::load("./assets/fonts/SometypeMono-Italic.ttf", 12);
 		}
+		// ------
 
+		// Init render utils ---
+		this->_logger->info("Initializing renderer utils");
 		RenderUtils::init();
 		// -------------------------
+
+		// Upload plugins ---
+		this->_logger->info("Uploading renderer plugins");
+		for (auto& plugin : this->_renderPlugins) {
+			if (plugin.second == nullptr) continue;
+			plugin.second->upload();
+		}
+		// -----------------------
 
 		// Setup stencil ----
 		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());

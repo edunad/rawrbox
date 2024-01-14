@@ -29,6 +29,7 @@ namespace rawrbox {
 
 	void BindlessManager::init() {
 		if (signature != nullptr) throw _logger->error("Signature already bound!");
+		_logger->info("Initializing bindless manager");
 
 		auto renderer = rawrbox::RENDERER;
 		_textureHandles.reserve(renderer->MAX_TEXTURES);

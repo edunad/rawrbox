@@ -75,6 +75,7 @@ namespace rawrbox {
 
 		void initialize(const rawrbox::Vector2i& size) override;
 		void resize(const rawrbox::Vector2i& size) override;
+		void upload() override;
 
 		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig) override;
 		void bind(Diligent::IPipelineResourceSignature& sig) override;

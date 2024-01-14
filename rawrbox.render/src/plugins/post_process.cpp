@@ -24,7 +24,7 @@ namespace rawrbox {
 
 	const std::string PostProcessPlugin::getID() const { return "PostProcess"; }
 
-	void PostProcessPlugin::initialize(const rawrbox::Vector2i& /*size*/) {
+	void PostProcessPlugin::upload() {
 		for (const auto& _postProcess : this->_postProcesses) {
 			_postProcess->init();
 		}

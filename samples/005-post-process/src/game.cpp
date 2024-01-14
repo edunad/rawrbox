@@ -25,7 +25,6 @@ namespace post_process {
 
 		// Setup renderer
 		auto render = window->createRenderer();
-		render->skipIntros(true);
 
 		// Setup post process ----
 		auto postProcess = render->addPlugin<rawrbox::PostProcessPlugin>();

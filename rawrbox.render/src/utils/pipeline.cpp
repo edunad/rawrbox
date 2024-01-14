@@ -26,6 +26,7 @@ namespace rawrbox {
 
 	void PipelineUtils::init(Diligent::IRenderDevice& device) {
 		if (initialized) return;
+		_logger->info("Initializing pipeline utils");
 
 		uint32_t id = Diligent::TEXTURE_ADDRESS_WRAP << 6 | Diligent::TEXTURE_ADDRESS_WRAP << 3 | Diligent::TEXTURE_ADDRESS_WRAP;
 		Diligent::SamplerDesc desc{

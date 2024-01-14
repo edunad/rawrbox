@@ -15,6 +15,7 @@ namespace rawrbox {
 
 	void RenderPlugin::initialize(const rawrbox::Vector2i& /*renderSize*/) {}
 	void RenderPlugin::resize(const rawrbox::Vector2i& /*renderSize*/) {}
+	void RenderPlugin::upload() {}
 
 	void RenderPlugin::preRender() {}
 	void RenderPlugin::postRender(rawrbox::TextureRender& /*renderTarget*/) {}
