@@ -1,8 +1,6 @@
 #include <rawrbox/render/plugins/post_process.hpp>
 #include <rawrbox/render/static.hpp>
 
-#include <fmt/format.h>
-
 namespace rawrbox {
 	PostProcessPlugin::~PostProcessPlugin() {
 		this->_postProcesses.clear();
@@ -10,12 +8,12 @@ namespace rawrbox {
 
 	// Post utils ----
 	void PostProcessPlugin::remove(size_t indx) {
-		if (this->_postProcesses.empty() || indx >= this->_postProcesses.size()) throw std::runtime_error(fmt::format("[RawrBox-PostProcess] Failed to remove {}!", indx));
+		if (this->_postProcesses.empty() || indx >= this->_postProcesses.size()) throw this->_logger->error("Failed to remove {}!", indx);
 		this->_postProcesses.erase(this->_postProcesses.begin() + indx);
 	}
 
 	rawrbox::PostProcessBase& PostProcessPlugin::get(size_t indx) const {
-		if (indx >= this->_postProcesses.size()) throw std::runtime_error(fmt::format("[RawrBox-PostProcess] Failed to get {}!", indx));
+		if (indx >= this->_postProcesses.size()) throw this->_logger->error("Failed to get {}!", indx);
 		return *this->_postProcesses[indx];
 	}
 
@@ -39,19 +37,25 @@ namespace rawrbox {
 		// TODO: RESIZE RENDER TEXTURE?
 	}
 
-	void PostProcessPlugin::postRender(rawrbox::TextureRender* renderTexture) {
+	void PostProcessPlugin::postRender(const rawrbox::TextureRender& renderTexture) {
 		if (this->_postProcesses.empty()) return;
+		rawrbox::BindlessManager::barrier(renderTexture);
 
 		for (const auto& _postProcesse : this->_postProcesses) {
 			this->_rt->startRecord(false);
-			_postProcesse->applyEffect(renderTexture->getHandle());
+			_postProcesse->applyEffect(renderTexture);
 			this->_rt->stopRecord();
 
 			// Copy texture over
-			Diligent::CopyTextureAttribs CopyAttribs{this->_rt->getTexture(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION,
-			    renderTexture->getTexture(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION};
+			Diligent::CopyTextureAttribs CopyAttribs;
+			CopyAttribs.pSrcTexture = this->_rt->getTexture();
+			CopyAttribs.pDstTexture = renderTexture.getTexture();
+
 			rawrbox::RENDERER->context()->CopyTexture(CopyAttribs);
+			// -----------------
 		}
+
+		rawrbox::BindlessManager::barrier(*this->_rt);
 	}
 
 } // namespace rawrbox

@@ -145,11 +145,11 @@ namespace rawrbox {
 	void CameraBase::update() {}
 
 	const rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f& /*pos*/) const {
-		throw std::runtime_error("Not implemented");
+		throw this->_logger->error("Not implemented");
 	}
 
 	const rawrbox::Vector3f CameraBase::screenToWorld(const rawrbox::Vector2f& /*screen_pos*/, const rawrbox::Vector3f& /*origin*/) const {
-		throw std::runtime_error("Not implemented");
+		throw this->_logger->error("Not implemented");
 	}
 
 	Diligent::IBuffer* CameraBase::uniforms() const { return this->_uniforms; }

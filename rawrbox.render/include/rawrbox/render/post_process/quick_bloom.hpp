@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/post_process/base.hpp>
 
@@ -33,3 +33,4 @@ namespace rawrbox {
 		void applyEffect(Diligent::ITextureView* texture) override;
 	};
 } // namespace rawrbox
+*/

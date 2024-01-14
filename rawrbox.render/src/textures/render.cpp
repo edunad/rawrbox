@@ -19,11 +19,12 @@ namespace rawrbox {
 
 	// ------ RENDER
 	void TextureRender::startRecord(bool clear) {
-		if (this->_recording) throw std::runtime_error("[RawrBox-TextureRender] Already recording");
+		if (this->_recording) throw this->_logger->error("Already recording");
 
 		// BARRIER ----
-		rawrbox::BindlessManager::immediateBarrier(*this->_tex, Diligent::RESOURCE_STATE_RENDER_TARGET);
-		// --------
+		rawrbox::BindlessManager::barrier(*this->_tex, Diligent::RESOURCE_STATE_RENDER_TARGET);
+		// if (this->_depth) rawrbox::BindlessManager::barrier(*this->_depthTex, Diligent::RESOURCE_STATE_DEPTH_WRITE);
+		//  --------
 
 		auto context = rawrbox::RENDERER->context();
 		context->SetRenderTargets(1, &this->_rtHandle, this->_depthHandle, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
@@ -41,22 +42,23 @@ namespace rawrbox {
 	}
 
 	void TextureRender::stopRecord() {
-		if (!this->_recording) throw std::runtime_error("[RawrBox-TextureRender] Not recording");
+		if (!this->_recording) throw this->_logger->error("Not recording");
 		auto* pRTV = rawrbox::RENDERER->swapChain()->GetCurrentBackBufferRTV();
 		auto* depth = rawrbox::RENDERER->swapChain()->GetDepthBufferDSV();
 
 		rawrbox::RENDERER->context()->SetRenderTargets(1, &pRTV, depth, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 		// BARRIER ----
-		rawrbox::BindlessManager::immediateBarrier(*this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE);
-		// --------
+		rawrbox::BindlessManager::barrier(*this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE);
+		// if (this->_depth) rawrbox::BindlessManager::barrier(*this->_depthTex, Diligent::RESOURCE_STATE_DEPTH_READ);
+		//  --------
 
 		this->_recording = false;
 	}
 
 	void TextureRender::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
 		if (this->_rtHandle != nullptr || this->_depthHandle != nullptr) return; // Failed texture is already bound, so skip it
-		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) throw std::runtime_error("[RawrBox-TextureRender] Invalid format");
+		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) throw this->_logger->error("Invalid format");
 
 		// Render target -----
 		Diligent::TextureDesc desc;
@@ -75,13 +77,13 @@ namespace rawrbox {
 
 		rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_tex);
 
+		// Immediate barrier
+		rawrbox::BindlessManager::barrier(*this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE);
+		// --------------
+
+		// Get handles --
 		this->_rtHandle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
-
-		this->_textureID = rawrbox::BindlessManager::registerTexture(*this);
-
-		// Immediate barrier
-		rawrbox::BindlessManager::immediateBarrier(*this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE);
 		// --------------
 
 		// Depth ----
@@ -98,9 +100,11 @@ namespace rawrbox {
 			rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_depthTex);
 			this->_depthHandle = this->_depthTex->GetDefaultView(Diligent::TEXTURE_VIEW_DEPTH_STENCIL);
 
-			rawrbox::BindlessManager::immediateBarrier(*this->_depthTex, Diligent::RESOURCE_STATE_DEPTH_WRITE);
+			rawrbox::BindlessManager::barrier(*this->_depthTex, Diligent::RESOURCE_STATE_DEPTH_WRITE);
 		}
 		// ----------
+
+		rawrbox::BindlessManager::registerTexture(*this);
 	}
 
 } // namespace rawrbox

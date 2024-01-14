@@ -10,4 +10,8 @@ namespace rawrbox {
 		defaults.push_back(std::make_unique<rawrbox::JSONLoader>());
 		return defaults;
 	}();
+
+	// LOGGER ------
+	std::unique_ptr<rawrbox::Logger> rawrbox::RESOURCES::_logger = std::make_unique<rawrbox::Logger>("RawrBox-Resources");
+	// -------------
 } // namespace rawrbox

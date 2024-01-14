@@ -1,0 +1,31 @@
+
+#include <rawrbox/render/post_process/base.hpp>
+#include <rawrbox/render/static.hpp>
+
+namespace rawrbox {
+	std::array<rawrbox::Vector4f, MAX_DATA> PostProcessBase::getData() {
+		return this->_data;
+	}
+
+	void PostProcessBase::applyEffect(const rawrbox::TextureBase& texture) {
+		if (!texture.isValid()) throw this->_logger->error("Effect texture not uploaded!");
+
+		auto context = rawrbox::RENDERER->context();
+		context->SetPipelineState(this->_pipeline);
+
+		// SETUP UNIFORMS ----------------------------
+		{
+			Diligent::MapHelper<rawrbox::BindlessPostProcessBuffer> CBConstants(context, rawrbox::BindlessManager::signatureBufferPostProcess, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			CBConstants->data = this->getData();
+			CBConstants->textureID = texture.getTextureID();
+			CBConstants->depthTextureID = texture.getDepthTextureID();
+		}
+		// -----------
+
+		// Draw quad
+		Diligent::DrawAttribs DrawAttrs;
+		DrawAttrs.NumVertices = 4;
+		DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL; // Verify the state of vertex and index buffers
+		context->Draw(DrawAttrs);
+	}
+} // namespace rawrbox

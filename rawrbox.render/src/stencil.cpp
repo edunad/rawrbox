@@ -7,9 +7,6 @@
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
-#include <fmt/format.h>
-#include <utf8.h>
-
 namespace rawrbox {
 	Stencil::Stencil(const rawrbox::Vector2i& size) : _windowSize(size) {
 		this->_streamingVB = std::make_unique<rawrbox::StreamingBuffer>("RawrBox::Stencil::VertexBuffer", Diligent::BIND_VERTEX_BUFFER, MaxVertsInStreamingBuffer * static_cast<uint32_t>(sizeof(rawrbox::PosUVColorVertexData)), 1);
@@ -33,7 +30,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::upload() {
-		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr) throw std::runtime_error("[RawrBox-Stencil] Upload already called");
+		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr) throw this->_logger->error("Upload already called");
 
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
@@ -426,11 +423,11 @@ namespace rawrbox {
 	}
 
 	void Stencil::render() {
-		if (!this->_offsets.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popOffset', cannot draw");
-		if (!this->_rotations.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popRotation', cannot draw");
-		if (!this->_outlines.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popOutline', cannot draw");
-		if (!this->_clips.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popClipping', cannot draw");
-		if (!this->_scales.empty()) throw std::runtime_error("[RawrBox-Stencil] Missing 'popScale', cannot draw");
+		if (!this->_offsets.empty()) throw this->_logger->error("Missing 'popOffset', cannot draw");
+		if (!this->_rotations.empty()) throw this->_logger->error("Missing 'popRotation', cannot draw");
+		if (!this->_outlines.empty()) throw this->_logger->error("Missing 'popOutline', cannot draw");
+		if (!this->_clips.empty()) throw this->_logger->error("Missing 'popClipping', cannot draw");
+		if (!this->_scales.empty()) throw this->_logger->error("Missing 'popScale', cannot draw");
 
 		this->internalDraw();
 	}
@@ -444,7 +441,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::popOffset() {
-		if (this->_offsets.empty()) throw std::runtime_error("[RawrBox-Stencil] Offset is empty, failed to pop");
+		if (this->_offsets.empty()) throw this->_logger->error("Offset is empty, failed to pop");
 
 		this->_offset -= this->_offsets.back();
 		this->_offsets.pop_back();
@@ -467,7 +464,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::popRotation() {
-		if (this->_rotations.empty()) throw std::runtime_error("[RawrBox-Stencil] Rotations is empty, failed to pop");
+		if (this->_rotations.empty()) throw this->_logger->error("Rotations is empty, failed to pop");
 
 		this->_rotation -= this->_rotations.back();
 		this->_rotations.pop_back();
@@ -481,7 +478,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::popOutline() {
-		if (this->_outlines.empty()) throw std::runtime_error("[RawrBox-Stencil] Outline is empty, failed to pop");
+		if (this->_outlines.empty()) throw this->_logger->error("Outline is empty, failed to pop");
 
 		this->_outline -= this->_outlines.back();
 		this->_outlines.pop_back();
@@ -494,7 +491,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::popClipping() {
-		if (this->_clips.empty()) throw std::runtime_error("[RawrBox-Stencil] Clips is empty, failed to pop");
+		if (this->_clips.empty()) throw this->_logger->error("Clips is empty, failed to pop");
 		this->_clips.pop_back();
 	}
 	// --------------------
@@ -506,7 +503,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::popScale() {
-		if (this->_scales.empty()) throw std::runtime_error("[RawrBox-Stencil] Scale is empty, failed to pop");
+		if (this->_scales.empty()) throw this->_logger->error("Scale is empty, failed to pop");
 
 		this->_scale -= this->_scales.back();
 		this->_scales.pop_back();

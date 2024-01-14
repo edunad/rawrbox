@@ -2,6 +2,7 @@
 
 #include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/textures/base.hpp>
+#include <rawrbox/render/textures/render.hpp>
 
 #include <RefCntAutoPtr.hpp>
 
@@ -33,6 +34,12 @@ namespace rawrbox {
 		rawrbox::Vector4_t<uint32_t> textureIDs = {}; // BASE, NORMAL, ROUGHTMETAL, EMISSION
 		rawrbox::Vector4f litData = {};               // Texture data
 	};
+
+	struct BindlessPostProcessBuffer {
+		std::array<rawrbox::Vector4f, MAX_DATA> data = {};
+		uint32_t textureID = 0;
+		uint32_t depthTextureID = 0;
+	};
 	// --------------------------
 
 	class BindlessManager {
@@ -53,12 +60,15 @@ namespace rawrbox {
 		static void unregisterUpdateTexture(rawrbox::TextureBase& tex);
 
 		static Diligent::RESOURCE_STATE mapResource(rawrbox::BufferType type);
+		static uint32_t internalRegister(Diligent::ITextureView* view, rawrbox::TEXTURE_TYPE type);
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> signature;
 		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> signatureBind;
+
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferPixel;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertex;
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferPostProcess;
 
 		static void init();
 		static void shutdown();
@@ -68,13 +78,12 @@ namespace rawrbox {
 		static void barrier(const rawrbox::TextureBase& texture, std::function<void()> callback = nullptr);
 		static void barrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state = Diligent::RESOURCE_STATE_SHADER_RESOURCE, std::function<void()> callback = nullptr);
 		static void barrier(Diligent::IBuffer& buffer, rawrbox::BufferType type, std::function<void()> callback = nullptr);
-
-		static void immediateBarrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state = Diligent::RESOURCE_STATE_SHADER_RESOURCE);
-		static void immediateBarrier(Diligent::IBuffer& buffer, rawrbox::BufferType type);
 		// ----------------
 
 		// TEXTURES -------
-		static uint32_t registerTexture(rawrbox::TextureBase& texture);
+		static void registerTexture(rawrbox::TextureBase& texture);
+		static void registerTexture(rawrbox::TextureRender& texture);
+
 		static void unregisterTexture(rawrbox::TextureBase& texture);
 		// ----------------
 	};

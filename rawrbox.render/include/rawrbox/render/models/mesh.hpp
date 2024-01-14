@@ -257,7 +257,7 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual const rawrbox::Vector4f& getData(const std::string& id) const {
 			auto fnd = this->data.find(id);
-			if (fnd == this->data.end()) throw std::runtime_error(fmt::format("[RawrBox-Mesh] Data '{}' not found", id));
+			if (fnd == this->data.end()) throw rawrbox::Logger::err("RawrBox-Mesh", "Data '{}' not found", id);
 			return fnd->second;
 		}
 

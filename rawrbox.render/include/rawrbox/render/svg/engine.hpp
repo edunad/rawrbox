@@ -11,6 +11,10 @@ namespace rawrbox {
 		static std::unordered_map<std::string, std::unique_ptr<lunasvg::Document>> _svgs;
 		static std::unordered_map<std::string, std::unique_ptr<rawrbox::TextureImage>> _renderedSVGS;
 
+		// LOGGER ------
+		static std::unique_ptr<rawrbox::Logger> _logger;
+		// -------------
+
 		static lunasvg::Document* internalLoad(const std::filesystem::path& filename);
 
 	public:

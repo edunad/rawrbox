@@ -4,22 +4,28 @@
 #include <rawrbox/render/utils/render.hpp>
 
 namespace rawrbox {
+	// PROTECTED ----
 	Diligent::IPipelineState* RenderUtils::_pipe = nullptr;
+	// LOGGER ------
+	std::unique_ptr<rawrbox::Logger> RenderUtils::_logger = std::make_unique<rawrbox::Logger>("RawrBox-RenderUtils");
+	// -------------
+	// -------------
 
 	void RenderUtils::init() {
-		if (_pipe != nullptr) throw std::runtime_error("[RawrBox-RenderUtils] Pipeline already initialized!");
+		if (_pipe != nullptr) throw _logger->error("Pipeline already initialized!");
 
 		rawrbox::PipeSettings settings;
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
 		settings.cull = Diligent::CULL_MODE_BACK;
-		settings.pVS = "rt.vsh";
-		settings.pPS = "rt.psh";
+		settings.pVS = "quad.vsh";
+		settings.pPS = "quad.psh";
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;              // Disable depth
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP; // Set topology
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		settings.signature = rawrbox::BindlessManager::signature; // Use bindless
 
 		_pipe = rawrbox::PipelineUtils::createPipeline("Utils::QUAD", settings);
+		_logger->info("Initializing..");
 	}
 
 	void RenderUtils::renderQUAD(const rawrbox::TextureBase& texture) {

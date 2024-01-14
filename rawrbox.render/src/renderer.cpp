@@ -154,7 +154,7 @@ namespace rawrbox {
 				break;
 #endif // GL_SUPPORTED
 
-			default: throw std::runtime_error("[RawrBox-Window] Invalid diligent engine");
+			default: throw this->_logger->error("Invalid diligent api");
 		}
 
 		// Setup shader pipeline if not exists
@@ -166,11 +166,16 @@ namespace rawrbox {
 		}
 		// -----------
 
-		if (this->_engineFactory == nullptr) throw std::runtime_error("[RawrBox-Renderer] Failed to initialize");
+		if (this->_engineFactory == nullptr) throw this->_logger->error("Failed to initialize");
 
 		// Setup camera -----
 		if (this->_camera != nullptr) this->_camera->initialize();
 		// ------------------
+
+		// Init pipelines ---
+		rawrbox::PipelineUtils::init(*this->device());
+		rawrbox::BindlessManager::init();
+		// ----------------------
 
 		// PLUGIN INITIALIZE ---
 		for (auto& plugin : this->_renderPlugins) {
@@ -178,11 +183,6 @@ namespace rawrbox {
 			plugin.second->initialize(this->getSize());
 		}
 		// -----------------------
-
-		// Init pipelines ---
-		rawrbox::PipelineUtils::init(*this->device());
-		rawrbox::BindlessManager::init();
-		// ----------------------
 
 		// Init default textures ---
 		if (rawrbox::MISSING_TEXTURE == nullptr) {
@@ -296,8 +296,8 @@ namespace rawrbox {
 	}
 
 	void RendererBase::render() {
-		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Failed to bind swapChain/context/device! Did you call 'init' ?");
-		if (this->_drawCall == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Missing draw call! Did you call 'setDrawCall' ?");
+		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw this->_logger->error("Failed to bind swapChain/context/device! Did you call 'init' ?");
+		if (this->_drawCall == nullptr) throw this->_logger->error("Missing draw call! Did you call 'setDrawCall' ?");
 
 		// Clear backbuffer ----
 		this->clear();
@@ -333,7 +333,7 @@ namespace rawrbox {
 		// Perform post-render --
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
-			plugin.second->postRender(this->_render.get());
+			plugin.second->postRender(*this->_render);
 		}
 		// -----------------------
 

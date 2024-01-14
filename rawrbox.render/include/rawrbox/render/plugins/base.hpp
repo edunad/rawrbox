@@ -15,11 +15,15 @@ namespace rawrbox {
 	protected:
 		bool _enabled = true;
 
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-RenderPlugin");
+		// -------------
+
 	public:
 		RenderPlugin() = default;
-		RenderPlugin(const RenderPlugin&) = default;
+		RenderPlugin(const RenderPlugin&) = delete;
 		RenderPlugin(RenderPlugin&&) = delete;
-		RenderPlugin& operator=(const RenderPlugin&) = default;
+		RenderPlugin& operator=(const RenderPlugin&) = delete;
 		RenderPlugin& operator=(RenderPlugin&&) = delete;
 		virtual ~RenderPlugin() = default;
 
@@ -38,7 +42,7 @@ namespace rawrbox {
 		virtual void resize(const rawrbox::Vector2i& renderSize);
 
 		virtual void preRender();
-		virtual void postRender(rawrbox::TextureRender* renderTarget);
+		virtual void postRender(const rawrbox::TextureRender& renderTarget);
 
 		virtual void update();
 	};

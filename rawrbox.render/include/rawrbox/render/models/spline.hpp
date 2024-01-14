@@ -78,7 +78,7 @@ namespace rawrbox {
 		}
 
 		virtual void generateMesh() {
-			if (this->_shape == nullptr) throw std::runtime_error("[RawrBox-Spline] Missing mesh shape!");
+			if (this->_shape == nullptr) throw this->_logger->error("Missing mesh shape!");
 
 			this->_mesh->clear();
 			std::vector<int> shapeSegments = this->_shape->getLineSegments();

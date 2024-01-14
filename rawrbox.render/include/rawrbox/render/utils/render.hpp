@@ -4,7 +4,12 @@
 
 namespace rawrbox {
 	class RenderUtils {
+	protected:
 		static Diligent::IPipelineState* _pipe;
+
+		// LOGGER ------
+		static std::unique_ptr<rawrbox::Logger> _logger;
+		// -------------
 
 	public:
 		static void init();

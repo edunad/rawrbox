@@ -33,6 +33,6 @@ namespace rawrbox {
 		void initialize(const rawrbox::Vector2i& size) override;
 		void resize(const rawrbox::Vector2i& size) override;
 
-		void postRender(rawrbox::TextureRender* render) override;
+		void postRender(const rawrbox::TextureRender& render) override;
 	};
 } // namespace rawrbox

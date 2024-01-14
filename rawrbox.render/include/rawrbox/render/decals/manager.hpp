@@ -17,7 +17,7 @@ namespace rawrbox {
 		uint32_t textureAtlasIndex = 0;
 
 		void setTexture(const rawrbox::TextureBase& texture, uint32_t id = 0) {
-			if (!texture.isValid()) throw std::runtime_error("[RawrBox-DECAL] Invalid texture, not uploaded?");
+			if (!texture.isValid()) throw rawrbox::Logger::err("RawrBox-DECAL", "Invalid texture, not uploaded?");
 
 			this->textureID = texture.getTextureID();
 			this->textureAtlasIndex = id;

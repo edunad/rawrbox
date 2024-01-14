@@ -138,7 +138,7 @@ namespace rawrbox {
 
 		// BLEND SHAPES ---
 		bool createBlendShape(const std::string& id, const std::vector<rawrbox::Vector3f>& newVertexPos, const std::vector<rawrbox::Vector3f>& newNormPos, float weight = 0.F) {
-			if (this->_mesh == nullptr) throw std::runtime_error("[RawrBox-ModelBase] Mesh not initialized!");
+			if (this->_mesh == nullptr) throw this->_logger->error("Mesh not initialized!");
 
 			auto blend = std::make_unique<rawrbox::BlendShapes<M>>();
 			blend->pos = newVertexPos;
@@ -254,7 +254,7 @@ namespace rawrbox {
 
 		// ----
 		virtual void upload(bool dynamic = false) {
-			if (this->isUploaded()) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
+			if (this->isUploaded()) throw this->_logger->error("Upload called twice!");
 
 			auto device = rawrbox::RENDERER->device();
 			auto context = rawrbox::RENDERER->context();
@@ -265,8 +265,8 @@ namespace rawrbox {
 			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
 			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
 
-			if (!dynamic && vertSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Vertices cannot be empty on non-dynamic buffer!");
-			if (!dynamic && indcSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Indices cannot be empty on non-dynamic buffer!");
+			if (!dynamic && vertSize <= 0) throw this->_logger->error("Vertices cannot be empty on non-dynamic buffer!");
+			if (!dynamic && indcSize <= 0) throw this->_logger->error("Indices cannot be empty on non-dynamic buffer!");
 
 			// Store original positions for blendstates
 			if (vertSize > 0) {
@@ -319,7 +319,7 @@ namespace rawrbox {
 		}
 
 		virtual void draw() {
-			if (!this->isUploaded()) throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not uploaded");
+			if (!this->isUploaded()) throw this->_logger->error("Failed to render model, vertex / index buffer is not uploaded");
 
 			// Bind vertex and index buffers
 			const uint64_t offset = 0;

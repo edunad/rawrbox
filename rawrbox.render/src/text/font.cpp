@@ -31,7 +31,7 @@ namespace rawrbox {
 
 	// INTERNAL ---
 	void Font::loadFontInfo() {
-		if (this->_font == nullptr) throw std::runtime_error("[RawrBox-Font] Font not loaded");
+		if (this->_font == nullptr) throw this->_logger->error("Font not loaded");
 
 		int ascent = 0;
 		int descent = 0;
@@ -53,7 +53,7 @@ namespace rawrbox {
 	}
 
 	std::unique_ptr<rawrbox::Glyph> Font::bakeGlyphAlpha(uint32_t codePoint) {
-		if (this->_font == nullptr) throw std::runtime_error("[RawrBox-Font] Font not loaded");
+		if (this->_font == nullptr) throw this->_logger->error("Font not loaded");
 
 		int32_t ascent = 0, descent = 0, lineGap = 0;
 		stbtt_GetFontVMetrics(this->_font.get(), &ascent, &descent, &lineGap);
@@ -83,7 +83,7 @@ namespace rawrbox {
 		stbtt_MakeCodepointBitmap(this->_font.get(), buffer.data(), ww, hh, dstPitch, scale, scale, codePoint);
 
 		auto pack = rawrbox::TextEngine::requestPack(ww, hh, Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM); // FONT_TYPE_ALPHA
-		if (pack.second == nullptr) throw std::runtime_error("[RawrBox-FONT] Failed to generate / get atlas texture");
+		if (pack.second == nullptr) throw this->_logger->error("Failed to generate / get atlas texture");
 
 		auto& packNode = pack.second->addSprite(ww, hh, rawrbox::ColorUtils::setChannels(1, 4, ww, hh, buffer));
 		auto size = pack.second->getSize();
@@ -113,7 +113,7 @@ namespace rawrbox {
 
 		// Load
 		this->_font = std::make_shared<stbtt_fontinfo>();
-		if (!stbtt_InitFont(this->_font.get(), buffer.data(), offset)) throw std::runtime_error("[RawrBox-Font] Failed to load font");
+		if (!stbtt_InitFont(this->_font.get(), buffer.data(), offset)) throw this->_logger->error("Failed to load font");
 		this->_scale = stbtt_ScaleForMappingEmToPixels(this->_font.get(), static_cast<float>(pixelHeight));
 		this->_pixelSize = static_cast<float>(pixelHeight);
 
@@ -199,7 +199,7 @@ namespace rawrbox {
 	}
 
 	void Font::render(const std::string& text, const rawrbox::Vector2f& pos, bool yIsUp, std::function<void(rawrbox::Glyph*, float, float, float, float)> renderGlyph) const {
-		if (renderGlyph == nullptr) throw std::runtime_error("[RawrBox-FONT] Failed to render glyph! Missing 'renderGlyph' param");
+		if (renderGlyph == nullptr) throw this->_logger->error("Failed to render glyph! Missing 'renderGlyph' param");
 
 		auto info = this->getFontInfo();
 		const float lineHeight = this->getLineHeight();

@@ -19,6 +19,10 @@ namespace rawrbox {
 		static std::vector<std::filesystem::path> _loadedFiles;
 		static std::vector<std::unique_ptr<rawrbox::Loader>> _loaders;
 
+		// LOGGER ------
+		static std::unique_ptr<rawrbox::Logger> _logger;
+		// -------------
+
 		// LOADS ---
 		template <class T = rawrbox::Resource>
 		static T* getFileImpl(const std::filesystem::path& filePath) {
@@ -69,7 +73,7 @@ namespace rawrbox {
 
 				ret->status = rawrbox::LoadStatus::LOADING;
 
-				if (!ret->load(buffer)) throw std::runtime_error(fmt::format("[RawrBox-Resources] Failed to load file '{}'", path));
+				if (!ret->load(buffer)) throw _logger->error("Failed to load file '{}'", path);
 				ret->upload();
 
 				ret->status = rawrbox::LoadStatus::LOADED;
@@ -84,7 +88,7 @@ namespace rawrbox {
 				return ret;
 			}
 
-			throw std::runtime_error(fmt::format("[RawrBox-Resources] Attempted to load unknown file extension '{}'. Missing loader!", filePath.generic_string()));
+			throw _logger->error("Attempted to load unknown file extension '{}'. Missing loader!", filePath.generic_string());
 		}
 		// ---------
 
@@ -123,13 +127,13 @@ namespace rawrbox {
 
 		template <class T = rawrbox::Resource>
 		static T* loadFile(const std::filesystem::path& filePath, uint32_t loadFlags = 0) {
-			if (filePath.empty()) throw std::runtime_error("[RawrBox-Resources] Attempted to load empty path");
+			if (filePath.empty()) throw _logger->error("Attempted to load empty path");
 			return loadFileImpl<T>(filePath, loadFlags);
 		}
 
 		template <class T = rawrbox::Resource>
 		static void loadFileAsync(const std::filesystem::path& filePath, uint32_t loadFlags = 0, std::function<void()> onComplete = nullptr) {
-			if (filePath.empty()) throw std::runtime_error("[RawrBox-Resources] Attempted to load empty path");
+			if (filePath.empty()) throw _logger->error("Attempted to load empty path");
 
 			rawrbox::ASYNC::run([filePath, loadFlags, onComplete]() {
 				loadFileImpl<T>(filePath, loadFlags);
@@ -140,8 +144,9 @@ namespace rawrbox {
 		template <class T = rawrbox::Resource>
 		[[nodiscard]] static T* getFile(const std::filesystem::path& filePath) {
 			auto fl = getFileImpl<T>(filePath);
-			if (fl == nullptr)
-				throw std::runtime_error(fmt::format("[RawrBox-Resources] File '{}' not loaded / found!", filePath.generic_string()));
+			if (fl == nullptr) {
+				throw _logger->error("File '{}' not loaded / found!", filePath.generic_string());
+			}
 
 			return fl;
 		}
@@ -203,6 +208,7 @@ namespace rawrbox {
 		// -----
 		static void shutdown() {
 			_loaders.clear();
+			_logger.reset();
 		}
 	};
 

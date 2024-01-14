@@ -48,8 +48,6 @@ namespace rawrbox {
 
 		rawrbox::Matrix4x4 _oldProj = {};
 
-		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-ClusteredPlugin");
-
 		virtual void buildBuffers();
 		virtual void buildPipelines();
 

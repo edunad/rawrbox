@@ -7,7 +7,7 @@
 
 int main(int /*argc*/, char* /*argv*/[]) {
 #ifdef _WIN32
-	SetConsoleTitle("Post-process test");
+	SetConsoleTitle("GENERATED MODEL TEST");
 	SetConsoleCP(CP_UTF8);
 	SetConsoleOutputCP(CP_UTF8);
 #endif

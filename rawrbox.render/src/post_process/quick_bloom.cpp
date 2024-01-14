@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/post_process/quick_bloom.hpp>
+/*#include <rawrbox/render/post_process/quick_bloom.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
@@ -72,3 +72,4 @@ namespace rawrbox {
 		context->Draw(DrawAttrs);
 	}
 } // namespace rawrbox
+*/

@@ -6,7 +6,7 @@
 
 #include <cpptrace/cpptrace.hpp>
 
-#include <fmt/printf.h>
+#include <fmt/format.h>
 
 #include <chrono>
 #include <string>
@@ -41,6 +41,15 @@ namespace rawrbox {
 	void Engine::shutdown() {
 		this->_shutdown = ENGINE_THREADS::THREAD_RENDER; // Stop render first
 		rawrbox::ASYNC::shutdown();
+	}
+
+	void Engine::prettyPrintErr(const std::string& err) {
+		std::string title = " FATAL ENGINE ERROR ";
+		std::string hLine = std::string((((err.size() + 1) / 2) - title.size() / 2), '-');
+
+		fmt::print("\n┌{}{}{}┐\n", hLine, title, hLine);
+		fmt::print(" {}\n", err);
+		fmt::print("└{}{}{}┘\n\n", hLine, title, hLine);
 	}
 
 	void Engine::run() {
@@ -106,20 +115,18 @@ namespace rawrbox {
 				this->onThreadShutdown(rawrbox::ENGINE_THREADS::THREAD_RENDER);
 				this->_shutdown = rawrbox::ENGINE_THREADS::THREAD_INPUT; // Done killing rendering, now destroy glfw
 			} catch (const cpptrace::exception_with_message& err) {
-				std::string wat = err.message();
-
-				std::string title = " FATAL ENGINE ERROR ";
-				std::string hLine = std::string((((wat.size() + 1) / 2) - title.size() / 2), '-');
-
-				fmt::print("\n┌{}{}{}┐\n", hLine, title, hLine);
-				fmt::print(" {}\n", wat);
-				fmt::print("└{}{}{}┘\n\n", hLine, title, hLine);
+				this->prettyPrintErr(err.message());
 
 				err.trace().print();
 				throw err;
+			} catch (const std::exception& err) {
+				this->prettyPrintErr(err.what());
+
+				fmt::print("▒▒{}▒▒\n", fmt::format(fmt::bg(fmt::color::dark_red), fmt::format(fmt::fg(fmt::color::white), " If you are the developer, please use the logger error in RAWRBOX.UTILS for a better stack trace ")));
+				cpptrace::generate_trace().print();
+				throw err;
 			}
 		});
-
 		// ----
 
 		// GLFW needs to run on main thread

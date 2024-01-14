@@ -189,6 +189,10 @@ namespace rawrbox {
 		std::vector<rawrbox::StencilDraw> _drawCalls = {};
 		// ----------
 
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Stencil");
+		// -------------
+
 		// ------ UTILS
 		void pushVertice(const uint32_t& textureID, rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col);
 		void pushIndices(std::vector<uint32_t> ind);

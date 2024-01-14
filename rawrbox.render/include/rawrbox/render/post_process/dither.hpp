@@ -12,23 +12,8 @@ namespace rawrbox {
 		FAST_MODE = 1
 	};
 
-	struct DitherSettings {
-		rawrbox::Vector4f g_ScreenSize = {};
-
-		float g_DitherMode = 0.0F;
-		float g_DitherIntensity = 0.02F; // intensity * 0.01F
-		float g_DitherDepth = 5.F;       // depth
-		float g_DitherColorDepth = 32.F; // 2 ^ colorDepth
-		float g_DitherThreshold = 1.F;   // threshold
-	};
-
 	class PostProcessDither : public rawrbox::PostProcessBase {
-		Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
-
-		rawrbox::DitherSettings _settings = {};
 		rawrbox::DITHER_MODE _mode = rawrbox::DITHER_MODE::SLOW_MODE;
-
-		void updateUniforms();
 
 	public:
 		explicit PostProcessDither(rawrbox::DITHER_MODE dither = rawrbox::DITHER_MODE::SLOW_MODE);
@@ -36,7 +21,7 @@ namespace rawrbox {
 		PostProcessDither& operator=(PostProcessDither&&) = delete;
 		PostProcessDither(const PostProcessDither&) = delete;
 		PostProcessDither& operator=(const PostProcessDither&) = delete;
-		~PostProcessDither() override;
+		~PostProcessDither() override = default;
 
 		virtual void setIntensity(float in);
 		virtual void setDepth(float dep);
@@ -45,6 +30,5 @@ namespace rawrbox {
 		virtual void setMode(rawrbox::DITHER_MODE mode);
 
 		void upload() override;
-		void applyEffect(Diligent::ITextureView* texture) override;
 	};
 } // namespace rawrbox

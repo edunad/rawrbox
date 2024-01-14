@@ -1,19 +1,18 @@
-Texture2DArray      g_Texture;
-SamplerState        g_Texture_sampler; // By convention, texture samplers must use the '_sampler' suffix
+#include <dither.fxh>
 
-cbuffer Constants {
-    // GLOBAL ----
-    float4   g_ScreenSize;
-    // ------------
+#include <camera.fxh>
+#include <pixel_post_process_uniforms.fxh>
 
-    // UNIFORMS ----
-    float   g_ditherMode;
-    float   g_ditherIntensity;
-    float   g_ditherDepth;
-    float   g_ditherColorDepth;
-    float   g_DitherThreshold;
-    // ------------
-};
+// ## MAPPING ----------------
+#define DitherMode       PostProcessConstants.data[0].x
+#define DitherIntensity  PostProcessConstants.data[0].y
+#define DitherDepth      PostProcessConstants.data[0].z
+#define DitherColorDepth PostProcessConstants.data[0].w
+#define DitherThreshold  PostProcessConstants.data[1].x
+// ========================
+
+Texture2DArray      g_Textures[];
+SamplerState        g_Textures_sampler; // By convention, texture samplers must use the '_sampler' suffix
 
 struct PSInput {
     float4 Pos   : SV_POSITION;
@@ -24,7 +23,6 @@ struct PSOutput {
     float4 Color : SV_TARGET;
 };
 
-#include <dither.fxh>
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
 #if defined(DESKTOP_GL) || defined(GL_ES)
@@ -33,15 +31,16 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     float2 UV = PSIn.UV;
 #endif
 
-    float4 Color = g_Texture.Sample(g_Texture_sampler, UV);
+    float4 color = g_Textures[PostProcessConstants.textureID].Sample(g_Textures_sampler, float3(UV.xy, 0));
+    if(color.a <= 0.0) discard;
 
     // Dither -----
-    if(g_ditherMode == 0.0) { // SLOW MODE
-		Color.rgb = getDither(UV * g_ScreenSize.zw, Color.rgb, g_ditherIntensity * g_ditherDepth / 3.0);
+    if(DitherMode == 0.0) { // SLOW MODE
+		color.rgb = getDither(UV * Camera.viewport.zw, color.rgb, DitherIntensity * DitherDepth / 3.0);
 	} else {
-		Color.rgb += getDitherFast(UV * g_ScreenSize.zw, 1) * g_ditherIntensity * g_ditherDepth / 3.0;
+		color.rgb += getDitherFast(UV * Camera.viewport.zw, 1) * DitherIntensity * DitherDepth / 3.0;
 	}
 
 	// Posterize
-	PSOut.Color = saturate(floor(Color * g_ditherColorDepth) / g_ditherColorDepth);
+	PSOut.Color = saturate(floor(color * DitherColorDepth) / DitherColorDepth);
 }
