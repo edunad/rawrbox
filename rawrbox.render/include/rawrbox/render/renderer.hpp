@@ -40,16 +40,18 @@ namespace rawrbox {
 		std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>> _renderPlugins = {};
 		// --------------
 
+		// Post process renderer ----
 		std::unique_ptr<rawrbox::TextureRender> _render = nullptr;
+		// --------------------------
 
-// QUERIES ---
 #ifdef _DEBUG
+		// QUERIES ---
 		std::unordered_map<std::string, std::unique_ptr<Diligent::ScopedQueryHelper>> _query = {};
 
 		std::unordered_map<std::string, Diligent::QueryDataPipelineStatistics> _pipelineData = {};
 		std::unordered_map<std::string, Diligent::QueryDataDuration> _durationData = {};
-#endif
 		// -------
+#endif
 
 		// INTRO ---
 		bool _introComplete = false;
@@ -71,7 +73,6 @@ namespace rawrbox {
 
 		bool _vsync = false;
 		bool _initialized = false;
-		bool _queryWarn = false;
 
 		Diligent::RENDER_DEVICE_TYPE _type = Diligent::RENDER_DEVICE_TYPE_UNDEFINED;
 
@@ -99,10 +100,12 @@ namespace rawrbox {
 		virtual void introComplete();
 		// ----------------
 
+#ifdef _DEBUG
 		// QUERIES ------
 		virtual void beginQuery(const std::string& query);
 		virtual void endQuery(const std::string& query);
 		// ----------------
+#endif
 
 		virtual void clear();
 		virtual void frame();

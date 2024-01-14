@@ -481,15 +481,8 @@ namespace rawrbox {
 	//-------------------------
 
 	// QUERIES ------
+#ifdef _DEBUG
 	void RendererBase::beginQuery(const std::string& query) {
-#ifndef _DEBUG
-		if (!this->_queryWarn) {
-			this->_logger->warn("beginQuery / endQuery is only available on DEBUG for performance reasons!");
-			this->_queryWarn = true;
-		}
-
-		return;
-#endif
 		const auto& supportedFeatures = this->device()->GetDeviceInfo().Features;
 		if (!supportedFeatures.PipelineStatisticsQueries || !supportedFeatures.DurationQueries) return;
 
@@ -548,14 +541,6 @@ namespace rawrbox {
 	}
 
 	void RendererBase::endQuery(const std::string& query) {
-#ifndef _DEBUG
-		if (!this->_queryWarn) {
-			this->_logger->warn("beginQuery / endQuery is only available on DEBUG for performance reasons!");
-			this->_queryWarn = true;
-		}
-
-		return;
-#endif
 		const auto& supportedFeatures = this->device()->GetDeviceInfo().Features;
 		if (!supportedFeatures.PipelineStatisticsQueries || !supportedFeatures.DurationQueries) return;
 
@@ -577,6 +562,7 @@ namespace rawrbox {
 		fndDuration->second->End(this->context(), durationData, sizeof(Diligent::QueryDataDuration));
 		// -----------------
 	}
+#endif
 	// ----------------
 
 	// Utils ----
