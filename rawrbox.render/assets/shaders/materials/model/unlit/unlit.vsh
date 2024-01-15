@@ -13,7 +13,7 @@
 #endif
 
 Texture2DArray g_Textures[];
-SamplerState   g_Textures_sampler;
+SamplerState   g_Sampler;
 
 #include <model_transforms.fxh>
 

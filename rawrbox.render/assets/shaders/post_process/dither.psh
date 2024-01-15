@@ -10,8 +10,8 @@
 #define DitherThreshold  PostProcessConstants.data[0].w
 // ========================
 
-Texture2DArray      g_Textures[];
-SamplerState        g_Textures_sampler; // By convention, texture samplers must use the '_sampler' suffix
+Texture2DArray g_Textures[];
+SamplerState   g_Sampler;
 
 struct PSInput {
     float4 Pos   : SV_POSITION;
@@ -30,7 +30,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     float3 UV = float3(PSIn.UV.xy, 0);
 #endif
 
-    float4 color = g_Textures[PostProcessConstants.textureID].Sample(g_Textures_sampler, UV);
+    float4 color = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, UV);
     float depth = 1;
 
     // Dither -----

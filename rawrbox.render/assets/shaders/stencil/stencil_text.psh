@@ -6,7 +6,7 @@
 #endif
 
 Texture2DArray g_Textures[];
-SamplerState   g_Textures_sampler;
+SamplerState   g_Sampler;
 
 struct PSInput {
     float4 Pos        : SV_POSITION;
@@ -21,7 +21,7 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    float a = g_Textures[NonUniformResourceIndex(PSIn.TextureID)].Sample(g_Textures_sampler, float3(PSIn.UV.xy, PSIn.UV.z)).r * PSIn.Color.a;
+    float a = g_Textures[NonUniformResourceIndex(PSIn.TextureID)].Sample(g_Sampler, float3(PSIn.UV.xy, PSIn.UV.z)).r * PSIn.Color.a;
 	if(a <= 0.0) discard;
 
 	PSOut.Color = toLinear(float4(PSIn.Color.rgb, a));

@@ -12,7 +12,7 @@
 #endif
 
 Texture2DArray g_Textures[];
-SamplerState   g_Textures_sampler;
+SamplerState   g_Sampler;
 
 #ifdef CLUSTER_PLUGIN
     #include <decaling.fxh>
@@ -33,7 +33,7 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    float4 color = g_Textures[Constants.textureIDs.x].Sample(g_Textures_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+    float4 color = g_Textures[Constants.textureIDs.x].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
     if (color.a <= 0.0) discard;
 
     #ifdef CLUSTER_PLUGIN

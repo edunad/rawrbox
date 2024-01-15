@@ -52,10 +52,10 @@ namespace rawrbox {
 		    {Diligent::SHADER_TYPE_PIXEL, "PostProcessConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
 		    {Diligent::SHADER_TYPE_VERTEX, "g_Textures", renderer->MAX_VERTEX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
-		    {Diligent::SHADER_TYPE_VERTEX, "g_Textures_sampler", 1, Diligent::SHADER_RESOURCE_TYPE_SAMPLER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
+		    //{Diligent::SHADER_TYPE_VERTEX, "g_Sampler", 1, Diligent::SHADER_RESOURCE_TYPE_SAMPLER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", renderer->MAX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures_sampler", 1, Diligent::SHADER_RESOURCE_TYPE_SAMPLER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
+		    //{Diligent::SHADER_TYPE_PIXEL, "g_Sampler", 1, Diligent::SHADER_RESOURCE_TYPE_SAMPLER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 		};
 
 		if (camera != nullptr) {
@@ -72,7 +72,6 @@ namespace rawrbox {
 
 		PRSDesc.Resources = resources.data();
 		PRSDesc.NumResources = static_cast<uint8_t>(resources.size());
-		PRSDesc.UseCombinedTextureSamplers = true;
 		// --------------
 
 		// SAMPLERS -----
@@ -81,8 +80,8 @@ namespace rawrbox {
 		    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
 
 		std::vector<Diligent::ImmutableSamplerDesc> samplers = {
-		    {Diligent::SHADER_TYPE_VERTEX, "g_Textures", SamLinearClampDesc},
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", SamLinearClampDesc},
+		    {Diligent::SHADER_TYPE_VERTEX, "g_Sampler", SamLinearClampDesc},
+		    {Diligent::SHADER_TYPE_PIXEL, "g_Sampler", SamLinearClampDesc},
 		};
 
 		PRSDesc.ImmutableSamplers = samplers.data();
@@ -140,6 +139,9 @@ namespace rawrbox {
 
 		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(signatureBufferVertex);
 		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(signatureBufferPixel);
+
+		// signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Sampler")->Set(rawrbox::PipelineUtils::defaultSampler);
+		// signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Sampler")->Set(rawrbox::PipelineUtils::defaultSampler);
 
 		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "PostProcessConstants")->Set(signatureBufferPostProcess);
 		// ----------------

@@ -1,8 +1,8 @@
 #include <correction.fxh>
 #include <pixel_bindless_uniforms.fxh>
 
-Texture2DArray    g_Textures[];
-SamplerState      g_Textures_sampler;
+Texture2DArray g_Textures[];
+SamplerState   g_Sampler;
 
 struct PSInput {
     float4 Pos   : SV_POSITION;
@@ -15,12 +15,13 @@ struct PSOutput {
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
 #if defined(DESKTOP_GL) || defined(GL_ES)
-    float2 UV = float2(PSIn.UV.x, 1.0 - PSIn.UV.y);
+    float3 UV = float3(PSIn.UV.x, 1.0 - PSIn.UV.y, 0);
 #else
-    float2 UV = PSIn.UV;
+    float3 UV = float3(PSIn.UV.xy, 0);
 #endif
 
-    float4 color = g_Textures[Constants.textureIDs.x].Sample(g_Textures_sampler, float3(UV, 0));
+
+    float4 color = g_Textures[Constants.textureIDs.x].Sample(g_Sampler, UV);
     if(color.a <= 0.0) discard;
 
     PSOut.Color = toLinear(color);

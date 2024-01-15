@@ -23,7 +23,7 @@
                     float2 decalDx = mul(ddxPos, (float3x3)decal.worldToLocal).xy;
                     float2 decalDy = mul(ddyPos, (float3x3)decal.worldToLocal).xy;
 
-                    float4 decalColor = g_Textures[decal.data.x].SampleGrad(g_Textures_sampler, float3(decalTexCoord.xy, decal.data.y), decalDx, decalDy, 0) * decal.color;
+                    float4 decalColor = g_Textures[decal.data.x].SampleGrad(g_Sampler, float3(decalTexCoord.xy, decal.data.y), decalDx, decalDy, 0) * decal.color;
                     float edge = 1 - pow(saturate(abs(dPos.z)), 8);
                     decalColor.a *= edge;
 

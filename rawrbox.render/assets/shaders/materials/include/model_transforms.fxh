@@ -62,7 +62,7 @@
             // displacement mode
             #ifdef TRANSFORM_DISPLACEMENT
                 if(DisplacementPower != 0. && DisplacementTexture != 0.) {
-                    data.pos.y += g_Textures[DisplacementTexture].SampleLevel(g_Textures_sampler, float3(a_texcoord0, 0), 0).x * DisplacementPower;
+                    data.pos.y += g_Textures[DisplacementTexture].SampleLevel(g_Sampler, float3(a_texcoord0, 0), 0).x * DisplacementPower;
                 }
             #endif
             // ----

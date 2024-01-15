@@ -5,8 +5,8 @@
 #define BloomIntensity  PostProcessConstants.data[0].x
 // ========================
 
-Texture2DArray      g_Textures[];
-SamplerState        g_Textures_sampler; // By convention, texture samplers must use the '_sampler' suffix
+Texture2DArray g_Textures[];
+SamplerState   g_Sampler;
 
 struct PSInput {
     float4 Pos   : SV_POSITION;
@@ -24,7 +24,7 @@ float4 GetBloom (in float2 uv, in float4 inColor) {
 
 	for (float x = -8.0; x <= 8.0; x += 1.0) {
 		for (float y = -8.0; y <= 8.0; y += 1.0) {
-            float4 addColor = g_Textures[PostProcessConstants.textureID].Sample(g_Textures_sampler, float3(uv + (float2(x, y) * px), 0));
+            float4 addColor = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, float3(uv + (float2(x, y) * px), 0));
 
 			if (max(addColor.r, max(addColor.g, addColor.b)) > 0.3) {
 				float dist = length(float2(x,y))+1.0;
@@ -48,6 +48,6 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     float3 UV = float3(PSIn.UV.xy, 0);
 #endif
 
-    float4 Color = g_Textures[PostProcessConstants.textureID].Sample(g_Textures_sampler, UV);
+    float4 Color = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, UV);
 	PSOut.Color = lerp(Color, GetBloom(UV, Color), BloomIntensity);
 }

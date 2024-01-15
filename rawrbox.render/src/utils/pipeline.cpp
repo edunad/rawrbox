@@ -87,12 +87,10 @@ namespace rawrbox {
 
 		Diligent::ShaderCreateInfo ShaderCI;
 		ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
-		ShaderCI.Desc.UseCombinedTextureSamplers = true; // (g_Texture + g_Texture_sampler combination)
 		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
 		ShaderCI.CompileFlags = Diligent::SHADER_COMPILE_FLAG_ENABLE_UNBOUNDED_ARRAYS;
 
 		std::string shaderName = fmt::format("RawrBox::SHADER::{}", name);
-
 		ShaderCI.Desc.ShaderType = type;
 		ShaderCI.EntryPoint = "main";
 		ShaderCI.Desc.Name = shaderName.c_str();
