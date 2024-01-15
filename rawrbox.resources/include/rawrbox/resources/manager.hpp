@@ -19,6 +19,8 @@ namespace rawrbox {
 		static std::vector<std::filesystem::path> _loadedFiles;
 		static std::vector<std::unique_ptr<rawrbox::Loader>> _loaders;
 
+		static std::atomic<uint32_t> _loadingFiles;
+
 		// LOGGER ------
 		static std::unique_ptr<rawrbox::Logger> _logger;
 		// -------------
@@ -132,11 +134,32 @@ namespace rawrbox {
 		}
 
 		template <class T = rawrbox::Resource>
+		static void loadListAsync(const std::vector<std::pair<std::string, uint32_t>>& files, std::function<void()> onComplete = nullptr) {
+			_loadingFiles += files.size();
+
+			std::function<void()> complete = [onComplete]() {
+				_loadingFiles = std::max<uint32_t>(_loadingFiles - 1, 0);
+				if (_loadingFiles <= 0 && onComplete != nullptr) onComplete();
+			};
+
+			for (auto& file : files) {
+				rawrbox::ASYNC::run([file, complete]() {
+					loadFileImpl<T>(file.first, file.second);
+					_logger->info("Loaded '{}'", fmt::format(fmt::fg(fmt::color::coral), file.first));
+
+					complete();
+				});
+			}
+		}
+
+		template <class T = rawrbox::Resource>
 		static void loadFileAsync(const std::filesystem::path& filePath, uint32_t loadFlags = 0, std::function<void()> onComplete = nullptr) {
 			if (filePath.empty()) throw _logger->error("Attempted to load empty path");
 
 			rawrbox::ASYNC::run([filePath, loadFlags, onComplete]() {
 				loadFileImpl<T>(filePath, loadFlags);
+				_logger->info("Loaded '{}'", fmt::format(fmt::fg(fmt::color::coral), filePath.generic_string()));
+
 				if (onComplete != nullptr) onComplete();
 			});
 		}

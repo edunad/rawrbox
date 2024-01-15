@@ -56,21 +56,20 @@ namespace post_process {
 	}
 
 	void Game::loadContent() {
-		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/textures/crate_hl1.png", 0)};
+		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
+		    {"./assets/textures/crate_hl1.png", 0},
+		};
 
-		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
-		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
-				this->_loadingFiles--;
-				if (this->_loadingFiles <= 0) {
-					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
-				}
+		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
+			rawrbox::runOnRenderThread([this]() {
+				rawrbox::BindlessManager::processBarriers(); // IMPORTANT: BARRIERS NEED TO BE PROCESSED AFTER LOADING ALL THE CONTENT
+				this->contentLoaded();
 			});
-		}
+		});
 	}
 
 	void Game::contentLoaded() {
+		if (this->_ready) return;
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/crate_hl1.png")->get();
 
 		// Setup

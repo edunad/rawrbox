@@ -25,11 +25,11 @@
 	#endif
 
 	#if defined(WRITE_CLUSTER_DATA_GRID)
-		#define CLUSTER_DATA_GRID
 		RWStructuredBuffer<uint2 /*format=rgba32ui*/> ClusterDataGrid; // Read-Write
-	#elif defined(READ_CLUSTER_DATA_GRID)
 		#define CLUSTER_DATA_GRID
+	#elif defined(READ_CLUSTER_DATA_GRID)
 		StructuredBuffer<uint2 /*format=rgba32ui*/> ClusterDataGrid; // Read-only
+		#define CLUSTER_DATA_GRID
 	#endif
 
     // UTILS -----------------

@@ -29,7 +29,7 @@ namespace rawrbox {
 		}
 	};
 
-	struct DecalConstants {
+	struct DecalsConstants {
 		rawrbox::Vector4_t<uint32_t> settings = {};
 	};
 

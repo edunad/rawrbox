@@ -2,13 +2,11 @@
 
 #include <camera.fxh>
 #include <light_uniforms.fxh>
-
-#define DECAL_CONSTANTS
 #include <decal_uniforms.fxh>
 
-#define READ_CLUSTERS
 #define READ_LIGHTS
 #define READ_DECALS
+#define WRITE_CLUSTERS
 #define WRITE_CLUSTER_DATA_GRID
 #include <cluster.fxh>
 

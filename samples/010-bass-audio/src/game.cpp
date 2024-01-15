@@ -46,21 +46,20 @@ namespace bass_test {
 	}
 
 	void Game::loadContent() {
-		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/sounds/clownmusic.ogg", 0 | rawrbox::SoundFlags::SOUND_3D)};
+		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
+		    {"./assets/sounds/clownmusic.ogg", 0 | rawrbox::SoundFlags::SOUND_3D}};
 
-		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
-		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
-				this->_loadingFiles--;
-				if (this->_loadingFiles <= 0) {
-					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
-				}
+		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
+			rawrbox::runOnRenderThread([this]() {
+				rawrbox::BindlessManager::processBarriers(); // IMPORTANT: BARRIERS NEED TO BE PROCESSED AFTER LOADING ALL THE CONTENT
+				this->contentLoaded();
 			});
-		}
+		});
 	}
 
 	void Game::contentLoaded() {
+		if (this->_ready) return;
+
 		// SETUP SOUNDS -------------------
 		// SOUND -----
 		// https://i.rawr.dev/Mystery%20Skulls%20-%20Freaking%20Out.mp3

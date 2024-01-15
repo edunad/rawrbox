@@ -44,12 +44,9 @@ namespace rawrbox {
 	}
 
 	void Engine::prettyPrintErr(const std::string& err) {
-		std::string title = " FATAL ENGINE ERROR ";
-		std::string hLine = std::string((((err.size() + 1) / 2) - title.size() / 2), '-');
-
-		fmt::print("\n┌{}{}{}┐\n", hLine, title, hLine);
+		fmt::print("\n ---- FATAL ENGINE ERROR ----\n");
 		fmt::print(" {}\n", err);
-		fmt::print("└{}{}{}┘\n\n", hLine, title, hLine);
+		fmt::print("-------------------------------\n\n");
 	}
 
 	void Engine::run() {

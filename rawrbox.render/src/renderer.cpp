@@ -310,6 +310,8 @@ namespace rawrbox {
 			}
 			// --------------------
 		}
+
+		rawrbox::BindlessManager::update();
 	}
 
 	void RendererBase::render() {
@@ -324,8 +326,8 @@ namespace rawrbox {
 		if (this->_camera != nullptr) this->_camera->updateBuffer();
 		// ---------------------
 
-		// Update textures -----
-		rawrbox::BindlessManager::update();
+		// Process barriers -----
+		rawrbox::BindlessManager::processBarriers();
 		// ---------------------
 
 		// Perform pre-render --
@@ -335,7 +337,7 @@ namespace rawrbox {
 		}
 		// -----------------------
 
-		// Commit signature --
+		// Commit graphics signature --
 		this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 		// -----------------------
 

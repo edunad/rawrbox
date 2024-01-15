@@ -22,7 +22,6 @@ namespace phys_2d_test {
 		rawrbox::TextureBase* _texture = nullptr;
 		rawrbox::TIMER* _timer = nullptr;
 
-		std::atomic<int> _loadingFiles = 0;
 		bool _paused = true;
 		bool _ready = false;
 

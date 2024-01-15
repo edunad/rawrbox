@@ -47,22 +47,21 @@ namespace webm_test {
 	}
 
 	void Game::loadContent() {
-		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/video/webm_test.webm", 0 | rawrbox::WEBMLoadFlags::PRELOAD),
-		    std::make_pair<std::string, uint32_t>("./assets/video/webm_test_2.webm", 0 | rawrbox::WEBMLoadFlags::PRELOAD)};
+		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
+		    {"./assets/video/webm_test.webm", 0 | rawrbox::WEBMLoadFlags::PRELOAD},
+		    {"./assets/video/webm_test_2.webm", 0 | rawrbox::WEBMLoadFlags::PRELOAD}};
 
-		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
-		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
-				this->_loadingFiles--;
-				if (this->_loadingFiles <= 0) {
-					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
-				}
+		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
+			rawrbox::runOnRenderThread([this]() {
+				rawrbox::BindlessManager::processBarriers(); // IMPORTANT: BARRIERS NEED TO BE PROCESSED AFTER LOADING ALL THE CONTENT
+				this->contentLoaded();
 			});
-		}
+		});
 	}
 
 	void Game::contentLoaded() {
+		if (this->_ready) return;
+
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./assets/video/webm_test.webm")->get<rawrbox::TextureWEBM>();
 		auto tex2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./assets/video/webm_test_2.webm")->get<rawrbox::TextureWEBM>();
 		tex2->setTextureUV(rawrbox::TEXTURE_UV::UV_FLIP_V);

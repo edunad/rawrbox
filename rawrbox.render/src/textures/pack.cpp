@@ -43,10 +43,7 @@ namespace rawrbox {
 			SubresData.pData = data.data();
 
 			context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-			// Barrier ----
 			rawrbox::BindlessManager::barrier(*this);
-			// ------------
 		}
 
 		return node;

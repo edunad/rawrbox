@@ -13,7 +13,7 @@
 
 namespace model {
 	void Game::setupGLFW() {
-		auto window = rawrbox::Window::createWindow();
+		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12);
 		window->setMonitor(-1);
 		window->setTitle("GENERATED MODEL TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
@@ -49,27 +49,24 @@ namespace model {
 	}
 
 	void Game::loadContent() {
-		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/textures/displacement.png", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/displacement.vertex.png", 0),
-
-		    std::make_pair<std::string, uint32_t>("./assets/textures/screem.png", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/meow3.gif", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/spline_tex.png", 0),
+		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
+		    {"./assets/textures/displacement.png", 0},
+		    {"./assets/textures/displacement.vertex.png", 0},
+		    {"./assets/textures/screem.png", 0},
+		    {"./assets/textures/meow3.gif", 0},
+		    {"./assets/textures/spline_tex.png", 0},
 		};
 
-		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
-		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
-				this->_loadingFiles--;
-				if (this->_loadingFiles <= 0) {
-					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
-				}
+		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
+			rawrbox::runOnRenderThread([this]() {
+				rawrbox::BindlessManager::processBarriers(); // IMPORTANT: BARRIERS NEED TO BE PROCESSED AFTER LOADING ALL THE CONTENT
+				this->contentLoaded();
 			});
-		}
+		});
 	}
 
 	void Game::createModels() {
+		if (this->_ready) return;
 		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/meow3.gif")->get();
 		auto texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
 

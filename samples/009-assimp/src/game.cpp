@@ -49,25 +49,23 @@ namespace assimp {
 	}
 
 	void Game::loadContent() {
-		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES),
-		    std::make_pair<std::string, uint32_t>("./assets/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT),
-		    std::make_pair<std::string, uint32_t>("./assets/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_METADATA),
-		    std::make_pair<std::string, uint32_t>("./assets/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE),
-		    std::make_pair<std::string, uint32_t>("./assets/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS)};
+		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
+		    {"./assets/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES},
+		    {"./assets/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT},
+		    {"./assets/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_METADATA},
+		    {"./assets/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE},
+		    {"./assets/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS}};
 
-		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
-		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
-				this->_loadingFiles--;
-				if (this->_loadingFiles <= 0) {
-					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
-				}
+		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
+			rawrbox::runOnRenderThread([this]() {
+				rawrbox::BindlessManager::processBarriers(); // IMPORTANT: BARRIERS NEED TO BE PROCESSED AFTER LOADING ALL THE CONTENT
+				this->contentLoaded();
 			});
-		}
+		});
 	}
 
 	void Game::contentLoaded() {
+		if (this->_ready) return;
 		// Assimp test ---
 		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx")->get();
 

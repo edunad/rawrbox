@@ -65,24 +65,23 @@ namespace ui_test {
 	}
 
 	void Game::loadContent() {
-		std::vector initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/textures/meow3.gif", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/json/test.json", 0)};
+		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
+		    {"./assets/textures/meow3.gif", 0},
+		    {"./assets/json/test.json", 0},
+		};
 
 		initialContentFiles.insert(initialContentFiles.begin(), rawrbox::UI_RESOURCES.begin(), rawrbox::UI_RESOURCES.end()); // Insert the UI resources
-
-		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
-		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
-				this->_loadingFiles--;
-				if (this->_loadingFiles <= 0) {
-					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
-				}
+		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
+			rawrbox::runOnRenderThread([this]() {
+				rawrbox::BindlessManager::processBarriers(); // IMPORTANT: BARRIERS NEED TO BE PROCESSED AFTER LOADING ALL THE CONTENT
+				this->contentLoaded();
 			});
-		}
+		});
 	}
 
 	void Game::contentLoaded() {
+		if (this->_ready) return;
+
 		// Setup binds ---
 		auto window = rawrbox::Window::getWindow();
 		auto winSize = window->getSize().cast<float>();

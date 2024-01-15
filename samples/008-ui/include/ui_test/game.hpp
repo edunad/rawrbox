@@ -21,8 +21,6 @@ namespace ui_test {
 		rawrbox::UIConsole* _consoleUI = nullptr;
 
 		bool _ready = false;
-		std::atomic<int> _loadingFiles = 0;
-
 		float _counter = 0;
 
 		void setupGLFW() override;

@@ -56,7 +56,10 @@ namespace rawrbox {
 
 		static std::unique_ptr<rawrbox::Logger> _logger;
 
-		static void processBarriers();
+		// SIGNATURES ------
+		static void createSignatures();
+		static void bindSignatures();
+		// -----------------
 
 		static void registerUpdateTexture(rawrbox::TextureBase& tex);
 		static void unregisterUpdateTexture(rawrbox::TextureBase& tex);
@@ -66,7 +69,9 @@ namespace rawrbox {
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> signature;
+		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> computeSignature;
 		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> signatureBind;
+		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> computeSignatureBind;
 
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferPixel;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertex;
@@ -74,7 +79,9 @@ namespace rawrbox {
 
 		static void init();
 		static void shutdown();
+
 		static void update();
+		static void processBarriers();
 
 		// BARRIERS -------
 		static void barrier(const rawrbox::TextureBase& texture, std::function<void()> callback = nullptr);

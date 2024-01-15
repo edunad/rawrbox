@@ -31,10 +31,9 @@ namespace rawrbox {
 	class ClusteredPlugin : public rawrbox::RenderPlugin {
 	protected:
 		Diligent::IPipelineState* _clusterBuildingComputeProgram = nullptr;
-		Diligent::IShaderResourceBinding* _clusterBuildingComputeBind = nullptr;
+		Diligent::IPipelineState* _cullingComputeProgram = nullptr;
 
-		Diligent::IPipelineState* _lightCullingComputeProgram = nullptr;
-		Diligent::IShaderResourceBinding* _lightCullingComputeBind = nullptr;
+		Diligent::DispatchComputeAttribs _dispatch = {};
 
 		// BUFFERS ---
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _clusterBuffer;
@@ -77,8 +76,8 @@ namespace rawrbox {
 		void resize(const rawrbox::Vector2i& size) override;
 		void upload() override;
 
-		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig) override;
-		void bind(Diligent::IPipelineResourceSignature& sig) override;
+		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig, bool compute) override;
+		void bind(Diligent::IPipelineResourceSignature& sig, bool compute) override;
 
 		void preRender() override;
 	};

@@ -43,6 +43,7 @@ namespace rawrbox {
 			BuffDesc.Size = sizeof(rawrbox::LightConstants);
 
 			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &uniforms);
+			rawrbox::BindlessManager::barrier(*uniforms, rawrbox::BufferType::CONSTANT);
 		}
 		// -----------------------------------------
 
@@ -60,6 +61,8 @@ namespace rawrbox {
 
 			_buffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
 			_bufferRead = _buffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
+
+			rawrbox::BindlessManager::barrier(*_buffer->GetBuffer(), rawrbox::BufferType::SHADER);
 		}
 
 		update();
@@ -120,7 +123,7 @@ namespace rawrbox {
 
 		auto buffer = _buffer->GetBuffer();
 		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size()), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-		rawrbox::BindlessManager::barrier(*buffer, rawrbox::BufferType::CONSTANT);
+		rawrbox::BindlessManager::barrier(*buffer, rawrbox::BufferType::SHADER);
 
 		rawrbox::__LIGHT_DIRTY__ = false;
 		// -------
@@ -130,6 +133,7 @@ namespace rawrbox {
 		if (uniforms == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		update(); // Update all lights if dirty
 
+		// TODO: Replace MAP?
 		{
 			Diligent::MapHelper<rawrbox::LightConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 

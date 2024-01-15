@@ -55,30 +55,29 @@ namespace stencil {
 	}
 
 	void Game::loadContent() {
-		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/textures/screem.png", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/fonts/droidsans.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/fonts/visitor1.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("consolab.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("consolai.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/meow3.gif", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/rawrbox.svg", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/cawt.webp", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/instance_test.png", 64),
+		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
+		    {"consolab.ttf", 0},
+		    {"consolai.ttf", 0},
+		    {"./assets/textures/screem.png", 0},
+		    {"./assets/fonts/droidsans.ttf", 0},
+		    {"./assets/fonts/visitor1.ttf", 0},
+		    {"./assets/textures/meow3.gif", 0},
+		    {"./assets/textures/rawrbox.svg", 0},
+		    {"./assets/textures/cawt.webp", 0},
+		    {"./assets/textures/instance_test.png", 64},
 		};
 
-		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
-		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
-				this->_loadingFiles--;
-				if (this->_loadingFiles <= 0) {
-					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
-				}
+		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
+			rawrbox::runOnRenderThread([this]() {
+				rawrbox::BindlessManager::processBarriers(); // IMPORTANT: BARRIERS NEED TO BE PROCESSED AFTER LOADING ALL THE CONTENT
+				this->contentLoaded();
 			});
-		}
+		});
 	}
 
 	void Game::contentLoaded() {
+		if (this->_ready) return;
+
 		// Textures ---
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
 		this->_texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/meow3.gif")->get();

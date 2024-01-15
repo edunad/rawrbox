@@ -9,7 +9,6 @@
 namespace instance_test {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::InstancedModel<>> _model = std::make_unique<rawrbox::InstancedModel<>>();
-		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;
 
 		void setupGLFW() override;
