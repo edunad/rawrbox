@@ -19,7 +19,7 @@ namespace rawrbox {
 	}
 
 	void ASYNC::shutdown() {
-		if (_pool == nullptr) throw _logger->error("ASYNC not initialized!");
+		if (_pool == nullptr) return;
 
 		_pool->purge();
 		_pool->reset();
