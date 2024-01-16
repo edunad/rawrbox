@@ -103,6 +103,10 @@ namespace rawrbox {
 
 		rawrbox::FontInfo _info = {};
 
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Font");
+		// -------------
+
 		// INTERNAL ---
 		virtual void loadFontInfo();
 

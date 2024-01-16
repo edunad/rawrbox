@@ -1,4 +1,5 @@
 
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/pack.hpp>
 
@@ -20,15 +21,17 @@ namespace rawrbox {
 	}
 
 	rawrbox::PackNode& TexturePack::addSprite(uint16_t width, uint16_t height, const std::vector<uint8_t>& data) {
-		if (this->_tex == nullptr) throw std::runtime_error("[RawrBox-TexturePack] Texture not bound");
+		if (this->_tex == nullptr) throw this->_logger->error("Texture not bound");
 
 		auto nodeOpt = this->_root->InsertNode(width, height);
-		if (!nodeOpt.has_value()) throw std::runtime_error(fmt::format("[TexturePack] Error: failed to add sprite with size {}, {}", width, height));
+		if (!nodeOpt.has_value()) throw this->_logger->error("Failed to add sprite with size {}, {}", width, height);
 
 		this->_spriteCount++;
 		auto& node = (*nodeOpt).get();
 
 		if (!data.empty()) {
+			auto context = rawrbox::RENDERER->context();
+
 			Diligent::Box UpdateBox;
 			UpdateBox.MinX = node.x;
 			UpdateBox.MinY = node.y;
@@ -39,7 +42,8 @@ namespace rawrbox {
 			SubresData.Stride = static_cast<uint64_t>(node.width * this->_channels);
 			SubresData.pData = data.data();
 
-			rawrbox::RENDERER->context()->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			rawrbox::BindlessManager::barrier(*this);
 		}
 
 		return node;

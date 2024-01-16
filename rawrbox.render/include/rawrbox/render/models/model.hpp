@@ -151,13 +151,13 @@ namespace rawrbox {
 			}
 		}
 		void postDraw() {
-			for (auto it2 = this->_playingAnimations.begin(); it2 != this->_playingAnimations.end();) {
-				if ((*it2).time >= (*it2).data->duration && !(*it2).loop) {
-					it2 = this->_playingAnimations.erase(it2);
+			for (auto it = this->_playingAnimations.begin(); it != this->_playingAnimations.end();) {
+				if ((*it).time >= (*it).data->duration && !(*it).loop) {
+					it = this->_playingAnimations.erase(it);
 					continue;
 				}
 
-				++it2;
+				++it;
 			}
 		}
 		// --------------
@@ -273,7 +273,7 @@ namespace rawrbox {
 			}
 
 #ifndef NDEBUG
-			if (old != this->_meshes.size()) fmt::print("[RawrBox-Model] Optimized mesh for rendering (Before {} | After {})\n", old, this->_meshes.size());
+			if (old != this->_meshes.size()) this->_logger->info("Optimized mesh for rendering (Before {} | After {})", old, this->_meshes.size());
 #endif
 		}
 
@@ -284,12 +284,12 @@ namespace rawrbox {
 
 		// ANIMATIONS ----
 		virtual bool blendAnimation(const std::string& /*otherAnim*/, float /*blend*/) {
-			throw std::runtime_error("TODO");
+			throw this->_logger->error("TODO");
 		}
 
 		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F) {
 			auto iter = this->_animations.find(name);
-			if (iter == this->_animations.end()) throw std::runtime_error(fmt::format("[RawrBox-Model] Animation {} not found!", name));
+			if (iter == this->_animations.end()) throw this->_logger->error("Animation {} not found!", name);
 
 			// Add it
 			this->_playingAnimations.emplace_back(name,
@@ -314,7 +314,7 @@ namespace rawrbox {
 
 		// BLEND SHAPES ---
 		void createBlendShape(size_t mesh, const std::string& id, const std::vector<rawrbox::Vector3f>& newVertexPos, const std::vector<rawrbox::Vector3f>& newNormPos, float weight = 0.F) {
-			if (mesh >= this->_meshes.size()) throw std::runtime_error(fmt::format("[RawrBox-ModelBase] Mesh '{}' not found!", mesh));
+			if (mesh >= this->_meshes.size()) throw this->_logger->error("Mesh '{}' not found!", mesh);
 
 			auto blend = std::make_unique<rawrbox::BlendShapes<typename M::vertexBufferType>>();
 			blend->pos = newVertexPos;
@@ -379,13 +379,13 @@ namespace rawrbox {
 		}
 
 		virtual void removeMeshByName(const std::string& id) {
-			for (auto it2 = this->_meshes.begin(); it2 != this->_meshes.end();) {
-				if ((*it2)->getName() == id) {
-					it2 = this->_meshes.erase(it2);
+			for (auto it = this->_meshes.begin(); it != this->_meshes.end();) {
+				if ((*it)->getName() == id) {
+					it = this->_meshes.erase(it);
 					continue;
 				}
 
-				++it2;
+				++it;
 			}
 
 			if (this->isUploaded() && this->isDynamic()) this->updateBuffers(); // Already uploaded? And dynamic? Then update vertices
@@ -480,18 +480,16 @@ namespace rawrbox {
 				// Bind materials uniforms & textures ----
 				rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix() * mesh->getMatrix());
 
-				this->_material->init();
 				this->_material->bindPipeline(*mesh);
 				this->_material->bindUniforms(*mesh);
-				this->_material->bindShaderResources();
-				//  -----------
+				//     -----------
 
 				Diligent::DrawIndexedAttribs DrawAttrs;
 				DrawAttrs.IndexType = Diligent::VT_UINT16;
 				DrawAttrs.FirstIndexLocation = mesh->baseIndex;
 				DrawAttrs.BaseVertex = mesh->baseVertex;
 				DrawAttrs.NumIndices = mesh->totalIndex;
-				DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
+				DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL /*| Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT*/;
 				context->DrawIndexed(DrawAttrs);
 			}
 

@@ -5,7 +5,6 @@
 #include <string>
 
 namespace rawrbox {
-
 	class KeyUtils {
 	public:
 		static std::string keyToStr(uint32_t key);

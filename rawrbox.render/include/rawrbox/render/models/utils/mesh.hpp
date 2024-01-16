@@ -298,9 +298,9 @@ namespace rawrbox {
 		// Does not support UV :( / normals
 		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const uint16_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
-			if (ratio % 3 != 0) throw std::runtime_error(fmt::format("[RawrBox-MeshUtils] Generate cone ratio '{}' needs to be divisible by 3", ratio));
+			if (ratio % 3 != 0) throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateCone' ratio '{}' needs to be divisible by 3", ratio);
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				throw std::runtime_error("[RawrBox-MeshUtils] Generate cone does not support normals");
+				throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateCone' does not support normals");
 			}
 
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
@@ -360,7 +360,7 @@ namespace rawrbox {
 		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const uint16_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				throw std::runtime_error("[RawrBox-MeshUtils] Generate cylinder does not support normals");
+				throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateCylinder' does not support normals");
 			}
 
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
@@ -426,7 +426,7 @@ namespace rawrbox {
 		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateSphere(const rawrbox::Vector3f& pos, float size, uint32_t ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				throw std::runtime_error("[RawrBox-MeshUtils] Generate sphere does not support normals");
+				throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateSphere' does not support normals");
 			}
 
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
@@ -599,7 +599,7 @@ namespace rawrbox {
 		template <typename M = rawrbox::MaterialUnlit>
 		static rawrbox::Mesh<typename M::vertexBufferType> generateGrid(uint16_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::Gray().strength(0.4F), const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent()) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				throw std::runtime_error("[RawrBox-MeshUtils] Generate grid does not support normals");
+				throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateGrid' does not support normals");
 			}
 
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};

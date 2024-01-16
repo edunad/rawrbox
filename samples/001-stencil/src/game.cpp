@@ -29,7 +29,6 @@ namespace stencil {
 
 		// Setup renderer
 		auto render = window->createRenderer(rawrbox::Color::RGBAHex(0x443355FF));
-		render->skipIntros(true);
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass == rawrbox::DrawPass::PASS_OVERLAY) {
@@ -56,30 +55,28 @@ namespace stencil {
 	}
 
 	void Game::loadContent() {
-		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/textures/screem.png", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/fonts/droidsans.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/fonts/visitor1.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("consolab.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("consolai.ttf", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/meow3.gif", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/rawrbox.svg", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/cawt.webp", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/instance_test.png", 64),
+		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
+		    {"consolab.ttf", 0},
+		    {"consolai.ttf", 0},
+		    {"./assets/textures/screem.png", 0},
+		    {"./assets/fonts/droidsans.ttf", 0},
+		    {"./assets/fonts/visitor1.ttf", 0},
+		    {"./assets/textures/meow3.gif", 0},
+		    {"./assets/textures/rawrbox.svg", 0},
+		    {"./assets/textures/cawt.webp", 0},
+		    {"./assets/textures/instance_test.png", 64},
 		};
 
-		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
-		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
-				this->_loadingFiles--;
-				if (this->_loadingFiles <= 0) {
-					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
-				}
+		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
+			rawrbox::runOnRenderThread([this]() {
+				rawrbox::BindlessManager::processBarriers(); // IMPORTANT: BARRIERS NEED TO BE PROCESSED AFTER LOADING ALL THE CONTENT
+				this->contentLoaded();
 			});
-		}
+		});
 	}
 
 	void Game::contentLoaded() {
+		if (this->_ready) return;
 
 		// Textures ---
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
@@ -124,21 +121,20 @@ namespace stencil {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
 			rawrbox::Window::shutdown();
 		} else {
+			this->_texture = nullptr;
+			this->_texture2 = nullptr;
+			this->_texture3 = nullptr;
+			this->_texture4 = nullptr;
+
+			this->_model.reset();
+
+			this->_font = nullptr;
+			this->_font2 = nullptr;
+
+			this->_markdown.reset();
+
 			rawrbox::RESOURCES::shutdown();
-			rawrbox::ASYNC::shutdown();
 		}
-
-		this->_texture = nullptr;
-		this->_texture2 = nullptr;
-		this->_texture3 = nullptr;
-		this->_texture4 = nullptr;
-
-		this->_model.reset();
-
-		this->_font = nullptr;
-		this->_font2 = nullptr;
-
-		this->_markdown.reset();
 	}
 
 	void Game::pollEvents() {
@@ -313,9 +309,6 @@ namespace stencil {
 		stencil.drawTexture({0, 0}, {256, 256}, *this->_texture4);
 		stencil.popOffset();
 		// -----
-
-		this->_texture5->update();
-		this->_texture2->update();
 
 		stencil.render();
 	}

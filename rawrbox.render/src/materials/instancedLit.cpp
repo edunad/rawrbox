@@ -12,14 +12,12 @@ namespace rawrbox {
 		const std::string id = "Model::Instanced::Lit";
 
 		if (!this->_built) {
-			fmt::print("[RawrBox-MaterialInstancedLit] Building material..\n");
+			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), id));
 
 			Diligent::ShaderMacroHelper helper;
 			helper.AddShaderMacro("INSTANCED", true);
 
-			this->createUniforms();
 			this->createPipelines(id, vertexBufferType::vLayout(true), helper);
-
 			this->_built = true;
 		}
 

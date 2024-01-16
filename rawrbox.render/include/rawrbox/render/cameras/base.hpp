@@ -3,6 +3,7 @@
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/vector4.hpp>
+#include <rawrbox/utils/logger.hpp>
 
 #include <RefCntAutoPtr.hpp>
 
@@ -48,6 +49,10 @@ namespace rawrbox {
 
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Camera");
+		// -------------
+
 		virtual void updateMtx();
 
 	public:
@@ -56,8 +61,8 @@ namespace rawrbox {
 		CameraBase() = default;
 		CameraBase(CameraBase&&) = default;
 		CameraBase& operator=(CameraBase&&) = default;
-		CameraBase(const CameraBase&) = default;
-		CameraBase& operator=(const CameraBase&) = default;
+		CameraBase(const CameraBase&) = delete;
+		CameraBase& operator=(const CameraBase&) = delete;
 
 		// UTILS -----
 		virtual void setPos(const rawrbox::Vector3f& pos);

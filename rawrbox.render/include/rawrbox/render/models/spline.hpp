@@ -78,7 +78,7 @@ namespace rawrbox {
 		}
 
 		virtual void generateMesh() {
-			if (this->_shape == nullptr) throw std::runtime_error("[RawrBox-Spline] Missing mesh shape!");
+			if (this->_shape == nullptr) throw this->_logger->error("Missing mesh shape!");
 
 			this->_mesh->clear();
 			std::vector<int> shapeSegments = this->_shape->getLineSegments();
@@ -151,16 +151,14 @@ namespace rawrbox {
 			// Bind materials uniforms & textures ----
 			rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix());
 
-			this->_material->init();
 			this->_material->bindPipeline(*this->_mesh);
 			this->_material->bindUniforms(*this->_mesh);
-			this->_material->bindShaderResources();
 			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;
 			DrawAttrs.IndexType = Diligent::VT_UINT16;
 			DrawAttrs.NumIndices = this->_mesh->totalIndex;
-			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
+			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL /*| Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT*/;
 
 			rawrbox::RENDERER->context()->DrawIndexed(DrawAttrs);
 		}

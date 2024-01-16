@@ -6,8 +6,11 @@
 namespace rawrbox {
 	class PostProcessPlugin : public rawrbox::RenderPlugin {
 	protected:
+		// BUFFERS ---
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _buffer;
+		// -------
+
 		std::vector<std::unique_ptr<rawrbox::PostProcessBase>> _postProcesses = {};
-		std::unique_ptr<rawrbox::TextureRender> _rt = {};
 
 	public:
 		PostProcessPlugin() = default;
@@ -17,6 +20,15 @@ namespace rawrbox {
 		PostProcessPlugin& operator=(PostProcessPlugin&&) = delete;
 		~PostProcessPlugin() override;
 
+		void initialize(const rawrbox::Vector2i& size) override;
+		void upload() override;
+
+		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig, bool compute) override;
+		void bind(Diligent::IPipelineResourceSignature& sig, bool compute) override;
+
+		void postRender(rawrbox::TextureRender& render) override;
+		[[nodiscard]] const std::string getID() const override;
+
 		// Process utils ----
 		template <class T, typename... CallbackArgs>
 		void add(CallbackArgs&&... args) {
@@ -25,14 +37,8 @@ namespace rawrbox {
 
 		virtual void remove(size_t indx);
 		[[nodiscard]] virtual rawrbox::PostProcessBase& get(size_t indx) const;
+		[[nodiscard]] virtual Diligent::IBuffer* getBuffer() const;
 		virtual size_t count();
 		// ---------
-
-		[[nodiscard]] const std::string getID() const override;
-
-		void initialize(const rawrbox::Vector2i& size) override;
-		void resize(const rawrbox::Vector2i& size) override;
-
-		void postRender(rawrbox::TextureRender* render) override;
 	};
 } // namespace rawrbox

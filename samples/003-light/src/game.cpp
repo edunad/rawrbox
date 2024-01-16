@@ -51,23 +51,22 @@ namespace light {
 
 	void Game::loadContent() {
 		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planks.png", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planksSpec.png", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/light_test/planksNorm.png", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/decals.png", 64)};
+		    {"./assets/textures/decals.png", 64},
+		    {"./assets/textures/light_test/planks.png", 0},
+		    {"./assets/textures/light_test/planksSpec.png", 0},
+		    {"./assets/textures/light_test/planksNorm.png", 0}};
 
-		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
-		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
-				this->_loadingFiles--;
-				if (this->_loadingFiles <= 0) {
-					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
-				}
+		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
+			rawrbox::runOnRenderThread([this]() {
+				rawrbox::BindlessManager::processBarriers(); // IMPORTANT: BARRIERS NEED TO BE PROCESSED AFTER LOADING ALL THE CONTENT
+				this->contentLoaded();
 			});
-		}
+		});
 	}
 
 	void Game::contentLoaded() {
+		if (this->_ready) return;
+
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planks.png")->get();
 		auto texNorm = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksNorm.png")->get();
 
@@ -156,14 +155,13 @@ namespace light {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
 			rawrbox::Window::shutdown();
 		} else {
-			rawrbox::RESOURCES::shutdown();
-			rawrbox::ASYNC::shutdown();
-		}
+			this->_model.reset();
+			this->_model2.reset();
+			this->_model3.reset();
+			this->_text.reset();
 
-		this->_model.reset();
-		this->_model2.reset();
-		this->_model3.reset();
-		this->_text.reset();
+			rawrbox::RESOURCES::shutdown();
+		}
 	}
 
 	void Game::pollEvents() {
@@ -176,7 +174,7 @@ namespace light {
 		if (this->_ready) {
 			auto light = rawrbox::LIGHTS::getLight(0);
 			if (light != nullptr) {
-				light->setOffsetPos({0, std::cos(rawrbox::FRAME * 0.01F) * 1.F, 0});
+				light->setOffsetPos({std::sin(rawrbox::FRAME * 0.01F) * 0.5F, 0, std::cos(rawrbox::FRAME * 0.01F) * 0.5F});
 			}
 
 			light = rawrbox::LIGHTS::getLight(1);

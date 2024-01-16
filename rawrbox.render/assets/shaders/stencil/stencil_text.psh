@@ -1,13 +1,19 @@
 #include <correction.fxh>
-#include <stencil_pixel_uniforms.fxh>
+
+#ifdef VULKAN
+// NonUniformResourceIndex is not supported by GLSLang
+#   define NonUniformResourceIndex(x) x
+#endif
 
 Texture2DArray g_Textures[];
-SamplerState   g_Textures_sampler;
+SamplerState   g_Sampler;
 
 struct PSInput {
-    float4 Pos    : SV_POSITION;
-    float4 UV     : TEX_COORD;
-    float4 Color  : COLOR;
+    float4 Pos        : SV_POSITION;
+    float4 UV         : TEX_COORD;
+    float4 Color      : COLOR;
+
+    uint   TextureID  : TEX_ARRAY_INDEX;
 };
 
 struct PSOutput {
@@ -15,7 +21,7 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    float a = g_Textures[Constants.textureID].Sample(g_Textures_sampler, float3(PSIn.UV.xy, PSIn.UV.z)).r * PSIn.Color.a;
+    float a = g_Textures[NonUniformResourceIndex(PSIn.TextureID)].Sample(g_Sampler, float3(PSIn.UV.xy, PSIn.UV.z)).r * PSIn.Color.a;
 	if(a <= 0.0) discard;
 
 	PSOut.Color = toLinear(float4(PSIn.Color.rgb, a));

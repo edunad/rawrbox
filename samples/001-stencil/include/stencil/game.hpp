@@ -25,8 +25,6 @@ namespace stencil {
 		rawrbox::Font* _font2 = nullptr;
 
 		bool _ready = false;
-		std::atomic<int> _loadingFiles = 0;
-
 		float _counter = 0;
 
 		void setupGLFW() override;

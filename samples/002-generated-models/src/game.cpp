@@ -13,7 +13,7 @@
 
 namespace model {
 	void Game::setupGLFW() {
-		auto window = rawrbox::Window::createWindow();
+		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12);
 		window->setMonitor(-1);
 		window->setTitle("GENERATED MODEL TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
@@ -49,22 +49,20 @@ namespace model {
 	}
 
 	void Game::loadContent() {
-		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/textures/screem.png", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/meow3.gif", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/displacement_test.png", 0),
-		    std::make_pair<std::string, uint32_t>("./assets/textures/spline_tex.png", 0),
+		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
+		    {"./assets/textures/displacement.png", 0},
+		    {"./assets/textures/displacement.vertex.png", 0},
+		    {"./assets/textures/screem.png", 0},
+		    {"./assets/textures/meow3.gif", 0},
+		    {"./assets/textures/spline_tex.png", 0},
 		};
 
-		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
-		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
-				this->_loadingFiles--;
-				if (this->_loadingFiles <= 0) {
-					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
-				}
+		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
+			rawrbox::runOnRenderThread([this]() {
+				rawrbox::BindlessManager::processBarriers(); // IMPORTANT: BARRIERS NEED TO BE PROCESSED AFTER LOADING ALL THE CONTENT
+				this->contentLoaded();
 			});
-		}
+		});
 	}
 
 	void Game::createModels() {
@@ -231,11 +229,12 @@ namespace model {
 	}
 
 	void Game::createDisplacement() {
-		auto texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement_test.png")->get();
+		auto textureDisplacement = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement.vertex.png")->get();
+		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement.png")->get();
 
 		auto mesh = rawrbox::MeshUtils::generateMesh({0, 0, -1.0F}, {2, 2}, 64, rawrbox::Colors::White());
-		mesh.setTexture(texture3);
-		mesh.setDisplacementTexture(texture3, 0.5F);
+		mesh.setTexture(texture);
+		mesh.setDisplacementTexture(textureDisplacement, 0.5F);
 
 		this->_displacement->addMesh(mesh);
 		this->_displacement->upload();
@@ -244,8 +243,10 @@ namespace model {
 	void Game::createSprite() {
 		auto texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
 
-		auto mesh = rawrbox::MeshUtils::generateCube({0, 1, 0}, {0.2F, 0.2F});
+		auto mesh = rawrbox::MeshUtils::generateCube({}, {0.2F, 0.2F});
 		mesh.setTexture(texture2);
+
+		this->_sprite->setPos({0, 1.25F, 0});
 		this->_sprite->addMesh(mesh);
 		this->_sprite->upload();
 	}
@@ -256,7 +257,7 @@ namespace model {
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CUBE", {-2.F, 0.55F, 0});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CUBE\nVertex snap", {-3.F, 0.55F, 0});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "AXIS", {0.F, 0.8F, 0});
-		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPRITE", {0.F, 1.2F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPRITE", {0.F, 1.4F, 0});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "DISPLACEMENT", {0.F, 0.75F, -2});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPHERES", {3.5F, 0.55F, -2.F});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CYLINDER", {-2.F, 0.55F, -2});
@@ -272,6 +273,8 @@ namespace model {
 	}
 
 	void Game::contentLoaded() {
+		if (this->_ready) return;
+
 		// Model test ----
 		this->createModels();
 		// ----
@@ -299,16 +302,15 @@ namespace model {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
 			rawrbox::Window::shutdown();
 		} else {
-			rawrbox::RESOURCES::shutdown();
-			rawrbox::ASYNC::shutdown();
-		}
+			this->_model.reset();
+			this->_bboxes.reset();
+			this->_displacement.reset();
+			this->_sprite.reset();
+			this->_spline.reset();
+			this->_text.reset();
 
-		this->_model.reset();
-		this->_bboxes.reset();
-		this->_displacement.reset();
-		this->_sprite.reset();
-		this->_spline.reset();
-		this->_text.reset();
+			rawrbox::RESOURCES::shutdown();
+		}
 	}
 
 	void Game::pollEvents() {

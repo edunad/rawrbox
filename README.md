@@ -124,8 +124,7 @@
 
 | LIB                 | NOTE                                                |
 | :------------------ | :-------------------------------------------------- |
-| bgfx                |                                                     |
-| bx                  | Required by `bgfx`                                  |
+| DiligentCore        |                                                     |
 | glfw                |                                                     |
 | nlohmann_json       | Used for JSON loading                               |
 | fmt                 | Used for text formatting                            |

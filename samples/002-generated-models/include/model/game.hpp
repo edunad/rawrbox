@@ -17,7 +17,6 @@ namespace model {
 		std::unique_ptr<rawrbox::Spline<>> _spline = std::make_unique<rawrbox::Spline<>>();
 		std::unique_ptr<rawrbox::Text3D<>> _text = std::make_unique<rawrbox::Text3D<>>();
 
-		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;
 
 		void setupGLFW() override;

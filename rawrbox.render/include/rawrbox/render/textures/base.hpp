@@ -13,12 +13,16 @@
 #include <vector>
 
 namespace rawrbox {
-
 	enum class TEXTURE_UV {
 		UV_NONE = 0,
 		UV_FLIP_U,
 		UV_FLIP_V,
 		UV_FLIP_UV
+	};
+
+	enum class TEXTURE_TYPE {
+		PIXEL,
+		VERTEX
 	};
 
 	class TextureBase {
@@ -28,16 +32,24 @@ namespace rawrbox {
 		rawrbox::Vector2i _size = {};
 
 		int _channels = 0;
+		uint32_t _textureID = 0; // Default to missing texture, it's always reserved to 0
+		uint32_t _depthTextureID = 0;
 
-		uint32_t _textureID = 0;
 		std::vector<uint8_t> _pixels = {};
 
 		rawrbox::TEXTURE_UV _textureUV = rawrbox::TEXTURE_UV::UV_NONE;
+		rawrbox::TEXTURE_TYPE _type = rawrbox::TEXTURE_TYPE::PIXEL;
+
 		Diligent::ISampler* _sampler = nullptr;
 
 		bool _failedToLoad = false;
 		bool _transparent = false;
 		bool _sRGB = false;
+		bool _registered = false;
+
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Texture");
+		// -------------
 
 		std::string _name = "";
 		virtual void loadFallback();
@@ -47,7 +59,7 @@ namespace rawrbox {
 
 	public:
 		TextureBase() = default;
-		TextureBase(const TextureBase&) = default;
+		TextureBase(const TextureBase&) = delete;
 		TextureBase(TextureBase&&) = delete;
 		TextureBase& operator=(TextureBase&&) = delete;
 		TextureBase& operator=(const TextureBase&) = delete;
@@ -57,8 +69,14 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool hasTransparency() const;
 		[[nodiscard]] virtual const rawrbox::Vector2i& getSize() const;
 		[[nodiscard]] virtual int getChannels() const;
+
 		[[nodiscard]] virtual bool isValid() const;
+		[[nodiscard]] virtual bool isRegistered() const;
+
+		[[nodiscard]] virtual uint32_t getDepthTextureID() const;
 		[[nodiscard]] virtual uint32_t getTextureID() const;
+		virtual void setDepthTextureID(uint32_t id);
+		virtual void setTextureID(uint32_t id);
 
 		[[nodiscard]] virtual Diligent::ITexture* getTexture() const;
 		[[nodiscard]] virtual Diligent::ITextureView* getHandle() const;
@@ -70,6 +88,9 @@ namespace rawrbox {
 		virtual void setTextureUV(rawrbox::TEXTURE_UV mode);
 		[[nodiscard]] virtual rawrbox::TEXTURE_UV getTextureUV() const;
 
+		virtual void setType(rawrbox::TEXTURE_TYPE type);
+		[[nodiscard]] virtual rawrbox::TEXTURE_TYPE getType() const;
+
 		[[nodiscard]] virtual const std::string& getName() const;
 		virtual void setName(const std::string& name);
 
@@ -77,6 +98,8 @@ namespace rawrbox {
 		// -----
 
 		virtual void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false);
+
 		virtual void update();
+		[[nodiscard]] virtual bool requiresUpdate() const;
 	};
 } // namespace rawrbox

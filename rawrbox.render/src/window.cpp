@@ -87,7 +87,7 @@ namespace rawrbox {
 
 	void Window::pollEvents() {
 		if (__WINDOWS.empty()) return;
-		glfwWaitEvents();
+		glfwWaitEventsTimeout(2500);
 	}
 
 	void Window::shutdown() {
@@ -103,16 +103,16 @@ namespace rawrbox {
 
 		// SHUTDOWN TEXTURES ----
 		rawrbox::MISSING_TEXTURE.reset();
+		rawrbox::MISSING_VERTEX_TEXTURE.reset();
+
 		rawrbox::WHITE_TEXTURE.reset();
 		rawrbox::BLACK_TEXTURE.reset();
 		rawrbox::NORMAL_TEXTURE.reset();
 		// ----------------------
 
-		// rawrbox::DECALS::shutdown();
-
-		glfwWaitEventsTimeout(1);
 		glfwPostEmptyEvent();
 		glfwTerminate();
+		glfwPostEmptyEvent();
 	}
 
 	void Window::update() {

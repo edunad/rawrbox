@@ -9,21 +9,18 @@
 
 #include <InputLayout.h>
 
-#include <array>
-
 namespace rawrbox {
-
 	struct VertexData {
 		rawrbox::Vector3f position = {};
 		rawrbox::Vector4f uv = {};
-		rawrbox::Colorf color = {};
+		uint32_t color = 0xFFFFFFFF;
 
 		VertexData() = default;
 		explicit VertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), color(cl) {}
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), color(cl.pack()) {}
 
 		explicit VertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), color(cl) {}
+		    const rawrbox::Vector2f& _uv = {}, const rawrbox::Color cl = rawrbox::Colors::White()) : position(_pos), uv(_uv), color(cl.pack()) {}
 
 		// Atlas ---
 		void setAtlasId(uint32_t _id) {
@@ -38,7 +35,7 @@ namespace rawrbox {
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 2 - Color
-			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false}};
+			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_UINT8, true}};
 
 			if (instanced) {
 				v.emplace_back(3, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 1
@@ -46,7 +43,7 @@ namespace rawrbox {
 				v.emplace_back(5, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
 				v.emplace_back(6, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
 
-				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Color
+				v.emplace_back(7, 1, 4, Diligent::VT_UINT8, true, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);    // Color
 				v.emplace_back(8, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
 			}
 
@@ -73,7 +70,7 @@ namespace rawrbox {
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 2 - Color
-			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_UINT8, true},
 			    // Attribute 3 - Normal
 			    Diligent::LayoutElement{3, 0, 3, Diligent::VT_FLOAT32, false},
 			    // Attribute 4 - Tangent
@@ -86,7 +83,7 @@ namespace rawrbox {
 				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
 				v.emplace_back(8, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
 
-				v.emplace_back(9, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);  // Color
+				v.emplace_back(9, 1, 4, Diligent::VT_UINT8, true, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);     // Color
 				v.emplace_back(10, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
 			}
 
@@ -113,7 +110,7 @@ namespace rawrbox {
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 2 - Color
-			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_UINT8, true},
 			    // Attribute 3 - BONE-INDICES
 			    Diligent::LayoutElement{3, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
 			    // Attribute 4 - BONE-WEIGHTS
@@ -125,7 +122,7 @@ namespace rawrbox {
 				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
 				v.emplace_back(8, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
 
-				v.emplace_back(9, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);  // Color
+				v.emplace_back(9, 1, 4, Diligent::VT_UINT8, true, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);     // Color
 				v.emplace_back(10, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
 			}
 
@@ -152,7 +149,7 @@ namespace rawrbox {
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 2 - Color
-			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_UINT8, true},
 			    // Attribute 3 - Normal
 			    Diligent::LayoutElement{3, 0, 3, Diligent::VT_FLOAT32, false},
 			    // Attribute 4 - Tangent
@@ -168,7 +165,7 @@ namespace rawrbox {
 				v.emplace_back(9, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);  // Matrix - 3
 				v.emplace_back(10, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
 
-				v.emplace_back(11, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Color
+				v.emplace_back(11, 1, 4, Diligent::VT_UINT8, true, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);    // Color
 				v.emplace_back(12, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
 			}
 

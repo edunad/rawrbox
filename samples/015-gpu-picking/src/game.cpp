@@ -196,7 +196,6 @@ namespace gpu {
 		this->_text.reset();
 
 		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
 
 		this->_window->unblockPoll();
 		this->_window.reset();

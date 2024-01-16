@@ -1,3 +1,4 @@
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/static.hpp>
 
@@ -7,6 +8,11 @@ namespace rawrbox {
 
 	std::unique_ptr<Diligent::DynamicBuffer> DECALS::_buffer = nullptr;
 	Diligent::IBufferView* DECALS::_bufferRead = nullptr;
+	bool DECALS::_CONSTANTS_DIRTY = false;
+
+	// LOGGER ------
+	std::unique_ptr<rawrbox::Logger> DECALS::_logger = std::make_unique<rawrbox::Logger>("RawrBox-Decals");
+	// -------------
 	// -----------
 
 	// PUBLIC ----
@@ -18,12 +24,12 @@ namespace rawrbox {
 		{
 			Diligent::BufferDesc BuffDesc;
 			BuffDesc.Name = "rawrbox::Decals::Uniforms";
-			BuffDesc.Usage = Diligent::USAGE_DYNAMIC;
+			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
 			BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-			BuffDesc.Size = sizeof(rawrbox::DecalConstants);
+			BuffDesc.Size = sizeof(rawrbox::DecalsConstants);
 
 			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &uniforms);
+			rawrbox::BindlessManager::barrier(*uniforms, rawrbox::BufferType::CONSTANT);
 		}
 		// -----------------------------------------
 
@@ -41,6 +47,8 @@ namespace rawrbox {
 
 			_buffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
 			_bufferRead = _buffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
+
+			rawrbox::BindlessManager::barrier(*_buffer->GetBuffer(), rawrbox::BufferType::SHADER);
 		}
 
 		update();
@@ -55,8 +63,18 @@ namespace rawrbox {
 		_decals.clear();
 	}
 
+	void DECALS::updateConstants() {
+		if (!_CONSTANTS_DIRTY) return;
+		_CONSTANTS_DIRTY = false;
+
+		rawrbox::DecalsConstants settings = {static_cast<uint32_t>(count())};
+
+		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::DecalsConstants), &settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::BindlessManager::barrier(*uniforms, rawrbox::BufferType::CONSTANT);
+	}
+
 	void DECALS::update() {
-		if (_buffer == nullptr) throw std::runtime_error("[RawrBox-DECALS] Buffer not initialized! Did you call 'init' ?");
+		if (_buffer == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__DECALS_DIRTY__ || _decals.empty()) return;
 
 		auto context = rawrbox::RENDERER->context();
@@ -82,20 +100,19 @@ namespace rawrbox {
 			_buffer->Resize(device, context, size, true);
 		}
 
-		rawrbox::RENDERER->context()->UpdateBuffer(_buffer->GetBuffer(), 0, sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(_decals.size()), decals.empty() ? nullptr : decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		auto buffer = _buffer->GetBuffer();
+		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(_decals.size()), decals.empty() ? nullptr : decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::BindlessManager::barrier(*buffer, rawrbox::BufferType::SHADER);
+
 		rawrbox::__DECALS_DIRTY__ = false;
 		// -------
 	}
 
 	void DECALS::bindUniforms() {
-		if (uniforms == nullptr) throw std::runtime_error("[RawrBox-DECALS] Buffer not initialized! Did you call 'init' ?");
-		update(); // Update all lights if dirty
+		if (uniforms == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 
-		{
-			Diligent::MapHelper<rawrbox::DecalConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			CBConstants->settings = {static_cast<uint32_t>(rawrbox::DECALS::count()), 0, 0, 0};
-		}
-		// --------------
+		updateConstants();
+		update(); // Update all decals if dirty
 	}
 
 	// UTILS ----
@@ -114,6 +131,7 @@ namespace rawrbox {
 		_decals.push_back(std::move(ptr));
 
 		rawrbox::__DECALS_DIRTY__ = true;
+		_CONSTANTS_DIRTY = true;
 	}
 
 	bool DECALS::remove(size_t indx) {
@@ -121,6 +139,7 @@ namespace rawrbox {
 
 		_decals.erase(_decals.begin() + indx);
 		rawrbox::__DECALS_DIRTY__ = true;
+		_CONSTANTS_DIRTY = true;
 		return true;
 	}
 
@@ -130,12 +149,14 @@ namespace rawrbox {
 		for (size_t i = 0; i < _decals.size(); i++) {
 			if (_decals[i].get() == decal) {
 				_decals.erase(_decals.begin() + i);
+
 				rawrbox::__DECALS_DIRTY__ = true;
-				break;
+				_CONSTANTS_DIRTY = true;
+				return true;
 			}
 		}
 
-		return true;
+		return false;
 	}
 	// ---------
 } // namespace rawrbox

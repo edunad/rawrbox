@@ -53,5 +53,7 @@ namespace rawrbox {
 		// ------RENDER
 		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false) override;
 		// --------------------
+
+		[[nodiscard]] bool requiresUpdate() const override;
 	};
 } // namespace rawrbox

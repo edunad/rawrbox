@@ -10,9 +10,13 @@
 namespace rawrbox {
 
 	class TextEngine {
-
+	protected:
 		static std::map<std::string, std::unique_ptr<rawrbox::Font>> _fonts;
 		static std::map<uint16_t, std::unique_ptr<rawrbox::TexturePack>> _packs;
+
+		// LOGGER ------
+		static std::unique_ptr<rawrbox::Logger> _logger;
+		// -------------
 
 		static std::string getFontInSystem(const std::filesystem::path& path);
 

@@ -1,9 +1,8 @@
 #include <rawrbox/math/utils/math.hpp>
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/animated.hpp>
 #include <rawrbox/utils/time.hpp>
-
-#include <fmt/format.h>
 
 namespace rawrbox {
 	// NOLINTBEGIN(modernize-pass-by-value)
@@ -11,8 +10,10 @@ namespace rawrbox {
 	TextureAnimatedBase::TextureAnimatedBase(const std::filesystem::path& filePath, const std::vector<uint8_t>& /*buffer*/, bool /*useFallback*/) : _filePath(filePath) {}
 	// NOLINTEND(modernize-pass-by-value)
 
-	void TextureAnimatedBase::internalLoad(const std::vector<uint8_t>& /*_buffer*/, bool /*_useFallback*/) { throw std::runtime_error("[RawrBox-TextureAnimatedBase] Not implemented"); }
+	void TextureAnimatedBase::internalLoad(const std::vector<uint8_t>& /*_buffer*/, bool /*_useFallback*/) { throw this->_logger->error("Not implemented"); }
 	void TextureAnimatedBase::internalUpdate() {
+		auto context = rawrbox::RENDERER->context();
+
 		Diligent::Box UpdateBox;
 		UpdateBox.MinX = 0;
 		UpdateBox.MinY = 0;
@@ -23,7 +24,8 @@ namespace rawrbox {
 		SubresData.Stride = this->_size.x * this->_channels;
 		SubresData.pData = this->_frames.empty() ? this->_pixels.data() : this->_frames[this->_currentFrame].pixels.data();
 
-		rawrbox::RENDERER->context()->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::BindlessManager::barrier(*this);
 	}
 
 	// ANIMATION ------
@@ -81,4 +83,6 @@ namespace rawrbox {
 		rawrbox::TextureBase::upload(format, true);
 	}
 	// --------------------
+
+	bool TextureAnimatedBase::requiresUpdate() const { return true; }
 } // namespace rawrbox

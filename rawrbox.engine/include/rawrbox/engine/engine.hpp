@@ -1,5 +1,7 @@
 #pragma once
+
 #include <rawrbox/engine/watch.hpp>
+#include <rawrbox/utils/logger.hpp>
 
 namespace rawrbox {
 	enum class ENGINE_THREADS {
@@ -9,12 +11,14 @@ namespace rawrbox {
 	};
 
 	class Engine {
-	private:
+	protected:
 		rawrbox::ENGINE_THREADS _shutdown = ENGINE_THREADS::NONE;
 		float _deltaTimeAccumulator = 0;
 
 		uint32_t _tps = 66;
 		uint32_t _fps = 60;
+
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Engine");
 
 		rawrbox::Watch _timer;
 
@@ -32,6 +36,7 @@ namespace rawrbox {
 		virtual void draw();
 
 		virtual void onThreadShutdown(rawrbox::ENGINE_THREADS thread);
+		void prettyPrintErr(const std::string& err);
 
 	public:
 		virtual ~Engine() = default;

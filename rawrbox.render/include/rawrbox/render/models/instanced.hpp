@@ -49,7 +49,7 @@ namespace rawrbox {
 		}
 
 		virtual void setTemplate(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
-			if (mesh.empty()) throw std::runtime_error("[RawrBox-InstancedModel] Invalid mesh! Missing vertices / indices!");
+			if (mesh.empty()) throw this->_logger->error("Invalid mesh! Missing vertices / indices!");
 			this->_mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh);
 
 			if (this->isUploaded() && this->isDynamic()) {
@@ -58,7 +58,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] virtual rawrbox::Mesh<typename M::vertexBufferType>& getTemplate() const {
-			if (this->_mesh == nullptr) throw std::runtime_error("[RawrBox-InstancedModel] Invalid mesh! Missing vertices / indices!");
+			if (this->_mesh == nullptr) throw this->_logger->error("Invalid mesh! Missing vertices / indices!");
 			return *this->_mesh;
 		}
 
@@ -68,14 +68,14 @@ namespace rawrbox {
 		}
 
 		virtual void removeInstance(size_t i = 0) {
-			if (i < 0 || i >= this->_instances.size()) throw std::runtime_error("[RawrBox-InstancedModel] Failed to find instance");
+			if (i < 0 || i >= this->_instances.size()) throw this->_logger->error("Failed to find instance");
 			this->_instances.erase(this->_instances.begin() + i);
 
 			if (this->isUploaded() && this->_autoUpload) this->updateInstance();
 		}
 
 		[[nodiscard]] rawrbox::Instance& getInstance(size_t i = 0) {
-			if (i < 0 || i >= this->_instances.size()) throw std::runtime_error("[RawrBox-InstancedModel] Failed to find instance");
+			if (i < 0 || i >= this->_instances.size()) throw this->_logger->error("Failed to find instance");
 			return this->_instances[i];
 		}
 
@@ -86,6 +86,8 @@ namespace rawrbox {
 			rawrbox::ModelBase<M>::upload(dynamic);
 
 			auto device = rawrbox::RENDERER->device();
+			auto context = rawrbox::RENDERER->context();
+
 			auto instSize = static_cast<uint32_t>(this->_instances.size());
 
 			// INSTANCE BUFFER ----
@@ -101,19 +103,24 @@ namespace rawrbox {
 
 			device->CreateBuffer(InstBuffDesc, this->_instances.empty() ? nullptr : &VBData, &this->_dataBuffer);
 			// ---------------------
+
+			// Barrier ----
+			rawrbox::BindlessManager::barrier(*this->_dataBuffer, rawrbox::BufferType::CONSTANT);
+			// ------------
 		}
 
 		virtual void updateInstance() {
-			if (this->_dataBuffer == nullptr) throw std::runtime_error("[RawrBox-InstancedModel] Data buffer not valid! Did you call upload()?");
+			if (this->_dataBuffer == nullptr) throw this->_logger->error("Data buffer not valid! Did you call upload()?");
 
 			auto context = rawrbox::RENDERER->context();
 			auto instSize = static_cast<uint32_t>(this->_instances.size());
 
 			context->UpdateBuffer(this->_vbh, 0, sizeof(rawrbox::Instance) * instSize, this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			rawrbox::BindlessManager::barrier(*this->_vbh, rawrbox::BufferType::VERTEX);
 		}
 
 		void draw() override {
-			if (!this->isUploaded()) throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not uploaded");
+			if (!this->isUploaded()) throw this->_logger->error("Failed to render model, vertex / index buffer is not uploaded");
 			if (this->_instances.empty()) return;
 
 			auto context = rawrbox::RENDERER->context();
@@ -131,10 +138,8 @@ namespace rawrbox {
 			// Bind materials uniforms & textures ----
 			rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix());
 
-			this->_material->init();
 			this->_material->bindPipeline(*this->_mesh);
 			this->_material->bindUniforms(*this->_mesh);
-			this->_material->bindShaderResources();
 			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;

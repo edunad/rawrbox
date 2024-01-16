@@ -6,6 +6,10 @@ namespace rawrbox {
 	// VARS ----
 	std::unordered_map<std::string, std::unique_ptr<lunasvg::Document>> SVGEngine::_svgs = {};
 	std::unordered_map<std::string, std::unique_ptr<rawrbox::TextureImage>> SVGEngine::_renderedSVGS = {};
+
+	// LOGGER ------
+	std::unique_ptr<rawrbox::Logger> SVGEngine::_logger = std::make_unique<rawrbox::Logger>("RawrBox-SVGEngine");
+	// -------------
 	//--------
 
 	lunasvg::Document* SVGEngine::internalLoad(const std::filesystem::path& filename) {
@@ -17,7 +21,7 @@ namespace rawrbox {
 		}
 
 		auto svg = lunasvg::Document::loadFromFile(name);
-		if (svg == nullptr) throw std::runtime_error(fmt::format("[RawrBox-SVGEngine] Failed to load '{}'", name));
+		if (svg == nullptr) throw _logger->error("Failed to load '{}'", name);
 
 		auto ptr = svg.get();
 		_svgs[name] = std::move(svg);
@@ -50,7 +54,7 @@ namespace rawrbox {
 		if (fnd != _renderedSVGS.end()) return fnd->second.get();
 
 		auto doc = SVGEngine::internalLoad(filename);
-		if (doc == nullptr) throw std::runtime_error(fmt::format("[RawrBox-SVGEngine] Failed to load '{}'", filename.generic_string()));
+		if (doc == nullptr) throw _logger->error("Failed to load '{}'", filename.generic_string());
 
 		auto img = doc->renderToBitmap(size.x, size.y);
 		auto texture = std::make_unique<rawrbox::TextureImage>(size, img.data(), 4);

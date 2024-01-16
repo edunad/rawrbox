@@ -1,10 +1,10 @@
+#include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/textures/manager.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
 #include <magic_enum.hpp>
 
-#include <fmt/format.h>
+#include <fmt/color.h>
 
 namespace rawrbox {
 	// STATICS ------
@@ -15,18 +15,18 @@ namespace rawrbox {
 	std::unordered_map<uint32_t, Diligent::RefCntAutoPtr<Diligent::ISampler>> PipelineUtils::_samplers = {};
 
 	Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> PipelineUtils::_stateCache;
+
+	std::unique_ptr<rawrbox::Logger> PipelineUtils::_logger = std::make_unique<rawrbox::Logger>("RawrBox-Pipeline");
 	// -------------
 
 	// PUBLIC ----
-	Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> PipelineUtils::signature;
-	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> PipelineUtils::signatureBind;
-
 	Diligent::ISampler* PipelineUtils::defaultSampler = nullptr;
 	bool PipelineUtils::initialized = false;
 	// -----------------
 
 	void PipelineUtils::init(Diligent::IRenderDevice& device) {
 		if (initialized) return;
+		_logger->info("Initializing pipeline utils");
 
 		uint32_t id = Diligent::TEXTURE_ADDRESS_WRAP << 6 | Diligent::TEXTURE_ADDRESS_WRAP << 3 | Diligent::TEXTURE_ADDRESS_WRAP;
 		Diligent::SamplerDesc desc{
@@ -48,72 +48,18 @@ namespace rawrbox {
 		initialized = true;
 	}
 
-	void PipelineUtils::createSignature() {
-		if (signature != nullptr) throw std::runtime_error("[RawrBox-Pipeline] Signature already bound!");
+	void PipelineUtils::shutdown() {
+		RAWRBOX_DESTROY(_stateCache);
 
-		Diligent::PipelineResourceSignatureDesc PRSDesc;
-		PRSDesc.Name = "RawrBox::SIGNATURE::BINDLESS";
-		PRSDesc.BindingIndex = 0;
+		_pipelines.clear();
+		_binds.clear();
+		_shaders.clear();
+		_samplers.clear();
 
-		// RESOURCES -----
-		std::vector<Diligent::PipelineResourceDesc> resources = {
-		    {Diligent::SHADER_TYPE_VERTEX, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		_logger.reset();
 
-		    {Diligent::SHADER_TYPE_VERTEX, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_DYNAMIC},
-
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", rawrbox::RENDERER->MAX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures_sampler", 1, Diligent::SHADER_RESOURCE_TYPE_SAMPLER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE},
-		};
-
-		// Add extra signatures ----
-		for (auto& plugin : rawrbox::RENDERER->getPlugins()) {
-			if (plugin.second == nullptr) continue;
-			plugin.second->signatures(resources);
-		}
-		// -------------------------
-
-		PRSDesc.Resources = resources.data();
-		PRSDesc.NumResources = static_cast<uint8_t>(resources.size());
-		PRSDesc.UseCombinedTextureSamplers = true;
-		// --------------
-
-		// SAMPLERS -----
-		Diligent::SamplerDesc SamLinearClampDesc{
-		    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,
-		    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
-
-		std::vector<Diligent::ImmutableSamplerDesc> samplers = {
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", SamLinearClampDesc},
-		};
-
-		PRSDesc.ImmutableSamplers = samplers.data();
-		PRSDesc.NumImmutableSamplers = static_cast<uint32_t>(samplers.size());
-		// --------------
-
-		rawrbox::RENDERER->device()->CreatePipelineResourceSignature(PRSDesc, &signature);
-
-		// Setup binds ---
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Camera")->Set(rawrbox::RENDERER->camera()->uniforms());
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Camera")->Set(rawrbox::RENDERER->camera()->uniforms());
-		// ----------------
-
-		// Add extra signatures ----
-		for (auto& plugin : rawrbox::RENDERER->getPlugins()) {
-			if (plugin.second == nullptr) continue;
-			plugin.second->bind(*signature);
-		}
-		// -------------------------
-
-		signature->CreateShaderResourceBinding(&signatureBind, true);
-
-		// Setup textures ---
-		signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(rawrbox::TextureManager::getHandles().data(), 0, static_cast<uint32_t>(rawrbox::TextureManager::total()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
-		rawrbox::TextureManager::onUpdate += []() {
-			signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(rawrbox::TextureManager::getHandles().data(), 0, static_cast<uint32_t>(rawrbox::TextureManager::total()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
-		};
-		// ------------------
+		defaultSampler = nullptr;
+		initialized = false;
 	}
 
 	Diligent::ISampler* PipelineUtils::registerSampler(uint32_t id, Diligent::SamplerDesc desc) {
@@ -129,6 +75,7 @@ namespace rawrbox {
 		return _samplers[id];
 	}
 
+	// TODO: ADD CACHE https://github.com/DiligentGraphics/DiligentCore/blob/e94b36978ccf8dd6e48c759318ef1b887496a7c5/Graphics/GraphicsTools/interface/BytecodeCache.h
 	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::ShaderMacroArray macros) {
 		if (name.empty()) return nullptr;
 		std::string id = fmt::format("{}-{}", name, macros.Count);
@@ -140,12 +87,10 @@ namespace rawrbox {
 
 		Diligent::ShaderCreateInfo ShaderCI;
 		ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
-		ShaderCI.Desc.UseCombinedTextureSamplers = true; // (g_Texture + g_Texture_sampler combination)
 		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
 		ShaderCI.CompileFlags = Diligent::SHADER_COMPILE_FLAG_ENABLE_UNBOUNDED_ARRAYS;
 
 		std::string shaderName = fmt::format("RawrBox::SHADER::{}", name);
-
 		ShaderCI.Desc.ShaderType = type;
 		ShaderCI.EntryPoint = "main";
 		ShaderCI.Desc.Name = shaderName.c_str();
@@ -155,10 +100,11 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IShader> shader;
 		Diligent::RefCntAutoPtr<Diligent::IDataBlob> output;
 		rawrbox::RENDERER->device()->CreateShader(ShaderCI, &shader, &output);
-		if (shader == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to compile shader '{}'", name));
+		if (shader == nullptr) throw _logger->error("Failed to compile shader '{}'", name);
 
 		std::string_view compilerOutput = output != nullptr ? std::bit_cast<const char*>(output->GetConstDataPtr()) : "";
-		fmt::print("[RawrBox-Shader] Compiled shader '{}'\n", name);
+
+		_logger->info("Compiled shader '{}'", fmt::format(fmt::fg(fmt::color::coral), name));
 		if (!compilerOutput.empty()) fmt::print("  └── {}\n", compilerOutput);
 
 		_shaders[id] = std::move(shader);
@@ -181,7 +127,7 @@ namespace rawrbox {
 	}
 
 	Diligent::IPipelineState* PipelineUtils::createComputePipeline(const std::string& name, rawrbox::PipeComputeSettings settings) {
-		if (settings.pCS.empty()) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create shader {}, pCS shader cannot be empty!", name));
+		if (settings.pCS.empty()) throw _logger->error("Failed to create shader {}, pCS shader cannot be empty!", name);
 
 		auto fnd = _pipelines.find(name);
 		if (fnd != _pipelines.end()) return fnd->second;
@@ -210,14 +156,14 @@ namespace rawrbox {
 		PSOCreateInfo.pCS = rawrbox::PipelineUtils::compileShader(settings.pCS, Diligent::SHADER_TYPE_COMPUTE, settings.macros);
 
 		rawrbox::RENDERER->device()->CreateComputePipelineState(PSOCreateInfo, &pipe);
-		if (pipe == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}'", name));
+		if (pipe == nullptr) throw _logger->error("Failed to create pipeline '{}'", name);
 
 		if (settings.signature == nullptr) {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;
 				auto var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
 
-				if (var == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type)));
+				if (var == nullptr) throw _logger->error("Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type));
 				var->Set(uni.uniform);
 			}
 		}
@@ -313,14 +259,14 @@ namespace rawrbox {
 
 		// ---------------------
 		rawrbox::RENDERER->device()->CreateGraphicsPipelineState(info, &pipe);
-		if (pipe == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}'", name));
+		if (pipe == nullptr) throw _logger->error("Failed to create pipeline '{}'", name);
 
 		if (settings.signature == nullptr) {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;
 
 				auto var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
-				if (var == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Pipeline] Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type)));
+				if (var == nullptr) throw _logger->error("Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type));
 
 				var->Set(uni.uniform);
 			}

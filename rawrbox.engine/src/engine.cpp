@@ -1,11 +1,12 @@
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/utils/thread_utils.hpp>
+#include <rawrbox/utils/threading.hpp>
 #include <rawrbox/utils/timer.hpp>
 
 #include <cpptrace/cpptrace.hpp>
 
-#include <fmt/printf.h>
+#include <fmt/format.h>
 
 #include <chrono>
 #include <string>
@@ -27,7 +28,7 @@ namespace rawrbox {
 	}
 
 	// Create the GLFW window
-	void Engine::setupGLFW() { throw cpptrace::logic_error("[RawrBox-Engine] Method 'setupGLFW' not implemented"); }
+	void Engine::setupGLFW() { throw this->_logger->error("Method 'setupGLFW' not implemented"); }
 	void Engine::init() {}
 	void Engine::pollEvents() {}
 	void Engine::fixedUpdate() {}
@@ -38,21 +39,34 @@ namespace rawrbox {
 	// -----
 
 	void Engine::shutdown() {
-		this->_shutdown = ENGINE_THREADS::THREAD_RENDER; // Stop bgfx first
+		this->_shutdown = ENGINE_THREADS::THREAD_RENDER; // Stop render first
+		rawrbox::ASYNC::shutdown();
+	}
+
+	void Engine::prettyPrintErr(const std::string& err) {
+		fmt::print("\n ---- FATAL ENGINE ERROR ----\n");
+		fmt::print(" {}\n", err);
+		fmt::print("-------------------------------\n\n");
 	}
 
 	void Engine::run() {
-
+		rawrbox::ASYNC::init();
 		rawrbox::ThreadUtils::setName("rawrbox:input");
+
+		// Init GLFW ---
 		this->setupGLFW();
+		// ---------
 
 		// Setup render threading
 		new std::jthread([this]() {
 			try {
 				rawrbox::RENDER_THREAD_ID = std::this_thread::get_id();
-				this->init();
-
 				rawrbox::ThreadUtils::setName("rawrbox:render");
+
+				// INITIALIZE ENGINE ---
+				this->init();
+				// ---------
+
 				while (this->_shutdown != ENGINE_THREADS::THREAD_RENDER) {
 					rawrbox::DELTA_TIME = float(std::max(0.0, this->_timer.record_elapsed_seconds()));
 
@@ -94,26 +108,24 @@ namespace rawrbox {
 					// ----------
 				}
 
-				fmt::print("[RawrBox-Engine] Thread 'rawrbox:render' shutdown\n");
+				this->_logger->warn("Thread 'rawrbox:render' shutdown");
 				rawrbox::TIMER::clear();
+
 				this->onThreadShutdown(rawrbox::ENGINE_THREADS::THREAD_RENDER);
+				this->_shutdown = rawrbox::ENGINE_THREADS::THREAD_INPUT; // Done killing rendering, now destroy glfw
+			} catch (const cpptrace::exception_with_message& err) {
+				this->prettyPrintErr(err.message());
 
-				this->_shutdown = rawrbox::ENGINE_THREADS::THREAD_INPUT; // Done killing bgfx, now destroy glfw
-			} catch (std::runtime_error& err) {
-				std::string wat = err.what();
+				err.trace().print();
+				throw err;
+			} catch (const std::exception& err) {
+				this->prettyPrintErr(err.what());
 
-				std::string title = " FATAL ENGINE ERROR ";
-				std::string hLine = std::string((((wat.size() + 1) / 2) - title.size() / 2), '-');
-
-				fmt::print("\n┌{}{}{}┐\n", hLine, title, hLine);
-				fmt::print(" {} \n", wat);
-				fmt::print("└{}{}{}┘\n\n", hLine, title, hLine);
-
+				fmt::print("▒▒{}▒▒\n", fmt::format(fmt::bg(fmt::color::dark_red), fmt::format(fmt::fg(fmt::color::white), " If you are the developer, please use the logger error in RAWRBOX.UTILS for a better stack trace ")));
 				cpptrace::generate_trace().print();
 				throw err;
 			}
 		});
-
 		// ----
 
 		// GLFW needs to run on main thread
@@ -122,7 +134,7 @@ namespace rawrbox {
 		}
 		// -----
 
-		fmt::print("[RawrBox-Engine] Thread 'rawrbox:input' shutdown\n");
+		this->_logger->warn("Thread 'rawrbox:input' shutdown");
 		this->onThreadShutdown(rawrbox::ENGINE_THREADS::THREAD_INPUT);
 	}
 

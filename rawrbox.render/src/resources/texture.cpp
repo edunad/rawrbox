@@ -10,24 +10,20 @@ namespace rawrbox {
 	ResourceTexture::~ResourceTexture() { this->_texture.reset(); }
 
 	bool ResourceTexture::load(const std::vector<uint8_t>& buffer) {
-		const bool isGIF = this->filePath.extension() == ".gif";
-		if (isGIF) {
+		const rawrbox::TEXTURE_TYPE type = this->filePath.generic_string().rfind(".vertex.") != -1 ? rawrbox::TEXTURE_TYPE::VERTEX : rawrbox::TEXTURE_TYPE::PIXEL;
+		auto extension = this->filePath.extension();
+
+		if (extension == ".gif") {
 			this->_texture = std::make_unique<rawrbox::TextureGIF>(this->filePath, buffer);
-			return true;
-		}
-
-		const bool isWEBP = this->filePath.extension() == ".webp";
-		if (isWEBP) {
+		} else if (extension == ".webp") {
 			this->_texture = std::make_unique<rawrbox::TextureWEBP>(this->filePath, buffer);
-			return true;
-		}
-
-		if (flags) {
+		} else if (flags) {
 			this->_texture = std::make_unique<rawrbox::TextureAtlas>(this->filePath, buffer, flags); // Use flags for sprite size
 		} else {
 			this->_texture = std::make_unique<rawrbox::TextureImage>(this->filePath, buffer);
 		}
 
+		this->_texture->setType(type);
 		return true;
 	}
 

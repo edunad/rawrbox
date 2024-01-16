@@ -9,8 +9,6 @@
 	#include <sol/sol.hpp>
 #endif
 
-#include <typeinfo>
-
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialUnlit>
@@ -50,9 +48,13 @@ namespace rawrbox {
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::BlendShapes<M>>> _blend_shapes = {};
 		std::vector<ModelOriginalData> _original_data = {};
 
-		// BGFX DYNAMIC SUPPORT ---
+		// DYNAMIC SUPPORT ---
 		bool _isDynamic = false;
 		// ----
+
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Model");
+		// -------------
 
 #ifdef RAWRBOX_SCRIPTING
 		sol::object _luaWrapper;
@@ -89,12 +91,12 @@ namespace rawrbox {
 				auto& blendNormals = shape.second->normals;
 
 				if (!blendPos.empty() && blendPos.size() != verts.size()) {
-					fmt::print("[RawrBox-ModelBase] Blendshape verts do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}\n", shape.first, verts.size(), blendPos.size());
+					this->_logger->info("Blendshape verts do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendPos.size());
 					return;
 				}
 
 				if (!blendNormals.empty() && blendNormals.size() != verts.size()) {
-					fmt::print("[RawrBox-ModelBase] Blendshape normals do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}\n", shape.first, verts.size(), blendNormals.size());
+					this->_logger->info("Blendshape normals do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendNormals.size());
 					return;
 				}
 
@@ -136,7 +138,7 @@ namespace rawrbox {
 
 		// BLEND SHAPES ---
 		bool createBlendShape(const std::string& id, const std::vector<rawrbox::Vector3f>& newVertexPos, const std::vector<rawrbox::Vector3f>& newNormPos, float weight = 0.F) {
-			if (this->_mesh == nullptr) throw std::runtime_error("[RawrBox-ModelBase] Mesh not initialized!");
+			if (this->_mesh == nullptr) throw this->_logger->error("Mesh not initialized!");
 
 			auto blend = std::make_unique<rawrbox::BlendShapes<M>>();
 			blend->pos = newVertexPos;
@@ -212,6 +214,9 @@ namespace rawrbox {
 
 			context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+			rawrbox::BindlessManager::barrier(*this->_vbh, rawrbox::BufferType::VERTEX);
+			rawrbox::BindlessManager::barrier(*this->_ibh, rawrbox::BufferType::INDEX);
 		}
 
 		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_mesh->getPos(); }
@@ -249,8 +254,10 @@ namespace rawrbox {
 
 		// ----
 		virtual void upload(bool dynamic = false) {
-			if (this->isUploaded()) throw std::runtime_error("[RawrBox-ModelBase] Upload called twice");
+			if (this->isUploaded()) throw this->_logger->error("Upload called twice!");
+
 			auto device = rawrbox::RENDERER->device();
+			auto context = rawrbox::RENDERER->context();
 
 			// Generate buffers ----
 			this->_isDynamic = dynamic;
@@ -258,8 +265,8 @@ namespace rawrbox {
 			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
 			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
 
-			if (!dynamic && vertSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Vertices cannot be empty on non-dynamic buffer!");
-			if (!dynamic && indcSize <= 0) throw std::runtime_error("[RawrBox-ModelBase] Indices cannot be empty on non-dynamic buffer!");
+			if (!dynamic && vertSize <= 0) throw this->_logger->error("Vertices cannot be empty on non-dynamic buffer!");
+			if (!dynamic && indcSize <= 0) throw this->_logger->error("Indices cannot be empty on non-dynamic buffer!");
 
 			// Store original positions for blendstates
 			if (vertSize > 0) {
@@ -300,10 +307,19 @@ namespace rawrbox {
 			IBData.DataSize = IndcBuffDesc.Size;
 			device->CreateBuffer(IndcBuffDesc, indcSize > 0 ? &IBData : nullptr, &this->_ibh);
 			// ---------------------
+
+			// Barrier ----
+			rawrbox::BindlessManager::barrier(*this->_vbh, rawrbox::BufferType::VERTEX);
+			rawrbox::BindlessManager::barrier(*this->_ibh, rawrbox::BufferType::INDEX);
+			// ------------
+
+			// Initialize material ----
+			this->_material->init();
+			// ------------
 		}
 
 		virtual void draw() {
-			if (!this->isUploaded()) throw std::runtime_error("[RawrBox-Model] Failed to render model, vertex / index buffer is not uploaded");
+			if (!this->isUploaded()) throw this->_logger->error("Failed to render model, vertex / index buffer is not uploaded");
 
 			// Bind vertex and index buffers
 			const uint64_t offset = 0;
@@ -312,6 +328,7 @@ namespace rawrbox {
 			// NOLINTEND(*)
 
 			auto context = rawrbox::RENDERER->context();
+
 			context->SetVertexBuffers(0, 1, pBuffs, &offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			// ----

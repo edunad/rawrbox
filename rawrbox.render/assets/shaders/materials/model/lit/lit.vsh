@@ -1,15 +1,19 @@
 
-#include <uniforms.fxh>
+#include <vertex_bindless_uniforms.fxh>
+#include <camera.fxh>
 
 #define TEXTURE_DATA
 #include <material.fxh>
 
-//#define TRANSFORM_DISPLACEMENT
+#define TRANSFORM_DISPLACEMENT
 #define TRANSFORM_PSX
 #define TRANSFORM_BILLBOARD
 #ifdef SKINNED
     #define TRANSFORM_BONES
 #endif
+
+Texture2DArray g_Textures[];
+SamplerState   g_Sampler;
 
 #include <model_transforms.fxh>
 
@@ -52,11 +56,11 @@ struct PSInput {
     float4 Pos                      : SV_POSITION;
     float4 WorldPos                 : POSITION1;
 
-    float4 Normal                   : NORMAL0;
-    float4 Tangent                  : TANGENT0;
+    float4 Normal                   : NORMAL;
+    float4 Tangent                  : TANGENT;
 
     float2 UV                       : TEX_COORD;
-    float4 Color                    : COLOR0;
+    float4 Color                    : COLOR;
 
     nointerpolation uint   TexIndex : TEX_ARRAY_INDEX;
 };
@@ -81,13 +85,13 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 
     PSIn.Pos      = transform.final;
     PSIn.WorldPos = mul(transform.pos, Camera.world);
-    PSIn.UV       = applyUVTransform(VSIn.UV.xy);
+    PSIn.UV       = VSIn.UV.xy; //applyUVTransform(VSIn.UV.xy);
 
     #ifdef INSTANCED
-        PSIn.Color    = VSIn.Color * VSIn.ColorOverride * Constants.model.colorOverride;
+        PSIn.Color    = VSIn.Color * VSIn.ColorOverride * Constants.colorOverride;
         PSIn.TexIndex = VSIn.Extra.x;
     #else
-        PSIn.Color    = VSIn.Color * Constants.model.colorOverride;
+        PSIn.Color    = VSIn.Color * Constants.colorOverride;
         PSIn.TexIndex = VSIn.UV.z;
     #endif
 }

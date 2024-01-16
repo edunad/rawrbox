@@ -25,7 +25,6 @@ namespace assimp {
 		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Text3D<>> _text = std::make_unique<rawrbox::Text3D<>>();
 
-		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;
 
 		void init() override;

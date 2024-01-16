@@ -23,7 +23,7 @@ namespace rawrbox {
 		void setScaleMul(float mul) { this->_scaleMul = mul; }
 		[[nodiscard]] float getScaleMul() const { return this->_scaleMul; }
 
-		size_t addText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White(), rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center, bool billboard = false) {
+		size_t addText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White(), rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center) {
 			float screenSize = font.getScale() * this->_scaleMul;
 
 			rawrbox::Vector3f startpos = {};
@@ -53,12 +53,10 @@ namespace rawrbox {
 			}
 
 			size_t id = rawrbox::TEXT_ID++;
-			font.render(text, startpos.xy(), true, [this, &font, billboard, pos, startpos, cl, screenSize, id](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
+			font.render(text, startpos.xy(), true, [this, &font, pos, startpos, cl, screenSize, id](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
 				rawrbox::Mesh<typename M::vertexBufferType> mesh;
 
 				mesh.setTexture(font.getPackTexture(glyph)); // Set the atlas
-				mesh.setOptimizable(!billboard);
-				mesh.addData("billboard_mode", {billboard ? 1.F : 0, 0, 0});
 				mesh.setName(fmt::format("3dtext-{}", id));
 
 				std::array<rawrbox::VertexData, 4> buff{

@@ -23,6 +23,7 @@
 	#include <EngineFactoryMtl.h>
 #endif
 
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/text/engine.hpp>
@@ -36,6 +37,10 @@ namespace rawrbox {
 	RendererBase::~RendererBase() {
 		this->_render.reset();
 		this->_stencil.reset();
+		this->_logger.reset();
+
+		rawrbox::BindlessManager::shutdown();
+		rawrbox::PipelineUtils::shutdown();
 
 		RAWRBOX_DESTROY(this->_device);
 		RAWRBOX_DESTROY(this->_context);
@@ -149,7 +154,7 @@ namespace rawrbox {
 				break;
 #endif // GL_SUPPORTED
 
-			default: throw std::runtime_error("[RawrBox-Window] Invalid diligent engine");
+			default: throw this->_logger->error("Invalid diligent api");
 		}
 
 		// Setup shader pipeline if not exists
@@ -161,27 +166,49 @@ namespace rawrbox {
 		}
 		// -----------
 
-		if (this->_engineFactory == nullptr) throw std::runtime_error("[RawrBox-Renderer] Failed to initialize");
+		if (this->_engineFactory == nullptr) throw this->_logger->error("Failed to initialize");
 
-		// Setup camera -----
-		if (this->_camera != nullptr) this->_camera->initialize();
-		// ------------------
-
-		// PLUGIN INITIALIZE ---
-		for (auto& plugin : this->_renderPlugins) {
-			if (plugin.second == nullptr) continue;
-			plugin.second->initialize(this->getSize());
-		}
-		// -----------------------
+		// Single draw call to setup window background
+		this->clear();
+		this->frame();
+		// --------------
 
 		// Init pipelines ---
 		rawrbox::PipelineUtils::init(*this->device());
 		// ----------------------
 
+		// Setup camera -----
+		if (this->_camera != nullptr) {
+			this->_camera->initialize();
+		} else {
+			this->_logger->warn("Camera is not setup! Only {} {}", fmt::format(fmt::fg(fmt::color::red), "OVERLAY"), fmt::format(fmt::fg(fmt::color::yellow), "pass will be available!"));
+		}
+		// ------------------
+
+		// Init plugins ---
+		for (auto& plugin : this->_renderPlugins) {
+			if (plugin.second == nullptr) continue;
+			this->_logger->info("Initializing '{}' renderer plugin", fmt::format(fmt::fg(fmt::color::coral), plugin.first));
+			plugin.second->initialize(this->getSize());
+		}
+		// -----------------------
+
+		// Init bindless ---
+		rawrbox::BindlessManager::init();
+		// -----------------
+
 		// Init default textures ---
+		this->_logger->info("Initializing default textures");
+
 		if (rawrbox::MISSING_TEXTURE == nullptr) {
 			rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
 			rawrbox::MISSING_TEXTURE->upload();
+		}
+
+		if (rawrbox::MISSING_VERTEX_TEXTURE == nullptr) {
+			rawrbox::MISSING_VERTEX_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
+			rawrbox::MISSING_VERTEX_TEXTURE->setType(rawrbox::TEXTURE_TYPE::VERTEX);
+			rawrbox::MISSING_VERTEX_TEXTURE->upload();
 		}
 
 		if (rawrbox::WHITE_TEXTURE == nullptr) {
@@ -201,6 +228,8 @@ namespace rawrbox {
 		// -------------------------
 
 		// Init default fonts ------
+		this->_logger->info("Initializing default fonts");
+
 		if (rawrbox::DEBUG_FONT_REGULAR == nullptr) {
 			rawrbox::DEBUG_FONT_REGULAR = rawrbox::TextEngine::load("./assets/fonts/SometypeMono-Regular.ttf", 12);
 		}
@@ -212,10 +241,18 @@ namespace rawrbox {
 		if (rawrbox::DEBUG_FONT_ITALIC == nullptr) {
 			rawrbox::DEBUG_FONT_ITALIC = rawrbox::TextEngine::load("./assets/fonts/SometypeMono-Italic.ttf", 12);
 		}
+		// ------
+
+		// Init render utils ---
+		RenderUtils::init();
 		// -------------------------
 
-		// Setup pipeline bindless signature
-		rawrbox::PipelineUtils::createSignature();
+		// Upload plugins ---
+		for (auto& plugin : this->_renderPlugins) {
+			if (plugin.second == nullptr) continue;
+			this->_logger->info("Uploading '{}' renderer plugin", fmt::format(fmt::fg(fmt::color::coral), plugin.first));
+			plugin.second->upload();
+		}
 		// -----------------------
 
 		// Setup stencil ----
@@ -250,6 +287,7 @@ namespace rawrbox {
 	}
 
 	// PLUGINS ---------------------------
+	const bool RendererBase::hasPlugin(const std::string& plugin) const { return this->_renderPlugins.find(plugin) != this->_renderPlugins.end(); }
 	const std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>>& RendererBase::getPlugins() const { return this->_renderPlugins; }
 	// -----------------------------------
 
@@ -271,12 +309,8 @@ namespace rawrbox {
 
 				return;
 			}
-
-			this->_currentIntro->texture->update();
 		} else {
-			if (this->_camera != nullptr) {
-				this->_camera->update();
-			}
+			if (this->_camera != nullptr) this->_camera->update();
 
 			// Update plugins --
 			for (auto& plugin : this->_renderPlugins) {
@@ -285,19 +319,37 @@ namespace rawrbox {
 			}
 			// --------------------
 		}
+
+		// Update textures ---
+		rawrbox::BindlessManager::update();
+		// --------------------
 	}
 
 	void RendererBase::render() {
-		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Failed to bind swapChain/context/device! Did you call 'init' ?");
-		if (this->_drawCall == nullptr) throw std::runtime_error("[Rawrbox-Renderer] Missing draw call! Did you call 'setDrawCall' ?");
+		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw this->_logger->error("Failed to bind swapChain/context/device! Did you call 'init' ?");
+		if (this->_drawCall == nullptr) throw this->_logger->error("Missing draw call! Did you call 'setDrawCall' ?");
 
 		// Clear backbuffer ----
 		this->clear();
 		// ---------------------
 
-		// Update camera -------
-		if (this->_camera != nullptr) this->_camera->updateBuffer();
+		// Process barriers -----
+		rawrbox::BindlessManager::processBarriers();
 		// ---------------------
+
+		// No camera -------
+		if (this->_camera == nullptr) {
+			this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+			this->frame();
+
+			return; // No camera, no world draw
+		}
+		// ---------------------
+
+		// Update camera buffer --
+		this->_camera->updateBuffer();
+		// -----------
 
 		// Perform pre-render --
 		for (auto& plugin : this->_renderPlugins) {
@@ -306,41 +358,34 @@ namespace rawrbox {
 		}
 		// -----------------------
 
-// Perform world --
-#ifdef _DEBUG
-		// this->beginQuery("WORLD");
-#endif
+		// Commit graphics signature --
+		this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		// -----------------------
 
+		// Perform world --
 		this->_render->startRecord();
+		// this->beginQuery("WORLD");
 		this->_drawCall(rawrbox::DrawPass::PASS_OPAQUE);
-		this->_render->stopRecord();
-
-#ifdef _DEBUG
 		// this->endQuery("WORLD");
-#endif
+		this->_render->stopRecord();
 		//  -----------------
 
 		// Perform post-render --
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
-			plugin.second->postRender(this->_render.get());
+			plugin.second->postRender(*this->_render);
 		}
 		// -----------------------
 
 		// Render world ----
-		rawrbox::RenderUtils::renderQUAD(this->_render->getHandle());
+		rawrbox::RenderUtils::renderQUAD(*this->_render);
 		// ------------------
 
 		// Perform overlay --
-#ifdef _DEBUG
 		// this->beginQuery("OVERLAY");
-#endif
 		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
-
-#ifdef _DEBUG
 		// this->endQuery("OVERLAY");
-#endif
-		// ------------------
+		//  ------------------
 
 		// Submit ---
 		this->frame();
@@ -367,7 +412,7 @@ namespace rawrbox {
 	}
 
 	/*void RendererBase::gpuCheck() {
-		if (this->_gpuReadFrame == rawrbox::BGFX_FRAME) {
+		if (this->_gpuReadFrame == rawrbox::FRAME) {
 			std::unordered_map<uint32_t, uint32_t> ids = {};
 			const bgfx::Caps* caps = bgfx::getCaps();
 
@@ -418,10 +463,10 @@ namespace rawrbox {
 
 		this->_drawCall = [this](const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OVERLAY) return;
-			this->_stencil->drawBox({}, this->_size.cast<float>(), rawrbox::Colors::Black());
+			auto screenSize = this->_size.cast<float>();
 
 			if (this->_currentIntro != nullptr) {
-				auto screenSize = this->_size.cast<float>();
+				this->_stencil->drawBox({}, screenSize, this->_currentIntro->background); // Background
 
 				if (this->_currentIntro->cover) {
 					this->_stencil->drawTexture({0, 0}, {screenSize.x, screenSize.y}, *this->_currentIntro->texture);
@@ -429,6 +474,8 @@ namespace rawrbox {
 					auto size = this->_currentIntro->texture->getSize().cast<float>();
 					this->_stencil->drawTexture({screenSize.x / 2.F - size.x / 2.F, screenSize.y / 2.F - size.y / 2.F}, {size.x, size.y}, *this->_currentIntro->texture);
 				}
+			} else {
+				this->_stencil->drawBox({}, screenSize, rawrbox::Colors::Black()); // Background
 			}
 
 			this->_stencil->render();
@@ -463,17 +510,17 @@ namespace rawrbox {
 	}
 
 	void RendererBase::skipIntros(bool skip) {
-		if (skip) fmt::print("[RawrBox] Skipping intros :(\n");
+		if (skip) this->_logger->info("Skipping intros :(");
 		this->_skipIntros = skip;
 	}
 
-	void RendererBase::addIntro(const std::filesystem::path& webpPath, float speed, bool cover) {
-		if (webpPath.extension() != ".webp") throw std::runtime_error(fmt::format("[RawrBox-RenderBase] Invalid intro '{}', format needs to be .webp!", webpPath.generic_string()));
-		this->_introList[webpPath.generic_string()] = {nullptr, speed, cover};
+	void RendererBase::addIntro(const std::filesystem::path& webpPath, float speed, bool cover, const rawrbox::Colorf& color) {
+		if (webpPath.extension() != ".webp") throw this->_logger->error("Invalid intro '{}', only '.webp' format is supported!", webpPath.generic_string());
+		this->_introList[webpPath.generic_string()] = {speed, cover, color};
 	}
-//-------------------------
+	//-------------------------
 
-// QUERIES ------
+	// QUERIES ------
 #ifdef _DEBUG
 	void RendererBase::beginQuery(const std::string& query) {
 		const auto& supportedFeatures = this->device()->GetDeviceInfo().Features;
@@ -498,7 +545,7 @@ namespace rawrbox {
 			pipelineHelper = helper.get();
 			this->_query[pipeName] = std::move(helper);
 
-			fmt::print("[RawrBox-Renderer] Created query {} -> QUERY_TYPE_PIPELINE_STATISTICS\n", query);
+			this->_logger->info("Created query '{}' -> QUERY_TYPE_PIPELINE_STATISTICS", fmt::format(fmt::fg(fmt::color::blue_violet), query));
 		} else {
 			pipelineHelper = fndPipeline->second.get();
 		}
@@ -517,13 +564,15 @@ namespace rawrbox {
 			durationHelper = helper.get();
 			this->_query[durationName] = std::move(helper);
 
-			fmt::print("[RawrBox-Renderer] Created query {} -> QUERY_TYPE_DURATION\n", query);
+			this->_logger->info("Created query '{}' -> QUERY_TYPE_DURATION", fmt::format(fmt::fg(fmt::color::blue_violet), query));
 		} else {
 			durationHelper = fndDuration->second.get();
 		}
 		// --------------
 
-		if (pipelineHelper == nullptr || durationHelper == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Renderer] Failed to create & begin query '{}'", query));
+		if (pipelineHelper == nullptr || durationHelper == nullptr) {
+			throw this->_logger->error("Failed to create & begin query '{}'", query);
+		}
 
 		// Start queries ---
 		pipelineHelper->Begin(this->context());
@@ -541,7 +590,9 @@ namespace rawrbox {
 		auto fndPipeline = this->_query.find(pipeName);
 		auto fndDuration = this->_query.find(durationName);
 
-		if (fndPipeline->second == nullptr || fndDuration->second == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Renderer] Failed to end query '{}', not found!", query));
+		if (fndPipeline->second == nullptr || fndDuration->second == nullptr) {
+			throw this->_logger->error("Failed to end query '{}', not found!", query);
+		}
 
 		// End queries ---
 		auto pipeData = &this->_pipelineData[pipeName];

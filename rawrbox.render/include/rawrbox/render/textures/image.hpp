@@ -5,7 +5,6 @@
 #include <rawrbox/render/textures/base.hpp>
 
 #include <filesystem>
-#include <string>
 #include <vector>
 
 namespace rawrbox {

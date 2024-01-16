@@ -30,7 +30,6 @@ namespace decal_test {
 
 		// Setup renderer
 		auto render = window->createRenderer();
-		render->skipIntros(true);
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
@@ -60,21 +59,21 @@ namespace decal_test {
 	}
 
 	void Game::loadContent() {
-		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("./assets/textures/decals.png", 64)};
+		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
+		    {"./assets/textures/decals.png", 64},
+		};
 
-		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
-		for (auto& f : initialContentFiles) {
-			rawrbox::RESOURCES::loadFileAsync(f.first, f.second, [this]() {
-				this->_loadingFiles--;
-				if (this->_loadingFiles <= 0) {
-					rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
-				}
+		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
+			rawrbox::runOnRenderThread([this]() {
+				rawrbox::BindlessManager::processBarriers(); // IMPORTANT: BARRIERS NEED TO BE PROCESSED AFTER LOADING ALL THE CONTENT
+				this->contentLoaded();
 			});
-		}
+		});
 	}
 
 	void Game::contentLoaded() {
+		if (this->_ready) return;
+
 		std::random_device prng;
 		std::uniform_int_distribution<uint16_t> dist(0, 4);
 		std::uniform_real_distribution<float> distRot(-1.5F, 1.5F);
@@ -133,9 +132,7 @@ namespace decal_test {
 			rawrbox::Window::shutdown();
 		} else {
 			this->_model.reset();
-
 			rawrbox::RESOURCES::shutdown();
-			rawrbox::ASYNC::shutdown();
 		}
 	}
 

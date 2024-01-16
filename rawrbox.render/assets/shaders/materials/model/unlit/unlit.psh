@@ -1,5 +1,5 @@
 
-#include <unlit_pixel_uniforms.fxh>
+#include <pixel_bindless_uniforms.fxh>
 
 #ifdef CLUSTER_PLUGIN
     #include <camera.fxh>
@@ -12,7 +12,7 @@
 #endif
 
 Texture2DArray g_Textures[];
-SamplerState   g_Textures_sampler;
+SamplerState   g_Sampler;
 
 #ifdef CLUSTER_PLUGIN
     #include <decaling.fxh>
@@ -23,7 +23,7 @@ struct PSInput {
     float4 WorldPos                 : POSITION1;
 
     float2 UV                       : TEX_COORD;
-    float4 Color                    : COLOR0;
+    float4 Color                    : COLOR;
 
     nointerpolation uint   TexIndex : TEX_ARRAY_INDEX;
 };
@@ -33,7 +33,7 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    float4 color = g_Textures[Constants.textureID].Sample(g_Textures_sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+    float4 color = g_Textures[Constants.textureIDs.x].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
     if (color.a <= 0.0) discard;
 
     #ifdef CLUSTER_PLUGIN
@@ -49,7 +49,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
             uint buckets = ClusterDataGrid[gridOffset + bucketIndex].y;
 
             // Apply decals ---
-            float4 roughtness = 0;
+            float4 roughtness = 0; // not used in unlit
             ApplyDecals(buckets, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, color, roughtness);
             // ----------------
         }

@@ -8,7 +8,6 @@
 #include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/base.hpp>
-#include <rawrbox/render/textures/manager.hpp>
 
 #include <RasterizerState.h>
 #include <fmt/printf.h>
@@ -48,7 +47,11 @@ namespace rawrbox {
 			return {base->getTextureID(), norm->getTextureID(), metR->getTextureID(), em->getTextureID()};
 		}
 
-		bool operator==(const rawrbox::MeshTextures& other) const { return this->texture == other.texture && this->normal == other.normal && this->emission == other.emission && this->roughtMetal == other.roughtMetal && this->displacement == other.displacement; }
+		[[nodiscard]] const bool canMerge(const rawrbox::MeshTextures& other) const {
+			return this->roughnessFactor == other.roughnessFactor && this->metalnessFactor == other.metalnessFactor && this->specularFactor == other.specularFactor && this->emissionFactor == other.emissionFactor;
+		}
+
+		bool operator==(const rawrbox::MeshTextures& other) const { return this->texture == other.texture && this->normal == other.normal && this->specularFactor == other.specularFactor && this->roughtMetal == other.roughtMetal && this->emission == other.emission; }
 		bool operator!=(const rawrbox::MeshTextures& other) const { return !operator==(other); }
 	};
 
@@ -202,7 +205,7 @@ namespace rawrbox {
 		virtual void setDisplacementTexture(rawrbox::TextureBase* ptr, float power = 1.F) {
 			this->textures.displacement = ptr;
 
-			this->addData("displacement_strength", {power, 0, 0, 0});
+			this->addData("displacement", {static_cast<float>(ptr->getTextureID()), power, 0, 0});
 			this->setOptimizable(false);
 		}
 
@@ -254,7 +257,7 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual const rawrbox::Vector4f& getData(const std::string& id) const {
 			auto fnd = this->data.find(id);
-			if (fnd == this->data.end()) throw std::runtime_error(fmt::format("[RawrBox-Mesh] Data '{}' not found", id));
+			if (fnd == this->data.end()) throw rawrbox::Logger::err("RawrBox-Mesh", "Data '{}' not found", id);
 			return fnd->second;
 		}
 
@@ -299,7 +302,7 @@ namespace rawrbox {
 			if (this->vertices.size() + other.vertices.size() >= MAX_VERTICES) return false; // Max vertice limit
 			if (this->indices.size() + other.indices.size() >= MAX_INDICES) return false;    // Max indice limit
 
-			return this->textures == other.textures &&
+			return this->textures == other.textures && // TODO: Replace with canMerge and pass textureID down to vertex?
 			       this->color == other.color &&
 			       this->wireframe == other.wireframe &&
 			       this->lineMode == other.lineMode &&

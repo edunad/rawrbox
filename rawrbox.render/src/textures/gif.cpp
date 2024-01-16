@@ -29,18 +29,19 @@ namespace rawrbox {
 			auto failure = stbi_failure_reason();
 
 			if (useFallback) {
-				fmt::print("[TextureGIF] Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), failure);
+				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), failure);
 				this->loadFallback();
 				return;
 			} else {
-				throw std::runtime_error(fmt::format("[TextureGIF] Error loading image: {}", failure));
+				throw this->_logger->error("Error loading image: {}", failure);
 			}
 		}
 
 		uint32_t framePixelCount = this->_size.x * this->_size.y * this->_channels;
 		for (int i = 0; i < frames_n; i++) {
-			// first push it, then allocate to prevent double copy of memory
-			this->_frames.push_back({});
+			// NOLINTBEGIN(*)
+			this->_frames.push_back({}); // first push it, then allocate to prevent double copy of memory
+			// NOLINTEND(*)
 
 			rawrbox::Frame& frame = this->_frames.back();
 			frame.delay = static_cast<float>(delays[i]); // in ms

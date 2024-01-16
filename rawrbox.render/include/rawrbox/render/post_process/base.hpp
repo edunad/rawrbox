@@ -1,14 +1,20 @@
 #pragma once
 
-#include <PipelineState.h>
-#include <ShaderResourceBinding.h>
-#include <TextureView.h>
+#include <rawrbox/math/vector4.hpp>
+#include <rawrbox/render/bindless.hpp>
+#include <rawrbox/render/textures/base.hpp>
 
 namespace rawrbox {
 	class PostProcessBase {
 	protected:
+		Diligent::IBuffer* _buffer = nullptr;
 		Diligent::IPipelineState* _pipeline = nullptr;
-		Diligent::IShaderResourceBinding* _bind = nullptr;
+
+		std::array<rawrbox::Vector4f, MAX_POST_DATA> _data = {};
+
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-PostProcess");
+		// -------------
 
 	public:
 		PostProcessBase() = default;
@@ -16,10 +22,9 @@ namespace rawrbox {
 		PostProcessBase& operator=(PostProcessBase&&) = delete;
 		PostProcessBase(const PostProcessBase&) = delete;
 		PostProcessBase& operator=(const PostProcessBase&) = delete;
-
 		virtual ~PostProcessBase() = default;
 
-		virtual void upload() = 0;
-		virtual void applyEffect(Diligent::ITextureView* texture) = 0;
+		virtual void init();
+		virtual void applyEffect(const rawrbox::TextureBase& texture);
 	};
 } // namespace rawrbox

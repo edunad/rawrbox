@@ -174,7 +174,6 @@ namespace scripting_test {
 		this->_instance.reset();
 
 		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
 		rawrbox::SCRIPTING::shutdown();
 
 		this->_window->unblockPoll();

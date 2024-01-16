@@ -1,16 +1,18 @@
 #pragma once
 
-#include <PipelineState.h>
-#include <Texture.h>
+#include <rawrbox/render/textures/base.hpp>
 
 namespace rawrbox {
 	class RenderUtils {
+	protected:
 		static Diligent::IPipelineState* _pipe;
-		static Diligent::IShaderResourceBinding* _SRB;
 
-		static void init();
+		// LOGGER ------
+		static std::unique_ptr<rawrbox::Logger> _logger;
+		// -------------
 
 	public:
-		static void renderQUAD(Diligent::ITextureView* texture, bool transition = true);
+		static void init();
+		static void renderQUAD(const rawrbox::TextureBase& texture);
 	};
 } // namespace rawrbox

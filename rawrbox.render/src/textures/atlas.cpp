@@ -1,7 +1,7 @@
 
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/atlas.hpp>
-#include <rawrbox/render/textures/manager.hpp>
 #include <rawrbox/render/utils/texture.hpp>
 
 #include <fmt/format.h>
@@ -29,7 +29,7 @@ namespace rawrbox {
 	}
 
 	std::vector<uint8_t> TextureAtlas::getSprite(size_t id) const {
-		if (id >= this->_tiles.size()) throw std::runtime_error(fmt::format("[RawrBox-Atlas] Invalid ID {}", id));
+		if (id >= this->_tiles.size()) throw this->_logger->error("Invalid ID {}", id);
 		return this->_tiles[id];
 	}
 	// --------------------
@@ -98,10 +98,15 @@ namespace rawrbox {
 		data.NumSubresources = static_cast<uint32_t>(subresData.size());
 
 		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
+		if (this->_tex == nullptr) throw this->_logger->error("Failed to create texture '{}'", this->_name);
 
-		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
-		this->_textureID = rawrbox::TextureManager::registerTexture(this);
+		rawrbox::BindlessManager::barrier(*this, [this]() {
+			// Get handles --
+			this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+			// -------
 
-		this->updateSampler();
+			rawrbox::BindlessManager::registerTexture(*this);
+			this->updateSampler();
+		});
 	}
 } // namespace rawrbox

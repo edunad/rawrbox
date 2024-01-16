@@ -1,9 +1,8 @@
 
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/static.hpp>
-
-#include <stdexcept>
 
 namespace rawrbox {
 	CameraBase::~CameraBase() {
@@ -11,14 +10,23 @@ namespace rawrbox {
 	}
 
 	void CameraBase::initialize() {
+		auto device = rawrbox::RENDERER->device();
+		auto context = rawrbox::RENDERER->context();
+
 		Diligent::BufferDesc CBDesc;
 		CBDesc.Name = "rawrbox::Camera::Uniforms";
-		CBDesc.Size = sizeof(rawrbox::CameraUniforms);
 		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
 		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+		CBDesc.Size = sizeof(rawrbox::CameraUniforms);
 
 		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+
+		// Barrier ----
+		rawrbox::BindlessManager::barrier(*this->_uniforms, rawrbox::BufferType::CONSTANT);
+		// ------------
+
+		this->_logger->info("Initializing camera");
 	}
 
 	void CameraBase::updateMtx(){};
@@ -137,11 +145,11 @@ namespace rawrbox {
 	void CameraBase::update() {}
 
 	const rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f& /*pos*/) const {
-		throw std::runtime_error("Not implemented");
+		throw this->_logger->error("Not implemented");
 	}
 
 	const rawrbox::Vector3f CameraBase::screenToWorld(const rawrbox::Vector2f& /*screen_pos*/, const rawrbox::Vector3f& /*origin*/) const {
-		throw std::runtime_error("Not implemented");
+		throw this->_logger->error("Not implemented");
 	}
 
 	Diligent::IBuffer* CameraBase::uniforms() const { return this->_uniforms; }

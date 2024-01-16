@@ -10,21 +10,21 @@ namespace rawrbox {
 		if (timers.empty()) return;
 
 		auto time = static_cast<float>(rawrbox::TimeUtils::time());
-		for (auto it2 = timers.begin(); it2 != timers.end();) {
-			auto& timer = (*it2).second;
+		for (auto it = timers.begin(); it != timers.end();) {
+			auto& timer = (*it).second;
 			if (timer == nullptr) {
-				it2 = timers.erase(it2);
+				it = timers.erase(it);
 				continue;
 			}
 
 			if (timer->_paused || time < timer->_nextTick) {
-				++it2;
+				++it;
 				continue;
 			}
 
 			if (timer->_func != nullptr) timer->_func(); // Tick
 			if (timer == nullptr) {                      // If timer was deleted after callback
-				it2 = timers.erase(it2);
+				it = timers.erase(it);
 				continue;
 			}
 
@@ -32,13 +32,13 @@ namespace rawrbox {
 			if (!timer->_infinite) timer->_ticks++;
 			if (!timer->_infinite && timer->_ticks >= timer->_iterations) {
 				if (timer->_onComplete) timer->_onComplete();
-				it2 = timers.erase(it2);
+				it = timers.erase(it);
 				continue;
 			} else {
 				timer->_nextTick += timer->_msDelay;
 			}
 
-			++it2;
+			++it;
 		}
 	}
 
