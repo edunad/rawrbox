@@ -9,6 +9,7 @@
 namespace rawrbox {
 	// PRIVATE ----
 	std::vector<std::shared_ptr<rawrbox::LightBase>> LIGHTS::_lights = {};
+	rawrbox::LightConstants LIGHTS::_settings = {};
 
 	std::unique_ptr<Diligent::DynamicBuffer> LIGHTS::_buffer = nullptr;
 	Diligent::IBufferView* LIGHTS::_bufferRead = nullptr;
@@ -17,18 +18,7 @@ namespace rawrbox {
 	std::unique_ptr<rawrbox::Logger> LIGHTS::_logger = std::make_unique<rawrbox::Logger>("RawrBox-Lights");
 	// -------------
 
-	// Ambient --
-	rawrbox::Colorf LIGHTS::_ambient = {0.01F, 0.01F, 0.01F, 1.F};
-
-	// Fog --
-	rawrbox::Colorf LIGHTS::_fog_color = {0.F, 0.F, 0.F, 0.F};
-	float LIGHTS::_fog_density = -1.F;
-	float LIGHTS::_fog_end = -1.F;
-	rawrbox::FOG_TYPE LIGHTS::_fog_type = rawrbox::FOG_TYPE::FOG_EXP;
-	// -----
-
 	// PUBLIC ----
-	bool LIGHTS::fullbright = false;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> LIGHTS::uniforms;
 	// -------
 
@@ -37,9 +27,8 @@ namespace rawrbox {
 		{
 			Diligent::BufferDesc BuffDesc;
 			BuffDesc.Name = "rawrbox::Light::Uniforms";
-			BuffDesc.Usage = Diligent::USAGE_DYNAMIC;
+			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
 			BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 			BuffDesc.Size = sizeof(rawrbox::LightConstants);
 
 			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &uniforms);
@@ -75,6 +64,13 @@ namespace rawrbox {
 		_buffer.reset();
 
 		_lights.clear();
+	}
+
+	void LIGHTS::updateConstants() {
+		_settings.lightSettings.y = static_cast<float>(count());
+
+		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::LightConstants), &_settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::BindlessManager::barrier(*uniforms, rawrbox::BufferType::CONSTANT);
 	}
 
 	void LIGHTS::update() {
@@ -132,20 +128,14 @@ namespace rawrbox {
 	void LIGHTS::bindUniforms() {
 		if (uniforms == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		update(); // Update all lights if dirty
-
-		// TODO: Replace MAP?
-		{
-			Diligent::MapHelper<rawrbox::LightConstants> CBConstants(rawrbox::RENDERER->context(), uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-
-			CBConstants->lightSettings = {fullbright ? 1U : 0U, static_cast<uint32_t>(rawrbox::LIGHTS::count()), 0, 0}; // other light settings
-			CBConstants->ambientColor = _ambient;
-			CBConstants->fogColor = _fog_color;
-			CBConstants->fogSettings = {static_cast<float>(_fog_type), _fog_end, _fog_density, 0.F};
-		}
 	}
 
 	// UTILS ----
-	void LIGHTS::setEnabled(bool fb) { fullbright = fb; }
+	void LIGHTS::setEnabled(bool fb) {
+		_settings.lightSettings.x = fb;
+		updateConstants();
+	}
+
 	rawrbox::LightBase* LIGHTS::getLight(size_t indx) {
 		if (indx < 0 || indx >= _lights.size()) return nullptr;
 		return _lights[indx].get();
@@ -156,30 +146,38 @@ namespace rawrbox {
 	// ----
 
 	// AMBIENT ----
-	void LIGHTS::setAmbient(const rawrbox::Colorf& col) { _ambient = col; }
-	const rawrbox::Colorf& LIGHTS::getAmbient() { return _ambient; }
+	void LIGHTS::setAmbient(const rawrbox::Colorf& col) {
+		if (_settings.ambientColor == col) return;
+
+		_settings.ambientColor = col;
+		updateConstants();
+	}
+	const rawrbox::Colorf& LIGHTS::getAmbient() { return _settings.ambientColor; }
 	// ---------
 
 	// FOG ----
 	void LIGHTS::setFog(rawrbox::FOG_TYPE type, float end, float density, const rawrbox::Colorf& color) {
-		_fog_type = type;
-		_fog_color = color;
-		_fog_density = density;
-		_fog_end = end;
+		_settings.fogSettings.x = static_cast<float>(type);
+		_settings.fogSettings.y = density;
+		_settings.fogSettings.z = end;
+		_settings.fogColor = color;
+
+		updateConstants();
 	}
 
-	rawrbox::FOG_TYPE LIGHTS::getFogType() { return _fog_type; }
-	const rawrbox::Colorf& LIGHTS::getFogColor() { return _fog_color; }
-	float LIGHTS::getFogDensity() { return _fog_density; }
-	float LIGHTS::getFogEnd() { return _fog_end; }
+	rawrbox::FOG_TYPE LIGHTS::getFogType() { return static_cast<rawrbox::FOG_TYPE>(_settings.fogSettings.x); }
+	const rawrbox::Colorf& LIGHTS::getFogColor() { return _settings.fogColor; }
+	float LIGHTS::getFogDensity() { return _settings.fogSettings.y; }
+	float LIGHTS::getFogEnd() { return _settings.fogSettings.z; }
 	// ---------
 
 	// LIGHT ----
 	bool LIGHTS::removeLight(size_t indx) {
 		if (indx > _lights.size()) return false;
-
 		_lights.erase(_lights.begin() + indx);
 		rawrbox::__LIGHT_DIRTY__ = true;
+
+		updateConstants();
 		return true;
 	}
 
@@ -194,6 +192,7 @@ namespace rawrbox {
 			}
 		}
 
+		updateConstants();
 		return true;
 	}
 	// ---------

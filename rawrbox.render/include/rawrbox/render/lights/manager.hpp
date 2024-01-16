@@ -11,7 +11,7 @@
 
 namespace rawrbox {
 
-	enum class FOG_TYPE {
+	enum class FOG_TYPE : uint32_t {
 		FOG_LINEAR = 0,
 		FOG_EXP = 1
 	};
@@ -35,24 +35,19 @@ namespace rawrbox {
 		// ------
 
 		// Ambient ---
-		rawrbox::Colorf ambientColor = {};
+		rawrbox::Colorf ambientColor = {0.01F, 0.01F, 0.01F, 1.F};
 		// -----
 
 		// Fog ----
-		rawrbox::Colorf fogColor = {};
-		rawrbox::Vector4f fogSettings = {};
+		rawrbox::Colorf fogColor = {0.F, 0.F, 0.F, 0.F};
+		rawrbox::Vector4f fogSettings = {static_cast<float>(rawrbox::FOG_TYPE::FOG_EXP), -1.F, -1.F, 0};
 		// --------
 	};
 
 	class LIGHTS {
 	protected:
 		static std::vector<std::shared_ptr<rawrbox::LightBase>> _lights;
-
-		static rawrbox::Colorf _ambient;
-		static rawrbox::Colorf _fog_color;
-		static rawrbox::FOG_TYPE _fog_type;
-		static float _fog_density;
-		static float _fog_end;
+		static rawrbox::LightConstants _settings;
 
 		static std::unique_ptr<Diligent::DynamicBuffer> _buffer;
 		static Diligent::IBufferView* _bufferRead;
@@ -61,12 +56,11 @@ namespace rawrbox {
 		static std::unique_ptr<rawrbox::Logger> _logger;
 		// -------------
 
+		static void updateConstants();
 		static void update();
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
-
-		static bool fullbright;
 
 		static void init();
 		static void shutdown();
@@ -100,8 +94,9 @@ namespace rawrbox {
 		static rawrbox::LightBase* addLight(CallbackArgs&&... args) {
 			auto light = _lights.emplace_back(std::make_shared<T>(std::forward<CallbackArgs>(args)...)).get();
 			light->setId(++rawrbox::LIGHT_ID);
-			rawrbox::__LIGHT_DIRTY__ = true;
 
+			rawrbox::__LIGHT_DIRTY__ = true;
+			updateConstants();
 			return light;
 		}
 
