@@ -61,7 +61,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
     float3 lightDir = mul(float4(0, 0, 0, 1.0), Camera.view).xyz;
 
     [loop]
-    for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS && (lightIndex < TOTAL_LIGHTS || decalIndex < TOTAL_DECALS); ++bucketIndex) {
+    for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS && (lightIndex < TOTAL_LIGHTS || decalIndex < DecalsConstants.total); ++bucketIndex) {
 		uint lightMask = 0;
         uint decalMask = 0;
 
@@ -98,7 +98,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
         }
 
         [loop]
-        for(uint o = 0; o < CLUSTERS_Z && decalIndex < TOTAL_DECALS; ++o) {
+        for(uint o = 0; o < CLUSTERS_Z && decalIndex < DecalsConstants.total; ++o) {
             Decal decal = Decals[decalIndex];
             ++decalIndex;
 

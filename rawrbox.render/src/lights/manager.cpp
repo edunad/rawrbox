@@ -14,6 +14,8 @@ namespace rawrbox {
 	std::unique_ptr<Diligent::DynamicBuffer> LIGHTS::_buffer = nullptr;
 	Diligent::IBufferView* LIGHTS::_bufferRead = nullptr;
 
+	bool LIGHTS::_CONSTANTS_DIRTY = false;
+
 	// LOGGER ------
 	std::unique_ptr<rawrbox::Logger> LIGHTS::_logger = std::make_unique<rawrbox::Logger>("RawrBox-Lights");
 	// -------------
@@ -67,6 +69,9 @@ namespace rawrbox {
 	}
 
 	void LIGHTS::updateConstants() {
+		if (!_CONSTANTS_DIRTY) return;
+
+		_CONSTANTS_DIRTY = false;
 		_settings.lightSettings.y = static_cast<float>(count());
 
 		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::LightConstants), &_settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
@@ -127,13 +132,15 @@ namespace rawrbox {
 
 	void LIGHTS::bindUniforms() {
 		if (uniforms == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
-		update(); // Update all lights if dirty
+
+		updateConstants(); // Update buffer if dirty
+		update();          // Update all lights if dirty
 	}
 
 	// UTILS ----
 	void LIGHTS::setEnabled(bool fb) {
 		_settings.lightSettings.x = fb;
-		updateConstants();
+		_CONSTANTS_DIRTY = true;
 	}
 
 	rawrbox::LightBase* LIGHTS::getLight(size_t indx) {
@@ -148,9 +155,8 @@ namespace rawrbox {
 	// AMBIENT ----
 	void LIGHTS::setAmbient(const rawrbox::Colorf& col) {
 		if (_settings.ambientColor == col) return;
-
 		_settings.ambientColor = col;
-		updateConstants();
+		_CONSTANTS_DIRTY = true;
 	}
 	const rawrbox::Colorf& LIGHTS::getAmbient() { return _settings.ambientColor; }
 	// ---------
@@ -162,7 +168,7 @@ namespace rawrbox {
 		_settings.fogSettings.z = end;
 		_settings.fogColor = color;
 
-		updateConstants();
+		_CONSTANTS_DIRTY = true;
 	}
 
 	rawrbox::FOG_TYPE LIGHTS::getFogType() { return static_cast<rawrbox::FOG_TYPE>(_settings.fogSettings.x); }
@@ -175,9 +181,9 @@ namespace rawrbox {
 	bool LIGHTS::removeLight(size_t indx) {
 		if (indx > _lights.size()) return false;
 		_lights.erase(_lights.begin() + indx);
-		rawrbox::__LIGHT_DIRTY__ = true;
 
-		updateConstants();
+		rawrbox::__LIGHT_DIRTY__ = true;
+		_CONSTANTS_DIRTY = true;
 		return true;
 	}
 
@@ -187,13 +193,14 @@ namespace rawrbox {
 		for (size_t i = 0; i < _lights.size(); i++) {
 			if (_lights[i].get() == light) {
 				_lights.erase(_lights.begin() + i);
+
 				rawrbox::__LIGHT_DIRTY__ = true;
-				break;
+				_CONSTANTS_DIRTY = true;
+				return true;
 			}
 		}
 
-		updateConstants();
-		return true;
+		return false;
 	}
 	// ---------
 

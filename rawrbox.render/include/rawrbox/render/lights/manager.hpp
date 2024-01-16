@@ -52,6 +52,8 @@ namespace rawrbox {
 		static std::unique_ptr<Diligent::DynamicBuffer> _buffer;
 		static Diligent::IBufferView* _bufferRead;
 
+		static bool _CONSTANTS_DIRTY;
+
 		// LOGGER ------
 		static std::unique_ptr<rawrbox::Logger> _logger;
 		// -------------
@@ -96,7 +98,7 @@ namespace rawrbox {
 			light->setId(++rawrbox::LIGHT_ID);
 
 			rawrbox::__LIGHT_DIRTY__ = true;
-			updateConstants();
+			_CONSTANTS_DIRTY = true;
 			return light;
 		}
 
