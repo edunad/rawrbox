@@ -25,7 +25,6 @@ namespace model {
 
 		// Setup renderer
 		auto render = window->createRenderer();
-		render->skipIntros(true);
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
@@ -67,7 +66,6 @@ namespace model {
 	}
 
 	void Game::createModels() {
-		if (this->_ready) return;
 		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/meow3.gif")->get();
 		auto texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
 
@@ -275,6 +273,8 @@ namespace model {
 	}
 
 	void Game::contentLoaded() {
+		if (this->_ready) return;
+
 		// Model test ----
 		this->createModels();
 		// ----

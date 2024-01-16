@@ -110,9 +110,9 @@ namespace rawrbox {
 		rawrbox::NORMAL_TEXTURE.reset();
 		// ----------------------
 
-		glfwWaitEventsTimeout(1);
 		glfwPostEmptyEvent();
 		glfwTerminate();
+		glfwPostEmptyEvent();
 	}
 
 	void Window::update() {

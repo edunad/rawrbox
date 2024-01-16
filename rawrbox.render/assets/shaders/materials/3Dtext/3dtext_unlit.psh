@@ -1,4 +1,4 @@
-#include <3dtext_unlit_uniforms.fxh>
+#include <pixel_bindless_uniforms.fxh>
 
 Texture2DArray g_Textures[];
 SamplerState   g_Sampler;
@@ -14,7 +14,7 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    float a = g_Textures[Constants.textureID].Sample(g_Sampler, float3(PSIn.UV, 0)).r * PSIn.Color.a;
+    float a = g_Textures[Constants.textureIDs.x].Sample(g_Sampler, float3(PSIn.UV, 0)).r * PSIn.Color.a;
 	if(a <= 0.0) discard;
 
 	PSOut.Color = float4(PSIn.Color.rgb, a);

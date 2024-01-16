@@ -61,10 +61,12 @@ namespace rawrbox {
 		new std::jthread([this]() {
 			try {
 				rawrbox::RENDER_THREAD_ID = std::this_thread::get_id();
-
-				this->init();
-
 				rawrbox::ThreadUtils::setName("rawrbox:render");
+
+				// INITIALIZE ENGINE ---
+				this->init();
+				// ---------
+
 				while (this->_shutdown != ENGINE_THREADS::THREAD_RENDER) {
 					rawrbox::DELTA_TIME = float(std::max(0.0, this->_timer.record_elapsed_seconds()));
 

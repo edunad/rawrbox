@@ -16,7 +16,7 @@ namespace light {
 
 	void Game::setupGLFW() {
 		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12);
-		window->setMonitor(1);
+		window->setMonitor(-1);
 		window->setTitle("LIGHT TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
 		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
@@ -27,7 +27,6 @@ namespace light {
 
 		// Setup renderer
 		auto render = window->createRenderer();
-		render->skipIntros(true);
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {

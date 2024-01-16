@@ -9,12 +9,12 @@
         // ----------------
     };
 
+    ConstantBuffer<ConstantsStruct> Constants;
+
     #define Billboard Constants.data[0]
     #define VertexSnap Constants.data[1].x
     #define DisplacementTexture Constants.data[2].x
     #define DisplacementPower Constants.data[2].y
     #define RecieveDecals Constants.data[3].x
     #define RecieveShadows Constants.data[3].y
-
-    ConstantBuffer<ConstantsStruct> Constants;
 #endif

@@ -75,7 +75,6 @@ namespace rawrbox {
 
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferPixel;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertex;
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferPostProcess;
 
 		static void init();
 		static void shutdown();

@@ -83,7 +83,6 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	float3 V           = normalize(Camera.cameraPos.xyz - PSIn.WorldPos.xyz);
 	float dither       = InterleavedGradientNoise(PSIn.Pos.xy);
 
-
     // Apply compute data ----
     uint3 clusterIndex3D = uint3(floor(PSIn.Pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(PSIn.Pos.w));
     uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
@@ -97,7 +96,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
         uint2 buckets = ClusterDataGrid[gridOffset + bucketIndex];
 
         // Apply decals ---
-        float4 roughtness = 0;
+        float4 roughtness = 0; // TODO
         ApplyDecals(buckets.y, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, baseColor, roughtness);
         // ----------------
 

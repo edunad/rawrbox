@@ -31,6 +31,8 @@ namespace rawrbox {
 	}
 
 	void PostProcessDither::init() {
+		rawrbox::PostProcessBase::init();
+
 		rawrbox::PipeSettings settings;
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
 		settings.cull = Diligent::CULL_MODE_NONE;

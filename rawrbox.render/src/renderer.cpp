@@ -168,12 +168,21 @@ namespace rawrbox {
 
 		if (this->_engineFactory == nullptr) throw this->_logger->error("Failed to initialize");
 
+		// Single draw call to setup window background
+		this->clear();
+		this->frame();
+		// --------------
+
 		// Init pipelines ---
 		rawrbox::PipelineUtils::init(*this->device());
 		// ----------------------
 
 		// Setup camera -----
-		if (this->_camera != nullptr) this->_camera->initialize();
+		if (this->_camera != nullptr) {
+			this->_camera->initialize();
+		} else {
+			this->_logger->warn("Camera is not setup! Only {} {}", fmt::format(fmt::fg(fmt::color::red), "OVERLAY"), fmt::format(fmt::fg(fmt::color::yellow), "pass will be available!"));
+		}
 		// ------------------
 
 		// Init plugins ---
@@ -278,6 +287,7 @@ namespace rawrbox {
 	}
 
 	// PLUGINS ---------------------------
+	const bool RendererBase::hasPlugin(const std::string& plugin) const { return this->_renderPlugins.find(plugin) != this->_renderPlugins.end(); }
 	const std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>>& RendererBase::getPlugins() const { return this->_renderPlugins; }
 	// -----------------------------------
 
@@ -300,9 +310,7 @@ namespace rawrbox {
 				return;
 			}
 		} else {
-			if (this->_camera != nullptr) {
-				this->_camera->update();
-			}
+			if (this->_camera != nullptr) this->_camera->update();
 
 			// Update plugins --
 			for (auto& plugin : this->_renderPlugins) {
@@ -325,19 +333,29 @@ namespace rawrbox {
 		this->clear();
 		// ---------------------
 
-		// Update camera -------
-		if (this->_camera != nullptr) this->_camera->updateBuffer();
-		// ---------------------
-
 		// Process barriers -----
 		rawrbox::BindlessManager::processBarriers();
 		// ---------------------
 
+		// No camera -------
+		if (this->_camera == nullptr) {
+			this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+			this->frame();
+
+			return; // No camera, no world draw
+		}
+		// ---------------------
+
+		// Update camera buffer --
+		this->_camera->updateBuffer();
+		// -----------
+
 		// Perform pre-render --
-		/*for (auto& plugin : this->_renderPlugins) {
+		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 			plugin.second->preRender();
-		}*/
+		}
 		// -----------------------
 
 		// Commit graphics signature --
@@ -345,27 +363,27 @@ namespace rawrbox {
 		// -----------------------
 
 		// Perform world --
-		// this->_render->startRecord();
+		this->_render->startRecord();
 		// this->beginQuery("WORLD");
 		this->_drawCall(rawrbox::DrawPass::PASS_OPAQUE);
 		// this->endQuery("WORLD");
-		// this->_render->stopRecord();
+		this->_render->stopRecord();
 		//  -----------------
 
 		// Perform post-render --
-		/*for (auto& plugin : this->_renderPlugins) {
+		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 			plugin.second->postRender(*this->_render);
-		}*/
+		}
 		// -----------------------
 
 		// Render world ----
-		// rawrbox::RenderUtils::renderQUAD(*this->_render);
+		rawrbox::RenderUtils::renderQUAD(*this->_render);
 		// ------------------
 
 		// Perform overlay --
 		// this->beginQuery("OVERLAY");
-		// this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
 		// this->endQuery("OVERLAY");
 		//  ------------------
 
