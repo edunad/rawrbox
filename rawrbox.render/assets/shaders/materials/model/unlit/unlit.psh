@@ -49,7 +49,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
             uint buckets = ClusterDataGrid[gridOffset + bucketIndex].y;
 
             // Apply decals ---
-            float4 roughtness = 0;
+            float4 roughtness = 0; // not used in unlit
             ApplyDecals(buckets, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, color, roughtness);
             // ----------------
         }

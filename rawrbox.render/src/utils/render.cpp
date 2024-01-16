@@ -25,7 +25,7 @@ namespace rawrbox {
 		settings.signature = rawrbox::BindlessManager::signature; // Use bindless
 
 		_pipe = rawrbox::PipelineUtils::createPipeline("Utils::QUAD", settings);
-		_logger->info("Initializing..");
+		_logger->info("Initializing");
 	}
 
 	void RenderUtils::renderQUAD(const rawrbox::TextureBase& texture) {

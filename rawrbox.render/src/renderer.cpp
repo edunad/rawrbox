@@ -168,18 +168,18 @@ namespace rawrbox {
 
 		if (this->_engineFactory == nullptr) throw this->_logger->error("Failed to initialize");
 
-		// Setup camera -----
-		if (this->_camera != nullptr) this->_camera->initialize();
-		// ------------------
-
 		// Init pipelines ---
 		rawrbox::PipelineUtils::init(*this->device());
 		// ----------------------
 
+		// Setup camera -----
+		if (this->_camera != nullptr) this->_camera->initialize();
+		// ------------------
+
 		// Init plugins ---
-		this->_logger->info("Initializing renderer plugins");
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr) continue;
+			this->_logger->info("Initializing '{}' renderer plugin", fmt::format(fmt::fg(fmt::color::coral), plugin.first));
 			plugin.second->initialize(this->getSize());
 		}
 		// -----------------------
@@ -189,7 +189,7 @@ namespace rawrbox {
 		// -----------------
 
 		// Init default textures ---
-		this->_logger->info("Initializing default textures / fonts");
+		this->_logger->info("Initializing default textures");
 
 		if (rawrbox::MISSING_TEXTURE == nullptr) {
 			rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
@@ -219,6 +219,8 @@ namespace rawrbox {
 		// -------------------------
 
 		// Init default fonts ------
+		this->_logger->info("Initializing default fonts");
+
 		if (rawrbox::DEBUG_FONT_REGULAR == nullptr) {
 			rawrbox::DEBUG_FONT_REGULAR = rawrbox::TextEngine::load("./assets/fonts/SometypeMono-Regular.ttf", 12);
 		}
@@ -233,14 +235,13 @@ namespace rawrbox {
 		// ------
 
 		// Init render utils ---
-		this->_logger->info("Initializing renderer utils");
 		RenderUtils::init();
 		// -------------------------
 
 		// Upload plugins ---
-		this->_logger->info("Uploading renderer plugins");
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr) continue;
+			this->_logger->info("Uploading '{}' renderer plugin", fmt::format(fmt::fg(fmt::color::coral), plugin.first));
 			plugin.second->upload();
 		}
 		// -----------------------
@@ -311,7 +312,9 @@ namespace rawrbox {
 			// --------------------
 		}
 
+		// Update textures ---
 		rawrbox::BindlessManager::update();
+		// --------------------
 	}
 
 	void RendererBase::render() {
@@ -331,10 +334,10 @@ namespace rawrbox {
 		// ---------------------
 
 		// Perform pre-render --
-		for (auto& plugin : this->_renderPlugins) {
+		/*for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 			plugin.second->preRender();
-		}
+		}*/
 		// -----------------------
 
 		// Commit graphics signature --
@@ -342,27 +345,27 @@ namespace rawrbox {
 		// -----------------------
 
 		// Perform world --
-		this->_render->startRecord();
+		// this->_render->startRecord();
 		// this->beginQuery("WORLD");
 		this->_drawCall(rawrbox::DrawPass::PASS_OPAQUE);
 		// this->endQuery("WORLD");
-		this->_render->stopRecord();
+		// this->_render->stopRecord();
 		//  -----------------
 
 		// Perform post-render --
-		for (auto& plugin : this->_renderPlugins) {
+		/*for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 			plugin.second->postRender(*this->_render);
-		}
+		}*/
 		// -----------------------
 
 		// Render world ----
-		rawrbox::RenderUtils::renderQUAD(*this->_render);
+		// rawrbox::RenderUtils::renderQUAD(*this->_render);
 		// ------------------
 
 		// Perform overlay --
 		// this->beginQuery("OVERLAY");
-		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+		// this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
 		// this->endQuery("OVERLAY");
 		//  ------------------
 

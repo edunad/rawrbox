@@ -17,7 +17,6 @@ SamplerState   g_Sampler;
 
 #include <model_transforms.fxh>
 
-
 struct VSInput {
     float3 Pos   : ATTRIB0;
 

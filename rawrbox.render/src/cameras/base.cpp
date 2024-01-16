@@ -4,8 +4,6 @@
 #include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/static.hpp>
 
-#include <stdexcept>
-
 namespace rawrbox {
 	CameraBase::~CameraBase() {
 		RAWRBOX_DESTROY(this->_uniforms);
@@ -17,16 +15,18 @@ namespace rawrbox {
 
 		Diligent::BufferDesc CBDesc;
 		CBDesc.Name = "rawrbox::Camera::Uniforms";
-		CBDesc.Size = sizeof(rawrbox::CameraUniforms);
 		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
 		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+		CBDesc.Size = sizeof(rawrbox::CameraUniforms);
 
 		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
 
 		// Barrier ----
 		rawrbox::BindlessManager::barrier(*this->_uniforms, rawrbox::BufferType::CONSTANT);
 		// ------------
+
+		this->_logger->info("Initializing camera");
 	}
 
 	void CameraBase::updateMtx(){};

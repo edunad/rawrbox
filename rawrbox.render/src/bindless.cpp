@@ -190,14 +190,14 @@ namespace rawrbox {
 		auto camera = renderer->camera();
 
 		// Setup graphic binds ---
+		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(signatureBufferVertex);
+		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(signatureBufferPixel);
+		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "PostProcessConstants")->Set(signatureBufferPostProcess);
+
 		if (camera != nullptr) {
 			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Camera")->Set(camera->uniforms());
 			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Camera")->Set(camera->uniforms());
 		}
-
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(signatureBufferVertex);
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(signatureBufferPixel);
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "PostProcessConstants")->Set(signatureBufferPostProcess);
 
 		// Add extra binds ----
 		for (auto& plugin : rawrbox::RENDERER->getPlugins()) {
@@ -323,7 +323,7 @@ namespace rawrbox {
 		auto* pDepthSRV = texture.getDepth(); // Get depth
 		if (pDepthSRV != nullptr) {
 			uint32_t id = internalRegister(pDepthSRV, rawrbox::TEXTURE_TYPE::PIXEL);
-			_logger->info("Registering {} bindless pixel texture slot '{}'", fmt::format(fmt::fg(fmt::color::red), "DEPTH"), fmt::format(fmt::fg(fmt::color::violet), std::to_string(id)));
+			_logger->info("Registering {} bindless texture '{}' on slot '{}'", fmt::format(fmt::fg(fmt::color::red), "DEPTH"), fmt::format(fmt::fg(fmt::color::violet), texture.getName()), fmt::format(fmt::fg(fmt::color::violet), std::to_string(id)));
 
 			// Register depth
 			texture.setDepthTextureID(id);
@@ -342,7 +342,7 @@ namespace rawrbox {
 		if (pTextureSRV == nullptr) throw _logger->error("Failed to register texture '{}'! Texture view is null, not uploaded?", texture.getName());
 
 		uint32_t id = internalRegister(pTextureSRV, texture.getType());
-		_logger->info("Registering bindless {} texture slot '{}'", texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX ? "vertex" : "pixel", fmt::format(fmt::fg(fmt::color::violet), std::to_string(id)));
+		_logger->info("Registering bindless {} texture '{}' on slot '{}'", texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX ? "vertex" : "pixel", fmt::format(fmt::fg(fmt::color::violet), texture.getName()), fmt::format(fmt::fg(fmt::color::violet), std::to_string(id)));
 
 		// ----
 		registerUpdateTexture(texture);
