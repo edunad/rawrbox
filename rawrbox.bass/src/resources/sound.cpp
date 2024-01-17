@@ -16,9 +16,7 @@ namespace rawrbox {
 				loaded = rawrbox::BASS::loadSound(this->filePath, this->flags);
 			}
 		} catch (const std::runtime_error& e) {
-			fmt::print("{}\n", e.what());
-			fmt::print("  └── Loading fallback sound!\n");
-
+			fmt::print("{}\n └── Loading fallback sound!\n", e.what());
 			loaded = rawrbox::BASS::loadSound("./assets/sound/error.ogg", this->flags);
 		}
 
@@ -41,6 +39,6 @@ namespace rawrbox {
 		       fileExtention == ".wav";
 	}
 
-	bool BASSLoader::supportsBuffer(const std::string& fileExtention) { return false; };
+	bool BASSLoader::supportsBuffer(const std::string& /*fileExtention*/) { return false; };
 	// ----
 } // namespace rawrbox

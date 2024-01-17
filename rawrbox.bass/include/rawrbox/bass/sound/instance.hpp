@@ -3,6 +3,7 @@
 #include <rawrbox/bass/sound/flags.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/utils/event.hpp>
+#include <rawrbox/utils/logger.hpp>
 
 #include <cmath>
 #include <vector>
@@ -35,6 +36,10 @@ namespace rawrbox {
 
 		bool _looping = false;
 		bool _stream = false;
+
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-SoundInstance");
+		// -------------
 
 #ifdef RAWRBOX_SCRIPTING
 		sol::object _luaWrapper;

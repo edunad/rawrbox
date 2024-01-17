@@ -5,7 +5,6 @@
 #include <fmt/printf.h>
 
 #include <memory>
-#include <stdexcept>
 
 namespace rawrbox {
 	SoundBase::SoundBase(uint32_t sample, uint32_t fx, uint32_t flags, bool stream) : _sample(sample), _fxSample(fx), _flags(flags), _isStream(stream) {}
@@ -24,7 +23,7 @@ namespace rawrbox {
 	}
 
 	std::shared_ptr<rawrbox::SoundInstance> SoundBase::createInstance() {
-		if (!this->isValid()) throw std::runtime_error("[RawrBox-BASS] Sound sample not valid!");
+		if (!this->isValid()) throw this->_logger->error("Sound sample not valid!");
 		auto ptr = std::make_shared<rawrbox::SoundInstance>(this->_sample, this->_isStream, this->_flags);
 
 		this->_instances.push_back(std::move(ptr));
@@ -32,7 +31,7 @@ namespace rawrbox {
 	}
 
 	std::shared_ptr<rawrbox::SoundInstance> SoundBase::getInstance(size_t i) {
-		if (i >= this->_instances.size()) throw std::runtime_error(fmt::format("[RawrBox-BASS] Sound instance '{}' not found!", i));
+		if (i >= this->_instances.size()) throw this->_logger->error("Sound instance '{}' not found!", i);
 		return this->_instances[i];
 	}
 

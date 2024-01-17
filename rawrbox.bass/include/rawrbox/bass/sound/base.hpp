@@ -2,6 +2,7 @@
 
 #include <rawrbox/bass/sound/flags.hpp>
 #include <rawrbox/bass/sound/instance.hpp>
+#include <rawrbox/utils/logger.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -18,6 +19,9 @@ namespace rawrbox {
 
 		std::vector<std::shared_ptr<rawrbox::SoundInstance>> _instances = {};
 
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Sound");
+		// -------------
 	public:
 		virtual ~SoundBase();
 

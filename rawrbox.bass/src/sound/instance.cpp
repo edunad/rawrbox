@@ -190,7 +190,7 @@ namespace rawrbox {
 				buffer.reserve(2048);
 				break;
 			default:
-				throw std::runtime_error(fmt::format("[RawrBox-BASS] Unknown FFT length {}, should be power of 2! Check: http://bass.radio42.com/help/html/a13cfef0-1056-bb94-81c4-a4fdf21bd463.htm", bass_length));
+				throw this->_logger->error("Unknown FFT length {}, should be power of 2! Check: http://bass.radio42.com/help/html/a13cfef0-1056-bb94-81c4-a4fdf21bd463.htm", bass_length);
 		}
 
 		BASS_ChannelGetData(this->_channel, &buffer.front(), flag);
@@ -205,7 +205,7 @@ namespace rawrbox {
 	// --------------
 
 	void SoundInstance::setBeatSettings(float bandwidth, float center_freq, float release_time) {
-		if ((this->_flags & SoundFlags::BEAT_DETECTION) == 0) throw std::runtime_error("[RawrBox-BASS] Load flag BEAT_DETECTION not set!");
+		if ((this->_flags & SoundFlags::BEAT_DETECTION) == 0) throw this->_logger->error("Load flag BEAT_DETECTION not set!");
 		if (!this->isCreated()) return;
 
 		BASS_FX_BPM_BeatSetParameters(this->_channel, bandwidth, center_freq, release_time);

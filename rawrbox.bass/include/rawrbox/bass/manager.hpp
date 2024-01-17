@@ -16,6 +16,9 @@ namespace rawrbox {
 
 		static rawrbox::Vector3f _oldLocation;
 
+		// LOGGER ------
+		static std::unique_ptr<rawrbox::Logger> _logger;
+		// -------------
 	public:
 		static bool _shutdown;
 		static std::unordered_map<std::string, std::unique_ptr<rawrbox::SoundBase>> sounds; // Keep alive the sounds

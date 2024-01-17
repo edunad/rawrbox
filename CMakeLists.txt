@@ -44,11 +44,8 @@ option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading"
 option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
 
 # Supports -----
-# Newest API's are recommended for performance boost! According to steam, at least dx12 is supported on 80% users
 option(RAWRBOX_DISABLE_SUPPORT_DX12   "Disable dx12 support" OFF)
-option(RAWRBOX_DISABLE_SUPPORT_DX11   "Disable dx11 support" ON)
 option(RAWRBOX_DISABLE_SUPPORT_VULKAN "Disable vulkan support" OFF)
-option(RAWRBOX_DISABLE_SUPPORT_OPENGL "Disable opengl support" ON)
 # ---------------
 
 option(RAWRBOX_COPY_SHADER_INCLUDES "Copy rawrbox shaders includes" OFF)
@@ -64,7 +61,7 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
     #set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
     #set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS ON)
-    #set(RAWRBOX_BUILD_RAWRBOX_BASS ON)
+    set(RAWRBOX_BUILD_RAWRBOX_BASS ON)
     set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
     #set(RAWRBOX_BUILD_RAWRBOX_WEBM ON)
     #set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)

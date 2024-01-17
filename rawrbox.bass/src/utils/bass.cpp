@@ -1,10 +1,9 @@
 
 #include <rawrbox/bass/utils/bass.hpp>
+#include <rawrbox/utils/logger.hpp>
 
 #include <bass.h>
 #include <fmt/format.h>
-
-#include <stdexcept>
 
 namespace rawrbox {
 	void BASSUtils::checkBASSError() {
@@ -42,7 +41,7 @@ namespace rawrbox {
 				break;
 		}
 
-		throw std::runtime_error(fmt::format("[RawrBox-BASS] Bass audio error: {}\n", readErr));
+		throw rawrbox::Logger::err("RawrBox-BASS", "Bass audio error:\n\t{}", readErr);
 	}
 
 } // namespace rawrbox

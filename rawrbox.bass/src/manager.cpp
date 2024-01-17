@@ -13,19 +13,23 @@
 namespace rawrbox {
 	constexpr auto MAX_SOUND_INSTANCES = 5; // Max sound effects playing at the same time
 
+	// LOGGER ------
+	std::unique_ptr<rawrbox::Logger> BASS::_logger = std::make_unique<rawrbox::Logger>("RawrBox-BASS");
+	// -------------
+
 	// STATIC VARS ----
-	bool rawrbox::BASS::_initialized = false;
-	bool rawrbox::BASS::_shutdown = false;
-	bool rawrbox::BASS::_muteOnUnfocus = true;
-	float rawrbox::BASS::_masterVolume = 1.F;
-	rawrbox::Vector3f rawrbox::BASS::_oldLocation = {};
+	bool BASS::_initialized = false;
+	bool BASS::_shutdown = false;
+	bool BASS::_muteOnUnfocus = true;
+	float BASS::_masterVolume = 1.F;
+	rawrbox::Vector3f BASS::_oldLocation = {};
 
 	// PUBLIC
-	std::unordered_map<std::string, std::unique_ptr<rawrbox::SoundBase>> rawrbox::BASS::sounds = {};
+	std::unordered_map<std::string, std::unique_ptr<rawrbox::SoundBase>> BASS::sounds = {};
 
-	rawrbox::EventNamed<std::pair<uint32_t, double>> rawrbox::BASS::onBEAT;
-	rawrbox::EventNamed<std::pair<uint32_t, float>> rawrbox::BASS::onBPM;
-	rawrbox::EventNamed<uint32_t> rawrbox::BASS::onSoundEnd;
+	rawrbox::EventNamed<std::pair<uint32_t, double>> BASS::onBEAT;
+	rawrbox::EventNamed<std::pair<uint32_t, float>> BASS::onBPM;
+	rawrbox::EventNamed<uint32_t> BASS::onSoundEnd;
 	// ------------
 
 	// BASS CALLBACKS (Not thread safe! We need to run these on the main thread) ------
@@ -71,17 +75,17 @@ namespace rawrbox {
 
 	void BASS::initialize() {
 		auto fxVersion = HIWORD(BASS_FX_GetVersion());
-		if (fxVersion != BASSVERSION) throw std::runtime_error(fmt::format("[RawrBox-BASS] BASS Version missmatch! FX [{}] | BASS [{}]", fxVersion, BASSVERSION));
+		if (fxVersion != BASSVERSION) throw _logger->error("BASS Version missmatch! FX [{}] | BASS [{}]", fxVersion, BASSVERSION);
 
 		_initialized = BASS_Init(-1, 44100, BASS_DEVICE_3D, nullptr, nullptr);
 		if (_initialized) {
-			fmt::print("[RawrBox-BASS] INITIALIZED BASS [{}] | BASS_FX [{}] \n", fxVersion, BASSVERSION);
+			_logger->info("Initialized BASS [{}] and BASS_FX [{}]", fxVersion, BASSVERSION);
 
 			BASS_Start();
 			BASS_Set3DFactors(1.0F, 10.0F, 1.0F);
 			BASS_Apply3D();
 		} else {
-			throw std::runtime_error(fmt::format("[RawrBox-BASS] BASS initialize error: {}", BASS_ErrorGetCode()));
+			throw _logger->error("BASS initialize error: {}", BASS_ErrorGetCode());
 		}
 	}
 
@@ -93,7 +97,9 @@ namespace rawrbox {
 		BASS_Free();
 
 		_initialized = false;
-		fmt::print("[RawrBox-BASS] BASS Shutdown \n");
+
+		_logger->warn("BASS Shutdown");
+		_logger.reset();
 	}
 
 	// LOAD ----
@@ -101,7 +107,7 @@ namespace rawrbox {
 		std::string pth = path.generic_string().c_str();
 
 		if (sounds.find(pth) != sounds.end()) return sounds[pth].get();
-		if (!std::filesystem::exists(path)) throw std::runtime_error(fmt::format("[RawrBox-BASS] File '{}' not found!", pth));
+		if (!std::filesystem::exists(path)) throw _logger->error("File '{}' not found!", pth);
 
 		auto size = std::filesystem::file_size(path);
 		if (path.generic_string().rfind(".3D") != std::string::npos) flags |= SoundFlags::SOUND_3D;
@@ -138,7 +144,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::SoundBase* BASS::loadHTTPSound(const std::string& url, uint32_t flags) {
-		if (!url.starts_with("http://") && !url.starts_with("https://")) throw std::runtime_error(fmt::format("[BASS] Invalid sound url '{}'", url));
+		if (!url.starts_with("http://") && !url.starts_with("https://")) throw _logger->error("Invalid sound url '{}'", url);
 		if (sounds.find(url) != sounds.end()) return sounds[url].get();
 
 		if (url.rfind(".3D") != std::string::npos) flags |= SoundFlags::SOUND_3D;
