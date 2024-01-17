@@ -15,7 +15,6 @@
 #include <vector>
 
 namespace rawrbox {
-
 	struct PipeUniforms {
 		Diligent::SHADER_TYPE type = Diligent::SHADER_TYPE_VERTEX;
 		Diligent::IDeviceObject* uniform = nullptr;
@@ -87,6 +86,7 @@ namespace rawrbox {
 		static std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> _binds;
 		static std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShader>> _shaders;
 		static std::unordered_map<uint32_t, Diligent::RefCntAutoPtr<Diligent::ISampler>> _samplers;
+		static std::unordered_map<Diligent::SHADER_TYPE, Diligent::ShaderMacroHelper> _globalMacros;
 
 		static Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> _stateCache;
 
@@ -101,11 +101,16 @@ namespace rawrbox {
 		static void shutdown();
 
 		static Diligent::ISampler* registerSampler(uint32_t id, Diligent::SamplerDesc type);
-		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::ShaderMacroArray macros = {});
+		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::ShaderMacroHelper macros = {});
 		static std::vector<Diligent::ImmutableSamplerDesc> compileSamplers(const std::vector<rawrbox::PipeSampler>& samplers);
 
 		static Diligent::IPipelineState* createComputePipeline(const std::string& name, rawrbox::PipeComputeSettings settings);
 		static Diligent::IPipelineState* createPipeline(const std::string& name, rawrbox::PipeSettings settings);
+
+		template <typename T = std::string>
+		static void registerGlobalMacro(const Diligent::SHADER_TYPE type, const std::string& macro, const T& val) {
+			_globalMacros[type].Add(macro.c_str(), val);
+		}
 
 		[[nodiscard]] static Diligent::ISampler* getSampler(uint32_t id);
 		[[nodiscard]] static Diligent::IShaderResourceBinding* getBind(const std::string& bindName);

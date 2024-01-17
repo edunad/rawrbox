@@ -1,6 +1,7 @@
 #pragma once
 
-#include <rawrbox/math/vector4.hpp>
+#include <rawrbox/math/matrix4x4.hpp>
+#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/base.hpp>
 #include <rawrbox/render/textures/render.hpp>
 
@@ -9,9 +10,6 @@
 #include <ShaderResourceBinding.h>
 
 namespace rawrbox {
-	constexpr auto MAX_PIXEL_DATA = 4;
-	constexpr auto MAX_POST_DATA = 2;
-
 	enum class BufferType {
 		CONSTANT,
 		INDEX,
@@ -22,12 +20,15 @@ namespace rawrbox {
 
 	// --------------------------
 	struct BindlessVertexBuffer {
-		// UNLIT ---
+		// MODEL ---
 		rawrbox::Colorf colorOverride = {};
 		rawrbox::Vector4f textureFlags = {};
 
-		std::array<rawrbox::Vector4f, MAX_PIXEL_DATA> data = {}; // Other mesh data, like vertex / displacement / billboard settings / masks
-									 // ----------
+		std::array<rawrbox::Vector4f, rawrbox::MAX_VERTEX_DATA> data = {}; // Other mesh data, like vertex / displacement / billboard settings / masks
+										   // ----------
+		// MODEL BONES ----
+		std::array<rawrbox::Matrix4x4, rawrbox::MAX_BONES_PER_MODEL> bones = {};
+		//-----------------
 	};
 	// --------------------------
 
@@ -37,7 +38,7 @@ namespace rawrbox {
 	};
 
 	struct BindlessPostProcessBuffer {
-		std::array<rawrbox::Vector4f, MAX_POST_DATA> data = {};
+		std::array<rawrbox::Vector4f, rawrbox::MAX_POST_DATA> data = {};
 
 		uint32_t textureID = 0;
 		uint32_t depthTextureID = 0;

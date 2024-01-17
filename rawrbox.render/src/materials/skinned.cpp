@@ -13,8 +13,6 @@ namespace rawrbox {
 			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), id));
 
 			Diligent::ShaderMacroHelper helper;
-			helper.AddShaderMacro("MAX_BONES", rawrbox::MAX_BONES_PER_MODEL);
-			helper.AddShaderMacro("NUM_BONES_PER_VERTEX", rawrbox::MAX_BONES_PER_VERTEX);
 			helper.AddShaderMacro("SKINNED", true);
 
 			this->createPipelines(id, vertexBufferType::vLayout(), helper);

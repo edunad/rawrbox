@@ -33,6 +33,6 @@ namespace rawrbox {
 		return fileExtention == ".webm";
 	}
 
-	bool WEBMLoader::supportsBuffer() { return false; };
+	bool WEBMLoader::supportsBuffer(const std::string& /*fileExtention*/) { return false; };
 	// -------
 } // namespace rawrbox

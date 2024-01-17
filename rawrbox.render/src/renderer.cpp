@@ -175,6 +175,10 @@ namespace rawrbox {
 
 		// Init pipelines ---
 		rawrbox::PipelineUtils::init(*this->device());
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MAX_BONES_PER_MODEL", rawrbox::MAX_BONES_PER_MODEL);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MAX_BONES_PER_VERTEX", rawrbox::MAX_BONES_PER_VERTEX);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MAX_VERTEX_DATA", rawrbox::MAX_VERTEX_DATA);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_PIXEL, "MAX_POST_DATA", rawrbox::MAX_POST_DATA);
 		// ----------------------
 
 		// Setup camera -----

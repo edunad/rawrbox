@@ -126,6 +126,10 @@ namespace rawrbox {
 	protected:
 		uint32_t _aiAnimMeshIndex = 0;
 
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Assimp");
+		// -------------
+
 		// TEXTURE LOADING -----
 		virtual void assimpSamplerToDiligent(Diligent::SamplerDesc& desc, const std::array<aiTextureMapMode, 3>& mode, int axis);
 
@@ -177,9 +181,9 @@ namespace rawrbox {
 		// --------
 
 		explicit AssimpImporter(uint32_t loadFlags = ModelLoadFlags::NONE, uint32_t assimpFlags = DEFAULT_ASSIMP_FLAGS);
-		AssimpImporter(const AssimpImporter&) = default;
+		AssimpImporter(const AssimpImporter&) = delete;
 		AssimpImporter(AssimpImporter&&) = delete;
-		AssimpImporter& operator=(const AssimpImporter&) = default;
+		AssimpImporter& operator=(const AssimpImporter&) = delete;
 		AssimpImporter& operator=(AssimpImporter&&) = delete;
 		virtual ~AssimpImporter() = default;
 

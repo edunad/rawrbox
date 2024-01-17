@@ -77,7 +77,7 @@ namespace rawrbox {
 						// Check relative
 						loadPath = fmt::format("{}/{}", parentFolder.generic_string(), basename);
 						if (!std::filesystem::exists(loadPath)) {
-							fmt::print("[RawrBox-Assimp] Failed to load texture '{}'\n", matPath.data);
+							this->_logger->warn("Failed to load texture '{}'", matPath.data);
 							_textures.emplace_back(nullptr);
 							continue;
 						}
@@ -140,25 +140,26 @@ namespace rawrbox {
 
 			// Texture loading ----
 			if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS) > 0) {
-				const auto dump = [](const aiMaterial* mat, aiTextureType type) {
+				const auto dump = [this](const aiMaterial* mat, aiTextureType type) {
 					const unsigned count = mat->GetTextureCount(type);
 
 					if (count > 0) {
 						aiString matPath;
 						ai_real matBlend = 0;
 
-						if (mat->GetTexture(type, 0, &matPath, nullptr, nullptr, &matBlend, nullptr, nullptr) == AI_SUCCESS) {
-							fmt::print("[RawrBox-Assimp] Found {} texture(s) '{}' of type '{}', blend: {}\n", count, matPath.C_Str(), magic_enum::enum_name(type), matBlend);
+						for (size_t c = 0; c < count; c++) {
+							if (mat->GetTexture(type, c, &matPath, nullptr, nullptr, &matBlend, nullptr, nullptr) == AI_SUCCESS) {
+								fmt::print("\t [{}] '{}' -> '{}'\n", c, matPath.C_Str(), magic_enum::enum_name(type));
+							}
 						}
 					}
 				};
 
 				constexpr auto assimp_mat = magic_enum::enum_entries<aiTextureType>();
 
-				fmt::print("==== DUMP FOR MATERIAL {}\n", pMaterial->GetName().C_Str());
+				this->_logger->info("Material: {}", fmt::format(fmt::fg(fmt::color::cyan), pMaterial->GetName().C_Str()));
 				for (auto& m : assimp_mat)
 					dump(pMaterial, m.first);
-				fmt::print("==== ====================\n");
 			}
 
 			// TEXTURE DIFFUSE
@@ -262,17 +263,18 @@ namespace rawrbox {
 				// DEBUG ----
 				if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE) > 0) {
 					std::function<void(std::unique_ptr<Bone>&, int)> printBone;
-					printBone = [&printBone](std::unique_ptr<Bone>& bn, int deep) -> void {
+					printBone = [&printBone, this](std::unique_ptr<Bone>& bn, int deep) -> void {
 						for (auto& c : bn->children) {
 							std::string d = "";
 							for (int i = 0; i < deep; i++)
 								d += "\t";
 
-							fmt::print("{}[{}] {}\n", d, c->boneId, c->name);
+							fmt::print("\t{}[{}] {}\n", d, c->boneId, c->name);
 							printBone(c, ++deep);
 						}
 					};
 
+					this->_logger->info("'{}' BONES", fmt::format(fmt::fg(fmt::color::cyan), this->fileName.generic_string()));
 					printBone(armature->rootBone, 0);
 				}
 				// -------------
@@ -287,7 +289,7 @@ namespace rawrbox {
 
 			// Apply the weights -----
 			auto fnd = mesh.skeleton->boneMap.find(boneKey);
-			if (fnd == mesh.skeleton->boneMap.end()) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to map bone {}", boneKey));
+			if (fnd == mesh.skeleton->boneMap.end()) throw this->_logger->error("Failed to map bone {}", boneKey);
 
 			fnd->second->offsetMtx.transpose(&bone->mOffsetMatrix.a1);
 			fnd->second->offsetMtx *= mesh.matrix;
@@ -320,7 +322,7 @@ namespace rawrbox {
 
 					// replace with new bone if the new bone has greater weight
 					if (boneWeight > minWeight) {
-						fmt::print("[RawrBox-Assimp] Model bone past max limit of '{}', replacing bone '{}' with bone '{}'", rawrbox::MAX_BONES_PER_VERTEX, v.bone_indices[minIndex], boneId);
+						this->_logger->warn("Model bone past max limit of '{}', replacing bone '{}' with bone '{}'", rawrbox::MAX_BONES_PER_VERTEX, v.bone_indices[minIndex], boneId);
 
 						v.bone_indices[minIndex] = boneId;
 						v.bone_weights[minIndex] = boneWeight;
@@ -363,7 +365,7 @@ namespace rawrbox {
 	aiNode* AssimpImporter::findRootSkeleton(const aiScene* sc, const std::string& meshName) {
 		// Attempt to find armature
 		auto aiNode = sc->mRootNode->FindNode(meshName.c_str());
-		if (aiNode == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Model] Failed to find node '{}' on scene root", meshName));
+		if (aiNode == nullptr) throw this->_logger->error("Failed to find node '{}' on scene root", meshName);
 
 		auto fnd = this->skeletons.find(aiNode->mName.data);
 		if (fnd != this->skeletons.end()) return aiNode;
@@ -400,7 +402,7 @@ namespace rawrbox {
 			if (animName.empty()) animName = fmt::format("anim_{}", i);
 
 			if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS) > 0) {
-				fmt::print("[RawrBox-Assimp] Found animation '{}'\n", animName);
+				this->_logger->info("Found animation '{}'", fmt::format(fmt::fg(fmt::color::green_yellow), animName));
 			}
 
 			auto spl = rawrbox::StrUtils::split(animName, '|');
@@ -433,7 +435,7 @@ namespace rawrbox {
 				if (ourChannel.nodeName.empty()) {
 					// Mark meshes as animated for quick lookup ----
 					pNode = sc->mRootNode->FindNode(meshName.c_str());
-					if (pNode == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to find animated mesh '{}'", meshName));
+					if (pNode == nullptr) throw this->_logger->error("Failed to find animated mesh '{}'", meshName);
 
 					for (size_t p = 0; p < pNode->mNumChildren; p++) {
 						this->markMeshAnimated(meshName, pNode->mChildren[p]->mName.data);
@@ -487,7 +489,7 @@ namespace rawrbox {
 			shape.mesh_index = this->meshes.size();
 
 			if (aiMesh.mNumVertices != mesh.vertices.size()) {
-				fmt::print("[RawrBox-Assimp] Failed to load blend shape '{}'! Vertex sizes do not match!", shape.name);
+				this->_logger->warn("Failed to load blend shape '{}'! Vertex sizes do not match!", shape.name);
 				return;
 			}
 
@@ -529,7 +531,7 @@ namespace rawrbox {
 				light.parentID = lightNode->mParent->mName.data; // TODO: Assimp doesn't seem to give the correct parent, will need to manually find it
 			}
 
-			if (aiLight.mColorDiffuse != aiLight.mColorSpecular) throw std::runtime_error("[RawrBox-Assimp] Light diffuse and specular do not match");
+			if (aiLight.mColorDiffuse != aiLight.mColorSpecular) throw this->_logger->error("Light diffuse and specular do not match");
 			float intensity = std::max(std::max(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g), aiLight.mColorDiffuse.b);
 
 			light.diffuse = rawrbox::Colorf(aiLight.mColorDiffuse.r, aiLight.mColorDiffuse.g, aiLight.mColorDiffuse.b, 1.F) / intensity;
@@ -607,9 +609,9 @@ namespace rawrbox {
 
 				if (aiMesh.HasVertexColors(0)) {
 					auto& col = aiMesh.mColors[0][i];
-					v.color = rawrbox::Colorf{col.r, col.g, col.b, col.a};
+					v.color = rawrbox::Colorf::pack(col.r, col.g, col.b, col.a);
 				} else {
-					v.color = rawrbox::Colors::White();
+					v.color = 0xFFFFFFFF;
 				}
 
 				if (aiMesh.HasNormals()) {
@@ -661,19 +663,15 @@ namespace rawrbox {
 
 	void AssimpImporter::internalLoad(const aiScene* scene, bool attemptedFallback) {
 		if (scene == nullptr) {
-			auto error = aiGetErrorString(); // Because vscode doesn't print the error bellow
-			fmt::print("[RawrBox-Assimp] Failed to load '{}' ──> {}\n  └── Loading fallback model!\n", this->fileName.generic_string(), error);
+			this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback model!", this->fileName.generic_string(), aiGetErrorString());
 
 			if (attemptedFallback) {
-				throw std::runtime_error(fmt::format("[RawrBox-Assimp] Failed to load fallback model! \n"));
+				throw this->_logger->error("Failed to load fallback model!");
 			} else {
-
-				fmt::print("[RawrBox-Assimp] Failed to load '{}'\n", this->fileName.generic_string());
 				scene = aiImportFile("./assets/models/error.gltf", this->assimpFlags); // fallback
 
 				if (scene == nullptr) {
-					error = aiGetErrorString(); // Because vscode doesn't print the error bellow
-					throw std::runtime_error(fmt::format("[RawrBox-Assimp] Asset '{}' error : '{}'\n", this->fileName.generic_string(), error));
+					throw this->_logger->error("Failed to load fallback '{}' ──> '{}'", this->fileName.generic_string(), aiGetErrorString());
 				}
 			}
 		}
@@ -681,10 +679,10 @@ namespace rawrbox {
 		// Parse metadata
 		if (onMetadata != nullptr) onMetadata(scene->mMetaData); // Allow metadata to be parsed outside, used on vrm for example
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_METADATA) > 0) {
-			fmt::print("==== DUMP FOR {} METADATA\n", this->fileName.generic_string());
+			this->_logger->info("'{}' METADATA", fmt::format(fmt::fg(fmt::color::cyan), this->fileName.generic_string()));
 
 			std::function<void(aiMetadata*)> printMetaData;
-			printMetaData = [&printMetaData](aiMetadata* meta) -> void {
+			printMetaData = [&printMetaData, this](aiMetadata* meta) -> void {
 				for (uint8_t i = 0; i < meta->mNumProperties; i++) {
 					auto data = meta->mValues[i];
 					std::string str = "";
@@ -729,12 +727,11 @@ namespace rawrbox {
 						case FORCE_32BIT: break;
 					}
 
-					fmt::print("{}: {}\n", meta->mKeys[i].C_Str(), str);
+					fmt::print("\t{}: {}\n", meta->mKeys[i].C_Str(), str);
 				}
 			};
 
 			printMetaData(scene->mMetaData);
-			fmt::print("=== ====================\n");
 		}
 		// ------------
 
@@ -750,7 +747,7 @@ namespace rawrbox {
 
 		// Parse metadata
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES) > 0) {
-			fmt::print("==== '{}' BLEND SHAPES\n", this->fileName.generic_string());
+			this->_logger->info("'{}' BLEND SHAPES", fmt::format(fmt::fg(fmt::color::cyan), this->fileName.generic_string()));
 
 			std::string old = "";
 			for (auto& s : this->blendShapes) {
@@ -760,13 +757,11 @@ namespace rawrbox {
 
 				if (old.empty() || old != shapeName) {
 					old = shapeName;
-					fmt::print("{} --->\n", shapeName);
+					fmt::print("\t{} --->\n", shapeName);
 				}
 
-				fmt::print("\t{}\n", shapeId);
+				fmt::print("\t\t{}\n", shapeId);
 			}
-
-			fmt::print("=== ====================\n");
 		}
 		// ----
 
@@ -802,9 +797,7 @@ namespace rawrbox {
 				this->internalLoad(aiImportFileFromMemory(bah, static_cast<uint32_t>(b.size() * sizeof(char)), this->assimpFlags, hint.c_str()));
 			}
 		} else {
-			// Fallback
-			fmt::print("[RawrBox-Assimp] Failed to load '{}'\n  └── Loading fallback model!\n", this->fileName.generic_string());
-			this->internalLoad(aiImportFile("./assets/models/error.gltf", this->assimpFlags), true);
+			this->load(path);
 		}
 	}
 

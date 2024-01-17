@@ -36,6 +36,6 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::Resource> createEntry() override;
 
 		bool canLoad(const std::string& fileExtention) override;
-		bool supportsBuffer() override;
+		bool supportsBuffer(const std::string& fileExtention) override;
 	};
 } // namespace rawrbox

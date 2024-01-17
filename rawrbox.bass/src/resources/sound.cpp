@@ -41,6 +41,6 @@ namespace rawrbox {
 		       fileExtention == ".wav";
 	}
 
-	bool BASSLoader::supportsBuffer() { return false; };
+	bool BASSLoader::supportsBuffer(const std::string& fileExtention) { return false; };
 	// ----
 } // namespace rawrbox

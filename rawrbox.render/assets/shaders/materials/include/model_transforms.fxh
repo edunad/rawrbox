@@ -43,7 +43,7 @@
                 float4x4 BoneTransform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
                 bool skinned = false;
 
-                for (uint idx = 0; idx < NUM_BONES_PER_VERTEX; idx++) {
+                for (uint idx = 0; idx < MAX_BONES_PER_VERTEX; idx++) {
                     if (weight[idx] > 0.0) {
                         BoneTransform += Constants.bones[indices[idx]] * weight[idx];
                         skinned = true;

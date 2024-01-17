@@ -24,6 +24,6 @@ namespace rawrbox {
 		return fileExtention == ".json";
 	}
 
-	bool JSONLoader::supportsBuffer() { return true; };
+	bool JSONLoader::supportsBuffer(const std::string& /*fileExtention*/) { return true; };
 	// -------
 } // namespace rawrbox

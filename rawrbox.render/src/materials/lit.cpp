@@ -30,6 +30,7 @@ namespace rawrbox {
 		settings.pPS = "lit.psh";
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = cluster->getClusterMacros() + helper;
+
 		settings.signature = rawrbox::BindlessManager::signature;
 		settings.layout = layout;
 		// -------------------

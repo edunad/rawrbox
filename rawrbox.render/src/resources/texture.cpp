@@ -49,6 +49,6 @@ namespace rawrbox {
 		       fileExtention == ".jpeg";
 	}
 
-	bool TextureLoader::supportsBuffer() { return true; }
+	bool TextureLoader::supportsBuffer(const std::string& /*fileExtention*/) { return true; }
 	// -------
 } // namespace rawrbox

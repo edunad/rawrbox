@@ -41,7 +41,7 @@ namespace rawrbox {
 
 			for (auto& blend : model.blendShapes) {
 				if (blend.second.mesh_index >= this->_meshes.size()) {
-					fmt::print("[RawrBox-Assimp] Failed to find mesh {}", blend.second.mesh_index);
+					this->_logger->warn("Failed to find mesh {}", blend.second.mesh_index);
 					continue;
 				}
 
@@ -74,7 +74,7 @@ namespace rawrbox {
 
 					default:
 					case rawrbox::LightType::UNKNOWN:
-						fmt::print("[RawrBox-Assimp] Failed to create unknown light '{}'\n", assimpLights.name);
+						this->_logger->warn("Failed to create unknown light '{}'", assimpLights.name);
 						break;
 				}
 

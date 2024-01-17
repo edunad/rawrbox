@@ -10,7 +10,7 @@ namespace rawrbox {
 		Diligent::IBuffer* _buffer = nullptr;
 		Diligent::IPipelineState* _pipeline = nullptr;
 
-		std::array<rawrbox::Vector4f, MAX_POST_DATA> _data = {};
+		std::array<rawrbox::Vector4f, rawrbox::MAX_POST_DATA> _data = {};
 
 		// LOGGER ------
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-PostProcess");

@@ -24,6 +24,6 @@ namespace rawrbox {
 		return fileExtention == ".svg";
 	}
 
-	bool SVGLoader::supportsBuffer() { return true; }
+	bool SVGLoader::supportsBuffer(const std::string& /*fileExtention*/) { return true; }
 	// -------
 } // namespace rawrbox

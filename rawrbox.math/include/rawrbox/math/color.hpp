@@ -168,10 +168,14 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] uint32_t pack() const {
+			return pack(this->r, this->g, this->b, this->a);
+		}
+
+		[[nodiscard]] static uint32_t pack(NumberType r, NumberType g, NumberType b, NumberType a) {
 			if constexpr (std::is_same_v<NumberType, int>) {
-				return 0 | (static_cast<uint8_t>(this->r) << 0) | (static_cast<uint8_t>(this->g) << 8) | (static_cast<uint8_t>(this->b) << 16) | (static_cast<uint8_t>(this->a) << 24);
+				return 0 | (static_cast<uint8_t>(r) << 0) | (static_cast<uint8_t>(g) << 8) | (static_cast<uint8_t>(b) << 16) | (static_cast<uint8_t>(a) << 24);
 			} else {
-				return 0 | (static_cast<uint8_t>(this->r * 255.0F) << 0) | (static_cast<uint8_t>(this->g * 255.0F) << 8) | (static_cast<uint8_t>(this->b * 255.0F) << 16) | (static_cast<uint8_t>(this->a * 255.0F) << 24);
+				return 0 | (static_cast<uint8_t>(r * 255.0F) << 0) | (static_cast<uint8_t>(g * 255.0F) << 8) | (static_cast<uint8_t>(b * 255.0F) << 16) | (static_cast<uint8_t>(a * 255.0F) << 24);
 			}
 		}
 

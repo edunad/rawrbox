@@ -22,6 +22,8 @@ namespace rawrbox {
 
 	constexpr auto MAX_BONES_PER_VERTEX = 4;
 	constexpr auto MAX_BONES_PER_MODEL = 200;
+	constexpr auto MAX_VERTEX_DATA = 4;
+	constexpr auto MAX_POST_DATA = 2;
 
 	// QUICK ACCESS ---
 	extern uint32_t FRAME;

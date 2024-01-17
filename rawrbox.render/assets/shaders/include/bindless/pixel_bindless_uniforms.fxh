@@ -8,8 +8,8 @@
 
     ConstantBuffer<ConstantsStruct> Constants;
 
-    #define RoughnessFactor    Constants.litData.x
-    #define MetalnessFactor    Constants.litData.y
-    #define SpecularFactor     Constants.litData.z
-    #define EmissionFactor     Constants.litData.w
+    #define RoughnessFactor         Constants.litData.x
+    #define MetalnessFactor         Constants.litData.y
+    #define SpecularFactor          Constants.litData.z
+    #define EmissionFactor          Constants.litData.w
 #endif

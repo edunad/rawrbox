@@ -31,7 +31,9 @@ namespace rawrbox {
 		       fileExtention == ".md5mesh";
 	}
 
-	bool AssimpLoader::supportsBuffer() { return true; }
+	bool AssimpLoader::supportsBuffer(const std::string& fileExtention) {
+		return fileExtention != ".gltf"; // GLTF requires scene to be loaded seperatly
+	}
 	// -------
 
 } // namespace rawrbox

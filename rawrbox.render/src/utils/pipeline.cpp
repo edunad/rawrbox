@@ -1,6 +1,7 @@
 #include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
+#include <rawrbox/utils/string.hpp>
 
 #include <magic_enum.hpp>
 
@@ -13,6 +14,7 @@ namespace rawrbox {
 	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> PipelineUtils::_binds = {};
 	std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShader>> PipelineUtils::_shaders = {};
 	std::unordered_map<uint32_t, Diligent::RefCntAutoPtr<Diligent::ISampler>> PipelineUtils::_samplers = {};
+	std::unordered_map<Diligent::SHADER_TYPE, Diligent::ShaderMacroHelper> PipelineUtils::_globalMacros = {};
 
 	Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> PipelineUtils::_stateCache;
 
@@ -76,10 +78,13 @@ namespace rawrbox {
 	}
 
 	// TODO: ADD CACHE https://github.com/DiligentGraphics/DiligentCore/blob/e94b36978ccf8dd6e48c759318ef1b887496a7c5/Graphics/GraphicsTools/interface/BytecodeCache.h
-	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::ShaderMacroArray macros) {
+	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::ShaderMacroHelper macros) {
 		if (name.empty()) return nullptr;
-		std::string id = fmt::format("{}-{}", name, macros.Count);
 
+		Diligent::ShaderMacroHelper helper = _globalMacros[type] + macros;
+
+		Diligent::ShaderMacroArray a = helper; // TODO: FIX ME
+		std::string id = fmt::format("{}-{}", name, a.Count);
 		auto fnd = _shaders.find(id);
 		if (fnd != _shaders.end()) {
 			return fnd->second;
@@ -95,7 +100,7 @@ namespace rawrbox {
 		ShaderCI.EntryPoint = "main";
 		ShaderCI.Desc.Name = shaderName.c_str();
 		ShaderCI.FilePath = name.c_str();
-		ShaderCI.Macros = macros;
+		ShaderCI.Macros = helper;
 
 		Diligent::RefCntAutoPtr<Diligent::IShader> shader;
 		Diligent::RefCntAutoPtr<Diligent::IDataBlob> output;

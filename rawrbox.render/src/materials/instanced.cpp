@@ -13,7 +13,7 @@ namespace rawrbox {
 			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), id));
 
 			Diligent::ShaderMacroHelper helper;
-			helper.AddShaderMacro("INSTANCED", true);
+			helper.Add("INSTANCED", true);
 
 			this->createPipelines(id, vertexBufferType::vLayout(true), helper);
 			this->_built = true;
