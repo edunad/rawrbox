@@ -60,7 +60,7 @@ option(RAWRBOX_DEV_MODE "Builds all modules, used for developing rawrbox" OFF)
 if(RAWRBOX_DEV_MODE)
     message(WARNING "RAWRBOX Dev mode enabled!")
 
-    #set(RAWRBOX_BUILD_RAWRBOX_UI ON)
+    set(RAWRBOX_BUILD_RAWRBOX_UI ON)
     set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
     #set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
     #set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS ON)

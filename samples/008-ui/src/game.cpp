@@ -1,6 +1,7 @@
 
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/utils/math.hpp>
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/window.hpp>
@@ -110,7 +111,6 @@ namespace ui_test {
 			{
 				auto label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({10, 5});
-				// label->setFont("./assets/fonts/PTMono-Bold.ttf", 8);
 				label->setText("Label: mew!");
 				label->sizeToContents();
 			}
@@ -118,7 +118,6 @@ namespace ui_test {
 			{
 				auto label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({10, 18});
-				// label->setFont("./assets/fonts/PTMono-Regular.ttf", 14);
 				label->setText("Label: shadow mew!");
 				label->setShadowColor(rawrbox::Colors::Black());
 				label->sizeToContents();
@@ -128,7 +127,6 @@ namespace ui_test {
 				auto input = frame->createChild<rawrbox::UIInput>();
 				input->setPos({10, 36});
 				input->setSize({380, 22});
-				// input->setFont("./assets/fonts/PTMono-Regular.ttf", 14);
 				input->setPlaceholder("placeholder");
 			}
 
@@ -136,7 +134,6 @@ namespace ui_test {
 				auto input = frame->createChild<rawrbox::UIInput>();
 				input->setPos({10, 64});
 				input->setSize({380, 22});
-				// input->setFont("./assets/fonts/PTMono-Regular.ttf", 14);
 				input->setText("readonly");
 				input->setReadOnly(true);
 			}
