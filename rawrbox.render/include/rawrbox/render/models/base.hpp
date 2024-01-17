@@ -320,16 +320,12 @@ namespace rawrbox {
 
 		virtual void draw() {
 			if (!this->isUploaded()) throw this->_logger->error("Failed to render model, vertex / index buffer is not uploaded");
-
-			// Bind vertex and index buffers
-			const uint64_t offset = 0;
-			// NOLINTBEGIN(*)
-			Diligent::IBuffer* pBuffs[] = {this->_vbh};
-			// NOLINTEND(*)
-
 			auto context = rawrbox::RENDERER->context();
 
-			context->SetVertexBuffers(0, 1, pBuffs, &offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+			// Bind vertex and index buffers
+			std::array<Diligent::IBuffer*, 1> pBuffs = {this->_vbh};
+
+			context->SetVertexBuffers(0, 1, pBuffs.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			// ----
 		}

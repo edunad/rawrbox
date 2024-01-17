@@ -76,7 +76,7 @@
             // vertex_snap mode
             #ifdef TRANSFORM_PSX
                 if(VertexSnap != 0.) {
-                    data.final = PSXTransform(mul(data.pos, proj), Camera.viewport.zw / VertexSnap);
+                    data.final = PSXTransform(mul(data.pos, proj), ScreenSize / VertexSnap);
                 } else {
                     data.final = mul(data.pos, proj);
                 }

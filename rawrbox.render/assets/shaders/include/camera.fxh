@@ -4,32 +4,24 @@
 
     struct CameraStruct {
         float4x4 view;
-        float4x4 viewInv;
 
         float4x4 proj;
         float4x4 projInv;
 
-        float4x4 viewProj;
-        float4x4 viewProjInv;
-
         float4x4 world;
         float4x4 worldViewProj;
 
-        float4   nearFar;
+        float4   viewport;
+        float4   pos;
 
-        int4     viewport;
-        float4   viewportInv;
-
-        float4   cameraPos;
-        float4   cameraAngle;
-
-        // GRID ---
-        float4   gridParams;
-        // -----
+        float2   gridParams;
     };
 
     ConstantBuffer<CameraStruct> Camera;
-    #define px (float2(1.0, 1.0) / Camera.viewport.zw)
+
+    #define ScreenSize Camera.viewport.zw
+    #define NearFar Camera.viewport.xy
+    #define px (float2(1.0, 1.0) / ScreenSize)
 
     // UTILS -----------------
     uint GetSliceFromDepth(float depth) {
@@ -47,8 +39,8 @@
         return viewRay * LinearizeDepth(depth, nearFar.x, nearFar.y);
     }
 
-    float3 ScreenToView(float4 screen, float4 invScreenSize, float2 nearFar, float4x4 invProj) {
-        float2 screenNormalized = screen.xy * invScreenSize.zw;
+    float3 ScreenToView(float3 screen, float2 invScreenSize, float2 nearFar, float4x4 invProj) {
+        float2 screenNormalized = screen * invScreenSize;
         return ViewPositionFromDepth(screenNormalized, screen.z, nearFar, invProj);
     }
     // -----------------------

@@ -12,26 +12,17 @@
 namespace rawrbox {
 	struct CameraUniforms {
 		rawrbox::Matrix4x4 gView = {};
-		rawrbox::Matrix4x4 gViewInv = {};
 
 		rawrbox::Matrix4x4 gProjection = {};
 		rawrbox::Matrix4x4 gProjectionInv = {};
 
-		rawrbox::Matrix4x4 gViewProj = {};
-		rawrbox::Matrix4x4 gViewProjInv = {};
-
 		rawrbox::Matrix4x4 gWorld = {};
 		rawrbox::Matrix4x4 gWorldViewProj = {};
 
-		rawrbox::Vector4f gNearFar = {};
-
-		rawrbox::Vector4i gViewport = {};
-		rawrbox::Vector4f gViewportInv = {};
+		rawrbox::Vector4f gViewport = {};
 
 		rawrbox::Vector4f gPos = {};
-		rawrbox::Vector4f gAngle = {};
-
-		rawrbox::Vector4f gGridParams = {};
+		rawrbox::Vector2f gGridParams = {};
 	};
 
 	class CameraBase {

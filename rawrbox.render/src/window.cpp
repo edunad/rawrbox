@@ -112,7 +112,6 @@ namespace rawrbox {
 
 		glfwPostEmptyEvent();
 		glfwTerminate();
-		glfwPostEmptyEvent();
 	}
 
 	void Window::update() {

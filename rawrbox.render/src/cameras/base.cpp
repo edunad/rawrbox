@@ -104,31 +104,20 @@ namespace rawrbox {
 		auto renderer = rawrbox::RENDERER;
 		auto context = renderer->context();
 
-		auto& screenSize = renderer->getSize();
-		auto screenSizeF = screenSize.cast<float>();
+		auto screenSize = renderer->getSize().cast<float>();
 
 		// SETUP UNIFORMS ----------------------------
 		Diligent::MapHelper<rawrbox::CameraUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 
 		CBConstants->gView = rawrbox::Matrix4x4::mtxTranspose(this->getViewMtx());
-		CBConstants->gViewInv = rawrbox::Matrix4x4::mtxInverse(CBConstants->gView);
-
 		CBConstants->gProjection = rawrbox::Matrix4x4::mtxTranspose(this->getProjMtx());
 		CBConstants->gProjectionInv = rawrbox::Matrix4x4::mtxInverse(CBConstants->gProjection);
 
-		CBConstants->gViewProj = CBConstants->gView * CBConstants->gProjection;
-		CBConstants->gViewProjInv = rawrbox::Matrix4x4::mtxInverse(CBConstants->gViewProj);
-
 		CBConstants->gWorld = rawrbox::Matrix4x4::mtxTranspose(this->_world);
-		CBConstants->gWorldViewProj = CBConstants->gWorld * CBConstants->gViewProj;
-
-		CBConstants->gNearFar = {this->getZNear(), this->getZFar()};
-
-		CBConstants->gViewport = {0, 0, screenSize.x, screenSize.y};
-		CBConstants->gViewportInv = {0, 0, 1.F / screenSizeF.x, 1.F / screenSizeF.y};
+		CBConstants->gWorldViewProj = CBConstants->gWorld * CBConstants->gView * CBConstants->gProjection;
+		CBConstants->gViewport = {this->getZNear(), this->getZFar(), screenSize.x, screenSize.y};
 
 		CBConstants->gPos = this->getPos();
-		CBConstants->gAngle = this->getAngle();
 		// ------------
 
 		// Setup grid ----

@@ -20,27 +20,5 @@ namespace rawrbox {
 
 		void init() override;
 		void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper = {}) override;
-
-		template <typename T = rawrbox::VertexData>
-		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
-
-			auto context = rawrbox::RENDERER->context();
-
-			// SETUP VERTEX UNIFORMS ----------------------------
-			{
-				Diligent::MapHelper<rawrbox::BindlessVertexBuffer> CBConstants(context, rawrbox::BindlessManager::signatureBufferVertex, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				this->bindBaseUniforms<T>(mesh, CBConstants);
-			}
-			// -----------
-
-			// SETUP PIXEL UNIFORMS ----------------------------
-			{
-				Diligent::MapHelper<rawrbox::BindlessPixelBuffer> CBConstants(context, rawrbox::BindlessManager::signatureBufferPixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				this->bindBasePixelUniforms<T>(mesh, CBConstants);
-
-				CBConstants->litData = mesh.textures.getData();
-			}
-			// -----------
-		}
 	};
 } // namespace rawrbox

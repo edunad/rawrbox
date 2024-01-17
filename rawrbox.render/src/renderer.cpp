@@ -53,6 +53,7 @@ namespace rawrbox {
 		// Enable required features --------------------------
 		features.WireframeFill = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.SparseResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		features.GeometryShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 
 		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.ShaderResourceRuntimeArray = Diligent::DEVICE_FEATURE_STATE_ENABLED;
@@ -110,6 +111,10 @@ namespace rawrbox {
 
 					Diligent::EngineVkCreateInfo EngineCI;
 					EngineCI.Features = features;
+
+					EngineCI.DynamicHeapSize = 128 << 20;
+					EngineCI.DynamicHeapPageSize = 2 << 20;
+
 					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_device, &this->_context);
 					pFactoryVk->CreateSwapChainVk(this->_device, this->_context, SCDesc, this->_window, &this->_swapChain);
 				}
@@ -412,7 +417,13 @@ namespace rawrbox {
 
 	void RendererBase::frame() {
 		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
-		rawrbox::FRAME++;
+		{
+			this->_context->Flush();
+			this->_context->FinishFrame();
+			this->_device->ReleaseStaleResources();
+		}
+
+		rawrbox::FRAME = this->_context->GetFrameNumber();
 	}
 
 	/*void RendererBase::gpuCheck() {

@@ -14,7 +14,7 @@
 
 namespace phys_2d_test {
 	void Game::setupGLFW() {
-		auto window = rawrbox::Window::createWindow();
+		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_VULKAN);
 		window->setMonitor(-1);
 		window->setTitle("2D PHYSICS TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);

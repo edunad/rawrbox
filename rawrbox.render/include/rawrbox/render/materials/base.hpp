@@ -39,7 +39,7 @@ namespace rawrbox {
 		virtual void setupPipelines(const std::string& id);
 
 		template <typename T = rawrbox::VertexData>
-		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<rawrbox::BindlessVertexBuffer>& helper) {
+		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, rawrbox::BindlessVertexBuffer* helper) {
 			// MODEL -------
 			std::array<rawrbox::Vector4f, rawrbox::MAX_VERTEX_DATA>
 			    data = {rawrbox::Vector4f{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
@@ -68,13 +68,22 @@ namespace rawrbox {
 		}
 
 		template <typename T = rawrbox::VertexData>
-		void bindBasePixelUniforms(const rawrbox::Mesh<T>& mesh, Diligent::MapHelper<rawrbox::BindlessPixelBuffer>& helper) {
+		void bindBasePixelUniforms(const rawrbox::Mesh<T>& mesh, rawrbox::BindlessPixelBuffer* helper) {
 			helper->textureIDs = mesh.textures.getPixelIDs();
+			helper->litData = mesh.textures.getData();
 		}
 
 		template <typename T = rawrbox::VertexData>
-		void bindUniforms(const rawrbox::Mesh<T>& /*mesh*/) {
-			throw this->_logger->error("Missing implementation");
+		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
+			auto context = rawrbox::RENDERER->context();
+
+			// SETUP UNIFORMS ----------------------------
+			Diligent::MapHelper<rawrbox::BindlessVertexBuffer> VertexConstants(context, rawrbox::BindlessManager::signatureBufferVertex, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			Diligent::MapHelper<rawrbox::BindlessPixelBuffer> PixelConstants(context, rawrbox::BindlessManager::signatureBufferPixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+
+			this->bindBaseUniforms<T>(mesh, VertexConstants);
+			this->bindBasePixelUniforms<T>(mesh, PixelConstants);
+			// -----------
 		}
 
 		template <typename T = rawrbox::VertexData>
