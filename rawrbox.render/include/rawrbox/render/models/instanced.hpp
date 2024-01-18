@@ -139,7 +139,11 @@ namespace rawrbox {
 			rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix());
 
 			this->_material->bindPipeline(*this->_mesh);
-			this->_material->bindUniforms(*this->_mesh);
+
+			this->_material->resetUniformBinds();
+			this->_material->bindVertexUniforms(*this->_mesh);
+			this->_material->bindVertexSkinnedUniforms(*this->_mesh);
+			this->_material->bindPixelUniforms(*this->_mesh);
 			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;
@@ -148,7 +152,7 @@ namespace rawrbox {
 			DrawAttrs.BaseVertex = this->_mesh->baseVertex;
 			DrawAttrs.NumIndices = this->_mesh->totalIndex;
 			DrawAttrs.NumInstances = static_cast<uint32_t>(this->_instances.size());
-			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
+			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT; // Instanced buffers are only updated once
 			context->DrawIndexed(DrawAttrs);
 		}
 	};

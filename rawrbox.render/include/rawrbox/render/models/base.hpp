@@ -320,6 +320,8 @@ namespace rawrbox {
 
 		virtual void draw() {
 			if (!this->isUploaded()) throw this->_logger->error("Failed to render model, vertex / index buffer is not uploaded");
+			if (this->_material == nullptr) throw this->_logger->error("Material not set");
+
 			auto context = rawrbox::RENDERER->context();
 
 			// Bind vertex and index buffers
@@ -328,6 +330,10 @@ namespace rawrbox {
 			context->SetVertexBuffers(0, 1, pBuffs.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			// ----
+
+			// Reset material uniforms ----
+			this->_material->resetUniformBinds();
+			// ----------------------------
 		}
 
 #ifdef RAWRBOX_SCRIPTING

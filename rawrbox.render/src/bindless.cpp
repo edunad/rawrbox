@@ -26,6 +26,7 @@ namespace rawrbox {
 
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> BindlessManager::signatureBufferPixel;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> BindlessManager::signatureBufferVertex;
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> BindlessManager::signatureBufferVertexSkinned;
 	// --------------
 
 	void BindlessManager::init() {
@@ -51,6 +52,18 @@ namespace rawrbox {
 
 			device->CreateBuffer(BuffVertexDesc, nullptr, &signatureBufferVertex);
 			rawrbox::BindlessManager::barrier(*signatureBufferVertex, rawrbox::BufferType::CONSTANT);
+		}
+
+		{
+			Diligent::BufferDesc BuffPixelDesc;
+			BuffPixelDesc.Name = "rawrbox::SIGNATURE::Vertex:::Skinned::Uniforms";
+			BuffPixelDesc.Usage = Diligent::USAGE_DYNAMIC;
+			BuffPixelDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			BuffPixelDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+			BuffPixelDesc.Size = sizeof(rawrbox::BindlessVertexSkinnedBuffer);
+
+			device->CreateBuffer(BuffPixelDesc, nullptr, &signatureBufferVertexSkinned);
+			rawrbox::BindlessManager::barrier(*signatureBufferVertexSkinned, rawrbox::BufferType::CONSTANT);
 		}
 
 		{
@@ -91,6 +104,7 @@ namespace rawrbox {
 
 		RAWRBOX_DESTROY(signatureBufferPixel);
 		RAWRBOX_DESTROY(signatureBufferVertex);
+		RAWRBOX_DESTROY(signatureBufferVertexSkinned);
 	}
 
 	// SIGNATURES ---------
@@ -107,6 +121,8 @@ namespace rawrbox {
 		// Graphics signature ---
 		std::vector<Diligent::PipelineResourceDesc> resources = {
 		    {Diligent::SHADER_TYPE_VERTEX, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    {Diligent::SHADER_TYPE_VERTEX, "SkinnedConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+
 		    {Diligent::SHADER_TYPE_VERTEX, "g_Textures", renderer->MAX_VERTEX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
 
 		    {Diligent::SHADER_TYPE_PIXEL, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
@@ -177,14 +193,15 @@ namespace rawrbox {
 		auto camera = renderer->camera();
 
 		// Setup graphic binds ---
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(signatureBufferPixel);
+		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(signatureBufferVertex);
+		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "SkinnedConstants")->Set(signatureBufferVertexSkinned);
 
 		if (camera != nullptr) {
-			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Camera")->Set(camera->uniforms());
 			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Camera")->Set(camera->uniforms());
+			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Camera")->Set(camera->uniforms());
 		}
 
-		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(signatureBufferVertex);
+		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(signatureBufferPixel);
 		// ------------
 
 		// Add extra binds ----

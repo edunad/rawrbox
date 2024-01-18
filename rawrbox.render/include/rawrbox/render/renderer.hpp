@@ -117,6 +117,7 @@ namespace rawrbox {
 		uint32_t MAX_VERTEX_TEXTURES = 128; // NOTE: IF THIS VALUE IS TOO HIGH, YOU MIGHT NEED TO INCREASE THE HEAP MEMORY
 
 		std::function<void()> onIntroCompleted = nullptr;
+		std::function<std::pair<uint32_t, uint32_t>()> overrideHEAP = nullptr;
 
 		RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize, const rawrbox::Colorf& clearColor = rawrbox::Colors::Black());
 		RendererBase(const RendererBase&) = delete;
@@ -125,7 +126,7 @@ namespace rawrbox {
 		RendererBase& operator=(RendererBase&&) = delete;
 		virtual ~RendererBase();
 
-		virtual void init(Diligent::DeviceFeatures features = {}, uint32_t HEAP_SIZE = 0);
+		virtual void init(Diligent::DeviceFeatures features = {});
 		virtual void resize(const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize);
 
 		// PLUGINS ---------------------------

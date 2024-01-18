@@ -40,7 +40,7 @@
     }
 
     float3 ScreenToView(float3 screen, float2 invScreenSize, float2 nearFar, float4x4 invProj) {
-        float2 screenNormalized = screen * invScreenSize;
+        float2 screenNormalized = screen.xy * invScreenSize;
         return ViewPositionFromDepth(screenNormalized, screen.z, nearFar, invProj);
     }
     // -----------------------

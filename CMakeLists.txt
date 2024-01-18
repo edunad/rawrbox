@@ -176,6 +176,7 @@ if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
             "ASM686 FALSE"
             "AMD64 FALSE"
             "POSITION_INDEPENDENT_CODE TRUE"
+            "ZLIB_BUILD_EXAMPLES OFF"
     )
 
     if(ZLIB_ADDED)

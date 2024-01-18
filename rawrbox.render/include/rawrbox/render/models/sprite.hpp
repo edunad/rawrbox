@@ -28,7 +28,7 @@ namespace rawrbox {
 
 		rawrbox::Mesh<typename M::vertexBufferType>* addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) override {
 			mesh.setOptimizable(false);
-			mesh.addData("billboard_mode", {this->_xAxis ? 1.F : 0.F, this->_yAxis ? 1.F : 0.F, this->_zAxis ? 1.F : 0.F, 0.F});
+			mesh.setBillboard(true);
 
 			return Model<M>::addMesh(mesh);
 		}

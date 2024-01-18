@@ -1,5 +1,3 @@
-
-
 #ifndef INCLUDED_MODEL_TRANSFORMS
     #ifdef INCLUDED_CAMERA
         #define INCLUDED_MODEL_TRANSFORMS
@@ -27,7 +25,7 @@
                 float4 vOut = vertex;
 
                 // TOOD: Lock X Y Z using billboard
-                if(billboard.x != 0. || billboard.y != 0. || billboard.z != 0.) {
+                if(Billboard != 0) {
                     float3 right = float3(Camera.view[0][0], Camera.view[1][0], Camera.view[2][0]);
                     float3 up = float3(Camera.view[0][1], Camera.view[1][1], Camera.view[2][1]);
 
@@ -38,20 +36,22 @@
             }
         #endif
 
-        #ifdef TRANSFORM_BONES
-            float4 boneTransform(uint4 indices, float4 weight, float3 position) {
-                float4x4 BoneTransform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-                bool skinned = false;
+        #ifdef SKINNED
+            #ifdef TRANSFORM_BONES
+                float4 boneTransform(uint4 indices, float4 weight, float3 position) {
+                    float4x4 BoneTransform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+                    bool skinned = false;
 
-                for (uint idx = 0; idx < MAX_BONES_PER_VERTEX; idx++) {
-                    if (weight[idx] > 0.0) {
-                        BoneTransform += Constants.bones[indices[idx]] * weight[idx];
-                        skinned = true;
+                    for (uint idx = 0; idx < MAX_BONES_PER_VERTEX; idx++) {
+                        if (weight[idx] > 0.0) {
+                            BoneTransform += SkinnedConstants.bones[indices[idx]] * weight[idx];
+                            skinned = true;
+                        }
                     }
-                }
 
-                return skinned ? mul(BoneTransform, float4(position, 1.f)) : float4(position, 1.f);
-            }
+                    return skinned ? mul(BoneTransform, float4(position, 1.f)) : float4(position, 1.f);
+                }
+            #endif
         #endif
 
         // Apply model transforms

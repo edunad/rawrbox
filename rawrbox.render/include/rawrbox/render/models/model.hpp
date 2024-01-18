@@ -150,6 +150,7 @@ namespace rawrbox {
 				}
 			}
 		}
+
 		void postDraw() {
 			for (auto it = this->_playingAnimations.begin(); it != this->_playingAnimations.end();) {
 				if ((*it).time >= (*it).data->duration && !(*it).loop) {
@@ -444,13 +445,6 @@ namespace rawrbox {
 			}
 		}
 
-		virtual void setRecieveDecals(bool recieve, int id = -1) {
-			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != static_cast<size_t>(id)) continue;
-				this->_meshes[i]->setRecieveDecals(recieve);
-			}
-		}
-
 		virtual void setTexture(rawrbox::TextureBase* tex, int id = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
 				if (id != -1 && i != static_cast<size_t>(id)) continue;
@@ -471,26 +465,35 @@ namespace rawrbox {
 			ModelBase<M>::draw();
 			this->preDraw();
 
-			auto context = rawrbox::RENDERER->context();
 			for (auto& mesh : this->_meshes) {
 				// Process animations ---
 				this->animate(*mesh);
 				// ---
 
-				// Bind materials uniforms & textures ----
-				rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix() * mesh->getMatrix());
-
+				// Bind pipelines ----
 				this->_material->bindPipeline(*mesh);
-				this->_material->bindUniforms(*mesh);
-				//     -----------
+				// -------------------
 
+				// Update uniforms -----
+				bool buffersUpdated = false;
+				if (this->_material->bindVertexUniforms(*mesh)) buffersUpdated = true;
+				if (this->_material->bindVertexSkinnedUniforms(*mesh)) buffersUpdated = true;
+				if (this->_material->bindPixelUniforms(*mesh)) buffersUpdated = true;
+
+				rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix() * mesh->getMatrix());
+				// -----------
+
+				// DRAW -------
 				Diligent::DrawIndexedAttribs DrawAttrs;
 				DrawAttrs.IndexType = Diligent::VT_UINT16;
 				DrawAttrs.FirstIndexLocation = mesh->baseIndex;
 				DrawAttrs.BaseVertex = mesh->baseVertex;
 				DrawAttrs.NumIndices = mesh->totalIndex;
-				DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL /*| Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT*/;
-				context->DrawIndexed(DrawAttrs);
+				DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
+				// if (!buffersUpdated) DrawAttrs.Flags |= Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT; // TODO
+
+				rawrbox::RENDERER->context()->DrawIndexed(DrawAttrs);
+				// -----------
 			}
 
 			this->postDraw();

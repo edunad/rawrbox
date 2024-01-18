@@ -21,8 +21,7 @@ namespace rawrbox {
 	class CameraBase;
 
 	constexpr auto MAX_BONES_PER_VERTEX = 4;
-	constexpr auto MAX_BONES_PER_MODEL = 200;
-	constexpr auto MAX_VERTEX_DATA = 4;
+	constexpr auto MAX_BONES_PER_MODEL = 150; // If value is increased, dynamic heap might need to be increased from the default 8mb
 	constexpr auto MAX_POST_DATA = 2;
 
 	// QUICK ACCESS ---

@@ -22,19 +22,29 @@ namespace rawrbox {
 	struct BindlessVertexBuffer {
 		// MODEL ---
 		rawrbox::Colorf colorOverride = {};
-		rawrbox::Vector4f textureFlags = {};
+		rawrbox::Vector4f data = {};
+		// ----------
 
-		std::array<rawrbox::Vector4f, rawrbox::MAX_VERTEX_DATA> data = {}; // Other mesh data, like vertex / displacement / billboard settings / masks
-										   // ----------
+		bool operator==(const BindlessVertexBuffer& other) const { return this->colorOverride == other.colorOverride && this->data == other.data; }
+		bool operator!=(const BindlessVertexBuffer& other) const { return !operator==(other); }
+	};
+
+	struct BindlessVertexSkinnedBuffer {
 		// MODEL BONES ----
-		std::array<rawrbox::Matrix4x4, rawrbox::MAX_BONES_PER_MODEL> bones = {};
-		//-----------------
+		std::array<rawrbox::Matrix4x4, rawrbox::MAX_BONES_PER_MODEL> bones = {}; // This is quite heavy on the dynamic buffer
+											 //-----------------
+
+		bool operator==(const BindlessVertexSkinnedBuffer& other) const { return std::equal(this->bones.begin(), this->bones.end(), other.bones.begin()); }
+		bool operator!=(const BindlessVertexSkinnedBuffer& other) const { return !operator==(other); }
 	};
 	// --------------------------
 
 	struct BindlessPixelBuffer {
 		rawrbox::Vector4_t<uint32_t> textureIDs = {}; // BASE, NORMAL, ROUGHTMETAL, EMISSION
 		rawrbox::Vector4f litData = {};               // Texture data
+
+		bool operator==(const BindlessPixelBuffer& other) const { return this->textureIDs == other.textureIDs && this->litData == other.litData; }
+		bool operator!=(const BindlessPixelBuffer& other) const { return !operator==(other); }
 	};
 
 	struct BindlessPostProcessBuffer {
@@ -42,6 +52,9 @@ namespace rawrbox {
 
 		uint32_t textureID = 0;
 		uint32_t depthTextureID = 0;
+
+		bool operator==(const BindlessPostProcessBuffer& other) const { return this->textureID == other.textureID && this->depthTextureID == other.depthTextureID && std::equal(this->data.begin(), this->data.end(), other.data.begin()); }
+		bool operator!=(const BindlessPostProcessBuffer& other) const { return !operator==(other); }
 	};
 	// --------------------------
 
@@ -76,6 +89,7 @@ namespace rawrbox {
 
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferPixel;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertex;
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertexSkinned;
 
 		static void init();
 		static void shutdown();

@@ -152,7 +152,8 @@ namespace rawrbox {
 			rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix());
 
 			this->_material->bindPipeline(*this->_mesh);
-			this->_material->bindUniforms(*this->_mesh);
+			this->_material->bindVertexUniforms(*this->_mesh);
+			this->_material->bindPixelUniforms(*this->_mesh);
 			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;

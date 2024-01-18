@@ -98,13 +98,13 @@ namespace decal_test {
 		// Setup
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({0, 1.0F, 0}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray());
-			mesh.setRecieveDecals(true);
+			// mesh.setRecieveDecals(true);
 			this->_model->addMesh(mesh);
 		}
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({0, -1.0F, 0.F}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray());
-			mesh.setRecieveDecals(true);
+			// mesh.setRecieveDecals(true);
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 
 			this->_model->addMesh(mesh);

@@ -14,7 +14,7 @@
 
 namespace phys_2d_test {
 	void Game::setupGLFW() {
-		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_VULKAN);
+		auto window = rawrbox::Window::createWindow();
 		window->setMonitor(-1);
 		window->setTitle("2D PHYSICS TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
@@ -93,7 +93,7 @@ namespace phys_2d_test {
 
 		// TIMER ---
 		this->_timer = rawrbox::TIMER::create(
-		    600, 25, [this]() { this->createBox({0, 5, 0}, {0.5F, 0.5F}); });
+		    300, 25, [this]() { this->createBox({0, 5, 0}, {0.5F, 0.5F}); });
 		this->_timer->pause(this->_paused);
 		// --------
 

@@ -1,9 +1,5 @@
-
 #include <vertex_bindless_uniforms.fxh>
 #include <camera.fxh>
-
-#define TEXTURE_DATA
-#include <material.fxh>
 
 #define TRANSFORM_DISPLACEMENT
 #define TRANSFORM_PSX

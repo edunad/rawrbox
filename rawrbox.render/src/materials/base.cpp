@@ -16,4 +16,10 @@ namespace rawrbox {
 		if (this->_cullnone == nullptr) this->_cullnone = rawrbox::PipelineUtils::getPipeline(id + "::CullNone");
 		if (this->_cullnone_alpha == nullptr) this->_cullnone_alpha = rawrbox::PipelineUtils::getPipeline(id + "::CullNone::Alpha");
 	}
+
+	void MaterialBase::resetUniformBinds() {
+		this->_lastPixelBuffer = {false, {}};
+		this->_lastVertexBuffer = {false, {}};
+		this->_lastSkinnedVertexBuffer = {false, {}};
+	}
 } // namespace rawrbox

@@ -34,6 +34,8 @@ namespace rawrbox {
 		float specularFactor = 0.5F;
 		float emissionFactor = 1.0F;
 
+		float displacementPower = 1.F;
+
 		[[nodiscard]] const rawrbox::Vector4f getData() const {
 			return {roughnessFactor, metalnessFactor, specularFactor, emissionFactor};
 		}
@@ -84,6 +86,11 @@ namespace rawrbox {
 		rawrbox::MeshTextures textures = {};
 		// -------
 
+		// OTHER ---
+		float vertexSnapPower = 0.F;
+		bool billboard = false;
+		// ---------
+
 		// RENDERING ---
 		rawrbox::Matrix4x4 matrix = {};
 		rawrbox::Color color = rawrbox::Colors::White();
@@ -105,8 +112,8 @@ namespace rawrbox {
 		std::vector<rawrbox::LightBase*> lights = {};
 		// -----------------
 
-		void* owner = nullptr;                                        // Eeeehhhh
-		std::unordered_map<std::string, rawrbox::Vector4f> data = {}; // Other data
+		void* owner = nullptr;                            // Eeeehhhh
+		std::unordered_map<std::string, float> data = {}; // Other data
 
 		Mesh() = default;
 		Mesh(const Mesh&) = default;
@@ -204,8 +211,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual const rawrbox::TextureBase* getDisplacementTexture() const { return this->textures.displacement; }
 		virtual void setDisplacementTexture(rawrbox::TextureBase* ptr, float power = 1.F) {
 			this->textures.displacement = ptr;
+			this->textures.displacementPower = power;
 
-			this->addData("displacement", {static_cast<float>(ptr->getTextureID()), power, 0, 0});
 			this->setOptimizable(false);
 		}
 
@@ -226,9 +233,12 @@ namespace rawrbox {
 			this->textures.specularFactor = spec;
 		}
 
+		virtual void setBillboard(bool billboard) {
+			this->billboard = billboard;
+		}
+
 		virtual void setVertexSnap(float power = 2.F) {
-			this->addData("vertex_snap", {power, 0, 0, 0});
-			this->setOptimizable(false);
+			this->vertexSnapPower = power;
 		}
 
 		virtual void setWireframe(bool _wireframe) {
@@ -239,30 +249,12 @@ namespace rawrbox {
 			this->culling = _culling;
 		}
 
-		virtual void setRecieveDecals(bool decals) {
-			this->addData("mask", {decals ? 1.0F : 0.0F, 0, 0, 0});
-		}
-
 		[[nodiscard]] virtual uint32_t getId(int /*index*/ = -1) const { return 0; }
 		virtual void setId(uint32_t /*id*/, int /*index*/ = -1) {}
 
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->color; }
 		virtual void setColor(const rawrbox::Color& _color) {
 			this->color = _color;
-		}
-
-		virtual void addData(const std::string& id, rawrbox::Vector4f _data) {
-			this->data[id] = _data;
-		}
-
-		[[nodiscard]] virtual const rawrbox::Vector4f& getData(const std::string& id) const {
-			auto fnd = this->data.find(id);
-			if (fnd == this->data.end()) throw rawrbox::Logger::err("RawrBox-Mesh", "Data '{}' not found", id);
-			return fnd->second;
-		}
-
-		[[nodiscard]] virtual bool hasData(const std::string& id) const {
-			return this->data.find(id) != this->data.end();
 		}
 
 		[[nodiscard]] virtual rawrbox::Skeleton* getSkeleton() const {

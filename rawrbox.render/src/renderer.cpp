@@ -47,7 +47,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_swapChain);
 	}
 
-	void RendererBase::init(Diligent::DeviceFeatures features, uint32_t HEAP_SIZE) {
+	void RendererBase::init(Diligent::DeviceFeatures features) {
 		Diligent::SwapChainDesc SCDesc;
 
 		// Enable required features --------------------------
@@ -86,9 +86,12 @@ namespace rawrbox {
 
 					Diligent::EngineD3D12CreateInfo EngineCI;
 					EngineCI.Features = features;
-					if (HEAP_SIZE != 0) {
-						EngineCI.GPUDescriptorHeapDynamicSize[0] = HEAP_SIZE * 4;
-						EngineCI.GPUDescriptorHeapSize[0] = HEAP_SIZE; // For mutable mode
+
+					if (this->overrideHEAP != nullptr) {
+						auto heap = this->overrideHEAP();
+
+						EngineCI.GPUDescriptorHeapDynamicSize[0] = heap.first;
+						EngineCI.GPUDescriptorHeapSize[0] = heap.second;
 					}
 
 					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
@@ -112,8 +115,12 @@ namespace rawrbox {
 					Diligent::EngineVkCreateInfo EngineCI;
 					EngineCI.Features = features;
 
-					EngineCI.DynamicHeapSize = 128 << 20;
-					EngineCI.DynamicHeapPageSize = 2 << 20;
+					if (this->overrideHEAP != nullptr) {
+						auto heap = this->overrideHEAP();
+
+						EngineCI.DynamicHeapSize = heap.first;
+						EngineCI.DynamicHeapPageSize = heap.second;
+					}
 
 					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_device, &this->_context);
 					pFactoryVk->CreateSwapChainVk(this->_device, this->_context, SCDesc, this->_window, &this->_swapChain);
@@ -182,7 +189,6 @@ namespace rawrbox {
 		rawrbox::PipelineUtils::init(*this->device());
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MAX_BONES_PER_MODEL", rawrbox::MAX_BONES_PER_MODEL);
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MAX_BONES_PER_VERTEX", rawrbox::MAX_BONES_PER_VERTEX);
-		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MAX_VERTEX_DATA", rawrbox::MAX_VERTEX_DATA);
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_PIXEL, "MAX_POST_DATA", rawrbox::MAX_POST_DATA);
 		// ----------------------
 
@@ -349,9 +355,16 @@ namespace rawrbox {
 		// No camera -------
 		if (this->_camera == nullptr) {
 			this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-			this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
-			this->frame();
 
+#ifdef _DEBUG
+			this->_context->BeginDebugGroup("OVERLAY");
+#endif
+			this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+#ifdef _DEBUG
+			this->_context->EndDebugGroup();
+#endif
+
+			this->frame();
 			return; // No camera, no world draw
 		}
 		// ---------------------
@@ -363,7 +376,13 @@ namespace rawrbox {
 		// Perform pre-render --
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+#ifdef _DEBUG
+				// this->_context->BeginDebugGroup(plugin.first.c_str());
+#endif
 			plugin.second->preRender();
+#ifdef _DEBUG
+			// this->_context->EndDebugGroup();
+#endif
 		}
 		// -----------------------
 
@@ -372,17 +391,29 @@ namespace rawrbox {
 		// -----------------------
 
 		// Perform world --
+#ifdef _DEBUG
+		this->_context->BeginDebugGroup("OPAQUE");
+		this->beginQuery("OPAQUE");
+#endif
 		this->_render->startRecord();
-		// this->beginQuery("WORLD");
 		this->_drawCall(rawrbox::DrawPass::PASS_OPAQUE);
-		// this->endQuery("WORLD");
 		this->_render->stopRecord();
+#ifdef _DEBUG
+		this->endQuery("OPAQUE");
+		this->_context->EndDebugGroup();
+#endif
 		//  -----------------
 
 		// Perform post-render --
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+#ifdef _DEBUG
+			this->_context->BeginDebugGroup(plugin.first.c_str());
+#endif
 			plugin.second->postRender(*this->_render);
+#ifdef _DEBUG
+			this->_context->EndDebugGroup();
+#endif
 		}
 		// -----------------------
 
@@ -391,9 +422,15 @@ namespace rawrbox {
 		// ------------------
 
 		// Perform overlay --
-		// this->beginQuery("OVERLAY");
+#ifdef _DEBUG
+		this->_context->BeginDebugGroup("OVERLAY");
+		this->beginQuery("OVERLAY");
+#endif
 		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
-		// this->endQuery("OVERLAY");
+#ifdef _DEBUG
+		this->endQuery("OVERLAY");
+		this->_context->EndDebugGroup();
+#endif
 		//  ------------------
 
 		// Submit ---
@@ -417,12 +454,6 @@ namespace rawrbox {
 
 	void RendererBase::frame() {
 		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
-		{
-			this->_context->Flush();
-			this->_context->FinishFrame();
-			this->_device->ReleaseStaleResources();
-		}
-
 		rawrbox::FRAME = this->_context->GetFrameNumber();
 	}
 

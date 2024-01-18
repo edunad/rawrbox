@@ -21,6 +21,10 @@ namespace rawrbox {
 		Diligent::IPipelineState* _cullnone = nullptr;
 		Diligent::IPipelineState* _cullnone_alpha = nullptr;
 
+		std::pair<bool, rawrbox::BindlessPixelBuffer> _lastPixelBuffer = {false, {}};
+		std::pair<bool, rawrbox::BindlessVertexBuffer> _lastVertexBuffer = {false, {}};
+		std::pair<bool, rawrbox::BindlessVertexSkinnedBuffer> _lastSkinnedVertexBuffer = {false, {}};
+
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Material");
 
 	public:
@@ -37,54 +41,70 @@ namespace rawrbox {
 
 		virtual void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper = {});
 		virtual void setupPipelines(const std::string& id);
+		virtual void resetUniformBinds();
 
 		template <typename T = rawrbox::VertexData>
-		void bindBaseUniforms(const rawrbox::Mesh<T>& mesh, rawrbox::BindlessVertexBuffer* helper) {
-			// MODEL -------
-			std::array<rawrbox::Vector4f, rawrbox::MAX_VERTEX_DATA>
-			    data = {rawrbox::Vector4f{0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}, {0.F, 0.F, 0.F, 0.F}};
+		rawrbox::BindlessVertexBuffer bindBaseUniforms(const rawrbox::Mesh<T>& mesh) {
+			rawrbox::Vector4f data = {mesh.billboard ? 1.F : 0.F, mesh.vertexSnapPower, 0, 0};
 
-			if (mesh.hasData("billboard_mode")) {
-				data[0] = mesh.getData("billboard_mode").data();
+			auto dTexture = mesh.textures.displacement;
+			if (dTexture != nullptr) {
+				data.z = dTexture->getTextureID();
+				data.w = mesh.textures.displacementPower;
 			}
 
-			if (mesh.hasData("vertex_snap")) {
-				data[1] = mesh.getData("vertex_snap").data();
-			}
-
-			if (mesh.hasData("displacement")) {
-				data[2] = mesh.getData("displacement").data();
-			}
-
-			if (mesh.hasData("mask")) {
-				data[3] = mesh.getData("mask").data();
-			}
-
-			helper->colorOverride = mesh.color;
-			helper->textureFlags = mesh.textures.texture == nullptr ? rawrbox::Vector4f() : mesh.textures.texture->getData();
-			helper->bones = mesh.boneTransforms;
-			helper->data = data;
-			// ----------------------------
+			return {
+			    mesh.color,
+			    data};
 		}
 
 		template <typename T = rawrbox::VertexData>
-		void bindBasePixelUniforms(const rawrbox::Mesh<T>& mesh, rawrbox::BindlessPixelBuffer* helper) {
-			helper->textureIDs = mesh.textures.getPixelIDs();
-			helper->litData = mesh.textures.getData();
+		rawrbox::BindlessPixelBuffer bindBasePixelUniforms(const rawrbox::Mesh<T>& mesh) {
+			return {
+			    mesh.textures.getPixelIDs(),
+			    mesh.textures.getData()};
 		}
 
 		template <typename T = rawrbox::VertexData>
-		void bindUniforms(const rawrbox::Mesh<T>& mesh) {
-			auto context = rawrbox::RENDERER->context();
+		rawrbox::BindlessVertexSkinnedBuffer bindBaseVertexSkinnedUniforms(const rawrbox::Mesh<T>& mesh) {
+			return {
+			    mesh.boneTransforms};
+		}
+
+		template <typename T = rawrbox::VertexData>
+		bool bindPixelUniforms(const rawrbox::Mesh<T>& mesh) {
+			rawrbox::BindlessPixelBuffer buff = this->bindBasePixelUniforms<T>(mesh);
+			if (this->_lastPixelBuffer.first && buff == this->_lastPixelBuffer.second) return false;
+			this->_lastPixelBuffer = {true, buff};
 
 			// SETUP UNIFORMS ----------------------------
-			Diligent::MapHelper<rawrbox::BindlessVertexBuffer> VertexConstants(context, rawrbox::BindlessManager::signatureBufferVertex, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			Diligent::MapHelper<rawrbox::BindlessPixelBuffer> PixelConstants(context, rawrbox::BindlessManager::signatureBufferPixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-
-			this->bindBaseUniforms<T>(mesh, VertexConstants);
-			this->bindBasePixelUniforms<T>(mesh, PixelConstants);
+			{
+				Diligent::MapHelper<rawrbox::BindlessPixelBuffer> PixelConstants(rawrbox::RENDERER->context(), rawrbox::BindlessManager::signatureBufferPixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				std::memcpy(PixelConstants, &this->_lastPixelBuffer.second, sizeof(rawrbox::BindlessPixelBuffer));
+			}
 			// -----------
+
+			return true;
 		}
+
+		template <typename T = rawrbox::VertexData>
+		bool bindVertexUniforms(const rawrbox::Mesh<T>& mesh) {
+			rawrbox::BindlessVertexBuffer buff = this->bindBaseUniforms<T>(mesh);
+			if (this->_lastVertexBuffer.first && buff == this->_lastVertexBuffer.second) return false;
+			this->_lastVertexBuffer = {true, buff};
+
+			// SETUP UNIFORMS ----------------------------
+			{
+				Diligent::MapHelper<rawrbox::BindlessVertexBuffer> VertexConstants(rawrbox::RENDERER->context(), rawrbox::BindlessManager::signatureBufferVertex, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				std::memcpy(VertexConstants, &this->_lastVertexBuffer.second, sizeof(rawrbox::BindlessVertexBuffer));
+			}
+			// -----------
+
+			return true;
+		}
+
+		template <typename T = rawrbox::VertexData>
+		bool bindVertexSkinnedUniforms(const rawrbox::Mesh<T>& /*mesh*/) { return false; }
 
 		template <typename T = rawrbox::VertexData>
 		void bindPipeline(const rawrbox::Mesh<T>& mesh) {
