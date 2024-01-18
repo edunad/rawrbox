@@ -13,7 +13,11 @@
 
 namespace webm_test {
 	void Game::setupGLFW() {
+#ifdef _DEBUG
+		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
+#else
 		auto window = rawrbox::Window::createWindow();
+#endif
 		window->setMonitor(-1);
 		window->setTitle("WEBM TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
@@ -64,25 +68,22 @@ namespace webm_test {
 
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./assets/video/webm_test.webm")->get<rawrbox::TextureWEBM>();
 		auto tex2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceWEBM>("./assets/video/webm_test_2.webm")->get<rawrbox::TextureWEBM>();
-		tex2->setTextureUV(rawrbox::TEXTURE_UV::UV_FLIP_V);
-		tex->setTextureUV(rawrbox::TEXTURE_UV::UV_FLIP_V);
-		// tex->setLoop(false);
-		tex->onEnd += [tex]() {
-			fmt::print("[RawrBox] WEBM reached end\n");
+		tex2->onEnd += [tex]() {
+			fmt::print("WEBM reached end\n");
 			tex->seek(6500);
 		};
 
-		this->_model->setOptimizable(false);
-
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane({2.F, 4.0F, 0.F}, {4.F, 3.F});
+			auto mesh = rawrbox::MeshUtils::generatePlane({-2.F, -4.0F, 0.F}, {4.F, 3.F});
 			mesh.setTexture(tex);
+
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane({-2.F, 4.0F, 0.F}, {4.F, 7.F});
+			auto mesh = rawrbox::MeshUtils::generatePlane({2.F, -4.0F, 0.F}, {4.F, 7.F});
 			mesh.setTexture(tex2);
+
 			this->_model->addMesh(mesh);
 		}
 
@@ -92,6 +93,7 @@ namespace webm_test {
 		}
 		// ----
 
+		this->_model->setEulerAngle({0, 0, rawrbox::MathUtils::toRad(180)});
 		this->_model->upload();
 		this->_ready = true;
 	}

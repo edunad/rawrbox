@@ -10,15 +10,14 @@ namespace rawrbox {
 	static std::mutex RENDER_THREAD_LOCK;
 	void WEBM::preloadVideo() {
 		std::lock_guard<std::mutex> lock(RENDER_THREAD_LOCK);
-		fmt::print("[RawrBox-WEBM] Pre-loading video '{}'\n", this->_filePath.generic_string());
+		this->_logger->info("Pre-loading video '{}'", fmt::format(fmt::fg(fmt::color::light_coral), this->_filePath.generic_string()));
 
 		while (this->advance()) {
 			auto frame = this->getFrame();
-			if (!frame.valid()) throw std::runtime_error("[RawrBox-WEBM] Failed to find frame");
+			if (!frame.valid()) throw this->_logger->error("Failed to find frame");
 
 			rawrbox::WEBMImage img;
-			if (!rawrbox::WEBMDecoder::decode(frame, img)) throw std::runtime_error("[RawrBox-WEBM] Failed to decode frame");
-			if (!img.valid()) throw std::runtime_error("[RawrBox-WEBM] Failed to decode frame");
+			if (!rawrbox::WEBMDecoder::decode(frame, img) || !img.valid()) throw this->_logger->error("Failed to decode frame");
 
 			this->_preloadedFrames[frame.pos] = img;
 		}
@@ -27,31 +26,35 @@ namespace rawrbox {
 	}
 
 	void WEBM::internalLoad() {
-		if (this->_reader == nullptr) throw std::runtime_error("[RawrBox-WEBM] Reader not initialized!");
+		if (this->_reader == nullptr) throw this->_logger->error("Reader not initialized!");
 
 		// Get the file info
 		long long pos = 0;
-		if (mkvparser::EBMLHeader().Parse(this->_reader.get(), pos))
-			throw std::runtime_error("[RawrBox-WEBM] File parsing failed");
+		if (mkvparser::EBMLHeader().Parse(this->_reader.get(), pos)) {
+			throw this->_logger->error("File parsing failed");
+		}
 
 		// Create a segment instance
 		mkvparser::Segment* pSegment = nullptr;
-		if (mkvparser::Segment::CreateInstance(this->_reader.get(), pos, pSegment))
-			throw std::runtime_error("[RawrBox-WEBM] Failed to create file segment");
+		if (mkvparser::Segment::CreateInstance(this->_reader.get(), pos, pSegment)) {
+			throw this->_logger->error("Failed to create file segment");
+		}
 
 		this->_segment = std::unique_ptr<mkvparser::Segment>(pSegment);
 
-		if (this->_segment == nullptr || this->_segment->Load() < 0)
-			throw std::runtime_error("[RawrBox-WEBM] Failed to load segment");
+		if (this->_segment == nullptr || this->_segment->Load() < 0) {
+			throw this->_logger->error("Failed to load segment");
+		}
 
 		const mkvparser::Tracks* tracks = this->_segment->GetTracks();
 		const unsigned long tracksCount = tracks->GetTracksCount();
 
 		const mkvparser::SegmentInfo* const segmentInfo = this->_segment->GetInfo();
-		if (segmentInfo == nullptr)
-			throw std::runtime_error("[RawrBox-WEBM] Failed to load segment info");
+		if (segmentInfo == nullptr) {
+			throw this->_logger->error("Failed to load segment info");
+		}
 
-		if (this->_segment->GetCount() <= 0) throw std::runtime_error(fmt::format("[RawrBox-WEBM] Track {} does not contain any cluster data!", this->_trackId));
+		if (this->_segment->GetCount() <= 0) throw this->_logger->error("Track {} does not contain any cluster data!", this->_trackId);
 
 		this->_info.duration = segmentInfo->GetDuration();
 		this->_info.timeScale = segmentInfo->GetTimeCodeScale();
@@ -75,7 +78,7 @@ namespace rawrbox {
 					if (this->_info.vCodec != rawrbox::VIDEO_CODEC::UNKNOWN) {
 						this->_video = dynamic_cast<const mkvparser::VideoTrack*>(track);
 					} else {
-						throw std::runtime_error(fmt::format("[RawrBox-WEBM] Unknown video codec '{}'\n", codecId));
+						throw this->_logger->error("Unknown video codec '{}'", codecId);
 					}
 
 					break;
@@ -84,7 +87,7 @@ namespace rawrbox {
 		}
 		// ----
 
-		if (this->_video == nullptr) throw std::runtime_error(fmt::format("[RawrBox-WEBM] Failed to find track {}", this->_trackId));
+		if (this->_video == nullptr) throw this->_logger->error("Failed to find track {}", this->_trackId);
 		this->_videoTrack = this->_video->GetNumber();
 
 		// Append extra info ----
@@ -119,13 +122,13 @@ namespace rawrbox {
 		this->_reader = std::make_unique<mkvparser::MkvReader>();
 
 		if (this->_reader->Open(filePath.string().c_str()))
-			throw std::runtime_error("[RawrBox-WEBM] Filename is invalid or error while opening");
+			throw this->_logger->error("Filename is invalid or error while opening");
 
 		this->internalLoad();
 	}
 
 	bool WEBM::advance() {
-		if (this->_video == nullptr) throw std::runtime_error("[RawrBox-WEBM] Video not loaded! Did you call load()?");
+		if (this->_video == nullptr) throw this->_logger->error("Video not loaded! Did you call load()?");
 		if (this->_paused) return false;
 
 		if (this->eos()) {
@@ -207,7 +210,7 @@ namespace rawrbox {
 	}
 
 	void WEBM::reset() {
-		if (this->_video == nullptr || this->_segment == nullptr) throw std::runtime_error("[RawrBox-WEBM] Video not loaded! Did you call 'load' ?");
+		if (this->_video == nullptr || this->_segment == nullptr) throw this->_logger->error("Video not loaded! Did you call 'load' ?");
 
 		this->_cluster = this->_segment->GetFirst();
 
@@ -220,7 +223,7 @@ namespace rawrbox {
 	}
 
 	void WEBM::seek(uint64_t timeMS) {
-		if (this->_video == nullptr || this->_segment == nullptr) throw std::runtime_error("[RawrBox-WEBM] Video not loaded! Did you call 'load' ?");
+		if (this->_video == nullptr || this->_segment == nullptr) throw this->_logger->error("Video not loaded! Did you call 'load' ?");
 
 		this->_cluster = this->_segment->FindCluster(timeMS * 1000000);
 

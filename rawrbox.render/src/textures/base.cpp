@@ -94,7 +94,6 @@ namespace rawrbox {
 
 	Diligent::ITexture* TextureBase::getTexture() const { return this->_tex; }
 	Diligent::ITextureView* TextureBase::getHandle() const { return this->_handle; }
-	std::array<float, 4> TextureBase::getData() const { return {static_cast<float>(this->_textureUV)}; }
 
 	Diligent::ISampler* TextureBase::getSampler() {
 		return this->_sampler == nullptr ? rawrbox::PipelineUtils::defaultSampler : this->_sampler;
@@ -105,9 +104,6 @@ namespace rawrbox {
 
 		this->updateSampler();
 	}
-
-	void TextureBase::setTextureUV(rawrbox::TEXTURE_UV mode) { this->_textureUV = mode; }
-	rawrbox::TEXTURE_UV TextureBase::getTextureUV() const { return this->_textureUV; }
 
 	void TextureBase::setType(rawrbox::TEXTURE_TYPE type) { this->_type = type; }
 	rawrbox::TEXTURE_TYPE TextureBase::getType() const { return this->_type; }

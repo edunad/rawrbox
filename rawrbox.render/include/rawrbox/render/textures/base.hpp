@@ -13,13 +13,6 @@
 #include <vector>
 
 namespace rawrbox {
-	enum class TEXTURE_UV {
-		UV_NONE = 0,
-		UV_FLIP_U,
-		UV_FLIP_V,
-		UV_FLIP_UV
-	};
-
 	enum class TEXTURE_TYPE {
 		PIXEL,
 		VERTEX
@@ -37,9 +30,7 @@ namespace rawrbox {
 
 		std::vector<uint8_t> _pixels = {};
 
-		rawrbox::TEXTURE_UV _textureUV = rawrbox::TEXTURE_UV::UV_NONE;
 		rawrbox::TEXTURE_TYPE _type = rawrbox::TEXTURE_TYPE::PIXEL;
-
 		Diligent::ISampler* _sampler = nullptr;
 
 		bool _failedToLoad = false;
@@ -80,13 +71,9 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual Diligent::ITexture* getTexture() const;
 		[[nodiscard]] virtual Diligent::ITextureView* getHandle() const;
-		[[nodiscard]] virtual std::array<float, 4> getData() const;
 
 		[[nodiscard]] virtual Diligent::ISampler* getSampler();
 		virtual void setSampler(Diligent::SamplerDesc desc);
-
-		virtual void setTextureUV(rawrbox::TEXTURE_UV mode);
-		[[nodiscard]] virtual rawrbox::TEXTURE_UV getTextureUV() const;
 
 		virtual void setType(rawrbox::TEXTURE_TYPE type);
 		[[nodiscard]] virtual rawrbox::TEXTURE_TYPE getType() const;

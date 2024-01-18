@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/utils/event.hpp>
+#include <rawrbox/utils/logger.hpp>
 #include <rawrbox/webm/decoder.hpp>
 
 #include <mkvparser/mkvparser.h>
@@ -48,6 +49,10 @@ namespace rawrbox {
 
 		std::unique_ptr<mkvparser::MkvReader> _reader = nullptr;
 		std::unique_ptr<mkvparser::Segment> _segment = nullptr;
+
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-WEBM");
+		// -------------
 
 		const mkvparser::Cluster* _cluster = nullptr;
 		const mkvparser::BlockEntry* _blockEntry = nullptr;

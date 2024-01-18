@@ -13,7 +13,11 @@
 
 namespace phys_3d_test {
 	void Game::setupGLFW() {
+#ifdef _DEBUG
+		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
+#else
 		auto window = rawrbox::Window::createWindow();
+#endif
 		window->setMonitor(-1);
 		window->setTitle("3D PHYSICS TEST");
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
@@ -46,8 +50,10 @@ namespace phys_3d_test {
 		rawrbox::PHYSICS::init(20, 2048, 2048, 2048, 2048, 5);
 
 		auto settings = rawrbox::PHYSICS::physicsSystem->GetPhysicsSettings();
-		settings.mNumPositionSteps = 2;
+		settings.mNumPositionSteps = 1;
 		settings.mNumVelocitySteps = 2;
+		settings.mDeterministicSimulation = false;
+		settings.mTimeBeforeSleep = 0.15F;
 
 		rawrbox::PHYSICS::physicsSystem->SetPhysicsSettings(settings);
 		// rawrbox::PHYSICS::onBodyAwake += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body awake \n"); };

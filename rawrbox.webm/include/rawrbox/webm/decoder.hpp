@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/math/vector2.hpp>
+#include <rawrbox/utils/logger.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -36,6 +37,10 @@ namespace rawrbox {
 		static rawrbox::VIDEO_CODEC _codec;
 		static std::unique_ptr<vpx_codec_ctx> _ctx;
 		static const void* _iter;
+
+		// LOGGER ------
+		static std::unique_ptr<rawrbox::Logger> _logger;
+		// -------------
 
 	public:
 		static void init(rawrbox::VIDEO_CODEC codec, uint32_t threads = 6);

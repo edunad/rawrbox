@@ -13,7 +13,11 @@ namespace rawrbox {
 	std::unique_ptr<vpx_codec_ctx> WEBMDecoder::_ctx = nullptr;
 	const void* WEBMDecoder::_iter = nullptr;
 
-	rawrbox::VIDEO_CODEC WEBMDecoder::_codec;
+	rawrbox::VIDEO_CODEC WEBMDecoder::_codec = rawrbox::VIDEO_CODEC::UNKNOWN;
+
+	// LOGGER ------
+	std::unique_ptr<rawrbox::Logger> WEBMDecoder::_logger = std::make_unique<rawrbox::Logger>("RawrBox-WEBMDecoder");
+	// -------------
 	// ------
 
 	void WEBMDecoder::init(rawrbox::VIDEO_CODEC codec, uint32_t threads) {
@@ -31,7 +35,7 @@ namespace rawrbox {
 				codecIface = vpx_codec_vp9_dx();
 				break;
 			default:
-				throw std::runtime_error("[WEBMDecoder] Invalid vpx codec");
+				throw _logger->error("Invalid vpx codec");
 		}
 
 		_codec = codec;
@@ -39,7 +43,7 @@ namespace rawrbox {
 
 		if (vpx_codec_dec_init(_ctx.get(), codecIface, &codecCfg, 0 | VPX_CODEC_USE_FRAME_THREADING)) {
 			_ctx.reset();
-			throw std::runtime_error("[WEBMDecoder] Failed to initialize vpx codec");
+			throw _logger->error("Failed to initialize vpx codec");
 		}
 	}
 
@@ -50,20 +54,20 @@ namespace rawrbox {
 
 	bool WEBMDecoder::decode(const rawrbox::WEBMFrame& frame, rawrbox::WEBMImage& image) {
 		if (_ctx == nullptr)
-			throw std::runtime_error("[WEBMDecoder] Codec not initialized, did you call 'init' ?");
+			throw _logger->error("Codec not initialized, did you call 'init' ?");
 
 		if (frame.codec != _codec) {
 			auto badname = magic_enum::enum_name(static_cast<rawrbox::VIDEO_CODEC>(frame.codec)).data();
 			auto name = magic_enum::enum_name(static_cast<rawrbox::VIDEO_CODEC>(_codec)).data();
 
-			throw std::runtime_error(fmt::format("[WEBMDecoder] Codec '{}' not set as config! '{}' was loaded instead", badname, name));
+			throw _logger->error("Codec '{}' not set as config! '{}' was loaded instead", badname, name);
 		}
 
 		_iter = nullptr;
 		if (vpx_codec_decode(_ctx.get(), frame.buffer.data(), static_cast<uint32_t>(frame.buffer.size()), nullptr, 0)) return false;
 
 		if (vpx_image_t* img = vpx_codec_get_frame(_ctx.get(), &_iter)) {
-			if ((img->fmt & VPX_IMG_FMT_PLANAR) == 0) throw std::runtime_error("[WEBMDecoder] Failed to get image! Image not in FMT_PLANAR!");
+			if ((img->fmt & VPX_IMG_FMT_PLANAR) == 0) throw _logger->error("Failed to get image! Image not in FMT_PLANAR!");
 
 			rawrbox::YUVLuminanceScale scale = rawrbox::YUVLuminanceScale::UNKNOWN;
 			int channels = 4;
@@ -79,7 +83,7 @@ namespace rawrbox {
 					scale = rawrbox::YUVLuminanceScale::FULL;
 					break;
 				default:
-					throw std::runtime_error("[WEBMDecoder] Unknown luminance format");
+					throw _logger->error("Unknown luminance format");
 			}
 
 			switch (img->fmt) {
@@ -91,7 +95,7 @@ namespace rawrbox {
 					}
 					break;
 				default:
-					throw std::runtime_error("[WEBMDecoder] Format not supported, video not in I420 format");
+					throw _logger->error("Format not supported, video not in I420 format");
 			}
 		}
 
