@@ -7,29 +7,65 @@
 namespace rawrbox {
 	CameraBase::~CameraBase() {
 		RAWRBOX_DESTROY(this->_uniforms);
+		RAWRBOX_DESTROY(this->_staticUniforms);
 	}
 
 	void CameraBase::initialize() {
+		if (this->_staticUniforms != nullptr) throw this->_logger->error("Camera already initialized!");
+
 		auto device = rawrbox::RENDERER->device();
 		auto context = rawrbox::RENDERER->context();
 
-		Diligent::BufferDesc CBDesc;
-		CBDesc.Name = "rawrbox::Camera::Uniforms";
-		CBDesc.Usage = Diligent::USAGE_DYNAMIC;
-		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-		CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-		CBDesc.Size = sizeof(rawrbox::CameraUniforms);
+		{
+			auto staticData = this->getStaticData();
 
-		rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+			Diligent::BufferDesc CBDesc;
+			CBDesc.Name = "rawrbox::Camera::Static::Uniforms";
+			CBDesc.Usage = Diligent::USAGE_IMMUTABLE;
+			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			CBDesc.Size = sizeof(rawrbox::CameraStaticUniforms);
 
-		// Barrier ----
-		rawrbox::BindlessManager::barrier(*this->_uniforms, rawrbox::BufferType::CONSTANT);
-		// ------------
+			Diligent::BufferData bData;
+			bData.DataSize = CBDesc.Size;
+			bData.pData = &staticData;
+
+			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, &bData, &this->_staticUniforms);
+			rawrbox::BindlessManager::barrier(*this->_staticUniforms, rawrbox::BufferType::CONSTANT);
+		}
+
+		{
+			Diligent::BufferDesc CBDesc;
+			CBDesc.Name = "rawrbox::Camera::Uniforms";
+			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+			CBDesc.Size = sizeof(rawrbox::CameraUniforms);
+
+			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
+			rawrbox::BindlessManager::barrier(*this->_uniforms, rawrbox::BufferType::CONSTANT);
+		}
 
 		this->_logger->info("Initializing camera");
 	}
 
-	void CameraBase::updateMtx(){};
+	void CameraBase::updateMtx() { throw this->_logger->error("Not implemented"); };
+	rawrbox::CameraStaticUniforms CameraBase::getStaticData() {
+		auto screenSize = rawrbox::RENDERER->getSize().cast<float>();
+
+		rawrbox::CameraStaticUniforms data = {};
+		data.gProjection = rawrbox::Matrix4x4::mtxTranspose(this->getProjMtx());
+		data.gProjectionInv = rawrbox::Matrix4x4::mtxInverse(data.gProjection);
+		data.gViewport = {this->getZNear(), this->getZFar(), screenSize.x, screenSize.y}; // TODO: Support screen re-scaling, make this dynamic buffer then
+
+		float nearZ = this->getZNear();
+		float farZ = this->getZFar();
+		auto gLightClustersNumZz = static_cast<float>(rawrbox::CLUSTERS_Z);
+
+		data.gGridParams = {
+		    gLightClustersNumZz / std::log(farZ / nearZ),
+		    (gLightClustersNumZz * std::log(nearZ)) / std::log(farZ / nearZ)};
+		return data;
+	}
 
 	// UTILS -----
 	void CameraBase::setPos(const rawrbox::Vector3f& pos) {
@@ -97,38 +133,20 @@ namespace rawrbox {
 		if (this->_world == transform) return;
 
 		this->_world = transform;
-		this->updateBuffer(); // TODO: Prob bad idea to keep updating buffer on every model
+		this->updateBuffer();
 	}
 
 	void CameraBase::updateBuffer() {
-		auto renderer = rawrbox::RENDERER;
-		auto context = renderer->context();
+		if (this->_uniforms == nullptr) throw this->_logger->error("Buffer not initialized! Did you call initialize?");
+		Diligent::MapHelper<rawrbox::CameraUniforms> CBConstants(rawrbox::RENDERER->context(), this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 
-		auto screenSize = renderer->getSize().cast<float>();
+		auto view = rawrbox::Matrix4x4::mtxTranspose(this->getViewMtx());
+		auto projection = rawrbox::Matrix4x4::mtxTranspose(this->getProjMtx());
 
-		// SETUP UNIFORMS ----------------------------
-		Diligent::MapHelper<rawrbox::CameraUniforms> CBConstants(context, this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-
-		CBConstants->gView = rawrbox::Matrix4x4::mtxTranspose(this->getViewMtx());
-		CBConstants->gProjection = rawrbox::Matrix4x4::mtxTranspose(this->getProjMtx());
-		CBConstants->gProjectionInv = rawrbox::Matrix4x4::mtxInverse(CBConstants->gProjection);
-
+		CBConstants->gView = view;
 		CBConstants->gWorld = rawrbox::Matrix4x4::mtxTranspose(this->_world);
-		CBConstants->gWorldViewProj = CBConstants->gWorld * CBConstants->gView * CBConstants->gProjection;
-		CBConstants->gViewport = {this->getZNear(), this->getZFar(), screenSize.x, screenSize.y};
-
+		CBConstants->gWorldViewProj = CBConstants->gWorld * CBConstants->gView * projection;
 		CBConstants->gPos = this->getPos();
-		// ------------
-
-		// Setup grid ----
-		float nearZ = this->getZNear();
-		float farZ = this->getZFar();
-		auto gLightClustersNumZz = static_cast<float>(rawrbox::CLUSTERS_Z);
-
-		CBConstants->gGridParams = {
-		    gLightClustersNumZz / std::log(farZ / nearZ),
-		    (gLightClustersNumZz * std::log(nearZ)) / std::log(farZ / nearZ)};
-		// --------------
 	}
 
 	void CameraBase::update() {}
@@ -142,5 +160,6 @@ namespace rawrbox {
 	}
 
 	Diligent::IBuffer* CameraBase::uniforms() const { return this->_uniforms; }
+	Diligent::IBuffer* CameraBase::staticUniforms() const { return this->_staticUniforms; }
 	// ----------------
 } // namespace rawrbox

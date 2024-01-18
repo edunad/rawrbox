@@ -10,19 +10,33 @@
 #include <Buffer.h>
 
 namespace rawrbox {
-	struct CameraUniforms {
-		rawrbox::Matrix4x4 gView = {};
-
+	struct CameraStaticUniforms { // Uniforms that won't be updated that frequently
 		rawrbox::Matrix4x4 gProjection = {};
 		rawrbox::Matrix4x4 gProjectionInv = {};
+
+		rawrbox::Vector4f gViewport = {};
+		rawrbox::Vector2f gGridParams = {};
+
+		bool operator==(const CameraStaticUniforms& other) const {
+			return this->gProjection == other.gProjection && this->gProjectionInv == other.gProjectionInv && this->gViewport == other.gViewport && this->gGridParams == other.gGridParams;
+		}
+
+		bool operator!=(const CameraStaticUniforms& other) const { return !operator==(other); }
+	};
+
+	struct CameraUniforms {
+		rawrbox::Matrix4x4 gView = {};
 
 		rawrbox::Matrix4x4 gWorld = {};
 		rawrbox::Matrix4x4 gWorldViewProj = {};
 
-		rawrbox::Vector4f gViewport = {};
-
 		rawrbox::Vector4f gPos = {};
-		rawrbox::Vector2f gGridParams = {};
+
+		bool operator==(const CameraUniforms& other) const {
+			return this->gView == other.gView && this->gWorld == other.gWorld && this->gWorldViewProj == other.gWorldViewProj && this->gPos == other.gPos;
+		}
+
+		bool operator!=(const CameraUniforms& other) const { return !operator==(other); }
 	};
 
 	class CameraBase {
@@ -38,6 +52,7 @@ namespace rawrbox {
 		float _z_near = 0.01F;
 		float _z_far = 100.F;
 
+		Diligent::RefCntAutoPtr<Diligent::IBuffer> _staticUniforms;
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 
 		// LOGGER ------
@@ -45,6 +60,7 @@ namespace rawrbox {
 		// -------------
 
 		virtual void updateMtx();
+		virtual rawrbox::CameraStaticUniforms getStaticData();
 
 	public:
 		virtual ~CameraBase();
@@ -81,9 +97,11 @@ namespace rawrbox {
 		// ----------------
 
 		[[nodiscard]] virtual Diligent::IBuffer* uniforms() const;
+		[[nodiscard]] virtual Diligent::IBuffer* staticUniforms() const;
 
 		virtual void initialize();
-		virtual void update();
+
 		virtual void updateBuffer();
+		virtual void update();
 	};
 } // namespace rawrbox

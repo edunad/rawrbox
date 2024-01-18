@@ -14,9 +14,9 @@ namespace rawrbox {
 		void updateMtx() override;
 
 	public:
-		CameraPerspective(const CameraPerspective&) = default;
+		CameraPerspective(const CameraPerspective&) = delete;
 		CameraPerspective(CameraPerspective&&) = default;
-		CameraPerspective& operator=(const CameraPerspective&) = default;
+		CameraPerspective& operator=(const CameraPerspective&) = delete;
 		CameraPerspective& operator=(CameraPerspective&&) = default;
 		~CameraPerspective() override = default;
 

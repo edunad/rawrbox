@@ -33,9 +33,9 @@ namespace rawrbox {
 		std::function<void()> onMovementStop = nullptr;
 		std::function<void()> onMovementStart = nullptr;
 
-		CameraOrbital(const CameraOrbital& other) = default;
+		CameraOrbital(const CameraOrbital& other) = delete;
 		CameraOrbital(CameraOrbital&& other) = default;
-		CameraOrbital& operator=(const CameraOrbital&) = default;
+		CameraOrbital& operator=(const CameraOrbital&) = delete;
 		CameraOrbital& operator=(CameraOrbital&&) = default;
 		~CameraOrbital() override = default;
 

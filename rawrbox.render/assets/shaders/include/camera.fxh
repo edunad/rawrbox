@@ -5,27 +5,31 @@
     struct CameraStruct {
         float4x4 view;
 
-        float4x4 proj;
-        float4x4 projInv;
-
         float4x4 world;
         float4x4 worldViewProj;
 
-        float4   viewport;
         float4   pos;
+    };
 
+    // Data that never / very rarelly changes
+    struct StaticCameraStruct {
+        float4x4 proj;
+        float4x4 projInv;
+
+        float4   viewport;
         float2   gridParams;
     };
 
     ConstantBuffer<CameraStruct> Camera;
+    ConstantBuffer<StaticCameraStruct> SCamera;
 
-    #define ScreenSize Camera.viewport.zw
-    #define NearFar Camera.viewport.xy
+    #define ScreenSize SCamera.viewport.zw
+    #define NearFar SCamera.viewport.xy
     #define px (float2(1.0, 1.0) / ScreenSize)
 
     // UTILS -----------------
     uint GetSliceFromDepth(float depth) {
-        return floor(log(depth) * Camera.gridParams.x - Camera.gridParams.y);
+        return floor(log(depth) * SCamera.gridParams.x - SCamera.gridParams.y);
     }
 
     float LinearizeDepth(float z, float near, float far) {

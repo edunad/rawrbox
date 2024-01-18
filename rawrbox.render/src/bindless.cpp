@@ -135,7 +135,10 @@ namespace rawrbox {
 
 		if (camera != nullptr) {
 			resources.emplace_back(Diligent::SHADER_TYPE_VERTEX, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+			resources.emplace_back(Diligent::SHADER_TYPE_VERTEX, "SCamera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+
 			resources.emplace_back(Diligent::SHADER_TYPE_PIXEL, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+			resources.emplace_back(Diligent::SHADER_TYPE_PIXEL, "SCamera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 		}
 
 		// Add extra signatures ----
@@ -169,6 +172,7 @@ namespace rawrbox {
 		if (camera != nullptr) {
 			resources = {
 			    {Diligent::SHADER_TYPE_COMPUTE, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+			    {Diligent::SHADER_TYPE_COMPUTE, "SCamera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 			};
 		} else {
 			resources.clear();
@@ -203,6 +207,9 @@ namespace rawrbox {
 		if (camera != nullptr) {
 			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Camera")->Set(camera->uniforms());
 			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Camera")->Set(camera->uniforms());
+
+			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "SCamera")->Set(camera->staticUniforms());
+			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "SCamera")->Set(camera->staticUniforms());
 		}
 
 		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(signatureBufferPixel);
@@ -226,6 +233,7 @@ namespace rawrbox {
 		// Setup compute binds --
 		if (camera != nullptr) {
 			computeSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(camera->uniforms());
+			computeSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "SCamera")->Set(camera->staticUniforms());
 		}
 
 		// Add extra binds ----
