@@ -357,11 +357,13 @@ namespace rawrbox {
 			this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 #ifdef _DEBUG
-			this->_context->BeginDebugGroup("OVERLAY");
+			// this->_context->BeginDebugGroup("OVERLAY");
+			// this->beginQuery("OVERLAY");
 #endif
 			this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
 #ifdef _DEBUG
-			this->_context->EndDebugGroup();
+			// this->_context->EndDebugGroup();
+			// this->endQuery("OVERLAY");
 #endif
 
 			this->frame();
@@ -392,15 +394,15 @@ namespace rawrbox {
 
 		// Perform world --
 #ifdef _DEBUG
-		this->_context->BeginDebugGroup("OPAQUE");
-		this->beginQuery("OPAQUE");
+		// this->_context->BeginDebugGroup("OPAQUE");
+		// this->beginQuery("OPAQUE");
 #endif
 		this->_render->startRecord();
 		this->_drawCall(rawrbox::DrawPass::PASS_OPAQUE);
 		this->_render->stopRecord();
 #ifdef _DEBUG
-		this->endQuery("OPAQUE");
-		this->_context->EndDebugGroup();
+		// this->endQuery("OPAQUE");
+		// this->_context->EndDebugGroup();
 #endif
 		//  -----------------
 
@@ -408,11 +410,11 @@ namespace rawrbox {
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 #ifdef _DEBUG
-			this->_context->BeginDebugGroup(plugin.first.c_str());
+				// this->_context->BeginDebugGroup(plugin.first.c_str());
 #endif
 			plugin.second->postRender(*this->_render);
 #ifdef _DEBUG
-			this->_context->EndDebugGroup();
+			// this->_context->EndDebugGroup();
 #endif
 		}
 		// -----------------------
@@ -423,13 +425,13 @@ namespace rawrbox {
 
 		// Perform overlay --
 #ifdef _DEBUG
-		this->_context->BeginDebugGroup("OVERLAY");
-		this->beginQuery("OVERLAY");
+		// this->_context->BeginDebugGroup("OVERLAY");
+		// this->beginQuery("OVERLAY");
 #endif
 		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
 #ifdef _DEBUG
-		this->endQuery("OVERLAY");
-		this->_context->EndDebugGroup();
+		// this->endQuery("OVERLAY");
+		// this->_context->EndDebugGroup();
 #endif
 		//  ------------------
 

@@ -64,6 +64,10 @@ namespace rawrbox {
 
 			device->CreateBuffer(BuffPixelDesc, nullptr, &signatureBufferVertexSkinned);
 			rawrbox::BindlessManager::barrier(*signatureBufferVertexSkinned, rawrbox::BufferType::CONSTANT);
+
+			// Horrible temp fix for signatures that are never mapped ---
+			Diligent::MapHelper<rawrbox::BindlessVertexSkinnedBuffer> HACK(rawrbox::RENDERER->context(), signatureBufferVertexSkinned, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			// -----------
 		}
 
 		{
