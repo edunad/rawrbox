@@ -6,17 +6,17 @@ set(output_target RAWRBOX.NETWORK)
 # LIBS ---
 CPMAddPackage(
     NAME
-    libcpr
+        libcpr
     GIT_TAG
-    1.10.4
+        1.10.4
     GITHUB_REPOSITORY
-    libcpr/cpr
-    #PATCH_COMMAND git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/cpr.patch
+        libcpr/cpr
+        #PATCH_COMMAND git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/cpr.patch
     OPTIONS
-    "BUILD_SHARED_LIBS OFF"
-    "CPR_ENABLE_CURL_HTTP_ONLY ON"
-    "CPR_ENABLE_SSL ON"
-    "CURL_ZLIB ON")
+        "BUILD_SHARED_LIBS OFF"
+        "CPR_ENABLE_CURL_HTTP_ONLY ON"
+        "CPR_ENABLE_SSL ON"
+        "CURL_ZLIB ON")
 
 if(libcpr_ADDED)
     if(NOT WIN32)

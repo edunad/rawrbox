@@ -6,14 +6,14 @@ set(output_target RAWRBOX.UI)
 # LIBS ---
 CPMAddPackage(
     NAME
-    clip
+        clip
     VERSION
-    1.7
+        1.7
     GITHUB_REPOSITORY
-    dacap/clip
+        dacap/clip
     OPTIONS
-    "CLIP_EXAMPLES OFF"
-    "CLIP_TESTS OFF")
+        "CLIP_EXAMPLES OFF"
+        "CLIP_TESTS OFF")
 
 if(clip_ADDED)
     target_include_directories(clip PUBLIC ${clip_SOURCE_DIR})

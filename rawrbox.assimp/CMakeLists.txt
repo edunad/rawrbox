@@ -18,7 +18,7 @@ CPMAddPackage(
     #PATCH_COMMAND
     #    git reset --hard && git apply --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patches/assimp.patch
     GITHUB_REPOSITORY
-        edunad/assimp #TODO: Change back to assimp/assimp once draco fix is merged
+        assimp/assimp
     OPTIONS
         "BUILD_SHARED_LIBS OFF"
         "ASSIMP_NO_EXPORT ON"

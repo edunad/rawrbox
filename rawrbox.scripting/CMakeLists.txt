@@ -58,7 +58,14 @@ else()
 endif()
 
 # SOL -----------
-CPMAddPackage(NAME sol2 GITHUB_REPOSITORY ThePhD/sol2 VERSION 3.3.0)
+CPMAddPackage(
+    NAME
+        sol2
+    GITHUB_REPOSITORY
+        ThePhD/sol2
+    VERSION
+        3.3.0
+    )
 
 if(sol2_ADDED)
     set_lib_runtime_mt(sol2)

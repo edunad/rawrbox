@@ -11,13 +11,13 @@ if(NOT RAWRBOX_BUILD_QHULL)
 else()
     CPMAddPackage(
         NAME
-        qhull
+            qhull
         GITHUB_REPOSITORY
-        qhull/qhull
+            qhull/qhull
         GIT_TAG
-        2020.2
+            2020.2
         DOWNLOAD_ONLY
-        ON)
+            ON)
 
     # Setup lib
     if(qhull_ADDED)

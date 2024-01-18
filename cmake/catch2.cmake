@@ -5,14 +5,14 @@ if(RAWRBOX_BUILD_TESTING)
 
     CPMAddPackage(
         NAME
-        Catch2
+            Catch2
         GITHUB_REPOSITORY
-        catchorg/Catch2
+            catchorg/Catch2
         VERSION
-        3.5.0
+            3.5.2
         OPTIONS
-        "CATCH_INSTALL_DOCS OFF"
-        "CATCH_INSTALL_EXTRAS ON")
+            "CATCH_INSTALL_DOCS OFF"
+            "CATCH_INSTALL_EXTRAS ON")
 
     list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
     list(APPEND RAWRBOX_EXTRA_TEST_LIBS Catch2::Catch2WithMain)

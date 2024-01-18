@@ -64,7 +64,7 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_RAWRBOX_BASS ON)
     set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
     set(RAWRBOX_BUILD_RAWRBOX_WEBM ON)
-    #set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
+    set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
     #set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING ON)
     set(RAWRBOX_BUILD_QHULL ON)
 endif()
@@ -132,7 +132,7 @@ endif()
 # -------------------------
 
 # GLOBAL PACKAGES ------
-CPMAddPackage("gh:fmtlib/fmt#10.1.1")
+CPMAddPackage("gh:fmtlib/fmt#10.2.1")
 if(fmt_ADDED)
     set_lib_runtime_mt(fmt)
 endif()

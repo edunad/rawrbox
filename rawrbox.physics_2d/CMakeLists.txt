@@ -5,13 +5,13 @@ set(output_target RAWRBOX.PHYSICS.2D)
 # LIBS ---
 CPMAddPackage(
     NAME
-    muli
+        muli
     GITHUB_REPOSITORY
-    Sopiro/Muli
+        Sopiro/Muli
     GIT_TAG
-    master
+        master
     OPTIONS
-    "MULI_BUILD_DEMO OFF")
+        "MULI_BUILD_DEMO OFF")
 
 set_lib_runtime_mt(muli)
 # ----
