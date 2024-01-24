@@ -55,12 +55,15 @@ endif()
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_NETWORK_IMPORTS "src/*.cpp" "include/*.hpp")
-if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.SCRIPTING)
-else()
-    remove_folder("${RAWRBOX_NETWORK_IMPORTS}" "/scripting/")
-    set(RAWRBOX_NETWORK_IMPORTS "${CLEAN_SOURCES}")
-endif()
+#if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+#    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.SCRIPTING)
+#else()
+#    remove_folder("${RAWRBOX_NETWORK_IMPORTS}" "/scripting/")
+#    set(RAWRBOX_NETWORK_IMPORTS "${CLEAN_SOURCES}")
+#endif()
+
+remove_folder("${RAWRBOX_NETWORK_IMPORTS}" "/scripting/")
+set(RAWRBOX_NETWORK_IMPORTS "${CLEAN_SOURCES}")
 # ----
 
 # Project setup

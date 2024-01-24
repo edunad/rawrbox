@@ -49,7 +49,7 @@ namespace rawrbox {
 
 			auto dTexture = mesh.textures.displacement;
 			if (dTexture != nullptr) {
-				data.z = dTexture->getTextureID();
+				data.z = static_cast<float>(dTexture->getTextureID());
 				data.w = mesh.textures.displacementPower;
 			}
 

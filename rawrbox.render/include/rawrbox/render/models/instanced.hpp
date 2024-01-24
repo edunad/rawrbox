@@ -5,7 +5,7 @@
 #include <rawrbox/render/models/model.hpp>
 
 #ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/render/scripting/wrappers/model/instanced_wrapper.hpp>
+	// #include <rawrbox/render/scripting/wrappers/model/instanced_wrapper.hpp>
 	#include <sol/sol.hpp>
 #endif
 
@@ -26,7 +26,7 @@ namespace rawrbox {
 #ifdef RAWRBOX_SCRIPTING
 		void initializeLua() override {
 			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
-			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::InstancedModelWrapper(this->shared_from_this()));
+			// this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::InstancedModelWrapper(this->shared_from_this()));
 		}
 #endif
 
@@ -86,8 +86,6 @@ namespace rawrbox {
 			rawrbox::ModelBase<M>::upload(dynamic);
 
 			auto device = rawrbox::RENDERER->device();
-			auto context = rawrbox::RENDERER->context();
-
 			auto instSize = static_cast<uint32_t>(this->_instances.size());
 
 			// INSTANCE BUFFER ----
@@ -95,7 +93,7 @@ namespace rawrbox {
 			InstBuffDesc.Name = "RawrBox::Buffer::Instance";
 			InstBuffDesc.Usage = Diligent::USAGE_DEFAULT;
 			InstBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-			InstBuffDesc.Size = instSize * sizeof(rawrbox::Instance);
+			InstBuffDesc.Size = std::max(instSize, 1U) * sizeof(rawrbox::Instance); // TODO: FIX ME, SPARSE BUFFER?
 
 			Diligent::BufferData VBData;
 			VBData.pData = this->_instances.data();

@@ -233,8 +233,8 @@ namespace rawrbox {
 			this->textures.specularFactor = spec;
 		}
 
-		virtual void setBillboard(bool billboard) {
-			this->billboard = billboard;
+		virtual void setBillboard(bool set) {
+			this->billboard = set;
 		}
 
 		virtual void setVertexSnap(float power = 2.F) {

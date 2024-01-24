@@ -2,7 +2,7 @@
 
 #ifdef RAWRBOX_SCRIPTING
 	#include <rawrbox/scripting/scripting.hpp>
-	#include <rawrbox/render_temp/scripting/wrappers/light/base_wrapper.hpp>
+// #include <rawrbox/render_temp/scripting/wrappers/light/base_wrapper.hpp>
 #endif
 
 namespace rawrbox {
@@ -15,7 +15,7 @@ namespace rawrbox {
 
 	void LightBase::initializeLua() {
 		if (!SCRIPTING::initialized) return;
-		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::LightBaseWrapper(shared_from_this()));
+		// this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::LightBaseWrapper(shared_from_this()));
 	}
 
 	sol::object& LightBase::getScriptingWrapper() {

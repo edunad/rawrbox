@@ -255,9 +255,7 @@ namespace rawrbox {
 		// ----
 		virtual void upload(bool dynamic = false) {
 			if (this->isUploaded()) throw this->_logger->error("Upload called twice!");
-
 			auto device = rawrbox::RENDERER->device();
-			auto context = rawrbox::RENDERER->context();
 
 			// Generate buffers ----
 			this->_isDynamic = dynamic;

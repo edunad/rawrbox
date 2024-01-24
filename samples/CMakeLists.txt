@@ -37,9 +37,9 @@ if(RAWRBOX_BUILD_RAWRBOX_WEBM)
     add_subdirectory("013-webm")
 endif()
 
-#if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-#    add_subdirectory("014-scripting")
-#endif()
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    add_subdirectory("014-scripting")
+endif()
 
 #add_subdirectory("015-gpu-picking")
 

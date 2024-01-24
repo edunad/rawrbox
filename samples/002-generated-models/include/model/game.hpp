@@ -32,6 +32,11 @@ namespace model {
 		void createSprite();
 		void createText();
 
+		void loadContent();
+		void contentLoaded();
+
+		void drawWorld();
+
 	public:
 		Game() = default;
 		Game(const Game&) = delete;
@@ -39,10 +44,5 @@ namespace model {
 		Game& operator=(const Game&) = delete;
 		Game& operator=(Game&&) = delete;
 		~Game() override = default;
-
-		void loadContent();
-		void contentLoaded();
-
-		void drawWorld();
 	};
 } // namespace model
