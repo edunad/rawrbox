@@ -15,7 +15,7 @@ namespace rawrbox {
 		static void compileAndLoad(lua_State* L, const std::string& chunkID, const std::filesystem::path& path);
 		static std::string getError(lua_State* L);
 
+		static luabridge::LuaRef jsonToLua(lua_State* L, const nlohmann::json& json);
 		static nlohmann::json luaToJsonObject(lua_State* L);
-		static nlohmann::json luaToJsonObject(const luabridge::LuaRef& ref);
 	};
 } // namespace rawrbox

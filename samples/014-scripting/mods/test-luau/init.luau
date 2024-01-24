@@ -26,3 +26,4 @@ printTable({
 })
 
 print("owwwoo")
+printTable(test())

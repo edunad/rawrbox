@@ -52,14 +52,46 @@ namespace rawrbox {
 		return error_message;
 	}
 
+	luabridge::LuaRef LuaUtils::jsonToLua(lua_State* L, const nlohmann::json& json) {
+		if (json.is_null()) {
+			return {L, luabridge::LuaNil()};
+		} else if (json.is_boolean()) {
+			return {L, json.get<bool>()};
+		} else if (json.is_number()) { // Lua only works with doubles
+			return {L, json.get<double>()};
+		} else if (json.is_string()) {
+			return {L, json.get<std::string>()};
+		} else if (json.is_object()) {
+			auto obj = luabridge::newTable(L);
+			for (nlohmann::json::const_iterator it = json.begin(); it != json.end(); ++it) {
+				obj[it.key().c_str()] = jsonToLua(L, *it);
+			}
+
+			return obj;
+		} else if (json.is_array()) {
+			auto obj = luabridge::newTable(L);
+			unsigned long i = 1;
+			for (const auto& it : json) {
+				obj[i++] = jsonToLua(L, it);
+			}
+
+			return obj;
+		}
+
+		throw std::runtime_error("Unknown json type");
+	}
+
 	// https://github.com/Henningstone/HMod/blob/3061f74e6e8f7b81a91bb2980725b44daf9c8c23/src/engine/server/lua/luajson.cpp#L173
 	nlohmann::json LuaUtils::luaToJsonObject(lua_State* L) {
 		nlohmann::json result = {};
 
+		if (lua_type(L, -1) != LUA_TTABLE) return result; // Not a table? meh
 		lua_pushnil(L);
+
+		int indx = 1; // Lua starts at 1
 		while (lua_next(L, -2) != 0) {
 			auto type = lua_type(L, -1);
-			auto key = lua_tostring(L, -2);
+			std::string key = lua_type(L, -2) == LUA_TNUMBER ? std::to_string(indx++) : lua_tostring(L, -2); // Vectors don't have a key
 
 			switch (type) {
 				case LUA_TBOOLEAN:
@@ -71,7 +103,7 @@ namespace rawrbox {
 				case LUA_TSTRING:
 					result[key] = lua_tostring(L, -1);
 					break;
-				case LUA_TVECTOR: // eeehhh
+				case LUA_TVECTOR: // eeehhh, might die?
 				case LUA_TTABLE:
 					result[key] = luaToJsonObject(L);
 					break;
@@ -88,41 +120,5 @@ namespace rawrbox {
 		}
 
 		return result;
-	}
-
-	nlohmann::json LuaUtils::luaToJsonObject(const luabridge::LuaRef& ref) {
-		if (!ref.isTable()) return {};
-		return luaToJsonObject(ref.state());
-		/*lua_State* L = ref.state();
-		lua_pushnil(L);
-
-		while (lua_next(L, -2) != 0) {
-			auto type = lua_type(L, -1);
-			auto key = lua_tostring(L, -2);
-
-			switch (type) {
-				case LUA_TBOOLEAN:
-					result[key] = lua_toboolean(L, -1) != 0;
-					break;
-				case LUA_TNUMBER:
-					result[key] = lua_tonumber(L, -1);
-					break;
-				case LUA_TSTRING:
-					result[key] = lua_tostring(L, -1);
-					break;
-				case LUA_TTABLE:
-					result[key] = luaToJsonObject(L);
-					break;
-				case LUA_TNONE:
-				case LUA_TNIL:
-				default:
-					result[key] = nullptr;
-					break;
-			}
-
-			lua_pop(L, 1);
-		}
-
-		return result;*/
 	}
 } // namespace rawrbox

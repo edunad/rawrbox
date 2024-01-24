@@ -57,9 +57,11 @@ namespace rawrbox {
 		globalTable.addFunction("time", []() { return rawrbox::TimeUtils::time(); });
 		// -------------
 
+		globalTable.addFunction("test", [](lua_State* state) { return rawrbox::LuaUtils::jsonToLua(state, nlohmann::json::parse(R"({"glossary":{"title":"example glossary","GlossDiv":{"title":"S","GlossList":{"GlossEntry":{"ID":"SGML","SortAs":"SGML","GlossTerm":"Standard Generalized Markup Language","Acronym":"SGML","Abbrev":"ISO 8879:1986","GlossDef":{"para":"A meta-markup language, used to create markup languages such as DocBook.","GlossSeeAlso":["GML","XML"]},"GlossSee":"markup"}}}}})")); });
+
 		// UTILS ----
-		globalTable.addFunction("printTable", [](luabridge::LuaRef ref) {
-			nlohmann::json json = rawrbox::LuaUtils::luaToJsonObject(ref);
+		globalTable.addFunction("printTable", [](lua_State* state) {
+			nlohmann::json json = rawrbox::LuaUtils::luaToJsonObject(state);
 			fmt::print("{}\n", json.dump(1, ' ', false));
 		});
 		// ----------
