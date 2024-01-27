@@ -1,5 +1,6 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 #include <rawrbox/utils/path.hpp>
+#include <rawrbox/utils/string.hpp>
 
 #include <Luau/Compiler.h>
 #include <fmt/format.h>
@@ -7,6 +8,9 @@
 namespace rawrbox {
 
 	void LuaUtils::compileAndLoad(lua_State* L, const std::string& chunkID, const std::filesystem::path& path) {
+		if (L == nullptr) throw std::runtime_error("Invalid lua state");
+		if (!std::filesystem::exists(path)) throw std::runtime_error("File not found");
+
 		// Load script ---
 		auto bytes = rawrbox::PathUtils::getRawData(path);
 		if (bytes.empty()) throw std::runtime_error("File empty / failed to load");
@@ -23,29 +27,38 @@ namespace rawrbox {
 		parser.allowDeclarationSyntax = true; // ?
 		parser.captureComments = false;
 
-		std::string bytecode = "";
-
-		try {
-			bytecode = Luau::compile(std::string(bytes.begin(), bytes.end()), options, parser);
-			if (bytecode.empty()) throw std::runtime_error("Failed to compile");
-		} catch (std::exception& error) {
-			throw std::runtime_error(error.what());
-		}
+		std::string bytecode = Luau::compile(std::string(bytes.begin(), bytes.end()), options, parser);
+		if (bytecode.empty()) throw std::runtime_error("Failed to compile");
 		// ----------
 
 		// Load -------
-		try {
-			std::string chunk = fmt::format("={}", chunkID);
-			if (luau_load(L, chunk.c_str(), bytecode.data(), bytecode.size(), 0) != 0) {
-				throw std::runtime_error(rawrbox::LuaUtils::getError(L));
-			}
-		} catch (std::exception& error) {
-			throw std::runtime_error(error.what());
+		std::string chunk = fmt::format("={}", chunkID);
+		if (luau_load(L, chunk.c_str(), bytecode.data(), bytecode.size(), 0) != 0) {
+			throw std::runtime_error(rawrbox::LuaUtils::getError(L));
 		}
 		// -----------
 	}
 
+	void LuaUtils::resume(lua_State* L, lua_State* from) {
+		if (L == nullptr) throw std::runtime_error("Invalid lua state");
+		if (lua_resume(L, from, 0) != 0) {
+			throw std::runtime_error(rawrbox::LuaUtils::getError(L));
+		}
+	}
+
+	void LuaUtils::run(lua_State* L) {
+		if (L == nullptr) throw std::runtime_error("Invalid lua state");
+		if (lua_pcall(L, 0, 0, 0) != 0) {
+			throw std::runtime_error(rawrbox::LuaUtils::getError(L));
+		}
+	}
+	void LuaUtils::collect_garbage(lua_State* L) {
+		if (L == nullptr) throw std::runtime_error("Invalid lua state");
+		lua_gc(L, LUA_GCCOLLECT, 0);
+	}
+
 	std::string LuaUtils::getError(lua_State* L) {
+		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 		const char* error_message = lua_tostring(L, -1);
 		lua_pop(L, 1); // Remove error
 
@@ -53,6 +66,8 @@ namespace rawrbox {
 	}
 
 	luabridge::LuaRef LuaUtils::jsonToLua(lua_State* L, const nlohmann::json& json) {
+		if (L == nullptr) throw std::runtime_error("Invalid lua state");
+
 		if (json.is_null()) {
 			return {L, luabridge::LuaNil()};
 		} else if (json.is_boolean()) {
@@ -81,10 +96,10 @@ namespace rawrbox {
 		throw std::runtime_error("Unknown json type");
 	}
 
-	// https://github.com/Henningstone/HMod/blob/3061f74e6e8f7b81a91bb2980725b44daf9c8c23/src/engine/server/lua/luajson.cpp#L173
 	nlohmann::json LuaUtils::luaToJsonObject(lua_State* L) {
-		nlohmann::json result = {};
+		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 
+		nlohmann::json result = {};
 		if (lua_type(L, -1) != LUA_TTABLE) return result; // Not a table? meh
 		lua_pushnil(L);
 
@@ -120,5 +135,41 @@ namespace rawrbox {
 		}
 
 		return result;
+	}
+
+	// #/ == System content
+	// @/ == Root content
+	// @cats/ == `cats` mod
+	// normal_path == current mod
+	std::string LuaUtils::getContent(const std::filesystem::path& path, const std::filesystem::path& modPath) {
+		if (path.empty()) return modPath.generic_string(); // Invalid path
+
+		auto pth = path.generic_string();
+		if (pth.starts_with("#")) {
+			auto slashPos = pth.find("/"); // Find the first /
+			return pth.substr(slashPos + 1);
+		} // System path
+
+		if (pth.starts_with("mods/")) return modPath.generic_string(); // Already has the mod
+		pth = rawrbox::StrUtils::replace(pth, "\\", "/");
+		pth = rawrbox::StrUtils::replace(pth, "./", "");
+		pth = rawrbox::StrUtils::replace(pth, "../", "");
+
+		// content/blabalba.png = my current mod
+		if (!modPath.empty() && pth.front() != '@') {
+			return std::filesystem::path(fmt::format("{}/{}", modPath.generic_string(), pth)).string(); // Becomes mods/mymod/content/blabalba.png
+		} else if (pth.front() == '@') {
+			auto slashPos = pth.find("/"); // Find the first /
+			std::string cleanPath = pth.substr(slashPos + 1);
+
+			// @/textures/blabalba.png = c++ content
+			if (pth.rfind("@/", 0) == 0) { // C++
+				return std::filesystem::path(fmt::format("content/{}", cleanPath)).string();
+			} else { // @otherMod/textures/blabalba.png = @othermod content
+				return std::filesystem::path(fmt::format("{}/{}", pth.substr(1, slashPos - 1), cleanPath)).string();
+			}
+		}
+
+		return pth;
 	}
 } // namespace rawrbox

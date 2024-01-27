@@ -121,7 +121,7 @@ namespace rawrbox {
 			} catch (const std::exception& err) {
 				this->prettyPrintErr(err.what());
 
-				fmt::print("▒▒{}▒▒\n", fmt::format(fmt::bg(fmt::color::dark_red), fmt::format(fmt::fg(fmt::color::white), " If you are the developer, please use the logger error in RAWRBOX.UTILS for a better stack trace ")));
+				fmt::print("▒▒{}▒▒\n", fmt::format(fmt::bg(fmt::color::dark_red), fmt::format(fmt::fg(fmt::color::white), " If you are a developer, please use the logger error in RAWRBOX.UTILS for a better stack trace ")));
 				cpptrace::generate_trace().print();
 				throw err;
 			}

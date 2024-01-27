@@ -1,12 +1,7 @@
 #pragma once
 
-// ----
-#include <lualib.h>
-// --- LuaBridge.h needs to be the last include!
-
-#include <LuaBridge/LuaBridge.h>
-// -------------
-
+#include <rawrbox/scripting/hooks.hpp>
+#include <rawrbox/scripting/mod.hpp>
 #include <rawrbox/scripting/plugin.hpp>
 #include <rawrbox/utils/file_watcher.hpp>
 #include <rawrbox/utils/logger.hpp>
@@ -19,7 +14,6 @@ namespace rawrbox {
 		{ T::registerLua(lua) };
 	};
 
-	class Mod;
 	class SCRIPTING {
 	protected:
 		static std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>> _mods;
@@ -27,13 +21,21 @@ namespace rawrbox {
 
 		static std::vector<std::unique_ptr<rawrbox::ScriptingPlugin>> _plugins;
 		static std::unique_ptr<rawrbox::FileWatcher> _watcher;
-		// static std::unique_ptr<rawrbox::Hooks> _hooks;
+		static std::unique_ptr<rawrbox::Hooks> _hooks;
 
 		// LOGGER ------
 		static std::unique_ptr<rawrbox::Logger> _logger;
 		// -------------
 
+		// LUA ----
+		static lua_State* _L;
+		// ----------
+
 		static bool _hotReloadEnabled;
+
+		// MODS ---
+		static void prepareMods();
+		// --------
 
 		// LOAD ----
 		static void loadLibraries();
@@ -41,9 +43,11 @@ namespace rawrbox {
 		static void loadGlobals();
 		// ----
 
-		// LUA ----
-		static lua_State* _L;
-		// ----------
+		// HOT RELOAD ---
+		static void registerLoadedFile(const std::string& modId, const std::string& filePath);
+		static void hotReload(const std::string& filePath);
+		// -------------
+
 	public:
 		static bool initialized;
 
@@ -68,12 +72,12 @@ namespace rawrbox {
 			}
 		}
 
-		/*template <typename... CallbackArgs>
+		template <typename... CallbackArgs>
 		static void call(const std::string& hookName, CallbackArgs&&... args) {
 			for (auto& mod : _mods) {
 				mod.second->call(hookName, args...);
 			}
-		}*/
+		}
 
 		static void init(int hotReloadMs = 0);
 		static void load();

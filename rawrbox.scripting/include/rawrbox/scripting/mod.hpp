@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <rawrbox/scripting/manager.hpp>
+#include <rawrbox/scripting/utils/lua.hpp>
 #include <rawrbox/utils/logger.hpp>
 
 #include <filesystem>
@@ -36,6 +36,7 @@ namespace rawrbox {
 		virtual ~Mod();
 
 		virtual void init();
+		virtual void gc();
 
 		// LOADING -------
 		virtual void load();

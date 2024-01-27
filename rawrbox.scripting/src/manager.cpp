@@ -14,6 +14,7 @@ namespace rawrbox {
 	std::unordered_map<std::string, std::vector<std::string>> SCRIPTING::_loadedLuaFiles = {};
 
 	std::unique_ptr<rawrbox::FileWatcher> SCRIPTING::_watcher = nullptr;
+	std::unique_ptr<rawrbox::Hooks> SCRIPTING::_hooks = nullptr;
 	std::vector<std::unique_ptr<rawrbox::ScriptingPlugin>> SCRIPTING::_plugins = {};
 
 	// LOGGER ------
@@ -57,23 +58,98 @@ namespace rawrbox {
 		globalTable.addFunction("time", []() { return rawrbox::TimeUtils::time(); });
 		// -------------
 
-		globalTable.addFunction("test", [](lua_State* state) { return rawrbox::LuaUtils::jsonToLua(state, nlohmann::json::parse(R"({"glossary":{"title":"example glossary","GlossDiv":{"title":"S","GlossList":{"GlossEntry":{"ID":"SGML","SortAs":"SGML","GlossTerm":"Standard Generalized Markup Language","Acronym":"SGML","Abbrev":"ISO 8879:1986","GlossDef":{"para":"A meta-markup language, used to create markup languages such as DocBook.","GlossSeeAlso":["GML","XML"]},"GlossSee":"markup"}}}}})")); });
-
 		// UTILS ----
 		globalTable.addFunction("printTable", [](lua_State* state) {
 			nlohmann::json json = rawrbox::LuaUtils::luaToJsonObject(state);
-			fmt::print("{}\n", json.dump(1, ' ', false));
+			_logger->info("{}\n", json.dump(1, ' ', false));
+		});
+
+		// Override print to support fmt?
+		globalTable.addFunction("print", [](lua_State* state) {
+			int nargs = lua_gettop(state);
+
+			std::vector<std::string> prtData = {};
+			for (int i = 1; i <= nargs; i++) {
+				if (!lua_isstring(state, i)) {
+					prtData.emplace_back("nil"); // Cannot be converted
+				} else {
+					prtData.emplace_back(lua_tostring(state, i));
+				}
+			}
+
+			if (prtData.empty()) return;
+			_logger->info("{}", fmt::join(prtData, " "));
+		});
+
+		globalTable.addFunction("include", [](lua_State* state) {
+			if (lua_type(state, 1) != LUA_TSTRING) throw std::runtime_error("Invalid param, string expected");
+			auto path = lua_tostring(state, 1);
+
+			lua_getfield(state, LUA_ENVIRONINDEX, "__mod_id");
+			if (lua_type(state, -1) != LUA_TSTRING) throw std::runtime_error("Invalid mod! Missing '__mod_id' on lua env");
+			auto modID = lua_tostring(state, -1);
+
+			lua_getfield(state, LUA_ENVIRONINDEX, "__mod_folder");
+			if (lua_type(state, -1) != LUA_TSTRING) throw std::runtime_error("Invalid mod! Missing '__mod_folder' on lua env");
+			auto modFolder = lua_tostring(state, -1);
+
+			auto fixedPath = LuaUtils::getContent(path, modFolder);
+			rawrbox::LuaUtils::compileAndLoad(state, modID, fixedPath);
+			rawrbox::LuaUtils::run(state);
+
+			// Register file for hot-reloading
+			registerLoadedFile(modID, fixedPath);
+			// ----
 		});
 		// ----------
 
 		// ENGINE ------
-		auto engine = globalTable.beginNamespace("engine");
-		engine.addVariable("deltaTime", rawrbox::DELTA_TIME);
-		engine.addVariable("fixedDeltaTime", rawrbox::FIXED_DELTA_TIME);
-		engine.addVariable("frameAlpha", rawrbox::FRAME_ALPHA);
-		engine.endNamespace();
+		globalTable.beginNamespace("engine")
+		    .addProperty("deltaTime", &rawrbox::DELTA_TIME, false)
+		    .addProperty("fixedDeltaTime", &rawrbox::FIXED_DELTA_TIME, false)
+		    .addProperty("frameAlpha", &rawrbox::FRAME_ALPHA, false)
+		    .endNamespace();
 		// -------------
 	}
+	// -------------
+
+	// HOT RELOAD -----
+	void SCRIPTING::registerLoadedFile(const std::string& modId, const std::string& filePath) {
+		auto mdFnd = _loadedLuaFiles.find(modId);
+		if (mdFnd != _loadedLuaFiles.end()) {
+			auto fileFnd = std::find(mdFnd->second.begin(), mdFnd->second.end(), filePath);
+			if (fileFnd != mdFnd->second.end()) return; // Already registered
+			mdFnd->second.push_back(filePath);
+		} else {
+			_loadedLuaFiles[modId] = {filePath};
+		}
+
+		if (hotReloadEnabled()) _watcher->watchFile(filePath);
+	}
+
+	void SCRIPTING::hotReload(const std::string& filePath) {
+		// Find the owner
+		for (auto& pt : _loadedLuaFiles) {
+			auto fnd = std::find(pt.second.begin(), pt.second.end(), filePath) != pt.second.end();
+			if (!fnd) continue;
+
+			auto md = _mods.find(pt.first);
+			if (md == _mods.end()) return;
+			_logger->warn("Hot-reloading lua file '{}'", filePath);
+
+			// Cleanup and load -----
+			auto env = md->second->getEnvironment();
+
+			md->second->gc(); // Cleanup
+			rawrbox::LuaUtils::compileAndLoad(env, md->first, filePath);
+			rawrbox::LuaUtils::run(env);
+			// ---------------
+
+			// onModHotReload(md->second.get());
+			break;
+		};
+	}
+	// -------------
 	// ----------
 
 	void SCRIPTING::init(int hotReloadMs) {
@@ -81,7 +157,7 @@ namespace rawrbox {
 
 		_hotReloadEnabled = hotReloadMs > 0;
 		if (_hotReloadEnabled) {
-			/*fmt::print("[RawrBox-Scripting] Enabled lua hot-reloading\n  └── Delay: {}ms\n", hotReloadMs);
+			_logger->info("Enabled lua hot-reloading\n  └── Delay: {}ms\n", hotReloadMs);
 
 			_watcher = std::make_unique<rawrbox::FileWatcher>(
 			    [](std::string pth, rawrbox::FileStatus status) {
@@ -89,10 +165,8 @@ namespace rawrbox {
 				    hotReload(pth);
 			    },
 			    std::chrono::milliseconds(hotReloadMs));
-			_watcher->start();*/
+			_watcher->start();
 		}
-
-		_mods.clear();
 
 		// Loading initial libs ---
 		loadLibraries();
@@ -100,97 +174,51 @@ namespace rawrbox {
 		loadGlobals();
 		//  ----
 
+		// Prepare mods (but dont load) ---
+		prepareMods();
+		// ----------------
+
 		// Freeze lua env ---
+		// No more modifications to the global table are allowed after this point
 		luaL_sandbox(_L);
 		// --------------
 
-		rawrbox::Mod test = {_L, "test", "./assets/mods/test-luau"};
+		// TEST ---
+		/*rawrbox::Mod test = {_L, "test", "./assets/mods/test-luau"};
+		rawrbox::Mod test2 = {_L, "test2", "./assets/mods/test-luau-2"};
+
 		test.init();
 		test.load();
 
-		/*
-				L = luaL_newstate();
+		test2.init();
+		test2.load();
 
-				// Open default libs
-				luaL_openlibs(L);
-				//---------------
+		test.call("test");
+		test2.call("test");
 
-				// Register types ----
-				auto globalTable = luabridge::getGlobalNamespace(L);
-				globalTable.addFunction("curtime", []() { return 0; });
-				// ----------------
-
-				// Freeze lua env ---
-				luaL_sandbox(L);
-				// --------------
-
-				_test = std::make_unique<Mod>(L, "my-mod", "./assets/mods/test-luau");
-				_test->init();
-				_test->load();
-
-				_test->call("init");
-
-				_test->call("update", "balblabla");
-
-				initialized = true;
-
-				// luaL_sandbox(L);
-				// luaL_openlibs(L);
-
-				// lua_setreadonly(L, LUA_GLOBALSINDEX, true);
-				// lua_setsafeenv(L, LUA_GLOBALSINDEX, true);
-
-				initialized = true;
-
-				L = luaL_newstate();
-
-				// lua_setreadonly(L, LUA_GLOBALSINDEX, true);
-				lua_setsafeenv(L, LUA_GLOBALSINDEX, true);
-
-				luaL_openlibs(L);
-
-				// Setup namespaces ---
-				luabridge::getGlobalNamespace(L)
-				    .beginNamespace("test")
-				    .addFunction("foo", []() {
-					    fmt::print("aaaa\n");
-				    })
-				    .endNamespace();
-
-				// Test MOD::Init()
-				luabridge::getGlobalNamespace(L)
-				    .beginNamespace("MOD")
-				    .addFunction("init", []() {
-					    fmt::print("aaaa\n");
-				    })
-				    .endNamespace();
-
-				auto init = luabridge::getGlobal(L, "init");
-
-				// ----------
-
-				rawrbox::LuaScript test = {};
-				test.compile("./assets/mods/luau_test.luau");
-				test.load();
-				*/
+		test.call("init");
+		test2.call("init");*/
+		// ----------
 	}
 
-	void SCRIPTING::load() {
-		if (!std::filesystem::exists("./mods")) throw _logger->error("Failed to locate folder './mods'");
+	void SCRIPTING::prepareMods() {
+		if (!std::filesystem::exists("./mods")) throw _logger->error("Failed to locate folder './mods'"); // TODO: SUPPORT FOLDER CONFIGURATION
 
-		// TODO: mod load ordering
+		// TODO: mod load ordering & mod settings to inject on sandboxed env
 		for (auto& p : std::filesystem::directory_iterator("./mods")) {
 			if (!p.is_directory()) continue;
 
 			auto id = p.path().filename().string();
 			auto folderPath = fmt::format("mods/{}", id);
 
-			// Done
-			auto mod = std::make_unique<rawrbox::Mod>(_L, id, folderPath);
-			_mods.emplace(id, std::move(mod));
+			_mods.emplace(id, std::make_unique<rawrbox::Mod>(_L, id, folderPath));
 		}
+	}
 
-		// Initialize
+	void SCRIPTING::load() {
+		if (!std::filesystem::exists("./mods")) throw _logger->error("Failed to locate folder './mods'");
+
+		// Load & initialize
 		for (auto& mod : _mods) {
 			mod.second->init();
 
@@ -202,7 +230,7 @@ namespace rawrbox {
 				mod.second->load();
 
 				// Register file for hot-reloading
-				// registerLoadedFile(mod.first, mod.second->getEntryFilePath());
+				registerLoadedFile(mod.first, mod.second->getEntryFilePath());
 				// ----
 			} catch (const cpptrace::exception_with_message err) {
 				_logger->warn("{}", err.message());
@@ -212,7 +240,17 @@ namespace rawrbox {
 	}
 
 	void SCRIPTING::shutdown() {
+		_watcher.reset();
+		_hooks.reset();
+
+		_loadedLuaFiles.clear();
+		_mods.clear();
+		_plugins.clear();
+
+		// Shutdown lua --
+		rawrbox::LuaUtils::collect_garbage(_L);
 		_L = nullptr;
+		// ----------------
 	}
 
 	// UTILS ----

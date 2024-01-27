@@ -11,7 +11,7 @@ set(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE
 # Copy content - MODS
 add_custom_target(
     link_mods_samples ALL COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/mods
-                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER}/mods
+                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/mods
     COMMENT "Linking MODS resources into binary directory")
 # ------------------
 
