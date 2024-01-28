@@ -1,6 +1,5 @@
 #pragma once
 
-#include <rawrbox/scripting/hooks.hpp>
 #include <rawrbox/scripting/mod.hpp>
 #include <rawrbox/scripting/plugin.hpp>
 #include <rawrbox/utils/event.hpp>
@@ -22,7 +21,6 @@ namespace rawrbox {
 
 		static std::vector<std::unique_ptr<rawrbox::ScriptingPlugin>> _plugins;
 		static std::unique_ptr<rawrbox::FileWatcher> _watcher;
-		static std::unique_ptr<rawrbox::Hooks> _hooks;
 
 		// LOGGER ------
 		static std::unique_ptr<rawrbox::Logger> _logger;

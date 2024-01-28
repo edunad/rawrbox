@@ -21,19 +21,16 @@ namespace rawrbox {
 
 		static std::string getError(lua_State* L);
 
+		static nlohmann::json getVariadicArgs(lua_State* L);
+
 		static luabridge::LuaRef jsonToLua(lua_State* L, const nlohmann::json& json);
 		static nlohmann::json luaToJsonObject(lua_State* L);
-
-		template <typename... CallbackArgs>
-		static void runCallback(const luabridge::LuaRef& func, CallbackArgs&&... args) {
-			if (!func.isCallable()) return;
-			fnc(func, std::forward<CallbackArgs>(args)...);
-		}
 
 		// #/ == System content
 		// @/ == Root content
 		// @cats/ == `cats` mod
 		// normal_path == current mod
-		static std::string getContent(const std::filesystem::path& path, const std::filesystem::path& modPath);
+		static std::string
+		getContent(const std::filesystem::path& path, const std::filesystem::path& modPath);
 	};
 } // namespace rawrbox

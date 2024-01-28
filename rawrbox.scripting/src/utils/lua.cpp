@@ -63,6 +63,34 @@ namespace rawrbox {
 		return lua_tostring(L, -1);
 	}
 
+	nlohmann::json LuaUtils::getVariadicArgs(lua_State* L) {
+		nlohmann::json args = {};
+
+		int nargs = lua_gettop(L);
+		if (nargs == 0) return args;
+
+		int validArgs = 0;
+		for (int i = 1; i <= nargs; i++) {
+			int type = lua_type(L, i);
+
+			switch (type) {
+				case LUA_TNUMBER:
+					args[validArgs++] = lua_tonumber(L, i);
+					break;
+				case LUA_TSTRING:
+					args[validArgs++] = lua_tostring(L, i);
+					break;
+				case LUA_TBOOLEAN:
+					args[validArgs++] = lua_toboolean(L, i);
+					break;
+				default:
+					break;
+			}
+		}
+
+		return args;
+	}
+
 	luabridge::LuaRef LuaUtils::jsonToLua(lua_State* L, const nlohmann::json& json) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 
