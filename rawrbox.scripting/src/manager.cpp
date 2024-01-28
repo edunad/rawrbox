@@ -30,6 +30,11 @@ namespace rawrbox {
 	// --------------
 
 	// PUBLIC ----
+	rawrbox::Event<> SCRIPTING::onRegisterTypes;
+	rawrbox::Event<> SCRIPTING::onRegisterGlobals;
+	rawrbox::Event<> SCRIPTING::onLoadLibraries;
+	rawrbox::Event<rawrbox::Mod*> SCRIPTING::onModHotReload;
+
 	bool SCRIPTING::initialized = false;
 	// ------
 
@@ -40,11 +45,45 @@ namespace rawrbox {
 		// COMMON -----
 		luaL_openlibs(_L); // Should be safe, since LUAU takes care of non-secure libs (https://luau-lang.org/sandbox#library)
 				   //  -----
+
+		// OTHER LIBS ---
+		rawrbox::LuaUtils::compileAndLoad(_L, "SHA", "./lua/sha2.lua");
+		rawrbox::LuaUtils::compileAndLoad(_L, "JSON", "./lua/json.lua");
+		// --------------
+
+		// Rawrbox LIBS ----
+		rawrbox::LuaUtils::compileAndLoad(_L, "RawrBox::Math", "./lua/math.lua");
+		rawrbox::LuaUtils::compileAndLoad(_L, "RawrBox::String", "./lua/string.lua");
+		rawrbox::LuaUtils::compileAndLoad(_L, "RawrBox::Table", "./lua/table.lua");
+		// -----------------
+
+		// Rawrbox enums ---
+		// if (_console != nullptr) rawrbox::LuaUtils::compileAndLoad(_L, "RawrBox::Enums::Console", "./lua/enums/console.lua");
+		rawrbox::LuaUtils::compileAndLoad(_L, "RawrBox::Enums::Input", "./lua/enums/input.lua");
+		// -----------------
+
+		// Register plugins libraries ---
+		for (auto& p : _plugins)
+			p->loadLibraries(_L);
+		//  -----
+
+		// Custom ----
+		onLoadLibraries();
+		// ----
 	}
 
 	void SCRIPTING::loadTypes() {
 		if (_L == nullptr) throw _logger->error("LUA is not set! Reference got destroyed?");
 		// Register types, these will be read-only & sandboxed!
+
+		// Register plugins types ---
+		for (auto& p : _plugins)
+			p->registerTypes(_L);
+		//  -----
+
+		// Custom ----
+		onRegisterTypes();
+		// ----
 	}
 
 	void SCRIPTING::loadGlobals() {
@@ -95,7 +134,6 @@ namespace rawrbox {
 
 			auto fixedPath = LuaUtils::getContent(path, modFolder);
 			rawrbox::LuaUtils::compileAndLoad(state, modID, fixedPath);
-			rawrbox::LuaUtils::run(state);
 
 			// Register file for hot-reloading
 			registerLoadedFile(modID, fixedPath);
@@ -109,6 +147,15 @@ namespace rawrbox {
 		    .addProperty("fixedDeltaTime", &rawrbox::FIXED_DELTA_TIME, false)
 		    .addProperty("frameAlpha", &rawrbox::FRAME_ALPHA, false)
 		    .endNamespace();
+		// -------------
+
+		// Register plugins globals ---
+		for (auto& p : _plugins)
+			p->registerGlobal(_L);
+		//  -----
+
+		// Custom ----
+		onRegisterGlobals();
 		// -------------
 	}
 	// -------------
@@ -124,7 +171,10 @@ namespace rawrbox {
 			_loadedLuaFiles[modId] = {filePath};
 		}
 
-		if (hotReloadEnabled()) _watcher->watchFile(filePath);
+		if (hotReloadEnabled()) {
+			_logger->info("Registered {} -> {} for hot reload", modId, filePath);
+			_watcher->watchFile(filePath);
+		}
 	}
 
 	void SCRIPTING::hotReload(const std::string& filePath) {
@@ -141,11 +191,15 @@ namespace rawrbox {
 			auto env = md->second->getEnvironment();
 
 			md->second->gc(); // Cleanup
-			rawrbox::LuaUtils::compileAndLoad(env, md->first, filePath);
-			rawrbox::LuaUtils::run(env);
+
+			try {
+				rawrbox::LuaUtils::compileAndLoad(env, md->first, filePath);
+			} catch (const std::exception& err) {
+				_logger->printError("{}", err.what());
+			}
 			// ---------------
 
-			// onModHotReload(md->second.get());
+			onModHotReload(md->second.get());
 			break;
 		};
 	}
@@ -157,7 +211,7 @@ namespace rawrbox {
 
 		_hotReloadEnabled = hotReloadMs > 0;
 		if (_hotReloadEnabled) {
-			_logger->info("Enabled lua hot-reloading\n  └── Delay: {}ms\n", hotReloadMs);
+			_logger->info("Enabled lua hot-reloading\n  └── Delay: {}ms", hotReloadMs);
 
 			_watcher = std::make_unique<rawrbox::FileWatcher>(
 			    [](std::string pth, rawrbox::FileStatus status) {
@@ -232,8 +286,9 @@ namespace rawrbox {
 				// Register file for hot-reloading
 				registerLoadedFile(mod.first, mod.second->getEntryFilePath());
 				// ----
-			} catch (const cpptrace::exception_with_message err) {
-				_logger->warn("{}", err.message());
+
+			} catch (const std::runtime_error& err) {
+				_logger->printError("{}", err.what());
 			}
 		}
 		// -----

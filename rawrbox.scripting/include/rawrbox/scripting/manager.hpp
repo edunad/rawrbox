@@ -3,6 +3,7 @@
 #include <rawrbox/scripting/hooks.hpp>
 #include <rawrbox/scripting/mod.hpp>
 #include <rawrbox/scripting/plugin.hpp>
+#include <rawrbox/utils/event.hpp>
 #include <rawrbox/utils/file_watcher.hpp>
 #include <rawrbox/utils/logger.hpp>
 #include <rawrbox/utils/string.hpp>
@@ -51,6 +52,13 @@ namespace rawrbox {
 	public:
 		static bool initialized;
 
+		// EVENTS ----
+		static rawrbox::Event<> onRegisterTypes;
+		static rawrbox::Event<> onRegisterGlobals;
+		static rawrbox::Event<> onLoadLibraries;
+		static rawrbox::Event<rawrbox::Mod*> onModHotReload;
+		// -------
+
 		// PLUGINS ---
 		template <typename T = rawrbox::ScriptingPlugin, typename... CallbackArgs>
 		static void registerPlugin(CallbackArgs&&... args) {
@@ -75,7 +83,7 @@ namespace rawrbox {
 		template <typename... CallbackArgs>
 		static void call(const std::string& hookName, CallbackArgs&&... args) {
 			for (auto& mod : _mods) {
-				mod.second->call(hookName, args...);
+				mod.second->call(hookName, std::forward<CallbackArgs>(args)...);
 			}
 		}
 

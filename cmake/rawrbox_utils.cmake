@@ -63,12 +63,12 @@ function(copy_lua_libs)
     if(${CMAKE_VERSION} VERSION_LESS "3.26.0")
         add_custom_target(
             copy_lua_libs_${COPY_LUA_LIBS_TARGET} ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${COPY_LUA_SRC_DIR}/lua
-                                                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER}/lua
+                                                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua
             COMMENT "Copying ${COPY_LUA_LIBS_TARGET}'s LUA libs into binary directory")
     else()
         add_custom_target(
             copy_lua_libs_${COPY_LUA_LIBS_TARGET} ALL COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${COPY_LUA_SRC_DIR}/lua
-                                                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER}/lua
+                                                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua
             COMMENT "Copying ${COPY_LUA_LIBS_TARGET}'s LUA libs into binary directory")
     endif()
 

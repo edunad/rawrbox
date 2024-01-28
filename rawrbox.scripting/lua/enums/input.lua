@@ -1,4 +1,4 @@
-INPUT = {
+_G.INPUT = {
     KEY = {
         SPACE = 32,
         APOSTROPHE = 39, -- '

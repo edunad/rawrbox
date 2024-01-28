@@ -28,6 +28,12 @@ namespace rawrbox {
 		}
 
 		template <typename... T>
+		void printError(fmt::format_string<T...> fmt, T&&... args) {
+			auto str = fmt::format(fmt, std::forward<T>(args)...);
+			fmt::print("[{} █ {}]: {}\n", fmt::format(fmt::fg(fmt::color::red), "ERROR"), fmt::format(fmt::fg(fmt::color::gold), this->_title), str);
+		}
+
+		template <typename... T>
 		void info(fmt::format_string<T...> fmt, T&&... args) {
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
 			fmt::print("[{} ▒ {}]: {}\n", fmt::format(fmt::fg(fmt::color::alice_blue), "INFO"), fmt::format(fmt::fg(fmt::color::gold), this->_title), str);

@@ -6,8 +6,7 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-
-	void LuaUtils::compileAndLoad(lua_State* L, const std::string& chunkID, const std::filesystem::path& path) {
+	void LuaUtils::compileAndLoad(lua_State* L, const std::string& chunkID, const std::filesystem::path& path, bool run) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 		if (!std::filesystem::exists(path)) throw std::runtime_error("File not found");
 
@@ -37,6 +36,8 @@ namespace rawrbox {
 			throw std::runtime_error(rawrbox::LuaUtils::getError(L));
 		}
 		// -----------
+
+		if (run) rawrbox::LuaUtils::run(L);
 	}
 
 	void LuaUtils::resume(lua_State* L, lua_State* from) {
@@ -59,10 +60,7 @@ namespace rawrbox {
 
 	std::string LuaUtils::getError(lua_State* L) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
-		const char* error_message = lua_tostring(L, -1);
-		lua_pop(L, 1); // Remove error
-
-		return error_message;
+		return lua_tostring(L, -1);
 	}
 
 	luabridge::LuaRef LuaUtils::jsonToLua(lua_State* L, const nlohmann::json& json) {

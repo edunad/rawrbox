@@ -1,7 +1,7 @@
 --[[
 	CONSOLE ENUMS
 ]]
-CONSOLE = {
+_G.CONSOLE = {
     FLAGS = {
         CHEATS = 2,
         ADMIN = 4,

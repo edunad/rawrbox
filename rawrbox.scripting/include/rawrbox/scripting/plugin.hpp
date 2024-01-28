@@ -14,7 +14,7 @@ namespace rawrbox {
 		virtual ~ScriptingPlugin() = default;
 
 		virtual void registerTypes(lua_State* /*_l*/) = 0;
-		virtual void registerGlobal(rawrbox::Mod* /*_mod*/) = 0;
-		virtual void loadLuaExtensions(rawrbox::Mod* /*_mod*/) = 0;
+		virtual void registerGlobal(lua_State* /*_l*/) = 0;
+		virtual void loadLibraries(lua_State* /*_l*/) = 0;
 	};
 } // namespace rawrbox

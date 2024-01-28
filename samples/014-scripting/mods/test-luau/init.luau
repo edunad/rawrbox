@@ -29,4 +29,5 @@ printTable({
     }
 })
 
-print("owwwoo")
+print(string.bytesToReadable(2323))
+print(json.encode({bla = 10}))
