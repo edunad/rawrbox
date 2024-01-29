@@ -3,7 +3,7 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
-	class IO {
+	class IOWrapper {
 
 	public:
 		static std::pair<std::string, std::string> load(const std::string& path);

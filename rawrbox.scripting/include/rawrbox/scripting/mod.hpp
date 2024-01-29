@@ -10,7 +10,6 @@
 namespace rawrbox {
 	class Mod {
 		// LUA ----
-		lua_State* _LSandbox = nullptr;
 		lua_State* _L = nullptr;
 		// --------
 
@@ -28,7 +27,7 @@ namespace rawrbox {
 		// -----------
 
 	public:
-		Mod(lua_State* L, const std::string id, std::filesystem::path folderName);
+		Mod(const std::string id, std::filesystem::path folderName);
 		Mod(const Mod&) = delete;
 		Mod(Mod&&) = delete;
 		Mod& operator=(const Mod&) = delete;

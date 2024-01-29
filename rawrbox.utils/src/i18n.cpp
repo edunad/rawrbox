@@ -29,6 +29,8 @@ namespace rawrbox {
 	}
 
 	void I18N::loadLanguagePack(const std::string& id, const std::string& path) {
+		_logger->info("Loading i18n for id {}", fmt::format(fmt::fg(fmt::color::coral), id));
+
 		for (auto& p : std::filesystem::directory_iterator(path)) {
 			if (p.is_directory()) continue;
 
@@ -42,6 +44,7 @@ namespace rawrbox {
 
 			try {
 				addLanguagePack(id, fileCleanName, nlohmann::json::parse(langRawStr));
+				fmt::print("- '{}' language\n", fileCleanName);
 			} catch (...) {
 				_logger->warn("Invalid JSON file: {}", filePath);
 			}

@@ -3,7 +3,10 @@
 #include <rawrbox/scripting/mod.hpp>
 #include <rawrbox/scripting/utils/lua.hpp>
 #include <rawrbox/scripting/wrappers/hooks.hpp>
+#include <rawrbox/scripting/wrappers/i18n.hpp>
 #include <rawrbox/scripting/wrappers/io.hpp>
+#include <rawrbox/scripting/wrappers/timer.hpp>
+#include <rawrbox/utils/i18n.hpp>
 #include <rawrbox/utils/logger.hpp>
 #include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/time.hpp>
@@ -56,82 +59,83 @@ namespace rawrbox {
 	// -------------
 
 	bool SCRIPTING::_hotReloadEnabled = false;
-
-	// LUA ------
-	lua_State* SCRIPTING::_L = nullptr;
-	// -------------
-
 	// --------------
 
 	// PUBLIC ----
-	rawrbox::Event<> SCRIPTING::onRegisterTypes;
-	rawrbox::Event<> SCRIPTING::onRegisterGlobals;
-	rawrbox::Event<> SCRIPTING::onLoadLibraries;
-	rawrbox::Event<rawrbox::Mod*> SCRIPTING::onModHotReload;
+	rawrbox::Event<rawrbox::Mod&> SCRIPTING::onRegisterTypes;
+	rawrbox::Event<rawrbox::Mod&> SCRIPTING::onRegisterGlobals;
+	rawrbox::Event<rawrbox::Mod&> SCRIPTING::onLoadLibraries;
+	rawrbox::Event<rawrbox::Mod&> SCRIPTING::onModHotReload;
 
 	bool SCRIPTING::initialized = false;
 	// ------
 
 	// LOAD -----
-	void SCRIPTING::loadLibraries() {
-		if (_L == nullptr) throw _logger->error("LUA is not set! Reference got destroyed?");
+	void SCRIPTING::loadLibraries(rawrbox::Mod& mod) {
+		auto L = mod.getEnvironment();
+		if (L == nullptr) throw _logger->error("LUA is not set! Reference got destroyed?");
 
 		// COMMON -----
-		luaL_openlibs(_L); // Should be safe, since LUAU takes care of non-secure libs (https://luau-lang.org/sandbox#library)
-				   //  -----
+		luaL_openlibs(L); // Should be safe, since LUAU takes care of non-secure libs (https://luau-lang.org/sandbox#library)
+				  //  -----
 
 		// OTHER LIBS ---
-		rawrbox::LuaUtils::compileAndLoad(_L, "SHA", "./lua/sha2.lua");
-		rawrbox::LuaUtils::compileAndLoad(_L, "JSON", "./lua/json.lua");
+		rawrbox::LuaUtils::compileAndLoad(L, "SHA", "./lua/sha2.lua");
+		rawrbox::LuaUtils::compileAndLoad(L, "JSON", "./lua/json.lua");
 		// --------------
 
 		// Rawrbox LIBS ----
-		rawrbox::LuaUtils::compileAndLoad(_L, "RawrBox::Math", "./lua/math.lua");
-		rawrbox::LuaUtils::compileAndLoad(_L, "RawrBox::String", "./lua/string.lua");
-		rawrbox::LuaUtils::compileAndLoad(_L, "RawrBox::Table", "./lua/table.lua");
+		rawrbox::LuaUtils::compileAndLoad(L, "RawrBox::Math", "./lua/math.lua");
+		rawrbox::LuaUtils::compileAndLoad(L, "RawrBox::String", "./lua/string.lua");
+		rawrbox::LuaUtils::compileAndLoad(L, "RawrBox::Table", "./lua/table.lua");
 		// -----------------
 
 		// Rawrbox enums ---
 		// if (_console != nullptr) rawrbox::LuaUtils::compileAndLoad(_L, "RawrBox::Enums::Console", "./lua/enums/console.lua");
-		rawrbox::LuaUtils::compileAndLoad(_L, "RawrBox::Enums::Input", "./lua/enums/input.lua");
+		rawrbox::LuaUtils::compileAndLoad(L, "RawrBox::Enums::Input", "./lua/enums/input.lua");
 		// -----------------
 
 		// Register plugins libraries ---
 		for (auto& p : _plugins)
-			p->loadLibraries(_L);
+			p->loadLibraries(L);
 		//  -----
 
 		// Custom ----
-		onLoadLibraries();
+		onLoadLibraries(mod);
 		// ----
 	}
 
-	void SCRIPTING::loadTypes() {
-		if (_L == nullptr) throw _logger->error("LUA is not set! Reference got destroyed?");
+	void SCRIPTING::loadTypes(rawrbox::Mod& mod) {
+		auto L = mod.getEnvironment();
+		if (L == nullptr) throw _logger->error("LUA is not set! Reference got destroyed?");
 		// Register types, these will be read-only & sandboxed!
 
 		// Rawrbox ---
-		rawrbox::Hooks::registerLua(_L);
+		rawrbox::Hooks::registerLua(L);
+		rawrbox::TimerWrapper::registerLua(L);
+		rawrbox::I18NWrapper::registerLua(L);
+
 #ifdef RAWRBOX_SCRIPTING_UNSAFE
-		rawrbox::IO::registerLua(_L); // TODO: Might have security vulnerabilities
+		rawrbox::IOWrapper::registerLua(L); // TODO: Might have security vulnerabilities
 #endif
 		// -----------
 
 		// Register plugins types ---
 		for (auto& p : _plugins)
-			p->registerTypes(_L);
+			p->registerTypes(L);
 		//  -----
 
 		// Custom ----
-		onRegisterTypes();
+		onRegisterTypes(mod);
 		// ----
 	}
 
-	void SCRIPTING::loadGlobals() {
-		if (_L == nullptr) throw _logger->error("LUA is not set! Reference got destroyed?");
+	void SCRIPTING::loadGlobals(rawrbox::Mod& mod) {
+		auto L = mod.getEnvironment();
+		if (L == nullptr) throw _logger->error("LUA is not set! Reference got destroyed?");
 		// Register globals, these will be read-only & sandboxed!
 
-		auto globalTable = luabridge::getGlobalNamespace(_L);
+		auto globalTable = luabridge::getGlobalNamespace(L);
 
 		// TIME UTILS ---
 		globalTable.addFunction("curtime", []() { return rawrbox::TimeUtils::curtime(); });
@@ -146,19 +150,10 @@ namespace rawrbox {
 
 		// Override print to support fmt?
 		globalTable.addFunction("print", [](lua_State* state) {
-			int nargs = lua_gettop(state);
+			auto args = rawrbox::LuaUtils::getStringVariadicArgs(state);
+			if (args.empty()) return;
 
-			std::vector<std::string> prtData = {};
-			for (int i = 1; i <= nargs; i++) {
-				if (!lua_isstring(state, i)) {
-					prtData.emplace_back("nil"); // Cannot be converted
-				} else {
-					prtData.emplace_back(lua_tostring(state, i));
-				}
-			}
-
-			if (prtData.empty()) return;
-			_logger->info("{}", fmt::join(prtData, " "));
+			_logger->info("{}", fmt::join(args, " "));
 		});
 
 		globalTable.addFunction("include", [](lua_State* state) {
@@ -192,14 +187,23 @@ namespace rawrbox {
 
 		// Register plugins globals ---
 		for (auto& p : _plugins)
-			p->registerGlobal(_L);
+			p->registerGlobal(L);
 		//  -----
 
 		// Custom ----
-		onRegisterGlobals();
+		onRegisterGlobals(mod);
 		// -------------
 	}
 	// -------------
+
+	// MOD LOAD ---
+	void SCRIPTING::loadI18N(const rawrbox::Mod& mod) {
+		auto i18nPath = fmt::format("{}/i18n", mod.getFolder().generic_string());
+		if (!std::filesystem::exists(i18nPath)) return;
+
+		rawrbox::I18N::loadLanguagePack(mod.getID(), i18nPath);
+	}
+	// ------------
 
 	// HOT RELOAD -----
 	void SCRIPTING::registerLoadedFile(const std::string& modId, const std::string& filePath) {
@@ -230,7 +234,6 @@ namespace rawrbox {
 
 			// Cleanup and load -----
 			auto env = md->second->getEnvironment();
-
 			md->second->gc(); // Cleanup
 
 			try {
@@ -240,7 +243,7 @@ namespace rawrbox {
 			}
 			// ---------------
 
-			onModHotReload(md->second.get());
+			onModHotReload(*md->second);
 			break;
 		};
 	}
@@ -248,8 +251,6 @@ namespace rawrbox {
 	// ----------
 
 	void SCRIPTING::init(int hotReloadMs) {
-		_L = luaL_newstate();
-
 		_hotReloadEnabled = hotReloadMs > 0;
 		if (_hotReloadEnabled) {
 			_logger->info("Enabled lua hot-reloading\n  └── Delay: {}ms", hotReloadMs);
@@ -263,37 +264,9 @@ namespace rawrbox {
 			_watcher->start();
 		}
 
-		// Loading initial libs ---
-		loadLibraries();
-		loadTypes();
-		loadGlobals();
-		//  ----
-
-		// Prepare mods (but dont load) ---
+		// Prepare mods sandboxed env (but dont load mod's lua) ---
 		prepareMods();
 		// ----------------
-
-		// Freeze lua env ---
-		// No more modifications to the global table are allowed after this point
-		luaL_sandbox(_L);
-		// --------------
-
-		// TEST ---
-		/*rawrbox::Mod test = {_L, "test", "./assets/mods/test-luau"};
-		rawrbox::Mod test2 = {_L, "test2", "./assets/mods/test-luau-2"};
-
-		test.init();
-		test.load();
-
-		test2.init();
-		test2.load();
-
-		test.call("test");
-		test2.call("test");
-
-		test.call("init");
-		test2.call("init");*/
-		// ----------
 	}
 
 	void SCRIPTING::prepareMods() {
@@ -306,7 +279,16 @@ namespace rawrbox {
 			auto id = p.path().filename().string();
 			auto folderPath = fmt::format("mods/{}", id);
 
-			_mods.emplace(id, std::make_unique<rawrbox::Mod>(_L, id, folderPath));
+			auto mod = std::make_unique<rawrbox::Mod>(id, folderPath);
+
+			// Prepare env ----------
+			loadLibraries(*mod);
+			loadTypes(*mod);
+			loadGlobals(*mod);
+			loadI18N(*mod);
+			// ----------
+
+			_mods.emplace(id, std::move(mod));
 		}
 	}
 
@@ -315,22 +297,14 @@ namespace rawrbox {
 
 		// Load & initialize
 		for (auto& mod : _mods) {
-			mod.second->init();
-
-			// loadLuaExtensions(mod.second.get());
-			// loadGlobals(mod.second.get());
-			// loadI18N(mod.second.get());
-
 			try {
+				mod.second->init(); // Sandbox env
 				mod.second->load();
-
-				// Register file for hot-reloading
-				registerLoadedFile(mod.first, mod.second->getEntryFilePath());
-				// ----
-
 			} catch (const std::runtime_error& err) {
 				_logger->printError("{}", err.what());
 			}
+
+			registerLoadedFile(mod.first, mod.second->getEntryFilePath()); // Register file for hot-reloading
 		}
 		// -----
 	}
@@ -341,16 +315,9 @@ namespace rawrbox {
 		_loadedLuaFiles.clear();
 		_mods.clear();
 		_plugins.clear();
-
-		// Shutdown lua --
-		rawrbox::LuaUtils::collect_garbage(_L);
-		_L = nullptr;
-		// ----------------
 	}
 
 	// UTILS ----
-	lua_State* SCRIPTING::getLUA() { return _L; }
-
 	const std::unordered_map<std::string, std::unique_ptr<Mod>>& SCRIPTING::getMods() { return _mods; }
 	const std::vector<std::string> SCRIPTING::getModsIds() {
 		std::vector<std::string> modNames = {};

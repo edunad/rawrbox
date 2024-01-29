@@ -26,10 +26,6 @@ namespace rawrbox {
 		static std::unique_ptr<rawrbox::Logger> _logger;
 		// -------------
 
-		// LUA ----
-		static lua_State* _L;
-		// ----------
-
 		static bool _hotReloadEnabled;
 
 		// MODS ---
@@ -37,10 +33,14 @@ namespace rawrbox {
 		// --------
 
 		// LOAD ----
-		static void loadLibraries();
-		static void loadTypes();
-		static void loadGlobals();
+		static void loadLibraries(rawrbox::Mod& mod);
+		static void loadTypes(rawrbox::Mod& mod);
+		static void loadGlobals(rawrbox::Mod& mod);
 		// ----
+
+		// MOD LOAD ---
+		static void loadI18N(const rawrbox::Mod& mod);
+		// ------------
 
 		// HOT RELOAD ---
 		static void registerLoadedFile(const std::string& modId, const std::string& filePath);
@@ -51,10 +51,10 @@ namespace rawrbox {
 		static bool initialized;
 
 		// EVENTS ----
-		static rawrbox::Event<> onRegisterTypes;
-		static rawrbox::Event<> onRegisterGlobals;
-		static rawrbox::Event<> onLoadLibraries;
-		static rawrbox::Event<rawrbox::Mod*> onModHotReload;
+		static rawrbox::Event<rawrbox::Mod&> onRegisterTypes;
+		static rawrbox::Event<rawrbox::Mod&> onRegisterGlobals;
+		static rawrbox::Event<rawrbox::Mod&> onLoadLibraries;
+		static rawrbox::Event<rawrbox::Mod&> onModHotReload;
 		// -------
 
 		// PLUGINS ---
@@ -68,13 +68,11 @@ namespace rawrbox {
 		// -----
 
 		template <typename T>
-		static void registerType() {
-			if (_L == nullptr) throw _logger->error("LUA is not set! Reference got destroyed?");
-
+		static void registerType(rawrbox::Mod& mod) {
 			if constexpr (isLuaType<T>) {
-				T::registerLua(*_L);
+				T::registerLua(mod.getEnvironment());
 			} else {
-				throw _logger->error("[RawrBox-Scripting] Type missing 'registerLua'");
+				throw _logger->error("Type missing 'registerLua'");
 			}
 		}
 
@@ -90,8 +88,7 @@ namespace rawrbox {
 		static void shutdown();
 
 		// UTILS ---
-		[[nodiscard]] static lua_State* getLUA();
-		[[nodiscard]] static const std::unordered_map<std::string, std::unique_ptr<Mod>>& getMods();
+		[[nodiscard]] static const std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>>& getMods();
 		[[nodiscard]] static const std::vector<std::string> getModsIds();
 
 		[[nodiscard]] static bool hotReloadEnabled();

@@ -8,10 +8,6 @@ function MOD:update(meow)
     print(curtime())
 end
 
-function MOD:test()
-    print("called mod test on test-luau!")
-end
-
 printTable({
     bla = 1,
     ok = true,

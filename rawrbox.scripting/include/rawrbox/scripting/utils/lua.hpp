@@ -14,13 +14,14 @@
 namespace rawrbox {
 	class LuaUtils {
 	public:
-		static void compileAndLoad(lua_State* L, const std::string& chunkID, const std::filesystem::path& path, bool run = true);
+		static void compileAndLoad(lua_State* L, const std::string& chunkID, const std::filesystem::path& path);
 		static void resume(lua_State* L, lua_State* from);
 		static void run(lua_State* L);
 		static void collect_garbage(lua_State* L);
 
 		static std::string getError(lua_State* L);
 
+		static std::vector<std::string> getStringVariadicArgs(lua_State* L);
 		static nlohmann::json getVariadicArgs(lua_State* L);
 
 		static luabridge::LuaRef jsonToLua(lua_State* L, const nlohmann::json& json);

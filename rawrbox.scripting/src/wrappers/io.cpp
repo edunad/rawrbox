@@ -7,7 +7,7 @@
 #include <fstream>
 
 namespace rawrbox {
-	std::pair<std::string, std::string> IO::load(const std::string& path) {
+	std::pair<std::string, std::string> IOWrapper::load(const std::string& path) {
 		if (!std::filesystem::exists("./data/" + path) || path.find("../") != std::string::npos) {
 			return std::make_pair(fmt::format("Failed to find file {{data/{}}}", path), "");
 		}
@@ -23,7 +23,7 @@ namespace rawrbox {
 		return std::make_pair("", dataStr.str());
 	}
 
-	std::string IO::save(const std::string& path, const std::string& data) {
+	std::string IOWrapper::save(const std::string& path, const std::string& data) {
 		// Anti-d3lta 2000
 		if (path.find("../") != std::string::npos) {
 			return fmt::format("Failed to save file {{data/{}}}", path);
@@ -41,11 +41,11 @@ namespace rawrbox {
 		return "";
 	}
 
-	void IO::registerLua(lua_State* L) {
+	void IOWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("io")
-		    .addFunction("save", &rawrbox::IO::save)
-		    .addFunction("load", &rawrbox::IO::load)
+		    .addFunction("save", &rawrbox::IOWrapper::save)
+		    .addFunction("load", &rawrbox::IOWrapper::load)
 		    .endNamespace();
 	}
 } // namespace rawrbox

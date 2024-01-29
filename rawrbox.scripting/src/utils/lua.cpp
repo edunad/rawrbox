@@ -6,13 +6,17 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-	void LuaUtils::compileAndLoad(lua_State* L, const std::string& chunkID, const std::filesystem::path& path, bool run) {
+	void LuaUtils::compileAndLoad(lua_State* L, const std::string& chunkID, const std::filesystem::path& path) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 		if (!std::filesystem::exists(path)) throw std::runtime_error("File not found");
 
 		// Load script ---
 		auto bytes = rawrbox::PathUtils::getRawData(path);
 		if (bytes.empty()) throw std::runtime_error("File empty / failed to load");
+		// --------------
+
+		// Create a new thread ----
+		auto loadThread = lua_newthread(L);
 		// --------------
 
 		// Compile ----
@@ -32,12 +36,14 @@ namespace rawrbox {
 
 		// Load -------
 		std::string chunk = fmt::format("={}", chunkID);
-		if (luau_load(L, chunk.c_str(), bytecode.data(), bytecode.size(), 0) != 0) {
+		if (luau_load(loadThread, chunk.c_str(), bytecode.data(), bytecode.size(), 0) != 0) {
 			throw std::runtime_error(rawrbox::LuaUtils::getError(L));
 		}
 		// -----------
 
-		if (run) rawrbox::LuaUtils::run(L);
+		// Run the thread ---
+		rawrbox::LuaUtils::resume(loadThread, L);
+		// -----------
 	}
 
 	void LuaUtils::resume(lua_State* L, lua_State* from) {
@@ -61,6 +67,23 @@ namespace rawrbox {
 	std::string LuaUtils::getError(lua_State* L) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 		return lua_tostring(L, -1);
+	}
+
+	std::vector<std::string> LuaUtils::getStringVariadicArgs(lua_State* L) {
+		std::vector<std::string> args = {};
+
+		int nargs = lua_gettop(L);
+		if (nargs == 0) return args;
+
+		for (int i = 1; i <= nargs; i++) {
+			if (!lua_isstring(L, i)) {
+				args.emplace_back("nil"); // Cannot be converted
+			} else {
+				args.emplace_back(lua_tostring(L, i));
+			}
+		}
+
+		return args;
 	}
 
 	nlohmann::json LuaUtils::getVariadicArgs(lua_State* L) {

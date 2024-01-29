@@ -23,3 +23,13 @@ else
     print(loadData[2])
 end
 -- -----------------
+
+---- TIMER TEST -----
+timer.simple("meow", 4000, function()
+    print("simple timer")
+end, function() print("simple timer end") end)
+
+timer.create("meow2", 2, 1000, function()
+    print("timer tick")
+end)
+----------------------

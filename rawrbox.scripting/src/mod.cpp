@@ -5,44 +5,46 @@
 #include <Luau/Compiler.h>
 
 namespace rawrbox {
-	Mod::Mod(lua_State* L, std::string id, std::filesystem::path folderPath) : _L(L), _folder(std::move(folderPath)), _id(std::move(id)), _LSandbox(lua_newthread(L)), _modTable(_LSandbox) {
-		if (this->_LSandbox == nullptr) throw _logger->error("Invalid lua handle");
+	Mod::Mod(std::string id, std::filesystem::path folderPath) : _folder(std::move(folderPath)), _id(std::move(id)), _L(luaL_newstate()), _modTable(_L) {
+		if (this->_L == nullptr) throw _logger->error("Invalid lua handle");
 
 		// Inject mod env --
-		lua_pushstring(this->_LSandbox, this->_folder.generic_string().c_str());
-		lua_setglobal(this->_LSandbox, "__mod_folder");
+		lua_pushstring(this->_L, this->_folder.generic_string().c_str());
+		lua_setglobal(this->_L, "__mod_folder");
 
-		lua_pushstring(this->_LSandbox, this->_id.c_str());
-		lua_setglobal(this->_LSandbox, "__mod_id");
+		lua_pushstring(this->_L, this->_id.c_str());
+		lua_setglobal(this->_L, "__mod_id");
 		// -----------------
-
-		// Sandbox thread ----
-		luaL_sandboxthread(this->_LSandbox);
-		// -------------------
 	}
 
 	Mod::~Mod() {
 		this->gc();
-
 		this->_L = nullptr;
-		this->_LSandbox = nullptr;
 	}
 
 	void Mod::init() {
-		// Initialize table ---
-		this->_modTable = luabridge::newTable(this->_LSandbox);
-		luabridge::setGlobal(this->_LSandbox, this->_modTable, "MOD");
-		// --------------------
+		if (this->_L == nullptr) throw _logger->error("Invalid lua handle");
+
+		// Freeze lua env ---
+		// No more modifications to the global table are allowed after this point
+		luaL_sandbox(this->_L);
+		luaL_sandboxthread(this->_L); // Clone of the _G env that allows modification, but you cannot modify _G directly
+		// --------------
+
+		// Initialize mod table, this can be modified ---
+		this->_modTable = luabridge::newTable(this->_L);
+		luabridge::setGlobal(this->_L, this->_modTable, "MOD");
+		//  --------------------
 	}
 
 	void Mod::gc() {
-		if (this->_LSandbox == nullptr) throw _logger->error("Invalid lua handle");
-		rawrbox::LuaUtils::collect_garbage(_LSandbox);
+		if (this->_L == nullptr) throw _logger->error("Invalid lua handle");
+		rawrbox::LuaUtils::collect_garbage(this->_L);
 	}
 
 	void Mod::load() {
-		if (this->_LSandbox == nullptr) throw _logger->error("Invalid lua sandbox environment");
-		rawrbox::LuaUtils::compileAndLoad(this->_LSandbox, this->getID(), this->getEntryFilePath());
+		if (this->_L == nullptr) throw _logger->error("Invalid lua sandbox environment");
+		rawrbox::LuaUtils::compileAndLoad(this->_L, this->getID(), this->getEntryFilePath());
 	}
 
 	// UTILS ----
@@ -50,6 +52,6 @@ namespace rawrbox {
 	const std::string Mod::getEntryFilePath() const { return fmt::format("{}/init.luau", this->_folder.generic_string()); }
 	const std::filesystem::path& Mod::getFolder() const { return this->_folder; }
 
-	lua_State* Mod::getEnvironment() { return this->_LSandbox; }
+	lua_State* Mod::getEnvironment() { return this->_L; }
 	// -----
 } // namespace rawrbox
