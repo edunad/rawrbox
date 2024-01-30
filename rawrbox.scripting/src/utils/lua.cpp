@@ -76,21 +76,18 @@ namespace rawrbox {
 		if (nargs == 0) return args;
 
 		for (int i = 1; i <= nargs; i++) {
-			if (!lua_isstring(L, i)) {
-				args.emplace_back("nil"); // Cannot be converted
-			} else {
-				args.emplace_back(lua_tostring(L, i));
-			}
+			if (!lua_isstring(L, i)) continue;
+			args.emplace_back(lua_tostring(L, i));
 		}
 
 		return args;
 	}
 
-	nlohmann::json LuaUtils::getVariadicArgs(lua_State* L) {
-		nlohmann::json args = {};
+	void LuaUtils::getVariadicArgs(const luabridge::LuaRef& in, luabridge::LuaRef& out) {
+		auto L = in.state();
 
 		int nargs = lua_gettop(L);
-		if (nargs == 0) return args;
+		if (nargs == 0) return;
 
 		int validArgs = 0;
 		for (int i = 1; i <= nargs; i++) {
@@ -98,20 +95,18 @@ namespace rawrbox {
 
 			switch (type) {
 				case LUA_TNUMBER:
-					args[validArgs++] = lua_tonumber(L, i);
+					out[validArgs++] = lua_tonumber(L, i);
 					break;
 				case LUA_TSTRING:
-					args[validArgs++] = lua_tostring(L, i);
+					out[validArgs++] = lua_tostring(L, i);
 					break;
 				case LUA_TBOOLEAN:
-					args[validArgs++] = lua_toboolean(L, i);
+					out[validArgs++] = lua_toboolean(L, i) != 0;
 					break;
 				default:
 					break;
 			}
 		}
-
-		return args;
 	}
 
 	luabridge::LuaRef LuaUtils::jsonToLua(lua_State* L, const nlohmann::json& json) {
@@ -184,6 +179,15 @@ namespace rawrbox {
 		}
 
 		return result;
+	}
+
+	std::string LuaUtils::getLuaENVVar(lua_State* L, const std::string& varId) {
+		if (L == nullptr) throw std::runtime_error("Invalid lua state");
+
+		lua_getfield(L, LUA_ENVIRONINDEX, varId.c_str());
+		if (!lua_isstring(L, -1)) throw std::runtime_error(fmt::format("Invalid lua env variable '{}'", varId));
+
+		return lua_tostring(L, -1);
 	}
 
 	// #/ == System content

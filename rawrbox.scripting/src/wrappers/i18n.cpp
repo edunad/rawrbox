@@ -19,12 +19,7 @@ namespace rawrbox {
 		std::string id = args[0];
 		std::string key = args[1];
 
-		if (id.empty()) {
-			lua_getfield(state, LUA_ENVIRONINDEX, "__mod_id");
-			if (lua_type(state, -1) != LUA_TSTRING) throw std::runtime_error("Invalid mod! Missing '__mod_id' on lua env");
-
-			id = lua_tostring(state, -1);
-		}
+		if (id.empty()) id = rawrbox::LuaUtils::getLuaENVVar(state, "__mod_id");
 
 		return rawrbox::I18N::get(id, key, {args.begin() + 2, args.end()});
 	}

@@ -1,4 +1,3 @@
-
 function MOD:init()
     print("hello from init")
 end
@@ -27,3 +26,9 @@ printTable({
 
 print(string.bytesToReadable(2323))
 print(json.encode({bla = 10}))
+
+
+meow = function(data)
+    printTable(data)
+    print("called meow")
+end

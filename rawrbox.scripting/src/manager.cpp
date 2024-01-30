@@ -5,6 +5,7 @@
 #include <rawrbox/scripting/wrappers/hooks.hpp>
 #include <rawrbox/scripting/wrappers/i18n.hpp>
 #include <rawrbox/scripting/wrappers/io.hpp>
+#include <rawrbox/scripting/wrappers/mod.hpp>
 #include <rawrbox/scripting/wrappers/timer.hpp>
 #include <rawrbox/utils/i18n.hpp>
 #include <rawrbox/utils/logger.hpp>
@@ -114,6 +115,7 @@ namespace rawrbox {
 		rawrbox::Hooks::registerLua(L);
 		rawrbox::TimerWrapper::registerLua(L);
 		rawrbox::I18NWrapper::registerLua(L);
+		rawrbox::MODWrapper::registerLua(L);
 
 #ifdef RAWRBOX_SCRIPTING_UNSAFE
 		rawrbox::IOWrapper::registerLua(L); // TODO: Might have security vulnerabilities
@@ -145,7 +147,7 @@ namespace rawrbox {
 		// UTILS ----
 		globalTable.addFunction("printTable", [](lua_State* state) {
 			nlohmann::json json = rawrbox::LuaUtils::luaToJsonObject(state);
-			_logger->info("{}\n", json.dump(1, ' ', false));
+			_logger->info("{}", json.dump(1, ' ', false));
 		});
 
 		// Override print to support fmt?
@@ -174,6 +176,19 @@ namespace rawrbox {
 			// Register file for hot-reloading
 			registerLoadedFile(modID, fixedPath);
 			// ----
+		});
+		// ---------
+
+		// MODDING ---
+		globalTable.addFunction("hasMOD", [](const std::string& id) {
+			return _mods.find(id) != _mods.end();
+		});
+
+		globalTable.addFunction("getMOD", [](const std::string& id) {
+			auto fnd = _mods.find(id);
+			if (fnd == _mods.end()) throw std::runtime_error(fmt::format("Mod {} not found", id));
+
+			return rawrbox::MODWrapper(fnd->second.get());
 		});
 		// ----------
 
@@ -300,7 +315,7 @@ namespace rawrbox {
 			try {
 				mod.second->init(); // Sandbox env
 				mod.second->load();
-			} catch (const std::runtime_error& err) {
+			} catch (std::runtime_error err) {
 				_logger->printError("{}", err.what());
 			}
 
