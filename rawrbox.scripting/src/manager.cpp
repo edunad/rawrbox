@@ -14,6 +14,7 @@
 #include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/time.hpp>
 
+#include <fmt/args.h>
 #include <fmt/format.h>
 
 /*⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -195,7 +196,24 @@ namespace rawrbox {
 		});
 		// ----------
 
+		// STRING ----
+		globalTable.beginNamespace("string")
+		    .addFunction("vformat", [](lua_State* state) {
+			    auto vars = rawrbox::LuaUtils::getStringVariadicArgs(state);
+			    if (vars.size() < 1) throw std::runtime_error("Missing params");
+
+			    fmt::dynamic_format_arg_store<fmt::format_context> fmtArgs = {};
+			    for (size_t i = 1; i < vars.size(); i++) {
+				    fmtArgs.push_back(vars[i]);
+			    }
+
+			    return fmt::vformat(vars[0], fmtArgs);
+		    })
+		    .endNamespace();
+		// -----------
+
 		// ENGINE ------
+		globalTable = luabridge::getGlobalNamespace(L);
 		globalTable.beginNamespace("engine")
 		    .addProperty("deltaTime", &rawrbox::DELTA_TIME, false)
 		    .addProperty("fixedDeltaTime", &rawrbox::FIXED_DELTA_TIME, false)
