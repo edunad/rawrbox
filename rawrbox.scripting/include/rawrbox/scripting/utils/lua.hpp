@@ -6,6 +6,8 @@
 #include <LuaBridge/LuaBridge.h>
 // -------------------------------
 
+#include <rawrbox/utils/logger.hpp>
+
 #include <nlohmann/json.hpp>
 
 #include <filesystem>
@@ -33,7 +35,6 @@ namespace rawrbox {
 		// @/ == Root content
 		// @cats/ == `cats` mod
 		// normal_path == current mod
-		static std::string
-		getContent(const std::filesystem::path& path, const std::filesystem::path& modPath);
+		static std::string getContent(const std::filesystem::path& path, const std::filesystem::path& modPath);
 	};
 } // namespace rawrbox

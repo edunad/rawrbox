@@ -16,7 +16,7 @@ namespace rawrbox {
 		auto argTable = luabridge::newTable(modEnv);
 		rawrbox::LuaUtils::getVariadicArgs(ref, argTable);
 
-		func(argTable);
+		luabridge::call(func, argTable);
 	}
 
 	std::string MODWrapper::getID() const {

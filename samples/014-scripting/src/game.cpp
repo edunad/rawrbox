@@ -72,6 +72,7 @@ namespace scripting_test {
 #endif
 		// ----
 
+		rawrbox::SCRIPTING::setConsole(this->_console.get());
 		rawrbox::SCRIPTING::init(2000); // Check files every 2 seconds
 
 		// Load lua mods

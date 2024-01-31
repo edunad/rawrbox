@@ -2,6 +2,8 @@
 #include <rawrbox/scripting/manager.hpp>
 #include <rawrbox/scripting/mod.hpp>
 #include <rawrbox/scripting/utils/lua.hpp>
+#include <rawrbox/scripting/wrappers/console.hpp>
+#include <rawrbox/scripting/wrappers/console_command.hpp>
 #include <rawrbox/scripting/wrappers/hooks.hpp>
 #include <rawrbox/scripting/wrappers/i18n.hpp>
 #include <rawrbox/scripting/wrappers/io.hpp>
@@ -59,6 +61,7 @@ namespace rawrbox {
 	std::unique_ptr<rawrbox::Logger> SCRIPTING::_logger = std::make_unique<rawrbox::Logger>("RawrBox-SCRIPTING");
 	// -------------
 
+	rawrbox::Console* SCRIPTING::_console = nullptr;
 	bool SCRIPTING::_hotReloadEnabled = false;
 	// --------------
 
@@ -120,6 +123,11 @@ namespace rawrbox {
 #ifdef RAWRBOX_SCRIPTING_UNSAFE
 		rawrbox::IOWrapper::registerLua(L); // TODO: Might have security vulnerabilities
 #endif
+
+		if (_console != nullptr) {
+			rawrbox::ConsoleCommandWrapper::registerLua(L);
+			rawrbox::ConsoleWrapper::registerLua(L);
+		}
 		// -----------
 
 		// Register plugins types ---
@@ -162,13 +170,8 @@ namespace rawrbox {
 			if (lua_type(state, 1) != LUA_TSTRING) throw std::runtime_error("Invalid param, string expected");
 			auto path = lua_tostring(state, 1);
 
-			lua_getfield(state, LUA_ENVIRONINDEX, "__mod_id");
-			if (lua_type(state, -1) != LUA_TSTRING) throw std::runtime_error("Invalid mod! Missing '__mod_id' on lua env");
-			auto modID = lua_tostring(state, -1);
-
-			lua_getfield(state, LUA_ENVIRONINDEX, "__mod_folder");
-			if (lua_type(state, -1) != LUA_TSTRING) throw std::runtime_error("Invalid mod! Missing '__mod_folder' on lua env");
-			auto modFolder = lua_tostring(state, -1);
+			auto modID = rawrbox::LuaUtils::getLuaENVVar(state, "__mod_id");
+			auto modFolder = rawrbox::LuaUtils::getLuaENVVar(state, "__mod_folder");
 
 			auto fixedPath = LuaUtils::getContent(path, modFolder);
 			rawrbox::LuaUtils::compileAndLoad(state, modID, fixedPath);
@@ -279,6 +282,10 @@ namespace rawrbox {
 			_watcher->start();
 		}
 
+		// Setup  --
+		if (_console != nullptr) rawrbox::ConsoleWrapper::init(_console);
+		// ----------------
+
 		// Prepare mods sandboxed env (but dont load mod's lua) ---
 		prepareMods();
 		// ----------------
@@ -325,12 +332,15 @@ namespace rawrbox {
 	}
 
 	void SCRIPTING::shutdown() {
+		_console = nullptr;
 		_watcher.reset();
 
 		_loadedLuaFiles.clear();
 		_mods.clear();
 		_plugins.clear();
 	}
+
+	void SCRIPTING::setConsole(rawrbox::Console* console) { _console = console; }
 
 	// UTILS ----
 	const std::unordered_map<std::string, std::unique_ptr<Mod>>& SCRIPTING::getMods() { return _mods; }

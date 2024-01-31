@@ -55,7 +55,7 @@ namespace rawrbox {
 			if (!fnc.isCallable()) return;
 
 			try {
-				fnc(fnc, std::forward<CallbackArgs>(args)...);
+				luabridge::call(fnc, std::forward<CallbackArgs>(args)...);
 			} catch (luabridge::LuaException& err) {
 				throw _logger->error("{}", err.what());
 			}

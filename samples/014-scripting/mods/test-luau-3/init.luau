@@ -1,5 +1,5 @@
 
-i18n.setLanguage("en")
+--[[i18n.setLanguage("en")
 print(i18n.get("", "hello", "world"))
 i18n.setLanguage("repti")
 print(i18n.get("", "hello", "world"))
@@ -10,4 +10,17 @@ if not hasMOD("aaaaa") then
 end
 
 local mod = getMOD("test-luau")
+print(mod:getID())
+print(mod:getFolder())
 mod:call("meow", 20, true, {potato = 20})
+
+print(curtime())]]--
+
+console.removeCommand("test")
+console.registerMethod("test", function(args)
+    print("called test command")
+    printTable(args)
+    return true, "ok"
+end, "meow")
+
+console.execute("test", "arg1")

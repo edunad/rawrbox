@@ -2,6 +2,7 @@
 
 #include <rawrbox/scripting/mod.hpp>
 #include <rawrbox/scripting/plugin.hpp>
+#include <rawrbox/utils/console.hpp>
 #include <rawrbox/utils/event.hpp>
 #include <rawrbox/utils/file_watcher.hpp>
 #include <rawrbox/utils/logger.hpp>
@@ -26,6 +27,7 @@ namespace rawrbox {
 		static std::unique_ptr<rawrbox::Logger> _logger;
 		// -------------
 
+		static rawrbox::Console* _console;
 		static bool _hotReloadEnabled;
 
 		// MODS ---
@@ -86,6 +88,8 @@ namespace rawrbox {
 		static void init(int hotReloadMs = 0);
 		static void load();
 		static void shutdown();
+
+		static void setConsole(rawrbox::Console* console);
 
 		// UTILS ---
 		[[nodiscard]] static const std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>>& getMods();

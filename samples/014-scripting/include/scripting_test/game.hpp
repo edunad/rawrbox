@@ -2,6 +2,7 @@
 
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/models/instanced.hpp>
+#include <rawrbox/utils/console.hpp>
 
 #ifdef RAWRBOX_UI
 	#include <rawrbox/ui/root.hpp>
@@ -15,6 +16,7 @@ namespace scripting_test {
 
 		std::shared_ptr<rawrbox::Model<>> _model = std::make_shared<rawrbox::Model<>>();
 		std::shared_ptr<rawrbox::InstancedModel<>> _instance = std::make_shared<rawrbox::InstancedModel<>>();
+		std::unique_ptr<rawrbox::Console> _console = std::make_unique<rawrbox::Console>();
 
 		bool _ready = false;
 
