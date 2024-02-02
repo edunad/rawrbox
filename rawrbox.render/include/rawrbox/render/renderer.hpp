@@ -31,7 +31,7 @@ namespace rawrbox {
 		bool cover = false;
 		rawrbox::Colorf background = rawrbox::Colors::Black();
 
-		RawrboxIntro(float _speed = 1.F, bool _cover = true, const rawrbox::Colorf& _color = rawrbox::Colors::Black()) : background(_color), speed(_speed), cover(_cover) {}
+		RawrboxIntro(float _speed = 1.F, bool _cover = true, const rawrbox::Colorf& _color = rawrbox::Colors::Black()) : speed(_speed), cover(_cover), background(_color) {}
 	};
 
 	class RendererBase {

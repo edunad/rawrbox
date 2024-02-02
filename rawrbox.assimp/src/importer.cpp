@@ -263,7 +263,7 @@ namespace rawrbox {
 				// DEBUG ----
 				if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE) > 0) {
 					std::function<void(std::unique_ptr<Bone>&, int)> printBone;
-					printBone = [&printBone, this](std::unique_ptr<Bone>& bn, int deep) -> void {
+					printBone = [&printBone](std::unique_ptr<Bone>& bn, int deep) -> void {
 						for (auto& c : bn->children) {
 							std::string d = "";
 							for (int i = 0; i < deep; i++)
@@ -682,7 +682,7 @@ namespace rawrbox {
 			this->_logger->info("'{}' METADATA", fmt::format(fmt::fg(fmt::color::cyan), this->fileName.generic_string()));
 
 			std::function<void(aiMetadata*)> printMetaData;
-			printMetaData = [&printMetaData, this](aiMetadata* meta) -> void {
+			printMetaData = [&printMetaData](aiMetadata* meta) -> void {
 				for (uint8_t i = 0; i < meta->mNumProperties; i++) {
 					auto data = meta->mValues[i];
 					std::string str = "";
