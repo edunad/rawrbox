@@ -150,7 +150,7 @@ namespace rawrbox {
 			return dynamic_cast<T*>(fnd->second.get());
 		}
 
-		[[nodiscard]] virtual const bool hasPlugin(const std::string& plugin) const;
+		[[nodiscard]] virtual bool hasPlugin(const std::string& plugin) const;
 		[[nodiscard]] virtual const std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>>& getPlugins() const;
 		// -----------------------------------
 

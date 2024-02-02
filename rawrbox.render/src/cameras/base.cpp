@@ -12,10 +12,6 @@ namespace rawrbox {
 
 	void CameraBase::initialize() {
 		if (this->_staticUniforms != nullptr) throw this->_logger->error("Camera already initialized!");
-
-		auto device = rawrbox::RENDERER->device();
-		auto context = rawrbox::RENDERER->context();
-
 		{
 			auto staticData = this->getStaticData();
 

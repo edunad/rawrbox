@@ -53,15 +53,12 @@ endif()
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_ASSIMP_IMPORTS "src/*.cpp" "include/*.hpp")
 
-#if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
-#    set(RAWRBOX_EXTRA_LIBS RAWRBOX.RESOURCES)
-#else()
-#    remove_folder("${RAWRBOX_ASSIMP_IMPORTS}" "/resources/")
-#    set(RAWRBOX_ASSIMP_IMPORTS "${CLEAN_SOURCES}")
-#endif()
-
-remove_folder("${RAWRBOX_ASSIMP_IMPORTS}" "/resources/")
-set(RAWRBOX_ASSIMP_IMPORTS "${CLEAN_SOURCES}")
+if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+    set(RAWRBOX_EXTRA_LIBS RAWRBOX.RESOURCES)
+else()
+    remove_folder("${RAWRBOX_ASSIMP_IMPORTS}" "/resources/")
+    set(RAWRBOX_ASSIMP_IMPORTS "${CLEAN_SOURCES}")
+endif()
 # ----
 
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_ASSIMP_IMPORTS})

@@ -3,7 +3,7 @@
 
 namespace rawrbox {
 	// QUICK ACCESS ---
-	uint32_t FRAME = 0;
+	uint64_t FRAME = 0;
 	Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> SHADER_FACTORY;
 
 	rawrbox::RendererBase* RENDERER = nullptr;

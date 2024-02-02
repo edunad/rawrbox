@@ -4,73 +4,6 @@ set(output_target RAWRBOX.SCRIPTING)
 # --------------
 
 # LIBS ---
-#if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT)
-#    message(STATUS "Enabled LuaJIT support")
-#    message(WARNING "LuaJIT should not be used right now, check issue https://github.com/edunad/rawrbox/issues/73")
-#
-#    #CPMAddPackage(NAME luajit GITHUB_REPOSITORY WohlSoft/LuaJIT GIT_TAG v2.1)
-#    #if(luajit_ADDED)
-#    #    set_lib_runtime_mt(luajit)
-#    #    set_lib_runtime_mt(libluajit)
-#    #    list(APPEND RAWRBOX_SCRIPTING_EXTRA_LIB libluajit)
-#    #    set(SOL2_LUA_VERSION "LuaJIT" CACHE STRING "" FORCE)
-#    #endif()
-#
-#    CPMAddPackage(
-#        NAME
-#            luajit
-#        GITHUB_REPOSITORY
-#            edunad/LuaJIT-cmake
-#        GIT_TAG
-#            master
-#        OPTIONS
-#            "LUAJIT_DISABLE_BUFFER ON"
-#            "LUA_USE_APICHECK ON")
-#
-#    if(luajit_ADDED)
-#        set_lib_runtime_mt(liblua-static)
-#
-#        set(RAWRBOX_SCRIPTING_EXTRA_LIB liblua-static)
-#        set(SOL2_LUA_VERSION "LuaJIT" CACHE STRING "" FORCE)
-#    endif()
-#else()
-#    message(STATUS "LuaJIT support disabled, using normal LUA")
-#    CPMAddPackage(
-#        NAME
-#            lua
-#        GITHUB_REPOSITORY
-#            lua/lua
-#        GIT_TAG
-#            v5.4.6
-#        DOWNLOAD_ONLY
-#            YES)
-#
-#    if(lua_ADDED)
-#        FILE(GLOB lua_sources ${lua_SOURCE_DIR}/*.c)
-#        list(REMOVE_ITEM lua_sources "${lua_SOURCE_DIR}/lua.c" "${lua_SOURCE_DIR}/luac.c" "${lua_SOURCE_DIR}/onelua.c")
-#        add_library(lua STATIC ${lua_sources})
-#
-#        target_include_directories(lua PUBLIC $<BUILD_INTERFACE:${lua_SOURCE_DIR}>)
-#        set_lib_runtime_mt(lua)
-#    endif()
-#
-#    list(APPEND RAWRBOX_SCRIPTING_EXTRA_LIB lua)
-#endif()
-#
-## SOL -----------
-#CPMAddPackage(
-#    NAME
-#        sol2
-#    GITHUB_REPOSITORY
-#        ThePhD/sol2
-#    VERSION
-#        3.3.0
-#    )
-#
-#if(sol2_ADDED)
-#    set_lib_runtime_mt(sol2)
-#endif()
-
 CPMAddPackage(
     NAME
         LuaBridge3
@@ -82,6 +15,10 @@ CPMAddPackage(
         "LUABRIDGE_TESTING OFF"
         "LUABRIDGE_COVERAGE OFF"
     )
+
+if(LuaBridge3_ADDED)
+    set_lib_runtime_mt(LuaBridge)
+endif()
 
 CPMAddPackage(
     NAME
@@ -96,6 +33,13 @@ CPMAddPackage(
         "LUAU_BUILD_BENCHMARKS OFF"
         "LUAU_BUILD_WEB OFF"
     )
+
+if(luau_ADDED)
+    set_lib_runtime_mt(Luau.VM)
+    set_lib_runtime_mt(Luau.Common)
+    set_lib_runtime_mt(Luau.Compiler)
+    set_lib_runtime_mt(Luau.Ast)
+endif()
 # --------------
 
 file(GLOB_RECURSE RAWRBOX_SCRIPTING_IMPORTS "src/*.cpp" "include/*.hpp")
@@ -124,8 +68,6 @@ target_link_libraries(${output_target}
         LuaBridge
         # ---------
 )
-
-
 
 set_lib_runtime_mt(${output_target})
 # --------------

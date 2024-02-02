@@ -76,6 +76,26 @@ CPMDeclarePackage(libcpr
     "CPR_ENABLE_SSL ON"
     "CURL_ZLIB ON"
 )
+# LuaBridge3 (unversioned)
+# CPMDeclarePackage(LuaBridge3
+#  NAME LuaBridge3
+#  GIT_TAG master
+#  GITHUB_REPOSITORY kunitoki/LuaBridge3
+#  OPTIONS
+#    "LUABRIDGE_TESTING OFF"
+#    "LUABRIDGE_COVERAGE OFF"
+#)
+# luau
+CPMDeclarePackage(luau
+  NAME luau
+  GIT_TAG 0.610
+  GITHUB_REPOSITORY luau-lang/luau
+  OPTIONS
+    "LUAU_BUILD_CLI OFF"
+    "LUAU_BUILD_TESTS OFF"
+    "LUAU_BUILD_BENCHMARKS OFF"
+    "LUAU_BUILD_WEB OFF"
+)
 # glfw
 CPMDeclarePackage(glfw
   NAME glfw
