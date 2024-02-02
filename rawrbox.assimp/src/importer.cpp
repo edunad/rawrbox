@@ -140,14 +140,14 @@ namespace rawrbox {
 
 			// Texture loading ----
 			if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS) > 0) {
-				const auto dump = [this](const aiMaterial* mat, aiTextureType type) {
+				const auto dump = [](const aiMaterial* mat, aiTextureType type) {
 					const unsigned count = mat->GetTextureCount(type);
 
 					if (count > 0) {
 						aiString matPath;
 						ai_real matBlend = 0;
 
-						for (size_t c = 0; c < count; c++) {
+						for (uint32_t c = 0; c < count; c++) {
 							if (mat->GetTexture(type, c, &matPath, nullptr, nullptr, &matBlend, nullptr, nullptr) == AI_SUCCESS) {
 								fmt::print("\t [{}] '{}' -> '{}'\n", c, matPath.C_Str(), magic_enum::enum_name(type));
 							}
@@ -578,9 +578,9 @@ namespace rawrbox {
 			auto min = aiMesh.mAABB.mMin;
 			auto max = aiMesh.mAABB.mMax;
 
-			mesh.bbox.m_min = {min.x, min.y, min.z};
-			mesh.bbox.m_max = {max.x, max.y, max.z};
-			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
+			mesh.bbox._min = {min.x, min.y, min.z};
+			mesh.bbox._max = {max.x, max.y, max.z};
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			if ((this->assimpFlags & aiProcess_PreTransformVertices) == 0) {
