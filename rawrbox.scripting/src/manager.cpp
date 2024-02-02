@@ -7,6 +7,13 @@
 #include <rawrbox/scripting/wrappers/hooks.hpp>
 #include <rawrbox/scripting/wrappers/i18n.hpp>
 #include <rawrbox/scripting/wrappers/io.hpp>
+#include <rawrbox/scripting/wrappers/math/aabb_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/math/bbox_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/math/color_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/math/matrix_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/math/vector2_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/math/vector3_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/math/vector4_wrapper.hpp>
 #include <rawrbox/scripting/wrappers/mod.hpp>
 #include <rawrbox/scripting/wrappers/timer.hpp>
 #include <rawrbox/utils/i18n.hpp>
@@ -131,6 +138,18 @@ namespace rawrbox {
 		}
 		// -----------
 
+		// Rawrbox Math
+		rawrbox::Vector2Wrapper::registerLua(L);
+		rawrbox::Vector3Wrapper::registerLua(L);
+		rawrbox::Vector4Wrapper::registerLua(L);
+
+		rawrbox::ColorWrapper::registerLua(L);
+		rawrbox::AABBWrapper::registerLua(L);
+		rawrbox::BBOXWrapper::registerLua(L);
+
+		rawrbox::MatrixWrapper::registerLua(L);
+		// -------------
+
 		// Register plugins types ---
 		for (auto& p : _plugins)
 			p->registerTypes(L);
@@ -146,58 +165,60 @@ namespace rawrbox {
 		if (L == nullptr) throw _logger->error("LUA is not set! Reference got destroyed?");
 		// Register globals, these will be read-only & sandboxed!
 
-		auto globalTable = luabridge::getGlobalNamespace(L);
+		// OVERRIDES ----
+		luabridge::getGlobalNamespace(L)
+		    .addFunction("printTable", [](lua_State* state) {
+			    nlohmann::json json = rawrbox::LuaUtils::luaToJsonObject(state);
+			    _logger->info("{}", json.dump(1, ' ', false));
+		    })
+		    .addFunction("print", [](lua_State* state) {
+			    auto args = rawrbox::LuaUtils::getStringVariadicArgs(state);
+			    if (args.empty()) return;
 
-		// TIME UTILS ---
-		globalTable.addFunction("curtime", []() { return rawrbox::TimeUtils::curtime(); });
-		globalTable.addFunction("time", []() { return rawrbox::TimeUtils::time(); });
-		// -------------
+			    _logger->info("{}", fmt::join(args, " "));
+		    })
+		    .addFunction("include", [](lua_State* state) {
+			    if (lua_type(state, 1) != LUA_TSTRING) throw std::runtime_error("Invalid param, string expected");
+			    auto path = lua_tostring(state, 1);
 
-		// UTILS ----
-		globalTable.addFunction("printTable", [](lua_State* state) {
-			nlohmann::json json = rawrbox::LuaUtils::luaToJsonObject(state);
-			_logger->info("{}", json.dump(1, ' ', false));
-		});
+			    auto modID = rawrbox::LuaUtils::getLuaENVVar(state, "__mod_id");
+			    auto modFolder = rawrbox::LuaUtils::getLuaENVVar(state, "__mod_folder");
 
-		// Override print to support fmt?
-		globalTable.addFunction("print", [](lua_State* state) {
-			auto args = rawrbox::LuaUtils::getStringVariadicArgs(state);
-			if (args.empty()) return;
+			    auto fixedPath = LuaUtils::getContent(path, modFolder);
+			    rawrbox::LuaUtils::compileAndLoad(state, modID, fixedPath);
 
-			_logger->info("{}", fmt::join(args, " "));
-		});
-
-		globalTable.addFunction("include", [](lua_State* state) {
-			if (lua_type(state, 1) != LUA_TSTRING) throw std::runtime_error("Invalid param, string expected");
-			auto path = lua_tostring(state, 1);
-
-			auto modID = rawrbox::LuaUtils::getLuaENVVar(state, "__mod_id");
-			auto modFolder = rawrbox::LuaUtils::getLuaENVVar(state, "__mod_folder");
-
-			auto fixedPath = LuaUtils::getContent(path, modFolder);
-			rawrbox::LuaUtils::compileAndLoad(state, modID, fixedPath);
-
-			// Register file for hot-reloading
-			registerLoadedFile(modID, fixedPath);
-			// ----
-		});
+			    // Register file for hot-reloading
+			    registerLoadedFile(modID, fixedPath);
+			    // ----
+		    });
 		// ---------
 
+		// TIME UTILS ---
+		luabridge::getGlobalNamespace(L)
+		    .beginNamespace("time", {})
+		    .addFunction("curtime", []() { return rawrbox::TimeUtils::curtime(); })
+		    .addFunction("time", []() { return rawrbox::TimeUtils::time(); })
+		    .endNamespace();
+		// -------------
+
 		// MODDING ---
-		globalTable.addFunction("hasMOD", [](const std::string& id) {
-			return _mods.find(id) != _mods.end();
-		});
+		luabridge::getGlobalNamespace(L)
+		    .beginNamespace("mod", {})
+		    .addFunction("exists", [](const std::string& id) {
+			    return _mods.find(id) != _mods.end();
+		    })
+		    .addFunction("get", [](const std::string& id) {
+			    auto fnd = _mods.find(id);
+			    if (fnd == _mods.end()) throw std::runtime_error(fmt::format("Mod {} not found", id));
 
-		globalTable.addFunction("getMOD", [](const std::string& id) {
-			auto fnd = _mods.find(id);
-			if (fnd == _mods.end()) throw std::runtime_error(fmt::format("Mod {} not found", id));
-
-			return rawrbox::MODWrapper(fnd->second.get());
-		});
+			    return rawrbox::MODWrapper(fnd->second.get());
+		    })
+		    .endNamespace();
 		// ----------
 
 		// STRING ----
-		globalTable.beginNamespace("string")
+		luabridge::getGlobalNamespace(L)
+		    .beginNamespace("string", {})
 		    .addFunction("vformat", [](lua_State* state) {
 			    auto vars = rawrbox::LuaUtils::getStringVariadicArgs(state);
 			    if (vars.size() < 1) throw std::runtime_error("Missing params");
@@ -213,8 +234,8 @@ namespace rawrbox {
 		// -----------
 
 		// ENGINE ------
-		globalTable = luabridge::getGlobalNamespace(L);
-		globalTable.beginNamespace("engine")
+		luabridge::getGlobalNamespace(L)
+		    .beginNamespace("engine", {})
 		    .addProperty("deltaTime", &rawrbox::DELTA_TIME, false)
 		    .addProperty("fixedDeltaTime", &rawrbox::FIXED_DELTA_TIME, false)
 		    .addProperty("frameAlpha", &rawrbox::FRAME_ALPHA, false)
@@ -299,6 +320,9 @@ namespace rawrbox {
 			    std::chrono::milliseconds(hotReloadMs));
 			_watcher->start();
 		}
+
+		// Attempt to create the directory if it doesn't exist
+		std::filesystem::create_directory("./data");
 
 		// Setup  --
 		if (_console != nullptr) rawrbox::ConsoleWrapper::init(_console);

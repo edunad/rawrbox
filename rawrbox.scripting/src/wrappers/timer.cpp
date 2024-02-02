@@ -48,7 +48,7 @@ namespace rawrbox {
 
 	void TimerWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("timer")
+		    .beginNamespace("timer", {})
 		    // CREATE -----
 		    .addFunction("create", &rawrbox::TimerWrapper::create)
 		    .addFunction("simple", &rawrbox::TimerWrapper::simple)

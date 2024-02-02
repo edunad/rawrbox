@@ -64,12 +64,12 @@ TEST_CASE("Color should behave as expected", "[rawrbox::Color]") {
 		REQUIRE_THAT(cl2.a, Catch::Matchers::WithinAbs(1.F, 0.0001F));
 	}
 
-	SECTION("rawrbox::Color::isTransparent") {
+	SECTION("rawrbox::Color::invisible") {
 		rawrbox::Colori col = rawrbox::Colori{255, 0, 255, 255};
 		rawrbox::Colori col2 = rawrbox::Colori{255, 255, 0, 0};
 
-		REQUIRE(col.isTransparent() == false);
-		REQUIRE(col2.isTransparent() == true);
+		REQUIRE(col.invisible() == false);
+		REQUIRE(col2.invisible() == true);
 	}
 
 	SECTION("rawrbox::Color::lerp") {

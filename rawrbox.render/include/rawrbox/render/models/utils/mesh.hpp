@@ -71,20 +71,20 @@ namespace rawrbox {
 
 			// AABB ---
 			auto calcAABB = [&mesh](const rawrbox::Vector3f& point) -> void {
-				if (point.x < mesh.bbox.m_min.x) mesh.bbox.m_min.x = point.x;
-				if (point.y < mesh.bbox.m_min.y) mesh.bbox.m_min.y = point.y;
-				if (point.z < mesh.bbox.m_min.z) mesh.bbox.m_min.z = point.z;
+				if (point.x < mesh.bbox._min.x) mesh.bbox._min.x = point.x;
+				if (point.y < mesh.bbox._min.y) mesh.bbox._min.y = point.y;
+				if (point.z < mesh.bbox._min.z) mesh.bbox._min.z = point.z;
 
-				if (point.x > mesh.bbox.m_max.x) mesh.bbox.m_max.x = point.x;
-				if (point.y > mesh.bbox.m_max.y) mesh.bbox.m_max.y = point.y;
-				if (point.z > mesh.bbox.m_max.z) mesh.bbox.m_max.z = point.z;
+				if (point.x > mesh.bbox._max.x) mesh.bbox._max.x = point.x;
+				if (point.y > mesh.bbox._max.y) mesh.bbox._max.y = point.y;
+				if (point.z > mesh.bbox._max.z) mesh.bbox._max.z = point.z;
 			};
 
 			calcAABB(a);
 			calcAABB(b);
 			calcAABB(c);
 
-			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			return mesh;
@@ -123,9 +123,9 @@ namespace rawrbox {
 			mesh.totalIndex = 6;
 
 			// AABB ---
-			mesh.bbox.m_min = {-hSize.x, -hSize.y, 0};
-			mesh.bbox.m_max = {hSize.x, hSize.y, 0};
-			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
+			mesh.bbox._min = {-hSize.x, -hSize.y, 0};
+			mesh.bbox._max = {hSize.x, hSize.y, 0};
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			return mesh;
@@ -236,9 +236,9 @@ namespace rawrbox {
 			mesh.totalIndex = static_cast<uint16_t>(inds.size());
 
 			// AABB ---
-			mesh.bbox.m_min = -hSize;
-			mesh.bbox.m_max = hSize;
-			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
+			mesh.bbox._min = -hSize;
+			mesh.bbox._max = hSize;
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
@@ -267,9 +267,9 @@ namespace rawrbox {
 			mesh.merge(generateCube<M>(pos, {0.01F, 0.01F, hSize * 2}, rawrbox::Colors::Blue())); // z
 
 			// AABB ---
-			mesh.bbox.m_min = {-hSize, -hSize, -hSize};
-			mesh.bbox.m_max = {hSize, hSize, hSize};
-			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
+			mesh.bbox._min = {-hSize, -hSize, -hSize};
+			mesh.bbox._max = {hSize, hSize, hSize};
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			return mesh;
@@ -286,9 +286,9 @@ namespace rawrbox {
 			mesh.merge(generateCube<M>(pos - offset, rawrbox::Vector3f(0.15F, hSize, 0.15F) * size, cl));
 
 			// AABB ---
-			mesh.bbox.m_min = rawrbox::Vector3f(-hSize, -hSize, -hSize) * size;
-			mesh.bbox.m_max = rawrbox::Vector3f(hSize, hSize, hSize) * size;
-			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
+			mesh.bbox._min = rawrbox::Vector3f(-hSize, -hSize, -hSize) * size;
+			mesh.bbox._max = rawrbox::Vector3f(hSize, hSize, hSize) * size;
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			return mesh;
@@ -347,9 +347,9 @@ namespace rawrbox {
 			mesh.totalIndex = numIndices + numLineListIndices;
 
 			// AABB ---
-			mesh.bbox.m_min = -hSize;
-			mesh.bbox.m_max = hSize;
-			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
+			mesh.bbox._min = -hSize;
+			mesh.bbox._max = hSize;
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			return mesh;
@@ -413,9 +413,9 @@ namespace rawrbox {
 			mesh.totalIndex = numIndices + numLineListIndices;
 
 			// AABB ---
-			mesh.bbox.m_min = -hSize;
-			mesh.bbox.m_max = hSize;
-			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
+			mesh.bbox._min = -hSize;
+			mesh.bbox._max = hSize;
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			return mesh;
@@ -523,9 +523,9 @@ namespace rawrbox {
 			// AABB ---
 			auto scale = rawrbox::Vector3f{hSize, hSize, hSize};
 
-			mesh.bbox.m_min = -scale;
-			mesh.bbox.m_max = scale;
-			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
+			mesh.bbox._min = -scale;
+			mesh.bbox._max = scale;
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());

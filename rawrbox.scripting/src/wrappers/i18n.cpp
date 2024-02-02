@@ -26,7 +26,7 @@ namespace rawrbox {
 
 	void I18NWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("i18n")
+		    .beginNamespace("i18n", {})
 		    // UTILS ---
 		    .addFunction("getLanguage", &rawrbox::I18NWrapper::getLanguage)
 		    .addFunction("setLanguage", &rawrbox::I18NWrapper::setLanguage)

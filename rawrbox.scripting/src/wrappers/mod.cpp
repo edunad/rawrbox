@@ -17,6 +17,7 @@ namespace rawrbox {
 		rawrbox::LuaUtils::getVariadicArgs(ref, argTable);
 
 		luabridge::call(func, argTable);
+		// TODO: SUPPORT RETURN ARGUMENTS
 	}
 
 	std::string MODWrapper::getID() const {

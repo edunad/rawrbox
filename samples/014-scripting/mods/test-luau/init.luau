@@ -27,6 +27,10 @@ printTable({
 print(string.bytesToReadable(2323))
 print(json.encode({bla = 10}))
 
+local vec = Vector2(2330)
+print(vec.x)
+vec.x = 23
+print(vec.x)
 
 meow = function(data)
     printTable(data)

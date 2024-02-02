@@ -16,14 +16,12 @@ namespace rawrbox {
 
 	public:
 		NumberType x = 0, y = 0, z = 0, w = 0;
-
 		Vector4_t() = default;
 		explicit Vector4_t(NumberType val) : x(val), y(val), z(val), w(val) {}
-
 		Vector4_t(NumberType _x, NumberType _y, NumberType _z = 0.F, NumberType _w = 0.F) : x(_x), y(_y), z(_z), w(_w) {}
 
 		// NOLINTBEGIN(hicpp-explicit-conversions)
-		Vector4_t(std::array<NumberType, 4> val) : x(val[0]), y(val[1]), z(val[2]), w(val[3]) {}
+		Vector4_t(const std::array<NumberType, 4>& val) : x(val[0]), y(val[1]), z(val[2]), w(val[3]) {}
 		Vector4_t(Vector3_t<NumberType> val, NumberType _w = 0.F) : x(val.x), y(val.y), z(val.z), w(_w) {}
 		Vector4_t(Vector2_t<NumberType> val, NumberType _z = 0.F, NumberType _w = 0.F) : x(val.x), y(val.y), z(_z), w(_w) {}
 		// NOLINTEND(hicpp-explicit-conversions)
@@ -31,6 +29,9 @@ namespace rawrbox {
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1, 1); }
 		[[nodiscard]] int size() const { return 4; }
+		[[nodiscard]] std::string toString() const { return std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "," + std::to_string(w); }
+
+		// TODO: ADD VEC4 VARIANTS
 
 		[[nodiscard]] Vector3_t<NumberType> xyz() const { return Vector3_t<NumberType>(x, y, z); }
 		[[nodiscard]] Vector3_t<NumberType> yxz() const { return Vector3_t<NumberType>(y, x, z); }
@@ -41,6 +42,10 @@ namespace rawrbox {
 
 		[[nodiscard]] Vector2_t<NumberType> xy() const { return Vector2_t<NumberType>(x, y); }
 		[[nodiscard]] Vector2_t<NumberType> yx() const { return Vector2_t<NumberType>(y, x); }
+		[[nodiscard]] Vector2_t<NumberType> xz() const { return Vector2_t<NumberType>(x, z); }
+		[[nodiscard]] Vector2_t<NumberType> yz() const { return Vector2_t<NumberType>(y, z); }
+		[[nodiscard]] Vector2_t<NumberType> zx() const { return Vector2_t<NumberType>(z, x); }
+		[[nodiscard]] Vector2_t<NumberType> zy() const { return Vector2_t<NumberType>(z, y); }
 
 		[[nodiscard]] const std::array<NumberType, 4> data() const { return {x, y, z, w}; }
 

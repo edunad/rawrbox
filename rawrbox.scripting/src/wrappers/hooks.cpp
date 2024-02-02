@@ -38,7 +38,7 @@ namespace rawrbox {
 
 	void Hooks::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("hooks")
+		    .beginNamespace("hooks", {})
 		    .addFunction("call", &rawrbox::Hooks::call)
 		    .addFunction("add", &rawrbox::Hooks::add)
 		    .addFunction("remove", &rawrbox::Hooks::remove)

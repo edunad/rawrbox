@@ -65,7 +65,7 @@ namespace rawrbox {
 
 	void ConsoleWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("console")
+		    .beginNamespace("console", {})
 		    // UTILS ----
 		    .addFunction("clear", &ConsoleWrapper::clear)
 		    .addFunction("get", &ConsoleWrapper::get)

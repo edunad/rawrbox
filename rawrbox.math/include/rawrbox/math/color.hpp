@@ -154,7 +154,7 @@ namespace rawrbox {
 			return std::max(std::max(r, g), b);
 		}
 
-		[[nodiscard]] bool isTransparent() const { return a == 0; }
+		[[nodiscard]] bool invisible() const { return a == 0; }
 		[[nodiscard]] bool hasTransparency() const {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return a != 255;
