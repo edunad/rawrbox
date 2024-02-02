@@ -16,7 +16,9 @@
 namespace rawrbox {
 	class LuaUtils {
 	public:
-		static void compileAndLoad(lua_State* L, const std::string& chunkID, const std::filesystem::path& path);
+		static void compileAndLoadFile(lua_State* L, const std::string& chunkID, const std::filesystem::path& path);
+		static void compileAndLoadScript(lua_State* L, const std::string& chunkID, const std::string& script);
+
 		static void resume(lua_State* L, lua_State* from);
 		static void run(lua_State* L);
 		static void collect_garbage(lua_State* L);

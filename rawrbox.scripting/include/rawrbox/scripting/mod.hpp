@@ -41,6 +41,8 @@ namespace rawrbox {
 		virtual void load();
 		// ---------------
 
+		virtual void script(const std::string& script);
+
 		// UTILS ----
 		[[nodiscard]] virtual const std::string& getID() const;
 		[[nodiscard]] virtual const std::string getEntryFilePath() const;
@@ -50,12 +52,11 @@ namespace rawrbox {
 		// -----
 
 		template <typename... CallbackArgs>
-		void call(const std::string& name, CallbackArgs&&... args) {
+		luabridge::LuaResult call(const std::string& name, CallbackArgs&&... args) {
 			auto fnc = this->_modTable[name];
-			if (!fnc.isCallable()) return;
 
 			try {
-				luabridge::call(fnc, std::forward<CallbackArgs>(args)...);
+				return luabridge::call(fnc, std::forward<CallbackArgs>(args)...);
 			} catch (luabridge::LuaException& err) {
 				throw _logger->error("{}", err.what());
 			}

@@ -44,7 +44,12 @@ namespace rawrbox {
 
 	void Mod::load() {
 		if (this->_L == nullptr) throw _logger->error("Invalid lua sandbox environment");
-		rawrbox::LuaUtils::compileAndLoad(this->_L, this->getID(), this->getEntryFilePath());
+		rawrbox::LuaUtils::compileAndLoadFile(this->_L, this->getID(), this->getEntryFilePath());
+	}
+
+	void Mod::script(const std::string& script) {
+		if (this->_L == nullptr) throw _logger->error("Invalid lua sandbox environment");
+		rawrbox::LuaUtils::compileAndLoadScript(this->_L, "unknown", script);
 	}
 
 	// UTILS ----

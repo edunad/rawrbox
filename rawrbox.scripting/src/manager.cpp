@@ -92,19 +92,19 @@ namespace rawrbox {
 				  //  -----
 
 		// OTHER LIBS ---
-		rawrbox::LuaUtils::compileAndLoad(L, "SHA", "./lua/sha2.lua");
-		rawrbox::LuaUtils::compileAndLoad(L, "JSON", "./lua/json.lua");
+		rawrbox::LuaUtils::compileAndLoadFile(L, "SHA", "./lua/sha2.lua");
+		rawrbox::LuaUtils::compileAndLoadFile(L, "JSON", "./lua/json.lua");
 		// --------------
 
 		// Rawrbox LIBS ----
-		rawrbox::LuaUtils::compileAndLoad(L, "RawrBox::Math", "./lua/math.lua");
-		rawrbox::LuaUtils::compileAndLoad(L, "RawrBox::String", "./lua/string.lua");
-		rawrbox::LuaUtils::compileAndLoad(L, "RawrBox::Table", "./lua/table.lua");
+		rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Math", "./lua/math.lua");
+		rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::String", "./lua/string.lua");
+		rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Table", "./lua/table.lua");
 		// -----------------
 
 		// Rawrbox enums ---
-		// if (_console != nullptr) rawrbox::LuaUtils::compileAndLoad(_L, "RawrBox::Enums::Console", "./lua/enums/console.lua");
-		rawrbox::LuaUtils::compileAndLoad(L, "RawrBox::Enums::Input", "./lua/enums/input.lua");
+		if (_console != nullptr) rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Enums::Console", "./lua/enums/console.lua");
+		rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Enums::Input", "./lua/enums/input.lua");
 		// -----------------
 
 		// Register plugins libraries ---
@@ -185,7 +185,7 @@ namespace rawrbox {
 			    auto modFolder = rawrbox::LuaUtils::getLuaENVVar(state, "__mod_folder");
 
 			    auto fixedPath = LuaUtils::getContent(path, modFolder);
-			    rawrbox::LuaUtils::compileAndLoad(state, modID, fixedPath);
+			    rawrbox::LuaUtils::compileAndLoadFile(state, modID, fixedPath);
 
 			    // Register file for hot-reloading
 			    registerLoadedFile(modID, fixedPath);
@@ -294,7 +294,7 @@ namespace rawrbox {
 			md->second->gc(); // Cleanup
 
 			try {
-				rawrbox::LuaUtils::compileAndLoad(env, md->first, filePath);
+				rawrbox::LuaUtils::compileAndLoadFile(env, md->first, filePath);
 			} catch (const std::exception& err) {
 				_logger->printError("{}", err.what());
 			}
@@ -396,5 +396,13 @@ namespace rawrbox {
 	}
 
 	bool SCRIPTING::hotReloadEnabled() { return _hotReloadEnabled; }
+	bool SCRIPTING::isLuaFileMounted(const std::string& path) {
+		for (auto& pt : _loadedLuaFiles) {
+			auto fnd = std::find(pt.second.begin(), pt.second.end(), path) != pt.second.end();
+			if (fnd) return true;
+		};
+
+		return false;
+	}
 	// -----
 } // namespace rawrbox

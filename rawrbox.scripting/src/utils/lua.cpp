@@ -6,7 +6,8 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-	void LuaUtils::compileAndLoad(lua_State* L, const std::string& chunkID, const std::filesystem::path& path) {
+
+	void LuaUtils::compileAndLoadFile(lua_State* L, const std::string& chunkID, const std::filesystem::path& path) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 		if (!std::filesystem::exists(path)) throw std::runtime_error("File not found");
 
@@ -14,6 +15,12 @@ namespace rawrbox {
 		auto bytes = rawrbox::PathUtils::getRawData(path);
 		if (bytes.empty()) throw std::runtime_error("File empty / failed to load");
 		// --------------
+
+		compileAndLoadScript(L, chunkID, std::string(bytes.begin(), bytes.end()));
+	}
+
+	void LuaUtils::compileAndLoadScript(lua_State* L, const std::string& chunkID, const std::string& script) {
+		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 
 		// Create a new thread ----
 		auto loadThread = lua_newthread(L);
@@ -30,7 +37,7 @@ namespace rawrbox {
 		parser.allowDeclarationSyntax = true; // ?
 		parser.captureComments = false;
 
-		std::string bytecode = Luau::compile(std::string(bytes.begin(), bytes.end()), options, parser);
+		std::string bytecode = Luau::compile(script, options, parser);
 		if (bytecode.empty()) throw std::runtime_error("Failed to compile");
 		// ----------
 
