@@ -87,7 +87,7 @@ namespace rawrbox {
 
 	void Window::pollEvents() {
 		if (__WINDOWS.empty()) return;
-		glfwWaitEventsTimeout(2500);
+		glfwWaitEventsTimeout(1);
 	}
 
 	void Window::shutdown() {
@@ -328,10 +328,15 @@ namespace rawrbox {
 
 	// ------UTILS
 	void Window::close() {
-		if (GLFWHANDLE != nullptr) glfwDestroyWindow(GLFWHANDLE);
-		this->_handle = nullptr;
-		if (GLFWCURSOR != nullptr) glfwDestroyCursor(GLFWCURSOR);
-		this->_cursor = nullptr;
+		if (GLFWHANDLE != nullptr) {
+			glfwDestroyWindow(GLFWHANDLE);
+			this->_handle = nullptr;
+		}
+
+		if (GLFWCURSOR != nullptr) {
+			glfwDestroyCursor(GLFWCURSOR);
+			this->_cursor = nullptr;
+		}
 	}
 
 	rawrbox::Vector2i Window::getSize() const {
@@ -416,6 +421,10 @@ namespace rawrbox {
 	// ------EVENTS
 	void Window::callbacks_windowClose(GLFWwindow* whandle) {
 		auto& window = glfwHandleToRenderer(whandle);
+
+		glfwSetWindowShouldClose(whandle, true);
+		glfwPostEmptyEvent();
+
 		window.onWindowClose(window);
 	}
 

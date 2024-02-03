@@ -88,7 +88,7 @@ CPMDeclarePackage(libcpr
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.610
+  GIT_TAG 0.611
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"
