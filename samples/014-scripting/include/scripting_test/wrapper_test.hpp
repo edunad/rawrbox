@@ -1,5 +1,5 @@
 #pragma once
-
+/*
 #include <sol/sol.hpp>
 
 namespace rawrbox {
@@ -16,3 +16,4 @@ namespace rawrbox {
 		}
 	};
 } // namespace rawrbox
+*/

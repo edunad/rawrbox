@@ -24,10 +24,13 @@ endif()
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_UI_IMPORTS "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
-if(NOT RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-    remove_folder("${RAWRBOX_UI_IMPORTS}" "/scripting/")
-    set(RAWRBOX_UI_IMPORTS "${CLEAN_SOURCES}")
-endif()
+#if(NOT RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+#    remove_folder("${RAWRBOX_UI_IMPORTS}" "/scripting/")
+#    set(RAWRBOX_UI_IMPORTS "${CLEAN_SOURCES}")
+#endif()
+
+remove_folder("${RAWRBOX_UI_IMPORTS}" "/scripting/")
+set(RAWRBOX_UI_IMPORTS "${CLEAN_SOURCES}")
 
 if(NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     message(FATAL "RAWRBOX.UI elements require RAWRBOX.RESOURCES to be enabled!")

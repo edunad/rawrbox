@@ -2,21 +2,32 @@
 #include <rawrbox/scripting/wrappers/math/aabb_wrapper.hpp>
 
 namespace rawrbox {
-	void AABBWrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<rawrbox::AABB>("AABB",
-		    sol::constructors<rawrbox::AABB(), rawrbox::AABB(rawrbox::AABB), rawrbox::AABB(float, float, float, float)>(),
+	void AABBWrapper::registerLua(lua_State* L) {
+		luabridge::getGlobalNamespace(L)
+		    .beginClass<rawrbox::AABB>("AABB")
+		    .addConstructor<void(), void(rawrbox::AABB), void(float, float, float, float), void(const Vector2_t<float>&, const Vector2_t<float>&)>()
 
-		    "top", &AABB::top,
-		    "left", &AABB::left,
-		    "bottom", &AABB::bottom,
-		    "right", &AABB::right,
+		    .addProperty("position", &AABB::pos)
+		    .addProperty("size", &AABB::size)
 
-		    "empty", &AABB::empty,
-		    "contains", &AABB::contains,
+		    .addFunction("surfaceArea", &AABB::surfaceArea)
+		    .addFunction("top", &AABB::top)
+		    .addFunction("right", &AABB::right)
+		    .addFunction("left", &AABB::left)
+		    .addFunction("bottom", &AABB::bottom)
+		    .addFunction("empty", &AABB::empty)
 
-		    "surfaceArea", &AABB::surfaceArea,
+		    .addFunction("contains",
+			luabridge::overload<const Vector2&>(&AABB::contains),
+			luabridge::overload<const AABB&>(&AABB::contains))
 
-		    sol::meta_function::equal_to, &rawrbox::AABB::operator==,
-		    sol::meta_function::multiplication, &rawrbox::AABB::operator*);
+		    .addFunction("intersects", &AABB::intersects)
+		    .addFunction("mask", &AABB::mask)
+
+		    .addFunction("__mul", &AABB::operator*)
+		    .addFunction("__eq", &AABB::operator==)
+		    .addFunction("__ne", &AABB::operator!=)
+
+		    .endClass();
 	}
 } // namespace rawrbox

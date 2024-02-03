@@ -2,56 +2,108 @@
 #include <rawrbox/scripting/wrappers/math/vector3_wrapper.hpp>
 
 namespace rawrbox {
-	void Vector3Wrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<rawrbox::Vector3f>("Vector3",
-		    sol::constructors<rawrbox::Vector3f(), rawrbox::Vector3f(rawrbox::Vector3f), rawrbox::Vector3f(rawrbox::Vector2f, float), rawrbox::Vector3f(float), rawrbox::Vector3f(float, float), rawrbox::Vector3f(float, float, float)>(),
+	void Vector3Wrapper::registerLua(lua_State* L) {
+		luabridge::getGlobalNamespace(L)
+		    .beginClass<rawrbox::Vector3>("Vector3")
+		    .addConstructor<void(), void(rawrbox::Vector3), void(float), void(float, float, float), void(const std::array<float, 3>&), void(rawrbox::Vector2, float)>()
 
-		    "x", &Vector3f::x,
-		    "y", &Vector3f::y,
-		    "z", &Vector3f::z,
+		    .addProperty("x", &rawrbox::Vector3::x)
+		    .addProperty("y", &rawrbox::Vector3::y)
+		    .addProperty("y", &rawrbox::Vector3::z)
 
-		    "yxz", &Vector3f::yxz,
-		    "yzx", &Vector3f::yzx,
-		    "xzy", &Vector3f::xzy,
-		    "zxy", &Vector3f::zxy,
-		    "zyx", &Vector3f::zyx,
-		    "xy", &Vector3f::xy,
-		    "yx", &Vector3f::yx,
+		    .addStaticFunction("zero", &rawrbox::Vector3::zero)
+		    .addStaticFunction("one", &rawrbox::Vector3::one)
+		    .addStaticFunction("up", &rawrbox::Vector3::up)
+		    .addStaticFunction("forward", &rawrbox::Vector3::forward)
+		    .addStaticFunction("left", &rawrbox::Vector3::left)
+		    .addStaticFunction("nan", &rawrbox::Vector3::nan)
 
-		    "zero", &Vector3f::zero,
-		    "one", &Vector3f::one,
-		    "up", &Vector3f::up,
-		    "forward", &Vector3f::forward,
-		    "left", &Vector3f::forward,
+		    .addStaticFunction("mad",
+			luabridge::overload<const Vector3&, const float, const Vector3&>(&rawrbox::Vector3::mad),
+			luabridge::overload<const Vector3&, const Vector3&, const Vector3&>(&rawrbox::Vector3::mad))
 
-		    "data", &Vector3f::data,
-		    "size", &Vector3f::size,
+		    .addFunction("__tostring", &rawrbox::Vector3::toString)
+		    .addFunction("size", &rawrbox::Vector3::size)
 
-		    "clamp", sol::overload(sol::resolve<Vector3f(float, float) const>(&Vector3f::clamp), sol::resolve<Vector3f(Vector3f, Vector3f) const>(&Vector3f::clamp)),
+		    .addFunction("yxz", &rawrbox::Vector3::yxz)
+		    .addFunction("yzx", &rawrbox::Vector3::yzx)
+		    .addFunction("xzy", &rawrbox::Vector3::xzy)
+		    .addFunction("zxy", &rawrbox::Vector3::zxy)
+		    .addFunction("zyx", &rawrbox::Vector3::zyx)
 
-		    "distance", &Vector3f::distance,
-		    "length", &Vector3f::length,
-		    "sqrMagnitude", &Vector3f::sqrMagnitude,
-		    "abs", &Vector3f::abs,
-		    "angle", &Vector3f::angle,
-		    "rotateAroundOrigin", &Vector3f::rotateAroundOrigin,
-		    "lerp", &Vector3f::lerp,
-		    "normalized", &Vector3f::normalized,
-		    "dot", &Vector3f::dot,
-		    "floor", &Vector3f::floor,
-		    "round", &Vector3f::round,
-		    "ceil", &Vector3f::ceil,
-		    "cross", &Vector3f::cross,
-		    "min", &Vector3f::min,
-		    "max", &Vector3f::max,
+		    .addFunction("xy", &rawrbox::Vector3::xy)
+		    .addFunction("yx", &rawrbox::Vector3::yx)
+		    .addFunction("xz", &rawrbox::Vector3::xz)
+		    .addFunction("yz", &rawrbox::Vector3::yz)
+		    .addFunction("zx", &rawrbox::Vector3::zx)
+		    .addFunction("zy", &rawrbox::Vector3::zy)
 
-		    sol::meta_function::less_than, sol::overload(sol::resolve<bool(const Vector3f&) const>(&Vector3f::operator<), sol::resolve<bool(float) const>(&Vector3f::operator<)),
-		    sol::meta_function::less_than_or_equal_to, sol::overload(sol::resolve<bool(const Vector3f&) const>(&Vector3f::operator<=), sol::resolve<bool(float) const>(&Vector3f::operator<=)),
-		    sol::meta_function::equal_to, sol::overload(sol::resolve<bool(const Vector3f&) const>(&Vector3f::operator==), sol::resolve<bool(float) const>(&Vector3f::operator==)),
+		    .addFunction("distance", &rawrbox::Vector3::distance)
+		    .addFunction("length", &rawrbox::Vector3::length)
+		    .addFunction("sqrMagnitude", &rawrbox::Vector3::sqrMagnitude)
+		    .addFunction("abs", &rawrbox::Vector3::abs)
 
-		    sol::meta_function::addition, sol::overload(sol::resolve<Vector3f(const Vector3f&) const>(&Vector3f::operator+), sol::resolve<Vector3f(float) const>(&Vector3f::operator+)),
-		    sol::meta_function::subtraction, sol::overload(sol::resolve<Vector3f(const Vector3f&) const>(&Vector3f::operator-), sol::resolve<Vector3f(float) const>(&Vector3f::operator-)),
-		    sol::meta_function::division, sol::overload(sol::resolve<Vector3f(const Vector3f&) const>(&Vector3f::operator/), sol::resolve<Vector3f(float) const>(&Vector3f::operator/)),
-		    sol::meta_function::multiplication, sol::overload(sol::resolve<Vector3f(const Vector3f&) const>(&Vector3f::operator*), sol::resolve<Vector3f(float) const>(&Vector3f::operator*)));
+		    .addFunction("angle", &rawrbox::Vector3::angle)
+		    .addFunction("rotateAroundOrigin", &rawrbox::Vector3::rotateAroundOrigin)
+		    .addFunction("lerp", &rawrbox::Vector3::lerp)
+
+		    .addFunction("clamp",
+			luabridge::overload<float, float>(&rawrbox::Vector3::clamp),
+			luabridge::overload<Vector3, Vector3>(&rawrbox::Vector3::clamp))
+
+		    .addFunction("clampMagnitude", &rawrbox::Vector3::clampMagnitude)
+
+		    .addFunction("normalized", &rawrbox::Vector3::normalized)
+		    .addFunction("dot", &rawrbox::Vector3::dot)
+		    .addFunction("floor", &rawrbox::Vector3::floor)
+		    .addFunction("round", &rawrbox::Vector3::round)
+		    .addFunction("ceil", &rawrbox::Vector3::ceil)
+		    .addFunction("cross", &rawrbox::Vector3::cross)
+		    .addFunction("min", &rawrbox::Vector3::min)
+		    .addFunction("max", &rawrbox::Vector3::max)
+
+		    .addFunction("__add",
+			luabridge::overload<float>(&rawrbox::Vector3::operator+),
+			luabridge::overload<const Vector3&>(&rawrbox::Vector3::operator+))
+
+		    .addFunction("__sub",
+			luabridge::overload<float>(&rawrbox::Vector3::operator-),
+			luabridge::overload<const Vector3&>(&rawrbox::Vector3::operator-))
+
+		    .addFunction("__mul",
+			luabridge::overload<float>(&rawrbox::Vector3::operator*),
+			luabridge::overload<const Vector3&>(&rawrbox::Vector3::operator*))
+
+		    .addFunction("__div",
+			luabridge::overload<float>(&rawrbox::Vector3::operator/),
+			luabridge::overload<const Vector3&>(&rawrbox::Vector3::operator/))
+
+		    .addFunction("__eq",
+			luabridge::overload<float>(&rawrbox::Vector3::operator==),
+			luabridge::overload<const Vector3&>(&rawrbox::Vector3::operator==))
+
+		    .addFunction("__ne",
+			luabridge::overload<float>(&rawrbox::Vector3::operator!=),
+			luabridge::overload<const Vector3&>(&rawrbox::Vector3::operator!=))
+
+		    .addFunction("__lt",
+			luabridge::overload<float>(&rawrbox::Vector3::operator<),
+			luabridge::overload<const Vector3&>(&rawrbox::Vector3::operator<))
+
+		    .addFunction("__le",
+			luabridge::overload<float>(&rawrbox::Vector3::operator<=),
+			luabridge::overload<const Vector3&>(&rawrbox::Vector3::operator<=))
+
+		    .addFunction("__gt",
+			luabridge::overload<float>(&rawrbox::Vector3::operator>),
+			luabridge::overload<const Vector3&>(&rawrbox::Vector3::operator>))
+
+		    .addFunction("__ge",
+			luabridge::overload<float>(&rawrbox::Vector3::operator>=),
+			luabridge::overload<const Vector3&>(&rawrbox::Vector3::operator>=))
+
+		    .addFunction("__unm", [](rawrbox::Vector3& v) { return -v; })
+
+		    .endClass();
 	}
 } // namespace rawrbox

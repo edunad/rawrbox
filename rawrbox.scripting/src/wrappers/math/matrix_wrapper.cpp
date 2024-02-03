@@ -2,39 +2,55 @@
 #include <rawrbox/scripting/wrappers/math/matrix_wrapper.hpp>
 
 namespace rawrbox {
-	void MatrixWrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<rawrbox::Matrix4x4>("Matrix",
-		    sol::constructors<rawrbox::Matrix4x4(), rawrbox::Matrix4x4(const float*), rawrbox::Matrix4x4(const std::array<float, 16>)>(),
+	void MatrixWrapper::registerLua(lua_State* L) {
+		luabridge::getGlobalNamespace(L)
+		    .beginClass<rawrbox::Matrix4x4>("Matrix")
+		    .addConstructor<void(), void(const std::array<float, 16>)>()
 
-		    "zero", &Matrix4x4::zero,
-		    "identity", &Matrix4x4::identity,
+		    .addFunction("size", &rawrbox::Matrix4x4::size)
 
-		    "size", &Matrix4x4::size,
+		    .addFunction("zero", &rawrbox::Matrix4x4::zero)
+		    .addFunction("identity", &rawrbox::Matrix4x4::identity)
 
-		    "transpose", sol::overload(sol::resolve<void(const float*)>(&Matrix4x4::transpose), sol::resolve<void(const std::array<float, 16>&)>(&Matrix4x4::transpose)),
+		    .addFunction("transpose",
+			luabridge::overload<>(&rawrbox::Matrix4x4::transpose),
+			luabridge::overload<const rawrbox::Matrix4x4&>(&rawrbox::Matrix4x4::transpose))
 
-		    "translate", &Matrix4x4::translate,
-		    "scale", &Matrix4x4::scale,
-		    "billboard", &Matrix4x4::billboard,
-		    "rotate", &Matrix4x4::rotate,
-		    "rotateX", &Matrix4x4::rotateX,
-		    "rotateY", &Matrix4x4::rotateY,
-		    "rotateZ", &Matrix4x4::rotateZ,
-		    "rotateXYZ", &Matrix4x4::rotateXYZ,
-		    "mtxSRT", &Matrix4x4::mtxSRT,
+		    .addFunction("get", [](const rawrbox::Matrix4x4& self, size_t index) {
+			    return self[index];
+		    })
 
-		    "mul", sol::overload(sol::resolve<void(const rawrbox::Matrix4x4&)>(&Matrix4x4::mul), sol::resolve<void(const rawrbox::Vector3f&)>(&Matrix4x4::mul)),
-		    "add", sol::overload(sol::resolve<void(const rawrbox::Matrix4x4&)>(&Matrix4x4::add), sol::resolve<void(const rawrbox::Vector3f&)>(&Matrix4x4::add)),
+		    .addFunction("translate", &rawrbox::Matrix4x4::translate)
+		    .addFunction("scale", &rawrbox::Matrix4x4::scale)
 
-		    "mulVec", sol::overload(sol::resolve<rawrbox::Vector3f(const rawrbox::Vector3f&) const>(&Matrix4x4::mulVec), sol::resolve<rawrbox::Vector4f(const rawrbox::Vector4f&) const>(&Matrix4x4::mulVec)),
+		    .addFunction("rotate", &rawrbox::Matrix4x4::rotate)
+		    .addFunction("rotateX", &rawrbox::Matrix4x4::rotateX)
+		    .addFunction("rotateY", &rawrbox::Matrix4x4::rotateY)
+		    .addFunction("rotateZ", &rawrbox::Matrix4x4::rotateZ)
+		    .addFunction("rotateXYZ", &rawrbox::Matrix4x4::rotateXYZ)
 
-		    "inverse", &Matrix4x4::inverse,
-		    "lookAt", &Matrix4x4::lookAt,
-		    "project", &Matrix4x4::project,
+		    .addFunction("ortho", &rawrbox::Matrix4x4::ortho)
+		    .addFunction("proj", &rawrbox::Matrix4x4::proj)
+		    .addFunction("billboard", &rawrbox::Matrix4x4::billboard)
 
-		    sol::meta_function::equal_to, &Matrix4x4::operator==,
-		    sol::meta_function::index, &Matrix4x4::operator[],
-		    sol::meta_function::addition, sol::overload(sol::resolve<rawrbox::Matrix4x4(rawrbox::Matrix4x4) const>(&Matrix4x4::operator+), sol::resolve<rawrbox::Matrix4x4(rawrbox::Vector3f) const>(&Matrix4x4::operator+)),
-		    sol::meta_function::multiplication, sol::overload(sol::resolve<rawrbox::Matrix4x4(rawrbox::Matrix4x4) const>(&Matrix4x4::operator*), sol::resolve<rawrbox::Matrix4x4(rawrbox::Vector3f) const>(&Matrix4x4::operator*)));
+		    .addFunction("SRT", &rawrbox::Matrix4x4::SRT)
+		    .addFunction("inverse", &rawrbox::Matrix4x4::inverse)
+		    .addFunction("lookAt", &rawrbox::Matrix4x4::lookAt)
+
+		    .addStaticFunction("mtxTranspose", &rawrbox::Matrix4x4::mtxTranspose)
+		    .addStaticFunction("mtxInverse", &rawrbox::Matrix4x4::mtxInverse)
+		    .addStaticFunction("mtxSRT", &rawrbox::Matrix4x4::mtxSRT)
+		    .addStaticFunction("mtxLookAt", &rawrbox::Matrix4x4::mtxLookAt)
+		    .addStaticFunction("mtxOrtho", &rawrbox::Matrix4x4::mtxOrtho)
+		    .addStaticFunction("mtxProj", &rawrbox::Matrix4x4::mtxProj)
+		    .addStaticFunction("mtxProject", &rawrbox::Matrix4x4::mtxProject)
+
+		    .addFunction("__mul", luabridge::overload<rawrbox::Vector3f>(&Matrix4x4::operator*), luabridge::overload<Matrix4x4>(&Matrix4x4::operator*))
+		    .addFunction("__add", luabridge::overload<rawrbox::Vector3f>(&Matrix4x4::operator+), luabridge::overload<Matrix4x4>(&Matrix4x4::operator+))
+		    .addFunction("__div", &rawrbox::Matrix4x4::operator/)
+		    .addFunction("__eq", &rawrbox::Matrix4x4::operator==)
+		    .addFunction("__ne", &rawrbox::Matrix4x4::operator!=)
+
+		    .endClass();
 	}
 } // namespace rawrbox

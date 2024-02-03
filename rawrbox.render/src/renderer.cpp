@@ -302,7 +302,7 @@ namespace rawrbox {
 	}
 
 	// PLUGINS ---------------------------
-	const bool RendererBase::hasPlugin(const std::string& plugin) const { return this->_renderPlugins.find(plugin) != this->_renderPlugins.end(); }
+	bool RendererBase::hasPlugin(const std::string& plugin) const { return this->_renderPlugins.find(plugin) != this->_renderPlugins.end(); }
 	const std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>>& RendererBase::getPlugins() const { return this->_renderPlugins; }
 	// -----------------------------------
 

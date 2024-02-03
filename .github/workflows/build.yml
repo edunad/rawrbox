@@ -23,7 +23,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4.1.1
 
       - name: Install dependencies
         run: |
@@ -31,11 +31,11 @@ jobs:
           sudo apt install -y build-essential wget cmake libssl-dev libvpx-dev gcc-11 libgl1-mesa-glx libgl1-mesa-dev libglew-dev ninja-build python3-pip libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev libxcomposite-dev libxcursor-dev libxdamage-dev libxdmcp-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxinerama-dev libxkbfile-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev libxrender-dev libxres-dev libxss-dev libxt-dev libxtst-dev libxv-dev libxvmc-dev libxxf86vm-dev xtrans-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-xkb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev xkb-data libxcb-dri3-dev uuid-dev libxcb-util-dev
 
       - name: Cache c++
-        uses: hendrikmuhs/ccache-action@v1.2.10
+        uses: hendrikmuhs/ccache-action@v1.2.12
         with:
           append-timestamp: false
-          restore-keys: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './rawrbox.bass/CMakeLists.txt', './rawrbox.engine/CMakeLists.txt', './rawrbox.math/CMakeLists.txt', './rawrbox.render/CMakeLists.txt', './rawrbox.resources/CMakeLists.txt', './ui/rawrbox.CMakeLists.txt', './utils/rawrbox.CMakeLists.txt', './rawrbox.physics_3d/CMakeLists.txt', './rawrbox.physics_2d/CMakeLists.txt', './rawrbox.webm/CMakeLists.txt', './rawrbox.assimp/CMakeLists.txt', './rawrbox.scripting/CMakeLists.txt', './rawrbox.network/CMakeLists.txt') }}-
-          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './rawrbox.bass/CMakeLists.txt', './rawrbox.engine/CMakeLists.txt', './rawrbox.math/CMakeLists.txt', './rawrbox.render/CMakeLists.txt', './rawrbox.resources/CMakeLists.txt', './ui/rawrbox.CMakeLists.txt', './utils/rawrbox.CMakeLists.txt', './rawrbox.physics_3d/CMakeLists.txt', './rawrbox.physics_2d/CMakeLists.txt', './rawrbox.webm/CMakeLists.txt', './rawrbox.assimp/CMakeLists.txt', './rawrbox.scripting/CMakeLists.txt', './rawrbox.network/CMakeLists.txt') }}
+          restore-keys: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './rawrbox.assimp/CMakeLists.txt', './rawrbox.bass/CMakeLists.txt', './rawrbox.engine/CMakeLists.txt', './rawrbox.math/CMakeLists.txt', './rawrbox.network/CMakeLists.txt', './rawrbox.physics_2d/CMakeLists.txt', './rawrbox.physics_3d/CMakeLists.txt', './rawrbox.render/CMakeLists.txt', './rawrbox.resources/CMakeLists.txt', './rawrbox.scripting/CMakeLists.txt', './rawrbox.ui/CMakeLists.txt', './rawrbox.utils/CMakeLists.txt', './rawrbox.webm/CMakeLists.txt') }}-
+          key: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './rawrbox.assimp/CMakeLists.txt', './rawrbox.bass/CMakeLists.txt', './rawrbox.engine/CMakeLists.txt', './rawrbox.math/CMakeLists.txt', './rawrbox.network/CMakeLists.txt', './rawrbox.physics_2d/CMakeLists.txt', './rawrbox.physics_3d/CMakeLists.txt', './rawrbox.render/CMakeLists.txt', './rawrbox.resources/CMakeLists.txt', './rawrbox.scripting/CMakeLists.txt', './rawrbox.ui/CMakeLists.txt', './rawrbox.utils/CMakeLists.txt', './rawrbox.webm/CMakeLists.txt') }}
 
       - name: CMAKE Setup
         id: setup
@@ -56,10 +56,10 @@ jobs:
           ctest --test-dir ./rawrbox.render --output-on-failure
           ctest --test-dir ./rawrbox.engine --output-on-failure
           ctest --test-dir ./rawrbox.resources --output-on-failure
-        #  ctest --test-dir ./rawrbox.scripting --output-on-failure
+          ctest --test-dir ./rawrbox.scripting --output-on-failure
 
       - name: Run linter
-        uses: cpp-linter/cpp-linter-action@v2.7.2
+        uses: cpp-linter/cpp-linter-action@v2.8.0
         if: github.ref != 'refs/heads/master'
         id: linter
         env:
@@ -67,17 +67,17 @@ jobs:
         with:
           style: file
           files-changed-only: true
-          tidy-checks: ""
           extra-args: "-std=c++20 -Wall"
           version: "17"
           database: "./build/"
-          thread-comments: true
+          step-summary: true
+          thread-comments: ${{ github.event_name == 'pull_request' && 'update' }}
           no-lgtm: false
           ignore: build | _deps | .github | rawrbox.render/include/stb | rawrbox.engine/tests | rawrbox.math/tests | rawrbox.render/tests | rawrbox.resources/tests | rawrbox.utils/tests | rawrbox.scripting/tests
 
       - name: Upload build artifacts
         if: github.ref == 'refs/heads/master'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.3.0
         with:
           name: output
           path: bin

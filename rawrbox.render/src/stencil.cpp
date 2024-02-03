@@ -143,7 +143,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::drawTriangle(const rawrbox::Vector2f& a, const rawrbox::Vector2f& aUV, const rawrbox::Color& colA, const rawrbox::Vector2f& b, const rawrbox::Vector2f& bUV, const rawrbox::Color& colB, const rawrbox::Vector2f& c, const rawrbox::Vector2f& cUV, const rawrbox::Color& colC) {
-		if (colA.isTransparent() && colB.isTransparent() && colC.isTransparent()) return;
+		if (colA.invisible() && colB.invisible() && colC.invisible()) return;
 		uint32_t textureID = rawrbox::WHITE_TEXTURE->getTextureID();
 
 		// Setup --------
@@ -183,7 +183,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd, uint32_t atlas) {
-		if (col.isTransparent()) return;
+		if (col.invisible()) return;
 
 		// Setup --------
 		this->setupDrawCall(this->_2dPipeline);
@@ -206,7 +206,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col, size_t roundness, float angleStart, float angleEnd) {
-		if (col.isTransparent()) return;
+		if (col.invisible()) return;
 
 		auto radius = size / 2;
 		auto targetPos = pos + radius;
@@ -235,7 +235,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const rawrbox::Color& col) {
-		if (col.isTransparent()) return;
+		if (col.invisible()) return;
 
 		rawrbox::StencilOutline outline = {1.F, 0.F}; // Default line size
 		if (this->_outline.isSet()) outline = this->_outline;
@@ -278,7 +278,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, rawrbox::Alignment alignX, rawrbox::Alignment alignY) {
-		if (col.isTransparent() || text.empty()) return;
+		if (col.invisible() || text.empty()) return;
 
 		rawrbox::Vector2f startpos = pos;
 		rawrbox::Vector2f tsize = font.getStringSize(text);

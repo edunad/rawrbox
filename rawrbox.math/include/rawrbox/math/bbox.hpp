@@ -9,26 +9,29 @@ namespace rawrbox {
 		using BBOXType = BBOX_t<NumberType>;
 
 	public:
-		rawrbox::Vector3f m_min = {};
-		rawrbox::Vector3f m_max = {};
-		rawrbox::Vector3f m_size = {};
+		rawrbox::Vector3f _min = {};
+		rawrbox::Vector3f _max = {};
+		rawrbox::Vector3f _size = {};
+
+		BBOX_t() = default;
+		BBOX_t(const Vector3_t<NumberType>& min, const Vector3_t<NumberType>& max, const Vector3_t<NumberType>& size) : _min(min), _max(max), _size(size) {}
 
 		[[nodiscard]] bool isEmpty() const {
-			return this->m_size == 0;
+			return this->_size == 0;
 		}
 
 		[[nodiscard]] const rawrbox::Vector3f& size() const {
-			return this->m_size;
+			return this->_size;
 		}
 
 		void combine(const BBOX_t<NumberType>& b) {
-			this->m_min = {std::min(this->m_min.x, b.m_min.x), std::min(this->m_min.y, b.m_min.y), std::min(this->m_min.z, b.m_min.z)};
-			this->m_max = {std::max(this->m_max.x, b.m_max.x), std::max(this->m_max.y, b.m_max.y), std::max(this->m_max.z, b.m_max.z)};
+			this->_min = {std::min(this->_min.x, b._min.x), std::min(this->_min.y, b._min.y), std::min(this->_min.z, b._min.z)};
+			this->_max = {std::max(this->_max.x, b._max.x), std::max(this->_max.y, b._max.y), std::max(this->_max.z, b._max.z)};
 
-			this->m_size = m_min.abs() + m_max.abs();
+			this->_size = _min.abs() + _max.abs();
 		}
 
-		bool operator==(const BBOX_t<NumberType>& other) const { return this->m_size == other.m_size; }
+		bool operator==(const BBOX_t<NumberType>& other) const { return this->_size == other._size; }
 		bool operator!=(const BBOX_t<NumberType>& other) const { return !operator==(other); }
 	};
 

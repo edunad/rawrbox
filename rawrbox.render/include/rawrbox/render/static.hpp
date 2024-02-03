@@ -25,7 +25,7 @@ namespace rawrbox {
 	constexpr auto MAX_POST_DATA = 2;
 
 	// QUICK ACCESS ---
-	extern uint32_t FRAME;
+	extern uint64_t FRAME;
 
 	extern Diligent::RefCntAutoPtr<Diligent::IShaderSourceInputStreamFactory> SHADER_FACTORY;
 

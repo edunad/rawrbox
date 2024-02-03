@@ -72,6 +72,10 @@ namespace rawrbox {
 			    std::clamp(y, min.y, max.y)};
 		}
 
+		[[nodiscard]] NumberType sqrMagnitude() const {
+			return static_cast<NumberType>(std::pow(x, 2) + std::pow(y, 2));
+		}
+
 		[[nodiscard]] VecType clampMagnitude(float max) const {
 			float mag = this->sqrMagnitude();
 			if (mag > max * max) {
@@ -83,7 +87,7 @@ namespace rawrbox {
 				return {x * max, y * max};
 			}
 
-			return this;
+			return *this;
 		}
 
 		[[nodiscard]] VecType min(const VecType& other) const
@@ -98,16 +102,18 @@ namespace rawrbox {
 			return {std::max(x, other.x), std::max(y, other.y)};
 		}
 
-		[[nodiscard]] NumberType atan2() const {
+		[[nodiscard]] NumberType atan2() const
+			requires(std::is_same_v<NumberType, float>)
+		{
 			return std::atan2(y, x);
 		}
 
 		static VecType sinCos(float radians) {
-			return VecType(std::sin(radians), std::cos(radians));
+			return {std::sin(radians), std::cos(radians)};
 		}
 
 		static VecType cosSin(float radians) {
-			return VecType(std::cos(radians), std::sin(radians));
+			return {std::cos(radians), std::sin(radians)};
 		}
 
 		static VecType intersects(const VecType& a1, const VecType& a2, const VecType& b1, const VecType& b2) {

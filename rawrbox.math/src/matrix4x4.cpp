@@ -477,6 +477,12 @@ namespace rawrbox {
 		return res;
 	}
 
+	rawrbox::Matrix4x4 Matrix4x4::operator/(rawrbox::Matrix4x4 other) const {
+		other.inverse();
+		other.mul(*this);
+		return other;
+	}
+
 	bool Matrix4x4::operator==(const rawrbox::Matrix4x4& other) const {
 		return std::equal(this->mtx.begin(), this->mtx.end(), other.mtx.begin());
 	}

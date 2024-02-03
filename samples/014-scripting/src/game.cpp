@@ -1,105 +1,78 @@
-
-
 #ifdef RAWRBOX_BASS
 	#include <rawrbox/bass/resources/sound.hpp>
-	#include <rawrbox/bass/scripting/plugin.hpp>
+// #include <rawrbox/bass/scripting/plugin.hpp>
 #endif
 
 #ifdef RAWRBOX_NETWORK
-	#include <rawrbox/network/scripting/plugin.hpp>
+// #include <rawrbox/network/scripting/plugin.hpp>
 #endif
 
-#include <rawrbox/render_temp/camera/orbital.hpp>
-#include <rawrbox/render_temp/model/utils/mesh.hpp>
-#include <rawrbox/render_temp/resources/font.hpp>
-#include <rawrbox/render_temp/resources/texture.hpp>
-#include <rawrbox/render_temp/scripting/plugin.hpp>
-#include <rawrbox/render_temp/static.hpp>
-#include <rawrbox/resources/manager.hpp>
-#include <rawrbox/resources/scripting/plugin.hpp>
-#include <rawrbox/scripting/scripting.hpp>
-
 #ifdef RAWRBOX_UI
-	#include <rawrbox/ui/scripting/plugin.hpp>
+// #include <rawrbox/ui/scripting/plugin.hpp>
 	#include <rawrbox/ui/static.hpp>
 #endif
 
+#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/resources/manager.hpp>
+#include <rawrbox/scripting/manager.hpp>
 #include <rawrbox/utils/timer.hpp>
 
 #include <scripting_test/game.hpp>
 #include <scripting_test/wrapper_test.hpp>
 
-#include <fmt/format.h>
-
 namespace scripting_test {
 	void Game::setupGLFW() {
-		this->_window = std::make_unique<rawrbox::Window>();
-		this->_window->setMonitor(-1);
-		this->_window->setTitle("SCRIPTING TEST");
-		this->_window->setRenderer<>(
-		    bgfx::RendererType::Count, [this]() { this->drawOverlay(); }, [this]() { this->drawWorld(); });
-		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
-		this->_window->onIntroCompleted += [this]() {
-			this->loadContent();
-		};
+#ifdef _DEBUG
+		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
+#else
+		auto window = rawrbox::Window::createWindow();
+#endif
+		window->setMonitor(-1);
+		window->setTitle("SCRIPTING TEST");
+		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
+		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
 
 	void Game::init() {
-		if (this->_window == nullptr) return;
+		auto window = rawrbox::Window::getWindow();
+
+		// Setup renderer
+		auto render = window->createRenderer();
+		render->skipIntros(true);
+		render->onIntroCompleted = [this]() { this->loadContent(); };
+		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+			if (pass == rawrbox::DrawPass::PASS_OPAQUE) {
+				this->drawWorld();
+			} else {
+				this->drawOverlay();
+			}
+		});
+		// ---------------
 
 		// Setup camera
-		auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+		auto cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
 
-#ifdef RAWRBOX_UI
-		// SETUP UI
-		this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*this->_window);
-		// ----
-#endif
-
-		// Setup loaders
+		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 #ifdef RAWRBOX_BASS
 		rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
 #endif
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
-		// ----------
+		//  --------------
 
-		// Setup scripting
-		rawrbox::SCRIPTING::registerPlugin<rawrbox::RenderPlugin>(this->_window.get());
-		rawrbox::SCRIPTING::registerPlugin<rawrbox::ResourcesPlugin>();
-
-#ifdef RAWRBOX_BASS
-		rawrbox::SCRIPTING::registerPlugin<rawrbox::BASSPlugin>();
-#endif
-
-#ifdef RAWRBOX_NETWORK
-		rawrbox::SCRIPTING::registerPlugin<rawrbox::NetworkPlugin>();
-#endif
-
+		// SETUP UI
 #ifdef RAWRBOX_UI
-		rawrbox::SCRIPTING::registerPlugin<rawrbox::UIPlugin>(this->_ROOT_UI.get());
+		this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*window);
 #endif
-
-		// Custom non-plugin ---
-		rawrbox::SCRIPTING::registerType<rawrbox::TestWrapper>();
-		rawrbox::SCRIPTING::onRegisterGlobals += [this](rawrbox::Mod* mod) {
-			mod->getEnvironment()["test"] = rawrbox::TestWrapper();
-			mod->getEnvironment()["test_model"] = [this]() -> sol::object {
-				if (!this->_ready || this->_model == nullptr) return sol::nil;
-				return this->_model->getScriptingWrapper();
-			};
-
-			mod->getEnvironment()["test_model2"] = [this]() -> sol::object {
-				if (!this->_ready || this->_instance == nullptr) return sol::nil;
-				return this->_instance->getScriptingWrapper();
-			};
-		};
 		// ----
 
+		rawrbox::SCRIPTING::setConsole(this->_console.get());
 		rawrbox::SCRIPTING::init(2000); // Check files every 2 seconds
 
 		// Load lua mods
@@ -107,11 +80,87 @@ namespace scripting_test {
 		rawrbox::SCRIPTING::call("init");
 		// ----
 
-		this->_window->initializeBGFX();
+		render->init();
+
+		/*
+				// Setup camera
+				auto cam = this->_window->setupCamera<rawrbox::CameraOrbital>(*this->_window);
+				cam->setPos({0.F, 5.F, -5.F});
+				cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
+				// --------------
+
+		#ifdef RAWRBOX_UI
+				// SETUP UI
+				this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*this->_window);
+				// ----
+		#endif
+
+				// Setup loaders
+				rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
+		#ifdef RAWRBOX_BASS
+				rawrbox::RESOURCES::addLoader<rawrbox::BASSLoader>();
+		#endif
+				rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
+				// ----------
+
+				// Setup scripting
+				rawrbox::SCRIPTING::registerPlugin<rawrbox::RenderPlugin>(this->_window.get());
+				rawrbox::SCRIPTING::registerPlugin<rawrbox::ResourcesPlugin>();
+
+		#ifdef RAWRBOX_BASS
+				rawrbox::SCRIPTING::registerPlugin<rawrbox::BASSPlugin>();
+		#endif
+
+		#ifdef RAWRBOX_NETWORK
+				rawrbox::SCRIPTING::registerPlugin<rawrbox::NetworkPlugin>();
+		#endif
+
+		#ifdef RAWRBOX_UI
+				rawrbox::SCRIPTING::registerPlugin<rawrbox::UIPlugin>(this->_ROOT_UI.get());
+		#endif
+
+				// Custom non-plugin ---
+				rawrbox::SCRIPTING::registerType<rawrbox::TestWrapper>();
+				rawrbox::SCRIPTING::onRegisterGlobals += [this](rawrbox::Mod* mod) {
+					mod->getEnvironment()["test"] = rawrbox::TestWrapper();
+					mod->getEnvironment()["test_model"] = [this]() -> sol::object {
+						if (!this->_ready || this->_model == nullptr) return sol::nil;
+						return this->_model->getScriptingWrapper();
+					};
+
+					mod->getEnvironment()["test_model2"] = [this]() -> sol::object {
+						if (!this->_ready || this->_instance == nullptr) return sol::nil;
+						return this->_instance->getScriptingWrapper();
+					};
+				};
+				// ----
+
+				rawrbox::SCRIPTING::init(2000); // Check files every 2 seconds
+
+				// Load lua mods
+				rawrbox::SCRIPTING::load();
+				rawrbox::SCRIPTING::call("init");
+				// ----
+		*/
 	}
 
 	void Game::loadContent() {
-		std::vector initialContentFiles = {
+
+		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
+		    {"./content/textures/crate_hl1.png", 0}};
+
+#ifdef RAWRBOX_UI
+		initialContentFiles.insert(initialContentFiles.begin(), rawrbox::UI_RESOURCES.begin(), rawrbox::UI_RESOURCES.end()); // Insert the UI resources
+#endif
+
+		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
+			rawrbox::runOnRenderThread([this]() {
+				rawrbox::BindlessManager::processBarriers(); // IMPORTANT: BARRIERS NEED TO BE PROCESSED AFTER LOADING ALL THE CONTENT
+				this->contentLoaded();
+			});
+		});
+
+		/*std::vector initialContentFiles = {
 		    std::make_pair<std::string, uint32_t>("./content/textures/crate_hl1.png", 0)};
 
 #ifdef RAWRBOX_UI
@@ -135,10 +184,11 @@ namespace scripting_test {
 				rawrbox::runOnRenderThread([this]() { this->contentLoaded(); });
 			}
 		});
-		// -----
+		// -----*/
 	}
 
 	void Game::contentLoaded() {
+		if (this->_ready) return;
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./content/textures/crate_hl1.png")->get();
 		this->_model->setOptimizable(false);
 
@@ -160,52 +210,27 @@ namespace scripting_test {
 		this->_model->upload();
 		this->_ready = true;
 
-		rawrbox::SCRIPTING::call("onReady");
+		// rawrbox::SCRIPTING::call("onReady");
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
+			rawrbox::Window::shutdown();
+		} else {
 #ifdef RAWRBOX_UI
-		this->_ROOT_UI.reset();
+			this->_ROOT_UI.reset();
 #endif
-
-		this->_model.reset();
-		this->_instance.reset();
-
-		rawrbox::RESOURCES::shutdown();
-		rawrbox::SCRIPTING::shutdown();
-
-		this->_window->unblockPoll();
-		this->_window.reset();
+			rawrbox::SCRIPTING::shutdown();
+			rawrbox::RESOURCES::shutdown();
+		}
 	}
 
 	void Game::pollEvents() {
-		if (this->_window == nullptr) return;
-		this->_window->pollEvents();
+		rawrbox::Window::pollEvents();
 	}
 
 	void Game::update() {
-		if (this->_window == nullptr) return;
-		this->_window->update();
-
-		if (!this->_ready) return;
-
-#ifdef RAWRBOX_UI
-		this->_ROOT_UI->update();
-#endif
-
-		rawrbox::SCRIPTING::call("update");
-	}
-
-	void Game::printFrames() {
-		const bgfx::Stats* stats = bgfx::getStats();
-
-		bgfx::dbgTextPrintf(1, 4, 0x6f, "GPU %0.6f [ms]", double(stats->gpuTimeEnd - stats->gpuTimeBegin) * 1000.0 / stats->gpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 5, 0x6f, "CPU %0.6f [ms]", double(stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000.0 / stats->cpuTimerFreq);
-		bgfx::dbgTextPrintf(1, 7, 0x5f, fmt::format("TRIANGLES: {}", stats->numPrims[bgfx::Topology::TriList]).c_str());
-		bgfx::dbgTextPrintf(1, 8, 0x5f, fmt::format("DRAW CALLS: {}", stats->numDraw).c_str());
-		bgfx::dbgTextPrintf(1, 9, 0x5f, fmt::format("COMPUTE CALLS: {}", stats->numCompute).c_str());
+		rawrbox::Window::update();
 	}
 
 	void Game::drawWorld() {
@@ -216,8 +241,7 @@ namespace scripting_test {
 
 	void Game::drawOverlay() {
 		if (!this->_ready) return;
-
-		rawrbox::SCRIPTING::call("drawOverlay");
+			// rawrbox::SCRIPTING::call("drawOverlay");
 
 #ifdef RAWRBOX_UI
 		this->_ROOT_UI->render();
@@ -225,21 +249,6 @@ namespace scripting_test {
 	}
 
 	void Game::draw() {
-		if (this->_window == nullptr) return;
-
-		// DEBUG ----
-		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(1, 1, 0x1f, "014-scripting");
-		bgfx::dbgTextPrintf(1, 2, 0x3f, "Description: SCRIPTING test");
-		this->printFrames();
-		// -----------
-
-		if (!this->_ready) {
-			bgfx::dbgTextPrintf(1, 10, 0x70, "                                   ");
-			bgfx::dbgTextPrintf(1, 11, 0x70, "          LOADING CONTENT          ");
-			bgfx::dbgTextPrintf(1, 12, 0x70, "                                   ");
-		}
-
-		this->_window->render(); // Commit primitives
+		rawrbox::Window::render(); // Draw world, overlay & commit primitives
 	}
 } // namespace scripting_test

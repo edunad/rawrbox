@@ -39,7 +39,7 @@ option(RAWRBOX_BUILD_RAWRBOX_ASSIMP "Build assimp & add model loading support" O
 option(RAWRBOX_BUILD_RAWRBOX_WEBM "Build libwebm & add video loading support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_NETWORK "Build network support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING "Build lua & mod support" OFF)
-option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT "Enable scripting LuaJIT support (CURRENTLY BROKEN)" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE "Enable unsafe scripting (io / etc)" OFF)
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" OFF)
 option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
 
@@ -65,7 +65,8 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
     set(RAWRBOX_BUILD_RAWRBOX_WEBM ON)
     set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
-    #set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING ON)
+    set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING ON)
+    set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE ON)
     set(RAWRBOX_BUILD_QHULL ON)
 endif()
 
@@ -213,10 +214,10 @@ if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
    add_subdirectory("rawrbox.network")
 endif()
 
-#if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-#    message(STATUS "Enabled RAWRBOX.SCRIPTING support")
-#    add_subdirectory("rawrbox.scripting")
-#endif()
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    message(STATUS "Enabled RAWRBOX.SCRIPTING support")
+    add_subdirectory("rawrbox.scripting")
+endif()
 
 add_subdirectory("rawrbox.render")
 

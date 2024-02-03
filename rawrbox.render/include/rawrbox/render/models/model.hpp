@@ -9,7 +9,7 @@
 #include <rawrbox/render/utils/anim.hpp>
 
 #ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/render/scripting/wrappers/model/model_wrapper.hpp>
+	// #include <rawrbox/render/scripting/wrappers/model/model_wrapper.hpp>
 	#include <sol/sol.hpp>
 #endif
 
@@ -189,7 +189,7 @@ namespace rawrbox {
 #ifdef RAWRBOX_SCRIPTING
 		void initializeLua() override {
 			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
-			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelWrapper(this->shared_from_this()));
+			// this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelWrapper(this->shared_from_this()));
 		}
 #endif
 
@@ -475,10 +475,16 @@ namespace rawrbox {
 				// -------------------
 
 				// Update uniforms -----
+				/*
 				bool buffersUpdated = false;
 				if (this->_material->bindVertexUniforms(*mesh)) buffersUpdated = true;
 				if (this->_material->bindVertexSkinnedUniforms(*mesh)) buffersUpdated = true;
 				if (this->_material->bindPixelUniforms(*mesh)) buffersUpdated = true;
+				*/
+
+				this->_material->bindVertexUniforms(*mesh);
+				this->_material->bindVertexSkinnedUniforms(*mesh);
+				this->_material->bindPixelUniforms(*mesh);
 
 				rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix() * mesh->getMatrix());
 				// -----------

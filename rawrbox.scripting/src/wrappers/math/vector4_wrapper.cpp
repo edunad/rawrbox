@@ -2,50 +2,98 @@
 #include <rawrbox/scripting/wrappers/math/vector4_wrapper.hpp>
 
 namespace rawrbox {
-	void Vector4Wrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<rawrbox::Vector4f>("Vector4",
-		    sol::constructors<rawrbox::Vector4f(), rawrbox::Vector3f(rawrbox::Vector4f), rawrbox::Vector4f(float), rawrbox::Vector4f(rawrbox::Vector3f, float), rawrbox::Vector4f(rawrbox::Vector2f, float, float), rawrbox::Vector4f(float, float, float, float)>(),
+	void Vector4Wrapper::registerLua(lua_State* L) {
+		luabridge::getGlobalNamespace(L)
+		    .beginClass<rawrbox::Vector4>("Vector4")
 
-		    "x", &Vector4f::x,
-		    "y", &Vector4f::y,
-		    "z", &Vector4f::z,
-		    "w", &Vector4f::w,
+		    .addConstructor<void(), void(rawrbox::Vector4), void(float), void(float, float, float, float), void(const std::array<float, 4>&), void(rawrbox::Vector3, float), void(rawrbox::Vector2, float, float)>()
 
-		    "xyz", &Vector4f::xyz,
-		    "yxz", &Vector4f::yxz,
-		    "yzx", &Vector4f::yzx,
-		    "xzy", &Vector4f::xzy,
-		    "zxy", &Vector4f::zxy,
-		    "zyx", &Vector4f::zyx,
-		    "xy", &Vector4f::xy,
-		    "yx", &Vector4f::yx,
+		    .addProperty("x", &rawrbox::Vector4::x)
+		    .addProperty("y", &rawrbox::Vector4::y)
+		    .addProperty("y", &rawrbox::Vector4::z)
+		    .addProperty("w", &rawrbox::Vector4::w)
 
-		    "data", &Vector4f::data,
+		    .addStaticFunction("zero", &rawrbox::Vector4::zero)
+		    .addStaticFunction("one", &rawrbox::Vector4::one)
 
-		    "length", &Vector4f::length,
-		    "size", &Vector4f::size,
-		    "sqrMagnitude", &Vector4f::sqrMagnitude,
-		    "normalized", &Vector4f::normalized,
+		    .addFunction("size", &rawrbox::Vector4::size)
+		    .addFunction("__tostring", &rawrbox::Vector4::toString)
 
-		    "clamp", sol::overload(sol::resolve<Vector4f(float, float) const>(&Vector4f::clamp), sol::resolve<Vector4f(Vector4f, Vector4f) const>(&Vector4f::clamp)),
+		    .addFunction("yxz", &rawrbox::Vector4::yxz)
+		    .addFunction("yzx", &rawrbox::Vector4::yzx)
+		    .addFunction("xzy", &rawrbox::Vector4::xzy)
+		    .addFunction("zxy", &rawrbox::Vector4::zxy)
+		    .addFunction("zyx", &rawrbox::Vector4::zyx)
 
-		    "lerp", &Vector4f::lerp,
-		    "toEuler", &Vector4f::toEuler,
-		    "toAxis", &Vector4f::toAxis,
-		    "toQuat", &Vector4f::toQuat,
-		    "lookRotation", &Vector4f::lookRotation,
-		    "inverse", &Vector4f::inverse,
-		    "interpolate", &Vector4f::interpolate,
-		    "min", &Vector4f::min,
-		    "max", &Vector4f::max,
+		    .addFunction("xy", &rawrbox::Vector4::xy)
+		    .addFunction("yx", &rawrbox::Vector4::yx)
+		    .addFunction("xz", &rawrbox::Vector4::xz)
+		    .addFunction("yz", &rawrbox::Vector4::yz)
+		    .addFunction("zx", &rawrbox::Vector4::zx)
+		    .addFunction("zy", &rawrbox::Vector4::zy)
 
-		    sol::meta_function::less_than, sol::overload(sol::resolve<bool(const Vector4f&) const>(&Vector4f::operator<), sol::resolve<bool(float) const>(&Vector4f::operator<)),
-		    sol::meta_function::less_than_or_equal_to, sol::overload(sol::resolve<bool(const Vector4f&) const>(&Vector4f::operator<=), sol::resolve<bool(float) const>(&Vector4f::operator<=)),
-		    sol::meta_function::equal_to, sol::overload(sol::resolve<bool(const Vector4f&) const>(&Vector4f::operator==), sol::resolve<bool(float) const>(&Vector4f::operator==)),
+		    .addFunction("length", &rawrbox::Vector4::length)
+		    .addFunction("sqrMagnitude", &rawrbox::Vector4::sqrMagnitude)
+		    .addFunction("normalized", &rawrbox::Vector4::normalized)
 
-		    sol::meta_function::addition, sol::overload(sol::resolve<Vector4f(const Vector4f&) const>(&Vector4f::operator+), sol::resolve<Vector4f(float) const>(&Vector4f::operator+)),
-		    sol::meta_function::subtraction, sol::overload(sol::resolve<Vector4f(const Vector4f&) const>(&Vector4f::operator-), sol::resolve<Vector4f(float) const>(&Vector4f::operator-)),
-		    sol::meta_function::division, sol::overload(sol::resolve<Vector4f(const Vector4f&) const>(&Vector4f::operator/), sol::resolve<Vector4f(float) const>(&Vector4f::operator/)),
-		    sol::meta_function::multiplication, sol::overload(sol::resolve<Vector4f(const Vector4f&) const>(&Vector4f::operator*), sol::resolve<Vector4f(float) const>(&Vector4f::operator*)));
+		    .addFunction("clamp",
+			luabridge::overload<float, float>(&rawrbox::Vector4::clamp),
+			luabridge::overload<Vector4, Vector4>(&rawrbox::Vector4::clamp))
+
+		    .addFunction("lerp", &rawrbox::Vector4::lerp)
+		    .addFunction("toEuler", &rawrbox::Vector4::toEuler)
+		    .addFunction("toAxis", &rawrbox::Vector4::toAxis)
+
+		    .addStaticFunction("toQuat", &rawrbox::Vector4::toQuat)
+		    .addStaticFunction("lookRotation", &rawrbox::Vector4::lookRotation)
+
+		    .addFunction("inverse", &rawrbox::Vector4::inverse)
+		    .addFunction("interpolate", &rawrbox::Vector4::interpolate)
+		    .addFunction("min", &rawrbox::Vector4::min)
+		    .addFunction("max", &rawrbox::Vector4::max)
+
+		    .addFunction("__add",
+			luabridge::overload<float>(&rawrbox::Vector4::operator+),
+			luabridge::overload<const Vector4&>(&rawrbox::Vector4::operator+))
+
+		    .addFunction("__sub",
+			luabridge::overload<float>(&rawrbox::Vector4::operator-),
+			luabridge::overload<const Vector4&>(&rawrbox::Vector4::operator-))
+
+		    .addFunction("__mul",
+			luabridge::overload<float>(&rawrbox::Vector4::operator*),
+			luabridge::overload<const Vector4&>(&rawrbox::Vector4::operator*))
+
+		    .addFunction("__div",
+			luabridge::overload<float>(&rawrbox::Vector4::operator/),
+			luabridge::overload<const Vector4&>(&rawrbox::Vector4::operator/))
+
+		    .addFunction("__eq",
+			luabridge::overload<float>(&rawrbox::Vector4::operator==),
+			luabridge::overload<const Vector4&>(&rawrbox::Vector4::operator==))
+
+		    .addFunction("__ne",
+			luabridge::overload<float>(&rawrbox::Vector4::operator!=),
+			luabridge::overload<const Vector4&>(&rawrbox::Vector4::operator!=))
+
+		    .addFunction("__lt",
+			luabridge::overload<float>(&rawrbox::Vector4::operator<),
+			luabridge::overload<const Vector4&>(&rawrbox::Vector4::operator<))
+
+		    .addFunction("__le",
+			luabridge::overload<float>(&rawrbox::Vector4::operator<=),
+			luabridge::overload<const Vector4&>(&rawrbox::Vector4::operator<=))
+
+		    .addFunction("__gt",
+			luabridge::overload<float>(&rawrbox::Vector4::operator>),
+			luabridge::overload<const Vector4&>(&rawrbox::Vector4::operator>))
+
+		    .addFunction("__ge",
+			luabridge::overload<float>(&rawrbox::Vector4::operator>=),
+			luabridge::overload<const Vector4&>(&rawrbox::Vector4::operator>=))
+
+		    .addFunction("__unm", [](rawrbox::Vector4& v) { return -v; })
+
+		    .endClass();
 	}
 } // namespace rawrbox

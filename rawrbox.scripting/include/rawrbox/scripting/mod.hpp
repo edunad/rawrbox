@@ -1,50 +1,65 @@
-#pragma once
-#include <rawrbox/scripting/utils/lua.hpp>
 
-#include <sol/sol.hpp>
+#pragma once
+
+#include <rawrbox/scripting/utils/lua.hpp>
+#include <rawrbox/utils/logger.hpp>
 
 #include <filesystem>
-#include <string>
+#include <memory>
 
 namespace rawrbox {
-	class Scripting;
-
 	class Mod {
-	protected:
-		sol::environment _environment;
-		sol::table _modTable;
+		// LUA ----
+		lua_State* _L = nullptr;
+		// --------
 
+		// TABLE ---
+		luabridge::LuaRef _modTable;
+		// ---------
+
+		// LOGGER ------
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Mod");
+		// -------------
+
+		// Settings ---
 		std::filesystem::path _folder;
-		std::string _id;
+		std::string _id = "UNKNOWN";
+		// -----------
 
 	public:
-		std::function<void(std::filesystem::path)> onLUAReload = nullptr;
-
-		Mod(std::string id, std::filesystem::path folderName);
-		Mod(const Mod&) = default;
+		Mod(const std::string id, std::filesystem::path folderName);
+		Mod(const Mod&) = delete;
 		Mod(Mod&&) = delete;
-		Mod& operator=(const Mod&) = default;
+		Mod& operator=(const Mod&) = delete;
 		Mod& operator=(Mod&&) = delete;
 		virtual ~Mod();
 
 		virtual void init();
-		virtual bool load();
-		virtual void preLoad();
+		virtual void gc();
+
+		// LOADING -------
+		virtual void load();
+		// ---------------
+
+		virtual void script(const std::string& script);
 
 		// UTILS ----
 		[[nodiscard]] virtual const std::string& getID() const;
 		[[nodiscard]] virtual const std::string getEntryFilePath() const;
 		[[nodiscard]] virtual const std::filesystem::path& getFolder() const;
 
-		virtual sol::environment& getEnvironment();
+		virtual lua_State* getEnvironment();
 		// -----
 
 		template <typename... CallbackArgs>
-		void call(const std::string& name, CallbackArgs&&... args) {
-			sol::function func = this->_modTable[name];
-			if (func.get_type() != sol::type::function) return;
+		luabridge::LuaResult call(const std::string& name, CallbackArgs&&... args) {
+			auto fnc = this->_modTable[name];
 
-			rawrbox::LuaUtils::runCallback(func, this->_modTable, std::forward<CallbackArgs>(args)...);
+			try {
+				return luabridge::call(fnc, std::forward<CallbackArgs>(args)...);
+			} catch (luabridge::LuaException& err) {
+				throw _logger->error("{}", err.what());
+			}
 		}
 	};
 } // namespace rawrbox

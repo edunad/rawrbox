@@ -2,47 +2,90 @@
 #include <rawrbox/scripting/wrappers/math/vector2_wrapper.hpp>
 
 namespace rawrbox {
-	void Vector2Wrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<rawrbox::Vector2f>("Vector2",
-		    sol::constructors<rawrbox::Vector2f(), rawrbox::Vector2f(rawrbox::Vector2f), rawrbox::Vector2f(float), rawrbox::Vector2f(float, float)>(),
+	void Vector2Wrapper::registerLua(lua_State* L) {
+		luabridge::getGlobalNamespace(L)
+		    .beginClass<rawrbox::Vector2>("Vector2")
+		    .addConstructor<void(), void(rawrbox::Vector2), void(float), void(float, float), void(std::array<float, 2>)>()
 
-		    "x", &Vector2f::x,
-		    "y", &Vector2f::y,
-		    "yx", &Vector2f::yx,
+		    .addProperty("x", &rawrbox::Vector2::x)
+		    .addProperty("y", &rawrbox::Vector2::y)
 
-		    "zero", &Vector2f::zero,
-		    "one", &Vector2f::one,
-		    "size", &Vector2f::size,
-		    "data", &Vector2f::data,
+		    .addStaticFunction("zero", &rawrbox::Vector2::zero)
+		    .addStaticFunction("one", &rawrbox::Vector2::one)
+		    .addStaticFunction("nan", &rawrbox::Vector2::nan)
 
-		    "clamp", sol::overload(sol::resolve<Vector2f(float, float) const>(&Vector2f::clamp), sol::resolve<Vector2f(Vector2f, Vector2f) const>(&Vector2f::clamp)),
+		    .addFunction("__tostring", &rawrbox::Vector2::toString)
+		    .addFunction("size", &rawrbox::Vector2::size)
+		    .addFunction("yx", &rawrbox::Vector2::yx)
+		    .addFunction("distance", &rawrbox::Vector2::distance)
+		    .addFunction("length", &rawrbox::Vector2::length)
+		    .addFunction("angle", &rawrbox::Vector2::angle)
+		    .addFunction("abs", &rawrbox::Vector2::abs)
 
-		    "distance", &Vector2f::distance,
-		    "length", &Vector2f::length,
-		    "angle", &Vector2f::angle,
-		    "abs", &Vector2f::abs,
-		    "lerp", &Vector2f::lerp,
-		    "atan2", &Vector2f::atan2,
-		    "sinCos", &Vector2f::sinCos,
-		    "cosSin", &Vector2f::cosSin,
-		    "intersects", &Vector2f::intersects,
-		    "rotateAroundOrigin", &Vector2f::rotateAroundOrigin,
-		    "dot", &Vector2f::dot,
-		    "normalized", &Vector2f::normalized,
-		    "cross", &Vector2f::cross,
-		    "floor", &Vector2f::floor,
-		    "round", &Vector2f::round,
-		    "ceil", &Vector2f::ceil,
-		    "min", &Vector2f::min,
-		    "max", &Vector2f::max,
+		    .addFunction("lerp", &rawrbox::Vector2::lerp)
+		    .addFunction("clamp",
+			luabridge::overload<float, float>(&rawrbox::Vector2::clamp),
+			luabridge::overload<Vector2, Vector2>(&rawrbox::Vector2::clamp))
 
-		    sol::meta_function::less_than, sol::overload(sol::resolve<bool(const Vector2f&) const>(&Vector2f::operator<), sol::resolve<bool(float) const>(&Vector2f::operator<)),
-		    sol::meta_function::less_than_or_equal_to, sol::overload(sol::resolve<bool(const Vector2f&) const>(&Vector2f::operator<=), sol::resolve<bool(float) const>(&Vector2f::operator<=)),
-		    sol::meta_function::equal_to, sol::overload(sol::resolve<bool(const Vector2f&) const>(&Vector2f::operator==), sol::resolve<bool(float) const>(&Vector2f::operator==)),
+		    .addFunction("clampMagnitude", &rawrbox::Vector2::clampMagnitude)
+		    .addFunction("min", &rawrbox::Vector2::min)
+		    .addFunction("max", &rawrbox::Vector2::max)
+		    .addFunction("atan2", &rawrbox::Vector2::atan2)
 
-		    sol::meta_function::addition, sol::overload(sol::resolve<Vector2f(const Vector2f&) const>(&Vector2f::operator+), sol::resolve<Vector2f(float) const>(&Vector2f::operator+)),
-		    sol::meta_function::subtraction, sol::overload(sol::resolve<Vector2f(const Vector2f&) const>(&Vector2f::operator-), sol::resolve<Vector2f(float) const>(&Vector2f::operator-)),
-		    sol::meta_function::division, sol::overload(sol::resolve<Vector2f(const Vector2f&) const>(&Vector2f::operator/), sol::resolve<Vector2f(float) const>(&Vector2f::operator/)),
-		    sol::meta_function::multiplication, sol::overload(sol::resolve<Vector2f(const Vector2f&) const>(&Vector2f::operator*), sol::resolve<Vector2f(float) const>(&Vector2f::operator*)));
+		    .addStaticFunction("sinCos", &rawrbox::Vector2::sinCos)
+		    .addStaticFunction("cosSin", &rawrbox::Vector2::cosSin)
+
+		    .addFunction("intersects", &rawrbox::Vector2::intersects)
+		    .addFunction("rotateAroundOrigin", &rawrbox::Vector2::rotateAroundOrigin)
+		    .addFunction("dot", &rawrbox::Vector2::dot)
+		    .addFunction("normalized", &rawrbox::Vector2::normalized)
+		    .addFunction("cross", &rawrbox::Vector2::cross)
+		    .addFunction("floor", &rawrbox::Vector2::floor)
+		    .addFunction("round", &rawrbox::Vector2::round)
+		    .addFunction("ceil", &rawrbox::Vector2::ceil)
+
+		    .addFunction("__add",
+			luabridge::overload<float>(&rawrbox::Vector2::operator+),
+			luabridge::overload<const Vector2&>(&rawrbox::Vector2::operator+))
+
+		    .addFunction("__sub",
+			luabridge::overload<float>(&rawrbox::Vector2::operator-),
+			luabridge::overload<const Vector2&>(&rawrbox::Vector2::operator-))
+
+		    .addFunction("__mul",
+			luabridge::overload<float>(&rawrbox::Vector2::operator*),
+			luabridge::overload<const Vector2&>(&rawrbox::Vector2::operator*))
+
+		    .addFunction("__div",
+			luabridge::overload<float>(&rawrbox::Vector2::operator/),
+			luabridge::overload<const Vector2&>(&rawrbox::Vector2::operator/))
+
+		    .addFunction("__eq",
+			luabridge::overload<float>(&rawrbox::Vector2::operator==),
+			luabridge::overload<const Vector2&>(&rawrbox::Vector2::operator==))
+
+		    .addFunction("__ne",
+			luabridge::overload<float>(&rawrbox::Vector2::operator!=),
+			luabridge::overload<const Vector2&>(&rawrbox::Vector2::operator!=))
+
+		    .addFunction("__lt",
+			luabridge::overload<float>(&rawrbox::Vector2::operator<),
+			luabridge::overload<const Vector2&>(&rawrbox::Vector2::operator<))
+
+		    .addFunction("__le",
+			luabridge::overload<float>(&rawrbox::Vector2::operator<=),
+			luabridge::overload<const Vector2&>(&rawrbox::Vector2::operator<=))
+
+		    .addFunction("__gt",
+			luabridge::overload<float>(&rawrbox::Vector2::operator>),
+			luabridge::overload<const Vector2&>(&rawrbox::Vector2::operator>))
+
+		    .addFunction("__ge",
+			luabridge::overload<float>(&rawrbox::Vector2::operator>=),
+			luabridge::overload<const Vector2&>(&rawrbox::Vector2::operator>=))
+
+		    .addFunction("__unm", [](rawrbox::Vector2& v) { return -v; })
+
+		    .endClass();
 	}
 } // namespace rawrbox

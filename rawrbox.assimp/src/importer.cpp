@@ -140,14 +140,14 @@ namespace rawrbox {
 
 			// Texture loading ----
 			if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS) > 0) {
-				const auto dump = [this](const aiMaterial* mat, aiTextureType type) {
+				const auto dump = [](const aiMaterial* mat, aiTextureType type) {
 					const unsigned count = mat->GetTextureCount(type);
 
 					if (count > 0) {
 						aiString matPath;
 						ai_real matBlend = 0;
 
-						for (size_t c = 0; c < count; c++) {
+						for (uint32_t c = 0; c < count; c++) {
 							if (mat->GetTexture(type, c, &matPath, nullptr, nullptr, &matBlend, nullptr, nullptr) == AI_SUCCESS) {
 								fmt::print("\t [{}] '{}' -> '{}'\n", c, matPath.C_Str(), magic_enum::enum_name(type));
 							}
@@ -263,7 +263,7 @@ namespace rawrbox {
 				// DEBUG ----
 				if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE) > 0) {
 					std::function<void(std::unique_ptr<Bone>&, int)> printBone;
-					printBone = [&printBone, this](std::unique_ptr<Bone>& bn, int deep) -> void {
+					printBone = [&printBone](std::unique_ptr<Bone>& bn, int deep) -> void {
 						for (auto& c : bn->children) {
 							std::string d = "";
 							for (int i = 0; i < deep; i++)
@@ -578,9 +578,9 @@ namespace rawrbox {
 			auto min = aiMesh.mAABB.mMin;
 			auto max = aiMesh.mAABB.mMax;
 
-			mesh.bbox.m_min = {min.x, min.y, min.z};
-			mesh.bbox.m_max = {max.x, max.y, max.z};
-			mesh.bbox.m_size = mesh.bbox.m_min.abs() + mesh.bbox.m_max.abs();
+			mesh.bbox._min = {min.x, min.y, min.z};
+			mesh.bbox._max = {max.x, max.y, max.z};
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			if ((this->assimpFlags & aiProcess_PreTransformVertices) == 0) {
@@ -682,7 +682,7 @@ namespace rawrbox {
 			this->_logger->info("'{}' METADATA", fmt::format(fmt::fg(fmt::color::cyan), this->fileName.generic_string()));
 
 			std::function<void(aiMetadata*)> printMetaData;
-			printMetaData = [&printMetaData, this](aiMetadata* meta) -> void {
+			printMetaData = [&printMetaData](aiMetadata* meta) -> void {
 				for (uint8_t i = 0; i < meta->mNumProperties; i++) {
 					auto data = meta->mValues[i];
 					std::string str = "";

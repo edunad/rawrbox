@@ -1,23 +1,20 @@
 #pragma once
 
-#include <rawrbox/scripting/mod.hpp>
-
-#include <sol/sol.hpp>
-
+struct lua_State;
 namespace rawrbox {
 	class Mod;
 
-	class Plugin {
+	class ScriptingPlugin {
 	public:
-		Plugin() = default;
-		Plugin(const Plugin &) = default;
-		Plugin(Plugin &&) = default;
-		Plugin &operator=(const Plugin &) = default;
-		Plugin &operator=(Plugin &&) = default;
-		virtual ~Plugin() = default;
+		ScriptingPlugin() = default;
+		ScriptingPlugin(const ScriptingPlugin&) = default;
+		ScriptingPlugin(ScriptingPlugin&&) = default;
+		ScriptingPlugin& operator=(const ScriptingPlugin&) = default;
+		ScriptingPlugin& operator=(ScriptingPlugin&&) = default;
+		virtual ~ScriptingPlugin() = default;
 
-		virtual void registerTypes(sol::state & /*_lua*/) {}
-		virtual void registerGlobal(rawrbox::Mod * /*_mod*/) {}
-		virtual void loadLuaExtensions(rawrbox::Mod * /*_mod*/) {}
+		virtual void registerTypes(lua_State* /*_l*/) = 0;
+		virtual void registerGlobal(lua_State* /*_l*/) = 0;
+		virtual void loadLibraries(lua_State* /*_l*/) = 0;
 	};
 } // namespace rawrbox

@@ -56,7 +56,7 @@ namespace rawrbox {
 
 		[[nodiscard]] NumberType LinearToGamma(const NumberType& x) const {
 			auto val = static_cast<float>(x);
-			return val <= 0.0031308 ? val * 12.92F : 1.055F * std::pow(val, 1.F / 2.4F) - 0.055F;
+			return val <= 0.0031308 ? static_cast<NumberType>(val * 12.92F) : static_cast<NumberType>(1.055F * std::pow(val, 1.F / 2.4F) - 0.055F);
 		}
 
 		[[nodiscard]] Color_t<NumberType> toLinear() const {
@@ -154,7 +154,7 @@ namespace rawrbox {
 			return std::max(std::max(r, g), b);
 		}
 
-		[[nodiscard]] bool isTransparent() const { return a == 0; }
+		[[nodiscard]] bool invisible() const { return a == 0; }
 		[[nodiscard]] bool hasTransparency() const {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return a != 255;

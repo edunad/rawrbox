@@ -1,53 +1,54 @@
 "📷 RENDERER":
-  - changed-files: "render/**/*"
+  - changed-files: "rawrbox.render/**/*"
 
 "🧮 MATH":
-  - changed-files: "math/**/*"
+  - changed-files: "rawrbox.math/**/*"
 
 "🖼️ UI":
-  - changed-files: "ui/**/*"
+  - changed-files: "rawrbox.ui/**/*"
 
 "⚒️ UTILS":
-  - changed-files: "utils/**/*"
+  - changed-files: "rawrbox.utils/**/*"
 
 "🐲 SAMPLES":
   - changed-files: "samples/**/*"
 
 "🧱 3D PHYSICS":
-  - changed-files: "physics_3d/**/*"
+  - changed-files: "rawrbox.physics_3d/**/*"
 
 "🏀 2D PHYSICS":
-  - changed-files: "physics_2d/**/*"
+  - changed-files: "rawrbox.physics_2d/**/*"
 
 "🎺 BASS":
-  - changed-files: "bass/**/*"
+  - changed-files: "rawrbox.bass/**/*"
 
 "💼 RESOURCES":
-  - changed-files: "resources/**/*"
+  - changed-files: "rawrbox.resources/**/*"
 
 "💽 ENGINE":
-  - changed-files: "engine/**/*"
+  - changed-files: "rawrbox.engine/**/*"
 
 "🧪 TESTS":
   - changed-files: "**/tests/**/*.cpp"
 
+"🎞 WEBM":
+  - changed-files: "rawrbox.webm/**/*"
+
+"🧙‍♂️ ASSIMP":
+  - changed-files: "rawrbox.assimp/**/*"
+
 "📜 SCRIPTING":
   - changed-files:
       [
-        "scripting/**/*",
-        "bass/**/scripting/*",
-        "network/**/scripting/*",
-        "render/**/scripting/*",
-        "resources/**/scripting/*",
-        "ui/**/scripting/*",
+        "rawrbox.scripting/**/*",
+        "rawrbox.bass/**/scripting/*",
+        "rawrbox.network/**/scripting/*",
+        "rawrbox.render/**/scripting/*",
+        "rawrbox.resources/**/scripting/*",
+        "rawrbox.ui/**/scripting/*",
         "**/*.lua",
+        "**/*.luau",
       ]
-
-"🎞 WEBM":
-  - changed-files: "webm/**/*"
-
-"🧙‍♂️ ASSIMP":
-  - changed-files: "assimp/**/*"
 
 "FEATURE":
   - head-branch: "^features/"

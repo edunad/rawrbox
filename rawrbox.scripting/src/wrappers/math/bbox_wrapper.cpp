@@ -2,11 +2,23 @@
 #include <rawrbox/scripting/wrappers/math/bbox_wrapper.hpp>
 
 namespace rawrbox {
-	void BBOXWrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<rawrbox::BBOX>("BBOX",
-		    sol::constructors<rawrbox::BBOX(), rawrbox::BBOX(rawrbox::BBOX), rawrbox::BBOXf(rawrbox::Vector3f, rawrbox::Vector3f, rawrbox::Vector3f)>(),
-		    "combine", &BBOXf::combine,
+	void BBOXWrapper::registerLua(lua_State* L) {
+		luabridge::getGlobalNamespace(L)
+		    .beginClass<rawrbox::BBOX>("BBOX")
 
-		    sol::meta_function::equal_to, &rawrbox::BBOX::operator==);
+		    .addConstructor<void(), void(rawrbox::BBOX), void(const rawrbox::Vector3&, const rawrbox::Vector3&, const rawrbox::Vector3&)>()
+
+		    .addProperty("min", &rawrbox::BBOX::_min)
+		    .addProperty("max", &rawrbox::BBOX::_max)
+		    .addProperty("size", &rawrbox::BBOX::_size)
+
+		    .addFunction("isEmpty", &rawrbox::BBOX::isEmpty)
+		    .addFunction("size", &rawrbox::BBOX::size)
+		    .addFunction("combine", &rawrbox::BBOX::combine)
+
+		    .addFunction("__eq", &rawrbox::BBOX::operator==)
+		    .addFunction("__ne", &rawrbox::BBOX::operator!=)
+
+		    .endClass();
 	}
 } // namespace rawrbox

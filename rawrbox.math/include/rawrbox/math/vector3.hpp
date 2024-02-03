@@ -20,13 +20,12 @@ namespace rawrbox {
 
 		Vector3_t() = default;
 		explicit Vector3_t(NumberType val) : x(val), y(val), z(val) {}
+		constexpr Vector3_t(NumberType _x, NumberType _y, NumberType _z) : x(_x), y(_y), z(_z) {}
 
 		// NOLINTBEGIN(hicpp-explicit-conversions)
 		Vector3_t(const std::array<NumberType, 3>& val) : x(val[0]), y(val[1]), z(val[2]) {}
 		Vector3_t(Vector2_t<NumberType> xy, NumberType _z = 0) : x(xy.x), y(xy.y), z(_z) {}
 		// NOLINTEND(hicpp-explicit-conversions)
-
-		constexpr Vector3_t(NumberType _x, NumberType _y, NumberType _z = 0) : x(_x), y(_y), z(_z) {}
 
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1); }
@@ -127,7 +126,7 @@ namespace rawrbox {
 				return {x * max, y * max, z * max};
 			}
 
-			return this;
+			return *this;
 		}
 
 		template <class ReturnType>

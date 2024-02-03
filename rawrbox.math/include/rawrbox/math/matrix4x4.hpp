@@ -55,7 +55,6 @@ namespace rawrbox {
 		// Views
 		rawrbox::Matrix4x4& ortho(float left, float right, float bottom, float top, float near, float far);
 		rawrbox::Matrix4x4& proj(float FOV, float aspect, float near, float far);
-
 		rawrbox::Matrix4x4& billboard(const rawrbox::Matrix4x4& view, const rawrbox::Vector3f& pos, const rawrbox::Vector3f& scale);
 		// ----------
 
@@ -97,6 +96,8 @@ namespace rawrbox {
 
 		rawrbox::Matrix4x4 operator+(rawrbox::Matrix4x4 other) const;
 		rawrbox::Matrix4x4 operator+(rawrbox::Vector3f other) const;
+
+		rawrbox::Matrix4x4 operator/(rawrbox::Matrix4x4 other) const;
 
 		bool operator==(const rawrbox::Matrix4x4& other) const;
 		bool operator!=(const rawrbox::Matrix4x4& other) const;
