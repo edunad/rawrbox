@@ -6,7 +6,7 @@
 #include <Buffer.h>
 
 #ifdef RAWRBOX_SCRIPTING
-	#include <sol/sol.hpp>
+// #include <sol/sol.hpp>
 #endif
 
 namespace rawrbox {
@@ -57,11 +57,11 @@ namespace rawrbox {
 		// -------------
 
 #ifdef RAWRBOX_SCRIPTING
-		sol::object _luaWrapper;
+		/*sol::object _luaWrapper;
 		virtual void initializeLua() {
 			if (!SCRIPTING::initialized) return;
 			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelBaseWrapper(this->shared_from_this()));
-		}
+		}*/
 #endif
 
 		// BLEND SHAPES ---
@@ -132,7 +132,7 @@ namespace rawrbox {
 			this->_mesh.reset();
 
 #ifdef RAWRBOX_SCRIPTING
-			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
+			// if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
 #endif
 		}
 
@@ -335,10 +335,10 @@ namespace rawrbox {
 		}
 
 #ifdef RAWRBOX_SCRIPTING
-		virtual sol::object& getScriptingWrapper() {
+		/*virtual sol::object& getScriptingWrapper() {
 			if (!this->_luaWrapper.valid()) this->initializeLua();
 			return this->_luaWrapper;
-		}
+		}*/
 #endif
 	};
 } // namespace rawrbox

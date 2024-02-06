@@ -72,7 +72,7 @@ namespace rawrbox {
 		if (!_CONSTANTS_DIRTY) return;
 
 		_CONSTANTS_DIRTY = false;
-		_settings.lightSettings.y = count();
+		_settings.lightSettings.y = static_cast<uint32_t>(count());
 
 		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::LightConstants), &_settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		rawrbox::BindlessManager::barrier(*uniforms, rawrbox::BufferType::CONSTANT);

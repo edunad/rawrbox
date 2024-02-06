@@ -8,7 +8,7 @@
 #include <fmt/format.h>
 
 #ifdef RAWRBOX_SCRIPTING
-	#include <sol/sol.hpp>
+//	#include <sol/sol.hpp>
 #endif
 
 namespace rawrbox {
@@ -31,8 +31,8 @@ namespace rawrbox {
 		float _intensity = 1.F;
 
 #ifdef RAWRBOX_SCRIPTING
-		sol::object _luaWrapper;
-		virtual void initializeLua();
+		// sol::object _luaWrapper;
+		// virtual void initializeLua();
 #endif
 
 	public:
@@ -78,7 +78,7 @@ namespace rawrbox {
 		virtual void setDirection(const rawrbox::Vector3f& dir);
 
 #ifdef RAWRBOX_SCRIPTING
-		virtual sol::object& getScriptingWrapper();
+		// virtual sol::object& getScriptingWrapper();
 #endif
 	};
 } // namespace rawrbox

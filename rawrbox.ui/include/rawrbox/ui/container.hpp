@@ -4,8 +4,8 @@
 #include <rawrbox/math/vector2.hpp>
 
 #ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/scripting/scripting.hpp>
-	#include <sol/sol.hpp>
+// #include <rawrbox/scripting/scripting.hpp>
+// #include <sol/sol.hpp>
 #endif
 
 #include <memory>
@@ -37,13 +37,13 @@ namespace rawrbox {
 		void internalDraw(rawrbox::UIContainer* elm, rawrbox::Stencil& stencil);
 
 #ifdef RAWRBOX_SCRIPTING
-		sol::object _luaWrapper;
-		virtual void initializeLua();
+		// sol::object _luaWrapper;
+		// virtual void initializeLua();
 #endif
 
 	public:
 #ifdef RAWRBOX_SCRIPTING
-		virtual ~UIContainer();
+		// virtual ~UIContainer();
 #else
 		virtual ~UIContainer() = default;
 #endif
@@ -144,7 +144,7 @@ namespace rawrbox {
 
 		// SCRIPTING ----
 #ifdef RAWRBOX_SCRIPTING
-		virtual sol::object& getScriptingWrapper();
+		// virtual sol::object& getScriptingWrapper();
 #endif
 		// ---------
 	};

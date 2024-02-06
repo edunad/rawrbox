@@ -29,3 +29,15 @@ console.execute("test", "arg1")]]--
 print(f)
 print("hello {}", "cookies")
 ]]--
+
+
+local sound = {}
+function MOD:init()
+    sound = BASS.loadHTTPSound("https://ams3.digitaloceanspaces.com/failcake/public/random_sounds/singusasong.ogg", BASS.FLAGS.BEAT_DETECTION)
+    sound:setVolume(0.3)
+    sound:play()
+
+    sound:onBEAT(function(beat)
+        print("beat", beat)
+    end)
+end

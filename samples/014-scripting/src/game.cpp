@@ -1,6 +1,6 @@
 #ifdef RAWRBOX_BASS
 	#include <rawrbox/bass/resources/sound.hpp>
-// #include <rawrbox/bass/scripting/plugin.hpp>
+	#include <rawrbox/bass/scripting/plugin.hpp>
 #endif
 
 #ifdef RAWRBOX_NETWORK
@@ -70,6 +70,28 @@ namespace scripting_test {
 #ifdef RAWRBOX_UI
 		this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*window);
 #endif
+		// ----
+
+		// Setup scripting
+#ifdef RAWRBOX_BASS
+		rawrbox::SCRIPTING::registerPlugin<rawrbox::BASSPlugin>();
+#endif
+		// Custom non-plugin ---
+		/*rawrbox::SCRIPTING::registerType<rawrbox::TestWrapper>();
+		rawrbox::SCRIPTING::onRegisterGlobals += [this](rawrbox::Mod* mod) {
+			mod->getEnvironment()["test"] = rawrbox::TestWrapper();
+			mod->getEnvironment()["test_model"] = [this]() -> sol::object {
+				if (!this->_ready || this->_model == nullptr) return sol::nil;
+				return this->_model->getScriptingWrapper();
+			};
+
+			mod->getEnvironment()["test_model2"] = [this]() -> sol::object {
+				if (!this->_ready || this->_instance == nullptr) return sol::nil;
+				return this->_instance->getScriptingWrapper();
+			};
+		};*/
+		// ----
+
 		// ----
 
 		rawrbox::SCRIPTING::setConsole(this->_console.get());

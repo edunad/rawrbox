@@ -1,4 +1,4 @@
-function MOD:init()
+--[[function MOD:init()
     print("hello from init")
 end
 
@@ -35,4 +35,4 @@ print(vec.x)
 meow = function(data)
     printTable(data)
     print("called meow")
-end
+end]]

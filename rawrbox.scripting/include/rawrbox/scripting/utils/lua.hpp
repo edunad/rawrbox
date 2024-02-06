@@ -33,6 +33,16 @@ namespace rawrbox {
 
 		static std::string getLuaENVVar(lua_State* L, const std::string& varId);
 
+		template <typename T>
+		static luabridge::LuaRef vectorToTable(lua_State* L, const std::vector<T>& in) {
+			auto tbl = luabridge::newTable(L);
+			for (size_t i = 0; i < in.size(); i++) {
+				tbl[i + 1] = in[i];
+			}
+
+			return tbl;
+		}
+
 		// #/ == System content
 		// @/ == Root content
 		// @cats/ == `cats` mod

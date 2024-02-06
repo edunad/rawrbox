@@ -1,4 +1,4 @@
-print("meow script!")
+--[[print("meow script!")
 
 print(engine.deltaTime)
 
@@ -33,3 +33,4 @@ timer.create("meow2", 2, 1000, function()
     print("timer tick")
 end)
 ----------------------
+]]

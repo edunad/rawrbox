@@ -19,7 +19,7 @@ namespace rawrbox {
 		static std::vector<std::filesystem::path> _loadedFiles;
 		static std::vector<std::unique_ptr<rawrbox::Loader>> _loaders;
 
-		static std::atomic<uint32_t> _loadingFiles;
+		static std::atomic<size_t> _loadingFiles;
 
 		// LOGGER ------
 		static std::unique_ptr<rawrbox::Logger> _logger;
@@ -138,7 +138,7 @@ namespace rawrbox {
 			_loadingFiles += files.size();
 
 			std::function<void()> complete = [onComplete]() {
-				_loadingFiles = std::max<uint32_t>(_loadingFiles - 1, 0);
+				_loadingFiles = std::max<size_t>(_loadingFiles - 1, 0);
 				if (_loadingFiles <= 0 && onComplete != nullptr) onComplete();
 			};
 

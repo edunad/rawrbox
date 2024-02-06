@@ -1,7 +1,7 @@
 #include <rawrbox/render/lights/manager.hpp>
 
 #ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/scripting/scripting.hpp>
+// #include <rawrbox/scripting/scripting.hpp>
 // #include <rawrbox/render_temp/scripting/wrappers/light/base_wrapper.hpp>
 #endif
 
@@ -10,10 +10,10 @@ namespace rawrbox {
 
 #ifdef RAWRBOX_SCRIPTING
 	LightBase::~LightBase() {
-		if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
+		//	if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
 	}
 
-	void LightBase::initializeLua() {
+	/*void LightBase::initializeLua() {
 		if (!SCRIPTING::initialized) return;
 		// this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::LightBaseWrapper(shared_from_this()));
 	}
@@ -21,7 +21,7 @@ namespace rawrbox {
 	sol::object& LightBase::getScriptingWrapper() {
 		if (!this->_luaWrapper.valid()) this->initializeLua();
 		return this->_luaWrapper;
-	}
+	}*/
 #endif
 
 	const rawrbox::Colorf LightBase::getColor() const { return this->_color; }

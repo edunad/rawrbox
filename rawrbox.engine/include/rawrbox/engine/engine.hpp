@@ -12,7 +12,7 @@ namespace rawrbox {
 
 	class Engine {
 	protected:
-		rawrbox::ENGINE_THREADS _shutdown = ENGINE_THREADS::NONE;
+		std::atomic<rawrbox::ENGINE_THREADS> _shutdown = ENGINE_THREADS::NONE;
 		float _deltaTimeAccumulator = 0;
 
 		uint32_t _tps = 66;

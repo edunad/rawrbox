@@ -7,11 +7,6 @@
 #include <bass_fx.h>
 #include <fmt/printf.h>
 
-#ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/scripting/scripting.hpp>
-	#include <rawrbox/bass/scripting/wrapper/instance_wrapper.hpp>
-#endif
-
 namespace rawrbox {
 	SoundInstance::SoundInstance(uint32_t audioSample, bool isStream, uint32_t flags) : _sample(audioSample), _flags(flags), _stream(isStream) {
 		rawrbox::BASS::onBEAT.add(std::to_string(this->_sample), [this](std::pair<uint32_t, double> data) {
@@ -40,23 +35,7 @@ namespace rawrbox {
 		// CLEANUP CALLBACKS
 		rawrbox::BASS::onBEAT.remove(std::to_string(this->_sample));
 		rawrbox::BASS::onSoundEnd.remove(std::to_string(this->_sample));
-
-#ifdef RAWRBOX_SCRIPTING
-		if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
-#endif
 	}
-
-#ifdef RAWRBOX_SCRIPTING
-	void SoundInstance::initializeLua() {
-		if (!SCRIPTING::initialized) return;
-		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::SoundInstanceWrapper(this->shared_from_this()));
-	}
-
-	sol::object& SoundInstance::getScriptingWrapper() {
-		if (!this->_luaWrapper.valid()) this->initializeLua();
-		return this->_luaWrapper;
-	}
-#endif
 
 	uint32_t SoundInstance::getNextAvailableChannel() const {
 		if (!isValid()) return 0;
@@ -171,28 +150,24 @@ namespace rawrbox {
 		switch (bass_length) {
 			case 256:
 				flag = BASS_DATA_FFT256;
-				buffer.reserve(128);
 				break;
 			case 512:
 				flag = BASS_DATA_FFT512;
-				buffer.reserve(256);
 				break;
 			case 1024:
 				flag = BASS_DATA_FFT1024;
-				buffer.reserve(512);
 				break;
 			case 2048:
 				flag = BASS_DATA_FFT2048;
-				buffer.reserve(1024);
 				break;
 			case 4096:
 				flag = BASS_DATA_FFT4096;
-				buffer.reserve(2048);
 				break;
 			default:
 				throw this->_logger->error("Unknown FFT length {}, should be power of 2! Check: http://bass.radio42.com/help/html/a13cfef0-1056-bb94-81c4-a4fdf21bd463.htm", bass_length);
 		}
 
+		buffer.resize(bass_length);
 		BASS_ChannelGetData(this->_channel, &buffer.front(), flag);
 		rawrbox::BASSUtils::checkBASSError();
 

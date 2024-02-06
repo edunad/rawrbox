@@ -13,8 +13,8 @@ namespace rawrbox {
 		ScriptingPlugin& operator=(ScriptingPlugin&&) = default;
 		virtual ~ScriptingPlugin() = default;
 
-		virtual void registerTypes(lua_State* /*_l*/) = 0;
-		virtual void registerGlobal(lua_State* /*_l*/) = 0;
-		virtual void loadLibraries(lua_State* /*_l*/) = 0;
+		virtual void registerTypes(lua_State* /*_l*/){};
+		virtual void registerGlobal(lua_State* /*_l*/){};
+		virtual void loadLibraries(lua_State* /*_l*/){};
 	};
 } // namespace rawrbox

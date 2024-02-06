@@ -1,4 +1,4 @@
-BASS = {
+_G.BASS = {
     FLAGS = {
         NONE = 0,
         SOUND_3D = 2,

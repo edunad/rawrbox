@@ -38,12 +38,9 @@ namespace rawrbox {
 
 		return _console->registerCommand(
 		    command, [callback](const std::vector<std::string>& args) -> std::pair<bool, std::string> {
-			    auto tbl = luabridge::newTable(callback.state());
-			    for (size_t i = 0; i < args.size(); i++) {
-				    tbl[i + 1] = args[i];
-			    }
-
+			    auto tbl = rawrbox::LuaUtils::vectorToTable(callback.state(), args);
 			    auto ret = luabridge::call(callback, tbl);
+
 			    switch (ret.size()) {
 				    case 2: return {ret[0].template unsafe_cast<bool>(), ret[1].template unsafe_cast<std::string>()};
 				    case 1: return {ret[0].template unsafe_cast<bool>(), ""};

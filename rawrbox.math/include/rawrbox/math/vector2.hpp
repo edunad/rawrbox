@@ -81,10 +81,10 @@ namespace rawrbox {
 			if (mag > max * max) {
 				float m = std::sqrt(mag);
 
-				float x = this->x / m;
-				float y = this->y / m;
+				float _x = this->x / m;
+				float _y = this->y / m;
 
-				return {x * max, y * max};
+				return {_x * max, _y * max};
 			}
 
 			return *this;

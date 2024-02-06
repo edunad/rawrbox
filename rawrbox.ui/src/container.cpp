@@ -12,17 +12,17 @@ namespace rawrbox {
 	UIContainer::UIContainer(rawrbox::UIContainer&& other) noexcept : _parent(other._parent), _children(std::move(other._children)), _alwaysOnTop(other._alwaysOnTop), _aabb(other._aabb) {}
 #ifdef RAWRBOX_SCRIPTING
 	UIContainer::~UIContainer() {
-		if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
+		// if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
 	}
 #endif
 
 	void UIContainer::initialize() {}
 
 #ifdef RAWRBOX_SCRIPTING
-	void UIContainer::initializeLua() {
-		if (!SCRIPTING::initialized) return;
-		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::UIContainerWrapper(this->shared_from_this()));
-	}
+	// void UIContainer::initializeLua() {
+	//	if (!SCRIPTING::initialized) return;
+	//	this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::UIContainerWrapper(this->shared_from_this()));
+	// }
 #endif
 
 	// UTILS ---
@@ -203,10 +203,10 @@ namespace rawrbox {
 
 	// SCRIPTING ----
 #ifdef RAWRBOX_SCRIPTING
-	sol::object& UIContainer::getScriptingWrapper() {
-		if (!this->_luaWrapper.valid()) this->initializeLua();
-		return this->_luaWrapper;
-	}
+	// sol::object& UIContainer::getScriptingWrapper() {
+	//	if (!this->_luaWrapper.valid()) this->initializeLua();
+	//	return this->_luaWrapper;
+	// }
 #endif
 	// ---------
 } // namespace rawrbox

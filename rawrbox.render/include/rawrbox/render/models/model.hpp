@@ -9,8 +9,8 @@
 #include <rawrbox/render/utils/anim.hpp>
 
 #ifdef RAWRBOX_SCRIPTING
-	// #include <rawrbox/render/scripting/wrappers/model/model_wrapper.hpp>
-	#include <sol/sol.hpp>
+// #include <rawrbox/render/scripting/wrappers/model/model_wrapper.hpp>
+// #include <sol/sol.hpp>
 #endif
 
 namespace rawrbox {
@@ -187,10 +187,10 @@ namespace rawrbox {
 		// --------------
 
 #ifdef RAWRBOX_SCRIPTING
-		void initializeLua() override {
+		/*void initializeLua() override {
 			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
 			// this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelWrapper(this->shared_from_this()));
-		}
+		}*/
 #endif
 
 	public:
