@@ -3,6 +3,8 @@
 #include <rawrbox/engine/watch.hpp>
 #include <rawrbox/utils/logger.hpp>
 
+#include <atomic>
+
 namespace rawrbox {
 	enum class ENGINE_THREADS {
 		NONE = 0,
