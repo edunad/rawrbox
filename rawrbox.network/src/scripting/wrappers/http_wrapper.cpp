@@ -1,40 +1,39 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/network/scripting/wrappers/http_wrapper.hpp>
-#include <rawrbox/scripting/scripting.hpp>
-#include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
-	void HTTPWrapper::request(const std::string& url, const rawrbox::HTTPMethod method, sol::table headers, sol::function callback, sol::optional<int> timeout) {
-		if (url.empty()) {
-			rawrbox::LuaUtils::runCallback(callback, true, "URL cannot be empty");
-			return;
-		}
+	void HTTPWrapper::request(const std::string& url, int method, const luabridge::LuaRef& headers, const luabridge::LuaRef& callback, std::optional<int> timeout) {
+		if (url.empty()) throw std::runtime_error("URL cannot be empty");
+		if (!headers.isTable()) throw std::runtime_error("Invalid header table");
+		if (!callback.isCallable()) throw std::runtime_error("Invalid callback");
+
+		auto L = headers.state();
 
 		// Setup headers -------
 		std::map<std::string, std::string> headerMap = {};
-		for (auto& pair : headers) {
-			std::string nameCheck = pair.first.as<std::string>();
-			std::transform(nameCheck.begin(), nameCheck.end(), nameCheck.begin(), ::toupper);
+		for (auto pair : luabridge::pairs(headers)) {
+			auto key = pair.first.unsafe_cast<std::string>();
+			luabridge::LuaRef value = pair.second;
+			if (value.type() != LUA_TSTRING) continue;
 
-			std::string name = pair.first.as<std::string>();
-			std::string value = pair.second.as<std::string>();
+			auto keyCheck = key;
+			std::transform(keyCheck.begin(), keyCheck.end(), keyCheck.begin(), ::toupper);
+			if (keyCheck.compare("METHOD") == 0 || keyCheck.compare("USER-AGENT") == 0) continue; // Remove these
 
-			if (nameCheck.compare("METHOD") == 0 || nameCheck.compare("USER-AGENT") == 0) continue; // Remove these
-			headerMap[name] = value;
+			headerMap[key] = value.unsafe_cast<std::string>();
 		}
-		// ------------------
+		// ----------
 
 		rawrbox::HTTP::request(
-		    url, method, headerMap, [callback](int code, std::map<std::string, std::string> headerResp, std::string resp) {
-			    rawrbox::runOnRenderThread([resp, code, callback, headerResp]() {
+		    url, static_cast<rawrbox::HTTPMethod>(method), headerMap, [callback, L](int code, std::map<std::string, std::string> headerResp, std::string resp) {
+			    rawrbox::runOnRenderThread([resp, code, callback, headerResp, L]() {
 				    if (code == 0 || (code == 200 && resp.starts_with("Operation timed out after"))) {
-					    rawrbox::LuaUtils::runCallback(callback, true, resp); // curl error
+					    luabridge::call(callback, false, resp); // curl error
 					    return;
 				    }
 
-				    auto& lua = rawrbox::SCRIPTING::getLUA();
-				    sol::table tbl = lua.create_table();
-				    sol::table headerTbl = lua.create_table();
+				    auto tbl = luabridge::newTable(L);
+				    auto headerTbl = luabridge::newTable(L);
 
 				    for (auto& pair : headerResp) {
 					    headerTbl[pair.first] = pair.second;
@@ -44,15 +43,16 @@ namespace rawrbox {
 				    tbl["data"] = resp;
 				    tbl["headers"] = headerTbl;
 
-				    rawrbox::LuaUtils::runCallback(callback, false, tbl);
+				    luabridge::call(callback, true, tbl);
 			    });
 		    },
 		    timeout.value_or(10000));
 	}
 
-	void HTTPWrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<HTTPWrapper>("HTTP",
-		    sol::no_constructor,
-		    "request", &HTTPWrapper::request);
+	void HTTPWrapper::registerLua(lua_State* L) {
+		luabridge::getGlobalNamespace(L)
+		    .beginNamespace("http")
+		    .addFunction("request", &HTTPWrapper::request)
+		    .endNamespace();
 	}
 } // namespace rawrbox

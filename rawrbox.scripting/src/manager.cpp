@@ -167,8 +167,8 @@ namespace rawrbox {
 
 		// OVERRIDES ----
 		luabridge::getGlobalNamespace(L)
-		    .addFunction("printTable", [](lua_State* state) {
-			    nlohmann::json json = rawrbox::LuaUtils::luaToJsonObject(state);
+		    .addFunction("printTable", [](const luabridge::LuaRef& ref) {
+			    nlohmann::json json = rawrbox::LuaUtils::luaToJsonObject(ref);
 			    _logger->info("{}", json.dump(1, ' ', false));
 		    })
 		    .addFunction("print", [](lua_State* state) {

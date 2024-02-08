@@ -1,0 +1,166 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 75b160c..54a6fa4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -262,7 +262,7 @@ IF ((CMAKE_C_COMPILER_ID MATCHES "GNU") AND NOT MINGW)
+   IF(NOT ASSIMP_HUNTER_ENABLED)
+     SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
+   ENDIF()
+-  
++
+   IF(CMAKE_CXX_COMPILER_VERSION GREATER_EQUAL 13)
+     MESSAGE(STATUS "GCC13 detected disabling \"-Wdangling-reference\" in Cpp files as it appears to be a false positive")
+     ADD_COMPILE_OPTIONS("$<$<COMPILE_LANGUAGE:CXX>:-Wno-dangling-reference>")
+@@ -284,13 +284,13 @@ ELSEIF(MSVC)
+   ELSE() # msvc
+     ADD_COMPILE_OPTIONS(/MP /bigobj)
+   ENDIF()
+-  
++
+   # disable "elements of array '' will be default initialized" warning on MSVC2013
+   IF(MSVC12)
+-    ADD_COMPILE_OPTIONS(/wd4351)	
++    ADD_COMPILE_OPTIONS(/wd4351)
+   ENDIF()
+   # supress warning for double to float conversion if Double precission is activated
+-  ADD_COMPILE_OPTIONS(/wd4244) 
++  ADD_COMPILE_OPTIONS(/wd4244)
+   SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /D_DEBUG /Zi /Od")
+   SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+   SET(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG:FULL /PDBALTPATH:%_PDB% /OPT:REF /OPT:ICF")
+@@ -330,7 +330,7 @@ ENDIF()
+ 
+ IF (ASSIMP_COVERALLS)
+   MESSAGE(STATUS "Coveralls enabled")
+-  
++
+   INCLUDE(Coveralls)
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fprofile-arcs -ftest-coverage")
+@@ -338,7 +338,7 @@ ENDIF()
+ 
+ IF (ASSIMP_ASAN)
+   MESSAGE(STATUS "AddressSanitizer enabled")
+-  
++
+   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
+   SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -fsanitize=address")
+ ENDIF()
+@@ -471,56 +471,58 @@ ENDIF()
+ 
+ # Search for external dependencies, and build them from source if not found
+ # Search for zlib
+-IF(ASSIMP_HUNTER_ENABLED)
+-  hunter_add_package(ZLIB)
+-  find_package(ZLIB CONFIG REQUIRED)
+-
+-  add_definitions(-DASSIMP_BUILD_NO_OWN_ZLIB)
+-  set(ZLIB_FOUND TRUE)
+-  set(ZLIB_LIBRARIES ZLIB::zlib)
+-  set(ASSIMP_BUILD_MINIZIP TRUE)
+-ELSE()
+-  # If the zlib is already found outside, add an export in case assimpTargets can't find it.
+-  IF( ZLIB_FOUND )
+-    INSTALL( TARGETS zlib zlibstatic
+-        EXPORT "${TARGETS_EXPORT_NAME}")
+-  ENDIF()
++if(ASSIMP_BUILD_ZLIB)
++  IF(ASSIMP_HUNTER_ENABLED)
++    hunter_add_package(ZLIB)
++    find_package(ZLIB CONFIG REQUIRED)
++
++    add_definitions(-DASSIMP_BUILD_NO_OWN_ZLIB)
++    set(ZLIB_FOUND TRUE)
++    set(ZLIB_LIBRARIES ZLIB::zlib)
++    set(ASSIMP_BUILD_MINIZIP TRUE)
++  ELSE()
++    # If the zlib is already found outside, add an export in case assimpTargets can't find it.
++    IF( ZLIB_FOUND )
++      INSTALL( TARGETS zlib zlibstatic
++          EXPORT "${TARGETS_EXPORT_NAME}")
++    ENDIF()
+ 
+-  IF ( NOT ASSIMP_BUILD_ZLIB )
+-    FIND_PACKAGE(ZLIB)
+-  ENDIF()
++    IF ( NOT ASSIMP_BUILD_ZLIB )
++      FIND_PACKAGE(ZLIB)
++    ENDIF()
+ 
+-  IF ( NOT ZLIB_FOUND AND NOT ASSIMP_BUILD_ZLIB )
+-    message( FATAL_ERROR
+-      "Build configured with -DASSIMP_BUILD_ZLIB=OFF but unable to find zlib"
+-    )
+-  ELSEIF( NOT ZLIB_FOUND )
+-    MESSAGE(STATUS "compiling zlib from sources")
+-    INCLUDE(CheckIncludeFile)
+-    INCLUDE(CheckTypeSize)
+-    INCLUDE(CheckFunctionExists)
+-
+-    # Explicitly turn off ASM686 and AMD64 cmake options.
+-    # The AMD64 option causes a build failure on MSVC and the ASM builds seem to have problems:
+-    #		https://github.com/madler/zlib/issues/41#issuecomment-125848075
+-    # Also prevents these options from "polluting" the cmake options if assimp is being
+-    # included as a submodule.
+-    set( ASM686 FALSE CACHE INTERNAL "Override ZLIB flag to turn off assembly" FORCE )
+-    set( AMD64 FALSE CACHE INTERNAL "Override ZLIB flag to turn off assembly" FORCE )
+-
+-    # compile from sources
+-    ADD_SUBDIRECTORY(contrib/zlib)
+-    SET(ZLIB_FOUND 1)
+-    SET(ZLIB_LIBRARIES zlibstatic)
+-    SET(ZLIB_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/contrib/zlib ${CMAKE_CURRENT_BINARY_DIR}/contrib/zlib)
+-    # need to ensure we don't link with system zlib or minizip as well.
+-    SET(ASSIMP_BUILD_MINIZIP 1)
+-  ELSE()
+-    ADD_DEFINITIONS(-DASSIMP_BUILD_NO_OWN_ZLIB)
+-    SET(ZLIB_LIBRARIES_LINKED -lz)
++    IF ( NOT ZLIB_FOUND AND NOT ASSIMP_BUILD_ZLIB )
++      message( FATAL_ERROR
++        "Build configured with -DASSIMP_BUILD_ZLIB=OFF but unable to find zlib"
++      )
++    ELSEIF( NOT ZLIB_FOUND )
++      MESSAGE(STATUS "compiling zlib from sources")
++      INCLUDE(CheckIncludeFile)
++      INCLUDE(CheckTypeSize)
++      INCLUDE(CheckFunctionExists)
++
++      # Explicitly turn off ASM686 and AMD64 cmake options.
++      # The AMD64 option causes a build failure on MSVC and the ASM builds seem to have problems:
++      #		https://github.com/madler/zlib/issues/41#issuecomment-125848075
++      # Also prevents these options from "polluting" the cmake options if assimp is being
++      # included as a submodule.
++      set( ASM686 FALSE CACHE INTERNAL "Override ZLIB flag to turn off assembly" FORCE )
++      set( AMD64 FALSE CACHE INTERNAL "Override ZLIB flag to turn off assembly" FORCE )
++
++      # compile from sources
++      ADD_SUBDIRECTORY(contrib/zlib)
++      SET(ZLIB_FOUND 1)
++      SET(ZLIB_LIBRARIES zlibstatic)
++      SET(ZLIB_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/contrib/zlib ${CMAKE_CURRENT_BINARY_DIR}/contrib/zlib)
++      # need to ensure we don't link with system zlib or minizip as well.
++      SET(ASSIMP_BUILD_MINIZIP 1)
++    ELSE()
++      ADD_DEFINITIONS(-DASSIMP_BUILD_NO_OWN_ZLIB)
++      SET(ZLIB_LIBRARIES_LINKED -lz)
++    ENDIF()
++    INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
+   ENDIF()
+-  INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIR})
+-ENDIF()
++endif()
+ 
+ IF( NOT IOS )
+   IF( NOT ASSIMP_BUILD_MINIZIP )
+diff --git a/include/assimp/ZipArchiveIOSystem.h b/include/assimp/ZipArchiveIOSystem.h
+index 9f3a478..0589e44 100644
+--- a/include/assimp/ZipArchiveIOSystem.h
++++ b/include/assimp/ZipArchiveIOSystem.h
+@@ -55,6 +55,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+ #include <assimp/IOStream.hpp>
+ #include <assimp/IOSystem.hpp>
++#include <zlib.h>
+ 
+ namespace Assimp {
+ 

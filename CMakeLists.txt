@@ -59,12 +59,12 @@ if(RAWRBOX_DEV_MODE)
 
     #set(RAWRBOX_BUILD_RAWRBOX_UI ON)
     set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
-    #set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
+    set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
     #set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS ON)
     set(RAWRBOX_BUILD_RAWRBOX_BASS ON)
-    #set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
+    set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
     #set(RAWRBOX_BUILD_RAWRBOX_WEBM ON)
-    #set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
+    set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
     set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING ON)
     set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE ON)
     #set(RAWRBOX_BUILD_QHULL ON)
@@ -164,38 +164,33 @@ if(nlohmann_json_ADDED)
 endif()
 
 # ---
-# libcurl keeps complaining it can't find zlibstatic, but when assimp is enabled, this works..
-if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
+if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)
+    message(WARNING "RAWRBOX.NETWORK / RAWRBOX.ASSIMP is enabled, adding ZLIB package")
+
     CPMFindPackage(
         NAME
-            ZLIB
+            zlib
         GITHUB_REPOSITORY
-            madler/zlib # zlib-ng/zlib-ng
+            zlib-ng/zlib-ng
+        USE_CACHE
+            OFF
         GIT_TAG
-            "v1.3" # "2.1.3"
+            2.1.6
         OPTIONS
             "ASM686 FALSE"
             "AMD64 FALSE"
-            "POSITION_INDEPENDENT_CODE TRUE"
+
+            "ZLIB_COMPAT ON"
             "ZLIB_BUILD_EXAMPLES OFF"
+            "ZLIB_ENABLE_TESTS OFF"
+
+            "POSITION_INDEPENDENT_CODE ON"
+            "WITH_GTEST OFF"
     )
 
-    if(ZLIB_ADDED)
-        set(ZLIB_FOUND 1)
-        set(ZLIB_LIBRARIES zlibstatic)
-        set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
-
-        add_library(ZLIB::ZLIB ALIAS zlibstatic)
-        set_lib_runtime_mt(zlibstatic)
-
-        message(STATUS "==== ZLIB")
-        message(STATUS "LIBRARY: ${ZLIB_LIBRARIES}")
-        message(STATUS "INCLUDE_DIR: ${ZLIB_INCLUDE_DIR}")
-        message(STATUS "BINARY_DIR: ${zlib_BINARY_DIR}")
-        message(STATUS "==== ====")
-
-        include_directories(${ZLIB_INCLUDE_DIR})
-
+    if(zlib_ADDED)
+        include_directories(${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
+        set_lib_runtime_mt(zlib)
     endif()
 endif()
 # --------------------
@@ -218,7 +213,6 @@ if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
    message(STATUS "Enabled RAWRBOX.NETWORK support")
    add_subdirectory("rawrbox.network")
 endif()
-
 
 add_subdirectory("rawrbox.render")
 

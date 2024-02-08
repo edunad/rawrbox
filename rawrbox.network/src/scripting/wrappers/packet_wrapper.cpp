@@ -1,4 +1,4 @@
-
+/*
 #include <rawrbox/network/scripting/wrappers/packet_wrapper.hpp>
 #include <rawrbox/scripting/utils/lua.hpp>
 
@@ -98,3 +98,4 @@ namespace rawrbox {
 	}
 	// -------------------------
 } // namespace rawrbox
+*/

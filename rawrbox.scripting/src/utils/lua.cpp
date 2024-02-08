@@ -34,11 +34,15 @@ namespace rawrbox {
 #endif
 
 		Luau::ParseOptions parser = {};
-		parser.allowDeclarationSyntax = true; // ?
+		parser.allowDeclarationSyntax = false;
 		parser.captureComments = false;
 
 		std::string bytecode = Luau::compile(script, options, parser);
-		if (bytecode.empty()) throw std::runtime_error("Failed to compile");
+		if (bytecode.empty() || bytecode[0] == '\0') {
+			size_t pos = bytecode.find(':'); // extract the error message
+			std::string errorMessage = pos != std::string::npos ? bytecode.substr(pos + 1) : "Unknown lua error";
+			throw std::runtime_error(errorMessage);
+		}
 		// ----------
 
 		// Load -------
@@ -147,42 +151,37 @@ namespace rawrbox {
 		throw std::runtime_error("Unknown json type");
 	}
 
-	nlohmann::json LuaUtils::luaToJsonObject(lua_State* L) {
-		if (L == nullptr) throw std::runtime_error("Invalid lua state");
-
+	nlohmann::json LuaUtils::luaToJsonObject(const luabridge::LuaRef& ref) {
 		nlohmann::json result = {};
-		if (lua_type(L, -1) != LUA_TTABLE) return result; // Not a table? meh
-		lua_pushnil(L);
+		if (!ref.isTable()) return result;
 
-		int indx = 1; // Lua starts at 1
-		while (lua_next(L, -2) != 0) {
-			auto type = lua_type(L, -1);
-			std::string key = lua_type(L, -2) == LUA_TNUMBER ? std::to_string(indx++) : lua_tostring(L, -2); // Vectors don't have a key
+		for (auto pair : luabridge::pairs(ref)) {
+			auto key = pair.first.unsafe_cast<std::string>();
+			luabridge::LuaRef value = pair.second;
 
-			switch (type) {
+			switch (value.type()) {
 				case LUA_TBOOLEAN:
-					result[key] = lua_toboolean(L, -1) != 0;
+					result[key] = value.unsafe_cast<bool>();
 					break;
 				case LUA_TNUMBER:
-					result[key] = lua_tonumber(L, -1);
+					result[key] = value.unsafe_cast<double>(); // Lua uses double for all numeric types
 					break;
 				case LUA_TSTRING:
-					result[key] = lua_tostring(L, -1);
+					result[key] = value.unsafe_cast<std::string>();
 					break;
 				case LUA_TVECTOR: // eeehhh, might die?
 				case LUA_TTABLE:
-					result[key] = luaToJsonObject(L);
+					result[key] = luaToJsonObject(value); // Recursive conversion
 					break;
 				case LUA_TFUNCTION:
-					result[key] = fmt::format("function({})", lua_topointer(L, -1));
+					result[key] = fmt::format("function({})", lua_topointer(value, -1));
 					break;
-				default:
 				case LUA_TNONE:
 				case LUA_TNIL:
+				default:
+					// Handle other types as needed, or ignore them
 					break;
 			}
-
-			lua_pop(L, 1);
 		}
 
 		return result;

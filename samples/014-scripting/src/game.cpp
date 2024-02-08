@@ -4,7 +4,7 @@
 #endif
 
 #ifdef RAWRBOX_NETWORK
-// #include <rawrbox/network/scripting/plugin.hpp>
+	#include <rawrbox/network/scripting/plugin.hpp>
 #endif
 
 #ifdef RAWRBOX_UI
@@ -75,6 +75,9 @@ namespace scripting_test {
 		// Setup scripting
 #ifdef RAWRBOX_BASS
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::BASSPlugin>();
+#endif
+#ifdef RAWRBOX_NETWORK
+		rawrbox::SCRIPTING::registerPlugin<rawrbox::NetworkPlugin>();
 #endif
 		// Custom non-plugin ---
 		/*rawrbox::SCRIPTING::registerType<rawrbox::TestWrapper>();

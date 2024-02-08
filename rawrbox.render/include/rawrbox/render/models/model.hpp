@@ -290,7 +290,9 @@ namespace rawrbox {
 
 		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F) {
 			auto iter = this->_animations.find(name);
-			if (iter == this->_animations.end()) throw this->_logger->error("Animation {} not found!", name);
+			if (iter == this->_animations.end()) {
+				throw this->_logger->error("Animation '{}' not found", fmt::format(fmt::fg(fmt::color::coral), name));
+			}
 
 			// Add it
 			this->_playingAnimations.emplace_back(name,

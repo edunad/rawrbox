@@ -29,7 +29,7 @@ namespace rawrbox {
 		static void getVariadicArgs(const luabridge::LuaRef& in, luabridge::LuaRef& out);
 
 		static luabridge::LuaRef jsonToLua(lua_State* L, const nlohmann::json& json);
-		static nlohmann::json luaToJsonObject(lua_State* L);
+		static nlohmann::json luaToJsonObject(const luabridge::LuaRef& ref);
 
 		static std::string getLuaENVVar(lua_State* L, const std::string& varId);
 

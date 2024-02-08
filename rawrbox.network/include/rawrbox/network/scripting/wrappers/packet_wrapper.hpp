@@ -1,5 +1,5 @@
 #pragma once
-
+/*
 #include <rawrbox/network/packet.hpp>
 
 #include <sol/sol.hpp>
@@ -61,3 +61,4 @@ namespace rawrbox {
 		static void registerLua(sol::state& lua);
 	};
 } // namespace rawrbox
+*/

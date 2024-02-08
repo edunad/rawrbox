@@ -24,7 +24,7 @@ namespace rawrbox {
 
 		rawrbox::Watch _timer;
 
-		// Quick sleep from  https://github.com/turanszkij/WickedEngine/blob/387c3e0a379a843c433d425f970846a073d55665/WickedEngine/wiApplication.cpp#L148
+		// Quick sleep from https://github.com/turanszkij/WickedEngine/blob/master/WickedEngine/wiHelper.cpp#L1622
 		virtual void sleep(float milliseconds);
 
 		// Create the GLFW window

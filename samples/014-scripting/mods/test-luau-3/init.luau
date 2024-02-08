@@ -31,9 +31,10 @@ print("hello {}", "cookies")
 ]]--
 
 
+--[[
 local sound = {}
 function MOD:init()
-    sound = BASS.loadHTTPSound("https://ams3.digitaloceanspaces.com/failcake/public/random_sounds/singusasong.ogg", BASS.FLAGS.BEAT_DETECTION)
+    sound = bass.loadHTTPSound("https://ams3.digitaloceanspaces.com/failcake/public/random_sounds/singusasong.ogg", BASS.FLAGS.BEAT_DETECTION)
     sound:setVolume(0.3)
     sound:play()
 
@@ -41,3 +42,15 @@ function MOD:init()
         print("beat", beat)
     end)
 end
+]]--
+
+--[[
+local headers = {
+    ["Content-Type"] = "application/json"
+}
+
+http.request("https://rawr.dev", HTTP_METHOD.GET, headers, function(success, data)
+    print(success)
+    printTable(data)
+end)
+]]--
