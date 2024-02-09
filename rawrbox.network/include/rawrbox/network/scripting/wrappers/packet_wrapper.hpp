@@ -1,8 +1,7 @@
 #pragma once
-/*
-#include <rawrbox/network/packet.hpp>
 
-#include <sol/sol.hpp>
+#include <rawrbox/network/packet.hpp>
+#include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
 	class PacketWrapper {
@@ -39,7 +38,7 @@ namespace rawrbox {
 		virtual void writeFloat(float val);
 		virtual void writeDouble(double val);
 		virtual void writeString(const std::string& val);
-		virtual void writeTable(sol::table val);
+		virtual void writeTable(const luabridge::LuaRef& ref);
 		// ---
 
 		// WRITE ---
@@ -55,10 +54,9 @@ namespace rawrbox {
 		virtual float readFloat();
 		virtual double readDouble();
 		virtual std::string readString();
-		virtual sol::table readTable(sol::this_state lua);
+		virtual luabridge::LuaRef readTable(lua_State* L);
 		// ---
 
-		static void registerLua(sol::state& lua);
+		static void registerLua(lua_State* L);
 	};
 } // namespace rawrbox
-*/

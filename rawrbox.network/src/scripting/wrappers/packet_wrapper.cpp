@@ -1,6 +1,5 @@
-/*
+
 #include <rawrbox/network/scripting/wrappers/packet_wrapper.hpp>
-#include <rawrbox/scripting/utils/lua.hpp>
 
 #include <utility>
 
@@ -28,7 +27,7 @@ namespace rawrbox {
 	void PacketWrapper::writeFloat(float val) { data.write(val); }
 	void PacketWrapper::writeDouble(double val) { data.write(val); }
 	void PacketWrapper::writeString(const std::string& val) { data.write(val); }
-	void PacketWrapper::writeTable(sol::table val) { data.write(rawrbox::LuaUtils::luaToJsonObject(val).dump()); }
+	void PacketWrapper::writeTable(const luabridge::LuaRef& val) { data.write(rawrbox::LuaUtils::luaToJsonObject(val).dump()); }
 	// -------
 
 	// READ ----
@@ -45,57 +44,57 @@ namespace rawrbox {
 	double PacketWrapper::readDouble() { return data.read<double>(); }
 	std::string PacketWrapper::readString() { return data.read<std::string>(); }
 
-	sol::table PacketWrapper::readTable(sol::this_state lua) {
-		sol::state_view view = lua;
-		return rawrbox::LuaUtils::jsonToLuaObject(nlohmann::json::parse(data.read<std::string>()), view);
+	luabridge::LuaRef PacketWrapper::readTable(lua_State* L) {
+		return rawrbox::LuaUtils::jsonToLua(L, nlohmann::json::parse(data.read<std::string>()));
 	}
 	// ----------
 
-	void PacketWrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<PacketWrapper>("Packet",
-		    sol::constructors<rawrbox::PacketWrapper(), rawrbox::PacketWrapper(rawrbox::PacketWrapper)>(),
+	void PacketWrapper::registerLua(lua_State* L) {
 
-		    // UTILS -----
-		    "seek", &PacketWrapper::seek,
-		    "tell", &PacketWrapper::tell,
-		    "size", &PacketWrapper::size,
-		    "clear", &PacketWrapper::clear,
-		    "empty", &PacketWrapper::empty,
-		    // -------------
+		luabridge::getGlobalNamespace(L)
+		    .beginClass<rawrbox::PacketWrapper>("Packet")
+		    .addConstructor<void(), void(rawrbox::PacketWrapper), void(rawrbox::Packet)>()
+
+		    // UTILS ----
+		    .addFunction("seek", &PacketWrapper::seek)
+		    .addFunction("clear", &PacketWrapper::clear)
+		    .addFunction("tell", &PacketWrapper::tell)
+		    .addFunction("size", &PacketWrapper::size)
+		    .addFunction("empty", &PacketWrapper::empty)
+		    // ----
 
 		    // WRITE ---
-		    "writeBool", &PacketWrapper::writeBool,
-		    "writeByte", &PacketWrapper::writeByte,
-		    "writeChar", &PacketWrapper::writeChar,
-		    "writeShort", &PacketWrapper::writeShort,
-		    "writeUShort", &PacketWrapper::writeUShort,
-		    "writeInt", &PacketWrapper::writeInt,
-		    "writeUInt", &PacketWrapper::writeUInt,
-		    "writeLong", &PacketWrapper::writeLong,
-		    "writeULong", &PacketWrapper::writeULong,
-		    "writeFloat", &PacketWrapper::writeFloat,
-		    "writeDouble", &PacketWrapper::writeDouble,
-		    "writeString", &PacketWrapper::writeString,
-		    "writeTable", &PacketWrapper::writeTable,
+		    .addFunction("writeBool", &PacketWrapper::writeBool)
+		    .addFunction("writeByte", &PacketWrapper::writeByte)
+		    .addFunction("writeChar", &PacketWrapper::writeChar)
+		    .addFunction("writeShort", &PacketWrapper::writeShort)
+		    .addFunction("writeUShort", &PacketWrapper::writeUShort)
+		    .addFunction("writeInt", &PacketWrapper::writeInt)
+		    .addFunction("writeUInt", &PacketWrapper::writeUInt)
+		    .addFunction("writeLong", &PacketWrapper::writeLong)
+		    .addFunction("writeULong", &PacketWrapper::writeULong)
+		    .addFunction("writeFloat", &PacketWrapper::writeFloat)
+		    .addFunction("writeDouble", &PacketWrapper::writeDouble)
+		    .addFunction("writeString", &PacketWrapper::writeString)
+		    .addFunction("writeTable", &PacketWrapper::writeTable)
 		    // ----
 
 		    // READ ---
-		    "readBool", &PacketWrapper::readBool,
-		    "readByte", &PacketWrapper::readByte,
-		    "readChar", &PacketWrapper::readChar,
-		    "readShort", &PacketWrapper::readShort,
-		    "readUShort", &PacketWrapper::readUShort,
-		    "readInt", &PacketWrapper::readInt,
-		    "readUInt", &PacketWrapper::readUInt,
-		    "readLong", &PacketWrapper::readLong,
-		    "readULong", &PacketWrapper::readULong,
-		    "readFloat", &PacketWrapper::readFloat,
-		    "readDouble", &PacketWrapper::readDouble,
-		    "readString", &PacketWrapper::readString,
-		    "readTable", &PacketWrapper::readTable
+		    .addFunction("readBool", &PacketWrapper::readBool)
+		    .addFunction("readByte", &PacketWrapper::readByte)
+		    .addFunction("readChar", &PacketWrapper::readChar)
+		    .addFunction("readShort", &PacketWrapper::readShort)
+		    .addFunction("readUShort", &PacketWrapper::readUShort)
+		    .addFunction("readInt", &PacketWrapper::readInt)
+		    .addFunction("readUInt", &PacketWrapper::readUInt)
+		    .addFunction("readLong", &PacketWrapper::readLong)
+		    .addFunction("readULong", &PacketWrapper::readULong)
+		    .addFunction("readFloat", &PacketWrapper::readFloat)
+		    .addFunction("readDouble", &PacketWrapper::readDouble)
+		    .addFunction("readString", &PacketWrapper::readString)
+		    .addFunction("readTable", &PacketWrapper::readTable)
 		    // ----
-		);
+		    .endClass();
 	}
 	// -------------------------
 } // namespace rawrbox
-*/

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <rawrbox/network/scripting/wrappers/http_wrapper.hpp>
-// #include <rawrbox/network/scripting/wrappers/packet_wrapper.hpp>
+#include <rawrbox/network/scripting/wrappers/packet_wrapper.hpp>
 #include <rawrbox/scripting/plugin.hpp>
 
 namespace rawrbox {
@@ -10,7 +10,7 @@ namespace rawrbox {
 		void registerTypes(lua_State* L) override {
 			if (L == nullptr) throw std::runtime_error("Tried to register plugin on invalid mod!");
 			rawrbox::HTTPWrapper::registerLua(L);
-			// rawrbox::PacketWrapper::registerLua(lua);
+			rawrbox::PacketWrapper::registerLua(L);
 		};
 
 		void loadLibraries(lua_State* L) override {

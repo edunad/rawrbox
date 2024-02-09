@@ -1,12 +1,12 @@
-LightType = {
+_G.LIGHT_TYPE = {
     UNKNOWN = 0,
 
     POINT = 1,
     SPOT = 2,
-    DIR = 3,
+    DIR = 3, -- Aka sun
 }
 
-FogType = {
+_G.FOG_TYPE = {
     LINEAR = 0,
     EXP = 1
 }
