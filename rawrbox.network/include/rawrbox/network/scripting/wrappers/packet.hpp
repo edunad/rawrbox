@@ -6,7 +6,7 @@
 namespace rawrbox {
 	class PacketWrapper {
 	protected:
-		rawrbox::Packet data;
+		rawrbox::Packet data = {};
 
 	public:
 		PacketWrapper() = default;

@@ -1,8 +1,7 @@
 #pragma once
-/*
-#include <rawrbox/render/textures/base.hpp>
 
-#include <sol/sol.hpp>
+#include <rawrbox/render/textures/base.hpp>
+#include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
 	class TextureWrapper {
@@ -21,11 +20,10 @@ namespace rawrbox {
 
 		// UTILS----
 		[[nodiscard]] virtual bool hasTransparency() const;
-		[[nodiscard]] virtual const rawrbox::Vector2i getSize() const;
+		[[nodiscard]] virtual rawrbox::Vector2 getSize() const;
 		[[nodiscard]] virtual bool isValid() const;
 		// -----
 
-		static void registerLua(sol::state& lua);
+		static void registerLua(lua_State* L);
 	};
 } // namespace rawrbox
-*/

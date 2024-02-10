@@ -26,7 +26,14 @@ namespace rawrbox {
 
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1); }
-		static VecType nan() { return VecType(std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN()); }
+
+		static VecType nan()
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{ return VecType(std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN()); }
+
+		[[nodiscard]] bool isNAN() const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{ return std::isnan<NumberType>(x) && std::isnan<NumberType>(y); }
 
 		[[nodiscard]] std::string toString() const { return std::to_string(x) + "," + std::to_string(y); }
 		[[nodiscard]] int size() const { return 2; }
@@ -91,19 +98,19 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] VecType min(const VecType& other) const
-			requires(std::is_same_v<NumberType, float>)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return {std::min(x, other.x), std::min(y, other.y)};
 		}
 
 		[[nodiscard]] VecType max(const VecType& other) const
-			requires(std::is_same_v<NumberType, float>)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return {std::max(x, other.x), std::max(y, other.y)};
 		}
 
 		[[nodiscard]] NumberType atan2() const
-			requires(std::is_same_v<NumberType, float>)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return std::atan2(y, x);
 		}
@@ -156,39 +163,39 @@ namespace rawrbox {
 		// ------
 
 		// UTILS - FLOAT ---
-		[[nodiscard]] float dot(const Vector2_t<float>& other) const
-			requires(std::is_same_v<NumberType, float>)
+		[[nodiscard]] float dot(const VecType& other) const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return x * other.x + y * other.y;
 		}
 
-		[[nodiscard]] Vector2_t<float> normalized() const
-			requires(std::is_same_v<NumberType, float>)
+		[[nodiscard]] VecType normalized() const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			float l = length();
-			return l == 0 ? Vector2_t<float>() : (*this) / l;
+			return l == 0 ? VecType() : (*this) / l;
 		}
 
-		[[nodiscard]] float cross(const Vector2_t<float>& other) const
-			requires(std::is_same_v<NumberType, float>)
+		[[nodiscard]] float cross(const VecType& other) const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return x * other.y - y * other.x;
 		}
 
 		[[nodiscard]] Vector2_t<float> floor() const
-			requires(std::is_same_v<NumberType, float>)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return {std::floor(x), std::floor(y)};
 		}
 
 		[[nodiscard]] Vector2_t<float> round() const
-			requires(std::is_same_v<NumberType, float>)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return {std::round(x), std::round(y)};
 		}
 
 		[[nodiscard]] Vector2_t<float> ceil() const
-			requires(std::is_same_v<NumberType, float>)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return {std::ceil(x), std::ceil(y)};
 		}

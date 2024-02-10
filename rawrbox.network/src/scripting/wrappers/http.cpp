@@ -1,5 +1,5 @@
 #include <rawrbox/engine/static.hpp>
-#include <rawrbox/network/scripting/wrappers/http_wrapper.hpp>
+#include <rawrbox/network/scripting/wrappers/http.hpp>
 
 namespace rawrbox {
 	void HTTPWrapper::request(const std::string& url, int method, const luabridge::LuaRef& headers, const luabridge::LuaRef& callback, std::optional<int> timeout) {

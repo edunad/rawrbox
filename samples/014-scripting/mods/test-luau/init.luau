@@ -36,3 +36,18 @@ meow = function(data)
     printTable(data)
     print("called meow")
 end]]
+
+--[[
+    timer.create("meow", -1, 1000, function()
+    camera.setPos(Vector3(0,math.random(0, 10),0))
+end)
+]]
+
+--[[
+timer.create("meow", -1, 1000, function()
+    local window = window.get(0)
+    window:setPos(Vector2(0,math.random(0, 10)))
+
+    print("move window")
+end)
+]]

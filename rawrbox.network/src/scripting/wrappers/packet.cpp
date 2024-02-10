@@ -1,5 +1,5 @@
 
-#include <rawrbox/network/scripting/wrappers/packet_wrapper.hpp>
+#include <rawrbox/network/scripting/wrappers/packet.hpp>
 
 #include <utility>
 
@@ -53,7 +53,7 @@ namespace rawrbox {
 
 		luabridge::getGlobalNamespace(L)
 		    .beginClass<rawrbox::PacketWrapper>("Packet")
-		    .addConstructor<void(), void(rawrbox::PacketWrapper), void(rawrbox::Packet)>()
+		    .addConstructor<void(), void(rawrbox::Packet)>()
 
 		    // UTILS ----
 		    .addFunction("seek", &PacketWrapper::seek)
@@ -94,6 +94,7 @@ namespace rawrbox {
 		    .addFunction("readString", &PacketWrapper::readString)
 		    .addFunction("readTable", &PacketWrapper::readTable)
 		    // ----
+
 		    .endClass();
 	}
 	// -------------------------

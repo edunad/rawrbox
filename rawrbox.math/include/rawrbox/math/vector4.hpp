@@ -26,6 +26,14 @@ namespace rawrbox {
 		Vector4_t(Vector2_t<NumberType> val, NumberType _z = 0.F, NumberType _w = 0.F) : x(val.x), y(val.y), z(_z), w(_w) {}
 		// NOLINTEND(hicpp-explicit-conversions)
 
+		static VecType nan()
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{ return VecType(std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN()); }
+
+		[[nodiscard]] bool isNAN() const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{ return std::isnan<NumberType>(x) && std::isnan<NumberType>(y) && std::isnan<NumberType>(z) && std::isnan<NumberType>(w); }
+
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1, 1); }
 		[[nodiscard]] int size() const { return 4; }
@@ -268,13 +276,13 @@ namespace rawrbox {
 		};
 
 		[[nodiscard]] VecType min(const VecType& other) const
-			requires(std::is_same_v<NumberType, float>)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return {std::min(x, other.x), std::min(y, other.y), std::min(z, other.z), std::min(w, other.w)};
 		}
 
 		[[nodiscard]] VecType max(const VecType& other) const
-			requires(std::is_same_v<NumberType, float>)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return {std::max(x, other.x), std::max(y, other.y), std::max(z, other.z), std::min(w, other.w)};
 		}

@@ -10,6 +10,7 @@
 
 struct GLFWwindow;
 struct GLFWmonitor;
+struct GLFWcursor;
 
 namespace rawrbox {
 	// FLAGS ------
@@ -40,6 +41,7 @@ namespace rawrbox {
 	using OnResizeCallback = rawrbox::Event<Window&, const Vector2i&, const Vector2i&>;
 	using OnScrollCallback = rawrbox::Event<Window&, const Vector2i&, const Vector2i&>;
 	using OnMouseMoveCallback = rawrbox::Event<Window&, const Vector2i&>;
+	using OnWindowMoveCallback = rawrbox::Event<Window&, const Vector2i&>;
 	using OnKeyCallback = rawrbox::Event<Window&, uint32_t, uint32_t, uint32_t, uint32_t>;
 	using OnMouseKeyCallback = rawrbox::Event<Window&, const Vector2i&, uint32_t, uint32_t, uint32_t>;
 	using OnWindowClose = rawrbox::Event<Window&>;
@@ -47,6 +49,8 @@ namespace rawrbox {
 
 	struct WindowSettings {
 		rawrbox::Vector2i size = {};
+		rawrbox::Vector2i pos = {-1, -1};
+
 		uint32_t flags = 0;
 		int monitor = -1;
 		std::string title = "RawrBox";
@@ -59,7 +63,7 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::RendererBase> _renderer = nullptr;
 
 		// CURSOR ------
-		void* _cursor = nullptr;
+		GLFWcursor* _cursor = nullptr;
 		std::array<uint8_t, 16 * 16 * 4> _cursorPixels = {};
 		// -----------
 
@@ -71,11 +75,21 @@ namespace rawrbox {
 		std::unordered_map<int, rawrbox::Vector2i> _screenSizes = {};
 		// --------
 
+		// STATIC ----
+		// LOGGER ------
+		static std::unique_ptr<rawrbox::Logger> _logger;
+		// -------------
+
+		static std::vector<std::unique_ptr<rawrbox::Window>> __WINDOWS;
+		static Diligent::RENDER_DEVICE_TYPE __RENDER_TYPE;
+		// -------------
+
 		// CALLBACKS ------
 		static void callbacks_focus(GLFWwindow* whandle, int focus);
 		static void callbacks_char(GLFWwindow* whandle, unsigned int ch);
 		static void callbacks_scroll(GLFWwindow* whandle, double x, double y);
 		static void callbacks_mouseMove(GLFWwindow* whandle, double x, double y);
+		static void callbacks_pos(GLFWwindow* whandle, int x, int y);
 		static void callbacks_resize(GLFWwindow* whandle, int width, int height);
 		static void callbacks_mouseKey(GLFWwindow* whandle, int button, int action, int mods);
 		static void callbacks_key(GLFWwindow* whandle, int key, int scancode, int action, int mods);
@@ -93,9 +107,6 @@ namespace rawrbox {
 		virtual ~Window();
 
 		// STATIC ---
-		static std::vector<std::unique_ptr<rawrbox::Window>> __WINDOWS;
-		static Diligent::RENDER_DEVICE_TYPE __RENDER_TYPE;
-
 		static rawrbox::Window* createWindow(Diligent::RENDER_DEVICE_TYPE render = Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_UNDEFINED);
 		static rawrbox::Window* getWindow(size_t indx = 0);
 
@@ -129,6 +140,7 @@ namespace rawrbox {
 		OnScrollCallback onMouseScroll;
 		OnMouseKeyCallback onMouseKey;
 		OnMouseMoveCallback onMouseMove;
+		OnWindowMoveCallback onWindowMove;
 		OnWindowClose onWindowClose;
 		// --------------------
 
@@ -147,6 +159,10 @@ namespace rawrbox {
 		void close();
 
 		[[nodiscard]] virtual rawrbox::Vector2i getSize() const;
+
+		virtual void setPos(const rawrbox::Vector2i& pos);
+		[[nodiscard]] virtual rawrbox::Vector2i getPos() const;
+
 		[[nodiscard]] virtual rawrbox::Vector2i getMonitorSize() const;
 
 		[[nodiscard]] virtual float getAspectRatio() const;

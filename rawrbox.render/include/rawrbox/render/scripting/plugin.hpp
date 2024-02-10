@@ -1,7 +1,8 @@
 #pragma once
 
-#include <rawrbox/render/scripting/wrappers/camera_wrapper.hpp>
-#include <rawrbox/render/scripting/wrappers/textures/base_wrapper.hpp>
+#include <rawrbox/render/scripting/wrappers/camera.hpp>
+#include <rawrbox/render/scripting/wrappers/textures/base.hpp>
+#include <rawrbox/render/scripting/wrappers/window.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/scripting/plugin.hpp>
 
@@ -15,17 +16,18 @@ namespace rawrbox {
 
 		void registerTypes(lua_State* L) override {
 			if (L == nullptr) throw std::runtime_error("Tried to register plugin on invalid mod!");
+
 			// GAME --
-			// rawrbox::CameraWrapper::registerLua(lua);
+			rawrbox::CameraWrapper::registerLua(L);
+			rawrbox::WindowWrapper::registerLua(L);
 			// -------
 
 			// TEXTURES ----
-			// rawrbox::TextureWrapper::registerLua(lua);
+			rawrbox::TextureWrapper::registerLua(L);
 			// ------
 
 			/*// GAME
 			rawrbox::WindowWrapper::registerLua(lua);
-			rawrbox::CameraWrapper::registerLua(lua);
 			rawrbox::StencilWrapper::registerLua(lua);
 			rawrbox::DecalsWrapper::registerLua(lua);
 			// ----
@@ -37,10 +39,6 @@ namespace rawrbox {
 			rawrbox::InstancedModelWrapper::registerLua(lua);
 			rawrbox::MeshWrapper::registerLua(lua);
 			// ----
-
-			// TEXTURES ----
-			rawrbox::TextureWrapper::registerLua(lua);
-			// ------
 
 			// LIGHT ----
 			rawrbox::LightBaseWrapper::registerLua(lua);
@@ -60,6 +58,23 @@ namespace rawrbox {
 		}
 
 		void registerGlobal(lua_State* L) override {
+			if (L == nullptr) throw std::runtime_error("Tried to register plugin on invalid mod!");
+
+			luabridge::getGlobalNamespace(L)
+			    .beginNamespace("renderer")
+			    .addVariable("MAX_BONES_PER_VERTEX", &rawrbox::MAX_BONES_PER_VERTEX)
+			    .addVariable("MAX_BONES_PER_MODEL", &rawrbox::MAX_BONES_PER_MODEL)
+			    .addVariable("MAX_POST_DATA", &rawrbox::MAX_POST_DATA)
+
+			    .addFunction("frame", []() { return rawrbox::FRAME; })
+			    .endNamespace();
+
+			luabridge::getGlobalNamespace(L)
+			    .beginNamespace("window")
+			    .addFunction("get", [](uint32_t index) {
+				    return rawrbox::WindowWrapper(rawrbox::Window::getWindow(index));
+			    })
+			    .endNamespace();
 			/*if (mod == nullptr) throw std::runtime_error("[RawrBox-RenderPlugin] Tried to register plugin on invalid mod!");
 
 			auto& env = mod->getEnvironment();
@@ -106,8 +121,7 @@ namespace rawrbox {
 
 		void loadLibraries(lua_State* L) override {
 			if (L == nullptr) throw std::runtime_error("Tried to register plugin on invalid mod!");
-			/*if (mod == nullptr) throw std::runtime_error("[RawrBox-RenderPlugin] Tried to register plugin on invalid mod!");
-			rawrbox::SCRIPTING::loadLuaFile("./lua/render_enums.lua", mod->getEnvironment());*/
+			rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Enums::RENDER", "./lua/enums/render.lua");
 		}
 	};
 } // namespace rawrbox

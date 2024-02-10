@@ -1,3 +1,4 @@
+#include <rawrbox/render/scripting/plugin.hpp>
 #ifdef RAWRBOX_BASS
 	#include <rawrbox/bass/resources/sound.hpp>
 	#include <rawrbox/bass/scripting/plugin.hpp>
@@ -79,6 +80,9 @@ namespace scripting_test {
 #ifdef RAWRBOX_NETWORK
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::NetworkPlugin>();
 #endif
+
+		rawrbox::SCRIPTING::registerPlugin<rawrbox::RendererPlugin>(window);
+
 		// Custom non-plugin ---
 		/*rawrbox::SCRIPTING::registerType<rawrbox::TestWrapper>();
 		rawrbox::SCRIPTING::onRegisterGlobals += [this](rawrbox::Mod* mod) {

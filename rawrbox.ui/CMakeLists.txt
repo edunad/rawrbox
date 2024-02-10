@@ -39,6 +39,7 @@ endif()
 
 # LIB ----
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_UI_IMPORTS})
+
 copy_resources(TARGET ${output_target})
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
     copy_lua_libs(TARGET ${output_target})
