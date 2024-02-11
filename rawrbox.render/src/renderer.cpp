@@ -361,9 +361,10 @@ namespace rawrbox {
 			// this->beginQuery("OVERLAY");
 #endif
 			this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+			if (this->_stencil != nullptr) this->_stencil->render();
 #ifdef _DEBUG
-			// this->_context->EndDebugGroup();
-			// this->endQuery("OVERLAY");
+				// this->_context->EndDebugGroup();
+				// this->endQuery("OVERLAY");
 #endif
 
 			this->frame();
@@ -429,9 +430,10 @@ namespace rawrbox {
 		// this->beginQuery("OVERLAY");
 #endif
 		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+		if (this->_stencil != nullptr) this->_stencil->render();
 #ifdef _DEBUG
-		// this->endQuery("OVERLAY");
-		// this->_context->EndDebugGroup();
+			// this->endQuery("OVERLAY");
+			// this->_context->EndDebugGroup();
 #endif
 		//  ------------------
 
@@ -656,7 +658,7 @@ namespace rawrbox {
 	// Utils ----
 	void RendererBase::setMainCamera(rawrbox::CameraBase* camera) const { rawrbox::MAIN_CAMERA = camera; }
 	rawrbox::CameraBase* RendererBase::camera() const { return this->_camera.get(); }
-	rawrbox::Stencil& RendererBase::stencil() const { return *this->_stencil.get(); }
+	rawrbox::Stencil* RendererBase::stencil() const { return this->_stencil.get(); }
 
 	Diligent::IDeviceContext* RendererBase::context() const { return this->_context; }
 	Diligent::ISwapChain* RendererBase::swapChain() const { return this->_swapChain; }

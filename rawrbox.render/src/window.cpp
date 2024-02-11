@@ -95,6 +95,7 @@ namespace rawrbox {
 
 	void Window::shutdown() {
 		__WINDOWS.clear();
+		_logger.reset();
 
 		// SHUTDOWN FONTS ----
 		rawrbox::TextEngine::shutdown();

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <rawrbox/render/scripting/wrappers/camera.hpp>
+#include <rawrbox/render/scripting/wrappers/stencil.hpp>
+#include <rawrbox/render/scripting/wrappers/text/font.hpp>
 #include <rawrbox/render/scripting/wrappers/textures/base.hpp>
 #include <rawrbox/render/scripting/wrappers/window.hpp>
 #include <rawrbox/render/static.hpp>
@@ -17,10 +19,15 @@ namespace rawrbox {
 		void registerTypes(lua_State* L) override {
 			if (L == nullptr) throw std::runtime_error("Tried to register plugin on invalid mod!");
 
+			// FONT ----
+			rawrbox::FontWrapper::registerLua(L);
+			// ------
+
 			// GAME --
 			rawrbox::CameraWrapper::registerLua(L);
 			rawrbox::WindowWrapper::registerLua(L);
-			// -------
+			rawrbox::StencilWrapper::registerLua(L);
+			//  -------
 
 			// TEXTURES ----
 			rawrbox::TextureWrapper::registerLua(L);
@@ -65,7 +72,6 @@ namespace rawrbox {
 			    .addVariable("MAX_BONES_PER_VERTEX", &rawrbox::MAX_BONES_PER_VERTEX)
 			    .addVariable("MAX_BONES_PER_MODEL", &rawrbox::MAX_BONES_PER_MODEL)
 			    .addVariable("MAX_POST_DATA", &rawrbox::MAX_POST_DATA)
-
 			    .addFunction("frame", []() { return rawrbox::FRAME; })
 			    .endNamespace();
 

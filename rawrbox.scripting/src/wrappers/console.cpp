@@ -24,7 +24,7 @@ namespace rawrbox {
 
 	std::pair<bool, std::string> ConsoleWrapper::execute(lua_State* L) {
 		if (_console == nullptr) throw std::runtime_error("Console instance not set!");
-		return _console->executeCommand(rawrbox::LuaUtils::getStringVariadicArgs(L));
+		return _console->executeCommand(rawrbox::LuaUtils::argsToString(L, true));
 	}
 
 	void ConsoleWrapper::print(const std::string& text, std::optional<rawrbox::PrintType> type) {

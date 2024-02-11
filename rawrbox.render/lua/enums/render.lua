@@ -10,3 +10,8 @@ _G.FOG_TYPE = {
     LINEAR = 0,
     EXP = 1
 }
+
+_G.DRAW_PASS = {
+    OPAQUE = 0,
+    OVERLAY = 1
+}

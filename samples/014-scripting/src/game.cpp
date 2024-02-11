@@ -239,7 +239,7 @@ namespace scripting_test {
 		this->_model->upload();
 		this->_ready = true;
 
-		// rawrbox::SCRIPTING::call("onReady");
+		rawrbox::SCRIPTING::call("onReady");
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
@@ -266,11 +266,12 @@ namespace scripting_test {
 		if (!this->_ready) return;
 		if (this->_model != nullptr) this->_model->draw();
 		if (this->_instance != nullptr) this->_instance->draw();
+		rawrbox::SCRIPTING::call("draw", static_cast<int>(rawrbox::DrawPass::PASS_OPAQUE));
 	}
 
 	void Game::drawOverlay() {
 		if (!this->_ready) return;
-			// rawrbox::SCRIPTING::call("drawOverlay");
+		rawrbox::SCRIPTING::call("draw", static_cast<int>(rawrbox::DrawPass::PASS_OVERLAY));
 
 #ifdef RAWRBOX_UI
 		this->_ROOT_UI->render();

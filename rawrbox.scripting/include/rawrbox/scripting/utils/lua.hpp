@@ -25,7 +25,7 @@ namespace rawrbox {
 
 		static std::string getError(lua_State* L);
 
-		static std::vector<std::string> getStringVariadicArgs(lua_State* L);
+		static std::vector<std::string> argsToString(lua_State* L, bool filterNonStr = false);
 		static void getVariadicArgs(const luabridge::LuaRef& in, luabridge::LuaRef& out);
 
 		static luabridge::LuaRef jsonToLua(lua_State* L, const nlohmann::json& json);

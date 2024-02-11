@@ -172,7 +172,7 @@ namespace rawrbox {
 			    _logger->info("{}", json.dump(1, ' ', false));
 		    })
 		    .addFunction("print", [](lua_State* state) {
-			    auto args = rawrbox::LuaUtils::getStringVariadicArgs(state);
+			    auto args = rawrbox::LuaUtils::argsToString(state);
 			    if (args.empty()) return;
 
 			    _logger->info("{}", fmt::join(args, " "));
@@ -220,7 +220,7 @@ namespace rawrbox {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("string", {})
 		    .addFunction("vformat", [](lua_State* state) {
-			    auto vars = rawrbox::LuaUtils::getStringVariadicArgs(state);
+			    auto vars = rawrbox::LuaUtils::argsToString(state);
 			    if (vars.size() < 1) throw std::runtime_error("Missing params");
 
 			    fmt::dynamic_format_arg_store<fmt::format_context> fmtArgs = {};

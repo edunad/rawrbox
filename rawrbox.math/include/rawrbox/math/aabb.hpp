@@ -86,6 +86,11 @@ namespace rawrbox {
 			return masked;
 		}
 
+		template <class ReturnType>
+		AABB_t<ReturnType> cast() const {
+			return {pos.template cast<ReturnType>(), size.template cast<ReturnType>()};
+		}
+
 		AABBType operator*(NumberType other) const { return AABBType(this->pos * other, this->size * other); }
 
 		bool operator==(const AABBType& other) const { return this->pos == other.pos && this->size == other.size; }

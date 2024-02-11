@@ -56,9 +56,13 @@ namespace rawrbox {
 			auto fnc = this->_modTable[name];
 
 			try {
-				return luabridge::call(fnc, std::forward<CallbackArgs>(args)...);
+				return luabridge::call(fnc, this->_modTable, std::forward<CallbackArgs>(args)...);
 			} catch (luabridge::LuaException& err) {
 				throw _logger->error("{}", err.what());
+			} catch (std::exception& err) {
+				throw _logger->error("{}", err.what());
+			} catch (...) {
+				throw _logger->error("unknown lua error");
 			}
 		}
 	};

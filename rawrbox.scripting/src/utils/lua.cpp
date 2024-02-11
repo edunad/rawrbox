@@ -80,15 +80,42 @@ namespace rawrbox {
 		return lua_tostring(L, -1);
 	}
 
-	std::vector<std::string> LuaUtils::getStringVariadicArgs(lua_State* L) {
+	std::vector<std::string> LuaUtils::argsToString(lua_State* L, bool filterNonStr) {
 		std::vector<std::string> args = {};
 
 		int nargs = lua_gettop(L);
 		if (nargs == 0) return args;
 
 		for (int i = 1; i <= nargs; i++) {
-			if (!lua_isstring(L, i)) continue;
-			args.emplace_back(lua_tostring(L, i));
+			if (filterNonStr) {
+				if (!lua_isstring(L, i)) continue;
+				args.emplace_back(lua_tostring(L, i));
+			} else {
+				int type = lua_type(L, i);
+
+				switch (type) {
+					case LUA_TFUNCTION:
+						args.emplace_back(fmt::format("function({})", lua_topointer(L, i)));
+						break;
+					case LUA_TTABLE:
+						args.emplace_back(fmt::format("table({})", lua_topointer(L, i)));
+						break;
+					case LUA_TVECTOR:
+						args.emplace_back(fmt::format("vector({})", lua_topointer(L, i)));
+						break;
+					case LUA_TUSERDATA:
+						args.emplace_back(fmt::format("userdata({})", lua_topointer(L, i)));
+						break;
+					case LUA_TNIL:
+					case LUA_TNONE:
+						args.emplace_back("nil");
+						break;
+					default:
+						if (!lua_isstring(L, i)) continue;
+						args.emplace_back(lua_tostring(L, i));
+						break;
+				}
+			}
 		}
 
 		return args;
