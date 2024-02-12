@@ -16,7 +16,7 @@ namespace rawrbox {
 		~SpotLight() override = default;
 
 		[[nodiscard]] rawrbox::LightType getType() const override;
-		[[nodiscard]] const rawrbox::Vector4f getData() const override;
+		[[nodiscard]] rawrbox::Vector4f getData() const override;
 
 		[[nodiscard]] float getUmbra() const;
 		[[nodiscard]] float getPenumbra() const;

@@ -90,7 +90,7 @@ namespace rawrbox {
 		lights.reserve(_lights.size());
 
 		for (auto& l : _lights) {
-			if (!l->isOn()) continue;
+			if (!l->isActive()) continue;
 
 			rawrbox::LightDataVertex light = {};
 

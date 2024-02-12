@@ -1,6 +1,8 @@
 #pragma once
 
 #include <rawrbox/render/scripting/wrappers/camera.hpp>
+#include <rawrbox/render/scripting/wrappers/light/base.hpp>
+#include <rawrbox/render/scripting/wrappers/light/manager.hpp>
 #include <rawrbox/render/scripting/wrappers/stencil.hpp>
 #include <rawrbox/render/scripting/wrappers/text/font.hpp>
 #include <rawrbox/render/scripting/wrappers/textures/base.hpp>
@@ -9,12 +11,12 @@
 #include <rawrbox/scripting/plugin.hpp>
 
 namespace rawrbox {
-	class RendererPlugin : public rawrbox::ScriptingPlugin {
+	class RendererScripting : public rawrbox::ScriptingPlugin {
 	protected:
 		rawrbox::Window* _window = nullptr;
 
 	public:
-		RendererPlugin(rawrbox::Window* window) : _window(window){};
+		RendererScripting(rawrbox::Window* window) : _window(window){};
 
 		void registerTypes(lua_State* L) override {
 			if (L == nullptr) throw std::runtime_error("Tried to register plugin on invalid mod!");
@@ -31,6 +33,11 @@ namespace rawrbox {
 
 			// TEXTURES ----
 			rawrbox::TextureWrapper::registerLua(L);
+			// ------
+
+			// LIGHT ----
+			rawrbox::LightBaseWrapper::registerLua(L);
+			rawrbox::LightsWrapper::registerLua(L);
 			// ------
 
 			/*// GAME

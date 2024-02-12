@@ -5,7 +5,7 @@
 #include <rawrbox/scripting/plugin.hpp>
 
 namespace rawrbox {
-	class BASSPlugin : public rawrbox::ScriptingPlugin {
+	class BASScripting : public rawrbox::ScriptingPlugin {
 	public:
 		void registerTypes(lua_State* L) override {
 			rawrbox::SoundInstanceWrapper::registerLua(L);

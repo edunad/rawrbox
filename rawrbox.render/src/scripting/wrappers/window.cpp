@@ -20,24 +20,24 @@ namespace rawrbox {
 		this->_window->setCursor(cursor);
 	}
 
-	void WindowWrapper::setSize(const rawrbox::Vector2& /*size*/) const {
+	void WindowWrapper::setSize(const rawrbox::Vector2i& /*size*/) const {
 		if (this->_window == nullptr) throw std::runtime_error("Invalid window handle");
 		// this->_window->setSize(size.cast<int>()); // TODO: THIS WILL AFFECT THE RENDERER, WE DON'T SUPPORT RESIZE FULLY YET
 	}
 
-	rawrbox::Vector2 WindowWrapper::getSize() const {
+	rawrbox::Vector2i WindowWrapper::getSize() const {
 		if (this->_window == nullptr) throw std::runtime_error("Invalid window handle");
-		return this->_window->getSize().cast<float>();
+		return this->_window->getSize();
 	}
 
-	void WindowWrapper::setPos(const rawrbox::Vector2& pos) const {
+	void WindowWrapper::setPos(const rawrbox::Vector2i& pos) const {
 		if (this->_window == nullptr) throw std::runtime_error("Invalid window handle");
-		this->_window->setPos(pos.cast<int>());
+		this->_window->setPos(pos);
 	}
 
-	rawrbox::Vector2 WindowWrapper::getPos() const {
+	rawrbox::Vector2i WindowWrapper::getPos() const {
 		if (this->_window == nullptr) throw std::runtime_error("Invalid window handle");
-		return this->_window->getPos().cast<float>();
+		return this->_window->getPos();
 	}
 
 	float WindowWrapper::getAspectRatio() const {
@@ -45,9 +45,9 @@ namespace rawrbox {
 		return this->_window->getAspectRatio();
 	}
 
-	rawrbox::Vector2 WindowWrapper::getMousePos() const {
+	rawrbox::Vector2i WindowWrapper::getMousePos() const {
 		if (this->_window == nullptr) throw std::runtime_error("Invalid window handle");
-		return this->_window->getMousePos().cast<float>();
+		return this->_window->getMousePos();
 	}
 
 	bool WindowWrapper::isKeyDown(int key) const {

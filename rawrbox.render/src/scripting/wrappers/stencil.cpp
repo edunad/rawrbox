@@ -13,9 +13,9 @@ namespace rawrbox {
 		rawrbox::RENDERER->stencil()->drawBox(pos, size, col.value_or(rawrbox::Colorsi::White()).cast<float>());
 	}
 
-	void StencilWrapper::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureWrapper& tex, const std::optional<rawrbox::Colori> col, const std::optional<rawrbox::Vector2f> uvStart, const std::optional<rawrbox::Vector2f> uvEnd) {
-		if (rawrbox::RENDERER == nullptr || !tex.isValid()) throw std::runtime_error("Invalid stencil handle");
-		rawrbox::RENDERER->stencil()->drawTexture(pos, size, *tex.getRef(), col.value_or(rawrbox::Colorsi::White()).cast<float>(), uvStart.value_or(rawrbox::Vector2f{0, 0}), uvEnd.value_or(rawrbox::Vector2f{1, 1}));
+	void StencilWrapper::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const std::optional<rawrbox::Colori> col, const std::optional<rawrbox::Vector2f> uvStart, const std::optional<rawrbox::Vector2f> uvEnd) {
+		if (rawrbox::RENDERER == nullptr) throw std::runtime_error("Invalid stencil handle");
+		rawrbox::RENDERER->stencil()->drawTexture(pos, size, tex, col.value_or(rawrbox::Colorsi::White()).cast<float>(), uvStart.value_or(rawrbox::Vector2f{0, 0}), uvEnd.value_or(rawrbox::Vector2f{1, 1}));
 	}
 
 	void StencilWrapper::drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, std::optional<rawrbox::Colori> col, std::optional<size_t> roundness, std::optional<float> angleStart, std::optional<float> angleEnd) {
@@ -28,9 +28,9 @@ namespace rawrbox {
 		rawrbox::RENDERER->stencil()->drawLine(from, to, col.value_or(rawrbox::Colorsi::White()).cast<float>());
 	}
 
-	void StencilWrapper::drawText(const rawrbox::FontWrapper& font, const std::string& text, const rawrbox::Vector2f& pos, const std::optional<rawrbox::Colori>& col, const std::optional<rawrbox::Alignment> alignX, const std::optional<rawrbox::Alignment> alignY) {
-		if (rawrbox::RENDERER == nullptr || font.isValid()) throw std::runtime_error("Invalid stencil handle");
-		rawrbox::RENDERER->stencil()->drawText(*font.getRef(), text, pos, col.value_or(rawrbox::Colorsi::White()).cast<float>(), alignX.value_or(rawrbox::Alignment::Center), alignY.value_or(rawrbox::Alignment::Center));
+	void StencilWrapper::drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const std::optional<rawrbox::Colori>& col, const std::optional<rawrbox::Alignment> alignX, const std::optional<rawrbox::Alignment> alignY) {
+		if (rawrbox::RENDERER == nullptr) throw std::runtime_error("Invalid stencil handle");
+		rawrbox::RENDERER->stencil()->drawText(font, text, pos, col.value_or(rawrbox::Colorsi::White()).cast<float>(), alignX.value_or(rawrbox::Alignment::Center), alignY.value_or(rawrbox::Alignment::Center));
 	}
 	// -------
 

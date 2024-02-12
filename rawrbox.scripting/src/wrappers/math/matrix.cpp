@@ -1,5 +1,5 @@
 #include <rawrbox/math/matrix4x4.hpp>
-#include <rawrbox/scripting/wrappers/math/matrix_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/math/matrix.hpp>
 
 namespace rawrbox {
 	void MatrixWrapper::registerLua(lua_State* L) {

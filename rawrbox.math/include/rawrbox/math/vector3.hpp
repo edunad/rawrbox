@@ -79,23 +79,6 @@ namespace rawrbox {
 			return {std::abs(x), std::abs(y), std::abs(z)};
 		}
 
-		// From: https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Math/Vector3.cs#L324
-		[[nodiscard]] NumberType angle(const VecType& target) const {
-			float denominator = std::sqrt(sqrMagnitude() * target.sqrMagnitude());
-			if (denominator < 1e-15F)
-				return 0.F;
-
-			float dot = std::clamp(this->dot(target) / denominator, -1.F, 1.F);
-			return std::acos(dot) * (1.F / (rawrbox::pi<float> * 2.F / 360.F));
-		}
-
-		[[nodiscard]] VecType rotateAroundOrigin(const VecType& axis, float theta) const {
-			float cos_theta = std::cos(theta);
-			float sin_theta = std::sin(theta);
-
-			return (VecType{this->x, this->y, this->z} * cos_theta) + (this->cross(axis) * sin_theta) + (axis * this->dot(axis)) * (1.F - cos_theta);
-		}
-
 		[[nodiscard]] VecType lerp(const VecType& other, float timestep) const {
 			if ((*this) == other) return other;
 			VecType ret;
@@ -121,14 +104,14 @@ namespace rawrbox {
 			    std::clamp(z, min.z, max.z)};
 		}
 
-		[[nodiscard]] VecType clampMagnitude(float max) const {
-			float mag = this->sqrMagnitude();
+		[[nodiscard]] VecType clampMagnitude(NumberType max) const {
+			NumberType mag = this->sqrMagnitude();
 			if (mag > max * max) {
-				float m = std::sqrt(mag);
+				NumberType m = std::sqrt(mag);
 
-				float x = this->x / m;
-				float y = this->y / m;
-				float z = this->z / m;
+				NumberType x = this->x / m;
+				NumberType y = this->y / m;
+				NumberType z = this->z / m;
 
 				return {x * max, y * max, z * max};
 			}
@@ -136,13 +119,43 @@ namespace rawrbox {
 			return *this;
 		}
 
+		[[nodiscard]] VecType min(const VecType& other) const {
+			return {std::min(x, other.x), std::min(y, other.y), std::min(z, other.z)};
+		}
+
+		[[nodiscard]] VecType max(const VecType& other) const {
+			return {std::max(x, other.x), std::max(y, other.y), std::max(z, other.z)};
+		}
+
 		template <class ReturnType>
 		Vector3_t<ReturnType> cast() const {
+			if constexpr (std::is_same_v<NumberType, ReturnType>) return *this;
 			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y), static_cast<ReturnType>(z)};
 		}
 		// ------
 
 		// UTILS - FLOAT ---
+		// From: https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Math/Vector3.cs#L324
+		[[nodiscard]] NumberType angle(const VecType& target) const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{
+			float denominator = std::sqrt(sqrMagnitude() * target.sqrMagnitude());
+			if (denominator < 1e-15F)
+				return 0.F;
+
+			float dot = std::clamp(this->dot(target) / denominator, -1.F, 1.F);
+			return std::acos(dot) * (1.F / (rawrbox::pi<float> * 2.F / 360.F));
+		}
+
+		[[nodiscard]] VecType rotateAroundOrigin(const VecType& axis, float theta) const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{
+			float cos_theta = std::cos(theta);
+			float sin_theta = std::sin(theta);
+
+			return (VecType{this->x, this->y, this->z} * cos_theta) + (this->cross(axis) * sin_theta) + (axis * this->dot(axis)) * (1.F - cos_theta);
+		}
+
 		[[nodiscard]] VecType normalized() const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
@@ -182,18 +195,6 @@ namespace rawrbox {
 			retVal.z = x * other.y - y * other.x;
 
 			return retVal;
-		}
-
-		[[nodiscard]] VecType min(const VecType& other) const
-			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
-		{
-			return {std::min(x, other.x), std::min(y, other.y), std::min(z, other.z)};
-		}
-
-		[[nodiscard]] VecType max(const VecType& other) const
-			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
-		{
-			return {std::max(x, other.x), std::max(y, other.y), std::max(z, other.z)};
 		}
 		// ----
 
@@ -280,5 +281,6 @@ namespace rawrbox {
 
 	using Vector3f = Vector3_t<float>;
 	using Vector3i = Vector3_t<int>;
+	using Vector3d = Vector3_t<double>;
 	using Vector3 = Vector3f;
 } // namespace rawrbox

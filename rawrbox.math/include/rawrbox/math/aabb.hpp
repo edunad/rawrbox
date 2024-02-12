@@ -66,10 +66,10 @@ namespace rawrbox {
 		[[nodiscard]] AABB_t<NumberType> mask(const AABB_t<NumberType>& other) const {
 			auto masked = *this;
 
-			if (masked.right() < other.left()) masked = {other.left(), other.top(), 0.0F, 0.0F};
-			if (masked.bottom() < other.top()) masked = {other.left(), other.top(), 0.0F, 0.0F};
-			if (masked.top() > other.bottom()) masked = {other.left(), other.top(), 0.0F, 0.0F};
-			if (masked.left() > other.right()) masked = {other.left(), other.top(), 0.0F, 0.0F};
+			if (masked.right() < other.left()) masked = {other.left(), other.top(), 0, 0};
+			if (masked.bottom() < other.top()) masked = {other.left(), other.top(), 0, 0};
+			if (masked.top() > other.bottom()) masked = {other.left(), other.top(), 0, 0};
+			if (masked.left() > other.right()) masked = {other.left(), other.top(), 0, 0};
 
 			if (masked.left() < other.left()) {
 				masked.size.x -= other.left() - std::abs(masked.left());

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
+#include <rawrbox/render/materials/instancedLit.hpp>
 #include <rawrbox/render/models/instanced.hpp>
 #include <rawrbox/utils/console.hpp>
 
@@ -15,7 +16,7 @@ namespace scripting_test {
 #endif
 
 		std::shared_ptr<rawrbox::Model<>> _model = std::make_shared<rawrbox::Model<>>();
-		std::shared_ptr<rawrbox::InstancedModel<>> _instance = std::make_shared<rawrbox::InstancedModel<>>();
+		std::unique_ptr<rawrbox::InstancedModel<rawrbox::MaterialInstancedLit>> _instance = std::make_unique<rawrbox::InstancedModel<rawrbox::MaterialInstancedLit>>();
 		std::unique_ptr<rawrbox::Console> _console = std::make_unique<rawrbox::Console>();
 
 		bool _ready = false;
@@ -25,6 +26,7 @@ namespace scripting_test {
 		void onThreadShutdown(rawrbox::ENGINE_THREADS thread) override;
 		void pollEvents() override;
 		void update() override;
+		void fixedUpdate() override;
 
 		void draw() override;
 

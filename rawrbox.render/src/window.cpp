@@ -90,7 +90,7 @@ namespace rawrbox {
 
 	void Window::pollEvents() {
 		if (__WINDOWS.empty()) return;
-		glfwWaitEvents();
+		glfwWaitEventsTimeout(1);
 	}
 
 	void Window::shutdown() {

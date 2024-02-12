@@ -83,13 +83,13 @@ namespace rawrbox {
 			return static_cast<NumberType>(std::pow(x, 2) + std::pow(y, 2));
 		}
 
-		[[nodiscard]] VecType clampMagnitude(float max) const {
-			float mag = this->sqrMagnitude();
+		[[nodiscard]] VecType clampMagnitude(NumberType max) const {
+			NumberType mag = this->sqrMagnitude();
 			if (mag > max * max) {
-				float m = std::sqrt(mag);
+				NumberType m = std::sqrt(mag);
 
-				float _x = this->x / m;
-				float _y = this->y / m;
+				NumberType _x = this->x / m;
+				NumberType _y = this->y / m;
 
 				return {_x * max, _y * max};
 			}
@@ -97,30 +97,36 @@ namespace rawrbox {
 			return *this;
 		}
 
-		[[nodiscard]] VecType min(const VecType& other) const
-			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
-		{
+		[[nodiscard]] VecType min(const VecType& other) const {
 			return {std::min(x, other.x), std::min(y, other.y)};
 		}
 
-		[[nodiscard]] VecType max(const VecType& other) const
-			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
-		{
+		[[nodiscard]] VecType max(const VecType& other) const {
 			return {std::max(x, other.x), std::max(y, other.y)};
 		}
 
-		[[nodiscard]] NumberType atan2() const
-			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
-		{
+		[[nodiscard]] NumberType atan2() const {
 			return std::atan2(y, x);
 		}
 
-		static VecType sinCos(float radians) {
-			return {std::sin(radians), std::cos(radians)};
+		static VecType sinCos(NumberType radians)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{
+			if constexpr (std::is_same_v<NumberType, float>) {
+				return {std::sinf(radians), std::cosf(radians)};
+			} else if constexpr (std::is_same_v<NumberType, double>) {
+				return {std::sin(radians), std::cos(radians)};
+			}
 		}
 
-		static VecType cosSin(float radians) {
-			return {std::cos(radians), std::sin(radians)};
+		static VecType cosSin(NumberType radians)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{
+			if constexpr (std::is_same_v<NumberType, float>) {
+				return {std::cosf(radians), std::sinf(radians)};
+			} else if constexpr (std::is_same_v<NumberType, double>) {
+				return {std::cos(radians), std::sin(radians)};
+			}
 		}
 
 		static VecType intersects(const VecType& a1, const VecType& a2, const VecType& b1, const VecType& b2) {
@@ -134,16 +140,18 @@ namespace rawrbox {
 
 				if (ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1)
 					return {
-					    a1.x + ua * (a2.x - a1.x),
-					    a1.y + ua * (a2.y - a1.y)};
+					    static_cast<NumberType>(a1.x + ua * (a2.x - a1.x)),
+					    static_cast<NumberType>(a1.y + ua * (a2.y - a1.y))};
 			}
 
 			return {
-			    std::numeric_limits<float>::quiet_NaN(),
-			    std::numeric_limits<float>::quiet_NaN()};
+			    std::numeric_limits<NumberType>::quiet_NaN(),
+			    std::numeric_limits<NumberType>::quiet_NaN()};
 		}
 
-		[[nodiscard]] VecType rotateAroundOrigin(NumberType rads, const VecType& origin) const {
+		[[nodiscard]] VecType rotateAroundOrigin(NumberType rads, const VecType& origin) const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{
 			if (rads == 0) return *this;
 
 			VecType u = *this - origin;
@@ -158,17 +166,16 @@ namespace rawrbox {
 
 		template <class ReturnType>
 		Vector2_t<ReturnType> cast() const {
+			if constexpr (std::is_same_v<NumberType, ReturnType>) return *this;
 			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y)};
 		}
 		// ------
 
-		// UTILS - FLOAT ---
-		[[nodiscard]] float dot(const VecType& other) const
-			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
-		{
+		[[nodiscard]] NumberType dot(const VecType& other) const {
 			return x * other.x + y * other.y;
 		}
 
+		// UTILS - FLOAT ---
 		[[nodiscard]] VecType normalized() const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
@@ -182,19 +189,19 @@ namespace rawrbox {
 			return x * other.y - y * other.x;
 		}
 
-		[[nodiscard]] Vector2_t<float> floor() const
+		[[nodiscard]] Vector2_t<NumberType> floor() const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return {std::floor(x), std::floor(y)};
 		}
 
-		[[nodiscard]] Vector2_t<float> round() const
+		[[nodiscard]] Vector2_t<NumberType> round() const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return {std::round(x), std::round(y)};
 		}
 
-		[[nodiscard]] Vector2_t<float> ceil() const
+		[[nodiscard]] Vector2_t<NumberType> ceil() const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return {std::ceil(x), std::ceil(y)};

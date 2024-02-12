@@ -165,7 +165,7 @@ endif()
 
 # ---
 if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)
-    message(WARNING "RAWRBOX.NETWORK / RAWRBOX.ASSIMP is enabled, adding ZLIB package")
+    message(WARNING "RAWRBOX.NETWORK / RAWRBOX.ASSIMP is enabled, adding zlib-ng package")
 
     CPMFindPackage(
         NAME
@@ -177,8 +177,8 @@ if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)
         GIT_TAG
             2.1.6
         OPTIONS
-            "ASM686 FALSE"
-            "AMD64 FALSE"
+            #"ASM686 FALSE"
+            #"AMD64 FALSE"
 
             "ZLIB_COMPAT ON"
             "ZLIB_BUILD_EXAMPLES OFF"

@@ -5,7 +5,7 @@
 #include <rawrbox/scripting/plugin.hpp>
 
 namespace rawrbox {
-	class NetworkPlugin : public rawrbox::ScriptingPlugin {
+	class NetworkScripting : public rawrbox::ScriptingPlugin {
 	public:
 		void registerTypes(lua_State* L) override {
 			if (L == nullptr) throw std::runtime_error("Tried to register plugin on invalid mod!");

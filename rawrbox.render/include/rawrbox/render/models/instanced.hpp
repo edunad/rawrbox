@@ -87,13 +87,14 @@ namespace rawrbox {
 
 			auto device = rawrbox::RENDERER->device();
 			auto instSize = static_cast<uint32_t>(this->_instances.size());
+			if (instSize <= 0) throw this->_logger->error("At least one instance must be present to upload");
 
 			// INSTANCE BUFFER ----
 			Diligent::BufferDesc InstBuffDesc;
 			InstBuffDesc.Name = "RawrBox::Buffer::Instance";
 			InstBuffDesc.Usage = Diligent::USAGE_DEFAULT;
 			InstBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-			InstBuffDesc.Size = std::max(instSize, 1U) * sizeof(rawrbox::Instance); // TODO: FIX ME, SPARSE BUFFER?
+			InstBuffDesc.Size = instSize * sizeof(rawrbox::Instance); // TODO: FIX ME, SPARSE BUFFER?
 
 			Diligent::BufferData VBData;
 			VBData.pData = this->_instances.data();

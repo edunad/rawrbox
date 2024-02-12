@@ -9,9 +9,9 @@ namespace rawrbox {
 		using BBOXType = BBOX_t<NumberType>;
 
 	public:
-		rawrbox::Vector3f _min = {};
-		rawrbox::Vector3f _max = {};
-		rawrbox::Vector3f _size = {};
+		rawrbox::Vector3_t<NumberType> _min = {};
+		rawrbox::Vector3_t<NumberType> _max = {};
+		rawrbox::Vector3_t<NumberType> _size = {};
 
 		BBOX_t() = default;
 		BBOX_t(const Vector3_t<NumberType>& min, const Vector3_t<NumberType>& max, const Vector3_t<NumberType>& size) : _min(min), _max(max), _size(size) {}
@@ -20,7 +20,7 @@ namespace rawrbox {
 			return this->_size == 0;
 		}
 
-		[[nodiscard]] const rawrbox::Vector3f& size() const {
+		[[nodiscard]] const rawrbox::Vector3_t<NumberType>& size() const {
 			return this->_size;
 		}
 
