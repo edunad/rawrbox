@@ -5,6 +5,8 @@
 #include <rawrbox/render/scripting/wrappers/decals/manager.hpp>
 #include <rawrbox/render/scripting/wrappers/light/base.hpp>
 #include <rawrbox/render/scripting/wrappers/light/manager.hpp>
+#include <rawrbox/render/scripting/wrappers/resources/font_loader.hpp>
+#include <rawrbox/render/scripting/wrappers/resources/texture_loader.hpp>
 #include <rawrbox/render/scripting/wrappers/stencil.hpp>
 #include <rawrbox/render/scripting/wrappers/text/font.hpp>
 #include <rawrbox/render/scripting/wrappers/textures/base.hpp>
@@ -55,13 +57,14 @@ namespace rawrbox {
 			rawrbox::InstancedModelWrapper::registerLua(lua);
 			rawrbox::MeshWrapper::registerLua(lua);
 			// ----
+*/
 
-#ifdef RAWRBOX_RESOURCES
 			// RESOURCES ---
-			rawrbox::TextureLoaderWrapper::registerLua(lua);
-			rawrbox::FontLoaderWrapper::registerLua(lua);
-// ------
-#endif*/
+#ifdef RAWRBOX_RESOURCES
+			rawrbox::TextureLoaderWrapper::registerLua(L);
+			rawrbox::FontLoaderWrapper::registerLua(L);
+#endif
+			// ------
 		}
 
 		void registerGlobal(lua_State* L) override {
