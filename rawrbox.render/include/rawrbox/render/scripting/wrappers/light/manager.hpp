@@ -28,7 +28,8 @@ namespace rawrbox {
 		static void addSpot(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color, float innerCone, float outerCone, float power);
 		static void addDirectional(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color);
 
-		static void removeLight(rawrbox::LightBase& light);
+		static void remove(const rawrbox::LightBase& light);
+		static void remove(size_t index);
 		// ---------
 
 		// utils ----

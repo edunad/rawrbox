@@ -22,7 +22,7 @@ namespace rawrbox {
 
 	void WindowWrapper::setSize(const rawrbox::Vector2i& /*size*/) const {
 		if (this->_window == nullptr) throw std::runtime_error("Invalid window handle");
-		// this->_window->setSize(size.cast<int>()); // TODO: THIS WILL AFFECT THE RENDERER, WE DON'T SUPPORT RESIZE FULLY YET
+		// this->_window->setSize(size.cast<int>()); // TODO: THIS WILL AFFECT THE RENDERER, WE DON'T SUPPORT FULLY RESIZE YET
 	}
 
 	rawrbox::Vector2i WindowWrapper::getSize() const {

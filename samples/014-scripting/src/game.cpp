@@ -174,7 +174,7 @@ namespace scripting_test {
 		this->_model->upload();
 
 		// TEST LIGHT ---
-		rawrbox::LIGHTS::addLight<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White()); // SUN
+		rawrbox::LIGHTS::add<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White()); // SUN
 		// ---
 
 		rawrbox::SCRIPTING::call("onReady");

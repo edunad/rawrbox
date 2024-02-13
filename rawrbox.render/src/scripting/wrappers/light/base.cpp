@@ -1,6 +1,6 @@
 
+#include <rawrbox/render/lights/base.hpp>
 #include <rawrbox/render/scripting/wrappers/light/base.hpp>
-
 namespace rawrbox {
 	void LightBaseWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)

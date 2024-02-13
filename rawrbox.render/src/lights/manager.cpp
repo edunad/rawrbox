@@ -178,7 +178,7 @@ namespace rawrbox {
 	// ---------
 
 	// LIGHT ----
-	bool LIGHTS::removeLight(size_t indx) {
+	bool LIGHTS::remove(size_t indx) {
 		if (indx > _lights.size()) return false;
 		_lights.erase(_lights.begin() + indx);
 
@@ -187,11 +187,11 @@ namespace rawrbox {
 		return true;
 	}
 
-	bool LIGHTS::removeLight(rawrbox::LightBase* light) {
-		if (light == nullptr || _lights.empty()) return false;
+	bool LIGHTS::remove(const rawrbox::LightBase& light) {
+		if (_lights.empty()) return false;
 
 		for (size_t i = 0; i < _lights.size(); i++) {
-			if (_lights[i].get() == light) {
+			if (_lights[i].get() == &light) {
 				_lights.erase(_lights.begin() + i);
 
 				rawrbox::__LIGHT_DIRTY__ = true;

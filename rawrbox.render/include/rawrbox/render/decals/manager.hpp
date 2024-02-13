@@ -46,15 +46,15 @@ namespace rawrbox {
 		// UTILS ----
 		static Diligent::IBufferView* getBuffer();
 
-		static rawrbox::Decal* getDecal(size_t indx);
+		static rawrbox::Decal* get(size_t indx);
 		static size_t count();
 		// ----------
 
 		// DECALS ----
-		static void add(rawrbox::Decal decal);
+		static void add(const rawrbox::Decal& decal);
 
 		static bool remove(size_t indx);
-		static bool remove(rawrbox::Decal* light);
+		static bool remove(const rawrbox::Decal& decal);
 		// ---------
 	};
 } // namespace rawrbox

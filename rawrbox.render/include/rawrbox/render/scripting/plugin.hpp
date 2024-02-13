@@ -1,6 +1,8 @@
 #pragma once
 
 #include <rawrbox/render/scripting/wrappers/camera.hpp>
+#include <rawrbox/render/scripting/wrappers/decals/decal.hpp>
+#include <rawrbox/render/scripting/wrappers/decals/manager.hpp>
 #include <rawrbox/render/scripting/wrappers/light/base.hpp>
 #include <rawrbox/render/scripting/wrappers/light/manager.hpp>
 #include <rawrbox/render/scripting/wrappers/stencil.hpp>
@@ -29,6 +31,11 @@ namespace rawrbox {
 			rawrbox::CameraWrapper::registerLua(L);
 			rawrbox::WindowWrapper::registerLua(L);
 			rawrbox::StencilWrapper::registerLua(L);
+
+			// DECALS ---
+			rawrbox::DecalWrapper::registerLua(L);
+			rawrbox::DecalsWrapper::registerLua(L);
+			//  -------
 			//  -------
 
 			// TEXTURES ----
@@ -40,12 +47,7 @@ namespace rawrbox {
 			rawrbox::LightsWrapper::registerLua(L);
 			// ------
 
-			/*// GAME
-			rawrbox::WindowWrapper::registerLua(lua);
-			rawrbox::StencilWrapper::registerLua(lua);
-			rawrbox::DecalsWrapper::registerLua(lua);
-			// ----
-
+			/*
 			// MODEL --
 			rawrbox::ModelBaseWrapper::registerLua(lua);
 			rawrbox::ModelWrapper::registerLua(lua);
@@ -53,15 +55,6 @@ namespace rawrbox {
 			rawrbox::InstancedModelWrapper::registerLua(lua);
 			rawrbox::MeshWrapper::registerLua(lua);
 			// ----
-
-			// LIGHT ----
-			rawrbox::LightBaseWrapper::registerLua(lua);
-			rawrbox::LightsWrapper::registerLua(lua);
-			// ------
-
-			// FONT ----
-			rawrbox::FontWrapper::registerLua(lua);
-			// ------
 
 #ifdef RAWRBOX_RESOURCES
 			// RESOURCES ---

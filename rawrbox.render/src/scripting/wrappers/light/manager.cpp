@@ -43,19 +43,23 @@ namespace rawrbox {
 
 	// Light ----
 	void LightsWrapper::addPoint(const rawrbox::Vector3f& pos, const rawrbox::Colori& color, float radius) {
-		rawrbox::LIGHTS::addLight<rawrbox::PointLight>(pos, color.cast<float>(), radius);
+		rawrbox::LIGHTS::add<rawrbox::PointLight>(pos, color.cast<float>(), radius);
 	}
 
 	void LightsWrapper::addSpot(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color, float innerCone, float outerCone, float power) {
-		rawrbox::LIGHTS::addLight<rawrbox::SpotLight>(pos, direction, color.cast<float>(), innerCone, outerCone, power);
+		rawrbox::LIGHTS::add<rawrbox::SpotLight>(pos, direction, color.cast<float>(), innerCone, outerCone, power);
 	}
 
 	void LightsWrapper::addDirectional(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color) {
-		rawrbox::LIGHTS::addLight<rawrbox::DirectionalLight>(pos, direction, color.cast<float>());
+		rawrbox::LIGHTS::add<rawrbox::DirectionalLight>(pos, direction, color.cast<float>());
 	}
 
-	void LightsWrapper::removeLight(rawrbox::LightBase& light) {
-		rawrbox::LIGHTS::removeLight(light.id());
+	void LightsWrapper::remove(const rawrbox::LightBase& light) {
+		rawrbox::LIGHTS::remove(light);
+	}
+
+	void LightsWrapper::remove(size_t index) {
+		rawrbox::LIGHTS::remove(index);
 	}
 	// ---------
 
@@ -93,7 +97,9 @@ namespace rawrbox {
 		    .addFunction("addSpot", &LightsWrapper::addSpot)
 		    .addFunction("addDirectional", &LightsWrapper::addDirectional)
 		    //
-		    .addFunction("removeLight", &LightsWrapper::removeLight)
+		    .addFunction("remove",
+			luabridge::overload<const rawrbox::LightBase&>(&LightsWrapper::remove),
+			luabridge::overload<size_t>(&LightsWrapper::remove))
 		    // --------
 
 		    // UTIL ---

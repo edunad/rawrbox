@@ -342,7 +342,7 @@ namespace rawrbox {
 					if (fnd != this->_meshes.end()) parent = fnd->get();
 				}
 
-				auto light = rawrbox::LIGHTS::addLight<T>(std::forward<CallbackArgs>(args)...);
+				auto light = rawrbox::LIGHTS::add<T>(std::forward<CallbackArgs>(args)...);
 				light->setOffsetPos(parent->getPos() + this->getPos());
 				parent->lights.push_back(light);
 
