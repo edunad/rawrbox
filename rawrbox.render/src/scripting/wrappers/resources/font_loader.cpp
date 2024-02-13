@@ -25,7 +25,7 @@ namespace rawrbox {
 
 	void FontLoaderWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("font")
+		    .beginNamespace("font", {})
 		    .addFunction("get", &FontLoaderWrapper::get)
 		    .endNamespace();
 	}

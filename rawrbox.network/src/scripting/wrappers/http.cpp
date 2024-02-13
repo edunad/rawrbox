@@ -28,7 +28,9 @@ namespace rawrbox {
 		    url, static_cast<rawrbox::HTTPMethod>(method), headerMap, [callback, L](int code, std::map<std::string, std::string> headerResp, std::string resp) {
 			    rawrbox::runOnRenderThread([resp, code, callback, headerResp, L]() {
 				    if (code == 0 || (code == 200 && resp.starts_with("Operation timed out after"))) {
-					    luabridge::call(callback, false, resp); // curl error
+					    auto result = luabridge::call(callback, false, resp); // curl error
+					    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
+
 					    return;
 				    }
 
@@ -43,7 +45,8 @@ namespace rawrbox {
 				    tbl["data"] = resp;
 				    tbl["headers"] = headerTbl;
 
-				    luabridge::call(callback, true, tbl);
+				    auto result = luabridge::call(callback, true, tbl);
+				    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
 			    });
 		    },
 		    timeout.value_or(10000));
@@ -51,7 +54,7 @@ namespace rawrbox {
 
 	void HTTPWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("http")
+		    .beginNamespace("http", {})
 		    .addFunction("request", &HTTPWrapper::request)
 		    .endNamespace();
 	}

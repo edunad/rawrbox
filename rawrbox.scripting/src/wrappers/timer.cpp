@@ -8,10 +8,13 @@ namespace rawrbox {
 		if (onComplete.has_value() && !onComplete->isCallable()) throw std::runtime_error("Invalid onComplete callback");
 
 		auto timer = rawrbox::TIMER::create(
-		    id, reps, delay, [callback]() { luabridge::call(callback); },
+		    id, reps, delay, [callback]() {
+				auto result = luabridge::call(callback);
+				if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage()); },
 		    [onComplete]() {
 			    if (!onComplete.has_value()) return;
-			    luabridge::call(onComplete.value());
+			    auto result = luabridge::call(onComplete.value());
+			    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
 		    });
 
 		return timer != nullptr;
@@ -22,10 +25,13 @@ namespace rawrbox {
 		if (onComplete.has_value() && !onComplete->isCallable()) throw std::runtime_error("Invalid onComplete callback");
 
 		auto timer = rawrbox::TIMER::simple(
-		    id, delay, [callback]() { luabridge::call(callback); },
+		    id, delay, [callback]() {
+				auto result = luabridge::call(callback);
+			    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage()); },
 		    [onComplete]() {
 			    if (!onComplete.has_value()) return;
-			    luabridge::call(onComplete.value());
+			    auto result = luabridge::call(onComplete.value());
+			    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
 		    });
 
 		return timer != nullptr;

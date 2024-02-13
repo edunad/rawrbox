@@ -131,6 +131,7 @@ namespace rawrbox {
 
 		// PLUGINS ---------------------------
 		template <typename T = rawrbox::RenderPlugin, typename... CallbackArgs>
+			requires(std::derived_from<T, rawrbox::RenderPlugin>)
 		T* addPlugin(CallbackArgs&&... args) {
 			if (this->_initialized) throw this->_logger->error("'addPlugin' must be called before 'init'!");
 			auto renderPass = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
@@ -143,6 +144,7 @@ namespace rawrbox {
 		}
 
 		template <typename T = rawrbox::RenderPlugin>
+			requires(std::derived_from<T, rawrbox::RenderPlugin>)
 		[[nodiscard]] T* getPlugin(const std::string& id) const {
 			auto fnd = this->_renderPlugins.find(id);
 			if (fnd == this->_renderPlugins.end()) return nullptr;

@@ -1,4 +1,4 @@
-local sun = nil
+--[[local sun = nil
 
 function MOD:draw(pass)
     if pass ~= DRAW_PASS.OVERLAY then return end
@@ -18,7 +18,6 @@ function MOD:update()
     if sun == nil then return end
     local frame = renderer.frame()
     sun:setColor(Color(math.cos(frame * 0.1) * 10, 0, 0, 255))
-    print("color sun")
 end
 
 
@@ -27,4 +26,4 @@ print(tostring(ma))
 
 local be = Vector2(40, 40)
 print(tostring(be))
-print(be:floor())
+print(be:floor())]]

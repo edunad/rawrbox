@@ -8,7 +8,7 @@
 namespace rawrbox {
 	void BASSWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("bass")
+		    .beginNamespace("bass", {})
 		    // UTILS -----
 		    .addFunction("getMasterVolume", &BASS::getMasterVolume)
 		    .addFunction("setMasterVolume", &BASS::setMasterVolume)

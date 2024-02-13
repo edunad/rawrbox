@@ -76,7 +76,7 @@ namespace rawrbox {
 
 	void LightsWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("lights")
+		    .beginNamespace("lights", {})
 		    .addFunction("setEnabled", &LightsWrapper::setEnabled)
 
 		    // FOG ---

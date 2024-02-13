@@ -77,7 +77,7 @@ namespace rawrbox {
 
 	void CameraWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("camera")
+		    .beginNamespace("camera", {})
 
 		    .addFunction("setPos", &CameraWrapper::setPos)
 		    .addFunction("getPos", &CameraWrapper::getPos)

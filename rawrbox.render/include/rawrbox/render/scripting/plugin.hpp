@@ -74,7 +74,7 @@ namespace rawrbox {
 			if (L == nullptr) throw std::runtime_error("Tried to register plugin on invalid mod!");
 
 			luabridge::getGlobalNamespace(L)
-			    .beginNamespace("renderer")
+			    .beginNamespace("renderer", {})
 			    .addVariable("MAX_BONES_PER_VERTEX", &rawrbox::MAX_BONES_PER_VERTEX)
 			    .addVariable("MAX_BONES_PER_MODEL", &rawrbox::MAX_BONES_PER_MODEL)
 			    .addVariable("MAX_POST_DATA", &rawrbox::MAX_POST_DATA)
@@ -82,7 +82,7 @@ namespace rawrbox {
 			    .endNamespace();
 
 			luabridge::getGlobalNamespace(L)
-			    .beginNamespace("window")
+			    .beginNamespace("window", {})
 			    .addFunction("get", [](uint32_t index) {
 				    return rawrbox::WindowWrapper(rawrbox::Window::getWindow(index));
 			    })

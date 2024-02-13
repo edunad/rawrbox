@@ -98,7 +98,7 @@ namespace rawrbox {
 
 	void StencilWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("stencil")
+		    .beginNamespace("stencil", {})
 
 		    // Draw
 		    .addFunction("drawTriangle", &StencilWrapper::drawTriangle)

@@ -27,6 +27,7 @@ namespace rawrbox {
 
 		// Freeze lua env ---
 		// No more modifications to the global table are allowed after this point
+		// luabridge::enableExceptions(_L);
 		luaL_sandbox(this->_L);
 		luaL_sandboxthread(this->_L); // Clone of the _G env that allows modification, but you cannot modify _G directly
 		// --------------

@@ -25,7 +25,7 @@ namespace rawrbox {
 
 	void TextureLoaderWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
-		    .beginNamespace("texture")
+		    .beginNamespace("texture", {})
 		    .addFunction("get", &TextureLoaderWrapper::get)
 		    .endNamespace();
 	}

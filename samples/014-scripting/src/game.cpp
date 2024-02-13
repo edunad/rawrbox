@@ -1,6 +1,7 @@
 #include <rawrbox/render/lights/directional.hpp>
 #include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/scripting/plugin.hpp>
+#include <rawrbox/resources/scripting/plugin.hpp>
 
 #ifdef RAWRBOX_BASS
 	#include <rawrbox/bass/resources/sound.hpp>
@@ -79,6 +80,8 @@ namespace scripting_test {
 		// ----
 
 		// Setup scripting
+		rawrbox::SCRIPTING::registerPlugin<rawrbox::ResourcesPlugin>();
+
 #ifdef RAWRBOX_BASS
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::BASScripting>();
 #endif
@@ -89,21 +92,18 @@ namespace scripting_test {
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::RendererScripting>(window);
 
 		// Custom non-plugin ---
-		/*rawrbox::SCRIPTING::registerType<rawrbox::TestWrapper>();
-		rawrbox::SCRIPTING::onRegisterGlobals += [this](rawrbox::Mod* mod) {
-			mod->getEnvironment()["test"] = rawrbox::TestWrapper();
-			mod->getEnvironment()["test_model"] = [this]() -> sol::object {
-				if (!this->_ready || this->_model == nullptr) return sol::nil;
-				return this->_model->getScriptingWrapper();
-			};
+		rawrbox::SCRIPTING::registerPlugin<rawrbox::TestPlugin>();
+		rawrbox::SCRIPTING::onRegisterGlobals += [this](rawrbox::Mod& mod) {
+			auto L = mod.getEnvironment();
 
-			mod->getEnvironment()["test_model2"] = [this]() -> sol::object {
-				if (!this->_ready || this->_instance == nullptr) return sol::nil;
-				return this->_instance->getScriptingWrapper();
-			};
-		};*/
-		// ----
-
+			luabridge::getGlobalNamespace(L)
+			    .addFunction("test_model", [this]() {
+				    return this->_model.get();
+			    })
+			    .addFunction("test_model2", [this]() {
+				    return this->_instance.get();
+			    });
+		};
 		// ----
 
 		rawrbox::SCRIPTING::setConsole(this->_console.get());
@@ -147,11 +147,11 @@ namespace scripting_test {
 		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/crate_hl1.png")->get();
 		this->_model->setOptimizable(false);
 
-		/*{
+		{
 			auto mesh = rawrbox::MeshUtils::generateCube({0.F, 1.0F, 0.F}, {1.F, 1.F, 1.F});
 			mesh.setTexture(tex);
 			this->_model->addMesh(mesh);
-		}*/
+		}
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
@@ -159,25 +159,11 @@ namespace scripting_test {
 		}
 		// ----
 
-		{
-			auto mesh = rawrbox::MeshUtils::generateCube<rawrbox::MaterialInstancedLit>({0, 0, 0}, {2.1F, 2.1F, 2.1F});
-
-			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
-			mesh.setTexture(tex);
-
-			this->_instance->setTemplate(mesh);
-		}
-
-		this->_instance->addInstance({rawrbox::Matrix4x4::mtxSRT({1, 1, 1}, {}, {})});
-		this->_instance->upload();
+		this->_instance->setTemplate(rawrbox::MeshUtils::generateCube({0.F, 0.0F, 0.F}, {0.1F, 0.1F, 0.1F}));
+		rawrbox::SCRIPTING::call("onReady");
 
 		this->_model->upload();
-
-		// TEST LIGHT ---
-		rawrbox::LIGHTS::add<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White()); // SUN
-		// ---
-
-		rawrbox::SCRIPTING::call("onReady");
+		this->_instance->upload();
 		this->_ready = true;
 	}
 

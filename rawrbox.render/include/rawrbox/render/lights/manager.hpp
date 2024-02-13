@@ -93,6 +93,7 @@ namespace rawrbox {
 
 		// Light ----
 		template <typename T = rawrbox::LightBase, typename... CallbackArgs>
+			requires(std::derived_from<T, rawrbox::LightBase>)
 		static rawrbox::LightBase* add(CallbackArgs&&... args) {
 			auto light = _lights.emplace_back(std::make_shared<T>(std::forward<CallbackArgs>(args)...)).get();
 			light->setId(++rawrbox::LIGHT_ID);

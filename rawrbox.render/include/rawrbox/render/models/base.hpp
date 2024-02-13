@@ -199,6 +199,11 @@ namespace rawrbox {
 			rawrbox::BindlessManager::barrier(*this->_ibh, rawrbox::BufferType::INDEX);
 		}
 
+		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->_mesh->getColor(); }
+		virtual void setColor(const rawrbox::Color& color) {
+			this->_mesh->setColor(color);
+		}
+
 		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_mesh->getPos(); }
 		virtual void setPos(const rawrbox::Vector3f& pos) {
 			this->_mesh->setPos(pos);
