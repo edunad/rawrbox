@@ -9,12 +9,7 @@
 #include <vector>
 
 namespace rawrbox {
-
-#ifdef RAWRBOX_SCRIPTING
-	class SoundInstance : public std::enable_shared_from_this<rawrbox::SoundInstance> {
-#else
 	class SoundInstance {
-#endif
 	protected:
 		uint32_t _sample = 0;
 		uint32_t _channel = 0;

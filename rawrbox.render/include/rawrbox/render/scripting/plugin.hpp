@@ -5,6 +5,11 @@
 #include <rawrbox/render/scripting/wrappers/decals/manager.hpp>
 #include <rawrbox/render/scripting/wrappers/light/base.hpp>
 #include <rawrbox/render/scripting/wrappers/light/manager.hpp>
+#include <rawrbox/render/scripting/wrappers/models/base.hpp>
+#include <rawrbox/render/scripting/wrappers/models/instance.hpp>
+#include <rawrbox/render/scripting/wrappers/models/instanced.hpp>
+#include <rawrbox/render/scripting/wrappers/models/mesh.hpp>
+#include <rawrbox/render/scripting/wrappers/models/model.hpp>
 #include <rawrbox/render/scripting/wrappers/resources/font_loader.hpp>
 #include <rawrbox/render/scripting/wrappers/resources/texture_loader.hpp>
 #include <rawrbox/render/scripting/wrappers/stencil.hpp>
@@ -33,11 +38,11 @@ namespace rawrbox {
 			rawrbox::CameraWrapper::registerLua(L);
 			rawrbox::WindowWrapper::registerLua(L);
 			rawrbox::StencilWrapper::registerLua(L);
+			//  -------
 
 			// DECALS ---
 			rawrbox::DecalWrapper::registerLua(L);
 			rawrbox::DecalsWrapper::registerLua(L);
-			//  -------
 			//  -------
 
 			// TEXTURES ----
@@ -49,15 +54,13 @@ namespace rawrbox {
 			rawrbox::LightsWrapper::registerLua(L);
 			// ------
 
-			/*
 			// MODEL --
-			rawrbox::ModelBaseWrapper::registerLua(lua);
-			rawrbox::ModelWrapper::registerLua(lua);
-			rawrbox::InstanceWrapper::registerLua(lua);
-			rawrbox::InstancedModelWrapper::registerLua(lua);
-			rawrbox::MeshWrapper::registerLua(lua);
+			rawrbox::MeshWrapper::registerLua(L);
+			rawrbox::ModelBaseWrapper::registerLua(L);
+			rawrbox::ModelWrapper::registerLua(L);
+			rawrbox::InstanceWrapper::registerLua(L);
+			rawrbox::InstancedModelWrapper::registerLua(L);
 			// ----
-*/
 
 			// RESOURCES ---
 #ifdef RAWRBOX_RESOURCES
@@ -84,48 +87,6 @@ namespace rawrbox {
 				    return rawrbox::WindowWrapper(rawrbox::Window::getWindow(index));
 			    })
 			    .endNamespace();
-			/*if (mod == nullptr) throw std::runtime_error("[RawrBox-RenderPlugin] Tried to register plugin on invalid mod!");
-
-			auto& env = mod->getEnvironment();
-
-			// Game singletons
-			env["camera"] = rawrbox::CameraWrapper();
-			// ---------------
-
-			// Renderer statics ---
-			env["MAX_BONES_PER_VERTEX"] = rawrbox::MAX_BONES_PER_VERTEX;
-			env["MAX_BONES_PER_MODEL"] = rawrbox::MAX_BONES_PER_MODEL;
-			env["MAX_POST_DATA"] = rawrbox::MAX_POST_DATA;
-
-			env["FRAME"] = []() { return rawrbox::FRAME; };
-			// -----
-
-			if (mod == nullptr) throw std::runtime_error("[RawrBox-RenderPlugin] Tried to register plugin on invalid mod!");
-			if (this->_window == nullptr) throw std::runtime_error("[RawrBox-RenderPlugin] Window not set!");
-
-			auto& env = mod->getEnvironment();
-
-			// Game singletons
-			env["camera"] = rawrbox::CameraWrapper();
-			env["window"] = rawrbox::WindowWrapper(this->_window);
-			env["stencil"] = rawrbox::StencilWrapper(&this->_window->getStencil());
-
-			env["decals"] = rawrbox::DecalsWrapper();
-			env["lights"] = rawrbox::LightsWrapper();
-
-#ifdef RAWRBOX_RESOURCES
-			// Loaders ----
-			env["texture"] = rawrbox::TextureLoaderWrapper();
-			env["font"] = rawrbox::FontLoaderWrapper();
-			//-----
-#endif
-
-			// Renderer statics ---
-			env["MAX_BONES_PER_VERTEX"] = rawrbox::MAX_BONES_PER_VERTEX;
-			env["MAX_BONES_PER_MODEL"] = rawrbox::MAX_BONES_PER_MODEL;
-			env["CURRENT_VIEW_ID"] = []() { return rawrbox::CURRENT_VIEW_ID; };
-			env["BGFX_FRAME"] = []() { return rawrbox::BGFX_FRAME; };
-			// -----*/
 		}
 
 		void loadLibraries(lua_State* L) override {

@@ -5,15 +5,8 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/lights/types.hpp>
 
-// #include <memory>
-
 namespace rawrbox {
-
-	// #ifdef RAWRBOX_SCRIPTING
-	//	class LightBase : public std::enable_shared_from_this<rawrbox::LightBase> {
-	// #else
 	class LightBase {
-		// #endif
 	protected:
 		bool _isActive = true;
 		size_t _id = 0;
