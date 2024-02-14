@@ -12,7 +12,7 @@ namespace rawrbox {
 			auto classDef = luabridge::getGlobalNamespace(L)
 					    .beginClass<VEC>(name.c_str());
 
-			classDef.addConstructor<void(), void(VEC), void(T), void(T, T, T), void(const std::array<T, 3>&), void(rawrbox::Vector2_t<T>, T)>()
+			classDef.addConstructor<void(), void(T), void(T, T, T), void(const std::array<T, 3>&), void(rawrbox::Vector2_t<T>, T)>()
 
 			    .addProperty("x", &VEC::x)
 			    .addProperty("y", &VEC::y)

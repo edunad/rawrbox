@@ -13,7 +13,7 @@ namespace rawrbox {
 					    .beginClass<VEC>(name.c_str());
 
 			classDef
-			    .addConstructor<void(), void(VEC), void(T), void(T, T, T, T), void(const std::array<T, 4>&), void(rawrbox::Vector3_t<T>, T), void(rawrbox::Vector2_t<T>, T, T)>()
+			    .addConstructor<void(), void(T), void(T, T, T, T), void(const std::array<T, 4>&), void(rawrbox::Vector3_t<T>, T), void(rawrbox::Vector2_t<T>, T, T)>()
 			    .addProperty("x", &VEC::x)
 			    .addProperty("y", &VEC::y)
 			    .addProperty("y", &VEC::z)

@@ -11,7 +11,7 @@ namespace rawrbox {
 
 			luabridge::getGlobalNamespace(L)
 			    .beginClass<AABBT>(name.c_str())
-			    .addConstructor<void(), void(AABBT), void(T, T, T, T), void(const Vector2_t<T>&, const Vector2_t<T>&)>()
+			    .addConstructor<void(), void(T, T, T, T), void(const Vector2_t<T>&, const Vector2_t<T>&)>()
 
 			    .addProperty("position", &AABBT::pos)
 			    .addProperty("size", &AABBT::size)
