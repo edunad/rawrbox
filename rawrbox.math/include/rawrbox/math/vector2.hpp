@@ -112,21 +112,13 @@ namespace rawrbox {
 		static VecType sinCos(NumberType radians)
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			if constexpr (std::is_same_v<NumberType, float>) {
-				return {std::sinf(radians), std::cosf(radians)};
-			} else if constexpr (std::is_same_v<NumberType, double>) {
-				return {std::sin(radians), std::cos(radians)};
-			}
+			return {std::sin(radians), std::cos(radians)};
 		}
 
 		static VecType cosSin(NumberType radians)
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			if constexpr (std::is_same_v<NumberType, float>) {
-				return {std::cosf(radians), std::sinf(radians)};
-			} else if constexpr (std::is_same_v<NumberType, double>) {
-				return {std::cos(radians), std::sin(radians)};
-			}
+			return {std::cos(radians), std::sin(radians)};
 		}
 
 		static VecType intersects(const VecType& a1, const VecType& a2, const VecType& b1, const VecType& b2) {
