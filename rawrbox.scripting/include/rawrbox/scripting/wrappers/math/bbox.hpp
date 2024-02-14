@@ -6,12 +6,13 @@ namespace rawrbox {
 	class BBOXWrapper {
 
 		template <typename T = int>
+			requires(std::is_integral_v<T> || std::is_floating_point_v<T>)
 		static void registerTemplate(lua_State* L, const std::string& name) {
 			using BBOXT = rawrbox::BBOX_t<T>;
 
 			luabridge::getGlobalNamespace(L)
 			    .beginClass<BBOXT>(name.c_str())
-			    .addConstructor<void(), void(BBOXT), void(const rawrbox::Vector3_t<T>&, const rawrbox::Vector3_t<T>&, const rawrbox::Vector3_t<T>&)>()
+			    .template addConstructor<void(), void(BBOXT), void(const rawrbox::Vector3_t<T>&, const rawrbox::Vector3_t<T>&, const rawrbox::Vector3_t<T>&)>()
 
 			    .addProperty("min", &BBOXT::_min)
 			    .addProperty("max", &BBOXT::_max)

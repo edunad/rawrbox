@@ -7,6 +7,7 @@
 
 namespace rawrbox {
 	template <class NumberType>
+		requires(std::is_integral_v<NumberType> || std::is_floating_point_v<NumberType>)
 	class Color_t {
 	private:
 		using ColorType = Color_t<NumberType>;

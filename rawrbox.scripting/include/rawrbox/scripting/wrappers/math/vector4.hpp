@@ -6,6 +6,7 @@
 namespace rawrbox {
 	class Vector4Wrapper {
 		template <typename T = int>
+			requires(std::is_integral_v<T> || std::is_floating_point_v<T>)
 		static void registerTemplate(lua_State* L, const std::string& name) {
 			using VEC = Vector4_t<T>;
 
@@ -13,7 +14,7 @@ namespace rawrbox {
 					    .beginClass<VEC>(name.c_str());
 
 			classDef
-			    .addConstructor<void(), void(T), void(T, T, T, T), void(const std::array<T, 4>&), void(rawrbox::Vector3_t<T>, T), void(rawrbox::Vector2_t<T>, T, T)>()
+			    .template addConstructor<void(), void(VEC), void(T), void(T, T, T, T), void(const std::array<T, 4>&), void(rawrbox::Vector3_t<T>, T), void(rawrbox::Vector2_t<T>, T, T)>()
 			    .addProperty("x", &VEC::x)
 			    .addProperty("y", &VEC::y)
 			    .addProperty("y", &VEC::z)

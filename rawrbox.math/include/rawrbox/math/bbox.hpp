@@ -4,6 +4,7 @@
 
 namespace rawrbox {
 	template <class NumberType>
+		requires(std::is_integral_v<NumberType> || std::is_floating_point_v<NumberType>)
 	struct BBOX_t {
 	protected:
 		using BBOXType = BBOX_t<NumberType>;

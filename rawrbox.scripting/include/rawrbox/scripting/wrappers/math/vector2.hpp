@@ -5,13 +5,14 @@
 namespace rawrbox {
 	class Vector2Wrapper {
 		template <typename T = int>
+			requires(std::is_integral_v<T> || std::is_floating_point_v<T>)
 		static void registerTemplate(lua_State* L, const std::string& name) {
 			using VEC = Vector2_t<T>;
 
 			auto classDef = luabridge::getGlobalNamespace(L)
 					    .beginClass<VEC>(name.c_str());
 
-			classDef.addConstructor<void(), void(T), void(T, T), void(std::array<T, 2>)>()
+			classDef.template addConstructor<void(), void(VEC), void(T), void(T, T), void(std::array<T, 2>)>()
 
 			    .addProperty("x", &VEC::x)
 			    .addProperty("y", &VEC::y)

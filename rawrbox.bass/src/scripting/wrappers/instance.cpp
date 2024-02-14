@@ -6,7 +6,6 @@ namespace rawrbox {
 	void SoundInstanceWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
 		    .beginClass<rawrbox::SoundInstance>("SoundInstance")
-		    .addConstructorFrom<std::shared_ptr<rawrbox::SoundInstance>, void(uint32_t, bool, uint32_t)>()
 
 		    .addFunction("play", &SoundInstance::play)
 		    .addFunction("pause", &SoundInstance::pause)

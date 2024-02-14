@@ -10,6 +10,7 @@
 
 namespace rawrbox {
 	template <class NumberType>
+		requires(std::is_integral_v<NumberType> || std::is_floating_point_v<NumberType>)
 	class Vector4_t {
 	protected:
 		using VecType = Vector4_t<NumberType>;

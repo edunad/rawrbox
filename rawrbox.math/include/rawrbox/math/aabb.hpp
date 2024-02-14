@@ -4,6 +4,7 @@
 
 namespace rawrbox {
 	template <class NumberType>
+		requires(std::is_integral_v<NumberType> || std::is_floating_point_v<NumberType>)
 	class AABB_t {
 	protected:
 		using AABBType = AABB_t<NumberType>;

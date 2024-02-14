@@ -5,13 +5,14 @@
 namespace rawrbox {
 	class ColorWrapper {
 		template <typename T = int>
+			requires(std::is_integral_v<T> || std::is_floating_point_v<T>)
 		static void registerTemplate(lua_State* L, const std::string& name) {
 			using CL = rawrbox::Color_t<T>;
 			using CLS = rawrbox::Colors_t<T>;
 
 			luabridge::getGlobalNamespace(L)
 			    .beginClass<CL>(name.c_str())
-			    .addConstructor<void(), void(CL), void(T, T, T, T)>()
+			    .template addConstructor<void(), void(CL), void(T, T, T, T)>()
 			    .addProperty("r", &CL::r)
 			    .addProperty("g", &CL::g)
 			    .addProperty("b", &CL::b)

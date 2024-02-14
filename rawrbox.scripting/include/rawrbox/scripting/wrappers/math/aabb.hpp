@@ -6,12 +6,13 @@
 namespace rawrbox {
 	class AABBWrapper {
 		template <typename T = int>
+			requires(std::is_integral_v<T> || std::is_floating_point_v<T>)
 		static void registerTemplate(lua_State* L, const std::string& name) {
 			using AABBT = rawrbox::AABB_t<T>;
 
 			luabridge::getGlobalNamespace(L)
 			    .beginClass<AABBT>(name.c_str())
-			    .addConstructor<void(), void(T, T, T, T), void(const Vector2_t<T>&, const Vector2_t<T>&)>()
+			    .template addConstructor<void(), void(AABBT), void(T, T, T, T), void(const Vector2_t<T>&, const Vector2_t<T>&)>()
 
 			    .addProperty("position", &AABBT::pos)
 			    .addProperty("size", &AABBT::size)
