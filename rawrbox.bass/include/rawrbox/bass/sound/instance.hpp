@@ -8,17 +8,8 @@
 #include <cmath>
 #include <vector>
 
-#ifdef RAWRBOX_SCRIPTING
-	#include <sol/sol.hpp>
-#endif
-
 namespace rawrbox {
-
-#ifdef RAWRBOX_SCRIPTING
-	class SoundInstance : public std::enable_shared_from_this<rawrbox::SoundInstance> {
-#else
 	class SoundInstance {
-#endif
 	protected:
 		uint32_t _sample = 0;
 		uint32_t _channel = 0;
@@ -40,11 +31,6 @@ namespace rawrbox {
 		// LOGGER ------
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-SoundInstance");
 		// -------------
-
-#ifdef RAWRBOX_SCRIPTING
-		sol::object _luaWrapper;
-		virtual void initializeLua();
-#endif
 
 		[[nodiscard]] uint32_t getNextAvailableChannel() const;
 
@@ -91,9 +77,5 @@ namespace rawrbox {
 		virtual void setLooping(bool loop);
 		virtual void setPosition(const rawrbox::Vector3f& location);
 		virtual void set3D(float maxDistance, float minDistance = 0.F);
-
-#ifdef RAWRBOX_SCRIPTING
-		virtual sol::object& getScriptingWrapper();
-#endif
 	};
 } // namespace rawrbox

@@ -1,39 +1,40 @@
 
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/resources/scripting/wrappers/resources_wrapper.hpp>
-#include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
-	void ResourcesWrapper::preLoadFolder(const std::string& path, sol::this_environment modEnv) {
-		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-ResourcesWrapper] MOD not set!");
-		std::string modFolder = modEnv.env.value()["__mod_folder"];
+	void ResourcesWrapper::preLoadFolder(const std::string& path, lua_State* L) {
+		if (L == nullptr) throw std::runtime_error("Lua env not set");
 
+		auto modFolder = rawrbox::LuaUtils::getLuaENVVar(L, "__mod_folder");
 		auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
+
 		rawrbox::RESOURCES::preLoadFolder(fixedPath);
 	}
 
-	void ResourcesWrapper::preLoad(const std::string& path, sol::optional<uint32_t> loadFlags, sol::this_environment modEnv) {
-		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-ResourcesWrapper] MOD not set!");
-		std::string modFolder = modEnv.env.value()["__mod_folder"];
+	void ResourcesWrapper::preLoad(const std::string& path, std::optional<uint32_t> loadFlags, lua_State* L) {
+		if (L == nullptr) throw std::runtime_error("Lua env not set");
 
+		auto modFolder = rawrbox::LuaUtils::getLuaENVVar(L, "__mod_folder");
 		auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
+
 		rawrbox::RESOURCES::preLoadFile(fixedPath, loadFlags.value_or(0));
 	}
 
-	std::string ResourcesWrapper::getContent(sol::optional<std::string> path, sol::this_environment modEnv) {
-		if (!modEnv.env.has_value()) throw std::runtime_error("[RawrBox-ResourcesWrapper] MOD not set!");
+	std::string ResourcesWrapper::getContent(std::optional<std::string> path, lua_State* L) {
+		if (L == nullptr) throw std::runtime_error("Lua env not set");
 
-		std::string modFolder = modEnv.env.value()["__mod_folder"];
+		auto modFolder = rawrbox::LuaUtils::getLuaENVVar(L, "__mod_folder");
 		return rawrbox::LuaUtils::getContent(path.value_or(""), modFolder);
 	}
 
-	void ResourcesWrapper::registerLua(sol::state& lua) {
-		lua.new_usertype<ResourcesWrapper>("resources",
-		    sol::no_constructor,
-		    "preLoad", &ResourcesWrapper::preLoad,
-		    "preLoadFolder", &ResourcesWrapper::preLoadFolder,
-
-		    "getContent", &ResourcesWrapper::getContent);
+	void ResourcesWrapper::registerLua(lua_State* L) {
+		luabridge::getGlobalNamespace(L)
+		    .beginNamespace("resources", {})
+		    .addFunction("preLoad", &rawrbox::ResourcesWrapper::preLoad)
+		    .addFunction("preLoadFolder", &rawrbox::ResourcesWrapper::preLoadFolder)
+		    .addFunction("getContent", &rawrbox::ResourcesWrapper::getContent)
+		    .endNamespace();
 	}
 
 } // namespace rawrbox

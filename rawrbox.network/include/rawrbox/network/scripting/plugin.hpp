@@ -1,27 +1,21 @@
 #pragma once
 
-#include <rawrbox/network/scripting/wrappers/http_wrapper.hpp>
-#include <rawrbox/network/scripting/wrappers/packet_wrapper.hpp>
-#include <rawrbox/scripting/scripting.hpp>
+#include <rawrbox/network/scripting/wrappers/http.hpp>
+#include <rawrbox/network/scripting/wrappers/packet.hpp>
+#include <rawrbox/scripting/plugin.hpp>
 
 namespace rawrbox {
-	class NetworkPlugin : public rawrbox::Plugin {
+	class NetworkScripting : public rawrbox::ScriptingPlugin {
 	public:
-		void registerTypes(sol::state& lua) override {
-			rawrbox::HTTPWrapper::registerLua(lua);
-			rawrbox::PacketWrapper::registerLua(lua);
-		}
+		void registerTypes(lua_State* L) override {
+			if (L == nullptr) throw std::runtime_error("Tried to register plugin on invalid mod!");
+			rawrbox::HTTPWrapper::registerLua(L);
+			rawrbox::PacketWrapper::registerLua(L);
+		};
 
-		void registerGlobal(rawrbox::Mod* mod) override {
-			if (mod == nullptr) throw std::runtime_error("[RawrBox-NetworkPlugin] Tried to register plugin on invalid mod!");
-
-			auto& env = mod->getEnvironment();
-			env["http"] = rawrbox::HTTPWrapper();
-		}
-
-		void loadLuaExtensions(rawrbox::Mod* mod) override {
-			if (mod == nullptr) throw std::runtime_error("[RawrBox-NetworkPlugin] Tried to register plugin on invalid mod!");
-			rawrbox::SCRIPTING::loadLuaFile("./lua/http.lua", mod->getEnvironment());
+		void loadLibraries(lua_State* L) override {
+			if (L == nullptr) throw std::runtime_error("Tried to register plugin on invalid mod!");
+			rawrbox::LuaUtils::compileAndLoadFile(L, "RawrBox::Enums::HTTP", "./lua/enums/http.lua");
 		}
 	};
 } // namespace rawrbox

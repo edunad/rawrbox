@@ -4,11 +4,6 @@
 #include <rawrbox/render/models/instance.hpp>
 #include <rawrbox/render/models/model.hpp>
 
-#ifdef RAWRBOX_SCRIPTING
-	// #include <rawrbox/render/scripting/wrappers/model/instanced_wrapper.hpp>
-	#include <sol/sol.hpp>
-#endif
-
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialInstanced>
@@ -22,13 +17,6 @@ namespace rawrbox {
 			rawrbox::ModelBase<M>::updateBuffers();
 			this->updateInstance();
 		}
-
-#ifdef RAWRBOX_SCRIPTING
-		void initializeLua() override {
-			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
-			// this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::InstancedModelWrapper(this->shared_from_this()));
-		}
-#endif
 
 	public:
 		explicit InstancedModel(size_t instanceSize = 0) {
@@ -87,13 +75,14 @@ namespace rawrbox {
 
 			auto device = rawrbox::RENDERER->device();
 			auto instSize = static_cast<uint32_t>(this->_instances.size());
+			if (instSize <= 0) throw this->_logger->error("At least one instance must be present to upload");
 
 			// INSTANCE BUFFER ----
 			Diligent::BufferDesc InstBuffDesc;
 			InstBuffDesc.Name = "RawrBox::Buffer::Instance";
 			InstBuffDesc.Usage = Diligent::USAGE_DEFAULT;
 			InstBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-			InstBuffDesc.Size = std::max(instSize, 1U) * sizeof(rawrbox::Instance); // TODO: FIX ME, SPARSE BUFFER?
+			InstBuffDesc.Size = instSize * sizeof(rawrbox::Instance); // TODO: FIX ME, SPARSE BUFFER?
 
 			Diligent::BufferData VBData;
 			VBData.pData = this->_instances.data();
@@ -113,8 +102,8 @@ namespace rawrbox {
 			auto context = rawrbox::RENDERER->context();
 			auto instSize = static_cast<uint32_t>(this->_instances.size());
 
-			context->UpdateBuffer(this->_vbh, 0, sizeof(rawrbox::Instance) * instSize, this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-			rawrbox::BindlessManager::barrier(*this->_vbh, rawrbox::BufferType::VERTEX);
+			context->UpdateBuffer(this->_dataBuffer, 0, instSize * sizeof(rawrbox::Instance), this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			rawrbox::BindlessManager::barrier(*this->_dataBuffer, rawrbox::BufferType::VERTEX);
 		}
 
 		void draw() override {

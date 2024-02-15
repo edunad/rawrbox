@@ -8,11 +8,6 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/anim.hpp>
 
-#ifdef RAWRBOX_SCRIPTING
-	// #include <rawrbox/render/scripting/wrappers/model/model_wrapper.hpp>
-	#include <sol/sol.hpp>
-#endif
-
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialUnlit>
@@ -186,13 +181,6 @@ namespace rawrbox {
 		}
 		// --------------
 
-#ifdef RAWRBOX_SCRIPTING
-		void initializeLua() override {
-			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
-			// this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelWrapper(this->shared_from_this()));
-		}
-#endif
-
 	public:
 		Model() = default;
 		Model(const Model&) = delete;
@@ -290,7 +278,9 @@ namespace rawrbox {
 
 		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F) {
 			auto iter = this->_animations.find(name);
-			if (iter == this->_animations.end()) throw this->_logger->error("Animation {} not found!", name);
+			if (iter == this->_animations.end()) {
+				throw this->_logger->error("Animation '{}' not found", fmt::format(fmt::fg(fmt::color::coral), name));
+			}
 
 			// Add it
 			this->_playingAnimations.emplace_back(name,
@@ -313,20 +303,6 @@ namespace rawrbox {
 		}
 		// --------------
 
-		// BLEND SHAPES ---
-		void createBlendShape(size_t mesh, const std::string& id, const std::vector<rawrbox::Vector3f>& newVertexPos, const std::vector<rawrbox::Vector3f>& newNormPos, float weight = 0.F) {
-			if (mesh >= this->_meshes.size()) throw this->_logger->error("Mesh '{}' not found!", mesh);
-
-			auto blend = std::make_unique<rawrbox::BlendShapes<typename M::vertexBufferType>>();
-			blend->pos = newVertexPos;
-			blend->normals = newNormPos;
-			blend->weight = weight;
-			blend->mesh = this->_meshes[mesh].get();
-
-			this->_blend_shapes[id] = std::move(blend);
-		}
-		// --------------
-
 		// LIGHTS ------
 		template <typename T = rawrbox::LightBase, typename... CallbackArgs>
 		T* addLight(const std::string& parentMesh = "", CallbackArgs&&... args) {
@@ -340,7 +316,7 @@ namespace rawrbox {
 					if (fnd != this->_meshes.end()) parent = fnd->get();
 				}
 
-				auto light = rawrbox::LIGHTS::addLight<T>(std::forward<CallbackArgs>(args)...);
+				auto light = rawrbox::LIGHTS::add<T>(std::forward<CallbackArgs>(args)...);
 				light->setOffsetPos(parent->getPos() + this->getPos());
 				parent->lights.push_back(light);
 
@@ -391,6 +367,7 @@ namespace rawrbox {
 
 			if (this->isUploaded() && this->isDynamic()) this->updateBuffers(); // Already uploaded? And dynamic? Then update vertices
 		}
+
 		virtual void removeMesh(size_t index) {
 			if (index >= this->_meshes.size()) return;
 			this->_meshes.erase(this->_meshes.begin() + index);
@@ -420,8 +397,8 @@ namespace rawrbox {
 			return this->_meshes[id].get();
 		}
 
-		virtual bool hasMesh(size_t id) {
-			return id >= 0 && id < this->_meshes.size();
+		virtual bool hasMesh(size_t index) {
+			return index >= 0 && index < this->_meshes.size();
 		}
 
 		virtual void setCulling(Diligent::CULL_MODE cull, int id = -1) {
@@ -476,6 +453,8 @@ namespace rawrbox {
 
 				// Update uniforms -----
 				/*
+				// TODO: USE THIS WHEN WE FULLY PASS THE TEXTURE AS MESH PARAMS INSTEAD OF SEPERATE
+
 				bool buffersUpdated = false;
 				if (this->_material->bindVertexUniforms(*mesh)) buffersUpdated = true;
 				if (this->_material->bindVertexSkinnedUniforms(*mesh)) buffersUpdated = true;

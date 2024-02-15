@@ -7,6 +7,7 @@
 
 namespace rawrbox {
 	template <class NumberType>
+		requires(std::is_integral_v<NumberType> || std::is_floating_point_v<NumberType>)
 	class Color_t {
 	private:
 		using ColorType = Color_t<NumberType>;
@@ -18,7 +19,7 @@ namespace rawrbox {
 		Color_t(NumberType _r, NumberType _g, NumberType _b, NumberType _a) : r(_r), g(_g), b(_b), a(_a) {}
 
 		static Color_t<NumberType> RGBAHex(uint32_t x) {
-			if constexpr (std::is_same_v<NumberType, float>) {
+			if constexpr (std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>) {
 				return {
 				    ((x >> 24) & 0xFF) / 255.0F,
 				    ((x >> 16) & 0xFF) / 255.0F,
@@ -34,7 +35,7 @@ namespace rawrbox {
 		}
 
 		static Color_t<NumberType> RGBHex(uint32_t x) {
-			if constexpr (std::is_same_v<NumberType, float>) {
+			if constexpr (std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>) {
 				return {
 				    ((x >> 16) & 0xFF) / 255.0F,
 				    ((x >> 8) & 0xFF) / 255.0F,
@@ -76,14 +77,16 @@ namespace rawrbox {
 
 		template <class ReturnType>
 		[[nodiscard]] Color_t<ReturnType> cast() const {
+			if constexpr (std::is_same_v<NumberType, ReturnType>) return *this;
+
 			if constexpr (std::is_same_v<NumberType, int>) {
-				return Color_t<float>(
+				return Color_t<ReturnType>(
 				    static_cast<ReturnType>(r) / 255.0F,
 				    static_cast<ReturnType>(g) / 255.0F,
 				    static_cast<ReturnType>(b) / 255.0F,
 				    static_cast<ReturnType>(a) / 255.0F);
 			} else {
-				return Color_t<int>(
+				return Color_t<ReturnType>(
 				    static_cast<ReturnType>(r * 255.0F),
 				    static_cast<ReturnType>(g * 255.0F),
 				    static_cast<ReturnType>(b * 255.0F),
@@ -290,6 +293,7 @@ namespace rawrbox {
 
 	using Colorf = Color_t<float>;
 	using Colori = Color_t<int>;
+	using Colord = Color_t<double>;
 	using Color = Colorf;
 
 	template <class NumberType>
@@ -385,5 +389,6 @@ namespace rawrbox {
 
 	using Colorsf = Colors_t<float>;
 	using Colorsi = Colors_t<int>;
+	using Colorsd = Colors_t<double>;
 	using Colors = Colorsf;
 } // namespace rawrbox

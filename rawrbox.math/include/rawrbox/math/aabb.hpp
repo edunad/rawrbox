@@ -4,6 +4,7 @@
 
 namespace rawrbox {
 	template <class NumberType>
+		requires(std::is_integral_v<NumberType> || std::is_floating_point_v<NumberType>)
 	class AABB_t {
 	protected:
 		using AABBType = AABB_t<NumberType>;
@@ -66,10 +67,10 @@ namespace rawrbox {
 		[[nodiscard]] AABB_t<NumberType> mask(const AABB_t<NumberType>& other) const {
 			auto masked = *this;
 
-			if (masked.right() < other.left()) masked = {other.left(), other.top(), 0.0F, 0.0F};
-			if (masked.bottom() < other.top()) masked = {other.left(), other.top(), 0.0F, 0.0F};
-			if (masked.top() > other.bottom()) masked = {other.left(), other.top(), 0.0F, 0.0F};
-			if (masked.left() > other.right()) masked = {other.left(), other.top(), 0.0F, 0.0F};
+			if (masked.right() < other.left()) masked = {other.left(), other.top(), 0, 0};
+			if (masked.bottom() < other.top()) masked = {other.left(), other.top(), 0, 0};
+			if (masked.top() > other.bottom()) masked = {other.left(), other.top(), 0, 0};
+			if (masked.left() > other.right()) masked = {other.left(), other.top(), 0, 0};
 
 			if (masked.left() < other.left()) {
 				masked.size.x -= other.left() - std::abs(masked.left());
@@ -84,6 +85,11 @@ namespace rawrbox {
 			if (masked.bottom() > other.bottom()) masked.size.y = other.bottom() - masked.top();
 
 			return masked;
+		}
+
+		template <class ReturnType>
+		AABB_t<ReturnType> cast() const {
+			return {pos.template cast<ReturnType>(), size.template cast<ReturnType>()};
 		}
 
 		AABBType operator*(NumberType other) const { return AABBType(this->pos * other, this->size * other); }

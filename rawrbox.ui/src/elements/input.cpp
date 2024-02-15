@@ -8,10 +8,6 @@
 
 #include <clip.h>
 
-#ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/ui/scripting/wrappers/elements/input_wrapper.hpp>
-#endif
-
 namespace rawrbox {
 	// INTERNAL ---
 	void UIInput::genFill() {
@@ -120,13 +116,6 @@ namespace rawrbox {
 
 		this->_charXPos = static_cast<size_t>(p);
 	}
-
-#ifdef RAWRBOX_SCRIPTING
-	void UIInput::initializeLua() {
-		if (!SCRIPTING::initialized) return;
-		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::InputWrapper(this->shared_from_this()));
-	}
-#endif
 	// -----
 
 	void UIInput::initialize() {

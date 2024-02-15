@@ -31,7 +31,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 #endif
 
     float4 Color = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, UV);
-	float3 h = hash(UV * 3000.0 * NoiseTimer);
+	float3 h = hash(UV.xy * 3000.0 * NoiseTimer);
 	float a = float(h.x) * (1.0 / float(0xffffffffu));
     float3 noise = float3(a, a, a) * NoiseIntensity;
 

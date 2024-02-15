@@ -5,19 +5,7 @@
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/progress_bar.hpp>
 
-#ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/ui/scripting/wrappers/elements/progress_bar_wrapper.hpp>
-#endif
-
 namespace rawrbox {
-
-#ifdef RAWRBOX_SCRIPTING
-	void UIProgressBar::initializeLua() {
-		if (!SCRIPTING::initialized) return;
-		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ProgressBarWrapper(this->shared_from_this()));
-	}
-#endif
-
 	// UTILS ----
 	void UIProgressBar::initialize() {
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/ui/overlay/overlay.png")->get();

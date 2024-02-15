@@ -49,5 +49,5 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 #endif
 
     float4 Color = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, UV);
-	PSOut.Color = lerp(Color, GetBloom(UV, Color), BloomIntensity);
+	PSOut.Color = lerp(Color, GetBloom(UV.xy, Color), BloomIntensity);
 }

@@ -25,13 +25,23 @@ namespace rawrbox {
 
 		static std::string getError(lua_State* L);
 
-		static std::vector<std::string> getStringVariadicArgs(lua_State* L);
+		static std::vector<std::string> argsToString(lua_State* L, bool filterNonStr = false);
 		static void getVariadicArgs(const luabridge::LuaRef& in, luabridge::LuaRef& out);
 
 		static luabridge::LuaRef jsonToLua(lua_State* L, const nlohmann::json& json);
-		static nlohmann::json luaToJsonObject(lua_State* L);
+		static nlohmann::json luaToJsonObject(const luabridge::LuaRef& ref);
 
 		static std::string getLuaENVVar(lua_State* L, const std::string& varId);
+
+		template <typename T>
+		static luabridge::LuaRef vectorToTable(lua_State* L, const std::vector<T>& in) {
+			auto tbl = luabridge::newTable(L);
+			for (size_t i = 0; i < in.size(); i++) {
+				tbl[i + 1] = in[i];
+			}
+
+			return tbl;
+		}
 
 		// #/ == System content
 		// @/ == Root content

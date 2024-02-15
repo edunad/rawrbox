@@ -44,7 +44,7 @@ namespace rawrbox {
 
 				// METAL / ROUGH -----
 				if (mat->metalRough != nullptr) {
-					mesh.setRoughtnessMetalness(mat->metalRough.get(), mat->roughnessFactor, mat->metalnessFactor);
+					mesh.setRoughtMetalTexture(mat->metalRough.get(), mat->roughnessFactor, mat->metalnessFactor);
 				}
 				// --------
 

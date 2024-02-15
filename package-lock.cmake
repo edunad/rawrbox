@@ -24,16 +24,18 @@ CPMDeclarePackage(nlohmann_json
     "URL_HASH"
     "SHA256=a22461d13119ac5c78f205d3df1db13403e58ce1bb1794edc9313677313f4a9d"
 )
-# ZLIB
-CPMDeclarePackage(ZLIB
-  NAME ZLIB
-  GIT_TAG v1.3
-  GITHUB_REPOSITORY madler/zlib
+# zlib
+CPMDeclarePackage(zlib
+  NAME zlib
+  GIT_TAG 2.1.6
+  GITHUB_REPOSITORY zlib-ng/zlib-ng
   OPTIONS
-    "ASM686 FALSE"
-    "AMD64 FALSE"
-    "POSITION_INDEPENDENT_CODE TRUE"
+    "ZLIB_COMPAT ON"
     "ZLIB_BUILD_EXAMPLES OFF"
+    "ZLIB_ENABLE_TESTS OFF"
+    "POSITION_INDEPENDENT_CODE ON"
+    "WITH_GTEST OFF"
+  USE_CACHE OFF
 )
 # Catch2
 CPMDeclarePackage(Catch2
@@ -60,21 +62,10 @@ CPMDeclarePackage(thread-pool
 )
 # cpptrace
 CPMDeclarePackage(cpptrace
-  VERSION 0.3.1
+  VERSION 0.4.0
   GITHUB_REPOSITORY jeremy-rifkin/cpptrace
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
-)
-# libcpr
-CPMDeclarePackage(libcpr
-  NAME libcpr
-  GIT_TAG 1.10.4
-  GITHUB_REPOSITORY libcpr/cpr
-  OPTIONS
-    "BUILD_SHARED_LIBS OFF"
-    "CPR_ENABLE_CURL_HTTP_ONLY ON"
-    "CPR_ENABLE_SSL ON"
-    "CURL_ZLIB ON"
 )
 # LuaBridge3 (unversioned)
 # CPMDeclarePackage(LuaBridge3
@@ -88,13 +79,25 @@ CPMDeclarePackage(libcpr
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.611
+  GIT_TAG 0.612
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"
     "LUAU_BUILD_TESTS OFF"
     "LUAU_BUILD_BENCHMARKS OFF"
     "LUAU_BUILD_WEB OFF"
+)
+# libcpr
+CPMDeclarePackage(libcpr
+  NAME libcpr
+  GIT_TAG 1.10.5
+  GITHUB_REPOSITORY libcpr/cpr
+  OPTIONS
+    "BUILD_SHARED_LIBS OFF"
+    "CPR_ENABLE_CURL_HTTP_ONLY ON"
+    "CPR_ENABLE_SSL ON"
+    "CURL_ZLIB ON"
+  PATCH_COMMAND git apply --reject --whitespace=fix D:/rawrbox/rawrbox.network/patch/libcpr.patch
 )
 # glfw
 CPMDeclarePackage(glfw
@@ -171,7 +174,7 @@ CPMDeclarePackage(libwebp
 # CPMDeclarePackage(assimp
 #  NAME assimp
 #  GIT_TAG master
-#  GITHUB_REPOSITORY assimp/assimp
+#  GITHUB_REPOSITORY edunad/assimp
 #  OPTIONS
 #    "BUILD_SHARED_LIBS OFF"
 #    "ASSIMP_NO_EXPORT ON"
@@ -180,8 +183,8 @@ CPMDeclarePackage(libwebp
 #    "ASSIMP_BUILD_TESTS OFF"
 #    "ASSIMP_BUILD_SAMPLES OFF"
 #    "ASSIMP_BUILD_DOCS OFF"
-#    "USE_STATIC_CRT ON"
 #    "ASSIMP_BUILD_ASSIMP_VIEW OFF"
+#    "USE_STATIC_CRT ON"
 #    "ASSIMP_WARNINGS_AS_ERRORS OFF"
 #    "ASSIMP_INSTALL OFF"
 #    "ASSIMP_INSTALL_PDB OFF"

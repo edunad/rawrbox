@@ -4,15 +4,13 @@ set(output_target RAWRBOX.RESOURCES)
 
 # LIB ----
 file(GLOB_RECURSE RAWRBOX_RESOURCES_IMPORTS "src/*.cpp" "include/*.hpp")
-#if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-#    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.SCRIPTING)
-#else()
-#    remove_folder("${RAWRBOX_RESOURCES_IMPORTS}" "/scripting/")
-#    set(RAWRBOX_RESOURCES_IMPORTS "${CLEAN_SOURCES}")
-#endif()
-
-   remove_folder("${RAWRBOX_RESOURCES_IMPORTS}" "/scripting/")
-   set(RAWRBOX_RESOURCES_IMPORTS "${CLEAN_SOURCES}")
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.SCRIPTING)
+    message(STATUS "Enabling RAWRBOX.RESOURCES scripting plugin")
+else()
+    remove_folder("${RAWRBOX_RESOURCES_IMPORTS}" "/scripting/")
+    set(RAWRBOX_RESOURCES_IMPORTS "${CLEAN_SOURCES}")
+endif()
 
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RESOURCES_IMPORTS})
 

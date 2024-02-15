@@ -9,12 +9,6 @@
 #include <rawrbox/utils/string.hpp>
 
 namespace rawrbox {
-
-	template <typename T>
-	concept isLuaType = requires(lua_State* lua) {
-		{ T::registerLua(lua) };
-	};
-
 	class SCRIPTING {
 	protected:
 		static std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>> _mods;
@@ -61,6 +55,7 @@ namespace rawrbox {
 
 		// PLUGINS ---
 		template <typename T = rawrbox::ScriptingPlugin, typename... CallbackArgs>
+			requires(std::derived_from<T, rawrbox::ScriptingPlugin>)
 		static void registerPlugin(CallbackArgs&&... args) {
 			auto plugin = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
 
@@ -68,15 +63,6 @@ namespace rawrbox {
 			_plugins.push_back(std::move(plugin));
 		}
 		// -----
-
-		template <typename T>
-		static void registerType(rawrbox::Mod& mod) {
-			if constexpr (isLuaType<T>) {
-				T::registerLua(mod.getEnvironment());
-			} else {
-				throw _logger->error("Type missing 'registerLua'");
-			}
-		}
 
 		template <typename... CallbackArgs>
 		static void call(const std::string& hookName, CallbackArgs&&... args) {

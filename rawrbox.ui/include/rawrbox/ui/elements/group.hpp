@@ -7,9 +7,6 @@ namespace rawrbox {
 	protected:
 		float _border = 0.F;
 
-#ifdef RAWRBOX_SCRIPTING
-		void initializeLua() override;
-#endif
 	public:
 		~UIGroup() override = default;
 		UIGroup() = default;

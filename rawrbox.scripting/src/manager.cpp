@@ -7,13 +7,13 @@
 #include <rawrbox/scripting/wrappers/hooks.hpp>
 #include <rawrbox/scripting/wrappers/i18n.hpp>
 #include <rawrbox/scripting/wrappers/io.hpp>
-#include <rawrbox/scripting/wrappers/math/aabb_wrapper.hpp>
-#include <rawrbox/scripting/wrappers/math/bbox_wrapper.hpp>
-#include <rawrbox/scripting/wrappers/math/color_wrapper.hpp>
-#include <rawrbox/scripting/wrappers/math/matrix_wrapper.hpp>
-#include <rawrbox/scripting/wrappers/math/vector2_wrapper.hpp>
-#include <rawrbox/scripting/wrappers/math/vector3_wrapper.hpp>
-#include <rawrbox/scripting/wrappers/math/vector4_wrapper.hpp>
+#include <rawrbox/scripting/wrappers/math/aabb.hpp>
+#include <rawrbox/scripting/wrappers/math/bbox.hpp>
+#include <rawrbox/scripting/wrappers/math/color.hpp>
+#include <rawrbox/scripting/wrappers/math/matrix.hpp>
+#include <rawrbox/scripting/wrappers/math/vector2.hpp>
+#include <rawrbox/scripting/wrappers/math/vector3.hpp>
+#include <rawrbox/scripting/wrappers/math/vector4.hpp>
 #include <rawrbox/scripting/wrappers/mod.hpp>
 #include <rawrbox/scripting/wrappers/timer.hpp>
 #include <rawrbox/utils/i18n.hpp>
@@ -167,12 +167,12 @@ namespace rawrbox {
 
 		// OVERRIDES ----
 		luabridge::getGlobalNamespace(L)
-		    .addFunction("printTable", [](lua_State* state) {
-			    nlohmann::json json = rawrbox::LuaUtils::luaToJsonObject(state);
+		    .addFunction("printTable", [](const luabridge::LuaRef& ref) {
+			    nlohmann::json json = rawrbox::LuaUtils::luaToJsonObject(ref);
 			    _logger->info("{}", json.dump(1, ' ', false));
 		    })
 		    .addFunction("print", [](lua_State* state) {
-			    auto args = rawrbox::LuaUtils::getStringVariadicArgs(state);
+			    auto args = rawrbox::LuaUtils::argsToString(state);
 			    if (args.empty()) return;
 
 			    _logger->info("{}", fmt::join(args, " "));
@@ -220,7 +220,7 @@ namespace rawrbox {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("string", {})
 		    .addFunction("vformat", [](lua_State* state) {
-			    auto vars = rawrbox::LuaUtils::getStringVariadicArgs(state);
+			    auto vars = rawrbox::LuaUtils::argsToString(state);
 			    if (vars.size() < 1) throw std::runtime_error("Missing params");
 
 			    fmt::dynamic_format_arg_store<fmt::format_context> fmtArgs = {};

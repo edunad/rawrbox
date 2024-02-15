@@ -28,10 +28,6 @@ namespace rawrbox {
 		rawrbox::Font* _regular = nullptr;
 		// -----------------
 
-#ifdef RAWRBOX_SCRIPTING
-		void initializeLua() override;
-#endif
-
 	public:
 		rawrbox::Event<> onClick;
 

@@ -117,7 +117,7 @@ namespace rawrbox {
 
 	// UTILS ----
 	Diligent::IBufferView* DECALS::getBuffer() { return _bufferRead; }
-	rawrbox::Decal* DECALS::getDecal(size_t indx) {
+	rawrbox::Decal* DECALS::get(size_t indx) {
 		if (indx >= _decals.size()) return nullptr;
 		return _decals[indx].get();
 	}
@@ -126,7 +126,7 @@ namespace rawrbox {
 	// ----
 
 	// DECALS ----
-	void DECALS::add(rawrbox::Decal decal) {
+	void DECALS::add(const rawrbox::Decal& decal) {
 		auto ptr = std::make_unique<rawrbox::Decal>(decal);
 		_decals.push_back(std::move(ptr));
 
@@ -143,11 +143,11 @@ namespace rawrbox {
 		return true;
 	}
 
-	bool DECALS::remove(rawrbox::Decal* decal) {
-		if (decal == nullptr || _decals.empty()) return false;
+	bool DECALS::remove(const rawrbox::Decal& decal) {
+		if (_decals.empty()) return false;
 
 		for (size_t i = 0; i < _decals.size(); i++) {
-			if (_decals[i].get() == decal) {
+			if (_decals[i].get() == &decal) {
 				_decals.erase(_decals.begin() + i);
 
 				rawrbox::__DECALS_DIRTY__ = true;

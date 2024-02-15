@@ -11,9 +11,6 @@ namespace rawrbox {
 		rawrbox::TextureBase* _texture = nullptr;
 		rawrbox::Color _color = rawrbox::Colors::White();
 
-#ifdef RAWRBOX_SCRIPTING
-		void initializeLua() override;
-#endif
 	public:
 		UIImage() = default;
 		UIImage(const UIImage&) = default;

@@ -361,9 +361,10 @@ namespace rawrbox {
 			// this->beginQuery("OVERLAY");
 #endif
 			this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+			if (this->_stencil != nullptr) this->_stencil->render();
 #ifdef _DEBUG
-			// this->_context->EndDebugGroup();
-			// this->endQuery("OVERLAY");
+				// this->_context->EndDebugGroup();
+				// this->endQuery("OVERLAY");
 #endif
 
 			this->frame();
@@ -429,9 +430,10 @@ namespace rawrbox {
 		// this->beginQuery("OVERLAY");
 #endif
 		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+		if (this->_stencil != nullptr) this->_stencil->render();
 #ifdef _DEBUG
-		// this->endQuery("OVERLAY");
-		// this->_context->EndDebugGroup();
+			// this->endQuery("OVERLAY");
+			// this->_context->EndDebugGroup();
 #endif
 		//  ------------------
 
@@ -450,7 +452,13 @@ namespace rawrbox {
 		this->_context->SetRenderTargets(1, &pRTV, pDSV, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		// Clear the back buffer
-		this->_context->ClearRenderTarget(pRTV, this->_clearColor.array().data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		if (!this->_introComplete) {
+			std::array<float, 4> clear = {0, 0, 0, 1};
+			this->_context->ClearRenderTarget(pRTV, clear.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		} else {
+			this->_context->ClearRenderTarget(pRTV, this->_clearColor.array().data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		}
+
 		this->_context->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG, 1.F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 
@@ -656,7 +664,7 @@ namespace rawrbox {
 	// Utils ----
 	void RendererBase::setMainCamera(rawrbox::CameraBase* camera) const { rawrbox::MAIN_CAMERA = camera; }
 	rawrbox::CameraBase* RendererBase::camera() const { return this->_camera.get(); }
-	rawrbox::Stencil& RendererBase::stencil() const { return *this->_stencil.get(); }
+	rawrbox::Stencil* RendererBase::stencil() const { return this->_stencil.get(); }
 
 	Diligent::IDeviceContext* RendererBase::context() const { return this->_context; }
 	Diligent::ISwapChain* RendererBase::swapChain() const { return this->_swapChain; }

@@ -11,12 +11,15 @@
 
 namespace rawrbox {
 	template <class NumberType>
+		requires(std::is_integral_v<NumberType> || std::is_floating_point_v<NumberType>)
 	class Vector3_t {
 	protected:
 		using VecType = Vector3_t<NumberType>;
 
 	public:
-		NumberType x = 0, y = 0, z = 0;
+		NumberType x = 0;
+		NumberType y = 0;
+		NumberType z = 0;
 
 		Vector3_t() = default;
 		explicit Vector3_t(NumberType val) : x(val), y(val), z(val) {}
@@ -32,7 +35,14 @@ namespace rawrbox {
 		static VecType up() { return VecType(0, 1, 0); }
 		static VecType forward() { return VecType(0, 0, 1); }
 		static VecType left() { return VecType(1, 0, 0); }
-		static VecType nan() { return VecType(std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN()); }
+
+		static VecType nan()
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{ return VecType(std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN()); }
+
+		[[nodiscard]] bool isNAN() const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{ return std::isnan<NumberType>(x) && std::isnan<NumberType>(y) && std::isnan<NumberType>(z); }
 
 		static VecType mad(const VecType& a, const VecType& b, const VecType& c) { return (a * b) + c; }
 		static VecType mad(const VecType& a, const NumberType b, const VecType& c) { return (a * b) + c; }
@@ -72,23 +82,6 @@ namespace rawrbox {
 			return {std::abs(x), std::abs(y), std::abs(z)};
 		}
 
-		// From: https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Math/Vector3.cs#L324
-		[[nodiscard]] NumberType angle(const VecType& target) const {
-			float denominator = std::sqrt(sqrMagnitude() * target.sqrMagnitude());
-			if (denominator < 1e-15F)
-				return 0.F;
-
-			float dot = std::clamp(this->dot(target) / denominator, -1.F, 1.F);
-			return std::acos(dot) * (1.F / (rawrbox::pi<float> * 2.F / 360.F));
-		}
-
-		[[nodiscard]] VecType rotateAroundOrigin(const VecType& axis, float theta) const {
-			float cos_theta = std::cos(theta);
-			float sin_theta = std::sin(theta);
-
-			return (VecType{this->x, this->y, this->z} * cos_theta) + (this->cross(axis) * sin_theta) + (axis * this->dot(axis)) * (1.F - cos_theta);
-		}
-
 		[[nodiscard]] VecType lerp(const VecType& other, float timestep) const {
 			if ((*this) == other) return other;
 			VecType ret;
@@ -114,14 +107,14 @@ namespace rawrbox {
 			    std::clamp(z, min.z, max.z)};
 		}
 
-		[[nodiscard]] VecType clampMagnitude(float max) const {
-			float mag = this->sqrMagnitude();
+		[[nodiscard]] VecType clampMagnitude(NumberType max) const {
+			NumberType mag = this->sqrMagnitude();
 			if (mag > max * max) {
-				float m = std::sqrt(mag);
+				NumberType m = std::sqrt(mag);
 
-				float x = this->x / m;
-				float y = this->y / m;
-				float z = this->z / m;
+				NumberType x = this->x / m;
+				NumberType y = this->y / m;
+				NumberType z = this->z / m;
 
 				return {x * max, y * max, z * max};
 			}
@@ -129,45 +122,75 @@ namespace rawrbox {
 			return *this;
 		}
 
+		[[nodiscard]] VecType min(const VecType& other) const {
+			return {std::min(x, other.x), std::min(y, other.y), std::min(z, other.z)};
+		}
+
+		[[nodiscard]] VecType max(const VecType& other) const {
+			return {std::max(x, other.x), std::max(y, other.y), std::max(z, other.z)};
+		}
+
 		template <class ReturnType>
 		Vector3_t<ReturnType> cast() const {
+			if constexpr (std::is_same_v<NumberType, ReturnType>) return *this;
 			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y), static_cast<ReturnType>(z)};
 		}
 		// ------
 
 		// UTILS - FLOAT ---
+		// From: https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Math/Vector3.cs#L324
+		[[nodiscard]] NumberType angle(const VecType& target) const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{
+			float denominator = std::sqrt(sqrMagnitude() * target.sqrMagnitude());
+			if (denominator < 1e-15F)
+				return 0.F;
+
+			float dot = std::clamp(this->dot(target) / denominator, -1.F, 1.F);
+			return std::acos(dot) * (1.F / (rawrbox::pi<float> * 2.F / 360.F));
+		}
+
+		[[nodiscard]] VecType rotateAroundOrigin(const VecType& axis, float theta) const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{
+			float cos_theta = std::cos(theta);
+			float sin_theta = std::sin(theta);
+
+			return (VecType{this->x, this->y, this->z} * cos_theta) + (this->cross(axis) * sin_theta) + (axis * this->dot(axis)) * (1.F - cos_theta);
+		}
+
 		[[nodiscard]] VecType normalized() const
-			requires(std::is_same_v<NumberType, float>)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return (*this) / length();
 		}
 
-		[[nodiscard]] float dot(const Vector3_t<float>& other) const
-			requires(std::is_same_v<NumberType, float>)
+		[[nodiscard]] float dot(const Vector3_t<NumberType>& other) const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return x * other.x + y * other.y + z * other.z;
 		}
 
 		[[nodiscard]] VecType floor() const
-			requires(std::is_same_v<NumberType, float>)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return {std::floor(x), std::floor(y), std::floor(z)};
 		}
 
 		[[nodiscard]] VecType round() const
-			requires(std::is_same_v<NumberType, float>)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return {std::round(x), std::round(y), std::round(z)};
 		}
 
 		[[nodiscard]] VecType ceil() const
-			requires(std::is_same_v<NumberType, float>)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return {std::ceil(x), std::ceil(y), std::ceil(z)};
 		}
 
 		[[nodiscard]] VecType cross(const VecType& other) const
-			requires(std::is_same_v<NumberType, float>)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			VecType retVal;
 			retVal.x = y * other.z - z * other.y;
@@ -175,18 +198,6 @@ namespace rawrbox {
 			retVal.z = x * other.y - y * other.x;
 
 			return retVal;
-		}
-
-		[[nodiscard]] VecType min(const VecType& other) const
-			requires(std::is_same_v<NumberType, float>)
-		{
-			return {std::min(x, other.x), std::min(y, other.y), std::min(z, other.z)};
-		}
-
-		[[nodiscard]] VecType max(const VecType& other) const
-			requires(std::is_same_v<NumberType, float>)
-		{
-			return {std::max(x, other.x), std::max(y, other.y), std::max(z, other.z)};
 		}
 		// ----
 
@@ -273,5 +284,6 @@ namespace rawrbox {
 
 	using Vector3f = Vector3_t<float>;
 	using Vector3i = Vector3_t<int>;
+	using Vector3d = Vector3_t<double>;
 	using Vector3 = Vector3f;
 } // namespace rawrbox

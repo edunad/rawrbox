@@ -30,10 +30,6 @@ namespace rawrbox {
 		rawrbox::TextureBase* _overlay = nullptr;
 		// -----------------
 
-#ifdef RAWRBOX_SCRIPTING
-		void initializeLua() override;
-#endif
-
 	public:
 		~UIFrame() override = default;
 		UIFrame() = default;
@@ -45,7 +41,7 @@ namespace rawrbox {
 		rawrbox::Event<> onClose;
 
 		void initialize() override;
-		[[nodiscard]] const rawrbox::Vector2f getDrawOffset() const override;
+		[[nodiscard]] rawrbox::Vector2f getDrawOffset() const override;
 
 		// UTILS -----
 		[[nodiscard]] const rawrbox::Color& getTitleColor() const;

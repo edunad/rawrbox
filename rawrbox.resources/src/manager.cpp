@@ -5,7 +5,9 @@ namespace rawrbox {
 	std::mutex rawrbox::RESOURCES::_threadLock;
 
 	std::vector<std::filesystem::path> rawrbox::RESOURCES::_loadedFiles = {};
-	std::atomic<uint32_t> rawrbox::RESOURCES::_loadingFiles = 0;
+
+	std::atomic<size_t> rawrbox::RESOURCES::_loadingFiles = 0;
+	std::atomic<size_t> rawrbox::RESOURCES::_loadingPreloadFiles = 0;
 
 	std::vector<std::unique_ptr<rawrbox::Loader>> rawrbox::RESOURCES::_loaders = [] {
 		std::vector<std::unique_ptr<rawrbox::Loader>> defaults;

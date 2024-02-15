@@ -5,19 +5,7 @@
 #include <rawrbox/ui/elements/frame.hpp>
 #include <rawrbox/ui/root.hpp>
 
-#ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/ui/scripting/wrappers/elements/frame_wrapper.hpp>
-#endif
-
 namespace rawrbox {
-
-#ifdef RAWRBOX_SCRIPTING
-	void UIFrame::initializeLua() {
-		if (!SCRIPTING::initialized) return;
-		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::FrameWrapper(this->shared_from_this()));
-	}
-#endif
-
 	void UIFrame::initialize() {
 		this->_stripes = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/stripe.png")->get();
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/overlay/overlay.png")->get();
@@ -43,7 +31,7 @@ namespace rawrbox {
 		};
 	}
 
-	const rawrbox::Vector2f UIFrame::getDrawOffset() const {
+	rawrbox::Vector2f UIFrame::getDrawOffset() const {
 		return {0, 18.F}; // Title offset
 	}
 
@@ -95,7 +83,7 @@ namespace rawrbox {
 
 	// DRAWING ---
 	void UIFrame::draw(rawrbox::Stencil& stencil) {
-		auto& size = getSize();
+		auto& size = this->getSize();
 
 		// Panel Background
 		stencil.drawBox({}, size, Color::RGBHex(0x0C0C0C));

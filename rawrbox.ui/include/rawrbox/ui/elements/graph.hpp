@@ -89,10 +89,6 @@ namespace rawrbox {
 		std::vector<std::array<rawrbox::Vector2f, rawrbox::UIGraphCategory::ENTRY_COUNT>> _vertCats = {};
 		std::vector<std::pair<std::string, float>> texts = {};
 
-#ifdef RAWRBOX_SCRIPTING
-		void initializeLua() override;
-#endif
-
 	public:
 		~UIGraph() override = default;
 		UIGraph() = default;
@@ -140,11 +136,11 @@ namespace rawrbox {
 
 		// FOCUS HANDLE ---
 		[[nodiscard]] bool hitTest(const rawrbox::Vector2f& point) const override;
+		[[nodiscard]] bool clipOverflow() const override;
 		// -----
 
 		// DRAW ----
 		void update() override;
-		[[nodiscard]] bool clipOverflow() const override;
 		void draw(rawrbox::Stencil& stencil) override;
 		// -------
 	};

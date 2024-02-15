@@ -223,7 +223,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] virtual const rawrbox::TextureBase* getRoughtMetalTexture() const { return this->textures.roughtMetal; }
-		virtual void setRoughtnessMetalness(rawrbox::TextureBase* ptr, float roughness = 0.5F, float metalness = 0.5F) {
+		virtual void setRoughtMetalTexture(rawrbox::TextureBase* ptr, float roughness = 0.5F, float metalness = 0.5F) {
 			this->textures.roughtMetal = ptr;
 			this->textures.roughnessFactor = roughness;
 			this->textures.metalnessFactor = metalness;

@@ -3,6 +3,8 @@
 #include <rawrbox/engine/watch.hpp>
 #include <rawrbox/utils/logger.hpp>
 
+#include <atomic>
+
 namespace rawrbox {
 	enum class ENGINE_THREADS {
 		NONE = 0,
@@ -12,7 +14,7 @@ namespace rawrbox {
 
 	class Engine {
 	protected:
-		rawrbox::ENGINE_THREADS _shutdown = ENGINE_THREADS::NONE;
+		std::atomic<rawrbox::ENGINE_THREADS> _shutdown = ENGINE_THREADS::NONE;
 		float _deltaTimeAccumulator = 0;
 
 		uint32_t _tps = 66;
@@ -22,7 +24,7 @@ namespace rawrbox {
 
 		rawrbox::Watch _timer;
 
-		// Quick sleep from  https://github.com/turanszkij/WickedEngine/blob/387c3e0a379a843c433d425f970846a073d55665/WickedEngine/wiApplication.cpp#L148
+		// Quick sleep from https://github.com/turanszkij/WickedEngine/blob/master/WickedEngine/wiHelper.cpp#L1622
 		virtual void sleep(float milliseconds);
 
 		// Create the GLFW window

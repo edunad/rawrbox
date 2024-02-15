@@ -5,10 +5,6 @@
 
 #include <Buffer.h>
 
-#ifdef RAWRBOX_SCRIPTING
-	#include <sol/sol.hpp>
-#endif
-
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialUnlit>
@@ -30,13 +26,8 @@ namespace rawrbox {
 		rawrbox::Vector3f normal = {};
 	};
 
-#ifdef RAWRBOX_SCRIPTING
-	template <typename M = rawrbox::MaterialUnlit>
-	class ModelBase : public std::enable_shared_from_this<rawrbox::ModelBase<M>> {
-#else
 	template <typename M = rawrbox::MaterialUnlit>
 	class ModelBase {
-#endif
 
 	protected:
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _vbh; // Vertices
@@ -55,14 +46,6 @@ namespace rawrbox {
 		// LOGGER ------
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Model");
 		// -------------
-
-#ifdef RAWRBOX_SCRIPTING
-		sol::object _luaWrapper;
-		virtual void initializeLua() {
-			if (!SCRIPTING::initialized) return;
-			this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ModelBaseWrapper(this->shared_from_this()));
-		}
-#endif
 
 		// BLEND SHAPES ---
 		virtual void applyBlendShapes() {
@@ -130,10 +113,6 @@ namespace rawrbox {
 			RAWRBOX_DESTROY(this->_ibh);
 
 			this->_mesh.reset();
-
-#ifdef RAWRBOX_SCRIPTING
-			if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
-#endif
 		}
 
 		// BLEND SHAPES ---
@@ -147,6 +126,7 @@ namespace rawrbox {
 			blend->mesh = this->_mesh.get();
 
 			this->_blend_shapes[id] = std::move(blend);
+			return true;
 		}
 
 		virtual bool removeBlendShape(const std::string& id) {
@@ -217,6 +197,11 @@ namespace rawrbox {
 
 			rawrbox::BindlessManager::barrier(*this->_vbh, rawrbox::BufferType::VERTEX);
 			rawrbox::BindlessManager::barrier(*this->_ibh, rawrbox::BufferType::INDEX);
+		}
+
+		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->_mesh->getColor(); }
+		virtual void setColor(const rawrbox::Color& color) {
+			this->_mesh->setColor(color);
 		}
 
 		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_mesh->getPos(); }
@@ -333,12 +318,5 @@ namespace rawrbox {
 			this->_material->resetUniformBinds();
 			// ----------------------------
 		}
-
-#ifdef RAWRBOX_SCRIPTING
-		virtual sol::object& getScriptingWrapper() {
-			if (!this->_luaWrapper.valid()) this->initializeLua();
-			return this->_luaWrapper;
-		}
-#endif
 	};
 } // namespace rawrbox

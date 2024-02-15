@@ -116,9 +116,8 @@ else()
 endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-    if(NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES) # RAWRBOX.RESOURCES already includes scripting if RAWRBOX_BUILD_RAWRBOX_SCRIPTING is enabled
-        list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.SCRIPTING)
-    endif()
+    list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.SCRIPTING)
+    message(STATUS "Enabling RAWRBOX.RENDER scripting plugin")
 else()
     remove_folder("${RAWRBOX_RENDER_SOURCES}" "/scripting/")
     set(RAWRBOX_RENDER_SOURCES "${CLEAN_SOURCES}")
@@ -128,11 +127,11 @@ endif()
 
 # Project setup
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RENDER_SOURCES})
-copy_resources(TARGET ${output_target})
 
-#if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-#    copy_lua_libs(TARGET ${output_target})
-#endif()
+copy_resources(TARGET ${output_target})
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    copy_lua_libs(TARGET ${output_target})
+endif()
 
 target_compile_options(${output_target} PRIVATE -DENGINE_DLL)
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)

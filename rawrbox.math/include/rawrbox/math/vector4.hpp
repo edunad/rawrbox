@@ -10,6 +10,7 @@
 
 namespace rawrbox {
 	template <class NumberType>
+		requires(std::is_integral_v<NumberType> || std::is_floating_point_v<NumberType>)
 	class Vector4_t {
 	protected:
 		using VecType = Vector4_t<NumberType>;
@@ -18,13 +19,21 @@ namespace rawrbox {
 		NumberType x = 0, y = 0, z = 0, w = 0;
 		Vector4_t() = default;
 		explicit Vector4_t(NumberType val) : x(val), y(val), z(val), w(val) {}
-		Vector4_t(NumberType _x, NumberType _y, NumberType _z = 0.F, NumberType _w = 0.F) : x(_x), y(_y), z(_z), w(_w) {}
+		Vector4_t(NumberType _x, NumberType _y, NumberType _z = 0, NumberType _w = 0) : x(_x), y(_y), z(_z), w(_w) {}
 
 		// NOLINTBEGIN(hicpp-explicit-conversions)
 		Vector4_t(const std::array<NumberType, 4>& val) : x(val[0]), y(val[1]), z(val[2]), w(val[3]) {}
-		Vector4_t(Vector3_t<NumberType> val, NumberType _w = 0.F) : x(val.x), y(val.y), z(val.z), w(_w) {}
-		Vector4_t(Vector2_t<NumberType> val, NumberType _z = 0.F, NumberType _w = 0.F) : x(val.x), y(val.y), z(_z), w(_w) {}
+		Vector4_t(Vector3_t<NumberType> val, NumberType _w = 0) : x(val.x), y(val.y), z(val.z), w(_w) {}
+		Vector4_t(Vector2_t<NumberType> val, NumberType _z = 0, NumberType _w = 0) : x(val.x), y(val.y), z(_z), w(_w) {}
 		// NOLINTEND(hicpp-explicit-conversions)
+
+		static VecType nan()
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{ return VecType(std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN(), std::numeric_limits<NumberType>::quiet_NaN()); }
+
+		[[nodiscard]] bool isNAN() const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{ return std::isnan<NumberType>(x) && std::isnan<NumberType>(y) && std::isnan<NumberType>(z) && std::isnan<NumberType>(w); }
 
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1, 1); }
@@ -59,6 +68,12 @@ namespace rawrbox {
 
 		VecType normalized() const {
 			return (*this) / length();
+		}
+
+		template <class ReturnType>
+		Vector4_t<ReturnType> cast() const {
+			if constexpr (std::is_same_v<NumberType, ReturnType>) return *this;
+			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y), static_cast<ReturnType>(z), static_cast<ReturnType>(w)};
 		}
 
 		[[nodiscard]] VecType clamp(NumberType min, NumberType max) const {
@@ -99,7 +114,9 @@ namespace rawrbox {
 			return ret.normalized();
 		}
 
-		Vector3_t<NumberType> toEuler() const {
+		Vector3_t<NumberType> toEuler() const
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{
 			// roll
 			float sinr_cosp = 2.0F * (w * x + y * z);
 			float cosr_cosp = 1.0F - 2.0F * (x * x + y * y);
@@ -116,7 +133,9 @@ namespace rawrbox {
 			return {std::atan2(sinr_cosp, cosr_cosp), std::asin(sinp), std::atan2(siny_cosp, cosy_cosp)};
 		}
 
-		Vector3_t<NumberType> toAxis() {
+		Vector3_t<NumberType> toAxis()
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{
 			if (std::abs(this->w) > 1.0F) {
 				auto nrm = this->normalized();
 
@@ -131,7 +150,9 @@ namespace rawrbox {
 			return {1, 0, 0};
 		}
 
-		static Vector4_t<NumberType> toQuat(const Vector3_t<NumberType>& in) {
+		static Vector4_t<NumberType> toQuat(const Vector3_t<NumberType>& in)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{
 			rawrbox::Vector4_t<NumberType> ret = {};
 
 			float x = in.x * 0.5F;
@@ -153,7 +174,9 @@ namespace rawrbox {
 			return ret;
 		}
 
-		static Vector4_t<NumberType> lookRotation(const Vector3_t<NumberType>& lookAt, const Vector3_t<NumberType>& upDirection) {
+		static Vector4_t<NumberType> lookRotation(const Vector3_t<NumberType>& lookAt, const Vector3_t<NumberType>& upDirection)
+			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		{
 			auto forward = lookAt.normalized();
 			auto right = upDirection.cross(forward).normalized();
 			auto up = forward.cross(right);
@@ -267,15 +290,11 @@ namespace rawrbox {
 			return pOut;
 		};
 
-		[[nodiscard]] VecType min(const VecType& other) const
-			requires(std::is_same_v<NumberType, float>)
-		{
+		[[nodiscard]] VecType min(const VecType& other) const {
 			return {std::min(x, other.x), std::min(y, other.y), std::min(z, other.z), std::min(w, other.w)};
 		}
 
-		[[nodiscard]] VecType max(const VecType& other) const
-			requires(std::is_same_v<NumberType, float>)
-		{
+		[[nodiscard]] VecType max(const VecType& other) const {
 			return {std::max(x, other.x), std::max(y, other.y), std::max(z, other.z), std::min(w, other.w)};
 		}
 
@@ -397,5 +416,6 @@ namespace rawrbox {
 
 	using Vector4f = Vector4_t<float>;
 	using Vector4i = Vector4_t<int>;
+	using Vector4d = Vector4_t<double>;
 	using Vector4 = Vector4f;
 } // namespace rawrbox

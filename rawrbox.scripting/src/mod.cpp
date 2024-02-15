@@ -5,7 +5,7 @@
 #include <Luau/Compiler.h>
 
 namespace rawrbox {
-	Mod::Mod(std::string id, std::filesystem::path folderPath) : _folder(std::move(folderPath)), _id(std::move(id)), _L(luaL_newstate()), _modTable(_L) {
+	Mod::Mod(std::string id, std::filesystem::path folderPath) : _L(luaL_newstate()), _modTable(_L), _folder(std::move(folderPath)), _id(std::move(id)) {
 		if (this->_L == nullptr) throw _logger->error("Invalid lua handle");
 
 		// Inject mod env --
@@ -27,6 +27,7 @@ namespace rawrbox {
 
 		// Freeze lua env ---
 		// No more modifications to the global table are allowed after this point
+		// luabridge::enableExceptions(_L);
 		luaL_sandbox(this->_L);
 		luaL_sandboxthread(this->_L); // Clone of the _G env that allows modification, but you cannot modify _G directly
 		// --------------

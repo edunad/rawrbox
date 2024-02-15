@@ -3,23 +3,14 @@
 #include <rawrbox/math/aabb.hpp>
 #include <rawrbox/math/vector2.hpp>
 
-#ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/scripting/scripting.hpp>
-	#include <sol/sol.hpp>
-#endif
-
 #include <memory>
 #include <vector>
 
 namespace rawrbox {
 	class Stencil;
 	class UIRoot;
-
-#ifdef RAWRBOX_SCRIPTING
-	class UIContainer : public std::enable_shared_from_this<UIContainer> {
-#else
 	class UIContainer {
-#endif
+
 	protected:
 		bool _hovering = false;
 		bool _focused = false;
@@ -36,17 +27,8 @@ namespace rawrbox {
 		void internalUpdate(rawrbox::UIContainer* elm);
 		void internalDraw(rawrbox::UIContainer* elm, rawrbox::Stencil& stencil);
 
-#ifdef RAWRBOX_SCRIPTING
-		sol::object _luaWrapper;
-		virtual void initializeLua();
-#endif
-
 	public:
-#ifdef RAWRBOX_SCRIPTING
-		virtual ~UIContainer();
-#else
 		virtual ~UIContainer() = default;
-#endif
 
 		UIContainer() = default;
 		UIContainer(const UIContainer&) = default;
@@ -58,11 +40,11 @@ namespace rawrbox {
 
 		// UTILS ---
 		virtual void setPos(const rawrbox::Vector2f& pos);
-		[[nodiscard]] virtual const rawrbox::Vector2f getPos() const;
-		[[nodiscard]] virtual const rawrbox::Vector2f getDrawOffset() const;
+		[[nodiscard]] virtual const rawrbox::Vector2f& getPos() const;
+		[[nodiscard]] virtual rawrbox::Vector2f getDrawOffset() const;
 
 		virtual void setSize(const rawrbox::Vector2f& size);
-		[[nodiscard]] virtual const rawrbox::Vector2f getSize() const;
+		[[nodiscard]] virtual const rawrbox::Vector2f& getSize() const;
 
 		virtual void removeChildren();
 		virtual void remove();
@@ -78,7 +60,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool hovering() const;
 
 		[[nodiscard]] virtual rawrbox::UIRoot* getRoot() const;
-		[[nodiscard]] virtual const rawrbox::Vector2f getPosAbsolute() const;
+		[[nodiscard]] virtual rawrbox::Vector2f getPosAbsolute() const;
 		// ---
 
 		// SORTING -----
@@ -141,11 +123,6 @@ namespace rawrbox {
 
 		virtual void update();
 		virtual void updateChildren();
-
-		// SCRIPTING ----
-#ifdef RAWRBOX_SCRIPTING
-		virtual sol::object& getScriptingWrapper();
-#endif
 		// ---------
 	};
 } // namespace rawrbox

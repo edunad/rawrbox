@@ -93,7 +93,8 @@ namespace rawrbox {
 
 		// Light ----
 		template <typename T = rawrbox::LightBase, typename... CallbackArgs>
-		static rawrbox::LightBase* addLight(CallbackArgs&&... args) {
+			requires(std::derived_from<T, rawrbox::LightBase>)
+		static rawrbox::LightBase* add(CallbackArgs&&... args) {
 			auto light = _lights.emplace_back(std::make_shared<T>(std::forward<CallbackArgs>(args)...)).get();
 			light->setId(++rawrbox::LIGHT_ID);
 
@@ -102,8 +103,8 @@ namespace rawrbox {
 			return light;
 		}
 
-		static bool removeLight(size_t indx);
-		static bool removeLight(rawrbox::LightBase* light);
+		static bool remove(size_t indx);
+		static bool remove(const rawrbox::LightBase& light);
 		// ---------
 	};
 } // namespace rawrbox

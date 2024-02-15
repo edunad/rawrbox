@@ -24,13 +24,10 @@ endif()
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_UI_IMPORTS "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
-#if(NOT RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-#    remove_folder("${RAWRBOX_UI_IMPORTS}" "/scripting/")
-#    set(RAWRBOX_UI_IMPORTS "${CLEAN_SOURCES}")
-#endif()
-
-remove_folder("${RAWRBOX_UI_IMPORTS}" "/scripting/")
-set(RAWRBOX_UI_IMPORTS "${CLEAN_SOURCES}")
+if(NOT RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    remove_folder("${RAWRBOX_UI_IMPORTS}" "/scripting/")
+    set(RAWRBOX_UI_IMPORTS "${CLEAN_SOURCES}")
+endif()
 
 if(NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     message(FATAL "RAWRBOX.UI elements require RAWRBOX.RESOURCES to be enabled!")
@@ -39,6 +36,7 @@ endif()
 
 # LIB ----
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_UI_IMPORTS})
+
 copy_resources(TARGET ${output_target})
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
     copy_lua_libs(TARGET ${output_target})

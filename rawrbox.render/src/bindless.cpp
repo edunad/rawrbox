@@ -401,8 +401,8 @@ namespace rawrbox {
 		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;
 
 		int size = static_cast<int>(handler.size());
-		if (size == (max / 1.2F)) _logger->warn("Aproaching max texture limit of {}", fmt::format(fmt::fg(fmt::color::red), std::to_string(max)));
-		if (size >= max) throw _logger->error("Max texture limit reached! Cannot allocate texture, remove some unecessary textures or increase max textures on renderer");
+		if (size == static_cast<int>(max / 1.2F)) _logger->warn("Aproaching max texture limit of {}", fmt::format(fmt::fg(fmt::color::red), std::to_string(max)));
+		if (size >= static_cast<int>(max)) throw _logger->error("Max texture limit reached! Cannot allocate texture, remove some unecessary textures or increase max textures on renderer");
 
 		int id = -1;
 
