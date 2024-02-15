@@ -9,7 +9,7 @@ namespace rawrbox {
 
 	void LuaUtils::compileAndLoadFile(lua_State* L, const std::string& chunkID, const std::filesystem::path& path) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
-		if (!std::filesystem::exists(path)) throw std::runtime_error("File not found");
+		if (!std::filesystem::exists(path)) throw std::runtime_error(fmt::format("File '{}' not found", path.generic_string()));
 
 		// Load script ---
 		auto bytes = rawrbox::PathUtils::getRawData(path);

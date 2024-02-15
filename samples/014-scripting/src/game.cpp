@@ -1,5 +1,4 @@
 #include <rawrbox/render/lights/directional.hpp>
-#include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/scripting/plugin.hpp>
 #include <rawrbox/resources/scripting/plugin.hpp>
 
@@ -13,7 +12,7 @@
 #endif
 
 #ifdef RAWRBOX_UI
-// #include <rawrbox/ui/scripting/plugin.hpp>
+	#include <rawrbox/ui/scripting/plugin.hpp>
 	#include <rawrbox/ui/static.hpp>
 #endif
 
@@ -46,8 +45,6 @@ namespace scripting_test {
 
 		// Setup renderer
 		auto render = window->createRenderer();
-		render->skipIntros(true);
-		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass == rawrbox::DrawPass::PASS_OPAQUE) {
@@ -75,7 +72,7 @@ namespace scripting_test {
 		// SETUP UI
 #ifdef RAWRBOX_UI
 		this->_ROOT_UI = std::make_unique<rawrbox::UIRoot>(*window);
-		// rawrbox::SCRIPTING::registerPlugin<rawrbox::UIPlugin>(this->_ROOT_UI.get());
+		rawrbox::SCRIPTING::registerPlugin<rawrbox::UIPlugin>(this->_ROOT_UI.get());
 #endif
 		// ----
 

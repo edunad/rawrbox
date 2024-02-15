@@ -1,38 +1,19 @@
-
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/ui/container.hpp>
 #include <rawrbox/ui/root.hpp>
 
-#ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/ui/scripting/wrappers/ui_container_wrapper.hpp>
-	#include <rawrbox/scripting/scripting.hpp>
-#endif
-
 namespace rawrbox {
 	UIContainer::UIContainer(rawrbox::UIContainer&& other) noexcept : _parent(other._parent), _children(std::move(other._children)), _alwaysOnTop(other._alwaysOnTop), _aabb(other._aabb) {}
-#ifdef RAWRBOX_SCRIPTING
-	UIContainer::~UIContainer() {
-		// if (this->_luaWrapper.valid()) this->_luaWrapper.abandon();
-	}
-#endif
-
 	void UIContainer::initialize() {}
 
-#ifdef RAWRBOX_SCRIPTING
-	// void UIContainer::initializeLua() {
-	//	if (!SCRIPTING::initialized) return;
-	//	this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::UIContainerWrapper(this->shared_from_this()));
-	// }
-#endif
-
 	// UTILS ---
-	const rawrbox::Vector2f UIContainer::getDrawOffset() const { return {}; };
+	rawrbox::Vector2f UIContainer::getDrawOffset() const { return {}; };
 
 	void UIContainer::setPos(const rawrbox::Vector2f& pos) { this->_aabb.pos = pos; }
-	const rawrbox::Vector2f UIContainer::getPos() const { return this->_aabb.pos; }
+	const rawrbox::Vector2f& UIContainer::getPos() const { return this->_aabb.pos; }
 
 	void UIContainer::setSize(const rawrbox::Vector2f& size) { this->_aabb.size = size; }
-	const rawrbox::Vector2f UIContainer::getSize() const { return this->_aabb.size; }
+	const rawrbox::Vector2f& UIContainer::getSize() const { return this->_aabb.size; }
 
 	void UIContainer::removeChildren() {
 		for (auto& c : this->_children) {
@@ -90,7 +71,7 @@ namespace rawrbox {
 
 	rawrbox::UIRoot* UIContainer::getRoot() const { return this->_root; }
 
-	const rawrbox::Vector2f UIContainer::getPosAbsolute() const {
+	rawrbox::Vector2f UIContainer::getPosAbsolute() const {
 		if (!this->hasParent()) return this->getPos();
 
 		rawrbox::Vector2f ret;
@@ -200,13 +181,4 @@ namespace rawrbox {
 	}
 
 	void UIContainer::update() {}
-
-	// SCRIPTING ----
-#ifdef RAWRBOX_SCRIPTING
-	// sol::object& UIContainer::getScriptingWrapper() {
-	//	if (!this->_luaWrapper.valid()) this->initializeLua();
-	//	return this->_luaWrapper;
-	// }
-#endif
-	// ---------
 } // namespace rawrbox

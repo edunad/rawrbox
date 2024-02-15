@@ -194,13 +194,13 @@ namespace rawrbox {
 	void UIRoot::render() {
 		if (this->_window == nullptr) return;
 		auto& renderer = this->_window->getRenderer();
-		auto& sten = renderer.stencil();
+		auto sten = renderer.stencil();
 
 		for (auto& ch : this->_children) {
-			ch->drawChildren(sten);
+			ch->drawChildren(*sten);
 		}
 
-		sten.render();
+		sten->render();
 	}
 
 	void UIRoot::update() {

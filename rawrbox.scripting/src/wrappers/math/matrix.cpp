@@ -5,7 +5,7 @@ namespace rawrbox {
 	void MatrixWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
 		    .beginClass<rawrbox::Matrix4x4>("Matrix")
-		    .addConstructor<void(), void(const std::array<float, 16>)>()
+		    .addConstructor<void(), void(rawrbox::Matrix4x4), void(const std::array<float, 16>)>()
 
 		    .addFunction("size", &rawrbox::Matrix4x4::size)
 
@@ -15,10 +15,6 @@ namespace rawrbox {
 		    .addFunction("transpose",
 			luabridge::overload<>(&rawrbox::Matrix4x4::transpose),
 			luabridge::overload<const rawrbox::Matrix4x4&>(&rawrbox::Matrix4x4::transpose))
-
-		    .addFunction("get", [](const rawrbox::Matrix4x4& self, size_t index) {
-			    return self[index];
-		    })
 
 		    .addFunction("translate", &rawrbox::Matrix4x4::translate)
 		    .addFunction("scale", &rawrbox::Matrix4x4::scale)
@@ -50,6 +46,9 @@ namespace rawrbox {
 		    .addFunction("__div", &rawrbox::Matrix4x4::operator/)
 		    .addFunction("__eq", &rawrbox::Matrix4x4::operator==)
 		    .addFunction("__ne", &rawrbox::Matrix4x4::operator!=)
+		    .addFunction("__index", [](rawrbox::Matrix4x4& self, size_t index) {
+			    return self[index];
+		    })
 
 		    .endClass();
 	}

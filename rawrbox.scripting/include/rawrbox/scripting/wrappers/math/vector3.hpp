@@ -17,7 +17,7 @@ namespace rawrbox {
 
 			    .addProperty("x", &VEC::x)
 			    .addProperty("y", &VEC::y)
-			    .addProperty("y", &VEC::z)
+			    .addProperty("z", &VEC::z)
 
 			    .addStaticFunction("zero", &VEC::zero)
 			    .addStaticFunction("one", &VEC::one)

@@ -5,18 +5,7 @@
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/image.hpp>
 
-#ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/ui/scripting/wrappers/elements/image_wrapper.hpp>
-#endif
-
 namespace rawrbox {
-#ifdef RAWRBOX_SCRIPTING
-	void UIImage::initializeLua() {
-		if (!SCRIPTING::initialized) return;
-		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::ImageWrapper(this->shared_from_this()));
-	}
-#endif
-
 	// UTILS ----
 	rawrbox::TextureBase* UIImage::getTexture() const { return this->_texture; }
 	void UIImage::setTexture(rawrbox::TextureBase* texture) { this->_texture = texture; }

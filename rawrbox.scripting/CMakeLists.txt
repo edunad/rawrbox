@@ -26,7 +26,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY
         luau-lang/luau
     GIT_TAG
-        0.611
+        0.612
     OPTIONS
         "LUAU_BUILD_CLI OFF"
         "LUAU_BUILD_TESTS OFF"

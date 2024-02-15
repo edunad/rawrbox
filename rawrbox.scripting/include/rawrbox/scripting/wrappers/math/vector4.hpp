@@ -17,7 +17,7 @@ namespace rawrbox {
 			    .template addConstructor<void(), void(VEC), void(T), void(T, T, T, T), void(const std::array<T, 4>&), void(rawrbox::Vector3_t<T>, T), void(rawrbox::Vector2_t<T>, T, T)>()
 			    .addProperty("x", &VEC::x)
 			    .addProperty("y", &VEC::y)
-			    .addProperty("y", &VEC::z)
+			    .addProperty("z", &VEC::z)
 			    .addProperty("w", &VEC::w)
 
 			    .addStaticFunction("zero", &VEC::zero)

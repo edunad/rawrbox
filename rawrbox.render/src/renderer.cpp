@@ -452,7 +452,13 @@ namespace rawrbox {
 		this->_context->SetRenderTargets(1, &pRTV, pDSV, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		// Clear the back buffer
-		this->_context->ClearRenderTarget(pRTV, this->_clearColor.array().data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		if (!this->_introComplete) {
+			std::array<float, 4> clear = {0, 0, 0, 1};
+			this->_context->ClearRenderTarget(pRTV, clear.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		} else {
+			this->_context->ClearRenderTarget(pRTV, this->_clearColor.array().data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		}
+
 		this->_context->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG, 1.F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 	}
 

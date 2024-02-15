@@ -17,7 +17,9 @@ namespace rawrbox {
 		using VecType = Vector3_t<NumberType>;
 
 	public:
-		NumberType x = 0, y = 0, z = 0;
+		NumberType x = 0;
+		NumberType y = 0;
+		NumberType z = 0;
 
 		Vector3_t() = default;
 		explicit Vector3_t(NumberType val) : x(val), y(val), z(val) {}

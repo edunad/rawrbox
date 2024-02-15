@@ -7,19 +7,7 @@
 #include <string>
 #include <utility>
 
-#ifdef RAWRBOX_SCRIPTING
-	#include <rawrbox/ui/scripting/wrappers/elements/graph_wrapper.hpp>
-#endif
-
 namespace rawrbox {
-
-#ifdef RAWRBOX_SCRIPTING
-	void UIGraph::initializeLua() {
-		if (!SCRIPTING::initialized) return;
-		this->_luaWrapper = sol::make_object(rawrbox::SCRIPTING::getLUA(), rawrbox::GraphWrapper(this->shared_from_this()));
-	}
-#endif
-
 	// CATEGORY --
 	rawrbox::UIGraphCategory& UIGraph::getCategory(size_t id) { return *this->_categories[id].get(); }
 	rawrbox::UIGraphCategory& UIGraph::addCategory(const std::string& name, const rawrbox::Color& color) {
