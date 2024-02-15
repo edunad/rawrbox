@@ -22,11 +22,11 @@ CPMAddPackage(
     NAME
         assimp
     GIT_TAG
-        v5.3.1
-    PATCH_COMMAND
-        git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/assimp.patch
+        master
+    #PATCH_COMMAND
+    #    git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/assimp.patch
     GITHUB_REPOSITORY
-        assimp/assimp
+        edunad/assimp
     OPTIONS
         "BUILD_SHARED_LIBS OFF"
         "ASSIMP_NO_EXPORT ON"
