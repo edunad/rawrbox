@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render_temp/model/instanced.hpp>
@@ -50,3 +50,4 @@ namespace gpu {
 		void drawOverlay();
 	};
 } // namespace gpu
+*/

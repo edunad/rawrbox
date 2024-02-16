@@ -1,4 +1,4 @@
-
+/*
 #include <rawrbox/render_temp/camera/orbital.hpp>
 #include <rawrbox/render_temp/gizmos.hpp>
 #include <rawrbox/render_temp/model/utils/mesh.hpp>
@@ -23,10 +23,7 @@ namespace particle_test {
 		this->_window->setRenderer<>(
 		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
-		this->_window->onIntroCompleted += [this]() {
-			this->loadContent();
-		};
+
 	}
 
 	void Game::init() {
@@ -179,3 +176,4 @@ namespace particle_test {
 		this->_window->render(); // Commit primitives
 	}
 } // namespace particle_test
+*/

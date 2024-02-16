@@ -1,11 +1,11 @@
-
+/*
 #ifdef _WIN32
 	#include <windows.h>
 #endif
 
 #include <particle_test/game.hpp>
 
-int main(int /*argc*/, char* /*argv*/[]) {
+int main(int argc, char* argv[]) {
 #ifdef _WIN32
 	SetConsoleTitle("PARTICLE test");
 	SetConsoleCP(CP_UTF8);
@@ -19,3 +19,4 @@ int main(int /*argc*/, char* /*argv*/[]) {
 
 	return 0;
 }
+*/

@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render_temp/model/model.hpp>
@@ -44,3 +44,4 @@ namespace particle_test {
 		void drawWorld();
 	};
 } // namespace particle_test
+*/
