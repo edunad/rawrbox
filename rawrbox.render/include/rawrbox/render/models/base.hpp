@@ -195,8 +195,10 @@ namespace rawrbox {
 			context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-			rawrbox::BindlessManager::barrier(*this->_vbh, rawrbox::BufferType::VERTEX);
-			rawrbox::BindlessManager::barrier(*this->_ibh, rawrbox::BufferType::INDEX);
+			// BARRIER -----
+			rawrbox::BindlessManager::bulkBarrier({{this->_vbh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+			    {this->_ibh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_INDEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+			// -----------
 		}
 
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->_mesh->getColor(); }
@@ -292,8 +294,8 @@ namespace rawrbox {
 			// ---------------------
 
 			// Barrier ----
-			rawrbox::BindlessManager::barrier(*this->_vbh, rawrbox::BufferType::VERTEX);
-			rawrbox::BindlessManager::barrier(*this->_ibh, rawrbox::BufferType::INDEX);
+			rawrbox::BindlessManager::bulkBarrier({{this->_vbh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+			    {this->_ibh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_INDEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			// ------------
 
 			// Initialize material ----

@@ -6,7 +6,6 @@
 
     #ifndef INCLUDED_LIGHTING
         #define INCLUDED_LIGHTING
-
         #include <math.fxh>
 
         struct LightResult {

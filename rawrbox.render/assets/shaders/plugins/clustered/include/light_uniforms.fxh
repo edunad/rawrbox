@@ -9,11 +9,6 @@
         // Ambient ---
         float4 ambientColor;
         // -----
-
-        // Fog ---
-        float4 fogColor;
-        float4 fogSettings;
-        // -----
     };
 
     ConstantBuffer<LightConstantsStruct> LightConstants;

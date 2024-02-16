@@ -25,8 +25,15 @@ namespace rawrbox {
 		if (this->_recording) throw this->_logger->error("Already recording");
 
 		// BARRIER ----
-		rawrbox::BindlessManager::barrier(*this->_tex, Diligent::RESOURCE_STATE_RENDER_TARGET);
-		if (this->_depth) rawrbox::BindlessManager::barrier(*this->_depthTex, Diligent::RESOURCE_STATE_DEPTH_WRITE);
+		if (this->_depth) {
+			std::vector<Diligent::StateTransitionDesc> Barriers = {
+			    {this->_tex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_RENDER_TARGET, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+			    {this->_depthTex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_DEPTH_WRITE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}};
+
+			rawrbox::BindlessManager::bulkBarrier(Barriers);
+		} else {
+			rawrbox::BindlessManager::barrier(*this->_tex, Diligent::RESOURCE_STATE_RENDER_TARGET);
+		}
 		//   --------
 
 		auto context = rawrbox::RENDERER->context();
@@ -52,8 +59,15 @@ namespace rawrbox {
 		rawrbox::RENDERER->context()->SetRenderTargets(1, &pRTV, depth, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 		// BARRIER ----
-		rawrbox::BindlessManager::barrier(*this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE);
-		if (this->_depth) rawrbox::BindlessManager::barrier(*this->_depthTex, Diligent::RESOURCE_STATE_DEPTH_READ);
+		if (this->_depth) {
+			std::vector<Diligent::StateTransitionDesc> Barriers = {
+			    {this->_tex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+			    {this->_depthTex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_DEPTH_READ, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}};
+
+			rawrbox::BindlessManager::bulkBarrier(Barriers);
+		} else {
+			rawrbox::BindlessManager::barrier(*this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE);
+		}
 		//   --------
 
 		this->_recording = false;

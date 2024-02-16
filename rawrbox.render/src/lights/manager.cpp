@@ -34,7 +34,6 @@ namespace rawrbox {
 			BuffDesc.Size = sizeof(rawrbox::LightConstants);
 
 			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &uniforms);
-			rawrbox::BindlessManager::barrier(*uniforms, rawrbox::BufferType::CONSTANT);
 		}
 		// -----------------------------------------
 
@@ -52,9 +51,12 @@ namespace rawrbox {
 
 			_buffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
 			_bufferRead = _buffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
-
-			rawrbox::BindlessManager::barrier(*_buffer->GetBuffer(), rawrbox::BufferType::SHADER);
 		}
+
+		// BARRIER -----
+		rawrbox::BindlessManager::bulkBarrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {_buffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		// -----------
 
 		update();
 	}
@@ -159,22 +161,6 @@ namespace rawrbox {
 		_CONSTANTS_DIRTY = true;
 	}
 	const rawrbox::Colorf& LIGHTS::getAmbient() { return _settings.ambientColor; }
-	// ---------
-
-	// FOG ----
-	void LIGHTS::setFog(rawrbox::FOG_TYPE type, float end, float density, const rawrbox::Colorf& color) {
-		_settings.fogSettings.x = static_cast<float>(type);
-		_settings.fogSettings.y = density;
-		_settings.fogSettings.z = end;
-		_settings.fogColor = color;
-
-		_CONSTANTS_DIRTY = true;
-	}
-
-	rawrbox::FOG_TYPE LIGHTS::getFogType() { return static_cast<rawrbox::FOG_TYPE>(_settings.fogSettings.x); }
-	const rawrbox::Colorf& LIGHTS::getFogColor() { return _settings.fogColor; }
-	float LIGHTS::getFogDensity() { return _settings.fogSettings.y; }
-	float LIGHTS::getFogEnd() { return _settings.fogSettings.z; }
 	// ---------
 
 	// LIGHT ----

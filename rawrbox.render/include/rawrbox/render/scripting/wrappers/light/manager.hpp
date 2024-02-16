@@ -9,15 +9,6 @@ namespace rawrbox {
 		// UTILS ----
 		static void setEnabled(bool fb);
 
-		// FOG
-		static void setFog(rawrbox::FOG_TYPE type, float end, float density, const std::optional<rawrbox::Colori> col);
-
-		static int getFogType();
-		static rawrbox::Colori getFogColor();
-		static float getFogEnd();
-		static float getFogDensity();
-		// ----
-
 		// AMBIENT
 		static void setAmbient(const rawrbox::Colori& col);
 		static rawrbox::Colori getAmbient();

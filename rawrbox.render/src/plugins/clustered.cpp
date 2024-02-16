@@ -104,10 +104,10 @@ namespace rawrbox {
 		rawrbox::DECALS::bindUniforms();
 		// ------------
 
-		// Barrier for writting ----
-		rawrbox::BindlessManager::barrier(*this->_clusterBuffer, rawrbox::BufferType::UNORDERED_ACCESS);
-		rawrbox::BindlessManager::barrier(*this->_dataGridBuffer, rawrbox::BufferType::UNORDERED_ACCESS);
-		// ------------
+		// Barrier for writting -----
+		rawrbox::BindlessManager::bulkBarrier({{this->_clusterBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {this->_dataGridBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		// -----------
 
 		// Commit compute signature --
 		context->CommitShaderResources(rawrbox::BindlessManager::computeSignatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
@@ -128,10 +128,10 @@ namespace rawrbox {
 		context->DispatchCompute(this->_dispatch);
 		// ----------------------
 
-		// Barrier ----
-		rawrbox::BindlessManager::barrier(*this->_clusterBuffer, rawrbox::BufferType::SHADER);
-		rawrbox::BindlessManager::barrier(*this->_dataGridBuffer, rawrbox::BufferType::SHADER);
-		// ------------
+		// BARRIER -----
+		rawrbox::BindlessManager::bulkBarrier({{this->_clusterBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {this->_dataGridBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		// -----------
 	}
 
 	void ClusteredPlugin::buildBuffers() {
@@ -151,10 +151,6 @@ namespace rawrbox {
 
 			this->_clusterBufferWrite = this->_clusterBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS); // Write / Read
 			this->_clusterBufferRead = this->_clusterBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);   //  Read only
-
-			// Barrier ----
-			rawrbox::BindlessManager::barrier(*this->_clusterBuffer, rawrbox::BufferType::UNORDERED_ACCESS);
-			// ------------
 		}
 		// --------------
 
@@ -171,12 +167,13 @@ namespace rawrbox {
 
 			this->_dataGridBufferWrite = this->_dataGridBuffer->GetDefaultView(Diligent::BUFFER_VIEW_UNORDERED_ACCESS); // Write / Read
 			this->_dataGridBufferRead = this->_dataGridBuffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);   //  Read only
-
-			// Barrier ----
-			rawrbox::BindlessManager::barrier(*this->_dataGridBuffer, rawrbox::BufferType::UNORDERED_ACCESS);
-			// ------------
 		}
 		// ------------------
+
+		// BARRIER -----
+		rawrbox::BindlessManager::bulkBarrier({{this->_clusterBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {this->_dataGridBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		// -----------
 	}
 
 	void ClusteredPlugin::buildPipelines() {

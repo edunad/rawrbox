@@ -103,7 +103,10 @@ namespace rawrbox {
 			auto instSize = static_cast<uint32_t>(this->_instances.size());
 
 			context->UpdateBuffer(this->_dataBuffer, 0, instSize * sizeof(rawrbox::Instance), this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-			rawrbox::BindlessManager::barrier(*this->_dataBuffer, rawrbox::BufferType::VERTEX);
+
+			// Barrier ----
+			rawrbox::BindlessManager::barrier(*this->_dataBuffer, rawrbox::BufferType::CONSTANT);
+			// ------------
 		}
 
 		void draw() override {

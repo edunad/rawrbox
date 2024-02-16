@@ -26,7 +26,6 @@ namespace rawrbox {
 			bData.pData = &staticData;
 
 			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, &bData, &this->_staticUniforms);
-			rawrbox::BindlessManager::barrier(*this->_staticUniforms, rawrbox::BufferType::CONSTANT);
 		}
 
 		{
@@ -38,8 +37,12 @@ namespace rawrbox {
 			CBDesc.Size = sizeof(rawrbox::CameraUniforms);
 
 			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
-			rawrbox::BindlessManager::barrier(*this->_uniforms, rawrbox::BufferType::CONSTANT);
 		}
+
+		// BARRIER -----
+		rawrbox::BindlessManager::bulkBarrier({{this->_staticUniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {this->_uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		// -----------
 
 		this->_logger->info("Initializing camera");
 	}

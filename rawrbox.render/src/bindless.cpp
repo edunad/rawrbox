@@ -51,7 +51,6 @@ namespace rawrbox {
 			BuffVertexDesc.Size = sizeof(rawrbox::BindlessVertexBuffer);
 
 			device->CreateBuffer(BuffVertexDesc, nullptr, &signatureBufferVertex);
-			rawrbox::BindlessManager::barrier(*signatureBufferVertex, rawrbox::BufferType::CONSTANT);
 		}
 
 		{
@@ -63,7 +62,6 @@ namespace rawrbox {
 			BuffPixelDesc.Size = sizeof(rawrbox::BindlessVertexSkinnedBuffer);
 
 			device->CreateBuffer(BuffPixelDesc, nullptr, &signatureBufferVertexSkinned);
-			rawrbox::BindlessManager::barrier(*signatureBufferVertexSkinned, rawrbox::BufferType::CONSTANT);
 
 			// Horrible temp fix for signatures that are never mapped ---
 			Diligent::MapHelper<rawrbox::BindlessVertexSkinnedBuffer> HACK(rawrbox::RENDERER->context(), signatureBufferVertexSkinned, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
@@ -79,9 +77,14 @@ namespace rawrbox {
 			BuffPixelDesc.Size = sizeof(rawrbox::BindlessPixelBuffer);
 
 			device->CreateBuffer(BuffPixelDesc, nullptr, &signatureBufferPixel);
-			rawrbox::BindlessManager::barrier(*signatureBufferPixel, rawrbox::BufferType::CONSTANT);
 		}
 		// -------------
+
+		// BARRIER -----
+		rawrbox::BindlessManager::bulkBarrier({{signatureBufferVertex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {signatureBufferVertexSkinned, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {signatureBufferPixel, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		// -----------
 
 		// Create signatures ------
 		createSignatures();
@@ -329,6 +332,13 @@ namespace rawrbox {
 
 			if (callback != nullptr) callback();
 		}
+	}
+
+	void BindlessManager::bulkBarrier(const std::vector<Diligent::StateTransitionDesc>& barriers) {
+		auto threadID = std::this_thread::get_id();
+		if (threadID != rawrbox::RENDER_THREAD_ID) throw _logger->error("Cannot call bulkBarrier on non-render thread, use barrier instead");
+
+		rawrbox::RENDERER->context()->TransitionResourceStates(static_cast<uint32_t>(barriers.size()), barriers.data());
 	}
 	// ----------------
 

@@ -9,28 +9,6 @@ namespace rawrbox {
 		rawrbox::LIGHTS::setEnabled(fb);
 	}
 
-	// FOG
-	void LightsWrapper::setFog(rawrbox::FOG_TYPE type, float end, float density, const std::optional<rawrbox::Colori> col) {
-		rawrbox::LIGHTS::setFog(type, end, density, col.value_or(rawrbox::Colorsi::White()).cast<float>());
-	}
-
-	int LightsWrapper::getFogType() {
-		return static_cast<int>(rawrbox::LIGHTS::getFogType());
-	}
-
-	rawrbox::Colori LightsWrapper::getFogColor() {
-		return rawrbox::LIGHTS::getFogColor().cast<int>();
-	}
-
-	float LightsWrapper::getFogEnd() {
-		return rawrbox::LIGHTS::getFogEnd();
-	}
-
-	float LightsWrapper::getFogDensity() {
-		return rawrbox::LIGHTS::getFogDensity();
-	}
-	// ----
-
 	// AMBIENT
 	void LightsWrapper::setAmbient(const rawrbox::Colori& col) {
 		rawrbox::LIGHTS::setAmbient(col.cast<float>());
@@ -78,14 +56,6 @@ namespace rawrbox {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("lights", {})
 		    .addFunction("setEnabled", &LightsWrapper::setEnabled)
-
-		    // FOG ---
-		    .addFunction("setFog", &LightsWrapper::setFog)
-		    .addFunction("getFogType", &LightsWrapper::getFogType)
-		    .addFunction("getFogColor", &LightsWrapper::getFogColor)
-		    .addFunction("getFogEnd", &LightsWrapper::getFogEnd)
-		    .addFunction("getFogDensity", &LightsWrapper::getFogDensity)
-		    // --------
 
 		    // AMBIENT ---
 		    .addFunction("setAmbient", &LightsWrapper::setAmbient)

@@ -101,6 +101,8 @@ namespace rawrbox {
 		static void barrier(const rawrbox::TextureBase& texture, std::function<void()> callback = nullptr);
 		static void barrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state = Diligent::RESOURCE_STATE_SHADER_RESOURCE, std::function<void()> callback = nullptr);
 		static void barrier(Diligent::IBuffer& buffer, rawrbox::BufferType type = rawrbox::BufferType::CONSTANT, std::function<void()> callback = nullptr);
+
+		static void bulkBarrier(const std::vector<Diligent::StateTransitionDesc>& barriers);
 		// ----------------
 
 		// TEXTURES -------

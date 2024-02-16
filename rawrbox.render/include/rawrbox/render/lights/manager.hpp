@@ -11,11 +11,6 @@
 
 namespace rawrbox {
 
-	enum class FOG_TYPE : uint32_t {
-		FOG_LINEAR = 0,
-		FOG_EXP = 1
-	};
-
 	struct LightDataVertex {
 		rawrbox::Vector4f position = {};
 		rawrbox::Vector4f direction = {};
@@ -37,11 +32,6 @@ namespace rawrbox {
 		// Ambient ---
 		rawrbox::Colorf ambientColor = {0.01F, 0.01F, 0.01F, 1.F};
 		// -----
-
-		// Fog ----
-		rawrbox::Colorf fogColor = {0.F, 0.F, 0.F, 0.F};
-		rawrbox::Vector4f fogSettings = {static_cast<float>(rawrbox::FOG_TYPE::FOG_EXP), -1.F, -1.F, 0};
-		// --------
 	};
 
 	class LIGHTS {
@@ -76,15 +66,6 @@ namespace rawrbox {
 		static size_t count();
 
 		static Diligent::IBufferView* getBuffer();
-
-		// FOG
-		static void setFog(rawrbox::FOG_TYPE type, float end, float density, const rawrbox::Colorf& col = rawrbox::Colors::Black());
-
-		static rawrbox::FOG_TYPE getFogType();
-		static const rawrbox::Colorf& getFogColor();
-		static float getFogEnd();
-		static float getFogDensity();
-		// ----
 
 		// AMBIENT
 		static void setAmbient(const rawrbox::Colorf& col);

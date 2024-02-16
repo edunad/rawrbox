@@ -36,7 +36,7 @@ namespace rawrbox {
 	}
 
 	void PostProcessPlugin::postRender(rawrbox::TextureRender& renderTexture) {
-		for (const auto& process : this->_postProcesses) {
+		for (auto& process : this->_postProcesses) {
 			renderTexture.startRecord(false);
 			process->applyEffect(renderTexture);
 			renderTexture.stopRecord();
