@@ -326,7 +326,6 @@ namespace rawrbox {
 			}
 		}
 		// -----
-
 		void setPos(const rawrbox::Vector3f& pos) override {
 			rawrbox::ModelBase<M>::setPos(pos);
 			this->updateLights();
@@ -412,13 +411,6 @@ namespace rawrbox {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
 				if (id != -1 && i != static_cast<size_t>(id)) continue;
 				this->_meshes[i]->setWireframe(wireframe);
-			}
-		}
-
-		virtual void setColor(const rawrbox::Color& color, int id = -1) {
-			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != static_cast<size_t>(id)) continue;
-				this->_meshes[i]->setColor(color);
 			}
 		}
 
