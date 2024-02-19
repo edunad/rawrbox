@@ -349,7 +349,7 @@ namespace rawrbox {
 
 		auto* pDepthSRV = texture.getDepth(); // Get depth
 		if (pDepthSRV != nullptr) {
-			uint32_t id = internalRegister(pDepthSRV, rawrbox::TEXTURE_TYPE::PIXEL);
+			auto id = internalRegister(pDepthSRV, rawrbox::TEXTURE_TYPE::PIXEL);
 			_logger->info("Registering {} bindless texture '{}' on slot '{}'", fmt::format(fmt::fg(fmt::color::red), "DEPTH"), fmt::format(fmt::fg(fmt::color::violet), texture.getName()), fmt::format(fmt::fg(fmt::color::violet), std::to_string(id)));
 
 			// Register depth
@@ -368,7 +368,7 @@ namespace rawrbox {
 		auto* pTextureSRV = texture.getHandle(); // Get shader resource view from the texture
 		if (pTextureSRV == nullptr) throw _logger->error("Failed to register texture '{}'! Texture view is null, not uploaded?", texture.getName());
 
-		uint32_t id = internalRegister(pTextureSRV, texture.getType());
+		auto id = internalRegister(pTextureSRV, texture.getType());
 		_logger->info("Registering bindless {} texture '{}' on slot '{}'", texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX ? "vertex" : "pixel", fmt::format(fmt::fg(fmt::color::violet), texture.getName()), fmt::format(fmt::fg(fmt::color::violet), std::to_string(id)));
 
 		// ----
@@ -405,9 +405,9 @@ namespace rawrbox {
 		// -----
 	}
 
-	uint32_t BindlessManager::internalRegister(Diligent::ITextureView* view, rawrbox::TEXTURE_TYPE type) {
+	uint16_t BindlessManager::internalRegister(Diligent::ITextureView* view, rawrbox::TEXTURE_TYPE type) {
 		bool isVertex = type == rawrbox::TEXTURE_TYPE::VERTEX;
-		uint32_t max = isVertex ? rawrbox::RENDERER->MAX_VERTEX_TEXTURES : rawrbox::RENDERER->MAX_TEXTURES;
+		auto max = isVertex ? rawrbox::RENDERER->MAX_VERTEX_TEXTURES : rawrbox::RENDERER->MAX_TEXTURES;
 		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;
 
 		int size = static_cast<int>(handler.size());

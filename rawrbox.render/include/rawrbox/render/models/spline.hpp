@@ -2,7 +2,6 @@
 
 #include <rawrbox/math/bezier_curve.hpp>
 #include <rawrbox/render/models/base.hpp>
-#include <rawrbox/utils/pack.hpp>
 
 namespace rawrbox {
 	struct Mesh2DShape {

@@ -40,7 +40,7 @@ namespace rawrbox {
 	// --------------------------
 
 	struct BindlessPixelBuffer {
-		rawrbox::Vector4_t<uint32_t> textureIDs = {}; // BASE, NORMAL, ROUGHTMETAL, EMISSION
+		rawrbox::Vector4_t<uint16_t> textureIDs = {}; // BASE, NORMAL, ROUGHTMETAL, EMISSION
 		rawrbox::Vector4f litData = {};               // Texture data
 
 		bool operator==(const BindlessPixelBuffer& other) const { return this->textureIDs == other.textureIDs && this->litData == other.litData; }
@@ -79,7 +79,7 @@ namespace rawrbox {
 		static void unregisterUpdateTexture(rawrbox::TextureBase& tex);
 
 		static Diligent::RESOURCE_STATE mapResource(rawrbox::BufferType type);
-		static uint32_t internalRegister(Diligent::ITextureView* view, rawrbox::TEXTURE_TYPE type);
+		static uint16_t internalRegister(Diligent::ITextureView* view, rawrbox::TEXTURE_TYPE type);
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> signature;

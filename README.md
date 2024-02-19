@@ -86,8 +86,6 @@
 | `RAWRBOX_CONTENT_FOLDER`                         | The content folder to output assets. Default is `assets`                                                  |
 | `RAWRBOX_SHADERS_FOLDER`                         | The content folder to output shaders. Default is `shaders`                                                |
 | --                                               | --                                                                                                        |
-| `RAWRBOX_COPY_SHADER_INCLUDES`                   | Copy shader includes into your `RAWRBOX_SHADERS_FOLDER` folder (useful if overriding rawrbox shaders)     |
-| --                                               | --                                                                                                        |
 | `RAWRBOX_USE_WAYLAND`                            | Enables WAYLAND compiling on LINUX                                                                        |
 | --                                               | --                                                                                                        |
 | `RAWRBOX_BUILD_QHULL`                            | Builds QHull util                                                                                         |

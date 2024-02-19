@@ -1,5 +1,5 @@
 
-#include <rawrbox/utils/pack.hpp>
+#include <rawrbox/math/utils/pack.hpp>
 
 #include <algorithm>
 #include <array>
@@ -12,25 +12,12 @@ namespace rawrbox {
 		return c / std::pow(10.F, static_cast<float>(precision));
 	}
 
-	uint32_t PackUtils::packUint32(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) {
-		return std::bit_cast<uint32_t>(std::array<uint8_t, 4>{_x, _y, _z, _w});
-	}
-
-	uint32_t PackUtils::packF4u(float _x, float _y, float _z, float _w) {
-		const auto xx = static_cast<uint8_t>(_x * 127.0F + 128.0F);
-		const auto yy = static_cast<uint8_t>(_y * 127.0F + 128.0F);
-		const auto zz = static_cast<uint8_t>(_z * 127.0F + 128.0F);
-		const auto ww = static_cast<uint8_t>(_w * 127.0F + 128.0F);
-
-		return PackUtils::packUint32(xx, yy, zz, ww);
-	}
-
 	uint32_t PackUtils::packRgba8(float x, float y, float z, float w) {
 		return std::bit_cast<uint32_t>(std::array<uint8_t, 4>{
-		    uint8_t(PackUtils::toUnorm(x, 255.0F)),
-		    uint8_t(PackUtils::toUnorm(y, 255.0F)),
-		    uint8_t(PackUtils::toUnorm(z, 255.0F)),
-		    uint8_t(PackUtils::toUnorm(w, 255.0F))});
+		    uint8_t(PackUtils::toUnorm(x, 255.F)),
+		    uint8_t(PackUtils::toUnorm(y, 255.F)),
+		    uint8_t(PackUtils::toUnorm(z, 255.F)),
+		    uint8_t(PackUtils::toUnorm(w, 255.F))});
 	}
 
 	uint32_t PackUtils::packNormal(float _x, float _y, float _z, float _w) {
@@ -74,6 +61,26 @@ namespace rawrbox {
 
 	float PackUtils::fromSnorm(int32_t _value, float _scale) {
 		return std::max(-1.0F, float(_value) / _scale);
+	}
+
+	short PackUtils::toHalf(float value) {
+		short fltInt16 = 0;
+		int fltInt32 = 0;
+
+		memcpy(&fltInt32, &value, sizeof(float));
+		fltInt16 = ((fltInt32 & 0x7fffffff) >> 13) - (0x38000000 >> 13);
+		fltInt16 |= ((fltInt32 & 0x80000000) >> 16);
+
+		return fltInt16;
+	}
+
+	float PackUtils::fromHalf(short fltInt16) {
+		int fltInt32 = ((fltInt16 & 0x8000) << 16);
+		fltInt32 |= ((fltInt16 & 0x7fff) << 13) + 0x38000000;
+
+		float fRet = 0.F;
+		memcpy(&fRet, &fltInt32, sizeof(float));
+		return fRet;
 	}
 
 	uint32_t PackUtils::toABGR(float _rr, float _gg, float _bb, float _aa) {

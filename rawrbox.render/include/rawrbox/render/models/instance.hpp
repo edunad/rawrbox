@@ -2,7 +2,7 @@
 
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/matrix4x4.hpp>
-#include <rawrbox/utils/pack.hpp>
+#include <rawrbox/math/utils/pack.hpp>
 
 namespace rawrbox {
 	struct Instance {

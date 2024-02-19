@@ -189,7 +189,7 @@ namespace rawrbox {
 		this->setupDrawCall(this->_2dPipeline);
 		// ----
 
-		uint32_t textureID = tex.getTextureID();
+		auto textureID = tex.getTextureID();
 		auto a = static_cast<float>(atlas);
 
 		this->pushVertice(textureID, {pos.x, pos.y}, {uvStart.x, uvStart.y, a}, col);

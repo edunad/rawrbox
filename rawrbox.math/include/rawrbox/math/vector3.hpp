@@ -138,6 +138,15 @@ namespace rawrbox {
 		// ------
 
 		// UTILS - FLOAT ---
+		[[nodiscard]] std::array<short, 3> pack() const
+			requires(std::is_same_v<NumberType, float>)
+		{
+			short xx = rawrbox::PackUtils::toHalf(this->x);
+			short yy = rawrbox::PackUtils::toHalf(this->y);
+			short zz = rawrbox::PackUtils::toHalf(this->z);
+			return {xx, yy, zz};
+		}
+
 		// From: https://github.com/Unity-Technologies/UnityCsReference/blob/master/Runtime/Export/Math/Vector3.cs#L324
 		[[nodiscard]] NumberType angle(const VecType& target) const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)

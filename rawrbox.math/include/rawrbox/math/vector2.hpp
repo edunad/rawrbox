@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <rawrbox/math/utils/pack.hpp>
+
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -110,9 +112,15 @@ namespace rawrbox {
 			return std::atan2(y, x);
 		}
 
-		static VecType sinCos(NumberType radians)
-			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
+		[[nodiscard]] std::array<short, 2> pack() const
+			requires(std::is_same_v<NumberType, float>)
 		{
+			short xx = rawrbox::PackUtils::toHalf(this->x);
+			short yy = rawrbox::PackUtils::toHalf(this->y);
+			return {xx, yy};
+		}
+
+		static VecType sinCos(NumberType radians) {
 			return {std::sin(radians), std::cos(radians)};
 		}
 

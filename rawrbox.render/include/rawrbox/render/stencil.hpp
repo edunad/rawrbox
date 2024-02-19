@@ -20,26 +20,24 @@
 namespace rawrbox {
 	struct PosUVColorVertexData {
 		// ----------
-		uint32_t textureID = {};
-		rawrbox::Vector2f pos = {};
-		uint32_t color = 0xFFFFFFFF;
-		// ----------
-
+		uint32_t textureID = 0x00000000;
+		std::array<short, 2> pos = {};
+		uint32_t color = 0x00000000;
 		rawrbox::Vector4f uv = {};
-		// ----------
+		//  ----------
 
 		PosUVColorVertexData() = default;
-		PosUVColorVertexData(const uint32_t& _textureID, const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, const rawrbox::Color& _cl) : textureID(_textureID), pos(_pos), color(_cl.pack()), uv(_uv) {}
+		PosUVColorVertexData(const uint16_t& _textureID, const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, const rawrbox::Color& _cl) : textureID(_textureID), pos(_pos.pack()), color(_cl.pack()), uv(_uv) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout() {
 			return {
 			    // Attribute 0 - TextureID
 			    Diligent::LayoutElement{0, 0, 1, Diligent::VT_UINT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX},
 			    // Attribute 1 - Position
-			    Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX},
+			    Diligent::LayoutElement{1, 0, 2, Diligent::VT_FLOAT16, true, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX},
 			    // Attribute 2 - Color
 			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_UINT8, true, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX},
-			    // Attribute 1 - UV
+			    // Attribute 3 - UV
 			    Diligent::LayoutElement{3, 0, 4, Diligent::VT_FLOAT32, false, Diligent::LAYOUT_ELEMENT_AUTO_OFFSET, Diligent::LAYOUT_ELEMENT_AUTO_STRIDE, Diligent::INPUT_ELEMENT_FREQUENCY_PER_VERTEX}};
 		}
 	};

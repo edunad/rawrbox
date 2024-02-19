@@ -1,8 +1,6 @@
-#include <pack.fxh>
-
 struct VSInput {
     uint   TextureID  : ATTRIB0;
-    float2 Pos        : ATTRIB1;
+    half2  Pos        : ATTRIB1;
     float4 Color      : ATTRIB2;
 
     // -----------------
@@ -18,8 +16,8 @@ struct PSInput {
 };
 
 void main(in VSInput VSIn, out PSInput PSIn) {
-    PSIn.Pos   = float4(VSIn.Pos, 0.0, 1.0);
-    PSIn.UV    = VSIn.UV;
-    PSIn.Color = VSIn.Color;
+    PSIn.Pos       = float4(VSIn.Pos, 0.0, 1.0);
+    PSIn.UV        = VSIn.UV;
+    PSIn.Color     = VSIn.Color;
     PSIn.TextureID = VSIn.TextureID;
 }

@@ -84,10 +84,10 @@ namespace rawrbox {
 	bool TextureBase::isValid() const { return this->_handle != nullptr; }
 	bool TextureBase::isRegistered() const { return this->_registered; }
 
-	uint32_t TextureBase::getDepthTextureID() const { return this->_depthTextureID; }
-	uint32_t TextureBase::getTextureID() const { return this->_textureID; }
-	void TextureBase::setDepthTextureID(uint32_t id) { this->_depthTextureID = id; }
-	void TextureBase::setTextureID(uint32_t id) {
+	uint16_t TextureBase::getDepthTextureID() const { return this->_depthTextureID; }
+	uint16_t TextureBase::getTextureID() const { return this->_textureID; }
+	void TextureBase::setDepthTextureID(uint16_t id) { this->_depthTextureID = id; }
+	void TextureBase::setTextureID(uint16_t id) {
 		this->_textureID = id;
 		this->_registered = true;
 	}

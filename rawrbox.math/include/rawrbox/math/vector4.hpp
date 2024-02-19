@@ -53,8 +53,10 @@ namespace rawrbox {
 		[[nodiscard]] Vector2_t<NumberType> yx() const { return Vector2_t<NumberType>(y, x); }
 		[[nodiscard]] Vector2_t<NumberType> xz() const { return Vector2_t<NumberType>(x, z); }
 		[[nodiscard]] Vector2_t<NumberType> yz() const { return Vector2_t<NumberType>(y, z); }
+
 		[[nodiscard]] Vector2_t<NumberType> zx() const { return Vector2_t<NumberType>(z, x); }
 		[[nodiscard]] Vector2_t<NumberType> zy() const { return Vector2_t<NumberType>(z, y); }
+		[[nodiscard]] Vector2_t<NumberType> zw() const { return Vector2_t<NumberType>(z, w); }
 
 		[[nodiscard]] const std::array<NumberType, 4> data() const { return {x, y, z, w}; }
 
@@ -112,6 +114,17 @@ namespace rawrbox {
 			}
 
 			return ret.normalized();
+		}
+
+		[[nodiscard]] std::array<short, 4> pack() const
+			requires(std::is_same_v<NumberType, float>)
+		{
+			short xx = rawrbox::PackUtils::toHalf(this->x);
+			short yy = rawrbox::PackUtils::toHalf(this->y);
+			short zz = rawrbox::PackUtils::toHalf(this->z);
+			short ww = rawrbox::PackUtils::toHalf(this->w);
+
+			return {xx, yy, zz, ww};
 		}
 
 		Vector3_t<NumberType> toEuler() const

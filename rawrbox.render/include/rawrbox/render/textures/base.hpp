@@ -25,8 +25,8 @@ namespace rawrbox {
 		rawrbox::Vector2i _size = {};
 
 		int _channels = 0;
-		uint32_t _textureID = 0; // Default to missing texture, it's always reserved to 0
-		uint32_t _depthTextureID = 0;
+		uint16_t _textureID = 0; // Default to missing texture, it's always reserved to 0
+		uint16_t _depthTextureID = 0;
 
 		std::vector<uint8_t> _pixels = {};
 
@@ -64,10 +64,10 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool isValid() const;
 		[[nodiscard]] virtual bool isRegistered() const;
 
-		[[nodiscard]] virtual uint32_t getDepthTextureID() const;
-		[[nodiscard]] virtual uint32_t getTextureID() const;
-		virtual void setDepthTextureID(uint32_t id);
-		virtual void setTextureID(uint32_t id);
+		[[nodiscard]] virtual uint16_t getDepthTextureID() const;
+		[[nodiscard]] virtual uint16_t getTextureID() const;
+		virtual void setDepthTextureID(uint16_t id);
+		virtual void setTextureID(uint16_t id);
 
 		[[nodiscard]] virtual Diligent::ITexture* getTexture() const;
 		[[nodiscard]] virtual Diligent::ITextureView* getHandle() const;
