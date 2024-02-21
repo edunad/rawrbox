@@ -10,6 +10,7 @@
 #include <functional>
 #include <iomanip>
 #include <mutex>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <unordered_map>
