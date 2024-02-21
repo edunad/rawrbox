@@ -63,7 +63,6 @@ namespace rawrbox {
 
 				// try to see if the file exists to make a crc32 of it
 				std::vector<uint8_t> buffer = {};
-
 				if (loader->supportsBuffer(ext)) {
 					buffer = rawrbox::PathUtils::getRawData(filePath);
 

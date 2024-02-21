@@ -2,7 +2,6 @@
 #include <rawrbox/assimp/importer.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/textures/image.hpp>
-#include <rawrbox/utils/pack.hpp>
 #include <rawrbox/utils/string.hpp>
 
 #include <magic_enum.hpp>

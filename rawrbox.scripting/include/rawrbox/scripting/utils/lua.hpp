@@ -8,7 +8,7 @@
 
 #include <rawrbox/utils/logger.hpp>
 
-#include <nlohmann/json.hpp>
+#include <glaze/glaze.hpp>
 
 #include <filesystem>
 #include <string>
@@ -28,8 +28,8 @@ namespace rawrbox {
 		static std::vector<std::string> argsToString(lua_State* L, bool filterNonStr = false);
 		static void getVariadicArgs(const luabridge::LuaRef& in, luabridge::LuaRef& out);
 
-		static luabridge::LuaRef jsonToLua(lua_State* L, const nlohmann::json& json);
-		static nlohmann::json luaToJsonObject(const luabridge::LuaRef& ref);
+		static luabridge::LuaRef jsonToLua(lua_State* L, const glz::json_t& json);
+		static glz::json_t luaToJsonObject(const luabridge::LuaRef& ref);
 
 		static std::string getLuaENVVar(lua_State* L, const std::string& varId);
 

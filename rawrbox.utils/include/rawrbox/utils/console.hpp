@@ -2,8 +2,6 @@
 
 #include <rawrbox/utils/event.hpp>
 
-#include <nlohmann/json.hpp>
-
 #include <fmt/format.h>
 
 #include <algorithm>

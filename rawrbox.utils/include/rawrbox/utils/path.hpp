@@ -25,6 +25,7 @@ namespace rawrbox {
 				ifs.read(std::bit_cast<char*>(file.data()), file.size());
 			}
 
+			file.push_back('\0');
 			return file;
 		}
 

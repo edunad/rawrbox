@@ -38,12 +38,13 @@ namespace rawrbox {
 		return str;
 	}
 
-	std::vector<std::string> StrUtils::split(const std::string& haystack, char needle) {
+	std::vector<std::string> StrUtils::split(const std::string& haystack, char needle, bool filterEmpty) {
 		std::vector<std::string> elems;
 		std::stringstream ss(haystack);
 		std::string item;
 
 		while (std::getline(ss, item, needle)) {
+			if (filterEmpty && item.empty()) continue;
 			elems.push_back(item);
 		}
 

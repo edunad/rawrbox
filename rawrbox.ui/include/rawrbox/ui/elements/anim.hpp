@@ -3,8 +3,9 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/ui/container.hpp>
+#include <rawrbox/utils/logger.hpp>
 
-#include <nlohmann/json.hpp>
+#include <glaze/glaze.hpp>
 
 #include <functional>
 #include <optional>
@@ -46,7 +47,7 @@ namespace rawrbox {
 		bool _active = false;
 
 		rawrbox::Vector2f _posOffset = {};
-		std::vector<UIAnimKeyframe> _keyframes = {};
+		std::vector<rawrbox::UIAnimKeyframe> _keyframes = {};
 		T* _element = nullptr;
 
 	public:
@@ -63,41 +64,39 @@ namespace rawrbox {
 		virtual void setReverse(bool reverse) { this->_reverse = reverse; };
 		virtual void setPos(const rawrbox::Vector2f& pos) { this->_posOffset = pos; };
 		virtual void setElement(T* element) { this->_element = element; };
-		virtual void setAnimation(const nlohmann::json& json) {
-			if (json == nullptr || json.empty()) return;
+		virtual void setAnimation(const glz::json_t& json) {
+			if (!json.contains("anim")) throw rawrbox::Logger::err("RawrBox-UI", "Missing anim data");
+			if (!json["anim"].holds<glz::json_t::array_t>()) throw rawrbox::Logger::err("RawrBox-UI", "Invalid anim data");
 
-			auto dt = json.find("anim");
-			if (dt == json.end() || dt->empty()) throw std::runtime_error("[RawrBox-UI] Missing anim data");
-			if (!dt->is_array()) throw std::runtime_error("[RawrBox-UI] Invalid anim data");
-
-			for (auto& data : json["anim"]) {
-				UIAnimKeyframe key;
+			auto jsonData = json["anim"].get<glz::json_t::array_t>();
+			for (auto& data : jsonData) {
+				rawrbox::UIAnimKeyframe key;
 
 				if (data.contains("time")) {
-					key.time = data["time"].get<float>();
+					key.time = data["time"].as<float>();
 				}
 
 				if (data.contains("pos")) {
-					float x = data["pos"]["x"].get<float>();
-					float y = data["pos"]["y"].get<float>();
+					auto x = data["pos"]["x"].as<float>();
+					auto y = data["pos"]["y"].as<float>();
 
 					key.pos = {x, y};
 				}
 
 				if (data.contains("size")) {
-					float x = data["size"]["x"].get<float>();
-					float y = data["size"]["y"].get<float>();
+					auto x = data["size"]["x"].as<float>();
+					auto y = data["size"]["y"].as<float>();
 
 					key.size = {x, y};
 				}
 
 				if (data.contains("color")) {
-					int r = data["color"]["r"].get<int>();
-					int g = data["color"]["g"].get<int>();
-					int b = data["color"]["b"].get<int>();
-					int a = data["color"]["a"].get<int>();
+					auto r = data["color"]["r"].as<int>();
+					auto g = data["color"]["g"].as<int>();
+					auto b = data["color"]["b"].as<int>();
+					auto a = data["color"]["a"].as<int>();
 
-					key.color = rawrbox::Colori{r, g, b, a}.cast<float>();
+					key.color = rawrbox::Colori(r, g, b, a).cast<float>();
 				}
 
 				this->_keyframes.push_back(key);
@@ -134,35 +133,45 @@ namespace rawrbox {
 
 		virtual void setKeyframe(UIAnimKeyframe& frame) {
 			if (_element == nullptr) throw std::runtime_error("[RawrBox-UI] UI element not set!");
-			if (frame.pos.has_value())
+			if (frame.pos.has_value()) {
 				if constexpr (isMovable<T>) {
 					_element->setPos(this->_posOffset + frame.pos.value());
 				}
-			if (frame.size.has_value())
+			}
+
+			if (frame.size.has_value()) {
 				if constexpr (isResizable<T>) {
 					_element->setSize(frame.size.value());
 				}
-			if (frame.color.has_value())
+			}
+
+			if (frame.color.has_value()) {
 				if constexpr (isColorable<T>) {
 					_element->setColor(frame.color.value());
 				}
+			}
 		}
 
 		virtual void lerpKeyframe(UIAnimKeyframe& prevKey, UIAnimKeyframe& newKey, float time) {
 			if (_element == nullptr) throw std::runtime_error("[RawrBox-UI] UI element not set!");
-			if (prevKey.pos.has_value() && newKey.pos.has_value())
+			if (prevKey.pos.has_value() && newKey.pos.has_value()) {
 				if constexpr (isMovable<T>) {
 					_element->setPos(this->_posOffset + prevKey.pos.value().lerp(newKey.pos.value(), time));
 				}
-			if (prevKey.size.has_value() && newKey.size.has_value())
+			}
+
+			if (prevKey.size.has_value() && newKey.size.has_value()) {
 				if constexpr (isResizable<T>) {
 					_element->setSize(prevKey.size.value().lerp(newKey.size.value(), time));
 				}
-			if (prevKey.color.has_value() && newKey.color.has_value())
+			}
+
+			if (prevKey.color.has_value() && newKey.color.has_value()) {
 				if constexpr (isColorable<T>) {
 					auto cl = prevKey.color.value().lerp(newKey.color.value(), time);
 					_element->setColor(cl);
 				}
+			}
 		}
 
 		virtual void update() {

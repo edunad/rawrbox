@@ -1,6 +1,8 @@
 
 #include <rawrbox/utils/i18n.hpp>
 
+#include <glaze/glaze.hpp>
+
 #include <fmt/args.h>
 #include <fmt/printf.h>
 
@@ -9,7 +11,7 @@
 
 namespace rawrbox {
 	// PRIVATE ----
-	std::unordered_map<std::string, rawrbox::Language> I18N::_languagePacks = {};
+	rawrbox::Language I18N::_languagePacks = {};
 	std::string I18N::_language = "en"; // Default is ENGLISH
 
 	// LOGGER ------
@@ -21,11 +23,15 @@ namespace rawrbox {
 		loadLanguagePack("c++", "./i18n");
 	}
 
-	void I18N::addLanguagePack(const std::string& id, const std::string& lang, const nlohmann::json& json) {
-		auto pack = _languagePacks.find(id);
-		if (pack == _languagePacks.end()) pack = _languagePacks.emplace(id, Language{}).first;
+	void I18N::addToLanguagePack(const std::string& id, const std::string& lang, const rawrbox::Translation& translation) {
+		std::string packID = fmt::format("{}-{}", id, lang);
 
-		pack->second[lang] = json;
+		auto pack = _languagePacks.find(packID);
+		if (pack == _languagePacks.end()) {
+			_languagePacks[packID] = translation;
+		} else {
+			_languagePacks[packID].insert(translation.begin(), translation.end());
+		}
 	}
 
 	void I18N::loadLanguagePack(const std::string& id, const std::string& path) {
@@ -43,7 +49,10 @@ namespace rawrbox {
 			if (langRawStr.empty()) continue;
 
 			try {
-				addLanguagePack(id, fileCleanName, nlohmann::json::parse(langRawStr));
+				rawrbox::Translation tr = {};
+				if (glz::read_json(tr, langRawStr) != glz::error_code::none) throw _logger->error("Invalid JSON file");
+
+				addToLanguagePack(id, fileCleanName, tr);
 				fmt::print("- '{}' language\n", fileCleanName);
 			} catch (...) {
 				_logger->warn("Invalid JSON file: {}", filePath);
@@ -60,21 +69,18 @@ namespace rawrbox {
 	}
 
 	std::string I18N::get(const std::string& id, const std::string& key) {
-		auto pack = _languagePacks.find(id);
-		if (pack == _languagePacks.end()) return fmt::format("$I18N FOR ID '{}' NOT FOUND$", id);
+		auto pack = _languagePacks.find(fmt::format("{}-{}", id, _language));
+		if (pack == _languagePacks.end()) {
+			_logger->warn("Could not find language '{}' on '{}', falling back to english", _language, id);
 
-		auto lang = pack->second.find(_language);
-		if (lang == pack->second.end()) {
-			_logger->warn("Could not find language '[#ffffff]{}[/]' on '[#ffffff]{}[/]', falling back to english\n", _language, id);
-
-			lang = pack->second.find("en");
-			if (lang == pack->second.end()) return fmt::format("$I18N FOR LANGUAGE '{}' NOT FOUND$", _language); // Still no language? Bah..
+			pack = _languagePacks.find(fmt::format("{}-en", id));
+			if (pack == _languagePacks.end()) return fmt::format("$I18N FOR LANGUAGE '{}-{}' NOT FOUND$", id, _language); // Still no language? Bah..
 		}
 
-		auto val = lang->second.find(key);
-		if (val == lang->second.end()) return fmt::format("$I18N KEY '{}' NOT FOUND$", key);
+		auto val = pack->second.find(key);
+		if (val == pack->second.end()) return fmt::format("$I18N KEY '{}' NOT FOUND$", key);
 
-		return val.value();
+		return val->second;
 	}
 
 	std::string I18N::get(const std::string& id, const std::string& key, std::vector<std::string> values) {

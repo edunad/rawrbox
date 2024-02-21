@@ -15,7 +15,6 @@
 #include <vector>
 
 namespace stencil {
-
 	void Game::setupGLFW() {
 #ifdef _DEBUG
 		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things

@@ -15,14 +15,12 @@ CPMDeclarePackage(magic_enum
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
 )
-# nlohmann_json
-CPMDeclarePackage(nlohmann_json
-  NAME nlohmann_json
-  VERSION 3.11.3
-  URL
-    "https://github.com/nlohmann/json/releases/download/v3.11.3/include.zip"
-    "URL_HASH"
-    "SHA256=a22461d13119ac5c78f205d3df1db13403e58ce1bb1794edc9313677313f4a9d"
+# glaze
+CPMDeclarePackage(glaze
+  VERSION 2.1.4
+  GITHUB_REPOSITORY stephenberry/glaze
+  SYSTEM YES
+  EXCLUDE_FROM_ALL YES
 )
 # zlib
 CPMDeclarePackage(zlib
@@ -79,7 +77,7 @@ CPMDeclarePackage(cpptrace
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.612
+  GIT_TAG 0.613
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"

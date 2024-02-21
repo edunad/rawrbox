@@ -2,12 +2,12 @@
 
 #include <rawrbox/utils/logger.hpp>
 
-#include <nlohmann/json.hpp>
+#include <glaze/glaze.hpp>
 
 namespace rawrbox {
 	class Settings {
 	protected:
-		nlohmann::json _settings = {};
+		glz::json_t _settings = {};
 
 		// LOGGER ------
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Settings");
@@ -21,13 +21,13 @@ namespace rawrbox {
 		Settings& operator=(Settings&&) = delete;
 		virtual ~Settings() = default;
 
-		virtual void load();
+		virtual void load(std::string data = "");
 		virtual void save();
 
-		[[nodiscard]] virtual const std::string getVersion() const;
-		[[nodiscard]] virtual const std::string getFileName() const;
+		[[nodiscard]] virtual std::string getVersion() const;
+		[[nodiscard]] virtual std::string getFileName() const;
 
-		virtual nlohmann::json getDefaults();
-		virtual nlohmann::json& getSettings();
+		virtual glz::json_t getDefaults();
+		virtual glz::json_t& getSettings();
 	};
 } // namespace rawrbox

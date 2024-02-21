@@ -147,39 +147,40 @@ namespace rawrbox {
 		}
 	}
 
-	luabridge::LuaRef LuaUtils::jsonToLua(lua_State* L, const nlohmann::json& json) {
+	luabridge::LuaRef LuaUtils::jsonToLua(lua_State* L, const glz::json_t& json) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 
-		if (json.is_null()) {
+		if (json.holds<glz::json_t::null_t>()) {
 			return {L, luabridge::LuaNil()};
-		} else if (json.is_boolean()) {
+		} else if (json.holds<bool>()) {
 			return {L, json.get<bool>()};
-		} else if (json.is_number()) { // Lua only works with doubles
+		} else if (json.holds<double>()) { // Lua only works with doubles
 			return {L, json.get<double>()};
-		} else if (json.is_string()) {
+		} else if (json.holds<std::string>()) {
 			return {L, json.get<std::string>()};
-		} else if (json.is_object()) {
+		} else if (json.holds<glz::json_t::object_t>()) {
 			auto obj = luabridge::newTable(L);
-			for (nlohmann::json::const_iterator it = json.begin(); it != json.end(); ++it) {
-				obj[it.key().c_str()] = jsonToLua(L, *it);
+			auto& jsonObject = json.get<glz::json_t::object_t>();
+			for (const auto& pair : jsonObject) {
+				obj[pair.first.c_str()] = jsonToLua(L, pair.second);
 			}
 
 			return obj;
-		} else if (json.is_array()) {
-			auto obj = luabridge::newTable(L);
-			unsigned long i = 1;
-			for (const auto& it : json) {
-				obj[i++] = jsonToLua(L, it);
+		} else if (json.holds<glz::json_t::array_t>()) {
+			auto arr = luabridge::newTable(L);
+			auto& jsonArray = json.get<glz::json_t::array_t>();
+			for (size_t i = 0; i < jsonArray.size(); ++i) {
+				arr[i + 1] = jsonToLua(L, jsonArray[i]);
 			}
 
-			return obj;
+			return arr;
 		}
 
 		throw std::runtime_error("Unknown json type");
 	}
 
-	nlohmann::json LuaUtils::luaToJsonObject(const luabridge::LuaRef& ref) {
-		nlohmann::json result = {};
+	glz::json_t LuaUtils::luaToJsonObject(const luabridge::LuaRef& ref) {
+		glz::json_t result = {};
 		if (!ref.isTable()) return result;
 
 		for (auto pair : luabridge::pairs(ref)) {

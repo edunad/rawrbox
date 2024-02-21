@@ -27,7 +27,7 @@ namespace rawrbox {
 	void PacketWrapper::writeFloat(float val) { data.write(val); }
 	void PacketWrapper::writeDouble(double val) { data.write(val); }
 	void PacketWrapper::writeString(const std::string& val) { data.write(val); }
-	void PacketWrapper::writeTable(const luabridge::LuaRef& val) { data.write(rawrbox::LuaUtils::luaToJsonObject(val).dump()); }
+	void PacketWrapper::writeTable(const luabridge::LuaRef& val) { data.write(glz::write<glz::opts{.prettify = true}>(rawrbox::LuaUtils::luaToJsonObject(val))); }
 	// -------
 
 	// READ ----
@@ -45,7 +45,12 @@ namespace rawrbox {
 	std::string PacketWrapper::readString() { return data.read<std::string>(); }
 
 	luabridge::LuaRef PacketWrapper::readTable(lua_State* L) {
-		return rawrbox::LuaUtils::jsonToLua(L, nlohmann::json::parse(data.read<std::string>()));
+		glz::json_t json = {};
+
+		auto err = glz::read_json(json, data.read<std::string>());
+		if (err != glz::error_code::none) throw std::runtime_error("Invalid table format");
+
+		return rawrbox::LuaUtils::jsonToLua(L, json);
 	}
 	// ----------
 
