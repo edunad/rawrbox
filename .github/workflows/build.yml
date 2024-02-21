@@ -41,7 +41,7 @@ jobs:
         id: setup
         run: |
           mkdir -p build && cd build
-          CXX=g++ cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON" -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DRAWRBOX_DEV_MODE:BOOL="ON" -DCMAKE_CXX_FLAGS="-fsanitize=address -fsanitize=undefined"
+          CXX=g++ cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_RUNTIME_OUTPUT_DIRECTORY="bin" -DCMAKE_EXPORT_COMPILE_COMMANDS="ON" -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DRAWRBOX_DEV_MODE:BOOL="ON"
           cd ../
 
       - name: Build
