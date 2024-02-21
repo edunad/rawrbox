@@ -65,9 +65,8 @@ namespace rawrbox {
 				std::vector<uint8_t> buffer = {};
 				if (loader->supportsBuffer(ext)) {
 					buffer = rawrbox::PathUtils::getRawData(filePath);
-
 					if (buffer.empty()) {
-						ret->crc32 = 0;
+						throw _logger->error("Failed to load file '{}'", path);
 					} else {
 						ret->crc32 = CRC::Calculate(buffer.data(), buffer.size(), CRC::CRC_32());
 					}

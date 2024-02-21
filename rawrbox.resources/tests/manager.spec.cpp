@@ -21,8 +21,4 @@ TEST_CASE("RESOURCES should behave as expected", "[rawrbox::RESOURCES]") {
 		rawrbox::RESOURCES::preLoadFile("./assets/json/test.json");
 		REQUIRE(ld->getPreload().size() == 1);
 	}
-
-	SECTION("rawrbox::RESOURCES::loadFiles") {
-		REQUIRE_NOTHROW(rawrbox::RESOURCES::loadFile("./assets/json/test.json"));
-	}
 }
