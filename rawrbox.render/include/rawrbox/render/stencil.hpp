@@ -27,7 +27,7 @@ namespace rawrbox {
 		//  ----------
 
 		PosUVColorVertexData() = default;
-		PosUVColorVertexData(const uint16_t& _textureID, const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, const rawrbox::Color& _cl) : textureID(_textureID), pos(_pos.pack()), color(_cl.pack()), uv(_uv) {}
+		PosUVColorVertexData(const uint32_t& _textureID, const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, const rawrbox::Color& _cl) : textureID(_textureID), pos(_pos.pack()), color(_cl.pack()), uv(_uv) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout() {
 			return {

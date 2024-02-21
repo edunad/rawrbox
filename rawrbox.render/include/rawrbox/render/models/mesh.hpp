@@ -40,7 +40,7 @@ namespace rawrbox {
 			return {roughnessFactor, metalnessFactor, specularFactor, emissionFactor};
 		}
 
-		[[nodiscard]] const rawrbox::Vector4_t<uint16_t> getPixelIDs() const {
+		[[nodiscard]] const rawrbox::Vector4_t<uint32_t> getPixelIDs() const {
 			auto base = texture == nullptr ? rawrbox::WHITE_TEXTURE.get() : texture;
 			auto norm = normal == nullptr ? rawrbox::NORMAL_TEXTURE.get() : normal;
 			auto metR = roughtMetal == nullptr ? rawrbox::BLACK_TEXTURE.get() : roughtMetal;

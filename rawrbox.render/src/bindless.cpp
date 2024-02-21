@@ -405,7 +405,7 @@ namespace rawrbox {
 		// -----
 	}
 
-	uint16_t BindlessManager::internalRegister(Diligent::ITextureView* view, rawrbox::TEXTURE_TYPE type) {
+	uint32_t BindlessManager::internalRegister(Diligent::ITextureView* view, rawrbox::TEXTURE_TYPE type) {
 		bool isVertex = type == rawrbox::TEXTURE_TYPE::VERTEX;
 		auto max = isVertex ? rawrbox::RENDERER->MAX_VERTEX_TEXTURES : rawrbox::RENDERER->MAX_TEXTURES;
 		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;
