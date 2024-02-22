@@ -33,8 +33,8 @@ namespace rawrbox {
 		if (signature != nullptr) throw _logger->error("Signature already bound!");
 		_logger->info("Initializing bindless manager");
 
-		auto renderer = rawrbox::RENDERER;
-		auto device = renderer->device();
+		auto *renderer = rawrbox::RENDERER;
+		auto *device = renderer->device();
 
 		// Reserve max textures ---
 		_textureHandles.reserve(renderer->MAX_TEXTURES);
@@ -116,10 +116,10 @@ namespace rawrbox {
 
 	// SIGNATURES ---------
 	void BindlessManager::createSignatures() {
-		auto renderer = rawrbox::RENDERER;
+		auto *renderer = rawrbox::RENDERER;
 
-		auto camera = renderer->camera();
-		auto device = renderer->device();
+		auto *camera = renderer->camera();
+		auto *device = renderer->device();
 
 		Diligent::PipelineResourceSignatureDesc PRSDesc;
 		PRSDesc.Name = "RawrBox::SIGNATURE::BINDLESS";
@@ -145,7 +145,7 @@ namespace rawrbox {
 		}
 
 		// Add extra signatures ----
-		for (auto& plugin : renderer->getPlugins()) {
+		for (const auto& plugin : renderer->getPlugins()) {
 			if (plugin.second == nullptr) continue;
 			plugin.second->signatures(resources, false);
 		}
@@ -186,7 +186,7 @@ namespace rawrbox {
 		PRSDesc.NumImmutableSamplers = 0;
 
 		// Add extra signatures ----
-		for (auto& plugin : renderer->getPlugins()) {
+		for (const auto& plugin : renderer->getPlugins()) {
 			if (plugin.second == nullptr) continue;
 			plugin.second->signatures(resources, true);
 		}
@@ -200,8 +200,8 @@ namespace rawrbox {
 	}
 
 	void BindlessManager::bindSignatures() {
-		auto renderer = rawrbox::RENDERER;
-		auto camera = renderer->camera();
+		auto *renderer = rawrbox::RENDERER;
+		auto *camera = renderer->camera();
 
 		// Setup graphic binds ---
 		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(signatureBufferVertex);
@@ -219,7 +219,7 @@ namespace rawrbox {
 		// ------------
 
 		// Add extra binds ----
-		for (auto& plugin : rawrbox::RENDERER->getPlugins()) {
+		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
 			if (plugin.second == nullptr) continue;
 			plugin.second->bind(*signature, false);
 		}
@@ -240,7 +240,7 @@ namespace rawrbox {
 		}
 
 		// Add extra binds ----
-		for (auto& plugin : rawrbox::RENDERER->getPlugins()) {
+		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
 			if (plugin.second == nullptr) continue;
 			plugin.second->bind(*computeSignature, true);
 		}
@@ -283,7 +283,7 @@ namespace rawrbox {
 
 		// UPDATE TEXTURES ---
 		if (!_updateTextures.empty()) {
-			for (auto tex : _updateTextures) {
+			for (auto *tex : _updateTextures) {
 				if (tex == nullptr) continue;
 				tex->update();
 			}
@@ -292,8 +292,8 @@ namespace rawrbox {
 	}
 
 	// BARRIERS -------
-	void BindlessManager::barrier(const rawrbox::TextureBase& texture, std::function<void()> callback) {
-		auto texHandle = texture.getTexture();
+	void BindlessManager::barrier(const rawrbox::TextureBase& texture, const std::function<void()>& callback) {
+		auto *texHandle = texture.getTexture();
 		if (texHandle == nullptr) throw _logger->error("Texture '{}' not uploaded! Cannot create barrier", texture.getName());
 
 		auto threadID = std::this_thread::get_id();
@@ -308,7 +308,7 @@ namespace rawrbox {
 		}
 	}
 
-	void BindlessManager::barrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state, std::function<void()> callback) {
+	void BindlessManager::barrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state, const std::function<void()>& callback) {
 		auto threadID = std::this_thread::get_id();
 		if (threadID != rawrbox::RENDER_THREAD_ID) { // Context is not thread safe, so we need to queue it
 			_barriers.emplace_back(&texture, Diligent::RESOURCE_STATE_UNKNOWN, state, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
@@ -321,7 +321,7 @@ namespace rawrbox {
 		}
 	}
 
-	void BindlessManager::barrier(Diligent::IBuffer& buffer, rawrbox::BufferType type, std::function<void()> callback) {
+	void BindlessManager::barrier(Diligent::IBuffer& buffer, rawrbox::BufferType type, const std::function<void()>& callback) {
 		auto threadID = std::this_thread::get_id();
 		if (threadID != rawrbox::RENDER_THREAD_ID) { // Context is not thread safe, so we need to queue it
 			_barriers.emplace_back(&buffer, Diligent::RESOURCE_STATE_UNKNOWN, mapResource(type), Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
@@ -405,7 +405,7 @@ namespace rawrbox {
 		// -----
 	}
 
-	uint16_t BindlessManager::internalRegister(Diligent::ITextureView* view, rawrbox::TEXTURE_TYPE type) {
+	uint32_t BindlessManager::internalRegister(Diligent::ITextureView* view, rawrbox::TEXTURE_TYPE type) {
 		bool isVertex = type == rawrbox::TEXTURE_TYPE::VERTEX;
 		auto max = isVertex ? rawrbox::RENDERER->MAX_VERTEX_TEXTURES : rawrbox::RENDERER->MAX_TEXTURES;
 		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;

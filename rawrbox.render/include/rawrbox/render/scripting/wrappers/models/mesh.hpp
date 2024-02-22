@@ -5,6 +5,7 @@
 namespace rawrbox {
 	class MeshWrapper {
 		template <typename T = rawrbox::VertexData>
+			requires(std::derived_from<T, rawrbox::VertexData>)
 		static void registerTemplate(lua_State* L, const std::string& name) {
 			using MeshC = rawrbox::Mesh<T>;
 

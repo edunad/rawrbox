@@ -16,6 +16,7 @@ namespace rawrbox {
 		~ResourceTexture() override;
 
 		template <typename T = rawrbox::TextureBase>
+			requires(std::derived_from<T, rawrbox::TextureBase>)
 		[[nodiscard]] T* get() const {
 			return dynamic_cast<T*>(this->_texture.get());
 		}

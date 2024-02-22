@@ -11,7 +11,7 @@ namespace rawrbox {
 
 		Mesh2DShape() = default;
 
-		std::vector<int> getLineSegments() {
+		[[nodiscard]] std::vector<int> getLineSegments() const {
 			std::vector<int> segments = {};
 
 			for (size_t i = 0; i < this->vertex.size() - 1; i++) {
@@ -24,6 +24,7 @@ namespace rawrbox {
 	};
 
 	template <typename M = rawrbox::MaterialUnlit>
+		requires(std::derived_from<M, rawrbox::MaterialBase>)
 	class Spline : public rawrbox::ModelBase<M> {
 	protected:
 		std::vector<std::unique_ptr<rawrbox::BezierCurve>> _curves = {};

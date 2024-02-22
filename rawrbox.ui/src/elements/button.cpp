@@ -71,7 +71,7 @@ namespace rawrbox {
 
 	// DRAWING ---
 	void UIButton::draw(rawrbox::Stencil& stencil) {
-		auto& size = getSize();
+		const auto& size = getSize();
 
 		// Background ----
 		stencil.drawBox({}, size, this->_backgroundColor); // Fake outline border
@@ -115,7 +115,7 @@ namespace rawrbox {
 	void UIButton::afterDraw(rawrbox::Stencil& stencil) {
 		if (this->_overlay == nullptr) return;
 
-		auto& size = this->getSize();
+		const auto& size = this->getSize();
 		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xFFFFFF0A), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
 	}
 	// ---------

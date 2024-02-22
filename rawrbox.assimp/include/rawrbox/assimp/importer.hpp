@@ -46,7 +46,7 @@ namespace rawrbox {
 	using OptionalTexture = std::optional<std::unique_ptr<rawrbox::TextureBase>>;
 
 	struct AssimpMaterial {
-		std::string name = "";
+		std::string name;
 
 		bool wireframe = false;
 		bool doubleSided = false;
@@ -75,7 +75,7 @@ namespace rawrbox {
 	struct AssimpLight {
 		rawrbox::LightType type = rawrbox::LightType::UNKNOWN;
 		std::string name = "light";
-		std::string parentID = "";
+		std::string parentID;
 
 		rawrbox::Colorf diffuse = rawrbox::Colors::White();
 		rawrbox::Colorf specular = rawrbox::Colors::White();
@@ -97,7 +97,7 @@ namespace rawrbox {
 	};
 
 	struct AssimpBlendShapes {
-		std::string name = "";
+		std::string name;
 		float weight = 0.F;
 
 		size_t mesh_index = 0;

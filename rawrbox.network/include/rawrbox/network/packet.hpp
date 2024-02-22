@@ -231,7 +231,7 @@ namespace rawrbox {
 
 		// UTILS -----
 		bool seek(size_t offset);
-		bool seek(std::vector<uint8_t>::iterator offset);
+		bool seek(const std::vector<uint8_t>::iterator& offset);
 
 		[[nodiscard]] size_t tell() const;
 		[[nodiscard]] size_t size() const;

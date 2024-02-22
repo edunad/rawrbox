@@ -2,8 +2,6 @@
 
 #include <rawrbox/utils/event.hpp>
 
-#include <nlohmann/json.hpp>
-
 #include <fmt/format.h>
 
 #include <algorithm>
@@ -12,6 +10,7 @@
 #include <functional>
 #include <iomanip>
 #include <mutex>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -138,14 +137,14 @@ namespace rawrbox {
 
 		virtual bool removeCommand(const std::string& id);
 
-		bool registerCommand(std::string key, ConsoleFunction func, std::string description = "", uint32_t flags = ConsoleFlags::NONE) {
+		bool registerCommand(std::string key, const ConsoleFunction& func, std::string description = "", uint32_t flags = ConsoleFlags::NONE) {
 			std::transform(key.begin(), key.end(), key.begin(), [](char c) { return static_cast<char>(std::tolower(c)); });
 			if (_commands.find(key) != _commands.end()) {
 				print(fmt::format("Console command `{}` has already been registered.", key), PrintType::ERR);
 				return false;
 			}
 
-			_commands[key] = ConsoleCommand(description, flags);
+			_commands[key] = ConsoleCommand(std::move(description), flags);
 			_commands[key].method = func;
 
 			return true;
@@ -159,7 +158,7 @@ namespace rawrbox {
 				return false;
 			}
 
-			_commands[key] = ConsoleCommand(description, flags);
+			_commands[key] = ConsoleCommand(std::move(description), flags);
 			_commands[key].var = &ref;
 
 			return true;

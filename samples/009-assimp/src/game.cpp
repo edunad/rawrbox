@@ -15,7 +15,7 @@ namespace assimp {
 
 	void Game::setupGLFW() {
 #ifdef _DEBUG
-		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
+		auto* window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
 #else
 		auto window = rawrbox::Window::createWindow();
 #endif
@@ -27,10 +27,10 @@ namespace assimp {
 	}
 
 	void Game::init() {
-		auto window = rawrbox::Window::getWindow();
+		auto* window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto render = window->createRenderer();
+		auto* render = window->createRenderer();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
@@ -40,7 +40,7 @@ namespace assimp {
 		// ---------------
 
 		// Setup camera
-		auto cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
+		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
@@ -72,7 +72,7 @@ namespace assimp {
 	void Game::contentLoaded() {
 		if (this->_ready) return;
 		// Assimp test ---
-		auto mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx")->get();
+		auto* mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx")->get();
 
 		this->_model->setPos({7, 1.1F, 2.F});
 		this->_model->load(*mdl);
@@ -83,7 +83,7 @@ namespace assimp {
 		this->_model2->upload();
 
 		// ANIMATIONS ---
-		auto mdl2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/wolf/wolfman_animated.fbx")->get();
+		auto* mdl2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/wolf/wolfman_animated.fbx")->get();
 		this->_model3->load(*mdl2);
 		this->_model3->playAnimation("Scene", true, 1.F);
 		this->_model3->setPos({1, 0, 0});
@@ -94,7 +94,7 @@ namespace assimp {
 		this->_model4->setPos({-1, 0, 0});
 		this->_model4->upload();
 
-		auto mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/multiple_skeleton/twocubestest.gltf")->get();
+		auto* mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/multiple_skeleton/twocubestest.gltf")->get();
 		this->_model5->load(*mdl4);
 		this->_model5->playAnimation("MewAction", true, 0.8F);
 		this->_model5->playAnimation("MewAction.001", true, 0.5F);
@@ -102,7 +102,7 @@ namespace assimp {
 		this->_model5->setScale({0.25F, 0.25F, 0.25F});
 		this->_model5->upload();
 
-		auto mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/grandma_tv/scene.gltf")->get();
+		auto* mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/grandma_tv/scene.gltf")->get();
 		this->_model6->load(*mdl5);
 		this->_model6->playAnimation("Scene", true, 1.F);
 		this->_model6->setPos({0, 0, -3.5F});
@@ -110,7 +110,7 @@ namespace assimp {
 		this->_model6->setEulerAngle({0, rawrbox::MathUtils::toRad(180.F), 0});
 		this->_model6->upload();
 
-		auto mdl6 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/shape_keys/shape_keys.glb")->get();
+		auto* mdl6 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/shape_keys/shape_keys.glb")->get();
 		this->_model7->load(*mdl6);
 		this->_model7->setScale({0.4F, 0.4F, 0.4F});
 		this->_model7->setPos({2.F, 0.4F, -6.F});

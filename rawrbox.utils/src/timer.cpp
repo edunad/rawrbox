@@ -1,6 +1,8 @@
 #include <rawrbox/utils/time.hpp>
 #include <rawrbox/utils/timer.hpp>
 
+#include <utility>
+
 namespace rawrbox {
 	uint32_t TIMER::ID = 0;
 	std::unordered_map<std::string, std::unique_ptr<rawrbox::TIMER>> TIMER::timers = {};
@@ -34,28 +36,27 @@ namespace rawrbox {
 				if (timer->_onComplete) timer->_onComplete();
 				it = timers.erase(it);
 				continue;
-			} else {
-				timer->_nextTick += timer->_msDelay;
 			}
 
+			timer->_nextTick += timer->_msDelay;
 			++it;
 		}
 	}
 
 	rawrbox::TIMER* TIMER::simple(const std::string& id, float msDelay, std::function<void()> func, std::function<void()> onComplete) {
-		return create(id, 1, msDelay, func, onComplete);
+		return create(id, 1, msDelay, std::move(func), std::move(onComplete));
 	}
 
 	rawrbox::TIMER* TIMER::simple(float msDelay, std::function<void()> func, std::function<void()> onComplete) {
-		return create(1, msDelay, func, onComplete);
+		return create(1, msDelay, std::move(func), std::move(onComplete));
 	}
 
 	rawrbox::TIMER* TIMER::create(const std::string& id, int reps, float msDelay, std::function<void()> func, std::function<void()> onComplete) {
-		return init(id, reps, msDelay, func, onComplete);
+		return init(id, reps, msDelay, std::move(func), std::move(onComplete));
 	}
 
 	rawrbox::TIMER* TIMER::create(int reps, float msDelay, std::function<void()> func, std::function<void()> onComplete) {
-		return init("", reps, msDelay, func, onComplete);
+		return init("", reps, msDelay, std::move(func), std::move(onComplete));
 	}
 
 	rawrbox::TIMER* TIMER::init(const std::string& id, int reps, float msDelay, std::function<void()> func, std::function<void()> onComplete) {
@@ -64,8 +65,8 @@ namespace rawrbox {
 
 		auto t = std::make_unique<rawrbox::TIMER>();
 		t->_msDelay = msDelay;
-		t->_func = func;
-		t->_onComplete = onComplete;
+		t->_func = std::move(func);
+		t->_onComplete = std::move(onComplete);
 		t->_iterations = reps;
 		t->_ticks = 0;
 		t->_id = _id;

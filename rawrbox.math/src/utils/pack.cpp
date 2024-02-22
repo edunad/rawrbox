@@ -5,6 +5,7 @@
 #include <array>
 #include <bit>
 #include <cmath>
+#include <cstring>
 
 namespace rawrbox {
 	float round(float val, int precision) {
@@ -67,7 +68,7 @@ namespace rawrbox {
 		short fltInt16 = 0;
 		int fltInt32 = 0;
 
-		memcpy(&fltInt32, &value, sizeof(float));
+		std::memcpy(&fltInt32, &value, sizeof(float));
 		fltInt16 = ((fltInt32 & 0x7fffffff) >> 13) - (0x38000000 >> 13);
 		fltInt16 |= ((fltInt32 & 0x80000000) >> 16);
 
@@ -79,7 +80,7 @@ namespace rawrbox {
 		fltInt32 |= ((fltInt16 & 0x7fff) << 13) + 0x38000000;
 
 		float fRet = 0.F;
-		memcpy(&fRet, &fltInt32, sizeof(float));
+		std::memcpy(&fRet, &fltInt32, sizeof(float));
 		return fRet;
 	}
 

@@ -8,7 +8,7 @@
 namespace rawrbox {
 	void BASSUtils::checkBASSError() {
 		int err = BASS_ErrorGetCode();
-		std::string readErr = "";
+		std::string readErr;
 
 		switch (err) {
 			case BASS_OK:

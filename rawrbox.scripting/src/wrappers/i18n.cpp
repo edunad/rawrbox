@@ -12,7 +12,7 @@ namespace rawrbox {
 	}
 
 	std::string I18NWrapper::get(const luabridge::LuaRef& ref) {
-		auto state = ref.state();
+		auto* state = ref.state();
 		auto args = rawrbox::LuaUtils::argsToString(state, true);
 		if (args.empty() || args.size() < 2) throw std::runtime_error("Missing params");
 

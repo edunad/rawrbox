@@ -10,7 +10,7 @@ namespace rawrbox {
 
 	class Matrix4x4 {
 	protected:
-		void vec4MulMtx(float* _result, const float* _vec, const float* _mat);
+		static void vec4MulMtx(float* _result, const float* _vec, const float* _mat);
 
 		void mul(const rawrbox::Matrix4x4& other);
 		void mul(const rawrbox::Vector3f& other);
@@ -82,10 +82,10 @@ namespace rawrbox {
 		// ------
 
 		// OPERATORS ----
-		float operator[](const size_t indx) const;
-		float operator[](const size_t indx);
+		float operator[](size_t indx) const;
+		float operator[](size_t indx);
 
-		void operator/=(const float other);
+		void operator/=(float other);
 		void operator/=(rawrbox::Matrix4x4 other);
 
 		void operator*=(const rawrbox::Matrix4x4& other);

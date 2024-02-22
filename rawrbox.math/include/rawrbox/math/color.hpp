@@ -137,23 +137,23 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] const std::array<NumberType, 4> array() const {
+		[[nodiscard]] std::array<NumberType, 4> array() const {
 			return {r, g, b, a};
 		}
 
-		[[nodiscard]] const rawrbox::Vector3_t<NumberType> rgb() const {
+		[[nodiscard]] rawrbox::Vector3_t<NumberType> rgb() const {
 			return {r, g, b};
 		}
 
-		[[nodiscard]] const rawrbox::Vector3_t<NumberType> bgr() const {
+		[[nodiscard]] rawrbox::Vector3_t<NumberType> bgr() const {
 			return {b, g, r};
 		}
 
-		[[nodiscard]] const ColorType bgra() const {
+		[[nodiscard]] ColorType bgra() const {
 			return {b, g, r, a};
 		}
 
-		[[nodiscard]] const NumberType max() const {
+		[[nodiscard]] NumberType max() const {
 			return std::max(std::max(r, g), b);
 		}
 

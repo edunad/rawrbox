@@ -20,7 +20,7 @@ namespace rawrbox {
 		bool _border = true;
 		bool _enabled = false;
 
-		std::string _tooltip = "";
+		std::string _tooltip;
 
 		// RESOURCES ---
 		rawrbox::TextureBase* _texture = nullptr;

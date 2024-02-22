@@ -27,7 +27,7 @@ namespace rawrbox {
 
 	// DRAWING ---
 	void UIProgressBar::draw(rawrbox::Stencil& stencil) {
-		auto& size = this->getSize();
+		const auto& size = this->getSize();
 
 		// BG
 		stencil.drawTexture({0, 0}, {size.x, size.y}, *this->_bg, Color::RGBAHex(0xFFFFFFA4), {}, {static_cast<float>(size.x) / static_cast<float>(this->_bg->getSize().x), static_cast<float>(size.y) / static_cast<float>(this->_bg->getSize().y)});
@@ -63,7 +63,7 @@ namespace rawrbox {
 	void UIProgressBar::afterDraw(Stencil& stencil) {
 		if (this->_overlay == nullptr) return;
 
-		auto& size = this->getSize();
+		const auto& size = this->getSize();
 		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xFFFFFF0A), {}, {static_cast<float>(size.x) / static_cast<float>(this->_overlay->getSize().x / 2), static_cast<float>(size.y) / static_cast<float>(this->_overlay->getSize().y / 2)});
 	}
 	// -----

@@ -43,10 +43,10 @@ namespace rawrbox {
 	rawrbox::UIContainer* UIRoot::findElement(const rawrbox::Vector2i& mousePos, rawrbox::Vector2i& offsetOut) {
 		auto& children = this->getChildren();
 		for (size_t i = children.size(); i > 0; i--) {
-			auto base = children[i - 1].get();
+			auto* base = children[i - 1].get();
 			if (base == nullptr) continue;
 
-			auto elm = this->findElement(base, mousePos, {0, 0}, offsetOut);
+			auto* elm = this->findElement(base, mousePos, {0, 0}, offsetOut);
 			if (elm != nullptr) return elm;
 		}
 
@@ -60,10 +60,10 @@ namespace rawrbox {
 		auto& elms = elmPtr->getChildren();
 
 		for (size_t i = elms.size(); i > 0; i--) {
-			auto base = elms[i - 1].get();
+			auto* base = elms[i - 1].get();
 			if (base == nullptr) continue;
 
-			auto found = this->findElement(base, mousePos - pos, offset + pos, offsetOut);
+			auto* found = this->findElement(base, mousePos - pos, offset + pos, offsetOut);
 			if (found != nullptr) return found;
 		}
 
@@ -113,7 +113,7 @@ namespace rawrbox {
 
 		// Clicked outside, reset focus ---
 		rawrbox::Vector2i offsetOut = {};
-		auto target = this->findElement(location, offsetOut);
+		auto* target = this->findElement(location, offsetOut);
 		if (target == nullptr) {
 			this->focusedElement = nullptr;
 			this->onFocusChange(nullptr);
@@ -127,7 +127,7 @@ namespace rawrbox {
 
 	void UIRoot::onMouseMove(const rawrbox::Vector2i& location) {
 		rawrbox::Vector2i offsetOut = {};
-		auto target = this->findElement(location, offsetOut);
+		auto* target = this->findElement(location, offsetOut);
 
 		// were holding our mouse on something, like dragging?
 		rawrbox::UIContainer* focused = nullptr;
@@ -194,7 +194,7 @@ namespace rawrbox {
 	void UIRoot::render() {
 		if (this->_window == nullptr) return;
 		auto& renderer = this->_window->getRenderer();
-		auto sten = renderer.stencil();
+		auto* sten = renderer.stencil();
 
 		for (auto& ch : this->_children) {
 			ch->drawChildren(*sten);

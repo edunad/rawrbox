@@ -154,7 +154,7 @@ namespace rawrbox {
 	Window::~Window() { this->close(); }
 	Window::Window(Diligent::RENDER_DEVICE_TYPE type) : _renderType(type) {
 		int count = 0;
-		auto monitors = glfwGetMonitors(&count);
+		auto* monitors = glfwGetMonitors(&count);
 
 		for (int i = 0; i < count; i++) {
 			const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
@@ -175,7 +175,7 @@ namespace rawrbox {
 #endif
 
 		glfwSetErrorCallback(glfw_errorCallback);
-		if (!glfwInit()) throw _logger->error("Failed to initialize glfw");
+		if (glfwInit() == 0) throw _logger->error("Failed to initialize glfw");
 
 		glfwWindowHint(GLFW_CLIENT_API, APIHint); // Disable opengl
 		if (APIHint == GLFW_OPENGL_API) {
@@ -191,7 +191,7 @@ namespace rawrbox {
 		GLFWmonitor* mon = glfwGetPrimaryMonitor();
 		if (this->_settings.monitor >= 0) {
 			int monitorscount = 0;
-			auto monitors = glfwGetMonitors(&monitorscount);
+			auto* monitors = glfwGetMonitors(&monitorscount);
 			if (this->_settings.monitor < monitorscount) {
 				mon = monitors[this->_settings.monitor];
 				properties[GLFW_VISIBLE] = 0;
@@ -241,7 +241,7 @@ namespace rawrbox {
 		this->_settings.title += fmt::format(" - {}", rawrbox::StrUtils::replace(renderTypeName, "RENDER_DEVICE_TYPE_", ""));
 #endif
 
-		auto glfwHandle = glfwCreateWindow(width, height, this->_settings.title.c_str(), windowed || borderless ? nullptr : mon, nullptr);
+		auto* glfwHandle = glfwCreateWindow(width, height, this->_settings.title.c_str(), windowed || borderless ? nullptr : mon, nullptr);
 		if (glfwHandle == nullptr) throw _logger->error("Failed to initialize window [{} - {}x{}]", this->_settings.title, width, height);
 
 		this->_handle = glfwHandle;
@@ -254,7 +254,8 @@ namespace rawrbox {
 		// Center window
 		if (this->_settings.pos == -1) {
 			if (windowed || transparent) {
-				int monx = 0, mony = 0;
+				int monx = 0;
+				int mony = 0;
 				glfwGetMonitorPos(mon, &monx, &mony);
 
 				this->_settings.pos = {monx + mode->width / 2 - width / 2, mony + mode->height / 2 - height / 2}; // Center
@@ -268,7 +269,7 @@ namespace rawrbox {
 // Set icon
 #ifdef WIN32
 		HANDLE hIcon = LoadIconW(GetModuleHandleW(nullptr), L"GLFW_ICON");
-		if (!hIcon) {
+		if (hIcon == nullptr) {
 			// No user-provided icon found, load default icon
 			hIcon = LoadIcon(nullptr, IDI_WINLOGO);
 		}
@@ -312,7 +313,7 @@ namespace rawrbox {
 	void Window::setCursor(uint32_t icon) {
 		if (this->_handle == nullptr) throw _logger->error("Invalid window handle");
 		if (this->_cursor != nullptr) glfwDestroyCursor(this->_cursor); // Delete old one
-		auto cursor = glfwCreateStandardCursor(icon);
+		auto* cursor = glfwCreateStandardCursor(icon);
 		this->_cursor = cursor;
 
 		glfwSetCursor(this->_handle, cursor);
@@ -330,7 +331,7 @@ namespace rawrbox {
 		image.width = 16;
 		image.height = 16;
 
-		auto cursor = glfwCreateCursor(&image, 0, 0);
+		auto* cursor = glfwCreateCursor(&image, 0, 0);
 		this->_cursor = cursor;
 
 		glfwSetCursor(this->_handle, cursor);
@@ -371,7 +372,7 @@ namespace rawrbox {
 		GLFWmonitor* w = getWindowMonitor();
 		if (w == nullptr) throw _logger->error("Failed to find screen dimensions");
 
-		auto vidmode = glfwGetVideoMode(w);
+		const auto* vidmode = glfwGetVideoMode(w);
 		return {vidmode->width, vidmode->height};
 	}
 
@@ -384,7 +385,8 @@ namespace rawrbox {
 
 	Vector2i Window::getMousePos() const {
 		if (this->_handle == nullptr) throw _logger->error("Invalid window handle");
-		double x = NAN, y = NAN;
+		double x = NAN;
+		double y = NAN;
 
 		glfwGetCursorPos(this->_handle, &x, &y);
 		return {static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y))};
@@ -420,7 +422,7 @@ namespace rawrbox {
 		return window;
 	}
 
-	rawrbox::RendererBase& Window::getRenderer() const { return *this->_renderer.get(); }
+	rawrbox::RendererBase& Window::getRenderer() const { return *this->_renderer; }
 
 	bool Window::isKeyDown(int key) const {
 		if (this->_handle == nullptr) throw _logger->error("Invalid window handle");
@@ -445,7 +447,7 @@ namespace rawrbox {
 	void Window::callbacks_windowClose(GLFWwindow* whandle) {
 		auto& window = glfwHandleToRenderer(whandle);
 
-		glfwSetWindowShouldClose(whandle, true);
+		glfwSetWindowShouldClose(whandle, 1);
 		glfwPostEmptyEvent();
 
 		window.onWindowClose(window);
@@ -520,7 +522,7 @@ namespace rawrbox {
 			auto& window = glfwHandleToRenderer(whandle);
 
 			window._hasFocus = (focus == 1);
-			window.onFocus(window, focus);
+			window.onFocus(window, focus != 0);
 		});
 	}
 
@@ -560,7 +562,8 @@ namespace rawrbox {
 
 		size_t overlapMonitor = 0;
 		auto totalMonitors = static_cast<size_t>(monitorCount);
-		uint32_t currentDim = 0, overlapDim = 0;
+		uint32_t currentDim = 0;
+		uint32_t overlapDim = 0;
 
 		for (size_t i = 0; i < totalMonitors; i++) {
 			rawrbox::AABBi monitorRect = {};

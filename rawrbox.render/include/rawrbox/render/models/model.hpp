@@ -11,6 +11,7 @@
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialUnlit>
+		requires(std::derived_from<M, rawrbox::MaterialBase>)
 	class Model : public rawrbox::ModelBase<M> {
 
 	protected:
@@ -66,7 +67,7 @@ namespace rawrbox {
 				calcs[fnd->second->boneId] = skeleton.invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
 			}
 
-			for (auto& child : parentBone.children) {
+			for (const auto& child : parentBone.children) {
 				this->animateBones(calcs, skeleton, *child, globalTransformation);
 			}
 		}
@@ -305,6 +306,7 @@ namespace rawrbox {
 
 		// LIGHTS ------
 		template <typename T = rawrbox::LightBase, typename... CallbackArgs>
+			requires(std::derived_from<T, rawrbox::LightBase>)
 		T* addLight(const std::string& parentMesh = "", CallbackArgs&&... args) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				auto parent = this->_meshes.back().get();

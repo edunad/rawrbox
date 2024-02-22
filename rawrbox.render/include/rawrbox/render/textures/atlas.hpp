@@ -6,14 +6,14 @@ namespace rawrbox {
 	protected:
 		std::vector<std::vector<uint8_t>> _tiles = {};
 
-		uint16_t _spriteSize = 32;
+		uint32_t _spriteSize = 32;
 		void processAtlas();
 
 	public:
-		explicit TextureAtlas(const std::filesystem::path& filePath, uint16_t spriteSize = 32, bool useFallback = true);
-		explicit TextureAtlas(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, uint16_t spriteSize = 32, bool useFallback = true);
+		explicit TextureAtlas(const std::filesystem::path& filePath, uint32_t spriteSize = 32, bool useFallback = true);
+		explicit TextureAtlas(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, uint32_t spriteSize = 32, bool useFallback = true);
 
-		TextureAtlas(const TextureAtlas&) = default;
+		TextureAtlas(const TextureAtlas&) = delete;
 		TextureAtlas(TextureAtlas&&) = delete;
 		TextureAtlas& operator=(const TextureAtlas&) = delete;
 		TextureAtlas& operator=(TextureAtlas&&) = delete;
@@ -21,7 +21,7 @@ namespace rawrbox {
 
 		// ------ PIXEL-UTILS
 		[[nodiscard]] size_t total() const;
-		[[nodiscard]] uint16_t getSpriteSize() const;
+		[[nodiscard]] uint32_t getSpriteSize() const;
 		[[nodiscard]] std::vector<uint8_t> getSprite(size_t id) const;
 		// --------------------
 

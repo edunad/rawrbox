@@ -1,7 +1,7 @@
 #include <rawrbox/network/http.hpp>
 
 namespace rawrbox {
-	void HTTP::request(const std::string& url, const rawrbox::HTTPMethod method, const std::map<std::string, std::string>& headers, std::function<void(int, std::map<std::string, std::string>, std::string)> callback, int timeout) {
+	void HTTP::request(const std::string& url, const rawrbox::HTTPMethod method, const std::map<std::string, std::string>& headers, const std::function<void(int, std::map<std::string, std::string>, std::string)>& callback, int timeout) {
 		if (callback == nullptr) throw std::runtime_error("[RawrBox-HTTP] Invalid callback");
 
 		cpr::Header header = {};
@@ -10,15 +10,15 @@ namespace rawrbox {
 		cpr::Timeout time = timeout;
 
 		// Setup headers ---
-		for (auto& h : headers) {
+		for (const auto& h : headers) {
 			header.emplace(h);
 		}
 		// ----
 
 		// Setup callback ---
-		auto cb = [callback](cpr::Response r) {
+		auto cb = [callback](const cpr::Response& r) {
 			std::map<std::string, std::string> headerResp = {};
-			for (auto& h : r.header) {
+			for (const auto& h : r.header) {
 				headerResp[h.first] = h.second;
 			}
 

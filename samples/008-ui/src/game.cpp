@@ -24,7 +24,7 @@ namespace ui_test {
 
 	void Game::setupGLFW() {
 #ifdef _DEBUG
-		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
+		auto* window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
 #else
 		auto window = rawrbox::Window::createWindow();
 #endif
@@ -35,10 +35,10 @@ namespace ui_test {
 	}
 
 	void Game::init() {
-		auto window = rawrbox::Window::getWindow();
+		auto* window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto render = window->createRenderer(rawrbox::Color::RGBAHex(0x443355FF));
+		auto* render = window->createRenderer(rawrbox::Color::RGBAHex(0x443355FF));
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OVERLAY) return;
@@ -88,10 +88,10 @@ namespace ui_test {
 		if (this->_ready) return;
 
 		// Setup binds ---
-		auto window = rawrbox::Window::getWindow();
+		auto* window = rawrbox::Window::getWindow();
 		auto winSize = window->getSize().cast<float>();
 
-		this->_consoleUI = this->_ROOT_UI->createChild<rawrbox::UIConsole>(*this->_console.get());
+		this->_consoleUI = this->_ROOT_UI->createChild<rawrbox::UIConsole>(*this->_console);
 		this->_consoleUI->setAlwaysTop(true);
 		this->_consoleUI->setPos({0, winSize.y - 240});
 		this->_consoleUI->setSize({winSize.x, 240});
@@ -107,20 +107,20 @@ namespace ui_test {
 		this->_anim->setAnimation(*rawrbox::RESOURCES::getFile<rawrbox::ResourceJSON>("./assets/json/test.json")->get());
 
 		{
-			auto frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
+			auto* frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
 			frame->setTitle("mewww");
 			frame->setSize({400, 200});
 			frame->setPos({600, 200});
 
 			{
-				auto label = frame->createChild<rawrbox::UILabel>();
+				auto* label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({10, 5});
 				label->setText("Label: mew!");
 				label->sizeToContents();
 			}
 
 			{
-				auto label = frame->createChild<rawrbox::UILabel>();
+				auto* label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({10, 18});
 				label->setText("Label: shadow mew!");
 				label->setShadowColor(rawrbox::Colors::Black());
@@ -128,14 +128,14 @@ namespace ui_test {
 			}
 
 			{
-				auto input = frame->createChild<rawrbox::UIInput>();
+				auto* input = frame->createChild<rawrbox::UIInput>();
 				input->setPos({10, 36});
 				input->setSize({380, 22});
 				input->setPlaceholder("placeholder");
 			}
 
 			{
-				auto input = frame->createChild<rawrbox::UIInput>();
+				auto* input = frame->createChild<rawrbox::UIInput>();
 				input->setPos({10, 64});
 				input->setSize({380, 22});
 				input->setText("readonly");
@@ -148,7 +148,7 @@ namespace ui_test {
 			this->_group->setSize({64, 64});
 
 			{
-				auto btn = frame->createChild<rawrbox::UIButton>();
+				auto* btn = frame->createChild<rawrbox::UIButton>();
 				btn->setPos({10, 96});
 				btn->setSize({200, 32});
 				btn->setText("MEW");
@@ -162,13 +162,13 @@ namespace ui_test {
 			}
 
 			{
-				auto img = this->_group->createChild<rawrbox::UIImage>();
+				auto* img = this->_group->createChild<rawrbox::UIImage>();
 				img->setTexture("./assets/textures/meow3.gif");
 				img->setSize({128, 128});
 			}
 
 			{
-				auto prog = frame->createChild<rawrbox::UIProgressBar>();
+				auto* prog = frame->createChild<rawrbox::UIProgressBar>();
 				prog->setPos({10, 130});
 				prog->setSize({200, 16});
 				prog->setValue(50);
@@ -176,14 +176,14 @@ namespace ui_test {
 			}
 
 			{
-				auto prog = frame->createChild<rawrbox::UIProgressBar>();
+				auto* prog = frame->createChild<rawrbox::UIProgressBar>();
 				prog->setPos({10, 146});
 				prog->setSize({200, 16});
 				prog->setValue(100);
 			}
 
 			{
-				auto img = this->_ROOT_UI->createChild<rawrbox::UIImage>();
+				auto* img = this->_ROOT_UI->createChild<rawrbox::UIImage>();
 				img->setTexture("./assets/textures/meow3.gif");
 				img->setSize({32, 32});
 
@@ -194,7 +194,7 @@ namespace ui_test {
 			}
 
 			{
-				auto btn = frame->createChild<rawrbox::UIButton>();
+				auto* btn = frame->createChild<rawrbox::UIButton>();
 				btn->setPos({290, 96});
 				btn->setSize({100, 32});
 				btn->setText("LINES");
@@ -206,7 +206,7 @@ namespace ui_test {
 			}
 
 			{
-				auto btn = frame->createChild<rawrbox::UIButton>();
+				auto* btn = frame->createChild<rawrbox::UIButton>();
 				btn->setPos({290, 140});
 				btn->setSize({100, 32});
 				btn->setText("BLOCK");
@@ -219,12 +219,12 @@ namespace ui_test {
 		}
 
 		{
-			auto frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
+			auto* frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
 			frame->setTitle("Virtual lists");
 			frame->setSize({400, 250});
 			frame->setPos({100, 450});
 			{
-				auto label = frame->createChild<rawrbox::UILabel>();
+				auto* label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({5, 3});
 				label->setText("LIST MODE");
 				label->sizeToContents();
@@ -232,7 +232,7 @@ namespace ui_test {
 
 			// LIST
 			{
-				auto vlist = frame->createChild<rawrbox::UIVirtualList<std::string>>();
+				auto* vlist = frame->createChild<rawrbox::UIVirtualList<std::string>>();
 				vlist->setPos({0, 16});
 				vlist->setSize({400, 100});
 				vlist->renderItem = [](size_t indx, std::string& msg, bool isHovering, rawrbox::Stencil& stencil) {
@@ -249,14 +249,14 @@ namespace ui_test {
 			}
 
 			{
-				auto label = frame->createChild<rawrbox::UILabel>();
+				auto* label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({5, 120});
 				label->setText("GRID MODE");
 				label->sizeToContents();
 			}
 			// GRID
 			{
-				auto vlist = frame->createChild<rawrbox::UIVirtualList<std::string>>();
+				auto* vlist = frame->createChild<rawrbox::UIVirtualList<std::string>>();
 				vlist->setPos({0, 136});
 				vlist->setSize({400, 100});
 				vlist->setMode(rawrbox::VirtualListMode::GRID);
@@ -275,7 +275,7 @@ namespace ui_test {
 		}
 
 		{
-			auto frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
+			auto* frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
 			frame->setTitle("graphss");
 			frame->setSize({400, 200});
 			frame->setPos({100, 200});

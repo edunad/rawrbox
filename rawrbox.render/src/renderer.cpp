@@ -32,6 +32,8 @@
 #include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/threading.hpp>
 
+#include <utility>
+
 namespace rawrbox {
 	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& screenSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor.toLinear()), _size(size), _monitorSize(screenSize), _window(window), _type(type) {}
 	RendererBase::~RendererBase() {
@@ -306,7 +308,7 @@ namespace rawrbox {
 	const std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>>& RendererBase::getPlugins() const { return this->_renderPlugins; }
 	// -----------------------------------
 
-	void RendererBase::setDrawCall(std::function<void(const rawrbox::DrawPass& pass)> call) { this->_drawCall = call; }
+	void RendererBase::setDrawCall(std::function<void(const rawrbox::DrawPass& pass)> call) { this->_drawCall = std::move(call); }
 
 	void RendererBase::update() {
 		if (this->_currentIntro != nullptr) {
@@ -580,7 +582,7 @@ namespace rawrbox {
 #ifdef _DEBUG
 	void RendererBase::beginQuery(const std::string& query) {
 		const auto& supportedFeatures = this->device()->GetDeviceInfo().Features;
-		if (!supportedFeatures.PipelineStatisticsQueries || !supportedFeatures.DurationQueries) return;
+		if ((supportedFeatures.PipelineStatisticsQueries == 0U) || (supportedFeatures.DurationQueries == 0U)) return;
 
 		auto pipeName = fmt::format("{}::PIPELINE", query);
 		auto durationName = fmt::format("{}::DURATION", query);
@@ -638,7 +640,7 @@ namespace rawrbox {
 
 	void RendererBase::endQuery(const std::string& query) {
 		const auto& supportedFeatures = this->device()->GetDeviceInfo().Features;
-		if (!supportedFeatures.PipelineStatisticsQueries || !supportedFeatures.DurationQueries) return;
+		if ((supportedFeatures.PipelineStatisticsQueries == 0U) || (supportedFeatures.DurationQueries == 0U)) return;
 
 		auto pipeName = fmt::format("{}::PIPELINE", query);
 		auto durationName = fmt::format("{}::DURATION", query);
@@ -651,8 +653,8 @@ namespace rawrbox {
 		}
 
 		// End queries ---
-		auto pipeData = &this->_pipelineData[pipeName];
-		auto durationData = &this->_durationData[durationName];
+		auto* pipeData = &this->_pipelineData[pipeName];
+		auto* durationData = &this->_durationData[durationName];
 
 		fndPipeline->second->End(this->context(), pipeData, sizeof(Diligent::QueryDataPipelineStatistics));
 		fndDuration->second->End(this->context(), durationData, sizeof(Diligent::QueryDataDuration));

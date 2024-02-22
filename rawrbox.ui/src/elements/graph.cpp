@@ -9,10 +9,10 @@
 
 namespace rawrbox {
 	// CATEGORY --
-	rawrbox::UIGraphCategory& UIGraph::getCategory(size_t id) { return *this->_categories[id].get(); }
+	rawrbox::UIGraphCategory& UIGraph::getCategory(size_t id) { return *this->_categories[id]; }
 	rawrbox::UIGraphCategory& UIGraph::addCategory(const std::string& name, const rawrbox::Color& color) {
 		this->_categories.push_back(std::make_unique<rawrbox::UIGraphCategory>(name, color));
-		return *this->_categories.back().get();
+		return *this->_categories.back();
 	}
 	// ----------
 

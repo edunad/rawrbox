@@ -50,7 +50,7 @@ namespace rawrbox {
 
 	void SoundInstance::play() {
 		if (this->isCreated() && this->isPaused()) {
-			BASS_ChannelPlay(this->_channel, false);
+			BASS_ChannelPlay(this->_channel, 0);
 			rawrbox::BASSUtils::checkBASSError();
 			return;
 		}
@@ -69,7 +69,7 @@ namespace rawrbox {
 			this->set3D(this->_maxDistance, this->_minDistance);
 		}
 
-		BASS_ChannelPlay(this->_channel, this->_stream || this->_looping); // actualy play the thing
+		BASS_ChannelPlay(this->_channel, static_cast<BOOL>(this->_stream || this->_looping)); // actualy play the thing
 		rawrbox::BASSUtils::checkBASSError();
 	}
 
@@ -104,7 +104,7 @@ namespace rawrbox {
 
 	bool SoundInstance::isCreated() const {
 		BASS_CHANNELINFO info;
-		return this->_channel != 0 && BASS_ChannelGetInfo(this->_channel, &info);
+		return this->_channel != 0 && (BASS_ChannelGetInfo(this->_channel, &info) != 0);
 	}
 
 	bool SoundInstance::is3D() const {
@@ -139,7 +139,7 @@ namespace rawrbox {
 	}
 
 	bool SoundInstance::isHTTPStream() const {
-		return !BASS_ChannelGetTags(this->_channel, BASS_TAG_HTTP);
+		return BASS_ChannelGetTags(this->_channel, BASS_TAG_HTTP) == nullptr;
 	}
 
 	const std::vector<float> SoundInstance::getFFT(int bass_length) const {

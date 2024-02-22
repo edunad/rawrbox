@@ -26,15 +26,15 @@ namespace rawrbox {
 		}
 
 		if (gifPixels == nullptr || delays == nullptr) {
-			auto failure = stbi_failure_reason();
+			const auto* failure = stbi_failure_reason();
 
 			if (useFallback) {
 				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), failure);
 				this->loadFallback();
 				return;
-			} else {
-				throw this->_logger->error("Error loading image: {}", failure);
 			}
+
+			throw this->_logger->error("Error loading image: {}", failure);
 		}
 
 		uint32_t framePixelCount = this->_size.x * this->_size.y * this->_channels;
@@ -47,7 +47,7 @@ namespace rawrbox {
 			frame.delay = static_cast<float>(delays[i]); // in ms
 			frame.pixels.resize(framePixelCount);
 
-			auto pixelsOffset = gifPixels + i * framePixelCount;
+			auto* pixelsOffset = gifPixels + i * framePixelCount;
 			std::copy(pixelsOffset, pixelsOffset + framePixelCount, frame.pixels.data());
 		}
 

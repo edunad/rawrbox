@@ -58,7 +58,7 @@ namespace rawrbox {
 		[[nodiscard]] Vector2_t<NumberType> zy() const { return Vector2_t<NumberType>(z, y); }
 		[[nodiscard]] Vector2_t<NumberType> zw() const { return Vector2_t<NumberType>(z, w); }
 
-		[[nodiscard]] const std::array<NumberType, 4> data() const { return {x, y, z, w}; }
+		[[nodiscard]] std::array<NumberType, 4> data() const { return {x, y, z, w}; }
 
 		NumberType length() const {
 			return static_cast<NumberType>(std::sqrt(std::pow(x, 2) + std::pow(y, 2) + std::pow(z, 2) + std::pow(w, 2)));
@@ -282,7 +282,8 @@ namespace rawrbox {
 			if ((static_cast<float>(1.0) - cosom) > static_cast<float>(0.0001)) // 0.0001 -> some epsillon
 			{
 				// Standard case (slerp)
-				float omega = NAN, sinom = NAN;
+				float omega = NAN;
+				float sinom = NAN;
 				omega = std::acos(cosom); // extract theta from dot product's cos theta
 				sinom = std::sin(omega);
 				sclp = std::sin((static_cast<float>(1.0) - pFactor) * omega) / sinom;

@@ -7,6 +7,7 @@
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialText3D>
+		requires(std::derived_from<M, rawrbox::MaterialText3D>)
 	class Text3D : public rawrbox::Model<M> {
 	protected:
 		float _scaleMul = 0.65F;

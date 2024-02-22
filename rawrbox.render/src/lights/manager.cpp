@@ -84,8 +84,8 @@ namespace rawrbox {
 		if (_buffer == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__LIGHT_DIRTY__ || _lights.empty()) return;
 
-		auto context = rawrbox::RENDERER->context();
-		auto device = rawrbox::RENDERER->device();
+		auto *context = rawrbox::RENDERER->context();
+		auto *device = rawrbox::RENDERER->device();
 
 		// Update lights ---
 		std::vector<rawrbox::LightDataVertex> lights = {};
@@ -124,7 +124,7 @@ namespace rawrbox {
 			_buffer->Resize(device, context, size, true);
 		}
 
-		auto buffer = _buffer->GetBuffer();
+		auto *buffer = _buffer->GetBuffer();
 		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size()), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		rawrbox::BindlessManager::barrier(*buffer, rawrbox::BufferType::SHADER);
 
@@ -141,7 +141,7 @@ namespace rawrbox {
 
 	// UTILS ----
 	void LIGHTS::setEnabled(bool fb) {
-		_settings.lightSettings.x = fb;
+		_settings.lightSettings.x = static_cast<unsigned int>(fb);
 		_CONSTANTS_DIRTY = true;
 	}
 

@@ -7,7 +7,7 @@ namespace rawrbox {
 		if (!callback.isCallable()) throw std::runtime_error("Invalid callback");
 		if (onComplete.has_value() && !onComplete->isCallable()) throw std::runtime_error("Invalid onComplete callback");
 
-		auto timer = rawrbox::TIMER::create(
+		auto* timer = rawrbox::TIMER::create(
 		    id, reps, delay, [callback]() {
 				auto result = luabridge::call(callback);
 				if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage()); },
@@ -24,7 +24,7 @@ namespace rawrbox {
 		if (!callback.isCallable()) throw std::runtime_error("Invalid callback");
 		if (onComplete.has_value() && !onComplete->isCallable()) throw std::runtime_error("Invalid onComplete callback");
 
-		auto timer = rawrbox::TIMER::simple(
+		auto* timer = rawrbox::TIMER::simple(
 		    id, delay, [callback]() {
 				auto result = luabridge::call(callback);
 			    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage()); },

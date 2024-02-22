@@ -8,8 +8,8 @@
 #include <rawrbox/render/models/model.hpp>
 
 namespace rawrbox {
-
 	template <typename M = MaterialUnlit>
+		requires(std::derived_from<M, rawrbox::MaterialBase>)
 	class AssimpModel : public rawrbox::Model<M> {
 	protected:
 		// INTERNAL -------
@@ -24,7 +24,7 @@ namespace rawrbox {
 			this->_animatedMeshes.clear();
 
 			// Mark animated meshes ---
-			for (auto& anim : model.animatedMeshes) {
+			for (const auto& anim : model.animatedMeshes) {
 				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [anim](std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>& msh) {
 					return msh->getName() == anim.second->name;
 				});
@@ -39,7 +39,7 @@ namespace rawrbox {
 		void loadBlendShapes(const rawrbox::AssimpImporter& model) {
 			this->_blend_shapes.clear();
 
-			for (auto& blend : model.blendShapes) {
+			for (const auto& blend : model.blendShapes) {
 				if (blend.second.mesh_index >= this->_meshes.size()) {
 					this->_logger->warn("Failed to find mesh {}", blend.second.mesh_index);
 					continue;
@@ -58,7 +58,7 @@ namespace rawrbox {
 		}
 
 		void loadLights(const rawrbox::AssimpImporter& model) {
-			for (auto& assimpLights : model.lights) {
+			for (const auto& assimpLights : model.lights) {
 				rawrbox::LightBase* light = nullptr;
 
 				switch (assimpLights.type) {

@@ -58,23 +58,24 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_TESTING ON)
     set(RAWRBOX_BUILD_SAMPLES ON)
 
-    set(RAWRBOX_BUILD_RAWRBOX_UI OFF)
+    set(RAWRBOX_BUILD_RAWRBOX_UI ON)
     set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
-    set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS OFF)
-    set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS OFF)
-    set(RAWRBOX_BUILD_RAWRBOX_BASS OFF)
-    set(RAWRBOX_BUILD_RAWRBOX_ASSIMP OFF)
-    set(RAWRBOX_BUILD_RAWRBOX_WEBM OFF)
-    set(RAWRBOX_BUILD_RAWRBOX_NETWORK OFF)
-    set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING OFF)
-    set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE OFF)
-    set(RAWRBOX_BUILD_QHULL OFF)
+    set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
+    set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS ON)
+    set(RAWRBOX_BUILD_RAWRBOX_BASS ON)
+    set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
+    set(RAWRBOX_BUILD_RAWRBOX_WEBM ON)
+    set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
+    set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING ON)
+    set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE ON)
+    set(RAWRBOX_BUILD_QHULL ON)
+
+    set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm")
 endif()
 
 # OTHER SETTINGS ----
 set(RAWRBOX_OUTPUT_BIN "bin" CACHE STRING "the target directory of where the output of the build will be stored for use by artifacts")
 set(RAWRBOX_CONTENT_FOLDER "assets" CACHE STRING "the assets folder (aka where models, textures, etc are)")
-set(RAWRBOX_SHADERS_FOLDER "shaders" CACHE STRING "the shaders folder")
 set(RAWRBOX_LIBRARY_TYPE "STATIC" CACHE STRING "Linking type for library")
 # ----------------
 
@@ -83,8 +84,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}")
-
-set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm")
 
 set(BUILD_SHARED_LIBS OFF)
 
@@ -148,21 +147,7 @@ if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
     CPMAddPackage("gl:wayland/weston@12.0.3")
 endif()
 
-CPMAddPackage(
-    NAME
-        nlohmann_json
-    VERSION
-        3.11.3
-    # the git repo is incredibly large, so we download the archived include directory
-    URL
-        https://github.com/nlohmann/json/releases/download/v3.11.3/include.zip
-    URL_HASH
-        SHA256=a22461d13119ac5c78f205d3df1db13403e58ce1bb1794edc9313677313f4a9d)
-
-if(nlohmann_json_ADDED)
-    add_library(nlohmann_json INTERFACE IMPORTED)
-    target_include_directories(nlohmann_json INTERFACE ${nlohmann_json_SOURCE_DIR}/include)
-endif()
+CPMAddPackage("gh:stephenberry/glaze@2.1.4")
 
 # ---
 if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)
@@ -256,3 +241,7 @@ if(RAWRBOX_BUILD_SAMPLES)
     add_subdirectory("samples")
 endif()
 
+
+if(WIN32)
+    string(REPLACE "/WX" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+endif()

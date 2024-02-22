@@ -113,8 +113,8 @@ namespace rawrbox {
 		//   virtual void gpuCheck();
 
 	public:
-		uint16_t MAX_TEXTURES = 8192;       // NOTE: IF THIS VALUE IS TOO HIGH, YOU MIGHT NEED TO INCREASE THE HEAP MEMORY
-		uint16_t MAX_VERTEX_TEXTURES = 128; // NOTE: IF THIS VALUE IS TOO HIGH, YOU MIGHT NEED TO INCREASE THE HEAP MEMORY
+		uint32_t MAX_TEXTURES = 8192;       // NOTE: IF THIS VALUE IS TOO HIGH, YOU MIGHT NEED TO INCREASE THE HEAP MEMORY
+		uint32_t MAX_VERTEX_TEXTURES = 128; // NOTE: IF THIS VALUE IS TOO HIGH, YOU MIGHT NEED TO INCREASE THE HEAP MEMORY
 
 		std::function<void()> onIntroCompleted = nullptr;
 		std::function<std::pair<uint32_t, uint32_t>()> overrideHEAP = nullptr;

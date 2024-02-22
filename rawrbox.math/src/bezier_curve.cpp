@@ -35,7 +35,7 @@ namespace rawrbox {
 	[[nodiscard]] const std::array<rawrbox::Vector3f, 4>& BezierCurve::getPoints() const { return this->_points; }
 
 	rawrbox::Vector3f BezierCurve::getNormal(float t, Vector3 up) {
-		return this->calculateNormal(this->getTangent(t), up);
+		return rawrbox::BezierCurve::calculateNormal(this->getTangent(t), up);
 	}
 
 	rawrbox::Vector3f BezierCurve::getTangent(float t) {

@@ -7,7 +7,7 @@ namespace rawrbox {
 		if (!headers.isTable()) throw std::runtime_error("Invalid header table");
 		if (!callback.isCallable()) throw std::runtime_error("Invalid callback");
 
-		auto L = headers.state();
+		auto *L = headers.state();
 
 		// Setup headers -------
 		std::map<std::string, std::string> headerMap = {};
@@ -18,14 +18,14 @@ namespace rawrbox {
 
 			auto keyCheck = key;
 			std::transform(keyCheck.begin(), keyCheck.end(), keyCheck.begin(), ::toupper);
-			if (keyCheck.compare("METHOD") == 0 || keyCheck.compare("USER-AGENT") == 0) continue; // Remove these
+			if (keyCheck == "METHOD" || keyCheck == "USER-AGENT") continue; // Remove these
 
 			headerMap[key] = value.unsafe_cast<std::string>();
 		}
 		// ----------
 
 		rawrbox::HTTP::request(
-		    url, static_cast<rawrbox::HTTPMethod>(method), headerMap, [callback, L](int code, std::map<std::string, std::string> headerResp, std::string resp) {
+		    url, static_cast<rawrbox::HTTPMethod>(method), headerMap, [callback, L](int code, const std::map<std::string, std::string>& headerResp, const std::string& resp) {
 			    rawrbox::runOnRenderThread([resp, code, callback, headerResp, L]() {
 				    if (code == 0 || (code == 200 && resp.starts_with("Operation timed out after"))) {
 					    auto result = luabridge::call(callback, false, resp); // curl error
@@ -37,7 +37,7 @@ namespace rawrbox {
 				    auto tbl = luabridge::newTable(L);
 				    auto headerTbl = luabridge::newTable(L);
 
-				    for (auto& pair : headerResp) {
+				    for (const auto& pair : headerResp) {
 					    headerTbl[pair.first] = pair.second;
 				    }
 

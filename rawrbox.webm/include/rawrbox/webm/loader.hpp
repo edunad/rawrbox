@@ -74,7 +74,7 @@ namespace rawrbox {
 
 		void load(const std::filesystem::path& filePath, uint32_t flags = 0);
 		bool advance();
-		bool eos();
+		[[nodiscard]] bool eos() const;
 
 		void reset();
 		void seek(uint64_t timeMS);
@@ -86,13 +86,13 @@ namespace rawrbox {
 		[[nodiscard]] const rawrbox::WEBMFrame& getFrame() const;
 		[[nodiscard]] const rawrbox::WEBMInfo& getInfo() const;
 
-		bool getLoop();
+		[[nodiscard]] bool getLoop() const;
 		void setLoop(bool loop);
 
-		bool getPaused();
+		[[nodiscard]] bool getPaused() const;
 		void setPaused(bool loop);
 
-		bool isPreLoaded();
+		[[nodiscard]] bool isPreLoaded() const;
 		// --------
 	};
 } // namespace rawrbox

@@ -23,7 +23,7 @@ namespace rawrbox {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 
 		// Create a new thread ----
-		auto loadThread = lua_newthread(L);
+		auto* loadThread = lua_newthread(L);
 		// --------------
 
 		// Compile ----
@@ -88,7 +88,7 @@ namespace rawrbox {
 
 		for (int i = 1; i <= nargs; i++) {
 			if (filterNonStr) {
-				if (!lua_isstring(L, i)) continue;
+				if (lua_isstring(L, i) == 0) continue;
 				args.emplace_back(lua_tostring(L, i));
 			} else {
 				int type = lua_type(L, i);
@@ -111,7 +111,7 @@ namespace rawrbox {
 						args.emplace_back("nil");
 						break;
 					default:
-						if (!lua_isstring(L, i)) continue;
+						if (lua_isstring(L, i) == 0) continue;
 						args.emplace_back(lua_tostring(L, i));
 						break;
 				}
@@ -122,7 +122,7 @@ namespace rawrbox {
 	}
 
 	void LuaUtils::getVariadicArgs(const luabridge::LuaRef& in, luabridge::LuaRef& out) {
-		auto L = in.state();
+		auto* L = in.state();
 
 		int nargs = lua_gettop(L);
 		if (nargs == 0) return;
@@ -147,39 +147,40 @@ namespace rawrbox {
 		}
 	}
 
-	luabridge::LuaRef LuaUtils::jsonToLua(lua_State* L, const nlohmann::json& json) {
+	luabridge::LuaRef LuaUtils::jsonToLua(lua_State* L, const glz::json_t& json) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 
-		if (json.is_null()) {
+		if (json.holds<glz::json_t::null_t>()) {
 			return {L, luabridge::LuaNil()};
-		} else if (json.is_boolean()) {
+		} else if (json.holds<bool>()) {
 			return {L, json.get<bool>()};
-		} else if (json.is_number()) { // Lua only works with doubles
+		} else if (json.holds<double>()) { // Lua only works with doubles
 			return {L, json.get<double>()};
-		} else if (json.is_string()) {
+		} else if (json.holds<std::string>()) {
 			return {L, json.get<std::string>()};
-		} else if (json.is_object()) {
+		} else if (json.holds<glz::json_t::object_t>()) {
 			auto obj = luabridge::newTable(L);
-			for (nlohmann::json::const_iterator it = json.begin(); it != json.end(); ++it) {
-				obj[it.key().c_str()] = jsonToLua(L, *it);
+			auto& jsonObject = json.get<glz::json_t::object_t>();
+			for (const auto& pair : jsonObject) {
+				obj[pair.first.c_str()] = jsonToLua(L, pair.second);
 			}
 
 			return obj;
-		} else if (json.is_array()) {
-			auto obj = luabridge::newTable(L);
-			unsigned long i = 1;
-			for (const auto& it : json) {
-				obj[i++] = jsonToLua(L, it);
+		} else if (json.holds<glz::json_t::array_t>()) {
+			auto arr = luabridge::newTable(L);
+			auto& jsonArray = json.get<glz::json_t::array_t>();
+			for (size_t i = 0; i < jsonArray.size(); ++i) {
+				arr[i + 1] = jsonToLua(L, jsonArray[i]);
 			}
 
-			return obj;
+			return arr;
 		}
 
 		throw std::runtime_error("Unknown json type");
 	}
 
-	nlohmann::json LuaUtils::luaToJsonObject(const luabridge::LuaRef& ref) {
-		nlohmann::json result = {};
+	glz::json_t LuaUtils::luaToJsonObject(const luabridge::LuaRef& ref) {
+		glz::json_t result = {};
 		if (!ref.isTable()) return result;
 
 		for (auto pair : luabridge::pairs(ref)) {
@@ -218,7 +219,7 @@ namespace rawrbox {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 
 		lua_getfield(L, LUA_ENVIRONINDEX, varId.c_str());
-		if (!lua_isstring(L, -1)) throw std::runtime_error(fmt::format("Invalid lua env variable '{}'", varId));
+		if (lua_isstring(L, -1) == 0) throw std::runtime_error(fmt::format("Invalid lua env variable '{}'", varId));
 
 		return lua_tostring(L, -1);
 	}
@@ -232,7 +233,7 @@ namespace rawrbox {
 
 		auto pth = path.generic_string();
 		if (pth.starts_with("#")) {
-			auto slashPos = pth.find("/"); // Find the first /
+			auto slashPos = pth.find('/'); // Find the first /
 			return pth.substr(slashPos + 1);
 		} // System path
 
@@ -244,16 +245,18 @@ namespace rawrbox {
 		// content/blabalba.png = my current mod
 		if (!modPath.empty() && pth.front() != '@') {
 			return std::filesystem::path(fmt::format("{}/{}", modPath.generic_string(), pth)).string(); // Becomes mods/mymod/content/blabalba.png
-		} else if (pth.front() == '@') {
-			auto slashPos = pth.find("/"); // Find the first /
+		}
+
+		if (pth.front() == '@') {
+			auto slashPos = pth.find('/'); // Find the first /
 			std::string cleanPath = pth.substr(slashPos + 1);
 
 			// @/textures/blabalba.png = c++ content
 			if (pth.rfind("@/", 0) == 0) { // C++
 				return std::filesystem::path(fmt::format("content/{}", cleanPath)).string();
-			} else { // @otherMod/textures/blabalba.png = @othermod content
-				return std::filesystem::path(fmt::format("{}/{}", pth.substr(1, slashPos - 1), cleanPath)).string();
 			}
+			// @otherMod/textures/blabalba.png = @othermod content
+			return std::filesystem::path(fmt::format("{}/{}", pth.substr(1, slashPos - 1), cleanPath)).string();
 		}
 
 		return pth;

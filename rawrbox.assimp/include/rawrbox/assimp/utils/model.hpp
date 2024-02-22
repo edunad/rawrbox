@@ -8,11 +8,12 @@ namespace rawrbox {
 	class AssimpUtils {
 	public:
 		template <typename M = MaterialUnlit>
+			requires(std::derived_from<M, rawrbox::MaterialBase>)
 		static rawrbox::Mesh<typename M::vertexBufferType> extractMesh(const rawrbox::AssimpImporter& model, size_t indx) {
-			auto& meshes = model.meshes;
+			const auto& meshes = model.meshes;
 			if (meshes.empty() || indx < 0 || indx >= meshes.size()) throw rawrbox::Logger::err("RawrBox-AssimpUtils", "Failed to extract mesh '{}'!", indx);
 
-			auto& assimpMesh = meshes[indx];
+			const auto& assimpMesh = meshes[indx];
 
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 			mesh.name = assimpMesh.name;
@@ -21,7 +22,7 @@ namespace rawrbox {
 
 			// Textures ---
 			if (assimpMesh.material != nullptr) {
-				auto mat = assimpMesh.material;
+				auto* mat = assimpMesh.material;
 				mesh.setWireframe(mat->wireframe);
 				mesh.setTransparentBlending(mat->alpha);
 				mesh.setCulling(mat->doubleSided ? Diligent::CULL_MODE::CULL_MODE_NONE : Diligent::CULL_MODE::CULL_MODE_BACK);
@@ -63,7 +64,7 @@ namespace rawrbox {
 			} else {
 				mesh.vertices.reserve(assimpMesh.vertices.size());
 
-				for (auto& v : assimpMesh.vertices) {
+				for (const auto& v : assimpMesh.vertices) {
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
 						mesh.vertices.push_back(rawrbox::VertexNormData(v.position, v.uv, v.normal, v.tangent, v.color));
 					} else if constexpr (supportsBones<typename M::vertexBufferType>) {

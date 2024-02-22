@@ -18,6 +18,6 @@ namespace rawrbox {
 
 	class HTTP {
 	public:
-		static void request(const std::string& url, const HTTPMethod method, const std::map<std::string, std::string>& headers, std::function<void(int, std::map<std::string, std::string>, std::string)> callback, int timeout = 10000);
+		static void request(const std::string& url, HTTPMethod method, const std::map<std::string, std::string>& headers, const std::function<void(int, std::map<std::string, std::string>, std::string)>& callback, int timeout = 10000);
 	};
 } // namespace rawrbox

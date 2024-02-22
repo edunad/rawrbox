@@ -29,7 +29,7 @@ namespace rawrbox {
 	}
 
 	void RenderUtils::renderQUAD(const rawrbox::TextureBase& texture) {
-		auto context = rawrbox::RENDERER->context();
+		auto* context = rawrbox::RENDERER->context();
 		context->SetPipelineState(_pipe);
 
 		// SETUP VERTEX UNIFORMS ----------------------------

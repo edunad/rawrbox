@@ -75,7 +75,7 @@ namespace rawrbox {
 		if (!this->hasParent()) return this->getPos();
 
 		rawrbox::Vector2f ret;
-		auto parent = this->getParent();
+		auto* parent = this->getParent();
 		while ((parent = parent->getParent()) != nullptr) {
 			ret += parent->getPos();
 		}

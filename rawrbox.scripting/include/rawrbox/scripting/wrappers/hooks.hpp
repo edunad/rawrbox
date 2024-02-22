@@ -7,7 +7,7 @@
 
 namespace rawrbox {
 	struct Hook {
-		std::string name = "";
+		std::string name;
 		luabridge::LuaRef func;
 
 		Hook(std::string name_, luabridge::LuaRef func_) : name(std::move(name_)), func(std::move(func_)) {}

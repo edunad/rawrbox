@@ -32,7 +32,7 @@ namespace rawrbox {
 		_console->print(text, type.value_or(rawrbox::PrintType::LOG));
 	}
 
-	bool ConsoleWrapper::registerMethod(const std::string& command, const luabridge::LuaRef& callback, std::optional<std::string> description, std::optional<uint32_t> flags) {
+	bool ConsoleWrapper::registerMethod(const std::string& command, const luabridge::LuaRef& callback, const std::optional<std::string>& description, std::optional<uint32_t> flags) {
 		if (_console == nullptr) throw std::runtime_error("Console instance not set!");
 		if (!callback.isCallable()) throw std::runtime_error("Invalid callback argument");
 

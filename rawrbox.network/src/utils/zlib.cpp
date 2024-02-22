@@ -5,7 +5,7 @@
 #include <bit>
 
 namespace rawrbox {
-	std::vector<uint8_t> ZLib::decode(std::vector<uint8_t>::const_iterator begin, std::vector<uint8_t>::const_iterator end) {
+	std::vector<uint8_t> ZLib::decode(const std::vector<uint8_t>::const_iterator& begin, const std::vector<uint8_t>::const_iterator& end) {
 		z_stream infstream;
 		infstream.zalloc = nullptr;
 		infstream.zfree = nullptr;
@@ -54,7 +54,7 @@ namespace rawrbox {
 		return decoded;
 	}
 
-	std::vector<uint8_t> ZLib::encode(std::vector<uint8_t>::const_iterator begin, std::vector<uint8_t>::const_iterator end) {
+	std::vector<uint8_t> ZLib::encode(const std::vector<uint8_t>::const_iterator& begin, const std::vector<uint8_t>::const_iterator& end) {
 		z_stream defstream;
 		defstream.zalloc = Z_NULL;
 		defstream.zfree = Z_NULL;

@@ -25,7 +25,7 @@ namespace rawrbox {
 		this->_md->fontBold = rawrbox::DEBUG_FONT_BOLD;
 
 		// SETUP UI ---
-		auto& size = this->getSize();
+		const auto& size = this->getSize();
 		this->_input = this->createChild<rawrbox::UIInput>();
 		this->_input->setFont(rawrbox::DEBUG_FONT_REGULAR);
 		this->_input->setSize({size.x, 18});
@@ -67,7 +67,7 @@ namespace rawrbox {
 		};
 
 		this->_input->onTextUpdate += [this]() {
-			auto& text = this->_input->getText();
+			const auto& text = this->_input->getText();
 			this->_commandHelp.clear();
 
 			if (!text.empty()) {
@@ -85,7 +85,7 @@ namespace rawrbox {
 		};
 
 		this->_input->onEnter += [this]() {
-			auto& text = this->_input->getText();
+			const auto& text = this->_input->getText();
 
 			if (!text.empty()) {
 				// Print the executed command
@@ -187,7 +187,7 @@ namespace rawrbox {
 			entry.tagWidth = rawrbox::DEBUG_FONT_BOLD->getStringSize(entry.tag).x;
 
 			// Merge logs
-			if (this->_entries.size() > 0 && this->_entries.back().type == log.type) {
+			if (!this->_entries.empty() && this->_entries.back().type == log.type) {
 				this->_entries.back().msg += "\n" + log.log;
 				this->_entries.back().height += rawrbox::DEBUG_FONT_BOLD->getStringSize(log.log).y;
 			} else {
@@ -203,7 +203,7 @@ namespace rawrbox {
 		// Draw top background
 		stencil.drawBox({}, {size.x, size.y - this->_input->getSize().y}, Color::RGBHex(0x0c0c0c));
 
-		for (auto& log : entries) {
+		for (const auto& log : entries) {
 			float sizeY = log.height + this->_textPadding * 2;
 
 			// skip out of view ones
@@ -230,7 +230,7 @@ namespace rawrbox {
 		auto size = this->getSize();
 		float yPos = 0;
 
-		for (auto& log : entries) {
+		for (const auto& log : entries) {
 			float sizeY = log.height + this->_textPadding * 2;
 
 			// skip out of view ones
@@ -276,7 +276,7 @@ namespace rawrbox {
 	void UIConsole::afterDraw(rawrbox::Stencil& stencil) {
 		if (this->_overlay == nullptr) return;
 
-		auto& size = this->getSize();
+		const auto& size = this->getSize();
 		auto overlaySize = this->_overlay->getSize().cast<float>() / 2.F;
 
 		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xffffff01), {}, {size.x / overlaySize.x, size.y / overlaySize.y});

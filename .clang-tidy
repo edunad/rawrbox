@@ -5,7 +5,8 @@ Checks: clang-diagnostic-*
   modernize-*
   hicpp-*
   misc-unused-*
-  misc-include-cleaner
+  readability-*
+  performance-*
   -cppcoreguidelines-avoid-do-while
   -cppcoreguidelines-pro-bounds-constant-array-index
   -modernize-use-trailing-return-type
@@ -22,6 +23,12 @@ Checks: clang-diagnostic-*
   -cppcoreguidelines-narrowing-conversions
   -hicpp-explicit-conversions
   -clang-analyzer-optin.cplusplus.UninitializedObject
+  -modernize-use-trailing-return-type
+  -readability-braces-around-statements
+  -readability-magic-numbers
+  -readability-identifier-length
+  -readability-function-cognitive-complexity
+  -readability-else-after-return
 WarningsAsErrors: "*"
 HeaderFilterRegex: ""
 AnalyzeTemporaryDtors: false

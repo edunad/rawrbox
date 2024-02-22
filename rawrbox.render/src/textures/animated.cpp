@@ -12,7 +12,7 @@ namespace rawrbox {
 
 	void TextureAnimatedBase::internalLoad(const std::vector<uint8_t>& /*_buffer*/, bool /*_useFallback*/) { throw this->_logger->error("Not implemented"); }
 	void TextureAnimatedBase::internalUpdate() {
-		auto context = rawrbox::RENDERER->context();
+		auto* context = rawrbox::RENDERER->context();
 
 		Diligent::Box UpdateBox;
 		UpdateBox.MinX = 0;
@@ -39,9 +39,9 @@ namespace rawrbox {
 			if (!this->_loop) {
 				this->setPaused(true);
 				return;
-			} else {
-				this->_currentFrame = 0;
 			}
+
+			this->_currentFrame = 0;
 		}
 
 		this->_cooldown = static_cast<int64_t>(this->_frames[this->_currentFrame].delay / this->_speed) + rawrbox::TimeUtils::curtime();

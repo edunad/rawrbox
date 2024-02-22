@@ -2,7 +2,6 @@
 #include <rawrbox/assimp/importer.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/textures/image.hpp>
-#include <rawrbox/utils/pack.hpp>
 #include <rawrbox/utils/string.hpp>
 
 #include <magic_enum.hpp>
@@ -67,7 +66,7 @@ namespace rawrbox {
 				std::unique_ptr<rawrbox::TextureImage> texture = nullptr;
 
 				if (basename.starts_with("*")) { // Embedded
-					auto aiTex = scene->GetEmbeddedTexture(textPath.generic_string().c_str());
+					const auto* aiTex = scene->GetEmbeddedTexture(textPath.generic_string().c_str());
 					texture = std::make_unique<rawrbox::TextureImage>(std::bit_cast<uint8_t*>(aiTex->pcData), aiTex->mWidth * std::max(aiTex->mHeight, 1U));
 				} else {
 					auto parentFolder = std::filesystem::path(this->fileName).parent_path();
@@ -158,7 +157,7 @@ namespace rawrbox {
 				constexpr auto assimp_mat = magic_enum::enum_entries<aiTextureType>();
 
 				this->_logger->info("Material: {}", fmt::format(fmt::fg(fmt::color::cyan), pMaterial->GetName().C_Str()));
-				for (auto& m : assimp_mat)
+				for (const auto& m : assimp_mat)
 					dump(pMaterial, m.first);
 			}
 
@@ -265,7 +264,7 @@ namespace rawrbox {
 					std::function<void(std::unique_ptr<Bone>&, int)> printBone;
 					printBone = [&printBone](std::unique_ptr<Bone>& bn, int deep) -> void {
 						for (auto& c : bn->children) {
-							std::string d = "";
+							std::string d;
 							for (int i = 0; i < deep; i++)
 								d += "\t";
 
@@ -335,7 +334,7 @@ namespace rawrbox {
 
 	void AssimpImporter::generateSkeleton(rawrbox::Skeleton& skeleton, const aiNode* pNode, rawrbox::Bone& parent) {
 		for (size_t i = 0; i < pNode->mNumChildren; i++) {
-			auto child = pNode->mChildren[i];
+			auto* child = pNode->mChildren[i];
 
 			std::string boneName = child->mName.data;
 			std::string boneKey = fmt::format("{}-{}", skeleton.name, boneName);
@@ -364,7 +363,7 @@ namespace rawrbox {
 
 	aiNode* AssimpImporter::findRootSkeleton(const aiScene* sc, const std::string& meshName) {
 		// Attempt to find armature
-		auto aiNode = sc->mRootNode->FindNode(meshName.c_str());
+		auto* aiNode = sc->mRootNode->FindNode(meshName.c_str());
 		if (aiNode == nullptr) throw this->_logger->error("Failed to find node '{}' on scene root", meshName);
 
 		auto fnd = this->skeletons.find(aiNode->mName.data);
@@ -384,7 +383,7 @@ namespace rawrbox {
 	}
 
 	void AssimpImporter::markMeshAnimated(const std::string& meshName, const std::string& search) {
-		auto m = std::find_if(this->meshes.begin(), this->meshes.end(), [&](rawrbox::AssimpMesh x) { return x.name == search; });
+		auto m = std::find_if(this->meshes.begin(), this->meshes.end(), [&](const rawrbox::AssimpMesh& x) { return x.name == search; });
 		if (m == this->meshes.end()) return;
 		(*m).animated = true;
 
@@ -416,13 +415,13 @@ namespace rawrbox {
 			// for each channel (frame / keyframe)
 			// extract position, rotation, scale and timings
 			for (size_t channelIndex = 0; channelIndex < anim.mNumChannels; channelIndex++) {
-				auto aChannel = anim.mChannels[channelIndex];
+				auto* aChannel = anim.mChannels[channelIndex];
 				std::string meshName = aChannel->mNodeName.data;
 
 				rawrbox::AnimationFrame ourChannel = {};
 
 				// ANIMATION MAPPING -----
-				auto pNode = this->findRootSkeleton(sc, meshName.c_str());
+				auto* pNode = this->findRootSkeleton(sc, meshName);
 				if (pNode != nullptr) {
 					std::string armature = pNode->mName.data;
 					if (armature == meshName) continue;
@@ -517,7 +516,7 @@ namespace rawrbox {
 		for (size_t n = 0; n < sc->mNumLights; ++n) {
 			auto& aiLight = *sc->mLights[n];
 
-			auto lightNode = sc->mRootNode->FindNode(aiLight.mName.data);
+			auto* lightNode = sc->mRootNode->FindNode(aiLight.mName.data);
 			if (lightNode == nullptr) continue;
 
 			rawrbox::AssimpLight light;
@@ -667,12 +666,11 @@ namespace rawrbox {
 
 			if (attemptedFallback) {
 				throw this->_logger->error("Failed to load fallback model!");
-			} else {
-				scene = aiImportFile("./assets/models/error.gltf", this->assimpFlags); // fallback
+			}
 
-				if (scene == nullptr) {
-					throw this->_logger->error("Failed to load fallback '{}' ──> '{}'", this->fileName.generic_string(), aiGetErrorString());
-				}
+			scene = aiImportFile("./assets/models/error.gltf", this->assimpFlags); // fallback
+			if (scene == nullptr) {
+				throw this->_logger->error("Failed to load fallback '{}' ──> '{}'", this->fileName.generic_string(), aiGetErrorString());
 			}
 		}
 
@@ -685,14 +683,14 @@ namespace rawrbox {
 			printMetaData = [&printMetaData](aiMetadata* meta) -> void {
 				for (uint8_t i = 0; i < meta->mNumProperties; i++) {
 					auto data = meta->mValues[i];
-					std::string str = "";
+					std::string str;
 
 					switch (data.mType) {
 						case AI_AISTRING:
 							str = fmt::format("{}", static_cast<aiString*>(data.mData)->data);
 							break;
 						case AI_BOOL:
-							str = fmt::format("{}", std::to_string(*static_cast<bool*>(data.mData)));
+							str = fmt::format("{}", std::to_string(static_cast<int>(*static_cast<bool*>(data.mData))));
 							break;
 						case AI_INT32:
 							str = fmt::format("{}", std::to_string(*static_cast<int32_t*>(data.mData)));
@@ -708,7 +706,7 @@ namespace rawrbox {
 							break;
 						case AI_AIVECTOR3D:
 							{
-								auto vec = static_cast<aiVector3D*>(data.mData);
+								auto* vec = static_cast<aiVector3D*>(data.mData);
 								str = fmt::format("{},{},{}", vec->x, vec->y, vec->z);
 							}
 							break;
@@ -749,7 +747,7 @@ namespace rawrbox {
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES) > 0) {
 			this->_logger->info("'{}' BLEND SHAPES", fmt::format(fmt::fg(fmt::color::cyan), this->fileName.generic_string()));
 
-			std::string old = "";
+			std::string old;
 			for (auto& s : this->blendShapes) {
 				auto split = rawrbox::StrUtils::split(s.first, '-');
 				auto shapeId = split[split.size() - 1];

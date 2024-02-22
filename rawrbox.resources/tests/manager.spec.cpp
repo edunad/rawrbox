@@ -15,9 +15,9 @@ TEST_CASE("RESOURCES should behave as expected", "[rawrbox::RESOURCES]") {
 	}
 
 	SECTION("rawrbox::RESOURCES::preLoadFile") {
-		auto& ld = rawrbox::RESOURCES::getLoaders().back();
+		const auto& ld = rawrbox::RESOURCES::getLoaders().back();
 
-		REQUIRE(ld->getPreload().size() == 0);
+		REQUIRE(ld->getPreload().empty());
 		rawrbox::RESOURCES::preLoadFile("./assets/json/test.json");
 		REQUIRE(ld->getPreload().size() == 1);
 	}

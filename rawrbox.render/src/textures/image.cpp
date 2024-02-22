@@ -69,14 +69,14 @@ namespace rawrbox {
 		if (image == nullptr) {
 			stbi_image_free(image);
 
-			auto failure = stbi_failure_reason();
+			const auto* failure = stbi_failure_reason();
 			if (useFallback) {
 				this->loadFallback();
 				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), failure);
 				return;
-			} else {
-				throw this->_logger->error("Error loading image: {}", failure);
 			}
+
+			throw this->_logger->error("Error loading image: {}", failure);
 		}
 
 		this->_pixels.resize(static_cast<uint32_t>(this->_size.x * this->_size.y) * this->_channels);

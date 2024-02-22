@@ -30,7 +30,7 @@
 - 3D text
 - 2D stencil drawing
 - Fonts (ttf) using [stb](https://github.com/nothings/stb)
-- JSON loading using [nlohmann json](https://github.com/nlohmann/json)
+- JSON loading using [glaze](https://github.com/stephenberry/glaze)
 - Images loading (png, jpeg, tga, bitmap, gif) using [stb](https://github.com/nothings/stb), SVG using [lunasvg](https://github.com/sammycage/lunasvg), WEBP using [libwebp](https://github.com/webmproject/libwebp)
 - Video only using [webm](https://github.com/webmproject/libwebm)
 - Sounds using [BASS](https://www.un4seen.com/) lib
@@ -42,7 +42,7 @@
 - 2D Physics system using [Muli](https://github.com/Sopiro/Muli)
 - Decal system
 - Instancing support
-- Scripting / modding support with LUA using [sol2](https://github.com/ThePhD/sol2) and [luajit2](https://github.com/openresty/luajit2)
+- Scripting / modding support with LUA using [luabridge3](https://github.com/kunitoki/LuaBridge3) and [luau](https://github.com/luau-lang/luau)
 - Post-processing effects support
 - HTTP / HTTPS requests using curl + [libcpr](https://github.com/libcpr/cpr)
 - Packet networking support
@@ -78,33 +78,31 @@
 
 # CMAKE OPTIONS
 
-| OPTION NAME                                      | NOTE                                                                                                      |
-| :----------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| `RAWRBOX_BUILD_TESTING`                          | Builds & enables project tests                                                                            |
-| --                                               | --                                                                                                        |
-| `RAWRBOX_OUTPUT_BIN`                             | The output build folder. Default is `bin`                                                                 |
-| `RAWRBOX_CONTENT_FOLDER`                         | The content folder to output assets. Default is `assets`                                                  |
-| `RAWRBOX_SHADERS_FOLDER`                         | The content folder to output shaders. Default is `shaders`                                                |
-| --                                               | --                                                                                                        |
-| `RAWRBOX_USE_WAYLAND`                            | Enables WAYLAND compiling on LINUX                                                                        |
-| --                                               | --                                                                                                        |
-| `RAWRBOX_BUILD_QHULL`                            | Builds QHull util                                                                                         |
-| `RAWRBOX_BUILD_SAMPLES`                          | Builds the project sample                                                                                 |
-| `RAWRBOX_BUILD_RAWRBOX_UI`                       | Builds and includes ui                                                                                    |
-| `RAWRBOX_BUILD_RAWRBOX_RESOURCES`                | Builds and resouces manager (aka handling and storing loaded resources)                                   |
-| `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`               | Builds the 3D physics engine                                                                              |
-| `RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS`               | Builds the 2D physics engine                                                                              |
-| `RAWRBOX_BUILD_RAWRBOX_NETWORK`                  | Builds network support                                                                                    |
-| `RAWRBOX_BUILD_RAWRBOX_BASS`                     | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️        |
-| `RAWRBOX_BUILD_RAWRBOX_ASSIMP`                   | Enables assimp model loading                                                                              |
-| `RAWRBOX_BUILD_RAWRBOX_WEBM`                     | Enables WEBM loading                                                                                      |
-| --                                               | --                                                                                                        |
-| `RAWRBOX_DEV_MODE`                               | Enables all the modules, used for rawrbox development                                                     |
-| --                                               | --                                                                                                        |
-| `RAWRBOX_BUILD_RAWRBOX_SCRIPTING`                | Enables lua & modding support                                                                             |
-| ~~`RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT`~~ | ~~Enable scripting LuaJIT support~~ (Currently broken [#73](https://github.com/edunad/rawrbox/issues/73)) |
-| --                                               | --                                                                                                        |
-| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME`       | Builds libraries with MSVC Multithreaded runtime (Auto-enabled if jolt is used)                           |
+| OPTION NAME                                | NOTE                                                                                               |
+| :----------------------------------------- | :------------------------------------------------------------------------------------------------- |
+| `RAWRBOX_BUILD_TESTING`                    | Builds & enables project tests                                                                     |
+| `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          |
+| --                                         | --                                                                                                 |
+| `RAWRBOX_OUTPUT_BIN`                       | The output build folder. Default is `bin`                                                          |
+| `RAWRBOX_CONTENT_FOLDER`                   | The content folder to output assets. Default is `assets`                                           |
+| --                                         | --                                                                                                 |
+| `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 |
+| --                                         | --                                                                                                 |
+| `RAWRBOX_BUILD_QHULL`                      | Builds QHull util                                                                                  |
+| `RAWRBOX_BUILD_RAWRBOX_UI`                 | Builds and includes ui                                                                             |
+| `RAWRBOX_BUILD_RAWRBOX_RESOURCES`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
+| `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`         | Builds the 3D physics engine                                                                       |
+| `RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS`         | Builds the 2D physics engine                                                                       |
+| `RAWRBOX_BUILD_RAWRBOX_NETWORK`            | Builds network support                                                                             |
+| `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
+| `RAWRBOX_BUILD_RAWRBOX_ASSIMP`             | Enables assimp model loading                                                                       |
+| `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM loading                                                                               |
+| `RAWRBOX_BUILD_RAWRBOX_SCRIPTING`          | Enables lua & modding support                                                                      |
+| `RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE`   | Enable io lib (loading and saving files on the data folder)                                        |
+| --                                         | --                                                                                                 |
+| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Auto-enabled if jolt is used)                    |
+| --                                         | --                                                                                                 |
+| `RAWRBOX_DEV_MODE`                         | Enables all the modules, used for rawrbox development                                              |
 
 <br/><br/>
 
@@ -120,29 +118,29 @@
 
 # EXTERNAL DEPENDENCIES
 
-| LIB                 | NOTE                                                |
-| :------------------ | :-------------------------------------------------- |
-| DiligentCore        |                                                     |
-| glfw                |                                                     |
-| nlohmann_json       | Used for JSON loading                               |
-| fmt                 | Used for text formatting                            |
-| utfcpp              | Used for utf support                                |
-| stb/image           | Used for loading images (png,gif,jpeg)              |
-| stb/image_write     | Used for writting images                            |
-| stb/freetype        | Used for loading fonts                              |
-| thread-pool         | Used for managing async threading                   |
-| qhull               | Used for calculating convex hulls from given points |
-| assimp              | Used for loading models                             |
-| catch2              | Used for testing                                    |
-| bass                | Used for loading sounds                             |
-| JoltPhysics         | Used for managing 3D physics                        |
-| muli                | Used for managing 2D physics                        |
-| webmlib & vpx       | Used for loading webm                               |
-| lua & sol2 & luajit | Used for loading & managing lua scripting           |
-| curl + libcpr       | Used for HTTP / HTTPS requests                      |
-| lunasvg             | Used for SVG loading                                |
-| cpptrace            | Used for easy error tracing                         |
-| libwebp             | Used for WEBP loading                               |
+| LIB              | NOTE                                                |
+| :--------------- | :-------------------------------------------------- |
+| DiligentCore     |                                                     |
+| glfw             |                                                     |
+| glaze            | Used for JSON loading                               |
+| fmt              | Used for text formatting                            |
+| utfcpp           | Used for utf support                                |
+| stb/image        | Used for loading images (png,gif,jpeg)              |
+| stb/image_write  | Used for writting images                            |
+| stb/freetype     | Used for loading fonts                              |
+| thread-pool      | Used for managing async threading                   |
+| qhull            | Used for calculating convex hulls from given points |
+| assimp           | Used for loading models                             |
+| catch2           | Used for testing                                    |
+| bass             | Used for loading sounds                             |
+| JoltPhysics      | Used for managing 3D physics                        |
+| muli             | Used for managing 2D physics                        |
+| webmlib & vpx    | Used for loading webm                               |
+| luabridge + luau | Used for loading & managing lua scripting           |
+| curl + libcpr    | Used for HTTP / HTTPS requests                      |
+| lunasvg          | Used for SVG loading                                |
+| cpptrace         | Used for easy error tracing                         |
+| libwebp          | Used for WEBP loading                               |
 
 # BUILDING
 

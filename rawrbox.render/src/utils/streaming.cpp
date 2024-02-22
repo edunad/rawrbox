@@ -4,7 +4,7 @@
 
 namespace rawrbox {
 	StreamingBuffer::StreamingBuffer(const std::string& name, Diligent::BIND_FLAGS flags, uint32_t size, size_t contexts) : _bufferSize(size), _mapInfo(contexts) {
-		auto device = rawrbox::RENDERER->device();
+		auto* device = rawrbox::RENDERER->device();
 
 		Diligent::BufferDesc buff;
 		buff.Name = name.c_str();

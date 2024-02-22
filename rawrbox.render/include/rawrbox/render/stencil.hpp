@@ -27,7 +27,7 @@ namespace rawrbox {
 		//  ----------
 
 		PosUVColorVertexData() = default;
-		PosUVColorVertexData(const uint16_t& _textureID, const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, const rawrbox::Color& _cl) : textureID(_textureID), pos(_pos.pack()), color(_cl.pack()), uv(_uv) {}
+		PosUVColorVertexData(const uint32_t& _textureID, const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, const rawrbox::Color& _cl) : textureID(_textureID), pos(_pos.pack()), color(_cl.pack()), uv(_uv) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout() {
 			return {
@@ -116,7 +116,7 @@ namespace rawrbox {
 		// NOLINTEND(hicpp-explicit-conversions)
 		StencilOutline(float _thickness, float _stipple) : thickness(_thickness), stipple(_stipple) {}
 
-		bool isSet() { return thickness > 0.F || stipple > 0.F; }
+		[[nodiscard]] bool isSet() const { return thickness > 0.F || stipple > 0.F; }
 
 		StencilOutline operator-(const StencilOutline& other) const {
 			return {this->thickness - other.thickness, this->stipple - other.stipple};
@@ -195,7 +195,7 @@ namespace rawrbox {
 		void pushVertice(const uint32_t& textureID, rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col);
 		void pushIndices(std::vector<uint32_t> ind);
 
-		void applyRotation(rawrbox::Vector2f& vert);
+		void applyRotation(rawrbox::Vector2f& vert) const;
 		void applyScale(rawrbox::Vector2f& vert);
 		// --------------------
 
@@ -262,7 +262,7 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ OTHER
-		[[nodiscard]] virtual const std::vector<rawrbox::StencilDraw> getDrawCalls() const;
+		[[nodiscard]] virtual std::vector<rawrbox::StencilDraw> getDrawCalls() const;
 		virtual void clear();
 		// --------------------
 	};

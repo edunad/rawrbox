@@ -155,7 +155,6 @@ target_link_libraries(
             ${RAWRBOX_EXTRA_LIBS}
             # ----------------------------
 
-            magic_enum::magic_enum
             utf8cpp
             lunasvg
             webpdemux

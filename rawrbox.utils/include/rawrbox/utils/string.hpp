@@ -13,6 +13,6 @@ namespace rawrbox {
 		static bool isNumeric(const std::string& str);
 		static std::string extractNumbers(std::string str);
 
-		static std::vector<std::string> split(const std::string& haystack, char needle);
+		static std::vector<std::string> split(const std::string& haystack, char needle, bool filterEmpty = false);
 	};
 } // namespace rawrbox
