@@ -234,230 +234,124 @@ namespace rawrbox {
 	uint32_t KeyUtils::strToKey(const std::string& rawKey) {
 		auto key = rawrbox::StrUtils::toUpper(rawKey);
 
-		if (key == " ")
-			return KEY_SPACE;
-		else if (key == "'")
-			return KEY_APOSTROPHE;
-		else if (key == ",")
-			return KEY_COMMA;
-		else if (key == "-")
-			return KEY_MINUS;
-		else if (key == ".")
-			return KEY_PERIOD;
-		else if (key == "/")
-			return KEY_SLASH;
+		if (key == " ") return KEY_SPACE;
+		if (key == "'") return KEY_APOSTROPHE;
+		if (key == ",") return KEY_COMMA;
+		if (key == "-") return KEY_MINUS;
+		if (key == ".") return KEY_PERIOD;
+		if (key == "/") return KEY_SLASH;
 
-		else if (key == "0")
-			return KEY_0;
-		else if (key == "1")
-			return KEY_1;
-		else if (key == "2")
-			return KEY_2;
-		else if (key == "3")
-			return KEY_3;
-		else if (key == "4")
-			return KEY_4;
-		else if (key == "5")
-			return KEY_5;
-		else if (key == "6")
-			return KEY_6;
-		else if (key == "7")
-			return KEY_7;
-		else if (key == "8")
-			return KEY_8;
-		else if (key == "9")
-			return KEY_9;
+		if (key == "0") return KEY_0;
+		if (key == "1") return KEY_1;
+		if (key == "2") return KEY_2;
+		if (key == "3") return KEY_3;
+		if (key == "4") return KEY_4;
+		if (key == "5") return KEY_5;
+		if (key == "6") return KEY_6;
+		if (key == "7") return KEY_7;
+		if (key == "8") return KEY_8;
+		if (key == "9") return KEY_9;
 
-		else if (key == ";")
-			return KEY_SEMICOLON;
-		else if (key == "=")
-			return KEY_EQUAL;
+		if (key == ";") return KEY_SEMICOLON;
+		if (key == "=") return KEY_EQUAL;
 
-		else if (key == "A")
-			return KEY_A;
-		else if (key == "B")
-			return KEY_B;
-		else if (key == "C")
-			return KEY_C;
-		else if (key == "D")
-			return KEY_D;
-		else if (key == "E")
-			return KEY_E;
-		else if (key == "F")
-			return KEY_F;
-		else if (key == "G")
-			return KEY_G;
-		else if (key == "H")
-			return KEY_H;
-		else if (key == "I")
-			return KEY_I;
-		else if (key == "J")
-			return KEY_J;
-		else if (key == "K")
-			return KEY_K;
-		else if (key == "L")
-			return KEY_L;
-		else if (key == "M")
-			return KEY_M;
-		else if (key == "N")
-			return KEY_N;
-		else if (key == "O")
-			return KEY_O;
-		else if (key == "P")
-			return KEY_P;
-		else if (key == "Q")
-			return KEY_Q;
-		else if (key == "R")
-			return KEY_R;
-		else if (key == "S")
-			return KEY_S;
-		else if (key == "T")
-			return KEY_T;
-		else if (key == "U")
-			return KEY_U;
-		else if (key == "V")
-			return KEY_V;
-		else if (key == "W")
-			return KEY_W;
-		else if (key == "X")
-			return KEY_X;
-		else if (key == "Y")
-			return KEY_Y;
-		else if (key == "Z")
-			return KEY_Z;
+		if (key == "A") return KEY_A;
+		if (key == "B") return KEY_B;
+		if (key == "C") return KEY_C;
+		if (key == "D") return KEY_D;
+		if (key == "E") return KEY_E;
+		if (key == "F") return KEY_F;
+		if (key == "G") return KEY_G;
+		if (key == "H") return KEY_H;
+		if (key == "I") return KEY_I;
+		if (key == "J") return KEY_J;
+		if (key == "K") return KEY_K;
+		if (key == "L") return KEY_L;
+		if (key == "M") return KEY_M;
+		if (key == "N") return KEY_N;
+		if (key == "O") return KEY_O;
+		if (key == "P") return KEY_P;
+		if (key == "Q") return KEY_Q;
+		if (key == "R") return KEY_R;
+		if (key == "S") return KEY_S;
+		if (key == "T") return KEY_T;
+		if (key == "U") return KEY_U;
+		if (key == "V") return KEY_V;
+		if (key == "W") return KEY_W;
+		if (key == "X") return KEY_X;
+		if (key == "Y") return KEY_Y;
+		if (key == "Z") return KEY_Z;
 
-		else if (key == "[")
-			return KEY_LEFT_BRACKET;
-		else if (key == "\\")
-			return KEY_BACKSLASH;
-		else if (key == "]")
-			return KEY_RIGHT_BRACKET;
-		else if (key == "`")
-			return KEY_GRAVE_ACCENT;
+		if (key == "[") return KEY_LEFT_BRACKET;
+		if (key == "\\") return KEY_BACKSLASH;
+		if (key == "]") return KEY_RIGHT_BRACKET;
+		if (key == "`") return KEY_GRAVE_ACCENT;
 
-		else if (key == "ESCAPE")
-			return KEY_ESCAPE;
-		else if (key == "ENTER")
-			return KEY_ENTER;
-		else if (key == "TAB")
-			return KEY_TAB;
-		else if (key == "BACKSPACE")
-			return KEY_BACKSPACE;
-		else if (key == "INSERT")
-			return KEY_INSERT;
-		else if (key == "DELETE")
-			return KEY_DELETE;
+		if (key == "ESCAPE") return KEY_ESCAPE;
+		if (key == "ENTER") return KEY_ENTER;
+		if (key == "TAB") return KEY_TAB;
+		if (key == "BACKSPACE") return KEY_BACKSPACE;
+		if (key == "INSERT") return KEY_INSERT;
+		if (key == "DELETE") return KEY_DELETE;
 
-		else if (key == "RIGHT")
-			return KEY_RIGHT;
-		else if (key == "LEFT")
-			return KEY_LEFT;
-		else if (key == "DOWN")
-			return KEY_DOWN;
-		else if (key == "UP")
-			return KEY_UP;
+		if (key == "RIGHT") return KEY_RIGHT;
+		if (key == "LEFT") return KEY_LEFT;
+		if (key == "DOWN") return KEY_DOWN;
+		if (key == "UP") return KEY_UP;
 
-		else if (key == "PAGE_UP")
-			return KEY_PAGE_UP;
-		else if (key == "PAGE_DOWN")
-			return KEY_PAGE_DOWN;
-		else if (key == "HOME")
-			return KEY_HOME;
-		else if (key == "END")
-			return KEY_END;
-		else if (key == "CAPS_LOCK")
-			return KEY_CAPS_LOCK;
-		else if (key == "SCROLL_LOCK")
-			return KEY_SCROLL_LOCK;
-		else if (key == "NUM_LOCK")
-			return KEY_NUM_LOCK;
-		else if (key == "PRINT_SCREEN")
-			return KEY_PRINT_SCREEN;
-		else if (key == "PAUSE")
-			return KEY_PAUSE;
+		if (key == "PAGE_UP") return KEY_PAGE_UP;
+		if (key == "PAGE_DOWN") return KEY_PAGE_DOWN;
+		if (key == "HOME") return KEY_HOME;
+		if (key == "END") return KEY_END;
+		if (key == "CAPS_LOCK") return KEY_CAPS_LOCK;
+		if (key == "SCROLL_LOCK") return KEY_SCROLL_LOCK;
+		if (key == "NUM_LOCK") return KEY_NUM_LOCK;
+		if (key == "PRINT_SCREEN") return KEY_PRINT_SCREEN;
+		if (key == "PAUSE") return KEY_PAUSE;
 
-		else if (key == "F1")
-			return KEY_F1;
-		else if (key == "F2")
-			return KEY_F2;
-		else if (key == "F3")
-			return KEY_F3;
-		else if (key == "F4")
-			return KEY_F4;
-		else if (key == "F5")
-			return KEY_F5;
-		else if (key == "F6")
-			return KEY_F6;
-		else if (key == "F7")
-			return KEY_F7;
-		else if (key == "F8")
-			return KEY_F8;
-		else if (key == "F9")
-			return KEY_F9;
-		else if (key == "F10")
-			return KEY_F10;
-		else if (key == "F11")
-			return KEY_F11;
-		else if (key == "F12")
-			return KEY_F12; // we don't use > F12
+		if (key == "F1") return KEY_F1;
+		if (key == "F2") return KEY_F2;
+		if (key == "F3") return KEY_F3;
+		if (key == "F4") return KEY_F4;
+		if (key == "F5") return KEY_F5;
+		if (key == "F6") return KEY_F6;
+		if (key == "F7") return KEY_F7;
+		if (key == "F8") return KEY_F8;
+		if (key == "F9") return KEY_F9;
+		if (key == "F10") return KEY_F10;
+		if (key == "F11") return KEY_F11;
+		if (key == "F12") return KEY_F12; // we don't use > F12
 
-		else if (key == "KP_0")
-			return KEY_KP_0;
-		else if (key == "KP_1")
-			return KEY_KP_1;
-		else if (key == "KP_2")
-			return KEY_KP_2;
-		else if (key == "KP_3")
-			return KEY_KP_3;
-		else if (key == "KP_4")
-			return KEY_KP_4;
-		else if (key == "KP_5")
-			return KEY_KP_5;
-		else if (key == "KP_6")
-			return KEY_KP_6;
-		else if (key == "KP_7")
-			return KEY_KP_7;
-		else if (key == "KP_8")
-			return KEY_KP_8;
-		else if (key == "KP_9")
-			return KEY_KP_9;
+		if (key == "KP_0") return KEY_KP_0;
+		if (key == "KP_1") return KEY_KP_1;
+		if (key == "KP_2") return KEY_KP_2;
+		if (key == "KP_3") return KEY_KP_3;
+		if (key == "KP_4") return KEY_KP_4;
+		if (key == "KP_5") return KEY_KP_5;
+		if (key == "KP_6") return KEY_KP_6;
+		if (key == "KP_7") return KEY_KP_7;
+		if (key == "KP_8") return KEY_KP_8;
+		if (key == "KP_9") return KEY_KP_9;
 
-		else if (key == "KP_DECIMAL")
-			return KEY_KP_DECIMAL;
-		else if (key == "KP_DIVIDE")
-			return KEY_KP_DIVIDE;
-		else if (key == "*")
-			return KEY_KP_MULTIPLY;
-		else if (key == "KP_SUBTRACT")
-			return KEY_KP_SUBTRACT;
-		else if (key == "+")
-			return KEY_KP_ADD;
-		else if (key == "KP_ENTER")
-			return KEY_KP_ENTER;
-		else if (key == "=")
-			return KEY_KP_EQUAL;
+		if (key == "KP_DECIMAL") return KEY_KP_DECIMAL;
+		if (key == "KP_DIVIDE") return KEY_KP_DIVIDE;
+		if (key == "*") return KEY_KP_MULTIPLY;
+		if (key == "KP_SUBTRACT") return KEY_KP_SUBTRACT;
+		if (key == "+") return KEY_KP_ADD;
+		if (key == "KP_ENTER") return KEY_KP_ENTER;
+		if (key == "=") return KEY_KP_EQUAL;
 
-		else if (key == "LEFT_SHIFT")
-			return KEY_LEFT_SHIFT;
-		else if (key == "LEFT_CONTROL")
-			return KEY_LEFT_CONTROL;
-		else if (key == "LEFT_ALT")
-			return KEY_LEFT_ALT;
-		else if (key == "LEFT_SUPER")
-			return KEY_LEFT_SUPER;
+		if (key == "LEFT_SHIFT") return KEY_LEFT_SHIFT;
+		if (key == "LEFT_CONTROL") return KEY_LEFT_CONTROL;
+		if (key == "LEFT_ALT") return KEY_LEFT_ALT;
+		if (key == "LEFT_SUPER") return KEY_LEFT_SUPER;
 
-		else if (key == "RIGHT_SHIFT")
-			return KEY_RIGHT_SHIFT;
-		else if (key == "RIGHT_CONTROL")
-			return KEY_RIGHT_CONTROL;
-		else if (key == "RIGHT_ALT")
-			return KEY_RIGHT_ALT;
-		else if (key == "RIGHT_SUPER")
-			return KEY_RIGHT_SUPER;
-		else if (key == "MENU")
-			return KEY_MENU;
+		if (key == "RIGHT_SHIFT") return KEY_RIGHT_SHIFT;
+		if (key == "RIGHT_CONTROL") return KEY_RIGHT_CONTROL;
+		if (key == "RIGHT_ALT") return KEY_RIGHT_ALT;
+		if (key == "RIGHT_SUPER") return KEY_RIGHT_SUPER;
+		if (key == "MENU") return KEY_MENU;
 
-		else
-			return 0;
+		return 0;
 	}
 } // namespace rawrbox
