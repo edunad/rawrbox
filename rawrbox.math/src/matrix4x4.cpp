@@ -23,7 +23,7 @@ namespace rawrbox {
 	void Matrix4x4::mul(const rawrbox::Matrix4x4& other) {
 		rawrbox::Matrix4x4 _result;
 
-		vec4MulMtx(&_result.mtx[0], &this->mtx[0], other.data());
+		vec4MulMtx(_result.mtx.data(), this->mtx.data(), other.data());
 		vec4MulMtx(&_result.mtx[4], &this->mtx[4], other.data());
 		vec4MulMtx(&_result.mtx[8], &this->mtx[8], other.data());
 		vec4MulMtx(&_result.mtx[12], &this->mtx[12], other.data());
@@ -35,7 +35,7 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 _result;
 		std::array<float, 4> m = {other.x, other.y, other.z, 1.F};
 
-		vec4MulMtx(&_result.mtx[0], m.data(), this->data());
+		vec4MulMtx(_result.mtx.data(), m.data(), this->data());
 		vec4MulMtx(&_result.mtx[4], m.data(), this->data());
 		vec4MulMtx(&_result.mtx[8], m.data(), this->data());
 		vec4MulMtx(&_result.mtx[12], m.data(), this->data());

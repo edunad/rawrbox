@@ -74,7 +74,7 @@ namespace rawrbox {
 		this->_currentDraw.indices.insert(this->_currentDraw.indices.end(), ind.begin(), ind.end());
 	}
 
-	void Stencil::applyRotation(rawrbox::Vector2f& vert) {
+	void Stencil::applyRotation(rawrbox::Vector2f& vert) const {
 		if (this->_rotation.rotation == 0) return;
 
 		rawrbox::Matrix4x4 translationMatrix = {};
@@ -131,7 +131,7 @@ namespace rawrbox {
 			this->drawLine(poly.verts[poly.indices.back()].pos, poly.verts[poly.indices.front()].pos, poly.verts[poly.indices.back()].col);
 
 		} else {
-			for (auto& v : poly.verts)
+			for (const auto& v : poly.verts)
 				this->pushVertice(textureID, v.pos, v.uv, v.col);
 
 			this->_currentDraw.indices.insert(this->_currentDraw.indices.end(), poly.indices.begin(), poly.indices.end());
@@ -363,7 +363,7 @@ namespace rawrbox {
 	void Stencil::internalDraw() {
 		if (this->_drawCalls.empty()) return;
 
-		auto context = rawrbox::RENDERER->context();
+		auto* context = rawrbox::RENDERER->context();
 		size_t contextID = 0;
 
 		for (auto& group : this->_drawCalls) {
@@ -511,7 +511,7 @@ namespace rawrbox {
 	// --------------------
 
 	// ------ OTHER
-	const std::vector<rawrbox::StencilDraw> Stencil::getDrawCalls() const { return this->_drawCalls; }
+	std::vector<rawrbox::StencilDraw> Stencil::getDrawCalls() const { return this->_drawCalls; }
 	void Stencil::clear() { this->_drawCalls.clear(); }
 	// --------------------
 } // namespace rawrbox

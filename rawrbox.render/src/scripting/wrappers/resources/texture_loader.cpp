@@ -11,16 +11,16 @@ namespace rawrbox {
 		if (!rawrbox::RESOURCES::isLoaded(fixedPath)) {
 			fmt::print("[RawrBox-Resources] Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath);
 
-			auto ptr = rawrbox::RESOURCES::loadFile<rawrbox::ResourceTexture>(fixedPath, loadFlags.value_or(0));
-			if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] '{}' not found!", fixedPath));
-
-			return ptr->get();
-		} else {
-			auto ptr = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(fixedPath);
+			auto* ptr = rawrbox::RESOURCES::loadFile<rawrbox::ResourceTexture>(fixedPath, loadFlags.value_or(0));
 			if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] '{}' not found!", fixedPath));
 
 			return ptr->get();
 		}
+
+		auto* ptr = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(fixedPath);
+		if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] '{}' not found!", fixedPath));
+
+		return ptr->get();
 	}
 
 	void TextureLoaderWrapper::registerLua(lua_State* L) {

@@ -41,9 +41,8 @@ namespace rawrbox {
 				if ((*it).second != nullptr && (*it).second->getSample() == channel) {
 					it = rawrbox::BASS::sounds.erase(it);
 					continue;
-				} else {
-					++it;
 				}
+				++it;
 			}
 		});
 	}
@@ -77,7 +76,7 @@ namespace rawrbox {
 		auto fxVersion = HIWORD(BASS_FX_GetVersion());
 		if (fxVersion != BASSVERSION) throw _logger->error("BASS Version missmatch! FX [{}] | BASS [{}]", fxVersion, BASSVERSION);
 
-		_initialized = BASS_Init(-1, 44100, BASS_DEVICE_3D, nullptr, nullptr);
+		_initialized = (BASS_Init(-1, 44100, BASS_DEVICE_3D, nullptr, nullptr) != 0);
 		if (_initialized) {
 			_logger->info("Initialized BASS [{}] and BASS_FX [{}]", fxVersion, BASSVERSION);
 
@@ -104,7 +103,7 @@ namespace rawrbox {
 
 	// LOAD ----
 	rawrbox::SoundBase* BASS::loadSound(const std::filesystem::path& path, uint32_t flags) {
-		std::string pth = path.generic_string().c_str();
+		std::string pth = path.generic_string();
 
 		if (sounds.find(pth) != sounds.end()) return sounds[pth].get();
 		if (!std::filesystem::exists(path)) throw _logger->error("File '{}' not found!", pth);
@@ -121,9 +120,9 @@ namespace rawrbox {
 		auto bassFlags = is3D ? BASS_SAMPLE_3D | BASS_SAMPLE_MONO | BASS_SAMPLE_OVER_DIST | BASS_SAMPLE_MUTEMAX : BASS_SAMPLE_OVER_POS;
 
 		if (shouldStream) {
-			sample = BASS_StreamCreateFile(false, path.generic_string().c_str(), 0, 0, bassFlags);
+			sample = BASS_StreamCreateFile(0, path.generic_string().c_str(), 0, 0, bassFlags);
 		} else {
-			sample = BASS_SampleLoad(false, path.generic_string().c_str(), 0, 0, MAX_SOUND_INSTANCES, bassFlags);
+			sample = BASS_SampleLoad(0, path.generic_string().c_str(), 0, 0, MAX_SOUND_INSTANCES, bassFlags);
 		}
 
 		if (sample == 0) rawrbox::BASSUtils::checkBASSError();

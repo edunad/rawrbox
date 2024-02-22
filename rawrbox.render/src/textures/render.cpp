@@ -36,7 +36,7 @@ namespace rawrbox {
 		}
 		//   --------
 
-		auto context = rawrbox::RENDERER->context();
+		auto* context = rawrbox::RENDERER->context();
 		context->SetRenderTargets(1, &this->_rtHandle, this->_depthRTHandle, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 		if (clear) {
@@ -103,7 +103,7 @@ namespace rawrbox {
 
 		// Depth ----
 		if (_depth) {
-			auto& swapDesc = rawrbox::RENDERER->swapChain()->GetDesc();
+			const auto& swapDesc = rawrbox::RENDERER->swapChain()->GetDesc();
 
 			std::string depthName = fmt::format("{}::DEPTH", this->_name);
 			desc.Name = depthName.c_str();

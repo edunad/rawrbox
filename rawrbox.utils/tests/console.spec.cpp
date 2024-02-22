@@ -30,7 +30,7 @@ TEST_CASE("CONSOLE should behave as expected", "[rawrbox::CONSOLE]") {
 
 		auto ex = console->executeCommand({"var_test", "true"});
 		REQUIRE(ex.first == true);
-		REQUIRE(ex.second == "");
+		REQUIRE(ex.second.empty());
 		REQUIRE(OK == true);
 
 		REQUIRE(console->removeCommand("var_test") == true);
@@ -64,7 +64,7 @@ TEST_CASE("CONSOLE should behave as expected", "[rawrbox::CONSOLE]") {
 
 		auto ex2 = console->executeCommand({"echo", "test"});
 		REQUIRE(ex2.first == true);
-		REQUIRE(ex2.second == "");
+		REQUIRE(ex2.second.empty());
 
 		REQUIRE(console->getLogs().size() == 1);
 		REQUIRE(console->getLogs()[0].log == "test");

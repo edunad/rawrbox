@@ -22,14 +22,14 @@ namespace rawrbox {
 		std::vector<uint8_t> buffer = {};
 		rawrbox::VIDEO_CODEC codec = rawrbox::VIDEO_CODEC::UNKNOWN;
 
-		inline bool valid() { return buffer.size() > 0; }
+		[[nodiscard]] inline bool valid() const { return !buffer.empty(); }
 	};
 
 	struct WEBMImage {
 		std::vector<uint8_t> pixels = {};
 		rawrbox::Vector2i size = {};
 
-		inline bool valid() { return pixels.size() > 0; }
+		[[nodiscard]] inline bool valid() const { return !pixels.empty(); }
 	};
 
 	class WEBMDecoder {

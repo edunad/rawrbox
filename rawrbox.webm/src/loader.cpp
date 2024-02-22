@@ -30,13 +30,13 @@ namespace rawrbox {
 
 		// Get the file info
 		long long pos = 0;
-		if (mkvparser::EBMLHeader().Parse(this->_reader.get(), pos)) {
+		if (mkvparser::EBMLHeader().Parse(this->_reader.get(), pos) != 0) {
 			throw this->_logger->error("File parsing failed");
 		}
 
 		// Create a segment instance
 		mkvparser::Segment* pSegment = nullptr;
-		if (mkvparser::Segment::CreateInstance(this->_reader.get(), pos, pSegment)) {
+		if (mkvparser::Segment::CreateInstance(this->_reader.get(), pos, pSegment) != 0) {
 			throw this->_logger->error("Failed to create file segment");
 		}
 
@@ -121,7 +121,7 @@ namespace rawrbox {
 		this->_filePath = filePath;
 		this->_reader = std::make_unique<mkvparser::MkvReader>();
 
-		if (this->_reader->Open(filePath.string().c_str()))
+		if (this->_reader->Open(filePath.string().c_str()) != 0)
 			throw this->_logger->error("Filename is invalid or error while opening");
 
 		this->internalLoad();
@@ -153,7 +153,7 @@ namespace rawrbox {
 			bool getNewBlock = false;
 			long status = 0;
 
-			if (!this->_blockEntry && !blockEntryEOS) {
+			if ((this->_blockEntry == nullptr) && !blockEntryEOS) {
 				status = this->_cluster->GetFirst(this->_blockEntry);
 				getNewBlock = true;
 			} else if (blockEntryEOS || this->_blockEntry->EOS()) {
@@ -179,7 +179,7 @@ namespace rawrbox {
 				getNewBlock = true;
 			}
 
-			if (status || !this->_blockEntry) {
+			if ((status != 0) || (this->_blockEntry == nullptr)) {
 				return false; // Reached end
 			}
 
@@ -205,7 +205,7 @@ namespace rawrbox {
 		return true;
 	}
 
-	bool WEBM::eos() {
+	bool WEBM::eos() const {
 		return this->_eos;
 	}
 
@@ -266,18 +266,18 @@ namespace rawrbox {
 		return this->_info;
 	}
 
-	bool WEBM::getLoop() { return this->_loop; }
+	bool WEBM::getLoop() const { return this->_loop; }
 	void WEBM::setLoop(bool loop) {
 		if (loop != this->_loop) this->reset();
 		this->_loop = loop;
 	}
 
-	bool WEBM::getPaused() { return this->_paused; }
+	bool WEBM::getPaused() const { return this->_paused; }
 	void WEBM::setPaused(bool paused) {
 		this->_paused = paused;
 	}
 
-	bool WEBM::isPreLoaded() {
+	bool WEBM::isPreLoaded() const {
 		return (this->_flags & rawrbox::WEBMLoadFlags::PRELOAD) > 0;
 	}
 	// -------

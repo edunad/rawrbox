@@ -38,7 +38,10 @@ namespace rawrbox {
 		int lineGap = 0;
 		stbtt_GetFontVMetrics(this->_font.get(), &ascent, &descent, &lineGap);
 
-		int x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+		int x0 = 0;
+		int y0 = 0;
+		int x1 = 0;
+		int y1 = 0;
 		stbtt_GetFontBoundingBox(this->_font.get(), &x0, &y0, &x1, &y1);
 
 		this->_info = {};
@@ -55,14 +58,20 @@ namespace rawrbox {
 	std::unique_ptr<rawrbox::Glyph> Font::bakeGlyphAlpha(uint32_t codePoint) {
 		if (this->_font == nullptr) throw this->_logger->error("Font not loaded");
 
-		int32_t ascent = 0, descent = 0, lineGap = 0;
+		int32_t ascent = 0;
+		int32_t descent = 0;
+		int32_t lineGap = 0;
 		stbtt_GetFontVMetrics(this->_font.get(), &ascent, &descent, &lineGap);
 
-		int32_t advance = 0, lsb = 0;
+		int32_t advance = 0;
+		int32_t lsb = 0;
 		stbtt_GetCodepointHMetrics(this->_font.get(), codePoint, &advance, &lsb);
 
 		const float scale = this->_scale;
-		int32_t x0 = 0, y0 = 0, x1 = 0, y1 = 0;
+		int32_t x0 = 0;
+		int32_t y0 = 0;
+		int32_t x1 = 0;
+		int32_t y1 = 0;
 		stbtt_GetCodepointBitmapBox(this->_font.get(), codePoint, scale, scale, &x0, &y0, &x1, &y1);
 
 		const auto ww = static_cast<int16_t>(x1 - x0);
@@ -113,7 +122,7 @@ namespace rawrbox {
 
 		// Load
 		this->_font = std::make_shared<stbtt_fontinfo>();
-		if (!stbtt_InitFont(this->_font.get(), buffer.data(), offset)) throw this->_logger->error("Failed to load font");
+		if (stbtt_InitFont(this->_font.get(), buffer.data(), offset) == 0) throw this->_logger->error("Failed to load font");
 		this->_scale = stbtt_ScaleForMappingEmToPixels(this->_font.get(), static_cast<float>(pixelHeight));
 		this->_pixelSize = static_cast<float>(pixelHeight);
 
@@ -151,7 +160,7 @@ namespace rawrbox {
 	float Font::getScale() const { return this->_scale; }
 	float Font::getLineHeight() const { return this->_info.ascender - this->_info.descender + this->_info.lineGap; }
 	float Font::getKerning(uint32_t prevCodePoint, uint32_t nextCodePoint) const {
-		if (this->_font == nullptr || (!this->_font->kern && !this->_font->gpos)) return 0; // no kerning
+		if (this->_font == nullptr || ((this->_font->kern == 0) && (this->_font->gpos == 0))) return 0; // no kerning
 		return this->_info.scale * static_cast<float>(stbtt__GetGlyphKernInfoAdvance(this->_font.get(), prevCodePoint, nextCodePoint));
 	}
 
@@ -173,7 +182,7 @@ namespace rawrbox {
 		while (beginIter != endIter) {
 			uint32_t point = utf8::next(beginIter, endIter); // get codepoint
 
-			const auto glyph = this->getGlyph(point);
+			auto* const glyph = this->getGlyph(point);
 			if (glyph == nullptr) continue;
 
 			if (point == '\n') {
@@ -223,7 +232,7 @@ namespace rawrbox {
 				continue;
 			}
 
-			const auto glyph = this->getGlyph(point);
+			auto* const glyph = this->getGlyph(point);
 			float kerning = this->getKerning(prevCodePoint, point);
 			cursor.x += kerning;
 
@@ -272,7 +281,7 @@ namespace rawrbox {
 		return count;
 	}
 
-	std::string Font::toUTF8(const std::wstring text) {
+	std::string Font::toUTF8(std::wstring& text) {
 		std::string result;
 
 		utf8::utf16to8(text.begin(), text.end(), std::back_inserter(result));

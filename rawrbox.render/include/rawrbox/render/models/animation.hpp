@@ -13,7 +13,7 @@ namespace rawrbox {
 	using AnimKey = std::pair<float, T>;
 
 	struct AnimationFrame {
-		std::string nodeName = "";
+		std::string nodeName;
 
 		std::vector<AnimKey<rawrbox::Vector3f>> position;
 		std::vector<AnimKey<rawrbox::Vector3f>> scale;

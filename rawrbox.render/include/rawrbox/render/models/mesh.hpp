@@ -36,20 +36,20 @@ namespace rawrbox {
 
 		float displacementPower = 1.F;
 
-		[[nodiscard]] const rawrbox::Vector4f getData() const {
+		[[nodiscard]] rawrbox::Vector4f getData() const {
 			return {roughnessFactor, metalnessFactor, specularFactor, emissionFactor};
 		}
 
-		[[nodiscard]] const rawrbox::Vector4_t<uint32_t> getPixelIDs() const {
-			auto base = texture == nullptr ? rawrbox::WHITE_TEXTURE.get() : texture;
-			auto norm = normal == nullptr ? rawrbox::NORMAL_TEXTURE.get() : normal;
-			auto metR = roughtMetal == nullptr ? rawrbox::BLACK_TEXTURE.get() : roughtMetal;
-			auto em = emission == nullptr ? rawrbox::BLACK_TEXTURE.get() : emission;
+		[[nodiscard]] rawrbox::Vector4_t<uint32_t> getPixelIDs() const {
+			auto *base = texture == nullptr ? rawrbox::WHITE_TEXTURE.get() : texture;
+			auto *norm = normal == nullptr ? rawrbox::NORMAL_TEXTURE.get() : normal;
+			auto *metR = roughtMetal == nullptr ? rawrbox::BLACK_TEXTURE.get() : roughtMetal;
+			auto *em = emission == nullptr ? rawrbox::BLACK_TEXTURE.get() : emission;
 
 			return {base->getTextureID(), norm->getTextureID(), metR->getTextureID(), em->getTextureID()};
 		}
 
-		[[nodiscard]] const bool canMerge(const rawrbox::MeshTextures& other) const {
+		[[nodiscard]] bool canMerge(const rawrbox::MeshTextures& other) const {
 			return this->roughnessFactor == other.roughnessFactor && this->metalnessFactor == other.metalnessFactor && this->specularFactor == other.specularFactor && this->emissionFactor == other.emissionFactor;
 		}
 

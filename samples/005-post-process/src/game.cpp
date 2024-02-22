@@ -15,7 +15,7 @@
 namespace post_process {
 	void Game::setupGLFW() {
 #ifdef _DEBUG
-		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
+		auto* window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
 #else
 		auto window = rawrbox::Window::createWindow();
 #endif
@@ -26,13 +26,13 @@ namespace post_process {
 	}
 
 	void Game::init() {
-		auto window = rawrbox::Window::getWindow();
+		auto* window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto render = window->createRenderer();
+		auto* render = window->createRenderer();
 
 		// Setup post process ----
-		auto postProcess = render->addPlugin<rawrbox::PostProcessPlugin>();
+		auto* postProcess = render->addPlugin<rawrbox::PostProcessPlugin>();
 		postProcess->add<rawrbox::PostProcessFog>();
 		postProcess->add<rawrbox::PostProcessDither>(rawrbox::DITHER_MODE::FAST_MODE);
 		postProcess->add<rawrbox::PostProcessQuickBloom>(0.015F);
@@ -49,7 +49,7 @@ namespace post_process {
 		// ---------------
 
 		// Setup camera
-		auto cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
+		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
@@ -76,7 +76,7 @@ namespace post_process {
 
 	void Game::contentLoaded() {
 		if (this->_ready) return;
-		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/crate_hl1.png")->get();
+		auto* tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/crate_hl1.png")->get();
 
 		// Setup
 		{

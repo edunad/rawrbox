@@ -14,7 +14,7 @@ namespace rawrbox {
 		this->_fillText = "";
 		if (this->_fillTextPattern.empty()) return;
 
-		auto& size = this->getSize();
+		const auto& size = this->getSize();
 		float x = this->_textSize.x;
 
 		while (true) {
@@ -27,7 +27,7 @@ namespace rawrbox {
 	void UIInput::combo_paste() {
 		if (this->_readOnly || this->_font == nullptr) return;
 
-		std::string paste_text = "";
+		std::string paste_text;
 		clip::get_text(paste_text);
 
 		if (this->_numeric) paste_text = rawrbox::StrUtils::extractNumbers(paste_text);
@@ -215,7 +215,7 @@ namespace rawrbox {
 	void UIInput::mouseDown(const rawrbox::Vector2i& mousePos, uint32_t /*button*/, uint32_t /*mods*/) {
 		if (this->_readOnly || this->_font == nullptr) return;
 
-		auto& text = this->getText();
+		const auto& text = this->getText();
 		auto characterCount = Font::getCharacterCount(text);
 
 		for (size_t i = 1; i < characterCount; i++) {
@@ -314,8 +314,8 @@ namespace rawrbox {
 	void UIInput::draw(Stencil& stencil) {
 		if (this->_font == nullptr) return;
 
-		auto& text = this->getText();
-		auto& size = this->getSize();
+		const auto& text = this->getText();
+		const auto& size = this->getSize();
 
 		stencil.drawBox({}, size, !(this->focused() || this->hovering()) || this->_readOnly ? this->getBackgroundColor() : this->getBackgroundColor() * 0.9F);
 		stencil.drawBox({0, 2}, {2, size.y - 2}, this->getBackgroundColor() * 0.5F);

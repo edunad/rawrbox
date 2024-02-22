@@ -36,12 +36,9 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] virtual bool hasFile(const std::filesystem::path& filePath) const {
-			for (auto& file : this->_files) {
-				if (!rawrbox::PathUtils::isSame(filePath, file->filePath)) continue;
-				return true;
-			}
-
-			return false;
+			return std::ranges::any_of(this->_files, [&filePath](const auto& file) {
+				return rawrbox::PathUtils::isSame(filePath, file->filePath);
+			});
 		}
 		// ----------
 
@@ -64,7 +61,7 @@ namespace rawrbox {
 			obj->filePath = filePath;
 
 			// store pointer so we can return it
-			auto ptr = obj.get();
+			auto* ptr = obj.get();
 
 			{
 				const std::lock_guard<std::mutex> mutexGuard(_threadLock);

@@ -25,7 +25,7 @@ namespace rawrbox {
 		_pool->reset();
 	}
 
-	std::future<void> ASYNC::run(std::function<void()> job) {
+	std::future<void> ASYNC::run(const std::function<void()>& job) {
 		if (_pool == nullptr) throw _logger->error("ASYNC not initialized!");
 		std::future<void> future = _pool->submit_task(job);
 

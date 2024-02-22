@@ -8,8 +8,8 @@ namespace rawrbox {
 		std::vector<rawrbox::JSONDiff> diffs = {};
 
 		if (a.holds<glz::json_t::array_t>() && b.holds<glz::json_t::array_t>()) {
-			auto& arrA = a.get<glz::json_t::array_t>();
-			auto& arrB = b.get<glz::json_t::array_t>();
+			const auto& arrA = a.get<glz::json_t::array_t>();
+			const auto& arrB = b.get<glz::json_t::array_t>();
 
 			// Compare arrays element by element
 			size_t minSize = std::min(arrA.size(), arrB.size());
@@ -32,14 +32,14 @@ namespace rawrbox {
 				}
 			}
 		} else if (a.holds<glz::json_t::object_t>() && b.holds<glz::json_t::object_t>()) {
-			auto& objA = a.get<glz::json_t::object_t>();
-			auto& objB = b.get<glz::json_t::object_t>();
+			const auto& objA = a.get<glz::json_t::object_t>();
+			const auto& objB = b.get<glz::json_t::object_t>();
 
 			for (const auto& [key, valueA] : objA) {
 				auto jsonPath = fmt::format("{}/{}", path, key);
 
 				if (objB.contains(key)) {
-					auto& valueB = objB.at(key);
+					const auto& valueB = objB.at(key);
 					auto subDiffs = diff(valueA, valueB, jsonPath);
 					diffs.insert(diffs.end(), subDiffs.begin(), subDiffs.end());
 				} else {

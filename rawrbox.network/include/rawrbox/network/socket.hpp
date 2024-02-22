@@ -48,7 +48,7 @@ namespace rawrbox {
 
 		uint8_t _totaldata = 0;
 
-		bool check();
+		bool check() const;
 
 	public:
 		bool blocking = true;
@@ -81,19 +81,19 @@ namespace rawrbox {
 		[[nodiscard]] rawrbox::SocketError connect(const std::string& host, uint16_t port);
 		void close();
 
-		uint64_t uAddr();
+		uint64_t uAddr() const;
 		bool isError();
 
 		std::string getIpAddress();
 
 		bool canRead();
 
-		int receive(uint8_t* buffer, int size, int spos = 0);
-		bool receiveAll(uint8_t* buffer, int size, int spos = 0);
-		int send(const uint8_t* data, int dataSize);
-		bool sendAll(const uint8_t* data, int dataSize);
-		int sendUDP(const uint8_t* buffer, int size, sockaddr_in* to);
-		int receiveUDP(uint8_t* buffer, int size, sockaddr_in* from);
-		void setTimeout(int miliseconds);
+		int receive(uint8_t* buffer, int size, int spos = 0) const;
+		bool receiveAll(uint8_t* buffer, int size, int spos = 0) const;
+		int send(const uint8_t* data, int dataSize) const;
+		bool sendAll(const uint8_t* data, int dataSize) const;
+		int sendUDP(const uint8_t* buffer, int size, sockaddr_in* to) const;
+		int receiveUDP(uint8_t* buffer, int size, sockaddr_in* from) const;
+		void setTimeout(int miliseconds) const;
 	};
 } // namespace rawrbox

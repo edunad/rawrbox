@@ -81,8 +81,8 @@ namespace rawrbox {
 		if (_buffer == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__DECALS_DIRTY__ || _decals.empty()) return;
 
-		auto context = rawrbox::RENDERER->context();
-		auto device = rawrbox::RENDERER->device();
+		auto *context = rawrbox::RENDERER->context();
+		auto *device = rawrbox::RENDERER->device();
 
 		// Update decals ---
 		std::vector<rawrbox::DecalVertex> decals = {};
@@ -104,7 +104,7 @@ namespace rawrbox {
 			_buffer->Resize(device, context, size, true);
 		}
 
-		auto buffer = _buffer->GetBuffer();
+		auto *buffer = _buffer->GetBuffer();
 		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(_decals.size()), decals.empty() ? nullptr : decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		// BARRIER ----

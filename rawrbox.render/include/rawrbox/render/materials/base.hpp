@@ -109,7 +109,7 @@ namespace rawrbox {
 		template <typename T = rawrbox::VertexData>
 		void bindPipeline(const rawrbox::Mesh<T>& mesh) {
 			if (this->_base == nullptr) throw this->_logger->error("Material not initialized!");
-			auto context = rawrbox::RENDERER->context();
+			auto *context = rawrbox::RENDERER->context();
 
 			if (mesh.wireframe) {
 				if (this->_line == nullptr) throw this->_logger->error("Wireframe not supported on material");

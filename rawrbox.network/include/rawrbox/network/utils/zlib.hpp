@@ -5,7 +5,7 @@
 namespace rawrbox {
 	class ZLib {
 	public:
-		static std::vector<uint8_t> decode(std::vector<uint8_t>::const_iterator begin, std::vector<uint8_t>::const_iterator end);
-		static std::vector<uint8_t> encode(std::vector<uint8_t>::const_iterator begin, std::vector<uint8_t>::const_iterator end);
+		static std::vector<uint8_t> decode(const std::vector<uint8_t>::const_iterator& begin, const std::vector<uint8_t>::const_iterator& end);
+		static std::vector<uint8_t> encode(const std::vector<uint8_t>::const_iterator& begin, const std::vector<uint8_t>::const_iterator& end);
 	};
 } // namespace rawrbox

@@ -21,7 +21,7 @@ namespace rawrbox {
 		rawrbox::RESOURCES::preLoadFile(fixedPath, loadFlags.value_or(0));
 	}
 
-	std::string ResourcesWrapper::getContent(std::optional<std::string> path, lua_State* L) {
+	std::string ResourcesWrapper::getContent(const std::optional<std::string>& path, lua_State* L) {
 		if (L == nullptr) throw std::runtime_error("Lua env not set");
 
 		auto modFolder = rawrbox::LuaUtils::getLuaENVVar(L, "__mod_folder");

@@ -14,7 +14,7 @@
 namespace model {
 	void Game::setupGLFW() {
 #ifdef _DEBUG
-		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
+		auto* window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
 #else
 		auto window = rawrbox::Window::createWindow();
 #endif
@@ -25,10 +25,10 @@ namespace model {
 	}
 
 	void Game::init() {
-		auto window = rawrbox::Window::getWindow();
+		auto* window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto render = window->createRenderer();
+		auto* render = window->createRenderer();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
@@ -37,7 +37,7 @@ namespace model {
 		// ---------------
 
 		// Setup camera
-		auto cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
+		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		cam->onMovementStart = []() { fmt::print("Camera start\n"); };
@@ -70,8 +70,8 @@ namespace model {
 	}
 
 	void Game::createModels() {
-		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/meow3.gif")->get();
-		auto texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
+		auto* texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/meow3.gif")->get();
+		auto* texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
 
 		// GRID ----
 		this->_model->addMesh(rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F}));
@@ -191,7 +191,7 @@ namespace model {
 	}
 
 	void Game::createSpline() {
-		auto texture4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/spline_tex.png")->get();
+		auto* texture4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/spline_tex.png")->get();
 
 		// Curve example
 		rawrbox::Mesh2DShape shape;
@@ -233,8 +233,8 @@ namespace model {
 	}
 
 	void Game::createDisplacement() {
-		auto textureDisplacement = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement.vertex.png")->get();
-		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement.png")->get();
+		auto* textureDisplacement = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement.vertex.png")->get();
+		auto* texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/displacement.png")->get();
 
 		auto mesh = rawrbox::MeshUtils::generateMesh({0, 0, -1.0F}, {2, 2}, 64, rawrbox::Colors::White());
 		mesh.setTexture(texture);
@@ -245,7 +245,7 @@ namespace model {
 	}
 
 	void Game::createSprite() {
-		auto texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
+		auto* texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
 
 		auto mesh = rawrbox::MeshUtils::generateCube({}, {0.2F, 0.2F, 0.2F});
 		mesh.setTexture(texture2);

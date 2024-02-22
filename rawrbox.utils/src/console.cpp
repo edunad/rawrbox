@@ -16,7 +16,7 @@ namespace rawrbox {
 			    std::unordered_map<std::string, ConsoleCommand> cmds = this->findCommand(args[1]);
 			    if (cmds.empty()) return std::make_pair<bool, std::string>(false, fmt::format("Failed to find commmand {}", args[1]));
 
-			    std::string helper = "";
+			    std::string helper;
 			    for (auto& cmd : cmds) {
 				    helper += fmt::format("[#1abc9c] **{}** [/][#ffffff]-> {}[/]\n", cmd.first, cmd.second.description);
 			    }
@@ -35,7 +35,7 @@ namespace rawrbox {
 
 		this->registerCommand(
 		    "list", [this](const std::vector<std::string>& /*args*/) {
-			    for (auto& cmd : getCommands()) {
+			    for (const auto& cmd : getCommands()) {
 				    if (!cmd.second.variable()) continue;
 				    this->print(fmt::format("{}: [#ffffff]{}[/] ", cmd.first, this->getCommandValue(cmd.second)), PrintType::LOG);
 			    }
@@ -97,7 +97,7 @@ namespace rawrbox {
 	std::string Console::getCommandValue(const ConsoleCommand& cmd) const {
 		if (!cmd.variable()) return "function";
 
-		auto& var = cmd.var.value();
+		const auto& var = cmd.var.value();
 		if (std::holds_alternative<int>(var)) return fmt::format("{}", std::get<int>(var));
 		if (std::holds_alternative<int*>(var)) return fmt::format("{}", *std::get<int*>(var));
 
@@ -122,7 +122,9 @@ namespace rawrbox {
 
 	std::vector<std::string> Console::getCommandStr() const {
 		std::vector<std::string> cmds;
-		for (auto& pair : this->_commands) {
+		cmds.reserve(this->_commands.size());
+
+		for (const auto& pair : this->_commands) {
 			cmds.push_back(pair.first);
 		}
 
@@ -183,7 +185,7 @@ namespace rawrbox {
 	}
 
 	std::pair<bool, std::string> Console::run(const std::vector<std::string>& args) {
-		auto& cmd = args[0];
+		const auto& cmd = args[0];
 		auto& command = this->_commands[cmd];
 
 		// easiest flow
@@ -234,8 +236,8 @@ namespace rawrbox {
 	std::pair<bool, std::string> Console::executeCommand(const std::vector<std::string>& args) {
 		if (args.empty()) return {false, "Command not found"};
 
-		auto& cmd = args[0];
-		if (cmd == "" || !hasCommand(cmd)) return {false, "Command not found"};
+		const auto& cmd = args[0];
+		if (cmd.empty() || !hasCommand(cmd)) return {false, "Command not found"};
 
 		auto& command = this->_commands[cmd];
 		if (this->validate != nullptr) {

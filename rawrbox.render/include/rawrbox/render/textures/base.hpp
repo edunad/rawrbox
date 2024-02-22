@@ -42,7 +42,7 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Texture");
 		// -------------
 
-		std::string _name = "";
+		std::string _name;
 		virtual void loadFallback();
 		virtual void updateSampler();
 

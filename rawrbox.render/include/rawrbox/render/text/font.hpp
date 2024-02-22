@@ -149,7 +149,7 @@ namespace rawrbox {
 		// GLOBAL UTILS ---
 		static size_t getByteCount(const std::string& text, size_t characterPosition);
 		static size_t getCharacterCount(const std::string& text);
-		static std::string toUTF8(const std::wstring text);
+		static std::string toUTF8(std::wstring& text);
 		// -------------*/
 	};
 

@@ -15,7 +15,7 @@ namespace rawrbox {
 		rawrbox::Font* _font = nullptr;
 		// -----------------
 
-		std::string _text = "";
+		std::string _text;
 		rawrbox::Vector2f _shadow = {1, 1};
 
 	public:

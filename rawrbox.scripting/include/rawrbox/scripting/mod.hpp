@@ -27,7 +27,7 @@ namespace rawrbox {
 		// -----------
 
 	public:
-		Mod(const std::string id, std::filesystem::path folderName);
+		Mod(std::string id, std::filesystem::path folderName);
 		Mod(const Mod&) = delete;
 		Mod(Mod&&) = delete;
 		Mod& operator=(const Mod&) = delete;

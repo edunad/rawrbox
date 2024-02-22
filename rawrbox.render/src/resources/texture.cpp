@@ -17,7 +17,7 @@ namespace rawrbox {
 			this->_texture = std::make_unique<rawrbox::TextureGIF>(this->filePath, buffer);
 		} else if (extension == ".webp") {
 			this->_texture = std::make_unique<rawrbox::TextureWEBP>(this->filePath, buffer);
-		} else if (flags) {
+		} else if (flags != 0U) {
 			this->_texture = std::make_unique<rawrbox::TextureAtlas>(this->filePath, buffer, flags); // Use flags for sprite size
 		} else {
 			this->_texture = std::make_unique<rawrbox::TextureImage>(this->filePath, buffer);

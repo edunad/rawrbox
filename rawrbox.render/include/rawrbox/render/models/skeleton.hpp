@@ -17,7 +17,7 @@ namespace rawrbox {
 		rawrbox::Vector4f _angle = {};
 
 	public:
-		std::string name = "";
+		std::string name;
 		uint8_t boneId = 0;
 
 		// Rendering ---
@@ -73,7 +73,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] rawrbox::Bone* getBone(size_t indx) const {
-			for (auto& i : this->boneMap) {
+			for (const auto& i : this->boneMap) {
 				if (i.second->boneId == indx) return i.second;
 			}
 

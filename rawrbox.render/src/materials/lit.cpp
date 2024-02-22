@@ -10,18 +10,18 @@ namespace rawrbox {
 	void MaterialLit::init() {
 		const std::string id = "Model::Lit";
 
-		if (!this->_built) {
+		if (!rawrbox::MaterialLit::_built) {
 			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), id));
 
 			this->createPipelines(id, vertexBufferType::vLayout());
-			this->_built = true;
+			rawrbox::MaterialLit::_built = true;
 		}
 
 		this->setupPipelines(id);
 	}
 
 	void MaterialLit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper) {
-		auto cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
+		auto *cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
 		if (cluster == nullptr) throw this->_logger->error("This material requires the `ClusteredPlugin` renderer plugin");
 
 		// PIPELINE ----

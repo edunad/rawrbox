@@ -31,7 +31,8 @@ namespace rawrbox {
 			// Gamma correction (luminescence table) and chroma correction
 			// would be done here. See the Berkeley mpeg_play sources.
 
-			int16_t CR = (i - 128), CB = CR;
+			int16_t CR = (i - 128);
+			int16_t CB = CR;
 			Cr_r_tab[i] = (int16_t)((0.419 / 0.299) * CR) + 0 * 768 + 256;
 			Cr_g_tab[i] = (int16_t)(-(0.299 / 0.419) * CR) + 1 * 768 + 256;
 			Cb_g_tab[i] = (int16_t)(-(0.114 / 0.331) * CB);

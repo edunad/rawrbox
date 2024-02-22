@@ -55,11 +55,11 @@ namespace rawrbox {
 		Diligent::ShaderMacroHelper macros = {};
 		Diligent::IPipelineResourceSignature* signature = nullptr;
 
-		std::string pVS = "";
-		std::string pPS = "";
-		std::string pGS = "";
+		std::string pVS;
+		std::string pPS;
+		std::string pGS;
 
-		std::string bind = "";
+		std::string bind;
 
 		std::vector<rawrbox::PipeUniforms> uniforms = {};
 		std::vector<Diligent::LayoutElement> layout = {};
@@ -69,8 +69,8 @@ namespace rawrbox {
 	};
 
 	struct PipeComputeSettings {
-		std::string pCS = "";
-		std::string bind = "";
+		std::string pCS;
+		std::string bind;
 
 		std::vector<rawrbox::PipeUniforms> uniforms = {};
 		std::vector<Diligent::ShaderResourceVariableDesc> resources = {};
@@ -101,7 +101,7 @@ namespace rawrbox {
 		static void shutdown();
 
 		static Diligent::ISampler* registerSampler(uint32_t id, Diligent::SamplerDesc type);
-		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::ShaderMacroHelper macros = {});
+		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, const Diligent::ShaderMacroHelper& macros = {});
 		static std::vector<Diligent::ImmutableSamplerDesc> compileSamplers(const std::vector<rawrbox::PipeSampler>& samplers);
 
 		static Diligent::IPipelineState* createComputePipeline(const std::string& name, rawrbox::PipeComputeSettings settings);

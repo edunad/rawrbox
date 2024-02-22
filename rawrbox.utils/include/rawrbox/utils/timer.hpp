@@ -8,7 +8,7 @@
 namespace rawrbox {
 	class TIMER {
 	protected:
-		std::string _id = "";
+		std::string _id;
 
 		float _nextTick = 0;
 		float _msDelay = 0;

@@ -64,7 +64,7 @@ namespace rawrbox {
 		if (this->hasParent()) {
 			this->setPos((this->getPos() + (mousePos.cast<float>() - this->_dragStart)).clamp(this->_parent->getPos(), this->_parent->getPos() + this->_parent->getSize() - this->getSize()));
 		} else {
-			auto& bb = this->getRoot()->getAABB();
+			const auto& bb = this->getRoot()->getAABB();
 			this->setPos((this->getPos() + (mousePos.cast<float>() - this->_dragStart)).clamp(bb.pos, bb.size - this->getSize()));
 		}
 	}
@@ -83,7 +83,7 @@ namespace rawrbox {
 
 	// DRAWING ---
 	void UIFrame::draw(rawrbox::Stencil& stencil) {
-		auto& size = this->getSize();
+		const auto& size = this->getSize();
 
 		// Panel Background
 		stencil.drawBox({}, size, Color::RGBHex(0x0C0C0C));
@@ -105,7 +105,7 @@ namespace rawrbox {
 	void UIFrame::afterDraw(rawrbox::Stencil& stencil) {
 		if (this->_overlay == nullptr) return;
 
-		auto& size = this->getSize();
+		const auto& size = this->getSize();
 		auto overlaySize = this->_overlay->getSize().cast<float>() / 2.F;
 
 		stencil.drawTexture({}, size, *this->_overlay, Color::RGBAHex(0xffffff01), {}, {size.x / overlaySize.x, size.y / overlaySize.y});

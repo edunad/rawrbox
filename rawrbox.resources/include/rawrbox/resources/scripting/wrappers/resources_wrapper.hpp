@@ -8,7 +8,7 @@ namespace rawrbox {
 	public:
 		static void preLoadFolder(const std::string& path, lua_State* L);
 		static void preLoad(const std::string& path, std::optional<uint32_t> loadFlags, lua_State* L);
-		static std::string getContent(std::optional<std::string> path, lua_State* L);
+		static std::string getContent(const std::optional<std::string>& path, lua_State* L);
 
 		static void registerLua(lua_State* L);
 	};

@@ -23,7 +23,7 @@ namespace rawrbox {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 
 		// Create a new thread ----
-		auto loadThread = lua_newthread(L);
+		auto* loadThread = lua_newthread(L);
 		// --------------
 
 		// Compile ----
@@ -88,7 +88,7 @@ namespace rawrbox {
 
 		for (int i = 1; i <= nargs; i++) {
 			if (filterNonStr) {
-				if (!lua_isstring(L, i)) continue;
+				if (lua_isstring(L, i) == 0) continue;
 				args.emplace_back(lua_tostring(L, i));
 			} else {
 				int type = lua_type(L, i);
@@ -111,7 +111,7 @@ namespace rawrbox {
 						args.emplace_back("nil");
 						break;
 					default:
-						if (!lua_isstring(L, i)) continue;
+						if (lua_isstring(L, i) == 0) continue;
 						args.emplace_back(lua_tostring(L, i));
 						break;
 				}
@@ -122,7 +122,7 @@ namespace rawrbox {
 	}
 
 	void LuaUtils::getVariadicArgs(const luabridge::LuaRef& in, luabridge::LuaRef& out) {
-		auto L = in.state();
+		auto* L = in.state();
 
 		int nargs = lua_gettop(L);
 		if (nargs == 0) return;
@@ -219,7 +219,7 @@ namespace rawrbox {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
 
 		lua_getfield(L, LUA_ENVIRONINDEX, varId.c_str());
-		if (!lua_isstring(L, -1)) throw std::runtime_error(fmt::format("Invalid lua env variable '{}'", varId));
+		if (lua_isstring(L, -1) == 0) throw std::runtime_error(fmt::format("Invalid lua env variable '{}'", varId));
 
 		return lua_tostring(L, -1);
 	}
@@ -233,7 +233,7 @@ namespace rawrbox {
 
 		auto pth = path.generic_string();
 		if (pth.starts_with("#")) {
-			auto slashPos = pth.find("/"); // Find the first /
+			auto slashPos = pth.find('/'); // Find the first /
 			return pth.substr(slashPos + 1);
 		} // System path
 
@@ -245,16 +245,18 @@ namespace rawrbox {
 		// content/blabalba.png = my current mod
 		if (!modPath.empty() && pth.front() != '@') {
 			return std::filesystem::path(fmt::format("{}/{}", modPath.generic_string(), pth)).string(); // Becomes mods/mymod/content/blabalba.png
-		} else if (pth.front() == '@') {
-			auto slashPos = pth.find("/"); // Find the first /
+		}
+
+		if (pth.front() == '@') {
+			auto slashPos = pth.find('/'); // Find the first /
 			std::string cleanPath = pth.substr(slashPos + 1);
 
 			// @/textures/blabalba.png = c++ content
 			if (pth.rfind("@/", 0) == 0) { // C++
 				return std::filesystem::path(fmt::format("content/{}", cleanPath)).string();
-			} else { // @otherMod/textures/blabalba.png = @othermod content
-				return std::filesystem::path(fmt::format("{}/{}", pth.substr(1, slashPos - 1), cleanPath)).string();
 			}
+			// @otherMod/textures/blabalba.png = @othermod content
+			return std::filesystem::path(fmt::format("{}/{}", pth.substr(1, slashPos - 1), cleanPath)).string();
 		}
 
 		return pth;

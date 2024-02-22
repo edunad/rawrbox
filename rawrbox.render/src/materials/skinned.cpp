@@ -9,14 +9,14 @@ namespace rawrbox {
 	void MaterialSkinned::init() {
 		const std::string id = "Model::Skinned";
 
-		if (!this->_built) {
+		if (!rawrbox::MaterialSkinned::_built) {
 			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), id));
 
 			Diligent::ShaderMacroHelper helper;
 			helper.AddShaderMacro("SKINNED", true);
 
 			this->createPipelines(id, vertexBufferType::vLayout(), helper);
-			this->_built = true;
+			rawrbox::MaterialSkinned::_built = true;
 		}
 
 		this->setupPipelines(id);

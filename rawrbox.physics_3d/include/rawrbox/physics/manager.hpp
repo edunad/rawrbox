@@ -68,7 +68,7 @@ namespace rawrbox {
 #if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
 		[[nodiscard]] const char* GetBroadPhaseLayerName(JPH::BroadPhaseLayer inLayer) const override {
 			auto a = static_cast<uint8_t>(inLayer);
-			auto name = magic_enum::enum_name(static_cast<rawrbox::PHYS_LAYERS>(a)).data();
+			const auto *name = magic_enum::enum_name(static_cast<rawrbox::PHYS_LAYERS>(a)).data();
 			return name;
 		}
 #endif

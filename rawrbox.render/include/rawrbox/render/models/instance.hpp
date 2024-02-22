@@ -16,16 +16,16 @@ namespace rawrbox {
 			if (id != 0) this->setId(id);
 		}
 
-		rawrbox::Colorf getColor() { return rawrbox::Color::RGBAHex(color); }
+		[[nodiscard]] rawrbox::Colorf getColor() const { return rawrbox::Color::RGBAHex(color); }
 		void setColor(const rawrbox::Colorf& cl) { color = cl.pack(); }
 
-		const rawrbox::Matrix4x4& getMatrix() { return matrix; }
+		[[nodiscard]] const rawrbox::Matrix4x4& getMatrix() const { return matrix; }
 		void setMatrix(const rawrbox::Matrix4x4& mtrx) { matrix = mtrx; }
 
-		uint16_t getAtlasId() { return static_cast<uint16_t>(extraData.x); }
+		[[nodiscard]] uint16_t getAtlasId() const { return static_cast<uint16_t>(extraData.x); }
 		void setAtlasId(uint16_t id) { extraData.x = static_cast<float>(id); }
 
-		uint32_t getId() {
+		[[nodiscard]] uint32_t getId() const {
 			return rawrbox::PackUtils::toABGR(extraData.y, extraData.z, extraData.w, 1.F);
 		}
 

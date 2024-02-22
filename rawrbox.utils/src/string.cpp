@@ -27,14 +27,15 @@ namespace rawrbox {
 
 	bool StrUtils::isNumeric(const std::string& str) {
 		std::string::const_iterator it = str.begin();
-
-		while (it != str.end() && std::isdigit(*it))
+		while (it != str.end() && (std::isdigit(*it) != 0)) {
 			++it;
+		}
+
 		return !str.empty() && it == str.end();
 	}
 
 	std::string StrUtils::extractNumbers(std::string str) {
-		str.erase(std::remove_if(str.begin(), str.end(), [](char c) { return !std::isdigit(c); }), str.end());
+		str.erase(std::remove_if(str.begin(), str.end(), [](char c) { return std::isdigit(c) == 0; }), str.end());
 		return str;
 	}
 

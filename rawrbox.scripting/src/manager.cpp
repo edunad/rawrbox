@@ -84,7 +84,7 @@ namespace rawrbox {
 
 	// LOAD -----
 	void SCRIPTING::loadLibraries(rawrbox::Mod& mod) {
-		auto L = mod.getEnvironment();
+		auto* L = mod.getEnvironment();
 		if (L == nullptr) throw _logger->error("LUA is not set! Reference got destroyed?");
 
 		// COMMON -----
@@ -118,7 +118,7 @@ namespace rawrbox {
 	}
 
 	void SCRIPTING::loadTypes(rawrbox::Mod& mod) {
-		auto L = mod.getEnvironment();
+		auto* L = mod.getEnvironment();
 		if (L == nullptr) throw _logger->error("LUA is not set! Reference got destroyed?");
 		// Register types, these will be read-only & sandboxed!
 
@@ -161,7 +161,7 @@ namespace rawrbox {
 	}
 
 	void SCRIPTING::loadGlobals(rawrbox::Mod& mod) {
-		auto L = mod.getEnvironment();
+		auto* L = mod.getEnvironment();
 		if (L == nullptr) throw _logger->error("LUA is not set! Reference got destroyed?");
 		// Register globals, these will be read-only & sandboxed!
 
@@ -179,7 +179,7 @@ namespace rawrbox {
 		    })
 		    .addFunction("include", [](lua_State* state) {
 			    if (lua_type(state, 1) != LUA_TSTRING) throw std::runtime_error("Invalid param, string expected");
-			    auto path = lua_tostring(state, 1);
+			    const auto* path = lua_tostring(state, 1);
 
 			    auto modID = rawrbox::LuaUtils::getLuaENVVar(state, "__mod_id");
 			    auto modFolder = rawrbox::LuaUtils::getLuaENVVar(state, "__mod_folder");
@@ -221,7 +221,7 @@ namespace rawrbox {
 		    .beginNamespace("string", {})
 		    .addFunction("vformat", [](lua_State* state) {
 			    auto vars = rawrbox::LuaUtils::argsToString(state);
-			    if (vars.size() < 1) throw std::runtime_error("Missing params");
+			    if (vars.empty()) throw std::runtime_error("Missing params");
 
 			    fmt::dynamic_format_arg_store<fmt::format_context> fmtArgs = {};
 			    for (size_t i = 1; i < vars.size(); i++) {
@@ -290,7 +290,7 @@ namespace rawrbox {
 			_logger->warn("Hot-reloading lua file '{}'", filePath);
 
 			// Cleanup and load -----
-			auto env = md->second->getEnvironment();
+			auto* env = md->second->getEnvironment();
 			md->second->gc(); // Cleanup
 
 			try {
@@ -313,7 +313,7 @@ namespace rawrbox {
 			_logger->info("Enabled lua hot-reloading\n  └── Delay: {}ms", hotReloadMs);
 
 			_watcher = std::make_unique<rawrbox::FileWatcher>(
-			    [](std::string pth, rawrbox::FileStatus status) {
+			    [](const std::string& pth, rawrbox::FileStatus status) {
 				    if (status != rawrbox::FileStatus::modified) return;
 				    hotReload(pth);
 			    },
@@ -337,7 +337,7 @@ namespace rawrbox {
 		if (!std::filesystem::exists("./mods")) throw _logger->error("Failed to locate folder './mods'"); // TODO: SUPPORT FOLDER CONFIGURATION
 
 		// TODO: mod load ordering & mod settings to inject on sandboxed env
-		for (auto& p : std::filesystem::directory_iterator("./mods")) {
+		for (const auto& p : std::filesystem::directory_iterator("./mods")) {
 			if (!p.is_directory()) continue;
 
 			auto id = p.path().filename().string();
@@ -386,8 +386,9 @@ namespace rawrbox {
 
 	// UTILS ----
 	const std::unordered_map<std::string, std::unique_ptr<Mod>>& SCRIPTING::getMods() { return _mods; }
-	const std::vector<std::string> SCRIPTING::getModsIds() {
+	std::vector<std::string> SCRIPTING::getModsIds() {
 		std::vector<std::string> modNames = {};
+		modNames.reserve(_mods.size());
 		for (auto& mod : _mods) {
 			modNames.push_back(mod.second->getID());
 		}

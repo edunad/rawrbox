@@ -79,7 +79,7 @@ namespace rawrbox {
 
 		// UTILS ---
 		[[nodiscard]] static const std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>>& getMods();
-		[[nodiscard]] static const std::vector<std::string> getModsIds();
+		[[nodiscard]] static std::vector<std::string> getModsIds();
 		[[nodiscard]] static bool hotReloadEnabled();
 		[[nodiscard]] static bool isLuaFileMounted(const std::string& path);
 		// ---------

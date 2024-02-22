@@ -66,7 +66,7 @@ namespace rawrbox {
 				calcs[fnd->second->boneId] = skeleton.invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
 			}
 
-			for (auto& child : parentBone.children) {
+			for (const auto& child : parentBone.children) {
 				this->animateBones(calcs, skeleton, *child, globalTransformation);
 			}
 		}

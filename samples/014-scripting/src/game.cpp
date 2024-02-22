@@ -30,7 +30,7 @@
 namespace scripting_test {
 	void Game::setupGLFW() {
 #ifdef _DEBUG
-		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
+		auto* window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
 #else
 		auto window = rawrbox::Window::createWindow();
 #endif
@@ -41,10 +41,10 @@ namespace scripting_test {
 	}
 
 	void Game::init() {
-		auto window = rawrbox::Window::getWindow();
+		auto* window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto render = window->createRenderer();
+		auto* render = window->createRenderer();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass == rawrbox::DrawPass::PASS_OPAQUE) {
@@ -56,7 +56,7 @@ namespace scripting_test {
 		// ---------------
 
 		// Setup camera
-		auto cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
+		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
@@ -91,7 +91,7 @@ namespace scripting_test {
 		// Custom non-plugin ---
 		rawrbox::SCRIPTING::registerPlugin<rawrbox::TestPlugin>();
 		rawrbox::SCRIPTING::onRegisterGlobals += [this](rawrbox::Mod& mod) {
-			auto L = mod.getEnvironment();
+			auto* L = mod.getEnvironment();
 
 			luabridge::getGlobalNamespace(L)
 			    .addFunction("test_model", [this]() {
@@ -141,7 +141,7 @@ namespace scripting_test {
 
 	void Game::contentLoaded() {
 		if (this->_ready) return;
-		auto tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/crate_hl1.png")->get();
+		auto* tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/crate_hl1.png")->get();
 		this->_model->setOptimizable(false);
 
 		{

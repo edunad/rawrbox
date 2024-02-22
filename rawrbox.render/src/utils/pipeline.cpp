@@ -78,7 +78,7 @@ namespace rawrbox {
 	}
 
 	// TODO: ADD CACHE https://github.com/DiligentGraphics/DiligentCore/blob/e94b36978ccf8dd6e48c759318ef1b887496a7c5/Graphics/GraphicsTools/interface/BytecodeCache.h
-	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::ShaderMacroHelper macros) {
+	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type, const Diligent::ShaderMacroHelper& macros) {
 		if (name.empty()) return nullptr;
 
 		Diligent::ShaderMacroHelper helper = _globalMacros[type] + macros;
@@ -124,7 +124,7 @@ namespace rawrbox {
 		    Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT, Diligent::FILTER_TYPE_POINT,
 		    Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP, Diligent::TEXTURE_ADDRESS_WRAP};
 
-		for (auto& sampler : samplers) {
+		for (const auto& sampler : samplers) {
 			ret.emplace_back(sampler.type, sampler.name.c_str(), SamLinearClampDesc);
 		}
 
@@ -166,7 +166,7 @@ namespace rawrbox {
 		if (settings.signature == nullptr) {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;
-				auto var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
+				auto* var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
 
 				if (var == nullptr) throw _logger->error("Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type));
 				var->Set(uni.uniform);
@@ -187,7 +187,7 @@ namespace rawrbox {
 		auto fnd = _pipelines.find(name);
 		if (fnd != _pipelines.end()) return fnd->second;
 
-		auto& desc = rawrbox::RENDERER->swapChain()->GetDesc();
+		const auto& desc = rawrbox::RENDERER->swapChain()->GetDesc();
 
 		Diligent::RefCntAutoPtr<Diligent::IPipelineState> pipe;
 		std::string pipeName = fmt::format("RawrBox::{}", name);
@@ -201,7 +201,7 @@ namespace rawrbox {
 
 		info.GraphicsPipeline.PrimitiveTopology = settings.topology;
 		info.GraphicsPipeline.RasterizerDesc.CullMode = settings.cull;
-		info.GraphicsPipeline.DepthStencilDesc.DepthEnable = settings.depth == Diligent::COMPARISON_FUNC_UNKNOWN ? false : true;
+		info.GraphicsPipeline.DepthStencilDesc.DepthEnable = settings.depth != Diligent::COMPARISON_FUNC_UNKNOWN;
 		info.GraphicsPipeline.DepthStencilDesc.DepthFunc = settings.depth;
 		info.GraphicsPipeline.DepthStencilDesc.DepthWriteEnable = settings.depthWrite;
 		info.GraphicsPipeline.RasterizerDesc.ScissorEnable = settings.scissors;
@@ -270,7 +270,7 @@ namespace rawrbox {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;
 
-				auto var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
+				auto* var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
 				if (var == nullptr) throw _logger->error("Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type));
 
 				var->Set(uni.uniform);

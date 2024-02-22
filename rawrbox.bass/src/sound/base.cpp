@@ -12,7 +12,7 @@ namespace rawrbox {
 		this->_instances.clear();
 
 		if (!this->isValid()) {
-			if (this->_flags & SoundFlags::BEAT_DETECTION) BASS_FX_BPM_BeatFree(this->_sample);
+			if ((this->_flags & SoundFlags::BEAT_DETECTION) != 0u) BASS_FX_BPM_BeatFree(this->_sample);
 
 			if (this->_isStream) {
 				BASS_StreamFree(this->_sample);

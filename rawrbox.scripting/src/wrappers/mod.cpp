@@ -8,7 +8,7 @@ namespace rawrbox {
 	void MODWrapper::call(const std::string& method, const luabridge::LuaRef& ref) const {
 		if (this->_mod == nullptr) throw std::runtime_error("Invalid mod reference");
 
-		auto modEnv = this->_mod->getEnvironment();
+		auto* modEnv = this->_mod->getEnvironment();
 		auto func = luabridge::getGlobal(modEnv, method.c_str());
 		if (!func.isValid()) throw std::runtime_error(fmt::format("Failed to find method {}", method));
 		if (!func.isCallable()) throw std::runtime_error("Invalid method id, not callable");

@@ -119,7 +119,7 @@ namespace rawrbox {
 		// Renderer ------
 		template <class T = rawrbox::RendererBase, typename... CallbackArgs>
 		rawrbox::RendererBase* createRenderer(CallbackArgs&&... args) {
-			_renderer = std::make_unique<T>(this->__RENDER_TYPE, this->getHandle(), this->getSize(), this->getMonitorSize(), std::forward<CallbackArgs>(args)...);
+			_renderer = std::make_unique<T>(rawrbox::Window::__RENDER_TYPE, this->getHandle(), this->getSize(), this->getMonitorSize(), std::forward<CallbackArgs>(args)...);
 
 			// Setup resize ----
 			this->onResize += [this](auto&, auto& size, auto& monitorSize) {

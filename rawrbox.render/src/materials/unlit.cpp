@@ -11,11 +11,11 @@ namespace rawrbox {
 	void MaterialUnlit::init() {
 		const std::string id = "Model::Unlit";
 
-		if (!this->_built) {
+		if (!rawrbox::MaterialUnlit::_built) {
 			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), id));
 
 			this->createPipelines(id, vertexBufferType::vLayout());
-			this->_built = true;
+			rawrbox::MaterialUnlit::_built = true;
 		}
 
 		this->setupPipelines(id);
@@ -31,7 +31,7 @@ namespace rawrbox {
 		settings.layout = layout;
 		settings.signature = rawrbox::BindlessManager::signature; // Use bindless
 
-		auto cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
+		auto *cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
 		if (cluster != nullptr) {
 			settings.macros = cluster->getClusterMacros() + helper;
 		}

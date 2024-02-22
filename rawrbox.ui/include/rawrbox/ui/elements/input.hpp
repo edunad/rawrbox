@@ -18,12 +18,12 @@ namespace rawrbox {
 		rawrbox::Font* _font = nullptr;
 		// -----------------
 
-		std::string _text = "";
-		std::string _hint = "";
-		std::string _placeholder = "";
+		std::string _text;
+		std::string _hint;
+		std::string _placeholder;
 
-		std::string _fillTextPattern = "";
-		std::string _fillText = "";
+		std::string _fillTextPattern;
+		std::string _fillText;
 
 		rawrbox::Vector2 _textSize{0, 0};
 		rawrbox::Vector2 _charSize{0, 0};

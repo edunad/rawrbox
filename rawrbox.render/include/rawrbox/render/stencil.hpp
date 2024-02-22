@@ -116,7 +116,7 @@ namespace rawrbox {
 		// NOLINTEND(hicpp-explicit-conversions)
 		StencilOutline(float _thickness, float _stipple) : thickness(_thickness), stipple(_stipple) {}
 
-		bool isSet() { return thickness > 0.F || stipple > 0.F; }
+		[[nodiscard]] bool isSet() const { return thickness > 0.F || stipple > 0.F; }
 
 		StencilOutline operator-(const StencilOutline& other) const {
 			return {this->thickness - other.thickness, this->stipple - other.stipple};
@@ -195,7 +195,7 @@ namespace rawrbox {
 		void pushVertice(const uint32_t& textureID, rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col);
 		void pushIndices(std::vector<uint32_t> ind);
 
-		void applyRotation(rawrbox::Vector2f& vert);
+		void applyRotation(rawrbox::Vector2f& vert) const;
 		void applyScale(rawrbox::Vector2f& vert);
 		// --------------------
 
@@ -262,7 +262,7 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ OTHER
-		[[nodiscard]] virtual const std::vector<rawrbox::StencilDraw> getDrawCalls() const;
+		[[nodiscard]] virtual std::vector<rawrbox::StencilDraw> getDrawCalls() const;
 		virtual void clear();
 		// --------------------
 	};

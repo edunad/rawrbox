@@ -225,7 +225,7 @@ namespace rawrbox {
 			    0, 3, 1};
 
 			for (uint16_t v = 0; v < 24; v += 4) {
-				for (auto& ind : cubeInd) {
+				for (const auto& ind : cubeInd) {
 					inds.push_back(ind + v);
 				}
 			}

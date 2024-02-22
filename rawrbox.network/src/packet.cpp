@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <utility>
 
 namespace rawrbox {
 	// Read ----
@@ -56,7 +57,7 @@ namespace rawrbox {
 		return true;
 	}
 
-	bool Packet::seek(std::vector<uint8_t>::iterator offset) {
+	bool Packet::seek(const std::vector<uint8_t>::iterator& offset) {
 		if (offset > end()) return false;
 		this->pos = std::distance(buffer.begin(), offset);
 		return true;
@@ -70,7 +71,7 @@ namespace rawrbox {
 
 	std::vector<uint8_t>& Packet::getBuffer() { return buffer; }
 	const std::vector<uint8_t>& Packet::getBuffer() const { return buffer; }
-	void Packet::setBuffer(std::vector<uint8_t> b) { buffer = b; }
+	void Packet::setBuffer(std::vector<uint8_t> b) { buffer = std::move(b); }
 
 	std::vector<uint8_t>::iterator Packet::begin() { return buffer.begin(); }
 	std::vector<uint8_t>::iterator Packet::end() { return buffer.end(); }

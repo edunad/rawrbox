@@ -18,18 +18,18 @@ namespace rawrbox {
 			WebPData webp_data = {buffer.data(), buffer.size()};
 
 			WebPAnimDecoderOptions options;
-			if (!WebPAnimDecoderOptionsInit(&options)) {
+			if (WebPAnimDecoderOptionsInit(&options) == 0) {
 				throw this->_logger->error("Error initializing image '{}'!", this->_filePath.generic_string());
 			}
 
-			options.use_threads = true;
-			auto decoder = WebPAnimDecoderNew(&webp_data, &options);
+			options.use_threads = 1;
+			auto* decoder = WebPAnimDecoderNew(&webp_data, &options);
 			if (decoder == nullptr) {
 				throw this->_logger->error("Error initializing decoder '{}'!", this->_filePath.generic_string());
 			}
 
 			WebPAnimInfo info;
-			if (!WebPAnimDecoderGetInfo(decoder, &info)) {
+			if (WebPAnimDecoderGetInfo(decoder, &info) == 0) {
 				WebPAnimDecoderDelete(decoder);
 				throw this->_logger->error("Error decoding image info '{}'!", this->_filePath.generic_string());
 			}
@@ -41,10 +41,10 @@ namespace rawrbox {
 			this->_channels = 4;
 
 			float prevTime = 0.F;
-			while (WebPAnimDecoderHasMoreFrames(decoder)) {
+			while (WebPAnimDecoderHasMoreFrames(decoder) != 0) {
 				uint8_t* buf = nullptr;
 				int delay = 0;
-				if (!WebPAnimDecoderGetNext(decoder, &buf, &delay)) {
+				if (WebPAnimDecoderGetNext(decoder, &buf, &delay) == 0) {
 					WebPAnimDecoderDelete(decoder);
 					throw this->_logger->error("Error decoding image '{}'!", this->_filePath.generic_string());
 				}

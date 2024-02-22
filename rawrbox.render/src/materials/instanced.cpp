@@ -9,14 +9,14 @@ namespace rawrbox {
 	void MaterialInstanced::init() {
 		const std::string id = "Model::Instanced";
 
-		if (!this->_built) {
+		if (!rawrbox::MaterialInstanced::_built) {
 			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), id));
 
 			Diligent::ShaderMacroHelper helper;
 			helper.Add("INSTANCED", true);
 
 			this->createPipelines(id, vertexBufferType::vLayout(true), helper);
-			this->_built = true;
+			rawrbox::MaterialInstanced::_built = true;
 		}
 
 		this->setupPipelines(id);

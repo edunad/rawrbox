@@ -17,7 +17,7 @@
 namespace stencil {
 	void Game::setupGLFW() {
 #ifdef _DEBUG
-		auto window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
+		auto* window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
 #else
 		auto window = rawrbox::Window::createWindow();
 #endif
@@ -28,10 +28,10 @@ namespace stencil {
 	}
 
 	void Game::init() {
-		auto window = rawrbox::Window::getWindow();
+		auto* window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto render = window->createRenderer(rawrbox::Color::RGBAHex(0x443355FF));
+		auto* render = window->createRenderer(rawrbox::Color::RGBAHex(0x443355FF));
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass == rawrbox::DrawPass::PASS_OVERLAY) {
@@ -43,7 +43,7 @@ namespace stencil {
 		// ---------------
 
 		// Setup camera --
-		auto cam = render->setupCamera<rawrbox::CameraPerspective>(render->getSize());
+		auto* cam = render->setupCamera<rawrbox::CameraPerspective>(render->getSize());
 		cam->setPos({-2.F, 5.F, -3.5F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// ---------------
@@ -152,7 +152,7 @@ namespace stencil {
 	void Game::drawOverlay() {
 		if (!this->_ready) return;
 
-		auto stencil = rawrbox::RENDERER->stencil();
+		auto* stencil = rawrbox::RENDERER->stencil();
 		stencil->pushOffset({20, 50});
 
 		// Box + clipping --

@@ -15,7 +15,7 @@ namespace rawrbox {
 
 		OrientedPoint(rawrbox::Vector3f position, rawrbox::Vector4f rotation, float vCoordinate = 0) : position(position), rotation(rotation), vCoordinate(vCoordinate) {}
 
-		rawrbox::Vector3f LocalToWorld(const rawrbox::Vector3f& point) {
+		[[nodiscard]] rawrbox::Vector3f LocalToWorld(const rawrbox::Vector3f& point) const {
 			return position + rotation * point;
 		}
 
@@ -23,7 +23,7 @@ namespace rawrbox {
 			return rotation.inverse() * (point - position);
 		}
 
-		rawrbox::Vector3f LocalToWorldDirection(const rawrbox::Vector3f& dir) {
+		[[nodiscard]] rawrbox::Vector3f LocalToWorldDirection(const rawrbox::Vector3f& dir) const {
 			return rotation * dir;
 		}
 	};
@@ -46,7 +46,7 @@ namespace rawrbox {
 		rawrbox::Vector3f getNormal(float t, Vector3 up);
 		rawrbox::Vector3f getTangent(float t);
 
-		rawrbox::Vector3f calculateNormal(rawrbox::Vector3f tangent, rawrbox::Vector3f up);
+		static rawrbox::Vector3f calculateNormal(rawrbox::Vector3f tangent, rawrbox::Vector3f up);
 		rawrbox::Vector3f calculateTangent(float t, float t2, float it2);
 		rawrbox::Vector3f calculatePoint(float t, float t2, float t3, float it, float it2, float it3);
 

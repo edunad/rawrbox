@@ -63,7 +63,7 @@ namespace rawrbox {
 		[[nodiscard]] Vector2_t<NumberType> zx() const { return Vector2_t<NumberType>(z, x); }
 		[[nodiscard]] Vector2_t<NumberType> zy() const { return Vector2_t<NumberType>(z, y); }
 
-		[[nodiscard]] const std::array<NumberType, 3> data() const { return {x, y, z}; }
+		[[nodiscard]] std::array<NumberType, 3> data() const { return {x, y, z}; }
 
 		// UTILS ---
 		[[nodiscard]] NumberType distance(const VecType& other) const {

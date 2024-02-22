@@ -37,7 +37,7 @@ namespace rawrbox {
 	void I18N::loadLanguagePack(const std::string& id, const std::string& path) {
 		_logger->info("Loading i18n for id {}", fmt::format(fmt::fg(fmt::color::coral), id));
 
-		for (auto& p : std::filesystem::directory_iterator(path)) {
+		for (const auto& p : std::filesystem::directory_iterator(path)) {
 			if (p.is_directory()) continue;
 
 			auto fileName = p.path().filename().string();
@@ -83,10 +83,11 @@ namespace rawrbox {
 		return val->second;
 	}
 
-	std::string I18N::get(const std::string& id, const std::string& key, std::vector<std::string> values) {
+	std::string I18N::get(const std::string& id, const std::string& key, const std::vector<std::string>& values) {
 		fmt::dynamic_format_arg_store<fmt::format_context> args;
-		for (std::string& str : values)
+		for (auto& str : values) {
 			args.push_back(str);
+		}
 
 		return fmt::vformat(get(id, key), args);
 	}

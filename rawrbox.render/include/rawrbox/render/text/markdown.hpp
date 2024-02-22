@@ -26,7 +26,7 @@ namespace rawrbox {
 		MarkdownType type = MarkdownType::none;
 		MarkdownOffset offset = MarkdownOffset::left;
 
-		std::string text = "";
+		std::string text;
 
 		rawrbox::Vector2f size = {};
 
@@ -54,8 +54,8 @@ namespace rawrbox {
 		void clear();
 		void regenFonts();
 		void parse(const std::string& text, rawrbox::Colorf defaultColor = rawrbox::Colors::White());
-		void render(rawrbox::Stencil& stencil, const rawrbox::Vector2f pos);
+		void render(rawrbox::Stencil& stencil, rawrbox::Vector2f pos);
 
-		[[nodiscard]] const rawrbox::Vector2f getSize() const;
+		[[nodiscard]] rawrbox::Vector2f getSize() const;
 	};
 } // namespace rawrbox

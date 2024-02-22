@@ -26,6 +26,6 @@ namespace rawrbox {
 		static const std::string& getLanguage();
 
 		static std::string get(const std::string& id, const std::string& key);
-		static std::string get(const std::string& id, const std::string& key, std::vector<std::string> values);
+		static std::string get(const std::string& id, const std::string& key, const std::vector<std::string>& values);
 	};
 } // namespace rawrbox

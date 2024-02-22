@@ -57,14 +57,14 @@ namespace rawrbox {
 			throw _logger->error("Codec not initialized, did you call 'init' ?");
 
 		if (frame.codec != _codec) {
-			auto badname = magic_enum::enum_name(static_cast<rawrbox::VIDEO_CODEC>(frame.codec)).data();
-			auto name = magic_enum::enum_name(static_cast<rawrbox::VIDEO_CODEC>(_codec)).data();
+			const auto* badname = magic_enum::enum_name(static_cast<rawrbox::VIDEO_CODEC>(frame.codec)).data();
+			const auto* name = magic_enum::enum_name(static_cast<rawrbox::VIDEO_CODEC>(_codec)).data();
 
 			throw _logger->error("Codec '{}' not set as config! '{}' was loaded instead", badname, name);
 		}
 
 		_iter = nullptr;
-		if (vpx_codec_decode(_ctx.get(), frame.buffer.data(), static_cast<uint32_t>(frame.buffer.size()), nullptr, 0)) return false;
+		if (vpx_codec_decode(_ctx.get(), frame.buffer.data(), static_cast<uint32_t>(frame.buffer.size()), nullptr, 0) != 0) return false;
 
 		if (vpx_image_t* img = vpx_codec_get_frame(_ctx.get(), &_iter)) {
 			if ((img->fmt & VPX_IMG_FMT_PLANAR) == 0) throw _logger->error("Failed to get image! Image not in FMT_PLANAR!");

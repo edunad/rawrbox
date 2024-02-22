@@ -31,8 +31,8 @@ namespace rawrbox {
 		if (physWorld == nullptr || onContact.empty()) return;
 
 		const muli::Contact* c = physWorld->GetContacts();
-		while (c) {
-			if (c->IsTouching() == false) {
+		while (c != nullptr) {
+			if (!c->IsTouching()) {
 				c = c->GetNext();
 				continue;
 			}

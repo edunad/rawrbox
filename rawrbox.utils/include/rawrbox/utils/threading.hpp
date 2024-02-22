@@ -19,6 +19,6 @@ namespace rawrbox {
 		static void init();
 		static void shutdown();
 
-		static std::future<void> run(std::function<void()> job);
+		static std::future<void> run(const std::function<void()>& job);
 	};
 } // namespace rawrbox

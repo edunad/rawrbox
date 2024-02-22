@@ -30,7 +30,7 @@ namespace rawrbox {
 		auto& node = (*nodeOpt).get();
 
 		if (!data.empty()) {
-			auto context = rawrbox::RENDERER->context();
+			auto* context = rawrbox::RENDERER->context();
 
 			Diligent::Box UpdateBox;
 			UpdateBox.MinX = node.x;

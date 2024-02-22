@@ -32,11 +32,11 @@ namespace rawrbox {
 		return bytes;
 	}
 
-	const rawrbox::Vector2f Markdown::getSize() const {
+	rawrbox::Vector2f Markdown::getSize() const {
 		rawrbox::Vector2f size = {};
 		rawrbox::Vector2f curpos = {};
 
-		for (auto& elm : _elements) {
+		for (const auto& elm : _elements) {
 			if (elm.type == MarkdownType::linebreak) {
 				curpos.y += elm.size.y;
 				curpos.x = 0;
@@ -94,7 +94,7 @@ namespace rawrbox {
 				if (endPos == std::string::npos) continue;
 
 				// set current style, do chunk and set style back
-				auto old = _currentStyle.font;
+				auto *old = _currentStyle.font;
 				_currentStyle.font = bold ? fontBold : fontItalic;
 				this->parseChunk({text.begin() + textStart, text.begin() + endPos});
 				_currentStyle.font = old;
@@ -114,7 +114,7 @@ namespace rawrbox {
 				textStart = i + 1;
 
 				// figure out what location to go to
-				auto endPos = text.find("~", i + 1);
+				auto endPos = text.find('~', i + 1);
 				if (endPos == std::string::npos) continue;
 
 				// set current style, do chunk and set style back
@@ -134,7 +134,7 @@ namespace rawrbox {
 				if (i > 0) pushTextSoFar(text, textStart, i);
 
 				// figure out what location to go to
-				auto endPos = text.find("]", i + 1);
+				auto endPos = text.find(']', i + 1);
 				if (endPos == std::string::npos) continue; // []
 
 				// get the color code string, if it's an end tag set it to default
@@ -225,7 +225,7 @@ namespace rawrbox {
 				}
 
 				// center text to match letter width changes
-				auto corruptedUtf8 = elm.font->toUTF8(corrupted);
+				auto corruptedUtf8 = rawrbox::Font::toUTF8(corrupted);
 				auto midpos = curpos;
 				midpos.x += elm.size.x / 2 - elm.font->getStringSize(corruptedUtf8).x / 2;
 
