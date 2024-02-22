@@ -71,6 +71,7 @@ namespace rawrbox {
 
 		// CHILD HANDLING --
 		template <class T, typename... CallbackArgs>
+			requires(std::derived_from<T, rawrbox::UIContainer>)
 		T* createChild(CallbackArgs&&... args) {
 			auto elm = std::make_shared<T>(std::forward<CallbackArgs>(args)...);
 			elm->setRoot(this->_root);

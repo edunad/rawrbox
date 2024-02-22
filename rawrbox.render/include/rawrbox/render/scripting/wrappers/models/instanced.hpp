@@ -6,6 +6,7 @@
 namespace rawrbox {
 	class InstancedModelWrapper {
 		template <typename T = rawrbox::MaterialInstanced>
+			requires(std::derived_from<T, rawrbox::MaterialBase>)
 		static void registerTemplate(lua_State* L, const std::string& name) {
 			using ModelC = rawrbox::InstancedModel<T>;
 			using ModelBaseC = rawrbox::ModelBase<T>;

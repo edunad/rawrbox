@@ -10,7 +10,7 @@
 namespace rawrbox {
 	TexturePack::TexturePack(uint16_t size) {
 		this->_size = {size, size};
-		this->_root = std::make_unique<PackNode>(0, 0, size, size);
+		this->_root = std::make_unique<rawrbox::PackNode>(0U, 0U, size, size);
 		this->_name = "RawrBox::Texture::Pack";
 	}
 

@@ -8,6 +8,7 @@ namespace rawrbox {
 	class AssimpUtils {
 	public:
 		template <typename M = MaterialUnlit>
+			requires(std::derived_from<M, rawrbox::MaterialBase>)
 		static rawrbox::Mesh<typename M::vertexBufferType> extractMesh(const rawrbox::AssimpImporter& model, size_t indx) {
 			const auto& meshes = model.meshes;
 			if (meshes.empty() || indx < 0 || indx >= meshes.size()) throw rawrbox::Logger::err("RawrBox-AssimpUtils", "Failed to extract mesh '{}'!", indx);

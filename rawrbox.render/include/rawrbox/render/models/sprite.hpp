@@ -5,6 +5,7 @@
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialUnlit>
+		requires(std::derived_from<M, rawrbox::MaterialBase>)
 	class Sprite : public rawrbox::Model<M> {
 	protected:
 		bool _xAxis = true;

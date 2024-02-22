@@ -41,10 +41,10 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] rawrbox::Vector4_t<uint32_t> getPixelIDs() const {
-			auto *base = texture == nullptr ? rawrbox::WHITE_TEXTURE.get() : texture;
-			auto *norm = normal == nullptr ? rawrbox::NORMAL_TEXTURE.get() : normal;
-			auto *metR = roughtMetal == nullptr ? rawrbox::BLACK_TEXTURE.get() : roughtMetal;
-			auto *em = emission == nullptr ? rawrbox::BLACK_TEXTURE.get() : emission;
+			auto* base = texture == nullptr ? rawrbox::WHITE_TEXTURE.get() : texture;
+			auto* norm = normal == nullptr ? rawrbox::NORMAL_TEXTURE.get() : normal;
+			auto* metR = roughtMetal == nullptr ? rawrbox::BLACK_TEXTURE.get() : roughtMetal;
+			auto* em = emission == nullptr ? rawrbox::BLACK_TEXTURE.get() : emission;
 
 			return {base->getTextureID(), norm->getTextureID(), metR->getTextureID(), em->getTextureID()};
 		}
@@ -57,7 +57,8 @@ namespace rawrbox {
 		bool operator!=(const rawrbox::MeshTextures& other) const { return !operator==(other); }
 	};
 
-	template <typename T = VertexData>
+	template <typename T = rawrbox::VertexData>
+		requires(std::derived_from<T, rawrbox::VertexData>)
 	class Mesh {
 		static constexpr uint16_t MAX_VERTICES = 16000;
 		static constexpr uint16_t MAX_INDICES = 16000;
@@ -272,7 +273,7 @@ namespace rawrbox {
 		}
 
 		virtual void merge(const rawrbox::Mesh<T>& other) {
-			std::transform(other.indices.begin(), other.indices.end(), std::back_inserter(this->indices), [this](uint16_t val) { return this->totalVertex + val; });
+			std::transform(other.indices.begin(), other.indices.end(), std::back_inserter(this->indices), [this](const uint16_t& val) { return static_cast<uint16_t>(this->totalVertex + val); });
 			this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
 
 			this->totalVertex = static_cast<uint16_t>(this->vertices.size());

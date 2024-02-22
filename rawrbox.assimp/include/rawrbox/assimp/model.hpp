@@ -8,8 +8,8 @@
 #include <rawrbox/render/models/model.hpp>
 
 namespace rawrbox {
-
 	template <typename M = MaterialUnlit>
+		requires(std::derived_from<M, rawrbox::MaterialBase>)
 	class AssimpModel : public rawrbox::Model<M> {
 	protected:
 		// INTERNAL -------

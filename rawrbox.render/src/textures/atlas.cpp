@@ -8,11 +8,11 @@
 
 namespace rawrbox {
 	// NOLINTBEGIN(modernize-pass-by-value)
-	TextureAtlas::TextureAtlas(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, uint16_t spriteSize, bool useFallback) : TextureImage::TextureImage(filePath, buffer, useFallback), _spriteSize(spriteSize) {
+	TextureAtlas::TextureAtlas(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, uint32_t spriteSize, bool useFallback) : TextureImage::TextureImage(filePath, buffer, useFallback), _spriteSize(spriteSize) {
 		this->processAtlas();
 	}
 
-	TextureAtlas::TextureAtlas(const std::filesystem::path& filePath, uint16_t spriteSize, bool useFallback) : TextureImage::TextureImage(filePath, useFallback), _spriteSize(spriteSize) {
+	TextureAtlas::TextureAtlas(const std::filesystem::path& filePath, uint32_t spriteSize, bool useFallback) : TextureImage::TextureImage(filePath, useFallback), _spriteSize(spriteSize) {
 		this->processAtlas();
 	}
 	// NOLINTEND(modernize-pass-by-value)
@@ -24,7 +24,7 @@ namespace rawrbox {
 		return static_cast<size_t>(totalSprites.x * totalSprites.y);
 	}
 
-	uint16_t TextureAtlas::getSpriteSize() const {
+	uint32_t TextureAtlas::getSpriteSize() const {
 		return this->_spriteSize;
 	}
 
@@ -50,7 +50,7 @@ namespace rawrbox {
 			auto y = i / tilesX;
 			auto x = i - y * tilesY;
 
-			for (int iy = 0; iy < this->_spriteSize; iy++) {
+			for (uint32_t iy = 0; iy < this->_spriteSize; iy++) {
 				auto offset = (iy + y * this->_spriteSize) * this->_size.x * _channels;
 				offset += x * this->_spriteSize * this->_channels;
 

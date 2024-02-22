@@ -10,12 +10,14 @@ namespace rawrbox {
 	class MathUtils {
 	public:
 		template <typename T = int>
+			requires(std::is_integral_v<T> || std::is_floating_point_v<T>)
 		static inline T repeat(T val, T min, T max) {
 			if (val < 0 && max > 0) val = max - std::abs(val - min);
 			return ((val - min) % max) + min;
 		}
 
 		template <typename T = int>
+			requires(std::is_integral_v<T> || std::is_floating_point_v<T>)
 		static inline T pingPong(T val, T max) {
 			return static_cast<T>(val - (std::floor(val / max) * max));
 		}
@@ -26,6 +28,7 @@ namespace rawrbox {
 		static float round(float val, int precision = 2);
 
 		template <typename T = float>
+			requires(std::is_integral_v<T> || std::is_floating_point_v<T>)
 		static T divideRound(T nominator, T denominator) {
 			return (nominator + denominator - static_cast<T>(1)) / denominator;
 		}

@@ -10,7 +10,7 @@ namespace rawrbox {
 	ResourceTexture::~ResourceTexture() { this->_texture.reset(); }
 
 	bool ResourceTexture::load(const std::vector<uint8_t>& buffer) {
-		const rawrbox::TEXTURE_TYPE type = this->filePath.generic_string().rfind(".vertex.") != -1 ? rawrbox::TEXTURE_TYPE::VERTEX : rawrbox::TEXTURE_TYPE::PIXEL;
+		const rawrbox::TEXTURE_TYPE type = this->filePath.generic_string().rfind(".vertex.") != std::string::npos ? rawrbox::TEXTURE_TYPE::VERTEX : rawrbox::TEXTURE_TYPE::PIXEL;
 		auto extension = this->filePath.extension();
 
 		if (extension == ".gif") {

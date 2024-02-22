@@ -44,6 +44,7 @@ namespace rawrbox {
 		virtual void resetUniformBinds();
 
 		template <typename T = rawrbox::VertexData>
+			requires(std::derived_from<T, rawrbox::VertexData>)
 		rawrbox::BindlessVertexBuffer bindBaseUniforms(const rawrbox::Mesh<T>& mesh) {
 			rawrbox::Vector4f data = {mesh.billboard ? 1.F : 0.F, mesh.vertexSnapPower, 0, 0};
 
@@ -59,6 +60,7 @@ namespace rawrbox {
 		}
 
 		template <typename T = rawrbox::VertexData>
+			requires(std::derived_from<T, rawrbox::VertexData>)
 		rawrbox::BindlessPixelBuffer bindBasePixelUniforms(const rawrbox::Mesh<T>& mesh) {
 			return {
 			    mesh.textures.getPixelIDs(),
@@ -66,12 +68,14 @@ namespace rawrbox {
 		}
 
 		template <typename T = rawrbox::VertexData>
+			requires(std::derived_from<T, rawrbox::VertexData>)
 		rawrbox::BindlessVertexSkinnedBuffer bindBaseVertexSkinnedUniforms(const rawrbox::Mesh<T>& mesh) {
 			return {
 			    mesh.boneTransforms};
 		}
 
 		template <typename T = rawrbox::VertexData>
+			requires(std::derived_from<T, rawrbox::VertexData>)
 		bool bindPixelUniforms(const rawrbox::Mesh<T>& mesh) {
 			rawrbox::BindlessPixelBuffer buff = this->bindBasePixelUniforms<T>(mesh);
 			if (this->_lastPixelBuffer.first && buff == this->_lastPixelBuffer.second) return false;
@@ -88,6 +92,7 @@ namespace rawrbox {
 		}
 
 		template <typename T = rawrbox::VertexData>
+			requires(std::derived_from<T, rawrbox::VertexData>)
 		bool bindVertexUniforms(const rawrbox::Mesh<T>& mesh) {
 			rawrbox::BindlessVertexBuffer buff = this->bindBaseUniforms<T>(mesh);
 			if (this->_lastVertexBuffer.first && buff == this->_lastVertexBuffer.second) return false;
@@ -104,12 +109,14 @@ namespace rawrbox {
 		}
 
 		template <typename T = rawrbox::VertexData>
+			requires(std::derived_from<T, rawrbox::VertexData>)
 		bool bindVertexSkinnedUniforms(const rawrbox::Mesh<T>& /*mesh*/) { return false; }
 
 		template <typename T = rawrbox::VertexData>
+			requires(std::derived_from<T, rawrbox::VertexData>)
 		void bindPipeline(const rawrbox::Mesh<T>& mesh) {
 			if (this->_base == nullptr) throw this->_logger->error("Material not initialized!");
-			auto *context = rawrbox::RENDERER->context();
+			auto* context = rawrbox::RENDERER->context();
 
 			if (mesh.wireframe) {
 				if (this->_line == nullptr) throw this->_logger->error("Wireframe not supported on material");

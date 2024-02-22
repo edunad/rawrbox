@@ -6,6 +6,7 @@
 namespace rawrbox {
 	class ModelBaseWrapper {
 		template <typename T = rawrbox::MaterialUnlit>
+			requires(std::derived_from<T, rawrbox::MaterialBase>)
 		static void registerTemplate(lua_State* L, const std::string& name) {
 			using ModelC = rawrbox::ModelBase<T>;
 

@@ -7,6 +7,7 @@
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialInstanced>
+		requires(std::derived_from<M, rawrbox::MaterialBase>)
 	class InstancedModel : public rawrbox::ModelBase<M> {
 	protected:
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _dataBuffer; // Data
@@ -73,7 +74,7 @@ namespace rawrbox {
 		void upload(bool dynamic = false) override {
 			rawrbox::ModelBase<M>::upload(dynamic);
 
-			auto *device = rawrbox::RENDERER->device();
+			auto* device = rawrbox::RENDERER->device();
 			auto instSize = static_cast<uint32_t>(this->_instances.size());
 			if (instSize <= 0) throw this->_logger->error("At least one instance must be present to upload");
 
@@ -99,7 +100,7 @@ namespace rawrbox {
 		virtual void updateInstance() {
 			if (this->_dataBuffer == nullptr) throw this->_logger->error("Data buffer not valid! Did you call upload()?");
 
-			auto *context = rawrbox::RENDERER->context();
+			auto* context = rawrbox::RENDERER->context();
 			auto instSize = static_cast<uint32_t>(this->_instances.size());
 
 			context->UpdateBuffer(this->_dataBuffer, 0, instSize * sizeof(rawrbox::Instance), this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
@@ -113,7 +114,7 @@ namespace rawrbox {
 			if (!this->isUploaded()) throw this->_logger->error("Failed to render model, vertex / index buffer is not uploaded");
 			if (this->_instances.empty()) return;
 
-			auto *context = rawrbox::RENDERER->context();
+			auto* context = rawrbox::RENDERER->context();
 
 			// Bind vertex and index buffers
 			// NOLINTBEGIN(*)

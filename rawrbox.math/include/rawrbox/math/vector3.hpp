@@ -110,13 +110,13 @@ namespace rawrbox {
 		[[nodiscard]] VecType clampMagnitude(NumberType max) const {
 			NumberType mag = this->sqrMagnitude();
 			if (mag > max * max) {
-				NumberType m = std::sqrt(mag);
+				auto m = static_cast<NumberType>(std::sqrt(mag));
 
-				NumberType x = this->x / m;
-				NumberType y = this->y / m;
-				NumberType z = this->z / m;
+				NumberType xx = this->x / m;
+				NumberType yy = this->y / m;
+				NumberType zz = this->z / m;
 
-				return {x * max, y * max, z * max};
+				return {xx * max, yy * max, zz * max};
 			}
 
 			return *this;
@@ -151,12 +151,12 @@ namespace rawrbox {
 		[[nodiscard]] NumberType angle(const VecType& target) const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			float denominator = std::sqrt(sqrMagnitude() * target.sqrMagnitude());
+			auto denominator = static_cast<NumberType>(std::sqrt(sqrMagnitude() * target.sqrMagnitude()));
 			if (denominator < 1e-15F)
 				return 0.F;
 
-			float dot = std::clamp(this->dot(target) / denominator, -1.F, 1.F);
-			return std::acos(dot) * (1.F / (rawrbox::pi<float> * 2.F / 360.F));
+			NumberType dot = std::clamp<NumberType>(this->dot(target) / denominator, -1.F, 1.F);
+			return std::acos(dot) * (1.F / (rawrbox::pi<NumberType> * 2.F / 360.F));
 		}
 
 		[[nodiscard]] VecType rotateAroundOrigin(const VecType& axis, float theta) const

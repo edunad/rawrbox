@@ -20,6 +20,7 @@ namespace rawrbox {
 		void init() override;
 
 		template <typename T = rawrbox::VertexData>
+			requires(std::derived_from<T, rawrbox::VertexData>)
 		bool bindVertexSkinnedUniforms(const rawrbox::Mesh<T>& mesh) {
 			rawrbox::BindlessVertexSkinnedBuffer buff = this->bindBaseVertexSkinnedUniforms<T>(mesh);
 			if (this->_lastSkinnedVertexBuffer.first && buff == this->_lastSkinnedVertexBuffer.second) return false;

@@ -30,7 +30,8 @@ namespace rawrbox {
 		[[nodiscard]] const std::string getID() const override;
 
 		// Process utils ----
-		template <class T, typename... CallbackArgs>
+		template <class T = rawrbox::PostProcessBase, typename... CallbackArgs>
+			requires(std::derived_from<T, rawrbox::PostProcessBase>)
 		void add(CallbackArgs&&... args) {
 			this->_postProcesses.push_back(std::make_unique<T>(std::forward<CallbackArgs>(args)...));
 		}

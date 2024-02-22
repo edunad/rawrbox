@@ -28,6 +28,7 @@ namespace rawrbox {
 
 		// LOADS ---
 		template <class T = rawrbox::Resource>
+			requires(std::derived_from<T, rawrbox::Resource>)
 		static T* getFileImpl(const std::filesystem::path& filePath) {
 			auto ext = filePath.extension().generic_string();
 			for (auto& loader : _loaders) {
@@ -43,6 +44,7 @@ namespace rawrbox {
 		}
 
 		template <class T = rawrbox::Resource>
+			requires(std::derived_from<T, rawrbox::Resource>)
 		static T* loadFileImpl(const std::filesystem::path& filePath, uint32_t loadFlags = 0) {
 			std::string path = filePath.generic_string();
 
@@ -94,6 +96,7 @@ namespace rawrbox {
 
 	public:
 		template <class T, typename... CallbackArgs>
+			requires(std::derived_from<T, rawrbox::Loader>)
 		static void addLoader(CallbackArgs&&... args) {
 			_loaders.push_back(std::make_unique<T>(std::forward<CallbackArgs>(args)...));
 		}
@@ -126,12 +129,14 @@ namespace rawrbox {
 		}
 
 		template <class T = rawrbox::Resource>
+			requires(std::derived_from<T, rawrbox::Resource>)
 		static T* loadFile(const std::filesystem::path& filePath, uint32_t loadFlags = 0) {
 			if (filePath.empty()) throw _logger->error("Attempted to load empty path");
 			return loadFileImpl<T>(filePath, loadFlags);
 		}
 
 		template <class T = rawrbox::Resource>
+			requires(std::derived_from<T, rawrbox::Resource>)
 		static void loadListAsync(const std::vector<std::pair<std::string, uint32_t>>& files, const std::function<void()>& onComplete = nullptr) {
 			_loadingFiles += files.size();
 
@@ -151,6 +156,7 @@ namespace rawrbox {
 		}
 
 		template <class T = rawrbox::Resource>
+			requires(std::derived_from<T, rawrbox::Resource>)
 		static void loadFileAsync(const std::filesystem::path& filePath, uint32_t loadFlags = 0, const std::function<void()>& onComplete = nullptr) {
 			if (filePath.empty()) throw _logger->error("Attempted to load empty path");
 
@@ -163,6 +169,7 @@ namespace rawrbox {
 		}
 
 		template <class T = rawrbox::Resource>
+			requires(std::derived_from<T, rawrbox::Resource>)
 		[[nodiscard]] static T* getFile(const std::filesystem::path& filePath) {
 			auto fl = getFileImpl<T>(filePath);
 			if (fl == nullptr) {

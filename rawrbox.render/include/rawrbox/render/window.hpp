@@ -118,6 +118,7 @@ namespace rawrbox {
 
 		// Renderer ------
 		template <class T = rawrbox::RendererBase, typename... CallbackArgs>
+			requires(std::derived_from<T, rawrbox::RendererBase>)
 		rawrbox::RendererBase* createRenderer(CallbackArgs&&... args) {
 			_renderer = std::make_unique<T>(rawrbox::Window::__RENDER_TYPE, this->getHandle(), this->getSize(), this->getMonitorSize(), std::forward<CallbackArgs>(args)...);
 
