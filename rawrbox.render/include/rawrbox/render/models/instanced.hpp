@@ -10,9 +10,8 @@ namespace rawrbox {
 		requires(std::derived_from<M, rawrbox::MaterialBase>)
 	class InstancedModel : public rawrbox::ModelBase<M> {
 	protected:
-		Diligent::RefCntAutoPtr<Diligent::IBuffer> _dataBuffer; // Data
+		std::unique_ptr<Diligent::DynamicBuffer> _dataBuffer = nullptr;
 		std::vector<rawrbox::Instance> _instances = {};
-		bool _autoUpload = true;
 
 		void updateBuffers() override {
 			rawrbox::ModelBase<M>::updateBuffers();
@@ -29,12 +28,8 @@ namespace rawrbox {
 		InstancedModel& operator=(const InstancedModel&) = delete;
 		InstancedModel& operator=(InstancedModel&&) = delete;
 		~InstancedModel() override {
-			RAWRBOX_DESTROY(this->_dataBuffer);
+			this->_dataBuffer.reset();
 			this->_instances.clear();
-		}
-
-		virtual void setAutoUpload(bool enabled) {
-			this->_autoUpload = enabled;
 		}
 
 		virtual void setTemplate(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
@@ -51,16 +46,16 @@ namespace rawrbox {
 			return *this->_mesh;
 		}
 
-		virtual void addInstance(const rawrbox::Instance& instance) {
+		virtual void addInstance(const rawrbox::Instance& instance, bool update = false) {
 			this->_instances.push_back(instance);
-			if (this->isUploaded() && this->_autoUpload) this->updateInstance();
+			if (this->isUploaded() && update) this->updateInstance();
 		}
 
-		virtual void removeInstance(size_t i = 0) {
+		virtual void removeInstance(size_t i = 0, bool update = false) {
 			if (i < 0 || i >= this->_instances.size()) throw this->_logger->error("Failed to find instance");
 			this->_instances.erase(this->_instances.begin() + i);
 
-			if (this->isUploaded() && this->_autoUpload) this->updateInstance();
+			if (this->isUploaded() && update) this->updateInstance();
 		}
 
 		[[nodiscard]] rawrbox::Instance& getInstance(size_t i = 0) {
@@ -75,39 +70,47 @@ namespace rawrbox {
 			rawrbox::ModelBase<M>::upload(dynamic);
 
 			auto* device = rawrbox::RENDERER->device();
-			auto instSize = static_cast<uint32_t>(this->_instances.size());
-			if (instSize <= 0) throw this->_logger->error("At least one instance must be present to upload");
+			auto size = this->_instances.size();
 
 			// INSTANCE BUFFER ----
 			Diligent::BufferDesc InstBuffDesc;
+			InstBuffDesc.ElementByteStride = sizeof(rawrbox::Instance);
 			InstBuffDesc.Name = "RawrBox::Buffer::Instance";
-			InstBuffDesc.Usage = Diligent::USAGE_DEFAULT;
+			InstBuffDesc.Usage = Diligent::USAGE_SPARSE;
 			InstBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-			InstBuffDesc.Size = instSize * sizeof(rawrbox::Instance); // TODO: FIX ME, SPARSE BUFFER?
+			InstBuffDesc.Size = InstBuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(size + 32, 1));
 
-			Diligent::BufferData VBData;
-			VBData.pData = this->_instances.data();
-			VBData.DataSize = InstBuffDesc.Size;
+			Diligent::DynamicBufferCreateInfo dynamicBuff;
+			dynamicBuff.Desc = InstBuffDesc;
 
-			device->CreateBuffer(InstBuffDesc, this->_instances.empty() ? nullptr : &VBData, &this->_dataBuffer);
-			// ---------------------
+			this->_dataBuffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
+			//  ---------------------
 
 			// Barrier ----
-			rawrbox::BindlessManager::barrier(*this->_dataBuffer, rawrbox::BufferType::CONSTANT);
+			rawrbox::BindlessManager::barrier(*this->_dataBuffer->GetBuffer(), rawrbox::BufferType::VERTEX);
 			// ------------
+
+			if (size != 0) this->updateInstance(); // Data was already added, then update the buffer
 		}
 
 		virtual void updateInstance() {
 			if (this->_dataBuffer == nullptr) throw this->_logger->error("Data buffer not valid! Did you call upload()?");
 
 			auto* context = rawrbox::RENDERER->context();
-			auto instSize = static_cast<uint32_t>(this->_instances.size());
+			auto* device = rawrbox::RENDERER->device();
 
-			context->UpdateBuffer(this->_dataBuffer, 0, instSize * sizeof(rawrbox::Instance), this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			// Update buffer ----
+			uint64_t size = sizeof(rawrbox::Instance) * static_cast<uint64_t>(std::max<size_t>(this->_instances.size(), 1)); // Always keep 1
+			if (size > this->_dataBuffer->GetDesc().Size) {
+				this->_dataBuffer->Resize(device, context, size + 32, true); // + OFFSET
+			}
 
-			// Barrier ----
-			rawrbox::BindlessManager::barrier(*this->_dataBuffer, rawrbox::BufferType::CONSTANT);
-			// ------------
+			auto* buffer = this->_dataBuffer->GetBuffer();
+			rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.size()), this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+			// BARRIER ----
+			rawrbox::BindlessManager::barrier(*buffer, rawrbox::BufferType::VERTEX);
+			// ---------
 		}
 
 		void draw() override {
@@ -119,7 +122,7 @@ namespace rawrbox {
 			// Bind vertex and index buffers
 			// NOLINTBEGIN(*)
 			const uint64_t offset[] = {0, 0};
-			Diligent::IBuffer* pBuffs[] = {this->_vbh, this->_dataBuffer};
+			Diligent::IBuffer* pBuffs[] = {this->_vbh, this->_dataBuffer->GetBuffer()};
 			// NOLINTEND(*)
 
 			context->SetVertexBuffers(0, 2, pBuffs, offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);

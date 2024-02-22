@@ -155,12 +155,12 @@ namespace scripting_test {
 			this->_model->addMesh(mesh);
 		}
 		// ----
+		this->_model->upload();
 
 		this->_instance->setTemplate(rawrbox::MeshUtils::generateCube({0.F, 0.0F, 0.F}, {0.1F, 0.1F, 0.1F}));
-		rawrbox::SCRIPTING::call("onReady");
-
-		this->_model->upload();
 		this->_instance->upload();
+
+		rawrbox::SCRIPTING::call("onReady");
 		this->_ready = true;
 	}
 

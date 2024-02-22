@@ -38,7 +38,7 @@ namespace rawrbox {
 			BuffDesc.Name = "rawrbox::Decals::Buffer";
 			BuffDesc.Usage = Diligent::USAGE_SPARSE;
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
-			BuffDesc.Size = BuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(_decals.size(), 1));
+			BuffDesc.Size = BuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(_decals.size() + 32, 1));
 			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
 
 			Diligent::DynamicBufferCreateInfo dynamicBuff;
@@ -81,8 +81,8 @@ namespace rawrbox {
 		if (_buffer == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__DECALS_DIRTY__ || _decals.empty()) return;
 
-		auto *context = rawrbox::RENDERER->context();
-		auto *device = rawrbox::RENDERER->device();
+		auto* context = rawrbox::RENDERER->context();
+		auto* device = rawrbox::RENDERER->device();
 
 		// Update decals ---
 		std::vector<rawrbox::DecalVertex> decals = {};
@@ -100,11 +100,9 @@ namespace rawrbox {
 
 		// Update buffer ----
 		uint64_t size = sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(std::max<size_t>(_decals.size(), 1)); // Always keep 1
-		if (size > _buffer->GetDesc().Size) {
-			_buffer->Resize(device, context, size, true);
-		}
+		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, size + 32, true);
 
-		auto *buffer = _buffer->GetBuffer();
+		auto* buffer = _buffer->GetBuffer();
 		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(_decals.size()), decals.empty() ? nullptr : decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		// BARRIER ----

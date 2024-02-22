@@ -98,9 +98,6 @@ function MOD:onReady()
 
     local mdl = test_model2()
     if mdl then
-        mdl:setAutoUpload(false)
-        print("model is ok, yey")
-
         for x = 1, apple.width do
             for y = 1, apple.height do
                 local ins = Instance()
@@ -112,6 +109,7 @@ function MOD:onReady()
             end
         end
 
+        mdl:updateInstance()
         mdl:setPos(Vector3(-2, 0, 2))
 
         for i = 1, apple.width * apple.height do

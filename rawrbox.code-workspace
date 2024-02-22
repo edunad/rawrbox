@@ -25,6 +25,7 @@
     ],
     "clangd.restartAfterCrash": true,
     "clangd.checkUpdates": true,
+    "clangd.detectExtensionConflicts": true,
     "clangd.arguments": ["--header-insertion=never", "--background-index"],
     "git.detectSubmodules": false,
     "git.autoRepositoryDetection": false,
