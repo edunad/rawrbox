@@ -18,7 +18,7 @@ namespace rawrbox {
 		// Setup callback ---
 		auto cb = [callback](const cpr::Response& r) {
 			std::map<std::string, std::string> headerResp = {};
-			for (auto& h : r.header) {
+			for (const auto& h : r.header) {
 				headerResp[h.first] = h.second;
 			}
 

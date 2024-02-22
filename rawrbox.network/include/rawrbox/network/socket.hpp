@@ -48,7 +48,7 @@ namespace rawrbox {
 
 		uint8_t _totaldata = 0;
 
-		bool check() const;
+		[[nodiscard]] bool check() const;
 
 	public:
 		bool blocking = true;
@@ -81,7 +81,7 @@ namespace rawrbox {
 		[[nodiscard]] rawrbox::SocketError connect(const std::string& host, uint16_t port);
 		void close();
 
-		uint64_t uAddr() const;
+		[[nodiscard]] uint64_t uAddr() const;
 		bool isError();
 
 		std::string getIpAddress();

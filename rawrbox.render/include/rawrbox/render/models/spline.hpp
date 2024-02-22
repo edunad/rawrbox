@@ -11,7 +11,7 @@ namespace rawrbox {
 
 		Mesh2DShape() = default;
 
-		std::vector<int> getLineSegments() const {
+		[[nodiscard]] std::vector<int> getLineSegments() const {
 			std::vector<int> segments = {};
 
 			for (size_t i = 0; i < this->vertex.size() - 1; i++) {

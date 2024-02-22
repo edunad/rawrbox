@@ -85,7 +85,7 @@ namespace rawrbox {
 
 	std::string I18N::get(const std::string& id, const std::string& key, const std::vector<std::string>& values) {
 		fmt::dynamic_format_arg_store<fmt::format_context> args;
-		for (auto& str : values) {
+		for (const auto& str : values) {
 			args.push_back(str);
 		}
 
