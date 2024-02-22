@@ -8,7 +8,7 @@
 
 "🖼️ UI":
   - changed-files:
-  - any-glob-to-any-file: "rawrbox.ui/**/*"
+      - any-glob-to-any-file: "rawrbox.ui/**/*"
 
 "⚒️ UTILS":
   - changed-files:
