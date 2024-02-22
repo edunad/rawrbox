@@ -142,7 +142,7 @@ namespace rawrbox {
 		return BASS_ChannelGetTags(this->_channel, BASS_TAG_HTTP) == nullptr;
 	}
 
-	const std::vector<float> SoundInstance::getFFT(int bass_length) const {
+	std::vector<float> SoundInstance::getFFT(int bass_length) const {
 		std::vector<float> buffer;
 		if (!this->isCreated()) return buffer;
 

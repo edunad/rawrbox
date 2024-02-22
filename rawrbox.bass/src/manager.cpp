@@ -8,7 +8,6 @@
 #include <fmt/printf.h>
 
 #include <filesystem>
-#include <stdexcept>
 
 namespace rawrbox {
 	constexpr auto MAX_SOUND_INSTANCES = 5; // Max sound effects playing at the same time
@@ -193,22 +192,22 @@ namespace rawrbox {
 		BASS_SetConfig(BASS_CONFIG_GVOL_STREAM, static_cast<DWORD>(volume * 10000));
 	}
 
-	void BASS::setMuteOnUnfocus(bool active) {
-		_muteOnUnfocus = active;
+	void BASS::setMuteOnUnfocus(bool set) {
+		_muteOnUnfocus = set;
 	}
 
 	float BASS::getMasterVolume() {
 		return _masterVolume;
 	}
 
-	void BASS::setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& forward, const rawrbox::Vector3f& up) {
+	void BASS::setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& front, const rawrbox::Vector3f& up) {
 		if (!_initialized) return;
 
 		auto velo = location - _oldLocation;
 		_oldLocation = location;
 
 		BASS_3DVECTOR Bass_Player = {location.x, location.y, location.z};
-		BASS_3DVECTOR Bass_Front = {forward.x, forward.y, forward.z};
+		BASS_3DVECTOR Bass_Front = {front.x, front.y, front.z};
 		BASS_3DVECTOR Bass_Top = {up.x, up.y, up.z};
 		BASS_3DVECTOR Bass_Velocity = {velo.x, velo.y, velo.z};
 

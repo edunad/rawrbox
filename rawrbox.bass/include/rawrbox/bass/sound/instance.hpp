@@ -65,7 +65,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool isPaused() const;
 		[[nodiscard]] virtual bool isHTTPStream() const;
 
-		[[nodiscard]] virtual const std::vector<float> getFFT(int bass_length) const;
+		[[nodiscard]] virtual std::vector<float> getFFT(int bass_length) const;
 
 		[[nodiscard]] virtual const rawrbox::Vector3f& getPosition() const;
 		// ------------------
@@ -75,7 +75,7 @@ namespace rawrbox {
 		virtual void setTempo(float tempo);
 		virtual void seek(double seek);
 		virtual void setLooping(bool loop);
-		virtual void setPosition(const rawrbox::Vector3f& location);
+		virtual void setPosition(const rawrbox::Vector3f& pos);
 		virtual void set3D(float maxDistance, float minDistance = 0.F);
 	};
 } // namespace rawrbox
