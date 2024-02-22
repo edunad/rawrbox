@@ -32,8 +32,8 @@ namespace rawrbox {
 
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1); }
-		static VecType up() { return VecType(0, 1, 0); }
-		static VecType forward() { return VecType(0, 0, 1); }
+		static VecType up() { return VecType(0, 0, 1); }
+		static VecType forward() { return VecType(0, 1, 0); }
 		static VecType left() { return VecType(1, 0, 0); }
 
 		static VecType nan()

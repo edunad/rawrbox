@@ -39,6 +39,10 @@ namespace rawrbox {
 	void LightsWrapper::remove(size_t index) {
 		rawrbox::LIGHTS::remove(index);
 	}
+
+	void LightsWrapper::clear() {
+		rawrbox::LIGHTS::clear();
+	}
 	// ---------
 
 	// Light utils ----
@@ -70,6 +74,7 @@ namespace rawrbox {
 		    .addFunction("remove",
 			luabridge::overload<const rawrbox::LightBase&>(&LightsWrapper::remove),
 			luabridge::overload<size_t>(&LightsWrapper::remove))
+		    .addFunction("clear", &LightsWrapper::clear)
 		    // --------
 
 		    // UTIL ---

@@ -163,5 +163,13 @@ namespace rawrbox {
 
 		return false;
 	}
+
+	void DECALS::clear() {
+		if (_decals.empty()) return;
+		_decals.clear();
+
+		rawrbox::__DECALS_DIRTY__ = true;
+		_CONSTANTS_DIRTY = true;
+	}
 	// ---------
 } // namespace rawrbox

@@ -2,6 +2,7 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/cameras/orbital.hpp>
 #include <rawrbox/render/decals/manager.hpp>
+#include <rawrbox/render/lights/point.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/resources/texture.hpp>
@@ -34,6 +35,7 @@ namespace decal_test {
 
 		// Setup renderer
 		auto* render = window->createRenderer();
+		render->skipIntros(true);
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
@@ -53,13 +55,37 @@ namespace decal_test {
 		// --------------
 
 		// BINDS ----
-		window->onMouseKey += [](auto&, const rawrbox::Vector2i&, int button, int action, int) {
+		window->onMouseKey += [this](auto&, const rawrbox::Vector2i&, int button, int action, int) {
 			const bool isDown = action == 1;
 			if (!isDown || button != MOUSE_BUTTON_1) return;
+			this->generateDecals();
 		};
 		// -----
 
 		render->init();
+	}
+
+	void Game::generateDecals() {
+		rawrbox::DECALS::clear();
+
+		std::random_device prng;
+		std::uniform_int_distribution<uint16_t> dist(0, 4);
+		std::uniform_real_distribution<float> distRot(-0.6F, 0.8F);
+
+		auto* decalTex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/decals.png")->get();
+		rawrbox::Decal d = {};
+
+		for (int i = 0; i < 30; i++) {
+			d.setTexture(*decalTex, dist(prng));
+			d.localToWorld = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({rawrbox::MathUtils::toRad(90), 0, 0}), {distRot(prng), 0.F, distRot(prng) - 1.2F});
+			d.color = rawrbox::Colors::Green();
+			rawrbox::DECALS::add(d);
+
+			d.setTexture(*decalTex, dist(prng));
+			d.localToWorld = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({0, rawrbox::MathUtils::toRad(180), 0}), {distRot(prng), distRot(prng) + 1.0F, 0.F});
+			d.color = rawrbox::Colors::Red();
+			rawrbox::DECALS::add(d);
+		}
 	}
 
 	void Game::loadContent() {
@@ -78,40 +104,19 @@ namespace decal_test {
 	void Game::contentLoaded() {
 		if (this->_ready) return;
 
-		std::random_device prng;
-		std::uniform_int_distribution<uint16_t> dist(0, 4);
-		std::uniform_real_distribution<float> distRot(-1.5F, 1.5F);
-
-		auto* decalTex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/decals.png")->get();
-		rawrbox::Decal d = {};
-
-		for (int i = 0; i < 30; i++) {
-			d.setTexture(*decalTex, dist(prng));
-			d.localToWorld = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({rawrbox::MathUtils::toRad(90), 0, 0}), {distRot(prng), 0.F, distRot(prng) - 1.55F});
-			d.color = rawrbox::Colors::Green();
-			rawrbox::DECALS::add(d);
-
-			d.setTexture(*decalTex, dist(prng));
-			d.localToWorld = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, {}, {distRot(prng), distRot(prng) + 1.25F, 0.F});
-			d.color = rawrbox::Colors::Red();
-			rawrbox::DECALS::add(d);
-		}
-
-		// rawrbox::LIGHTS::addLight<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, -1.F}, rawrbox::Colors::White() * 0.5F, 5.F);
-
 		// Setup
 		{
-			auto mesh = rawrbox::MeshUtils::generateCube({0, 1.0F, 0}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray());
+			auto mesh = rawrbox::MeshUtils::generateCube<rawrbox::MaterialLit>({0, 1.0F, 0}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray());
 			// mesh.setRecieveDecals(true);
-			this->_model->addMesh(mesh);
+			this->_model2->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generateCube({0, -1.0F, 0.F}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray());
+			auto mesh = rawrbox::MeshUtils::generateCube<rawrbox::MaterialLit>({0, -1.0F, 0.F}, {3.F, 2.F, 0.1F}, rawrbox::Colors::Gray());
 			// mesh.setRecieveDecals(true);
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 
-			this->_model->addMesh(mesh);
+			this->_model2->addMesh(mesh);
 		}
 
 		{
@@ -128,6 +133,13 @@ namespace decal_test {
 		// ----
 
 		this->_model->upload();
+		this->_model2->upload();
+
+		this->generateDecals();
+
+		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, -1.F}, rawrbox::Colors::White() * 4.5F, 5.F);
+		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, 1.F}, rawrbox::Colors::White() * 4.5F, 5.F);
+
 		this->_ready = true;
 	}
 
@@ -148,13 +160,14 @@ namespace decal_test {
 		rawrbox::Window::update();
 
 		if (this->_ready && this->_model != nullptr) {
-			this->_model->getMesh(2)->setPos({std::sin(rawrbox::FRAME * 0.01F) * 0.5F - 1.F, -0.05F, -0.55F - std::cos(rawrbox::FRAME * 0.01F) * 0.5F});
+			this->_model->getMesh(0)->setPos({std::sin(rawrbox::FRAME * 0.01F) * 0.5F - 1.F, -0.05F, -0.55F - std::cos(rawrbox::FRAME * 0.01F) * 0.5F});
 		}
 	}
 
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 		this->_model->draw();
+		this->_model2->draw();
 	}
 
 	void Game::draw() {

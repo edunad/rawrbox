@@ -14,8 +14,8 @@ namespace rawrbox {
 		rawrbox::__DECALS_DIRTY__ = true;
 	}
 
-	void Decal::setScale(const rawrbox::Vector3f& pos) {
-		this->localToWorld.scale(pos);
+	void Decal::setScale(const rawrbox::Vector3f& scale) {
+		this->localToWorld.scale(scale);
 		rawrbox::__DECALS_DIRTY__ = true;
 	}
 

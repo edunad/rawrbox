@@ -83,7 +83,7 @@ namespace rawrbox {
 			Diligent::DynamicBufferCreateInfo dynamicBuff;
 			dynamicBuff.Desc = InstBuffDesc;
 
-			this->_dataBuffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
+			this->_dataBuffer = std::make_unique<Diligent::DynamicBuffer>(device, dynamicBuff);
 			//  ---------------------
 
 			// Barrier ----

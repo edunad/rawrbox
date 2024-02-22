@@ -186,6 +186,14 @@ namespace rawrbox {
 
 		return false;
 	}
+
+	void LIGHTS::clear() {
+		if (_lights.empty()) return;
+		_lights.clear();
+
+		rawrbox::__LIGHT_DIRTY__ = true;
+		_CONSTANTS_DIRTY = true;
+	}
 	// ---------
 
 } // namespace rawrbox

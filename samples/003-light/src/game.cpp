@@ -134,16 +134,6 @@ namespace light {
 		rawrbox::LIGHTS::add<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White()); // SUN
 		// -------------------
 
-		// Decal test --------
-		auto* decalTex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/decals.png")->get();
-
-		rawrbox::Decal d = {};
-		d.setTexture(*decalTex, 3);
-		d.localToWorld = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({rawrbox::MathUtils::toRad(90), 0, 0}), {-3.5F, 0, 0});
-
-		rawrbox::DECALS::add(d);
-		// -------------------
-
 		this->_model->upload();
 		this->_model2->upload();
 		this->_model3->upload();

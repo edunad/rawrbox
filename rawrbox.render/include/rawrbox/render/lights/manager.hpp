@@ -86,6 +86,7 @@ namespace rawrbox {
 
 		static bool remove(size_t indx);
 		static bool remove(const rawrbox::LightBase& light);
+		static void clear();
 		// ---------
 	};
 } // namespace rawrbox

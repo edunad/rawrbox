@@ -21,6 +21,7 @@ namespace rawrbox {
 
 		static void remove(const rawrbox::LightBase& light);
 		static void remove(size_t index);
+		static void clear();
 		// ---------
 
 		// utils ----

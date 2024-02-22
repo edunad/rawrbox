@@ -19,9 +19,15 @@
                 float3 decalTexCoord = dPos.xyz * float3(0.5f, -0.5f, 0.5f) + 0.5f;
                 float4 decalAccumulation = 0;
 
-                if(all(decalTexCoord >= 0.0) && all(decalTexCoord <= 1.0)) {
-                    float2 decalDx = mul(ddxPos, (float3x3)decal.worldToLocal).xy;
-                    float2 decalDy = mul(ddyPos, (float3x3)decal.worldToLocal).xy;
+                float3x3 wLocal = (float3x3)decal.worldToLocal;
+
+                // Back-face culling check
+                float3 viewDir = normalize(worldPosition.xyz - Camera.pos.xyz);
+
+                float3 decalNormal = mul(float3(0, 0, 1), wLocal);
+                if(dot(decalNormal, viewDir) < 0 && all(decalTexCoord >= 0.0) && all(decalTexCoord <= 1.0)) {
+                    float2 decalDx = mul(ddxPos, wLocal).xy;
+                    float2 decalDy = mul(ddyPos, wLocal).xy;
 
                     float4 decalColor = g_Textures[decal.data.x].SampleGrad(g_Sampler, float3(decalTexCoord.xy, decal.data.y), decalDx, decalDy, 0) * decal.color;
                     float edge = 1 - pow(saturate(abs(dPos.z)), 8);

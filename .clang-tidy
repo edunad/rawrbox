@@ -29,6 +29,7 @@ Checks: clang-diagnostic-*
   -readability-identifier-length
   -readability-function-cognitive-complexity
   -readability-else-after-return
+  -readability-convert-member-functions-to-static
 WarningsAsErrors: "*"
 HeaderFilterRegex: ""
 AnalyzeTemporaryDtors: false

@@ -304,7 +304,7 @@ namespace rawrbox {
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L687
 		// Does not support UV :( / normals
 		template <typename M = rawrbox::MaterialUnlit>
-			requires(std::derived_from<M, rawrbox::MaterialBase>)
+			requires(std::derived_from<M, rawrbox::MaterialUnlit>)
 		static rawrbox::Mesh<typename M::vertexBufferType> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const uint16_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			if (ratio % 3 != 0) throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateCone' ratio '{}' needs to be divisible by 3", ratio);
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
@@ -366,7 +366,7 @@ namespace rawrbox {
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L750
 		// Does not support UV :( / normals
 		template <typename M = rawrbox::MaterialUnlit>
-			requires(std::derived_from<M, rawrbox::MaterialBase>)
+			requires(std::derived_from<M, rawrbox::MaterialUnlit>)
 		static rawrbox::Mesh<typename M::vertexBufferType> generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const uint16_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateCylinder' does not support normals");
@@ -433,7 +433,7 @@ namespace rawrbox {
 		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L640
 		// Does not support UV :( / normals
 		template <typename M = rawrbox::MaterialUnlit>
-			requires(std::derived_from<M, rawrbox::MaterialBase>)
+			requires(std::derived_from<M, rawrbox::MaterialUnlit>)
 		static rawrbox::Mesh<typename M::vertexBufferType> generateSphere(const rawrbox::Vector3f& pos, float size, uint32_t ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateSphere' does not support normals");
@@ -608,7 +608,7 @@ namespace rawrbox {
 
 		// Adapted from : https://stackoverflow.com/questions/58494179/how-to-create-a-grid-in-opengl-and-drawing-it-with-lines
 		template <typename M = rawrbox::MaterialUnlit>
-			requires(std::derived_from<M, rawrbox::MaterialBase>)
+			requires(std::derived_from<M, rawrbox::MaterialUnlit>)
 		static rawrbox::Mesh<typename M::vertexBufferType> generateGrid(uint16_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::Gray().strength(0.4F), const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent()) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateGrid' does not support normals");
