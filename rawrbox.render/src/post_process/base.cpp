@@ -6,7 +6,7 @@
 namespace rawrbox {
 
 	void PostProcessBase::init() {
-		auto *plugin = rawrbox::RENDERER->getPlugin<rawrbox::PostProcessPlugin>("PostProcess");
+		auto* plugin = rawrbox::RENDERER->getPlugin<rawrbox::PostProcessPlugin>("PostProcess");
 		if (plugin == nullptr) throw this->_logger->error("Post process plugin requires the 'PostProcess' renderer plugin!");
 
 		this->_buffer = plugin->getBuffer();
@@ -15,7 +15,7 @@ namespace rawrbox {
 	void PostProcessBase::applyEffect(const rawrbox::TextureBase& texture) {
 		if (!texture.isValid()) throw this->_logger->error("Effect texture not uploaded!");
 
-		auto *context = rawrbox::RENDERER->context();
+		auto* context = rawrbox::RENDERER->context();
 		context->SetPipelineState(this->_pipeline);
 
 		// SETUP UNIFORMS ----------------------------

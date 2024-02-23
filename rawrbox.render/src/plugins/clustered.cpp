@@ -92,12 +92,12 @@ namespace rawrbox {
 	}
 
 	void ClusteredPlugin::preRender() {
-		auto *renderer = rawrbox::RENDERER;
+		auto* renderer = rawrbox::RENDERER;
 		if (renderer == nullptr) throw this->_logger->error("Renderer not initialized!");
 		if (this->_clusterBuildingComputeProgram == nullptr || this->_cullingComputeProgram == nullptr) throw this->_logger->error("Compute pipelines not initialized, did you call 'initialize'");
 
-		auto *camera = renderer->camera();
-		auto *context = renderer->context();
+		auto* camera = renderer->camera();
+		auto* context = renderer->context();
 
 		// Setup uniforms
 		rawrbox::LIGHTS::bindUniforms();
@@ -135,7 +135,7 @@ namespace rawrbox {
 	}
 
 	void ClusteredPlugin::buildBuffers() {
-		auto *device = rawrbox::RENDERER->device();
+		auto* device = rawrbox::RENDERER->device();
 
 		// Clusters  --
 		{

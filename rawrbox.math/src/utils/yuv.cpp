@@ -21,10 +21,10 @@ namespace rawrbox {
 		if (!_colorTable.empty()) return _colorTable;
 		_colorTable.resize(4 * 256); // R G B A
 
-		int16_t *Cr_r_tab = &_colorTable[0 * 256];
-		int16_t *Cr_g_tab = &_colorTable[1 * 256];
-		int16_t *Cb_g_tab = &_colorTable[2 * 256];
-		int16_t *Cb_b_tab = &_colorTable[3 * 256];
+		int16_t* Cr_r_tab = &_colorTable[0 * 256];
+		int16_t* Cr_g_tab = &_colorTable[1 * 256];
+		int16_t* Cb_g_tab = &_colorTable[2 * 256];
+		int16_t* Cb_b_tab = &_colorTable[3 * 256];
 
 		// Generate the tables for the display surface
 		for (int16_t i = 0; i < 256; i++) {
@@ -50,9 +50,9 @@ namespace rawrbox {
 		bytes.resize(3 * 768);
 		// -----
 
-		uint8_t *r_2_pix_alloc = &bytes[0 * 768];
-		uint8_t *g_2_pix_alloc = &bytes[1 * 768];
-		uint8_t *b_2_pix_alloc = &bytes[2 * 768];
+		uint8_t* r_2_pix_alloc = &bytes[0 * 768];
+		uint8_t* g_2_pix_alloc = &bytes[1 * 768];
+		uint8_t* b_2_pix_alloc = &bytes[2 * 768];
 
 		if (scale == rawrbox::YUVLuminanceScale::FULL) {
 			// Set up entries 0-255 in rgb-to-pixel value tables.
@@ -101,7 +101,7 @@ namespace rawrbox {
 		return bytes;
 	}
 
-	void YUVUtils::convert420(rawrbox::YUVLuminanceScale scale, uint8_t *dst, int dstPitch, const uint8_t *ySrc, const uint8_t *uSrc, const uint8_t *vSrc, const uint8_t *aSrc, int yWidth, int yHeight, int yPitch, int uvPitch) {
+	void YUVUtils::convert420(rawrbox::YUVLuminanceScale scale, uint8_t* dst, int dstPitch, const uint8_t* ySrc, const uint8_t* uSrc, const uint8_t* vSrc, const uint8_t* aSrc, int yWidth, int yHeight, int yPitch, int uvPitch) {
 		const auto rgbToPix = lookup(scale);
 		const auto colorTab = getColorTAB();
 
@@ -112,7 +112,7 @@ namespace rawrbox {
 
 		for (int h = 0; h < halfHeight; h++) {
 			for (int w = 0; w < halfWidth; w++) {
-				const uint8_t *L = nullptr;
+				const uint8_t* L = nullptr;
 
 				int16_t cr_r = colorTab[*vSrc + 0 * 256];
 				int16_t crb_g = colorTab[*vSrc + 1 * 256] + colorTab[*uSrc + 2 * 256];
@@ -143,7 +143,7 @@ namespace rawrbox {
 		}
 	}
 
-	void YUVUtils::convert420(rawrbox::YUVLuminanceScale scale, uint8_t *dst, int dstPitch, const uint8_t *ySrc, const uint8_t *uSrc, const uint8_t *vSrc, int yWidth, int yHeight, int yPitch, int uvPitch) {
+	void YUVUtils::convert420(rawrbox::YUVLuminanceScale scale, uint8_t* dst, int dstPitch, const uint8_t* ySrc, const uint8_t* uSrc, const uint8_t* vSrc, int yWidth, int yHeight, int yPitch, int uvPitch) {
 		const auto rgbToPix = lookup(scale);
 		const auto colorTab = getColorTAB();
 
@@ -154,7 +154,7 @@ namespace rawrbox {
 
 		for (int h = 0; h < halfHeight; h++) {
 			for (int w = 0; w < halfWidth; w++) {
-				const uint8_t *L = nullptr;
+				const uint8_t* L = nullptr;
 
 				int16_t cr_r = colorTab[*vSrc + 0 * 256];
 				int16_t crb_g = colorTab[*vSrc + 1 * 256] + colorTab[*uSrc + 2 * 256];

@@ -75,9 +75,9 @@ namespace rawrbox {
 		return fltInt16;
 	}
 
-	float PackUtils::fromHalf(short fltInt16) {
-		int fltInt32 = ((fltInt16 & 0x8000) << 16);
-		fltInt32 |= ((fltInt16 & 0x7fff) << 13) + 0x38000000;
+	float PackUtils::fromHalf(short value) {
+		int fltInt32 = ((value & 0x8000) << 16);
+		fltInt32 |= ((value & 0x7fff) << 13) + 0x38000000;
 
 		float fRet = 0.F;
 		std::memcpy(&fRet, &fltInt32, sizeof(float));

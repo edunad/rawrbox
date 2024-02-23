@@ -23,7 +23,7 @@ namespace rawrbox {
 		auto svg = lunasvg::Document::loadFromFile(name);
 		if (svg == nullptr) throw _logger->error("Failed to load '{}'", name);
 
-		auto *ptr = svg.get();
+		auto* ptr = svg.get();
 		_svgs[name] = std::move(svg);
 		return ptr;
 	}
@@ -53,7 +53,7 @@ namespace rawrbox {
 		auto fnd = _renderedSVGS.find(id);
 		if (fnd != _renderedSVGS.end()) return fnd->second.get();
 
-		auto *doc = SVGEngine::internalLoad(filename);
+		auto* doc = SVGEngine::internalLoad(filename);
 		if (doc == nullptr) throw _logger->error("Failed to load '{}'", filename.generic_string());
 
 		auto img = doc->renderToBitmap(size.x, size.y);
@@ -61,7 +61,7 @@ namespace rawrbox {
 		texture->setName("SVG");
 		texture->upload();
 
-		auto *ptr = texture.get();
+		auto* ptr = texture.get();
 		_renderedSVGS[id] = std::move(texture);
 
 		return ptr;

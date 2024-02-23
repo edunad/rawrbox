@@ -94,7 +94,7 @@ namespace rawrbox {
 				if (endPos == std::string::npos) continue;
 
 				// set current style, do chunk and set style back
-				auto *old = _currentStyle.font;
+				auto* old = _currentStyle.font;
 				_currentStyle.font = bold ? fontBold : fontItalic;
 				this->parseChunk({text.begin() + textStart, text.begin() + endPos});
 				_currentStyle.font = old;

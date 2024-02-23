@@ -20,7 +20,7 @@ namespace rawrbox {
 		static std::vector<int16_t> getColorTAB();
 		static std::vector<uint8_t> lookup(rawrbox::YUVLuminanceScale scale);
 
-		static void convert420(rawrbox::YUVLuminanceScale scale, uint8_t *dst, int dstPitch, const uint8_t *ySrc, const uint8_t *uSrc, const uint8_t *vSrc, const uint8_t *aSrc, int yWidth, int yHeight, int yPitch, int uvPitch);
-		static void convert420(rawrbox::YUVLuminanceScale scale, uint8_t *dst, int dstPitch, const uint8_t *ySrc, const uint8_t *uSrc, const uint8_t *vSrc, int yWidth, int yHeight, int yPitch, int uvPitch);
+		static void convert420(rawrbox::YUVLuminanceScale scale, uint8_t* dst, int dstPitch, const uint8_t* ySrc, const uint8_t* uSrc, const uint8_t* vSrc, const uint8_t* aSrc, int yWidth, int yHeight, int yPitch, int uvPitch);
+		static void convert420(rawrbox::YUVLuminanceScale scale, uint8_t* dst, int dstPitch, const uint8_t* ySrc, const uint8_t* uSrc, const uint8_t* vSrc, int yWidth, int yHeight, int yPitch, int uvPitch);
 	};
 } // namespace rawrbox

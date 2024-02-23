@@ -33,8 +33,8 @@ namespace rawrbox {
 		if (signature != nullptr) throw _logger->error("Signature already bound!");
 		_logger->info("Initializing bindless manager");
 
-		auto *renderer = rawrbox::RENDERER;
-		auto *device = renderer->device();
+		auto* renderer = rawrbox::RENDERER;
+		auto* device = renderer->device();
 
 		// Reserve max textures ---
 		_textureHandles.reserve(renderer->MAX_TEXTURES);
@@ -116,10 +116,10 @@ namespace rawrbox {
 
 	// SIGNATURES ---------
 	void BindlessManager::createSignatures() {
-		auto *renderer = rawrbox::RENDERER;
+		auto* renderer = rawrbox::RENDERER;
 
-		auto *camera = renderer->camera();
-		auto *device = renderer->device();
+		auto* camera = renderer->camera();
+		auto* device = renderer->device();
 
 		Diligent::PipelineResourceSignatureDesc PRSDesc;
 		PRSDesc.Name = "RawrBox::SIGNATURE::BINDLESS";
@@ -200,8 +200,8 @@ namespace rawrbox {
 	}
 
 	void BindlessManager::bindSignatures() {
-		auto *renderer = rawrbox::RENDERER;
-		auto *camera = renderer->camera();
+		auto* renderer = rawrbox::RENDERER;
+		auto* camera = renderer->camera();
 
 		// Setup graphic binds ---
 		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(signatureBufferVertex);
@@ -283,7 +283,7 @@ namespace rawrbox {
 
 		// UPDATE TEXTURES ---
 		if (!_updateTextures.empty()) {
-			for (auto *tex : _updateTextures) {
+			for (auto* tex : _updateTextures) {
 				if (tex == nullptr) continue;
 				tex->update();
 			}
@@ -293,7 +293,7 @@ namespace rawrbox {
 
 	// BARRIERS -------
 	void BindlessManager::barrier(const rawrbox::TextureBase& texture, const std::function<void()>& callback) {
-		auto *texHandle = texture.getTexture();
+		auto* texHandle = texture.getTexture();
 		if (texHandle == nullptr) throw _logger->error("Texture '{}' not uploaded! Cannot create barrier", texture.getName());
 
 		auto threadID = std::this_thread::get_id();

@@ -31,7 +31,7 @@ namespace rawrbox {
 		settings.layout = layout;
 		settings.signature = rawrbox::BindlessManager::signature; // Use bindless
 
-		auto *cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
+		auto* cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
 		if (cluster != nullptr) {
 			settings.macros = cluster->getClusterMacros() + helper;
 		}

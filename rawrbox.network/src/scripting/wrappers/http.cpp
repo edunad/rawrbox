@@ -7,7 +7,7 @@ namespace rawrbox {
 		if (!headers.isTable()) throw std::runtime_error("Invalid header table");
 		if (!callback.isCallable()) throw std::runtime_error("Invalid callback");
 
-		auto *L = headers.state();
+		auto* L = headers.state();
 
 		// Setup headers -------
 		std::map<std::string, std::string> headerMap = {};

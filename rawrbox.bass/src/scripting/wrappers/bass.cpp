@@ -25,13 +25,13 @@ namespace rawrbox {
 				    fmt::print("Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath);
 			    }
 #endif
-			    auto *sound = BASS::loadSound(fixedPath, flags.value_or(0));
+			    auto* sound = BASS::loadSound(fixedPath, flags.value_or(0));
 			    if (sound == nullptr) throw std::runtime_error(fmt::format("Failed to load sound '{}'", path));
 
 			    return sound->createInstance();
 		    })
 		    .addFunction("loadHTTPSound", [](const std::string& url, std::optional<uint32_t> flags) {
-			    auto *sound = BASS::loadHTTPSound(url, flags.value_or(0));
+			    auto* sound = BASS::loadHTTPSound(url, flags.value_or(0));
 			    if (sound == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] Failed to load http sound '{}'", url));
 
 			    return sound->createInstance();
