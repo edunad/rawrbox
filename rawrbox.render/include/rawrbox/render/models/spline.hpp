@@ -46,7 +46,7 @@ namespace rawrbox {
 		Spline& operator=(Spline&&) = delete;
 		~Spline() override = default;
 
-		virtual void setExtrudeVerts(rawrbox::Mesh2DShape shape) {
+		virtual void setExtrudeVerts(const rawrbox::Mesh2DShape& shape) {
 			this->_shape = std::make_unique<rawrbox::Mesh2DShape>(shape);
 		}
 

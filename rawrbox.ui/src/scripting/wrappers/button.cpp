@@ -19,7 +19,7 @@ namespace rawrbox {
 		    .addFunction("getBackgroundColor", &rawrbox::UIButton::getBackgroundColor)
 
 		    .addFunction("setText", [](rawrbox::UIButton& self, const std::string& str, std::optional<uint32_t> size) {
-			    self.setText(str, size.value_or(16));
+			    self.setText(str, size.value_or(16U));
 		    })
 		    .addFunction("getText", &rawrbox::UIButton::getText)
 

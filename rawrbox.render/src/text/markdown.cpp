@@ -216,7 +216,7 @@ namespace rawrbox {
 			if (elm.type == MarkdownType::corrupt) {
 				auto& text = elm.text;
 
-				std::array<wchar_t, 21> letters = {L'!', L'§', L'$', L'%', L'/', L'(', L')', L'=', L'?', L'_', L'<', L'>', L'^', static_cast<wchar_t>(0x00B0), L'*', L'#', L'-', L':', L';', L'~', static_cast<wchar_t>(0x00D8)};
+				std::array<wchar_t, 21> letters = {L'!', L'§', L'$', L'%', L'/', L'(', L')', L'=', L'?', L'_', L'<', L'>', L'^', L'\u00B0', L'*', L'#', L'-', L':', L';', L'~', L'\u00D8'};
 				std::wstring corrupted;
 
 				std::uniform_int_distribution<size_t> dist(0, letters.size() - 1);

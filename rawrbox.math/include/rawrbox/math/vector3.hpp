@@ -32,8 +32,8 @@ namespace rawrbox {
 
 		static VecType zero() { return VecType(); }
 		static VecType one() { return VecType(1, 1, 1); }
-		static VecType up() { return VecType(0, 0, 1); }
-		static VecType forward() { return VecType(0, 1, 0); }
+		static VecType up() { return VecType(0, 1, 0); }
+		static VecType forward() { return VecType(0, 0, 1); }
 		static VecType left() { return VecType(1, 0, 0); }
 
 		static VecType nan()
@@ -86,9 +86,9 @@ namespace rawrbox {
 			if ((*this) == other) return other;
 			VecType ret;
 
-			ret.x = static_cast<NumberType>(static_cast<float>(x) + static_cast<float>(other.x - x) * timestep);
-			ret.y = static_cast<NumberType>(static_cast<float>(y) + static_cast<float>(other.y - y) * timestep);
-			ret.z = static_cast<NumberType>(static_cast<float>(z) + static_cast<float>(other.z - z) * timestep);
+			ret.x = static_cast<NumberType>(x + other.x - x * timestep);
+			ret.y = static_cast<NumberType>(y + other.y - y * timestep);
+			ret.z = static_cast<NumberType>(z + other.z - z * timestep);
 
 			return ret;
 		}
@@ -153,19 +153,19 @@ namespace rawrbox {
 		{
 			auto denominator = static_cast<NumberType>(std::sqrt(sqrMagnitude() * target.sqrMagnitude()));
 			if (denominator < 1e-15F)
-				return 0.F;
+				return ZERO<NumberType>;
 
-			NumberType dot = std::clamp<NumberType>(this->dot(target) / denominator, -1.F, 1.F);
-			return std::acos(dot) * (1.F / (rawrbox::pi<NumberType> * 2.F / 360.F));
+			NumberType dot = std::clamp<NumberType>(this->dot(target) / denominator, -ONE<NumberType>, ONE<NumberType>);
+			return std::acos(dot) * (ONE<NumberType> / (rawrbox::pi<NumberType> * static_cast<NumberType>(2.F / 360.F)));
 		}
 
 		[[nodiscard]] VecType rotateAroundOrigin(const VecType& axis, float theta) const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			float cos_theta = std::cos(theta);
-			float sin_theta = std::sin(theta);
+			auto cos_theta = static_cast<NumberType>(std::cos(static_cast<float>(theta)));
+			auto sin_theta = static_cast<NumberType>(std::sin(static_cast<float>(theta)));
 
-			return (VecType{this->x, this->y, this->z} * cos_theta) + (this->cross(axis) * sin_theta) + (axis * this->dot(axis)) * (1.F - cos_theta);
+			return ((*this) * cos_theta) + (this->cross(axis) * sin_theta) + (axis * this->dot(axis)) * (ONE<NumberType> - cos_theta);
 		}
 
 		[[nodiscard]] VecType normalized() const
@@ -174,7 +174,7 @@ namespace rawrbox {
 			return (*this) / length();
 		}
 
-		[[nodiscard]] float dot(const Vector3_t<NumberType>& other) const
+		[[nodiscard]] NumberType dot(const Vector3_t<NumberType>& other) const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return x * other.x + y * other.y + z * other.z;
@@ -201,12 +201,8 @@ namespace rawrbox {
 		[[nodiscard]] VecType cross(const VecType& other) const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			VecType retVal;
-			retVal.x = y * other.z - z * other.y;
-			retVal.y = z * other.x - x * other.z;
-			retVal.z = x * other.y - y * other.x;
-
-			return retVal;
+			return {
+			    y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x};
 		}
 		// ----
 

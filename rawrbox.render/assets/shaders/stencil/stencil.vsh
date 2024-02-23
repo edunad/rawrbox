@@ -1,6 +1,6 @@
 struct VSInput {
     uint   TextureID  : ATTRIB0;
-    half2  Pos        : ATTRIB1;
+    float2 Pos        : ATTRIB1;
     float4 Color      : ATTRIB2;
 
     // -----------------

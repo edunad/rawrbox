@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace rawrbox {
+
 	class MathUtils {
 	public:
 		template <typename T = int>

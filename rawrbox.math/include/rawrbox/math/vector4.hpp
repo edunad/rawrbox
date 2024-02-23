@@ -1,6 +1,5 @@
 #pragma once
 
-#include <rawrbox/math/pi.hpp>
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
 
@@ -98,10 +97,10 @@ namespace rawrbox {
 			if ((*this) == other) return other;
 			VecType ret;
 
-			float dot = x * other.x + y * other.y + z * other.z + w * other.w;
-			float blend = 1.F - timestep;
+			NumberType dot = x * other.x + y * other.y + z * other.z + w * other.w;
+			NumberType blend = ONE<NumberType> - timestep;
 
-			if (dot < 0.F) {
+			if (dot < ZERO<NumberType>) {
 				ret.x = blend * x + blend * -other.x;
 				ret.y = blend * y + blend * -other.y;
 				ret.z = blend * z + blend * -other.z;
@@ -131,17 +130,17 @@ namespace rawrbox {
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			// roll
-			float sinr_cosp = 2.0F * (w * x + y * z);
-			float cosr_cosp = 1.0F - 2.0F * (x * x + y * y);
+			NumberType sinr_cosp = TWO<NumberType> * (w * x + y * z);
+			NumberType cosr_cosp = ONE<NumberType> - TWO<NumberType> * (x * x + y * y);
 
 			// pitch
-			float sinp = 2.0F * (w * y - z * x);
-			sinp = sinp > 1.0F ? 1.0F : sinp;
-			sinp = sinp < -1.0F ? -1.0F : sinp;
+			NumberType sinp = TWO<NumberType> * (w * y - z * x);
+			sinp = sinp > ONE<NumberType> ? ONE<NumberType> : sinp;
+			sinp = sinp < -ONE<NumberType> ? -ONE<NumberType> : sinp;
 
 			// yaw
-			float siny_cosp = 2.0F * (w * z + x * y);
-			float cosy_cosp = 1.0F - 2.0F * (y * y + z * z);
+			NumberType siny_cosp = TWO<NumberType> * (w * z + x * y);
+			NumberType cosy_cosp = ONE<NumberType> - TWO<NumberType> * (y * y + z * z);
 
 			return {std::atan2(sinr_cosp, cosr_cosp), std::asin(sinp), std::atan2(siny_cosp, cosy_cosp)};
 		}
@@ -149,7 +148,7 @@ namespace rawrbox {
 		Vector3_t<NumberType> toAxis()
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			if (std::abs(this->w) > 1.0F) {
+			if (std::abs(this->w) > ONE<NumberType>) {
 				auto nrm = this->normalized();
 
 				this->x = nrm.x;
@@ -158,8 +157,8 @@ namespace rawrbox {
 				this->w = nrm.w;
 			}
 
-			float den = std::sqrt(1.0F - this->w * this->w);
-			if (den > 0.0001F) return {this->x / den, this->y / den, this->z / den};
+			NumberType den = std::sqrt(ONE<NumberType> - this->w * this->w);
+			if (den > static_cast<NumberType>(0.0001F)) return {this->x / den, this->y / den, this->z / den};
 			return {1, 0, 0};
 		}
 
@@ -168,16 +167,16 @@ namespace rawrbox {
 		{
 			rawrbox::Vector4_t<NumberType> ret = {};
 
-			float x = in.x * 0.5F;
-			float y = in.y * -0.5F;
-			float z = in.z * 0.5F;
+			NumberType x = in.x * HALFONE<NumberType>;
+			NumberType y = in.y * -HALFONE<NumberType>;
+			NumberType z = in.z * HALFONE<NumberType>;
 
-			float sinX = std::sin(x);
-			float cosX = std::cos(x);
-			float sinY = std::sin(y);
-			float cosY = std::cos(y);
-			float sinZ = std::sin(z);
-			float cosZ = std::cos(z);
+			auto sinX = static_cast<NumberType>(std::sin(static_cast<float>(x)));
+			auto cosX = static_cast<NumberType>(std::cos(static_cast<float>(x)));
+			auto sinY = static_cast<NumberType>(std::sin(static_cast<float>(y)));
+			auto cosY = static_cast<NumberType>(std::cos(static_cast<float>(y)));
+			auto sinZ = static_cast<NumberType>(std::sin(static_cast<float>(z)));
+			auto cosZ = static_cast<NumberType>(std::cos(static_cast<float>(z)));
 
 			ret.w = cosY * cosX * cosZ + sinY * sinX * sinZ;
 			ret.x = cosY * sinX * cosZ + sinY * cosX * sinZ;
@@ -204,14 +203,14 @@ namespace rawrbox {
 			auto m21 = forward.y;
 			auto m22 = forward.z;
 
-			float num8 = (m00 + m11) + m22;
+			auto num8 = (m00 + m11) + m22;
 			rawrbox::Vector4_t<NumberType> ret = {};
 
-			if (num8 > 0.F) {
-				auto num = std::sqrt(num8 + 1.F);
+			if (num8 > ZERO<NumberType>) {
+				auto num = std::sqrt(num8 + ONE<NumberType>);
 
-				ret.w = num * 0.5F;
-				num = 0.5F / num;
+				ret.w = num * HALFONE<NumberType>;
+				num = HALFONE<NumberType> / num;
 
 				ret.x = (m12 - m21) * num;
 				ret.y = (m20 - m02) * num;
@@ -220,10 +219,10 @@ namespace rawrbox {
 			}
 
 			if ((m00 >= m11) && (m00 >= m22)) {
-				auto num7 = std::sqrt(((1.F + m00) - m11) - m22);
-				auto num4 = 0.5F / num7;
+				auto num7 = std::sqrt(((ONE<NumberType> + m00) - m11) - m22);
+				auto num4 = HALFONE<NumberType> / num7;
 
-				ret.x = 0.5F * num7;
+				ret.x = HALFONE<NumberType> * num7;
 				ret.y = (m01 + m10) * num4;
 				ret.z = (m02 + m20) * num4;
 				ret.w = (m12 - m21) * num4;
@@ -231,42 +230,42 @@ namespace rawrbox {
 			}
 
 			if (m11 > m22) {
-				auto num6 = std::sqrt(((1.F + m11) - m00) - m22);
-				auto num3 = 0.5F / num6;
+				auto num6 = std::sqrt(((ONE<NumberType> + m11) - m00) - m22);
+				auto num3 = HALFONE<NumberType> / num6;
 
 				ret.x = (m10 + m01) * num3;
-				ret.y = 0.5F * num6;
+				ret.y = HALFONE<NumberType> * num6;
 				ret.z = (m21 + m12) * num3;
 				ret.w = (m20 - m02) * num3;
 				return ret;
 			}
 
-			auto num5 = std::sqrt(((1.F + m22) - m00) - m11);
-			auto num2 = 0.5F / num5;
+			auto num5 = std::sqrt(((ONE<NumberType> + m22) - m00) - m11);
+			auto num2 = HALFONE<NumberType> / num5;
 
 			ret.x = (m20 + m02) * num2;
 			ret.y = (m21 + m12) * num2;
-			ret.z = 0.5F * num5;
+			ret.z = HALFONE<NumberType> * num5;
 			ret.w = (m01 - m10) * num2;
 
 			return ret;
 		}
 
 		VecType inverse() {
-			float lengthSq = this->sqrMagnitude();
-			if (lengthSq == 0.0F) return *this;
+			auto lengthSq = this->sqrMagnitude();
+			if (lengthSq == ZERO<NumberType>) return *this;
 
-			float i = 1.0F / lengthSq;
+			auto i = ONE<NumberType> / lengthSq;
 			return VecType(this->xyz() * -i, this->w * i);
 		}
 
-		VecType interpolate(const VecType& pEnd, float pFactor) {
+		VecType interpolate(const VecType& pEnd, NumberType pFactor) {
 			// calc cosine theta
-			float cosom = x * pEnd.x + y * pEnd.y + z * pEnd.z + w * pEnd.w;
+			auto cosom = x * pEnd.x + y * pEnd.y + z * pEnd.z + w * pEnd.w;
 
 			// adjust signs (if necessary)
 			VecType end = pEnd;
-			if (cosom < static_cast<float>(0.0)) {
+			if (cosom < ZERO<NumberType>) {
 				cosom = -cosom;
 				end.x = -end.x; // Reverse all signs
 				end.y = -end.y;
@@ -276,21 +275,22 @@ namespace rawrbox {
 
 			// Calculate coefficients
 			// NOLINTBEGIN(clang-analyzer-deadcode.DeadStores)
-			float sclp = NAN;
-			float sclq = NAN;
+			NumberType sclp = std::numeric_limits<NumberType>::quiet_NaN();
+			NumberType sclq = std::numeric_limits<NumberType>::quiet_NaN();
 
-			if ((static_cast<float>(1.0) - cosom) > static_cast<float>(0.0001)) // 0.0001 -> some epsillon
+			if ((ONE<NumberType> - cosom) > static_cast<NumberType>(0.0001)) // 0.0001 -> some epsillon
 			{
 				// Standard case (slerp)
-				float omega = NAN;
-				float sinom = NAN;
+				NumberType omega = std::numeric_limits<NumberType>::quiet_NaN();
+				NumberType sinom = std::numeric_limits<NumberType>::quiet_NaN();
+
 				omega = std::acos(cosom); // extract theta from dot product's cos theta
 				sinom = std::sin(omega);
-				sclp = std::sin((static_cast<float>(1.0) - pFactor) * omega) / sinom;
+				sclp = std::sin((ONE<NumberType> - pFactor) * omega) / sinom;
 				sclq = std::sin(pFactor * omega) / sinom;
 			} else {
 				// Very close, do linear interp (because it's faster)
-				sclp = static_cast<float>(1.0) - pFactor;
+				sclp = ONE<NumberType> - pFactor;
 				sclq = pFactor;
 			}
 			// NOLINTEND(clang-analyzer-deadcode.DeadStores)
@@ -406,9 +406,9 @@ namespace rawrbox {
 		VecType operator-() const { return VecType(-x, -y, -z, -w); }
 
 		Vector3_t<NumberType> operator*(const Vector3_t<NumberType>& other) const {
-			float num = this->x * 2.F;
-			float num2 = this->y * 2.F;
-			float num3 = this->z * 2.F;
+			float num = this->x * TWO<NumberType>;
+			float num2 = this->y * TWO<NumberType>;
+			float num3 = this->z * TWO<NumberType>;
 			float num4 = this->x * num;
 			float num5 = this->y * num2;
 			float num6 = this->z * num3;
@@ -420,9 +420,9 @@ namespace rawrbox {
 			float num12 = this->w * num3;
 
 			Vector3_t<NumberType> result = {};
-			result.x = (1.F - (num5 + num6)) * other.x + (num7 - num12) * other.y + (num8 + num11) * other.z;
-			result.y = (num7 + num12) * other.x + (1.F - (num4 + num6)) * other.y + (num9 - num10) * other.z;
-			result.z = (num8 - num11) * other.x + (num9 + num10) * other.y + (1.F - (num4 + num5)) * other.z;
+			result.x = (ONE<NumberType> - (num5 + num6)) * other.x + (num7 - num12) * other.y + (num8 + num11) * other.z;
+			result.y = (num7 + num12) * other.x + (ONE<NumberType> - (num4 + num6)) * other.y + (num9 - num10) * other.z;
+			result.z = (num8 - num11) * other.x + (num9 + num10) * other.y + (ONE<NumberType> - (num4 + num5)) * other.z;
 			return result;
 		}
 		// -------

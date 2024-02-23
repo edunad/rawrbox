@@ -26,15 +26,16 @@
 
 - Model loading (animations, light, texture, blend shapes) using [assimp](https://github.com/assimp/assimp)
 - Light support (point, spot, directional)
-- Clustered rendering & support for other type of rendering
+- Support for rendering plugins (like clustered rendering, post processing, etc)
 - 3D text
+- Bindless rendering
 - 2D stencil drawing
 - Fonts (ttf) using [stb](https://github.com/nothings/stb)
 - JSON loading using [glaze](https://github.com/stephenberry/glaze)
 - Images loading (png, jpeg, tga, bitmap, gif) using [stb](https://github.com/nothings/stb), SVG using [lunasvg](https://github.com/sammycage/lunasvg), WEBP using [libwebp](https://github.com/webmproject/libwebp)
 - Video only using [webm](https://github.com/webmproject/libwebm)
 - Sounds using [BASS](https://www.un4seen.com/) lib
-- Custom UI
+- Custom UI support
 - Material system (similar to unity)
 - Vulkan / DirectX / OpenGL support using [Diligent](https://github.com/DiligentGraphics/DiligentCore)
 - Linux Wayland support + steam deck support
@@ -46,13 +47,13 @@
 - Post-processing effects support
 - HTTP / HTTPS requests using curl + [libcpr](https://github.com/libcpr/cpr)
 - Packet networking support
-- Settings support
 - Custom dev console (with support for custom commands)
 - I18N (internationalization) support
-- GPU picking
 
 # TODO LIST
 
+- GPU picking
+- Particle engine
 - Add animation blending
 - Add lights shadow maps
 
@@ -88,19 +89,22 @@
 | --                                         | --                                                                                                 |
 | `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 |
 | --                                         | --                                                                                                 |
-| `RAWRBOX_BUILD_QHULL`                      | Builds QHull util                                                                                  |
 | `RAWRBOX_BUILD_RAWRBOX_UI`                 | Builds and includes ui                                                                             |
 | `RAWRBOX_BUILD_RAWRBOX_RESOURCES`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
 | `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`         | Builds the 3D physics engine                                                                       |
 | `RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS`         | Builds the 2D physics engine                                                                       |
-| `RAWRBOX_BUILD_RAWRBOX_NETWORK`            | Builds network support                                                                             |
 | `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
 | `RAWRBOX_BUILD_RAWRBOX_ASSIMP`             | Enables assimp model loading                                                                       |
 | `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM loading                                                                               |
+| `RAWRBOX_BUILD_RAWRBOX_NETWORK`            | Builds network support                                                                             |
 | `RAWRBOX_BUILD_RAWRBOX_SCRIPTING`          | Enables lua & modding support                                                                      |
-| `RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE`   | Enable io lib (loading and saving files on the data folder)                                        |
+| `RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE`   | Enables io support on lua (loading and saving files on the data folder)                            |
+| `RAWRBOX_BUILD_QHULL`                      | Builds QHull util                                                                                  |
 | --                                         | --                                                                                                 |
 | `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Auto-enabled if jolt is used)                    |
+| --                                         | --                                                                                                 |
+| `RAWRBOX_DISABLE_SUPPORT_DX12`             | Disable dx12 support                                                                               |
+| `RAWRBOX_DISABLE_SUPPORT_VULKAN`           | Disable vulkan support                                                                             |
 | --                                         | --                                                                                                 |
 | `RAWRBOX_DEV_MODE`                         | Enables all the modules, used for rawrbox development                                              |
 
@@ -177,60 +181,56 @@
 
 ### 001-stencil
 
-<a href='/samples/001-stencil'><img src="https://i.rawr.dev/ovBhNPVOh6-min.gif" width=512 /></a>
+<a href='/samples/001-stencil'><img src="https://i.rawr.dev/sample1-min.gif" width=512 /></a>
 
 ### 002-generated-models
 
-<a href='/samples/002-generated-models'><img src="https://i.rawr.dev/g2y8DbaiCt-min.gif" width=512 /></a>
+<a href='/samples/002-generated-models'><img src="https://i.rawr.dev/sample2-min.gif" width=512 /></a>
 
-### 003-assimp
+### 003-light
 
-<a href='/samples/003-assimp'><img src="https://i.rawr.dev/L0rZ8jYwkH-min.gif" width=512 /></a>
+<a href='/samples/003-light'><img src="https://i.rawr.dev/sample3-min.gif" width=512 /></a>
 
-### 004-light-support
+### 004-instancing
 
-<a href='/samples/004-light-support'><img src="https://i.rawr.dev/Xvk5DpQPUd-min.gif" width=512 /></a>
+<a href='/samples/004-instancing'><img src="https://i.rawr.dev/sample4-min.gif" width=512 /></a>
 
 ### 005-post-process
 
-<a href='/samples/005-post-process'><img src="https://i.rawr.dev/4YBkWan9pe-min.gif" width=512 /></a>
+<a href='/samples/005-post-process'><img src="https://i.rawr.dev/sample5-min.gif" width=512 /></a>
 
-### 006-bass-loading
+### 006-decals
 
-<a href='/samples/006-bass-loading'><img src="https://i.rawr.dev/a0AeGGNQ7A-min.gif" width=512 /></a>
+<a href='/samples/006-decals'><img src="https://i.rawr.dev/sample6-min.gif" width=512 /></a>
 
-### 007-particle-system
-
-<a href='/samples/007-particle-system'><img src="https://i.rawr.dev/55dUuFJqKR-min.gif" width=512 /></a>
+### ~~007-particle-system~~ (TODO)
 
 ### 008-ui
 
-<a href='/samples/008-ui'><img src="https://i.rawr.dev/nsV1zTUAr1-min.gif" width=512 /></a>
+<a href='/samples/008-ui'><img src="https://i.rawr.dev/sample8-min.gif" width=512 /></a>
 
-### 009-physics
+### 009-assimp
 
-<a href='/samples/009-physics-3d'><img src="https://i.rawr.dev/Ir57QELn6F-min3.gif" width=512 /></a>
+<a href='/samples/009-assimp'><img src="https://i.rawr.dev/sample9-min.gif" width=512 /></a>
 
-### 010-instancing
+### 010-bass-audio
 
-<a href='/samples/010-instancing'><img src="https://i.rawr.dev/dwPPjtAdzr-min.gif" width=512 /></a>
+<a href='/samples/010-bass-audio'><img src="https://i.rawr.dev/bylavGsjpB.png" width=512 /></a>
 
-### 011-decals
+### 011-physics-3D
 
-<a href='/samples/011-decals'><img src="https://i.rawr.dev/x4ekTeLHzu-min.gif" width=512 /></a>
+<a href='/samples/011-physics-3D'><img src="https://i.rawr.dev/sample11-min.gif" width=512 /></a>
 
-### 012-webm
+### 012-physics-3D
 
-<a href='/samples/012-webm'><img src="https://i.rawr.dev/sH0bFsxJhp-min.gif" width=512 /></a>
+<a href='/samples/012-physics-2D'><img src="https://i.rawr.dev/sample12-min.gif" width=512 /></a>
 
-### 013-physics-2d
+### 013-webm
 
-<a href='/samples/013-physics-2d'><img src="https://i.rawr.dev/YzkRS6BO30-min.gif" width=512 /></a>
+<a href='/samples/013-webm'><img src="https://i.rawr.dev/sample13-min.gif" width=512 /></a>
 
 ### 014-scripting
 
-<a href='/samples/014-scripting'><img src="https://i.rawr.dev/EgZILBUsED-min.gif" width=512 /></a>
+<a href='/samples/014-scripting'><img src="https://i.rawr.dev/sample14-min.gif" width=512 /></a>
 
-### 015-gpu-picking
-
-<a href='/samples/015-gpu-picking'><img src="https://i.rawr.dev/Ib7spZI19Y-min.gif" width=512 /></a>
+### ~~015-gpu-picking~~ (TODO)
