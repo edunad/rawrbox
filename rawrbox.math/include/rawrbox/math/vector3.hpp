@@ -86,9 +86,9 @@ namespace rawrbox {
 			if ((*this) == other) return other;
 			VecType ret;
 
-			ret.x = static_cast<NumberType>(x + other.x - x * timestep);
-			ret.y = static_cast<NumberType>(y + other.y - y * timestep);
-			ret.z = static_cast<NumberType>(z + other.z - z * timestep);
+			ret.x = static_cast<NumberType>(static_cast<float>(x) + static_cast<float>(other.x - x) * timestep);
+			ret.y = static_cast<NumberType>(static_cast<float>(y) + static_cast<float>(other.y - y) * timestep);
+			ret.z = static_cast<NumberType>(static_cast<float>(z) + static_cast<float>(other.z - z) * timestep);
 
 			return ret;
 		}
