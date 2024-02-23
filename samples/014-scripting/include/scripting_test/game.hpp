@@ -1,28 +1,23 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/materials/lit.hpp>
-#include <rawrbox/render/model/instanced.hpp>
-#include <rawrbox/render/window.hpp>
+#include <rawrbox/render/models/instanced.hpp>
+#include <rawrbox/utils/console.hpp>
 
 #ifdef RAWRBOX_UI
 	#include <rawrbox/ui/root.hpp>
 #endif
 
-#include <memory>
-
 namespace scripting_test {
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Window> _window = nullptr;
-
 #ifdef RAWRBOX_UI
 		std::unique_ptr<rawrbox::UIRoot> _ROOT_UI = nullptr;
 #endif
 
-		std::shared_ptr<rawrbox::Model> _model = std::make_shared<rawrbox::Model>();
-		std::shared_ptr<rawrbox::InstancedModel> _instance = std::make_shared<rawrbox::InstancedModel>();
+		std::shared_ptr<rawrbox::Model<>> _model = std::make_shared<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::InstancedModel<>> _instance = std::make_unique<rawrbox::InstancedModel<>>();
+		std::unique_ptr<rawrbox::Console> _console = std::make_unique<rawrbox::Console>();
 
-		std::atomic<int> _loadingFiles = 0;
 		bool _ready = false;
 
 		void setupGLFW() override;
@@ -30,6 +25,8 @@ namespace scripting_test {
 		void onThreadShutdown(rawrbox::ENGINE_THREADS thread) override;
 		void pollEvents() override;
 		void update() override;
+		void fixedUpdate() override;
+
 		void draw() override;
 
 	public:
@@ -42,7 +39,6 @@ namespace scripting_test {
 
 		void drawWorld();
 		void drawOverlay();
-		void printFrames();
 
 		void loadContent();
 		void contentLoaded();

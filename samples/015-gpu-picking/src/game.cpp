@@ -1,8 +1,8 @@
-
-#include <rawrbox/render/camera/orbital.hpp>
-#include <rawrbox/render/model/utils/mesh.hpp>
-#include <rawrbox/render/renderers/cluster.hpp>
-#include <rawrbox/render/resources/font.hpp>
+/*
+#include <rawrbox/render_temp/camera/orbital.hpp>
+#include <rawrbox/render_temp/model/utils/mesh.hpp>
+#include <rawrbox/render_temp/renderers/cluster.hpp>
+#include <rawrbox/render_temp/resources/font.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -17,7 +17,7 @@ namespace gpu {
 		this->_window->setRenderer(
 		    bgfx::RendererType::Count, [this]() { this->drawOverlay(); }, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
+
 		this->_window->onIntroCompleted += [this]() {
 			this->loadContent();
 		};
@@ -41,7 +41,7 @@ namespace gpu {
 
 	void Game::loadContent() {
 		std::array<std::pair<std::string, uint32_t>, 1> initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("content/fonts/LiberationMono-Regular.ttf", 0)};
+		    std::make_pair<std::string, uint32_t>("content/fonts/PTMono-Regular.ttf", 0)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
 		for (auto& f : initialContentFiles) {
@@ -55,7 +55,7 @@ namespace gpu {
 	}
 
 	void Game::contentLoaded() {
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/LiberationMono-Regular.ttf")->getSize(24);
+		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/PTMono-Regular.ttf")->getSize(24);
 
 		// Setup
 		{
@@ -110,7 +110,7 @@ namespace gpu {
 		// ------
 
 		// BINDS ----
-		this->_window->onMouseKey += [this](auto& /*w*/, const rawrbox::Vector2i& mousePos, int button, int action, int /*mods*/) {
+		this->_window->onMouseKey += [this](auto& w, const rawrbox::Vector2i& mousePos, int button, int action, int mods) {
 			const bool isDown = action == 1;
 			if (!isDown || button != MOUSE_BUTTON_1) return;
 
@@ -196,7 +196,6 @@ namespace gpu {
 		this->_text.reset();
 
 		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
 
 		this->_window->unblockPoll();
 		this->_window.reset();
@@ -261,3 +260,4 @@ namespace gpu {
 		this->_window->render(); // Draw world & commit primitives
 	}
 } // namespace gpu
+*/

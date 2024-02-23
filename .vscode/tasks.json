@@ -6,7 +6,7 @@
     {
       "label": "Run multi-threaded clang-tidy",
       "type": "shell",
-      "command": "python run-clang-tidy.py -fix -p \"build\" -j 12 -filter build -filter bin -filter tests",
+      "command": "python run-clang-tidy.py -fix -p \"build\" -j 12 -filter build -filter bin -filter tests -filter .cache",
       "group": "build",
       "options": {
         "cwd": "${workspaceFolder}"
@@ -34,7 +34,7 @@
     {
       "label": "Run iwyu",
       "type": "shell",
-      "command": "export iwyu=../${workspaceFolder} && python3 iwyu_tool.py ./engine ./math ./physics ./render ./resources ./ui ./utils -p build -j 8 > .iwyu && python3 fix_includes.py --comments < .iwyu",
+      "command": "export iwyu=../${workspaceFolder} && python3 iwyu_tool.py ./rawrbox.assimp ./rawrbox.bass ./rawrbox.engine ./rawrbox.math ./rawrbox.network ./rawrbox.physics_2d ./rawrbox.physics_3d ./rawrbox.render ./rawrbox.resources ./rawrbox.ui ./rawrbox.utils ./rawrbox.webm -p build -j 8 > .iwyu && python3 fix_includes.py --comments < .iwyu",
       "group": "build",
       "options": {
         "cwd": "${workspaceFolder}"
@@ -55,7 +55,7 @@
     {
       "label": "Clean project",
       "type": "shell",
-      "command": "rm -rf build bin .cache bass/deps webm/deps",
+      "command": "rm -rf build bin .cache rawrbox.bass/deps rawrbox.webm/deps ",
       "group": "build",
       "options": {
         "cwd": "${workspaceFolder}"

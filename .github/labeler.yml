@@ -1,59 +1,74 @@
 "📷 RENDERER":
-  - changed-files: "render/**/*"
+  - changed-files:
+      - any-glob-to-any-file: "rawrbox.render/**/*"
 
 "🧮 MATH":
-  - changed-files: "math/**/*"
+  - changed-files:
+      - any-glob-to-any-file: "rawrbox.math/**/*"
 
 "🖼️ UI":
-  - changed-files: "ui/**/*"
+  - changed-files:
+      - any-glob-to-any-file: "rawrbox.ui/**/*"
 
 "⚒️ UTILS":
-  - changed-files: "utils/**/*"
+  - changed-files:
+      - any-glob-to-any-file: "rawrbox.utils/**/*"
 
 "🐲 SAMPLES":
-  - changed-files: "samples/**/*"
+  - changed-files:
+      - any-glob-to-any-file: "samples/**/*"
 
 "🧱 3D PHYSICS":
-  - changed-files: "physics_3d/**/*"
+  - changed-files:
+      - any-glob-to-any-file: "rawrbox.physics_3d/**/*"
 
 "🏀 2D PHYSICS":
-  - changed-files: "physics_2d/**/*"
+  - changed-files:
+      - any-glob-to-any-file: "rawrbox.physics_2d/**/*"
 
 "🎺 BASS":
-  - changed-files: "bass/**/*"
+  - changed-files:
+      - any-glob-to-any-file: "rawrbox.bass/**/*"
 
 "💼 RESOURCES":
-  - changed-files: "resources/**/*"
+  - changed-files:
+      - any-glob-to-any-file: "rawrbox.resources/**/*"
 
 "💽 ENGINE":
-  - changed-files: "engine/**/*"
+  - changed-files:
+      - any-glob-to-any-file: "rawrbox.engine/**/*"
 
 "🧪 TESTS":
-  - changed-files: "**/tests/**/*.cpp"
+  - changed-files:
+      - any-glob-to-any-file: "**/tests/**/*.cpp"
+
+"🎞 WEBM":
+  - changed-files:
+      - any-glob-to-any-file: "rawrbox.webm/**/*"
+
+"🧙‍♂️ ASSIMP":
+  - changed-files:
+      - any-glob-to-any-file: "rawrbox.assimp/**/*"
 
 "📜 SCRIPTING":
   - changed-files:
-      [
-        "scripting/**/*",
-        "bass/**/scripting/*",
-        "network/**/scripting/*",
-        "render/**/scripting/*",
-        "resources/**/scripting/*",
-        "ui/**/scripting/*",
-        "**/*.lua",
-      ]
-
-"🎞 WEBM":
-  - changed-files: "webm/**/*"
-
-"🧙‍♂️ ASSIMP":
-  - changed-files: "assimp/**/*"
+      - any-glob-to-any-file:
+          [
+            "rawrbox.scripting/**/*",
+            "rawrbox.bass/**/scripting/*",
+            "rawrbox.network/**/scripting/*",
+            "rawrbox.render/**/scripting/*",
+            "rawrbox.resources/**/scripting/*",
+            "rawrbox.ui/**/scripting/*",
+            "**/*.lua",
+            "**/*.luau",
+          ]
 
 "FEATURE":
-  - head-branch: "^features/"
+  - head-branch: ["^features/"]
 
 "BUG":
-  - head-branch: "^bugfixes/"
+  - head-branch: ["^bugfixes/"]
 
 "IMPROVEMENTS":
-  - head-branch: "^improvements/"
+  - head-branch: ["^improvements/"]

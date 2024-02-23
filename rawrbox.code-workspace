@@ -10,6 +10,7 @@
     }
   ],
   "settings": {
+    "luau-lsp.sourcemap.enabled": false,
     "githubIssues.queries": [
       {
         "label": "Issues",
@@ -24,7 +25,9 @@
     ],
     "clangd.restartAfterCrash": true,
     "clangd.checkUpdates": true,
-    "clangd.arguments": ["--header-insertion=never"],
+    "clangd.detectExtensionConflicts": true,
+    "clangd.arguments": ["--header-insertion=never", "--background-index"],
+    "git.detectSubmodules": false,
     "git.autoRepositoryDetection": false,
     "testMate.cpp.test.advancedExecutables": [
       {
@@ -35,6 +38,15 @@
         }
       }
     ],
+    "findInCurrentFile": {
+      "fixHeaders": {
+        // this will be the command name to use in the codeActions
+        "title": "fixHeaders", // this is how it will look in the Command Palette
+        "find": "#include \"(.*?)\"",
+        "replace": "#include <$1>",
+        "isRegex": true
+      }
+    },
     "editor.bracketPairColorization.enabled": true,
     "editor.formatOnSave": true,
     "editor.stickyScroll.enabled": true,
@@ -45,24 +57,27 @@
       "editor.defaultFormatter": null,
       "editor.formatOnSave": false
     },
+    "[cpp]": {
+      "editor.codeActionsOnSave": ["source.fixHeaders"]
+    },
     "trailing-spaces.trimOnSave": true,
     "C_Cpp.default.compilerArgs": ["-fexceptions"],
     "cmake.configureOnOpen": false,
     "cmake.autoSelectActiveFolder": false,
     "cmake.generator": "Ninja",
+    "cmake.touchbar.visibility": "default",
     "cmake.configureArgs": ["-Wno-dev"],
     "cmake.configureSettings": {
       "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
       "RAWRBOX_DEV_MODE": true,
-      "RAWRBOX_OUTPUT_BIN": "bin"
+      "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "bin"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "workbench.editor.pinnedTabSizing": "shrink",
     "workbench.editor.wrapTabs": true,
     "files.insertFinalNewline": true,
     "files.associations": {
-      "*.sc": "hlsl",
-      "*.sh": "hlsl",
+      "*.csh": "hlsl",
       "xstring": "cpp",
       "functional": "cpp",
       "map": "cpp",
@@ -172,7 +187,8 @@
       }
     },
 
-    "debug.terminal.clearBeforeReusing": true
+    "debug.terminal.clearBeforeReusing": true,
+    "dotnet.defaultSolution": "disable"
   },
   "extensions": {
     "recommendations": [

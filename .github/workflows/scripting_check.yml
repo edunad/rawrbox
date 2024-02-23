@@ -1,30 +1,30 @@
 name: CI/CD - COMMENTS
 on:
-    pull_request:
-        types: [labeled, unlabeled]
+  pull_request:
+    types: [labeled, unlabeled]
 
 jobs:
-    comment:
-        permissions:
-            contents: read
-            pull-requests: write
-        runs-on: ubuntu-latest
-        steps:
-            - name: Find comment
-              uses: peter-evans/find-comment@v2
-              id: fc
-              with:
-                  issue-number: ${{ github.event.pull_request.number }}
-                  comment-author: 'github-actions[bot]'
-                  body-includes: ## NOTICE  - A LUA API change was detected ⚠
+  comment:
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Find comment
+        uses: peter-evans/find-comment@v3.0.0
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: ## NOTICE  - A LUA API change was detected ⚠
 
-            - name: Create / Update comment
-              uses: peter-evans/create-or-update-comment@v3
-              if: contains(github.event.pull_request.labels.*.name, '📜 SCRIPTING')
-              with:
-                  comment-id: ${{ steps.fc.outputs.comment-id }}
-                  issue-number: ${{ github.event.pull_request.number }}
-                  body: |
-                      ## NOTICE  - A LUA API change was detected ⚠
-                      - Ensure [**wiki** / **rawrbox-lib**](https://github.com/edunad/rawrbox-wiki) is up to date.
-                  edit-mode: replace
+      - name: Create / Update comment
+        uses: peter-evans/create-or-update-comment@v4.0.0
+        if: contains(github.event.pull_request.labels.*.name, '📜 SCRIPTING')
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## NOTICE  - A LUA API change was detected ⚠
+            - Ensure [**wiki** / **rawrbox-lib**](https://github.com/edunad/rawrbox-wiki) is up to date.
+          edit-mode: replace

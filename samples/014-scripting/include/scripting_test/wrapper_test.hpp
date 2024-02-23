@@ -1,18 +1,24 @@
 #pragma once
 
-#include <sol/sol.hpp>
+#include <rawrbox/scripting/plugin.hpp>
+#include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
 	class TestWrapper {
 	public:
-		std::string hello(const std::string& str) {
-			return "hello " + str + " mew mew";
+		inline static void registerLua(lua_State* L) {
+			luabridge::getGlobalNamespace(L)
+			    .beginNamespace("test")
+			    .addFunction("hello", [](const std::string& str) {
+				    return "hello " + str + " mew mew";
+			    })
+			    .endNamespace();
 		}
+	};
 
-		inline static void registerLua(sol::state& lua) {
-			lua.new_usertype<rawrbox::TestWrapper>("test",
-			    sol::no_constructor,
-			    "hello", &rawrbox::TestWrapper::hello);
+	class TestPlugin : public rawrbox::ScriptingPlugin {
+		void registerTypes(lua_State* L) override {
+			TestWrapper::registerLua(L);
 		}
 	};
 } // namespace rawrbox

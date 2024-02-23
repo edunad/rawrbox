@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-##===--- iwyu_tool.py -----------------------------------------------------===##
+## ===--- iwyu_tool.py -----------------------------------------------------===##
 #
 #                     The LLVM Compiler Infrastructure
 #
 # This file is distributed under the University of Illinois Open Source
 # License. See LICENSE.TXT for details.
 #
-##===----------------------------------------------------------------------===##
+## ===----------------------------------------------------------------------===##
 
 """ Driver to consume a Clang compilation database and invoke IWYU.
 
@@ -179,7 +179,7 @@ def win_split(cmdline):
             elif c in (' ', '\t') and not in_quotes:
                 # MSDN: Arguments are delimited by white space, which is either
                 # a space or a tab [but only outside of a string].
-                # Flush backslashes and return arg bufferd so far, unless empty.
+                # Flush any buffered backslashes and yield arg, unless empty.
                 arg += '\\' * backslashes
                 if arg:
                     yield arg
@@ -236,6 +236,7 @@ IWYU_EXECUTABLE = find_include_what_you_use()
 
 class Process(object):
     """ Manages an IWYU process in flight """
+
     def __init__(self, proc, outfile):
         self.proc = proc
         self.outfile = outfile
@@ -266,6 +267,7 @@ class Process(object):
     @classmethod
     def start(cls, invocation):
         """ Start a Process for the invocation and capture stdout+stderr. """
+
         outfile = tempfile.TemporaryFile(prefix='iwyu')
         process = subprocess.Popen(
             invocation.command,
@@ -275,13 +277,14 @@ class Process(object):
         return cls(process, outfile)
 
 
-KNOWN_COMPILER_WRAPPERS=frozenset([
+KNOWN_COMPILER_WRAPPERS = frozenset([
     "ccache"
 ])
 
 
 class Invocation(object):
     """ Holds arguments of an IWYU invocation. """
+
     def __init__(self, command, cwd):
         self.command = command
         self.cwd = cwd
@@ -444,7 +447,7 @@ def _bootstrap(sys_argv):
         """ Rewrite the parser's format_usage. """
         original_format_usage = parser.format_usage
         parser.format_usage = lambda: original_format_usage().rstrip() + \
-                              ' -- [<IWYU args>]' + os.linesep
+            ' -- [<IWYU args>]' + os.linesep
 
     def customize_help(parser):
         """ Rewrite the parser's format_help. """

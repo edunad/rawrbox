@@ -1,12 +1,12 @@
-
-#include <rawrbox/render/camera/orbital.hpp>
-#include <rawrbox/render/gizmos.hpp>
-#include <rawrbox/render/model/utils/mesh.hpp>
-#include <rawrbox/render/particles/emitter.hpp>
-#include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/render/static.hpp>
-#include <rawrbox/render/texture/atlas.hpp>
+/*
+#include <rawrbox/render_temp/camera/orbital.hpp>
+#include <rawrbox/render_temp/gizmos.hpp>
+#include <rawrbox/render_temp/model/utils/mesh.hpp>
+#include <rawrbox/render_temp/particles/emitter.hpp>
+#include <rawrbox/render_temp/resources/font.hpp>
+#include <rawrbox/render_temp/resources/texture.hpp>
+#include <rawrbox/render_temp/static.hpp>
+#include <rawrbox/render_temp/textures/atlas.hpp>
 #include <rawrbox/resources/manager.hpp>
 
 #include <particle_test/game.hpp>
@@ -23,10 +23,7 @@ namespace particle_test {
 		this->_window->setRenderer<>(
 		    bgfx::RendererType::Count, []() {}, [this]() { this->drawWorld(); });
 		this->_window->create(1024, 768, rawrbox::WindowFlags::Debug::TEXT | rawrbox::WindowFlags::Debug::PROFILER | rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::MULTI_THREADED);
-		this->_window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
-		this->_window->onIntroCompleted += [this]() {
-			this->loadContent();
-		};
+
 	}
 
 	void Game::init() {
@@ -48,7 +45,6 @@ namespace particle_test {
 
 	void Game::loadContent() {
 		std::array initialContentFiles = {
-		    std::make_pair<std::string, uint32_t>("content/fonts/LiberationMono-Regular.ttf", 0),
 		    std::make_pair<std::string, uint32_t>("content/textures/particles/particles.png", 32)};
 
 		this->_loadingFiles = static_cast<int>(initialContentFiles.size());
@@ -63,10 +59,6 @@ namespace particle_test {
 	}
 
 	void Game::contentLoaded() {
-		// Fonts -----
-		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("content/fonts/LiberationMono-Regular.ttf")->getSize(24);
-		// ------
-
 		// Setup Engine
 		auto texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("content/textures/particles/particles.png")->get<rawrbox::TextureAtlas>();
 		this->_ps = std::make_unique<rawrbox::ParticleSystem>(*texture);
@@ -120,9 +112,7 @@ namespace particle_test {
 		this->_modelGrid.reset();
 		this->_text.reset();
 
-		rawrbox::GIZMOS::shutdown();
 		rawrbox::RESOURCES::shutdown();
-		rawrbox::ASYNC::shutdown();
 
 		this->_window->unblockPoll();
 		this->_window.reset();
@@ -186,3 +176,4 @@ namespace particle_test {
 		this->_window->render(); // Commit primitives
 	}
 } // namespace particle_test
+*/

@@ -1,10 +1,10 @@
-#pragma once
+/*#pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/model/model.hpp>
-#include <rawrbox/render/model/text3D.hpp>
-#include <rawrbox/render/particles/system.hpp>
-#include <rawrbox/render/window.hpp>
+#include <rawrbox/render_temp/model/model.hpp>
+#include <rawrbox/render_temp/model/text3D.hpp>
+#include <rawrbox/render_temp/particles/system.hpp>
+#include <rawrbox/render_temp/window.hpp>
 
 #include <memory>
 
@@ -44,3 +44,4 @@ namespace particle_test {
 		void drawWorld();
 	};
 } // namespace particle_test
+*/

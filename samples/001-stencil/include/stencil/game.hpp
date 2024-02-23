@@ -1,19 +1,18 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render/model/model.hpp>
+#include <rawrbox/render/models/model.hpp>
 #include <rawrbox/render/text/font.hpp>
 #include <rawrbox/render/text/markdown.hpp>
-#include <rawrbox/render/texture/gif.hpp>
-#include <rawrbox/render/texture/image.hpp>
-#include <rawrbox/render/window.hpp>
+#include <rawrbox/render/textures/animated.hpp>
+#include <rawrbox/render/textures/image.hpp>
 
 #include <memory>
 
 namespace stencil {
+
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::Model> _model = std::make_unique<rawrbox::Model>();
+		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Markdown> _markdown = std::make_unique<rawrbox::Markdown>();
 
 		rawrbox::TextureBase* _texture = nullptr;
@@ -24,11 +23,8 @@ namespace stencil {
 
 		rawrbox::Font* _font = nullptr;
 		rawrbox::Font* _font2 = nullptr;
-		rawrbox::Font* _font3 = nullptr;
 
 		bool _ready = false;
-		std::atomic<int> _loadingFiles = 0;
-
 		float _counter = 0;
 
 		void setupGLFW() override;
@@ -46,8 +42,6 @@ namespace stencil {
 		Game& operator=(const Game&) = delete;
 		Game& operator=(Game&&) = delete;
 		~Game() override = default;
-
-		void printFrames();
 
 		void loadContent();
 		void contentLoaded();

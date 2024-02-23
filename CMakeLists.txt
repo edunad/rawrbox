@@ -10,7 +10,7 @@ CPMUsePackageLock(package-lock.cmake)
 # ---------------
 
 # Versioning
-set(RAWRBOX_VERSION_MAJOR 1 CACHE STRING "major version" FORCE)
+set(RAWRBOX_VERSION_MAJOR 2 CACHE STRING "major version" FORCE)
 set(RAWRBOX_VERSION_MINOR 0 CACHE STRING "minor version" FORCE)
 set(RAWRBOX_VERSION ${RAWRBOX_VERSION_MAJOR}.${RAWRBOX_VERSION_MINOR} CACHE STRING "version" FORCE)
 
@@ -27,8 +27,8 @@ list(PREPEND CONAN_GENERATORS_FOLDER ${CMAKE_BINARY_DIR})
 # OPTIONS ---
 option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 
-option(RAWRBOX_BUILD_TESTING "Build tests" ON)
-option(RAWRBOX_BUILD_SAMPLES "Build samples" ON)
+option(RAWRBOX_BUILD_TESTING "Build tests" OFF)
+option(RAWRBOX_BUILD_SAMPLES "Build samples" OFF)
 
 option(RAWRBOX_BUILD_RAWRBOX_UI "Build RAWRBOX.UI" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_RESOURCES "Build RAWRBOX.RESOURCES" OFF)
@@ -39,11 +39,14 @@ option(RAWRBOX_BUILD_RAWRBOX_ASSIMP "Build assimp & add model loading support" O
 option(RAWRBOX_BUILD_RAWRBOX_WEBM "Build libwebm & add video loading support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_NETWORK "Build network support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING "Build lua & mod support" OFF)
-option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_USE_LUAJIT "Enable scripting LuaJIT support (CURRENTLY BROKEN)" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE "Enable unsafe scripting (io / etc)" OFF)
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" OFF)
 option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
 
-option(RAWRBOX_COPY_SHADER_INCLUDES "Copy rawrbox shaders includes" OFF)
+# Supports -----
+option(RAWRBOX_DISABLE_SUPPORT_DX12   "Disable dx12 support" OFF)
+option(RAWRBOX_DISABLE_SUPPORT_VULKAN "Disable vulkan support" OFF)
+# ---------------
 
 option(RAWRBOX_DEV_MODE "Builds all modules, used for developing rawrbox" OFF)
 # -----
@@ -51,6 +54,9 @@ option(RAWRBOX_DEV_MODE "Builds all modules, used for developing rawrbox" OFF)
 # Uncomment for package.lock generation
 if(RAWRBOX_DEV_MODE)
     message(WARNING "RAWRBOX Dev mode enabled!")
+
+    set(RAWRBOX_BUILD_TESTING ON)
+    set(RAWRBOX_BUILD_SAMPLES ON)
 
     set(RAWRBOX_BUILD_RAWRBOX_UI ON)
     set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
@@ -61,20 +67,23 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_RAWRBOX_WEBM ON)
     set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
     set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING ON)
+    set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE ON)
     set(RAWRBOX_BUILD_QHULL ON)
+
+    set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm")
 endif()
 
 # OTHER SETTINGS ----
 set(RAWRBOX_OUTPUT_BIN "bin" CACHE STRING "the target directory of where the output of the build will be stored for use by artifacts")
-set(RAWRBOX_CONTENT_FOLDER "content" CACHE STRING "the content folder (aka where models, textures, etc are)")
-set(RAWRBOX_SHADERS_FOLDER "shaders" CACHE STRING "the shaders folder")
+set(RAWRBOX_CONTENT_FOLDER "assets" CACHE STRING "the assets folder (aka where models, textures, etc are)")
 set(RAWRBOX_LIBRARY_TYPE "STATIC" CACHE STRING "Linking type for library")
 # ----------------
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSPDLOG_FMT_EXTERNAL -DNOMINMAX")
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}")
 
 set(BUILD_SHARED_LIBS OFF)
 
@@ -90,9 +99,7 @@ if(NOT WIN32)
 
     if(RAWRBOX_USE_WAYLAND)
         list(APPEND RAWRBOX_EXTRA_LIBS wayland-egl)
-
         set(GLFW_BUILD_WAYLAND ON CACHE INTERNAL "")
-        set(BGFX_USE_WAYLAND ON CACHE INTERNAL "")
     endif()
 else()
     # Ignore warnings about missing pdb
@@ -126,121 +133,103 @@ endif()
 # -------------------------
 
 # GLOBAL PACKAGES ------
-CPMAddPackage("gh:fmtlib/fmt#10.1.1")
+CPMAddPackage("gh:fmtlib/fmt#10.2.1")
 if(fmt_ADDED)
     set_lib_runtime_mt(fmt)
 endif()
 
-CPMAddPackage("gh:Neargye/magic_enum@0.9.3")
+CPMAddPackage("gh:Neargye/magic_enum@0.9.5")
 if(magic_enum_ADDED)
     set_lib_runtime_mt(magic_enum)
 endif()
 
 if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
-    CPMAddPackage("gl:wayland/weston@12.0.1")
+    CPMAddPackage("gl:wayland/weston@12.0.3")
 endif()
 
-CPMAddPackage(
-    NAME
-    nlohmann_json
-    VERSION
-    3.11.2
-    # the git repo is incredibly large, so we download the archived include directory
-    URL
-    https://github.com/nlohmann/json/releases/download/v3.11.2/include.zip
-    URL_HASH
-    SHA256=e5c7a9f49a16814be27e4ed0ee900ecd0092bfb7dbfca65b5a421b774dccaaed)
-
-if(nlohmann_json_ADDED)
-    add_library(nlohmann_json INTERFACE IMPORTED)
-    target_include_directories(nlohmann_json INTERFACE ${nlohmann_json_SOURCE_DIR}/include)
-endif()
+CPMAddPackage("gh:stephenberry/glaze@2.1.7")
 
 # ---
-# libcurl keeps complaining it can't find zlibstatic, but when assimp is enabled, this works..
-if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
+if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)
+    message(WARNING "RAWRBOX.NETWORK / RAWRBOX.ASSIMP is enabled, adding zlib-ng package")
+
     CPMFindPackage(
         NAME
-            ZLIB
+            zlib
         GITHUB_REPOSITORY
-            madler/zlib # zlib-ng/zlib-ng
+            zlib-ng/zlib-ng
+        USE_CACHE
+            OFF
         GIT_TAG
-            "v1.2.13" # "2.1.3"
+            2.1.6
         OPTIONS
-            "ASM686 FALSE"
-            "AMD64 FALSE"
-            "POSITION_INDEPENDENT_CODE TRUE"
+            #"ASM686 FALSE"
+            #"AMD64 FALSE"
+
+            "ZLIB_COMPAT ON"
+            "ZLIB_BUILD_EXAMPLES OFF"
+            "ZLIB_ENABLE_TESTS OFF"
+
+            "POSITION_INDEPENDENT_CODE ON"
+            "WITH_GTEST OFF"
     )
 
-    if(ZLIB_ADDED)
-        set(ZLIB_FOUND 1)
-        set(ZLIB_LIBRARIES zlibstatic)
-        set(ZLIB_INCLUDE_DIR ${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
-
-        add_library(ZLIB::ZLIB ALIAS zlibstatic)
-        set_lib_runtime_mt(zlibstatic)
-
-        message(STATUS "==== ZLIB")
-        message(STATUS "LIBRARY: ${ZLIB_LIBRARIES}")
-        message(STATUS "INCLUDE_DIR: ${ZLIB_INCLUDE_DIR}")
-        message(STATUS "BINARY_DIR: ${zlib_BINARY_DIR}")
-        message(STATUS "==== ====")
-
-        include_directories(${ZLIB_INCLUDE_DIR})
-
+    if(zlib_ADDED)
+        include_directories(${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
+        set_lib_runtime_mt(zlib)
     endif()
 endif()
 # --------------------
 
-add_subdirectory("math")
-add_subdirectory("utils")
-add_subdirectory("engine")
+add_subdirectory("rawrbox.math")
+add_subdirectory("rawrbox.utils")
+add_subdirectory("rawrbox.engine")
+
+if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    message(STATUS "Enabled RAWRBOX.SCRIPTING support")
+    add_subdirectory("rawrbox.scripting")
+endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
-    message(STATUS "Enabled RESOURCES support")
-    add_subdirectory("resources")
+    message(STATUS "Enabled RAWRBOX.RESOURCES support")
+    add_subdirectory("rawrbox.resources")
 endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
-    message(STATUS "Enabled NETWORK support")
-    add_subdirectory("network")
+   message(STATUS "Enabled RAWRBOX.NETWORK support")
+   add_subdirectory("rawrbox.network")
 endif()
 
-if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
-    message(STATUS "Enabled SCRIPTING support")
-    add_subdirectory("scripting")
-endif()
-
-add_subdirectory("render")
-
-if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
-    message(STATUS "Enabled ASSIMP support")
-    add_subdirectory("assimp")
-endif()
+add_subdirectory("rawrbox.render")
 
 if(RAWRBOX_BUILD_RAWRBOX_WEBM)
-    message(STATUS "Enabled WEBM support")
-    add_subdirectory("webm")
+    message(STATUS "Enabled RAWRBOX.WEBM support")
+    add_subdirectory("rawrbox.webm")
+endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
+    message(STATUS "Enabled RAWRBOX.ASSIMP support")
+    add_subdirectory("rawrbox.assimp")
 endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_UI)
-    message(STATUS "Enabled UI support")
-    add_subdirectory("ui")
+    message(STATUS "Enabled RAWRBOX.UI support")
+    add_subdirectory("rawrbox.ui")
 endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_BASS)
-    message(STATUS "Enabled BASS support")
-    add_subdirectory("bass")
+    message(STATUS "Enabled RAWRBOX.BASS support")
+    add_subdirectory("rawrbox.bass")
 endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
-    message(STATUS "Enabled 3D PHYSICS support")
-    add_subdirectory("physics_3d")
+    message(STATUS "Enabled RAWRBOX.3D_PHYSICS support")
+    add_subdirectory("rawrbox.physics_3d")
 endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
-    message(STATUS "Enabled 2D PHYSICS support")
-    add_subdirectory("physics_2d")
+    message(STATUS "Enabled RAWRBOX.2D_PHYSICS support")
+    add_subdirectory("rawrbox.physics_2d")
 endif()
 
 # Shhhhh windows... shhhh....
@@ -252,3 +241,7 @@ if(RAWRBOX_BUILD_SAMPLES)
     add_subdirectory("samples")
 endif()
 
+
+if(WIN32)
+    string(REPLACE "/WX" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+endif()
