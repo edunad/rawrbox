@@ -29,7 +29,7 @@ namespace decal_test {
 #ifdef _DEBUG
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
 #else
-		window->init(1024, 768, rawrbox::WindowFlags::Window::FULLSCREEN);
+		window->init(1024, 768, rawrbox::WindowFlags::Window::BORDERLESS);
 #endif
 		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
