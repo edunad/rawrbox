@@ -147,7 +147,7 @@ if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
     CPMAddPackage("gl:wayland/weston@12.0.3")
 endif()
 
-CPMAddPackage("gh:stephenberry/glaze@2.1.4")
+CPMAddPackage("gh:stephenberry/glaze@2.1.7")
 
 # ---
 if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)
