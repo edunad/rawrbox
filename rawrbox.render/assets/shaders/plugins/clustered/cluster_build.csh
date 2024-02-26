@@ -19,7 +19,7 @@ float3 LineFromOriginZIntersection(float3 lineFromOrigin, float depth) {
 ClusterAABB AABBFromMinMax(float3 minimum, float3 maximum) {
 	ClusterAABB aabb;
 	aabb.Center = float4((minimum + maximum) * 0.5, 0);
-	aabb.Extents = float4(maximum, 0) - aabb.Center;
+	aabb.Extents = float4(maximum, 0.0) - aabb.Center;
 	return aabb;
 }
 
@@ -30,11 +30,11 @@ ClusterAABB ComputeCluster(uint3 clusterIndex3D) {
 
 	float2 screenInv = float2(1.0 / ScreenSize.x, 1.0 / ScreenSize.y);
 
-	float3 minPoint_VS = ScreenToView(float3(minPoint_SS, 1), screenInv, NearFar, SCamera.projInv).xyz;
-	float3 maxPoint_VS = ScreenToView(float3(maxPoint_SS, 1), screenInv, NearFar, SCamera.projInv).xyz;
+	float3 minPoint_VS = ScreenToView(float3(minPoint_SS, 1.0), screenInv, NearFar, SCamera.projInv).xyz;
+	float3 maxPoint_VS = ScreenToView(float3(maxPoint_SS, 1.0), screenInv, NearFar, SCamera.projInv).xyz;
 
 	float farZ = GetDepthFromSlice(clusterIndex3D.z, NearFar);
-	float nearZ = GetDepthFromSlice(clusterIndex3D.z + 1, NearFar);
+	float nearZ = GetDepthFromSlice(clusterIndex3D.z + 1.0, NearFar);
 
 	float3 minPointNear = LineFromOriginZIntersection(minPoint_VS, nearZ);
 	float3 maxPointNear = LineFromOriginZIntersection(maxPoint_VS, nearZ);
@@ -49,10 +49,9 @@ ClusterAABB ComputeCluster(uint3 clusterIndex3D) {
 
 [numthreads(CLUSTERS_X_THREADS, CLUSTERS_Y_THREADS, CLUSTERS_Z_THREADS)]
 void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
-    uint3 clusterIndex3D = dispatchThreadId;
-    if(any(clusterIndex3D >= GROUP_SIZE))
+    if(any(dispatchThreadId >= GROUP_SIZE.xyz))
 		return;
 
-	uint clusterIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
-    Clusters[clusterIndex] = ComputeCluster(clusterIndex3D);
+	uint clusterIndex = Flatten3D(dispatchThreadId, float2(CLUSTERS_X, CLUSTERS_Y));
+    Clusters[clusterIndex] = ComputeCluster(dispatchThreadId);
 }

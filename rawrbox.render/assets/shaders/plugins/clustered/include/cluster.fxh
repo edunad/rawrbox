@@ -25,12 +25,14 @@
 	#endif
 
 	#if defined(WRITE_CLUSTER_DATA_GRID)
-		RWStructuredBuffer<uint2 /*format=rgba32ui*/> ClusterDataGrid; // Read-Write
+		RWStructuredBuffer<uint2> ClusterDataGrid; // Read-Write
 		#define CLUSTER_DATA_GRID
 	#elif defined(READ_CLUSTER_DATA_GRID)
-		StructuredBuffer<uint2 /*format=rgba32ui*/> ClusterDataGrid; // Read-only
+		StructuredBuffer<uint2> ClusterDataGrid; // Read-only
 		#define CLUSTER_DATA_GRID
 	#endif
+
+	#define GROUP_SIZE uint3(CLUSTERS_X, CLUSTERS_Y, CLUSTERS_Z)
 
     // UTILS -----------------
 	uint Flatten2D(uint2 index, uint dimensionsX) {

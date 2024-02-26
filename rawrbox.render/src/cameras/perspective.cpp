@@ -4,11 +4,11 @@
 
 namespace rawrbox {
 	// NOLINTBEGIN(clang-analyzer-optin.cplusplus.VirtualCall)
-	CameraPerspective::CameraPerspective(const rawrbox::Vector2i& _wsize, float FOV, float near, float far) : _winSize(_wsize), _FOV(FOV) {
+	CameraPerspective::CameraPerspective(const rawrbox::Vector2i& winSize, float FOV, float near, float far) : _winSize(winSize), _FOV(FOV) {
 		this->_z_near = near;
 		this->_z_far = far;
 
-		this->_projection = rawrbox::Matrix4x4::mtxProj(FOV, static_cast<float>(_wsize.x) / static_cast<float>(_wsize.y), this->_z_near, this->_z_far);
+		this->_projection = rawrbox::Matrix4x4::mtxProj(FOV, static_cast<float>(winSize.x) / static_cast<float>(winSize.y), this->_z_near, this->_z_far);
 		this->updateMtx();
 	}
 	// NOLINTEND(clang-analyzer-optin.cplusplus.VirtualCall)
@@ -22,11 +22,11 @@ namespace rawrbox {
 		this->_view = rawrbox::Matrix4x4::mtxLookAt(this->_pos, at, up);
 	}
 
-	const rawrbox::Vector3f CameraPerspective::worldToScreen(const rawrbox::Vector3f& pos) const {
+	rawrbox::Vector3f CameraPerspective::worldToScreen(const rawrbox::Vector3f& pos) const {
 		return rawrbox::Matrix4x4::mtxProject(pos, this->_view, this->_projection, {0, 0, this->_winSize.x, this->_winSize.y});
 	}
 
-	const rawrbox::Vector3f CameraPerspective::screenToWorld(const rawrbox::Vector2f& screen_pos, const rawrbox::Vector3f& origin) const {
+	rawrbox::Vector3f CameraPerspective::screenToWorld(const rawrbox::Vector2f& screen_pos, const rawrbox::Vector3f& origin) const {
 		rawrbox::Vector3f plane_normal = {0, 1, 0};
 
 		auto screenPos = screen_pos.cast<float>();

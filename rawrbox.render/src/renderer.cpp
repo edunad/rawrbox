@@ -97,7 +97,7 @@ namespace rawrbox {
 					}
 
 					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
-					pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc{}, this->_window, &this->_swapChain);
+					pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc(false), this->_window, &this->_swapChain);
 				}
 				break;
 #endif // D3D12_SUPPORTED
@@ -173,8 +173,14 @@ namespace rawrbox {
 
 		// Setup shader pipeline if not exists
 		if (rawrbox::SHADER_FACTORY == nullptr) {
-			auto dirs = rawrbox::PathUtils::glob("assets/shaders", true);
+			auto rootDir = this->getShadersDirectory();
+			auto dirs = rawrbox::PathUtils::glob(rootDir, true);
 			auto paths = fmt::format("{}", fmt::join(dirs, ";"));
+
+			this->_logger->info("Initializing shader factory (using {}):", fmt::format(fmt::fg(fmt::color::coral), rootDir));
+			for (const auto& dir : dirs) {
+				this->_logger->info("\t{}", dir);
+			}
 
 			this->_engineFactory->CreateDefaultShaderSourceStreamFactory(paths.c_str(), &rawrbox::SHADER_FACTORY);
 		}
@@ -678,6 +684,10 @@ namespace rawrbox {
 
 	Diligent::ITextureView* RendererBase::getColor(bool rt) const {
 		return rt ? this->_render->getRT() : this->_render->getHandle();
+	}
+
+	std::string RendererBase::getShadersDirectory() const {
+		return "./assets/shaders";
 	}
 
 #ifdef _DEBUG

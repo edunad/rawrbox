@@ -23,7 +23,7 @@ bool BoxInAABB(float4x4 localPos, ClusterAABB aabb) {
 }
 
 bool SphereInAABB(Sphere sphere, ClusterAABB aabb) {
-    float3 d = max(0, abs(aabb.Center.xyz - sphere.Position) - aabb.Extents.xyz);
+	float3 d = max(0, abs(aabb.Center.xyz - sphere.Position) - aabb.Extents.xyz);
 	float distanceSq = dot(d, d);
 
 	return distanceSq <= sphere.Radius * sphere.Radius;
@@ -46,11 +46,10 @@ bool ConeInSphere(float3 conePosition, float3 coneDirection, float coneRange, fl
 
 [numthreads(CLUSTERS_X_THREADS, CLUSTERS_Y_THREADS, CLUSTERS_Z_THREADS)]
 void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
-    uint3 clusterIndex3D = dispatchThreadId;
-    if(any(clusterIndex3D >= GROUP_SIZE))
+    if(any(dispatchThreadId >= GROUP_SIZE.xyz))
 		return;
 
-	uint clusterIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
+	uint clusterIndex = Flatten3D(dispatchThreadId, float2(CLUSTERS_X, CLUSTERS_Y));
     ClusterAABB cluster = Clusters[clusterIndex];
 
 	float clusterRadius = sqrt(dot(cluster.Extents.xyz, cluster.Extents.xyz));

@@ -31,8 +31,8 @@ namespace rawrbox {
 
 		GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * CLUSTERS_Z;
 
-		auto check = CLUSTERS_Z % CLUSTERS_Z_THREADS != 0;
-		if (check) throw this->_logger->error("Number of cluster depth slices must be divisible by thread count z-dimension");
+		if constexpr (CLUSTERS_Z % CLUSTERS_Z_THREADS != 0) throw this->_logger->error("Number of cluster depth slices must be divisible by thread count z-dimension");
+		if constexpr (MAX_LIGHTS_PER_CLUSTER % 32 != 0) throw this->_logger->error("MAX_LIGHTS_PER_CLUSTER must be divisible by 32");
 
 		// Setup dispatch ---
 		this->_dispatch.ThreadGroupCountX = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_X, CLUSTERS_X_THREADS);
@@ -49,6 +49,8 @@ namespace rawrbox {
 	}
 
 	void ClusteredPlugin::resize(const rawrbox::Vector2i& renderSize) {
+		if (renderSize.x <= 0 || renderSize.y <= 0) return; // Minimized
+
 		// Re-calculate clusters ----
 		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, CLUSTER_TEXTEL_SIZE);
 		CLUSTERS_Y = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.y, CLUSTER_TEXTEL_SIZE);
@@ -61,7 +63,6 @@ namespace rawrbox {
 		// ----------
 
 		// --------------------------
-
 		this->_oldProj = {}; // Re-build clusters
 	}
 
@@ -124,6 +125,8 @@ namespace rawrbox {
 		// ------
 
 		// Perform light / decal culling
+		// uint32_t ClearValue = 0;
+		// context->ClearUAVUint(this->_dataGridBuffer, &ClearValue);
 		context->SetPipelineState(this->_cullingComputeProgram);
 		context->DispatchCompute(this->_dispatch);
 		// ----------------------
@@ -197,7 +200,7 @@ namespace rawrbox {
 		Diligent::ShaderMacroHelper macro;
 
 		macro.AddShaderMacro("THREAD_GROUP_SIZE", rawrbox::THREAD_GROUP_SIZE);
-		macro.AddShaderMacro("GROUP_SIZE", GROUP_SIZE);
+		// macro.AddShaderMacro("GROUP_SIZE", GROUP_SIZE);
 		macro.AddShaderMacro("CLUSTERS_X_THREADS", rawrbox::CLUSTERS_X_THREADS);
 		macro.AddShaderMacro("CLUSTERS_Y_THREADS", rawrbox::CLUSTERS_Y_THREADS);
 		macro.AddShaderMacro("CLUSTERS_Z_THREADS", rawrbox::CLUSTERS_Z_THREADS);

@@ -22,7 +22,7 @@ namespace rawrbox {
 
 		explicit CameraPerspective(const rawrbox::Vector2i& winSize, float FOV = 60.F, float near = 0.01F, float far = 100.F);
 
-		[[nodiscard]] const rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const override;
-		[[nodiscard]] const rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screen_pos, const rawrbox::Vector3f& origin = {0, 0, 0}) const override;
+		[[nodiscard]] rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const override;
+		[[nodiscard]] rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screen_pos, const rawrbox::Vector3f& origin = {0, 0, 0}) const override;
 	};
 } // namespace rawrbox

@@ -208,16 +208,11 @@ namespace rawrbox {
 		bool fullscreen = (flags & WindowFlags::Window::FULLSCREEN) > 0;
 
 		if (!fullscreen && !windowed && !borderless) throw _logger->error("Window flag attribute missing");
-		if (windowed && (borderless || fullscreen)) throw _logger->error("Only one window flag attribute can be selected");
-		if (borderless && (windowed || fullscreen)) throw _logger->error("Only one window flag attribute can be selected");
-		if (fullscreen && (windowed || borderless)) throw _logger->error("Only one window flag attribute can be selected");
+		if ((windowed && (borderless || fullscreen)) || (borderless && (windowed || fullscreen)) || (fullscreen && (windowed || borderless))) throw _logger->error("Only one window flag attribute can be selected");
 
-		if (fullscreen || (width >= mode->width || height >= mode->height)) {
+		if (borderless || fullscreen || (width >= mode->width || height >= mode->height)) {
 			width = mode->width;
 			height = mode->height;
-		} else if (borderless) {
-			width = mode->width - 1;
-			height = mode->height - 1;
 		}
 		// -----------
 
@@ -252,18 +247,20 @@ namespace rawrbox {
 		// -------------
 
 		// Center window
+		int monx = 0;
+		int mony = 0;
+		glfwGetMonitorPos(mon, &monx, &mony);
+
 		if (this->_settings.pos == -1) {
 			if (windowed || transparent) {
-				int monx = 0;
-				int mony = 0;
-				glfwGetMonitorPos(mon, &monx, &mony);
-
 				this->_settings.pos = {monx + mode->width / 2 - width / 2, mony + mode->height / 2 - height / 2}; // Center
-				glfwSetWindowPos(glfwHandle, this->_settings.pos.x, this->_settings.pos.y);
-
-				glfwShowWindow(glfwHandle);
+			} else {
+				this->_settings.pos = {monx, mony}; // Top corner
 			}
 		}
+
+		glfwSetWindowPos(glfwHandle, this->_settings.pos.x, this->_settings.pos.y);
+		glfwShowWindow(glfwHandle);
 		// ------
 
 // Set icon
@@ -310,20 +307,20 @@ namespace rawrbox {
 		glfwSetInputMode(this->_handle, GLFW_CURSOR, hidden ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
 	}
 
-	void Window::setCursor(uint32_t icon) {
+	void Window::setCursor(uint32_t cursor) {
 		if (this->_handle == nullptr) throw _logger->error("Invalid window handle");
 		if (this->_cursor != nullptr) glfwDestroyCursor(this->_cursor); // Delete old one
-		auto* cursor = glfwCreateStandardCursor(icon);
-		this->_cursor = cursor;
+		auto* icon = glfwCreateStandardCursor(cursor);
+		this->_cursor = icon;
 
-		glfwSetCursor(this->_handle, cursor);
+		glfwSetCursor(this->_handle, icon);
 	}
 
-	void Window::setCursor(const std::array<uint8_t, 1024>& pixels) {
+	void Window::setCursor(const std::array<uint8_t, 1024>& cursor) {
 		if (this->_handle == nullptr) throw _logger->error("Invalid window handle");
-		if (pixels.empty()) throw _logger->error("Cursor pixels cannot be empty");
+		if (cursor.empty()) throw _logger->error("Cursor pixels cannot be empty");
 
-		std::memcpy(this->_cursorPixels.data(), pixels.data(), pixels.size() * sizeof(uint8_t));
+		std::memcpy(this->_cursorPixels.data(), cursor.data(), cursor.size() * sizeof(uint8_t));
 		if (this->_cursor != nullptr) glfwDestroyCursor(this->_cursor); // Delete old one
 
 		GLFWimage image = {};
@@ -331,10 +328,10 @@ namespace rawrbox {
 		image.width = 16;
 		image.height = 16;
 
-		auto* cursor = glfwCreateCursor(&image, 0, 0);
-		this->_cursor = cursor;
+		auto* icon = glfwCreateCursor(&image, 0, 0);
+		this->_cursor = icon;
 
-		glfwSetCursor(this->_handle, cursor);
+		glfwSetCursor(this->_handle, icon);
 	}
 	// -------------------
 

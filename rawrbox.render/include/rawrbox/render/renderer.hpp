@@ -190,6 +190,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual Diligent::ITextureView* getDepth() const;
 		[[nodiscard]] virtual Diligent::ITextureView* getColor(bool rt = false) const;
 
+		[[nodiscard]] virtual std::string getShadersDirectory() const;
+
 #ifdef _DEBUG
 		[[nodiscard]] virtual const Diligent::QueryDataPipelineStatistics& getPipelineStats(const std::string& query);
 		[[nodiscard]] virtual const Diligent::QueryDataDuration& getDurationStats(const std::string& query);

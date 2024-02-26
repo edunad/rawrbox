@@ -3,7 +3,7 @@
 #include <rawrbox/render/cameras/orbital.hpp>
 
 namespace rawrbox {
-	CameraOrbital::CameraOrbital(rawrbox::Window& window, float speed, float FOV, float near, float far) : CameraPerspective(window.getSize(), FOV, near, far), _window(&window), _speed(speed) {
+	CameraOrbital::CameraOrbital(rawrbox::Window& window, float speed, float FOV, float near, float far) : rawrbox::CameraPerspective(window.getSize(), FOV, near, far), _window(&window), _speed(speed) {
 		this->_window->onMouseKey += [this](auto& /*w*/, const rawrbox::Vector2i& mousePos, int button, int action, int /*mods*/) {
 			const bool isDown = action == 1;
 			if (button != this->_controls.rotate) return;

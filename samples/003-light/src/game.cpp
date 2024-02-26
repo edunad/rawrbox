@@ -22,7 +22,11 @@ namespace light {
 #endif
 		window->setMonitor(-1);
 		window->setTitle("LIGHT TEST");
+#ifdef _DEBUG
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
+#else
+		window->init(-1, -1, rawrbox::WindowFlags::Window::BORDERLESS);
+#endif
 
 		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
 	}
@@ -32,6 +36,7 @@ namespace light {
 
 		// Setup renderer
 		auto* render = window->createRenderer();
+		render->skipIntros(true);
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
@@ -41,7 +46,7 @@ namespace light {
 		// ---------------
 
 		// Setup camera
-		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
+		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window, 8, 60, 0.1F, 80.F);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------

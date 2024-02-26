@@ -84,7 +84,6 @@ namespace rawrbox {
 
 		return *this;
 	}
-
 	rawrbox::Matrix4x4& Matrix4x4::transpose() {
 		this->transpose(this->data());
 		return *this;
@@ -208,6 +207,7 @@ namespace rawrbox {
 		this->mtx[0] = 1.F / (aspect * tanHalfFovy);
 		this->mtx[5] = 1.F / (tanHalfFovy);
 		this->mtx[14] = -(2.F * far * near) / (far - near);
+		this->mtx[15] = 0.F;
 
 		if (Matrix4x4::MTX_RIGHT_HANDED) {
 			this->mtx[10] = -(far + near) / (far - near);
