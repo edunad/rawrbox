@@ -49,6 +49,7 @@ jobs:
         run: cd build && ninja
 
       - name: Run tests
+        if: contains(github.event.pull_request.labels.*.name, 'SKIP_TESTS') != true
         run: |
           cd build
           ctest --test-dir ./rawrbox.math --output-on-failure
@@ -60,7 +61,7 @@ jobs:
 
       - name: Run linter
         uses: cpp-linter/cpp-linter-action@v2.9.1
-        if: github.ref != 'refs/heads/master' && !contains(github.event.pull_request.labels.*.name, 'UPLOAD')
+        if: github.ref != 'refs/heads/master' && !contains(github.event.pull_request.labels.*.name, 'SKIP_LINTER')
         id: linter
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
