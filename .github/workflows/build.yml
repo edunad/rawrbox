@@ -60,7 +60,7 @@ jobs:
 
       - name: Run linter
         uses: cpp-linter/cpp-linter-action@v2.9.1
-        if: github.ref != 'refs/heads/master'
+        if: github.ref != 'refs/heads/master' && !contains(github.event.pull_request.labels.*.name, 'UPLOAD')
         id: linter
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -77,7 +77,7 @@ jobs:
           ignore: build | _deps | .github | rawrbox.render/include/stb | rawrbox.engine/tests | rawrbox.math/tests | rawrbox.render/tests | rawrbox.resources/tests | rawrbox.utils/tests | rawrbox.scripting/tests
 
       - name: Upload build artifacts
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' || contains(github.event.pull_request.labels.*.name, 'UPLOAD')
         uses: actions/upload-artifact@v4.3.1
         with:
           name: output
