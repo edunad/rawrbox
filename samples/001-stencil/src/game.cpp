@@ -157,6 +157,7 @@ namespace stencil {
 		if (!this->_ready) return;
 
 		auto* stencil = rawrbox::RENDERER->stencil();
+
 		stencil->pushOffset({20, 50});
 
 		// Box + clipping --
@@ -303,6 +304,7 @@ namespace stencil {
 		stencil->popRotation();
 
 		stencil->drawText(*rawrbox::DEBUG_FONT_BOLD, "MeW MeW MeW! I am a cat, nya.", {0, 75});
+		stencil->drawText("Quick dirty text", {0, 107});
 		// ---
 
 		// Markdown ---

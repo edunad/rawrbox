@@ -10,7 +10,7 @@
 #define STBI_ONLY_JPEG
 #define STBI_ONLY_BMP
 #define STBI_ONLY_TGA
-#include <stb/image.hpp>
+#include <stb/stb_image.hpp>
 #pragma warning(pop)
 // NOLINTEND(clang-diagnostic-unknown-pragmas)
 

@@ -7,6 +7,8 @@
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
+#include <stb/stb_easy_font.hpp>
+
 namespace rawrbox {
 	Stencil::Stencil(const rawrbox::Vector2i& size) : _windowSize(size) {
 		this->_streamingVB = std::make_unique<rawrbox::StreamingBuffer>("RawrBox::Stencil::VertexBuffer", Diligent::BIND_VERTEX_BUFFER, MaxVertsInStreamingBuffer * static_cast<uint32_t>(sizeof(rawrbox::PosUVColorVertexData)), 1);
@@ -271,6 +273,47 @@ namespace rawrbox {
 			this->pushIndices({0, 1, 2,
 			    1, 3, 2});
 		}
+
+		// Add to calls
+		this->pushDrawCall();
+		// ----
+	}
+
+	void Stencil::drawText(const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col) {
+		if (col.invisible() || text.empty()) return;
+		uint32_t textureID = rawrbox::WHITE_TEXTURE->getTextureID();
+
+		// Setup --------
+		this->setupDrawCall(this->_2dPipeline);
+		// ----
+
+		// Generate vertices and indices for the text
+		std::array<char, 960000> vertexBuffer = {};
+		// NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast)
+		int num_quads = stb_easy_font_print(0, 0, const_cast<char*>(text.c_str()), nullptr, vertexBuffer.data(), sizeof(vertexBuffer));
+		// NOLINTEND(cppcoreguidelines-pro-type-const-cast)
+
+		auto* data = std::bit_cast<float*>(vertexBuffer.data());
+		std::vector<uint32_t> indices;
+
+		for (int quad = 0, stride = 0; quad < num_quads; ++quad, stride += 16) {
+			// Push vertices for the current quad
+			this->pushVertice(textureID, {data[(0 * 4) + stride] + pos.x, data[(0 * 4) + 1 + stride] + pos.y}, {}, col);
+			this->pushVertice(textureID, {data[(1 * 4) + stride] + pos.x, data[(1 * 4) + 1 + stride] + pos.y}, {}, col);
+			this->pushVertice(textureID, {data[(2 * 4) + stride] + pos.x, data[(2 * 4) + 1 + stride] + pos.y}, {}, col);
+			this->pushVertice(textureID, {data[(3 * 4) + stride] + pos.x, data[(3 * 4) + 1 + stride] + pos.y}, {}, col);
+
+			// Generate indices for the current quad
+			uint32_t base_index = quad * 4; //  4 vertices per quad
+			indices.push_back(base_index);
+			indices.push_back(base_index + 1);
+			indices.push_back(base_index + 2);
+			indices.push_back(base_index + 2);
+			indices.push_back(base_index + 3);
+			indices.push_back(base_index);
+		}
+
+		this->pushIndices(indices);
 
 		// Add to calls
 		this->pushDrawCall();
