@@ -56,6 +56,7 @@ namespace rawrbox {
 		features.WireframeFill = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.SparseResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.GeometryShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		features.ComputeShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 
 		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.ShaderResourceRuntimeArray = Diligent::DEVICE_FEATURE_STATE_ENABLED;
@@ -189,8 +190,8 @@ namespace rawrbox {
 		if (this->_engineFactory == nullptr) throw this->_logger->error("Failed to initialize");
 
 		// Single draw call to setup window background
-		// this->clear();
-		// this->frame();
+		this->clear();
+		this->frame();
 		// --------------
 
 		// Init pipelines ---
