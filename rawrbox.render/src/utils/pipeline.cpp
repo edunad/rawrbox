@@ -64,21 +64,21 @@ namespace rawrbox {
 		initialized = false;
 	}
 
-	Diligent::ISampler* PipelineUtils::registerSampler(uint32_t id, Diligent::SamplerDesc desc) {
+	Diligent::ISampler* PipelineUtils::registerSampler(uint32_t id, Diligent::SamplerDesc type) {
 		auto fnd = _samplers.find(id);
 		if (fnd != _samplers.end()) {
 			return fnd->second;
 		}
 
 		Diligent::RefCntAutoPtr<Diligent::ISampler> sampler;
-		rawrbox::RENDERER->device()->CreateSampler(desc, &sampler);
+		rawrbox::RENDERER->device()->CreateSampler(type, &sampler);
 
 		_samplers[id] = std::move(sampler);
 		return _samplers[id];
 	}
 
 	// TODO: ADD CACHE https://github.com/DiligentGraphics/DiligentCore/blob/e94b36978ccf8dd6e48c759318ef1b887496a7c5/Graphics/GraphicsTools/interface/BytecodeCache.h
-	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type, const Diligent::ShaderMacroHelper& macros) {
+	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::SHADER_SOURCE_LANGUAGE language, const Diligent::ShaderMacroHelper& macros) {
 		if (name.empty()) return nullptr;
 
 		Diligent::ShaderMacroHelper helper = _globalMacros[type] + macros;
@@ -91,9 +91,11 @@ namespace rawrbox {
 		}
 
 		Diligent::ShaderCreateInfo ShaderCI;
-		ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
+		ShaderCI.SourceLanguage = language;
 		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
 		ShaderCI.CompileFlags = Diligent::SHADER_COMPILE_FLAG_ENABLE_UNBOUNDED_ARRAYS;
+		ShaderCI.ShaderCompiler = Diligent::SHADER_COMPILER_DXC;
+		ShaderCI.HLSLVersion = {6, 5};
 
 		std::string shaderName = fmt::format("RawrBox::SHADER::{}", name);
 		ShaderCI.Desc.ShaderType = type;
@@ -158,7 +160,7 @@ namespace rawrbox {
 			PSODesc.ResourceLayout.NumVariables = static_cast<uint32_t>(settings.resources.size());
 		}
 
-		PSOCreateInfo.pCS = rawrbox::PipelineUtils::compileShader(settings.pCS, Diligent::SHADER_TYPE_COMPUTE, settings.macros);
+		PSOCreateInfo.pCS = rawrbox::PipelineUtils::compileShader(settings.pCS, Diligent::SHADER_TYPE_COMPUTE, settings.language, settings.macros);
 
 		rawrbox::RENDERER->device()->CreateComputePipelineState(PSOCreateInfo, &pipe);
 		if (pipe == nullptr) throw _logger->error("Failed to create pipeline '{}'", name);
@@ -237,9 +239,9 @@ namespace rawrbox {
 		// -----
 
 		// SHADERS ----
-		info.pVS = rawrbox::PipelineUtils::compileShader(settings.pVS, Diligent::SHADER_TYPE_VERTEX, settings.macros);
-		info.pPS = rawrbox::PipelineUtils::compileShader(settings.pPS, Diligent::SHADER_TYPE_PIXEL, settings.macros);
-		info.pGS = rawrbox::PipelineUtils::compileShader(settings.pGS, Diligent::SHADER_TYPE_GEOMETRY, settings.macros);
+		info.pVS = rawrbox::PipelineUtils::compileShader(settings.pVS, Diligent::SHADER_TYPE_VERTEX, settings.language, settings.macros);
+		info.pPS = rawrbox::PipelineUtils::compileShader(settings.pPS, Diligent::SHADER_TYPE_PIXEL, settings.language, settings.macros);
+		info.pGS = rawrbox::PipelineUtils::compileShader(settings.pGS, Diligent::SHADER_TYPE_GEOMETRY, settings.language, settings.macros);
 		// -------------
 
 		// Layout

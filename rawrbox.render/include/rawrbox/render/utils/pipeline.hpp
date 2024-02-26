@@ -54,6 +54,7 @@ namespace rawrbox {
 
 		Diligent::ShaderMacroHelper macros = {};
 		Diligent::IPipelineResourceSignature* signature = nullptr;
+		Diligent::SHADER_SOURCE_LANGUAGE language = Diligent::SHADER_SOURCE_LANGUAGE::SHADER_SOURCE_LANGUAGE_HLSL;
 
 		std::string pVS;
 		std::string pPS;
@@ -75,6 +76,7 @@ namespace rawrbox {
 		std::vector<rawrbox::PipeUniforms> uniforms = {};
 		std::vector<Diligent::ShaderResourceVariableDesc> resources = {};
 
+		Diligent::SHADER_SOURCE_LANGUAGE language = Diligent::SHADER_SOURCE_LANGUAGE::SHADER_SOURCE_LANGUAGE_HLSL;
 		Diligent::IPipelineResourceSignature* signature = nullptr;
 
 		Diligent::SHADER_RESOURCE_VARIABLE_TYPE resourceType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
@@ -101,7 +103,7 @@ namespace rawrbox {
 		static void shutdown();
 
 		static Diligent::ISampler* registerSampler(uint32_t id, Diligent::SamplerDesc type);
-		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, const Diligent::ShaderMacroHelper& macros = {});
+		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, Diligent::SHADER_SOURCE_LANGUAGE language = Diligent::SHADER_SOURCE_LANGUAGE_HLSL, const Diligent::ShaderMacroHelper& macros = {});
 		static std::vector<Diligent::ImmutableSamplerDesc> compileSamplers(const std::vector<rawrbox::PipeSampler>& samplers);
 
 		static Diligent::IPipelineState* createComputePipeline(const std::string& name, rawrbox::PipeComputeSettings settings);
