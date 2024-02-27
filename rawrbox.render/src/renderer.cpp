@@ -189,8 +189,8 @@ namespace rawrbox {
 		if (this->_engineFactory == nullptr) throw this->_logger->error("Failed to initialize");
 
 		// Single draw call to setup window background
-		// this->clear();
-		// this->frame();
+		this->clear();
+		this->frame();
 		// --------------
 
 		// Init pipelines ---
