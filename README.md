@@ -4,7 +4,6 @@
 		<a href="https://github.com/edunad/rawrbox">RawrBox</a> - PSX..ish game engine
 	</p>
 </h2>
-
 <h4>
 	<p align="center">
 		<img src="https://github.com/edunad/rawrbox/actions/workflows/build.yml/badge.svg?branch=master&event=push"/>&nbsp;
@@ -15,8 +14,6 @@
 		<br/><br/>
 		<a href="#features">Features</a> -
 		<a href="#libs">Libs</a> -
-		<a href="#cmake">Settings</a> -
-		<a href="#dependencies">Dependencies</a> -
 		<a href="#building">Building</a> -
 		<a href="#samples">Samples</a>
 	</p>
@@ -188,10 +185,10 @@
 
 # SAMPLES
 
-| <p align="center">001-stencil</p><a href='/samples/001-stencil'><img src="https://i.rawr.dev/sample1-min.gif" width=240 /></a>       | <p align="center">002-generated-models</p><a href='/samples/002-generated-models'><img src="https://i.rawr.dev/sample2-min.gif" width=240 /></a> | <p align="center">003-light</p><a href='/samples/003-light'><img src="https://i.rawr.dev/sample3-min.gif" width=240 /></a>            |
-| ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| <p align="center">004-instancing</p><a href='/samples/004-instancing'><img src="https://i.rawr.dev/sample4-min.gif" width=240 /></a> | <p align="center">005-post-process</p><a href='/samples/005-post-process'><img src="https://i.rawr.dev/sample5-min.gif" width=240 /></a>         | <p align="center">006-decals</p><a href='/samples/006-decals'><img src="https://i.rawr.dev/sample6-min.gif" width=240 /></a>          |
-| <p align="center">~~007-particle-system~~ (TODO)</p>                                                                                 | <p align="center">008-ui</p><a href='/samples/008-ui'><img src="https://i.rawr.dev/sample8-min.gif" width=240 /></a>                             | <p align="center">009-assimp</p><a href='/samples/009-assimp'><img src="https://i.rawr.dev/sample9-min.gif" width=240 /></a>          |
-| <p align="center">010-bass-audio</p><a href='/samples/010-bass-audio'><img src="https://i.rawr.dev/bylavGsjpB.png" width=240 /></a>  | <p align="center">011-physics-3D</p><a href='/samples/011-physics-3D'><img src="https://i.rawr.dev/sample11-min.gif" width=240 /></a>            | <p align="center">012-physics-3D</p><a href='/samples/012-physics-2D'><img src="https://i.rawr.dev/sample12-min.gif" width=240 /></a> |
-| <p align="center">013-webm</p><a href='/samples/013-webm'><img src="https://i.rawr.dev/sample13-min.gif" width=240 /></a>            | <p align="center">014-scripting</p><a href='/samples/014-scripting'><img src="https://i.rawr.dev/sample14-min.gif" width=240 /></a>              | <p align="center">~~015-gpu-picking~~ (TODO)</p>                                                                                      |
+| 001-stencil</br><a href='/samples/001-stencil'><img src="https://i.rawr.dev/sample1-min.gif" width=240 /></a>       | 002-generated-models</br><a href='/samples/002-generated-models'><img src="https://i.rawr.dev/sample2-min.gif" width=240 /></a> | 003-light</br><a href='/samples/003-light'><img src="https://i.rawr.dev/sample3-min.gif" width=240 /></a>            |
+| :------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------: |
+| 004-instancing</br><a href='/samples/004-instancing'><img src="https://i.rawr.dev/sample4-min.gif" width=240 /></a> | 005-post-process</br><a href='/samples/005-post-process'><img src="https://i.rawr.dev/sample5-min.gif" width=240 /></a>         | 006-decals</br><a href='/samples/006-decals'><img src="https://i.rawr.dev/sample6-min.gif" width=240 /></a>          |
+| ~~007-particle-system~~ (TODO)                                                                                | 008-ui</br><a href='/samples/008-ui'><img src="https://i.rawr.dev/sample8-min.gif" width=240 /></a>                             | 009-assimp</br><a href='/samples/009-assimp'><img src="https://i.rawr.dev/sample9-min.gif" width=240 /></a>          |
+| 010-bass-audio</br><a href='/samples/010-bass-audio'><img src="https://i.rawr.dev/bylavGsjpB.png" width=240 /></a>  | 011-physics-3D</br><a href='/samples/011-physics-3D'><img src="https://i.rawr.dev/sample11-min.gif" width=240 /></a>            | 012-physics-3D</br><a href='/samples/012-physics-2D'><img src="https://i.rawr.dev/sample12-min.gif" width=240 /></a> |
+| 013-webm</br><a href='/samples/013-webm'><img src="https://i.rawr.dev/sample13-min.gif" width=240 /></a>            | 014-scripting</br><a href='/samples/014-scripting'><img src="https://i.rawr.dev/sample14-min.gif" width=240 /></a>              | ~~015-gpu-picking~~ (TODO)                                                                                 |
 
