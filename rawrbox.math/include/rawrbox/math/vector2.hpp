@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <rawrbox/math/pi.hpp>
 #include <rawrbox/math/utils/pack.hpp>
 
 #include <algorithm>
@@ -131,15 +132,15 @@ namespace rawrbox {
 		}
 
 		static VecType intersects(const VecType& a1, const VecType& a2, const VecType& b1, const VecType& b2) {
-			float ua = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x);
-			float ub = (a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x);
-			float denominator = (b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y);
+			auto ua = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x);
+			auto ub = (a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x);
+			auto denominator = (b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y);
 
-			if (std::abs(denominator) > 0.00001F) {
+			if (std::abs(denominator) > static_cast<NumberType>(0.00001F)) {
 				ua /= denominator;
 				ub /= denominator;
 
-				if (ua >= 0 && ua <= 1 && ub >= 0 && ub <= 1)
+				if (ua >= rawrbox::ZERO<NumberType> && ua <= rawrbox::ONE<NumberType> && ub >= rawrbox::ZERO<NumberType> && ub <= rawrbox::ONE<NumberType>)
 					return {
 					    static_cast<NumberType>(a1.x + ua * (a2.x - a1.x)),
 					    static_cast<NumberType>(a1.y + ua * (a2.y - a1.y))};
@@ -153,7 +154,7 @@ namespace rawrbox {
 		[[nodiscard]] VecType rotateAroundOrigin(NumberType rads, const VecType& origin) const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			if (rads == 0) return *this;
+			if (rads == rawrbox::ZERO<NumberType>) return *this;
 
 			VecType u = *this - origin;
 			if (u == VecType()) return *this;
@@ -180,11 +181,11 @@ namespace rawrbox {
 		[[nodiscard]] VecType normalized() const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
-			float l = length();
-			return l == 0 ? VecType() : (*this) / l;
+			auto l = length();
+			return l == rawrbox::ZERO<NumberType> ? VecType() : (*this) / l;
 		}
 
-		[[nodiscard]] float cross(const VecType& other) const
+		[[nodiscard]] NumberType cross(const VecType& other) const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
 		{
 			return x * other.y - y * other.x;

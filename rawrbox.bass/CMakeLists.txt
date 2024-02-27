@@ -30,12 +30,12 @@ endif()
 
 # Copy content - BASS
 add_custom_target(
-    copy_lib_bass ALL COMMAND ${CMAKE_COMMAND} -E copy ${BASS_BINARY} ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
+    copy_lib_bass ALL COMMAND ${CMAKE_COMMAND} -E copy ${BASS_BINARY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     COMMENT "Copying BASS lib into binary directory")
 
 add_custom_target(
     copy_lib_bass_fx ALL COMMAND ${CMAKE_COMMAND} -E copy ${BASS_BINARY_FX}
-                            ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
+                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     COMMENT "Copying BASS FX lib into binary directory")
 
 set(RAWRBOX_EXTRA_DEPS copy_lib_bass copy_lib_bass_fx)

@@ -28,12 +28,12 @@ if(libcpr_ADDED)
             if(${OPENSSL_VERSION} VERSION_GREATER_EQUAL "3.0.0")
                 add_custom_target(
                     copy_openssl_libssl ALL COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_SSL_LIBRARY}
-                                            ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/libssl.so.3
+                                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libssl.so.3
                     COMMENT "Copying OpenSSL DLL into binary directory")
 
                 add_custom_target(
                     copy_openssl_libcrypto ALL COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_CRYPTO_LIBRARY}
-                                            ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}/libcrypto.so.3
+                                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libcrypto.so.3
                     COMMENT "Copying OpenSSL DLL into binary directory")
 
                 set(OPENSSL_COPY_TARGETS copy_openssl_libssl copy_openssl_libcrypto)
@@ -41,7 +41,7 @@ if(libcpr_ADDED)
             else()
                 add_custom_target(
                     copy_openssl ALL COMMAND ${CMAKE_COMMAND} -E copy ${OPENSSL_LIBRARIES}
-                                            ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
+                                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
                     COMMENT "Copying OpenSSL DLL into binary directory")
 
                 set(OPENSSL_COPY_TARGETS copy_openssl)

@@ -84,7 +84,6 @@
 | `RAWRBOX_BUILD_TESTING`                    | Builds & enables project tests                                                                     |
 | `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          |
 | --                                         | --                                                                                                 |
-| `RAWRBOX_OUTPUT_BIN`                       | The output build folder. Default is `bin`                                                          |
 | `RAWRBOX_CONTENT_FOLDER`                   | The content folder to output assets. Default is `assets`                                           |
 | --                                         | --                                                                                                 |
 | `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 |

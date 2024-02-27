@@ -6,8 +6,6 @@ project(${output_target})
 file(GLOB_RECURSE RAWRBOX_SAMPLE_SOURCES "include/*.hpp" "src/*.cpp")
 
 # Project setup
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE})
-
 add_executable(${output_target} ${RAWRBOX_SAMPLE_SOURCES})
 add_dependencies(${output_target} copy_resources_samples)
 target_include_directories(${output_target} PRIVATE "include")

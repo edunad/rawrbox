@@ -37,7 +37,7 @@ if(libwebm_ADDED)
     if(WIN32)
         add_custom_target(
             copy_dll_vpx ALL COMMAND ${CMAKE_COMMAND} -E copy ${VPX_BINARY}
-                                     ${CMAKE_HOME_DIRECTORY}/${RAWRBOX_OUTPUT_BIN}/${CMAKE_BUILD_TYPE}
+                                     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
             COMMENT "Copying VPX DLL into binary directory")
     endif()
     # ----

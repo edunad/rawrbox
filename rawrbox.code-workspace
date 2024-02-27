@@ -68,9 +68,8 @@
     "cmake.touchbar.visibility": "default",
     "cmake.configureArgs": ["-Wno-dev"],
     "cmake.configureSettings": {
-      "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
       "RAWRBOX_DEV_MODE": true,
-      "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "bin"
+      "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
     },
     "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "workbench.editor.pinnedTabSizing": "shrink",
