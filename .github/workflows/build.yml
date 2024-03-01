@@ -58,6 +58,7 @@ jobs:
           ctest --test-dir ./rawrbox.engine --output-on-failure
           ctest --test-dir ./rawrbox.resources --output-on-failure
           ctest --test-dir ./rawrbox.scripting --output-on-failure
+          ctest --test-dir ./rawrbox.network --output-on-failure
 
       - name: Run linter
         uses: cpp-linter/cpp-linter-action@v2.9.1
@@ -75,7 +76,7 @@ jobs:
           repo-root: "${{github.workspace}}"
           thread-comments: true
           no-lgtm: false
-          ignore: build | _deps | .github | rawrbox.render/include/stb | rawrbox.engine/tests | rawrbox.math/tests | rawrbox.render/tests | rawrbox.resources/tests | rawrbox.utils/tests | rawrbox.scripting/tests
+          ignore: build | _deps | .github | rawrbox.render/include/stb | rawrbox.engine/tests | rawrbox.math/tests | rawrbox.render/tests | rawrbox.resources/tests | rawrbox.utils/tests | rawrbox.scripting/tests | rawrbox.network/tests
 
       - name: Upload build artifacts
         if: github.ref == 'refs/heads/master' || contains(github.event.pull_request.labels.*.name, '⚠️ UPLOAD ⚠️')

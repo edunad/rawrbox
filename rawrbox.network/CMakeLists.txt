@@ -94,5 +94,5 @@ set_lib_runtime_mt(${output_target})
 # --------------
 
 # TEST ----
-#include(../cmake/catch2.cmake)
+include(../cmake/catch2.cmake)
 # --------------
