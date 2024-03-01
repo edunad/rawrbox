@@ -25,7 +25,6 @@ IncludeCategories:
     Priority: 4
   - Regex: ".*"
     Priority: 5
-
 IncludeBlocks: Regroup
 DerivePointerAlignment: false
 PointerAlignment: Left

@@ -46,6 +46,20 @@
     },
 
     {
+      "label": "Run clang-format",
+      "type": "shell",
+      "command": "clang-format -i `find -not -path \"*build*\" -not -path \"*deps*\" -not -path \"*.cache*\" \\( -name *.cpp -o -name *.h -o -name *.hpp \\)`",
+      "group": "build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+
+    {
       "label": "Build tests",
       "type": "cmake",
       "command": "build",
