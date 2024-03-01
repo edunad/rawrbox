@@ -1,5 +1,5 @@
-#include <hash.fxh>
-#include <pixel_post_process_uniforms.fxh>
+#include "hash.fxh"
+#include "pixel_post_process_uniforms.fxh"
 
 // ## MAPPING ----------------
 #define NoiseIntensity  PostProcessConstants.data[0].x

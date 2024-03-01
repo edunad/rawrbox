@@ -113,6 +113,18 @@ set(CMAKE_SKIP_RPATH TRUE)
 set(CMAKE_SKIP_BUILD_RPATH TRUE)
 # ---------------------------------
 
+# Patch vs studio paths
+if(WIN32 AND NOT VS_DXC_COMPILER_PATH AND NOT VS_DXIL_SIGNER_PATH AND NOT VS_D3D_COMPILER_PATH)
+    get_filename_component(CMAKE_DEVKIT_LOCATION ${CMAKE_RC_COMPILER} DIRECTORY)
+
+    set(VS_DXC_COMPILER_PATH "${CMAKE_DEVKIT_LOCATION}/dxcompiler.dll" CACHE INTERNAL "")
+    set(VS_DXIL_SIGNER_PATH "${CMAKE_DEVKIT_LOCATION}/dxil.dll" CACHE INTERNAL "")
+    set(VS_D3D_COMPILER_PATH "${CMAKE_DEVKIT_LOCATION}/d3dcompiler_47.dll" CACHE INTERNAL "")
+
+    message(STATUS "Patching DirectX Visual Studio paths:\n\tVS_DXC_COMPILER_PATH: ${VS_DXC_COMPILER_PATH}\n\tVS_DXIL_SIGNER_PATH: ${VS_DXIL_SIGNER_PATH}\n\tVS_D3D_COMPILER_PATH: ${VS_D3D_COMPILER_PATH}")
+endif()
+# ---------------------
+
 ## CHECKS ---
 if(RAWRBOX_BUILD_SAMPLES AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     message(WARNING "Samples require RAWRBOX.RESOURCES to be enabled, enabling...")
@@ -231,7 +243,7 @@ if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
 endif()
 
 # Shhhhh windows... shhhh....
-# mute_dependencies_warnings("RAWRBOX")
+mute_dependencies_warnings(".*RAWRBOX.*")
 # --------------------
 
 if(RAWRBOX_BUILD_SAMPLES)

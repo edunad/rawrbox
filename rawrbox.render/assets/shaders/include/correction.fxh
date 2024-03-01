@@ -6,8 +6,8 @@
         return x <= 0.04045F ? x / 12.92F : pow(abs((x + 0.055F) / 1.055F), 2.4F);
     }
 
+    // http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
     float fastToLinear(float x) {
-        // http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
         return x * (x * (x * 0.305306011f + 0.682171111f) + 0.012522878f);
     }
 

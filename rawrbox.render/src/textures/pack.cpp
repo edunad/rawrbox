@@ -68,8 +68,8 @@ namespace rawrbox {
 		// if all of the above didn't return, the current leaf is large enough,
 		// with some space to spare, so we split up the current node so we have
 		// one prefectly fitted node and some spare nodes
-		uint16_t remainingWidth = width - insertedWidth;
-		uint16_t remainingHeight = height - insertedHeight;
+		int remainingWidth = width - insertedWidth;
+		int remainingHeight = height - insertedHeight;
 
 		bool isRemainderWiderThanHigh = remainingWidth > remainingHeight;
 

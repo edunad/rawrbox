@@ -100,7 +100,7 @@ namespace rawrbox {
 		static void init(Diligent::IRenderDevice& device);
 		static void shutdown();
 
-		static Diligent::ISampler* registerSampler(uint32_t id, Diligent::SamplerDesc type);
+		static Diligent::ISampler* registerSampler(uint32_t id, Diligent::SamplerDesc desc);
 		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, const Diligent::ShaderMacroHelper& macros = {});
 		static std::vector<Diligent::ImmutableSamplerDesc> compileSamplers(const std::vector<rawrbox::PipeSampler>& samplers);
 

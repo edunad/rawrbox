@@ -1,5 +1,5 @@
-#include <vertex_bindless_uniforms.fxh>
-#include <camera.fxh>
+#include "vertex_bindless_uniforms.fxh"
+#include "camera.fxh"
 
 #define TRANSFORM_DISPLACEMENT
 #define TRANSFORM_PSX
@@ -11,7 +11,7 @@
 Texture2DArray g_Textures[];
 SamplerState   g_Sampler;
 
-#include <model_transforms.fxh>
+#include "model_transforms.fxh"
 
 struct VSInput {
     float3 Pos     : ATTRIB0;

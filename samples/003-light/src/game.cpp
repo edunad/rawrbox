@@ -45,7 +45,7 @@ namespace light {
 		// ---------------
 
 		// Setup camera
-		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window, 8, 60, 0.1F, 80.F);
+		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------

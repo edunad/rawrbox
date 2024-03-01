@@ -17,7 +17,7 @@ CPMDeclarePackage(magic_enum
 )
 # glaze
 CPMDeclarePackage(glaze
-  VERSION 2.1.7
+  VERSION 2.1.8
   GITHUB_REPOSITORY stephenberry/glaze
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -60,7 +60,7 @@ CPMDeclarePackage(thread-pool
 )
 # cpptrace
 CPMDeclarePackage(cpptrace
-  VERSION 0.4.0
+  VERSION 0.4.1
   GITHUB_REPOSITORY jeremy-rifkin/cpptrace
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -77,7 +77,7 @@ CPMDeclarePackage(cpptrace
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.613
+  GIT_TAG 0.614
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"
@@ -100,7 +100,7 @@ CPMDeclarePackage(libcpr
 # glfw
 CPMDeclarePackage(glfw
   NAME glfw
-  GIT_TAG 3.3.9
+  GIT_TAG 3.4
   GITHUB_REPOSITORY glfw/glfw
   OPTIONS
     "GLFW_BUILD_DOCS OFF"

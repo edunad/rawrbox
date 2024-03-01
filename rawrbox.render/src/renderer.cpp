@@ -35,7 +35,7 @@
 #include <utility>
 
 namespace rawrbox {
-	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& screenSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor.toLinear()), _size(size), _monitorSize(screenSize), _window(window), _type(type) {}
+	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor.toLinear()), _size(size), _monitorSize(monitorSize), _window(window), _type(type) {}
 	RendererBase::~RendererBase() {
 		this->_render.reset();
 		this->_stencil.reset();
@@ -59,6 +59,11 @@ namespace rawrbox {
 
 		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.ShaderResourceRuntimeArray = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		features.ComputeShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		features.DepthClamp = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		features.DepthBiasClamp = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+
+		features.TransferQueueTimestampQueries = Diligent::DEVICE_FEATURE_STATE_DISABLED;
 		// ---------------------------------------------------
 
 #ifdef _DEBUG
@@ -94,7 +99,13 @@ namespace rawrbox {
 
 						EngineCI.GPUDescriptorHeapDynamicSize[0] = heap.first;
 						EngineCI.GPUDescriptorHeapSize[0] = heap.second;
-					}
+					} /* else {
+						 EngineCI.GPUDescriptorHeapDynamicSize[0] = 32768;
+						 EngineCI.GPUDescriptorHeapSize[1] = 128;
+						 EngineCI.GPUDescriptorHeapDynamicSize[1] = 2048 - 128;
+						 EngineCI.DynamicDescriptorAllocationChunkSize[0] = 32;
+						 EngineCI.DynamicDescriptorAllocationChunkSize[1] = 8;
+					 }*/
 
 					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
 					pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc(false), this->_window, &this->_swapChain);
@@ -122,7 +133,9 @@ namespace rawrbox {
 
 						EngineCI.DynamicHeapSize = heap.first;
 						EngineCI.DynamicHeapPageSize = heap.second;
-					}
+					} /* else {
+						 EngineCI.DynamicHeapSize = 64 << 20;
+					 }*/
 
 					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_device, &this->_context);
 					pFactoryVk->CreateSwapChainVk(this->_device, this->_context, SCDesc, this->_window, &this->_swapChain);
@@ -251,7 +264,7 @@ namespace rawrbox {
 		// -------------------------
 
 		// Init default fonts ------
-		this->_logger->info("Initializing default fonts");
+		this->_logger->info("Loading default fonts");
 
 		if (rawrbox::DEBUG_FONT_REGULAR == nullptr) {
 			rawrbox::DEBUG_FONT_REGULAR = rawrbox::TextEngine::load("./assets/fonts/SometypeMono-Regular.ttf", 12);

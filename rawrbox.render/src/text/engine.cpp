@@ -50,7 +50,7 @@ namespace rawrbox {
 
 		// Ok, make a new pack then
 		auto id = TextEngine::packID++;
-		auto pack = std::make_unique<rawrbox::TexturePack>(512);
+		auto pack = std::make_unique<rawrbox::TexturePack>(512U);
 		pack->upload(format);
 
 		_packs.emplace(id, std::move(pack));

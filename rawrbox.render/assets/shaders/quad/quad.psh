@@ -1,5 +1,5 @@
-#include <correction.fxh>
-#include <pixel_bindless_uniforms.fxh>
+#include "correction.fxh"
+#include "pixel_bindless_uniforms.fxh"
 
 Texture2DArray g_Textures[];
 SamplerState   g_Sampler;
@@ -14,14 +14,7 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-#if defined(DESKTOP_GL) || defined(GL_ES)
-    float3 UV = float3(PSIn.UV.x, 1.0 - PSIn.UV.y, 0);
-#else
-    float3 UV = float3(PSIn.UV.xy, 0);
-#endif
-
-
-    float4 color = g_Textures[Constants.textureIDs.x].Sample(g_Sampler, UV);
+    float4 color = g_Textures[Constants.textureIDs.x].Sample(g_Sampler, float3(PSIn.UV.xy, 0));
     if(color.a <= 0.0) discard;
 
     PSOut.Color = toLinear(color);

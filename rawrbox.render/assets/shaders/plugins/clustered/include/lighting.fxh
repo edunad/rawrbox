@@ -6,7 +6,7 @@
 
     #ifndef INCLUDED_LIGHTING
         #define INCLUDED_LIGHTING
-        #include <math.fxh>
+        #include "math.fxh"
 
         struct LightResult {
             float3 Diffuse;

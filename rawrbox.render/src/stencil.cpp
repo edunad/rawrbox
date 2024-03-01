@@ -1,13 +1,13 @@
 
-#include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/utils/math.hpp>
-#include <rawrbox/math/vector4.hpp>
 #include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
-#include <rawrbox/render/utils/pipeline.hpp>
 
+#pragma warning(push)
+#pragma warning(disable : 4505)
 #include <stb/stb_easy_font.hpp>
+#pragma warning(pop)
 
 namespace rawrbox {
 	Stencil::Stencil(const rawrbox::Vector2i& size) : _windowSize(size) {

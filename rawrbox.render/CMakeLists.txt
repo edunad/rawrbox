@@ -9,7 +9,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY
         glfw/glfw
     GIT_TAG
-        3.3.9
+        3.4
     OPTIONS
         "GLFW_BUILD_DOCS OFF"
         "GLFW_BUILD_EXAMPLES OFF"
@@ -206,10 +206,6 @@ if(GL_SUPPORTED)
 
     set_lib_runtime_mt(Diligent-GraphicsEngineOpenGL-shared)
     set_lib_runtime_mt(Diligent-GraphicsEngineOpenGL-static)
-endif()
-
-if(WIN32)
-    copy_required_dlls(${output_target})
 endif()
 
 # TEST ----

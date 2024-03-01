@@ -1,7 +1,7 @@
 
 #define READ_CLUSTER_DATA_GRID
-#include <cluster.fxh>
-#include <colormap.fxh>
+#include "cluster.fxh"
+#include "colormap.fxh"
 
 struct PSInput {
     float4 Pos                      : SV_POSITION;

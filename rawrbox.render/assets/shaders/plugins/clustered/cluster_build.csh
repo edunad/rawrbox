@@ -1,9 +1,9 @@
 // Based off https://github.com/simco50/D3D12_Research <3
 
-#include <camera.fxh>
+#include "camera.fxh"
 
 #define WRITE_CLUSTERS
-#include <cluster.fxh>
+#include "cluster.fxh"
 
 float GetDepthFromSlice(uint slice, float2 nearFar) {
 	return nearFar.x * pow(abs(nearFar.y / nearFar.x), (float)slice / (float)CLUSTERS_Z);

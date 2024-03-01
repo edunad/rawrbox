@@ -1,14 +1,14 @@
 // Based off https://github.com/simco50/D3D12_Research <3
 
-#include <camera.fxh>
-#include <light_uniforms.fxh>
-#include <decal_uniforms.fxh>
+#include "camera.fxh"
+#include "light_uniforms.fxh"
+#include "decal_uniforms.fxh"
 
 #define READ_LIGHTS
 #define READ_DECALS
 #define WRITE_CLUSTERS
 #define WRITE_CLUSTER_DATA_GRID
-#include <cluster.fxh>
+#include "cluster.fxh"
 
 struct Sphere {
 	float3 Position;

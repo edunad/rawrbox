@@ -15,6 +15,7 @@ target_link_libraries(${output_target} PRIVATE RAWRBOX.RENDER)
 target_compile_definitions(${output_target} PRIVATE NOMINMAX)
 
 set_lib_runtime_mt(${output_target})
+copy_required_dlls(${output_target}) # Required by diligent
 
 if(NOT WIN32)
     set_target_properties(${output_target} PROPERTIES LINK_FLAGS -Wl,-rpath,'\$ORIGIN')

@@ -94,9 +94,12 @@ namespace rawrbox {
 		ShaderCI.SourceLanguage = Diligent::SHADER_SOURCE_LANGUAGE_HLSL;
 		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
 		ShaderCI.CompileFlags = Diligent::SHADER_COMPILE_FLAG_ENABLE_UNBOUNDED_ARRAYS;
+		// ShaderCI.ShaderCompiler = Diligent::SHADER_COMPILER_DXC;
+		ShaderCI.GLSLExtensions = "#extension GL_EXT_nonuniform_qualifier : require\n";
 
 		std::string shaderName = fmt::format("RawrBox::SHADER::{}", name);
 		ShaderCI.Desc.ShaderType = type;
+		ShaderCI.Desc.UseCombinedTextureSamplers = false;
 		ShaderCI.EntryPoint = "main";
 		ShaderCI.Desc.Name = shaderName.c_str();
 		ShaderCI.FilePath = name.c_str();
@@ -104,14 +107,19 @@ namespace rawrbox {
 
 		Diligent::RefCntAutoPtr<Diligent::IShader> shader;
 		Diligent::RefCntAutoPtr<Diligent::IDataBlob> output;
+
 		rawrbox::RENDERER->device()->CreateShader(ShaderCI, &shader, &output);
+
+		_logger->setAutoNewLine(false);
+		_logger->info("Shader '{}'", fmt::format(fmt::fg(fmt::color::coral), name));
+		_logger->setAutoNewLine(true);
+
+		// auto compilerOutput = output == nullptr ? "" : std::string(static_cast<const char*>(output->GetConstDataPtr()), output->GetSize());
+		// fmt::print("\n{}\n", compilerOutput);
+
+		fmt::print("{}\n", shader != nullptr ? " [✓ OK]" : " [✖ FAILED]");
+
 		if (shader == nullptr) throw _logger->error("Failed to compile shader '{}'", name);
-
-		std::string_view compilerOutput = output != nullptr ? std::bit_cast<const char*>(output->GetConstDataPtr()) : "";
-
-		_logger->info("Compiled shader '{}'", fmt::format(fmt::fg(fmt::color::coral), name));
-		if (!compilerOutput.empty()) fmt::print("  └── {}\n", compilerOutput);
-
 		_shaders[id] = std::move(shader);
 		return _shaders[id];
 	}
@@ -251,7 +259,6 @@ namespace rawrbox {
 
 		// Resources ----
 		auto samplers = compileSamplers(settings.immutableSamplers);
-
 		if (!settings.resources.empty()) {
 			info.PSODesc.ResourceLayout.Variables = settings.resources.data();
 			info.PSODesc.ResourceLayout.NumVariables = static_cast<uint32_t>(settings.resources.size());
