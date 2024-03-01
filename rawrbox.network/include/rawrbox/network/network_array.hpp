@@ -49,7 +49,7 @@ namespace rawrbox {
 		}
 
 		void insert(std::vector<T>::const_iterator index, const T& a, bool track = true) {
-			if (track) this->changelog.push_back({true, std::distance<std::vector<T>::const_iterator>(cbegin(), index)});
+			if (track) this->changelog.push_back({true, std::distance<typename std::vector<T>::const_iterator>(cbegin(), index)});
 			std::vector<T>::insert(index, a);
 		}
 
@@ -72,7 +72,7 @@ namespace rawrbox {
 		}
 
 		void erase(std::vector<T>::const_iterator index, bool track = true) {
-			if (track) this->changelog.push_back({false, std::distance<std::vector<T>::const_iterator>(this->cbegin(), index)});
+			if (track) this->changelog.push_back({false, std::distance<typename std::vector<T>::const_iterator>(this->cbegin(), index)});
 			std::vector<T>::erase(index);
 		}
 
