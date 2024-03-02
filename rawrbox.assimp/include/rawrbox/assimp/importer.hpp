@@ -102,8 +102,8 @@ namespace rawrbox {
 
 		size_t mesh_index = 0;
 
-		std::vector<rawrbox::Vector3f> pos = {};
-		std::vector<rawrbox::Vector3f> norms = {};
+		std::vector<rawrbox::Vector4f> pos = {};
+		std::vector<rawrbox::Vector4f> norms = {};
 	};
 
 	struct AssimpMesh {
@@ -119,6 +119,7 @@ namespace rawrbox {
 		std::vector<rawrbox::VertexNormBoneData> vertices = {};
 		std::vector<uint16_t> indices = {};
 
+		rawrbox::Color color = rawrbox::Colors::White();
 		explicit AssimpMesh(std::string _name) : name(std::move(_name)){};
 	};
 

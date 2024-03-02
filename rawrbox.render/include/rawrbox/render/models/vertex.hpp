@@ -16,7 +16,9 @@ namespace rawrbox {
 
 		VertexData() = default;
 		VertexData(const rawrbox::Vector4f& _pos,
-		    const rawrbox::Vector4f& _uv = {}) : position(_pos), uv(_uv) { this->position.w = 1.F; }
+		    const rawrbox::Vector4f& _uv = {}) : position(_pos), uv(_uv) {
+			this->position.w = 1.F;
+		}
 
 		// Atlas ---
 		void setAtlasId(uint32_t _id) {
@@ -47,12 +49,13 @@ namespace rawrbox {
 
 	// Supports light ---
 	struct VertexNormData : public VertexData {
-		uint32_t normal = {};
-		uint32_t tangent = {};
+		uint32_t normal = 0x00000000;
+		uint32_t tangent = 0x00000000;
 
 		VertexNormData() = default;
 		VertexNormData(const rawrbox::Vector4f& _pos,
 		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexData(_pos, _uv), normal(rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z)), tangent(rawrbox::PackUtils::packNormal(tang.x, tang.y, tang.z)) {}
+		VertexNormData(const rawrbox::Vector4f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t _norm = 0x00000000, uint32_t _tang = 0x00000000) : rawrbox::VertexData(_pos, _uv), normal(_norm), tangent(_tang) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
@@ -123,6 +126,8 @@ namespace rawrbox {
 		VertexNormBoneData(const rawrbox::Vector4f& _pos,
 		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexNormData(_pos, _uv, norm, tang) {}
 
+		VertexNormBoneData(const rawrbox::Vector4f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t norm = 0x00000000, uint32_t tang = 0x00000000) : rawrbox::VertexNormData(_pos, _uv, norm, tang) {}
+
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
@@ -130,13 +135,13 @@ namespace rawrbox {
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 2 - Normal
-			    Diligent::LayoutElement{3, 0, 4, Diligent::VT_UINT8, true},
+			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_UINT8, true},
 			    // Attribute 3 - Tangent
-			    Diligent::LayoutElement{4, 0, 4, Diligent::VT_UINT8, true},
+			    Diligent::LayoutElement{3, 0, 4, Diligent::VT_UINT8, true},
 			    // Attribute 4 - BONE-INDICES
-			    Diligent::LayoutElement{5, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
+			    Diligent::LayoutElement{4, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
 			    // Attribute 5 - BONE-WEIGHTS
-			    Diligent::LayoutElement{6, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}};
+			    Diligent::LayoutElement{5, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}}; // TODO, VT_FLOAT16 for bone-weights?
 
 			if (instanced) {
 				v.emplace_back(6, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 1

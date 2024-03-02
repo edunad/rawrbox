@@ -14,43 +14,43 @@ SamplerState   g_Sampler;
 #include "model_transforms.fxh"
 
 struct VSInput {
-    float4 Pos   : ATTRIB0;
-    float4 UV    : ATTRIB1;
+    float4 Pos                    : ATTRIB0;
+    float4 UV                     : ATTRIB1;
 
     #ifdef SKINNED
-        uint4 BoneIndex   : ATTRIB2;
-        float4 BoneWeight : ATTRIB3;
+        uint4 BoneIndex           : ATTRIB2;
+        float4 BoneWeight         : ATTRIB3;
 
         #ifdef INSTANCED
             // Instance attributes
-            float4 MtrxRow0      : ATTRIB4;
-            float4 MtrxRow1      : ATTRIB5;
-            float4 MtrxRow2      : ATTRIB6;
-            float4 MtrxRow3      : ATTRIB7;
-            float4 ColorOverride : ATTRIB8;
-            float4 Extra         : ATTRIB9;
+            float4 MtrxRow0       : ATTRIB4;
+            float4 MtrxRow1       : ATTRIB5;
+            float4 MtrxRow2       : ATTRIB6;
+            float4 MtrxRow3       : ATTRIB7;
+            float4 ColorOverride  : ATTRIB8;
+            float4 Extra          : ATTRIB9;
         #endif
     #else
         #ifdef INSTANCED
             // Instance attributes
-            float4 MtrxRow0      : ATTRIB2;
-            float4 MtrxRow1      : ATTRIB3;
-            float4 MtrxRow2      : ATTRIB4;
-            float4 MtrxRow3      : ATTRIB5;
-            float4 ColorOverride : ATTRIB6;
-            float4 Extra         : ATTRIB7;
+            float4 MtrxRow0       : ATTRIB2;
+            float4 MtrxRow1       : ATTRIB3;
+            float4 MtrxRow2       : ATTRIB4;
+            float4 MtrxRow3       : ATTRIB5;
+            float4 ColorOverride  : ATTRIB6;
+            float4 Extra          : ATTRIB7;
         #endif
     #endif
 };
 
 struct PSInput {
-    float4 Pos                      : SV_POSITION;
-    float4 WorldPos                 : POSITION1;
+    float4 Pos                    : SV_POSITION;
+    float4 WorldPos               : POSITION1;
 
-    float2 UV                       : TEX_COORD;
-    float4 Color                    : COLOR;
+    float2 UV                     : TEX_COORD;
+    float4 Color                  : COLOR;
 
-    nointerpolation uint   TexIndex : TEX_ARRAY_INDEX;
+    nointerpolation uint TexIndex : TEX_ARRAY_INDEX;
 };
 
 

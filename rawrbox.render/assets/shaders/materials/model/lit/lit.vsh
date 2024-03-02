@@ -14,49 +14,49 @@ SamplerState   g_Sampler;
 #include "model_transforms.fxh"
 
 struct VSInput {
-    float4 Pos     : ATTRIB0;
-    float4 UV      : ATTRIB1;
+    float4 Pos                    : ATTRIB0;
+    float4 UV                     : ATTRIB1;
 
-    float4 Normal  : ATTRIB2;
-    float4 Tangent : ATTRIB3;
+    float4 Normal                 : ATTRIB2;
+    float4 Tangent                : ATTRIB3;
 
     #ifdef SKINNED
-        uint4 BoneIndex   : ATTRIB4;
-        float4 BoneWeight : ATTRIB5;
+        uint4 BoneIndex           : ATTRIB4;
+        float4 BoneWeight         : ATTRIB5;
 
         #ifdef INSTANCED
             // Instance attributes
-            float4 MtrxRow0      : ATTRIB6;
-            float4 MtrxRow1      : ATTRIB7;
-            float4 MtrxRow2      : ATTRIB8;
-            float4 MtrxRow3      : ATTRIB9;
-            float4 ColorOverride : ATTRIB10;
-            float4 Extra         : ATTRIB11;
+            float4 MtrxRow0       : ATTRIB6;
+            float4 MtrxRow1       : ATTRIB7;
+            float4 MtrxRow2       : ATTRIB8;
+            float4 MtrxRow3       : ATTRIB9;
+            float4 ColorOverride  : ATTRIB10;
+            float4 Extra          : ATTRIB11;
         #endif
     #else
         #ifdef INSTANCED
             // Instance attributes
-            float4 MtrxRow0      : ATTRIB4;
-            float4 MtrxRow1      : ATTRIB5;
-            float4 MtrxRow2      : ATTRIB6;
-            float4 MtrxRow3      : ATTRIB7;
-            float4 ColorOverride : ATTRIB8;
-            float4 Extra         : ATTRIB9;
+            float4 MtrxRow0       : ATTRIB4;
+            float4 MtrxRow1       : ATTRIB5;
+            float4 MtrxRow2       : ATTRIB6;
+            float4 MtrxRow3       : ATTRIB7;
+            float4 ColorOverride  : ATTRIB8;
+            float4 Extra          : ATTRIB9;
         #endif
     #endif
 };
 
 struct PSInput {
-    float4 Pos                      : SV_POSITION;
-    float4 WorldPos                 : POSITION1;
+    float4 Pos                    : SV_POSITION;
+    float4 WorldPos               : POSITION1;
 
-    float4 Normal                   : NORMAL;
-    float4 Tangent                  : TANGENT;
+    float4 Normal                 : NORMAL;
+    float4 Tangent                : TANGENT;
 
-    float2 UV                       : TEX_COORD;
-    float4 Color                    : COLOR;
+    float2 UV                     : TEX_COORD;
+    float4 Color                  : COLOR;
 
-    nointerpolation uint   TexIndex : TEX_ARRAY_INDEX;
+    nointerpolation uint TexIndex : TEX_ARRAY_INDEX;
 };
 
 

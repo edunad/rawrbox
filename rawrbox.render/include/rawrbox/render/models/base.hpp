@@ -15,8 +15,8 @@ namespace rawrbox {
 
 		rawrbox::Mesh<typename M::vertexBufferType>* mesh = nullptr; // For quick access
 
-		std::vector<rawrbox::Vector3f> pos = {};
-		std::vector<rawrbox::Vector3f> normals = {};
+		std::vector<rawrbox::Vector4f> pos = {};
+		std::vector<rawrbox::Vector4f> normals = {};
 
 		bool isActive() { return weight > 0.F; }
 		BlendShapes() = default;
@@ -96,8 +96,8 @@ namespace rawrbox {
 				// Apply normal ----
 				if constexpr (supportsNormals<typename M::vertexBufferType>) {
 					for (size_t i = 0; i < blendNormals.size(); i++) {
-						//	TODO
-						// verts[i].normal = verts[i].normal.lerp(blendNormals[i], step);
+						rawrbox::Vector4f unpacked = rawrbox::Vector4f(rawrbox::PackUtils::fromNormal(verts[i].normal)).lerp(blendNormals[i], step); // meh
+						verts[i].normal = rawrbox::PackUtils::packNormal(unpacked.x, unpacked.y, unpacked.z);
 					}
 				}
 				// -------------------
@@ -119,7 +119,7 @@ namespace rawrbox {
 		}
 
 		// BLEND SHAPES ---
-		bool createBlendShape(const std::string& id, const std::vector<rawrbox::Vector3f>& newVertexPos, const std::vector<rawrbox::Vector3f>& newNormPos, float weight = 0.F) {
+		bool createBlendShape(const std::string& id, const std::vector<rawrbox::Vector4f>& newVertexPos, const std::vector<rawrbox::Vector4f>& newNormPos, float weight = 0.F) {
 			if (this->_mesh == nullptr) throw this->_logger->error("Mesh not initialized!");
 
 			auto blend = std::make_unique<rawrbox::BlendShapes<M>>();
@@ -264,7 +264,7 @@ namespace rawrbox {
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
 						_original_data.push_back({v.position, v.normal});
 					} else {
-						_original_data.push_back({v.position, {}});
+						_original_data.push_back({v.position, 0x00000000});
 					}
 				}
 			}
