@@ -14,11 +14,11 @@ SamplerState   g_Sampler;
 #include "model_transforms.fxh"
 
 struct VSInput {
-    float3 Pos     : ATTRIB0;
+    float4 Pos     : ATTRIB0;
     float4 UV      : ATTRIB1;
 
-    float3 Normal  : ATTRIB2;
-    float3 Tangent : ATTRIB3;
+    float4 Normal  : ATTRIB2;
+    float4 Tangent : ATTRIB3;
 
     #ifdef SKINNED
         uint4 BoneIndex   : ATTRIB4;
@@ -64,7 +64,7 @@ void main(in VSInput VSIn, out PSInput PSIn) {
     #ifdef SKINNED
         float4 pos = boneTransform(VSIn.BoneIndex, VSIn.BoneWeight, VSIn.Pos);
     #else
-        float4 pos = float4(VSIn.Pos, 1.);
+        float4 pos = VSIn.Pos;
     #endif
 
     #ifdef INSTANCED
@@ -74,8 +74,11 @@ void main(in VSInput VSIn, out PSInput PSIn) {
         TransformedData transform = applyPosTransforms(pos, VSIn.UV.xy);
     #endif
 
-    PSIn.Normal   = mul(float4(VSIn.Normal, 0.0), Camera.world);
-    PSIn.Tangent  = mul(float4(VSIn.Tangent, 0.0), Camera.world);
+	float4 normal = VSIn.Normal * 2.0 - 1.0;
+	float4 tangent = VSIn.Tangent * 2.0 - 1.0;
+
+    PSIn.Normal   = normalize(mul(normal, Camera.world));
+    PSIn.Tangent  = normalize(mul(tangent, Camera.world));
 
     PSIn.Pos      = transform.final;
     PSIn.WorldPos = mul(transform.pos, Camera.world);

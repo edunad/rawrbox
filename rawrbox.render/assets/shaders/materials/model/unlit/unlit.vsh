@@ -14,7 +14,7 @@ SamplerState   g_Sampler;
 #include "model_transforms.fxh"
 
 struct VSInput {
-    float3 Pos   : ATTRIB0;
+    float4 Pos   : ATTRIB0;
     float4 UV    : ATTRIB1;
 
     #ifdef SKINNED
@@ -58,7 +58,7 @@ void main(in VSInput VSIn, out PSInput PSIn) {
     #ifdef SKINNED
         float4 pos = boneTransform(VSIn.BoneIndex, VSIn.BoneWeight, VSIn.Pos);
     #else
-        float4 pos = float4(VSIn.Pos, 1.);
+        float4 pos = VSIn.Pos;
     #endif
 
     #ifdef INSTANCED

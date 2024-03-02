@@ -78,6 +78,7 @@ namespace light {
 
 		auto* tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planks.png")->get();
 		auto* texNorm = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksNorm.png")->get();
+		auto* texRought = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/light_test/planksSpec.png")->get();
 
 		// Setup
 		{
@@ -91,6 +92,8 @@ namespace light {
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 			mesh.setTexture(tex);
 			mesh.setNormalTexture(texNorm);
+			mesh.setSpecularFactor(0.05F);
+			mesh.setRoughtMetalTexture(texRought);
 
 			this->_model2->addMesh(mesh);
 		}
@@ -101,6 +104,8 @@ namespace light {
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 			mesh.setTexture(tex);
 			mesh.setNormalTexture(texNorm);
+			mesh.setSpecularFactor(0.05F);
+			mesh.setRoughtMetalTexture(texRought);
 
 			this->_model2->addMesh(mesh);
 		}
@@ -111,6 +116,8 @@ namespace light {
 			mesh.setEulerAngle({rawrbox::MathUtils::toRad(90), 0, 0});
 			mesh.setTexture(tex);
 			mesh.setNormalTexture(texNorm);
+			mesh.setSpecularFactor(0.05F);
+			mesh.setRoughtMetalTexture(texRought);
 
 			this->_model3->setTemplate(mesh);
 		}

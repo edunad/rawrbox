@@ -62,7 +62,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
     // NORMAL -----
 	float3 normalTS = g_Textures[Constants.textureIDs.y].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)).rgb;
-	float3x3 TBN    = CreateTangentToWorld(PSIn.Normal.xyz, float4(normalize(PSIn.Tangent.xyz), PSIn.Tangent.w));
+	float3x3 TBN    = CreateTangentToWorld(PSIn.Normal.xyz, float4(PSIn.Tangent.xyz, PSIn.Tangent.w));
     float3 normal   = TangentSpaceNormalMapping(normalTS, TBN);
     // -------------
 

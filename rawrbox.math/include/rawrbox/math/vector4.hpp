@@ -115,6 +115,7 @@ namespace rawrbox {
 			return ret.normalized();
 		}
 
+		// FLOATING NUMBERS ----
 		[[nodiscard]] std::array<short, 4> pack() const
 			requires(std::is_same_v<NumberType, float>)
 		{
@@ -250,6 +251,7 @@ namespace rawrbox {
 
 			return ret;
 		}
+		// ---------------------
 
 		VecType inverse() {
 			auto lengthSq = this->sqrMagnitude();

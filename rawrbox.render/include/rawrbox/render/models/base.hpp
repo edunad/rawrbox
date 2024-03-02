@@ -23,8 +23,8 @@ namespace rawrbox {
 	};
 
 	struct ModelOriginalData {
-		rawrbox::Vector3f pos = {};
-		rawrbox::Vector3f normal = {};
+		rawrbox::Vector4f pos = {};
+		uint32_t normal = {};
 	};
 
 	template <typename M = rawrbox::MaterialUnlit>
@@ -39,7 +39,7 @@ namespace rawrbox {
 		std::unique_ptr<M> _material = std::make_unique<M>();
 
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::BlendShapes<M>>> _blend_shapes = {};
-		std::vector<ModelOriginalData> _original_data = {};
+		std::vector<rawrbox::ModelOriginalData> _original_data = {};
 
 		// DYNAMIC SUPPORT ---
 		bool _isDynamic = false;
@@ -96,7 +96,8 @@ namespace rawrbox {
 				// Apply normal ----
 				if constexpr (supportsNormals<typename M::vertexBufferType>) {
 					for (size_t i = 0; i < blendNormals.size(); i++) {
-						verts[i].normal = verts[i].normal.lerp(blendNormals[i], step);
+						//	TODO
+						// verts[i].normal = verts[i].normal.lerp(blendNormals[i], step);
 					}
 				}
 				// -------------------

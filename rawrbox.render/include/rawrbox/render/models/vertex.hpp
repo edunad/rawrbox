@@ -11,13 +11,12 @@
 
 namespace rawrbox {
 	struct VertexData {
-		rawrbox::Vector3f position = {};
+		rawrbox::Vector4f position = {};
 		rawrbox::Vector4f uv = {};
-		// uint32_t id = 0x00000000;
 
 		VertexData() = default;
-		VertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}) : position(_pos), uv(_uv) {}
+		VertexData(const rawrbox::Vector4f& _pos,
+		    const rawrbox::Vector4f& _uv = {}) : position(_pos), uv(_uv) { this->position.w = 1.F; }
 
 		// Atlas ---
 		void setAtlasId(uint32_t _id) {
@@ -28,7 +27,7 @@ namespace rawrbox {
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
-			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false}};
 
@@ -48,23 +47,23 @@ namespace rawrbox {
 
 	// Supports light ---
 	struct VertexNormData : public VertexData {
-		rawrbox::Vector3f normal = {};
-		rawrbox::Vector3f tangent = {};
+		uint32_t normal = {};
+		uint32_t tangent = {};
 
 		VertexNormData() = default;
-		VertexNormData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexData(_pos, _uv), normal(norm), tangent(tang) {}
+		VertexNormData(const rawrbox::Vector4f& _pos,
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexData(_pos, _uv), normal(rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z)), tangent(rawrbox::PackUtils::packNormal(tang.x, tang.y, tang.z)) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
-			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 2 - Normal
-			    Diligent::LayoutElement{2, 0, 3, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{2, 0, 4, Diligent::VT_UINT8, true},
 			    // Attribute 3 - Tangent
-			    Diligent::LayoutElement{3, 0, 3, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{3, 0, 4, Diligent::VT_UINT8, true},
 			};
 
 			if (instanced) {
@@ -87,13 +86,13 @@ namespace rawrbox {
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
 		VertexBoneData() = default;
-		VertexBoneData(const rawrbox::Vector3f& _pos,
+		VertexBoneData(const rawrbox::Vector4f& _pos,
 		    const rawrbox::Vector4f& _uv = {}) : rawrbox::VertexData(_pos, _uv) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
-			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 2 - BONE-INDICES
@@ -121,19 +120,19 @@ namespace rawrbox {
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
 		VertexNormBoneData() = default;
-		VertexNormBoneData(const rawrbox::Vector3f& _pos,
+		VertexNormBoneData(const rawrbox::Vector4f& _pos,
 		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexNormData(_pos, _uv, norm, tang) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
-			    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 2 - Normal
-			    Diligent::LayoutElement{3, 0, 3, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{3, 0, 4, Diligent::VT_UINT8, true},
 			    // Attribute 3 - Tangent
-			    Diligent::LayoutElement{4, 0, 3, Diligent::VT_FLOAT32, false},
+			    Diligent::LayoutElement{4, 0, 4, Diligent::VT_UINT8, true},
 			    // Attribute 4 - BONE-INDICES
 			    Diligent::LayoutElement{5, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
 			    // Attribute 5 - BONE-WEIGHTS
