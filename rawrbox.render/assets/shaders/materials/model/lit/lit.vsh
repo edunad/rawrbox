@@ -15,35 +15,33 @@ SamplerState   g_Sampler;
 
 struct VSInput {
     float3 Pos     : ATTRIB0;
-
     float4 UV      : ATTRIB1;
-    float4 Color   : ATTRIB2;
 
-    float3 Normal  : ATTRIB3;
-    float3 Tangent : ATTRIB4;
+    float3 Normal  : ATTRIB2;
+    float3 Tangent : ATTRIB3;
 
     #ifdef SKINNED
-        uint4 BoneIndex   : ATTRIB5;
-        float4 BoneWeight : ATTRIB6;
+        uint4 BoneIndex   : ATTRIB4;
+        float4 BoneWeight : ATTRIB5;
 
         #ifdef INSTANCED
             // Instance attributes
-            float4 MtrxRow0      : ATTRIB7;
-            float4 MtrxRow1      : ATTRIB8;
-            float4 MtrxRow2      : ATTRIB9;
-            float4 MtrxRow3      : ATTRIB10;
-            float4 ColorOverride : ATTRIB11;
-            float4 Extra         : ATTRIB12;
+            float4 MtrxRow0      : ATTRIB6;
+            float4 MtrxRow1      : ATTRIB7;
+            float4 MtrxRow2      : ATTRIB8;
+            float4 MtrxRow3      : ATTRIB9;
+            float4 ColorOverride : ATTRIB10;
+            float4 Extra         : ATTRIB11;
         #endif
     #else
         #ifdef INSTANCED
             // Instance attributes
-            float4 MtrxRow0      : ATTRIB5;
-            float4 MtrxRow1      : ATTRIB6;
-            float4 MtrxRow2      : ATTRIB7;
-            float4 MtrxRow3      : ATTRIB8;
-            float4 ColorOverride : ATTRIB9;
-            float4 Extra         : ATTRIB10;
+            float4 MtrxRow0      : ATTRIB4;
+            float4 MtrxRow1      : ATTRIB5;
+            float4 MtrxRow2      : ATTRIB6;
+            float4 MtrxRow3      : ATTRIB7;
+            float4 ColorOverride : ATTRIB8;
+            float4 Extra         : ATTRIB9;
         #endif
     #endif
 };
@@ -84,10 +82,10 @@ void main(in VSInput VSIn, out PSInput PSIn) {
     PSIn.UV       = VSIn.UV.xy; //applyUVTransform(VSIn.UV.xy);
 
     #ifdef INSTANCED
-        PSIn.Color    = VSIn.Color * VSIn.ColorOverride * Constants.colorOverride;
+        PSIn.Color    = VSIn.ColorOverride * Constants.colorOverride;
         PSIn.TexIndex = VSIn.Extra.x;
     #else
-        PSIn.Color    = VSIn.Color * Constants.colorOverride;
+        PSIn.Color    = Constants.colorOverride;
         PSIn.TexIndex = VSIn.UV.z;
     #endif
 }

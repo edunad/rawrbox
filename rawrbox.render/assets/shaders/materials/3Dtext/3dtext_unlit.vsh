@@ -7,7 +7,6 @@
 struct VSInput {
     float3 Pos   : ATTRIB0;
     float4 UV    : ATTRIB1;
-    float4 Color : ATTRIB2;
 };
 
 struct PSInput {
@@ -21,5 +20,5 @@ void main(in VSInput VSIn, out PSInput PSIn) {
     PSIn.Pos = transform.final;
 
     PSIn.UV       = VSIn.UV.xy;
-    PSIn.Color    = VSIn.Color;
+    PSIn.Color    = Constants.colorOverride;
 }
