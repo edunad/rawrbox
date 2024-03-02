@@ -299,6 +299,10 @@ namespace rawrbox {
 		// Setup renderer --
 		this->_render = std::make_unique<rawrbox::TextureRender>(this->getSize()); // TODO: RESCALE
 		this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
+
+		auto idIndex = this->_render->addTexture(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB, Diligent::BIND_SHADER_RESOURCE | Diligent::BIND_RENDER_TARGET);
+		this->_render->addView(idIndex, Diligent::TEXTURE_VIEW_RENDER_TARGET);
+		this->_render->addView(idIndex, Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 		// --------
 
 		this->playIntro();

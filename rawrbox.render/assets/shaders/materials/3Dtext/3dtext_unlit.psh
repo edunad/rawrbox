@@ -10,7 +10,8 @@ struct PSInput {
 };
 
 struct PSOutput {
-    float4 Color : SV_TARGET;
+    float4 Color   : SV_TARGET0;
+    float4 GPUPick : SV_TARGET1;
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
@@ -18,4 +19,5 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	if(a <= 0.0) discard;
 
 	PSOut.Color = float4(PSIn.Color.rgb, a);
+    PSOut.GPUPick = float4(1,0,0,1);
 }

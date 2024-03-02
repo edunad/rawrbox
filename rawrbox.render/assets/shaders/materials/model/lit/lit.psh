@@ -32,7 +32,8 @@ struct PSInput {
 };
 
 struct PSOutput {
-    float4 Color : SV_TARGET;
+    float4 Color   : SV_TARGET0;
+    float4 GPUPick : SV_TARGET1;
 };
 
 float3x3 CreateTangentToWorld(float3 normal, float4 tangent) {
@@ -116,4 +117,6 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
     PSOut.Color.rgb = outRadiance;
     PSOut.Color.a = baseColor.a;
+
+    PSOut.GPUPick = float4(1,0,0,1);
 }

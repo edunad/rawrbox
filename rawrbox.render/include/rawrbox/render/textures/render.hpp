@@ -6,9 +6,14 @@
 namespace rawrbox {
 	class TextureRender : public rawrbox::TextureBase {
 	private:
-		Diligent::RefCntAutoPtr<Diligent::ITextureView> _rtHandle;
-		Diligent::RefCntAutoPtr<Diligent::ITextureView> _depthRTHandle;
-		Diligent::RefCntAutoPtr<Diligent::ITextureView> _depthHandle;
+		// Custom render target views ---
+		std::vector<Diligent::RefCntAutoPtr<Diligent::ITexture>> _textures = {};
+		std::vector<Diligent::ITextureView*> _views = {};
+		std::vector<Diligent::ITextureView*> _viewsRT = {};
+		// -------------------------------
+
+		Diligent::ITextureView* _depthRTHandle = nullptr;
+		Diligent::ITextureView* _depthHandle = nullptr;
 
 		Diligent::RefCntAutoPtr<Diligent::ITexture> _depthTex;
 
@@ -31,12 +36,23 @@ namespace rawrbox {
 		[[nodiscard]] virtual Diligent::ITextureView* getRTDepth() const;
 		[[nodiscard]] virtual Diligent::ITextureView* getRT() const;
 
+		[[nodiscard]] virtual Diligent::ITextureView* getView(size_t index) const;
+		[[nodiscard]] virtual Diligent::ITextureView* getViewRT(size_t index) const;
+
 		[[nodiscard]] virtual Diligent::ITexture* getDepthHandle() const;
+
+		[[nodiscard]] Diligent::ITexture* getTexture(size_t index) const;
+
+		[[nodiscard]] Diligent::ITexture* getTexture() const override;
+		[[nodiscard]] Diligent::ITextureView* getHandle() const override;
 		// ------------
 
 		// ------RENDER
 		virtual void startRecord(bool clear = true);
 		virtual void stopRecord();
+
+		virtual size_t addTexture(Diligent::TEXTURE_FORMAT format, Diligent::BIND_FLAGS flags);
+		virtual void addView(size_t index, Diligent::TEXTURE_VIEW_TYPE format = Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 
 		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false) override;
 		//  --------------------

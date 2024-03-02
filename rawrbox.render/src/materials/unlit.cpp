@@ -29,6 +29,7 @@ namespace rawrbox {
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = helper;
 		settings.layout = layout;
+		settings.renderTargets = 2;                               // COLOR + GPUPick
 		settings.signature = rawrbox::BindlessManager::signature; // Use bindless
 
 		auto* cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");

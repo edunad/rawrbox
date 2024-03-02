@@ -14,6 +14,7 @@ namespace rawrbox {
 		rawrbox::Vector3f position = {};
 		rawrbox::Vector4f uv = {};
 		uint32_t color = 0xFFFFFFFF;
+		// uint32_t id = 0x00000000;
 
 		VertexData() = default;
 		explicit VertexData(const rawrbox::Vector3f& _pos,
@@ -32,6 +33,13 @@ namespace rawrbox {
 		void setAtlasId(uint32_t _id) {
 			this->uv.z = static_cast<float>(_id);
 		}
+		// ---------------------
+
+		// GPU Picker ---
+		/*void setId(uint32_t _id) {
+			if (id > 0x00FFFFFF) throw rawrbox::Logger::err("RawrBox-Mesh", "Invalid id");
+			this->id = 0xFF000000 | _id; // Alpha is not supported;
+		}*/
 		// ---------------------
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
