@@ -769,7 +769,7 @@ namespace rawrbox {
 
 		bool optimize = (this->loadFlags & rawrbox::ModelLoadFlags::Optimization::DISABLE) == 0;
 		if (optimize) {
-			this->assimpFlags |= aiProcessPreset_TargetRealtime_Fast | aiProcess_GlobalScale | aiProcess_TransformUVCoords;
+			this->assimpFlags |= aiProcessPreset_TargetRealtime_Fast | aiProcess_ImproveCacheLocality | aiProcess_GlobalScale | aiProcess_TransformUVCoords;
 		}
 
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {
