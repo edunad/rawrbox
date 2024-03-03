@@ -495,12 +495,12 @@ namespace rawrbox {
 			for (size_t i = 0; i < aiMesh.mNumVertices; i++) {
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
-					shape.pos.emplace_back(vert.x, vert.y, vert.z);
+					shape.pos.emplace_back(vert.x, vert.y, vert.z, 1.F);
 				}
 
 				if (aiMesh.HasNormals()) {
 					auto& norm = aiMesh.mNormals[i];
-					shape.norms.emplace_back(norm.x, norm.y, norm.z);
+					shape.norms.emplace_back(norm.x, norm.y, norm.z, 0.F);
 				}
 			}
 
@@ -598,7 +598,7 @@ namespace rawrbox {
 
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
-					v.position = {vert.x, vert.y, vert.z};
+					v.position = {vert.x, vert.y, vert.z, 1.F};
 				}
 
 				if (aiMesh.HasTextureCoords(0)) {
@@ -608,19 +608,17 @@ namespace rawrbox {
 
 				if (aiMesh.HasVertexColors(0)) {
 					auto& col = aiMesh.mColors[0][i];
-					v.color = rawrbox::Colorf::pack(col.r, col.g, col.b, col.a);
-				} else {
-					v.color = 0xFFFFFFFF;
+					mesh.color = {col.r, col.g, col.b, col.a}; // We don't support vertex coloring, just color the whole mesh
 				}
 
 				if (aiMesh.HasNormals()) {
 					auto& normal = aiMesh.mNormals[i];
-					v.normal = {normal.x, normal.y, normal.z};
+					v.normal = rawrbox::PackUtils::packNormal(normal.x, normal.y, normal.z);
 				}
 
 				if (aiMesh.HasTangentsAndBitangents()) {
 					auto& tangents = aiMesh.mTangents[i];
-					v.tangent = {tangents.x, tangents.y, tangents.z};
+					v.tangent = rawrbox::PackUtils::packNormal(tangents.x, tangents.y, tangents.z);
 				}
 
 				mesh.vertices.push_back(v);
@@ -771,7 +769,7 @@ namespace rawrbox {
 
 		bool optimize = (this->loadFlags & rawrbox::ModelLoadFlags::Optimization::DISABLE) == 0;
 		if (optimize) {
-			this->assimpFlags |= aiProcessPreset_TargetRealtime_Fast | aiProcess_GlobalScale | aiProcess_TransformUVCoords;
+			this->assimpFlags |= aiProcessPreset_TargetRealtime_Fast | aiProcess_ImproveCacheLocality | aiProcess_GlobalScale | aiProcess_TransformUVCoords;
 		}
 
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {

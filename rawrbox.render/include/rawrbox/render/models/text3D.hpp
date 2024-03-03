@@ -59,12 +59,13 @@ namespace rawrbox {
 
 				mesh.setTexture(font.getPackTexture(glyph)); // Set the atlas
 				mesh.setName(fmt::format("3dtext-{}", id));
+				mesh.setColor(cl);
 
 				std::array<rawrbox::VertexData, 4> buff{
-				    rawrbox::VertexData(pos + startpos + Vector3f(x0 * screenSize, y0 * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureBottomRight.y), cl),
-				    rawrbox::VertexData(pos + startpos + Vector3f(x1 * screenSize, y1 * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureTopLeft.y), cl),
-				    rawrbox::VertexData(pos + startpos + Vector3f(x0 * screenSize, y1 * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureTopLeft.y), cl),
-				    rawrbox::VertexData(pos + startpos + Vector3f(x1 * screenSize, y0 * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureBottomRight.y), cl),
+				    rawrbox::VertexData(pos + startpos + Vector3f(x0 * screenSize, y0 * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureBottomRight.y)),
+				    rawrbox::VertexData(pos + startpos + Vector3f(x1 * screenSize, y1 * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureTopLeft.y)),
+				    rawrbox::VertexData(pos + startpos + Vector3f(x0 * screenSize, y1 * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureTopLeft.y)),
+				    rawrbox::VertexData(pos + startpos + Vector3f(x1 * screenSize, y0 * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureBottomRight.y)),
 				};
 
 				std::array<uint16_t, 6> inds{

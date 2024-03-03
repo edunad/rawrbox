@@ -94,27 +94,16 @@ namespace rawrbox {
 		}
 
 		VecType lerp(const VecType& other, NumberType timestep) const {
-			if ((*this) == other) return other;
 			VecType ret;
 
-			NumberType dot = x * other.x + y * other.y + z * other.z + w * other.w;
-			NumberType blend = ONE<NumberType> - timestep;
-
-			if (dot < ZERO<NumberType>) {
-				ret.x = blend * x + blend * -other.x;
-				ret.y = blend * y + blend * -other.y;
-				ret.z = blend * z + blend * -other.z;
-				ret.w = blend * w + blend * -other.w;
-			} else {
-				ret.x = blend * x + blend * other.x;
-				ret.y = blend * y + blend * other.y;
-				ret.z = blend * z + blend * other.z;
-				ret.w = blend * w + blend * other.w;
-			}
-
-			return ret.normalized();
+			ret.x = static_cast<NumberType>(static_cast<float>(x) + static_cast<float>(other.x - x) * timestep);
+			ret.y = static_cast<NumberType>(static_cast<float>(y) + static_cast<float>(other.y - y) * timestep);
+			ret.z = static_cast<NumberType>(static_cast<float>(z) + static_cast<float>(other.z - z) * timestep);
+			ret.w = static_cast<NumberType>(static_cast<float>(w) + static_cast<float>(other.w - w) * timestep);
+			return ret;
 		}
 
+		// FLOATING NUMBERS ----
 		[[nodiscard]] std::array<short, 4> pack() const
 			requires(std::is_same_v<NumberType, float>)
 		{
@@ -250,6 +239,7 @@ namespace rawrbox {
 
 			return ret;
 		}
+		// ---------------------
 
 		VecType inverse() {
 			auto lengthSq = this->sqrMagnitude();

@@ -15,16 +15,16 @@ namespace rawrbox {
 
 		rawrbox::Mesh<typename M::vertexBufferType>* mesh = nullptr; // For quick access
 
-		std::vector<rawrbox::Vector3f> pos = {};
-		std::vector<rawrbox::Vector3f> normals = {};
+		std::vector<rawrbox::Vector4f> pos = {};
+		std::vector<rawrbox::Vector4f> normals = {};
 
 		bool isActive() { return weight > 0.F; }
 		BlendShapes() = default;
 	};
 
 	struct ModelOriginalData {
-		rawrbox::Vector3f pos = {};
-		rawrbox::Vector3f normal = {};
+		rawrbox::Vector4f pos = {};
+		uint32_t normal = {};
 	};
 
 	template <typename M = rawrbox::MaterialUnlit>
@@ -39,7 +39,7 @@ namespace rawrbox {
 		std::unique_ptr<M> _material = std::make_unique<M>();
 
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::BlendShapes<M>>> _blend_shapes = {};
-		std::vector<ModelOriginalData> _original_data = {};
+		std::vector<rawrbox::ModelOriginalData> _original_data = {};
 
 		// DYNAMIC SUPPORT ---
 		bool _isDynamic = false;
@@ -96,7 +96,8 @@ namespace rawrbox {
 				// Apply normal ----
 				if constexpr (supportsNormals<typename M::vertexBufferType>) {
 					for (size_t i = 0; i < blendNormals.size(); i++) {
-						verts[i].normal = verts[i].normal.lerp(blendNormals[i], step);
+						rawrbox::Vector4f unpacked = rawrbox::Vector4f(rawrbox::PackUtils::fromNormal(verts[i].normal)).lerp(blendNormals[i], step); // meh
+						verts[i].normal = rawrbox::PackUtils::packNormal(unpacked.x, unpacked.y, unpacked.z);
 					}
 				}
 				// -------------------
@@ -118,7 +119,7 @@ namespace rawrbox {
 		}
 
 		// BLEND SHAPES ---
-		bool createBlendShape(const std::string& id, const std::vector<rawrbox::Vector3f>& newVertexPos, const std::vector<rawrbox::Vector3f>& newNormPos, float weight = 0.F) {
+		bool createBlendShape(const std::string& id, const std::vector<rawrbox::Vector4f>& newVertexPos, const std::vector<rawrbox::Vector4f>& newNormPos, float weight = 0.F) {
 			if (this->_mesh == nullptr) throw this->_logger->error("Mesh not initialized!");
 
 			auto blend = std::make_unique<rawrbox::BlendShapes<M>>();
@@ -263,7 +264,7 @@ namespace rawrbox {
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
 						_original_data.push_back({v.position, v.normal});
 					} else {
-						_original_data.push_back({v.position, {}});
+						_original_data.push_back({v.position, 0x00000000});
 					}
 				}
 			}
