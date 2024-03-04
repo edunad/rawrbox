@@ -131,8 +131,8 @@ namespace rawrbox {
 		}
 
 		template <class ReturnType>
+			requires(!std::is_same_v<NumberType, ReturnType>)
 		Vector3_t<ReturnType> cast() const {
-			if constexpr (std::is_same_v<NumberType, ReturnType>) return *this;
 			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y), static_cast<ReturnType>(z)};
 		}
 		// ------

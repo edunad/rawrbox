@@ -15,16 +15,16 @@ namespace rawrbox {
 
 		rawrbox::Mesh<typename M::vertexBufferType>* mesh = nullptr; // For quick access
 
-		std::vector<rawrbox::Vector3f> pos = {};
-		std::vector<rawrbox::Vector3f> normals = {};
+		std::vector<rawrbox::Vector4f> pos = {};
+		std::vector<rawrbox::Vector4f> normals = {};
 
 		bool isActive() { return weight > 0.F; }
 		BlendShapes() = default;
 	};
 
 	struct ModelOriginalData {
-		rawrbox::Vector3f pos = {};
-		rawrbox::Vector3f normal = {};
+		rawrbox::Vector4f pos = {};
+		uint32_t normal = {};
 	};
 
 	template <typename M = rawrbox::MaterialUnlit>
@@ -39,10 +39,11 @@ namespace rawrbox {
 		std::unique_ptr<M> _material = std::make_unique<M>();
 
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::BlendShapes<M>>> _blend_shapes = {};
-		std::vector<ModelOriginalData> _original_data = {};
+		std::vector<rawrbox::ModelOriginalData> _original_data = {};
 
 		// DYNAMIC SUPPORT ---
 		bool _isDynamic = false;
+		bool _requiresUpdate = false;
 		// ----
 
 		// LOGGER ------
@@ -96,13 +97,34 @@ namespace rawrbox {
 				// Apply normal ----
 				if constexpr (supportsNormals<typename M::vertexBufferType>) {
 					for (size_t i = 0; i < blendNormals.size(); i++) {
-						verts[i].normal = verts[i].normal.lerp(blendNormals[i], step);
+						rawrbox::Vector4f unpacked = rawrbox::Vector4f(rawrbox::PackUtils::fromNormal(verts[i].normal)).lerp(blendNormals[i], step); // meh
+						verts[i].normal = rawrbox::PackUtils::packNormal(unpacked.x, unpacked.y, unpacked.z);
 					}
 				}
 				// -------------------
 			}
 		}
 		// --------------
+
+		virtual void internalUpdate() {
+			if (!this->_isDynamic || !this->_requiresUpdate) return;
+			this->_requiresUpdate = false;
+
+			auto* context = rawrbox::RENDERER->context();
+
+			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
+			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
+			auto empty = vertSize <= 0 || indcSize <= 0;
+
+			// BARRIER -----
+			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_vbh, this->_ibh}, {Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_COPY_DEST});
+
+			context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+
+			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_vbh, this->_ibh}, {Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::RESOURCE_STATE_INDEX_BUFFER});
+			// -----------
+		}
 
 	public:
 		ModelBase() = default;
@@ -118,7 +140,7 @@ namespace rawrbox {
 		}
 
 		// BLEND SHAPES ---
-		bool createBlendShape(const std::string& id, const std::vector<rawrbox::Vector3f>& newVertexPos, const std::vector<rawrbox::Vector3f>& newNormPos, float weight = 0.F) {
+		bool createBlendShape(const std::string& id, const std::vector<rawrbox::Vector4f>& newVertexPos, const std::vector<rawrbox::Vector4f>& newNormPos, float weight = 0.F) {
 			if (this->_mesh == nullptr) throw this->_logger->error("Mesh not initialized!");
 
 			auto blend = std::make_unique<rawrbox::BlendShapes<M>>();
@@ -173,8 +195,6 @@ namespace rawrbox {
 		virtual void updateBuffers() {
 			if (!this->isDynamic() || !this->isUploaded()) return;
 
-			auto* context = rawrbox::RENDERER->context();
-
 			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
 			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
 			auto empty = vertSize <= 0 || indcSize <= 0;
@@ -194,13 +214,7 @@ namespace rawrbox {
 			}
 			// -----------
 
-			context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-			context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
-			// BARRIER -----
-			rawrbox::BindlessManager::bulkBarrier({{this->_vbh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-			    {this->_ibh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_INDEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-			// -----------
+			this->_requiresUpdate = true;
 		}
 
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->_mesh->getColor(); }
@@ -263,7 +277,7 @@ namespace rawrbox {
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
 						_original_data.push_back({v.position, v.normal});
 					} else {
-						_original_data.push_back({v.position, {}});
+						_original_data.push_back({v.position, 0x00000000});
 					}
 				}
 			}
@@ -279,6 +293,7 @@ namespace rawrbox {
 			Diligent::BufferData VBData;
 			VBData.pData = this->_mesh->vertices.data();
 			VBData.DataSize = VertBuffDesc.Size;
+
 			device->CreateBuffer(VertBuffDesc, vertSize > 0 ? &VBData : nullptr, &this->_vbh);
 			// ---------------------
 
@@ -296,8 +311,7 @@ namespace rawrbox {
 			// ---------------------
 
 			// Barrier ----
-			rawrbox::BindlessManager::bulkBarrier({{this->_vbh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-			    {this->_ibh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_INDEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_vbh, this->_ibh}, {Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::RESOURCE_STATE_INDEX_BUFFER});
 			// ------------
 
 			// Initialize material ----
@@ -311,11 +325,15 @@ namespace rawrbox {
 
 			auto* context = rawrbox::RENDERER->context();
 
+			// Execute pending buffer updates --
+			this->internalUpdate();
+			// --------------------------
+
 			// Bind vertex and index buffers
 			std::array<Diligent::IBuffer*, 1> pBuffs = {this->_vbh};
 
-			context->SetVertexBuffers(0, 1, pBuffs.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			context->SetVertexBuffers(0, 1, pBuffs.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			// ----
 
 			// Reset material uniforms ----

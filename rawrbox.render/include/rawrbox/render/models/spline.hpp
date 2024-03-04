@@ -110,9 +110,9 @@ namespace rawrbox {
 						auto uv = rawrbox::Vector2f(this->_shape->u[j], path[i].vCoordinate);
 
 						if constexpr (supportsNormals<typename M::vertexBufferType>) {
-							buff[id] = rawrbox::VertexNormData(path[i].LocalToWorld(pos), uv, norm, {}, rawrbox::Colors::White());
+							buff[id] = rawrbox::VertexNormData(path[i].LocalToWorld(pos), uv, norm, {});
 						} else {
-							buff[id] = rawrbox::VertexData(path[i].LocalToWorld(pos), uv, rawrbox::Colors::White());
+							buff[id] = rawrbox::VertexData(path[i].LocalToWorld(pos), uv);
 						}
 					}
 				}

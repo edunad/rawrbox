@@ -13,13 +13,13 @@ namespace rawrbox {
 		buff.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 		buff.Size = size;
 
-		auto state = rawrbox::BufferType::VERTEX;
-		if (flags == Diligent::BIND_INDEX_BUFFER) state = rawrbox::BufferType::INDEX;
+		auto state = Diligent::RESOURCE_STATE_VERTEX_BUFFER;
+		if (flags == Diligent::BIND_INDEX_BUFFER) state = Diligent::RESOURCE_STATE_INDEX_BUFFER;
 
 		device->CreateBuffer(buff, nullptr, &this->_buffer);
 
 		// Barrier ----
-		rawrbox::BindlessManager::barrier(*this->_buffer, state);
+		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_buffer}, {state});
 		// ------------
 	}
 

@@ -144,7 +144,7 @@ namespace rawrbox {
 	// ----
 
 	// UTILS ---
-	const rawrbox::FontInfo Font::getFontInfo() const { return this->_info; }
+	const rawrbox::FontInfo& Font::getFontInfo() const { return this->_info; }
 
 	bool Font::hasGlyph(uint32_t codepoint) const {
 		return this->_glyphs.find(codepoint) != this->_glyphs.end();
@@ -207,7 +207,7 @@ namespace rawrbox {
 		return rawrbox::TextEngine::getPack(g->packID);
 	}
 
-	void Font::render(const std::string& text, const rawrbox::Vector2f& pos, bool yIsUp, std::function<void(rawrbox::Glyph*, float, float, float, float)> renderGlyph) const {
+	void Font::render(const std::string& text, const rawrbox::Vector2f& pos, bool yIsUp, const std::function<void(rawrbox::Glyph*, float, float, float, float)>& renderGlyph) const {
 		if (renderGlyph == nullptr) throw this->_logger->error("Failed to render glyph! Missing 'renderGlyph' param");
 
 		auto info = this->getFontInfo();

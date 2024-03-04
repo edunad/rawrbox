@@ -130,7 +130,7 @@ namespace rawrbox {
 		// ----
 
 		// UTILS ---
-		[[nodiscard]] virtual const rawrbox::FontInfo getFontInfo() const;
+		[[nodiscard]] virtual const rawrbox::FontInfo& getFontInfo() const;
 
 		[[nodiscard]] virtual bool hasGlyph(uint32_t codepoint) const;
 		[[nodiscard]] virtual rawrbox::Glyph* getGlyph(uint32_t codepoint) const;
@@ -143,7 +143,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual rawrbox::Vector2f getStringSize(const std::string& text) const;
 		[[nodiscard]] virtual rawrbox::TexturePack* getPackTexture(rawrbox::Glyph* g) const;
 
-		virtual void render(const std::string& text, const rawrbox::Vector2f& pos, bool yIsUp, std::function<void(rawrbox::Glyph*, float, float, float, float)> render) const;
+		virtual void render(const std::string& text, const rawrbox::Vector2f& pos, bool yIsUp, const std::function<void(rawrbox::Glyph*, float, float, float, float)>& render) const;
 		// ----
 
 		// GLOBAL UTILS ---

@@ -76,9 +76,8 @@ namespace rawrbox {
 		}
 
 		template <class ReturnType>
+			requires(!std::is_same_v<NumberType, ReturnType>)
 		[[nodiscard]] Color_t<ReturnType> cast() const {
-			if constexpr (std::is_same_v<NumberType, ReturnType>) return *this;
-
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return Color_t<ReturnType>(
 				    static_cast<ReturnType>(r) / 255.0F,
@@ -302,7 +301,7 @@ namespace rawrbox {
 		using ColorType = Color_t<NumberType>;
 
 	public:
-		[[nodiscard]] static inline ColorType Black() {
+		[[nodiscard]] static inline constexpr ColorType Black() {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(0, 0, 0, 255);
 			} else {
@@ -310,7 +309,7 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] static inline ColorType White() {
+		[[nodiscard]] static inline constexpr ColorType White() {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(255, 255, 255, 255);
 			} else {
@@ -318,7 +317,7 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] static inline ColorType Gray() {
+		[[nodiscard]] static inline constexpr ColorType Gray() {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(206, 204, 191, 255);
 			} else {
@@ -326,7 +325,7 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] static inline ColorType Red() {
+		[[nodiscard]] static inline constexpr ColorType Red() {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(255, 82, 82, 255);
 			} else {
@@ -334,7 +333,7 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] static inline ColorType Green() {
+		[[nodiscard]] static inline constexpr ColorType Green() {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(36, 222, 128, 255);
 			} else {
@@ -342,7 +341,7 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] static inline ColorType Blue() {
+		[[nodiscard]] static inline constexpr ColorType Blue() {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(51, 171, 222, 255);
 			} else {
@@ -350,7 +349,7 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] static inline ColorType Orange() {
+		[[nodiscard]] static inline constexpr ColorType Orange() {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(255, 120, 61, 255);
 			} else {
@@ -358,7 +357,7 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] static inline ColorType Yellow() {
+		[[nodiscard]] static inline constexpr ColorType Yellow() {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(255, 230, 64, 255);
 			} else {
@@ -366,7 +365,7 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] static inline ColorType Purple() {
+		[[nodiscard]] static inline constexpr ColorType Purple() {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(255, 0, 255, 255);
 			} else {
@@ -374,7 +373,7 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] static inline ColorType Brown() {
+		[[nodiscard]] static inline constexpr ColorType Brown() {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(133, 88, 49, 255);
 			} else {
@@ -382,7 +381,7 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] static inline ColorType Transparent() {
+		[[nodiscard]] static inline constexpr ColorType Transparent() {
 			return ColorType(0, 0, 0, 0);
 		}
 	};

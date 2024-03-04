@@ -72,8 +72,8 @@ namespace rawrbox {
 		}
 
 		template <class ReturnType>
+			requires(!std::is_same_v<NumberType, ReturnType>)
 		Vector4_t<ReturnType> cast() const {
-			if constexpr (std::is_same_v<NumberType, ReturnType>) return *this;
 			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y), static_cast<ReturnType>(z), static_cast<ReturnType>(w)};
 		}
 
@@ -94,27 +94,16 @@ namespace rawrbox {
 		}
 
 		VecType lerp(const VecType& other, NumberType timestep) const {
-			if ((*this) == other) return other;
 			VecType ret;
 
-			NumberType dot = x * other.x + y * other.y + z * other.z + w * other.w;
-			NumberType blend = ONE<NumberType> - timestep;
-
-			if (dot < ZERO<NumberType>) {
-				ret.x = blend * x + blend * -other.x;
-				ret.y = blend * y + blend * -other.y;
-				ret.z = blend * z + blend * -other.z;
-				ret.w = blend * w + blend * -other.w;
-			} else {
-				ret.x = blend * x + blend * other.x;
-				ret.y = blend * y + blend * other.y;
-				ret.z = blend * z + blend * other.z;
-				ret.w = blend * w + blend * other.w;
-			}
-
-			return ret.normalized();
+			ret.x = static_cast<NumberType>(static_cast<float>(x) + static_cast<float>(other.x - x) * timestep);
+			ret.y = static_cast<NumberType>(static_cast<float>(y) + static_cast<float>(other.y - y) * timestep);
+			ret.z = static_cast<NumberType>(static_cast<float>(z) + static_cast<float>(other.z - z) * timestep);
+			ret.w = static_cast<NumberType>(static_cast<float>(w) + static_cast<float>(other.w - w) * timestep);
+			return ret;
 		}
 
+		// FLOATING NUMBERS ----
 		[[nodiscard]] std::array<short, 4> pack() const
 			requires(std::is_same_v<NumberType, float>)
 		{
@@ -250,6 +239,7 @@ namespace rawrbox {
 
 			return ret;
 		}
+		// ---------------------
 
 		VecType inverse() {
 			auto lengthSq = this->sqrMagnitude();
@@ -284,10 +274,10 @@ namespace rawrbox {
 				NumberType omega = std::numeric_limits<NumberType>::quiet_NaN();
 				NumberType sinom = std::numeric_limits<NumberType>::quiet_NaN();
 
-				omega = std::acos(cosom); // extract theta from dot product's cos theta
-				sinom = std::sin(omega);
-				sclp = std::sin((ONE<NumberType> - pFactor) * omega) / sinom;
-				sclq = std::sin(pFactor * omega) / sinom;
+				omega = static_cast<NumberType>(std::acos(cosom)); // extract theta from dot product's cos theta
+				sinom = static_cast<NumberType>(std::sin(omega));
+				sclp = static_cast<NumberType>(std::sin((ONE<NumberType> - pFactor) * omega) / sinom);
+				sclq = static_cast<NumberType>(std::sin(pFactor * omega) / sinom);
 			} else {
 				// Very close, do linear interp (because it's faster)
 				sclp = ONE<NumberType> - pFactor;

@@ -1,10 +1,11 @@
 #pragma once
 
-// -------------------------------
+#pragma warning(push)
+#pragma warning(disable : 4702)
 #include <lualib.h>
 // --- LuaBridge.h needs to be included after lualib.h!
 #include <LuaBridge/LuaBridge.h>
-// -------------------------------
+#pragma warning(pop)
 
 #include <rawrbox/utils/logger.hpp>
 

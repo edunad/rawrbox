@@ -88,6 +88,7 @@ namespace rawrbox {
 		}
 
 		template <class ReturnType>
+			requires(!std::is_same_v<NumberType, ReturnType>)
 		AABB_t<ReturnType> cast() const {
 			return {pos.template cast<ReturnType>(), size.template cast<ReturnType>()};
 		}

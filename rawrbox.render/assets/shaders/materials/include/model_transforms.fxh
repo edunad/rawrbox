@@ -38,7 +38,7 @@
 
         #ifdef SKINNED
             #ifdef TRANSFORM_BONES
-                float4 boneTransform(uint4 indices, float4 weight, float3 position) {
+                float4 boneTransform(uint4 indices, float4 weight, float4 position) {
                     float4x4 BoneTransform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
                     bool skinned = false;
 
@@ -49,7 +49,7 @@
                         }
                     }
 
-                    return skinned ? mul(BoneTransform, float4(position, 1.f)) : float4(position, 1.f);
+                    return skinned ? mul(BoneTransform, position) : position;
                 }
             #endif
         #endif
