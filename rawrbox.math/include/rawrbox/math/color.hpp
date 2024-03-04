@@ -76,9 +76,8 @@ namespace rawrbox {
 		}
 
 		template <class ReturnType>
+			requires(!std::is_same_v<NumberType, ReturnType>)
 		[[nodiscard]] Color_t<ReturnType> cast() const {
-			if constexpr (std::is_same_v<NumberType, ReturnType>) return *this;
-
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return Color_t<ReturnType>(
 				    static_cast<ReturnType>(r) / 255.0F,

@@ -11,7 +11,7 @@ namespace rawrbox {
 		uint16_t width = 0;
 		uint16_t height = 0;
 
-		bool empty = true;
+		std::vector<uint8_t> data = {};
 
 		std::unique_ptr<PackNode> left = nullptr;
 		std::unique_ptr<PackNode> right = nullptr;
@@ -28,6 +28,8 @@ namespace rawrbox {
 		size_t _spriteCount = 0;
 		std::unique_ptr<rawrbox::PackNode> _root;
 
+		bool _pendingUpdate = false;
+
 	public:
 		explicit TexturePack(uint16_t size = 1024);
 
@@ -43,5 +45,8 @@ namespace rawrbox {
 		rawrbox::PackNode& addSprite(uint16_t width, uint16_t height, const std::vector<uint8_t>& data);
 
 		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false) override;
+
+		void update() override;
+		[[nodiscard]] bool requiresUpdate() const override;
 	};
 } // namespace rawrbox

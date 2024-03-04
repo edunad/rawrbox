@@ -26,26 +26,19 @@ namespace rawrbox {
 		auto nodeOpt = this->_root->InsertNode(width, height);
 		if (!nodeOpt.has_value()) throw this->_logger->error("Failed to add sprite with size {}, {}", width, height);
 
-		this->_spriteCount++;
 		auto& node = (*nodeOpt).get();
+		node.data = data; // Set the data of that node
 
 		if (!data.empty()) {
-			auto* context = rawrbox::RENDERER->context();
+			this->_pixels.insert(this->_pixels.begin(), data.begin(), data.end());
 
-			Diligent::Box UpdateBox;
-			UpdateBox.MinX = node.x;
-			UpdateBox.MinY = node.y;
-			UpdateBox.MaxX = node.x + node.width;
-			UpdateBox.MaxY = node.y + node.height;
-
-			Diligent::TextureSubResData SubresData;
-			SubresData.Stride = static_cast<uint64_t>(node.width * this->_channels);
-			SubresData.pData = data.data();
-
-			context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-			rawrbox::BindlessManager::barrier(*this);
+			if (!this->_pendingUpdate) {
+				this->_pendingUpdate = true;
+				rawrbox::BindlessManager::registerUpdateTexture(*this);
+			}
 		}
 
+		this->_spriteCount++;
 		return node;
 	}
 
@@ -54,7 +47,8 @@ namespace rawrbox {
 	}
 
 	bool PackNode::canInsertNode(uint16_t insertedWidth, uint16_t insertedHeight) {
-		if (!empty) return false;
+		if (!data.empty()) return false;
+
 		if (left && right) {
 			if (left->canInsertNode(insertedWidth, insertedHeight)) return true;
 			if (right->canInsertNode(insertedWidth, insertedHeight)) return true;
@@ -85,7 +79,7 @@ namespace rawrbox {
 	}
 
 	std::optional<std::reference_wrapper<rawrbox::PackNode>> PackNode::InsertNode(uint16_t insertedWidth, uint16_t insertedHeight) {
-		if (!empty) return std::nullopt;
+		if (!data.empty()) return std::nullopt;
 
 		if (left && right) {
 			// both children exist, which means this node is full, try left then right
@@ -107,7 +101,6 @@ namespace rawrbox {
 
 		if (width == insertedWidth && height == insertedHeight) {
 			// fits perfectly
-			empty = false;
 			return *this;
 		}
 
@@ -135,4 +128,23 @@ namespace rawrbox {
 		rawrbox::TextureBase::upload(format, true);
 	}
 
+	void TexturePack::update() {
+		if (!this->_pendingUpdate) return;
+		auto* context = rawrbox::RENDERER->context();
+
+		Diligent::Box UpdateBox;
+		UpdateBox.MinX = 0;
+		UpdateBox.MinY = 0;
+		UpdateBox.MaxX = this->_size.x;
+		UpdateBox.MaxY = this->_size.y;
+
+		Diligent::TextureSubResData SubresData;
+		SubresData.Stride = this->_size.x * this->_channels;
+		SubresData.pData = this->_pixels.data();
+
+		context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		this->_pendingUpdate = false;
+	}
+
+	[[nodiscard]] bool TexturePack::requiresUpdate() const { return this->_pendingUpdate; };
 } // namespace rawrbox

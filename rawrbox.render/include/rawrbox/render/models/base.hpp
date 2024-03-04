@@ -195,12 +195,13 @@ namespace rawrbox {
 			}
 			// -----------
 
-			context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-			context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-
 			// BARRIER -----
-			rawrbox::BindlessManager::bulkBarrier({{this->_vbh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-			    {this->_ibh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_INDEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_vbh, this->_ibh}, {Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_COPY_DEST});
+
+			context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+
+			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_vbh, this->_ibh}, {Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::RESOURCE_STATE_INDEX_BUFFER});
 			// -----------
 		}
 
@@ -297,8 +298,7 @@ namespace rawrbox {
 			// ---------------------
 
 			// Barrier ----
-			rawrbox::BindlessManager::bulkBarrier({{this->_vbh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-			    {this->_ibh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_INDEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_vbh, this->_ibh}, {Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::RESOURCE_STATE_INDEX_BUFFER});
 			// ------------
 
 			// Initialize material ----
@@ -315,8 +315,8 @@ namespace rawrbox {
 			// Bind vertex and index buffers
 			std::array<Diligent::IBuffer*, 1> pBuffs = {this->_vbh};
 
-			context->SetVertexBuffers(0, 1, pBuffs.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			context->SetVertexBuffers(0, 1, pBuffs.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			// ----
 
 			// Reset material uniforms ----

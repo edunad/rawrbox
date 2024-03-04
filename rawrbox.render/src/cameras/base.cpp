@@ -40,8 +40,7 @@ namespace rawrbox {
 		}
 
 		// BARRIER -----
-		rawrbox::BindlessManager::bulkBarrier({{this->_staticUniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-		    {this->_uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_staticUniforms, this->_uniforms}, {Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_CONSTANT_BUFFER});
 		// -----------
 
 		this->_logger->info("Initializing camera");

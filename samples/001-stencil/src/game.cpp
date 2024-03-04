@@ -36,6 +36,7 @@ namespace stencil {
 
 		// Setup renderer
 		auto* render = window->createRenderer(rawrbox::Color::RGBAHex(0x443355FF));
+		render->skipIntros(true);
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass == rawrbox::DrawPass::PASS_OVERLAY) {

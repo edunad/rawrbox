@@ -49,8 +49,7 @@ namespace rawrbox {
 		}
 
 		// BARRIER -----
-		rawrbox::BindlessManager::bulkBarrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-		    {_buffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({uniforms, _buffer->GetBuffer()}, {Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_SHADER_RESOURCE});
 		// -----------
 
 		update();
@@ -70,10 +69,11 @@ namespace rawrbox {
 		_CONSTANTS_DIRTY = false;
 
 		rawrbox::DecalsConstants settings = {static_cast<uint32_t>(count())};
-		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::DecalsConstants), &settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
-		// BARRIER -----
-		rawrbox::BindlessManager::barrier(*uniforms, rawrbox::BufferType::CONSTANT);
+		// BARRIER ----
+		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({uniforms}, {Diligent::RESOURCE_STATE_COPY_DEST});
+		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::DecalsConstants), &settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({uniforms}, {Diligent::RESOURCE_STATE_CONSTANT_BUFFER});
 		// --------
 	}
 
@@ -103,10 +103,11 @@ namespace rawrbox {
 		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, size + 32, true);
 
 		auto* buffer = _buffer->GetBuffer();
-		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(_decals.size()), decals.empty() ? nullptr : decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		// BARRIER ----
-		rawrbox::BindlessManager::barrier(*buffer, rawrbox::BufferType::SHADER);
+		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({buffer}, {Diligent::RESOURCE_STATE_COPY_DEST});
+		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(_decals.size()), decals.empty() ? nullptr : decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({buffer}, {Diligent::RESOURCE_STATE_SHADER_RESOURCE});
 		// ---------
 
 		rawrbox::__DECALS_DIRTY__ = false;

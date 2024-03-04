@@ -25,7 +25,6 @@ namespace rawrbox {
 		SubresData.pData = this->_frames.empty() ? this->_pixels.data() : this->_frames[this->_currentFrame].pixels.data();
 
 		context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-		rawrbox::BindlessManager::barrier(*this);
 	}
 
 	// ANIMATION ------
