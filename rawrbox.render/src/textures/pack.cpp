@@ -30,7 +30,23 @@ namespace rawrbox {
 		node.data = data; // Set the data of that node
 
 		if (!data.empty()) {
-			this->_pixels.insert(this->_pixels.begin(), data.begin(), data.end());
+			Diligent::Box UpdateBox;
+			UpdateBox.MinX = node.x;
+			UpdateBox.MinY = node.y;
+			UpdateBox.MaxX = node.x + node.width;
+			UpdateBox.MaxY = node.y + node.height;
+
+			for (size_t y = 0; y < node.height; y++) {
+				const auto stride = node.width * this->_channels;
+				const auto* start = data.data() + y * stride;
+				const auto* last = start + stride;
+
+				auto startPointY = UpdateBox.MinY + y;
+				auto startPointX = UpdateBox.MinX;
+
+				auto* dest = this->_pixels.data() + (startPointY * this->_size.x + startPointX) * this->_channels;
+				std::copy(start, last, dest);
+			}
 
 			if (!this->_pendingUpdate) {
 				this->_pendingUpdate = true;
