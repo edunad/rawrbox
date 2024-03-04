@@ -87,7 +87,7 @@ namespace rawrbox {
 			//  ---------------------
 
 			// Barrier ----
-			rawrbox::BindlessManager::barrier(*this->_dataBuffer->GetBuffer(), rawrbox::BufferType::VERTEX);
+			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_dataBuffer->GetBuffer()}, {Diligent::RESOURCE_STATE_VERTEX_BUFFER});
 			// ------------
 
 			if (size != 0) this->updateInstance(); // Data was already added, then update the buffer
@@ -106,10 +106,11 @@ namespace rawrbox {
 			}
 
 			auto* buffer = this->_dataBuffer->GetBuffer();
-			rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.size()), this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 			// BARRIER ----
-			rawrbox::BindlessManager::barrier(*buffer, rawrbox::BufferType::VERTEX);
+			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({buffer}, {Diligent::RESOURCE_STATE_COPY_DEST});
+			rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.size()), this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({buffer}, {Diligent::RESOURCE_STATE_VERTEX_BUFFER});
 			// ---------
 		}
 
@@ -125,8 +126,8 @@ namespace rawrbox {
 			Diligent::IBuffer* pBuffs[] = {this->_vbh, this->_dataBuffer->GetBuffer()};
 			// NOLINTEND(*)
 
-			context->SetVertexBuffers(0, 2, pBuffs, offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			context->SetVertexBuffers(0, 2, pBuffs, offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			// ----
 
 			// Bind materials uniforms & textures ----

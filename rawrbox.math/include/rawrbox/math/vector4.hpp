@@ -72,8 +72,8 @@ namespace rawrbox {
 		}
 
 		template <class ReturnType>
+			requires(!std::is_same_v<NumberType, ReturnType>)
 		Vector4_t<ReturnType> cast() const {
-			if constexpr (std::is_same_v<NumberType, ReturnType>) return *this;
 			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y), static_cast<ReturnType>(z), static_cast<ReturnType>(w)};
 		}
 
@@ -274,10 +274,10 @@ namespace rawrbox {
 				NumberType omega = std::numeric_limits<NumberType>::quiet_NaN();
 				NumberType sinom = std::numeric_limits<NumberType>::quiet_NaN();
 
-				omega = std::acos(cosom); // extract theta from dot product's cos theta
-				sinom = std::sin(omega);
-				sclp = std::sin((ONE<NumberType> - pFactor) * omega) / sinom;
-				sclq = std::sin(pFactor * omega) / sinom;
+				omega = static_cast<NumberType>(std::acos(cosom)); // extract theta from dot product's cos theta
+				sinom = static_cast<NumberType>(std::sin(omega));
+				sclp = static_cast<NumberType>(std::sin((ONE<NumberType> - pFactor) * omega) / sinom);
+				sclq = static_cast<NumberType>(std::sin(pFactor * omega) / sinom);
 			} else {
 				// Very close, do linear interp (because it's faster)
 				sclp = ONE<NumberType> - pFactor;

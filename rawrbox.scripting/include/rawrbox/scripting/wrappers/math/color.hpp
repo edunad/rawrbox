@@ -27,15 +27,9 @@ namespace rawrbox {
 			    .addFunction("hasTransparency", &CL::hasTransparency)
 			    .addFunction("dot", &CL::dot)
 
-			    .addFunction("rgb", [](const CL& self) {
-				    return self.template cast<float>().rgb();
-			    })
-			    .addFunction("bgr", [](const CL& self) {
-				    return self.template cast<float>().bgr();
-			    })
-			    .addFunction("bgra", [](const CL& self) {
-				    return self.template cast<float>().bgra();
-			    })
+			    .addFunction("rgb", &CL::rgb)
+			    .addFunction("bgr", &CL::bgr)
+			    .addFunction("bgra", &CL::bgra)
 
 			    .addFunction("__add", luabridge::overload<T>(&CL::operator+), luabridge::overload<const CL&>(&CL::operator+))
 			    .addFunction("__sub", luabridge::overload<T>(&CL::operator-), luabridge::overload<const CL&>(&CL::operator-))

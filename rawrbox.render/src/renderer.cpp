@@ -458,6 +458,10 @@ namespace rawrbox {
 #endif
 		//  ------------------
 
+		// Clear barrier cache -----
+		rawrbox::BindlessManager::clearBarrierCache();
+		// ---------------------
+
 		// Submit ---
 		this->frame();
 		// ---------------------

@@ -16,7 +16,10 @@ namespace rawrbox {
 		BuffPixelDesc.Size = sizeof(rawrbox::BindlessPostProcessBuffer);
 
 		rawrbox::RENDERER->device()->CreateBuffer(BuffPixelDesc, nullptr, &this->_buffer);
-		rawrbox::BindlessManager::barrier(*this->_buffer, rawrbox::BufferType::CONSTANT);
+
+		// BARRIER -----
+		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_buffer}, {Diligent::RESOURCE_STATE_CONSTANT_BUFFER});
+		// ---------------
 	}
 
 	void PostProcessPlugin::upload() {

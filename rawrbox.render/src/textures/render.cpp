@@ -26,13 +26,9 @@ namespace rawrbox {
 
 		// BARRIER ----
 		if (this->_depth) {
-			std::vector<Diligent::StateTransitionDesc> Barriers = {
-			    {this->_tex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_RENDER_TARGET, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-			    {this->_depthTex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_DEPTH_WRITE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}};
-
-			rawrbox::BindlessManager::bulkBarrier(Barriers);
+			rawrbox::BindlessManager::barrier<Diligent::ITexture>({this->_tex, this->_depthTex}, {Diligent::RESOURCE_STATE_RENDER_TARGET, Diligent::RESOURCE_STATE_DEPTH_WRITE});
 		} else {
-			rawrbox::BindlessManager::barrier(*this->_tex, Diligent::RESOURCE_STATE_RENDER_TARGET);
+			rawrbox::BindlessManager::barrier<Diligent::ITexture>({this->_tex}, {Diligent::RESOURCE_STATE_RENDER_TARGET});
 		}
 		//   --------
 
@@ -60,15 +56,11 @@ namespace rawrbox {
 
 		// BARRIER ----
 		if (this->_depth) {
-			std::vector<Diligent::StateTransitionDesc> Barriers = {
-			    {this->_tex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-			    {this->_depthTex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_DEPTH_READ, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}};
-
-			rawrbox::BindlessManager::bulkBarrier(Barriers);
+			rawrbox::BindlessManager::barrier<Diligent::ITexture>({this->_tex, this->_depthTex}, {Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_DEPTH_READ});
 		} else {
-			rawrbox::BindlessManager::barrier(*this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE);
+			rawrbox::BindlessManager::barrier<Diligent::ITexture>({this->_tex}, {Diligent::RESOURCE_STATE_SHADER_RESOURCE});
 		}
-		//   --------
+		// --------
 
 		this->_recording = false;
 	}
@@ -93,12 +85,6 @@ namespace rawrbox {
 		desc.ClearValue.Color[3] = 0.F;
 
 		rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_tex);
-		rawrbox::BindlessManager::barrier(*this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE);
-		// --------------
-
-		// Get handles --
-		this->_rtHandle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
-		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 		// --------------
 
 		// Depth ----
@@ -114,12 +100,19 @@ namespace rawrbox {
 			desc.ClearValue.DepthStencil.Stencil = 0;
 
 			rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_depthTex);
-			rawrbox::BindlessManager::barrier(*this->_depthTex, Diligent::RESOURCE_STATE_DEPTH_READ);
+			rawrbox::BindlessManager::barrier<Diligent::ITexture>({this->_tex, this->_depthTex}, {Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_DEPTH_READ});
 
 			this->_depthHandle = this->_depthTex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 			this->_depthRTHandle = this->_depthTex->GetDefaultView(Diligent::TEXTURE_VIEW_DEPTH_STENCIL);
+		} else {
+			rawrbox::BindlessManager::barrier<Diligent::ITexture>({this->_tex}, {Diligent::RESOURCE_STATE_SHADER_RESOURCE});
 		}
 		// ----------
+
+		// Get handles --
+		this->_rtHandle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
+		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+		// --------------
 
 		rawrbox::BindlessManager::registerTexture(*this);
 	}

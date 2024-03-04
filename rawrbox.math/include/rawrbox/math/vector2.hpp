@@ -90,7 +90,7 @@ namespace rawrbox {
 		[[nodiscard]] VecType clampMagnitude(NumberType max) const {
 			NumberType mag = this->sqrMagnitude();
 			if (mag > max * max) {
-				NumberType m = std::sqrt(mag);
+				auto m = static_cast<NumberType>(std::sqrt(mag));
 
 				NumberType _x = this->x / m;
 				NumberType _y = this->y / m;
@@ -110,7 +110,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] NumberType atan2() const {
-			return std::atan2(y, x);
+			return static_cast<NumberType>(std::atan2(y, x));
 		}
 
 		[[nodiscard]] std::array<short, 2> pack() const
@@ -167,8 +167,8 @@ namespace rawrbox {
 		}
 
 		template <class ReturnType>
+			requires(!std::is_same_v<NumberType, ReturnType>)
 		Vector2_t<ReturnType> cast() const {
-			if constexpr (std::is_same_v<NumberType, ReturnType>) return *this;
 			return {static_cast<ReturnType>(x), static_cast<ReturnType>(y)};
 		}
 		// ------

@@ -12,8 +12,11 @@ namespace rawrbox {
 
 	std::vector<rawrbox::TextureBase*> BindlessManager::_updateTextures = {};
 
-	std::vector<Diligent::StateTransitionDesc> BindlessManager::_barriers = {};
-	std::vector<std::function<void()>> BindlessManager::_barriersCallbacks = {};
+	// BARRIER ----
+	std::unordered_map<Diligent::IDeviceObject*, Diligent::StateTransitionDesc> BindlessManager::_barrierQueue = {};
+	std::unordered_map<Diligent::IDeviceObject*, Diligent::RESOURCE_STATE> BindlessManager::_barrierCache = {};
+	std::vector<std::function<void()>> BindlessManager::_barrierCallback = {};
+	// -------------
 
 	std::unique_ptr<rawrbox::Logger> BindlessManager::_logger = std::make_unique<rawrbox::Logger>("RawrBox-BindlessManager");
 	// --------------
@@ -81,9 +84,7 @@ namespace rawrbox {
 		// -------------
 
 		// BARRIER -----
-		rawrbox::BindlessManager::bulkBarrier({{signatureBufferVertex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-		    {signatureBufferVertexSkinned, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-		    {signatureBufferPixel, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({signatureBufferVertexSkinned, signatureBufferPixel}, {Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_CONSTANT_BUFFER});
 		// -----------
 
 		// Create signatures ------
@@ -100,8 +101,9 @@ namespace rawrbox {
 		_vertexTextureHandles = {};
 		_updateTextures = {};
 
-		_barriers = {};
-		_barriersCallbacks = {};
+		_barrierCache = {};
+		_barrierQueue = {};
+		_barrierCallback = {};
 
 		RAWRBOX_DESTROY(signature);
 		RAWRBOX_DESTROY(computeSignature);
@@ -252,30 +254,44 @@ namespace rawrbox {
 	// --------------------------
 
 	void BindlessManager::processBarriers() {
-		if (_barriers.empty()) return;
-
 		auto threadID = std::this_thread::get_id();
 		if (threadID != rawrbox::RENDER_THREAD_ID) throw _logger->error("Barriers can only be processed on the main render thread");
 
-		rawrbox::RENDERER->context()->TransitionResourceStates(static_cast<uint32_t>(_barriers.size()), _barriers.data());
-		for (auto& callback : _barriersCallbacks) {
+		if (_barrierQueue.empty()) return;
+
+		// bulk all the barriers ---
+		std::vector<Diligent::StateTransitionDesc> states = {};
+		states.reserve(_barrierQueue.size());
+
+		for (auto& barrier : _barrierQueue) {
+			auto fnd = _barrierCache.find(barrier.first);
+			if (fnd != _barrierCache.end() && fnd->second == barrier.second.NewState) {
+				continue; //  Was already executed
+			}
+
+			states.push_back(barrier.second);
+			_barrierCache[barrier.first] = barrier.second.NewState; // Cache it so its not executed again this frame
+		}
+		// ------------
+
+		// Transition (aka execute barriers) ---
+		if (!states.empty()) {
+			rawrbox::RENDERER->context()->TransitionResourceStates(static_cast<uint32_t>(states.size()), states.data());
+		}
+		// ------------
+
+		// Call all the callbacks ---
+		for (auto& callback : _barrierCallback) {
 			callback();
 		}
+		// --------------------------
 
-		_barriers.clear();
-		_barriersCallbacks.clear();
+		_barrierQueue.clear();
+		_barrierCallback.clear();
 	}
 
-	void BindlessManager::registerUpdateTexture(rawrbox::TextureBase& tex) {
-		if (!tex.requiresUpdate()) return;
-		_updateTextures.push_back(&tex);
-	}
-
-	void BindlessManager::unregisterUpdateTexture(rawrbox::TextureBase& tex) {
-		auto fnd = std::find(_updateTextures.begin(), _updateTextures.end(), &tex);
-		if (fnd == _updateTextures.end()) return;
-
-		_updateTextures.erase(fnd);
+	void BindlessManager::clearBarrierCache() {
+		_barrierCache.clear();
 	}
 
 	void BindlessManager::update() {
@@ -283,64 +299,19 @@ namespace rawrbox {
 
 		// UPDATE TEXTURES ---
 		if (!_updateTextures.empty()) {
-			for (auto* tex : _updateTextures) {
-				if (tex == nullptr) continue;
-				tex->update();
+			for (auto it = _updateTextures.begin(); it != _updateTextures.end();) {
+				auto& texture = (*it);
+				if (texture == nullptr || !texture->requiresUpdate()) {
+					it = _updateTextures.erase(it);
+					continue;
+				}
+
+				texture->update();
+				it++;
 			}
 		}
 		// ---------------------
 	}
-
-	// BARRIERS -------
-	void BindlessManager::barrier(const rawrbox::TextureBase& texture, const std::function<void()>& callback) {
-		auto* texHandle = texture.getTexture();
-		if (texHandle == nullptr) throw _logger->error("Texture '{}' not uploaded! Cannot create barrier", texture.getName());
-
-		auto threadID = std::this_thread::get_id();
-		if (threadID != rawrbox::RENDER_THREAD_ID) { // Context is not thread safe, so we need to queue it
-			_barriers.emplace_back(texture.getTexture(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
-			if (callback != nullptr) _barriersCallbacks.push_back(callback);
-		} else {
-			Diligent::StateTransitionDesc barrier = {texHandle, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE};
-			rawrbox::RENDERER->context()->TransitionResourceStates(1, &barrier);
-
-			if (callback != nullptr) callback();
-		}
-	}
-
-	void BindlessManager::barrier(Diligent::ITexture& texture, Diligent::RESOURCE_STATE state, const std::function<void()>& callback) {
-		auto threadID = std::this_thread::get_id();
-		if (threadID != rawrbox::RENDER_THREAD_ID) { // Context is not thread safe, so we need to queue it
-			_barriers.emplace_back(&texture, Diligent::RESOURCE_STATE_UNKNOWN, state, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
-			if (callback != nullptr) _barriersCallbacks.push_back(callback);
-		} else {
-			Diligent::StateTransitionDesc barrier = {&texture, Diligent::RESOURCE_STATE_UNKNOWN, state, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE};
-			rawrbox::RENDERER->context()->TransitionResourceStates(1, &barrier);
-
-			if (callback != nullptr) callback();
-		}
-	}
-
-	void BindlessManager::barrier(Diligent::IBuffer& buffer, rawrbox::BufferType type, const std::function<void()>& callback) {
-		auto threadID = std::this_thread::get_id();
-		if (threadID != rawrbox::RENDER_THREAD_ID) { // Context is not thread safe, so we need to queue it
-			_barriers.emplace_back(&buffer, Diligent::RESOURCE_STATE_UNKNOWN, mapResource(type), Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
-			if (callback != nullptr) _barriersCallbacks.push_back(callback);
-		} else {
-			Diligent::StateTransitionDesc barrier = {&buffer, Diligent::RESOURCE_STATE_UNKNOWN, mapResource(type), Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE};
-			rawrbox::RENDERER->context()->TransitionResourceStates(1, &barrier);
-
-			if (callback != nullptr) callback();
-		}
-	}
-
-	void BindlessManager::bulkBarrier(const std::vector<Diligent::StateTransitionDesc>& barriers) {
-		auto threadID = std::this_thread::get_id();
-		if (threadID != rawrbox::RENDER_THREAD_ID) throw _logger->error("Cannot call bulkBarrier on non-render thread, use barrier instead");
-
-		rawrbox::RENDERER->context()->TransitionResourceStates(static_cast<uint32_t>(barriers.size()), barriers.data());
-	}
-	// ----------------
 
 	// REGISTER TEXTURES -------
 	void BindlessManager::registerTexture(rawrbox::TextureRender& texture) {
@@ -405,6 +376,18 @@ namespace rawrbox {
 		// -----
 	}
 
+	void BindlessManager::registerUpdateTexture(rawrbox::TextureBase& texture) {
+		if (!texture.requiresUpdate()) return;
+		_updateTextures.push_back(&texture);
+	}
+
+	void BindlessManager::unregisterUpdateTexture(rawrbox::TextureBase& texture) {
+		auto fnd = std::find(_updateTextures.begin(), _updateTextures.end(), &texture);
+		if (fnd == _updateTextures.end()) return;
+
+		_updateTextures.erase(fnd);
+	}
+
 	uint32_t BindlessManager::internalRegister(Diligent::ITextureView* view, rawrbox::TEXTURE_TYPE type) {
 		bool isVertex = type == rawrbox::TEXTURE_TYPE::VERTEX;
 		auto max = isVertex ? rawrbox::RENDERER->MAX_VERTEX_TEXTURES : rawrbox::RENDERER->MAX_TEXTURES;
@@ -440,30 +423,6 @@ namespace rawrbox {
 		// -----
 
 		return id;
-	}
-
-	Diligent::RESOURCE_STATE BindlessManager::mapResource(rawrbox::BufferType type) {
-		auto state = Diligent::RESOURCE_STATE_UNKNOWN;
-		switch (type) {
-			case BufferType::CONSTANT:
-				state = Diligent::RESOURCE_STATE_CONSTANT_BUFFER;
-				break;
-			case BufferType::INDEX:
-				state = Diligent::RESOURCE_STATE_INDEX_BUFFER;
-				break;
-			case BufferType::VERTEX:
-				state = Diligent::RESOURCE_STATE_VERTEX_BUFFER;
-				break;
-			case BufferType::UNORDERED_ACCESS:
-				state = Diligent::RESOURCE_STATE_UNORDERED_ACCESS;
-				break;
-			case BufferType::SHADER:
-				state = Diligent::RESOURCE_STATE_SHADER_RESOURCE;
-				break;
-		}
-
-		if (state == Diligent::RESOURCE_STATE_UNKNOWN) throw _logger->error("Invalid buffer type! Cannot create barrier");
-		return state;
 	}
 	// --------------
 }; // namespace rawrbox

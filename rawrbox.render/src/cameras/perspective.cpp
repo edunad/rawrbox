@@ -26,10 +26,8 @@ namespace rawrbox {
 		return rawrbox::Matrix4x4::mtxProject(pos, this->_view, this->_projection, {0, 0, this->_winSize.x, this->_winSize.y});
 	}
 
-	rawrbox::Vector3f CameraPerspective::screenToWorld(const rawrbox::Vector2f& screen_pos, const rawrbox::Vector3f& origin) const {
+	rawrbox::Vector3f CameraPerspective::screenToWorld(const rawrbox::Vector2f& screenPos, const rawrbox::Vector3f& origin) const {
 		rawrbox::Vector3f plane_normal = {0, 1, 0};
-
-		auto screenPos = screen_pos.cast<float>();
 
 		// get our pos and force aim downwards, the getForward() seems to behave odd when aiming full down
 		auto campos = this->getPos();
