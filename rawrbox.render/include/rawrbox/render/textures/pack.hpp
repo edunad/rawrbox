@@ -26,12 +26,11 @@ namespace rawrbox {
 	class TexturePack : public rawrbox::TextureBase {
 	private:
 		size_t _spriteCount = 0;
-		std::unique_ptr<rawrbox::PackNode> _root;
-
+		std::unique_ptr<rawrbox::PackNode> _root = nullptr;
 		bool _pendingUpdate = false;
 
 	public:
-		explicit TexturePack(uint16_t size = 1024);
+		explicit TexturePack(uint16_t size = 1024U);
 
 		TexturePack(const TexturePack&) = delete;
 		TexturePack(TexturePack&&) = delete;
