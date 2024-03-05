@@ -28,6 +28,7 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/textures/webp.hpp>
+#include <rawrbox/render/utils/barrier.hpp>
 #include <rawrbox/render/utils/render.hpp>
 #include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/threading.hpp>
@@ -374,7 +375,7 @@ namespace rawrbox {
 		// ---------------------
 
 		// Process barriers -----
-		rawrbox::BindlessManager::processBarriers();
+		rawrbox::BarrierUtils::processBarriers();
 		// ---------------------
 
 		// No camera -------
@@ -463,7 +464,7 @@ namespace rawrbox {
 		//  ------------------
 
 		// Clear barrier cache -----
-		rawrbox::BindlessManager::clearBarrierCache();
+		rawrbox::BarrierUtils::clearBarrierCache();
 		// ---------------------
 
 		// Submit ---

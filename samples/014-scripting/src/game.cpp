@@ -137,7 +137,6 @@ namespace scripting_test {
 		// Start loading ----
 		rawrbox::RESOURCES::startPreLoadQueueAsync(nullptr, nullptr, [this]() {
 			rawrbox::runOnRenderThread([this]() {
-				rawrbox::BindlessManager::processBarriers(); // IMPORTANT: BARRIERS NEED TO BE PROCESSED AFTER LOADING ALL THE CONTENT
 				this->contentLoaded();
 			});
 		});

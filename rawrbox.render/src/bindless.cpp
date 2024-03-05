@@ -12,12 +12,6 @@ namespace rawrbox {
 
 	std::vector<rawrbox::TextureBase*> BindlessManager::_updateTextures = {};
 
-	// BARRIER ----
-	std::unordered_map<Diligent::IDeviceObject*, Diligent::StateTransitionDesc> BindlessManager::_barrierQueue = {};
-	std::unordered_map<Diligent::IDeviceObject*, Diligent::RESOURCE_STATE> BindlessManager::_barrierCache = {};
-	std::vector<std::function<void()>> BindlessManager::_barrierCallback = {};
-	// -------------
-
 	std::unique_ptr<rawrbox::Logger> BindlessManager::_logger = std::make_unique<rawrbox::Logger>("RawrBox-BindlessManager");
 	// --------------
 
@@ -84,7 +78,8 @@ namespace rawrbox {
 		// -------------
 
 		// BARRIER -----
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({signatureBufferVertexSkinned, signatureBufferPixel}, {Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_CONSTANT_BUFFER});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{signatureBufferVertexSkinned, Diligent::RESOURCE_STATE_CONSTANT_BUFFER},
+		    {signatureBufferPixel, Diligent::RESOURCE_STATE_CONSTANT_BUFFER}});
 		// -----------
 
 		// Create signatures ------
@@ -100,10 +95,6 @@ namespace rawrbox {
 		_textureHandles = {};
 		_vertexTextureHandles = {};
 		_updateTextures = {};
-
-		_barrierCache = {};
-		_barrierQueue = {};
-		_barrierCallback = {};
 
 		RAWRBOX_DESTROY(signature);
 		RAWRBOX_DESTROY(computeSignature);
@@ -252,47 +243,6 @@ namespace rawrbox {
 		// ----------------------
 	}
 	// --------------------------
-
-	void BindlessManager::processBarriers() {
-		auto threadID = std::this_thread::get_id();
-		if (threadID != rawrbox::RENDER_THREAD_ID) throw _logger->error("Barriers can only be processed on the main render thread");
-
-		if (_barrierQueue.empty()) return;
-
-		// bulk all the barriers ---
-		std::vector<Diligent::StateTransitionDesc> states = {};
-		states.reserve(_barrierQueue.size());
-
-		for (auto& barrier : _barrierQueue) {
-			auto fnd = _barrierCache.find(barrier.first);
-			if (fnd != _barrierCache.end() && fnd->second == barrier.second.NewState) {
-				continue; //  Was already executed
-			}
-
-			states.push_back(barrier.second);
-			_barrierCache[barrier.first] = barrier.second.NewState; // Cache it so its not executed again this frame
-		}
-		// ------------
-
-		// Transition (aka execute barriers) ---
-		if (!states.empty()) {
-			rawrbox::RENDERER->context()->TransitionResourceStates(static_cast<uint32_t>(states.size()), states.data());
-		}
-		// ------------
-
-		// Call all the callbacks ---
-		for (auto& callback : _barrierCallback) {
-			callback();
-		}
-		// --------------------------
-
-		_barrierQueue.clear();
-		_barrierCallback.clear();
-	}
-
-	void BindlessManager::clearBarrierCache() {
-		_barrierCache.clear();
-	}
 
 	void BindlessManager::update() {
 		if (signature == nullptr) return;

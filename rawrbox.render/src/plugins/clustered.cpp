@@ -106,7 +106,7 @@ namespace rawrbox {
 		// ------------
 
 		// Barrier for writting -----
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_clusterBuffer, this->_dataGridBuffer}, {Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::RESOURCE_STATE_UNORDERED_ACCESS});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_clusterBuffer, Diligent::RESOURCE_STATE_UNORDERED_ACCESS}, {this->_dataGridBuffer, Diligent::RESOURCE_STATE_UNORDERED_ACCESS}});
 		// -----------
 
 		// Commit compute signature --
@@ -131,7 +131,7 @@ namespace rawrbox {
 		// ----------------------
 
 		// BARRIER -----
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_clusterBuffer, this->_dataGridBuffer}, {Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_SHADER_RESOURCE});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_clusterBuffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}, {this->_dataGridBuffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
 		// -----------
 	}
 
@@ -172,7 +172,7 @@ namespace rawrbox {
 		// ------------------
 
 		// BARRIER -----
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_clusterBuffer, this->_dataGridBuffer}, {Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::RESOURCE_STATE_UNORDERED_ACCESS});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_clusterBuffer, Diligent::RESOURCE_STATE_UNORDERED_ACCESS}, {this->_dataGridBuffer, Diligent::RESOURCE_STATE_UNORDERED_ACCESS}});
 		// -----------
 	}
 

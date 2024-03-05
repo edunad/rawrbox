@@ -100,9 +100,8 @@ namespace rawrbox {
 		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
 		if (this->_tex == nullptr) throw this->_logger->error("Failed to create texture '{}'", this->_name);
 
-		rawrbox::BindlessManager::barrier<Diligent::ITexture>(
-		    {this->_tex},
-		    {Diligent::RESOURCE_STATE_SHADER_RESOURCE}, [this]() {
+		rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE}},
+		    [this]() {
 			    // Get handles --
 			    this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 			    // -------

@@ -14,6 +14,8 @@
         float4 colorOverride;
         float4 data;
         // ----------------
+
+        float4 gpuID;
     };
 
     #ifdef SKINNED

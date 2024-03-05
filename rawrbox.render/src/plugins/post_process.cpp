@@ -18,7 +18,7 @@ namespace rawrbox {
 		rawrbox::RENDERER->device()->CreateBuffer(BuffPixelDesc, nullptr, &this->_buffer);
 
 		// BARRIER -----
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_buffer}, {Diligent::RESOURCE_STATE_CONSTANT_BUFFER});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_buffer, Diligent::RESOURCE_STATE_CONSTANT_BUFFER}});
 		// ---------------
 	}
 
@@ -40,7 +40,7 @@ namespace rawrbox {
 
 	void PostProcessPlugin::postRender(rawrbox::TextureRender& renderTexture) {
 		for (auto& process : this->_postProcesses) {
-			renderTexture.startRecord(false);
+			renderTexture.startRecord(false, 1);
 			process->applyEffect(renderTexture);
 			renderTexture.stopRecord();
 		}

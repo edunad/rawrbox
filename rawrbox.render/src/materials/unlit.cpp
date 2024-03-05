@@ -21,7 +21,7 @@ namespace rawrbox {
 		this->setupPipelines(id);
 	}
 
-	void MaterialUnlit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper) {
+	void MaterialUnlit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, const Diligent::ShaderMacroHelper& helper) {
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
 		settings.pVS = "unlit.vsh";

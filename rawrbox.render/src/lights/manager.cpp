@@ -54,7 +54,7 @@ namespace rawrbox {
 		}
 
 		// BARRIER -----
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({uniforms, _buffer->GetBuffer()}, {Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_SHADER_RESOURCE});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER}, {_buffer->GetBuffer(), Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
 		// -----------
 
 		update();
@@ -76,9 +76,9 @@ namespace rawrbox {
 		_settings.lightSettings.y = static_cast<uint32_t>(count());
 
 		// BARRIER -----
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({uniforms}, {Diligent::RESOURCE_STATE_COPY_DEST});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{uniforms, Diligent::RESOURCE_STATE_COPY_DEST}});
 		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::LightConstants), &_settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({uniforms}, {Diligent::RESOURCE_STATE_CONSTANT_BUFFER});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER}});
 		// --------
 	}
 
@@ -127,9 +127,9 @@ namespace rawrbox {
 		auto* buffer = _buffer->GetBuffer();
 
 		// BARRIER -----
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({buffer}, {Diligent::RESOURCE_STATE_COPY_DEST});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_COPY_DEST}});
 		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size()), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({buffer}, {Diligent::RESOURCE_STATE_SHADER_RESOURCE});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
 		// -------------
 
 		rawrbox::__LIGHT_DIRTY__ = false;

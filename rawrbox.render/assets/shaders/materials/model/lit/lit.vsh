@@ -54,8 +54,9 @@ struct PSInput {
     float4 Tangent                : TANGENT;
 
     float2 UV                     : TEX_COORD;
-    float4 Color                  : COLOR;
+    float4 Color                  : COLOR0;
 
+    nointerpolation float4 GPUId  : COLOR1;
     nointerpolation uint TexIndex : TEX_ARRAY_INDEX;
 };
 
@@ -82,13 +83,15 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 
     PSIn.Pos      = transform.final;
     PSIn.WorldPos = mul(transform.pos, Camera.world);
-    PSIn.UV       = VSIn.UV.xy; //applyUVTransform(VSIn.UV.xy);
+    PSIn.UV       = VSIn.UV.xy;
 
     #ifdef INSTANCED
         PSIn.Color    = VSIn.ColorOverride * Constants.colorOverride;
-        PSIn.TexIndex = VSIn.Extra.x;
+        PSIn.GPUId    = VISn.Extra.xyz;
+        PSIn.TexIndex = VSIn.Extra.z;
     #else
         PSIn.Color    = Constants.colorOverride;
+        PSIn.GPUId    = Constants.gpuID;
         PSIn.TexIndex = VSIn.UV.z;
     #endif
 }

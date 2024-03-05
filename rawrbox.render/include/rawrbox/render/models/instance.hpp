@@ -22,19 +22,19 @@ namespace rawrbox {
 		[[nodiscard]] const rawrbox::Matrix4x4& getMatrix() const { return matrix; }
 		void setMatrix(const rawrbox::Matrix4x4& mtrx) { matrix = mtrx; }
 
-		[[nodiscard]] uint16_t getAtlasId() const { return static_cast<uint16_t>(extraData.x); }
-		void setAtlasId(uint16_t id) { extraData.x = static_cast<float>(id); }
+		[[nodiscard]] uint16_t getAtlasId() const { return static_cast<uint16_t>(extraData.w); }
+		void setAtlasId(uint16_t id) { extraData.w = static_cast<float>(id); }
 
 		[[nodiscard]] uint32_t getId() const {
-			return rawrbox::PackUtils::toABGR(extraData.y, extraData.z, extraData.w, 1.F);
+			return rawrbox::PackUtils::toABGR(extraData.x, extraData.y, extraData.z, 1.F);
 		}
 
 		void setId(uint32_t id) {
 			auto pack = rawrbox::PackUtils::fromABGR(0xFF000000 | id);
 
-			extraData.y = pack[0];
-			extraData.z = pack[1];
-			extraData.w = pack[2];
+			extraData.x = pack[0];
+			extraData.y = pack[1];
+			extraData.z = pack[2];
 		}
 	};
 } // namespace rawrbox

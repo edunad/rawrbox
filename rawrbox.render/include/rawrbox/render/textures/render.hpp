@@ -2,8 +2,10 @@
 
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/render/textures/base.hpp>
+#include <rawrbox/render/utils/barrier.hpp>
 
 namespace rawrbox {
+
 	class TextureRender : public rawrbox::TextureBase {
 	private:
 		// Custom render target views ---
@@ -16,6 +18,11 @@ namespace rawrbox {
 		Diligent::ITextureView* _depthHandle = nullptr;
 
 		Diligent::RefCntAutoPtr<Diligent::ITexture> _depthTex;
+
+		// BARRIERS ---
+		std::vector<rawrbox::Barrier<Diligent::ITexture>> _barrierRead = {};
+		std::vector<rawrbox::Barrier<Diligent::ITexture>> _barrierWrite = {};
+		// -------------
 
 		rawrbox::Vector2i _size = {};
 		bool _depth = true;
@@ -48,7 +55,7 @@ namespace rawrbox {
 		// ------------
 
 		// ------RENDER
-		virtual void startRecord(bool clear = true);
+		virtual void startRecord(bool clear = true, size_t renderTargets = 0);
 		virtual void stopRecord();
 
 		virtual size_t addTexture(Diligent::TEXTURE_FORMAT format, Diligent::BIND_FLAGS flags);

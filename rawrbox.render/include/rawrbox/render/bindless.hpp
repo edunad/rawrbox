@@ -1,6 +1,5 @@
 #pragma once
 
-#include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/base.hpp>
@@ -17,7 +16,11 @@ namespace rawrbox {
 		rawrbox::Vector4f data = {};
 		// ----------
 
-		bool operator==(const BindlessVertexBuffer& other) const { return this->colorOverride == other.colorOverride && this->data == other.data; }
+		// MODEL ID ---
+		rawrbox::Vector4f gpuID = {};
+		// ----------
+
+		bool operator==(const BindlessVertexBuffer& other) const { return this->colorOverride == other.colorOverride && this->data == other.data && this->gpuID == other.gpuID; }
 		bool operator!=(const BindlessVertexBuffer& other) const { return !operator==(other); }
 	};
 
@@ -57,12 +60,6 @@ namespace rawrbox {
 
 		static std::vector<rawrbox::TextureBase*> _updateTextures;
 
-		// BARRIER -------------
-		static std::unordered_map<Diligent::IDeviceObject*, Diligent::StateTransitionDesc> _barrierQueue;
-		static std::unordered_map<Diligent::IDeviceObject*, Diligent::RESOURCE_STATE> _barrierCache;
-		static std::vector<std::function<void()>> _barrierCallback;
-		// -------------------------
-
 		static std::unique_ptr<rawrbox::Logger> _logger;
 
 		// SIGNATURES ------
@@ -86,25 +83,6 @@ namespace rawrbox {
 		static void shutdown();
 
 		static void update();
-
-		// BARRIERS -------
-
-		template <typename T>
-			requires(std::derived_from<T, Diligent::IDeviceObject>)
-		static void barrier(const std::vector<T*>& resources, const std::vector<Diligent::RESOURCE_STATE>& states, const std::function<void()>& callback = nullptr) {
-			if (resources.size() != states.size()) throw _logger->error("Barrier resources and states do not match! {}-{}", resources.size(), states.size());
-
-			for (size_t i = 0; i < resources.size(); i++) {
-				_barrierQueue[resources[i]] = Diligent::StateTransitionDesc(resources[i], Diligent::RESOURCE_STATE_UNKNOWN, states[i], Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
-			}
-
-			if (callback != nullptr) _barrierCallback.push_back(callback);
-			if (std::this_thread::get_id() == rawrbox::RENDER_THREAD_ID) processBarriers();
-		}
-
-		static void processBarriers();
-		static void clearBarrierCache();
-		// ----------------
 
 		// TEXTURES -------
 		static void registerTexture(rawrbox::TextureBase& texture);

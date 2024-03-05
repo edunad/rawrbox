@@ -68,8 +68,8 @@ namespace rawrbox {
 				    self.setCulling(static_cast<Diligent::CULL_MODE>(cull));
 			    })
 
-			    .addFunction("getId", &MeshC::getId)
-			    .addFunction("setId", &MeshC::setId)
+			    .addFunction("getID", &MeshC::getID)
+			    .addFunction("setID", &MeshC::setID)
 
 			    .addFunction("getColor", &MeshC::getColor)
 			    .addFunction("setColor", &MeshC::setColor)
