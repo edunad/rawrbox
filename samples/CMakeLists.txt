@@ -41,5 +41,5 @@ if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
     add_subdirectory("014-scripting")
 endif()
 
-#add_subdirectory("015-gpu-picking")
+add_subdirectory("015-gpu-picking")
 

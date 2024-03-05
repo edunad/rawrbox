@@ -81,7 +81,7 @@ namespace rawrbox {
 		this->_recording = false;
 	}
 
-	size_t TextureRender::addTexture(Diligent::TEXTURE_FORMAT format, Diligent::BIND_FLAGS flags) {
+	size_t TextureRender::addTexture(Diligent::TEXTURE_FORMAT format, Diligent::BIND_FLAGS flags, Diligent::USAGE usage, Diligent::CPU_ACCESS_FLAGS cpu) {
 		bool isDepth = (flags & Diligent::BIND_DEPTH_STENCIL) != 0;
 
 		Diligent::TextureDesc desc;
@@ -90,6 +90,8 @@ namespace rawrbox {
 		desc.Width = this->_size.x;
 		desc.Height = this->_size.y;
 		desc.MipLevels = 1;
+		desc.Usage = usage;
+		desc.CPUAccessFlags = cpu;
 		desc.Format = format;
 		desc.ClearValue.Format = desc.Format;
 
@@ -142,9 +144,9 @@ namespace rawrbox {
 	void TextureRender::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
 		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) throw this->_logger->error("Invalid format");
 
-		this->addTexture(format, Diligent::BIND_SHADER_RESOURCE | Diligent::BIND_RENDER_TARGET);
-		this->addView(0, Diligent::TEXTURE_VIEW_RENDER_TARGET);
-		this->addView(0, Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+		auto view = this->addTexture(format, Diligent::BIND_SHADER_RESOURCE | Diligent::BIND_RENDER_TARGET);
+		this->addView(view, Diligent::TEXTURE_VIEW_RENDER_TARGET);
+		this->addView(view, Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 
 		// Depth ----
 		if (_depth) {

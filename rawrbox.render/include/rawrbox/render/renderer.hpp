@@ -90,9 +90,7 @@ namespace rawrbox {
 		// -------------
 
 		// GPU PICKING ----
-		// uint32_t _gpuReadFrame = 0;
-		// std::array<uint8_t, rawrbox::GPU_PICK_SAMPLE_SIZE> _gpuPixelData = {};
-		// std::vector<std::function<void(uint32_t)>> _gpuPickCallbacks = {};
+		Diligent::RefCntAutoPtr<Diligent::ITexture> _blitTexture;
 		// ----------------
 
 		// INTRO ------
@@ -109,12 +107,12 @@ namespace rawrbox {
 
 		virtual void clear();
 		virtual void frame();
-		//  virtual void finalRender();
-		//   virtual void gpuCheck();
 
 	public:
 		uint32_t MAX_TEXTURES = 8192;       // NOTE: IF THIS VALUE IS TOO HIGH, YOU MIGHT NEED TO INCREASE THE HEAP MEMORY
 		uint32_t MAX_VERTEX_TEXTURES = 128; // NOTE: IF THIS VALUE IS TOO HIGH, YOU MIGHT NEED TO INCREASE THE HEAP MEMORY
+
+		uint32_t GPU_PICK_SAMPLE_SIZE = 2;
 
 		std::function<void()> onIntroCompleted = nullptr;
 		std::function<std::pair<uint32_t, uint32_t>()> overrideHEAP = nullptr;
@@ -197,14 +195,11 @@ namespace rawrbox {
 		[[nodiscard]] virtual const Diligent::QueryDataDuration& getDurationStats(const std::string& query);
 #endif
 
-		//[[nodiscard]] virtual const bgfx::TextureHandle getMask() const;
-		//[[nodiscard]] virtual const bgfx::TextureHandle getGPUPick() const;
-
 		[[nodiscard]] virtual const rawrbox::Vector2i& getSize() const;
 		[[nodiscard]] virtual bool getVSync() const;
 		virtual void setVSync(bool vsync);
 
-		// virtual void gpuPick(const rawrbox::Vector2i& pos, std::function<void(uint32_t)> callback);
+		[[nodiscard]] virtual uint32_t gpuPick(const rawrbox::Vector2i& pos) const;
 		//  ------
 	};
 } // namespace rawrbox

@@ -1,36 +1,23 @@
-/*#pragma once
+#pragma once
 
 #include <rawrbox/engine/engine.hpp>
-#include <rawrbox/render_temp/model/instanced.hpp>
-#include <rawrbox/render_temp/model/model.hpp>
-#include <rawrbox/render_temp/model/text3D.hpp>
-#include <rawrbox/render_temp/text/engine.hpp>
-#include <rawrbox/render_temp/window.hpp>
+#include <rawrbox/render/models/model.hpp>
 
 #include <memory>
 
 namespace gpu {
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Window> _window = nullptr;
-		std::unique_ptr<rawrbox::Model> _model = std::make_unique<rawrbox::Model>();
-		std::unique_ptr<rawrbox::Model> _model2 = std::make_unique<rawrbox::Model>();
-		std::unique_ptr<rawrbox::InstancedModel> _instance = std::make_unique<rawrbox::InstancedModel>();
-		std::unique_ptr<rawrbox::Text3D> _text = std::make_unique<rawrbox::Text3D>();
-
-		rawrbox::Font* _font = nullptr;
-
-		rawrbox::VertexData* _lastPicked_vert = nullptr;
-		rawrbox::Mesh* _lastPicked_mesh = nullptr;
-		rawrbox::Instance* _lastPicked_instance = nullptr;
-
-		std::atomic<int> _loadingFiles = 0;
+		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
 		bool _ready = false;
+
+		rawrbox::Mesh<>* _lastPickedMesh = nullptr;
 
 		void setupGLFW() override;
 		void init() override;
 		void onThreadShutdown(rawrbox::ENGINE_THREADS thread) override;
 		void pollEvents() override;
 		void update() override;
+
 		void draw() override;
 
 	public:
@@ -41,13 +28,9 @@ namespace gpu {
 		Game& operator=(Game&&) = delete;
 		~Game() override = default;
 
-		void printFrames();
+		void drawWorld();
 
 		void loadContent();
 		void contentLoaded();
-
-		void drawWorld();
-		void drawOverlay();
 	};
 } // namespace gpu
-*/

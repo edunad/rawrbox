@@ -1,3 +1,150 @@
+
+#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/static.hpp>
+
+#include <gpu/game.hpp>
+
+#include <fmt/format.h>
+
+namespace gpu {
+	void Game::setupGLFW() {
+#if defined(_DEBUG) && defined(RAWRBOX_SUPPORT_DX12)
+		auto* window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
+#else
+		auto window = rawrbox::Window::createWindow();
+#endif
+		window->setMonitor(-1);
+		window->setTitle("WEBM TEST");
+#ifdef _DEBUG
+		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
+#else
+		window->init(-1, -1, rawrbox::WindowFlags::Window::BORDERLESS);
+#endif
+
+		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
+	}
+
+	void Game::init() {
+		auto* window = rawrbox::Window::getWindow();
+
+		// Setup renderer
+		auto* render = window->createRenderer();
+		render->skipIntros(true);
+		render->onIntroCompleted = [this]() { this->loadContent(); };
+		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
+			this->drawWorld();
+		});
+		// ---------------
+
+		// Setup camera
+		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
+		cam->setPos({0.F, 5.F, -5.F});
+		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
+		// --------------
+
+		render->init();
+
+		// BINDS ----
+		window->onMouseKey += [this](auto& w, const rawrbox::Vector2i& mousePos, int button, int action, int mods) {
+			const bool isDown = action == 1;
+			if (!this->_ready || !isDown || button != MOUSE_BUTTON_1) return;
+
+			uint32_t id = rawrbox::RENDERER->gpuPick(mousePos);
+			if (id == 0) return;
+
+			fmt::print("{}\n", id);
+
+			/*rawrbox::RENDERER->gpuPick(mousePos, [this](uint32_t id) {
+				bool updateModel = false;
+				bool updateInstance = false;
+
+				if (this->_lastPicked_vert != nullptr) {
+					this->_lastPicked_vert->abgr = rawrbox::Colors::White().pack();
+					this->_lastPicked_vert = nullptr;
+					updateModel = true;
+				}
+
+				if (this->_lastPicked_mesh != nullptr) {
+					this->_lastPicked_mesh->setColor(rawrbox::Colors::White());
+					this->_lastPicked_mesh = nullptr;
+				}
+
+				if (this->_lastPicked_instance != nullptr) {
+					this->_lastPicked_instance->setColor(rawrbox::Colors::White());
+					this->_lastPicked_instance = nullptr;
+					updateInstance = true;
+				}
+
+				if (id != 0) {
+
+				}
+
+				if (updateModel) this->_model->updateBuffers();
+			});*/
+		};
+		// -----
+	}
+
+	void Game::loadContent() {
+		this->contentLoaded(); // NO CONTENT
+	}
+
+	void Game::contentLoaded() {
+		if (this->_ready) return;
+
+		{
+			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generateCube({3.0F, 0, 0}, {0.5F, 0.5F, 0.5F});
+			mesh.setID(1);
+
+			this->_model->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generateCube({2.0F, 0, 0}, {0.5F, 0.5F, 0.5F});
+			mesh.setID(2);
+
+			this->_model->addMesh(mesh);
+		}
+		// ----
+
+		this->_model->upload();
+		this->_ready = true;
+	}
+
+	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
+			rawrbox::Window::shutdown();
+		} else {
+			this->_model.reset();
+			this->_lastPickedMesh = nullptr;
+		}
+	}
+
+	void Game::pollEvents() {
+		rawrbox::Window::pollEvents();
+	}
+
+	void Game::update() {
+		rawrbox::Window::update();
+	}
+
+	void Game::drawWorld() {
+		if (!this->_ready) return;
+		if (this->_model != nullptr) this->_model->draw();
+	}
+
+	void Game::draw() {
+		rawrbox::Window::render(); // Commit primitives
+	}
+} // namespace gpu
+
 /*
 #include <rawrbox/render_temp/camera/orbital.hpp>
 #include <rawrbox/render_temp/model/utils/mesh.hpp>

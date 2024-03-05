@@ -293,17 +293,31 @@ namespace rawrbox {
 		// -----------------------
 
 		// Setup stencil ----
-		this->_stencil = std::make_unique<rawrbox::Stencil>(this->getSize());
+		this->_stencil = std::make_unique<rawrbox::Stencil>(this->_size);
 		this->_stencil->upload();
 		// ------------------
 
 		// Setup renderer --
-		this->_render = std::make_unique<rawrbox::TextureRender>(this->getSize()); // TODO: RESCALE
+		this->_render = std::make_unique<rawrbox::TextureRender>(this->_size); // TODO: RESCALE
 		this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
 
-		auto idIndex = this->_render->addTexture(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB, Diligent::BIND_SHADER_RESOURCE | Diligent::BIND_RENDER_TARGET);
+		// GPU PICKING TEXTURE
+		auto idIndex = this->_render->addTexture(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB, Diligent::BIND_RENDER_TARGET);
 		this->_render->addView(idIndex, Diligent::TEXTURE_VIEW_RENDER_TARGET);
-		this->_render->addView(idIndex, Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+
+		Diligent::TextureDesc desc;
+		desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
+		desc.Width = this->_size.x; // TODO: RESCALE
+		desc.Height = this->_size.y;
+		desc.MipLevels = 1;
+		desc.Usage = Diligent::USAGE_STAGING;
+		desc.CPUAccessFlags = Diligent::CPU_ACCESS_READ;
+		desc.Format = Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB;
+		desc.Name = "RawrBox::GPU::Blit";
+
+		this->_device->CreateTexture(desc, nullptr, &this->_blitTexture);
+		// --------
+
 		// --------
 
 		this->playIntro();
@@ -497,45 +511,6 @@ namespace rawrbox {
 		rawrbox::FRAME = this->_context->GetFrameNumber();
 	}
 
-	/*void RendererBase::gpuCheck() {
-		if (this->_gpuReadFrame == rawrbox::FRAME) {
-			std::unordered_map<uint32_t, uint32_t> ids = {};
-			const bgfx::Caps* caps = bgfx::getCaps();
-
-			uint32_t max = 0;
-			uint32_t id = 0;
-
-			// ----------
-			for (uint8_t* x = this->_gpuPixelData.data(); x < this->_gpuPixelData.data() + rawrbox::GPU_PICK_SAMPLE_SIZE;) {
-				uint8_t rr = *x++;
-				uint8_t gg = *x++;
-				uint8_t bb = *x++;
-				uint8_t aa = *x++;
-
-				if (aa == 0) continue;
-				if (caps->rendererType == bgfx::RendererType::Direct3D9) {
-					std::swap(rr, bb);
-				}
-
-				uint32_t hashKey = rawrbox::PackUtils::toABGR(rr / 255.F, gg / 255.F, bb / 255.F, 1.F);
-				auto& v = ids[hashKey];
-				v++;
-
-				if (v > max) {
-					max = v;
-					id = hashKey;
-				}
-			}
-
-			// --------------
-			for (auto& p : this->_gpuPickCallbacks) {
-				p(id);
-			}
-
-			this->_gpuPickCallbacks.clear();
-		}
-	}*/
-
 	// INTRO ------
 	void RendererBase::playIntro() {
 		if (this->_skipIntros) {
@@ -725,30 +700,66 @@ namespace rawrbox {
 	}
 #endif
 
-	/*const bgfx::TextureHandle RendererBase::getMask() const {
-		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
-		return this->_render->getTexture(1);
-	}
-
-	const bgfx::TextureHandle RendererBase::getGPUPick() const {
-		if (this->_render == nullptr) return BGFX_INVALID_HANDLE;
-		return this->_render->getTexture(2);
-	}*/
-
 	const rawrbox::Vector2i& RendererBase::getSize() const { return this->_size; }
 
 	bool RendererBase::getVSync() const { return this->_vsync; }
 	void RendererBase::setVSync(bool vsync) { this->_vsync = vsync; }
 
-	/*void RendererBase::gpuPick(const rawrbox::Vector2i& pos, std::function<void(uint32_t)> callback) {
-		if (this->_render == nullptr || pos.x < 0 || pos.y < 0 || pos.x >= this->_size.x || pos.y >= this->_size.y) return;
+	[[nodiscard]] uint32_t RendererBase::gpuPick(const rawrbox::Vector2i& pos) const {
+		if (this->_render == nullptr) throw _logger->error("Render target texture not initialized");
+		if (pos.x < 0 || pos.y < 0 || pos.x >= this->_size.x || pos.y >= this->_size.y) return 0; // Range outside
 
-		auto tex = this->getGPUPick();
-		if (!bgfx::isValid(tex)) return;
+		auto* tex = this->_render->getTexture(1); // Get the GPUPicking texture
+		if (tex == nullptr) throw _logger->error("GPU texture on render target not found");
 
-		bgfx::blit(rawrbox::BLIT_VIEW, this->_GPUBlitTex, 0, 0, tex, static_cast<uint16_t>(pos.x), static_cast<uint16_t>(pos.y));
-		this->_gpuReadFrame = bgfx::readTexture(this->_GPUBlitTex, this->_gpuPixelData.data());
-		this->_gpuPickCallbacks.emplace_back(callback);
-	}*/
+		// Copy texture over to staging ---
+		Diligent::CopyTextureAttribs copy;
+		copy.pSrcTexture = tex;
+		copy.pDstTexture = this->_blitTexture;
+
+		rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{tex, Diligent::RESOURCE_STATE_COPY_SOURCE}});
+		this->_context->CopyTexture(copy);
+		//  --------------
+
+		// Blit the staging texture, get a small sample
+		Diligent::MappedTextureSubresource MappedSubres;
+		Diligent::Box MapRegion;
+		MapRegion.MinX = pos.x - GPU_PICK_SAMPLE_SIZE;
+		MapRegion.MinY = pos.y - GPU_PICK_SAMPLE_SIZE;
+		MapRegion.MaxX = MapRegion.MinX + GPU_PICK_SAMPLE_SIZE * 2;
+		MapRegion.MaxY = MapRegion.MinY + GPU_PICK_SAMPLE_SIZE * 2;
+
+		// ----------
+		this->_context->MapTextureSubresource(this->_blitTexture, 0, 0, Diligent::MAP_READ, Diligent::MAP_FLAG_DO_NOT_WAIT | Diligent::MAP_FLAG_DISCARD, &MapRegion, MappedSubres);
+
+		uint32_t max = 0;
+		uint32_t id = 0;
+		std::unordered_map<uint32_t, uint32_t> ids = {};
+
+		auto* pixelData = std::bit_cast<uint8_t*>(MappedSubres.pData);
+		for (size_t y = MapRegion.MinY; y < MapRegion.MaxY; y++) {
+			for (size_t x = MapRegion.MinX; x < MapRegion.MaxX; x++) {
+				size_t pixelIndex = x * 4 + y * MappedSubres.Stride;
+
+				uint8_t r = pixelData[pixelIndex];
+				uint8_t g = pixelData[pixelIndex + 1];
+				uint8_t b = pixelData[pixelIndex + 2];
+
+				if ((r | g | b) == 0) continue;
+
+				uint32_t hashKey = rawrbox::PackUtils::toRGBA(r / 255.F, g / 255.F, b / 255.F, 1.F);
+				auto& v = ids[hashKey];
+				v++;
+
+				if (v > max) {
+					max = v;
+					id = hashKey;
+				}
+			}
+		}
+
+		this->_context->UnmapTextureSubresource(this->_blitTexture, 0, 0);
+		return id;
+	}
 	// ------
 } // namespace rawrbox
