@@ -26,11 +26,11 @@ namespace rawrbox {
 		void setAtlasId(uint16_t id) { extraData.w = static_cast<float>(id); }
 
 		[[nodiscard]] uint32_t getId() const {
-			return rawrbox::PackUtils::toABGR(extraData.x, extraData.y, extraData.z, 1.F);
+			return rawrbox::PackUtils::toRGBA(extraData.x, extraData.y, extraData.z, 1.F);
 		}
 
 		void setId(uint32_t id) {
-			auto pack = rawrbox::PackUtils::fromABGR(0xFF000000 | id);
+			auto pack = rawrbox::PackUtils::fromRGBA((id << 8) | 0xFF);
 
 			extraData.x = pack[0];
 			extraData.y = pack[1];

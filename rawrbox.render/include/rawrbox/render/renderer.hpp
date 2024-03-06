@@ -34,6 +34,14 @@ namespace rawrbox {
 		RawrboxIntro(float _speed = 1.F, bool _cover = true, const rawrbox::Colorf& _color = rawrbox::Colors::Black()) : speed(_speed), cover(_cover), background(_color) {}
 	};
 
+	struct RawrboxGPUPick {
+	public:
+		rawrbox::Vector2i mousePos = {};
+		std::function<void(uint32_t)> callback = nullptr;
+
+		RawrboxGPUPick(const rawrbox::Vector2i& _mousePos, const std::function<void(uint32_t)>& _callback) : mousePos(_mousePos), callback(_callback) {}
+	};
+
 	class RendererBase {
 	protected:
 		// PLUGINS -----
@@ -90,8 +98,9 @@ namespace rawrbox {
 		// -------------
 
 		// GPU PICKING ----
-		Diligent::RefCntAutoPtr<Diligent::ITexture> _blitTexture;
-		uint64_t _LAST_GPU_PICK = 0;
+		Diligent::RefCntAutoPtr<Diligent::ITexture> _gpuTexture;
+		Diligent::IFence* _gpuCopyFence = nullptr;
+		std::vector<rawrbox::RawrboxGPUPick> _gpuCallback = {};
 		// ----------------
 
 		// INTRO ------
@@ -108,6 +117,8 @@ namespace rawrbox {
 
 		virtual void clear();
 		virtual void frame();
+
+		virtual void processGPUPicking();
 
 	public:
 		uint32_t MAX_TEXTURES = 8192;       // NOTE: IF THIS VALUE IS TOO HIGH, YOU MIGHT NEED TO INCREASE THE HEAP MEMORY
@@ -200,7 +211,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool getVSync() const;
 		virtual void setVSync(bool vsync);
 
-		[[nodiscard]] virtual uint32_t gpuPick(const rawrbox::Vector2i& pos);
+		virtual void gpuPick(const rawrbox::Vector2i& pos, const std::function<void(uint32_t)>& callback);
 		//  ------
 	};
 } // namespace rawrbox

@@ -75,7 +75,7 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 
     #ifdef INSTANCED
         PSIn.Color    = VSIn.ColorOverride * Constants.colorOverride;
-        PSIn.GPUId    = VISn.Extra.xyz;
+        PSIn.GPUId    = float4(VSIn.Extra.xyz, 1.);
         PSIn.TexIndex = VSIn.Extra.w;
     #else
         PSIn.Color    = Constants.colorOverride;

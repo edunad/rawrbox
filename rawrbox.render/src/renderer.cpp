@@ -316,7 +316,7 @@ namespace rawrbox {
 		desc.Format = Diligent::TEX_FORMAT_RGBA8_UNORM;
 		desc.Name = "RawrBox::GPU::Blit";
 
-		this->_device->CreateTexture(desc, nullptr, &this->_blitTexture);
+		this->_device->CreateTexture(desc, nullptr, &this->_gpuTexture);
 		// --------
 
 		// --------
@@ -387,6 +387,10 @@ namespace rawrbox {
 
 		// Clear backbuffer ----
 		this->clear();
+		// ---------------------
+
+		// Process gpu picking --
+		this->processGPUPicking();
 		// ---------------------
 
 		// Process barriers -----
@@ -510,6 +514,62 @@ namespace rawrbox {
 	void RendererBase::frame() {
 		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
 		rawrbox::FRAME = this->_context->GetFrameNumber();
+	}
+
+	void RendererBase::processGPUPicking() {
+		if (this->_gpuCallback.empty() || this->_gpuCopyFence == nullptr) return;
+		if (this->_gpuCopyFence->GetCompletedValue() < 1) return;
+
+		for (auto& callbacks : this->_gpuCallback) {
+			uint32_t max = 0;
+			uint32_t id = 0;
+			std::unordered_map<uint32_t, uint32_t> ids = {};
+
+			// Blit the staging texture, get a small sample (this does not work on dx11)
+			Diligent::MappedTextureSubresource MappedSubres;
+			Diligent::Box MapRegion;
+			MapRegion.MinX = callbacks.mousePos.x - GPU_PICK_SAMPLE_SIZE;
+			MapRegion.MinY = callbacks.mousePos.y - GPU_PICK_SAMPLE_SIZE;
+			MapRegion.MaxX = MapRegion.MinX + GPU_PICK_SAMPLE_SIZE * 2;
+			MapRegion.MaxY = MapRegion.MinY + GPU_PICK_SAMPLE_SIZE * 2;
+			// ----------
+
+			this->_context->MapTextureSubresource(this->_gpuTexture, 0, 0, Diligent::MAP_READ, Diligent::MAP_FLAG_DO_NOT_WAIT | Diligent::MAP_FLAG_DISCARD, &MapRegion, MappedSubres);
+
+			if (MappedSubres.pData != nullptr) { // If nullptr, then the texture is already in use by something else
+				auto* pixelData = std::bit_cast<uint8_t*>(MappedSubres.pData);
+
+				for (size_t y = MapRegion.MinY; y < MapRegion.MaxY; y++) {
+					for (size_t x = MapRegion.MinX; x < MapRegion.MaxX; x++) {
+						size_t pixelIndex = x * 4 + y * MappedSubres.Stride;
+
+						uint8_t r = pixelData[pixelIndex];
+						uint8_t g = pixelData[pixelIndex + 1];
+						uint8_t b = pixelData[pixelIndex + 2];
+
+						if ((r | g | b) == 0) continue;
+
+						uint32_t hashKey = rawrbox::PackUtils::toRGBA(r, g, b, 255);
+						auto& v = ids[hashKey];
+						v++;
+
+						// Get the average pixel
+						if (v > max) {
+							max = v;
+							id = hashKey;
+						}
+					}
+				}
+			}
+
+			this->_context->UnmapTextureSubresource(this->_gpuTexture, 0, 0);
+			if (callbacks.callback != nullptr) callbacks.callback(id);
+		}
+
+		this->_gpuCallback.clear();
+
+		this->_gpuCopyFence->Release();
+		this->_gpuCopyFence = nullptr;
 	}
 
 	// INTRO ------
@@ -706,70 +766,34 @@ namespace rawrbox {
 	bool RendererBase::getVSync() const { return this->_vsync; }
 	void RendererBase::setVSync(bool vsync) { this->_vsync = vsync; }
 
-	[[nodiscard]] uint32_t RendererBase::gpuPick(const rawrbox::Vector2i& pos) {
+	void RendererBase::gpuPick(const rawrbox::Vector2i& pos, const std::function<void(uint32_t)>& callback) {
 		if (this->_render == nullptr) throw _logger->error("Render target texture not initialized");
-		if (pos.x < 0 || pos.y < 0 || pos.x >= this->_size.x || pos.y >= this->_size.y) return 0; // Range outside
+		if (pos.x < 0 || pos.y < 0 || pos.x >= this->_size.x || pos.y >= this->_size.y) throw _logger->error("Outside of window range");
 
-		uint32_t max = 0;
-		uint32_t id = 0;
-		std::unordered_map<uint32_t, uint32_t> ids = {};
+		auto* tex = this->_render->getTexture(1); // Get the GPUPicking texture
+		if (tex == nullptr) throw _logger->error("GPU texture on render target not found");
 
-		// Only perform a texture copy if the frame changed
-		if (this->_LAST_GPU_PICK != rawrbox::FRAME) {
-			this->_LAST_GPU_PICK = rawrbox::FRAME;
+		if (this->_gpuCopyFence == nullptr) {
+			// Create fence ----
+			Diligent::FenceDesc desc;
+			desc.Type = Diligent::FENCE_TYPE_GENERAL;
+			desc.Name = "Rawrbox::Fence::GPUPicking";
 
-			auto* tex = this->_render->getTexture(1); // Get the GPUPicking texture
-			if (tex == nullptr) throw _logger->error("GPU texture on render target not found");
+			this->_device->CreateFence(desc, &this->_gpuCopyFence);
+			// -----------------
 
 			// Copy texture over to staging ---
 			Diligent::CopyTextureAttribs copy;
 			copy.pSrcTexture = tex;
-			copy.pDstTexture = this->_blitTexture;
+			copy.pDstTexture = this->_gpuTexture;
 
 			rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{tex, Diligent::RESOURCE_STATE_COPY_SOURCE}});
-			this->_context->CopyTexture(copy);
-			//  --------------
+			this->_context->CopyTexture(copy); // This is an async operation, enqueue the fence
+							   //  --------------
+			this->_context->EnqueueSignal(this->_gpuCopyFence, 1);
 		}
 
-		// Blit the staging texture, get a small sample (this does not work on dx11)
-		Diligent::MappedTextureSubresource MappedSubres;
-		Diligent::Box MapRegion;
-		MapRegion.MinX = pos.x - GPU_PICK_SAMPLE_SIZE;
-		MapRegion.MinY = pos.y - GPU_PICK_SAMPLE_SIZE;
-		MapRegion.MaxX = MapRegion.MinX + GPU_PICK_SAMPLE_SIZE * 2;
-		MapRegion.MaxY = MapRegion.MinY + GPU_PICK_SAMPLE_SIZE * 2;
-		// ----------
-
-		this->_context->MapTextureSubresource(this->_blitTexture, 0, 0, Diligent::MAP_READ, Diligent::MAP_FLAG_DO_NOT_WAIT | Diligent::MAP_FLAG_DISCARD, &MapRegion, MappedSubres);
-
-		if (MappedSubres.pData != nullptr) { // If nullptr, then the texture is already in use by something else
-			auto* pixelData = std::bit_cast<uint8_t*>(MappedSubres.pData);
-
-			for (size_t y = MapRegion.MinY; y < MapRegion.MaxY; y++) {
-				for (size_t x = MapRegion.MinX; x < MapRegion.MaxX; x++) {
-					size_t pixelIndex = x * 4 + y * MappedSubres.Stride;
-
-					uint8_t r = pixelData[pixelIndex];
-					uint8_t g = pixelData[pixelIndex + 1];
-					uint8_t b = pixelData[pixelIndex + 2];
-
-					if ((r | g | b) == 0) continue;
-
-					uint32_t hashKey = rawrbox::PackUtils::toRGBA(r, g, b, 255);
-					auto& v = ids[hashKey];
-					v++;
-
-					// Get the average pixel
-					if (v > max) {
-						max = v;
-						id = hashKey;
-					}
-				}
-			}
-		}
-
-		this->_context->UnmapTextureSubresource(this->_blitTexture, 0, 0);
-		return id;
+		this->_gpuCallback.emplace_back(pos, callback);
 	}
 	// ------
 } // namespace rawrbox

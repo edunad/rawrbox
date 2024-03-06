@@ -457,14 +457,10 @@ namespace rawrbox {
 				// -------------------
 
 				// Update uniforms -----
-				/*
-				// TODO: USE THIS WHEN WE FULLY PASS THE TEXTURE AS MESH PARAMS INSTEAD OF SEPERATE
-
-				bool buffersUpdated = false;
-				if (this->_material->bindVertexUniforms(*mesh)) buffersUpdated = true;
-				if (this->_material->bindVertexSkinnedUniforms(*mesh)) buffersUpdated = true;
-				if (this->_material->bindPixelUniforms(*mesh)) buffersUpdated = true;
-				*/
+				// bool buffersUpdated = false;
+				// buffersUpdated = this->_material->bindVertexUniforms(*mesh);
+				// buffersUpdated = this->_material->bindVertexSkinnedUniforms(*mesh);
+				// buffersUpdated = this->_material->bindPixelUniforms(*mesh);
 
 				this->_material->bindVertexUniforms(*mesh);
 				this->_material->bindVertexSkinnedUniforms(*mesh);
@@ -480,7 +476,7 @@ namespace rawrbox {
 				DrawAttrs.BaseVertex = mesh->baseVertex;
 				DrawAttrs.NumIndices = mesh->totalIndex;
 				DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
-				// if (!buffersUpdated) DrawAttrs.Flags |= Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT; // TODO
+				// if (!buffersUpdated) DrawAttrs.Flags |= Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
 
 				rawrbox::RENDERER->context()->DrawIndexed(DrawAttrs);
 				// -----------
