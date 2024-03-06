@@ -14,8 +14,8 @@ namespace gpu {
 #else
 		auto window = rawrbox::Window::createWindow();
 #endif
-		window->setMonitor(-1);
-		window->setTitle("WEBM TEST");
+		window->setMonitor(1);
+		window->setTitle("GPU PICKING TEST");
 #ifdef _DEBUG
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
 #else
@@ -47,42 +47,28 @@ namespace gpu {
 		render->init();
 
 		// BINDS ----
-		window->onMouseKey += [this](auto& w, const rawrbox::Vector2i& mousePos, int button, int action, int mods) {
+		window->onMouseKey += [this](auto& /*w*/, const rawrbox::Vector2i& mousePos, int button, int action, int /*mods*/) {
 			const bool isDown = action == 1;
 			if (!this->_ready || !isDown || button != MOUSE_BUTTON_1) return;
 
 			uint32_t id = rawrbox::RENDERER->gpuPick(mousePos);
-			if (id == 0) return;
 
-			fmt::print("{}\n", id);
+			if (this->_lastPickedMesh != nullptr) {
+				this->_lastPickedMesh->setColor(rawrbox::Colors::White());
+				this->_lastPickedMesh = nullptr;
+			}
 
-			/*rawrbox::RENDERER->gpuPick(mousePos, [this](uint32_t id) {
-				bool updateModel = false;
-				bool updateInstance = false;
-
-				if (this->_lastPicked_vert != nullptr) {
-					this->_lastPicked_vert->abgr = rawrbox::Colors::White().pack();
-					this->_lastPicked_vert = nullptr;
-					updateModel = true;
+			if (id != 0) {
+				if (this->_lastPickedMesh == nullptr) {
+					for (auto& mesh : this->_model->meshes()) {
+						if (mesh->getID() == id) {
+							mesh->setColor(rawrbox::Colors::Red());
+							this->_lastPickedMesh = mesh.get();
+							break;
+						}
+					}
 				}
-
-				if (this->_lastPicked_mesh != nullptr) {
-					this->_lastPicked_mesh->setColor(rawrbox::Colors::White());
-					this->_lastPicked_mesh = nullptr;
-				}
-
-				if (this->_lastPicked_instance != nullptr) {
-					this->_lastPicked_instance->setColor(rawrbox::Colors::White());
-					this->_lastPicked_instance = nullptr;
-					updateInstance = true;
-				}
-
-				if (id != 0) {
-
-				}
-
-				if (updateModel) this->_model->updateBuffers();
-			});*/
+			}
 		};
 		// -----
 	}

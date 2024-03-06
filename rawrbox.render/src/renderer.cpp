@@ -36,7 +36,7 @@
 #include <utility>
 
 namespace rawrbox {
-	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor.toLinear()), _size(size), _monitorSize(monitorSize), _window(window), _type(type) {}
+	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor), _size(size), _monitorSize(monitorSize), _window(window), _type(type) {}
 	RendererBase::~RendererBase() {
 		this->_render.reset();
 		this->_stencil.reset();
@@ -52,6 +52,7 @@ namespace rawrbox {
 
 	void RendererBase::init(Diligent::DeviceFeatures features) {
 		Diligent::SwapChainDesc SCDesc;
+		SCDesc.ColorBufferFormat = Diligent::TEX_FORMAT_RGBA8_UNORM;
 
 		// Enable required features --------------------------
 		features.WireframeFill = Diligent::DEVICE_FEATURE_STATE_ENABLED;
@@ -299,10 +300,10 @@ namespace rawrbox {
 
 		// Setup renderer --
 		this->_render = std::make_unique<rawrbox::TextureRender>(this->_size); // TODO: RESCALE
-		this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB);
+		this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM);
 
 		// GPU PICKING TEXTURE
-		auto idIndex = this->_render->addTexture(Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB, Diligent::BIND_RENDER_TARGET);
+		auto idIndex = this->_render->addTexture(Diligent::TEX_FORMAT_RGBA8_UNORM, Diligent::BIND_RENDER_TARGET);
 		this->_render->addView(idIndex, Diligent::TEXTURE_VIEW_RENDER_TARGET);
 
 		Diligent::TextureDesc desc;
@@ -312,7 +313,7 @@ namespace rawrbox {
 		desc.MipLevels = 1;
 		desc.Usage = Diligent::USAGE_STAGING;
 		desc.CPUAccessFlags = Diligent::CPU_ACCESS_READ;
-		desc.Format = Diligent::TEX_FORMAT_RGBA8_UNORM_SRGB;
+		desc.Format = Diligent::TEX_FORMAT_RGBA8_UNORM;
 		desc.Name = "RawrBox::GPU::Blit";
 
 		this->_device->CreateTexture(desc, nullptr, &this->_blitTexture);
@@ -705,55 +706,64 @@ namespace rawrbox {
 	bool RendererBase::getVSync() const { return this->_vsync; }
 	void RendererBase::setVSync(bool vsync) { this->_vsync = vsync; }
 
-	[[nodiscard]] uint32_t RendererBase::gpuPick(const rawrbox::Vector2i& pos) const {
+	[[nodiscard]] uint32_t RendererBase::gpuPick(const rawrbox::Vector2i& pos) {
 		if (this->_render == nullptr) throw _logger->error("Render target texture not initialized");
 		if (pos.x < 0 || pos.y < 0 || pos.x >= this->_size.x || pos.y >= this->_size.y) return 0; // Range outside
 
-		auto* tex = this->_render->getTexture(1); // Get the GPUPicking texture
-		if (tex == nullptr) throw _logger->error("GPU texture on render target not found");
+		uint32_t max = 0;
+		uint32_t id = 0;
+		std::unordered_map<uint32_t, uint32_t> ids = {};
 
-		// Copy texture over to staging ---
-		Diligent::CopyTextureAttribs copy;
-		copy.pSrcTexture = tex;
-		copy.pDstTexture = this->_blitTexture;
+		// Only perform a texture copy if the frame changed
+		if (this->_LAST_GPU_PICK != rawrbox::FRAME) {
+			this->_LAST_GPU_PICK = rawrbox::FRAME;
 
-		rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{tex, Diligent::RESOURCE_STATE_COPY_SOURCE}});
-		this->_context->CopyTexture(copy);
-		//  --------------
+			auto* tex = this->_render->getTexture(1); // Get the GPUPicking texture
+			if (tex == nullptr) throw _logger->error("GPU texture on render target not found");
 
-		// Blit the staging texture, get a small sample
+			// Copy texture over to staging ---
+			Diligent::CopyTextureAttribs copy;
+			copy.pSrcTexture = tex;
+			copy.pDstTexture = this->_blitTexture;
+
+			rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{tex, Diligent::RESOURCE_STATE_COPY_SOURCE}});
+			this->_context->CopyTexture(copy);
+			//  --------------
+		}
+
+		// Blit the staging texture, get a small sample (this does not work on dx11)
 		Diligent::MappedTextureSubresource MappedSubres;
 		Diligent::Box MapRegion;
 		MapRegion.MinX = pos.x - GPU_PICK_SAMPLE_SIZE;
 		MapRegion.MinY = pos.y - GPU_PICK_SAMPLE_SIZE;
 		MapRegion.MaxX = MapRegion.MinX + GPU_PICK_SAMPLE_SIZE * 2;
 		MapRegion.MaxY = MapRegion.MinY + GPU_PICK_SAMPLE_SIZE * 2;
-
 		// ----------
+
 		this->_context->MapTextureSubresource(this->_blitTexture, 0, 0, Diligent::MAP_READ, Diligent::MAP_FLAG_DO_NOT_WAIT | Diligent::MAP_FLAG_DISCARD, &MapRegion, MappedSubres);
 
-		uint32_t max = 0;
-		uint32_t id = 0;
-		std::unordered_map<uint32_t, uint32_t> ids = {};
+		if (MappedSubres.pData != nullptr) { // If nullptr, then the texture is already in use by something else
+			auto* pixelData = std::bit_cast<uint8_t*>(MappedSubres.pData);
 
-		auto* pixelData = std::bit_cast<uint8_t*>(MappedSubres.pData);
-		for (size_t y = MapRegion.MinY; y < MapRegion.MaxY; y++) {
-			for (size_t x = MapRegion.MinX; x < MapRegion.MaxX; x++) {
-				size_t pixelIndex = x * 4 + y * MappedSubres.Stride;
+			for (size_t y = MapRegion.MinY; y < MapRegion.MaxY; y++) {
+				for (size_t x = MapRegion.MinX; x < MapRegion.MaxX; x++) {
+					size_t pixelIndex = x * 4 + y * MappedSubres.Stride;
 
-				uint8_t r = pixelData[pixelIndex];
-				uint8_t g = pixelData[pixelIndex + 1];
-				uint8_t b = pixelData[pixelIndex + 2];
+					uint8_t r = pixelData[pixelIndex];
+					uint8_t g = pixelData[pixelIndex + 1];
+					uint8_t b = pixelData[pixelIndex + 2];
 
-				if ((r | g | b) == 0) continue;
+					if ((r | g | b) == 0) continue;
 
-				uint32_t hashKey = rawrbox::PackUtils::toRGBA(r / 255.F, g / 255.F, b / 255.F, 1.F);
-				auto& v = ids[hashKey];
-				v++;
+					uint32_t hashKey = rawrbox::PackUtils::toRGBA(r, g, b, 255);
+					auto& v = ids[hashKey];
+					v++;
 
-				if (v > max) {
-					max = v;
-					id = hashKey;
+					// Get the average pixel
+					if (v > max) {
+						max = v;
+						id = hashKey;
+					}
 				}
 			}
 		}

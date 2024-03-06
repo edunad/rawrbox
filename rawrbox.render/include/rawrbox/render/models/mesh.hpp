@@ -105,7 +105,7 @@ namespace rawrbox {
 
 		// OTHER ---
 		rawrbox::MeshData data = {};
-		uint32_t meshId = 0x00000000;
+		uint32_t meshID = 0x00000000;
 		// ---------
 
 		// RENDERING ---
@@ -263,8 +263,10 @@ namespace rawrbox {
 			this->culling = _culling;
 		}
 
-		[[nodiscard]] virtual uint32_t getID() const { return this->meshId; }
-		virtual void setID(uint32_t id) { this->meshId = (id << 8) | 0xFF; }
+		[[nodiscard]] virtual uint32_t getID() const { return this->meshID; }
+		virtual void setID(uint32_t id) {
+			this->meshID = (id << 8) | 0xFF;
+		}
 
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->color; }
 		virtual void setColor(const rawrbox::Color& _color) {
@@ -310,7 +312,7 @@ namespace rawrbox {
 
 			return this->textures == other.textures && // TODO: Replace with canMerge and pass textureID down to vertex?
 			       this->color == other.color &&
-			       this->meshId == other.meshId &&
+			       this->meshID == other.meshID &&
 			       this->data == other.data &&
 			       this->wireframe == other.wireframe &&
 			       this->lineMode == other.lineMode &&

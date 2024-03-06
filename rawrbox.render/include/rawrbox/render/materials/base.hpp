@@ -46,17 +46,9 @@ namespace rawrbox {
 		template <typename T = rawrbox::VertexData>
 			requires(std::derived_from<T, rawrbox::VertexData>)
 		rawrbox::BindlessVertexBuffer bindBaseUniforms(const rawrbox::Mesh<T>& mesh) {
-			/*rawrbox::Vector4f data = {mesh.billboard ? 1.F : 0.F, mesh.vertexSnapPower, 0, 0};
-
-			auto dTexture = mesh.textures.displacement;
-			if (dTexture != nullptr) {
-				data.z = static_cast<float>(dTexture->getTextureID());
-				data.w = mesh.textures.displacementPower;
-			}*/
-
 			std::array<float, 4> gpuID = {0, 0, 0, 0};
-			if (mesh.meshId != 0x00000000) {
-				gpuID = rawrbox::PackUtils::fromRGBA(mesh.meshId);
+			if (mesh.getID() != 0x00000000) {
+				gpuID = rawrbox::PackUtils::fromRGBA(mesh.getID());
 			}
 
 			return {

@@ -29,5 +29,5 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 		discard;
 	}
 
-    PSOut.Color = toLinear(color);
+    PSOut.Color = color;
 }

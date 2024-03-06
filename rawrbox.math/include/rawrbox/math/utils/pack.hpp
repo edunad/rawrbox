@@ -23,7 +23,10 @@ namespace rawrbox {
 		static float fromHalf(short value);
 
 		static uint32_t toABGR(float _rr, float _gg, float _bb, float _aa);
+		static uint32_t toABGR(uint8_t _rr, uint8_t _gg, uint8_t _bb, uint8_t _aa);
+
 		static uint32_t toRGBA(float _rr, float _gg, float _bb, float _aa);
+		static uint32_t toRGBA(uint8_t _rr, uint8_t _gg, uint8_t _bb, uint8_t _aa);
 
 		static std::array<float, 4> fromABGR(uint32_t val);
 		static std::array<float, 4> fromRGBA(uint32_t val);

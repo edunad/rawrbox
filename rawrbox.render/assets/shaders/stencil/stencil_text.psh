@@ -27,5 +27,5 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     float a = g_Textures[NonUniformResourceIndex(PSIn.TextureID)].Sample(g_Sampler, float3(PSIn.UV.xy, PSIn.UV.z)).r * PSIn.Color.a;
 	if(a <= 0.0) discard;
 
-	PSOut.Color = toLinear(float4(PSIn.Color.rgb, a));
+	PSOut.Color = float4(PSIn.Color.rgb, a);
 }

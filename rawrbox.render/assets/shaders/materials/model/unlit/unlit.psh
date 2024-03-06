@@ -1,5 +1,6 @@
 
 #include "pixel_bindless_uniforms.fxh"
+#include "correction.fxh"
 
 #ifdef CLUSTER_PLUGIN
     #include "camera.fxh"
@@ -37,7 +38,7 @@ struct PSOutput {
 void main(in PSInput PSIn, out PSOutput PSOut) {
     float4 color = g_Textures[Constants.textureIDs.x].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
     if (color.a <= 0.0) discard;
-    
+
     #ifdef CLUSTER_PLUGIN
         // Apply compute data ----
         uint3 clusterIndex3D = uint3(floor(PSIn.Pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(PSIn.Pos.w));

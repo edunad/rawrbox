@@ -91,6 +91,7 @@ namespace rawrbox {
 
 		// GPU PICKING ----
 		Diligent::RefCntAutoPtr<Diligent::ITexture> _blitTexture;
+		uint64_t _LAST_GPU_PICK = 0;
 		// ----------------
 
 		// INTRO ------
@@ -199,7 +200,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool getVSync() const;
 		virtual void setVSync(bool vsync);
 
-		[[nodiscard]] virtual uint32_t gpuPick(const rawrbox::Vector2i& pos) const;
+		[[nodiscard]] virtual uint32_t gpuPick(const rawrbox::Vector2i& pos);
 		//  ------
 	};
 } // namespace rawrbox
