@@ -1,6 +1,5 @@
 
 #include "pixel_bindless_uniforms.fxh"
-#include "correction.fxh"
 
 #ifdef CLUSTER_PLUGIN
     #include "camera.fxh"
