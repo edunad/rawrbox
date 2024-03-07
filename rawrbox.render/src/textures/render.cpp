@@ -6,41 +6,65 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-	TextureRender::TextureRender(const rawrbox::Vector2i& size, bool depth) : _size(size), _depth(depth) { this->_name = "RawrBox::RenderTarget"; }
+	TextureRender::TextureRender(const rawrbox::Vector2i& size, bool depth) : _depth(depth) {
+		this->_size = size;
+		this->_name = "RawrBox::RenderTarget";
+	}
+
 	TextureRender::~TextureRender() {
-		RAWRBOX_DESTROY(this->_depthHandle);
-		RAWRBOX_DESTROY(this->_depthTex);
+		this->_views.clear();
+		this->_viewsRT.clear();
+		this->_textures.clear();
+
+		this->_barrierWrite.clear();
+		this->_barrierRead.clear();
 	}
 
 	// ------ UTILS
 	Diligent::ITextureView* TextureRender::getDepth() const { return this->_depthHandle; }
 	Diligent::ITextureView* TextureRender::getRTDepth() const { return this->_depthRTHandle; }
-	Diligent::ITextureView* TextureRender::getRT() const { return this->_rtHandle; }
+	Diligent::ITextureView* TextureRender::getRT() const { return this->getViewRT(0); }
+
+	Diligent::ITextureView* TextureRender::getView(size_t index) const {
+		if (index > this->_views.size()) return nullptr;
+		return this->_views[index];
+	}
+
+	Diligent::ITextureView* TextureRender::getViewRT(size_t index) const {
+		if (index > this->_viewsRT.size()) return nullptr;
+		return this->_viewsRT[index];
+	}
 
 	Diligent::ITexture* TextureRender::getDepthHandle() const { return this->_depthTex; }
+	Diligent::ITexture* TextureRender::getTexture() const { return this->getTexture(0); }
+
+	Diligent::ITextureView* TextureRender::getHandle() const { return this->getView(0); }
+	Diligent::ITexture* TextureRender::getTexture(size_t index) const {
+		if (index > this->_views.size()) return nullptr;
+		return this->_textures[index];
+	}
 	// ------------
 
 	// ------ RENDER
-	void TextureRender::startRecord(bool clear) {
+	void TextureRender::startRecord(bool clear, size_t renderTargets) {
 		if (this->_recording) throw this->_logger->error("Already recording");
+		auto* context = rawrbox::RENDERER->context();
 
 		// BARRIER ----
-		if (this->_depth) {
-			rawrbox::BindlessManager::barrier<Diligent::ITexture>({this->_tex, this->_depthTex}, {Diligent::RESOURCE_STATE_RENDER_TARGET, Diligent::RESOURCE_STATE_DEPTH_WRITE});
-		} else {
-			rawrbox::BindlessManager::barrier<Diligent::ITexture>({this->_tex}, {Diligent::RESOURCE_STATE_RENDER_TARGET});
-		}
-		//   --------
+		rawrbox::BarrierUtils::barrier<Diligent::ITexture>(this->_barrierWrite);
+		//  --------
 
-		auto* context = rawrbox::RENDERER->context();
-		context->SetRenderTargets(1, &this->_rtHandle, this->_depthRTHandle, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		size_t totalTargets = renderTargets == 0 ? this->_viewsRT.size() : renderTargets;
+		context->SetRenderTargets(static_cast<uint32_t>(totalTargets), this->_viewsRT.data(), this->getRTDepth(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 		if (clear) {
 			const std::array<float, 4> ClearColor = {0.0F, 0.0F, 0.0F, 0.0F};
-			context->ClearRenderTarget(this->_rtHandle, ClearColor.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			for (size_t i = 0; i < totalTargets; i++) {
+				context->ClearRenderTarget(this->_viewsRT[i], ClearColor.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			}
 
 			if (this->_depthRTHandle != nullptr) {
-				context->ClearDepthStencil(this->_depthRTHandle, Diligent::CLEAR_DEPTH_FLAG, 1.0F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+				context->ClearDepthStencil(this->getRTDepth(), Diligent::CLEAR_DEPTH_FLAG, 1.0F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			}
 		}
 
@@ -52,67 +76,91 @@ namespace rawrbox {
 		auto* pRTV = rawrbox::RENDERER->swapChain()->GetCurrentBackBufferRTV();
 		auto* depth = rawrbox::RENDERER->swapChain()->GetDepthBufferDSV();
 
-		rawrbox::RENDERER->context()->SetRenderTargets(1, &pRTV, depth, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::RENDERER->context()->SetRenderTargets(1, &pRTV, depth, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY); // Restore
 
 		// BARRIER ----
-		if (this->_depth) {
-			rawrbox::BindlessManager::barrier<Diligent::ITexture>({this->_tex, this->_depthTex}, {Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_DEPTH_READ});
-		} else {
-			rawrbox::BindlessManager::barrier<Diligent::ITexture>({this->_tex}, {Diligent::RESOURCE_STATE_SHADER_RESOURCE});
-		}
-		// --------
+		rawrbox::BarrierUtils::barrier<Diligent::ITexture>(this->_barrierRead);
+		//  --------
 
 		this->_recording = false;
 	}
 
-	void TextureRender::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
-		if (this->_rtHandle != nullptr || this->_depthHandle != nullptr) return; // Failed texture is already bound, so skip it
-		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) throw this->_logger->error("Invalid format");
+	size_t TextureRender::addTexture(Diligent::TEXTURE_FORMAT format, Diligent::BIND_FLAGS flags, Diligent::USAGE usage, Diligent::CPU_ACCESS_FLAGS cpu) {
+		bool isDepth = (flags & Diligent::BIND_DEPTH_STENCIL) != 0;
 
-		// Render target -----
 		Diligent::TextureDesc desc;
 		desc.Type = Diligent::RESOURCE_DIM_TEX_2D_ARRAY;
-		desc.BindFlags = Diligent::BIND_SHADER_RESOURCE | Diligent::BIND_RENDER_TARGET;
+		desc.BindFlags = flags;
 		desc.Width = this->_size.x;
 		desc.Height = this->_size.y;
 		desc.MipLevels = 1;
+		desc.Usage = usage;
+		desc.CPUAccessFlags = cpu;
 		desc.Format = format;
-		desc.Name = this->_name.c_str();
 		desc.ClearValue.Format = desc.Format;
-		desc.ClearValue.Color[0] = 0.F;
-		desc.ClearValue.Color[1] = 0.F;
-		desc.ClearValue.Color[2] = 0.F;
-		desc.ClearValue.Color[3] = 0.F;
 
-		rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_tex);
-		// --------------
+		if (isDepth) {
+			std::string depthName = fmt::format("{}::DEPTH", this->_name);
+
+			desc.ClearValue.Format = desc.Format;
+			desc.ClearValue.DepthStencil.Depth = 1;
+			desc.ClearValue.DepthStencil.Stencil = 0;
+			desc.Name = depthName.c_str();
+		} else {
+			desc.ClearValue.Color[0] = 0.F;
+			desc.ClearValue.Color[1] = 0.F;
+			desc.ClearValue.Color[2] = 0.F;
+			desc.ClearValue.Color[3] = 0.F;
+			desc.Name = this->_name.c_str();
+		}
+
+		if (isDepth) {
+			rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_depthTex);
+			rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{this->_depthTex, Diligent::RESOURCE_STATE_DEPTH_READ}});
+
+			this->_barrierRead.emplace_back(this->_depthTex, Diligent::RESOURCE_STATE_DEPTH_READ);
+			this->_barrierWrite.emplace_back(this->_depthTex, Diligent::RESOURCE_STATE_DEPTH_WRITE);
+		} else {
+			Diligent::RefCntAutoPtr<Diligent::ITexture> texture;
+			rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &texture);
+
+			rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{texture, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
+
+			this->_barrierRead.emplace_back(texture, Diligent::RESOURCE_STATE_SHADER_RESOURCE);
+			this->_barrierWrite.emplace_back(texture, Diligent::RESOURCE_STATE_RENDER_TARGET);
+			this->_textures.push_back(std::move(texture));
+		}
+
+		return this->_textures.size() - 1;
+	}
+
+	void TextureRender::addView(size_t index, Diligent::TEXTURE_VIEW_TYPE format) {
+		auto* tex = this->getTexture(index);
+		if (tex == nullptr) throw _logger->error("Invalid texture index '{}'! Did you call 'addTexture`?", index);
+
+		if (format == Diligent::TEXTURE_VIEW_RENDER_TARGET) {
+			this->_viewsRT.push_back(tex->GetDefaultView(format));
+		} else {
+			this->_views.push_back(tex->GetDefaultView(format));
+		}
+	}
+
+	void TextureRender::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
+		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) throw this->_logger->error("Invalid format");
+
+		auto view = this->addTexture(format, Diligent::BIND_SHADER_RESOURCE | Diligent::BIND_RENDER_TARGET);
+		this->addView(view, Diligent::TEXTURE_VIEW_RENDER_TARGET);
+		this->addView(view, Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 
 		// Depth ----
 		if (_depth) {
 			const auto& swapDesc = rawrbox::RENDERER->swapChain()->GetDesc();
 
-			std::string depthName = fmt::format("{}::DEPTH", this->_name);
-			desc.Name = depthName.c_str();
-			desc.Format = swapDesc.DepthBufferFormat;
-			desc.BindFlags = Diligent::BIND_SHADER_RESOURCE | Diligent::BIND_DEPTH_STENCIL;
-			desc.ClearValue.Format = desc.Format;
-			desc.ClearValue.DepthStencil.Depth = 1;
-			desc.ClearValue.DepthStencil.Stencil = 0;
-
-			rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_depthTex);
-			rawrbox::BindlessManager::barrier<Diligent::ITexture>({this->_tex, this->_depthTex}, {Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_DEPTH_READ});
-
+			this->addTexture(swapDesc.DepthBufferFormat, Diligent::BIND_SHADER_RESOURCE | Diligent::BIND_DEPTH_STENCIL);
 			this->_depthHandle = this->_depthTex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 			this->_depthRTHandle = this->_depthTex->GetDefaultView(Diligent::TEXTURE_VIEW_DEPTH_STENCIL);
-		} else {
-			rawrbox::BindlessManager::barrier<Diligent::ITexture>({this->_tex}, {Diligent::RESOURCE_STATE_SHADER_RESOURCE});
 		}
 		// ----------
-
-		// Get handles --
-		this->_rtHandle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_RENDER_TARGET);
-		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
-		// --------------
 
 		rawrbox::BindlessManager::registerTexture(*this);
 	}

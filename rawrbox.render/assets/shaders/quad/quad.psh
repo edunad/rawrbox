@@ -1,4 +1,3 @@
-#include "correction.fxh"
 #include "pixel_bindless_uniforms.fxh"
 
 Texture2DArray g_Textures[];
@@ -17,5 +16,5 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     float4 color = g_Textures[Constants.textureIDs.x].Sample(g_Sampler, float3(PSIn.UV.xy, 0));
     if(color.a <= 0.0) discard;
 
-    PSOut.Color = toLinear(color);
+    PSOut.Color = color;
 }

@@ -1,7 +1,7 @@
 #include <rawrbox/render/materials/base.hpp>
 
 namespace rawrbox {
-	void MaterialBase::createPipelines(const std::string& /*id*/, const std::vector<Diligent::LayoutElement>& /*layout*/, Diligent::ShaderMacroHelper /*helper*/) {}
+	void MaterialBase::createPipelines(const std::string& /*id*/, const std::vector<Diligent::LayoutElement>& /*layout*/, const Diligent::ShaderMacroHelper& /*helper*/) {}
 	void MaterialBase::setupPipelines(const std::string& id) {
 		if (this->_base == nullptr) this->_base = rawrbox::PipelineUtils::getPipeline(id);
 		if (this->_base_alpha == nullptr) this->_base_alpha = rawrbox::PipelineUtils::getPipeline(id + "::Alpha");

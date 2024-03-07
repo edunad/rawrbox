@@ -20,7 +20,7 @@ namespace rawrbox {
 		this->setupPipelines(id);
 	}
 
-	void MaterialLit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper) {
+	void MaterialLit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, const Diligent::ShaderMacroHelper& helper) {
 		auto* cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
 		if (cluster == nullptr) throw this->_logger->error("This material requires the `ClusteredPlugin` renderer plugin");
 
@@ -28,6 +28,7 @@ namespace rawrbox {
 		rawrbox::PipeSettings settings;
 		settings.pVS = "lit.vsh";
 		settings.pPS = "lit.psh";
+		settings.renderTargets = 2; // COLOR + GPUPick
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = cluster->getClusterMacros() + helper;
 

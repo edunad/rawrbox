@@ -87,7 +87,7 @@ namespace rawrbox {
 			//  ---------------------
 
 			// Barrier ----
-			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_dataBuffer->GetBuffer()}, {Diligent::RESOURCE_STATE_VERTEX_BUFFER});
+			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_dataBuffer->GetBuffer(), Diligent::RESOURCE_STATE_VERTEX_BUFFER}});
 			// ------------
 
 			if (size != 0) this->updateInstance(); // Data was already added, then update the buffer
@@ -108,10 +108,10 @@ namespace rawrbox {
 			auto* buffer = this->_dataBuffer->GetBuffer();
 
 			// BARRIER ----
-			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({buffer}, {Diligent::RESOURCE_STATE_COPY_DEST});
+			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_COPY_DEST}});
 			rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.size()), this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({buffer}, {Diligent::RESOURCE_STATE_VERTEX_BUFFER});
-			// ---------
+			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_VERTEX_BUFFER}});
+			//  ---------
 		}
 
 		void draw() override {
@@ -135,6 +135,11 @@ namespace rawrbox {
 
 			this->_material->bindPipeline(*this->_mesh);
 
+			// bool updated = false;
+			// updated = this->_material->bindVertexUniforms(*this->_mesh);
+			// updated = this->_material->bindVertexSkinnedUniforms(*this->_mesh);
+			// updated = this->_material->bindPixelUniforms(*this->_mesh);
+
 			this->_material->resetUniformBinds();
 			this->_material->bindVertexUniforms(*this->_mesh);
 			this->_material->bindVertexSkinnedUniforms(*this->_mesh);
@@ -147,7 +152,9 @@ namespace rawrbox {
 			DrawAttrs.BaseVertex = this->_mesh->baseVertex;
 			DrawAttrs.NumIndices = this->_mesh->totalIndex;
 			DrawAttrs.NumInstances = static_cast<uint32_t>(this->_instances.size());
-			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT; // Instanced buffers are only updated once
+			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL; // Instanced buffers are only updated once
+			// if (!updated) DrawAttrs.Flags |= Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
+
 			context->DrawIndexed(DrawAttrs);
 		}
 	};

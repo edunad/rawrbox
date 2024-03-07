@@ -117,12 +117,12 @@ namespace rawrbox {
 			auto empty = vertSize <= 0 || indcSize <= 0;
 
 			// BARRIER -----
-			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_vbh, this->_ibh}, {Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_COPY_DEST});
+			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbh, Diligent::RESOURCE_STATE_COPY_DEST}, {this->_ibh, Diligent::RESOURCE_STATE_COPY_DEST}});
 
 			context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
-			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_vbh, this->_ibh}, {Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::RESOURCE_STATE_INDEX_BUFFER});
+			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER}, {this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER}});
 			// -----------
 		}
 
@@ -215,6 +215,11 @@ namespace rawrbox {
 			// -----------
 
 			this->_requiresUpdate = true;
+		}
+
+		[[nodiscard]] virtual uint32_t getID(int /*index*/ = -1) const { return this->_mesh->getID(); }
+		virtual void setID(uint32_t id, int /*index*/ = -1) {
+			this->_mesh->setID(id);
 		}
 
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->_mesh->getColor(); }
@@ -311,7 +316,7 @@ namespace rawrbox {
 			// ---------------------
 
 			// Barrier ----
-			rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_vbh, this->_ibh}, {Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::RESOURCE_STATE_INDEX_BUFFER});
+			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER}, {this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER}});
 			// ------------
 
 			// Initialize material ----

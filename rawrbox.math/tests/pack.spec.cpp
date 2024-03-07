@@ -27,4 +27,21 @@ TEST_CASE("Pack utils should behave as expected", "[rawrbox::Pack]") {
 
 		REQUIRE_THAT(unpack_3, Catch::Matchers::WithinAbs(0.43F, 0.0001F));
 	}
+
+	SECTION("rawrbox::packColor") {
+		uint32_t id = (1 << 8) | 0xFF;
+
+		auto packed_1 = rawrbox::PackUtils::fromRGBA(id);
+
+		REQUIRE_THAT(packed_1[0], Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+		REQUIRE_THAT(packed_1[1], Catch::Matchers::WithinAbs(0.F, 0.0001F));
+		REQUIRE_THAT(packed_1[2], Catch::Matchers::WithinAbs(0.00392156886F, 0.0001F));
+		REQUIRE_THAT(packed_1[3], Catch::Matchers::WithinAbs(1.F, 0.0001F));
+
+		auto unpacked_1 = rawrbox::PackUtils::toRGBA(packed_1[0], packed_1[1], packed_1[2], 1.F);
+		REQUIRE(unpacked_1 == id);
+
+		auto unpacked_2 = rawrbox::PackUtils::toRGBA(static_cast<uint8_t>(0), static_cast<uint8_t>(0), static_cast<uint8_t>(1), static_cast<uint8_t>(255));
+		REQUIRE(unpacked_2 == id);
+	}
 }

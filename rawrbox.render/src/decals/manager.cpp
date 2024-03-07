@@ -1,6 +1,6 @@
-#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/barrier.hpp>
 
 namespace rawrbox {
 	// PRIVATE ----
@@ -49,7 +49,8 @@ namespace rawrbox {
 		}
 
 		// BARRIER -----
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({uniforms, _buffer->GetBuffer()}, {Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_SHADER_RESOURCE});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER},
+		    {_buffer->GetBuffer(), Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
 		// -----------
 
 		update();
@@ -71,9 +72,9 @@ namespace rawrbox {
 		rawrbox::DecalsConstants settings = {static_cast<uint32_t>(count())};
 
 		// BARRIER ----
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({uniforms}, {Diligent::RESOURCE_STATE_COPY_DEST});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{uniforms, Diligent::RESOURCE_STATE_COPY_DEST}});
 		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::DecalsConstants), &settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({uniforms}, {Diligent::RESOURCE_STATE_CONSTANT_BUFFER});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER}});
 		// --------
 	}
 
@@ -105,9 +106,9 @@ namespace rawrbox {
 		auto* buffer = _buffer->GetBuffer();
 
 		// BARRIER ----
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({buffer}, {Diligent::RESOURCE_STATE_COPY_DEST});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_COPY_DEST}});
 		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(_decals.size()), decals.empty() ? nullptr : decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({buffer}, {Diligent::RESOURCE_STATE_SHADER_RESOURCE});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
 		// ---------
 
 		rawrbox::__DECALS_DIRTY__ = false;

@@ -402,6 +402,17 @@ namespace rawrbox {
 			return index >= 0 && index < this->_meshes.size();
 		}
 
+		[[nodiscard]] uint32_t getID(int index = 0) const override {
+			return this->_meshes[index]->getID();
+		}
+
+		void setID(uint32_t id, int index = -1) override {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (index != -1 && i != static_cast<size_t>(index)) continue;
+				this->_meshes[i]->setID(id);
+			}
+		}
+
 		virtual void setCulling(Diligent::CULL_MODE cull, int id = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
 				if (id != -1 && i != static_cast<size_t>(id)) continue;
@@ -446,14 +457,10 @@ namespace rawrbox {
 				// -------------------
 
 				// Update uniforms -----
-				/*
-				// TODO: USE THIS WHEN WE FULLY PASS THE TEXTURE AS MESH PARAMS INSTEAD OF SEPERATE
-
-				bool buffersUpdated = false;
-				if (this->_material->bindVertexUniforms(*mesh)) buffersUpdated = true;
-				if (this->_material->bindVertexSkinnedUniforms(*mesh)) buffersUpdated = true;
-				if (this->_material->bindPixelUniforms(*mesh)) buffersUpdated = true;
-				*/
+				// bool buffersUpdated = false;
+				// buffersUpdated = this->_material->bindVertexUniforms(*mesh);
+				// buffersUpdated = this->_material->bindVertexSkinnedUniforms(*mesh);
+				// buffersUpdated = this->_material->bindPixelUniforms(*mesh);
 
 				this->_material->bindVertexUniforms(*mesh);
 				this->_material->bindVertexSkinnedUniforms(*mesh);
@@ -469,7 +476,7 @@ namespace rawrbox {
 				DrawAttrs.BaseVertex = mesh->baseVertex;
 				DrawAttrs.NumIndices = mesh->totalIndex;
 				DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
-				// if (!buffersUpdated) DrawAttrs.Flags |= Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT; // TODO
+				// if (!buffersUpdated) DrawAttrs.Flags |= Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
 
 				rawrbox::RENDERER->context()->DrawIndexed(DrawAttrs);
 				// -----------

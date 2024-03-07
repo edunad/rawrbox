@@ -231,7 +231,9 @@ namespace rawrbox {
 			info.GraphicsPipeline.SubpassIndex = settings.renderPass.index;
 			info.GraphicsPipeline.NumRenderTargets = 0;
 		} else {
-			info.GraphicsPipeline.RTVFormats[0] = desc.ColorBufferFormat;
+			for (size_t i = 0; i < settings.renderTargets; i++) {
+				info.GraphicsPipeline.RTVFormats[i] = desc.ColorBufferFormat;
+			}
 		}
 
 		if (settings.blending.src != Diligent::BLEND_FACTOR_UNDEFINED && settings.blending.dest != Diligent::BLEND_FACTOR_UNDEFINED) {

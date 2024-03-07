@@ -14,7 +14,6 @@
 
 #include <cstdint>
 #include <string>
-#include <unordered_map>
 
 namespace rawrbox {
 	struct Skeleton;
@@ -27,14 +26,10 @@ namespace rawrbox {
 		rawrbox::TextureBase* roughtMetal = nullptr;
 		rawrbox::TextureBase* emission = nullptr;
 
-		rawrbox::TextureBase* displacement = nullptr;
-
 		float roughnessFactor = 1.0F;
 		float metalnessFactor = 1.0F;
 		float specularFactor = 0.5F;
 		float emissionFactor = 1.0F;
-
-		float displacementPower = 1.F;
 
 		[[nodiscard]] rawrbox::Vector4f getData() const {
 			return {roughnessFactor, metalnessFactor, specularFactor, emissionFactor};
@@ -55,6 +50,27 @@ namespace rawrbox {
 
 		bool operator==(const rawrbox::MeshTextures& other) const { return this->texture == other.texture && this->normal == other.normal && this->specularFactor == other.specularFactor && this->roughtMetal == other.roughtMetal && this->emission == other.emission; }
 		bool operator!=(const rawrbox::MeshTextures& other) const { return !operator==(other); }
+	};
+
+	struct MeshData { // Aka data for vertex shader
+	public:
+		float vertexSnapPower = 0.F;
+		bool billboard = false;
+
+		// Displacement ---
+		rawrbox::TextureBase* displacement = nullptr;
+		float displacementPower = 1.F;
+		// --------------
+
+		[[nodiscard]] rawrbox::Vector4f getData() const {
+			if (displacement != nullptr) {
+				return {billboard ? 1.F : 0.F, vertexSnapPower, static_cast<float>(displacement->getTextureID()), displacementPower};
+			}
+			return {billboard ? 1.F : 0.F, vertexSnapPower, 0.F, 0.F};
+		}
+
+		bool operator==(const rawrbox::MeshData& other) const { return this->vertexSnapPower == other.vertexSnapPower && this->billboard == other.billboard && this->displacement == other.displacement && this->displacementPower == other.displacementPower; }
+		bool operator!=(const rawrbox::MeshData& other) const { return !operator==(other); }
 	};
 
 	template <typename T = rawrbox::VertexData>
@@ -88,8 +104,8 @@ namespace rawrbox {
 		// -------
 
 		// OTHER ---
-		float vertexSnapPower = 0.F;
-		bool billboard = false;
+		rawrbox::MeshData data = {};
+		uint32_t meshID = 0x00000000;
 		// ---------
 
 		// RENDERING ---
@@ -113,8 +129,7 @@ namespace rawrbox {
 		std::vector<rawrbox::LightBase*> lights = {};
 		// -----------------
 
-		void* owner = nullptr;                            // Eeeehhhh
-		std::unordered_map<std::string, float> data = {}; // Other data
+		void* owner = nullptr; // Eeeehhhh
 
 		Mesh() = default;
 		Mesh(const Mesh&) = default;
@@ -147,8 +162,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool empty() const {
 			return this->indices.empty() || this->vertices.empty();
 		}
-		[[nodiscard]] virtual const rawrbox::Matrix4x4& getMatrix() { return this->matrix; }
 
+		[[nodiscard]] virtual const rawrbox::Matrix4x4& getMatrix() { return this->matrix; }
 		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const { return this->_pos; }
 		virtual void setPos(const rawrbox::Vector3f& pos) {
 			this->_pos = pos;
@@ -209,12 +224,10 @@ namespace rawrbox {
 			this->textures.normal = ptr;
 		}
 
-		[[nodiscard]] virtual const rawrbox::TextureBase* getDisplacementTexture() const { return this->textures.displacement; }
+		[[nodiscard]] virtual const rawrbox::TextureBase* getDisplacementTexture() const { return this->data.displacement; }
 		virtual void setDisplacementTexture(rawrbox::TextureBase* ptr, float power = 1.F) {
-			this->textures.displacement = ptr;
-			this->textures.displacementPower = power;
-
-			this->setOptimizable(false);
+			this->data.displacement = ptr;
+			this->data.displacementPower = power;
 		}
 
 		[[nodiscard]] virtual const rawrbox::TextureBase* getEmissionTexture() const { return this->textures.emission; }
@@ -235,11 +248,11 @@ namespace rawrbox {
 		}
 
 		virtual void setBillboard(bool set) {
-			this->billboard = set;
+			this->data.billboard = set;
 		}
 
 		virtual void setVertexSnap(float power = 2.F) {
-			this->vertexSnapPower = power;
+			this->data.vertexSnapPower = power;
 		}
 
 		virtual void setWireframe(bool _wireframe) {
@@ -250,8 +263,10 @@ namespace rawrbox {
 			this->culling = _culling;
 		}
 
-		[[nodiscard]] virtual uint32_t getId(int /*index*/ = -1) const { return 0; }
-		virtual void setId(uint32_t /*id*/, int /*index*/ = -1) {}
+		[[nodiscard]] virtual uint32_t getID() const { return this->meshID; }
+		virtual void setID(uint32_t id) {
+			this->meshID = (id << 8) | 0xFF;
+		}
 
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->color; }
 		virtual void setColor(const rawrbox::Color& _color) {
@@ -297,6 +312,8 @@ namespace rawrbox {
 
 			return this->textures == other.textures && // TODO: Replace with canMerge and pass textureID down to vertex?
 			       this->color == other.color &&
+			       this->meshID == other.meshID &&
+			       this->data == other.data &&
 			       this->wireframe == other.wireframe &&
 			       this->lineMode == other.lineMode &&
 			       this->matrix == other.matrix;

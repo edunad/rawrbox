@@ -88,8 +88,16 @@ namespace rawrbox {
 		return 0 | (static_cast<uint8_t>(_rr * 255.0F) << 0) | (static_cast<uint8_t>(_gg * 255.0F) << 8) | (static_cast<uint8_t>(_bb * 255.0F) << 16) | (static_cast<uint8_t>(_aa * 255.0F) << 24);
 	}
 
+	uint32_t PackUtils::toABGR(uint8_t _rr, uint8_t _gg, uint8_t _bb, uint8_t _aa) {
+		return 0 | (_rr << 0) | (_gg << 8) | (_bb << 16) | (_aa << 24);
+	}
+
 	uint32_t PackUtils::toRGBA(float _rr, float _gg, float _bb, float _aa) {
 		return 0 | (static_cast<uint8_t>(_aa * 255.0F) << 0) | (static_cast<uint8_t>(_bb * 255.0F) << 8) | (static_cast<uint8_t>(_gg * 255.0F) << 16) | (static_cast<uint8_t>(_rr * 255.0F) << 24);
+	}
+
+	uint32_t PackUtils::toRGBA(uint8_t _rr, uint8_t _gg, uint8_t _bb, uint8_t _aa) {
+		return 0 | (_aa << 0) | (_bb << 8) | (_gg << 16) | (_rr << 24);
 	}
 
 	std::array<float, 4> PackUtils::fromABGR(uint32_t val) {
@@ -97,18 +105,30 @@ namespace rawrbox {
 	}
 
 	std::array<float, 4> PackUtils::fromRGBA(uint32_t val) {
+		uint8_t r = (val >> 24) & 0xFF;
+		uint8_t g = (val >> 16) & 0xFF;
+		uint8_t b = (val >> 8) & 0xFF;
+		uint8_t a = (val)&0xFF;
+
 		return {
-		    ((val >> 24) & 0xFF) / 255.0F,
-		    ((val >> 16) & 0xFF) / 255.0F,
-		    ((val >> 8) & 0xFF) / 255.0F,
-		    ((val)&0xFF) / 255.0F};
+		    r / 255.0F, // Red
+		    g / 255.0F, // Green
+		    b / 255.0F, // Blue
+		    a / 255.0F  // Alpha
+		};
 	}
 
 	std::array<float, 4> PackUtils::fromRGB(uint32_t val) {
-		return {((val >> 16) & 0xFF) / 255.0F,
-		    ((val >> 8) & 0xFF) / 255.0F,
-		    ((val)&0xFF) / 255.0F,
-		    1.F};
+		uint8_t r = (val >> 24) & 0xFF;
+		uint8_t g = (val >> 16) & 0xFF;
+		uint8_t b = (val >> 8) & 0xFF;
+
+		return {
+		    r / 255.0F, // Red
+		    g / 255.0F, // Green
+		    b / 255.0F, // Blue
+		    1.F         // Alpha
+		};
 	}
 
 } // namespace rawrbox

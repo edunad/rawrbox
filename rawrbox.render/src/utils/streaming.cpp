@@ -1,5 +1,5 @@
-#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/barrier.hpp>
 #include <rawrbox/render/utils/streaming.hpp>
 
 namespace rawrbox {
@@ -19,7 +19,7 @@ namespace rawrbox {
 		device->CreateBuffer(buff, nullptr, &this->_buffer);
 
 		// Barrier ----
-		rawrbox::BindlessManager::barrier<Diligent::IBuffer>({this->_buffer}, {state});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_buffer, state}});
 		// ------------
 	}
 

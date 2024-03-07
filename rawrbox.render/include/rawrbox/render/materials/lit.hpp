@@ -19,6 +19,6 @@ namespace rawrbox {
 		~MaterialLit() override = default;
 
 		void init() override;
-		void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, Diligent::ShaderMacroHelper helper = {}) override;
+		void createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, const Diligent::ShaderMacroHelper& helper = {}) override;
 	};
 } // namespace rawrbox
