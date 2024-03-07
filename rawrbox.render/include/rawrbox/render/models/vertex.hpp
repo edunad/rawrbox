@@ -26,13 +26,6 @@ namespace rawrbox {
 		}
 		// ---------------------
 
-		// GPU Picker ---
-		/*void setId(uint32_t _id) {
-			if (id > 0x00FFFFFF) throw rawrbox::Logger::err("RawrBox-Mesh", "Invalid id");
-			this->id = 0xFF000000 | _id; // Alpha is not supported;
-		}*/
-		// ---------------------
-
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position

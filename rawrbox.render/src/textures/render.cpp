@@ -157,7 +157,6 @@ namespace rawrbox {
 			const auto& swapDesc = rawrbox::RENDERER->swapChain()->GetDesc();
 
 			this->addTexture(swapDesc.DepthBufferFormat, Diligent::BIND_SHADER_RESOURCE | Diligent::BIND_DEPTH_STENCIL);
-
 			this->_depthHandle = this->_depthTex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 			this->_depthRTHandle = this->_depthTex->GetDefaultView(Diligent::TEXTURE_VIEW_DEPTH_STENCIL);
 		}
