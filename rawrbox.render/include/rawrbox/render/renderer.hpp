@@ -7,6 +7,7 @@
 #include <rawrbox/render/plugins/base.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/render/textures/render.hpp>
+#include <rawrbox/render/textures/utils/blit.hpp>
 #include <rawrbox/utils/logger.hpp>
 
 #include <RefCntAutoPtr.hpp>
@@ -32,14 +33,6 @@ namespace rawrbox {
 		rawrbox::Colorf background = rawrbox::Colors::Black();
 
 		RawrboxIntro(float _speed = 1.F, bool _cover = true, const rawrbox::Colorf& _color = rawrbox::Colors::Black()) : speed(_speed), cover(_cover), background(_color) {}
-	};
-
-	struct RawrboxGPUPick {
-	public:
-		rawrbox::Vector2i mousePos = {};
-		std::function<void(uint32_t)> callback = nullptr;
-
-		RawrboxGPUPick(const rawrbox::Vector2i& _mousePos, const std::function<void(uint32_t)>& _callback) : mousePos(_mousePos), callback(_callback) {}
 	};
 
 	class RendererBase {
@@ -95,13 +88,8 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Renderer");
 		std::unique_ptr<rawrbox::CameraBase> _camera = nullptr;
 		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
+		std::unique_ptr<rawrbox::TextureBLIT> _GPUBlit = nullptr;
 		// -------------
-
-		// GPU PICKING ----
-		Diligent::RefCntAutoPtr<Diligent::ITexture> _gpuTexture;
-		Diligent::IFence* _gpuCopyFence = nullptr;
-		std::vector<rawrbox::RawrboxGPUPick> _gpuCallback = {};
-		// ----------------
 
 		// INTRO ------
 		virtual void playIntro();
@@ -117,8 +105,6 @@ namespace rawrbox {
 
 		virtual void clear();
 		virtual void frame();
-
-		virtual void processGPUPicking();
 
 	public:
 		uint32_t MAX_TEXTURES = 8192;       // NOTE: IF THIS VALUE IS TOO HIGH, YOU MIGHT NEED TO INCREASE THE HEAP MEMORY
@@ -208,6 +194,7 @@ namespace rawrbox {
 #endif
 
 		[[nodiscard]] virtual const rawrbox::Vector2i& getSize() const;
+
 		[[nodiscard]] virtual bool getVSync() const;
 		virtual void setVSync(bool vsync);
 

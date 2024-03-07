@@ -24,7 +24,6 @@ namespace rawrbox {
 		std::vector<rawrbox::Barrier<Diligent::ITexture>> _barrierWrite = {};
 		// -------------
 
-		rawrbox::Vector2i _size = {};
 		bool _depth = true;
 		bool _recording = false;
 
