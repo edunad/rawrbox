@@ -57,7 +57,7 @@ namespace rawrbox {
 		virtual void startRecord(bool clear = true, size_t renderTargets = 0);
 		virtual void stopRecord();
 
-		virtual size_t addTexture(Diligent::TEXTURE_FORMAT format, Diligent::BIND_FLAGS flags, Diligent::USAGE usage = Diligent::USAGE_DEFAULT, Diligent::CPU_ACCESS_FLAGS cpu = Diligent::CPU_ACCESS_NONE);
+		virtual size_t addTexture(Diligent::TEXTURE_FORMAT format, Diligent::BIND_FLAGS flags);
 		virtual void addView(size_t index, Diligent::TEXTURE_VIEW_TYPE format = Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 
 		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false) override;

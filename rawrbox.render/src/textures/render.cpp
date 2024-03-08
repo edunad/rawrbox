@@ -85,8 +85,9 @@ namespace rawrbox {
 		this->_recording = false;
 	}
 
-	size_t TextureRender::addTexture(Diligent::TEXTURE_FORMAT format, Diligent::BIND_FLAGS flags, Diligent::USAGE usage, Diligent::CPU_ACCESS_FLAGS cpu) {
+	size_t TextureRender::addTexture(Diligent::TEXTURE_FORMAT format, Diligent::BIND_FLAGS flags) {
 		bool isDepth = (flags & Diligent::BIND_DEPTH_STENCIL) != 0;
+		if (isDepth && this->_depthHandle != nullptr) throw _logger->error("Only one depth texture is allowed");
 
 		Diligent::TextureDesc desc;
 		desc.Type = Diligent::RESOURCE_DIM_TEX_2D_ARRAY;
@@ -94,8 +95,6 @@ namespace rawrbox {
 		desc.Width = this->_size.x;
 		desc.Height = this->_size.y;
 		desc.MipLevels = 1;
-		desc.Usage = usage;
-		desc.CPUAccessFlags = cpu;
 		desc.Format = format;
 		desc.ClearValue.Format = desc.Format;
 
@@ -122,8 +121,8 @@ namespace rawrbox {
 			this->_barrierWrite.emplace_back(this->_depthTex, Diligent::RESOURCE_STATE_DEPTH_WRITE);
 		} else {
 			Diligent::RefCntAutoPtr<Diligent::ITexture> texture;
-			rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &texture);
 
+			rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &texture);
 			rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{texture, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
 
 			this->_barrierRead.emplace_back(texture, Diligent::RESOURCE_STATE_SHADER_RESOURCE);
