@@ -40,8 +40,8 @@ namespace rawrbox {
 
 	class ConsoleCommand {
 	public:
-		std::optional<ConsoleVariable> var;
-		std::optional<ConsoleFunction> method;
+		std::optional<ConsoleVariable> var = {};
+		std::optional<ConsoleFunction> method = {};
 
 		std::string description;
 		uint32_t flags = ConsoleFlags::NONE;

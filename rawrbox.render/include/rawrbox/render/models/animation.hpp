@@ -27,7 +27,7 @@ namespace rawrbox {
 		float ticksPerSecond = 0;
 		float duration = 0;
 
-		std::vector<AnimationFrame> frames;
+		std::vector<AnimationFrame> frames = {};
 	};
 
 	struct PlayingAnimationData {

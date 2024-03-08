@@ -39,7 +39,7 @@ namespace rawrbox {
 		using std::vector<T>::back;
 		using std::vector<T>::resize;
 
-		std::vector<T>::const_iterator find(const T& key) const { return std::find(begin(), end(), key); }
+		typename std::vector<T>::const_iterator find(const T& key) const { return std::find(begin(), end(), key); }
 		bool operator==(const VectorDelta<T>& other) const { return other.size() == size() && std::equal(other.begin(), other.end(), begin()); }
 		bool operator!=(const VectorDelta<T>& other) { return !operator==(other); }
 
@@ -48,13 +48,13 @@ namespace rawrbox {
 			if (track) this->changelog.push_back({true, size() - 1});
 		}
 
-		void insert(std::vector<T>::const_iterator index, const T& a, bool track = true) {
+		void insert(typename std::vector<T>::const_iterator index, const T& a, bool track = true) {
 			if (track) this->changelog.push_back({true, std::distance<typename std::vector<T>::const_iterator>(cbegin(), index)});
 			std::vector<T>::insert(index, a);
 		}
 
 		DeltaData<size_t, T> calculate() {
-			DeltaData<size_t, T> diff;
+			DeltaData<size_t, T> diff = {};
 			for (auto& indx : this->changelog) {
 				if (indx.first)
 					diff.push_back({indx.second, at(indx.second)});
@@ -71,7 +71,7 @@ namespace rawrbox {
 			this->changelog.reserve(size);
 		}
 
-		void erase(std::vector<T>::const_iterator index, bool track = true) {
+		void erase(typename std::vector<T>::const_iterator index, bool track = true) {
 			if (track) this->changelog.push_back({false, std::distance<typename std::vector<T>::const_iterator>(this->cbegin(), index)});
 			std::vector<T>::erase(index);
 		}
@@ -128,7 +128,7 @@ namespace rawrbox {
 		}
 
 		DeltaData<KEY, VAL> calculate() {
-			DeltaData<KEY, VAL> diff;
+			DeltaData<KEY, VAL> diff = {};
 			for (auto& indx : changelog) {
 				if (indx.first)
 					diff.push_back({indx.second, at(indx.second)});
@@ -161,7 +161,7 @@ namespace rawrbox {
 	template <typename KEY, typename VAL>
 	struct UMapDelta : private std::unordered_map<KEY, VAL> {
 	public:
-		DeltaChangelog<KEY> changelog; // added?, changed index
+		DeltaChangelog<KEY> changelog = {}; // added?, changed index
 
 		using std::unordered_map<KEY, VAL>::unordered_map;
 		using std::unordered_map<KEY, VAL>::at;
@@ -191,7 +191,7 @@ namespace rawrbox {
 		}
 
 		DeltaData<KEY, VAL> calculate() {
-			DeltaData<KEY, VAL> diff;
+			DeltaData<KEY, VAL> diff = {};
 			for (auto& indx : this->changelog) {
 				if (indx.first)
 					diff.push_back({indx.second, at(indx.second)});

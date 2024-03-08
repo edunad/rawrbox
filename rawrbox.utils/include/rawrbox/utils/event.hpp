@@ -46,6 +46,6 @@ namespace rawrbox {
 		}
 
 	private:
-		std::vector<Func> calls;
+		std::vector<Func> calls = {};
 	};
 } // namespace rawrbox

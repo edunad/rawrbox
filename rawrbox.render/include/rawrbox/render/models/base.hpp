@@ -18,7 +18,7 @@ namespace rawrbox {
 		std::vector<rawrbox::Vector4f> pos = {};
 		std::vector<rawrbox::Vector4f> normals = {};
 
-		bool isActive() { return weight > 0.F; }
+		[[nodiscard]] bool isActive() const { return weight > 0.F; }
 		BlendShapes() = default;
 	};
 

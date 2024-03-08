@@ -152,23 +152,32 @@ namespace rawrbox {
 
 		if (json.holds<glz::json_t::null_t>()) {
 			return {L, luabridge::LuaNil()};
-		} else if (json.holds<bool>()) {
+		}
+
+		if (json.holds<bool>()) {
 			return {L, json.get<bool>()};
-		} else if (json.holds<double>()) { // Lua only works with doubles
+		}
+
+		if (json.holds<double>()) { // Lua only works with doubles
 			return {L, json.get<double>()};
-		} else if (json.holds<std::string>()) {
+		}
+		if (json.holds<std::string>()) {
 			return {L, json.get<std::string>()};
-		} else if (json.holds<glz::json_t::object_t>()) {
+		}
+
+		if (json.holds<glz::json_t::object_t>()) {
 			auto obj = luabridge::newTable(L);
-			auto& jsonObject = json.get<glz::json_t::object_t>();
+			const auto& jsonObject = json.get<glz::json_t::object_t>();
 			for (const auto& pair : jsonObject) {
 				obj[pair.first.c_str()] = jsonToLua(L, pair.second);
 			}
 
 			return obj;
-		} else if (json.holds<glz::json_t::array_t>()) {
+		}
+
+		if (json.holds<glz::json_t::array_t>()) {
 			auto arr = luabridge::newTable(L);
-			auto& jsonArray = json.get<glz::json_t::array_t>();
+			const auto& jsonArray = json.get<glz::json_t::array_t>();
 			for (size_t i = 0; i < jsonArray.size(); ++i) {
 				arr[i + 1] = jsonToLua(L, jsonArray[i]);
 			}

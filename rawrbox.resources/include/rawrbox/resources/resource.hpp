@@ -18,7 +18,7 @@ namespace rawrbox {
 		uint32_t flags = 0; // Used for certain files
 		uint32_t crc32 = 0;
 
-		std::filesystem::path filePath;
+		std::filesystem::path filePath = {};
 		std::string extention;
 
 		virtual bool load(const std::vector<uint8_t>& buffer);

@@ -16,7 +16,7 @@ namespace rawrbox {
 	template <class T>
 	class UIVirtualList : public rawrbox::UIContainer {
 	protected:
-		std::vector<T> _items;
+		std::vector<T> _items = {};
 		rawrbox::VirtualListMode _mode = rawrbox::VirtualListMode::LIST;
 
 		// MOUSE POS ---

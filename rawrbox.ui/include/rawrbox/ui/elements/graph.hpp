@@ -24,7 +24,7 @@ namespace rawrbox {
 
 	struct UIGraphCategory {
 	protected:
-		std::chrono::high_resolution_clock::time_point _timer;
+		std::chrono::high_resolution_clock::time_point _timer = {};
 		std::string _name;
 		rawrbox::Color _color = rawrbox::Colors::White();
 

@@ -31,9 +31,9 @@ namespace rawrbox {
 	public:
 		float time = 1.F;
 
-		std::optional<rawrbox::Vector2f> size;
-		std::optional<rawrbox::Vector2f> pos;
-		std::optional<rawrbox::Colorf> color;
+		std::optional<rawrbox::Vector2f> size = std::nullopt;
+		std::optional<rawrbox::Vector2f> pos = std::nullopt;
+		std::optional<rawrbox::Colorf> color = std::nullopt;
 	};
 
 	template <class T>

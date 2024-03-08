@@ -9,8 +9,8 @@
 
 namespace rawrbox {
 	struct Frame {
-		float delay;
-		std::vector<uint8_t> pixels;
+		float delay = 0.F;
+		std::vector<uint8_t> pixels = {};
 	};
 
 	class TextureAnimatedBase : public rawrbox::TextureBase {
