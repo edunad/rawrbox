@@ -90,6 +90,15 @@ namespace rawrbox {
 
 	void Window::pollEvents() {
 		if (__WINDOWS.empty()) return;
+
+		// Check if the window should close
+		for (const auto& window : __WINDOWS) {
+			if (glfwWindowShouldClose(window->_handle) != 0) {
+				return;
+			}
+		}
+		// ----
+
 		glfwWaitEventsTimeout(1);
 	}
 
