@@ -175,6 +175,7 @@ namespace scripting_test {
 #ifdef RAWRBOX_UI
 			this->_ROOT_UI.reset();
 #endif
+			rawrbox::ASYNC::shutdown();
 			rawrbox::SCRIPTING::shutdown();
 			rawrbox::RESOURCES::shutdown();
 		}

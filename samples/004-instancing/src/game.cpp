@@ -104,6 +104,8 @@ namespace instance_test {
 			rawrbox::Window::shutdown();
 		} else {
 			this->_model.reset();
+
+			rawrbox::ASYNC::shutdown();
 			rawrbox::RESOURCES::shutdown();
 		}
 	}

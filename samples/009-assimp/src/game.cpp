@@ -160,6 +160,7 @@ namespace assimp {
 
 			this->_text.reset();
 
+			rawrbox::ASYNC::shutdown();
 			rawrbox::RESOURCES::shutdown();
 		}
 	}

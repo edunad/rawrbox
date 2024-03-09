@@ -163,6 +163,7 @@ namespace light {
 			this->_model3.reset();
 			this->_text.reset();
 
+			rawrbox::ASYNC::shutdown();
 			rawrbox::RESOURCES::shutdown();
 		}
 	}

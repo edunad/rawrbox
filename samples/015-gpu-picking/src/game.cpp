@@ -154,8 +154,8 @@ namespace gpu {
 		} else {
 			this->_model.reset();
 			this->_instance.reset();
-
 			this->_text.reset();
+
 			this->_lastPickedMesh = nullptr;
 		}
 	}
