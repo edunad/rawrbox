@@ -382,6 +382,7 @@ namespace rawrbox {
 		// ---------------------
 
 		// Process barriers -----
+		rawrbox::BarrierUtils::clearBarrierCache();
 		rawrbox::BarrierUtils::processBarriers();
 		// ---------------------
 
@@ -469,10 +470,6 @@ namespace rawrbox {
 			// this->_context->EndDebugGroup();
 #endif
 		//  ------------------
-
-		// Clear barrier cache -----
-		rawrbox::BarrierUtils::clearBarrierCache();
-		// ---------------------
 
 		// Submit ---
 		this->frame();

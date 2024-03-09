@@ -14,7 +14,7 @@ namespace rawrbox {
 	}
 
 	const rawrbox::Color& UIImage::getColor() const { return this->_color; }
-	void UIImage::setColor(const rawrbox::Color& cl) { this->_color = cl; }
+	void UIImage::setColor(const rawrbox::Color& col) { this->_color = col; }
 
 	void UIImage::sizeToContents() {
 		if (this->_texture == nullptr) return;
