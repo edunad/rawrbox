@@ -11,14 +11,13 @@
 
 namespace rawrbox {
 	struct VertexData {
-		rawrbox::Vector4f position = {};
+		rawrbox::Vector3f position = {};
+		float w = 1.F; // Padding
 		rawrbox::Vector4f uv = {};
 
 		VertexData() = default;
-		VertexData(const rawrbox::Vector4f& _pos,
-		    const rawrbox::Vector4f& _uv = {}) : position(_pos), uv(_uv) {
-			this->position.w = 1.F;
-		}
+		VertexData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector4f& _uv = {}) : position(_pos), uv(_uv) {}
 
 		// Atlas ---
 		void setAtlasId(uint32_t _id) {
@@ -53,9 +52,9 @@ namespace rawrbox {
 		uint32_t tangent = 0x00000000;
 
 		VertexNormData() = default;
-		VertexNormData(const rawrbox::Vector4f& _pos,
+		VertexNormData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexData(_pos, _uv), normal(rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z)), tangent(rawrbox::PackUtils::packNormal(tang.x, tang.y, tang.z)) {}
-		VertexNormData(const rawrbox::Vector4f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t _norm = 0x00000000, uint32_t _tang = 0x00000000) : rawrbox::VertexData(_pos, _uv), normal(_norm), tangent(_tang) {}
+		VertexNormData(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t _norm = 0x00000000, uint32_t _tang = 0x00000000) : rawrbox::VertexData(_pos, _uv), normal(_norm), tangent(_tang) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
@@ -89,7 +88,7 @@ namespace rawrbox {
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
 		VertexBoneData() = default;
-		VertexBoneData(const rawrbox::Vector4f& _pos,
+		VertexBoneData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {}) : rawrbox::VertexData(_pos, _uv) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
@@ -123,10 +122,10 @@ namespace rawrbox {
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
 		VertexNormBoneData() = default;
-		VertexNormBoneData(const rawrbox::Vector4f& _pos,
+		VertexNormBoneData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexNormData(_pos, _uv, norm, tang) {}
 
-		VertexNormBoneData(const rawrbox::Vector4f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t norm = 0x00000000, uint32_t tang = 0x00000000) : rawrbox::VertexNormData(_pos, _uv, norm, tang) {}
+		VertexNormBoneData(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t norm = 0x00000000, uint32_t tang = 0x00000000) : rawrbox::VertexNormData(_pos, _uv, norm, tang) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {

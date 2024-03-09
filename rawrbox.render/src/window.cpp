@@ -99,7 +99,7 @@ namespace rawrbox {
 		}
 		// ----
 
-		glfwWaitEventsTimeout(1);
+		glfwWaitEvents();
 	}
 
 	void Window::shutdown() {

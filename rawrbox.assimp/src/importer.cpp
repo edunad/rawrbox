@@ -495,7 +495,7 @@ namespace rawrbox {
 			for (size_t i = 0; i < aiMesh.mNumVertices; i++) {
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
-					shape.pos.emplace_back(vert.x, vert.y, vert.z, 1.F);
+					shape.pos.emplace_back(vert.x, vert.y, vert.z);
 				}
 
 				if (aiMesh.HasNormals()) {
@@ -598,7 +598,7 @@ namespace rawrbox {
 
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
-					v.position = {vert.x, vert.y, vert.z, 1.F};
+					v.position = {vert.x, vert.y, vert.z};
 				}
 
 				if (aiMesh.HasTextureCoords(0)) {

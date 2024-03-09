@@ -299,7 +299,7 @@ namespace rawrbox {
 
 		virtual void rotateVertices(float rad, rawrbox::Vector3f axis = {0, 1, 0}) {
 			for (auto& v : vertices) {
-				v.position = {v.position.xyz().rotateAroundOrigin(axis, rad), v.position.w};
+				v.position = v.position.rotateAroundOrigin(axis, rad);
 			}
 		}
 

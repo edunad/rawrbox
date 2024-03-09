@@ -15,7 +15,7 @@ namespace rawrbox {
 
 		rawrbox::Mesh<typename M::vertexBufferType>* mesh = nullptr; // For quick access
 
-		std::vector<rawrbox::Vector4f> pos = {};
+		std::vector<rawrbox::Vector3f> pos = {};
 		std::vector<rawrbox::Vector4f> normals = {};
 
 		[[nodiscard]] bool isActive() const { return weight > 0.F; }
@@ -23,7 +23,7 @@ namespace rawrbox {
 	};
 
 	struct ModelOriginalData {
-		rawrbox::Vector4f pos = {};
+		rawrbox::Vector3f pos = {};
 		uint32_t normal = {};
 	};
 
@@ -140,7 +140,7 @@ namespace rawrbox {
 		}
 
 		// BLEND SHAPES ---
-		bool createBlendShape(const std::string& id, const std::vector<rawrbox::Vector4f>& newVertexPos, const std::vector<rawrbox::Vector4f>& newNormPos, float weight = 0.F) {
+		bool createBlendShape(const std::string& id, const std::vector<rawrbox::Vector3f>& newVertexPos, const std::vector<rawrbox::Vector4f>& newNormPos, float weight = 0.F) {
 			if (this->_mesh == nullptr) throw this->_logger->error("Mesh not initialized!");
 
 			auto blend = std::make_unique<rawrbox::BlendShapes<M>>();

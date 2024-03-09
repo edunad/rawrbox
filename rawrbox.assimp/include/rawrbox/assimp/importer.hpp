@@ -102,7 +102,7 @@ namespace rawrbox {
 
 		size_t mesh_index = 0;
 
-		std::vector<rawrbox::Vector4f> pos = {};
+		std::vector<rawrbox::Vector3f> pos = {};
 		std::vector<rawrbox::Vector4f> norms = {};
 	};
 
