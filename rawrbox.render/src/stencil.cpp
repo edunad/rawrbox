@@ -10,7 +10,7 @@
 #pragma warning(pop)
 
 namespace rawrbox {
-	Stencil::Stencil(const rawrbox::Vector2i& size) : _windowSize(size) {
+	Stencil::Stencil(const rawrbox::Vector2i& size) : _size(size) {
 		this->_streamingVB = std::make_unique<rawrbox::StreamingBuffer>("RawrBox::Stencil::VertexBuffer", Diligent::BIND_VERTEX_BUFFER, MaxVertsInStreamingBuffer * static_cast<uint32_t>(sizeof(rawrbox::PosUVColorVertexData)), 1);
 		this->_streamingIB = std::make_unique<rawrbox::StreamingBuffer>("RawrBox::Stencil::IndexBuffer", Diligent::BIND_INDEX_BUFFER, MaxVertsInStreamingBuffer * 3 * static_cast<uint32_t>(sizeof(uint32_t)), 1);
 
@@ -57,11 +57,11 @@ namespace rawrbox {
 	}
 
 	void Stencil::resize(const rawrbox::Vector2i& size) {
-		this->_windowSize = size;
+		this->_size = size;
 	}
 
 	void Stencil::pushVertice(const uint32_t& textureID, rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col) {
-		auto wSize = this->_windowSize.cast<float>();
+		auto wSize = this->_size.cast<float>();
 
 		this->applyScale(pos);
 		this->applyRotation(pos);
@@ -380,7 +380,7 @@ namespace rawrbox {
 		this->_currentDraw.clear();
 
 		this->_currentDraw.stencilProgram = program;
-		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::AABBi(0, 0, this->_windowSize.x, this->_windowSize.y) : this->_clips.back();
+		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::AABBi(0, 0, this->_size.x, this->_size.y) : this->_clips.back();
 	}
 
 	void Stencil::pushDrawCall() {
@@ -554,7 +554,9 @@ namespace rawrbox {
 	// --------------------
 
 	// ------ OTHER
+	const rawrbox::Vector2i& Stencil::getSize() const { return this->_size; }
 	std::vector<rawrbox::StencilDraw> Stencil::getDrawCalls() const { return this->_drawCalls; }
+
 	void Stencil::clear() { this->_drawCalls.clear(); }
 	// --------------------
 } // namespace rawrbox

@@ -154,7 +154,7 @@ namespace rawrbox {
 		// ------------
 
 		// WINDOW ----
-		rawrbox::Vector2i _windowSize = {};
+		rawrbox::Vector2i _size = {};
 		//  ----------
 
 		// Offset handling ----
@@ -263,6 +263,7 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ OTHER
+		[[nodiscard]] virtual const rawrbox::Vector2i& getSize() const;
 		[[nodiscard]] virtual std::vector<rawrbox::StencilDraw> getDrawCalls() const;
 		virtual void clear();
 		// --------------------
