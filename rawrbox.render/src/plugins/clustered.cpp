@@ -94,11 +94,13 @@ namespace rawrbox {
 
 	void ClusteredPlugin::preRender() {
 		auto* renderer = rawrbox::RENDERER;
-		if (renderer == nullptr) throw this->_logger->error("Renderer not initialized!");
-		if (this->_clusterBuildingComputeProgram == nullptr || this->_cullingComputeProgram == nullptr) throw this->_logger->error("Compute pipelines not initialized, did you call 'initialize'");
-
 		auto* camera = renderer->camera();
 		auto* context = renderer->context();
+
+		if (renderer == nullptr) throw this->_logger->error("Renderer not initialized!");
+		if (camera == nullptr) throw this->_logger->error("Camera not initialized!");
+
+		if (this->_clusterBuildingComputeProgram == nullptr || this->_cullingComputeProgram == nullptr) throw this->_logger->error("Compute pipelines not initialized, did you call 'initialize'");
 
 		// Setup uniforms
 		rawrbox::LIGHTS::bindUniforms();
@@ -177,6 +179,8 @@ namespace rawrbox {
 	}
 
 	void ClusteredPlugin::buildPipelines() {
+		if (rawrbox::MAIN_CAMERA == nullptr) throw _logger->error("Clustered plugin requires at least one camera!");
+
 		rawrbox::PipeComputeSettings settings;
 		settings.macros = this->getClusterMacros();
 		settings.signature = rawrbox::BindlessManager::computeSignature;
