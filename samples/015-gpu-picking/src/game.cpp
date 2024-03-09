@@ -49,7 +49,7 @@ namespace gpu {
 		// BINDS ----
 		window->onMouseKey += [this](auto& /*w*/, const rawrbox::Vector2i& mousePos, int button, int action, int /*mods*/) {
 			const bool isDown = action == 1;
-			if (!this->_ready || !isDown || button != MOUSE_BUTTON_1) return;
+			if (!this->_ready || !isDown || button != rawrbox::MOUSE_BUTTON_1) return;
 
 			rawrbox::RENDERER->gpuPick(mousePos, [this](uint32_t id) {
 				bool updateInstance = false;

@@ -68,7 +68,7 @@ namespace phys_3d_test {
 		// BINDS ----
 		window->onMouseKey += [this](auto&, const rawrbox::Vector2i&, int button, int action, int) {
 			const bool isDown = action == 1;
-			if (!isDown || button != MOUSE_BUTTON_1) return;
+			if (!isDown || button != rawrbox::MOUSE_BUTTON_1) return;
 
 			this->_paused = !this->_paused;
 			if (this->_timer != nullptr) this->_timer->pause(this->_paused);

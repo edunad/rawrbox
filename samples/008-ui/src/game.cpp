@@ -102,7 +102,7 @@ namespace ui_test {
 		this->_consoleUI->setVisible(false);
 
 		window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
-			if (action != KEY_ACTION_UP || key != KEY_F1 || this->_consoleUI == nullptr) return;
+			if (action != rawrbox::KEY_ACTION_UP || key != rawrbox::KEY_F1 || this->_consoleUI == nullptr) return;
 			this->_consoleUI->setVisible(!this->_consoleUI->visible());
 		};
 		// ----------
