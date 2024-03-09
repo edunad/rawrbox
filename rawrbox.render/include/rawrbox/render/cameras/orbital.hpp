@@ -24,8 +24,12 @@ namespace rawrbox {
 		rawrbox::Window* _window = nullptr;
 
 		// Camera control ---
-		float _speed = 0.F;
-		bool _enableLook = false;
+		bool _enabled = true;
+		bool _look = false;
+
+		float _moveSpeed = 8.F;
+		float _mouseSpeed = 0.0015F;
+
 		rawrbox::CameraControls _controls = {};
 		rawrbox::Vector2i _oldMousePos = {};
 		// ------------
@@ -39,9 +43,16 @@ namespace rawrbox {
 		CameraOrbital& operator=(CameraOrbital&&) = default;
 		~CameraOrbital() override = default;
 
-		explicit CameraOrbital(rawrbox::Window& window, float speed = 8.F, float FOV = 60.F, float near = 0.01F, float far = 100.F);
+		explicit CameraOrbital(rawrbox::Window& window, float FOV = 60.F, float near = 0.01F, float far = 100.F);
 
+		// UTILS ---
 		void setControls(rawrbox::CameraControls controls);
+		void enableControls(bool enabled);
+
+		void setMoveSpeed(float speed);
+		void setMouseSpeed(float speed);
+		// ----
+
 		void update() override;
 	};
 } // namespace rawrbox

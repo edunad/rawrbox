@@ -3,12 +3,12 @@
 #include <rawrbox/render/cameras/orbital.hpp>
 
 namespace rawrbox {
-	CameraOrbital::CameraOrbital(rawrbox::Window& window, float speed, float FOV, float near, float far) : rawrbox::CameraPerspective(window.getSize(), FOV, near, far), _window(&window), _speed(speed) {
+	CameraOrbital::CameraOrbital(rawrbox::Window& window, float FOV, float near, float far) : rawrbox::CameraPerspective(window.getSize(), FOV, near, far), _window(&window) {
 		this->_window->onMouseKey += [this](auto& /*w*/, const rawrbox::Vector2i& mousePos, int button, int action, int /*mods*/) {
 			const bool isDown = action == 1;
 			if (button != this->_controls.rotate) return;
 
-			this->_enableLook = isDown;
+			this->_look = isDown && this->_enabled;
 			this->_oldMousePos = mousePos;
 
 			if (isDown && this->onMovementStart) this->onMovementStart();
@@ -16,15 +16,14 @@ namespace rawrbox {
 		};
 
 		this->_window->onMouseMove += [this](auto& /*w*/, const rawrbox::Vector2i& mousePos) {
-			if (!this->_enableLook) return;
-			float m_mouseSpeed = 0.0015F;
+			if (!this->_look || !this->_enabled) return;
 
 			auto deltaX = mousePos.x - this->_oldMousePos.x;
 			auto deltaY = mousePos.y - this->_oldMousePos.y;
 
 			auto ang = this->getAngle();
-			ang.x += m_mouseSpeed * static_cast<float>(deltaX);
-			ang.y -= m_mouseSpeed * static_cast<float>(deltaY);
+			ang.x += this->_mouseSpeed * static_cast<float>(deltaX);
+			ang.y -= this->_mouseSpeed * static_cast<float>(deltaY);
 
 			this->setAngle(ang);
 			this->_oldMousePos = mousePos;
@@ -32,9 +31,13 @@ namespace rawrbox {
 	}
 
 	void CameraOrbital::setControls(rawrbox::CameraControls controls) { this->_controls = controls; }
+	void CameraOrbital::enableControls(bool enabled) { this->_enabled = enabled; }
+
+	void CameraOrbital::setMoveSpeed(float speed) { this->_moveSpeed = speed; }
+	void CameraOrbital::setMouseSpeed(float speed) { this->_mouseSpeed = speed; }
 
 	void CameraOrbital::update() {
-		if (this->_window == nullptr) return;
+		if (this->_window == nullptr || !this->_enabled) return;
 
 		auto dir = this->getForward();
 		auto eye = this->getPos();
@@ -43,7 +46,7 @@ namespace rawrbox {
 		auto m_dir = rawrbox::Vector3f(dir.x, dir.y, dir.z);
 		auto m_eye = rawrbox::Vector3f(eye.x, eye.y, eye.z);
 
-		float sp = this->_speed;
+		float sp = this->_moveSpeed;
 		if (this->_window->isKeyDown(KEY_LEFT_SHIFT)) {
 			sp *= 2.F;
 		}
