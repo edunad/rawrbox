@@ -6,8 +6,14 @@
 
 #include <thread>
 
+std::atomic<bool> shutdownThread = false;
+std::atomic<int> threadCalls = 0;
+
 TEST_CASE("Engine should behave as expected", "[rawrbox::Engine]") {
 	rawrbox::Engine eng;
+
+	auto curtime = []() { return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count(); };
+	long long delay = 0;
 
 	SECTION("rawrbox::Engine::setTPS") {
 		REQUIRE(eng.getTPS() == 66);
@@ -29,16 +35,36 @@ TEST_CASE("Engine should behave as expected", "[rawrbox::Engine]") {
 
 	SECTION("rawrbox::Engine::runOnRenderThread") {
 		REQUIRE(rawrbox::RENDER_THREAD_INVOKES.empty() == true);
-		std::thread t1([](const std::string& msg) {
-			REQUIRE(msg == "nice");
-			rawrbox::runOnRenderThread([]() {
-				REQUIRE(true);
-			});
-		},
-		    "nice");
 
-		rawrbox::___runThreadInvokes();
-		t1.join();
-		REQUIRE(rawrbox::RENDER_THREAD_INVOKES.empty() == false);
+		threadCalls = 0;
+
+		rawrbox::RENDER_THREAD_ID = std::this_thread::get_id();
+		rawrbox::runOnRenderThread([]() {
+			new std::jthread([]() {
+				threadCalls++;
+				rawrbox::runOnRenderThread([]() {
+					threadCalls++;
+					new std::jthread([]() {
+						rawrbox::runOnRenderThread([]() {
+							threadCalls++;
+							new std::jthread([]() {
+								rawrbox::runOnRenderThread([]() {
+									threadCalls++;
+									shutdownThread = true;
+								});
+							});
+						});
+					});
+				});
+			});
+		});
+
+		delay = curtime() + 1500;
+		while (!shutdownThread && delay > curtime()) {
+			rawrbox::___runThreadInvokes();
+		}
+
+		REQUIRE(rawrbox::RENDER_THREAD_INVOKES.empty());
+		REQUIRE(threadCalls == 4);
 	}
 }

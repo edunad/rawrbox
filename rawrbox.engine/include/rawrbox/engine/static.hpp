@@ -1,5 +1,4 @@
 #pragma once
-#include <rawrbox/utils/ringbuffer.hpp>
 
 #include <functional>
 #include <mutex>
@@ -11,6 +10,7 @@ namespace rawrbox {
 	extern std::thread::id RENDER_THREAD_ID;
 	extern std::queue<std::function<void()>> RENDER_THREAD_INVOKES;
 	extern std::mutex RENDER_THREAD_LOCK;
+	// -----
 
 	// TIMING ---
 	extern float DELTA_TIME;
@@ -20,8 +20,10 @@ namespace rawrbox {
 
 	// NOLINTBEGIN(clang-diagnostic-unused-function)
 	static inline void runOnRenderThread(std::function<void()> func) {
-		if (RENDER_THREAD_ID != std::this_thread::get_id()) {
-			std::lock_guard<std::mutex> lock(RENDER_THREAD_LOCK);
+		auto id = std::this_thread::get_id();
+
+		if (RENDER_THREAD_ID != id) {
+			std::lock_guard<std::mutex> lockGuard(RENDER_THREAD_LOCK);
 			RENDER_THREAD_INVOKES.push(std::move(func));
 			return;
 		}
@@ -31,12 +33,18 @@ namespace rawrbox {
 
 	// ⚠️ INTERNAL - DO NOT CALL UNLESS YOU KNOW WHAT YOU ARE DOING ⚠️
 	static inline void ___runThreadInvokes() {
-		std::lock_guard<std::mutex> lock(RENDER_THREAD_LOCK);
-		while (!rawrbox::RENDER_THREAD_INVOKES.empty()) {
-			std::function<void()> fnc = std::move(rawrbox::RENDER_THREAD_INVOKES.front());
-			rawrbox::RENDER_THREAD_INVOKES.pop();
+		auto id = std::this_thread::get_id();
+		if (id != RENDER_THREAD_ID) throw std::runtime_error("Invalid thread, must run on main thread!");
 
-			fnc();
+		while (!rawrbox::RENDER_THREAD_INVOKES.empty()) {
+			std::function<void()> fnc = nullptr;
+			{
+				std::lock_guard<std::mutex> lockGuard(RENDER_THREAD_LOCK); // This is a bit slow, having to lock on all the calls, but there's nothing else i can do
+				fnc = std::move(rawrbox::RENDER_THREAD_INVOKES.front());
+				rawrbox::RENDER_THREAD_INVOKES.pop();
+			}
+
+			if (fnc != nullptr) fnc();
 		}
 	}
 	// NOLINTEND(clang-diagnostic-unused-function)

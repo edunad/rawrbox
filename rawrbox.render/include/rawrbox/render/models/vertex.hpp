@@ -47,7 +47,7 @@ namespace rawrbox {
 	};
 
 	// Supports light ---
-	struct VertexNormData : public VertexData {
+	struct VertexNormData : public rawrbox::VertexData {
 		uint32_t normal = 0x00000000;
 		uint32_t tangent = 0x00000000;
 
@@ -83,7 +83,7 @@ namespace rawrbox {
 	};
 
 	// Supports bones ---
-	struct VertexBoneData : public VertexData {
+	struct VertexBoneData : public rawrbox::VertexData {
 		std::array<uint32_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
@@ -117,7 +117,7 @@ namespace rawrbox {
 	};
 
 	// Supports light && bones ---
-	struct VertexNormBoneData : public VertexNormData {
+	struct VertexNormBoneData : public rawrbox::VertexNormData {
 		std::array<uint32_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
