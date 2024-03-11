@@ -35,23 +35,21 @@ namespace rawrbox {
 	// --------------------
 
 	void TextureAtlas::processAtlas() {
-		int tilesX = this->_size.x / this->_spriteSize;
-		int tilesY = this->_size.y / this->_spriteSize;
-
 		int tileSizeX = this->_spriteSize * this->_channels;
+		size_t totalSprites = (this->_size.x / this->_spriteSize) * (this->_size.y / this->_spriteSize);
 
 		this->_tiles.clear();
-		this->_tiles.resize(this->total());
+		this->_tiles.resize(totalSprites);
 
-		for (size_t i = 0; i < this->total(); ++i) {
-			auto& pix = this->_tiles[i];
+		for (size_t spriteIndex = 0; spriteIndex < totalSprites; ++spriteIndex) {
+			int x = spriteIndex % (this->_size.x / this->_spriteSize);
+			int y = spriteIndex / (this->_size.x / this->_spriteSize);
+
+			auto& pix = this->_tiles[spriteIndex];
 			pix.resize(this->_spriteSize * this->_spriteSize * this->_channels);
 
-			auto y = i / tilesX;
-			auto x = i - y * tilesY;
-
 			for (uint32_t iy = 0; iy < this->_spriteSize; iy++) {
-				auto offset = (iy + y * this->_spriteSize) * this->_size.x * _channels;
+				auto offset = (iy + y * this->_spriteSize) * this->_size.x * this->_channels;
 				offset += x * this->_spriteSize * this->_channels;
 
 				std::copy(this->_pixels.begin() + offset, this->_pixels.begin() + offset + tileSizeX, pix.begin() + iy * tileSizeX);
@@ -90,7 +88,7 @@ namespace rawrbox {
 			auto& res = subresData[slice];
 
 			res.pData = this->_tiles[slice].data();
-			res.Stride = this->_spriteSize * this->_channels;
+			res.Stride = desc.Width * this->_channels;
 		}
 
 		Diligent::TextureData data;
