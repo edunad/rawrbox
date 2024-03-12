@@ -239,6 +239,7 @@ namespace ui_test {
 				auto* vlist = frame->createChild<rawrbox::UIVirtualList<std::string>>();
 				vlist->setPos({0, 16});
 				vlist->setSize({400, 100});
+				vlist->setScrollSpeed(5);
 				vlist->renderItem = [](size_t indx, std::string& msg, bool isHovering, rawrbox::Stencil& stencil) {
 					stencil.drawBox({}, {400, 12}, isHovering ? rawrbox::Colors::Black() : rawrbox::Colors::Gray().strength(indx % 2 == 1 ? 0.25F : 0.5F));
 					stencil.drawText(*rawrbox::DEBUG_FONT_REGULAR, msg, {0, 0});
@@ -319,7 +320,6 @@ namespace ui_test {
 			this->_ROOT_UI.reset();
 			this->_console.reset();
 
-			rawrbox::ASYNC::shutdown();
 			rawrbox::RESOURCES::shutdown();
 		}
 	}

@@ -128,7 +128,6 @@ namespace bass_test {
 			this->_modelGrid.reset();
 			this->_text.reset();
 
-			rawrbox::ASYNC::shutdown();
 			rawrbox::BASS::shutdown();
 			rawrbox::RESOURCES::shutdown();
 		}

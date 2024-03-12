@@ -139,7 +139,6 @@ namespace phys_2d_test {
 			this->_texture = nullptr;
 			this->_timer = nullptr;
 
-			rawrbox::ASYNC::shutdown();
 			rawrbox::PHYSICS_2D::shutdown();
 			rawrbox::RESOURCES::shutdown();
 		}

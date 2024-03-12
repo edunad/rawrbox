@@ -154,7 +154,6 @@ namespace decal_test {
 			this->_model.reset();
 			this->_model2.reset();
 
-			rawrbox::ASYNC::shutdown();
 			rawrbox::RESOURCES::shutdown();
 		}
 	}

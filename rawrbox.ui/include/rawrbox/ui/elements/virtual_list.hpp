@@ -28,6 +28,7 @@ namespace rawrbox {
 		// MOUSE SCROLL ----
 		int _mouseScrollY = 0;
 		int _maxYOffset = 0;
+		int _scrollSpeed = 2;
 		// ----
 
 		rawrbox::Color _backgroundColor = rawrbox::Colors::Transparent();
@@ -54,34 +55,39 @@ namespace rawrbox {
 
 		[[nodiscard]] bool lockScroll() const override { return true; }
 
-		void clear() {
+		void clear() const {
 			this->_items.clear();
 			this->_mouseScrollY = 0;
 		};
 
-		void addItem(T item) {
+		void addItem(const T& item) {
 			this->_items.push_back(item);
 		};
 
-		void setItems(std::vector<T> items) {
+		void setItems(const std::vector<T> items) {
 			this->_items = items;
 			this->_mouseScrollY = 0;
 		};
 
-		void resetScroll() {
+		void resetScroll() const {
 			this->_mouseScrollY = 0;
 		};
 
-		bool hasItem(size_t index) {
+		[[nodiscard]] int getScrollSpeed() const { return this->_scrollSpeed; }
+		void setScrollSpeed(int speed) {
+			this->_scrollSpeed = speed;
+		}
+
+		[[nodiscard]] bool hasItem(size_t index) const {
 			return std::find(this->_items.begin(), this->_items.end(), index) != this->_items.end();
 		};
 
-		std::vector<T>& getItems() { return this->_items; }
-		T& getItem(size_t index) {
+		[[nodiscard]] const std::vector<T>& getItems() const { return this->_items; }
+		[[nodiscard]] T& getItem(size_t index) const {
 			return this->_items[index];
 		};
 
-		int getPadding() { return this->_padding; }
+		[[nodiscard]] int getPadding() const { return this->_padding; }
 		void setPadding(int padding) {
 			this->_padding = padding;
 		}
@@ -113,14 +119,14 @@ namespace rawrbox {
 				int xEnd = xPosOffset + itemSize.x;
 
 				// Hover check
-				if (_mousePos.x > xPosOffset && _mousePos.x < xEnd && _mousePos.y > yStart && _mousePos.y < yEnd) {
+				if (this->_mousePos.x > xPosOffset && this->_mousePos.x<xEnd&& this->_mousePos.y> yStart && this->_mousePos.y < yEnd) {
 					this->_hoverIndex = static_cast<int>(indx);
 				}
 
 				// Calculate visibility
 				if (yEnd > 0 && yStart < size.y) {
 					stencil.pushOffset({static_cast<float>(xPosOffset), static_cast<float>(yStart)});
-					this->renderItem(indx, itm, _hoverIndex == static_cast<int>(indx), stencil);
+					this->renderItem(indx, itm, this->_hoverIndex == static_cast<int>(indx), stencil);
 					stencil.popOffset();
 				}
 
@@ -153,13 +159,13 @@ namespace rawrbox {
 		}
 
 		void mouseUp(const rawrbox::Vector2i& /*mousePos*/, uint32_t button, uint32_t /*mods*/) override {
-			if (button != 0 || _hoverIndex < 0 || _hoverIndex > static_cast<int>(this->_items.size())) return;
-			this->onItemClick(_hoverIndex, this->_items[_hoverIndex], false);
+			if (button != 0 || this->_hoverIndex < 0 || this->_hoverIndex > static_cast<int>(this->_items.size())) return;
+			this->onItemClick(this->_hoverIndex, this->_items[this->_hoverIndex], false);
 		}
 
 		void mouseDown(const rawrbox::Vector2i& /*mousePos*/, uint32_t button, uint32_t /*mods*/) override {
-			if (button != 0 || _hoverIndex < 0 || _hoverIndex > static_cast<int>(this->_items.size())) return;
-			this->onItemClick(_hoverIndex, this->_items[_hoverIndex], true);
+			if (button != 0 || this->_hoverIndex < 0 || this->_hoverIndex > static_cast<int>(this->_items.size())) return;
+			this->onItemClick(this->_hoverIndex, this->_items[this->_hoverIndex], true);
 		}
 
 		void mouseMove(const rawrbox::Vector2i& pos) override {
@@ -168,12 +174,7 @@ namespace rawrbox {
 
 		void mouseScroll(const rawrbox::Vector2i& /*mousePos*/, const rawrbox::Vector2i& offset) override {
 			if (offset.y == 0) return;
-
-			int newVal = _mouseScrollY + offset.y * 2;
-			if (newVal > 0) newVal = 0;
-			if (newVal < _maxYOffset) newVal = _maxYOffset;
-
-			_mouseScrollY = newVal;
+			this->_mouseScrollY = std::clamp<int>(this->_mouseScrollY + offset.y * this->_scrollSpeed, this->_maxYOffset, 0);
 		};
 
 		void setHovering(bool hover) override {
@@ -185,7 +186,7 @@ namespace rawrbox {
 			}
 		};
 
-		virtual void setBackgroundColor(rawrbox::Color color) {
+		virtual void setBackgroundColor(const rawrbox::Color& color) {
 			this->_backgroundColor = color;
 		}
 

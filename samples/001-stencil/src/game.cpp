@@ -139,7 +139,6 @@ namespace stencil {
 
 			this->_markdown.reset();
 
-			rawrbox::ASYNC::shutdown();
 			rawrbox::RESOURCES::shutdown();
 		}
 	}

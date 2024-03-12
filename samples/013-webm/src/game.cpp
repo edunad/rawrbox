@@ -108,7 +108,6 @@ namespace webm_test {
 		} else {
 			this->_model.reset();
 
-			rawrbox::ASYNC::shutdown();
 			rawrbox::RESOURCES::shutdown();
 		}
 	}

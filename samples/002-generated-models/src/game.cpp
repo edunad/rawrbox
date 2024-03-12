@@ -307,7 +307,6 @@ namespace model {
 			this->_spline.reset();
 			this->_text.reset();
 
-			rawrbox::ASYNC::shutdown();
 			rawrbox::RESOURCES::shutdown();
 		}
 	}
