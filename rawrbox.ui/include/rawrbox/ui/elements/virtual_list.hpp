@@ -55,7 +55,7 @@ namespace rawrbox {
 
 		[[nodiscard]] bool lockScroll() const override { return true; }
 
-		void clear() const {
+		void clear() {
 			this->_items.clear();
 			this->_mouseScrollY = 0;
 		};
