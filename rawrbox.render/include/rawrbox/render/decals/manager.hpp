@@ -16,7 +16,7 @@ namespace rawrbox {
 
 	struct DecalVertex {
 		rawrbox::Matrix4x4 worldToLocal = {};
-		rawrbox::Vector4_t<uint32_t> data = {};
+		rawrbox::Vector4u data = {};
 		rawrbox::Colorf color = {};
 	};
 

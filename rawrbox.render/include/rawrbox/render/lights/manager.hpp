@@ -26,7 +26,7 @@ namespace rawrbox {
 
 	struct LightConstants {
 		// Light ---------
-		rawrbox::Vector4_t<uint32_t> lightSettings = {};
+		rawrbox::Vector4u lightSettings = {};
 		// ------
 
 		// Ambient ---
