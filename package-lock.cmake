@@ -17,7 +17,7 @@ CPMDeclarePackage(magic_enum
 )
 # glaze
 CPMDeclarePackage(glaze
-  VERSION 2.1.8
+  VERSION 2.2.4
   GITHUB_REPOSITORY stephenberry/glaze
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -38,7 +38,7 @@ CPMDeclarePackage(zlib
 # Catch2
 CPMDeclarePackage(Catch2
   NAME Catch2
-  VERSION 3.5.2
+  VERSION 3.5.3
   GITHUB_REPOSITORY catchorg/Catch2
   OPTIONS
     "CATCH_INSTALL_DOCS OFF"
@@ -77,7 +77,7 @@ CPMDeclarePackage(cpptrace
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.614
+  GIT_TAG 0.616
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"
@@ -200,10 +200,11 @@ CPMDeclarePackage(libwebp
 # clip
 CPMDeclarePackage(clip
   NAME clip
-  VERSION 1.7
+  VERSION 1.8
   GITHUB_REPOSITORY dacap/clip
   OPTIONS
     "CLIP_EXAMPLES OFF"
+    "CLIP_ENABLE_IMAGE OFF"
     "CLIP_TESTS OFF"
 )
 # Jolt

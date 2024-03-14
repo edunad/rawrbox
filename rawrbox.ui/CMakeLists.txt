@@ -8,11 +8,12 @@ CPMAddPackage(
     NAME
         clip
     VERSION
-        1.7
+        1.8
     GITHUB_REPOSITORY
         dacap/clip
     OPTIONS
         "CLIP_EXAMPLES OFF"
+        "CLIP_ENABLE_IMAGE OFF"
         "CLIP_TESTS OFF")
 
 if(clip_ADDED)
