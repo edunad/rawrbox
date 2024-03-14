@@ -17,10 +17,9 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IFence> _copyFence;
 
 		std::vector<std::function<void()>> _callbacks = {};
-		rawrbox::Vector2i _size = {};
 
 	public:
-		TextureBLIT(const rawrbox::Vector2i& size);
+		TextureBLIT(const rawrbox::Vector2u& size);
 		TextureBLIT(TextureBLIT&&) = delete;
 		TextureBLIT& operator=(TextureBLIT&&) = delete;
 		TextureBLIT(const TextureBLIT&) = delete;
@@ -29,8 +28,8 @@ namespace rawrbox {
 
 		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false) override;
 
-		void copy(Diligent::ITexture* base, const std::function<void()>& callback);
-		void blit(const Diligent::Box& box, const std::function<void(const uint8_t*, const uint64_t)>& callback);
+		void copy(Diligent::ITexture* base, Diligent::Box* box, const std::function<void()>& callback);
+		void blit(Diligent::Box* box, const std::function<void(const uint8_t*, const uint64_t)>& callback);
 
 		void update() override;
 		[[nodiscard]] bool requiresUpdate() const override;

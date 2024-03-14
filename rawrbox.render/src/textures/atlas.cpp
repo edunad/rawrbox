@@ -20,7 +20,7 @@ namespace rawrbox {
 
 	// ------ PIXEL-UTILS
 	size_t TextureAtlas::total() const {
-		rawrbox::Vector2i totalSprites = this->_size / this->_spriteSize;
+		rawrbox::Vector2u totalSprites = this->_size / this->_spriteSize;
 		return static_cast<size_t>(totalSprites.x * totalSprites.y);
 	}
 
@@ -35,15 +35,15 @@ namespace rawrbox {
 	// --------------------
 
 	void TextureAtlas::processAtlas() {
-		int tileSizeX = this->_spriteSize * this->_channels;
-		size_t totalSprites = (this->_size.x / this->_spriteSize) * (this->_size.y / this->_spriteSize);
+		uint32_t tileSizeX = this->_spriteSize * this->_channels;
+		uint32_t totalSprites = (this->_size.x / this->_spriteSize) * (this->_size.y / this->_spriteSize);
 
 		this->_tiles.clear();
 		this->_tiles.resize(totalSprites);
 
-		for (size_t spriteIndex = 0; spriteIndex < totalSprites; ++spriteIndex) {
-			int x = spriteIndex % (this->_size.x / this->_spriteSize);
-			int y = spriteIndex / (this->_size.x / this->_spriteSize);
+		for (uint32_t spriteIndex = 0; spriteIndex < totalSprites; ++spriteIndex) {
+			uint32_t x = spriteIndex % (this->_size.x / this->_spriteSize);
+			uint32_t y = spriteIndex / (this->_size.x / this->_spriteSize);
 
 			auto& pix = this->_tiles[spriteIndex];
 			pix.resize(this->_spriteSize * this->_spriteSize * this->_channels);

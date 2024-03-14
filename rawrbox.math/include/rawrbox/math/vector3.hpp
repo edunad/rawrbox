@@ -290,5 +290,6 @@ namespace rawrbox {
 	using Vector3f = Vector3_t<float>;
 	using Vector3i = Vector3_t<int>;
 	using Vector3d = Vector3_t<double>;
+	using Vector3u = Vector3_t<uint32_t>;
 	using Vector3 = Vector3f;
 } // namespace rawrbox

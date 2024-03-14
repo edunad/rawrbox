@@ -19,7 +19,7 @@ namespace gpu {
 #ifdef _DEBUG
 		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
 #else
-		window->init(-1, -1, rawrbox::WindowFlags::Window::BORDERLESS);
+		window->init(0, 0, rawrbox::WindowFlags::Window::BORDERLESS);
 #endif
 
 		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
@@ -30,7 +30,6 @@ namespace gpu {
 
 		// Setup renderer
 		auto* render = window->createRenderer();
-		render->skipIntros(true);
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;

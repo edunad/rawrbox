@@ -32,7 +32,7 @@ namespace rawrbox {
 		settings.renderTargets = 2;                               // COLOR + GPUPick
 		settings.signature = rawrbox::BindlessManager::signature; // Use bindless
 
-		auto* cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
+		auto* cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("ClusteredPlugin");
 		if (cluster != nullptr) {
 			settings.macros = cluster->getClusterMacros() + helper;
 		}

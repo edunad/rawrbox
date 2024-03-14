@@ -70,10 +70,8 @@ namespace rawrbox {
 		virtual Diligent::IBufferView* getDataGridBuffer(bool readOnly = true);
 		// ----------
 
-		[[nodiscard]] const std::string getID() const override;
-
-		void initialize(const rawrbox::Vector2i& size) override;
-		void resize(const rawrbox::Vector2i& size) override;
+		void initialize(const rawrbox::Vector2u& size) override;
+		void resize(const rawrbox::Vector2u& size) override;
 		void upload() override;
 
 		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig, bool compute) override;

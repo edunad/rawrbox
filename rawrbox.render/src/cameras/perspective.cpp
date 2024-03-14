@@ -4,7 +4,7 @@
 
 namespace rawrbox {
 	// NOLINTBEGIN(clang-analyzer-optin.cplusplus.VirtualCall)
-	CameraPerspective::CameraPerspective(const rawrbox::Vector2i& winSize, float FOV, float near, float far) : _winSize(winSize), _FOV(FOV) {
+	CameraPerspective::CameraPerspective(const rawrbox::Vector2u& winSize, float FOV, float near, float far) : _winSize(winSize), _FOV(FOV) {
 		this->_z_near = near;
 		this->_z_far = far;
 

@@ -28,7 +28,7 @@ namespace rawrbox {
 		bool _recording = false;
 
 	public:
-		explicit TextureRender(const rawrbox::Vector2i& size, bool depth = true);
+		explicit TextureRender(const rawrbox::Vector2u& size, bool depth = true);
 
 		TextureRender(TextureRender&&) = delete;
 		TextureRender& operator=(TextureRender&&) = delete;

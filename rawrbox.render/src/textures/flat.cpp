@@ -4,7 +4,7 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-	TextureFlat::TextureFlat(const rawrbox::Vector2i& initsize, const rawrbox::Colorf& bgcol) : _transparent(bgcol.a != 1.F) {
+	TextureFlat::TextureFlat(const rawrbox::Vector2u& initsize, const rawrbox::Colorf& bgcol) : _transparent(bgcol.a != 1.F) {
 		this->setName("FLAT::" + bgcol.toHEX());
 		this->_channels = 4;
 

@@ -8,8 +8,6 @@
 #include <RenderPass.h>
 #include <TextureView.h>
 
-#include <string>
-
 namespace rawrbox {
 	class RenderPlugin {
 	protected:
@@ -30,7 +28,6 @@ namespace rawrbox {
 		// UTILS ----
 		virtual void setEnabled(bool enabled);
 		[[nodiscard]] virtual bool isEnabled() const;
-		[[nodiscard]] virtual const std::string getID() const;
 		// ----------
 
 		virtual void requirements(Diligent::DeviceFeatures& features);
@@ -38,8 +35,8 @@ namespace rawrbox {
 		virtual void signatures(std::vector<Diligent::PipelineResourceDesc>& sig, bool compute);
 		virtual void bind(Diligent::IPipelineResourceSignature& sig, bool compute);
 
-		virtual void initialize(const rawrbox::Vector2i& renderSize);
-		virtual void resize(const rawrbox::Vector2i& renderSize);
+		virtual void initialize(const rawrbox::Vector2u& renderSize);
+		virtual void resize(const rawrbox::Vector2u& renderSize);
 		virtual void upload();
 
 		virtual void preRender();

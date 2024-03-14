@@ -9,6 +9,7 @@
 #include <rawrbox/render/textures/render.hpp>
 #include <rawrbox/render/textures/utils/blit.hpp>
 #include <rawrbox/utils/logger.hpp>
+#include <rawrbox/utils/string.hpp>
 
 #include <RefCntAutoPtr.hpp>
 #include <ScopedQueryHelper.hpp>
@@ -67,8 +68,8 @@ namespace rawrbox {
 
 		rawrbox::Colorf _clearColor = rawrbox::Colors::Black();
 
-		rawrbox::Vector2i _size = {};
-		rawrbox::Vector2i _monitorSize = {};
+		rawrbox::Vector2u _size = {};
+		rawrbox::Vector2u _monitorSize = {};
 
 		Diligent::NativeWindow _window = {};
 
@@ -115,7 +116,7 @@ namespace rawrbox {
 		std::function<void()> onIntroCompleted = nullptr;
 		std::function<std::pair<uint32_t, uint32_t>()> overrideHEAP = nullptr;
 
-		RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize, const rawrbox::Colorf& clearColor = rawrbox::Colors::Black());
+		RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2u& size, const rawrbox::Vector2u& monitorSize, const rawrbox::Colorf& clearColor = rawrbox::Colors::Black());
 		RendererBase(const RendererBase&) = delete;
 		RendererBase(RendererBase&&) = delete;
 		RendererBase& operator=(const RendererBase&) = delete;
@@ -123,7 +124,7 @@ namespace rawrbox {
 		virtual ~RendererBase();
 
 		virtual void init(Diligent::DeviceFeatures features = {});
-		virtual void resize(const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize);
+		virtual void resize(const rawrbox::Vector2u& size, const rawrbox::Vector2u& monitorSize);
 
 		// PLUGINS ---------------------------
 		template <typename T = rawrbox::RenderPlugin, typename... CallbackArgs>
@@ -131,12 +132,15 @@ namespace rawrbox {
 		T* addPlugin(CallbackArgs&&... args) {
 			if (this->_initialized) throw this->_logger->error("'addPlugin' must be called before 'init'!");
 			auto renderPass = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
-			auto p = renderPass.get();
 
-			this->_renderPlugins[p->getID()] = std::move(renderPass);
-			this->_logger->info("Registered new plugin '{}'", p->getID());
+			auto id = rawrbox::StrUtils::replace(typeid(T).name(), "class rawrbox::", "");
+			if (this->_renderPlugins.contains(id)) throw this->_logger->error("Plugin '{}' already registered!", id);
 
-			return p;
+			auto* pass = renderPass.get();
+			this->_renderPlugins[id] = std::move(renderPass);
+			this->_logger->info("Registered renderer plugin '{}'", id);
+
+			return pass;
 		}
 
 		template <typename T = rawrbox::RenderPlugin>
@@ -193,7 +197,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual const Diligent::QueryDataDuration& getDurationStats(const std::string& query);
 #endif
 
-		[[nodiscard]] virtual const rawrbox::Vector2i& getSize() const;
+		[[nodiscard]] virtual const rawrbox::Vector2u& getSize() const;
 
 		[[nodiscard]] virtual bool getVSync() const;
 		virtual void setVSync(bool vsync);

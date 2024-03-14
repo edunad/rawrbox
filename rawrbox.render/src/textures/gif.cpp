@@ -18,11 +18,14 @@ namespace rawrbox {
 		int* delays = nullptr;
 		uint8_t* gifPixels = nullptr;
 
+		int width = 0;
+		int height = 0;
+
 		// Need to find a way to not load it all to memory
 		if (buffer.empty()) {
-			gifPixels = stbi_xload_file(this->_filePath.generic_string().c_str(), &this->_size.x, &this->_size.y, &frames_n, &delays);
+			gifPixels = stbi_xload_file(this->_filePath.generic_string().c_str(), &width, &height, &frames_n, &delays);
 		} else {
-			gifPixels = stbi_xload_mem(buffer.data(), static_cast<int>(buffer.size()), &this->_size.x, &this->_size.y, &frames_n, &delays);
+			gifPixels = stbi_xload_mem(buffer.data(), static_cast<int>(buffer.size()), &width, &height, &frames_n, &delays);
 		}
 
 		if (gifPixels == nullptr || delays == nullptr) {
@@ -36,6 +39,8 @@ namespace rawrbox {
 
 			throw this->_logger->error("Error loading image: {}", failure);
 		}
+
+		this->_size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
 		uint32_t framePixelCount = this->_size.x * this->_size.y * this->_channels;
 		for (int i = 0; i < frames_n; i++) {

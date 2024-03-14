@@ -78,7 +78,7 @@ namespace rawrbox {
 		static rawrbox::Matrix4x4 mtxOrtho(float left, float right, float bottom, float top, float near, float far);
 		static rawrbox::Matrix4x4 mtxProj(float FOV, float aspect, float near, float far);
 
-		static rawrbox::Vector3f mtxProject(const rawrbox::Vector3f& pos, const rawrbox::Matrix4x4& view, const rawrbox::Matrix4x4& proj, const rawrbox::Vector4i& viewport);
+		static rawrbox::Vector3f mtxProject(const rawrbox::Vector3f& pos, const rawrbox::Matrix4x4& view, const rawrbox::Matrix4x4& proj, const rawrbox::Vector4u& viewport);
 		// ------
 
 		// OPERATORS ----

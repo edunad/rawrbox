@@ -5,7 +5,7 @@
 namespace rawrbox {
 	class TextureGIF : public rawrbox::TextureAnimatedBase {
 	private:
-		void internalLoad(const std::vector<uint8_t>& data, bool useFallback = true) override;
+		void internalLoad(const std::vector<uint8_t>& buffer, bool useFallback = true) override;
 
 	public:
 		explicit TextureGIF(const std::filesystem::path& filePath, bool useFallback = true);

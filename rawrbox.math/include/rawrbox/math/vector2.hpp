@@ -287,5 +287,6 @@ namespace rawrbox {
 
 	using Vector2f = Vector2_t<float>;
 	using Vector2i = Vector2_t<int>;
+	using Vector2u = Vector2_t<uint32_t>;
 	using Vector2 = Vector2f;
 } // namespace rawrbox

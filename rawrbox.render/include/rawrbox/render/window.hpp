@@ -38,7 +38,7 @@ namespace rawrbox {
 	// ------EVENTS
 	using OnFocusCallback = rawrbox::Event<Window&, bool>;
 	using OnCharCallback = rawrbox::Event<Window&, uint32_t>;
-	using OnResizeCallback = rawrbox::Event<Window&, const Vector2i&, const Vector2i&>;
+	using OnResizeCallback = rawrbox::Event<Window&, const Vector2u&, const Vector2u&>;
 	using OnScrollCallback = rawrbox::Event<Window&, const Vector2i&, const Vector2i&>;
 	using OnMouseMoveCallback = rawrbox::Event<Window&, const Vector2i&>;
 	using OnWindowMoveCallback = rawrbox::Event<Window&, const Vector2i&>;
@@ -48,7 +48,7 @@ namespace rawrbox {
 	// --------------------
 
 	struct WindowSettings {
-		rawrbox::Vector2i size = {};
+		rawrbox::Vector2u size = {};
 		rawrbox::Vector2i pos = {-1, -1};
 
 		uint32_t flags = 0;
@@ -65,6 +65,7 @@ namespace rawrbox {
 		// CURSOR ------
 		GLFWcursor* _cursor = nullptr;
 		std::array<uint8_t, 16 * 16 * 4> _cursorPixels = {};
+		rawrbox::Vector2i _mousePos = {};
 		// -----------
 
 		Diligent::RENDER_DEVICE_TYPE _renderType = Diligent::RENDER_DEVICE_TYPE::RENDER_DEVICE_TYPE_UNDEFINED;
@@ -72,7 +73,7 @@ namespace rawrbox {
 		bool _hasFocus = false;
 
 		// Screen Utils --
-		std::unordered_map<int, rawrbox::Vector2i> _screenSizes = {};
+		std::unordered_map<int, rawrbox::Vector2u> _screenSizes = {};
 		// --------
 
 		// STATIC ----
@@ -145,7 +146,7 @@ namespace rawrbox {
 		OnWindowClose onWindowClose;
 		// --------------------
 
-		void init(int width, int height, uint32_t flags = WindowFlags::NONE);
+		void init(uint32_t width, uint32_t height, uint32_t flags = WindowFlags::NONE);
 
 		void setMonitor(int monitor);
 		void setTitle(const std::string& title);
@@ -159,15 +160,15 @@ namespace rawrbox {
 		// UTILS ---------------
 		void close();
 
-		[[nodiscard]] virtual rawrbox::Vector2i getSize() const;
+		[[nodiscard]] virtual const rawrbox::Vector2u& getSize() const;
 
 		virtual void setPos(const rawrbox::Vector2i& pos);
-		[[nodiscard]] virtual rawrbox::Vector2i getPos() const;
+		[[nodiscard]] virtual const rawrbox::Vector2i& getPos() const;
 
-		[[nodiscard]] virtual rawrbox::Vector2i getMonitorSize() const;
+		[[nodiscard]] virtual rawrbox::Vector2u getMonitorSize() const;
 
 		[[nodiscard]] virtual float getAspectRatio() const;
-		[[nodiscard]] virtual rawrbox::Vector2i getMousePos() const;
+		[[nodiscard]] virtual const rawrbox::Vector2i& getMousePos() const;
 		[[nodiscard]] virtual uint32_t getWindowFlags() const;
 		[[nodiscard]] virtual Diligent::NativeWindow getHandle() const;
 		[[nodiscard]] virtual rawrbox::RendererBase& getRenderer() const;
@@ -175,7 +176,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool isKeyDown(int key) const;
 		[[nodiscard]] virtual bool isMouseDown(int key) const;
 
-		[[nodiscard]] virtual const std::unordered_map<int, rawrbox::Vector2i>& getScreenSizes() const;
+		[[nodiscard]] virtual const std::unordered_map<int, rawrbox::Vector2u>& getScreenSizes() const;
 
 		[[nodiscard]] virtual bool hasFocus() const;
 

@@ -22,7 +22,7 @@ namespace rawrbox {
 	protected:
 		Diligent::RefCntAutoPtr<Diligent::ITextureView> _handle;
 		Diligent::RefCntAutoPtr<Diligent::ITexture> _tex;
-		rawrbox::Vector2i _size = {};
+		rawrbox::Vector2u _size = {};
 
 		int _channels = 0;
 		uint32_t _textureID = 0; // Default to missing texture, it's always reserved to 0
@@ -58,7 +58,7 @@ namespace rawrbox {
 
 		// UTILS----
 		[[nodiscard]] virtual bool hasTransparency() const;
-		[[nodiscard]] virtual const rawrbox::Vector2i& getSize() const;
+		[[nodiscard]] virtual const rawrbox::Vector2u& getSize() const;
 		[[nodiscard]] virtual int getChannels() const;
 
 		[[nodiscard]] virtual bool isValid() const;

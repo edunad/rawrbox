@@ -102,5 +102,6 @@ namespace rawrbox {
 	using AABBd = AABB_t<double>;
 	using AABBf = AABB_t<float>;
 	using AABBi = AABB_t<int>;
+	using AABBu = AABB_t<uint32_t>;
 	using AABB = AABBf;
 } // namespace rawrbox

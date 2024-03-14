@@ -72,7 +72,7 @@ namespace rawrbox {
 			rawrbox::YUVLuminanceScale scale = rawrbox::YUVLuminanceScale::UNKNOWN;
 			int channels = 4;
 
-			image.size = {static_cast<int>(img->d_w), static_cast<int>(img->d_h)};
+			image.size = {img->d_w, img->d_h};
 			image.pixels.resize(image.size.x * image.size.y * channels);
 
 			switch (img->range) {

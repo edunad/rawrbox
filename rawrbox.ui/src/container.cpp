@@ -162,6 +162,7 @@ namespace rawrbox {
 	void UIContainer::mouseUp(const rawrbox::Vector2i& /*_mousePos*/, uint32_t /*_button*/, uint32_t /*_mods*/) {}
 	void UIContainer::mouseScroll(const rawrbox::Vector2i& /*_mousePos*/, const rawrbox::Vector2i& /*_offset*/) {}
 	void UIContainer::mouseMove(const rawrbox::Vector2i& /*_mousePos*/) {}
+
 	void UIContainer::key(uint32_t /*_key*/, uint32_t /*_scancode*/, uint32_t /*_action*/, uint32_t /*_mods*/) {}
 	void UIContainer::keyChar(uint32_t /*_key*/) {}
 	// ---

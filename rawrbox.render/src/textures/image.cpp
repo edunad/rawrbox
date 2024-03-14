@@ -19,21 +19,36 @@
 namespace rawrbox {
 	// NOLINTBEGIN(modernize-pass-by-value)
 	TextureImage::TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback) : _filePath(filePath) {
-		uint8_t* image = stbi_load_from_memory(buffer.data(), static_cast<int>(buffer.size()) * sizeof(uint8_t), &this->_size.x, &this->_size.y, &this->_channels, 0);
+		int width = 0;
+		int height = 0;
+
+		uint8_t* image = stbi_load_from_memory(buffer.data(), static_cast<int>(buffer.size()) * sizeof(uint8_t), &width, &height, &this->_channels, 0);
+
+		this->_size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 		this->internalLoad(image, useFallback);
 	}
 
 	TextureImage::TextureImage(const std::filesystem::path& filePath, bool useFallback) : _filePath(filePath) {
-		stbi_uc* image = stbi_load(filePath.generic_string().c_str(), &this->_size.x, &this->_size.y, &this->_channels, 0);
+		int width = 0;
+		int height = 0;
+
+		stbi_uc* image = stbi_load(filePath.generic_string().c_str(), &width, &height, &this->_channels, 0);
+
+		this->_size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 		this->internalLoad(image, useFallback);
 	}
 
 	TextureImage::TextureImage(const uint8_t* buffer, int bufferSize, bool useFallback) {
-		uint8_t* image = stbi_load_from_memory(buffer, bufferSize, &this->_size.x, &this->_size.y, &this->_channels, 0);
+		int width = 0;
+		int height = 0;
+
+		uint8_t* image = stbi_load_from_memory(buffer, bufferSize, &width, &height, &this->_channels, 0);
+
+		this->_size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 		this->internalLoad(image, useFallback);
 	}
 
-	TextureImage::TextureImage(const rawrbox::Vector2i& size, const uint8_t* buffer, int channels) {
+	TextureImage::TextureImage(const rawrbox::Vector2u& size, const uint8_t* buffer, int channels) {
 		this->_size = size;
 		this->_channels = channels;
 		this->_name = "RawrBox::Texture::Image";
@@ -52,8 +67,8 @@ namespace rawrbox {
 		// ---------------------------
 	}
 
-	TextureImage::TextureImage(const rawrbox::Vector2i& size, const std::vector<uint8_t>& buffer, int channels) : TextureImage(size, buffer.data(), channels) {}
-	TextureImage::TextureImage(const rawrbox::Vector2i& size, int channels) {
+	TextureImage::TextureImage(const rawrbox::Vector2u& size, const std::vector<uint8_t>& buffer, int channels) : TextureImage(size, buffer.data(), channels) {}
+	TextureImage::TextureImage(const rawrbox::Vector2u& size, int channels) {
 		this->_size = size;
 		this->_channels = channels;
 		this->_name = "RawrBox::Texture::Image";

@@ -19,7 +19,7 @@ namespace rawrbox {
 	// NOLINTEND{unused-const-variable}
 
 	struct WEBMInfo {
-		rawrbox::Vector2i size = {};
+		rawrbox::Vector2u size = {};
 
 		rawrbox::VIDEO_CODEC vCodec = rawrbox::VIDEO_CODEC::UNKNOWN;
 		std::string title;
@@ -82,7 +82,7 @@ namespace rawrbox {
 		[[nodiscard]] bool getNextFrame(rawrbox::WEBMImage& img);
 
 		// UTILS ------
-		[[nodiscard]] const rawrbox::Vector2i& getSize() const;
+		[[nodiscard]] const rawrbox::Vector2u& getSize() const;
 		[[nodiscard]] const rawrbox::WEBMFrame& getFrame() const;
 		[[nodiscard]] const rawrbox::WEBMInfo& getInfo() const;
 
@@ -90,7 +90,7 @@ namespace rawrbox {
 		void setLoop(bool loop);
 
 		[[nodiscard]] bool getPaused() const;
-		void setPaused(bool loop);
+		void setPaused(bool paused);
 
 		[[nodiscard]] bool isPreLoaded() const;
 		// --------

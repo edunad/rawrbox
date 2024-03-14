@@ -220,7 +220,7 @@ namespace rawrbox {
 
 		for (size_t i = 1; i < characterCount; i++) {
 			auto size = this->_font->getStringSize(text.substr(0, Font::getByteCount(text, i)));
-			if (mousePos.x < size.cast<int>().x) {
+			if (mousePos.x < size.x) {
 				this->_charXPos = i - 1;
 				return;
 			}

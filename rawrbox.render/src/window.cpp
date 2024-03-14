@@ -167,11 +167,11 @@ namespace rawrbox {
 
 		for (int i = 0; i < count; i++) {
 			const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
-			this->_screenSizes[i] = {mode->width, mode->height};
+			this->_screenSizes[i] = {static_cast<uint32_t>(mode->width), static_cast<uint32_t>(mode->height)};
 		}
 	}
 
-	void Window::init(int width, int height, uint32_t flags) {
+	void Window::init(uint32_t width, uint32_t height, uint32_t flags) {
 		if (rawrbox::RENDER_THREAD_ID == std::this_thread::get_id()) throw _logger->error("'init' should be called inside engine's 'setupGLFW'!");
 
 		int APIHint = GLFW_NO_API;
@@ -212,16 +212,19 @@ namespace rawrbox {
 
 		// Fullscreen / borderless
 		const GLFWvidmode* mode = glfwGetVideoMode(mon);
+
+		auto vidW = static_cast<uint32_t>(mode->width);
+		auto vidH = static_cast<uint32_t>(mode->height);
+
 		bool windowed = (flags & WindowFlags::Window::WINDOWED) > 0;
 		bool borderless = (flags & WindowFlags::Window::BORDERLESS) > 0;
 		bool fullscreen = (flags & WindowFlags::Window::FULLSCREEN) > 0;
 
 		if (!fullscreen && !windowed && !borderless) throw _logger->error("Window flag attribute missing");
 		if ((windowed && (borderless || fullscreen)) || (borderless && (windowed || fullscreen)) || (fullscreen && (windowed || borderless))) throw _logger->error("Only one window flag attribute can be selected");
-
-		if (borderless || fullscreen || (width >= mode->width || height >= mode->height)) {
-			width = mode->width;
-			height = mode->height;
+		if (borderless || fullscreen || (width >= vidW || height >= vidH)) {
+			width = vidW;
+			height = vidH;
 		}
 		// -----------
 
@@ -262,7 +265,7 @@ namespace rawrbox {
 
 		if (this->_settings.pos == -1) {
 			if (windowed || transparent) {
-				this->_settings.pos = {monx + mode->width / 2 - width / 2, mony + mode->height / 2 - height / 2}; // Center
+				this->_settings.pos = {monx + static_cast<int>(mode->width / 2 - width / 2), mony + static_cast<int>(mode->height / 2 - height / 2)}; // Center
 			} else {
 				this->_settings.pos = {monx, mony}; // Top corner
 			}
@@ -357,7 +360,7 @@ namespace rawrbox {
 		}
 	}
 
-	rawrbox::Vector2i Window::getSize() const {
+	const rawrbox::Vector2u& Window::getSize() const {
 		return this->_settings.size;
 	}
 
@@ -368,34 +371,29 @@ namespace rawrbox {
 		this->_settings.pos = pos;
 	}
 
-	rawrbox::Vector2i Window::getPos() const {
+	const rawrbox::Vector2i& Window::getPos() const {
 		return this->_settings.pos;
 	}
 
-	rawrbox::Vector2i Window::getMonitorSize() const {
+	rawrbox::Vector2u Window::getMonitorSize() const {
 		if (this->_handle == nullptr) throw _logger->error("Invalid window handle");
 
 		GLFWmonitor* w = getWindowMonitor();
 		if (w == nullptr) throw _logger->error("Failed to find screen dimensions");
 
 		const auto* vidmode = glfwGetVideoMode(w);
-		return {vidmode->width, vidmode->height};
+		return {static_cast<uint32_t>(vidmode->width), static_cast<uint32_t>(vidmode->height)};
 	}
 
 	float Window::getAspectRatio() const {
 		if (this->_handle == nullptr) throw _logger->error("Invalid window handle");
-		Vector2f ret = this->getSize().cast<float>();
+		rawrbox::Vector2f ret = this->getSize().cast<float>();
 
 		return ret.x / ret.y;
 	}
 
-	Vector2i Window::getMousePos() const {
-		if (this->_handle == nullptr) throw _logger->error("Invalid window handle");
-		double x = NAN;
-		double y = NAN;
-
-		glfwGetCursorPos(this->_handle, &x, &y);
-		return {static_cast<int>(std::floor(x)), static_cast<int>(std::floor(y))};
+	const rawrbox::Vector2i& Window::getMousePos() const {
+		return this->_mousePos;
 	}
 
 	uint32_t Window::getWindowFlags() const {
@@ -440,7 +438,7 @@ namespace rawrbox {
 		return glfwGetMouseButton(this->_handle, key) == GLFW_PRESS;
 	}
 
-	const std::unordered_map<int, rawrbox::Vector2i>& Window::getScreenSizes() const {
+	const std::unordered_map<int, rawrbox::Vector2u>& Window::getScreenSizes() const {
 		return this->_screenSizes;
 	}
 
@@ -460,10 +458,11 @@ namespace rawrbox {
 	}
 
 	void Window::callbacks_resize(GLFWwindow* whandle, int width, int height) {
-		rawrbox::runOnRenderThread([whandle, width, height]() {
-			auto& window = glfwHandleToRenderer(whandle);
-			window._settings.size = {width, height};
+		auto& window = glfwHandleToRenderer(whandle);
+		if (width == 0 && height == 0) return; // Minimized
 
+		window._settings.size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+		rawrbox::runOnRenderThread([&window]() {
 			window.onResize(window, window._settings.size, window.getMonitorSize());
 		});
 	}
@@ -471,9 +470,8 @@ namespace rawrbox {
 	void Window::callbacks_key(GLFWwindow* whandle, int key, int scancode, int action, int mods) {
 		if (key < 0) return;
 
-		rawrbox::runOnRenderThread([whandle, key, scancode, action, mods]() {
-			auto& window = glfwHandleToRenderer(whandle);
-
+		auto& window = glfwHandleToRenderer(whandle);
+		rawrbox::runOnRenderThread([key, scancode, action, mods, &window]() {
 			window.onKey(window,
 			    static_cast<uint32_t>(key),
 			    static_cast<uint32_t>(scancode),
@@ -485,12 +483,10 @@ namespace rawrbox {
 	void Window::callbacks_mouseKey(GLFWwindow* whandle, int button, int action, int mods) {
 		if (button < 0) return;
 
-		rawrbox::runOnRenderThread([whandle, button, action, mods]() {
-			auto& window = glfwHandleToRenderer(whandle);
-			auto pos = window.getMousePos();
-
+		auto& window = glfwHandleToRenderer(whandle);
+		rawrbox::runOnRenderThread([button, action, mods, &window]() {
 			window.onMouseKey(window,
-			    pos,
+			    window.getMousePos(),
 			    static_cast<uint32_t>(button),
 			    static_cast<uint32_t>(action),
 			    static_cast<uint32_t>(mods));
@@ -498,45 +494,43 @@ namespace rawrbox {
 	}
 
 	void Window::callbacks_char(GLFWwindow* whandle, unsigned int ch) {
-		rawrbox::runOnRenderThread([whandle, ch]() {
-			auto& window = glfwHandleToRenderer(whandle);
+		auto& window = glfwHandleToRenderer(whandle);
+		rawrbox::runOnRenderThread([&window, ch]() {
 			window.onChar(window, ch);
 		});
 	}
 
 	void Window::callbacks_scroll(GLFWwindow* whandle, double x, double y) {
-		rawrbox::runOnRenderThread([whandle, x, y]() {
-			auto& window = glfwHandleToRenderer(whandle);
+		auto& window = glfwHandleToRenderer(whandle);
 
-			auto size = window.getSize();
-			auto pos = window.getMousePos();
-
-			if (pos.x < 0 || pos.y < 0 || pos.x > size.x || pos.y > size.y) return; // Outside window
-			window.onMouseScroll(window, pos, {static_cast<int>(x * 10), static_cast<int>(y * 10)});
+		rawrbox::runOnRenderThread([x, y, &window]() {
+			window.onMouseScroll(window, window.getMousePos(), {static_cast<int>(x * 10), static_cast<int>(y * 10)});
 		});
 	}
 
 	void Window::callbacks_mouseMove(GLFWwindow* whandle, double x, double y) {
-		rawrbox::runOnRenderThread([whandle, x, y]() {
-			auto& window = glfwHandleToRenderer(whandle);
-			window.onMouseMove(window, {static_cast<int>(x), static_cast<int>(y)});
+		auto& window = glfwHandleToRenderer(whandle);
+		window._mousePos = {static_cast<int>(x), static_cast<int>(y)};
+
+		rawrbox::runOnRenderThread([&window]() {
+			window.onMouseMove(window, window.getMousePos());
 		});
 	}
 
 	void Window::callbacks_focus(GLFWwindow* whandle, int focus) {
-		rawrbox::runOnRenderThread([whandle, focus]() {
-			auto& window = glfwHandleToRenderer(whandle);
+		auto& window = glfwHandleToRenderer(whandle);
+		window._hasFocus = (focus == 1);
 
-			window._hasFocus = (focus == 1);
-			window.onFocus(window, focus != 0);
+		rawrbox::runOnRenderThread([&window]() {
+			window.onFocus(window, window._hasFocus);
 		});
 	}
 
 	void Window::callbacks_pos(GLFWwindow* whandle, int x, int y) {
-		rawrbox::runOnRenderThread([whandle, x, y]() {
-			auto& window = glfwHandleToRenderer(whandle);
+		auto& window = glfwHandleToRenderer(whandle);
 
-			window._settings.pos = {x, y};
+		window._settings.pos = {x, y};
+		rawrbox::runOnRenderThread([&window]() {
 			window.onWindowMove(window, window._settings.pos);
 		});
 	}

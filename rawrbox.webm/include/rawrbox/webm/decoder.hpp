@@ -27,7 +27,7 @@ namespace rawrbox {
 
 	struct WEBMImage {
 		std::vector<uint8_t> pixels = {};
-		rawrbox::Vector2i size = {};
+		rawrbox::Vector2u size = {};
 
 		[[nodiscard]] inline bool valid() const { return !pixels.empty(); }
 	};

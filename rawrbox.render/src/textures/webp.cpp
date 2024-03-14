@@ -10,12 +10,12 @@ namespace rawrbox {
 	TextureWEBP::TextureWEBP(const std::filesystem::path& filePath, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, useFallback) { this->internalLoad(rawrbox::PathUtils::getRawData(this->_filePath), useFallback); }
 	TextureWEBP::TextureWEBP(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, buffer, useFallback) { this->internalLoad(buffer, useFallback); }
 
-	void TextureWEBP::internalLoad(const std::vector<uint8_t>& buffer, bool useFallback) {
+	void TextureWEBP::internalLoad(const std::vector<uint8_t>& data, bool useFallback) {
 		this->_name = "RawrBox::Texture::WEBP";
 
 		try {
-			if (buffer.empty()) throw this->_logger->error("Image not found");
-			WebPData webp_data = {buffer.data(), buffer.size()};
+			if (data.empty()) throw this->_logger->error("Image not found");
+			WebPData webp_data = {data.data(), data.size()};
 
 			WebPAnimDecoderOptions options;
 			if (WebPAnimDecoderOptionsInit(&options) == 0) {
@@ -37,7 +37,7 @@ namespace rawrbox {
 			this->_frames.clear();
 			this->_frames.reserve(info.frame_count);
 
-			this->_size = {static_cast<int>(info.canvas_width), static_cast<int>(info.canvas_height)};
+			this->_size = {info.canvas_width, info.canvas_height};
 			this->_channels = 4;
 
 			float prevTime = 0.F;
@@ -49,7 +49,7 @@ namespace rawrbox {
 					throw this->_logger->error("Error decoding image '{}'!", this->_filePath.generic_string());
 				}
 
-				Frame frame;
+				rawrbox::Frame frame;
 				frame.delay = static_cast<float>(delay) - prevTime;
 				frame.pixels.resize(this->_size.x * this->_size.y * this->_channels);
 				std::memcpy(frame.pixels.data(), buf, this->_size.x * this->_size.y * this->_channels);

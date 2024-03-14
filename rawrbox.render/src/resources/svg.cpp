@@ -9,7 +9,7 @@ namespace rawrbox {
 		return rawrbox::SVGEngine::preLoad(filePath.generic_string(), buffer);
 	}
 
-	rawrbox::TextureBase* ResourceSVG::get(const rawrbox::Vector2i& size, uint32_t /*flags*/) {
+	rawrbox::TextureBase* ResourceSVG::get(const rawrbox::Vector2u& size, uint32_t /*flags*/) {
 		return rawrbox::SVGEngine::load(filePath.generic_string(), size);
 	}
 	// -------

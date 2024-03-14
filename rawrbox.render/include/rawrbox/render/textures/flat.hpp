@@ -10,7 +10,7 @@ namespace rawrbox {
 		bool _transparent = false;
 
 	public:
-		TextureFlat(const rawrbox::Vector2i& initsize, const rawrbox::Color& bgcol);
+		TextureFlat(const rawrbox::Vector2u& initsize, const rawrbox::Color& bgcol);
 		[[nodiscard]] bool hasTransparency() const override;
 	};
 } // namespace rawrbox

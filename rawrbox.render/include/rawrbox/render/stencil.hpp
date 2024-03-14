@@ -59,7 +59,7 @@ namespace rawrbox {
 		std::vector<rawrbox::PosUVColorVertexData> vertices = {};
 		std::vector<uint32_t> indices = {};
 
-		rawrbox::AABBi clip = {};
+		rawrbox::AABBu clip = {};
 		bool cull = true;
 
 		void clear() {
@@ -154,7 +154,7 @@ namespace rawrbox {
 		// ------------
 
 		// WINDOW ----
-		rawrbox::Vector2i _size = {};
+		rawrbox::Vector2u _size = {};
 		//  ----------
 
 		// Offset handling ----
@@ -164,7 +164,7 @@ namespace rawrbox {
 		// ----------
 
 		// Clip handling ----
-		std::vector<rawrbox::AABBi> _clips = {};
+		std::vector<rawrbox::AABBu> _clips = {};
 		// ----------
 
 		// Outline handling ----
@@ -208,7 +208,7 @@ namespace rawrbox {
 
 	public:
 		Stencil() = default;
-		explicit Stencil(const rawrbox::Vector2i& size);
+		explicit Stencil(const rawrbox::Vector2u& size);
 
 		Stencil(Stencil&&) = delete;
 		Stencil& operator=(Stencil&&) = delete;
@@ -218,7 +218,7 @@ namespace rawrbox {
 		virtual ~Stencil();
 
 		virtual void upload();
-		virtual void resize(const rawrbox::Vector2i& size);
+		virtual void resize(const rawrbox::Vector2u& size);
 
 		// ------ UTILS
 		virtual void drawPolygon(const rawrbox::Polygon& poly);
@@ -263,7 +263,7 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ OTHER
-		[[nodiscard]] virtual const rawrbox::Vector2i& getSize() const;
+		[[nodiscard]] virtual const rawrbox::Vector2u& getSize() const;
 		[[nodiscard]] virtual std::vector<rawrbox::StencilDraw> getDrawCalls() const;
 		virtual void clear();
 		// --------------------

@@ -8,7 +8,7 @@ namespace rawrbox {
 
 	public:
 		bool load(const std::vector<uint8_t>& buffer) override;
-		rawrbox::TextureBase* get(const rawrbox::Vector2i& size, uint32_t flags = 0);
+		rawrbox::TextureBase* get(const rawrbox::Vector2u& size, uint32_t flags = 0);
 	};
 
 	class SVGLoader : public rawrbox::Loader {
