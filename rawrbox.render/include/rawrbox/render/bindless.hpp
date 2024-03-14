@@ -35,8 +35,8 @@ namespace rawrbox {
 	// --------------------------
 
 	struct BindlessPixelBuffer {
-		rawrbox::Vector4_t<uint32_t> textureIDs = {}; // BASE, NORMAL, ROUGHTMETAL, EMISSION
-		rawrbox::Vector4f litData = {};               // Texture data
+		rawrbox::Vector4u textureIDs = {}; // BASE, NORMAL, ROUGHTMETAL, EMISSION
+		rawrbox::Vector4f litData = {};    // Texture data
 
 		bool operator==(const BindlessPixelBuffer& other) const { return this->textureIDs == other.textureIDs && this->litData == other.litData; }
 		bool operator!=(const BindlessPixelBuffer& other) const { return !operator==(other); }
