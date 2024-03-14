@@ -53,7 +53,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool visible() const;
 
 		virtual void focus();
-		virtual void setFocused(bool visible);
+		virtual void setFocused(bool focused);
 		[[nodiscard]] virtual bool focused() const;
 
 		virtual void setHovering(bool hovering);
@@ -118,6 +118,7 @@ namespace rawrbox {
 		virtual void mouseUp(const rawrbox::Vector2i& mousePos, uint32_t button, uint32_t mods);
 		virtual void mouseScroll(const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset);
 		virtual void mouseMove(const rawrbox::Vector2i& mousePos);
+
 		virtual void key(uint32_t key, uint32_t scancode, uint32_t action, uint32_t mods);
 		virtual void keyChar(uint32_t key);
 		// ---

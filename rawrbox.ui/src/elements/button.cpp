@@ -45,7 +45,7 @@ namespace rawrbox {
 
 	// INPUTS ---
 	void UIButton::mouseUp(const rawrbox::Vector2i& /*mousePos*/, uint32_t button, uint32_t /*mods*/) {
-		if (!this->_enabled || button != MOUSE_BUTTON_1) return;
+		if (!this->_enabled || button != rawrbox::MOUSE_BUTTON_1) return;
 		onClick();
 	}
 	// ---------

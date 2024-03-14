@@ -90,8 +90,8 @@ namespace rawrbox {
 
 		// Title
 		stencil.drawBox({}, {size.x, this->_titleSize}, this->_titleColor);
-		if (rawrbox::DEBUG_FONT_BOLD != nullptr) {
-			stencil.drawText(*rawrbox::DEBUG_FONT_BOLD, this->_title, {4, 8}, Color::RGBAHex(0x000000D9), rawrbox::Alignment::Left, rawrbox::Alignment::Center);
+		if (rawrbox::DEBUG_FONT_REGULAR != nullptr) {
+			stencil.drawText(*rawrbox::DEBUG_FONT_REGULAR, this->_title, {4, 8}, Color::RGBAHex(0x000000D9), rawrbox::Alignment::Left, rawrbox::Alignment::Center);
 		}
 
 		if (this->_closable) {

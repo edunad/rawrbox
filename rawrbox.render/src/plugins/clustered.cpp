@@ -23,9 +23,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_dataGridBufferRead);
 	}
 
-	const std::string ClusteredPlugin::getID() const { return "Clustered"; }
-
-	void ClusteredPlugin::initialize(const rawrbox::Vector2i& renderSize) {
+	void ClusteredPlugin::initialize(const rawrbox::Vector2u& renderSize) {
 		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, CLUSTER_TEXTEL_SIZE);
 		CLUSTERS_Y = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.y, CLUSTER_TEXTEL_SIZE);
 
@@ -48,7 +46,7 @@ namespace rawrbox {
 		this->buildBuffers();
 	}
 
-	void ClusteredPlugin::resize(const rawrbox::Vector2i& renderSize) {
+	void ClusteredPlugin::resize(const rawrbox::Vector2u& renderSize) {
 		if (renderSize.x <= 0 || renderSize.y <= 0) return; // Minimized
 
 		// Re-calculate clusters ----

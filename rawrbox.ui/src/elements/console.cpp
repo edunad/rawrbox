@@ -136,7 +136,7 @@ namespace rawrbox {
 		return this->visible();
 	}
 
-	void UIConsole::mouseScroll(const Vector2i& /*_mousePos*/, const Vector2i& offset) {
+	void UIConsole::mouseScroll(const rawrbox::Vector2i& /*_mousePos*/, const rawrbox::Vector2i& offset) {
 		if (offset.y == 0) return;
 
 		float newVal = this->_mouseScrollY + static_cast<float>(offset.y) * 2;

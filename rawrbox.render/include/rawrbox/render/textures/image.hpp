@@ -18,12 +18,12 @@ namespace rawrbox {
 		explicit TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback = true);
 		explicit TextureImage(const uint8_t* buffer, int bufferSize, bool useFallback = true); // TO BE DECODED
 
-		explicit TextureImage(const rawrbox::Vector2i& size, const uint8_t* buffer, int channels = 4);
-		explicit TextureImage(const rawrbox::Vector2i& size, const std::vector<uint8_t>& buffer, int channels = 4);
+		explicit TextureImage(const rawrbox::Vector2u& size, const uint8_t* buffer, int channels = 4);
+		explicit TextureImage(const rawrbox::Vector2u& size, const std::vector<uint8_t>& buffer, int channels = 4);
 
-		explicit TextureImage(const rawrbox::Vector2i& size, int channels = 4);
+		explicit TextureImage(const rawrbox::Vector2u& size, int channels = 4);
 
-		TextureImage(const TextureImage&) = default;
+		TextureImage(const TextureImage&) = delete;
 		TextureImage(TextureImage&&) = delete;
 		TextureImage& operator=(const TextureImage&) = delete;
 		TextureImage& operator=(TextureImage&&) = delete;

@@ -20,14 +20,12 @@ namespace rawrbox {
 		PostProcessPlugin& operator=(PostProcessPlugin&&) = delete;
 		~PostProcessPlugin() override;
 
-		void initialize(const rawrbox::Vector2i& size) override;
+		void initialize(const rawrbox::Vector2u& size) override;
 		void upload() override;
 
 		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig, bool compute) override;
 		void bind(Diligent::IPipelineResourceSignature& sig, bool compute) override;
-
 		void postRender(rawrbox::TextureRender& render) override;
-		[[nodiscard]] const std::string getID() const override;
 
 		// Process utils ----
 		template <class T = rawrbox::PostProcessBase, typename... CallbackArgs>

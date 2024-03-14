@@ -6,7 +6,7 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-	TextureRender::TextureRender(const rawrbox::Vector2i& size, bool depth) : _depth(depth) {
+	TextureRender::TextureRender(const rawrbox::Vector2u& size, bool depth) : _depth(depth) {
 		this->_size = size;
 		this->_name = "RawrBox::RenderTarget";
 	}

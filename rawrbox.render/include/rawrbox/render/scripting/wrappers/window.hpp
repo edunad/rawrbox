@@ -22,11 +22,11 @@ namespace rawrbox {
 		virtual void hideCursor(bool hidden);
 		virtual void setCursor(uint32_t cursor);
 
-		virtual void setSize(const rawrbox::Vector2i& size) const;
-		[[nodiscard]] virtual rawrbox::Vector2i getSize() const;
+		virtual void setSize(const rawrbox::Vector2u& size) const;
+		[[nodiscard]] virtual const rawrbox::Vector2u& getSize() const;
 
 		virtual void setPos(const rawrbox::Vector2i& pos) const;
-		[[nodiscard]] virtual rawrbox::Vector2i getPos() const;
+		[[nodiscard]] virtual const rawrbox::Vector2i& getPos() const;
 
 		[[nodiscard]] virtual float getAspectRatio() const;
 

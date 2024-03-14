@@ -48,7 +48,7 @@ namespace rawrbox {
 		return true;
 	}
 
-	rawrbox::TextureBase* SVGEngine::load(const std::filesystem::path& filename, const rawrbox::Vector2i& size) {
+	rawrbox::TextureBase* SVGEngine::load(const std::filesystem::path& filename, const rawrbox::Vector2u& size) {
 		auto id = fmt::format("{}-{}x{}", filename.generic_string(), size.x, size.y);
 		auto fnd = _renderedSVGS.find(id);
 		if (fnd != _renderedSVGS.end()) return fnd->second.get();

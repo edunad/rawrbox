@@ -7,7 +7,7 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_buffer);
 	}
 
-	void PostProcessPlugin::initialize(const rawrbox::Vector2i& /*size*/) {
+	void PostProcessPlugin::initialize(const rawrbox::Vector2u& /*size*/) {
 		Diligent::BufferDesc BuffPixelDesc;
 		BuffPixelDesc.Name = "rawrbox::PostProcess";
 		BuffPixelDesc.Usage = Diligent::USAGE_DYNAMIC;
@@ -45,8 +45,6 @@ namespace rawrbox {
 			renderTexture.stopRecord();
 		}
 	}
-
-	const std::string PostProcessPlugin::getID() const { return "PostProcess"; }
 
 	// Post utils ----
 	void PostProcessPlugin::remove(size_t indx) {

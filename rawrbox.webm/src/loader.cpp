@@ -6,8 +6,8 @@
 #include <mutex>
 
 namespace rawrbox {
-
 	static std::mutex RENDER_THREAD_LOCK;
+
 	void WEBM::preloadVideo() {
 		std::lock_guard<std::mutex> lock(RENDER_THREAD_LOCK);
 		this->_logger->info("Pre-loading video '{}'", fmt::format(fmt::fg(fmt::color::light_coral), this->_filePath.generic_string()));
@@ -92,7 +92,7 @@ namespace rawrbox {
 
 		// Append extra info ----
 		this->_info.frameRate = this->_video->GetFrameRate();
-		this->_info.size = {static_cast<int>(this->_video->GetWidth()), static_cast<int>(this->_video->GetHeight())};
+		this->_info.size = {static_cast<uint32_t>(this->_video->GetWidth()), static_cast<uint32_t>(this->_video->GetHeight())};
 		// -----
 
 		// Start pre-loading video if flag enabled ----
@@ -254,7 +254,7 @@ namespace rawrbox {
 	}
 
 	// UTILS ------
-	const rawrbox::Vector2i& WEBM::getSize() const {
+	const rawrbox::Vector2u& WEBM::getSize() const {
 		return this->_info.size;
 	}
 

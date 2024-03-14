@@ -3,7 +3,11 @@
 #include <rawrbox/render/textures/utils/blit.hpp>
 
 namespace rawrbox {
-	TextureBLIT::TextureBLIT(const rawrbox::Vector2i& size) : _size(size) {}
+	TextureBLIT::TextureBLIT(const rawrbox::Vector2u& size) {
+		this->_size = size;
+		this->_name = "RawrBox::GPU::Blit";
+	}
+
 	TextureBLIT::~TextureBLIT() {
 		RAWRBOX_DESTROY(this->_copyFence);
 		this->_callbacks.clear();
@@ -14,18 +18,19 @@ namespace rawrbox {
 
 		Diligent::TextureDesc desc;
 		desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
-		desc.Width = this->_size.x; // TODO: RESCALE
+		desc.Width = this->_size.x;
 		desc.Height = this->_size.y;
 		desc.MipLevels = 1;
 		desc.Usage = Diligent::USAGE_STAGING;
+		desc.BindFlags = Diligent::BIND_NONE;
 		desc.CPUAccessFlags = Diligent::CPU_ACCESS_READ;
 		desc.Format = Diligent::TEX_FORMAT_RGBA8_UNORM;
-		desc.Name = "RawrBox::GPU::Blit";
+		desc.Name = this->_name.c_str();
 
 		rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_tex);
 	}
 
-	void TextureBLIT::copy(Diligent::ITexture* base, const std::function<void()>& callback) {
+	void TextureBLIT::copy(Diligent::ITexture* base, Diligent::Box* box, const std::function<void()>& callback) {
 		if (base == nullptr) throw _logger->error("Invalid texture");
 		if (callback == nullptr) throw _logger->error("Invalid callback");
 
@@ -45,6 +50,7 @@ namespace rawrbox {
 			Diligent::CopyTextureAttribs copy;
 			copy.pSrcTexture = base;
 			copy.pDstTexture = this->_tex;
+			copy.pSrcBox = box;
 
 			rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{copy.pSrcTexture, Diligent::RESOURCE_STATE_COPY_SOURCE}});
 			context->CopyTexture(copy); // This is an async operation, enqueue the fence
@@ -57,12 +63,12 @@ namespace rawrbox {
 		this->_callbacks.push_back(callback);
 	}
 
-	void TextureBLIT::blit(const Diligent::Box& box, const std::function<void(const uint8_t*, const uint64_t)>& callback) {
+	void TextureBLIT::blit(Diligent::Box* box, const std::function<void(const uint8_t*, const uint64_t)>& callback) {
 		if (callback == nullptr) throw _logger->error("Invalid callback");
 		auto* context = rawrbox::RENDERER->context();
 
 		Diligent::MappedTextureSubresource MappedSubres;
-		context->MapTextureSubresource(this->_tex, 0, 0, Diligent::MAP_READ, Diligent::MAP_FLAG_DO_NOT_WAIT | Diligent::MAP_FLAG_DISCARD, &box, MappedSubres);
+		context->MapTextureSubresource(this->_tex, 0, 0, Diligent::MAP_READ, Diligent::MAP_FLAG_DO_NOT_WAIT | Diligent::MAP_FLAG_DISCARD, box, MappedSubres);
 		try { // Slap a try and catch since we need to ensure that the resource is unmapped
 			callback(MappedSubres.pData == nullptr ? nullptr : std::bit_cast<uint8_t*>(MappedSubres.pData), MappedSubres.Stride);
 		} catch (...) {

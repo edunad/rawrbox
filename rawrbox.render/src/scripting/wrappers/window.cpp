@@ -20,12 +20,12 @@ namespace rawrbox {
 		this->_window->setCursor(cursor);
 	}
 
-	void WindowWrapper::setSize(const rawrbox::Vector2i& /*size*/) const {
+	void WindowWrapper::setSize(const rawrbox::Vector2u& /*size*/) const {
 		if (this->_window == nullptr) throw std::runtime_error("Invalid window handle");
 		// this->_window->setSize(size.cast<int>()); // TODO: THIS WILL AFFECT THE RENDERER, WE DON'T SUPPORT FULLY RESIZE YET
 	}
 
-	rawrbox::Vector2i WindowWrapper::getSize() const {
+	const rawrbox::Vector2u& WindowWrapper::getSize() const {
 		if (this->_window == nullptr) throw std::runtime_error("Invalid window handle");
 		return this->_window->getSize();
 	}
@@ -35,7 +35,7 @@ namespace rawrbox {
 		this->_window->setPos(pos);
 	}
 
-	rawrbox::Vector2i WindowWrapper::getPos() const {
+	const rawrbox::Vector2i& WindowWrapper::getPos() const {
 		if (this->_window == nullptr) throw std::runtime_error("Invalid window handle");
 		return this->_window->getPos();
 	}

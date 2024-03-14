@@ -77,7 +77,7 @@ namespace rawrbox {
 	// UTILS ---
 	bool TextureBase::hasTransparency() const { return this->_channels == 4 && this->_transparent; }
 
-	const rawrbox::Vector2i& TextureBase::getSize() const { return this->_size; }
+	const rawrbox::Vector2u& TextureBase::getSize() const { return this->_size; }
 
 	int TextureBase::getChannels() const { return this->_channels; }
 

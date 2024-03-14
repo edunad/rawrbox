@@ -36,7 +36,7 @@
 #include <utility>
 
 namespace rawrbox {
-	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor), _size(size), _monitorSize(monitorSize), _window(window), _type(type) {}
+	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2u& size, const rawrbox::Vector2u& monitorSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor), _size(size), _monitorSize(monitorSize), _window(window), _type(type) {}
 	RendererBase::~RendererBase() {
 		this->_render.reset();
 		this->_stencil.reset();
@@ -220,7 +220,7 @@ namespace rawrbox {
 		if (this->_camera != nullptr) {
 			this->_camera->initialize();
 		} else {
-			this->_logger->warn("Camera is not setup! Only {} {}", fmt::format(fmt::fg(fmt::color::red), "OVERLAY"), fmt::format(fmt::fg(fmt::color::yellow), "pass will be available!"));
+			this->_logger->warn("No camera found! Only {} {}", fmt::format(fmt::fg(fmt::color::red), "OVERLAY"), fmt::format(fmt::fg(fmt::color::yellow), "pass will be available!"));
 		}
 		// ------------------
 
@@ -251,17 +251,17 @@ namespace rawrbox {
 		}
 
 		if (rawrbox::WHITE_TEXTURE == nullptr) {
-			rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::White());
+			rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2u(2, 2), rawrbox::Colors::White());
 			rawrbox::WHITE_TEXTURE->upload();
 		}
 
 		if (rawrbox::BLACK_TEXTURE == nullptr) {
-			rawrbox::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Colors::Black());
+			rawrbox::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2u(2, 2), rawrbox::Colors::Black());
 			rawrbox::BLACK_TEXTURE->upload();
 		}
 
 		if (rawrbox::NORMAL_TEXTURE == nullptr) {
-			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2i(2, 2), rawrbox::Color::RGBHex(0x7f7fff));
+			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2u(2, 2), rawrbox::Color::RGBHex(0x7f7fff));
 			rawrbox::NORMAL_TEXTURE->upload();
 		}
 		// -------------------------
@@ -295,7 +295,7 @@ namespace rawrbox {
 		// -----------------------
 
 		// Setup blit ----
-		this->_GPUBlit = std::make_unique<rawrbox::TextureBLIT>(this->_size);
+		this->_GPUBlit = std::make_unique<rawrbox::TextureBLIT>(rawrbox::Vector2u{GPU_PICK_SAMPLE_SIZE, GPU_PICK_SAMPLE_SIZE});
 		this->_GPUBlit->upload();
 		// ---------------
 
@@ -317,7 +317,7 @@ namespace rawrbox {
 		this->_initialized = true;
 	}
 
-	void RendererBase::resize(const rawrbox::Vector2i& size, const rawrbox::Vector2i& monitorSize) {
+	void RendererBase::resize(const rawrbox::Vector2u& size, const rawrbox::Vector2u& monitorSize) {
 		if (this->_swapChain == nullptr) return;
 		this->_swapChain->Resize(size.x, size.y);
 
@@ -690,7 +690,7 @@ namespace rawrbox {
 	}
 #endif
 
-	const rawrbox::Vector2i& RendererBase::getSize() const { return this->_size; }
+	const rawrbox::Vector2u& RendererBase::getSize() const { return this->_size; }
 
 	bool RendererBase::getVSync() const { return this->_vsync; }
 	void RendererBase::setVSync(bool vsync) { this->_vsync = vsync; }
@@ -699,23 +699,24 @@ namespace rawrbox {
 		if (this->_render == nullptr) throw _logger->error("Render target texture not initialized");
 		if (callback == nullptr) throw _logger->error("Render target texture not initialized");
 
-		if (pos.x < 0 || pos.y < 0 || pos.x >= this->_size.x || pos.y >= this->_size.y) throw _logger->error("Outside of window range");
+		auto size = this->_size.cast<int>();
+		if (pos.x < 0 || pos.y < 0 || pos.x >= size.x || pos.y >= size.y) throw _logger->error("Outside of window range");
 
 		Diligent::Box MapRegion;
-		MapRegion.MinX = pos.x - GPU_PICK_SAMPLE_SIZE;
-		MapRegion.MinY = pos.y - GPU_PICK_SAMPLE_SIZE;
-		MapRegion.MaxX = MapRegion.MinX + GPU_PICK_SAMPLE_SIZE * 2;
-		MapRegion.MaxY = MapRegion.MinY + GPU_PICK_SAMPLE_SIZE * 2;
+		MapRegion.MinX = pos.x;
+		MapRegion.MinY = pos.y;
+		MapRegion.MaxX = MapRegion.MinX + GPU_PICK_SAMPLE_SIZE;
+		MapRegion.MaxY = MapRegion.MinY + GPU_PICK_SAMPLE_SIZE;
 
 		auto* tex = this->_render->getTexture(1);
-		this->_GPUBlit->copy(tex, [this, MapRegion, callback]() {
-			this->_GPUBlit->blit(MapRegion, [MapRegion, callback](const uint8_t* pixels, const uint64_t stride) {
+		this->_GPUBlit->copy(tex, &MapRegion, [this, callback]() {
+			this->_GPUBlit->blit(nullptr, [this, callback](const uint8_t* pixels, const uint64_t stride) {
 				uint32_t max = 0;
 				uint32_t id = 0;
 				std::unordered_map<uint32_t, uint32_t> ids = {};
 
-				for (size_t y = MapRegion.MinY; y < MapRegion.MaxY; y++) {
-					for (size_t x = MapRegion.MinX; x < MapRegion.MaxX; x++) {
+				for (size_t y = 0; y < GPU_PICK_SAMPLE_SIZE; y++) {
+					for (size_t x = 0; x < GPU_PICK_SAMPLE_SIZE; x++) {
 						size_t pixelIndex = x * 4 + y * stride;
 
 						uint8_t r = pixels[pixelIndex];
