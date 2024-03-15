@@ -121,7 +121,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::Matrix4x4 CameraBase::getViewProjMtx() const {
-		return this->_view * this->_projection;
+		return this->_projection * this->_view;
 	}
 
 	const rawrbox::Matrix4x4& CameraBase::getModelTransform() const {
