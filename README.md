@@ -80,33 +80,36 @@
 
 # CMAKE OPTIONS
 
-| OPTION NAME                                | NOTE                                                                                               |
-| :----------------------------------------- | :------------------------------------------------------------------------------------------------- |
-| `RAWRBOX_BUILD_TESTING`                    | Builds & enables project tests                                                                     |
-| `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_CONTENT_FOLDER`                   | The content folder to output assets. Default is `assets`                                           |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_BUILD_RAWRBOX_UI`                 | Builds and includes ui                                                                             |
-| `RAWRBOX_BUILD_RAWRBOX_RESOURCES`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
-| `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`         | Builds the 3D physics engine                                                                       |
-| `RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS`         | Builds the 2D physics engine                                                                       |
-| `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
-| `RAWRBOX_BUILD_RAWRBOX_ASSIMP`             | Enables assimp model loading                                                                       |
-| `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM loading                                                                               |
-| `RAWRBOX_BUILD_RAWRBOX_NETWORK`            | Builds network support                                                                             |
-| `RAWRBOX_BUILD_RAWRBOX_SCRIPTING`          | Enables lua & modding support                                                                      |
-| `RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE`   | Enables io support on lua (loading and saving files on the data folder)                            |
-| `RAWRBOX_BUILD_QHULL`                      | Builds QHull util                                                                                  |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Auto-enabled if jolt is used)                    |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_DISABLE_SUPPORT_DX12`             | Disable dx12 support                                                                               |
-| `RAWRBOX_DISABLE_SUPPORT_VULKAN`           | Disable vulkan support                                                                             |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_DEV_MODE`                         | Enables all the modules, used for rawrbox development                                              |
+| OPTION NAME                                 | NOTE                                                                                               |
+| :------------------------------------------ | :------------------------------------------------------------------------------------------------- |
+| `RAWRBOX_BUILD_TESTING`                     | Builds & enables project tests                                                                     |
+| `RAWRBOX_BUILD_SAMPLES`                     | Builds the project sample                                                                          |
+| --                                          | --                                                                                                 |
+| `RAWRBOX_CONTENT_FOLDER`                    | The content folder to output assets. Default is `assets`                                           |
+| --                                          | --                                                                                                 |
+| `RAWRBOX_USE_WAYLAND`                       | Enables WAYLAND compiling on LINUX                                                                 |
+| --                                          | --                                                                                                 |
+| `RAWRBOX_BUILD_RAWRBOX_UI`                  | Builds and includes ui                                                                             |
+| `RAWRBOX_BUILD_RAWRBOX_RESOURCES`           | Builds and resouces manager (aka handling and storing loaded resources)                            |
+| `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`          | Builds the 3D physics engine                                                                       |
+| `RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS`          | Builds the 2D physics engine                                                                       |
+| `RAWRBOX_BUILD_RAWRBOX_BASS`                | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
+| `RAWRBOX_BUILD_RAWRBOX_ASSIMP`              | Enables assimp model loading                                                                       |
+| `RAWRBOX_BUILD_RAWRBOX_WEBM`                | Enables WEBM loading                                                                               |
+| `RAWRBOX_BUILD_RAWRBOX_NETWORK`             | Builds network support                                                                             |
+| --                                          | --                                                                                                 |
+| `RAWRBOX_BUILD_RAWRBOX_SCRIPTING`           | Enables lua & modding support                                                                      |
+| `RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE`    | Enables io support on lua (loading and saving files on the data folder)                            |
+| `RAWRBOX_BUILD_RAWRBOX_SCRIPTING_EXCEPTION` | Enables scripting throwing exceptions instead of catching them                                     |
+| --                                          | --                                                                                                 |
+| `RAWRBOX_BUILD_QHULL`                       | Builds QHull util                                                                                  |
+| --                                          | --                                                                                                 |
+| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME`  | Builds libraries with MSVC Multithreaded runtime (Auto-enabled if jolt is used)                    |
+| --                                          | --                                                                                                 |
+| `RAWRBOX_DISABLE_SUPPORT_DX12`              | Disable dx12 support                                                                               |
+| `RAWRBOX_DISABLE_SUPPORT_VULKAN`            | Disable vulkan support                                                                             |
+| --                                          | --                                                                                                 |
+| `RAWRBOX_DEV_MODE`                          | Enables all the modules, used for rawrbox development                                              |
 
 <br/><br/>
 
@@ -185,7 +188,7 @@
 
 # SAMPLES
 
-|   001-stencil<br/><a href='/samples/001-stencil'><img src="https://i.rawr.dev/sample1-min-2.gif" width="240" /></a>   | 002-generated-models<br/><a href='/samples/002-generated-models'><img src="https://i.rawr.dev/sample2-min.gif" width="240" /></a> |      003-light<br/><a href='/samples/003-light'><img src="https://i.rawr.dev/sample3-min-2.gif" width="240" /></a>       |
+|   001-stencil<br/><a href='/samples/001-stencil'><img src="https://i.rawr.dev/sample1-min-2.gif" width="240" /></a>   | 002-generated-models<br/><a href='/samples/002-generated-models'><img src="https://i.rawr.dev/sample2-min.gif" width="240" /></a> |      003-light<br/><a href='/samples/003-light'><img src="https://i.rawr.dev/sample3-min-3.gif" width="240" /></a>       |
 | :-------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------: |
 | 004-instancing<br/><a href='/samples/004-instancing'><img src="https://i.rawr.dev/sample4-min.gif" width="240" /></a> |     005-post-process<br/><a href='/samples/005-post-process'><img src="https://i.rawr.dev/sample5-min.gif" width="240" /></a>     |      006-decals<br/><a href='/samples/006-decals'><img src="https://i.rawr.dev/sample6-min.gif" width="240" /></a>       |
 |                                            ~~007-particle-system~~ (TODO)                                             |               008-ui<br/><a href='/samples/008-ui'><img src="https://i.rawr.dev/sample8-min.gif" width="240" /></a>               |      009-assimp<br/><a href='/samples/009-assimp'><img src="https://i.rawr.dev/sample9-min.gif" width="240" /></a>       |

@@ -15,7 +15,7 @@ namespace rawrbox {
 
 		void updateBuffers() override {
 			rawrbox::ModelBase<M>::updateBuffers();
-			this->updateInstance();
+			this->updateInstances();
 		}
 
 	public:
@@ -46,16 +46,13 @@ namespace rawrbox {
 			return *this->_mesh;
 		}
 
-		virtual void addInstance(const rawrbox::Instance& instance, bool update = false) {
+		virtual void addInstance(const rawrbox::Instance& instance) {
 			this->_instances.push_back(instance);
-			if (this->isUploaded() && update) this->updateInstance();
 		}
 
-		virtual void removeInstance(size_t i = 0, bool update = false) {
+		virtual void removeInstance(size_t i = 0) {
 			if (i < 0 || i >= this->_instances.size()) throw this->_logger->error("Failed to find instance");
 			this->_instances.erase(this->_instances.begin() + i);
-
-			if (this->isUploaded() && update) this->updateInstance();
 		}
 
 		[[nodiscard]] rawrbox::Instance& getInstance(size_t i = 0) {
@@ -90,10 +87,10 @@ namespace rawrbox {
 			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_dataBuffer->GetBuffer(), Diligent::RESOURCE_STATE_VERTEX_BUFFER}});
 			// ------------
 
-			if (size != 0) this->updateInstance(); // Data was already added, then update the buffer
+			if (size != 0) this->updateInstances(); // Data was already added, then update the buffer
 		}
 
-		virtual void updateInstance() {
+		virtual void updateInstances() {
 			if (this->_dataBuffer == nullptr) throw this->_logger->error("Data buffer not valid! Did you call upload()?");
 
 			auto* context = rawrbox::RENDERER->context();

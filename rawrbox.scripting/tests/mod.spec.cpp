@@ -28,11 +28,12 @@ TEST_CASE("Mod should behave as expected", "[rawrbox::Mod]") {
 		REQUIRE_NOTHROW(mod.init());
 		REQUIRE_NOTHROW(mod.script("return true"));
 
-		REQUIRE(mod.call("test").hasFailed());
+		REQUIRE(!mod.call("test").has_value());
 		REQUIRE_NOTHROW(mod.script("function MOD:test() return true end"));
 
+		REQUIRE(mod.call("test").has_value());
 		for (size_t i = 0; i < 10000; i++)
-			REQUIRE(mod.call("test").wasOk());
+			REQUIRE(mod.call("test").value().wasOk());
 
 		REQUIRE_NOTHROW(mod.gc());
 	}

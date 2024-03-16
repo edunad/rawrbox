@@ -183,7 +183,7 @@ namespace rawrbox {
 		// --------------
 
 	public:
-		Model() = default;
+		Model(size_t vertex = 0) : rawrbox::ModelBase<M>(vertex){};
 		Model(const Model&) = delete;
 		Model(Model&&) = delete;
 		Model& operator=(const Model&) = delete;
@@ -268,6 +268,9 @@ namespace rawrbox {
 		}
 
 		void updateBuffers() override {
+			if (!this->isUploaded()) throw this->_logger->error("Model is not uploaded!");
+			if (!this->isDynamic()) throw this->_logger->error("Model is not dynamic!");
+
 			this->flattenMeshes();
 			rawrbox::ModelBase<M>::updateBuffers();
 		}
@@ -365,15 +368,11 @@ namespace rawrbox {
 
 				++it;
 			}
-
-			if (this->isUploaded() && this->isDynamic()) this->updateBuffers(); // Already uploaded? And dynamic? Then update vertices
 		}
 
 		virtual void removeMesh(size_t index) {
 			if (index >= this->_meshes.size()) return;
 			this->_meshes.erase(this->_meshes.begin() + index);
-
-			if (this->isUploaded() && this->isDynamic()) this->updateBuffers(); // Already uploaded? And dynamic? Then update vertices
 		}
 
 		virtual rawrbox::Mesh<typename M::vertexBufferType>* addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
@@ -381,8 +380,6 @@ namespace rawrbox {
 			mesh.owner = this;
 
 			auto& a = this->_meshes.emplace_back(std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh));
-			if (this->isUploaded() && this->isDynamic()) this->updateBuffers(); // Already uploaded? And dynamic? Then update vertices
-
 			return a.get();
 		}
 
@@ -431,6 +428,13 @@ namespace rawrbox {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
 				if (id != -1 && i != static_cast<size_t>(id)) continue;
 				this->_meshes[i]->setTexture(tex);
+			}
+		}
+
+		void setColor(const rawrbox::Color& color, int index = -1) {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (index != -1 && i != static_cast<size_t>(index)) continue;
+				this->_meshes[i]->setColor(color);
 			}
 		}
 

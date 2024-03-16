@@ -15,8 +15,8 @@ namespace rawrbox {
 
 		AABB_t() = default;
 
-		AABB_t(NumberType x_, NumberType y_, NumberType w_, NumberType h_) : pos(x_, y_), size(w_, h_) {}
-		AABB_t(const Vector2_t<NumberType>& pos_, const Vector2_t<NumberType>& size_) : pos(pos_), size(size_) {}
+		constexpr AABB_t(NumberType x_, NumberType y_, NumberType w_, NumberType h_) : pos(x_, y_), size(w_, h_) {}
+		constexpr AABB_t(const Vector2_t<NumberType>& pos_, const Vector2_t<NumberType>& size_) : pos(pos_), size(size_) {}
 
 		[[nodiscard]] NumberType surfaceArea() const {
 			return this->size.x * this->size.y;

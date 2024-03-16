@@ -15,7 +15,7 @@ namespace rawrbox {
 		rawrbox::Vector3_t<NumberType> _size = {};
 
 		BBOX_t() = default;
-		BBOX_t(const Vector3_t<NumberType>& min, const Vector3_t<NumberType>& max, const Vector3_t<NumberType>& size) : _min(min), _max(max), _size(size) {}
+		constexpr BBOX_t(const Vector3_t<NumberType>& min, const Vector3_t<NumberType>& max, const Vector3_t<NumberType>& size) : _min(min), _max(max), _size(size) {}
 
 		[[nodiscard]] bool isEmpty() const {
 			return this->_size == 0;

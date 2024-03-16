@@ -88,7 +88,7 @@ namespace gpu {
 					// -----------------
 				}
 
-				if (updateInstance) this->_instance->updateInstance();
+				if (updateInstance) this->_instance->updateInstances();
 			});
 		};
 		// -----

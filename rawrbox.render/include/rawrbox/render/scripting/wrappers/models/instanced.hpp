@@ -13,7 +13,7 @@ namespace rawrbox {
 
 			luabridge::getGlobalNamespace(L)
 			    .deriveClass<ModelC, ModelBaseC>(name.c_str())
-			    .addFunction("updateInstance", &ModelC::updateInstance)
+			    .addFunction("updateInstances", &ModelC::updateInstances)
 
 			    .addFunction("setTemplate", &ModelC::setTemplate)
 			    .addFunction("getTemplate", &ModelC::getTemplate)

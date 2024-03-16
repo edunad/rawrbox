@@ -35,8 +35,8 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _vbh; // Vertices
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _ibh; // Indices
 
-		std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>> _mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>();
-		std::unique_ptr<M> _material = std::make_unique<M>();
+		std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>> _mesh = nullptr;
+		std::unique_ptr<M> _material = nullptr;
 
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::BlendShapes<M>>> _blend_shapes = {};
 		std::vector<rawrbox::ModelOriginalData> _original_data = {};
@@ -127,7 +127,11 @@ namespace rawrbox {
 		}
 
 	public:
-		ModelBase() = default;
+		ModelBase(size_t vertex = 0) {
+			this->_mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(vertex, vertex * 3); // TRIANGLES
+			this->_material = std::make_unique<M>();
+		};
+
 		ModelBase(ModelBase&&) = delete;
 		ModelBase& operator=(ModelBase&&) = delete;
 		ModelBase(const ModelBase&) = delete;
@@ -193,7 +197,7 @@ namespace rawrbox {
 
 		// UTIL ---
 		virtual void updateBuffers() {
-			if (!this->isDynamic() || !this->isUploaded()) return;
+			if (!this->isDynamic() || !this->isUploaded()) throw this->_logger->error("Model is not dynamic or uploaded!");
 
 			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
 			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
@@ -263,16 +267,15 @@ namespace rawrbox {
 		// ----
 		virtual void upload(bool dynamic = false) {
 			if (this->isUploaded()) throw this->_logger->error("Upload called twice!");
-			auto* device = rawrbox::RENDERER->device();
 
 			// Generate buffers ----
 			this->_isDynamic = dynamic;
 
-			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
-			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
+			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.capacity());
+			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.capacity());
 
-			if (!dynamic && vertSize <= 0) throw this->_logger->error("Vertices cannot be empty on non-dynamic buffer!");
-			if (!dynamic && indcSize <= 0) throw this->_logger->error("Indices cannot be empty on non-dynamic buffer!");
+			if (vertSize <= 0) throw this->_logger->error("Vertices cannot be empty!");
+			if (indcSize <= 0) throw this->_logger->error("Indices cannot be empty!");
 
 			// Store original positions for blendstates
 			if (vertSize > 0) {
@@ -288,6 +291,8 @@ namespace rawrbox {
 			}
 			// -----------
 
+			auto* device = rawrbox::RENDERER->device();
+
 			// VERT ----
 			Diligent::BufferDesc VertBuffDesc;
 			VertBuffDesc.Name = "RawrBox::Buffer::Vertex";
@@ -299,7 +304,7 @@ namespace rawrbox {
 			VBData.pData = this->_mesh->vertices.data();
 			VBData.DataSize = VertBuffDesc.Size;
 
-			device->CreateBuffer(VertBuffDesc, vertSize > 0 ? &VBData : nullptr, &this->_vbh);
+			device->CreateBuffer(VertBuffDesc, &VBData, &this->_vbh);
 			// ---------------------
 
 			// INDC ----
@@ -307,12 +312,12 @@ namespace rawrbox {
 			IndcBuffDesc.Name = "RawrBox::Buffer::Indices";
 			IndcBuffDesc.Usage = dynamic ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE;
 			IndcBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
-			IndcBuffDesc.Size = indcSize * sizeof(uint16_t);
+			IndcBuffDesc.Size = indcSize * static_cast<uint32_t>(sizeof(uint16_t));
 
 			Diligent::BufferData IBData;
 			IBData.pData = this->_mesh->indices.data();
 			IBData.DataSize = IndcBuffDesc.Size;
-			device->CreateBuffer(IndcBuffDesc, indcSize > 0 ? &IBData : nullptr, &this->_ibh);
+			device->CreateBuffer(IndcBuffDesc, &IBData, &this->_ibh);
 			// ---------------------
 
 			// Barrier ----

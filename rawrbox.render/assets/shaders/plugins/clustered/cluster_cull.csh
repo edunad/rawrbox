@@ -60,9 +60,8 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
     float3 lightDir = mul(float4(0, 0, 0, 1.0), Camera.view).xyz;
 
     [loop]
-    for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS && (lightIndex < TOTAL_LIGHTS || decalIndex < DecalsConstants.total); ++bucketIndex) {
-		uint lightMask = 0;
-        uint decalMask = 0;
+    for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS && (lightIndex < TOTAL_LIGHTS || decalIndex < TOTAL_DECALS); ++bucketIndex) {
+        ClusterData data = (ClusterData)0;
 
         [loop]
         for(uint i = 0; i < CLUSTERS_Z && lightIndex < TOTAL_LIGHTS; ++i) {
@@ -75,7 +74,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
                 sphere.Position = mul(light.position, Camera.view).xyz;
 
                 if(SphereInAABB(sphere, cluster)) {
-                    lightMask |= 1u << i;
+                    data.light |= 1u << i;
                 }
             } else if(light.type == LIGHT_SPOT) {
                 float3 viewSpacePos = mul(light.position, Camera.view).xyz;
@@ -89,27 +88,27 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 				sphere.Position = cluster.Center.xyz;
 
                 if(ConeInSphere(viewSpacePos, viewSpaceDir, light.radius, coneAngleSinCos, sphere)) {
-                    lightMask |= 1u << i;
+                    data.light |= 1u << i;
                 }
             } else {
-                lightMask |= 1u << i; // Unknown / directional, don't calculate cull
+                data.light |= 1u << i; // Unknown / directional, don't calculate cull
             }
         }
 
         [loop]
-        for(uint o = 0; o < CLUSTERS_Z && decalIndex < DecalsConstants.total; ++o) {
+        for(uint o = 0; o < CLUSTERS_Z && decalIndex < TOTAL_DECALS; ++o) {
             Decal decal = Decals[decalIndex];
             ++decalIndex;
 
             if(decal.data.w == 1) { //test
                 if(BoxInAABB(decal.worldToLocal, cluster)) {
-                    decalMask |= 1u << o;
+                    data.decal |= 1u << o;
                 }
             } else {
-                decalMask |= 1u << o;
+                data.decal |= 1u << o;
             }
         }
 
-	    ClusterDataGrid[clusterIndex * CLUSTERED_NUM_BUCKETS + bucketIndex] = uint2(lightMask, decalMask);
+	    ClusterDataGrid[clusterIndex * CLUSTERED_NUM_BUCKETS + bucketIndex] = data;
     }
 }

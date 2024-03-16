@@ -22,12 +22,12 @@ namespace rawrbox {
 		NumberType z = 0;
 
 		Vector3_t() = default;
-		explicit Vector3_t(NumberType val) : x(val), y(val), z(val) {}
+		constexpr explicit Vector3_t(NumberType val) : x(val), y(val), z(val) {}
 		constexpr Vector3_t(NumberType _x, NumberType _y, NumberType _z) : x(_x), y(_y), z(_z) {}
 
 		// NOLINTBEGIN(hicpp-explicit-conversions)
-		Vector3_t(const std::array<NumberType, 3>& val) : x(val[0]), y(val[1]), z(val[2]) {}
-		Vector3_t(Vector2_t<NumberType> xy, NumberType _z = 0) : x(xy.x), y(xy.y), z(_z) {}
+		constexpr Vector3_t(const std::array<NumberType, 3>& val) : x(val[0]), y(val[1]), z(val[2]) {}
+		constexpr Vector3_t(Vector2_t<NumberType> xy, NumberType _z = 0) : x(xy.x), y(xy.y), z(_z) {}
 		// NOLINTEND(hicpp-explicit-conversions)
 
 		static VecType zero() { return VecType(); }

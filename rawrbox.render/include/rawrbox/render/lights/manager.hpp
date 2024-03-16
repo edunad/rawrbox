@@ -26,7 +26,7 @@ namespace rawrbox {
 
 	struct LightConstants {
 		// Light ---------
-		rawrbox::Vector4u lightSettings = {};
+		rawrbox::Vector4u lightSettings = {1U, 0U, 0U, 0U};
 		// ------
 
 		// Ambient ---
@@ -60,7 +60,8 @@ namespace rawrbox {
 		static void bindUniforms();
 
 		// UTILS ----
-		static void setEnabled(bool fb);
+		static void setEnabled(bool enabled);
+		static bool isEnabled();
 
 		static rawrbox::LightBase* getLight(size_t indx);
 		static size_t count();

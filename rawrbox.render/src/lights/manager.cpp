@@ -33,7 +33,11 @@ namespace rawrbox {
 			BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 			BuffDesc.Size = sizeof(rawrbox::LightConstants);
 
-			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &uniforms);
+			Diligent::BufferData data;
+			data.pData = &_settings;
+			data.DataSize = BuffDesc.Size;
+
+			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, &data, &uniforms);
 		}
 		// -----------------------------------------
 
@@ -144,10 +148,15 @@ namespace rawrbox {
 	}
 
 	// UTILS ----
-	void LIGHTS::setEnabled(bool fb) {
-		_settings.lightSettings.x = static_cast<unsigned int>(fb);
+	void LIGHTS::setEnabled(bool enabled) {
+		auto fullbright = static_cast<uint32_t>(enabled);
+		if (_settings.lightSettings.x == fullbright) return;
+
+		_settings.lightSettings.x = fullbright;
 		_CONSTANTS_DIRTY = true;
 	}
+
+	bool LIGHTS::isEnabled() { return _settings.lightSettings.x == 1U; }
 
 	rawrbox::LightBase* LIGHTS::getLight(size_t indx) {
 		if (indx < 0 || indx >= _lights.size()) return nullptr;
@@ -161,6 +170,7 @@ namespace rawrbox {
 	// AMBIENT ----
 	void LIGHTS::setAmbient(const rawrbox::Colorf& col) {
 		if (_settings.ambientColor == col) return;
+
 		_settings.ambientColor = col;
 		_CONSTANTS_DIRTY = true;
 	}

@@ -3,7 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("AABB should behave as expected", "[rawrbox::AABB]") {
-	rawrbox::AABB aabb = rawrbox::AABB{0.F, 0.F, 10.F, 10.F};
+	rawrbox::AABB aabb = {0.F, 0.F, 10.F, 10.F};
 
 	SECTION("rawrbox::AABB") {
 		REQUIRE(aabb.top() == 0.F);

@@ -13,9 +13,9 @@ namespace rawrbox {
 	static constexpr uint32_t CLUSTER_TEXTEL_SIZE = 64;
 	static constexpr uint32_t CLUSTERS_Z = 32;
 
-	static constexpr uint32_t MAX_LIGHTS_PER_CLUSTER = 256;
+	static constexpr uint32_t MAX_DATA_PER_CLUSTER = 256;
 
-	static constexpr uint32_t CLUSTERED_NUM_BUCKETS = MAX_LIGHTS_PER_CLUSTER / CLUSTERS_Z;
+	static constexpr uint32_t CLUSTERED_NUM_BUCKETS = MAX_DATA_PER_CLUSTER / CLUSTERS_Z;
 
 	static constexpr uint32_t CLUSTERS_X_THREADS = 4;
 	static constexpr uint32_t CLUSTERS_Y_THREADS = 4;
