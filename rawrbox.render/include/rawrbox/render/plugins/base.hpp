@@ -41,7 +41,8 @@ namespace rawrbox {
 
 		virtual void preRender();
 		virtual void postRender(rawrbox::TextureRender& renderTarget);
-
 		virtual void update();
+
+		virtual std::string getID() = 0;
 	};
 } // namespace rawrbox

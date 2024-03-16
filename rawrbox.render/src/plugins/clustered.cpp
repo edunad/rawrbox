@@ -218,4 +218,6 @@ namespace rawrbox {
 	Diligent::IBufferView* ClusteredPlugin::getDataGridBuffer(bool readOnly) { return readOnly ? this->_dataGridBufferRead : this->_dataGridBufferWrite; }
 	// ----------
 
+	std::string ClusteredPlugin::getID() { return "Clustered"; }
+
 } // namespace rawrbox
