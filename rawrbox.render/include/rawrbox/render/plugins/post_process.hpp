@@ -38,6 +38,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual rawrbox::PostProcessBase& get(size_t indx) const;
 		[[nodiscard]] virtual Diligent::IBuffer* getBuffer() const;
 		virtual size_t count();
+
+		std::string getID() override;
 		// ---------
 	};
 } // namespace rawrbox

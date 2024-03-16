@@ -59,5 +59,7 @@ namespace rawrbox {
 
 	Diligent::IBuffer* PostProcessPlugin::getBuffer() const { return this->_buffer; }
 	size_t PostProcessPlugin::count() { return this->_postProcesses.size(); }
+
+	std::string PostProcessPlugin::getID() { return "PostProcess"; }
 	// ----
 } // namespace rawrbox

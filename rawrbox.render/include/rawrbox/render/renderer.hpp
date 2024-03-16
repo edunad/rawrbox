@@ -133,7 +133,7 @@ namespace rawrbox {
 			if (this->_initialized) throw this->_logger->error("'addPlugin' must be called before 'init'!");
 			auto renderPass = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
 
-			auto id = rawrbox::StrUtils::replace(typeid(T).name(), "class rawrbox::", "");
+			auto id = renderPass->getID();
 			if (this->_renderPlugins.contains(id)) throw this->_logger->error("Plugin '{}' already registered!", id);
 
 			auto* pass = renderPass.get();

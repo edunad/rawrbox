@@ -78,5 +78,6 @@ namespace rawrbox {
 		void bind(Diligent::IPipelineResourceSignature& sig, bool compute) override;
 
 		void preRender() override;
+		std::string getID() override;
 	};
 } // namespace rawrbox
