@@ -1,13 +1,28 @@
-name: CI/CD - COMMENTS
+name: CI/CD - CHECKS
+
 on:
-  pull_request:
-    types: [labeled, unlabeled]
+  pull_request_target:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label PR
+        uses: actions/labeler@v5.0.0
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          sync-labels: true
   comment:
-    permissions:
-      contents: read
-      pull-requests: write
+    needs: label
     runs-on: ubuntu-latest
     steps:
       - name: Find comment
