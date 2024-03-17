@@ -84,3 +84,9 @@ jobs:
         with:
           name: output
           path: bin
+
+      - name: Release
+        if: github.ref == 'refs/heads/master' && github.repository_owner == 'edunad'
+        uses: release-drafter/release-drafter@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,102 @@
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+categories:
+  - title: "RAWRBOX.ASSIMP"
+    labels:
+      - "🧙‍♂️ ASSIMP"
+
+  - title: "RAWRBOX.BASS"
+    labels:
+      - "🎺 BASS"
+
+  - title: "RAWRBOX.ENGINE"
+    labels:
+      - "💽 ENGINE"
+
+  - title: "RAWRBOX.MATH"
+    labels:
+      - "🧮 MATH"
+
+  - title: "RAWRBOX.NETWORK"
+    labels:
+      - "🛰 NETWORK"
+
+  - title: "RAWRBOX.RENDERER"
+    labels:
+      - "📷 RENDERER"
+
+  - title: "RAWRBOX.RESOURCES"
+    labels:
+      - "💼 RESOURCES"
+
+  - title: "RAWRBOX.SCRIPTING"
+    labels:
+      - "📜 SCRIPTING"
+
+  - title: "RAWRBOX.UI"
+    labels:
+      - "🖼️ UI"
+
+  - title: "RAWRBOX.UTILS"
+    labels:
+      - "⚒️ UTILS"
+
+  - title: "RAWRBOX.WEBM"
+    labels:
+      - "🎞 WEBM"
+
+  - title: "RAWRBOX.2D_PHYSICS"
+    labels:
+      - "🏀 2D PHYSICS"
+
+  - title: "RAWRBOX.3D_PHYSICS"
+    labels:
+      - "🧱 3D PHYSICS"
+
+  - title: "Bug fixes"
+    labels:
+      - "BUG"
+
+  - title: "Development"
+    labels:
+      - "IMPROVEMENTS"
+      - "FEATURE"
+
+exclude-labels:
+  - "dependencies"
+  - "github_actions"
+  - "🧪 TESTS"
+  - "TODO"
+  - "⚠️ SKIP_LINTER ⚠️"
+  - "⚠️ SKIP_TESTS ⚠️"
+  - "⚠️ UPLOAD ⚠️"
+change-template: "- #$NUMBER $TITLE"
+change-title-escapes: '\<*_&`#@'
+version-resolver:
+  major:
+    labels:
+      - "FEATURE"
+  minor:
+    labels:
+      - "IMPROVEMENTS"
+      - "🧙‍♂️ ASSIMP"
+      - "🎺 BASS"
+      - "💽 ENGINE"
+      - "🧮 MATH"
+      - "🛰 NETWORK"
+      - "📷 RENDERER"
+      - "💼 RESOURCES"
+      - "📜 SCRIPTING"
+      - "🖼️ UI"
+      - "⚒️ UTILS"
+      - "🎞 WEBM"
+      - "🏀 2D PHYSICS"
+      - "🧱 3D PHYSICS"
+  patch:
+    labels:
+      - "BUG"
+  default: patch
+template: |
+  $CHANGES
+
+  Thanks to $CONTRIBUTORS
