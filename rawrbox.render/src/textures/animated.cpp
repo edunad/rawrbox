@@ -24,7 +24,9 @@ namespace rawrbox {
 		SubresData.Stride = this->_size.x * this->_channels;
 		SubresData.pData = this->_frames.empty() ? this->_pixels.data() : this->_frames[this->_currentFrame].pixels.data();
 
-		context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{this->_tex, Diligent::RESOURCE_STATE_COPY_DEST}});
+		context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
 	}
 
 	// ANIMATION ------

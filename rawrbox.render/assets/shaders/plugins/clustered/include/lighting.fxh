@@ -179,30 +179,32 @@
 
             if(LightConstants.lightSettings.x == 0.0) {
                 lighting.Diffuse = diffuse;  // FULL BRIGHT
-            } else {
-                while(bucket) {
-                    uint bitIndex = firstbitlow(bucket);
-                    bucket ^= 1u << bitIndex;
-
-                    // Apply light ------------
-                    Light light = Lights[bitIndex + bucketIndex * CLUSTERS_Z];
-
-                    float3 L;
-                    float attenuation = GetAttenuation(light, worldPos, L);
-
-                    if(attenuation > 0.0F) {
-                        LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
-
-                        lighting.Diffuse += result.Diffuse * light.color * light.intensity;
-                        lighting.Specular += result.Specular * light.color * light.intensity;
-                    }
-                    // ------------------------
-                }
-
-                // AMBIENT LIGHT ---
-                lighting.Diffuse *= LightConstants.ambientColor.rgb;
-                // -----------------
+                return;
             }
+
+            while(bucket) {
+                uint bitIndex = firstbitlow(bucket);
+                bucket ^= 1u << bitIndex;
+
+                // Apply light ------------
+                Light light = Lights[bitIndex + bucketIndex * CLUSTERS_Z];
+
+                float3 L;
+                float attenuation = GetAttenuation(light, worldPos, L);
+
+                if(attenuation > 0.0F) {
+                    LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
+
+                    lighting.Diffuse += result.Diffuse * light.color * light.intensity;
+                    lighting.Specular += result.Specular * light.color * light.intensity;
+                }
+                // ------------------------
+            }
+
+            // AMBIENT LIGHT ---
+            lighting.Diffuse *= LightConstants.ambientColor.rgb;
+            // -----------------
+
         }
 
     #endif

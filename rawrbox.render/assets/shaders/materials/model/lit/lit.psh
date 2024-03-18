@@ -94,6 +94,8 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     float3 ddyPos = ddy(PSIn.WorldPos.xyz);
 
     LightResult result = (LightResult)0;
+
+    [loop]
     for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
         ClusterData buckets = ClusterDataGrid[gridOffset + bucketIndex];
 

@@ -13,7 +13,7 @@ namespace rawrbox {
 	static constexpr uint32_t CLUSTER_TEXTEL_SIZE = 64;
 	static constexpr uint32_t CLUSTERS_Z = 32;
 
-	static constexpr uint32_t MAX_DATA_PER_CLUSTER = 256;
+	static constexpr uint32_t MAX_DATA_PER_CLUSTER = 128;
 
 	static constexpr uint32_t CLUSTERED_NUM_BUCKETS = MAX_DATA_PER_CLUSTER / CLUSTERS_Z;
 

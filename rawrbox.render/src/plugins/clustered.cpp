@@ -199,7 +199,6 @@ namespace rawrbox {
 		Diligent::ShaderMacroHelper macro;
 
 		macro.AddShaderMacro("THREAD_GROUP_SIZE", rawrbox::THREAD_GROUP_SIZE);
-		// macro.AddShaderMacro("GROUP_SIZE", GROUP_SIZE);
 		macro.AddShaderMacro("CLUSTERS_X_THREADS", rawrbox::CLUSTERS_X_THREADS);
 		macro.AddShaderMacro("CLUSTERS_Y_THREADS", rawrbox::CLUSTERS_Y_THREADS);
 		macro.AddShaderMacro("CLUSTERS_Z_THREADS", rawrbox::CLUSTERS_Z_THREADS);
