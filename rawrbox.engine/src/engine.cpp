@@ -58,7 +58,7 @@ namespace rawrbox {
 		// ---------
 
 		// Setup render threading
-		new std::jthread([this]() {
+		auto renderThread = std::jthread([this]() {
 			try {
 				rawrbox::RENDER_THREAD_ID = std::this_thread::get_id();
 				rawrbox::ThreadUtils::setName("rawrbox:render");
