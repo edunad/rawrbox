@@ -183,7 +183,7 @@ namespace rawrbox {
 		// --------------
 
 	public:
-		Model(size_t vertex = 0) : rawrbox::ModelBase<M>(vertex){};
+		Model(size_t vertices = 0, size_t indices = 0) : rawrbox::ModelBase<M>(vertices, indices){};
 		Model(const Model&) = delete;
 		Model(Model&&) = delete;
 		Model& operator=(const Model&) = delete;

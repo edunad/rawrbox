@@ -127,8 +127,8 @@ namespace rawrbox {
 		}
 
 	public:
-		ModelBase(size_t vertex = 0) {
-			this->_mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(vertex, vertex * 3); // TRIANGLES
+		ModelBase(size_t vertices = 0, size_t indices = 0) {
+			this->_mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(vertices, indices);
 			this->_material = std::make_unique<M>();
 		};
 
