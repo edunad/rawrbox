@@ -32,6 +32,7 @@ namespace rawrbox {
 	protected:
 		Diligent::IPipelineState* _clusterBuildingComputeProgram = nullptr;
 		Diligent::IPipelineState* _cullingComputeProgram = nullptr;
+		Diligent::IPipelineState* _cullingResetProgram = nullptr;
 
 		Diligent::DispatchComputeAttribs _dispatch = {};
 

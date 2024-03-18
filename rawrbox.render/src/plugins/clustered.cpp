@@ -98,7 +98,7 @@ namespace rawrbox {
 		if (renderer == nullptr) throw this->_logger->error("Renderer not initialized!");
 		if (camera == nullptr) throw this->_logger->error("Camera not initialized!");
 
-		if (this->_clusterBuildingComputeProgram == nullptr || this->_cullingComputeProgram == nullptr) throw this->_logger->error("Compute pipelines not initialized, did you call 'initialize'");
+		if (this->_clusterBuildingComputeProgram == nullptr || this->_cullingComputeProgram == nullptr || this->_cullingResetProgram == nullptr) throw this->_logger->error("Compute pipelines not initialized, did you call 'initialize'");
 
 		// Setup uniforms
 		rawrbox::LIGHTS::bindUniforms();
@@ -123,9 +123,16 @@ namespace rawrbox {
 		}
 		// ------
 
-		// Perform light / decal culling
+		// Reset clusters
+		// TODO: REPLACE WITH
 		// uint32_t ClearValue = 0;
 		// context->ClearUAVUint(this->_dataGridBuffer, &ClearValue);
+
+		context->SetPipelineState(this->_cullingResetProgram);
+		context->DispatchCompute(this->_dispatch);
+		// --------------
+
+		// Perform light / decal culling
 		context->SetPipelineState(this->_cullingComputeProgram);
 		context->DispatchCompute(this->_dispatch);
 		// ----------------------
@@ -187,6 +194,11 @@ namespace rawrbox {
 		settings.pCS = "cluster_build.csh";
 		this->_clusterBuildingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Build", settings);
 		// ---------
+
+		// RESET -----
+		settings.pCS = "cluster_reset.csh";
+		this->_cullingResetProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Reset", settings);
+		//  ----
 
 		// CULLING -----
 		settings.pCS = "cluster_cull.csh";
