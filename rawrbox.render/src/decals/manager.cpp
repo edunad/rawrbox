@@ -1,3 +1,4 @@
+#include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/barrier.hpp>
@@ -36,7 +37,7 @@ namespace rawrbox {
 			Diligent::BufferDesc BuffDesc;
 			BuffDesc.ElementByteStride = sizeof(rawrbox::DecalVertex);
 			BuffDesc.Name = "rawrbox::Decals::Buffer";
-			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
+			BuffDesc.Usage = Diligent::USAGE_SPARSE;
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 			BuffDesc.Size = BuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(_decals.size() + 32, 1));
 			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
@@ -97,11 +98,11 @@ namespace rawrbox {
 		}
 
 		auto* context = rawrbox::RENDERER->context();
-		// auto* device = rawrbox::RENDERER->device();
+		auto* device = rawrbox::RENDERER->device();
 
 		// Update buffer ----
-		// uint64_t size = sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(std::max<size_t>(_decals.size(), 1)); // Always keep 1
-		// if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, size + 32, true);
+		uint64_t size = sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(std::max<size_t>(_decals.size(), 1)); // Always keep 1
+		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, size + 32);
 
 		auto* buffer = _buffer->GetBuffer();
 

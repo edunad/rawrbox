@@ -84,20 +84,6 @@ namespace rawrbox {
 		return result;
 	}
 
-	int MathUtils::nextPow2(int pow) {
-		if (pow != 0 && (pow & (pow - 1)) != 0) {
-			pow--;
-			pow |= pow >> 1;
-			pow |= pow >> 2;
-			pow |= pow >> 4;
-			pow |= pow >> 8;
-			pow |= pow >> 16;
-			pow++;
-		}
-
-		return pow;
-	}
-
 	// In DEG
 	float MathUtils::angleDistance(float A, float B) {
 		if (A >= 180) A = -180.F + std::fmod(A + 180, 360.F);

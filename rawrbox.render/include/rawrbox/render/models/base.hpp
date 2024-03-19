@@ -120,7 +120,7 @@ namespace rawrbox {
 			this->_requiresUpdate = false;
 
 			auto* context = rawrbox::RENDERER->context();
-			// auto* device = rawrbox::RENDERER->device();
+			auto* device = rawrbox::RENDERER->device();
 
 			auto vertSize = static_cast<uint64_t>(this->_mesh->vertices.size());
 			auto indcSize = static_cast<uint64_t>(this->_mesh->indices.size());
@@ -136,11 +136,11 @@ namespace rawrbox {
 				rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER}, {this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER}});
 			} else {
 				// Resize buffer ----
-				/*uint64_t sizeVB = sizeof(typename M::vertexBufferType) * std::max<uint64_t>(vertSize, 1U);          // Always keep 1
-				if (sizeVB > this->_vbhD->GetDesc().Size) this->_vbhD->Resize(device, context, sizeVB + 128, true); // + OFFSET
+				uint64_t sizeVB = sizeof(typename M::vertexBufferType) * std::max<uint64_t>(vertSize, 1U);                            // Always keep 1
+				if (sizeVB > this->_vbhD->GetDesc().Size) this->_vbhD->Resize(device, context, rawrbox::MathUtils::nextPow2(sizeVB)); // + OFFSET
 
-				uint64_t sizeIB = sizeof(uint16_t) * std::max<uint64_t>(indcSize, 1U);                              // Always keep 1
-				if (sizeIB > this->_ibhD->GetDesc().Size) this->_ibhD->Resize(device, context, sizeIB + 128, true); // + OFFSET*/
+				uint64_t sizeIB = sizeof(uint16_t) * std::max<uint64_t>(indcSize, 1U);                                                // Always keep 1
+				if (sizeIB > this->_ibhD->GetDesc().Size) this->_ibhD->Resize(device, context, rawrbox::MathUtils::nextPow2(sizeIB)); // + OFFSET
 				// ----------
 
 				auto* VBbuffer = this->_vbhD->GetBuffer();
@@ -170,6 +170,8 @@ namespace rawrbox {
 			RAWRBOX_DESTROY(this->_vbh);
 			RAWRBOX_DESTROY(this->_ibh);
 
+			this->_vbhD.reset();
+			this->_ibhD.reset();
 			this->_mesh.reset();
 		}
 
@@ -334,7 +336,7 @@ namespace rawrbox {
 			VertBuffDesc.Usage = this->isDynamic() ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE;
 
 			if (dynamic) {
-				VertBuffDesc.Size = VertBuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(vertSize + 128, 1));
+				VertBuffDesc.Size = VertBuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(rawrbox::MathUtils::nextPow2(vertSize + 1024), 1));
 
 				Diligent::DynamicBufferCreateInfo dynamicBuff;
 				dynamicBuff.Desc = VertBuffDesc;
@@ -360,7 +362,7 @@ namespace rawrbox {
 
 			if (dynamic) {
 				IndcBuffDesc.Usage = Diligent::USAGE_DEFAULT;
-				IndcBuffDesc.Size = IndcBuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(indcSize + 128, 1));
+				IndcBuffDesc.Size = IndcBuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(rawrbox::MathUtils::nextPow2(indcSize + 1024), 1));
 
 				Diligent::DynamicBufferCreateInfo dynamicBuff;
 				dynamicBuff.Desc = IndcBuffDesc;
