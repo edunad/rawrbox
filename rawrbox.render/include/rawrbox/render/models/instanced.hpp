@@ -63,8 +63,8 @@ namespace rawrbox {
 		virtual std::vector<rawrbox::Instance>& instances() { return this->_instances; }
 		[[nodiscard]] virtual size_t count() const { return this->_instances.size(); }
 
-		void upload(bool dynamic = false) override {
-			rawrbox::ModelBase<M>::upload(dynamic);
+		void upload(rawrbox::UploadType type = rawrbox::UploadType::STATIC) override {
+			rawrbox::ModelBase<M>::upload(type);
 
 			auto* device = rawrbox::RENDERER->device();
 			auto size = this->_instances.size();
@@ -94,19 +94,17 @@ namespace rawrbox {
 			if (this->_dataBuffer == nullptr) throw this->_logger->error("Data buffer not valid! Did you call upload()?");
 
 			auto* context = rawrbox::RENDERER->context();
-			auto* device = rawrbox::RENDERER->device();
+			// auto* device = rawrbox::RENDERER->device();
 
 			// Update buffer ----
-			uint64_t size = sizeof(rawrbox::Instance) * static_cast<uint64_t>(std::max<size_t>(this->_instances.size(), 1)); // Always keep 1
-			if (size > this->_dataBuffer->GetDesc().Size) {
-				this->_dataBuffer->Resize(device, context, size + 32, true); // + OFFSET
-			}
+			// uint64_t size = sizeof(rawrbox::Instance) * static_cast<uint64_t>(std::max<size_t>(this->_instances.size(), 1)); // Always keep 1
+			// if (size > this->_dataBuffer->GetDesc().Size) this->_dataBuffer->Resize(device, context, size + 32, true);       // + OFFSET
 
 			auto* buffer = this->_dataBuffer->GetBuffer();
 
 			// BARRIER ----
 			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_COPY_DEST}});
-			rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.size()), this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			context->UpdateBuffer(buffer, 0, sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.size()), this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_VERTEX_BUFFER}});
 			//  ---------
 		}

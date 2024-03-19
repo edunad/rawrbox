@@ -442,9 +442,9 @@ namespace rawrbox {
 			return this->_meshes;
 		}
 
-		void upload(bool dynamic = false) override {
+		void upload(rawrbox::UploadType type = rawrbox::UploadType::STATIC) override {
 			this->flattenMeshes(); // Merge and optimize meshes for drawing
-			ModelBase<M>::upload(dynamic);
+			ModelBase<M>::upload(type);
 		}
 
 		void draw() override {

@@ -181,7 +181,7 @@ namespace model {
 			this->_model->addMesh(mesh);
 		}
 
-		this->_model->upload(false);
+		this->_model->upload();
 		this->_bboxes->upload();
 	}
 

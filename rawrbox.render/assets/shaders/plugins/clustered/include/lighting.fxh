@@ -131,8 +131,11 @@
         }
 
         float3 ComputeDiffuseColor(float3 baseColor, float metalness) {
-            if(metalness == 1.0) return baseColor;
-            return baseColor * (1 - metalness);
+            if(metalness == 1.0) {
+                return baseColor;
+            } else {
+                return baseColor * (1 - metalness);
+            }
         }
 
         LightResult DefaultLitBxDF(float3 specularColor, float specularRoughness, float3 diffuseColor, half3 N, half3 V, half3 L, float falloff) {
@@ -142,7 +145,6 @@
                 return lighting;
             } else {
                 float NdotL = saturate(dot(N, L));
-
                 if(NdotL == 0.0f) {
                     return lighting;
                 } else {

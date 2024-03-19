@@ -92,8 +92,8 @@ namespace rawrbox {
 		}
 		// ----------
 
-		void upload(bool /*dynamic*/ = false) override {
-			Model<M>::upload(true); // Always force dynamic, since we can remove text
+		void upload(rawrbox::UploadType /*type*/ = rawrbox::UploadType::STATIC) override {
+			Model<M>::upload(rawrbox::UploadType::DYNAMIC); // Always force dynamic, since we can remove text
 		}
 	};
 } // namespace rawrbox
