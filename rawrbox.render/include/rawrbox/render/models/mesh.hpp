@@ -26,8 +26,8 @@ namespace rawrbox {
 		rawrbox::TextureBase* roughtMetal = nullptr;
 		rawrbox::TextureBase* emission = nullptr;
 
-		float roughnessFactor = 1.0F;
-		float metalnessFactor = 1.0F;
+		float roughnessFactor = 0.0F;
+		float metalnessFactor = 0.0F;
 		float specularFactor = 0.5F;
 		float emissionFactor = 1.0F;
 

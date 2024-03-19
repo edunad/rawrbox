@@ -131,6 +131,7 @@
         }
 
         float3 ComputeDiffuseColor(float3 baseColor, float metalness) {
+            if(metalness == 1.0) return baseColor;
             return baseColor * (1 - metalness);
         }
 
