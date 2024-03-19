@@ -37,7 +37,7 @@ namespace rawrbox {
 			Diligent::BufferDesc BuffDesc;
 			BuffDesc.ElementByteStride = sizeof(rawrbox::DecalVertex);
 			BuffDesc.Name = "rawrbox::Decals::Buffer";
-			BuffDesc.Usage = Diligent::USAGE_SPARSE;
+			BuffDesc.Usage = Diligent::USAGE_DEFAULT; // Diligent::USAGE_SPARSE has some issues on the steam deck, but its only good for BIG buffers, in our case we use small buffers for light
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 			BuffDesc.Size = BuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(_decals.size() + 32, 1));
 			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
