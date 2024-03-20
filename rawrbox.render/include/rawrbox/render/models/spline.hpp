@@ -54,7 +54,7 @@ namespace rawrbox {
 			this->_mesh->setTexture(texture);
 		}
 
-		virtual void setColor(const rawrbox::Color& col) {
+		void setColor(const rawrbox::Color& col, int /*index*/ = -1) override {
 			this->_mesh->setColor(col);
 		}
 

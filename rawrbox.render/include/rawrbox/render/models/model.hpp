@@ -229,7 +229,7 @@ namespace rawrbox {
 
 		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
 		virtual void optimize() {
-#ifndef NDEBUG
+#ifdef _DEBUG
 			size_t old = this->_meshes.size();
 #endif
 
@@ -262,8 +262,8 @@ namespace rawrbox {
 				}
 			}
 
-#ifndef NDEBUG
-			if (old != this->_meshes.size()) this->_logger->info("Optimized mesh for rendering (Before {} | After {})", old, this->_meshes.size());
+#ifdef _DEBUG
+			if (old != this->_meshes.size() && !this->isUploaded()) this->_logger->info("Optimized mesh for rendering (Before {} | After {}), this will only display once to prevent spam.", old, this->_meshes.size()); // Only do it once
 #endif
 		}
 
@@ -410,32 +410,36 @@ namespace rawrbox {
 			}
 		}
 
-		virtual void setCulling(Diligent::CULL_MODE cull, int id = -1) {
+		virtual void setCulling(Diligent::CULL_MODE cull, int index = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != static_cast<size_t>(id)) continue;
+				if (index != -1 && i != static_cast<size_t>(index)) continue;
 				this->_meshes[i]->setCulling(cull);
 			}
 		}
 
-		virtual void setWireframe(bool wireframe, int id = -1) {
+		virtual void setWireframe(bool wireframe, int index = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != static_cast<size_t>(id)) continue;
+				if (index != -1 && i != static_cast<size_t>(index)) continue;
 				this->_meshes[i]->setWireframe(wireframe);
 			}
 		}
 
-		virtual void setTexture(rawrbox::TextureBase* tex, int id = -1) {
+		virtual void setTexture(rawrbox::TextureBase* tex, int index = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != static_cast<size_t>(id)) continue;
+				if (index != -1 && i != static_cast<size_t>(index)) continue;
 				this->_meshes[i]->setTexture(tex);
 			}
 		}
 
-		void setColor(const rawrbox::Color& color, int index = -1) {
+		void setColor(const rawrbox::Color& color, int index = -1) override {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
 				if (index != -1 && i != static_cast<size_t>(index)) continue;
 				this->_meshes[i]->setColor(color);
 			}
+		}
+
+		[[nodiscard]] const rawrbox::Color& getColor(int index = 0) const override {
+			return this->_meshes[index]->getColor();
 		}
 
 		virtual std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>>& meshes() {

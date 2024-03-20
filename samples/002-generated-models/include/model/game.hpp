@@ -12,6 +12,7 @@ namespace model {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Model<>> _displacement = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::Model<>> _modelDynamic = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Model<>> _bboxes = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Sprite<>> _sprite = std::make_unique<rawrbox::Sprite<>>();
 		std::unique_ptr<rawrbox::Spline<>> _spline = std::make_unique<rawrbox::Spline<>>();
@@ -31,6 +32,7 @@ namespace model {
 		void createDisplacement();
 		void createSprite();
 		void createText();
+		void createDynamic();
 
 		void loadContent();
 		void contentLoaded();

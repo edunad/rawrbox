@@ -101,8 +101,8 @@ namespace rawrbox {
 		auto* device = rawrbox::RENDERER->device();
 
 		// Update buffer ----
-		uint64_t size = sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(std::max<size_t>(_decals.size(), 1)); // Always keep 1
-		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, size + 32);
+		uint64_t size = sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(_decals.size());
+		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, size + 32); // + OFFSET
 
 		auto* buffer = _buffer->GetBuffer();
 

@@ -136,11 +136,12 @@ namespace rawrbox {
 				rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER}, {this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER}});
 			} else {
 				// Resize buffer ----
-				uint64_t sizeVB = sizeof(typename M::vertexBufferType) * std::max<uint64_t>(vertSize, 1U);                            // Always keep 1
-				if (sizeVB > this->_vbhD->GetDesc().Size) this->_vbhD->Resize(device, context, rawrbox::MathUtils::nextPow2(sizeVB)); // + OFFSET
 
-				uint64_t sizeIB = sizeof(uint16_t) * std::max<uint64_t>(indcSize, 1U);                                                // Always keep 1
-				if (sizeIB > this->_ibhD->GetDesc().Size) this->_ibhD->Resize(device, context, rawrbox::MathUtils::nextPow2(sizeIB)); // + OFFSET
+				uint64_t sizeVB = sizeof(typename M::vertexBufferType) * vertSize;                                                     // Always keep 1
+				if (sizeVB > this->_vbhD->GetDesc().Size) this->_vbhD->Resize(device, context, sizeVB + this->BUFFER_INCREASE_OFFSET); // + OFFSET
+
+				uint64_t sizeIB = sizeof(uint16_t) * indcSize;                                                                         // Always keep 1
+				if (sizeIB > this->_ibhD->GetDesc().Size) this->_ibhD->Resize(device, context, sizeIB + this->BUFFER_INCREASE_OFFSET); // + OFFSET
 				// ----------
 
 				auto* VBbuffer = this->_vbhD->GetBuffer();
@@ -157,6 +158,9 @@ namespace rawrbox {
 		}
 
 	public:
+		// To prevent the vertex / index buffer from resizing too often, increase this value to offset the scaling based on your model needs
+		uint64_t BUFFER_INCREASE_OFFSET = 256;
+
 		ModelBase(size_t vertices = 0, size_t indices = 0) {
 			this->_mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(vertices, indices);
 			this->_material = std::make_unique<M>();
@@ -258,8 +262,8 @@ namespace rawrbox {
 			this->_mesh->setID(id);
 		}
 
-		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->_mesh->getColor(); }
-		virtual void setColor(const rawrbox::Color& color) {
+		[[nodiscard]] virtual const rawrbox::Color& getColor(int /*index*/ = -1) const { return this->_mesh->getColor(); }
+		virtual void setColor(const rawrbox::Color& color, int /*index*/ = -1) {
 			this->_mesh->setColor(color);
 		}
 
@@ -301,8 +305,6 @@ namespace rawrbox {
 			if (this->isUploaded()) throw this->_logger->error("Already uploaded!");
 			this->_uploadType = type;
 
-			auto* context = rawrbox::RENDERER->context();
-
 			// Generate buffers ----
 			auto vertSize = static_cast<uint64_t>(this->_mesh->vertices.capacity());
 			auto indcSize = static_cast<uint64_t>(this->_mesh->indices.capacity());
@@ -336,13 +338,12 @@ namespace rawrbox {
 			VertBuffDesc.Usage = this->isDynamic() ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE; // TODO:  Diligent::USAGE_SPARSE;
 
 			if (resizable) {
-				VertBuffDesc.Size = VertBuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(rawrbox::MathUtils::nextPow2(vertSize + 1024), 1));
+				VertBuffDesc.Size = VertBuffDesc.ElementByteStride * (vertSize + this->BUFFER_INCREASE_OFFSET);
 
 				Diligent::DynamicBufferCreateInfo dynamicBuff;
 				dynamicBuff.Desc = VertBuffDesc;
 
 				this->_vbhD = std::make_unique<Diligent::DynamicBuffer>(device, dynamicBuff);
-				if (!empty) context->UpdateBuffer(this->_vbhD->GetBuffer(), 0, VertBuffDesc.Size, this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			} else {
 				VertBuffDesc.Size = VertBuffDesc.ElementByteStride * vertSize;
 
@@ -359,16 +360,15 @@ namespace rawrbox {
 			IndcBuffDesc.Name = "RawrBox::Buffer::Indices";
 			IndcBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
 			IndcBuffDesc.ElementByteStride = static_cast<uint32_t>(sizeof(uint16_t));
-			IndcBuffDesc.Usage = this->isDynamic() ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE; // TODO:  Diligent::USAGE_SPARSE;
+			IndcBuffDesc.Usage = this->isDynamic() ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE; // TODO: Diligent::USAGE_SPARSE;
 
 			if (resizable) {
-				IndcBuffDesc.Size = IndcBuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(rawrbox::MathUtils::nextPow2(indcSize + 1024), 1));
+				IndcBuffDesc.Size = IndcBuffDesc.ElementByteStride * (indcSize + this->BUFFER_INCREASE_OFFSET);
 
 				Diligent::DynamicBufferCreateInfo dynamicBuff;
 				dynamicBuff.Desc = IndcBuffDesc;
 
 				this->_ibhD = std::make_unique<Diligent::DynamicBuffer>(device, dynamicBuff);
-				if (!empty) context->UpdateBuffer(this->_ibhD->GetBuffer(), 0, IndcBuffDesc.Size, this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			} else {
 				IndcBuffDesc.Size = IndcBuffDesc.ElementByteStride * indcSize;
 
@@ -383,6 +383,7 @@ namespace rawrbox {
 			// Barrier ----
 			if (resizable) {
 				rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbhD->GetBuffer(), Diligent::RESOURCE_STATE_VERTEX_BUFFER}, {this->_ibhD->GetBuffer(), Diligent::RESOURCE_STATE_INDEX_BUFFER}});
+				if (!empty) this->_requiresUpdate = true;
 			} else {
 				rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER}, {this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER}});
 			}
