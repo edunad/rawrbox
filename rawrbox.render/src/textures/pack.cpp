@@ -8,7 +8,7 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-	TexturePack::TexturePack(uint16_t size) {
+	TexturePack::TexturePack(uint32_t size) {
 		this->_size = {size, size};
 		this->_root = std::make_unique<rawrbox::PackNode>(0U, 0U, size, size);
 		this->_name = "RawrBox::Texture::Pack";
@@ -20,7 +20,7 @@ namespace rawrbox {
 		return this->_spriteCount;
 	}
 
-	rawrbox::PackNode& TexturePack::addSprite(uint16_t width, uint16_t height, const std::vector<uint8_t>& data) {
+	rawrbox::PackNode& TexturePack::addSprite(uint32_t width, uint32_t height, const std::vector<uint8_t>& data) {
 		if (this->_tex == nullptr) throw this->_logger->error("Texture not bound");
 
 		auto nodeOpt = this->_root->InsertNode(width, height);
@@ -58,11 +58,11 @@ namespace rawrbox {
 		return node;
 	}
 
-	bool TexturePack::canInsertNode(uint16_t width, uint16_t height) {
+	bool TexturePack::canInsertNode(uint32_t width, uint32_t height) {
 		return this->_root->canInsertNode(width, height);
 	}
 
-	bool PackNode::canInsertNode(uint16_t insertedWidth, uint16_t insertedHeight) {
+	bool PackNode::canInsertNode(uint32_t insertedWidth, uint32_t insertedHeight) {
 		if (!data.empty()) return false;
 
 		if (left && right) {
@@ -78,8 +78,8 @@ namespace rawrbox {
 		// if all of the above didn't return, the current leaf is large enough,
 		// with some space to spare, so we split up the current node so we have
 		// one prefectly fitted node and some spare nodes
-		int remainingWidth = width - insertedWidth;
-		int remainingHeight = height - insertedHeight;
+		int remainingWidth = std::max<int>(0, static_cast<int>(width) - static_cast<int>(insertedWidth));
+		int remainingHeight = std::max<int>(0, static_cast<int>(height) - static_cast<int>(insertedHeight));
 
 		bool isRemainderWiderThanHigh = remainingWidth > remainingHeight;
 
@@ -94,7 +94,7 @@ namespace rawrbox {
 		return left->canInsertNode(insertedWidth, insertedHeight);
 	}
 
-	std::optional<std::reference_wrapper<rawrbox::PackNode>> PackNode::InsertNode(uint16_t insertedWidth, uint16_t insertedHeight) {
+	std::optional<std::reference_wrapper<rawrbox::PackNode>> PackNode::InsertNode(uint32_t insertedWidth, uint32_t insertedHeight) {
 		if (!data.empty()) return std::nullopt;
 
 		if (left && right) {
