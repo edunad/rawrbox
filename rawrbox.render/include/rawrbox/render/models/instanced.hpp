@@ -19,6 +19,9 @@ namespace rawrbox {
 		}
 
 	public:
+		// To prevent the instance buffer from resizing too often, increase this value to offset the scaling based on your model needs
+		uint64_t BUFFER_INSTANCE_INCREASE_OFFSET = 32;
+
 		explicit InstancedModel(size_t instanceSize = 0) {
 			if (instanceSize != 0) this->_instances.reserve(instanceSize);
 		}
@@ -75,7 +78,7 @@ namespace rawrbox {
 			InstBuffDesc.Name = "RawrBox::Buffer::Instance";
 			InstBuffDesc.Usage = Diligent::USAGE_SPARSE;
 			InstBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-			InstBuffDesc.Size = InstBuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(size + 32, 1));
+			InstBuffDesc.Size = InstBuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(size + this->BUFFER_INSTANCE_INCREASE_OFFSET, 1));
 
 			Diligent::DynamicBufferCreateInfo dynamicBuff;
 			dynamicBuff.Desc = InstBuffDesc;
@@ -94,11 +97,11 @@ namespace rawrbox {
 			if (this->_dataBuffer == nullptr) throw this->_logger->error("Data buffer not valid! Did you call upload()?");
 
 			auto* context = rawrbox::RENDERER->context();
-			// auto* device = rawrbox::RENDERER->device();
+			auto* device = rawrbox::RENDERER->device();
 
 			// Update buffer ----
-			// uint64_t size = sizeof(rawrbox::Instance) * static_cast<uint64_t>(std::max<size_t>(this->_instances.size(), 1)); // Always keep 1
-			// if (size > this->_dataBuffer->GetDesc().Size) this->_dataBuffer->Resize(device, context, size + 32, true);       // + OFFSET
+			uint64_t size = sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.size());                                                   // Always keep 1
+			if (size > this->_dataBuffer->GetDesc().Size) this->_dataBuffer->Resize(device, context, size + this->BUFFER_INSTANCE_INCREASE_OFFSET, true); // + OFFSET
 
 			auto* buffer = this->_dataBuffer->GetBuffer();
 
