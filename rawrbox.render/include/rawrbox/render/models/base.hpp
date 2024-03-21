@@ -137,11 +137,11 @@ namespace rawrbox {
 			} else {
 				// Resize buffer ----
 
-				uint64_t sizeVB = sizeof(typename M::vertexBufferType) * vertSize;                                                     // Always keep 1
-				if (sizeVB > this->_vbhD->GetDesc().Size) this->_vbhD->Resize(device, context, sizeVB + this->BUFFER_INCREASE_OFFSET); // + OFFSET
+				uint64_t sizeVB = sizeof(typename M::vertexBufferType) * vertSize;                                                                                              // Always keep 1
+				if (sizeVB > this->_vbhD->GetDesc().Size) this->_vbhD->Resize(device, context, sizeVB + (sizeof(typename M::vertexBufferType) * this->BUFFER_INCREASE_OFFSET)); // + OFFSET
 
-				uint64_t sizeIB = sizeof(uint16_t) * indcSize;                                                                         // Always keep 1
-				if (sizeIB > this->_ibhD->GetDesc().Size) this->_ibhD->Resize(device, context, sizeIB + this->BUFFER_INCREASE_OFFSET); // + OFFSET
+				uint64_t sizeIB = sizeof(uint16_t) * indcSize;                                                                                              // Always keep 1
+				if (sizeIB > this->_ibhD->GetDesc().Size) this->_ibhD->Resize(device, context, sizeIB + (sizeof(uint16_t) * this->BUFFER_INCREASE_OFFSET)); // + OFFSET
 				// ----------
 
 				auto* VBbuffer = this->_vbhD->GetBuffer();
@@ -177,6 +177,16 @@ namespace rawrbox {
 			this->_vbhD.reset();
 			this->_ibhD.reset();
 			this->_mesh.reset();
+		}
+
+		void resize(uint64_t vertexSize, uint32_t indiceSize) {
+			if (this->_vbh != nullptr) RAWRBOX_DESTROY(this->_vbh);
+			if (this->_ibh != nullptr) RAWRBOX_DESTROY(this->_ibh);
+
+			this->_mesh->vertices.reserve(vertexSize);
+			this->_mesh->indices.reserve(indiceSize);
+
+			this->upload(this->_uploadType);
 		}
 
 		// BLEND SHAPES ---
@@ -352,6 +362,7 @@ namespace rawrbox {
 				VBData.DataSize = VertBuffDesc.Size;
 
 				device->CreateBuffer(VertBuffDesc, &VBData, &this->_vbh);
+				if (this->_vbh == nullptr) throw this->_logger->error("Failed to create vertex buffer");
 			}
 			// ---------------------
 
@@ -377,6 +388,7 @@ namespace rawrbox {
 				IBData.DataSize = IndcBuffDesc.Size;
 
 				device->CreateBuffer(IndcBuffDesc, &IBData, &this->_ibh);
+				if (this->_ibh == nullptr) throw this->_logger->error("Failed to create index buffer");
 			}
 			// ---------------------
 
