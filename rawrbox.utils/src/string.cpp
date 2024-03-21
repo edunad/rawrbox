@@ -11,7 +11,7 @@ namespace rawrbox {
 	}
 
 	std::string StrUtils::toUpper(std::string str) {
-		std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+		std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
 		return str;
 	}
 
