@@ -65,7 +65,7 @@ local function playAnimation()
             end
         end
 
-        mdl:updateBuffers()
+        mdl:updateInstances()
 
         currentFrame = currentFrame + 1
         if currentFrame > #apple.frames then stopAnimation() end
@@ -109,7 +109,7 @@ function MOD:onReady()
             end
         end
 
-        mdl:updateInstance()
+        mdl:updateInstances()
         mdl:setPos(Vector3(-2, 0, 2))
 
         for i = 1, apple.width * apple.height do

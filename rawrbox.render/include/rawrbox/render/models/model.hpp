@@ -183,7 +183,7 @@ namespace rawrbox {
 		// --------------
 
 	public:
-		Model() = default;
+		Model(size_t vertices = 0, size_t indices = 0) : rawrbox::ModelBase<M>(vertices, indices){};
 		Model(const Model&) = delete;
 		Model(Model&&) = delete;
 		Model& operator=(const Model&) = delete;
@@ -229,7 +229,7 @@ namespace rawrbox {
 
 		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
 		virtual void optimize() {
-#ifndef NDEBUG
+#ifdef _DEBUG
 			size_t old = this->_meshes.size();
 #endif
 
@@ -262,12 +262,15 @@ namespace rawrbox {
 				}
 			}
 
-#ifndef NDEBUG
-			if (old != this->_meshes.size()) this->_logger->info("Optimized mesh for rendering (Before {} | After {})", old, this->_meshes.size());
+#ifdef _DEBUG
+			if (old != this->_meshes.size() && !this->isUploaded()) this->_logger->info("Optimized mesh for rendering (Before {} | After {}), this will only display once to prevent spam.", old, this->_meshes.size()); // Only do it once
 #endif
 		}
 
 		void updateBuffers() override {
+			if (!this->isUploaded()) throw this->_logger->error("Model is not uploaded!");
+			if (!this->isDynamic()) throw this->_logger->error("Model is not dynamic!");
+
 			this->flattenMeshes();
 			rawrbox::ModelBase<M>::updateBuffers();
 		}
@@ -365,15 +368,11 @@ namespace rawrbox {
 
 				++it;
 			}
-
-			if (this->isUploaded() && this->isDynamic()) this->updateBuffers(); // Already uploaded? And dynamic? Then update vertices
 		}
 
 		virtual void removeMesh(size_t index) {
 			if (index >= this->_meshes.size()) return;
 			this->_meshes.erase(this->_meshes.begin() + index);
-
-			if (this->isUploaded() && this->isDynamic()) this->updateBuffers(); // Already uploaded? And dynamic? Then update vertices
 		}
 
 		virtual rawrbox::Mesh<typename M::vertexBufferType>* addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
@@ -381,8 +380,6 @@ namespace rawrbox {
 			mesh.owner = this;
 
 			auto& a = this->_meshes.emplace_back(std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh));
-			if (this->isUploaded() && this->isDynamic()) this->updateBuffers(); // Already uploaded? And dynamic? Then update vertices
-
 			return a.get();
 		}
 
@@ -413,34 +410,45 @@ namespace rawrbox {
 			}
 		}
 
-		virtual void setCulling(Diligent::CULL_MODE cull, int id = -1) {
+		virtual void setCulling(Diligent::CULL_MODE cull, int index = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != static_cast<size_t>(id)) continue;
+				if (index != -1 && i != static_cast<size_t>(index)) continue;
 				this->_meshes[i]->setCulling(cull);
 			}
 		}
 
-		virtual void setWireframe(bool wireframe, int id = -1) {
+		virtual void setWireframe(bool wireframe, int index = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != static_cast<size_t>(id)) continue;
+				if (index != -1 && i != static_cast<size_t>(index)) continue;
 				this->_meshes[i]->setWireframe(wireframe);
 			}
 		}
 
-		virtual void setTexture(rawrbox::TextureBase* tex, int id = -1) {
+		virtual void setTexture(rawrbox::TextureBase* tex, int index = -1) {
 			for (size_t i = 0; i < this->_meshes.size(); i++) {
-				if (id != -1 && i != static_cast<size_t>(id)) continue;
+				if (index != -1 && i != static_cast<size_t>(index)) continue;
 				this->_meshes[i]->setTexture(tex);
 			}
+		}
+
+		void setColor(const rawrbox::Color& color, int index = -1) override {
+			for (size_t i = 0; i < this->_meshes.size(); i++) {
+				if (index != -1 && i != static_cast<size_t>(index)) continue;
+				this->_meshes[i]->setColor(color);
+			}
+		}
+
+		[[nodiscard]] const rawrbox::Color& getColor(int index = 0) const override {
+			return this->_meshes[index]->getColor();
 		}
 
 		virtual std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>>& meshes() {
 			return this->_meshes;
 		}
 
-		void upload(bool dynamic = false) override {
+		void upload(rawrbox::UploadType type = rawrbox::UploadType::STATIC) override {
 			this->flattenMeshes(); // Merge and optimize meshes for drawing
-			ModelBase<M>::upload(dynamic);
+			ModelBase<M>::upload(type);
 		}
 
 		void draw() override {

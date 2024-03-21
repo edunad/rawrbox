@@ -4,8 +4,6 @@
 #include <rawrbox/render/lights/manager.hpp>
 #include <rawrbox/render/plugins/clustered.hpp>
 
-#include <fmt/format.h>
-
 namespace rawrbox {
 	// PRIVATE ----
 	std::vector<std::shared_ptr<rawrbox::LightBase>> LIGHTS::_lights = {};
@@ -33,7 +31,11 @@ namespace rawrbox {
 			BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 			BuffDesc.Size = sizeof(rawrbox::LightConstants);
 
-			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &uniforms);
+			Diligent::BufferData data;
+			data.pData = &_settings;
+			data.DataSize = BuffDesc.Size;
+
+			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, &data, &uniforms);
 		}
 		// -----------------------------------------
 
@@ -41,7 +43,7 @@ namespace rawrbox {
 			Diligent::BufferDesc BuffDesc;
 			BuffDesc.ElementByteStride = sizeof(rawrbox::LightDataVertex);
 			BuffDesc.Name = "rawrbox::Light::Buffer";
-			BuffDesc.Usage = Diligent::USAGE_SPARSE;
+			BuffDesc.Usage = Diligent::USAGE_DEFAULT; // Diligent::USAGE_SPARSE has some issues on the steam deck, but its only good for BIG buffers, in our case we use small buffers for light
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 			BuffDesc.Size = BuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(_lights.size() + 32, 1));
 			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
@@ -86,9 +88,6 @@ namespace rawrbox {
 		if (_buffer == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__LIGHT_DIRTY__ || _lights.empty()) return;
 
-		auto* context = rawrbox::RENDERER->context();
-		auto* device = rawrbox::RENDERER->device();
-
 		// Update lights ---
 		std::vector<rawrbox::LightDataVertex> lights = {};
 		lights.reserve(_lights.size());
@@ -120,15 +119,18 @@ namespace rawrbox {
 			lights.push_back(light);
 		}
 
+		auto* context = rawrbox::RENDERER->context();
+		auto* device = rawrbox::RENDERER->device();
+
 		// Update buffer ----
-		uint64_t size = sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(std::max<size_t>(_lights.size(), 1)); // Always keep 1
-		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, size + 32, true);
+		uint64_t size = sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size());
+		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, size + 32); // + OFFSET
 
 		auto* buffer = _buffer->GetBuffer();
 
 		// BARRIER -----
 		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_COPY_DEST}});
-		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size()), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		context->UpdateBuffer(buffer, 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size()), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
 		// -------------
 
@@ -144,10 +146,15 @@ namespace rawrbox {
 	}
 
 	// UTILS ----
-	void LIGHTS::setEnabled(bool fb) {
-		_settings.lightSettings.x = static_cast<unsigned int>(fb);
+	void LIGHTS::setEnabled(bool enabled) {
+		auto fullbright = static_cast<uint32_t>(enabled);
+		if (_settings.lightSettings.x == fullbright) return;
+
+		_settings.lightSettings.x = fullbright;
 		_CONSTANTS_DIRTY = true;
 	}
+
+	bool LIGHTS::isEnabled() { return _settings.lightSettings.x == 1U; }
 
 	rawrbox::LightBase* LIGHTS::getLight(size_t indx) {
 		if (indx < 0 || indx >= _lights.size()) return nullptr;
@@ -161,6 +168,7 @@ namespace rawrbox {
 	// AMBIENT ----
 	void LIGHTS::setAmbient(const rawrbox::Colorf& col) {
 		if (_settings.ambientColor == col) return;
+
 		_settings.ambientColor = col;
 		_CONSTANTS_DIRTY = true;
 	}

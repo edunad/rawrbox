@@ -6,6 +6,7 @@
     };
 
     ConstantBuffer<DecalsConstantsStruct> DecalsConstants;
+    #define TOTAL_DECALS DecalsConstants.total
 
     struct Decal {
         float4x4 worldToLocal;

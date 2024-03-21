@@ -95,8 +95,11 @@ namespace rawrbox {
 		desc.Width = this->_size.x;
 		desc.Height = this->_size.y;
 		desc.MipLevels = 1;
+		desc.SampleCount = 1;
 		desc.Format = format;
 		desc.ClearValue.Format = desc.Format;
+		desc.Usage = Diligent::USAGE_DEFAULT;
+		desc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
 
 		if (isDepth) {
 			std::string depthName = fmt::format("{}::DEPTH", this->_name);
@@ -147,7 +150,7 @@ namespace rawrbox {
 	void TextureRender::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
 		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) throw this->_logger->error("Invalid format");
 
-		auto view = this->addTexture(format, Diligent::BIND_SHADER_RESOURCE | Diligent::BIND_RENDER_TARGET);
+		auto view = this->addTexture(format);
 		this->addView(view, Diligent::TEXTURE_VIEW_RENDER_TARGET);
 		this->addView(view, Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 

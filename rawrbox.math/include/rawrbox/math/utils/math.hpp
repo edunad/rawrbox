@@ -43,7 +43,22 @@ namespace rawrbox {
 
 		static float angleRadLerp(float a, float b, float lerpFactor);
 
-		static int nextPow2(int pow);
+		template <typename T = int>
+			requires(std::is_integral_v<T>)
+		static T nextPow2(T val) {
+			if (val <= 0) return 1;
+			if (val & (val - 1)) {
+				val--;
+
+				for (T i = 1; i < sizeof(T) * 8; i <<= 1) {
+					val |= val >> i;
+				}
+
+				val++;
+			}
+
+			return val;
+		}
 
 		// In DEG
 		static float angleDistance(float A, float B);

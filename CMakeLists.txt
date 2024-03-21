@@ -39,6 +39,7 @@ option(RAWRBOX_BUILD_RAWRBOX_WEBM "Build libwebm & add video loading support" OF
 option(RAWRBOX_BUILD_RAWRBOX_NETWORK "Build network support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING "Build lua & mod support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE "Enable unsafe scripting (io / etc)" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_EXCEPTION "Enables scripting throwing exceptions instead of catching them" OFF)
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" OFF)
 option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
 

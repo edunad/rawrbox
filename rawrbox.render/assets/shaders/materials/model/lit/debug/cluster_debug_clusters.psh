@@ -28,13 +28,13 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
     uint lightCount = 0;
 	for(uint i = 0; i < CLUSTERED_NUM_BUCKETS; ++i)
-		lightCount += countbits(ClusterDataGrid[lightGridOffset + i].x);
+		lightCount += countbits(ClusterDataGrid[lightGridOffset + i].light);
 
     if(lightCount == 0) {
         PSOut.Color = float4(0.01, 0.01, 0.01, 1.0);
         return;
     }
 
-    float3 lightCountColor = turboColormap(float(lightCount) / MAX_LIGHTS_PER_CLUSTER);
+    float3 lightCountColor = turboColormap(float(lightCount) / MAX_DATA_PER_CLUSTER);
     PSOut.Color = float4(lightCountColor, 1.0);
 }

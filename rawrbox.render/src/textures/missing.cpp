@@ -11,9 +11,9 @@ namespace rawrbox {
 
 		// #60005b
 		// #fe00fc
-		int i = 0;
-		for (int x = 0; x < this->_size.x; x++) {
-			for (int y = 0; y < this->_size.y; y++) {
+		uint32_t i = 0;
+		for (uint32_t x = 0; x < this->_size.x; x++) {
+			for (uint32_t y = 0; y < this->_size.y; y++) {
 				if ((x == 0 && y == 0) || (x == 1 && y == 1)) {
 					this->_pixels[i] = static_cast<uint8_t>(96);
 					this->_pixels[i + 1] = static_cast<uint8_t>(0);

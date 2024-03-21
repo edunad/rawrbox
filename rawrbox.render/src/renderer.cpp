@@ -309,7 +309,7 @@ namespace rawrbox {
 		this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM);
 
 		// GPU PICKING TEXTURE
-		auto idIndex = this->_render->addTexture(Diligent::TEX_FORMAT_RGBA8_UNORM, Diligent::BIND_RENDER_TARGET);
+		auto idIndex = this->_render->addTexture(Diligent::TEX_FORMAT_RGBA8_UNORM);
 		this->_render->addView(idIndex, Diligent::TEXTURE_VIEW_RENDER_TARGET);
 		// --------
 
@@ -367,10 +367,6 @@ namespace rawrbox {
 			}
 			// --------------------
 		}
-
-		// Update textures ---
-		rawrbox::BindlessManager::update();
-		// --------------------
 	}
 
 	void RendererBase::render() {
@@ -385,6 +381,10 @@ namespace rawrbox {
 		rawrbox::BarrierUtils::clearBarrierCache();
 		rawrbox::BarrierUtils::processBarriers();
 		// ---------------------
+
+		// Update textures ---
+		rawrbox::BindlessManager::update();
+		// --------------------
 
 		// No camera -------
 		if (this->_camera == nullptr) {

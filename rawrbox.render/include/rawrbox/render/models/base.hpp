@@ -22,6 +22,12 @@ namespace rawrbox {
 		BlendShapes() = default;
 	};
 
+	enum class UploadType {
+		STATIC = 0,
+		FIXED_DYNAMIC = 1,
+		RESIZABLE_DYNAMIC = 2
+	};
+
 	struct ModelOriginalData {
 		rawrbox::Vector3f pos = {};
 		uint32_t normal = {};
@@ -35,14 +41,17 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _vbh; // Vertices
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _ibh; // Indices
 
-		std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>> _mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>();
-		std::unique_ptr<M> _material = std::make_unique<M>();
+		std::unique_ptr<Diligent::DynamicBuffer> _vbhD = nullptr; // Vertices
+		std::unique_ptr<Diligent::DynamicBuffer> _ibhD = nullptr; // Indices
+
+		std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>> _mesh = nullptr;
+		std::unique_ptr<M> _material = nullptr;
 
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::BlendShapes<M>>> _blend_shapes = {};
 		std::vector<rawrbox::ModelOriginalData> _original_data = {};
 
 		// DYNAMIC SUPPORT ---
-		bool _isDynamic = false;
+		rawrbox::UploadType _uploadType = rawrbox::UploadType::STATIC;
 		bool _requiresUpdate = false;
 		// ----
 
@@ -107,27 +116,56 @@ namespace rawrbox {
 		// --------------
 
 		virtual void internalUpdate() {
-			if (!this->_isDynamic || !this->_requiresUpdate) return;
+			if (!this->isDynamic() || !this->_requiresUpdate) return;
 			this->_requiresUpdate = false;
 
 			auto* context = rawrbox::RENDERER->context();
+			auto* device = rawrbox::RENDERER->device();
 
-			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
-			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
+			auto vertSize = static_cast<uint64_t>(this->_mesh->vertices.size());
+			auto indcSize = static_cast<uint64_t>(this->_mesh->indices.size());
 			auto empty = vertSize <= 0 || indcSize <= 0;
 
 			// BARRIER -----
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbh, Diligent::RESOURCE_STATE_COPY_DEST}, {this->_ibh, Diligent::RESOURCE_STATE_COPY_DEST}});
+			if (this->_uploadType == rawrbox::UploadType::FIXED_DYNAMIC) {
+				rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbh, Diligent::RESOURCE_STATE_COPY_DEST}, {this->_ibh, Diligent::RESOURCE_STATE_COPY_DEST}});
 
-			context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-			context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+				context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+				context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER}, {this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER}});
+				rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER}, {this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER}});
+			} else {
+				// Resize buffer ----
+
+				uint64_t sizeVB = sizeof(typename M::vertexBufferType) * vertSize;                                                     // Always keep 1
+				if (sizeVB > this->_vbhD->GetDesc().Size) this->_vbhD->Resize(device, context, sizeVB + this->BUFFER_INCREASE_OFFSET); // + OFFSET
+
+				uint64_t sizeIB = sizeof(uint16_t) * indcSize;                                                                         // Always keep 1
+				if (sizeIB > this->_ibhD->GetDesc().Size) this->_ibhD->Resize(device, context, sizeIB + this->BUFFER_INCREASE_OFFSET); // + OFFSET
+				// ----------
+
+				auto* VBbuffer = this->_vbhD->GetBuffer();
+				auto* IBbuffer = this->_ibhD->GetBuffer();
+
+				rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{VBbuffer, Diligent::RESOURCE_STATE_COPY_DEST}, {IBbuffer, Diligent::RESOURCE_STATE_COPY_DEST}});
+
+				rawrbox::RENDERER->context()->UpdateBuffer(VBbuffer, 0, sizeof(typename M::vertexBufferType) * vertSize, vertSize <= 0 ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+				rawrbox::RENDERER->context()->UpdateBuffer(IBbuffer, 0, sizeof(uint16_t) * indcSize, indcSize <= 0 ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+
+				rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{VBbuffer, Diligent::RESOURCE_STATE_VERTEX_BUFFER}, {IBbuffer, Diligent::RESOURCE_STATE_INDEX_BUFFER}});
+			}
 			// -----------
 		}
 
 	public:
-		ModelBase() = default;
+		// To prevent the vertex / index buffer from resizing too often, increase this value to offset the scaling based on your model needs
+		uint64_t BUFFER_INCREASE_OFFSET = 256;
+
+		ModelBase(size_t vertices = 0, size_t indices = 0) {
+			this->_mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(vertices, indices);
+			this->_material = std::make_unique<M>();
+		};
+
 		ModelBase(ModelBase&&) = delete;
 		ModelBase& operator=(ModelBase&&) = delete;
 		ModelBase(const ModelBase&) = delete;
@@ -136,6 +174,8 @@ namespace rawrbox {
 			RAWRBOX_DESTROY(this->_vbh);
 			RAWRBOX_DESTROY(this->_ibh);
 
+			this->_vbhD.reset();
+			this->_ibhD.reset();
 			this->_mesh.reset();
 		}
 
@@ -193,7 +233,7 @@ namespace rawrbox {
 
 		// UTIL ---
 		virtual void updateBuffers() {
-			if (!this->isDynamic() || !this->isUploaded()) return;
+			if (!this->isDynamic() || !this->isUploaded()) throw this->_logger->error("Model is not dynamic or uploaded!");
 
 			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
 			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
@@ -222,8 +262,8 @@ namespace rawrbox {
 			this->_mesh->setID(id);
 		}
 
-		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->_mesh->getColor(); }
-		virtual void setColor(const rawrbox::Color& color) {
+		[[nodiscard]] virtual const rawrbox::Color& getColor(int /*index*/ = -1) const { return this->_mesh->getColor(); }
+		virtual void setColor(const rawrbox::Color& color, int /*index*/ = -1) {
 			this->_mesh->setColor(color);
 		}
 
@@ -250,10 +290,10 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] virtual bool isDynamic() const {
-			return this->_isDynamic;
+			return this->_uploadType != rawrbox::UploadType::STATIC;
 		}
 		[[nodiscard]] virtual bool isUploaded() const {
-			return this->_vbh != nullptr && this->_ibh != nullptr;
+			return (this->_vbh != nullptr && this->_ibh != nullptr) || (this->_vbhD != nullptr && this->_ibhD != nullptr);
 		}
 
 		virtual rawrbox::Mesh<typename M::vertexBufferType>* mesh() {
@@ -261,21 +301,21 @@ namespace rawrbox {
 		}
 
 		// ----
-		virtual void upload(bool dynamic = false) {
-			if (this->isUploaded()) throw this->_logger->error("Upload called twice!");
-			auto* device = rawrbox::RENDERER->device();
+		virtual void upload(rawrbox::UploadType type = rawrbox::UploadType::STATIC) {
+			if (this->isUploaded()) throw this->_logger->error("Already uploaded!");
+			this->_uploadType = type;
 
 			// Generate buffers ----
-			this->_isDynamic = dynamic;
+			auto vertSize = static_cast<uint64_t>(this->_mesh->vertices.capacity());
+			auto indcSize = static_cast<uint64_t>(this->_mesh->indices.capacity());
 
-			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
-			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
+			bool empty = vertSize <= 0 || indcSize <= 0;
+			bool resizable = type == rawrbox::UploadType::RESIZABLE_DYNAMIC;
 
-			if (!dynamic && vertSize <= 0) throw this->_logger->error("Vertices cannot be empty on non-dynamic buffer!");
-			if (!dynamic && indcSize <= 0) throw this->_logger->error("Indices cannot be empty on non-dynamic buffer!");
+			if (!resizable && empty) throw this->_logger->error("Vertices / Indices cannot be empty!");
 
 			// Store original positions for blendstates
-			if (vertSize > 0) {
+			if (this->isDynamic() && vertSize > 0) {
 				_original_data.reserve(vertSize);
 
 				for (auto& v : this->_mesh->vertices) {
@@ -288,35 +328,65 @@ namespace rawrbox {
 			}
 			// -----------
 
+			auto* device = rawrbox::RENDERER->device();
+
 			// VERT ----
 			Diligent::BufferDesc VertBuffDesc;
 			VertBuffDesc.Name = "RawrBox::Buffer::Vertex";
-			VertBuffDesc.Usage = dynamic ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE;
 			VertBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-			VertBuffDesc.Size = vertSize * static_cast<uint32_t>(sizeof(typename M::vertexBufferType));
+			VertBuffDesc.ElementByteStride = static_cast<uint32_t>(sizeof(typename M::vertexBufferType));
+			VertBuffDesc.Usage = this->isDynamic() ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE; // TODO:  Diligent::USAGE_SPARSE;
 
-			Diligent::BufferData VBData;
-			VBData.pData = this->_mesh->vertices.data();
-			VBData.DataSize = VertBuffDesc.Size;
+			if (resizable) {
+				VertBuffDesc.Size = VertBuffDesc.ElementByteStride * (vertSize + this->BUFFER_INCREASE_OFFSET);
 
-			device->CreateBuffer(VertBuffDesc, vertSize > 0 ? &VBData : nullptr, &this->_vbh);
+				Diligent::DynamicBufferCreateInfo dynamicBuff;
+				dynamicBuff.Desc = VertBuffDesc;
+
+				this->_vbhD = std::make_unique<Diligent::DynamicBuffer>(device, dynamicBuff);
+			} else {
+				VertBuffDesc.Size = VertBuffDesc.ElementByteStride * vertSize;
+
+				Diligent::BufferData VBData;
+				VBData.pData = this->_mesh->vertices.data();
+				VBData.DataSize = VertBuffDesc.Size;
+
+				device->CreateBuffer(VertBuffDesc, &VBData, &this->_vbh);
+			}
 			// ---------------------
 
 			// INDC ----
 			Diligent::BufferDesc IndcBuffDesc;
 			IndcBuffDesc.Name = "RawrBox::Buffer::Indices";
-			IndcBuffDesc.Usage = dynamic ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE;
 			IndcBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
-			IndcBuffDesc.Size = indcSize * sizeof(uint16_t);
+			IndcBuffDesc.ElementByteStride = static_cast<uint32_t>(sizeof(uint16_t));
+			IndcBuffDesc.Usage = this->isDynamic() ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE; // TODO: Diligent::USAGE_SPARSE;
 
-			Diligent::BufferData IBData;
-			IBData.pData = this->_mesh->indices.data();
-			IBData.DataSize = IndcBuffDesc.Size;
-			device->CreateBuffer(IndcBuffDesc, indcSize > 0 ? &IBData : nullptr, &this->_ibh);
+			if (resizable) {
+				IndcBuffDesc.Size = IndcBuffDesc.ElementByteStride * (indcSize + this->BUFFER_INCREASE_OFFSET);
+
+				Diligent::DynamicBufferCreateInfo dynamicBuff;
+				dynamicBuff.Desc = IndcBuffDesc;
+
+				this->_ibhD = std::make_unique<Diligent::DynamicBuffer>(device, dynamicBuff);
+			} else {
+				IndcBuffDesc.Size = IndcBuffDesc.ElementByteStride * indcSize;
+
+				Diligent::BufferData IBData;
+				IBData.pData = this->_mesh->indices.data();
+				IBData.DataSize = IndcBuffDesc.Size;
+
+				device->CreateBuffer(IndcBuffDesc, &IBData, &this->_ibh);
+			}
 			// ---------------------
 
 			// Barrier ----
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER}, {this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER}});
+			if (resizable) {
+				rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbhD->GetBuffer(), Diligent::RESOURCE_STATE_VERTEX_BUFFER}, {this->_ibhD->GetBuffer(), Diligent::RESOURCE_STATE_INDEX_BUFFER}});
+				if (!empty) this->_requiresUpdate = true;
+			} else {
+				rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER}, {this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER}});
+			}
 			// ------------
 
 			// Initialize material ----
@@ -335,10 +405,10 @@ namespace rawrbox {
 			// --------------------------
 
 			// Bind vertex and index buffers
-			std::array<Diligent::IBuffer*, 1> pBuffs = {this->_vbh};
+			std::array<Diligent::IBuffer*, 1> pBuffs = {this->_vbh == nullptr ? this->_vbhD->GetBuffer() : this->_vbh};
 
 			context->SetVertexBuffers(0, 1, pBuffs.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			context->SetIndexBuffer(this->_ibh == nullptr ? this->_ibhD->GetBuffer() : this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			// ----
 
 			// Reset material uniforms ----

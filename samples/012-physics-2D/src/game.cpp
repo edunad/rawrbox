@@ -37,8 +37,11 @@ namespace phys_2d_test {
 		auto* render = window->createRenderer();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
-			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
-			this->drawWorld();
+			if (pass == rawrbox::DrawPass::PASS_OPAQUE) {
+				this->drawWorld();
+			} else {
+				this->drawOverlay();
+			}
 		});
 		// ---------------
 
@@ -61,10 +64,8 @@ namespace phys_2d_test {
 		// --------------
 
 		// BINDS ----
-		window->onMouseKey += [this](auto&, const rawrbox::Vector2i&, int button, int action, int) {
-			const bool isDown = action == 1;
-			if (!isDown || button != rawrbox::MOUSE_BUTTON_1) return;
-
+		window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
+			if (action != rawrbox::KEY_ACTION_UP || key != rawrbox::KEY_F1) return;
 			this->_paused = !this->_paused;
 			if (this->_timer != nullptr) this->_timer->pause(this->_paused);
 		};
@@ -175,6 +176,13 @@ namespace phys_2d_test {
 			b->mdl->draw();
 		}
 		// ------------------
+	}
+
+	void Game::drawOverlay() const {
+		if (!this->_ready) return;
+		auto* stencil = rawrbox::RENDERER->stencil();
+
+		stencil->drawText(fmt::format("[F1]   PAUSED: {}", this->_paused), {15, 15});
 	}
 
 	void Game::draw() {

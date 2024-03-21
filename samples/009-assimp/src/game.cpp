@@ -118,7 +118,7 @@ namespace assimp {
 		this->_model7->load(*mdl6);
 		this->_model7->setScale({0.4F, 0.4F, 0.4F});
 		this->_model7->setPos({2.F, 0.4F, -6.F});
-		this->_model7->upload(true);
+		this->_model7->upload(rawrbox::UploadType::FIXED_DYNAMIC);
 		//    -----
 
 		// Text test ----

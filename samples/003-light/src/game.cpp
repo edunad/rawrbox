@@ -39,8 +39,11 @@ namespace light {
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
-			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
-			this->drawWorld();
+			if (pass == rawrbox::DrawPass::PASS_OPAQUE) {
+				this->drawWorld();
+			} else {
+				this->drawOverlay();
+			}
 		});
 		// ---------------
 
@@ -49,6 +52,13 @@ namespace light {
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
+
+		// BINDS ----
+		window->onKey += [](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
+			if (action != rawrbox::KEY_ACTION_UP || key != rawrbox::KEY_F1) return;
+			rawrbox::LIGHTS::setEnabled(!rawrbox::LIGHTS::isEnabled());
+		};
+		// -----
 
 		// Add loaders ----
 		rawrbox::RESOURCES::addLoader<rawrbox::FontLoader>();
@@ -197,7 +207,7 @@ namespace light {
 		}
 	}
 
-	void Game::drawWorld() {
+	void Game::drawWorld() const {
 		if (!this->_ready || this->_model == nullptr || this->_model2 == nullptr || this->_text == nullptr) return;
 
 		this->_model->draw();
@@ -205,6 +215,13 @@ namespace light {
 		this->_model3->draw();
 
 		this->_text->draw();
+	}
+
+	void Game::drawOverlay() const {
+		if (!this->_ready) return;
+		auto* stencil = rawrbox::RENDERER->stencil();
+
+		stencil->drawText(fmt::format("[F1]   FULLBRIGHT: {}", !rawrbox::LIGHTS::isEnabled()), {15, 15});
 	}
 
 	void Game::draw() {

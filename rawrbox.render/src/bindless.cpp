@@ -257,7 +257,7 @@ namespace rawrbox {
 				}
 
 				texture->update();
-				it++;
+				++it;
 			}
 		}
 		// ---------------------

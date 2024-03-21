@@ -1,5 +1,6 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/network/scripting/wrappers/http.hpp>
+#include <rawrbox/utils/string.hpp>
 
 namespace rawrbox {
 	void HTTPWrapper::request(const std::string& url, int method, const luabridge::LuaRef& headers, const luabridge::LuaRef& callback, std::optional<int> timeout) {
@@ -16,8 +17,7 @@ namespace rawrbox {
 			luabridge::LuaRef value = pair.second;
 			if (value.type() != LUA_TSTRING) continue;
 
-			auto keyCheck = key;
-			std::transform(keyCheck.begin(), keyCheck.end(), keyCheck.begin(), ::toupper);
+			auto keyCheck = rawrbox::StrUtils::toUpper(key);
 			if (keyCheck == "METHOD" || keyCheck == "USER-AGENT") continue; // Remove these
 
 			headerMap[key] = value.unsafe_cast<std::string>();

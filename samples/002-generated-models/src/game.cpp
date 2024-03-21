@@ -6,6 +6,7 @@
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
+#include <rawrbox/utils/timer.hpp>
 
 #include <model/game.hpp>
 
@@ -43,7 +44,7 @@ namespace model {
 
 		// Setup camera
 		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
-		cam->setPos({0.F, 5.F, -5.F});
+		cam->setPos({0.F, 6.F, -6.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		cam->onMovementStart = []() { fmt::print("Camera start\n"); };
 		cam->onMovementStop = []() { fmt::print("Camera stop\n"); };
@@ -181,7 +182,7 @@ namespace model {
 			this->_model->addMesh(mesh);
 		}
 
-		this->_model->upload(false);
+		this->_model->upload();
 		this->_bboxes->upload();
 	}
 
@@ -262,12 +263,24 @@ namespace model {
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CONE", {-3.5F, 0.55F, -2});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "PYRAMID", {-5.0F, 0.55F, -2});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "ARROW", {-4.0F, 0.55F, 0.F});
-
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPLINE", {-1.5F, 0.55F, 2});
-
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "1 UNIT", {3.5F, 1.0F, 2.5F});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "HALF UNIT", {1.5F, 0.55F, 2.5F});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "DYNAMIC RESIZE", {0.F, 0.55F, -4.0F});
 		this->_text->upload();
+	}
+
+	void Game::createDynamic() {
+		this->_modelDynamic->setPos({0, 0, -4.F});
+		this->_modelDynamic->upload(rawrbox::UploadType::RESIZABLE_DYNAMIC);
+
+		float y = 0;
+		rawrbox::TIMER::create(5, 700, [this, y]() mutable {
+			this->_modelDynamic->addMesh(rawrbox::MeshUtils::generateCube({y - 2.F, 0.F, .0F}, {0.5F, 0.5F, 0.5F}, rawrbox::Colors::White()));
+			this->_modelDynamic->updateBuffers();
+
+			y += 1.F;
+		});
 	}
 
 	void Game::contentLoaded() {
@@ -291,6 +304,10 @@ namespace model {
 
 		// Text test ----
 		this->createText();
+		// ------
+
+		// Text dynamic ----
+		this->createDynamic();
 		// ------
 
 		this->_ready = true;
@@ -321,9 +338,9 @@ namespace model {
 
 	void Game::drawWorld() {
 		if (!this->_ready) return;
-		if (this->_model == nullptr || this->_sprite == nullptr || this->_text == nullptr || this->_displacement == nullptr || this->_spline == nullptr) return;
 
 		if (this->_model->isUploaded()) this->_model->draw();
+		if (this->_modelDynamic->isUploaded()) this->_modelDynamic->draw();
 		if (this->_displacement->isUploaded()) this->_displacement->draw();
 		if (this->_sprite->isUploaded()) this->_sprite->draw();
 		if (this->_spline->isUploaded()) this->_spline->draw();

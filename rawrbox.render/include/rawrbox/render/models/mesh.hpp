@@ -131,7 +131,11 @@ namespace rawrbox {
 
 		void* owner = nullptr; // Eeeehhhh
 
-		Mesh() = default;
+		Mesh(size_t vertexSize = 0, size_t indexSize = 0) {
+			if (vertexSize != 0) this->vertices.resize(vertexSize);
+			if (indexSize != 0) this->indices.resize(indexSize);
+		};
+
 		Mesh(const Mesh&) = default;
 		Mesh(Mesh&&) noexcept = default;
 		Mesh& operator=(const Mesh&) = default;

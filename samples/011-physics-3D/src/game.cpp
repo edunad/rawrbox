@@ -36,8 +36,11 @@ namespace phys_3d_test {
 		auto* render = window->createRenderer();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
-			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
-			this->drawWorld();
+			if (pass == rawrbox::DrawPass::PASS_OPAQUE) {
+				this->drawWorld();
+			} else {
+				this->drawOverlay();
+			}
 		});
 		// ---------------
 
@@ -66,10 +69,8 @@ namespace phys_3d_test {
 		// ----------------------------
 
 		// BINDS ----
-		window->onMouseKey += [this](auto&, const rawrbox::Vector2i&, int button, int action, int) {
-			const bool isDown = action == 1;
-			if (!isDown || button != rawrbox::MOUSE_BUTTON_1) return;
-
+		window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
+			if (action != rawrbox::KEY_ACTION_UP || key != rawrbox::KEY_F1) return;
 			this->_paused = !this->_paused;
 			if (this->_timer != nullptr) this->_timer->pause(this->_paused);
 		};
@@ -132,7 +133,7 @@ namespace phys_3d_test {
 
 		// TIMER ---
 		this->_timer = rawrbox::TIMER::create(
-		    600, 25, [this]() { this->createBox({0, 5, 0}, {0.5F, 0.5F, 0.5F}); }, [this] {
+		    600, 25, [this]() { this->createBox({0, 10, 0}, {0.5F, 0.5F, 0.5F}); }, [this] {
 			    this->_timer = nullptr;
 			    rawrbox::PHYSICS::optimize(); // Only need to be called after adding a lot of bodies in one go
 		    });
@@ -224,6 +225,13 @@ namespace phys_3d_test {
 			b->mdl->draw();
 		}
 		// ------------------*/
+	}
+
+	void Game::drawOverlay() const {
+		if (!this->_ready) return;
+		auto* stencil = rawrbox::RENDERER->stencil();
+
+		stencil->drawText(fmt::format("[F1]   PAUSED: {}", this->_paused), {15, 15});
 	}
 
 	void Game::draw() {

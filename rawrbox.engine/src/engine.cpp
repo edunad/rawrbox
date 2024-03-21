@@ -58,7 +58,7 @@ namespace rawrbox {
 		// ---------
 
 		// Setup render threading
-		new std::jthread([this]() {
+		auto renderThread = std::jthread([this]() {
 			try {
 				rawrbox::RENDER_THREAD_ID = std::this_thread::get_id();
 				rawrbox::ThreadUtils::setName("rawrbox:render");
@@ -68,12 +68,12 @@ namespace rawrbox {
 				// ---------
 
 				while (this->_shutdown != ENGINE_THREADS::THREAD_RENDER) {
-					rawrbox::DELTA_TIME = float(std::max(0.0, this->_timer.record_elapsed_seconds()));
+					rawrbox::DELTA_TIME = static_cast<float>(std::max(0.0, this->_timer.record_elapsed_seconds()));
 
 					const float target_deltaTime = 1.0F / this->_fps;
 					if (rawrbox::DELTA_TIME < target_deltaTime) {
 						sleep((target_deltaTime - rawrbox::DELTA_TIME) * 1000);
-						rawrbox::DELTA_TIME += float(std::max(0.0, this->_timer.record_elapsed_seconds()));
+						rawrbox::DELTA_TIME += static_cast<float>(std::max(0.0, this->_timer.record_elapsed_seconds()));
 					}
 
 					// THREADING ----

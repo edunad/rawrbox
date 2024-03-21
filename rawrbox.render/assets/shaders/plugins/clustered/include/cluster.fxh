@@ -6,6 +6,11 @@
 		float4 Extents;
 	};
 
+	struct ClusterData {
+		uint light;
+		uint decal;
+	};
+
 	#if defined(WRITE_CLUSTERS)
 		RWStructuredBuffer<ClusterAABB> Clusters; // Read-Write
 		#define CLUSTERS
@@ -25,10 +30,10 @@
 	#endif
 
 	#if defined(WRITE_CLUSTER_DATA_GRID)
-		RWStructuredBuffer<uint2> ClusterDataGrid; // Read-Write
+		RWStructuredBuffer<ClusterData> ClusterDataGrid; // Read-Write
 		#define CLUSTER_DATA_GRID
 	#elif defined(READ_CLUSTER_DATA_GRID)
-		StructuredBuffer<uint2> ClusterDataGrid; // Read-only
+		StructuredBuffer<ClusterData> ClusterDataGrid; // Read-only
 		#define CLUSTER_DATA_GRID
 	#endif
 

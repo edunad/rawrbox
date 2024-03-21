@@ -27,7 +27,7 @@ namespace rawrbox {
 		// -----------
 
 	public:
-		Mod(std::string id, std::filesystem::path folderName);
+		Mod(std::string id, std::filesystem::path folderPath);
 		Mod(const Mod&) = delete;
 		Mod(Mod&&) = delete;
 		Mod& operator=(const Mod&) = delete;
@@ -45,18 +45,19 @@ namespace rawrbox {
 
 		// UTILS ----
 		[[nodiscard]] virtual const std::string& getID() const;
-		[[nodiscard]] virtual const std::string getEntryFilePath() const;
+		[[nodiscard]] virtual std::string getEntryFilePath() const;
 		[[nodiscard]] virtual const std::filesystem::path& getFolder() const;
 
 		virtual lua_State* getEnvironment();
 		// -----
 
 		template <typename... CallbackArgs>
-		luabridge::LuaResult call(const std::string& name, CallbackArgs&&... args) {
+		std::optional<luabridge::LuaResult> call(const std::string& name, CallbackArgs&&... args) {
 			auto fnc = this->_modTable[name];
+			if (!fnc.isCallable()) return std::nullopt;
 
 			luabridge::LuaResult result = luabridge::call(fnc, this->_modTable, std::forward<CallbackArgs>(args)...);
-			if (fnc.isCallable() && result.hasFailed()) {
+			if (result.hasFailed()) {
 				_logger->warn("Lua error on {}\n  └── {}", this->_id, result.errorMessage());
 			}
 

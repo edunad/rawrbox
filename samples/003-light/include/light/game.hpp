@@ -36,6 +36,8 @@ namespace light {
 
 		void loadContent();
 		void contentLoaded();
-		void drawWorld();
+
+		void drawWorld() const;
+		void drawOverlay() const;
 	};
 } // namespace light

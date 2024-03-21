@@ -131,7 +131,11 @@
         }
 
         float3 ComputeDiffuseColor(float3 baseColor, float metalness) {
-            return baseColor * (1 - metalness);
+            if(metalness == 1.0) {
+                return baseColor;
+            } else {
+                return baseColor * (1 - metalness);
+            }
         }
 
         LightResult DefaultLitBxDF(float3 specularColor, float specularRoughness, float3 diffuseColor, half3 N, half3 V, half3 L, float falloff) {
@@ -141,7 +145,6 @@
                 return lighting;
             } else {
                 float NdotL = saturate(dot(N, L));
-
                 if(NdotL == 0.0f) {
                     return lighting;
                 } else {
@@ -162,8 +165,8 @@
 
                         // Kulla17 - Energy conervation due to multiple scattering
                         /*float gloss = Pow4(1 - specularRoughness);
-                        float3 DFG = EnvDFGPolynomial(specular, gloss, NdotV);
-                        float3 energyCompensation = 1.0f + specular * (1.0f / DFG.y - 1.0f);
+                        float3 DFG = EnvDFGPolynomial(specularColor, gloss, NdotV);
+                        float3 energyCompensation = 1.0f + specularColor * (1.0f / DFG.y - 1.0f);
                         lighting.Specular *= energyCompensation;*/
                     }
 
@@ -177,32 +180,34 @@
         void ApplyLight(uint lightBucket, uint bucketIndex, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 V, float3 worldPos, float dither) {
             uint bucket = lightBucket;
 
-            if(LightConstants.lightSettings.x == 1.0) {
+            if(LightConstants.lightSettings.x == 0.0) {
                 lighting.Diffuse = diffuse;  // FULL BRIGHT
-            } else {
-                while(bucket) {
-                    uint bitIndex = firstbitlow(bucket);
-                    bucket ^= 1u << bitIndex;
-
-                    // Apply light ------------
-                    Light light = Lights[bitIndex + bucketIndex * CLUSTERS_Z];
-
-                    float3 L;
-                    float attenuation = GetAttenuation(light, worldPos, L);
-
-                    if(attenuation > 0.0F) {
-                        LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
-
-                        lighting.Diffuse += result.Diffuse * light.color * light.intensity;
-                        lighting.Specular += result.Specular * light.color * light.intensity;
-                    }
-                    // ------------------------
-                }
-
-                // AMBIENT LIGHT ---
-                lighting.Diffuse *= LightConstants.ambientColor.rgb;
-                // -----------------
+                return;
             }
+
+            while(bucket) {
+                uint bitIndex = firstbitlow(bucket);
+                bucket ^= 1u << bitIndex;
+
+                // Apply light ------------
+                Light light = Lights[bitIndex + bucketIndex * CLUSTERS_Z];
+
+                float3 L;
+                float attenuation = GetAttenuation(light, worldPos, L);
+
+                if(attenuation > 0.0F) {
+                    LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
+
+                    lighting.Diffuse += result.Diffuse * light.color * light.intensity;
+                    lighting.Specular += result.Specular * light.color * light.intensity;
+                }
+                // ------------------------
+            }
+
+            // AMBIENT LIGHT ---
+            lighting.Diffuse *= LightConstants.ambientColor.rgb;
+            // -----------------
+
         }
 
     #endif

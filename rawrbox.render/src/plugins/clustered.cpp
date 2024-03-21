@@ -30,7 +30,7 @@ namespace rawrbox {
 		GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * CLUSTERS_Z;
 
 		if constexpr (CLUSTERS_Z % CLUSTERS_Z_THREADS != 0) throw this->_logger->error("Number of cluster depth slices must be divisible by thread count z-dimension");
-		if constexpr (MAX_LIGHTS_PER_CLUSTER % 32 != 0) throw this->_logger->error("MAX_LIGHTS_PER_CLUSTER must be divisible by 32");
+		if constexpr (MAX_DATA_PER_CLUSTER % 32 != 0) throw this->_logger->error("MAX_DATA_PER_CLUSTER must be divisible by 32");
 
 		// Setup dispatch ---
 		this->_dispatch.ThreadGroupCountX = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_X, CLUSTERS_X_THREADS);
@@ -98,7 +98,7 @@ namespace rawrbox {
 		if (renderer == nullptr) throw this->_logger->error("Renderer not initialized!");
 		if (camera == nullptr) throw this->_logger->error("Camera not initialized!");
 
-		if (this->_clusterBuildingComputeProgram == nullptr || this->_cullingComputeProgram == nullptr) throw this->_logger->error("Compute pipelines not initialized, did you call 'initialize'");
+		if (this->_clusterBuildingComputeProgram == nullptr || this->_cullingComputeProgram == nullptr || this->_cullingResetProgram == nullptr) throw this->_logger->error("Compute pipelines not initialized, did you call 'initialize'");
 
 		// Setup uniforms
 		rawrbox::LIGHTS::bindUniforms();
@@ -123,9 +123,16 @@ namespace rawrbox {
 		}
 		// ------
 
-		// Perform light / decal culling
+		// Reset clusters
+		// TODO: REPLACE WITH
 		// uint32_t ClearValue = 0;
 		// context->ClearUAVUint(this->_dataGridBuffer, &ClearValue);
+
+		context->SetPipelineState(this->_cullingResetProgram);
+		context->DispatchCompute(this->_dispatch);
+		// --------------
+
+		// Perform light / decal culling
 		context->SetPipelineState(this->_cullingComputeProgram);
 		context->DispatchCompute(this->_dispatch);
 		// ----------------------
@@ -161,7 +168,7 @@ namespace rawrbox {
 			BuffDesc.ElementByteStride = sizeof(std::array<uint32_t, 2>);
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 			BuffDesc.Name = "rawrbox::Cluster::ClusterDataGrid";
-			BuffDesc.Size = BuffDesc.ElementByteStride * (rawrbox::MAX_LIGHTS_PER_CLUSTER / rawrbox::CLUSTERS_Z * GROUP_SIZE);
+			BuffDesc.Size = BuffDesc.ElementByteStride * (rawrbox::MAX_DATA_PER_CLUSTER / rawrbox::CLUSTERS_Z * GROUP_SIZE);
 			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
 
 			device->CreateBuffer(BuffDesc, nullptr, &this->_dataGridBuffer);
@@ -188,6 +195,11 @@ namespace rawrbox {
 		this->_clusterBuildingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Build", settings);
 		// ---------
 
+		// RESET -----
+		settings.pCS = "cluster_reset.csh";
+		this->_cullingResetProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Reset", settings);
+		//  ----
+
 		// CULLING -----
 		settings.pCS = "cluster_cull.csh";
 		this->_cullingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Cull", settings);
@@ -199,14 +211,13 @@ namespace rawrbox {
 		Diligent::ShaderMacroHelper macro;
 
 		macro.AddShaderMacro("THREAD_GROUP_SIZE", rawrbox::THREAD_GROUP_SIZE);
-		// macro.AddShaderMacro("GROUP_SIZE", GROUP_SIZE);
 		macro.AddShaderMacro("CLUSTERS_X_THREADS", rawrbox::CLUSTERS_X_THREADS);
 		macro.AddShaderMacro("CLUSTERS_Y_THREADS", rawrbox::CLUSTERS_Y_THREADS);
 		macro.AddShaderMacro("CLUSTERS_Z_THREADS", rawrbox::CLUSTERS_Z_THREADS);
 		macro.AddShaderMacro("CLUSTERS_X", CLUSTERS_X);
 		macro.AddShaderMacro("CLUSTERS_Y", CLUSTERS_Y);
 		macro.AddShaderMacro("CLUSTERS_Z", rawrbox::CLUSTERS_Z);
-		macro.AddShaderMacro("MAX_LIGHTS_PER_CLUSTER", rawrbox::MAX_LIGHTS_PER_CLUSTER);
+		macro.AddShaderMacro("MAX_DATA_PER_CLUSTER", rawrbox::MAX_DATA_PER_CLUSTER);
 		macro.AddShaderMacro("CLUSTER_TEXTEL_SIZE", rawrbox::CLUSTER_TEXTEL_SIZE);
 		macro.AddShaderMacro("CLUSTERED_NUM_BUCKETS", rawrbox::CLUSTERED_NUM_BUCKETS);
 

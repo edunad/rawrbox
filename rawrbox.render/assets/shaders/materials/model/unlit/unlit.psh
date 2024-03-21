@@ -47,8 +47,9 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
         float3 ddxPos = ddx(PSIn.WorldPos.xyz);
         float3 ddyPos = ddy(PSIn.WorldPos.xyz);
 
+        [loop]
         for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
-            uint buckets = ClusterDataGrid[gridOffset + bucketIndex].y;
+            uint buckets = ClusterDataGrid[gridOffset + bucketIndex].decal;
 
             // Apply decals ---
             float4 roughtness = 0; // not used in unlit

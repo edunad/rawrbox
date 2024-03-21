@@ -6,12 +6,12 @@
 
 namespace rawrbox {
 	std::string StrUtils::toLower(std::string str) {
-		std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::tolower(c); });
+		std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 		return str;
 	}
 
 	std::string StrUtils::toUpper(std::string str) {
-		std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return std::toupper(c); });
+		std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
 		return str;
 	}
 

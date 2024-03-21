@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <bit>
+#include <climits>
 #include <cmath>
 #include <cstring>
 
@@ -65,13 +66,16 @@ namespace rawrbox {
 	}
 
 	short PackUtils::toHalf(float value) {
-		short fltInt16 = 0;
 		int fltInt32 = 0;
 
 		std::memcpy(&fltInt32, &value, sizeof(float));
-		fltInt16 = ((fltInt32 & 0x7fffffff) >> 13) - (0x38000000 >> 13);
-		fltInt16 |= ((fltInt32 & 0x80000000) >> 16);
+		int shifted = ((fltInt32 & 0x7fffffff) >> 13) - (0x38000000 >> 13);
+		if (shifted > SHRT_MAX || shifted < SHRT_MIN) {
+			shifted = std::clamp(shifted, SHRT_MIN, SHRT_MAX);
+		}
 
+		auto fltInt16 = static_cast<short>(shifted);
+		fltInt16 |= ((fltInt32 & 0x80000000) >> 16);
 		return fltInt16;
 	}
 

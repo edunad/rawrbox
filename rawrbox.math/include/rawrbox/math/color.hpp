@@ -16,7 +16,7 @@ namespace rawrbox {
 		NumberType r = 0, g = 0, b = 0, a = 1;
 
 		Color_t() = default;
-		Color_t(NumberType _r, NumberType _g, NumberType _b, NumberType _a) : r(_r), g(_g), b(_b), a(_a) {}
+		constexpr Color_t(NumberType _r, NumberType _g, NumberType _b, NumberType _a) : r(_r), g(_g), b(_b), a(_a) {}
 
 		static Color_t<NumberType> RGBAHex(uint32_t x) {
 			if constexpr (std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>) {

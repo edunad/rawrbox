@@ -94,19 +94,21 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     float3 ddyPos = ddy(PSIn.WorldPos.xyz);
 
     LightResult result = (LightResult)0;
-    for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
-        uint2 buckets = ClusterDataGrid[gridOffset + bucketIndex];
 
-        // Apply decals ---
-        float4 roughtness = 0; // TODO
-        ApplyDecals(buckets.y, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, baseColor, roughtness);
-        // ----------------
+    [loop]
+    for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
+        ClusterData buckets = ClusterDataGrid[gridOffset + bucketIndex];
 
         // Apply light ---
         float3 diffuse     = ComputeDiffuseColor(baseColor.rgb, metal);
         float3 specular    = ComputeF0(SpecularFactor, baseColor.rgb, metal);
 
-        ApplyLight(buckets.x, bucketIndex, result, specular, rough, diffuse, normal, V, PSIn.WorldPos.xyz, dither);
+        ApplyLight(buckets.light, bucketIndex, result, specular, rough, diffuse, normal, V, PSIn.WorldPos.xyz, dither);
+        // ----------------
+
+        // Apply decals ---
+        float4 roughtness = 0; // TODO
+        ApplyDecals(buckets.decal, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, baseColor, roughtness);
         // ----------------
     }
     // ----------------

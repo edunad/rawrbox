@@ -42,6 +42,7 @@ namespace phys_2d_test {
 		~Game() override = default;
 
 		void drawWorld();
+		void drawOverlay() const;
 
 		void createBox(const rawrbox::Vector3f& pos, const rawrbox::Vector2f& size);
 

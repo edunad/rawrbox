@@ -40,14 +40,14 @@ TEST_CASE("Engine should behave as expected", "[rawrbox::Engine]") {
 
 		rawrbox::RENDER_THREAD_ID = std::this_thread::get_id();
 		rawrbox::runOnRenderThread([]() {
-			new std::jthread([]() {
+			auto t1 = std::jthread([]() {
 				threadCalls++;
 				rawrbox::runOnRenderThread([]() {
 					threadCalls++;
-					new std::jthread([]() {
+					auto t2 = std::jthread([]() {
 						rawrbox::runOnRenderThread([]() {
 							threadCalls++;
-							new std::jthread([]() {
+							auto t3 = std::jthread([]() {
 								rawrbox::runOnRenderThread([]() {
 									threadCalls++;
 									shutdownThread = true;

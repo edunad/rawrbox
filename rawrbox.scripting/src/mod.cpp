@@ -25,11 +25,15 @@ namespace rawrbox {
 	void Mod::init() {
 		if (this->_L == nullptr) throw _logger->error("Invalid lua handle");
 
+#ifdef RAWRBOX_SCRIPTING_EXCEPTION
+		luabridge::enableExceptions(_L);
+#endif
+
 		// Freeze lua env ---
 		// No more modifications to the global table are allowed after this point
-		// luabridge::enableExceptions(_L);
 		luaL_sandbox(this->_L);
 		luaL_sandboxthread(this->_L); // Clone of the _G env that allows modification, but you cannot modify _G directly
+
 		// --------------
 
 		// Initialize mod table, this can be modified ---
@@ -55,7 +59,7 @@ namespace rawrbox {
 
 	// UTILS ----
 	const std::string& Mod::getID() const { return this->_id; }
-	const std::string Mod::getEntryFilePath() const { return fmt::format("{}/init.luau", this->_folder.generic_string()); }
+	std::string Mod::getEntryFilePath() const { return fmt::format("{}/init.luau", this->_folder.generic_string()); }
 	const std::filesystem::path& Mod::getFolder() const { return this->_folder; }
 
 	lua_State* Mod::getEnvironment() { return this->_L; }

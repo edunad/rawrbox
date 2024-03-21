@@ -44,6 +44,9 @@ TEST_CASE("MathUtils should behave as expected", "[rawrbox::MathUtils]") {
 	SECTION("rawrbox::MathUtils::nextPow2") {
 		REQUIRE(rawrbox::MathUtils::nextPow2(8) == 8);
 		REQUIRE(rawrbox::MathUtils::nextPow2(12) == 16);
+		REQUIRE(rawrbox::MathUtils::nextPow2(32) == 32);
+		REQUIRE(rawrbox::MathUtils::nextPow2(43) == 64);
+		REQUIRE(rawrbox::MathUtils::nextPow2(34353453) == 67108864);
 		REQUIRE(rawrbox::MathUtils::nextPow2(1) == 1);
 	}
 
