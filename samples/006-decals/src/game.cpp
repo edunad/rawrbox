@@ -27,7 +27,7 @@ namespace decal_test {
 		window->setMonitor(-1);
 		window->setTitle("DECALS TEST");
 #ifdef _DEBUG
-		window->init(1024, 768, rawrbox::WindowFlags::Window::WINDOWED);
+		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED);
 #else
 		window->init(0, 0, rawrbox::WindowFlags::Window::BORDERLESS);
 #endif

@@ -19,6 +19,8 @@ namespace rawrbox {
 		states.reserve(_barrierQueue.size());
 
 		for (auto& barrier : _barrierQueue) {
+			if (barrier.second.pResource == nullptr) continue;
+
 			auto fnd = _barrierCache.find(barrier.first);
 			if (fnd != _barrierCache.end() && fnd->second == barrier.second.NewState) {
 				continue; //  Was already executed

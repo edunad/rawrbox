@@ -82,6 +82,8 @@ namespace rawrbox {
 			// SETUP UNIFORMS ----------------------------
 			{
 				Diligent::MapHelper<rawrbox::BindlessPixelBuffer> PixelConstants(rawrbox::RENDERER->context(), rawrbox::BindlessManager::signatureBufferPixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				if (PixelConstants == nullptr) throw _logger->error("Failed to map the pixel constants buffer!");
+
 				std::memcpy(PixelConstants, &this->_lastPixelBuffer.second, sizeof(rawrbox::BindlessPixelBuffer));
 			}
 			// -----------
@@ -99,6 +101,8 @@ namespace rawrbox {
 			// SETUP UNIFORMS ----------------------------
 			{
 				Diligent::MapHelper<rawrbox::BindlessVertexBuffer> VertexConstants(rawrbox::RENDERER->context(), rawrbox::BindlessManager::signatureBufferVertex, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+				if (VertexConstants == nullptr) throw _logger->error("Failed to map the vertex constants buffer!");
+
 				std::memcpy(VertexConstants, &this->_lastVertexBuffer.second, sizeof(rawrbox::BindlessVertexBuffer));
 			}
 			// -----------

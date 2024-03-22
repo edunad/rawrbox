@@ -63,10 +63,9 @@ namespace rawrbox {
 		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.ShaderResourceRuntimeArray = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.ComputeShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
-		features.DepthClamp = Diligent::DEVICE_FEATURE_STATE_ENABLED;
-		features.DepthBiasClamp = Diligent::DEVICE_FEATURE_STATE_ENABLED;
-
-		features.TransferQueueTimestampQueries = Diligent::DEVICE_FEATURE_STATE_DISABLED;
+		features.VertexPipelineUAVWritesAndAtomics = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		// features.DepthClamp = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		// features.DepthBiasClamp = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		// ---------------------------------------------------
 
 #ifdef _DEBUG

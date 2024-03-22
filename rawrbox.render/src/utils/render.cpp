@@ -35,12 +35,15 @@ namespace rawrbox {
 		// SETUP VERTEX UNIFORMS ----------------------------
 		{
 			Diligent::MapHelper<rawrbox::BindlessVertexBuffer> CBConstants(context, rawrbox::BindlessManager::signatureBufferVertex, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			if (CBConstants == nullptr) throw _logger->error("Failed to map the vertex constants buffer!");
 		}
 		// -----------
 
 		// SETUP PIXEL UNIFORMS ----------------------------
 		{
 			Diligent::MapHelper<rawrbox::BindlessPixelBuffer> CBConstants(context, rawrbox::BindlessManager::signatureBufferPixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			if (CBConstants == nullptr) throw _logger->error("Failed to map the pixel constants buffer!");
+
 			CBConstants->textureIDs = {texture.getTextureID(), 0, 0, 0};
 		}
 		// -----------

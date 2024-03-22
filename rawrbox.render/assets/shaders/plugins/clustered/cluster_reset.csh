@@ -8,5 +8,5 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 		return;
 
 	uint clusterIndex = Flatten3D(dispatchThreadId, float2(CLUSTERS_X, CLUSTERS_Y));
-    ClusterDataGrid[clusterIndex] = (ClusterData)0;
+    ClusterDataGrid[clusterIndex] = 0;
 }
