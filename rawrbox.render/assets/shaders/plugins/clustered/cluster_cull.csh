@@ -61,7 +61,8 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 
     [loop]
     for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS && (lightIndex < TOTAL_LIGHTS || decalIndex < TOTAL_DECALS); ++bucketIndex) {
-        ClusterData data = (ClusterData)0;
+        uint lightOffset = 0;
+        uint decalOffset = 0;
 
         [loop]
         for(uint i = 0; i < CLUSTERS_Z && lightIndex < TOTAL_LIGHTS; ++i) {
@@ -74,7 +75,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
                 sphere.Position = mul(light.position, Camera.view).xyz;
 
                 if(SphereInAABB(sphere, cluster)) {
-                    data.light |= 1u << i;
+                    lightOffset |= 1u << i;
                 }
             } else if(light.type == LIGHT_SPOT) {
                 float3 viewSpacePos = mul(light.position, Camera.view).xyz;
@@ -88,10 +89,10 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 				sphere.Position = cluster.Center.xyz;
 
                 if(ConeInSphere(viewSpacePos, viewSpaceDir, light.radius, coneAngleSinCos, sphere)) {
-                    data.light |= 1u << i;
+                    lightOffset |= 1u << i;
                 }
             } else {
-                data.light |= 1u << i; // Unknown / directional, don't calculate cull
+                lightOffset |= 1u << i; // Unknown / directional, don't calculate cull
             }
         }
 
@@ -102,13 +103,13 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 
             if(decal.data.w == 1) { //test
                 if(BoxInAABB(decal.worldToLocal, cluster)) {
-                    data.decal |= 1u << o;
+                    decalOffset |= 1u << o;
                 }
             } else {
-                data.decal |= 1u << o;
+                decalOffset |= 1u << o;
             }
         }
 
-	    ClusterDataGrid[clusterIndex * CLUSTERED_NUM_BUCKETS + bucketIndex] = data;
+	    ClusterDataGrid[clusterIndex * CLUSTERED_NUM_BUCKETS + bucketIndex] = uint4(lightOffset, decalOffset, 0, 0);
     }
 }

@@ -137,13 +137,16 @@ namespace rawrbox {
 
 	void CameraBase::updateBuffer() {
 		if (this->_uniforms == nullptr) throw this->_logger->error("Buffer not initialized! Did you call initialize?");
-		Diligent::MapHelper<rawrbox::CameraUniforms> CBConstants(rawrbox::RENDERER->context(), this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 
 		auto view = rawrbox::Matrix4x4::mtxTranspose(this->getViewMtx());
 		auto projection = rawrbox::Matrix4x4::mtxTranspose(this->getProjMtx());
+		auto world = rawrbox::Matrix4x4::mtxTranspose(this->_world);
+
+		Diligent::MapHelper<rawrbox::CameraUniforms> CBConstants(rawrbox::RENDERER->context(), this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+		if (CBConstants == nullptr) throw _logger->error("Failed to map the camera constants buffer!");
 
 		CBConstants->gView = view;
-		CBConstants->gWorld = rawrbox::Matrix4x4::mtxTranspose(this->_world);
+		CBConstants->gWorld = world;
 		CBConstants->gWorldViewProj = CBConstants->gWorld * CBConstants->gView * projection;
 		CBConstants->gPos = this->getPos();
 	}

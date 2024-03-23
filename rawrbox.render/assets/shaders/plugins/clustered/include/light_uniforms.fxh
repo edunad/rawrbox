@@ -40,5 +40,6 @@
     #define LIGHT_SPOT        2
     #define LIGHT_DIRECTIONAL 3
 
+    #define FULL_BRIGHT LightConstants.lightSettings.x
     #define TOTAL_LIGHTS LightConstants.lightSettings.y
 #endif

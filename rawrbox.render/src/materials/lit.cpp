@@ -28,7 +28,7 @@ namespace rawrbox {
 		rawrbox::PipeSettings settings;
 		settings.pVS = "lit.vsh";
 		settings.pPS = "lit.psh";
-		settings.renderTargets = 2; // COLOR + GPUPick
+		settings.renderTargets = rawrbox::RENDER_TARGET_TARGETS; // COLOR + GPUPick
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = cluster->getClusterMacros() + helper;
 

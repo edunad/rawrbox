@@ -20,6 +20,7 @@ namespace rawrbox {
 		// SETUP UNIFORMS ----------------------------
 		{
 			Diligent::MapHelper<rawrbox::BindlessPostProcessBuffer> CBConstants(context, this->_buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			if (CBConstants == nullptr) throw _logger->error("Failed to map the postprocess constants buffer!");
 
 			CBConstants->data = this->_data;
 			CBConstants->textureID = texture.getTextureID();

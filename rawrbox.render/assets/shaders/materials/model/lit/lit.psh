@@ -62,64 +62,66 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     float4 baseColor = g_Textures[Constants.textureIDs.x].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
     if (baseColor.a <= 0.0) discard;
 
-    // NORMAL -----
-	float3 normalTS = g_Textures[Constants.textureIDs.y].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)).rgb;
-	float3x3 TBN    = CreateTangentToWorld(PSIn.Normal.xyz, float4(PSIn.Tangent.xyz, PSIn.Tangent.w));
-    float3 normal   = TangentSpaceNormalMapping(normalTS, TBN);
-    // -------------
+    if(TOTAL_DECALS != 0 || TOTAL_LIGHTS != 0) {
+        // NORMAL -----
+        float3 normalTS = g_Textures[Constants.textureIDs.y].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)).rgb;
+        float3x3 TBN    = CreateTangentToWorld(PSIn.Normal.xyz, float4(PSIn.Tangent.xyz, PSIn.Tangent.w));
+        float3 normal   = TangentSpaceNormalMapping(normalTS, TBN);
+        // -------------
 
-    // ROUGHT / METAL -----
-	float2 roughtMetalTS = g_Textures[Constants.textureIDs.z].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)).bg;
-    float metal = MetalnessFactor;
-    float rough = RoughnessFactor;
+        // ROUGHT / METAL -----
+        float2 roughtMetalTS = g_Textures[Constants.textureIDs.z].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)).bg;
+        float metal = MetalnessFactor;
+        float rough = RoughnessFactor;
 
-    if(roughtMetalTS.x != 0.0 && roughtMetalTS.y != 0.0) {
-        metal *= roughtMetalTS.x;
-        rough *= roughtMetalTS.y;
-    }
-    // -------------
+        if(roughtMetalTS.x != 0.0 && roughtMetalTS.y != 0.0) {
+            metal *= roughtMetalTS.x;
+            rough *= roughtMetalTS.y;
+        }
+        // -------------
 
-	float4 emissionTS = g_Textures[Constants.textureIDs.w].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+        float4 emissionTS = g_Textures[Constants.textureIDs.w].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
 
-    // LIGHT ------
-	float3 V           = normalize(Camera.pos.xyz - PSIn.WorldPos.xyz);
-	float dither       = InterleavedGradientNoise(PSIn.Pos.xy);
+        // LIGHT ------
+        float3 V           = normalize(Camera.pos.xyz - PSIn.WorldPos.xyz);
+        float dither       = InterleavedGradientNoise(PSIn.Pos.xy);
 
-    // Apply compute data ----
-    uint3 clusterIndex3D = uint3(floor(PSIn.Pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(PSIn.Pos.w));
-    uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
-    uint gridOffset = tileIndex * CLUSTERED_NUM_BUCKETS;
+        // Apply compute data ----
+        uint3 clusterIndex3D = uint3(floor(PSIn.Pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(PSIn.Pos.w));
+        uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
+        uint gridOffset = tileIndex * CLUSTERED_NUM_BUCKETS;
 
-    float3 ddxPos = ddx(PSIn.WorldPos.xyz);
-    float3 ddyPos = ddy(PSIn.WorldPos.xyz);
+        float3 ddxPos = ddx(PSIn.WorldPos.xyz);
+        float3 ddyPos = ddy(PSIn.WorldPos.xyz);
 
-    LightResult result = (LightResult)0;
+        LightResult result = (LightResult)0;
+        for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
+            uint4 buckets = ClusterDataGrid[gridOffset + bucketIndex];
 
-    [loop]
-    for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
-        ClusterData buckets = ClusterDataGrid[gridOffset + bucketIndex];
+            // Apply light ---
+            float3 diffuse     = ComputeDiffuseColor(baseColor.rgb, metal);
+            float3 specular    = ComputeF0(SpecularFactor, baseColor.rgb, metal);
 
-        // Apply light ---
-        float3 diffuse     = ComputeDiffuseColor(baseColor.rgb, metal);
-        float3 specular    = ComputeF0(SpecularFactor, baseColor.rgb, metal);
+            ApplyLight(buckets.x, bucketIndex, result, specular, rough, diffuse, normal, V, PSIn.WorldPos.xyz, dither);
+            // ----------------
 
-        ApplyLight(buckets.light, bucketIndex, result, specular, rough, diffuse, normal, V, PSIn.WorldPos.xyz, dither);
+            // Apply decals ---
+            float4 roughtness = 0; // TODO
+            ApplyDecals(buckets.y, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, baseColor, roughtness);
+            // ----------------
+        }
         // ----------------
 
-        // Apply decals ---
-        float4 roughtness = 0; // TODO
-        ApplyDecals(buckets.decal, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, baseColor, roughtness);
-        // ----------------
+        float3 outRadiance = 0;
+        outRadiance += result.Diffuse + result.Specular;
+        outRadiance += emissionTS.rgb * EmissionFactor;
+        // ------------
+
+        PSOut.Color.rgb = outRadiance;
+        PSOut.Color.a = baseColor.a;
+    } else {
+        PSOut.Color = baseColor;
     }
-    // ----------------
-
-	float3 outRadiance = 0;
-	outRadiance += result.Diffuse + result.Specular;
-	outRadiance += emissionTS.rgb * EmissionFactor;
-    // ------------
-
-    PSOut.Color.rgb = outRadiance;
-    PSOut.Color.a = baseColor.a;
 
     // GPU PICKING -----
     PSOut.GPUPick = float4(PSIn.GPUId.rgb, all(PSIn.GPUId.rgb) ? 0. : 1.);

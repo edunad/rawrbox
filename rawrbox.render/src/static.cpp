@@ -25,14 +25,14 @@ namespace rawrbox {
 	rawrbox::Font* DEBUG_FONT_ITALIC = nullptr;
 	// -------------------
 
-	// ID GENERATION
+	// ID GENERATION  -----
 	size_t SOUND_ID = 0;
 	size_t LIGHT_ID = 0;
 	size_t EMITTER_ID = 0;
 	size_t TEXT_ID = 0;
 	// -----
 
-	// OTHER INTERNAL
+	// OTHER INTERNAL  -----
 	bool __LIGHT_DIRTY__ = true;
 	bool __DECALS_DIRTY__ = true;
 	// --------------

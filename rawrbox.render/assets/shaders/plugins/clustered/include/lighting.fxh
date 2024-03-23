@@ -178,9 +178,9 @@
         }
 
         void ApplyLight(uint lightBucket, uint bucketIndex, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 V, float3 worldPos, float dither) {
-            uint bucket = lightBucket;
+            uint bucket = clamp(lightBucket, 0, MAX_DATA_PER_CLUSTER);
 
-            if(LightConstants.lightSettings.x == 0.0) {
+            if(FULL_BRIGHT == 0.0) {
                 lighting.Diffuse = diffuse;  // FULL BRIGHT
                 return;
             }
