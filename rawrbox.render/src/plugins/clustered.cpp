@@ -107,7 +107,7 @@ namespace rawrbox {
 
 		// Barrier for writting -----
 		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_clusterBuffer, Diligent::RESOURCE_STATE_UNORDERED_ACCESS}, {this->_dataGridBuffer, Diligent::RESOURCE_STATE_UNORDERED_ACCESS}});
-		// -----------
+		//  -----------
 
 		// Commit compute signature --
 		context->CommitShaderResources(rawrbox::BindlessManager::computeSignatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
@@ -128,9 +128,9 @@ namespace rawrbox {
 		// uint32_t ClearValue = 0;
 		// context->ClearUAVUint(this->_dataGridBuffer, &ClearValue);
 
-		context->SetPipelineState(this->_cullingResetProgram);
-		context->DispatchCompute(this->_dispatch);
-		// --------------
+		// context->SetPipelineState(this->_cullingResetProgram);
+		// context->DispatchCompute(this->_dispatch);
+		//   --------------
 
 		// Perform light / decal culling
 		context->SetPipelineState(this->_cullingComputeProgram);
@@ -139,7 +139,7 @@ namespace rawrbox {
 
 		// BARRIER -----
 		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_clusterBuffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}, {this->_dataGridBuffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
-		// -----------
+		//  -----------
 	}
 
 	void ClusteredPlugin::buildBuffers() {
