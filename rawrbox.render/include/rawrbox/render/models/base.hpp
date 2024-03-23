@@ -147,13 +147,26 @@ namespace rawrbox {
 				this->_logger->info("Resizing index buffer ({} -> {})", indcSize, this->_mesh->indices.capacity());
 			}
 
+			if (resizeVertex && resizeIndex) {
+				this->_requiresUpdate = false;
+				return;
+			}
+
 			// BARRIER -----
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{resizeVertex ? nullptr : this->_vbh, Diligent::RESOURCE_STATE_COPY_DEST}, {resizeIndex ? nullptr : this->_ibh, Diligent::RESOURCE_STATE_COPY_DEST}});
+			std::vector<rawrbox::Barrier<Diligent::IBuffer>> barriers = {};
+			if (!resizeVertex) barriers.emplace_back(this->_vbh, Diligent::RESOURCE_STATE_COPY_DEST);
+			if (!resizeIndex) barriers.emplace_back(this->_ibh, Diligent::RESOURCE_STATE_COPY_DEST);
+
+			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>(barriers);
 
 			if (!resizeVertex) context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			if (!resizeIndex) context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{resizeVertex ? nullptr : this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER}, {resizeIndex ? nullptr : this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER}});
+			barriers.clear();
+			if (!resizeVertex) barriers.emplace_back(this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER);
+			if (!resizeIndex) barriers.emplace_back(this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER);
+
+			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>(barriers);
 			// -----------
 
 			this->_requiresUpdate = false;
