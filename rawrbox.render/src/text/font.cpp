@@ -218,6 +218,7 @@ namespace rawrbox {
 
 		auto beginIter = text.begin();
 		auto endIter = utf8::find_invalid(text.begin(), text.end()); // Find invalid utf8
+
 		while (beginIter != endIter) {
 			uint32_t point = utf8::next(beginIter, endIter); // get codepoint
 			if (point == L'\n') {

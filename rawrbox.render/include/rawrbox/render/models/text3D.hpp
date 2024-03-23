@@ -10,7 +10,7 @@ namespace rawrbox {
 		requires(std::derived_from<M, rawrbox::MaterialText3D>)
 	class Text3D : public rawrbox::Model<M> {
 	protected:
-		float _scaleMul = 0.65F;
+		float _scaleMul = 0.45F;
 
 	public:
 		Text3D() = default;
@@ -55,6 +55,9 @@ namespace rawrbox {
 
 			size_t id = rawrbox::TEXT_ID++;
 			font.render(text, startpos.xy(), true, [this, &font, pos, startpos, cl, screenSize, id](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
+				float baselineAdjustment = font.getFontInfo().ascender - glyph->offset.y;
+				baselineAdjustment *= screenSize; // Apply screen size scaling to the adjustment
+
 				rawrbox::Mesh<typename M::vertexBufferType> mesh;
 
 				mesh.setTexture(font.getPackTexture(glyph)); // Set the atlas
@@ -62,10 +65,10 @@ namespace rawrbox {
 				mesh.setColor(cl);
 
 				std::array<rawrbox::VertexData, 4> buff{
-				    rawrbox::VertexData(pos + startpos + Vector3f(x0 * screenSize, y0 * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureBottomRight.y)),
-				    rawrbox::VertexData(pos + startpos + Vector3f(x1 * screenSize, y1 * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureTopLeft.y)),
-				    rawrbox::VertexData(pos + startpos + Vector3f(x0 * screenSize, y1 * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureTopLeft.y)),
-				    rawrbox::VertexData(pos + startpos + Vector3f(x1 * screenSize, y0 * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureBottomRight.y)),
+				    rawrbox::VertexData(pos + startpos + Vector3f(x0 * screenSize, (y0 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureBottomRight.y)),
+				    rawrbox::VertexData(pos + startpos + Vector3f(x1 * screenSize, (y1 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureTopLeft.y)),
+				    rawrbox::VertexData(pos + startpos + Vector3f(x0 * screenSize, (y1 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureTopLeft.y)),
+				    rawrbox::VertexData(pos + startpos + Vector3f(x1 * screenSize, (y0 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureBottomRight.y)),
 				};
 
 				std::array<uint16_t, 6> inds{

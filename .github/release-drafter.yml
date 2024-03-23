@@ -1,67 +1,5 @@
 name-template: "v$RESOLVED_VERSION"
 tag-template: "v$RESOLVED_VERSION"
-categories:
-  - title: "RAWRBOX.ASSIMP"
-    labels:
-      - "🧙‍♂️ ASSIMP"
-
-  - title: "RAWRBOX.BASS"
-    labels:
-      - "🎺 BASS"
-
-  - title: "RAWRBOX.ENGINE"
-    labels:
-      - "💽 ENGINE"
-
-  - title: "RAWRBOX.MATH"
-    labels:
-      - "🧮 MATH"
-
-  - title: "RAWRBOX.NETWORK"
-    labels:
-      - "🛰 NETWORK"
-
-  - title: "RAWRBOX.RENDERER"
-    labels:
-      - "📷 RENDERER"
-
-  - title: "RAWRBOX.RESOURCES"
-    labels:
-      - "💼 RESOURCES"
-
-  - title: "RAWRBOX.SCRIPTING"
-    labels:
-      - "📜 SCRIPTING"
-
-  - title: "RAWRBOX.UI"
-    labels:
-      - "🖼️ UI"
-
-  - title: "RAWRBOX.UTILS"
-    labels:
-      - "⚒️ UTILS"
-
-  - title: "RAWRBOX.WEBM"
-    labels:
-      - "🎞 WEBM"
-
-  - title: "RAWRBOX.2D_PHYSICS"
-    labels:
-      - "🏀 2D PHYSICS"
-
-  - title: "RAWRBOX.3D_PHYSICS"
-    labels:
-      - "🧱 3D PHYSICS"
-
-  - title: "Bug fixes"
-    labels:
-      - "BUG"
-
-  - title: "Development"
-    labels:
-      - "IMPROVEMENTS"
-      - "FEATURE"
-
 exclude-labels:
   - "dependencies"
   - "github_actions"
@@ -70,8 +8,8 @@ exclude-labels:
   - "⚠️ SKIP_LINTER ⚠️"
   - "⚠️ SKIP_TESTS ⚠️"
   - "⚠️ UPLOAD ⚠️"
-change-template: "- #$NUMBER $TITLE"
-change-title-escapes: '\<*_&`#@'
+change-template: "- $TITLE @$AUTHOR (#$NUMBER)"
+change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
 version-resolver:
   major:
     labels:
@@ -97,4 +35,6 @@ version-resolver:
       - "BUG"
   default: patch
 template: |
+  ## What’s Changed
+
   $CHANGES
