@@ -98,5 +98,3 @@ version-resolver:
   default: patch
 template: |
   $CHANGES
-
-  Thanks to $CONTRIBUTORS
