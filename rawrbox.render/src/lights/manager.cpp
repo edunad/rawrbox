@@ -48,6 +48,7 @@ namespace rawrbox {
 			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
 
 			Diligent::DynamicBufferCreateInfo dynamicBuff;
+			dynamicBuff.MemoryPageSize = 0;
 			dynamicBuff.Desc = BuffDesc;
 
 			_buffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
