@@ -124,7 +124,7 @@ namespace rawrbox {
 
 		// Update buffer ----
 		uint64_t size = sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size());
-		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, (size + 15) & ~15); // + OFFSET (always ensure power of 16 for sparse)
+		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, size); // + OFFSET (always ensure power of 16 for sparse)
 
 		auto* buffer = _buffer->GetBuffer();
 

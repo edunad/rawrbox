@@ -102,7 +102,7 @@ namespace rawrbox {
 
 		// Update buffer ----
 		uint64_t size = sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(_decals.size());
-		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, (size + 15) & ~15); // + OFFSET (always ensure power of 16 for sparse)
+		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, size);
 
 		auto* buffer = _buffer->GetBuffer();
 
