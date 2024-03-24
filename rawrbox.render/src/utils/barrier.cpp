@@ -30,9 +30,7 @@ namespace rawrbox {
 		// ------------
 
 		// Transition (aka execute barriers) ---
-		if (!states.empty()) {
-			rawrbox::RENDERER->context()->TransitionResourceStates(static_cast<uint32_t>(states.size()), states.data());
-		}
+		if (!states.empty()) rawrbox::RENDERER->context()->TransitionResourceStates(static_cast<uint32_t>(states.size()), states.data());
 		// ------------
 
 		// Call all the callbacks ---

@@ -43,9 +43,8 @@ namespace rawrbox {
 			Diligent::BufferDesc BuffDesc;
 			BuffDesc.ElementByteStride = sizeof(rawrbox::LightDataVertex);
 			BuffDesc.Name = "rawrbox::Light::Buffer";
-			BuffDesc.Usage = Diligent::USAGE_DEFAULT; // Diligent::USAGE_SPARSE has some issues on the steam deck, but its only good for BIG buffers, in our case we use small buffers for light
+			BuffDesc.Usage = Diligent::USAGE_SPARSE;
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
-			BuffDesc.Size = BuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(_lights.size() + 32, 1));
 			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
 
 			Diligent::DynamicBufferCreateInfo dynamicBuff;
@@ -124,13 +123,13 @@ namespace rawrbox {
 
 		// Update buffer ----
 		uint64_t size = sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size());
-		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, size + 32); // + OFFSET
+		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, (size + 15) & ~15); // + OFFSET (always ensure power of 16 for sparse)
 
 		auto* buffer = _buffer->GetBuffer();
 
 		// BARRIER -----
 		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_COPY_DEST}});
-		context->UpdateBuffer(buffer, 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size()), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		context->UpdateBuffer(buffer, 0, size, lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
 		// -------------
 
@@ -141,8 +140,8 @@ namespace rawrbox {
 	void LIGHTS::bindUniforms() {
 		if (uniforms == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 
-		updateConstants(); // Update buffer if dirty
 		update();          // Update all lights if dirty
+		updateConstants(); // Update buffer if dirty
 	}
 
 	// UTILS ----
