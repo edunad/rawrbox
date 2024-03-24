@@ -5,9 +5,9 @@
 
 namespace rawrbox {
 	// PRIVATE ----
-	std::vector<std::unique_ptr<rawrbox::Decal>> DECALS::_decals = {};
+	std::vector<rawrbox::Decal> DECALS::_decals = {};
 
-	std::unique_ptr<Diligent::DynamicBuffer> DECALS::_buffer = nullptr;
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> DECALS::_buffer;
 	Diligent::IBufferView* DECALS::_bufferRead = nullptr;
 	bool DECALS::_CONSTANTS_DIRTY = false;
 
@@ -18,50 +18,59 @@ namespace rawrbox {
 
 	// PUBLIC ----
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> DECALS::uniforms;
+	std::function<void()> DECALS::onUpdate = nullptr;
 	// -------
 
 	void DECALS::init() {
-		// Init uniforms
-		{
-			Diligent::BufferDesc BuffDesc;
-			BuffDesc.Name = "rawrbox::Decals::Uniforms";
-			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
-			BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			BuffDesc.Size = sizeof(rawrbox::DecalsConstants);
+		_decals.reserve(16); // OFFSET
 
-			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &uniforms);
-		}
+		// Init uniforms
+		Diligent::BufferDesc BuffDesc;
+		BuffDesc.Name = "rawrbox::Decals::Uniforms";
+		BuffDesc.Usage = Diligent::USAGE_DEFAULT;
+		BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+		BuffDesc.Size = sizeof(rawrbox::Vector4u);
+
+		rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &uniforms);
 		// -----------------------------------------
 
-		{
-			Diligent::BufferDesc BuffDesc;
-			BuffDesc.ElementByteStride = sizeof(rawrbox::DecalVertex);
-			BuffDesc.Name = "rawrbox::Decals::Buffer";
-			BuffDesc.Usage = Diligent::USAGE_SPARSE;
-			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
-			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
-
-			Diligent::DynamicBufferCreateInfo dynamicBuff;
-			dynamicBuff.MemoryPageSize = 0;
-			dynamicBuff.Desc = BuffDesc;
-
-			_buffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
-			_bufferRead = _buffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
-		}
+		// Create data --
+		createDataBuffer();
+		// --------------
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER},
-		    {_buffer->GetBuffer(), Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER}});
 		// -----------
+	}
 
-		update();
+	void DECALS::createDataBuffer() {
+		RAWRBOX_DESTROY(_buffer);
+
+		Diligent::BufferDesc BuffDesc;
+		BuffDesc.ElementByteStride = sizeof(rawrbox::Decal);
+		BuffDesc.Name = "RawrBox::Decals::Buffer";
+		BuffDesc.Usage = Diligent::USAGE_DEFAULT;
+		BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
+		BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
+		BuffDesc.Size = BuffDesc.ElementByteStride * _decals.capacity();
+
+		Diligent::BufferData VBData;
+		VBData.pData = _decals.data();
+		VBData.DataSize = BuffDesc.Size;
+
+		rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, _decals.empty() ? nullptr : &VBData, &_buffer);
+		_bufferRead = _buffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
+
+		// BARRIER -----
+		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{_buffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
+		// -----------
 	}
 
 	void DECALS::shutdown() {
 		RAWRBOX_DESTROY(uniforms);
 
 		_bufferRead = nullptr;
-		_buffer.reset();
+		RAWRBOX_DESTROY(_buffer);
 
 		_decals.clear();
 	}
@@ -70,11 +79,11 @@ namespace rawrbox {
 		if (!_CONSTANTS_DIRTY) return;
 		_CONSTANTS_DIRTY = false;
 
-		rawrbox::DecalsConstants settings = {static_cast<uint32_t>(count())};
+		rawrbox::Vector4u settings = {static_cast<uint32_t>(count()), 0, 0, 0};
 
 		// BARRIER ----
 		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{uniforms, Diligent::RESOURCE_STATE_COPY_DEST}});
-		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::DecalsConstants), &settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::Vector4u), &settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER}});
 		// --------
 	}
@@ -83,37 +92,23 @@ namespace rawrbox {
 		if (_buffer == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__DECALS_DIRTY__ || _decals.empty()) return;
 
-		// Update decals ---
-		std::vector<rawrbox::DecalVertex> decals = {};
-		decals.reserve(_decals.size());
-
-		for (auto& d : _decals) {
-			rawrbox::DecalVertex decal = {};
-
-			decal.data = {d->textureID, d->textureAtlasIndex, 0, 0};
-			decal.worldToLocal = d->localToWorld.inverse().transpose();
-			decal.color = d->color;
-
-			decals.push_back(decal);
+		// Resize buffer ----
+		uint64_t size = sizeof(rawrbox::Decal) * static_cast<uint64_t>(_decals.capacity());
+		if (size > _buffer->GetDesc().Size) {
+			_decals.reserve(_decals.capacity() + 16); // + OFFSET
+			_logger->warn("Resizing decal buffer ({} -> {})", _decals.size(), _decals.capacity());
+			createDataBuffer();
+		} else {
+			// BARRIER ----
+			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{_buffer, Diligent::RESOURCE_STATE_COPY_DEST}});
+			rawrbox::RENDERER->context()->UpdateBuffer(_buffer, 0, size, _decals.empty() ? nullptr : _decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{_buffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
+			// ---------
 		}
-
-		auto* context = rawrbox::RENDERER->context();
-		auto* device = rawrbox::RENDERER->device();
-
-		// Update buffer ----
-		uint64_t size = sizeof(rawrbox::DecalVertex) * static_cast<uint64_t>(_decals.size());
-		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, size);
-
-		auto* buffer = _buffer->GetBuffer();
-
-		// BARRIER ----
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_COPY_DEST}});
-		context->UpdateBuffer(buffer, 0, size, decals.empty() ? nullptr : decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
 		// ---------
 
+		if (onUpdate != nullptr) onUpdate();
 		rawrbox::__DECALS_DIRTY__ = false;
-		// -------
 	}
 
 	void DECALS::bindUniforms() {
@@ -125,9 +120,9 @@ namespace rawrbox {
 
 	// UTILS ----
 	Diligent::IBufferView* DECALS::getBuffer() { return _bufferRead; }
-	rawrbox::Decal* DECALS::get(size_t indx) {
-		if (indx >= _decals.size()) return nullptr;
-		return _decals[indx].get();
+	const rawrbox::Decal& DECALS::get(size_t indx) {
+		if (indx >= _decals.size()) throw _logger->error("Invalid decal index {}", indx);
+		return _decals[indx];
 	}
 
 	size_t DECALS::count() { return _decals.size(); }
@@ -135,8 +130,7 @@ namespace rawrbox {
 
 	// DECALS ----
 	void DECALS::add(const rawrbox::Decal& decal) {
-		auto ptr = std::make_unique<rawrbox::Decal>(decal);
-		_decals.push_back(std::move(ptr));
+		_decals.push_back(decal);
 
 		rawrbox::__DECALS_DIRTY__ = true;
 		_CONSTANTS_DIRTY = true;
@@ -149,22 +143,6 @@ namespace rawrbox {
 		rawrbox::__DECALS_DIRTY__ = true;
 		_CONSTANTS_DIRTY = true;
 		return true;
-	}
-
-	bool DECALS::remove(const rawrbox::Decal& decal) {
-		if (_decals.empty()) return false;
-
-		for (size_t i = 0; i < _decals.size(); i++) {
-			if (_decals[i].get() == &decal) {
-				_decals.erase(_decals.begin() + i);
-
-				rawrbox::__DECALS_DIRTY__ = true;
-				_CONSTANTS_DIRTY = true;
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	void DECALS::clear() {

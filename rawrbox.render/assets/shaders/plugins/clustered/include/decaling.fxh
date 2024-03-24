@@ -5,13 +5,12 @@
     #ifndef INCLUDED_DECALS
         #define INCLUDED_DECALS
 
-        void ApplyDecals(uint decalBucket, uint bucketIndex, float4 worldPosition, float3 ddxPos, float3 ddyPos, inout float4 baseColor, inout float4 roughtness) {
-            uint bucket = clamp(decalBucket, 0, MAX_DATA_PER_CLUSTER);
+        void ApplyDecals(in uint decalBucket, uint bucketIndex, float4 worldPosition, float3 ddxPos, float3 ddyPos, inout float4 baseColor, inout float4 roughtness) {
             if(TOTAL_DECALS == 0) return;
 
-            while(bucket) {
-                uint bitIndex = firstbitlow(bucket);
-                bucket ^= 1u << bitIndex;
+            while(decalBucket) {
+                uint bitIndex = firstbitlow(decalBucket);
+                decalBucket ^= 1u << bitIndex;
 
                 // Apply decal ------------
                 Decal decal = Decals[bitIndex + bucketIndex * CLUSTERS_Z];

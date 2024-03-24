@@ -34,6 +34,7 @@ namespace rawrbox {
 
 		virtual void signatures(std::vector<Diligent::PipelineResourceDesc>& sig, bool compute);
 		virtual void bind(Diligent::IPipelineResourceSignature& sig, bool compute);
+		virtual void bindMutable(Diligent::IShaderResourceBinding& sig, bool compute);
 
 		virtual void initialize(const rawrbox::Vector2u& renderSize);
 		virtual void resize(const rawrbox::Vector2u& renderSize);

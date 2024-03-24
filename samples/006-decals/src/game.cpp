@@ -78,17 +78,17 @@ namespace decal_test {
 		std::uniform_real_distribution<float> distRot(-0.6F, 0.8F);
 
 		auto* decalTex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/decals.png")->get();
-		rawrbox::Decal d = {};
 
+		rawrbox::Decal d = {};
 		for (int i = 0; i < 30; i++) {
 			d.setTexture(*decalTex, dist(prng));
-			d.localToWorld = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({rawrbox::MathUtils::toRad(90), 0, 0}), {distRot(prng), 0.F, distRot(prng) - 1.2F});
-			d.color = rawrbox::Colors::Green();
+			d.setMatrix(rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({rawrbox::MathUtils::toRad(90), 0, 0}), {distRot(prng), 0.F, distRot(prng) - 1.2F}));
+			d.setColor(rawrbox::Colors::Green());
 			rawrbox::DECALS::add(d);
 
 			d.setTexture(*decalTex, dist(prng));
-			d.localToWorld = rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({0, rawrbox::MathUtils::toRad(180), 0}), {distRot(prng), distRot(prng) + 1.0F, 0.F});
-			d.color = rawrbox::Colors::Red();
+			d.setMatrix(rawrbox::Matrix4x4::mtxSRT({0.5F, 0.5F, 0.5F}, rawrbox::Vector4f::toQuat({0, rawrbox::MathUtils::toRad(180), 0}), {distRot(prng), distRot(prng) + 1.0F, 0.F}));
+			d.setColor(rawrbox::Colors::Red());
 			rawrbox::DECALS::add(d);
 		}
 	}

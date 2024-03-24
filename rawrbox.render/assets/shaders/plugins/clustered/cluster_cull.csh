@@ -101,12 +101,12 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
             Decal decal = Decals[decalIndex];
             ++decalIndex;
 
-            if(decal.data.w == 1) { //test
+            if(decal.data.w == 1) { // TODO: SUPPORT DECAL CULLING
                 if(BoxInAABB(decal.worldToLocal, cluster)) {
                     decalOffset |= 1u << o;
                 }
             } else {
-                decalOffset |= 1u << o;
+                decalOffset |= 1u << o; // Unknown, don't calculate cull
             }
         }
 

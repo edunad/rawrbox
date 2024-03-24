@@ -2,25 +2,20 @@
 #include <rawrbox/render/static.hpp>
 
 namespace rawrbox {
-	Decal::Decal(const rawrbox::Matrix4x4& _mtx, const rawrbox::TextureBase& _texture, const rawrbox::Colorf& _color, uint32_t _atlas) : localToWorld(_mtx), color(_color), textureAtlasIndex(_atlas) {
-		this->setTexture(_texture);
+	Decal::Decal(const rawrbox::Matrix4x4& _mtx, const rawrbox::TextureBase& _texture, const rawrbox::Colorf& _color, uint32_t _atlas) : worldToLocal(_mtx), color(_color) {
+		this->setTexture(_texture, _atlas);
 	}
 
 	void Decal::setTexture(const rawrbox::TextureBase& texture, uint32_t id) {
 		if (!texture.isValid()) throw rawrbox::Logger::err("RawrBox-DECAL", "Invalid texture, not uploaded?");
-		this->textureID = texture.getTextureID();
-		this->textureAtlasIndex = id;
+		this->data.x = texture.getTextureID();
+		this->data.y = id;
 
 		rawrbox::__DECALS_DIRTY__ = true;
 	}
 
-	void Decal::setScale(const rawrbox::Vector3f& scale) {
-		this->localToWorld.scale(scale);
-		rawrbox::__DECALS_DIRTY__ = true;
-	}
-
-	void Decal::setPos(const rawrbox::Vector3f& pos) {
-		this->localToWorld.translate(pos);
+	void Decal::setMatrix(const rawrbox::Matrix4x4& mtx) {
+		this->worldToLocal = rawrbox::Matrix4x4::mtxInverse(mtx).transpose();
 		rawrbox::__DECALS_DIRTY__ = true;
 	}
 
