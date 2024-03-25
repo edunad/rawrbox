@@ -197,6 +197,29 @@ if(VULKAN_SUPPORTED)
 
     set_lib_runtime_mt(Diligent-GraphicsEngineVk-shared)
     set_lib_runtime_mt(Diligent-GraphicsEngineVk-static)
+
+
+    # Add DXC --------------------
+    if(NOT WIN32)
+        find_package(Vulkan REQUIRED)
+
+        if(Vulkan_FOUND)
+            message(STATUS ${Vulkan_dxc_LIBRARY})
+
+            add_custom_target(
+                copy_dxcompiler ALL COMMAND ${CMAKE_COMMAND} -E copy ${Vulkan_dxc_LIBRARY}/libdxcompiler.so
+                                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libdxcompiler.so
+                COMMENT "Copying libdxcompiler into binary directory")
+
+            add_custom_target(
+                copy_dxil ALL COMMAND ${CMAKE_COMMAND} -E copy ${Vulkan_dxc_LIBRARY}/libdxil.so
+                                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libdxil.so
+                COMMENT "Copying libdxil into binary directory")
+
+            add_dependencies(${output_target} copy_dxcompiler copy_dxil)
+        endif()
+    endif()
+    # --------------------------
 endif()
 
 if(GL_SUPPORTED)
