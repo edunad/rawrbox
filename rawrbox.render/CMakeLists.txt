@@ -3,6 +3,13 @@ set(output_target RAWRBOX.RENDER)
 # --------------
 
 # Packages ----
+set(DXC_VERSION "v1.8.2403.1")
+set(DXC_RELEASE_DATE "2024_03_22")
+
+find_package(DXC REQUIRED)
+# --------------
+
+# Packages ----
 CPMAddPackage(
     NAME
         glfw
@@ -67,6 +74,11 @@ if(DiligentCore_ADDED)
     else()
         set_lib_runtime_mt(Diligent-LinuxPlatform)
     endif()
+
+    ## We use DXC from github ----
+    set(DXC_SPIRV_PATH "" CACHE STRING "" FORCE)
+    set(DILIGENT_DXCOMPILER_FOR_SPIRV_PATH "" CACHE STRING "" FORCE)
+    # ----------------------------
 endif()
 
 CPMAddPackage("gh:nemtrif/utfcpp@4.0.5")
@@ -189,7 +201,6 @@ else()
     message(STATUS "Setting deligent mode to: static")
 endif()
 
-
 if(VULKAN_SUPPORTED)
     message(STATUS "Enabling VULKAN support")
 
@@ -198,38 +209,30 @@ if(VULKAN_SUPPORTED)
 
     set_lib_runtime_mt(Diligent-GraphicsEngineVk-shared)
     set_lib_runtime_mt(Diligent-GraphicsEngineVk-static)
-
-    # Add DXC --------------------
-    #if(NOT WIN32)
-        find_package(Vulkan REQUIRED)
-        if(Vulkan_FOUND)
-            get_filename_component(_VULKAN_LIB_DIR ${Vulkan_LIBRARY} DIRECTORY)
-            message(STATUS "Vulkan SDK: ${_VULKAN_LIB_DIR}")
-
-            add_custom_target(
-                copy_dxcompiler ALL COMMAND ${CMAKE_COMMAND} -E copy ${_VULKAN_LIB_DIR}/libdxcompiler.so
-                                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libdxcompiler.so
-                COMMENT "Copying libdxcompiler into binary directory")
-
-            add_custom_target(
-                copy_dxil ALL COMMAND ${CMAKE_COMMAND} -E copy ${_VULKAN_LIB_DIR}/libdxil.so
-                                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libdxil.so
-                COMMENT "Copying libdxil into binary directory")
-
-            add_dependencies(${output_target} copy_dxcompiler copy_dxil)
-        endif()
-    #endif()
-    # --------------------------
 endif()
 
 if(GL_SUPPORTED)
     message(STATUS "Enabling OPENGL support")
+
     target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineOpenGL-${DILIGENT_LINK_MODE})
     target_compile_definitions(${output_target} PUBLIC RAWRBOX_SUPPORT_OPENGL)
 
     set_lib_runtime_mt(Diligent-GraphicsEngineOpenGL-shared)
     set_lib_runtime_mt(Diligent-GraphicsEngineOpenGL-static)
 endif()
+
+# COPY DXC ---------------------------------
+add_custom_target(
+    copy_dxc ALL COMMAND ${CMAKE_COMMAND} -E copy ${DXC_BINARY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    COMMENT "Copying dxcompiler lib into binary directory")
+
+add_custom_target(
+    copy_dxil ALL COMMAND ${CMAKE_COMMAND} -E copy ${DXC_BINARY_IL}
+                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    COMMENT "Copying dxil lib into binary directory")
+
+add_dependencies(${output_target} copy_dxc copy_dxil)
+# ---------------------------------
 
 # TEST ----
 #include(../cmake/catch2.cmake)

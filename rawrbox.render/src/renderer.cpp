@@ -96,6 +96,8 @@ namespace rawrbox {
 
 					Diligent::EngineD3D12CreateInfo EngineCI;
 					EngineCI.Features = features;
+					// EngineCI.D3D12ValidationFlags = Diligent::D3D12_VALIDATION_FLAG_NONE;
+					// EngineCI.EnableValidation = false;
 
 					if (this->overrideHEAP != nullptr) {
 						auto heap = this->overrideHEAP();
@@ -130,6 +132,7 @@ namespace rawrbox {
 
 					Diligent::EngineVkCreateInfo EngineCI;
 					EngineCI.Features = features;
+					EngineCI.pDxCompilerPath = "dxcompiler";
 
 					if (this->overrideHEAP != nullptr) {
 						auto heap = this->overrideHEAP();
