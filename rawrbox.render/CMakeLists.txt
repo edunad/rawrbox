@@ -207,12 +207,12 @@ if(VULKAN_SUPPORTED)
             message(STATUS "Vulkan SDK: ${_VULKAN_LIB_DIR}")
 
             add_custom_target(
-                copy_dxcompiler ALL COMMAND ${CMAKE_COMMAND} -E copy ${_VULKAN_LIB_DIR}/../Bin/libdxcompiler.so
+                copy_dxcompiler ALL COMMAND ${CMAKE_COMMAND} -E copy ${_VULKAN_LIB_DIR}/libdxcompiler.so
                                         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libdxcompiler.so
                 COMMENT "Copying libdxcompiler into binary directory")
 
             add_custom_target(
-                copy_dxil ALL COMMAND ${CMAKE_COMMAND} -E copy ${_VULKAN_LIB_DIR}/../Bin/libdxil.so
+                copy_dxil ALL COMMAND ${CMAKE_COMMAND} -E copy ${_VULKAN_LIB_DIR}/libdxil.so
                                         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libdxil.so
                 COMMENT "Copying libdxil into binary directory")
 
