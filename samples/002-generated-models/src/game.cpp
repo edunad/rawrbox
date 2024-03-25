@@ -92,7 +92,6 @@ namespace model {
 
 			this->_model->addMesh(mesh);
 		}
-
 		// --------
 
 		// PLANE -----

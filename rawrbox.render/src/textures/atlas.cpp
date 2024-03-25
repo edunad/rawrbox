@@ -102,9 +102,9 @@ namespace rawrbox {
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
 		// -------
 
-		rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE}},
-		    [this]() {
-			    rawrbox::BindlessManager::registerTexture(*this);
-		    });
+		rawrbox::runOnRenderThread([this]() {
+			rawrbox::BarrierUtils::barrier({{this->_tex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+			rawrbox::BindlessManager::registerTexture(*this);
+		});
 	}
 } // namespace rawrbox

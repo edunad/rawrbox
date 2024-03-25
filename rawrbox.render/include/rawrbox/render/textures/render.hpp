@@ -20,8 +20,8 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::ITexture> _depthTex;
 
 		// BARRIERS ---
-		std::vector<rawrbox::Barrier<Diligent::ITexture>> _barrierRead = {};
-		std::vector<rawrbox::Barrier<Diligent::ITexture>> _barrierWrite = {};
+		std::vector<Diligent::StateTransitionDesc> _barrierRead = {};
+		std::vector<Diligent::StateTransitionDesc> _barrierWrite = {};
 		// -------------
 
 		bool _depth = true;

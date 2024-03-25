@@ -78,8 +78,8 @@ namespace rawrbox {
 		// -------------
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{signatureBufferVertexSkinned, Diligent::RESOURCE_STATE_CONSTANT_BUFFER},
-		    {signatureBufferPixel, Diligent::RESOURCE_STATE_CONSTANT_BUFFER}});
+		rawrbox::BarrierUtils::barrier({{signatureBufferVertexSkinned, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {signatureBufferPixel, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----------
 
 		// Create signatures ------

@@ -52,7 +52,7 @@ namespace rawrbox {
 			copy.pDstTexture = this->_tex;
 			copy.pSrcBox = box;
 
-			rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{copy.pSrcTexture, Diligent::RESOURCE_STATE_COPY_SOURCE}});
+			rawrbox::BarrierUtils::barrier({{copy.pSrcTexture, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_SOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			context->CopyTexture(copy); // This is an async operation, enqueue the fence
 						    //  --------------
 

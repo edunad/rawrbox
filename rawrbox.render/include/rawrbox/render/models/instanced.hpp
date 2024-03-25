@@ -85,7 +85,7 @@ namespace rawrbox {
 			//  ---------------------
 
 			// Barrier ----
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_dataBuffer->GetBuffer(), Diligent::RESOURCE_STATE_VERTEX_BUFFER}});
+			rawrbox::BarrierUtils::barrier({{this->_dataBuffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			// ------------
 
 			if (size != 0) this->updateInstances(); // Data was already added, then update the buffer
@@ -104,9 +104,9 @@ namespace rawrbox {
 			auto* buffer = this->_dataBuffer->GetBuffer();
 
 			// BARRIER ----
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_COPY_DEST}});
+			rawrbox::BarrierUtils::barrier({{buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			context->UpdateBuffer(buffer, 0, size, this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_VERTEX_BUFFER}});
+			rawrbox::BarrierUtils::barrier({{buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			//  ---------
 		}
 
