@@ -200,19 +200,25 @@ if(VULKAN_SUPPORTED)
     set_lib_runtime_mt(Diligent-GraphicsEngineVk-static)
 
     # Add DXC --------------------
-    if(NOT WIN32)
-        add_custom_target(
-            copy_dxcompiler ALL COMMAND ${CMAKE_COMMAND} -E copy /usr/lib/dxc/libdxcompiler.so
-                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libdxcompiler.so
-            COMMENT "Copying libdxcompiler into binary directory")
+    #if(NOT WIN32)
+        find_package(Vulkan REQUIRED)
+        if(Vulkan_FOUND)
+            get_filename_component(_VULKAN_LIB_DIR ${Vulkan_LIBRARY} DIRECTORY)
+            message(STATUS "Vulkan SDK: ${_VULKAN_LIB_DIR}")
 
-        add_custom_target(
-            copy_dxil ALL COMMAND ${CMAKE_COMMAND} -E copy /usr/lib/dxc/libdxil.so
-                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libdxil.so
-            COMMENT "Copying libdxil into binary directory")
+            add_custom_target(
+                copy_dxcompiler ALL COMMAND ${CMAKE_COMMAND} -E copy ${_VULKAN_LIB_DIR}/../Bin/libdxcompiler.so
+                                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libdxcompiler.so
+                COMMENT "Copying libdxcompiler into binary directory")
 
-        add_dependencies(${output_target} copy_dxcompiler copy_dxil)
-    endif()
+            add_custom_target(
+                copy_dxil ALL COMMAND ${CMAKE_COMMAND} -E copy ${_VULKAN_LIB_DIR}/../Bin/libdxil.so
+                                        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libdxil.so
+                COMMENT "Copying libdxil into binary directory")
+
+            add_dependencies(${output_target} copy_dxcompiler copy_dxil)
+        endif()
+    #endif()
     # --------------------------
 endif()
 
