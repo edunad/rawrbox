@@ -9,8 +9,9 @@ namespace rawrbox {
 
 	void RenderPlugin::requirements(Diligent::DeviceFeatures& /*features*/) {}
 	void RenderPlugin::signatures(std::vector<Diligent::PipelineResourceDesc>& /*sig*/, bool /*comput*/) {}
-	void RenderPlugin::bind(Diligent::IPipelineResourceSignature& /*sig*/, bool /*compute*/) {}
-	void RenderPlugin::bindMutable(Diligent::IShaderResourceBinding& /*sig*/, bool /*compute*/) {}
+
+	void RenderPlugin::bindStatic(Diligent::IPipelineResourceSignature& /*sig*/, bool /*compute*/) {}
+	void RenderPlugin::bindMutable(Diligent::IShaderResourceBinding& /*bind*/, bool /*compute*/) {}
 
 	void RenderPlugin::initialize(const rawrbox::Vector2u& /*renderSize*/) {}
 	void RenderPlugin::resize(const rawrbox::Vector2u& /*renderSize*/) {}

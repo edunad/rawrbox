@@ -1,10 +1,4 @@
-//#ifndef DXCOMPILER
-//#    define NonUniformResourceIndex(x) x
-//#endif
-
-#ifdef VULKAN
-#      define NonUniformResourceIndex(x) x
-#endif
+#include "defines.fxh"
 
 Texture2DArray g_Textures[];
 SamplerState   g_Sampler;

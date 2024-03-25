@@ -33,7 +33,7 @@ namespace rawrbox {
 		sig.emplace_back(Diligent::SHADER_TYPE_PIXEL, "PostProcessConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 	}
 
-	void PostProcessPlugin::bind(Diligent::IPipelineResourceSignature& sig, bool compute) {
+	void PostProcessPlugin::bindStatic(Diligent::IPipelineResourceSignature& sig, bool compute) {
 		if (compute) return;
 		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "PostProcessConstants")->Set(this->_buffer);
 	}

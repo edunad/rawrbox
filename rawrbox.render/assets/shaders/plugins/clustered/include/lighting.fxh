@@ -13,6 +13,10 @@
             float3 Specular;
         };
 
+        Light GetLight(uint index) {
+            return Lights[NonUniformResourceIndex(index)];
+        }
+
 		float3 Diffuse_Lambert(float3 diffuseColor) {
 			return diffuseColor * INV_PI;
 		}
@@ -178,7 +182,7 @@
         }
 
         void ApplyLight(uint lightBucket, uint bucketIndex, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 V, float3 worldPos, float dither) {
-            uint bucket = clamp(lightBucket, 0, MAX_DATA_PER_CLUSTER);
+            uint bucket = lightBucket;
 
             if(FULL_BRIGHT == 0.0) {
                 lighting.Diffuse = diffuse;  // FULL BRIGHT
@@ -190,7 +194,10 @@
                 bucket ^= 1u << bitIndex;
 
                 // Apply light ------------
-                Light light = Lights[bitIndex + bucketIndex * CLUSTERS_Z];
+                uint index = bitIndex + bucketIndex * CLUSTERS_Z;
+                if(index > TOTAL_LIGHTS) break;
+
+                Light light = GetLight(index);
 
                 float3 L;
                 float attenuation = GetAttenuation(light, worldPos, L);

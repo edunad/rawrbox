@@ -43,6 +43,15 @@ namespace rawrbox {
 		// -----------
 	}
 
+	void DECALS::shutdown() {
+		RAWRBOX_DESTROY(uniforms);
+
+		_bufferRead = nullptr;
+		RAWRBOX_DESTROY(_buffer);
+
+		_decals.clear();
+	}
+
 	void DECALS::createDataBuffer() {
 		RAWRBOX_DESTROY(_buffer);
 
@@ -64,15 +73,6 @@ namespace rawrbox {
 		// BARRIER -----
 		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{_buffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
 		// -----------
-	}
-
-	void DECALS::shutdown() {
-		RAWRBOX_DESTROY(uniforms);
-
-		_bufferRead = nullptr;
-		RAWRBOX_DESTROY(_buffer);
-
-		_decals.clear();
 	}
 
 	void DECALS::updateConstants() {
@@ -114,8 +114,8 @@ namespace rawrbox {
 	void DECALS::bindUniforms() {
 		if (uniforms == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 
-		update(); // Update all decals if dirty
-		updateConstants();
+		update();          // Update all decals if dirty
+		updateConstants(); // Update buffer if dirty
 	}
 
 	// UTILS ----

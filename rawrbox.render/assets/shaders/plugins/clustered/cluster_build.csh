@@ -23,7 +23,6 @@ ClusterAABB AABBFromMinMax(float3 minimum, float3 maximum) {
 	return aabb;
 }
 
-
 ClusterAABB ComputeCluster(uint3 clusterIndex3D) {
 	float2 minPoint_SS = float2(clusterIndex3D.x * CLUSTER_TEXTEL_SIZE, clusterIndex3D.y * CLUSTER_TEXTEL_SIZE);
 	float2 maxPoint_SS = float2((clusterIndex3D.x + 1) * CLUSTER_TEXTEL_SIZE, (clusterIndex3D.y + 1) * CLUSTER_TEXTEL_SIZE);

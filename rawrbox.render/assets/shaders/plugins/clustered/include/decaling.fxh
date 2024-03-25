@@ -5,15 +5,23 @@
     #ifndef INCLUDED_DECALS
         #define INCLUDED_DECALS
 
-        void ApplyDecals(in uint decalBucket, uint bucketIndex, float4 worldPosition, float3 ddxPos, float3 ddyPos, inout float4 baseColor, inout float4 roughtness) {
+        Decal GetDecal(uint index) {
+            return Decals[NonUniformResourceIndex(index)];
+        }
+
+        void ApplyDecals(uint decalBucket, uint bucketIndex, float4 worldPosition, float3 ddxPos, float3 ddyPos, inout float4 baseColor, inout float4 roughtness) {
+            uint bucket = decalBucket;
             if(TOTAL_DECALS == 0) return;
 
-            while(decalBucket) {
-                uint bitIndex = firstbitlow(decalBucket);
-                decalBucket ^= 1u << bitIndex;
+            while(bucket) {
+                uint bitIndex = firstbitlow(bucket);
+                bucket ^= 1u << bitIndex;
 
                 // Apply decal ------------
-                Decal decal = Decals[bitIndex + bucketIndex * CLUSTERS_Z];
+                uint index = bitIndex + bucketIndex * CLUSTERS_Z;
+                if(index > TOTAL_DECALS) break;
+
+                Decal decal = GetDecal(index);
 
                 float4 dPos = mul(worldPosition, decal.worldToLocal);
                 float3 decalTexCoord = dPos.xyz * float3(0.5f, -0.5f, 0.5f) + 0.5f;
@@ -23,8 +31,8 @@
 
                 // Back-face culling check
                 float3 viewDir = normalize(worldPosition.xyz - Camera.pos.xyz);
-
                 float3 decalNormal = mul(float3(0, 0, 1), wLocal); // TODO: ADD NORMAL TO DECAL?
+
                 if(dot(decalNormal, viewDir) < 0 && all(decalTexCoord >= 0.0) && all(decalTexCoord <= 1.0)) {
                     float2 decalDx = mul(ddxPos, wLocal).xy;
                     float2 decalDy = mul(ddyPos, wLocal).xy;

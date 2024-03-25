@@ -24,7 +24,7 @@ namespace rawrbox {
 		void upload() override;
 
 		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig, bool compute) override;
-		void bind(Diligent::IPipelineResourceSignature& sig, bool compute) override;
+		void bindStatic(Diligent::IPipelineResourceSignature& sig, bool compute) override;
 		void postRender(rawrbox::TextureRender& render) override;
 
 		// Process utils ----

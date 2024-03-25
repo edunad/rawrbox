@@ -4,6 +4,8 @@
 #include <rawrbox/render/models/instance.hpp>
 #include <rawrbox/render/models/model.hpp>
 
+#include <DynamicBuffer.hpp>
+
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialInstanced>

@@ -109,6 +109,14 @@ namespace rawrbox {
 		return *this;
 	}
 
+	rawrbox::Vector3f Matrix4x4::getPos() const {
+		return {this->mtx[12], this->mtx[13], this->mtx[14]};
+	}
+
+	rawrbox::Vector3f Matrix4x4::getScale() const {
+		return {this->mtx[0], this->mtx[5], this->mtx[10]};
+	}
+
 	rawrbox::Matrix4x4& Matrix4x4::rotate(const rawrbox::Vector4f& rot) {
 		const float x2 = rot.x + rot.x;
 		const float y2 = rot.y + rot.y;
