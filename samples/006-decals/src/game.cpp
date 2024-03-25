@@ -40,7 +40,6 @@ namespace decal_test {
 
 		// Setup renderer
 		auto* render = window->createRenderer();
-		render->skipIntros(true);
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {

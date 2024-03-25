@@ -676,6 +676,10 @@ namespace rawrbox {
 		return "./assets/shaders";
 	}
 
+	const Diligent::RENDER_DEVICE_TYPE& RendererBase::getRenderType() const {
+		return this->_type;
+	}
+
 #ifdef _DEBUG
 	// Only available on DEBUG, since it might hit performance :S
 	const Diligent::QueryDataPipelineStatistics& RendererBase::getPipelineStats(const std::string& query) {
