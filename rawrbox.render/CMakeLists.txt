@@ -192,19 +192,20 @@ endif()
 
 if(VULKAN_SUPPORTED)
     message(STATUS "Enabling VULKAN support")
+
     target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineVk-${DILIGENT_LINK_MODE})
     target_compile_definitions(${output_target} PUBLIC RAWRBOX_SUPPORT_VULKAN)
 
     set_lib_runtime_mt(Diligent-GraphicsEngineVk-shared)
     set_lib_runtime_mt(Diligent-GraphicsEngineVk-static)
 
-
     # Add DXC --------------------
     if(NOT WIN32)
-        find_package(Vulkan REQUIRED)
+        find_package(Vulkan REQUIRED COMPONENTS "dxc")
 
         if(Vulkan_FOUND)
-            message(STATUS ${Vulkan_dxc_LIBRARY})
+	        message(STATUS "Vulkan: Version ${Vulkan_VERSION}")
+            message(STATUS "== DXC: ${Vulkan_dxc_LIBRARY}")
 
             add_custom_target(
                 copy_dxcompiler ALL COMMAND ${CMAKE_COMMAND} -E copy ${Vulkan_dxc_LIBRARY}/libdxcompiler.so
