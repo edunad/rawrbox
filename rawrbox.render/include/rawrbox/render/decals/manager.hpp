@@ -4,13 +4,15 @@
 #include <rawrbox/render/decals/decal.hpp>
 #include <rawrbox/render/textures/base.hpp>
 
+#include <DynamicBuffer.hpp>
+
 namespace rawrbox {
 
 	class DECALS {
 	protected:
 		static std::vector<rawrbox::Decal> _decals;
 
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _buffer;
+		static std::unique_ptr<Diligent::DynamicBuffer> _buffer;
 		static Diligent::IBufferView* _bufferRead;
 
 		static bool _CONSTANTS_DIRTY;

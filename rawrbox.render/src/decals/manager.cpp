@@ -7,7 +7,7 @@ namespace rawrbox {
 	// PRIVATE ----
 	std::vector<rawrbox::Decal> DECALS::_decals = {};
 
-	Diligent::RefCntAutoPtr<Diligent::IBuffer> DECALS::_buffer;
+	std::unique_ptr<Diligent::DynamicBuffer> DECALS::_buffer;
 	Diligent::IBufferView* DECALS::_bufferRead = nullptr;
 	bool DECALS::_CONSTANTS_DIRTY = false;
 
@@ -41,37 +41,43 @@ namespace rawrbox {
 		// BARRIER -----
 		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----------
+
+		update();
 	}
 
 	void DECALS::shutdown() {
 		RAWRBOX_DESTROY(uniforms);
 
 		_bufferRead = nullptr;
-		RAWRBOX_DESTROY(_buffer);
+		_buffer.reset();
 
 		_decals.clear();
 	}
 
 	void DECALS::createDataBuffer() {
-		RAWRBOX_DESTROY(_buffer);
+		// RAWRBOX_DESTROY(_buffer);
 
 		Diligent::BufferDesc BuffDesc;
 		BuffDesc.ElementByteStride = sizeof(rawrbox::Decal);
 		BuffDesc.Name = "RawrBox::Decals::Buffer";
-		BuffDesc.Usage = Diligent::USAGE_DEFAULT;
+		BuffDesc.Usage = Diligent::USAGE_SPARSE;
 		BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 		BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
 		BuffDesc.Size = BuffDesc.ElementByteStride * _decals.capacity();
 
-		Diligent::BufferData VBData;
-		VBData.pData = _decals.data();
-		VBData.DataSize = BuffDesc.Size;
+		Diligent::DynamicBufferCreateInfo dynamicBuff;
+		dynamicBuff.Desc = BuffDesc;
 
-		rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, _decals.empty() ? nullptr : &VBData, &_buffer);
-		_bufferRead = _buffer->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
+		/*Diligent::BufferData VBData;
+		VBData.pData = _decals.data();
+		VBData.DataSize = BuffDesc.Size;*/
+
+		// rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, _decals.empty() ? nullptr , &_buffer);
+		_buffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
+		_bufferRead = _buffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier({{_buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{_buffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----------
 	}
 
@@ -92,22 +98,25 @@ namespace rawrbox {
 		if (_buffer == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__DECALS_DIRTY__ || _decals.empty()) return;
 
+		auto* device = rawrbox::RENDERER->device();
+		auto* context = rawrbox::RENDERER->context();
+
 		// Resize buffer ----
 		uint64_t size = sizeof(rawrbox::Decal) * static_cast<uint64_t>(_decals.capacity());
 		if (size > _buffer->GetDesc().Size) {
 			_decals.reserve(_decals.capacity() + 16); // + OFFSET
-			_logger->warn("Resizing decal buffer ({} -> {})", _decals.size(), _decals.capacity());
-			createDataBuffer();
-		} else {
-			// BARRIER ----
-			rawrbox::BarrierUtils::barrier({{_buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-			rawrbox::RENDERER->context()->UpdateBuffer(_buffer, 0, size, _decals.empty() ? nullptr : _decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-			rawrbox::BarrierUtils::barrier({{_buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-			// ---------
+			_buffer->Resize(device, context, sizeof(rawrbox::Decal) * static_cast<uint64_t>(_decals.capacity()), true);
 		}
+		// --------
+
+		auto* buffer = _buffer->GetBuffer();
+
+		// BARRIER ----
+		rawrbox::BarrierUtils::barrier({{buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, size, _decals.empty() ? nullptr : _decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BarrierUtils::barrier({{buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// ---------
 
-		if (onUpdate != nullptr) onUpdate();
 		rawrbox::__DECALS_DIRTY__ = false;
 	}
 

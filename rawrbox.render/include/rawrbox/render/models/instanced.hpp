@@ -98,8 +98,11 @@ namespace rawrbox {
 			auto* device = rawrbox::RENDERER->device();
 
 			// Update buffer ----
-			uint64_t size = sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.size());
-			if (size > this->_dataBuffer->GetDesc().Size) this->_dataBuffer->Resize(device, context, (size + 15) & ~15); // + OFFSET
+			uint64_t size = sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.capacity());
+			if (size > this->_dataBuffer->GetDesc().Size) {
+				this->_instances.reserve(this->_instances.capacity() + 16);
+				this->_dataBuffer->Resize(device, context, sizeof(rawrbox::Decal) * static_cast<uint64_t>(_instances.capacity()), true);
+			}
 
 			auto* buffer = this->_dataBuffer->GetBuffer();
 
