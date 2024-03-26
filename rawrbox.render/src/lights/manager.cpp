@@ -20,32 +20,47 @@ namespace rawrbox {
 
 	// PUBLIC ----
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> LIGHTS::uniforms;
-	std::function<void()> LIGHTS::onUpdate = nullptr;
 	// -------
 
 	void LIGHTS::init() {
 		_lights.reserve(16); // OFFSET
 
 		// Init uniforms
-		Diligent::BufferDesc BuffDesc;
-		BuffDesc.Name = "rawrbox::Light::Uniforms";
-		BuffDesc.Usage = Diligent::USAGE_DEFAULT;
-		BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-		BuffDesc.Size = sizeof(rawrbox::LightConstants);
+		{
+			Diligent::BufferDesc BuffDesc;
+			BuffDesc.Name = "rawrbox::Light::Uniforms";
+			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
+			BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			BuffDesc.Size = sizeof(rawrbox::LightConstants);
 
-		Diligent::BufferData data;
-		data.pData = &_settings;
-		data.DataSize = BuffDesc.Size;
+			Diligent::BufferData data;
+			data.pData = &_settings;
+			data.DataSize = BuffDesc.Size;
 
-		rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, &data, &uniforms);
+			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, &data, &uniforms);
+		}
 		// -----------------------------------------
 
 		// Create data --
-		createDataBuffer();
+		{
+			Diligent::BufferDesc BuffDesc;
+			BuffDesc.ElementByteStride = sizeof(rawrbox::LightDataVertex);
+			BuffDesc.Name = "RawrBox::Light::Buffer";
+			BuffDesc.Usage = Diligent::USAGE_SPARSE;
+			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
+			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
+			BuffDesc.Size = BuffDesc.ElementByteStride * _lights.capacity();
+
+			Diligent::DynamicBufferCreateInfo dynamicBuff;
+			dynamicBuff.Desc = BuffDesc;
+
+			_buffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
+			_bufferRead = _buffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
+		}
 		// --------------
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}, {_buffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----------
 
 		update();
@@ -58,29 +73,6 @@ namespace rawrbox {
 		_buffer.reset();
 
 		_lights.clear();
-	}
-
-	void LIGHTS::createDataBuffer() {
-		// RAWRBOX_DESTROY(_buffer);
-
-		Diligent::BufferDesc BuffDesc;
-		BuffDesc.ElementByteStride = sizeof(rawrbox::LightDataVertex);
-		BuffDesc.Name = "RawrBox::Light::Buffer";
-		BuffDesc.Usage = Diligent::USAGE_SPARSE;
-		BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
-		BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
-		BuffDesc.Size = BuffDesc.ElementByteStride * _lights.capacity();
-
-		Diligent::DynamicBufferCreateInfo dynamicBuff;
-		dynamicBuff.Desc = BuffDesc;
-
-		// rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &_buffer);
-		_buffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
-		_bufferRead = _buffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
-
-		// BARRIER -----
-		rawrbox::BarrierUtils::barrier({{_buffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-		// -----------
 	}
 
 	void LIGHTS::updateConstants() {

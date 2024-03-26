@@ -18,28 +18,42 @@ namespace rawrbox {
 
 	// PUBLIC ----
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> DECALS::uniforms;
-	std::function<void()> DECALS::onUpdate = nullptr;
 	// -------
 
 	void DECALS::init() {
 		_decals.reserve(16); // OFFSET
+		{
+			// Init uniforms
+			Diligent::BufferDesc BuffDesc;
+			BuffDesc.Name = "rawrbox::Decals::Uniforms";
+			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
+			BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+			BuffDesc.Size = sizeof(rawrbox::Vector4u);
 
-		// Init uniforms
-		Diligent::BufferDesc BuffDesc;
-		BuffDesc.Name = "rawrbox::Decals::Uniforms";
-		BuffDesc.Usage = Diligent::USAGE_DEFAULT;
-		BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-		BuffDesc.Size = sizeof(rawrbox::Vector4u);
-
-		rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &uniforms);
-		// -----------------------------------------
+			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &uniforms);
+			// -----------------------------------------
+		}
 
 		// Create data --
-		createDataBuffer();
-		// --------------
+		{
+			Diligent::BufferDesc BuffDesc;
+			BuffDesc.ElementByteStride = sizeof(rawrbox::Decal);
+			BuffDesc.Name = "RawrBox::Decals::Buffer";
+			BuffDesc.Usage = Diligent::USAGE_SPARSE;
+			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
+			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
+			BuffDesc.Size = BuffDesc.ElementByteStride * _decals.capacity();
+
+			Diligent::DynamicBufferCreateInfo dynamicBuff;
+			dynamicBuff.Desc = BuffDesc;
+
+			_buffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
+			_bufferRead = _buffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
+		}
+		// -----------
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}, {_buffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----------
 
 		update();
@@ -52,33 +66,6 @@ namespace rawrbox {
 		_buffer.reset();
 
 		_decals.clear();
-	}
-
-	void DECALS::createDataBuffer() {
-		// RAWRBOX_DESTROY(_buffer);
-
-		Diligent::BufferDesc BuffDesc;
-		BuffDesc.ElementByteStride = sizeof(rawrbox::Decal);
-		BuffDesc.Name = "RawrBox::Decals::Buffer";
-		BuffDesc.Usage = Diligent::USAGE_SPARSE;
-		BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
-		BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
-		BuffDesc.Size = BuffDesc.ElementByteStride * _decals.capacity();
-
-		Diligent::DynamicBufferCreateInfo dynamicBuff;
-		dynamicBuff.Desc = BuffDesc;
-
-		/*Diligent::BufferData VBData;
-		VBData.pData = _decals.data();
-		VBData.DataSize = BuffDesc.Size;*/
-
-		// rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, _decals.empty() ? nullptr , &_buffer);
-		_buffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
-		_bufferRead = _buffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
-
-		// BARRIER -----
-		rawrbox::BarrierUtils::barrier({{_buffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-		// -----------
 	}
 
 	void DECALS::updateConstants() {

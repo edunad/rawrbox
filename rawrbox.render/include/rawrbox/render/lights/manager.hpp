@@ -52,7 +52,6 @@ namespace rawrbox {
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
-		static std::function<void()> onUpdate;
 
 		static void init();
 		static void shutdown();

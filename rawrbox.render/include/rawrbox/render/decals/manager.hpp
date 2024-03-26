@@ -21,14 +21,11 @@ namespace rawrbox {
 		static std::unique_ptr<rawrbox::Logger> _logger;
 		// -------------
 
-		static void createDataBuffer();
-
 		static void updateConstants();
 		static void update();
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
-		static std::function<void()> onUpdate;
 
 		static void init();
 		static void shutdown();
