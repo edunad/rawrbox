@@ -58,6 +58,8 @@ namespace rawrbox {
 
 		// BLEND SHAPES ---
 		virtual void applyBlendShapes() {
+			if (this->_original_data.empty()) return;
+
 			// Reset vertex ---------
 			for (auto& shape : this->_blend_shapes) {
 				if (!shape.second->isActive() || shape.second->mesh == nullptr) continue;

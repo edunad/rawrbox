@@ -8,8 +8,7 @@ namespace rawrbox {
 		    .beginClass<rawrbox::Decal>("Decal")
 		    .addConstructor<void(), void(rawrbox::Decal&), void(const rawrbox::Matrix4x4&, const rawrbox::TextureBase&, const rawrbox::Colorf&, uint32_t)>()
 		    .addFunction("setTexture", &Decal::setTexture)
-		    .addFunction("setScale", &Decal::setScale)
-		    .addFunction("setPos", &Decal::setPos)
+		    .addFunction("setMatrix", &Decal::setMatrix)
 		    .addFunction("setColor", &Decal::setColor)
 		    .endClass();
 	}
