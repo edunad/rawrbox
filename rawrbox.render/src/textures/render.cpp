@@ -89,6 +89,8 @@ namespace rawrbox {
 		bool isDepth = (flags & Diligent::BIND_DEPTH_STENCIL) != 0;
 		if (isDepth && this->_depthHandle != nullptr) throw _logger->error("Only one depth texture is allowed");
 
+		std::string name = isDepth ? fmt::format("{}::DEPTH", this->_name) : this->_name;
+
 		Diligent::TextureDesc desc;
 		desc.Type = Diligent::RESOURCE_DIM_TEX_2D_ARRAY;
 		desc.BindFlags = flags;
@@ -102,18 +104,16 @@ namespace rawrbox {
 		desc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
 
 		if (isDepth) {
-			std::string depthName = fmt::format("{}::DEPTH", this->_name);
-
 			desc.ClearValue.Format = desc.Format;
 			desc.ClearValue.DepthStencil.Depth = 1;
 			desc.ClearValue.DepthStencil.Stencil = 0;
-			desc.Name = depthName.c_str();
+			desc.Name = name.c_str();
 		} else {
 			desc.ClearValue.Color[0] = 0.F;
 			desc.ClearValue.Color[1] = 0.F;
 			desc.ClearValue.Color[2] = 0.F;
 			desc.ClearValue.Color[3] = 0.F;
-			desc.Name = this->_name.c_str();
+			desc.Name = name.c_str();
 		}
 
 		if (isDepth) {

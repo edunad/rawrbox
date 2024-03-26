@@ -43,6 +43,13 @@
         return viewRay * LinearizeDepth(depth, nearFar.x, nearFar.y);
     }
 
+    float3 WorldPositionFromDepth(float2 uv, float depth, float4x4 invProj) {
+        float4 clip = float4(float2(uv.x, 1.0f - uv.y) * 2.0f - 1.0f, depth, 1.0f);
+        float4 world = mul(clip, invProj);
+
+        return world.xyz / world.w;
+    }
+
     float3 ScreenToView(float3 screen, float2 invScreenSize, float2 nearFar, float4x4 invProj) {
         float2 screenNormalized = screen.xy * invScreenSize;
         return ViewPositionFromDepth(screenNormalized, screen.z, nearFar, invProj);
