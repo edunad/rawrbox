@@ -4,6 +4,8 @@
 #include <rawrbox/render/lights/base.hpp>
 #include <rawrbox/render/static.hpp>
 
+#include <DynamicBuffer.hpp>
+
 namespace rawrbox {
 
 	struct LightDataVertex {
@@ -34,7 +36,7 @@ namespace rawrbox {
 		static std::vector<std::shared_ptr<rawrbox::LightBase>> _lights;
 		static rawrbox::LightConstants _settings;
 
-		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _buffer;
+		static std::unique_ptr<Diligent::DynamicBuffer> _buffer;
 		static Diligent::IBufferView* _bufferRead;
 
 		static bool _CONSTANTS_DIRTY;

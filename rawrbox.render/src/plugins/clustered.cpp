@@ -40,10 +40,10 @@ namespace rawrbox {
 
 		// Initialize light engine
 		rawrbox::LIGHTS::init();
-		rawrbox::LIGHTS::onUpdate = []() {
+		/*rawrbox::LIGHTS::onUpdate = []() {
 			rawrbox::BindlessManager::computeSignatureBind->GetVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Lights")->Set(rawrbox::LIGHTS::getBuffer(), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 			rawrbox::BindlessManager::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "Lights")->Set(rawrbox::LIGHTS::getBuffer(), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
-		};
+		};*/
 
 		rawrbox::DECALS::init();
 		/*rawrbox::DECALS::onUpdate = []() {
@@ -81,7 +81,7 @@ namespace rawrbox {
 		sig.emplace_back(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Clusters", 1, compute ? Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV : Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 		sig.emplace_back(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "ClusterDataGrid", 1, compute ? Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV : Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 
-		sig.emplace_back(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Lights", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE);
+		sig.emplace_back(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Lights", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 		sig.emplace_back(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "LightConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 
 		sig.emplace_back(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Decals", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
@@ -92,6 +92,7 @@ namespace rawrbox {
 		sig.GetStaticVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Clusters")->Set(this->getClustersBuffer(!compute));
 		sig.GetStaticVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "ClusterDataGrid")->Set(this->getDataGridBuffer(!compute));
 
+		sig.GetStaticVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Lights")->Set(rawrbox::LIGHTS::getBuffer());
 		sig.GetStaticVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "LightConstants")->Set(rawrbox::LIGHTS::uniforms);
 
 		sig.GetStaticVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Decals")->Set(rawrbox::DECALS::getBuffer());
@@ -99,8 +100,8 @@ namespace rawrbox {
 	}
 
 	void ClusteredPlugin::bindMutable(Diligent::IShaderResourceBinding& bind, bool compute) {
-		bind.GetVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Lights")->Set(rawrbox::LIGHTS::getBuffer());
-		// bind.GetVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Decals")->Set(rawrbox::DECALS::getBuffer());
+		// bind.GetVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Lights")->Set(rawrbox::LIGHTS::getBuffer());
+		//  bind.GetVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Decals")->Set(rawrbox::DECALS::getBuffer());
 	}
 
 	void ClusteredPlugin::preRender() {

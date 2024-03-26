@@ -113,7 +113,7 @@ namespace rawrbox {
 
 		// BARRIER ----
 		rawrbox::BarrierUtils::barrier({{buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, size, _decals.empty() ? nullptr : _decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::Decal) * static_cast<uint64_t>(_decals.size()), _decals.empty() ? nullptr : _decals.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 		rawrbox::BarrierUtils::barrier({{buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// ---------
 
