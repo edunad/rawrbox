@@ -58,6 +58,8 @@ namespace rawrbox {
 
 		// BLEND SHAPES ---
 		virtual void applyBlendShapes() {
+			if (this->_original_data.empty()) return;
+
 			// Reset vertex ---------
 			for (auto& shape : this->_blend_shapes) {
 				if (!shape.second->isActive() || shape.second->mesh == nullptr) continue;
@@ -153,20 +155,20 @@ namespace rawrbox {
 			}
 
 			// BARRIER -----
-			std::vector<rawrbox::Barrier<Diligent::IBuffer>> barriers = {};
-			if (!resizeVertex) barriers.emplace_back(this->_vbh, Diligent::RESOURCE_STATE_COPY_DEST);
-			if (!resizeIndex) barriers.emplace_back(this->_ibh, Diligent::RESOURCE_STATE_COPY_DEST);
+			std::vector<Diligent::StateTransitionDesc> barriers = {};
+			if (!resizeVertex) barriers.emplace_back(this->_vbh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+			if (!resizeIndex) barriers.emplace_back(this->_ibh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
 
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>(barriers);
+			rawrbox::BarrierUtils::barrier(barriers);
 
 			if (!resizeVertex) context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			if (!resizeIndex) context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 			barriers.clear();
-			if (!resizeVertex) barriers.emplace_back(this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER);
-			if (!resizeIndex) barriers.emplace_back(this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER);
+			if (!resizeVertex) barriers.emplace_back(this->_vbh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+			if (!resizeIndex) barriers.emplace_back(this->_ibh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_INDEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
 
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>(barriers);
+			rawrbox::BarrierUtils::barrier(barriers);
 			// -----------
 
 			this->_requiresUpdate = false;
@@ -191,7 +193,7 @@ namespace rawrbox {
 			device->CreateBuffer(IndcBuffDesc, &IBData, &this->_ibh);
 			if (this->_ibh == nullptr) throw this->_logger->error("Failed to create index buffer");
 
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER}});
+			rawrbox::BarrierUtils::barrier({{this->_ibh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_INDEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		}
 
 		virtual void createVertexBuffer() {
@@ -213,7 +215,7 @@ namespace rawrbox {
 			device->CreateBuffer(VertBuffDesc, &VBData, &this->_vbh);
 			if (this->_vbh == nullptr) throw this->_logger->error("Failed to create vertex buffer");
 
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER}});
+			rawrbox::BarrierUtils::barrier({{this->_vbh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		}
 
 	public:

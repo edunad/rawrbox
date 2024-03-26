@@ -6,26 +6,15 @@
 
 #include <DynamicBuffer.hpp>
 
-#include <memory>
-
 namespace rawrbox {
-
-	struct DecalsConstants {
-		uint32_t total = 0;
-	};
-
-	struct DecalVertex {
-		rawrbox::Matrix4x4 worldToLocal = {};
-		rawrbox::Vector4u data = {};
-		rawrbox::Colorf color = {};
-	};
 
 	class DECALS {
 	protected:
-		static std::vector<std::unique_ptr<rawrbox::Decal>> _decals;
+		static std::vector<rawrbox::Decal> _decals;
 
 		static std::unique_ptr<Diligent::DynamicBuffer> _buffer;
 		static Diligent::IBufferView* _bufferRead;
+
 		static bool _CONSTANTS_DIRTY;
 
 		// LOGGER ------
@@ -46,15 +35,13 @@ namespace rawrbox {
 		// UTILS ----
 		static Diligent::IBufferView* getBuffer();
 
-		static rawrbox::Decal* get(size_t indx);
+		static const rawrbox::Decal& get(size_t indx);
 		static size_t count();
 		// ----------
 
 		// DECALS ----
 		static void add(const rawrbox::Decal& decal);
-
 		static bool remove(size_t indx);
-		static bool remove(const rawrbox::Decal& decal);
 		static void clear();
 		// ---------
 	};

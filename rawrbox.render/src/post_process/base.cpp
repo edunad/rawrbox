@@ -5,7 +5,7 @@
 
 namespace rawrbox {
 	void PostProcessBase::init() {
-		auto* plugin = rawrbox::RENDERER->getPlugin<rawrbox::PostProcessPlugin>("PostProcessPlugin");
+		auto* plugin = rawrbox::RENDERER->getPlugin<rawrbox::PostProcessPlugin>("PostProcess");
 		if (plugin == nullptr) throw this->_logger->error("Post process plugin requires the 'PostProcess' renderer plugin!");
 
 		this->_buffer = plugin->getBuffer();

@@ -69,7 +69,7 @@
     {
       "label": "Clean project",
       "type": "shell",
-      "command": "rm -rf build bin .cache rawrbox.bass/deps rawrbox.webm/deps ",
+      "command": "rm -rf build bin .cache rawrbox.bass/deps rawrbox.webm/deps rawrbox.render/deps",
       "group": "build",
       "options": {
         "cwd": "${workspaceFolder}"

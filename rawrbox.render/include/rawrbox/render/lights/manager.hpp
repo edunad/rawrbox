@@ -6,9 +6,6 @@
 
 #include <DynamicBuffer.hpp>
 
-#include <memory>
-#include <vector>
-
 namespace rawrbox {
 
 	struct LightDataVertex {
@@ -47,6 +44,8 @@ namespace rawrbox {
 		// LOGGER ------
 		static std::unique_ptr<rawrbox::Logger> _logger;
 		// -------------
+
+		static void createDataBuffer();
 
 		static void updateConstants();
 		static void update();

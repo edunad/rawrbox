@@ -19,6 +19,9 @@ namespace rawrbox {
 		    .addFunction("translate", &rawrbox::Matrix4x4::translate)
 		    .addFunction("scale", &rawrbox::Matrix4x4::scale)
 
+		    .addFunction("getPos", &rawrbox::Matrix4x4::getPos)
+		    .addFunction("getScale", &rawrbox::Matrix4x4::getScale)
+
 		    .addFunction("rotate", &rawrbox::Matrix4x4::rotate)
 		    .addFunction("rotateX", &rawrbox::Matrix4x4::rotateX)
 		    .addFunction("rotateY", &rawrbox::Matrix4x4::rotateY)

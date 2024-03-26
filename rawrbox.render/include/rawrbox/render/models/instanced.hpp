@@ -4,6 +4,8 @@
 #include <rawrbox/render/models/instance.hpp>
 #include <rawrbox/render/models/model.hpp>
 
+#include <DynamicBuffer.hpp>
+
 namespace rawrbox {
 
 	template <typename M = rawrbox::MaterialInstanced>
@@ -19,9 +21,6 @@ namespace rawrbox {
 		}
 
 	public:
-		// To prevent the instance buffer from resizing too often, increase this value to offset the scaling based on your model needs
-		uint64_t BUFFER_INSTANCE_INCREASE_OFFSET = 32;
-
 		explicit InstancedModel(size_t instanceSize = 0) {
 			if (instanceSize != 0) this->_instances.reserve(instanceSize);
 		}
@@ -78,7 +77,6 @@ namespace rawrbox {
 			InstBuffDesc.Name = "RawrBox::Buffer::Instance";
 			InstBuffDesc.Usage = Diligent::USAGE_SPARSE;
 			InstBuffDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-			InstBuffDesc.Size = InstBuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(size + this->BUFFER_INSTANCE_INCREASE_OFFSET, 1));
 
 			Diligent::DynamicBufferCreateInfo dynamicBuff;
 			dynamicBuff.Desc = InstBuffDesc;
@@ -87,7 +85,7 @@ namespace rawrbox {
 			//  ---------------------
 
 			// Barrier ----
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_dataBuffer->GetBuffer(), Diligent::RESOURCE_STATE_VERTEX_BUFFER}});
+			rawrbox::BarrierUtils::barrier({{this->_dataBuffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			// ------------
 
 			if (size != 0) this->updateInstances(); // Data was already added, then update the buffer
@@ -100,15 +98,18 @@ namespace rawrbox {
 			auto* device = rawrbox::RENDERER->device();
 
 			// Update buffer ----
-			uint64_t size = sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.size());                                                   // Always keep 1
-			if (size > this->_dataBuffer->GetDesc().Size) this->_dataBuffer->Resize(device, context, size + this->BUFFER_INSTANCE_INCREASE_OFFSET, true); // + OFFSET
+			uint64_t size = sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.capacity());
+			if (size > this->_dataBuffer->GetDesc().Size) {
+				this->_instances.reserve(this->_instances.capacity() + 16);
+				this->_dataBuffer->Resize(device, context, sizeof(rawrbox::Decal) * static_cast<uint64_t>(_instances.capacity()), true);
+			}
 
 			auto* buffer = this->_dataBuffer->GetBuffer();
 
 			// BARRIER ----
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_COPY_DEST}});
-			context->UpdateBuffer(buffer, 0, sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.size()), this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-			rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_VERTEX_BUFFER}});
+			rawrbox::BarrierUtils::barrier({{buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+			context->UpdateBuffer(buffer, 0, size, this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			rawrbox::BarrierUtils::barrier({{buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			//  ---------
 		}
 

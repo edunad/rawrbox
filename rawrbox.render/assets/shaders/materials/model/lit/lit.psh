@@ -1,3 +1,4 @@
+#include "defines.fxh"
 #include "math.fxh"
 
 #include "pixel_bindless_uniforms.fxh"
@@ -96,18 +97,18 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
         LightResult result = (LightResult)0;
         for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
-            uint4 buckets = ClusterDataGrid[gridOffset + bucketIndex];
+            ClusterData buckets = ClusterDataGrid[gridOffset + bucketIndex];
+
+            // Apply decals ---
+            float4 roughtness = 0; // TODO
+            ApplyDecals(buckets.decals, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, baseColor, roughtness);
+            // ----------------
 
             // Apply light ---
             float3 diffuse     = ComputeDiffuseColor(baseColor.rgb, metal);
             float3 specular    = ComputeF0(SpecularFactor, baseColor.rgb, metal);
 
-            ApplyLight(buckets.x, bucketIndex, result, specular, rough, diffuse, normal, V, PSIn.WorldPos.xyz, dither);
-            // ----------------
-
-            // Apply decals ---
-            float4 roughtness = 0; // TODO
-            ApplyDecals(buckets.y, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, baseColor, roughtness);
+            ApplyLight(buckets.lights, bucketIndex, result, specular, rough, diffuse, normal, V, PSIn.WorldPos.xyz, dither);
             // ----------------
         }
         // ----------------

@@ -78,8 +78,8 @@ namespace rawrbox {
 		// -------------
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{signatureBufferVertexSkinned, Diligent::RESOURCE_STATE_CONSTANT_BUFFER},
-		    {signatureBufferPixel, Diligent::RESOURCE_STATE_CONSTANT_BUFFER}});
+		rawrbox::BarrierUtils::barrier({{signatureBufferVertexSkinned, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {signatureBufferPixel, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----------
 
 		// Create signatures ------
@@ -214,11 +214,18 @@ namespace rawrbox {
 		// Add extra binds ----
 		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
 			if (plugin.second == nullptr) continue;
-			plugin.second->bind(*signature, false);
+			plugin.second->bindStatic(*signature, false);
 		}
 		// -------------------------
 
 		signature->CreateShaderResourceBinding(&signatureBind, true);
+
+		// Bind signature bind ----
+		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
+			if (plugin.second == nullptr) continue;
+			plugin.second->bindMutable(*signatureBind, false);
+		}
+		// -------------------------
 
 		// Setup textures ---
 		signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Textures")->SetArray(_vertexTextureHandles.data(), 0, static_cast<uint32_t>(_vertexTextureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
@@ -235,11 +242,18 @@ namespace rawrbox {
 		// Add extra binds ----
 		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
 			if (plugin.second == nullptr) continue;
-			plugin.second->bind(*computeSignature, true);
+			plugin.second->bindStatic(*computeSignature, true);
 		}
 		// -------------------------
 
 		computeSignature->CreateShaderResourceBinding(&computeSignatureBind, true);
+
+		// Bind signature bind ----
+		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
+			if (plugin.second == nullptr) continue;
+			plugin.second->bindMutable(*computeSignatureBind, true);
+		}
+		// -------------------------
 		// ----------------------
 	}
 	// --------------------------

@@ -58,11 +58,12 @@ namespace rawrbox {
 		// Enable required features --------------------------
 		features.WireframeFill = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.SparseResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+
 		features.GeometryShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		features.ComputeShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 
 		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.ShaderResourceRuntimeArray = Diligent::DEVICE_FEATURE_STATE_ENABLED;
-		features.ComputeShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.VertexPipelineUAVWritesAndAtomics = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		// features.DepthClamp = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		// features.DepthBiasClamp = Diligent::DEVICE_FEATURE_STATE_ENABLED;
@@ -95,6 +96,8 @@ namespace rawrbox {
 
 					Diligent::EngineD3D12CreateInfo EngineCI;
 					EngineCI.Features = features;
+					// EngineCI.D3D12ValidationFlags = Diligent::D3D12_VALIDATION_FLAG_NONE;
+					// EngineCI.EnableValidation = false;
 
 					if (this->overrideHEAP != nullptr) {
 						auto heap = this->overrideHEAP();
@@ -129,6 +132,7 @@ namespace rawrbox {
 
 					Diligent::EngineVkCreateInfo EngineCI;
 					EngineCI.Features = features;
+					EngineCI.pDxCompilerPath = "dxcompiler";
 
 					if (this->overrideHEAP != nullptr) {
 						auto heap = this->overrideHEAP();
@@ -378,8 +382,8 @@ namespace rawrbox {
 
 		// Process barriers -----
 		rawrbox::BarrierUtils::clearBarrierCache();
-		rawrbox::BarrierUtils::processBarriers();
-		// ---------------------
+		// rawrbox::BarrierUtils::processBarriers();
+		//  ---------------------
 
 		// Update textures ---
 		rawrbox::BindlessManager::update();
@@ -674,6 +678,10 @@ namespace rawrbox {
 
 	std::string RendererBase::getShadersDirectory() const {
 		return "./assets/shaders";
+	}
+
+	const Diligent::RENDER_DEVICE_TYPE& RendererBase::getRenderType() const {
+		return this->_type;
 	}
 
 #ifdef _DEBUG

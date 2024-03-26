@@ -6,7 +6,11 @@
 #include "cluster.fxh"
 
 float GetDepthFromSlice(uint slice, float2 nearFar) {
-	return nearFar.x * pow(abs(nearFar.y / nearFar.x), (float)slice / (float)CLUSTERS_Z);
+	#ifdef VULKAN
+		return nearFar.y * pow(abs(nearFar.x / nearFar.y), (float)slice / (float)CLUSTERS_Z);
+	#else
+		return nearFar.x * pow(abs(nearFar.y / nearFar.x), (float)slice / (float)CLUSTERS_Z);
+	#endif
 }
 
 float3 LineFromOriginZIntersection(float3 lineFromOrigin, float depth) {
@@ -22,7 +26,6 @@ ClusterAABB AABBFromMinMax(float3 minimum, float3 maximum) {
 	aabb.Extents = float4(maximum, 0.0) - aabb.Center;
 	return aabb;
 }
-
 
 ClusterAABB ComputeCluster(uint3 clusterIndex3D) {
 	float2 minPoint_SS = float2(clusterIndex3D.x * CLUSTER_TEXTEL_SIZE, clusterIndex3D.y * CLUSTER_TEXTEL_SIZE);

@@ -76,7 +76,7 @@ namespace rawrbox {
 		void upload() override;
 
 		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig, bool compute) override;
-		void bind(Diligent::IPipelineResourceSignature& sig, bool compute) override;
+		void bindStatic(Diligent::IPipelineResourceSignature& sig, bool compute) override;
 
 		void preRender() override;
 		std::string getID() override;

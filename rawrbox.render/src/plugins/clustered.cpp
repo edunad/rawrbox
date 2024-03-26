@@ -79,7 +79,7 @@ namespace rawrbox {
 		sig.emplace_back(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "DecalsConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 	}
 
-	void ClusteredPlugin::bind(Diligent::IPipelineResourceSignature& sig, bool compute) {
+	void ClusteredPlugin::bindStatic(Diligent::IPipelineResourceSignature& sig, bool compute) {
 		sig.GetStaticVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Clusters")->Set(this->getClustersBuffer(!compute));
 		sig.GetStaticVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "ClusterDataGrid")->Set(this->getDataGridBuffer(!compute));
 
@@ -106,7 +106,10 @@ namespace rawrbox {
 		// ------------
 
 		// Barrier for writting -----
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_clusterBuffer, Diligent::RESOURCE_STATE_UNORDERED_ACCESS}, {this->_dataGridBuffer, Diligent::RESOURCE_STATE_UNORDERED_ACCESS}});
+		rawrbox::BarrierUtils::barrier({
+		    {this->_clusterBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {this->_dataGridBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		});
 		//  -----------
 
 		// Commit compute signature --
@@ -128,8 +131,8 @@ namespace rawrbox {
 		// uint32_t ClearValue = 0;
 		// context->ClearUAVUint(this->_dataGridBuffer, &ClearValue);
 
-		// context->SetPipelineState(this->_cullingResetProgram);
-		// context->DispatchCompute(this->_dispatch);
+		context->SetPipelineState(this->_cullingResetProgram);
+		context->DispatchCompute(this->_dispatch);
 		//   --------------
 
 		// Perform light / decal culling
@@ -138,7 +141,10 @@ namespace rawrbox {
 		// ----------------------
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_clusterBuffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}, {this->_dataGridBuffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
+		rawrbox::BarrierUtils::barrier({
+		    {this->_clusterBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {this->_dataGridBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		});
 		//  -----------
 	}
 
@@ -179,7 +185,10 @@ namespace rawrbox {
 		// ------------------
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_clusterBuffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}, {this->_dataGridBuffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
+		rawrbox::BarrierUtils::barrier({
+		    {this->_clusterBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {this->_dataGridBuffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		});
 		// -----------
 	}
 

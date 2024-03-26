@@ -9,7 +9,7 @@ namespace rawrbox {
 	std::vector<std::shared_ptr<rawrbox::LightBase>> LIGHTS::_lights = {};
 	rawrbox::LightConstants LIGHTS::_settings = {};
 
-	std::unique_ptr<Diligent::DynamicBuffer> LIGHTS::_buffer = nullptr;
+	std::unique_ptr<Diligent::DynamicBuffer> LIGHTS::_buffer;
 	Diligent::IBufferView* LIGHTS::_bufferRead = nullptr;
 
 	bool LIGHTS::_CONSTANTS_DIRTY = false;
@@ -23,6 +23,8 @@ namespace rawrbox {
 	// -------
 
 	void LIGHTS::init() {
+		_lights.reserve(16); // OFFSET
+
 		// Init uniforms
 		{
 			Diligent::BufferDesc BuffDesc;
@@ -39,14 +41,15 @@ namespace rawrbox {
 		}
 		// -----------------------------------------
 
+		// Create data --
 		{
 			Diligent::BufferDesc BuffDesc;
 			BuffDesc.ElementByteStride = sizeof(rawrbox::LightDataVertex);
-			BuffDesc.Name = "rawrbox::Light::Buffer";
-			BuffDesc.Usage = Diligent::USAGE_DEFAULT; // Diligent::USAGE_SPARSE has some issues on the steam deck, but its only good for BIG buffers, in our case we use small buffers for light
+			BuffDesc.Name = "RawrBox::Light::Buffer";
+			BuffDesc.Usage = Diligent::USAGE_SPARSE;
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
-			BuffDesc.Size = BuffDesc.ElementByteStride * static_cast<uint64_t>(std::max<size_t>(_lights.size() + 32, 1));
 			BuffDesc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
+			BuffDesc.Size = BuffDesc.ElementByteStride * _lights.capacity();
 
 			Diligent::DynamicBufferCreateInfo dynamicBuff;
 			dynamicBuff.Desc = BuffDesc;
@@ -54,9 +57,10 @@ namespace rawrbox {
 			_buffer = std::make_unique<Diligent::DynamicBuffer>(rawrbox::RENDERER->device(), dynamicBuff);
 			_bufferRead = _buffer->GetBuffer()->GetDefaultView(Diligent::BUFFER_VIEW_SHADER_RESOURCE);
 		}
+		// --------------
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER}, {_buffer->GetBuffer(), Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
+		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}, {_buffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----------
 
 		update();
@@ -78,9 +82,9 @@ namespace rawrbox {
 		_settings.lightSettings.y = static_cast<uint32_t>(count());
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{uniforms, Diligent::RESOURCE_STATE_COPY_DEST}});
+		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::LightConstants), &_settings, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER}});
+		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// --------
 	}
 
@@ -90,7 +94,7 @@ namespace rawrbox {
 
 		// Update lights ---
 		std::vector<rawrbox::LightDataVertex> lights = {};
-		lights.reserve(_lights.size());
+		lights.reserve(_lights.capacity());
 
 		for (auto& l : _lights) {
 			if (!l->isActive()) continue;
@@ -118,31 +122,35 @@ namespace rawrbox {
 
 			lights.push_back(light);
 		}
+		// ----
 
-		auto* context = rawrbox::RENDERER->context();
 		auto* device = rawrbox::RENDERER->device();
+		auto* context = rawrbox::RENDERER->context();
 
-		// Update buffer ----
-		uint64_t size = sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size());
-		if (size > _buffer->GetDesc().Size) _buffer->Resize(device, context, size + 32); // + OFFSET
+		// Resize buffer ----
+		uint64_t size = sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.capacity());
+		if (size > _buffer->GetDesc().Size) {
+			_lights.reserve(_lights.capacity() + 16); // + OFFSET
+			_buffer->Resize(device, context, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.capacity()), true);
+		}
+		// --------
 
 		auto* buffer = _buffer->GetBuffer();
 
-		// BARRIER -----
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_COPY_DEST}});
-		context->UpdateBuffer(buffer, 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(_lights.size()), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{buffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
-		// -------------
+		// BARRIER ----
+		rawrbox::BarrierUtils::barrier({{buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::RENDERER->context()->UpdateBuffer(buffer, 0, sizeof(rawrbox::LightDataVertex) * static_cast<uint64_t>(lights.size()), lights.empty() ? nullptr : lights.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BarrierUtils::barrier({{buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		// ---------
 
 		rawrbox::__LIGHT_DIRTY__ = false;
-		// -------
 	}
 
 	void LIGHTS::bindUniforms() {
 		if (uniforms == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 
-		updateConstants(); // Update buffer if dirty
 		update();          // Update all lights if dirty
+		updateConstants(); // Update buffer if dirty
 	}
 
 	// UTILS ----

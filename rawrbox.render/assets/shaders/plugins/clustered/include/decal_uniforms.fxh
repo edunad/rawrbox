@@ -2,11 +2,11 @@
     #define INCLUDED_DECAL_UNIFORMS
 
     struct DecalsConstantsStruct {
-        uint total;
+        uint4 data;
     };
 
     ConstantBuffer<DecalsConstantsStruct> DecalsConstants;
-    #define TOTAL_DECALS DecalsConstants.total
+    #define TOTAL_DECALS DecalsConstants.data.x
 
     struct Decal {
         float4x4 worldToLocal;

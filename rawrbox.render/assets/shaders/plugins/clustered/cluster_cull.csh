@@ -15,13 +15,6 @@ struct Sphere {
 	float Radius;
 };
 
-bool BoxInAABB(float4x4 localPos, ClusterAABB aabb) {
-    float4 dPos = mul(aabb.Center, localPos);
-    float3 decalTexCoord = dPos.xyz * float3(0.5f, -0.5f, 0.5f) + 0.5f;
-
-	return all(decalTexCoord >= 0.0) && all(decalTexCoord <= 1.0);
-}
-
 bool SphereInAABB(Sphere sphere, ClusterAABB aabb) {
 	float3 d = max(0, abs(aabb.Center.xyz - sphere.Position) - aabb.Extents.xyz);
 	float distanceSq = dot(d, d);
@@ -61,8 +54,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 
     [loop]
     for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS && (lightIndex < TOTAL_LIGHTS || decalIndex < TOTAL_DECALS); ++bucketIndex) {
-        uint lightOffset = 0;
-        uint decalOffset = 0;
+        ClusterData data = (ClusterData)0;
 
         [loop]
         for(uint i = 0; i < CLUSTERS_Z && lightIndex < TOTAL_LIGHTS; ++i) {
@@ -75,7 +67,7 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
                 sphere.Position = mul(light.position, Camera.view).xyz;
 
                 if(SphereInAABB(sphere, cluster)) {
-                    lightOffset |= 1u << i;
+                    data.lights |= 1u << i;
                 }
             } else if(light.type == LIGHT_SPOT) {
                 float3 viewSpacePos = mul(light.position, Camera.view).xyz;
@@ -89,10 +81,10 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
 				sphere.Position = cluster.Center.xyz;
 
                 if(ConeInSphere(viewSpacePos, viewSpaceDir, light.radius, coneAngleSinCos, sphere)) {
-                    lightOffset |= 1u << i;
+                    data.lights |= 1u << i;
                 }
-            } else {
-                lightOffset |= 1u << i; // Unknown / directional, don't calculate cull
+            } else if(light.type == LIGHT_DIRECTIONAL) {
+                data.lights |= 1u << i; // Directional, don't calculate cull
             }
         }
 
@@ -101,15 +93,9 @@ void main(uint3 dispatchThreadId : SV_DispatchThreadID) {
             Decal decal = Decals[decalIndex];
             ++decalIndex;
 
-            if(decal.data.w == 1) { //test
-                if(BoxInAABB(decal.worldToLocal, cluster)) {
-                    decalOffset |= 1u << o;
-                }
-            } else {
-                decalOffset |= 1u << o;
-            }
+            data.decals |= 1u << o; // TODO: CULLING
         }
 
-	    ClusterDataGrid[clusterIndex * CLUSTERED_NUM_BUCKETS + bucketIndex] = uint4(lightOffset, decalOffset, 0, 0);
+	    ClusterDataGrid[clusterIndex * CLUSTERED_NUM_BUCKETS + bucketIndex] = data;
     }
 }

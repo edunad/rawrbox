@@ -50,6 +50,21 @@ TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 		REQUIRE(q[5] == 4);
 		REQUIRE(q[10] == 10);
 	}
+
+	SECTION("rawrbox::Matrix4x4::getScale") {
+		rawrbox::Matrix4x4 q = {};
+		q.scale({0, 4, 10});
+
+		REQUIRE(q.getScale() == rawrbox::Vector3f(0, 4, 10));
+	}
+
+	SECTION("rawrbox::Matrix4x4::getPos") {
+		rawrbox::Matrix4x4 q = {};
+		q.translate({-4, 12, 5});
+
+		REQUIRE(q.getPos() == rawrbox::Vector3f(-4, 12, 5));
+	}
+
 	SECTION("rawrbox::Matrix4x4::transpose") {
 		rawrbox::Matrix4x4 q(std::array<float, 16>{2.F, 4.F, 1.F, 2.F, 4.F, 6.F, 7.F, 4.F, 3.F, 2.F, 5.F, 9.F, 1.F, 2.F, 3.F, 3.F});
 		q.transpose();

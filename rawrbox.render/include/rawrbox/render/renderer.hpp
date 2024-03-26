@@ -184,13 +184,16 @@ namespace rawrbox {
 
 		// WARNING: NOT THREAD SAFE!!
 		[[nodiscard]] virtual Diligent::IDeviceContext* context() const;
+		// WARNING: NOT THREAD SAFE!!
 		[[nodiscard]] virtual Diligent::ISwapChain* swapChain() const;
+		// WARNING: NOT THREAD SAFE!!
 		[[nodiscard]] virtual Diligent::IRenderDevice* device() const;
 
 		[[nodiscard]] virtual Diligent::ITextureView* getDepth() const;
 		[[nodiscard]] virtual Diligent::ITextureView* getColor(bool rt = false) const;
 
 		[[nodiscard]] virtual std::string getShadersDirectory() const;
+		[[nodiscard]] virtual const Diligent::RENDER_DEVICE_TYPE& getRenderType() const;
 
 #ifdef _DEBUG
 		[[nodiscard]] virtual const Diligent::QueryDataPipelineStatistics& getPipelineStats(const std::string& query);

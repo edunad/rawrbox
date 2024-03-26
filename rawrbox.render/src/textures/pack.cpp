@@ -158,9 +158,11 @@ namespace rawrbox {
 		SubresData.Stride = this->_size.x * this->_channels;
 		SubresData.pData = this->_pixels.data();
 
-		rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{this->_tex, Diligent::RESOURCE_STATE_COPY_DEST}});
+		// BARRIER ----
+		rawrbox::BarrierUtils::barrier({{this->_tex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		rawrbox::BarrierUtils::barrier<Diligent::ITexture>({{this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE}});
+		rawrbox::BarrierUtils::barrier({{this->_tex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		// ------------
 
 		this->_pendingUpdate = false;
 	}

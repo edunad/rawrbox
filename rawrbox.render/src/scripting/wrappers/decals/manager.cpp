@@ -10,10 +10,7 @@ namespace rawrbox {
 		    .addFunction("count", &DECALS::count)
 		    .addFunction("add", &DECALS::add)
 		    .addFunction("clear", &DECALS::clear)
-
-		    .addFunction("remove",
-			luabridge::overload<const rawrbox::Decal&>(&DECALS::remove),
-			luabridge::overload<size_t>(&DECALS::remove))
+		    .addFunction("remove", &DECALS::remove)
 
 		    .endNamespace();
 	}

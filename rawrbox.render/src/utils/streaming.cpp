@@ -19,7 +19,7 @@ namespace rawrbox {
 		device->CreateBuffer(buff, nullptr, &this->_buffer);
 
 		// Barrier ----
-		rawrbox::BarrierUtils::barrier<Diligent::IBuffer>({{this->_buffer, state}});
+		rawrbox::BarrierUtils::barrier({{this->_buffer, Diligent::RESOURCE_STATE_UNKNOWN, state, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// ------------
 	}
 
