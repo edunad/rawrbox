@@ -171,10 +171,10 @@
 
 ### IDE SETUP (Visual Code)
 
-- Open the workspace file (`.code-workspace`) and install the recommended extensions (at least **C++** & **CMAKE**)
-- Run **cmake configure**
-- Select `[Visual Studio Build Tools <version> Release - amd64]` on the kit popup (for all of the projects)
-- Run the compiler by hitting F5
+1. Open the workspace file (`.code-workspace`) and install the recommended extensions (at least **C++** & **CMAKE**)
+2. Run **cmake configure**
+3. Select `[Visual Studio Build Tools <version> Release - amd64]` on the kit popup (for all of the projects)
+4. Run the compiler by hitting F5
 
 ## LINUX
 
@@ -184,7 +184,9 @@
 
 ### IDE SETUP
 
-- TODO
+1. Build the container : `podman build -t rawrbox .`
+2. Run the container : `podman run -d rawrbox`
+3. Attach the bash window: `podman exec -it <pod id> /bin/bash`
 
 # SAMPLES
 
