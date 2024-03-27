@@ -180,9 +180,9 @@
 
 ### REQUIRED SOFTWARE
 
-- [PODMAN](https://podman.io/)
+- [PODMAN](https://podman.io/) or [DOCKER](https://docker.com/)
 
-### IDE SETUP
+### SETUP
 
 1. Build the container : `podman build -t rawrbox .`
 2. Run the container : `podman run -ti rawrbox /bin/bash`
