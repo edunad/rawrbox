@@ -185,8 +185,9 @@
 ### IDE SETUP
 
 1. Build the container : `podman build -t rawrbox .`
-2. Run the container : `podman run -d rawrbox`
-3. Attach the bash window: `podman exec -it <pod id> /bin/bash`
+2. Run the container : `podman run -ti rawrbox /bin/bash`
+3. Run `cmake_rawrbox` (ALIAS) to prepare the cmake rawrbox
+4. Run `build_rawrbox` (ALIAS) to build rawrbox
 
 # SAMPLES
 

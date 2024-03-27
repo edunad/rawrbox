@@ -9,7 +9,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Setup all dependencies
 RUN dpkg --add-architecture i386 && \
 apt update && \
-apt full-upgrade && \
+apt full-upgrade -y && \
 apt install -y build-essential \
     wget \
     cmake \
@@ -83,7 +83,10 @@ git config --global credential.helper store
 RUN git clone "https://github.com/edunad/rawrbox"
 
 WORKDIR /root/rawrbox
-RUN echo alias rawrbox="cd /root/rawrbox" >> /root/.bashrc
-RUN echo alias build_rawrbox="rawrbox;mkdir -p build;cd build;CXX=g++ cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=\"ON\" -DRAWRBOX_DEV_MODE:BOOL=\"ON\";cd ../" >> /root/.bashrc
+RUN echo "alias rawrbox=\"cd /root/rawrbox\"" >> /root/.bashrc
+RUN echo "alias cmake_rawrbox=\"rawrbox;mkdir -p build;cd build;CXX=g++ cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=\"ON\" -DRAWRBOX_DEV_MODE:BOOL=\"ON\";cd ../\"" >> /root/.bashrc
+RUN echo "alias build_rawrbox=\"cd build && ninja\"" >> /root/.bashrc
 
+CMD /bin/bash
+ENTRYPOINT /bin/bash
 # Done 🐲
