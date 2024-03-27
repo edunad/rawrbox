@@ -242,7 +242,7 @@ namespace model {
 	void Game::createSprite() {
 		auto* texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
 
-		auto mesh = rawrbox::MeshUtils::generateCube({}, {0.2F, 0.2F, 0.2F});
+		auto mesh = rawrbox::MeshUtils::generatePlane({}, {0.2F, 0.2F});
 		mesh.setTexture(texture2);
 
 		this->_sprite->setPos({0, 0.25F, 0});

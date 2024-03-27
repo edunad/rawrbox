@@ -19,6 +19,12 @@ namespace rawrbox {
 	struct Skeleton;
 	class LightBase;
 
+	namespace MeshBilldboard {
+		const uint32_t X = 1 << 1;
+		const uint32_t Y = 1 << 2;
+		const uint32_t ALL = 1 << 3;
+	}; // namespace MeshBilldboard
+
 	struct MeshTextures {
 	public:
 		rawrbox::TextureBase* texture = nullptr;
@@ -55,7 +61,7 @@ namespace rawrbox {
 	struct MeshData { // Aka data for vertex shader
 	public:
 		float vertexSnapPower = 0.F;
-		bool billboard = false;
+		float billboard = 0.F;
 
 		// Displacement ---
 		rawrbox::TextureBase* displacement = nullptr;
@@ -64,9 +70,10 @@ namespace rawrbox {
 
 		[[nodiscard]] rawrbox::Vector4f getData() const {
 			if (displacement != nullptr) {
-				return {billboard ? 1.F : 0.F, vertexSnapPower, static_cast<float>(displacement->getTextureID()), displacementPower};
+				return {billboard, vertexSnapPower, static_cast<float>(displacement->getTextureID()), displacementPower};
 			}
-			return {billboard ? 1.F : 0.F, vertexSnapPower, 0.F, 0.F};
+
+			return {billboard, vertexSnapPower, 0.F, 0.F};
 		}
 
 		bool operator==(const rawrbox::MeshData& other) const { return this->vertexSnapPower == other.vertexSnapPower && this->billboard == other.billboard && this->displacement == other.displacement && this->displacementPower == other.displacementPower; }
@@ -251,8 +258,8 @@ namespace rawrbox {
 			this->textures.specularFactor = spec;
 		}
 
-		virtual void setBillboard(bool set) {
-			this->data.billboard = set;
+		virtual void setBillboard(uint32_t set) {
+			this->data.billboard = static_cast<float>(set);
 		}
 
 		virtual void setVertexSnap(float power = 2.F) {

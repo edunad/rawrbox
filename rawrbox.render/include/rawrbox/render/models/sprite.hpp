@@ -10,7 +10,6 @@ namespace rawrbox {
 	protected:
 		bool _xAxis = true;
 		bool _yAxis = true;
-		bool _zAxis = true;
 
 	public:
 		Sprite() = default;
@@ -24,12 +23,15 @@ namespace rawrbox {
 		virtual void lockXAxix(bool locked) { this->_xAxis = !locked; }
 		[[nodiscard]] virtual bool yAxisEnabled() const { return this->_yAxis; }
 		virtual void lockYAxix(bool locked) { this->_yAxis = !locked; }
-		[[nodiscard]] virtual bool zAxisEnabled() const { return this->_zAxis; }
-		virtual void lockZAxix(bool locked) { this->_zAxis = !locked; }
 
 		rawrbox::Mesh<typename M::vertexBufferType>* addMesh(rawrbox::Mesh<typename M::vertexBufferType> mesh) override {
 			mesh.setOptimizable(false);
-			mesh.setBillboard(true);
+
+			uint32_t billboard = 0;
+			if (this->_xAxis) billboard |= rawrbox::MeshBilldboard::X;
+			if (this->_yAxis) billboard |= rawrbox::MeshBilldboard::Y;
+
+			mesh.setBillboard(billboard);
 
 			return Model<M>::addMesh(mesh);
 		}

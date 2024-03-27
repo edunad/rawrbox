@@ -53,10 +53,10 @@
     "terminal.integrated.gpuAcceleration": "auto",
     "files.eol": "\n",
     "output.smartScroll.enabled": false,
-    "[hlsl]": {
+    /*"[hlsl]": {
       "editor.defaultFormatter": null,
       "editor.formatOnSave": false
-    },
+    },*/
     "[cpp]": {
       "editor.codeActionsOnSave": ["source.fixHeaders"]
     },
