@@ -61,7 +61,7 @@ jobs:
           ctest --test-dir ./rawrbox.network --output-on-failure
 
       - name: Run linter
-        uses: cpp-linter/cpp-linter-action@v2.10.3
+        uses: cpp-linter/cpp-linter-action@v2.11.0
         if: github.ref != 'refs/heads/master' && !contains(github.event.pull_request.labels.*.name, '⚠️ SKIP_LINTER ⚠️')
         id: linter
         env:
