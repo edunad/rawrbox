@@ -276,231 +276,206 @@ namespace rawrbox {
 			return mesh;
 		}
 
-		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L687
-		// Does not support UV :( / normals
 		template <typename M = rawrbox::MaterialUnlit>
-			requires(std::derived_from<M, rawrbox::MaterialUnlit>)
-		static rawrbox::Mesh<typename M::vertexBufferType> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const uint16_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
-			if (ratio % 3 != 0) throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateCone' ratio '{}' needs to be divisible by 3", ratio);
-			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateCone' does not support normals");
-			}
-
-			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
-			const float step = rawrbox::pi<float> * 2.0F / ratio;
-
-			const uint16_t numVertices = ratio + 1;
-			const uint16_t numIndices = ratio * 6;
-			const uint16_t numLineListIndices = ratio * 4;
-
-			mesh.vertices.resize(numVertices);
-			mesh.indices.resize(numIndices + numLineListIndices);
-
-			auto hSize = size / 2.F;
-			hSize.y /= 2.F;
-
-			mesh.vertices[ratio] = rawrbox::VertexData(pos + rawrbox::Vector3f(0, hSize.y, 0), rawrbox::Vector2f(0, 0));
-
-			for (uint16_t ii = 0; ii < ratio; ++ii) {
-				const float angle = step * ii;
-
-				const float angX = std::cos(angle) * hSize.x;
-				const float angZ = std::sin(angle) * hSize.z;
-
-				mesh.vertices[ii] = rawrbox::VertexData(pos + rawrbox::Vector3f(angZ, -hSize.y, angX), rawrbox::Vector2f(0, 0));
-
-				mesh.indices[ii * 3 + 0] = ratio;
-				mesh.indices[ii * 3 + 1] = (ii + 1) % ratio;
-				mesh.indices[ii * 3 + 2] = ii;
-
-				mesh.indices[ratio * 3 + ii * 3 + 0] = 0;
-				mesh.indices[ratio * 3 + ii * 3 + 1] = ii;
-				mesh.indices[ratio * 3 + ii * 3 + 2] = (ii + 1) % ratio;
-
-				mesh.indices[numIndices + ii * 2 + 0] = ii;
-				mesh.indices[numIndices + ii * 2 + 1] = ratio;
-
-				mesh.indices[numIndices + ratio * 2 + ii * 2 + 0] = ii;
-				mesh.indices[numIndices + ratio * 2 + ii * 2 + 1] = (ii + 1) % ratio;
-			}
-
-			mesh.baseVertex = 0;
-			mesh.baseIndex = 0;
-			mesh.totalVertex = numVertices;
-			mesh.totalIndex = numIndices + numLineListIndices;
-
-			// AABB ---
-			mesh.bbox._min = -hSize;
-			mesh.bbox._max = hSize;
-			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
-			// -----
-
-			mesh.setColor(cl);
-			return mesh;
-		}
-
-		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L750
-		// Does not support UV :( / normals
-		template <typename M = rawrbox::MaterialUnlit>
-			requires(std::derived_from<M, rawrbox::MaterialUnlit>)
-		static rawrbox::Mesh<typename M::vertexBufferType> generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const uint16_t ratio = 12, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
-			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateCylinder' does not support normals");
-			}
+			requires(std::derived_from<M, rawrbox::MaterialBase>)
+		static rawrbox::Mesh<typename M::vertexBufferType> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const uint16_t ratio = 11, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
+			if (ratio < 3) throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateCone' ratio '{}' needs to be at least 3", ratio);
 
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 
 			const float step = rawrbox::pi<float> * 2.0F / ratio;
-			const uint16_t numVertices = ratio * 2;
-			const uint16_t numIndices = ratio * 12;
-			const uint16_t numLineListIndices = ratio * 6;
-			const rawrbox::Vector3f hSize = size / 2.F;
+			const float radius = size.x / 2.F;
+			const float height = size.y / 4.F;
 
-			mesh.vertices.resize(numVertices);
-			mesh.indices.resize(numIndices + numLineListIndices);
-
-			for (uint16_t ii = 0; ii < ratio; ++ii) {
-				const float angle = step * ii;
-
-				const float angX = std::cos(angle) * hSize.x;
-				const float angZ = std::sin(angle) * hSize.z;
-
-				mesh.vertices[ii] = rawrbox::VertexData(pos + rawrbox::Vector3f(angX, hSize.y, angZ), rawrbox::Vector2f(0, 0));
-				mesh.vertices[ii + ratio] = rawrbox::VertexData(pos + rawrbox::Vector3f(angX, -hSize.y, angZ), rawrbox::Vector2f(0, 0));
-
-				mesh.indices[ii * 6 + 0] = ii + ratio;
-				mesh.indices[ii * 6 + 1] = (ii + 1) % ratio;
-				mesh.indices[ii * 6 + 2] = ii;
-				mesh.indices[ii * 6 + 3] = ii + ratio;
-				mesh.indices[ii * 6 + 4] = (ii + 1) % ratio + ratio;
-				mesh.indices[ii * 6 + 5] = (ii + 1) % ratio;
-
-				mesh.indices[ratio * 6 + ii * 6 + 0] = 0;
-				mesh.indices[ratio * 6 + ii * 6 + 1] = ii;
-				mesh.indices[ratio * 6 + ii * 6 + 2] = (ii + 1) % ratio;
-				mesh.indices[ratio * 6 + ii * 6 + 3] = ratio;
-				mesh.indices[ratio * 6 + ii * 6 + 4] = (ii + 1) % ratio + ratio;
-				mesh.indices[ratio * 6 + ii * 6 + 5] = ii + ratio;
-
-				mesh.indices[numIndices + ii * 2 + 0] = ii;
-				mesh.indices[numIndices + ii * 2 + 1] = ii + ratio;
-
-				mesh.indices[numIndices + ratio * 2 + ii * 2 + 0] = ii;
-				mesh.indices[numIndices + ratio * 2 + ii * 2 + 1] = (ii + 1) % ratio;
-
-				mesh.indices[numIndices + ratio * 4 + ii * 2 + 0] = ratio + ii;
-				mesh.indices[numIndices + ratio * 4 + ii * 2 + 1] = ratio + (ii + 1) % ratio;
-			}
-
-			mesh.baseVertex = 0;
-			mesh.baseIndex = 0;
-			mesh.totalVertex = numVertices;
-			mesh.totalIndex = numIndices + numLineListIndices;
-
-			// AABB ---
-			mesh.bbox._min = -hSize;
-			mesh.bbox._max = hSize;
-			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
-			// -----
-
-			mesh.setColor(cl);
-			return mesh;
-		}
-
-		// Adapted from https://github.com/bkaradzic/bgfx/blob/master/examples/common/debugdraw/debugdraw.cpp#L640
-		// Does not support UV :( / normals
-		template <typename M = rawrbox::MaterialUnlit>
-			requires(std::derived_from<M, rawrbox::MaterialUnlit>)
-		static rawrbox::Mesh<typename M::vertexBufferType> generateSphere(const rawrbox::Vector3f& pos, float size, uint32_t ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateSphere' does not support normals");
+				mesh.vertices.push_back(rawrbox::VertexNormData(rawrbox::Vector3f(0, height, 0) + pos, rawrbox::Vector2f(0.5F, 0.5F), rawrbox::Vector3f(0, 1, 0)));
+				mesh.vertices.push_back(rawrbox::VertexNormData(rawrbox::Vector3f(0, -height, 0) + pos, rawrbox::Vector2f(0.5F, 0.5F), rawrbox::Vector3f(0, -1, 0)));
+			} else {
+				mesh.vertices.push_back(rawrbox::VertexData(rawrbox::Vector3f(0, height, 0) + pos, rawrbox::Vector2f(0.5F, 0.5F)));
+				mesh.vertices.push_back(rawrbox::VertexData(rawrbox::Vector3f(0, -height, 0) + pos, rawrbox::Vector2f(0.5F, 0.5F)));
 			}
 
-			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
+			for (uint16_t i = 0; i <= ratio; ++i) {
+				const float angle = step * i;
+				const float x = std::cos(angle) * radius;
+				const float z = std::sin(angle) * radius;
 
-			const float golden = 1.6180339887F;
-			const float len = std::sqrt(golden * golden + 1.0F);
-			const float hSize = size / 2.F;
-			const float ss = 1.0F / len * hSize;
-			const float ll = ss * golden;
+				rawrbox::Vector3f bottomVertex = rawrbox::Vector3f(x, -height, z) + pos;
+				rawrbox::Vector3f normal = rawrbox::Vector3f(x, radius, z).normalized();
 
-			const std::array<rawrbox::Vector3f, 32> vv = {
-			    rawrbox::Vector3f{-ll, 0.0F, -ss},
-			    rawrbox::Vector3f{ll, 0.0F, -ss},
-			    rawrbox::Vector3f{ll, 0.0F, ss},
-			    rawrbox::Vector3f{-ll, 0.0F, ss},
+				// Circular UV mapping for the bottom cap
+				float u = 0.5F + std::cos(angle) * 0.5F;
+				float v = 0.5F + std::sin(angle) * 0.5F;
 
-			    rawrbox::Vector3f{-ss, ll, 0.0F},
-			    rawrbox::Vector3f{ss, ll, 0.0F},
-			    rawrbox::Vector3f{ss, -ll, 0.0F},
-			    rawrbox::Vector3f{-ss, -ll, 0.0F},
+				// Seamless UV mapping for the sides
+				float sideV = static_cast<float>(i) / ratio;
 
-			    rawrbox::Vector3f{0.0F, -ss, ll},
-			    rawrbox::Vector3f{0.0F, ss, ll},
-			    rawrbox::Vector3f{0.0F, ss, -ll},
-			    rawrbox::Vector3f{0.0F, -ss, -ll},
-			};
+				mesh.vertices.push_back(rawrbox::VertexNormData(bottomVertex, rawrbox::Vector2f(u, v), normal));
+				mesh.vertices.push_back(rawrbox::VertexNormData(bottomVertex, rawrbox::Vector2f(sideV, 0.0F), normal));
 
-			std::vector<typename M::vertexBufferType> buff = {};
+				if (i < ratio) {
+					// Bottom cap (inverted culling)
+					mesh.indices.push_back(1);
+					mesh.indices.push_back(i * 2 + 4);
+					mesh.indices.push_back(i * 2 + 2);
 
-			std::function<void(const rawrbox::Vector3f& _v0, const rawrbox::Vector3f& _v1, const rawrbox::Vector3f& _v2, float _scale, uint32_t ratio)> triangle;
-			triangle = [&pos, &triangle, &buff, &cl](const rawrbox::Vector3f& _v0, const rawrbox::Vector3f& _v1, const rawrbox::Vector3f& _v2, float _scale, uint32_t ratio) {
-				if (0 == ratio) {
-					buff.push_back(rawrbox::VertexData(pos + _v0, rawrbox::Vector2f(1, 1)));
-					buff.push_back(rawrbox::VertexData(pos + _v2, rawrbox::Vector2f(1, 0)));
-					buff.push_back(rawrbox::VertexData(pos + _v1, rawrbox::Vector2f(0, 1)));
-				} else {
-					const rawrbox::Vector3f v01 = (_v0 + _v1).normalized() * _scale;
-					const rawrbox::Vector3f v12 = (_v1 + _v2).normalized() * _scale;
-					const rawrbox::Vector3f v20 = (_v2 + _v0).normalized() * _scale;
-
-					--ratio;
-					triangle(_v0, v01, v20, _scale, ratio);
-					triangle(_v1, v12, v01, _scale, ratio);
-					triangle(_v2, v20, v12, _scale, ratio);
-					triangle(v01, v12, v20, _scale, ratio);
+					// Side faces
+					mesh.indices.push_back(0);
+					mesh.indices.push_back(i * 2 + 3);
+					mesh.indices.push_back(i * 2 + 5);
 				}
-			};
-
-			triangle(vv[0], vv[4], vv[3], hSize, ratio);
-			triangle(vv[0], vv[10], vv[4], hSize, ratio);
-			triangle(vv[4], vv[10], vv[5], hSize, ratio);
-			triangle(vv[5], vv[10], vv[1], hSize, ratio);
-			triangle(vv[5], vv[1], vv[2], hSize, ratio);
-			triangle(vv[5], vv[2], vv[9], hSize, ratio);
-			triangle(vv[5], vv[9], vv[4], hSize, ratio);
-			triangle(vv[3], vv[4], vv[9], hSize, ratio);
-
-			triangle(vv[0], vv[3], vv[7], hSize, ratio);
-			triangle(vv[0], vv[7], vv[11], hSize, ratio);
-			triangle(vv[11], vv[7], vv[6], hSize, ratio);
-			triangle(vv[11], vv[6], vv[1], hSize, ratio);
-			triangle(vv[1], vv[6], vv[2], hSize, ratio);
-			triangle(vv[2], vv[6], vv[8], hSize, ratio);
-			triangle(vv[8], vv[6], vv[7], hSize, ratio);
-			triangle(vv[8], vv[7], vv[3], hSize, ratio);
-
-			triangle(vv[0], vv[11], vv[10], hSize, ratio);
-			triangle(vv[1], vv[10], vv[11], hSize, ratio);
-			triangle(vv[2], vv[8], vv[9], hSize, ratio);
-			triangle(vv[3], vv[9], vv[8], hSize, ratio);
-
-			// ----------
-
-			auto numIndices = static_cast<uint32_t>(buff.size());
-
-			std::vector<uint16_t> trilist = {};
-			trilist.resize(numIndices);
-			for (uint32_t ii = 0; ii < numIndices; ++ii) {
-				trilist[ii] = uint16_t(ii);
 			}
 
-			uint32_t numLineListIndices = rawrbox::TopologyUtils::triToLine(nullptr, 0, trilist.data(), numIndices, false);
+			mesh.baseVertex = 0;
+			mesh.baseIndex = 0;
+			mesh.totalVertex = static_cast<uint16_t>(mesh.vertices.size());
+			mesh.totalIndex = static_cast<uint16_t>(mesh.indices.size());
 
-			std::vector<uint16_t> inds = {};
-			inds.resize(numLineListIndices * sizeof(uint16_t));
+			// AABB ---
+			mesh.bbox._min = rawrbox::Vector3f(-radius, -height, -radius) + pos;
+			mesh.bbox._max = rawrbox::Vector3f(radius, height, radius) + pos;
+			mesh.bbox._size = mesh.bbox._max - mesh.bbox._min;
+			// -----
 
-			rawrbox::TopologyUtils::triToLine(inds.data(), numLineListIndices * sizeof(uint16_t), trilist.data(), numIndices, false);
+			mesh.setColor(cl);
+			return mesh;
+		}
+
+		template <typename M = rawrbox::MaterialUnlit>
+			requires(std::derived_from<M, rawrbox::MaterialBase>)
+		static rawrbox::Mesh<typename M::vertexBufferType> generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const uint16_t ratio = 11, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
+			if (ratio < 3) throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateCylinder' ratio '{}' needs to be at least 3", ratio);
+
+			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
+
+			const float step = rawrbox::pi<float> * 2.0F / ratio;
+			const float radius = size.x / 2.F;
+			const float halfHeight = size.y / 2.F;
+
+			if constexpr (supportsNormals<typename M::vertexBufferType>) {
+				mesh.vertices.push_back(rawrbox::VertexNormData(pos + rawrbox::Vector3f(0, halfHeight, 0), rawrbox::Vector2f(0.5F, 0.5F), rawrbox::Vector3f(0, 1, 0)));
+				mesh.vertices.push_back(rawrbox::VertexNormData(pos - rawrbox::Vector3f(0, halfHeight, 0), rawrbox::Vector2f(0.5F, 0.5F), rawrbox::Vector3f(0, -1, 0)));
+			} else {
+				mesh.vertices.push_back(rawrbox::VertexData(pos + rawrbox::Vector3f(0, halfHeight, 0), rawrbox::Vector2f(0.5F, 0.5F)));
+				mesh.vertices.push_back(rawrbox::VertexData(pos - rawrbox::Vector3f(0, halfHeight, 0), rawrbox::Vector2f(0.5F, 0.5F)));
+			}
+
+			for (uint16_t i = 0; i <= ratio; ++i) {
+				const float angle = step * i;
+				const float x = std::cos(angle) * radius;
+				const float z = std::sin(angle) * radius;
+
+				rawrbox::Vector3f topVertex = pos + rawrbox::Vector3f(x, halfHeight, z);
+				rawrbox::Vector3f bottomVertex = pos + rawrbox::Vector3f(x, -halfHeight, z);
+				rawrbox::Vector3f normal = rawrbox::Vector3f(x, 0, z).normalized();
+
+				// Circular UV mapping for top and bottom caps
+				float u = 0.5F + std::cos(angle) * 0.5F;
+				float v = 0.5F + std::sin(angle) * 0.5F;
+
+				// Linear UV mapping for sides
+				float sideU = static_cast<float>(i) / ratio;
+
+				if constexpr (supportsNormals<typename M::vertexBufferType>) {
+					mesh.vertices.push_back(rawrbox::VertexNormData(topVertex, rawrbox::Vector2f(u, v), normal));
+					mesh.vertices.push_back(rawrbox::VertexNormData(bottomVertex, rawrbox::Vector2f(u, v), normal));
+					mesh.vertices.push_back(rawrbox::VertexNormData(topVertex, rawrbox::Vector2f(sideU, 1.0F), normal));
+					mesh.vertices.push_back(rawrbox::VertexNormData(bottomVertex, rawrbox::Vector2f(sideU, 0.0F), normal));
+				} else {
+					mesh.vertices.push_back(rawrbox::VertexData(topVertex, rawrbox::Vector2f(u, v)));
+					mesh.vertices.push_back(rawrbox::VertexData(bottomVertex, rawrbox::Vector2f(u, v)));
+					mesh.vertices.push_back(rawrbox::VertexData(topVertex, rawrbox::Vector2f(sideU, 1.0F)));
+					mesh.vertices.push_back(rawrbox::VertexData(bottomVertex, rawrbox::Vector2f(sideU, 0.0F)));
+				}
+
+				if (i < ratio) {
+					// Top cap
+					mesh.indices.push_back(0);
+					mesh.indices.push_back(i * 4 + 2);
+					mesh.indices.push_back(i * 4 + 6);
+
+					// Bottom cap
+					mesh.indices.push_back(1);
+					mesh.indices.push_back(i * 4 + 7);
+					mesh.indices.push_back(i * 4 + 3);
+
+					// Side faces
+					mesh.indices.push_back(i * 4 + 4);
+					mesh.indices.push_back(i * 4 + 5);
+					mesh.indices.push_back(i * 4 + 9);
+
+					mesh.indices.push_back(i * 4 + 4);
+					mesh.indices.push_back(i * 4 + 9);
+					mesh.indices.push_back(i * 4 + 8);
+				}
+			}
+
+			mesh.baseVertex = 0;
+			mesh.baseIndex = 0;
+			mesh.totalVertex = static_cast<uint16_t>(mesh.vertices.size());
+			mesh.totalIndex = static_cast<uint16_t>(mesh.indices.size());
+
+			// AABB ---
+			mesh.bbox._min = pos - rawrbox::Vector3f(radius, halfHeight, radius);
+			mesh.bbox._max = pos + rawrbox::Vector3f(radius, halfHeight, radius);
+			mesh.bbox._size = mesh.bbox._max - mesh.bbox._min;
+			// -----
+
+			mesh.setColor(cl);
+			return mesh;
+		}
+
+		template <typename M = rawrbox::MaterialUnlit>
+			requires(std::derived_from<M, rawrbox::MaterialUnlit>)
+		static rawrbox::Mesh<typename M::vertexBufferType> generateSphere(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, float ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
+			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
+
+			std::vector<typename M::vertexBufferType> buff;
+			std::vector<uint16_t> inds;
+
+			auto sphereSize = size / 2;
+
+			const auto numSegments = static_cast<uint16_t>(18 * ratio);
+			const auto numParallels = static_cast<uint16_t>(9 * ratio);
+
+			for (uint16_t i = 0; i <= numParallels; ++i) {
+				float v = static_cast<float>(i) / static_cast<float>(numParallels);
+				float phi = v * rawrbox::pi<float>;
+
+				for (uint16_t j = 0; j <= numSegments; ++j) {
+					float u = static_cast<float>(j) / static_cast<float>(numSegments);
+					float theta = u * rawrbox::pi<float> * 2.0F;
+
+					float x = std::sin(phi) * std::cos(theta) * sphereSize.x;
+					float y = std::cos(phi) * sphereSize.y;
+					float z = std::sin(phi) * std::sin(theta) * sphereSize.z;
+
+					rawrbox::Vector3f vertexPos = {x, y, z};
+
+					if constexpr (supportsNormals<typename M::vertexBufferType>) {
+						buff.push_back(rawrbox::VertexNormData(vertexPos + pos, {u, v}, vertexPos.normalized()));
+					} else {
+						buff.push_back(rawrbox::VertexData(vertexPos + pos, {u, v}));
+					}
+				}
+			}
+
+			for (uint16_t i = 0; i < numParallels; ++i) {
+				for (uint16_t j = 0; j < numSegments; ++j) {
+					uint16_t a = i * (numSegments + 1) + j;
+					uint16_t b = a + 1;
+					uint16_t c = (i + 1) * (numSegments + 1) + j;
+					uint16_t d = c + 1;
+
+					inds.push_back(a);
+					inds.push_back(d);
+					inds.push_back(b);
+
+					inds.push_back(a);
+					inds.push_back(c);
+					inds.push_back(d);
+				}
+			}
 
 			mesh.baseVertex = 0;
 			mesh.baseIndex = 0;
@@ -508,10 +483,8 @@ namespace rawrbox {
 			mesh.totalIndex = static_cast<uint16_t>(inds.size());
 
 			// AABB ---
-			auto scale = rawrbox::Vector3f{hSize, hSize, hSize};
-
-			mesh.bbox._min = -scale;
-			mesh.bbox._max = scale;
+			mesh.bbox._min = -sphereSize;
+			mesh.bbox._max = sphereSize;
 			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 

@@ -65,6 +65,7 @@ namespace model {
 		    {"./assets/textures/screem.png", 0},
 		    {"./assets/textures/meow3.gif", 0},
 		    {"./assets/textures/fire1.gif", 0},
+		    {"./assets/textures/UV.png", 0},
 		    {"./assets/textures/spline_tex.png", 0},
 		};
 
@@ -78,6 +79,7 @@ namespace model {
 	void Game::createModels() {
 		auto* texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/meow3.gif")->get();
 		auto* texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
+		auto* texture3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/UV.png")->get();
 
 		// GRID ----
 		this->_model->addMesh(rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F}));
@@ -138,21 +140,24 @@ namespace model {
 
 		// Sphere
 		{
-			auto mesh = rawrbox::MeshUtils::generateSphere({2.F, 0.F, -2.F}, 0.5F, 0);
+			auto mesh = rawrbox::MeshUtils::generateSphere({2.F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 0.25F);
+			mesh.setTexture(texture3);
 
 			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({2.F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generateSphere({3.5F, 0.F, -2.F}, 0.5F, 1);
+			auto mesh = rawrbox::MeshUtils::generateSphere({3.5F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 0.5F);
+			mesh.setTexture(texture3);
 
 			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({3.5F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generateSphere({5.F, 0.F, -2.F}, 0.5F, 2);
+			auto mesh = rawrbox::MeshUtils::generateSphere({5.F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 1.F);
+			mesh.setTexture(texture3);
 
 			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({5.F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
@@ -162,6 +167,7 @@ namespace model {
 		// CYLINDER ------
 		{
 			auto mesh = rawrbox::MeshUtils::generateCylinder({-2.F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 12);
+			mesh.setTexture(texture3);
 
 			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-2.F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
@@ -170,6 +176,7 @@ namespace model {
 		// CONE ------
 		{
 			auto mesh = rawrbox::MeshUtils::generateCone({-3.5F, 0.F, -2.F}, {0.5F, 1.F, 0.5F}, 12);
+			mesh.setTexture(texture3);
 
 			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-3.5F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);
@@ -177,6 +184,7 @@ namespace model {
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateCone({-5.F, 0.F, -2.F}, {0.5F, 1.F, 0.5F}, 3);
+			mesh.setTexture(texture3);
 
 			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-5.F, 0.F, -2.F}, mesh.getBBOX()));
 			this->_model->addMesh(mesh);

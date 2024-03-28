@@ -19,6 +19,8 @@ namespace rawrbox {
 		VertexData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {}) : position(_pos), uv(_uv) {}
 
+		void setUV(const rawrbox::Vector4f& _uv) { this->uv = _uv; }
+
 		// Atlas ---
 		void setAtlasId(uint32_t _id) {
 			this->uv.z = static_cast<float>(_id);
@@ -55,6 +57,9 @@ namespace rawrbox {
 		VertexNormData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexData(_pos, _uv), normal(rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z)), tangent(rawrbox::PackUtils::packNormal(tang.x, tang.y, tang.z)) {}
 		VertexNormData(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t _norm = 0x00000000, uint32_t _tang = 0x00000000) : rawrbox::VertexData(_pos, _uv), normal(_norm), tangent(_tang) {}
+
+		void setNormal(const rawrbox::Vector3f& norm) { normal = rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z); }
+		void setTangent(const rawrbox::Vector3f& tang) { tangent = rawrbox::PackUtils::packNormal(tang.x, tang.y, tang.z); }
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
