@@ -64,6 +64,7 @@ namespace model {
 		    {"./assets/textures/displacement.vertex.png", 0},
 		    {"./assets/textures/screem.png", 0},
 		    {"./assets/textures/meow3.gif", 0},
+		    {"./assets/textures/fire1.gif", 0},
 		    {"./assets/textures/spline_tex.png", 0},
 		};
 
@@ -240,14 +241,29 @@ namespace model {
 	}
 
 	void Game::createSprite() {
-		auto* texture2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/screem.png")->get();
+		auto* texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/fire1.gif")->get();
 
-		auto mesh = rawrbox::MeshUtils::generateCube({}, {0.2F, 0.2F, 0.2F});
-		mesh.setTexture(texture2);
+		{
+			auto mesh = rawrbox::MeshUtils::generatePlane({0, 0, 0}, {0.5F, 0.5F});
+			mesh.setTexture(texture);
+			mesh.setBillboard(rawrbox::MeshBilldboard::Y);
 
-		this->_sprite->setPos({0, 0.25F, 0});
-		this->_sprite->addMesh(mesh);
+			this->_sprite->addMesh(mesh);
+		}
+
+		{
+			auto mesh = rawrbox::MeshUtils::generatePlane({0, 0, 0}, {0.5F, 0.5F});
+			mesh.setTexture(texture);
+			mesh.setBillboard(rawrbox::MeshBilldboard::X);
+
+			this->_sprite_2->addMesh(mesh);
+		}
+
+		this->_sprite->setPos({-0.5F, 0.25F, 0});
 		this->_sprite->upload();
+
+		this->_sprite_2->setPos({0.5F, 0.25F, 0});
+		this->_sprite_2->upload();
 	}
 
 	void Game::createText() {
@@ -255,7 +271,8 @@ namespace model {
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TRIANGLE", {3.5F, 0.5F, 0});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CUBE", {-2.F, 0.55F, 0});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CUBE\n+ VERTEX SNAP", {-3.F, 0.55F, 0});
-		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPRITE", {0.F, 0.4F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPRITE\nX AXIS", {0.5F, 0.7F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPRITE\nY AXIS", {-0.5F, 0.7F, 0});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "DISPLACEMENT", {0.F, 0.75F, -2});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SPHERES", {3.5F, 0.55F, -2.F});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "CYLINDER", {-2.F, 0.55F, -2});
@@ -320,6 +337,7 @@ namespace model {
 			this->_bboxes.reset();
 			this->_displacement.reset();
 			this->_sprite.reset();
+			this->_sprite_2.reset();
 			this->_spline.reset();
 			this->_text.reset();
 
@@ -342,6 +360,7 @@ namespace model {
 		if (this->_modelDynamic->isUploaded()) this->_modelDynamic->draw();
 		if (this->_displacement->isUploaded()) this->_displacement->draw();
 		if (this->_sprite->isUploaded()) this->_sprite->draw();
+		if (this->_sprite_2->isUploaded()) this->_sprite_2->draw();
 		if (this->_spline->isUploaded()) this->_spline->draw();
 		if (this->_bboxes->isUploaded()) this->_bboxes->draw();
 		if (this->_text->isUploaded()) this->_text->draw();

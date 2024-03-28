@@ -21,18 +21,19 @@
         // ----------------------
 
         #ifdef TRANSFORM_BILLBOARD
-            float4 billboardTransform(float4 vertex, float4 billboard) {
-                float4 vOut = vertex;
+            float4 billboardTransform(float4 vertex, int billboard) {
+				float3 right = float3(1, 0, 0);
+				float3 up = float3(0, 1, 0);
 
-                // TOOD: Lock X Y Z using billboard
-                if(Billboard != 0) {
-                    float3 right = float3(Camera.view[0][0], Camera.view[1][0], Camera.view[2][0]);
-                    float3 up = float3(Camera.view[0][1], Camera.view[1][1], Camera.view[2][1]);
+				if ((billboard & 2) != 0) { // X
+					right = float3(Camera.view[0][0], Camera.view[1][0], Camera.view[2][0]);
+				}
 
-                    vOut = float4((right * vertex.x) + (up * vertex.y), 1.);
-                }
+				if ((billboard & 4) != 0) {// Y
+					up = float3(Camera.view[0][1], Camera.view[1][1], Camera.view[2][1]);
+				}
 
-                return vOut;
+                return float4((right * vertex.x) + (up * vertex.y), 1.);
             }
         #endif
 
@@ -62,14 +63,16 @@
             // displacement mode
             #ifdef TRANSFORM_DISPLACEMENT
                 if(DisplacementPower != 0. && DisplacementTexture != 0.) {
-                    data.pos.y += g_Textures[DisplacementTexture].SampleLevel(g_Sampler, float3(a_texcoord0, 0), 0).x * DisplacementPower;
+                	data.pos.y += g_Textures[DisplacementTexture].SampleLevel(g_Sampler, float3(a_texcoord0, 0), 0).x * DisplacementPower;
                 }
             #endif
             // ----
 
             // Billboard mode
             #ifdef TRANSFORM_BILLBOARD
-                data.pos = billboardTransform(data.pos, Billboard);
+                if(Billboard != 0.){
+                	data.pos = billboardTransform(data.pos, asint(Billboard));
+                }
             #endif
             // ----
 

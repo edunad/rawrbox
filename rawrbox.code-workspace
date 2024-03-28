@@ -197,7 +197,8 @@
       "shardulm94.trailing-spaces",
       "xaver.clang-format",
       "llvm-vs-code-extensions.vscode-clangd",
-      "matepek.vscode-catch2-test-adapter"
+      "matepek.vscode-catch2-test-adapter",
+      "TimGJones.hlsltools"
     ]
   }
 }
