@@ -53,10 +53,10 @@
     "terminal.integrated.gpuAcceleration": "auto",
     "files.eol": "\n",
     "output.smartScroll.enabled": false,
-    /*"[hlsl]": {
+    "[hlsl]": {
       "editor.defaultFormatter": null,
       "editor.formatOnSave": false
-    },*/
+    },
     "[cpp]": {
       "editor.codeActionsOnSave": ["source.fixHeaders"]
     },
@@ -197,7 +197,8 @@
       "shardulm94.trailing-spaces",
       "xaver.clang-format",
       "llvm-vs-code-extensions.vscode-clangd",
-      "matepek.vscode-catch2-test-adapter"
+      "matepek.vscode-catch2-test-adapter",
+      "TimGJones.hlsltools"
     ]
   }
 }

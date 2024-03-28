@@ -22,7 +22,7 @@ namespace rawrbox {
 	namespace MeshBilldboard {
 		const uint32_t X = 1 << 1;
 		const uint32_t Y = 1 << 2;
-		const uint32_t ALL = 1 << 3;
+		const uint32_t ALL = X | Y;
 	}; // namespace MeshBilldboard
 
 	struct MeshTextures {

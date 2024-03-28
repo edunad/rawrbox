@@ -22,14 +22,14 @@
 
         #ifdef TRANSFORM_BILLBOARD
             float4 billboardTransform(float4 vertex, int billboard) {
-				float3 right = float3(-1, 0, 0);
+				float3 right = float3(1, 0, 0);
 				float3 up = float3(0, 1, 0);
 
-				if ((billboard & 1) != 0) { // X
+				if ((billboard & 2) != 0) { // X
 					right = float3(Camera.view[0][0], Camera.view[1][0], Camera.view[2][0]);
 				}
 
-				if ((billboard & 2) != 0) {// Y
+				if ((billboard & 4) != 0) {// Y
 					up = float3(Camera.view[0][1], Camera.view[1][1], Camera.view[2][1]);
 				}
 

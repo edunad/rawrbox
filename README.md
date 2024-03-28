@@ -34,21 +34,20 @@
 - Fonts (ttf) using [stb](https://github.com/nothings/stb)
 - JSON loading using [glaze](https://github.com/stephenberry/glaze)
 - Images loading (png, jpeg, tga, bitmap, gif) using [stb](https://github.com/nothings/stb), SVG using [lunasvg](https://github.com/sammycage/lunasvg), WEBP using [libwebp](https://github.com/webmproject/libwebp)
-- Video only using [webm](https://github.com/webmproject/libwebm)
+- WEBM video using [webm](https://github.com/webmproject/libwebm) (No audio)
 - Sounds using [BASS](https://www.un4seen.com/) lib
-- Custom UI support
+- Custom UI support + dev console (with support for custom commands)
 - Material system (similar to unity)
 - Vulkan / DirectX / OpenGL support using [Diligent](https://github.com/DiligentGraphics/DiligentCore)
 - Linux Wayland support + steam deck support
 - 3D Physics system using [JoltPhysics](https://github.com/jrouwe/JoltPhysics)
 - 2D Physics system using [Muli](https://github.com/Sopiro/Muli)
-- Decal system
+- Clustered decal system (WIP)
 - Instancing support
 - Scripting / modding support with LUA using [luabridge3](https://github.com/kunitoki/LuaBridge3) and [luau](https://github.com/luau-lang/luau)
 - Post-processing effects support
 - HTTP / HTTPS requests using curl + [libcpr](https://github.com/libcpr/cpr)
 - Packet networking support
-- Custom dev console (with support for custom commands)
 - I18N (internationalization) support
 - GPU picking
 
@@ -191,7 +190,7 @@
 
 # SAMPLES
 
-|   001-stencil<br/><a href='/samples/001-stencil'><img src="https://i.rawr.dev/sample1-min-2.gif" width="240" /></a>   | 002-generated-models<br/><a href='/samples/002-generated-models'><img src="https://i.rawr.dev/sample2-min-1.gif" width="240" /></a> |      003-light<br/><a href='/samples/003-light'><img src="https://i.rawr.dev/sample3-min-3.gif" width="240" /></a>       |
+|   001-stencil<br/><a href='/samples/001-stencil'><img src="https://i.rawr.dev/sample1-min-2.gif" width="240" /></a>   | 002-generated-models<br/><a href='/samples/002-generated-models'><img src="https://i.rawr.dev/sample2-min-2.gif" width="240" /></a> |      003-light<br/><a href='/samples/003-light'><img src="https://i.rawr.dev/sample3-min-3.gif" width="240" /></a>       |
 | :-------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------: |
 | 004-instancing<br/><a href='/samples/004-instancing'><img src="https://i.rawr.dev/sample4-min.gif" width="240" /></a> |      005-post-process<br/><a href='/samples/005-post-process'><img src="https://i.rawr.dev/sample5-min.gif" width="240" /></a>      |      006-decals<br/><a href='/samples/006-decals'><img src="https://i.rawr.dev/sample6-min.gif" width="240" /></a>       |
 |                                            ~~007-particle-system~~ (TODO)                                             |                008-ui<br/><a href='/samples/008-ui'><img src="https://i.rawr.dev/sample8-min.gif" width="240" /></a>                |      009-assimp<br/><a href='/samples/009-assimp'><img src="https://i.rawr.dev/sample9-min.gif" width="240" /></a>       |
