@@ -45,7 +45,7 @@ namespace model {
 		// Setup camera
 		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 6.F, -6.F});
-		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
+		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-55), 0.F, 0.F});
 		cam->onMovementStart = []() { fmt::print("Camera start\n"); };
 		cam->onMovementStop = []() { fmt::print("Camera stop\n"); };
 		// --------------

@@ -27,13 +27,13 @@ namespace rawrbox {
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				mesh.vertices = {
-				    rawrbox::VertexNormData(a, rawrbox::Vector2f(), {}, {}),
-				    rawrbox::VertexNormData(b, rawrbox::Vector2f(), {}, {}),
+				    rawrbox::VertexNormData(a, {}, {}, {}),
+				    rawrbox::VertexNormData(b, {}, {}, {}),
 				};
 			} else {
 				mesh.vertices = {
-				    rawrbox::VertexData(a, rawrbox::Vector2f()),
-				    rawrbox::VertexData(b, rawrbox::Vector2f()),
+				    rawrbox::VertexData(a, {}),
+				    rawrbox::VertexData(b, {}),
 				};
 			}
 
@@ -428,10 +428,12 @@ namespace rawrbox {
 		template <typename M = rawrbox::MaterialUnlit>
 			requires(std::derived_from<M, rawrbox::MaterialUnlit>)
 		static rawrbox::Mesh<typename M::vertexBufferType> generateSphere(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, float ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
+			if (ratio <= 0.F) throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateSphere' ratio '{}' cannot be less than 0", ratio);
+
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 
-			std::vector<typename M::vertexBufferType> buff;
-			std::vector<uint16_t> inds;
+			std::vector<typename M::vertexBufferType> buff = {};
+			std::vector<uint16_t> inds = {};
 
 			auto sphereSize = size / 2;
 
