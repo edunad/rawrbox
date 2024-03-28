@@ -70,7 +70,7 @@ else()
     endif()
 endif()
 
-CPMAddPackage("gh:bshoshany/thread-pool@4.0.1")
+CPMAddPackage("gh:bshoshany/thread-pool@4.1.0")
 if(thread-pool_ADDED)
     add_library(thread-pool INTERFACE IMPORTED)
     target_include_directories(thread-pool INTERFACE ${thread-pool_SOURCE_DIR}/include)

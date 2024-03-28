@@ -31,7 +31,8 @@ namespace decal_test {
 		Game& operator=(Game&&) = delete;
 		~Game() override = default;
 
-		void drawWorld();
+		void drawWorld() const;
+		void drawOverlay() const;
 
 		void loadContent();
 		void contentLoaded();

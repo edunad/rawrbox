@@ -17,7 +17,7 @@ CPMDeclarePackage(magic_enum
 )
 # glaze
 CPMDeclarePackage(glaze
-  VERSION 2.3.1
+  VERSION 2.4.0
   GITHUB_REPOSITORY stephenberry/glaze
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -53,7 +53,7 @@ CPMDeclarePackage(qhull
 )
 # thread-pool
 CPMDeclarePackage(thread-pool
-  VERSION 4.0.1
+  VERSION 4.1.0
   GITHUB_REPOSITORY bshoshany/thread-pool
   SYSTEM YES
   EXCLUDE_FROM_ALL YES

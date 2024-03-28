@@ -43,8 +43,11 @@ namespace decal_test {
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
-			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
-			this->drawWorld();
+			if (pass == rawrbox::DrawPass::PASS_OPAQUE) {
+				this->drawWorld();
+			} else {
+				this->drawOverlay();
+			}
 		});
 		// ---------------
 
@@ -169,10 +172,18 @@ namespace decal_test {
 		}
 	}
 
-	void Game::drawWorld() {
+	void Game::drawWorld() const {
 		if (!this->_ready) return;
+
 		this->_model->draw();
 		this->_model2->draw();
+	}
+
+	void Game::drawOverlay() const {
+		if (!this->_ready) return;
+		auto* stencil = rawrbox::RENDERER->stencil();
+
+		stencil->drawText(fmt::format("[MOUSE_1]   RANDOMIZE DECALS"), {15, 15});
 	}
 
 	void Game::draw() {
