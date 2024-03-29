@@ -2,7 +2,6 @@
 
 #include <array>
 #include <bit>
-#include <iostream>
 
 #ifdef _MSC_VER
 	#define _WINSOCK_DEPRECATED_NO_WARNINGS
