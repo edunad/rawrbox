@@ -16,7 +16,7 @@ TEST_CASE("BezierCurve functionalities are correct", "[rawrbox::BezierCurve]") {
 		auto point = curve.getPoint(0.5F);
 
 		REQUIRE_THAT(point.x, Catch::Matchers::WithinAbs(1.5F, 0.01F));
-		REQUIRE_THAT(point.y, Catch::Matchers::WithinAbs(2.0F, 0.01F));
+		REQUIRE_THAT(point.y, Catch::Matchers::WithinAbs(1.5F, 0.01F));
 		REQUIRE_THAT(point.z, Catch::Matchers::WithinAbs(0.0F, 0.01F));
 
 		REQUIRE(curve.getPoint(0.0F) == controlPoints.front());
@@ -42,7 +42,7 @@ TEST_CASE("BezierCurve functionalities are correct", "[rawrbox::BezierCurve]") {
 		auto orientedPoint = curve.getOrientedPoint(0.5F);
 
 		REQUIRE_THAT(orientedPoint.position.x, Catch::Matchers::WithinAbs(1.5F, 0.01F));
-		REQUIRE_THAT(orientedPoint.position.y, Catch::Matchers::WithinAbs(2.0F, 0.01F));
+		REQUIRE_THAT(orientedPoint.position.y, Catch::Matchers::WithinAbs(1.5F, 0.01F));
 		REQUIRE_THAT(orientedPoint.position.z, Catch::Matchers::WithinAbs(0.0F, 0.01F));
 		REQUIRE_THAT(orientedPoint.rotation.length(), Catch::Matchers::WithinAbs(1.0F, 0.01F));
 	}

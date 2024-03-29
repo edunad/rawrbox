@@ -2,8 +2,11 @@
 #include <rawrbox/math/bezier_curve.hpp>
 #include <rawrbox/math/utils/math.hpp>
 
+#include <stdexcept>
+
 namespace rawrbox {
 	BezierCurve::BezierCurve(const std::array<rawrbox::Vector3f, 4>& points, float subDivisions) : _subDivisions(subDivisions), _points(points) {
+		if (subDivisions <= 0) throw std::runtime_error("Subdivisions must be a positive number.");
 		this->generateSamples();
 	}
 
