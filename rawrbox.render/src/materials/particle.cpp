@@ -1,27 +1,27 @@
 
-#include <rawrbox/render/materials/lit.hpp>
-#include <rawrbox/render/plugins/clustered.hpp>
+#include <rawrbox/render/materials/particle.hpp>
+#include <rawrbox/render/utils/pipeline.hpp>
 
 namespace rawrbox {
 	// STATIC DATA ----
-	bool MaterialLit::_built = false;
+	bool MaterialParticle::_built = false;
 	// ----------------
 
-	void MaterialLit::init() {
-		const std::string id = "Model::Lit";
+	void MaterialParticle::init() {
+		const std::string id = "Particle::Unlit";
 
-		if (!rawrbox::MaterialLit::_built) {
+		if (!rawrbox::MaterialParticle::_built) {
 			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), id));
 
-			this->createPipelines(id, vertexBufferType::vLayout());
-			rawrbox::MaterialLit::_built = true;
+			this->createPipelines(id, {});
+			rawrbox::MaterialParticle::_built = true;
 		}
 
 		this->setupPipelines(id);
 	}
 
-	void MaterialLit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, const Diligent::ShaderMacroHelper& helper) {
-		auto* cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
+	void MaterialParticle::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, const Diligent::ShaderMacroHelper& helper) {
+		/*auto* cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
 		if (cluster == nullptr) throw this->_logger->error("This material requires the `Clustered` renderer plugin");
 
 		// PIPELINE ----
@@ -56,6 +56,6 @@ namespace rawrbox {
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		rawrbox::PipelineUtils::createPipeline(id + "::CullNone::Alpha", settings);
-		// -----
+		// -----*/
 	}
 } // namespace rawrbox

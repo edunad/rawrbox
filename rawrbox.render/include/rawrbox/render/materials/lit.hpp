@@ -1,7 +1,6 @@
 #pragma once
 
-#include <rawrbox/render/materials/unlit.hpp>
-#include <rawrbox/render/plugins/clustered.hpp>
+#include <rawrbox/render/materials/base.hpp>
 
 namespace rawrbox {
 
