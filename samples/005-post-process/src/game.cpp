@@ -44,7 +44,7 @@ namespace post_process {
 		//  -----------------------
 
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
-			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
+			if (pass != rawrbox::DrawPass::PASS_WORLD) return;
 			this->drawWorld();
 		});
 		render->onIntroCompleted = [this]() {

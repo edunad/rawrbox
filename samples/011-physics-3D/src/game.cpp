@@ -36,7 +36,7 @@ namespace phys_3d_test {
 		auto* render = window->createRenderer();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
-			if (pass == rawrbox::DrawPass::PASS_OPAQUE) {
+			if (pass == rawrbox::DrawPass::PASS_WORLD) {
 				this->drawWorld();
 			} else {
 				this->drawOverlay();

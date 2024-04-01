@@ -8,16 +8,15 @@ namespace rawrbox {
 	// --------------
 
 	void RenderPlugin::requirements(Diligent::DeviceFeatures& /*features*/) {}
-	void RenderPlugin::signatures(std::vector<Diligent::PipelineResourceDesc>& /*sig*/, bool /*comput*/) {}
-
-	void RenderPlugin::bindStatic(Diligent::IPipelineResourceSignature& /*sig*/, bool /*compute*/) {}
-	void RenderPlugin::bindMutable(Diligent::IShaderResourceBinding& /*bind*/, bool /*compute*/) {}
+	void RenderPlugin::signatures(std::vector<Diligent::PipelineResourceDesc>& /*sig*/) {}
+	void RenderPlugin::bindStatic(Diligent::IPipelineResourceSignature& /*sig*/) {}
+	void RenderPlugin::bindMutable(Diligent::IShaderResourceBinding& /*bind*/) {}
 
 	void RenderPlugin::initialize(const rawrbox::Vector2u& /*renderSize*/) {}
 	void RenderPlugin::resize(const rawrbox::Vector2u& /*renderSize*/) {}
 	void RenderPlugin::upload() {}
 
-	void RenderPlugin::preRender() {}
+	void RenderPlugin::render() {}
 	void RenderPlugin::postRender(rawrbox::TextureRender& /*renderTarget*/) {}
 
 	void RenderPlugin::update() {}

@@ -103,7 +103,6 @@ namespace rawrbox {
 		virtual void endQuery(const std::string& query);
 		// ----------------
 #endif
-
 		virtual void clear();
 		virtual void frame();
 

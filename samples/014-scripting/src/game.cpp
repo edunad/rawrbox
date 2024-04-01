@@ -52,7 +52,7 @@ namespace scripting_test {
 		auto* render = window->createRenderer();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
-			if (pass == rawrbox::DrawPass::PASS_OPAQUE) {
+			if (pass == rawrbox::DrawPass::PASS_WORLD) {
 				this->drawWorld();
 			} else {
 				this->drawOverlay();
@@ -197,7 +197,7 @@ namespace scripting_test {
 		if (!this->_ready) return;
 		if (this->_model != nullptr) this->_model->draw();
 		if (this->_instance != nullptr) this->_instance->draw();
-		rawrbox::SCRIPTING::call("draw", static_cast<int>(rawrbox::DrawPass::PASS_OPAQUE));
+		rawrbox::SCRIPTING::call("draw", static_cast<int>(rawrbox::DrawPass::PASS_WORLD));
 	}
 
 	void Game::drawOverlay() {

@@ -56,7 +56,9 @@ namespace rawrbox {
 		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}, {_buffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----------
 
-		update();
+		// Update, DynamicBuffer does not support passing data?
+		updateBuffer();
+		// -----------
 	}
 
 	void DECALS::shutdown() {
@@ -81,7 +83,7 @@ namespace rawrbox {
 		// --------
 	}
 
-	void DECALS::update() {
+	void DECALS::updateBuffer() {
 		if (_buffer == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__DECALS_DIRTY__ || _decals.empty()) return;
 
@@ -107,10 +109,10 @@ namespace rawrbox {
 		rawrbox::__DECALS_DIRTY__ = false;
 	}
 
-	void DECALS::bindUniforms() {
+	void DECALS::update() {
 		if (uniforms == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 
-		update();          // Update all decals if dirty
+		updateBuffer();    // Update all decals if dirty
 		updateConstants(); // Update buffer if dirty
 	}
 

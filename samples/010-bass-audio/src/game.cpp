@@ -35,7 +35,7 @@ namespace bass_test {
 		auto* render = window->createRenderer();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
-			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
+			if (pass != rawrbox::DrawPass::PASS_WORLD) return;
 			this->drawWorld();
 		});
 		// ---------------

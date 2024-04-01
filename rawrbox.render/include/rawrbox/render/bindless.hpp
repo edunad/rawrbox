@@ -71,13 +71,13 @@ namespace rawrbox {
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> signature;
-		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> computeSignature;
 		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> signatureBind;
-		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> computeSignatureBind;
 
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferPixel;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertex;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertexSkinned;
+
+		static rawrbox::Event<void()> onTextureUpdate;
 
 		static void init();
 		static void shutdown();

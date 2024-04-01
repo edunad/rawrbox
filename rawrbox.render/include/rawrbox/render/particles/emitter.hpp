@@ -6,8 +6,21 @@
 #include <RefCntAutoPtr.hpp>
 
 #include <Buffer.h>
+#include <PipelineState.h>
 
 namespace rawrbox {
+
+	struct EmitterUniforms {
+	public:
+		rawrbox::Vector3f position = {};
+		float maxLifeTime = 0;
+
+		rawrbox::Vector3f velocity = {};
+		float deltaTime = 0;
+
+		rawrbox::Vector4u data = {}; // TOTAL_PARTICLES, etc
+	};
+
 	class Emitter {
 	protected:
 		Diligent::RefCntAutoPtr<Diligent::IBuffer> _constants;
@@ -15,6 +28,10 @@ namespace rawrbox {
 
 		Diligent::IBufferView* _bufferRead = nullptr;
 		Diligent::IBufferView* _bufferWrite = nullptr;
+
+		Diligent::IPipelineState* _process = nullptr;
+
+		rawrbox::EmitterUniforms _uniforms = {};
 
 		std::vector<rawrbox::Particle> _particles = {};
 		uint32_t _maxParticles = 0;
@@ -38,6 +55,15 @@ namespace rawrbox {
 		virtual ~Emitter();
 
 		// UTILS ----
+		virtual void setPos(const rawrbox::Vector3f& pos);
+		[[nodiscard]] virtual const rawrbox::Vector3f& getPos() const;
+
+		virtual void setVelocity(const rawrbox::Vector3f& vel);
+		[[nodiscard]] virtual const rawrbox::Vector3f& getVelocity() const;
+
+		virtual void setMaxLifetime(float lifetime);
+		[[nodiscard]] virtual float getMaxLifetime() const;
+
 		virtual Diligent::IBufferView* getBuffer(bool readOnly = true);
 		// --------
 

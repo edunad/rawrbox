@@ -39,7 +39,7 @@ namespace assimp {
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
-			if (pass != rawrbox::DrawPass::PASS_OPAQUE) return;
+			if (pass != rawrbox::DrawPass::PASS_WORLD) return;
 			this->drawWorld();
 		});
 		// ---------------

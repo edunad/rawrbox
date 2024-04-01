@@ -3,12 +3,18 @@
 #include <rawrbox/render/static.hpp>
 
 namespace rawrbox {
-
 	// PIPELINE ---
 	bool Emitter::_PIPELINE_INIT = false;
 	void Emitter::createPipeline() {
 		if (Emitter::_PIPELINE_INIT) return;
-		Emitter::_PIPELINE_INIT = true;
+
+		rawrbox::PipeComputeSettings settings;
+		settings.signature = rawrbox::BindlessManager::computeSignature;
+
+		// BUILDING -----
+		settings.pCS = "particles.csh";
+		rawrbox::PipelineUtils::createComputePipeline("Particles::Process", settings);
+		// ---------
 	}
 	// --------------
 
@@ -29,9 +35,13 @@ namespace rawrbox {
 		{
 			Diligent::BufferDesc BuffDesc;
 			BuffDesc.Name = "rawrbox::Emitter::Uniforms";
-			BuffDesc.Usage = Diligent::USAGE_DYNAMIC;
+			BuffDesc.Usage = Diligent::USAGE_DYNAMIC; // TODO: DEFAULT
 			BuffDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			BuffDesc.Size = sizeof(rawrbox::Vector4u);
+			BuffDesc.Size = sizeof(rawrbox::EmitterUniforms);
+
+			Diligent::BufferData data;
+			data.pData = &this->_uniforms;
+			data.DataSize = BuffDesc.Size;
 
 			rawrbox::RENDERER->device()->CreateBuffer(BuffDesc, nullptr, &this->_constants);
 		}
@@ -65,17 +75,40 @@ namespace rawrbox {
 	}
 
 	// UTILS ----
+
+	void Emitter::setPos(const rawrbox::Vector3f& pos) { this->_uniforms.position = pos; }
+	const rawrbox::Vector3f& Emitter::getPos() const { return this->_uniforms.position; }
+
+	void Emitter::setVelocity(const rawrbox::Vector3f& vel) { this->_uniforms.velocity = vel; }
+	const rawrbox::Vector3f& Emitter::getVelocity() const { return this->_uniforms.velocity; }
+
+	void Emitter::setMaxLifetime(float lifetime) { this->_uniforms.maxLifeTime = lifetime; }
+	float Emitter::getMaxLifetime() const { return this->_uniforms.maxLifeTime; }
+
 	Diligent::IBufferView* Emitter::getBuffer(bool readOnly) { return readOnly ? this->_bufferRead : this->_bufferWrite; }
 	// --------
 
 	void Emitter::updateConstants() {
 		if (this->_constants == nullptr) throw this->_logger->error("Emitter not uploaded");
+
+		// SETUP UNIFORMS ----------------------------
+		Diligent::MapHelper<rawrbox::EmitterUniforms> Constants(rawrbox::RENDERER->context(), this->_constants, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+		if (Constants == nullptr) throw _logger->error("Failed to map emitter constants buffer!");
+		std::memcpy(Constants, &this->_uniforms, sizeof(rawrbox::EmitterUniforms));
+
+		Constants->data.x = this->_particles.size();
+		Constants->deltaTime = rawrbox::DELTA_TIME;
+		// -----------
 	}
 
 	void Emitter::update() {
 		auto* context = rawrbox::RENDERER->context();
 
-		// context->SetPipelineState(this->_clusterBuildingComputeProgram);
+		// TODO: MOVE ME TO UPDATE ONCE?
+		this->updateConstants();
+		// -----------------------------
+
+		context->SetPipelineState(this->_process);
 		context->DispatchCompute({rawrbox::MathUtils::divideRound<uint32_t>(this->_particles.size(), 255), 1, 1});
 	}
 

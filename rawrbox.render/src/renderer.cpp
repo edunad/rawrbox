@@ -380,103 +380,118 @@ namespace rawrbox {
 		this->clear();
 		// ---------------------
 
-		// Process barriers -----
+		// Clear prev barriers -----
 		rawrbox::BarrierUtils::clearBarrierCache();
-		// rawrbox::BarrierUtils::processBarriers();
 		//  ---------------------
 
 		// Update textures ---
 		rawrbox::BindlessManager::update();
 		// --------------------
 
-		// No camera -------
-		if (this->_camera == nullptr) {
-			this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		if (this->_camera == nullptr) throw this->_logger->error("todo");
 
-#ifdef _DEBUG
-			// this->_context->BeginDebugGroup("OVERLAY");
-			// this->beginQuery("OVERLAY");
-#endif
-			this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
-			if (this->_stencil != nullptr) this->_stencil->render();
-#ifdef _DEBUG
+		/*
+				// Clear backbuffer ----
+				this->clear();
+				// ---------------------
+
+				// Process barriers -----
+				rawrbox::BarrierUtils::clearBarrierCache();
+				//  ---------------------
+
+				// Update textures ---
+				rawrbox::BindlessManager::update();
+				// --------------------
+
+				// No camera -------
+				if (this->_camera == nullptr) {
+					this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+
+		#ifdef _DEBUG
+					// this->_context->BeginDebugGroup("OVERLAY");
+					// this->beginQuery("OVERLAY");
+		#endif
+					this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+					if (this->_stencil != nullptr) this->_stencil->render();
+		#ifdef _DEBUG
+						// this->_context->EndDebugGroup();
+						// this->endQuery("OVERLAY");
+		#endif
+
+					this->frame();
+					return; // No camera, no world draw
+				}
+				// ---------------------
+
+				// Update camera buffer --
+				this->_camera->updateBuffer();
+				// -----------
+
+				// Perform pre-render --
+				for (auto& plugin : this->_renderPlugins) {
+					if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+		#ifdef _DEBUG
+						// this->_context->BeginDebugGroup(plugin.first.c_str());
+		#endif
+					plugin.second->render();
+		#ifdef _DEBUG
+					// this->_context->EndDebugGroup();
+		#endif
+				}
+				// -----------------------
+
+				// Commit graphics signature --
+				this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+				// -----------------------
+
+				// Perform world --
+		#ifdef _DEBUG
+				// this->_context->BeginDebugGroup("OPAQUE");
+				// this->beginQuery("OPAQUE");
+		#endif
+				this->_render->startRecord();
+				this->_drawCall(rawrbox::DrawPass::PASS_WORLD);
+				this->_render->stopRecord();
+		#ifdef _DEBUG
+				// this->endQuery("OPAQUE");
 				// this->_context->EndDebugGroup();
-				// this->endQuery("OVERLAY");
-#endif
+		#endif
+				//  -----------------
 
-			this->frame();
-			return; // No camera, no world draw
-		}
-		// ---------------------
+				// Perform post-render --
+				for (auto& plugin : this->_renderPlugins) {
+					if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+		#ifdef _DEBUG
+						// this->_context->BeginDebugGroup(plugin.first.c_str());
+		#endif
+					plugin.second->postRender(*this->_render);
+		#ifdef _DEBUG
+					// this->_context->EndDebugGroup();
+		#endif
+				}
+				// -----------------------
 
-		// Update camera buffer --
-		this->_camera->updateBuffer();
-		// -----------
+				// Render world ----
+				rawrbox::RenderUtils::renderQUAD(*this->_render);
+				// ------------------
 
-		// Perform pre-render --
-		for (auto& plugin : this->_renderPlugins) {
-			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
-#ifdef _DEBUG
-				// this->_context->BeginDebugGroup(plugin.first.c_str());
-#endif
-			plugin.second->preRender();
-#ifdef _DEBUG
-			// this->_context->EndDebugGroup();
-#endif
-		}
-		// -----------------------
+				// Perform overlay --
+		#ifdef _DEBUG
+				// this->_context->BeginDebugGroup("OVERLAY");
+				// this->beginQuery("OVERLAY");
+		#endif
+				this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+				if (this->_stencil != nullptr) this->_stencil->render();
+		#ifdef _DEBUG
+					// this->endQuery("OVERLAY");
+					// this->_context->EndDebugGroup();
+		#endif
+				//  ------------------
 
-		// Commit graphics signature --
-		this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		// -----------------------
-
-		// Perform world --
-#ifdef _DEBUG
-		// this->_context->BeginDebugGroup("OPAQUE");
-		// this->beginQuery("OPAQUE");
-#endif
-		this->_render->startRecord();
-		this->_drawCall(rawrbox::DrawPass::PASS_OPAQUE);
-		this->_render->stopRecord();
-#ifdef _DEBUG
-		// this->endQuery("OPAQUE");
-		// this->_context->EndDebugGroup();
-#endif
-		//  -----------------
-
-		// Perform post-render --
-		for (auto& plugin : this->_renderPlugins) {
-			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
-#ifdef _DEBUG
-				// this->_context->BeginDebugGroup(plugin.first.c_str());
-#endif
-			plugin.second->postRender(*this->_render);
-#ifdef _DEBUG
-			// this->_context->EndDebugGroup();
-#endif
-		}
-		// -----------------------
-
-		// Render world ----
-		rawrbox::RenderUtils::renderQUAD(*this->_render);
-		// ------------------
-
-		// Perform overlay --
-#ifdef _DEBUG
-		// this->_context->BeginDebugGroup("OVERLAY");
-		// this->beginQuery("OVERLAY");
-#endif
-		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
-		if (this->_stencil != nullptr) this->_stencil->render();
-#ifdef _DEBUG
-			// this->endQuery("OVERLAY");
-			// this->_context->EndDebugGroup();
-#endif
-		//  ------------------
-
-		// Submit ---
-		this->frame();
-		// ---------------------
+				// Submit ---
+				this->frame();
+				// ---------------------
+				*/
 	}
 
 	void RendererBase::clear() {
@@ -715,7 +730,7 @@ namespace rawrbox {
 		MapRegion.MaxX = MapRegion.MinX + GPU_PICK_SAMPLE_SIZE;
 		MapRegion.MaxY = MapRegion.MinY + GPU_PICK_SAMPLE_SIZE;
 
-		auto* tex = this->_render->getTexture(1);
+		auto* tex = this->_render->getTexture(1); // GPU pick texture
 		this->_GPUBlit->copy(tex, &MapRegion, [this, callback]() {
 			this->_GPUBlit->blit(nullptr, [this, callback](const uint8_t* pixels, const uint64_t stride) {
 				uint32_t max = 0;

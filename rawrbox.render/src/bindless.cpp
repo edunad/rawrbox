@@ -17,9 +17,7 @@ namespace rawrbox {
 
 	// PUBLIC -------
 	Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> BindlessManager::signature;
-	Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> BindlessManager::computeSignature;
 	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> BindlessManager::signatureBind;
-	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> BindlessManager::computeSignatureBind;
 
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> BindlessManager::signatureBufferPixel;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> BindlessManager::signatureBufferVertex;
@@ -97,10 +95,7 @@ namespace rawrbox {
 		_updateTextures = {};
 
 		RAWRBOX_DESTROY(signature);
-		RAWRBOX_DESTROY(computeSignature);
-
 		RAWRBOX_DESTROY(signatureBind);
-		RAWRBOX_DESTROY(computeSignatureBind);
 
 		RAWRBOX_DESTROY(signatureBufferPixel);
 		RAWRBOX_DESTROY(signatureBufferVertex);
@@ -140,10 +135,9 @@ namespace rawrbox {
 		// Add extra signatures ----
 		for (const auto& plugin : renderer->getPlugins()) {
 			if (plugin.second == nullptr) continue;
-			plugin.second->signatures(resources, false);
+			plugin.second->signatures(resources);
 		}
 		// -------------------------
-
 		PRSDesc.Resources = resources.data();
 		PRSDesc.NumResources = static_cast<uint8_t>(resources.size());
 
@@ -162,33 +156,6 @@ namespace rawrbox {
 		// --------------
 
 		device->CreatePipelineResourceSignature(PRSDesc, &signature);
-		// ----------------------
-
-		// Compute signature ---
-		if (camera != nullptr) {
-			resources = {
-			    {Diligent::SHADER_TYPE_COMPUTE, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-			    {Diligent::SHADER_TYPE_COMPUTE, "SCamera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-			};
-		} else {
-			resources.clear();
-		}
-
-		PRSDesc.Name = "RawrBox::SIGNATURE::BINDLESS::COMPUTE";
-		PRSDesc.ImmutableSamplers = nullptr;
-		PRSDesc.NumImmutableSamplers = 0;
-
-		// Add extra signatures ----
-		for (const auto& plugin : renderer->getPlugins()) {
-			if (plugin.second == nullptr) continue;
-			plugin.second->signatures(resources, true);
-		}
-		// -------------------------
-
-		PRSDesc.Resources = resources.data();
-		PRSDesc.NumResources = static_cast<uint8_t>(resources.size());
-
-		device->CreatePipelineResourceSignature(PRSDesc, &computeSignature);
 		// ----------------------
 	}
 
@@ -210,11 +177,10 @@ namespace rawrbox {
 
 		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(signatureBufferPixel);
 		// ------------
-
 		// Add extra binds ----
 		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
 			if (plugin.second == nullptr) continue;
-			plugin.second->bindStatic(*signature, false);
+			plugin.second->bindStatic(*signature);
 		}
 		// -------------------------
 
@@ -223,7 +189,7 @@ namespace rawrbox {
 		// Bind signature bind ----
 		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
 			if (plugin.second == nullptr) continue;
-			plugin.second->bindMutable(*signatureBind, false);
+			plugin.second->bindMutable(*signatureBind);
 		}
 		// -------------------------
 
@@ -232,29 +198,6 @@ namespace rawrbox {
 		signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(_textureHandles.data(), 0, static_cast<uint32_t>(_textureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 		// ----------------------
 		// ----------------
-
-		// Setup compute binds --
-		if (camera != nullptr) {
-			computeSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(camera->uniforms());
-			computeSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "SCamera")->Set(camera->staticUniforms());
-		}
-
-		// Add extra binds ----
-		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
-			if (plugin.second == nullptr) continue;
-			plugin.second->bindStatic(*computeSignature, true);
-		}
-		// -------------------------
-
-		computeSignature->CreateShaderResourceBinding(&computeSignatureBind, true);
-
-		// Bind signature bind ----
-		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
-			if (plugin.second == nullptr) continue;
-			plugin.second->bindMutable(*computeSignatureBind, true);
-		}
-		// -------------------------
-		// ----------------------
 	}
 	// --------------------------
 

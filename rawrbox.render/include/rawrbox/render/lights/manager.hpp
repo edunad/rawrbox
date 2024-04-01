@@ -48,7 +48,7 @@ namespace rawrbox {
 		static void createDataBuffer();
 
 		static void updateConstants();
-		static void update();
+		static void updateBuffer();
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
@@ -56,7 +56,7 @@ namespace rawrbox {
 		static void init();
 		static void shutdown();
 
-		static void bindUniforms();
+		static void update();
 
 		// UTILS ----
 		static void setEnabled(bool enabled);

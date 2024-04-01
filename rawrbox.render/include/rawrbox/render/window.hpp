@@ -150,6 +150,11 @@ namespace rawrbox {
 
 		void setMonitor(int monitor);
 		void setTitle(const std::string& title);
+		void setOpacity(float opacity);
+
+#ifdef _WIN32
+		void alert(); // Blink application, only available in windows
+#endif
 
 		// CURSOR ------
 		void hideCursor(bool hidden);
