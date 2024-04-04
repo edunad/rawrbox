@@ -59,7 +59,9 @@ namespace rawrbox {
 
 		// Setup render threading
 		auto renderThread = std::jthread([this]() {
+#ifndef _DEBUG
 			try {
+#endif
 				rawrbox::RENDER_THREAD_ID = std::this_thread::get_id();
 				rawrbox::ThreadUtils::setName("rawrbox:render");
 
@@ -113,6 +115,7 @@ namespace rawrbox {
 
 				this->onThreadShutdown(rawrbox::ENGINE_THREADS::THREAD_RENDER);
 				this->_shutdown = rawrbox::ENGINE_THREADS::THREAD_INPUT; // Done killing rendering, now destroy glfw
+#ifndef _DEBUG
 			} catch (const cpptrace::exception_with_message& err) {
 				this->prettyPrintErr(err.message());
 
@@ -125,6 +128,7 @@ namespace rawrbox {
 				cpptrace::generate_trace().print();
 				throw err;
 			}
+#endif
 		});
 		// ----
 
