@@ -3,14 +3,19 @@
 
     struct EmitterConstantsStruct {
         float3 position;
-        float lifetime;
+        float time;
 
-        float3 velocity;
-        float deltaTime;
+        float4 velocity[2];
 
-        uint4 data;
+        float4 color[4];
+        float4 size;
+
+        // ------------
+        float2 life;
+        float spawnRate;
+        float maxParticles;
+        // ------------
     };
 
     ConstantBuffer<EmitterConstantsStruct> EmitterConstants;
-    #define TOTAL_PARTICLES EmitterConstants.data.x
 #endif

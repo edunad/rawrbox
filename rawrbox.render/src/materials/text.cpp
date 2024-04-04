@@ -33,8 +33,8 @@ namespace rawrbox {
 			_build = true;
 		}
 
-		if (this->_base == nullptr) this->_base = rawrbox::PipelineUtils::getPipeline("3DText::Base");
-		if (this->_base_alpha == nullptr) this->_base_alpha = this->_base;
-		if (this->_wireframe == nullptr) this->_wireframe = rawrbox::PipelineUtils::getPipeline("3DText::Base::Wireframe");
+		if (this->base == nullptr) this->base = rawrbox::PipelineUtils::getPipeline("3DText::Base");
+		if (this->base_alpha == nullptr) this->base_alpha = this->base;
+		if (this->wireframe == nullptr) this->wireframe = rawrbox::PipelineUtils::getPipeline("3DText::Base::Wireframe");
 	}
 } // namespace rawrbox

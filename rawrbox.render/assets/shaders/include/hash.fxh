@@ -79,4 +79,22 @@
 
 		return v;
 	}
+
+	// Generate random float2 in range [0, 1)
+	float2 generateRandom(uint2 v) {
+		uint2 p = pcg2d(v);
+		return float2(p) / float(0xffffffffu);
+	}
+
+	// Generate random float3 in range [0, 1)
+	float3 generateRandom(uint3 v) {
+		uint3 p = pcg3d(v);
+		return float3(p) / float(0xffffffffu);
+	}
+
+	// Generate random float4 in range [0, 1)
+	float4 generateRandom(uint4 v) {
+		uint4 p = pcg4d(v);
+		return float4(p) / float(0xffffffffu);
+	}
 #endif

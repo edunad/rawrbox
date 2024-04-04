@@ -39,7 +39,7 @@ namespace rawrbox {
 		static void setMasterVolume(float volume, bool set = true);
 		static void setMuteOnUnfocus(bool set);
 		static void setHasFocus(bool hasFocus);
-		static void setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& front = {0, 0, 1}, const rawrbox::Vector3f& top = {0, 1, 0});
+		static void setListenerLocation(const rawrbox::Vector3f& location, const rawrbox::Vector3f& front = {0, 0, 1}, const rawrbox::Vector3f& up = {0, 1, 0});
 		// -----
 	};
 } // namespace rawrbox

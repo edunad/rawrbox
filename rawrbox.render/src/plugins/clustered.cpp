@@ -44,6 +44,7 @@ namespace rawrbox {
 		// -----------------------
 
 		this->buildBuffers();
+		this->buildSignatures();
 	}
 
 	void ClusteredPlugin::resize(const rawrbox::Vector2u& renderSize) {

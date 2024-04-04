@@ -8,6 +8,7 @@ namespace rawrbox {
 	// --------------
 
 	void RenderPlugin::requirements(Diligent::DeviceFeatures& /*features*/) {}
+
 	void RenderPlugin::signatures(std::vector<Diligent::PipelineResourceDesc>& /*sig*/) {}
 	void RenderPlugin::bindStatic(Diligent::IPipelineResourceSignature& /*sig*/) {}
 	void RenderPlugin::bindMutable(Diligent::IShaderResourceBinding& /*bind*/) {}

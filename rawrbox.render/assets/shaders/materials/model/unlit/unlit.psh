@@ -1,4 +1,6 @@
 #include "defines.fxh"
+#include "math.fxh"
+
 #include "pixel_bindless_uniforms.fxh"
 
 #ifdef CLUSTER_PLUGIN

@@ -149,6 +149,7 @@ namespace rawrbox {
 		CBConstants->gWorld = world;
 		CBConstants->gWorldViewProj = CBConstants->gWorld * CBConstants->gView * projection;
 		CBConstants->gPos = this->getPos();
+		CBConstants->gDeltaTime = rawrbox::DELTA_TIME;
 	}
 
 	void CameraBase::update() {}

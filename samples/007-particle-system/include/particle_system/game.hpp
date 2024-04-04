@@ -3,6 +3,7 @@
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/models/model.hpp>
 #include <rawrbox/render/models/text3D.hpp>
+#include <rawrbox/render/particles/emitter.hpp>
 
 #include <memory>
 
@@ -10,6 +11,7 @@ namespace particle_system {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Text3D<>> _text = std::make_unique<rawrbox::Text3D<>>();
+		std::unique_ptr<rawrbox::Emitter<>> _emitter = std::make_unique<rawrbox::Emitter<>>(300);
 
 		bool _ready = false;
 

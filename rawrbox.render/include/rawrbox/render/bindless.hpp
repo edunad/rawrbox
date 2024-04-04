@@ -44,11 +44,9 @@ namespace rawrbox {
 
 	struct BindlessPostProcessBuffer {
 		std::array<rawrbox::Vector4f, rawrbox::MAX_POST_DATA> data = {};
+		rawrbox::Vector4u textureIDs = {}; // BASE, DEPTH, ?, ?
 
-		uint32_t textureID = 0;
-		uint32_t depthTextureID = 0;
-
-		bool operator==(const BindlessPostProcessBuffer& other) const { return this->textureID == other.textureID && this->depthTextureID == other.depthTextureID && std::equal(this->data.begin(), this->data.end(), other.data.begin()); }
+		bool operator==(const BindlessPostProcessBuffer& other) const { return this->textureIDs == other.textureIDs && std::equal(this->data.begin(), this->data.end(), other.data.begin()); }
 		bool operator!=(const BindlessPostProcessBuffer& other) const { return !operator==(other); }
 	};
 	// --------------------------
@@ -77,7 +75,7 @@ namespace rawrbox {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertex;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertexSkinned;
 
-		static rawrbox::Event<void()> onTextureUpdate;
+		static rawrbox::Event<> onTextureUpdate;
 
 		static void init();
 		static void shutdown();

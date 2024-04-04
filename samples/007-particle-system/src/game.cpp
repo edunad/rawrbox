@@ -1,6 +1,7 @@
 
 #include <rawrbox/render/cameras/orbital.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
+#include <rawrbox/render/plugins/particle_engine.hpp>
 #include <rawrbox/render/static.hpp>
 
 #include <particle_system/game.hpp>
@@ -31,6 +32,7 @@ namespace particle_system {
 		// Setup renderer
 		auto* render = window->createRenderer();
 		render->skipIntros(true);
+		render->addPlugin<rawrbox::ParticleEnginePlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_WORLD) return;
@@ -54,16 +56,34 @@ namespace particle_system {
 	void Game::contentLoaded() {
 		if (this->_ready) return;
 
+		// Setup model --
 		auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
+
 		this->_model->addMesh(mesh);
+		this->_model->upload();
+		// --------------
 
 		// Text test ----
 		// this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "MESH ID", {0.0F, 0.5F, -0.5F});
 		// this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "INSTANCE MESH ID", {0.0F, 0.5F, 0.5F});
+		// this->_text->upload();
 		// ------
 
-		this->_model->upload();
-		this->_text->upload();
+		// Setup emitter ---
+		this->_emitter->setPos({0, 1.F, 0});
+		this->_emitter->setVelocity(rawrbox::Vector3f{0, 0, 0}, rawrbox::Vector3f{1.0F, 1.0F, 0.0F});
+
+		this->_emitter->setColorTransition({rawrbox::Colorf{1.0F, 1.0F, 1.0F, 1.0F},
+		    rawrbox::Colorf{1.0F, 1.0F, 1.0F, 1.0F},
+		    rawrbox::Colorf{1.0F, 1.0F, 1.0F, 1.0F},
+		    rawrbox::Colorf{1.0F, 1.0F, 1.0F, 0.0F}});
+
+		this->_emitter->setLifetimeRange(1.0F, 15.0F);
+		this->_emitter->setSpawnRate(1.0F);
+		this->_emitter->setSize(rawrbox::Vector4f{0.1F, 0.1F, 0.05F, 0.05F});
+
+		this->_emitter->upload();
+		// -----------------
 
 		this->_ready = true;
 	}
@@ -72,6 +92,7 @@ namespace particle_system {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
 			rawrbox::Window::shutdown();
 		} else {
+			this->_emitter.reset();
 			this->_model.reset();
 			this->_text.reset();
 		}
@@ -89,7 +110,8 @@ namespace particle_system {
 		if (!this->_ready) return;
 
 		if (this->_model != nullptr) this->_model->draw();
-		if (this->_text != nullptr) this->_text->draw();
+		// if (this->_text != nullptr) this->_text->draw();
+		if (this->_emitter != nullptr) this->_emitter->draw();
 	}
 
 	void Game::draw() {

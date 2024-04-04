@@ -3,18 +3,18 @@
 namespace rawrbox {
 	void MaterialBase::createPipelines(const std::string& /*id*/, const std::vector<Diligent::LayoutElement>& /*layout*/, const Diligent::ShaderMacroHelper& /*helper*/) {}
 	void MaterialBase::setupPipelines(const std::string& id) {
-		if (this->_base == nullptr) this->_base = rawrbox::PipelineUtils::getPipeline(id);
-		if (this->_base_alpha == nullptr) this->_base_alpha = rawrbox::PipelineUtils::getPipeline(id + "::Alpha");
+		if (this->base == nullptr) this->base = rawrbox::PipelineUtils::getPipeline(id);
+		if (this->base_alpha == nullptr) this->base_alpha = rawrbox::PipelineUtils::getPipeline(id + "::Alpha");
 
-		if (this->_line == nullptr) this->_line = rawrbox::PipelineUtils::getPipeline(id + "::Line");
+		if (this->line == nullptr) this->line = rawrbox::PipelineUtils::getPipeline(id + "::Line");
 
-		if (this->_cullback == nullptr) this->_cullback = rawrbox::PipelineUtils::getPipeline(id + "::CullBack");
-		if (this->_cullback_alpha == nullptr) this->_cullback_alpha = rawrbox::PipelineUtils::getPipeline(id + "::CullBack::Alpha");
+		if (this->cullback == nullptr) this->cullback = rawrbox::PipelineUtils::getPipeline(id + "::CullBack");
+		if (this->cullback_alpha == nullptr) this->cullback_alpha = rawrbox::PipelineUtils::getPipeline(id + "::CullBack::Alpha");
 
-		if (this->_wireframe == nullptr) this->_wireframe = rawrbox::PipelineUtils::getPipeline(id + "::Wireframe");
+		if (this->wireframe == nullptr) this->wireframe = rawrbox::PipelineUtils::getPipeline(id + "::Wireframe");
 
-		if (this->_cullnone == nullptr) this->_cullnone = rawrbox::PipelineUtils::getPipeline(id + "::CullNone");
-		if (this->_cullnone_alpha == nullptr) this->_cullnone_alpha = rawrbox::PipelineUtils::getPipeline(id + "::CullNone::Alpha");
+		if (this->cullnone == nullptr) this->cullnone = rawrbox::PipelineUtils::getPipeline(id + "::CullNone");
+		if (this->cullnone_alpha == nullptr) this->cullnone_alpha = rawrbox::PipelineUtils::getPipeline(id + "::CullNone::Alpha");
 	}
 
 	void MaterialBase::resetUniformBinds() {

@@ -1,5 +1,6 @@
 
 #include <rawrbox/render/materials/particle.hpp>
+#include <rawrbox/render/plugins/particle_engine.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
 namespace rawrbox {
@@ -20,26 +21,26 @@ namespace rawrbox {
 		this->setupPipelines(id);
 	}
 
-	void MaterialParticle::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, const Diligent::ShaderMacroHelper& helper) {
-		/*auto* cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
-		if (cluster == nullptr) throw this->_logger->error("This material requires the `Clustered` renderer plugin");
-
+	void MaterialParticle::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& /*layout*/, const Diligent::ShaderMacroHelper& /*helper*/) {
+		auto* engine = rawrbox::RENDERER->getPlugin<rawrbox::ParticleEnginePlugin>("ParticleEngine");
+		if (engine == nullptr) throw this->_logger->error("This material requires the `ParticleEngine` renderer plugin");
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
-		settings.pVS = "lit.vsh";
-		settings.pPS = "lit.psh";
-		settings.renderTargets = rawrbox::RENDER_TARGET_TARGETS; // COLOR + GPUPick
-		settings.cull = Diligent::CULL_MODE_FRONT;
-		settings.macros = cluster->getClusterMacros() + helper;
+		settings.pVS = "particles.vsh";
+		settings.pPS = "particles.psh";
+		settings.renderTargets = rawrbox::RENDER_TARGET_TARGETS;        // COLOR + GPUPick
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; // Set topology
+		settings.cull = Diligent::CULL_MODE_NONE;
+		// settings.macros = cluster->getClusterMacros() + helper;
 
 		settings.signature = rawrbox::BindlessManager::signature;
-		settings.layout = layout;
 		// -------------------
 
+		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		settings.fill = Diligent::FILL_MODE_SOLID;
 		rawrbox::PipelineUtils::createPipeline(id, settings);
 
-		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+		/*settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		rawrbox::PipelineUtils::createPipeline(id + "::Alpha", settings);
 
 		settings.fill = Diligent::FILL_MODE_SOLID;
@@ -55,7 +56,7 @@ namespace rawrbox {
 		rawrbox::PipelineUtils::createPipeline(id + "::CullNone", settings);
 
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipeline(id + "::CullNone::Alpha", settings);
-		// -----*/
+		rawrbox::PipelineUtils::createPipeline(id + "::CullNone::Alpha", settings);*/
+		// -----
 	}
 } // namespace rawrbox

@@ -380,7 +380,7 @@ namespace rawrbox {
 		this->clear();
 		// ---------------------
 
-		// Clear prev barriers -----
+		// Process barriers -----
 		rawrbox::BarrierUtils::clearBarrierCache();
 		//  ---------------------
 
@@ -388,110 +388,94 @@ namespace rawrbox {
 		rawrbox::BindlessManager::update();
 		// --------------------
 
-		if (this->_camera == nullptr) throw this->_logger->error("todo");
+		// No camera -------
+		if (this->_camera == nullptr) {
+			this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
-		/*
-				// Clear backbuffer ----
-				this->clear();
-				// ---------------------
-
-				// Process barriers -----
-				rawrbox::BarrierUtils::clearBarrierCache();
-				//  ---------------------
-
-				// Update textures ---
-				rawrbox::BindlessManager::update();
-				// --------------------
-
-				// No camera -------
-				if (this->_camera == nullptr) {
-					this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-
-		#ifdef _DEBUG
-					// this->_context->BeginDebugGroup("OVERLAY");
-					// this->beginQuery("OVERLAY");
-		#endif
-					this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
-					if (this->_stencil != nullptr) this->_stencil->render();
-		#ifdef _DEBUG
-						// this->_context->EndDebugGroup();
-						// this->endQuery("OVERLAY");
-		#endif
-
-					this->frame();
-					return; // No camera, no world draw
-				}
-				// ---------------------
-
-				// Update camera buffer --
-				this->_camera->updateBuffer();
-				// -----------
-
-				// Perform pre-render --
-				for (auto& plugin : this->_renderPlugins) {
-					if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
-		#ifdef _DEBUG
-						// this->_context->BeginDebugGroup(plugin.first.c_str());
-		#endif
-					plugin.second->render();
-		#ifdef _DEBUG
-					// this->_context->EndDebugGroup();
-		#endif
-				}
-				// -----------------------
-
-				// Commit graphics signature --
-				this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-				// -----------------------
-
-				// Perform world --
-		#ifdef _DEBUG
-				// this->_context->BeginDebugGroup("OPAQUE");
-				// this->beginQuery("OPAQUE");
-		#endif
-				this->_render->startRecord();
-				this->_drawCall(rawrbox::DrawPass::PASS_WORLD);
-				this->_render->stopRecord();
-		#ifdef _DEBUG
-				// this->endQuery("OPAQUE");
+#ifdef _DEBUG
+			// this->_context->BeginDebugGroup("OVERLAY");
+			// this->beginQuery("OVERLAY");
+#endif
+			this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+			if (this->_stencil != nullptr) this->_stencil->render();
+#ifdef _DEBUG
 				// this->_context->EndDebugGroup();
-		#endif
-				//  -----------------
+				// this->endQuery("OVERLAY");
+#endif
 
-				// Perform post-render --
-				for (auto& plugin : this->_renderPlugins) {
-					if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
-		#ifdef _DEBUG
-						// this->_context->BeginDebugGroup(plugin.first.c_str());
-		#endif
-					plugin.second->postRender(*this->_render);
-		#ifdef _DEBUG
-					// this->_context->EndDebugGroup();
-		#endif
-				}
-				// -----------------------
+			this->frame();
+			return; // No camera, no world draw
+		}
+		// ---------------------
 
-				// Render world ----
-				rawrbox::RenderUtils::renderQUAD(*this->_render);
-				// ------------------
+		// Update camera buffer --
+		this->_camera->updateBuffer();
+		// -----------
 
-				// Perform overlay --
-		#ifdef _DEBUG
-				// this->_context->BeginDebugGroup("OVERLAY");
-				// this->beginQuery("OVERLAY");
-		#endif
-				this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
-				if (this->_stencil != nullptr) this->_stencil->render();
-		#ifdef _DEBUG
-					// this->endQuery("OVERLAY");
-					// this->_context->EndDebugGroup();
-		#endif
-				//  ------------------
+		// Perform pre-render --
+		for (auto& plugin : this->_renderPlugins) {
+			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+#ifdef _DEBUG
+				// this->_context->BeginDebugGroup(plugin.first.c_str());
+#endif
+			plugin.second->render();
+#ifdef _DEBUG
+			// this->_context->EndDebugGroup();
+#endif
+		}
+		// -----------------------
 
-				// Submit ---
-				this->frame();
-				// ---------------------
-				*/
+		// Commit graphics signature --
+		this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		// -----------------------
+
+		// Perform world --
+#ifdef _DEBUG
+		// this->_context->BeginDebugGroup("OPAQUE");
+		// this->beginQuery("OPAQUE");
+#endif
+		this->_render->startRecord();
+		this->_drawCall(rawrbox::DrawPass::PASS_WORLD);
+		this->_render->stopRecord();
+#ifdef _DEBUG
+		// this->endQuery("OPAQUE");
+		// this->_context->EndDebugGroup();
+#endif
+		//  -----------------
+
+		// Perform post-render --
+		for (auto& plugin : this->_renderPlugins) {
+			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+#ifdef _DEBUG
+				// this->_context->BeginDebugGroup(plugin.first.c_str());
+#endif
+			plugin.second->postRender(*this->_render);
+#ifdef _DEBUG
+			// this->_context->EndDebugGroup();
+#endif
+		}
+		// -----------------------
+
+		// Render world ----
+		rawrbox::RenderUtils::renderQUAD(*this->_render);
+		// ------------------
+
+		// Perform overlay --
+#ifdef _DEBUG
+		// this->_context->BeginDebugGroup("OVERLAY");
+		// this->beginQuery("OVERLAY");
+#endif
+		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+		if (this->_stencil != nullptr) this->_stencil->render();
+#ifdef _DEBUG
+			// this->endQuery("OVERLAY");
+			// this->_context->EndDebugGroup();
+#endif
+		//  ------------------
+
+		// Submit ---
+		this->frame();
+		// ---------------------
 	}
 
 	void RendererBase::clear() {

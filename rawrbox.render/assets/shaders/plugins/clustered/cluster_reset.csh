@@ -1,3 +1,4 @@
+#include "math.fxh"
 
 #define WRITE_CLUSTER_DATA_GRID
 #include "cluster.fxh"

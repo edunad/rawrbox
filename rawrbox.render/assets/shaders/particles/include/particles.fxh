@@ -3,10 +3,16 @@
     #include "math.fxh"
 
 	struct Particle {
-		float4 position;
-        float4 velocity;
+		float3 position;
+		float lifeTime;
+
+		float3 velocity;
+		float initialLifeTime;
+
+		float2 size;
+		float2 rotation;
+
         float4 color;
-        float4 data; // X = Lifetime, Y = TextureID, Z = ???, W = ???
 	};
 
 	#if defined(WRITE_PARTICLES)

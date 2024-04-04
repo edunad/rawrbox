@@ -8,8 +8,6 @@ namespace rawrbox {
 		static bool _built;
 
 	public:
-		using vertexBufferType = rawrbox::VertexData;
-
 		MaterialParticle() = default;
 		MaterialParticle(MaterialParticle&&) = delete;
 		MaterialParticle& operator=(MaterialParticle&&) = delete;

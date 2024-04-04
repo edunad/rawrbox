@@ -1,5 +1,6 @@
 // Based off https://github.com/simco50/D3D12_Research <3
 
+#include "math.fxh"
 #include "camera.fxh"
 
 #define WRITE_CLUSTERS

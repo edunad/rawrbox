@@ -16,6 +16,8 @@ namespace rawrbox {
 	// --------------
 
 	// PUBLIC -------
+	rawrbox::Event<> BindlessManager::onTextureUpdate;
+
 	Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> BindlessManager::signature;
 	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> BindlessManager::signatureBind;
 
@@ -58,7 +60,7 @@ namespace rawrbox {
 
 			device->CreateBuffer(BuffPixelDesc, nullptr, &signatureBufferVertexSkinned);
 
-			// Horrible temp fix for signatures that are never mapped ---
+			// Horrible temp fix for signatures that might never be mapped ---
 			Diligent::MapHelper<rawrbox::BindlessVertexSkinnedBuffer> HACK(rawrbox::RENDERER->context(), signatureBufferVertexSkinned, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 			// -----------
 		}
@@ -117,7 +119,6 @@ namespace rawrbox {
 		std::vector<Diligent::PipelineResourceDesc> resources = {
 		    {Diligent::SHADER_TYPE_VERTEX, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 		    {Diligent::SHADER_TYPE_VERTEX, "SkinnedConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-
 		    {Diligent::SHADER_TYPE_VERTEX, "g_Textures", renderer->MAX_VERTEX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
 
 		    {Diligent::SHADER_TYPE_PIXEL, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
@@ -253,6 +254,10 @@ namespace rawrbox {
 		registerUpdateTexture(texture);
 		texture.setTextureID(id);
 		// ------------
+
+		// EVENT ----
+		onTextureUpdate();
+		// -----
 	}
 
 	void BindlessManager::unregisterTexture(rawrbox::TextureBase& texture) {
@@ -280,6 +285,10 @@ namespace rawrbox {
 		if (signatureBind != nullptr) {
 			signatureBind->GetVariableByName(isVertex ? Diligent::SHADER_TYPE_VERTEX : Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(handler.data(), 0, static_cast<uint32_t>(handler.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 		}
+		// -----
+
+		// EVENT ----
+		onTextureUpdate();
 		// -----
 	}
 

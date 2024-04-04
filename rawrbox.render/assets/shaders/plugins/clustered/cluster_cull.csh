@@ -1,6 +1,7 @@
 // Based off https://github.com/simco50/D3D12_Research <3
 
 #include "camera.fxh"
+#include "math.fxh"
 #include "light_uniforms.fxh"
 #include "decal_uniforms.fxh"
 

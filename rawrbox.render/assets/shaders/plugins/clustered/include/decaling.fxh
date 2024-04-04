@@ -30,7 +30,7 @@
                 float3x3 wLocal = (float3x3)decal.worldToLocal;
 
                 // Back-face culling check
-                float3 viewDir = normalize(worldPosition.xyz - Camera.pos.xyz);
+                float3 viewDir = normalize(worldPosition.xyz - Camera.pos);
                 float3 decalNormal = mul(float3(0, 0, 1), wLocal); // TODO: ADD NORMAL TO DECAL?
 
                 if(dot(decalNormal, viewDir) < 0 && all(decalTexCoord >= 0.0) && all(decalTexCoord <= 1.0)) {

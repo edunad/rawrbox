@@ -7,7 +7,7 @@ namespace rawrbox {
 
 	class AssimpUtils {
 	public:
-		template <typename M = MaterialUnlit>
+		template <typename M = rawrbox::MaterialUnlit>
 			requires(std::derived_from<M, rawrbox::MaterialBase>)
 		static rawrbox::Mesh<typename M::vertexBufferType> extractMesh(const rawrbox::AssimpImporter& model, size_t indx) {
 			const auto& meshes = model.meshes;

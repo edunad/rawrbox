@@ -6,12 +6,17 @@
 namespace rawrbox {
 	struct Particle {
 	public:
-		rawrbox::Vector4f position = {};
-		rawrbox::Vector4f velocity = {};
+		rawrbox::Vector3f position = {};
+		float lifeTime = 0.F;
+
+		rawrbox::Vector3f velocity = {};
+		float initialLifeTime = 0.F;
+
+		rawrbox::Vector2f size = {};
+		rawrbox::Vector2f rotation = {};
+
 		rawrbox::Colorf color = {};
-		rawrbox::Vector4f data = {};
 
 		Particle() = default;
-		Particle(const rawrbox::Vector3f& _position, const rawrbox::Vector3f& _velocity, const rawrbox::Colorf& _color, float life) : position(_position), velocity(_velocity), color(_color), data(life, 0, 0, 0) {}
 	};
 } // namespace rawrbox
