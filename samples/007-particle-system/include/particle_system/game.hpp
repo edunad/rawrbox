@@ -11,7 +11,7 @@ namespace particle_system {
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Text3D<>> _text = std::make_unique<rawrbox::Text3D<>>();
-		std::unique_ptr<rawrbox::Emitter<>> _emitter = std::make_unique<rawrbox::Emitter<>>(300);
+		std::unique_ptr<rawrbox::Emitter<>> _emitter = std::make_unique<rawrbox::Emitter<>>(100000);
 
 		bool _ready = false;
 

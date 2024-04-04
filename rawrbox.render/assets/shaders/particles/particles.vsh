@@ -3,6 +3,7 @@
 
 #define READ_PARTICLES
 #include "particles.fxh"
+#include "model_transforms.fxh"
 
 struct VSInput {
     uint VertexID : SV_VertexID;
@@ -32,9 +33,9 @@ void main(in VSInput VSIn, out PSInput PSIn) {
     // Get particle data
     Particle particle = GetParticle(particleIndex);
 
-    // Set output position based on particle position and quad vertex position
-    float4 worldPos = float4(particle.position, 1.0) + float4(Pos[vertexIndex].xy * particle.size, 0.0, 0.0);
-    PSIn.POS = mul(worldPos, Camera.worldViewProj);
+    // Apply billboard transform to quad vertex position
+    float4 billboardPos = billboardTransform(Pos[vertexIndex] * float4(particle.size, 1.0, 1.0), 6);
+    PSIn.POS = mul(float4(billboardPos.xyz + particle.position, 1.0), Camera.worldViewProj);
 
     // Set output UV based on quad vertex
     float2 UV[4];

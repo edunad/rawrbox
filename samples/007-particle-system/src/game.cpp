@@ -71,15 +71,15 @@ namespace particle_system {
 
 		// Setup emitter ---
 		this->_emitter->setPos({0, 1.F, 0});
-		this->_emitter->setVelocity(rawrbox::Vector3f{0, 0, 0}, rawrbox::Vector3f{1.0F, 1.0F, 0.0F});
+		this->_emitter->setVelocity(rawrbox::Vector3f{-1.F, 0, -1}, rawrbox::Vector3f{1.0F, 1.0F, 1.0F});
 
 		this->_emitter->setColorTransition({rawrbox::Colorf{1.0F, 1.0F, 1.0F, 1.0F},
 		    rawrbox::Colorf{1.0F, 1.0F, 1.0F, 1.0F},
 		    rawrbox::Colorf{1.0F, 1.0F, 1.0F, 1.0F},
 		    rawrbox::Colorf{1.0F, 1.0F, 1.0F, 0.0F}});
 
-		this->_emitter->setLifetimeRange(1.0F, 15.0F);
-		this->_emitter->setSpawnRate(1.0F);
+		this->_emitter->setLifetimeRange(1.0F, 5.0F);
+		this->_emitter->setSpawnRate(5.F);
 		this->_emitter->setSize(rawrbox::Vector4f{0.1F, 0.1F, 0.05F, 0.05F});
 
 		this->_emitter->upload();

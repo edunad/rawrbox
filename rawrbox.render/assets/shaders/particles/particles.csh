@@ -6,13 +6,23 @@
 #include "particles.fxh"
 
 float3 CalculateVelocity(uint hash) {
-    float t = (float)hash / 4294967295.0f;
-    return lerp(EmitterConstants.velocity[0].xyz, EmitterConstants.velocity[1].xyz, t);
+    float3 randomVelocity;
+    randomVelocity.x = lerp(EmitterConstants.velocity[0].x, EmitterConstants.velocity[1].x, (float)(hash & 0xFF) / 255.0f);
+    randomVelocity.y = lerp(EmitterConstants.velocity[0].y, EmitterConstants.velocity[1].y, (float)((hash >> 8) & 0xFF) / 255.0f);
+    randomVelocity.z = lerp(EmitterConstants.velocity[0].z, EmitterConstants.velocity[1].z, (float)((hash >> 16) & 0xFF) / 255.0f);
+
+    return randomVelocity;
 }
 
 float2 CalculateSize(uint hash) {
-    float t = (float)hash / 4294967295.0f;
-    return lerp(EmitterConstants.size.xy, EmitterConstants.size.zw, t);
+    float2 randomSize;
+    randomSize.x = lerp(EmitterConstants.size.x, EmitterConstants.size.z, (float)(hash & 0xFFFF) / 65535.0f);
+    randomSize.y = lerp(EmitterConstants.size.y, EmitterConstants.size.w, (float)((hash >> 16) & 0xFFFF) / 65535.0f);
+    return randomSize;
+}
+
+float CalculateLife(uint hash) {
+    return lerp(EmitterConstants.life.x, EmitterConstants.life.y, (float)(hash & 0xFFFF) / 65535.0f);
 }
 
 float4 ParticleColor(float lifetimeRatio) {
@@ -25,15 +35,14 @@ float4 ParticleColor(float lifetimeRatio) {
     }
 }
 
+
 [numthreads(255, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID) {
     uint particleIndex = dispatchThreadID.x;
     if (particleIndex >= EmitterConstants.maxParticles) return;
 
     Particle particle = GetParticle(particleIndex);
-
-    //uint3 hash = pcg3d16(uint3(EmitterConstants.time, EmitterConstants.time * 7, EmitterConstants.time * 13));
-    uint hashForSize = pcg(EmitterConstants.time * 7);
+    uint hash = pcg(EmitterConstants.time + particleIndex * 1009);
 
     // Calculate the spawn interval based on the spawn rate
     float spawnInterval = 1.0 / EmitterConstants.spawnRate;
@@ -42,9 +51,10 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID) {
     if (particle.lifeTime <= 0.0f && EmitterConstants.time >= particleSpawnTime) {
         // Spawn / reset a particle
         particle.position = EmitterConstants.position;
-        particle.velocity = CalculateVelocity(hashForSize);
-        particle.size = CalculateSize(hashForSize);
-        particle.initialLifeTime = lerp(EmitterConstants.life.x, EmitterConstants.life.y, hashForSize);
+        particle.velocity = CalculateVelocity(hash);
+        particle.size = CalculateSize(hash);
+        particle.initialLifeTime = CalculateLife(hash);
+
         particle.lifeTime = particle.initialLifeTime;
         particle.color = EmitterConstants.color[0];
     } else {
