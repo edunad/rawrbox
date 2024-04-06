@@ -71,7 +71,6 @@ namespace rawrbox {
 		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> signature;
 		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> signatureBind;
 
-
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferPixel;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertex;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertexSkinned;
