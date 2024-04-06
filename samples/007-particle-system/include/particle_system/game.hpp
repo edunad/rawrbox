@@ -12,8 +12,8 @@ namespace particle_system {
 		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Text3D<>> _text = std::make_unique<rawrbox::Text3D<>>();
 
-		std::unique_ptr<rawrbox::Emitter<>> _emitter = std::make_unique<rawrbox::Emitter<>>(88000);
-		std::unique_ptr<rawrbox::Emitter<>> _emitter2 = std::make_unique<rawrbox::Emitter<>>(88000);
+		std::unique_ptr<rawrbox::Emitter<>> _emitter = std::make_unique<rawrbox::Emitter<>>(100);
+		std::unique_ptr<rawrbox::Emitter<>> _emitter2 = std::make_unique<rawrbox::Emitter<>>(100);
 
 		bool _ready = false;
 

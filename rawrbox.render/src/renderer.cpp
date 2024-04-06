@@ -104,13 +104,13 @@ namespace rawrbox {
 
 						EngineCI.GPUDescriptorHeapDynamicSize[0] = heap.first;
 						EngineCI.GPUDescriptorHeapSize[0] = heap.second;
-					} /* else {
-						 EngineCI.GPUDescriptorHeapDynamicSize[0] = 32768;
-						 EngineCI.GPUDescriptorHeapSize[1] = 128;
-						 EngineCI.GPUDescriptorHeapDynamicSize[1] = 2048 - 128;
-						 EngineCI.DynamicDescriptorAllocationChunkSize[0] = 32;
-						 EngineCI.DynamicDescriptorAllocationChunkSize[1] = 8;
-					 }*/
+					} else {
+						EngineCI.GPUDescriptorHeapDynamicSize[0] = 32768;
+						EngineCI.GPUDescriptorHeapSize[1] = 128;
+						EngineCI.GPUDescriptorHeapDynamicSize[1] = 2048 - 128;
+						EngineCI.DynamicDescriptorAllocationChunkSize[0] = 32;
+						EngineCI.DynamicDescriptorAllocationChunkSize[1] = 8;
+					}
 
 					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
 					pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc(false), this->_window, &this->_swapChain);
@@ -132,7 +132,7 @@ namespace rawrbox {
 
 					Diligent::EngineVkCreateInfo EngineCI;
 					EngineCI.Features = features;
-					EngineCI.pDxCompilerPath = "dxcompiler";
+					// EngineCI.pDxCompilerPath = "dxcompiler";
 
 					if (this->overrideHEAP != nullptr) {
 						auto heap = this->overrideHEAP();

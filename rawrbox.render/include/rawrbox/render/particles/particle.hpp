@@ -10,13 +10,11 @@ namespace rawrbox {
 		float lifeTime = 0.F;
 
 		rawrbox::Vector3f velocity = {};
-		float initialLifeTime = 0.F;
+		float atlasIndex = 0.F;
 
 		rawrbox::Vector2f size = {};
 		rawrbox::Vector2f rotation = {};
 
 		rawrbox::Colorf color = {};
-
-		Particle() = default;
 	};
 } // namespace rawrbox

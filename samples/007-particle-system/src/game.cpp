@@ -97,7 +97,7 @@ namespace particle_system {
 			    rawrbox::Colorf{1.0F, 1.0F, 0.0F, 1.0F}, // Yellow
 			    rawrbox::Colorf{1.0F, 0.5F, 0.0F, 1.0F}, // Orange
 			    rawrbox::Colorf{1.0F, 0.0F, 0.0F, 1.0F}, // Red
-			    rawrbox::Colorf{0.5F, 0.0F, 0.0F, 0.0F}  // Dark red with fade-out
+			    rawrbox::Colorf{1.0F, 1.0F, 1.0F, 1.0F}  // Dark red with fade-out
 			});
 
 			this->_emitter->setLifetimeRange(0.5F, 1.5F);                       // Adjust lifetime for fire particles
@@ -110,7 +110,7 @@ namespace particle_system {
 			this->_emitter->upload();
 		}
 
-		/*{
+		{
 			auto* texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/particles.png")->get();
 
 			this->_emitter2->setTexture(texture);
@@ -134,7 +134,7 @@ namespace particle_system {
 			this->_emitter2->setGravityMul(1.0F);                                                                    // Adjust gravity for upward movement
 
 			this->_emitter2->upload();
-		}*/
+		}
 		// -----------------
 
 		this->_ready = true;
@@ -165,7 +165,7 @@ namespace particle_system {
 		if (this->_model != nullptr) this->_model->draw();
 		// if (this->_text != nullptr) this->_text->draw();
 		if (this->_emitter != nullptr) this->_emitter->draw();
-		// if (this->_emitter2 != nullptr) this->_emitter2->draw();
+		if (this->_emitter2 != nullptr) this->_emitter2->draw();
 	}
 
 	void Game::draw() {

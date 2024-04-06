@@ -14,11 +14,10 @@ float3 CalculateVelocity(uint hash) {
     return randomVelocity;
 }
 
-float3 CalculateRotation(uint hash) {
-    float3 randomRotation;
+float2 CalculateRotation(uint hash) {
+    float2 randomRotation;
     randomRotation.x = lerp(EmitterConstants.rotationMin.x, EmitterConstants.rotationMax.x, (float)(hash & 0xFF) * (1.0f / 255.0f));
     randomRotation.y = lerp(EmitterConstants.rotationMin.y, EmitterConstants.rotationMax.y, (float)((hash >> 8) & 0xFF) * (1.0f / 255.0f));
-    randomRotation.z = lerp(EmitterConstants.rotationMin.z, EmitterConstants.rotationMax.z, (float)((hash >> 16) & 0xFF) * (1.0f / 255.0f));
     return randomRotation;
 }
 
@@ -57,9 +56,9 @@ groupshared Particle localParticles[256];
 [numthreads(256, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex) {
     uint particleIndex = dispatchThreadID.x;
-    if (particleIndex == 0 || particleIndex >= EmitterConstants.maxParticles) return;
+    if (particleIndex >= EmitterConstants.maxParticles) return;
 
-     // Load particle data into groupshared memory
+    // Load particle data into groupshared memory
     localParticles[groupIndex] = GetParticle(particleIndex);
     GroupMemoryBarrierWithGroupSync();
 

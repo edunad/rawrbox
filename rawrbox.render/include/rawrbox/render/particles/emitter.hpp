@@ -62,10 +62,7 @@ namespace rawrbox {
 		// -------------
 
 	public:
-		Emitter(uint32_t maxParticles) : _maxParticles(maxParticles) {
-			if (_maxParticles > 88000) throw _logger->error("Max particles cannot exceed 88000! (for now)");
-			this->setTexture(nullptr);
-		}
+		Emitter(uint32_t maxParticles) : _maxParticles(maxParticles) { this->setTexture(nullptr); }
 		Emitter(const Emitter&) = delete;
 		Emitter(Emitter&&) = delete;
 		Emitter& operator=(const Emitter&) = delete;
@@ -193,6 +190,7 @@ namespace rawrbox {
 
 			Diligent::DrawAttribs DrawAttrs;
 			DrawAttrs.NumVertices = this->_maxParticles;
+			// DrawAttrs.NumInstances = ;
 			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
 			context->Draw(DrawAttrs);
 		}
