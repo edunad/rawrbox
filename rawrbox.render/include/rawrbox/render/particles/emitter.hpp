@@ -176,7 +176,7 @@ namespace rawrbox {
 			if (engine == nullptr) throw this->_logger->error("Emitter requires the `ParticleEngine` renderer plugin");
 			auto* bind = engine->getBind();
 
-			this->_uniforms.time++;
+			this->_uniforms.time += rawrbox::DELTA_TIME;
 
 			// Setup bind ---
 			bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Particles")->Set(this->_bufferRead);
@@ -190,7 +190,6 @@ namespace rawrbox {
 
 			Diligent::DrawAttribs DrawAttrs;
 			DrawAttrs.NumVertices = this->_maxParticles;
-			// DrawAttrs.NumInstances = ;
 			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
 			context->Draw(DrawAttrs);
 		}

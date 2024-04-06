@@ -1,6 +1,6 @@
 #ifndef INCLUDED_PARTICLES
 	#define INCLUDED_PARTICLES
-    #include "math.fxh"
+	#include "math.fxh"
 
 	struct Particle {
 		float3 position;
@@ -12,7 +12,7 @@
 		float2 size;
 		float2 rotation;
 
-        float4 color;
+		float4 color;
 	};
 
 	#if defined(WRITE_PARTICLES)
@@ -23,10 +23,9 @@
 		#define PARTICLES
 	#endif
 
-    #ifdef PARTICLES
-    Particle GetParticle(uint index) {
-        return Particles[NonUniformResourceIndex(index)];
-    }
-    #endif
-
+	#ifdef PARTICLES
+	Particle GetParticle(uint index) {
+	    return Particles[NonUniformResourceIndex(index)];
+	}
+	#endif
 #endif

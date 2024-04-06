@@ -25,5 +25,5 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
     if(color.a <= 0.0) discard;
 
     PSOut.Color = color * PSIn.COLOR;
-	PSOut.GPUPick = float4(0, 0, 0, 0);
+    PSOut.GPUPick = float4(0, 0, 0, 0);
 }

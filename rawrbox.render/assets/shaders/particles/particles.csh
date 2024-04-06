@@ -37,19 +37,23 @@ float CalculateLife(uint hash) {
 }
 
 float4 ParticleColor(float lifetimeRatio) {
-    float minLife = EmitterConstants.lifeMin;
-    float maxLife = EmitterConstants.lifeMax;
-    float normalizedLifetime = saturate((maxLife - lifetimeRatio) / (maxLife - minLife));
+    const float transitionPoints[3] = {0.33, 0.66, 0.99};
+    lifetimeRatio = saturate(1.0 - lifetimeRatio);
 
-    if (normalizedLifetime < 0.33f) {
-        return lerp(EmitterConstants.color[0], EmitterConstants.color[1], normalizedLifetime * 3.0f);
-    } else if (normalizedLifetime < 0.66f) {
-        return lerp(EmitterConstants.color[1], EmitterConstants.color[2], (normalizedLifetime - 0.33f) * 3.0f);
+    // Determine color based on lifetimeRatio
+    if (lifetimeRatio < transitionPoints[0]) {
+        float factor = lifetimeRatio / transitionPoints[0];
+        return lerp(EmitterConstants.color[0], EmitterConstants.color[1], factor);
+    } else if (lifetimeRatio < transitionPoints[1]) {
+        float factor = (lifetimeRatio - transitionPoints[0]) / (transitionPoints[1] - transitionPoints[0]);
+        return lerp(EmitterConstants.color[1], EmitterConstants.color[2], factor);
+    } else if (lifetimeRatio < transitionPoints[2]) {
+        float factor = (lifetimeRatio - transitionPoints[1]) / (transitionPoints[2] - transitionPoints[1]);
+        return lerp(EmitterConstants.color[2], EmitterConstants.color[3], factor);
     } else {
-        return lerp(EmitterConstants.color[2], EmitterConstants.color[3], (normalizedLifetime - 0.66f) * 3.0f);
+        return EmitterConstants.color[3];
     }
 }
-
 // Use groupshared memory to reduce bandwidth
 groupshared Particle localParticles[256];
 

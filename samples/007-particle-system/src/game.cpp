@@ -17,7 +17,7 @@ namespace particle_system {
 #else
 		auto* window = rawrbox::Window::createWindow();
 #endif
-		window->setMonitor(1);
+		window->setMonitor(-1);
 		window->setTitle("PARTICLE TEST");
 #ifdef _DEBUG
 		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED);
@@ -78,34 +78,31 @@ namespace particle_system {
 		// --------------
 
 		// Text test ----
-		// this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "MESH ID", {0.0F, 0.5F, -0.5F});
-		// this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "INSTANCE MESH ID", {0.0F, 0.5F, 0.5F});
-		// this->_text->upload();
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "EMITTER", {0, 0.5F, 0});
+		this->_text->upload();
 		// ------
+
+		auto* texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/particles.png")->get();
 
 		// Setup emitter ---
 		{
-			auto* texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/particles.png")->get();
-
 			this->_emitter->setTexture(texture);
-			this->_emitter->setAtlasIndex(0, 2); // Assuming fire textures are in the first 4 atlas indices
+			this->_emitter->setAtlasIndex(0, 2);
 
-			this->_emitter->setPos({2, 0.1F, 0});                                                                   // Adjust the position as needed
-			this->_emitter->setVelocity(rawrbox::Vector3f{-0.5F, 0.F, -0.5F}, rawrbox::Vector3f{0.5F, 0.8F, 0.5F}); // Adjust velocity for fire-like movement
+			this->_emitter->setPos({2, 0.1F, 0});
+			this->_emitter->setVelocity(rawrbox::Vector3f{-0.5F, 0.F, -0.5F}, rawrbox::Vector3f{0.5F, 0.8F, 0.5F});
 
-			this->_emitter->setColorTransition({
-			    rawrbox::Colorf{1.0F, 1.0F, 0.0F, 1.0F}, // Yellow
-			    rawrbox::Colorf{1.0F, 0.5F, 0.0F, 1.0F}, // Orange
-			    rawrbox::Colorf{1.0F, 0.0F, 0.0F, 1.0F}, // Red
-			    rawrbox::Colorf{1.0F, 1.0F, 1.0F, 1.0F}  // Dark red with fade-out
-			});
+			this->_emitter->setColorTransition({rawrbox::Colors::Orange(),
+			    rawrbox::Colors::Red(),
+			    rawrbox::Colors::Purple(),
+			    rawrbox::Colorf{1.0F, 1.0F, 1.0F, 0.0F}});
 
-			this->_emitter->setLifetimeRange(0.5F, 1.5F);                       // Adjust lifetime for fire particles
-			this->_emitter->setSpawnRate(10.F);                                 // Increase spawn rate for denser fire
-			this->_emitter->setSize(rawrbox::Vector4f{0.2F, 0.2F, 0.2F, 0.2F}); // Adjust size for fire particles
+			this->_emitter->setLifetimeRange(0.5F, 1.0F);
+			this->_emitter->setSpawnRate(100.F);
+			this->_emitter->setSize(rawrbox::Vector4f{0.2F, 0.2F, 0.2F, 0.2F});
 
-			this->_emitter->setRotation(rawrbox::Vector3f{0.0F, 0.0F, 0.0F}, rawrbox::Vector3f{0.0F, 0.0F, 6.28F}); // Random rotation around Z-axis
-			this->_emitter->setGravityMul(0.1F);                                                                    // Adjust gravity for upward movement
+			this->_emitter->setRotation(rawrbox::Vector3f{0.0F, 0.0F, 0.0F}, rawrbox::Vector3f{0.0F, 0.0F, 6.28F});
+			this->_emitter->setGravityMul(-0.5F);
 
 			this->_emitter->upload();
 		}
@@ -114,24 +111,22 @@ namespace particle_system {
 			auto* texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/particles.png")->get();
 
 			this->_emitter2->setTexture(texture);
-			this->_emitter2->setAtlasIndex(6, 8); // Assuming fire textures are in the first 4 atlas indices
+			this->_emitter2->setAtlasIndex(6, 8);
 
-			this->_emitter2->setPos({-2, 0.1F, 0});                                                                  // Adjust the position as needed
-			this->_emitter2->setVelocity(rawrbox::Vector3f{-0.5F, 0.F, -0.5F}, rawrbox::Vector3f{0.5F, 0.8F, 0.5F}); // Adjust velocity for fire-like movement
+			this->_emitter2->setPos({0, 2.F, 0});
+			this->_emitter2->setVelocity(rawrbox::Vector3f{-0.5F, 0.F, -0.5F}, rawrbox::Vector3f{0.5F, 0.8F, 0.5F});
 
-			this->_emitter2->setColorTransition({
-			    rawrbox::Colorf{1.0F, 1.0F, 0.0F, 1.0F}, // Yellow
-			    rawrbox::Colorf{1.0F, 0.5F, 0.0F, 1.0F}, // Orange
-			    rawrbox::Colorf{1.0F, 0.0F, 0.0F, 1.0F}, // Red
-			    rawrbox::Colorf{0.5F, 0.0F, 0.0F, 0.0F}  // Dark red with fade-out
-			});
+			this->_emitter2->setColorTransition({rawrbox::Colorf{1.0F, 1.0F, 0.0F, 1.0F},
+			    rawrbox::Colorf{1.0F, 0.5F, 0.0F, 1.0F},
+			    rawrbox::Colorf{1.0F, 0.0F, 0.0F, 1.0F},
+			    rawrbox::Colorf{0.5F, 0.0F, 0.0F, 0.0F}});
 
-			this->_emitter2->setLifetimeRange(0.5F, 1.5F);                       // Adjust lifetime for fire particles
-			this->_emitter2->setSpawnRate(10.F);                                 // Increase spawn rate for denser fire
-			this->_emitter2->setSize(rawrbox::Vector4f{0.2F, 0.2F, 0.2F, 0.2F}); // Adjust size for fire particles
+			this->_emitter2->setLifetimeRange(0.5F, 1.0F);
+			this->_emitter2->setSpawnRate(5.F);
+			this->_emitter2->setSize(rawrbox::Vector4f{0.2F, 0.2F, 0.2F, 0.2F});
 
-			this->_emitter2->setRotation(rawrbox::Vector3f{0.0F, 0.0F, 0.0F}, rawrbox::Vector3f{0.0F, 0.0F, 6.28F}); // Random rotation around Z-axis
-			this->_emitter2->setGravityMul(1.0F);                                                                    // Adjust gravity for upward movement
+			this->_emitter2->setRotation(rawrbox::Vector3f{0.0F, 0.0F, 0.0F}, rawrbox::Vector3f{0.0F, 0.0F, 6.28F});
+			this->_emitter2->setGravityMul(1.0F);
 
 			this->_emitter2->upload();
 		}
@@ -157,13 +152,17 @@ namespace particle_system {
 
 	void Game::update() {
 		rawrbox::Window::update();
+		if (!this->_ready) return;
+
+		auto f = static_cast<float>(rawrbox::FRAME);
+		if (this->_emitter != nullptr) this->_emitter->setPos(rawrbox::Vector3f(std::cos(f) * 2.F, 0, std::sin(f) * 2.F));
 	}
 
 	void Game::drawWorld() {
 		if (!this->_ready) return;
 
 		if (this->_model != nullptr) this->_model->draw();
-		// if (this->_text != nullptr) this->_text->draw();
+		if (this->_text != nullptr) this->_text->draw();
 		if (this->_emitter != nullptr) this->_emitter->draw();
 		if (this->_emitter2 != nullptr) this->_emitter2->draw();
 	}
