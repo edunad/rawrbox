@@ -26,6 +26,7 @@ namespace rawrbox {
 
 	struct CameraUniforms {
 		rawrbox::Matrix4x4 gView = {};
+		rawrbox::Matrix4x4 gViewInv = {};
 
 		rawrbox::Matrix4x4 gWorld = {};
 		rawrbox::Matrix4x4 gWorldViewProj = {};

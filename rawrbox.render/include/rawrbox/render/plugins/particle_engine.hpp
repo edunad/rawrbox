@@ -16,7 +16,10 @@ namespace rawrbox {
 
 		// SIGNATURE ---
 		Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> _signature;
+		Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> _dynamicSignature;
+
 		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _signatureBind;
+		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _dynamicSignatureBind;
 		// --------------
 
 		// BUFFERS -----
@@ -47,7 +50,10 @@ namespace rawrbox {
 		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig) override;
 		void bindStatic(Diligent::IPipelineResourceSignature& sig) override;
 
-		void render() override;
+		void preRender() override;
+
+		[[nodiscard]] Diligent::IPipelineResourceSignature* getSignature(bool dynamic = true) const;
+		[[nodiscard]] Diligent::IShaderResourceBinding* getBind(bool dynamic = true) const;
 
 		// REGISTER ----
 		void registerEmitter(rawrbox::Emitter<>* em);

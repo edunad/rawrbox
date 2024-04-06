@@ -17,17 +17,29 @@ namespace rawrbox {
 		rawrbox::Vector3f position = {};
 		float time = 0.F;
 
-		std::array<rawrbox::Vector4f, 2> velocity = {}; // Random between 2 values
-		std::array<rawrbox::Colorf, 4> color = {};      // Transition between 4 colors using lifetime: 0 ---- 1 ---- 2 ----> 3
+		rawrbox::Vector3f velocityMin = {};
+		float lifeMin = 0.F;
+
+		rawrbox::Vector3f velocityMax = {};
+		float lifeMax = 0.F;
+
+		rawrbox::Vector3f rotationMin = {};
+		float spawnRate = 0.F;
+
+		rawrbox::Vector3f rotationMax = {};
+		float gravity = 0.F; // -9.81F
+
+		std::array<rawrbox::Colorf, 4> color = {}; // Transition between 4 colors using lifetime: 0 ---- 1 ---- 2 ----> 3
 
 		// -----
 		rawrbox::Vector4f size = {}; // Random between 2 values
 					     // -------
 
 		// -----
-		rawrbox::Vector2f life = {};
-		float spawnRate = 0;
-		float maxParticles = 0;
+		uint32_t maxParticles = 0;
+		uint32_t atlasMin = 0;
+		uint32_t atlasMax = 0;
+		uint32_t textureID = 0;
 		// -------
 	};
 
@@ -50,7 +62,10 @@ namespace rawrbox {
 		// -------------
 
 	public:
-		Emitter(uint32_t maxParticles) : _maxParticles(maxParticles) {}
+		Emitter(uint32_t maxParticles) : _maxParticles(maxParticles) {
+			if (_maxParticles > 88000) throw _logger->error("Max particles cannot exceed 88000! (for now)");
+			this->setTexture(nullptr);
+		}
 		Emitter(const Emitter&) = delete;
 		Emitter(Emitter&&) = delete;
 		Emitter& operator=(const Emitter&) = delete;
@@ -73,17 +88,40 @@ namespace rawrbox {
 		[[nodiscard]] virtual const rawrbox::Vector4f& getSize() const { return this->_uniforms.size; }
 		virtual void setSize(const rawrbox::Vector4f& size) { this->_uniforms.size = size; }
 
-		[[nodiscard]] virtual std::array<rawrbox::Vector4f, 2> getVelocity() const { return this->_uniforms.velocity; }
+		[[nodiscard]] virtual std::pair<rawrbox::Vector3f, rawrbox::Vector3f> getVelocity() const { return {this->_uniforms.velocityMin, this->_uniforms.velocityMax}; }
 		virtual void setVelocity(const rawrbox::Vector3f& min, const rawrbox::Vector3f& max) {
-			this->_uniforms.velocity[0] = min;
-			this->_uniforms.velocity[1] = max;
+			this->_uniforms.velocityMin = min;
+			this->_uniforms.velocityMax = max;
 		}
+
+		[[nodiscard]] virtual std::pair<rawrbox::Vector3f, rawrbox::Vector3f> getRotation() const { return {this->_uniforms.rotationMin, this->_uniforms.rotationMax}; }
+		virtual void setRotation(const rawrbox::Vector3f& min, const rawrbox::Vector3f& max) {
+			this->_uniforms.rotationMin = min;
+			this->_uniforms.rotationMax = max;
+		}
+
+		virtual void setTexture(rawrbox::TextureBase* texture) {
+			this->_uniforms.textureID = texture != nullptr ? texture->getTextureID() : 0;
+		}
+
+		[[nodiscard]] virtual std::pair<uint32_t, uint32_t> getAtlasIndex() const { return {this->_uniforms.atlasMin, this->_uniforms.atlasMax}; }
+		virtual void setAtlasIndex(uint32_t min, uint32_t max) {
+			this->_uniforms.atlasMin = min;
+			this->_uniforms.atlasMax = max;
+		}
+
+		[[nodiscard]] virtual float getGravityMul() const { return this->_uniforms.gravity; }
+		virtual void setGravityMul(float gravity) { this->_uniforms.gravity = gravity; }
 
 		virtual void setColorTransition(const std::array<rawrbox::Colorf, 4>& col) { this->_uniforms.color = col; }
 		[[nodiscard]] virtual const std::array<rawrbox::Colorf, 4>& getColorTransition() const { return this->_uniforms.color; }
 
-		virtual void setLifetimeRange(float minLife, float maxLife) { this->_uniforms.life = {minLife, maxLife}; }
-		[[nodiscard]] virtual const rawrbox::Vector2f& getLifetimeRange() const { return this->_uniforms.life; }
+		virtual void setLifetimeRange(float minLife, float maxLife) {
+			this->_uniforms.lifeMin = minLife;
+			this->_uniforms.lifeMax = maxLife;
+		}
+
+		[[nodiscard]] virtual std::pair<float, float> getLifetimeRange() const { return {this->_uniforms.lifeMin, this->_uniforms.lifeMax}; }
 
 		virtual void setSpawnRate(float rate) { this->_uniforms.spawnRate = rate; }
 		[[nodiscard]] virtual float getSpawnRate() const { return this->_uniforms.spawnRate; }
@@ -135,23 +173,27 @@ namespace rawrbox {
 
 		virtual void draw() {
 			if (!this->isEnabled()) return;
-			this->_uniforms.time++;
-
 			auto* context = rawrbox::RENDERER->context();
 
+			auto* engine = rawrbox::RENDERER->getPlugin<rawrbox::ParticleEnginePlugin>("ParticleEngine");
+			if (engine == nullptr) throw this->_logger->error("Emitter requires the `ParticleEngine` renderer plugin");
+			auto* bind = engine->getBind();
+
+			this->_uniforms.time++;
+
 			// Setup bind ---
-			rawrbox::BindlessManager::signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Particles")->Set(this->_bufferRead /*, Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE*/);
+			bind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "Particles")->Set(this->_bufferRead);
 			// ---------------
 
-			context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			context->CommitShaderResources(bind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 			// Bind pipeline ----
 			context->SetPipelineState(this->_material->base);
 			// ----------
 
 			Diligent::DrawAttribs DrawAttrs;
-			DrawAttrs.NumVertices = this->_maxParticles * 6; // 4 vertices per particle quad
-			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
+			DrawAttrs.NumVertices = this->_maxParticles;
+			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
 			context->Draw(DrawAttrs);
 		}
 	};

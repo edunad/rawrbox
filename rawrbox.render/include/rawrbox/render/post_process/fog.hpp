@@ -19,7 +19,7 @@ namespace rawrbox {
 		~PostProcessFog() override = default;
 
 		virtual void setColor(const rawrbox::Colorf& color);
-		virtual void setType(rawrbox::FOG_TYPE end);
+		virtual void setType(rawrbox::FOG_TYPE type);
 		virtual void setEnd(float end);
 		virtual void setDensity(float density);
 

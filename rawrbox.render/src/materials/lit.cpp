@@ -32,7 +32,7 @@ namespace rawrbox {
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = cluster->getClusterMacros() + helper;
 
-		settings.signature = rawrbox::BindlessManager::signature;
+		settings.signatures = {rawrbox::BindlessManager::signature};
 		settings.layout = layout;
 		// -------------------
 

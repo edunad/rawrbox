@@ -22,7 +22,7 @@ namespace rawrbox {
 		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;              // Disable depth
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP; // Set topology
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		settings.signature = rawrbox::BindlessManager::signature; // Use bindless
+		settings.signatures = {rawrbox::BindlessManager::signature}; // Use bindless
 
 		_pipe = rawrbox::PipelineUtils::createPipeline("Utils::QUAD", settings);
 		_logger->info("Initializing");

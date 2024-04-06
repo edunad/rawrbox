@@ -4,6 +4,8 @@
     static const float FLT_MIN  = 1.175494351e-38F;
     static const float FLT_MAX  = 3.402823466e+38F;
 
+    static const float GRAVITY  = -9.81F;
+
     static const float PI      	= 3.14159265358979323846;
     static const float INV_PI   = 0.31830988618379067154;
     static const float INV_2PI  = 0.15915494309189533577;

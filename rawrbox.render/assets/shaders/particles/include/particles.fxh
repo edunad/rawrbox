@@ -7,10 +7,10 @@
 		float lifeTime;
 
 		float3 velocity;
-		float initialLifeTime;
+		float atlasIndex;
 
 		float2 size;
-		float2 rotation;
+		float3 rotation;
 
         float4 color;
 	};

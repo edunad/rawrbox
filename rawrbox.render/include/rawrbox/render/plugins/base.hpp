@@ -40,7 +40,7 @@ namespace rawrbox {
 		virtual void resize(const rawrbox::Vector2u& renderSize);
 		virtual void upload();
 
-		virtual void render();
+		virtual void preRender();
 		virtual void postRender(rawrbox::TextureRender& renderTarget);
 
 		virtual void update();

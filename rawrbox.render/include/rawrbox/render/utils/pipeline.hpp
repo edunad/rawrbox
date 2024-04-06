@@ -53,7 +53,7 @@ namespace rawrbox {
 		rawrbox::PipeBlending blending = {};
 
 		Diligent::ShaderMacroHelper macros = {};
-		Diligent::IPipelineResourceSignature* signature = nullptr;
+		std::vector<Diligent::IPipelineResourceSignature*> signatures = {};
 
 		std::string pVS;
 		std::string pPS;
@@ -74,8 +74,7 @@ namespace rawrbox {
 
 		std::vector<rawrbox::PipeUniforms> uniforms = {};
 		std::vector<Diligent::ShaderResourceVariableDesc> resources = {};
-
-		Diligent::IPipelineResourceSignature* signature = nullptr;
+		std::vector<Diligent::IPipelineResourceSignature*> signatures = {};
 
 		Diligent::SHADER_RESOURCE_VARIABLE_TYPE resourceType = Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC;
 		Diligent::ShaderMacroHelper macros = {};

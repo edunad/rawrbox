@@ -418,7 +418,7 @@ namespace rawrbox {
 #ifdef _DEBUG
 				// this->_context->BeginDebugGroup(plugin.first.c_str());
 #endif
-			plugin.second->render();
+			plugin.second->preRender();
 #ifdef _DEBUG
 			// this->_context->EndDebugGroup();
 #endif

@@ -21,7 +21,7 @@ namespace rawrbox {
 			settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 			settings.cull = Diligent::CULL_MODE_FRONT;
 			settings.layout = rawrbox::VertexData::vLayout();
-			settings.signature = rawrbox::BindlessManager::signature; // Use bindless
+			settings.signatures = {rawrbox::BindlessManager::signature}; // Use bindless
 
 			settings.fill = Diligent::FILL_MODE_WIREFRAME;
 			rawrbox::PipelineUtils::createPipeline("3DText::Base::Wireframe", settings);

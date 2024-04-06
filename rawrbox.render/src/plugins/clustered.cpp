@@ -91,7 +91,7 @@ namespace rawrbox {
 		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "DecalsConstants")->Set(rawrbox::DECALS::uniforms);
 	}
 
-	void ClusteredPlugin::render() {
+	void ClusteredPlugin::preRender() {
 		auto* renderer = rawrbox::RENDERER;
 		auto* camera = renderer->camera();
 		auto* context = renderer->context();
@@ -254,7 +254,7 @@ namespace rawrbox {
 
 		rawrbox::PipeComputeSettings settings;
 		settings.macros = this->getClusterMacros();
-		settings.signature = this->_signature;
+		settings.signatures = {this->_signature};
 
 		// BUILDING -----
 		settings.pCS = "cluster_build.csh";

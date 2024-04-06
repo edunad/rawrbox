@@ -5,15 +5,26 @@
         float3 position;
         float time;
 
-        float4 velocity[2];
+        float3 velocityMin;
+        float lifeMin;
+
+        float3 velocityMax;
+        float lifeMax;
+
+        float3 rotationMin;
+        float spawnRate;
+
+        float3 rotationMax;
+        float gravity;
 
         float4 color[4];
         float4 size;
 
         // ------------
-        float2 life;
-        float spawnRate;
-        float maxParticles;
+        uint maxParticles;
+        uint atlasMin;
+        uint atlasMax;
+        uint textureID;
         // ------------
     };
 

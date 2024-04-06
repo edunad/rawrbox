@@ -28,35 +28,17 @@ namespace rawrbox {
 		rawrbox::PipeSettings settings;
 		settings.pVS = "particles.vsh";
 		settings.pPS = "particles.psh";
-		settings.renderTargets = rawrbox::RENDER_TARGET_TARGETS;        // COLOR + GPUPick
-		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST; // Set topology
+		settings.pGS = "particles.gsh";
+		settings.renderTargets = rawrbox::RENDER_TARGET_TARGETS;     // COLOR + GPUPick
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_POINT_LIST; // Set topology
 		settings.cull = Diligent::CULL_MODE_NONE;
-		// settings.macros = cluster->getClusterMacros() + helper;
-
-		settings.signature = rawrbox::BindlessManager::signature;
+		// settings.depthWrite = false;
+		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+		settings.fill = Diligent::FILL_MODE_SOLID;
+		settings.signatures = {rawrbox::BindlessManager::signature, engine->getSignature()};
 		// -------------------
 
-		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		settings.fill = Diligent::FILL_MODE_SOLID;
 		rawrbox::PipelineUtils::createPipeline(id, settings);
-
-		/*settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipeline(id + "::Alpha", settings);
-
-		settings.fill = Diligent::FILL_MODE_SOLID;
-		settings.cull = Diligent::CULL_MODE_BACK;
-		settings.blending = {};
-		rawrbox::PipelineUtils::createPipeline(id + "::CullBack", settings);
-
-		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipeline(id + "::CullBack::Alpha", settings);
-
-		settings.cull = Diligent::CULL_MODE_NONE;
-		settings.blending = {};
-		rawrbox::PipelineUtils::createPipeline(id + "::CullNone", settings);
-
-		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
-		rawrbox::PipelineUtils::createPipeline(id + "::CullNone::Alpha", settings);*/
 		// -----
 	}
 } // namespace rawrbox
