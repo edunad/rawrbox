@@ -10,7 +10,10 @@
 		float atlasIndex;
 
 		float2 size;
-		float2 rotation;
+		float2 _padding;
+
+		float3 rotation;
+		float _padding_2;
 
 		float4 color;
 	};

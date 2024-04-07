@@ -1,21 +1,24 @@
 #include "camera.fxh"
 #include "model_transforms.fxh"
 
-struct GSInput {
-    float4 POS       : SV_POSITION;
-    float2 SIZE      : SIZE;
-    float3 UV        : TEXCOORD0;
-    float4 COLOR     : COLOR;
+#include "particles_uniforms.fxh"
 
-    uint   TextureID : TEX_ARRAY_INDEX;
+struct GSInput {
+    float4 POS         : SV_POSITION;
+    float2 SIZE        : SIZE;
+    float3x3 ROTATION  : ROTATION;
+    float3 UV          : TEXCOORD0;
+    float4 COLOR       : COLOR;
 };
 
 struct GSOutput {
-    float4 Position : SV_POSITION;
-    float3 UV       : TEXCOORD0;
-    float4 Color    : COLOR;
+    float4 Position  : SV_POSITION;
+    float3 UV        : TEXCOORD0;
+    float4 Color     : COLOR;
     uint   TextureID : TEX_ARRAY_INDEX;
 };
+
+
 
 [maxvertexcount(4)]
 void main(point GSInput input[1], inout TriangleStream<GSOutput> outputStream) {
@@ -39,11 +42,12 @@ void main(point GSInput input[1], inout TriangleStream<GSOutput> outputStream) {
 
     GSOutput output;
     output.Color = input[0].COLOR;
-    output.TextureID = input[0].TextureID;
+    output.TextureID = EmitterConstants.textureID;
 
     [unroll]
     for (int i = 0; i < 4; ++i) {
-        float4 billboardOffset = billboardTransform(float4(offsets[i], 1.0), 6);
+        float3 rotatedOffset = mul(input[0].ROTATION, offsets[i]);
+        float4 billboardOffset = billboardTransform(float4(rotatedOffset, 1.0), EmitterConstants.billboard);
 
         output.Position = mul(float4(input[0].POS.xyz + billboardOffset.xyz, 1.0f), Camera.worldViewProj);
         output.UV = float3(uvs[i], input[0].UV.z);

@@ -14,10 +14,12 @@ float3 CalculateVelocity(uint hash) {
     return randomVelocity;
 }
 
-float2 CalculateRotation(uint hash) {
-    float2 randomRotation;
+float3 CalculateRotation(uint hash) {
+    float3 randomRotation;
     randomRotation.x = lerp(EmitterConstants.rotationMin.x, EmitterConstants.rotationMax.x, (float)(hash & 0xFF) * (1.0f / 255.0f));
     randomRotation.y = lerp(EmitterConstants.rotationMin.y, EmitterConstants.rotationMax.y, (float)((hash >> 8) & 0xFF) * (1.0f / 255.0f));
+    randomRotation.z = lerp(EmitterConstants.rotationMin.z, EmitterConstants.rotationMax.z, (float)((hash >> 8) & 0xFF) * (1.0f / 255.0f));
+
     return randomRotation;
 }
 
@@ -60,7 +62,11 @@ groupshared Particle localParticles[256];
 [numthreads(256, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID, uint groupIndex : SV_GroupIndex) {
     uint particleIndex = dispatchThreadID.x;
-    if (particleIndex >= EmitterConstants.maxParticles) return;
+
+    uint maxParticles, stride;
+    Particles.GetDimensions(maxParticles, stride);
+
+    if (particleIndex >= maxParticles) return;
 
     // Load particle data into groupshared memory
     localParticles[groupIndex] = GetParticle(particleIndex);
@@ -73,7 +79,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID, uint groupIndex : SV_Gro
     float spawnInterval = 1.0f / EmitterConstants.spawnRate;
     float particleSpawnTime = particleIndex * spawnInterval;
 
-    if (particle.lifeTime <= 0.0f && EmitterConstants.time >= particleSpawnTime) {
+    if (particle.lifeTime <= 0.0F && EmitterConstants.time >= particleSpawnTime) {
         // Spawn / reset a particle
         particle.position = EmitterConstants.position;
         particle.color = EmitterConstants.color[0];
@@ -86,6 +92,8 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID, uint groupIndex : SV_Gro
     } else {
         // Apply gravity to the particle velocity
         float3 gravity = float3(0, GRAVITY, 0) * EmitterConstants.gravity;
+
+        particle.rotation += 0.5F * Camera.deltaTime;
         particle.velocity += gravity * Camera.deltaTime;
         particle.position += particle.velocity * Camera.deltaTime;
         particle.lifeTime -= Camera.deltaTime;

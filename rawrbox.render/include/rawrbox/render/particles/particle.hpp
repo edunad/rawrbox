@@ -13,7 +13,10 @@ namespace rawrbox {
 		float atlasIndex = 0.F;
 
 		rawrbox::Vector2f size = {};
-		rawrbox::Vector2f rotation = {};
+		rawrbox::Vector2f _padding = {};
+
+		rawrbox::Vector3f rotation = {};
+		float _padding_2 = 0.F;
 
 		rawrbox::Colorf color = {};
 	};

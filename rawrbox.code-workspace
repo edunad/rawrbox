@@ -76,6 +76,7 @@
     "workbench.editor.wrapTabs": true,
     "files.insertFinalNewline": true,
     "files.associations": {
+      "*.gsh": "hlsl",
       "*.csh": "hlsl",
       "xstring": "cpp",
       "functional": "cpp",

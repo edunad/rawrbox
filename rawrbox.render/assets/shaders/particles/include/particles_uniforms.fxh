@@ -21,7 +21,7 @@
         float4 size;
 
         // ------------
-        uint maxParticles;
+        uint billboard;
         uint atlasMin;
         uint atlasMax;
         uint textureID;

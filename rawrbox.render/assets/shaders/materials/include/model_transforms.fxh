@@ -18,7 +18,7 @@
         }
         // ----------------------
 
-        float4 billboardTransform(float4 vertex, int billboard) {
+        float4 billboardTransform(float4 vertex, uint billboard) {
             float3 right = float3(1, 0, 0);
             float3 up = float3(0, 1, 0);
 

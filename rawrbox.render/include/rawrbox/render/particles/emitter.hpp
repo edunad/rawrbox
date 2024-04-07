@@ -27,7 +27,7 @@ namespace rawrbox {
 		float spawnRate = 0.F;
 
 		rawrbox::Vector3f rotationMax = {};
-		float gravity = 0.F; // -9.81F
+		float gravity = 0.F;
 
 		std::array<rawrbox::Colorf, 4> color = {}; // Transition between 4 colors using lifetime: 0 ---- 1 ---- 2 ----> 3
 
@@ -36,7 +36,7 @@ namespace rawrbox {
 					     // -------
 
 		// -----
-		uint32_t maxParticles = 0;
+		uint32_t billboard = 0;
 		uint32_t atlasMin = 0;
 		uint32_t atlasMax = 0;
 		uint32_t textureID = 0;
@@ -109,6 +109,9 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual float getGravityMul() const { return this->_uniforms.gravity; }
 		virtual void setGravityMul(float gravity) { this->_uniforms.gravity = gravity; }
+
+		[[nodiscard]] virtual uint32_t getBillboard() const { return this->_uniforms.billboard; }
+		virtual void billboard(uint32_t billboard) { this->_uniforms.billboard = billboard; }
 
 		virtual void setColorTransition(const std::array<rawrbox::Colorf, 4>& col) { this->_uniforms.color = col; }
 		[[nodiscard]] virtual const std::array<rawrbox::Colorf, 4>& getColorTransition() const { return this->_uniforms.color; }

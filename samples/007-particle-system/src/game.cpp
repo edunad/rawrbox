@@ -78,7 +78,7 @@ namespace particle_system {
 		// --------------
 
 		// Text test ----
-		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "EMITTER", {0, 0.5F, 0});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "EMITTER", {0, 2.3F, 0});
 		this->_text->upload();
 		// ------
 
@@ -101,15 +101,13 @@ namespace particle_system {
 			this->_emitter->setSpawnRate(100.F);
 			this->_emitter->setSize(rawrbox::Vector4f{0.2F, 0.2F, 0.2F, 0.2F});
 
-			this->_emitter->setRotation(rawrbox::Vector3f{0.0F, 0.0F, 0.0F}, rawrbox::Vector3f{0.0F, 0.0F, 6.28F});
+			this->_emitter->setRotation(rawrbox::Vector3f{0.0F, 0.0F, 0.0F}, rawrbox::Vector3f{0.0F, 5.0F, 6.28F});
 			this->_emitter->setGravityMul(-0.5F);
 
 			this->_emitter->upload();
 		}
 
 		{
-			auto* texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/particles.png")->get();
-
 			this->_emitter2->setTexture(texture);
 			this->_emitter2->setAtlasIndex(6, 8);
 
@@ -124,8 +122,9 @@ namespace particle_system {
 			this->_emitter2->setLifetimeRange(0.5F, 1.0F);
 			this->_emitter2->setSpawnRate(5.F);
 			this->_emitter2->setSize(rawrbox::Vector4f{0.2F, 0.2F, 0.2F, 0.2F});
+			this->_emitter2->billboard(rawrbox::MeshBilldboard::ALL);
 
-			this->_emitter2->setRotation(rawrbox::Vector3f{0.0F, 0.0F, 0.0F}, rawrbox::Vector3f{0.0F, 0.0F, 6.28F});
+			// this->_emitter2->setRotation(rawrbox::Vector3f{0.0F, 0.0F, 0.0F}, rawrbox::Vector3f{0.0F, 4.0F, 6.28F});
 			this->_emitter2->setGravityMul(1.0F);
 
 			this->_emitter2->upload();

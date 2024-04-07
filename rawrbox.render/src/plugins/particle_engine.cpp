@@ -102,11 +102,11 @@ namespace rawrbox {
 	}
 
 	void ParticleEnginePlugin::signatures(std::vector<Diligent::PipelineResourceDesc>& sig) {
-		sig.emplace_back(Diligent::SHADER_TYPE_VERTEX, "EmitterConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+		sig.emplace_back(Diligent::SHADER_TYPE_GEOMETRY, "EmitterConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 	}
 
 	void ParticleEnginePlugin::bindStatic(Diligent::IPipelineResourceSignature& sig) {
-		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "EmitterConstants")->Set(this->_uniforms);
+		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "EmitterConstants")->Set(this->_uniforms);
 	}
 
 	void ParticleEnginePlugin::preRender() {
@@ -149,7 +149,6 @@ namespace rawrbox {
 			if (Constants == nullptr) throw _logger->error("Failed to map emitter constants buffer!");
 
 			std::memcpy(Constants, &emitter->getUniform(), sizeof(rawrbox::EmitterUniforms));
-			Constants->maxParticles = emitter->maxParticles();
 		}
 		// --------
 
