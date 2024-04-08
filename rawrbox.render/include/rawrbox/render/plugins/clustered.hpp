@@ -46,16 +46,22 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IBufferView> _dataGridBufferRead;
 		// -----------
 
+		// SIGNATURE ---
+		Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> _signature;
+		Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> _signatureBind;
+		// --------------
+
 		rawrbox::Matrix4x4 _oldProj = {};
 
 		virtual void buildBuffers();
+		virtual void buildSignatures();
 		virtual void buildPipelines();
 
 	public:
 		static uint32_t CLUSTERS_X;
 		static uint32_t CLUSTERS_Y;
 
-		static uint32_t GROUP_SIZE;
+		static uint32_t CLUSTERS_GROUP_SIZE;
 
 		ClusteredPlugin() = default;
 		ClusteredPlugin(const ClusteredPlugin&) = delete;
@@ -75,10 +81,11 @@ namespace rawrbox {
 		void resize(const rawrbox::Vector2u& size) override;
 		void upload() override;
 
-		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig, bool compute) override;
-		void bindStatic(Diligent::IPipelineResourceSignature& sig, bool compute) override;
+		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig) override;
+		void bindStatic(Diligent::IPipelineResourceSignature& sig) override;
 
 		void preRender() override;
+
 		std::string getID() override;
 	};
 } // namespace rawrbox

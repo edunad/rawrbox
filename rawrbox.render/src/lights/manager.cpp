@@ -60,10 +60,13 @@ namespace rawrbox {
 		// --------------
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}, {_buffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {_buffer->GetBuffer(), Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----------
 
-		update();
+		// Update, DynamicBuffer does not support passing data?
+		updateBuffer();
+		// -----------
 	}
 
 	void LIGHTS::shutdown() {
@@ -88,7 +91,7 @@ namespace rawrbox {
 		// --------
 	}
 
-	void LIGHTS::update() {
+	void LIGHTS::updateBuffer() {
 		if (_buffer == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__LIGHT_DIRTY__ || _lights.empty()) return;
 
@@ -146,10 +149,10 @@ namespace rawrbox {
 		rawrbox::__LIGHT_DIRTY__ = false;
 	}
 
-	void LIGHTS::bindUniforms() {
+	void LIGHTS::update() {
 		if (uniforms == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
 
-		update();          // Update all lights if dirty
+		updateBuffer();    // Update all lights if dirty
 		updateConstants(); // Update buffer if dirty
 	}
 

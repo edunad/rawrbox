@@ -84,7 +84,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
         float4 emissionTS = g_Textures[Constants.textureIDs.w].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
 
         // LIGHT ------
-        float3 V           = normalize(Camera.pos.xyz - PSIn.WorldPos.xyz);
+        float3 V           = normalize(Camera.pos - PSIn.WorldPos.xyz);
         float dither       = InterleavedGradientNoise(PSIn.Pos.xy);
 
         // Apply compute data ----

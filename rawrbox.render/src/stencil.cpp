@@ -43,7 +43,7 @@ namespace rawrbox {
 		settings.scissors = true;
 		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
 		settings.layout = rawrbox::PosUVColorVertexData::vLayout();
-		settings.signature = rawrbox::BindlessManager::signature; // Use bindless
+		settings.signatures = {rawrbox::BindlessManager::signature}; // Use bindless
 
 		this->_2dPipeline = rawrbox::PipelineUtils::createPipeline("Stencil::2D", settings);
 

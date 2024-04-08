@@ -4,11 +4,13 @@
 
     struct CameraStruct {
         float4x4 view;
+        float4x4 viewInv;
 
         float4x4 world;
         float4x4 worldViewProj;
 
-        float4   pos;
+        float3   pos;
+        float    deltaTime;
     };
 
     // Data that never / very rarelly changes

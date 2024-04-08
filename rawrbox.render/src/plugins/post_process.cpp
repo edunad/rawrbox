@@ -28,13 +28,11 @@ namespace rawrbox {
 		}
 	}
 
-	void PostProcessPlugin::signatures(std::vector<Diligent::PipelineResourceDesc>& sig, bool compute) {
-		if (compute) return;
+	void PostProcessPlugin::signatures(std::vector<Diligent::PipelineResourceDesc>& sig) {
 		sig.emplace_back(Diligent::SHADER_TYPE_PIXEL, "PostProcessConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 	}
 
-	void PostProcessPlugin::bindStatic(Diligent::IPipelineResourceSignature& sig, bool compute) {
-		if (compute) return;
+	void PostProcessPlugin::bindStatic(Diligent::IPipelineResourceSignature& sig) {
 		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "PostProcessConstants")->Set(this->_buffer);
 	}
 

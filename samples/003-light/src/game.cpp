@@ -39,7 +39,7 @@ namespace light {
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
-			if (pass == rawrbox::DrawPass::PASS_OPAQUE) {
+			if (pass == rawrbox::DrawPass::PASS_WORLD) {
 				this->drawWorld();
 			} else {
 				this->drawOverlay();

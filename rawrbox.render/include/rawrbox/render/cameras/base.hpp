@@ -26,11 +26,15 @@ namespace rawrbox {
 
 	struct CameraUniforms {
 		rawrbox::Matrix4x4 gView = {};
+		rawrbox::Matrix4x4 gViewInv = {};
 
 		rawrbox::Matrix4x4 gWorld = {};
 		rawrbox::Matrix4x4 gWorldViewProj = {};
 
-		rawrbox::Vector4f gPos = {};
+		// ----------
+		rawrbox::Vector3f gPos = {};
+		float gDeltaTime = 0;
+		// ----------------
 
 		bool operator==(const CameraUniforms& other) const {
 			return this->gView == other.gView && this->gWorld == other.gWorld && this->gWorldViewProj == other.gWorldViewProj && this->gPos == other.gPos;

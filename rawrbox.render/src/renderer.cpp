@@ -104,13 +104,13 @@ namespace rawrbox {
 
 						EngineCI.GPUDescriptorHeapDynamicSize[0] = heap.first;
 						EngineCI.GPUDescriptorHeapSize[0] = heap.second;
-					} /* else {
-						 EngineCI.GPUDescriptorHeapDynamicSize[0] = 32768;
-						 EngineCI.GPUDescriptorHeapSize[1] = 128;
-						 EngineCI.GPUDescriptorHeapDynamicSize[1] = 2048 - 128;
-						 EngineCI.DynamicDescriptorAllocationChunkSize[0] = 32;
-						 EngineCI.DynamicDescriptorAllocationChunkSize[1] = 8;
-					 }*/
+					} else {
+						EngineCI.GPUDescriptorHeapDynamicSize[0] = 32768;
+						EngineCI.GPUDescriptorHeapSize[1] = 128;
+						EngineCI.GPUDescriptorHeapDynamicSize[1] = 2048 - 128;
+						EngineCI.DynamicDescriptorAllocationChunkSize[0] = 32;
+						EngineCI.DynamicDescriptorAllocationChunkSize[1] = 8;
+					}
 
 					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
 					pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc(false), this->_window, &this->_swapChain);
@@ -132,7 +132,7 @@ namespace rawrbox {
 
 					Diligent::EngineVkCreateInfo EngineCI;
 					EngineCI.Features = features;
-					EngineCI.pDxCompilerPath = "dxcompiler";
+					// EngineCI.pDxCompilerPath = "dxcompiler";
 
 					if (this->overrideHEAP != nullptr) {
 						auto heap = this->overrideHEAP();
@@ -382,7 +382,6 @@ namespace rawrbox {
 
 		// Process barriers -----
 		rawrbox::BarrierUtils::clearBarrierCache();
-		// rawrbox::BarrierUtils::processBarriers();
 		//  ---------------------
 
 		// Update textures ---
@@ -436,7 +435,7 @@ namespace rawrbox {
 		// this->beginQuery("OPAQUE");
 #endif
 		this->_render->startRecord();
-		this->_drawCall(rawrbox::DrawPass::PASS_OPAQUE);
+		this->_drawCall(rawrbox::DrawPass::PASS_WORLD);
 		this->_render->stopRecord();
 #ifdef _DEBUG
 		// this->endQuery("OPAQUE");
@@ -715,7 +714,7 @@ namespace rawrbox {
 		MapRegion.MaxX = MapRegion.MinX + GPU_PICK_SAMPLE_SIZE;
 		MapRegion.MaxY = MapRegion.MinY + GPU_PICK_SAMPLE_SIZE;
 
-		auto* tex = this->_render->getTexture(1);
+		auto* tex = this->_render->getTexture(1); // GPU pick texture
 		this->_GPUBlit->copy(tex, &MapRegion, [this, callback]() {
 			this->_GPUBlit->blit(nullptr, [this, callback](const uint8_t* pixels, const uint64_t stride) {
 				uint32_t max = 0;

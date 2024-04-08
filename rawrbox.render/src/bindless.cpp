@@ -16,10 +16,10 @@ namespace rawrbox {
 	// --------------
 
 	// PUBLIC -------
+	rawrbox::Event<> BindlessManager::onTextureUpdate;
+
 	Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> BindlessManager::signature;
-	Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> BindlessManager::computeSignature;
 	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> BindlessManager::signatureBind;
-	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> BindlessManager::computeSignatureBind;
 
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> BindlessManager::signatureBufferPixel;
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> BindlessManager::signatureBufferVertex;
@@ -60,7 +60,7 @@ namespace rawrbox {
 
 			device->CreateBuffer(BuffPixelDesc, nullptr, &signatureBufferVertexSkinned);
 
-			// Horrible temp fix for signatures that are never mapped ---
+			// Horrible temp fix for signatures that might never be mapped ---
 			Diligent::MapHelper<rawrbox::BindlessVertexSkinnedBuffer> HACK(rawrbox::RENDERER->context(), signatureBufferVertexSkinned, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 			// -----------
 		}
@@ -97,10 +97,7 @@ namespace rawrbox {
 		_updateTextures = {};
 
 		RAWRBOX_DESTROY(signature);
-		RAWRBOX_DESTROY(computeSignature);
-
 		RAWRBOX_DESTROY(signatureBind);
-		RAWRBOX_DESTROY(computeSignatureBind);
 
 		RAWRBOX_DESTROY(signatureBufferPixel);
 		RAWRBOX_DESTROY(signatureBufferVertex);
@@ -122,7 +119,6 @@ namespace rawrbox {
 		std::vector<Diligent::PipelineResourceDesc> resources = {
 		    {Diligent::SHADER_TYPE_VERTEX, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 		    {Diligent::SHADER_TYPE_VERTEX, "SkinnedConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-
 		    {Diligent::SHADER_TYPE_VERTEX, "g_Textures", renderer->MAX_VERTEX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
 
 		    {Diligent::SHADER_TYPE_PIXEL, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
@@ -135,15 +131,17 @@ namespace rawrbox {
 
 			resources.emplace_back(Diligent::SHADER_TYPE_PIXEL, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 			resources.emplace_back(Diligent::SHADER_TYPE_PIXEL, "SCamera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+
+			resources.emplace_back(Diligent::SHADER_TYPE_GEOMETRY, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+			resources.emplace_back(Diligent::SHADER_TYPE_GEOMETRY, "SCamera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 		}
 
 		// Add extra signatures ----
 		for (const auto& plugin : renderer->getPlugins()) {
 			if (plugin.second == nullptr) continue;
-			plugin.second->signatures(resources, false);
+			plugin.second->signatures(resources);
 		}
 		// -------------------------
-
 		PRSDesc.Resources = resources.data();
 		PRSDesc.NumResources = static_cast<uint8_t>(resources.size());
 
@@ -163,33 +161,6 @@ namespace rawrbox {
 
 		device->CreatePipelineResourceSignature(PRSDesc, &signature);
 		// ----------------------
-
-		// Compute signature ---
-		if (camera != nullptr) {
-			resources = {
-			    {Diligent::SHADER_TYPE_COMPUTE, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-			    {Diligent::SHADER_TYPE_COMPUTE, "SCamera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-			};
-		} else {
-			resources.clear();
-		}
-
-		PRSDesc.Name = "RawrBox::SIGNATURE::BINDLESS::COMPUTE";
-		PRSDesc.ImmutableSamplers = nullptr;
-		PRSDesc.NumImmutableSamplers = 0;
-
-		// Add extra signatures ----
-		for (const auto& plugin : renderer->getPlugins()) {
-			if (plugin.second == nullptr) continue;
-			plugin.second->signatures(resources, true);
-		}
-		// -------------------------
-
-		PRSDesc.Resources = resources.data();
-		PRSDesc.NumResources = static_cast<uint8_t>(resources.size());
-
-		device->CreatePipelineResourceSignature(PRSDesc, &computeSignature);
-		// ----------------------
 	}
 
 	void BindlessManager::bindSignatures() {
@@ -203,18 +174,19 @@ namespace rawrbox {
 		if (camera != nullptr) {
 			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Camera")->Set(camera->uniforms());
 			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Camera")->Set(camera->uniforms());
+			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "Camera")->Set(camera->uniforms());
 
 			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "SCamera")->Set(camera->staticUniforms());
 			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "SCamera")->Set(camera->staticUniforms());
+			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "SCamera")->Set(camera->staticUniforms());
 		}
 
 		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(signatureBufferPixel);
 		// ------------
-
 		// Add extra binds ----
 		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
 			if (plugin.second == nullptr) continue;
-			plugin.second->bindStatic(*signature, false);
+			plugin.second->bindStatic(*signature);
 		}
 		// -------------------------
 
@@ -223,7 +195,7 @@ namespace rawrbox {
 		// Bind signature bind ----
 		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
 			if (plugin.second == nullptr) continue;
-			plugin.second->bindMutable(*signatureBind, false);
+			plugin.second->bindMutable(*signatureBind);
 		}
 		// -------------------------
 
@@ -232,29 +204,6 @@ namespace rawrbox {
 		signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(_textureHandles.data(), 0, static_cast<uint32_t>(_textureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 		// ----------------------
 		// ----------------
-
-		// Setup compute binds --
-		if (camera != nullptr) {
-			computeSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(camera->uniforms());
-			computeSignature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "SCamera")->Set(camera->staticUniforms());
-		}
-
-		// Add extra binds ----
-		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
-			if (plugin.second == nullptr) continue;
-			plugin.second->bindStatic(*computeSignature, true);
-		}
-		// -------------------------
-
-		computeSignature->CreateShaderResourceBinding(&computeSignatureBind, true);
-
-		// Bind signature bind ----
-		for (const auto& plugin : rawrbox::RENDERER->getPlugins()) {
-			if (plugin.second == nullptr) continue;
-			plugin.second->bindMutable(*computeSignatureBind, true);
-		}
-		// -------------------------
-		// ----------------------
 	}
 	// --------------------------
 
@@ -310,6 +259,10 @@ namespace rawrbox {
 		registerUpdateTexture(texture);
 		texture.setTextureID(id);
 		// ------------
+
+		// EVENT ----
+		onTextureUpdate();
+		// -----
 	}
 
 	void BindlessManager::unregisterTexture(rawrbox::TextureBase& texture) {
@@ -337,6 +290,10 @@ namespace rawrbox {
 		if (signatureBind != nullptr) {
 			signatureBind->GetVariableByName(isVertex ? Diligent::SHADER_TYPE_VERTEX : Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(handler.data(), 0, static_cast<uint32_t>(handler.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 		}
+		// -----
+
+		// EVENT ----
+		onTextureUpdate();
 		// -----
 	}
 

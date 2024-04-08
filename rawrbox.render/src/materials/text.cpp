@@ -21,7 +21,7 @@ namespace rawrbox {
 			settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 			settings.cull = Diligent::CULL_MODE_FRONT;
 			settings.layout = rawrbox::VertexData::vLayout();
-			settings.signature = rawrbox::BindlessManager::signature; // Use bindless
+			settings.signatures = {rawrbox::BindlessManager::signature}; // Use bindless
 
 			settings.fill = Diligent::FILL_MODE_WIREFRAME;
 			rawrbox::PipelineUtils::createPipeline("3DText::Base::Wireframe", settings);
@@ -33,8 +33,8 @@ namespace rawrbox {
 			_build = true;
 		}
 
-		if (this->_base == nullptr) this->_base = rawrbox::PipelineUtils::getPipeline("3DText::Base");
-		if (this->_base_alpha == nullptr) this->_base_alpha = this->_base;
-		if (this->_wireframe == nullptr) this->_wireframe = rawrbox::PipelineUtils::getPipeline("3DText::Base::Wireframe");
+		if (this->base == nullptr) this->base = rawrbox::PipelineUtils::getPipeline("3DText::Base");
+		if (this->base_alpha == nullptr) this->base_alpha = this->base;
+		if (this->wireframe == nullptr) this->wireframe = rawrbox::PipelineUtils::getPipeline("3DText::Base::Wireframe");
 	}
 } // namespace rawrbox

@@ -44,11 +44,9 @@ namespace rawrbox {
 
 	struct BindlessPostProcessBuffer {
 		std::array<rawrbox::Vector4f, rawrbox::MAX_POST_DATA> data = {};
+		rawrbox::Vector4u textureIDs = {}; // BASE, DEPTH, ?, ?
 
-		uint32_t textureID = 0;
-		uint32_t depthTextureID = 0;
-
-		bool operator==(const BindlessPostProcessBuffer& other) const { return this->textureID == other.textureID && this->depthTextureID == other.depthTextureID && std::equal(this->data.begin(), this->data.end(), other.data.begin()); }
+		bool operator==(const BindlessPostProcessBuffer& other) const { return this->textureIDs == other.textureIDs && std::equal(this->data.begin(), this->data.end(), other.data.begin()); }
 		bool operator!=(const BindlessPostProcessBuffer& other) const { return !operator==(other); }
 	};
 	// --------------------------
@@ -71,13 +69,13 @@ namespace rawrbox {
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> signature;
-		static Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> computeSignature;
 		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> signatureBind;
-		static Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> computeSignatureBind;
 
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferPixel;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertex;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> signatureBufferVertexSkinned;
+
+		static rawrbox::Event<> onTextureUpdate;
 
 		static void init();
 		static void shutdown();

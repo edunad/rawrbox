@@ -23,8 +23,7 @@ namespace rawrbox {
 			if (CBConstants == nullptr) throw _logger->error("Failed to map the postprocess constants buffer!");
 
 			CBConstants->data = this->_data;
-			CBConstants->textureID = texture.getTextureID();
-			CBConstants->depthTextureID = texture.getDepthTextureID();
+			CBConstants->textureIDs = {texture.getTextureID(), texture.getDepthTextureID(), 0, 0};
 		}
 		// -----------
 

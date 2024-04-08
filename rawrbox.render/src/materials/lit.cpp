@@ -1,6 +1,6 @@
-#include <rawrbox/render/lights/manager.hpp>
+
 #include <rawrbox/render/materials/lit.hpp>
-#include <rawrbox/render/utils/pipeline.hpp>
+#include <rawrbox/render/plugins/clustered.hpp>
 
 namespace rawrbox {
 	// STATIC DATA ----
@@ -32,7 +32,7 @@ namespace rawrbox {
 		settings.cull = Diligent::CULL_MODE_FRONT;
 		settings.macros = cluster->getClusterMacros() + helper;
 
-		settings.signature = rawrbox::BindlessManager::signature;
+		settings.signatures = {rawrbox::BindlessManager::signature};
 		settings.layout = layout;
 		// -------------------
 

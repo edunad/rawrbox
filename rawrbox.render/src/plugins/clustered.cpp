@@ -8,7 +8,7 @@
 namespace rawrbox {
 	uint32_t ClusteredPlugin::CLUSTERS_X = 0;
 	uint32_t ClusteredPlugin::CLUSTERS_Y = 0;
-	uint32_t ClusteredPlugin::GROUP_SIZE = 0;
+	uint32_t ClusteredPlugin::CLUSTERS_GROUP_SIZE = 0;
 
 	ClusteredPlugin::~ClusteredPlugin() {
 		rawrbox::LIGHTS::shutdown(); // Shutdown light system
@@ -27,7 +27,7 @@ namespace rawrbox {
 		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, CLUSTER_TEXTEL_SIZE);
 		CLUSTERS_Y = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.y, CLUSTER_TEXTEL_SIZE);
 
-		GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * CLUSTERS_Z;
+		CLUSTERS_GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * CLUSTERS_Z;
 
 		if constexpr (CLUSTERS_Z % CLUSTERS_Z_THREADS != 0) throw this->_logger->error("Number of cluster depth slices must be divisible by thread count z-dimension");
 		if constexpr (MAX_DATA_PER_CLUSTER % 32 != 0) throw this->_logger->error("MAX_DATA_PER_CLUSTER must be divisible by 32");
@@ -44,6 +44,7 @@ namespace rawrbox {
 		// -----------------------
 
 		this->buildBuffers();
+		this->buildSignatures();
 	}
 
 	void ClusteredPlugin::resize(const rawrbox::Vector2u& renderSize) {
@@ -52,8 +53,8 @@ namespace rawrbox {
 		// Re-calculate clusters ----
 		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, CLUSTER_TEXTEL_SIZE);
 		CLUSTERS_Y = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.y, CLUSTER_TEXTEL_SIZE);
-
-		GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * CLUSTERS_Z;
+		CLUSTERS_GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * CLUSTERS_Z;
+		// -------------------------
 
 		// Re-setup dispatch ---
 		this->_dispatch.ThreadGroupCountX = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_X, CLUSTERS_X_THREADS);
@@ -68,26 +69,26 @@ namespace rawrbox {
 		this->buildPipelines();
 	}
 
-	void ClusteredPlugin::signatures(std::vector<Diligent::PipelineResourceDesc>& sig, bool compute) {
-		sig.emplace_back(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Clusters", 1, compute ? Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV : Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
-		sig.emplace_back(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "ClusterDataGrid", 1, compute ? Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV : Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+	void ClusteredPlugin::signatures(std::vector<Diligent::PipelineResourceDesc>& sig) {
+		sig.emplace_back(Diligent::SHADER_TYPE_PIXEL, "Clusters", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+		sig.emplace_back(Diligent::SHADER_TYPE_PIXEL, "ClusterDataGrid", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 
-		sig.emplace_back(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Lights", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
-		sig.emplace_back(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "LightConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+		sig.emplace_back(Diligent::SHADER_TYPE_PIXEL, "Lights", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+		sig.emplace_back(Diligent::SHADER_TYPE_PIXEL, "LightConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 
-		sig.emplace_back(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Decals", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
-		sig.emplace_back(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "DecalsConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+		sig.emplace_back(Diligent::SHADER_TYPE_PIXEL, "Decals", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
+		sig.emplace_back(Diligent::SHADER_TYPE_PIXEL, "DecalsConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC);
 	}
 
-	void ClusteredPlugin::bindStatic(Diligent::IPipelineResourceSignature& sig, bool compute) {
-		sig.GetStaticVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Clusters")->Set(this->getClustersBuffer(!compute));
-		sig.GetStaticVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "ClusterDataGrid")->Set(this->getDataGridBuffer(!compute));
+	void ClusteredPlugin::bindStatic(Diligent::IPipelineResourceSignature& sig) {
+		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Clusters")->Set(this->getClustersBuffer(true));
+		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "ClusterDataGrid")->Set(this->getDataGridBuffer(true));
 
-		sig.GetStaticVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Lights")->Set(rawrbox::LIGHTS::getBuffer());
-		sig.GetStaticVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "LightConstants")->Set(rawrbox::LIGHTS::uniforms);
+		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Lights")->Set(rawrbox::LIGHTS::getBuffer());
+		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "LightConstants")->Set(rawrbox::LIGHTS::uniforms);
 
-		sig.GetStaticVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "Decals")->Set(rawrbox::DECALS::getBuffer());
-		sig.GetStaticVariableByName(compute ? Diligent::SHADER_TYPE_COMPUTE : Diligent::SHADER_TYPE_PIXEL, "DecalsConstants")->Set(rawrbox::DECALS::uniforms);
+		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Decals")->Set(rawrbox::DECALS::getBuffer());
+		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "DecalsConstants")->Set(rawrbox::DECALS::uniforms);
 	}
 
 	void ClusteredPlugin::preRender() {
@@ -100,9 +101,9 @@ namespace rawrbox {
 
 		if (this->_clusterBuildingComputeProgram == nullptr || this->_cullingComputeProgram == nullptr || this->_cullingResetProgram == nullptr) throw this->_logger->error("Compute pipelines not initialized, did you call 'initialize'");
 
-		// Setup uniforms
-		rawrbox::LIGHTS::bindUniforms();
-		rawrbox::DECALS::bindUniforms();
+		// Update light & decals
+		rawrbox::LIGHTS::update();
+		rawrbox::DECALS::update();
 		// ------------
 
 		// Barrier for writting -----
@@ -113,7 +114,7 @@ namespace rawrbox {
 		//  -----------
 
 		// Commit compute signature --
-		context->CommitShaderResources(rawrbox::BindlessManager::computeSignatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		context->CommitShaderResources(this->_signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 		// -----------------------
 
 		// Rebuild clusters ---
@@ -130,7 +131,6 @@ namespace rawrbox {
 		// TODO: REPLACE WITH
 		// uint32_t ClearValue = 0;
 		// context->ClearUAVUint(this->_dataGridBuffer, &ClearValue);
-
 		context->SetPipelineState(this->_cullingResetProgram);
 		context->DispatchCompute(this->_dispatch);
 		//   --------------
@@ -158,7 +158,7 @@ namespace rawrbox {
 			BuffDesc.Usage = Diligent::USAGE_DEFAULT;
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 			BuffDesc.Name = "rawrbox::Cluster::Cluster";
-			BuffDesc.Size = BuffDesc.ElementByteStride * GROUP_SIZE;
+			BuffDesc.Size = BuffDesc.ElementByteStride * CLUSTERS_GROUP_SIZE;
 			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
 
 			device->CreateBuffer(BuffDesc, nullptr, &this->_clusterBuffer);
@@ -174,7 +174,7 @@ namespace rawrbox {
 			BuffDesc.ElementByteStride = sizeof(std::array<uint32_t, 4>);
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 			BuffDesc.Name = "rawrbox::Cluster::ClusterDataGrid";
-			BuffDesc.Size = BuffDesc.ElementByteStride * (rawrbox::MAX_DATA_PER_CLUSTER / rawrbox::CLUSTERS_Z * GROUP_SIZE);
+			BuffDesc.Size = BuffDesc.ElementByteStride * (rawrbox::MAX_DATA_PER_CLUSTER / rawrbox::CLUSTERS_Z * CLUSTERS_GROUP_SIZE);
 			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
 
 			device->CreateBuffer(BuffDesc, nullptr, &this->_dataGridBuffer);
@@ -192,12 +192,69 @@ namespace rawrbox {
 		// -----------
 	}
 
+	void ClusteredPlugin::buildSignatures() {
+		if (this->_signature != nullptr || this->_signatureBind != nullptr) throw this->_logger->error("Signatures already bound!");
+		if (rawrbox::MAIN_CAMERA == nullptr) throw this->_logger->error("Clustered plugin requires at least one camera!");
+
+		std::vector<Diligent::PipelineResourceDesc> resources = {
+		    // CAMERA ------
+		    {Diligent::SHADER_TYPE_COMPUTE, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    {Diligent::SHADER_TYPE_COMPUTE, "SCamera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    // --------------
+
+		    // CLUSTERS ---
+		    {Diligent::SHADER_TYPE_COMPUTE, "Clusters", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    {Diligent::SHADER_TYPE_COMPUTE, "ClusterDataGrid", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_UAV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    // ------------
+
+		    // LIGHT -----
+		    {Diligent::SHADER_TYPE_COMPUTE, "Lights", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    {Diligent::SHADER_TYPE_COMPUTE, "LightConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    // -----------
+
+		    // DECAL -----
+		    {Diligent::SHADER_TYPE_COMPUTE, "Decals", 1, Diligent::SHADER_RESOURCE_TYPE_BUFFER_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    {Diligent::SHADER_TYPE_COMPUTE, "DecalsConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
+		    // -----------
+		};
+
+		// Compute signature ---
+		Diligent::PipelineResourceSignatureDesc PRSDesc;
+		PRSDesc.Name = "RawrBox::SIGNATURE::Clustered";
+		PRSDesc.BindingIndex = 0;
+
+		PRSDesc.ImmutableSamplers = nullptr;
+		PRSDesc.NumImmutableSamplers = 0;
+
+		PRSDesc.Resources = resources.data();
+		PRSDesc.NumResources = static_cast<uint8_t>(resources.size());
+
+		rawrbox::RENDERER->device()->CreatePipelineResourceSignature(PRSDesc, &this->_signature);
+		// ----------------------
+
+		// Compute bind ---
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(rawrbox::MAIN_CAMERA->uniforms());
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "SCamera")->Set(rawrbox::MAIN_CAMERA->staticUniforms());
+
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Clusters")->Set(this->getClustersBuffer(false));
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ClusterDataGrid")->Set(this->getDataGridBuffer(false));
+
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Lights")->Set(rawrbox::LIGHTS::getBuffer());
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "LightConstants")->Set(rawrbox::LIGHTS::uniforms);
+
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Decals")->Set(rawrbox::DECALS::getBuffer());
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "DecalsConstants")->Set(rawrbox::DECALS::uniforms);
+
+		this->_signature->CreateShaderResourceBinding(&this->_signatureBind, true);
+		// ----------------
+	}
+
 	void ClusteredPlugin::buildPipelines() {
-		if (rawrbox::MAIN_CAMERA == nullptr) throw _logger->error("Clustered plugin requires at least one camera!");
+		if (rawrbox::MAIN_CAMERA == nullptr) throw this->_logger->error("Clustered plugin requires at least one camera!");
 
 		rawrbox::PipeComputeSettings settings;
 		settings.macros = this->getClusterMacros();
-		settings.signature = rawrbox::BindlessManager::computeSignature;
+		settings.signatures = {this->_signature};
 
 		// BUILDING -----
 		settings.pCS = "cluster_build.csh";

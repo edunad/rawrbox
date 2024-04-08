@@ -157,10 +157,9 @@ namespace rawrbox {
 		PSODesc.PipelineType = Diligent::PIPELINE_TYPE_COMPUTE;
 		PSODesc.ResourceLayout.DefaultVariableType = settings.resourceType;
 
-		std::array<Diligent::IPipelineResourceSignature*, 1> signatures = {settings.signature};
-		if (settings.signature != nullptr) {
-			PSOCreateInfo.ppResourceSignatures = signatures.data();
-			PSOCreateInfo.ResourceSignaturesCount = 1U;
+		if (!settings.signatures.empty()) {
+			PSOCreateInfo.ppResourceSignatures = settings.signatures.data();
+			PSOCreateInfo.ResourceSignaturesCount = static_cast<uint32_t>(settings.signatures.size());
 		}
 
 		if (!settings.resources.empty()) {
@@ -173,7 +172,7 @@ namespace rawrbox {
 		rawrbox::RENDERER->device()->CreateComputePipelineState(PSOCreateInfo, &pipe);
 		if (pipe == nullptr) throw _logger->error("Failed to create pipeline '{}'", name);
 
-		if (settings.signature == nullptr) {
+		if (settings.signatures.empty()) {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;
 				auto* var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
@@ -184,7 +183,7 @@ namespace rawrbox {
 		}
 
 		// Bind ----
-		if (!settings.bind.empty() && settings.signature == nullptr) {
+		if (!settings.bind.empty() && settings.signatures.empty()) {
 			pipe->CreateShaderResourceBinding(&_binds[settings.bind], true);
 		}
 		//-----
@@ -217,10 +216,9 @@ namespace rawrbox {
 		info.GraphicsPipeline.RasterizerDesc.ScissorEnable = settings.scissors;
 		info.GraphicsPipeline.RasterizerDesc.FillMode = settings.fill;
 
-		std::array<Diligent::IPipelineResourceSignature*, 1> signatures = {settings.signature};
-		if (settings.signature != nullptr) {
-			info.ppResourceSignatures = signatures.data();
-			info.ResourceSignaturesCount = 1U;
+		if (!settings.signatures.empty()) {
+			info.ppResourceSignatures = settings.signatures.data();
+			info.ResourceSignaturesCount = static_cast<uint32_t>(settings.signatures.size());
 		}
 
 		if (settings.depthFormat) {
@@ -277,7 +275,7 @@ namespace rawrbox {
 		rawrbox::RENDERER->device()->CreateGraphicsPipelineState(info, &pipe);
 		if (pipe == nullptr) throw _logger->error("Failed to create pipeline '{}'", name);
 
-		if (settings.signature == nullptr) {
+		if (settings.signatures.empty()) {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;
 
@@ -289,7 +287,7 @@ namespace rawrbox {
 		}
 
 		// Bind ----
-		if (!settings.bind.empty() && settings.signature == nullptr) {
+		if (!settings.bind.empty() && settings.signatures.empty()) {
 			pipe->CreateShaderResourceBinding(&_binds[settings.bind], true);
 		}
 		//-----

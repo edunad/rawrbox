@@ -33,7 +33,7 @@ namespace rawrbox {
 		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 		settings.pVS = "quad.vsh";
 		settings.pPS = "fog.psh";
-		settings.signature = rawrbox::BindlessManager::signature;
+		settings.signatures = {rawrbox::BindlessManager::signature};
 
 		this->_pipeline = rawrbox::PipelineUtils::createPipeline("PostProcess::Fog", settings);
 	}

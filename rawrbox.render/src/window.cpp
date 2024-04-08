@@ -311,7 +311,31 @@ namespace rawrbox {
 
 	void Window::setTitle(const std::string& title) {
 		this->_settings.title = title;
+		if (this->_handle != nullptr) glfwSetWindowTitle(this->_handle, this->_settings.title.c_str());
 	}
+
+	void Window::setOpacity(float opacity) {
+		if (this->_handle == nullptr) throw _logger->error("Invalid window handle");
+		glfwSetWindowOpacity(this->_handle, opacity);
+	}
+
+#ifdef _WIN32
+	void Window::alert() { // Blink application
+		if (this->_handle == nullptr) throw _logger->error("Invalid window handle");
+		HWND hwnd = glfwGetWin32Window(this->_handle);
+
+		// Set up the FLASHWINFO structure
+		FLASHWINFO fi;
+		fi.cbSize = sizeof(FLASHWINFO);
+		fi.hwnd = hwnd;
+		fi.dwFlags = FLASHW_ALL | FLASHW_TIMERNOFG;
+		fi.uCount = 0;
+		fi.dwTimeout = 0;
+
+		// Start flashing the taskbar icon
+		FlashWindowEx(&fi);
+	}
+#endif
 
 	// CURSOR ------
 	void Window::hideCursor(bool hidden) {

@@ -8,34 +8,30 @@
         };
 
         // Snap vertex to achieve PSX look
-        #ifdef TRANSFORM_PSX
-            float4 PSXTransform(float4 vertex, float2 resolution) {
-                float4 snappedPos = vertex;
-                snappedPos.xyz = vertex.xyz / vertex.w;                         // convert to normalised device coordinates (NDC)
-                snappedPos.xy = floor(resolution * snappedPos.xy) / resolution; // snap the vertex to the lower-resolution grid
-                snappedPos.xyz *= vertex.w;                                     // convert back to projection-space
+        float4 PSXTransform(float4 vertex, float2 resolution) {
+            float4 snappedPos = vertex;
+            snappedPos.xyz = vertex.xyz / vertex.w;                         // convert to normalised device coordinates (NDC)
+            snappedPos.xy = floor(resolution * snappedPos.xy) / resolution; // snap the vertex to the lower-resolution grid
+            snappedPos.xyz *= vertex.w;                                     // convert back to projection-space
 
-                return snappedPos;
-            }
-        #endif
+            return snappedPos;
+        }
         // ----------------------
 
-        #ifdef TRANSFORM_BILLBOARD
-            float4 billboardTransform(float4 vertex, int billboard) {
-				float3 right = float3(1, 0, 0);
-				float3 up = float3(0, 1, 0);
+        float4 billboardTransform(float4 vertex, uint billboard) {
+            float3 right = float3(1, 0, 0);
+            float3 up = float3(0, 1, 0);
 
-				if ((billboard & 2) != 0) { // X
-					right = float3(Camera.view[0][0], Camera.view[1][0], Camera.view[2][0]);
-				}
-
-				if ((billboard & 4) != 0) {// Y
-					up = float3(Camera.view[0][1], Camera.view[1][1], Camera.view[2][1]);
-				}
-
-                return float4((right * vertex.x) + (up * vertex.y), 1.);
+            if ((billboard & 2) != 0) { // X
+                right = float3(Camera.view[0][0], Camera.view[1][0], Camera.view[2][0]);
             }
-        #endif
+
+            if ((billboard & 4) != 0) {// Y
+                up = float3(Camera.view[0][1], Camera.view[1][1], Camera.view[2][1]);
+            }
+
+            return float4((right * vertex.x) + (up * vertex.y), 1.);
+        }
 
         #ifdef SKINNED
             #ifdef TRANSFORM_BONES
