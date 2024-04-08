@@ -17,7 +17,7 @@ CPMDeclarePackage(magic_enum
 )
 # glaze
 CPMDeclarePackage(glaze
-  VERSION 2.4.0
+  VERSION 2.4.4
   GITHUB_REPOSITORY stephenberry/glaze
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -60,7 +60,7 @@ CPMDeclarePackage(thread-pool
 )
 # cpptrace
 CPMDeclarePackage(cpptrace
-  VERSION 0.5.1
+  VERSION 0.5.2
   GITHUB_REPOSITORY jeremy-rifkin/cpptrace
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -77,7 +77,7 @@ CPMDeclarePackage(cpptrace
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.617
+  GIT_TAG 0.620
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"
@@ -210,7 +210,7 @@ CPMDeclarePackage(clip
 # Jolt
 CPMDeclarePackage(Jolt
   NAME Jolt
-  VERSION 4.0.2
+  VERSION 5.0.0
   GITHUB_REPOSITORY jrouwe/JoltPhysics
   SOURCE_SUBDIR Build
   OPTIONS
