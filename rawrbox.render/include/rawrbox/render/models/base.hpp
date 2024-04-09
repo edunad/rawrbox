@@ -156,8 +156,8 @@ namespace rawrbox {
 
 			// BARRIER -----
 			std::vector<Diligent::StateTransitionDesc> barriers = {};
-			if (!resizeVertex) barriers.emplace_back(this->_vbh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
-			if (!resizeIndex) barriers.emplace_back(this->_ibh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+			if (!resizeVertex) barriers.emplace_back(this->_vbh, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+			if (!resizeIndex) barriers.emplace_back(this->_ibh, Diligent::RESOURCE_STATE_INDEX_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
 
 			rawrbox::BarrierUtils::barrier(barriers);
 
@@ -165,8 +165,8 @@ namespace rawrbox {
 			if (!resizeIndex) context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 			barriers.clear();
-			if (!resizeVertex) barriers.emplace_back(this->_vbh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
-			if (!resizeIndex) barriers.emplace_back(this->_ibh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_INDEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+			if (!resizeVertex) barriers.emplace_back(this->_vbh, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+			if (!resizeIndex) barriers.emplace_back(this->_ibh, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_INDEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
 
 			rawrbox::BarrierUtils::barrier(barriers);
 			// -----------

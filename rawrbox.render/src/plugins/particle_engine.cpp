@@ -167,7 +167,7 @@ namespace rawrbox {
 
 		// Barrier for writting -----
 		rawrbox::BarrierUtils::barrier({
-		    {buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {buffer, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
 		});
 		//  -----------
 
@@ -182,7 +182,7 @@ namespace rawrbox {
 
 		// Barrier for reading -----
 		rawrbox::BarrierUtils::barrier({
-		    {buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {buffer, Diligent::RESOURCE_STATE_UNORDERED_ACCESS, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
 		});
 		//  -----------
 	}
