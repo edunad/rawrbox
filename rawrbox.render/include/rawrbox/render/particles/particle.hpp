@@ -12,12 +12,9 @@ namespace rawrbox {
 		rawrbox::Vector3f velocity = {};
 		float atlasIndex = 0.F;
 
-		rawrbox::Vector2f size = {};
-		rawrbox::Vector2f _padding = {};
-
 		rawrbox::Vector3f rotation = {};
-		float _padding_2 = 0.F;
 
+		rawrbox::Vector2f size = {};
 		rawrbox::Colorf color = {};
 	};
 } // namespace rawrbox

@@ -2,6 +2,7 @@
 #include "particles_uniforms.fxh"
 #include "hash.fxh"
 #include "math.fxh"
+#include "unpack.fxh"
 
 #define WRITE_PARTICLES
 #include "particles.fxh"
@@ -38,24 +39,30 @@ float CalculateLife(uint hash) {
     return lerp(EmitterConstants.lifeMin, EmitterConstants.lifeMax, (float)(hash & 0xFFFF) * (1.0f / 65535.0f));
 }
 
-float4 ParticleColor(float lifetimeRatio) {
+float4 ParticleColor(Particle particle) {
     const float transitionPoints[3] = {0.33, 0.66, 0.99};
-    lifetimeRatio = saturate(1.0 - lifetimeRatio);
+    const float lifetimeRatio = saturate(1.0 - particle.lifeTime);
+
+    float4 color_0 = particle.color;
+    float4 color_1 = Unpack_RGBA8_UNORM(EmitterConstants.color.y);
+    float4 color_2 = Unpack_RGBA8_UNORM(EmitterConstants.color.z);
+    float4 color_3 = Unpack_RGBA8_UNORM(EmitterConstants.color.w);
 
     // Determine color based on lifetimeRatio
     if (lifetimeRatio < transitionPoints[0]) {
         float factor = lifetimeRatio / transitionPoints[0];
-        return lerp(EmitterConstants.color[0], EmitterConstants.color[1], factor);
+        return lerp(color_0, color_1, factor);
     } else if (lifetimeRatio < transitionPoints[1]) {
         float factor = (lifetimeRatio - transitionPoints[0]) / (transitionPoints[1] - transitionPoints[0]);
-        return lerp(EmitterConstants.color[1], EmitterConstants.color[2], factor);
+        return lerp(color_1, color_2, factor);
     } else if (lifetimeRatio < transitionPoints[2]) {
         float factor = (lifetimeRatio - transitionPoints[1]) / (transitionPoints[2] - transitionPoints[1]);
-        return lerp(EmitterConstants.color[2], EmitterConstants.color[3], factor);
+        return lerp(color_2, color_3, factor);
     } else {
-        return EmitterConstants.color[3];
+        return color_3;
     }
 }
+
 // Use groupshared memory to reduce bandwidth
 groupshared Particle localParticles[256];
 
@@ -76,13 +83,13 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID, uint groupIndex : SV_Gro
     uint hash = pcg(EmitterConstants.time + particleIndex * 1009);
 
     // Calculate the spawn interval based on the spawn rate
-    float spawnInterval = 1.0f / EmitterConstants.spawnRate;
+    float spawnInterval = 1.0F / EmitterConstants.spawnRate;
     float particleSpawnTime = particleIndex * spawnInterval;
 
     if (particle.lifeTime <= 0.0F && EmitterConstants.time >= particleSpawnTime) {
         // Spawn / reset a particle
         particle.position = EmitterConstants.position;
-        particle.color = EmitterConstants.color[0];
+        particle.color = Unpack_RGBA8_UNORM(EmitterConstants.color.x);
 
         particle.velocity = CalculateVelocity(hash);
         particle.size = CalculateSize(hash);
@@ -97,7 +104,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID, uint groupIndex : SV_Gro
         particle.velocity += gravity * Camera.deltaTime;
         particle.position += particle.velocity * Camera.deltaTime;
         particle.lifeTime -= Camera.deltaTime;
-        particle.color = ParticleColor(particle.lifeTime);
+        particle.color = ParticleColor(particle);
     }
 
     localParticles[groupIndex] = particle;
