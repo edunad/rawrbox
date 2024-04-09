@@ -48,7 +48,6 @@ namespace post_process {
 		this->_noise = postProcess->add<rawrbox::PostProcessNoise>(0.1F);
 		//   -----------------------
 
-		render->skipIntros(true);
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass == rawrbox::DrawPass::PASS_WORLD) {
 				this->drawWorld();
