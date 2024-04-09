@@ -54,8 +54,8 @@ namespace light {
 		// --------------
 
 		// BINDS ----
-		window->onKey += [](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
-			if (action != rawrbox::KEY_ACTION_UP || key != rawrbox::KEY_F1) return;
+		window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
+			if (!this->_ready || action != rawrbox::KEY_ACTION_UP || key != rawrbox::KEY_F1) return;
 			rawrbox::LIGHTS::setEnabled(!rawrbox::LIGHTS::isEnabled());
 		};
 		// -----

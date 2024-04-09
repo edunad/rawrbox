@@ -19,8 +19,8 @@
         // ----------------------
 
         float4 billboardTransform(float4 vertex, uint billboard) {
-            float3 right = float3(1, 0, 0);
-            float3 up = float3(0, 1, 0);
+            float3 right = CAMERA_RIGHT;
+            float3 up = CAMERA_UP;
 
             if ((billboard & 2) != 0) { // X
                 right = float3(Camera.view[0][0], Camera.view[1][0], Camera.view[2][0]);

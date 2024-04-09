@@ -170,15 +170,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] uint32_t pack() const {
-			return pack(this->r, this->g, this->b, this->a);
-		}
-
-		[[nodiscard]] static uint32_t pack(NumberType r, NumberType g, NumberType b, NumberType a) {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return 0 | (static_cast<uint8_t>(r) << 0) | (static_cast<uint8_t>(g) << 8) | (static_cast<uint8_t>(b) << 16) | (static_cast<uint8_t>(a) << 24);
-			} else {
-				return 0 | (static_cast<uint8_t>(r * 255.0F) << 0) | (static_cast<uint8_t>(g * 255.0F) << 8) | (static_cast<uint8_t>(b * 255.0F) << 16) | (static_cast<uint8_t>(a * 255.0F) << 24);
-			}
+			return rawrbox::PackUtils::packRgba8(static_cast<float>(r), static_cast<float>(g), static_cast<float>(b), static_cast<float>(a));
 		}
 
 		ColorType operator-(const ColorType& other) const {
@@ -305,7 +297,7 @@ namespace rawrbox {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(0, 0, 0, 255);
 			} else {
-				return ColorType(0, 0, 0, 1);
+				return ColorType(0.F, 0.F, 0.F, 1.F);
 			}
 		}
 
@@ -313,7 +305,7 @@ namespace rawrbox {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(255, 255, 255, 255);
 			} else {
-				return ColorType(1, 1, 1, 1);
+				return ColorType(1.F, 1.F, 1.F, 1.F);
 			}
 		}
 
@@ -321,7 +313,7 @@ namespace rawrbox {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(206, 204, 191, 255);
 			} else {
-				return ColorType(0.81F, 0.8F, 0.75F, 1);
+				return ColorType(0.81F, 0.8F, 0.75F, 1.F);
 			}
 		}
 
@@ -329,7 +321,7 @@ namespace rawrbox {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(255, 82, 82, 255);
 			} else {
-				return ColorType(1, 0.32F, 0.32F, 1);
+				return ColorType(1, 0.32F, 0.32F, 1.F);
 			}
 		}
 
@@ -337,7 +329,7 @@ namespace rawrbox {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(36, 222, 128, 255);
 			} else {
-				return ColorType(0.14F, 0.87F, 0.50F, 1);
+				return ColorType(0.14F, 0.87F, 0.50F, 1.F);
 			}
 		}
 
@@ -345,7 +337,7 @@ namespace rawrbox {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(51, 171, 222, 255);
 			} else {
-				return ColorType(0.2F, 0.67F, 0.87F, 1);
+				return ColorType(0.2F, 0.67F, 0.87F, 1.F);
 			}
 		}
 
@@ -353,7 +345,7 @@ namespace rawrbox {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(255, 120, 61, 255);
 			} else {
-				return ColorType(1, 0.47F, 0.24F, 1);
+				return ColorType(1, 0.47F, 0.24F, 1.F);
 			}
 		}
 
@@ -361,7 +353,7 @@ namespace rawrbox {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(255, 230, 64, 255);
 			} else {
-				return ColorType(1, 0.9F, 0.25F, 1);
+				return ColorType(1, 0.9F, 0.25F, 1.F);
 			}
 		}
 
@@ -369,7 +361,7 @@ namespace rawrbox {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(255, 0, 255, 255);
 			} else {
-				return ColorType(1.F, 0.F, 1.F, 1);
+				return ColorType(1.F, 0.F, 1.F, 1.F);
 			}
 		}
 
@@ -377,7 +369,7 @@ namespace rawrbox {
 			if constexpr (std::is_same_v<NumberType, int>) {
 				return ColorType(133, 88, 49, 255);
 			} else {
-				return ColorType(0.52F, 0.35F, 0.19F, 1);
+				return ColorType(0.52F, 0.35F, 0.19F, 1.F);
 			}
 		}
 

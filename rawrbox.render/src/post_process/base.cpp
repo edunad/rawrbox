@@ -33,4 +33,7 @@ namespace rawrbox {
 		DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL; // Verify the state of vertex and index buffers
 		context->Draw(DrawAttrs);
 	}
+
+	void PostProcessBase::setEnabled(bool enabled) { this->_enabled = enabled; }
+	bool PostProcessBase::isEnabled() const { return this->_enabled; }
 } // namespace rawrbox

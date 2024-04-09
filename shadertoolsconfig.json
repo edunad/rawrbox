@@ -9,6 +9,7 @@
     "./rawrbox.render/assets/shaders/materials/particles/include"
   ],
   "hlsl.preprocessorDefinitions": {
+    "MAX_POST_DATA": 2,
     "THREAD_GROUP_SIZE": 64,
     "CLUSTERS_X_THREADS": 4,
     "CLUSTERS_Y_THREADS": 4,

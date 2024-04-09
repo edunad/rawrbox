@@ -279,9 +279,24 @@ namespace rawrbox {
 		// ----
 	}
 
-	void Stencil::drawText(const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col) {
+	void Stencil::drawText(const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, const rawrbox::Color& bgCol) {
 		if (col.invisible() || text.empty()) return;
 		uint32_t textureID = rawrbox::WHITE_TEXTURE->getTextureID();
+
+		// NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast)
+		auto* textCh = const_cast<char*>(text.c_str());
+		// NOLINTEND(cppcoreguidelines-pro-type-const-cast)
+
+		// Draw background ---
+		if (!bgCol.invisible()) {
+			// Calculate the background size based on the text size
+			int bgWidth = stb_easy_font_width(textCh);
+			int bgHeight = stb_easy_font_height(textCh);
+
+			// Draw the background rectangle
+			this->drawBox({pos.x - 2.F, pos.y - 2.F}, {static_cast<float>(bgWidth) + 3.F, static_cast<float>(bgHeight) - 1.F}, bgCol);
+		}
+		// ---------------
 
 		// Setup --------
 		this->setupDrawCall(this->_2dPipeline);
@@ -289,12 +304,10 @@ namespace rawrbox {
 
 		// Generate vertices and indices for the text
 		std::array<char, 960000> vertexBuffer = {};
-		// NOLINTBEGIN(cppcoreguidelines-pro-type-const-cast)
-		int num_quads = stb_easy_font_print(0, 0, const_cast<char*>(text.c_str()), nullptr, vertexBuffer.data(), sizeof(vertexBuffer));
-		// NOLINTEND(cppcoreguidelines-pro-type-const-cast)
+		int num_quads = stb_easy_font_print(0, 0, textCh, nullptr, vertexBuffer.data(), sizeof(vertexBuffer));
 
 		auto* data = std::bit_cast<float*>(vertexBuffer.data());
-		std::vector<uint32_t> indices;
+		std::vector<uint32_t> indices = {};
 
 		for (int quad = 0, stride = 0; quad < num_quads; ++quad, stride += 16) {
 			// Push vertices for the current quad

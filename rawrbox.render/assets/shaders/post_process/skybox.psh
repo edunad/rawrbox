@@ -1,0 +1,51 @@
+#include "camera.fxh"
+
+#define UINT_DATA
+#include "pixel_post_process_uniforms.fxh"
+
+#include "math.fxh"
+#include "unpack.fxh"
+
+// ## MAPPING ----------------
+#define START_COLOR PostProcessConstants.data[0].x
+#define END_COLOR PostProcessConstants.data[0].y
+#define PSX_BANDING PostProcessConstants.data[0].z
+// ========================
+
+Texture2DArray g_Textures[];
+SamplerState   g_Sampler;
+
+struct PSInput {
+    float4 Pos   : SV_POSITION;
+    float2 UV    : TEX_COORD;
+};
+
+struct PSOutput {
+    float4 Color : SV_TARGET;
+};
+
+void main(in PSInput PSIn, out PSOutput PSOut) {
+#if defined(DESKTOP_GL) || defined(GL_ES)
+    float3 UV = float3(PSIn.UV.x, 1.0 - PSIn.UV.y, 0);
+#else
+    float3 UV = float3(PSIn.UV.xy, 0);
+#endif
+
+    float Depth = g_Textures[PostProcessConstants.textureDepthID].Sample(g_Sampler, UV).r;
+    Depth = 1.0 - (2.0 * NearFar.x) / (NearFar.y + NearFar.x - Depth * (NearFar.y - NearFar.x));
+    if (Depth > 0.01) {
+        PSOut.Color = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, UV);
+        return;
+    }
+
+    // Calculate the view direction vector
+    float3 viewDir = mul(float4(PSIn.UV * 2.0 - 1.0, 1.0, 1.0), Camera.viewInv).xyz;
+    viewDir = normalize(viewDir);
+
+    float2 texCoord = float2(
+        floor((atan2(viewDir.z, viewDir.x) / (2.0 * PI) + 0.5) * PSX_BANDING) / PSX_BANDING,
+        floor((acos(viewDir.y) / PI) * PSX_BANDING) / PSX_BANDING
+    );
+
+    PSOut.Color = lerp(Unpack_RGBA8_UNORM(END_COLOR), Unpack_RGBA8_UNORM(START_COLOR), texCoord.y);
+}

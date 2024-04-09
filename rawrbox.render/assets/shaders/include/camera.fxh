@@ -29,6 +29,9 @@
     #define NearFar SCamera.viewport.xy
     #define px (float2(1.0, 1.0) / ScreenSize)
 
+    #define CAMERA_UP float3(0.0, 1.0, 0.0)
+    #define CAMERA_RIGHT float3(1.0, 0.0, 0.0)
+
     // UTILS -----------------
     uint GetSliceFromDepth(float depth) {
         return floor(log(depth) * SCamera.gridParams.x - SCamera.gridParams.y);

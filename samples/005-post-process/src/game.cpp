@@ -6,6 +6,7 @@
 #include <rawrbox/render/post_process/fog.hpp>
 #include <rawrbox/render/post_process/noise.hpp>
 #include <rawrbox/render/post_process/quick_bloom.hpp>
+#include <rawrbox/render/post_process/skybox.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
@@ -37,15 +38,23 @@ namespace post_process {
 
 		// Setup post process ----
 		auto* postProcess = render->addPlugin<rawrbox::PostProcessPlugin>();
-		postProcess->add<rawrbox::PostProcessFog>();
-		postProcess->add<rawrbox::PostProcessDither>(rawrbox::DITHER_MODE::FAST_MODE);
-		postProcess->add<rawrbox::PostProcessQuickBloom>(0.015F);
-		postProcess->add<rawrbox::PostProcessNoise>(0.1F);
-		//  -----------------------
+		this->_skybox = postProcess->add<rawrbox::PostProcessSkybox>(rawrbox::Colors::Blue(), rawrbox::Colors::White());
 
+		this->_fog = postProcess->add<rawrbox::PostProcessFog>();
+		this->_fog->setEnabled(false);
+
+		this->_dither = postProcess->add<rawrbox::PostProcessDither>(rawrbox::DITHER_MODE::SLOW_MODE);
+		this->_bloom = postProcess->add<rawrbox::PostProcessQuickBloom>(0.015F);
+		this->_noise = postProcess->add<rawrbox::PostProcessNoise>(0.1F);
+		//   -----------------------
+
+		render->skipIntros(true);
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
-			if (pass != rawrbox::DrawPass::PASS_WORLD) return;
-			this->drawWorld();
+			if (pass == rawrbox::DrawPass::PASS_WORLD) {
+				this->drawWorld();
+			} else {
+				this->drawOverlay();
+			}
 		});
 		render->onIntroCompleted = [this]() {
 			this->loadContent();
@@ -57,6 +66,31 @@ namespace post_process {
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------
+
+		// BINDS ----
+		window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
+			if (!this->_ready || action != rawrbox::KEY_ACTION_UP) return;
+
+			switch (key) {
+				case rawrbox::KEY_F1:
+					this->_skybox->setEnabled(!this->_skybox->isEnabled());
+					break;
+				case rawrbox::KEY_F2:
+					this->_dither->setEnabled(!this->_dither->isEnabled());
+					break;
+				case rawrbox::KEY_F3:
+					this->_fog->setEnabled(!this->_fog->isEnabled());
+					break;
+				case rawrbox::KEY_F4:
+					this->_bloom->setEnabled(!this->_bloom->isEnabled());
+					break;
+				case rawrbox::KEY_F5:
+					this->_noise->setEnabled(!this->_noise->isEnabled());
+					break;
+				default: break;
+			}
+		};
+		// -----
 
 		// Add loaders
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
@@ -118,6 +152,17 @@ namespace post_process {
 	void Game::drawWorld() {
 		if (!this->_ready || this->_model == nullptr) return;
 		this->_model->draw();
+	}
+
+	void Game::drawOverlay() const {
+		if (!this->_ready) return;
+		auto* stencil = rawrbox::RENDERER->stencil();
+
+		stencil->drawText(fmt::format("[F1]   SKYBOX -> {}", this->_skybox->isEnabled() ? "enabled" : "disabled"), {15, 15}, rawrbox::Colors::White(), rawrbox::Colors::Black());
+		stencil->drawText(fmt::format("[F2]   DITHER -> {}", this->_dither->isEnabled() ? "enabled" : "disabled"), {15, 30}, rawrbox::Colors::White(), rawrbox::Colors::Black());
+		stencil->drawText(fmt::format("[F3]   FOG -> {}", this->_fog->isEnabled() ? "enabled" : "disabled"), {15, 45}, rawrbox::Colors::White(), rawrbox::Colors::Black());
+		stencil->drawText(fmt::format("[F4]   BLOOM -> {}", this->_bloom->isEnabled() ? "enabled" : "disabled"), {15, 60}, rawrbox::Colors::White(), rawrbox::Colors::Black());
+		stencil->drawText(fmt::format("[F5]   NOISE -> {}", this->_noise->isEnabled() ? "enabled" : "disabled"), {15, 75}, rawrbox::Colors::White(), rawrbox::Colors::Black());
 	}
 
 	void Game::draw() {

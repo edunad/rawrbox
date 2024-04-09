@@ -35,11 +35,13 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
     // Dither -----
     if(DitherMode == 0.0) { // SLOW MODE
-		color.rgb = getDither(UV.xy * ScreenSize, color.rgb, DitherIntensity * depth / 3.0);
-	} else {
-		color.rgb += getDitherFast(UV.xy * ScreenSize, 1) * DitherIntensity * depth / 3.0;
-	}
+        color.rgb = getDither(UV.xy * ScreenSize, color.rgb, DitherIntensity * depth / 3.0);
+    } else {
+        color.rgb += getDitherFast(UV.xy * ScreenSize, 1) * DitherIntensity * depth / 3.0;
+    }
 
-	// Posterize
-	PSOut.Color = saturate(floor(color * DitherColorDepth) / DitherColorDepth);
+    // Posterize
+    color = saturate(floor(color * DitherColorDepth) / DitherColorDepth);
+
+    PSOut.Color = color;
 }
