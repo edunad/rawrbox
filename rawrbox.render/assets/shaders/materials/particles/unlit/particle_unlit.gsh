@@ -15,6 +15,7 @@ struct GSOutput {
     float4 Position  : SV_POSITION;
     float3 UV        : TEXCOORD0;
     float4 Color     : COLOR;
+
     uint   TextureID : TEX_ARRAY_INDEX;
 };
 

@@ -11,17 +11,17 @@ namespace rawrbox {
 			case Easing::STEP:
 				return val < 0.5F ? 0.F : 1.F;
 			case Easing::EASE_IN_QUAD:
-				return std::pow(val, 2);
+				return std::pow<float>(val, 2.F);
 			case Easing::EASE_OUT_QUAD:
-				return 1 - std::pow(1 - val, 2);
+				return 1.F - std::pow<float>(1.F - val, 2.F);
 			case Easing::EASE_IN_OUT_QUAD:
-				return val < 0.5 ? 2 * std::pow(val, 2) : 1 - std::pow(-2 * val + 2, 2) / 2;
+				return val < 0.5F ? 2.F * std::pow<float>(val, 2.F) : 1.F - std::pow<float>(-2.F * val + 2.F, 2.F) / 2.F;
 			case Easing::EASE_IN_CUBIC:
-				return std::pow(val, 3);
+				return std::pow<float>(val, 3.F);
 			case Easing::EASE_OUT_CUBIC:
-				return 1 - std::pow(1 - val, 3);
+				return 1.F - std::pow<float>(1.F - val, 3.F);
 			case Easing::EASE_IN_OUT_CUBIC:
-				return val < 0.5 ? 4 * std::pow(val, 3) : 1 - std::pow(-2 * val + 2, 3) / 2;
+				return val < 0.5F ? 4.F * std::pow<float>(val, 3.F) : 1.F - std::pow<float>(-2.F * val + 2.F, 3.F) / 2.F;
 			default:
 				throw std::runtime_error("[RawrBox-Easing] Unsupported easing");
 		}
