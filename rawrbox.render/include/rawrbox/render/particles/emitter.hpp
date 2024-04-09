@@ -29,7 +29,7 @@ namespace rawrbox {
 		rawrbox::Vector3f rotationMax = {};
 		float gravity = 0.F;
 
-		std::array<rawrbox::Colorf, 4> color = {}; // Transition between 4 colors using lifetime: 0 ---- 1 ---- 2 ----> 3
+		std::array<uint32_t, 4> color = {}; // Transition between 4 colors using lifetime: 0 ---- 1 ---- 2 ----> 3
 
 		// -----
 		rawrbox::Vector4f size = {}; // Random between 2 values
@@ -113,8 +113,13 @@ namespace rawrbox {
 		[[nodiscard]] virtual uint32_t getBillboard() const { return this->_uniforms.billboard; }
 		virtual void billboard(uint32_t billboard) { this->_uniforms.billboard = billboard; }
 
-		virtual void setColorTransition(const std::array<rawrbox::Colorf, 4>& col) { this->_uniforms.color = col; }
-		[[nodiscard]] virtual const std::array<rawrbox::Colorf, 4>& getColorTransition() const { return this->_uniforms.color; }
+		virtual void setColorTransition(const std::array<uint32_t, 4>& col) { this->_uniforms.color = col; }
+		virtual void setColorTransition(const std::array<rawrbox::Colorf, 4>& col) {
+			for (size_t i = 0; i < col.size(); i++)
+				this->_uniforms.color[i] = col[i].pack();
+		}
+
+		[[nodiscard]] virtual const std::array<uint32_t, 4>& getColorTransition() const { return this->_uniforms.color; }
 
 		virtual void setLifetimeRange(float minLife, float maxLife) {
 			this->_uniforms.lifeMin = minLife;

@@ -4,9 +4,9 @@
     "./rawrbox.render/assets/shaders/include/bindless",
     "./rawrbox.render/assets/shaders/materials/include",
     "./rawrbox.render/assets/shaders/plugins/clustered/include",
+    "./rawrbox.render/assets/shaders/plugins/particle_engine/include",
     "./rawrbox.render/assets/shaders/post_process",
-    "./rawrbox.render/assets/shaders/particles",
-    "./rawrbox.render/assets/shaders/particles/include"
+    "./rawrbox.render/assets/shaders/materials/particles/include"
   ],
   "hlsl.preprocessorDefinitions": {
     "THREAD_GROUP_SIZE": 64,

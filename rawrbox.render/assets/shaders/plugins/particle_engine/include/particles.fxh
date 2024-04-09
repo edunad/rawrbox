@@ -3,19 +3,16 @@
 	#include "math.fxh"
 
 	struct Particle {
-		float3 position;
-		float lifeTime;
+		float3 position;    // 12 bytes
+		float lifeTime;     // 4 bytes
 
-		float3 velocity;
-		float atlasIndex;
+		float3 velocity;    // 12 bytes
+		float atlasIndex;   // 4 bytes
 
-		float2 size;
-		float2 _padding;
+		float3 rotation;    // 12 bytes
 
-		float3 rotation;
-		float _padding_2;
-
-		float4 color;
+		float2 size;        // 8 bytes
+		float4 color;       // 16 bytes
 	};
 
 	#if defined(WRITE_PARTICLES)
