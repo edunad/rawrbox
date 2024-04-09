@@ -38,6 +38,8 @@ namespace rawrbox {
 
 	void PostProcessPlugin::postRender(rawrbox::TextureRender& renderTexture) {
 		for (auto& process : this->_postProcesses) {
+			if (!process->isEnabled()) continue;
+
 			renderTexture.startRecord(false, 1);
 			process->applyEffect(renderTexture);
 			renderTexture.stopRecord();
@@ -50,9 +52,9 @@ namespace rawrbox {
 		this->_postProcesses.erase(this->_postProcesses.begin() + indx);
 	}
 
-	rawrbox::PostProcessBase& PostProcessPlugin::get(size_t indx) const {
+	rawrbox::PostProcessBase* PostProcessPlugin::get(size_t indx) const {
 		if (indx >= this->_postProcesses.size()) throw this->_logger->error("Failed to get {}!", indx);
-		return *this->_postProcesses[indx];
+		return this->_postProcesses[indx].get();
 	}
 
 	Diligent::IBuffer* PostProcessPlugin::getBuffer() const { return this->_buffer; }

@@ -1,68 +1,67 @@
 #include "defines.fxh"
 #include "math.fxh"
-
 #include "pixel_bindless_uniforms.fxh"
 
 #ifdef CLUSTER_PLUGIN
-    #include "camera.fxh"
-    #include "decal_uniforms.fxh"
+	#include "camera.fxh"
+	#include "decal_uniforms.fxh"
 
-    #define READ_DECALS
-    #define READ_CLUSTER_DATA_GRID
-    #include "cluster.fxh"
+	#define READ_DECALS
+	#define READ_CLUSTER_DATA_GRID
+	#include "cluster.fxh"
 #endif
 
 Texture2DArray g_Textures[];
-SamplerState   g_Sampler;
+SamplerState g_Sampler;
 
 #ifdef CLUSTER_PLUGIN
-    #include "decaling.fxh"
+	#include "decaling.fxh"
 #endif
 
 struct PSInput {
-    float4 Pos                    : SV_POSITION;
-    float4 WorldPos               : POSITION1;
+	float4 Pos : SV_POSITION;
+	float4 WorldPos : POSITION1;
 
-    float2 UV                     : TEX_COORD;
-    float4 Color                  : COLOR;
+	float2 UV : TEX_COORD;
+	float4 Color : COLOR;
 
-    nointerpolation float4 GPUId  : COLOR1;
-    nointerpolation uint TexIndex : TEX_ARRAY_INDEX;
+	nointerpolation float4 GPUId : COLOR1;
+	nointerpolation uint TexIndex : TEX_ARRAY_INDEX;
 };
 
 struct PSOutput {
-    float4 Color   : SV_TARGET0;
-    float4 GPUPick : SV_TARGET1;
+	float4 Color : SV_TARGET0;
+	float4 GPUPick : SV_TARGET1;
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-    float4 color = g_Textures[Constants.textureIDs.x].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
-    if (color.a <= 0.0) discard;
+	float4 color = g_Textures[Constants.textureIDs.x].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+	if (color.a <= 0.0) discard;
 
-    #ifdef CLUSTER_PLUGIN
-        if(TOTAL_DECALS != 0) {
-            // Apply compute data ----
-            uint3 clusterIndex3D = uint3(floor(PSIn.Pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(PSIn.Pos.w));
-            uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
-            uint gridOffset = tileIndex * CLUSTERED_NUM_BUCKETS;
+#ifdef CLUSTER_PLUGIN
+	if (TOTAL_DECALS != 0) {
+		// Apply compute data ----
+		uint3 clusterIndex3D = uint3(floor(PSIn.Pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(PSIn.Pos.w));
+		uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
+		uint gridOffset = tileIndex * CLUSTERED_NUM_BUCKETS;
 
-            float3 ddxPos = ddx(PSIn.WorldPos.xyz);
-            float3 ddyPos = ddy(PSIn.WorldPos.xyz);
+		float3 ddxPos = ddx(PSIn.WorldPos.xyz);
+		float3 ddyPos = ddy(PSIn.WorldPos.xyz);
 
-            for(uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
-                uint buckets = ClusterDataGrid[gridOffset + bucketIndex].decals;
+		for (uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
+			uint buckets = ClusterDataGrid[gridOffset + bucketIndex].decals;
 
-                // Apply decals ---
-                float4 roughtness = 0; // not used in unlit
-                ApplyDecals(buckets, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, color, roughtness);
-                // ----------------
-            }
-        }
-    #endif
+			// Apply decals ---
+			float4 roughtness = 0; // not used in unlit
+			ApplyDecals(buckets, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, color, roughtness);
+			// ----------------
+		}
+	}
+#endif
 
-    PSOut.Color = color;
+	PSOut.Color = color;
 
-    // GPU PICKING -----
-    PSOut.GPUPick = float4(PSIn.GPUId.rgb, all(PSIn.GPUId.rgb) ? 0. : 1.);
+	// GPU PICKING -----
+	PSOut.GPUPick = float4(PSIn.GPUId.rgb, all(PSIn.GPUId.rgb) ? 0. : 1.);
 	// -----------------
 }

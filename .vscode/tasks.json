@@ -48,7 +48,7 @@
     {
       "label": "Run clang-format",
       "type": "shell",
-      "command": "clang-format -i `find -not -path \"*build*\" -not -path \"*deps*\" -not -path \"*.cache*\" \\( -name *.cpp -o -name *.h -o -name *.hpp \\)`",
+      "command": "clang-format -i `find -not -path \"*build*\" -not -path \"*deps*\" -not -path \"*.cache*\" \\( -name *.cpp -o -name *.h -o -name *.hpp -o -name *.fxh -o -name *.psh -o -name *.vsh -o -name *.gsh -o -name *.csh \\)`",
       "group": "build",
       "options": {
         "cwd": "${workspaceFolder}"

@@ -51,10 +51,12 @@ namespace rawrbox {
 			copy.pSrcTexture = base;
 			copy.pDstTexture = this->_tex;
 			copy.pSrcBox = box;
+			copy.DstTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY;
+			copy.SrcTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY;
 
 			rawrbox::BarrierUtils::barrier({{copy.pSrcTexture, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_SOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			context->CopyTexture(copy); // This is an async operation, enqueue the fence
-						    //  --------------
+			//   --------------
 
 			context->EnqueueSignal(this->_copyFence, 1);
 			rawrbox::BindlessManager::registerUpdateTexture(*this);

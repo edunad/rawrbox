@@ -27,19 +27,26 @@ namespace rawrbox {
 		void bindStatic(Diligent::IPipelineResourceSignature& sig) override;
 		void postRender(rawrbox::TextureRender& render) override;
 
-		// Process utils ----
+		// PLUGIN UTILS ----
 		template <class T = rawrbox::PostProcessBase, typename... CallbackArgs>
 			requires(std::derived_from<T, rawrbox::PostProcessBase>)
-		void add(CallbackArgs&&... args) {
-			this->_postProcesses.push_back(std::make_unique<T>(std::forward<CallbackArgs>(args)...));
+		rawrbox::PostProcessBase* add(CallbackArgs&&... args) {
+			auto process = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
+
+			auto* pro = process.get();
+			this->_postProcesses.push_back(std::move(process));
+			return pro;
 		}
 
 		virtual void remove(size_t indx);
-		[[nodiscard]] virtual rawrbox::PostProcessBase& get(size_t indx) const;
+		// ----
+
+		// UTILS ----=
+		[[nodiscard]] virtual rawrbox::PostProcessBase* get(size_t indx) const;
 		[[nodiscard]] virtual Diligent::IBuffer* getBuffer() const;
 		virtual size_t count();
+		// ---------
 
 		std::string getID() override;
-		// ---------
 	};
 } // namespace rawrbox

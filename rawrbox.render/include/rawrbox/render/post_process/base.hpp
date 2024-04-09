@@ -9,8 +9,13 @@ namespace rawrbox {
 	protected:
 		Diligent::IBuffer* _buffer = nullptr;
 		Diligent::IPipelineState* _pipeline = nullptr;
+		bool _enabled = true;
 
+#ifdef UINT_DATA
+		std::array<rawrbox::Vector4u, rawrbox::MAX_POST_DATA> _data = {};
+#else
 		std::array<rawrbox::Vector4f, rawrbox::MAX_POST_DATA> _data = {};
+#endif
 
 		// LOGGER ------
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-PostProcess");
@@ -26,5 +31,8 @@ namespace rawrbox {
 
 		virtual void init();
 		virtual void applyEffect(const rawrbox::TextureBase& texture);
+
+		virtual void setEnabled(bool enabled);
+		[[nodiscard]] virtual bool isEnabled() const;
 	};
 } // namespace rawrbox
