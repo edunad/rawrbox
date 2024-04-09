@@ -1,45 +1,44 @@
 #ifndef INCLUDED_LIGHT_UNIFORMS
-    #define INCLUDED_LIGHT_UNIFORMS
+#define INCLUDED_LIGHT_UNIFORMS
 
-    struct LightConstantsStruct {
-        // Light ---------
-        uint4 lightSettings;
-        // ------
+struct LightConstantsStruct {
+	// Light ---------
+	uint4 lightSettings;
+	// ------
 
-        // Ambient ---
-        float4 ambientColor;
-        // -----
-    };
+	// Ambient ---
+	float4 ambientColor;
+	// -----
+};
 
-    ConstantBuffer<LightConstantsStruct> LightConstants;
+ConstantBuffer<LightConstantsStruct> LightConstants;
 
-    struct Light {
-        float4 position;
-        float4 direction;
+struct Light {
+	float4 position;
+	float4 direction;
 
-        float3 color;
-        float  intensity;
+	float3 color;
+	float intensity;
 
-        // -------
-        float  radius;
-        float  penumbra;
-        float  umbra;
+	// -------
+	float radius;
+	float penumbra;
+	float umbra;
 
-        uint   type;
-        // -------
-    };
+	uint type;
+	// -------
+};
 
-    // Aka sun
-    struct DirectionalLight {
-        float4 direction;
-        float4 radiance;
-    };
+// Aka sun
+struct DirectionalLight {
+	float4 direction;
+	float4 radiance;
+};
 
+#define LIGHT_POINT       1
+#define LIGHT_SPOT        2
+#define LIGHT_DIRECTIONAL 3
 
-    #define LIGHT_POINT       1
-    #define LIGHT_SPOT        2
-    #define LIGHT_DIRECTIONAL 3
-
-    #define FULL_BRIGHT LightConstants.lightSettings.x
-    #define TOTAL_LIGHTS LightConstants.lightSettings.y
+#define FULL_BRIGHT  LightConstants.lightSettings.x
+#define TOTAL_LIGHTS LightConstants.lightSettings.y
 #endif

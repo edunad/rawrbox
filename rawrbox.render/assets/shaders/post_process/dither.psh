@@ -1,6 +1,5 @@
-#include "dither.fxh"
-
 #include "camera.fxh"
+#include "dither.fxh"
 #include "pixel_post_process_uniforms.fxh"
 
 // ## MAPPING ----------------
@@ -11,37 +10,36 @@
 // ========================
 
 Texture2DArray g_Textures[];
-SamplerState   g_Sampler;
+SamplerState g_Sampler;
 
 struct PSInput {
-    float4 Pos   : SV_POSITION;
-    float2 UV    : TEX_COORD;
+	float4 Pos : SV_POSITION;
+	float2 UV : TEX_COORD;
 };
 
 struct PSOutput {
-    float4 Color : SV_TARGET;
+	float4 Color : SV_TARGET;
 };
-
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
 #if defined(DESKTOP_GL) || defined(GL_ES)
-    float3 UV = float3(PSIn.UV.x, 1.0 - PSIn.UV.y, 0);
+	float3 UV = float3(PSIn.UV.x, 1.0 - PSIn.UV.y, 0);
 #else
-    float3 UV = float3(PSIn.UV.xy, 0);
+	float3 UV = float3(PSIn.UV.xy, 0);
 #endif
 
-    float4 color = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, UV);
-    float depth = 1;
+	float4 color = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, UV);
+	float depth = 1;
 
-    // Dither -----
-    if(DitherMode == 0.0) { // SLOW MODE
-        color.rgb = getDither(UV.xy * ScreenSize, color.rgb, DitherIntensity * depth / 3.0);
-    } else {
-        color.rgb += getDitherFast(UV.xy * ScreenSize, 1) * DitherIntensity * depth / 3.0;
-    }
+	// Dither -----
+	if (DitherMode == 0.0) { // SLOW MODE
+		color.rgb = getDither(UV.xy * ScreenSize, color.rgb, DitherIntensity * depth / 3.0);
+	} else {
+		color.rgb += getDitherFast(UV.xy * ScreenSize, 1) * DitherIntensity * depth / 3.0;
+	}
 
-    // Posterize
-    color = saturate(floor(color * DitherColorDepth) / DitherColorDepth);
+	// Posterize
+	color = saturate(floor(color * DitherColorDepth) / DitherColorDepth);
 
-    PSOut.Color = color;
+	PSOut.Color = color;
 }

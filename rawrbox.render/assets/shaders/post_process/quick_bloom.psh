@@ -2,33 +2,33 @@
 #include "pixel_post_process_uniforms.fxh"
 
 // ## MAPPING ----------------
-#define BloomIntensity  PostProcessConstants.data[0].x
+#define BloomIntensity PostProcessConstants.data[0].x
 // ========================
 
 Texture2DArray g_Textures[];
-SamplerState   g_Sampler;
+SamplerState g_Sampler;
 
 struct PSInput {
-    float4 Pos   : SV_POSITION;
-    float2 UV    : TEX_COORD;
+	float4 Pos : SV_POSITION;
+	float2 UV : TEX_COORD;
 };
 
 struct PSOutput {
-    float4 Color : SV_TARGET;
+	float4 Color : SV_TARGET;
 };
 
 // Adapted from https://www.shadertoy.com/view/4tlBWH
-float4 GetBloom (in float2 uv, in float4 inColor) {
+float4 GetBloom(in float2 uv, in float4 inColor) {
 	float numSamples = 1.0;
-    float4 color = inColor;
+	float4 color = inColor;
 
 	for (float x = -8.0; x <= 8.0; x += 1.0) {
 		for (float y = -8.0; y <= 8.0; y += 1.0) {
-            float4 addColor = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, float3(uv + (float2(x, y) * px), 0));
+			float4 addColor = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, float3(uv + (float2(x, y) * px), 0));
 
 			if (max(addColor.r, max(addColor.g, addColor.b)) > 0.3) {
-				float dist = length(float2(x,y))+1.0;
-				float4 glowColor = max((addColor * 128.0) / pow(dist, 2.0), float4(0,0,0,0));
+				float dist = length(float2(x, y)) + 1.0;
+				float4 glowColor = max((addColor * 128.0) / pow(dist, 2.0), float4(0, 0, 0, 0));
 
 				if (max(glowColor.r, max(glowColor.g, glowColor.b)) > 0.0) {
 					color += glowColor;
@@ -43,11 +43,11 @@ float4 GetBloom (in float2 uv, in float4 inColor) {
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
 #if defined(DESKTOP_GL) || defined(GL_ES)
-    float3 UV = float3(PSIn.UV.x, 1.0 - PSIn.UV.y, 0);
+	float3 UV = float3(PSIn.UV.x, 1.0 - PSIn.UV.y, 0);
 #else
-    float3 UV = float3(PSIn.UV.xy, 0);
+	float3 UV = float3(PSIn.UV.xy, 0);
 #endif
 
-    float4 Color = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, UV);
+	float4 Color = g_Textures[PostProcessConstants.textureID].Sample(g_Sampler, UV);
 	PSOut.Color = lerp(Color, GetBloom(UV.xy, Color), BloomIntensity);
 }
