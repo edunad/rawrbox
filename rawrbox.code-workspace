@@ -54,8 +54,8 @@
     "files.eol": "\n",
     "output.smartScroll.enabled": false,
     "[hlsl]": {
-      "editor.defaultFormatter": null,
-      "editor.formatOnSave": false
+      "editor.defaultFormatter": "xaver.clang-format",
+      "editor.formatOnSave": true
     },
     "[cpp]": {
       "editor.codeActionsOnSave": ["source.fixHeaders"]
@@ -78,6 +78,9 @@
     "files.associations": {
       "*.gsh": "hlsl",
       "*.csh": "hlsl",
+      "*.psh": "hlsl",
+      "*.vsh": "hlsl",
+      "*.fxh": "hlsl",
       "xstring": "cpp",
       "functional": "cpp",
       "map": "cpp",

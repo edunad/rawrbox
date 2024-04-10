@@ -19,7 +19,7 @@ float3 CalculateRotation(uint hash) {
 	float3 randomRotation;
 	randomRotation.x = lerp(EmitterConstants.rotationMin.x, EmitterConstants.rotationMax.x, (float)(hash & 0xFF) * (1.0f / 255.0f));
 	randomRotation.y = lerp(EmitterConstants.rotationMin.y, EmitterConstants.rotationMax.y, (float)((hash >> 8) & 0xFF) * (1.0f / 255.0f));
-	randomRotation.z = lerp(EmitterConstants.rotationMin.z, EmitterConstants.rotationMax.z, (float)((hash >> 8) & 0xFF) * (1.0f / 255.0f));
+	randomRotation.z = lerp(EmitterConstants.rotationMin.z, EmitterConstants.rotationMax.z, (float)((hash >> 16) & 0xFF) * (1.0f / 255.0f));
 
 	return randomRotation;
 }
@@ -27,7 +27,7 @@ float3 CalculateRotation(uint hash) {
 float2 CalculateSize(uint hash) {
 	float2 randomSize;
 	randomSize.x = lerp(EmitterConstants.size.x, EmitterConstants.size.z, (float)(hash & 0xFFFF) * (1.0f / 65535.0f));
-	randomSize.y = lerp(EmitterConstants.size.y, EmitterConstants.size.w, (float)((hash >> 16) & 0xFFFF) * (1.0f / 65535.0f));
+	randomSize.y = lerp(EmitterConstants.size.y, EmitterConstants.size.w, (float)((hash >> 8) & 0xFFFF) * (1.0f / 65535.0f));
 	return randomSize;
 }
 
