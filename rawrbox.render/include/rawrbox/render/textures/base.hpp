@@ -25,8 +25,10 @@ namespace rawrbox {
 		rawrbox::Vector2u _size = {};
 
 		int _channels = 0;
+
 		uint32_t _textureID = 0; // Default to missing texture, it's always reserved to 0
 		uint32_t _depthTextureID = 0;
+		uint32_t _slice = 0;
 
 		std::vector<uint8_t> _pixels = {};
 
@@ -82,6 +84,9 @@ namespace rawrbox {
 		virtual void setName(const std::string& name);
 
 		virtual void setSRGB(bool set);
+
+		virtual void setSlice(uint32_t id);
+		[[nodiscard]] virtual uint32_t getSlice() const;
 		// -----
 
 		virtual void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false);

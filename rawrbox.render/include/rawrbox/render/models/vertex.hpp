@@ -20,11 +20,11 @@ namespace rawrbox {
 		    const rawrbox::Vector4f& _uv = {}) : position(_pos), uv(_uv) {}
 
 		void setUV(const rawrbox::Vector4f& _uv) { this->uv = _uv; }
+		void setPos(const rawrbox::Vector3f& _pos) { this->position = _pos; }
 
-		// Atlas ---
-		void setAtlasId(uint32_t _id) {
-			this->uv.z = static_cast<float>(_id);
-		}
+		// Texture array ---
+		void setSlice(uint32_t _id) { this->uv.z = static_cast<float>(_id); }
+		[[nodiscard]] uint32_t getSlice() const { return static_cast<uint16_t>(this->uv.z); }
 		// ---------------------
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
@@ -40,8 +40,7 @@ namespace rawrbox {
 				v.emplace_back(4, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
 				v.emplace_back(5, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
 
-				v.emplace_back(6, 1, 4, Diligent::VT_UINT8, true, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);    // Color
-				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
+				v.emplace_back(6, 1, 4, Diligent::VT_UINT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Data
 			}
 
 			return v;
@@ -79,8 +78,7 @@ namespace rawrbox {
 				v.emplace_back(6, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
 				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
 
-				v.emplace_back(8, 1, 4, Diligent::VT_UINT8, true, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);    // Color
-				v.emplace_back(9, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
+				v.emplace_back(8, 1, 4, Diligent::VT_UINT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Data
 			}
 
 			return v;
@@ -113,8 +111,7 @@ namespace rawrbox {
 				v.emplace_back(6, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
 				v.emplace_back(7, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
 
-				v.emplace_back(8, 1, 4, Diligent::VT_UINT8, true, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);    // Color
-				v.emplace_back(9, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
+				v.emplace_back(8, 1, 4, Diligent::VT_UINT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Data
 			}
 
 			return v;
@@ -153,8 +150,7 @@ namespace rawrbox {
 				v.emplace_back(8, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
 				v.emplace_back(9, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
 
-				v.emplace_back(10, 1, 4, Diligent::VT_UINT8, true, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE);    // Color
-				v.emplace_back(11, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Extra
+				v.emplace_back(10, 1, 4, Diligent::VT_UINT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Data
 			}
 
 			return v;

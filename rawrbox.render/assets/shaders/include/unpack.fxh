@@ -61,6 +61,11 @@ float4 Unpack_ARGB8_UNORM(uint value) {
 	return float4(packed.y, packed.z, packed.w, packed.x) / 255.0;
 }
 
+float4 Unpack_ABGR8_UNORM(uint value) {
+    uint4 packed = uint4(value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, value >> 24);
+	return float4(packed.w, packed.z, packed.y, packed.x) / 255.0;
+}
+
 uint Pack_RGBA8_SNORM(float4 value) {
 	int4 packed = int4(round(clamp(value, -1.0, 1.0) * 127.0)) & 0xff;
 	return uint(packed.x | (packed.y << 8) | (packed.z << 16) | (packed.w << 24));

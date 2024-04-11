@@ -7,34 +7,24 @@
 namespace rawrbox {
 	struct Instance {
 		rawrbox::Matrix4x4 matrix = {};
-		uint32_t color = 0xFFFFFFFF;
-		rawrbox::Vector4f extraData = {}; // AtlasID, etc..
+		rawrbox::Vector4u data = {0xFFFFFFFF, 0, 0, 0}; // Color, slice, gpu id, ??
 
 		Instance() = default;
-		Instance(const rawrbox::Matrix4x4& mat, const rawrbox::Colorf& col = rawrbox::Colors::White(), uint16_t atlasId = 0, uint32_t id = 0) : matrix(mat), color(col.pack()) {
-			this->setAtlasId(atlasId);
+		Instance(const rawrbox::Matrix4x4& mat, const rawrbox::Colorf& col = rawrbox::Colors::White(), uint16_t slice = 0, uint32_t id = 0) : matrix(mat), data(col.pack(), 0, 0, 0) {
+			this->setSlice(slice);
 			if (id != 0) this->setId(id);
 		}
 
-		[[nodiscard]] rawrbox::Colorf getColor() const { return rawrbox::Color::RGBAHex(color); }
-		void setColor(const rawrbox::Colorf& cl) { color = cl.pack(); }
+		[[nodiscard]] rawrbox::Colorf getColor() const { return rawrbox::Color::RGBAHex(data.x); }
+		void setColor(const rawrbox::Colorf& cl) { data.x = cl.pack(); }
 
 		[[nodiscard]] const rawrbox::Matrix4x4& getMatrix() const { return matrix; }
 		void setMatrix(const rawrbox::Matrix4x4& mtrx) { matrix = mtrx; }
 
-		[[nodiscard]] uint16_t getAtlasId() const { return static_cast<uint16_t>(extraData.w); }
-		void setAtlasId(uint16_t id) { extraData.w = static_cast<float>(id); }
+		[[nodiscard]] uint32_t getSlice() const { return data.y; }
+		void setSlice(uint32_t slice) { data.y = slice; }
 
-		[[nodiscard]] uint32_t getId() const {
-			return rawrbox::PackUtils::toRGBA(extraData.x, extraData.y, extraData.z, 1.F);
-		}
-
-		void setId(uint32_t id) {
-			auto pack = rawrbox::PackUtils::fromRGBA((id << 8) | 0xFF);
-
-			extraData.x = pack[0];
-			extraData.y = pack[1];
-			extraData.z = pack[2];
-		}
+		[[nodiscard]] uint32_t getId() const { return data.z; }
+		void setId(uint32_t id) { data.z = (id << 8) | 0xFF; }
 	};
 } // namespace rawrbox

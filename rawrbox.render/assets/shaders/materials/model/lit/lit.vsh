@@ -1,5 +1,6 @@
 #include "camera.fxh"
 #include "vertex_bindless_uniforms.fxh"
+#include "unpack.fxh"
 
 #define TRANSFORM_DISPLACEMENT
 #define TRANSFORM_PSX
@@ -30,8 +31,8 @@ struct VSInput {
 	float4 MtrxRow1 : ATTRIB7;
 	float4 MtrxRow2 : ATTRIB8;
 	float4 MtrxRow3 : ATTRIB9;
-	float4 ColorOverride : ATTRIB10;
-	float4 Extra : ATTRIB11;
+
+	uint4  InstData : ATTRIB10; // Color, slice, gpu id, ??
 	#endif
 #else
 	#ifdef INSTANCED
@@ -40,8 +41,8 @@ struct VSInput {
 	float4 MtrxRow1 : ATTRIB5;
 	float4 MtrxRow2 : ATTRIB6;
 	float4 MtrxRow3 : ATTRIB7;
-	float4 ColorOverride : ATTRIB8;
-	float4 Extra : ATTRIB9;
+
+	uint4  InstData : ATTRIB8; // Color, slice, gpu id, ??
 	#endif
 #endif
 };
@@ -85,12 +86,12 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 	PSIn.UV = VSIn.UV.xy;
 
 #ifdef INSTANCED
-	PSIn.Color = VSIn.ColorOverride * Constants.colorOverride;
-	PSIn.GPUId = float4(VSIn.Extra.xyz, 1.);
-	PSIn.TexIndex = VSIn.Extra.z;
+	PSIn.Color = Unpack_RGBA8_UNORM(VSIn.InstData.x) * Unpack_RGBA8_UNORM(ColorOverride);
+	PSIn.TexIndex = VSIn.UV.z + VSIn.InstData.y + SliceOverride;
+	PSIn.GPUId = Unpack_ABGR8_UNORM(VSIn.InstData.z);
 #else
-	PSIn.Color = Constants.colorOverride;
-	PSIn.GPUId = Constants.gpuID;
-	PSIn.TexIndex = VSIn.UV.z;
+	PSIn.Color = Unpack_RGBA8_UNORM(ColorOverride);
+	PSIn.GPUId = Unpack_ABGR8_UNORM(GPUID);
+	PSIn.TexIndex = VSIn.UV.z + SliceOverride;
 #endif
 }

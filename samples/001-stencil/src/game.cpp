@@ -113,7 +113,7 @@ namespace stencil {
 		std::random_device prng;
 		std::uniform_int_distribution<uint16_t> dist(0, 4);
 		for (auto& vertice : mesh.vertices) {
-			vertice.setAtlasId(dist(prng));
+			vertice.setSlice(dist(prng));
 		}
 
 		this->_model->addMesh(mesh);

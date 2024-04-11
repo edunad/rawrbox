@@ -112,6 +112,9 @@ namespace rawrbox {
 	void TextureBase::setName(const std::string& name) { this->_name = fmt::format("RawrBox::Texture::{}", name); }
 
 	void TextureBase::setSRGB(bool set) { this->_sRGB = set; }
+
+	void TextureBase::setSlice(uint32_t id) { this->_slice = id; }
+	uint32_t TextureBase::getSlice() const { return this->_slice; }
 	// ----
 
 	void TextureBase::upload(Diligent::TEXTURE_FORMAT format, bool dynamic) {

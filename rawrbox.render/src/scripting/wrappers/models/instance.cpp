@@ -14,8 +14,8 @@ namespace rawrbox {
 		    .addFunction("getMatrix", &Instance::getMatrix)
 		    .addFunction("setMatrix", &Instance::setMatrix)
 
-		    .addFunction("getAtlasId", &Instance::getAtlasId)
-		    .addFunction("setAtlasId", &Instance::setAtlasId)
+		    .addFunction("getSlice", &Instance::getSlice)
+		    .addFunction("setSlice", &Instance::setSlice)
 
 		    .addFunction("getId", &Instance::getId)
 		    .addFunction("setId", &Instance::setId)

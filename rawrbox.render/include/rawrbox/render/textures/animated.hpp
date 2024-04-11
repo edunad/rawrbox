@@ -18,10 +18,9 @@ namespace rawrbox {
 		std::vector<rawrbox::Frame> _frames = {};
 		std::filesystem::path _filePath = "";
 
-		int _currentFrame = 0;
-
 		bool _loop = true;
 		bool _pause = false;
+		bool _textureArray = false;
 
 		uint64_t _cooldown = 0;
 		float _speed = 1.F;
@@ -41,16 +40,20 @@ namespace rawrbox {
 		virtual void reset();
 		// --------------------
 
-		// ------UTILS
-		virtual bool getLoop();
+		// UTILS -----------
+		[[nodiscard]] virtual bool getLoop() const;
 		virtual void setLoop(bool loop);
-		virtual bool getPaused();
+		[[nodiscard]] virtual bool getPaused() const;
 		virtual void setPaused(bool paused);
-		virtual float getSpeed();
+		[[nodiscard]] virtual float getSpeed() const;
 		virtual void setSpeed(float speed);
+
+		[[nodiscard]] virtual uint32_t total() const;
+
+		[[nodiscard]] uint32_t getSlice() const override;
 		// --------------------
 
-		// ------RENDER
+		// RENDER ------
 		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false) override;
 		// --------------------
 

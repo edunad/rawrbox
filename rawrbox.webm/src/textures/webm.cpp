@@ -67,7 +67,7 @@ namespace rawrbox {
 		this->_cooldown = rawrbox::TimeUtils::curtime() + 20;
 	}
 
-	bool TextureWEBM::getLoop() {
+	bool TextureWEBM::getLoop() const {
 		if (this->_webm == nullptr) return false;
 		return this->_webm->getLoop();
 	}
@@ -77,7 +77,7 @@ namespace rawrbox {
 		this->_webm->setLoop(loop);
 	}
 
-	bool TextureWEBM::getPaused() {
+	bool TextureWEBM::getPaused() const {
 		if (this->_webm == nullptr) return false;
 		return this->_webm->getPaused();
 	}
@@ -87,7 +87,7 @@ namespace rawrbox {
 		this->_webm->setPaused(paused);
 	}
 
-	float TextureWEBM::getSpeed() {
+	float TextureWEBM::getSpeed() const {
 		throw std::runtime_error("[RawrBox-TextureWEBM] Not supported");
 	}
 

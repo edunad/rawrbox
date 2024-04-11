@@ -30,13 +30,13 @@ namespace rawrbox {
 		void seek(uint64_t timeMS);
 		void reset() override;
 
-		bool getLoop() override;
+		[[nodiscard]] bool getLoop() const override;
 		void setLoop(bool loop) override;
 
-		bool getPaused() override;
+		[[nodiscard]] bool getPaused() const override;
 		void setPaused(bool paused) override;
 
-		float getSpeed() override;
+		[[nodiscard]] float getSpeed() const override;
 		void setSpeed(float speed) override;
 		// ----
 
