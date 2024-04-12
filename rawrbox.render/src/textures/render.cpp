@@ -18,6 +18,8 @@ namespace rawrbox {
 
 		this->_barrierWrite.clear();
 		this->_barrierRead.clear();
+
+		RAWRBOX_DESTROY(this->_depthTex);
 	}
 
 	// ------ UTILS
@@ -120,16 +122,16 @@ namespace rawrbox {
 			rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_depthTex);
 			rawrbox::BarrierUtils::barrier({{this->_depthTex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_DEPTH_READ, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 
-			this->_barrierRead.emplace_back(this->_depthTex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_DEPTH_READ, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE | Diligent::STATE_TRANSITION_FLAG_DISCARD_CONTENT);
-			this->_barrierWrite.emplace_back(this->_depthTex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_DEPTH_WRITE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE | Diligent::STATE_TRANSITION_FLAG_DISCARD_CONTENT);
+			this->_barrierRead.emplace_back(this->_depthTex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_DEPTH_READ, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+			this->_barrierWrite.emplace_back(this->_depthTex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_DEPTH_WRITE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
 		} else {
 			Diligent::RefCntAutoPtr<Diligent::ITexture> texture;
 
 			rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &texture);
 			rawrbox::BarrierUtils::barrier({{texture, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 
-			this->_barrierRead.emplace_back(texture, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE | Diligent::STATE_TRANSITION_FLAG_DISCARD_CONTENT);
-			this->_barrierWrite.emplace_back(texture, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_RENDER_TARGET, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE | Diligent::STATE_TRANSITION_FLAG_DISCARD_CONTENT);
+			this->_barrierRead.emplace_back(texture, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
+			this->_barrierWrite.emplace_back(texture, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_RENDER_TARGET, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
 
 			this->_textures.push_back(std::move(texture));
 		}

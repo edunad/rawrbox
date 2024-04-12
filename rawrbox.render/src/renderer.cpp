@@ -384,10 +384,6 @@ namespace rawrbox {
 		this->clear();
 		// ---------------------
 
-		// Process barriers -----
-		rawrbox::BarrierUtils::clearBarrierCache();
-		//  ---------------------
-
 		// Update textures ---
 		rawrbox::BindlessManager::update();
 		// --------------------
@@ -504,7 +500,9 @@ namespace rawrbox {
 
 	void RendererBase::frame() {
 		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
+
 		rawrbox::FRAME = this->_context->GetFrameNumber();
+		rawrbox::BarrierUtils::clearBarrierCache();
 	}
 
 	// INTRO ------
