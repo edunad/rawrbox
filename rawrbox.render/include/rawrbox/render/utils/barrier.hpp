@@ -11,7 +11,7 @@ namespace rawrbox {
 	class BarrierUtils {
 	protected:
 		// BARRIER -------------
-		static std::unordered_map<Diligent::IDeviceObject*, Diligent::RESOURCE_STATE> _barrierCache;
+		static std::unordered_map<Diligent::IDeviceObject*, Diligent::StateTransitionDesc> _barrierCache;
 		//  -------------------------
 
 	public:
