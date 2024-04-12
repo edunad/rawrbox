@@ -62,7 +62,9 @@ namespace rawrbox {
 			return {std::abs(x), std::abs(y)};
 		}
 
-		[[nodiscard]] VecType lerp(const VecType& other, float timestep) const {
+		[[nodiscard]] VecType lerp(const VecType& other, float timestep) const
+			requires(!std::is_same_v<NumberType, uint16_t>)
+		{
 			VecType ret;
 
 			ret.x = static_cast<NumberType>(static_cast<float>(x) + static_cast<float>(other.x - x) * timestep);
@@ -113,11 +115,23 @@ namespace rawrbox {
 			return static_cast<NumberType>(std::atan2(y, x));
 		}
 
-		[[nodiscard]] std::array<short, 2> pack() const
+		// UTILS uint16_t --
+		[[nodiscard]] std::array<float, 2> unpack() const
+			requires(std::is_same_v<NumberType, uint16_t>)
+		{
+			float xx = rawrbox::PackUtils::fromFP16(this->x);
+			float yy = rawrbox::PackUtils::fromFP16(this->y);
+
+			return {xx, yy};
+		}
+		// ----------
+
+		[[nodiscard]] std::array<uint16_t, 2> pack() const
 			requires(std::is_same_v<NumberType, float>)
 		{
-			short xx = rawrbox::PackUtils::toHalf(this->x);
-			short yy = rawrbox::PackUtils::toHalf(this->y);
+			uint16_t xx = rawrbox::PackUtils::toFP16(this->x);
+			uint16_t yy = rawrbox::PackUtils::toFP16(this->y);
+
 			return {xx, yy};
 		}
 
@@ -288,5 +302,6 @@ namespace rawrbox {
 	using Vector2f = Vector2_t<float>;
 	using Vector2i = Vector2_t<int>;
 	using Vector2u = Vector2_t<uint32_t>;
+	using Vector2f16 = Vector2_t<uint16_t>;
 	using Vector2 = Vector2f;
 } // namespace rawrbox
