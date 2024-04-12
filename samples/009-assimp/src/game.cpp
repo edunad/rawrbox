@@ -82,7 +82,7 @@ namespace assimp {
 		this->_model->load(*mdl);
 		this->_model->upload();
 
-		this->_model2->setPos({-6, 1.1F, -2.F});
+		this->_model2->setPos({-6, 1.1F, 2.F});
 		this->_model2->load(*mdl);
 		this->_model2->upload();
 
@@ -109,7 +109,7 @@ namespace assimp {
 		auto* mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/grandma_tv/scene.gltf")->get();
 		this->_model6->load(*mdl5);
 		this->_model6->playAnimation("Scene", true, 1.F);
-		this->_model6->setPos({0, 0, -3.5F});
+		this->_model6->setPos({-1, 0, -3.5F});
 		this->_model6->setScale({0.35F, 0.35F, 0.35F});
 		this->_model6->setEulerAngle({0, rawrbox::MathUtils::toRad(180.F), 0});
 		this->_model6->upload();
@@ -117,7 +117,7 @@ namespace assimp {
 		auto* mdl6 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/shape_keys/shape_keys.glb")->get();
 		this->_model7->load(*mdl6);
 		this->_model7->setScale({0.4F, 0.4F, 0.4F});
-		this->_model7->setPos({2.F, 0.4F, -6.F});
+		this->_model7->setPos({1.F, 0.4F, -3.5F});
 		this->_model7->upload(rawrbox::UploadType::FIXED_DYNAMIC);
 		//    -----
 
@@ -126,8 +126,8 @@ namespace assimp {
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TEXTURES", {6.F, 3.0F, 0});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.F, 2.5F});
-		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "VERTEX ANIMATIONS", {0.F, 1.8F, -3.5F});
-		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "EMBEDDED TEXTURES +\nBLEND SHAPES", {2.F, 1.8F, -6.F});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "VERTEX ANIMATIONS", {-1.F, 1.8F, -3.5F});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "EMBEDDED TEXTURES +\nBLEND SHAPES", {1.F, 1.8F, -3.5F});
 		this->_text->upload();
 		// ------
 

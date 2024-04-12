@@ -3,8 +3,8 @@ set(output_target RAWRBOX.RENDER)
 # --------------
 
 # Packages ----
-set(DXC_VERSION "v1.8.2403.1")
-set(DXC_RELEASE_DATE "2024_03_22")
+set(DXC_VERSION "v1.8.2403.2")
+set(DXC_RELEASE_DATE "2024_03_29")
 
 find_package(DXC REQUIRED)
 # --------------
@@ -38,6 +38,8 @@ CPMAddPackage(
     COMMAND
         git restore Graphics/GraphicsEngineVulkan/src/VulkanUtilities/VulkanInstance.cpp
     OPTIONS
+        "DILIGENT_NO_RENDER_STATE_PACKAGER ON"
+        "DILIGENT_NO_FORMAT_VALIDATION ON"
         "DILIGENT_NO_OPENGL ON"
         "DILIGENT_NO_VULKAN ${RAWRBOX_DISABLE_SUPPORT_VULKAN}"
         "DILIGENT_NO_DIRECT3D11 ON"
@@ -73,12 +75,10 @@ if(DiligentCore_ADDED)
         set_lib_runtime_mt(Diligent-Win32Platform)
     else()
         set_lib_runtime_mt(Diligent-LinuxPlatform)
-    endif()
 
-    ## We use DXC from github ----
-    set(DXC_SPIRV_PATH "" CACHE STRING "" FORCE)
-    set(DILIGENT_DXCOMPILER_FOR_SPIRV_PATH "" CACHE STRING "" FORCE)
-    # ----------------------------
+        set(DXC_SPIRV_PATH "" CACHE STRING "" FORCE)
+        set(DILIGENT_DXCOMPILER_FOR_SPIRV_PATH "" CACHE STRING "" FORCE)
+    endif()
 endif()
 
 CPMAddPackage("gh:nemtrif/utfcpp@4.0.5")

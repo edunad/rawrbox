@@ -3,7 +3,6 @@
 #include <array>
 #include <cstdint>
 
-// From https://github.com/bkaradzic/bgfx/blob/master/examples/33-pom/pom.cpp#L56
 namespace rawrbox {
 	class PackUtils {
 	protected:
@@ -19,8 +18,8 @@ namespace rawrbox {
 
 		static std::array<float, 4> fromNormal(uint32_t val);
 
-		static short toHalf(float value);
-		static float fromHalf(short value);
+		static uint16_t toFP16(float half);
+		static float fromFP16(uint16_t half);
 
 		static uint32_t toABGR(float _rr, float _gg, float _bb, float _aa);
 		static uint32_t toABGR(uint8_t _rr, uint8_t _gg, uint8_t _bb, uint8_t _aa);
