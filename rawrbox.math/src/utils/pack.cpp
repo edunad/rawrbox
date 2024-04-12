@@ -65,27 +65,85 @@ namespace rawrbox {
 		return std::max(-1.0F, float(_value) / _scale);
 	}
 
-	short PackUtils::toHalf(float value) {
-		int fltInt32 = 0;
+	uint16_t PackUtils::toFP16(float half) {
+		auto bits = std::bit_cast<uint32_t>(half);
 
-		std::memcpy(&fltInt32, &value, sizeof(float));
-		int shifted = ((fltInt32 & 0x7fffffff) >> 13) - (0x38000000 >> 13);
-		if (shifted > SHRT_MAX || shifted < SHRT_MIN) {
-			shifted = std::clamp(shifted, SHRT_MIN, SHRT_MAX);
+		uint32_t sign = (bits >> 31) & 0x1;
+		int32_t exponent = ((bits >> 23) & 0xFF) - 127; // Exponent in float32 is biased by 127
+		uint32_t mantissa = bits & 0x7FFFFF;
+
+		// Adjust the exponent for FP16's bias (15 instead of 127 for FP32)
+		exponent += 15;
+
+		// Handle special cases
+		if (exponent >= 31) {
+			if (exponent > 31 || mantissa != 0) { // Check for NaN or infinity
+				// Preserve the signaling bit in NaNs and set the mantissa to maximum
+				return static_cast<uint16_t>((sign << 15) | 0x7C00 | (mantissa != 0U ? 0x200 : 0));
+			}
+
+			return static_cast<uint16_t>((sign << 15) | 0x7C00); // Infinity
 		}
 
-		auto fltInt16 = static_cast<short>(shifted);
-		fltInt16 |= ((fltInt32 & 0x80000000) >> 16);
-		return fltInt16;
+		if (exponent <= 0) {
+			if (exponent < -10) {
+				return static_cast<uint16_t>(sign << 15); // Value is too small for FP16 subnormals, flush to zero
+			}
+
+			// Handle subnormal numbers
+			mantissa |= 0x800000;                                // Add the implicit leading bit
+			int shift = 14 - exponent;                           // Calculate how much to shift mantissa to fit in FP16
+			mantissa = (mantissa + (1 << (shift - 1))) >> shift; // Round to nearest, ties to even
+
+			return static_cast<uint16_t>((sign << 15) | mantissa);
+		}
+
+		// Normalized number
+		uint32_t roundedMantissa = (mantissa + 0x00001000) >> 13; // Round to nearest, ties to even
+		if ((roundedMantissa & 0x0400) != 0U) {                   // Check if rounding caused a carry
+			roundedMantissa = 0;                              // Mantissa overflows to 0
+			exponent += 1;                                    // Increase exponent
+			if (exponent >= 31) {                             // Check for overflow to infinity
+				return static_cast<uint16_t>((sign << 15) | 0x7C00);
+			}
+		}
+
+		// Pack sign, exponent, and mantissa into FP16 format
+		return static_cast<uint16_t>((sign << 15) | (exponent << 10) | (roundedMantissa & 0x03FF));
 	}
 
-	float PackUtils::fromHalf(short value) {
-		int fltInt32 = ((value & 0x8000) << 16);
-		fltInt32 |= ((value & 0x7fff) << 13) + 0x38000000;
+	float PackUtils::fromFP16(uint16_t half) {
+		// Extract the sign (bit 15), exponent (bits 14-10), and mantissa (bits 9-0)
+		int sign = (half >> 15) & 0x01;
+		int exponent = (half >> 10) & 0x1F;
+		int mantissa = half & 0x03FF;
 
-		float fRet = 0.F;
-		std::memcpy(&fRet, &fltInt32, sizeof(float));
-		return fRet;
+		float signF = sign == 0.F ? 1.0F : -1.0F;
+		float mantissaF = mantissa / 1024.0F; // Normalize mantissa
+
+		// Handle special cases for exponent
+		if (exponent == 0.F) {
+			// Subnormal number (or zero)
+			if (mantissa == 0.F) {
+				return 0.0F * signF; // +/-0
+			}
+
+			// Use exponent of 1 (denormalized number) and adjust mantissa accordingly
+			return signF * std::pow(2.F, -14.F) * mantissaF;
+		}
+
+		if (exponent == 31.F) {
+			// Infinity or NaN (Not a Number)
+			if (mantissa == 0.F) {
+				return signF * std::numeric_limits<float>::infinity();
+			}
+
+			return std::numeric_limits<float>::quiet_NaN();
+		}
+
+		// Normalized number
+		float exponentF = std::pow(2.F, exponent - 15.F);
+		return signF * exponentF * (1.0F + mantissaF);
 	}
 
 	uint32_t PackUtils::toABGR(float _rr, float _gg, float _bb, float _aa) {

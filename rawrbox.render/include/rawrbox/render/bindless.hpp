@@ -12,15 +12,11 @@
 namespace rawrbox {
 	struct BindlessVertexBuffer {
 		// MODEL ---
-		rawrbox::Colorf colorOverride = {};
-		rawrbox::Vector4f data = {};
-		// ----------
+		rawrbox::Vector4u data = {0xFFFFFFFF, 0, 0x00000000, 0}; // Color, Atlas, GPUId, Billboard
+		rawrbox::Vector4f dataF = {};                            // VertexSnap, DisplacementTexture, DisplacementPower, ???
+					      // ----------
 
-		// MODEL ID ---
-		rawrbox::Vector4f gpuID = {};
-		// ----------
-
-		bool operator==(const BindlessVertexBuffer& other) const { return this->colorOverride == other.colorOverride && this->data == other.data && this->gpuID == other.gpuID; }
+		bool operator==(const BindlessVertexBuffer& other) const { return this->data == other.data && this->dataF == other.dataF; }
 		bool operator!=(const BindlessVertexBuffer& other) const { return !operator==(other); }
 	};
 

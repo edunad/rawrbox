@@ -82,7 +82,9 @@ namespace rawrbox {
 			return {std::abs(x), std::abs(y), std::abs(z)};
 		}
 
-		[[nodiscard]] VecType lerp(const VecType& other, float timestep) const {
+		[[nodiscard]] VecType lerp(const VecType& other, float timestep) const
+			requires(!std::is_same_v<NumberType, uint16_t>)
+		{
 			if ((*this) == other) return other;
 			VecType ret;
 
@@ -137,13 +139,26 @@ namespace rawrbox {
 		}
 		// ------
 
+		// UTILS uint16_t --
+		[[nodiscard]] std::array<float, 3> unpack() const
+			requires(std::is_same_v<NumberType, uint16_t>)
+		{
+			float xx = rawrbox::PackUtils::fromFP16(this->x);
+			float yy = rawrbox::PackUtils::fromFP16(this->y);
+			float zz = rawrbox::PackUtils::fromFP16(this->z);
+
+			return {xx, yy, zz};
+		}
+		// ----------
+
 		// UTILS - FLOAT ---
-		[[nodiscard]] std::array<short, 3> pack() const
+		[[nodiscard]] std::array<uint16_t, 3> pack() const
 			requires(std::is_same_v<NumberType, float>)
 		{
-			short xx = rawrbox::PackUtils::toHalf(this->x);
-			short yy = rawrbox::PackUtils::toHalf(this->y);
-			short zz = rawrbox::PackUtils::toHalf(this->z);
+			uint16_t xx = rawrbox::PackUtils::toFP16(this->x);
+			uint16_t yy = rawrbox::PackUtils::toFP16(this->y);
+			uint16_t zz = rawrbox::PackUtils::toFP16(this->z);
+
 			return {xx, yy, zz};
 		}
 
@@ -291,5 +306,6 @@ namespace rawrbox {
 	using Vector3i = Vector3_t<int>;
 	using Vector3d = Vector3_t<double>;
 	using Vector3u = Vector3_t<uint32_t>;
+	using Vector3f16 = Vector3_t<uint16_t>;
 	using Vector3 = Vector3f;
 } // namespace rawrbox

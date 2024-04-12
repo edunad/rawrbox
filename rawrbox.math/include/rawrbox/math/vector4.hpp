@@ -93,7 +93,9 @@ namespace rawrbox {
 			    std::clamp(w, min.w, max.w)};
 		}
 
-		VecType lerp(const VecType& other, NumberType timestep) const {
+		VecType lerp(const VecType& other, NumberType timestep) const
+			requires(!std::is_same_v<NumberType, uint16_t>)
+		{
 			VecType ret;
 
 			ret.x = static_cast<NumberType>(static_cast<float>(x) + static_cast<float>(other.x - x) * timestep);
@@ -104,16 +106,29 @@ namespace rawrbox {
 		}
 
 		// FLOATING NUMBERS ----
-		[[nodiscard]] std::array<short, 4> pack() const
+		[[nodiscard]] std::array<uint16_t, 4> pack() const
 			requires(std::is_same_v<NumberType, float>)
 		{
-			short xx = rawrbox::PackUtils::toHalf(this->x);
-			short yy = rawrbox::PackUtils::toHalf(this->y);
-			short zz = rawrbox::PackUtils::toHalf(this->z);
-			short ww = rawrbox::PackUtils::toHalf(this->w);
+			uint16_t xx = rawrbox::PackUtils::toFP16(this->x);
+			uint16_t yy = rawrbox::PackUtils::toFP16(this->y);
+			uint16_t zz = rawrbox::PackUtils::toFP16(this->z);
+			uint16_t ww = rawrbox::PackUtils::toFP16(this->w);
 
 			return {xx, yy, zz, ww};
 		}
+
+		// UTILS uint16_t --
+		[[nodiscard]] std::array<float, 4> unpack() const
+			requires(std::is_same_v<NumberType, uint16_t>)
+		{
+			float xx = rawrbox::PackUtils::fromFP16(this->x);
+			float yy = rawrbox::PackUtils::fromFP16(this->y);
+			float zz = rawrbox::PackUtils::fromFP16(this->z);
+			float ww = rawrbox::PackUtils::fromFP16(this->w);
+
+			return {xx, yy, zz, ww};
+		}
+		// ----------
 
 		Vector3_t<NumberType> toEuler() const
 			requires(std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>)
@@ -422,5 +437,6 @@ namespace rawrbox {
 	using Vector4i = Vector4_t<int>;
 	using Vector4d = Vector4_t<double>;
 	using Vector4u = Vector4_t<uint32_t>;
+	using Vector4f16 = Vector4_t<uint16_t>;
 	using Vector4 = Vector4f;
 } // namespace rawrbox

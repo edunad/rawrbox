@@ -184,7 +184,7 @@ namespace rawrbox {
 		}
 	}
 
-	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd, uint32_t atlas) {
+	void Stencil::drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col, const rawrbox::Vector2f& uvStart, const rawrbox::Vector2f& uvEnd, int slice) {
 		if (col.invisible()) return;
 
 		// Setup --------
@@ -192,7 +192,7 @@ namespace rawrbox {
 		// ----
 
 		auto textureID = tex.getTextureID();
-		auto a = static_cast<float>(atlas);
+		auto a = slice == -1 ? tex.getSlice() : static_cast<float>(slice);
 
 		this->pushVertice(textureID, {pos.x, pos.y}, {uvStart.x, uvStart.y, a}, col);
 		this->pushVertice(textureID, {pos.x, pos.y + size.y}, {uvStart.x, uvEnd.y, a}, col);

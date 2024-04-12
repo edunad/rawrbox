@@ -1,4 +1,5 @@
 #include "camera.fxh"
+#include "unpack.fxh"
 #include "vertex_bindless_uniforms.fxh"
 
 #define TRANSFORM_BILLBOARD
@@ -20,5 +21,5 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 	PSIn.Pos = transform.final;
 
 	PSIn.UV = VSIn.UV.xy;
-	PSIn.Color = Constants.colorOverride;
+	PSIn.Color = Unpack_RGBA8_UNORM(ColorOverride);
 }

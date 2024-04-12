@@ -61,22 +61,15 @@ namespace rawrbox {
 	struct MeshData { // Aka data for vertex shader
 	public:
 		float vertexSnapPower = 0.F;
-		float billboard = 0.F;
+		uint32_t slice = 0;
+		uint32_t billboard = 0;
 
 		// Displacement ---
 		rawrbox::TextureBase* displacement = nullptr;
 		float displacementPower = 1.F;
 		// --------------
 
-		[[nodiscard]] rawrbox::Vector4f getData() const {
-			if (displacement != nullptr) {
-				return {billboard, vertexSnapPower, static_cast<float>(displacement->getTextureID()), displacementPower};
-			}
-
-			return {billboard, vertexSnapPower, 0.F, 0.F};
-		}
-
-		bool operator==(const rawrbox::MeshData& other) const { return this->vertexSnapPower == other.vertexSnapPower && this->billboard == other.billboard && this->displacement == other.displacement && this->displacementPower == other.displacementPower; }
+		bool operator==(const rawrbox::MeshData& other) const { return this->vertexSnapPower == other.vertexSnapPower && this->billboard == other.billboard && this->slice == other.slice && this->displacement == other.displacement && this->displacementPower == other.displacementPower; }
 		bool operator!=(const rawrbox::MeshData& other) const { return !operator==(other); }
 	};
 
@@ -206,24 +199,8 @@ namespace rawrbox {
 			return std::bit_cast<B*>(this->owner);
 		}
 
-		[[nodiscard]] virtual uint16_t getAtlasID(int index = -1) const {
-			if (this->vertices.empty()) return 0;
-			if (index < 0) return static_cast<uint16_t>(this->vertices.front().uv.z);
-
-			return static_cast<uint16_t>(this->vertices[std::clamp(index, 0, static_cast<int>(this->vertices.size() - 1))].uv.z);
-		}
-
-		virtual void setAtlasID(uint16_t _atlasId, int index = -1) {
-			auto vSize = static_cast<int>(this->vertices.size());
-			for (int i = 0; i < vSize; i++) {
-				if (index != -1 && i == index) {
-					this->vertices[i].setAtlasId(_atlasId);
-					break;
-				}
-
-				this->vertices[i].setAtlasId(_atlasId);
-			}
-		}
+		[[nodiscard]] virtual uint32_t getSlice() const { return this->data.slice; }
+		virtual void setSlice(uint32_t slice) { this->data.slice = slice; }
 
 		[[nodiscard]] virtual const rawrbox::TextureBase* getTexture() const { return this->textures.texture; }
 		virtual void setTexture(rawrbox::TextureBase* ptr) {
@@ -259,7 +236,7 @@ namespace rawrbox {
 		}
 
 		virtual void setBillboard(uint32_t set) {
-			this->data.billboard = static_cast<float>(set);
+			this->data.billboard = set;
 		}
 
 		virtual void setVertexSnap(float power = 2.F) {
@@ -275,9 +252,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] virtual uint32_t getID() const { return this->meshID; }
-		virtual void setID(uint32_t id) {
-			this->meshID = (id << 8) | 0xFF;
-		}
+		virtual void setID(uint32_t id) { this->meshID = (id << 8) | 0xFF; }
 
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->color; }
 		virtual void setColor(const rawrbox::Color& _color) {

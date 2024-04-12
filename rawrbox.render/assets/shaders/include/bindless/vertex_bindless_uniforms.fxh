@@ -7,25 +7,24 @@ struct SkinnedConstantsStruct {
 	float4x4 bones[MAX_BONES_PER_MODEL];
 	// ----------------
 };
-#endif
 
-struct ConstantsStruct {
-	// Model ----
-	float4 colorOverride;
-	float4 data;
-	// ----------------
-
-	float4 gpuID;
-};
-
-#ifdef SKINNED
 ConstantBuffer<SkinnedConstantsStruct> SkinnedConstants;
 #endif
 
+struct ConstantsStruct {
+	uint4 data;
+	float4 dataF;
+};
+
 ConstantBuffer<ConstantsStruct> Constants;
 
-#define Billboard           (uint) Constants.data.x
-#define VertexSnap          Constants.data.y
-#define DisplacementTexture (uint) Constants.data.z
-#define DisplacementPower   Constants.data.w
+#define ColorOverride Constants.data.x
+#define SliceOverride Constants.data.y
+#define GPUID         Constants.data.z
+#define Billboard     Constants.data.w
+
+#define VertexSnap          Constants.dataF.x
+#define DisplacementTexture (uint) Constants.dataF.y
+#define DisplacementPower   Constants.dataF.z
+
 #endif

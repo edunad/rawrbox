@@ -42,8 +42,8 @@ namespace rawrbox {
 
 			    .addFunction("setTransparentBlending", &MeshC::setTransparentBlending)
 
-			    .addFunction("getAtlasID", &MeshC::getAtlasID)
-			    .addFunction("setAtlasID", &MeshC::setAtlasID)
+			    .addFunction("getSlice", &MeshC::getSlice)
+			    .addFunction("setSlice", &MeshC::setSlice)
 
 			    .addFunction("getTexture", &MeshC::getTexture)
 			    .addFunction("setTexture", &MeshC::setTexture)

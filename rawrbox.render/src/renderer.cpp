@@ -61,6 +61,7 @@ namespace rawrbox {
 
 		features.GeometryShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.ComputeShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		features.ShaderFloat16 = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 
 		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.ShaderResourceRuntimeArray = Diligent::DEVICE_FEATURE_STATE_ENABLED;
@@ -132,7 +133,10 @@ namespace rawrbox {
 
 					Diligent::EngineVkCreateInfo EngineCI;
 					EngineCI.Features = features;
-					// EngineCI.pDxCompilerPath = "dxcompiler";
+
+	#ifndef _WIN32
+					EngineCI.pDxCompilerPath = "dxcompiler";
+	#endif
 
 					if (this->overrideHEAP != nullptr) {
 						auto heap = this->overrideHEAP();

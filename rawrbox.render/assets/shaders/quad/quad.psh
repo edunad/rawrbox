@@ -13,7 +13,7 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-	float4 color = g_Textures[Constants.textureIDs.x].Sample(g_Sampler, float3(PSIn.UV.xy, 0));
+	float4 color = g_Textures[BaseID].Sample(g_Sampler, float3(PSIn.UV.xy, 0));
 	if (color.a <= 0.0) discard;
 
 	PSOut.Color = color;

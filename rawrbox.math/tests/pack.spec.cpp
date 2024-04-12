@@ -12,9 +12,6 @@ TEST_CASE("Pack utils should behave as expected", "[rawrbox::Pack]") {
 		uint32_t packed_2 = rawrbox::PackUtils::packNormal(0.4F, 0.23F, 0.5F);
 		std::array<float, 4> unpack_2 = rawrbox::PackUtils::fromNormal(packed_2);
 
-		short packed_3 = rawrbox::PackUtils::toHalf(0.43F);
-		float unpack_3 = rawrbox::PackUtils::fromHalf(packed_3);
-
 		REQUIRE_THAT(unpack_1[0], Catch::Matchers::WithinAbs(0.4F, 0.0001F));
 		REQUIRE_THAT(unpack_1[1], Catch::Matchers::WithinAbs(0.F, 0.0001F));
 		REQUIRE_THAT(unpack_1[2], Catch::Matchers::WithinAbs(0.F, 0.0001F));
@@ -24,6 +21,11 @@ TEST_CASE("Pack utils should behave as expected", "[rawrbox::Pack]") {
 		REQUIRE_THAT(unpack_2[1], Catch::Matchers::WithinAbs(0.23F, 0.0001F));
 		REQUIRE_THAT(unpack_2[2], Catch::Matchers::WithinAbs(0.5F, 0.0001F));
 		REQUIRE_THAT(unpack_2[3], Catch::Matchers::WithinAbs(0.F, 0.0001F));
+	}
+
+	SECTION("rawrbox::FP16") {
+		short packed_3 = rawrbox::PackUtils::toFP16(0.43F);
+		float unpack_3 = rawrbox::PackUtils::fromFP16(packed_3);
 
 		REQUIRE_THAT(unpack_3, Catch::Matchers::WithinAbs(0.43F, 0.0001F));
 	}
