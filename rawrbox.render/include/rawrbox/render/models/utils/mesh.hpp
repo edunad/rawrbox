@@ -27,13 +27,13 @@ namespace rawrbox {
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				mesh.vertices = {
-				    rawrbox::VertexNormData(a, {}, {}, {}),
-				    rawrbox::VertexNormData(b, {}, {}, {}),
+				    rawrbox::VertexNormData(a, rawrbox::Vector2f{}, {}, {}),
+				    rawrbox::VertexNormData(b, rawrbox::Vector2f{}, {}, {}),
 				};
 			} else {
 				mesh.vertices = {
-				    rawrbox::VertexData(a, {}),
-				    rawrbox::VertexData(b, {}),
+				    rawrbox::VertexData(a, rawrbox::Vector2f{}),
+				    rawrbox::VertexData(b, rawrbox::Vector2f{}),
 				};
 			}
 
@@ -455,9 +455,9 @@ namespace rawrbox {
 					rawrbox::Vector3f vertexPos = {x, y, z};
 
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
-						buff.push_back(rawrbox::VertexNormData(vertexPos + pos, {u, v}, vertexPos.normalized()));
+						buff.push_back(rawrbox::VertexNormData(vertexPos + pos, rawrbox::Vector2f{u, v}, vertexPos.normalized()));
 					} else {
-						buff.push_back(rawrbox::VertexData(vertexPos + pos, {u, v}));
+						buff.push_back(rawrbox::VertexData(vertexPos + pos, rawrbox::Vector2f{u, v}));
 					}
 				}
 			}

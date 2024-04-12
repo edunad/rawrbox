@@ -11,19 +11,19 @@
 
 namespace rawrbox {
 	struct VertexData {
-		rawrbox::Vector3f16 position = {};
-		uint16_t w = 0x3C00; //  Padding - 1.0
+		rawrbox::Vector3f position = {};
+		float w = 1.F; // padding
 
 		rawrbox::Vector4f16 uv = {};
 
 		VertexData() = default;
 		VertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}) : position(_pos.pack()), uv(_uv.pack()) {}
-		VertexData(const rawrbox::Vector3f16& _pos,
+		    const rawrbox::Vector4f& _uv = {}) : position(_pos), uv(_uv.pack()) {}
+		VertexData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f16& _uv = {}) : position(_pos), uv(_uv) {}
 
 		void setUV(const rawrbox::Vector4f& _uv) { this->uv = _uv.pack(); }
-		void setPos(const rawrbox::Vector3f& _pos) { this->position = _pos.pack(); }
+		void setPos(const rawrbox::Vector3f& _pos) { this->position = _pos; }
 
 		// Texture array ---
 		void setSlice(uint32_t _id) { this->uv.z = static_cast<int16_t>(_id); }
@@ -33,7 +33,7 @@ namespace rawrbox {
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
-			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT16, false},
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT16, false}};
 
@@ -59,7 +59,7 @@ namespace rawrbox {
 		VertexNormData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexData(_pos, _uv), normal(rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z)), tangent(rawrbox::PackUtils::packNormal(tang.x, tang.y, tang.z)) {}
 		VertexNormData(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t _norm = 0x00000000, uint32_t _tang = 0x00000000) : rawrbox::VertexData(_pos, _uv), normal(_norm), tangent(_tang) {}
-		VertexNormData(const rawrbox::Vector3f16& _pos, const rawrbox::Vector4f16& _uv = {}, uint32_t _norm = 0x00000000, uint32_t _tang = 0x00000000) : rawrbox::VertexData(_pos, _uv), normal(_norm), tangent(_tang) {}
+		VertexNormData(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f16& _uv = {}, uint32_t _norm = 0x00000000, uint32_t _tang = 0x00000000) : rawrbox::VertexData(_pos, _uv), normal(_norm), tangent(_tang) {}
 
 		void setNormal(const rawrbox::Vector3f& norm) { normal = rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z); }
 		void setTangent(const rawrbox::Vector3f& tang) { tangent = rawrbox::PackUtils::packNormal(tang.x, tang.y, tang.z); }
@@ -67,7 +67,7 @@ namespace rawrbox {
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
-			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT16, false},
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT16, false},
 			    // Attribute 2 - Normal
@@ -97,13 +97,13 @@ namespace rawrbox {
 		VertexBoneData() = default;
 		VertexBoneData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {}) : rawrbox::VertexData(_pos, _uv) {}
-		VertexBoneData(const rawrbox::Vector3f16& _pos,
+		VertexBoneData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f16& _uv = {}) : rawrbox::VertexData(_pos, _uv) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
-			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT16, false},
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT16, false},
 			    // Attribute 2 - BONE-INDICES
@@ -134,12 +134,12 @@ namespace rawrbox {
 		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexNormData(_pos, _uv, norm, tang) {}
 
 		VertexNormBoneData(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t norm = 0x00000000, uint32_t tang = 0x00000000) : rawrbox::VertexNormData(_pos, _uv, norm, tang) {}
-		VertexNormBoneData(const rawrbox::Vector3f16& _pos, const rawrbox::Vector4f16& _uv = {}, uint32_t norm = 0x00000000, uint32_t tang = 0x00000000) : rawrbox::VertexNormData(_pos, _uv, norm, tang) {}
+		VertexNormBoneData(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f16& _uv = {}, uint32_t norm = 0x00000000, uint32_t tang = 0x00000000) : rawrbox::VertexNormData(_pos, _uv, norm, tang) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
 			    // Attribute 0 - Position
-			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT16, false},
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT16, false},
 			    // Attribute 2 - Normal

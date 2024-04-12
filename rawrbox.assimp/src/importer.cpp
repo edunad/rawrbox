@@ -598,7 +598,7 @@ namespace rawrbox {
 
 				if (aiMesh.HasPositions()) {
 					auto& vert = aiMesh.mVertices[i];
-					v.position = rawrbox::Vector3f(vert.x, vert.y, vert.z).pack();
+					v.position = {vert.x, vert.y, vert.z};
 				}
 
 				if (aiMesh.HasTextureCoords(0)) {

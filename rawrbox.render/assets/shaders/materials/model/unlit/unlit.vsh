@@ -15,7 +15,7 @@ SamplerState g_Sampler;
 #include "model_transforms.fxh"
 
 struct VSInput {
-	half4 Pos        : ATTRIB0;
+	float4 Pos       : ATTRIB0;
 	half4 UV         : ATTRIB1;
 
 #ifdef SKINNED

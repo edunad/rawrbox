@@ -15,15 +15,15 @@ SamplerState g_Sampler;
 #include "model_transforms.fxh"
 
 struct VSInput {
-	half4 Pos        : ATTRIB0;
-	half4 UV         : ATTRIB1;
+	float4 Pos        : ATTRIB0;
+	half4  UV         : ATTRIB1;
 
-	half4 Normal     : ATTRIB2;
-	half4 Tangent    : ATTRIB3;
+	half4  Normal     : ATTRIB2;
+	half4  Tangent    : ATTRIB3;
 
 #ifdef SKINNED
-	uint4 BoneIndex  : ATTRIB4;
-	half4 BoneWeight : ATTRIB5;
+	uint4  BoneIndex  : ATTRIB4;
+	half4  BoneWeight : ATTRIB5;
 
 	#ifdef INSTANCED
 	// Instance attributes
