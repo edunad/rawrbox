@@ -77,7 +77,6 @@ namespace rawrbox {
 			    .addFunction("clear", &MeshC::clear)
 			    .addFunction("merge", &MeshC::merge)
 
-			    .addFunction("rotateVertices", &MeshC::rotateVertices)
 			    .addFunction("setOptimizable", &MeshC::setOptimizable)
 			    .addFunction("canOptimize", &MeshC::canOptimize)
 

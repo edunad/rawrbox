@@ -283,12 +283,6 @@ namespace rawrbox {
 			this->bbox.combine(other.bbox);
 		}
 
-		virtual void rotateVertices(float rad, rawrbox::Vector3f axis = {0, 1, 0}) {
-			for (auto& v : vertices) {
-				v.position = v.position.rotateAroundOrigin(axis, rad);
-			}
-		}
-
 		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
 		[[nodiscard]] virtual bool canOptimize(const rawrbox::Mesh<T>& other) const {
 			if (!this->_canOptimize || !other._canOptimize) return false;

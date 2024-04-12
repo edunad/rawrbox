@@ -29,7 +29,7 @@ namespace rawrbox {
 	};
 
 	struct ModelOriginalData {
-		rawrbox::Vector3f pos = {};
+		rawrbox::Vector3f16 pos = {};
 		uint32_t normal = {};
 	};
 
@@ -98,7 +98,7 @@ namespace rawrbox {
 
 				// Apply vertices ----
 				for (size_t i = 0; i < blendPos.size(); i++) {
-					verts[i].position = verts[i].position.lerp(blendPos[i], step);
+					verts[i].position = rawrbox::Vector3f(verts[i].position.unpack()).lerp(blendPos[i], step).pack(); // Thanks, i hate it
 				}
 				// -------------------
 
