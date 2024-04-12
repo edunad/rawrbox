@@ -1,10 +1,8 @@
 struct VSInput {
-	uint TextureID : ATTRIB0;
-	float2 Pos : ATTRIB1;
-	float4 Color : ATTRIB2;
-
-	// -----------------
-	float4 UV : ATTRIB3;
+ 	half2 Pos : ATTRIB1; // 2 components
+    half4 Color : ATTRIB2; // 4 components
+    uint TextureID : ATTRIB3; // 1 component
+    half4 UV : ATTRIB4; // 4 components
 };
 
 struct PSInput {

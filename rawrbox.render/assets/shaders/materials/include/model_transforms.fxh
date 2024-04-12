@@ -10,9 +10,9 @@
 	// Snap vertex to achieve PSX look
 	half4 PSXTransform(half4 vertex, half2 resolution) {
 		half4 snappedPos = vertex;
-		snappedPos.xyz = vertex.xyz / vertex.w;                         // convert to normalized device coordinates (NDC)+
+		snappedPos.xyz = vertex.xyz / vertex.w; // convert to normalized device coordinates (NDC)+
 		snappedPos.xy = floor(resolution * snappedPos.xy + 0.5) / resolution;
-		snappedPos.xyz *= vertex.w;                                     // convert back to projection-space
+		snappedPos.xyz *= vertex.w; // convert back to projection-space
 
 		return snappedPos;
 	}
@@ -34,22 +34,22 @@
 	}
 
 		#ifdef SKINNED
-		#ifdef TRANSFORM_BONES
-			half4 boneTransform(uint4 indices, half4 weight, half4 position) {
-				half4x4 BoneTransform = half4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-				bool skinned = false;
+			#ifdef TRANSFORM_BONES
+	half4 boneTransform(uint4 indices, half4 weight, half4 position) {
+		half4x4 BoneTransform = half4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		bool skinned = false;
 
-				for (uint idx = 0; idx < MAX_BONES_PER_VERTEX; idx++) {
-					if (weight[idx] > 0.0) {
-						BoneTransform += SkinnedConstants.bones[indices[idx]] * weight[idx];
-						skinned = true;
-					}
-				}
-
-				return skinned ? mul(BoneTransform, position) : position;
+		for (uint idx = 0; idx < MAX_BONES_PER_VERTEX; idx++) {
+			if (weight[idx] > 0.0) {
+				BoneTransform += SkinnedConstants.bones[indices[idx]] * weight[idx];
+				skinned = true;
 			}
+		}
+
+		return skinned ? mul(BoneTransform, position) : position;
+	}
+			#endif
 		#endif
-	#endif
 
 	// Apply model transforms
 	TransformedData applyPosTransforms(float4x4 proj, half4 a_position, half2 a_texcoord0) {

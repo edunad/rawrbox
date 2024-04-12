@@ -26,8 +26,8 @@ namespace rawrbox {
 		void setPos(const rawrbox::Vector3f& _pos) { this->position = _pos; }
 
 		// Texture array ---
-		void setSlice(uint32_t _id) { this->uv.z = static_cast<int16_t>(_id); }
-		[[nodiscard]] uint32_t getSlice() const { return static_cast<uint16_t>(this->uv.z); }
+		void setSlice(uint32_t _id) { this->uv.z = rawrbox::PackUtils::toFP16(static_cast<float>(_id)); }
+		[[nodiscard]] uint32_t getSlice() const { return static_cast<uint32_t>(rawrbox::PackUtils::fromFP16(this->uv.z)); }
 		// ---------------------
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
