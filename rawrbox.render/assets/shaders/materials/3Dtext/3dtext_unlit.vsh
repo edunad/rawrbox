@@ -1,6 +1,6 @@
 #include "camera.fxh"
-#include "vertex_bindless_uniforms.fxh"
 #include "unpack.fxh"
+#include "vertex_bindless_uniforms.fxh"
 
 #define TRANSFORM_BILLBOARD
 #include "model_transforms.fxh"

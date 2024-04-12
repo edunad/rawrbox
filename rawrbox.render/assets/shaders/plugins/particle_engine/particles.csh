@@ -67,7 +67,7 @@ float4 ParticleColor(Particle particle) {
 groupshared Particle localParticles[256];
 
 [numthreads(256, 1, 1)]
-void main(uint3 dispatchThreadID : SV_DispatchThreadID, uint groupIndex: SV_GroupIndex) {
+void main(uint3 dispatchThreadID: SV_DispatchThreadID, uint groupIndex: SV_GroupIndex) {
 	uint particleIndex = dispatchThreadID.x;
 
 	uint maxParticles, stride;

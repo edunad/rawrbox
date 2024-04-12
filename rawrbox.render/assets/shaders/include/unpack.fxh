@@ -62,7 +62,7 @@ float4 Unpack_ARGB8_UNORM(uint value) {
 }
 
 float4 Unpack_ABGR8_UNORM(uint value) {
-    uint4 packed = uint4(value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, value >> 24);
+	uint4 packed = uint4(value & 0xff, (value >> 8) & 0xff, (value >> 16) & 0xff, value >> 24);
 	return float4(packed.w, packed.z, packed.y, packed.x) / 255.0;
 }
 

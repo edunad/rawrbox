@@ -8,10 +8,10 @@ struct ConstantsStruct {
 
 ConstantBuffer<ConstantsStruct> Constants;
 
-#define BaseID          Constants.textureIDs.x
-#define NormalID        Constants.textureIDs.y
-#define RoughtMetalID   Constants.textureIDs.z
-#define EmissionID      Constants.textureIDs.w
+#define BaseID        Constants.textureIDs.x
+#define NormalID      Constants.textureIDs.y
+#define RoughtMetalID Constants.textureIDs.z
+#define EmissionID    Constants.textureIDs.w
 
 #define RoughnessFactor Constants.litData.x
 #define MetalnessFactor Constants.litData.y

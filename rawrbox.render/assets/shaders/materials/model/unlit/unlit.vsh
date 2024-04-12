@@ -1,6 +1,6 @@
 #include "camera.fxh"
-#include "vertex_bindless_uniforms.fxh"
 #include "unpack.fxh"
+#include "vertex_bindless_uniforms.fxh"
 
 #define TRANSFORM_DISPLACEMENT
 #define TRANSFORM_PSX
@@ -29,7 +29,7 @@ struct VSInput {
 	float4 MtrxRow2 : ATTRIB6;
 	float4 MtrxRow3 : ATTRIB7;
 
-	uint4  InstData : ATTRIB8;  // Color, slice, gpu id, ??
+	uint4 InstData : ATTRIB8; // Color, slice, gpu id, ??
 	#endif
 #else
 	#ifdef INSTANCED
@@ -39,7 +39,7 @@ struct VSInput {
 	float4 MtrxRow2 : ATTRIB4;
 	float4 MtrxRow3 : ATTRIB5;
 
-	uint4  InstData : ATTRIB6; // Color, slice, gpu id, ??
+	uint4 InstData : ATTRIB6; // Color, slice, gpu id, ??
 	#endif
 #endif
 };
