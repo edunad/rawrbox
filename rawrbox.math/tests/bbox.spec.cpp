@@ -8,9 +8,9 @@ TEST_CASE("BBOX should behave as expected", "[rawrbox::BBOX]") {
 	SECTION("rawrbox::BBOX") {
 		rawrbox::BBOX bbox(rawrbox::Vector3f(0, 0, 0), rawrbox::Vector3f(1, 1, 1), rawrbox::Vector3f(1, 1, 1));
 
-		REQUIRE(bbox._min == rawrbox::Vector3f(0, 0, 0));
-		REQUIRE(bbox._max == rawrbox::Vector3f(1, 1, 1));
-		REQUIRE(bbox._size == rawrbox::Vector3f(1, 1, 1));
+		REQUIRE(bbox.min == rawrbox::Vector3f(0, 0, 0));
+		REQUIRE(bbox.max == rawrbox::Vector3f(1, 1, 1));
+		REQUIRE(bbox.size == rawrbox::Vector3f(1, 1, 1));
 	}
 
 	SECTION("rawrbox::BBOX::isEmpty") {
@@ -24,16 +24,16 @@ TEST_CASE("BBOX should behave as expected", "[rawrbox::BBOX]") {
 	SECTION("rawrbox::BBOX::size") {
 		rawrbox::BBOX bbox(rawrbox::Vector3f(0, 0, 0), rawrbox::Vector3f(1, 2, 3), rawrbox::Vector3f(1, 2, 3));
 
-		REQUIRE(bbox.size() == rawrbox::Vector3f(1, 2, 3));
+		REQUIRE(bbox.size == rawrbox::Vector3f(1, 2, 3));
 	}
 
 	SECTION("rawrbox::BBOX::expand") {
 		rawrbox::BBOX bbox(rawrbox::Vector3f(0, 0, 0), rawrbox::Vector3f(1, 1, 1), rawrbox::Vector3f(1, 1, 1));
 		bbox.expand(rawrbox::Vector3f(2, 2, 2));
 
-		REQUIRE(bbox._min == rawrbox::Vector3f(0, 0, 0));
-		REQUIRE(bbox._max == rawrbox::Vector3f(2, 2, 2));
-		REQUIRE(bbox._size == rawrbox::Vector3f(2, 2, 2));
+		REQUIRE(bbox.min == rawrbox::Vector3f(0, 0, 0));
+		REQUIRE(bbox.max == rawrbox::Vector3f(2, 2, 2));
+		REQUIRE(bbox.size == rawrbox::Vector3f(2, 2, 2));
 	}
 
 	SECTION("rawrbox::BBOX::contains") {
@@ -48,8 +48,8 @@ TEST_CASE("BBOX should behave as expected", "[rawrbox::BBOX]") {
 		rawrbox::BBOX bbox2(rawrbox::Vector3f(1, 1, 1), rawrbox::Vector3f(2, 2, 2), rawrbox::Vector3f(1, 1, 1));
 		bbox1.combine(bbox2);
 
-		REQUIRE(bbox1._min == rawrbox::Vector3f(0, 0, 0));
-		REQUIRE(bbox1._max == rawrbox::Vector3f(2, 2, 2));
+		REQUIRE(bbox1.min == rawrbox::Vector3f(0, 0, 0));
+		REQUIRE(bbox1.max == rawrbox::Vector3f(2, 2, 2));
 	}
 
 	SECTION("rawrbox::BBOX::operators") {
