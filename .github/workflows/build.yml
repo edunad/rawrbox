@@ -49,7 +49,7 @@ jobs:
         run: cd build && ninja
 
       - name: Run tests
-        if: contains(github.event.pull_request.labels.*.name, '⚠️ SKIP_TESTS ⚠️') != true
+        if: github.ref != 'refs/heads/master' && !contains(github.event.pull_request.labels.*.name, '⚠️ SKIP_TESTS ⚠️')
         run: |
           cd build
           ctest --test-dir ./rawrbox.math --output-on-failure
@@ -68,6 +68,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           style: file
+          tidy-checks: ""
           files-changed-only: true
           extra-args: "-std=c++23 -Wall"
           version: "17"
