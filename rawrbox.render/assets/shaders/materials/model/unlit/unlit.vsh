@@ -15,29 +15,29 @@ SamplerState g_Sampler;
 #include "model_transforms.fxh"
 
 struct VSInput {
-	float4 Pos : ATTRIB0;
-	float4 UV : ATTRIB1;
+	float4 Pos       : ATTRIB0;
+	half4 UV         : ATTRIB1;
 
 #ifdef SKINNED
-	uint4 BoneIndex : ATTRIB2;
-	float4 BoneWeight : ATTRIB3;
+	uint4 BoneIndex  : ATTRIB2;
+	half4 BoneWeight : ATTRIB3;
 
 	#ifdef INSTANCED
 	// Instance attributes
-	float4 MtrxRow0 : ATTRIB4;
-	float4 MtrxRow1 : ATTRIB5;
-	float4 MtrxRow2 : ATTRIB6;
-	float4 MtrxRow3 : ATTRIB7;
+	float4 MtrxRow0   : ATTRIB4;
+	float4 MtrxRow1   : ATTRIB5;
+	float4 MtrxRow2   : ATTRIB6;
+	float4 MtrxRow3   : ATTRIB7;
 
 	uint4 InstData : ATTRIB8; // Color, slice, gpu id, ??
 	#endif
 #else
 	#ifdef INSTANCED
 	// Instance attributes
-	float4 MtrxRow0 : ATTRIB2;
-	float4 MtrxRow1 : ATTRIB3;
-	float4 MtrxRow2 : ATTRIB4;
-	float4 MtrxRow3 : ATTRIB5;
+	float4 MtrxRow0   : ATTRIB2;
+	float4 MtrxRow1   : ATTRIB3;
+	float4 MtrxRow2   : ATTRIB4;
+	float4 MtrxRow3   : ATTRIB5;
 
 	uint4 InstData : ATTRIB6; // Color, slice, gpu id, ??
 	#endif
@@ -45,25 +45,25 @@ struct VSInput {
 };
 
 struct PSInput {
-	float4 Pos : SV_POSITION;
-	float4 WorldPos : POSITION1;
+	float4 Pos                    : SV_POSITION;
+	float4 WorldPos               : POSITION1;
 
-	float2 UV : TEX_COORD0;
-	float4 Color : COLOR0;
+	float2 UV                     : TEX_COORD0;
+	float4 Color                  : COLOR0;
 
-	nointerpolation float4 GPUId : COLOR1;
+	nointerpolation float4 GPUId  : COLOR1;
 	nointerpolation uint TexIndex : TEX_ARRAY_INDEX;
 };
 
 void main(in VSInput VSIn, out PSInput PSIn) {
 #ifdef SKINNED
-	float4 pos = boneTransform(VSIn.BoneIndex, VSIn.BoneWeight, VSIn.Pos);
+	half4 pos = boneTransform(VSIn.BoneIndex, VSIn.BoneWeight, VSIn.Pos);
 #else
-	float4 pos = VSIn.Pos;
+	half4 pos = VSIn.Pos;
 #endif
 
 #ifdef INSTANCED
-	float4x4 InstanceMatr = MatrixFromRows(VSIn.MtrxRow0, VSIn.MtrxRow1, VSIn.MtrxRow2, VSIn.MtrxRow3);
+	half4x4 InstanceMatr = MatrixFromRows(VSIn.MtrxRow0, VSIn.MtrxRow1, VSIn.MtrxRow2, VSIn.MtrxRow3);
 	TransformedData transform = applyPosTransforms(mul(pos, InstanceMatr), VSIn.UV.xy);
 #else
 	TransformedData transform = applyPosTransforms(pos, VSIn.UV.xy);

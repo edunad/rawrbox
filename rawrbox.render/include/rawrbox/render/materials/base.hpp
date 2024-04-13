@@ -117,24 +117,24 @@ namespace rawrbox {
 			if (this->base == nullptr) throw this->_logger->error("Material not initialized!");
 			auto* context = rawrbox::RENDERER->context();
 
-			if (mesh.wireframe) {
+			if (mesh.getWireframe()) {
 				if (this->line == nullptr) throw this->_logger->error("Wireframe not supported on material");
 				context->SetPipelineState(this->wireframe);
-			} else if (mesh.lineMode) {
+			} else if (mesh.getLineMode()) {
 				if (this->line == nullptr) throw this->_logger->error("Line not supported on material");
 				context->SetPipelineState(this->line);
 			} else {
 				if (mesh.culling == Diligent::CULL_MODE_NONE) {
 					if (this->cullnone == nullptr) throw this->_logger->error("Disabled cull not supported on material");
-					if (mesh.alphaBlend && this->cullnone_alpha == nullptr) throw this->_logger->error("Disabled alpha cull not supported on material");
-					context->SetPipelineState(mesh.alphaBlend ? this->cullnone_alpha : this->cullnone);
+					if (mesh.isTransparent() && this->cullnone_alpha == nullptr) throw this->_logger->error("Disabled alpha cull not supported on material");
+					context->SetPipelineState(mesh.isTransparent() ? this->cullnone_alpha : this->cullnone);
 				} else if (mesh.culling == Diligent::CULL_MODE_BACK) {
 					if (this->cullback == nullptr) throw this->_logger->error("Cull back not supported on material");
-					if (mesh.alphaBlend && this->cullback_alpha == nullptr) throw this->_logger->error("Cull back alpha not supported on material");
-					context->SetPipelineState(mesh.alphaBlend ? this->cullback_alpha : this->cullback);
+					if (mesh.isTransparent() && this->cullback_alpha == nullptr) throw this->_logger->error("Cull back alpha not supported on material");
+					context->SetPipelineState(mesh.isTransparent() ? this->cullback_alpha : this->cullback);
 				} else {
-					if (mesh.alphaBlend && this->base_alpha == nullptr) throw this->_logger->error("Alpha not supported on material");
-					context->SetPipelineState(mesh.alphaBlend ? this->base_alpha : this->base);
+					if (mesh.isTransparent() && this->base_alpha == nullptr) throw this->_logger->error("Alpha not supported on material");
+					context->SetPipelineState(mesh.isTransparent() ? this->base_alpha : this->base);
 				}
 			}
 		}

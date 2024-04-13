@@ -304,7 +304,7 @@ namespace rawrbox {
 
 				if (indx < rawrbox::MAX_BONES_PER_VERTEX) {
 					v.bone_indices[indx] = boneId;
-					v.bone_weights[indx] = boneWeight;
+					v.bone_weights[indx] = rawrbox::PackUtils::toFP16(boneWeight);
 
 					indx++;
 				} else {
@@ -324,7 +324,7 @@ namespace rawrbox {
 						this->_logger->warn("Model bone past max limit of '{}', replacing bone '{}' with bone '{}'", rawrbox::MAX_BONES_PER_VERTEX, v.bone_indices[minIndex], boneId);
 
 						v.bone_indices[minIndex] = boneId;
-						v.bone_weights[minIndex] = boneWeight;
+						v.bone_weights[minIndex] = rawrbox::PackUtils::toFP16(boneWeight);
 					}
 				}
 			}
@@ -577,9 +577,9 @@ namespace rawrbox {
 			auto min = aiMesh.mAABB.mMin;
 			auto max = aiMesh.mAABB.mMax;
 
-			mesh.bbox._min = {min.x, min.y, min.z};
-			mesh.bbox._max = {max.x, max.y, max.z};
-			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
+			mesh.bbox.min = {min.x, min.y, min.z};
+			mesh.bbox.max = {max.x, max.y, max.z};
+			mesh.bbox.size = mesh.bbox.min.abs() + mesh.bbox.max.abs();
 			// -----
 
 			if ((this->assimpFlags & aiProcess_PreTransformVertices) == 0) {
@@ -603,7 +603,7 @@ namespace rawrbox {
 
 				if (aiMesh.HasTextureCoords(0)) {
 					auto& uv = aiMesh.mTextureCoords[0][i];
-					v.uv = {uv.x, uv.y, 0, 0};
+					v.uv = rawrbox::Vector4f(uv.x, uv.y, 0, 0).pack();
 				}
 
 				if (aiMesh.HasVertexColors(0)) {

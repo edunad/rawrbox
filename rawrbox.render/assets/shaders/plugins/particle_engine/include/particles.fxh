@@ -16,10 +16,10 @@ struct Particle {
 };
 
 #if defined(WRITE_PARTICLES)
-RWStructuredBuffer<Particle> Particles; // Read-Write
+	RWStructuredBuffer<Particle> Particles; // Read-Write
 	#define PARTICLES
 #elif defined(READ_PARTICLES)
-StructuredBuffer<Particle> Particles; // Read-only
+	StructuredBuffer<Particle> Particles; // Read-only
 	#define PARTICLES
 #endif
 
