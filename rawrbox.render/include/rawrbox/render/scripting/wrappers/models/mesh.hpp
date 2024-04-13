@@ -40,11 +40,7 @@ namespace rawrbox {
 			    .addFunction("getScale", &MeshC::getScale)
 			    .addFunction("setScale", &MeshC::setScale)
 
-			    .addFunction("setLineMode", &MeshC::setLineMode)
-			    .addFunction("getLineMode", &MeshC::getLineMode)
-
-			    .addFunction("setLineMode", &MeshC::setTransparent)
-			    .addFunction("isTransparent", &MeshC::isTransparent)
+			    .addFunction("setTransparentBlending", &MeshC::setTransparentBlending)
 
 			    .addFunction("getSlice", &MeshC::getSlice)
 			    .addFunction("setSlice", &MeshC::setSlice)
@@ -67,10 +63,7 @@ namespace rawrbox {
 			    .addFunction("setSpecularFactor", &MeshC::setSpecularFactor)
 			    .addFunction("setBillboard", &MeshC::setBillboard)
 			    .addFunction("setVertexSnap", &MeshC::setVertexSnap)
-
 			    .addFunction("setWireframe", &MeshC::setWireframe)
-			    .addFunction("getWireframe", &MeshC::getWireframe)
-
 			    .addFunction("setCulling", [](MeshC& self, uint32_t cull) {
 				    self.setCulling(static_cast<Diligent::CULL_MODE>(cull));
 			    })
@@ -84,6 +77,7 @@ namespace rawrbox {
 			    .addFunction("clear", &MeshC::clear)
 			    .addFunction("merge", &MeshC::merge)
 
+			    .addFunction("rotateVertices", &MeshC::rotateVertices)
 			    .addFunction("setOptimizable", &MeshC::setOptimizable)
 			    .addFunction("canOptimize", &MeshC::canOptimize)
 

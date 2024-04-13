@@ -81,9 +81,6 @@ namespace rawrbox {
 
 	protected:
 		bool _canOptimize = true;
-		bool _wireframe = false;
-		bool _lineMode = false;
-		bool _transparent = false;
 
 		rawrbox::Vector3f _scale = {1, 1, 1};
 		rawrbox::Vector3f _pos = {};
@@ -115,6 +112,10 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 matrix = {};
 		rawrbox::Color color = rawrbox::Colors::White();
 
+		bool wireframe = false;
+		bool lineMode = false;
+		bool alphaBlend = false;
+
 		Diligent::CULL_MODE culling = Diligent::CULL_MODE_FRONT;
 		rawrbox::BBOX bbox = {};
 		// --------------
@@ -142,22 +143,25 @@ namespace rawrbox {
 		virtual ~Mesh() = default;
 
 		// UTILS ----
-		[[nodiscard]] virtual const std::string& getName() const { return this->name; }
-		virtual void setName(const std::string& _name) { this->name = _name; }
+		[[nodiscard]] virtual const std::string& getName() const {
+			return this->name;
+		}
 
-		[[nodiscard]] virtual bool getWireframe() const { return this->_wireframe; }
-		virtual void setWireframe(bool wireframe) { this->_wireframe = wireframe; }
+		virtual void setName(const std::string& _name) {
+			this->name = _name;
+		}
 
-		[[nodiscard]] virtual bool getLineMode() const { return this->_lineMode; }
-		virtual void setLineMode(bool line) { this->_lineMode = line; }
+		[[nodiscard]] virtual const std::vector<T>& getVertices() const {
+			return this->vertices;
+		}
 
-		virtual void setTransparent(bool transparent) { this->_transparent = transparent; }
-		[[nodiscard]] virtual bool isTransparent() const { return this->_transparent; }
+		[[nodiscard]] virtual const std::vector<uint16_t>& getIndices() const {
+			return this->indices;
+		}
 
-		[[nodiscard]] virtual const std::vector<T>& getVertices() const { return this->vertices; }
-		[[nodiscard]] virtual const std::vector<uint16_t>& getIndices() const { return this->indices; }
-
-		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const { return this->bbox; }
+		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const {
+			return this->bbox;
+		}
 
 		[[nodiscard]] virtual bool empty() const {
 			return this->indices.empty() || this->vertices.empty();
@@ -186,6 +190,8 @@ namespace rawrbox {
 			this->_scale = scale;
 			this->matrix.SRT(this->_scale, this->_angle, this->_pos);
 		}
+
+		virtual void setTransparentBlending(bool _transparent) { this->alphaBlend = _transparent; }
 
 		template <typename B>
 		B* getOwner() {
@@ -237,6 +243,10 @@ namespace rawrbox {
 			this->data.vertexSnapPower = power;
 		}
 
+		virtual void setWireframe(bool _wireframe) {
+			this->wireframe = _wireframe;
+		}
+
 		virtual void setCulling(Diligent::CULL_MODE _culling) {
 			this->culling = _culling;
 		}
@@ -273,6 +283,12 @@ namespace rawrbox {
 			this->bbox.combine(other.bbox);
 		}
 
+		virtual void rotateVertices(float rad, rawrbox::Vector3f axis = {0, 1, 0}) {
+			for (auto& v : vertices) {
+				v.position = v.position.rotateAroundOrigin(axis, rad);
+			}
+		}
+
 		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
 		[[nodiscard]] virtual bool canOptimize(const rawrbox::Mesh<T>& other) const {
 			if (!this->_canOptimize || !other._canOptimize) return false;
@@ -284,9 +300,8 @@ namespace rawrbox {
 			       this->color == other.color &&
 			       this->meshID == other.meshID &&
 			       this->data == other.data &&
-			       this->_wireframe == other._wireframe &&
-			       this->_transparent == other._transparent &&
-			       this->_lineMode == other._lineMode &&
+			       this->wireframe == other.wireframe &&
+			       this->lineMode == other.lineMode &&
 			       this->matrix == other.matrix;
 		}
 	};

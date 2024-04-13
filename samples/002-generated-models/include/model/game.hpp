@@ -19,7 +19,6 @@ namespace model {
 		std::unique_ptr<rawrbox::Text3D<>> _text = std::make_unique<rawrbox::Text3D<>>();
 
 		bool _ready = false;
-		bool _bbox = true;
 
 		void setupGLFW() override;
 		void init() override;
@@ -38,6 +37,8 @@ namespace model {
 		void loadContent();
 		void contentLoaded();
 
+		void drawWorld();
+
 	public:
 		Game() = default;
 		Game(const Game&) = delete;
@@ -45,8 +46,5 @@ namespace model {
 		Game& operator=(const Game&) = delete;
 		Game& operator=(Game&&) = delete;
 		~Game() override = default;
-
-		void drawWorld();
-		void drawOverlay() const;
 	};
 } // namespace model

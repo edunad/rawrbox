@@ -11,46 +11,8 @@ namespace rawrbox {
 		template <typename M = rawrbox::MaterialUnlit>
 			requires(std::derived_from<M, rawrbox::MaterialBase>)
 		static rawrbox::Mesh<typename M::vertexBufferType> generateBBOX(const rawrbox::Vector3f& pos, const rawrbox::BBOXf& bbox) {
-			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
-
-			mesh.setLineMode(true);
-			mesh.setColor(rawrbox::Colors::Red());
-
-			const auto& min = bbox.min;
-			const auto& max = bbox.max;
-
-			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				mesh.vertices = {
-				    rawrbox::VertexNormData(pos + rawrbox::Vector3f{min.x, min.y, min.z}, rawrbox::Vector2f{}, {}, {}),
-				    rawrbox::VertexNormData(pos + rawrbox::Vector3f{max.x, min.y, min.z}, rawrbox::Vector2f{}, {}, {}),
-				    rawrbox::VertexNormData(pos + rawrbox::Vector3f{max.x, max.y, min.z}, rawrbox::Vector2f{}, {}, {}),
-				    rawrbox::VertexNormData(pos + rawrbox::Vector3f{min.x, max.y, min.z}, rawrbox::Vector2f{}, {}, {}),
-				    rawrbox::VertexNormData(pos + rawrbox::Vector3f{min.x, min.y, max.z}, rawrbox::Vector2f{}, {}, {}),
-				    rawrbox::VertexNormData(pos + rawrbox::Vector3f{max.x, min.y, max.z}, rawrbox::Vector2f{}, {}, {}),
-				    rawrbox::VertexNormData(pos + rawrbox::Vector3f{max.x, max.y, max.z}, rawrbox::Vector2f{}, {}, {}),
-				    rawrbox::VertexNormData(pos + rawrbox::Vector3f{min.x, max.y, max.z}, rawrbox::Vector2f{}, {}, {})};
-			} else {
-				mesh.vertices = {
-				    rawrbox::VertexData(pos + rawrbox::Vector3f{min.x, min.y, min.z}, rawrbox::Vector2f{}),
-				    rawrbox::VertexData(pos + rawrbox::Vector3f{max.x, min.y, min.z}, rawrbox::Vector2f{}),
-				    rawrbox::VertexData(pos + rawrbox::Vector3f{max.x, max.y, min.z}, rawrbox::Vector2f{}),
-				    rawrbox::VertexData(pos + rawrbox::Vector3f{min.x, max.y, min.z}, rawrbox::Vector2f{}),
-				    rawrbox::VertexData(pos + rawrbox::Vector3f{min.x, min.y, max.z}, rawrbox::Vector2f{}),
-				    rawrbox::VertexData(pos + rawrbox::Vector3f{max.x, min.y, max.z}, rawrbox::Vector2f{}),
-				    rawrbox::VertexData(pos + rawrbox::Vector3f{max.x, max.y, max.z}, rawrbox::Vector2f{}),
-				    rawrbox::VertexData(pos + rawrbox::Vector3f{min.x, max.y, max.z}, rawrbox::Vector2f{})};
-			}
-
-			mesh.indices = {
-			    0, 1, 1, 2, 2, 3, 3, 0, // Bottom face
-			    4, 5, 5, 6, 6, 7, 7, 4, // Top face
-			    0, 4, 1, 5, 2, 6, 3, 7  // Connecting lines between top and bottom faces
-			};
-
-			mesh.baseVertex = 0;
-			mesh.baseIndex = 0;
-			mesh.totalVertex = 8;
-			mesh.totalIndex = 24;
+			auto mesh = generateCube<M>(pos, bbox.size(), rawrbox::Colorf(1.0F, 0.1F, 0.1F, 1.0F));
+			mesh.setWireframe(true);
 
 			return mesh;
 		}
@@ -65,13 +27,13 @@ namespace rawrbox {
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				mesh.vertices = {
-				    rawrbox::VertexNormData(a, rawrbox::Vector2f{}, {}, {}),
-				    rawrbox::VertexNormData(b, rawrbox::Vector2f{}, {}, {}),
+				    rawrbox::VertexNormData(a, {}, {}, {}),
+				    rawrbox::VertexNormData(b, {}, {}, {}),
 				};
 			} else {
 				mesh.vertices = {
-				    rawrbox::VertexData(a, rawrbox::Vector2f{}),
-				    rawrbox::VertexData(b, rawrbox::Vector2f{}),
+				    rawrbox::VertexData(a, {}),
+				    rawrbox::VertexData(b, {}),
 				};
 			}
 
@@ -114,15 +76,21 @@ namespace rawrbox {
 			mesh.totalIndex = 3;
 
 			// AABB ---
-			mesh.bbox.min = {
-			    std::min({a.x, b.x, c.x}),
-			    std::min({a.y, b.y, c.y}),
-			    std::min({a.z, b.z, c.z})};
-			mesh.bbox.max = {
-			    std::max({a.x, b.x, c.x}),
-			    std::max({a.y, b.y, c.y}),
-			    std::max({a.z, b.z, c.z})};
-			mesh.bbox.size = mesh.bbox.min.abs() + mesh.bbox.max.abs();
+			auto calcAABB = [&mesh](const rawrbox::Vector3f& point) -> void {
+				if (point.x < mesh.bbox._min.x) mesh.bbox._min.x = point.x;
+				if (point.y < mesh.bbox._min.y) mesh.bbox._min.y = point.y;
+				if (point.z < mesh.bbox._min.z) mesh.bbox._min.z = point.z;
+
+				if (point.x > mesh.bbox._max.x) mesh.bbox._max.x = point.x;
+				if (point.y > mesh.bbox._max.y) mesh.bbox._max.y = point.y;
+				if (point.z > mesh.bbox._max.z) mesh.bbox._max.z = point.z;
+			};
+
+			calcAABB(a);
+			calcAABB(b);
+			calcAABB(c);
+
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			mesh.setColor(col);
@@ -163,9 +131,9 @@ namespace rawrbox {
 			mesh.totalIndex = 6;
 
 			// AABB ---
-			mesh.bbox.min = {-hSize.x, -hSize.y, 0};
-			mesh.bbox.max = {hSize.x, hSize.y, 0};
-			mesh.bbox.size = mesh.bbox.min.abs() + mesh.bbox.max.abs();
+			mesh.bbox._min = {-hSize.x, -hSize.y, 0};
+			mesh.bbox._max = {hSize.x, hSize.y, 0};
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			mesh.setColor(cl);
@@ -278,9 +246,9 @@ namespace rawrbox {
 			mesh.totalIndex = static_cast<uint16_t>(inds.size());
 
 			// AABB ---
-			mesh.bbox.min = -hSize;
-			mesh.bbox.max = hSize;
-			mesh.bbox.size = mesh.bbox.min.abs() + mesh.bbox.max.abs();
+			mesh.bbox._min = -hSize;
+			mesh.bbox._max = hSize;
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
@@ -300,9 +268,9 @@ namespace rawrbox {
 			mesh.merge(generateCube<M>(pos - offset, rawrbox::Vector3f(0.15F, hSize, 0.15F) * size, cl));
 
 			// AABB ---
-			mesh.bbox.min = rawrbox::Vector3f(-hSize, -hSize, -hSize) * size;
-			mesh.bbox.max = rawrbox::Vector3f(hSize, hSize, hSize) * size;
-			mesh.bbox.size = mesh.bbox.min.abs() + mesh.bbox.max.abs();
+			mesh.bbox._min = rawrbox::Vector3f(-hSize, -hSize, -hSize) * size;
+			mesh.bbox._max = rawrbox::Vector3f(hSize, hSize, hSize) * size;
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			return mesh;
@@ -364,9 +332,9 @@ namespace rawrbox {
 			mesh.totalIndex = static_cast<uint16_t>(mesh.indices.size());
 
 			// AABB ---
-			mesh.bbox.min = {-radius, -height, -radius};
-			mesh.bbox.max = {radius, height, radius};
-			mesh.bbox.size = mesh.bbox.min.abs() + mesh.bbox.max.abs();
+			mesh.bbox._min = rawrbox::Vector3f(-radius, -height, -radius) + pos;
+			mesh.bbox._max = rawrbox::Vector3f(radius, height, radius) + pos;
+			mesh.bbox._size = mesh.bbox._max - mesh.bbox._min;
 			// -----
 
 			mesh.setColor(cl);
@@ -448,9 +416,9 @@ namespace rawrbox {
 			mesh.totalIndex = static_cast<uint16_t>(mesh.indices.size());
 
 			// AABB ---
-			mesh.bbox.min = {-radius, -halfHeight, -radius};
-			mesh.bbox.max = {radius, halfHeight, radius};
-			mesh.bbox.size = mesh.bbox.min.abs() + mesh.bbox.max.abs();
+			mesh.bbox._min = pos - rawrbox::Vector3f(radius, halfHeight, radius);
+			mesh.bbox._max = pos + rawrbox::Vector3f(radius, halfHeight, radius);
+			mesh.bbox._size = mesh.bbox._max - mesh.bbox._min;
 			// -----
 
 			mesh.setColor(cl);
@@ -487,9 +455,9 @@ namespace rawrbox {
 					rawrbox::Vector3f vertexPos = {x, y, z};
 
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
-						buff.push_back(rawrbox::VertexNormData(vertexPos + pos, rawrbox::Vector2f{u, v}, vertexPos.normalized()));
+						buff.push_back(rawrbox::VertexNormData(vertexPos + pos, {u, v}, vertexPos.normalized()));
 					} else {
-						buff.push_back(rawrbox::VertexData(vertexPos + pos, rawrbox::Vector2f{u, v}));
+						buff.push_back(rawrbox::VertexData(vertexPos + pos, {u, v}));
 					}
 				}
 			}
@@ -517,9 +485,9 @@ namespace rawrbox {
 			mesh.totalIndex = static_cast<uint16_t>(inds.size());
 
 			// AABB ---
-			mesh.bbox.min = -sphereSize;
-			mesh.bbox.max = sphereSize;
-			mesh.bbox.size = mesh.bbox.min.abs() + mesh.bbox.max.abs();
+			mesh.bbox._min = -sphereSize;
+			mesh.bbox._max = sphereSize;
+			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
 			// -----
 
 			mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
@@ -600,8 +568,6 @@ namespace rawrbox {
 			}
 
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
-			mesh.setLineMode(true);
-			mesh.setColor(cl);
 
 			const uint16_t vertSize = size * size;
 			mesh.vertices.reserve(vertSize);
@@ -644,7 +610,9 @@ namespace rawrbox {
 			mesh.baseIndex = 0;
 			mesh.totalVertex = vertSize;
 			mesh.totalIndex = indcSize;
+			mesh.lineMode = true;
 
+			mesh.setColor(cl);
 			return mesh;
 		}
 	};
