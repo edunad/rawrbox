@@ -14,12 +14,11 @@ namespace rawrbox {
 			    .beginClass<BBOXT>(name.c_str())
 			    .template addConstructor<void(), void(BBOXT), void(const rawrbox::Vector3_t<T>&, const rawrbox::Vector3_t<T>&, const rawrbox::Vector3_t<T>&)>()
 
-			    .addProperty("min", &BBOXT::_min)
-			    .addProperty("max", &BBOXT::_max)
-			    .addProperty("size", &BBOXT::_size)
+			    .addProperty("min", &BBOXT::min)
+			    .addProperty("max", &BBOXT::max)
+			    .addProperty("size", &BBOXT::size)
 
 			    .addFunction("isEmpty", &BBOXT::isEmpty)
-			    .addFunction("size", &BBOXT::size)
 			    .addFunction("combine", &BBOXT::combine)
 
 			    .addFunction("__eq", &BBOXT::operator==)

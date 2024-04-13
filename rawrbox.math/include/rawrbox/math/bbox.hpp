@@ -10,45 +10,41 @@ namespace rawrbox {
 		using BBOXType = BBOX_t<NumberType>;
 
 	public:
-		rawrbox::Vector3_t<NumberType> _min = {};
-		rawrbox::Vector3_t<NumberType> _max = {};
-		rawrbox::Vector3_t<NumberType> _size = {};
+		rawrbox::Vector3_t<NumberType> min = {};
+		rawrbox::Vector3_t<NumberType> max = {};
+		rawrbox::Vector3_t<NumberType> size = {};
 
 		BBOX_t() = default;
-		constexpr BBOX_t(const Vector3_t<NumberType>& min, const Vector3_t<NumberType>& max, const Vector3_t<NumberType>& size) : _min(min), _max(max), _size(size) {}
+		constexpr BBOX_t(const Vector3_t<NumberType>& _min, const Vector3_t<NumberType>& _max, const Vector3_t<NumberType>& _size) : min(_min), max(_max), size(_size) {}
 
 		[[nodiscard]] bool isEmpty() const {
-			return this->_size == 0;
-		}
-
-		[[nodiscard]] const rawrbox::Vector3_t<NumberType>& size() const {
-			return this->_size;
+			return this->size == 0;
 		}
 
 		void expand(const rawrbox::Vector3_t<NumberType>& pos) {
-			if (pos.x < _min.x) _min.x = pos.x;
-			if (pos.y < _min.y) _min.y = pos.y;
-			if (pos.z < _min.z) _min.z = pos.z;
+			if (pos.x < this->min.x) this->min.x = pos.x;
+			if (pos.y < this->min.y) this->min.y = pos.y;
+			if (pos.z < this->min.z) this->min.z = pos.z;
 
-			if (pos.x > _max.x) _max.x = pos.x;
-			if (pos.y > _max.y) _max.y = pos.y;
-			if (pos.z > _max.z) _max.z = pos.z;
+			if (pos.x > this->max.x) this->max.x = pos.x;
+			if (pos.y > this->max.y) this->max.y = pos.y;
+			if (pos.z > this->max.z) this->max.z = pos.z;
 
-			_size = _max - _min;
+			this->size = this->max - this->min;
 		}
 
 		bool contains(const rawrbox::Vector3_t<NumberType>& pos) {
-			return pos.x >= _min.x && pos.x <= _max.x && pos.y >= _min.y && pos.y <= _max.y && pos.z >= _min.z && pos.z <= _max.z;
+			return pos.x >= this->min.x && pos.x <= this->max.x && pos.y >= this->min.y && pos.y <= this->max.y && pos.z >= this->min.z && pos.z <= this->max.z;
 		}
 
 		void combine(const BBOX_t<NumberType>& b) {
-			this->_min = {std::min(this->_min.x, b._min.x), std::min(this->_min.y, b._min.y), std::min(this->_min.z, b._min.z)};
-			this->_max = {std::max(this->_max.x, b._max.x), std::max(this->_max.y, b._max.y), std::max(this->_max.z, b._max.z)};
+			this->min = {std::min(this->min.x, b.min.x), std::min(this->min.y, b.min.y), std::min(this->min.z, b.min.z)};
+			this->max = {std::max(this->max.x, b.max.x), std::max(this->max.y, b.max.y), std::max(this->max.z, b.max.z)};
 
-			this->_size = _min.abs() + _max.abs();
+			this->size = this->min.abs() + this->max.abs();
 		}
 
-		bool operator==(const BBOX_t<NumberType>& other) const { return this->_size == other._size; }
+		bool operator==(const BBOX_t<NumberType>& other) const { return this->size == other.size; }
 		bool operator!=(const BBOX_t<NumberType>& other) const { return !operator==(other); }
 	};
 

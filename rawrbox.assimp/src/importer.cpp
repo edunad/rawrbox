@@ -577,9 +577,9 @@ namespace rawrbox {
 			auto min = aiMesh.mAABB.mMin;
 			auto max = aiMesh.mAABB.mMax;
 
-			mesh.bbox._min = {min.x, min.y, min.z};
-			mesh.bbox._max = {max.x, max.y, max.z};
-			mesh.bbox._size = mesh.bbox._min.abs() + mesh.bbox._max.abs();
+			mesh.bbox.min = {min.x, min.y, min.z};
+			mesh.bbox.max = {max.x, max.y, max.z};
+			mesh.bbox.size = mesh.bbox.min.abs() + mesh.bbox.max.abs();
 			// -----
 
 			if ((this->assimpFlags & aiProcess_PreTransformVertices) == 0) {
