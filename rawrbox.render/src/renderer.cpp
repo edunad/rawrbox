@@ -495,13 +495,15 @@ namespace rawrbox {
 		}
 
 		this->_context->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG, 1.F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+
+		// Clear barrier cache ---
+		rawrbox::BarrierUtils::clearBarrierCache();
+		// -----------
 	}
 
 	void RendererBase::frame() {
 		this->_swapChain->Present(this->_vsync ? 1 : 0); // Submit
-
 		rawrbox::FRAME = this->_context->GetFrameNumber();
-		rawrbox::BarrierUtils::clearBarrierCache();
 	}
 
 	// INTRO ------
