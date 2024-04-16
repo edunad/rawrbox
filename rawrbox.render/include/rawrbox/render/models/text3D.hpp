@@ -64,11 +64,11 @@ namespace rawrbox {
 				mesh.setName(fmt::format("3dtext-{}", id));
 				mesh.setColor(cl);
 
-				std::array<rawrbox::VertexData, 4> buff = {
-				    rawrbox::VertexData(pos + startpos + Vector3f(x0 * screenSize, (y0 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureBottomRight.y)),
-				    rawrbox::VertexData(pos + startpos + Vector3f(x1 * screenSize, (y1 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureTopLeft.y)),
-				    rawrbox::VertexData(pos + startpos + Vector3f(x0 * screenSize, (y1 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureTopLeft.y)),
-				    rawrbox::VertexData(pos + startpos + Vector3f(x1 * screenSize, (y0 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureBottomRight.y)),
+				std::array<rawrbox::VertexUVData, 4> buff = {
+				    rawrbox::VertexUVData(pos + startpos + Vector3f(x0 * screenSize, (y0 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureBottomRight.y)),
+				    rawrbox::VertexUVData(pos + startpos + Vector3f(x1 * screenSize, (y1 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureTopLeft.y)),
+				    rawrbox::VertexUVData(pos + startpos + Vector3f(x0 * screenSize, (y1 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureTopLeft.y)),
+				    rawrbox::VertexUVData(pos + startpos + Vector3f(x1 * screenSize, (y0 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureBottomRight.y)),
 				};
 
 				std::array<uint16_t, 6> inds{

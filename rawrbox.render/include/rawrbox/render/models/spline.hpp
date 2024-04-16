@@ -111,8 +111,10 @@ namespace rawrbox {
 
 						if constexpr (supportsNormals<typename M::vertexBufferType>) {
 							buff[id] = rawrbox::VertexNormData(path[i].LocalToWorld(pos), uv, norm, {});
+						} else if constexpr (supportsUVs<typename M::vertexBufferType>) {
+							buff[id] = rawrbox::VertexUVData(path[i].LocalToWorld(pos), uv);
 						} else {
-							buff[id] = rawrbox::VertexData(path[i].LocalToWorld(pos), uv);
+							buff[id] = rawrbox::VertexData(path[i].LocalToWorld(pos));
 						}
 					}
 				}

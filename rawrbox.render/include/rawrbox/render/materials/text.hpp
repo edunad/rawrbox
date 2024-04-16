@@ -8,7 +8,7 @@ namespace rawrbox {
 		static bool _build;
 
 	public:
-		using vertexBufferType = rawrbox::VertexData;
+		using vertexBufferType = rawrbox::VertexUVData;
 
 		MaterialText3D() = default;
 		MaterialText3D(const MaterialText3D&) = delete;

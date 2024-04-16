@@ -75,8 +75,10 @@ namespace rawrbox {
 						data.bone_weights = v.bone_weights;
 
 						mesh.vertices.push_back(data);
+					} else if constexpr (supportsUVs<typename M::vertexBufferType>) {
+						mesh.vertices.push_back(rawrbox::VertexUVData(v.position, v.uv));
 					} else {
-						mesh.vertices.push_back(rawrbox::VertexData(v.position, v.uv));
+						mesh.vertices.push_back(rawrbox::VertexData(v.position));
 					}
 				}
 			}

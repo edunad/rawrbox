@@ -8,7 +8,7 @@ namespace rawrbox {
 		static bool _built;
 
 	public:
-		using vertexBufferType = rawrbox::VertexData;
+		using vertexBufferType = rawrbox::VertexUVData;
 
 		MaterialUnlit() = default;
 		MaterialUnlit(const MaterialUnlit&) = delete;

@@ -13,19 +13,43 @@ namespace rawrbox {
 	struct VertexData {
 		rawrbox::Vector3f position = {};
 		float w = 1.F; // Padding
-		rawrbox::Vector4f uv = {};
 
 		VertexData() = default;
-		VertexData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}) : position(_pos), uv(_uv) {}
+		VertexData(const rawrbox::Vector3f& _pos) : position(_pos) {}
 
-		void setUV(const rawrbox::Vector4f& _uv) { this->uv = _uv; }
 		void setPos(const rawrbox::Vector3f& _pos) { this->position = _pos; }
+
+		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
+			std::vector<Diligent::LayoutElement> v = {
+			    // Attribute 0 - Position
+			    Diligent::LayoutElement{0, 0, 4, Diligent::VT_FLOAT32, false}};
+
+			if (instanced) {
+				v.emplace_back(2, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 1
+				v.emplace_back(3, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 2
+				v.emplace_back(4, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 3
+				v.emplace_back(5, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 4
+
+				v.emplace_back(6, 1, 4, Diligent::VT_UINT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Data
+			}
+
+			return v;
+		}
+	};
+
+	struct VertexUVData : public rawrbox::VertexData {
+		rawrbox::Vector4f uv = {};
+
+		VertexUVData() = default;
+		VertexUVData(const rawrbox::Vector3f& _pos,
+		    const rawrbox::Vector4f& _uv = {}) : rawrbox::VertexData(_pos), uv(_uv) {}
 
 		// Texture array ---
 		void setSlice(uint32_t _id) { this->uv.z = static_cast<float>(_id); }
 		[[nodiscard]] uint32_t getSlice() const { return static_cast<uint16_t>(this->uv.z); }
 		// ---------------------
+
+		void setUV(const rawrbox::Vector4f& _uv) { this->uv = _uv; }
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
@@ -48,14 +72,14 @@ namespace rawrbox {
 	};
 
 	// Supports light ---
-	struct VertexNormData : public rawrbox::VertexData {
+	struct VertexNormData : public rawrbox::VertexUVData {
 		uint32_t normal = 0x00000000;
 		uint32_t tangent = 0x00000000;
 
 		VertexNormData() = default;
 		VertexNormData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexData(_pos, _uv), normal(rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z)), tangent(rawrbox::PackUtils::packNormal(tang.x, tang.y, tang.z)) {}
-		VertexNormData(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t _norm = 0x00000000, uint32_t _tang = 0x00000000) : rawrbox::VertexData(_pos, _uv), normal(_norm), tangent(_tang) {}
+		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexUVData(_pos, _uv), normal(rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z)), tangent(rawrbox::PackUtils::packNormal(tang.x, tang.y, tang.z)) {}
+		VertexNormData(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t _norm = 0x00000000, uint32_t _tang = 0x00000000) : rawrbox::VertexUVData(_pos, _uv), normal(_norm), tangent(_tang) {}
 
 		void setNormal(const rawrbox::Vector3f& norm) { normal = rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z); }
 		void setTangent(const rawrbox::Vector3f& tang) { tangent = rawrbox::PackUtils::packNormal(tang.x, tang.y, tang.z); }
@@ -86,13 +110,13 @@ namespace rawrbox {
 	};
 
 	// Supports bones ---
-	struct VertexBoneData : public rawrbox::VertexData {
+	struct VertexBoneData : public rawrbox::VertexUVData {
 		std::array<uint32_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
 
 		VertexBoneData() = default;
 		VertexBoneData(const rawrbox::Vector3f& _pos,
-		    const rawrbox::Vector4f& _uv = {}) : rawrbox::VertexData(_pos, _uv) {}
+		    const rawrbox::Vector4f& _uv = {}) : rawrbox::VertexUVData(_pos, _uv) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
@@ -163,5 +187,8 @@ namespace rawrbox {
 
 	template <typename T>
 	concept supportsNormals = requires(T t) { t.normal; };
+
+	template <typename T>
+	concept supportsUVs = requires(T t) { t.uv; };
 	// ---
 } // namespace rawrbox

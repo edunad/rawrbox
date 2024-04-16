@@ -20,7 +20,7 @@ namespace rawrbox {
 			settings.renderTargets = rawrbox::RENDER_TARGET_TARGETS; // COLOR + GPUPick
 			settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 			settings.cull = Diligent::CULL_MODE_FRONT;
-			settings.layout = rawrbox::VertexData::vLayout();
+			settings.layout = vertexBufferType::vLayout();
 			settings.signatures = {rawrbox::BindlessManager::signature}; // Use bindless
 
 			settings.fill = Diligent::FILL_MODE_WIREFRAME;

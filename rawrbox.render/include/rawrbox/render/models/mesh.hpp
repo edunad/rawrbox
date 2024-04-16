@@ -73,7 +73,7 @@ namespace rawrbox {
 		bool operator!=(const rawrbox::MeshData& other) const { return !operator==(other); }
 	};
 
-	template <typename T = rawrbox::VertexData>
+	template <typename T = rawrbox::VertexUVData>
 		requires(std::derived_from<T, rawrbox::VertexData>)
 	class Mesh {
 		static constexpr uint16_t MAX_VERTICES = 16000;
@@ -247,6 +247,17 @@ namespace rawrbox {
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const { return this->color; }
 		virtual void setColor(const rawrbox::Color& _color) {
 			this->color = _color;
+		}
+
+		virtual void repeatUV(uint32_t slices) {
+			if (this->empty()) return;
+
+			if constexpr (supportsUVs<T>) {
+				for (auto& vert : this->vertices) {
+					vert.uv.x *= slices;
+					vert.uv.y *= slices;
+				}
+			}
 		}
 
 		[[nodiscard]] virtual rawrbox::Skeleton* getSkeleton() const {
