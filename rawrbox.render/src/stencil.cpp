@@ -401,7 +401,9 @@ namespace rawrbox {
 			auto& oldCall = this->_drawCalls.back();
 			bool canMerge = oldCall.clip == this->_currentDraw.clip &&
 					oldCall.cull == this->_currentDraw.cull &&
-					oldCall.stencilProgram == this->_currentDraw.stencilProgram;
+					oldCall.stencilProgram == this->_currentDraw.stencilProgram &&
+					oldCall.indices.size() < 16000 &&
+					oldCall.vertices.size() < 16000;
 
 			if (canMerge) {
 				for (auto& ind : this->_currentDraw.indices) {

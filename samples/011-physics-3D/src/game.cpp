@@ -66,13 +66,23 @@ namespace phys_3d_test {
 		rawrbox::PHYSICS::physicsSystem->SetPhysicsSettings(settings);
 		// rawrbox::PHYSICS::onBodyAwake += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body awake \n"); };
 		// rawrbox::PHYSICS::onBodySleep += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body sleep \n"); };
+		this->_physDebug = std::make_unique<rawrbox::DebugRenderer>();
 		// ----------------------------
 
 		// BINDS ----
 		window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
-			if (action != rawrbox::KEY_ACTION_UP || key != rawrbox::KEY_F1) return;
-			this->_paused = !this->_paused;
-			if (this->_timer != nullptr) this->_timer->pause(this->_paused);
+			if (action != rawrbox::KEY_ACTION_UP) return;
+
+			switch (key) {
+				case rawrbox::KEY_F1:
+					this->_paused = !this->_paused;
+					if (this->_timer != nullptr) this->_timer->pause(this->_paused);
+					break;
+				case rawrbox::KEY_F2:
+					this->_debug = !this->_debug;
+					break;
+				default: break;
+			}
 		};
 		// -----
 
@@ -101,7 +111,7 @@ namespace phys_3d_test {
 		// Next we can create a rigid body to serve as the floor, we make a large box
 		// Create the settings for the collision volume (the shape).
 		// Note that for simple shapes (like boxes) you can also directly construct a BoxShape.
-		JPH::BoxShapeSettings floor_shape_settings(JPH::Vec3(100.0F, 0.1F, 100.0F));
+		JPH::BoxShapeSettings floor_shape_settings(JPH::Vec3(15.0F, 0.1F, 15.0F));
 
 		// Create the shape
 		JPH::ShapeSettings::ShapeResult floor_shape_result = floor_shape_settings.Create();
@@ -133,7 +143,7 @@ namespace phys_3d_test {
 
 		// TIMER ---
 		this->_timer = rawrbox::TIMER::create(
-		    600, 25, [this]() { this->createBox({0, 10, 0}, {0.5F, 0.5F, 0.5F}); }, [this] {
+		    30, 25, [this]() { this->createBox({0, 10, 0}, {0.5F, 0.5F, 0.5F}); }, [this] {
 			    this->_timer = nullptr;
 			    rawrbox::PHYSICS::optimize(); // Only need to be called after adding a lot of bodies in one go
 		    });
@@ -151,7 +161,6 @@ namespace phys_3d_test {
 
 		JPH::BodyInterface& body_interface = rawrbox::PHYSICS::physicsSystem->GetBodyInterface();
 		JPH::BoxShapeSettings box_shape_settings(JPH::Vec3(size.x / 2.F, size.y / 2.F, size.z / 2.F));
-		// JPH::SphereShapeSettings box_shape_settings(size.x / 2.F);
 
 		JPH::ShapeSettings::ShapeResult box_result = box_shape_settings.Create();
 		JPH::ShapeRefC box_shape = box_result.Get(); // We don't expect an error here, but you can check floor_shape_result for HasError() / GetError()
@@ -183,6 +192,7 @@ namespace phys_3d_test {
 			rawrbox::Window::shutdown();
 		} else {
 			this->_modelGrid.reset();
+			this->_physDebug.reset();
 			this->_boxes.clear();
 
 			this->_texture = nullptr;
@@ -229,9 +239,17 @@ namespace phys_3d_test {
 
 	void Game::drawOverlay() const {
 		if (!this->_ready) return;
-		auto* stencil = rawrbox::RENDERER->stencil();
 
+		auto* stencil = rawrbox::RENDERER->stencil();
 		stencil->drawText(fmt::format("[F1]   PAUSED: {}", this->_paused), {15, 15});
+		stencil->drawText(fmt::format("[F2]   DEBUG: {}", this->_debug), {15, 28});
+
+		if (this->_debug) {
+			JPH::BodyManager::DrawSettings settings;
+			settings.mDrawShape = true;
+
+			rawrbox::PHYSICS::physicsSystem->DrawBodies(settings, _physDebug.get());
+		}
 	}
 
 	void Game::draw() {
