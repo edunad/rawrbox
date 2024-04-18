@@ -29,10 +29,10 @@ namespace rawrbox {
 
 	class DebugRenderer : public JPH::DebugRenderer {
 	protected:
-		float _maxRenderDistance = 100.F;
+		float _maxRenderDistance = 200.F;
 
 	public:
-		DebugRenderer(float maxDistance = 100.F) : _maxRenderDistance(maxDistance) { JPH::DebugRenderer::Initialize(); }
+		DebugRenderer(float maxDistance = 200.F) : _maxRenderDistance(maxDistance) { JPH::DebugRenderer::Initialize(); }
 
 		Batch CreateTriangleBatch(const Triangle* inTriangles, int inTriangleCount) override {
 			// NOLINTBEGIN(*)
@@ -66,22 +66,23 @@ namespace rawrbox {
 			rawrbox::Color color = {mdlColor.GetX(), mdlColor.GetY(), mdlColor.GetZ(), mdlColor.GetW()};
 
 			// Transform 3D vertices to 2D screen coordinates
-			stencil->pushClipping({0, 0, static_cast<int>(screenSize.x), static_cast<int>(screenSize.y)});
 			for (size_t fi = 0; fi < b.indices.size(); fi += 3) {
-				JPH::Float3 v0 = {};
-				JPH::Float3 v1 = {};
-				JPH::Float3 v2 = {};
+				JPH::Vec3 v0 = inModelMatrix * JPH::Vec3(b.vertices[b.indices[fi + 0]].mPosition);
+				JPH::Vec3 v1 = inModelMatrix * JPH::Vec3(b.vertices[b.indices[fi + 1]].mPosition);
+				JPH::Vec3 v2 = inModelMatrix * JPH::Vec3(b.vertices[b.indices[fi + 2]].mPosition);
 
-				(inModelMatrix * JPH::Vec3(b.vertices[b.indices[fi + 0]].mPosition)).StoreFloat3(&v0);
-				(inModelMatrix * JPH::Vec3(b.vertices[b.indices[fi + 1]].mPosition)).StoreFloat3(&v1);
-				(inModelMatrix * JPH::Vec3(b.vertices[b.indices[fi + 2]].mPosition)).StoreFloat3(&v2);
-
-				rawrbox::Vector3f screenPos0 = camera->worldToScreen({v0.x, v0.y, v0.z}) /*.clamp({0, 0, 0}, {static_cast<float>(screenSize.x), static_cast<float>(screenSize.y), 1.F})*/;
-				rawrbox::Vector3f screenPos1 = camera->worldToScreen({v1.x, v1.y, v1.z}) /*.clamp({0, 0, 0}, {static_cast<float>(screenSize.x), static_cast<float>(screenSize.y), 1.F})*/;
-				rawrbox::Vector3f screenPos2 = camera->worldToScreen({v2.x, v2.y, v2.z}) /*.clamp({0, 0, 0}, {static_cast<float>(screenSize.x), static_cast<float>(screenSize.y), 1.F})*/;
+				rawrbox::Vector3f screenPos0 = camera->worldToScreen({v0.GetX(), v0.GetY(), v0.GetZ()});
+				rawrbox::Vector3f screenPos1 = camera->worldToScreen({v1.GetX(), v1.GetY(), v1.GetZ()});
+				rawrbox::Vector3f screenPos2 = camera->worldToScreen({v2.GetX(), v2.GetY(), v2.GetZ()});
 
 				// Check if all vertices are outside the screen
-				if (screenPos0.z < 0 || screenPos0.z > 1.F || screenPos1.z < 0 || screenPos1.z > 1.F || screenPos2.z < 0 || screenPos2.z > 1.F) continue;
+				if ((screenPos0.x < 0 || screenPos0.x > screenSize.x || screenPos0.y < 0 || screenPos0.y > screenSize.y) ||
+				    (screenPos1.x < 0 || screenPos1.x > screenSize.x || screenPos1.y < 0 || screenPos1.y > screenSize.y) ||
+				    (screenPos2.x < 0 || screenPos2.x > screenSize.x || screenPos2.y < 0 || screenPos2.y > screenSize.y)) {
+					continue;
+				}
+
+				if ((screenPos0.z < 0 || screenPos0 > 1.F) || (screenPos1.z < 0 || screenPos1.z > 1.F) || (screenPos2.z < 0 || screenPos2.z > 1.F)) continue;
 
 				if (inDrawMode == EDrawMode::Wireframe) {
 					stencil->drawLine(screenPos0.xy(), screenPos1.xy());
@@ -93,7 +94,6 @@ namespace rawrbox {
 					    screenPos2.xy(), {}, color);
 				}
 			}
-			stencil->popClipping();
 		}
 
 		void DrawText3D(JPH::RVec3Arg /*inPosition*/, const JPH::string_view& /*inString*/, JPH::ColorArg /*inColor = JPH::Color::sWhite*/, float /*inHeight = 0.5F*/) override {
