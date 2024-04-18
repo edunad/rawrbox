@@ -1,11 +1,13 @@
 #pragma once
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/vector3.hpp>
+#include <rawrbox/physics/debugger.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <Jolt/Jolt.h>
 
 // Jolt includes
+
 #include <magic_enum.hpp>
 
 #include <Jolt/Core/Factory.h>

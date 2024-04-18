@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
+#include <rawrbox/physics/debugger.hpp>
 #include <rawrbox/physics/manager.hpp>
 #include <rawrbox/render/models/model.hpp>
 #include <rawrbox/utils/timer.hpp>
@@ -19,10 +20,13 @@ namespace phys_3d_test {
 		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
 		std::vector<std::unique_ptr<BoxOfDoom>> _boxes = std::vector<std::unique_ptr<BoxOfDoom>>();
 
+		std::unique_ptr<rawrbox::DebugRenderer> _physDebug = nullptr;
+
 		rawrbox::TextureBase* _texture = nullptr;
 		rawrbox::TIMER* _timer = nullptr;
 
 		bool _paused = true;
+		bool _debug = true;
 		bool _ready = false;
 
 		void setupGLFW() override;
