@@ -10,6 +10,13 @@
 #include <type_traits>
 
 namespace rawrbox {
+
+	enum class AXIS {
+		X = 0,
+		Y,
+		Z
+	};
+
 	template <class NumberType>
 		requires(std::is_integral_v<NumberType> || std::is_floating_point_v<NumberType>)
 	class Vector3_t {

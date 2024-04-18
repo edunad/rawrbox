@@ -8,6 +8,7 @@
 #include <cmath>
 
 namespace rawrbox {
+
 	template <class NumberType>
 		requires(std::is_integral_v<NumberType> || std::is_floating_point_v<NumberType>)
 	class Vector4_t {
@@ -315,6 +316,24 @@ namespace rawrbox {
 
 		[[nodiscard]] VecType max(const VecType& other) const {
 			return {std::max(x, other.x), std::max(y, other.y), std::max(z, other.z), std::min(w, other.w)};
+		}
+
+		void rotate(NumberType angle, rawrbox::AXIS axis) {
+			NumberType halfAngle = angle / TWO<NumberType>;
+			auto cosHalfAngle = static_cast<NumberType>(std::cos(halfAngle));
+			auto sinHalfAngle = static_cast<NumberType>(std::sin(halfAngle));
+
+			switch (axis) {
+				case AXIS::X:
+					*this = Vector4_t<NumberType>(cosHalfAngle, sinHalfAngle * ONE<NumberType>, ZERO<NumberType>, ZERO<NumberType>) * (*this);
+					return;
+				case AXIS::Y:
+					*this = Vector4_t<NumberType>(cosHalfAngle, ZERO<NumberType>, sinHalfAngle * ONE<NumberType>, ZERO<NumberType>) * (*this);
+					return;
+				case AXIS::Z:
+					*this = Vector4_t<NumberType>(cosHalfAngle, ZERO<NumberType>, ZERO<NumberType>, sinHalfAngle * ONE<NumberType>) * (*this);
+					return;
+			}
 		}
 
 		// OPERATORS ---

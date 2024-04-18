@@ -118,7 +118,7 @@ namespace rawrbox {
 			auto* context = rawrbox::RENDERER->context();
 
 			if (mesh.getWireframe()) {
-				if (this->line == nullptr) throw this->_logger->error("Wireframe not supported on material");
+				if (this->wireframe == nullptr) throw this->_logger->error("Wireframe not supported on material");
 				context->SetPipelineState(this->wireframe);
 			} else if (mesh.getLineMode()) {
 				if (this->line == nullptr) throw this->_logger->error("Line not supported on material");
