@@ -41,7 +41,7 @@ namespace rawrbox {
 		_codec = codec;
 		_ctx = std::make_unique<vpx_codec_ctx>();
 
-		if (vpx_codec_dec_init(_ctx.get(), codecIface, &codecCfg, 0 | VPX_CODEC_USE_FRAME_THREADING)) {
+		if (vpx_codec_dec_init(_ctx.get(), codecIface, &codecCfg, VPX_CODEC_USE_FRAME_THREADING)) {
 			_ctx.reset();
 			throw _logger->error("Failed to initialize vpx codec");
 		}

@@ -64,7 +64,7 @@ namespace rawrbox {
 			this->_items.push_back(item);
 		};
 
-		void setItems(const std::vector<T> items) {
+		void setItems(const std::vector<T>& items) {
 			this->_items = items;
 			this->_mouseScrollY = 0;
 		};

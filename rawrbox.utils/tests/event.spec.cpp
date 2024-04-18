@@ -19,7 +19,7 @@ TEST_CASE("Event should behave as expected", "[rawrbox::Event]") {
 
 	SECTION("rawrbox::Event::call") {
 		rawrbox::Event<std::string> a;
-		a += [](std::string t) {
+		a += [](const std::string& t) {
 			REQUIRE(t == "ok");
 		};
 

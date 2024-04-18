@@ -178,7 +178,7 @@ namespace rawrbox {
 			auto* device = rawrbox::RENDERER->device();
 
 			auto indcSize = static_cast<uint64_t>(std::max<size_t>(this->_mesh->indices.capacity(), this->isDynamic() ? 1U : 0U)); // RESIZABLE requires at least one vertice
-			if (indcSize <= 0) throw this->_logger->error("Indices data cannot be empty!");
+			if (indcSize == 0) throw this->_logger->error("Indices data cannot be empty!");
 
 			Diligent::BufferDesc IndcBuffDesc;
 			IndcBuffDesc.Name = "RawrBox::Buffer::Indices";
@@ -200,7 +200,7 @@ namespace rawrbox {
 			auto* device = rawrbox::RENDERER->device();
 
 			auto vertSize = static_cast<uint64_t>(std::max<size_t>(this->_mesh->vertices.capacity(), this->isDynamic() ? 1U : 0U)); // RESIZABLE requires at least one vertice
-			if (vertSize <= 0) throw this->_logger->error("Vertices data cannot be empty!");
+			if (vertSize == 0) throw this->_logger->error("Vertices data cannot be empty!");
 
 			Diligent::BufferDesc VertBuffDesc;
 			VertBuffDesc.Name = "RawrBox::Buffer::Vertex";
@@ -296,7 +296,7 @@ namespace rawrbox {
 
 			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
 			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
-			auto empty = vertSize <= 0 || indcSize <= 0;
+			auto empty = vertSize == 0 || indcSize == 0;
 
 			// Store original positions for blendstates
 			if (!empty && _original_data.size() != vertSize) {

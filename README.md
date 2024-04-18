@@ -1,15 +1,16 @@
 <h2>
 	<p align="center">
-		<img src="./rawrbox.svg" width="300" /><br/>
+		<img alt="logo" src="./rawrbox.svg" width="300" /><br/>
 		<a href="https://github.com/edunad/rawrbox">RawrBox</a> - PSX..ish game engine
 	</p>
 </h2>
 <h4>
 	<p align="center">
-		<img src="https://github.com/edunad/rawrbox/actions/workflows/build.yml/badge.svg?branch=master&event=push"/>&nbsp;
-		<img src="https://img.shields.io/github/license/edunad/rawrbox.svg"/>&nbsp;
-		<img src="https://img.shields.io/github/issues/edunad/rawrbox/BUG.svg"/>&nbsp;
-		<img src="https://img.shields.io/github/last-commit/edunad/rawrbox.svg"/>&nbsp;
+		<img alt="logo" src="https://github.com/edunad/rawrbox/actions/workflows/build.yml/badge.svg?branch=master&event=push"/>&nbsp;
+		<img alt="logo" src="https://img.shields.io/github/license/edunad/rawrbox.svg"/>&nbsp;
+		<img alt="logo" src="https://img.shields.io/github/issues/edunad/rawrbox/BUG.svg"/>&nbsp;
+		<img alt="logo" src="https://img.shields.io/github/last-commit/edunad/rawrbox.svg"/>&nbsp;
+		<img alt="logo" src="https://app.codacy.com/project/badge/Grade/d8f8badc1e654f2a8098e3a624405bbd"/>&nbsp;
 		<a href="https://box.rawr.dev"><img src="https://img.shields.io/badge/wiki-%F0%9F%90%B2-black"/></a>
 		<br/><br/>
 		<a href="#features">Features</a> -
@@ -20,7 +21,7 @@
 </h4>
 
 <p align="center">
-	<a href="https://github.com/edunad/rawrbox-template"><img src="./RAWRBOX-TEMPLATE.png" width="256" /></a><br/>
+	<a href="https://github.com/edunad/rawrbox-template"><img alt="template" src="./RAWRBOX-TEMPLATE.png" width="256" /></a><br/>
 </p>
 
 # FEATURES
@@ -117,7 +118,7 @@
 <br/><br/>
 
 <p align="center">
-  <img src="./RAWBOX%20-%20Dependencies.png" />
+  <img alt="dependencies" src="./RAWBOX%20-%20Dependencies.png" />
 </p>
 
 <br/><br/><br/>

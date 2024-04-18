@@ -53,12 +53,12 @@ namespace rawrbox {
 		}
 
 		virtual void removeInstance(size_t i = 0) {
-			if (i < 0 || i >= this->_instances.size()) throw this->_logger->error("Failed to find instance");
+			if (i >= this->_instances.size()) throw this->_logger->error("Failed to find instance");
 			this->_instances.erase(this->_instances.begin() + i);
 		}
 
 		[[nodiscard]] rawrbox::Instance& getInstance(size_t i = 0) {
-			if (i < 0 || i >= this->_instances.size()) throw this->_logger->error("Failed to find instance");
+			if (i >= this->_instances.size()) throw this->_logger->error("Failed to find instance");
 			return this->_instances[i];
 		}
 

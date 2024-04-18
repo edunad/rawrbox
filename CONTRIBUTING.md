@@ -4,12 +4,12 @@ Thank you for your interest in contributing to RawrBox ♥!
 
 ## How to Contribute
 
-- For bug fixes, use a branch name like: ```bugs/your-bug-fix```
-- For new features, use a branch name like: ```features/your-new-feature```
+- For bug fixes, use a branch name like: `bugs/your-bug-fix`
+- For new features, use a branch name like: `features/your-new-feature`
 
-2. Make sure all the samples & tests are compiling and running.
-3. Ensure `scripting` & `resources` are implemented for new features.
-4. Implement new tests when possible.
+1. Make sure all the samples & tests are compiling and running.
+2. Ensure `scripting` & `resources` are implemented for new features.
+3. Implement new tests when possible.
 
 ## Coding Guidelines
 

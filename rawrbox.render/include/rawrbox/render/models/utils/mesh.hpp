@@ -1,7 +1,6 @@
 #pragma once
 
 #include <rawrbox/render/materials/unlit.hpp>
-#include <rawrbox/render/utils/topology.hpp>
 
 namespace rawrbox {
 
