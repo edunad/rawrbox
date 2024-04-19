@@ -17,7 +17,7 @@ namespace rawrbox {
 		// ---------
 
 		static std::pair<bool, std::string> execute(lua_State* L);
-		static void print(const std::string& command, std::optional<rawrbox::PrintType> type);
+		static void print(const std::string& text, std::optional<rawrbox::PrintType> type);
 
 		static bool registerMethod(const std::string& command, const luabridge::LuaRef& callback, const std::optional<std::string>& description, std::optional<uint32_t> flags);
 

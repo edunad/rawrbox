@@ -4,9 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <bit>
-#include <climits>
 #include <cmath>
-#include <cstring>
 
 namespace rawrbox {
 	float round(float val, int precision) {

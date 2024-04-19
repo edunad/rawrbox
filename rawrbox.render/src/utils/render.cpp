@@ -15,7 +15,6 @@ namespace rawrbox {
 		if (_pipe != nullptr) throw _logger->error("Pipeline already initialized!");
 
 		rawrbox::PipeSettings settings;
-		settings.depth = Diligent::COMPARISON_FUNC_UNKNOWN;
 		settings.cull = Diligent::CULL_MODE_BACK;
 		settings.pVS = "quad.vsh";
 		settings.pPS = "quad.psh";

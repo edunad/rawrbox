@@ -364,7 +364,7 @@ namespace rawrbox {
 			try {
 				mod.second->init(); // Sandbox env
 				mod.second->load();
-			} catch (std::runtime_error err) {
+			} catch (const std::runtime_error& err) {
 				_logger->printError("{}", err.what());
 			}
 

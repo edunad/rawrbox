@@ -11,7 +11,7 @@ namespace rawrbox {
 			requires(std::derived_from<M, rawrbox::MaterialBase>)
 		static rawrbox::Mesh<typename M::vertexBufferType> extractMesh(const rawrbox::AssimpImporter& model, size_t indx) {
 			const auto& meshes = model.meshes;
-			if (meshes.empty() || indx < 0 || indx >= meshes.size()) throw rawrbox::Logger::err("RawrBox-AssimpUtils", "Failed to extract mesh '{}'!", indx);
+			if (meshes.empty() || indx >= meshes.size()) throw rawrbox::Logger::err("RawrBox-AssimpUtils", "Failed to extract mesh '{}'!", indx);
 
 			const auto& assimpMesh = meshes[indx];
 

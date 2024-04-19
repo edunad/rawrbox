@@ -191,8 +191,7 @@ def find_binary(arg, name, build_path):
         return binary
     else:
         raise SystemExit(
-            "error: failed to find {} in $PATH or at {}".format(
-                name, built_path)
+            "error: failed to find {} in $PATH or at {}".format(name, built_path)
         )
 
 
@@ -237,13 +236,11 @@ def run_tidy(args, clang_tidy_binary, tmpdir, build_path, queue, lock, failed_fi
         output, err = proc.communicate()
         if proc.returncode != 0:
             if proc.returncode < 0:
-                msg = "%s: terminated by signal %d\n" % (
-                    name, -proc.returncode)
+                msg = "%s: terminated by signal %d\n" % (name, -proc.returncode)
                 err += msg.encode("utf-8")
             failed_files.append(name)
         with lock:
-            sys.stdout.write(" ".join(invocation) +
-                             "\n" + output.decode("utf-8"))
+            sys.stdout.write(" ".join(invocation) + "\n" + output.decode("utf-8"))
             if len(err) > 0:
                 sys.stdout.flush()
                 sys.stderr.write(err.decode("utf-8"))
@@ -302,6 +299,21 @@ def main():
         "headers to output diagnostics from. Diagnostics from "
         "the main file of each translation unit are always "
         "displayed.",
+    )
+    parser.add_argument(
+        "-source-filter",
+        default=None,
+        help="Regular expression matching the names of the "
+        "source files from compilation database to output "
+        "diagnostics from.",
+    )
+    parser.add_argument(
+        "-directory-filter",
+        dest="directory_filter",
+        action="append",
+        default=[],
+        help="List of directories matching the names of the "
+        "compilation database to filter.",
     )
     parser.add_argument(
         "-line-filter",
@@ -396,8 +408,7 @@ def main():
         # Find our database
         build_path = find_compilation_database(db_path)
 
-    clang_tidy_binary = find_binary(
-        args.clang_tidy_binary, "clang-tidy", build_path)
+    clang_tidy_binary = find_binary(args.clang_tidy_binary, "clang-tidy", build_path)
 
     if args.fix:
         clang_apply_replacements_binary = find_binary(
@@ -463,9 +474,21 @@ def main():
     # Load the database and extract all files.
     database = json.load(open(os.path.join(build_path, db_path)))
     files = set(
-        [make_absolute(entry["file"], entry["directory"])
-         for entry in database]
+        [make_absolute(entry["file"], entry["directory"]) for entry in database]
     )
+
+    # Filter source files from compilation database.
+    if args.source_filter:
+        try:
+            source_filter_re = re.compile(args.source_filter)
+        except:
+            print(
+                "Error: unable to compile regex from arg -source-filter:",
+                file=sys.stderr,
+            )
+            traceback.print_exc()
+            sys.exit(1)
+        files = {f for f in files if source_filter_re.match(f)}
 
     max_task = args.j
     if max_task == 0:
@@ -473,6 +496,7 @@ def main():
 
     # Build up a big regexy filter from all command line arguments.
     file_name_re = re.compile("|".join(args.files))
+    directory_filters_re = re.compile("|".join(args.directory_filters))
 
     return_code = 0
     try:
@@ -499,7 +523,7 @@ def main():
 
         # Fill the queue with files.
         for name in files:
-            if file_name_re.search(name):
+            if file_name_re.search(name) and not directory_filters_re.search(name):
                 task_queue.put(name)
 
         # Wait for all threads to be done.
@@ -527,8 +551,7 @@ def main():
     if args.fix:
         print("Applying fixes ...")
         try:
-            apply_fixes(args, clang_apply_replacements_binary,
-                        export_fixes_dir)
+            apply_fixes(args, clang_apply_replacements_binary, export_fixes_dir)
         except:
             print("Error applying fixes.\n", file=sys.stderr)
             traceback.print_exc()

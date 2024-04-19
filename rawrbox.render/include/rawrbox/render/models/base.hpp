@@ -121,7 +121,7 @@ namespace rawrbox {
 			auto vertSize = static_cast<uint64_t>(this->_mesh->vertices.size());
 			auto indcSize = static_cast<uint64_t>(this->_mesh->indices.size());
 
-			auto empty = vertSize <= 0 || indcSize <= 0;
+			auto empty = vertSize == 0 || indcSize == 0;
 
 			uint64_t sizeVB = sizeof(typename M::vertexBufferType) * vertSize;
 			uint64_t sizeIB = sizeof(uint16_t) * indcSize;
