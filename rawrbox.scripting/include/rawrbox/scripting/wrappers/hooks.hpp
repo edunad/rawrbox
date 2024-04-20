@@ -18,7 +18,7 @@ namespace rawrbox {
 		static std::unordered_map<std::string, std::vector<rawrbox::Hook>> _hooks;
 
 	public:
-		static void call(const std::string& id, const luabridge::LuaRef& func);
+		static void call(const std::string& id, const luabridge::LuaRef& args);
 		static void add(const std::string& id, const std::string& name, const luabridge::LuaRef& func);
 		static void remove(const std::string& id, const std::string& name);
 

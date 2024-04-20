@@ -24,39 +24,66 @@
 	<a href="https://github.com/edunad/rawrbox-template"><img alt="template" src="./RAWRBOX-TEMPLATE.png" width="256" /></a><br/>
 </p>
 
+## Why PSXish?
+
+This engine started as a C++ training project, with hopes of being applied in upcoming games. Don't expect it to rival big players like Unity, Unreal or Godot; it's not geared towards advanced rendering techniques such as anti-aliasing or ray-tracing. Rather, it's tailored for crafting straightforward, PlayStation 1-style games. Surprisingly, it runs on Vulkan/DirectX12, keeping it somewhat modern despite its retro inspiration.
+
 # FEATURES
 
-- Model loading (animations, light, texture, blend shapes) using [assimp](https://github.com/assimp/assimp)
-- Light support (point, spot, directional)
-- Support for rendering plugins (like clustered rendering, post processing, etc)
-- 3D text
-- Bindless rendering
-- 2D stencil drawing
-- Fonts (ttf) using [stb](https://github.com/nothings/stb)
-- JSON loading using [glaze](https://github.com/stephenberry/glaze)
-- Images loading (png, jpeg, tga, bitmap, gif) using [stb](https://github.com/nothings/stb), SVG using [lunasvg](https://github.com/sammycage/lunasvg), WEBP using [libwebp](https://github.com/webmproject/libwebp)
-- WEBM video using [webm](https://github.com/webmproject/libwebm) (No audio)
-- Sounds using [BASS](https://www.un4seen.com/) lib
-- Custom UI support + dev console (with support for custom commands)
-- Material system (similar to unity)
-- Vulkan / DirectX / OpenGL support using [Diligent](https://github.com/DiligentGraphics/DiligentCore)
-- Linux Wayland support + steam deck support
-- 3D Physics system using [JoltPhysics](https://github.com/jrouwe/JoltPhysics)
-- 2D Physics system using [Muli](https://github.com/Sopiro/Muli)
-- Clustered decal system (WIP)
-- Instancing support
-- Scripting / modding support with LUA using [luabridge3](https://github.com/kunitoki/LuaBridge3) and [luau](https://github.com/luau-lang/luau)
-- Post-processing effects support
-- HTTP / HTTPS requests using curl + [libcpr](https://github.com/libcpr/cpr)
-- Packet networking support
-- I18N (internationalization) support
-- GPU picking
-- GPU particle engine
+|    Module     | Features                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| :-----------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|  **Engine**   | - Tick based system<br/>- Limit FPS and TPS                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| **Animation** | - Skeleton data support<br/> - Blendshapes support<br/> - Multiple armature animation support                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+|   **Data**    | - File formats: <br/>&nbsp;&nbsp;&nbsp;&nbsp;- Meshes (using [assimp](https://github.com/assimp/assimp)): <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- glTF/GLB<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - OBJ<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - FBX<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - DAE<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - 3DS<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - MD5mesh<br/>&nbsp;&nbsp;&nbsp;&nbsp;- Images: <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- PNG, JPEG, BMP, TGA, GIF (using [stb](https://github.com/nothings/stb))<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- SVG (using [lunasvg](https://github.com/sammycage/lunasvg))<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- WEBP (using [libwebp](https://github.com/webmproject/libwebp))<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- WEBM (video only) (using [libwebp](https://github.com/webmproject/libwebm))<br/>&nbsp;&nbsp;&nbsp;&nbsp;- Fonts: <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- TTF (using [stb](https://github.com/nothings/stb))<br/>&nbsp;&nbsp;&nbsp;&nbsp;- Audio (using [BASS](https://www.un4seen.com/)): <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- OGG<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- MP4<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- MP3<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- WAV<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Supports url audio<br/>&nbsp;&nbsp;&nbsp;&nbsp;- JSON (using [glaze](https://github.com/stephenberry/glaze)) |
+|   **Math**    | - Vectors, colors, matrices & quaternions support<br/> - Bezier curve & easing<br> - Packing support (float16, etc)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+|  **Physics**  | - 3D multi-threaded physics (using [JoltPhysics](https://github.com/jrouwe/JoltPhysics))<br/> - 2D physics support (using [Muli](https://github.com/Sopiro/Muli))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **Rendering** | - **Vulkan** & **DirectX 12** support using ([Diligent](https://github.com/DiligentGraphics/DiligentCore))<br/>- Material system similar to unity<br/>- Window & Input callbacks (using [GLFW](https://github.com/glfw/glfw)) <br/>- Clustered rendering :<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Decals (**WIP**)<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Lights (point / spot/ directional)<br/>- Linux (**steamdeck**) support<br/>- Bindless rendering<br/>- Post-processing support<br/> - 2D rendering<br/> - Custom rendering plugins<br/> - GPU Picking<br/> - GPU Particle system<br/>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+|  **Network**  | - HTTP / HTTPS requests (using [libcpr](https://github.com/libcpr/cpr))<br/>- Packet network implementation<br/>- **NetVar** & **NetArray** support for [snapshot](https://gafferongames.com/post/snapshot_interpolation/) implementation <br/>- Simple socket implementation                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **Scripting** | - Scripting / modding support with LUAU (using [luabridge3](https://github.com/kunitoki/LuaBridge3) + [luau](https://github.com/luau-lang/luau))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+|   **Other**   | - I18N (internationalization) support<br/>- Settings support<br/>- Custom UI<br/>- DEV Console with support for custom commands & scripts<br/> - Timer utils (based on [GMOD's](https://wiki.facepunch.com/gmod/timer) timers)<br/>- File watcher implementation <br/>- Threading utilities                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
-# TODO LIST
+# SAMPLES
 
-- Add animation blending
-- Add lights shadow maps
+|        001-stencil<br/><a href='/samples/001-stencil'><img src="https://i.rawr.dev/sample1-min-2.gif" width="240" /></a>        | 002-generated-models<br/><a href='/samples/002-generated-models'><img src="https://i.rawr.dev/sample2-min-4.gif" width="240" /></a> |      003-light<br/><a href='/samples/003-light'><img src="https://i.rawr.dev/sample3-min-3.gif" width="240" /></a>       |
+| :-----------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------: |
+|      004-instancing<br/><a href='/samples/004-instancing'><img src="https://i.rawr.dev/sample4-min.gif" width="240" /></a>      |     005-post-process<br/><a href='/samples/005-post-process'><img src="https://i.rawr.dev/sample5-min-2.gif" width="240" /></a>     |     006-decals<br/><a href='/samples/006-decals'><img src="https://i.rawr.dev/sample6-min-2.gif" width="240" /></a>      |
+| 007-particle-system<br/><a href='/samples/007-particle-system'><img src="https://i.rawr.dev/sample7-min.gif" width="240" /></a> |                008-ui<br/><a href='/samples/008-ui'><img src="https://i.rawr.dev/sample8-min.gif" width="240" /></a>                |     009-assimp<br/><a href='/samples/009-assimp'><img src="https://i.rawr.dev/sample9-min-2.gif" width="240" /></a>      |
+|      010-bass-audio<br/><a href='/samples/010-bass-audio'><img src="https://i.rawr.dev/bylavGsjpB.png" width="240" /></a>       |      011-physics-3D<br/><a href='/samples/011-physics-3D'><img src="https://i.rawr.dev/sample11-min-2.gif" width="240" /></a>       |  012-physics-2D<br/><a href='/samples/012-physics-2D'><img src="https://i.rawr.dev/sample12-min.gif" width="240" /></a>  |
+|           013-webm<br/><a href='/samples/013-webm'><img src="https://i.rawr.dev/sample13-min.gif" width="240" /></a>            |        014-scripting<br/><a href='/samples/014-scripting'><img src="https://i.rawr.dev/sample14-min.gif" width="240" /></a>         | 015-gpu-picking<br/><a href='/samples/015-gpu-picking'><img src="https://i.rawr.dev/sample15-min.gif" width="240" /></a> |
+
+# BUILDING
+
+## WINDOWS
+
+### REQUIRED SOFTWARE
+
+- [GIT](https://git-scm.com/) or something similar to GIT
+- [CMAKE](https://cmake.org/download/) at least > 3.16.3
+- Download and install **C++ Build Tools** (2022 is recommended)<br/>
+  - ![](https://i.rawr.dev/KcTNzFJZhZ.png)
+- Download and install a IDE, [Visual Code](https://code.visualstudio.com/) is **recommended**.
+- Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)<br/>
+  - `pip install ninja` if you have python3 installed
+
+### IDE SETUP (Visual Code)
+
+1. Open the workspace file (`.code-workspace`) and install the recommended extensions (at least **C++** & **CMAKE**)
+2. Run **cmake configure**
+3. Select `[Visual Studio Build Tools <version> Release - amd64]` on the kit popup (for all of the projects)
+4. Run the compiler by hitting F5
+
+## LINUX
+
+### REQUIRED SOFTWARE
+
+- [PODMAN](https://podman.io/) or [DOCKER](https://docker.com/)
+
+### SETUP
+
+1. Build the container : `podman build -t rawrbox .`
+2. Run the container : `podman run -ti rawrbox /bin/bash`
+3. Run `cmake_rawrbox` (ALIAS) to prepare the cmake rawrbox
+4. Run `build_rawrbox` (ALIAS) to build rawrbox
 
 # LIBS
 
@@ -154,46 +181,3 @@
 | curl + libcpr     | Used for HTTP / HTTPS requests                      |
 | lunasvg           | Used for SVG loading                                |
 | cpptrace          | Used for easy error tracing                         |
-
-# BUILDING
-
-## WINDOWS
-
-### REQUIRED SOFTWARE
-
-- [GIT](https://git-scm.com/) or something similar to GIT
-- [CMAKE](https://cmake.org/download/) at least > 3.16.3
-- Download and install **C++ Build Tools** (2022 is recommended)<br/>
-  - ![](https://i.rawr.dev/KcTNzFJZhZ.png)
-- Download and install a IDE, [Visual Code](https://code.visualstudio.com/) is **recommended**.
-- Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)<br/>
-  - `pip install ninja` if you have python3 installed
-
-### IDE SETUP (Visual Code)
-
-1. Open the workspace file (`.code-workspace`) and install the recommended extensions (at least **C++** & **CMAKE**)
-2. Run **cmake configure**
-3. Select `[Visual Studio Build Tools <version> Release - amd64]` on the kit popup (for all of the projects)
-4. Run the compiler by hitting F5
-
-## LINUX
-
-### REQUIRED SOFTWARE
-
-- [PODMAN](https://podman.io/) or [DOCKER](https://docker.com/)
-
-### SETUP
-
-1. Build the container : `podman build -t rawrbox .`
-2. Run the container : `podman run -ti rawrbox /bin/bash`
-3. Run `cmake_rawrbox` (ALIAS) to prepare the cmake rawrbox
-4. Run `build_rawrbox` (ALIAS) to build rawrbox
-
-# SAMPLES
-
-|        001-stencil<br/><a href='/samples/001-stencil'><img src="https://i.rawr.dev/sample1-min-2.gif" width="240" /></a>        | 002-generated-models<br/><a href='/samples/002-generated-models'><img src="https://i.rawr.dev/sample2-min-4.gif" width="240" /></a> |      003-light<br/><a href='/samples/003-light'><img src="https://i.rawr.dev/sample3-min-3.gif" width="240" /></a>       |
-| :-----------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------: |
-|      004-instancing<br/><a href='/samples/004-instancing'><img src="https://i.rawr.dev/sample4-min.gif" width="240" /></a>      |     005-post-process<br/><a href='/samples/005-post-process'><img src="https://i.rawr.dev/sample5-min-2.gif" width="240" /></a>     |     006-decals<br/><a href='/samples/006-decals'><img src="https://i.rawr.dev/sample6-min-2.gif" width="240" /></a>      |
-| 007-particle-system<br/><a href='/samples/007-particle-system'><img src="https://i.rawr.dev/sample7-min.gif" width="240" /></a> |                008-ui<br/><a href='/samples/008-ui'><img src="https://i.rawr.dev/sample8-min.gif" width="240" /></a>                |     009-assimp<br/><a href='/samples/009-assimp'><img src="https://i.rawr.dev/sample9-min-2.gif" width="240" /></a>      |
-|      010-bass-audio<br/><a href='/samples/010-bass-audio'><img src="https://i.rawr.dev/bylavGsjpB.png" width="240" /></a>       |      011-physics-3D<br/><a href='/samples/011-physics-3D'><img src="https://i.rawr.dev/sample11-min-2.gif" width="240" /></a>       |  012-physics-2D<br/><a href='/samples/012-physics-2D'><img src="https://i.rawr.dev/sample12-min.gif" width="240" /></a>  |
-|           013-webm<br/><a href='/samples/013-webm'><img src="https://i.rawr.dev/sample13-min.gif" width="240" /></a>            |        014-scripting<br/><a href='/samples/014-scripting'><img src="https://i.rawr.dev/sample14-min.gif" width="240" /></a>         | 015-gpu-picking<br/><a href='/samples/015-gpu-picking'><img src="https://i.rawr.dev/sample15-min.gif" width="240" /></a> |

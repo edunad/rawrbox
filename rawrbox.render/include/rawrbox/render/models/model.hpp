@@ -30,7 +30,7 @@ namespace rawrbox {
 		bool _canOptimize = true;
 
 		// ANIMATIONS ----
-		void animate(rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
+		void animate(const rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
 			// VERTEX ANIMATION ----
 			for (auto& anim : this->_animatedMeshes) {
 				if (anim.second == nullptr) continue;

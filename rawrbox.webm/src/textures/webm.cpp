@@ -5,8 +5,6 @@
 #include <rawrbox/utils/time.hpp>
 #include <rawrbox/webm/textures/webm.hpp>
 
-#include <fmt/format.h>
-
 namespace rawrbox {
 	TextureWEBM::TextureWEBM(const std::filesystem::path& filePath, uint32_t flags, bool useFallback) : rawrbox::TextureAnimatedBase(filePath, useFallback), _flags(flags) { this->internalLoad({}, useFallback); }
 	TextureWEBM::~TextureWEBM() {
@@ -17,7 +15,7 @@ namespace rawrbox {
 		this->_name = "RawrBox::Texture::WEBM";
 
 		try {
-			if (!std::filesystem::exists(this->_filePath)) throw std::runtime_error("Video not found!");
+			if (!std::filesystem::exists(this->_filePath)) throw this->_logger->error("Video not found!");
 
 			this->_webm = std::make_unique<rawrbox::WEBM>();
 			this->_webm->load(this->_filePath, this->_flags);
@@ -27,9 +25,9 @@ namespace rawrbox {
 
 			this->_channels = 4; // Force 4 channels
 			this->_size = this->_webm->getSize();
-		} catch (std::runtime_error err) {
+		} catch (const std::runtime_error& err) {
 			if (useFallback) {
-				fmt::print("[RawrBox-TextureWEBM] Failed to load '{}' ──> {}\n  └── Loading fallback texture!\n", this->_filePath.generic_string(), err.what());
+				_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), err.what());
 				this->loadFallback();
 				return;
 			}
@@ -41,8 +39,7 @@ namespace rawrbox {
 	void TextureWEBM::update() {
 		if (this->_failedToLoad || this->_handle == nullptr) return; // Not bound
 		if (this->_pause || this->_cooldown >= rawrbox::TimeUtils::curtime()) return;
-
-		if (this->_webm == nullptr) throw std::runtime_error("[RawrBox-TextureWEBM] WEBM loader not initialized!");
+		if (this->_webm == nullptr) throw this->_logger->error("WEBM loader not initialized!");
 
 		rawrbox::WEBMImage img;
 		if (!this->_webm->getNextFrame(img)) return; // Reached end
@@ -88,11 +85,11 @@ namespace rawrbox {
 	}
 
 	float TextureWEBM::getSpeed() const {
-		throw std::runtime_error("[RawrBox-TextureWEBM] Not supported");
+		throw this->_logger->error("Not supported");
 	}
 
 	void TextureWEBM::setSpeed(float /*speed*/) {
-		throw std::runtime_error("[RawrBox-TextureWEBM] Not supported");
+		throw this->_logger->error("Not supported");
 	}
 	// ----
 

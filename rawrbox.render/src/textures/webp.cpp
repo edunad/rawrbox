@@ -59,7 +59,7 @@ namespace rawrbox {
 			}
 
 			WebPAnimDecoderDelete(decoder);
-		} catch (std::runtime_error err) {
+		} catch (const std::runtime_error& err) {
 			if (useFallback) {
 				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), err.what());
 				this->loadFallback();

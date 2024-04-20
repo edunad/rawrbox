@@ -13,7 +13,6 @@ TEST_CASE("Engine should behave as expected", "[rawrbox::Engine]") {
 	rawrbox::Engine eng;
 
 	auto curtime = []() { return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count(); };
-	long long delay = 0;
 
 	SECTION("rawrbox::Engine::setTPS") {
 		REQUIRE(eng.getTPS() == 66);
@@ -36,6 +35,7 @@ TEST_CASE("Engine should behave as expected", "[rawrbox::Engine]") {
 	SECTION("rawrbox::Engine::runOnRenderThread") {
 		REQUIRE(rawrbox::RENDER_THREAD_INVOKES.empty() == true);
 
+		long long delay = 0;
 		threadCalls = 0;
 
 		rawrbox::RENDER_THREAD_ID = std::this_thread::get_id();

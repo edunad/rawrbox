@@ -38,7 +38,7 @@ namespace rawrbox {
 		virtual void writeFloat(float val);
 		virtual void writeDouble(double val);
 		virtual void writeString(const std::string& val);
-		virtual void writeTable(const luabridge::LuaRef& ref);
+		virtual void writeTable(const luabridge::LuaRef& val);
 		// ---
 
 		// WRITE ---
