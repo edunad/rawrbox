@@ -97,7 +97,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY
         webmproject/libwebp
     VERSION
-        1.3.2
+        1.4.0
     OPTIONS
         "BUILD_SHARED_LIBS OFF"
         "WEBP_BUILD_ANIM_UTILS OFF"

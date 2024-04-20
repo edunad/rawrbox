@@ -17,7 +17,7 @@ CPMDeclarePackage(magic_enum
 )
 # glaze
 CPMDeclarePackage(glaze
-  VERSION 2.5.0
+  VERSION 2.5.3
   GITHUB_REPOSITORY stephenberry/glaze
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -38,7 +38,7 @@ CPMDeclarePackage(zlib
 # Catch2
 CPMDeclarePackage(Catch2
   NAME Catch2
-  VERSION 3.5.3
+  VERSION 3.5.4
   GITHUB_REPOSITORY catchorg/Catch2
   OPTIONS
     "CATCH_INSTALL_DOCS OFF"
@@ -77,7 +77,7 @@ CPMDeclarePackage(cpptrace
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.620
+  GIT_TAG 0.622
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"
@@ -117,6 +117,8 @@ CPMDeclarePackage(glfw
 #  GIT_TAG master
 #  GITHUB_REPOSITORY DiligentGraphics/DiligentCore
 #  OPTIONS
+#    "DILIGENT_NO_RENDER_STATE_PACKAGER ON"
+#    "DILIGENT_NO_FORMAT_VALIDATION ON"
 #    "DILIGENT_NO_OPENGL ON"
 #    "DILIGENT_NO_VULKAN OFF"
 #    "DILIGENT_NO_DIRECT3D11 ON"
@@ -141,7 +143,7 @@ CPMDeclarePackage(lunasvg
 # libwebp
 CPMDeclarePackage(libwebp
   NAME libwebp
-  VERSION 1.3.2
+  VERSION 1.4.0
   GITHUB_REPOSITORY webmproject/libwebp
   OPTIONS
     "BUILD_SHARED_LIBS OFF"
@@ -200,7 +202,7 @@ CPMDeclarePackage(libwebp
 # clip
 CPMDeclarePackage(clip
   NAME clip
-  VERSION 1.8
+  VERSION 1.9
   GITHUB_REPOSITORY dacap/clip
   OPTIONS
     "CLIP_EXAMPLES OFF"
