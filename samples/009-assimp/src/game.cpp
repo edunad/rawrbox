@@ -92,9 +92,10 @@ namespace assimp {
 		this->_model3->playAnimation("Scene", true, 1.F);
 		this->_model3->setPos({1, 0, 0});
 		this->_model3->upload();
+		this->_model3->onAnimationComplete += [](std::string anim) { fmt::print("Anim '{}' completed\n", anim); };
 
 		this->_model4->load(*mdl2);
-		this->_model4->playAnimation("Scene", true, 1.F);
+		this->_model4->playAnimation("Scene", true, -1.F);
 		this->_model4->setPos({-1, 0, 0});
 		this->_model4->upload();
 
