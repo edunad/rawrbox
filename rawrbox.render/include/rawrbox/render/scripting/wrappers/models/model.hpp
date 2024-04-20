@@ -21,7 +21,9 @@ namespace rawrbox {
 
 			    // ANIMATION ----
 			    .addFunction("playAnimation", &ModelC::playAnimation)
+			    .addFunction("hasAnimation", &ModelC::playAnimation)
 			    .addFunction("stopAnimation", &ModelC::stopAnimation)
+			    .addFunction("isAnimationPlaying", &ModelC::isAnimationPlaying)
 			    // ----
 
 			    // UTILS ----

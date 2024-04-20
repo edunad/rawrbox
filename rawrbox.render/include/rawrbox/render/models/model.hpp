@@ -15,10 +15,10 @@ namespace rawrbox {
 	class Model : public rawrbox::ModelBase<M> {
 
 	protected:
+		// ANIMATION ---
 		std::unordered_map<std::string, rawrbox::Animation> _animations = {};
-
 		std::vector<rawrbox::PlayingAnimationData> _playingAnimations = {};
-		std::vector<rawrbox::LightBase> _lights = {};
+		// ------------
 
 		std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes = {};
 		rawrbox::BBOX _bbox = {};
@@ -26,6 +26,10 @@ namespace rawrbox {
 		// SKINNING ----
 		std::unordered_map<std::string, rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // Map for quick lookup
 		// --------
+
+		// LIGHTS ---
+		std::vector<rawrbox::LightBase> _lights = {};
+		// -----
 
 		bool _canOptimize = true;
 
@@ -60,7 +64,6 @@ namespace rawrbox {
 			auto nodeTransform = parentBone.transformationMtx * parentBone.overrideMtx;
 			this->readAnims(nodeTransform, parentBone.name);
 
-			// store the result of our parent bone and our current node
 			rawrbox::Matrix4x4 globalTransformation = parentTransform * nodeTransform;
 			auto fnd = skeleton.boneMap.find(parentBone.name);
 			if (fnd != skeleton.boneMap.end()) {
@@ -79,10 +82,7 @@ namespace rawrbox {
 				});
 
 				if (animChannel != anim.data->frames.end()) {
-					// figure out how "fast" the animation needs to play and the current playtime of the animation
-					float ticksPerSecond = anim.data->ticksPerSecond != 0 ? anim.data->ticksPerSecond : 25.0F;
-					float timeInTicks = anim.time * ticksPerSecond;
-					timeInTicks = std::fmod(timeInTicks, anim.data->duration);
+					float timeInTicks = std::fmod(anim.time, anim.data->duration);
 
 					// helper, select the next "frame" we should play depending on the time
 					auto findFrameIndex = [&](auto& keys) {
@@ -110,9 +110,9 @@ namespace rawrbox {
 					auto nextScl = scaleFrameIndex + 1 >= animChannel->scale.size() ? animChannel->scale.front() : animChannel->scale[scaleFrameIndex + 1];
 
 					// Easing ----
-					Vector3f position = nextPos.second;
-					Vector4f rotation = nextRot.second;
-					Vector3f scale = nextScl.second;
+					rawrbox::Vector3f position = nextPos.second;
+					rawrbox::Vector4f rotation = nextRot.second;
+					rawrbox::Vector3f scale = nextScl.second;
 
 					float t = rawrbox::EasingUtils::ease(animChannel->stateEnd, timeInTicks);
 
@@ -121,39 +121,39 @@ namespace rawrbox {
 					scale = rawrbox::AnimUtils::lerpVector3(t, currScl, nextScl);
 					//   ----
 
-					rawrbox::Matrix4x4 mt = {};
-					mt.translate(position);
-
-					rawrbox::Matrix4x4 ms = {};
-					ms.scale(scale);
-
-					rawrbox::Matrix4x4 mr = {};
-					mr.rotate(rotation);
-
-					nodeTransform = mt * mr * ms;
+					nodeTransform = rawrbox::Matrix4x4::mtxSRT(scale, rotation, position);
 				}
 			}
 		}
 
-		void preDraw() {
-			for (auto& anim : this->_playingAnimations) {
-				float timeToAdd = rawrbox::DELTA_TIME * anim.speed;
-				float time = anim.time + timeToAdd;
-				float totalDur = anim.data->duration;
-
-				if (!((time > totalDur || time < -totalDur) && !anim.loop)) {
-					anim.time += timeToAdd;
-				}
-			}
-		}
-
-		void postDraw() {
+		void updateAnimations() {
 			for (auto it = this->_playingAnimations.begin(); it != this->_playingAnimations.end();) {
-				if ((*it).time >= (*it).data->duration && !(*it).loop) {
-					it = this->_playingAnimations.erase(it);
-					continue;
+				float timeToAdd = rawrbox::DELTA_TIME * it->speed * it->data->ticksPerSecond;
+				float newTime = it->time + timeToAdd;
+				float totalDur = it->data->duration;
+
+				// Check if the animation has reached the end or the beginning (for negative speed)
+				bool animationEnded = (it->speed >= 0 && newTime >= totalDur) || (it->speed < 0 && newTime <= 0);
+
+				if (animationEnded) {
+					if (it->loop) {
+						// If looping, wrap the time around
+						newTime = std::fmod(newTime, totalDur);
+						if (newTime < 0) newTime += totalDur;
+					} else {
+						// If not looping, clamp the time to the duration or 0
+						newTime = it->speed >= 0 ? totalDur : 0;
+					}
+
+					this->onAnimationComplete(it->name);
+
+					if (!it->loop) {
+						it = this->_playingAnimations.erase(it);
+						continue;
+					}
 				}
 
+				it->time = newTime;
 				++it;
 			}
 		}
@@ -183,6 +183,10 @@ namespace rawrbox {
 		// --------------
 
 	public:
+		// ANIMATION ---
+		rawrbox::Event<std::string> onAnimationComplete = {};
+		// ------------
+
 		Model(size_t vertices = 0, size_t indices = 0) : rawrbox::ModelBase<M>(vertices, indices){};
 		Model(const Model&) = delete;
 		Model(Model&&) = delete;
@@ -291,7 +295,7 @@ namespace rawrbox {
 			    loop,
 			    speed,
 			    0.0F,
-			    &iter->second);
+			    iter->second);
 
 			return true;
 		}
@@ -304,6 +308,14 @@ namespace rawrbox {
 			}
 
 			return false;
+		}
+
+		virtual bool hasAnimation(const std::string& name) {
+			return this->_animations.find(name) != this->_animations.end();
+		}
+
+		virtual bool isAnimationPlaying(const std::string& name) {
+			return std::find_if(this->_playingAnimations.begin(), this->_playingAnimations.end(), [&name](const rawrbox::PlayingAnimationData& anim) { return anim.name == name; }) != this->_playingAnimations.end();
 		}
 		// --------------
 
@@ -453,7 +465,7 @@ namespace rawrbox {
 
 		void draw() override {
 			ModelBase<M>::draw();
-			this->preDraw();
+			this->updateAnimations();
 
 			for (auto& mesh : this->_meshes) {
 				// Process animations ---
@@ -489,8 +501,6 @@ namespace rawrbox {
 				rawrbox::RENDERER->context()->DrawIndexed(DrawAttrs);
 				// -----------
 			}
-
-			this->postDraw();
 		}
 	};
 } // namespace rawrbox
