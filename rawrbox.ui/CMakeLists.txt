@@ -8,7 +8,7 @@ CPMAddPackage(
     NAME
         clip
     VERSION
-        1.8
+        1.9
     GITHUB_REPOSITORY
         dacap/clip
     OPTIONS

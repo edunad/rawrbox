@@ -56,12 +56,15 @@ namespace rawrbox {
 			auto fnc = this->_modTable[name];
 			if (!fnc.isCallable()) return std::nullopt;
 
-			luabridge::LuaResult result = luabridge::call(fnc, this->_modTable, std::forward<CallbackArgs>(args)...);
-			if (result.hasFailed()) {
-				_logger->warn("Lua error on {}\n  └── {}", this->_id, result.errorMessage());
-			}
+			try {
+				luabridge::LuaResult result = luabridge::call(fnc, this->_modTable, std::forward<CallbackArgs>(args)...);
+				if (result.hasFailed()) _logger->warn("Lua error on {}\n  └── {}", this->_id, result.errorMessage());
 
-			return result;
+				return result;
+			} catch (const luabridge::LuaException& err) {
+				_logger->warn("Lua error on {}\n  └── {}", this->_id, err.what());
+				return std::nullopt;
+			}
 		}
 	};
 } // namespace rawrbox

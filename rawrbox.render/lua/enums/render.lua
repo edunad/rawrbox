@@ -12,6 +12,6 @@ _G.FOG_TYPE = {
 }
 
 _G.DRAW_PASS = {
-    OPAQUE = 0,
+    WORLD = 0,
     OVERLAY = 1
 }

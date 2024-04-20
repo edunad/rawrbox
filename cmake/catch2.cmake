@@ -9,7 +9,7 @@ if(RAWRBOX_BUILD_TESTING)
         GITHUB_REPOSITORY
             catchorg/Catch2
         VERSION
-            3.5.3
+            3.5.4
         OPTIONS
             "CATCH_INSTALL_DOCS OFF"
             "CATCH_INSTALL_EXTRAS ON")

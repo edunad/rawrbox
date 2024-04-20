@@ -1,3 +1,6 @@
+local testMDL = nil
+local testMDLMesh = nil
+
 function TEST()
     print("You called test! On test-mod-2")
 end
@@ -10,12 +13,23 @@ function MOD:draw(pass)
 end
 
 function MOD:update()
-    local mdl = test_model()
-    if mdl then
-        local mesh1 = mdl:getMesh(0)
-        if not mesh1 then return end
+    if not testMDL then
+        local mdl = test_model()
+        if not mdl then return end
 
-        local frame = renderer.frame()
-        mesh1:setPos(Vector3(-5., 0, math.sin(frame * 0.01) * 2))
+        testMDL = mdl
+    end
+
+    if testMDL then
+        if not testMDLMesh then
+            local mesh1 = testMDL:getMesh(0)
+            if not mesh1 then return end
+            testMDLMesh = mesh1
+        end
+
+        if testMDLMesh then
+            local frame = renderer.frame()
+            testMDLMesh:setPos(Vector3(-5., 0, math.sin(frame * 0.01) * 2))
+        end
     end
 end

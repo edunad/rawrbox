@@ -7,7 +7,7 @@
 
 namespace rawrbox {
 	void ModelWrapper::registerLua(lua_State* L) {
-		registerTemplate<>(L, "Model");
+		registerTemplate<rawrbox::MaterialUnlit>(L, "Model");
 		registerTemplate<rawrbox::MaterialLit>(L, "ModelLit");
 		registerTemplate<rawrbox::MaterialSkinned>(L, "ModelSkinned");
 		registerTemplate<rawrbox::MaterialSkinnedLit>(L, "ModelSkinnedLit");
