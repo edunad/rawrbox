@@ -17,18 +17,18 @@ TEST_CASE("AABB should behave as expected", "[rawrbox::AABB]") {
 	}
 
 	SECTION("rawrbox::AABB::contains") {
-		REQUIRE(aabb.contains({-1.F, -1.F}) == false);
-		REQUIRE(aabb.contains({1.5F, 1.5F}) == true);
-		REQUIRE(aabb.contains({8.F, 8.F}) == true);
-		REQUIRE(aabb.contains({12.F, 12.F}) == false);
+		REQUIRE(aabb.contains(rawrbox::Vector2f(-1.F, -1.F)) == false);
+		REQUIRE(aabb.contains(rawrbox::Vector2f(1.5F, 1.5F)) == true);
+		REQUIRE(aabb.contains(rawrbox::Vector2f(8.F, 8.F)) == true);
+		REQUIRE(aabb.contains(rawrbox::Vector2f(12.F, 12.F)) == false);
 	}
 
 	SECTION("rawrbox::AABB::mask") {
 		auto mask = aabb.mask({2, 2, 5, 5});
 
-		REQUIRE(mask.contains({-1.F, -1.F}) == false);
-		REQUIRE(mask.contains({1.5F, 1.5F}) == false);
-		REQUIRE(mask.contains({3.F, 3.F}) == true);
-		REQUIRE(mask.contains({8.F, 8.F}) == false);
+		REQUIRE(mask.contains(rawrbox::Vector2f(-1.F, -1.F)) == false);
+		REQUIRE(mask.contains(rawrbox::Vector2f(1.5F, 1.5F)) == false);
+		REQUIRE(mask.contains(rawrbox::Vector2f(3.F, 3.F)) == true);
+		REQUIRE(mask.contains(rawrbox::Vector2f(8.F, 8.F)) == false);
 	}
 }
