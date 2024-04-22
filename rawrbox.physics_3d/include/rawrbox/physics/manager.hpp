@@ -82,7 +82,6 @@ namespace rawrbox {
 
 	class PHYSICS {
 	protected:
-		static std::unique_ptr<JPH::TempAllocatorImpl> _allocator;
 		static std::unique_ptr<JPH::JobSystemThreadPool> _threadPool;
 		static std::unique_ptr<JPH::Factory> _factory;
 
@@ -95,6 +94,7 @@ namespace rawrbox {
 
 	public:
 		// VARS ----
+		static std::unique_ptr<JPH::TempAllocatorImpl> allocator;
 		static std::unique_ptr<JPH::PhysicsSystem> physicsSystem;
 		static int steps;
 

@@ -3,7 +3,6 @@
 
 namespace rawrbox {
 	// Private
-	std::unique_ptr<JPH::TempAllocatorImpl> PHYSICS::_allocator = nullptr;
 	std::unique_ptr<JPH::JobSystemThreadPool> PHYSICS::_threadPool = nullptr;
 	std::unique_ptr<JPH::Factory> PHYSICS::_factory = nullptr;
 
@@ -16,6 +15,7 @@ namespace rawrbox {
 	// ---
 
 	// Public
+	std::unique_ptr<JPH::TempAllocatorImpl> PHYSICS::allocator = nullptr;
 	std::unique_ptr<JPH::PhysicsSystem> PHYSICS::physicsSystem = nullptr;
 
 	rawrbox::Event<const JPH::BodyID&, uint64_t> PHYSICS::onBodyAwake;
@@ -45,7 +45,7 @@ namespace rawrbox {
 		JPH::RegisterTypes();
 
 		// Initialize allocator
-		_allocator = std::make_unique<JPH::TempAllocatorImpl>(mbAlloc * 1024 * 1024); // MB
+		allocator = std::make_unique<JPH::TempAllocatorImpl>(mbAlloc * 1024 * 1024); // MB
 
 		// Initialize pool
 		if (maxThreads == 0) maxThreads = std::thread::hardware_concurrency() - 1;
@@ -67,7 +67,7 @@ namespace rawrbox {
 		_factory.reset();
 		JPH::Factory::sInstance = nullptr;
 
-		_allocator.reset();
+		allocator.reset();
 		_threadPool.reset();
 
 		_bodyListener.reset();
@@ -77,12 +77,12 @@ namespace rawrbox {
 	}
 
 	void PHYSICS::tick() {
-		if (_factory == nullptr || _allocator == nullptr || _threadPool == nullptr || physicsSystem == nullptr) return;
-		physicsSystem->Update(rawrbox::FIXED_DELTA_TIME, steps, _allocator.get(), _threadPool.get());
+		if (allocator == nullptr || _threadPool == nullptr || physicsSystem == nullptr) return;
+		physicsSystem->Update(rawrbox::FIXED_DELTA_TIME, steps, allocator.get(), _threadPool.get());
 	}
 
 	void PHYSICS::optimize() {
-		if (_factory == nullptr || _allocator == nullptr || _threadPool == nullptr || physicsSystem == nullptr) return;
+		if (physicsSystem == nullptr) return;
 		physicsSystem->OptimizeBroadPhase();
 	}
 } // namespace rawrbox
