@@ -6,6 +6,7 @@
 	#include <rawrbox/render/stencil.hpp>
 
 	#include <Jolt/Renderer/DebugRenderer.h>
+	#include <Jolt/Physics/Collision/RayCast.h>
 
 namespace rawrbox {
 	struct RBatch : public JPH::RefTargetVirtual, public JPH::RefTarget<RBatch> {
@@ -100,12 +101,18 @@ namespace rawrbox {
 		}
 
 		void DrawLine(JPH::RVec3Arg inFrom, JPH::RVec3Arg inTo, JPH::ColorArg inColor) override {
-			auto* stencil = rawrbox::RENDERER->stencil();
+			auto* renderer = rawrbox::RENDERER;
+			auto* camera = rawrbox::MAIN_CAMERA;
+			if (renderer == nullptr || camera == nullptr) return;
 
-			rawrbox::Vector2f from(inFrom.GetX(), inFrom.GetY());
-			rawrbox::Vector2f to(inTo.GetX(), inTo.GetY());
-			rawrbox::Color color(inColor.r, inColor.g, inColor.b, inColor.a);
-			stencil->drawLine(from, to, color);
+			auto* stencil = rawrbox::RENDERER->stencil();
+			if (stencil == nullptr) return;
+
+			rawrbox::Vector3f start = camera->worldToScreen(rawrbox::PhysUtils::posToVec(inFrom));
+			rawrbox::Vector3f end = camera->worldToScreen(rawrbox::PhysUtils::posToVec(inTo));
+
+			auto mdlColor = inColor.ToVec4();
+			stencil->drawLine(start.xy(), end.xy(), {mdlColor.GetX(), mdlColor.GetY(), mdlColor.GetZ(), mdlColor.GetW()});
 		}
 
 		void DrawTriangle(JPH::RVec3Arg inV1, JPH::RVec3Arg inV2, JPH::RVec3Arg inV3, JPH::ColorArg inColor, ECastShadow /*inCastShadow*/ = ECastShadow::Off) override {
@@ -117,6 +124,20 @@ namespace rawrbox {
 			rawrbox::Color color(inColor.r, inColor.g, inColor.b, inColor.a);
 
 			stencil->drawTriangle(v1, {}, color, v2, {}, color, v3, {}, color);
+		}
+
+		static void DrawRay(const JPH::RRayCast& ray) {
+			auto* renderer = rawrbox::RENDERER;
+			auto* camera = rawrbox::MAIN_CAMERA;
+			if (renderer == nullptr || camera == nullptr) return;
+
+			auto* stencil = rawrbox::RENDERER->stencil();
+			if (stencil == nullptr) return;
+
+			rawrbox::Vector3f start = camera->worldToScreen(rawrbox::PhysUtils::posToVec(ray.mOrigin));
+			rawrbox::Vector3f end = camera->worldToScreen(rawrbox::PhysUtils::posToVec(ray.mOrigin + ray.mDirection));
+
+			stencil->drawLine(start.xy(), end.xy(), rawrbox::Colors::Red());
 		}
 	};
 } // namespace rawrbox
