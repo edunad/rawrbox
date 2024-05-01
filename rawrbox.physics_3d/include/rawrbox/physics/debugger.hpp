@@ -126,7 +126,7 @@ namespace rawrbox {
 			stencil->drawTriangle(v1, {}, color, v2, {}, color, v3, {}, color);
 		}
 
-		static void DrawRay(const JPH::RRayCast& ray) {
+		static void DrawRay(const JPH::RRayCast& ray, const rawrbox::Color& color = rawrbox::Colors::Red()) {
 			auto* renderer = rawrbox::RENDERER;
 			auto* camera = rawrbox::MAIN_CAMERA;
 			if (renderer == nullptr || camera == nullptr) return;
@@ -137,7 +137,7 @@ namespace rawrbox {
 			rawrbox::Vector3f start = camera->worldToScreen(rawrbox::PhysUtils::posToVec(ray.mOrigin));
 			rawrbox::Vector3f end = camera->worldToScreen(rawrbox::PhysUtils::posToVec(ray.mOrigin + ray.mDirection));
 
-			stencil->drawLine(start.xy(), end.xy(), rawrbox::Colors::Red());
+			stencil->drawLine(start.xy(), end.xy(), color);
 		}
 	};
 } // namespace rawrbox
