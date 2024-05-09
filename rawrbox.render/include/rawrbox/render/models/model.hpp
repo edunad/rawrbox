@@ -150,8 +150,10 @@ namespace rawrbox {
 					this->onAnimationComplete(it->second.name);
 
 					if (!it->second.loop) {
-						if (it->second.onComplete != nullptr) it->second.onComplete();
+						auto onCompleteCallback = it->second.onComplete;
 						it = this->_playingAnimations.erase(it);
+
+						if (onCompleteCallback != nullptr) onCompleteCallback();
 						continue;
 					}
 				}
