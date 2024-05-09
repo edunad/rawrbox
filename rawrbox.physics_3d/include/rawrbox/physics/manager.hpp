@@ -97,6 +97,7 @@ namespace rawrbox {
 		static std::unique_ptr<JPH::TempAllocatorImpl> allocator;
 		static std::unique_ptr<JPH::PhysicsSystem> physicsSystem;
 		static int steps;
+		static bool simulate;
 
 		static rawrbox::Event<const JPH::BodyID&, uint64_t> onBodyAwake;
 		static rawrbox::Event<const JPH::BodyID&, uint64_t> onBodySleep;
@@ -112,6 +113,7 @@ namespace rawrbox {
 		static void init(uint32_t mbAlloc = 20, uint32_t maxBodies = 2048, uint32_t maxBodyMutexes = 2048, uint32_t maxBodyPairs = 2048, uint32_t maxContactConstraints = 2048, uint32_t maxThreads = 0);
 		static void shutdown();
 
+		static void clear();
 		static void tick();     // Should be tick based update
 		static void optimize(); // Call only when a lot of bodies are added at a single time
 	};

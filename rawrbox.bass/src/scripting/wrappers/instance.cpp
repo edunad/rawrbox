@@ -25,11 +25,8 @@ namespace rawrbox {
 		    .addFunction("isPaused", &SoundInstance::isPaused)
 		    .addFunction("isHTTPStream", &SoundInstance::isHTTPStream)
 
-		    .addFunction("getFFT", [](rawrbox::SoundInstance* self, int length, lua_State* L) {
-			    if (self == nullptr) throw std::runtime_error("Failed to get instance");
-
-			    auto fftData = self->getFFT(length);
-			    return rawrbox::LuaUtils::vectorToTable(L, fftData);
+		    .addFunction("getFFT", [](rawrbox::SoundInstance& self, int length, lua_State* L) {
+			    return rawrbox::LuaUtils::vectorToTable(L, self.getFFT(length));
 		    })
 
 		    .addFunction("getPosition", &SoundInstance::getPosition)

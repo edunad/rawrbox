@@ -4,6 +4,8 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/vector4.hpp>
 
+#include <functional>
+#include <utility>
 #include <vector>
 
 namespace rawrbox {
@@ -37,8 +39,9 @@ namespace rawrbox {
 		float time = 0;
 
 		rawrbox::Animation* data = nullptr;
+		std::function<void()> onComplete = nullptr;
 
 		PlayingAnimationData() = default;
-		PlayingAnimationData(std::string _name, bool _loop, float _speed, float _time, rawrbox::Animation& _data) : name(std::move(_name)), loop(_loop), speed(_speed), time(_time), data(&_data){};
+		PlayingAnimationData(std::string _name, bool _loop, float _speed, float _time, rawrbox::Animation& _data, std::function<void()> complete = nullptr) : name(std::move(_name)), loop(_loop), speed(_speed), time(_time), data(&_data), onComplete(std::move(complete)){};
 	};
 } // namespace rawrbox

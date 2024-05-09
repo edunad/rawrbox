@@ -64,6 +64,8 @@ namespace phys_3d_test {
 		settings.mTimeBeforeSleep = 0.15F;
 
 		rawrbox::PHYSICS::physicsSystem->SetPhysicsSettings(settings);
+		rawrbox::PHYSICS::simulate = false; // PAUSE THE SIMULATION
+
 		// rawrbox::PHYSICS::onBodyAwake += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body awake \n"); };
 		// rawrbox::PHYSICS::onBodySleep += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body sleep \n"); };
 		this->_physDebug = std::make_unique<rawrbox::DebugRenderer>();
@@ -75,11 +77,15 @@ namespace phys_3d_test {
 
 			switch (key) {
 				case rawrbox::KEY_F1:
-					this->_paused = !this->_paused;
-					if (this->_timer != nullptr) this->_timer->pause(this->_paused);
+					rawrbox::PHYSICS::simulate = !rawrbox::PHYSICS::simulate;
+					if (this->_timer != nullptr) this->_timer->pause(!rawrbox::PHYSICS::simulate);
 					break;
 				case rawrbox::KEY_F2:
 					this->_debug = !this->_debug;
+					break;
+				case rawrbox::KEY_F3:
+					this->_boxes.clear();
+					rawrbox::PHYSICS::clear();
 					break;
 				default: break;
 			}
@@ -148,7 +154,7 @@ namespace phys_3d_test {
 			    rawrbox::PHYSICS::optimize(); // Only need to be called after adding a lot of bodies in one go
 		    });
 
-		this->_timer->pause(this->_paused);
+		this->_timer->pause(!rawrbox::PHYSICS::simulate);
 		// --------
 
 		this->_ready = true;
@@ -212,7 +218,6 @@ namespace phys_3d_test {
 	}
 
 	void Game::fixedUpdate() {
-		if (this->_paused) return;
 		rawrbox::PHYSICS::tick();
 	}
 
@@ -241,8 +246,9 @@ namespace phys_3d_test {
 		if (!this->_ready) return;
 
 		auto* stencil = rawrbox::RENDERER->stencil();
-		stencil->drawText(fmt::format("[F1]   PAUSED: {}", this->_paused), {15, 15});
+		stencil->drawText(fmt::format("[F1]   PAUSED: {}", rawrbox::PHYSICS::simulate), {15, 15});
 		stencil->drawText(fmt::format("[F2]   DEBUG: {}", this->_debug), {15, 28});
+		stencil->drawText(fmt::format("[F3]   CLEAR"), {15, 48});
 
 		if (this->_debug) {
 			JPH::BodyManager::DrawSettings settings;

@@ -17,7 +17,7 @@ namespace rawrbox {
 	protected:
 		// ANIMATION ---
 		std::unordered_map<std::string, rawrbox::Animation> _animations = {};
-		std::vector<rawrbox::PlayingAnimationData> _playingAnimations = {};
+		std::unordered_map<std::string, rawrbox::PlayingAnimationData> _playingAnimations = {};
 		// ------------
 
 		std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes = {};
@@ -76,7 +76,9 @@ namespace rawrbox {
 		}
 
 		void readAnims(rawrbox::Matrix4x4& nodeTransform, const std::string& nodeName) const {
-			for (auto& anim : this->_playingAnimations) {
+			for (auto& playingAnim : this->_playingAnimations) {
+
+				auto& anim = playingAnim.second;
 				auto animChannel = std::find_if(anim.data->frames.begin(), anim.data->frames.end(), [&](AnimationFrame& x) {
 					return x.nodeName == nodeName;
 				});
@@ -128,32 +130,33 @@ namespace rawrbox {
 
 		void updateAnimations() {
 			for (auto it = this->_playingAnimations.begin(); it != this->_playingAnimations.end();) {
-				float timeToAdd = rawrbox::DELTA_TIME * it->speed * it->data->ticksPerSecond;
-				float newTime = it->time + timeToAdd;
-				float totalDur = it->data->duration;
+				float timeToAdd = rawrbox::DELTA_TIME * it->second.speed * it->second.data->ticksPerSecond;
+				float newTime = it->second.time + timeToAdd;
+				float totalDur = it->second.data->duration;
 
 				// Check if the animation has reached the end or the beginning (for negative speed)
-				bool animationEnded = (it->speed >= 0 && newTime >= totalDur) || (it->speed < 0 && newTime <= 0);
+				bool animationEnded = (it->second.speed >= 0 && newTime >= totalDur) || (it->second.speed < 0 && newTime <= 0);
 
 				if (animationEnded) {
-					if (it->loop) {
+					if (it->second.loop) {
 						// If looping, wrap the time around
 						newTime = std::fmod(newTime, totalDur);
 						if (newTime < 0) newTime += totalDur;
 					} else {
 						// If not looping, clamp the time to the duration or 0
-						newTime = it->speed >= 0 ? totalDur : 0;
+						newTime = it->second.speed >= 0 ? totalDur : 0;
 					}
 
-					this->onAnimationComplete(it->name);
+					this->onAnimationComplete(it->second.name);
 
-					if (!it->loop) {
+					if (!it->second.loop) {
+						if (it->second.onComplete != nullptr) it->second.onComplete();
 						it = this->_playingAnimations.erase(it);
 						continue;
 					}
 				}
 
-				it->time = newTime;
+				it->second.time = newTime;
 				++it;
 			}
 		}
@@ -284,30 +287,38 @@ namespace rawrbox {
 			throw this->_logger->error("TODO");
 		}
 
-		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F) {
+		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F, bool forceSingle = false, std::function<void()> onComplete = nullptr) {
 			auto iter = this->_animations.find(name);
 			if (iter == this->_animations.end()) {
 				throw this->_logger->error("Animation '{}' not found", fmt::format(fmt::fg(fmt::color::coral), name));
 			}
 
+			auto fnd = this->_playingAnimations.find(name);
+			if (fnd != this->_playingAnimations.end()) return false;
+
 			// Add it
-			this->_playingAnimations.emplace_back(name,
+			if (forceSingle) this->stopAllAnimations();
+			this->_playingAnimations[name] = {
+			    name,
 			    loop,
 			    speed,
 			    0.0F,
-			    iter->second);
+			    iter->second,
+			    onComplete};
 
 			return true;
 		}
 
-		virtual bool stopAnimation(const std::string& name) {
-			for (size_t i = 0; i < this->_playingAnimations.size(); i++) {
-				if (this->_playingAnimations[i].name != name) continue;
-				this->_playingAnimations.erase(this->_playingAnimations.begin() + i);
-				return true;
-			}
+		virtual void stopAllAnimations() {
+			this->_playingAnimations.clear();
+		}
 
-			return false;
+		virtual bool stopAnimation(const std::string& name) {
+			auto fnd = this->_playingAnimations.find(name);
+			if (fnd == this->_playingAnimations.end()) return false;
+
+			this->_playingAnimations.erase(fnd);
+			return true;
 		}
 
 		virtual bool hasAnimation(const std::string& name) {
@@ -315,7 +326,7 @@ namespace rawrbox {
 		}
 
 		virtual bool isAnimationPlaying(const std::string& name) {
-			return std::find_if(this->_playingAnimations.begin(), this->_playingAnimations.end(), [&name](const rawrbox::PlayingAnimationData& anim) { return anim.name == name; }) != this->_playingAnimations.end();
+			return this->_playingAnimations.find(name) != this->_playingAnimations.end();
 		}
 		// --------------
 

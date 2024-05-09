@@ -25,7 +25,6 @@ namespace phys_3d_test {
 		rawrbox::TextureBase* _texture = nullptr;
 		rawrbox::TIMER* _timer = nullptr;
 
-		bool _paused = true;
 		bool _debug = true;
 		bool _ready = false;
 
