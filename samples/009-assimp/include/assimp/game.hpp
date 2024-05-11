@@ -21,6 +21,7 @@ namespace assimp {
 		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinned>> _model6 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialSkinned>>();
 
 		std::unique_ptr<rawrbox::AssimpModel<>> _model7 = std::make_unique<rawrbox::AssimpModel<>>();
+		std::unique_ptr<rawrbox::AssimpModel<rawrbox::MaterialSkinned>> _model8 = std::make_unique<rawrbox::AssimpModel<rawrbox::MaterialSkinned>>();
 
 		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Text3D<>> _text = std::make_unique<rawrbox::Text3D<>>();
@@ -33,6 +34,8 @@ namespace assimp {
 		void pollEvents() override;
 		void update() override;
 		void draw() override;
+
+		void testANIM();
 
 	public:
 		Game() = default;

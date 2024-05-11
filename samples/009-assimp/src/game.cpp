@@ -62,6 +62,7 @@ namespace assimp {
 		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
 		    {"./assets/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES},
 		    {"./assets/models/ps1_phasmophobia/Phasmaphobia_Semi.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT},
+		    {"./assets/models/anim_test.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS},
 		    {"./assets/models/wolf/wolfman_animated.fbx", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_METADATA | rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS},
 		    {"./assets/models/multiple_skeleton/twocubestest.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE},
 		    {"./assets/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS}};
@@ -69,6 +70,17 @@ namespace assimp {
 		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
 			rawrbox::runOnRenderThread([this]() {
 				this->contentLoaded();
+			});
+		});
+	}
+
+	void Game::testANIM() {
+		this->_model8->playAnimation("TEST.UP", false, 1.F, true, [this]() {
+			this->_model8->playAnimation("TEST.LEFT", false, 1.F, true, [this]() {
+				this->_model8->playAnimation("TEST.BACK", false, 1.F, true, [this]() {
+					fmt::print("loop anim test \n");
+					this->testANIM();
+				});
 			});
 		});
 	}
@@ -99,28 +111,36 @@ namespace assimp {
 		this->_model4->setPos({-1, 0, 0});
 		this->_model4->upload();
 
-		auto* mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/multiple_skeleton/twocubestest.gltf")->get();
-		this->_model5->load(*mdl4);
+		auto* mdl3 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/multiple_skeleton/twocubestest.gltf")->get();
+		this->_model5->load(*mdl3);
 		this->_model5->playAnimation("MewAction", true, 0.8F);
 		this->_model5->playAnimation("MewAction.001", true, 0.5F);
 		this->_model5->setPos({0, 0, 2.5F});
 		this->_model5->setScale({0.25F, 0.25F, 0.25F});
 		this->_model5->upload();
 
-		auto* mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/grandma_tv/scene.gltf")->get();
-		this->_model6->load(*mdl5);
+		auto* mdl4 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/grandma_tv/scene.gltf")->get();
+		this->_model6->load(*mdl4);
 		this->_model6->playAnimation("Scene", true, 1.F);
 		this->_model6->setPos({-1, 0, -3.5F});
 		this->_model6->setScale({0.35F, 0.35F, 0.35F});
 		this->_model6->setEulerAngle({0, rawrbox::MathUtils::toRad(180.F), 0});
 		this->_model6->upload();
 
-		auto* mdl6 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/shape_keys/shape_keys.glb")->get();
-		this->_model7->load(*mdl6);
+		auto* mdl5 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/shape_keys/shape_keys.glb")->get();
+		this->_model7->load(*mdl5);
 		this->_model7->setScale({0.4F, 0.4F, 0.4F});
 		this->_model7->setPos({1.F, 0.4F, -3.5F});
 		this->_model7->upload(rawrbox::UploadType::FIXED_DYNAMIC);
 		//    -----
+
+		// ANIM TEST ---
+		auto* mdl6 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/anim_test.glb")->get();
+
+		this->_model8->setPos({7, 1.1F, 2.F});
+		this->_model8->load(*mdl6);
+		this->_model8->upload();
+		// ---------
 
 		// Text test ----
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TEXTURES + LIGHT", {-6.F, 3.0F, 0});
@@ -143,6 +163,10 @@ namespace assimp {
 		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{-1, 0.6F, -1.4F}, rawrbox::Colors::White() * 100, 1.6F);
 		// -----------
 
+		// ANIM TEST ---
+		this->testANIM();
+		// -------------
+
 		this->_ready = true;
 	}
 
@@ -157,6 +181,7 @@ namespace assimp {
 			this->_model5.reset();
 			this->_model6.reset();
 			this->_model7.reset();
+			this->_model8.reset();
 			this->_modelGrid.reset();
 
 			this->_text.reset();
@@ -192,6 +217,7 @@ namespace assimp {
 		this->_model7->draw();
 		//
 
+		this->_model8->draw();
 		this->_text->draw();
 	}
 

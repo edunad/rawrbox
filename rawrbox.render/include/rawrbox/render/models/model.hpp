@@ -77,7 +77,6 @@ namespace rawrbox {
 
 		void readAnims(rawrbox::Matrix4x4& nodeTransform, const std::string& nodeName) const {
 			for (auto& playingAnim : this->_playingAnimations) {
-
 				auto& anim = playingAnim.second;
 				auto animChannel = std::find_if(anim.data->frames.begin(), anim.data->frames.end(), [&](AnimationFrame& x) {
 					return x.nodeName == nodeName;
@@ -139,23 +138,17 @@ namespace rawrbox {
 
 				if (animationEnded) {
 					if (it->second.loop) {
-						// If looping, wrap the time around
 						newTime = std::fmod(newTime, totalDur);
-						if (newTime < 0) newTime += totalDur;
+						if (newTime <= 0) newTime += totalDur;
 					} else {
-						// If not looping, clamp the time to the duration or 0
-						newTime = it->second.speed >= 0 ? totalDur : 0;
-					}
-
-					this->onAnimationComplete(it->second.name);
-
-					if (!it->second.loop) {
 						auto onCompleteCallback = it->second.onComplete;
 						it = this->_playingAnimations.erase(it);
 
 						if (onCompleteCallback != nullptr) onCompleteCallback();
 						continue;
 					}
+
+					this->onAnimationComplete(it->second.name);
 				}
 
 				it->second.time = newTime;
