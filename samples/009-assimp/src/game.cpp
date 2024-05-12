@@ -76,7 +76,7 @@ namespace assimp {
 
 	void Game::testANIM() {
 		this->_model8->playAnimation("TEST.UP", false, 1.F, true, [this]() {
-			this->_model8->playAnimation("TEST.LEFT", false, 1.F, true, [this]() {
+			this->_model8->playAnimation("TEST.LEFT", false, -1.F, true, [this]() {
 				this->_model8->playAnimation("TEST.BACK", false, 1.F, true, [this]() {
 					fmt::print("loop anim test \n");
 					this->testANIM();
@@ -104,7 +104,6 @@ namespace assimp {
 		this->_model3->playAnimation("Scene", true, 1.F);
 		this->_model3->setPos({1, 0, 0});
 		this->_model3->upload();
-		this->_model3->onAnimationComplete += [](std::string anim) { fmt::print("Anim '{}' completed\n", anim); };
 
 		this->_model4->load(*mdl2);
 		this->_model4->playAnimation("Scene", true, -1.F);
@@ -115,7 +114,7 @@ namespace assimp {
 		this->_model5->load(*mdl3);
 		this->_model5->playAnimation("MewAction", true, 0.8F);
 		this->_model5->playAnimation("MewAction.001", true, 0.5F);
-		this->_model5->setPos({0, 0, 2.5F});
+		this->_model5->setPos({-2.F, 0, 2.5F});
 		this->_model5->setScale({0.25F, 0.25F, 0.25F});
 		this->_model5->upload();
 
@@ -136,8 +135,8 @@ namespace assimp {
 
 		// ANIM TEST ---
 		auto* mdl6 = rawrbox::RESOURCES::getFile<rawrbox::ResourceAssimp>("./assets/models/anim_test.glb")->get();
-
-		this->_model8->setPos({7, 1.1F, 2.F});
+		this->_model8->setScale({0.25F, 0.25F, 0.25F});
+		this->_model8->setPos({2.F, 0.F, 2.5F});
 		this->_model8->load(*mdl6);
 		this->_model8->upload();
 		// ---------
@@ -146,9 +145,10 @@ namespace assimp {
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TEXTURES + LIGHT", {-6.F, 3.0F, 0});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TEXTURES", {6.F, 3.0F, 0});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
-		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TWO ARMATURES +\nTWO ANIMATIONS", {0.F, 1.F, 2.5F});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TWO ARMATURES +\nTWO ANIMATIONS", {-2.25F, 0.5F, 2.5F});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "VERTEX ANIMATIONS", {-1.F, 1.8F, -3.5F});
 		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "EMBEDDED TEXTURES +\nBLEND SHAPES", {1.F, 1.8F, -3.5F});
+		this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "ANIMATION EVENT", {1.5F, 1.F, 2.5F});
 		this->_text->upload();
 		// ------
 

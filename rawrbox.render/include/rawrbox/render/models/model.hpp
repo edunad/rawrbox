@@ -133,22 +133,19 @@ namespace rawrbox {
 				float newTime = it->second.time + timeToAdd;
 				float totalDur = it->second.data->duration;
 
-				// Check if the animation has reached the end or the beginning (for negative speed)
-				bool animationEnded = (it->second.speed >= 0 && newTime >= totalDur) || (it->second.speed < 0 && newTime <= 0);
-
+				bool animationEnded = it->second.speed >= 0 ? newTime >= totalDur : newTime <= 0;
 				if (animationEnded) {
-					if (it->second.loop) {
-						newTime = std::fmod(newTime, totalDur);
-						if (newTime <= 0) newTime += totalDur;
-					} else {
-						auto onCompleteCallback = it->second.onComplete;
-						it = this->_playingAnimations.erase(it);
+					auto onCompleteCallback = it->second.onComplete;
 
+					if (!it->second.loop) {
+						it = this->_playingAnimations.erase(it);
 						if (onCompleteCallback != nullptr) onCompleteCallback();
+
 						continue;
 					}
 
-					this->onAnimationComplete(it->second.name);
+					newTime = it->second.speed >= 0 ? 0 : totalDur;
+					if (onCompleteCallback != nullptr) onCompleteCallback();
 				}
 
 				it->second.time = newTime;
@@ -181,10 +178,6 @@ namespace rawrbox {
 		// --------------
 
 	public:
-		// ANIMATION ---
-		rawrbox::Event<std::string> onAnimationComplete = {};
-		// ------------
-
 		Model(size_t vertices = 0, size_t indices = 0) : rawrbox::ModelBase<M>(vertices, indices){};
 		Model(const Model&) = delete;
 		Model(Model&&) = delete;
@@ -297,7 +290,6 @@ namespace rawrbox {
 			    name,
 			    loop,
 			    speed,
-			    0.0F,
 			    iter->second,
 			    onComplete};
 

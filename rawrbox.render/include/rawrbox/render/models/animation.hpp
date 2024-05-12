@@ -42,6 +42,6 @@ namespace rawrbox {
 		std::function<void()> onComplete = nullptr;
 
 		PlayingAnimationData() = default;
-		PlayingAnimationData(std::string _name, bool _loop, float _speed, float _time, rawrbox::Animation& _data, std::function<void()> complete = nullptr) : name(std::move(_name)), loop(_loop), speed(_speed), time(_time), data(&_data), onComplete(std::move(complete)){};
+		PlayingAnimationData(std::string _name, bool _loop, float _speed, rawrbox::Animation& _data, std::function<void()> complete = nullptr) : name(std::move(_name)), loop(_loop), speed(_speed), time(_speed <= 0.F ? _data.duration : 0.F), data(&_data), onComplete(std::move(complete)){};
 	};
 } // namespace rawrbox
