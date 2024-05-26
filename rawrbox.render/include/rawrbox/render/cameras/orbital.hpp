@@ -1,7 +1,5 @@
 #pragma once
 
-#include <rawrbox/math/vector2.hpp>
-#include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/cameras/perspective.hpp>
 #include <rawrbox/render/window.hpp>
 #include <rawrbox/utils/keys.hpp>
@@ -11,12 +9,12 @@
 namespace rawrbox {
 
 	struct CameraControls {
-		int rotate = MOUSE_BUTTON_2;
+		int rotate = rawrbox::MOUSE_BUTTON_2;
 
-		int forward = KEY_W;
-		int backwards = KEY_S;
-		int left = KEY_A;
-		int right = KEY_D;
+		int forward = rawrbox::KEY_W;
+		int backwards = rawrbox::KEY_S;
+		int left = rawrbox::KEY_A;
+		int right = rawrbox::KEY_D;
 	};
 
 	class CameraOrbital : public rawrbox::CameraPerspective {

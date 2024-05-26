@@ -17,7 +17,7 @@ CPMDeclarePackage(magic_enum
 )
 # glaze
 CPMDeclarePackage(glaze
-  VERSION 2.6.1
+  VERSION 2.6.7
   GITHUB_REPOSITORY stephenberry/glaze
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -77,7 +77,7 @@ CPMDeclarePackage(cpptrace
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.625
+  GIT_TAG 0.626
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"
