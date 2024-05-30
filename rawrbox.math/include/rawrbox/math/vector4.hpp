@@ -106,6 +106,28 @@ namespace rawrbox {
 			return ret;
 		}
 
+		VecType slerp(const VecType& other, NumberType timestep) const
+			requires(!std::is_same_v<NumberType, uint16_t>)
+		{
+			VecType ret;
+
+			auto lerpSingleAngle = [](NumberType a, NumberType b, NumberType t) {
+				NumberType difference = std::fmod(b - a, TWO<NumberType> * rawrbox::pi<NumberType>);
+				if (difference > static_cast<NumberType>(rawrbox::pi<NumberType>))
+					difference -= 2.0F * static_cast<NumberType>(rawrbox::pi<NumberType>);
+				else if (difference < -static_cast<NumberType>(rawrbox::pi<NumberType>))
+					difference += 2.0F * static_cast<NumberType>(rawrbox::pi<NumberType>);
+				return a + difference * t;
+			};
+
+			ret.x = lerpSingleAngle(x, other.x, timestep);
+			ret.y = lerpSingleAngle(y, other.y, timestep);
+			ret.z = lerpSingleAngle(z, other.z, timestep);
+			ret.w = lerpSingleAngle(w, other.w, timestep);
+
+			return ret;
+		}
+
 		// FLOATING NUMBERS ----
 		[[nodiscard]] std::array<uint16_t, 4> pack() const
 			requires(std::is_same_v<NumberType, float>)

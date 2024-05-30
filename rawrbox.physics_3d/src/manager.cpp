@@ -18,6 +18,8 @@ namespace rawrbox {
 	std::unique_ptr<JPH::TempAllocatorImpl> PHYSICS::allocator = nullptr;
 	std::unique_ptr<JPH::PhysicsSystem> PHYSICS::physicsSystem = nullptr;
 
+	JPH::Ref<JPH::Shape> PHYSICS::rayBoxShape = nullptr;
+
 	rawrbox::Event<const JPH::BodyID&, uint64_t> PHYSICS::onBodyAwake;
 	rawrbox::Event<const JPH::BodyID&, uint64_t> PHYSICS::onBodySleep;
 
@@ -60,9 +62,15 @@ namespace rawrbox {
 		physicsSystem->Init(maxBodies, maxBodyMutexes, maxBodyPairs, maxContactConstraints, *_bpLayerInterface, *_bpLayerFilter, *_layerFilter);
 		physicsSystem->SetBodyActivationListener(_bodyListener.get());
 		physicsSystem->SetContactListener(_contactListener.get());
+
+		// Create raycast shape --
+		rayBoxShape = new JPH::BoxShape(JPH::Vec3(1, 1, 1) / 2.F);
+		// ------------------------
 	}
 
 	void PHYSICS::shutdown() {
+		rayBoxShape->Release();
+
 		JPH::UnregisterTypes();
 
 		_factory.reset();

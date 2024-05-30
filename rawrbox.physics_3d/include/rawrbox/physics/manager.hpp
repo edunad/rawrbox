@@ -96,6 +96,9 @@ namespace rawrbox {
 		// VARS ----
 		static std::unique_ptr<JPH::TempAllocatorImpl> allocator;
 		static std::unique_ptr<JPH::PhysicsSystem> physicsSystem;
+
+		static JPH::Ref<JPH::Shape> rayBoxShape;
+
 		static int steps;
 		static bool simulate;
 
