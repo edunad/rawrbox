@@ -56,13 +56,14 @@ TEST_CASE("Vector4 should behave as expected", "[rawrbox::Vector4]") {
 	}
 
 	SECTION("rawrbox::Vector4::slerp") {
-		rawrbox::Vector4f o = rawrbox::Vector4f{1.F, 1.F, 0.F, 10.F};
-		auto n = q.lerp(o, 0.5F);
+		rawrbox::Vector4f start = rawrbox::Vector4f{1.F, 0.F, 0.F, 0.F};
+		rawrbox::Vector4f end = rawrbox::Vector4f{0.F, 1.F, 0.F, 0.F};
+		auto n = start.slerp(end, 0.5F);
 
-		REQUIRE_THAT(n.x, Catch::Matchers::WithinAbs(2.0F, 0.0001F));
-		REQUIRE_THAT(n.y, Catch::Matchers::WithinAbs(1.0F, 0.0001F));
-		REQUIRE_THAT(n.z, Catch::Matchers::WithinAbs(3.5F, 0.0001F));
-		REQUIRE_THAT(n.w, Catch::Matchers::WithinAbs(10.F, 0.0001F));
+		REQUIRE_THAT(n.x, Catch::Matchers::WithinAbs(0.5F, 0.0001F));
+		REQUIRE_THAT(n.y, Catch::Matchers::WithinAbs(0.5F, 0.0001F));
+		REQUIRE_THAT(n.z, Catch::Matchers::WithinAbs(0.F, 0.0001F));
+		REQUIRE_THAT(n.w, Catch::Matchers::WithinAbs(0.F, 0.0001F));
 	}
 
 	SECTION("rawrbox::Vector4::toEuler") {

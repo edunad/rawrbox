@@ -64,8 +64,10 @@ namespace rawrbox {
 		physicsSystem->SetContactListener(_contactListener.get());
 
 		// Create raycast shape --
+		// NOLINTBEGIN(*)
 		rayBoxShape = new JPH::BoxShape(JPH::Vec3(1, 1, 1) / 2.F);
-		// ------------------------
+		// NOLINTEND(*)
+		//  ------------------------
 	}
 
 	void PHYSICS::shutdown() {
