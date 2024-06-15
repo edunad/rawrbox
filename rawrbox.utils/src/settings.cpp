@@ -26,7 +26,7 @@ namespace rawrbox {
 		std::ofstream out(fileName);
 		if (!out.is_open()) throw this->_logger->error("Failed to save settings '{}'", fileName);
 
-		out << glz::write<glz::opts{.prettify = true}>(this->_settings);
+		out << glz::write<glz::opts{.prettify = true}>(this->_settings)->c_str();
 		out.close();
 	}
 
@@ -56,19 +56,17 @@ namespace rawrbox {
 				}
 
 				rawrbox::JSONUtils::patch(this->_settings, fixedDiff);
-				this->_settings["VERSION"] = this->getVersion(); // For settings version comparison
-				this->save();
+				this->_logger->warn("Settings migrated!");
 			} else {
 				this->_logger->warn("Missing version, cannot migrate! Adding current version, some things might be broken!");
-				this->_settings["VERSION"] = this->getVersion(); // For settings version comparison
 			}
 
 		} else {
 			this->_settings = this->getDefaults();
-			this->_settings["VERSION"] = this->getVersion(); // For settings version comparison
-
-			this->save();
 		}
+
+		this->_settings["VERSION"] = this->getVersion(); // For settings version comparison
+		this->save();
 	}
 
 	glz::json_t& Settings::getSettings() {

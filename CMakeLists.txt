@@ -155,10 +155,10 @@ if(magic_enum_ADDED)
 endif()
 
 if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
-    CPMAddPackage("gl:wayland/weston@12.0.3")
+    CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@13.0.3")
 endif()
 
-CPMAddPackage("gh:stephenberry/glaze@2.6.9")
+CPMAddPackage("gh:stephenberry/glaze@2.9.0")
 
 # ---
 if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)

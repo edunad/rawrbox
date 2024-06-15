@@ -246,7 +246,7 @@ namespace phys_3d_test {
 		if (!this->_ready) return;
 
 		auto* stencil = rawrbox::RENDERER->stencil();
-		stencil->drawText(fmt::format("[F1]   PAUSED: {}", rawrbox::PHYSICS::simulate), {15, 15});
+		stencil->drawText(fmt::format("[F1]   PAUSED: {}", !rawrbox::PHYSICS::simulate), {15, 15});
 		stencil->drawText(fmt::format("[F2]   DEBUG: {}", this->_debug), {15, 28});
 		stencil->drawText(fmt::format("[F3]   CLEAR"), {15, 48});
 

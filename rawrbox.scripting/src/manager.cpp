@@ -169,7 +169,7 @@ namespace rawrbox {
 		luabridge::getGlobalNamespace(L)
 		    .addFunction("printTable", [](const luabridge::LuaRef& ref) {
 			    auto json = rawrbox::LuaUtils::luaToJsonObject(ref);
-			    _logger->info("{}", glz::write<glz::opts{.prettify = true}>(json));
+			    _logger->info("{}", glz::write<glz::opts{.prettify = true}>(json)->c_str());
 		    })
 		    .addFunction("print", [](lua_State* state) {
 			    auto args = rawrbox::LuaUtils::argsToString(state);

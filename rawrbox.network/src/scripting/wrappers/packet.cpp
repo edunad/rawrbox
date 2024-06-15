@@ -27,7 +27,7 @@ namespace rawrbox {
 	void PacketWrapper::writeFloat(float val) { data.write(val); }
 	void PacketWrapper::writeDouble(double val) { data.write(val); }
 	void PacketWrapper::writeString(const std::string& val) { data.write(val); }
-	void PacketWrapper::writeTable(const luabridge::LuaRef& val) { data.write(glz::write<glz::opts{.prettify = true}>(rawrbox::LuaUtils::luaToJsonObject(val))); }
+	void PacketWrapper::writeTable(const luabridge::LuaRef& val) { data.write(glz::write<glz::opts{.prettify = true}>(rawrbox::LuaUtils::luaToJsonObject(val))->c_str()); }
 	// -------
 
 	// READ ----
