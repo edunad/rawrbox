@@ -22,12 +22,10 @@ namespace rawrbox {
 
 	void Settings::save() {
 		auto fileName = this->getFileName();
-
-		std::ofstream out(fileName);
-		if (!out.is_open()) throw this->_logger->error("Failed to save settings '{}'", fileName);
-
-		out << glz::write<glz::opts{.prettify = true}>(this->_settings)->c_str();
-		out.close();
+		auto ec = glz::write_file_json(this->_settings, fileName, std::string{});
+		if (ec) {
+			throw this->_logger->error("Failed to save settings '{}'", fileName);
+		}
 	}
 
 	void Settings::load(std::string data) {

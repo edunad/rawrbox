@@ -17,4 +17,10 @@ function testRawrbox()
     for i = 0, 15 do
         print(string.vformat("[{}] = {}", i, m[i]))
     end
+
+    print("Test printTable")
+    printTable({
+        aaa = 1,
+        test = "test",
+    })
 end
