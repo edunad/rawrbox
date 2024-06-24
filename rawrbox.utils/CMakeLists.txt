@@ -77,7 +77,7 @@ if(thread-pool_ADDED)
 endif()
 
 # DEPS ----
-CPMAddPackage("gh:jeremy-rifkin/cpptrace@0.6.1")
+CPMAddPackage("gh:jeremy-rifkin/cpptrace@0.6.2")
 if(cpptrace_ADDED)
   set_lib_runtime_mt(cpptrace-lib)
 endif()

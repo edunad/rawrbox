@@ -158,7 +158,7 @@ if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
     CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@13.0.3")
 endif()
 
-CPMAddPackage("gh:stephenberry/glaze@2.9.0")
+CPMAddPackage("gh:stephenberry/glaze@2.9.2")
 
 # ---
 if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)
@@ -172,7 +172,7 @@ if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)
         USE_CACHE
             OFF
         GIT_TAG
-            2.1.6
+            2.1.7
         OPTIONS
             #"ASM686 FALSE"
             #"AMD64 FALSE"

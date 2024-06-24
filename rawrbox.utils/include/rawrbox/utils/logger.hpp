@@ -45,6 +45,13 @@ namespace rawrbox {
 		}
 
 		template <typename... T>
+		void success(fmt::format_string<T...> fmt, T&&... args) {
+			auto str = fmt::format(fmt, std::forward<T>(args)...);
+			fmt::print("[{} ▒ {}]: {}", fmt::format(fmt::fg(fmt::color::lime_green), "SUCCESS"), fmt::format(fmt::fg(fmt::color::gold), this->_title), str);
+			if (this->_autoNewLine) fmt::print("\n");
+		}
+
+		template <typename... T>
 		static cpptrace::runtime_error err(const std::string& title, fmt::format_string<T...> fmt, T&&... args) {
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
 			return cpptrace::runtime_error(fmt::format("[{} █ {}]: {}", fmt::format(fmt::fg(fmt::color::red), "ERROR"), fmt::format(fmt::fg(fmt::color::gold), title), str));

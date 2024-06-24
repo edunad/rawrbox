@@ -22,10 +22,8 @@ namespace rawrbox {
 
 	void Settings::save() {
 		auto fileName = this->getFileName();
-		auto ec = glz::write_file_json(this->_settings, fileName, std::string{});
-		if (ec) {
-			throw this->_logger->error("Failed to save settings '{}'", fileName);
-		}
+		auto ec = glz::write_file_json<glz::opts{.prettify = true}>(this->_settings, fileName, std::string{});
+		if (ec) throw this->_logger->error("Failed to save settings '{}'", fileName);
 	}
 
 	void Settings::load(std::string data) {
