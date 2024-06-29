@@ -168,8 +168,12 @@ namespace rawrbox {
 		// OVERRIDES ----
 		luabridge::getGlobalNamespace(L)
 		    .addFunction("printTable", [](const luabridge::LuaRef& ref) {
-			    auto json = rawrbox::LuaUtils::luaToJsonObject(ref);
-			    _logger->info("{}", glz::write<glz::opts{.prettify = true}>(json)->c_str());
+			    std::string output;
+
+			    glz::error_ctx ec = glz::write<glz::opts{.prettify = true}>(rawrbox::LuaUtils::luaToJsonObject(ref), output);
+			    if (ec) throw std::runtime_error(fmt::format("Failed to printTable"));
+
+			    _logger->info("{}", output);
 		    })
 		    .addFunction("print", [](lua_State* state) {
 			    auto args = rawrbox::LuaUtils::argsToString(state);
