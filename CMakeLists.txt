@@ -149,7 +149,7 @@ if(fmt_ADDED)
     set_lib_runtime_mt(fmt)
 endif()
 
-CPMAddPackage("gh:Neargye/magic_enum@0.9.5")
+CPMAddPackage("gh:Neargye/magic_enum@0.9.6")
 if(magic_enum_ADDED)
     set_lib_runtime_mt(magic_enum)
 endif()
