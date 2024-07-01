@@ -35,7 +35,7 @@ namespace rawrbox {
 	}
 
 	void I18N::loadLanguagePack(const std::string& id, const std::string& path) {
-		_logger->info("Loading i18n for id {}", fmt::format(fmt::fg(fmt::color::coral), id));
+		_logger->info("Loading i18n for id {}", fmt::styled(id, fmt::fg(fmt::color::coral)));
 
 		for (const auto& p : std::filesystem::directory_iterator(path)) {
 			if (p.is_directory()) continue;

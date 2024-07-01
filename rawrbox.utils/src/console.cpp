@@ -1,6 +1,8 @@
 #include <rawrbox/utils/console.hpp>
 #include <rawrbox/utils/string.hpp>
 
+#include <fmt/ranges.h>
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>

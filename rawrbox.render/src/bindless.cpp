@@ -234,7 +234,7 @@ namespace rawrbox {
 		auto* pDepthSRV = texture.getDepth(); // Get depth
 		if (pDepthSRV != nullptr) {
 			auto id = internalRegister(pDepthSRV, rawrbox::TEXTURE_TYPE::PIXEL);
-			_logger->info("Registering {} bindless texture '{}' on slot '{}'", fmt::format(fmt::fg(fmt::color::red), "DEPTH"), fmt::format(fmt::fg(fmt::color::violet), texture.getName()), fmt::format(fmt::fg(fmt::color::violet), std::to_string(id)));
+			_logger->info("Registering {} bindless texture '{}' on slot '{}'", fmt::styled("DEPTH", fmt::fg(fmt::color::red)), fmt::styled(texture.getName(), fmt::fg(fmt::color::violet)), fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
 
 			// Register depth
 			texture.setDepthTextureID(id);
@@ -253,7 +253,7 @@ namespace rawrbox {
 		if (pTextureSRV == nullptr) throw _logger->error("Failed to register texture '{}'! Texture view is null, not uploaded?", texture.getName());
 
 		auto id = internalRegister(pTextureSRV, texture.getType());
-		_logger->info("Registering bindless {} texture '{}' on slot '{}'", texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX ? "vertex" : "pixel", fmt::format(fmt::fg(fmt::color::violet), texture.getName()), fmt::format(fmt::fg(fmt::color::violet), std::to_string(id)));
+		_logger->info("Registering bindless {} texture '{}' on slot '{}'", texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX ? "vertex" : "pixel", fmt::styled(texture.getName(), fmt::fg(fmt::color::violet)), fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
 
 		// ----
 		registerUpdateTexture(texture);
@@ -284,7 +284,7 @@ namespace rawrbox {
 		if (depthId != 0) handler[depthId] = nullptr;
 		// --------------------
 
-		_logger->info("Un-registering bindless {} texture slot '{}'", isVertex ? "vertex" : "pixel", fmt::format(fmt::fg(fmt::color::violet), std::to_string(id)));
+		_logger->info("Un-registering bindless {} texture slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
 
 		// Update signature ---
 		if (signatureBind != nullptr) {
@@ -315,7 +315,7 @@ namespace rawrbox {
 		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;
 
 		int size = static_cast<int>(handler.size());
-		if (size == static_cast<int>(max / 1.2F)) _logger->warn("Aproaching max texture limit of {}", fmt::format(fmt::fg(fmt::color::red), std::to_string(max)));
+		if (size == static_cast<int>(max / 1.2F)) _logger->warn("Aproaching max texture limit of {}", fmt::styled(std::to_string(max), fmt::fg(fmt::color::red)));
 		if (size >= static_cast<int>(max)) throw _logger->error("Max texture limit reached! Cannot allocate texture, remove some unecessary textures or increase max textures on renderer");
 
 		int id = -1;

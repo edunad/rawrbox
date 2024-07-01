@@ -33,6 +33,8 @@
 #include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/threading.hpp>
 
+#include <fmt/ranges.h>
+
 #include <utility>
 
 namespace rawrbox {
@@ -199,7 +201,7 @@ namespace rawrbox {
 			auto dirs = rawrbox::PathUtils::glob(rootDir, true);
 			auto paths = fmt::format("{}", fmt::join(dirs, ";"));
 
-			this->_logger->info("Initializing shader factory (using {}):", fmt::format(fmt::fg(fmt::color::coral), rootDir));
+			this->_logger->info("Initializing shader factory (using {}):", fmt::styled(rootDir, fmt::fg(fmt::color::coral)));
 			for (const auto& dir : dirs) {
 				this->_logger->info("\t{}", dir);
 			}
@@ -233,7 +235,7 @@ namespace rawrbox {
 		// Init plugins ---
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr) continue;
-			this->_logger->info("Initializing '{}' renderer plugin", fmt::format(fmt::fg(fmt::color::coral), plugin.first));
+			this->_logger->info("Initializing '{}' renderer plugin", fmt::styled(plugin.first, fmt::fg(fmt::color::coral)));
 			plugin.second->initialize(this->getSize());
 		}
 		// -----------------------
@@ -295,7 +297,7 @@ namespace rawrbox {
 		// Upload plugins ---
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr) continue;
-			this->_logger->info("Uploading '{}' renderer plugin", fmt::format(fmt::fg(fmt::color::coral), plugin.first));
+			this->_logger->info("Uploading '{}' renderer plugin", fmt::styled(plugin.first, fmt::fg(fmt::color::coral)));
 			plugin.second->upload();
 		}
 		// -----------------------
@@ -601,7 +603,7 @@ namespace rawrbox {
 			pipelineHelper = helper.get();
 			this->_query[pipeName] = std::move(helper);
 
-			this->_logger->info("Created query '{}' -> QUERY_TYPE_PIPELINE_STATISTICS", fmt::format(fmt::fg(fmt::color::blue_violet), query));
+			this->_logger->info("Created query '{}' -> QUERY_TYPE_PIPELINE_STATISTICS", fmt::styled(query, fmt::fg(fmt::color::blue_violet)));
 		} else {
 			pipelineHelper = fndPipeline->second.get();
 		}
@@ -620,7 +622,7 @@ namespace rawrbox {
 			durationHelper = helper.get();
 			this->_query[durationName] = std::move(helper);
 
-			this->_logger->info("Created query '{}' -> QUERY_TYPE_DURATION", fmt::format(fmt::fg(fmt::color::blue_violet), query));
+			this->_logger->info("Created query '{}' -> QUERY_TYPE_DURATION", fmt::styled(query, fmt::fg(fmt::color::blue_violet)));
 		} else {
 			durationHelper = fndDuration->second.get();
 		}

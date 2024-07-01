@@ -12,7 +12,7 @@ namespace rawrbox {
 		const std::string id = "Particle::Unlit";
 
 		if (!rawrbox::MaterialParticle::_built) {
-			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), id));
+			this->_logger->info("Building {} material..", fmt::styled(id, fmt::fg(fmt::color::azure)));
 
 			this->createPipelines(id, {});
 			rawrbox::MaterialParticle::_built = true;

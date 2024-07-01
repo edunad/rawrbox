@@ -10,7 +10,7 @@ namespace rawrbox {
 
 	void WEBM::preloadVideo() {
 		std::lock_guard<std::mutex> lock(RENDER_THREAD_LOCK);
-		this->_logger->info("Pre-loading video '{}'", fmt::format(fmt::fg(fmt::color::light_coral), this->_filePath.generic_string()));
+		this->_logger->info("Pre-loading video '{}'", fmt::styled(this->_filePath.generic_string(), fmt::fg(fmt::color::light_coral)));
 
 		while (this->advance()) {
 			auto frame = this->getFrame();

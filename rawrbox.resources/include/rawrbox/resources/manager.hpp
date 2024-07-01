@@ -148,7 +148,7 @@ namespace rawrbox {
 			for (const auto& file : files) {
 				rawrbox::ASYNC::run([file, &complete]() {
 					loadFileImpl<T>(file.first, file.second);
-					_logger->info("Loaded '{}'", fmt::format(fmt::fg(fmt::color::coral), file.first));
+					_logger->info("Loaded '{}'", fmt::styled(file.first, fmt::fg(fmt::color::coral)));
 
 					complete();
 				});
@@ -209,7 +209,7 @@ namespace rawrbox {
 						loadFile(file.first, file.second);
 						if (endLoad != nullptr) endLoad(file.first.generic_string(), file.second);
 
-						_logger->info("Loaded '{}'", fmt::format(fmt::fg(fmt::color::coral), file.first.generic_string()));
+						_logger->info("Loaded '{}'", fmt::styled(file.first.generic_string(), fmt::fg(fmt::color::coral)));
 						complete();
 					});
 				}

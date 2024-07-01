@@ -3,7 +3,7 @@
 
 # fmt
 CPMDeclarePackage(fmt
-  GIT_TAG 10.2.1
+  GIT_TAG 11.0.0
   GITHUB_REPOSITORY fmtlib/fmt
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -17,7 +17,7 @@ CPMDeclarePackage(magic_enum
 )
 # glaze
 CPMDeclarePackage(glaze
-  VERSION 2.9.2
+  VERSION 2.9.3
   GITHUB_REPOSITORY stephenberry/glaze
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -77,7 +77,7 @@ CPMDeclarePackage(cpptrace
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.631
+  GIT_TAG 0.632
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"

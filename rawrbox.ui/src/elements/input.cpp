@@ -7,6 +7,7 @@
 #include <rawrbox/utils/string.hpp>
 
 #include <clip.h>
+#include <fmt/ranges.h>
 
 namespace rawrbox {
 	// INTERNAL ---

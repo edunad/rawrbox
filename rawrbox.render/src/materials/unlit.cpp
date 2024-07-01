@@ -12,7 +12,7 @@ namespace rawrbox {
 		const std::string id = "Model::Unlit";
 
 		if (!rawrbox::MaterialUnlit::_built) {
-			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), id));
+			this->_logger->info("Building {} material..", fmt::styled(id, fmt::fg(fmt::color::azure)));
 
 			this->createPipelines(id, vertexBufferType::vLayout());
 			rawrbox::MaterialUnlit::_built = true;

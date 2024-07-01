@@ -20,41 +20,45 @@ namespace rawrbox {
 		template <typename... T>
 		void warn(fmt::format_string<T...> fmt, T&&... args) {
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			fmt::print("[{} ▓ {}]: {}", fmt::format(fmt::fg(fmt::color::yellow), "WARN"), fmt::format(fmt::fg(fmt::color::gold), this->_title), fmt::format(fmt::fg(fmt::color::yellow), str));
+
+			fmt::print("[{} ▓ {}]: {}", fmt::styled("WARN", fmt::fg(fmt::color::yellow)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), fmt::styled(str, fmt::fg(fmt::color::yellow)));
 			if (this->_autoNewLine) fmt::print("\n");
 		}
 
 		template <typename... T>
 		cpptrace::runtime_error error(fmt::format_string<T...> fmt, T&&... args) {
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			return cpptrace::runtime_error(fmt::format("[{} █ {}]: {}", fmt::format(fmt::fg(fmt::color::red), "ERROR"), fmt::format(fmt::fg(fmt::color::gold), this->_title), str));
+			return cpptrace::runtime_error(fmt::format("[{} ▓ {}]: {}", fmt::styled("ERROR", fmt::fg(fmt::color::red)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), str));
 		}
 
 		template <typename... T>
 		void printError(fmt::format_string<T...> fmt, T&&... args) {
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			fmt::print("[{} █ {}]: {}", fmt::format(fmt::fg(fmt::color::red), "ERROR"), fmt::format(fmt::fg(fmt::color::gold), this->_title), str);
+
+			fmt::print("[{} ▓ {}]: {}", fmt::styled("ERROR", fmt::fg(fmt::color::red)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), str);
 			if (this->_autoNewLine) fmt::print("\n");
 		}
 
 		template <typename... T>
 		void info(fmt::format_string<T...> fmt, T&&... args) {
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			fmt::print("[{} ▒ {}]: {}", fmt::format(fmt::fg(fmt::color::alice_blue), "INFO"), fmt::format(fmt::fg(fmt::color::gold), this->_title), str);
+
+			fmt::print("[{} ▓ {}]: {}", fmt::styled("INFO", fmt::fg(fmt::color::alice_blue)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), str);
 			if (this->_autoNewLine) fmt::print("\n");
 		}
 
 		template <typename... T>
 		void success(fmt::format_string<T...> fmt, T&&... args) {
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			fmt::print("[{} ▒ {}]: {}", fmt::format(fmt::fg(fmt::color::lime_green), "SUCCESS"), fmt::format(fmt::fg(fmt::color::gold), this->_title), str);
+
+			fmt::print("[{} ▓ {}]: {}", fmt::styled("SUCCESS", fmt::fg(fmt::color::lime_green)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), str);
 			if (this->_autoNewLine) fmt::print("\n");
 		}
 
 		template <typename... T>
 		static cpptrace::runtime_error err(const std::string& title, fmt::format_string<T...> fmt, T&&... args) {
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			return cpptrace::runtime_error(fmt::format("[{} █ {}]: {}", fmt::format(fmt::fg(fmt::color::red), "ERROR"), fmt::format(fmt::fg(fmt::color::gold), title), str));
+			return cpptrace::runtime_error(fmt::format("[{} ▓ {}]: {}", fmt::styled("ERROR", fmt::fg(fmt::color::red)), fmt::styled(title, fmt::fg(fmt::color::gold)), str));
 		}
 	};
 } // namespace rawrbox

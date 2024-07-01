@@ -156,7 +156,7 @@ namespace rawrbox {
 
 				constexpr auto assimp_mat = magic_enum::enum_entries<aiTextureType>();
 
-				this->_logger->info("Material: {}", fmt::format(fmt::fg(fmt::color::cyan), pMaterial->GetName().C_Str()));
+				this->_logger->info("Material: {}", fmt::styled(pMaterial->GetName().C_Str(), fmt::fg(fmt::color::cyan)));
 				for (const auto& m : assimp_mat)
 					dump(pMaterial, m.first);
 			}
@@ -273,7 +273,7 @@ namespace rawrbox {
 						}
 					};
 
-					this->_logger->info("'{}' BONES", fmt::format(fmt::fg(fmt::color::cyan), this->fileName.generic_string()));
+					this->_logger->info("'{}' BONES", fmt::styled(this->fileName.generic_string(), fmt::fg(fmt::color::cyan)));
 					printBone(armature->rootBone, 0);
 				}
 				// -------------
@@ -401,7 +401,7 @@ namespace rawrbox {
 			if (animName.empty()) animName = fmt::format("anim_{}", i);
 
 			if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS) > 0) {
-				this->_logger->info("Found animation '{}'", fmt::format(fmt::fg(fmt::color::green_yellow), animName));
+				this->_logger->info("Found animation '{}'", fmt::styled(animName, fmt::fg(fmt::color::green_yellow)));
 			}
 
 			auto spl = rawrbox::StrUtils::split(animName, '|');
@@ -675,7 +675,7 @@ namespace rawrbox {
 		// Parse metadata
 		if (onMetadata != nullptr) onMetadata(scene->mMetaData); // Allow metadata to be parsed outside, used on vrm for example
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_METADATA) > 0) {
-			this->_logger->info("'{}' METADATA", fmt::format(fmt::fg(fmt::color::cyan), this->fileName.generic_string()));
+			this->_logger->info("'{}' METADATA", fmt::styled(this->fileName.generic_string(), fmt::fg(fmt::color::cyan)));
 
 			std::function<void(aiMetadata*)> printMetaData;
 			printMetaData = [&printMetaData](aiMetadata* meta) -> void {
@@ -743,7 +743,7 @@ namespace rawrbox {
 
 		// Parse metadata
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES) > 0) {
-			this->_logger->info("'{}' BLEND SHAPES", fmt::format(fmt::fg(fmt::color::cyan), this->fileName.generic_string()));
+			this->_logger->info("'{}' BLEND SHAPES", fmt::styled(this->fileName.generic_string(), fmt::fg(fmt::color::cyan)));
 
 			std::string old;
 			for (auto& s : this->blendShapes) {

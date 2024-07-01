@@ -10,7 +10,7 @@ namespace rawrbox {
 		const std::string id = "Model::Instanced";
 
 		if (!rawrbox::MaterialInstanced::_built) {
-			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), id));
+			this->_logger->info("Building {} material..", fmt::styled(id, fmt::fg(fmt::color::azure)));
 
 			Diligent::ShaderMacroHelper helper;
 			helper.Add("INSTANCED", true);

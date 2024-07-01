@@ -11,7 +11,7 @@ namespace rawrbox {
 		const std::string id = "Model::Lit";
 
 		if (!rawrbox::MaterialLit::_built) {
-			this->_logger->info("Building {} material..", fmt::format(fmt::fg(fmt::color::azure), id));
+			this->_logger->info("Building {} material..", fmt::styled(id, fmt::fg(fmt::color::azure)));
 
 			this->createPipelines(id, vertexBufferType::vLayout());
 			rawrbox::MaterialLit::_built = true;

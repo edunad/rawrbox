@@ -113,7 +113,7 @@ namespace rawrbox {
 		rawrbox::RENDERER->device()->CreateShader(ShaderCI, &shader, &output);
 
 		_logger->setAutoNewLine(false);
-		_logger->info("Shader '{}'", fmt::format(fmt::fg(fmt::color::coral), name));
+		_logger->info("Shader '{}'", fmt::styled(name, fmt::fg(fmt::color::coral)));
 		_logger->setAutoNewLine(true);
 
 		// auto compilerOutput = output == nullptr ? "" : std::string(static_cast<const char*>(output->GetConstDataPtr()), output->GetSize());
