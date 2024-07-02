@@ -1,6 +1,8 @@
 #include <rawrbox/utils/threading.hpp>
 
-#include <cpptrace/cpptrace.hpp>
+#ifdef RAWRBOX_TRACE_EXCEPTIONS
+	#include <cpptrace/cpptrace.hpp>
+#endif
 
 #include <fmt/format.h>
 
@@ -13,9 +15,9 @@ namespace rawrbox {
 	// -------------
 	// -------------
 
-	void ASYNC::init() {
+	void ASYNC::init(uint32_t threads) {
 		if (_pool != nullptr) throw _logger->error("ASYNC init already called!");
-		_pool = std::make_unique<BS::thread_pool>(5);
+		_pool = std::make_unique<BS::thread_pool>(threads);
 	}
 
 	void ASYNC::shutdown() {
@@ -29,11 +31,15 @@ namespace rawrbox {
 		if (_pool == nullptr) throw _logger->error("ASYNC not initialized!");
 		std::future<void> future = _pool->submit_task(job);
 
+#ifdef RAWRBOX_TRACE_EXCEPTIONS
 		try {
 			future.get();
 		} catch (const cpptrace::exception_with_message& e) {
 			throw _logger->error("Fatal error\n  └── {}", e.message());
 		}
+#else
+		future.get();
+#endif
 
 		return future;
 	}

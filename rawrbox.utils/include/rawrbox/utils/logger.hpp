@@ -1,6 +1,8 @@
 #pragma once
 
-#include <cpptrace/cpptrace.hpp>
+#ifdef RAWRBOX_TRACE_EXCEPTIONS
+	#include <cpptrace/cpptrace.hpp>
+#endif
 
 #include <fmt/color.h>
 #include <fmt/format.h>
@@ -25,11 +27,31 @@ namespace rawrbox {
 			if (this->_autoNewLine) fmt::print("\n");
 		}
 
+#ifdef RAWRBOX_TRACE_EXCEPTIONS
 		template <typename... T>
 		cpptrace::runtime_error error(fmt::format_string<T...> fmt, T&&... args) {
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
 			return cpptrace::runtime_error(fmt::format("[{} ▓ {}]: {}", fmt::styled("ERROR", fmt::fg(fmt::color::red)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), str));
 		}
+
+		template <typename... T>
+		static cpptrace::runtime_error err(const std::string& title, fmt::format_string<T...> fmt, T&&... args) {
+			auto str = fmt::format(fmt, std::forward<T>(args)...);
+			return cpptrace::runtime_error(fmt::format("[{} ▓ {}]: {}", fmt::styled("ERROR", fmt::fg(fmt::color::red)), fmt::styled(title, fmt::fg(fmt::color::gold)), str));
+		}
+#else
+		template <typename... T>
+		std::exception error(fmt::format_string<T...> fmt, T&&... args) {
+			auto str = fmt::format(fmt, std::forward<T>(args)...);
+			return std::runtime_error(fmt::format("[{} ▓ {}]: {}", fmt::styled("ERROR", fmt::fg(fmt::color::red)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), str));
+		}
+
+		template <typename... T>
+		static std::exception err(const std::string& title, fmt::format_string<T...> fmt, T&&... args) {
+			auto str = fmt::format(fmt, std::forward<T>(args)...);
+			return std::runtime_error(fmt::format("[{} ▓ {}]: {}", fmt::styled("ERROR", fmt::fg(fmt::color::red)), fmt::styled(title, fmt::fg(fmt::color::gold)), str));
+		}
+#endif
 
 		template <typename... T>
 		void printError(fmt::format_string<T...> fmt, T&&... args) {
@@ -53,12 +75,6 @@ namespace rawrbox {
 
 			fmt::print("[{} ▓ {}]: {}", fmt::styled("SUCCESS", fmt::fg(fmt::color::lime_green)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), str);
 			if (this->_autoNewLine) fmt::print("\n");
-		}
-
-		template <typename... T>
-		static cpptrace::runtime_error err(const std::string& title, fmt::format_string<T...> fmt, T&&... args) {
-			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			return cpptrace::runtime_error(fmt::format("[{} ▓ {}]: {}", fmt::styled("ERROR", fmt::fg(fmt::color::red)), fmt::styled(title, fmt::fg(fmt::color::gold)), str));
 		}
 	};
 } // namespace rawrbox

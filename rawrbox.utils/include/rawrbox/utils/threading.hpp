@@ -16,7 +16,7 @@ namespace rawrbox {
 		// -------------
 
 	public:
-		static void init();
+		static void init(uint32_t threads = 5);
 		static void shutdown();
 
 		static std::future<void> run(const std::function<void()>& job);

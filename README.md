@@ -137,6 +137,8 @@ This engine started as a C++ training project, with hopes of being applied in up
 | `RAWRBOX_DISABLE_SUPPORT_VULKAN`            | Disable vulkan support                                                                             |
 | --                                          | --                                                                                                 |
 | `RAWRBOX_DEV_MODE`                          | Enables all the modules, used for rawrbox development                                              |
+| --                                          | --                                                                                                 |
+| `RAWRBOX_TRACE_EXCEPTIONS`                  | Enables exception tracing                                                                          |
 
 <br/><br/>
 
