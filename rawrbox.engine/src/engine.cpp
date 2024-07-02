@@ -4,7 +4,9 @@
 #include <rawrbox/utils/threading.hpp>
 #include <rawrbox/utils/timer.hpp>
 
-#include <cpptrace/cpptrace.hpp>
+#ifdef RAWRBOX_TRACE_EXCEPTIONS
+	#include <cpptrace/cpptrace.hpp>
+#endif
 
 #include <fmt/format.h>
 
@@ -59,7 +61,7 @@ namespace rawrbox {
 
 		// Setup render threading
 		auto renderThread = std::jthread([this]() {
-#ifndef _DEBUG
+#ifdef RAWRBOX_TRACE_EXCEPTIONS
 			try {
 #endif
 				rawrbox::RENDER_THREAD_ID = std::this_thread::get_id();
@@ -115,7 +117,7 @@ namespace rawrbox {
 
 				this->onThreadShutdown(rawrbox::ENGINE_THREADS::THREAD_RENDER);
 				this->_shutdown = rawrbox::ENGINE_THREADS::THREAD_INPUT; // Done killing rendering, now destroy glfw
-#ifndef _DEBUG
+#ifdef RAWRBOX_TRACE_EXCEPTIONS
 			} catch (const cpptrace::exception_with_message& err) {
 				this->prettyPrintErr(err.message());
 
@@ -124,7 +126,7 @@ namespace rawrbox {
 			} catch (const std::exception& err) {
 				this->prettyPrintErr(err.what());
 
-				fmt::print("▒▒{}▒▒\n", fmt::format(fmt::bg(fmt::color::dark_red), fmt::format(fmt::fg(fmt::color::white), " If you are a developer, please use the logger error in RAWRBOX.UTILS for a better stack trace ")));
+				fmt::print("▒▒{}▒▒\n", fmt::styled(" If you are a developer, please use the logger error in RAWRBOX.UTILS for a better stack trace ", fmt::bg(fmt::color::dark_red) | fmt::fg(fmt::color::white)));
 				cpptrace::generate_trace().print();
 				throw err;
 			}

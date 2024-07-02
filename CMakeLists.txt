@@ -26,6 +26,7 @@ list(PREPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 # OPTIONS ---
 option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 
+# Build -----
 option(RAWRBOX_BUILD_TESTING "Build tests" OFF)
 option(RAWRBOX_BUILD_SAMPLES "Build samples" OFF)
 
@@ -42,13 +43,17 @@ option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE "Enable unsafe scripting (io / etc
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_EXCEPTION "Enables scripting throwing exceptions instead of catching them" OFF)
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" OFF)
 option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
+# ---------------
 
 # Supports -----
 option(RAWRBOX_DISABLE_SUPPORT_DX12   "Disable dx12 support" OFF)
 option(RAWRBOX_DISABLE_SUPPORT_VULKAN "Disable vulkan support" OFF)
 # ---------------
 
+# Other -----
 option(RAWRBOX_DEV_MODE "Builds all modules, used for developing rawrbox" OFF)
+option(RAWRBOX_TRACE_EXCEPTIONS "Enables exception tracing" ON)
+# ---------------
 # -----
 
 # Uncomment for package.lock generation

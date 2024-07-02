@@ -6,6 +6,7 @@
 #include <rawrbox/utils/logger.hpp>
 
 #include <cmath>
+#include <memory>
 #include <vector>
 
 namespace rawrbox {
