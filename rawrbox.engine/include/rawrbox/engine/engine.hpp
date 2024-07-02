@@ -4,6 +4,7 @@
 #include <rawrbox/utils/logger.hpp>
 
 #include <atomic>
+#include <memory>
 
 namespace rawrbox {
 	enum class ENGINE_THREADS {
