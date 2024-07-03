@@ -58,8 +58,9 @@ namespace rawrbox {
 			requires(std::derived_from<T, rawrbox::ScriptingPlugin>)
 		static void registerPlugin(CallbackArgs&&... args) {
 			auto plugin = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
+			auto split = rawrbox::StrUtils::split(typeid(T).name(), "::");
 
-			_logger->info("Registered lua plugin '{}'", rawrbox::StrUtils::replace(typeid(T).name(), "class rawrbox::", ""));
+			_logger->info("Registered lua plugin '{}'", split.front());
 			_plugins.push_back(std::move(plugin));
 		}
 		// -----

@@ -27,13 +27,18 @@ TEST_CASE("StrUtils should behave as expected", "[rawrbox::StrUtils]") {
 	}
 
 	SECTION("rawrbox::StrUtils::split") {
-		auto spl = rawrbox::StrUtils::split("a|bC|C", '|');
-		auto spl2 = rawrbox::StrUtils::split("abc", '|');
+		auto spl = rawrbox::StrUtils::split("a||bC||C", "||");
+		auto spl2 = rawrbox::StrUtils::split("a|bC|C", '|');
+		auto spl3 = rawrbox::StrUtils::split("abc", "|");
 
 		REQUIRE(spl[0] == "a");
 		REQUIRE(spl[1] == "bC");
 		REQUIRE(spl[2] == "C");
 
-		REQUIRE(spl2[0] == "abc");
+		REQUIRE(spl2[0] == "a");
+		REQUIRE(spl2[1] == "bC");
+		REQUIRE(spl2[2] == "C");
+
+		REQUIRE(spl3[0] == "abc");
 	}
 }

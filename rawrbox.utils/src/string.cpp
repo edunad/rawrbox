@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <string>
 
 namespace rawrbox {
 	std::string StrUtils::toLower(std::string str) {
@@ -50,5 +51,27 @@ namespace rawrbox {
 		}
 
 		return elems;
+	}
+
+	std::vector<std::string> StrUtils::split(const std::string& haystack, const std::string& needle, bool filterEmpty) {
+		std::vector<std::string> result = {};
+
+		size_t pos = 0;
+		size_t found = 0;
+
+		while ((found = haystack.find(needle, pos)) != std::string::npos) {
+			std::string token = haystack.substr(pos, found - pos);
+			if (!filterEmpty || !token.empty()) {
+				result.push_back(token);
+			}
+			pos = found + needle.length();
+		}
+
+		std::string lastToken = haystack.substr(pos);
+		if (!filterEmpty || !lastToken.empty()) {
+			result.push_back(lastToken);
+		}
+
+		return result;
 	}
 } // namespace rawrbox
