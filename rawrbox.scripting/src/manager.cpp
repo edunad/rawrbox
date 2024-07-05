@@ -61,7 +61,7 @@
 namespace rawrbox {
 	// PROTECTED ----
 	std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>> SCRIPTING::_mods = {};
-	std::unordered_map<std::string, std::vector<std::string>> SCRIPTING::_loadedLuaFiles = {};
+	std::unordered_map<std::string, std::vector<std::filesystem::path>> SCRIPTING::_loadedLuaFiles = {};
 
 	std::unique_ptr<rawrbox::FileWatcher> SCRIPTING::_watcher = nullptr;
 	std::vector<std::unique_ptr<rawrbox::ScriptingPlugin>> SCRIPTING::_plugins = {};
@@ -268,23 +268,25 @@ namespace rawrbox {
 	// ------------
 
 	// HOT RELOAD -----
-	void SCRIPTING::registerLoadedFile(const std::string& modId, const std::string& filePath) {
+	void SCRIPTING::registerLoadedFile(const std::string& modId, const std::filesystem::path& filePath) {
 		auto mdFnd = _loadedLuaFiles.find(modId);
+
 		if (mdFnd != _loadedLuaFiles.end()) {
 			auto fileFnd = std::find(mdFnd->second.begin(), mdFnd->second.end(), filePath);
 			if (fileFnd != mdFnd->second.end()) return; // Already registered
+
 			mdFnd->second.push_back(filePath);
 		} else {
 			_loadedLuaFiles[modId] = {filePath};
 		}
 
 		if (hotReloadEnabled()) {
-			_logger->info("Registered {} -> {} for hot reload", modId, filePath);
+			_logger->info("Registered {} -> {} for hot reload", fmt::styled(modId, fmt::fg(fmt::color::coral)), filePath.generic_string());
 			_watcher->watchFile(filePath);
 		}
 	}
 
-	void SCRIPTING::hotReload(const std::string& filePath) {
+	void SCRIPTING::hotReload(const std::filesystem::path& filePath) {
 		// Find the owner
 		for (auto& pt : _loadedLuaFiles) {
 			auto fnd = std::find(pt.second.begin(), pt.second.end(), filePath) != pt.second.end();
@@ -292,7 +294,7 @@ namespace rawrbox {
 
 			auto md = _mods.find(pt.first);
 			if (md == _mods.end()) return;
-			_logger->warn("Hot-reloading lua file '{}'", filePath);
+			_logger->warn("Hot-reloading lua file '{}'", filePath.generic_string());
 
 			// Cleanup and load -----
 			auto* env = md->second->getEnvironment();
@@ -315,7 +317,7 @@ namespace rawrbox {
 	void SCRIPTING::init(int hotReloadMs) {
 		_hotReloadEnabled = hotReloadMs > 0;
 		if (_hotReloadEnabled) {
-			_logger->info("Enabled lua hot-reloading\n  └── Delay: {}ms", hotReloadMs);
+			_logger->info("Enabled lua hot-reloading\n  └── Delay: {}ms", fmt::styled(hotReloadMs, fmt::fg(fmt::color::gold)));
 
 			_watcher = std::make_unique<rawrbox::FileWatcher>(
 			    [](const std::string& pth, rawrbox::FileStatus status) {
@@ -326,57 +328,47 @@ namespace rawrbox {
 			_watcher->start();
 		}
 
-		// Attempt to create the directory if it doesn't exist
-		std::filesystem::create_directory("./data");
-
 		// Setup  --
 		if (_console != nullptr) rawrbox::ConsoleWrapper::init(_console);
 		// ----------------
-
-		// Prepare mods sandboxed env (but dont load mod's lua) ---
-		prepareMods();
-		// ----------------
 	}
 
-	void SCRIPTING::prepareMods() {
-		if (!std::filesystem::exists("./mods")) throw _logger->error("Failed to locate folder './mods'"); // TODO: SUPPORT FOLDER CONFIGURATION
+	// LOADING ----
+	void SCRIPTING::loadMods(const std::filesystem::path& rootFolder) { // Load mods
+		if (!std::filesystem::exists(rootFolder)) throw _logger->error("Failed to locate root folder '{}'", rootFolder.generic_string());
 
-		// TODO: mod load ordering & mod settings to inject on sandboxed env
-		for (const auto& p : std::filesystem::directory_iterator("./mods")) {
+		for (const auto& p : std::filesystem::directory_iterator(rootFolder)) {
 			if (!p.is_directory()) continue;
-
-			auto id = p.path().filename().string();
-			auto folderPath = fmt::format("mods/{}", id);
-
-			auto mod = std::make_unique<rawrbox::Mod>(id, folderPath);
-
-			// Prepare env ----------
-			loadLibraries(*mod);
-			loadTypes(*mod);
-			loadGlobals(*mod);
-			loadI18N(*mod);
-			// ----------
-
-			_mods.emplace(id, std::move(mod));
+			loadMod(p);
 		}
 	}
 
-	void SCRIPTING::load() {
-		if (!std::filesystem::exists("./mods")) throw _logger->error("Failed to locate folder './mods'");
+	void SCRIPTING::loadMod(const std::filesystem::path& modFolder) {
+		if (!std::filesystem::exists(modFolder)) throw _logger->error("Failed to locate mod folder '{}'", modFolder.generic_string());
 
-		// Load & initialize
-		for (auto& mod : _mods) {
-			try {
-				mod.second->init(); // Sandbox env
-				mod.second->load();
-			} catch (const std::runtime_error& err) {
-				_logger->printError("{}", err.what());
-			}
+		auto id = modFolder.filename().string();
+		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder);
 
-			registerLoadedFile(mod.first, mod.second->getEntryFilePath()); // Register file for hot-reloading
+		// Prepare env ----------
+		loadLibraries(*mod);
+		loadTypes(*mod);
+		loadGlobals(*mod);
+		loadI18N(*mod);
+		// ----------
+
+		try {
+			mod->init(); // Sandbox env
+			mod->load();
+
+			mod->call("init");
+			registerLoadedFile(mod->getID(), mod->getEntryFilePath()); // Register file for hot-reloading
+		} catch (const std::runtime_error& err) {
+			_logger->printError("{}", err.what());
 		}
-		// -----
+
+		_mods.emplace(id, std::move(mod));
 	}
+	// -----------
 
 	void SCRIPTING::shutdown() {
 		_console = nullptr;

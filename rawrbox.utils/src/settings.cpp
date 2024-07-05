@@ -41,22 +41,23 @@ namespace rawrbox {
 			}
 
 			// Validate version
-			if (_settings.contains("VERSION") && _settings["VERSION"].get<std::string>() != this->getVersion()) {
-				this->_logger->warn("Migrating settings to version '{}'", this->getVersion());
-				auto diff = rawrbox::JSONUtils::diff(this->_settings, getDefaults());
+			if (_settings.contains("VERSION")) {
+				if (_settings["VERSION"].get<std::string>() != this->getVersion()) {
+					this->_logger->warn("Migrating settings to version '{}'", this->getVersion());
+					auto diff = rawrbox::JSONUtils::diff(this->_settings, getDefaults());
 
-				std::vector<rawrbox::JSONDiff> fixedDiff = {};
-				for (auto& itm : diff) {
-					if (itm.op == rawrbox::JSONDiffOp::REPLACE && itm.path != "/VERSION") continue;
-					fixedDiff.push_back(itm);
+					std::vector<rawrbox::JSONDiff> fixedDiff = {};
+					for (auto& itm : diff) {
+						if (itm.op == rawrbox::JSONDiffOp::REPLACE && itm.path != "/VERSION") continue;
+						fixedDiff.push_back(itm);
+					}
+
+					rawrbox::JSONUtils::patch(this->_settings, fixedDiff);
+					this->_logger->warn("Settings migrated!");
 				}
-
-				rawrbox::JSONUtils::patch(this->_settings, fixedDiff);
-				this->_logger->warn("Settings migrated!");
 			} else {
 				this->_logger->warn("Missing version, cannot migrate! Adding current version, some things might be broken!");
 			}
-
 		} else {
 			this->_settings = this->getDefaults();
 		}

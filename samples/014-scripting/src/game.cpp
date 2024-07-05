@@ -112,8 +112,12 @@ namespace scripting_test {
 		rawrbox::SCRIPTING::init(2000); // Check files every 2 seconds
 
 		// Load lua mods
-		rawrbox::SCRIPTING::load();
-		rawrbox::SCRIPTING::call("init");
+		if (!std::filesystem::exists("./mods")) {
+			std::filesystem::create_directory("./mods");
+		}
+
+		rawrbox::SCRIPTING::loadMods("./mods"); // To load the entire folder
+		// rawrbox::SCRIPTING::loadMod("./mods/test_mod"); // To load a specific mod
 		// ----
 
 		render->init();

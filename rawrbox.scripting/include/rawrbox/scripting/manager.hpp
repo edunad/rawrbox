@@ -12,7 +12,7 @@ namespace rawrbox {
 	class SCRIPTING {
 	protected:
 		static std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>> _mods;
-		static std::unordered_map<std::string, std::vector<std::string>> _loadedLuaFiles;
+		static std::unordered_map<std::string, std::vector<std::filesystem::path>> _loadedLuaFiles;
 
 		static std::vector<std::unique_ptr<rawrbox::ScriptingPlugin>> _plugins;
 		static std::unique_ptr<rawrbox::FileWatcher> _watcher;
@@ -23,10 +23,6 @@ namespace rawrbox {
 
 		static rawrbox::Console* _console;
 		static bool _hotReloadEnabled;
-
-		// MODS ---
-		static void prepareMods();
-		// --------
 
 		// LOAD ----
 		static void loadLibraries(rawrbox::Mod& mod);
@@ -39,8 +35,8 @@ namespace rawrbox {
 		// ------------
 
 		// HOT RELOAD ---
-		static void registerLoadedFile(const std::string& modId, const std::string& filePath);
-		static void hotReload(const std::string& filePath);
+		static void registerLoadedFile(const std::string& modId, const std::filesystem::path& filePath);
+		static void hotReload(const std::filesystem::path& filePath);
 		// -------------
 
 	public:
@@ -58,9 +54,9 @@ namespace rawrbox {
 			requires(std::derived_from<T, rawrbox::ScriptingPlugin>)
 		static void registerPlugin(CallbackArgs&&... args) {
 			auto plugin = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
-			auto split = rawrbox::StrUtils::split(typeid(T).name(), "::");
+			auto pluginName = rawrbox::StrUtils::replace(typeid(T).name(), "class ", "");
 
-			_logger->info("Registered lua plugin '{}'", split.front());
+			_logger->info("Registered lua plugin '{}'", fmt::styled(pluginName, fmt::fg(fmt::color::coral)));
 			_plugins.push_back(std::move(plugin));
 		}
 		// -----
@@ -73,7 +69,12 @@ namespace rawrbox {
 		}
 
 		static void init(int hotReloadMs = 0);
-		static void load();
+
+		// LOADING ----
+		static void loadMods(const std::filesystem::path& rootFolder);
+		static void loadMod(const std::filesystem::path& modFolder);
+		// -----------
+
 		static void shutdown();
 
 		static void setConsole(rawrbox::Console* console);
