@@ -59,8 +59,12 @@ namespace rawrbox {
 
 	// UTILS ----
 	const std::string& Mod::getID() const { return this->_id; }
+
 	std::string Mod::getEntryFilePath() const { return fmt::format("{}/init.luau", this->_folder.generic_string()); }
 	const std::filesystem::path& Mod::getFolder() const { return this->_folder; }
+
+	const glz::json_t& Mod::getMetadata() const { return this->_metadata; }
+	void Mod::setMetadata(glz::json_t& data) { this->_metadata = data; }
 
 	lua_State* Mod::getEnvironment() { return this->_L; }
 	// -----

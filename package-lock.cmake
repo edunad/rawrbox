@@ -3,7 +3,7 @@
 
 # fmt
 CPMDeclarePackage(fmt
-  GIT_TAG 11.0.0
+  GIT_TAG 11.0.1
   GITHUB_REPOSITORY fmtlib/fmt
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -17,7 +17,7 @@ CPMDeclarePackage(magic_enum
 )
 # glaze
 CPMDeclarePackage(glaze
-  VERSION 2.9.3
+  VERSION 2.9.5
   GITHUB_REPOSITORY stephenberry/glaze
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -135,7 +135,7 @@ CPMDeclarePackage(utfcpp
 )
 # lunasvg
 CPMDeclarePackage(lunasvg
-  VERSION 2.3.9
+  VERSION 2.4.0
   GITHUB_REPOSITORY sammycage/lunasvg
   SYSTEM YES
   EXCLUDE_FROM_ALL YES

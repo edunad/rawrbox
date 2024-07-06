@@ -149,7 +149,7 @@ endif()
 # -------------------------
 
 # GLOBAL PACKAGES ------
-CPMAddPackage("gh:fmtlib/fmt#11.0.0")
+CPMAddPackage("gh:fmtlib/fmt#11.0.1")
 if(fmt_ADDED)
     set_lib_runtime_mt(fmt)
 endif()
@@ -163,7 +163,7 @@ if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
     CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@13.0.3")
 endif()
 
-CPMAddPackage("gh:stephenberry/glaze@2.9.3")
+CPMAddPackage("gh:stephenberry/glaze@2.9.5")
 
 # ---
 if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)

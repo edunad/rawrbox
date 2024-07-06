@@ -22,7 +22,7 @@ namespace rawrbox {
 	public:
 		static void initialize();
 		static void addToLanguagePack(const std::string& id, const std::string& lang, const rawrbox::Translation& translation);
-		static void loadLanguagePack(const std::string& id, const std::string& path);
+		static void loadLanguagePack(const std::string& id, const std::filesystem::path& path);
 		static void setLanguage(const std::string& language);
 		static const std::string& getLanguage();
 

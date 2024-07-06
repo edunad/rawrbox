@@ -34,7 +34,7 @@ namespace rawrbox {
 		}
 	}
 
-	void I18N::loadLanguagePack(const std::string& id, const std::string& path) {
+	void I18N::loadLanguagePack(const std::string& id, const std::filesystem::path& path) {
 		_logger->info("Loading i18n for id {}", fmt::styled(id, fmt::fg(fmt::color::coral)));
 
 		for (const auto& p : std::filesystem::directory_iterator(path)) {
@@ -42,7 +42,7 @@ namespace rawrbox {
 
 			auto fileName = p.path().filename().string();
 			auto fileCleanName = p.path().stem().string();
-			auto filePath = fmt::format("{}/{}", path, fileName);
+			auto filePath = path / fileName;
 
 			std::ifstream langRaw(filePath);
 			std::string langRawStr((std::istreambuf_iterator<char>(langRaw)), std::istreambuf_iterator<char>());
@@ -55,7 +55,7 @@ namespace rawrbox {
 				addToLanguagePack(id, fileCleanName, tr);
 				fmt::print("- '{}' language\n", fileCleanName);
 			} catch (...) {
-				_logger->warn("Invalid JSON file: {}", filePath);
+				_logger->warn("Invalid JSON file: {}", filePath.generic_string());
 			}
 		}
 	}

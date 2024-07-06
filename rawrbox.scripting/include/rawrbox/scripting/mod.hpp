@@ -26,6 +26,9 @@ namespace rawrbox {
 		std::string _id = "UNKNOWN";
 		// -----------
 
+		// OTHER ----
+		glz::json_t _metadata = {};
+		// --------
 	public:
 		Mod(std::string id, std::filesystem::path folderPath);
 		Mod(const Mod&) = delete;
@@ -45,10 +48,14 @@ namespace rawrbox {
 
 		// UTILS ----
 		[[nodiscard]] virtual const std::string& getID() const;
+
 		[[nodiscard]] virtual std::string getEntryFilePath() const;
 		[[nodiscard]] virtual const std::filesystem::path& getFolder() const;
 
-		virtual lua_State* getEnvironment();
+		[[nodiscard]] virtual const glz::json_t& getMetadata() const;
+		virtual void setMetadata(glz::json_t& data);
+
+		[[nodiscard]] virtual lua_State* getEnvironment();
 		// -----
 
 		template <typename... CallbackArgs>

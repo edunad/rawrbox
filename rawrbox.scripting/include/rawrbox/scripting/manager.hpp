@@ -71,8 +71,8 @@ namespace rawrbox {
 		static void init(int hotReloadMs = 0);
 
 		// LOADING ----
-		static void loadMods(const std::filesystem::path& rootFolder);
-		static void loadMod(const std::filesystem::path& modFolder);
+		static void loadMods(const std::filesystem::path& rootFolder, bool requireMetadata = false);
+		static void loadMod(const std::filesystem::path& modFolder, bool requireMetadata = false);
 		// -----------
 
 		static void shutdown();

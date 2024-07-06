@@ -129,6 +129,12 @@ namespace rawrbox {
 				fmt::print("▒▒{}▒▒\n", fmt::styled(" If you are a developer, please use logger error in RAWRBOX.UTILS for a better stack trace ", fmt::bg(fmt::color::dark_red) | fmt::fg(fmt::color::white)));
 				cpptrace::generate_trace().print();
 				throw err;
+			} catch (...) {
+				this->prettyPrintErr("Unknown error");
+
+				fmt::print("▒▒{}▒▒\n", fmt::styled(" If you are a developer, please use logger error in RAWRBOX.UTILS for a better stack trace ", fmt::bg(fmt::color::dark_red) | fmt::fg(fmt::color::white)));
+				cpptrace::generate_trace().print();
+				throw std::runtime_error("Unknown error");
 			}
 #endif
 		});

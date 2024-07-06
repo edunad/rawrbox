@@ -86,7 +86,7 @@ if(utfcpp_ADDED)
     set_lib_runtime_mt(utf8cpp)
 endif()
 
-CPMAddPackage("gh:sammycage/lunasvg@2.3.9")
+CPMAddPackage("gh:sammycage/lunasvg@2.4.0")
 if(lunasvg_ADDED)
     set_lib_runtime_mt(lunasvg)
 endif()

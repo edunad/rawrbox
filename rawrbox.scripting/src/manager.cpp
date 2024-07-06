@@ -171,7 +171,7 @@ namespace rawrbox {
 		    .addFunction("printTable", [](const luabridge::LuaRef& ref) {
 			    std::string output;
 
-			    glz::error_ctx ec = glz::write<glz::opts{.prettify = true}>(rawrbox::LuaUtils::luaToJsonObject(ref), output);
+			    glz::error_ctx ec = glz::write<glz::opts{.prettify = 1U}>(rawrbox::LuaUtils::luaToJsonObject(ref), output);
 			    if (ec) throw std::runtime_error(fmt::format("Failed to printTable"));
 
 			    _logger->info("{}", output);
@@ -260,7 +260,7 @@ namespace rawrbox {
 
 	// MOD LOAD ---
 	void SCRIPTING::loadI18N(const rawrbox::Mod& mod) {
-		auto i18nPath = fmt::format("{}/i18n", mod.getFolder().generic_string());
+		auto i18nPath = mod.getFolder() / "i18n";
 		if (!std::filesystem::exists(i18nPath)) return;
 
 		rawrbox::I18N::loadLanguagePack(mod.getID(), i18nPath);
@@ -334,20 +334,38 @@ namespace rawrbox {
 	}
 
 	// LOADING ----
-	void SCRIPTING::loadMods(const std::filesystem::path& rootFolder) { // Load mods
+	void SCRIPTING::loadMods(const std::filesystem::path& rootFolder, bool requireMetadata) { // Load mods
 		if (!std::filesystem::exists(rootFolder)) throw _logger->error("Failed to locate root folder '{}'", rootFolder.generic_string());
 
 		for (const auto& p : std::filesystem::directory_iterator(rootFolder)) {
 			if (!p.is_directory()) continue;
-			loadMod(p);
+			loadMod(p, requireMetadata);
 		}
 	}
 
-	void SCRIPTING::loadMod(const std::filesystem::path& modFolder) {
+	void SCRIPTING::loadMod(const std::filesystem::path& modFolder, bool requireMetadata) {
 		if (!std::filesystem::exists(modFolder)) throw _logger->error("Failed to locate mod folder '{}'", modFolder.generic_string());
 
-		auto id = modFolder.filename().string();
+		std::string id = modFolder.filename().generic_string();
+		glz::json_t metadataJSON = {};
+
+		if (requireMetadata) {
+			std::filesystem::path configPath = modFolder / "mod.json";
+
+			if (std::filesystem::exists(configPath)) {
+				auto ec = glz::read_file_json(metadataJSON, modFolder.generic_string(), std::string{});
+				if (ec) throw _logger->error("Failed to load mod.json");
+
+				if (metadataJSON.contains("id")) id = metadataJSON["id"].get<std::string>();
+			} else {
+				_logger->warn("Failed to locate mod metadata '{}'", modFolder.generic_string());
+			}
+		}
+
+		if (id.empty()) throw _logger->error("Mod ID is empty");
+
 		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder);
+		mod->setMetadata(metadataJSON);
 
 		// Prepare env ----------
 		loadLibraries(*mod);
