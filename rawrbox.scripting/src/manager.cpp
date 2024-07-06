@@ -353,7 +353,7 @@ namespace rawrbox {
 			std::filesystem::path configPath = modFolder / "mod.json";
 
 			if (std::filesystem::exists(configPath)) {
-				auto ec = glz::read_file_json(metadataJSON, modFolder.generic_string(), std::string{});
+				auto ec = glz::read_file_json(metadataJSON, configPath.generic_string(), std::string{});
 				if (ec) throw _logger->error("Failed to load mod.json");
 
 				if (metadataJSON.contains("id")) id = metadataJSON["id"].get<std::string>();
