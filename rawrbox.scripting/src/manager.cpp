@@ -265,6 +265,17 @@ namespace rawrbox {
 
 		rawrbox::I18N::loadLanguagePack(mod.getID(), i18nPath);
 	}
+
+	void SCRIPTING::loadMetadata(rawrbox::Mod& mod) {
+		std::filesystem::path configPath = mod.getFolder() / "mod.json";
+		if (!std::filesystem::exists(configPath)) return;
+
+		glz::json_t metadataJSON = {};
+		auto ec = glz::read_file_json(metadataJSON, configPath.generic_string(), std::string{});
+		if (ec) throw _logger->error("Failed to load mod.json");
+
+		mod.setMetadata(metadataJSON);
+	}
 	// ------------
 
 	// HOT RELOAD -----
@@ -334,41 +345,26 @@ namespace rawrbox {
 	}
 
 	// LOADING ----
-	void SCRIPTING::loadMods(const std::filesystem::path& rootFolder, bool requireMetadata) { // Load mods
+	void SCRIPTING::loadMods(const std::filesystem::path& rootFolder) { // Load mods
 		if (!std::filesystem::exists(rootFolder)) throw _logger->error("Failed to locate root folder '{}'", rootFolder.generic_string());
 
 		for (const auto& p : std::filesystem::directory_iterator(rootFolder)) {
 			if (!p.is_directory()) continue;
-			loadMod(p, requireMetadata);
+			loadMod(p);
 		}
 	}
 
-	void SCRIPTING::loadMod(const std::filesystem::path& modFolder, bool requireMetadata) {
+	void SCRIPTING::loadMod(const std::filesystem::path& modFolder) {
 		if (!std::filesystem::exists(modFolder)) throw _logger->error("Failed to locate mod folder '{}'", modFolder.generic_string());
 
 		std::string id = modFolder.filename().generic_string();
-		glz::json_t metadataJSON = {};
-
-		if (requireMetadata) {
-			std::filesystem::path configPath = modFolder / "mod.json";
-
-			if (std::filesystem::exists(configPath)) {
-				auto ec = glz::read_file_json(metadataJSON, configPath.generic_string(), std::string{});
-				if (ec) throw _logger->error("Failed to load mod.json");
-
-				if (metadataJSON.contains("id")) id = metadataJSON["id"].get<std::string>();
-			} else {
-				_logger->warn("Failed to locate mod metadata '{}'", modFolder.generic_string());
-			}
-		}
-
 		if (id.empty()) throw _logger->error("Mod ID is empty");
 
 		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder);
-		mod->setMetadata(metadataJSON);
 
 		// Prepare env ----------
 		loadLibraries(*mod);
+		loadMetadata(*mod);
 		loadTypes(*mod);
 		loadGlobals(*mod);
 		loadI18N(*mod);

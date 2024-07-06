@@ -36,6 +36,11 @@ namespace rawrbox {
 		return this->_mod->getEntryFilePath();
 	}
 
+	luabridge::LuaRef MODWrapper::getMetadata(lua_State* L) const {
+		if (this->_mod == nullptr) throw std::runtime_error("Invalid mod reference");
+		return rawrbox::LuaUtils::jsonToLua(L, this->_mod->getMetadata());
+	}
+
 	void MODWrapper::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
 		    .beginClass<rawrbox::MODWrapper>("mod")
@@ -43,6 +48,7 @@ namespace rawrbox {
 		    .addFunction("getID", &MODWrapper::getID)
 		    .addFunction("getFolder", &MODWrapper::getFolder)
 		    .addFunction("getEntryFilePath", &MODWrapper::getEntryFilePath)
+		    .addFunction("getMetadata", &MODWrapper::getMetadata)
 		    .endClass();
 	}
 } // namespace rawrbox
