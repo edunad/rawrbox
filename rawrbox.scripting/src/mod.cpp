@@ -5,18 +5,7 @@
 #include <Luau/Compiler.h>
 
 namespace rawrbox {
-	Mod::Mod(std::string id, std::filesystem::path folderPath) : _L(luaL_newstate()), _modTable(_L), _folder(std::move(folderPath)), _id(std::move(id)) {
-		if (this->_L == nullptr) throw _logger->error("Invalid lua handle");
-
-		// Inject mod env --
-		lua_pushstring(this->_L, this->_folder.generic_string().c_str());
-		lua_setglobal(this->_L, "__mod_folder");
-
-		lua_pushstring(this->_L, this->_id.c_str());
-		lua_setglobal(this->_L, "__mod_id");
-		// -----------------
-	}
-
+	Mod::Mod(std::string id, std::filesystem::path folderPath, glz::json_t metadata) : _L(luaL_newstate()), _modTable(_L), _folder(std::move(folderPath)), _id(std::move(id)), _metadata(std::move(metadata)) {}
 	Mod::~Mod() {
 		this->gc();
 		this->_L = nullptr;
@@ -28,6 +17,17 @@ namespace rawrbox {
 #ifdef RAWRBOX_SCRIPTING_EXCEPTION
 		luabridge::enableExceptions(_L);
 #endif
+
+		// Inject mod env --
+		lua_pushstring(this->_L, this->_folder.generic_string().c_str());
+		lua_setglobal(this->_L, "__mod_folder");
+
+		lua_pushstring(this->_L, this->_folder.filename().generic_string().c_str());
+		lua_setglobal(this->_L, "__mod_folder_root");
+
+		lua_pushstring(this->_L, this->_id.c_str());
+		lua_setglobal(this->_L, "__mod_id");
+		// -----------------
 
 		// Freeze lua env ---
 		// No more modifications to the global table are allowed after this point
@@ -49,9 +49,7 @@ namespace rawrbox {
 
 	void Mod::load() {
 		if (this->_L == nullptr) throw _logger->error("Invalid lua sandbox environment");
-
-		auto id = this->_metadata.contains("id") ? this->_metadata["id"].get<std::string>() : this->getID();
-		rawrbox::LuaUtils::compileAndLoadFile(this->_L, id, this->getEntryFilePath());
+		rawrbox::LuaUtils::compileAndLoadFile(this->_L, this->getID(), this->getEntryFilePath());
 	}
 
 	void Mod::script(const std::string& script) {
@@ -66,7 +64,6 @@ namespace rawrbox {
 	const std::filesystem::path& Mod::getFolder() const { return this->_folder; }
 
 	const glz::json_t& Mod::getMetadata() const { return this->_metadata; }
-	void Mod::setMetadata(glz::json_t& data) { this->_metadata = data; }
 
 	lua_State* Mod::getEnvironment() { return this->_L; }
 	// -----

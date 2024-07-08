@@ -1,30 +1,5 @@
-
-
 include("./src/test.luau")
 data = data or {}
-
-function MOD:init()
-    data.frame = nil
-    data.ready = false
-
-    print("TEST Mod initialized!")
-    testRawrbox()
-
-    -- ACCESS ENV ON MOD 2
-    local mod2 = mod.get("test-mod-2")
-    if not mod2 then return end
-    mod2:call("TEST")
-    -------------------------------------------
-end
-
-function MOD:onLoad()
-    if not resources then
-        error("resources module not available, cannot continue")
-        return
-    end
-
-    resources.preLoad("./assets/gumball_wink.gif")
-end
 
 
 local function drawUI()
@@ -93,7 +68,30 @@ local function drawUI()
     image:setTexturePath("./assets/gumball_wink.gif")
 end
 
+function MOD:onInit()
+    data.frame = nil
+    data.ready = false
+
+    print("TEST Mod initialized!")
+    testRawrbox()
+end
+
+function MOD:onLoad()
+    if not resources then
+        error("resources module not available, cannot continue")
+        return
+    end
+
+    resources.preLoad("./assets/gumball_wink.gif")
+end
+
 function MOD:onReady()
+    -- ACCESS ENV ON MOD 2
+    local mod2 = mod.get("test-mod-2")
+    if not mod2 then return end
+    mod2:call("TEST")
+    ---------------------------------------
+
     data.ready = true
     drawUI()
 end

@@ -4,7 +4,7 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
-	class LightsWrapper {
+	class LightsGlobal {
 	public:
 		// UTILS ----
 		static void setEnabled(bool fb);

@@ -168,8 +168,8 @@ namespace scripting_test {
 		this->_instance->setTemplate(rawrbox::MeshUtils::generateCube({0.F, 0.0F, 0.F}, {0.1F, 0.1F, 0.1F}));
 		this->_instance->upload();
 
-		rawrbox::SCRIPTING::call("onReady");
 		this->_ready = true;
+		rawrbox::SCRIPTING::call("onReady");
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {

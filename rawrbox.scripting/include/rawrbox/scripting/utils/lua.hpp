@@ -35,6 +35,7 @@ namespace rawrbox {
 		static std::string getLuaENVVar(lua_State* L, const std::string& varId);
 
 		template <typename T>
+			requires(std::is_arithmetic_v<T> || std::is_same_v<T, std::string>)
 		static luabridge::LuaRef vectorToTable(lua_State* L, const std::vector<T>& in) {
 			auto tbl = luabridge::newTable(L);
 			for (size_t i = 0; i < in.size(); i++) {

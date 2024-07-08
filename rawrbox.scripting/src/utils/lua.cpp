@@ -161,12 +161,14 @@ namespace rawrbox {
 		if (json.holds<double>()) { // Lua only works with doubles
 			return {L, json.get<double>()};
 		}
+
 		if (json.holds<std::string>()) {
 			return {L, json.get<std::string>()};
 		}
 
 		if (json.holds<glz::json_t::object_t>()) {
 			auto obj = luabridge::newTable(L);
+
 			const auto& jsonObject = json.get<glz::json_t::object_t>();
 			for (const auto& pair : jsonObject) {
 				obj[pair.first.c_str()] = jsonToLua(L, pair.second);
@@ -177,6 +179,7 @@ namespace rawrbox {
 
 		if (json.holds<glz::json_t::array_t>()) {
 			auto arr = luabridge::newTable(L);
+
 			const auto& jsonArray = json.get<glz::json_t::array_t>();
 			for (size_t i = 0; i < jsonArray.size(); ++i) {
 				arr[i + 1] = jsonToLua(L, jsonArray[i]);
@@ -208,7 +211,7 @@ namespace rawrbox {
 					break;
 				case LUA_TVECTOR: // eeehhh, might die?
 				case LUA_TTABLE:
-					result[key] = luaToJsonObject(value); // Recursive conversion
+					result[key] = luaToJsonObject(value);
 					break;
 				case LUA_TFUNCTION:
 					result[key] = fmt::format("function({})", lua_topointer(value, -1));
@@ -216,7 +219,6 @@ namespace rawrbox {
 				case LUA_TNONE:
 				case LUA_TNIL:
 				default:
-					// Handle other types as needed, or ignore them
 					break;
 			}
 		}

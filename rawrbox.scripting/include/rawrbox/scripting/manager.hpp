@@ -32,7 +32,6 @@ namespace rawrbox {
 
 		// MOD LOAD ---
 		static void loadI18N(const rawrbox::Mod& mod);
-		static void loadMetadata(rawrbox::Mod& mod);
 		// ------------
 
 		// HOT RELOAD ---
