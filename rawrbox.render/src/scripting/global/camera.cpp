@@ -1,103 +1,103 @@
-#include <rawrbox/render/scripting/wrappers/camera.hpp>
+#include <rawrbox/render/scripting/global/camera.hpp>
 #include <rawrbox/render/static.hpp>
 
 namespace rawrbox {
 
 	// UTILS -----
-	void CameraWrapper::setPos(const rawrbox::Vector3f& pos) {
+	void CameraGlobal::setPos(const rawrbox::Vector3f& pos) {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		rawrbox::MAIN_CAMERA->setPos(pos);
 	}
 
-	rawrbox::Vector3f CameraWrapper::getPos() {
+	rawrbox::Vector3f CameraGlobal::getPos() {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		return rawrbox::MAIN_CAMERA->getPos();
 	}
 
-	void CameraWrapper::setAngle(const rawrbox::Vector4f& ang) {
+	void CameraGlobal::setAngle(const rawrbox::Vector4f& ang) {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		rawrbox::MAIN_CAMERA->setAngle(ang);
 	}
 
-	rawrbox::Vector4f CameraWrapper::getAngle() {
+	rawrbox::Vector4f CameraGlobal::getAngle() {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		return rawrbox::MAIN_CAMERA->getAngle();
 	}
 
-	rawrbox::Vector3f CameraWrapper::getForward() {
+	rawrbox::Vector3f CameraGlobal::getForward() {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		return rawrbox::MAIN_CAMERA->getForward();
 	}
 
-	rawrbox::Vector3f CameraWrapper::getRight() {
+	rawrbox::Vector3f CameraGlobal::getRight() {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		return rawrbox::MAIN_CAMERA->getRight();
 	}
 
-	rawrbox::Vector3f CameraWrapper::getUp() {
+	rawrbox::Vector3f CameraGlobal::getUp() {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		return rawrbox::MAIN_CAMERA->getUp();
 	}
 
-	float CameraWrapper::getZFar() {
+	float CameraGlobal::getZFar() {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		return rawrbox::MAIN_CAMERA->getZFar();
 	}
 
-	float CameraWrapper::getZNear() {
+	float CameraGlobal::getZNear() {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		return rawrbox::MAIN_CAMERA->getZNear();
 	}
 
-	rawrbox::Matrix4x4 CameraWrapper::getViewMtx() {
+	rawrbox::Matrix4x4 CameraGlobal::getViewMtx() {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		return rawrbox::MAIN_CAMERA->getViewMtx();
 	}
 
-	rawrbox::Matrix4x4 CameraWrapper::getProjMtx() {
+	rawrbox::Matrix4x4 CameraGlobal::getProjMtx() {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		return rawrbox::MAIN_CAMERA->getProjMtx();
 	}
 
-	rawrbox::Matrix4x4 CameraWrapper::getViewProjMtx() {
+	rawrbox::Matrix4x4 CameraGlobal::getViewProjMtx() {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		return rawrbox::MAIN_CAMERA->getViewProjMtx();
 	}
 
-	rawrbox::Vector3f CameraWrapper::worldToScreen(const rawrbox::Vector3f& pos) {
+	rawrbox::Vector3f CameraGlobal::worldToScreen(const rawrbox::Vector3f& pos) {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		return rawrbox::MAIN_CAMERA->worldToScreen(pos);
 	}
 
-	rawrbox::Vector3f CameraWrapper::screenToWorld(const rawrbox::Vector2f& screen_pos) {
+	rawrbox::Vector3f CameraGlobal::screenToWorld(const rawrbox::Vector2f& screen_pos) {
 		if (rawrbox::MAIN_CAMERA == nullptr) throw std::runtime_error("No MAIN_CAMERA found");
 		return rawrbox::MAIN_CAMERA->screenToWorld(screen_pos);
 	}
 	// ----------------
 
-	void CameraWrapper::registerLua(lua_State* L) {
+	void CameraGlobal::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("camera", {})
 
-		    .addFunction("setPos", &CameraWrapper::setPos)
-		    .addFunction("getPos", &CameraWrapper::getPos)
-		    .addFunction("setAngle", &CameraWrapper::setAngle)
-		    .addFunction("getAngle", &CameraWrapper::getAngle)
+		    .addFunction("setPos", &CameraGlobal::setPos)
+		    .addFunction("getPos", &CameraGlobal::getPos)
+		    .addFunction("setAngle", &CameraGlobal::setAngle)
+		    .addFunction("getAngle", &CameraGlobal::getAngle)
 
 		    // UTILS ----
-		    .addFunction("getForward", &CameraWrapper::getForward)
-		    .addFunction("getRight", &CameraWrapper::getRight)
-		    .addFunction("getUp", &CameraWrapper::getUp)
+		    .addFunction("getForward", &CameraGlobal::getForward)
+		    .addFunction("getRight", &CameraGlobal::getRight)
+		    .addFunction("getUp", &CameraGlobal::getUp)
 
-		    .addFunction("getZFar", &CameraWrapper::getZFar)
-		    .addFunction("getZNear", &CameraWrapper::getZNear)
+		    .addFunction("getZFar", &CameraGlobal::getZFar)
+		    .addFunction("getZNear", &CameraGlobal::getZNear)
 
-		    .addFunction("getViewMtx", &CameraWrapper::getViewMtx)
-		    .addFunction("getProjMtx", &CameraWrapper::getProjMtx)
-		    .addFunction("getViewProjMtx", &CameraWrapper::getViewProjMtx)
+		    .addFunction("getViewMtx", &CameraGlobal::getViewMtx)
+		    .addFunction("getProjMtx", &CameraGlobal::getProjMtx)
+		    .addFunction("getViewProjMtx", &CameraGlobal::getViewProjMtx)
 
-		    .addFunction("worldToScreen", &CameraWrapper::worldToScreen)
-		    .addFunction("screenToWorld", &CameraWrapper::screenToWorld)
+		    .addFunction("worldToScreen", &CameraGlobal::worldToScreen)
+		    .addFunction("screenToWorld", &CameraGlobal::screenToWorld)
 
 		    .endNamespace();
 	}

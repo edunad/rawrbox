@@ -4,7 +4,7 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
-	class TextureLoaderWrapper {
+	class TextureLoaderGlobal {
 
 	public:
 		static rawrbox::TextureBase* get(const std::string& path, std::optional<uint32_t> loadFlags, lua_State* L);

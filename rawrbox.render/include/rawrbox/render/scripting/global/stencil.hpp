@@ -6,7 +6,7 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
-	class StencilWrapper {
+	class StencilGlobal {
 
 	public:
 		// Draw ----

@@ -4,7 +4,7 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
-	class FontLoaderWrapper {
+	class FontLoaderGlobal {
 
 	public:
 		static rawrbox::Font* get(const std::string& path, std::optional<uint16_t> size, lua_State* L);

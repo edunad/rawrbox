@@ -1,9 +1,9 @@
 #include <rawrbox/engine/static.hpp>
-#include <rawrbox/network/scripting/wrappers/http.hpp>
+#include <rawrbox/network/scripting/global/http.hpp>
 #include <rawrbox/utils/string.hpp>
 
 namespace rawrbox {
-	void HTTPWrapper::request(const std::string& url, int method, const luabridge::LuaRef& headers, const luabridge::LuaRef& callback, std::optional<int> timeout) {
+	void HTTPGlobal::request(const std::string& url, int method, const luabridge::LuaRef& headers, const luabridge::LuaRef& callback, std::optional<int> timeout) {
 		if (url.empty()) throw std::runtime_error("URL cannot be empty");
 		if (!headers.isTable()) throw std::runtime_error("Invalid header table");
 		if (!callback.isCallable()) throw std::runtime_error("Invalid callback");
@@ -52,10 +52,10 @@ namespace rawrbox {
 		    timeout.value_or(10000));
 	}
 
-	void HTTPWrapper::registerLua(lua_State* L) {
+	void HTTPGlobal::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("http", {})
-		    .addFunction("request", &HTTPWrapper::request)
+		    .addFunction("request", &HTTPGlobal::request)
 		    .endNamespace();
 	}
 } // namespace rawrbox

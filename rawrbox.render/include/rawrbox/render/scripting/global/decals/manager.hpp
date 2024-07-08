@@ -3,7 +3,7 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
-	class DecalsWrapper {
+	class DecalsGlobal {
 
 	public:
 		static void registerLua(lua_State* L);

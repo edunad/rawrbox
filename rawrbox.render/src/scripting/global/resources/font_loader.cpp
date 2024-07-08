@@ -1,10 +1,10 @@
 
 #include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/scripting/wrappers/resources/font_loader.hpp>
+#include <rawrbox/render/scripting/global/resources/font_loader.hpp>
 #include <rawrbox/resources/manager.hpp>
 
 namespace rawrbox {
-	rawrbox::Font* FontLoaderWrapper::get(const std::string& path, std::optional<uint16_t> size, lua_State* L) {
+	rawrbox::Font* FontLoaderGlobal::get(const std::string& path, std::optional<uint16_t> size, lua_State* L) {
 		auto modFolder = rawrbox::LuaUtils::getLuaENVVar(L, "__mod_folder");
 		auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
 
@@ -23,10 +23,10 @@ namespace rawrbox {
 		return ptr->getSize(size.value_or(12));
 	}
 
-	void FontLoaderWrapper::registerLua(lua_State* L) {
+	void FontLoaderGlobal::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("font", {})
-		    .addFunction("get", &FontLoaderWrapper::get)
+		    .addFunction("get", &FontLoaderGlobal::get)
 		    .endNamespace();
 	}
 

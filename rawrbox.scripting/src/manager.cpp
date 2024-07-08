@@ -265,17 +265,6 @@ namespace rawrbox {
 
 		rawrbox::I18N::loadLanguagePack(mod.getID(), i18nPath);
 	}
-
-	void SCRIPTING::loadMetadata(rawrbox::Mod& mod) {
-		std::filesystem::path configPath = mod.getFolder() / "mod.json";
-		if (!std::filesystem::exists(configPath)) return;
-
-		glz::json_t metadataJSON = {};
-		auto ec = glz::read_file_json(metadataJSON, configPath.generic_string(), std::string{});
-		if (ec) throw _logger->error("Failed to load mod.json");
-
-		mod.setMetadata(metadataJSON);
-	}
 	// ------------
 
 	// HOT RELOAD -----
@@ -360,11 +349,24 @@ namespace rawrbox {
 		std::string id = modFolder.filename().generic_string();
 		if (id.empty()) throw _logger->error("Mod ID is empty");
 
-		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder);
+		// LOAD METADATA ---
+		std::filesystem::path configPath = modFolder / "mod.json";
+		glz::json_t metadataJSON = {};
+
+		if (std::filesystem::exists(configPath)) {
+			auto ec = glz::read_file_json(metadataJSON, configPath.generic_string(), std::string{});
+			if (ec) throw _logger->error("Failed to load mod.json");
+
+			if (metadataJSON.contains("id")) {
+				id = metadataJSON["id"].get<std::string>();
+			}
+		}
+		// -----------------
+
+		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder, metadataJSON);
 
 		// Prepare env ----------
 		loadLibraries(*mod);
-		loadMetadata(*mod);
 		loadTypes(*mod);
 		loadGlobals(*mod);
 		loadI18N(*mod);
@@ -374,7 +376,7 @@ namespace rawrbox {
 			mod->init(); // Sandbox env
 			mod->load();
 
-			mod->call("init");
+			mod->call("onInit");
 			registerLoadedFile(mod->getID(), mod->getEntryFilePath()); // Register file for hot-reloading
 		} catch (const std::runtime_error& err) {
 			_logger->printError("{}", err.what());

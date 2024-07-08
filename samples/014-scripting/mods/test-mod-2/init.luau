@@ -12,6 +12,10 @@ function MOD:draw(pass)
     stencil.drawBox(Vector2(10 + math.cos(frame * 0.1) * 5, 10 + math.sin(frame * 0.1) * 5), Vector2(10, 10), Color(1, 0, 0, 1))
 end
 
+function MOD:onReady()
+    print("test-mod-2 onReady")
+end
+
 function MOD:update()
     if not testMDL then
         local mdl = test_model()

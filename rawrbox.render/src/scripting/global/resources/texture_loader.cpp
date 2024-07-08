@@ -1,10 +1,10 @@
 
 #include <rawrbox/render/resources/texture.hpp>
-#include <rawrbox/render/scripting/wrappers/resources/texture_loader.hpp>
+#include <rawrbox/render/scripting/global/resources/texture_loader.hpp>
 #include <rawrbox/resources/manager.hpp>
 
 namespace rawrbox {
-	rawrbox::TextureBase* TextureLoaderWrapper::get(const std::string& path, std::optional<uint32_t> loadFlags, lua_State* L) {
+	rawrbox::TextureBase* TextureLoaderGlobal::get(const std::string& path, std::optional<uint32_t> loadFlags, lua_State* L) {
 		auto modFolder = rawrbox::LuaUtils::getLuaENVVar(L, "__mod_folder");
 		auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
 
@@ -23,10 +23,10 @@ namespace rawrbox {
 		return ptr->get();
 	}
 
-	void TextureLoaderWrapper::registerLua(lua_State* L) {
+	void TextureLoaderGlobal::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("texture", {})
-		    .addFunction("get", &TextureLoaderWrapper::get)
+		    .addFunction("get", &TextureLoaderGlobal::get)
 		    .endNamespace();
 	}
 

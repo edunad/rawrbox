@@ -6,21 +6,21 @@
 
 TEST_CASE("Mod should behave as expected", "[rawrbox::Mod]") {
 	SECTION("rawrbox::Mod::Mod") {
-		rawrbox::Mod mod = {"my_mod", "./my_mod"};
+		rawrbox::Mod mod = {"my_mod", "./my_mod", {}};
 
 		REQUIRE(mod.getFolder() == "./my_mod");
 		REQUIRE(mod.getID() == "my_mod");
 	}
 
 	SECTION("rawrbox::Mod::init") {
-		rawrbox::Mod mod = {"my_mod", "./my_mod"};
+		rawrbox::Mod mod = {"my_mod", "./my_mod", {}};
 		luaL_openlibs(mod.getEnvironment());
 
 		REQUIRE_NOTHROW(mod.init());
 	}
 
 	SECTION("rawrbox::Mod::load") {
-		rawrbox::Mod mod = {"my_mod", "./my_mod"};
+		rawrbox::Mod mod = {"my_mod", "./my_mod", {}};
 		luaL_openlibs(mod.getEnvironment());
 
 		REQUIRE_THROWS(mod.load());

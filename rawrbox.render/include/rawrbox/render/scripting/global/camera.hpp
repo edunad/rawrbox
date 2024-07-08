@@ -4,7 +4,7 @@
 #include <rawrbox/scripting/utils/lua.hpp>
 
 namespace rawrbox {
-	class CameraWrapper {
+	class CameraGlobal {
 	public:
 		// UTILS -----
 		static void setPos(const rawrbox::Vector3f& pos);

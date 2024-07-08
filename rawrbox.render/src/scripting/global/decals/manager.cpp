@@ -1,9 +1,9 @@
 
 #include <rawrbox/render/decals/manager.hpp>
-#include <rawrbox/render/scripting/wrappers/decals/manager.hpp>
+#include <rawrbox/render/scripting/global/decals/manager.hpp>
 
 namespace rawrbox {
-	void DecalsWrapper::registerLua(lua_State* L) {
+	void DecalsGlobal::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("decals", {})
 		    .addFunction("get", &DECALS::get)
