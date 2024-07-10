@@ -93,8 +93,8 @@ namespace rawrbox {
 
 		// Top bar
 		stencil.drawBox({0, 0}, {size.x, height}, rawrbox::Color::RGBHex(0x202226));
-		stencil.drawBox({0, 20}, {size.x, 1}, rawrbox::Color::RGBAHex(0x0000005A)); // line split
-											    // ----
+		stencil.drawBox({0, height}, {size.x, 1}, rawrbox::Color::RGBAHex(0x0000005A)); // line split
+												// ----
 	}
 	// -------
 } // namespace rawrbox
