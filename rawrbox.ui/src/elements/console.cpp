@@ -9,14 +9,8 @@
 #include <rawrbox/utils/string.hpp>
 
 namespace rawrbox {
-	UIConsole::UIConsole(rawrbox::Console& console) : _console(&console) {}
-	UIConsole::~UIConsole() {
-		if (this->_console == nullptr) return;
-		this->_console->onPrint.clear();
-	}
-
-	void UIConsole::initialize() {
-		if (this->_console == nullptr) throw std::runtime_error("[RawrBox-UIConsole] Invalid console reference");
+	UIConsole::UIConsole(rawrbox::UIRoot* root, rawrbox::Console& console) : rawrbox::UIContainer(root), _console(&console) {
+		if (this->_console == nullptr) throw rawrbox::Logger::err("UIConsole", "Invalid console reference");
 
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/ui/overlay/overlay.png")->get();
 
@@ -110,6 +104,11 @@ namespace rawrbox {
 		};
 
 		this->updateEntries();
+	}
+
+	UIConsole::~UIConsole() {
+		if (this->_console == nullptr) return;
+		this->_console->onPrint.clear();
 	}
 
 	void UIConsole::setVisible(bool visible) {

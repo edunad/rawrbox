@@ -119,9 +119,7 @@ namespace rawrbox {
 	}
 	// -----
 
-	void UIInput::initialize() {
-		this->_font = rawrbox::DEBUG_FONT_REGULAR;
-
+	UIInput::UIInput(rawrbox::UIRoot* root) : rawrbox::UIContainer(root), _font(rawrbox::DEBUG_FONT_REGULAR) {
 		this->_charSize = this->_font->getStringSize("W");
 		this->_textSize.y = this->_charSize.y;
 	}

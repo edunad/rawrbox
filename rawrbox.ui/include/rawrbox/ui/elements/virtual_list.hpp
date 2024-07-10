@@ -34,7 +34,7 @@ namespace rawrbox {
 		rawrbox::Color _backgroundColor = rawrbox::Colors::Transparent();
 
 	public:
-		UIVirtualList() = default;
+		UIVirtualList(rawrbox::UIRoot* root) : rawrbox::UIContainer(root){};
 		UIVirtualList(const UIVirtualList&) = delete;
 		UIVirtualList(UIVirtualList&&) = delete;
 		UIVirtualList& operator=(const UIVirtualList&) = delete;

@@ -31,7 +31,7 @@ namespace rawrbox {
 	public:
 		rawrbox::Event<> onClick;
 
-		UIButton() = default;
+		UIButton(rawrbox::UIRoot* root);
 		UIButton(const UIButton&) = default;
 		UIButton(UIButton&&) = delete;
 		UIButton& operator=(const UIButton&) = default;
@@ -41,8 +41,6 @@ namespace rawrbox {
 			this->_overlay = nullptr;
 			this->_regular = nullptr;
 		}
-
-		void initialize() override;
 
 		// UTILS -----
 		virtual void setTextureSize(const rawrbox::Vector2& size);

@@ -8,8 +8,8 @@ namespace rawrbox {
 		float _border = 0.F;
 
 	public:
+		UIGroup(rawrbox::UIRoot* root);
 		~UIGroup() override = default;
-		UIGroup() = default;
 		UIGroup(const UIGroup&) = default;
 		UIGroup(UIGroup&&) = delete;
 		UIGroup& operator=(const UIGroup&) = default;

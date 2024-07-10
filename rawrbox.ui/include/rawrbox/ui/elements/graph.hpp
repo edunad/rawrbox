@@ -90,14 +90,12 @@ namespace rawrbox {
 		std::vector<std::pair<std::string, float>> texts = {};
 
 	public:
-		~UIGraph() override = default;
-		UIGraph() = default;
+		UIGraph(rawrbox::UIRoot* root);
 		UIGraph(const UIGraph&) = default;
 		UIGraph(UIGraph&&) = delete;
 		UIGraph& operator=(const UIGraph&) = default;
 		UIGraph& operator=(UIGraph&&) = delete;
-
-		void initialize() override;
+		~UIGraph() override;
 
 		// CATEGORY --
 		virtual rawrbox::UIGraphCategory& getCategory(size_t id);

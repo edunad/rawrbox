@@ -12,14 +12,12 @@ namespace rawrbox {
 		rawrbox::Color _color = rawrbox::Colors::White();
 
 	public:
-		UIImage() = default;
+		UIImage(rawrbox::UIRoot* root);
 		UIImage(const UIImage&) = default;
 		UIImage(UIImage&&) = delete;
 		UIImage& operator=(const UIImage&) = default;
 		UIImage& operator=(UIImage&&) = delete;
-		~UIImage() override {
-			this->_texture = nullptr;
-		}
+		~UIImage() override;
 
 		// UTILS ----
 		[[nodiscard]] virtual rawrbox::TextureBase* getTexture() const;

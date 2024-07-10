@@ -6,6 +6,11 @@
 #include <rawrbox/ui/elements/image.hpp>
 
 namespace rawrbox {
+	UIImage::UIImage(rawrbox::UIRoot* root) : rawrbox::UIContainer(root) {}
+	UIImage::~UIImage() {
+		this->_texture = nullptr;
+	}
+
 	// UTILS ----
 	rawrbox::TextureBase* UIImage::getTexture() const { return this->_texture; }
 	void UIImage::setTexture(rawrbox::TextureBase* texture) { this->_texture = texture; }

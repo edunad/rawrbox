@@ -12,6 +12,7 @@
 #include <rawrbox/ui/elements/input.hpp>
 #include <rawrbox/ui/elements/label.hpp>
 #include <rawrbox/ui/elements/progress_bar.hpp>
+#include <rawrbox/ui/elements/tabs.hpp>
 #include <rawrbox/ui/elements/virtual_list.hpp>
 #include <rawrbox/ui/static.hpp>
 #include <rawrbox/utils/keys.hpp>
@@ -227,15 +228,14 @@ namespace ui_test {
 			frame->setTitle("Virtual lists");
 			frame->setSize({400, 250});
 			frame->setPos({100, 450});
+
+			// LIST
 			{
 				auto* label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({5, 3});
 				label->setText("LIST MODE");
 				label->sizeToContents();
-			}
 
-			// LIST
-			{
 				auto* vlist = frame->createChild<rawrbox::UIVirtualList<std::string>>();
 				vlist->setPos({0, 16});
 				vlist->setSize({400, 100});
@@ -253,14 +253,13 @@ namespace ui_test {
 					vlist->addItem(fmt::format("Item #{}", i));
 			}
 
+			// GRID
 			{
 				auto* label = frame->createChild<rawrbox::UILabel>();
 				label->setPos({5, 120});
 				label->setText("GRID MODE");
 				label->sizeToContents();
-			}
-			// GRID
-			{
+
 				auto* vlist = frame->createChild<rawrbox::UIVirtualList<std::string>>();
 				vlist->setPos({0, 136});
 				vlist->setSize({400, 100});
@@ -281,7 +280,7 @@ namespace ui_test {
 
 		{
 			auto* frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
-			frame->setTitle("graphss");
+			frame->setTitle("Graphs");
 			frame->setSize({400, 200});
 			frame->setPos({100, 200});
 			frame->onClose += [this]() {
@@ -303,6 +302,52 @@ namespace ui_test {
 			this->_graph->setAutoScale(true);
 			this->_graph->setSmoothing(20);
 			this->_graph->setShowLegend(true);
+		}
+
+		{
+			auto* frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
+			frame->setTitle("Tabs");
+			frame->setSize({300, 250});
+			frame->setPos({600, 450});
+
+			// TAB 1 ---
+			auto* group1 = frame->createChild<rawrbox::UIGroup>();
+			auto* label1 = group1->createChild<rawrbox::UILabel>();
+			label1->setText("Tab 1");
+			label1->sizeToContents();
+			// --------
+
+			// TAB 2 ---
+			auto* group2 = frame->createChild<rawrbox::UIGroup>();
+			auto* label2 = group2->createChild<rawrbox::UILabel>();
+			label2->setText("Tab 2");
+			label2->sizeToContents();
+			// --------
+
+			// TAB 3 ---
+			auto* group3 = frame->createChild<rawrbox::UIGroup>();
+			auto* label3 = group3->createChild<rawrbox::UILabel>();
+			label3->setText("Tab 3");
+			label3->sizeToContents();
+			// --------
+
+			// TAB 4 ---
+			auto* group4 = frame->createChild<rawrbox::UIGroup>();
+			auto* label4 = group4->createChild<rawrbox::UILabel>();
+			label4->setText("Tab 4");
+			label4->sizeToContents();
+			// --------
+
+			std::vector<rawrbox::UITab> tabs = {
+			    {"tab1", "Tab 1", group1},
+			    {"tab2", "Tab 2", group2},
+			    {"tab3", "Tab 3", group3},
+			    {"tab4", "Tab 4", group4}};
+
+			auto* tab = frame->createChild<rawrbox::UITabs>(tabs);
+			tab->setSize({300, 250});
+			tab->setActive(0);
+			tab->setEnabled(2, false);
 		}
 		// ---
 
