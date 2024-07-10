@@ -6,6 +6,7 @@
 #include <rawrbox/ui/elements/input.hpp>
 #include <rawrbox/ui/elements/label.hpp>
 #include <rawrbox/ui/elements/progress_bar.hpp>
+#include <rawrbox/ui/elements/tabs.hpp>
 #include <rawrbox/ui/root.hpp>
 #include <rawrbox/ui/scripting/wrappers/ui.hpp>
 
@@ -85,6 +86,13 @@ namespace rawrbox {
 			    }
 
 			    return root->createChild<rawrbox::UIGraph>();
+		    })
+		    .addFunction("createTabs", [root](std::optional<rawrbox::UIContainer*> parent, const std::vector<rawrbox::UITab>& tabs) {
+			    if (parent.has_value()) {
+				    return parent.value()->createChild<rawrbox::UITabs>(tabs);
+			    }
+
+			    return root->createChild<rawrbox::UITabs>(tabs);
 		    })
 		    .endNamespace();
 	}

@@ -6,14 +6,13 @@
 #include <rawrbox/ui/root.hpp>
 
 namespace rawrbox {
-	void UIFrame::initialize() {
+	UIFrame::UIFrame(rawrbox::UIRoot* root) : rawrbox::UIContainer(root), _closeButton(this->createChild<rawrbox::UIButton>()) {
 		this->_stripes = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/ui/stripe.png")->get();
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/ui/overlay/overlay.png")->get();
 
 		// Build close button ---
 		auto size = this->getSize();
 
-		this->_closeButton = this->createChild<rawrbox::UIButton>();
 		this->_closeButton->setTexture("./assets/textures/ui/icons/close.png");
 		this->_closeButton->setSize({30, this->_titleSize - 1});
 		this->_closeButton->setPos({size.x - 30, -this->_titleSize});
@@ -23,7 +22,6 @@ namespace rawrbox {
 		this->_closeButton->setBorder(false);
 		this->_closeButton->setBackgroundColor(Colors::Transparent());
 		this->_closeButton->setVisible(this->_closable);
-		this->_closeButton->initialize();
 
 		this->_closeButton->onClick += [this]() {
 			this->onClose();

@@ -7,9 +7,14 @@
 
 namespace rawrbox {
 	// UTILS ----
-	void UIProgressBar::initialize() {
+	UIProgressBar::UIProgressBar(rawrbox::UIRoot* root) : rawrbox::UIContainer(root) {
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/ui/overlay/overlay.png")->get();
 		this->_bg = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/ui/background_grid.png")->get();
+	}
+
+	UIProgressBar::~UIProgressBar() {
+		this->_overlay = nullptr;
+		this->_bg = nullptr;
 	}
 
 	void UIProgressBar::showPercent(bool show) { this->_percent = show; }

@@ -30,13 +30,11 @@ namespace rawrbox {
 	public:
 		virtual ~UIContainer() = default;
 
-		UIContainer() = default;
+		UIContainer(rawrbox::UIRoot* root);
 		UIContainer(const UIContainer&) = default;
 		UIContainer(UIContainer&&) noexcept;
 		UIContainer& operator=(const UIContainer&) = default;
 		UIContainer& operator=(UIContainer&&) = delete;
-
-		virtual void initialize();
 
 		// UTILS ---
 		virtual void setPos(const rawrbox::Vector2f& pos);
@@ -73,10 +71,8 @@ namespace rawrbox {
 		template <class T, typename... CallbackArgs>
 			requires(std::derived_from<T, rawrbox::UIContainer>)
 		T* createChild(CallbackArgs&&... args) {
-			auto elm = std::make_shared<T>(std::forward<CallbackArgs>(args)...);
-			elm->setRoot(this->_root);
+			auto elm = std::make_shared<T>(this->_root, std::forward<CallbackArgs>(args)...);
 			elm->setParent(this);
-			elm->initialize();
 
 			auto& childn = this->getChildren();
 			if (elm->alwaysOnTop()) {

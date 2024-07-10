@@ -6,7 +6,7 @@
 #include <rawrbox/utils/keys.hpp>
 
 namespace rawrbox {
-	void UIButton::initialize() {
+	UIButton::UIButton(rawrbox::UIRoot* root) : rawrbox::UIContainer(root) {
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("assets/textures/ui/overlay/overlay.png")->get();
 	}
 

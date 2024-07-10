@@ -48,14 +48,13 @@ namespace rawrbox {
 		virtual void drawText(rawrbox::Stencil& stencil, const std::vector<ConsoleEntry>& entries);
 
 	public:
-		UIConsole(rawrbox::Console& console);
+		UIConsole(rawrbox::UIRoot* root, rawrbox::Console& console);
 		UIConsole(const UIConsole&) = delete;
 		UIConsole(UIConsole&&) = delete;
 		UIConsole& operator=(const UIConsole&) = delete;
 		UIConsole& operator=(UIConsole&&) = delete;
 		~UIConsole() override;
 
-		void initialize() override;
 		void draw(rawrbox::Stencil& stencil) override;
 		void afterDraw(rawrbox::Stencil& stencil) override;
 

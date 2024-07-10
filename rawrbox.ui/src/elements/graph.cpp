@@ -16,8 +16,9 @@ namespace rawrbox {
 	}
 	// ----------
 
-	void UIGraph::initialize() {
-		this->_font = rawrbox::DEBUG_FONT_REGULAR;
+	UIGraph::UIGraph(rawrbox::UIRoot* root) : rawrbox::UIContainer(root), _font(rawrbox::DEBUG_FONT_REGULAR) {}
+	UIGraph::~UIGraph() {
+		this->_font = nullptr;
 	}
 
 	// UTILS ----

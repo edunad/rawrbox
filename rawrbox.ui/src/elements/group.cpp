@@ -2,6 +2,8 @@
 #include <rawrbox/ui/elements/group.hpp>
 
 namespace rawrbox {
+	UIGroup::UIGroup(rawrbox::UIRoot* root) : rawrbox::UIContainer(root) {}
+
 	// UTILS ----
 	void UIGroup::setBorder(float border) { this->_border = border; }
 	float UIGroup::getBorder() const { return this->_border; }

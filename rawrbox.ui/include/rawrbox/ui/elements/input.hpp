@@ -49,18 +49,16 @@ namespace rawrbox {
 		void moveCharet(bool forward);
 		// ---------------
 	public:
-		~UIInput() override = default;
-		UIInput() = default;
+		UIInput(rawrbox::UIRoot* root);
 		UIInput(const UIInput&) = default;
 		UIInput(UIInput&&) = delete;
 		UIInput& operator=(const UIInput&) = default;
 		UIInput& operator=(UIInput&&) = delete;
+		~UIInput() override = default;
 
 		rawrbox::Event<uint32_t> onKey;
 		rawrbox::Event<> onTextUpdate;
 		rawrbox::Event<> onEnter;
-
-		void initialize() override;
 
 		// UTILS ----
 		virtual void setHints(const std::vector<std::string>& hints);

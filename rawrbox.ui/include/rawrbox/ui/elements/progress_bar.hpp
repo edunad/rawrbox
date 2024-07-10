@@ -22,9 +22,14 @@ namespace rawrbox {
 	public:
 		rawrbox::Event<float> onValueChange;
 
-		// UTILS ----
-		void initialize() override;
+		UIProgressBar(rawrbox::UIRoot* root);
+		UIProgressBar(const UIProgressBar&) = default;
+		UIProgressBar(UIProgressBar&&) = delete;
+		UIProgressBar& operator=(const UIProgressBar&) = default;
+		UIProgressBar& operator=(UIProgressBar&&) = delete;
+		~UIProgressBar() override;
 
+		// UTILS ----
 		virtual void showPercent(bool show);
 		[[nodiscard]] virtual bool isPercentVisible() const;
 

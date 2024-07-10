@@ -31,16 +31,15 @@ namespace rawrbox {
 		// -----------------
 
 	public:
-		~UIFrame() override = default;
-		UIFrame() = default;
+		rawrbox::Event<> onClose;
+
+		UIFrame(rawrbox::UIRoot* root);
 		UIFrame(const UIFrame&) = default;
 		UIFrame(UIFrame&&) = delete;
 		UIFrame& operator=(const UIFrame&) = default;
 		UIFrame& operator=(UIFrame&&) = delete;
+		~UIFrame() override = default;
 
-		rawrbox::Event<> onClose;
-
-		void initialize() override;
 		[[nodiscard]] rawrbox::Vector2f getDrawOffset() const override;
 
 		// UTILS -----
