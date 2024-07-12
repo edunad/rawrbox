@@ -1,7 +1,5 @@
 #include <rawrbox/utils/file_watcher.hpp>
 
-#include <stdexcept>
-
 namespace rawrbox {
 	FileWatcher::FileWatcher(const std::function<void(std::string, rawrbox::FileStatus)>& action, std::chrono::duration<int, std::milli> delay) : _delay{delay}, _action(action) {}
 	FileWatcher::~FileWatcher() { this->stop(); }
@@ -20,6 +18,13 @@ namespace rawrbox {
 
 	void FileWatcher::watchFile(const std::filesystem::path& path) {
 		this->_files[path.generic_string()] = std::filesystem::last_write_time(path);
+	}
+
+	void FileWatcher::unwatchFile(const std::filesystem::path& path) {
+		auto fnd = this->_files.find(path.generic_string());
+		if (fnd == this->_files.end()) return;
+
+		this->_files.erase(fnd);
 	}
 
 	void FileWatcher::start() {

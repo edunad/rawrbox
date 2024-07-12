@@ -334,16 +334,19 @@ namespace rawrbox {
 	}
 
 	// LOADING ----
-	void SCRIPTING::loadMods(const std::filesystem::path& rootFolder) { // Load mods
+	std::unordered_map<std::filesystem::path, bool> SCRIPTING::loadMods(const std::filesystem::path& rootFolder) { // Load mods
 		if (!std::filesystem::exists(rootFolder)) throw _logger->error("Failed to locate root folder '{}'", rootFolder.generic_string());
 
+		std::unordered_map<std::filesystem::path, bool> success = {};
 		for (const auto& p : std::filesystem::directory_iterator(rootFolder)) {
 			if (!p.is_directory()) continue;
-			loadMod(p);
+			success[p] = loadMod(p);
 		}
+
+		return success;
 	}
 
-	void SCRIPTING::loadMod(const std::filesystem::path& modFolder) {
+	bool SCRIPTING::loadMod(const std::filesystem::path& modFolder) {
 		if (!std::filesystem::exists(modFolder)) throw _logger->error("Failed to locate mod folder '{}'", modFolder.generic_string());
 
 		std::string id = modFolder.filename().generic_string();
@@ -361,6 +364,7 @@ namespace rawrbox {
 				id = metadataJSON["id"].get<std::string>();
 			}
 		}
+
 		// -----------------
 
 		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder, metadataJSON);
@@ -380,13 +384,39 @@ namespace rawrbox {
 			registerLoadedFile(mod->getID(), mod->getEntryFilePath()); // Register file for hot-reloading
 		} catch (const std::runtime_error& err) {
 			_logger->printError("{}", err.what());
+			return false;
 		}
 
 		_mods.emplace(id, std::move(mod));
+		return true;
+	}
+
+	bool SCRIPTING::unloadMod(const std::string& modId) {
+		auto fnd = _mods.find(modId);
+		if (fnd == _mods.end()) return false;
+
+		auto fndLua = _loadedLuaFiles.find(modId);
+		if (fndLua != _loadedLuaFiles.end()) {
+			for (auto& pt : fndLua->second) {
+				_watcher->unwatchFile(pt);
+			}
+
+			_loadedLuaFiles.erase(fndLua);
+		}
+
+		fnd->second->shutdown();
+		_mods.erase(fnd);
+		return true;
 	}
 	// -----------
 
 	void SCRIPTING::shutdown() {
+		// Shutdown mods ---
+		for (auto& mod : _mods) {
+			mod.second->shutdown();
+		}
+		// ----------------
+
 		_console = nullptr;
 		_watcher.reset();
 

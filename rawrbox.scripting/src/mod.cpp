@@ -11,6 +11,11 @@ namespace rawrbox {
 		this->_L = nullptr;
 	}
 
+	void Mod::shutdown() {
+		if (this->_L == nullptr) throw _logger->error("Invalid lua handle");
+		this->call("onShutdown");
+	}
+
 	void Mod::init() {
 		if (this->_L == nullptr) throw _logger->error("Invalid lua handle");
 

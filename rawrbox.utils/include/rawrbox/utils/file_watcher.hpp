@@ -30,6 +30,7 @@ namespace rawrbox {
 		~FileWatcher();
 
 		void watchFile(const std::filesystem::path& path);
+		void unwatchFile(const std::filesystem::path& path);
 
 		void stop();
 		void start();
