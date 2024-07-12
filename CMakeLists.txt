@@ -78,7 +78,10 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS ON)
     set(RAWRBOX_BUILD_QHULL ON)
 
-    set(STEAMWORKS_APPID 100)
+    if(NOT DEFINED STEAMWORKS_APPID)
+        message(STATUS "Set STEAMWORKS_APPID to 480 (SpaceWars example game)")
+        set(STEAMWORKS_APPID 480) # SpaceWars example game
+    endif()
 
     set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}")
