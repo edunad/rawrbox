@@ -38,6 +38,8 @@ namespace rawrbox {
 		virtual ~Mod();
 
 		virtual void init();
+		virtual void shutdown();
+
 		virtual void gc();
 
 		// LOADING -------

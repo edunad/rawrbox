@@ -395,12 +395,28 @@ namespace rawrbox {
 		auto fnd = _mods.find(modId);
 		if (fnd == _mods.end()) return false;
 
+		auto fndLua = _loadedLuaFiles.find(modId);
+		if (fndLua != _loadedLuaFiles.end()) {
+			for (auto& pt : fndLua->second) {
+				_watcher->unwatchFile(pt);
+			}
+
+			_loadedLuaFiles.erase(fndLua);
+		}
+
+		fnd->second->shutdown();
 		_mods.erase(fnd);
 		return true;
 	}
 	// -----------
 
 	void SCRIPTING::shutdown() {
+		// Shutdown mods ---
+		for (auto& mod : _mods) {
+			mod.second->shutdown();
+		}
+		// ----------------
+
 		_console = nullptr;
 		_watcher.reset();
 
