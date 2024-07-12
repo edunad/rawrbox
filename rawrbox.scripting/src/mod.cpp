@@ -7,6 +7,8 @@
 namespace rawrbox {
 	Mod::Mod(std::string id, std::filesystem::path folderPath, glz::json_t metadata) : _L(luaL_newstate()), _modTable(_L), _folder(std::move(folderPath)), _id(std::move(id)), _metadata(std::move(metadata)) {}
 	Mod::~Mod() {
+		this->call("onShutdown");
+
 		this->gc();
 		this->_L = nullptr;
 	}

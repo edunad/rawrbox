@@ -43,3 +43,6 @@ endif()
 
 add_subdirectory("015-gpu-picking")
 
+if(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS)
+    add_subdirectory("016-steamworks")
+endif()

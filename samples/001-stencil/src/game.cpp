@@ -323,14 +323,10 @@ namespace stencil {
 
 	void Game::update() {
 		rawrbox::Window::update();
+		if (!this->_ready || this->_model == nullptr) return;
 
-		if (this->_ready) {
-			if (this->_model != nullptr) {
-				this->_model->setEulerAngle({0, rawrbox::MathUtils::toRad(this->_counter * 20.F), rawrbox::MathUtils::toRad(this->_counter * 10.F)});
-			}
-
-			this->_counter += 0.1F;
-		}
+		this->_model->setEulerAngle({0, rawrbox::MathUtils::toRad(this->_counter * 20.F), rawrbox::MathUtils::toRad(this->_counter * 10.F)});
+		this->_counter += 0.1F;
 	}
 
 	void Game::draw() {

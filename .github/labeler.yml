@@ -49,10 +49,14 @@
 "🧙‍♂️ ASSIMP":
   - changed-files:
       - any-glob-to-any-file: "rawrbox.assimp/**/*"
-      
+
 "🛰 NETWORK":
   - changed-files:
       - any-glob-to-any-file: "rawrbox.network/**/*"
+
+"💨 STEAMWORKS":
+  - changed-files:
+      - any-glob-to-any-file: "rawrbox.steamworks/**/*"
 
 "📜 SCRIPTING":
   - changed-files:

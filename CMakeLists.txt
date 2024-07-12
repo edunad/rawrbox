@@ -11,8 +11,9 @@ CPMUsePackageLock(package-lock.cmake)
 
 # Versioning
 set(RAWRBOX_VERSION_MAJOR 2 CACHE STRING "major version" FORCE)
-set(RAWRBOX_VERSION_MINOR 0 CACHE STRING "minor version" FORCE)
-set(RAWRBOX_VERSION ${RAWRBOX_VERSION_MAJOR}.${RAWRBOX_VERSION_MINOR} CACHE STRING "version" FORCE)
+set(RAWRBOX_VERSION_MINOR 4 CACHE STRING "minor version" FORCE)
+set(RAWRBOX_VERSION_PATCH 0 CACHE STRING "patch version" FORCE)
+set(RAWRBOX_VERSION ${RAWRBOX_VERSION_MAJOR}.${RAWRBOX_VERSION_MINOR}.${RAWRBOX_VERSION_PATCH} CACHE STRING "version" FORCE)
 
 project("RAWRBOX" VERSION ${RAWRBOX_VERSION} DESCRIPTION "Game engine - By edunad" LANGUAGES C CXX)
 # ---
@@ -30,8 +31,8 @@ option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 option(RAWRBOX_BUILD_TESTING "Build tests" OFF)
 option(RAWRBOX_BUILD_SAMPLES "Build samples" OFF)
 
-option(RAWRBOX_BUILD_RAWRBOX_UI "Build RAWRBOX.UI" OFF)
-option(RAWRBOX_BUILD_RAWRBOX_RESOURCES "Build RAWRBOX.RESOURCES" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_UI "Build rawrbox UI" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_RESOURCES "Build rawrbox resources utils" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS "Build 3D physics support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS "Build 2D physics support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_BASS "Build bass & add sound loading support" OFF)
@@ -41,6 +42,7 @@ option(RAWRBOX_BUILD_RAWRBOX_NETWORK "Build network support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING "Build lua & mod support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE "Enable unsafe scripting (io / etc)" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_EXCEPTION "Enables scripting throwing exceptions instead of catching them" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS "Build steamworks support" OFF)
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" OFF)
 option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
 # ---------------
@@ -73,14 +75,17 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
     set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING ON)
     set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE ON)
+    set(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS ON)
     set(RAWRBOX_BUILD_QHULL ON)
+
+    set(STEAMWORKS_APPID 100)
 
     set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}")
 endif()
 
 # OTHER SETTINGS ----
-set(RAWRBOX_CONTENT_FOLDER "assets" CACHE STRING "the assets folder (aka where models, textures, etc are)")
+set(RAWRBOX_CONTENT_FOLDER "assets" CACHE STRING "The assets folder (aka where models, textures, etc are)")
 set(RAWRBOX_LIBRARY_TYPE "STATIC" CACHE STRING "Linking type for library")
 # ----------------
 
@@ -248,6 +253,11 @@ if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
     add_subdirectory("rawrbox.physics_2d")
 endif()
 
+if(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS)
+    message(STATUS "Enabled RAWRBOX.STEAMWORKS support")
+    add_subdirectory("rawrbox.steamworks")
+endif()
+
 # Shhhhh windows... shhhh....
 mute_dependencies_warnings(".*RAWRBOX.*")
 # --------------------
@@ -256,7 +266,6 @@ if(RAWRBOX_BUILD_SAMPLES)
     message(STATUS "Enabled SAMPLES building")
     add_subdirectory("samples")
 endif()
-
 
 if(WIN32)
     string(REPLACE "/WX" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
