@@ -5,6 +5,8 @@
 
 #include <steam/steam_api.h>
 
+#include <memory>
+
 namespace rawrbox {
 	enum class Controller {
 		Unknown,

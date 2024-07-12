@@ -6,6 +6,7 @@
 #include <steam/steam_api.h>
 
 #include <functional>
+#include <memory>
 #include <optional>
 #include <string>
 
