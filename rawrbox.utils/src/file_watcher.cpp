@@ -22,7 +22,7 @@ namespace rawrbox {
 
 	void FileWatcher::unwatchFile(const std::filesystem::path& path) {
 		auto fnd = this->_files.find(path.generic_string());
-		if (fnd != this->_files.end()) return;
+		if (fnd == this->_files.end()) return;
 
 		this->_files.erase(fnd);
 	}
