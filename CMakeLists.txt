@@ -182,7 +182,7 @@ if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)
         USE_CACHE
             OFF
         GIT_TAG
-            2.1.7
+            2.2.1
         OPTIONS
             #"ASM686 FALSE"
             #"AMD64 FALSE"

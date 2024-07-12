@@ -3,8 +3,8 @@ set(output_target RAWRBOX.RENDER)
 # --------------
 
 # Packages ----
-set(DXC_VERSION "v1.8.2403.2")
-set(DXC_RELEASE_DATE "2024_03_29")
+set(DXC_VERSION "v1.8.2405")
+set(DXC_RELEASE_DATE "2024_05_24")
 
 find_package(DXC REQUIRED)
 # --------------

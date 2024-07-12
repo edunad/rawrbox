@@ -25,7 +25,7 @@ CPMDeclarePackage(glaze
 # zlib
 CPMDeclarePackage(zlib
   NAME zlib
-  GIT_TAG 2.1.7
+  GIT_TAG 2.2.1
   GITHUB_REPOSITORY zlib-ng/zlib-ng
   OPTIONS
     "ZLIB_COMPAT ON"
@@ -77,7 +77,7 @@ CPMDeclarePackage(cpptrace
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.632
+  GIT_TAG 0.633
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"

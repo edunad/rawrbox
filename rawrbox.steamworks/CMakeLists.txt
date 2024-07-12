@@ -4,7 +4,7 @@ set(output_target RAWRBOX.STEAMWORKS)
 # --------------
 
 # LIBS ---
-set(STEAMWORKS_SDKPATH "${CMAKE_CURRENT_LIST_DIR}/steamworks")
+set(STEAMWORKS_SDKPATH "${CMAKE_CURRENT_LIST_DIR}/_deps/steamworks")
 set(STEAMWORKS_APPID 480) # Example game SpaceWar
 
 find_package(STEAMWORKS REQUIRED)
