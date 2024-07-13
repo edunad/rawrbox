@@ -1,11 +1,13 @@
 
 #pragma once
-#include <rawrbox/render/text/font.hpp>
-#include <rawrbox/render/textures/base.hpp>
+
+#include <rawrbox/math/color.hpp>
 #include <rawrbox/ui/container.hpp>
 #include <rawrbox/utils/event.hpp>
 
 namespace rawrbox {
+	class TextureBase;
+
 	class UIProgressBar : public rawrbox::UIContainer {
 	protected:
 		// RESOURCES ---

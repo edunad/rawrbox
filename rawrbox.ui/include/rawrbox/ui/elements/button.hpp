@@ -1,14 +1,15 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/ui/container.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <string>
 
 namespace rawrbox {
+	class TextureBase;
+	class Font;
+
 	class UIButton : public rawrbox::UIContainer {
 		rawrbox::Color _backgroundColor = rawrbox::Color::RGBHex(0x36393f);
 		rawrbox::Color _textColor = rawrbox::Color::RGBHex(0xf5f6fa);

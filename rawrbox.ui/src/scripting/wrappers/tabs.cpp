@@ -14,6 +14,15 @@ namespace rawrbox {
 		    .addFunction("getButtonFontSize", &rawrbox::UITabs::getButtonFontSize)
 		    .addFunction("getTabHeight", &rawrbox::UITabs::getTabHeight)
 
+		    .addFunction("onTabChange", [](rawrbox::UITabs& self, const luabridge::LuaRef& callback) {
+			    if (!callback.isCallable()) throw std::runtime_error("Callback not a function");
+
+			    self.onTabChange += [callback](const std::string& tabId) -> void {
+				    auto result = luabridge::call(callback, tabId);
+				    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
+			    };
+		    })
+
 		    .endClass();
 	}
 } // namespace rawrbox

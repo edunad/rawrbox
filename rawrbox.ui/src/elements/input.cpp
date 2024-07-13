@@ -1,6 +1,8 @@
 
+#include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
+#include <rawrbox/render/text/font.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/input.hpp>
 #include <rawrbox/utils/keys.hpp>

@@ -2,12 +2,14 @@
 
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/ui/container.hpp>
-#include <rawrbox/ui/elements/button.hpp>
 #include <rawrbox/utils/event.hpp>
 
 #include <string>
 
 namespace rawrbox {
+	class TextureBase;
+	class UIButton;
+
 	class UIFrame : public rawrbox::UIContainer {
 	protected:
 		float _titleSize = 18.F;

@@ -7,6 +7,7 @@
 #include <rawrbox/render/window.hpp>
 #include <rawrbox/resources/loaders/json.hpp>
 #include <rawrbox/resources/manager.hpp>
+#include <rawrbox/ui/elements/button.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
 #include <rawrbox/ui/elements/group.hpp>
 #include <rawrbox/ui/elements/input.hpp>

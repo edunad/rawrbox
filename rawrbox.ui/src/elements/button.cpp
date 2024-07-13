@@ -1,4 +1,6 @@
 
+#include <rawrbox/render/resources/font.hpp>
+#include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/resources/manager.hpp>

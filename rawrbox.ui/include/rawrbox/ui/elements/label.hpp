@@ -1,12 +1,14 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/ui/container.hpp>
 
+#include <filesystem>
 #include <string>
 
 namespace rawrbox {
+	class Font;
+
 	class UILabel : public rawrbox::UIContainer {
 		rawrbox::Color _color = rawrbox::Colors::White();
 		rawrbox::Color _shadowColor = rawrbox::Colors::Transparent();
