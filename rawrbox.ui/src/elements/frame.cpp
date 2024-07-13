@@ -1,7 +1,9 @@
 
+#include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
 #include <rawrbox/resources/manager.hpp>
+#include <rawrbox/ui/elements/button.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
 #include <rawrbox/ui/root.hpp>
 

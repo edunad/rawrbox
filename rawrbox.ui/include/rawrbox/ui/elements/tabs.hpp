@@ -1,12 +1,14 @@
 #pragma once
 
 #include <rawrbox/ui/container.hpp>
-#include <rawrbox/ui/elements/button.hpp>
-#include <rawrbox/ui/elements/group.hpp>
+#include <rawrbox/utils/event.hpp>
 
 #include <utility>
 
 namespace rawrbox {
+	class UIGroup;
+	class UIButton;
+
 	struct UITab {
 	public:
 		std::string name;
@@ -29,6 +31,8 @@ namespace rawrbox {
 		virtual void generate();
 
 	public:
+		rawrbox::Event<const std::string&> onTabChange;
+
 		UITabs(rawrbox::UIRoot* root, const std::vector<rawrbox::UITab>& tabs);
 		UITabs(const UITabs&) = default;
 		UITabs(UITabs&&) = delete;

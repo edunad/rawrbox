@@ -1,4 +1,5 @@
 #include <rawrbox/ui/container.hpp>
+#include <rawrbox/ui/elements/button.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
 #include <rawrbox/ui/elements/graph.hpp>
 #include <rawrbox/ui/elements/group.hpp>

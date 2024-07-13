@@ -1,4 +1,6 @@
 #include <rawrbox/render/stencil.hpp>
+#include <rawrbox/ui/elements/button.hpp>
+#include <rawrbox/ui/elements/group.hpp>
 #include <rawrbox/ui/elements/tabs.hpp>
 #include <rawrbox/utils/logger.hpp>
 
@@ -53,6 +55,12 @@ namespace rawrbox {
 	void UITabs::setActive(size_t index) {
 		if (index > this->_tabs.size()) throw rawrbox::Logger::err("UITabs", "Invalid index {}", index);
 
+		auto& tab = this->_tabs[index];
+		if (tab.button == nullptr) throw rawrbox::Logger::err("UITabs", "Invalid tab button from index {}", index);
+		if (tab.group == nullptr) throw rawrbox::Logger::err("UITabs", "Invalid tab group from index {}", index);
+
+		if (this->_activeTab == &tab) return;
+
 		if (this->_activeTab != nullptr) {
 			if (this->_activeTab->button != nullptr && this->_activeTab->group != nullptr) {
 				this->_activeTab->button->setBackgroundColor(Color::RGBHex(0x282a2e));
@@ -60,14 +68,11 @@ namespace rawrbox {
 			}
 		}
 
-		auto& tab = this->_tabs[index];
-		if (tab.button == nullptr) throw rawrbox::Logger::err("UITabs", "Invalid tab button from index {}", index);
-		if (tab.group == nullptr) throw rawrbox::Logger::err("UITabs", "Invalid tab group from index {}", index);
-
 		tab.button->setBackgroundColor(Color::RGBHex(0x131418));
 		tab.group->setVisible(true);
 
 		this->_activeTab = &tab;
+		onTabChange(tab.id);
 	}
 
 	void UITabs::setEnabled(size_t index, bool enabled) {

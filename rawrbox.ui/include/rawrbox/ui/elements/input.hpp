@@ -1,14 +1,14 @@
 #pragma once
 
 #include <rawrbox/math/color.hpp>
-#include <rawrbox/render/resources/font.hpp>
-#include <rawrbox/render/text/font.hpp>
 #include <rawrbox/ui/container.hpp>
 #include <rawrbox/utils/event.hpp>
 
+#include <filesystem>
 #include <string>
 
 namespace rawrbox {
+	class Font;
 	class UIInput : public rawrbox::UIContainer {
 		rawrbox::Color _backgroundColor = {0.15F, 0.15F, 0.15F, 1.F};
 		rawrbox::Color _border = rawrbox::Colors::Transparent();
