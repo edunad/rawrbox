@@ -5,6 +5,6 @@
 namespace rawrbox {
 	class TextureMissing : public rawrbox::TextureBase {
 	public:
-		TextureMissing();
+		TextureMissing(const rawrbox::Vector2u& size = {2, 2});
 	};
 } // namespace rawrbox

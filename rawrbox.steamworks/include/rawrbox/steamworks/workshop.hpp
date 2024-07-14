@@ -102,6 +102,11 @@ namespace rawrbox {
 		[[nodiscard]] static rawrbox::WorkshopStatus getWorkshopModState(PublishedFileId_t id);
 		// -------------
 
+		// QUERIES ---
+		static void queryUserMods(const std::function<void(std::vector<SteamUGCDetails_t>)>& callback, EUserUGCList type = k_EUserUGCList_Subscribed, const std::vector<std::string>& tags = {}, size_t page = 1);
+		static void queryMods(const std::function<void(std::vector<SteamUGCDetails_t>)>& callback, EUGCQuery type = k_EUGCQuery_RankedByVote, const std::vector<std::string>& tags = {}, size_t page = 1);
+		//-------------
+
 		// UPLOAD ------
 		[[nodiscard]] static rawrbox::WorkshopModConfig readConfig(const std::filesystem::path& rootPath);
 		[[nodiscard]] static std::vector<std::filesystem::path> validateFiles(const std::filesystem::path& rootPath, const std::vector<std::string>& ignore);

@@ -29,6 +29,7 @@ namespace rawrbox {
 		rawrbox::UIGroup* _buttonGroup = nullptr;
 
 		virtual void generate();
+		virtual void updateTabs();
 
 	public:
 		rawrbox::Event<const std::string&> onTabChange;

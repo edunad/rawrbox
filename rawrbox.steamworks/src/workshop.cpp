@@ -226,6 +226,51 @@ namespace rawrbox {
 	}
 	// -------------
 
+	// QUERIES ----
+	void SteamWORKSHOP::queryUserMods(const std::function<void(std::vector<SteamUGCDetails_t>)>& callback, EUserUGCList type, const std::vector<std::string>& tags, size_t page) {
+		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
+
+		auto id = SteamUser()->GetSteamID().GetAccountID();
+		UGCQueryHandle_t handle = SteamUGC()->CreateQueryUserUGCRequest(id, type, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_CreationOrderDesc, STEAMWORKS_APPID, STEAMWORKS_APPID, page);
+		if (handle == k_UGCQueryHandleInvalid) throw _logger->error("Failed to request workshop items");
+
+		// TAGS -----
+		for (const auto& tag : tags) {
+			if (!SteamUGC()->AddRequiredTag(handle, tag.c_str())) {
+				_logger->warn("Failed to add tag '{}' to query search", tag);
+				continue;
+			}
+		}
+		// -----------
+
+		SteamAPICall_t hSteamAPICall = SteamUGC()->SendQueryUGCRequest(handle);
+		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [callback](const std::vector<SteamUGCDetails_t>& details) {
+			callback(details);
+		});
+	}
+
+	void SteamWORKSHOP::queryMods(const std::function<void(std::vector<SteamUGCDetails_t>)>& callback, EUGCQuery type, const std::vector<std::string>& tags, size_t page) {
+		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
+
+		UGCQueryHandle_t handle = SteamUGC()->CreateQueryAllUGCRequest(type, k_EUGCMatchingUGCType_Items, STEAMWORKS_APPID, STEAMWORKS_APPID, page);
+		if (handle == k_UGCQueryHandleInvalid) throw _logger->error("Failed to request workshop items");
+
+		// TAGS -----
+		for (const auto& tag : tags) {
+			if (!SteamUGC()->AddRequiredTag(handle, tag.c_str())) {
+				_logger->warn("Failed to add tag '{}' to query search", tag);
+				continue;
+			}
+		}
+		// -----------
+
+		SteamAPICall_t hSteamAPICall = SteamUGC()->SendQueryUGCRequest(handle);
+		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [callback](const std::vector<SteamUGCDetails_t>& details) {
+			callback(details);
+		});
+	}
+	// -------------
+
 	// UPLOAD ------
 	rawrbox::WorkshopModConfig SteamWORKSHOP::readConfig(const std::filesystem::path& rootPath) {
 		rawrbox::WorkshopModConfig config = {};

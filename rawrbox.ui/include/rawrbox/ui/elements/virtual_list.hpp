@@ -46,7 +46,7 @@ namespace rawrbox {
 		std::function<void(rawrbox::Stencil&)> renderAfter = nullptr;
 		std::function<rawrbox::Vector2i(size_t)> getItemSize = nullptr;
 
-		rawrbox::Event<size_t, T&, bool> onItemClick;
+		rawrbox::Event<size_t, T&, bool> onItemClick = {};
 
 		[[nodiscard]] const rawrbox::VirtualListMode& getMode() const { return this->_mode; }
 		void setMode(rawrbox::VirtualListMode mode) {
@@ -61,7 +61,15 @@ namespace rawrbox {
 		};
 
 		void addItem(const T& item) {
-			this->_items.push_back(item);
+			this->_items.emplace_back(std::move(item));
+		};
+
+		void addItem(T& item) {
+			this->_items.emplace_back(std::move(item));
+		};
+
+		void addItem(T&& item) {
+			this->_items.emplace_back(std::move(item));
 		};
 
 		void setItems(const std::vector<T>& items) {

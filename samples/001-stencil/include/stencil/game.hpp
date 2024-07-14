@@ -6,11 +6,11 @@
 #include <rawrbox/render/text/markdown.hpp>
 #include <rawrbox/render/textures/animated.hpp>
 #include <rawrbox/render/textures/image.hpp>
+#include <rawrbox/render/textures/streaming.hpp>
 
 #include <memory>
 
 namespace stencil {
-
 	class Game : public rawrbox::Engine {
 		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Markdown> _markdown = std::make_unique<rawrbox::Markdown>();
@@ -21,10 +21,14 @@ namespace stencil {
 		rawrbox::TextureBase* _texture4 = nullptr;
 		rawrbox::TextureAnimatedBase* _texture5 = nullptr;
 
+		std::unique_ptr<rawrbox::TextureMissing> _textureMissing = nullptr;
+		std::unique_ptr<rawrbox::TextureStreaming> _textureStreaming = nullptr;
+
 		rawrbox::Font* _font = nullptr;
 		rawrbox::Font* _font2 = nullptr;
 
 		bool _ready = false;
+
 		float _counter = 0;
 
 		void setupGLFW() override;

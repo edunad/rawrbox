@@ -58,9 +58,12 @@ namespace rawrbox {
 		TextureBase& operator=(const TextureBase&) = delete;
 		virtual ~TextureBase();
 
-		// UTILS----
+		// UTILS---
+		[[nodiscard]] virtual const std::vector<uint8_t>& getPixels() const;
+
 		[[nodiscard]] virtual bool hasTransparency() const;
 		[[nodiscard]] virtual const rawrbox::Vector2u& getSize() const;
+
 		[[nodiscard]] virtual int getChannels() const;
 
 		[[nodiscard]] virtual bool isValid() const;

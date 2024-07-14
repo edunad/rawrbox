@@ -10,11 +10,43 @@
 #include <vector>
 
 namespace rawrbox {
+	class SteamUGCQuery {
+	protected:
+		std::function<void(std::vector<SteamUGCDetails_t>)> _callback = nullptr;
+		CCallResult<rawrbox::SteamUGCQuery, SteamUGCQueryCompleted_t> _result = {};
+
+	public:
+		SteamUGCQuery(SteamAPICall_t id, const std::function<void(std::vector<SteamUGCDetails_t>)>& callback) : _callback(callback) {
+			_result.Set(id, this, &rawrbox::SteamUGCQuery::OnUGCQueryCompleted);
+		}
+
+		void OnUGCQueryCompleted(SteamUGCQueryCompleted_t* pParam, bool bIOFailure) {
+			std::vector<SteamUGCDetails_t> details = {};
+
+			if (bIOFailure || pParam->m_eResult != k_EResultOK || pParam->m_unNumResultsReturned <= 0) {
+				this->_callback(details);
+				return;
+			}
+
+			for (uint32_t i = 0; i < pParam->m_unNumResultsReturned; i++) {
+				SteamUGCDetails_t detail = {};
+
+				if (SteamUGC()->GetQueryUGCResult(pParam->m_handle, i, &detail)) {
+					if (detail.m_eResult == k_EResultOK && detail.m_eFileType == k_EWorkshopFileTypeCommunity) {
+						details.push_back(detail);
+					}
+				}
+			}
+
+			SteamUGC()->ReleaseQueryUGCRequest(pParam->m_handle);
+			this->_callback(details);
+		}
+	};
+
 	class SteamCALLBACKS {
 	protected:
 		// QUERY ----
-		std::function<void(std::vector<SteamUGCDetails_t>)> _UGCQueryCompletedCallback = nullptr;
-		CCallResult<rawrbox::SteamCALLBACKS, SteamUGCQueryCompleted_t> _steamUGCQueryCompletedResult = {};
+		std::unordered_map<SteamAPICall_t, std::unique_ptr<rawrbox::SteamUGCQuery>> _ugcQueries = {};
 		// --------
 
 		// WORKSHOP ----
@@ -50,10 +82,6 @@ namespace rawrbox {
 		void OnWorkshopCreateItem(CreateItemResult_t* result, bool bIOFailure);
 		void OnWorkshopUpdateItem(SubmitItemUpdateResult_t* result, bool bIOFailure);
 		// -------------
-
-		// QUERY ---
-		void OnUGCQueryCompleted(SteamUGCQueryCompleted_t* pParam, bool bIOFailure);
-		// --------
 
 	public:
 		rawrbox::Event<PublishedFileId_t> onModInstalled;

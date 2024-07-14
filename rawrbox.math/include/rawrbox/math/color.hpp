@@ -20,7 +20,7 @@ namespace rawrbox {
 		constexpr Color_t(const std::array<NumberType, 4>& arr) : r(arr[0]), g(arr[1]), b(arr[2]), a(arr[3]) {}
 
 		static Color_t<NumberType> RGBAHex(uint32_t x) {
-			if constexpr (std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>) {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return {
 				    ((x >> 24) & 0xFF) / 255.0F,
 				    ((x >> 16) & 0xFF) / 255.0F,
@@ -36,7 +36,7 @@ namespace rawrbox {
 		}
 
 		static Color_t<NumberType> RGBHex(uint32_t x) {
-			if constexpr (std::is_same_v<NumberType, float> || std::is_same_v<NumberType, double>) {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return {
 				    ((x >> 16) & 0xFF) / 255.0F,
 				    ((x >> 8) & 0xFF) / 255.0F,
@@ -44,9 +44,9 @@ namespace rawrbox {
 				    1.F};
 			} else {
 				return {
-				    static_cast<int>(((x >> 16) & 0xFF)),
-				    static_cast<int>(((x >> 8) & 0xFF)),
-				    static_cast<int>(((x)&0xFF)),
+				    static_cast<NumberType>(((x >> 16) & 0xFF)),
+				    static_cast<NumberType>(((x >> 8) & 0xFF)),
+				    static_cast<NumberType>(((x)&0xFF)),
 				    255};
 			}
 		}
@@ -71,7 +71,7 @@ namespace rawrbox {
 
 		[[nodiscard]] std::string toHEX() const {
 			std::array<char, 10> hexColor = {};
-			std::snprintf(hexColor.data(), sizeof(hexColor), "#%02x%02x%02x%02x", static_cast<int>(this->r), static_cast<int>(this->g), static_cast<int>(this->b), static_cast<int>(this->a));
+			std::snprintf(hexColor.data(), sizeof(hexColor), "#%02x%02x%02x%02x", static_cast<NumberType>(this->r), static_cast<NumberType>(this->g), static_cast<NumberType>(this->b), static_cast<NumberType>(this->a));
 
 			return {hexColor.begin(), hexColor.end()};
 		}
@@ -79,18 +79,18 @@ namespace rawrbox {
 		template <class ReturnType>
 			requires(!std::is_same_v<NumberType, ReturnType>)
 		[[nodiscard]] Color_t<ReturnType> cast() const {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return Color_t<ReturnType>(
-				    static_cast<ReturnType>(r) / 255.0F,
-				    static_cast<ReturnType>(g) / 255.0F,
-				    static_cast<ReturnType>(b) / 255.0F,
-				    static_cast<ReturnType>(a) / 255.0F);
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return Color_t<ReturnType>(
 				    static_cast<ReturnType>(r * 255.0F),
 				    static_cast<ReturnType>(g * 255.0F),
 				    static_cast<ReturnType>(b * 255.0F),
 				    static_cast<ReturnType>(a * 255.0F));
+			} else {
+				return Color_t<ReturnType>(
+				    static_cast<ReturnType>(r) / 255.0F,
+				    static_cast<ReturnType>(g) / 255.0F,
+				    static_cast<ReturnType>(b) / 255.0F,
+				    static_cast<ReturnType>(a) / 255.0F);
 			}
 		}
 
@@ -110,10 +110,10 @@ namespace rawrbox {
 			};
 
 			auto col = cols[index % cols.size()];
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return col;
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return col / 255.0F;
+			} else {
+				return col;
 			}
 		}
 
@@ -130,10 +130,10 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] ColorType strength(float strength) const {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return {static_cast<int>(r * strength), static_cast<int>(g * strength), static_cast<int>(b * strength), 255};
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return {r * strength, g * strength, b * strength, 1.F};
+			} else {
+				return {static_cast<NumberType>(r * strength), static_cast<NumberType>(g * strength), static_cast<NumberType>(b * strength), 255};
 			}
 		}
 
@@ -159,10 +159,10 @@ namespace rawrbox {
 
 		[[nodiscard]] bool invisible() const { return a == 0; }
 		[[nodiscard]] bool hasTransparency() const {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return a != 255;
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return a != 1.F;
+			} else {
+				return a != 255;
 			}
 		}
 
@@ -295,82 +295,82 @@ namespace rawrbox {
 
 	public:
 		[[nodiscard]] static inline constexpr ColorType Black() {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return ColorType(0, 0, 0, 255);
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return ColorType(0.F, 0.F, 0.F, 1.F);
+			} else {
+				return ColorType(0, 0, 0, 255);
 			}
 		}
 
 		[[nodiscard]] static inline constexpr ColorType White() {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return ColorType(255, 255, 255, 255);
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return ColorType(1.F, 1.F, 1.F, 1.F);
+			} else {
+				return ColorType(255, 255, 255, 255);
 			}
 		}
 
 		[[nodiscard]] static inline constexpr ColorType Gray() {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return ColorType(206, 204, 191, 255);
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return ColorType(0.81F, 0.8F, 0.75F, 1.F);
+			} else {
+				return ColorType(206, 204, 191, 255);
 			}
 		}
 
 		[[nodiscard]] static inline constexpr ColorType Red() {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return ColorType(255, 82, 82, 255);
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return ColorType(1, 0.32F, 0.32F, 1.F);
+			} else {
+				return ColorType(255, 82, 82, 255);
 			}
 		}
 
 		[[nodiscard]] static inline constexpr ColorType Green() {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return ColorType(36, 222, 128, 255);
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return ColorType(0.14F, 0.87F, 0.50F, 1.F);
+			} else {
+				return ColorType(36, 222, 128, 255);
 			}
 		}
 
 		[[nodiscard]] static inline constexpr ColorType Blue() {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return ColorType(51, 171, 222, 255);
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return ColorType(0.2F, 0.67F, 0.87F, 1.F);
+			} else {
+				return ColorType(51, 171, 222, 255);
 			}
 		}
 
 		[[nodiscard]] static inline constexpr ColorType Orange() {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return ColorType(255, 120, 61, 255);
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return ColorType(1, 0.47F, 0.24F, 1.F);
+			} else {
+				return ColorType(255, 120, 61, 255);
 			}
 		}
 
 		[[nodiscard]] static inline constexpr ColorType Yellow() {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return ColorType(255, 230, 64, 255);
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return ColorType(1, 0.9F, 0.25F, 1.F);
+			} else {
+				return ColorType(255, 230, 64, 255);
 			}
 		}
 
 		[[nodiscard]] static inline constexpr ColorType Purple() {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return ColorType(255, 0, 255, 255);
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return ColorType(1.F, 0.F, 1.F, 1.F);
+			} else {
+				return ColorType(255, 0, 255, 255);
 			}
 		}
 
 		[[nodiscard]] static inline constexpr ColorType Brown() {
-			if constexpr (std::is_same_v<NumberType, int>) {
-				return ColorType(133, 88, 49, 255);
-			} else {
+			if constexpr (std::is_floating_point_v<NumberType>) {
 				return ColorType(0.52F, 0.35F, 0.19F, 1.F);
+			} else {
+				return ColorType(133, 88, 49, 255);
 			}
 		}
 

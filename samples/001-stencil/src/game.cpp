@@ -7,6 +7,7 @@
 #include <rawrbox/render/resources/svg.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
+#include <rawrbox/utils/timer.hpp>
 
 #include <stencil/game.hpp>
 
@@ -95,6 +96,18 @@ namespace stencil {
 			fmt::print("end\n");
 		};
 
+		this->_textureMissing = std::make_unique<rawrbox::TextureMissing>(rawrbox::Vector2u(64, 64));
+		this->_textureMissing->upload();
+
+		this->_textureStreaming = std::make_unique<rawrbox::TextureStreaming>(this->_texture->getSize());
+		this->_textureStreaming->upload();
+
+		// Simulate loading --
+		rawrbox::TIMER::simple(4000.F, [this]() {
+			this->_textureStreaming->setPixelData(this->_texture->getPixels());
+		});
+		// ----
+
 		this->_font = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/droidsans.ttf")->getSize(28);
 		this->_font2 = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>("./assets/fonts/visitor1.ttf")->getSize(18);
 		// ----
@@ -131,6 +144,9 @@ namespace stencil {
 			this->_texture2 = nullptr;
 			this->_texture3 = nullptr;
 			this->_texture4 = nullptr;
+			this->_texture5 = nullptr;
+			this->_textureMissing.reset();
+			this->_textureStreaming.reset();
 
 			this->_model.reset();
 
@@ -248,16 +264,24 @@ namespace stencil {
 		stencil->drawTexture({0, 0}, {100, 100}, *this->_texture);
 		stencil->popOffset();
 
-		stencil->pushOffset({900, 0});
+		stencil->pushOffset({910, 0});
 		stencil->drawTexture({0, 0}, {100, 100}, *this->_texture2);
 		stencil->popOffset();
 
-		stencil->pushOffset({750, 110});
-		stencil->drawTexture({0, 0}, {64, 64}, *this->_texture3, rawrbox::Colors::White(), {}, {1, 1}, static_cast<uint32_t>(this->_counter) % 4);
+		stencil->pushOffset({1020, 0});
+		stencil->drawTexture({0, 0}, {100, 100}, *this->_texture3, rawrbox::Colors::White(), {}, {1, 1}, static_cast<uint32_t>(this->_counter) % 4);
 		stencil->popOffset();
 
-		stencil->pushOffset({820, 110});
+		stencil->pushOffset({1130, 0});
 		stencil->drawTexture({0, 0}, {509 * 0.35F, 404 * 0.35F}, *this->_texture5);
+		stencil->popOffset();
+
+		stencil->pushOffset({1320, 0});
+		stencil->drawTexture({0, 0}, {100, 100}, *this->_textureMissing);
+		stencil->popOffset();
+
+		stencil->pushOffset({1430, 0});
+		stencil->drawTexture({0, 0}, {100, 100}, *this->_textureStreaming);
 		stencil->popOffset();
 		// ---
 

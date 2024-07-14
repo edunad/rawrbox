@@ -75,8 +75,9 @@ namespace rawrbox {
 	}
 
 	// UTILS ---
-	bool TextureBase::hasTransparency() const { return this->_channels == 4 && this->_transparent; }
+	const std::vector<uint8_t>& TextureBase::getPixels() const { return this->_pixels; }
 
+	bool TextureBase::hasTransparency() const { return this->_channels == 4 && this->_transparent; }
 	const rawrbox::Vector2u& TextureBase::getSize() const { return this->_size; }
 
 	int TextureBase::getChannels() const { return this->_channels; }
@@ -126,7 +127,7 @@ namespace rawrbox {
 
 		if (this->_pixels.empty()) {
 			this->_pixels.resize(this->_size.x * this->_size.y * this->_channels);
-			std::memset(this->_pixels.data(), 0, this->_pixels.size());
+			std::memset(this->_pixels.data(), 0, this->_pixels.size()); // Fill it with empty pixels
 		}
 
 		Diligent::TextureDesc desc;
