@@ -48,7 +48,7 @@ namespace rawrbox {
 			this->_frames.push_back({}); // first push it, then allocate to prevent double copy of memory
 			// NOLINTEND(*)
 
-			rawrbox::Frame& frame = this->_frames.back();
+			rawrbox::ImageFrame& frame = this->_frames.back();
 			frame.delay = static_cast<float>(delays[i]); // in ms
 			frame.pixels.resize(framePixelCount);
 

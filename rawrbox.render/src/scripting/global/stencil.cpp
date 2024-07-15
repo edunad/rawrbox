@@ -32,6 +32,11 @@ namespace rawrbox {
 		if (rawrbox::RENDERER == nullptr) throw std::runtime_error("Invalid stencil handle");
 		rawrbox::RENDERER->stencil()->drawText(font, text, pos, col.value_or(rawrbox::Colors::White()), alignX.value_or(rawrbox::Alignment::Center), alignY.value_or(rawrbox::Alignment::Center));
 	}
+
+	void StencilGlobal::drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size) {
+		if (rawrbox::RENDERER == nullptr) throw std::runtime_error("Invalid stencil handle");
+		rawrbox::RENDERER->stencil()->drawLoading(pos, size);
+	}
 	// -------
 
 	// Pop & Push ----
@@ -107,6 +112,7 @@ namespace rawrbox {
 		    .addFunction("drawCircle", &StencilGlobal::drawCircle)
 		    .addFunction("drawLine", &StencilGlobal::drawLine)
 		    .addFunction("drawText", &StencilGlobal::drawText)
+		    .addFunction("drawLoading", &StencilGlobal::drawLoading)
 		    // -----
 
 		    // Pop & push

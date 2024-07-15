@@ -148,7 +148,7 @@ namespace rawrbox {
 		Diligent::IPipelineState* _linePipeline = nullptr;
 		Diligent::IPipelineState* _textPipeline = nullptr;
 
-		static constexpr const int MaxVertsInStreamingBuffer = 4096;
+		static constexpr const int MaxVertsInStreamingBuffer = 16000;
 		std::unique_ptr<rawrbox::StreamingBuffer> _streamingVB = nullptr;
 		std::unique_ptr<rawrbox::StreamingBuffer> _streamingIB = nullptr;
 		// ------------
@@ -229,6 +229,7 @@ namespace rawrbox {
 		virtual void drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const rawrbox::Color& col = rawrbox::Colors::White());
 		virtual void drawText(const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Color& bgCol = rawrbox::Colors::Transparent());
 		virtual void drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White(), rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
+		virtual void drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size);
 		//  --------------------
 
 		// ------ RENDERING

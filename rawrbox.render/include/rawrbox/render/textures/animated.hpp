@@ -8,14 +8,10 @@
 #include <vector>
 
 namespace rawrbox {
-	struct Frame {
-		float delay = 0.F;
-		std::vector<uint8_t> pixels = {};
-	};
 
 	class TextureAnimatedBase : public rawrbox::TextureBase {
 	protected:
-		std::vector<rawrbox::Frame> _frames = {};
+		std::vector<rawrbox::ImageFrame> _frames = {};
 		std::filesystem::path _filePath = "";
 
 		bool _loop = true;

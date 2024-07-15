@@ -121,6 +121,7 @@ namespace rawrbox {
 		rawrbox::WHITE_TEXTURE.reset();
 		rawrbox::BLACK_TEXTURE.reset();
 		rawrbox::NORMAL_TEXTURE.reset();
+		rawrbox::CHECKER_TEXTURE.reset();
 		// ----------------------
 
 		glfwPostEmptyEvent();

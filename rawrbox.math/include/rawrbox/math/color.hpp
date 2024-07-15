@@ -71,7 +71,13 @@ namespace rawrbox {
 
 		[[nodiscard]] std::string toHEX() const {
 			std::array<char, 10> hexColor = {};
-			std::snprintf(hexColor.data(), sizeof(hexColor), "#%02x%02x%02x%02x", static_cast<NumberType>(this->r), static_cast<NumberType>(this->g), static_cast<NumberType>(this->b), static_cast<NumberType>(this->a));
+
+			if constexpr (std::is_floating_point_v<NumberType>) {
+				rawrbox::Color_t<int> cast = this->cast<int>();
+				std::snprintf(hexColor.data(), sizeof(hexColor), "#%02x%02x%02x%02x", cast.r, cast.g, cast.b, cast.a);
+			} else {
+				std::snprintf(hexColor.data(), sizeof(hexColor), "#%02x%02x%02x%02x", static_cast<int>(this->r), static_cast<int>(this->g), static_cast<int>(this->b), static_cast<int>(this->a));
+			}
 
 			return {hexColor.begin(), hexColor.end()};
 		}

@@ -5,16 +5,16 @@
 namespace rawrbox {
 	class TextureStreaming : public rawrbox::TextureBase {
 	protected:
-		int _tick = 0;
+		bool _hasData = false;
 		bool _pendingUpdate = true;
-
-		std::vector<uint8_t> _checker_1 = {};
-		std::vector<uint8_t> _checker_2 = {};
 
 	public:
 		TextureStreaming(const rawrbox::Vector2u& size);
 
-		void setPixelData(const std::vector<uint8_t>& data);
+		// UTILS ---
+		void setImage(const rawrbox::ImageData& data);
+		[[nodiscard]] bool hasData() const;
+		// --------
 
 		void update() override;
 		[[nodiscard]] bool requiresUpdate() const override;

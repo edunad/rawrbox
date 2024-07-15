@@ -17,6 +17,7 @@ namespace rawrbox {
 	std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE = nullptr;
 	std::shared_ptr<rawrbox::TextureFlat> BLACK_TEXTURE = nullptr;
 	std::shared_ptr<rawrbox::TextureFlat> NORMAL_TEXTURE = nullptr;
+	std::shared_ptr<rawrbox::TextureImage> CHECKER_TEXTURE = nullptr;
 	// ---------
 
 	// FONT FALLBACKS ----

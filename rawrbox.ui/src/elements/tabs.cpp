@@ -107,6 +107,10 @@ namespace rawrbox {
 	uint16_t UITabs::getButtonFontSize() const { return 11U; }
 	// ----
 
+	// FOCUS HANDLE ---
+	bool UITabs::hitTest(const rawrbox::Vector2f& point) const { return point.y >= 0 && point.y < this->getTabHeight(); }
+	// -----
+
 	// DRAW ----
 	void UITabs::draw(rawrbox::Stencil& stencil) {
 		const auto& size = this->getSize();

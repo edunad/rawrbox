@@ -2,7 +2,7 @@
 #include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/atlas.hpp>
-#include <rawrbox/render/utils/texture.hpp>
+#include <rawrbox/render/textures/utils/utils.hpp>
 
 #include <fmt/format.h>
 

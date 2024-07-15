@@ -1,7 +1,9 @@
 
 #include <rawrbox/steamworks/input.hpp>
 #include <rawrbox/steamworks/sdk.hpp>
-#include <rawrbox/steamworks/workshop.hpp>
+#include <rawrbox/steamworks/utils.hpp>
+#include <rawrbox/steamworks/workshop/manager.hpp>
+#include <rawrbox/steamworks/workshop/storage.hpp>
 
 #ifdef _WIN32
 	#include <Windows.h>
@@ -22,6 +24,7 @@ namespace rawrbox {
 
 	// PRIVATE ----------
 	bool SteamSDK::_initialized = false;
+
 	std::unique_ptr<rawrbox::Logger> SteamSDK::_logger = std::make_unique<rawrbox::Logger>("RawrBox-SteamSDK");
 	// ------------------
 
@@ -43,6 +46,9 @@ namespace rawrbox {
 
 		// Input
 		rawrbox::SteamINPUT::init();
+
+		// Storage
+		rawrbox::SteamSTORAGE::init();
 
 		_initialized = true;
 		onInitialized();
@@ -93,9 +99,9 @@ namespace rawrbox {
 		return SteamUser()->GetSteamID();
 	}
 
-	rawrbox::SteamAvatar SteamSDK::getAvatar(const CSteamID& id, const rawrbox::AvatarSize& size) {
+	rawrbox::SteamImage SteamSDK::getAvatar(const CSteamID& id, const rawrbox::AvatarSize& size) {
 		if (SteamUser() == nullptr) throw _logger->error("SteamUser not initialized");
-		rawrbox::SteamAvatar avatar = {};
+		rawrbox::SteamImage avatar = {};
 
 		int ptrId = 0;
 		switch (size) {
@@ -105,15 +111,7 @@ namespace rawrbox {
 		}
 
 		if (ptrId == 0) return avatar;
-
-		bool success = SteamUtils()->GetImageSize(ptrId, &avatar.width, &avatar.height);
-		if (!success) return avatar;
-
-		const uint32_t uImageSizeInBytes = avatar.width * avatar.height * 4U;
-		avatar.pixels.resize(uImageSizeInBytes);
-
-		SteamUtils()->GetImageRGBA(ptrId, avatar.pixels.data(), uImageSizeInBytes);
-		return avatar;
+		return rawrbox::SteamUTILS::getImage(ptrId);
 	}
 
 	std::vector<CSteamID> SteamSDK::getFriends() {

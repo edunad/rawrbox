@@ -27,6 +27,7 @@
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/text/engine.hpp>
+#include <rawrbox/render/textures/utils/utils.hpp>
 #include <rawrbox/render/textures/webp.hpp>
 #include <rawrbox/render/utils/barrier.hpp>
 #include <rawrbox/render/utils/render.hpp>
@@ -272,6 +273,14 @@ namespace rawrbox {
 			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2u(2, 2), rawrbox::Color::RGBHex(0x7f7fff));
 			rawrbox::NORMAL_TEXTURE->upload();
 		}
+
+		if (rawrbox::CHECKER_TEXTURE == nullptr) {
+			auto checker = rawrbox::TextureUtils::generateCheckboard({256, 256}, rawrbox::Color::RGBHex(0x343434), rawrbox::Color::RGBHex(0x666666), 8);
+
+			rawrbox::CHECKER_TEXTURE = std::make_shared<rawrbox::TextureImage>(rawrbox::Vector2u(256, 256), checker, 4U);
+			rawrbox::CHECKER_TEXTURE->upload();
+		}
+
 		// -------------------------
 
 		// Init default fonts ------

@@ -52,6 +52,10 @@ namespace rawrbox {
 		[[nodiscard]] virtual uint16_t getButtonFontSize() const;
 		// ---------
 
+		// FOCUS HANDLE ---
+		[[nodiscard]] bool hitTest(const rawrbox::Vector2f& point) const override;
+		// ---------
+
 		// DRAW ----
 		void draw(rawrbox::Stencil& stencil) override;
 		// -------

@@ -99,5 +99,19 @@ namespace rawrbox {
 		this->_UpdateItemResult.Set(apicall, this, &SteamCALLBACKS::OnWorkshopUpdateItem);
 	}
 	// ----------
+
+	// STORAGE ---
+	void SteamCALLBACKS::addRequestUGC(UGCHandle_t handle, SteamAPICall_t apicall, const std::function<void(std::vector<uint8_t>)>& callback) {
+		auto fnd = this->_ugcStorageQueries.find(apicall);
+		if (fnd != this->_ugcStorageQueries.end()) throw _logger->error("AddRequestUGC with api call {} already called! Wait for previous call to complete", apicall);
+
+		std::unique_ptr<rawrbox::SteamStorageRequest> query = std::make_unique<rawrbox::SteamStorageRequest>(handle, apicall, [this, apicall, callback](std::vector<uint8_t> data) {
+			callback(std::move(data));
+			this->_ugcStorageQueries.erase(apicall);
+		});
+
+		this->_ugcStorageQueries[apicall] = std::move(query);
+	}
+	// -----------
 	// -----------
 } // namespace rawrbox

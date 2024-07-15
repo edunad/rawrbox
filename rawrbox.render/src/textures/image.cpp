@@ -10,6 +10,7 @@
 #define STBI_ONLY_JPEG
 #define STBI_ONLY_BMP
 #define STBI_ONLY_TGA
+#define STBI_FAILURE_USERMSG
 #include <stb/stb_image.hpp>
 #pragma warning(pop)
 // NOLINTEND(clang-diagnostic-unknown-pragmas)
@@ -21,9 +22,11 @@ namespace rawrbox {
 	TextureImage::TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback) : _filePath(filePath) {
 		int width = 0;
 		int height = 0;
+		int channels = 0;
 
-		uint8_t* image = stbi_load_from_memory(buffer.data(), static_cast<int>(buffer.size()) * sizeof(uint8_t), &width, &height, &this->_channels, 0);
+		uint8_t* image = stbi_load_from_memory(buffer.data(), static_cast<int>(buffer.size()) * sizeof(uint8_t), &width, &height, &channels, 0);
 
+		this->_channels = static_cast<uint8_t>(channels);
 		this->_size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 		this->internalLoad(image, useFallback);
 	}
@@ -31,9 +34,11 @@ namespace rawrbox {
 	TextureImage::TextureImage(const std::filesystem::path& filePath, bool useFallback) : _filePath(filePath) {
 		int width = 0;
 		int height = 0;
+		int channels = 0;
 
-		stbi_uc* image = stbi_load(filePath.generic_string().c_str(), &width, &height, &this->_channels, 0);
+		stbi_uc* image = stbi_load(filePath.generic_string().c_str(), &width, &height, &channels, 0);
 
+		this->_channels = static_cast<uint8_t>(channels);
 		this->_size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 		this->internalLoad(image, useFallback);
 	}
@@ -41,14 +46,16 @@ namespace rawrbox {
 	TextureImage::TextureImage(const uint8_t* buffer, int bufferSize, bool useFallback) {
 		int width = 0;
 		int height = 0;
+		int channels = 0;
 
-		uint8_t* image = stbi_load_from_memory(buffer, bufferSize, &width, &height, &this->_channels, 0);
+		uint8_t* image = stbi_load_from_memory(buffer, bufferSize, &width, &height, &channels, 0);
 
+		this->_channels = static_cast<uint8_t>(channels);
 		this->_size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 		this->internalLoad(image, useFallback);
 	}
 
-	TextureImage::TextureImage(const rawrbox::Vector2u& size, const uint8_t* buffer, int channels) {
+	TextureImage::TextureImage(const rawrbox::Vector2u& size, const uint8_t* buffer, uint8_t channels) {
 		this->_size = size;
 		this->_channels = channels;
 		this->_name = "RawrBox::Texture::Image";
@@ -57,7 +64,7 @@ namespace rawrbox {
 		std::memcpy(this->_pixels.data(), buffer, static_cast<uint32_t>(this->_pixels.size()) * sizeof(uint8_t));
 
 		// Check for transparency ----
-		if (this->_channels == 4) {
+		if (this->_channels == 4U) {
 			for (size_t i = 0; i < this->_pixels.size(); i += this->_channels) {
 				if (this->_pixels[i + 3] == 1.F) continue;
 				this->_transparent = true;
@@ -67,8 +74,8 @@ namespace rawrbox {
 		// ---------------------------
 	}
 
-	TextureImage::TextureImage(const rawrbox::Vector2u& size, const std::vector<uint8_t>& buffer, int channels) : TextureImage(size, buffer.data(), channels) {}
-	TextureImage::TextureImage(const rawrbox::Vector2u& size, int channels) {
+	TextureImage::TextureImage(const rawrbox::Vector2u& size, const std::vector<uint8_t>& buffer, uint8_t channels) : TextureImage(size, buffer.data(), channels) {}
+	TextureImage::TextureImage(const rawrbox::Vector2u& size, uint8_t channels) {
 		this->_size = size;
 		this->_channels = channels;
 		this->_name = "RawrBox::Texture::Image";
@@ -98,7 +105,7 @@ namespace rawrbox {
 		std::memcpy(this->_pixels.data(), image, static_cast<uint32_t>(this->_pixels.size()) * sizeof(uint8_t));
 
 		// Check for transparency ----
-		if (this->_channels == 4) {
+		if (this->_channels == 4U) {
 			for (size_t i = 0; i < this->_pixels.size(); i += this->_channels) {
 				if (this->_pixels[i + 3] == 1.F) continue;
 				_transparent = true;

@@ -18,13 +18,25 @@ namespace rawrbox {
 		VERTEX
 	};
 
+	struct ImageFrame {
+		float delay = 0.F;
+		std::vector<uint8_t> pixels = {};
+	};
+
+	struct ImageData {
+		rawrbox::Vector2u size = {};
+		uint8_t channels = 0;
+
+		std::vector<rawrbox::ImageFrame> frames = {};
+	};
+
 	class TextureBase {
 	protected:
 		Diligent::RefCntAutoPtr<Diligent::ITextureView> _handle;
 		Diligent::RefCntAutoPtr<Diligent::ITexture> _tex;
 		rawrbox::Vector2u _size = {};
 
-		int _channels = 0;
+		uint8_t _channels = 0;
 
 		uint32_t _textureID = 0; // Default to missing texture, it's always reserved to 0
 		uint32_t _depthTextureID = 0;
@@ -48,7 +60,7 @@ namespace rawrbox {
 		virtual void loadFallback();
 		virtual void updateSampler();
 
-		virtual void tryGetFormatChannels(Diligent::TEXTURE_FORMAT& format, int& channels);
+		virtual void tryGetFormatChannels(Diligent::TEXTURE_FORMAT& format, uint8_t& channels);
 
 	public:
 		TextureBase() = default;
@@ -64,7 +76,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool hasTransparency() const;
 		[[nodiscard]] virtual const rawrbox::Vector2u& getSize() const;
 
-		[[nodiscard]] virtual int getChannels() const;
+		[[nodiscard]] virtual uint8_t getChannels() const;
 
 		[[nodiscard]] virtual bool isValid() const;
 		[[nodiscard]] virtual bool isRegistered() const;

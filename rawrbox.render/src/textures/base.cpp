@@ -30,7 +30,7 @@ namespace rawrbox {
 		this->_handle->SetSampler(this->getSampler());
 	}
 
-	void TextureBase::tryGetFormatChannels(Diligent::TEXTURE_FORMAT& format, int& channels) {
+	void TextureBase::tryGetFormatChannels(Diligent::TEXTURE_FORMAT& format, uint8_t& channels) {
 		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) {
 			switch (channels) {
 				case 1:
@@ -47,29 +47,29 @@ namespace rawrbox {
 			}
 		}
 
-		if (channels == 0) {
+		if (channels == 0U) {
 			switch (format) {
 				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_A8_UNORM:
 				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_R8_UNORM:
-					channels = 1;
+					channels = 1U;
 					break;
 				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RG8_UNORM:
-					channels = 2;
+					channels = 2U;
 					break;
 				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM:
 				case Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM_SRGB:
 				default:
-					channels = 4;
+					channels = 4U;
 					break;
 			}
 		}
 
 		// No RGB8, replace with SRGB
-		if (this->_channels == 3) {
-			this->_channels = 4;
+		if (this->_channels == 3U) {
+			this->_channels = 4U;
 
 			if (!this->_pixels.empty()) {
-				this->_pixels = rawrbox::ColorUtils::setChannels(3, 4, this->_size.x, this->_size.y, this->_pixels);
+				this->_pixels = rawrbox::ColorUtils::setChannels(3U, 4U, this->_size.x, this->_size.y, this->_pixels);
 			}
 		}
 	}
@@ -77,10 +77,10 @@ namespace rawrbox {
 	// UTILS ---
 	const std::vector<uint8_t>& TextureBase::getPixels() const { return this->_pixels; }
 
-	bool TextureBase::hasTransparency() const { return this->_channels == 4 && this->_transparent; }
+	bool TextureBase::hasTransparency() const { return this->_channels == 4U && this->_transparent; }
 	const rawrbox::Vector2u& TextureBase::getSize() const { return this->_size; }
 
-	int TextureBase::getChannels() const { return this->_channels; }
+	uint8_t TextureBase::getChannels() const { return this->_channels; }
 
 	bool TextureBase::isValid() const { return this->getHandle() != nullptr; }
 	bool TextureBase::isRegistered() const { return this->_registered; }

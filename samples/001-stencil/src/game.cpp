@@ -104,7 +104,16 @@ namespace stencil {
 
 		// Simulate loading --
 		rawrbox::TIMER::simple(4000.F, [this]() {
-			this->_textureStreaming->setPixelData(this->_texture->getPixels());
+			rawrbox::ImageData data = {};
+			data.size = this->_texture->getSize();
+			data.channels = 4;
+
+			rawrbox::ImageFrame frame = {};
+			frame.pixels = this->_texture->getPixels();
+
+			data.frames.emplace_back(frame);
+
+			this->_textureStreaming->setImage(data);
 		});
 		// ----
 
@@ -281,7 +290,13 @@ namespace stencil {
 		stencil->popOffset();
 
 		stencil->pushOffset({1430, 0});
-		stencil->drawTexture({0, 0}, {100, 100}, *this->_textureStreaming);
+
+		if (this->_textureStreaming->hasData()) {
+			stencil->drawTexture({0, 0}, {100, 100}, *this->_textureStreaming);
+		} else {
+			stencil->drawLoading({0, 0}, {100, 100});
+		}
+
 		stencil->popOffset();
 		// ---
 
