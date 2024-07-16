@@ -9,7 +9,10 @@
 
 namespace rawrbox {
 	TexturePack::TexturePack(uint32_t size) {
-		this->_size = {size, size};
+		this->_data.size = {size, size};
+		this->_data.channels = 4;
+		this->_data.createFrame(); // Create empty frame to be filled later
+
 		this->_root = std::make_unique<rawrbox::PackNode>(0U, 0U, size, size);
 		this->_name = "RawrBox::Texture::Pack";
 	}
@@ -37,14 +40,14 @@ namespace rawrbox {
 			UpdateBox.MaxY = node.y + node.height;
 
 			for (size_t y = 0; y < node.height; y++) {
-				const auto stride = node.width * this->_channels;
+				const auto stride = node.width * this->_data.channels;
 				const auto* start = data.data() + y * stride;
 				const auto* last = start + stride;
 
 				auto startPointY = UpdateBox.MinY + y;
 				auto startPointX = UpdateBox.MinX;
 
-				auto* dest = this->_pixels.data() + (startPointY * this->_size.x + startPointX) * this->_channels;
+				auto* dest = this->_data.pixels().data() + (startPointY * this->_data.size.x + startPointX) * this->_data.channels;
 				std::copy(start, last, dest);
 			}
 
@@ -151,12 +154,12 @@ namespace rawrbox {
 		Diligent::Box UpdateBox;
 		UpdateBox.MinX = 0;
 		UpdateBox.MinY = 0;
-		UpdateBox.MaxX = this->_size.x;
-		UpdateBox.MaxY = this->_size.y;
+		UpdateBox.MaxX = this->_data.size.x;
+		UpdateBox.MaxY = this->_data.size.y;
 
 		Diligent::TextureSubResData SubresData;
-		SubresData.Stride = this->_size.x * this->_channels;
-		SubresData.pData = this->_pixels.data();
+		SubresData.Stride = this->_data.size.x * this->_data.channels;
+		SubresData.pData = this->_data.pixels().data();
 
 		// BARRIER ----
 		rawrbox::BarrierUtils::barrier({{this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});

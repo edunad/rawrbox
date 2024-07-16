@@ -277,7 +277,7 @@ namespace rawrbox {
 		if (rawrbox::CHECKER_TEXTURE == nullptr) {
 			auto checker = rawrbox::TextureUtils::generateCheckboard({256, 256}, rawrbox::Color::RGBHex(0x343434), rawrbox::Color::RGBHex(0x666666), 8);
 
-			rawrbox::CHECKER_TEXTURE = std::make_shared<rawrbox::TextureImage>(rawrbox::Vector2u(256, 256), checker, 4U);
+			rawrbox::CHECKER_TEXTURE = std::make_shared<rawrbox::TextureImage>(rawrbox::Vector2u(256, 256), checker, 4);
 			rawrbox::CHECKER_TEXTURE->upload();
 		}
 

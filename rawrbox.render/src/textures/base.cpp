@@ -21,6 +21,8 @@ namespace rawrbox {
 		this->_failedToLoad = true;
 
 		auto missing = _type == TEXTURE_TYPE::VERTEX ? rawrbox::MISSING_VERTEX_TEXTURE : rawrbox::MISSING_TEXTURE;
+
+		this->_data.frames = missing->getData().frames;
 		this->_handle = missing->getHandle();
 		this->_textureID = missing->getTextureID();
 	}
@@ -65,22 +67,27 @@ namespace rawrbox {
 		}
 
 		// No RGB8, replace with SRGB
-		if (this->_channels == 3U) {
-			this->_channels = 4U;
+		if (this->_data.channels == 3U) {
+			this->_data.channels = 4U;
 
-			if (!this->_pixels.empty()) {
-				this->_pixels = rawrbox::ColorUtils::setChannels(3U, 4U, this->_size.x, this->_size.y, this->_pixels);
+			auto& pixels = this->_data.pixels();
+			if (!pixels.empty()) {
+				pixels = rawrbox::ColorUtils::setChannels(3U, 4U, this->_data.size.x, this->_data.size.y, pixels);
 			}
 		}
 	}
 
 	// UTILS ---
-	const std::vector<uint8_t>& TextureBase::getPixels() const { return this->_pixels; }
+	const rawrbox::ImageData& TextureBase::getData() const { return this->_data; }
+	const std::vector<uint8_t>& TextureBase::getPixels(size_t index) const {
+		if (index > this->_data.frames.size()) throw this->_logger->error("Pixel data from frame index {} not found", index);
+		return this->_data.frames[index].pixels;
+	}
 
-	bool TextureBase::hasTransparency() const { return this->_channels == 4U && this->_transparent; }
-	const rawrbox::Vector2u& TextureBase::getSize() const { return this->_size; }
+	bool TextureBase::hasTransparency() const { return this->_data.channels == 4U && this->_transparent; }
+	const rawrbox::Vector2u& TextureBase::getSize() const { return this->_data.size; }
 
-	uint8_t TextureBase::getChannels() const { return this->_channels; }
+	uint8_t TextureBase::getChannels() const { return this->_data.channels; }
 
 	bool TextureBase::isValid() const { return this->getHandle() != nullptr; }
 	bool TextureBase::isRegistered() const { return this->_registered; }
@@ -120,14 +127,17 @@ namespace rawrbox {
 
 	void TextureBase::upload(Diligent::TEXTURE_FORMAT format, bool dynamic) {
 		if (this->_failedToLoad || this->_handle != nullptr) return; // Failed texture is already bound, so skip it
+		if (!this->_data.valid()) throw this->_logger->error("Cannot upload invalid image data");
+		if (this->_data.total() > 2048U) throw this->_logger->error("Cannot upload more than 2048 image frames");
 
 		// Try to determine texture format
-		this->tryGetFormatChannels(format, this->_channels);
+		this->tryGetFormatChannels(format, this->_data.channels);
 		// --------------------------------
 
-		if (this->_pixels.empty()) {
-			this->_pixels.resize(this->_size.x * this->_size.y * this->_channels);
-			std::memset(this->_pixels.data(), 0, this->_pixels.size()); // Fill it with empty pixels
+		if (this->_data.empty()) {
+			this->_data.createFrame();
+		} else {
+			this->_transparent = this->_data.transparent();
 		}
 
 		Diligent::TextureDesc desc;
@@ -135,19 +145,28 @@ namespace rawrbox {
 		desc.BindFlags = Diligent::BIND_SHADER_RESOURCE;
 		desc.Usage = dynamic ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE;
 		desc.CPUAccessFlags = Diligent::CPU_ACCESS_NONE;
-		desc.Width = this->_size.x;
-		desc.Height = this->_size.y;
+		desc.Width = this->_data.size.x;
+		desc.Height = this->_data.size.y;
 		desc.MipLevels = 1;
 		desc.Format = format;
 		desc.Name = this->_name.c_str();
 
-		Diligent::TextureSubResData pSubResource;
-		pSubResource.pData = this->_pixels.data();
-		pSubResource.Stride = this->_size.x * this->_channels;
+		std::vector<Diligent::TextureSubResData> subresData = {};
+		// NOLINTBEGIN(cppcoreguidelines-pro-type-union-access)
+		desc.ArraySize = static_cast<uint32_t>(this->_data.total());
+		// NOLINTEND(cppcoreguidelines-pro-type-union-access)
+
+		subresData.resize(desc.ArraySize);
+		for (uint32_t slice = 0; slice < subresData.size(); slice++) {
+			auto& res = subresData[slice];
+
+			res.pData = this->_data.frames[slice].pixels.data();
+			res.Stride = desc.Width * this->_data.channels;
+		}
 
 		Diligent::TextureData data;
-		data.pSubResources = &pSubResource;
-		data.NumSubresources = 1;
+		data.pSubResources = subresData.data();
+		data.NumSubresources = static_cast<uint32_t>(subresData.size());
 
 		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
 		if (this->_tex == nullptr) throw this->_logger->error("Failed to create texture '{}'", this->_name);

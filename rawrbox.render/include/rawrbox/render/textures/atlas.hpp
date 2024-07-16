@@ -1,13 +1,12 @@
 #pragma once
-#include <rawrbox/render/textures/image.hpp>
+#include <rawrbox/render/textures/base.hpp>
 
 namespace rawrbox {
-	class TextureAtlas : public rawrbox::TextureImage {
+	class TextureAtlas : public rawrbox::TextureBase {
 	protected:
-		std::vector<std::vector<uint8_t>> _tiles = {};
-
 		uint32_t _spriteSize = 32;
-		void processAtlas();
+
+		void processAtlas(const rawrbox::ImageData& data);
 
 	public:
 		explicit TextureAtlas(const std::filesystem::path& filePath, uint32_t spriteSize = 32, bool useFallback = true);
@@ -24,7 +23,5 @@ namespace rawrbox {
 		[[nodiscard]] uint32_t getSpriteSize() const;
 		[[nodiscard]] std::vector<uint8_t> getSprite(size_t id) const;
 		// --------------------
-
-		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false) override;
 	};
 } // namespace rawrbox

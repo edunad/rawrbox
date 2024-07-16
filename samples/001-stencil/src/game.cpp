@@ -106,12 +106,8 @@ namespace stencil {
 		rawrbox::TIMER::simple(4000.F, [this]() {
 			rawrbox::ImageData data = {};
 			data.size = this->_texture->getSize();
-			data.channels = 4;
-
-			rawrbox::ImageFrame frame = {};
-			frame.pixels = this->_texture->getPixels();
-
-			data.frames.emplace_back(frame);
+			data.channels = this->_texture->getChannels();
+			data.createFrame(this->_texture->getPixels());
 
 			this->_textureStreaming->setImage(data);
 		});

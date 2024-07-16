@@ -12,11 +12,7 @@ namespace rawrbox {
 		this->_name = "RawrBox::Texture::WEBP";
 
 		try {
-			rawrbox::ImageData webpData = rawrbox::WEBP::decode(data);
-
-			this->_size = webpData.size;
-			this->_frames = std::move(webpData.frames);
-			this->_channels = webpData.channels;
+			this->_data = rawrbox::WEBP::decode(data);
 		} catch (const std::runtime_error& err) {
 			if (useFallback) {
 				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), err.what());

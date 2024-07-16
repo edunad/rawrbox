@@ -7,12 +7,6 @@
 #include <utility>
 
 namespace rawrbox {
-	SteamCALLBACKS::SteamCALLBACKS() : _IPCFailureCallback(this, &SteamCALLBACKS::OnIPCFailure),
-					   _SteamShutdownCallback(this, &SteamCALLBACKS::OnSteamShutdown),
-					   _CallbackWorkshopItemInstalled(this, &SteamCALLBACKS::OnWorkshopItemInstalled),
-					   _CallbackWorkshopItemRemoved(this, &SteamCALLBACKS::OnWorkshopItemRemoved),
-					   _CallbackWorkshopItemDownloaded(this, &SteamCALLBACKS::OnWorkshopItemDownloaded) {}
-
 	// PRIVATE ----
 	// GLOBAL ---------
 	void SteamCALLBACKS::OnIPCFailure(IPCFailure_t* /*failure*/) {
@@ -70,6 +64,38 @@ namespace rawrbox {
 	// -------------
 
 	// PUBLIC ---
+	SteamCALLBACKS::SteamCALLBACKS() : _IPCFailureCallback(this, &SteamCALLBACKS::OnIPCFailure),
+					   _SteamShutdownCallback(this, &SteamCALLBACKS::OnSteamShutdown),
+					   _CallbackWorkshopItemInstalled(this, &SteamCALLBACKS::OnWorkshopItemInstalled),
+					   _CallbackWorkshopItemRemoved(this, &SteamCALLBACKS::OnWorkshopItemRemoved),
+					   _CallbackWorkshopItemDownloaded(this, &SteamCALLBACKS::OnWorkshopItemDownloaded) {}
+
+	void SteamCALLBACKS::init() {
+		if (this->_initialized) throw this->_logger->error("Already initialized");
+
+		this->_initialized = true;
+		this->_callbackThread = std::make_unique<std::jthread>([this]() {
+			while (!this->_callbackShutdown) {
+				SteamAPI_RunCallbacks();
+				std::this_thread::sleep_for(std::chrono::milliseconds(100));
+			}
+		});
+	}
+
+	void SteamCALLBACKS::shutdown() {
+		this->_ugcQueries.clear();
+		this->_ugcStorageQueries.clear();
+
+		this->_CreateItemResult.Cancel();
+		this->_UpdateItemResult.Cancel();
+
+		this->_callbackShutdown = true;
+		this->_callbackThread->join();
+		this->_callbackThread.reset();
+
+		this->_initialized = false;
+	}
+
 	// QUERY ---
 	void SteamCALLBACKS::addUGCQueryCallback(SteamAPICall_t apicall, const std::function<void(std::vector<SteamUGCDetails_t>)>& callback) {
 		auto fnd = this->_ugcQueries.find(apicall);

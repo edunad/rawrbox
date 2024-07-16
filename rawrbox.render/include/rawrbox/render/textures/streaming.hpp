@@ -5,8 +5,8 @@
 namespace rawrbox {
 	class TextureStreaming : public rawrbox::TextureBase {
 	protected:
-		bool _hasData = false;
 		bool _pendingUpdate = true;
+		bool _hasData = false;
 
 	public:
 		TextureStreaming(const rawrbox::Vector2u& size);

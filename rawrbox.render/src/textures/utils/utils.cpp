@@ -1,21 +1,12 @@
 #include <rawrbox/render/textures/base.hpp>
+#include <rawrbox/render/textures/utils/gif.hpp>
+#include <rawrbox/render/textures/utils/stbi.hpp>
 #include <rawrbox/render/textures/utils/utils.hpp>
 #include <rawrbox/render/textures/utils/webp.hpp>
 
-#include <bitset>
+#include <magic_enum.hpp>
 
-// NOLINTBEGIN(clang-diagnostic-unknown-pragmas)
-#pragma warning(push)
-#pragma warning(disable : 4505)
-#define STB_IMAGE_STATIC
-#define STB_IMAGE_IMPLEMENTATION
-#define STBI_ONLY_PNG
-#define STBI_ONLY_JPEG
-#define STBI_ONLY_BMP
-#define STBI_ONLY_TGA
-#include <stb/stb_image.hpp>
-#pragma warning(pop)
-// NOLINTEND(clang-diagnostic-unknown-pragmas)
+#include <bitset>
 
 namespace rawrbox {
 	rawrbox::Vector4f TextureUtils::atlasToUV(const rawrbox::Vector2i& atlasSize, uint32_t spriteSize, uint32_t id) {
@@ -105,16 +96,6 @@ namespace rawrbox {
 		return resizedData;
 	}
 
-	// .jpg:  FF D8 FF
-	// .png:  89 50 4E 47 0D 0A 1A 0A
-	// .gif:  GIF87a
-	//        GIF89a
-	// .tiff: 49 49 2A 00
-	//        4D 4D 00 2A
-	// .bmp:  BM
-	// .webp: RIFF ???? WEBP
-	// .ico   00 00 01 00
-	//        00 00 02 00 ( cursor files )
 	rawrbox::ImageType TextureUtils::getImageType(const std::vector<uint8_t>& data) {
 		if (data.empty() || data.size() < 16) return rawrbox::ImageType::IMAGE_INVALID;
 
@@ -149,37 +130,29 @@ namespace rawrbox {
 			return rawrbox::ImageType::IMAGE_WEBP;
 		}
 
-		// Check for ICO
-		if ((data[0] == 0x00 && data[1] == 0x00 && (data[2] == 0x01 || data[2] == 0x02) && data[3] == 0x00)) {
-			return rawrbox::ImageType::IMAGE_ICO;
+		// Check for TGA
+		if (data[2] == 0x02 && data[16] == 0x20 && data[17] == 0x20 && data[18] == 0x20 && data[19] == 0x20) {
+			return rawrbox::ImageType::IMAGE_TGA;
 		}
 
 		return rawrbox::ImageType::IMAGE_INVALID;
 	}
 
 	rawrbox::ImageData TextureUtils::decodeImage(const std::vector<uint8_t>& data) {
-		rawrbox::ImageType type = getImageType(data);
-		if (type == rawrbox::ImageType::IMAGE_INVALID) throw rawrbox::Logger::err("TextureUtils", "Invalid image type!");
-		if (type == rawrbox::ImageType::IMAGE_WEBP) return rawrbox::WEBP::decode(data);
-
-		int width = 0;
-		int height = 0;
-		int channels = 0;
-
-		uint8_t* image = stbi_load_from_memory(data.data(), static_cast<int>(data.size()) * sizeof(uint8_t), &width, &height, &channels, 0);
-		if (image == nullptr) throw rawrbox::Logger::err("TextureUtils", "Error decoding image!");
-
-		rawrbox::ImageData texture = {};
-		texture.channels = static_cast<uint8_t>(channels);
-		texture.size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
-
-		rawrbox::ImageFrame frame = {};
-		frame.pixels.resize(width * height * channels);
-		std::memcpy(frame.pixels.data(), image, width * height * channels);
-
-		texture.frames.push_back(frame);
-		stbi_image_free(image);
-
-		return texture;
+		switch (getImageType(data)) {
+			case IMAGE_JPG:
+			case IMAGE_PNG:
+			case IMAGE_TIFF:
+			case IMAGE_TGA:
+			case IMAGE_BMP:
+				return rawrbox::STBI::decode(data);
+			case IMAGE_GIF:
+				return rawrbox::GIF::decode(data);
+			case IMAGE_WEBP:
+				return rawrbox::WEBP::decode(data);
+			default:
+			case IMAGE_INVALID:
+				throw rawrbox::Logger::err("TextureUtils", "Invalid image type!");
+		}
 	}
 } // namespace rawrbox

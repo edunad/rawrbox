@@ -11,17 +11,14 @@ namespace rawrbox {
 
 	class TextureAnimatedBase : public rawrbox::TextureBase {
 	protected:
-		std::vector<rawrbox::ImageFrame> _frames = {};
 		std::filesystem::path _filePath = "";
 
 		bool _loop = true;
 		bool _pause = false;
-		bool _textureArray = false;
 
 		uint64_t _cooldown = 0;
 		float _speed = 1.F;
 
-		virtual void internalUpdate();
 		virtual void internalLoad(const std::vector<uint8_t>& data, bool useFallback = true);
 
 	public:
@@ -45,12 +42,6 @@ namespace rawrbox {
 		virtual void setSpeed(float speed);
 
 		[[nodiscard]] virtual uint32_t total() const;
-
-		[[nodiscard]] uint32_t getSlice() const override;
-		// --------------------
-
-		// RENDER ------
-		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false) override;
 		// --------------------
 
 		[[nodiscard]] bool requiresUpdate() const override;

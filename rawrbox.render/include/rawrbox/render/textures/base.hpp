@@ -19,30 +19,56 @@ namespace rawrbox {
 	};
 
 	struct ImageFrame {
-		float delay = 0.F;
+		float delay = 0.F; // User for animation
 		std::vector<uint8_t> pixels = {};
 	};
 
 	struct ImageData {
 		rawrbox::Vector2u size = {};
-		uint8_t channels = 0;
+		uint8_t channels = 0U;
 
 		std::vector<rawrbox::ImageFrame> frames = {};
+
+		void createFrame() {
+			rawrbox::ImageFrame frame = {};
+			frame.pixels.resize(this->size.x * this->size.y * this->channels);
+			std::memset(frame.pixels.data(), 0, frame.pixels.size()); // Fill it with empty pixels
+
+			this->frames.emplace_back(frame);
+		};
+
+		void createFrame(const std::vector<uint8_t>& frame) { this->frames.push_back({0.F, frame}); };
+		[[nodiscard]] std::vector<uint8_t>& pixels() { return this->frames.begin()->pixels; }
+		[[nodiscard]] const std::vector<uint8_t>& pixels() const { return this->frames.begin()->pixels; }
+
+		[[nodiscard]] bool valid() const { return channels != 0U && size > 0; }
+		[[nodiscard]] bool empty() const { return this->frames.empty(); }
+
+		[[nodiscard]] size_t total() const { return this->frames.size(); }
+		[[nodiscard]] bool transparent() const {
+			if (channels != 4U || this->frames.empty()) return false;
+
+			for (const auto& frame : this->frames) {
+				for (size_t o = 0; o < frame.pixels.size(); o += channels) {
+					if (frame.pixels[o + 3] == 1.F) continue;
+					return true;
+				}
+			}
+
+			return false;
+		}
 	};
 
 	class TextureBase {
 	protected:
 		Diligent::RefCntAutoPtr<Diligent::ITextureView> _handle;
 		Diligent::RefCntAutoPtr<Diligent::ITexture> _tex;
-		rawrbox::Vector2u _size = {};
 
-		uint8_t _channels = 0;
+		rawrbox::ImageData _data = {};
 
 		uint32_t _textureID = 0; // Default to missing texture, it's always reserved to 0
 		uint32_t _depthTextureID = 0;
 		uint32_t _slice = 0;
-
-		std::vector<uint8_t> _pixels = {};
 
 		rawrbox::TEXTURE_TYPE _type = rawrbox::TEXTURE_TYPE::PIXEL;
 		Diligent::ISampler* _sampler = nullptr;
@@ -71,7 +97,8 @@ namespace rawrbox {
 		virtual ~TextureBase();
 
 		// UTILS---
-		[[nodiscard]] virtual const std::vector<uint8_t>& getPixels() const;
+		[[nodiscard]] virtual const rawrbox::ImageData& getData() const;
+		[[nodiscard]] virtual const std::vector<uint8_t>& getPixels(size_t index = 0) const;
 
 		[[nodiscard]] virtual bool hasTransparency() const;
 		[[nodiscard]] virtual const rawrbox::Vector2u& getSize() const;

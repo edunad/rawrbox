@@ -11,7 +11,6 @@ namespace rawrbox {
 	class TextureImage : public rawrbox::TextureBase {
 	protected:
 		std::filesystem::path _filePath = "";
-		void internalLoad(uint8_t* image, bool useFallback = true);
 
 	public:
 		explicit TextureImage(const std::filesystem::path& filePath, bool useFallback = true);

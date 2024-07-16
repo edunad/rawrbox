@@ -1,4 +1,5 @@
 
+#include <rawrbox/steamworks/callbacks.hpp>
 #include <rawrbox/steamworks/input.hpp>
 #include <rawrbox/steamworks/sdk.hpp>
 #include <rawrbox/steamworks/utils.hpp>
@@ -44,6 +45,9 @@ namespace rawrbox {
 		// Steam debug msgs
 		SteamUtils()->SetWarningMessageHook(&SteamAPIDebugTextHook);
 
+		// Callbacks
+		rawrbox::SteamCALLBACKS::getInstance().init();
+
 		// Input
 		rawrbox::SteamINPUT::init();
 
@@ -57,6 +61,7 @@ namespace rawrbox {
 	}
 
 	void SteamSDK::shutdown() {
+		rawrbox::SteamCALLBACKS::getInstance().shutdown();
 		rawrbox::SteamWORKSHOP::shutdown();
 		rawrbox::SteamINPUT::shutdown();
 
@@ -65,8 +70,6 @@ namespace rawrbox {
 
 	void SteamSDK::update() {
 		if (!isReady()) return;
-
-		SteamAPI_RunCallbacks();
 		rawrbox::SteamINPUT::update();
 	}
 	// ------------

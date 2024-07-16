@@ -13,7 +13,7 @@ namespace rawrbox {
 		IMAGE_TIFF,    // tagged image file format
 		IMAGE_BMP,     // Microsoft bitmap format
 		IMAGE_WEBP,    // Google WebP format, a type of .riff file
-		IMAGE_ICO,     // Microsoft icon format
+		IMAGE_TGA,     // Truevision Targa image
 		IMAGE_INVALID, // unidentified image types.
 	};
 

@@ -1,119 +1,82 @@
-#include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/image.hpp>
-
-// NOLINTBEGIN(clang-diagnostic-unknown-pragmas)
-#pragma warning(push)
-#pragma warning(disable : 4505)
-#define STB_IMAGE_STATIC
-#define STB_IMAGE_IMPLEMENTATION
-#define STBI_ONLY_PNG
-#define STBI_ONLY_JPEG
-#define STBI_ONLY_BMP
-#define STBI_ONLY_TGA
-#define STBI_FAILURE_USERMSG
-#include <stb/stb_image.hpp>
-#pragma warning(pop)
-// NOLINTEND(clang-diagnostic-unknown-pragmas)
+#include <rawrbox/render/textures/utils/stbi.hpp>
 
 #include <fmt/format.h>
 
 namespace rawrbox {
 	// NOLINTBEGIN(modernize-pass-by-value)
 	TextureImage::TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback) : _filePath(filePath) {
-		int width = 0;
-		int height = 0;
-		int channels = 0;
+		try {
+			this->_data = rawrbox::STBI::decode(buffer);
+			if (!this->_data.valid() || this->_data.total() == 0) throw this->_logger->error("Invalid image data!");
+		} catch (const cpptrace::exception_with_message& e) {
+			if (useFallback) {
+				this->loadFallback();
+				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), e.what());
+				return;
+			}
 
-		uint8_t* image = stbi_load_from_memory(buffer.data(), static_cast<int>(buffer.size()) * sizeof(uint8_t), &width, &height, &channels, 0);
-
-		this->_channels = static_cast<uint8_t>(channels);
-		this->_size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
-		this->internalLoad(image, useFallback);
+			throw e;
+		}
 	}
 
 	TextureImage::TextureImage(const std::filesystem::path& filePath, bool useFallback) : _filePath(filePath) {
-		int width = 0;
-		int height = 0;
-		int channels = 0;
+		try {
+			this->_data = rawrbox::STBI::decode(filePath);
+			if (!this->_data.valid() || this->_data.total() == 0) throw this->_logger->error("Invalid image data!");
+		} catch (const cpptrace::exception_with_message& e) {
+			if (useFallback) {
+				this->loadFallback();
+				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), e.what());
+				return;
+			}
 
-		stbi_uc* image = stbi_load(filePath.generic_string().c_str(), &width, &height, &channels, 0);
-
-		this->_channels = static_cast<uint8_t>(channels);
-		this->_size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
-		this->internalLoad(image, useFallback);
+			throw e;
+		}
 	}
 
 	TextureImage::TextureImage(const uint8_t* buffer, int bufferSize, bool useFallback) {
-		int width = 0;
-		int height = 0;
-		int channels = 0;
+		try {
+			this->_data = rawrbox::STBI::decode(buffer, bufferSize);
+			if (!this->_data.valid() || this->_data.total() == 0) throw this->_logger->error("Invalid image data!");
+		} catch (const cpptrace::exception_with_message& e) {
+			if (useFallback) {
+				this->loadFallback();
+				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), e.what());
+				return;
+			}
 
-		uint8_t* image = stbi_load_from_memory(buffer, bufferSize, &width, &height, &channels, 0);
-
-		this->_channels = static_cast<uint8_t>(channels);
-		this->_size = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
-		this->internalLoad(image, useFallback);
+			throw e;
+		}
 	}
 
 	TextureImage::TextureImage(const rawrbox::Vector2u& size, const uint8_t* buffer, uint8_t channels) {
-		this->_size = size;
-		this->_channels = channels;
-		this->_name = "RawrBox::Texture::Image";
+		this->_data.size = size;
+		this->_data.channels = channels;
 
-		this->_pixels.resize(static_cast<uint32_t>(this->_size.x * this->_size.y * channels));
-		std::memcpy(this->_pixels.data(), buffer, static_cast<uint32_t>(this->_pixels.size()) * sizeof(uint8_t));
+		rawrbox::ImageFrame frame = {};
+
+		frame.pixels.resize(static_cast<uint32_t>(size.x * size.y * channels));
+		std::memcpy(frame.pixels.data(), buffer, static_cast<uint32_t>(frame.pixels.size()) * sizeof(uint8_t));
 
 		// Check for transparency ----
-		if (this->_channels == 4U) {
-			for (size_t i = 0; i < this->_pixels.size(); i += this->_channels) {
-				if (this->_pixels[i + 3] == 1.F) continue;
+		if (channels == 4U) {
+			for (size_t i = 0; i < frame.pixels.size(); i += channels) {
+				if (frame.pixels[i + 3] == 1.F) continue;
 				this->_transparent = true;
 				break;
 			}
 		}
 		// ---------------------------
+
+		this->_data.frames.emplace_back(frame);
 	}
 
 	TextureImage::TextureImage(const rawrbox::Vector2u& size, const std::vector<uint8_t>& buffer, uint8_t channels) : TextureImage(size, buffer.data(), channels) {}
 	TextureImage::TextureImage(const rawrbox::Vector2u& size, uint8_t channels) {
-		this->_size = size;
-		this->_channels = channels;
-		this->_name = "RawrBox::Texture::Image";
-
-		this->_pixels.resize(static_cast<uint32_t>(this->_size.x * this->_size.y * channels));
-		std::memset(this->_pixels.data(), 255, this->_pixels.size() * sizeof(uint8_t));
+		this->_data.size = size;
+		this->_data.channels = channels;
+		this->_data.createFrame();
 	}
-
 	// NOLINTEND(modernize-pass-by-value)
-	void TextureImage::internalLoad(uint8_t* image, bool useFallback) {
-		this->_name = "RawrBox::Texture::Image";
-
-		if (image == nullptr) {
-			stbi_image_free(image);
-
-			const auto* failure = stbi_failure_reason();
-			if (useFallback) {
-				this->loadFallback();
-				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), failure);
-				return;
-			}
-
-			throw this->_logger->error("Error loading image: {}", failure);
-		}
-
-		this->_pixels.resize(static_cast<uint32_t>(this->_size.x * this->_size.y) * this->_channels);
-		std::memcpy(this->_pixels.data(), image, static_cast<uint32_t>(this->_pixels.size()) * sizeof(uint8_t));
-
-		// Check for transparency ----
-		if (this->_channels == 4U) {
-			for (size_t i = 0; i < this->_pixels.size(); i += this->_channels) {
-				if (this->_pixels[i + 3] == 1.F) continue;
-				_transparent = true;
-				break;
-			}
-		}
-		// ---------------------------
-
-		stbi_image_free(image);
-	}
 } // namespace rawrbox

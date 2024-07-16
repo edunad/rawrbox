@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <memory>
+#include <thread>
 #include <vector>
 
 namespace rawrbox {
@@ -100,6 +101,11 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-SteamCALLBACKS");
 		// -------------
 
+		// THREAD LOOP ---
+		std::atomic<bool> _callbackShutdown = false;
+		std::unique_ptr<std::jthread> _callbackThread;
+		// -------
+
 #pragma warning(push)
 #pragma warning(disable : 4068)
 #pragma GCC diagnostic push
@@ -122,6 +128,8 @@ namespace rawrbox {
 		void OnWorkshopUpdateItem(SubmitItemUpdateResult_t* result, bool bIOFailure);
 		// -------------
 
+		bool _initialized = false;
+
 	public:
 		rawrbox::Event<PublishedFileId_t> onModInstalled;
 		rawrbox::Event<PublishedFileId_t> onModUpdated;
@@ -133,6 +141,9 @@ namespace rawrbox {
 		}
 
 		SteamCALLBACKS();
+
+		void init();
+		void shutdown();
 
 		// QUERY ---
 		void addUGCQueryCallback(SteamAPICall_t apicall, const std::function<void(std::vector<SteamUGCDetails_t>)>& callback);
