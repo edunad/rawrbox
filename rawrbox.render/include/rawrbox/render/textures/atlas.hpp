@@ -1,5 +1,8 @@
 #pragma once
+
 #include <rawrbox/render/textures/base.hpp>
+
+#include <filesystem>
 
 namespace rawrbox {
 	class TextureAtlas : public rawrbox::TextureBase {

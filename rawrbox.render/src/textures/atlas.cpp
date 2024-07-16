@@ -3,8 +3,6 @@
 #include <rawrbox/render/textures/atlas.hpp>
 #include <rawrbox/render/textures/utils/stbi.hpp>
 
-#include <fmt/format.h>
-
 namespace rawrbox {
 	// NOLINTBEGIN(modernize-pass-by-value)
 	TextureAtlas::TextureAtlas(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, uint32_t spriteSize, bool useFallback) : _spriteSize(spriteSize) {
