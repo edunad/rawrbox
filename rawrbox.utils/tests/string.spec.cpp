@@ -13,6 +13,11 @@ TEST_CASE("StrUtils should behave as expected", "[rawrbox::StrUtils]") {
 		REQUIRE(rawrbox::StrUtils::toUpper("AvI STOP PLayING BAD GAmES") == "AVI STOP PLAYING BAD GAMES");
 	}
 
+	SECTION("rawrbox::StrUtils::truncate") {
+		REQUIRE(rawrbox::StrUtils::truncate("AvI STOP PLayING BAD GAmES", 8) == "AvI STOP...");
+		REQUIRE(rawrbox::StrUtils::truncate("AvI STOP PLayING BAD GAmES", 100) == "AvI STOP PLayING BAD GAmES");
+	}
+
 	SECTION("rawrbox::StrUtils::isNumeric") {
 		REQUIRE(rawrbox::StrUtils::isNumeric("A3B4") == false);
 	}

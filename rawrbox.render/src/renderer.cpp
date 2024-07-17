@@ -260,24 +260,24 @@ namespace rawrbox {
 		}
 
 		if (rawrbox::WHITE_TEXTURE == nullptr) {
-			rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2u(2, 2), rawrbox::Colors::White());
+			rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2u(2U, 2U), rawrbox::Colors::White());
 			rawrbox::WHITE_TEXTURE->upload();
 		}
 
 		if (rawrbox::BLACK_TEXTURE == nullptr) {
-			rawrbox::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2u(2, 2), rawrbox::Colors::Black());
+			rawrbox::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2u(2U, 2U), rawrbox::Colors::Black());
 			rawrbox::BLACK_TEXTURE->upload();
 		}
 
 		if (rawrbox::NORMAL_TEXTURE == nullptr) {
-			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2u(2, 2), rawrbox::Color::RGBHex(0x7f7fff));
+			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2u(2U, 2U), rawrbox::Color::RGBHex(0x7f7fff));
 			rawrbox::NORMAL_TEXTURE->upload();
 		}
 
 		if (rawrbox::CHECKER_TEXTURE == nullptr) {
-			auto checker = rawrbox::TextureUtils::generateCheckboard({256, 256}, rawrbox::Color::RGBHex(0x343434), rawrbox::Color::RGBHex(0x666666), 8);
+			auto checker = rawrbox::TextureUtils::generateCheckboard({256U, 256U}, rawrbox::Color::RGBHex(0x343434), rawrbox::Color::RGBHex(0x666666), 8U);
 
-			rawrbox::CHECKER_TEXTURE = std::make_shared<rawrbox::TextureImage>(rawrbox::Vector2u(256, 256), checker, 4);
+			rawrbox::CHECKER_TEXTURE = std::make_shared<rawrbox::TextureImage>(rawrbox::Vector2u(256U, 256U), checker, 4);
 			rawrbox::CHECKER_TEXTURE->upload();
 		}
 

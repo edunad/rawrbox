@@ -387,7 +387,7 @@ namespace rawrbox {
 		});
 	}
 
-	void Stencil::drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size) {
+	void Stencil::drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, uint64_t loadOffset) {
 		// Setup --------
 		this->setupDrawCall(this->_2dPipeline);
 		// ----
@@ -395,7 +395,7 @@ namespace rawrbox {
 		const auto textureID = rawrbox::CHECKER_TEXTURE->getTextureID();
 		const auto col = rawrbox::Colors::White();
 
-		if ((time(nullptr) % 2) == 0) {
+		if (((time(nullptr) + loadOffset) % 2) == 0) {
 			this->pushVertice(textureID, {pos.x, pos.y}, {0.F, 1.F, 0.F}, col);
 			this->pushVertice(textureID, {pos.x, pos.y + size.y}, {0.F, 0.F, 0.F}, col);
 			this->pushVertice(textureID, {pos.x + size.x, pos.y}, {1.F, 1.F, 0.F}, col);

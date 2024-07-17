@@ -23,8 +23,8 @@ namespace rawrbox {
 		auto frame = data.pixels();
 		if (frame.empty()) throw _logger->error("Cannot set empty pixels");
 
-		frame = rawrbox::TextureUtils::resize(data.size, frame, this->_data.size, data.channels);
-		if (data.channels != this->_data.channels) frame = rawrbox::ColorUtils::setChannels(data.channels, this->_data.channels, this->_data.size.x, this->_data.size.y, frame);
+		if (data.channels != this->_data.channels) frame = rawrbox::ColorUtils::setChannels(data.channels, this->_data.channels, data.size.x, data.size.y, frame);
+		frame = rawrbox::TextureUtils::resize(data.size, frame, this->_data.size, this->_data.channels);
 
 		std::memcpy(this->_data.pixels().data(), frame.data(), frame.size());
 		this->_hasData = true;

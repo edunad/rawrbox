@@ -1,6 +1,6 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/text/engine.hpp>
-#include <rawrbox/utils/path.hpp>
+#include <rawrbox/utils/file.hpp>
 
 #include <fmt/format.h>
 
@@ -83,7 +83,7 @@ namespace rawrbox {
 			}
 		}
 
-		auto bytes = rawrbox::PathUtils::getRawData(pth);
+		auto bytes = rawrbox::FileUtils::getRawData(pth);
 		if (bytes.empty()) throw _logger->error("Failed to load font '{}'", filename.generic_string());
 
 		_fonts[key] = std::make_unique<rawrbox::Font>(filename);

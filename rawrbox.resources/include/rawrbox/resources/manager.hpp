@@ -2,6 +2,7 @@
 
 #include <rawrbox/resources/loader.hpp>
 #include <rawrbox/utils/crc.hpp>
+#include <rawrbox/utils/file.hpp>
 #include <rawrbox/utils/threading.hpp>
 
 #include <fmt/format.h>
@@ -66,7 +67,7 @@ namespace rawrbox {
 				// try to see if the file exists to make a crc32 of it
 				std::vector<uint8_t> buffer = {};
 				if (loader->supportsBuffer(ext)) {
-					buffer = rawrbox::PathUtils::getRawData(filePath);
+					buffer = rawrbox::FileUtils::getRawData(filePath);
 					if (buffer.empty()) {
 						throw _logger->error("Failed to load file '{}'", path);
 					}

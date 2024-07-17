@@ -1,5 +1,5 @@
 #include <rawrbox/scripting/utils/lua.hpp>
-#include <rawrbox/utils/path.hpp>
+#include <rawrbox/utils/file.hpp>
 #include <rawrbox/utils/string.hpp>
 
 #include <Luau/Compiler.h>
@@ -12,7 +12,7 @@ namespace rawrbox {
 		if (!std::filesystem::exists(path)) throw std::runtime_error(fmt::format("File '{}' not found", path.generic_string()));
 
 		// Load script ---
-		auto bytes = rawrbox::PathUtils::getRawData(path);
+		auto bytes = rawrbox::FileUtils::getRawData(path);
 		if (bytes.empty()) throw std::runtime_error("File empty / failed to load");
 		// --------------
 

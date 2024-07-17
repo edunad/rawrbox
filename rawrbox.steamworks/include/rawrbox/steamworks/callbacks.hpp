@@ -53,6 +53,7 @@ namespace rawrbox {
 	class SteamStorageRequest {
 	protected:
 		UGCHandle_t _handle = 0;
+		bool _canceled = false;
 
 		std::function<void(std::vector<uint8_t>)> _callback = nullptr;
 		CCallResult<rawrbox::SteamStorageRequest, RemoteStorageDownloadUGCResult_t> _result = {};
@@ -66,12 +67,20 @@ namespace rawrbox {
 		SteamStorageRequest& operator=(const SteamStorageRequest&) = delete;
 		SteamStorageRequest(SteamStorageRequest&&) noexcept = delete;
 		SteamStorageRequest& operator=(SteamStorageRequest&&) noexcept = delete;
-		~SteamStorageRequest() { this->_result.Cancel(); }
+		~SteamStorageRequest() {
+			this->Cancel();
+		}
+
+		void Cancel() {
+			this->_canceled = true;
+			this->_result.Cancel();
+		}
 
 		void OnRequestCompleted(RemoteStorageDownloadUGCResult_t* pResult, bool bIOFailure) {
 			if (SteamRemoteStorage() == nullptr) throw std::runtime_error("SteamRemoteStorage is null");
 
-			if (bIOFailure || pResult->m_eResult != k_EResultOK) {
+			if (this->_callback == nullptr) return;
+			if (this->_canceled || bIOFailure || pResult->m_eResult != k_EResultOK) {
 				return;
 			}
 
@@ -155,7 +164,10 @@ namespace rawrbox {
 		// ------------
 
 		// STORAGE ---
-		void addRequestUGC(UGCHandle_t handle, SteamAPICall_t apicall, const std::function<void(std::vector<uint8_t>)>& callback);
+		void cancelUGCRequest(SteamAPICall_t handle);
+		void cancelAllUGCRequest();
+
+		rawrbox::SteamStorageRequest* addUGCRequest(UGCHandle_t handle, SteamAPICall_t apicall, const std::function<void(std::vector<uint8_t>)>& callback);
 		// -----------
 	};
 } // namespace rawrbox
