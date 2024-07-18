@@ -3,7 +3,7 @@
 #include <algorithm>
 
 namespace rawrbox {
-	std::vector<uint8_t> ColorUtils::setChannels(size_t channels, size_t target, size_t width, size_t height, const std::vector<uint8_t>& buffer) {
+	std::vector<uint8_t> ColorUtils::setChannels(uint8_t channels, uint8_t target, size_t width, size_t height, const std::vector<uint8_t>& buffer) {
 		std::vector<uint8_t> fixedBuffer = {};
 		fixedBuffer.resize(width * height * target);
 

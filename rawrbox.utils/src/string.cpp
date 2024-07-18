@@ -26,6 +26,11 @@ namespace rawrbox {
 		return str;
 	}
 
+	std::string StrUtils::truncate(std::string str, size_t length) {
+		if (length < str.size()) return str.substr(0, length) + "...";
+		return str;
+	}
+
 	bool StrUtils::isNumeric(const std::string& str) {
 		std::string::const_iterator it = str.begin();
 		while (it != str.end() && (std::isdigit(*it) != 0)) {

@@ -17,6 +17,7 @@ namespace rawrbox {
 		static void drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, std::optional<rawrbox::Color> col, std::optional<size_t> roundness, std::optional<float> angleStart, std::optional<float> angleEnd);
 		static void drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, std::optional<rawrbox::Color> col);
 		static void drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const std::optional<rawrbox::Color>& col, std::optional<rawrbox::Alignment> alignX, std::optional<rawrbox::Alignment> alignY);
+		static void drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size);
 		//  ------
 
 		// Pop & Push ----

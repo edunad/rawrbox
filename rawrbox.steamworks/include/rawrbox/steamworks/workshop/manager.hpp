@@ -12,6 +12,7 @@
 #include <string>
 
 namespace rawrbox {
+
 	enum class WorkshopStatus : uint32_t {
 		NONE = 0U,
 		INSTALLED,
@@ -101,6 +102,11 @@ namespace rawrbox {
 		[[nodiscard]] static std::string getWorkshopModFolder(PublishedFileId_t id);
 		[[nodiscard]] static rawrbox::WorkshopStatus getWorkshopModState(PublishedFileId_t id);
 		// -------------
+
+		// QUERIES ---
+		static void queryUserMods(const std::function<void(std::vector<SteamUGCDetails_t>)>& callback, EUserUGCList type = k_EUserUGCList_Subscribed, const std::vector<std::string>& tags = {}, uint32_t page = 1U);
+		static void queryMods(const std::function<void(std::vector<SteamUGCDetails_t>)>& callback, EUGCQuery type = k_EUGCQuery_RankedByVote, const std::vector<std::string>& tags = {}, uint32_t page = 1U);
+		//-------------
 
 		// UPLOAD ------
 		[[nodiscard]] static rawrbox::WorkshopModConfig readConfig(const std::filesystem::path& rootPath);

@@ -1,5 +1,4 @@
 #pragma once
-
 #include <rawrbox/utils/event.hpp>
 #include <rawrbox/utils/logger.hpp>
 
@@ -8,13 +7,7 @@
 #include <memory>
 
 namespace rawrbox {
-	struct SteamAvatar {
-	public:
-		std::vector<uint8_t> pixels;
-
-		uint32_t width = 0;
-		uint32_t height = 0;
-	};
+	struct SteamImage;
 
 	enum class AvatarSize : uint32_t {
 		SMALL = 0,
@@ -43,7 +36,7 @@ namespace rawrbox {
 
 		// USER ---
 		static CSteamID getSteamID();
-		static rawrbox::SteamAvatar getAvatar(const CSteamID& id, const rawrbox::AvatarSize& size);
+		static rawrbox::SteamImage getAvatar(const CSteamID& id, const rawrbox::AvatarSize& size);
 		static std::vector<CSteamID> getFriends();
 		//  -----------
 	};

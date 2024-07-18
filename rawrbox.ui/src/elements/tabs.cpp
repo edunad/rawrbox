@@ -16,8 +16,6 @@ namespace rawrbox {
 		// Create the main group ---
 		this->_buttonGroup->setPos({0, 0});
 		this->_buttonGroup->setSize({size.x, height});
-
-		this->_buttonGroup->removeChildren();
 		// ------
 
 		for (size_t i = 0; i < this->_tabs.size(); i++) {
@@ -42,13 +40,31 @@ namespace rawrbox {
 			// ------------
 		}
 	}
+
+	void UITabs::updateTabs() {
+		const auto& size = this->getSize();
+
+		const float height = this->getTabHeight();
+		const float buttonWidth = this->getButtonWidth();
+
+		this->_buttonGroup->setSize({size.x, height});
+
+		for (auto& tab : this->_tabs) {
+			if (tab.button == nullptr || tab.group == nullptr) continue;
+
+			tab.group->setSize({size.x, size.y - height});
+			tab.button->setSize({buttonWidth, height});
+		}
+	}
 	// -------------
 
-	UITabs::UITabs(rawrbox::UIRoot* root, const std::vector<rawrbox::UITab>& tabs) : rawrbox::UIContainer(root), _tabs(tabs), _buttonGroup(this->createChild<rawrbox::UIGroup>()) {}
+	UITabs::UITabs(rawrbox::UIRoot* root, const std::vector<rawrbox::UITab>& tabs) : rawrbox::UIContainer(root), _tabs(tabs), _buttonGroup(this->createChild<rawrbox::UIGroup>()) {
+		this->generate();
+	}
 
 	void UITabs::setSize(const rawrbox::Vector2f& size) {
 		rawrbox::UIContainer::setSize(size);
-		this->generate();
+		this->updateTabs();
 	}
 
 	// TABS ---
@@ -90,6 +106,10 @@ namespace rawrbox {
 
 	uint16_t UITabs::getButtonFontSize() const { return 11U; }
 	// ----
+
+	// FOCUS HANDLE ---
+	bool UITabs::hitTest(const rawrbox::Vector2f& point) const { return point.y >= 0 && point.y < this->getTabHeight(); }
+	// -----
 
 	// DRAW ----
 	void UITabs::draw(rawrbox::Stencil& stencil) {

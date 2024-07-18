@@ -1,33 +1,13 @@
 #include <rawrbox/render/textures/missing.hpp>
+#include <rawrbox/render/textures/utils/utils.hpp>
 
 #include <fmt/format.h>
 
 namespace rawrbox {
-	TextureMissing::TextureMissing() {
-		this->setName("MISSING");
-
-		this->_pixels.resize(static_cast<uint32_t>(2 * 2) * 4);
-		this->_size = {2, 2};
-
-		// #60005b
-		// #fe00fc
-		uint32_t i = 0;
-		for (uint32_t x = 0; x < this->_size.x; x++) {
-			for (uint32_t y = 0; y < this->_size.y; y++) {
-				if ((x == 0 && y == 0) || (x == 1 && y == 1)) {
-					this->_pixels[i] = static_cast<uint8_t>(96);
-					this->_pixels[i + 1] = static_cast<uint8_t>(0);
-					this->_pixels[i + 2] = static_cast<uint8_t>(91);
-					this->_pixels[i + 3] = static_cast<uint8_t>(255);
-				} else {
-					this->_pixels[i] = static_cast<uint8_t>(254);
-					this->_pixels[i + 1] = static_cast<uint8_t>(0);
-					this->_pixels[i + 2] = static_cast<uint8_t>(252);
-					this->_pixels[i + 3] = static_cast<uint8_t>(255);
-				}
-
-				i += 4;
-			}
-		}
+	TextureMissing::TextureMissing(const rawrbox::Vector2u& size) {
+		this->_name = "RawrBox::MISSING";
+		this->_data.channels = 4;
+		this->_data.size = size;
+		this->_data.createFrame(rawrbox::TextureUtils::generateCheckboard(size, rawrbox::Color::RGBHex(0x60005b), rawrbox::Color::RGBHex(0xfe00fc), 2));
 	}
 } // namespace rawrbox

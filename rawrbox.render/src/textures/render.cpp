@@ -7,7 +7,9 @@
 
 namespace rawrbox {
 	TextureRender::TextureRender(const rawrbox::Vector2u& size, bool depth) : _depth(depth) {
-		this->_size = size;
+		this->_data.size = size;
+		this->_data.channels = 4;
+
 		this->_name = "RawrBox::RenderTarget";
 	}
 
@@ -96,8 +98,8 @@ namespace rawrbox {
 		Diligent::TextureDesc desc;
 		desc.Type = Diligent::RESOURCE_DIM_TEX_2D_ARRAY;
 		desc.BindFlags = flags;
-		desc.Width = this->_size.x;
-		desc.Height = this->_size.y;
+		desc.Width = this->_data.size.x;
+		desc.Height = this->_data.size.y;
 		desc.MipLevels = 1;
 		desc.SampleCount = 1;
 		desc.Format = format;

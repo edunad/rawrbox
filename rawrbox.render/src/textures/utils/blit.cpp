@@ -4,7 +4,9 @@
 
 namespace rawrbox {
 	TextureBLIT::TextureBLIT(const rawrbox::Vector2u& size) {
-		this->_size = size;
+		this->_data.size = size;
+		this->_data.channels = 4;
+
 		this->_name = "RawrBox::GPU::Blit";
 	}
 
@@ -18,8 +20,8 @@ namespace rawrbox {
 
 		Diligent::TextureDesc desc;
 		desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
-		desc.Width = this->_size.x;
-		desc.Height = this->_size.y;
+		desc.Width = this->_data.size.x;
+		desc.Height = this->_data.size.y;
 		desc.MipLevels = 1;
 		desc.Usage = Diligent::USAGE_STAGING;
 		desc.BindFlags = Diligent::BIND_NONE;

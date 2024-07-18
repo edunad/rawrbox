@@ -46,14 +46,16 @@ namespace rawrbox {
 		std::function<void(rawrbox::Stencil&)> renderAfter = nullptr;
 		std::function<rawrbox::Vector2i(size_t)> getItemSize = nullptr;
 
-		rawrbox::Event<size_t, T&, bool> onItemClick;
+		rawrbox::Event<size_t, T&, bool> onItemClick = {};
 
 		[[nodiscard]] const rawrbox::VirtualListMode& getMode() const { return this->_mode; }
 		void setMode(rawrbox::VirtualListMode mode) {
 			this->_mode = mode;
 		}
 
-		[[nodiscard]] bool lockScroll() const override { return true; }
+		[[nodiscard]] bool lockScroll() const override {
+			return true;
+		}
 
 		void clear() {
 			this->_items.clear();
@@ -61,12 +63,24 @@ namespace rawrbox {
 		};
 
 		void addItem(const T& item) {
-			this->_items.push_back(item);
+			this->_items.emplace_back(std::move(item));
+		};
+
+		void addItem(T& item) {
+			this->_items.emplace_back(std::move(item));
+		};
+
+		void addItem(T&& item) {
+			this->_items.emplace_back(std::move(item));
 		};
 
 		void setItems(const std::vector<T>& items) {
 			this->_items = items;
 			this->_mouseScrollY = 0;
+		};
+
+		[[nodiscard]] size_t total() const {
+			return this->_items.size();
 		};
 
 		void resetScroll() const {
@@ -97,7 +111,8 @@ namespace rawrbox {
 			if (this->getItemSize == nullptr) throw std::runtime_error("[VirtualList] Missing 'getItemSize' implementation");
 			if (this->renderItem == nullptr) throw std::runtime_error("[VirtualList] Missing 'renderItem' implementation");
 
-			auto size = this->getSize();
+			const auto& size = this->getSize();
+
 			int yPosOffset = 0;
 			int xPosOffset = 0;
 
@@ -112,6 +127,16 @@ namespace rawrbox {
 
 				if (this->shouldRender != nullptr && !this->shouldRender(indx, itm)) continue;
 				auto itemSize = this->getItemSize(indx);
+
+				// Check if item fits
+				int nextX = itemSize.x + this->_padding;
+				int nextY = itemSize.y + this->_padding;
+				bool fits = (xPosOffset + nextX) <= size.x;
+
+				if (this->_mode == rawrbox::VirtualListMode::GRID && !fits) {
+					yPosOffset += nextY;
+					xPosOffset = 0;
+				}
 
 				// Item size
 				int yStart = yPosOffset + this->_mouseScrollY;
@@ -131,16 +156,8 @@ namespace rawrbox {
 				}
 
 				// Next item
-				int nextX = itemSize.x + this->_padding;
-				int nextY = itemSize.y + this->_padding;
-
 				if (this->_mode == rawrbox::VirtualListMode::GRID) {
-					if ((xPosOffset + nextX) >= size.x) {
-						yPosOffset += nextY;
-						xPosOffset = 0;
-					} else {
-						xPosOffset += nextX;
-					}
+					if (fits) xPosOffset += nextX;
 				} else {
 					yPosOffset += nextY;
 				}

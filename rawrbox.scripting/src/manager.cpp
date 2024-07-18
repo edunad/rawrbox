@@ -391,6 +391,10 @@ namespace rawrbox {
 		return true;
 	}
 
+	bool SCRIPTING::unloadMod(const std::filesystem::path& modFolder) {
+		return unloadMod(modFolder.filename().generic_string());
+	}
+
 	bool SCRIPTING::unloadMod(const std::string& modId) {
 		auto fnd = _mods.find(modId);
 		if (fnd == _mods.end()) return false;

@@ -27,20 +27,17 @@ namespace rawrbox {
 		_pool->reset();
 	}
 
-	std::future<void> ASYNC::run(const std::function<void()>& job) {
+	void ASYNC::run(const std::function<void()>& job) {
 		if (_pool == nullptr) throw _logger->error("ASYNC not initialized!");
-		std::future<void> future = _pool->submit_task(job);
 
 #ifdef RAWRBOX_TRACE_EXCEPTIONS
 		try {
-			future.get();
+			_pool->detach_task(job);
 		} catch (const cpptrace::exception_with_message& e) {
 			throw _logger->error("Fatal error\n  └── {}", e.message());
 		}
 #else
-		future.get();
+		_pool->detach_task(job);
 #endif
-
-		return future;
 	}
 } // namespace rawrbox

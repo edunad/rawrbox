@@ -23,6 +23,11 @@
 	#define GLFW_EXPOSE_NATIVE_WGL
 #endif
 
+#if _WIN32
+	#include <dwmapi.h>
+	#pragma comment(lib, "dwmapi.lib")
+#endif
+
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/render/text/engine.hpp>
@@ -121,6 +126,7 @@ namespace rawrbox {
 		rawrbox::WHITE_TEXTURE.reset();
 		rawrbox::BLACK_TEXTURE.reset();
 		rawrbox::NORMAL_TEXTURE.reset();
+		rawrbox::CHECKER_TEXTURE.reset();
 		// ----------------------
 
 		glfwPostEmptyEvent();
@@ -275,8 +281,8 @@ namespace rawrbox {
 		glfwShowWindow(glfwHandle);
 		// ------
 
-// Set icon
 #ifdef WIN32
+		// ICON ----
 		HANDLE hIcon = LoadIconW(GetModuleHandleW(nullptr), L"GLFW_ICON");
 		if (hIcon == nullptr) {
 			// No user-provided icon found, load default icon
@@ -286,6 +292,25 @@ namespace rawrbox {
 		HWND hwnd = glfwGetWin32Window(glfwHandle);
 		::SendMessage(hwnd, WM_SETICON, ICON_SMALL, std::bit_cast<LPARAM>(hIcon));
 		::SendMessage(hwnd, WM_SETICON, ICON_BIG, std::bit_cast<LPARAM>(hIcon));
+		// -----------
+
+		// DARK THEME ---
+		const BOOL isDarkMode = TRUE;
+		DwmSetWindowAttribute(hwnd, DWMWINDOWATTRIBUTE::DWMWA_USE_IMMERSIVE_DARK_MODE, &isDarkMode, sizeof(isDarkMode));
+		// ------------
+
+		// Backdrop ----
+		DWM_BLURBEHIND bb = {
+		    .dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION,
+		    .fEnable = TRUE,
+		    .hRgnBlur = CreateRectRgn(0, 0, -1, -1),
+		};
+		DwmEnableBlurBehindWindow(hwnd, &bb);
+		BOOL value = TRUE;
+		DwmSetWindowAttribute(hwnd, DWMWA_USE_HOSTBACKDROPBRUSH, &value, sizeof(value));
+		DWM_SYSTEMBACKDROP_TYPE backdrop_type = DWMSBT_MAINWINDOW;
+		DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, &backdrop_type, sizeof(backdrop_type));
+		// ---------------
 #endif
 		// ---------------
 
