@@ -16,9 +16,12 @@ namespace rawrbox {
 			std::vector<T> file = {};
 			const auto iflags = std::ios::in | std::ios::binary | std::ios::ate;
 			if (auto ifs = std::ifstream(filePath.generic_string(), iflags)) {
-				file.resize(ifs.tellg());
-				ifs.seekg(0, std::ios::beg);
-				ifs.read(std::bit_cast<char*>(file.data()), file.size());
+				const auto fileSize = ifs.tellg();
+				if (fileSize > 0) {
+					file.resize(fileSize);
+					ifs.seekg(0, std::ios::beg);
+					ifs.read(std::bit_cast<char*>(file.data()), file.size());
+				}
 			}
 
 			file.push_back('\0');

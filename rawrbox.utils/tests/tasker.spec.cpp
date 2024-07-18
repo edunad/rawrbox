@@ -10,7 +10,7 @@ TEST_CASE("Tasker should behave as expected", "[rawrbox::Tasker]") {
 		std::function<void()> callback = nullptr;
 
 		void run(const std::function<void()>& onComplete) override {
-			if (callback != nullptr) callback();
+			callback();
 			onComplete();
 		}
 	};
