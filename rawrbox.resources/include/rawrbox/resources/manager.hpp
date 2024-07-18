@@ -141,17 +141,13 @@ namespace rawrbox {
 		static void loadListAsync(const std::vector<std::pair<std::string, uint32_t>>& files, const std::function<void()>& onComplete = nullptr) {
 			_loadingFiles += files.size();
 
-			std::function<void()> complete = [onComplete]() {
-				_loadingFiles = std::max<size_t>(_loadingFiles - 1, 0);
-				if (_loadingFiles <= 0 && onComplete != nullptr) onComplete();
-			};
-
 			for (const auto& file : files) {
-				rawrbox::ASYNC::run([file, &complete]() {
+				rawrbox::ASYNC::run([file, onComplete]() {
 					loadFileImpl<T>(file.first, file.second);
 					_logger->info("Loaded '{}'", fmt::styled(file.first, fmt::fg(fmt::color::coral)));
 
-					complete();
+					_loadingFiles = std::max<size_t>(_loadingFiles - 1, 0);
+					if (_loadingFiles <= 0 && onComplete != nullptr) onComplete();
 				});
 			}
 		}

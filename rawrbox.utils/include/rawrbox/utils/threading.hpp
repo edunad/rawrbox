@@ -4,8 +4,6 @@
 
 #include <BS_thread_pool.hpp>
 
-#include <future>
-
 namespace rawrbox {
 	class ASYNC {
 	protected:
@@ -16,9 +14,9 @@ namespace rawrbox {
 		// -------------
 
 	public:
-		static void init(uint32_t threads = 5);
+		static void init(uint32_t threads = 0);
 		static void shutdown();
 
-		static std::future<void> run(const std::function<void()>& job);
+		static void run(const std::function<void()>& job);
 	};
 } // namespace rawrbox

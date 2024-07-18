@@ -78,6 +78,9 @@ namespace rawrbox {
 	}
 
 	// UTILS ---
+	void TextureBase::setID(uint64_t id) { this->_id = id; }
+	uint64_t TextureBase::getID() const { return this->_id; }
+
 	const rawrbox::ImageData& TextureBase::getData() const { return this->_data; }
 	const std::vector<uint8_t>& TextureBase::getPixels(size_t index) const {
 		if (index > this->_data.frames.size()) throw this->_logger->error("Pixel data from frame index {} not found", index);

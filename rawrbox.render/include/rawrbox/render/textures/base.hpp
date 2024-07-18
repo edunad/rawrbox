@@ -41,6 +41,8 @@ namespace rawrbox {
 		[[nodiscard]] std::vector<uint8_t>& pixels() { return this->frames.begin()->pixels; }
 		[[nodiscard]] const std::vector<uint8_t>& pixels() const { return this->frames.begin()->pixels; }
 
+		void clearFrames() { this->frames.clear(); }
+
 		[[nodiscard]] bool valid() const { return channels != 0U && size > 0; }
 		[[nodiscard]] bool empty() const { return this->frames.empty(); }
 
@@ -65,6 +67,8 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::ITexture> _tex;
 
 		rawrbox::ImageData _data = {};
+
+		uint64_t _id = 0;
 
 		uint32_t _textureID = 0; // Default to missing texture, it's always reserved to 0
 		uint32_t _depthTextureID = 0;
@@ -97,6 +101,9 @@ namespace rawrbox {
 		virtual ~TextureBase();
 
 		// UTILS---
+		void setID(uint64_t id);
+		[[nodiscard]] uint64_t getID() const;
+
 		[[nodiscard]] virtual const rawrbox::ImageData& getData() const;
 		[[nodiscard]] virtual const std::vector<uint8_t>& getPixels(size_t index = 0) const;
 

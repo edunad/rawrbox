@@ -2,12 +2,12 @@
 
 #include <rawrbox/utils/event.hpp>
 #include <rawrbox/utils/logger.hpp>
+#include <rawrbox/utils/threading.hpp>
 
 #include <steam/steam_api.h>
 
 #include <functional>
 #include <memory>
-#include <thread>
 #include <vector>
 
 namespace rawrbox {
@@ -52,9 +52,7 @@ namespace rawrbox {
 
 	class SteamStorageRequest {
 	protected:
-		UGCHandle_t _handle = 0;
-		bool _canceled = false;
-
+		UGCHandle_t _handle = k_UGCHandleInvalid;
 		std::function<void(std::vector<uint8_t>)> _callback = nullptr;
 		CCallResult<rawrbox::SteamStorageRequest, RemoteStorageDownloadUGCResult_t> _result = {};
 
@@ -68,26 +66,25 @@ namespace rawrbox {
 		SteamStorageRequest(SteamStorageRequest&&) noexcept = delete;
 		SteamStorageRequest& operator=(SteamStorageRequest&&) noexcept = delete;
 		~SteamStorageRequest() {
-			this->Cancel();
-		}
-
-		void Cancel() {
-			this->_canceled = true;
+			this->_handle = k_UGCHandleInvalid;
+			this->_callback = nullptr;
 			this->_result.Cancel();
 		}
 
 		void OnRequestCompleted(RemoteStorageDownloadUGCResult_t* pResult, bool bIOFailure) {
 			if (SteamRemoteStorage() == nullptr) throw std::runtime_error("SteamRemoteStorage is null");
 
-			if (this->_callback == nullptr) return;
-			if (this->_canceled || bIOFailure || pResult->m_eResult != k_EResultOK) {
+			if (this->_callback == nullptr ||
+			    bIOFailure || pResult->m_eResult != k_EResultOK) {
 				return;
 			}
 
-			std::vector<uint8_t> buffer(pResult->m_nSizeInBytes);
-			SteamRemoteStorage()->UGCRead(this->_handle, buffer.data(), pResult->m_nSizeInBytes, 0, k_EUGCRead_ContinueReadingUntilFinished);
+			rawrbox::ASYNC::run([pResult, this]() {
+				std::vector<uint8_t> buffer(pResult->m_nSizeInBytes);
+				SteamRemoteStorage()->UGCRead(this->_handle, buffer.data(), pResult->m_nSizeInBytes, 0, k_EUGCRead_ContinueReadingUntilFinished);
 
-			this->_callback(buffer);
+				this->_callback(buffer);
+			});
 		}
 	};
 
@@ -109,11 +106,6 @@ namespace rawrbox {
 		// LOGGER ------
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-SteamCALLBACKS");
 		// -------------
-
-		// THREAD LOOP ---
-		std::atomic<bool> _callbackShutdown = false;
-		std::unique_ptr<std::jthread> _callbackThread;
-		// -------
 
 #pragma warning(push)
 #pragma warning(disable : 4068)
@@ -154,6 +146,10 @@ namespace rawrbox {
 		void init();
 		void shutdown();
 
+		// THREADING ---
+		void runOnThread(const std::function<void()>& thread);
+		// -------------
+
 		// QUERY ---
 		void addUGCQueryCallback(SteamAPICall_t apicall, const std::function<void(std::vector<SteamUGCDetails_t>)>& callback);
 		// --------
@@ -167,7 +163,7 @@ namespace rawrbox {
 		void cancelUGCRequest(SteamAPICall_t handle);
 		void cancelAllUGCRequest();
 
-		rawrbox::SteamStorageRequest* addUGCRequest(UGCHandle_t handle, SteamAPICall_t apicall, const std::function<void(std::vector<uint8_t>)>& callback);
+		void addUGCRequest(UGCHandle_t handle, SteamAPICall_t apicall, const std::function<void(std::vector<uint8_t>)>& callback);
 		// -----------
 	};
 } // namespace rawrbox

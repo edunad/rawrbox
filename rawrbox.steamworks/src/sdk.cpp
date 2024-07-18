@@ -70,6 +70,8 @@ namespace rawrbox {
 
 	void SteamSDK::update() {
 		if (!isReady()) return;
+
+		SteamAPI_RunCallbacks();
 		rawrbox::SteamINPUT::update();
 	}
 	// ------------

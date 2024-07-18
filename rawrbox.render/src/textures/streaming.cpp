@@ -17,6 +17,12 @@ namespace rawrbox {
 	}
 
 	// UTILS ---
+	void TextureStreaming::clear() {
+		// We don't update the texture pixels, instead show MISSING_TEXTURE
+		this->_hasData = false;
+		this->_pendingUpdate = false;
+	}
+
 	void TextureStreaming::setImage(const rawrbox::ImageData& data) {
 		if (data.frames.empty()) throw _logger->error("Cannot set empty data");
 
@@ -67,6 +73,11 @@ namespace rawrbox {
 
 	bool TextureStreaming::requiresUpdate() const {
 		return this->_pendingUpdate;
+	}
+
+	uint32_t TextureStreaming::getTextureID() const {
+		if (!this->hasData()) return rawrbox::MISSING_TEXTURE->getTextureID();
+		return rawrbox::TextureBase::getTextureID();
 	}
 
 	void TextureStreaming::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {

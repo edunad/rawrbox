@@ -72,14 +72,7 @@ namespace rawrbox {
 
 	void SteamCALLBACKS::init() {
 		if (this->_initialized) throw this->_logger->error("Already initialized");
-
 		this->_initialized = true;
-		this->_callbackThread = std::make_unique<std::jthread>([this]() {
-			while (!this->_callbackShutdown) {
-				SteamAPI_RunCallbacks();
-				std::this_thread::sleep_for(std::chrono::milliseconds(100));
-			}
-		});
 	}
 
 	void SteamCALLBACKS::shutdown() {
@@ -88,10 +81,6 @@ namespace rawrbox {
 
 		this->_CreateItemResult.Cancel();
 		this->_UpdateItemResult.Cancel();
-
-		this->_callbackShutdown = true;
-		this->_callbackThread->join();
-		this->_callbackThread.reset();
 
 		this->_initialized = false;
 	}
@@ -130,8 +119,6 @@ namespace rawrbox {
 	void SteamCALLBACKS::cancelUGCRequest(SteamAPICall_t handle) {
 		auto fnd = this->_ugcStorageQueries.find(handle);
 		if (fnd == this->_ugcStorageQueries.end()) return;
-
-		fnd->second->Cancel();
 		this->_ugcStorageQueries.erase(handle);
 	}
 
@@ -139,7 +126,7 @@ namespace rawrbox {
 		this->_ugcStorageQueries.clear();
 	}
 
-	rawrbox::SteamStorageRequest* SteamCALLBACKS::addUGCRequest(UGCHandle_t handle, SteamAPICall_t apicall, const std::function<void(std::vector<uint8_t>)>& callback) {
+	void SteamCALLBACKS::addUGCRequest(UGCHandle_t handle, SteamAPICall_t apicall, const std::function<void(std::vector<uint8_t>)>& callback) {
 		auto fnd = this->_ugcStorageQueries.find(apicall);
 		if (fnd != this->_ugcStorageQueries.end()) throw _logger->error("addUGCRequest with api call {} already called! Wait for previous call to complete", apicall);
 
@@ -148,9 +135,7 @@ namespace rawrbox {
 			this->_ugcStorageQueries.erase(apicall);
 		});
 
-		auto* ptr = query.get();
 		this->_ugcStorageQueries[apicall] = std::move(query);
-		return ptr;
 	}
 	// -----------
 	// -----------
