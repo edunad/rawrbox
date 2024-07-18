@@ -241,9 +241,8 @@ namespace rawrbox {
 		const auto& cmd = args[0];
 		if (cmd.empty() || !hasCommand(cmd)) return {false, "Command not found"};
 
-		auto& command = this->_commands[cmd];
 		if (this->validate != nullptr) {
-			return this->validate(command);
+			return this->validate(this->_commands[cmd]);
 		}
 
 		return run(args);

@@ -1,6 +1,8 @@
 #include <rawrbox/utils/thread_utils.hpp>
 
-#ifdef _MSC_VER
+#include <bit>
+
+#ifdef _WIN32
 	#include <windows.h>
 #endif
 
@@ -21,6 +23,11 @@ namespace rawrbox {
 		info.szName = name.c_str();
 		info.dwThreadID = GetCurrentThreadId();
 		info.dwFlags = 0;
+
+		__try {
+			RaiseException(0x406D1388, 0, sizeof(info) / sizeof(ULONG_PTR), std::bit_cast<ULONG_PTR*>(&info));
+		} __except (EXCEPTION_EXECUTE_HANDLER) {
+		}
 	}
 #else
 	void ThreadUtils::setName(const std::string& name) {}

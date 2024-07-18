@@ -406,7 +406,7 @@ namespace rawrbox {
 		}
 
 		virtual bool hasMesh(size_t index) {
-			return index >= 0 && index < this->_meshes.size();
+			return index < this->_meshes.size();
 		}
 
 		[[nodiscard]] uint32_t getID(int index = 0) const override {
