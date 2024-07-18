@@ -3,6 +3,7 @@
 #include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/textures/flat.hpp>
+#include <rawrbox/render/textures/image.hpp>
 #include <rawrbox/render/textures/missing.hpp>
 #include <rawrbox/render/window.hpp>
 
@@ -43,6 +44,7 @@ namespace rawrbox {
 	extern std::shared_ptr<rawrbox::TextureFlat> WHITE_TEXTURE;
 	extern std::shared_ptr<rawrbox::TextureFlat> BLACK_TEXTURE;
 	extern std::shared_ptr<rawrbox::TextureFlat> NORMAL_TEXTURE;
+	extern std::shared_ptr<rawrbox::TextureImage> CHECKER_TEXTURE;
 	// ----
 
 	// FONT FALLBACKS ----

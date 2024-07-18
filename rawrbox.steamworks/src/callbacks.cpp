@@ -4,13 +4,9 @@
 
 #include <fmt/printf.h>
 
-namespace rawrbox {
-	SteamCALLBACKS::SteamCALLBACKS() : _IPCFailureCallback(this, &SteamCALLBACKS::OnIPCFailure),
-					   _SteamShutdownCallback(this, &SteamCALLBACKS::OnSteamShutdown),
-					   _CallbackWorkshopItemInstalled(this, &SteamCALLBACKS::OnWorkshopItemInstalled),
-					   _CallbackWorkshopItemRemoved(this, &SteamCALLBACKS::OnWorkshopItemRemoved),
-					   _CallbackWorkshopItemDownloaded(this, &SteamCALLBACKS::OnWorkshopItemDownloaded) {}
+#include <utility>
 
+namespace rawrbox {
 	// PRIVATE ----
 	// GLOBAL ---------
 	void SteamCALLBACKS::OnIPCFailure(IPCFailure_t* /*failure*/) {
@@ -55,29 +51,6 @@ namespace rawrbox {
 	}
 	// --------
 
-	// QUERY ---
-	void SteamCALLBACKS::OnUGCQueryCompleted(SteamUGCQueryCompleted_t* pParam, bool bIOFailure) {
-		std::vector<SteamUGCDetails_t> details = {};
-
-		if (bIOFailure || pParam->m_eResult != k_EResultOK || pParam->m_unNumResultsReturned <= 0) {
-			this->_logger->warn("Failed to query workshop mods: '{}'", magic_enum::enum_name(pParam->m_eResult));
-		} else {
-			for (uint32_t i = 0; i < pParam->m_unNumResultsReturned; i++) {
-				SteamUGCDetails_t detail = {};
-
-				if (SteamUGC()->GetQueryUGCResult(pParam->m_handle, i, &detail)) {
-					if (detail.m_eResult == k_EResultOK && detail.m_eFileType == k_EWorkshopFileTypeCommunity) {
-						details.push_back(detail);
-					}
-				}
-			}
-		}
-
-		if (this->_UGCQueryCompletedCallback != nullptr) this->_UGCQueryCompletedCallback(details);
-		SteamUGC()->ReleaseQueryUGCRequest(pParam->m_handle);
-	}
-	// --------
-
 	// WORKSHOP ---
 	void SteamCALLBACKS::OnWorkshopCreateItem(CreateItemResult_t* result, bool bIOFailure) {
 		if (bIOFailure) throw _logger->error("Failed to create workshop item");
@@ -91,12 +64,38 @@ namespace rawrbox {
 	// -------------
 
 	// PUBLIC ---
+	SteamCALLBACKS::SteamCALLBACKS() : _IPCFailureCallback(this, &SteamCALLBACKS::OnIPCFailure),
+					   _SteamShutdownCallback(this, &SteamCALLBACKS::OnSteamShutdown),
+					   _CallbackWorkshopItemInstalled(this, &SteamCALLBACKS::OnWorkshopItemInstalled),
+					   _CallbackWorkshopItemRemoved(this, &SteamCALLBACKS::OnWorkshopItemRemoved),
+					   _CallbackWorkshopItemDownloaded(this, &SteamCALLBACKS::OnWorkshopItemDownloaded) {}
+
+	void SteamCALLBACKS::init() {
+		if (this->_initialized) throw this->_logger->error("Already initialized");
+		this->_initialized = true;
+	}
+
+	void SteamCALLBACKS::shutdown() {
+		this->_ugcQueries.clear();
+		this->_ugcStorageQueries.clear();
+
+		this->_CreateItemResult.Cancel();
+		this->_UpdateItemResult.Cancel();
+
+		this->_initialized = false;
+	}
+
 	// QUERY ---
 	void SteamCALLBACKS::addUGCQueryCallback(SteamAPICall_t apicall, const std::function<void(std::vector<SteamUGCDetails_t>)>& callback) {
-		if (this->_UGCQueryCompletedCallback != nullptr) throw _logger->error("AddUGCQueryCallback already called! Wait for previous call to complete");
+		auto fnd = this->_ugcQueries.find(apicall);
+		if (fnd != this->_ugcQueries.end()) throw _logger->error("AddUGCQueryCallback with api call {} already called! Wait for previous call to complete", apicall);
 
-		this->_UGCQueryCompletedCallback = callback;
-		this->_steamUGCQueryCompletedResult.Set(apicall, this, &SteamCALLBACKS::OnUGCQueryCompleted);
+		std::unique_ptr<rawrbox::SteamUGCQuery> query = std::make_unique<rawrbox::SteamUGCQuery>(apicall, [this, apicall, callback](std::vector<SteamUGCDetails_t> details) {
+			callback(std::move(details));
+			this->_ugcQueries.erase(apicall);
+		});
+
+		this->_ugcQueries[apicall] = std::move(query);
 	}
 	// ----------
 
@@ -115,5 +114,29 @@ namespace rawrbox {
 		this->_UpdateItemResult.Set(apicall, this, &SteamCALLBACKS::OnWorkshopUpdateItem);
 	}
 	// ----------
+
+	// STORAGE ---
+	void SteamCALLBACKS::cancelUGCRequest(SteamAPICall_t handle) {
+		auto fnd = this->_ugcStorageQueries.find(handle);
+		if (fnd == this->_ugcStorageQueries.end()) return;
+		this->_ugcStorageQueries.erase(handle);
+	}
+
+	void SteamCALLBACKS::cancelAllUGCRequest() {
+		this->_ugcStorageQueries.clear();
+	}
+
+	void SteamCALLBACKS::addUGCRequest(UGCHandle_t handle, SteamAPICall_t apicall, const std::function<void(std::vector<uint8_t>)>& callback) {
+		auto fnd = this->_ugcStorageQueries.find(apicall);
+		if (fnd != this->_ugcStorageQueries.end()) throw _logger->error("addUGCRequest with api call {} already called! Wait for previous call to complete", apicall);
+
+		std::unique_ptr<rawrbox::SteamStorageRequest> query = std::make_unique<rawrbox::SteamStorageRequest>(handle, apicall, [this, apicall, callback](std::vector<uint8_t> data) {
+			callback(std::move(data));
+			this->_ugcStorageQueries.erase(apicall);
+		});
+
+		this->_ugcStorageQueries[apicall] = std::move(query);
+	}
+	// -----------
 	// -----------
 } // namespace rawrbox

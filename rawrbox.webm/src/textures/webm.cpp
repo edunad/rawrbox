@@ -11,6 +11,7 @@ namespace rawrbox {
 		this->_webm.reset();
 	}
 
+	// PRIVATE ----
 	void TextureWEBM::internalLoad(const std::vector<uint8_t>& /*buffer*/, bool useFallback) { // buffer not supported on webm :(
 		this->_name = "RawrBox::Texture::WEBM";
 
@@ -23,8 +24,10 @@ namespace rawrbox {
 			this->_webm->setPaused(this->_pause);
 			this->_webm->onEnd += [this]() { this->onEnd(); };
 
-			this->_channels = 4; // Force 4 channels
-			this->_size = this->_webm->getSize();
+			this->_data.channels = 4; // Force 4 channels
+			this->_data.size = this->_webm->getSize();
+			this->_data.createFrame();
+
 		} catch (const std::runtime_error& err) {
 			if (useFallback) {
 				_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), err.what());
@@ -36,6 +39,26 @@ namespace rawrbox {
 		}
 	}
 
+	void TextureWEBM::internalUpdate() {
+		auto* context = rawrbox::RENDERER->context();
+
+		Diligent::Box UpdateBox;
+		UpdateBox.MinX = 0;
+		UpdateBox.MinY = 0;
+		UpdateBox.MaxX = this->_data.size.x;
+		UpdateBox.MaxY = this->_data.size.y;
+
+		Diligent::TextureSubResData SubresData;
+		SubresData.Stride = this->_data.size.x * this->_data.channels;
+		SubresData.pData = this->_data.pixels().data();
+
+		rawrbox::BarrierUtils::barrier({{this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BarrierUtils::barrier({{this->_tex, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+	}
+	// ---------------
+
+	// PUBLIC --------
 	void TextureWEBM::update() {
 		if (this->_failedToLoad || this->_handle == nullptr) return; // Not bound
 		if (this->_pause || this->_cooldown >= rawrbox::TimeUtils::curtime()) return;
@@ -44,8 +67,7 @@ namespace rawrbox {
 		rawrbox::WEBMImage img;
 		if (!this->_webm->getNextFrame(img)) return; // Reached end
 
-		this->_pixels = img.pixels;
-		this->_size = img.size;
+		std::memcpy(this->_data.pixels().data(), img.pixels.data(), img.pixels.size());
 		this->_cooldown = rawrbox::TimeUtils::curtime() + 20; // TODO: FIX TIME SCALE
 
 		this->internalUpdate();
@@ -99,4 +121,5 @@ namespace rawrbox {
 		rawrbox::TextureBase::upload(this->_sRGB ? Diligent::TEX_FORMAT_BGRA8_UNORM_SRGB : Diligent::TEX_FORMAT_BGRA8_UNORM, true);
 	}
 	// --------------------
+	// ---------
 } // namespace rawrbox

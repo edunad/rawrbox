@@ -386,6 +386,34 @@ namespace rawrbox {
 			// ----
 		});
 	}
+
+	void Stencil::drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, uint64_t loadOffset) {
+		// Setup --------
+		this->setupDrawCall(this->_2dPipeline);
+		// ----
+
+		const auto textureID = rawrbox::CHECKER_TEXTURE->getTextureID();
+		const auto col = rawrbox::Colors::White();
+
+		if (((time(nullptr) + loadOffset) % 2) == 0) {
+			this->pushVertice(textureID, {pos.x, pos.y}, {0.F, 1.F, 0.F}, col);
+			this->pushVertice(textureID, {pos.x, pos.y + size.y}, {0.F, 0.F, 0.F}, col);
+			this->pushVertice(textureID, {pos.x + size.x, pos.y}, {1.F, 1.F, 0.F}, col);
+			this->pushVertice(textureID, {pos.x + size.x, pos.y + size.y}, {1.F, 0.F, 0.F}, col);
+		} else {
+			this->pushVertice(textureID, {pos.x, pos.y}, {0.F, 0.F, 0.F}, col);
+			this->pushVertice(textureID, {pos.x, pos.y + size.y}, {0.F, 1.F, 0.F}, col);
+			this->pushVertice(textureID, {pos.x + size.x, pos.y}, {1.F, 0.F, 0.F}, col);
+			this->pushVertice(textureID, {pos.x + size.x, pos.y + size.y}, {1.F, 1.F, 0.F}, col);
+		}
+
+		this->pushIndices({0, 1, 2,
+		    1, 3, 2});
+
+		// Add to calls
+		this->pushDrawCall();
+		// ----
+	}
 	// --------------------
 
 	// ------RENDERING
@@ -399,11 +427,11 @@ namespace rawrbox {
 	void Stencil::pushDrawCall() {
 		if (!this->_drawCalls.empty()) {
 			auto& oldCall = this->_drawCalls.back();
+
 			bool canMerge = oldCall.clip == this->_currentDraw.clip &&
 					oldCall.cull == this->_currentDraw.cull &&
 					oldCall.stencilProgram == this->_currentDraw.stencilProgram &&
-					oldCall.indices.size() < 16000 &&
-					oldCall.vertices.size() < 16000;
+					oldCall.vertices.size() + this->_currentDraw.vertices.size() < MaxVertsInStreamingBuffer;
 
 			if (canMerge) {
 				for (auto& ind : this->_currentDraw.indices) {

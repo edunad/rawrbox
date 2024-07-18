@@ -3,6 +3,7 @@
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/steamworks/sdk.hpp>
+#include <rawrbox/steamworks/utils.hpp>
 
 #include <steamworks/game.hpp>
 

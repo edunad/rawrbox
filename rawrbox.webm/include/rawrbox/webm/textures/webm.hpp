@@ -13,6 +13,7 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::WEBM> _webm = nullptr;
 
 		void internalLoad(const std::vector<uint8_t>& data, bool useFallback = true) override;
+		void internalUpdate();
 
 	public:
 		rawrbox::Event<> onEnd;

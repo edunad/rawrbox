@@ -108,11 +108,19 @@ CPMAddPackage(
         "WEBP_BUILD_VWEBP OFF"
         "WEBP_BUILD_WEBPINFO OFF"
         "WEBP_BUILD_WEBPMUX OFF"
+        "WEBP_BUILD_LIBWEBPMUX ON"
+        "WEBP_BUILD_LIBWEBPMUX ON"
+        "WEBP_USE_THREAD ON"
+        "WEBP_NEAR_LOSSLESS ON"
+        "WEBP_LINK_STATIC ON"
         "WEBP_BUILD_EXTRAS OFF")
 
 if(libwebp_ADDED)
     set_lib_runtime_mt(webp)
     set_lib_runtime_mt(webpdemux)
+    set_lib_runtime_mt(libwebpmux)
+    #set_lib_runtime_mt(sharpyuv)
+    #set_lib_runtime_mt(xxhash)
 endif()
 # ------------
 
@@ -170,7 +178,8 @@ target_link_libraries(
             utf8cpp
             lunasvg
             webpdemux
-            glfw)
+            glfw
+)
 
 set_lib_runtime_mt(${output_target})
 

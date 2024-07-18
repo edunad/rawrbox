@@ -74,6 +74,7 @@ namespace rawrbox {
 		static std::unordered_map<std::filesystem::path, bool> loadMods(const std::filesystem::path& rootFolder);
 		static bool loadMod(const std::filesystem::path& modFolder);
 
+		static bool unloadMod(const std::filesystem::path& modFolder);
 		static bool unloadMod(const std::string& modId);
 		// -----------
 

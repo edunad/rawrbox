@@ -7,7 +7,6 @@
 #include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/utils/texture.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 

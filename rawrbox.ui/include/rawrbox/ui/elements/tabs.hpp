@@ -29,6 +29,7 @@ namespace rawrbox {
 		rawrbox::UIGroup* _buttonGroup = nullptr;
 
 		virtual void generate();
+		virtual void updateTabs();
 
 	public:
 		rawrbox::Event<const std::string&> onTabChange;
@@ -49,6 +50,10 @@ namespace rawrbox {
 		[[nodiscard]] virtual float getTabHeight() const;
 		[[nodiscard]] virtual float getButtonWidth() const;
 		[[nodiscard]] virtual uint16_t getButtonFontSize() const;
+		// ---------
+
+		// FOCUS HANDLE ---
+		[[nodiscard]] bool hitTest(const rawrbox::Vector2f& point) const override;
 		// ---------
 
 		// DRAW ----
