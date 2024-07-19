@@ -30,6 +30,7 @@ version-resolver:
       - "🎞 WEBM"
       - "🏀 2D PHYSICS"
       - "🧱 3D PHYSICS"
+      - "💨 STEAMWORKS"
   patch:
     labels:
       - "BUG"

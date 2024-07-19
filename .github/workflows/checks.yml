@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Label PR
-        uses: actions/labeler@v5.0.0
+        uses: actions/labeler@8558fd74291d67161a8a78ce36a881fa63b766a9
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           sync-labels: true
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Find comment
-        uses: peter-evans/find-comment@v3.1.0
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e
         id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
@@ -34,7 +34,7 @@ jobs:
           body-includes: ## NOTICE  - A LUA API change was detected ⚠
 
       - name: Create / Update comment
-        uses: peter-evans/create-or-update-comment@v4.0.0
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043
         if: contains(github.event.pull_request.labels.*.name, '📜 SCRIPTING')
         with:
           comment-id: ${{ steps.fc.outputs.comment-id }}
