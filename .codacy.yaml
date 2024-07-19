@@ -2,12 +2,13 @@
 reviews:
   high_level_summary: true
 exclude_paths:
-  - ".cache/**"
-  - "deps/**"
-  - "build/**"
-  - "rawrbox.render/include/stb/**"
+  - ".cache/**/*"
+  - "deps/**/*"
+  - "build/**/*"
+  - "rawrbox.render/include/stb/**/*"
   - "**.spec.**"
   - "crc.hpp"
+  - "**.py"
   - "README.md"
 engines:
   cppcheck:
