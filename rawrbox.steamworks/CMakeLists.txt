@@ -4,7 +4,7 @@ set(output_target RAWRBOX.STEAMWORKS)
 # --------------
 
 # LIBS ---
-set(STEAMWORKS_SDKPATH "${CMAKE_CURRENT_LIST_DIR}/_deps/steamworks")
+set(STEAMWORKS_SDKPATH "${CMAKE_CURRENT_LIST_DIR}/deps/steamworks")
 find_package(STEAMWORKS REQUIRED)
 # --------------
 
