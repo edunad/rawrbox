@@ -89,4 +89,7 @@ RUN echo "alias build_rawrbox=\"cd build && ninja\"" >> /root/.bashrc
 
 CMD /bin/bash
 ENTRYPOINT /bin/bash
+
+RUN rawrbox -m myuser
+USER rawrbox
 # Done 🐲

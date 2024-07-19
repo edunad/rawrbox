@@ -172,13 +172,21 @@ namespace rawrbox {
 
 		int connectResult = 0;
 		if (ipv6) {
-			memcpy(&addr6, result->ai_addr, result->ai_addrlen);
+			if (result->ai_addrlen <= sizeof(addr6)) {
+				std::memcpy(&addr6, result->ai_addr, result->ai_addrlen);
+			} else {
+				throw std::runtime_error("Not enough space for ipv6 address");
+			}
 
 			addr6.sin6_family = AF_INET6;
 			addr6.sin6_port = htons(port);
 			connectResult = ::connect(sock, std::bit_cast<struct sockaddr*>(&addr6), sizeof(addr6));
 		} else {
-			memcpy(&addr, result->ai_addr, result->ai_addrlen);
+			if (result->ai_addrlen <= sizeof(addr)) {
+				std::memcpy(&addr, result->ai_addr, result->ai_addrlen);
+			} else {
+				throw std::runtime_error("Not enough space for ipv4 address");
+			}
 
 			addr.sin_family = AF_INET;
 			addr.sin_port = htons(port);
