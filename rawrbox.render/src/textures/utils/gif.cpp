@@ -1,7 +1,7 @@
 #include <rawrbox/render/textures/base.hpp>
 #include <rawrbox/render/textures/utils/gif.hpp>
 
-#include <stb/gif.hpp>
+#include <stb/stb_gif.hpp>
 
 namespace rawrbox {
 	std::unique_ptr<rawrbox::Logger> GIF::_logger = std::make_unique<rawrbox::Logger>("RawrBox-GIF");

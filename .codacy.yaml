@@ -5,7 +5,7 @@ exclude_paths:
   - ".cache/**/*"
   - "deps/**/*"
   - "build/**/*"
-  - "rawrbox.render/include/stb/**/*"
+  - "stb/**/*"
   - "**.spec.**"
   - "crc.hpp"
   - "**.py"
