@@ -265,3 +265,4 @@ captures/
 .iwyu
 .docusaurus/
 .yarn/
+!rawrbox.steamworks/deps/

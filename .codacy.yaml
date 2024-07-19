@@ -1,0 +1,9 @@
+reviews:
+  high_level_summary: true
+exclude_paths:
+  - ".cache/**/*"
+  - "deps/**/*"
+  - "build/**/*"
+  - "rawrbox.render/include/stb/**/*"
+  - "**.spec.hpp"
+  - "**.spec.cpp"
