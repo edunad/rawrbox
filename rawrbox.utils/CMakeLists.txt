@@ -78,7 +78,7 @@ endif()
 
 # DEPS ----
 if(RAWRBOX_TRACE_EXCEPTIONS)
-    CPMAddPackage("gh:jeremy-rifkin/cpptrace@0.6.2")
+    CPMAddPackage("gh:jeremy-rifkin/cpptrace@0.6.3")
     if(cpptrace_ADDED)
         set_lib_runtime_mt(cpptrace-lib)
     endif()

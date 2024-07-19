@@ -17,7 +17,7 @@ CPMDeclarePackage(magic_enum
 )
 # glaze
 CPMDeclarePackage(glaze
-  VERSION 2.9.5
+  VERSION 3.1.2
   GITHUB_REPOSITORY stephenberry/glaze
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -60,7 +60,7 @@ CPMDeclarePackage(thread-pool
 )
 # cpptrace
 CPMDeclarePackage(cpptrace
-  VERSION 0.6.2
+  VERSION 0.6.3
   GITHUB_REPOSITORY jeremy-rifkin/cpptrace
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -77,7 +77,7 @@ CPMDeclarePackage(cpptrace
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.633
+  GIT_TAG 0.634
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"
@@ -155,6 +155,11 @@ CPMDeclarePackage(libwebp
     "WEBP_BUILD_VWEBP OFF"
     "WEBP_BUILD_WEBPINFO OFF"
     "WEBP_BUILD_WEBPMUX OFF"
+    "WEBP_BUILD_LIBWEBPMUX ON"
+    "WEBP_BUILD_LIBWEBPMUX ON"
+    "WEBP_USE_THREAD ON"
+    "WEBP_NEAR_LOSSLESS ON"
+    "WEBP_LINK_STATIC ON"
     "WEBP_BUILD_EXTRAS OFF"
 )
 # libwebm (unversioned)
