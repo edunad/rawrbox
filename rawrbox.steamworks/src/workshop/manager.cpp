@@ -231,7 +231,7 @@ namespace rawrbox {
 		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
 
 		auto id = SteamUser()->GetSteamID().GetAccountID();
-		UGCQueryHandle_t handle = SteamUGC()->CreateQueryUserUGCRequest(id, type, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_CreationOrderDesc, 4000, 4000, page);
+		UGCQueryHandle_t handle = SteamUGC()->CreateQueryUserUGCRequest(id, type, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_CreationOrderDesc, STEAMWORKS_APPID, STEAMWORKS_APPID, page);
 		if (handle == k_UGCQueryHandleInvalid) throw _logger->error("Failed to request workshop items");
 
 		// TAGS -----
