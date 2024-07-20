@@ -11,21 +11,21 @@ namespace rawrbox {
 			const auto& arrA = a.get<glz::json_t::array_t>();
 			const auto& arrB = b.get<glz::json_t::array_t>();
 
-			// Compare arrays element by element
+			// Diffs
 			size_t minSize = std::min(arrA.size(), arrB.size());
 			for (size_t i = 0; i < minSize; ++i) {
 				auto subDiffs = diff(arrA[i], arrB[i], fmt::format("{}/{}", path, std::to_string(i)));
 				diffs.insert(diffs.end(), subDiffs.begin(), subDiffs.end());
 			}
 
-			// If arrA is longer, add "remove" operations for the extra elements
+			// REMOVE
 			if (arrA.size() > arrB.size()) {
 				for (size_t i = arrB.size(); i < arrA.size(); ++i) {
 					diffs.emplace_back(rawrbox::JSONDiffOp::REMOVE, fmt::format("{}/{}", path, std::to_string(i)), glz::json_t::null_t());
 				}
 			}
 
-			// If arrB is longer, add "add" operations for the extra elements
+			// ADD
 			if (arrB.size() > arrA.size()) {
 				for (size_t i = arrA.size(); i < arrB.size(); ++i) {
 					diffs.emplace_back(rawrbox::JSONDiffOp::ADD, fmt::format("{}/{}", path, std::to_string(i)), arrB[i]);

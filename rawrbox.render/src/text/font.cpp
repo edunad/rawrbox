@@ -282,7 +282,7 @@ namespace rawrbox {
 		return count;
 	}
 
-	std::string Font::toUTF8(std::wstring& text) {
+	std::string Font::toUTF8(const std::wstring& text) {
 		std::string result;
 
 		utf8::utf16to8(text.begin(), text.end(), std::back_inserter(result));

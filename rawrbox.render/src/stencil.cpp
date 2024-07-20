@@ -303,8 +303,10 @@ namespace rawrbox {
 		// ----
 
 		// Generate vertices and indices for the text
-		std::array<char, 960000> vertexBuffer = {};
-		int num_quads = stb_easy_font_print(0, 0, textCh, nullptr, vertexBuffer.data(), sizeof(vertexBuffer));
+		std::vector<char> vertexBuffer = {};
+		vertexBuffer.resize(text.length() * 300);
+
+		int num_quads = stb_easy_font_print(0, 0, textCh, nullptr, vertexBuffer.data(), static_cast<int>(vertexBuffer.size()));
 
 		auto* data = std::bit_cast<float*>(vertexBuffer.data());
 		std::vector<uint32_t> indices = {};

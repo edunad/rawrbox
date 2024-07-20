@@ -48,6 +48,8 @@ namespace rawrbox {
 		int channels = 0;
 
 		uint8_t* image = stbi_load(path.generic_string().c_str(), &width, &height, &channels, 0);
+		if (image == nullptr) return {};
+
 		return internalLoad(width, height, channels, image);
 	}
 
@@ -59,6 +61,8 @@ namespace rawrbox {
 		int channels = 0;
 
 		uint8_t* image = stbi_load_from_memory(data.data(), static_cast<int>(data.size()) * sizeof(uint8_t), &width, &height, &channels, 0);
+		if (image == nullptr) return {};
+
 		return internalLoad(width, height, channels, image);
 	}
 
@@ -68,6 +72,8 @@ namespace rawrbox {
 		int channels = 0;
 
 		uint8_t* image = stbi_load_from_memory(buffer, bufferSize, &width, &height, &channels, 0);
+		if (image == nullptr) return {};
+
 		return internalLoad(width, height, channels, image);
 	}
 } // namespace rawrbox

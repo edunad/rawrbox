@@ -33,7 +33,8 @@ CPMDeclarePackage(zlib
     "ZLIB_ENABLE_TESTS OFF"
     "POSITION_INDEPENDENT_CODE ON"
     "WITH_GTEST OFF"
-  USE_CACHE OFF
+    "USE_CACHE"
+    "OFF"
 )
 # Catch2
 CPMDeclarePackage(Catch2
@@ -77,7 +78,7 @@ CPMDeclarePackage(cpptrace
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.634
+  GIT_TAG 0.635
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"
@@ -95,7 +96,12 @@ CPMDeclarePackage(libcpr
     "CPR_ENABLE_CURL_HTTP_ONLY ON"
     "CPR_ENABLE_SSL ON"
     "CURL_ZLIB ON"
-  PATCH_COMMAND git apply --reject --whitespace=fix D:/rawrbox/rawrbox.network/patch/libcpr.patch
+    "PATCH_COMMAND"
+    "git"
+    "apply"
+    "--reject"
+    "--whitespace=fix"
+    "D:/rawrbox/rawrbox.network/patch/libcpr.patch"
 )
 # glfw
 CPMDeclarePackage(glfw
