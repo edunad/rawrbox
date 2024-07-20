@@ -3,6 +3,7 @@
 #include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
+#include <rawrbox/utils/time.hpp>
 
 #pragma warning(push)
 #pragma warning(disable : 4505)
@@ -389,7 +390,7 @@ namespace rawrbox {
 		});
 	}
 
-	void Stencil::drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, uint64_t loadOffset) {
+	void Stencil::drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size) {
 		// Setup --------
 		this->setupDrawCall(this->_2dPipeline);
 		// ----
@@ -397,17 +398,14 @@ namespace rawrbox {
 		const auto textureID = rawrbox::CHECKER_TEXTURE->getTextureID();
 		const auto col = rawrbox::Colors::White();
 
-		if (((time(nullptr) + loadOffset) % 2) == 0) {
-			this->pushVertice(textureID, {pos.x, pos.y}, {0.F, 1.F, 0.F}, col);
-			this->pushVertice(textureID, {pos.x, pos.y + size.y}, {0.F, 0.F, 0.F}, col);
-			this->pushVertice(textureID, {pos.x + size.x, pos.y}, {1.F, 1.F, 0.F}, col);
-			this->pushVertice(textureID, {pos.x + size.x, pos.y + size.y}, {1.F, 0.F, 0.F}, col);
-		} else {
-			this->pushVertice(textureID, {pos.x, pos.y}, {0.F, 0.F, 0.F}, col);
-			this->pushVertice(textureID, {pos.x, pos.y + size.y}, {0.F, 1.F, 0.F}, col);
-			this->pushVertice(textureID, {pos.x + size.x, pos.y}, {1.F, 0.F, 0.F}, col);
-			this->pushVertice(textureID, {pos.x + size.x, pos.y + size.y}, {1.F, 1.F, 0.F}, col);
-		}
+		uint64_t LOAD_OFFSET = rawrbox::TimeUtils::time();
+		if ((LOAD_OFFSET % static_cast<uint32_t>(size.x * size.y)) == 0U) LOAD_OFFSET = 0U;
+
+		float offset = static_cast<float>(LOAD_OFFSET) * 0.0005F;
+		this->pushVertice(textureID, {pos.x, pos.y}, {offset, 1.F + offset, 0.F}, col);
+		this->pushVertice(textureID, {pos.x, pos.y + size.y}, {offset, offset, 0.F}, col);
+		this->pushVertice(textureID, {pos.x + size.x, pos.y}, {1.F + offset, 1.F + offset, 0.F}, col);
+		this->pushVertice(textureID, {pos.x + size.x, pos.y + size.y}, {1.F + offset, offset, 0.F}, col);
 
 		this->pushIndices({0, 1, 2,
 		    1, 3, 2});

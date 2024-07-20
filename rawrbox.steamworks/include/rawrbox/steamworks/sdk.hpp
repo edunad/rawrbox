@@ -36,6 +36,7 @@ namespace rawrbox {
 
 		// USER ---
 		static CSteamID getSteamID();
+		static std::string getPersonaName(const CSteamID& id);
 		static rawrbox::SteamImage getAvatar(const CSteamID& id, const rawrbox::AvatarSize& size);
 		static std::vector<CSteamID> getFriends();
 		//  -----------

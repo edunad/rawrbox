@@ -12,8 +12,6 @@ namespace rawrbox {
 
 	class UIFrame : public rawrbox::UIContainer {
 	protected:
-		float _titleSize = 18.F;
-
 		std::string _title;
 		rawrbox::Color _titleColor = rawrbox::Colors::White();
 
@@ -33,6 +31,7 @@ namespace rawrbox {
 		// -----------------
 
 	public:
+		constexpr static float TITLE_SIZE = 18.F;
 		rawrbox::Event<> onClose;
 
 		UIFrame(rawrbox::UIRoot* root);

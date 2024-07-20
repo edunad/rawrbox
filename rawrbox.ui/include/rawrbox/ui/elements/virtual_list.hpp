@@ -131,7 +131,7 @@ namespace rawrbox {
 				// Check if item fits
 				int nextX = itemSize.x + this->_padding;
 				int nextY = itemSize.y + this->_padding;
-				bool fits = (xPosOffset + nextX) <= size.x;
+				bool fits = (xPosOffset + itemSize.x) <= size.x;
 
 				if (this->_mode == rawrbox::VirtualListMode::GRID && !fits) {
 					yPosOffset += nextY;

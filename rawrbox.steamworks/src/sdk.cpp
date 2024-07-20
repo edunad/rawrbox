@@ -104,6 +104,17 @@ namespace rawrbox {
 		return SteamUser()->GetSteamID();
 	}
 
+	std::string SteamSDK::getPersonaName(const CSteamID& id) {
+		if (SteamFriends() == nullptr) throw _logger->error("SteamFriends not initialized");
+
+		if (!SteamFriends()->RequestUserInformation(id, true)) {
+			const auto* name = SteamFriends()->GetFriendPersonaName(id);
+			return name;
+		}
+
+		return "";
+	}
+
 	rawrbox::SteamImage SteamSDK::getAvatar(const CSteamID& id, const rawrbox::AvatarSize& size) {
 		if (SteamUser() == nullptr) throw _logger->error("SteamUser not initialized");
 		rawrbox::SteamImage avatar = {};

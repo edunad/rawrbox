@@ -229,7 +229,7 @@ namespace rawrbox {
 		virtual void drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const rawrbox::Color& col = rawrbox::Colors::White());
 		virtual void drawText(const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Color& bgCol = rawrbox::Colors::Transparent());
 		virtual void drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White(), rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
-		virtual void drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, uint64_t loadOffset = 0U);
+		virtual void drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size);
 		//  --------------------
 
 		// ------ RENDERING

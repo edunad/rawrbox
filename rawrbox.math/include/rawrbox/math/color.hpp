@@ -19,7 +19,7 @@ namespace rawrbox {
 		constexpr Color_t(NumberType _r, NumberType _g, NumberType _b, NumberType _a = 1) : r(_r), g(_g), b(_b), a(_a) {}
 		constexpr Color_t(const std::array<NumberType, 4>& arr) : r(arr[0]), g(arr[1]), b(arr[2]), a(arr[3]) {}
 
-		static Color_t<NumberType> RGBAHex(uint32_t x) {
+		constexpr static Color_t<NumberType> RGBAHex(uint32_t x) {
 			if constexpr (std::is_floating_point_v<NumberType>) {
 				return {
 				    ((x >> 24) & 0xFF) / 255.0F,
@@ -35,7 +35,7 @@ namespace rawrbox {
 			}
 		}
 
-		static Color_t<NumberType> RGBHex(uint32_t x) {
+		constexpr static Color_t<NumberType> RGBHex(uint32_t x) {
 			if constexpr (std::is_floating_point_v<NumberType>) {
 				return {
 				    ((x >> 16) & 0xFF) / 255.0F,
@@ -100,7 +100,7 @@ namespace rawrbox {
 			}
 		}
 
-		static ColorType debug(int index) {
+		constexpr static ColorType debug(int index) {
 			std::array cols{
 			    ColorType(255, 82, 82, 255),   // rgb(255, 82, 82)
 			    ColorType(51, 217, 178, 255),  // rgb(51, 217, 178)
