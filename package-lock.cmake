@@ -3,7 +3,7 @@
 
 # fmt
 CPMDeclarePackage(fmt
-  GIT_TAG 11.0.1
+  GIT_TAG 11.0.2
   GITHUB_REPOSITORY fmtlib/fmt
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -17,7 +17,7 @@ CPMDeclarePackage(magic_enum
 )
 # glaze
 CPMDeclarePackage(glaze
-  VERSION 3.1.2
+  VERSION 3.1.5
   GITHUB_REPOSITORY stephenberry/glaze
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -33,8 +33,7 @@ CPMDeclarePackage(zlib
     "ZLIB_ENABLE_TESTS OFF"
     "POSITION_INDEPENDENT_CODE ON"
     "WITH_GTEST OFF"
-    "USE_CACHE"
-    "OFF"
+  USE_CACHE OFF
 )
 # Catch2
 CPMDeclarePackage(Catch2
@@ -96,12 +95,7 @@ CPMDeclarePackage(libcpr
     "CPR_ENABLE_CURL_HTTP_ONLY ON"
     "CPR_ENABLE_SSL ON"
     "CURL_ZLIB ON"
-    "PATCH_COMMAND"
-    "git"
-    "apply"
-    "--reject"
-    "--whitespace=fix"
-    "D:/rawrbox/rawrbox.network/patch/libcpr.patch"
+  PATCH_COMMAND git apply --reject --whitespace=fix D:/rawrbox/rawrbox.network/patch/libcpr.patch
 )
 # glfw
 CPMDeclarePackage(glfw
