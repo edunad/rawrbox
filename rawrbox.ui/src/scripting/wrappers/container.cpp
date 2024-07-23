@@ -12,6 +12,8 @@ namespace rawrbox {
 
 		    .addFunction("setSize", &rawrbox::UIContainer::setSize)
 		    .addFunction("getSize", &rawrbox::UIContainer::getSize)
+		    .addFunction("getContentSize", &rawrbox::UIContainer::getContentSize)
+		    .addFunction("sizeToParent", &rawrbox::UIContainer::sizeToParent)
 
 		    .addFunction("removeChildren", &rawrbox::UIContainer::removeChildren)
 		    .addFunction("remove", &rawrbox::UIContainer::remove)

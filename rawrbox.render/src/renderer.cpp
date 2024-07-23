@@ -275,7 +275,7 @@ namespace rawrbox {
 		}
 
 		if (rawrbox::CHECKER_TEXTURE == nullptr) {
-			auto checker = rawrbox::TextureUtils::generateCheckboard({256U, 256U}, rawrbox::Color::RGBHex(0x343434), rawrbox::Color::RGBHex(0x666666), 8U);
+			auto checker = rawrbox::TextureUtils::generateCheckboard({256U, 256U}, rawrbox::Color::RGBHex(0x161618), rawrbox::Color::RGBHex(0x2a2a2d), 8U);
 
 			rawrbox::CHECKER_TEXTURE = std::make_shared<rawrbox::TextureImage>(rawrbox::Vector2u(256U, 256U), checker, 4);
 			rawrbox::CHECKER_TEXTURE->upload();
@@ -287,15 +287,15 @@ namespace rawrbox {
 		this->_logger->info("Loading default fonts");
 
 		if (rawrbox::DEBUG_FONT_REGULAR == nullptr) {
-			rawrbox::DEBUG_FONT_REGULAR = rawrbox::TextEngine::load("./assets/fonts/SometypeMono-Regular.ttf", 12);
+			rawrbox::DEBUG_FONT_REGULAR = rawrbox::TextEngine::load("./assets/fonts/SourceCodePro-Regular.ttf", 11);
 		}
 
 		if (rawrbox::DEBUG_FONT_BOLD == nullptr) {
-			rawrbox::DEBUG_FONT_BOLD = rawrbox::TextEngine::load("./assets/fonts/SometypeMono-Bold.ttf", 12);
+			rawrbox::DEBUG_FONT_BOLD = rawrbox::TextEngine::load("./assets/fonts/SourceCodePro-Bold.ttf", 11);
 		}
 
 		if (rawrbox::DEBUG_FONT_ITALIC == nullptr) {
-			rawrbox::DEBUG_FONT_ITALIC = rawrbox::TextEngine::load("./assets/fonts/SometypeMono-Italic.ttf", 12);
+			rawrbox::DEBUG_FONT_ITALIC = rawrbox::TextEngine::load("./assets/fonts/SourceCodePro-Italic.ttf", 11);
 		}
 		// ------
 

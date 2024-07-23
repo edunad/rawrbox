@@ -11,6 +11,8 @@ namespace rawrbox {
 	}
 
 	float MathUtils::round(float val, int precision) {
+		if (precision == 0) return std::roundf(val);
+
 		int c = static_cast<int>(val * std::pow(10, precision) + .5F);
 		return c / std::pow(10.F, static_cast<float>(precision));
 	}

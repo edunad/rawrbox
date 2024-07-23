@@ -32,6 +32,10 @@ namespace rawrbox {
 		virtual void updateTabs();
 
 	public:
+		constexpr static float TAB_HEIGHT = 20.F;
+		constexpr static float BUTTON_WIDTH = 70.F;
+		constexpr static uint16_t BUTTON_FONT_SIZE = 11U;
+
 		rawrbox::Event<const std::string&> onTabChange;
 
 		UITabs(rawrbox::UIRoot* root, const std::vector<rawrbox::UITab>& tabs);
@@ -46,10 +50,6 @@ namespace rawrbox {
 		// TABS ----
 		virtual void setActive(size_t index);
 		virtual void setEnabled(size_t index, bool enabled);
-
-		[[nodiscard]] virtual float getTabHeight() const;
-		[[nodiscard]] virtual float getButtonWidth() const;
-		[[nodiscard]] virtual uint16_t getButtonFontSize() const;
 		// ---------
 
 		// FOCUS HANDLE ---

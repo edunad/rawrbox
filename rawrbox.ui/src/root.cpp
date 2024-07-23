@@ -184,6 +184,7 @@ namespace rawrbox {
 
 		elm->bringToFront();
 		elm->setFocused(true);
+
 		this->focusedElement = elm;
 		// ---
 

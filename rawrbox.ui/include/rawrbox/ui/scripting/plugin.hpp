@@ -11,6 +11,7 @@
 #include <rawrbox/ui/scripting/wrappers/image.hpp>
 #include <rawrbox/ui/scripting/wrappers/input.hpp>
 #include <rawrbox/ui/scripting/wrappers/label.hpp>
+#include <rawrbox/ui/scripting/wrappers/loading.hpp>
 #include <rawrbox/ui/scripting/wrappers/progress_bar.hpp>
 #include <rawrbox/ui/scripting/wrappers/tab.hpp>
 #include <rawrbox/ui/scripting/wrappers/tabs.hpp>
@@ -39,6 +40,7 @@ namespace rawrbox {
 			rawrbox::UIGraphWrapper::registerLua(L);
 			rawrbox::UITabWrapper::registerLua(L);
 			rawrbox::UITabsWrapper::registerLua(L);
+			rawrbox::UILoadingWrapper::registerLua(L);
 			// ------
 
 			rawrbox::UIWrapper::registerLua(L, _root);

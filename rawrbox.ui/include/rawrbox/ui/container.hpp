@@ -43,6 +43,9 @@ namespace rawrbox {
 
 		virtual void setSize(const rawrbox::Vector2f& size);
 		[[nodiscard]] virtual const rawrbox::Vector2f& getSize() const;
+		[[nodiscard]] virtual rawrbox::Vector2f getContentSize() const;
+
+		virtual void sizeToParent();
 
 		virtual void removeChildren();
 		virtual void remove();
@@ -75,13 +78,9 @@ namespace rawrbox {
 			elm->setParent(this);
 
 			auto& childn = this->getChildren();
-			if (elm->alwaysOnTop()) {
-				childn.insert(childn.begin(), std::move(elm));
-			} else {
-				childn.push_back(std::move(elm));
-			}
+			childn.push_back(std::move(elm));
 
-			return dynamic_cast<T*>(this->getChildren().back().get());
+			return dynamic_cast<T*>(childn.back().get());
 		}
 
 		std::vector<std::shared_ptr<rawrbox::UIContainer>>& getChildren();

@@ -10,9 +10,9 @@ namespace rawrbox {
 		    .addFunction("setActive", &rawrbox::UITabs::setActive)
 		    .addFunction("setEnabled", &rawrbox::UITabs::setEnabled)
 
-		    .addFunction("getButtonWidth", &rawrbox::UITabs::getButtonWidth)
-		    .addFunction("getButtonFontSize", &rawrbox::UITabs::getButtonFontSize)
-		    .addFunction("getTabHeight", &rawrbox::UITabs::getTabHeight)
+		    .addStaticProperty("BUTTON_WIDTH", &rawrbox::UITabs::BUTTON_WIDTH)
+		    .addStaticProperty("BUTTON_FONT_SIZE", &rawrbox::UITabs::BUTTON_FONT_SIZE)
+		    .addStaticProperty("TAB_HEIGHT", &rawrbox::UITabs::TAB_HEIGHT)
 
 		    .addFunction("onTabChange", [](rawrbox::UITabs& self, const luabridge::LuaRef& callback) {
 			    if (!callback.isCallable()) throw std::runtime_error("Callback not a function");

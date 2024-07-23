@@ -6,6 +6,7 @@
 #include <rawrbox/ui/elements/image.hpp>
 #include <rawrbox/ui/elements/input.hpp>
 #include <rawrbox/ui/elements/label.hpp>
+#include <rawrbox/ui/elements/loading.hpp>
 #include <rawrbox/ui/elements/progress_bar.hpp>
 #include <rawrbox/ui/elements/tabs.hpp>
 #include <rawrbox/ui/root.hpp>
@@ -94,6 +95,13 @@ namespace rawrbox {
 			    }
 
 			    return root->createChild<rawrbox::UITabs>(tabs);
+		    })
+		    .addFunction("createLoading", [root](std::optional<rawrbox::UIContainer*> parent) {
+			    if (parent.has_value()) {
+				    return parent.value()->createChild<rawrbox::UILoading>();
+			    }
+
+			    return root->createChild<rawrbox::UILoading>();
 		    })
 		    .endNamespace();
 	}

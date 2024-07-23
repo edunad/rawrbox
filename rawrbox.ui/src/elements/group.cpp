@@ -26,8 +26,7 @@ namespace rawrbox {
 	// DRAW ----
 	void UIGroup::draw(rawrbox::Stencil& stencil) {
 		if (this->_border <= 0.F) return;
-
-		auto size = this->getSize();
+		const auto& size = this->getContentSize();
 
 		stencil.pushOutline({this->_border, 0});
 		stencil.drawBox({this->_border, this->_border}, size - this->_border * 2, rawrbox::Color::RGBAHex(0x0000001A));

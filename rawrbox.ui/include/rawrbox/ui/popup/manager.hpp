@@ -18,10 +18,9 @@ namespace rawrbox {
 
 	class UIFrame;
 	class UIRoot;
-	class UIGroup;
 
 	class POPUP {
-		static rawrbox::UIGroup* _group;
+		static rawrbox::UIRoot* _root;
 
 		static std::unordered_map<std::string, rawrbox::UIFrame*> _popups;
 		static std::unique_ptr<rawrbox::Logger> _logger;

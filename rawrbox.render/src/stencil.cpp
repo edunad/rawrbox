@@ -366,8 +366,8 @@ namespace rawrbox {
 			}
 		}
 
-		startpos.x = std::roundf(startpos.x);
-		startpos.y = std::roundf(startpos.y);
+		startpos.x = rawrbox::MathUtils::round(startpos.x, 0);
+		startpos.y = rawrbox::MathUtils::round(startpos.y, 0);
 
 		font.render(text, startpos, false, [this, &font, col](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
 			uint32_t textureID = font.getPackTexture(glyph)->getTextureID();
@@ -390,22 +390,20 @@ namespace rawrbox {
 		});
 	}
 
-	void Stencil::drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size) {
+	void Stencil::drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& color) {
 		// Setup --------
 		this->setupDrawCall(this->_2dPipeline);
 		// ----
 
 		const auto textureID = rawrbox::CHECKER_TEXTURE->getTextureID();
-		const auto col = rawrbox::Colors::White();
-
 		uint64_t LOAD_OFFSET = rawrbox::TimeUtils::time();
 		if ((LOAD_OFFSET % static_cast<uint32_t>(size.x * size.y)) == 0U) LOAD_OFFSET = 0U;
 
 		float offset = static_cast<float>(LOAD_OFFSET) * 0.0005F;
-		this->pushVertice(textureID, {pos.x, pos.y}, {offset, 1.F + offset, 0.F}, col);
-		this->pushVertice(textureID, {pos.x, pos.y + size.y}, {offset, offset, 0.F}, col);
-		this->pushVertice(textureID, {pos.x + size.x, pos.y}, {1.F + offset, 1.F + offset, 0.F}, col);
-		this->pushVertice(textureID, {pos.x + size.x, pos.y + size.y}, {1.F + offset, offset, 0.F}, col);
+		this->pushVertice(textureID, {pos.x, pos.y}, {offset, 1.F + offset, 0.F}, color);
+		this->pushVertice(textureID, {pos.x, pos.y + size.y}, {offset, offset, 0.F}, color);
+		this->pushVertice(textureID, {pos.x + size.x, pos.y}, {1.F + offset, 1.F + offset, 0.F}, color);
+		this->pushVertice(textureID, {pos.x + size.x, pos.y + size.y}, {1.F + offset, offset, 0.F}, color);
 
 		this->pushIndices({0, 1, 2,
 		    1, 3, 2});

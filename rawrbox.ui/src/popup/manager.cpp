@@ -2,33 +2,30 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/ui/elements/button.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
-#include <rawrbox/ui/elements/group.hpp>
 #include <rawrbox/ui/elements/label.hpp>
+#include <rawrbox/ui/elements/loading.hpp>
 #include <rawrbox/ui/popup/manager.hpp>
 #include <rawrbox/ui/root.hpp>
 
 namespace rawrbox {
 	// PRIVATE ---
-	rawrbox::UIGroup* POPUP::_group = {};
+	rawrbox::UIRoot* POPUP::_root = {};
 	std::unordered_map<std::string, rawrbox::UIFrame*> POPUP::_popups = {};
 	std::unique_ptr<rawrbox::Logger> POPUP::_logger = std::make_unique<rawrbox::Logger>("RawrBox-POPUP");
 	// ----------
 
 	void POPUP::init(rawrbox::UIRoot* root) {
 		if (root == nullptr) throw _logger->error("Invalid UIRoot!");
-
-		_group = root->createChild<rawrbox::UIGroup>();
-		_group->setPos({0, 0});
-		_group->setSize(rawrbox::RENDERER->getSize().cast<float>());
+		_root = root;
 	}
 
 	void POPUP::shutdown() {
 		_popups.clear();
-		_group = nullptr;
+		_root = nullptr;
 	}
 
 	rawrbox::UIFrame* POPUP::spawn(const std::string& id, const std::string& title, const std::string& message, rawrbox::PopupType type, const std::function<void(bool)>& callback) {
-		if (_group == nullptr) throw _logger->error("UIRoot is not initialized!");
+		if (_root == nullptr) throw _logger->error("UIRoot is not initialized!");
 
 		auto titleColor = rawrbox::Color::RGBHex(0xFFFFFF);
 		auto btnColor = rawrbox::Color::RGBHex(0x282a2e);
@@ -57,28 +54,36 @@ namespace rawrbox {
 		const bool loading = type == rawrbox::PopupType::LOADING;
 
 		// Destroy old one, if it exists
-		const auto* old = get(id);
+		auto* old = get(id);
 		if (old != nullptr) {
 			pos = old->getPos();
+			old->remove();
+
 			destroy(id);
 		}
 		// -----
 
-		auto* popupFrame = _group->createChild<rawrbox::UIFrame>();
+		auto* popupFrame = _root->createChild<rawrbox::UIFrame>();
 		popupFrame->setTitle(title);
 		popupFrame->setTitleColor(titleColor);
 		popupFrame->setSize(size);
 		popupFrame->setPos(pos);
 		popupFrame->setClosable(!loading);
+		popupFrame->bringToFront();
+
+		if (loading) {
+			auto* loadFrame = popupFrame->createChild<rawrbox::UILoading>();
+			loadFrame->setSize({size.x, size.x});
+		}
 
 		auto* messageLabel = popupFrame->createChild<rawrbox::UILabel>();
 		messageLabel->setText(message);
-		messageLabel->setFont("consola.ttf", 11);
+		messageLabel->setFont(rawrbox::DEBUG_FONT_REGULAR);
 		messageLabel->sizeToContents();
 
-		const auto& frameSize = popupFrame->getSize();
+		const auto& frameSize = popupFrame->getContentSize();
 		if (!loading) {
-			messageLabel->setPos({2, 22});
+			messageLabel->setPos({2, 3});
 
 			if (type == rawrbox::PopupType::QUESTION) {
 				auto halfWidth = frameSize.x / 2;
@@ -92,9 +97,9 @@ namespace rawrbox {
 				yesButton->setTextColor(rawrbox::Colors::White());
 				yesButton->setBorder(false);
 				yesButton->setBackgroundColor(btnColor);
-				yesButton->onClick += [id, callback]() {
+				yesButton->onClick += [id, callback, popupFrame]() {
 					if (callback != nullptr) callback(true);
-					destroy(id);
+					if (destroy(id)) popupFrame->remove();
 				};
 
 				auto* noButton = popupFrame->createChild<rawrbox::UIButton>();
@@ -105,9 +110,9 @@ namespace rawrbox {
 				noButton->setTextColor(rawrbox::Colors::White());
 				noButton->setBorder(false);
 				noButton->setBackgroundColor(Color::RGBHex(0x402929));
-				noButton->onClick += [id, callback]() {
+				noButton->onClick += [id, callback, popupFrame]() {
 					if (callback != nullptr) callback(false);
-					destroy(id);
+					if (destroy(id)) popupFrame->remove();
 				};
 
 			} else {
@@ -119,9 +124,9 @@ namespace rawrbox {
 				okButton->setTextColor(rawrbox::Colors::White());
 				okButton->setBorder(false);
 				okButton->setBackgroundColor(btnColor);
-				okButton->onClick += [id, callback]() {
+				okButton->onClick += [id, callback, popupFrame]() {
 					if (callback != nullptr) callback(true);
-					destroy(id);
+					if (destroy(id)) popupFrame->remove();
 				};
 			}
 
@@ -130,8 +135,7 @@ namespace rawrbox {
 				destroy(id);
 			};
 		} else {
-			auto txtSize = messageLabel->getSize();
-			messageLabel->setPos((frameSize + 20 - txtSize) / 2);
+			messageLabel->setPos((frameSize - messageLabel->getSize()) / 2);
 		}
 
 		_popups[id] = popupFrame;
@@ -152,9 +156,7 @@ namespace rawrbox {
 		auto fnd = _popups.find(id);
 		if (fnd == _popups.end()) return false;
 
-		if (fnd->second != nullptr) fnd->second->remove();
 		_popups.erase(id);
-
 		return true;
 	}
 	// ---------------
@@ -169,7 +171,10 @@ namespace rawrbox {
 	}
 
 	void POPUP::clear() {
-		_group->removeChildren();
+		for (const auto& popup : _popups) {
+			popup.second->remove();
+		}
+
 		_popups.clear();
 	}
 	// ---------------

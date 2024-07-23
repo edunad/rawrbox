@@ -32,7 +32,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::Vector2f UIFrame::getDrawOffset() const {
-		return {0, 18.F}; // Title offset
+		return {0, TITLE_SIZE}; // Title offset
 	}
 
 	// UTILS -----
