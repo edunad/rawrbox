@@ -34,7 +34,7 @@ namespace rawrbox {
 	public:
 		constexpr static float TAB_HEIGHT = 20.F;
 		constexpr static float BUTTON_WIDTH = 70.F;
-		constexpr static uint16_t BUTTON_FONT_SIZE = 11U;
+		constexpr static uint16_t BUTTON_FONT_SIZE = 10U;
 
 		rawrbox::Event<const std::string&> onTabChange;
 

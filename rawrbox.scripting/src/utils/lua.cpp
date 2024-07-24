@@ -226,15 +226,6 @@ namespace rawrbox {
 		return result;
 	}
 
-	std::string LuaUtils::getLuaENVVar(lua_State* L, const std::string& varId) {
-		if (L == nullptr) throw std::runtime_error("Invalid lua state");
-
-		lua_getfield(L, LUA_ENVIRONINDEX, varId.c_str());
-		if (lua_isstring(L, -1) == 0) throw std::runtime_error(fmt::format("Invalid lua env variable '{}'", varId));
-
-		return lua_tostring(L, -1);
-	}
-
 	// #/ == System content
 	// @/ == Root content
 	// @cats/ == `cats` mod

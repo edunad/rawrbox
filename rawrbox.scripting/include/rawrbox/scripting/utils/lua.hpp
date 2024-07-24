@@ -32,7 +32,21 @@ namespace rawrbox {
 		static luabridge::LuaRef jsonToLua(lua_State* L, const glz::json_t& json);
 		static glz::json_t luaToJsonObject(const luabridge::LuaRef& ref);
 
-		static std::string getLuaENVVar(lua_State* L, const std::string& varId);
+		template <typename T>
+			requires(std::is_arithmetic_v<T> || std::is_same_v<T, std::string>)
+		static T getLuaENVVar(lua_State* L, const std::string& varId) {
+			if (L == nullptr) throw std::runtime_error("Invalid lua state");
+
+			lua_getfield(L, LUA_ENVIRONINDEX, varId.c_str());
+
+			const auto* conv = lua_tostring(L, -1);
+			if (conv == nullptr) throw std::runtime_error(fmt::format("Invalid lua env variable '{}'", varId));
+			if constexpr (std::is_same_v<T, std::string>) {
+				return conv;
+			} else {
+				return static_cast<T>(conv);
+			}
+		}
 
 		template <typename T>
 			requires(std::is_arithmetic_v<T> || std::is_same_v<T, std::string>)

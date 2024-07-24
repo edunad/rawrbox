@@ -42,7 +42,7 @@ namespace rawrbox {
 			    self.setFont(fnt);
 		    })
 		    .addFunction("setFontPath", [](rawrbox::UIInput& self, const std::string& path, std::optional<uint16_t> size, lua_State* L) {
-			    auto modFolder = rawrbox::LuaUtils::getLuaENVVar(L, "__mod_folder");
+			    auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(L, "__mod_folder");
 			    auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
 
 			    self.setFont(fixedPath, size.value_or(11));

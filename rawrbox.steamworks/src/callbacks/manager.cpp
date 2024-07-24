@@ -1,4 +1,4 @@
-#include <rawrbox/steamworks/callbacks.hpp>
+#include <rawrbox/steamworks/callbacks/manager.hpp>
 
 #include <magic_enum.hpp>
 
@@ -86,11 +86,11 @@ namespace rawrbox {
 	}
 
 	// QUERY ---
-	void SteamCALLBACKS::addUGCQueryCallback(SteamAPICall_t apicall, const std::function<void(std::vector<SteamUGCDetails_t>)>& callback) {
+	void SteamCALLBACKS::addUGCQueryCallback(SteamAPICall_t apicall, const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback) {
 		auto fnd = this->_ugcQueries.find(apicall);
 		if (fnd != this->_ugcQueries.end()) throw _logger->error("AddUGCQueryCallback with api call {} already called! Wait for previous call to complete", apicall);
 
-		std::unique_ptr<rawrbox::SteamUGCQuery> query = std::make_unique<rawrbox::SteamUGCQuery>(apicall, [this, apicall, callback](std::vector<SteamUGCDetails_t> details) {
+		std::unique_ptr<rawrbox::SteamUGCQuery> query = std::make_unique<rawrbox::SteamUGCQuery>(apicall, [this, apicall, callback](std::vector<rawrbox::WorkshopMod> details) {
 			callback(std::move(details));
 			this->_ugcQueries.erase(apicall);
 		});

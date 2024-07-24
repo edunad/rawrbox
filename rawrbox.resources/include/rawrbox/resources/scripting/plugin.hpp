@@ -15,7 +15,7 @@ namespace rawrbox {
 			    .addFunction("preLoadFolder", [](const std::string& path, lua_State* L) {
 				    if (L == nullptr) throw std::runtime_error("Lua env not set");
 
-				    auto modFolder = rawrbox::LuaUtils::getLuaENVVar(L, "__mod_folder");
+				    auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(L, "__mod_folder");
 				    if (modFolder.empty()) throw std::runtime_error("Mod folder not set in Lua env");
 
 				    auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
@@ -24,7 +24,7 @@ namespace rawrbox {
 			    .addFunction("preLoad", [](const std::string& path, std::optional<uint32_t> loadFlags, lua_State* L) {
 				    if (L == nullptr) throw std::runtime_error("Lua env not set");
 
-				    auto modFolder = rawrbox::LuaUtils::getLuaENVVar(L, "__mod_folder");
+				    auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(L, "__mod_folder");
 				    if (modFolder.empty()) throw std::runtime_error("Mod folder not set in Lua env");
 
 				    auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
@@ -33,7 +33,7 @@ namespace rawrbox {
 			    .addFunction("getContent", [](const std::optional<std::string>& path, lua_State* L) {
 				    if (L == nullptr) throw std::runtime_error("Lua env not set");
 
-				    auto modFolder = rawrbox::LuaUtils::getLuaENVVar(L, "__mod_folder");
+				    auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(L, "__mod_folder");
 				    if (modFolder.empty()) throw std::runtime_error("Mod folder not set in Lua env");
 
 				    return rawrbox::LuaUtils::getContent(path.value_or(""), modFolder);

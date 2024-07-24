@@ -78,6 +78,7 @@ namespace rawrbox {
 	rawrbox::Event<rawrbox::Mod&> SCRIPTING::onRegisterTypes;
 	rawrbox::Event<rawrbox::Mod&> SCRIPTING::onRegisterGlobals;
 	rawrbox::Event<rawrbox::Mod&> SCRIPTING::onLoadLibraries;
+	rawrbox::Event<rawrbox::Mod&> SCRIPTING::onLoadModifiers;
 	rawrbox::Event<rawrbox::Mod&> SCRIPTING::onModHotReload;
 
 	bool SCRIPTING::initialized = false;
@@ -186,8 +187,8 @@ namespace rawrbox {
 			    if (lua_type(state, 1) != LUA_TSTRING) throw std::runtime_error("Invalid param, string expected");
 			    const auto* path = lua_tostring(state, 1);
 
-			    auto modID = rawrbox::LuaUtils::getLuaENVVar(state, "__mod_id");
-			    auto modFolder = rawrbox::LuaUtils::getLuaENVVar(state, "__mod_folder");
+			    auto modID = rawrbox::LuaUtils::getLuaENVVar<std::string>(state, "__mod_id");
+			    auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(state, "__mod_folder");
 
 			    auto fixedPath = LuaUtils::getContent(path, modFolder);
 			    rawrbox::LuaUtils::compileAndLoadFile(state, modID, fixedPath);
@@ -254,6 +255,16 @@ namespace rawrbox {
 
 		// Custom ----
 		onRegisterGlobals(mod);
+		// -------------
+	}
+
+	void SCRIPTING::loadModifiers(rawrbox::Mod& mod) {
+		for (auto& p : _plugins) {
+			p->modifyMod(mod);
+		}
+
+		// Custom ----
+		onLoadModifiers(mod);
 		// -------------
 	}
 	// -------------
@@ -340,17 +351,16 @@ namespace rawrbox {
 		std::unordered_map<std::filesystem::path, bool> success = {};
 		for (const auto& p : std::filesystem::directory_iterator(rootFolder)) {
 			if (!p.is_directory()) continue;
-			success[p] = loadMod(p);
+			success[p] = loadMod(p.path().filename().generic_string(), p);
 		}
 
 		return success;
 	}
 
-	bool SCRIPTING::loadMod(const std::filesystem::path& modFolder) {
+	bool SCRIPTING::loadMod(const std::string& id, const std::filesystem::path& modFolder) {
+		if (id.empty()) throw _logger->error("Mod ID cannot be empty");
 		if (!std::filesystem::exists(modFolder)) throw _logger->error("Failed to locate mod folder '{}'", modFolder.generic_string());
-
-		std::string id = modFolder.filename().generic_string();
-		if (id.empty()) throw _logger->error("Mod ID is empty");
+		if (_mods.find(id) != _mods.end()) throw _logger->error("Mod '{}' already loaded", id);
 
 		// LOAD METADATA ---
 		std::filesystem::path configPath = modFolder / "mod.json";
@@ -359,12 +369,7 @@ namespace rawrbox {
 		if (std::filesystem::exists(configPath)) {
 			auto ec = glz::read_file_json(metadataJSON, configPath.generic_string(), std::string{});
 			if (ec) throw _logger->error("Failed to load mod.json");
-
-			if (metadataJSON.contains("id")) {
-				id = metadataJSON["id"].get<std::string>();
-			}
 		}
-
 		// -----------------
 
 		auto mod = std::make_unique<rawrbox::Mod>(id, modFolder, metadataJSON);
@@ -374,6 +379,7 @@ namespace rawrbox {
 		loadTypes(*mod);
 		loadGlobals(*mod);
 		loadI18N(*mod);
+		loadModifiers(*mod);
 		// ----------
 
 		try {
@@ -381,6 +387,8 @@ namespace rawrbox {
 			mod->load();
 
 			mod->call("onInit");
+
+			_logger->info("Mod '{}' loaded", fmt::styled(id, fmt::fg(fmt::color::coral)));
 			registerLoadedFile(mod->getID(), mod->getEntryFilePath()); // Register file for hot-reloading
 		} catch (const std::runtime_error& err) {
 			_logger->printError("{}", err.what());
@@ -410,6 +418,8 @@ namespace rawrbox {
 
 		fnd->second->shutdown();
 		_mods.erase(fnd);
+
+		_logger->info("Mod '{}' unloaded", fmt::styled(modId, fmt::fg(fmt::color::coral)));
 		return true;
 	}
 	// -----------
