@@ -409,8 +409,10 @@ namespace rawrbox {
 
 		auto fndLua = _loadedLuaFiles.find(modId);
 		if (fndLua != _loadedLuaFiles.end()) {
-			for (auto& pt : fndLua->second) {
-				_watcher->unwatchFile(pt);
+			if (_watcher != nullptr) {
+				for (auto& pt : fndLua->second) {
+					_watcher->unwatchFile(pt);
+				}
 			}
 
 			_loadedLuaFiles.erase(fndLua);

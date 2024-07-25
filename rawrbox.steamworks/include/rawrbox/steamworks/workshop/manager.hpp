@@ -90,7 +90,8 @@ namespace rawrbox {
 		static rawrbox::Event<const std::vector<rawrbox::WorkshopMod>&> onModsLoaded;
 
 		static rawrbox::Event<PublishedFileId_t> onModInstalled;
-		static rawrbox::Event<PublishedFileId_t> onModRemoved;
+		static rawrbox::Event<PublishedFileId_t> onModUnSubscribed;
+		static rawrbox::Event<PublishedFileId_t> onModSubscribed;
 		static rawrbox::Event<PublishedFileId_t> onModUpdated;
 
 		static rawrbox::Event<const UGCUpdateHandle_t&, const rawrbox::WorkshopModConfig&> onModUpdating;

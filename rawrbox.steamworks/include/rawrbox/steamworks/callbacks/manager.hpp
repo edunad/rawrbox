@@ -40,7 +40,8 @@ namespace rawrbox {
 
 		// Workshop callbacks
 		STEAM_CALLBACK(rawrbox::SteamCALLBACKS, OnWorkshopItemInstalled, ItemInstalled_t, _CallbackWorkshopItemInstalled);
-		STEAM_CALLBACK(rawrbox::SteamCALLBACKS, OnWorkshopItemRemoved, RemoteStoragePublishedFileUnsubscribed_t, _CallbackWorkshopItemRemoved);
+		STEAM_CALLBACK(rawrbox::SteamCALLBACKS, OnWorkshopItemUnSubscribed, RemoteStoragePublishedFileUnsubscribed_t, _CallbackWorkshopItemUnSubscribed);
+		STEAM_CALLBACK(rawrbox::SteamCALLBACKS, OnWorkshopItemSubscribed, RemoteStoragePublishedFileSubscribed_t, _CallbackWorkshopItemSubscribed);
 		STEAM_CALLBACK(rawrbox::SteamCALLBACKS, OnWorkshopItemDownloaded, DownloadItemResult_t, _CallbackWorkshopItemDownloaded);
 		// ---
 #pragma GCC diagnostic pop
@@ -54,9 +55,10 @@ namespace rawrbox {
 		bool _initialized = false;
 
 	public:
+		rawrbox::Event<PublishedFileId_t> onModSubscribed;
+		rawrbox::Event<PublishedFileId_t> onModUnSubscribed;
 		rawrbox::Event<PublishedFileId_t> onModInstalled;
 		rawrbox::Event<PublishedFileId_t> onModUpdated;
-		rawrbox::Event<PublishedFileId_t> onModRemoved;
 
 		static rawrbox::SteamCALLBACKS& getInstance() {
 			static rawrbox::SteamCALLBACKS cl;

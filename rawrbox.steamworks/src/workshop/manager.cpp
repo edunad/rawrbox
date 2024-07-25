@@ -121,7 +121,8 @@ namespace rawrbox {
 	// PUBLIC -------
 	rawrbox::Event<const std::vector<rawrbox::WorkshopMod>&> SteamWORKSHOP::onModsLoaded = {};
 	rawrbox::Event<PublishedFileId_t> SteamWORKSHOP::onModInstalled = {};
-	rawrbox::Event<PublishedFileId_t> SteamWORKSHOP::onModRemoved = {};
+	rawrbox::Event<PublishedFileId_t> SteamWORKSHOP::onModUnSubscribed = {};
+	rawrbox::Event<PublishedFileId_t> SteamWORKSHOP::onModSubscribed = {};
 	rawrbox::Event<PublishedFileId_t> SteamWORKSHOP::onModUpdated = {};
 
 	rawrbox::Event<const UGCUpdateHandle_t&, const rawrbox::WorkshopModConfig&> SteamWORKSHOP::onModUpdating = {};
@@ -139,8 +140,12 @@ namespace rawrbox {
 			onModUpdated(id);
 		};
 
-		SteamCALLBACKS::getInstance().onModRemoved += [](PublishedFileId_t id) {
-			onModRemoved(id);
+		SteamCALLBACKS::getInstance().onModUnSubscribed += [](PublishedFileId_t id) {
+			onModUnSubscribed(id);
+		};
+
+		SteamCALLBACKS::getInstance().onModSubscribed += [](PublishedFileId_t id) {
+			onModSubscribed(id);
 		};
 		// ----------------------
 

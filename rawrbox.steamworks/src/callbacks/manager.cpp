@@ -29,6 +29,13 @@ namespace rawrbox {
 	// -------
 
 	// WORKSHOP ----
+	void SteamCALLBACKS::OnWorkshopItemSubscribed(RemoteStoragePublishedFileSubscribed_t* pParam) {
+		if (pParam->m_nAppID != STEAMWORKS_APPID) return;
+
+		this->_logger->info("Steam workshop subscribed: {}", pParam->m_nPublishedFileId);
+		this->onModSubscribed(pParam->m_nPublishedFileId);
+	}
+
 	void SteamCALLBACKS::OnWorkshopItemInstalled(ItemInstalled_t* pParam) {
 		if (pParam->m_unAppID != STEAMWORKS_APPID) return;
 
@@ -36,11 +43,11 @@ namespace rawrbox {
 		this->onModInstalled(pParam->m_nPublishedFileId);
 	}
 
-	void SteamCALLBACKS::OnWorkshopItemRemoved(RemoteStoragePublishedFileUnsubscribed_t* pParam) {
+	void SteamCALLBACKS::OnWorkshopItemUnSubscribed(RemoteStoragePublishedFileUnsubscribed_t* pParam) {
 		if (pParam->m_nAppID != STEAMWORKS_APPID) return;
 
-		this->_logger->info("Steam workshop removed: {}", pParam->m_nPublishedFileId); // Seems to only be triggered after game shutsdown.. wow
-		this->onModRemoved(pParam->m_nPublishedFileId);
+		this->_logger->info("Steam workshop unsubscribed: {}", pParam->m_nPublishedFileId); // Seems to only be triggered after game shutsdown.. wow
+		this->onModUnSubscribed(pParam->m_nPublishedFileId);
 	}
 
 	void SteamCALLBACKS::OnWorkshopItemDownloaded(DownloadItemResult_t* pParam) {
@@ -67,7 +74,8 @@ namespace rawrbox {
 	SteamCALLBACKS::SteamCALLBACKS() : _IPCFailureCallback(this, &SteamCALLBACKS::OnIPCFailure),
 					   _SteamShutdownCallback(this, &SteamCALLBACKS::OnSteamShutdown),
 					   _CallbackWorkshopItemInstalled(this, &SteamCALLBACKS::OnWorkshopItemInstalled),
-					   _CallbackWorkshopItemRemoved(this, &SteamCALLBACKS::OnWorkshopItemRemoved),
+					   _CallbackWorkshopItemUnSubscribed(this, &SteamCALLBACKS::OnWorkshopItemUnSubscribed),
+					   _CallbackWorkshopItemSubscribed(this, &SteamCALLBACKS::OnWorkshopItemSubscribed),
 					   _CallbackWorkshopItemDownloaded(this, &SteamCALLBACKS::OnWorkshopItemDownloaded) {}
 
 	void SteamCALLBACKS::init() {
