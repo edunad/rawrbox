@@ -26,8 +26,15 @@ namespace rawrbox {
 
 	void UIContainer::removeChildren() {
 		for (auto& c : this->_children) {
-			if (this->_root->focusedElement == c.get()) this->_root->focusedElement = nullptr;
-			if (this->_root->hoveredElement == c.get()) this->_root->hoveredElement = nullptr;
+			c->removeChildren();
+
+			if (this->_root->focusedElement == c.get()) {
+				this->_root->focusedElement = nullptr;
+			}
+
+			if (this->_root->hoveredElement == c.get()) {
+				this->_root->hoveredElement = nullptr;
+			}
 		}
 
 		this->_children.clear();
@@ -51,6 +58,7 @@ namespace rawrbox {
 
 	void UIContainer::setVisible(bool visible) {
 		this->_visible = visible;
+
 		if (!visible) {
 			if (this->_root->focusedElement == this) this->_root->focusedElement = nullptr;
 			if (this->_root->hoveredElement == this) this->_root->hoveredElement = nullptr;
