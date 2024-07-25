@@ -230,8 +230,8 @@ namespace rawrbox {
 	// @/ == Root content
 	// @cats/ == `cats` mod
 	// normal_path == current mod
-	std::string LuaUtils::getContent(const std::filesystem::path& path, const std::filesystem::path& modPath) {
-		if (path.empty()) return modPath.generic_string(); // Invalid path
+	std::filesystem::path LuaUtils::getContent(const std::filesystem::path& path, const std::filesystem::path& modPath) {
+		if (path.empty()) return modPath; // Invalid path
 
 		auto pth = path.generic_string();
 		if (pth.starts_with("#")) {
@@ -239,14 +239,14 @@ namespace rawrbox {
 			return pth.substr(slashPos + 1);
 		} // System path
 
-		if (pth.starts_with("mods/")) return modPath.generic_string(); // Already has the mod
+		if (pth.starts_with("mods/")) return modPath; // Already has the mod
 		pth = rawrbox::StrUtils::replace(pth, "\\", "/");
 		pth = rawrbox::StrUtils::replace(pth, "./", "");
 		pth = rawrbox::StrUtils::replace(pth, "../", "");
 
 		// assets/blabalba.png = my current mod
 		if (!modPath.empty() && pth.front() != '@') {
-			return std::filesystem::path(fmt::format("{}/{}", modPath.generic_string(), pth)).string(); // Becomes mods/mymod/assets/blabalba.png
+			return modPath / pth; // Becomes mods/mymod/assets/blabalba.png
 		}
 
 		if (pth.front() == '@') {
@@ -255,7 +255,7 @@ namespace rawrbox {
 
 			// @/textures/blabalba.png = c++ assets
 			if (pth.rfind("@/", 0) == 0) { // C++
-				return std::filesystem::path(fmt::format("assets/{}", cleanPath)).string();
+				return std::filesystem::path("assets") / cleanPath;
 			}
 			// @otherMod/textures/blabalba.png = @othermod assets
 			return std::filesystem::path(fmt::format("{}/{}", pth.substr(1, slashPos - 1), cleanPath)).string();

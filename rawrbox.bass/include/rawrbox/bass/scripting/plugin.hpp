@@ -32,7 +32,7 @@ namespace rawrbox {
 
 #ifdef RAWRBOX_RESOURCES
 				    if (!rawrbox::RESOURCES::isLoaded(fixedPath)) {
-					    fmt::print("Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath);
+					    fmt::print("Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath.generic_string());
 				    }
 #endif
 				    auto* sound = BASS::loadSound(fixedPath, flags.value_or(0));

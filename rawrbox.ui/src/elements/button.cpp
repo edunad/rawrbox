@@ -38,7 +38,7 @@ namespace rawrbox {
 	void UIButton::setTooltip(const std::string& text) { this->_tooltip = text; }
 	const std::string& UIButton::getTooltip() const { return this->_tooltip; }
 
-	void UIButton::setTexture(const std::string& path) {
+	void UIButton::setTexture(const std::filesystem::path& path) {
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->get();
 	}
 

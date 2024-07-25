@@ -4,7 +4,7 @@
 #include <rawrbox/ui/container.hpp>
 #include <rawrbox/utils/event.hpp>
 
-#include <string>
+#include <filesystem>
 
 namespace rawrbox {
 	class TextureBase;
@@ -61,7 +61,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual const std::string& getTooltip() const;
 
 		virtual void setTexture(rawrbox::TextureBase* texture);
-		virtual void setTexture(const std::string& path);
+		virtual void setTexture(const std::filesystem::path& path);
 
 		virtual void setEnabled(bool enabled);
 		[[nodiscard]] bool isEnabled() const;

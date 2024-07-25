@@ -63,6 +63,6 @@ namespace rawrbox {
 		// @/ == Root content
 		// @cats/ == `cats` mod
 		// normal_path == current mod
-		static std::string getContent(const std::filesystem::path& path, const std::filesystem::path& modPath);
+		static std::filesystem::path getContent(const std::filesystem::path& path, const std::filesystem::path& modPath);
 	};
 } // namespace rawrbox

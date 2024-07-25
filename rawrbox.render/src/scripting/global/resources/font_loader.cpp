@@ -9,16 +9,16 @@ namespace rawrbox {
 		auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
 
 		if (!rawrbox::RESOURCES::isLoaded(fixedPath)) {
-			fmt::print("[RawrBox-Resources] Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath);
+			fmt::print("[RawrBox-Resources] Loading '{}' RUNTIME! You should load content on the mod's load stage!\n", fixedPath.generic_string());
 
 			auto* ptr = rawrbox::RESOURCES::loadFile<rawrbox::ResourceFont>(fixedPath, 0);
-			if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] '{}' not found!", fixedPath));
+			if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] '{}' not found!", fixedPath.generic_string()));
 
 			return ptr->getSize(size.value_or(12));
 		}
 
 		auto* ptr = rawrbox::RESOURCES::getFile<rawrbox::ResourceFont>(fixedPath);
-		if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] '{}' not found!", fixedPath));
+		if (ptr == nullptr) throw std::runtime_error(fmt::format("[RawrBox-Resources] '{}' not found!", fixedPath.generic_string()));
 
 		return ptr->getSize(size.value_or(12));
 	}
