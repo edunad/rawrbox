@@ -158,13 +158,8 @@ namespace rawrbox {
 			return;
 		}
 
-		UGCQueryHandle_t handle = SteamUGC()->CreateQueryUGCDetailsRequest(subs.data(), static_cast<uint32_t>(subs.size()));
-		if (handle == k_UGCQueryHandleInvalid) throw _logger->error("Failed to request workshop items");
-		if (!SteamUGC()->SetReturnKeyValueTags(handle, true)) return;
-
-		SteamAPICall_t hSteamAPICall = SteamUGC()->SendQueryUGCRequest(handle);
-		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [](const std::vector<rawrbox::WorkshopMod>& details) {
-			_logger->info("Found {} subscribed workshop items", details.size());
+		_logger->info("Loading {} workshop mods", subs.size());
+		queryMods(subs, [subs](const std::vector<rawrbox::WorkshopMod>& details) {
 			loadMods(details);
 		});
 	}
@@ -270,6 +265,17 @@ namespace rawrbox {
 		// -----------
 
 		if (!SteamUGC()->SetReturnKeyValueTags(handle, true)) throw _logger->error("Failed to request key values");
+
+		SteamAPICall_t hSteamAPICall = SteamUGC()->SendQueryUGCRequest(handle);
+		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [callback](const std::vector<rawrbox::WorkshopMod>& details) {
+			callback(details);
+		});
+	}
+
+	void SteamWORKSHOP::queryMods(std::vector<PublishedFileId_t> ids, const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback) {
+		UGCQueryHandle_t handle = SteamUGC()->CreateQueryUGCDetailsRequest(ids.data(), static_cast<uint32_t>(ids.size()));
+		if (handle == k_UGCQueryHandleInvalid) throw _logger->error("Failed to request workshop items");
+		if (!SteamUGC()->SetReturnKeyValueTags(handle, true)) throw _logger->error("Failed to request workshop items");
 
 		SteamAPICall_t hSteamAPICall = SteamUGC()->SendQueryUGCRequest(handle);
 		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [callback](const std::vector<rawrbox::WorkshopMod>& details) {

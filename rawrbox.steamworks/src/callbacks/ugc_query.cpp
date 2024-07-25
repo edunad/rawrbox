@@ -1,5 +1,6 @@
 
 #include <rawrbox/steamworks/callbacks/ugc_query.hpp>
+#include <rawrbox/utils/string.hpp>
 
 #include <array>
 
@@ -26,13 +27,16 @@ namespace rawrbox {
 				std::array<char, 256> val = {};
 
 				if (!SteamUGC()->GetQueryUGCKeyValueTag(pParam->m_handle, i, tag, key.data(), static_cast<uint32_t>(key.size()), val.data(), static_cast<uint32_t>(val.size()))) continue;
-				detail.keyVals[key.data()] = val.data();
+				detail.keyVals[rawrbox::StrUtils::toUpper(key.data())] = val.data();
 			}
 
 			if (SteamUGC()->GetQueryUGCResult(pParam->m_handle, i, &detail)) {
 				if (detail.m_eResult == k_EResultOK && detail.m_eFileType == k_EWorkshopFileTypeCommunity) {
-					detail.modId = detail.keyVals.contains("MOD_ID") ? detail.keyVals["MOD_ID"] : std::to_string(detail.m_nPublishedFileId);
+					if (!detail.keyVals.contains("MOD_ID")) continue;
+
+					detail.modId = detail.keyVals["MOD_ID"];
 					detail.installPath = rawrbox::SteamWORKSHOP::getWorkshopModFolder(detail.m_nPublishedFileId);
+
 					details.push_back(detail);
 				}
 			}

@@ -109,13 +109,12 @@ namespace rawrbox {
 
 		[[nodiscard]] static std::filesystem::path getWorkshopModFolder(PublishedFileId_t id);
 		[[nodiscard]] static rawrbox::WorkshopStatus getWorkshopModState(PublishedFileId_t id);
-
-		[[nodiscard]] static const std::string& getKeyVal(PublishedFileId_t id, const std::string& key);
 		// -------------
 
 		// QUERIES ---
 		static void queryUserMods(const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback, EUserUGCList type = k_EUserUGCList_Subscribed, const std::vector<std::string>& tags = {}, uint32_t page = 1U);
 		static void queryMods(const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback, EUGCQuery type = k_EUGCQuery_RankedByVote, const std::vector<std::string>& tags = {}, uint32_t page = 1U);
+		static void queryMods(std::vector<PublishedFileId_t> ids, const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback);
 		//-------------
 
 		// UPLOAD ------
