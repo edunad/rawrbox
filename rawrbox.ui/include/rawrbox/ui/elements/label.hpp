@@ -32,6 +32,8 @@ namespace rawrbox {
 		[[nodiscard]] bool hitTest(const rawrbox::Vector2f& point) const override;
 		// -----
 
+		void setPos(const rawrbox::Vector2f& pos) override;
+
 		// UTILS ----
 		virtual void setColor(const rawrbox::Color& col);
 		[[nodiscard]] virtual const rawrbox::Color& getColor() const;

@@ -9,6 +9,10 @@ find_package(STEAMWORKS REQUIRED)
 # --------------
 
 file(GLOB_RECURSE RAWRBOX_STEAMWORKS_IMPORTS "src/*.cpp" "include/*.hpp")
+if(NOT RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+    remove_folder("${RAWRBOX_STEAMWORKS_IMPORTS}" "/scripting/")
+    set(RAWRBOX_STEAMWORKS_IMPORTS "${CLEAN_SOURCES}")
+endif()
 
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_STEAMWORKS_IMPORTS})
 

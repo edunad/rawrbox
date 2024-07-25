@@ -28,6 +28,7 @@ namespace rawrbox {
 		static void loadLibraries(rawrbox::Mod& mod);
 		static void loadTypes(rawrbox::Mod& mod);
 		static void loadGlobals(rawrbox::Mod& mod);
+		static void loadModifiers(rawrbox::Mod& mod);
 		// ----
 
 		// MOD LOAD ---
@@ -46,6 +47,7 @@ namespace rawrbox {
 		static rawrbox::Event<rawrbox::Mod&> onRegisterTypes;
 		static rawrbox::Event<rawrbox::Mod&> onRegisterGlobals;
 		static rawrbox::Event<rawrbox::Mod&> onLoadLibraries;
+		static rawrbox::Event<rawrbox::Mod&> onLoadModifiers;
 		static rawrbox::Event<rawrbox::Mod&> onModHotReload;
 		// -------
 
@@ -72,7 +74,7 @@ namespace rawrbox {
 
 		// LOADING ----
 		static std::unordered_map<std::filesystem::path, bool> loadMods(const std::filesystem::path& rootFolder);
-		static bool loadMod(const std::filesystem::path& modFolder);
+		static bool loadMod(const std::string& id, const std::filesystem::path& modFolder);
 
 		static bool unloadMod(const std::filesystem::path& modFolder);
 		static bool unloadMod(const std::string& modId);

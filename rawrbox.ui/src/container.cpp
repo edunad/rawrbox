@@ -17,6 +17,12 @@ namespace rawrbox {
 
 	void UIContainer::setSize(const rawrbox::Vector2f& size) { this->_aabb.size = size; }
 	const rawrbox::Vector2f& UIContainer::getSize() const { return this->_aabb.size; }
+	rawrbox::Vector2f UIContainer::getContentSize() const { return this->getSize() - this->getDrawOffset(); }
+
+	void UIContainer::sizeToParent() {
+		if (this->_parent == nullptr) return;
+		this->setSize(this->_parent->getContentSize());
+	}
 
 	void UIContainer::removeChildren() {
 		for (auto& c : this->_children) {

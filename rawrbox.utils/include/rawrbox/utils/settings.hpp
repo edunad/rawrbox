@@ -11,7 +11,7 @@ namespace rawrbox {
 	concept hasJSONVersion = requires(T t) { t.VERSION; };
 
 	template <typename T>
-		requires(hasJSONVersion<T> && glz::write_json_supported<T>)
+		requires(hasJSONVersion<T> && glz::write_json_supported<T> && glz::read_json_supported<T>)
 	class Settings {
 	protected:
 		T _settings = {};

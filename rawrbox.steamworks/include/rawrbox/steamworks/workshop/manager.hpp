@@ -17,7 +17,8 @@ namespace rawrbox {
 		NONE = 0U,
 		INSTALLED,
 		NEEDS_UPDATE,
-		DOWNLOADING
+		DOWNLOADING,
+		INVALID
 	};
 
 	static const std::vector<std::string> fileWhitelist = {
@@ -54,7 +55,6 @@ namespace rawrbox {
 
 	struct WorkshopModConfig {
 		std::optional<std::string> type;
-		std::optional<std::string> id;
 
 		std::string title;
 		std::string version;
@@ -68,6 +68,11 @@ namespace rawrbox {
 		std::optional<std::vector<std::string>> ignore;
 	};
 
+	struct WorkshopMod : public SteamUGCDetails_t {
+		std::unordered_map<std::string, std::string> keyVals;
+		std::filesystem::path installPath;
+	};
+
 	class SteamWORKSHOP {
 	protected:
 		// LOGGER ------
@@ -75,18 +80,19 @@ namespace rawrbox {
 		// ------------
 
 		[[nodiscard]] static bool validateMod(PublishedFileId_t id);
-		static void loadMods(const std::vector<SteamUGCDetails_t>& details);
+		static void loadMods(const std::vector<rawrbox::WorkshopMod>& details);
 
 		// UPLOAD ------
 		[[nodiscard]] static std::filesystem::path moveToTempModFolder(const std::string& rootPath, const std::vector<std::filesystem::path>& uploadFiles);
 		static void updateItem(PublishedFileId_t id, const rawrbox::WorkshopModConfig& config, const std::filesystem::path& uploadPath, const std::function<void(SubmitItemUpdateResult_t*)>& callback, bool isNewMod = false);
 		// -------------
 	public:
-		static rawrbox::Event<const std::vector<std::filesystem::path>&> onModsLoaded;
+		static rawrbox::Event<const std::vector<rawrbox::WorkshopMod>&> onModsLoaded;
 
-		static rawrbox::Event<const std::filesystem::path&> onModInstalled;
-		static rawrbox::Event<const std::filesystem::path&> onModRemoved;
-		static rawrbox::Event<const std::filesystem::path&> onModUpdated;
+		static rawrbox::Event<PublishedFileId_t> onModInstalled;
+		static rawrbox::Event<PublishedFileId_t> onModUnSubscribed;
+		static rawrbox::Event<PublishedFileId_t> onModSubscribed;
+		static rawrbox::Event<PublishedFileId_t> onModUpdated;
 
 		static rawrbox::Event<const UGCUpdateHandle_t&, const rawrbox::WorkshopModConfig&> onModUpdating;
 		static rawrbox::Event<const rawrbox::WorkshopModConfig&> onModValidate;
@@ -101,11 +107,13 @@ namespace rawrbox {
 
 		[[nodiscard]] static std::string getWorkshopModFolder(PublishedFileId_t id);
 		[[nodiscard]] static rawrbox::WorkshopStatus getWorkshopModState(PublishedFileId_t id);
+
+		[[nodiscard]] static const std::string& getKeyVal(PublishedFileId_t id, const std::string& key);
 		// -------------
 
 		// QUERIES ---
-		static void queryUserMods(const std::function<void(std::vector<SteamUGCDetails_t>)>& callback, EUserUGCList type = k_EUserUGCList_Subscribed, const std::vector<std::string>& tags = {}, uint32_t page = 1U);
-		static void queryMods(const std::function<void(std::vector<SteamUGCDetails_t>)>& callback, EUGCQuery type = k_EUGCQuery_RankedByVote, const std::vector<std::string>& tags = {}, uint32_t page = 1U);
+		static void queryUserMods(const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback, EUserUGCList type = k_EUserUGCList_Subscribed, const std::vector<std::string>& tags = {}, uint32_t page = 1U);
+		static void queryMods(const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback, EUGCQuery type = k_EUGCQuery_RankedByVote, const std::vector<std::string>& tags = {}, uint32_t page = 1U);
 		//-------------
 
 		// UPLOAD ------

@@ -1,4 +1,4 @@
-#include <rawrbox/steamworks/callbacks.hpp>
+#include <rawrbox/steamworks/callbacks/manager.hpp>
 #include <rawrbox/steamworks/sdk.hpp>
 #include <rawrbox/steamworks/workshop/manager.hpp>
 #include <rawrbox/utils/string.hpp>
@@ -20,11 +20,11 @@ namespace rawrbox {
 		return std::filesystem::exists(fmt::format("./mods/workshop_{}", std::to_string(id)));
 	}
 
-	void SteamWORKSHOP::loadMods(const std::vector<SteamUGCDetails_t>& details) {
+	void SteamWORKSHOP::loadMods(const std::vector<rawrbox::WorkshopMod>& details) {
 		_logger->info("Loading workshop mods");
 
-		std::vector<std::filesystem::path> loadedMods = {};
-		for (const SteamUGCDetails_t& detail : details) {
+		std::vector<rawrbox::WorkshopMod> loadedMods = {};
+		for (const rawrbox::WorkshopMod& detail : details) {
 			auto tags = rawrbox::StrUtils::split(detail.m_rgchTags, ",");
 			if (tags.empty()) {
 				_logger->warn("Missing tags for workshop item '{}', skipping mod..", detail.m_nPublishedFileId);
@@ -35,7 +35,7 @@ namespace rawrbox {
 			switch (status) {
 				case WorkshopStatus::INSTALLED:
 					_logger->info("Found workshop item '{}'", detail.m_nPublishedFileId);
-					loadedMods.emplace_back(getWorkshopModFolder(detail.m_nPublishedFileId));
+					loadedMods.emplace_back(detail);
 					break;
 
 				case WorkshopStatus::NEEDS_UPDATE:
@@ -91,9 +91,6 @@ namespace rawrbox {
 			if (!SteamUGC()->SetItemDescription(updateHandle, description.c_str())) throw _logger->error("Failed to set workshop item description");
 		}
 
-		if (!config.id.has_value()) throw _logger->error("Missing workshop id");
-		if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "WORKSHOP_ID", config.id.value().c_str())) throw _logger->error("Failed to set workshop workshop type");
-
 		std::string type = config.type.value_or("");
 		if (type.empty()) {
 			if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "WORKSHOP_TYPE", type.c_str())) throw _logger->error("Failed to set workshop workshop type");
@@ -122,10 +119,11 @@ namespace rawrbox {
 	// -----------
 
 	// PUBLIC -------
-	rawrbox::Event<const std::vector<std::filesystem::path>&> SteamWORKSHOP::onModsLoaded = {};
-	rawrbox::Event<const std::filesystem::path&> SteamWORKSHOP::onModInstalled = {};
-	rawrbox::Event<const std::filesystem::path&> SteamWORKSHOP::onModRemoved = {};
-	rawrbox::Event<const std::filesystem::path&> SteamWORKSHOP::onModUpdated = {};
+	rawrbox::Event<const std::vector<rawrbox::WorkshopMod>&> SteamWORKSHOP::onModsLoaded = {};
+	rawrbox::Event<PublishedFileId_t> SteamWORKSHOP::onModInstalled = {};
+	rawrbox::Event<PublishedFileId_t> SteamWORKSHOP::onModUnSubscribed = {};
+	rawrbox::Event<PublishedFileId_t> SteamWORKSHOP::onModSubscribed = {};
+	rawrbox::Event<PublishedFileId_t> SteamWORKSHOP::onModUpdated = {};
 
 	rawrbox::Event<const UGCUpdateHandle_t&, const rawrbox::WorkshopModConfig&> SteamWORKSHOP::onModUpdating = {};
 	rawrbox::Event<const rawrbox::WorkshopModConfig&> SteamWORKSHOP::onModValidate = {};
@@ -135,15 +133,19 @@ namespace rawrbox {
 
 		// Register callback events ---
 		SteamCALLBACKS::getInstance().onModInstalled += [](PublishedFileId_t id) {
-			onModInstalled(getWorkshopModFolder(id));
+			onModInstalled(id);
 		};
 
 		SteamCALLBACKS::getInstance().onModUpdated += [](PublishedFileId_t id) {
-			onModUpdated(getWorkshopModFolder(id));
+			onModUpdated(id);
 		};
 
-		SteamCALLBACKS::getInstance().onModRemoved += [](PublishedFileId_t id) {
-			onModRemoved(getWorkshopModFolder(id));
+		SteamCALLBACKS::getInstance().onModUnSubscribed += [](PublishedFileId_t id) {
+			onModUnSubscribed(id);
+		};
+
+		SteamCALLBACKS::getInstance().onModSubscribed += [](PublishedFileId_t id) {
+			onModSubscribed(id);
 		};
 		// ----------------------
 
@@ -156,10 +158,10 @@ namespace rawrbox {
 
 		UGCQueryHandle_t handle = SteamUGC()->CreateQueryUGCDetailsRequest(subs.data(), static_cast<uint32_t>(subs.size()));
 		if (handle == k_UGCQueryHandleInvalid) throw _logger->error("Failed to request workshop items");
-		if (!SteamUGC()->SetReturnChildren(handle, true)) return;
+		if (!SteamUGC()->SetReturnKeyValueTags(handle, true)) return;
 
 		SteamAPICall_t hSteamAPICall = SteamUGC()->SendQueryUGCRequest(handle);
-		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [](const std::vector<SteamUGCDetails_t>& details) {
+		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [](const std::vector<rawrbox::WorkshopMod>& details) {
 			_logger->info("Found {} subscribed workshop items", details.size());
 			loadMods(details);
 		});
@@ -191,9 +193,7 @@ namespace rawrbox {
 		uint64 size = 0;
 		uint32 updateTimestamp = 0;
 		std::array<char, 1024> buff = {};
-
-		bool installed = SteamUGC()->GetItemInstallInfo(id, &size, buff.data(), sizeof(buff) / sizeof(char), &updateTimestamp);
-		if (!installed) _logger->warn("Failed to access mod '{}', mod not installed?", id);
+		SteamUGC()->GetItemInstallInfo(id, &size, buff.data(), buff.size(), &updateTimestamp);
 
 		return {buff.data()};
 	}
@@ -224,14 +224,15 @@ namespace rawrbox {
 
 		return rawrbox::WorkshopStatus::NONE;
 	}
+
 	// -------------
 
 	// QUERIES ----
-	void SteamWORKSHOP::queryUserMods(const std::function<void(std::vector<SteamUGCDetails_t>)>& callback, EUserUGCList type, const std::vector<std::string>& tags, uint32_t page) {
+	void SteamWORKSHOP::queryUserMods(const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback, EUserUGCList type, const std::vector<std::string>& tags, uint32_t page) {
 		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
 
 		auto id = SteamUser()->GetSteamID().GetAccountID();
-		UGCQueryHandle_t handle = SteamUGC()->CreateQueryUserUGCRequest(id, type, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_CreationOrderDesc, 4000, 4000, page);
+		UGCQueryHandle_t handle = SteamUGC()->CreateQueryUserUGCRequest(id, type, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_CreationOrderDesc, STEAMWORKS_APPID, STEAMWORKS_APPID, page);
 		if (handle == k_UGCQueryHandleInvalid) throw _logger->error("Failed to request workshop items");
 
 		// TAGS -----
@@ -243,13 +244,15 @@ namespace rawrbox {
 		}
 		// -----------
 
+		if (!SteamUGC()->SetReturnKeyValueTags(handle, true)) throw _logger->error("Failed to request key values");
+
 		SteamAPICall_t hSteamAPICall = SteamUGC()->SendQueryUGCRequest(handle);
-		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [callback](const std::vector<SteamUGCDetails_t>& details) {
+		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [callback](const std::vector<rawrbox::WorkshopMod>& details) {
 			callback(details);
 		});
 	}
 
-	void SteamWORKSHOP::queryMods(const std::function<void(std::vector<SteamUGCDetails_t>)>& callback, EUGCQuery type, const std::vector<std::string>& tags, uint32_t page) {
+	void SteamWORKSHOP::queryMods(const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback, EUGCQuery type, const std::vector<std::string>& tags, uint32_t page) {
 		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
 
 		UGCQueryHandle_t handle = SteamUGC()->CreateQueryAllUGCRequest(type, k_EUGCMatchingUGCType_Items, STEAMWORKS_APPID, STEAMWORKS_APPID, page);
@@ -264,8 +267,10 @@ namespace rawrbox {
 		}
 		// -----------
 
+		if (!SteamUGC()->SetReturnKeyValueTags(handle, true)) throw _logger->error("Failed to request key values");
+
 		SteamAPICall_t hSteamAPICall = SteamUGC()->SendQueryUGCRequest(handle);
-		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [callback](const std::vector<SteamUGCDetails_t>& details) {
+		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [callback](const std::vector<rawrbox::WorkshopMod>& details) {
 			callback(details);
 		});
 	}
@@ -275,16 +280,10 @@ namespace rawrbox {
 	rawrbox::WorkshopModConfig SteamWORKSHOP::readConfig(const std::filesystem::path& rootPath) {
 		rawrbox::WorkshopModConfig config = {};
 
-		auto result = glz::read_file_json(config, fmt::format("{}/mod.json", rootPath.generic_string()), std::string{});
+		auto result = glz::read_file_json<glz::opts{.comments = 1U}>(config, fmt::format("{}/mod.json", rootPath.generic_string()), std::string{});
 		if (result.ec != glz::error_code::none) {
 			throw _logger->error("Failed to read 'mod.json' file {{}}", magic_enum::enum_name(result.ec));
 		}
-
-		// Update config id --
-		if (!config.id.has_value()) {
-			config.id = rootPath.filename().generic_string();
-		}
-		// ------------------
 
 		// Validate preview
 		if (config.preview.has_value()) {
@@ -297,7 +296,6 @@ namespace rawrbox {
 		// ----------------
 
 		onModValidate(config);
-
 		return config;
 	}
 

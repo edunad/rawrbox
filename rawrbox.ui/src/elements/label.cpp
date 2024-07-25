@@ -16,6 +16,10 @@ namespace rawrbox {
 	bool UILabel::hitTest(const rawrbox::Vector2f& /*point*/) const { return false; }
 	// -----
 
+	void UILabel::setPos(const rawrbox::Vector2f& pos) {
+		rawrbox::UIContainer::setPos({std::roundf(pos.x), std::roundf(pos.y)});
+	}
+
 	// UTILS ----
 	void UILabel::setColor(const rawrbox::Color& col) { this->_color = col; }
 	const rawrbox::Color& UILabel::getColor() const { return this->_color; }

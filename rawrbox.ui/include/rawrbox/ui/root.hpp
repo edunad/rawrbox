@@ -51,13 +51,9 @@ namespace rawrbox {
 			auto elm = std::make_shared<T>(this, std::forward<CallbackArgs>(args)...);
 
 			auto& childn = this->getChildren();
-			if (elm->alwaysOnTop()) {
-				childn.insert(childn.begin(), std::move(elm));
-			} else {
-				childn.push_back(std::move(elm));
-			}
+			childn.push_back(std::move(elm));
 
-			return dynamic_cast<T*>(this->getChildren().back().get());
+			return dynamic_cast<T*>(childn.back().get());
 		}
 		// ----
 

@@ -19,7 +19,7 @@ namespace rawrbox {
 		std::string id = args[0];
 		std::string key = args[1];
 
-		if (id.empty()) id = rawrbox::LuaUtils::getLuaENVVar(state, "__mod_id");
+		if (id.empty()) id = rawrbox::LuaUtils::getLuaENVVar<std::string>(state, "__mod_id");
 
 		return rawrbox::I18N::get(id, key, {args.begin() + 2, args.end()});
 	}

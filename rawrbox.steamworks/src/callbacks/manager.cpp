@@ -1,4 +1,4 @@
-#include <rawrbox/steamworks/callbacks.hpp>
+#include <rawrbox/steamworks/callbacks/manager.hpp>
 
 #include <magic_enum.hpp>
 
@@ -29,6 +29,13 @@ namespace rawrbox {
 	// -------
 
 	// WORKSHOP ----
+	void SteamCALLBACKS::OnWorkshopItemSubscribed(RemoteStoragePublishedFileSubscribed_t* pParam) {
+		if (pParam->m_nAppID != STEAMWORKS_APPID) return;
+
+		this->_logger->info("Steam workshop subscribed: {}", pParam->m_nPublishedFileId);
+		this->onModSubscribed(pParam->m_nPublishedFileId);
+	}
+
 	void SteamCALLBACKS::OnWorkshopItemInstalled(ItemInstalled_t* pParam) {
 		if (pParam->m_unAppID != STEAMWORKS_APPID) return;
 
@@ -36,11 +43,11 @@ namespace rawrbox {
 		this->onModInstalled(pParam->m_nPublishedFileId);
 	}
 
-	void SteamCALLBACKS::OnWorkshopItemRemoved(RemoteStoragePublishedFileUnsubscribed_t* pParam) {
+	void SteamCALLBACKS::OnWorkshopItemUnSubscribed(RemoteStoragePublishedFileUnsubscribed_t* pParam) {
 		if (pParam->m_nAppID != STEAMWORKS_APPID) return;
 
-		this->_logger->info("Steam workshop removed: {}", pParam->m_nPublishedFileId); // Seems to only be triggered after game shutsdown.. wow
-		this->onModRemoved(pParam->m_nPublishedFileId);
+		this->_logger->info("Steam workshop unsubscribed: {}", pParam->m_nPublishedFileId); // Seems to only be triggered after game shutsdown.. wow
+		this->onModUnSubscribed(pParam->m_nPublishedFileId);
 	}
 
 	void SteamCALLBACKS::OnWorkshopItemDownloaded(DownloadItemResult_t* pParam) {
@@ -67,7 +74,8 @@ namespace rawrbox {
 	SteamCALLBACKS::SteamCALLBACKS() : _IPCFailureCallback(this, &SteamCALLBACKS::OnIPCFailure),
 					   _SteamShutdownCallback(this, &SteamCALLBACKS::OnSteamShutdown),
 					   _CallbackWorkshopItemInstalled(this, &SteamCALLBACKS::OnWorkshopItemInstalled),
-					   _CallbackWorkshopItemRemoved(this, &SteamCALLBACKS::OnWorkshopItemRemoved),
+					   _CallbackWorkshopItemUnSubscribed(this, &SteamCALLBACKS::OnWorkshopItemUnSubscribed),
+					   _CallbackWorkshopItemSubscribed(this, &SteamCALLBACKS::OnWorkshopItemSubscribed),
 					   _CallbackWorkshopItemDownloaded(this, &SteamCALLBACKS::OnWorkshopItemDownloaded) {}
 
 	void SteamCALLBACKS::init() {
@@ -86,11 +94,11 @@ namespace rawrbox {
 	}
 
 	// QUERY ---
-	void SteamCALLBACKS::addUGCQueryCallback(SteamAPICall_t apicall, const std::function<void(std::vector<SteamUGCDetails_t>)>& callback) {
+	void SteamCALLBACKS::addUGCQueryCallback(SteamAPICall_t apicall, const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback) {
 		auto fnd = this->_ugcQueries.find(apicall);
 		if (fnd != this->_ugcQueries.end()) throw _logger->error("AddUGCQueryCallback with api call {} already called! Wait for previous call to complete", apicall);
 
-		std::unique_ptr<rawrbox::SteamUGCQuery> query = std::make_unique<rawrbox::SteamUGCQuery>(apicall, [this, apicall, callback](std::vector<SteamUGCDetails_t> details) {
+		std::unique_ptr<rawrbox::SteamUGCQuery> query = std::make_unique<rawrbox::SteamUGCQuery>(apicall, [this, apicall, callback](std::vector<rawrbox::WorkshopMod> details) {
 			callback(std::move(details));
 			this->_ugcQueries.erase(apicall);
 		});

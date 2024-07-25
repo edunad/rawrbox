@@ -15,6 +15,7 @@
 #include <rawrbox/ui/elements/progress_bar.hpp>
 #include <rawrbox/ui/elements/tabs.hpp>
 #include <rawrbox/ui/elements/virtual_list.hpp>
+#include <rawrbox/ui/popup/manager.hpp>
 #include <rawrbox/ui/static.hpp>
 #include <rawrbox/utils/keys.hpp>
 
@@ -67,6 +68,8 @@ namespace ui_test {
 			else
 				fmt::print("[ROOT_UI] No element to focus\n");
 		};
+
+		rawrbox::POPUP::init(this->_ROOT_UI.get());
 		// ----
 
 		this->_console = std::make_unique<rawrbox::Console>();
@@ -104,8 +107,9 @@ namespace ui_test {
 		this->_consoleUI->setVisible(false);
 
 		window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
-			if (action != rawrbox::KEY_ACTION_UP || key != rawrbox::KEY_F1 || this->_consoleUI == nullptr) return;
+			if (action != rawrbox::KEY_ACTION_DOWN || key != rawrbox::KEY_F1 || this->_consoleUI == nullptr) return;
 			this->_consoleUI->setVisible(!this->_consoleUI->visible());
+			this->_consoleUI->bringToFront();
 		};
 		// ----------
 
@@ -316,6 +320,51 @@ namespace ui_test {
 			auto* label1 = group1->createChild<rawrbox::UILabel>();
 			label1->setText("Tab 1");
 			label1->sizeToContents();
+
+			auto* button1 = group1->createChild<rawrbox::UIButton>();
+			button1->setText("POPUP INFO");
+			button1->setEnabled(true);
+			button1->setSize({200, 24});
+			button1->setPos({10, 40});
+			button1->onClick += []() {
+				rawrbox::POPUP::create("test-1", "Info", "This is a popup info message");
+			};
+
+			auto* button2 = group1->createChild<rawrbox::UIButton>();
+			button2->setText("POPUP QUESTION");
+			button2->setEnabled(true);
+			button2->setSize({200, 24});
+			button2->setPos({10, 40 + 26});
+			button2->onClick += []() {
+				rawrbox::POPUP::create("test-2", "Question", "This is a popup question message", rawrbox::PopupType::QUESTION);
+			};
+
+			auto* button3 = group1->createChild<rawrbox::UIButton>();
+			button3->setText("POPUP WARNING");
+			button3->setEnabled(true);
+			button3->setSize({200, 24});
+			button3->setPos({10, 40 + 26 * 2});
+			button3->onClick += []() {
+				rawrbox::POPUP::create("test-3", "Warning", "This is a popup warning message", rawrbox::PopupType::WARNING);
+			};
+
+			auto* button4 = group1->createChild<rawrbox::UIButton>();
+			button4->setText("POPUP LOADING");
+			button4->setEnabled(true);
+			button4->setSize({200, 24});
+			button4->setPos({10, 40 + 26 * 3});
+			button4->onClick += []() {
+				rawrbox::POPUP::create("test-4", "Loading", "This is a popup loading message", rawrbox::PopupType::LOADING);
+			};
+
+			auto* button5 = group1->createChild<rawrbox::UIButton>();
+			button5->setText("POPUP ERROR");
+			button5->setEnabled(true);
+			button5->setSize({200, 24});
+			button5->setPos({10, 40 + 26 * 4});
+			button5->onClick += []() {
+				rawrbox::POPUP::create("test-5", "Error", "This is a popup error message", rawrbox::PopupType::ERR);
+			};
 			// --------
 
 			// TAB 2 ---
@@ -363,6 +412,7 @@ namespace ui_test {
 			this->_graph = nullptr;
 			this->_consoleUI = nullptr;
 
+			rawrbox::POPUP::shutdown();
 			this->_ROOT_UI.reset();
 			this->_console.reset();
 

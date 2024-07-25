@@ -1,6 +1,5 @@
+#include <rawrbox/steamworks/callbacks/manager.hpp>
 #include <rawrbox/steamworks/workshop/storage.hpp>
-#include <rawrbox/utils/path.hpp>
-#include <rawrbox/utils/threading.hpp>
 
 namespace rawrbox {
 	// PRIVATE ----------
