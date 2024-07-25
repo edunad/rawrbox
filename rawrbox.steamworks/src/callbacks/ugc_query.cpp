@@ -31,6 +31,7 @@ namespace rawrbox {
 
 			if (SteamUGC()->GetQueryUGCResult(pParam->m_handle, i, &detail)) {
 				if (detail.m_eResult == k_EResultOK && detail.m_eFileType == k_EWorkshopFileTypeCommunity) {
+					detail.modId = detail.keyVals.contains("MOD_ID") ? detail.keyVals["MOD_ID"] : std::to_string(detail.m_nPublishedFileId);
 					detail.installPath = rawrbox::SteamWORKSHOP::getWorkshopModFolder(detail.m_nPublishedFileId);
 					details.push_back(detail);
 				}

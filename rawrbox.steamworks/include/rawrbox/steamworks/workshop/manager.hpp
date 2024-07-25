@@ -54,6 +54,7 @@ namespace rawrbox {
 	    ".map"};
 
 	struct WorkshopModConfig {
+		std::optional<std::string> id;
 		std::optional<std::string> type;
 
 		std::string title;
@@ -69,6 +70,7 @@ namespace rawrbox {
 	};
 
 	struct WorkshopMod : public SteamUGCDetails_t {
+		std::string modId;
 		std::unordered_map<std::string, std::string> keyVals;
 		std::filesystem::path installPath;
 	};
@@ -105,7 +107,7 @@ namespace rawrbox {
 		// UTILS -----
 		[[nodiscard]] static std::vector<PublishedFileId_t> getSubbedWorkshopMods();
 
-		[[nodiscard]] static std::string getWorkshopModFolder(PublishedFileId_t id);
+		[[nodiscard]] static std::filesystem::path getWorkshopModFolder(PublishedFileId_t id);
 		[[nodiscard]] static rawrbox::WorkshopStatus getWorkshopModState(PublishedFileId_t id);
 
 		[[nodiscard]] static const std::string& getKeyVal(PublishedFileId_t id, const std::string& key);

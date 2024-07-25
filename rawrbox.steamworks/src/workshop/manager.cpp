@@ -80,6 +80,7 @@ namespace rawrbox {
 
 	void SteamWORKSHOP::updateItem(PublishedFileId_t id, const rawrbox::WorkshopModConfig& config, const std::filesystem::path& uploadPath, const std::function<void(SubmitItemUpdateResult_t*)>& callback, bool isNewMod) {
 		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
+		if (!config.id.has_value()) throw _logger->error("Invalid mod id");
 
 		UGCUpdateHandle_t updateHandle = SteamUGC()->StartItemUpdate(STEAMWORKS_APPID, id);
 		if (updateHandle == k_UGCUpdateHandleInvalid) throw _logger->error("Failed to start item update");
@@ -93,9 +94,10 @@ namespace rawrbox {
 
 		std::string type = config.type.value_or("");
 		if (type.empty()) {
-			if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "WORKSHOP_TYPE", type.c_str())) throw _logger->error("Failed to set workshop workshop type");
+			if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "WORKSHOP_TYPE", type.c_str())) throw _logger->error("Failed to set workshop type");
 		}
 
+		if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "MOD_ID", config.id.value().c_str())) throw _logger->error("Failed to set workshop mod id");
 		if (!SteamUGC()->SetItemContent(updateHandle, uploadPath.generic_string().c_str())) throw _logger->error("Failed to set workshop item content");
 
 		if (config.preview.has_value()) {
@@ -187,7 +189,7 @@ namespace rawrbox {
 		return mods;
 	}
 
-	std::string SteamWORKSHOP::getWorkshopModFolder(PublishedFileId_t id) {
+	std::filesystem::path SteamWORKSHOP::getWorkshopModFolder(PublishedFileId_t id) {
 		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
 
 		uint64 size = 0;
@@ -285,6 +287,12 @@ namespace rawrbox {
 			throw _logger->error("Failed to read 'mod.json' file {{}}", magic_enum::enum_name(result.ec));
 		}
 
+		// Fill id
+		if (!config.id.has_value() || config.id.value().empty()) {
+			config.id = rootPath.filename().generic_string();
+		}
+		// ---------------
+
 		// Validate preview
 		if (config.preview.has_value()) {
 			auto previewPath = std::filesystem::absolute(rootPath / config.preview.value());
@@ -360,7 +368,7 @@ namespace rawrbox {
 
 		updateItem(
 		    id,
-		    config, tempFolder, [onComplete](SubmitItemUpdateResult_t* result) {
+		    config, rootPath, [onComplete](SubmitItemUpdateResult_t* result) {
 			    onComplete(result);
 		    },
 		    false);
