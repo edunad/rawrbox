@@ -361,7 +361,10 @@ namespace rawrbox {
 	bool SCRIPTING::loadMod(const std::string& id, const std::filesystem::path& modFolder) {
 		if (id.empty()) throw _logger->error("Mod ID cannot be empty");
 		if (!std::filesystem::exists(modFolder)) throw _logger->error("Failed to locate mod folder '{}'", modFolder.generic_string());
-		if (_mods.find(id) != _mods.end()) throw _logger->error("Mod '{}' already loaded", id);
+		if (_mods.find(id) != _mods.end()) {
+			_logger->warn("Mod {} already loaded! Mod name conflict?", id);
+			return false;
+		}
 
 		// LOAD METADATA ---
 		std::filesystem::path configPath = modFolder / "mod.json";
