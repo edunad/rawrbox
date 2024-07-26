@@ -1,6 +1,7 @@
 # 016-steamworks Sample
 
-### This sample demonstrates the integration of Steamworks into your game.
+> [!NOTE]
+> This sample demonstrates the integration of Steamworks into your game.
 
 > [!WARNING]
 > A Steamworks account and app ID are required.
