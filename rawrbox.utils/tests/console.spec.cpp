@@ -2,6 +2,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <memory>
+
 TEST_CASE("CONSOLE should behave as expected", "[rawrbox::CONSOLE]") {
 	std::unique_ptr<rawrbox::Console> console = std::make_unique<rawrbox::Console>();
 	bool OK = false;
