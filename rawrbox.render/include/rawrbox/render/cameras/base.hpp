@@ -9,6 +9,8 @@
 
 #include <Buffer.h>
 
+#include <memory>
+
 namespace rawrbox {
 	struct CameraStaticUniforms { // Uniforms that won't be updated that frequently
 		rawrbox::Matrix4x4 gProjection = {};
