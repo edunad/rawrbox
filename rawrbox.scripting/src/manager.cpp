@@ -191,10 +191,11 @@ namespace rawrbox {
 			    auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(state, "__mod_folder");
 
 			    auto fixedPath = LuaUtils::getContent(path, modFolder);
-			    rawrbox::LuaUtils::compileAndLoadFile(state, modID, fixedPath);
+			    if (!fixedPath.first.empty()) throw std::runtime_error("External mod lua loading not supported");
+			    rawrbox::LuaUtils::compileAndLoadFile(state, modID, fixedPath.second);
 
 			    // Register file for hot-reloading
-			    registerLoadedFile(modID, fixedPath);
+			    registerLoadedFile(modID, fixedPath.second);
 			    // ----
 		    });
 		// ---------
@@ -444,6 +445,13 @@ namespace rawrbox {
 	void SCRIPTING::setConsole(rawrbox::Console* console) { _console = console; }
 
 	// UTILS ----
+	rawrbox::Mod* SCRIPTING::getMod(const std::string& id) {
+		auto fnd = _mods.find(id);
+		if (fnd == _mods.end()) return nullptr;
+
+		return fnd->second.get();
+	}
+
 	const std::unordered_map<std::string, std::unique_ptr<Mod>>& SCRIPTING::getMods() { return _mods; }
 	std::vector<std::string> SCRIPTING::getModsIds() {
 		std::vector<std::string> modNames = {};

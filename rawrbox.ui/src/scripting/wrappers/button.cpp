@@ -32,8 +32,9 @@ namespace rawrbox {
 		    .addFunction("setTexturePath", [](rawrbox::UIButton& self, const std::string& path, lua_State* L) {
 			    auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(L, "__mod_folder");
 			    auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
+			    if (!fixedPath.first.empty()) throw std::runtime_error("External mod resources loading not supported");
 
-			    self.setTexture(fixedPath);
+			    self.setTexture(fixedPath.second);
 		    })
 
 		    .addFunction("setEnabled", &rawrbox::UIButton::setEnabled)

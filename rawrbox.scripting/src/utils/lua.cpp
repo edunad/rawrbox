@@ -226,41 +226,39 @@ namespace rawrbox {
 		return result;
 	}
 
-	// #/ == System content
-	// @/ == Root content
-	// @cats/ == `cats` mod
+	// #/ == Root assets
 	// normal_path == current mod
-	std::filesystem::path LuaUtils::getContent(const std::filesystem::path& path, const std::filesystem::path& modPath) {
-		if (path.empty()) return modPath; // Invalid path
+	// @cats/ == `cats` mod
+	std::pair<std::string, std::filesystem::path> LuaUtils::getContent(const std::filesystem::path& path, const std::filesystem::path& modPath) {
+		if (path.empty()) throw std::runtime_error("Invalid path"); // Invalid path
 
 		auto pth = path.generic_string();
-		if (pth.starts_with("#")) {
-			auto slashPos = pth.find('/'); // Find the first /
-			return pth.substr(slashPos + 1);
-		} // System path
-
-		if (pth.starts_with("mods/")) return modPath; // Already has the mod
 		pth = rawrbox::StrUtils::replace(pth, "\\", "/");
 		pth = rawrbox::StrUtils::replace(pth, "./", "");
 		pth = rawrbox::StrUtils::replace(pth, "../", "");
 
-		// assets/blabalba.png = my current mod
-		if (!modPath.empty() && pth.front() != '@') {
-			return modPath / pth; // Becomes mods/mymod/assets/blabalba.png
-		}
-
-		if (pth.front() == '@') {
+		// #/ == Root assets
+		if (pth.front() == '#') {
 			auto slashPos = pth.find('/'); // Find the first /
-			std::string cleanPath = pth.substr(slashPos + 1);
+			if (slashPos == std::string::npos) throw std::runtime_error("Invalid path");
 
-			// @/textures/blabalba.png = c++ assets
-			if (pth.rfind("@/", 0) == 0) { // C++
-				return std::filesystem::path("assets") / cleanPath;
-			}
-			// @otherMod/textures/blabalba.png = @othermod assets
-			return std::filesystem::path(fmt::format("{}/{}", pth.substr(1, slashPos - 1), cleanPath)).string();
+			return {"", std::filesystem::path("assets") / pth.substr(slashPos + 1)};
 		}
 
-		return pth;
+		// @cats/ == `cats` mod
+		if (pth.front() == '@') {
+			pth.erase(0, 1); // Remove @
+			std::string modID = pth.substr(0, pth.find('/'));
+			if (modID.empty()) throw std::runtime_error("Invalid mod ID");
+
+			return {modID, pth.substr(pth.find('/') + 1)};
+		}
+
+		// assets/blabalba.png = my current mod
+		if (!modPath.empty()) {
+			return {"", modPath / pth}; // Becomes mods/mymod/assets/blabalba.png
+		}
+
+		return {"", modPath};
 	}
 } // namespace rawrbox

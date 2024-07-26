@@ -47,7 +47,7 @@ namespace rawrbox {
 					}
 					break;
 				case WorkshopStatus::DOWNLOADING:
-				case WorkshopStatus::NONE:
+				case WorkshopStatus::UNKNOWN:
 				default:
 					break;
 			}
@@ -85,27 +85,47 @@ namespace rawrbox {
 		UGCUpdateHandle_t updateHandle = SteamUGC()->StartItemUpdate(STEAMWORKS_APPID, id);
 		if (updateHandle == k_UGCUpdateHandleInvalid) throw _logger->error("Failed to start item update");
 
+		// SETUP TITLE AND DESCRIPTION ----
 		if (isNewMod) {
 			auto description = config.description.value_or("Mod's description");
 
 			if (!SteamUGC()->SetItemTitle(updateHandle, config.title.c_str())) throw _logger->error("Failed to set workshop item title");
 			if (!SteamUGC()->SetItemDescription(updateHandle, description.c_str())) throw _logger->error("Failed to set workshop item description");
 		}
+		// ------
 
+		// SETUP KEY VALUES ----
 		std::string type = config.type.value_or("");
 		if (type.empty()) {
 			if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "WORKSHOP_TYPE", type.c_str())) throw _logger->error("Failed to set workshop type");
 		}
 
 		if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "MOD_ID", config.id.value().c_str())) throw _logger->error("Failed to set workshop mod id");
-		if (!SteamUGC()->SetItemContent(updateHandle, uploadPath.generic_string().c_str())) throw _logger->error("Failed to set workshop item content");
+		// ----------------------
 
+		// SETUP DEPENDENCIES ----
+		if (config.dependencies.has_value()) {
+			for (const auto& dep : config.dependencies.value()) {
+				PublishedFileId_t depId = std::strtoull(dep.c_str(), nullptr, 10);
+				if (depId == id) throw _logger->error("Cannot add self as a dependency");
+
+				if (SteamUGC()->AddDependency(id, depId) == 0) throw _logger->error("Failed to set workshop dependency {}", dep);
+			}
+		}
+		// ----------------
+
+		// SETUP CONTENT ----
+		if (!SteamUGC()->SetItemContent(updateHandle, uploadPath.generic_string().c_str())) throw _logger->error("Failed to set workshop item content");
+		// ------
+
+		// SETUP PREVIEW ----
 		if (config.preview.has_value()) {
 			std::string previewPath = std::filesystem::absolute(fmt::format("{}/{}", uploadPath.generic_string(), config.preview.value())).generic_string();
 			if (!SteamUGC()->SetItemPreview(updateHandle, previewPath.c_str())) throw _logger->error("Failed to set workshop item preview image");
 		}
+		// -------------
 
-		// Allow custom ---
+		// CUSTOM CONFIG ---
 		onModUpdating(updateHandle, config);
 		// ---------------------
 
@@ -190,7 +210,7 @@ namespace rawrbox {
 		uint64 size = 0;
 		uint32 updateTimestamp = 0;
 		std::array<char, 1024> buff = {};
-		SteamUGC()->GetItemInstallInfo(id, &size, buff.data(), buff.size(), &updateTimestamp);
+		SteamUGC()->GetItemInstallInfo(id, &size, buff.data(), static_cast<uint32_t>(buff.size()), &updateTimestamp);
 
 		return {buff.data()};
 	}
@@ -200,7 +220,15 @@ namespace rawrbox {
 		uint32 state = SteamUGC()->GetItemState(id);
 
 		if ((state & EItemState::k_EItemStateSubscribed) == 0U) {
-			return rawrbox::WorkshopStatus::NONE;
+			return rawrbox::WorkshopStatus::UNKNOWN; // Not subscribed
+		}
+
+		if ((state & (EItemState::k_EItemStateDownloadPending)) != 0U) {
+			return rawrbox::WorkshopStatus::NEEDS_UPDATE;
+		}
+
+		if ((state & EItemState::k_EItemStateDownloading) != 0U) {
+			return rawrbox::WorkshopStatus::DOWNLOADING;
 		}
 
 		if ((state & EItemState::k_EItemStateInstalled) != 0U) {
@@ -208,18 +236,10 @@ namespace rawrbox {
 				return rawrbox::WorkshopStatus::NEEDS_UPDATE;
 			}
 
-			if ((state & (EItemState::k_EItemStateDownloadPending)) != 0U) {
-				return rawrbox::WorkshopStatus::NEEDS_UPDATE;
-			}
-
-			if ((state & EItemState::k_EItemStateDownloading) != 0U) {
-				return rawrbox::WorkshopStatus::DOWNLOADING;
-			}
-
 			return rawrbox::WorkshopStatus::INSTALLED;
 		}
 
-		return rawrbox::WorkshopStatus::NONE;
+		return rawrbox::WorkshopStatus::UNKNOWN;
 	}
 
 	// -------------

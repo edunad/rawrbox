@@ -18,7 +18,10 @@ namespace rawrbox {
 				    auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(L, "__mod_folder");
 				    if (modFolder.empty()) throw std::runtime_error("Mod folder not set in Lua env");
 
-				    rawrbox::RESOURCES::preLoadFolder(rawrbox::LuaUtils::getContent(path, modFolder));
+				    auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
+				    if (!fixedPath.first.empty()) throw std::runtime_error("External mod resources loading not supported");
+
+				    rawrbox::RESOURCES::preLoadFolder(fixedPath.second);
 			    })
 			    .addFunction("preLoad", [](const std::string& path, std::optional<uint32_t> loadFlags, lua_State* L) {
 				    if (L == nullptr) throw std::runtime_error("Lua env not set");
@@ -26,7 +29,10 @@ namespace rawrbox {
 				    auto modFolder = rawrbox::LuaUtils::getLuaENVVar<std::string>(L, "__mod_folder");
 				    if (modFolder.empty()) throw std::runtime_error("Mod folder not set in Lua env");
 
-				    rawrbox::RESOURCES::preLoadFile(rawrbox::LuaUtils::getContent(path, modFolder), loadFlags.value_or(0));
+				    auto fixedPath = rawrbox::LuaUtils::getContent(path, modFolder);
+				    if (!fixedPath.first.empty()) throw std::runtime_error("External mod resources loading not supported");
+
+				    rawrbox::RESOURCES::preLoadFile(fixedPath.second, loadFlags.value_or(0));
 			    })
 			    .addFunction("getContent", [](const std::optional<std::string>& path, lua_State* L) {
 				    if (L == nullptr) throw std::runtime_error("Lua env not set");

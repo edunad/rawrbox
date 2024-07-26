@@ -85,6 +85,7 @@ namespace rawrbox {
 		static void setConsole(rawrbox::Console* console);
 
 		// UTILS ---
+		[[nodiscard]] static rawrbox::Mod* getMod(const std::string& id);
 		[[nodiscard]] static const std::unordered_map<std::string, std::unique_ptr<rawrbox::Mod>>& getMods();
 		[[nodiscard]] static std::vector<std::string> getModsIds();
 		[[nodiscard]] static bool hotReloadEnabled();
