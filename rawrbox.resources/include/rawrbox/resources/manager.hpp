@@ -194,20 +194,17 @@ namespace rawrbox {
 		static void startPreLoadQueueAsync(const std::function<void(std::string, uint32_t)>& startLoad = nullptr, const std::function<void(std::string, uint32_t)>& endLoad = nullptr, const std::function<void()>& onComplete = nullptr) {
 			_loadingPreloadFiles += getTotalPreload();
 
-			std::function<void()> complete = [onComplete]() {
-				_loadingPreloadFiles = std::max<size_t>(_loadingPreloadFiles - 1, 0);
-				if (_loadingPreloadFiles <= 0 && onComplete != nullptr) onComplete();
-			};
-
 			for (auto& loader : _loaders) {
 				for (const auto& file : loader->getPreload()) {
-					rawrbox::ASYNC::run([startLoad, &file, endLoad, &complete]() {
+					rawrbox::ASYNC::run([startLoad, &file, endLoad, onComplete]() {
 						if (startLoad != nullptr) startLoad(file.first.generic_string(), file.second);
 						loadFile(file.first, file.second);
 						if (endLoad != nullptr) endLoad(file.first.generic_string(), file.second);
 
 						_logger->info("Loaded '{}'", fmt::styled(file.first.generic_string(), fmt::fg(fmt::color::coral)));
-						complete();
+
+						_loadingPreloadFiles = std::max<size_t>(_loadingPreloadFiles - 1, 0);
+						if (_loadingPreloadFiles <= 0 && onComplete != nullptr) onComplete();
 					});
 				}
 			}

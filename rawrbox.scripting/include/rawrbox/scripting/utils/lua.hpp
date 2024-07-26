@@ -59,10 +59,9 @@ namespace rawrbox {
 			return tbl;
 		}
 
-		// #/ == System content
-		// @/ == Root content
-		// @cats/ == `cats` mod
+		// #/ == Root content
 		// normal_path == current mod
-		static std::filesystem::path getContent(const std::filesystem::path& path, const std::filesystem::path& modPath);
+		// @cats/ == `cats` mod
+		static std::pair<std::string, std::filesystem::path> getContent(const std::filesystem::path& path, const std::filesystem::path& modPath);
 	};
 } // namespace rawrbox

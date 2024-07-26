@@ -14,11 +14,10 @@
 namespace rawrbox {
 
 	enum class WorkshopStatus : uint32_t {
-		NONE = 0U,
+		UNKNOWN = 0U,
 		INSTALLED,
 		NEEDS_UPDATE,
-		DOWNLOADING,
-		INVALID
+		DOWNLOADING
 	};
 
 	static const std::vector<std::string> fileWhitelist = {
@@ -64,6 +63,7 @@ namespace rawrbox {
 		std::optional<std::string> description;
 		std::optional<std::string> preview;
 		std::optional<std::string> repo;
+		std::optional<std::vector<std::string>> dependencies;
 
 		std::optional<std::vector<std::string>> tags;
 		std::optional<std::vector<std::string>> ignore;
