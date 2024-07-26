@@ -445,6 +445,10 @@ namespace rawrbox {
 	void SCRIPTING::setConsole(rawrbox::Console* console) { _console = console; }
 
 	// UTILS ----
+	bool SCRIPTING::hasMod(const std::string& id) {
+		return _mods.contains(id);
+	}
+
 	rawrbox::Mod* SCRIPTING::getMod(const std::string& id) {
 		auto fnd = _mods.find(id);
 		if (fnd == _mods.end()) return nullptr;
