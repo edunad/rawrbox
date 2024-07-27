@@ -22,6 +22,7 @@ namespace rawrbox {
 			this->_preloadedFrames[frame.pos] = img;
 		}
 
+		this->_logger->info("Done pre-loading '{}'", fmt::styled(this->_filePath.generic_string(), fmt::fg(fmt::color::light_coral)));
 		this->reset();
 	}
 

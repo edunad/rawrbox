@@ -9,12 +9,15 @@
 namespace rawrbox {
 	TextureBase::~TextureBase() {
 		if (this->_failedToLoad) return; // Don't delete the fallback
-		if (this->_handle != nullptr) {
-			rawrbox::BindlessManager::unregisterTexture(*this);
-			this->_textureID = 0;
-		}
+
+		rawrbox::BindlessManager::unregisterTexture(*this);
+		this->_textureID = 0; // Back to MISSING
+
+		RAWRBOX_DESTROY(this->_tex);
+		this->_tex = nullptr;
 
 		RAWRBOX_DESTROY(this->_handle);
+		this->_handle = nullptr;
 	}
 
 	void TextureBase::loadFallback() {

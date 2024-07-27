@@ -284,13 +284,8 @@ namespace rawrbox {
 		if (depthId != 0) handler[depthId] = nullptr;
 		// --------------------
 
+		// No need to update signature, it will be overriden by another texture
 		_logger->info("Un-registering bindless {} texture slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
-
-		// Update signature ---
-		if (signatureBind != nullptr) {
-			signatureBind->GetVariableByName(isVertex ? Diligent::SHADER_TYPE_VERTEX : Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(handler.data(), 0, static_cast<uint32_t>(handler.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
-		}
-		// -----
 
 		// EVENT ----
 		onTextureUpdate();
