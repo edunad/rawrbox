@@ -121,6 +121,9 @@ namespace ui_test {
 			frame->setTitle("mewww");
 			frame->setSize({400, 200});
 			frame->setPos({600, 200});
+			frame->onClose += [frame]() {
+				frame->remove();
+			};
 
 			{
 				auto* label = frame->createChild<rawrbox::UILabel>();
@@ -233,6 +236,9 @@ namespace ui_test {
 			frame->setTitle("Virtual lists");
 			frame->setSize({400, 250});
 			frame->setPos({100, 450});
+			frame->onClose += [frame]() {
+				frame->remove();
+			};
 
 			// LIST
 			{
@@ -288,8 +294,9 @@ namespace ui_test {
 			frame->setTitle("Graphs");
 			frame->setSize({400, 200});
 			frame->setPos({100, 200});
-			frame->onClose += [this]() {
+			frame->onClose += [this, frame]() {
 				this->_graph = nullptr;
+				frame->remove();
 			};
 
 			this->_graph = frame->createChild<rawrbox::UIGraph>();
@@ -314,6 +321,9 @@ namespace ui_test {
 			frame->setTitle("Tabs");
 			frame->setSize({300, 250});
 			frame->setPos({600, 450});
+			frame->onClose += [frame]() {
+				frame->remove();
+			};
 
 			// TAB 1 ---
 			auto* group1 = frame->createChild<rawrbox::UIGroup>();
