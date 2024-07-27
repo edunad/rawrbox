@@ -110,6 +110,35 @@ namespace rawrbox {
 		vert.x = res.x;
 		vert.y = res.y;
 	}
+
+	rawrbox::Vector2f Stencil::alignPosition(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, rawrbox::Alignment alignX, rawrbox::Alignment alignY) const {
+		rawrbox::Vector2f startpos = pos;
+		if (alignX != rawrbox::Alignment::Left || alignY != rawrbox::Alignment::Left) {
+			switch (alignX) {
+				case rawrbox::Alignment::Left:
+					break;
+				case rawrbox::Alignment::Center:
+					startpos.x -= size.x / 2;
+					break;
+				case rawrbox::Alignment::Right:
+					startpos.x -= size.x;
+					break;
+			}
+
+			switch (alignY) {
+				case rawrbox::Alignment::Left:
+					break;
+				case rawrbox::Alignment::Center:
+					startpos.y -= size.y / 2;
+					break;
+				case rawrbox::Alignment::Right:
+					startpos.y -= size.y;
+					break;
+			}
+		}
+
+		return startpos.round();
+	}
 	// --------------------
 
 	// ------UTILS
@@ -280,7 +309,7 @@ namespace rawrbox {
 		// ----
 	}
 
-	void Stencil::drawText(const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, const rawrbox::Color& bgCol) {
+	void Stencil::drawText(const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, const rawrbox::Color& bgCol, rawrbox::Alignment alignX, rawrbox::Alignment alignY) {
 		if (col.invisible() || text.empty()) return;
 		uint32_t textureID = rawrbox::WHITE_TEXTURE->getTextureID();
 
@@ -288,16 +317,18 @@ namespace rawrbox {
 		auto* textCh = const_cast<char*>(text.c_str());
 		// NOLINTEND(cppcoreguidelines-pro-type-const-cast)
 
+		auto fontWidth = static_cast<float>(stb_easy_font_width(textCh));
+		auto fontHeight = static_cast<float>(stb_easy_font_height(textCh));
+
 		// Draw background ---
 		if (!bgCol.invisible()) {
-			// Calculate the background size based on the text size
-			int bgWidth = stb_easy_font_width(textCh);
-			int bgHeight = stb_easy_font_height(textCh);
-
-			// Draw the background rectangle
-			this->drawBox({pos.x - 2.F, pos.y - 2.F}, {static_cast<float>(bgWidth) + 3.F, static_cast<float>(bgHeight) - 1.F}, bgCol);
+			this->drawBox({pos.x - 2.F, pos.y - 2.F}, {fontWidth + 3.F, fontHeight - 1.F}, bgCol);
 		}
 		// ---------------
+
+		// Setup position ---
+		rawrbox::Vector2f startpos = this->alignPosition(pos, {fontWidth, fontHeight}, alignX, alignY);
+		// ------------------
 
 		// Setup --------
 		this->setupDrawCall(this->_2dPipeline);
@@ -314,10 +345,10 @@ namespace rawrbox {
 
 		for (int quad = 0, stride = 0; quad < num_quads; ++quad, stride += 16) {
 			// Push vertices for the current quad
-			this->pushVertice(textureID, {data[(0 * 4) + stride] + pos.x, data[(0 * 4) + 1 + stride] + pos.y}, {}, col);
-			this->pushVertice(textureID, {data[(1 * 4) + stride] + pos.x, data[(1 * 4) + 1 + stride] + pos.y}, {}, col);
-			this->pushVertice(textureID, {data[(2 * 4) + stride] + pos.x, data[(2 * 4) + 1 + stride] + pos.y}, {}, col);
-			this->pushVertice(textureID, {data[(3 * 4) + stride] + pos.x, data[(3 * 4) + 1 + stride] + pos.y}, {}, col);
+			this->pushVertice(textureID, rawrbox::Vector2f{data[(0 * 4) + stride], data[(0 * 4) + 1 + stride]} + startpos, {}, col);
+			this->pushVertice(textureID, rawrbox::Vector2f{data[(1 * 4) + stride], data[(1 * 4) + 1 + stride]} + startpos, {}, col);
+			this->pushVertice(textureID, rawrbox::Vector2f{data[(2 * 4) + stride], data[(2 * 4) + 1 + stride]} + startpos, {}, col);
+			this->pushVertice(textureID, rawrbox::Vector2f{data[(3 * 4) + stride], data[(3 * 4) + 1 + stride]} + startpos, {}, col);
 
 			// Generate indices for the current quad
 			uint32_t base_index = quad * 4; //  4 vertices per quad
@@ -339,35 +370,8 @@ namespace rawrbox {
 	void Stencil::drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col, rawrbox::Alignment alignX, rawrbox::Alignment alignY) {
 		if (col.invisible() || text.empty()) return;
 
-		rawrbox::Vector2f startpos = pos;
 		rawrbox::Vector2f tsize = font.getStringSize(text);
-
-		if (alignX != Alignment::Left || alignY != Alignment::Left) {
-			switch (alignX) {
-				case Alignment::Left:
-					break;
-				case Alignment::Center:
-					startpos.x -= tsize.x / 2;
-					break;
-				case Alignment::Right:
-					startpos.x -= tsize.x;
-					break;
-			}
-
-			switch (alignY) {
-				case Alignment::Left:
-					break;
-				case Alignment::Center:
-					startpos.y -= tsize.y / 2;
-					break;
-				case Alignment::Right:
-					startpos.y -= tsize.y;
-					break;
-			}
-		}
-
-		startpos.x = rawrbox::MathUtils::round(startpos.x, 0);
-		startpos.y = rawrbox::MathUtils::round(startpos.y, 0);
+		rawrbox::Vector2f startpos = this->alignPosition(pos, tsize, alignX, alignY);
 
 		font.render(text, startpos, false, [this, &font, col](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
 			uint32_t textureID = font.getPackTexture(glyph)->getTextureID();

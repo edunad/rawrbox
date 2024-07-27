@@ -70,6 +70,11 @@ namespace rawrbox {
 		popupFrame->setPos(pos);
 		popupFrame->setClosable(!loading);
 		popupFrame->bringToFront();
+		popupFrame->onClose += [id, callback, popupFrame]() {
+			if (callback != nullptr) callback(false);
+			destroy(id);
+			popupFrame->remove();
+		};
 
 		if (loading) {
 			auto* loadFrame = popupFrame->createChild<rawrbox::UILoading>();
@@ -129,11 +134,6 @@ namespace rawrbox {
 					if (destroy(id)) popupFrame->remove();
 				};
 			}
-
-			popupFrame->onClose += [id, callback]() {
-				if (callback != nullptr) callback(false);
-				destroy(id);
-			};
 		} else {
 			messageLabel->setPos((frameSize - messageLabel->getSize()) / 2);
 		}

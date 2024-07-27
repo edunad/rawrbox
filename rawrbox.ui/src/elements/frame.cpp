@@ -27,7 +27,6 @@ namespace rawrbox {
 
 		this->_closeButton->onClick += [this]() {
 			this->onClose();
-			this->remove();
 		};
 	}
 

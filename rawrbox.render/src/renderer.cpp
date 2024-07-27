@@ -107,13 +107,13 @@ namespace rawrbox {
 
 						EngineCI.GPUDescriptorHeapDynamicSize[0] = heap.first;
 						EngineCI.GPUDescriptorHeapSize[0] = heap.second;
-					} /*else {
+					} else {
 						EngineCI.GPUDescriptorHeapDynamicSize[0] = 32768;
 						EngineCI.GPUDescriptorHeapSize[1] = 128;
 						EngineCI.GPUDescriptorHeapDynamicSize[1] = 2048 - 128;
 						EngineCI.DynamicDescriptorAllocationChunkSize[0] = 32;
 						EngineCI.DynamicDescriptorAllocationChunkSize[1] = 8;
-					}*/
+					}
 
 					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
 					pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc(false), this->_window, &this->_swapChain);
@@ -145,9 +145,10 @@ namespace rawrbox {
 
 						EngineCI.DynamicHeapSize = heap.first;
 						EngineCI.DynamicHeapPageSize = heap.second;
-					} /* else {
-						 EngineCI.DynamicHeapSize = 64 << 20;
-					 }*/
+					} else {
+						EngineCI.DynamicHeapSize = 128 << 20;
+						EngineCI.DynamicHeapPageSize = 2 << 20;
+					}
 
 					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_device, &this->_context);
 					pFactoryVk->CreateSwapChainVk(this->_device, this->_context, SCDesc, this->_window, &this->_swapChain);
@@ -278,6 +279,7 @@ namespace rawrbox {
 			auto checker = rawrbox::TextureUtils::generateCheckboard({256U, 256U}, rawrbox::Color::RGBHex(0x161618), rawrbox::Color::RGBHex(0x2a2a2d), 8U);
 
 			rawrbox::CHECKER_TEXTURE = std::make_shared<rawrbox::TextureImage>(rawrbox::Vector2u(256U, 256U), checker, 4);
+			rawrbox::CHECKER_TEXTURE->setName("CHECKER_TEXTURE");
 			rawrbox::CHECKER_TEXTURE->upload();
 		}
 

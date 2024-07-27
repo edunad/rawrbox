@@ -24,6 +24,7 @@ namespace rawrbox {
 		}
 
 		this->_texture->setType(type);
+		this->_texture->setName(this->filePath.filename().generic_string());
 		return true;
 	}
 
