@@ -197,6 +197,8 @@ namespace rawrbox {
 
 		void applyRotation(rawrbox::Vector2f& vert) const;
 		void applyScale(rawrbox::Vector2f& vert);
+
+		[[nodiscard]] rawrbox::Vector2f alignPosition(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, rawrbox::Alignment alignX, rawrbox::Alignment alignY) const;
 		// --------------------
 
 		// ------ RENDERING
@@ -227,7 +229,7 @@ namespace rawrbox {
 		virtual void drawTexture(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::TextureBase& tex, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Vector2f& uvStart = {0, 0}, const rawrbox::Vector2f& uvEnd = {1, 1}, int slice = -1);
 		virtual void drawCircle(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& col = rawrbox::Colors::White(), size_t roundness = 32, float angleStart = 0.F, float angleEnd = 360.F);
 		virtual void drawLine(const rawrbox::Vector2& from, const rawrbox::Vector2& to, const rawrbox::Color& col = rawrbox::Colors::White());
-		virtual void drawText(const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Color& bgCol = rawrbox::Colors::Transparent());
+		virtual void drawText(const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Color& bgCol = rawrbox::Colors::Transparent(), rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
 		virtual void drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White(), rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
 		virtual void drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& color = rawrbox::Colors::White());
 		//  --------------------
