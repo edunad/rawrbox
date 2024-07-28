@@ -85,6 +85,22 @@ if(NOT VPXSDK_FOUND AND NOT TARGET VPX::VPX)
     set_target_properties(VPX::VPX PROPERTIES IMPORTED_NO_SONAME TRUE IMPORTED_IMPLIB "${VPX_LIBRARY}" IMPORTED_LOCATION "${VPX_LIBRARY}"
                                               INTERFACE_INCLUDE_DIRECTORIES "${VPX_LIBRARY_INCLUDE_DIR}")
 
+    if(WIN32)
+        add_custom_target(
+            copy_dll_vpx ALL COMMAND ${CMAKE_COMMAND} -E copy ${VPX_BINARY}
+                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+            COMMENT "Copying VPX DLL into binary directory")
+    elseif(APPLE)
+        message(FATAL "VPX-CMake: Apple not supported")
+    else()
+        add_custom_target(
+            copy_dll_vpx ALL COMMAND ${CMAKE_COMMAND} -E copy ${VPX_LIBRARY}
+                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+            COMMENT "Copying VPX SO into binary directory")
+    endif()
+
+    add_dependencies(VPX::VPX copy_dll_vpx)
+
     if(VPX_STATIC_MULTITHREADED)
         if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
             set_target_properties(VPX::VPX PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
