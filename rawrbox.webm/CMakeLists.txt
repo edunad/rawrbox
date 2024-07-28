@@ -26,7 +26,7 @@ if(libwebm_ADDED)
     set_lib_runtime_mt(mkvparser)
 
     # Add codec
-    set(VPX_VERSION v1.14.0)
+    set(VPX_VERSION v1.14.1)
     set(VPX_MSC_VERSION 17)
     if(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME)
         set(VPX_STATIC_MULTITHREADED ON)

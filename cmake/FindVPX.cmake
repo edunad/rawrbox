@@ -44,8 +44,7 @@ if(NOT VPXSDK_FOUND AND NOT TARGET VPX::VPX)
 
     if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "4") # 32 bits
         if(APPLE)
-            set(VPX_LIB_PATH "UNKNOWN")
-            set(VPX_BINARY "UNKNOWN")
+            message(FATAL_ERROR "Apple VPX not supported")
         elseif(WIN32)
             set(VPX_LIB_PATH "${VPX_DIR}/lib/x86")
             set(VPX_BINARY "${VPX_DIR}/bin/x86/vpx.dll")
@@ -59,8 +58,7 @@ if(NOT VPXSDK_FOUND AND NOT TARGET VPX::VPX)
         message(STATUS "VPX-CMake: 32 bit")
     else()
         if(APPLE)
-            set(VPX_LIB_PATH "UNKNOWN")
-            set(VPX_BINARY "UNKNOWN")
+            message(FATAL_ERROR "Apple VPX not supported")
         elseif(WIN32)
             set(VPX_LIB_PATH "${VPX_DIR}/lib/x64")
             set(VPX_BINARY "${VPX_DIR}/bin/x64/vpx.dll")
@@ -91,11 +89,16 @@ if(NOT VPXSDK_FOUND AND NOT TARGET VPX::VPX)
                                     ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
             COMMENT "Copying VPX DLL into binary directory")
     elseif(APPLE)
-        message(FATAL "VPX-CMake: Apple not supported")
+        message(FATAL_ERROR "Apple VPX not supported")
     else()
+        # Distribution version, e.g., ubuntu24.04
+        # cmake_host_system_information(RESULT DISTRO_VERSION_ID QUERY DISTRIB_VERSION_ID)
+        # cmake_host_system_information(RESULT DISTRO_ID QUERY DISTRIB_ID)
+        # set(DEBIAN_VERSION "${DISTRO_ID}${DISTRO_VERSION_ID}")
+
         add_custom_target(
             copy_dll_vpx ALL COMMAND ${CMAKE_COMMAND} -E copy ${VPX_LIBRARY}
-                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libvpx.so.7 # libvpx.so.7 is the latest version on ubunutu-22.04
             COMMENT "Copying VPX SO into binary directory")
     endif()
 
