@@ -17,6 +17,7 @@ namespace rawrbox {
 	std::unordered_map<Diligent::SHADER_TYPE, Diligent::ShaderMacroHelper> PipelineUtils::_globalMacros = {};
 
 	Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> PipelineUtils::_stateCache;
+	std::filesystem::path PipelineUtils::_stateCachePath;
 
 	std::unique_ptr<rawrbox::Logger> PipelineUtils::_logger = std::make_unique<rawrbox::Logger>("RawrBox-Pipeline");
 	// -------------
@@ -47,10 +48,49 @@ namespace rawrbox {
 		Diligent::CreateRenderStateCache(CacheCI, &_stateCache);
 		// -------------------------
 
+		// Load cache -----
+		const std::filesystem::path cacheRoot = ".shader";
+		if (!std::filesystem::exists(cacheRoot)) {
+			std::filesystem::create_directory(cacheRoot);
+		}
+
+#ifdef _DEBUG
+		_stateCachePath = cacheRoot / fmt::format("{}_d.bin", magic_enum::enum_name(rawrbox::RENDERER->getRenderType()));
+#else
+		_stateCachePath = cacheRoot / fmt::format("{}_r.bin", magic_enum::enum_name(rawrbox::RENDERER->getRenderType()));
+#endif
+
+		const auto pString = _stateCachePath.generic_string();
+		if (std::filesystem::exists(_stateCachePath)) {
+			Diligent::FileWrapper CacheDataFile(pString.c_str());
+			auto pCacheData = Diligent::DataBlobImpl::Create();
+
+			if (CacheDataFile->Read(pCacheData)) {
+				_logger->info("Loaded pipeline cache from '{}'", pString);
+				_stateCache->Load(pCacheData);
+			}
+		}
+		// ------------------
+
 		initialized = true;
 	}
 
 	void PipelineUtils::shutdown() {
+		// Save cache -----
+		Diligent::RefCntAutoPtr<Diligent::IDataBlob> pCacheData;
+		if (_stateCache->WriteToBlob(0, &pCacheData)) {
+			if (pCacheData != nullptr) {
+				const auto pString = _stateCachePath.generic_string();
+				Diligent::FileWrapper CacheDataFile{pString.c_str(), Diligent::EFileAccessMode::Overwrite};
+				if (CacheDataFile->Write(pCacheData->GetConstDataPtr(), pCacheData->GetSize())) {
+					_logger->info("Saved pipeline cache to '{}'", pString);
+				} else {
+					_logger->error("Failed to save pipeline cache to '{}'", pString);
+				}
+			}
+		}
+		// ------
+
 		RAWRBOX_DESTROY(_stateCache);
 
 		_pipelines.clear();
@@ -77,12 +117,10 @@ namespace rawrbox {
 		return _samplers[id];
 	}
 
-	// TODO: ADD CACHE https://github.com/DiligentGraphics/DiligentCore/blob/e94b36978ccf8dd6e48c759318ef1b887496a7c5/Graphics/GraphicsTools/interface/BytecodeCache.h
 	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type, const Diligent::ShaderMacroHelper& macros) {
 		if (name.empty()) return nullptr;
 
 		Diligent::ShaderMacroHelper helper = _globalMacros[type] + macros;
-
 		Diligent::ShaderMacroArray a = helper; // TODO: FIX ME
 		std::string id = fmt::format("{}-{}", name, a.Count);
 		auto fnd = _shaders.find(id);
@@ -103,23 +141,22 @@ namespace rawrbox {
 		ShaderCI.Desc.ShaderType = type;
 		ShaderCI.Desc.UseCombinedTextureSamplers = false;
 		ShaderCI.EntryPoint = "main";
-		ShaderCI.Desc.Name = shaderName.c_str();
 		ShaderCI.FilePath = name.c_str();
+		ShaderCI.Desc.Name = shaderName.c_str();
 		ShaderCI.Macros = helper;
 
 		Diligent::RefCntAutoPtr<Diligent::IShader> shader;
-		Diligent::RefCntAutoPtr<Diligent::IDataBlob> output;
-
-		rawrbox::RENDERER->device()->CreateShader(ShaderCI, &shader, &output);
+		_stateCache->CreateShader(ShaderCI, &shader);
 
 		_logger->setAutoNewLine(false);
 		_logger->info("Shader '{}'", fmt::styled(name, fmt::fg(fmt::color::coral)));
 		_logger->setAutoNewLine(true);
 
-		// auto compilerOutput = output == nullptr ? "" : std::string(static_cast<const char*>(output->GetConstDataPtr()), output->GetSize());
-		// fmt::print("\n{}\n", compilerOutput);
-
-		fmt::print("{}\n", shader != nullptr ? " [✓ OK]" : " [✖ FAILED]");
+		if (shader != nullptr) {
+			fmt::print("{}\n", fmt::styled(" [✓ OK]", fmt::fg(fmt::color::green_yellow)));
+		} else {
+			fmt::print("{}\n", fmt::styled(" [✖ FAILED]", fmt::fg(fmt::color::red)));
+		}
 
 		if (shader == nullptr) throw _logger->error("Failed to compile shader '{}'", name);
 		_shaders[id] = std::move(shader);
@@ -169,7 +206,7 @@ namespace rawrbox {
 
 		PSOCreateInfo.pCS = rawrbox::PipelineUtils::compileShader(settings.pCS, Diligent::SHADER_TYPE_COMPUTE, settings.macros);
 
-		rawrbox::RENDERER->device()->CreateComputePipelineState(PSOCreateInfo, &pipe);
+		_stateCache->CreateComputePipelineState(PSOCreateInfo, &pipe);
 		if (pipe == nullptr) throw _logger->error("Failed to create pipeline '{}'", name);
 
 		if (settings.signatures.empty()) {
@@ -272,7 +309,7 @@ namespace rawrbox {
 		}
 
 		// ---------------------
-		rawrbox::RENDERER->device()->CreateGraphicsPipelineState(info, &pipe);
+		_stateCache->CreateGraphicsPipelineState(info, &pipe);
 		if (pipe == nullptr) throw _logger->error("Failed to create pipeline '{}'", name);
 
 		if (settings.signatures.empty()) {

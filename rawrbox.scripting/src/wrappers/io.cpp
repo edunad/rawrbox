@@ -8,7 +8,7 @@
 
 namespace rawrbox {
 	std::pair<std::string, std::string> IOWrapper::load(const std::string& path) {
-		std::filesystem::path dataDir = std::filesystem::absolute("./data");
+		std::filesystem::path dataDir = std::filesystem::absolute("./.data");
 		std::filesystem::path filePath = dataDir / path;
 
 		// Check if the resolved filePath is still within the data directory
@@ -28,7 +28,7 @@ namespace rawrbox {
 	}
 
 	std::string IOWrapper::save(const std::string& path, const std::string& data) {
-		std::filesystem::path dataDir = std::filesystem::absolute("./data");
+		std::filesystem::path dataDir = std::filesystem::absolute("./.data");
 		std::filesystem::path filePath = dataDir / path;
 
 		// Check if the resolved filePath is still within the data directory

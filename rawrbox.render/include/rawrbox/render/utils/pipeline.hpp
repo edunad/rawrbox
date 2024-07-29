@@ -13,6 +13,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <filesystem>
 
 namespace rawrbox {
 	struct PipeUniforms {
@@ -81,6 +82,7 @@ namespace rawrbox {
 	};
 
 	class PipelineUtils {
+	protected:
 		static std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IPipelineState>> _pipelines;
 		static std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding>> _binds;
 		static std::unordered_map<std::string, Diligent::RefCntAutoPtr<Diligent::IShader>> _shaders;
@@ -88,6 +90,8 @@ namespace rawrbox {
 		static std::unordered_map<Diligent::SHADER_TYPE, Diligent::ShaderMacroHelper> _globalMacros;
 
 		static Diligent::RefCntAutoPtr<Diligent::IRenderStateCache> _stateCache;
+
+		static std::filesystem::path _stateCachePath;
 
 		static std::unique_ptr<rawrbox::Logger> _logger;
 
