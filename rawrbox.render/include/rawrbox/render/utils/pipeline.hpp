@@ -13,6 +13,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <filesystem>
 
 namespace rawrbox {
 	struct PipeUniforms {
