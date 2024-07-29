@@ -12,12 +12,13 @@ namespace rawrbox {
 
 	std::vector<rawrbox::TextureBase*> BindlessManager::_updateTextures = {};
 
+	bool BindlessManager::_updatePixelSignature = false;
+	bool BindlessManager::_updateVertexSignature = false;
+
 	std::unique_ptr<rawrbox::Logger> BindlessManager::_logger = std::make_unique<rawrbox::Logger>("RawrBox-BindlessManager");
 	// --------------
 
 	// PUBLIC -------
-	rawrbox::Event<> BindlessManager::onTextureUpdate;
-
 	Diligent::RefCntAutoPtr<Diligent::IPipelineResourceSignature> BindlessManager::signature;
 	Diligent::RefCntAutoPtr<Diligent::IShaderResourceBinding> BindlessManager::signatureBind;
 
@@ -95,6 +96,9 @@ namespace rawrbox {
 		_textureHandles = {};
 		_vertexTextureHandles = {};
 		_updateTextures = {};
+
+		_updateVertexSignature = false;
+		_updatePixelSignature = false;
 
 		RAWRBOX_DESTROY(signature);
 		RAWRBOX_DESTROY(signatureBind);
@@ -208,7 +212,7 @@ namespace rawrbox {
 	// --------------------------
 
 	void BindlessManager::update() {
-		if (signature == nullptr) return;
+		if (signature == nullptr || signatureBind == nullptr) return;
 
 		// UPDATE TEXTURES ---
 		if (!_updateTextures.empty()) {
@@ -222,6 +226,18 @@ namespace rawrbox {
 				texture->update();
 				++it;
 			}
+		}
+		// ---------------------
+
+		// UPDATE SHADER BIND ---
+		if (_updateVertexSignature) {
+			_updateVertexSignature = false;
+			signatureBind->GetVariableByName(Diligent::SHADER_TYPE_VERTEX, "g_Textures")->SetArray(_vertexTextureHandles.data(), 0, static_cast<uint32_t>(_vertexTextureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+		}
+
+		if (_updatePixelSignature) {
+			_updatePixelSignature = false;
+			signatureBind->GetVariableByName(Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(_textureHandles.data(), 0, static_cast<uint32_t>(_textureHandles.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
 		}
 		// ---------------------
 	}
@@ -252,27 +268,24 @@ namespace rawrbox {
 		auto* pTextureSRV = texture.getHandle(); // Get shader resource view from the texture
 		if (pTextureSRV == nullptr) throw _logger->error("Failed to register texture '{}'! Texture view is null, not uploaded?", texture.getName());
 
-		auto id = internalRegister(pTextureSRV, texture.getType());
-		_logger->info("Registering bindless {} texture '{}' on slot '{}'", texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX ? "vertex" : "pixel", fmt::styled(texture.getName(), fmt::fg(fmt::color::violet)), fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
+		const bool isVertex = texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX;
+		const auto id = internalRegister(pTextureSRV, texture.getType());
+		_logger->info("Registering bindless {} texture '{}' on slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(texture.getName(), fmt::fg(fmt::color::violet)), fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
 
-		// ----
+		// Register for updates
 		registerUpdateTexture(texture);
 		texture.setTextureID(id);
 		// ------------
-
-		// EVENT ----
-		onTextureUpdate();
-		// -----
 	}
 
 	void BindlessManager::unregisterTexture(rawrbox::TextureBase& texture) {
 		if (signature == nullptr) return;
 
-		bool isVertex = texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX;
+		const bool isVertex = texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX;
 		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;
 
-		auto id = texture.getTextureID();
-		auto depthId = texture.getDepthTextureID();
+		const auto id = texture.getTextureID();
+		const auto depthId = texture.getDepthTextureID();
 
 		if (id >= handler.size()) throw _logger->error("Index '{}' not found!", id);
 		if (depthId >= handler.size()) throw _logger->error("Depth index '{}' not found!", id);
@@ -286,10 +299,6 @@ namespace rawrbox {
 
 		// No need to update signature, it will be overriden by another texture
 		_logger->info("Un-registering bindless {} texture slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
-
-		// EVENT ----
-		onTextureUpdate();
-		// -----
 	}
 
 	void BindlessManager::registerUpdateTexture(rawrbox::TextureBase& texture) {
@@ -332,11 +341,13 @@ namespace rawrbox {
 			handler[id] = view;
 		}
 
-		// Update signature ---
-		if (signatureBind != nullptr) {
-			signatureBind->GetVariableByName(isVertex ? Diligent::SHADER_TYPE_VERTEX : Diligent::SHADER_TYPE_PIXEL, "g_Textures")->SetArray(handler.data(), 0, static_cast<uint32_t>(handler.size()), Diligent::SET_SHADER_RESOURCE_FLAG_ALLOW_OVERWRITE);
+		// Trigger bind update ----
+		if (isVertex) {
+			_updateVertexSignature = true;
+		} else {
+			_updatePixelSignature = true;
 		}
-		// -----
+		// ------------
 
 		return id;
 	}

@@ -72,7 +72,7 @@ namespace rawrbox {
 		this->_data.frames.emplace_back(frame);
 	}
 
-	TextureImage::TextureImage(const rawrbox::Vector2u& size, const std::vector<uint8_t>& buffer, uint8_t channels) : TextureImage(size, buffer.data(), channels) {}
+	TextureImage::TextureImage(const rawrbox::Vector2u& size, const std::vector<uint8_t>& buffer, uint8_t channels) : rawrbox::TextureImage(size, buffer.data(), channels) {}
 	TextureImage::TextureImage(const rawrbox::Vector2u& size, uint8_t channels) {
 		this->_data.size = size;
 		this->_data.channels = channels;
