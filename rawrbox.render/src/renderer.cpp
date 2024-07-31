@@ -732,7 +732,7 @@ namespace rawrbox {
 
 		auto* tex = this->_render->getTexture(1); // GPU pick texture
 		this->_GPUBlit->copy(tex, &MapRegion, [this, callback]() {
-			this->_GPUBlit->blit(nullptr, [this, callback](const uint8_t* pixels, const uint64_t stride) {
+			this->_GPUBlit->blit(nullptr, [callback](const uint8_t* pixels, const uint64_t stride) {
 				uint32_t max = 0;
 				uint32_t id = 0;
 				std::unordered_map<uint32_t, uint32_t> ids = {};
