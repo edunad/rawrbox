@@ -32,7 +32,7 @@ namespace rawrbox {
 		    .addFunction("setTextShadowColor", &rawrbox::UIGraph::setTextShadowColor)
 		    .addFunction("getTextShadowColor", &rawrbox::UIGraph::getTextShadowColor)
 
-		    .addFunction("setFontPTR", [](rawrbox::UIGraph& self, rawrbox::Font* fnt) {
+		    .addFunction("setFont", [](rawrbox::UIGraph& self, rawrbox::Font* fnt) {
 			    self.setFont(fnt);
 		    })
 		    .addFunction("setFontPath", [](rawrbox::UIGraph& self, const std::string& path, std::optional<uint16_t> size, lua_State* L) {

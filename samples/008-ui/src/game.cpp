@@ -8,6 +8,7 @@
 #include <rawrbox/resources/loaders/json.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/ui/elements/button.hpp>
+#include <rawrbox/ui/elements/dropdown.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
 #include <rawrbox/ui/elements/group.hpp>
 #include <rawrbox/ui/elements/input.hpp>
@@ -256,8 +257,8 @@ namespace ui_test {
 					stencil.drawText(*rawrbox::DEBUG_FONT_REGULAR, msg, {0, 0});
 				};
 
-				vlist->getItemSize = [](size_t /*indx*/) {
-					return rawrbox::Vector2i(400, 12);
+				vlist->getItemSize = [](size_t /*indx*/) -> rawrbox::Vector2i {
+					return {400, 12};
 				};
 
 				for (size_t i = 0; i < 64; i++)
@@ -280,8 +281,8 @@ namespace ui_test {
 					stencil.drawText(*rawrbox::DEBUG_FONT_REGULAR, msg, {0, 0});
 				};
 
-				vlist->getItemSize = [](size_t /*indx*/) {
-					return rawrbox::Vector2i(24, 24);
+				vlist->getItemSize = [](size_t /*indx*/) -> rawrbox::Vector2i {
+					return {24, 24};
 				};
 
 				for (size_t i = 0; i < 256; i++)
@@ -375,6 +376,7 @@ namespace ui_test {
 			button5->onClick += []() {
 				rawrbox::POPUP::create("test-5", "Error", "This is a popup error message", rawrbox::PopupType::ERR);
 			};
+
 			// --------
 
 			// TAB 2 ---
@@ -408,6 +410,27 @@ namespace ui_test {
 			tab->setSize({300, 250});
 			tab->setActive(0);
 			tab->setEnabled(2, false);
+		}
+
+		{
+			auto* frame = this->_ROOT_UI->createChild<rawrbox::UIFrame>();
+			frame->setTitle("Dropdown");
+			frame->setSize({300, 250});
+			frame->setPos({950, 450});
+			frame->onClose += [frame]() {
+				frame->remove();
+			};
+
+			// TODO: FIX RENDERING, TEMP FIX MAKE THE LISTS BEING ADDED REVERSE ORDER
+			auto* dropdown2 = frame->createChild<rawrbox::UIDropdown>(std::vector<std::string>{"Longggg option isidfjs sdfssdfsd", "dfgdfgdfg gfhgfh isidfjs sdfssdfsd"});
+			dropdown2->setSize({200, 24});
+			dropdown2->setPos({10, 50});
+			dropdown2->setActive(0);
+
+			auto* dropdown = frame->createChild<rawrbox::UIDropdown>(std::vector<std::string>{"Option 1", "Option 2", "Option 3", "Option 4"});
+			dropdown->setSize({200, 24});
+			dropdown->setPos({10, 10});
+			dropdown->setActive(0);
 		}
 		// ---
 

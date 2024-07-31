@@ -1,5 +1,6 @@
 #include <rawrbox/ui/container.hpp>
 #include <rawrbox/ui/elements/button.hpp>
+#include <rawrbox/ui/elements/dropdown.hpp>
 #include <rawrbox/ui/elements/frame.hpp>
 #include <rawrbox/ui/elements/graph.hpp>
 #include <rawrbox/ui/elements/group.hpp>
@@ -102,6 +103,13 @@ namespace rawrbox {
 			    }
 
 			    return root->createChild<rawrbox::UILoading>();
+		    })
+		    .addFunction("createDropdown", [root](std::optional<rawrbox::UIContainer*> parent, const std::optional<std::vector<std::string>>& options) {
+			    if (parent.has_value()) {
+				    return parent.value()->createChild<rawrbox::UIDropdown>(options.value_or(std::vector<std::string>{}));
+			    }
+
+			    return root->createChild<rawrbox::UIDropdown>(options.value_or(std::vector<std::string>{}));
 		    })
 		    .endNamespace();
 	}

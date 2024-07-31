@@ -111,9 +111,13 @@ namespace rawrbox {
 
 		this->_pressingMouseButton++;
 
-		// Clicked outside, reset focus ---
+		// Check new focus target ----
 		rawrbox::Vector2i offsetOut = {};
 		auto* target = this->findElement(location, offsetOut);
+		if (target == this->focusedElement) return;
+		// ----------
+
+		// Clicked outside, reset focus ---
 		if (target == nullptr) {
 			this->focusedElement = nullptr;
 			this->onFocusChange(nullptr);

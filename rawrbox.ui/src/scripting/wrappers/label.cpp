@@ -17,7 +17,7 @@ namespace rawrbox {
 		    .addFunction("setText", &rawrbox::UILabel::setText)
 		    .addFunction("getText", &rawrbox::UILabel::getText)
 
-		    .addFunction("setFontPTR", [](rawrbox::UILabel& self, rawrbox::Font* fnt) {
+		    .addFunction("setFont", [](rawrbox::UILabel& self, rawrbox::Font* fnt) {
 			    self.setFont(fnt);
 		    })
 		    .addFunction("setFontPath", [](rawrbox::UILabel& self, const std::string& path, lua_State* L) {

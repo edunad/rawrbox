@@ -74,6 +74,11 @@ namespace rawrbox {
 			this->_items.emplace_back(std::move(item));
 		};
 
+		void removeItem(size_t index) {
+			if (index >= this->_items.size()) return;
+			this->_items.erase(this->_items.begin() + index);
+		};
+
 		void setItems(const std::vector<T>& items) {
 			this->_items = items;
 			this->_mouseScrollY = 0;
@@ -93,11 +98,18 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] bool hasItem(size_t index) const {
-			return std::find(this->_items.begin(), this->_items.end(), index) != this->_items.end();
+			return index < this->_items.size();
 		};
 
 		[[nodiscard]] const std::vector<T>& getItems() const { return this->_items; }
-		[[nodiscard]] T& getItem(size_t index) const {
+
+		[[nodiscard]] const T& getItem(size_t index) const {
+			if (index >= this->_items.size()) throw std::runtime_error("[VirtualList] Index out of bounds");
+			return this->_items[index];
+		};
+
+		[[nodiscard]] T& getItem(size_t index) {
+			if (index >= this->_items.size()) throw std::runtime_error("[VirtualList] Index out of bounds");
 			return this->_items[index];
 		};
 

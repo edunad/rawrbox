@@ -18,6 +18,9 @@ namespace rawrbox {
 		    .addFunction("setBackgroundColor", &rawrbox::UIButton::setBackgroundColor)
 		    .addFunction("getBackgroundColor", &rawrbox::UIButton::getBackgroundColor)
 
+		    .addFunction("setBorderColor", &rawrbox::UIButton::setBorderColor)
+		    .addFunction("getBorderColor", &rawrbox::UIButton::getBorderColor)
+
 		    .addFunction("setText", [](rawrbox::UIButton& self, const std::string& str, std::optional<uint16_t> size) {
 			    self.setText(str, size.value_or(16U));
 		    })
@@ -26,7 +29,7 @@ namespace rawrbox {
 		    .addFunction("setTooltip", &rawrbox::UIButton::setTooltip)
 		    .addFunction("getTooltip", &rawrbox::UIButton::getTooltip)
 
-		    .addFunction("setTexturePTR", [](rawrbox::UIButton& self, rawrbox::TextureBase* tex) {
+		    .addFunction("setTexture", [](rawrbox::UIButton& self, rawrbox::TextureBase* tex) {
 			    self.setTexture(tex);
 		    })
 		    .addFunction("setTexturePath", [](rawrbox::UIButton& self, const std::string& path, lua_State* L) {

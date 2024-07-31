@@ -38,7 +38,7 @@ namespace rawrbox {
 		    .addFunction("setBackgroundColor", &rawrbox::UIInput::setBackgroundColor)
 		    .addFunction("getBackgroundColor", &rawrbox::UIInput::getBackgroundColor)
 
-		    .addFunction("setFontPTR", [](rawrbox::UIInput& self, rawrbox::Font* fnt) {
+		    .addFunction("setFont", [](rawrbox::UIInput& self, rawrbox::Font* fnt) {
 			    self.setFont(fnt);
 		    })
 		    .addFunction("setFontPath", [](rawrbox::UIInput& self, const std::string& path, std::optional<uint16_t> size, lua_State* L) {
