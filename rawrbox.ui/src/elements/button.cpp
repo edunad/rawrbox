@@ -23,11 +23,8 @@ namespace rawrbox {
 	void UIButton::setTextColor(const rawrbox::Color& color) { this->_textColor = color; }
 	const rawrbox::Color& UIButton::getTextColor() const { return this->_textColor; }
 
-	void UIButton::setBorder(bool enabled) { this->_border = enabled; }
-	bool UIButton::borderEnabled() const { return this->_border; }
-
-	void UIButton::setEnabled(bool enabled) { this->_enabled = enabled; }
-	bool UIButton::isEnabled() const { return this->_enabled; }
+	void UIButton::setBorderColor(const rawrbox::Color& color) { this->_borderColor = color; }
+	const rawrbox::Color& UIButton::getBorderColor() const { return this->_borderColor; }
 
 	void UIButton::setText(const std::string& text, uint16_t size) {
 		this->_regular = rawrbox::DEBUG_FONT_REGULAR->scale(size);
@@ -38,11 +35,16 @@ namespace rawrbox {
 	void UIButton::setTooltip(const std::string& text) { this->_tooltip = text; }
 	const std::string& UIButton::getTooltip() const { return this->_tooltip; }
 
+	void UIButton::setTexture(rawrbox::TextureBase* texture) { this->_texture = texture; }
 	void UIButton::setTexture(const std::filesystem::path& path) {
 		this->_texture = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>(path)->get();
 	}
 
-	void UIButton::setTexture(rawrbox::TextureBase* texture) { this->_texture = texture; }
+	void UIButton::setEnabled(bool enabled) { this->_enabled = enabled; }
+	bool UIButton::isEnabled() const { return this->_enabled; }
+
+	void UIButton::setBorder(bool enabled) { this->_border = enabled; }
+	bool UIButton::borderEnabled() const { return this->_border; }
 	// ---------
 
 	// INPUTS ---
@@ -73,13 +75,13 @@ namespace rawrbox {
 
 	// DRAWING ---
 	void UIButton::draw(rawrbox::Stencil& stencil) {
-		const auto& size = getSize();
+		const auto& size = this->getContentSize();
 
 		// Background ----
 		stencil.drawBox({}, size, this->_backgroundColor); // Fake outline border
 		if (this->_border) {
 			stencil.pushOutline({2});
-			stencil.drawBox({}, size, rawrbox::Color::RGBAHex(0x0000004A)); // Fake outline border
+			stencil.drawBox({}, size, this->_borderColor); // Fake outline border
 			stencil.popOutline();
 		}
 		// ---------------

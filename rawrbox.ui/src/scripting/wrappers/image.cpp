@@ -9,7 +9,7 @@ namespace rawrbox {
 		    .addFunction("getColor", &rawrbox::UIImage::getColor)
 
 		    .addFunction("getTexture", &rawrbox::UIImage::getTexture)
-		    .addFunction("setTexturePTR", [](rawrbox::UIImage& self, rawrbox::TextureBase* tex) {
+		    .addFunction("setTexture", [](rawrbox::UIImage& self, rawrbox::TextureBase* tex) {
 			    self.setTexture(tex);
 		    })
 		    .addFunction("setTexturePath", [](rawrbox::UIImage& self, const std::string& path, lua_State* L) {

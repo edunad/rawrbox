@@ -14,6 +14,7 @@ namespace rawrbox {
 		rawrbox::Color _backgroundColor = rawrbox::Color::RGBHex(0x36393f);
 		rawrbox::Color _textColor = rawrbox::Color::RGBHex(0xf5f6fa);
 		rawrbox::Color _textureColor = rawrbox::Colors::White();
+		rawrbox::Color _borderColor = rawrbox::Color::RGBAHex(0x0000004A);
 
 		std::string _text;
 		rawrbox::Vector2 _textureSize = {12, 12};
@@ -45,6 +46,7 @@ namespace rawrbox {
 
 		// UTILS -----
 		virtual void setTextureSize(const rawrbox::Vector2& size);
+
 		virtual void setTextureColor(const rawrbox::Color& color);
 		[[nodiscard]] virtual const rawrbox::Color& getTextureColor() const;
 
@@ -53,6 +55,9 @@ namespace rawrbox {
 
 		virtual void setBackgroundColor(const rawrbox::Color& color);
 		[[nodiscard]] virtual const rawrbox::Color& getBackgroundColor() const;
+
+		virtual void setBorderColor(const rawrbox::Color& color);
+		[[nodiscard]] virtual const rawrbox::Color& getBorderColor() const;
 
 		virtual void setText(const std::string& text, uint16_t size = 16);
 		[[nodiscard]] virtual const std::string& getText() const;

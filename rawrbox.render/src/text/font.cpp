@@ -128,6 +128,8 @@ namespace rawrbox {
 
 		this->loadFontInfo();
 		this->addChars("�~!@#$%^&*()_+`1234567890-=QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm|<>?,./:;\"'}{][ \\§°Ø");
+
+		this->_charSize = this->getStringSize("�"); // Biggest char in the font
 	}
 
 	void Font::addChars(const std::string& chars) {
@@ -162,6 +164,10 @@ namespace rawrbox {
 	float Font::getKerning(uint32_t prevCodePoint, uint32_t nextCodePoint) const {
 		if (this->_font == nullptr || ((this->_font->kern == 0) && (this->_font->gpos == 0))) return 0; // no kerning
 		return this->_info.scale * static_cast<float>(stbtt__GetGlyphKernInfoAdvance(this->_font.get(), prevCodePoint, nextCodePoint));
+	}
+
+	const rawrbox::Vector2f& Font::getCharSize() const {
+		return this->_charSize;
 	}
 
 	rawrbox::Vector2f Font::getStringSize(const std::string& text) const {

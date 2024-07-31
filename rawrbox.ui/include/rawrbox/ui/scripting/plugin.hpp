@@ -4,6 +4,7 @@
 #include <rawrbox/ui/root.hpp>
 #include <rawrbox/ui/scripting/wrappers/button.hpp>
 #include <rawrbox/ui/scripting/wrappers/container.hpp>
+#include <rawrbox/ui/scripting/wrappers/dropdown.hpp>
 #include <rawrbox/ui/scripting/wrappers/frame.hpp>
 #include <rawrbox/ui/scripting/wrappers/graph.hpp>
 #include <rawrbox/ui/scripting/wrappers/graph_cat.hpp>
@@ -41,6 +42,7 @@ namespace rawrbox {
 			rawrbox::UITabWrapper::registerLua(L);
 			rawrbox::UITabsWrapper::registerLua(L);
 			rawrbox::UILoadingWrapper::registerLua(L);
+			rawrbox::UIDropdownWrapper::registerLua(L);
 			// ------
 
 			rawrbox::UIWrapper::registerLua(L, _root);

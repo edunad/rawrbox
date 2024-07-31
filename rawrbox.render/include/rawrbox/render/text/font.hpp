@@ -98,6 +98,8 @@ namespace rawrbox {
 		float _scale = 0.F;
 		float _pixelSize = 0;
 
+		rawrbox::Vector2f _charSize = {};
+
 		int16_t _widthPadding = 0;
 		int16_t _heightPadding = 0;
 
@@ -140,7 +142,9 @@ namespace rawrbox {
 		[[nodiscard]] virtual float getLineHeight() const;
 		[[nodiscard]] virtual float getKerning(uint32_t prevCodePoint, uint32_t nextCodePoint) const;
 
+		[[nodiscard]] virtual const rawrbox::Vector2f& getCharSize() const;
 		[[nodiscard]] virtual rawrbox::Vector2f getStringSize(const std::string& text) const;
+
 		[[nodiscard]] virtual rawrbox::TexturePack* getPackTexture(rawrbox::Glyph* g) const;
 
 		virtual void render(const std::string& text, const rawrbox::Vector2f& pos, bool yIsUp, const std::function<void(rawrbox::Glyph*, float, float, float, float)>& render) const;
