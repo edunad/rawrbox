@@ -507,7 +507,7 @@ namespace rawrbox {
 			this->_context->ClearRenderTarget(pRTV, this->_clearColor.array().data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 		}
 
-		this->_context->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG | Diligent::CLEAR_STENCIL_FLAG, 1.F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+		this->_context->ClearDepthStencil(pDSV, Diligent::CLEAR_DEPTH_FLAG, 1.F, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 
 		// Clear barrier cache ---
 		rawrbox::BarrierUtils::clearBarrierCache();
