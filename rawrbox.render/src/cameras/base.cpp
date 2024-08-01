@@ -31,9 +31,8 @@ namespace rawrbox {
 		{
 			Diligent::BufferDesc CBDesc;
 			CBDesc.Name = "rawrbox::Camera::Uniforms";
-			CBDesc.Usage = Diligent::USAGE_DYNAMIC;
+			CBDesc.Usage = Diligent::USAGE_DEFAULT;
 			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			CBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
 			CBDesc.Size = sizeof(rawrbox::CameraUniforms);
 
 			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
@@ -143,15 +142,17 @@ namespace rawrbox {
 		auto projection = rawrbox::Matrix4x4::mtxTranspose(this->getProjMtx());
 		auto world = rawrbox::Matrix4x4::mtxTranspose(this->_world);
 
-		Diligent::MapHelper<rawrbox::CameraUniforms> CBConstants(rawrbox::RENDERER->context(), this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-		if (CBConstants == nullptr) throw _logger->error("Failed to map the camera constants buffer!");
+		rawrbox::CameraUniforms data = {};
+		data.gView = view;
+		data.gViewInv = viewInv;
+		data.gWorld = world;
+		data.gWorldViewProj = data.gWorld * data.gView * projection;
+		data.gPos = this->getPos();
+		data.gDeltaTime = rawrbox::DELTA_TIME;
 
-		CBConstants->gView = view;
-		CBConstants->gViewInv = viewInv;
-		CBConstants->gWorld = world;
-		CBConstants->gWorldViewProj = CBConstants->gWorld * CBConstants->gView * projection;
-		CBConstants->gPos = this->getPos();
-		CBConstants->gDeltaTime = rawrbox::DELTA_TIME;
+		rawrbox::BarrierUtils::barrier({{this->_uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::RENDERER->context()->UpdateBuffer(this->_uniforms, 0, sizeof(rawrbox::CameraUniforms), &data, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BarrierUtils::barrier({{this->_uniforms, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 	}
 
 	void CameraBase::update() {}
