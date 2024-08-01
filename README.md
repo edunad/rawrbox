@@ -12,6 +12,7 @@
 		<a href="https://github.com/edunad/rawrbox/commits/master/"><img alt="logo" src="https://img.shields.io/github/last-commit/edunad/rawrbox.svg"/>&nbsp;</a>
 		<a href="https://app.codacy.com/gh/edunad/rawrbox/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade"><img alt="logo" src="https://app.codacy.com/project/badge/Grade/d8f8badc1e654f2a8098e3a624405bbd"/>&nbsp;</a>
 		<a href="https://box.rawr.dev"><img src="https://img.shields.io/badge/wiki-%F0%9F%90%B2-black"/></a>
+		<a href="https://discord.gg/cHWmjEn2yg"><img src="https://img.shields.io/discord/1268630826070052885?a"/></a>
 		<br/><br/>
 		<a href="#features">Features</a> -
 		<a href="#libs">Libs</a> -
