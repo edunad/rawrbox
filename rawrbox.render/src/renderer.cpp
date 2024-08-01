@@ -200,10 +200,12 @@ namespace rawrbox {
 		// Setup shader pipeline if not exists
 		if (rawrbox::SHADER_FACTORY == nullptr) {
 			auto rootDir = this->getShadersDirectory();
+			if (!std::filesystem::exists(rootDir)) throw this->_logger->error("Shaders directory '{}' not found!", rootDir.generic_string());
+
 			auto dirs = rawrbox::PathUtils::glob(rootDir, true);
 			auto paths = fmt::format("{}", fmt::join(dirs, ";"));
 
-			this->_logger->info("Initializing shader factory (using {}):", fmt::styled(rootDir, fmt::fg(fmt::color::coral)));
+			this->_logger->info("Initializing shader factory (using {}):", fmt::styled(rootDir.generic_string(), fmt::fg(fmt::color::coral)));
 			for (const auto& dir : dirs) {
 				this->_logger->info("\t{}", dir);
 			}
@@ -691,7 +693,7 @@ namespace rawrbox {
 		return rt ? this->_render->getRT() : this->_render->getHandle();
 	}
 
-	std::string RendererBase::getShadersDirectory() const {
+	std::filesystem::path RendererBase::getShadersDirectory() const {
 		return "./assets/shaders";
 	}
 

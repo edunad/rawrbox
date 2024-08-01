@@ -191,7 +191,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual Diligent::ITextureView* getDepth() const;
 		[[nodiscard]] virtual Diligent::ITextureView* getColor(bool rt = false) const;
 
-		[[nodiscard]] virtual std::string getShadersDirectory() const;
+		[[nodiscard]] virtual std::filesystem::path getShadersDirectory() const;
 		[[nodiscard]] virtual const Diligent::RENDER_DEVICE_TYPE& getRenderType() const;
 
 #ifdef _DEBUG
