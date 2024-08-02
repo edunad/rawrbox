@@ -14,7 +14,7 @@ namespace rawrbox {
 		// MODEL ---
 		rawrbox::Vector4u data = {0xFFFFFFFF, 0, 0x00000000, 0}; // Color, Atlas, GPUId, Billboard
 		rawrbox::Vector4f dataF = {};                            // VertexSnap, DisplacementTexture, DisplacementPower, ???
-					      // ----------
+									 // ----------
 
 		bool operator==(const BindlessVertexBuffer& other) const { return this->data == other.data && this->dataF == other.dataF; }
 		bool operator!=(const BindlessVertexBuffer& other) const { return !operator==(other); }
