@@ -61,7 +61,7 @@ jobs:
 
       - name: Upload build artifacts
         if: github.ref == 'refs/heads/master' || contains(github.event.pull_request.labels.*.name, '⚠️ UPLOAD ⚠️')
-        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b
+        uses: actions/upload-artifact@89ef406dd8d7e03cfd12d9e0a4a378f454709029
         with:
           name: output
           path: bin
