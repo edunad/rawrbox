@@ -62,13 +62,14 @@ namespace rawrbox {
 	}
 
 	void Stencil::pushVertice(const uint32_t& textureID, rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col) {
-		auto wSize = this->_size.cast<float>();
+		// auto wSize = this->_size.cast<float>();
 
 		this->applyScale(pos);
 		this->applyRotation(pos);
 
 		this->_currentDraw.vertices.emplace_back(textureID,
-		    rawrbox::Vector2f(((pos.x + this->_offset.x) / wSize.x * 2 - 1), ((pos.y + this->_offset.y) / wSize.y * 2 - 1) * -1),
+		    // rawrbox::Vector2f(((pos.x + this->_offset.x) / wSize.x * 2 - 1), ((pos.y + this->_offset.y) / wSize.y * 2 - 1) * -1),
+		    rawrbox::Vector2f(pos.x + this->_offset.x, pos.y + this->_offset.y),
 		    uv,
 		    col);
 	}
@@ -411,6 +412,21 @@ namespace rawrbox {
 
 		this->pushIndices({0, 1, 2,
 		    1, 3, 2});
+
+		// Add to calls
+		this->pushDrawCall();
+		// ----
+	}
+
+	void Stencil::drawVertices(const std::vector<rawrbox::PosUVColorVertexData>& vertices, const std::vector<uint32_t>& indices) {
+		if (vertices.empty() || indices.empty()) return;
+
+		// Setup --------
+		this->setupDrawCall(this->_2dPipeline);
+		// ----
+
+		this->_currentDraw.vertices.insert(this->_currentDraw.vertices.end(), vertices.begin(), vertices.end());
+		this->_currentDraw.indices.insert(this->_currentDraw.indices.end(), indices.begin(), indices.end());
 
 		// Add to calls
 		this->pushDrawCall();

@@ -175,6 +175,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual float getAspectRatio() const;
 		[[nodiscard]] virtual const rawrbox::Vector2i& getMousePos() const;
 		[[nodiscard]] virtual uint32_t getWindowFlags() const;
+
+		[[nodiscard]] virtual GLFWwindow* getGLFWHandle() const;
 		[[nodiscard]] virtual Diligent::NativeWindow getHandle() const;
 		[[nodiscard]] virtual rawrbox::RendererBase& getRenderer() const;
 

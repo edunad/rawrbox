@@ -43,6 +43,7 @@ option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING "Build lua & mod support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE "Enable unsafe scripting (io / etc)" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_EXCEPTION "Enables scripting throwing exceptions instead of catching them" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS "Build steamworks support" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_IMGUI "Build imgui support" OFF)
 option(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME "Build with msvc multithreading" OFF)
 option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
 # ---------------
@@ -76,6 +77,7 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING ON)
     set(RAWRBOX_BUILD_RAWRBOX_SCRIPTING_UNSAFE ON)
     set(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS ON)
+    set(RAWRBOX_BUILD_RAWRBOX_IMGUI ON)
     set(RAWRBOX_BUILD_QHULL ON)
 
     if(NOT DEFINED STEAMWORKS_APPID)
@@ -259,6 +261,11 @@ endif()
 if(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS)
     message(STATUS "Enabled RAWRBOX.STEAMWORKS support")
     add_subdirectory("rawrbox.steamworks")
+endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_IMGUI)
+    message(STATUS "Enabled RAWRBOX.IMGUI support")
+    add_subdirectory("rawrbox.imgui")
 endif()
 
 # Shhhhh windows... shhhh....

@@ -2,6 +2,7 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/bindless.hpp>
+#include <rawrbox/render/cameras/perspective.hpp>
 #include <rawrbox/render/resources/font.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/window.hpp>
@@ -53,6 +54,12 @@ namespace ui_test {
 			if (pass != rawrbox::DrawPass::PASS_OVERLAY) return;
 			this->_ROOT_UI->render();
 		});
+		// ---------------
+
+		// Setup camera --
+		auto* cam = render->setupCamera<rawrbox::CameraPerspective>(render->getSize());
+		cam->setPos({-2.F, 5.F, -3.5F});
+		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// ---------------
 
 		// Add loaders

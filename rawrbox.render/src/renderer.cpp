@@ -229,11 +229,8 @@ namespace rawrbox {
 		// ----------------------
 
 		// Setup camera -----
-		if (this->_camera != nullptr) {
-			this->_camera->initialize();
-		} else {
-			this->_logger->warn("No camera found! Only {} {}", fmt::format(fmt::fg(fmt::color::red), "OVERLAY"), fmt::format(fmt::fg(fmt::color::yellow), "pass will be available!"));
-		}
+		if (this->_camera == nullptr) throw this->_logger->error("No camera found!");
+		this->_camera->initialize();
 		// ------------------
 
 		// Init plugins ---
@@ -391,7 +388,7 @@ namespace rawrbox {
 	}
 
 	void RendererBase::render() {
-		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw this->_logger->error("Failed to bind swapChain/context/device! Did you call 'init' ?");
+		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw this->_logger->error("Failed to bind swapChain / context / device! Did you call 'init' ?");
 		if (this->_drawCall == nullptr) throw this->_logger->error("Missing draw call! Did you call 'setDrawCall' ?");
 
 		// Clear backbuffer ----
@@ -401,26 +398,6 @@ namespace rawrbox {
 		// Update textures ---
 		rawrbox::BindlessManager::update();
 		// --------------------
-
-		// No camera -------
-		if (this->_camera == nullptr) {
-			this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-
-#ifdef _DEBUG
-			// this->_context->BeginDebugGroup("OVERLAY");
-			// this->beginQuery("OVERLAY");
-#endif
-			this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
-			if (this->_stencil != nullptr) this->_stencil->render();
-#ifdef _DEBUG
-				// this->_context->EndDebugGroup();
-				// this->endQuery("OVERLAY");
-#endif
-
-			this->frame();
-			return; // No camera, no world draw
-		}
-		// ---------------------
 
 		// Update camera buffer --
 		this->_camera->updateBuffer();
