@@ -3,15 +3,6 @@
 
 // ---- IMGUI ----
 #include <backends/imgui_impl_glfw.h>
-
-#ifdef RAWRBOX_SUPPORT_DX12
-// #include <backends/imgui_impl_dx12.h>
-#endif
-
-#ifdef RAWRBOX_SUPPORT_VULKAN
-// #include <backends/imgui_impl_vulkan.h>
-#endif
-
 #include <imgui.h>
 // ---------------
 
