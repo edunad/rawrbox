@@ -71,5 +71,10 @@ namespace rawrbox {
 	const glz::json_t& Mod::getMetadata() const { return this->_metadata; }
 
 	lua_State* Mod::getEnvironment() { return this->_L; }
+
+#ifdef RAWRBOX_STEAMWORKS
+	void Mod::setWorkshopId(PublishedFileId_t id) { this->_workshopId = id; }
+	PublishedFileId_t Mod::getWorkshopId() const { return this->_workshopId; }
+#endif
 	// -----
 } // namespace rawrbox

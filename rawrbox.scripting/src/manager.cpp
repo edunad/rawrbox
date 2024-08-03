@@ -346,10 +346,10 @@ namespace rawrbox {
 	}
 
 	// LOADING ----
-	std::unordered_map<std::filesystem::path, bool> SCRIPTING::loadMods(const std::filesystem::path& rootFolder) { // Load mods
+	std::unordered_map<std::filesystem::path, rawrbox::Mod*> SCRIPTING::loadMods(const std::filesystem::path& rootFolder) { // Load mods
 		if (!std::filesystem::exists(rootFolder)) throw _logger->error("Failed to locate root folder '{}'", rootFolder.generic_string());
 
-		std::unordered_map<std::filesystem::path, bool> success = {};
+		std::unordered_map<std::filesystem::path, rawrbox::Mod*> success = {};
 		for (const auto& p : std::filesystem::directory_iterator(rootFolder)) {
 			if (!p.is_directory()) continue;
 			success[p] = loadMod(p.path().filename().generic_string(), p);
@@ -358,12 +358,12 @@ namespace rawrbox {
 		return success;
 	}
 
-	bool SCRIPTING::loadMod(const std::string& id, const std::filesystem::path& modFolder) {
+	rawrbox::Mod* SCRIPTING::loadMod(const std::string& id, const std::filesystem::path& modFolder) {
 		if (id.empty()) throw _logger->error("Mod ID cannot be empty");
 		if (!std::filesystem::exists(modFolder)) throw _logger->error("Failed to locate mod folder '{}'", modFolder.generic_string());
 		if (_mods.find(id) != _mods.end()) {
 			_logger->warn("Mod {} already loaded! Mod name conflict?", id);
-			return false;
+			return nullptr;
 		}
 
 		// LOAD METADATA ---
@@ -396,11 +396,13 @@ namespace rawrbox {
 			registerLoadedFile(mod->getID(), mod->getEntryFilePath()); // Register file for hot-reloading
 		} catch (const std::runtime_error& err) {
 			_logger->printError("{}", err.what());
-			return false;
+			return nullptr;
 		}
 
+		rawrbox::Mod* modPtr = mod.get();
 		_mods.emplace(id, std::move(mod));
-		return true;
+
+		return modPtr;
 	}
 
 	bool SCRIPTING::unloadMod(const std::filesystem::path& modFolder) {

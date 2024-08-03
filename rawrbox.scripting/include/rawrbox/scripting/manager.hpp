@@ -73,8 +73,8 @@ namespace rawrbox {
 		static void init(int hotReloadMs = 0);
 
 		// LOADING ----
-		static std::unordered_map<std::filesystem::path, bool> loadMods(const std::filesystem::path& rootFolder);
-		static bool loadMod(const std::string& id, const std::filesystem::path& modFolder);
+		static std::unordered_map<std::filesystem::path, rawrbox::Mod*> loadMods(const std::filesystem::path& rootFolder);
+		static rawrbox::Mod* loadMod(const std::string& id, const std::filesystem::path& modFolder);
 
 		static bool unloadMod(const std::filesystem::path& modFolder);
 		static bool unloadMod(const std::string& modId);
