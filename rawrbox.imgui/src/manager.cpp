@@ -21,32 +21,40 @@ namespace rawrbox {
 		}
 
 		auto* stencil = _renderer->stencil();
-		for (auto& cmd : data->CmdLists) {
-			std::vector<rawrbox::PosUVColorVertexData> verts(cmd->VtxBuffer.size());
-			std::memcpy(verts.data(), cmd->VtxBuffer.Data, cmd->VtxBuffer.size() * sizeof(rawrbox::PosUVColorVertexData));
-
-			std::vector<uint32_t> indc(cmd->IdxBuffer.Data, cmd->IdxBuffer.Data + cmd->IdxBuffer.size());
-			for (auto& cmdB : cmd->CmdBuffer) {
-				auto* texture = std::bit_cast<rawrbox::TextureBase*>(cmdB.TextureId);
-				if (texture == nullptr) continue;
-
-				if (cmdB.UserCallback != nullptr) {
-					cmdB.UserCallback(cmd, &cmdB);
+		for (const auto& cmd : data->CmdLists) {
+			for (const auto& buffer : cmd->CmdBuffer) {
+				if (buffer.UserCallback != nullptr) {
+					buffer.UserCallback(cmd, &buffer);
 					continue;
 				}
 
-				for (uint32_t i = 0; i < cmdB.ElemCount; i++) {
-					auto idx = indc[cmdB.IdxOffset + i];
-					auto& vert = verts[idx];
+				if (buffer.ElemCount == 0) continue;
 
+				auto* texture = std::bit_cast<rawrbox::TextureBase*>(buffer.TextureId);
+				if (texture == nullptr) texture = _imguiFontTexture.get();
+
+				std::vector<rawrbox::PosUVColorVertexData> verts(cmd->VtxBuffer.size() - buffer.VtxOffset);
+				std::memcpy(verts.data(), cmd->VtxBuffer.Data + buffer.VtxOffset, verts.size() * sizeof(rawrbox::PosUVColorVertexData));
+
+				std::vector<uint32_t> indc(cmd->IdxBuffer.size() - buffer.IdxOffset);
+				std::memcpy(indc.data(), cmd->IdxBuffer.Data + buffer.IdxOffset, indc.size() * sizeof(uint32_t));
+
+				for (auto& vert : verts) {
 					vert.textureID = texture->getTextureID();
 					vert.uv.z = static_cast<float>(texture->getSlice());
 				}
-			}
 
-			// TODO: stencil->pushClipping({});
-			stencil->drawVertices(verts, indc);
-			// TODO: stencil->popClipping();
+				rawrbox::AABBu clip =
+				    {
+					static_cast<uint32_t>((buffer.ClipRect.x - data->DisplayPos.x) * data->FramebufferScale.x),
+					static_cast<uint32_t>((buffer.ClipRect.y - data->DisplayPos.y) * data->FramebufferScale.y),
+					static_cast<uint32_t>((buffer.ClipRect.z - data->DisplayPos.x) * data->FramebufferScale.x),
+					static_cast<uint32_t>((buffer.ClipRect.w - data->DisplayPos.y) * data->FramebufferScale.y)};
+
+				stencil->pushClipping({clip, true});
+				stencil->drawVertices(verts, indc);
+				stencil->popClipping();
+			}
 		}
 	}
 	//------
@@ -62,8 +70,10 @@ namespace rawrbox {
 		darkTheme ? ImGui::StyleColorsDark() : ImGui::StyleColorsLight();
 
 		ImGuiIO& IO = ImGui::GetIO();
-		IO.BackendRendererName = "RawrBox-Renderer";
+		IO.BackendRendererName = "RawrBox-IMGUI";
 		IO.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
+		IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		IO.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 		switch (_renderer->getRenderType()) {
 			case Diligent::RENDER_DEVICE_TYPE_D3D12:
@@ -87,7 +97,7 @@ namespace rawrbox {
 		rawrbox::Vector2i size = {};
 		IO.Fonts->GetTexDataAsRGBA32(&pData, &size.x, &size.y);
 
-		_imguiFontTexture = std::make_unique<rawrbox::TextureImage>(size.cast<uint32_t>(), pData, 4U);
+		_imguiFontTexture = std::make_unique<rawrbox::TextureImage>(size.cast<uint32_t>(), pData, uint8_t(4));
 		_imguiFontTexture->setName("IMGUI");
 		_imguiFontTexture->upload();
 		// ----------
@@ -100,6 +110,8 @@ namespace rawrbox {
 	void IMGUIManager::clear() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
+		ImGui::DockSpaceOverViewport(ImGui::GetWindowDockID(), ImGui::GetMainViewport());
 	}
 
 	void IMGUIManager::render() {

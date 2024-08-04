@@ -10,8 +10,8 @@ namespace rawrbox {
 		using AABBType = AABB_t<NumberType>;
 
 	public:
-		Vector2_t<NumberType> pos;
-		Vector2_t<NumberType> size;
+		Vector2_t<NumberType> pos = {};
+		Vector2_t<NumberType> size = {};
 
 		AABB_t() = default;
 

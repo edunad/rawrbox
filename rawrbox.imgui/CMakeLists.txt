@@ -4,11 +4,14 @@ set(output_target RAWRBOX.IMGUI)
 
 # LIBS ---
 CPMAddPackage(
-    NAME imgui
+    NAME
+        imgui
     GITHUB_REPOSITORY
         ocornut/imgui
     PATCH_COMMAND
         git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/imgui.patch
+    GIT_TAG
+        docking
     VERSION
         1.91.0
     DOWNLOAD_ONLY
@@ -21,6 +24,7 @@ if(imgui_ADDED)
         ${imgui_SOURCE_DIR}/imgui_draw.cpp
         ${imgui_SOURCE_DIR}/imgui_tables.cpp
         ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+        ${imgui_SOURCE_DIR}/imgui_demo.cpp
 
         ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.cpp
         ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp

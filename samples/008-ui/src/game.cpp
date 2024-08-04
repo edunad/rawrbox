@@ -29,7 +29,7 @@ namespace ui_test {
 
 	void Game::setupGLFW() {
 #if defined(_DEBUG) && defined(RAWRBOX_SUPPORT_DX12)
-		auto* window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
+		auto* window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_VULKAN); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
 #else
 		auto* window = rawrbox::Window::createWindow();
 #endif

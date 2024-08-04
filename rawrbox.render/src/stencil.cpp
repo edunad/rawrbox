@@ -62,13 +62,10 @@ namespace rawrbox {
 	}
 
 	void Stencil::pushVertice(const uint32_t& textureID, rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col) {
-		// auto wSize = this->_size.cast<float>();
-
 		this->applyScale(pos);
 		this->applyRotation(pos);
 
 		this->_currentDraw.vertices.emplace_back(textureID,
-		    // rawrbox::Vector2f(((pos.x + this->_offset.x) / wSize.x * 2 - 1), ((pos.y + this->_offset.y) / wSize.y * 2 - 1) * -1),
 		    rawrbox::Vector2f(pos.x + this->_offset.x, pos.y + this->_offset.y),
 		    uv,
 		    col);
@@ -439,7 +436,7 @@ namespace rawrbox {
 		this->_currentDraw.clear();
 
 		this->_currentDraw.stencilProgram = program;
-		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::AABBu(0, 0, this->_size.x, this->_size.y) : this->_clips.back();
+		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::StencilClip({0, 0, this->_size.x, this->_size.y}) : this->_clips.back();
 	}
 
 	void Stencil::pushDrawCall() {
@@ -502,10 +499,17 @@ namespace rawrbox {
 
 			// SCISSOR ---
 			Diligent::Rect scissor;
-			scissor.left = group.clip.left();
-			scissor.right = group.clip.right();
-			scissor.top = group.clip.top();
-			scissor.bottom = group.clip.bottom();
+			if (group.clip.screenSpace) {
+				scissor.left = std::max<int>(group.clip.rect.pos.x, 0);
+				scissor.top = std::max<int>(group.clip.rect.pos.y, 0);
+				scissor.right = std::min<int>(group.clip.rect.size.x, this->_size.x);
+				scissor.bottom = std::min<int>(group.clip.rect.size.y, this->_size.y);
+			} else {
+				scissor.left = std::max<int>(group.clip.rect.left(), 0);
+				scissor.top = std::max<int>(group.clip.rect.top(), 0);
+				scissor.right = std::min<int>(group.clip.rect.right(), this->_size.x);
+				scissor.bottom = std::min<int>(group.clip.rect.bottom(), this->_size.y);
+			}
 
 			context->SetScissorRects(1, &scissor, 0, 0);
 			// -----------
@@ -562,7 +566,7 @@ namespace rawrbox {
 	// --------------------
 
 	// ------ ROTATION
-	void Stencil::pushRotation(const StencilRotation& rot) {
+	void Stencil::pushRotation(const rawrbox::StencilRotation& rot) {
 		this->_rotations.push_back(rot);
 		this->_rotation += rot;
 	}
@@ -576,7 +580,7 @@ namespace rawrbox {
 	// --------------------
 
 	// ------ OUTLINE
-	void Stencil::pushOutline(const StencilOutline& outline) {
+	void Stencil::pushOutline(const rawrbox::StencilOutline& outline) {
 		this->_outlines.push_back(outline);
 		this->_outline += outline;
 	}
@@ -590,8 +594,11 @@ namespace rawrbox {
 	// --------------------
 
 	// ------ CLIPPING
-	void Stencil::pushClipping(const rawrbox::AABBi& rect) {
-		this->_clips.emplace_back(rect.pos.x + static_cast<int>(this->_offset.x), rect.pos.y + static_cast<int>(this->_offset.y), rect.size.x, rect.size.y);
+	void Stencil::pushClipping(const rawrbox::StencilClip& clip) {
+		rawrbox::StencilClip newClip = clip;
+		newClip.rect.pos = clip.rect.pos + this->_offset.cast<uint32_t>();
+
+		this->_clips.emplace_back(newClip);
 	}
 
 	void Stencil::popClipping() {

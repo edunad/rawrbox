@@ -53,13 +53,24 @@ namespace rawrbox {
 		std::vector<unsigned int> indices = {};
 	};
 
+	struct StencilClip {
+		rawrbox::AABBu rect = {};
+		bool screenSpace = false;
+
+		StencilClip() = default;
+		StencilClip(const rawrbox::AABBu& bbox, bool screen = false) : rect(bbox), screenSpace(screen){};
+
+		bool operator==(const rawrbox::StencilClip& other) const { return this->rect == other.rect && this->screenSpace == other.screenSpace; }
+		bool operator!=(const rawrbox::StencilClip& other) const { return !operator==(other); }
+	};
+
 	struct StencilDraw {
 		Diligent::IPipelineState* stencilProgram = nullptr;
 
 		std::vector<rawrbox::PosUVColorVertexData> vertices = {};
 		std::vector<uint32_t> indices = {};
 
-		rawrbox::AABBu clip = {};
+		rawrbox::StencilClip clip = {};
 		bool cull = true;
 
 		void clear() {
@@ -164,7 +175,7 @@ namespace rawrbox {
 		// ----------
 
 		// Clip handling ----
-		std::vector<rawrbox::AABBu> _clips = {};
+		std::vector<rawrbox::StencilClip> _clips = {};
 		// ----------
 
 		// Outline handling ----
@@ -248,17 +259,17 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ ROTATION
-		virtual void pushRotation(const StencilRotation& rot);
+		virtual void pushRotation(const rawrbox::StencilRotation& rot);
 		virtual void popRotation();
 		// --------------------
 
 		// ------ OUTLINE
-		virtual void pushOutline(const StencilOutline& outline);
+		virtual void pushOutline(const rawrbox::StencilOutline& outline);
 		virtual void popOutline();
 		// --------------------
 
 		// ------ CLIPPING
-		virtual void pushClipping(const rawrbox::AABBi& rect);
+		virtual void pushClipping(const rawrbox::StencilClip& clip);
 		virtual void popClipping();
 		// --------------------
 

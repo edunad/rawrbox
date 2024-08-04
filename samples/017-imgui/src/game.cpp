@@ -106,25 +106,14 @@ namespace imgui {
 	}
 
 	void Game::drawIMGUIMenu() {
-		auto dialogFlags = ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings;
 
-		if (!this->_showDialog.empty()) {
-			ImGui::OpenPopup(this->_showDialog.c_str());
-		}
-
-		if (ImGui::BeginPopupModal("Welcome", nullptr, dialogFlags)) {
-			ImGui::Text("Hello Player!");
-			ImGui::InputText("Name", this->_inputText.data(), 256);
-
-			ImGui::Image((void*)this->_texture, ImVec2(553, 358));
-
-			if (ImGui::Button("OK")) {
-				ImGui::CloseCurrentPopup();
-				this->_showDialog = "";
-			}
-
-			ImGui::EndPopup();
-		}
+		// TEST FRAME --
+		ImGui::Begin("Welcome");
+		ImGui::Text("Hello Player!");
+		ImGui::InputText("Name", this->_inputText.data(), 256);
+		ImGui::Image((void*)this->_texture, ImVec2(553, 358));
+		ImGui::End();
+		// ----------
 
 		// TOOLBAR --
 		if (ImGui::BeginMainMenuBar()) {
@@ -151,6 +140,8 @@ namespace imgui {
 			ImGui::EndMainMenuBar();
 		}
 		// ----------
+
+		ImGui::ShowDemoWindow();
 	}
 
 	void Game::draw() {

@@ -142,7 +142,6 @@ namespace steamworks {
 		CSteamID id = rawrbox::SteamSDK::getSteamID();
 
 		stencil->drawText(fmt::format("SteamID: {}", std::to_string(id.GetAccountID())), {2, 25});
-		stencil->render();
 	}
 
 	void Game::drawWorld() {

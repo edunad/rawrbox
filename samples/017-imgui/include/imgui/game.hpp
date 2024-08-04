@@ -19,9 +19,7 @@ namespace imgui {
 
 		void drawIMGUIMenu();
 
-		std::string _showDialog = "Welcome";
 		std::string _inputText = "blabalbal";
-
 		rawrbox::TextureBase* _texture = nullptr;
 
 	public:
