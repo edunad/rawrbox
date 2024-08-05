@@ -80,9 +80,9 @@ namespace rawrbox {
 		rawrbox::RENDERER->stencil()->popOutline();
 	}
 
-	void StencilGlobal::pushClipping(const rawrbox::AABBu& box, bool useViewspace) {
+	void StencilGlobal::pushClipping(const rawrbox::AABBu& box) {
 		if (rawrbox::RENDERER == nullptr) throw std::runtime_error("Invalid stencil handle");
-		rawrbox::RENDERER->stencil()->pushClipping({box, useViewspace});
+		rawrbox::RENDERER->stencil()->pushClipping(box);
 	}
 
 	void StencilGlobal::popClipping() {

@@ -38,6 +38,7 @@ namespace rawrbox {
 			return this->pos.y + this->size.y;
 		}
 
+		[[nodiscard]] bool valid() const { return this->size.x > this->pos.x && this->size.y > this->pos.y; }
 		[[nodiscard]] bool empty() const { return this->pos == 0 && this->size == 0; }
 		[[nodiscard]] bool contains(const Vector2_t<NumberType>& pos_) const {
 			return pos_.x >= this->pos.x &&                // left

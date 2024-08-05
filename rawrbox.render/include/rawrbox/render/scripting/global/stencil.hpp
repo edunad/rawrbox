@@ -33,7 +33,7 @@ namespace rawrbox {
 		static void pushOutline(float thickness, float stipple = 0.F);
 		static void popOutline();
 
-		static void pushClipping(const rawrbox::AABBu& box, bool useViewspace = false);
+		static void pushClipping(const rawrbox::AABBu& box);
 		static void popClipping();
 
 		static void pushScale(const rawrbox::Vector2f& scale);

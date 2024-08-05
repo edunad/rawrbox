@@ -28,6 +28,7 @@ namespace rawrbox {
 
 		PosUVColorVertexData() = default;
 		PosUVColorVertexData(const uint32_t& _textureID, const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, const rawrbox::Color& _cl) : textureID(_textureID), pos(_pos), color(_cl.pack()), uv(_uv) {}
+		PosUVColorVertexData(const uint32_t& _textureID, const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, uint32_t _cl) : textureID(_textureID), pos(_pos), color(_cl), uv(_uv) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout() {
 			return {
@@ -53,29 +54,18 @@ namespace rawrbox {
 		std::vector<unsigned int> indices = {};
 	};
 
-	struct StencilClip {
-		rawrbox::AABBu rect = {};
-		bool screenSpace = false;
-
-		StencilClip() = default;
-		StencilClip(const rawrbox::AABBu& bbox, bool screen = false) : rect(bbox), screenSpace(screen){};
-
-		bool operator==(const rawrbox::StencilClip& other) const { return this->rect == other.rect && this->screenSpace == other.screenSpace; }
-		bool operator!=(const rawrbox::StencilClip& other) const { return !operator==(other); }
-	};
-
 	struct StencilDraw {
 		Diligent::IPipelineState* stencilProgram = nullptr;
 
 		std::vector<rawrbox::PosUVColorVertexData> vertices = {};
 		std::vector<uint32_t> indices = {};
 
-		rawrbox::StencilClip clip = {};
+		rawrbox::AABBu clip = {};
 		bool cull = true;
 
 		void clear() {
 			this->cull = true;
-			this->clip = {}; // NONE
+			this->clip = {};
 
 			this->stencilProgram = nullptr;
 
@@ -175,7 +165,7 @@ namespace rawrbox {
 		// ----------
 
 		// Clip handling ----
-		std::vector<rawrbox::StencilClip> _clips = {};
+		std::vector<rawrbox::AABBu> _clips = {};
 		// ----------
 
 		// Outline handling ----
@@ -214,8 +204,8 @@ namespace rawrbox {
 
 		// ------ RENDERING
 		void setupDrawCall(Diligent::IPipelineState* program);
-
 		void pushDrawCall();
+
 		void internalDraw();
 		// --------------------
 
@@ -269,7 +259,7 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ CLIPPING
-		virtual void pushClipping(const rawrbox::StencilClip& clip);
+		virtual void pushClipping(const rawrbox::AABBu& clip);
 		virtual void popClipping();
 		// --------------------
 

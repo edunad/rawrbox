@@ -51,14 +51,14 @@ namespace imgui {
 		rawrbox::RESOURCES::addLoader<rawrbox::TextureLoader>();
 		//  --------------
 
+		render->init();
+
 		// Setup ImGui
-		rawrbox::IMGUIManager::init(*rawrbox::Window::getWindow(), true);
+		rawrbox::IMGUIManager::init(true);
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.F, 0.F, 0.F, 0.F);
 		// --------------
-
-		render->init();
 	}
 
 	void Game::loadContent() {

@@ -2,6 +2,7 @@
 
 #include <rawrbox/render/window.hpp>
 
+#include <DynamicBuffer.hpp>
 #include <RefCntAutoPtr.hpp>
 
 #include <Buffer.h>
@@ -14,13 +15,17 @@ namespace rawrbox {
 		static std::unique_ptr<rawrbox::TextureImage> _imguiFontTexture;
 		// -------
 
-		static rawrbox::Window* _window;
-		static rawrbox::RendererBase* _renderer;
+		// Buffers ---
+		static Diligent::IPipelineState* _2dPipeline;
+
+		static std::unique_ptr<Diligent::DynamicBuffer> _pVB;
+		static std::unique_ptr<Diligent::DynamicBuffer> _pIB;
+		// -----------
 
 		static void renderDrawData(ImDrawData* data);
 
 	public:
-		static void init(rawrbox::Window& window, bool darkTheme = true);
+		static void init(bool darkTheme = true);
 
 		static void load();
 

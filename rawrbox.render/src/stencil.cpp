@@ -422,8 +422,8 @@ namespace rawrbox {
 		this->setupDrawCall(this->_2dPipeline);
 		// ----
 
-		this->_currentDraw.vertices.insert(this->_currentDraw.vertices.end(), vertices.begin(), vertices.end());
-		this->_currentDraw.indices.insert(this->_currentDraw.indices.end(), indices.begin(), indices.end());
+		this->_currentDraw.vertices = vertices;
+		this->_currentDraw.indices = indices;
 
 		// Add to calls
 		this->pushDrawCall();
@@ -436,7 +436,7 @@ namespace rawrbox {
 		this->_currentDraw.clear();
 
 		this->_currentDraw.stencilProgram = program;
-		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::StencilClip({0, 0, this->_size.x, this->_size.y}) : this->_clips.back();
+		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::AABBu{0, 0, this->_size.x, this->_size.y} : this->_clips.back();
 	}
 
 	void Stencil::pushDrawCall() {
@@ -458,7 +458,7 @@ namespace rawrbox {
 			}
 		}
 
-		this->_drawCalls.push_back(this->_currentDraw);
+		this->_drawCalls.emplace_back(this->_currentDraw);
 	}
 
 	void Stencil::internalDraw() {
@@ -499,19 +499,14 @@ namespace rawrbox {
 
 			// SCISSOR ---
 			Diligent::Rect scissor;
-			if (group.clip.screenSpace) {
-				scissor.left = std::max<int>(group.clip.rect.pos.x, 0);
-				scissor.top = std::max<int>(group.clip.rect.pos.y, 0);
-				scissor.right = std::min<int>(group.clip.rect.size.x, this->_size.x);
-				scissor.bottom = std::min<int>(group.clip.rect.size.y, this->_size.y);
-			} else {
-				scissor.left = std::max<int>(group.clip.rect.left(), 0);
-				scissor.top = std::max<int>(group.clip.rect.top(), 0);
-				scissor.right = std::min<int>(group.clip.rect.right(), this->_size.x);
-				scissor.bottom = std::min<int>(group.clip.rect.bottom(), this->_size.y);
-			}
+			scissor.left = std::max<int>(group.clip.left(), 0);
+			scissor.top = std::max<int>(group.clip.top(), 0);
+			scissor.right = std::min<int>(group.clip.right(), this->_size.x);
+			scissor.bottom = std::min<int>(group.clip.bottom(), this->_size.y);
 
-			context->SetScissorRects(1, &scissor, 0, 0);
+			if (scissor.IsValid()) {
+				context->SetScissorRects(1, &scissor, this->_size.x, this->_size.y);
+			}
 			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;
@@ -594,11 +589,11 @@ namespace rawrbox {
 	// --------------------
 
 	// ------ CLIPPING
-	void Stencil::pushClipping(const rawrbox::StencilClip& clip) {
-		rawrbox::StencilClip newClip = clip;
-		newClip.rect.pos = clip.rect.pos + this->_offset.cast<uint32_t>();
+	void Stencil::pushClipping(const rawrbox::AABBu& clip) {
+		rawrbox::AABBu fixedClip = clip;
+		fixedClip.pos = clip.pos + this->_offset.cast<uint32_t>();
 
-		this->_clips.emplace_back(newClip);
+		this->_clips.emplace_back(fixedClip);
 	}
 
 	void Stencil::popClipping() {
