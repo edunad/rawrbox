@@ -12,8 +12,8 @@ namespace rawrbox {
 	// Buffers ---
 	Diligent::IPipelineState* IMGUIManager::_2dPipeline = nullptr;
 
-	std::unique_ptr<Diligent::DynamicBuffer> IMGUIManager::_pVB;
-	std::unique_ptr<Diligent::DynamicBuffer> IMGUIManager::_pIB;
+	std::unique_ptr<rawrbox::StreamingBuffer> IMGUIManager::_pVB;
+	std::unique_ptr<rawrbox::StreamingBuffer> IMGUIManager::_pIB;
 	// -----------
 
 	// TEXTURE ----
@@ -26,110 +26,96 @@ namespace rawrbox {
 		if (data == nullptr || data->DisplaySize.x <= 0.0F || data->DisplaySize.y <= 0.0F || data->CmdListsCount == 0)
 			return;
 
-		auto* device = rawrbox::RENDERER->device();
 		auto* context = rawrbox::RENDERER->context();
 
-		// Check & Resize Buffers ---
-		uint64_t vtxSize = sizeof(ImDrawVert) * data->TotalVtxCount;
-		if (vtxSize > _pVB->GetDesc().Size) {
-			int totalVtx = rawrbox::MathUtils::nextPow2(data->TotalVtxCount);
-			_pVB->Resize(device, context, sizeof(ImDrawVert) * static_cast<uint64_t>(totalVtx), true);
-		}
+		// Setup streaming buffer ---
+		auto VBOffset = _pVB->allocate(data->TotalVtxCount * sizeof(ImDrawVert), 0);
+		auto IBOffset = _pIB->allocate(data->TotalIdxCount * sizeof(ImDrawIdx), 0);
 
-		uint64_t idxSize = sizeof(ImDrawIdx) * data->TotalIdxCount;
-		if (idxSize > _pIB->GetDesc().Size) {
-			int totalIdx = rawrbox::MathUtils::nextPow2(data->TotalIdxCount);
-			_pIB->Resize(device, context, sizeof(ImDrawIdx) * static_cast<uint64_t>(totalIdx), true);
-		}
-		// ----------------
+		auto* VertexData = std::bit_cast<ImDrawVert*>(std::bit_cast<uint8_t*>(_pVB->getCPUAddress(0)) + VBOffset);
+		auto* IndexData = std::bit_cast<ImDrawIdx*>(std::bit_cast<uint8_t*>(_pIB->getCPUAddress(0)) + IBOffset);
 
-		// Setup data ----
-		{
-			Diligent::MapHelper<ImDrawVert> Vertex(context, _pVB->GetBuffer(), Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			Diligent::MapHelper<ImDrawIdx> Index(context, _pIB->GetBuffer(), Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+		for (auto* cmdList : data->CmdLists) {
+			for (auto& pCmd : cmdList->CmdBuffer) {
+				auto* texture = std::bit_cast<rawrbox::TextureBase*>(pCmd.TextureId);
+				if (texture == nullptr) texture = rawrbox::MISSING_TEXTURE.get();
 
-			ImDrawVert* pVtxDst = Vertex;
-			ImDrawIdx* pIdxDst = Index;
+				if (pCmd.ElemCount == 0) continue;
 
-			for (int CmdListID = 0; CmdListID < data->CmdListsCount; CmdListID++) {
-				const ImDrawList* pCmdList = data->CmdLists[CmdListID];
+				for (uint32_t i = 0; i < pCmd.ElemCount; i++) {
+					int indx = pCmd.IdxOffset + i;
+					auto indice = cmdList->IdxBuffer[indx];
 
-				memcpy(pVtxDst, pCmdList->VtxBuffer.Data, pCmdList->VtxBuffer.Size * sizeof(ImDrawVert));
-				memcpy(pIdxDst, pCmdList->IdxBuffer.Data, pCmdList->IdxBuffer.Size * sizeof(ImDrawIdx));
-
-				pVtxDst += pCmdList->VtxBuffer.Size;
-				pIdxDst += pCmdList->IdxBuffer.Size;
+					cmdList->VtxBuffer[indice].textureID = texture->getTextureID();
+					cmdList->VtxBuffer[indice].__padding__.x = static_cast<float>(texture->getSlice());
+				}
 			}
-		}
-		// -------
 
-		auto setup = [&]() //
-		{
-			// Setup shader and vertex buffers
-			std::array<Diligent::IBuffer*, 1> pVBs = {_pVB->GetBuffer()};
+			std::memcpy(VertexData, cmdList->VtxBuffer.Data, cmdList->VtxBuffer.Size * sizeof(ImDrawVert));
+			std::memcpy(IndexData, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.Size * sizeof(ImDrawIdx));
+
+			VertexData += cmdList->VtxBuffer.Size;
+			IndexData += cmdList->IdxBuffer.Size;
+		}
+
+		_pVB->release(0);
+		_pIB->release(0);
+		//  -------------------
+
+		auto setup = [context]() {
+			std::array<Diligent::IBuffer*, 1> pVBs = {_pVB->buffer()};
 
 			context->SetVertexBuffers(0, 1, pVBs.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-			context->SetIndexBuffer(_pIB->GetBuffer(), 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			context->SetIndexBuffer(_pIB->buffer(), 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			context->SetPipelineState(_2dPipeline);
 		};
 
 		setup();
 
 		// Render command lists
-		// (Because we merged all buffers into a single one, we maintain our own offset into them)
 		uint32_t GlobalIdxOffset = 0;
 		uint32_t GlobalVtxOffset = 0;
 
-		for (int CmdListID = 0; CmdListID < data->CmdListsCount; CmdListID++) {
-			ImDrawList* pCmdList = data->CmdLists[CmdListID];
-
-			for (int CmdID = 0; CmdID < pCmdList->CmdBuffer.Size; CmdID++) {
-				ImDrawCmd* pCmd = &pCmdList->CmdBuffer[CmdID];
-				if (pCmd->UserCallback != nullptr) {
-					// User callback, registered via ImDrawList::AddCallback()
-					// (ImDrawCallback_ResetRenderState is a special callback value used by the user to request the renderer to reset render state.)
-					if (pCmd->UserCallback == ImDrawCallback_ResetRenderState)
+		for (const auto& pCmdList : data->CmdLists) {
+			for (const auto& pCmd : pCmdList->CmdBuffer) {
+				if (pCmd.UserCallback != nullptr) {
+					// NOLINTBEGIN(*)
+					if (pCmd.UserCallback == ImDrawCallback_ResetRenderState) {
+						// NOLINTEND(*)
 						setup();
-					else
-						pCmd->UserCallback(pCmdList, pCmd);
-				} else {
-					if (pCmd->ElemCount == 0)
 						continue;
-
-					auto* texture = std::bit_cast<rawrbox::TextureBase*>(pCmd->TextureId);
-					if (texture == nullptr) texture = _imguiFontTexture.get();
-
-					// Apply scissor/clipping rectangle
-					Diligent::Rect Scissor(
-					    (pCmd->ClipRect.x - data->DisplayPos.x) * data->FramebufferScale.x,
-					    (pCmd->ClipRect.y - data->DisplayPos.y) * data->FramebufferScale.y,
-					    (pCmd->ClipRect.z - data->DisplayPos.x) * data->FramebufferScale.x,
-					    (pCmd->ClipRect.w - data->DisplayPos.y) * data->FramebufferScale.y //
-					);
-
-					if (!Scissor.IsValid())
-						continue;
-
-					rawrbox::RENDERER->context()->SetScissorRects(1, &Scissor, 0, 0);
-
-					for (int i = pCmd->VtxOffset; i < pCmdList->VtxBuffer.size(); i++) {
-						auto& vert = pCmdList->VtxBuffer[i];
-
-						vert.textureID = texture->getTextureID();
-						vert.__padding__.x = static_cast<float>(texture->getSlice());
 					}
 
-					Diligent::DrawIndexedAttribs DrawAttrs{pCmd->ElemCount, Diligent::VT_UINT32, Diligent::DRAW_FLAG_VERIFY_STATES};
-					DrawAttrs.FirstIndexLocation = pCmd->IdxOffset + GlobalIdxOffset;
-					DrawAttrs.BaseVertex = pCmd->VtxOffset + GlobalVtxOffset;
-
-					rawrbox::RENDERER->context()->DrawIndexed(DrawAttrs);
+					pCmd.UserCallback(pCmdList, &pCmd);
+					continue;
 				}
+
+				if (pCmd.ElemCount == 0) continue;
+
+				// Apply scissor/clipping rectangle
+				Diligent::Rect Scissor(
+				    static_cast<uint32_t>((pCmd.ClipRect.x - data->DisplayPos.x) * data->FramebufferScale.x),
+				    static_cast<uint32_t>((pCmd.ClipRect.y - data->DisplayPos.y) * data->FramebufferScale.y),
+				    static_cast<uint32_t>((pCmd.ClipRect.z - data->DisplayPos.x) * data->FramebufferScale.x),
+				    static_cast<uint32_t>((pCmd.ClipRect.w - data->DisplayPos.y) * data->FramebufferScale.y) //
+				);
+
+				if (!Scissor.IsValid()) continue;
+				rawrbox::RENDERER->context()->SetScissorRects(1, &Scissor, 0, 0);
+
+				Diligent::DrawIndexedAttribs DrawAttrs = {pCmd.ElemCount, Diligent::VT_UINT32, Diligent::DRAW_FLAG_VERIFY_STATES};
+				DrawAttrs.FirstIndexLocation = GlobalIdxOffset + pCmd.IdxOffset;
+				DrawAttrs.BaseVertex = GlobalVtxOffset + pCmd.VtxOffset;
+
+				rawrbox::RENDERER->context()->DrawIndexed(DrawAttrs);
 			}
 
 			GlobalIdxOffset += pCmdList->IdxBuffer.Size;
 			GlobalVtxOffset += pCmdList->VtxBuffer.Size;
 		}
+
+		_pVB->flush(0);
+		_pIB->flush(0);
 	}
 	//------
 
@@ -162,35 +148,12 @@ namespace rawrbox {
 		// ----
 
 		// Setup buffers ---
-		{
-			Diligent::BufferDesc VBDesc;
-			VBDesc.Name = "RawrBox::Buffer:IMGUI::VERTEX";
-			VBDesc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
-			VBDesc.Size = 1024 * sizeof(ImDrawVert);
-			VBDesc.Usage = Diligent::USAGE_DYNAMIC;
-			VBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+		_pVB = std::make_unique<rawrbox::StreamingBuffer>("RawrBox::Stencil::VertexBuffer", Diligent::BIND_VERTEX_BUFFER, MaxVertsInStreamingBuffer * static_cast<uint32_t>(sizeof(ImDrawVert)), 1);
+		_pVB->setPersistent(true);
 
-			Diligent::DynamicBufferCreateInfo dynamicBuff;
-			dynamicBuff.Desc = VBDesc;
-
-			_pVB = std::make_unique<Diligent::DynamicBuffer>(renderer.device(), dynamicBuff);
-		}
-
-		{
-			Diligent::BufferDesc VBDesc;
-			VBDesc.Name = "RawrBox::Buffer:IMGUI::INDEX";
-			VBDesc.ElementByteStride = sizeof(ImDrawIdx);
-			VBDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
-			VBDesc.Size = 2048 * sizeof(ImDrawIdx);
-			VBDesc.Usage = Diligent::USAGE_DYNAMIC;
-			VBDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
-
-			Diligent::DynamicBufferCreateInfo dynamicBuff;
-			dynamicBuff.Desc = VBDesc;
-
-			_pIB = std::make_unique<Diligent::DynamicBuffer>(renderer.device(), dynamicBuff);
-		}
-		// -----------------
+		_pIB = std::make_unique<rawrbox::StreamingBuffer>("RawrBox::Stencil::IndexBuffer", Diligent::BIND_INDEX_BUFFER, MaxVertsInStreamingBuffer * 3 * static_cast<uint32_t>(sizeof(ImDrawIdx)), 1);
+		_pIB->setPersistent(true);
+		// --------------------------
 
 		_2dPipeline = rawrbox::PipelineUtils::getPipeline("Stencil::2D"); // Re-use stencil pipeline
 		if (_2dPipeline == nullptr) throw std::runtime_error("Failed to get stencil pipeline, call imgui init after initializing the renderer");
