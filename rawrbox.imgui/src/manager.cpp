@@ -29,8 +29,8 @@ namespace rawrbox {
 		auto* context = rawrbox::RENDERER->context();
 
 		// Setup streaming buffer ---
-		auto VBOffset = _pVB->allocate(data->TotalVtxCount * sizeof(ImDrawVert), 0);
-		auto IBOffset = _pIB->allocate(data->TotalIdxCount * sizeof(ImDrawIdx), 0);
+		auto VBOffset = static_cast<uint64_t>(_pVB->allocate(data->TotalVtxCount * sizeof(ImDrawVert), 0));
+		auto IBOffset = static_cast<uint64_t>(_pIB->allocate(data->TotalIdxCount * sizeof(ImDrawIdx), 0));
 
 		auto* VertexData = std::bit_cast<ImDrawVert*>(std::bit_cast<uint8_t*>(_pVB->getCPUAddress(0)) + VBOffset);
 		auto* IndexData = std::bit_cast<ImDrawIdx*>(std::bit_cast<uint8_t*>(_pIB->getCPUAddress(0)) + IBOffset);
@@ -42,12 +42,11 @@ namespace rawrbox {
 
 				if (pCmd.ElemCount == 0) continue;
 
-				for (uint32_t i = 0; i < pCmd.ElemCount; i++) {
-					int indx = pCmd.IdxOffset + i;
-					auto indice = cmdList->IdxBuffer[indx];
+				for (uint32_t i = pCmd.IdxOffset; i < pCmd.IdxOffset + pCmd.ElemCount; i++) {
+					auto verticeIndex = cmdList->IdxBuffer[i];
 
-					cmdList->VtxBuffer[indice].textureID = texture->getTextureID();
-					cmdList->VtxBuffer[indice].__padding__.x = static_cast<float>(texture->getSlice());
+					cmdList->VtxBuffer[verticeIndex].textureID = texture->getTextureID();
+					cmdList->VtxBuffer[verticeIndex].__padding__.x = static_cast<float>(texture->getSlice());
 				}
 			}
 
@@ -62,11 +61,11 @@ namespace rawrbox {
 		_pIB->release(0);
 		//  -------------------
 
-		auto setup = [context]() {
-			std::array<Diligent::IBuffer*, 1> pVBs = {_pVB->buffer()};
+		auto setup = [&]() {
+			auto* buffer = _pVB->buffer();
 
-			context->SetVertexBuffers(0, 1, pVBs.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-			context->SetIndexBuffer(_pIB->buffer(), 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
+			context->SetVertexBuffers(0, 1, &buffer, &VBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+			context->SetIndexBuffer(_pIB->buffer(), IBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
 			context->SetPipelineState(_2dPipeline);
 		};
 
@@ -97,8 +96,7 @@ namespace rawrbox {
 				    static_cast<uint32_t>((pCmd.ClipRect.x - data->DisplayPos.x) * data->FramebufferScale.x),
 				    static_cast<uint32_t>((pCmd.ClipRect.y - data->DisplayPos.y) * data->FramebufferScale.y),
 				    static_cast<uint32_t>((pCmd.ClipRect.z - data->DisplayPos.x) * data->FramebufferScale.x),
-				    static_cast<uint32_t>((pCmd.ClipRect.w - data->DisplayPos.y) * data->FramebufferScale.y) //
-				);
+				    static_cast<uint32_t>((pCmd.ClipRect.w - data->DisplayPos.y) * data->FramebufferScale.y));
 
 				if (!Scissor.IsValid()) continue;
 				rawrbox::RENDERER->context()->SetScissorRects(1, &Scissor, 0, 0);

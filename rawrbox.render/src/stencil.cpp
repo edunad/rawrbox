@@ -475,8 +475,8 @@ namespace rawrbox {
 			auto indSize = static_cast<uint32_t>(group.indices.size());
 
 			// Allocate data -----
-			auto VBOffset = this->_streamingVB->allocate(vertSize * sizeof(rawrbox::PosUVColorVertexData), contextID);
-			auto IBOffset = this->_streamingIB->allocate(indSize * sizeof(uint32_t), contextID);
+			auto VBOffset = static_cast<uint64_t>(this->_streamingVB->allocate(vertSize * sizeof(rawrbox::PosUVColorVertexData), contextID));
+			auto IBOffset = static_cast<uint64_t>(this->_streamingIB->allocate(indSize * sizeof(uint32_t), contextID));
 
 			auto* VertexData = std::bit_cast<rawrbox::PosUVColorVertexData*>(std::bit_cast<uint8_t*>(this->_streamingVB->getCPUAddress(contextID)) + VBOffset);
 			auto* IndexData = std::bit_cast<uint32_t*>(std::bit_cast<uint8_t*>(this->_streamingIB->getCPUAddress(contextID)) + IBOffset);
@@ -489,13 +489,12 @@ namespace rawrbox {
 			//  -------------------
 
 			// Render ------------
-			const std::array<uint64_t, 1> offsets = {VBOffset};
-			std::array<Diligent::IBuffer*, 1> pBuffs = {this->_streamingVB->buffer()};
+			auto* vertBuffer = this->_streamingVB->buffer();
 
-			context->SetVertexBuffers(0, 1, pBuffs.data(), offsets.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+			context->SetVertexBuffers(0, 1, &vertBuffer, &VBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 			context->SetIndexBuffer(this->_streamingIB->buffer(), IBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-
 			context->SetPipelineState(group.stencilProgram);
+			// --------------
 
 			// SCISSOR ---
 			Diligent::Rect scissor;
