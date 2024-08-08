@@ -435,12 +435,13 @@ namespace rawrbox {
 	void Stencil::setupDrawCall(Diligent::IPipelineState* program) {
 		this->_currentDraw.clear();
 
+		this->_currentDraw.optimize = this->_optimizations.empty() ? true : this->_optimizations.back();
 		this->_currentDraw.stencilProgram = program;
-		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::AABBu{0, 0, this->_size.x, this->_size.y} : this->_clips.back();
+		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::Clip{{0, 0, this->_size.x, this->_size.y}} : this->_clips.back();
 	}
 
 	void Stencil::pushDrawCall() {
-		if (!this->_drawCalls.empty()) {
+		if (this->_currentDraw.optimize && !this->_drawCalls.empty()) {
 			auto& oldCall = this->_drawCalls.back();
 
 			bool canMerge = oldCall.clip == this->_currentDraw.clip &&
@@ -498,10 +499,17 @@ namespace rawrbox {
 
 			// SCISSOR ---
 			Diligent::Rect scissor;
-			scissor.left = std::max<int>(group.clip.left(), 0);
-			scissor.top = std::max<int>(group.clip.top(), 0);
-			scissor.right = std::min<int>(group.clip.right(), this->_size.x);
-			scissor.bottom = std::min<int>(group.clip.bottom(), this->_size.y);
+			if (group.clip.worldSpace) {
+				scissor.left = std::max<int>(group.clip.bbox.pos.x, 0);
+				scissor.top = std::max<int>(group.clip.bbox.pos.y, 0);
+				scissor.right = std::min<int>(group.clip.bbox.size.x, this->_size.x);
+				scissor.bottom = std::min<int>(group.clip.bbox.size.y, this->_size.y);
+			} else {
+				scissor.left = std::max<int>(group.clip.bbox.left(), 0);
+				scissor.top = std::max<int>(group.clip.bbox.top(), 0);
+				scissor.right = std::min<int>(group.clip.bbox.right(), this->_size.x);
+				scissor.bottom = std::min<int>(group.clip.bbox.bottom(), this->_size.y);
+			}
 
 			if (scissor.IsValid()) {
 				context->SetScissorRects(1, &scissor, this->_size.x, this->_size.y);
@@ -530,6 +538,7 @@ namespace rawrbox {
 		if (!this->_outlines.empty()) throw this->_logger->error("Missing 'popOutline', cannot draw");
 		if (!this->_clips.empty()) throw this->_logger->error("Missing 'popClipping', cannot draw");
 		if (!this->_scales.empty()) throw this->_logger->error("Missing 'popScale', cannot draw");
+		if (!this->_optimizations.empty()) throw this->_logger->error("Missing 'popOptimize', cannot draw");
 
 		this->internalDraw();
 	}
@@ -588,9 +597,9 @@ namespace rawrbox {
 	// --------------------
 
 	// ------ CLIPPING
-	void Stencil::pushClipping(const rawrbox::AABBu& clip) {
-		rawrbox::AABBu fixedClip = clip;
-		fixedClip.pos = clip.pos + this->_offset.cast<uint32_t>();
+	void Stencil::pushClipping(const rawrbox::Clip& clip) {
+		rawrbox::Clip fixedClip = clip;
+		fixedClip.bbox.pos = clip.bbox.pos + this->_offset.cast<uint32_t>();
 
 		this->_clips.emplace_back(fixedClip);
 	}
@@ -614,6 +623,17 @@ namespace rawrbox {
 		this->_scales.pop_back();
 	}
 	// --------------------
+
+	// ------ OPTIMIZATION
+	void Stencil::pushOptimize(bool optimize) {
+		this->_optimizations.push_back(optimize);
+	}
+
+	void Stencil::popOptimize() {
+		if (this->_optimizations.empty()) throw this->_logger->error("Optimize is empty, failed to pop");
+		this->_optimizations.pop_back();
+	}
+	// -------------------
 
 	// ------ OTHER
 	const rawrbox::Vector2u& Stencil::getSize() const { return this->_size; }

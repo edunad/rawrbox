@@ -9,13 +9,6 @@
 
 namespace rawrbox {
 	// PROTECTED ---
-	// Buffers ---
-	Diligent::IPipelineState* IMGUIManager::_2dPipeline = nullptr;
-
-	std::unique_ptr<rawrbox::StreamingBuffer> IMGUIManager::_pVB;
-	std::unique_ptr<rawrbox::StreamingBuffer> IMGUIManager::_pIB;
-	// -----------
-
 	// TEXTURE ----
 	std::unique_ptr<rawrbox::TextureImage> IMGUIManager::_imguiFontTexture = nullptr;
 	// -------
@@ -26,63 +19,21 @@ namespace rawrbox {
 		if (data == nullptr || data->DisplaySize.x <= 0.0F || data->DisplaySize.y <= 0.0F || data->CmdListsCount == 0)
 			return;
 
-		auto* context = rawrbox::RENDERER->context();
-
-		// Setup streaming buffer ---
-		auto VBOffset = static_cast<uint64_t>(_pVB->allocate(data->TotalVtxCount * sizeof(ImDrawVert), 0));
-		auto IBOffset = static_cast<uint64_t>(_pIB->allocate(data->TotalIdxCount * sizeof(ImDrawIdx), 0));
-
-		auto* VertexData = std::bit_cast<ImDrawVert*>(std::bit_cast<uint8_t*>(_pVB->getCPUAddress(0)) + VBOffset);
-		auto* IndexData = std::bit_cast<ImDrawIdx*>(std::bit_cast<uint8_t*>(_pIB->getCPUAddress(0)) + IBOffset);
-
-		for (auto* cmdList : data->CmdLists) {
-			for (auto& pCmd : cmdList->CmdBuffer) {
-				auto* texture = std::bit_cast<rawrbox::TextureBase*>(pCmd.TextureId);
-				if (texture == nullptr) texture = rawrbox::MISSING_TEXTURE.get();
-
-				if (pCmd.ElemCount == 0) continue;
-
-				for (uint32_t i = pCmd.IdxOffset; i < pCmd.IdxOffset + pCmd.ElemCount; i++) {
-					auto verticeIndex = cmdList->IdxBuffer[i];
-
-					cmdList->VtxBuffer[verticeIndex].textureID = texture->getTextureID();
-					cmdList->VtxBuffer[verticeIndex].__padding__.x = static_cast<float>(texture->getSlice());
-				}
-			}
-
-			std::memcpy(VertexData, cmdList->VtxBuffer.Data, cmdList->VtxBuffer.Size * sizeof(ImDrawVert));
-			std::memcpy(IndexData, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.Size * sizeof(ImDrawIdx));
-
-			VertexData += cmdList->VtxBuffer.Size;
-			IndexData += cmdList->IdxBuffer.Size;
-		}
-
-		_pVB->release(0);
-		_pIB->release(0);
-		//  -------------------
-
-		auto setup = [&]() {
-			auto* buffer = _pVB->buffer();
-
-			context->SetVertexBuffers(0, 1, &buffer, &VBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-			context->SetIndexBuffer(_pIB->buffer(), IBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_TRANSITION);
-			context->SetPipelineState(_2dPipeline);
-		};
-
-		setup();
-
-		// Render command lists
-		uint32_t GlobalIdxOffset = 0;
-		uint32_t GlobalVtxOffset = 0;
+		auto* stencil = rawrbox::RENDERER->stencil();
 
 		for (const auto& pCmdList : data->CmdLists) {
+			std::vector<uint32_t> indices(pCmdList->IdxBuffer.Size);
+			std::memcpy(indices.data(), pCmdList->IdxBuffer.Data, pCmdList->IdxBuffer.Size * sizeof(ImDrawIdx));
+
+			std::vector<rawrbox::PosUVColorVertexData> vertices(pCmdList->VtxBuffer.Size);
+			std::memcpy(vertices.data(), pCmdList->VtxBuffer.Data, pCmdList->VtxBuffer.Size * sizeof(ImDrawVert));
+
 			for (const auto& pCmd : pCmdList->CmdBuffer) {
 				if (pCmd.UserCallback != nullptr) {
 					// NOLINTBEGIN(*)
 					if (pCmd.UserCallback == ImDrawCallback_ResetRenderState) {
 						// NOLINTEND(*)
-						setup();
-						continue;
+						continue; // Not supported
 					}
 
 					pCmd.UserCallback(pCmdList, &pCmd);
@@ -91,29 +42,36 @@ namespace rawrbox {
 
 				if (pCmd.ElemCount == 0) continue;
 
+				// Texturing ----
+				auto* texture = pCmd.TextureId;
+				if (texture == nullptr) texture = rawrbox::MISSING_TEXTURE.get();
+
+				for (uint32_t i = pCmd.IdxOffset; i < pCmd.IdxOffset + pCmd.ElemCount; i++) {
+					auto verticeIndex = indices[i];
+
+					vertices[verticeIndex].textureID = texture->getTextureID();
+					vertices[verticeIndex].uv.z = static_cast<float>(texture->getSlice());
+				}
+				// ------------
+
 				// Apply scissor/clipping rectangle
-				Diligent::Rect Scissor(
+				rawrbox::AABBu Scissor(
 				    static_cast<uint32_t>((pCmd.ClipRect.x - data->DisplayPos.x) * data->FramebufferScale.x),
 				    static_cast<uint32_t>((pCmd.ClipRect.y - data->DisplayPos.y) * data->FramebufferScale.y),
 				    static_cast<uint32_t>((pCmd.ClipRect.z - data->DisplayPos.x) * data->FramebufferScale.x),
 				    static_cast<uint32_t>((pCmd.ClipRect.w - data->DisplayPos.y) * data->FramebufferScale.y));
 
-				if (!Scissor.IsValid()) continue;
-				rawrbox::RENDERER->context()->SetScissorRects(1, &Scissor, 0, 0);
+				if (!Scissor.valid()) continue;
 
-				Diligent::DrawIndexedAttribs DrawAttrs = {pCmd.ElemCount, Diligent::VT_UINT32, Diligent::DRAW_FLAG_VERIFY_STATES};
-				DrawAttrs.FirstIndexLocation = GlobalIdxOffset + pCmd.IdxOffset;
-				DrawAttrs.BaseVertex = GlobalVtxOffset + pCmd.VtxOffset;
+				stencil->pushOptimize(false);
+				stencil->pushClipping({Scissor, true});
 
-				rawrbox::RENDERER->context()->DrawIndexed(DrawAttrs);
+				stencil->drawVertices(vertices, indices);
+
+				stencil->popClipping();
+				stencil->popOptimize();
 			}
-
-			GlobalIdxOffset += pCmdList->IdxBuffer.Size;
-			GlobalVtxOffset += pCmdList->VtxBuffer.Size;
 		}
-
-		_pVB->flush(0);
-		_pIB->flush(0);
 	}
 	//------
 
@@ -144,17 +102,6 @@ namespace rawrbox {
 				break;
 		}
 		// ----
-
-		// Setup buffers ---
-		_pVB = std::make_unique<rawrbox::StreamingBuffer>("RawrBox::Stencil::VertexBuffer", Diligent::BIND_VERTEX_BUFFER, MaxVertsInStreamingBuffer * static_cast<uint32_t>(sizeof(ImDrawVert)), 1);
-		_pVB->setPersistent(true);
-
-		_pIB = std::make_unique<rawrbox::StreamingBuffer>("RawrBox::Stencil::IndexBuffer", Diligent::BIND_INDEX_BUFFER, MaxVertsInStreamingBuffer * 3 * static_cast<uint32_t>(sizeof(ImDrawIdx)), 1);
-		_pIB->setPersistent(true);
-		// --------------------------
-
-		_2dPipeline = rawrbox::PipelineUtils::getPipeline("Stencil::2D"); // Re-use stencil pipeline
-		if (_2dPipeline == nullptr) throw std::runtime_error("Failed to get stencil pipeline, call imgui init after initializing the renderer");
 	}
 
 	void IMGUIManager::load() {
@@ -170,16 +117,12 @@ namespace rawrbox {
 		_imguiFontTexture->upload();
 		// ----------
 
-		// NOLINTBEGIN(*)
-		IO.Fonts->TexID = (ImTextureID)_imguiFontTexture.get();
-		// NOLINTEND(*)
+		IO.Fonts->TexID = _imguiFontTexture.get();
 	}
 
 	void IMGUIManager::clear() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-
-		ImGui::DockSpaceOverViewport(ImGui::GetWindowDockID(), ImGui::GetMainViewport());
 	}
 
 	void IMGUIManager::render() {
@@ -188,9 +131,6 @@ namespace rawrbox {
 	}
 
 	void IMGUIManager::shutdown() {
-		_pIB.reset();
-		_pVB.reset();
-
 		_imguiFontTexture.reset();
 
 		ImGui_ImplGlfw_Shutdown();

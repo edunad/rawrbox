@@ -11,18 +11,9 @@ struct ImDrawData;
 namespace rawrbox {
 	class IMGUIManager {
 	private:
-		static constexpr uint32_t MaxVertsInStreamingBuffer = 65536;
-
 		// TEXTURES ----
 		static std::unique_ptr<rawrbox::TextureImage> _imguiFontTexture;
 		// -------
-
-		// Buffers ---
-		static Diligent::IPipelineState* _2dPipeline;
-
-		static std::unique_ptr<rawrbox::StreamingBuffer> _pVB;
-		static std::unique_ptr<rawrbox::StreamingBuffer> _pIB;
-		// -----------
 
 		static void renderDrawData(ImDrawData* data);
 

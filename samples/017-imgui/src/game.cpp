@@ -33,7 +33,6 @@ namespace imgui {
 
 		// Setup renderer
 		auto* render = window->createRenderer();
-		render->skipIntros(true);
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OVERLAY) return;
@@ -106,12 +105,13 @@ namespace imgui {
 	}
 
 	void Game::drawIMGUIMenu() {
+		ImGui::DockSpaceOverViewport(ImGui::GetWindowDockID(), ImGui::GetMainViewport());
 
 		// TEST FRAME --
 		ImGui::Begin("Welcome");
 		ImGui::Text("Hello Player!");
 		ImGui::InputText("Name", this->_inputText.data(), 256);
-		ImGui::Image((void*)this->_texture, ImVec2(553, 358));
+		ImGui::Image(this->_texture, ImVec2(553, 358));
 		ImGui::End();
 		// ----------
 

@@ -54,19 +54,29 @@ namespace rawrbox {
 		std::vector<unsigned int> indices = {};
 	};
 
+	struct Clip {
+		rawrbox::AABBu bbox = {};
+		bool worldSpace = false;
+
+		bool operator==(const Clip& other) const { return this->bbox == other.bbox && this->worldSpace == other.worldSpace; }
+		bool operator!=(const Clip& other) const { return !operator==(other); }
+	};
+
 	struct StencilDraw {
 		Diligent::IPipelineState* stencilProgram = nullptr;
 
 		std::vector<rawrbox::PosUVColorVertexData> vertices = {};
 		std::vector<uint32_t> indices = {};
 
-		rawrbox::AABBu clip = {};
+		rawrbox::Clip clip = {};
 		bool cull = true;
+		bool optimize = true;
 
 		void clear() {
 			this->cull = true;
 			this->clip = {};
 
+			this->optimize = true;
 			this->stencilProgram = nullptr;
 
 			this->indices.clear();
@@ -165,7 +175,7 @@ namespace rawrbox {
 		// ----------
 
 		// Clip handling ----
-		std::vector<rawrbox::AABBu> _clips = {};
+		std::vector<rawrbox::Clip> _clips = {};
 		// ----------
 
 		// Outline handling ----
@@ -182,6 +192,10 @@ namespace rawrbox {
 		std::vector<rawrbox::Vector2f> _scales = {};
 		rawrbox::Vector2f _scale = {};
 		// ----------
+
+		// Optimization handling ----
+		std::vector<bool> _optimizations = {};
+		// ---------------------------
 
 		// Drawing -----
 		rawrbox::StencilDraw _currentDraw = {};
@@ -259,7 +273,7 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ CLIPPING
-		virtual void pushClipping(const rawrbox::AABBu& clip);
+		virtual void pushClipping(const rawrbox::Clip& clip);
 		virtual void popClipping();
 		// --------------------
 
@@ -267,6 +281,11 @@ namespace rawrbox {
 		virtual void pushScale(const rawrbox::Vector2f& scale);
 		virtual void popScale();
 		// --------------------
+
+		// ------ OPTIMIZATION
+		virtual void pushOptimize(bool optimize);
+		virtual void popOptimize();
+		// -------------------
 
 		// ------ OTHER
 		[[nodiscard]] virtual const rawrbox::Vector2u& getSize() const;

@@ -8,8 +8,8 @@ CPMAddPackage(
         imgui
     GITHUB_REPOSITORY
         ocornut/imgui
-    PATCH_COMMAND
-        git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/imgui.patch
+    #PATCH_COMMAND
+    #    git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/imgui.patch
     GIT_TAG
         docking
     VERSION
@@ -28,6 +28,9 @@ if(imgui_ADDED)
 
         ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
     )
+
+    # Setup config file
+    configure_file(./imconfig.h ${imgui_SOURCE_DIR}/imconfig.h)
 
     add_library(IMGUI STATIC ${IMGUI_SRC})
     target_include_directories(IMGUI

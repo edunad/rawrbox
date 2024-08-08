@@ -135,7 +135,7 @@ namespace rawrbox {
 		bool canClip = elm->clipOverflow();
 
 		stencil.pushOffset(elm->getPos());
-		if (canClip) stencil.pushClipping(rawrbox::AABBu{{0U, 0U}, elm->getSize().cast<uint32_t>()});
+		if (canClip) stencil.pushClipping(rawrbox::Clip{{{0U, 0U}, elm->getSize().cast<uint32_t>()}, false});
 
 		elm->beforeDraw(stencil);
 		elm->draw(stencil);

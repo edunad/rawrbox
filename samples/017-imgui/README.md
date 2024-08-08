@@ -3,4 +3,4 @@
 > [!NOTE]
 > This sample demonstrates the integration of IMGUI into your game.
 
-![](https://i.rawr.dev/sample17-min.gif)
+![](https://i.rawr.dev/sample17-min-2.gif)
