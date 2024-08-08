@@ -69,7 +69,6 @@ namespace rawrbox {
 		rawrbox::ImageData _data = {};
 
 		uint64_t _id = 0;
-
 		uint32_t _textureID = 0; // Default to missing texture, it's always reserved to 0
 		uint32_t _depthTextureID = 0;
 		uint32_t _slice = 0;

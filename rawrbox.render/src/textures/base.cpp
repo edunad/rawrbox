@@ -95,7 +95,10 @@ namespace rawrbox {
 
 	uint8_t TextureBase::getChannels() const { return this->_data.channels; }
 
-	bool TextureBase::isValid() const { return this->getHandle() != nullptr; }
+	bool TextureBase::isValid() const {
+		return this->getHandle() != nullptr && (this->_failedToLoad && this->_textureID == 0);
+	}
+
 	bool TextureBase::isRegistered() const { return this->_registered; }
 
 	uint32_t TextureBase::getDepthTextureID() const { return this->_depthTextureID; }
@@ -177,9 +180,11 @@ namespace rawrbox {
 		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
 		if (this->_tex == nullptr) throw this->_logger->error("Failed to create texture '{}'", this->_name);
 
-		rawrbox::runOnRenderThread([this]() {
-			this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+		// Get handles --
+		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+		// -------
 
+		rawrbox::runOnRenderThread([this]() {
 			rawrbox::BarrierUtils::barrier({{this->_tex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			rawrbox::BindlessManager::registerTexture(*this);
 		});

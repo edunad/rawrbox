@@ -11,7 +11,7 @@ namespace rawrbox {
 		} catch (const cpptrace::exception_with_message& e) {
 			if (useFallback) {
 				this->loadFallback();
-				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", filePath.generic_string(), e.what());
+				this->_logger->warn("Failed to load '{}' ──> \n\t{}\n\t\t  └── Loading fallback texture!", filePath.generic_string(), e.message());
 				return;
 			}
 
@@ -25,7 +25,7 @@ namespace rawrbox {
 		} catch (const cpptrace::exception_with_message& e) {
 			if (useFallback) {
 				this->loadFallback();
-				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", filePath.generic_string(), e.what());
+				this->_logger->warn("Failed to load '{}' ──> \n\t{}\n\t\t  └── Loading fallback texture!", filePath.generic_string(), e.message());
 				return;
 			}
 

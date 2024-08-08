@@ -110,10 +110,6 @@ namespace rawrbox {
 
 	void Window::shutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
-			for (const auto& window : __WINDOWS) {
-				window->_renderer.reset(); // Shutdown renderers
-			}
-
 			// SHUTDOWN FONTS ----
 			rawrbox::TextEngine::shutdown();
 
@@ -136,6 +132,12 @@ namespace rawrbox {
 			rawrbox::BindlessManager::shutdown();
 			rawrbox::PipelineUtils::shutdown();
 			// ---------------
+
+			// SHUTDOWN RENDERERS ----
+			for (const auto& window : __WINDOWS) {
+				window->_renderer.reset();
+			}
+			// ---------------------
 
 			_logger->success("Thread 'rawrbox:render' shutdown complete");
 			return;

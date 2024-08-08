@@ -13,9 +13,9 @@ namespace rawrbox {
 
 		try {
 			this->_data = rawrbox::WEBP::decode(data);
-		} catch (const std::runtime_error& err) {
+		} catch (const cpptrace::exception_with_message& err) {
 			if (useFallback) {
-				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), err.what());
+				this->_logger->warn("Failed to load '{}' ──> \n\t{}\n\t\t  └── Loading fallback texture!", this->_filePath.generic_string(), err.message());
 				this->loadFallback();
 				return;
 			}
