@@ -41,10 +41,7 @@ namespace rawrbox {
 		// Initialize pipeline cache -----
 		Diligent::RenderStateCacheCreateInfo CacheCI;
 		CacheCI.pDevice = &device;
-#ifdef _DEBUG
-		CacheCI.LogLevel = Diligent::RENDER_STATE_CACHE_LOG_LEVEL_VERBOSE;
-		CacheCI.EnableHotReload = true;
-#endif
+
 		Diligent::CreateRenderStateCache(CacheCI, &_stateCache);
 		// -------------------------
 

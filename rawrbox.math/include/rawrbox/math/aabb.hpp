@@ -10,8 +10,8 @@ namespace rawrbox {
 		using AABBType = AABB_t<NumberType>;
 
 	public:
-		Vector2_t<NumberType> pos;
-		Vector2_t<NumberType> size;
+		Vector2_t<NumberType> pos = {};
+		Vector2_t<NumberType> size = {};
 
 		AABB_t() = default;
 
@@ -38,6 +38,7 @@ namespace rawrbox {
 			return this->pos.y + this->size.y;
 		}
 
+		[[nodiscard]] bool valid() const { return this->size.x > this->pos.x && this->size.y > this->pos.y; }
 		[[nodiscard]] bool empty() const { return this->pos == 0 && this->size == 0; }
 		[[nodiscard]] bool contains(const Vector2_t<NumberType>& pos_) const {
 			return pos_.x >= this->pos.x &&                // left

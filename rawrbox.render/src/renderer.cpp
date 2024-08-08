@@ -229,11 +229,8 @@ namespace rawrbox {
 		// ----------------------
 
 		// Setup camera -----
-		if (this->_camera != nullptr) {
-			this->_camera->initialize();
-		} else {
-			this->_logger->warn("No camera found! Only {} {}", fmt::format(fmt::fg(fmt::color::red), "OVERLAY"), fmt::format(fmt::fg(fmt::color::yellow), "pass will be available!"));
-		}
+		if (this->_camera == nullptr) throw this->_logger->error("No camera found!");
+		this->_camera->initialize();
 		// ------------------
 
 		// Init plugins ---
@@ -280,7 +277,7 @@ namespace rawrbox {
 		if (rawrbox::CHECKER_TEXTURE == nullptr) {
 			auto checker = rawrbox::TextureUtils::generateCheckboard({256U, 256U}, rawrbox::Color::RGBHex(0x161618), rawrbox::Color::RGBHex(0x2a2a2d), 8U);
 
-			rawrbox::CHECKER_TEXTURE = std::make_shared<rawrbox::TextureImage>(rawrbox::Vector2u(256U, 256U), checker, 4);
+			rawrbox::CHECKER_TEXTURE = std::make_shared<rawrbox::TextureImage>(rawrbox::Vector2u(256U, 256U), checker, uint8_t(4));
 			rawrbox::CHECKER_TEXTURE->setName("CHECKER_TEXTURE");
 			rawrbox::CHECKER_TEXTURE->upload();
 		}
@@ -291,15 +288,15 @@ namespace rawrbox {
 		this->_logger->info("Loading default fonts");
 
 		if (rawrbox::DEBUG_FONT_REGULAR == nullptr) {
-			rawrbox::DEBUG_FONT_REGULAR = rawrbox::TextEngine::load("./assets/fonts/SourceCodePro-Regular.ttf", 11);
+			rawrbox::DEBUG_FONT_REGULAR = rawrbox::TextEngine::load("./assets/fonts/SourceCodePro-Regular.ttf", 11U);
 		}
 
 		if (rawrbox::DEBUG_FONT_BOLD == nullptr) {
-			rawrbox::DEBUG_FONT_BOLD = rawrbox::TextEngine::load("./assets/fonts/SourceCodePro-Bold.ttf", 11);
+			rawrbox::DEBUG_FONT_BOLD = rawrbox::TextEngine::load("./assets/fonts/SourceCodePro-Bold.ttf", 11U);
 		}
 
 		if (rawrbox::DEBUG_FONT_ITALIC == nullptr) {
-			rawrbox::DEBUG_FONT_ITALIC = rawrbox::TextEngine::load("./assets/fonts/SourceCodePro-Italic.ttf", 11);
+			rawrbox::DEBUG_FONT_ITALIC = rawrbox::TextEngine::load("./assets/fonts/SourceCodePro-Italic.ttf", 11U);
 		}
 		// ------
 
@@ -391,7 +388,7 @@ namespace rawrbox {
 	}
 
 	void RendererBase::render() {
-		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw this->_logger->error("Failed to bind swapChain/context/device! Did you call 'init' ?");
+		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw this->_logger->error("Failed to bind swapChain / context / device! Did you call 'init' ?");
 		if (this->_drawCall == nullptr) throw this->_logger->error("Missing draw call! Did you call 'setDrawCall' ?");
 
 		// Clear backbuffer ----
@@ -401,26 +398,6 @@ namespace rawrbox {
 		// Update textures ---
 		rawrbox::BindlessManager::update();
 		// --------------------
-
-		// No camera -------
-		if (this->_camera == nullptr) {
-			this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-
-#ifdef _DEBUG
-			// this->_context->BeginDebugGroup("OVERLAY");
-			// this->beginQuery("OVERLAY");
-#endif
-			this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
-			if (this->_stencil != nullptr) this->_stencil->render();
-#ifdef _DEBUG
-				// this->_context->EndDebugGroup();
-				// this->endQuery("OVERLAY");
-#endif
-
-			this->frame();
-			return; // No camera, no world draw
-		}
-		// ---------------------
 
 		// Update camera buffer --
 		this->_camera->updateBuffer();
@@ -536,7 +513,7 @@ namespace rawrbox {
 			if (pass != rawrbox::DrawPass::PASS_OVERLAY) return;
 			auto screenSize = this->_size.cast<float>();
 
-			if (this->_currentIntro != nullptr) {
+			if (this->_currentIntro != nullptr && this->_currentIntro->valid()) {
 				this->_stencil->drawBox({}, screenSize, this->_currentIntro->background); // Background
 
 				if (this->_currentIntro->cover) {
@@ -545,6 +522,7 @@ namespace rawrbox {
 					auto size = this->_currentIntro->texture->getSize().cast<float>();
 					this->_stencil->drawTexture({screenSize.x / 2.F - size.x / 2.F, screenSize.y / 2.F - size.y / 2.F}, {size.x, size.y}, *this->_currentIntro->texture);
 				}
+
 			} else {
 				this->_stencil->drawBox({}, screenSize, rawrbox::Colors::Black()); // Background
 			}

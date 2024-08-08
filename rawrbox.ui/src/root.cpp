@@ -114,8 +114,11 @@ namespace rawrbox {
 		// Check new focus target ----
 		rawrbox::Vector2i offsetOut = {};
 		auto* target = this->findElement(location, offsetOut);
-		if (target == this->focusedElement) return;
-		// ----------
+		if (target == this->focusedElement) {
+			target->mouseDown(location - offsetOut, button, mods);
+			return;
+		}
+		//  ----------
 
 		// Clicked outside, reset focus ---
 		if (target == nullptr) {

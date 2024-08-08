@@ -58,6 +58,10 @@
   - changed-files:
       - any-glob-to-any-file: "rawrbox.steamworks/**/*"
 
+"🎨 IMGUI":
+  - changed-files:
+      - any-glob-to-any-file: "rawrbox.imgui/**/*"
+
 "📜 SCRIPTING":
   - changed-files:
       - any-glob-to-any-file:

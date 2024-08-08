@@ -449,6 +449,8 @@ namespace rawrbox {
 		return this->_settings.flags;
 	}
 
+	GLFWwindow* Window::getGLFWHandle() const { return this->_handle; }
+
 	Diligent::NativeWindow Window::getHandle() const {
 		if (this->_handle == nullptr) throw _logger->error("Invalid window handle");
 			// Get native window ----

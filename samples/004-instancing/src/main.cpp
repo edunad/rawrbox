@@ -13,7 +13,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
 #endif
 
 	instance_test::Game engine;
-	engine.setFPS(60);
+	engine.setFPS(120);
 	engine.setTPS(66);
 	engine.run();
 

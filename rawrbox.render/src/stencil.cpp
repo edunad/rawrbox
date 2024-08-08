@@ -62,13 +62,11 @@ namespace rawrbox {
 	}
 
 	void Stencil::pushVertice(const uint32_t& textureID, rawrbox::Vector2f pos, const rawrbox::Vector4f& uv, const rawrbox::Color& col) {
-		auto wSize = this->_size.cast<float>();
-
 		this->applyScale(pos);
 		this->applyRotation(pos);
 
 		this->_currentDraw.vertices.emplace_back(textureID,
-		    rawrbox::Vector2f(((pos.x + this->_offset.x) / wSize.x * 2 - 1), ((pos.y + this->_offset.y) / wSize.y * 2 - 1) * -1),
+		    rawrbox::Vector2f(pos.x + this->_offset.x, pos.y + this->_offset.y),
 		    uv,
 		    col);
 	}
@@ -416,18 +414,34 @@ namespace rawrbox {
 		this->pushDrawCall();
 		// ----
 	}
+
+	void Stencil::drawVertices(const std::vector<rawrbox::PosUVColorVertexData>& vertices, const std::vector<uint32_t>& indices) {
+		if (vertices.empty() || indices.empty()) return;
+
+		// Setup --------
+		this->setupDrawCall(this->_2dPipeline);
+		// ----
+
+		this->_currentDraw.vertices = vertices;
+		this->_currentDraw.indices = indices;
+
+		// Add to calls
+		this->pushDrawCall();
+		// ----
+	}
 	// --------------------
 
 	// ------RENDERING
 	void Stencil::setupDrawCall(Diligent::IPipelineState* program) {
 		this->_currentDraw.clear();
 
+		this->_currentDraw.optimize = this->_optimizations.empty() ? true : this->_optimizations.back();
 		this->_currentDraw.stencilProgram = program;
-		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::AABBu(0, 0, this->_size.x, this->_size.y) : this->_clips.back();
+		this->_currentDraw.clip = this->_clips.empty() ? rawrbox::Clip{{0, 0, this->_size.x, this->_size.y}} : this->_clips.back();
 	}
 
 	void Stencil::pushDrawCall() {
-		if (!this->_drawCalls.empty()) {
+		if (this->_currentDraw.optimize && !this->_drawCalls.empty()) {
 			auto& oldCall = this->_drawCalls.back();
 
 			bool canMerge = oldCall.clip == this->_currentDraw.clip &&
@@ -445,7 +459,7 @@ namespace rawrbox {
 			}
 		}
 
-		this->_drawCalls.push_back(this->_currentDraw);
+		this->_drawCalls.emplace_back(this->_currentDraw);
 	}
 
 	void Stencil::internalDraw() {
@@ -462,8 +476,8 @@ namespace rawrbox {
 			auto indSize = static_cast<uint32_t>(group.indices.size());
 
 			// Allocate data -----
-			auto VBOffset = this->_streamingVB->allocate(vertSize * sizeof(rawrbox::PosUVColorVertexData), contextID);
-			auto IBOffset = this->_streamingIB->allocate(indSize * sizeof(uint32_t), contextID);
+			auto VBOffset = static_cast<uint64_t>(this->_streamingVB->allocate(vertSize * sizeof(rawrbox::PosUVColorVertexData), contextID));
+			auto IBOffset = static_cast<uint64_t>(this->_streamingIB->allocate(indSize * sizeof(uint32_t), contextID));
 
 			auto* VertexData = std::bit_cast<rawrbox::PosUVColorVertexData*>(std::bit_cast<uint8_t*>(this->_streamingVB->getCPUAddress(contextID)) + VBOffset);
 			auto* IndexData = std::bit_cast<uint32_t*>(std::bit_cast<uint8_t*>(this->_streamingIB->getCPUAddress(contextID)) + IBOffset);
@@ -476,22 +490,30 @@ namespace rawrbox {
 			//  -------------------
 
 			// Render ------------
-			const std::array<uint64_t, 1> offsets = {VBOffset};
-			std::array<Diligent::IBuffer*, 1> pBuffs = {this->_streamingVB->buffer()};
+			auto* vertBuffer = this->_streamingVB->buffer();
 
-			context->SetVertexBuffers(0, 1, pBuffs.data(), offsets.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+			context->SetVertexBuffers(0, 1, &vertBuffer, &VBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
 			context->SetIndexBuffer(this->_streamingIB->buffer(), IBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-
 			context->SetPipelineState(group.stencilProgram);
+			// --------------
 
 			// SCISSOR ---
 			Diligent::Rect scissor;
-			scissor.left = group.clip.left();
-			scissor.right = group.clip.right();
-			scissor.top = group.clip.top();
-			scissor.bottom = group.clip.bottom();
+			if (group.clip.worldSpace) {
+				scissor.left = std::max<int>(group.clip.bbox.pos.x, 0);
+				scissor.top = std::max<int>(group.clip.bbox.pos.y, 0);
+				scissor.right = std::min<int>(group.clip.bbox.size.x, this->_size.x);
+				scissor.bottom = std::min<int>(group.clip.bbox.size.y, this->_size.y);
+			} else {
+				scissor.left = std::max<int>(group.clip.bbox.left(), 0);
+				scissor.top = std::max<int>(group.clip.bbox.top(), 0);
+				scissor.right = std::min<int>(group.clip.bbox.right(), this->_size.x);
+				scissor.bottom = std::min<int>(group.clip.bbox.bottom(), this->_size.y);
+			}
 
-			context->SetScissorRects(1, &scissor, 0, 0);
+			if (scissor.IsValid()) {
+				context->SetScissorRects(1, &scissor, this->_size.x, this->_size.y);
+			}
 			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;
@@ -516,6 +538,7 @@ namespace rawrbox {
 		if (!this->_outlines.empty()) throw this->_logger->error("Missing 'popOutline', cannot draw");
 		if (!this->_clips.empty()) throw this->_logger->error("Missing 'popClipping', cannot draw");
 		if (!this->_scales.empty()) throw this->_logger->error("Missing 'popScale', cannot draw");
+		if (!this->_optimizations.empty()) throw this->_logger->error("Missing 'popOptimize', cannot draw");
 
 		this->internalDraw();
 	}
@@ -546,7 +569,7 @@ namespace rawrbox {
 	// --------------------
 
 	// ------ ROTATION
-	void Stencil::pushRotation(const StencilRotation& rot) {
+	void Stencil::pushRotation(const rawrbox::StencilRotation& rot) {
 		this->_rotations.push_back(rot);
 		this->_rotation += rot;
 	}
@@ -560,7 +583,7 @@ namespace rawrbox {
 	// --------------------
 
 	// ------ OUTLINE
-	void Stencil::pushOutline(const StencilOutline& outline) {
+	void Stencil::pushOutline(const rawrbox::StencilOutline& outline) {
 		this->_outlines.push_back(outline);
 		this->_outline += outline;
 	}
@@ -574,8 +597,11 @@ namespace rawrbox {
 	// --------------------
 
 	// ------ CLIPPING
-	void Stencil::pushClipping(const rawrbox::AABBi& rect) {
-		this->_clips.emplace_back(rect.pos.x + static_cast<int>(this->_offset.x), rect.pos.y + static_cast<int>(this->_offset.y), rect.size.x, rect.size.y);
+	void Stencil::pushClipping(const rawrbox::Clip& clip) {
+		rawrbox::Clip fixedClip = clip;
+		fixedClip.bbox.pos = clip.bbox.pos + this->_offset.cast<uint32_t>();
+
+		this->_clips.emplace_back(fixedClip);
 	}
 
 	void Stencil::popClipping() {
@@ -597,6 +623,17 @@ namespace rawrbox {
 		this->_scales.pop_back();
 	}
 	// --------------------
+
+	// ------ OPTIMIZATION
+	void Stencil::pushOptimize(bool optimize) {
+		this->_optimizations.push_back(optimize);
+	}
+
+	void Stencil::popOptimize() {
+		if (this->_optimizations.empty()) throw this->_logger->error("Optimize is empty, failed to pop");
+		this->_optimizations.pop_back();
+	}
+	// -------------------
 
 	// ------ OTHER
 	const rawrbox::Vector2u& Stencil::getSize() const { return this->_size; }

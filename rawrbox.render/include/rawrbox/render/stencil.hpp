@@ -28,6 +28,7 @@ namespace rawrbox {
 
 		PosUVColorVertexData() = default;
 		PosUVColorVertexData(const uint32_t& _textureID, const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, const rawrbox::Color& _cl) : textureID(_textureID), pos(_pos), color(_cl.pack()), uv(_uv) {}
+		PosUVColorVertexData(const uint32_t& _textureID, const rawrbox::Vector2f& _pos, const rawrbox::Vector4f& _uv, uint32_t _cl) : textureID(_textureID), pos(_pos), color(_cl), uv(_uv) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout() {
 			return {
@@ -53,19 +54,29 @@ namespace rawrbox {
 		std::vector<unsigned int> indices = {};
 	};
 
+	struct Clip {
+		rawrbox::AABBu bbox = {};
+		bool worldSpace = false;
+
+		bool operator==(const Clip& other) const { return this->bbox == other.bbox && this->worldSpace == other.worldSpace; }
+		bool operator!=(const Clip& other) const { return !operator==(other); }
+	};
+
 	struct StencilDraw {
 		Diligent::IPipelineState* stencilProgram = nullptr;
 
 		std::vector<rawrbox::PosUVColorVertexData> vertices = {};
 		std::vector<uint32_t> indices = {};
 
-		rawrbox::AABBu clip = {};
+		rawrbox::Clip clip = {};
 		bool cull = true;
+		bool optimize = true;
 
 		void clear() {
 			this->cull = true;
-			this->clip = {}; // NONE
+			this->clip = {};
 
+			this->optimize = true;
 			this->stencilProgram = nullptr;
 
 			this->indices.clear();
@@ -164,7 +175,7 @@ namespace rawrbox {
 		// ----------
 
 		// Clip handling ----
-		std::vector<rawrbox::AABBu> _clips = {};
+		std::vector<rawrbox::Clip> _clips = {};
 		// ----------
 
 		// Outline handling ----
@@ -181,6 +192,10 @@ namespace rawrbox {
 		std::vector<rawrbox::Vector2f> _scales = {};
 		rawrbox::Vector2f _scale = {};
 		// ----------
+
+		// Optimization handling ----
+		std::vector<bool> _optimizations = {};
+		// ---------------------------
 
 		// Drawing -----
 		rawrbox::StencilDraw _currentDraw = {};
@@ -203,8 +218,8 @@ namespace rawrbox {
 
 		// ------ RENDERING
 		void setupDrawCall(Diligent::IPipelineState* program);
-
 		void pushDrawCall();
+
 		void internalDraw();
 		// --------------------
 
@@ -232,6 +247,8 @@ namespace rawrbox {
 		virtual void drawText(const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White(), const rawrbox::Color& bgCol = rawrbox::Colors::Transparent(), rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
 		virtual void drawText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector2f& pos, const rawrbox::Color& col = rawrbox::Colors::White(), rawrbox::Alignment alignX = rawrbox::Alignment::Left, rawrbox::Alignment alignY = rawrbox::Alignment::Left);
 		virtual void drawLoading(const rawrbox::Vector2f& pos, const rawrbox::Vector2f& size, const rawrbox::Color& color = rawrbox::Colors::White());
+
+		virtual void drawVertices(const std::vector<rawrbox::PosUVColorVertexData>& vertices, const std::vector<uint32_t>& indices);
 		//  --------------------
 
 		// ------ RENDERING
@@ -246,17 +263,17 @@ namespace rawrbox {
 		// --------------------
 
 		// ------ ROTATION
-		virtual void pushRotation(const StencilRotation& rot);
+		virtual void pushRotation(const rawrbox::StencilRotation& rot);
 		virtual void popRotation();
 		// --------------------
 
 		// ------ OUTLINE
-		virtual void pushOutline(const StencilOutline& outline);
+		virtual void pushOutline(const rawrbox::StencilOutline& outline);
 		virtual void popOutline();
 		// --------------------
 
 		// ------ CLIPPING
-		virtual void pushClipping(const rawrbox::AABBi& rect);
+		virtual void pushClipping(const rawrbox::Clip& clip);
 		virtual void popClipping();
 		// --------------------
 
@@ -264,6 +281,11 @@ namespace rawrbox {
 		virtual void pushScale(const rawrbox::Vector2f& scale);
 		virtual void popScale();
 		// --------------------
+
+		// ------ OPTIMIZATION
+		virtual void pushOptimize(bool optimize);
+		virtual void popOptimize();
+		// -------------------
 
 		// ------ OTHER
 		[[nodiscard]] virtual const rawrbox::Vector2u& getSize() const;

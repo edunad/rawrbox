@@ -46,3 +46,7 @@ add_subdirectory("015-gpu-picking")
 if(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS)
     add_subdirectory("016-steamworks")
 endif()
+
+if(RAWRBOX_BUILD_RAWRBOX_IMGUI)
+    add_subdirectory("017-imgui")
+endif()

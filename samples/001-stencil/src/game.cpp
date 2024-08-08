@@ -182,11 +182,11 @@ namespace stencil {
 
 		// Box + clipping --
 		stencil->pushRotation({this->_counter * 50.5F, {50, 50}});
-		stencil->pushClipping({-20, -20, 50, 140});
+		stencil->pushClipping({rawrbox::AABBu{0, 0, 50, 140}});
 		stencil->drawBox({0, 0}, {100, 100}, rawrbox::Colors::Green());
 		stencil->popClipping();
 
-		stencil->pushClipping({50, -20, 50, 140});
+		stencil->pushClipping({rawrbox::AABBu{50, 0, 50, 140}});
 		stencil->drawBox({0, 0}, {100, 100}, rawrbox::Colors::Red());
 		stencil->popClipping();
 		stencil->popRotation();
@@ -352,8 +352,6 @@ namespace stencil {
 		stencil->drawTexture({0, 0}, {256, 256}, *this->_texture4);
 		stencil->popOffset();
 		// -----
-
-		stencil->render();
 	}
 
 	void Game::update() {
