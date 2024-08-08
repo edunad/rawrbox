@@ -23,17 +23,10 @@ namespace rawrbox {
 
 		size_t size() { return calls.size(); }
 		bool empty() { return calls.empty(); }
-
-		void clear() {
-			calls.clear();
-		}
+		void clear() { calls.clear(); }
 
 		Event& operator-=(Func callback) {
-			auto found = std::find(calls.begin(), calls.end(), callback);
-			if (found == calls.end()) return *this;
-
-			calls.erase(found);
-
+			calls.erase(std::remove_if(calls.begin(), calls.end(), [&](const Func& func) { return func.target_type() == callback.target_type(); }), calls.end());
 			return *this;
 		}
 
