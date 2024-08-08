@@ -129,11 +129,13 @@ namespace rawrbox {
 		renderDrawData(ImGui::GetDrawData());
 	}
 
-	void IMGUIManager::shutdown() {
-		_imguiFontTexture.reset();
-
-		ImGui_ImplGlfw_Shutdown();
-		ImGui::DestroyContext();
+	void IMGUIManager::shutdown(rawrbox::ENGINE_THREADS thread) {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
+			_imguiFontTexture.reset();
+		} else {
+			ImGui_ImplGlfw_Shutdown();
+			ImGui::DestroyContext();
+		}
 	}
 	//------
 } // namespace rawrbox

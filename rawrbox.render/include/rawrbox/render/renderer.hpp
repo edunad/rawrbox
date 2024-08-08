@@ -34,6 +34,7 @@ namespace rawrbox {
 		rawrbox::Colorf background = rawrbox::Colors::Black();
 
 		RawrboxIntro(float _speed = 1.F, bool _cover = true, const rawrbox::Colorf& _color = rawrbox::Colors::Black()) : speed(_speed), cover(_cover), background(_color) {}
+		[[nodiscard]] bool valid() const { return this->texture != nullptr; }
 	};
 
 	class RendererBase {
@@ -56,7 +57,7 @@ namespace rawrbox {
 #endif
 
 		// INTRO ---
-		bool _introComplete = false;
+		std::atomic<bool> _introComplete = false;
 		bool _skipIntros = false;
 
 		rawrbox::RawrboxIntro* _currentIntro = nullptr;

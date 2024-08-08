@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rawrbox/engine/engine.hpp>
 #include <rawrbox/render/window.hpp>
 
 #include <DynamicBuffer.hpp>
@@ -25,6 +26,6 @@ namespace rawrbox {
 		static void clear();
 		static void render();
 
-		static void shutdown();
+		static void shutdown(rawrbox::ENGINE_THREADS thread);
 	};
 } // namespace rawrbox

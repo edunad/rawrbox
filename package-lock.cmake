@@ -17,7 +17,7 @@ CPMDeclarePackage(magic_enum
 )
 # glaze
 CPMDeclarePackage(glaze
-  VERSION 3.1.9
+  VERSION 3.2.1
   GITHUB_REPOSITORY stephenberry/glaze
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -77,7 +77,7 @@ CPMDeclarePackage(cpptrace
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.636
+  GIT_TAG 0.637
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"
@@ -234,3 +234,11 @@ CPMDeclarePackage(Jolt
 #  OPTIONS
 #    "MULI_BUILD_DEMO OFF"
 #)
+# imgui
+CPMDeclarePackage(imgui
+  NAME imgui
+  VERSION 1.91.0
+  GIT_TAG docking
+  DOWNLOAD_ONLY YES
+  GITHUB_REPOSITORY ocornut/imgui
+)
