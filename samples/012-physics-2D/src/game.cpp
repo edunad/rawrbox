@@ -130,9 +130,7 @@ namespace phys_2d_test {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
-			rawrbox::Window::shutdown();
-		} else {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
 			this->_modelGrid.reset();
 			this->_boxes.clear();
 
@@ -142,6 +140,8 @@ namespace phys_2d_test {
 			rawrbox::PHYSICS_2D::shutdown();
 			rawrbox::RESOURCES::shutdown();
 		}
+
+		rawrbox::Window::shutdown(thread);
 	}
 
 	void Game::pollEvents() {

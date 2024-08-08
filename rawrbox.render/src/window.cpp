@@ -28,8 +28,9 @@
 	#pragma comment(lib, "dwmapi.lib")
 #endif
 
-#include <rawrbox/engine/static.hpp>
+#include <rawrbox/engine/engine.hpp>
 #include <rawrbox/math/matrix4x4.hpp>
+#include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/text/engine.hpp>
 #include <rawrbox/render/window.hpp>
 #include <rawrbox/utils/string.hpp>
@@ -107,30 +108,48 @@ namespace rawrbox {
 		glfwWaitEvents();
 	}
 
-	void Window::shutdown() {
+	void Window::shutdown(rawrbox::ENGINE_THREADS thread) {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
+			// SHUTDOWN FONTS ----
+			rawrbox::TextEngine::shutdown();
+
+			rawrbox::DEBUG_FONT_REGULAR = nullptr;
+			rawrbox::DEBUG_FONT_BOLD = nullptr;
+			rawrbox::DEBUG_FONT_ITALIC = nullptr;
+			// --------------------
+
+			// SHUTDOWN TEXTURES ----
+			rawrbox::MISSING_TEXTURE.reset();
+			rawrbox::MISSING_VERTEX_TEXTURE.reset();
+
+			rawrbox::WHITE_TEXTURE.reset();
+			rawrbox::BLACK_TEXTURE.reset();
+			rawrbox::NORMAL_TEXTURE.reset();
+			rawrbox::CHECKER_TEXTURE.reset();
+			// ----------------------
+
+			// SHUTDOWN PLUGINS ----
+			rawrbox::BindlessManager::shutdown();
+			rawrbox::PipelineUtils::shutdown();
+			// ---------------
+
+			// SHUTDOWN RENDERERS ----
+			for (const auto& window : __WINDOWS) {
+				window->_renderer.reset();
+			}
+			// ---------------------
+
+			_logger->success("Thread 'rawrbox:render' shutdown complete");
+			return;
+		}
+
 		__WINDOWS.clear();
-		_logger.reset();
-
-		// SHUTDOWN FONTS ----
-		rawrbox::TextEngine::shutdown();
-
-		rawrbox::DEBUG_FONT_REGULAR = nullptr;
-		rawrbox::DEBUG_FONT_BOLD = nullptr;
-		rawrbox::DEBUG_FONT_ITALIC = nullptr;
-		// --------------------
-
-		// SHUTDOWN TEXTURES ----
-		rawrbox::MISSING_TEXTURE.reset();
-		rawrbox::MISSING_VERTEX_TEXTURE.reset();
-
-		rawrbox::WHITE_TEXTURE.reset();
-		rawrbox::BLACK_TEXTURE.reset();
-		rawrbox::NORMAL_TEXTURE.reset();
-		rawrbox::CHECKER_TEXTURE.reset();
-		// ----------------------
 
 		glfwPostEmptyEvent();
 		glfwTerminate();
+
+		_logger->success("Thread 'rawrbox:input' shutdown complete");
+		_logger.reset();
 	}
 
 	void Window::update() {

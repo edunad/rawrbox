@@ -15,8 +15,8 @@ namespace rawrbox {
 			} else {
 				loaded = rawrbox::BASS::loadSound(this->filePath, this->flags);
 			}
-		} catch (const std::runtime_error& e) {
-			fmt::print("{}\n └── Loading fallback sound!\n", e.what());
+		} catch (const cpptrace::exception_with_message& e) {
+			fmt::print("\n\t{}\n\t\t └── Loading fallback sound!\n", e.message());
 			loaded = rawrbox::BASS::loadSound("./assets/sound/error.ogg", this->flags);
 		}
 

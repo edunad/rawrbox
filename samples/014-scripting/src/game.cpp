@@ -173,15 +173,19 @@ namespace scripting_test {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
-			rawrbox::Window::shutdown();
-		} else {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
+			this->_model.reset();
+			this->_instance.reset();
+			this->_console.reset();
+
 #ifdef RAWRBOX_UI
 			this->_ROOT_UI.reset();
 #endif
 			rawrbox::SCRIPTING::shutdown();
 			rawrbox::RESOURCES::shutdown();
 		}
+
+		rawrbox::Window::shutdown(thread);
 	}
 
 	void Game::pollEvents() {

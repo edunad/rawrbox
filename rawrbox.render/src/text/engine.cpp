@@ -38,6 +38,7 @@ namespace rawrbox {
 	void TextEngine::shutdown() {
 		_fonts.clear();
 		_packs.clear();
+		_logger.reset();
 
 		TextEngine::packID = 0;
 	}

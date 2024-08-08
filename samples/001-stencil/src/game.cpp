@@ -125,7 +125,7 @@ namespace stencil {
 		// ----
 
 		// Textures ---
-		auto mesh = rawrbox::MeshUtils::generateCube<>({0, 0, 0}, {2.F, 2.F, 2.F});
+		auto mesh = rawrbox::MeshUtils::generateCube({0, 0, 0}, {2.F, 2.F, 2.F});
 		mesh.setTexture(this->_texture3);
 
 		std::random_device prng;
@@ -142,9 +142,7 @@ namespace stencil {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
-			rawrbox::Window::shutdown();
-		} else {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
 			this->_texture = nullptr;
 			this->_texture2 = nullptr;
 			this->_texture3 = nullptr;
@@ -162,6 +160,8 @@ namespace stencil {
 
 			rawrbox::RESOURCES::shutdown();
 		}
+
+		rawrbox::Window::shutdown(thread);
 	}
 
 	void Game::pollEvents() {
