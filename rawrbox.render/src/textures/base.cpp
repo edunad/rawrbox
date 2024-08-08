@@ -96,7 +96,7 @@ namespace rawrbox {
 	uint8_t TextureBase::getChannels() const { return this->_data.channels; }
 
 	bool TextureBase::isValid() const {
-		return this->getHandle() != nullptr && (this->_failedToLoad && this->_textureID == 0);
+		return this->getHandle() != nullptr && (this->_failedToLoad || this->_textureID != 0);
 	}
 
 	bool TextureBase::isRegistered() const { return this->_registered; }

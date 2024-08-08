@@ -41,6 +41,7 @@ namespace rawrbox {
 		// Initialize pipeline cache -----
 		Diligent::RenderStateCacheCreateInfo CacheCI;
 		CacheCI.pDevice = &device;
+		// CacheCI.LogLevel = Diligent::RENDER_STATE_CACHE_LOG_LEVEL_VERBOSE;
 
 		Diligent::CreateRenderStateCache(CacheCI, &_stateCache);
 		// -------------------------
@@ -74,22 +75,18 @@ namespace rawrbox {
 
 	void PipelineUtils::shutdown() {
 		// Save cache -----
-		{
-			Diligent::RefCntAutoPtr<Diligent::IDataBlob> pCacheData;
+		Diligent::RefCntAutoPtr<Diligent::IDataBlob> pCacheData;
 
-			if (_stateCache->WriteToBlob(0, &pCacheData)) {
-				if (pCacheData != nullptr) {
-					const auto pString = _stateCachePath.generic_string();
-					Diligent::FileWrapper CacheDataFile{pString.c_str(), Diligent::EFileAccessMode::Overwrite};
-					if (CacheDataFile->Write(pCacheData->GetConstDataPtr(), pCacheData->GetSize())) {
-						_logger->info("Saved pipeline cache to '{}'", pString);
-					} else {
-						_logger->error("Failed to save pipeline cache to '{}'", pString);
-					}
+		if (_stateCache->WriteToBlob(0, &pCacheData)) {
+			if (pCacheData != nullptr) {
+				const auto pString = _stateCachePath.generic_string();
+				Diligent::FileWrapper CacheDataFile{pString.c_str(), Diligent::EFileAccessMode::Overwrite};
+				if (CacheDataFile->Write(pCacheData->GetConstDataPtr(), pCacheData->GetSize())) {
+					_logger->info("Saved pipeline cache to '{}'", pString);
+				} else {
+					_logger->error("Failed to save pipeline cache to '{}'", pString);
 				}
 			}
-
-			RAWRBOX_DESTROY(pCacheData);
 		}
 		// ------
 

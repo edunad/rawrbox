@@ -34,7 +34,7 @@ namespace rawrbox {
 		rawrbox::Colorf background = rawrbox::Colors::Black();
 
 		RawrboxIntro(float _speed = 1.F, bool _cover = true, const rawrbox::Colorf& _color = rawrbox::Colors::Black()) : speed(_speed), cover(_cover), background(_color) {}
-		[[nodiscard]] bool valid() const { return this->texture != nullptr; }
+		[[nodiscard]] bool isValid() const { return this->texture != nullptr; }
 	};
 
 	class RendererBase {

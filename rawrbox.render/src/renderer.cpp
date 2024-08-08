@@ -510,7 +510,7 @@ namespace rawrbox {
 			if (pass != rawrbox::DrawPass::PASS_OVERLAY) return;
 			auto screenSize = this->_size.cast<float>();
 
-			if (this->_currentIntro != nullptr && this->_currentIntro->valid()) {
+			if (this->_currentIntro != nullptr && this->_currentIntro->isValid() && this->_currentIntro->texture->isValid()) {
 				this->_stencil->drawBox({}, screenSize, this->_currentIntro->background); // Background
 
 				if (this->_currentIntro->cover) {
