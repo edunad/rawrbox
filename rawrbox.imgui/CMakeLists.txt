@@ -8,8 +8,6 @@ CPMAddPackage(
         imgui
     GITHUB_REPOSITORY
         ocornut/imgui
-    #PATCH_COMMAND
-    #    git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/imgui.patch
     GIT_TAG
         docking
     VERSION
