@@ -46,9 +46,6 @@ namespace rawrbox {
 		this->_logger.reset();
 		this->_GPUBlit.reset();
 
-		rawrbox::BindlessManager::shutdown();
-		rawrbox::PipelineUtils::shutdown();
-
 		RAWRBOX_DESTROY(this->_device);
 		RAWRBOX_DESTROY(this->_context);
 		RAWRBOX_DESTROY(this->_swapChain);

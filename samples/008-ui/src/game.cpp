@@ -445,9 +445,7 @@ namespace ui_test {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
-			rawrbox::Window::shutdown();
-		} else {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
 			this->_anim->reset();
 			this->_graph = nullptr;
 			this->_consoleUI = nullptr;
@@ -458,6 +456,8 @@ namespace ui_test {
 
 			rawrbox::RESOURCES::shutdown();
 		}
+
+		rawrbox::Window::shutdown(thread);
 	}
 
 	void Game::pollEvents() {

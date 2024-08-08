@@ -356,9 +356,7 @@ namespace model {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
-			rawrbox::Window::shutdown();
-		} else {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
 			this->_model.reset();
 			this->_bboxes.reset();
 			this->_displacement.reset();
@@ -369,6 +367,8 @@ namespace model {
 
 			rawrbox::RESOURCES::shutdown();
 		}
+
+		rawrbox::Window::shutdown(thread);
 	}
 
 	void Game::pollEvents() {

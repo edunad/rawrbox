@@ -148,15 +148,15 @@ namespace gpu {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
-			rawrbox::Window::shutdown();
-		} else {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
 			this->_model.reset();
 			this->_instance.reset();
 			this->_text.reset();
 
 			this->_lastPickedMesh = nullptr;
 		}
+
+		rawrbox::Window::shutdown(thread);
 	}
 
 	void Game::pollEvents() {

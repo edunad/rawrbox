@@ -34,6 +34,7 @@ namespace rawrbox {
 	//  --------------------
 
 	class Window;
+	enum class ENGINE_THREADS;
 
 	// ------EVENTS
 	using OnFocusCallback = rawrbox::Event<Window&, bool>;
@@ -114,7 +115,7 @@ namespace rawrbox {
 		static void pollEvents();
 		static void update();
 		static void render();
-		static void shutdown();
+		static void shutdown(rawrbox::ENGINE_THREADS thread);
 		// --------
 
 		// Renderer ------

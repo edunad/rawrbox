@@ -112,15 +112,15 @@ namespace steamworks {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
-		if (thread == rawrbox::ENGINE_THREADS::THREAD_INPUT) {
-			rawrbox::Window::shutdown();
-		} else {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
 			this->_avatar.reset();
 			this->_friendAvatars.clear();
 			this->_model.reset();
 
 			rawrbox::SteamSDK::shutdown();
 		}
+
+		rawrbox::Window::shutdown(thread);
 	}
 
 	void Game::pollEvents() {

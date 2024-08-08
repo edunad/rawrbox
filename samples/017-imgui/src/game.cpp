@@ -83,9 +83,7 @@ namespace imgui {
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		rawrbox::IMGUIManager::shutdown(thread);
-
-		if (thread != rawrbox::ENGINE_THREADS::THREAD_INPUT) return;
-		rawrbox::Window::shutdown();
+		rawrbox::Window::shutdown(thread);
 	}
 
 	void Game::pollEvents() {
