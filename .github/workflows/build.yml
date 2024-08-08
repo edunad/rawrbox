@@ -30,7 +30,7 @@ jobs:
           sudo apt update
           sudo apt install -y git wget cmake libegl1-mesa-dev libwayland-dev libxkbcommon-dev wayland-protocols libvulkan-dev libssl-dev libvpx-dev gcc-12 g++-12 libgl1-mesa-glx libgl1-mesa-dev libglew-dev ninja-build python3-pip libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev libxcomposite-dev libxcursor-dev libxdamage-dev libxdmcp-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxinerama-dev libxkbfile-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev libxrender-dev libxres-dev libxss-dev libxt-dev libxtst-dev libxv-dev libxvmc-dev libxxf86vm-dev xtrans-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-xkb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev xkb-data libxcb-dri3-dev uuid-dev libxcb-util-dev
       - name: Cache c++
-        uses: hendrikmuhs/ccache-action@c92f40bee50034e84c763e33b317c77adaa81c92
+        uses: hendrikmuhs/ccache-action@ed74d11c0b343532753ecead8a951bb09bb34bc9
         with:
           append-timestamp: false
           restore-keys: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './rawrbox.assimp/CMakeLists.txt', './rawrbox.bass/CMakeLists.txt', './rawrbox.engine/CMakeLists.txt', './rawrbox.math/CMakeLists.txt', './rawrbox.network/CMakeLists.txt', './rawrbox.physics_2d/CMakeLists.txt', './rawrbox.physics_3d/CMakeLists.txt', './rawrbox.render/CMakeLists.txt', './rawrbox.resources/CMakeLists.txt', './rawrbox.scripting/CMakeLists.txt', './rawrbox.ui/CMakeLists.txt', './rawrbox.utils/CMakeLists.txt', './rawrbox.webm/CMakeLists.txt', './rawrbox.steamworks/CMakeLists.txt', './rawrbox.imgui/CMakeLists.txt') }}-
@@ -61,7 +61,7 @@ jobs:
 
       - name: Upload build artifacts
         if: github.ref == 'refs/heads/master' || contains(github.event.pull_request.labels.*.name, '⚠️ UPLOAD ⚠️')
-        uses: actions/upload-artifact@89ef406dd8d7e03cfd12d9e0a4a378f454709029
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a
         with:
           name: output
           path: bin
