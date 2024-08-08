@@ -114,11 +114,6 @@ namespace rawrbox {
 				window->_renderer.reset(); // Shutdown renderers
 			}
 
-			// SHUTDOWN PLUGINS ----
-			rawrbox::BindlessManager::shutdown();
-			rawrbox::PipelineUtils::shutdown();
-			// ---------------
-
 			// SHUTDOWN FONTS ----
 			rawrbox::TextEngine::shutdown();
 
@@ -136,6 +131,11 @@ namespace rawrbox {
 			rawrbox::NORMAL_TEXTURE.reset();
 			rawrbox::CHECKER_TEXTURE.reset();
 			// ----------------------
+
+			// SHUTDOWN PLUGINS ----
+			rawrbox::BindlessManager::shutdown();
+			rawrbox::PipelineUtils::shutdown();
+			// ---------------
 
 			_logger->success("Thread 'rawrbox:render' shutdown complete");
 			return;

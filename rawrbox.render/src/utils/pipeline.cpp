@@ -94,6 +94,7 @@ namespace rawrbox {
 		_binds.clear();
 		_shaders.clear();
 		_samplers.clear();
+		_globalMacros.clear();
 
 		_logger.reset();
 
