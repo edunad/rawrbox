@@ -67,11 +67,12 @@ namespace rawrbox {
 	void UIDropdown::setActive(size_t option) {
 		if (this->_list == nullptr || option > this->_list->total()) return;
 
-		this->_selected = this->_list->getItem(option);
-		this->onSelectionChange(this->_selected);
+		this->_selected = option;
+		this->onSelectionChange(this->_selected, this->_list->getItem(this->_selected));
 	}
 
-	const std::string& UIDropdown::getSelected() const { return this->_selected; }
+	size_t UIDropdown::getSelected() const { return this->_selected; }
+	const std::string& UIDropdown::getSelectedValue() const { return this->_list->getItem(this->_selected); }
 	// ---------
 
 	// OVERRIDE ---
@@ -108,9 +109,10 @@ namespace rawrbox {
 		// -----
 
 		// TEXT ---
-		if (!this->_selected.empty()) {
+		if (!this->_list->empty()) {
+			const auto& selected = this->_list->getItem(this->_selected);
 			const auto& charSize = rawrbox::DEBUG_FONT_REGULAR->getCharSize();
-			auto trimStr = rawrbox::StrUtils::truncate(this->_selected, static_cast<size_t>(this->_originalSize.x / charSize.x) - 6);
+			auto trimStr = rawrbox::StrUtils::truncate(selected, static_cast<size_t>(this->_originalSize.x / charSize.x) - 6);
 
 			stencil.drawText(*rawrbox::DEBUG_FONT_REGULAR, trimStr, {5, 5}, rawrbox::Colors::White());
 		}

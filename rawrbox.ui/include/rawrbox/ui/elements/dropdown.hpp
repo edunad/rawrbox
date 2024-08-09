@@ -12,14 +12,15 @@ namespace rawrbox {
 		// OPTIONS ---
 		rawrbox::UIVirtualList<std::string>* _list = nullptr;
 		rawrbox::Vector2f _originalSize = {};
-		std::string _selected;
+
+		size_t _selected = 0;
 		// -------------
 
 		void calculateListSize();
 
 	public:
 		constexpr static float ICON_SIZE = 16.F;
-		rawrbox::Event<const std::string&> onSelectionChange;
+		rawrbox::Event<size_t, const std::string&> onSelectionChange;
 
 		UIDropdown(rawrbox::UIRoot* root, const std::vector<std::string>& options = {});
 		UIDropdown(const UIDropdown&) = default;
@@ -34,7 +35,8 @@ namespace rawrbox {
 		void removeOption(size_t index);
 
 		void setActive(size_t option);
-		[[nodiscard]] const std::string& getSelected() const;
+		[[nodiscard]] size_t getSelected() const;
+		[[nodiscard]] const std::string& getSelectedValue() const;
 		// ---------
 
 		// OVERRIDE ---

@@ -88,6 +88,10 @@ namespace rawrbox {
 			return this->_items.size();
 		};
 
+		[[nodiscard]] bool empty() const {
+			return this->_items.empty();
+		};
+
 		void resetScroll() const {
 			this->_mouseScrollY = 0;
 		};

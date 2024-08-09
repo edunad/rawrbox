@@ -72,6 +72,11 @@ namespace rawrbox {
 	}
 
 	const rawrbox::AABBf& UIRoot::getAABB() const { return this->_aabb; }
+
+	void UIRoot::resetHoverFocus(rawrbox::UIContainer* element) {
+		if (this->hoveredElement == element) this->hoveredElement = nullptr;
+		if (this->focusedElement == element) this->focusedElement = nullptr;
+	}
 	// ---
 
 	// CHILDREN
@@ -178,6 +183,7 @@ namespace rawrbox {
 			focused->mouseMove(location - absPos);
 		}
 	}
+
 	// -----
 
 	// FOCUS

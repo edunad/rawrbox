@@ -428,16 +428,14 @@ namespace ui_test {
 				frame->remove();
 			};
 
-			// TODO: FIX RENDERING, TEMP FIX MAKE THE LISTS BEING ADDED REVERSE ORDER
+			// TODO: FIX FRAME RENDERING, TEMP FIX MAKE THE LISTS BEING ADDED REVERSE ORDER
 			auto* dropdown2 = frame->createChild<rawrbox::UIDropdown>(std::vector<std::string>{"Longggg option isidfjs sdfssdfsd", "dfgdfgdfg gfhgfh isidfjs sdfssdfsd"});
 			dropdown2->setSize({200, 24});
 			dropdown2->setPos({10, 50});
-			dropdown2->setActive(0);
 
 			auto* dropdown = frame->createChild<rawrbox::UIDropdown>(std::vector<std::string>{"Option 1", "Option 2", "Option 3", "Option 4"});
 			dropdown->setSize({200, 24});
 			dropdown->setPos({10, 10});
-			dropdown->setActive(0);
 		}
 		// ---
 

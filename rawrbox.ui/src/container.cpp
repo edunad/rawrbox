@@ -26,15 +26,8 @@ namespace rawrbox {
 
 	void UIContainer::removeChildren() {
 		for (auto& c : this->_children) {
+			this->_root->resetHoverFocus(c.get());
 			c->removeChildren();
-
-			if (this->_root->focusedElement == c.get()) {
-				this->_root->focusedElement = nullptr;
-			}
-
-			if (this->_root->hoveredElement == c.get()) {
-				this->_root->hoveredElement = nullptr;
-			}
 		}
 
 		this->_children.clear();
@@ -58,16 +51,10 @@ namespace rawrbox {
 
 	void UIContainer::setVisible(bool visible) {
 		this->_visible = visible;
+		if (!visible) this->_root->resetHoverFocus(this);
 
-		if (!visible) {
-			if (this->_root->focusedElement == this) this->_root->focusedElement = nullptr;
-			if (this->_root->hoveredElement == this) this->_root->hoveredElement = nullptr;
-		}
-
-		if (this->hasChildren()) {
-			for (auto& c : this->_children) {
-				c->setVisible(visible); // Propagate to children so we can unfocus the elements
-			}
+		for (auto& c : this->getChildren()) {
+			this->_root->resetHoverFocus(c.get()); // Propagate to children so we can unfocus the elements
 		}
 	}
 

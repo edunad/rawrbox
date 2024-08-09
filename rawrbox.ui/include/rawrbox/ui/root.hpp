@@ -39,6 +39,8 @@ namespace rawrbox {
 		rawrbox::UIContainer* findElement(const rawrbox::Vector2i& mousePos, rawrbox::Vector2i& offsetOut);
 		rawrbox::UIContainer* findElement(rawrbox::UIContainer* elmPtr, const rawrbox::Vector2i& mousePos, const rawrbox::Vector2i& offset, rawrbox::Vector2i& offsetOut);
 		[[nodiscard]] const rawrbox::AABBf& getAABB() const;
+
+		void resetHoverFocus(rawrbox::UIContainer* element);
 		// ---
 
 		// CHILDREN
