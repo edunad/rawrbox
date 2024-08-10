@@ -111,8 +111,8 @@ namespace rawrbox {
 
 	// Supports bones ---
 	struct VertexBoneData : public rawrbox::VertexUVData {
-		std::array<uint32_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
-		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
+		std::array<uint32_t, RB_MAX_BONES_PER_VERTEX> bone_indices = {};
+		std::array<float, RB_MAX_BONES_PER_VERTEX> bone_weights = {};
 
 		VertexBoneData() = default;
 		VertexBoneData(const rawrbox::Vector3f& _pos,
@@ -125,9 +125,9 @@ namespace rawrbox {
 			    // Attribute 1 - UV
 			    Diligent::LayoutElement{1, 0, 4, Diligent::VT_FLOAT32, false},
 			    // Attribute 2 - BONE-INDICES
-			    Diligent::LayoutElement{2, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
+			    Diligent::LayoutElement{2, 0, RB_MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
 			    // Attribute 3 - BONE-WEIGHTS
-			    Diligent::LayoutElement{3, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}};
+			    Diligent::LayoutElement{3, 0, RB_MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}};
 
 			if (instanced) {
 				v.emplace_back(4, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 1
@@ -144,8 +144,8 @@ namespace rawrbox {
 
 	// Supports light && bones ---
 	struct VertexNormBoneData : public rawrbox::VertexNormData {
-		std::array<uint32_t, rawrbox::MAX_BONES_PER_VERTEX> bone_indices = {};
-		std::array<float, rawrbox::MAX_BONES_PER_VERTEX> bone_weights = {};
+		std::array<uint32_t, RB_MAX_BONES_PER_VERTEX> bone_indices = {};
+		std::array<float, RB_MAX_BONES_PER_VERTEX> bone_weights = {};
 
 		VertexNormBoneData() = default;
 		VertexNormBoneData(const rawrbox::Vector3f& _pos,
@@ -164,9 +164,9 @@ namespace rawrbox {
 			    // Attribute 3 - Tangent
 			    Diligent::LayoutElement{3, 0, 4, Diligent::VT_UINT8, true},
 			    // Attribute 4 - BONE-INDICES
-			    Diligent::LayoutElement{4, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
+			    Diligent::LayoutElement{4, 0, RB_MAX_BONES_PER_VERTEX, Diligent::VT_UINT32, false},
 			    // Attribute 5 - BONE-WEIGHTS
-			    Diligent::LayoutElement{5, 0, rawrbox::MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}}; // TODO, VT_FLOAT16 for bone-weights?
+			    Diligent::LayoutElement{5, 0, RB_MAX_BONES_PER_VERTEX, Diligent::VT_FLOAT32, false}}; // TODO, VT_FLOAT16 for bone-weights?
 
 			if (instanced) {
 				v.emplace_back(6, 1, 4, Diligent::VT_FLOAT32, false, Diligent::INPUT_ELEMENT_FREQUENCY_PER_INSTANCE); // Matrix - 1

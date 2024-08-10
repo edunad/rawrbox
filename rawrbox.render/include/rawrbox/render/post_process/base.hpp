@@ -12,9 +12,9 @@ namespace rawrbox {
 		bool _enabled = true;
 
 #ifdef UINT_DATA
-		std::array<rawrbox::Vector4u, rawrbox::MAX_POST_DATA> _data = {};
+		std::array<rawrbox::Vector4u, RB_RENDER_MAX_POST_DATA> _data = {};
 #else
-		std::array<rawrbox::Vector4f, rawrbox::MAX_POST_DATA> _data = {};
+		std::array<rawrbox::Vector4f, RB_RENDER_MAX_POST_DATA> _data = {};
 #endif
 
 		// LOGGER ------

@@ -44,7 +44,7 @@ namespace rawrbox {
 
 			// BONE ANIMATION ----
 			if constexpr (supportsBones<typename M::vertexBufferType>) {
-				std::array<rawrbox::Matrix4x4, rawrbox::MAX_BONES_PER_MODEL> boneTransforms = {};
+				std::array<rawrbox::Matrix4x4, RB_RENDER_MAX_BONES_PER_MODEL> boneTransforms = {};
 
 				if (mesh.skeleton != nullptr) {
 					auto calcs = std::unordered_map<uint8_t, rawrbox::Matrix4x4>();

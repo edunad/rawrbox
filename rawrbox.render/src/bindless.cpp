@@ -35,8 +35,8 @@ namespace rawrbox {
 		auto* device = renderer->device();
 
 		// Reserve max textures ---
-		_textureHandles.reserve(rawrbox::RendererBase::MAX_TEXTURES);
-		_vertexTextureHandles.reserve(rawrbox::RendererBase::MAX_VERTEX_TEXTURES);
+		_textureHandles.reserve(RB_RENDER_MAX_TEXTURES);
+		_vertexTextureHandles.reserve(RB_RENDER_MAX_VERTEX_TEXTURES);
 		// ------------------------
 
 		// Create Buffer ------
@@ -123,10 +123,10 @@ namespace rawrbox {
 		std::vector<Diligent::PipelineResourceDesc> resources = {
 		    {Diligent::SHADER_TYPE_VERTEX, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 		    {Diligent::SHADER_TYPE_VERTEX, "SkinnedConstants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    {Diligent::SHADER_TYPE_VERTEX, "g_Textures", rawrbox::RendererBase::MAX_VERTEX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
+		    {Diligent::SHADER_TYPE_VERTEX, "g_Textures", RB_RENDER_MAX_VERTEX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
 
 		    {Diligent::SHADER_TYPE_PIXEL, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
-		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", rawrbox::RendererBase::MAX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
+		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", RB_RENDER_MAX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
 		};
 
 		if (camera != nullptr) {
@@ -309,7 +309,7 @@ namespace rawrbox {
 
 	uint32_t BindlessManager::internalRegister(Diligent::ITextureView* view, rawrbox::TEXTURE_TYPE type) {
 		bool isVertex = type == rawrbox::TEXTURE_TYPE::VERTEX;
-		auto max = isVertex ? rawrbox::RendererBase::MAX_VERTEX_TEXTURES : rawrbox::RendererBase::MAX_TEXTURES;
+		auto max = isVertex ? RB_RENDER_MAX_VERTEX_TEXTURES : RB_RENDER_MAX_TEXTURES;
 		auto& handler = isVertex ? _vertexTextureHandles : _textureHandles;
 
 		int size = static_cast<int>(handler.size());

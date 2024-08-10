@@ -1,3 +1,4 @@
+#include <rawrbox/bass/bass_config.hpp>
 #include <rawrbox/bass/manager.hpp>
 #include <rawrbox/bass/sound/instance.hpp>
 #include <rawrbox/bass/utils/bass.hpp>
@@ -10,8 +11,6 @@
 #include <filesystem>
 
 namespace rawrbox {
-	constexpr auto MAX_SOUND_INSTANCES = 5; // Max sound effects playing at the same time
-
 	// LOGGER ------
 	std::unique_ptr<rawrbox::Logger> BASS::_logger = std::make_unique<rawrbox::Logger>("RawrBox-BASS");
 	// -------------
@@ -113,7 +112,7 @@ namespace rawrbox {
 		bool is3D = (flags & SoundFlags::SOUND_3D) > 0;
 		bool beatDetection = (flags & SoundFlags::BEAT_DETECTION) > 0;
 		bool bpmDetection = (flags & SoundFlags::BPM_DETECTION) > 0;
-		bool shouldStream = size > 1024 * 1024 * 2;
+		bool shouldStream = size > RB_BASS_MAX_LOCAL_SIZE;
 
 		HSAMPLE sample = 0;
 		auto bassFlags = is3D ? BASS_SAMPLE_3D | BASS_SAMPLE_MONO | BASS_SAMPLE_OVER_DIST | BASS_SAMPLE_MUTEMAX : BASS_SAMPLE_OVER_POS;
@@ -121,7 +120,7 @@ namespace rawrbox {
 		if (shouldStream) {
 			sample = BASS_StreamCreateFile(0, path.generic_string().c_str(), 0, 0, bassFlags);
 		} else {
-			sample = BASS_SampleLoad(0, path.generic_string().c_str(), 0, 0, MAX_SOUND_INSTANCES, bassFlags);
+			sample = BASS_SampleLoad(0, path.generic_string().c_str(), 0, 0, RB_BASS_MAX_SOUND_INSTANCES, bassFlags);
 		}
 
 		if (sample == 0) rawrbox::BASSUtils::checkBASSError();
