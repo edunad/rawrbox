@@ -220,9 +220,9 @@ namespace rawrbox {
 
 		// Init pipelines ---
 		rawrbox::PipelineUtils::init(*this->device());
-		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MAX_BONES_PER_MODEL", rawrbox::MAX_BONES_PER_MODEL);
-		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MAX_BONES_PER_VERTEX", rawrbox::MAX_BONES_PER_VERTEX);
-		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_PIXEL, "MAX_POST_DATA", rawrbox::MAX_POST_DATA);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MAX_BONES_PER_MODEL", RB_RENDER_MAX_BONES_PER_MODEL);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MAX_BONES_PER_VERTEX", RB_MAX_BONES_PER_VERTEX);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_PIXEL, "MAX_POST_DATA", RB_RENDER_MAX_POST_DATA);
 		// ----------------------
 
 		// Setup camera -----
@@ -310,7 +310,7 @@ namespace rawrbox {
 		// -----------------------
 
 		// Setup blit ----
-		this->_GPUBlit = std::make_unique<rawrbox::TextureBLIT>(rawrbox::Vector2u{GPU_PICK_SAMPLE_SIZE, GPU_PICK_SAMPLE_SIZE});
+		this->_GPUBlit = std::make_unique<rawrbox::TextureBLIT>(rawrbox::Vector2u{RB_RENDER_GPU_PICK_SAMPLE_SIZE, RB_RENDER_GPU_PICK_SAMPLE_SIZE});
 		this->_GPUBlit->upload();
 		// ---------------
 
@@ -704,8 +704,8 @@ namespace rawrbox {
 		Diligent::Box MapRegion;
 		MapRegion.MinX = pos.x;
 		MapRegion.MinY = pos.y;
-		MapRegion.MaxX = MapRegion.MinX + GPU_PICK_SAMPLE_SIZE;
-		MapRegion.MaxY = MapRegion.MinY + GPU_PICK_SAMPLE_SIZE;
+		MapRegion.MaxX = MapRegion.MinX + RB_RENDER_GPU_PICK_SAMPLE_SIZE;
+		MapRegion.MaxY = MapRegion.MinY + RB_RENDER_GPU_PICK_SAMPLE_SIZE;
 
 		auto* tex = this->_render->getTexture(1); // GPU pick texture
 		this->_GPUBlit->copy(tex, &MapRegion, [this, callback]() {
@@ -714,8 +714,8 @@ namespace rawrbox {
 				uint32_t id = 0;
 				std::unordered_map<uint32_t, uint32_t> ids = {};
 
-				for (size_t y = 0; y < GPU_PICK_SAMPLE_SIZE; y++) {
-					for (size_t x = 0; x < GPU_PICK_SAMPLE_SIZE; x++) {
+				for (size_t y = 0; y < RB_RENDER_GPU_PICK_SAMPLE_SIZE; y++) {
+					for (size_t x = 0; x < RB_RENDER_GPU_PICK_SAMPLE_SIZE; x++) {
 						size_t pixelIndex = x * 4 + y * stride;
 
 						uint8_t r = pixels[pixelIndex];

@@ -302,7 +302,7 @@ namespace rawrbox {
 				uint32_t boneId = fnd->second->boneId;
 				float boneWeight = weightobj.mWeight;
 
-				if (indx < rawrbox::MAX_BONES_PER_VERTEX) {
+				if (indx < RB_MAX_BONES_PER_VERTEX) {
 					v.bone_indices[indx] = boneId;
 					v.bone_weights[indx] = boneWeight;
 
@@ -312,7 +312,7 @@ namespace rawrbox {
 					int minIndex = 0;
 					float minWeight = v.bone_weights[0];
 
-					for (int o = 1; o < rawrbox::MAX_BONES_PER_VERTEX; o++) {
+					for (int o = 1; o < RB_MAX_BONES_PER_VERTEX; o++) {
 						if (v.bone_weights[o] < minWeight) {
 							minIndex = o;
 							minWeight = v.bone_weights[o];
@@ -321,7 +321,7 @@ namespace rawrbox {
 
 					// replace with new bone if the new bone has greater weight
 					if (boneWeight > minWeight) {
-						this->_logger->warn("Model bone past max limit of '{}', replacing bone '{}' with bone '{}'", rawrbox::MAX_BONES_PER_VERTEX, v.bone_indices[minIndex], boneId);
+						this->_logger->warn("Model bone past max limit of '{}', replacing bone '{}' with bone '{}'", RB_MAX_BONES_PER_VERTEX, v.bone_indices[minIndex], boneId);
 
 						v.bone_indices[minIndex] = boneId;
 						v.bone_weights[minIndex] = boneWeight;

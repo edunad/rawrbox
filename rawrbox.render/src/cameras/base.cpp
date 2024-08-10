@@ -57,7 +57,7 @@ namespace rawrbox {
 
 		float nearZ = this->getZNear();
 		float farZ = this->getZFar();
-		auto gLightClustersNumZz = static_cast<float>(rawrbox::CLUSTERS_Z);
+		auto gLightClustersNumZz = static_cast<float>(RB_RENDER_CLUSTERS_Z);
 
 		data.gGridParams = {
 		    gLightClustersNumZz / std::log(farZ / nearZ),

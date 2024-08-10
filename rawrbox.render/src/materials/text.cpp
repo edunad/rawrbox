@@ -17,7 +17,7 @@ namespace rawrbox {
 			rawrbox::PipeSettings settings;
 			settings.pVS = "3dtext_unlit.vsh";
 			settings.pPS = "3dtext_unlit.psh";
-			settings.renderTargets = rawrbox::RENDER_TARGET_TARGETS; // COLOR + GPUPick
+			settings.renderTargets = RB_RENDER_RENDER_TARGET_TARGETS; // COLOR + GPUPick
 			settings.immutableSamplers = {{Diligent::SHADER_TYPE_PIXEL, "g_Texture"}};
 			settings.cull = Diligent::CULL_MODE_FRONT;
 			settings.layout = vertexBufferType::vLayout();

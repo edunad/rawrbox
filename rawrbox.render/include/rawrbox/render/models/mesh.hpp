@@ -76,8 +76,6 @@ namespace rawrbox {
 	template <typename T = rawrbox::VertexUVData>
 		requires(std::derived_from<T, rawrbox::VertexData>)
 	class Mesh {
-		static constexpr uint16_t MAX_VERTICES = 16000;
-		static constexpr uint16_t MAX_INDICES = 16000;
 
 	protected:
 		bool _canOptimize = true;
@@ -121,7 +119,7 @@ namespace rawrbox {
 
 		// ANIMATION ------
 		rawrbox::Skeleton* skeleton = nullptr;
-		std::array<rawrbox::Matrix4x4, rawrbox::MAX_BONES_PER_MODEL> boneTransforms = {};
+		std::array<rawrbox::Matrix4x4, RB_RENDER_MAX_BONES_PER_MODEL> boneTransforms = {};
 		// -----------------
 
 		// LIGHTS ------
@@ -288,8 +286,8 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool canOptimize(const rawrbox::Mesh<T>& other) const {
 			if (!this->_canOptimize || !other._canOptimize) return false;
 
-			if (this->vertices.size() + other.vertices.size() >= MAX_VERTICES) return false; // Max vertice limit
-			if (this->indices.size() + other.indices.size() >= MAX_INDICES) return false;    // Max indice limit
+			if (this->vertices.size() + other.vertices.size() >= RB_RENDER_MAX_VERTICES) return false; // Max vertice limit
+			if (this->indices.size() + other.indices.size() >= RB_RENDER_MAX_INDICES) return false;    // Max indice limit
 
 			return this->textures == other.textures && // TODO: Replace with canMerge and pass textureID down to vertex?
 			       this->color == other.color &&

@@ -24,18 +24,18 @@ namespace rawrbox {
 	}
 
 	void ClusteredPlugin::initialize(const rawrbox::Vector2u& renderSize) {
-		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, CLUSTER_TEXTEL_SIZE);
-		CLUSTERS_Y = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.y, CLUSTER_TEXTEL_SIZE);
+		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, RB_RENDER_CLUSTER_TEXTEL_SIZE);
+		CLUSTERS_Y = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.y, RB_RENDER_CLUSTER_TEXTEL_SIZE);
 
-		CLUSTERS_GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * CLUSTERS_Z;
+		CLUSTERS_GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * RB_RENDER_CLUSTERS_Z;
 
-		if constexpr (CLUSTERS_Z % CLUSTERS_Z_THREADS != 0) throw this->_logger->error("Number of cluster depth slices must be divisible by thread count z-dimension");
-		if constexpr (MAX_DATA_PER_CLUSTER % 32 != 0) throw this->_logger->error("MAX_DATA_PER_CLUSTER must be divisible by 32");
+		if constexpr (RB_RENDER_CLUSTERS_Z % RB_RENDER_CLUSTERS_Z_THREADS != 0) throw this->_logger->error("Number of cluster depth slices must be divisible by thread count z-dimension");
+		if constexpr (RB_RENDER_MAX_DATA_PER_CLUSTER % 32 != 0) throw this->_logger->error("MAX_DATA_PER_CLUSTER must be divisible by 32");
 
 		// Setup dispatch ---
-		this->_dispatch.ThreadGroupCountX = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_X, CLUSTERS_X_THREADS);
-		this->_dispatch.ThreadGroupCountY = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_Y, CLUSTERS_Y_THREADS);
-		this->_dispatch.ThreadGroupCountZ = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_Z, CLUSTERS_Z_THREADS);
+		this->_dispatch.ThreadGroupCountX = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_X, RB_RENDER_CLUSTERS_X_THREADS);
+		this->_dispatch.ThreadGroupCountY = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_Y, RB_RENDER_CLUSTERS_Y_THREADS);
+		this->_dispatch.ThreadGroupCountZ = rawrbox::MathUtils::divideRound<uint32_t>(RB_RENDER_CLUSTERS_Z, RB_RENDER_CLUSTERS_Z_THREADS);
 		// ----------
 
 		// Initialize light engine
@@ -51,14 +51,14 @@ namespace rawrbox {
 		if (renderSize.x <= 0 || renderSize.y <= 0) return; // Minimized
 
 		// Re-calculate clusters ----
-		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, CLUSTER_TEXTEL_SIZE);
-		CLUSTERS_Y = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.y, CLUSTER_TEXTEL_SIZE);
-		CLUSTERS_GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * CLUSTERS_Z;
+		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, RB_RENDER_CLUSTER_TEXTEL_SIZE);
+		CLUSTERS_Y = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.y, RB_RENDER_CLUSTER_TEXTEL_SIZE);
+		CLUSTERS_GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * RB_RENDER_CLUSTERS_Z;
 		// -------------------------
 
 		// Re-setup dispatch ---
-		this->_dispatch.ThreadGroupCountX = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_X, CLUSTERS_X_THREADS);
-		this->_dispatch.ThreadGroupCountY = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_Y, CLUSTERS_Y_THREADS);
+		this->_dispatch.ThreadGroupCountX = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_X, RB_RENDER_CLUSTERS_X_THREADS);
+		this->_dispatch.ThreadGroupCountY = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_Y, RB_RENDER_CLUSTERS_Y_THREADS);
 		// ----------
 
 		// --------------------------
@@ -174,7 +174,7 @@ namespace rawrbox {
 			BuffDesc.ElementByteStride = sizeof(std::array<uint32_t, 4>);
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 			BuffDesc.Name = "rawrbox::Cluster::ClusterDataGrid";
-			BuffDesc.Size = BuffDesc.ElementByteStride * (rawrbox::MAX_DATA_PER_CLUSTER / rawrbox::CLUSTERS_Z * CLUSTERS_GROUP_SIZE);
+			BuffDesc.Size = BuffDesc.ElementByteStride * (RB_RENDER_MAX_DATA_PER_CLUSTER / RB_RENDER_CLUSTERS_Z * CLUSTERS_GROUP_SIZE);
 			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
 
 			device->CreateBuffer(BuffDesc, nullptr, &this->_dataGridBuffer);
@@ -276,16 +276,16 @@ namespace rawrbox {
 	Diligent::ShaderMacroHelper ClusteredPlugin::getClusterMacros() {
 		Diligent::ShaderMacroHelper macro;
 
-		macro.AddShaderMacro("THREAD_GROUP_SIZE", rawrbox::THREAD_GROUP_SIZE);
-		macro.AddShaderMacro("CLUSTERS_X_THREADS", rawrbox::CLUSTERS_X_THREADS);
-		macro.AddShaderMacro("CLUSTERS_Y_THREADS", rawrbox::CLUSTERS_Y_THREADS);
-		macro.AddShaderMacro("CLUSTERS_Z_THREADS", rawrbox::CLUSTERS_Z_THREADS);
+		macro.AddShaderMacro("THREAD_GROUP_SIZE", RB_RENDER_THREAD_GROUP_SIZE);
+		macro.AddShaderMacro("CLUSTERS_X_THREADS", RB_RENDER_CLUSTERS_X_THREADS);
+		macro.AddShaderMacro("CLUSTERS_Y_THREADS", RB_RENDER_CLUSTERS_Y_THREADS);
+		macro.AddShaderMacro("CLUSTERS_Z_THREADS", RB_RENDER_CLUSTERS_Z_THREADS);
 		macro.AddShaderMacro("CLUSTERS_X", CLUSTERS_X);
 		macro.AddShaderMacro("CLUSTERS_Y", CLUSTERS_Y);
-		macro.AddShaderMacro("CLUSTERS_Z", rawrbox::CLUSTERS_Z);
-		macro.AddShaderMacro("MAX_DATA_PER_CLUSTER", rawrbox::MAX_DATA_PER_CLUSTER);
-		macro.AddShaderMacro("CLUSTER_TEXTEL_SIZE", rawrbox::CLUSTER_TEXTEL_SIZE);
-		macro.AddShaderMacro("CLUSTERED_NUM_BUCKETS", rawrbox::CLUSTERED_NUM_BUCKETS);
+		macro.AddShaderMacro("CLUSTERS_Z", RB_RENDER_CLUSTERS_Z);
+		macro.AddShaderMacro("MAX_DATA_PER_CLUSTER", RB_RENDER_MAX_DATA_PER_CLUSTER);
+		macro.AddShaderMacro("CLUSTER_TEXTEL_SIZE", RB_RENDER_CLUSTER_TEXTEL_SIZE);
+		macro.AddShaderMacro("CLUSTERED_NUM_BUCKETS", RB_RENDER_CLUSTERED_NUM_BUCKETS);
 
 		macro.AddShaderMacro("CLUSTER_PLUGIN", true);
 		return macro;

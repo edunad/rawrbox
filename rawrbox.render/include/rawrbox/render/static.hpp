@@ -1,5 +1,8 @@
 #pragma once
 
+#include <rawrbox/render/render_config.hpp>
+// ------
+
 #include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/renderer.hpp>
 #include <rawrbox/render/textures/flat.hpp>
@@ -21,12 +24,6 @@
 
 namespace rawrbox {
 	class CameraBase;
-
-	constexpr auto MAX_BONES_PER_VERTEX = 4;
-	constexpr auto MAX_BONES_PER_MODEL = 150; // If value is increased, dynamic heap might need to be increased from the default 8mb
-	constexpr auto MAX_POST_DATA = 2;
-
-	constexpr uint8_t RENDER_TARGET_TARGETS = 2; // COLOR + GPUPick
 
 	// QUICK ACCESS ---
 	extern uint64_t FRAME;

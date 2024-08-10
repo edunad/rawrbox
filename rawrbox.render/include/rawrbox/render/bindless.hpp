@@ -22,8 +22,8 @@ namespace rawrbox {
 
 	struct BindlessVertexSkinnedBuffer {
 		// MODEL BONES ----
-		std::array<rawrbox::Matrix4x4, rawrbox::MAX_BONES_PER_MODEL> bones = {}; // This is quite heavy on the dynamic buffer
-											 //-----------------
+		std::array<rawrbox::Matrix4x4, RB_RENDER_MAX_BONES_PER_MODEL> bones = {}; // This is quite heavy on the dynamic buffer
+											  //-----------------
 
 		bool operator==(const BindlessVertexSkinnedBuffer& other) const { return std::equal(this->bones.begin(), this->bones.end(), other.bones.begin()); }
 		bool operator!=(const BindlessVertexSkinnedBuffer& other) const { return !operator==(other); }
@@ -39,7 +39,7 @@ namespace rawrbox {
 	};
 
 	struct BindlessPostProcessBuffer {
-		std::array<rawrbox::Vector4f, rawrbox::MAX_POST_DATA> data = {};
+		std::array<rawrbox::Vector4f, RB_RENDER_MAX_POST_DATA> data = {};
 		rawrbox::Vector4u textureIDs = {}; // BASE, DEPTH, ?, ?
 
 		bool operator==(const BindlessPostProcessBuffer& other) const { return this->textureIDs == other.textureIDs && std::equal(this->data.begin(), this->data.end(), other.data.begin()); }

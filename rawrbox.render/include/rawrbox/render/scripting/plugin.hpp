@@ -84,9 +84,9 @@ namespace rawrbox {
 
 			luabridge::getGlobalNamespace(L)
 			    .beginNamespace("renderer", {})
-			    .addVariable("MAX_BONES_PER_VERTEX", &rawrbox::MAX_BONES_PER_VERTEX)
-			    .addVariable("MAX_BONES_PER_MODEL", &rawrbox::MAX_BONES_PER_MODEL)
-			    .addVariable("MAX_POST_DATA", &rawrbox::MAX_POST_DATA)
+			    .addVariable("MAX_BONES_PER_VERTEX", RB_MAX_BONES_PER_VERTEX)
+			    .addVariable("MAX_BONES_PER_MODEL", RB_RENDER_MAX_BONES_PER_MODEL)
+			    .addVariable("MAX_POST_DATA", RB_RENDER_MAX_POST_DATA)
 			    .addFunction("frame", []() { return rawrbox::FRAME; })
 			    .endNamespace();
 
