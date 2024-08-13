@@ -92,6 +92,11 @@ namespace rawrbox {
 		[[nodiscard]] static std::vector<std::string> getModsIds();
 		[[nodiscard]] static bool hotReloadEnabled();
 		[[nodiscard]] static bool isLuaFileMounted(const std::string& path);
+
+#ifdef RAWRBOX_SCRIPTING_WORKSHOP_MODDING
+		[[nodiscard]] static std::vector<rawrbox::Mod*> getModsByWorkshopType(uint32_t type);
+		[[nodiscard]] static rawrbox::Mod* getModByWorkshopId(uint64_t id);
+#endif
 		// ---------
 	};
 } // namespace rawrbox

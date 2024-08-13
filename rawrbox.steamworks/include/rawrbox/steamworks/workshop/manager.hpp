@@ -54,7 +54,7 @@ namespace rawrbox {
 
 	struct WorkshopModConfig {
 		std::optional<std::string> id;
-		std::optional<std::string> type;
+		std::optional<std::string> type; // Used to track what type of mod it is, this is optional and depends on your implementation
 
 		std::string title;
 		std::string version;
@@ -67,10 +67,14 @@ namespace rawrbox {
 
 		std::optional<std::vector<std::string>> tags;
 		std::optional<std::vector<std::string>> ignore;
+
+		// So we can keep track of the workshop id, it gets overriden by the system on create
+		std::optional<std::string> __workshop_id__;
 	};
 
 	struct WorkshopMod : public SteamUGCDetails_t {
 		std::string modId;
+		std::string modType;
 		std::unordered_map<std::string, std::string> keyVals;
 		std::filesystem::path installPath;
 	};
@@ -83,6 +87,10 @@ namespace rawrbox {
 
 		[[nodiscard]] static bool validateMod(PublishedFileId_t id);
 		static void loadMods(const std::vector<rawrbox::WorkshopMod>& details);
+
+		// UTILS ---
+		static void patchConfig(const std::filesystem::path& rootPath, const rawrbox::WorkshopModConfig& config);
+		// -------
 
 		// UPLOAD ------
 		[[nodiscard]] static std::filesystem::path moveToTempModFolder(const std::string& rootPath, const std::vector<std::filesystem::path>& uploadFiles);

@@ -16,6 +16,7 @@ namespace rawrbox {
 
 		VertexData() = default;
 		VertexData(const rawrbox::Vector3f& _pos) : position(_pos) {}
+		VertexData(const rawrbox::Vector4f& _pos) : position(_pos.xyz()), w(_pos.w) {}
 
 		void setPos(const rawrbox::Vector3f& _pos) { this->position = _pos; }
 

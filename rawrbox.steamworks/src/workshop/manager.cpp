@@ -56,6 +56,18 @@ namespace rawrbox {
 		onModsLoaded(loadedMods);
 	}
 
+	// UTILS ---
+	void SteamWORKSHOP::patchConfig(const std::filesystem::path& rootPath, const rawrbox::WorkshopModConfig& config) {
+		auto configPath = fmt::format("{}/mod.json", rootPath.generic_string());
+		if (!std::filesystem::exists(configPath)) throw _logger->error("Missing 'mod.json' file");
+
+		auto ec = glz::write_file_json<glz::opts{.comments = 1U, .prettify = 1U, .allow_conversions = 1U}>(config, configPath, std::string{});
+		if (ec != glz::error_code::none) throw _logger->error("Failed to patch settings '{}'", configPath);
+
+		_logger->success("Patched mod config");
+	}
+	// -------
+
 	// UPLOAD ------
 	std::filesystem::path SteamWORKSHOP::moveToTempModFolder(const std::string& rootPath, const std::vector<std::filesystem::path>& uploadFiles) {
 		// Create temp folder
@@ -95,9 +107,9 @@ namespace rawrbox {
 		// ------
 
 		// SETUP KEY VALUES ----
-		std::string type = config.type.value_or("");
-		if (type.empty()) {
-			if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "WORKSHOP_TYPE", type.c_str())) throw _logger->error("Failed to set workshop type");
+		std::string type = config.type.value_or("MOD");
+		if (!type.empty()) {
+			if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "MOD_TYPE", type.c_str())) throw _logger->error("Failed to set workshop type");
 		}
 
 		if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "MOD_ID", config.id.value().c_str())) throw _logger->error("Failed to set workshop mod id");
@@ -313,9 +325,10 @@ namespace rawrbox {
 			throw _logger->error("Failed to read 'mod.json' file {{}}", magic_enum::enum_name(result.ec));
 		}
 
-		// Fill id
-		if (!config.id.has_value() || config.id.value().empty()) {
+		// Always override and fill id
+		if (!config.id.has_value()) {
 			config.id = rootPath.filename().generic_string();
+			_logger->info("Missing mod id, using {}", config.id.value());
 		}
 		// ---------------
 
@@ -402,6 +415,7 @@ namespace rawrbox {
 
 	void SteamWORKSHOP::createWorkshop(rawrbox::WorkshopModConfig& config, const std::filesystem::path& rootPath, const std::vector<std::filesystem::path>& files, const std::function<void(SubmitItemUpdateResult_t*)>& onComplete) {
 		if (files.empty()) throw _logger->error("Cannot upload empty mod!");
+		if (config.__workshop_id__.has_value()) throw _logger->error("Mod already has a workshop id");
 
 		SteamAPICall_t apicall = SteamUGC()->CreateItem(STEAMWORKS_APPID, k_EWorkshopFileTypeCommunity);
 		if (apicall == 0) throw _logger->error("Failed to create workshop item");
@@ -413,6 +427,11 @@ namespace rawrbox {
 
 			auto err = checkErrors(result->m_eResult);
 			if (!err.empty()) throw _logger->error("{}", err);
+
+			// PATCH CONFIG ----
+			config.__workshop_id__ = std::to_string(result->m_nPublishedFileId);
+			patchConfig(rootPath, config);
+			// ------
 
 			auto tempFolder = moveToTempModFolder(rootPath.generic_string(), files);
 			_logger->info("Created temp folder '{}'", tempFolder.generic_string());

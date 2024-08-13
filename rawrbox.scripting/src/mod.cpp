@@ -72,9 +72,12 @@ namespace rawrbox {
 
 	lua_State* Mod::getEnvironment() { return this->_L; }
 
-#ifdef RAWRBOX_STEAMWORKS
-	void Mod::setWorkshopId(PublishedFileId_t id) { this->_workshopId = id; }
-	PublishedFileId_t Mod::getWorkshopId() const { return this->_workshopId; }
+#ifdef RAWRBOX_SCRIPTING_WORKSHOP_MODDING
+	void Mod::setWorkshopId(uint64_t id) { this->_workshopId = id; }
+	uint64_t Mod::getWorkshopId() const { return this->_workshopId; }
+
+	void Mod::setWorkshopType(uint32_t type) { this->_workshopType = type; }
+	uint32_t Mod::getWorkshopType() const { return this->_workshopType; }
 #endif
 	// -----
 } // namespace rawrbox

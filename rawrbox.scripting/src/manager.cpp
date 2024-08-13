@@ -352,7 +352,9 @@ namespace rawrbox {
 		std::unordered_map<std::filesystem::path, rawrbox::Mod*> success = {};
 		for (const auto& p : std::filesystem::directory_iterator(rootFolder)) {
 			if (!p.is_directory()) continue;
-			success[p] = loadMod(p.path().filename().generic_string(), p);
+
+			auto* mod = loadMod(p.path().filename().generic_string(), p);
+			if (mod != nullptr) success[p] = mod;
 		}
 
 		return success;
@@ -481,5 +483,24 @@ namespace rawrbox {
 
 		return false;
 	}
+
+#ifdef RAWRBOX_SCRIPTING_WORKSHOP_MODDING
+	std::vector<rawrbox::Mod*> SCRIPTING::getModsByWorkshopType(uint32_t type) {
+		std::vector<rawrbox::Mod*> mods = {};
+		for (auto& mod : _mods) {
+			if (mod.second->getWorkshopType() == type) mods.push_back(mod.second.get());
+		}
+
+		return mods;
+	}
+
+	rawrbox::Mod* SCRIPTING::getModByWorkshopId(uint64_t id) {
+		for (auto& mod : _mods) {
+			if (mod.second->getWorkshopId() == id) return mod.second.get();
+		}
+
+		return nullptr;
+	}
+#endif
 	// -----
 } // namespace rawrbox

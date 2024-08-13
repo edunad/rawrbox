@@ -7,10 +7,6 @@
 #include <filesystem>
 #include <memory>
 
-#ifdef RAWRBOX_STEAMWORKS
-	#include <steam/steam_api.h>
-#endif
-
 namespace rawrbox {
 	class Mod {
 		// LUA ----
@@ -28,8 +24,10 @@ namespace rawrbox {
 		// Settings ---
 		std::filesystem::path _folder;
 		std::string _id = "UNKNOWN";
-#ifdef RAWRBOX_STEAMWORKS
-		PublishedFileId_t _workshopId = 0;
+
+#ifdef RAWRBOX_SCRIPTING_WORKSHOP_MODDING
+		uint64_t _workshopId = 0;
+		uint32_t _workshopType = 0;
 #endif
 		// -----------
 
@@ -65,9 +63,12 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual lua_State* getEnvironment();
 
-#ifdef RAWRBOX_STEAMWORKS
-		virtual void setWorkshopId(PublishedFileId_t id);
-		[[nodiscard]] virtual PublishedFileId_t getWorkshopId() const;
+#ifdef RAWRBOX_SCRIPTING_WORKSHOP_MODDING
+		virtual void setWorkshopId(uint64_t id);
+		[[nodiscard]] virtual uint64_t getWorkshopId() const;
+
+		virtual void setWorkshopType(uint32_t type);
+		[[nodiscard]] virtual uint32_t getWorkshopType() const;
 #endif
 		// -----
 
