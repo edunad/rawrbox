@@ -17,7 +17,7 @@ CPMDeclarePackage(magic_enum
 )
 # glaze
 CPMDeclarePackage(glaze
-  VERSION 3.2.2
+  VERSION 3.2.5
   GITHUB_REPOSITORY stephenberry/glaze
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -217,7 +217,7 @@ CPMDeclarePackage(clip
 # Jolt
 CPMDeclarePackage(Jolt
   NAME Jolt
-  VERSION 5.0.0
+  VERSION 5.1.0
   GITHUB_REPOSITORY jrouwe/JoltPhysics
   SOURCE_SUBDIR Build
   OPTIONS

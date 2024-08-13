@@ -179,7 +179,7 @@ if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
     CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@13.0.3")
 endif()
 
-CPMAddPackage("gh:stephenberry/glaze@3.2.2")
+CPMAddPackage("gh:stephenberry/glaze@3.2.5")
 
 # ---
 if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)
