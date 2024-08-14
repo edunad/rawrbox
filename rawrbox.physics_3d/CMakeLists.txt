@@ -24,7 +24,6 @@ CPMAddPackage(
 )
 
 if(Jolt_ADDED)
-    string(REPLACE "/GR" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
 endif()
 # ----
