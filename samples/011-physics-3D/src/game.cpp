@@ -67,7 +67,7 @@ namespace phys_3d_test {
 
 		// rawrbox::PHYSICS::onBodyAwake += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body awake \n"); };
 		// rawrbox::PHYSICS::onBodySleep += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body sleep \n"); };
-		this->_physDebug = std::make_unique<rawrbox::DebugRenderer>();
+		this->_physDebug = std::make_unique<rawrbox::PHYSDebug>();
 		// ----------------------------
 
 		// BINDS ----

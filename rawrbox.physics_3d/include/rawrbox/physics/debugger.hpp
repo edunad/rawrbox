@@ -28,12 +28,12 @@ namespace rawrbox {
 		void Release() override { JPH::RefTarget<RBatch>::Release(); }
 	};
 
-	class DebugRenderer : public JPH::DebugRenderer {
+	class PHYSDebug : public JPH::DebugRenderer {
 	protected:
 		float _maxRenderDistance = 200.F;
 
 	public:
-		DebugRenderer(float maxDistance = 200.F) : _maxRenderDistance(maxDistance) { JPH::DebugRenderer::Initialize(); }
+		PHYSDebug(float maxDistance = 200.F) : _maxRenderDistance(maxDistance) { JPH::DebugRenderer::Initialize(); }
 
 		Batch CreateTriangleBatch(const Triangle* inTriangles, int inTriangleCount) override {
 			// NOLINTBEGIN(*)

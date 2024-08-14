@@ -20,7 +20,7 @@ namespace phys_3d_test {
 		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
 		std::vector<std::unique_ptr<BoxOfDoom>> _boxes = std::vector<std::unique_ptr<BoxOfDoom>>();
 
-		std::unique_ptr<rawrbox::DebugRenderer> _physDebug = nullptr;
+		std::unique_ptr<rawrbox::PHYSDebug> _physDebug = nullptr;
 
 		rawrbox::TextureBase* _texture = nullptr;
 		rawrbox::TIMER* _timer = nullptr;

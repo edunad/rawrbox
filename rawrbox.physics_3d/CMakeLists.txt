@@ -17,15 +17,12 @@ CPMAddPackage(
         "USE_STATIC_MSVC_RUNTIME_LIBRARY ON"
         "ENABLE_ALL_WARNINGS OFF"
 
-        "CPP_RTTI_ENABLED ON" # This is breaking linux build
-        "CPP_EXCEPTIONS_ENABLED ON"# This is breaking linux build
+        "CPP_RTTI_ENABLED ON"
+        "CPP_EXCEPTIONS_ENABLED ON"
+
     SOURCE_SUBDIR
         "Build"
 )
-
-if(Jolt_ADDED)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /GR-")
-endif()
 # ----
 
 # LIB ----
