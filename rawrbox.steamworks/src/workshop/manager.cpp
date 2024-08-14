@@ -228,6 +228,8 @@ namespace rawrbox {
 	}
 
 	rawrbox::WorkshopStatus SteamWORKSHOP::getWorkshopModState(PublishedFileId_t id) {
+		if (id == 0) return rawrbox::WorkshopStatus::INSTALLED; // Assume local mod & unpublished
+
 		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
 		uint32 state = SteamUGC()->GetItemState(id);
 
