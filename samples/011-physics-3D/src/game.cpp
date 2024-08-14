@@ -65,9 +65,11 @@ namespace phys_3d_test {
 		rawrbox::PHYSICS::physicsSystem->SetPhysicsSettings(settings);
 		rawrbox::PHYSICS::simulate = false; // PAUSE THE SIMULATION
 
-		// rawrbox::PHYSICS::onBodyAwake += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body awake \n"); };
-		// rawrbox::PHYSICS::onBodySleep += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body sleep \n"); };
+// rawrbox::PHYSICS::onBodyAwake += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body awake \n"); };
+// rawrbox::PHYSICS::onBodySleep += [](const JPH::BodyID& id, uint64_t inBodyUserData) { fmt::print("Body sleep \n"); };
+#ifdef JPH_DEBUG_RENDERER
 		this->_physDebug = std::make_unique<rawrbox::PHYSDebug>();
+#endif
 		// ----------------------------
 
 		// BINDS ----
@@ -195,7 +197,9 @@ namespace phys_3d_test {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
 			this->_modelGrid.reset();
+#ifdef JPH_DEBUG_RENDERER
 			this->_physDebug.reset();
+#endif
 			this->_boxes.clear();
 
 			this->_texture = nullptr;
@@ -246,6 +250,7 @@ namespace phys_3d_test {
 
 		auto* stencil = rawrbox::RENDERER->stencil();
 		stencil->drawText(fmt::format("[F1]   PAUSED: {}", !rawrbox::PHYSICS::simulate), {15, 15});
+#ifdef JPH_DEBUG_RENDERER
 		stencil->drawText(fmt::format("[F2]   DEBUG: {}", this->_debug), {15, 28});
 		stencil->drawText(fmt::format("[F3]   CLEAR"), {15, 48});
 
@@ -255,6 +260,9 @@ namespace phys_3d_test {
 
 			rawrbox::PHYSICS::physicsSystem->DrawBodies(settings, _physDebug.get());
 		}
+#else
+		stencil->drawText(fmt::format("[F3]   CLEAR"), {15, 28});
+#endif
 	}
 
 	void Game::draw() {

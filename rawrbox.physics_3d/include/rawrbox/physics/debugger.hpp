@@ -1,12 +1,17 @@
 #pragma once
 
-#ifdef RAWRBOX_RENDER
-	#include <rawrbox/physics/utils.hpp>
-	#include <rawrbox/render/static.hpp>
-	#include <rawrbox/render/stencil.hpp>
+#ifndef JPH_DEBUG_RENDERER
+	#error This file should only be included when JPH_DEBUG_RENDERER is defined
+#endif
 
-	#include <Jolt/Renderer/DebugRenderer.h>
-	#include <Jolt/Physics/Collision/RayCast.h>
+#ifdef JPH_DEBUG_RENDERER
+	#ifdef RAWRBOX_RENDER
+		#include <rawrbox/physics/utils.hpp>
+		#include <rawrbox/render/static.hpp>
+		#include <rawrbox/render/stencil.hpp>
+
+		#include <Jolt/Renderer/DebugRenderer.h>
+		#include <Jolt/Physics/Collision/RayCast.h>
 
 namespace rawrbox {
 	struct RBatch : public JPH::RefTargetVirtual, public JPH::RefTarget<RBatch> {
@@ -141,4 +146,5 @@ namespace rawrbox {
 		}
 	};
 } // namespace rawrbox
+	#endif
 #endif
