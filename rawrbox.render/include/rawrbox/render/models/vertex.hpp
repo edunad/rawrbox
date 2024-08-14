@@ -14,8 +14,8 @@ namespace rawrbox {
 		rawrbox::Vector3f position = {};
 		float w = 1.F; // Padding
 
-		VertexData() = default;
-		VertexData(const rawrbox::Vector3f& _pos) : position(_pos) {}
+		constexpr VertexData() = default;
+		constexpr VertexData(const rawrbox::Vector3f& _pos) : position(_pos) {}
 		VertexData(const rawrbox::Vector4f& _pos) : position(_pos.xyz()), w(_pos.w) {}
 
 		void setPos(const rawrbox::Vector3f& _pos) { this->position = _pos; }
@@ -41,8 +41,8 @@ namespace rawrbox {
 	struct VertexUVData : public rawrbox::VertexData {
 		rawrbox::Vector4f uv = {};
 
-		VertexUVData() = default;
-		VertexUVData(const rawrbox::Vector3f& _pos,
+		constexpr VertexUVData() = default;
+		constexpr VertexUVData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {}) : rawrbox::VertexData(_pos), uv(_uv) {}
 
 		// Texture array ---
@@ -77,10 +77,10 @@ namespace rawrbox {
 		uint32_t normal = 0x00000000;
 		uint32_t tangent = 0x00000000;
 
-		VertexNormData() = default;
+		constexpr VertexNormData() = default;
 		VertexNormData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexUVData(_pos, _uv), normal(rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z)), tangent(rawrbox::PackUtils::packNormal(tang.x, tang.y, tang.z)) {}
-		VertexNormData(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t _norm = 0x00000000, uint32_t _tang = 0x00000000) : rawrbox::VertexUVData(_pos, _uv), normal(_norm), tangent(_tang) {}
+		constexpr VertexNormData(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t _norm = 0x00000000, uint32_t _tang = 0x00000000) : rawrbox::VertexUVData(_pos, _uv), normal(_norm), tangent(_tang) {}
 
 		void setNormal(const rawrbox::Vector3f& norm) { normal = rawrbox::PackUtils::packNormal(norm.x, norm.y, norm.z); }
 		void setTangent(const rawrbox::Vector3f& tang) { tangent = rawrbox::PackUtils::packNormal(tang.x, tang.y, tang.z); }
@@ -115,8 +115,8 @@ namespace rawrbox {
 		std::array<uint32_t, RB_MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, RB_MAX_BONES_PER_VERTEX> bone_weights = {};
 
-		VertexBoneData() = default;
-		VertexBoneData(const rawrbox::Vector3f& _pos,
+		constexpr VertexBoneData() = default;
+		constexpr VertexBoneData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {}) : rawrbox::VertexUVData(_pos, _uv) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
@@ -148,11 +148,11 @@ namespace rawrbox {
 		std::array<uint32_t, RB_MAX_BONES_PER_VERTEX> bone_indices = {};
 		std::array<float, RB_MAX_BONES_PER_VERTEX> bone_weights = {};
 
-		VertexNormBoneData() = default;
+		constexpr VertexNormBoneData() = default;
 		VertexNormBoneData(const rawrbox::Vector3f& _pos,
 		    const rawrbox::Vector4f& _uv = {}, const rawrbox::Vector3f& norm = {}, const rawrbox::Vector3f& tang = {}) : rawrbox::VertexNormData(_pos, _uv, norm, tang) {}
 
-		VertexNormBoneData(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t norm = 0x00000000, uint32_t tang = 0x00000000) : rawrbox::VertexNormData(_pos, _uv, norm, tang) {}
+		constexpr VertexNormBoneData(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f& _uv = {}, uint32_t norm = 0x00000000, uint32_t tang = 0x00000000) : rawrbox::VertexNormData(_pos, _uv, norm, tang) {}
 
 		static std::vector<Diligent::LayoutElement> vLayout(bool instanced = false) {
 			std::vector<Diligent::LayoutElement> v = {
