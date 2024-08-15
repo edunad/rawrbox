@@ -59,8 +59,22 @@ option(RAWRBOX_DISABLE_SUPPORT_VULKAN "Disable vulkan support" OFF)
 # Other -----
 option(RAWRBOX_DEV_MODE "Builds all modules, used for developing rawrbox" OFF)
 option(RAWRBOX_TRACE_EXCEPTIONS "Enables exception tracing" ON)
+option(RAWRBOX_INTERPROCEDURAL_OPTIMIZATION "Enables IPO" ON)
 # ---------------
 # -----
+
+if(RAWRBOX_INTERPROCEDURAL_OPTIMIZATION)
+    message(WARNING "Enabled INTERPROCEDURAL_OPTIMIZATION")
+
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT ipoSupported OUTPUT error)
+
+    if(ipoSupported)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    else()
+        message(FATAL_ERROR "IPO / LTO is not supported, please disable RAWRBOX_INTERPROCEDURAL_OPTIMIZATION")
+    endif()
+endif()
 
 # Uncomment for package.lock generation
 if(RAWRBOX_DEV_MODE)
