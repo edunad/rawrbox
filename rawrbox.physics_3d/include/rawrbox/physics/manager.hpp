@@ -1,15 +1,12 @@
 #pragma once
+
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/vector3.hpp>
-#include <rawrbox/physics/debugger.hpp>
 #include <rawrbox/utils/event.hpp>
 
-#include <Jolt/Jolt.h>
-
 // Jolt includes
-
-#include <magic_enum.hpp>
-
+#include <Jolt/Jolt.h>
+//--
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Core/JobSystemThreadPool.h>
 #include <Jolt/Core/TempAllocator.h>
@@ -20,6 +17,10 @@
 #include <Jolt/Physics/PhysicsSettings.h>
 #include <Jolt/Physics/PhysicsSystem.h>
 #include <Jolt/RegisterTypes.h>
+//---
+
+#include <magic_enum.hpp>
+
 #include <fmt/format.h>
 
 #include <memory>

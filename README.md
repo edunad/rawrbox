@@ -60,6 +60,7 @@ This engine started as a C++ training project, with hopes of being applied in my
 ### REQUIRED SOFTWARE
 
 - [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x64.exe) 2015 - 2022 version
+- [Vulkan SDK](https://vulkan.lunarg.com/sdk/home#windows) (ensure the enviroment paths are correct)
 - [GIT](https://git-scm.com/) or something similar to GIT
 - [CMAKE](https://cmake.org/download/) at least > 3.16.3
 - Download and install **C++ Build Tools** (2022 is recommended)<br/>
@@ -113,44 +114,45 @@ This engine started as a C++ training project, with hopes of being applied in my
 
 # CMAKE OPTIONS
 
-| OPTION NAME                                | NOTE                                                                                               |
-| :----------------------------------------- | :------------------------------------------------------------------------------------------------- |
-| `RAWRBOX_BUILD_TESTING`                    | Builds & enables project tests                                                                     |
-| `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_CONTENT_FOLDER`                   | The content folder to output assets. Default is `assets`                                           |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_BUILD_RAWRBOX_UI`                 | Builds and includes ui                                                                             |
-| `RAWRBOX_BUILD_RAWRBOX_RESOURCES`          | Builds and resouces manager (aka handling and storing loaded resources)                            |
-| `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`         | Builds the 3D physics engine                                                                       |
-| `RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS`         | Builds the 2D physics engine                                                                       |
-| `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ |
-| `RAWRBOX_BUILD_RAWRBOX_ASSIMP`             | Enables assimp model loading                                                                       |
-| `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM loading                                                                               |
-| `RAWRBOX_BUILD_RAWRBOX_NETWORK`            | Builds network support                                                                             |
-| `RAWRBOX_BUILD_RAWRBOX_IMGUI`              | Builds imgui support                                                                               |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_BUILD_RAWRBOX_SCRIPTING`          | Enables lua & modding support                                                                      |
-| `RAWRBOX_SCRIPTING_UNSAFE`                 | Enables io support on lua (loading and saving files on the data folder)                            |
-| `RAWRBOX_SCRIPTING_EXCEPTION`              | Enables scripting throwing exceptions instead of catching them                                     |
-| `RAWRBOX_SCRIPTING_WORKSHOP_MODDING`       | Enables workshop utilities (useful for steam workshop / mod.io)                                    |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_BUILD_RAWRBOX_STEAMWORKS`         | Enables steamworks support                                                                         |
-| `STEAMWORKS_APPID`                         | Sets the steamworks appid                                                                          |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_BUILD_QHULL`                      | Builds QHull util                                                                                  |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Auto-enabled if jolt is used)                    |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_DISABLE_SUPPORT_DX12`             | Disable dx12 support                                                                               |
-| `RAWRBOX_DISABLE_SUPPORT_VULKAN`           | Disable vulkan support                                                                             |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_DEV_MODE`                         | Enables all the modules, used for rawrbox development                                              |
-| --                                         | --                                                                                                 |
-| `RAWRBOX_TRACE_EXCEPTIONS`                 | Enables exception tracing                                                                          |
-| `RAWRBOX_INTERPROCEDURAL_OPTIMIZATION`     | Enables IPO compilation                                                                            |
+| OPTION NAME                                | NOTE                                                                                               | DEFAULT |
+| :----------------------------------------- | :------------------------------------------------------------------------------------------------- | ------- |
+| `RAWRBOX_BUILD_TESTING`                    | Builds & enables project tests                                                                     | OFF     |
+| `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          | OFF     |
+| --                                         | --                                                                                                 | --      |
+| `RAWRBOX_CONTENT_FOLDER`                   | The content folder to output assets. Default is `assets`                                           | OFF     |
+| --                                         | --                                                                                                 | --      |
+| `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 | OFF     |
+| --                                         | --                                                                                                 | --      |
+| `RAWRBOX_BUILD_RAWRBOX_RENDER`             | Builds and the renderer, disable for renderless programs                                           | ON      |
+| `RAWRBOX_BUILD_RAWRBOX_UI`                 | Builds rawrbox ui (alternative to imgui)                                                           | OFF     |
+| `RAWRBOX_BUILD_RAWRBOX_RESOURCES`          | Builds the resouces manager (aka handling and storing loaded resources)                            | OFF     |
+| `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`         | Builds the 3D physics engine                                                                       | OFF     |
+| `RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS`         | Builds the 2D physics engine                                                                       | OFF     |
+| `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ | OFF     |
+| `RAWRBOX_BUILD_RAWRBOX_ASSIMP`             | Enables assimp model loading                                                                       | OFF     |
+| `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM loading                                                                               | OFF     |
+| `RAWRBOX_BUILD_RAWRBOX_NETWORK`            | Builds network support                                                                             | OFF     |
+| `RAWRBOX_BUILD_RAWRBOX_IMGUI`              | Builds imgui support                                                                               | OFF     |
+| --                                         | --                                                                                                 | --      |
+| `RAWRBOX_BUILD_RAWRBOX_SCRIPTING`          | Enables lua & modding support                                                                      | OFF     |
+| `RAWRBOX_SCRIPTING_UNSAFE`                 | Enables io support on lua (loading and saving files on the data folder)                            | OFF     |
+| `RAWRBOX_SCRIPTING_EXCEPTION`              | Enables scripting throwing exceptions instead of catching them                                     | OFF     |
+| `RAWRBOX_SCRIPTING_WORKSHOP_MODDING`       | Enables workshop utilities (useful for steam workshop / mod.io)                                    | OFF     |
+| --                                         | --                                                                                                 | --      |
+| `RAWRBOX_BUILD_RAWRBOX_STEAMWORKS`         | Enables steamworks support                                                                         | OFF     |
+| `STEAMWORKS_APPID`                         | Sets the steamworks appid                                                                          | OFF     |
+| --                                         | --                                                                                                 | --      |
+| `RAWRBOX_BUILD_QHULL`                      | Builds QHull util                                                                                  | OFF     |
+| --                                         | --                                                                                                 | --      |
+| `RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME` | Builds libraries with MSVC Multithreaded runtime (Auto-enabled if jolt is used)                    | OFF     |
+| --                                         | --                                                                                                 | --      |
+| `RAWRBOX_DISABLE_SUPPORT_DX12`             | Disable dx12 support                                                                               | OFF     |
+| `RAWRBOX_DISABLE_SUPPORT_VULKAN`           | Disable vulkan support                                                                             | OFF     |
+| --                                         | --                                                                                                 | --      |
+| `RAWRBOX_DEV_MODE`                         | Enables all the modules, used for rawrbox development                                              | OFF     |
+| --                                         | --                                                                                                 | --      |
+| `RAWRBOX_TRACE_EXCEPTIONS`                 | Enables exception tracing                                                                          | ON      |
+| `RAWRBOX_INTERPROCEDURAL_OPTIMIZATION`     | Enables IPO compilation on release                                                                 | ON      |
 
 <br/><br/>
 

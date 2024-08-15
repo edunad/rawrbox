@@ -17,9 +17,13 @@ namespace rawrbox {
 			} else {
 				this->_data = rawrbox::GIF::decode(buffer);
 			}
+#ifdef RAWRBOX_TRACE_EXCEPTIONS
 		} catch (const cpptrace::exception_with_message& e) {
+#else
+		} catch (const std::exception& e) {
+#endif
 			if (useFallback) {
-				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), e.message());
+				this->_logger->warn("Failed to load '{}' ──> {}\n  └── Loading fallback texture!", this->_filePath.generic_string(), e.what());
 				this->loadFallback();
 				return;
 			}

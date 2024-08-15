@@ -13,14 +13,18 @@ namespace rawrbox {
 
 		try {
 			this->_data = rawrbox::WEBP::decode(data);
-		} catch (const cpptrace::exception_with_message& err) {
+#ifdef RAWRBOX_TRACE_EXCEPTIONS
+		} catch (const cpptrace::exception_with_message& e) {
+#else
+		} catch (const std::exception& e) {
+#endif
 			if (useFallback) {
-				this->_logger->warn("Failed to load '{}' ──> \n\t{}\n\t\t  └── Loading fallback texture!", this->_filePath.generic_string(), err.message());
+				this->_logger->warn("Failed to load '{}' ──> \n\t{}\n\t\t  └── Loading fallback texture!", this->_filePath.generic_string(), e.what());
 				this->loadFallback();
 				return;
 			}
 
-			throw err;
+			throw e;
 		}
 	}
 } // namespace rawrbox

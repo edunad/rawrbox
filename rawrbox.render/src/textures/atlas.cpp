@@ -8,10 +8,14 @@ namespace rawrbox {
 	TextureAtlas::TextureAtlas(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, uint32_t spriteSize, bool useFallback) : _spriteSize(spriteSize) {
 		try {
 			this->processAtlas(rawrbox::STBI::decode(buffer));
+#ifdef RAWRBOX_TRACE_EXCEPTIONS
 		} catch (const cpptrace::exception_with_message& e) {
+#else
+		} catch (const std::exception& e) {
+#endif
 			if (useFallback) {
 				this->loadFallback();
-				this->_logger->warn("Failed to load '{}' ──> \n\t{}\n\t\t  └── Loading fallback texture!", filePath.generic_string(), e.message());
+				this->_logger->warn("Failed to load '{}' ──> \n\t{}\n\t\t  └── Loading fallback texture!", filePath.generic_string(), e.what());
 				return;
 			}
 
@@ -22,10 +26,14 @@ namespace rawrbox {
 	TextureAtlas::TextureAtlas(const std::filesystem::path& filePath, uint32_t spriteSize, bool useFallback) : _spriteSize(spriteSize) {
 		try {
 			this->processAtlas(rawrbox::STBI::decode(filePath));
+#ifdef RAWRBOX_TRACE_EXCEPTIONS
 		} catch (const cpptrace::exception_with_message& e) {
+#else
+		} catch (const std::exception& e) {
+#endif
 			if (useFallback) {
 				this->loadFallback();
-				this->_logger->warn("Failed to load '{}' ──> \n\t{}\n\t\t  └── Loading fallback texture!", filePath.generic_string(), e.message());
+				this->_logger->warn("Failed to load '{}' ──> \n\t{}\n\t\t  └── Loading fallback texture!", filePath.generic_string(), e.what());
 				return;
 			}
 

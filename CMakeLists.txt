@@ -31,6 +31,7 @@ option(RAWRBOX_USE_WAYLAND "Use Wayland for linux" OFF)
 option(RAWRBOX_BUILD_TESTING "Build tests" OFF)
 option(RAWRBOX_BUILD_SAMPLES "Build samples" OFF)
 
+option(RAWRBOX_BUILD_RAWRBOX_RENDER "Build rawrbox renderer, disable for renderless programs" ON)
 option(RAWRBOX_BUILD_RAWRBOX_UI "Build rawrbox UI" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_RESOURCES "Build rawrbox resources utils" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS "Build 3D physics support" OFF)
@@ -63,26 +64,27 @@ option(RAWRBOX_INTERPROCEDURAL_OPTIMIZATION "Enables IPO" ON)
 # ---------------
 # -----
 
-if(RAWRBOX_INTERPROCEDURAL_OPTIMIZATION)
-    message(WARNING "Enabled INTERPROCEDURAL_OPTIMIZATION")
+if(RAWRBOX_INTERPROCEDURAL_OPTIMIZATION AND NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "ARM64") AND NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "ARM"))
+    message(STATUS "Enabled INTERPROCEDURAL_OPTIMIZATION for release and distribution")
 
     include(CheckIPOSupported)
     check_ipo_supported(RESULT ipoSupported OUTPUT error)
 
     if(ipoSupported)
-        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DISTRIBUTION TRUE)
     else()
         message(FATAL_ERROR "IPO / LTO is not supported, please disable RAWRBOX_INTERPROCEDURAL_OPTIMIZATION")
     endif()
 endif()
 
-# Uncomment for package.lock generation
 if(RAWRBOX_DEV_MODE)
     message(WARNING "RAWRBOX Dev mode enabled!")
 
     set(RAWRBOX_BUILD_TESTING ON)
     set(RAWRBOX_BUILD_SAMPLES ON)
 
+    set(RAWRBOX_BUILD_RAWRBOX_RENDER ON)
     set(RAWRBOX_BUILD_RAWRBOX_UI ON)
     set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
     set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
@@ -135,6 +137,8 @@ if(NOT WIN32)
         list(APPEND RAWRBOX_EXTRA_LIBS wayland-egl)
         set(GLFW_BUILD_WAYLAND ON CACHE INTERNAL "")
     endif()
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti -fexceptions") # Enable exceptions and RTTI
 else()
     # Ignore warnings about missing pdb
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4099")
@@ -142,7 +146,7 @@ else()
     set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4099")
 
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive-")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive- /EHsc /GR") # Enable strict mode, exceptions and RTTI
 endif()
 
 set(CMAKE_SKIP_RPATH TRUE)
@@ -162,14 +166,26 @@ endif()
 # ---------------------
 
 ## CHECKS ---
-if(RAWRBOX_BUILD_SAMPLES AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
-    message(WARNING "Samples require RAWRBOX.RESOURCES to be enabled, enabling...")
-    set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
-endif()
+if(NOT RAWRBOX_BUILD_RAWRBOX_RENDER)
+    message(WARNING "----------------------------------------\nRAWRBOX_BUILD_RAWRBOX_RENDER is disabled!\nDisabling UI / ASSIMP / IMGUI / WEBM and samples..\n----------------------------------------")
+    set(RAWRBOX_BUILD_RAWRBOX_UI OFF)
+    set(RAWRBOX_BUILD_RAWRBOX_ASSIMP OFF)
+    set(RAWRBOX_BUILD_RAWRBOX_IMGUI OFF)
+    set(RAWRBOX_BUILD_RAWRBOX_WEBM OFF)
 
-if(RAWRBOX_BUILD_RAWRBOX_UI AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
-    message(WARNING "RAWRBOX.UI requires RAWRBOX.RESOURCES to be enabled, enabling...")
-    set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
+    set(RAWRBOX_BUILD_SAMPLES OFF)
+else()
+    # Samples & UI ---
+    if(RAWRBOX_BUILD_SAMPLES AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+        message(WARNING "Samples require RAWRBOX.RESOURCES to be enabled, enabling...")
+        set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
+    endif()
+
+    if(RAWRBOX_BUILD_RAWRBOX_UI AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+        message(WARNING "RAWRBOX.UI requires RAWRBOX.RESOURCES to be enabled, enabling...")
+        set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
+    endif()
+    # -----------
 endif()
 
 if(NOT RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME AND RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
@@ -189,8 +205,10 @@ if(magic_enum_ADDED)
     set_lib_runtime_mt(magic_enum)
 endif()
 
-if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
-    CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@13.0.3")
+if(RAWRBOX_BUILD_RAWRBOX_RENDER)
+    if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
+        CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@13.0.3")
+    endif()
 endif()
 
 CPMAddPackage("gh:stephenberry/glaze@3.2.5")
@@ -231,6 +249,11 @@ add_subdirectory("rawrbox.math")
 add_subdirectory("rawrbox.utils")
 add_subdirectory("rawrbox.engine")
 
+if(RAWRBOX_BUILD_RAWRBOX_RENDER)
+    message(STATUS "Enabled RAWRBOX.RENDER support")
+    add_subdirectory("rawrbox.render")
+endif()
+
 if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
     message(STATUS "Enabled RAWRBOX.SCRIPTING support")
     add_subdirectory("rawrbox.scripting")
@@ -245,8 +268,6 @@ if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
    message(STATUS "Enabled RAWRBOX.NETWORK support")
    add_subdirectory("rawrbox.network")
 endif()
-
-add_subdirectory("rawrbox.render")
 
 if(RAWRBOX_BUILD_RAWRBOX_WEBM)
     message(STATUS "Enabled RAWRBOX.WEBM support")

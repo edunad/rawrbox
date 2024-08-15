@@ -1,7 +1,7 @@
-#pragma once
-
 #ifdef _DEBUG
 	#ifdef RAWRBOX_RENDER
+		#pragma once
+
 		#include <rawrbox/physics/utils.hpp>
 		#include <rawrbox/render/static.hpp>
 		#include <rawrbox/render/stencil.hpp>

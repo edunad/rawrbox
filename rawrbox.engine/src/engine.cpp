@@ -4,10 +4,6 @@
 #include <rawrbox/utils/threading.hpp>
 #include <rawrbox/utils/timer.hpp>
 
-#ifdef RAWRBOX_TRACE_EXCEPTIONS
-	#include <cpptrace/cpptrace.hpp>
-#endif
-
 #include <fmt/format.h>
 
 #include <chrono>
