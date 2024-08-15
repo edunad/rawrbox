@@ -1,15 +1,12 @@
 #pragma once
 
-#ifndef JPH_DEBUG_RENDERER
-	#error This file should only be included when JPH_DEBUG_RENDERER is defined
-#endif
-
-#ifdef JPH_DEBUG_RENDERER
+#ifdef _DEBUG
 	#ifdef RAWRBOX_RENDER
 		#include <rawrbox/physics/utils.hpp>
 		#include <rawrbox/render/static.hpp>
 		#include <rawrbox/render/stencil.hpp>
 
+		#include <Jolt/Jolt.h>
 		#include <Jolt/Renderer/DebugRenderer.h>
 		#include <Jolt/Physics/Collision/RayCast.h>
 
