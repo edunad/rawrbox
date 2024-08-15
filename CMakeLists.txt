@@ -66,7 +66,9 @@ option(RAWRBOX_INTERPROCEDURAL_OPTIMIZATION "Enables IPO" ON)
 
 if(RAWRBOX_INTERPROCEDURAL_OPTIMIZATION AND NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "ARM64") AND NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "ARM"))
     message(STATUS "Enabled INTERPROCEDURAL_OPTIMIZATION for release and distribution")
+
     cmake_policy(SET CMP0069 NEW)
+    set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
 
     include(CheckIPOSupported)
     check_ipo_supported(RESULT ipoSupported OUTPUT error)
