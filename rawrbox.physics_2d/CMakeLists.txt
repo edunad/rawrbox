@@ -24,6 +24,7 @@ target_compile_definitions(${output_target} PUBLIC RAWRBOX_PHYSICS_2D)
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC RAWRBOX.ENGINE RAWRBOX.MATH muli)
+set_property(TARGET ${output_target} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 set_lib_runtime_mt(${output_target})
 # --------------

@@ -19,6 +19,7 @@ add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_STEAMWORKS_IMPORT
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_STEAMWORKS STEAMWORKS_APPID=${STEAMWORKS_APPID})
 
+set_property(TARGET ${output_target} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target}

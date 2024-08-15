@@ -50,6 +50,7 @@ target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMI
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_IMGUI)
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
+set_property(TARGET ${output_target} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 target_link_libraries(${output_target} PUBLIC RAWRBOX.RENDER IMGUI)
 
 set_lib_runtime_mt(${output_target})

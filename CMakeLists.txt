@@ -254,11 +254,6 @@ if(RAWRBOX_BUILD_RAWRBOX_BASS)
     add_subdirectory("rawrbox.bass")
 endif()
 
-if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
-    message(STATUS "Enabled RAWRBOX.3D_PHYSICS support")
-    add_subdirectory("rawrbox.physics_3d")
-endif()
-
 if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
     message(STATUS "Enabled RAWRBOX.2D_PHYSICS support")
     add_subdirectory("rawrbox.physics_2d")
@@ -273,6 +268,13 @@ if(RAWRBOX_BUILD_RAWRBOX_IMGUI)
     message(STATUS "Enabled RAWRBOX.IMGUI support")
     add_subdirectory("rawrbox.imgui")
 endif()
+
+# Jolt enables some weird flags, make sure it's the last one
+if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
+    message(STATUS "Enabled RAWRBOX.3D_PHYSICS support")
+    add_subdirectory("rawrbox.physics_3d")
+endif()
+# --------------------
 
 # Shhhhh windows... shhhh....
 mute_dependencies_warnings(".*RAWRBOX.*")

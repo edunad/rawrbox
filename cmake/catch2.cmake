@@ -12,6 +12,7 @@ if(RAWRBOX_BUILD_TESTING)
             3.6.0
         OPTIONS
             "CATCH_INSTALL_DOCS OFF"
+            "CATCH_CONFIG_FAST_COMPILE ON"
             "CATCH_INSTALL_EXTRAS ON")
 
     list(APPEND CMAKE_MODULE_PATH ${Catch2_SOURCE_DIR}/extras)
@@ -31,7 +32,7 @@ if(RAWRBOX_BUILD_TESTING)
 
     add_executable(${output_target}-TESTS ${RAWRBOX_TESTS_IMPORTS})
     target_compile_definitions(${output_target}-TESTS PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
-    set_target_properties(${output_target}-TESTS PROPERTIES COMPILE_DEFINITIONS RAWRBOX_TESTING=1)
+    target_compile_definitions(${output_target}-TESTS PUBLIC CATCH_CONFIG_FAST_COMPILE RAWRBOX_TESTING)
     target_compile_features(${output_target}-TESTS PRIVATE cxx_std_${CMAKE_CXX_STANDARD})
     target_link_libraries(${output_target}-TESTS PRIVATE ${output_target} ${RAWRBOX_EXTRA_TEST_LIBS})
 

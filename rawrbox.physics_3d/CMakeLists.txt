@@ -15,9 +15,14 @@ CPMAddPackage(
         "COMPILE_AS_SHARED_LIBRARY OFF"
         "INTERPROCEDURAL_OPTIMIZATION ON"
         "USE_STATIC_MSVC_RUNTIME_LIBRARY ON"
+
         "ENABLE_ALL_WARNINGS OFF"
-        #"CPP_RTTI_ENABLED ON"
-        "CPP_EXCEPTIONS_ENABLED ON"
+
+        "DEBUG_RENDERER_IN_DISTRIBUTION OFF"
+        "DEBUG_RENDERER_IN_DEBUG_AND_RELEASE OFF"
+
+        "PROFILER_IN_DISTRIBUTION OFF"
+        "PROFILER_IN_DEBUG_AND_RELEASE OFF"
 
     SOURCE_SUBDIR
         "Build"
@@ -32,6 +37,7 @@ target_compile_definitions(${output_target} PUBLIC RAWRBOX_PHYSICS_3D JPH_DEBUG_
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC RAWRBOX.ENGINE RAWRBOX.MATH Jolt)
+set_property(TARGET ${output_target} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 set_lib_runtime_mt(${output_target})
 # --------------

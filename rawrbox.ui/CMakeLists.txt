@@ -43,6 +43,7 @@ if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
     copy_lua_libs(TARGET ${output_target})
 endif()
 
+set_property(TARGET ${output_target} PROPERTY INTERPROCEDURAL_OPTIMIZATION TRUE)
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_UI)
 target_include_directories(${output_target} PUBLIC "include")
