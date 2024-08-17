@@ -214,7 +214,7 @@ if(RAWRBOX_BUILD_RAWRBOX_RENDER)
     endif()
 endif()
 
-CPMAddPackage("gh:stephenberry/glaze@3.2.5")
+CPMAddPackage("gh:stephenberry/glaze@3.3.1")
 
 # ---
 if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)

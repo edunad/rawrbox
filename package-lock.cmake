@@ -17,7 +17,7 @@ CPMDeclarePackage(magic_enum
 )
 # glaze
 CPMDeclarePackage(glaze
-  VERSION 3.2.5
+  VERSION 3.3.1
   GITHUB_REPOSITORY stephenberry/glaze
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -42,6 +42,7 @@ CPMDeclarePackage(Catch2
   GITHUB_REPOSITORY catchorg/Catch2
   OPTIONS
     "CATCH_INSTALL_DOCS OFF"
+    "CATCH_CONFIG_FAST_COMPILE ON"
     "CATCH_INSTALL_EXTRAS ON"
 )
 # qhull
@@ -64,38 +65,6 @@ CPMDeclarePackage(cpptrace
   GITHUB_REPOSITORY jeremy-rifkin/cpptrace
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
-)
-# LuaBridge3 (unversioned)
-# CPMDeclarePackage(LuaBridge3
-#  NAME LuaBridge3
-#  GIT_TAG master
-#  GITHUB_REPOSITORY kunitoki/LuaBridge3
-#  OPTIONS
-#    "LUABRIDGE_TESTING OFF"
-#    "LUABRIDGE_COVERAGE OFF"
-#)
-# luau
-CPMDeclarePackage(luau
-  NAME luau
-  GIT_TAG 0.638
-  GITHUB_REPOSITORY luau-lang/luau
-  OPTIONS
-    "LUAU_BUILD_CLI OFF"
-    "LUAU_BUILD_TESTS OFF"
-    "LUAU_BUILD_BENCHMARKS OFF"
-    "LUAU_BUILD_WEB OFF"
-)
-# libcpr
-CPMDeclarePackage(libcpr
-  NAME libcpr
-  GIT_TAG 1.10.5
-  GITHUB_REPOSITORY libcpr/cpr
-  OPTIONS
-    "BUILD_SHARED_LIBS OFF"
-    "CPR_ENABLE_CURL_HTTP_ONLY ON"
-    "CPR_ENABLE_SSL ON"
-    "CURL_ZLIB ON"
-  PATCH_COMMAND git apply --reject --whitespace=fix D:/rawrbox/rawrbox.network/patch/libcpr.patch
 )
 # glfw
 CPMDeclarePackage(glfw
@@ -162,6 +131,38 @@ CPMDeclarePackage(libwebp
     "WEBP_LINK_STATIC ON"
     "WEBP_BUILD_EXTRAS OFF"
 )
+# LuaBridge3 (unversioned)
+# CPMDeclarePackage(LuaBridge3
+#  NAME LuaBridge3
+#  GIT_TAG master
+#  GITHUB_REPOSITORY kunitoki/LuaBridge3
+#  OPTIONS
+#    "LUABRIDGE_TESTING OFF"
+#    "LUABRIDGE_COVERAGE OFF"
+#)
+# luau
+CPMDeclarePackage(luau
+  NAME luau
+  GIT_TAG 0.639
+  GITHUB_REPOSITORY luau-lang/luau
+  OPTIONS
+    "LUAU_BUILD_CLI OFF"
+    "LUAU_BUILD_TESTS OFF"
+    "LUAU_BUILD_BENCHMARKS OFF"
+    "LUAU_BUILD_WEB OFF"
+)
+# libcpr
+CPMDeclarePackage(libcpr
+  NAME libcpr
+  GIT_TAG 1.10.5
+  GITHUB_REPOSITORY libcpr/cpr
+  OPTIONS
+    "BUILD_SHARED_LIBS OFF"
+    "CPR_ENABLE_CURL_HTTP_ONLY ON"
+    "CPR_ENABLE_SSL ON"
+    "CURL_ZLIB ON"
+  PATCH_COMMAND git apply --reject --whitespace=fix D:/rawrbox/rawrbox.network/patch/libcpr.patch
+)
 # libwebm (unversioned)
 # CPMDeclarePackage(libwebm
 #  NAME libwebm
@@ -214,18 +215,6 @@ CPMDeclarePackage(clip
     "CLIP_ENABLE_IMAGE OFF"
     "CLIP_TESTS OFF"
 )
-# Jolt
-CPMDeclarePackage(Jolt
-  NAME Jolt
-  VERSION 5.1.0
-  GITHUB_REPOSITORY jrouwe/JoltPhysics
-  SOURCE_SUBDIR Build
-  OPTIONS
-    "COMPILE_AS_SHARED_LIBRARY OFF"
-    "INTERPROCEDURAL_OPTIMIZATION ON"
-    "USE_STATIC_MSVC_RUNTIME_LIBRARY ON"
-    "ENABLE_ALL_WARNINGS OFF"
-)
 # muli (unversioned)
 # CPMDeclarePackage(muli
 #  NAME muli
@@ -241,4 +230,19 @@ CPMDeclarePackage(imgui
   GIT_TAG docking
   DOWNLOAD_ONLY YES
   GITHUB_REPOSITORY ocornut/imgui
+)
+# Jolt
+CPMDeclarePackage(Jolt
+  NAME Jolt
+  VERSION 5.1.0
+  GITHUB_REPOSITORY jrouwe/JoltPhysics
+  SOURCE_SUBDIR Build
+  OPTIONS
+    "INTERPROCEDURAL_OPTIMIZATION ON"
+    "COMPILE_AS_SHARED_LIBRARY OFF"
+    "USE_STATIC_MSVC_RUNTIME_LIBRARY ON"
+    "ENABLE_ALL_WARNINGS OFF"
+    "DEBUG_RENDERER_IN_DISTRIBUTION OFF"
+    "PROFILER_IN_DISTRIBUTION OFF"
+    "PROFILER_IN_DEBUG_AND_RELEASE OFF"
 )
