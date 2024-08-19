@@ -22,9 +22,7 @@ CPMAddPackage(
     NAME
         assimp
     GIT_TAG
-        master
-    #PATCH_COMMAND
-    #    git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/assimp.patch
+        4.1.0
     GITHUB_REPOSITORY
         edunad/assimp
     OPTIONS
@@ -54,7 +52,7 @@ CPMAddPackage(
         "ASSIMP_BUILD_STL_IMPORTER ON"
         "ASSIMP_BUILD_GLTF_IMPORTER ON"
         "ASSIMP_BUILD_3DS_IMPORTER ON"
-        # "ASSIMP_BUILD_MDL_IMPORTER ON"
+        # "ASSIMP_BUILD_MDL_IMPORTER ON" # Does not work for some reason
         "ASSIMP_BUILD_MD5_IMPORTER ON")
 
 if(assimp_ADDED)
