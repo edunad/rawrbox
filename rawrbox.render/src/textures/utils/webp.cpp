@@ -10,14 +10,14 @@
 namespace rawrbox {
 	std::unique_ptr<rawrbox::Logger> WEBP::_logger = std::make_unique<rawrbox::Logger>("RawrBox-WEBP");
 
-	rawrbox::ImageData WEBP::decode(const std::vector<uint8_t>& data) {
-		if (data.empty()) throw _logger->error("Invalid data, cannot be empty!");
+	rawrbox::ImageData WEBP::decode(const uint8_t* buffer, size_t bufferSize) {
+		if (buffer == nullptr || bufferSize <= 0) throw _logger->error("Invalid data, cannot be empty!");
 
 		WebPAnimDecoderOptions options;
 		options.use_threads = 1;
 		if (WebPAnimDecoderOptionsInit(&options) == 0) throw _logger->error("Error initializing image!");
 
-		WebPData webp_data = {data.data(), data.size()};
+		WebPData webp_data = {buffer, bufferSize};
 
 		auto* decoder = WebPAnimDecoderNew(&webp_data, &options);
 		if (decoder == nullptr) throw _logger->error("Error initializing decoder!");
@@ -54,6 +54,10 @@ namespace rawrbox {
 
 		WebPAnimDecoderDelete(decoder);
 		return webpData;
+	}
+
+	rawrbox::ImageData WEBP::decode(const std::vector<uint8_t>& data) {
+		return decode(data.data(), data.size());
 	}
 
 	std::vector<uint8_t> WEBP::encode(const rawrbox::ImageData& /*data*/) {
