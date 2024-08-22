@@ -46,9 +46,9 @@
   - changed-files:
       - any-glob-to-any-file: "rawrbox.webm/**/*"
 
-"🧙‍♂️ ASSIMP":
+"🧙‍♂️ GLTF":
   - changed-files:
-      - any-glob-to-any-file: "rawrbox.assimp/**/*"
+      - any-glob-to-any-file: "rawrbox.gltf/**/*"
 
 "🛰 NETWORK":
   - changed-files:

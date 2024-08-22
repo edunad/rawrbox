@@ -169,7 +169,7 @@ endif()
 
 ## CHECKS ---
 if(NOT RAWRBOX_BUILD_RAWRBOX_RENDER)
-    message(WARNING "----------------------------------------\nRAWRBOX_BUILD_RAWRBOX_RENDER is disabled!\nDisabling UI / ASSIMP / IMGUI / WEBM and samples..\n----------------------------------------")
+    message(WARNING "----------------------------------------\nRAWRBOX_BUILD_RAWRBOX_RENDER is disabled!\nDisabling UI / GLTF / IMGUI / WEBM and samples..\n----------------------------------------")
     set(RAWRBOX_BUILD_RAWRBOX_UI OFF)
     set(RAWRBOX_BUILD_RAWRBOX_GLTF OFF)
     set(RAWRBOX_BUILD_RAWRBOX_IMGUI OFF)
