@@ -20,20 +20,20 @@ namespace rawrbox {
 		}
 
 		void loadAnimations(const rawrbox::GLTFImporter& model) {
-			/*this->_animations = model.animations;
+			this->_animations = model.animations;
 			this->_animatedMeshes.clear();
 
 			// Mark animated meshes ---
 			for (const auto& anim : model.animatedMeshes) {
 				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [anim](std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>& msh) {
-					return msh->getName() == anim.second->name;
+					return msh->getName() == anim.first;
 				});
 				if (fnd == this->_meshes.end()) continue;
 
 				(*fnd)->setOptimizable(false);
 				this->_animatedMeshes[anim.first] = (*fnd).get();
 			}
-			// -----------------------*/
+			// -----------------------
 		}
 
 		void loadBlendShapes(const rawrbox::GLTFImporter& model) {

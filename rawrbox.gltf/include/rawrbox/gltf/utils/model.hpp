@@ -16,13 +16,13 @@ namespace rawrbox {
 			const auto& gltfMesh = meshes[indx];
 
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
-			mesh.name = gltfMesh.name;
-			mesh.bbox = gltfMesh.bbox;
-			mesh.matrix = gltfMesh.matrix;
+			mesh.name = gltfMesh->name;
+			mesh.bbox = gltfMesh->bbox;
+			mesh.matrix = gltfMesh->matrix;
 
 			// Textures ---
-			if (gltfMesh.material != nullptr) {
-				auto* mat = gltfMesh.material;
+			if (gltfMesh->material != nullptr) {
+				auto* mat = gltfMesh->material;
 
 				mesh.setTransparent(mat->alpha);
 				mesh.setCulling(mat->doubleSided ? Diligent::CULL_MODE::CULL_MODE_NONE : Diligent::CULL_MODE::CULL_MODE_BACK);
@@ -37,50 +37,36 @@ namespace rawrbox {
 				mesh.setColor(mat->baseColor);
 				// --------
 
-				/*mesh.setWireframe(mat->wireframe);
-				mesh.setTransparent(mat->alpha);
-				mesh.setCulling(mat->doubleSided ? Diligent::CULL_MODE::CULL_MODE_NONE : Diligent::CULL_MODE::CULL_MODE_BACK);
-
-				// DIFFUSE -----
-				if (mat->diffuse.has_value()) {
-					mesh.setTexture(mat->diffuse.value() == nullptr ? rawrbox::MISSING_TEXTURE.get() : mat->diffuse.value().get());
-				} else {
-					mesh.setTexture(rawrbox::WHITE_TEXTURE.get()); // Default
-				}
-
-				mesh.setColor(mat->baseColor);
-				// --------
-
 				// NORMAL -----
 				if (mat->normal != nullptr) {
-					mesh.setNormalTexture(mat->normal.get());
+					mesh.setNormalTexture(mat->normal);
 				}
 				// --------
 
 				// METAL / ROUGH -----
 				if (mat->metalRough != nullptr) {
-					mesh.setRoughtMetalTexture(mat->metalRough.get(), mat->roughnessFactor, mat->metalnessFactor);
+					mesh.setRoughtMetalTexture(mat->metalRough, mat->roughnessFactor, mat->metalnessFactor);
 				}
 				// --------
 
 				// EMISSION -----
 				if (mat->emissive != nullptr) {
-					mesh.setEmissionTexture(mat->emissive.get(), mat->emissionFactor);
+					mesh.setEmissionTexture(mat->emissive, mat->emissionFactor);
 				}
-				// --------*/
+				// --------
 			} else {
-				mesh.setColor(gltfMesh.color);
+				mesh.setColor(gltfMesh->color);
 			}
 			// ------------
 
-			mesh.indices = gltfMesh.indices;
+			mesh.indices = gltfMesh->indices;
 
 			if constexpr (supportsNormals<typename M::vertexBufferType> && supportsBones<typename M::vertexBufferType>) {
-				mesh.vertices = gltfMesh.vertices;
+				mesh.vertices = gltfMesh->vertices;
 			} else {
-				mesh.vertices.reserve(gltfMesh.vertices.size());
+				mesh.vertices.reserve(gltfMesh->vertices.size());
 
-				for (const auto& v : gltfMesh.vertices) {
+				for (const auto& v : gltfMesh->vertices) {
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
 						mesh.vertices.push_back(rawrbox::VertexNormData(v.position, v.uv, v.normal, v.tangent));
 					} else if constexpr (supportsBones<typename M::vertexBufferType>) {
@@ -100,10 +86,10 @@ namespace rawrbox {
 			if (mesh.vertices.empty()) throw rawrbox::Logger::err("RawrBox-GLTFUtils", "Failed to extract model '{}'!", model.filePath.generic_string());
 
 			// Bones
-			/*if (gltfMesh.skeleton != nullptr) {
-				mesh.skeleton = gltfMesh.skeleton;
+			if (gltfMesh->skeleton != nullptr) {
+				mesh.skeleton = gltfMesh->skeleton;
 				mesh.setOptimizable(false);
-			}*/
+			}
 			// -------------------
 
 			mesh.baseVertex = 0;

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <rawrbox/math/bbox.hpp>
+#include <rawrbox/render/models/animation.hpp>
+#include <rawrbox/render/models/skeleton.hpp>
 #include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/utils/logger.hpp>
 
@@ -69,7 +71,7 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 matrix = {};
 
 		rawrbox::GLTFMaterial* material = nullptr;
-		// rawrbox::Skeleton* skeleton = nullptr;
+		rawrbox::Skeleton* skeleton = nullptr;
 
 		bool animated = false;
 
@@ -99,6 +101,17 @@ namespace rawrbox {
 		virtual Diligent::SamplerDesc convertSampler(const fastgltf::Sampler& sample);
 		//  -------------
 
+		// SKELETONS --
+		virtual std::string findMesh(const std::string& id);
+
+		virtual void generateBones(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::Skeleton& skeleton, rawrbox::Bone& parent);
+		virtual void loadSkeletons(const fastgltf::Asset& scene);
+		// ------------
+
+		// ANIMATIONS ---
+		virtual void loadAnimations(const fastgltf::Asset& scene);
+		// -------------
+
 		// MODEL ---
 		virtual void loadSubmeshes(const fastgltf::Asset& scene);
 
@@ -108,6 +121,7 @@ namespace rawrbox {
 
 		// UTILS ---
 		virtual fastgltf::sources::ByteView getSourceData(const fastgltf::Asset& scene, const fastgltf::DataSource& source);
+		virtual rawrbox::Matrix4x4 toMatrix(const fastgltf::TRS& mtx);
 
 		template <typename T, std::size_t Extent>
 		fastgltf::span<T, fastgltf::dynamic_extent> subspan(fastgltf::span<T, Extent> span, size_t offset, size_t count = fastgltf::dynamic_extent) {
@@ -130,8 +144,16 @@ namespace rawrbox {
 		std::vector<std::unique_ptr<rawrbox::TextureBase>> textures = {};
 		// ------------
 
+		// SKINNING ---
+		std::vector<std::unique_ptr<rawrbox::Skeleton>> skeletons = {};
+		std::unordered_map<std::string, rawrbox::Animation> animations = {};
+
+		std::unordered_map<rawrbox::Skeleton*, rawrbox::GLTFMesh*> skeletonMeshes = {};
+		std::unordered_map<std::string, rawrbox::GLTFMesh*> animatedMeshes = {}; // Map for quick lookup
+		// ---------
+
 		// MODELS -------
-		std::vector<rawrbox::GLTFMesh> meshes = {};
+		std::vector<std::unique_ptr<rawrbox::GLTFMesh>> meshes = {};
 		// ---------------
 
 		explicit GLTFImporter(uint32_t loadFlags = ModelLoadFlags::NONE);
