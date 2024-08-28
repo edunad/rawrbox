@@ -161,7 +161,7 @@ CPMDeclarePackage(libcpr
     "CPR_ENABLE_CURL_HTTP_ONLY ON"
     "CPR_ENABLE_SSL ON"
     "CURL_ZLIB ON"
-  PATCH_COMMAND git apply --reject --whitespace=fix D:/rawrbox/rawrbox.network/patch/libcpr.patch
+  PATCHES libcpr.patch
 )
 # libwebm (unversioned)
 # CPMDeclarePackage(libwebm
@@ -218,7 +218,7 @@ CPMDeclarePackage(clip
 # muli (unversioned)
 # CPMDeclarePackage(muli
 #  NAME muli
-#  GIT_TAG master
+#  GIT_TAG c7697eaee46d128b967368d7454aa2459fed15d4
 #  GITHUB_REPOSITORY Sopiro/Muli
 #  OPTIONS
 #    "MULI_BUILD_DEMO OFF"

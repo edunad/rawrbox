@@ -9,7 +9,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY
         Sopiro/Muli
     GIT_TAG
-        master
+        "c7697eaee46d128b967368d7454aa2459fed15d4" # master branch is currently broken: https://github.com/Sopiro/Muli/issues/3
     OPTIONS
         "MULI_BUILD_DEMO OFF")
 
@@ -24,7 +24,6 @@ target_compile_definitions(${output_target} PUBLIC RAWRBOX_PHYSICS_2D)
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target} PUBLIC RAWRBOX.ENGINE RAWRBOX.MATH muli)
-
 
 set_lib_runtime_mt(${output_target})
 # --------------

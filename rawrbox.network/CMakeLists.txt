@@ -11,8 +11,8 @@ CPMAddPackage(
         1.10.5
     GITHUB_REPOSITORY
         libcpr/cpr
-    PATCH_COMMAND
-        git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/libcpr.patch
+    PATCHES
+        libcpr.patch
     OPTIONS
         "BUILD_SHARED_LIBS OFF"
         "CPR_ENABLE_CURL_HTTP_ONLY ON"
