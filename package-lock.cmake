@@ -38,7 +38,7 @@ CPMDeclarePackage(zlib
 # Catch2
 CPMDeclarePackage(Catch2
   NAME Catch2
-  VERSION 3.6.0
+  VERSION 3.7.0
   GITHUB_REPOSITORY catchorg/Catch2
   OPTIONS
     "CATCH_INSTALL_DOCS OFF"
@@ -61,7 +61,7 @@ CPMDeclarePackage(thread-pool
 )
 # cpptrace
 CPMDeclarePackage(cpptrace
-  VERSION 0.6.3
+  VERSION 0.7.0
   GITHUB_REPOSITORY jeremy-rifkin/cpptrace
   SYSTEM YES
   EXCLUDE_FROM_ALL YES
@@ -143,7 +143,7 @@ CPMDeclarePackage(libwebp
 # luau
 CPMDeclarePackage(luau
   NAME luau
-  GIT_TAG 0.639
+  GIT_TAG 0.640
   GITHUB_REPOSITORY luau-lang/luau
   OPTIONS
     "LUAU_BUILD_CLI OFF"
@@ -161,8 +161,7 @@ CPMDeclarePackage(libcpr
     "CPR_ENABLE_CURL_HTTP_ONLY ON"
     "CPR_ENABLE_SSL ON"
     "CURL_ZLIB ON"
-  PATCH_COMMAND
-    "git apply --reject --whitespace=fix ./patch/libcpr.patch"
+  PATCH_COMMAND git apply --reject --whitespace=fix D:/rawrbox/rawrbox.network/patch/libcpr.patch
 )
 # libwebm (unversioned)
 # CPMDeclarePackage(libwebm
