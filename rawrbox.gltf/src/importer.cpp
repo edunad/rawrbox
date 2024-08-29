@@ -14,29 +14,40 @@
 namespace rawrbox {
 	// PRIVATE -----
 	void GLTFImporter::internalLoad(fastgltf::GltfDataBuffer& data) {
-		fastgltf::Parser parser{
-		    fastgltf::Extensions::KHR_mesh_quantization |
-		    fastgltf::Extensions::KHR_materials_unlit |
-		    fastgltf::Extensions::KHR_materials_specular |
-		    fastgltf::Extensions::KHR_texture_basisu |
-		    fastgltf::Extensions::EXT_texture_webp |
-		    fastgltf::Extensions::KHR_materials_emissive_strength};
+		auto extensions =
+		    fastgltf::Extensions::KHR_mesh_quantization;
 
 		auto gltfOptions =
 		    fastgltf::Options::DontRequireValidAssetMember |
 		    fastgltf::Options::DecomposeNodeMatrices |
-		    fastgltf::Options::AllowDouble |
 		    fastgltf::Options::LoadExternalBuffers;
 
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
+			extensions |= fastgltf::Extensions::KHR_materials_unlit |
+				      fastgltf::Extensions::KHR_materials_specular | fastgltf::Extensions::KHR_texture_basisu |
+				      fastgltf::Extensions::EXT_texture_webp | fastgltf::Extensions::KHR_materials_emissive_strength;
+
 			gltfOptions |= fastgltf::Options::LoadExternalImages; // Handle loading for us
 		}
+
+		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_LIGHT) > 0) {
+			extensions |= fastgltf::Extensions::KHR_lights_punctual;
+		}
+
+		fastgltf::Parser parser(extensions);
 
 		auto asset = parser.loadGltf(data, this->filePath.parent_path(), gltfOptions);
 		if (asset.error() != fastgltf::Error::None) {
 			this->_logger->warn("{}", fastgltf::getErrorMessage(asset.error()));
 			return;
 		}
+
+#ifdef _DEBUG
+		if (fastgltf::validate(asset.get()) != fastgltf::Error::None) {
+			this->_logger->warn("{}", fastgltf::getErrorMessage(asset.error()));
+			return;
+		}
+#endif
 
 		fastgltf::Asset& scene = asset.get();
 		// TODO: PRINT METADATA

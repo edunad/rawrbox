@@ -14,7 +14,7 @@ namespace gltf {
 #else
 		auto* window = rawrbox::Window::createWindow();
 #endif
-		window->setMonitor(-1);
+		window->setMonitor(1);
 		window->setTitle("GLTF TEST");
 #ifdef _DEBUG
 		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED);
