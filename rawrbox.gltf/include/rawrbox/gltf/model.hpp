@@ -14,8 +14,9 @@ namespace rawrbox {
 	protected:
 		// INTERNAL -------
 		void loadMeshes(const rawrbox::GLTFImporter& model) {
-			for (size_t i = 0; i < model.meshes.size(); i++) {
-				this->addMesh(rawrbox::GLTFUtils::extractMesh<M>(model, i));
+			for (const auto& gltfMesh : model.meshes) {
+				if (gltfMesh->vertices.empty() || gltfMesh->indices.empty()) continue; // Bone / empty
+				this->addMesh(rawrbox::GLTFUtils::extractMesh<M>(*gltfMesh));
 			}
 		}
 
@@ -23,15 +24,14 @@ namespace rawrbox {
 			this->_animations = model.animations;
 			this->_animatedMeshes.clear();
 
-			// Mark animated meshes ---
-			for (const auto& anim : model.animatedMeshes) {
-				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [anim](std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>& msh) {
-					return msh->getName() == anim.first;
-				});
-				if (fnd == this->_meshes.end()) continue;
+			// Get animated vertex meshes ---
+			this->_animatedMeshes.resize(model.animatedMeshes.size(), nullptr);
 
-				(*fnd)->setOptimizable(false);
-				this->_animatedMeshes[anim.first] = (*fnd).get();
+			for (const auto& anim : model.animatedMeshes) {
+				if (anim.first >= this->_meshes.size()) continue;
+
+				this->_animatedMeshes[anim.first] = this->_meshes[anim.first].get();
+				this->_animatedMeshes[anim.first]->setOptimizable(false);
 			}
 			// -----------------------
 		}

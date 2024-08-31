@@ -24,7 +24,7 @@ namespace rawrbox {
 		rawrbox::BBOX _bbox = {};
 
 		// SKINNING ----
-		std::unordered_map<std::string, rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // Map for quick lookup
+		std::vector<rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // For quick lookup
 		// --------
 
 		// LIGHTS ---
@@ -34,102 +34,60 @@ namespace rawrbox {
 		bool _canOptimize = true;
 
 		// ANIMATIONS ----
-		void animate(rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
-			// VERTEX ANIMATION ----
-			for (auto& anim : this->_animatedMeshes) {
-				if (anim.second == nullptr) continue;
-				this->readAnims(anim.second->matrix, anim.first);
-			}
-			// ------------
+		void processAnimations() const {
+			for (const auto& playingAnim : this->_playingAnimations) {
+				const rawrbox::PlayingAnimationData& anim = playingAnim.second;
+				const std::vector<rawrbox::AnimationFrame>& frames = anim.data->frames;
 
-			// BONE ANIMATION ----
-			/*if constexpr (supportsBones<typename M::vertexBufferType>) {
-				std::array<rawrbox::Matrix4x4, RB_RENDER_MAX_BONES_PER_MODEL> boneTransforms = {};
-
-				if (mesh.skeleton != nullptr) {
-					auto calcs = std::unordered_map<uint8_t, rawrbox::Matrix4x4>();
-					this->animateBones(calcs, *mesh.skeleton, *mesh.skeleton->rootBone, {});
-
-					for (size_t i = 0; i < calcs.size(); i++) {
-						boneTransforms[i] = calcs[static_cast<uint8_t>(i)];
-					}
-				}
-
-				mesh.boneTransforms = boneTransforms;
-			}*/
-			// -----
-		}
-
-		void animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, const rawrbox::Skeleton& skeleton, const rawrbox::Bone& parentBone, const rawrbox::Matrix4x4& parentTransform) const {
-			auto nodeTransform = parentBone.transformationMtx * parentBone.overrideMtx;
-			this->readAnims(nodeTransform, parentBone.name);
-
-			rawrbox::Matrix4x4 globalTransformation = parentTransform * nodeTransform;
-			auto fnd = skeleton.boneMap.find(parentBone.name);
-			if (fnd != skeleton.boneMap.end()) {
-				calcs[fnd->second->boneId] = skeleton.invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
-			}
-
-			for (const auto& child : parentBone.children) {
-				this->animateBones(calcs, skeleton, *child, globalTransformation);
-			}
-		}
-
-		void readAnims(rawrbox::Matrix4x4& nodeTransform, const std::string& nodeName) const {
-			for (auto& playingAnim : this->_playingAnimations) {
-				auto& anim = playingAnim.second;
-				auto animChannel = std::find_if(anim.data->frames.begin(), anim.data->frames.end(), [&](AnimationFrame& x) {
-					return x.nodeName == nodeName;
-				});
-
-				if (animChannel != anim.data->frames.end()) {
-					float timeInTicks = std::fmod(anim.time, anim.data->duration);
-
-					// helper, select the next "frame" we should play depending on the time
-					auto findFrameIndex = [&](auto& keys) {
-						for (size_t i = 0; i + 1 < keys.size(); i++) {
-							if (timeInTicks < keys[i + 1].first) {
-								return i;
-							}
+				float timeInTicks = std::fmod(anim.time, anim.data->duration);
+				auto findFrameIndex = [&](auto& keys) {
+					for (size_t i = 0; i + 1 < keys.size(); i++) {
+						if (timeInTicks < keys[i + 1].first) {
+							return i;
 						}
+					}
 
-						return static_cast<size_t>(0);
-					};
+					return static_cast<size_t>(0);
+				};
+
+				for (const auto& frame : frames) {
+					if (frame.nodeIndex >= this->_meshes.size()) continue; // Not a mesh, probably a bone
+					auto& mesh = this->_meshes[frame.nodeIndex];
 
 					// find all frames
-					auto positionFrameIndex = findFrameIndex(animChannel->position);
-					auto rotationFrameIndex = findFrameIndex(animChannel->rotation);
-					auto scaleFrameIndex = findFrameIndex(animChannel->scale);
+					auto positionFrameIndex = findFrameIndex(frame.position);
+					auto rotationFrameIndex = findFrameIndex(frame.rotation);
+					auto scaleFrameIndex = findFrameIndex(frame.scale);
 
-					auto currPos = animChannel->position[positionFrameIndex];
-					auto nextPos = positionFrameIndex + 1 >= animChannel->position.size() ? animChannel->position.front() : animChannel->position[positionFrameIndex + 1];
+					auto currPos = frame.position[positionFrameIndex];
+					auto nextPos = positionFrameIndex + 1 >= frame.position.size() ? frame.position.front() : frame.position[positionFrameIndex + 1];
 
-					auto currRot = animChannel->rotation[rotationFrameIndex];
-					auto nextRot = rotationFrameIndex + 1 >= animChannel->rotation.size() ? animChannel->rotation.front() : animChannel->rotation[rotationFrameIndex + 1];
+					auto currRot = frame.rotation[rotationFrameIndex];
+					auto nextRot = rotationFrameIndex + 1 >= frame.rotation.size() ? frame.rotation.front() : frame.rotation[rotationFrameIndex + 1];
 
-					auto currScl = animChannel->scale[scaleFrameIndex];
-					auto nextScl = scaleFrameIndex + 1 >= animChannel->scale.size() ? animChannel->scale.front() : animChannel->scale[scaleFrameIndex + 1];
+					auto currScl = frame.scale[scaleFrameIndex];
+					auto nextScl = scaleFrameIndex + 1 >= frame.scale.size() ? frame.scale.front() : frame.scale[scaleFrameIndex + 1];
 
 					// Easing ----
 					rawrbox::Vector3f position = nextPos.second;
 					rawrbox::Vector4f rotation = nextRot.second;
 					rawrbox::Vector3f scale = nextScl.second;
 
-					float t = rawrbox::EasingUtils::ease(animChannel->stateEnd, timeInTicks);
+					float t = rawrbox::EasingUtils::ease(frame.stateEnd, timeInTicks);
 
 					position = rawrbox::AnimUtils::lerpVector3(t, currPos, nextPos);
 					rotation = rawrbox::AnimUtils::lerpRotation(t, currRot, nextRot);
 					scale = rawrbox::AnimUtils::lerpVector3(t, currScl, nextScl);
 					//   ----
 
-					nodeTransform = rawrbox::Matrix4x4::mtxSRT(scale, rotation, position);
+					mesh->matrix = rawrbox::Matrix4x4::mtxSRT(scale, rotation, position);
 				}
 			}
 		}
 
 		void updateAnimations() {
 			for (auto it = this->_playingAnimations.begin(); it != this->_playingAnimations.end();) {
-				float timeToAdd = rawrbox::DELTA_TIME * it->second.speed * it->second.data->ticksPerSecond;
+				float timeToAdd = rawrbox::DELTA_TIME * it->second.speed * 1000.0F; // ticksPerSecond
 				float newTime = it->second.time + timeToAdd;
 				float totalDur = it->second.data->duration;
 
@@ -151,6 +109,8 @@ namespace rawrbox {
 				it->second.time = newTime;
 				++it;
 			}
+
+			this->processAnimations();
 		}
 		// --------------
 
@@ -466,9 +426,6 @@ namespace rawrbox {
 			this->updateAnimations();
 
 			for (auto& mesh : this->_meshes) {
-				// Process animations ---
-				this->animate(*mesh);
-				// ---
 
 				// Bind pipelines ----
 				this->_material->bindPipeline(*mesh);

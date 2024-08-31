@@ -117,6 +117,10 @@ namespace rawrbox {
 		return {this->mtx[0], this->mtx[5], this->mtx[10]};
 	}
 
+	rawrbox::Vector4f Matrix4x4::getRotation() const {
+		return {this->mtx[4], this->mtx[5], this->mtx[6], this->mtx[7]};
+	}
+
 	rawrbox::Matrix4x4& Matrix4x4::rotate(const rawrbox::Vector4f& rot) {
 		const float x2 = rot.x + rot.x;
 		const float y2 = rot.y + rot.y;

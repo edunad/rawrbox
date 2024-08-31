@@ -67,13 +67,16 @@ namespace gltf {
 		if (this->_ready) return;
 
 		// TEST ---
-		this->_tst = std::make_unique<rawrbox::GLTFImporter>(rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | /*rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE |*/ rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS);
+		this->_tst = std::make_unique<rawrbox::GLTFImporter>(rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE | rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS);
 		// this->_tst->load("./assets/models/grandma_tv/scene.gltf");
 		this->_tst->load("./assets/models/wolf/wolf.glb");
 
 		this->_tstMdl = std::make_unique<rawrbox::GLTFModel<rawrbox::MaterialSkinned>>();
 		this->_tstMdl->load(*this->_tst);
-		this->_tstMdl->playAnimation("Scene", true, 1.F);
+		// this->_tstMdl->playAnimation("Scene", true, 1.F);
+
+		// this->_tstMdl->playAnimation("Armature.001|Armature.001|Armature.001|Scene", true, 1.F);
+		this->_tstMdl->playAnimation("Kalashnikov|Kalashnikov|Kalashnikov|Scene", true, 1.F);
 		this->_tstMdl->upload();
 		//  ----------
 

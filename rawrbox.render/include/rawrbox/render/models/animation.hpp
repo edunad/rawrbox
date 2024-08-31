@@ -14,7 +14,7 @@ namespace rawrbox {
 	using AnimKey = std::pair<float, T>;
 
 	struct AnimationFrame {
-		std::string nodeName;
+		size_t nodeIndex;
 
 		std::vector<AnimKey<rawrbox::Vector3f>> position;
 		std::vector<AnimKey<rawrbox::Vector3f>> scale;
@@ -25,9 +25,7 @@ namespace rawrbox {
 	};
 
 	struct Animation {
-		float ticksPerSecond = 0;
 		float duration = 0;
-
 		std::vector<rawrbox::AnimationFrame> frames = {};
 	};
 

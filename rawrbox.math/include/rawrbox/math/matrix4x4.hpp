@@ -48,6 +48,7 @@ namespace rawrbox {
 
 		[[nodiscard]] rawrbox::Vector3f getPos() const;
 		[[nodiscard]] rawrbox::Vector3f getScale() const;
+		[[nodiscard]] rawrbox::Vector4f getRotation() const;
 
 		rawrbox::Matrix4x4& rotate(const rawrbox::Vector4f& rot);
 		rawrbox::Matrix4x4& rotateX(float x);

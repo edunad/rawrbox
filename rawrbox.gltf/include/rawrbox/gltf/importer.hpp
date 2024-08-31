@@ -72,8 +72,7 @@ namespace rawrbox {
 
 		rawrbox::GLTFMaterial* material = nullptr;
 		rawrbox::Skeleton* skeleton = nullptr;
-
-		bool animated = false;
+		rawrbox::GLTFMesh* parent = nullptr;
 
 		std::vector<rawrbox::VertexNormBoneData> vertices = {};
 		std::vector<uint16_t> indices = {};
@@ -102,7 +101,7 @@ namespace rawrbox {
 		//  -------------
 
 		// SKELETONS --
-		virtual std::string findMesh(const std::string& id);
+		virtual rawrbox::Matrix4x4 extractSkeletonMatrix(const fastgltf::Asset& scene, const fastgltf::Skin& skin);
 
 		virtual void generateBones(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::Skeleton& skeleton, rawrbox::Bone& parent);
 		virtual void loadSkeletons(const fastgltf::Asset& scene);
@@ -113,7 +112,8 @@ namespace rawrbox {
 		// -------------
 
 		// MODEL ---
-		virtual void loadSubmeshes(const fastgltf::Asset& scene);
+		virtual void loadScene(const fastgltf::Asset& scene);
+		virtual void loadMeshes(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::GLTFMesh* parentMesh = nullptr);
 
 		virtual std::vector<rawrbox::VertexNormBoneData> extractVertex(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive);
 		virtual std::vector<uint16_t> extractIndices(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive);
@@ -149,7 +149,7 @@ namespace rawrbox {
 		std::unordered_map<std::string, rawrbox::Animation> animations = {};
 
 		std::unordered_map<rawrbox::Skeleton*, rawrbox::GLTFMesh*> skeletonMeshes = {};
-		std::unordered_map<std::string, rawrbox::GLTFMesh*> animatedMeshes = {}; // Map for quick lookup
+		std::unordered_map<size_t, rawrbox::GLTFMesh*> animatedMeshes = {}; // Map for quick lookup
 		// ---------
 
 		// MODELS -------

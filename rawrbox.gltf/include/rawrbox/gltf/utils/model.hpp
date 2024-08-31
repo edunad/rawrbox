@@ -9,20 +9,16 @@ namespace rawrbox {
 	public:
 		template <typename M = rawrbox::MaterialUnlit>
 			requires(std::derived_from<M, rawrbox::MaterialBase>)
-		static rawrbox::Mesh<typename M::vertexBufferType> extractMesh(const rawrbox::GLTFImporter& model, size_t indx) {
-			const auto& meshes = model.meshes;
-			if (meshes.empty() || indx >= meshes.size()) throw rawrbox::Logger::err("RawrBox-GLTFUtils", "Failed to extract mesh '{}'!", indx);
-
-			const auto& gltfMesh = meshes[indx];
-
+		static rawrbox::Mesh<typename M::vertexBufferType> extractMesh(const rawrbox::GLTFMesh& gltfMesh) {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
-			mesh.name = gltfMesh->name;
-			mesh.bbox = gltfMesh->bbox;
-			mesh.matrix = gltfMesh->matrix;
+
+			mesh.name = gltfMesh.name;
+			mesh.bbox = gltfMesh.bbox;
+			mesh.matrix = gltfMesh.matrix;
 
 			// Textures ---
-			if (gltfMesh->material != nullptr) {
-				auto* mat = gltfMesh->material;
+			if (gltfMesh.material != nullptr) {
+				auto* mat = gltfMesh.material;
 
 				mesh.setTransparent(mat->alpha);
 				mesh.setCulling(mat->doubleSided ? Diligent::CULL_MODE::CULL_MODE_NONE : Diligent::CULL_MODE::CULL_MODE_BACK);
@@ -55,18 +51,18 @@ namespace rawrbox {
 				}
 				// --------
 			} else {
-				mesh.setColor(gltfMesh->color);
+				mesh.setColor(gltfMesh.color);
 			}
 			// ------------
 
-			mesh.indices = gltfMesh->indices;
+			mesh.indices = gltfMesh.indices;
 
 			if constexpr (supportsNormals<typename M::vertexBufferType> && supportsBones<typename M::vertexBufferType>) {
-				mesh.vertices = gltfMesh->vertices;
+				mesh.vertices = gltfMesh.vertices;
 			} else {
-				mesh.vertices.reserve(gltfMesh->vertices.size());
+				mesh.vertices.reserve(gltfMesh.vertices.size());
 
-				for (const auto& v : gltfMesh->vertices) {
+				for (const auto& v : gltfMesh.vertices) {
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
 						mesh.vertices.push_back(rawrbox::VertexNormData(v.position, v.uv, v.normal, v.tangent));
 					} else if constexpr (supportsBones<typename M::vertexBufferType>) {
@@ -83,12 +79,10 @@ namespace rawrbox {
 				}
 			}
 
-			if (mesh.vertices.empty()) throw rawrbox::Logger::err("RawrBox-GLTFUtils", "Failed to extract model '{}'!", model.filePath.generic_string());
-
 			// Bones
-			if (gltfMesh->skeleton != nullptr) {
-				mesh.skeleton = gltfMesh->skeleton;
-				mesh.setOptimizable(false);
+			if (gltfMesh.skeleton != nullptr) {
+				mesh.skeleton = gltfMesh.skeleton;
+				mesh.setOptimizable(false); // Don't merge meshes
 			}
 			// -------------------
 

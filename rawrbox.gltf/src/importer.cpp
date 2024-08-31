@@ -43,10 +43,11 @@ namespace rawrbox {
 		}
 
 #ifdef _DEBUG
-		if (fastgltf::validate(asset.get()) != fastgltf::Error::None) {
+		/*auto err = fastgltf::validate(asset.get());
+		if (err != fastgltf::Error::None) {
 			this->_logger->warn("{}", fastgltf::getErrorMessage(asset.error()));
 			return;
-		}
+		}*/
 #endif
 
 		fastgltf::Asset& scene = asset.get();
@@ -59,18 +60,13 @@ namespace rawrbox {
 		}
 		// --------------
 
-		// LOAD SKELETONS ---
-		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {
-			this->loadSkeletons(scene);
-		}
-		// --------------
-
-		// LOAD MODELS ---
-		this->loadSubmeshes(scene);
-		// ---------------
+		// LOAD SCENE ---
+		this->loadScene(scene);
+		//  ---------------
 
 		// LOAD ANIMATIONS ---
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {
+			this->loadSkeletons(scene);
 			this->loadAnimations(scene);
 		}
 		// -------------------
@@ -232,14 +228,17 @@ namespace rawrbox {
 	// -------------
 
 	// SKELETONS --
+	rawrbox::Matrix4x4 GLTFImporter::extractSkeletonMatrix(const fastgltf::Asset& scene, const fastgltf::Skin& skin) {
+		if (skin.inverseBindMatrices) return {};
+		const auto& matrixAccessor = scene.accessors[skin.inverseBindMatrices.value()];
 
-	std::string GLTFImporter::findMesh(const std::string& id) {
-		for (const auto& skeleton : this->skeletons) {
-			const auto* bone = skeleton->getBone(id);
-			if (bone != nullptr) return this->skeletonMeshes[skeleton.get()]->name;
-		}
+		fastgltf::iterateAccessorWithIndex<fastgltf::math::fmat4x4>(
+		    scene, matrixAccessor,
+		    [&](const fastgltf::math::fmat4x4& mtx, std::size_t /*idx*/) {
+			    return rawrbox::Matrix4x4(mtx.data());
+		    });
 
-		return id;
+		return {};
 	}
 
 	void GLTFImporter::generateBones(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::Skeleton& skeleton, rawrbox::Bone& parent) {
@@ -263,38 +262,29 @@ namespace rawrbox {
 	}
 
 	void GLTFImporter::loadSkeletons(const fastgltf::Asset& scene) {
-		if (scene.skins.empty()) return;
+		/*if (scene.skins.empty()) return;
 
 		this->skeletons.resize(scene.skins.size());
 
 		for (size_t i = 0; i < scene.skins.size(); i++) {
 			const auto& skin = scene.skins[i];
+			if (skin.joints.empty()) continue;
+
+			// const auto& rootNode = this->meshes.front();
+			const auto& rootJoint = scene.nodes[skin.joints[0]];
+
 			auto skeleton = std::make_unique<rawrbox::Skeleton>(std::string{skin.name.begin(), skin.name.end()});
+			skeleton->invTransformationMtx = this->extractSkeletonMatrix(scene, skin);
 
-			if (skin.inverseBindMatrices) {
-				const auto& matrixAccessor = scene.accessors[skin.inverseBindMatrices.value()];
+			// Create root bone ---
+			skeleton->rootBone = std::make_unique<rawrbox::Bone>("ROOT-BONE");
+			skeleton->rootBone->owner = skeleton.get();
+			skeleton->rootBone->transformationMtx = this->toMatrix(std::get<fastgltf::TRS>(rootJoint.transform));
 
-				fastgltf::iterateAccessorWithIndex<fastgltf::math::fmat4x4>(
-				    scene, matrixAccessor,
-				    [&](const fastgltf::math::fmat4x4& mtx, std::size_t /*idx*/) {
-					    skeleton->invTransformationMtx.transpose(mtx.data());
-					    skeleton->invTransformationMtx.inverse();
-				    });
+			if (!rootJoint.children.empty()) {
+				this->generateBones(scene, rootJoint, *skeleton, *skeleton->rootBone);
 			}
-
-			// Joints ---
-			if (!skin.joints.empty()) {
-				const auto& rootJoint = scene.nodes[skin.joints[0]];
-
-				skeleton->rootBone = std::make_unique<rawrbox::Bone>(std::string{rootJoint.name.begin(), rootJoint.name.end()});
-				skeleton->rootBone->owner = skeleton.get();
-				skeleton->rootBone->transformationMtx = this->toMatrix(std::get<fastgltf::TRS>(rootJoint.transform));
-
-				if (!rootJoint.children.empty()) {
-					this->generateBones(scene, rootJoint, *skeleton, *skeleton->rootBone);
-				}
-			}
-			// --------
+			// -------
 
 			// DEBUG ----
 			if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE) > 0) {
@@ -316,7 +306,7 @@ namespace rawrbox {
 			// -------------
 
 			this->skeletons[i] = std::move(skeleton);
-		}
+		}*/
 	}
 	// ------------
 
@@ -330,22 +320,18 @@ namespace rawrbox {
 			std::string animName = std::string(anim.name.begin(), anim.name.end());
 			if (animName.empty()) animName = fmt::format("anim_{}", i);
 
-			auto spl = rawrbox::StrUtils::split(animName, '|'); // Cleanup blender mess, keeps adding | to each animation
-
 			if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS) > 0) {
-				this->_logger->info("Found animation '{}'", fmt::styled(spl.back(), fmt::fg(fmt::color::green_yellow)));
+				this->_logger->info("Found animation '{}'", fmt::styled(animName, fmt::fg(fmt::color::green_yellow)));
 			}
 
-			auto& rawrAnim = this->animations[spl.back()];
-			rawrAnim.ticksPerSecond = 1.F; // ????
+			auto& rawrAnim = this->animations[animName];
 			rawrAnim.frames.reserve(anim.samplers.size());
 
 			for (const auto& channel : anim.channels) {
 				if (!channel.nodeIndex) continue; // Not a animation?
 
-				const auto& bone = scene.nodes[channel.nodeIndex.value()]; // Bone being affected
-				std::string nodeName = std::string(bone.name.begin(), bone.name.end());
-
+				const size_t nodeIndex = channel.nodeIndex.value();
+				const auto& mesh = this->meshes[nodeIndex]; // Mesh being affected
 				const auto& sampler = anim.samplers[channel.samplerIndex];
 
 				// Determine start and end time of the inputs.
@@ -358,42 +344,44 @@ namespace rawrbox {
 				// -----------------
 
 				// Original transform ---
-				auto TRS = std::get<fastgltf::TRS>(bone.transform);
-
-				rawrbox::Vector4f rot = {TRS.rotation.x(), TRS.rotation.y(), TRS.rotation.z(), TRS.rotation.w()};
-				rawrbox::Vector3f pos = {TRS.translation.x(), TRS.translation.y(), TRS.translation.z()};
-				rawrbox::Vector3f scale = {TRS.scale.x(), TRS.scale.y(), TRS.scale.z()};
+				rawrbox::Vector4f rot = mesh->matrix.getRotation();
+				rawrbox::Vector3f pos = mesh->matrix.getPos();
+				rawrbox::Vector3f scale = mesh->matrix.getScale();
 				// -----------------------
 
 				// Animate meshes ----
 				rawrbox::AnimationFrame frame = {};
-				frame.nodeName = this->findMesh(nodeName);
+				frame.nodeIndex = nodeIndex;
+
+				// Mark as animated
+				this->animatedMeshes[nodeIndex] = mesh.get();
+				// ----------------
 
 				// READ CHANGES ----
 				const auto& outputInputAccessor = scene.accessors[sampler.outputAccessor];
 
 				switch (channel.path) {
 					case fastgltf::AnimationPath::Translation:
-						fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, outputInputAccessor, [&](fastgltf::math::fvec3 pos, std::size_t /*idx*/) {
-							frame.position.push_back({static_cast<float>(timeDiff), {pos.x(), pos.y(), pos.z()}});
+						fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, outputInputAccessor, [&](fastgltf::math::fvec3 newPos, std::size_t /*idx*/) {
+							frame.position.push_back({static_cast<float>(timeDiff), {newPos.x(), newPos.y(), newPos.z()}});
 							frame.rotation.push_back({static_cast<float>(timeDiff), {rot.x, rot.y, rot.z, rot.w}});
 							frame.scale.push_back({static_cast<float>(timeDiff), {scale.x, scale.y, scale.z}});
 						});
 
 						break;
 					case fastgltf::AnimationPath::Rotation:
-						fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec4>(scene, outputInputAccessor, [&](fastgltf::math::fvec4 rot, std::size_t /*idx*/) {
+						fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec4>(scene, outputInputAccessor, [&](fastgltf::math::fvec4 newRot, std::size_t /*idx*/) {
 							frame.position.push_back({static_cast<float>(timeDiff), {pos.x, pos.y, pos.z}});
-							frame.rotation.push_back({static_cast<float>(timeDiff), {rot.x(), rot.y(), rot.z(), rot.w()}});
+							frame.rotation.push_back({static_cast<float>(timeDiff), {newRot.x(), newRot.y(), newRot.z(), newRot.w()}});
 							frame.scale.push_back({static_cast<float>(timeDiff), {scale.x, scale.y, scale.z}});
 						});
 
 						break;
 					case fastgltf::AnimationPath::Scale:
-						fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, outputInputAccessor, [&](fastgltf::math::fvec3 scale, std::size_t /*idx*/) {
+						fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, outputInputAccessor, [&](fastgltf::math::fvec3 newScale, std::size_t /*idx*/) {
 							frame.position.push_back({static_cast<float>(timeDiff), {pos.x, pos.y, pos.z}});
 							frame.rotation.push_back({static_cast<float>(timeDiff), {rot.x, rot.y, rot.z, rot.w}});
-							frame.scale.push_back({static_cast<float>(timeDiff), {scale.x(), scale.y(), scale.z()}});
+							frame.scale.push_back({static_cast<float>(timeDiff), {newScale.x(), newScale.y(), newScale.z()}});
 						});
 						break;
 					case fastgltf::AnimationPath::Weights:
@@ -414,7 +402,7 @@ namespace rawrbox {
 						break;
 					case fastgltf::AnimationInterpolation::CubicSpline:
 						frame.stateStart = rawrbox::Easing::EASE_IN_CUBIC;
-						frame.stateEnd = rawrbox::Easing::EASE_OUT_CUBIC;
+						frame.stateEnd = rawrbox::Easing::EASE_OUT_CUBIC; // ?
 						break;
 				}
 				// -------------------
@@ -427,14 +415,32 @@ namespace rawrbox {
 	// -------------
 
 	// MODEL ---
-	void GLTFImporter::loadSubmeshes(const fastgltf::Asset& scene) {
-		for (const auto& node : scene.nodes) {
-			if (!node.meshIndex.has_value()) continue;
+	void GLTFImporter::loadScene(const fastgltf::Asset& scene) {
+		for (const auto& rootScenes : scene.scenes) {
+			if (rootScenes.nodeIndices.size() == 1) {
+				this->loadMeshes(scene, scene.nodes[0]); // ROOT
+			} else {
+				// Create fake root
+				auto gltfMesh = std::make_unique<rawrbox::GLTFMesh>("ROOT");
+				auto* mdlGet = gltfMesh.get();
+				this->meshes.emplace_back(std::move(gltfMesh));
+				// ----
 
+				for (const auto& nodeIndex : rootScenes.nodeIndices) {
+					this->loadMeshes(scene, scene.nodes[nodeIndex], mdlGet);
+				}
+			}
+		}
+	}
+
+	void GLTFImporter::loadMeshes(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::GLTFMesh* parentMesh) {
+		auto gltfMesh = std::make_unique<rawrbox::GLTFMesh>(std::string{node.name.begin(), node.name.end()});
+
+		gltfMesh->parent = parentMesh;
+		gltfMesh->matrix = this->toMatrix(std::get<fastgltf::TRS>(node.transform));
+
+		if (node.meshIndex) {
 			const auto& mesh = scene.meshes[node.meshIndex.value()];
-			auto gltfMesh = std::make_unique<rawrbox::GLTFMesh>(std::string{node.name.begin(), node.name.end()});
-
-			// TODO: CALCULATE BBOX
 
 			// Primitives
 			for (const auto& primitive : mesh.primitives) {
@@ -464,43 +470,26 @@ namespace rawrbox {
 				gltfMesh->indices.insert(gltfMesh->indices.end(), indices.begin(), indices.end());
 			}
 			/// -------
-
-			// Transform
-			gltfMesh->matrix = this->toMatrix(std::get<fastgltf::TRS>(node.transform));
-			// --------
-
-			// SKIN ---
-			if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0 && node.skinIndex.has_value()) {
-				if (node.skinIndex.value() >= this->skeletons.size()) {
-					this->_logger->warn("Invalid skin index '{}'", node.skinIndex.value());
-				} else {
-					gltfMesh->animated = true;
-					gltfMesh->skeleton = this->skeletons[node.skinIndex.value()].get();
-
-					this->animatedMeshes[gltfMesh->name] = gltfMesh.get();     // For easy lookup
-					this->skeletonMeshes[gltfMesh->skeleton] = gltfMesh.get(); // For easy lookup
-				}
-
-				/*auto fnd = mesh.skeleton->boneMap.find(gltfMesh->name);
-				if (fnd == mesh.skeleton->boneMap.end()) throw this->_logger->error("Failed to map bone {}", boneKey);*/
-			}
-
-			if (this->animatedMeshes.contains(gltfMesh->name)) {
-
-				/*
-				fnd->second->offsetMtx.transpose(&bone->mOffsetMatrix.a1);
-				fnd->second->offsetMtx *= mesh.matrix;*/
-			}
-			// -------------------
-
-			// Blendshapes
-			if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) > 0) {
-				// this->loadBlendShapes(aiMesh, mesh);
-			}
-			// -------------------
-
-			this->meshes.emplace_back(std::move(gltfMesh));
 		}
+
+		// BLEND SHAPES ---
+		// https://github.com/assimp/assimp/blob/master/code/AssetLib/glTF2/glTF2Importer.cpp#L637
+		/*if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) > 0 && !primitive.targets.empty()) {
+			for (auto& targets : primitive.targets) {
+			}
+		}*/
+		// --------------
+
+		// Add meshes ---
+		auto* mdlGet = gltfMesh.get();
+		this->meshes.emplace_back(std::move(gltfMesh));
+		// ----
+
+		// Children ---
+		for (const auto& children : node.children) {
+			this->loadMeshes(scene, scene.nodes[children], mdlGet);
+		}
+		// ---
 	}
 
 	std::vector<rawrbox::VertexNormBoneData> GLTFImporter::extractVertex(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive) {
