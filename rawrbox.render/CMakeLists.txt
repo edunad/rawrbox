@@ -70,6 +70,7 @@ if(DiligentCore_ADDED)
     set_lib_runtime_mt(MachineIndependent)
     set_lib_runtime_mt(GenericCodeGen)
     set_lib_runtime_mt(spirv-cross-core)
+    set_lib_runtime_mt(glslang)
 
     if(WIN32)
         set_lib_runtime_mt(Diligent-Win32Platform)
@@ -80,6 +81,32 @@ if(DiligentCore_ADDED)
         set(DILIGENT_DXCOMPILER_FOR_SPIRV_PATH "" CACHE STRING "" FORCE)
     endif()
 endif()
+
+CPMAddPackage(
+    NAME
+        ozz
+    GITHUB_REPOSITORY
+        guillaumeblanc/ozz-animation
+    GIT_TAG
+        0.15.0
+    OPTIONS
+        "ozz_build_tools OFF"
+        "ozz_build_fbx OFF"
+        "ozz_build_gltf OFF"
+        "ozz_build_samples OFF"
+        "ozz_build_howtos OFF"
+        "ozz_build_tests OFF"
+        "ozz_build_msvc_rt_dll ON"
+)
+
+if(ozz_ADDED)
+    set_lib_runtime_mt(ozz_base)
+    set_lib_runtime_mt(ozz_options)
+    set_lib_runtime_mt(ozz_animation)
+    set_lib_runtime_mt(ozz_animation_offline)
+    set_lib_runtime_mt(ozz_geometry)
+endif()
+
 
 CPMAddPackage("gh:nemtrif/utfcpp@4.0.5")
 if(utfcpp_ADDED)
@@ -175,6 +202,9 @@ target_link_libraries(
             RAWRBOX.ENGINE
             ${RAWRBOX_EXTRA_LIBS}
             # ----------------------------
+
+            ozz_animation
+            ozz_animation_offline
 
             utf8cpp
             lunasvg

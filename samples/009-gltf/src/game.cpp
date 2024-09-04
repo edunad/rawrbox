@@ -14,7 +14,7 @@ namespace gltf {
 #else
 		auto* window = rawrbox::Window::createWindow();
 #endif
-		window->setMonitor(1);
+		window->setMonitor(2);
 		window->setTitle("GLTF TEST");
 #ifdef _DEBUG
 		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED);
@@ -73,10 +73,10 @@ namespace gltf {
 
 		this->_tstMdl = std::make_unique<rawrbox::GLTFModel<rawrbox::MaterialSkinned>>();
 		this->_tstMdl->load(*this->_tst);
-		// this->_tstMdl->playAnimation("Scene", true, 1.F);
+		// this->_tstMdl->playAnimation("TV_standby|Scene", true, 1.F);
 
-		// this->_tstMdl->playAnimation("Armature.001|Armature.001|Armature.001|Scene", true, 1.F);
-		this->_tstMdl->playAnimation("Kalashnikov|Kalashnikov|Kalashnikov|Scene", true, 1.F);
+		this->_tstMdl->playAnimation("Armature.001|Armature.001|Armature.001|Scene", true, 1.F);
+		//  this->_tstMdl->playAnimation("Kalashnikov|Kalashnikov|Kalashnikov|Scene", true, 1.F);
 		this->_tstMdl->upload();
 		//  ----------
 

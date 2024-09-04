@@ -14,7 +14,7 @@ namespace rawrbox {
 
 			mesh.name = gltfMesh.name;
 			mesh.bbox = gltfMesh.bbox;
-			mesh.matrix = gltfMesh.matrix;
+			mesh.matrix = rawrbox::Matrix4x4::mtxSRT(gltfMesh.scale, gltfMesh.rotation, gltfMesh.position);
 
 			// Textures ---
 			if (gltfMesh.material != nullptr) {
@@ -80,10 +80,10 @@ namespace rawrbox {
 			}
 
 			// Bones
-			if (gltfMesh.skeleton != nullptr) {
+			/*if (gltfMesh.skeleton != nullptr) {
 				mesh.skeleton = gltfMesh.skeleton;
 				mesh.setOptimizable(false); // Don't merge meshes
-			}
+			}*/
 			// -------------------
 
 			mesh.baseVertex = 0;

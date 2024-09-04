@@ -167,6 +167,8 @@ if(WIN32 AND NOT VS_DXC_COMPILER_PATH AND NOT VS_DXIL_SIGNER_PATH AND NOT VS_D3D
 endif()
 # ---------------------
 
+set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME OFF)
+
 ## CHECKS ---
 if(NOT RAWRBOX_BUILD_RAWRBOX_RENDER)
     message(WARNING "----------------------------------------\nRAWRBOX_BUILD_RAWRBOX_RENDER is disabled!\nDisabling UI / GLTF / IMGUI / WEBM and samples..\n----------------------------------------")

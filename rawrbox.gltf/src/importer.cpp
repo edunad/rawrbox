@@ -11,6 +11,18 @@
 // https://raw.githubusercontent.com/KhronosGroup/glTF/main/specification/2.0/figures/gltfOverview-2.0.0d.png
 // https://github.com/NVIDIA/OptiX_Apps/blob/82b27c9c035a08289acda4f19a8a80afa99f17a4/apps/GLTF_renderer/Application.cpp#L4438
 
+template <>
+struct fastgltf::ElementTraits<ozz::math::Quaternion> : fastgltf::ElementTraitsBase<ozz::math::Quaternion, AccessorType::Vec4, float> {};
+
+template <>
+struct fastgltf::ElementTraits<ozz::math::Float3> : fastgltf::ElementTraitsBase<ozz::math::Float3, AccessorType::Vec3, float> {};
+
+template <>
+struct fastgltf::ElementTraits<rawrbox::Vector3f> : fastgltf::ElementTraitsBase<rawrbox::Vector3f, AccessorType::Vec3, float> {};
+
+template <>
+struct fastgltf::ElementTraits<rawrbox::Vector4f> : fastgltf::ElementTraitsBase<rawrbox::Vector4f, AccessorType::Vec4, float> {};
+
 namespace rawrbox {
 	// PRIVATE -----
 	void GLTFImporter::internalLoad(fastgltf::GltfDataBuffer& data) {
@@ -229,20 +241,20 @@ namespace rawrbox {
 
 	// SKELETONS --
 	rawrbox::Matrix4x4 GLTFImporter::extractSkeletonMatrix(const fastgltf::Asset& scene, const fastgltf::Skin& skin) {
-		if (skin.inverseBindMatrices) return {};
+		/*if (skin.inverseBindMatrices) return {};
 		const auto& matrixAccessor = scene.accessors[skin.inverseBindMatrices.value()];
 
-		fastgltf::iterateAccessorWithIndex<fastgltf::math::fmat4x4>(
+		fastgltf::iterateAccessor<fastgltf::math::fmat4x4>(
 		    scene, matrixAccessor,
-		    [&](const fastgltf::math::fmat4x4& mtx, std::size_t /*idx*/) {
+		    [&](const fastgltf::math::fmat4x4& mtx) {
 			    return rawrbox::Matrix4x4(mtx.data());
-		    });
+		    });*/
 
 		return {};
 	}
 
 	void GLTFImporter::generateBones(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::Skeleton& skeleton, rawrbox::Bone& parent) {
-		for (const auto& childIndex : node.children) {
+		/*for (const auto& childIndex : node.children) {
 			const auto& childNode = scene.nodes[childIndex];
 
 			std::string boneName = {childNode.name.begin(), childNode.name.end()};
@@ -258,7 +270,7 @@ namespace rawrbox {
 
 			this->generateBones(scene, childNode, skeleton, *bone);
 			parent.children.push_back(std::move(bone));
-		}
+		}*/
 	}
 
 	void GLTFImporter::loadSkeletons(const fastgltf::Asset& scene) {
@@ -317,6 +329,100 @@ namespace rawrbox {
 		for (size_t i = 0; i < scene.animations.size(); i++) {
 			const auto& anim = scene.animations[i];
 
+			const std::string animName = std::string(anim.name.begin(), anim.name.end());
+			auto& rawrAnim = this->animations[animName];
+
+			rawrAnim.duration = 0.F;
+			rawrAnim.tracks.resize(anim.channels.size());
+			rawrAnim.name = animName;
+
+			if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS) > 0) {
+				this->_logger->info("Found animation '{}'", fmt::styled(animName, fmt::fg(fmt::color::green_yellow)));
+			}
+
+			for (size_t i = 0; i < anim.channels.size(); i++) {
+				const auto& channel = anim.channels[i];
+				if (!channel.nodeIndex) continue; // Not a animation?
+
+				auto& track = rawrAnim.tracks[i];
+
+				const size_t nodeIndex = channel.nodeIndex.value();
+				const auto& mesh = this->meshes[nodeIndex]; // Mesh being affected
+
+				// Mark as animated
+				this->animatedMeshes[nodeIndex] = mesh.get();
+				// ----------------
+
+				const auto& sampler = anim.samplers[channel.samplerIndex];
+				const auto& timeAccessor = scene.accessors[sampler.inputAccessor];
+				const auto& dataAccessor = scene.accessors[sampler.outputAccessor];
+
+				if (timeAccessor.count != dataAccessor.count) // Invalid data
+					continue;
+
+				// Original transform ---
+				ozz::math::Float3 pos = {};
+				ozz::math::Float4 rot = {};
+				ozz::math::Float3 scale = {};
+				// -----------------------
+
+				// TIME ----
+				for (size_t iTime = 0; iTime < timeAccessor.count; iTime++) {
+					double t = fastgltf::getAccessorElement<double>(scene, timeAccessor, iTime);
+					if (t > rawrAnim.duration) rawrAnim.duration = t;
+
+					switch (channel.path) {
+						case fastgltf::AnimationPath::Translation:
+							{
+								ozz::math::Float3 newPos = fastgltf::getAccessorElement<ozz::math::Float3>(scene, dataAccessor, i);
+								track.translations.emplace_back(t, newPos);
+								break;
+							}
+						case fastgltf::AnimationPath::Rotation:
+							{
+								ozz::math::Quaternion newRot = fastgltf::getAccessorElement<ozz::math::Quaternion>(scene, dataAccessor, i);
+								track.rotations.emplace_back(t, newRot);
+								break;
+							}
+						case fastgltf::AnimationPath::Scale:
+							{
+								ozz::math::Float3 newScale = fastgltf::getAccessorElement<ozz::math::Float3>(scene, dataAccessor, i);
+								track.scales.emplace_back(t, newScale);
+								break;
+							}
+							break;
+						case fastgltf::AnimationPath::Weights:
+							continue; // TODO: SUPPORT BLEND SHAPES
+						default:
+							// Handle other cases
+							continue;
+					}
+				}
+				// -------------
+
+				// INTERPOLATION ----
+				// FOR WEIGHTS
+				/*switch (sampler.interpolation) {
+					case fastgltf::AnimationInterpolation::Linear:
+						// frame.stateStart = rawrbox::Easing::LINEAR;
+						// frame.stateEnd = rawrbox::Easing::LINEAR;
+						break;
+					case fastgltf::AnimationInterpolation::Step:
+						// frame.stateStart = rawrbox::Easing::STEP;
+						// frame.stateEnd = rawrbox::Easing::STEP;
+						break;
+					case fastgltf::AnimationInterpolation::CubicSpline:
+						// frame.stateStart = rawrbox::Easing::EASE_IN_CUBIC;
+						// frame.stateEnd = rawrbox::Easing::EASE_OUT_CUBIC; // ?
+						break;
+				}*/
+				// ---------
+			}
+		}
+
+		/*for (size_t i = 0; i < scene.animations.size(); i++) {
+			const auto& anim = scene.animations[i];
+
 			std::string animName = std::string(anim.name.begin(), anim.name.end());
 			if (animName.empty()) animName = fmt::format("anim_{}", i);
 
@@ -332,65 +438,66 @@ namespace rawrbox {
 
 				const size_t nodeIndex = channel.nodeIndex.value();
 				const auto& mesh = this->meshes[nodeIndex]; // Mesh being affected
-				const auto& sampler = anim.samplers[channel.samplerIndex];
-
-				// Determine start and end time of the inputs.
-				// gltf 2.0 specs: "Animation sampler's input accessor MUST have its min and max properties defined."
-				const auto* minTime = std::get_if<FASTGLTF_STD_PMR_NS::vector<double>>(&scene.accessors[sampler.inputAccessor].min);
-				const auto* maxTime = std::get_if<FASTGLTF_STD_PMR_NS::vector<double>>(&scene.accessors[sampler.inputAccessor].max);
-				auto timeDiff = static_cast<float>(maxTime->front()) - static_cast<float>(minTime->front());
-
-				if (rawrAnim.duration < timeDiff) rawrAnim.duration = timeDiff;
-				// -----------------
-
-				// Original transform ---
-				rawrbox::Vector4f rot = mesh->matrix.getRotation();
-				rawrbox::Vector3f pos = mesh->matrix.getPos();
-				rawrbox::Vector3f scale = mesh->matrix.getScale();
-				// -----------------------
-
-				// Animate meshes ----
-				rawrbox::AnimationFrame frame = {};
-				frame.nodeIndex = nodeIndex;
 
 				// Mark as animated
 				this->animatedMeshes[nodeIndex] = mesh.get();
 				// ----------------
 
-				// READ CHANGES ----
-				const auto& outputInputAccessor = scene.accessors[sampler.outputAccessor];
+				const auto& sampler = anim.samplers[channel.samplerIndex];
+				const auto& timeAccessor = scene.accessors[sampler.inputAccessor];
+				const auto& dataAccessor = scene.accessors[sampler.outputAccessor];
 
-				switch (channel.path) {
-					case fastgltf::AnimationPath::Translation:
-						fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, outputInputAccessor, [&](fastgltf::math::fvec3 newPos, std::size_t /*idx*/) {
-							frame.position.push_back({static_cast<float>(timeDiff), {newPos.x(), newPos.y(), newPos.z()}});
-							frame.rotation.push_back({static_cast<float>(timeDiff), {rot.x, rot.y, rot.z, rot.w}});
-							frame.scale.push_back({static_cast<float>(timeDiff), {scale.x, scale.y, scale.z}});
-						});
+				if (timeAccessor.count != dataAccessor.count) // Invalid data
+					continue;
 
-						break;
-					case fastgltf::AnimationPath::Rotation:
-						fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec4>(scene, outputInputAccessor, [&](fastgltf::math::fvec4 newRot, std::size_t /*idx*/) {
-							frame.position.push_back({static_cast<float>(timeDiff), {pos.x, pos.y, pos.z}});
-							frame.rotation.push_back({static_cast<float>(timeDiff), {newRot.x(), newRot.y(), newRot.z(), newRot.w()}});
-							frame.scale.push_back({static_cast<float>(timeDiff), {scale.x, scale.y, scale.z}});
-						});
+				// Original transform ---
+				rawrbox::Vector3f pos = mesh->position;
+				rawrbox::Vector4f rot = mesh->rotation;
+				rawrbox::Vector3f scale = mesh->scale;
+				// -----------------------
 
-						break;
-					case fastgltf::AnimationPath::Scale:
-						fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, outputInputAccessor, [&](fastgltf::math::fvec3 newScale, std::size_t /*idx*/) {
-							frame.position.push_back({static_cast<float>(timeDiff), {pos.x, pos.y, pos.z}});
-							frame.rotation.push_back({static_cast<float>(timeDiff), {rot.x, rot.y, rot.z, rot.w}});
-							frame.scale.push_back({static_cast<float>(timeDiff), {newScale.x(), newScale.y(), newScale.z()}});
-						});
-						break;
-					case fastgltf::AnimationPath::Weights:
-						break; // TODO: SUPPORT BLEND SHAPES
-					default:
-						// Handle other cases
-						break;
+				rawrbox::AnimationFrame frame = {};
+				frame.nodeIndex = nodeIndex;
+
+				// TIME ----
+				for (size_t iTime = 0; iTime < timeAccessor.count; iTime++) {
+					double t = fastgltf::getAccessorElement<double>(scene, timeAccessor, iTime);
+					if (t > rawrAnim.duration) rawrAnim.duration = t;
+
+					switch (channel.path) {
+						case fastgltf::AnimationPath::Translation:
+							{
+								fastgltf::math::fvec3 newPos = fastgltf::getAccessorElement<fastgltf::math::fvec3>(scene, dataAccessor, i);
+								pos = {newPos.x(), newPos.y(), newPos.z()};
+								break;
+							}
+						case fastgltf::AnimationPath::Rotation:
+							{
+								fastgltf::math::fvec4 newRot = fastgltf::getAccessorElement<fastgltf::math::fvec4>(scene, dataAccessor, i);
+								rot = {newRot.x(), newRot.y(), newRot.z(), newRot.w()};
+								break;
+							}
+						case fastgltf::AnimationPath::Scale:
+							{
+								fastgltf::math::fvec3 newScale = fastgltf::getAccessorElement<fastgltf::math::fvec3>(scene, dataAccessor, i);
+								scale = {newScale.x(), newScale.y(), newScale.z()};
+								break;
+							}
+							break;
+						case fastgltf::AnimationPath::Weights:
+							continue; // TODO: SUPPORT BLEND SHAPES
+						default:
+							// Handle other cases
+							continue;
+					}
+
+					frame.position.emplace_back(t, pos);
+					frame.rotation.emplace_back(t, rot);
+					frame.scale.emplace_back(t, scale);
 				}
+				// -----------------------
 
+				// INTERPOLATION ----
 				switch (sampler.interpolation) {
 					case fastgltf::AnimationInterpolation::Linear:
 						frame.stateStart = rawrbox::Easing::LINEAR;
@@ -405,12 +512,11 @@ namespace rawrbox {
 						frame.stateEnd = rawrbox::Easing::EASE_OUT_CUBIC; // ?
 						break;
 				}
-				// -------------------
-				// -----------------------
+				// ---------
 
 				rawrAnim.frames.emplace_back(frame);
 			}
-		}
+		}*/
 	}
 	// -------------
 
@@ -420,14 +526,8 @@ namespace rawrbox {
 			if (rootScenes.nodeIndices.size() == 1) {
 				this->loadMeshes(scene, scene.nodes[0]); // ROOT
 			} else {
-				// Create fake root
-				auto gltfMesh = std::make_unique<rawrbox::GLTFMesh>("ROOT");
-				auto* mdlGet = gltfMesh.get();
-				this->meshes.emplace_back(std::move(gltfMesh));
-				// ----
-
 				for (const auto& nodeIndex : rootScenes.nodeIndices) {
-					this->loadMeshes(scene, scene.nodes[nodeIndex], mdlGet);
+					this->loadMeshes(scene, scene.nodes[nodeIndex], nullptr);
 				}
 			}
 		}
@@ -437,7 +537,12 @@ namespace rawrbox {
 		auto gltfMesh = std::make_unique<rawrbox::GLTFMesh>(std::string{node.name.begin(), node.name.end()});
 
 		gltfMesh->parent = parentMesh;
-		gltfMesh->matrix = this->toMatrix(std::get<fastgltf::TRS>(node.transform));
+
+		auto mtx = std::get<fastgltf::TRS>(node.transform);
+
+		gltfMesh->position = {mtx.translation.x(), mtx.translation.y(), mtx.translation.z()};
+		gltfMesh->scale = {mtx.scale.x(), mtx.scale.y(), mtx.scale.z()};
+		gltfMesh->rotation = {mtx.rotation.x(), mtx.rotation.y(), mtx.rotation.z(), mtx.rotation.w()};
 
 		if (node.meshIndex) {
 			const auto& mesh = scene.meshes[node.meshIndex.value()];

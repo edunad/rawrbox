@@ -16,15 +16,15 @@ namespace rawrbox {
 
 	protected:
 		// ANIMATION ---
-		std::unordered_map<std::string, rawrbox::Animation> _animations = {};
-		std::unordered_map<std::string, rawrbox::PlayingAnimationData> _playingAnimations = {};
+		// std::unordered_map<std::string, rawrbox::Animation> _animations = {};
+		// std::unordered_map<std::string, rawrbox::PlayingAnimationData> _playingAnimations = {};
 		// ------------
 
 		std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes = {};
 		rawrbox::BBOX _bbox = {};
 
 		// SKINNING ----
-		std::vector<rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // For quick lookup
+		std::unordered_map<size_t, rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // For quick lookup
 		// --------
 
 		// LIGHTS ---
@@ -35,39 +35,32 @@ namespace rawrbox {
 
 		// ANIMATIONS ----
 		void processAnimations() const {
-			for (const auto& playingAnim : this->_playingAnimations) {
+			/*for (const auto& playingAnim : this->_playingAnimations) {
 				const rawrbox::PlayingAnimationData& anim = playingAnim.second;
 				const std::vector<rawrbox::AnimationFrame>& frames = anim.data->frames;
 
 				float timeInTicks = std::fmod(anim.time, anim.data->duration);
-				auto findFrameIndex = [&](auto& keys) {
-					for (size_t i = 0; i + 1 < keys.size(); i++) {
-						if (timeInTicks < keys[i + 1].first) {
-							return i;
-						}
-					}
-
-					return static_cast<size_t>(0);
-				};
 
 				for (const auto& frame : frames) {
-					if (frame.nodeIndex >= this->_meshes.size()) continue; // Not a mesh, probably a bone
-					auto& mesh = this->_meshes[frame.nodeIndex];
+					auto fnd = this->_animatedMeshes.find(frame.nodeIndex);
+					if (fnd == this->_animatedMeshes.end() || fnd->second == nullptr) continue;
 
-					// find all frames
-					auto positionFrameIndex = findFrameIndex(frame.position);
-					auto rotationFrameIndex = findFrameIndex(frame.rotation);
-					auto scaleFrameIndex = findFrameIndex(frame.scale);
+					auto timeIndexFnd = std::find_if(frame.position.begin(), frame.position.end(), [&](const auto& key) {
+						return key.first >= timeInTicks;
+					});
+					if (timeIndexFnd == frame.position.end()) continue;
 
-					auto currPos = frame.position[positionFrameIndex];
-					auto nextPos = positionFrameIndex + 1 >= frame.position.size() ? frame.position.front() : frame.position[positionFrameIndex + 1];
+					const size_t timeIndex = timeIndexFnd->first;
+					this->_logger->info("Time index: {}", timeIndex);
 
-					auto currRot = frame.rotation[rotationFrameIndex];
-					auto nextRot = rotationFrameIndex + 1 >= frame.rotation.size() ? frame.rotation.front() : frame.rotation[rotationFrameIndex + 1];
+					auto currPos = frame.position[timeIndex];
+					auto nextPos = timeIndex + 1 >= frame.position.size() ? frame.position.front() : frame.position[timeIndex + 1];
 
-					auto currScl = frame.scale[scaleFrameIndex];
-					auto nextScl = scaleFrameIndex + 1 >= frame.scale.size() ? frame.scale.front() : frame.scale[scaleFrameIndex + 1];
+					auto currRot = frame.rotation[timeIndex];
+					auto nextRot = timeIndex + 1 >= frame.rotation.size() ? frame.rotation.front() : frame.rotation[timeIndex + 1];
 
+					auto currScl = frame.scale[timeIndex];
+					auto nextScl = timeIndex + 1 >= frame.scale.size() ? frame.scale.front() : frame.scale[timeIndex + 1];
 					// Easing ----
 					rawrbox::Vector3f position = nextPos.second;
 					rawrbox::Vector4f rotation = nextRot.second;
@@ -80,14 +73,14 @@ namespace rawrbox {
 					scale = rawrbox::AnimUtils::lerpVector3(t, currScl, nextScl);
 					//   ----
 
-					mesh->matrix = rawrbox::Matrix4x4::mtxSRT(scale, rotation, position);
-				}
-			}
+					fnd->second->matrix = rawrbox::Matrix4x4::mtxSRT(scale, rotation, position);
+		}
+	}*/
 		}
 
 		void updateAnimations() {
-			for (auto it = this->_playingAnimations.begin(); it != this->_playingAnimations.end();) {
-				float timeToAdd = rawrbox::DELTA_TIME * it->second.speed * 1000.0F; // ticksPerSecond
+			/*for (auto it = this->_playingAnimations.begin(); it != this->_playingAnimations.end();) {
+				float timeToAdd = rawrbox::DELTA_TIME * it->second.speed; // ticksPerSecond
 				float newTime = it->second.time + timeToAdd;
 				float totalDur = it->second.data->duration;
 
@@ -110,7 +103,7 @@ namespace rawrbox {
 				++it;
 			}
 
-			this->processAnimations();
+			this->processAnimations();*/
 		}
 		// --------------
 
@@ -138,7 +131,7 @@ namespace rawrbox {
 		// --------------
 
 	public:
-		Model(size_t vertices = 0, size_t indices = 0) : rawrbox::ModelBase<M>(vertices, indices){};
+		Model(size_t vertices = 0, size_t indices = 0) : rawrbox::ModelBase<M>(vertices, indices) {};
 		Model(const Model&) = delete;
 		Model(Model&&) = delete;
 		Model& operator=(const Model&) = delete;
@@ -146,7 +139,7 @@ namespace rawrbox {
 		~Model() override {
 			this->_meshes.clear();
 			this->_animatedMeshes.clear();
-			this->_animations.clear();
+			// this->_animations.clear();
 			this->_lights.clear();
 		}
 
@@ -236,7 +229,7 @@ namespace rawrbox {
 		}
 
 		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F, bool forceSingle = false, std::function<void()> onComplete = nullptr) {
-			auto iter = this->_animations.find(name);
+			/*auto iter = this->_animations.find(name);
 			if (iter == this->_animations.end()) {
 				throw this->_logger->error("Animation '{}' not found", fmt::styled(name, fmt::fg(fmt::color::coral)));
 			}
@@ -251,29 +244,31 @@ namespace rawrbox {
 			    loop,
 			    speed,
 			    iter->second,
-			    onComplete};
+			    onComplete};*/
 
 			return true;
 		}
 
 		virtual void stopAllAnimations() {
-			this->_playingAnimations.clear();
+			// this->_playingAnimations.clear();
 		}
 
 		virtual bool stopAnimation(const std::string& name) {
-			auto fnd = this->_playingAnimations.find(name);
+			/*auto fnd = this->_playingAnimations.find(name);
 			if (fnd == this->_playingAnimations.end()) return false;
 
-			this->_playingAnimations.erase(fnd);
+			this->_playingAnimations.erase(fnd);*/
 			return true;
 		}
 
 		virtual bool hasAnimation(const std::string& name) {
-			return this->_animations.find(name) != this->_animations.end();
+			// return this->_animations.find(name) != this->_animations.end();
+			return false;
 		}
 
 		virtual bool isAnimationPlaying(const std::string& name) {
-			return this->_playingAnimations.find(name) != this->_playingAnimations.end();
+			return false;
+			// return this->_playingAnimations.find(name) != this->_playingAnimations.end();
 		}
 		// --------------
 

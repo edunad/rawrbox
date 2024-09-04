@@ -61,24 +61,27 @@ namespace rawrbox {
 		rawrbox::TextureBase* emissive = nullptr;
 		rawrbox::Colorf emissionColor = rawrbox::Colors::White();
 
-		explicit GLTFMaterial(std::string _name) : name(std::move(_name)){};
+		explicit GLTFMaterial(std::string _name) : name(std::move(_name)) {};
 	};
 
 	struct GLTFMesh {
 	public:
 		std::string name;
 		rawrbox::BBOX bbox = {};
-		rawrbox::Matrix4x4 matrix = {};
+
+		rawrbox::Vector3f position = {};
+		rawrbox::Vector3f scale = {1.F, 1.F, 1.F};
+		rawrbox::Vector4f rotation = {0.F, 0.F, 0.F, 1.F};
 
 		rawrbox::GLTFMaterial* material = nullptr;
-		rawrbox::Skeleton* skeleton = nullptr;
+		// rawrbox::Skeleton* skeleton = nullptr;
 		rawrbox::GLTFMesh* parent = nullptr;
 
 		std::vector<rawrbox::VertexNormBoneData> vertices = {};
 		std::vector<uint16_t> indices = {};
 
 		rawrbox::Color color = rawrbox::Colors::White();
-		GLTFMesh(std::string _name) : name(std::move(_name)){};
+		GLTFMesh(std::string _name) : name(std::move(_name)) {};
 	};
 
 	class GLTFImporter {
@@ -146,7 +149,7 @@ namespace rawrbox {
 
 		// SKINNING ---
 		std::vector<std::unique_ptr<rawrbox::Skeleton>> skeletons = {};
-		std::unordered_map<std::string, rawrbox::Animation> animations = {};
+		std::unordered_map<std::string, ozz::animation::offline::RawAnimation> animations = {};
 
 		std::unordered_map<rawrbox::Skeleton*, rawrbox::GLTFMesh*> skeletonMeshes = {};
 		std::unordered_map<size_t, rawrbox::GLTFMesh*> animatedMeshes = {}; // Map for quick lookup

@@ -21,18 +21,21 @@ namespace rawrbox {
 		}
 
 		void loadAnimations(const rawrbox::GLTFImporter& model) {
-			this->_animations = model.animations;
+			/*this->_animations = model.animations;
 			this->_animatedMeshes.clear();
 
 			// Get animated vertex meshes ---
-			this->_animatedMeshes.resize(model.animatedMeshes.size(), nullptr);
-
 			for (const auto& anim : model.animatedMeshes) {
-				if (anim.first >= this->_meshes.size()) continue;
+				// Map the animated mesh to the mesh (since this->_meshes only contains valid meshes for rendering)
+				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&anim](auto& mesh) {
+					return mesh->getName() == anim.second->name;
+				});
 
-				this->_animatedMeshes[anim.first] = this->_meshes[anim.first].get();
+				if (fnd == this->_meshes.end()) continue;
+
+				this->_animatedMeshes[anim.first] = fnd->get();
 				this->_animatedMeshes[anim.first]->setOptimizable(false);
-			}
+			}*/
 			// -----------------------
 		}
 
