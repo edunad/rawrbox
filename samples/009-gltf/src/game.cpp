@@ -73,10 +73,7 @@ namespace gltf {
 
 		this->_tstMdl = std::make_unique<rawrbox::GLTFModel<rawrbox::MaterialSkinned>>();
 		this->_tstMdl->load(*this->_tst);
-		// this->_tstMdl->playAnimation("TV_standby|Scene", true, 1.F);
-
-		this->_tstMdl->playAnimation("Armature.001|Armature.001|Armature.001|Scene", true, 1.F);
-		//  this->_tstMdl->playAnimation("Kalashnikov|Kalashnikov|Kalashnikov|Scene", true, 1.F);
+		this->_tstMdl->playAnimation(true, 1.F);
 		this->_tstMdl->upload();
 		//  ----------
 

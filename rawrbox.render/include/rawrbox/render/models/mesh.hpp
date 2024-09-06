@@ -15,8 +15,13 @@
 #include <cstdint>
 #include <string>
 
+namespace ozz {
+	namespace animation {
+		class Skeleton;
+	}
+} // namespace ozz
+
 namespace rawrbox {
-	struct Skeleton;
 	class LightBase;
 
 	namespace MeshBilldboard {
@@ -118,7 +123,7 @@ namespace rawrbox {
 		// --------------
 
 		// ANIMATION ------
-		rawrbox::Skeleton* skeleton = nullptr;
+		ozz::animation::Skeleton* skeleton = nullptr;
 		std::array<rawrbox::Matrix4x4, RB_RENDER_MAX_BONES_PER_MODEL> boneTransforms = {};
 		// -----------------
 
@@ -258,7 +263,7 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] virtual rawrbox::Skeleton* getSkeleton() const {
+		[[nodiscard]] virtual ozz::animation::Skeleton* getSkeleton() const {
 			return this->skeleton;
 		}
 

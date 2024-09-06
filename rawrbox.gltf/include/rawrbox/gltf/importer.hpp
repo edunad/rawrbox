@@ -8,6 +8,11 @@
 
 #include <fastgltf/core.hpp>
 
+#include <ozz/animation/offline/raw_skeleton.h>
+#include <ozz/animation/runtime/animation.h>
+#include <ozz/animation/runtime/skeleton.h>
+#include <ozz/base/memory/unique_ptr.h>
+
 #include <filesystem>
 #include <memory>
 #include <utility>
@@ -66,6 +71,8 @@ namespace rawrbox {
 
 	struct GLTFMesh {
 	public:
+		size_t index;
+
 		std::string name;
 		rawrbox::BBOX bbox = {};
 
@@ -74,7 +81,7 @@ namespace rawrbox {
 		rawrbox::Vector4f rotation = {0.F, 0.F, 0.F, 1.F};
 
 		rawrbox::GLTFMaterial* material = nullptr;
-		// rawrbox::Skeleton* skeleton = nullptr;
+		ozz::animation::Skeleton* skeleton = nullptr;
 		rawrbox::GLTFMesh* parent = nullptr;
 
 		std::vector<rawrbox::VertexNormBoneData> vertices = {};
@@ -104,9 +111,9 @@ namespace rawrbox {
 		//  -------------
 
 		// SKELETONS --
-		virtual rawrbox::Matrix4x4 extractSkeletonMatrix(const fastgltf::Asset& scene, const fastgltf::Skin& skin);
+		virtual ozz::math::Transform extractTransform(const fastgltf::TRS& mtx);
 
-		virtual void generateBones(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::Skeleton& skeleton, rawrbox::Bone& parent);
+		virtual void generateBones(const fastgltf::Asset& scene, const fastgltf::Node& node, ozz::animation::offline::RawSkeleton::Joint& parent);
 		virtual void loadSkeletons(const fastgltf::Asset& scene);
 		// ------------
 
@@ -148,11 +155,10 @@ namespace rawrbox {
 		// ------------
 
 		// SKINNING ---
-		std::vector<std::unique_ptr<rawrbox::Skeleton>> skeletons = {};
-		std::unordered_map<std::string, ozz::animation::offline::RawAnimation> animations = {};
+		std::vector<ozz::unique_ptr<ozz::animation::Skeleton>> skeletons = {};
+		std::vector<ozz::unique_ptr<ozz::animation::Animation>> animations = {};
+		std::unordered_map<size_t, std::vector<rawrbox::GLTFMesh*>> trackToMesh = {}; // Animation index -> track index, mesh
 
-		std::unordered_map<rawrbox::Skeleton*, rawrbox::GLTFMesh*> skeletonMeshes = {};
-		std::unordered_map<size_t, rawrbox::GLTFMesh*> animatedMeshes = {}; // Map for quick lookup
 		// ---------
 
 		// MODELS -------

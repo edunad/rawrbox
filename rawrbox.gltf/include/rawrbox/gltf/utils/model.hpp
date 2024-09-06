@@ -80,10 +80,10 @@ namespace rawrbox {
 			}
 
 			// Bones
-			/*if (gltfMesh.skeleton != nullptr) {
+			if (gltfMesh.skeleton != nullptr) {
 				mesh.skeleton = gltfMesh.skeleton;
 				mesh.setOptimizable(false); // Don't merge meshes
-			}*/
+			}
 			// -------------------
 
 			mesh.baseVertex = 0;

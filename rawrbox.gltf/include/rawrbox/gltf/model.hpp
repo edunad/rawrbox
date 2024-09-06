@@ -16,26 +16,42 @@ namespace rawrbox {
 		void loadMeshes(const rawrbox::GLTFImporter& model) {
 			for (const auto& gltfMesh : model.meshes) {
 				if (gltfMesh->vertices.empty() || gltfMesh->indices.empty()) continue; // Bone / empty
-				this->addMesh(rawrbox::GLTFUtils::extractMesh<M>(*gltfMesh));
+
+				auto mesh = rawrbox::GLTFUtils::extractMesh<M>(*gltfMesh);
+				mesh.meshID = gltfMesh->index;
+
+				this->addMesh(mesh);
 			}
 		}
 
+		rawrbox::Mesh<typename M::vertexBufferType>* getMeshByID(size_t index) {
+			auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&index](auto& mesh) { return mesh->getID() == index; });
+			if (fnd == this->_meshes.end()) return nullptr;
+
+			return (*fnd).get();
+		}
+
 		void loadAnimations(const rawrbox::GLTFImporter& model) {
-			/*this->_animations = model.animations;
-			this->_animatedMeshes.clear();
+			// Get animations ---
+			this->_animations.resize(model.animations.size());
+			for (size_t i = 0; i < model.animations.size(); i++) {
+				this->_animations[i] = model.animations[i].get();
+			}
+			// -------------------
 
-			// Get animated vertex meshes ---
-			for (const auto& anim : model.animatedMeshes) {
-				// Map the animated mesh to the mesh (since this->_meshes only contains valid meshes for rendering)
-				auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&anim](auto& mesh) {
-					return mesh->getName() == anim.second->name;
-				});
+			// Map animations
+			this->_trackToMesh.clear();
+			for (const auto& anim : model.trackToMesh) {
+				for (const auto& mesh : anim.second) {
+					auto* rawrMesh = this->getMeshByID(mesh->index);
+					if (rawrMesh == nullptr) continue;
 
-				if (fnd == this->_meshes.end()) continue;
+					rawrMesh->setOptimizable(false);
+					rawrMesh->meshID = 0x00000000; // Reset id, we don't need it anymore
 
-				this->_animatedMeshes[anim.first] = fnd->get();
-				this->_animatedMeshes[anim.first]->setOptimizable(false);
-			}*/
+					this->_trackToMesh[anim.first].push_back(rawrMesh); // Horrible, i know.
+				}
+			}
 			// -----------------------
 		}
 

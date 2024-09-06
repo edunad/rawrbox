@@ -4,9 +4,11 @@
 #include <rawrbox/render/lights/manager.hpp>
 #include <rawrbox/render/models/animation.hpp>
 #include <rawrbox/render/models/base.hpp>
-#include <rawrbox/render/models/skeleton.hpp>
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/utils/anim.hpp>
+
+#include <ozz/animation/runtime/animation.h>
+#include <ozz/base/maths/soa_float4x4.h>
+#include <ozz/base/memory/unique_ptr.h>
 
 namespace rawrbox {
 
@@ -16,16 +18,14 @@ namespace rawrbox {
 
 	protected:
 		// ANIMATION ---
-		// std::unordered_map<std::string, rawrbox::Animation> _animations = {};
-		// std::unordered_map<std::string, rawrbox::PlayingAnimationData> _playingAnimations = {};
+		std::vector<ozz::animation::Animation*> _animations = {};
+
+		std::unordered_map<size_t, std::vector<rawrbox::Mesh<typename M::vertexBufferType>*>> _trackToMesh = {}; // For quick lookup
+		std::unordered_map<std::string, std::unique_ptr<rawrbox::AnimationSampler>> _playingAnimations = {};
 		// ------------
 
 		std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes = {};
 		rawrbox::BBOX _bbox = {};
-
-		// SKINNING ----
-		std::unordered_map<size_t, rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // For quick lookup
-		// --------
 
 		// LIGHTS ---
 		std::vector<rawrbox::LightBase> _lights = {};
@@ -34,76 +34,55 @@ namespace rawrbox {
 		bool _canOptimize = true;
 
 		// ANIMATIONS ----
-		void processAnimations() const {
-			/*for (const auto& playingAnim : this->_playingAnimations) {
-				const rawrbox::PlayingAnimationData& anim = playingAnim.second;
-				const std::vector<rawrbox::AnimationFrame>& frames = anim.data->frames;
+		void processAnimations(rawrbox::AnimationSampler* sample) const {
+			if (sample == nullptr) return;
 
-				float timeInTicks = std::fmod(anim.time, anim.data->duration);
+			const auto& outputs = sample->getOutput();
+			for (size_t i = 0; i < outputs.size(); i++) {
+				const auto& output = outputs[i];
 
-				for (const auto& frame : frames) {
-					auto fnd = this->_animatedMeshes.find(frame.nodeIndex);
-					if (fnd == this->_animatedMeshes.end() || fnd->second == nullptr) continue;
+				auto fnd = this->_trackToMesh.find(sample->getIndex());
+				if (fnd == this->_trackToMesh.end()) return;
 
-					auto timeIndexFnd = std::find_if(frame.position.begin(), frame.position.end(), [&](const auto& key) {
-						return key.first >= timeInTicks;
-					});
-					if (timeIndexFnd == frame.position.end()) continue;
+				for (auto& mesh : fnd->second) {
+					rawrbox::Vector3f position = {ozz::math::GetX(output.translation.x), ozz::math::GetX(output.translation.y), ozz::math::GetX(output.translation.z)};
+					rawrbox::Vector4f rotation = {ozz::math::GetY(output.rotation.x), ozz::math::GetY(output.rotation.y), ozz::math::GetY(output.rotation.z), ozz::math::GetY(output.rotation.w)};
+					rawrbox::Vector3f scale = {ozz::math::GetZ(output.scale.x), ozz::math::GetZ(output.scale.y), ozz::math::GetZ(output.scale.z)};
 
-					const size_t timeIndex = timeIndexFnd->first;
-					this->_logger->info("Time index: {}", timeIndex);
-
-					auto currPos = frame.position[timeIndex];
-					auto nextPos = timeIndex + 1 >= frame.position.size() ? frame.position.front() : frame.position[timeIndex + 1];
-
-					auto currRot = frame.rotation[timeIndex];
-					auto nextRot = timeIndex + 1 >= frame.rotation.size() ? frame.rotation.front() : frame.rotation[timeIndex + 1];
-
-					auto currScl = frame.scale[timeIndex];
-					auto nextScl = timeIndex + 1 >= frame.scale.size() ? frame.scale.front() : frame.scale[timeIndex + 1];
-					// Easing ----
-					rawrbox::Vector3f position = nextPos.second;
-					rawrbox::Vector4f rotation = nextRot.second;
-					rawrbox::Vector3f scale = nextScl.second;
-
-					float t = rawrbox::EasingUtils::ease(frame.stateEnd, timeInTicks);
-
-					position = rawrbox::AnimUtils::lerpVector3(t, currPos, nextPos);
-					rotation = rawrbox::AnimUtils::lerpRotation(t, currRot, nextRot);
-					scale = rawrbox::AnimUtils::lerpVector3(t, currScl, nextScl);
-					//   ----
-
-					fnd->second->matrix = rawrbox::Matrix4x4::mtxSRT(scale, rotation, position);
-		}
-	}*/
+					mesh->matrix = rawrbox::Matrix4x4::mtxSRT(scale, rotation, position);
+				}
+			}
 		}
 
 		void updateAnimations() {
-			/*for (auto it = this->_playingAnimations.begin(); it != this->_playingAnimations.end();) {
-				float timeToAdd = rawrbox::DELTA_TIME * it->second.speed; // ticksPerSecond
-				float newTime = it->second.time + timeToAdd;
-				float totalDur = it->second.data->duration;
+			// Sample animations -----
+			for (auto it = this->_playingAnimations.begin(); it != this->_playingAnimations.end();) {
+				const auto& anim = it->second;
+				if (anim == nullptr) continue;
 
-				bool animationEnded = it->second.speed >= 0 ? newTime >= totalDur : newTime <= 0;
+				float timeToAdd = rawrbox::DELTA_TIME * anim->getSpeed();
+				float newTime = std::fmodf(anim->getTime() + (timeToAdd / anim->getDuration()), 1.F);
+
+				bool animationEnded = anim->getSpeed() >= 0 ? newTime >= 1.F : newTime <= 0;
 				if (animationEnded) {
-					auto onCompleteCallback = it->second.onComplete;
-
-					if (!it->second.loop) {
+					if (!anim->getLoop()) {
 						it = this->_playingAnimations.erase(it);
-						if (onCompleteCallback != nullptr) onCompleteCallback();
-
+						// if (onCompleteCallback != nullptr) onCompleteCallback();
 						continue;
 					}
 
-					newTime = it->second.speed >= 0 ? 0 : totalDur;
-					if (onCompleteCallback != nullptr) onCompleteCallback();
+					newTime = anim->getSpeed() >= 0 ? 0 : 1.F;
+					// if (onCompleteCallback != nullptr) onCompleteCallback();
 				}
 
-				it->second.time = newTime;
+				anim->setTime(newTime);
+				anim->sample();
+
+				this->processAnimations(anim.get());
+
 				++it;
 			}
-
-			this->processAnimations();*/
+			// -----------------
 		}
 		// --------------
 
@@ -138,8 +117,9 @@ namespace rawrbox {
 		Model& operator=(Model&&) = delete;
 		~Model() override {
 			this->_meshes.clear();
-			this->_animatedMeshes.clear();
-			// this->_animations.clear();
+			this->_trackToMesh.clear();
+			this->_animations.clear();
+			this->_playingAnimations.clear();
 			this->_lights.clear();
 		}
 
@@ -228,47 +208,54 @@ namespace rawrbox {
 			throw this->_logger->error("TODO");
 		}
 
-		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F, bool forceSingle = false, std::function<void()> onComplete = nullptr) {
-			/*auto iter = this->_animations.find(name);
-			if (iter == this->_animations.end()) {
-				throw this->_logger->error("Animation '{}' not found", fmt::styled(name, fmt::fg(fmt::color::coral)));
+		virtual bool playAnimation(bool loop, float speed, std::function<void()> onComplete = nullptr) {
+			this->_playingAnimations.clear();
+
+			for (size_t i = 0; i < this->_animations.size(); i++) {
+				ozz::animation::Animation* anim = this->_animations[i];
+				if (anim == nullptr) continue;
+
+				this->_playingAnimations[anim->name()] = std::make_unique<rawrbox::AnimationSampler>(i, anim);
 			}
 
-			auto fnd = this->_playingAnimations.find(name);
-			if (fnd != this->_playingAnimations.end()) return false;
+			return false;
+		}
 
-			// Add it
-			if (forceSingle) this->stopAllAnimations();
-			this->_playingAnimations[name] = {
-			    name,
-			    loop,
-			    speed,
-			    iter->second,
-			    onComplete};*/
+		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F, bool forceSingle = false, std::function<void()> onComplete = nullptr) {
+			for (size_t i = 0; i < this->_animations.size(); i++) {
+				ozz::animation::Animation* anim = this->_animations[i];
+				if (anim == nullptr || anim->name() != name) continue;
 
-			return true;
+				auto fnd = this->_playingAnimations.find(name);
+				if (fnd != this->_playingAnimations.end()) return false; // Already playing
+
+				if (forceSingle) this->stopAllAnimations();
+				this->_playingAnimations[name] = std::make_unique<rawrbox::AnimationSampler>(i, anim);
+
+				return true;
+			}
+
+			return false;
 		}
 
 		virtual void stopAllAnimations() {
-			// this->_playingAnimations.clear();
+			this->_playingAnimations.clear();
 		}
 
 		virtual bool stopAnimation(const std::string& name) {
-			/*auto fnd = this->_playingAnimations.find(name);
+			auto fnd = this->_playingAnimations.find(name);
 			if (fnd == this->_playingAnimations.end()) return false;
 
-			this->_playingAnimations.erase(fnd);*/
+			this->_playingAnimations.erase(fnd);
 			return true;
 		}
 
-		virtual bool hasAnimation(const std::string& name) {
-			// return this->_animations.find(name) != this->_animations.end();
-			return false;
+		virtual const std::vector<ozz::animation::Animation*>& getAnimations() {
+			return this->_animations;
 		}
 
 		virtual bool isAnimationPlaying(const std::string& name) {
-			return false;
-			// return this->_playingAnimations.find(name) != this->_playingAnimations.end();
+			return this->_playingAnimations.find(name) != this->_playingAnimations.end();
 		}
 		// --------------
 
