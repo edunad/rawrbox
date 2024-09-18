@@ -2,13 +2,10 @@
 
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/lights/manager.hpp>
-#include <rawrbox/render/models/animation.hpp>
+#include <rawrbox/render/models/animations/skeleton.hpp>
+#include <rawrbox/render/models/animations/vertex.hpp>
 #include <rawrbox/render/models/base.hpp>
 #include <rawrbox/render/static.hpp>
-
-#include <ozz/animation/runtime/animation.h>
-#include <ozz/base/maths/soa_float4x4.h>
-#include <ozz/base/memory/unique_ptr.h>
 
 namespace rawrbox {
 
@@ -34,7 +31,48 @@ namespace rawrbox {
 		bool _canOptimize = true;
 
 		// ANIMATIONS ----
-		void processAnimations(rawrbox::AnimationSampler* sample) const {
+		virtual void playAnimation(size_t index, ozz::animation::Animation* animation) {
+			if (animation == nullptr) return;
+
+			auto name = animation->name();
+			switch (animation->type) {
+				case ozz::animation::UNKNOWN:
+					this->_logger->warn("Unknown animation type, skipping");
+					break;
+				case ozz::animation::VERTEX:
+					this->_playingAnimations[name] = std::make_unique<rawrbox::AnimationVertexSampler>(index, animation);
+					break;
+				case ozz::animation::SKELETON:
+					if constexpr (supportsBones<typename M::vertexBufferType>) {
+						this->_playingAnimations[name] = std::make_unique<rawrbox::AnimationSkeletonSampler>(index, animation);
+					} else {
+						this->_logger->warn("Model does not support bones");
+					}
+					break;
+			}
+		}
+
+		void sampleAnimations(rawrbox::AnimationSampler* sample) const {
+			switch (sample->getType()) {
+				case ozz::animation::VERTEX:
+					this->processVertexAnimation(dynamic_cast<rawrbox::AnimationVertexSampler*>(sample));
+					break;
+
+				case ozz::animation::SKELETON:
+					if constexpr (supportsBones<typename M::vertexBufferType>) {
+						this->processSkeletonAnimations(dynamic_cast<rawrbox::AnimationSkeletonSampler*>(sample));
+					} else {
+						throw this->_logger->error("Model does not support bones");
+					}
+					break;
+
+				default:
+				case ozz::animation::UNKNOWN:
+					throw this->_logger->error("Unknown animation type");
+			}
+		}
+
+		void processVertexAnimation(rawrbox::AnimationVertexSampler* sample) const {
 			if (sample == nullptr) return;
 
 			const auto& outputs = sample->getOutput();
@@ -54,35 +92,47 @@ namespace rawrbox {
 			}
 		}
 
-		void updateAnimations() {
-			// Sample animations -----
+		void processSkeletonAnimations(rawrbox::AnimationSkeletonSampler* sample) const {
+			if (sample == nullptr) return;
+
+			for (auto& mesh : this->_meshes) {
+				const ozz::animation::Skeleton* skeleton = mesh->skeleton;
+				if (skeleton == nullptr) continue;
+
+				const ozz::vector<ozz::math::Float4x4>& modelOutput = sample->getOutput(skeleton);
+
+				// rawrbox::Matrix4x4 invGlobalMtx = rawrbox::Matrix4x4(skeleton->inverseBindMatrices[0]);
+				std::array<rawrbox::Matrix4x4, RB_RENDER_MAX_BONES_PER_MODEL> boneTransforms = {};
+				for (size_t i = 0; i < modelOutput.size(); i++) {
+					const ozz::math::Float4x4& output = modelOutput[i];
+
+					rawrbox::Matrix4x4 invMtx = rawrbox::Matrix4x4(skeleton->inverseBindMatrices[i]);
+					invMtx.inverse();
+
+					auto mtx = rawrbox::Matrix4x4({ozz::math::GetX(output.cols[0]), ozz::math::GetY(output.cols[0]), ozz::math::GetZ(output.cols[0]), ozz::math::GetW(output.cols[0]), ozz::math::GetX(output.cols[1]), ozz::math::GetY(output.cols[1]), ozz::math::GetZ(output.cols[1]), ozz::math::GetW(output.cols[1]), ozz::math::GetX(output.cols[2]), ozz::math::GetY(output.cols[2]), ozz::math::GetZ(output.cols[2]), ozz::math::GetW(output.cols[2]), ozz::math::GetX(output.cols[3]), ozz::math::GetY(output.cols[3]), ozz::math::GetZ(output.cols[3]), ozz::math::GetW(output.cols[3])});
+
+					boneTransforms[i] = mtx * invMtx;
+				}
+
+				mesh->boneTransforms = boneTransforms;
+			}
+		}
+
+		void tickAnimations() {
 			for (auto it = this->_playingAnimations.begin(); it != this->_playingAnimations.end();) {
 				const auto& anim = it->second;
 				if (anim == nullptr) continue;
 
-				float timeToAdd = rawrbox::DELTA_TIME * anim->getSpeed();
-				float newTime = std::fmodf(anim->getTime() + (timeToAdd / anim->getDuration()), 1.F);
+				bool finished = anim->tick(rawrbox::DELTA_TIME);
+				this->sampleAnimations(anim.get());
 
-				bool animationEnded = anim->getSpeed() >= 0 ? newTime >= 1.F : newTime <= 0;
-				if (animationEnded) {
-					if (!anim->getLoop()) {
-						it = this->_playingAnimations.erase(it);
-						// if (onCompleteCallback != nullptr) onCompleteCallback();
-						continue;
-					}
-
-					newTime = anim->getSpeed() >= 0 ? 0 : 1.F;
-					// if (onCompleteCallback != nullptr) onCompleteCallback();
+				if (finished) {
+					it = this->_playingAnimations.erase(it);
+					continue;
 				}
-
-				anim->setTime(newTime);
-				anim->sample();
-
-				this->processAnimations(anim.get());
 
 				++it;
 			}
-			// -----------------
 		}
 		// --------------
 
@@ -134,6 +184,8 @@ namespace rawrbox {
 
 			// Flatten meshes for buffers
 			for (auto& mesh : this->_meshes) {
+				if (mesh == nullptr || mesh->empty()) continue;
+
 				// Fix start index ----
 				mesh->baseIndex = static_cast<uint16_t>(this->_mesh->indices.size());
 				mesh->baseVertex = static_cast<uint16_t>(this->_mesh->vertices.size());
@@ -211,14 +263,10 @@ namespace rawrbox {
 		virtual bool playAnimation(bool loop, float speed, std::function<void()> onComplete = nullptr) {
 			this->_playingAnimations.clear();
 
-			for (size_t i = 0; i < this->_animations.size(); i++) {
-				ozz::animation::Animation* anim = this->_animations[i];
-				if (anim == nullptr) continue;
+			for (size_t i = 0; i < this->_animations.size(); i++)
+				this->playAnimation(i, this->_animations[i]);
 
-				this->_playingAnimations[anim->name()] = std::make_unique<rawrbox::AnimationSampler>(i, anim);
-			}
-
-			return false;
+			return true;
 		}
 
 		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F, bool forceSingle = false, std::function<void()> onComplete = nullptr) {
@@ -230,7 +278,7 @@ namespace rawrbox {
 				if (fnd != this->_playingAnimations.end()) return false; // Already playing
 
 				if (forceSingle) this->stopAllAnimations();
-				this->_playingAnimations[name] = std::make_unique<rawrbox::AnimationSampler>(i, anim);
+				this->playAnimation(i, anim);
 
 				return true;
 			}
@@ -335,6 +383,16 @@ namespace rawrbox {
 			return a.get();
 		}
 
+		virtual rawrbox::Mesh<typename M::vertexBufferType>* addMesh(size_t index, rawrbox::Mesh<typename M::vertexBufferType> mesh) {
+			if (index >= this->_meshes.size()) throw this->_logger->error("Index out of bounds");
+
+			this->_bbox.combine(mesh.getBBOX());
+			mesh.owner = this;
+
+			this->_meshes[index] = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh);
+			return this->_meshes[index].get();
+		}
+
 		virtual rawrbox::Mesh<typename M::vertexBufferType>* getMeshByName(const std::string& id) {
 			auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&id](auto& mesh) { return mesh->getName() == id; });
 			if (fnd == this->_meshes.end()) return nullptr;
@@ -405,9 +463,10 @@ namespace rawrbox {
 
 		void draw() override {
 			ModelBase<M>::draw();
-			this->updateAnimations();
+			this->tickAnimations();
 
 			for (auto& mesh : this->_meshes) {
+				if (mesh == nullptr || mesh->empty()) continue; // Bone, skip it.
 
 				// Bind pipelines ----
 				this->_material->bindPipeline(*mesh);

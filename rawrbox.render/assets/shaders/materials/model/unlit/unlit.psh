@@ -35,7 +35,12 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-	float4 color = g_Textures[BaseID].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+	uint baseTextureID = BaseID;
+	#ifdef SHADER_DEBUG
+		baseTextureID = WHITE_TEXTURE_ID;
+	#endif
+
+	float4 color = g_Textures[baseTextureID].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
 	if (color.a <= 0.0) discard;
 
 #ifdef CLUSTER_PLUGIN

@@ -104,6 +104,8 @@ if(RAWRBOX_DEV_MODE)
     #set(RAWRBOX_BUILD_RAWRBOX_IMGUI ON)
     #set(RAWRBOX_BUILD_QHULL ON)
 
+    set(RAWRBOX_TRACE_EXCEPTIONS OFF)
+
     if(NOT DEFINED STEAMWORKS_APPID)
         message(STATUS "Set STEAMWORKS_APPID to 480 (SpaceWars example game)")
         set(STEAMWORKS_APPID 480) # SpaceWars example game

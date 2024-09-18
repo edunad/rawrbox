@@ -14,7 +14,7 @@ namespace rawrbox {
 
 			mesh.name = gltfMesh.name;
 			mesh.bbox = gltfMesh.bbox;
-			mesh.matrix = rawrbox::Matrix4x4::mtxSRT(gltfMesh.scale, gltfMesh.rotation, gltfMesh.position);
+			mesh.matrix = gltfMesh.matrix;
 
 			// Textures ---
 			if (gltfMesh.material != nullptr) {
@@ -79,17 +79,17 @@ namespace rawrbox {
 				}
 			}
 
+			mesh.baseVertex = 0;
+			mesh.baseIndex = 0;
+			mesh.totalVertex = static_cast<uint16_t>(mesh.vertices.size());
+			mesh.totalIndex = static_cast<uint16_t>(mesh.indices.size());
+
 			// Bones
 			if (gltfMesh.skeleton != nullptr) {
 				mesh.skeleton = gltfMesh.skeleton;
 				mesh.setOptimizable(false); // Don't merge meshes
 			}
 			// -------------------
-
-			mesh.baseVertex = 0;
-			mesh.baseIndex = 0;
-			mesh.totalVertex = static_cast<uint16_t>(mesh.vertices.size());
-			mesh.totalIndex = static_cast<uint16_t>(mesh.indices.size());
 
 			return mesh;
 		}

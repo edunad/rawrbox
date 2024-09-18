@@ -117,6 +117,48 @@ namespace rawrbox {
 		return {this->mtx[0], this->mtx[5], this->mtx[10]};
 	}
 
+	rawrbox::Vector4f Matrix4x4::getRotation() const {
+		rawrbox::Vector4f result = {};
+
+		float trace = this->mtx[0] + this->mtx[5] + this->mtx[10];
+		if (trace > 0) {
+			float s = 0.5f / sqrtf(trace + 1.0f);
+			result.w = 0.25f / s;
+			result.x = (this->mtx[9] - this->mtx[6]) * s;
+			result.y = (this->mtx[2] - this->mtx[8]) * s;
+			result.z = (this->mtx[4] - this->mtx[1]) * s;
+		} else {
+			if (this->mtx[0] > this->mtx[5] && this->mtx[0] > this->mtx[10]) {
+				float s = 2.0f * sqrtf(1.0f + this->mtx[0] - this->mtx[5] - this->mtx[10]);
+				result.w = (this->mtx[9] - this->mtx[6]) / s;
+				result.x = 0.25f * s;
+				result.y = (this->mtx[1] + this->mtx[4]) / s;
+				result.z = (this->mtx[2] + this->mtx[8]) / s;
+			} else if (this->mtx[5] > this->mtx[10]) {
+				float s = 2.0f * sqrtf(1.0f + this->mtx[5] - this->mtx[0] - this->mtx[10]);
+				result.w = (this->mtx[2] - this->mtx[8]) / s;
+				result.x = (this->mtx[1] + this->mtx[4]) / s;
+				result.y = 0.25f * s;
+				result.z = (this->mtx[6] + this->mtx[9]) / s;
+			} else {
+				float s = 2.0f * sqrtf(1.0f + this->mtx[10] - this->mtx[0] - this->mtx[5]);
+				result.w = (this->mtx[4] - this->mtx[1]) / s;
+				result.x = (this->mtx[2] + this->mtx[8]) / s;
+				result.y = (this->mtx[6] + this->mtx[9]) / s;
+				result.z = 0.25f * s;
+			}
+		}
+
+		result.w = -result.w; // ??
+		return result;
+	}
+
+	void Matrix4x4::decompose(rawrbox::Vector3f& pos, rawrbox::Vector4f& rotation, rawrbox::Vector3f& scale) const {
+		pos = this->getPos();
+		rotation = this->getRotation();
+		scale = this->getScale();
+	}
+
 	rawrbox::Matrix4x4& Matrix4x4::rotate(const rawrbox::Vector4f& rot) {
 		const float x2 = rot.x + rot.x;
 		const float y2 = rot.y + rot.y;

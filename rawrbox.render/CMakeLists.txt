@@ -89,6 +89,8 @@ CPMAddPackage(
         guillaumeblanc/ozz-animation
     GIT_TAG
         0.15.0
+    PATCH_COMMAND
+        git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/ozz.patch
     OPTIONS
         "ozz_build_tools OFF"
         "ozz_build_fbx OFF"

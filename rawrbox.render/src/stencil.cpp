@@ -517,7 +517,7 @@ namespace rawrbox {
 			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;
-			DrawAttrs.IndexType = Diligent::VT_UINT32;
+			DrawAttrs.IndexType = Diligent::VT_UINT16;
 			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL | Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
 			DrawAttrs.NumIndices = indSize;
 			DrawAttrs.BaseVertex = 0;

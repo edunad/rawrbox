@@ -1,13 +1,12 @@
 #pragma once
 
 #include <rawrbox/math/bbox.hpp>
-#include <rawrbox/render/models/animation.hpp>
-#include <rawrbox/render/models/skeleton.hpp>
 #include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/utils/logger.hpp>
 
 #include <fastgltf/core.hpp>
 
+#include <ozz/animation/offline/raw_animation.h>
 #include <ozz/animation/offline/raw_skeleton.h>
 #include <ozz/animation/runtime/animation.h>
 #include <ozz/animation/runtime/skeleton.h>
@@ -71,14 +70,11 @@ namespace rawrbox {
 
 	struct GLTFMesh {
 	public:
-		size_t index;
+		size_t index = 0;
 
 		std::string name;
 		rawrbox::BBOX bbox = {};
-
-		rawrbox::Vector3f position = {};
-		rawrbox::Vector3f scale = {1.F, 1.F, 1.F};
-		rawrbox::Vector4f rotation = {0.F, 0.F, 0.F, 1.F};
+		rawrbox::Matrix4x4 matrix = {};
 
 		rawrbox::GLTFMaterial* material = nullptr;
 		ozz::animation::Skeleton* skeleton = nullptr;
@@ -91,6 +87,14 @@ namespace rawrbox {
 		GLTFMesh(std::string _name) : name(std::move(_name)) {};
 	};
 
+	struct GLTFAnimation {
+		std::string name;
+		float duration = 0.F;
+
+		const ozz::animation::Skeleton* skeleton = nullptr;
+		std::unordered_map<std::string, ozz::animation::offline::RawAnimation::JointTrack> tracks = {};
+	};
+
 	class GLTFImporter {
 	protected:
 		// LOGGER ------
@@ -101,7 +105,15 @@ namespace rawrbox {
 		std::vector<rawrbox::TextureBase*> _texturesMap = {};
 		// ----------
 
+		// ANIMATIONS --
+		std::vector<rawrbox::GLTFAnimation> _parsedAnimations = {};
+		// ------------
+
 		virtual void internalLoad(fastgltf::GltfDataBuffer& data);
+
+		// POST-LOAD ---
+		virtual void postLoadFixSceneNames(fastgltf::Asset& scene);
+		//-----------
 
 		// MATERIALS ---
 		virtual void loadTextures(const fastgltf::Asset& scene);
@@ -111,14 +123,13 @@ namespace rawrbox {
 		//  -------------
 
 		// SKELETONS --
-		virtual ozz::math::Transform extractTransform(const fastgltf::TRS& mtx);
-
-		virtual void generateBones(const fastgltf::Asset& scene, const fastgltf::Node& node, ozz::animation::offline::RawSkeleton::Joint& parent);
+		virtual ozz::math::Transform extractTransform(const std::variant<fastgltf::TRS, fastgltf::math::fmat4x4>& mtx);
 		virtual void loadSkeletons(const fastgltf::Asset& scene);
 		// ------------
 
 		// ANIMATIONS ---
 		virtual void loadAnimations(const fastgltf::Asset& scene);
+		virtual void parseAnimations();
 		// -------------
 
 		// MODEL ---
@@ -132,14 +143,21 @@ namespace rawrbox {
 		// UTILS ---
 		virtual fastgltf::sources::ByteView getSourceData(const fastgltf::Asset& scene, const fastgltf::DataSource& source);
 		virtual rawrbox::Matrix4x4 toMatrix(const fastgltf::TRS& mtx);
+		virtual rawrbox::Matrix4x4 toMatrix(const fastgltf::math::fmat4x4& mtx);
 
 		template <typename T, std::size_t Extent>
 		fastgltf::span<T, fastgltf::dynamic_extent> subspan(fastgltf::span<T, Extent> span, size_t offset, size_t count = fastgltf::dynamic_extent) {
-			assert(offset < span.size());
-			assert(count == fastgltf::dynamic_extent || count <= span.size() - offset);
+			if (offset >= span.size()) {
+				throw _logger->error("Offset is out of range");
+			}
 
-			if (count == fastgltf::dynamic_extent)
+			if (count != fastgltf::dynamic_extent && count > span.size() - offset) {
+				throw _logger->error("Count is out of range");
+			}
+
+			if (count == fastgltf::dynamic_extent) {
 				count = span.size() - offset;
+			}
 
 			return fastgltf::span<T>{span.data() + offset, count};
 		}
@@ -157,8 +175,8 @@ namespace rawrbox {
 		// SKINNING ---
 		std::vector<ozz::unique_ptr<ozz::animation::Skeleton>> skeletons = {};
 		std::vector<ozz::unique_ptr<ozz::animation::Animation>> animations = {};
-		std::unordered_map<size_t, std::vector<rawrbox::GLTFMesh*>> trackToMesh = {}; // Animation index -> track index, mesh
 
+		std::unordered_map<size_t, std::vector<rawrbox::GLTFMesh*>> trackToMesh = {}; // Animation index -> mesh
 		// ---------
 
 		// MODELS -------

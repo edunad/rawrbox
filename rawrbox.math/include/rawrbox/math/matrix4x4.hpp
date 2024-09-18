@@ -7,7 +7,7 @@
 #include <cstring>
 
 namespace rawrbox {
-
+	// Matrix4x4 uses column-major order
 	class Matrix4x4 {
 	protected:
 		static void vec4MulMtx(float* _result, const float* _vec, const float* _mat);
@@ -49,6 +49,8 @@ namespace rawrbox {
 		[[nodiscard]] rawrbox::Vector3f getPos() const;
 		[[nodiscard]] rawrbox::Vector3f getScale() const;
 		[[nodiscard]] rawrbox::Vector4f getRotation() const;
+
+		void decompose(rawrbox::Vector3f& pos, rawrbox::Vector4f& rotation, rawrbox::Vector3f& scale) const;
 
 		rawrbox::Matrix4x4& rotate(const rawrbox::Vector4f& rot);
 		rawrbox::Matrix4x4& rotateX(float x);

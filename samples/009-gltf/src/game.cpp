@@ -14,7 +14,7 @@ namespace gltf {
 #else
 		auto* window = rawrbox::Window::createWindow();
 #endif
-		window->setMonitor(2);
+		window->setMonitor(-1);
 		window->setTitle("GLTF TEST");
 #ifdef _DEBUG
 		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED);
@@ -42,11 +42,14 @@ namespace gltf {
 		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
-		// --------------
+// --------------
 
-		// Add loaders
+// Add loaders
 
-		// --------------
+// --------------
+#ifdef _DEBUG
+		rawrbox::MaterialSkinned::DEBUG_MODE = false;
+#endif
 
 		render->init();
 	}
@@ -69,11 +72,14 @@ namespace gltf {
 		// TEST ---
 		this->_tst = std::make_unique<rawrbox::GLTFImporter>(rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE | rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS);
 		// this->_tst->load("./assets/models/grandma_tv/scene.gltf");
-		this->_tst->load("./assets/models/wolf/wolf.glb");
+		//  this->_tst->load("./assets/models/alien/xenomorph00.glb");
+		// this->_tst->load("./assets/models/wolf/wolf.glb");
+		this->_tst->load("./assets/models/skin_test.gltf");
 
 		this->_tstMdl = std::make_unique<rawrbox::GLTFModel<rawrbox::MaterialSkinned>>();
 		this->_tstMdl->load(*this->_tst);
 		this->_tstMdl->playAnimation(true, 1.F);
+		//  this->_tstMdl->setWireframe(true);
 		this->_tstMdl->upload();
 		//  ----------
 

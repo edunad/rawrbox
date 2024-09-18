@@ -4,6 +4,9 @@
 namespace rawrbox {
 	// STATIC DATA ----
 	bool MaterialSkinned::_built = false;
+#ifdef _DEBUG
+	bool MaterialSkinned::DEBUG_MODE = false;
+#endif
 	// ----------------
 
 	void MaterialSkinned::init() {
@@ -14,6 +17,10 @@ namespace rawrbox {
 
 			Diligent::ShaderMacroHelper helper;
 			helper.AddShaderMacro("SKINNED", true);
+
+#ifdef _DEBUG
+			if (rawrbox::MaterialSkinned::DEBUG_MODE) helper.AddShaderMacro("SHADER_DEBUG", true);
+#endif
 
 			this->createPipelines(id, vertexBufferType::vLayout(), helper);
 			rawrbox::MaterialSkinned::_built = true;

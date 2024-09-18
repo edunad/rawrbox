@@ -33,23 +33,44 @@ float4 billboardTransform(float4 vertex, uint billboard) {
 	return float4((right * vertex.x) + (up * vertex.y), 1.);
 }
 
-	#ifdef SKINNED
-		#ifdef TRANSFORM_BONES
-float4 boneTransform(uint4 indices, float4 weight, float4 position) {
-	float4x4 BoneTransform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-	bool skinned = false;
+#ifdef SKINNED
+	#ifdef TRANSFORM_BONES
+		float4 boneTransform(uint4 indices, float4 weights, float4 position) {
+			float4x4 BoneTransform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+			bool skinned = false;
 
-	for (uint idx = 0; idx < MAX_BONES_PER_VERTEX; idx++) {
-		if (weight[idx] > 0.0) {
-			BoneTransform += SkinnedConstants.bones[indices[idx]] * weight[idx];
-			skinned = true;
+			for (uint idx = 0; idx < MAX_BONES_PER_VERTEX; idx++) {
+				if (weights[idx] > 0.0) {
+					BoneTransform += weights[idx] * SkinnedConstants.bones[indices[idx]];
+					skinned = true;
+				}
+			}
+
+			return skinned ? mul(BoneTransform, position) : position;
 		}
-	}
 
-	return skinned ? mul(BoneTransform, position) : position;
-}
+		// For debugging purposes
+		#ifdef SHADER_DEBUG
+		float4 boneToColor(uint4 indices, float4 weights, uint boneId) {
+			for (uint idx = 0; idx < MAX_BONES_PER_VERTEX; idx++) {
+				if(indices[idx] == boneId) {
+					float weight = weights[idx];
+
+					if(weight >= 0.7) {
+						return float4(1.0 * weight, 0.0, 0.0, 1.0);
+					} else if(weight >= 0.4 && weight <= 0.6) {
+						return float4(0.0, 1.0 * weight, 0.0, 1.0);
+					} else if(weight >= 0.1) {
+						return float4(1.0 * weight, 1.0 * weight, 0.0, 1.0);
+					}
+				}
+			}
+
+			return float4(1.0, 1.0, 1.0, 1.0);
+		}
 		#endif
 	#endif
+#endif
 
 // Apply model transforms
 TransformedData applyPosTransforms(float4x4 proj, float4 a_position, float2 a_texcoord0) {

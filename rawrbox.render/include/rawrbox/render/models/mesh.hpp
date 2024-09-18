@@ -18,7 +18,7 @@
 namespace ozz {
 	namespace animation {
 		class Skeleton;
-	}
+	} // namespace animation
 } // namespace ozz
 
 namespace rawrbox {
@@ -288,6 +288,8 @@ namespace rawrbox {
 		}
 
 		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
+		virtual bool isOptimizable() const { return this->_canOptimize; }
+
 		[[nodiscard]] virtual bool canOptimize(const rawrbox::Mesh<T>& other) const {
 			if (!this->_canOptimize || !other._canOptimize) return false;
 

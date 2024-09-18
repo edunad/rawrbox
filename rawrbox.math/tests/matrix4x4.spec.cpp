@@ -65,6 +65,18 @@ TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 		REQUIRE(q.getPos() == rawrbox::Vector3f(-4, 12, 5));
 	}
 
+	SECTION("rawrbox::Matrix4x4::getRotation") {
+		rawrbox::Matrix4x4 q = {};
+		q.rotate({0, 4, 10, 2});
+
+		rawrbox::Vector4f rotation = q.getRotation();
+
+		REQUIRE_THAT(rotation.x, Catch::Matchers::WithinAbs(0.0F, 0.0001F));
+		REQUIRE_THAT(rotation.y, Catch::Matchers::WithinAbs(4.0F, 0.0001F));
+		REQUIRE_THAT(rotation.z, Catch::Matchers::WithinAbs(10.0F, 0.0001F));
+		REQUIRE_THAT(rotation.w, Catch::Matchers::WithinAbs(2.0F, 0.0001F));
+	}
+
 	SECTION("rawrbox::Matrix4x4::transpose") {
 		rawrbox::Matrix4x4 q(std::array<float, 16>{2.F, 4.F, 1.F, 2.F, 4.F, 6.F, 7.F, 4.F, 3.F, 2.F, 5.F, 9.F, 1.F, 2.F, 3.F, 3.F});
 		q.transpose();
