@@ -99,22 +99,18 @@ namespace rawrbox {
 				const ozz::animation::Skeleton* skeleton = mesh->skeleton;
 				if (skeleton == nullptr) continue;
 
-				const ozz::vector<ozz::math::Float4x4>& modelOutput = sample->getOutput(skeleton);
+				rawrbox::Matrix4x4 globalMtx = rawrbox::Matrix4x4(skeleton->inverseBindMatrices[0]);
+				globalMtx.inverse();
 
-				// rawrbox::Matrix4x4 invGlobalMtx = rawrbox::Matrix4x4(skeleton->inverseBindMatrices[0]);
-				std::array<rawrbox::Matrix4x4, RB_RENDER_MAX_BONES_PER_MODEL> boneTransforms = {};
+				const ozz::vector<ozz::math::Float4x4>& modelOutput = sample->getOutput(skeleton);
 				for (size_t i = 0; i < modelOutput.size(); i++) {
 					const ozz::math::Float4x4& output = modelOutput[i];
 
 					rawrbox::Matrix4x4 invMtx = rawrbox::Matrix4x4(skeleton->inverseBindMatrices[i]);
-					invMtx.inverse();
-
 					auto mtx = rawrbox::Matrix4x4({ozz::math::GetX(output.cols[0]), ozz::math::GetY(output.cols[0]), ozz::math::GetZ(output.cols[0]), ozz::math::GetW(output.cols[0]), ozz::math::GetX(output.cols[1]), ozz::math::GetY(output.cols[1]), ozz::math::GetZ(output.cols[1]), ozz::math::GetW(output.cols[1]), ozz::math::GetX(output.cols[2]), ozz::math::GetY(output.cols[2]), ozz::math::GetZ(output.cols[2]), ozz::math::GetW(output.cols[2]), ozz::math::GetX(output.cols[3]), ozz::math::GetY(output.cols[3]), ozz::math::GetZ(output.cols[3]), ozz::math::GetW(output.cols[3])});
 
-					boneTransforms[i] = mtx * invMtx;
+					mesh->boneTransforms[i] = globalMtx * mtx * invMtx;
 				}
-
-				mesh->boneTransforms = boneTransforms;
 			}
 		}
 

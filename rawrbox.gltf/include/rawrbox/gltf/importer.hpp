@@ -91,7 +91,7 @@ namespace rawrbox {
 		std::string name;
 		float duration = 0.F;
 
-		const ozz::animation::Skeleton* skeleton = nullptr;
+		ozz::animation::Skeleton* skeleton = nullptr;
 		std::unordered_map<std::string, ozz::animation::offline::RawAnimation::JointTrack> tracks = {};
 	};
 
@@ -104,6 +104,10 @@ namespace rawrbox {
 		// TEXTURES ----
 		std::vector<rawrbox::TextureBase*> _texturesMap = {};
 		// ----------
+
+		// SKELETONS --
+		std::unordered_map<ozz::animation::Skeleton*, std::unordered_map<std::string, ozz::math::Transform>> _bindPoses = {};
+		// ------------
 
 		// ANIMATIONS --
 		std::vector<rawrbox::GLTFAnimation> _parsedAnimations = {};
