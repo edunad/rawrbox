@@ -17,7 +17,7 @@ namespace rawrbox {
 		// ANIMATION ---
 		std::vector<ozz::animation::Animation*> _animations = {};
 
-		std::unordered_map<size_t, std::vector<rawrbox::Mesh<typename M::vertexBufferType>*>> _trackToMesh = {}; // For quick lookup
+		std::unordered_map<size_t, std::vector<rawrbox::Mesh<typename M::vertexBufferType>*>> _vertexAnimations = {}; // For quick lookup
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::AnimationSampler>> _playingAnimations = {};
 		// ------------
 
@@ -79,13 +79,13 @@ namespace rawrbox {
 			for (size_t i = 0; i < outputs.size(); i++) {
 				const auto& output = outputs[i];
 
-				auto fnd = this->_trackToMesh.find(sample->getIndex());
-				if (fnd == this->_trackToMesh.end()) return;
+				auto fnd = this->_vertexAnimations.find(sample->getIndex());
+				if (fnd == this->_vertexAnimations.end()) return;
 
 				for (auto& mesh : fnd->second) {
 					rawrbox::Vector3f position = {ozz::math::GetX(output.translation.x), ozz::math::GetX(output.translation.y), ozz::math::GetX(output.translation.z)};
-					rawrbox::Vector4f rotation = {ozz::math::GetY(output.rotation.x), ozz::math::GetY(output.rotation.y), ozz::math::GetY(output.rotation.z), ozz::math::GetY(output.rotation.w)};
-					rawrbox::Vector3f scale = {ozz::math::GetZ(output.scale.x), ozz::math::GetZ(output.scale.y), ozz::math::GetZ(output.scale.z)};
+					rawrbox::Vector4f rotation = {ozz::math::GetX(output.rotation.x), ozz::math::GetX(output.rotation.y), ozz::math::GetX(output.rotation.z), ozz::math::GetX(output.rotation.w)};
+					rawrbox::Vector3f scale = {ozz::math::GetX(output.scale.x), ozz::math::GetX(output.scale.y), ozz::math::GetX(output.scale.z)};
 
 					mesh->matrix = rawrbox::Matrix4x4::mtxSRT(scale, rotation, position);
 				}
@@ -163,7 +163,7 @@ namespace rawrbox {
 		Model& operator=(Model&&) = delete;
 		~Model() override {
 			this->_meshes.clear();
-			this->_trackToMesh.clear();
+			this->_vertexAnimations.clear();
 			this->_animations.clear();
 			this->_playingAnimations.clear();
 			this->_lights.clear();

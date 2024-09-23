@@ -7,9 +7,10 @@
 #include <magic_enum.hpp>
 
 #include <ozz/animation/offline/animation_builder.h>
+#include <ozz/animation/offline/animation_optimizer.h>
 #include <ozz/animation/offline/raw_track.h>
 #include <ozz/animation/offline/skeleton_builder.h>
-#include <ozz/animation/offline/track_optimizer.h>
+#include <simdjson.h>
 
 #include <variant>
 
@@ -25,7 +26,6 @@ struct fastgltf::ElementTraits<rawrbox::Vector3f> : fastgltf::ElementTraitsBase<
 template <>
 struct fastgltf::ElementTraits<rawrbox::Vector4f> : fastgltf::ElementTraitsBase<rawrbox::Vector4f, AccessorType::Vec4, float> {};
 
-// https://github.com/Deweh/NativeAnimationFrameworkSF/blob/7b8ad3d4de0b7752dde302c1f64cf819b07586c0/Plugin/src/Serialization/GLTFImport.cpp#L233
 namespace rawrbox {
 	// PRIVATE -----
 	void GLTFImporter::internalLoad(fastgltf::GltfDataBuffer& data) {
@@ -49,20 +49,36 @@ namespace rawrbox {
 		}
 
 		fastgltf::Parser parser(extensions);
+		parser.setUserPointer(this);
+
+		// Custom extras ----
+		parser.setExtrasParseCallback([](simdjson::dom::object* extras, std::size_t objectIndex, fastgltf::Category objectType, void* userPointer) {
+			if (extras == nullptr) return;
+
+			auto* importer = static_cast<GLTFImporter*>(userPointer);
+			if (importer == nullptr) return;
+
+			if (objectType == fastgltf::Category::Meshes) {
+				if ((importer->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) > 0) {
+					auto arr = extras->at_key("targetNames").get_array();
+					if (arr.error() != simdjson::error_code::SUCCESS) return;
+
+					for (auto target : arr) {
+						auto targetName = std::string(target.get_string().value());
+						if (targetName.empty()) targetName = fmt::format("blendshape_{}", importer->blendShapes.size());
+
+						importer->targetNames[objectIndex].push_back(targetName);
+					}
+				}
+			}
+		});
+		// ------------------
 
 		auto asset = parser.loadGltf(data, this->filePath.parent_path(), gltfOptions);
 		if (asset.error() != fastgltf::Error::None) {
 			this->_logger->warn("{}", fastgltf::getErrorMessage(asset.error()));
 			return;
 		}
-
-#ifdef _DEBUG
-		/*auto err = fastgltf::validate(asset.get());
-		if (err != fastgltf::Error::None) {
-			this->_logger->warn("{}", fastgltf::getErrorMessage(asset.error()));
-			return;
-		}*/
-#endif
 
 		fastgltf::Asset& scene = asset.get();
 
@@ -105,9 +121,19 @@ namespace rawrbox {
 		// --------------
 
 		// Fix nodes ---
+		std::unordered_set<std::string> nodeNames;
 		for (size_t i = 0; i < scene.nodes.size(); i++) {
 			auto& nodes = scene.nodes[i];
+			auto name = std::string(nodes.name);
+
 			if (nodes.name.empty()) nodes.name = fmt::format("node_{}", i);
+			if (nodeNames.contains(name)) {
+				name = fmt::format("{}_{}", name, i);
+				this->_logger->warn("Duplicate node name '{}', this is not supported!, renaming to '{}'", nodes.name, name);
+			}
+
+			nodes.name = name;
+			nodeNames.insert(name);
 		}
 		// --------------
 
@@ -197,7 +223,8 @@ namespace rawrbox {
 					texture = std::make_unique<rawrbox::TextureWEBP>(name, bah, static_cast<int>(imageData.bytes.size()));
 					break;
 				case GLTFImageType::DDS:
-					break;
+					this->_logger->warn("Unsupported texture '{} -> {}'", i, name);
+					continue;
 				case GLTFImageType::OTHER:
 					texture = std::make_unique<rawrbox::TextureImage>(bah, static_cast<int>(imageData.bytes.size()));
 					break;
@@ -322,8 +349,8 @@ namespace rawrbox {
 		// UTILS -------
 
 		// GENERATE CHILDREN BONES ---
-		std::function<void(const fastgltf::Node& node, ozz::animation::offline::RawSkeleton::Joint& parent, std::unordered_map<std::string, ozz::math::Transform>& bindPose)> generateBones;
-		generateBones = [this, &scene, &generateBones](const fastgltf::Node& node, ozz::animation::offline::RawSkeleton::Joint& parent, std::unordered_map<std::string, ozz::math::Transform>& bindPose) {
+		std::function<void(const fastgltf::Node& node, ozz::animation::offline::RawSkeleton::Joint& parent, std::unordered_set<size_t>& processedJoints)> generateBones;
+		generateBones = [this, &scene, &generateBones](const fastgltf::Node& node, ozz::animation::offline::RawSkeleton::Joint& parent, std::unordered_set<size_t>& processedJoints) {
 			for (const auto& childIndex : node.children) {
 				const auto& childNode = scene.nodes[childIndex];
 				if (childIndex > this->meshes.size()) throw this->_logger->error("Missing child index '{}' mesh", childIndex);
@@ -331,9 +358,10 @@ namespace rawrbox {
 				ozz::animation::offline::RawSkeleton::Joint childJoint = {};
 				childJoint.name = std::string(childNode.name);
 				childJoint.transform = extractTransform(childNode.transform);
-				bindPose[std::string(childNode.name)] = childJoint.transform;
 
-				generateBones(childNode, childJoint, bindPose);
+				processedJoints.insert(childIndex);
+				generateBones(childNode, childJoint, processedJoints);
+
 				parent.children.push_back(childJoint);
 			}
 		};
@@ -383,20 +411,18 @@ namespace rawrbox {
 
 			// BUILD SKELETON STRUCTURE ----
 			ozz::animation::offline::RawSkeleton rawSkeleton;
-			std::unordered_map<std::string, ozz::math::Transform> bindPose;
+			std::unordered_set<size_t> processedBones;
 
 			for (const auto& rootJoint : skin.joints) {
 				auto& root = scene.nodes[rootJoint];
-				std::string bindName = std::string(root.name);
-
-				if (bindPose.contains(bindName)) continue; // This is the only way to determine root joints
+				if (processedBones.contains(rootJoint)) continue; // This is the only way to determine root joints
 
 				ozz::animation::offline::RawSkeleton::Joint rootBone;
 				rootBone.name = root.name;
 				rootBone.transform = this->extractTransform(root.transform);
 
-				bindPose[bindName] = rootBone.transform; // Track it so we can track the root joints
-				if (!root.children.empty()) generateBones(root, rootBone, bindPose);
+				processedBones.insert(rootJoint); // Track it so we can track the root joints
+				if (!root.children.empty()) generateBones(root, rootBone, processedBones);
 
 				rawSkeleton.roots.push_back(rootBone);
 			}
@@ -420,8 +446,6 @@ namespace rawrbox {
 
 			this->skeletons[i] = std::move(buildSkeleton);
 			this->skeletons[i]->inverseBindMatrices = inverseBindMatrices;
-
-			this->_bindPoses[this->skeletons[i].get()] = bindPose; // meh
 			// ----------------------
 
 			// Apply skins on bones --
@@ -495,12 +519,14 @@ namespace rawrbox {
 					} else {
 						gltfAnim.skeleton = mesh->skeleton;
 					}
+				} else {
+					this->vertexAnimation[i].insert(mesh.get());
 				}
 				// ----------------
 
+				// TIME ----
 				auto& track = gltfAnim.tracks[nodeName];
 
-				// TIME ----
 				for (size_t iTime = 0; iTime < timeAccessor.count; iTime++) {
 					double t = fastgltf::getAccessorElement<double>(scene, timeAccessor, iTime);
 					if (t > gltfAnim.duration) gltfAnim.duration = t; // Calculate the total animation time
@@ -525,6 +551,7 @@ namespace rawrbox {
 								break;
 							}
 						case fastgltf::AnimationPath::Weights:
+							this->_logger->warn("Unsupported channel path 'Weights' for animation '{}'", gltfAnim.name);
 							break; // TODO: SUPPORT BLEND SHAPES
 						default:
 							// Handle other cases
@@ -555,34 +582,30 @@ namespace rawrbox {
 			rawrAnim.name = anim.name;
 
 			if (anim.skeleton != nullptr) {
-				auto& bindPoses = this->_bindPoses[anim.skeleton];
-
-				// Ozz requires all joints to have tracks ---
 				for (std::string bone : anim.skeleton->joint_names()) {
-					auto fnd = bindPoses.find(bone);
-					if (fnd == bindPoses.end()) {
-						this->_logger->warn("Missing bind pose for bone '{}'", bone);
-						continue;
-					}
-
-					auto& track = anim.tracks[bone];
-
-					auto& rTl = track.rotations;
-					auto& pTl = track.translations;
-					auto& sTl = track.scales;
-
-					if (rTl.empty()) rTl.emplace_back(0.0F, fnd->second.rotation);
-					if (pTl.empty()) pTl.emplace_back(0.0F, fnd->second.translation);
-					if (sTl.empty()) sTl.emplace_back(0.0F, fnd->second.scale);
-
-					rawrAnim.tracks.emplace_back(track);
+					rawrAnim.tracks.emplace_back(anim.tracks[bone]); // All bones need to be tracked for skeleton animations
 				}
-				// ----------
 			} else {
 				for (const auto& track : anim.tracks) {
 					rawrAnim.tracks.emplace_back(track.second);
 				}
 			}
+
+			if (rawrAnim.tracks.empty()) {
+				this->_logger->warn("Animation '{}' has no tracks, skipping...", rawrAnim.name);
+				continue;
+			}
+
+			// Optimize skeleton
+			if ((this->loadFlags & rawrbox::ModelLoadFlags::Optimizer::SKELETON_ANIMATIONS) > 0 && anim.skeleton != nullptr) {
+				ozz::animation::offline::AnimationOptimizer optimizer;
+				ozz::animation::offline::RawAnimation input = rawrAnim;
+
+				if (!optimizer(input, *anim.skeleton, &rawrAnim)) {
+					this->_logger->warn("Failed to optimize animation '{}'", rawrAnim.name);
+				}
+			}
+			// ------------
 
 			// Build the animations ---
 			auto buildAnim = builder(rawrAnim);
@@ -615,10 +638,45 @@ namespace rawrbox {
 		gltfMesh->matrix = this->toMatrix(std::get<fastgltf::TRS>(node.transform));
 
 		if (node.meshIndex) {
+			const bool importBlendShapes = (this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) > 0;
 			const auto& mesh = scene.meshes[node.meshIndex.value()];
+
+			// Weights --
+			std::vector<std::unique_ptr<rawrbox::GLTFBlendShapes>> blendShapes = {};
+
+			if (importBlendShapes && !mesh.weights.empty()) {
+				auto& blendNames = this->targetNames[node.meshIndex.value()];
+				if (blendNames.empty()) {
+					this->_logger->warn("Mesh '{}' has no blend shape name, skipping...", gltfMesh->name);
+					return;
+				}
+
+				if (blendNames.size() != mesh.weights.size()) {
+					this->_logger->warn("Mesh '{}' has {} blend shape names, but only {} weights, skipping...", gltfMesh->name, blendNames.size(), mesh.weights.size());
+					return;
+				}
+
+				blendShapes.resize(blendNames.size());
+				for (size_t i = 0; i < blendNames.size(); i++) {
+					const auto& name = blendNames[i];
+					auto shape = std::make_unique<rawrbox::GLTFBlendShapes>();
+
+					shape->name = fmt::format("{}-{}", gltfMesh->name, name);
+					shape->mesh_index = gltfMesh->index;
+					shape->weight = mesh.weights[shape->mesh_index]; // Default weight
+
+					blendShapes[i] = std::move(shape);
+				}
+			}
+			// ----------
 
 			// Primitives
 			for (const auto& primitive : mesh.primitives) {
+				if (primitive.type != fastgltf::PrimitiveType::Triangles) {
+					this->_logger->warn("Primitive type '{}' not supported", magic_enum::enum_name(primitive.type));
+					continue;
+				}
+
 				// Textures --
 				if (primitive.materialIndex) {
 					if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
@@ -633,10 +691,38 @@ namespace rawrbox {
 				}
 				// ----------
 
-				if (primitive.type != fastgltf::PrimitiveType::Triangles) {
-					this->_logger->warn("Primitive type '{}' not supported", magic_enum::enum_name(primitive.type));
-					continue;
+				// BLEND SHAPES --
+				if (importBlendShapes && !primitive.targets.empty()) {
+					for (size_t i = 0; i < primitive.targets.size(); i++) {
+						if (blendShapes[i] == nullptr) throw this->_logger->error("Invalid blend shape '{}'", i);
+						const auto& targets = primitive.targets[i];
+
+						// POSITION ---
+						const auto* positionTarget = primitive.findTargetAttribute(i, "POSITION");
+						if (positionTarget != nullptr && positionTarget != targets.end()) {
+							const auto& positionAccessor = scene.accessors[positionTarget->accessorIndex];
+							blendShapes[i]->pos.resize(positionAccessor.count);
+
+							fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, positionAccessor, [&](fastgltf::math::fvec3 pos, size_t index) {
+								blendShapes[i]->pos[index] = rawrbox::Vector3f(pos.x(), pos.y(), pos.z());
+							});
+						}
+						// ----------------
+
+						// NORMAL ---
+						const auto* normalTarget = primitive.findTargetAttribute(i, "NORMAL");
+						if (normalTarget != nullptr && normalTarget != targets.end()) {
+							const auto& normAccessor = scene.accessors[normalTarget->accessorIndex];
+							blendShapes[i]->norms.resize(normAccessor.count);
+
+							fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, normAccessor, [&](fastgltf::math::fvec3 norm, size_t index) {
+								blendShapes[i]->norms[index] = rawrbox::Vector4f(norm.x(), norm.y(), norm.z(), 0.0F);
+							});
+						}
+						// ----------------
+					}
 				}
+				// ----------------
 
 				std::vector<rawrbox::VertexNormBoneData> verts = this->extractVertex(scene, primitive);
 				gltfMesh->vertices.insert(gltfMesh->vertices.end(), verts.begin(), verts.end());
@@ -645,15 +731,21 @@ namespace rawrbox {
 				gltfMesh->indices.insert(gltfMesh->indices.end(), indices.begin(), indices.end());
 			}
 			/// -------
-		}
 
-		// BLEND SHAPES ---
-		// https://github.com/assimp/assimp/blob/master/code/AssetLib/glTF2/glTF2Importer.cpp#L637
-		/*if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) > 0 && !primitive.targets.empty()) {
-			for (auto& targets : primitive.targets) {
+			if (!blendShapes.empty()) {
+				const bool debugBlend = (this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES) > 0;
+
+				if (debugBlend) this->_logger->info("'{}' BLEND SHAPES", fmt::styled(mesh.name, fmt::fg(fmt::color::cyan)));
+				for (auto& shape : blendShapes) {
+					if (debugBlend) {
+						auto nm = rawrbox::StrUtils::split(shape->name, '-');
+						fmt::print("\t---> {} \n", fmt::styled(nm.back(), fmt::fg(fmt::color::cyan)));
+					}
+
+					this->blendShapes.emplace_back(std::move(shape));
+				}
 			}
-		}*/
-		// --------------
+		}
 
 		// Add meshes ---
 		auto* mdlGet = gltfMesh.get();
@@ -818,7 +910,7 @@ namespace rawrbox {
 		this->textures.clear();     // Clear old textures
 		this->_texturesMap.clear(); // Clear old textures
 
-		this->trackToMesh.clear();
+		this->vertexAnimation.clear();
 		this->animations.clear();
 		this->skeletons.clear();
 
@@ -849,6 +941,8 @@ namespace rawrbox {
 	}
 
 	void GLTFImporter::load(const std::filesystem::path& path) {
+		if (!std::filesystem::exists(path)) throw this->_logger->error("File '{}' does not exist!", path.generic_string());
+
 		this->filePath = path;
 
 		auto data = fastgltf::GltfDataBuffer::FromPath(path);

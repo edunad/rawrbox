@@ -39,9 +39,9 @@ namespace rawrbox {
 			}
 			// -------------------
 
-			// Map animations
-			this->_trackToMesh.clear();
-			for (const auto& anim : model.trackToMesh) {
+			// Map vertex animations
+			this->_vertexAnimations.clear();
+			for (const auto& anim : model.vertexAnimation) {
 				for (const auto& mesh : anim.second) {
 					auto* rawrMesh = this->getMeshByID(mesh->index);
 					if (rawrMesh == nullptr) continue;
@@ -49,31 +49,31 @@ namespace rawrbox {
 					rawrMesh->setOptimizable(false);
 					rawrMesh->meshID = 0x00000000; // Reset id, we don't need it anymore
 
-					this->_trackToMesh[anim.first].push_back(rawrMesh); // Horrible, i know.
+					this->_vertexAnimations[anim.first].push_back(rawrMesh); // Horrible, i know.
 				}
 			}
 			// -----------------------
 		}
 
 		void loadBlendShapes(const rawrbox::GLTFImporter& model) {
-			/*this->_blend_shapes.clear();
+			this->_blend_shapes.clear();
 
 			for (const auto& blend : model.blendShapes) {
-				if (blend.second.mesh_index >= this->_meshes.size()) {
-					this->_logger->warn("Failed to find mesh {}", blend.second.mesh_index);
+				if (blend->mesh_index >= this->_meshes.size()) {
+					this->_logger->warn("Failed to find mesh {}", blend->mesh_index);
 					continue;
 				}
 
 				auto s = std::make_unique<rawrbox::BlendShapes<M>>();
-				s->normals = blend.second.norms;
-				s->pos = blend.second.pos;
-				s->weight = blend.second.weight;
+				s->normals = blend->norms;
+				s->pos = blend->pos;
+				s->weight = blend->weight;
 
-				s->mesh = this->_meshes[blend.second.mesh_index].get();
+				s->mesh = this->_meshes[blend->mesh_index].get();
 				s->mesh->setOptimizable(false);
 
-				this->_blend_shapes[blend.first] = std::move(s);
-			}*/
+				this->_blend_shapes[blend->name] = std::move(s);
+			}
 		}
 
 		void loadLights(const rawrbox::GLTFImporter& model) {

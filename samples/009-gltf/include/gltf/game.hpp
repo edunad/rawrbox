@@ -11,6 +11,7 @@
 namespace gltf {
 	class Game : public rawrbox::Engine {
 		bool _ready = false;
+		float _time = 0.F;
 
 		// TEMP ---
 		std::unique_ptr<rawrbox::GLTFImporter> _tst = nullptr;

@@ -57,24 +57,32 @@ namespace rawrbox {
 		// -------------
 
 		// BLEND SHAPES ---
-		virtual void applyBlendShapes() {
-			if (this->_original_data.empty()) return;
+		virtual void calculateOriginalShape() {
+			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
+			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
 
-			// Reset vertex ---------
-			for (auto& shape : this->_blend_shapes) {
-				if (!shape.second->isActive() || shape.second->mesh == nullptr) continue;
+			auto empty = vertSize == 0 || indcSize == 0;
+			if (empty) throw this->_logger->error("Invalid mesh! Missing vertices / indices!");
 
-				auto& verts = shape.second->mesh->vertices;
-				for (size_t i = 0; i < verts.size(); i++) {
-					auto& data = this->_original_data[i];
-					verts[i].position = data.pos;
+			// Store original positions for blendstates
+			this->_original_data.clear();
+			this->_original_data.reserve(vertSize);
 
-					if constexpr (supportsNormals<typename M::vertexBufferType>) {
-						verts[i].normal = data.normal;
-					}
+			for (auto& v : this->_mesh->vertices) {
+				if constexpr (supportsNormals<typename M::vertexBufferType>) {
+					this->_original_data.push_back({v.position, v.normal});
+				} else {
+					this->_original_data.push_back({v.position, {}});
 				}
 			}
-			// --------
+			// -----------
+		}
+
+		virtual void applyBlendShapes() {
+			if (!this->isUploaded()) throw this->_logger->error("Blendshapes require the model to be uploaded!");
+			if (!this->isDynamic()) throw this->_logger->error("Blendshapes require the model to be dynamic!");
+
+			if (this->_original_data.empty()) this->calculateOriginalShape(); // Initial setup
 
 			for (auto& shape : this->_blend_shapes) {
 				if (!shape.second->isActive() || shape.second->mesh == nullptr) continue;
@@ -98,14 +106,14 @@ namespace rawrbox {
 
 				// Apply vertices ----
 				for (size_t i = 0; i < blendPos.size(); i++) {
-					verts[i].position = verts[i].position.lerp(blendPos[i], step);
+					verts[i].position = this->_original_data[i].pos.lerp(blendPos[i], step);
 				}
 				// -------------------
 
 				// Apply normal ----
 				if constexpr (supportsNormals<typename M::vertexBufferType>) {
 					for (size_t i = 0; i < blendNormals.size(); i++) {
-						rawrbox::Vector4f unpacked = rawrbox::Vector4f(rawrbox::PackUtils::fromNormal(verts[i].normal)).lerp(blendNormals[i], step); // meh
+						rawrbox::Vector4f unpacked = rawrbox::Vector4f(rawrbox::PackUtils::fromNormal(this->_original_data[i].normal)).lerp(blendNormals[i], step); // meh
 						verts[i].normal = rawrbox::PackUtils::packNormal(unpacked.x, unpacked.y, unpacked.z);
 					}
 				}
@@ -282,38 +290,14 @@ namespace rawrbox {
 				}
 			}
 
-			if (found) {
-				this->applyBlendShapes();
-			}
-
+			if (found) this->applyBlendShapes();
 			return found;
 		}
 		// --------------
 
 		// UTIL ---
 		virtual void updateBuffers() {
-			if (!this->isDynamic() || !this->isUploaded()) throw this->_logger->error("Model is not dynamic or uploaded!");
-
-			auto vertSize = static_cast<uint32_t>(this->_mesh->vertices.size());
-			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
-			auto empty = vertSize == 0 || indcSize == 0;
-
-			// Store original positions for blendstates
-			if (!empty && _original_data.size() != vertSize) {
-				_original_data.clear();
-				_original_data.reserve(vertSize);
-
-				for (auto& v : this->_mesh->vertices) {
-					if constexpr (supportsNormals<typename M::vertexBufferType>) {
-						_original_data.push_back({v.position, v.normal});
-					} else {
-						_original_data.push_back({v.position, {}});
-					}
-				}
-			}
-			// -----------
-
-			this->_requiresUpdate = true;
+			this->_requiresUpdate = this->isDynamic() && this->isUploaded();
 		}
 
 		[[nodiscard]] virtual uint32_t getID(int /*index*/ = -1) const { return this->_mesh->getID(); }
@@ -363,20 +347,6 @@ namespace rawrbox {
 		virtual void upload(rawrbox::UploadType type = rawrbox::UploadType::STATIC) {
 			if (this->isUploaded()) throw this->_logger->error("Already uploaded!");
 			this->_uploadType = type;
-
-			// Store original positions for blendstates
-			if (this->isDynamic() && this->_mesh->vertices.empty()) {
-				_original_data.reserve(this->_mesh->vertices.capacity());
-
-				for (auto& v : this->_mesh->vertices) {
-					if constexpr (supportsNormals<typename M::vertexBufferType>) {
-						_original_data.push_back({v.position, v.normal});
-					} else {
-						_original_data.push_back({v.position, 0x00000000});
-					}
-				}
-			}
-			// -----------
 
 			// BUFFERS ----
 			this->createVertexBuffer();

@@ -33,6 +33,10 @@ namespace rawrbox {
 			const uint32_t PRINT_BLENDSHAPES = 1 << 24;
 		} // namespace Debug
 
+		namespace Optimizer {
+			const uint32_t SKELETON_ANIMATIONS = 1 << 30;
+		} // namespace Optimizer
+
 	}; // namespace ModelLoadFlags
 	   // NOLINTEND(unused-const-variable)
 
@@ -66,6 +70,16 @@ namespace rawrbox {
 		rawrbox::Colorf emissionColor = rawrbox::Colors::White();
 
 		explicit GLTFMaterial(std::string _name) : name(std::move(_name)) {};
+	};
+
+	struct GLTFBlendShapes {
+		std::string name;
+		float weight = 0.F;
+
+		size_t mesh_index = 0;
+
+		std::vector<rawrbox::Vector3f> pos = {};
+		std::vector<rawrbox::Vector4f> norms = {};
 	};
 
 	struct GLTFMesh {
@@ -104,10 +118,6 @@ namespace rawrbox {
 		// TEXTURES ----
 		std::vector<rawrbox::TextureBase*> _texturesMap = {};
 		// ----------
-
-		// SKELETONS --
-		std::unordered_map<ozz::animation::Skeleton*, std::unordered_map<std::string, ozz::math::Transform>> _bindPoses = {};
-		// ------------
 
 		// ANIMATIONS --
 		std::vector<rawrbox::GLTFAnimation> _parsedAnimations = {};
@@ -171,6 +181,10 @@ namespace rawrbox {
 		std::filesystem::path filePath;
 		uint32_t loadFlags = 0;
 
+		// EXTENSIONS --
+		std::unordered_map<size_t, std::vector<std::string>> targetNames = {};
+		// -------------
+
 		// TEXTURES ----
 		std::vector<std::unique_ptr<rawrbox::GLTFMaterial>> materials = {};
 		std::vector<std::unique_ptr<rawrbox::TextureBase>> textures = {};
@@ -180,8 +194,12 @@ namespace rawrbox {
 		std::vector<ozz::unique_ptr<ozz::animation::Skeleton>> skeletons = {};
 		std::vector<ozz::unique_ptr<ozz::animation::Animation>> animations = {};
 
-		std::unordered_map<size_t, std::vector<rawrbox::GLTFMesh*>> trackToMesh = {}; // Animation index -> mesh
+		std::unordered_map<size_t, std::unordered_set<rawrbox::GLTFMesh*>> vertexAnimation = {}; // Animation index -> mesh
 		// ---------
+
+		// BLEND SHAPES ---
+		std::vector<std::unique_ptr<rawrbox::GLTFBlendShapes>> blendShapes = {};
+		// ----------------
 
 		// MODELS -------
 		std::vector<std::unique_ptr<rawrbox::GLTFMesh>> meshes = {};
