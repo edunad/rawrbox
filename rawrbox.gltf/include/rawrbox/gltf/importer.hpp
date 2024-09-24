@@ -34,7 +34,8 @@ namespace rawrbox {
 		} // namespace Debug
 
 		namespace Optimizer {
-			const uint32_t SKELETON_ANIMATIONS = 1 << 30;
+			const uint32_t MESH = 1 << 30;
+			const uint32_t SKELETON_ANIMATIONS = 1 << 31;
 		} // namespace Optimizer
 
 	}; // namespace ModelLoadFlags
@@ -95,7 +96,7 @@ namespace rawrbox {
 		rawrbox::GLTFMesh* parent = nullptr;
 
 		std::vector<rawrbox::VertexNormBoneData> vertices = {};
-		std::vector<uint16_t> indices = {};
+		std::vector<uint32_t> indices = {};
 
 		rawrbox::Color color = rawrbox::Colors::White();
 		GLTFMesh(std::string _name) : name(std::move(_name)) {};
@@ -151,7 +152,7 @@ namespace rawrbox {
 		virtual void loadMeshes(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::GLTFMesh* parentMesh = nullptr);
 
 		virtual std::vector<rawrbox::VertexNormBoneData> extractVertex(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive);
-		virtual std::vector<uint16_t> extractIndices(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive);
+		virtual std::vector<uint32_t> extractIndices(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive);
 		// ----------
 
 		// UTILS ---
@@ -177,6 +178,10 @@ namespace rawrbox {
 		}
 		// ------
 
+		// OPTIMIZATION ---
+		virtual void optimizeMesh(std::vector<rawrbox::VertexNormBoneData>& verts, std::vector<uint32_t>& indices);
+		virtual void simplifyMesh(std::vector<rawrbox::VertexNormBoneData>& verts, std::vector<uint32_t>& indices, float complexity_threshold = 0.9F);
+		// -----------
 	public:
 		std::filesystem::path filePath;
 		uint32_t loadFlags = 0;

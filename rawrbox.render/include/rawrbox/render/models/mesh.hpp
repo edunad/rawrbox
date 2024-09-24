@@ -96,13 +96,13 @@ namespace rawrbox {
 		std::string name = "mesh";
 
 		// OFFSETS ---
-		uint16_t baseVertex = 0;
-		uint16_t baseIndex = 0;
-		uint16_t totalVertex = 0;
-		uint16_t totalIndex = 0;
+		uint32_t baseVertex = 0;
+		uint32_t baseIndex = 0;
+		uint32_t totalVertex = 0;
+		uint32_t totalIndex = 0;
 
 		std::vector<T> vertices = {};
-		std::vector<uint16_t> indices = {};
+		std::vector<uint32_t> indices = {};
 		// -------
 
 		// TEXTURES ---
@@ -158,7 +158,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool isTransparent() const { return this->_transparent; }
 
 		[[nodiscard]] virtual const std::vector<T>& getVertices() const { return this->vertices; }
-		[[nodiscard]] virtual const std::vector<uint16_t>& getIndices() const { return this->indices; }
+		[[nodiscard]] virtual const std::vector<uint32_t>& getIndices() const { return this->indices; }
 
 		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const { return this->bbox; }
 
@@ -278,11 +278,11 @@ namespace rawrbox {
 		}
 
 		virtual void merge(const rawrbox::Mesh<T>& other) {
-			std::transform(other.indices.begin(), other.indices.end(), std::back_inserter(this->indices), [this](const uint16_t& val) { return static_cast<uint16_t>(this->totalVertex + val); });
+			std::transform(other.indices.begin(), other.indices.end(), std::back_inserter(this->indices), [this](const uint32_t& val) { return this->totalVertex + val; });
 			this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
 
-			this->totalVertex = static_cast<uint16_t>(this->vertices.size());
-			this->totalIndex = static_cast<uint16_t>(this->indices.size());
+			this->totalVertex = static_cast<uint32_t>(this->vertices.size());
+			this->totalIndex = static_cast<uint32_t>(this->indices.size());
 
 			this->bbox.combine(other.bbox);
 		}

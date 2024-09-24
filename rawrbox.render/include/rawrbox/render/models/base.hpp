@@ -88,7 +88,6 @@ namespace rawrbox {
 				if (!shape.second->isActive() || shape.second->mesh == nullptr) continue;
 
 				auto& verts = shape.second->mesh->vertices;
-
 				auto& blendPos = shape.second->pos;
 				auto& blendNormals = shape.second->normals;
 
@@ -129,10 +128,10 @@ namespace rawrbox {
 			auto vertSize = static_cast<uint64_t>(this->_mesh->vertices.size());
 			auto indcSize = static_cast<uint64_t>(this->_mesh->indices.size());
 
-			auto empty = vertSize == 0 || indcSize == 0;
+			const bool empty = vertSize == 0 || indcSize == 0;
 
 			uint64_t sizeVB = sizeof(typename M::vertexBufferType) * vertSize;
-			uint64_t sizeIB = sizeof(uint16_t) * indcSize;
+			uint64_t sizeIB = sizeof(uint32_t) * indcSize;
 
 			bool resizable = this->_uploadType == rawrbox::UploadType::RESIZABLE_DYNAMIC;
 
@@ -142,7 +141,7 @@ namespace rawrbox {
 			if (resizeVertex) {
 				RAWRBOX_DESTROY(this->_vbh);
 
-				this->_mesh->vertices.reserve(vertSize + this->BUFFER_INCREASE_OFFSET);
+				this->_mesh->vertices.reserve(vertSize + RB_RENDER_BUFFER_INCREASE_OFFSET);
 				this->createVertexBuffer();
 
 				this->_logger->info("Resizing vertex buffer ({} -> {})", vertSize, this->_mesh->vertices.capacity());
@@ -151,7 +150,7 @@ namespace rawrbox {
 			if (resizeIndex) {
 				RAWRBOX_DESTROY(this->_ibh);
 
-				this->_mesh->indices.reserve(indcSize + this->BUFFER_INCREASE_OFFSET);
+				this->_mesh->indices.reserve(indcSize + RB_RENDER_BUFFER_INCREASE_OFFSET);
 				this->createIndexBuffer();
 
 				this->_logger->info("Resizing index buffer ({} -> {})", indcSize, this->_mesh->indices.capacity());
@@ -170,7 +169,7 @@ namespace rawrbox {
 			rawrbox::BarrierUtils::barrier(barriers);
 
 			if (!resizeVertex) context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-			if (!resizeIndex) context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint16_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			if (!resizeIndex) context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint32_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 
 			barriers.clear();
 			if (!resizeVertex) barriers.emplace_back(this->_vbh, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
@@ -192,7 +191,7 @@ namespace rawrbox {
 			IndcBuffDesc.Name = "RawrBox::Buffer::Indices";
 			IndcBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
 			IndcBuffDesc.Usage = this->isDynamic() ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE; // TODO: Diligent::USAGE_SPARSE;
-			IndcBuffDesc.Size = static_cast<uint32_t>(sizeof(uint16_t)) * indcSize;
+			IndcBuffDesc.Size = static_cast<uint32_t>(sizeof(uint32_t)) * indcSize;
 
 			Diligent::BufferData IBData;
 			IBData.pData = this->_mesh->indices.data();
@@ -227,9 +226,6 @@ namespace rawrbox {
 		}
 
 	public:
-		// To prevent the vertex / index buffer from resizing too often, increase this value to offset the scaling based on your model needs
-		uint64_t BUFFER_INCREASE_OFFSET = 256;
-
 		ModelBase(size_t vertices = 0, size_t indices = 0) {
 			this->_mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(vertices, indices);
 			this->_material = std::make_unique<M>();

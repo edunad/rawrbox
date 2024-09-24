@@ -32,4 +32,3 @@ Checks: clang-diagnostic-*
   -cppcoreguidelines-pro-type-union-access
 WarningsAsErrors: "*"
 HeaderFilterRegex: ""
-AnalyzeTemporaryDtors: false

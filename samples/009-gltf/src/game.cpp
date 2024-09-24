@@ -70,24 +70,30 @@ namespace gltf {
 		if (this->_ready) return;
 
 		// TEST ---
-		this->_tst = std::make_unique<rawrbox::GLTFImporter>(rawrbox::ModelLoadFlags::IMPORT_TEXTURES |
-								     rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES |
-								     rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS |
-								     rawrbox::ModelLoadFlags::Optimizer::SKELETON_ANIMATIONS |
-								     rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES |
-								     rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE |
-								     rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS);
+		this->_tst = std::make_unique<rawrbox::GLTFImporter>(
+		    rawrbox::ModelLoadFlags::IMPORT_TEXTURES |
+		    rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES |
+		    rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS |
+
+		    rawrbox::ModelLoadFlags::Optimizer::MESH |
+		    rawrbox::ModelLoadFlags::Optimizer::SKELETON_ANIMATIONS |
+
+		    rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES |
+		    rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE |
+		    rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS);
 
 		// this->_tst->load("./assets/models/grandma_tv/scene.gltf");
-		this->_tst->load("./assets/models/shape_keys/shape_keys.glb");
-		// this->_tst->load("./assets/models/wolf/wolf.glb");
-		//  this->_tst->load("./assets/models/skin_test.gltf");
+		this->_tst->load("./assets/models/813_kelley_road.glb");
+		// this->_tst->load("./assets/models/shape_keys/shape_keys.glb");
+		//  this->_tst->load("./assets/models/wolf/wolf.glb");
+		//   this->_tst->load("./assets/models/skin_test.gltf");
 
 		this->_tstMdl = std::make_unique<rawrbox::GLTFModel<rawrbox::MaterialSkinned>>();
+		this->_tstMdl->setScale({0.005F, 0.005F, 0.005F});
 		this->_tstMdl->load(*this->_tst);
-		// this->_tstMdl->playAnimation(true, 1.F);
-		//  this->_tstMdl->setWireframe(true);
-		this->_tstMdl->upload(rawrbox::UploadType::FIXED_DYNAMIC);
+		this->_tstMdl->playAnimation(true, 1.F);
+		// this->_tstMdl->setWireframe(true);
+		this->_tstMdl->upload(rawrbox::UploadType::STATIC);
 		//  ----------
 
 		this->_ready = true;
@@ -116,11 +122,11 @@ namespace gltf {
 		if (!this->_ready) return;
 		if (this->_tstMdl == nullptr) return;
 
-		this->_tstMdl->setBlendShape("Cheese-Melt", std::cos(this->_time) * 0.5F);
-		this->_tstMdl->setBlendShape("Cheese-Morph", std::cos(this->_time) * 0.5F);
+		// this->_tstMdl->setBlendShape("Cheese-Melt", std::cos(this->_time) * 0.5F);
+		// this->_tstMdl->setBlendShape("Cheese-Morph", std::cos(this->_time) * 0.5F);
 		this->_tstMdl->draw();
 
-		this->_time += 0.01F;
+		// this->_time += 0.01F;
 	}
 
 	void Game::draw() {

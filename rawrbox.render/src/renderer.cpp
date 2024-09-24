@@ -195,6 +195,12 @@ namespace rawrbox {
 			default: throw this->_logger->error("Invalid diligent api");
 		}
 
+		// Check device limitations ---
+		if (!(this->_device->GetAdapterInfo().DrawCommand.CapFlags & Diligent::DRAW_COMMAND_CAP_FLAG_BASE_VERTEX)) {
+			throw this->_logger->error("Base vertex not supported");
+		}
+		// ----------------------------
+
 		// Setup shader pipeline if not exists
 		if (rawrbox::SHADER_FACTORY == nullptr) {
 			auto rootDir = this->getShadersDirectory();

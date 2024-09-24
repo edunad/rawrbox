@@ -18,6 +18,8 @@ CPMAddPackage(
 if(fastgltf_ADDED)
     set_lib_runtime_mt(fastgltf)
 endif()
+
+CPMAddPackage("gh:zeux/meshoptimizer@0.21")
 # ----
 
 # Grab source files
@@ -43,6 +45,7 @@ target_link_libraries(${output_target}
         ${RAWRBOX_EXTRA_LIBS}
 
         fastgltf
+        meshoptimizer
 )
 
 set_lib_runtime_mt(${output_target})

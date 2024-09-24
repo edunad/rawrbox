@@ -6,6 +6,7 @@
 #include <fastgltf/types.hpp>
 #include <magic_enum.hpp>
 
+#include <meshoptimizer.h>
 #include <ozz/animation/offline/animation_builder.h>
 #include <ozz/animation/offline/animation_optimizer.h>
 #include <ozz/animation/offline/raw_track.h>
@@ -86,7 +87,9 @@ namespace rawrbox {
 		this->postLoadFixSceneNames(scene);
 		// ---------------
 
-		// TODO: PRINT METADATA
+		// OPTIMIZATION --
+
+		// ----------
 
 		// LOAD MATERIALS ---
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
@@ -188,9 +191,9 @@ namespace rawrbox {
 			} else if (gltfTexture.imageIndex.has_value()) {
 				imgIndex = {gltfTexture.imageIndex.value(), rawrbox::GLTFImageType::OTHER};
 			} else if (gltfTexture.webpImageIndex.has_value()) {
-				imgIndex = {gltfTexture.imageIndex.value(), rawrbox::GLTFImageType::WEBP};
+				imgIndex = {gltfTexture.webpImageIndex.value(), rawrbox::GLTFImageType::WEBP};
 			} else if (gltfTexture.ddsImageIndex.has_value()) {
-				// imgIndex = {gltfTexture.imageIndex.value(), rawrbox::GLTFImageType::DDS};  // TODO: SUPPORT DDS
+				// imgIndex = {gltfTexture.ddsImageIndex.value(), rawrbox::GLTFImageType::DDS};  // TODO: SUPPORT DDS
 				continue;
 			}
 
@@ -725,9 +728,21 @@ namespace rawrbox {
 				// ----------------
 
 				std::vector<rawrbox::VertexNormBoneData> verts = this->extractVertex(scene, primitive);
-				gltfMesh->vertices.insert(gltfMesh->vertices.end(), verts.begin(), verts.end());
+				std::vector<uint32_t> indices = this->extractIndices(scene, primitive);
 
-				std::vector<uint16_t> indices = this->extractIndices(scene, primitive);
+				if ((this->loadFlags & rawrbox::ModelLoadFlags::Optimizer::MESH) > 0) {
+					auto startVert = verts.size();
+					auto startInd = indices.size();
+
+					this->optimizeMesh(verts, indices);
+					this->simplifyMesh(verts, indices);
+
+					if (startVert != verts.size() || startInd != indices.size()) {
+						this->_logger->info("Optimized mesh '{}'\n\tVertices -> {} to {}\n\tIndices -> {} to {}", fmt::styled(gltfMesh->name, fmt::fg(fmt::color::cyan)), startVert, verts.size(), startInd, indices.size());
+					}
+				}
+
+				gltfMesh->vertices.insert(gltfMesh->vertices.end(), verts.begin(), verts.end());
 				gltfMesh->indices.insert(gltfMesh->indices.end(), indices.begin(), indices.end());
 			}
 			/// -------
@@ -832,17 +847,14 @@ namespace rawrbox {
 		return verts;
 	}
 
-	std::vector<uint16_t> GLTFImporter::extractIndices(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive) {
-		auto indices = std::vector<uint16_t>();
+	std::vector<uint32_t> GLTFImporter::extractIndices(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive) {
+		auto indices = std::vector<uint32_t>();
 
 		const auto& accessor = scene.accessors[primitive.indicesAccessor.value()];
 		indices.resize(accessor.count);
 
 		// INDICES ----
-		// TODO: SUPPORT UINT32 FOR INDICES
-		if (accessor.componentType == fastgltf::ComponentType::UnsignedByte || accessor.componentType == fastgltf::ComponentType::UnsignedShort) {
-			fastgltf::iterateAccessorWithIndex<uint16_t>(scene, accessor, [&](uint16_t indice, size_t idx) { indices[idx] = indice; });
-		}
+		fastgltf::iterateAccessorWithIndex<uint32_t>(scene, accessor, [&](uint32_t indice, size_t idx) { indices[idx] = indice; });
 		// -----------
 
 		return indices;
@@ -897,10 +909,59 @@ namespace rawrbox {
 	}
 	// ----------
 
+	// OPTIMIZATION ---
+	void GLTFImporter::optimizeMesh(std::vector<rawrbox::VertexNormBoneData>& verts, std::vector<uint32_t>& indices) {
+		size_t indiceSize = indices.size();
+		std::vector<uint32_t> remap(indiceSize);
+
+		// Calculate vertex map ---
+		size_t newVerticeCount = meshopt_generateVertexRemap(&remap[0], &indices[0], indiceSize, &verts[0], indiceSize, sizeof(rawrbox::VertexNormBoneData));
+		// ------
+
+		// Optimize index & vertex buffers ---
+		std::vector<uint32_t> resultIndices(indiceSize);
+		std::vector<rawrbox::VertexNormBoneData> resultVertices(newVerticeCount);
+
+		meshopt_remapIndexBuffer(&resultIndices[0], &indices[0], indiceSize, &remap[0]);
+		meshopt_remapVertexBuffer(&resultVertices[0], &verts[0], indiceSize, sizeof(rawrbox::VertexNormBoneData), &remap[0]);
+		// -------------
+
+		// Vertex cache
+		meshopt_optimizeVertexCache(&resultIndices[0], &resultIndices[0], indiceSize, newVerticeCount);
+
+		// Overdraw
+		meshopt_optimizeOverdraw(&resultIndices[0], &resultIndices[0], indiceSize, &resultVertices[0].position.x, newVerticeCount, sizeof(rawrbox::VertexNormBoneData), 1.05f);
+
+		// Vertex fetch
+		meshopt_optimizeVertexFetch(&resultVertices[0], &resultIndices[0], indiceSize, &resultVertices[0], newVerticeCount, sizeof(rawrbox::VertexNormBoneData));
+
+		verts.swap(resultVertices);
+		indices.swap(resultIndices);
+	}
+
+	void GLTFImporter::simplifyMesh(std::vector<rawrbox::VertexNormBoneData>& verts, std::vector<uint32_t>& indices, float complexity_threshold) {
+		const size_t index_count = indices.size();
+		const size_t vertex_count = verts.size();
+
+		const size_t target_index_count = index_count * complexity_threshold;
+		constexpr float target_error = 1e-2f;
+		constexpr unsigned int options = 0;
+
+		std::vector<uint32_t> lod_indices(index_count);
+		float lod_error = 0.0f;
+
+		lod_indices.resize(meshopt_simplify(lod_indices.data(), indices.data(), index_count,
+		    reinterpret_cast<const float*>(verts.data()),
+		    vertex_count, sizeof(rawrbox::VertexNormBoneData), target_index_count,
+		    target_error, options, &lod_error));
+
+		indices.swap(lod_indices);
+	}
+
+	// -----------
 	// -------------
 
 	// PUBLIC -------
-
 	GLTFImporter::GLTFImporter(uint32_t loadFlags) : loadFlags(loadFlags) {}
 	GLTFImporter::~GLTFImporter() {
 		this->_logger.reset();

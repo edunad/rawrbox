@@ -81,8 +81,8 @@ namespace rawrbox {
 
 			mesh.baseVertex = 0;
 			mesh.baseIndex = 0;
-			mesh.totalVertex = static_cast<uint16_t>(mesh.vertices.size());
-			mesh.totalIndex = static_cast<uint16_t>(mesh.indices.size());
+			mesh.totalVertex = static_cast<uint32_t>(mesh.vertices.size());
+			mesh.totalIndex = static_cast<uint32_t>(mesh.indices.size());
 
 			// Bones
 			if (gltfMesh.skeleton != nullptr) {

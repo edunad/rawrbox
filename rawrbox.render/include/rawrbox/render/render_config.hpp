@@ -16,8 +16,9 @@
 #define RB_RENDER_MAX_VERTICES 16000
 #define RB_RENDER_MAX_INDICES  RB_RENDER_MAX_VERTICES * 3
 
-#define RB_MAX_BONES_PER_VERTEX       4
-#define RB_RENDER_MAX_BONES_PER_MODEL 150
+#define RB_MAX_BONES_PER_VERTEX          4
+#define RB_RENDER_MAX_BONES_PER_MODEL    150
+#define RB_RENDER_BUFFER_INCREASE_OFFSET 256 // To prevent the vertex / index buffer from resizing too often, increase this value to offset the scaling based on your model needs
 // -------------
 
 // SHADERS ------

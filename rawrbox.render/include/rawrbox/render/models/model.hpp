@@ -183,8 +183,8 @@ namespace rawrbox {
 				if (mesh == nullptr || mesh->empty()) continue;
 
 				// Fix start index ----
-				mesh->baseIndex = static_cast<uint16_t>(this->_mesh->indices.size());
-				mesh->baseVertex = static_cast<uint16_t>(this->_mesh->vertices.size());
+				mesh->baseIndex = static_cast<uint32_t>(this->_mesh->indices.size());
+				mesh->baseVertex = static_cast<uint32_t>(this->_mesh->vertices.size());
 				// --------------------
 
 				// Append vertices
@@ -483,7 +483,7 @@ namespace rawrbox {
 
 				// DRAW -------
 				Diligent::DrawIndexedAttribs DrawAttrs;
-				DrawAttrs.IndexType = Diligent::VT_UINT16;
+				DrawAttrs.IndexType = Diligent::VT_UINT32;
 				DrawAttrs.FirstIndexLocation = mesh->baseIndex;
 				DrawAttrs.BaseVertex = mesh->baseVertex;
 				DrawAttrs.NumIndices = mesh->totalIndex;
