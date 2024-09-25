@@ -389,10 +389,7 @@ namespace rawrbox {
 			fastgltf::iterateAccessorWithIndex<fastgltf::math::fmat4x4>(
 			    scene, scene.accessors[skin.inverseBindMatrices.value()],
 			    [&](const fastgltf::math::fmat4x4& mtx, size_t index) {
-				    rawrbox::Matrix4x4 mt = rawrbox::Matrix4x4(mtx.data());
-				    mt.toLeftHand(); // Ugh
-
-				    std::memcpy(inverseBindMatrices[index].data(), mt.data(), sizeof(float) * mtx.size());
+				    std::memcpy(inverseBindMatrices[index].data(), mtx.data(), sizeof(float) * mtx.size());
 			    });
 			// ---------------------------
 
@@ -494,9 +491,10 @@ namespace rawrbox {
 
 				const auto& mesh = this->meshes[nodeIndex]; // Mesh being affected
 				const auto& node = scene.nodes[nodeIndex];  // Node being affected
+				const bool isSkinAnimation = mesh->skeleton != nullptr;
 
 				// Check if it's a skeleton animation
-				if (mesh->skeleton != nullptr) {
+				if (isSkinAnimation) {
 					if (gltfAnim.skeleton != nullptr && gltfAnim.skeleton != mesh->skeleton) {
 						this->_logger->warn("Animation '{}' contains 2 or more skeletons, this is not supported! Please split the animation per skeleton", gltfAnim.name);
 						continue;
@@ -520,25 +518,27 @@ namespace rawrbox {
 						case fastgltf::AnimationPath::Translation:
 							{
 								ozz::math::Float3 key = fastgltf::getAccessorElement<ozz::math::Float3>(scene, dataAccessor, iTime);
-								// Convert to left-hand coordinate system
-								// key.x = -key.x;
+								if (!isSkinAnimation) key.z = -key.z; // Convert to left-hand coordinate system
+
 								track.translations.emplace_back(t, key);
 								break;
 							}
 						case fastgltf::AnimationPath::Rotation:
 							{
 								ozz::math::Quaternion key = fastgltf::getAccessorElement<ozz::math::Quaternion>(scene, dataAccessor, iTime);
-								// Convert to left-hand coordinate system
-								key.x = -key.x;
-								// key.y = -key.y;
+								if (!isSkinAnimation) { // Convert to left-hand coordinate system
+									key.x = -key.x;
+									key.y = -key.y;
+								}
+
 								track.rotations.emplace_back(t, key);
 								break;
 							}
 						case fastgltf::AnimationPath::Scale:
 							{
 								ozz::math::Float3 key = fastgltf::getAccessorElement<ozz::math::Float3>(scene, dataAccessor, iTime);
-								// Convert to left-hand coordinate system
-								// key.z = -key.z;
+								if (!isSkinAnimation) key.z = -key.z; // Convert to left-hand coordinate system
+
 								track.scales.emplace_back(t, key);
 								break;
 							}
@@ -575,7 +575,7 @@ namespace rawrbox {
 
 			if (anim.skeleton != nullptr) {
 				for (std::string bone : anim.skeleton->joint_names()) {
-					rawrAnim.tracks.emplace_back(anim.tracks[bone]); // All bones need to be tracked for skeleton animations
+					rawrAnim.tracks.emplace_back(anim.tracks[bone]);
 				}
 			} else {
 				for (const auto& track : anim.tracks) {
