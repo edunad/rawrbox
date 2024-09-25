@@ -10,6 +10,8 @@ find_package(DXC REQUIRED)
 # --------------
 
 # Packages ----
+CPMAddPackage("gh:zeux/meshoptimizer@0.21")
+
 CPMAddPackage(
     NAME
         glfw
@@ -115,7 +117,7 @@ if(utfcpp_ADDED)
     set_lib_runtime_mt(utf8cpp)
 endif()
 
-CPMAddPackage("gh:sammycage/lunasvg@2.4.0")
+CPMAddPackage("gh:sammycage/lunasvg@2.4.1")
 if(lunasvg_ADDED)
     set_lib_runtime_mt(lunasvg)
 endif()
@@ -212,6 +214,7 @@ target_link_libraries(
             lunasvg
             webpdemux
             glfw
+            meshoptimizer
 )
 
 set_lib_runtime_mt(${output_target})

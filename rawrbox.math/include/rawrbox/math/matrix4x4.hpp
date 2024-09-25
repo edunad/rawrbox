@@ -46,6 +46,8 @@ namespace rawrbox {
 		rawrbox::Matrix4x4& translate(const rawrbox::Vector3f& pos);
 		rawrbox::Matrix4x4& scale(const rawrbox::Vector3f& scale);
 
+		rawrbox::Matrix4x4& toLeftHand(); // Convert right hand matrix to left hand
+
 		[[nodiscard]] rawrbox::Vector3f getPos() const;
 		[[nodiscard]] rawrbox::Vector3f getScale() const;
 		[[nodiscard]] rawrbox::Vector4f getRotation() const;
@@ -75,6 +77,8 @@ namespace rawrbox {
 		// ------
 
 		// STATIC UTILS ----
+		static rawrbox::Matrix4x4 mtxLeftHand(rawrbox::Matrix4x4 mtx);
+
 		static rawrbox::Matrix4x4 mtxTranspose(rawrbox::Matrix4x4 mtx);
 		static rawrbox::Matrix4x4 mtxInverse(rawrbox::Matrix4x4 mtx);
 

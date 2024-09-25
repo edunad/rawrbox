@@ -109,6 +109,15 @@ namespace rawrbox {
 		return *this;
 	}
 
+	rawrbox::Matrix4x4& Matrix4x4::toLeftHand() {
+		this->mtx[2] = -this->mtx[2];
+		this->mtx[6] = -this->mtx[6];
+		this->mtx[10] = -this->mtx[10];
+		this->mtx[14] = -this->mtx[14];
+
+		return *this;
+	}
+
 	rawrbox::Vector3f Matrix4x4::getPos() const {
 		return {this->mtx[12], this->mtx[13], this->mtx[14]};
 	}
@@ -399,21 +408,23 @@ namespace rawrbox {
 	// ------
 
 	// STATIC UTILS ----
+	rawrbox::Matrix4x4 Matrix4x4::mtxLeftHand(rawrbox::Matrix4x4 mtx) {
+		return mtx.toLeftHand();
+	}
+
+	rawrbox::Matrix4x4 Matrix4x4::mtxTranspose(rawrbox::Matrix4x4 mtx) {
+		return mtx.transpose();
+	}
+
+	rawrbox::Matrix4x4 Matrix4x4::mtxInverse(rawrbox::Matrix4x4 mtx) {
+		return mtx.inverse();
+	}
+
 	rawrbox::Matrix4x4 Matrix4x4::mtxSRT(const rawrbox::Vector3f& scale, const rawrbox::Vector4f& rotation, const rawrbox::Vector3f& pos) {
 		rawrbox::Matrix4x4 ret = {};
 		ret.SRT(scale, rotation, pos);
 
 		return ret;
-	}
-
-	rawrbox::Matrix4x4 Matrix4x4::mtxTranspose(rawrbox::Matrix4x4 mtx) {
-		mtx.transpose();
-		return mtx;
-	}
-
-	rawrbox::Matrix4x4 Matrix4x4::mtxInverse(rawrbox::Matrix4x4 mtx) {
-		mtx.inverse();
-		return mtx;
 	}
 
 	rawrbox::Matrix4x4 Matrix4x4::mtxLookAt(const rawrbox::Vector3f& _eye, const rawrbox::Vector3f& _at, const rawrbox::Vector3f& _up) {

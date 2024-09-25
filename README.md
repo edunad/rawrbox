@@ -25,6 +25,10 @@
 	<a href="https://github.com/edunad/rawrbox-template"><img alt="template" src="./RAWRBOX-TEMPLATE.png" width="256" /></a><br/>
 </p>
 
+> [!IMPORTANT]
+> Engine is [left handed](<https://learn.microsoft.com/en-us/previous-versions/windows/desktop/images/bb324490.leftrght(en-us,vs.85).gif>) world coords (Y is up).
+> Matrix uses [column-major](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Row_and_column_major_order.svg/1200px-Row_and_column_major_order.svg.png) order
+
 ## Why PSXish?
 
 This engine started as a C++ training project, with hopes of being applied in my own games. Don't expect it to rival big players like Unity, Unreal or Godot; it's not geared towards advanced rendering techniques such as anti-aliasing or ray-tracing. Rather, it's tailored for creating PlayStation 1-style games.
@@ -199,8 +203,3 @@ This engine started as a C++ training project, with hopes of being applied in my
 | curl + libcpr     | Used for HTTP / HTTPS requests                      |
 | lunasvg           | Used for SVG loading                                |
 | cpptrace          | Used for easy error tracing                         |
-
-# Important notes
-
-- Engine is left handed world coords (Y is up)
-- Matrix uses column-major order

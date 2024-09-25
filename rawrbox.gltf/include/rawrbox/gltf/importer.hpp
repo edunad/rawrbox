@@ -31,6 +31,7 @@ namespace rawrbox {
 			const uint32_t PRINT_ANIMATIONS = 1 << 22;
 			const uint32_t PRINT_METADATA = 1 << 23;
 			const uint32_t PRINT_BLENDSHAPES = 1 << 24;
+			const uint32_t PRINT_OPTIMIZATION_STATS = 1 << 25;
 		} // namespace Debug
 
 		namespace Optimizer {
@@ -138,7 +139,6 @@ namespace rawrbox {
 		//  -------------
 
 		// SKELETONS --
-		virtual ozz::math::Transform extractTransform(const std::variant<fastgltf::TRS, fastgltf::math::fmat4x4>& mtx);
 		virtual void loadSkeletons(const fastgltf::Asset& scene);
 		// ------------
 
@@ -158,7 +158,6 @@ namespace rawrbox {
 		// UTILS ---
 		virtual fastgltf::sources::ByteView getSourceData(const fastgltf::Asset& scene, const fastgltf::DataSource& source);
 		virtual rawrbox::Matrix4x4 toMatrix(const fastgltf::TRS& mtx);
-		virtual rawrbox::Matrix4x4 toMatrix(const fastgltf::math::fmat4x4& mtx);
 
 		template <typename T, std::size_t Extent>
 		fastgltf::span<T, fastgltf::dynamic_extent> subspan(fastgltf::span<T, Extent> span, size_t offset, size_t count = fastgltf::dynamic_extent) {

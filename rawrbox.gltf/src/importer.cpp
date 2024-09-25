@@ -87,10 +87,6 @@ namespace rawrbox {
 		this->postLoadFixSceneNames(scene);
 		// ---------------
 
-		// OPTIMIZATION --
-
-		// ----------
-
 		// LOAD MATERIALS ---
 		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
 			this->loadTextures(scene);
@@ -331,20 +327,6 @@ namespace rawrbox {
 	// -------------
 
 	// SKELETONS --
-	ozz::math::Transform GLTFImporter::extractTransform(const std::variant<fastgltf::TRS, fastgltf::math::fmat4x4>& mtx) {
-		ozz::math::Transform tr = ozz::math::Transform::identity();
-
-		if (std::holds_alternative<fastgltf::TRS>(mtx)) {
-			const auto& trs = std::get<fastgltf::TRS>(mtx);
-
-			tr.translation = {trs.translation.x(), trs.translation.y(), trs.translation.z()};
-			tr.rotation = {trs.rotation.x(), trs.rotation.y(), trs.rotation.z(), trs.rotation.w()};
-			tr.scale = {trs.scale.x(), trs.scale.y(), trs.scale.z()};
-		}
-
-		return tr;
-	}
-
 	void GLTFImporter::loadSkeletons(const fastgltf::Asset& scene) {
 		if (scene.skins.empty()) return;
 		ozz::animation::offline::SkeletonBuilder builder;
@@ -360,7 +342,6 @@ namespace rawrbox {
 
 				ozz::animation::offline::RawSkeleton::Joint childJoint = {};
 				childJoint.name = std::string(childNode.name);
-				childJoint.transform = extractTransform(childNode.transform);
 
 				processedJoints.insert(childIndex);
 				generateBones(childNode, childJoint, processedJoints);
@@ -408,7 +389,10 @@ namespace rawrbox {
 			fastgltf::iterateAccessorWithIndex<fastgltf::math::fmat4x4>(
 			    scene, scene.accessors[skin.inverseBindMatrices.value()],
 			    [&](const fastgltf::math::fmat4x4& mtx, size_t index) {
-				    std::memcpy(inverseBindMatrices[index].data(), mtx.data(), sizeof(float) * mtx.size());
+				    rawrbox::Matrix4x4 mt = rawrbox::Matrix4x4(mtx.data());
+				    mt.toLeftHand(); // Ugh
+
+				    std::memcpy(inverseBindMatrices[index].data(), mt.data(), sizeof(float) * mtx.size());
 			    });
 			// ---------------------------
 
@@ -422,7 +406,6 @@ namespace rawrbox {
 
 				ozz::animation::offline::RawSkeleton::Joint rootBone;
 				rootBone.name = root.name;
-				rootBone.transform = this->extractTransform(root.transform);
 
 				processedBones.insert(rootJoint); // Track it so we can track the root joints
 				if (!root.children.empty()) generateBones(root, rootBone, processedBones);
@@ -491,7 +474,9 @@ namespace rawrbox {
 
 			for (size_t c = 0; c < anim.channels.size(); c++) {
 				const auto& channel = anim.channels[c];
+
 				if (!channel.nodeIndex) continue;
+				const size_t nodeIndex = channel.nodeIndex.value();
 
 				const auto& sampler = anim.samplers[channel.samplerIndex];
 				const auto& timeAccessor = scene.accessors[sampler.inputAccessor];
@@ -507,12 +492,8 @@ namespace rawrbox {
 					continue;
 				}
 
-				const size_t nodeIndex = channel.nodeIndex.value();
 				const auto& mesh = this->meshes[nodeIndex]; // Mesh being affected
-
-				const auto& node = scene.nodes[nodeIndex]; // Node being affected
-				auto nodeName = std::string(node.name);
-				auto transform = this->extractTransform(node.transform);
+				const auto& node = scene.nodes[nodeIndex];  // Node being affected
 
 				// Check if it's a skeleton animation
 				if (mesh->skeleton != nullptr) {
@@ -528,6 +509,7 @@ namespace rawrbox {
 				// ----------------
 
 				// TIME ----
+				auto nodeName = std::string(node.name);
 				auto& track = gltfAnim.tracks[nodeName];
 
 				for (size_t iTime = 0; iTime < timeAccessor.count; iTime++) {
@@ -538,18 +520,25 @@ namespace rawrbox {
 						case fastgltf::AnimationPath::Translation:
 							{
 								ozz::math::Float3 key = fastgltf::getAccessorElement<ozz::math::Float3>(scene, dataAccessor, iTime);
+								// Convert to left-hand coordinate system
+								// key.x = -key.x;
 								track.translations.emplace_back(t, key);
 								break;
 							}
 						case fastgltf::AnimationPath::Rotation:
 							{
 								ozz::math::Quaternion key = fastgltf::getAccessorElement<ozz::math::Quaternion>(scene, dataAccessor, iTime);
+								// Convert to left-hand coordinate system
+								key.x = -key.x;
+								// key.y = -key.y;
 								track.rotations.emplace_back(t, key);
 								break;
 							}
 						case fastgltf::AnimationPath::Scale:
 							{
 								ozz::math::Float3 key = fastgltf::getAccessorElement<ozz::math::Float3>(scene, dataAccessor, iTime);
+								// Convert to left-hand coordinate system
+								// key.z = -key.z;
 								track.scales.emplace_back(t, key);
 								break;
 							}
@@ -638,7 +627,9 @@ namespace rawrbox {
 
 		gltfMesh->parent = parentMesh;
 		gltfMesh->index = this->meshes.size();
+
 		gltfMesh->matrix = this->toMatrix(std::get<fastgltf::TRS>(node.transform));
+		gltfMesh->matrix.toLeftHand();
 
 		if (node.meshIndex) {
 			const bool importBlendShapes = (this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) > 0;
@@ -730,6 +721,13 @@ namespace rawrbox {
 				std::vector<rawrbox::VertexNormBoneData> verts = this->extractVertex(scene, primitive);
 				std::vector<uint32_t> indices = this->extractIndices(scene, primitive);
 
+				// Invert the winding order for left-handed coordinate system
+				for (size_t i = 0; i < indices.size(); i += 3) {
+					std::swap(indices[i + 1], indices[i + 2]);
+				}
+				// ----------
+
+				// OPTIMIZATION ---
 				if ((this->loadFlags & rawrbox::ModelLoadFlags::Optimizer::MESH) > 0) {
 					auto startVert = verts.size();
 					auto startInd = indices.size();
@@ -737,8 +735,10 @@ namespace rawrbox {
 					this->optimizeMesh(verts, indices);
 					this->simplifyMesh(verts, indices);
 
-					if (startVert != verts.size() || startInd != indices.size()) {
-						this->_logger->info("Optimized mesh '{}'\n\tVertices -> {} to {}\n\tIndices -> {} to {}", fmt::styled(gltfMesh->name, fmt::fg(fmt::color::cyan)), startVert, verts.size(), startInd, indices.size());
+					if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_OPTIMIZATION_STATS) > 0) {
+						if (startVert != verts.size() || startInd != indices.size()) {
+							this->_logger->info("Optimized mesh '{}'\n\tVertices -> {} to {}\n\tIndices -> {} to {}", fmt::styled(gltfMesh->name, fmt::fg(fmt::color::cyan)), startVert, verts.size(), startInd, indices.size());
+						}
 					}
 				}
 
@@ -805,10 +805,10 @@ namespace rawrbox {
 		if (tangentAttribute != nullptr && tangentAttribute != primitive.attributes.end()) {
 			const auto& tangentAccessor = scene.accessors[tangentAttribute->accessorIndex];
 
-			fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(
+			fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec4>(
 			    scene, tangentAccessor,
-			    [&](const fastgltf::math::fvec3& tangent, std::size_t idx) {
-				    verts[idx].tangent = rawrbox::PackUtils::packNormal(tangent.x(), tangent.y(), tangent.z());
+			    [&](const fastgltf::math::fvec4& tangent, std::size_t idx) {
+				    verts[idx].tangent = rawrbox::PackUtils::packNormal(tangent.x(), tangent.y(), tangent.z(), tangent.w() > 0.0F ? 1.0F : -1.0F);
 			    });
 		}
 		// calculate tangent using
@@ -902,10 +902,6 @@ namespace rawrbox {
 
 	rawrbox::Matrix4x4 GLTFImporter::toMatrix(const fastgltf::TRS& mtx) {
 		return rawrbox::Matrix4x4::mtxSRT({mtx.scale.x(), mtx.scale.y(), mtx.scale.z()}, {mtx.rotation.x(), mtx.rotation.y(), mtx.rotation.z(), mtx.rotation.w()}, {mtx.translation.x(), mtx.translation.y(), mtx.translation.z()});
-	}
-
-	rawrbox::Matrix4x4 GLTFImporter::toMatrix(const fastgltf::math::fmat4x4& mtx) {
-		return rawrbox::Matrix4x4(mtx.data());
 	}
 	// ----------
 
