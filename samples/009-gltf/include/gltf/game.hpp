@@ -1,22 +1,31 @@
 #pragma once
 
-//-------------- TEMP
-#include <rawrbox/gltf/importer.hpp>
-///----------
-
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/gltf/model.hpp>
+#include <rawrbox/render/materials/lit.hpp>
 #include <rawrbox/render/materials/skinned.hpp>
+#include <rawrbox/render/materials/skinnedLit.hpp>
+#include <rawrbox/render/models/text3D.hpp>
 
 namespace gltf {
 	class Game : public rawrbox::Engine {
-		bool _ready = false;
-		float _time = 0.F;
 
-		// TEMP ---
-		std::unique_ptr<rawrbox::GLTFImporter> _tst = nullptr;
-		std::unique_ptr<rawrbox::GLTFModel<rawrbox::MaterialSkinned>> _tstMdl = nullptr;
-		// ------
+		std::unique_ptr<rawrbox::GLTFModel<>> _blendTest;
+		std::unique_ptr<rawrbox::GLTFModel<>> _grandmaTV;
+
+		std::unique_ptr<rawrbox::GLTFModel<rawrbox::MaterialLit>> _phasmo;
+
+		std::unique_ptr<rawrbox::GLTFModel<rawrbox::MaterialSkinned>> _animTest;
+
+		std::unique_ptr<rawrbox::GLTFModel<rawrbox::MaterialSkinned>> _wolf;
+		std::unique_ptr<rawrbox::GLTFModel<rawrbox::MaterialSkinnedLit>> _wolfLit;
+
+		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::Text3D<>> _text = std::make_unique<rawrbox::Text3D<>>();
+
+		bool _ready = false;
+
+		void playTestAnim();
 
 		void init() override;
 		void setupGLFW() override;

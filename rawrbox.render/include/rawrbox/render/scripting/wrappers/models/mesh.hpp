@@ -83,9 +83,10 @@ namespace rawrbox {
 
 			    .addFunction("clear", &MeshC::clear)
 			    .addFunction("merge", &MeshC::merge)
+			    .addFunction("optimize", &MeshC::optimize)
 
-			    .addFunction("setOptimizable", &MeshC::setOptimizable)
-			    .addFunction("canOptimize", &MeshC::canOptimize)
+			    .addFunction("setMergeable", &MeshC::setMergeable)
+			    .addFunction("canMerge", &MeshC::canMerge)
 
 			    .endClass();
 		}

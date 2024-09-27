@@ -1,4 +1,5 @@
 #include <rawrbox/gltf/importer.hpp>
+#include <rawrbox/render/models/utils/optimization.hpp>
 #include <rawrbox/render/textures/webp.hpp>
 #include <rawrbox/utils/file.hpp>
 
@@ -6,7 +7,6 @@
 #include <fastgltf/types.hpp>
 #include <magic_enum.hpp>
 
-#include <meshoptimizer.h>
 #include <ozz/animation/offline/animation_builder.h>
 #include <ozz/animation/offline/animation_optimizer.h>
 #include <ozz/animation/offline/raw_track.h>
@@ -66,7 +66,7 @@ namespace rawrbox {
 
 					for (auto target : arr) {
 						auto targetName = std::string(target.get_string().value());
-						if (targetName.empty()) targetName = fmt::format("blendshape_{}", importer->blendShapes.size());
+						if (targetName.empty()) targetName = fmt::format("blendshape_{}", importer->targetNames.size());
 
 						importer->targetNames[objectIndex].push_back(targetName);
 					}
@@ -334,18 +334,20 @@ namespace rawrbox {
 		// UTILS -------
 
 		// GENERATE CHILDREN BONES ---
-		std::function<void(const fastgltf::Node& node, ozz::animation::offline::RawSkeleton::Joint& parent, std::unordered_set<size_t>& processedJoints)> generateBones;
-		generateBones = [this, &scene, &generateBones](const fastgltf::Node& node, ozz::animation::offline::RawSkeleton::Joint& parent, std::unordered_set<size_t>& processedJoints) {
+		std::function<void(const fastgltf::Node& node, ozz::animation::offline::RawSkeleton::Joint& parent)> generateBones;
+		generateBones = [this, &scene, &generateBones](const fastgltf::Node& node, ozz::animation::offline::RawSkeleton::Joint& parent) {
 			for (const auto& childIndex : node.children) {
 				const auto& childNode = scene.nodes[childIndex];
-				if (childIndex > this->meshes.size()) throw this->_logger->error("Missing child index '{}' mesh", childIndex);
+				const std::string jointName = std::string(childNode.name);
 
 				ozz::animation::offline::RawSkeleton::Joint childJoint = {};
-				childJoint.name = std::string(childNode.name);
+				childJoint.name = jointName;
 
-				processedJoints.insert(childIndex);
-				generateBones(childNode, childJoint, processedJoints);
+				// REGISTER JOINT ---
+				this->joints[jointName] = std::make_unique<rawrbox::GLTFJoint>(this->joints.size(), childNode);
+				// ------------------
 
+				generateBones(childNode, childJoint);
 				parent.children.push_back(childJoint);
 			}
 		};
@@ -395,17 +397,21 @@ namespace rawrbox {
 
 			// BUILD SKELETON STRUCTURE ----
 			ozz::animation::offline::RawSkeleton rawSkeleton;
-			std::unordered_set<size_t> processedBones;
 
 			for (const auto& rootJoint : skin.joints) {
 				auto& root = scene.nodes[rootJoint];
-				if (processedBones.contains(rootJoint)) continue; // This is the only way to determine root joints
+				const std::string rootName = std::string(root.name);
+
+				if (this->joints.contains(rootName)) continue; // This is the only way to determine root joints
 
 				ozz::animation::offline::RawSkeleton::Joint rootBone;
-				rootBone.name = root.name;
+				rootBone.name = rootName;
 
-				processedBones.insert(rootJoint); // Track it so we can track the root joints
-				if (!root.children.empty()) generateBones(root, rootBone, processedBones);
+				// REGISTER JOINT ---
+				this->joints[rootName] = std::make_unique<rawrbox::GLTFJoint>(this->joints.size(), root);
+				// ------------------
+
+				if (!root.children.empty()) generateBones(root, rootBone);
 
 				rawSkeleton.roots.push_back(rootBone);
 			}
@@ -433,20 +439,29 @@ namespace rawrbox {
 
 			// Apply skins on bones --
 			for (auto& joint : skin.joints) {
-				if (joint >= this->meshes.size()) {
-					this->_logger->warn("Invalid mesh index '{}'", joint);
-					continue;
-				}
+				const auto& node = scene.nodes[joint];
+				const std::string jointName = std::string(node.name);
 
-				this->meshes[joint]->skeleton = this->skeletons[i].get();
+				auto fnd = this->joints.find(jointName);
+				if (fnd == this->joints.end()) throw this->_logger->error("Invalid joint '{}', could not find in skeleton", jointName);
+
+				fnd->second->skeleton = this->skeletons[i].get();
 			}
 			// --------------
 		}
 
 		// Apply skins on meshes --
-		for (auto& node : scene.nodes) {
-			if (!node.skinIndex || !node.meshIndex) continue;
-			this->meshes[node.meshIndex.value()]->skeleton = this->skeletons[node.skinIndex.value()].get();
+		for (size_t i = 0; i < scene.nodes.size(); i++) {
+			const auto& node = scene.nodes[i];
+			if (!node.skinIndex) continue;
+
+			size_t skinIndex = node.skinIndex.value();
+			if (skinIndex >= this->skeletons.size()) {
+				this->_logger->warn("Invalid skeleton index '{}' on mesh {}", skinIndex, i);
+				continue;
+			}
+
+			this->meshes[node.meshIndex.value()]->skeleton = this->skeletons[skinIndex].get();
 		}
 		// --------------
 	}
@@ -489,20 +504,22 @@ namespace rawrbox {
 					continue;
 				}
 
-				const auto& mesh = this->meshes[nodeIndex]; // Mesh being affected
-				const auto& node = scene.nodes[nodeIndex];  // Node being affected
-				const bool isSkinAnimation = mesh->skeleton != nullptr;
+				const auto& node = scene.nodes[nodeIndex]; // Node being affected
 
-				// Check if it's a skeleton animation
-				if (isSkinAnimation) {
-					if (gltfAnim.skeleton != nullptr && gltfAnim.skeleton != mesh->skeleton) {
-						this->_logger->warn("Animation '{}' contains 2 or more skeletons, this is not supported! Please split the animation per skeleton", gltfAnim.name);
-						continue;
-					} else {
-						gltfAnim.skeleton = mesh->skeleton;
-					}
-				} else {
+				if (node.meshIndex) {                                            // Vertex animation
+					const auto& mesh = this->meshes[node.meshIndex.value()]; // Mesh being affected
 					this->vertexAnimation[i].insert(mesh.get());
+				} else {
+					auto fnd = this->joints.find(std::string(node.name));
+
+					if (fnd != this->joints.end()) {
+						if (gltfAnim.skeleton != nullptr && gltfAnim.skeleton != fnd->second->skeleton) {
+							this->_logger->warn("Animation '{}' contains 2 or more skeletons, this is not supported! Please split the animation per skeleton", gltfAnim.name);
+							continue;
+						} else {
+							gltfAnim.skeleton = fnd->second->skeleton;
+						}
+					}
 				}
 				// ----------------
 
@@ -518,7 +535,7 @@ namespace rawrbox {
 						case fastgltf::AnimationPath::Translation:
 							{
 								ozz::math::Float3 key = fastgltf::getAccessorElement<ozz::math::Float3>(scene, dataAccessor, iTime);
-								if (!isSkinAnimation) key.z = -key.z; // Convert to left-hand coordinate system
+								if (gltfAnim.skeleton == nullptr) key.z = -key.z; // Convert to left-hand coordinate system
 
 								track.translations.emplace_back(t, key);
 								break;
@@ -526,7 +543,7 @@ namespace rawrbox {
 						case fastgltf::AnimationPath::Rotation:
 							{
 								ozz::math::Quaternion key = fastgltf::getAccessorElement<ozz::math::Quaternion>(scene, dataAccessor, iTime);
-								if (!isSkinAnimation) { // Convert to left-hand coordinate system
+								if (gltfAnim.skeleton == nullptr) { // Convert to left-hand coordinate system
 									key.x = -key.x;
 									key.y = -key.y;
 								}
@@ -537,7 +554,7 @@ namespace rawrbox {
 						case fastgltf::AnimationPath::Scale:
 							{
 								ozz::math::Float3 key = fastgltf::getAccessorElement<ozz::math::Float3>(scene, dataAccessor, iTime);
-								if (!isSkinAnimation) key.z = -key.z; // Convert to left-hand coordinate system
+								if (gltfAnim.skeleton == nullptr) key.z = -key.z; // Convert to left-hand coordinate system
 
 								track.scales.emplace_back(t, key);
 								break;
@@ -559,7 +576,7 @@ namespace rawrbox {
 		//- -----------------------------------------------------------
 	}
 
-	void GLTFImporter::parseAnimations() {
+	void GLTFImporter::parseAnimations() { // I don't like this extra step, but OZZ requires tracks to have all bones and be in order..
 		if (this->_parsedAnimations.empty()) return;
 		ozz::animation::offline::AnimationBuilder builder;
 
@@ -575,7 +592,7 @@ namespace rawrbox {
 
 			if (anim.skeleton != nullptr) {
 				for (std::string bone : anim.skeleton->joint_names()) {
-					rawrAnim.tracks.emplace_back(anim.tracks[bone]);
+					rawrAnim.tracks.emplace_back(anim.tracks[bone]); // Ensure all joints have a track and it's ordered based on skeleton
 				}
 			} else {
 				for (const auto& track : anim.tracks) {
@@ -617,161 +634,117 @@ namespace rawrbox {
 	void GLTFImporter::loadScene(const fastgltf::Asset& scene) {
 		for (const auto& rootScenes : scene.scenes) {
 			for (const auto& nodeIndex : rootScenes.nodeIndices) {
-				this->loadMeshes(scene, scene.nodes[nodeIndex], nullptr);
+				this->loadNodes(scene, scene.nodes[nodeIndex], nullptr);
 			}
 		}
 	}
 
-	void GLTFImporter::loadMeshes(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::GLTFMesh* parentMesh) {
-		auto gltfMesh = std::make_unique<rawrbox::GLTFMesh>(std::string{node.name.begin(), node.name.end()});
+	void GLTFImporter::loadNodes(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::GLTFNode* parentNode) {
+		rawrbox::GLTFNode* newParent = nullptr;
 
-		gltfMesh->parent = parentMesh;
-		gltfMesh->index = this->meshes.size();
-
-		gltfMesh->matrix = this->toMatrix(std::get<fastgltf::TRS>(node.transform));
-		gltfMesh->matrix.toLeftHand();
-
-		if (node.meshIndex) {
-			const bool importBlendShapes = (this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) > 0;
-			const auto& mesh = scene.meshes[node.meshIndex.value()];
-
-			// Weights --
-			std::vector<std::unique_ptr<rawrbox::GLTFBlendShapes>> blendShapes = {};
-
-			if (importBlendShapes && !mesh.weights.empty()) {
-				auto& blendNames = this->targetNames[node.meshIndex.value()];
-				if (blendNames.empty()) {
-					this->_logger->warn("Mesh '{}' has no blend shape name, skipping...", gltfMesh->name);
-					return;
-				}
-
-				if (blendNames.size() != mesh.weights.size()) {
-					this->_logger->warn("Mesh '{}' has {} blend shape names, but only {} weights, skipping...", gltfMesh->name, blendNames.size(), mesh.weights.size());
-					return;
-				}
-
-				blendShapes.resize(blendNames.size());
-				for (size_t i = 0; i < blendNames.size(); i++) {
-					const auto& name = blendNames[i];
-					auto shape = std::make_unique<rawrbox::GLTFBlendShapes>();
-
-					shape->name = fmt::format("{}-{}", gltfMesh->name, name);
-					shape->mesh_index = gltfMesh->index;
-					shape->weight = mesh.weights[shape->mesh_index]; // Default weight
-
-					blendShapes[i] = std::move(shape);
-				}
-			}
-			// ----------
-
-			// Primitives
-			for (const auto& primitive : mesh.primitives) {
-				if (primitive.type != fastgltf::PrimitiveType::Triangles) {
-					this->_logger->warn("Primitive type '{}' not supported", magic_enum::enum_name(primitive.type));
-					continue;
-				}
-
-				// Textures --
-				if (primitive.materialIndex) {
-					if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
-						auto* material = this->materials[primitive.materialIndex.value()].get();
-
-						if (gltfMesh->material != nullptr && gltfMesh->material != material) {
-							this->_logger->warn("Tried to load 2 different materials on the same submesh, this isn't supported!");
-						} else {
-							gltfMesh->material = material;
-						}
-					}
-				}
-				// ----------
-
-				// BLEND SHAPES --
-				if (importBlendShapes && !primitive.targets.empty()) {
-					for (size_t i = 0; i < primitive.targets.size(); i++) {
-						if (blendShapes[i] == nullptr) throw this->_logger->error("Invalid blend shape '{}'", i);
-						const auto& targets = primitive.targets[i];
-
-						// POSITION ---
-						const auto* positionTarget = primitive.findTargetAttribute(i, "POSITION");
-						if (positionTarget != nullptr && positionTarget != targets.end()) {
-							const auto& positionAccessor = scene.accessors[positionTarget->accessorIndex];
-							blendShapes[i]->pos.resize(positionAccessor.count);
-
-							fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, positionAccessor, [&](fastgltf::math::fvec3 pos, size_t index) {
-								blendShapes[i]->pos[index] = rawrbox::Vector3f(pos.x(), pos.y(), pos.z());
-							});
-						}
-						// ----------------
-
-						// NORMAL ---
-						const auto* normalTarget = primitive.findTargetAttribute(i, "NORMAL");
-						if (normalTarget != nullptr && normalTarget != targets.end()) {
-							const auto& normAccessor = scene.accessors[normalTarget->accessorIndex];
-							blendShapes[i]->norms.resize(normAccessor.count);
-
-							fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, normAccessor, [&](fastgltf::math::fvec3 norm, size_t index) {
-								blendShapes[i]->norms[index] = rawrbox::Vector4f(norm.x(), norm.y(), norm.z(), 0.0F);
-							});
-						}
-						// ----------------
-					}
-				}
-				// ----------------
-
-				std::vector<rawrbox::VertexNormBoneData> verts = this->extractVertex(scene, primitive);
-				std::vector<uint32_t> indices = this->extractIndices(scene, primitive);
-
-				// Invert the winding order for left-handed coordinate system
-				for (size_t i = 0; i < indices.size(); i += 3) {
-					std::swap(indices[i + 1], indices[i + 2]);
-				}
-				// ----------
-
-				// OPTIMIZATION ---
-				if ((this->loadFlags & rawrbox::ModelLoadFlags::Optimizer::MESH) > 0) {
-					auto startVert = verts.size();
-					auto startInd = indices.size();
-
-					this->optimizeMesh(verts, indices);
-					this->simplifyMesh(verts, indices);
-
-					if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_OPTIMIZATION_STATS) > 0) {
-						if (startVert != verts.size() || startInd != indices.size()) {
-							this->_logger->info("Optimized mesh '{}'\n\tVertices -> {} to {}\n\tIndices -> {} to {}", fmt::styled(gltfMesh->name, fmt::fg(fmt::color::cyan)), startVert, verts.size(), startInd, indices.size());
-						}
-					}
-				}
-
-				gltfMesh->vertices.insert(gltfMesh->vertices.end(), verts.begin(), verts.end());
-				gltfMesh->indices.insert(gltfMesh->indices.end(), indices.begin(), indices.end());
-			}
-			/// -------
-
-			if (!blendShapes.empty()) {
-				const bool debugBlend = (this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES) > 0;
-
-				if (debugBlend) this->_logger->info("'{}' BLEND SHAPES", fmt::styled(mesh.name, fmt::fg(fmt::color::cyan)));
-				for (auto& shape : blendShapes) {
-					if (debugBlend) {
-						auto nm = rawrbox::StrUtils::split(shape->name, '-');
-						fmt::print("\t---> {} \n", fmt::styled(nm.back(), fmt::fg(fmt::color::cyan)));
-					}
-
-					this->blendShapes.emplace_back(std::move(shape));
-				}
-			}
+		if (node.lightIndex) {
+			this->lights.push_back(std::make_unique<rawrbox::GLTFLight>(this->lights.size(), node, scene.lights[node.lightIndex.value()]));
+		} else if (node.meshIndex) {
+			auto mesh = this->extractMesh(scene, node);
+			if (mesh != nullptr) this->meshes.push_back(std::move(mesh));
 		}
-
-		// Add meshes ---
-		auto* mdlGet = gltfMesh.get();
-		this->meshes.emplace_back(std::move(gltfMesh));
-		// ----
 
 		// Children ---
 		for (const auto& children : node.children) {
-			this->loadMeshes(scene, scene.nodes[children], mdlGet);
+			this->loadNodes(scene, scene.nodes[children], newParent);
 		}
 		// ---
+	}
+
+	std::unique_ptr<rawrbox::GLTFMesh> GLTFImporter::extractMesh(const fastgltf::Asset& scene, const fastgltf::Node& node) {
+		auto gltfMesh = std::make_unique<rawrbox::GLTFMesh>(this->meshes.size(), node);
+
+		size_t meshIndex = node.meshIndex.value();
+		const auto& mesh = scene.meshes[meshIndex];
+
+		const bool importBlendShapes = (this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) > 0;
+
+		// SUB-MESHES ----
+		gltfMesh->primitives.resize(mesh.primitives.size());
+
+		for (size_t i = 0; i < mesh.primitives.size(); i++) {
+			const auto& primitive = mesh.primitives[i];
+			if (primitive.type != fastgltf::PrimitiveType::Triangles) {
+				this->_logger->warn("Primitive type '{}' not supported", magic_enum::enum_name(primitive.type));
+				continue;
+			}
+
+			rawrbox::GLTFPrimitive& rawrPrimitive = gltfMesh->primitives[i];
+			rawrPrimitive.material = primitive.materialIndex.has_value() ? this->materials[primitive.materialIndex.value()].get() : nullptr;
+
+			// BLEND SHAPES --
+			if (importBlendShapes && !primitive.targets.empty()) {
+				rawrPrimitive.blendShapes.resize(primitive.targets.size());
+
+				for (size_t o = 0; o < primitive.targets.size(); o++) {
+					const auto& blendNames = this->targetNames[meshIndex];
+					if (blendNames.empty()) throw this->_logger->error("Invalid blend shape names for mesh '{}'", gltfMesh->name);
+
+					rawrbox::GLTFBlendShape& shape = rawrPrimitive.blendShapes[o];
+					shape.name = fmt::format("{}-{}", gltfMesh->name, blendNames[o]);
+					shape.weight = mesh.weights[o]; // Default weight
+
+					// POSITION ---
+					const auto* positionTarget = primitive.findTargetAttribute(o, "POSITION");
+					if (positionTarget != nullptr) {
+						const auto& positionAccessor = scene.accessors[positionTarget->accessorIndex];
+
+						shape.pos.resize(positionAccessor.count);
+						fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, positionAccessor, [&](fastgltf::math::fvec3 pos, size_t index) {
+							shape.pos[index] = rawrbox::Vector3f(pos.x(), pos.y(), pos.z());
+						});
+					}
+					// ----------------
+
+					// NORMAL ---
+					const auto* normalTarget = primitive.findTargetAttribute(o, "NORMAL");
+					if (normalTarget != nullptr) {
+						const auto& normAccessor = scene.accessors[normalTarget->accessorIndex];
+
+						shape.norms.resize(normAccessor.count);
+						fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, normAccessor, [&](fastgltf::math::fvec3 norm, size_t index) {
+							shape.norms[index] = rawrbox::Vector4f(norm.x(), norm.y(), norm.z(), 0.0F);
+						});
+					}
+					// ----------------
+				}
+			}
+
+			// ---------------
+
+			// VERTICES ---
+			rawrPrimitive.vertices = this->extractVertex(scene, primitive);
+			rawrPrimitive.indices = this->extractIndices(scene, primitive);
+			// -----------
+
+			// OPTIMIZATION ---
+			if ((this->loadFlags & rawrbox::ModelLoadFlags::Optimizer::MESH) > 0) {
+				if (rawrPrimitive.blendShapes.empty()) {
+					auto startVert = rawrPrimitive.vertices.size();
+					auto startInd = rawrPrimitive.indices.size();
+
+					rawrbox::MeshOptimization::optimize(rawrPrimitive.vertices, rawrPrimitive.indices);
+					rawrbox::MeshOptimization::simplify(rawrPrimitive.vertices, rawrPrimitive.indices);
+
+					if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_OPTIMIZATION_STATS) > 0) {
+						if (startVert != rawrPrimitive.vertices.size() || startInd != rawrPrimitive.indices.size()) {
+							this->_logger->info("Optimized mesh '{}'\n\tVertices -> {} to {}\n\tIndices -> {} to {}", fmt::styled(gltfMesh->name, fmt::fg(fmt::color::cyan)), startVert, rawrPrimitive.vertices.size(), startInd, rawrPrimitive.indices.size());
+						}
+					}
+				} else {
+					this->_logger->warn("Mesh '{}' has blend shapes, optimization is not supported!", gltfMesh->name);
+				}
+			}
+			// ----------------
+		}
+		// -------------------
+
+		return gltfMesh;
 	}
 
 	std::vector<rawrbox::VertexNormBoneData> GLTFImporter::extractVertex(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive) {
@@ -857,6 +830,12 @@ namespace rawrbox {
 		fastgltf::iterateAccessorWithIndex<uint32_t>(scene, accessor, [&](uint32_t indice, size_t idx) { indices[idx] = indice; });
 		// -----------
 
+		// Invert the winding order for left-handed coordinate system
+		for (size_t i = 0; i < indices.size(); i += 3) {
+			std::swap(indices[i + 1], indices[i + 2]);
+		}
+		// ----------
+
 		return indices;
 	}
 	// ----------
@@ -899,62 +878,7 @@ namespace rawrbox {
 				      }},
 		    source);
 	}
-
-	rawrbox::Matrix4x4 GLTFImporter::toMatrix(const fastgltf::TRS& mtx) {
-		return rawrbox::Matrix4x4::mtxSRT({mtx.scale.x(), mtx.scale.y(), mtx.scale.z()}, {mtx.rotation.x(), mtx.rotation.y(), mtx.rotation.z(), mtx.rotation.w()}, {mtx.translation.x(), mtx.translation.y(), mtx.translation.z()});
-	}
 	// ----------
-
-	// OPTIMIZATION ---
-	void GLTFImporter::optimizeMesh(std::vector<rawrbox::VertexNormBoneData>& verts, std::vector<uint32_t>& indices) {
-		size_t indiceSize = indices.size();
-		std::vector<uint32_t> remap(indiceSize);
-
-		// Calculate vertex map ---
-		size_t newVerticeCount = meshopt_generateVertexRemap(&remap[0], &indices[0], indiceSize, &verts[0], indiceSize, sizeof(rawrbox::VertexNormBoneData));
-		// ------
-
-		// Optimize index & vertex buffers ---
-		std::vector<uint32_t> resultIndices(indiceSize);
-		std::vector<rawrbox::VertexNormBoneData> resultVertices(newVerticeCount);
-
-		meshopt_remapIndexBuffer(&resultIndices[0], &indices[0], indiceSize, &remap[0]);
-		meshopt_remapVertexBuffer(&resultVertices[0], &verts[0], indiceSize, sizeof(rawrbox::VertexNormBoneData), &remap[0]);
-		// -------------
-
-		// Vertex cache
-		meshopt_optimizeVertexCache(&resultIndices[0], &resultIndices[0], indiceSize, newVerticeCount);
-
-		// Overdraw
-		meshopt_optimizeOverdraw(&resultIndices[0], &resultIndices[0], indiceSize, &resultVertices[0].position.x, newVerticeCount, sizeof(rawrbox::VertexNormBoneData), 1.05f);
-
-		// Vertex fetch
-		meshopt_optimizeVertexFetch(&resultVertices[0], &resultIndices[0], indiceSize, &resultVertices[0], newVerticeCount, sizeof(rawrbox::VertexNormBoneData));
-
-		verts.swap(resultVertices);
-		indices.swap(resultIndices);
-	}
-
-	void GLTFImporter::simplifyMesh(std::vector<rawrbox::VertexNormBoneData>& verts, std::vector<uint32_t>& indices, float complexity_threshold) {
-		const size_t index_count = indices.size();
-		const size_t vertex_count = verts.size();
-
-		const size_t target_index_count = index_count * complexity_threshold;
-		constexpr float target_error = 1e-2f;
-		constexpr unsigned int options = 0;
-
-		std::vector<uint32_t> lod_indices(index_count);
-		float lod_error = 0.0f;
-
-		lod_indices.resize(meshopt_simplify(lod_indices.data(), indices.data(), index_count,
-		    reinterpret_cast<const float*>(verts.data()),
-		    vertex_count, sizeof(rawrbox::VertexNormBoneData), target_index_count,
-		    target_error, options, &lod_error));
-
-		indices.swap(lod_indices);
-	}
-
-	// -----------
 	// -------------
 
 	// PUBLIC -------
@@ -963,6 +887,8 @@ namespace rawrbox {
 		this->_logger.reset();
 
 		this->meshes.clear(); // Clear old meshes
+		this->joints.clear(); // Clear old joints
+		this->lights.clear(); // Clear old lights
 
 		this->textures.clear();     // Clear old textures
 		this->_texturesMap.clear(); // Clear old textures

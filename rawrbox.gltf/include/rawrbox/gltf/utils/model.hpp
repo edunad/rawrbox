@@ -9,7 +9,7 @@ namespace rawrbox {
 	public:
 		template <typename M = rawrbox::MaterialUnlit>
 			requires(std::derived_from<M, rawrbox::MaterialBase>)
-		static rawrbox::Mesh<typename M::vertexBufferType> extractMesh(const rawrbox::GLTFMesh& gltfMesh) {
+		static rawrbox::Mesh<typename M::vertexBufferType> extractMesh(const rawrbox::GLTFMesh& gltfMesh, const rawrbox::GLTFPrimitive& primitive) {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh;
 
 			mesh.name = gltfMesh.name;
@@ -17,8 +17,8 @@ namespace rawrbox {
 			mesh.matrix = gltfMesh.matrix;
 
 			// Textures ---
-			if (gltfMesh.material != nullptr) {
-				auto* mat = gltfMesh.material;
+			if (primitive.material != nullptr) {
+				auto* mat = primitive.material;
 
 				mesh.setTransparent(mat->alpha);
 				mesh.setCulling(mat->doubleSided ? Diligent::CULL_MODE::CULL_MODE_NONE : Diligent::CULL_MODE::CULL_MODE_BACK);
@@ -50,19 +50,17 @@ namespace rawrbox {
 					mesh.setEmissionTexture(mat->emissive, mat->emissionFactor);
 				}
 				// --------
-			} else {
-				mesh.setColor(gltfMesh.color);
 			}
 			// ------------
 
-			mesh.indices = gltfMesh.indices;
+			mesh.indices = primitive.indices;
 
 			if constexpr (supportsNormals<typename M::vertexBufferType> && supportsBones<typename M::vertexBufferType>) {
-				mesh.vertices = gltfMesh.vertices;
+				mesh.vertices = primitive.vertices;
 			} else {
-				mesh.vertices.reserve(gltfMesh.vertices.size());
+				mesh.vertices.reserve(primitive.vertices.size());
 
-				for (const auto& v : gltfMesh.vertices) {
+				for (const auto& v : primitive.vertices) {
 					if constexpr (supportsNormals<typename M::vertexBufferType>) {
 						mesh.vertices.push_back(rawrbox::VertexNormData(v.position, v.uv, v.normal, v.tangent));
 					} else if constexpr (supportsBones<typename M::vertexBufferType>) {
@@ -87,7 +85,7 @@ namespace rawrbox {
 			// Bones
 			if (gltfMesh.skeleton != nullptr) {
 				mesh.skeleton = gltfMesh.skeleton;
-				mesh.setOptimizable(false); // Don't merge meshes
+				mesh.setMergeable(false); // Don't merge meshes
 			}
 			// -------------------
 

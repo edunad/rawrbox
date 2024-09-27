@@ -70,7 +70,7 @@ namespace rawrbox {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 
 			mesh.lineMode = true;
-			mesh.setOptimizable(false);
+			mesh.setMergeable(false);
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				mesh.vertices = {

@@ -15,12 +15,13 @@ namespace rawrbox {
 		// INTERNAL -------
 		void loadMeshes(const rawrbox::GLTFImporter& model) {
 			for (const auto& gltfMesh : model.meshes) {
-				if (gltfMesh->vertices.empty() || gltfMesh->indices.empty()) continue; // Bone / empty
+				if (gltfMesh->primitives.empty()) continue; // Bone / empty
+				for (const auto& gltfPrimitive : gltfMesh->primitives) {
+					auto mesh = rawrbox::GLTFUtils::extractMesh<M>(*gltfMesh, gltfPrimitive);
+					mesh.meshID = gltfMesh->index;
 
-				auto mesh = rawrbox::GLTFUtils::extractMesh<M>(*gltfMesh);
-				mesh.meshID = gltfMesh->index;
-
-				this->addMesh(mesh);
+					this->addMesh(mesh);
+				}
 			}
 		}
 
@@ -46,7 +47,7 @@ namespace rawrbox {
 					auto* rawrMesh = this->getMeshByID(mesh->index);
 					if (rawrMesh == nullptr) continue;
 
-					rawrMesh->setOptimizable(false);
+					rawrMesh->setMergeable(false);
 					rawrMesh->meshID = 0x00000000; // Reset id, we don't need it anymore
 
 					this->_vertexAnimations[anim.first].push_back(rawrMesh); // Horrible, i know.
@@ -58,47 +59,48 @@ namespace rawrbox {
 		void loadBlendShapes(const rawrbox::GLTFImporter& model) {
 			this->_blend_shapes.clear();
 
-			for (const auto& blend : model.blendShapes) {
-				if (blend->mesh_index >= this->_meshes.size()) {
-					this->_logger->warn("Failed to find mesh {}", blend->mesh_index);
-					continue;
+			for (size_t i = 0; i < model.meshes.size(); i++) {
+				const auto& mesh = model.meshes[i];
+
+				for (const auto& primitive : mesh->primitives) {
+					for (const auto& blend : primitive.blendShapes) {
+						auto s = std::make_unique<rawrbox::BlendShapes<M>>();
+						s->normals = blend.norms;
+						s->pos = blend.pos;
+						s->weight = blend.weight;
+
+						s->mesh = this->_meshes[i].get();
+						s->mesh->setMergeable(false);
+
+						this->_blend_shapes[blend.name] = std::move(s);
+					}
 				}
-
-				auto s = std::make_unique<rawrbox::BlendShapes<M>>();
-				s->normals = blend->norms;
-				s->pos = blend->pos;
-				s->weight = blend->weight;
-
-				s->mesh = this->_meshes[blend->mesh_index].get();
-				s->mesh->setOptimizable(false);
-
-				this->_blend_shapes[blend->name] = std::move(s);
 			}
 		}
 
 		void loadLights(const rawrbox::GLTFImporter& model) {
-			/*for (const auto& assimpLights : model.lights) {
+			for (const auto& gltfLight : model.lights) {
 				rawrbox::LightBase* light = nullptr;
 
-				switch (assimpLights.type) {
+				switch (gltfLight->type) {
 					case rawrbox::LightType::POINT:
-						light = this->template addLight<rawrbox::PointLight>(assimpLights.parentID, assimpLights.pos, assimpLights.diffuse, 10.F); // TODO: BROKEN
+						light = this->template addLight<rawrbox::PointLight>(gltfLight->parent, gltfLight->pos, gltfLight->color, gltfLight->radius);
 						break;
 					case rawrbox::LightType::SPOT:
-						light = this->template addLight<rawrbox::SpotLight>(assimpLights.parentID, assimpLights.pos, assimpLights.direction, assimpLights.diffuse, assimpLights.angleInnerCone, assimpLights.angleOuterCone, 10.F); // TODO: BROKEN
+						light = this->template addLight<rawrbox::SpotLight>(gltfLight->parent, gltfLight->pos, gltfLight->direction, gltfLight->color, gltfLight->angleInnerCone, gltfLight->angleOuterCone, gltfLight->radius);
 						break;
-					case rawrbox::LightType::DIR:
-						light = this->template addLight<rawrbox::DirectionalLight>(assimpLights.parentID, assimpLights.pos, assimpLights.direction, assimpLights.diffuse);
+					case rawrbox::LightType::DIRECTIONAL:
+						light = this->template addLight<rawrbox::DirectionalLight>(gltfLight->parent, gltfLight->pos, gltfLight->direction, gltfLight->color);
 						break;
 
 					default:
 					case rawrbox::LightType::UNKNOWN:
-						this->_logger->warn("Failed to create unknown light '{}'", assimpLights.name);
+						this->_logger->warn("Failed to create unknown light '{}'", gltfLight->name);
 						break;
 				}
 
-				if (light != nullptr) light->setIntensity(assimpLights.intensity);
-			}*/
+				if (light != nullptr) light->setIntensity(gltfLight->intensity);
+			}
 		}
 		// -------------------
 
@@ -113,10 +115,7 @@ namespace rawrbox {
 		void load(const rawrbox::GLTFImporter& model) {
 			this->loadMeshes(model);
 			this->loadBlendShapes(model);
-
-			if constexpr (supportsBones<typename M::vertexBufferType>) {
-				this->loadAnimations(model);
-			}
+			this->loadAnimations(model);
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				this->loadLights(model);

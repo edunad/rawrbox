@@ -5,6 +5,7 @@
 #include <rawrbox/render/models/animations/skeleton.hpp>
 #include <rawrbox/render/models/animations/vertex.hpp>
 #include <rawrbox/render/models/base.hpp>
+#include <rawrbox/render/models/utils/optimization.hpp>
 #include <rawrbox/render/static.hpp>
 
 namespace rawrbox {
@@ -28,28 +29,32 @@ namespace rawrbox {
 		std::vector<rawrbox::LightBase> _lights = {};
 		// -----
 
-		bool _canOptimize = true;
+		bool _canMerge = true;
 
 		// ANIMATIONS ----
-		virtual void playAnimation(size_t index, ozz::animation::Animation* animation) {
-			if (animation == nullptr) return;
+		virtual rawrbox::AnimationSampler* playAnimation(size_t index, ozz::animation::Animation* animation, std::function<void(const std::string&)> onComplete = nullptr) {
+			if (animation == nullptr) return nullptr;
 
 			auto name = animation->name();
 			switch (animation->type) {
-				case ozz::animation::UNKNOWN:
-					this->_logger->warn("Unknown animation type, skipping");
-					break;
 				case ozz::animation::VERTEX:
-					this->_playingAnimations[name] = std::make_unique<rawrbox::AnimationVertexSampler>(index, animation);
-					break;
+					this->_playingAnimations[name] = std::make_unique<rawrbox::AnimationVertexSampler>(index, animation, onComplete);
+					return this->_playingAnimations[name].get();
 				case ozz::animation::SKELETON:
 					if constexpr (supportsBones<typename M::vertexBufferType>) {
-						this->_playingAnimations[name] = std::make_unique<rawrbox::AnimationSkeletonSampler>(index, animation);
+						this->_playingAnimations[name] = std::make_unique<rawrbox::AnimationSkeletonSampler>(index, animation, onComplete);
+						return this->_playingAnimations[name].get();
 					} else {
-						this->_logger->warn("Model does not support bones");
+						this->_logger->warn("Failed to play animation {}, model does not support bones", name);
 					}
 					break;
+				case ozz::animation::UNKNOWN:
+				default:
+					this->_logger->warn("Unknown animation type, skipping");
+					break;
 			}
+
+			return nullptr;
 		}
 
 		void sampleAnimations(rawrbox::AnimationSampler* sample) const {
@@ -62,7 +67,7 @@ namespace rawrbox {
 					if constexpr (supportsBones<typename M::vertexBufferType>) {
 						this->processSkeletonAnimations(dynamic_cast<rawrbox::AnimationSkeletonSampler*>(sample));
 					} else {
-						throw this->_logger->error("Model does not support bones");
+						throw this->_logger->error("Failed to play animation {}, model does not support bones", sample->getAnimation()->name());
 					}
 					break;
 
@@ -119,12 +124,11 @@ namespace rawrbox {
 				const auto& anim = it->second;
 				if (anim == nullptr) continue;
 
-				bool finished = anim->tick(rawrbox::DELTA_TIME);
-				this->sampleAnimations(anim.get());
-
-				if (finished) {
+				if (anim->tick(rawrbox::DELTA_TIME)) {
 					it = this->_playingAnimations.erase(it);
 					continue;
+				} else {
+					this->sampleAnimations(anim.get());
 				}
 
 				++it;
@@ -169,12 +173,12 @@ namespace rawrbox {
 			this->_lights.clear();
 		}
 
-		virtual void flattenMeshes(bool optimize = true, bool sort = true) {
+		virtual void flattenMeshes(bool merge = true, bool sort = true) {
 			this->_mesh->clear();
 
 			// Merge same meshes to reduce calls
-			if (this->_canOptimize && optimize) {
-				this->optimize();
+			if (this->_canMerge && merge) {
+				this->merge();
 			}
 			// ----------------------
 
@@ -203,12 +207,28 @@ namespace rawrbox {
 			// --------
 		}
 
-		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
-		virtual void optimize() {
+		virtual void setMergeable(bool status) { this->_canMerge = status; }
+
+		// Note: this can be quite slow, use sparingly
+		virtual void optimize(float complexity_threshold = 0.9F) {
+			for (auto& mesh : this->_meshes) {
+				if (mesh == nullptr || mesh->empty()) continue;
+#ifdef _DEBUG
+				size_t oldVerts = mesh->vertices.size();
+				size_t oldInds = mesh->indices.size();
+#endif
+				rawrbox::MeshOptimization::optimize(mesh->vertices, mesh->indices);
+				rawrbox::MeshOptimization::simplify(mesh->vertices, mesh->indices, complexity_threshold);
+#ifdef _DEBUG
+				if (oldVerts != mesh->vertices.size() || oldInds != mesh->indices.size()) this->_logger->info("Optimized mesh for rendering (Before {} | After {})", oldVerts, mesh->vertices.size());
+#endif
+			}
+		}
+
+		virtual void merge() {
 #ifdef _DEBUG
 			size_t old = this->_meshes.size();
 #endif
-
 			for (size_t i1 = 0; i1 < this->_meshes.size(); i1++) {
 				auto& mesh1 = this->_meshes[i1];
 
@@ -218,20 +238,21 @@ namespace rawrbox {
 
 				for (size_t i2 = this->_meshes.size() - 1; i2 > i1; i2--) {
 					auto& mesh2 = this->_meshes[i2];
-					if (!mesh1->canOptimize(*mesh2)) continue;
+					if (!mesh1->canMerge(*mesh2)) continue;
 
 					reserveVertices += mesh2->vertices.size();
 					reserveIndices += mesh2->indices.size();
 				}
 
 				if (reserveVertices == mesh1->vertices.size()) continue;
+
 				mesh1->vertices.reserve(reserveVertices);
 				mesh1->indices.reserve(reserveIndices);
 
 				// merge what it can
 				for (size_t i2 = this->_meshes.size() - 1; i2 > i1; i2--) {
 					auto& mesh2 = this->_meshes[i2];
-					if (!mesh1->canOptimize(*mesh2)) continue;
+					if (!mesh1->canMerge(*mesh2)) continue;
 
 					mesh1->merge(*mesh2);
 					this->_meshes.erase(this->_meshes.begin() + i2);
@@ -239,7 +260,7 @@ namespace rawrbox {
 			}
 
 #ifdef _DEBUG
-			if (old != this->_meshes.size() && !this->isUploaded()) this->_logger->info("Optimized mesh for rendering (Before {} | After {}), this will only display once to prevent spam.", old, this->_meshes.size()); // Only do it once
+			if (old != this->_meshes.size() && !this->isUploaded()) this->_logger->info("Merged mesh for rendering (Before {} | After {}), this will only display once to prevent spam.", old, this->_meshes.size()); // Only do it once
 #endif
 		}
 
@@ -256,30 +277,31 @@ namespace rawrbox {
 			throw this->_logger->error("TODO");
 		}
 
-		virtual bool playAnimation(bool loop, float speed, std::function<void()> onComplete = nullptr) {
-			this->_playingAnimations.clear();
+		virtual std::vector<rawrbox::AnimationSampler*> playAnimation(std::function<void(const std::string&)> onComplete = nullptr) {
+			std::vector<rawrbox::AnimationSampler*> anims = {};
 
-			for (size_t i = 0; i < this->_animations.size(); i++)
-				this->playAnimation(i, this->_animations[i]);
+			this->stopAllAnimations();
+			for (size_t i = 0; i < this->_animations.size(); i++) {
+				anims.push_back(this->playAnimation(i, this->_animations[i], onComplete));
+			}
 
-			return true;
+			return anims;
 		}
 
-		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F, bool forceSingle = false, std::function<void()> onComplete = nullptr) {
+		virtual rawrbox::AnimationSampler* playAnimation(const std::string& name, bool forceSingle = false, std::function<void(const std::string&)> onComplete = nullptr) {
 			for (size_t i = 0; i < this->_animations.size(); i++) {
 				ozz::animation::Animation* anim = this->_animations[i];
 				if (anim == nullptr || anim->name() != name) continue;
 
 				auto fnd = this->_playingAnimations.find(name);
-				if (fnd != this->_playingAnimations.end()) return false; // Already playing
+				if (fnd != this->_playingAnimations.end()) return nullptr; // Already playing
 
 				if (forceSingle) this->stopAllAnimations();
-				this->playAnimation(i, anim);
-
-				return true;
+				return this->playAnimation(i, anim, onComplete);
 			}
 
-			return false;
+			this->_logger->warn("Failed to find animation {}", name);
+			return nullptr;
 		}
 
 		virtual void stopAllAnimations() {
@@ -306,15 +328,11 @@ namespace rawrbox {
 		// LIGHTS ------
 		template <typename T = rawrbox::LightBase, typename... CallbackArgs>
 			requires(std::derived_from<T, rawrbox::LightBase>)
-		T* addLight(const std::string& parentMesh = "", CallbackArgs&&... args) {
+		T* addLight(std::optional<size_t> parentIndex, CallbackArgs&&... args) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				auto parent = this->_meshes.back().get();
-				if (!parentMesh.empty()) {
-					auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
-						return msh->getName() == parentMesh;
-					});
-
-					if (fnd != this->_meshes.end()) parent = fnd->get();
+				auto* parent = this->_meshes.back().get();
+				if (parentIndex.has_value() && parentIndex.value() < this->_meshes.size()) {
+					parent = this->_meshes[parentIndex.value()].get();
 				}
 
 				auto light = rawrbox::LIGHTS::add<T>(std::forward<CallbackArgs>(args)...);

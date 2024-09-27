@@ -15,7 +15,7 @@ namespace rawrbox {
 			    .deriveClass<ModelC, ModelBaseC>(name.c_str())
 			    // OPTIMIZATION ----
 			    .addFunction("flattenMeshes", &ModelC::flattenMeshes)
-			    .addFunction("setOptimizable", &ModelC::setOptimizable)
+			    .addFunction("setMergeable", &ModelC::setMergeable)
 			    .addFunction("optimize", &ModelC::optimize)
 			    // ----
 

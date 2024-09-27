@@ -83,7 +83,7 @@ namespace rawrbox {
 	class Mesh {
 
 	protected:
-		bool _canOptimize = true;
+		bool _canMerge = true;
 		bool _wireframe = false;
 		bool _lineMode = false;
 		bool _transparent = false;
@@ -287,11 +287,11 @@ namespace rawrbox {
 			this->bbox.combine(other.bbox);
 		}
 
-		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
-		virtual bool isOptimizable() const { return this->_canOptimize; }
+		virtual void setMergeable(bool status) { this->_canMerge = status; }
+		virtual bool isMergeable() const { return this->_canMerge; }
 
-		[[nodiscard]] virtual bool canOptimize(const rawrbox::Mesh<T>& other) const {
-			if (!this->_canOptimize || !other._canOptimize) return false;
+		[[nodiscard]] virtual bool canMerge(const rawrbox::Mesh<T>& other) const {
+			if (!this->_canMerge || !other._canMerge) return false;
 
 			if (this->vertices.size() + other.vertices.size() >= RB_RENDER_MAX_VERTICES) return false; // Max vertice limit
 			if (this->indices.size() + other.indices.size() >= RB_RENDER_MAX_INDICES) return false;    // Max indice limit

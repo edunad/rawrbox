@@ -51,6 +51,7 @@ namespace rawrbox {
 		[[nodiscard]] rawrbox::Vector3f getPos() const;
 		[[nodiscard]] rawrbox::Vector3f getScale() const;
 		[[nodiscard]] rawrbox::Vector4f getRotation() const;
+		[[nodiscard]] rawrbox::Vector3f getForward() const;
 
 		void decompose(rawrbox::Vector3f& pos, rawrbox::Vector4f& rotation, rawrbox::Vector3f& scale) const;
 

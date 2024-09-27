@@ -92,13 +92,11 @@ namespace rawrbox {
 				auto& blendNormals = shape.second->normals;
 
 				if (!blendPos.empty() && blendPos.size() != verts.size()) {
-					this->_logger->info("Blendshape verts do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendPos.size());
-					return;
+					throw this->_logger->error("Blendshape verts do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendPos.size());
 				}
 
 				if (!blendNormals.empty() && blendNormals.size() != verts.size()) {
-					this->_logger->info("Blendshape normals do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendNormals.size());
-					return;
+					throw this->_logger->error("Blendshape normals do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendNormals.size());
 				}
 
 				float step = std::clamp(shape.second->weight, 0.F, 1.F);
@@ -192,6 +190,7 @@ namespace rawrbox {
 			IndcBuffDesc.BindFlags = Diligent::BIND_INDEX_BUFFER;
 			IndcBuffDesc.Usage = this->isDynamic() ? Diligent::USAGE_DEFAULT : Diligent::USAGE_IMMUTABLE; // TODO: Diligent::USAGE_SPARSE;
 			IndcBuffDesc.Size = static_cast<uint32_t>(sizeof(uint32_t)) * indcSize;
+			IndcBuffDesc.ElementByteStride = sizeof(uint32_t);
 
 			Diligent::BufferData IBData;
 			IBData.pData = this->_mesh->indices.data();

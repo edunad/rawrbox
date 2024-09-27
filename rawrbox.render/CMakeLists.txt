@@ -91,8 +91,8 @@ CPMAddPackage(
         guillaumeblanc/ozz-animation
     GIT_TAG
         0.15.0
-    PATCH_COMMAND
-        git apply --reject --whitespace=fix ${CMAKE_CURRENT_SOURCE_DIR}/patch/ozz.patch
+    PATCHES
+        ${CMAKE_CURRENT_SOURCE_DIR}/patch/ozz.patch
     OPTIONS
         "ozz_build_tools OFF"
         "ozz_build_fbx OFF"
@@ -117,7 +117,7 @@ if(utfcpp_ADDED)
     set_lib_runtime_mt(utf8cpp)
 endif()
 
-CPMAddPackage("gh:sammycage/lunasvg@2.4.1")
+CPMAddPackage("gh:sammycage/lunasvg@2.4.0") # 2.4.1 causes a weird error on build
 if(lunasvg_ADDED)
     set_lib_runtime_mt(lunasvg)
 endif()

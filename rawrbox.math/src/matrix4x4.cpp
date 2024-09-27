@@ -162,6 +162,10 @@ namespace rawrbox {
 		return result;
 	}
 
+	rawrbox::Vector3f Matrix4x4::getForward() const {
+		return {this->mtx[8], this->mtx[9], this->mtx[10]};
+	}
+
 	void Matrix4x4::decompose(rawrbox::Vector3f& pos, rawrbox::Vector4f& rotation, rawrbox::Vector3f& scale) const {
 		pos = this->getPos();
 		rotation = this->getRotation();

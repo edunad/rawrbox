@@ -5,5 +5,5 @@ namespace rawrbox {
 		this->_direction = direction.normalized();
 	};
 
-	rawrbox::LightType DirectionalLight::getType() const { return LightType::DIR; };
+	rawrbox::LightType DirectionalLight::getType() const { return LightType::DIRECTIONAL; };
 } // namespace rawrbox

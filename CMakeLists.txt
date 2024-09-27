@@ -6,7 +6,6 @@ include("cmake/rawrbox_utils.cmake")
 
 # SETUP CPM -----
 include("cmake/cpm.cmake")
-CPMUsePackageLock(package-lock.cmake)
 # ---------------
 
 # Versioning

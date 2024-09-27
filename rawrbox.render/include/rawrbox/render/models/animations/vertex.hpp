@@ -11,7 +11,7 @@ namespace rawrbox {
 		ozz::vector<ozz::math::SoaTransform> _output;
 
 	public:
-		AnimationVertexSampler(size_t index, ozz::animation::Animation* anim) : rawrbox::AnimationSampler(index, anim) {
+		AnimationVertexSampler(size_t index, ozz::animation::Animation* anim, std::function<void(const std::string&)> onComplete = nullptr) : rawrbox::AnimationSampler(index, anim, onComplete) {
 			this->_context.Resize(anim->num_tracks());
 			this->_output.resize(anim->num_soa_tracks());
 		}

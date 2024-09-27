@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/math/bbox.hpp>
+#include <rawrbox/render/lights/types.hpp>
 #include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/utils/logger.hpp>
 
@@ -29,9 +30,8 @@ namespace rawrbox {
 			const uint32_t PRINT_BONE_STRUCTURE = 1 << 20;
 			const uint32_t PRINT_MATERIALS = 1 << 21;
 			const uint32_t PRINT_ANIMATIONS = 1 << 22;
-			const uint32_t PRINT_METADATA = 1 << 23;
-			const uint32_t PRINT_BLENDSHAPES = 1 << 24;
-			const uint32_t PRINT_OPTIMIZATION_STATS = 1 << 25;
+			const uint32_t PRINT_BLENDSHAPES = 1 << 23;
+			const uint32_t PRINT_OPTIMIZATION_STATS = 1 << 24;
 		} // namespace Debug
 
 		namespace Optimizer {
@@ -74,33 +74,94 @@ namespace rawrbox {
 		explicit GLTFMaterial(std::string _name) : name(std::move(_name)) {};
 	};
 
-	struct GLTFBlendShapes {
+	struct GLTFBlendShape {
 		std::string name;
 		float weight = 0.F;
-
-		size_t mesh_index = 0;
 
 		std::vector<rawrbox::Vector3f> pos = {};
 		std::vector<rawrbox::Vector4f> norms = {};
 	};
 
-	struct GLTFMesh {
-	public:
+	struct GLTFNode {
 		size_t index = 0;
 
 		std::string name;
-		rawrbox::BBOX bbox = {};
 		rawrbox::Matrix4x4 matrix = {};
 
+		GLTFNode(size_t idx, const fastgltf::Node& node) : name(std::move(node.name)), index(idx) {
+			auto mtx = std::get<fastgltf::TRS>(node.transform);
+
+			this->matrix = rawrbox::Matrix4x4::mtxSRT({mtx.scale.x(), mtx.scale.y(), mtx.scale.z()}, {mtx.rotation.x(), mtx.rotation.y(), mtx.rotation.z(), mtx.rotation.w()}, {mtx.translation.x(), mtx.translation.y(), mtx.translation.z()});
+			this->matrix.toLeftHand();
+		};
+	};
+
+	struct GLTFLight : public rawrbox::GLTFNode {
+		rawrbox::LightType type = rawrbox::LightType::UNKNOWN;
+		rawrbox::Colorf color = rawrbox::Colors::White();
+
+		rawrbox::Vector3f pos = {};
+		rawrbox::Vector3f direction = {};
+
+		std::optional<size_t> parent = std::nullopt;
+
+		float angleInnerCone = 0.F;
+		float angleOuterCone = 0.F;
+
+		float intensity = 1.F;
+		float radius = 0.F;
+
+		GLTFLight(size_t idx, const fastgltf::Node& node, const fastgltf::Light& light) : rawrbox::GLTFNode(idx, node) {
+
+			this->color = rawrbox::Colorf(light.color.x(), light.color.y(), light.color.z(), 1.0F);
+			this->radius = light.range.value_or(10.F);
+
+			this->intensity = light.intensity / 12.F; // ???
+			this->angleInnerCone = light.innerConeAngle.value_or(0.F);
+			this->angleOuterCone = light.outerConeAngle.value_or(0.F);
+
+			this->pos = this->matrix.getPos();
+			this->direction = this->matrix.getForward();
+
+			if (node.meshIndex) this->parent = node.meshIndex.value();
+
+			switch (light.type) {
+				case fastgltf::LightType::Directional:
+					this->type = rawrbox::LightType::DIRECTIONAL;
+					break;
+				case fastgltf::LightType::Spot:
+					this->type = rawrbox::LightType::SPOT;
+					break;
+				case fastgltf::LightType::Point:
+					this->type = rawrbox::LightType::POINT;
+					break;
+			}
+		};
+	};
+
+	struct GLTFPrimitive {
 		rawrbox::GLTFMaterial* material = nullptr;
-		ozz::animation::Skeleton* skeleton = nullptr;
-		rawrbox::GLTFMesh* parent = nullptr;
+		std::vector<rawrbox::GLTFBlendShape> blendShapes = {};
 
 		std::vector<rawrbox::VertexNormBoneData> vertices = {};
 		std::vector<uint32_t> indices = {};
+	};
 
-		rawrbox::Color color = rawrbox::Colors::White();
-		GLTFMesh(std::string _name) : name(std::move(_name)) {};
+	struct GLTFMesh : public rawrbox::GLTFNode {
+	public:
+		rawrbox::BBOX bbox = {};
+
+		std::vector<rawrbox::GLTFPrimitive> primitives = {};
+
+		ozz::animation::Skeleton* skeleton = nullptr;
+
+		GLTFMesh(size_t idx, const fastgltf::Node& node) : rawrbox::GLTFNode(idx, node) {};
+	};
+
+	struct GLTFJoint : public rawrbox::GLTFNode {
+		ozz::animation::Skeleton* skeleton = nullptr;
+
+		GLTFJoint(size_t idx, const fastgltf::Node& node) : rawrbox::GLTFNode(idx, node) {};
 	};
 
 	struct GLTFAnimation {
@@ -149,7 +210,9 @@ namespace rawrbox {
 
 		// MODEL ---
 		virtual void loadScene(const fastgltf::Asset& scene);
-		virtual void loadMeshes(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::GLTFMesh* parentMesh = nullptr);
+		virtual void loadNodes(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::GLTFNode* parentNode = nullptr);
+
+		virtual std::unique_ptr<rawrbox::GLTFMesh> extractMesh(const fastgltf::Asset& scene, const fastgltf::Node& node);
 
 		virtual std::vector<rawrbox::VertexNormBoneData> extractVertex(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive);
 		virtual std::vector<uint32_t> extractIndices(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive);
@@ -157,7 +220,6 @@ namespace rawrbox {
 
 		// UTILS ---
 		virtual fastgltf::sources::ByteView getSourceData(const fastgltf::Asset& scene, const fastgltf::DataSource& source);
-		virtual rawrbox::Matrix4x4 toMatrix(const fastgltf::TRS& mtx);
 
 		template <typename T, std::size_t Extent>
 		fastgltf::span<T, fastgltf::dynamic_extent> subspan(fastgltf::span<T, Extent> span, size_t offset, size_t count = fastgltf::dynamic_extent) {
@@ -176,11 +238,6 @@ namespace rawrbox {
 			return fastgltf::span<T>{span.data() + offset, count};
 		}
 		// ------
-
-		// OPTIMIZATION ---
-		virtual void optimizeMesh(std::vector<rawrbox::VertexNormBoneData>& verts, std::vector<uint32_t>& indices);
-		virtual void simplifyMesh(std::vector<rawrbox::VertexNormBoneData>& verts, std::vector<uint32_t>& indices, float complexity_threshold = 0.9F);
-		// -----------
 	public:
 		std::filesystem::path filePath;
 		uint32_t loadFlags = 0;
@@ -197,13 +254,14 @@ namespace rawrbox {
 		// SKINNING ---
 		std::vector<ozz::unique_ptr<ozz::animation::Skeleton>> skeletons = {};
 		std::vector<ozz::unique_ptr<ozz::animation::Animation>> animations = {};
+		std::unordered_map<std::string, std::unique_ptr<rawrbox::GLTFJoint>> joints = {};
 
 		std::unordered_map<size_t, std::unordered_set<rawrbox::GLTFMesh*>> vertexAnimation = {}; // Animation index -> mesh
 		// ---------
 
-		// BLEND SHAPES ---
-		std::vector<std::unique_ptr<rawrbox::GLTFBlendShapes>> blendShapes = {};
-		// ----------------
+		// LIGHTS ----
+		std::vector<std::unique_ptr<rawrbox::GLTFLight>> lights = {};
+		// -------------
 
 		// MODELS -------
 		std::vector<std::unique_ptr<rawrbox::GLTFMesh>> meshes = {};

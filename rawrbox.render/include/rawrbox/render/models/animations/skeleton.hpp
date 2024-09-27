@@ -10,7 +10,7 @@ namespace rawrbox {
 	class AnimationSkeletonSampler : public rawrbox::AnimationSampler {
 	private:
 	public:
-		AnimationSkeletonSampler(size_t index, ozz::animation::Animation* anim) : rawrbox::AnimationSampler(index, anim) {}
+		AnimationSkeletonSampler(size_t index, ozz::animation::Animation* anim, std::function<void(const std::string&)> onComplete = nullptr) : rawrbox::AnimationSampler(index, anim, onComplete) {}
 
 		// UTILS ----
 		virtual ozz::vector<ozz::math::Float4x4> getOutput(const ozz::animation::Skeleton* skeleton) {
