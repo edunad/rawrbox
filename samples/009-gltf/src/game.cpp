@@ -79,7 +79,7 @@ namespace gltf {
 		if (this->_ready) return;
 
 		// PHASMO
-		/*{
+		{
 			auto* mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceGLTF>("./assets/models/ps1_phasmophobia/scene.glb")->get();
 
 			this->_phasmo = std::make_unique<rawrbox::GLTFModel<rawrbox::MaterialLit>>();
@@ -87,7 +87,7 @@ namespace gltf {
 
 			this->_phasmo->setPos({7, 1.1F, 2.F});
 			this->_phasmo->upload();
-		}*/
+		}
 		// -------
 
 		// TV
@@ -111,7 +111,7 @@ namespace gltf {
 		// ----------
 
 		// BLEND SHAPE
-		/*{
+		{
 			auto* mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceGLTF>("./assets/models/shape_keys/shape_keys.glb")->get();
 
 			this->_blendTest = std::make_unique<rawrbox::GLTFModel<>>();
@@ -119,11 +119,11 @@ namespace gltf {
 
 			this->_blendTest->setPos({1.F, 0.4F, -3.5F});
 			this->_blendTest->upload(rawrbox::UploadType::FIXED_DYNAMIC);
-		}*/
+		}
 		// ----------
 
 		// ANIMATION TEST
-		/*{
+		{
 			auto* mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceGLTF>("./assets/models/anim_test.glb")->get();
 
 			this->_animTest = std::make_unique<rawrbox::GLTFModel<rawrbox::MaterialSkinned>>();
@@ -132,11 +132,11 @@ namespace gltf {
 			this->_animTest->setScale({0.25F, 0.25F, 0.25F});
 			this->_animTest->setPos({2.F, 0.F, 2.5F});
 			this->_animTest->upload();
-		}*/
+		}
 		// ----------
 
 		// WOLF ----
-		/*{
+		{
 			auto* mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceGLTF>("./assets/models/wolf/wolf.glb")->get();
 
 			this->_wolf = std::make_unique<rawrbox::GLTFModel<rawrbox::MaterialSkinned>>();
@@ -162,7 +162,7 @@ namespace gltf {
 				for (auto& anim : anims)
 					anim->setLoop(true);
 			}
-		}*/
+		}
 		// ----------
 
 		{
