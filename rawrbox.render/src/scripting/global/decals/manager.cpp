@@ -6,6 +6,7 @@ namespace rawrbox {
 	void DecalsGlobal::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("decals", {})
+
 		    .addFunction("get", &DECALS::get)
 		    .addFunction("count", &DECALS::count)
 		    .addFunction("add", &DECALS::add)

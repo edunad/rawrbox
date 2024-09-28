@@ -34,7 +34,6 @@ namespace gltf {
 
 		// Setup renderer
 		auto* render = window->createRenderer();
-		render->skipIntros(true);
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
@@ -117,7 +116,7 @@ namespace gltf {
 			this->_blendTest = std::make_unique<rawrbox::GLTFModel<>>();
 			this->_blendTest->load(*mdl);
 
-			this->_blendTest->setPos({1.F, 0.4F, -3.5F});
+			this->_blendTest->setPos({-5, 0, 0});
 			this->_blendTest->upload(rawrbox::UploadType::FIXED_DYNAMIC);
 		}
 		// ----------
@@ -166,10 +165,24 @@ namespace gltf {
 		// ----------
 
 		{
+			this->_modelGrid = std::make_unique<rawrbox::Model<>>();
+
 			auto mesh = rawrbox::MeshUtils::generateGrid(24, {0.F, 0.F, 0.F});
 			this->_modelGrid->addMesh(mesh);
 			this->_modelGrid->upload();
 		}
+
+		// ---- TEXT ----
+		{
+			this->_text = std::make_unique<rawrbox::Text3D<>>();
+			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TEXTURES + LIGHT", {6.F, 3.0F, 0});
+			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
+			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "VERTEX ANIMATIONS", {-1.F, 1.8F, -3.5F});
+			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "BLEND SHAPES", {-5.F, 1.8F, 0.F});
+			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "ANIMATION EVENT", {1.5F, 1.F, 2.5F});
+			this->_text->upload();
+		}
+		// ----
 
 		// LIGHT ----
 		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{-1, 1.6F, -1.4F}, rawrbox::Colors::White() * 100, 1.6F);
@@ -258,6 +271,10 @@ namespace gltf {
 		// LIGHT TEST --
 		if (this->_phasmo != nullptr) this->_phasmo->draw();
 		// -------------
+
+		// TEXT ----
+		if (this->_text != nullptr) this->_text->draw();
+		// ----
 	}
 
 	void Game::draw() {

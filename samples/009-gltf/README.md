@@ -1,6 +1,6 @@
-# 010-bass-audio Sample
+# 009-gltf Sample
 
 > [!NOTE]
-> This sample demonstrates how to utilize BASS library to load both HTTP and local sound files, as well as manipulate sound effects.
+> This sample demonstrates how to utilize GLTF library to load glb / gltf file.
 
-![](https://i.rawr.dev/sample10-min.gif)
+![](https://i.rawr.dev/sample9-min-4.gif)

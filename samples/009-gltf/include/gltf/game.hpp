@@ -20,8 +20,8 @@ namespace gltf {
 		std::unique_ptr<rawrbox::GLTFModel<rawrbox::MaterialSkinned>> _wolf;
 		std::unique_ptr<rawrbox::GLTFModel<rawrbox::MaterialSkinnedLit>> _wolfLit;
 
-		std::unique_ptr<rawrbox::Model<>> _modelGrid = std::make_unique<rawrbox::Model<>>();
-		std::unique_ptr<rawrbox::Text3D<>> _text = std::make_unique<rawrbox::Text3D<>>();
+		std::unique_ptr<rawrbox::Model<>> _modelGrid;
+		std::unique_ptr<rawrbox::Text3D<>> _text;
 
 		bool _ready = false;
 

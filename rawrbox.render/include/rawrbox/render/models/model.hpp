@@ -308,6 +308,10 @@ namespace rawrbox {
 			this->_playingAnimations.clear();
 		}
 
+		virtual bool hasAnimation(const std::string& name) {
+			return this->_playingAnimations.contains(name);
+		}
+
 		virtual bool stopAnimation(const std::string& name) {
 			auto fnd = this->_playingAnimations.find(name);
 			if (fnd == this->_playingAnimations.end()) return false;

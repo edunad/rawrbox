@@ -42,7 +42,7 @@ namespace rawrbox {
 		float specularFactor = 0.5F;
 		float emissionFactor = 1.0F;
 
-		float alphaCutoff = 0.0F;
+		float alphaCutoff = 0.5F;
 
 		[[nodiscard]] rawrbox::Vector4f getTextureData() const {
 			return {roughnessFactor, metalnessFactor, specularFactor, emissionFactor};

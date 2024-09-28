@@ -4,6 +4,8 @@
 #define READ_PARTICLES
 #include "particles.fxh"
 
+#define PARTICLE_ALPHACUTOFF 0.5
+
 Texture2DArray g_Textures[];
 SamplerState g_Sampler;
 
@@ -22,7 +24,10 @@ struct PSOutput {
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
 	float4 color = g_Textures[NonUniformResourceIndex(PSIn.TextureID)].Sample(g_Sampler, PSIn.UV);
-	if (color.a <= 0.0) discard;
+
+	// Remove alpha ----
+	clip(color.a - PARTICLE_ALPHACUTOFF); // TODO: ALLOW CUSTOM ALPHA CUTOFF
+	// -------------
 
 	PSOut.Color = color * PSIn.COLOR;
 	PSOut.GPUPick = float4(0, 0, 0, 0);
