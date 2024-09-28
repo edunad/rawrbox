@@ -25,7 +25,7 @@ namespace rawrbox {
 		       fileExtention == ".gltf";
 	}
 
-	bool GLTFLoader::supportsBuffer(const std::string& fileExtention) {
+	bool GLTFLoader::supportsBuffer(const std::string& /*fileExtention*/) {
 		return true;
 	}
 	// -------

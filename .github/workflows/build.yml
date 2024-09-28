@@ -21,6 +21,8 @@ concurrency:
 jobs:
   build-linux:
     runs-on: rawrbox
+    container:
+      image: ubuntu:24.04
     steps:
       - name: Checkout
         uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938
@@ -28,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y git wget cmake libegl1-mesa-dev libwayland-dev libxkbcommon-dev wayland-protocols libvulkan-dev libssl-dev libvpx-dev gcc-12 g++-12 libgl1-mesa-glx libgl1-mesa-dev libglew-dev ninja-build python3-pip libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev libxcomposite-dev libxcursor-dev libxdamage-dev libxdmcp-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxinerama-dev libxkbfile-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev libxrender-dev libxres-dev libxss-dev libxt-dev libxtst-dev libxv-dev libxvmc-dev libxxf86vm-dev xtrans-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-xkb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev xkb-data libxcb-dri3-dev uuid-dev libxcb-util-dev
+          sudo apt install -y git wget cmake libegl1-mesa-dev libwayland-dev libxkbcommon-dev wayland-protocols libvulkan-dev libssl-dev libvpx-dev gcc-14 g++-14 libgl1-mesa-glx libgl1-mesa-dev libglew-dev ninja-build python3-pip libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev libxcomposite-dev libxcursor-dev libxdamage-dev libxdmcp-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxinerama-dev libxkbfile-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev libxrender-dev libxres-dev libxss-dev libxt-dev libxtst-dev libxv-dev libxvmc-dev libxxf86vm-dev xtrans-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-xkb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev xkb-data libxcb-dri3-dev uuid-dev libxcb-util-dev
       - name: Cache c++
         uses: hendrikmuhs/ccache-action@ed74d11c0b343532753ecead8a951bb09bb34bc9
         with:
@@ -40,7 +42,7 @@ jobs:
         id: setup
         run: |
           mkdir -p build && cd build
-          CC=gcc-12 CXX=g++-12 cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_EXPORT_COMPILE_COMMANDS="ON" -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DRAWRBOX_DEV_MODE:BOOL="ON"
+          CC=gcc-14 CXX=g++-14 cmake .. -G Ninja -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_EXPORT_COMPILE_COMMANDS="ON" -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DRAWRBOX_DEV_MODE:BOOL="ON"
           cd ../
 
       - name: Build

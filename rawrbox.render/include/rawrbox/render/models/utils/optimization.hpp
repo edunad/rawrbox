@@ -45,7 +45,7 @@ namespace rawrbox {
 			const size_t index_count = indices.size();
 			const size_t vertex_count = verts.size();
 
-			const size_t target_index_count = index_count * complexity_threshold;
+			const size_t target_index_count = index_count * static_cast<uint32_t>(complexity_threshold);
 			constexpr float target_error = 1e-2f;
 			constexpr unsigned int options = 0;
 

@@ -18,7 +18,7 @@ namespace rawrbox {
 				if (gltfMesh->primitives.empty()) continue; // Bone / empty
 				for (const auto& gltfPrimitive : gltfMesh->primitives) {
 					auto mesh = rawrbox::GLTFUtils::extractMesh<M>(*gltfMesh, gltfPrimitive);
-					mesh.meshID = gltfMesh->index;
+					mesh.meshID = static_cast<uint32_t>(gltfMesh->index);
 
 					this->addMesh(mesh);
 				}

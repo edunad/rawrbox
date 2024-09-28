@@ -62,6 +62,10 @@
     },
     "trailing-spaces.trimOnSave": true,
     "C_Cpp.default.compilerArgs": ["-fexceptions"],
+    "C_Cpp.codeAnalysis.clangTidy.useBuildPath": true,
+    "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+    "C_Cpp.intelliSenseEngine": "disabled",
+    "clangd.path": "clangd",
     "cmake.configureOnOpen": false,
     "cmake.autoSelectActiveFolder": false,
     "cmake.generator": "Ninja",
@@ -71,7 +75,6 @@
       "RAWRBOX_DEV_MODE": true,
       "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
     },
-    "C_Cpp.codeAnalysis.clangTidy.enabled": true,
     "workbench.editor.pinnedTabSizing": "shrink",
     "workbench.editor.wrapTabs": true,
     "files.insertFinalNewline": true,

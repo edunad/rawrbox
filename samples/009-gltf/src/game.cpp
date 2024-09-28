@@ -84,7 +84,7 @@ namespace gltf {
 			this->_phasmo = std::make_unique<rawrbox::GLTFModel<rawrbox::MaterialLit>>();
 			this->_phasmo->load(*mdl);
 
-			this->_phasmo->setPos({7, 1.1F, 2.F});
+			this->_phasmo->setPos({7.F, 1.1F, 2.F});
 			this->_phasmo->upload();
 		}
 		// -------

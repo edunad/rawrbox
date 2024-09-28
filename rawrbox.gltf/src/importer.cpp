@@ -529,7 +529,7 @@ namespace rawrbox {
 				auto& track = gltfAnim.tracks[nodeName];
 
 				for (size_t iTime = 0; iTime < timeAccessor.count; iTime++) {
-					double t = fastgltf::getAccessorElement<double>(scene, timeAccessor, iTime);
+					float t = fastgltf::getAccessorElement<float>(scene, timeAccessor, iTime);
 					if (t > gltfAnim.duration) gltfAnim.duration = t; // Calculate the total animation time
 
 					switch (channel.path) {
@@ -635,14 +635,12 @@ namespace rawrbox {
 	void GLTFImporter::loadScene(const fastgltf::Asset& scene) {
 		for (const auto& rootScenes : scene.scenes) {
 			for (const auto& nodeIndex : rootScenes.nodeIndices) {
-				this->loadNodes(scene, scene.nodes[nodeIndex], nullptr);
+				this->loadNodes(scene, scene.nodes[nodeIndex]);
 			}
 		}
 	}
 
-	void GLTFImporter::loadNodes(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::GLTFNode* parentNode) {
-		rawrbox::GLTFNode* newParent = nullptr;
-
+	void GLTFImporter::loadNodes(const fastgltf::Asset& scene, const fastgltf::Node& node) {
 		if (node.lightIndex) {
 			this->lights.push_back(std::make_unique<rawrbox::GLTFLight>(this->lights.size(), node, scene.lights[node.lightIndex.value()]));
 		} else if (node.meshIndex) {
@@ -652,7 +650,7 @@ namespace rawrbox {
 
 		// Children ---
 		for (const auto& children : node.children) {
-			this->loadNodes(scene, scene.nodes[children], newParent);
+			this->loadNodes(scene, scene.nodes[children]);
 		}
 		// ---
 	}

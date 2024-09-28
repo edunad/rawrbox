@@ -1,5 +1,6 @@
 ---
-Checks: clang-diagnostic-*
+Checks: 
+  clang-diagnostic-*
   clang-analyzer-*
   cppcoreguidelines-*
   modernize-*

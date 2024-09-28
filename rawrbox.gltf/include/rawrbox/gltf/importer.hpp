@@ -27,16 +27,16 @@ namespace rawrbox {
 		const uint32_t IMPORT_BLEND_SHAPES = 1 << 4;
 
 		namespace Debug {
-			const uint32_t PRINT_BONE_STRUCTURE = 1 << 20;
-			const uint32_t PRINT_MATERIALS = 1 << 21;
-			const uint32_t PRINT_ANIMATIONS = 1 << 22;
-			const uint32_t PRINT_BLENDSHAPES = 1 << 23;
-			const uint32_t PRINT_OPTIMIZATION_STATS = 1 << 24;
+			const uint32_t PRINT_BONE_STRUCTURE = 1 << 10;
+			const uint32_t PRINT_MATERIALS = 1 << 11;
+			const uint32_t PRINT_ANIMATIONS = 1 << 12;
+			const uint32_t PRINT_BLENDSHAPES = 1 << 13;
+			const uint32_t PRINT_OPTIMIZATION_STATS = 1 << 14;
 		} // namespace Debug
 
 		namespace Optimizer {
-			const uint32_t MESH = 1 << 30;
-			const uint32_t SKELETON_ANIMATIONS = 1 << 31;
+			const uint32_t MESH = 1 << 20;
+			const uint32_t SKELETON_ANIMATIONS = 1 << 21;
 		} // namespace Optimizer
 
 	}; // namespace ModelLoadFlags
@@ -52,6 +52,7 @@ namespace rawrbox {
 		std::string name;
 
 		bool doubleSided = false;
+
 		bool transparent = false;
 		float alphaCutoff = 0.5F;
 
@@ -89,7 +90,7 @@ namespace rawrbox {
 		std::string name;
 		rawrbox::Matrix4x4 matrix = {};
 
-		GLTFNode(size_t idx, const fastgltf::Node& node) : name(std::move(node.name)), index(idx) {
+		GLTFNode(size_t idx, const fastgltf::Node& node) : index(idx), name(std::move(node.name)) {
 			auto mtx = std::get<fastgltf::TRS>(node.transform);
 
 			this->matrix = rawrbox::Matrix4x4::mtxSRT({mtx.scale.x(), mtx.scale.y(), mtx.scale.z()}, {mtx.rotation.x(), mtx.rotation.y(), mtx.rotation.z(), mtx.rotation.w()}, {mtx.translation.x(), mtx.translation.y(), mtx.translation.z()});
@@ -210,7 +211,7 @@ namespace rawrbox {
 
 		// MODEL ---
 		virtual void loadScene(const fastgltf::Asset& scene);
-		virtual void loadNodes(const fastgltf::Asset& scene, const fastgltf::Node& node, rawrbox::GLTFNode* parentNode = nullptr);
+		virtual void loadNodes(const fastgltf::Asset& scene, const fastgltf::Node& node);
 
 		virtual std::unique_ptr<rawrbox::GLTFMesh> extractMesh(const fastgltf::Asset& scene, const fastgltf::Node& node);
 
