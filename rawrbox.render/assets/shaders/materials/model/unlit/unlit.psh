@@ -41,29 +41,33 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	#endif
 
 	float4 color = g_Textures[baseTextureID].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
-	if (color.a <= 0.0) discard;
 
-#ifdef CLUSTER_PLUGIN
-	if (TOTAL_DECALS != 0) {
-		// Apply compute data ----
-		uint3 clusterIndex3D = uint3(floor(PSIn.Pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(PSIn.Pos.w));
-		uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
-		uint gridOffset = tileIndex * CLUSTERED_NUM_BUCKETS;
+	// Remove alpha ----
+	clip(color.a - AlphaCutoff);
+	// -------------
 
-		float3 ddxPos = ddx(PSIn.WorldPos.xyz);
-		float3 ddyPos = ddy(PSIn.WorldPos.xyz);
+	// Apply decals ----
+	#ifdef CLUSTER_PLUGIN
+		if (TOTAL_DECALS != 0) {
+			// Apply compute data ----
+			uint3 clusterIndex3D = uint3(floor(PSIn.Pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(PSIn.Pos.w));
+			uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
+			uint gridOffset = tileIndex * CLUSTERED_NUM_BUCKETS;
 
-		for (uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
-			uint buckets = ClusterDataGrid[gridOffset + bucketIndex].decals;
+			float3 ddxPos = ddx(PSIn.WorldPos.xyz);
+			float3 ddyPos = ddy(PSIn.WorldPos.xyz);
 
-			// Apply decals ---
-			float4 roughtness = 0; // not used in unlit
-			ApplyDecals(buckets, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, color, roughtness);
-			// ----------------
+			for (uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
+				uint buckets = ClusterDataGrid[gridOffset + bucketIndex].decals;
+
+				// Apply decals ---
+				float4 roughtness = 0; // not used in unlit
+				ApplyDecals(buckets, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, color, roughtness);
+				// ----------------
+			}
 		}
-	}
-#endif
-
+	#endif
+	// -----------------
 	PSOut.Color = color;
 
 	// GPU PICKING -----

@@ -20,7 +20,8 @@ namespace rawrbox {
 			if (primitive.material != nullptr) {
 				auto* mat = primitive.material;
 
-				mesh.setTransparent(mat->alpha);
+				mesh.setAlphaCutoff(mat->alphaCutoff);
+				mesh.setTransparent(mat->transparent);
 				mesh.setCulling(mat->doubleSided ? Diligent::CULL_MODE::CULL_MODE_NONE : Diligent::CULL_MODE::CULL_MODE_BACK);
 
 				// DIFFUSE -----

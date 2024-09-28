@@ -18,7 +18,7 @@ namespace gltf {
 #else
 		auto* window = rawrbox::Window::createWindow();
 #endif
-		window->setMonitor(2);
+		window->setMonitor(-1);
 		window->setTitle("GLTF TEST");
 #ifdef _DEBUG
 		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED);
@@ -63,11 +63,10 @@ namespace gltf {
 	void Game::loadContent() {
 		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
 		    {"./assets/models/ps1_phasmophobia/scene.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT | rawrbox::ModelLoadFlags::Optimizer::MESH},
-		    /*{"./assets/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES},
+		    {"./assets/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES},
 		    {"./assets/models/wolf/wolf.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Optimizer::SKELETON_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS},
 		    {"./assets/models/anim_test.glb", rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS},
-		    {"./assets/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS}*/
-		};
+		    {"./assets/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS}};
 
 		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
 			rawrbox::runOnRenderThread([this]() {
@@ -80,7 +79,7 @@ namespace gltf {
 		if (this->_ready) return;
 
 		// PHASMO
-		{
+		/*{
 			auto* mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceGLTF>("./assets/models/ps1_phasmophobia/scene.glb")->get();
 
 			this->_phasmo = std::make_unique<rawrbox::GLTFModel<rawrbox::MaterialLit>>();
@@ -88,11 +87,11 @@ namespace gltf {
 
 			this->_phasmo->setPos({7, 1.1F, 2.F});
 			this->_phasmo->upload();
-		}
+		}*/
 		// -------
 
 		// TV
-		/*{
+		{
 			auto* mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceGLTF>("./assets/models/grandma_tv/scene.gltf")->get();
 
 			this->_grandmaTV = std::make_unique<rawrbox::GLTFModel<>>();
@@ -108,7 +107,7 @@ namespace gltf {
 				for (auto& anim : anims)
 					anim->setLoop(true);
 			}
-		}*/
+		}
 		// ----------
 
 		// BLEND SHAPE
@@ -123,10 +122,9 @@ namespace gltf {
 		}*/
 		// ----------
 
-		/*
 		// ANIMATION TEST
-		{
-			auto* mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceGLTF>("./assets/models/anim_test.glb")->get()
+		/*{
+			auto* mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceGLTF>("./assets/models/anim_test.glb")->get();
 
 			this->_animTest = std::make_unique<rawrbox::GLTFModel<rawrbox::MaterialSkinned>>();
 			this->_animTest->load(*mdl);
@@ -134,9 +132,8 @@ namespace gltf {
 			this->_animTest->setScale({0.25F, 0.25F, 0.25F});
 			this->_animTest->setPos({2.F, 0.F, 2.5F});
 			this->_animTest->upload();
-		}
+		}*/
 		// ----------
-		*/
 
 		// WOLF ----
 		/*{

@@ -59,7 +59,10 @@ float3 TangentSpaceNormalMapping(float3 sampledNormal, float3x3 TBN) {
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
 	float4 baseColor = g_Textures[BaseID].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
-	if (baseColor.a <= 0.0) discard;
+
+	// Remove alpha ----
+	clip(baseColor.a - AlphaCutoff);
+	// -------------
 
 	if (TOTAL_DECALS != 0 || TOTAL_LIGHTS != 0) {
 		// NORMAL -----

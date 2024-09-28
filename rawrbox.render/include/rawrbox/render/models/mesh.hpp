@@ -42,11 +42,17 @@ namespace rawrbox {
 		float specularFactor = 0.5F;
 		float emissionFactor = 1.0F;
 
-		[[nodiscard]] rawrbox::Vector4f getData() const {
+		float alphaCutoff = 0.0F;
+
+		[[nodiscard]] rawrbox::Vector4f getTextureData() const {
 			return {roughnessFactor, metalnessFactor, specularFactor, emissionFactor};
 		}
 
-		[[nodiscard]] rawrbox::Vector4_t<uint32_t> getPixelIDs() const {
+		[[nodiscard]] rawrbox::Vector4f getData() const {
+			return {alphaCutoff, 0.F, 0.F, 0.F};
+		}
+
+		[[nodiscard]] rawrbox::Vector4_t<uint32_t> getTextureIDs() const {
 			auto* base = texture == nullptr ? rawrbox::WHITE_TEXTURE.get() : texture;
 			auto* norm = normal == nullptr ? rawrbox::NORMAL_TEXTURE.get() : normal;
 			auto* metR = roughtMetal == nullptr ? rawrbox::BLACK_TEXTURE.get() : roughtMetal;
@@ -56,7 +62,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] bool canMerge(const rawrbox::MeshTextures& other) const {
-			return this->roughnessFactor == other.roughnessFactor && this->metalnessFactor == other.metalnessFactor && this->specularFactor == other.specularFactor && this->emissionFactor == other.emissionFactor;
+			return this->roughnessFactor == other.roughnessFactor && this->metalnessFactor == other.metalnessFactor && this->specularFactor == other.specularFactor && this->emissionFactor == other.emissionFactor && this->alphaCutoff == other.alphaCutoff;
 		}
 
 		bool operator==(const rawrbox::MeshTextures& other) const { return this->texture == other.texture && this->normal == other.normal && this->specularFactor == other.specularFactor && this->roughtMetal == other.roughtMetal && this->emission == other.emission; }
@@ -154,6 +160,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool getLineMode() const { return this->_lineMode; }
 		virtual void setLineMode(bool line) { this->_lineMode = line; }
 
+		virtual void setAlphaCutoff(float cutoff) { this->textures.alphaCutoff = cutoff; }
 		virtual void setTransparent(bool transparent) { this->_transparent = transparent; }
 		[[nodiscard]] virtual bool isTransparent() const { return this->_transparent; }
 
@@ -301,8 +308,8 @@ namespace rawrbox {
 			       this->meshID == other.meshID &&
 			       this->data == other.data &&
 			       this->_wireframe == other._wireframe &&
-			       this->_transparent == other._transparent &&
 			       this->_lineMode == other._lineMode &&
+			       this->_transparent == other._transparent &&
 			       this->matrix == other.matrix;
 		}
 	};

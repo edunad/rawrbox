@@ -52,7 +52,8 @@ namespace rawrbox {
 		std::string name;
 
 		bool doubleSided = false;
-		bool alpha = false;
+		bool transparent = false;
+		float alphaCutoff = 0.5F;
 
 		rawrbox::TextureBase* diffuse = nullptr;
 		rawrbox::Colorf baseColor = rawrbox::Colors::White();
@@ -112,7 +113,6 @@ namespace rawrbox {
 		float radius = 0.F;
 
 		GLTFLight(size_t idx, const fastgltf::Node& node, const fastgltf::Light& light) : rawrbox::GLTFNode(idx, node) {
-
 			this->color = rawrbox::Colorf(light.color.x(), light.color.y(), light.color.z(), 1.0F);
 			this->radius = light.range.value_or(10.F);
 

@@ -255,7 +255,8 @@ namespace rawrbox {
 			// -----------
 
 			// TRANSPARENCY ----
-			mat->alpha = material.alphaMode != fastgltf::AlphaMode::Opaque;
+			mat->alphaCutoff = material.alphaCutoff;
+			mat->transparent = material.alphaMode != fastgltf::AlphaMode::Opaque;
 			// ---------
 
 			// Texture Loading ---
