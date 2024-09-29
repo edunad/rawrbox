@@ -16,7 +16,10 @@ struct PSOutput {
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
 	float a = g_Textures[BaseID].Sample(g_Sampler, float3(PSIn.UV, 0)).r * PSIn.Color.a;
-	if (a <= 0.0) discard;
+
+	// Remove alpha ----
+	clip(a - AlphaCutoff);
+	// -------------
 
 	PSOut.Color = float4(PSIn.Color.rgb, a);
 	PSOut.GPUPick = float4(0, 0, 0, 0);

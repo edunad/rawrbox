@@ -87,8 +87,8 @@ namespace rawrbox {
 
 		ImGuiIO& IO = ImGui::GetIO();
 		IO.BackendRendererName = "RawrBox-IMGUI";
-		IO.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 		IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		IO.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
 
 		switch (renderer.getRenderType()) {
 			case Diligent::RENDER_DEVICE_TYPE_D3D12:

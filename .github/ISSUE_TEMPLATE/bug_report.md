@@ -8,7 +8,7 @@ assignees: ""
 
 ### RawrBox lib
 
-- [ ] rawrbox.assimp
+- [ ] rawrbox.gltf
 - [ ] rawrbox.bass
 - [ ] rawrbox.engine
 - [ ] rawrbox.math

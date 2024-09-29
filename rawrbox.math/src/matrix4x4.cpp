@@ -109,12 +109,67 @@ namespace rawrbox {
 		return *this;
 	}
 
+	rawrbox::Matrix4x4& Matrix4x4::toLeftHand() {
+		this->mtx[2] = -this->mtx[2];
+		this->mtx[6] = -this->mtx[6];
+		this->mtx[10] = -this->mtx[10];
+		this->mtx[14] = -this->mtx[14];
+
+		return *this;
+	}
+
 	rawrbox::Vector3f Matrix4x4::getPos() const {
 		return {this->mtx[12], this->mtx[13], this->mtx[14]};
 	}
 
 	rawrbox::Vector3f Matrix4x4::getScale() const {
 		return {this->mtx[0], this->mtx[5], this->mtx[10]};
+	}
+
+	rawrbox::Vector4f Matrix4x4::getRotation() const {
+		rawrbox::Vector4f result = {};
+
+		float trace = this->mtx[0] + this->mtx[5] + this->mtx[10];
+		if (trace > 0) {
+			float s = 0.5f / sqrtf(trace + 1.0f);
+			result.w = 0.25f / s;
+			result.x = (this->mtx[9] - this->mtx[6]) * s;
+			result.y = (this->mtx[2] - this->mtx[8]) * s;
+			result.z = (this->mtx[4] - this->mtx[1]) * s;
+		} else {
+			if (this->mtx[0] > this->mtx[5] && this->mtx[0] > this->mtx[10]) {
+				float s = 2.0f * sqrtf(1.0f + this->mtx[0] - this->mtx[5] - this->mtx[10]);
+				result.w = (this->mtx[9] - this->mtx[6]) / s;
+				result.x = 0.25f * s;
+				result.y = (this->mtx[1] + this->mtx[4]) / s;
+				result.z = (this->mtx[2] + this->mtx[8]) / s;
+			} else if (this->mtx[5] > this->mtx[10]) {
+				float s = 2.0f * sqrtf(1.0f + this->mtx[5] - this->mtx[0] - this->mtx[10]);
+				result.w = (this->mtx[2] - this->mtx[8]) / s;
+				result.x = (this->mtx[1] + this->mtx[4]) / s;
+				result.y = 0.25f * s;
+				result.z = (this->mtx[6] + this->mtx[9]) / s;
+			} else {
+				float s = 2.0f * sqrtf(1.0f + this->mtx[10] - this->mtx[0] - this->mtx[5]);
+				result.w = (this->mtx[4] - this->mtx[1]) / s;
+				result.x = (this->mtx[2] + this->mtx[8]) / s;
+				result.y = (this->mtx[6] + this->mtx[9]) / s;
+				result.z = 0.25f * s;
+			}
+		}
+
+		result.w = -result.w; // ??
+		return result;
+	}
+
+	rawrbox::Vector3f Matrix4x4::getForward() const {
+		return {this->mtx[8], this->mtx[9], this->mtx[10]};
+	}
+
+	void Matrix4x4::decompose(rawrbox::Vector3f& pos, rawrbox::Vector4f& rotation, rawrbox::Vector3f& scale) const {
+		pos = this->getPos();
+		rotation = this->getRotation();
+		scale = this->getScale();
 	}
 
 	rawrbox::Matrix4x4& Matrix4x4::rotate(const rawrbox::Vector4f& rot) {
@@ -357,21 +412,23 @@ namespace rawrbox {
 	// ------
 
 	// STATIC UTILS ----
+	rawrbox::Matrix4x4 Matrix4x4::mtxLeftHand(rawrbox::Matrix4x4 mtx) {
+		return mtx.toLeftHand();
+	}
+
+	rawrbox::Matrix4x4 Matrix4x4::mtxTranspose(rawrbox::Matrix4x4 mtx) {
+		return mtx.transpose();
+	}
+
+	rawrbox::Matrix4x4 Matrix4x4::mtxInverse(rawrbox::Matrix4x4 mtx) {
+		return mtx.inverse();
+	}
+
 	rawrbox::Matrix4x4 Matrix4x4::mtxSRT(const rawrbox::Vector3f& scale, const rawrbox::Vector4f& rotation, const rawrbox::Vector3f& pos) {
 		rawrbox::Matrix4x4 ret = {};
 		ret.SRT(scale, rotation, pos);
 
 		return ret;
-	}
-
-	rawrbox::Matrix4x4 Matrix4x4::mtxTranspose(rawrbox::Matrix4x4 mtx) {
-		mtx.transpose();
-		return mtx;
-	}
-
-	rawrbox::Matrix4x4 Matrix4x4::mtxInverse(rawrbox::Matrix4x4 mtx) {
-		mtx.inverse();
-		return mtx;
 	}
 
 	rawrbox::Matrix4x4 Matrix4x4::mtxLookAt(const rawrbox::Vector3f& _eye, const rawrbox::Vector3f& _at, const rawrbox::Vector3f& _up) {

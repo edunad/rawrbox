@@ -17,8 +17,8 @@ if(RAWRBOX_BUILD_RAWRBOX_UI)
     add_subdirectory("008-ui")
 endif()
 
-if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
-    add_subdirectory("009-assimp")
+if(RAWRBOX_BUILD_RAWRBOX_GLTF)
+    add_subdirectory("009-gltf")
 endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_BASS)

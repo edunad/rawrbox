@@ -126,7 +126,7 @@ namespace decal_test {
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateSphere({0.F, 0.F, -1.F}, {0.5F, 0.5F, 0.5F});
-			mesh.setOptimizable(false);
+			mesh.setMergeable(false);
 
 			this->_model->addMesh(mesh);
 		}

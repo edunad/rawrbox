@@ -10,6 +10,8 @@ find_package(DXC REQUIRED)
 # --------------
 
 # Packages ----
+CPMAddPackage("gh:zeux/meshoptimizer@0.21")
+
 CPMAddPackage(
     NAME
         glfw
@@ -70,6 +72,7 @@ if(DiligentCore_ADDED)
     set_lib_runtime_mt(MachineIndependent)
     set_lib_runtime_mt(GenericCodeGen)
     set_lib_runtime_mt(spirv-cross-core)
+    set_lib_runtime_mt(glslang)
 
     if(WIN32)
         set_lib_runtime_mt(Diligent-Win32Platform)
@@ -81,12 +84,40 @@ if(DiligentCore_ADDED)
     endif()
 endif()
 
+CPMAddPackage(
+    NAME
+        ozz
+    GITHUB_REPOSITORY
+        guillaumeblanc/ozz-animation
+    GIT_TAG
+        0.15.0
+    PATCHES
+        ${CMAKE_CURRENT_SOURCE_DIR}/patch/ozz.patch
+    OPTIONS
+        "ozz_build_tools OFF"
+        "ozz_build_fbx OFF"
+        "ozz_build_gltf OFF"
+        "ozz_build_samples OFF"
+        "ozz_build_howtos OFF"
+        "ozz_build_tests OFF"
+        "ozz_build_msvc_rt_dll ON"
+)
+
+if(ozz_ADDED)
+    set_lib_runtime_mt(ozz_base)
+    set_lib_runtime_mt(ozz_options)
+    set_lib_runtime_mt(ozz_animation)
+    set_lib_runtime_mt(ozz_animation_offline)
+    set_lib_runtime_mt(ozz_geometry)
+endif()
+
+
 CPMAddPackage("gh:nemtrif/utfcpp@4.0.5")
 if(utfcpp_ADDED)
     set_lib_runtime_mt(utf8cpp)
 endif()
 
-CPMAddPackage("gh:sammycage/lunasvg@2.4.0")
+CPMAddPackage("gh:sammycage/lunasvg@2.4.0") # 2.4.1 causes a weird error on build
 if(lunasvg_ADDED)
     set_lib_runtime_mt(lunasvg)
 endif()
@@ -176,10 +207,14 @@ target_link_libraries(
             ${RAWRBOX_EXTRA_LIBS}
             # ----------------------------
 
+            ozz_animation
+            ozz_animation_offline
+
             utf8cpp
             lunasvg
             webpdemux
             glfw
+            meshoptimizer
 )
 
 set_lib_runtime_mt(${output_target})

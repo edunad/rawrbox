@@ -70,7 +70,7 @@ namespace rawrbox {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 
 			mesh.lineMode = true;
-			mesh.setOptimizable(false);
+			mesh.setMergeable(false);
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				mesh.vertices = {
@@ -326,12 +326,12 @@ namespace rawrbox {
 				    rawrbox::VertexData(pos + rawrbox::Vector3f(-hSize.x, -hSize.y, hSize.z))};
 			}
 
-			std::vector<uint16_t> inds = {};
-			constexpr std::array<uint16_t, 6> cubeInd = {
+			std::vector<uint32_t> inds = {};
+			constexpr std::array<uint32_t, 6> cubeInd = {
 			    0, 1, 2,
 			    0, 3, 1};
 
-			for (uint16_t v = 0; v < 24; v += 4) {
+			for (uint32_t v = 0; v < 24; v += 4) {
 				for (const auto& ind : cubeInd) {
 					inds.push_back(ind + v);
 				}
@@ -339,8 +339,8 @@ namespace rawrbox {
 
 			mesh.baseVertex = 0;
 			mesh.baseIndex = 0;
-			mesh.totalVertex = static_cast<uint16_t>(mesh.vertices.size());
-			mesh.totalIndex = static_cast<uint16_t>(inds.size());
+			mesh.totalVertex = static_cast<uint32_t>(mesh.vertices.size());
+			mesh.totalIndex = static_cast<uint32_t>(inds.size());
 
 			// AABB ---
 			mesh.bbox.min = -hSize;
@@ -436,8 +436,8 @@ namespace rawrbox {
 
 			mesh.baseVertex = 0;
 			mesh.baseIndex = 0;
-			mesh.totalVertex = static_cast<uint16_t>(mesh.vertices.size());
-			mesh.totalIndex = static_cast<uint16_t>(mesh.indices.size());
+			mesh.totalVertex = static_cast<uint32_t>(mesh.vertices.size());
+			mesh.totalIndex = static_cast<uint32_t>(mesh.indices.size());
 
 			// AABB ---
 			mesh.bbox.min = {-radius, -height, -radius};
@@ -528,8 +528,8 @@ namespace rawrbox {
 
 			mesh.baseVertex = 0;
 			mesh.baseIndex = 0;
-			mesh.totalVertex = static_cast<uint16_t>(mesh.vertices.size());
-			mesh.totalIndex = static_cast<uint16_t>(mesh.indices.size());
+			mesh.totalVertex = static_cast<uint32_t>(mesh.vertices.size());
+			mesh.totalIndex = static_cast<uint32_t>(mesh.indices.size());
 
 			// AABB ---
 			mesh.bbox.min = {-radius, -halfHeight, -radius};
@@ -580,12 +580,12 @@ namespace rawrbox {
 
 			mesh.indices.reserve(numParallels * numSegments * 6);
 
-			for (uint16_t i = 0; i < numParallels; ++i) {
-				for (uint16_t j = 0; j < numSegments; ++j) {
-					uint16_t a = i * (numSegments + 1) + j;
-					uint16_t b = a + 1;
-					uint16_t c = (i + 1) * (numSegments + 1) + j;
-					uint16_t d = c + 1;
+			for (uint32_t i = 0; i < numParallels; ++i) {
+				for (uint32_t j = 0; j < numSegments; ++j) {
+					uint32_t a = i * (numSegments + 1) + j;
+					uint32_t b = a + 1;
+					uint32_t c = (i + 1) * (numSegments + 1) + j;
+					uint32_t d = c + 1;
 
 					mesh.indices.push_back(a);
 					mesh.indices.push_back(d);
@@ -599,8 +599,8 @@ namespace rawrbox {
 
 			mesh.baseVertex = 0;
 			mesh.baseIndex = 0;
-			mesh.totalVertex = static_cast<uint16_t>(mesh.vertices.size());
-			mesh.totalIndex = static_cast<uint16_t>(mesh.indices.size());
+			mesh.totalVertex = static_cast<uint32_t>(mesh.vertices.size());
+			mesh.totalIndex = static_cast<uint32_t>(mesh.indices.size());
 
 			// AABB ---
 			mesh.bbox.min = -sphereSize;
@@ -618,7 +618,7 @@ namespace rawrbox {
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 
 			auto uvScale = 1.0F / static_cast<float>(subDivs - 1);
-			const uint16_t vertSize = subDivs * subDivs;
+			const uint32_t vertSize = subDivs * subDivs;
 
 			mesh.vertices.reserve(vertSize);
 
@@ -650,14 +650,14 @@ namespace rawrbox {
 				}
 			}
 
-			const uint16_t indcSize = ((subDivs - 1) * (subDivs - 1)) * 6;
+			const uint32_t indcSize = ((subDivs - 1) * (subDivs - 1)) * 6;
 			mesh.indices.reserve(indcSize);
 
 			for (size_t y = 0; y < subDivs - 1; y++) {
-				auto yOffset = static_cast<uint16_t>(y * subDivs);
+				auto yOffset = static_cast<uint32_t>(y * subDivs);
 
 				for (size_t x = 0; x < subDivs - 1; x++) {
-					uint16_t index = yOffset + static_cast<uint16_t>(x);
+					uint32_t index = yOffset + static_cast<uint32_t>(x);
 
 					mesh.indices.push_back(index + 1);
 					mesh.indices.push_back(index + subDivs);
@@ -690,12 +690,12 @@ namespace rawrbox {
 			mesh.setLineMode(true);
 			mesh.setColor(cl);
 
-			const uint16_t vertSize = size * size;
+			const uint32_t vertSize = size * size;
 			mesh.vertices.reserve(vertSize);
 
 			float step = 1.F;
-			for (uint16_t j = 0; j <= size; ++j) {
-				for (uint16_t i = 0; i <= size; ++i) {
+			for (uint32_t j = 0; j <= size; ++j) {
+				for (uint32_t i = 0; i <= size; ++i) {
 					float x = static_cast<float>(i) / static_cast<float>(step);
 					float y = 0;
 					float z = static_cast<float>(j) / static_cast<float>(step);
@@ -711,14 +711,14 @@ namespace rawrbox {
 				}
 			}
 
-			const uint16_t indcSize = vertSize * 8;
+			const uint32_t indcSize = vertSize * 8;
 			mesh.indices.reserve(indcSize);
 
-			for (uint16_t j = 0; j < size; ++j) {
-				for (uint16_t i = 0; i < size; ++i) {
+			for (uint32_t j = 0; j < size; ++j) {
+				for (uint32_t i = 0; i < size; ++i) {
 
-					uint16_t row1 = j * (size + 1);
-					uint16_t row2 = (j + 1) * (size + 1);
+					uint32_t row1 = j * (size + 1);
+					uint32_t row2 = (j + 1) * (size + 1);
 
 					mesh.indices.push_back(row1 + i);
 					mesh.indices.push_back(row1 + i + 1);

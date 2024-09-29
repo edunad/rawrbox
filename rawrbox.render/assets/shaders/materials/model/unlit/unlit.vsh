@@ -78,7 +78,17 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 	PSIn.TexIndex = VSIn.UV.z + VSIn.InstData.y + SliceOverride;
 	PSIn.GPUId = Unpack_ABGR8_UNORM(VSIn.InstData.z);
 #else
+
+// DEBUG ----
+#ifdef SHADER_DEBUG
+	#ifdef SKINNED
+		PSIn.Color = boneToColor(VSIn.BoneIndex, VSIn.BoneWeight, 4);
+	#endif
+#else
 	PSIn.Color = Unpack_RGBA8_UNORM(ColorOverride);
+#endif
+// --------------
+
 	PSIn.GPUId = Unpack_ABGR8_UNORM(GPUID);
 	PSIn.TexIndex = VSIn.UV.z + SliceOverride;
 #endif

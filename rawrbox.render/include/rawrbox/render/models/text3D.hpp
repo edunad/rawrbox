@@ -71,7 +71,7 @@ namespace rawrbox {
 				    rawrbox::VertexUVData(pos + startpos + Vector3f(x1 * screenSize, (y0 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureBottomRight.y)),
 				};
 
-				std::array<uint16_t, 6> inds{
+				std::array<uint32_t, 6> inds{
 				    0, 1, 2,
 				    0, 3, 1};
 
@@ -81,8 +81,8 @@ namespace rawrbox {
 				mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
 				mesh.indices.insert(mesh.indices.end(), inds.begin(), inds.end());
 
-				mesh.totalVertex += static_cast<uint16_t>(buff.size());
-				mesh.totalIndex += static_cast<uint16_t>(inds.size());
+				mesh.totalVertex += static_cast<uint32_t>(buff.size());
+				mesh.totalIndex += static_cast<uint32_t>(inds.size());
 
 				this->addMesh(mesh);
 			});

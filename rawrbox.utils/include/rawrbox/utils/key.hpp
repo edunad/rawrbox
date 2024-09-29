@@ -2,7 +2,9 @@
 
 #include <rawrbox/utils/keys.hpp>
 
+#include <cstdint>
 #include <string>
+
 
 namespace rawrbox {
 	class KeyUtils {

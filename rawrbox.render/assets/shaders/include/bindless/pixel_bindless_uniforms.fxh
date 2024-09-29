@@ -3,7 +3,8 @@
 
 struct ConstantsStruct {
 	uint4 textureIDs; // BASE, NORMAL, ROUGHTMETAL, EMISSION
-	float4 litData;
+	float4 textureData;
+	float4 pixelData;
 };
 
 ConstantBuffer<ConstantsStruct> Constants;
@@ -13,9 +14,11 @@ ConstantBuffer<ConstantsStruct> Constants;
 #define RoughtMetalID Constants.textureIDs.z
 #define EmissionID    Constants.textureIDs.w
 
-#define RoughnessFactor Constants.litData.x
-#define MetalnessFactor Constants.litData.y
-#define SpecularFactor  Constants.litData.z
-#define EmissionFactor  Constants.litData.w
+#define RoughnessFactor Constants.textureData.x
+#define MetalnessFactor Constants.textureData.y
+#define SpecularFactor  Constants.textureData.z
+#define EmissionFactor  Constants.textureData.w
+
+#define AlphaCutoff  Constants.pixelData.x
 
 #endif

@@ -58,7 +58,8 @@ namespace rawrbox {
 			requires(std::derived_from<T, rawrbox::VertexData>)
 		rawrbox::BindlessPixelBuffer bindBasePixelUniforms(const rawrbox::Mesh<T>& mesh) {
 			return {
-			    mesh.textures.getPixelIDs(),
+			    mesh.textures.getTextureIDs(),
+			    mesh.textures.getTextureData(),
 			    mesh.textures.getData()};
 		}
 

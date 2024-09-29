@@ -15,8 +15,13 @@
 #include <cstdint>
 #include <string>
 
+namespace ozz {
+	namespace animation {
+		class Skeleton;
+	} // namespace animation
+} // namespace ozz
+
 namespace rawrbox {
-	struct Skeleton;
 	class LightBase;
 
 	namespace MeshBilldboard {
@@ -37,11 +42,17 @@ namespace rawrbox {
 		float specularFactor = 0.5F;
 		float emissionFactor = 1.0F;
 
-		[[nodiscard]] rawrbox::Vector4f getData() const {
+		float alphaCutoff = 0.5F;
+
+		[[nodiscard]] rawrbox::Vector4f getTextureData() const {
 			return {roughnessFactor, metalnessFactor, specularFactor, emissionFactor};
 		}
 
-		[[nodiscard]] rawrbox::Vector4_t<uint32_t> getPixelIDs() const {
+		[[nodiscard]] rawrbox::Vector4f getData() const {
+			return {alphaCutoff, 0.F, 0.F, 0.F};
+		}
+
+		[[nodiscard]] rawrbox::Vector4_t<uint32_t> getTextureIDs() const {
 			auto* base = texture == nullptr ? rawrbox::WHITE_TEXTURE.get() : texture;
 			auto* norm = normal == nullptr ? rawrbox::NORMAL_TEXTURE.get() : normal;
 			auto* metR = roughtMetal == nullptr ? rawrbox::BLACK_TEXTURE.get() : roughtMetal;
@@ -51,7 +62,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] bool canMerge(const rawrbox::MeshTextures& other) const {
-			return this->roughnessFactor == other.roughnessFactor && this->metalnessFactor == other.metalnessFactor && this->specularFactor == other.specularFactor && this->emissionFactor == other.emissionFactor;
+			return this->roughnessFactor == other.roughnessFactor && this->metalnessFactor == other.metalnessFactor && this->specularFactor == other.specularFactor && this->emissionFactor == other.emissionFactor && this->alphaCutoff == other.alphaCutoff;
 		}
 
 		bool operator==(const rawrbox::MeshTextures& other) const { return this->texture == other.texture && this->normal == other.normal && this->specularFactor == other.specularFactor && this->roughtMetal == other.roughtMetal && this->emission == other.emission; }
@@ -78,7 +89,7 @@ namespace rawrbox {
 	class Mesh {
 
 	protected:
-		bool _canOptimize = true;
+		bool _canMerge = true;
 		bool _wireframe = false;
 		bool _lineMode = false;
 		bool _transparent = false;
@@ -91,13 +102,13 @@ namespace rawrbox {
 		std::string name = "mesh";
 
 		// OFFSETS ---
-		uint16_t baseVertex = 0;
-		uint16_t baseIndex = 0;
-		uint16_t totalVertex = 0;
-		uint16_t totalIndex = 0;
+		uint32_t baseVertex = 0;
+		uint32_t baseIndex = 0;
+		uint32_t totalVertex = 0;
+		uint32_t totalIndex = 0;
 
 		std::vector<T> vertices = {};
-		std::vector<uint16_t> indices = {};
+		std::vector<uint32_t> indices = {};
 		// -------
 
 		// TEXTURES ---
@@ -118,7 +129,7 @@ namespace rawrbox {
 		// --------------
 
 		// ANIMATION ------
-		rawrbox::Skeleton* skeleton = nullptr;
+		ozz::animation::Skeleton* skeleton = nullptr;
 		std::array<rawrbox::Matrix4x4, RB_RENDER_MAX_BONES_PER_MODEL> boneTransforms = {};
 		// -----------------
 
@@ -149,11 +160,12 @@ namespace rawrbox {
 		[[nodiscard]] virtual bool getLineMode() const { return this->_lineMode; }
 		virtual void setLineMode(bool line) { this->_lineMode = line; }
 
+		virtual void setAlphaCutoff(float cutoff) { this->textures.alphaCutoff = cutoff; }
 		virtual void setTransparent(bool transparent) { this->_transparent = transparent; }
 		[[nodiscard]] virtual bool isTransparent() const { return this->_transparent; }
 
 		[[nodiscard]] virtual const std::vector<T>& getVertices() const { return this->vertices; }
-		[[nodiscard]] virtual const std::vector<uint16_t>& getIndices() const { return this->indices; }
+		[[nodiscard]] virtual const std::vector<uint32_t>& getIndices() const { return this->indices; }
 
 		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const { return this->bbox; }
 
@@ -258,7 +270,7 @@ namespace rawrbox {
 			}
 		}
 
-		[[nodiscard]] virtual rawrbox::Skeleton* getSkeleton() const {
+		[[nodiscard]] virtual ozz::animation::Skeleton* getSkeleton() const {
 			return this->skeleton;
 		}
 
@@ -273,18 +285,20 @@ namespace rawrbox {
 		}
 
 		virtual void merge(const rawrbox::Mesh<T>& other) {
-			std::transform(other.indices.begin(), other.indices.end(), std::back_inserter(this->indices), [this](const uint16_t& val) { return static_cast<uint16_t>(this->totalVertex + val); });
+			std::transform(other.indices.begin(), other.indices.end(), std::back_inserter(this->indices), [this](const uint32_t& val) { return this->totalVertex + val; });
 			this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
 
-			this->totalVertex = static_cast<uint16_t>(this->vertices.size());
-			this->totalIndex = static_cast<uint16_t>(this->indices.size());
+			this->totalVertex = static_cast<uint32_t>(this->vertices.size());
+			this->totalIndex = static_cast<uint32_t>(this->indices.size());
 
 			this->bbox.combine(other.bbox);
 		}
 
-		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
-		[[nodiscard]] virtual bool canOptimize(const rawrbox::Mesh<T>& other) const {
-			if (!this->_canOptimize || !other._canOptimize) return false;
+		virtual void setMergeable(bool status) { this->_canMerge = status; }
+		virtual bool isMergeable() const { return this->_canMerge; }
+
+		[[nodiscard]] virtual bool canMerge(const rawrbox::Mesh<T>& other) const {
+			if (!this->_canMerge || !other._canMerge) return false;
 
 			if (this->vertices.size() + other.vertices.size() >= RB_RENDER_MAX_VERTICES) return false; // Max vertice limit
 			if (this->indices.size() + other.indices.size() >= RB_RENDER_MAX_INDICES) return false;    // Max indice limit
@@ -294,8 +308,8 @@ namespace rawrbox {
 			       this->meshID == other.meshID &&
 			       this->data == other.data &&
 			       this->_wireframe == other._wireframe &&
-			       this->_transparent == other._transparent &&
 			       this->_lineMode == other._lineMode &&
+			       this->_transparent == other._transparent &&
 			       this->matrix == other.matrix;
 		}
 	};

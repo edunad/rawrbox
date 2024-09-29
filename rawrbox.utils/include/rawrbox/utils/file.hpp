@@ -25,7 +25,7 @@ namespace rawrbox {
 				}
 			}
 
-			file.push_back('\0');
+			file.push_back(static_cast<T>('\0'));
 			return file;
 		}
 

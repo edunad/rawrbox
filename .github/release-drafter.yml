@@ -17,7 +17,7 @@ version-resolver:
   minor:
     labels:
       - "IMPROVEMENTS"
-      - "🧙‍♂️ ASSIMP"
+      - "🧙‍♂️ GLTF"
       - "🎺 BASS"
       - "💽 ENGINE"
       - "🧮 MATH"

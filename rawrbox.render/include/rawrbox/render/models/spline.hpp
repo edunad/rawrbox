@@ -95,7 +95,7 @@ namespace rawrbox {
 				int triIndexCount = triCount * 3;
 
 				rawrbox::Mesh mesh;
-				std::vector<uint16_t> triangleIndices(triIndexCount);
+				std::vector<uint32_t> triangleIndices(triIndexCount);
 				std::vector<typename M::vertexBufferType> buff(vertCount);
 
 				// Generate all of the vertices and normals
@@ -123,10 +123,10 @@ namespace rawrbox {
 				for (int i = 0; i < segments; i++) {
 					int offset = i * vertsInShape;
 					for (int l = 0; l < static_cast<int>(shapeSegments.size()); l += 2) {
-						auto a = static_cast<uint16_t>(offset + shapeSegments[l]);
-						auto b = static_cast<uint16_t>(offset + shapeSegments[l] + vertsInShape);
-						auto c = static_cast<uint16_t>(offset + shapeSegments[l + 1] + vertsInShape);
-						auto d = static_cast<uint16_t>(offset + shapeSegments[l + 1]);
+						auto a = static_cast<uint32_t>(offset + shapeSegments[l]);
+						auto b = static_cast<uint32_t>(offset + shapeSegments[l] + vertsInShape);
+						auto c = static_cast<uint32_t>(offset + shapeSegments[l + 1] + vertsInShape);
+						auto d = static_cast<uint32_t>(offset + shapeSegments[l + 1]);
 
 						triangleIndices[ti++] = a; // 0
 						triangleIndices[ti++] = b; // 1
@@ -138,8 +138,8 @@ namespace rawrbox {
 					}
 				}
 
-				mesh.totalIndex = static_cast<uint16_t>(triIndexCount);
-				mesh.totalVertex = static_cast<uint16_t>(vertCount);
+				mesh.totalIndex = static_cast<uint32_t>(triIndexCount);
+				mesh.totalVertex = static_cast<uint32_t>(vertCount);
 				mesh.vertices.insert(mesh.vertices.end(), buff.begin(), buff.end());
 				mesh.indices.insert(mesh.indices.end(), triangleIndices.begin(), triangleIndices.end());
 
@@ -159,7 +159,7 @@ namespace rawrbox {
 			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;
-			DrawAttrs.IndexType = Diligent::VT_UINT16;
+			DrawAttrs.IndexType = Diligent::VT_UINT32;
 			DrawAttrs.NumIndices = this->_mesh->totalIndex;
 			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL /*| Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT*/;
 

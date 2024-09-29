@@ -61,12 +61,13 @@ namespace rawrbox {
 
 		features.GeometryShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.ComputeShaders = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		// features.Tessellation = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 
 		features.BindlessResources = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		features.ShaderResourceRuntimeArrays = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+
 		features.VertexPipelineUAVWritesAndAtomics = Diligent::DEVICE_FEATURE_STATE_ENABLED;
-		// features.DepthClamp = Diligent::DEVICE_FEATURE_STATE_ENABLED;
-		// features.DepthBiasClamp = Diligent::DEVICE_FEATURE_STATE_ENABLED;
+		features.PixelUAVWritesAndAtomics = Diligent::DEVICE_FEATURE_STATE_ENABLED;
 		// ---------------------------------------------------
 
 #ifdef _DEBUG
@@ -194,6 +195,12 @@ namespace rawrbox {
 			default: throw this->_logger->error("Invalid diligent api");
 		}
 
+		// Check device limitations ---
+		if (!(this->_device->GetAdapterInfo().DrawCommand.CapFlags & Diligent::DRAW_COMMAND_CAP_FLAG_BASE_VERTEX)) {
+			throw this->_logger->error("Base vertex not supported");
+		}
+		// ----------------------------
+
 		// Setup shader pipeline if not exists
 		if (rawrbox::SHADER_FACTORY == nullptr) {
 			auto rootDir = this->getShadersDirectory();
@@ -223,6 +230,15 @@ namespace rawrbox {
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MAX_BONES_PER_MODEL", RB_RENDER_MAX_BONES_PER_MODEL);
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MAX_BONES_PER_VERTEX", RB_MAX_BONES_PER_VERTEX);
 		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_PIXEL, "MAX_POST_DATA", RB_RENDER_MAX_POST_DATA);
+
+		// THESE ARE ALWAYS REGISTERED TO THOSE INDEXES, IF THAT CHANGES, THEN SOMETHING WENT REAALLYYY WRONG
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_PIXEL, "MISSING_TEXTURE_ID", 0);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "MISSING_TEXTURE_ID", 0);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_PIXEL, "WHITE_TEXTURE_ID", 1);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "WHITE_TEXTURE_ID", 1);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_PIXEL, "BLACK_TEXTURE_ID", 2);
+		rawrbox::PipelineUtils::registerGlobalMacro(Diligent::SHADER_TYPE_VERTEX, "BLACK_TEXTURE_ID", 2);
+		// --------------
 		// ----------------------
 
 		// Setup camera -----
@@ -247,28 +263,28 @@ namespace rawrbox {
 
 		if (rawrbox::MISSING_TEXTURE == nullptr) {
 			rawrbox::MISSING_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
-			rawrbox::MISSING_TEXTURE->upload();
+			rawrbox::MISSING_TEXTURE->upload(); // 0
 		}
 
 		if (rawrbox::MISSING_VERTEX_TEXTURE == nullptr) {
 			rawrbox::MISSING_VERTEX_TEXTURE = std::make_shared<rawrbox::TextureMissing>();
 			rawrbox::MISSING_VERTEX_TEXTURE->setType(rawrbox::TEXTURE_TYPE::VERTEX);
-			rawrbox::MISSING_VERTEX_TEXTURE->upload();
+			rawrbox::MISSING_VERTEX_TEXTURE->upload(); // 0
 		}
 
 		if (rawrbox::WHITE_TEXTURE == nullptr) {
 			rawrbox::WHITE_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2u(2U, 2U), rawrbox::Colors::White());
-			rawrbox::WHITE_TEXTURE->upload();
+			rawrbox::WHITE_TEXTURE->upload(); // 1
 		}
 
 		if (rawrbox::BLACK_TEXTURE == nullptr) {
 			rawrbox::BLACK_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2u(2U, 2U), rawrbox::Colors::Black());
-			rawrbox::BLACK_TEXTURE->upload();
+			rawrbox::BLACK_TEXTURE->upload(); // 2
 		}
 
 		if (rawrbox::NORMAL_TEXTURE == nullptr) {
 			rawrbox::NORMAL_TEXTURE = std::make_shared<rawrbox::TextureFlat>(rawrbox::Vector2u(2U, 2U), rawrbox::Color::RGBHex(0x7f7fff));
-			rawrbox::NORMAL_TEXTURE->upload();
+			rawrbox::NORMAL_TEXTURE->upload(); // 3
 		}
 
 		if (rawrbox::CHECKER_TEXTURE == nullptr) {
@@ -276,7 +292,7 @@ namespace rawrbox {
 
 			rawrbox::CHECKER_TEXTURE = std::make_shared<rawrbox::TextureImage>(rawrbox::Vector2u(256U, 256U), checker, uint8_t(4));
 			rawrbox::CHECKER_TEXTURE->setName("CHECKER_TEXTURE");
-			rawrbox::CHECKER_TEXTURE->upload();
+			rawrbox::CHECKER_TEXTURE->upload(); // 4
 		}
 
 		// -------------------------

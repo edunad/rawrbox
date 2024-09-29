@@ -150,7 +150,7 @@ namespace scripting_test {
 	void Game::contentLoaded() {
 		if (this->_ready) return;
 		auto* tex = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/crate_hl1.png")->get();
-		this->_model->setOptimizable(false);
+		this->_model->setMergeable(false);
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({0.F, 1.0F, 0.F}, {1.F, 1.F, 1.F});

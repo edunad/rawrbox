@@ -15,20 +15,27 @@ namespace rawrbox {
 			    .deriveClass<ModelC, ModelBaseC>(name.c_str())
 			    // OPTIMIZATION ----
 			    .addFunction("flattenMeshes", &ModelC::flattenMeshes)
-			    .addFunction("setOptimizable", &ModelC::setOptimizable)
+			    .addFunction("setMergeable", &ModelC::setMergeable)
 			    .addFunction("optimize", &ModelC::optimize)
+			    .addFunction("merge", &ModelC::merge)
 			    // ----
 
 			    // ANIMATION ----
-			    .addFunction("playAnimation", &ModelC::playAnimation)
-			    .addFunction("hasAnimation", &ModelC::playAnimation)
+			    .addFunction("playAnimation",
+				luabridge::overload<std::function<void(const std::string&)>>(&ModelC::playAnimation),
+				luabridge::overload<const std::string&, bool, std::function<void(const std::string&)>>(&ModelC::playAnimation))
+
+			    .addFunction("hasAnimation", &ModelC::hasAnimation)
 			    .addFunction("stopAnimation", &ModelC::stopAnimation)
 			    .addFunction("stopAllAnimations", &ModelC::stopAllAnimations)
 			    .addFunction("isAnimationPlaying", &ModelC::isAnimationPlaying)
 			    // ----
 
 			    // UTILS ----
-			    .addFunction("addMesh", &ModelC::addMesh)
+			    .addFunction("addMesh",
+				luabridge::overload<rawrbox::Mesh<typename T::vertexBufferType>>(&ModelC::addMesh),
+				luabridge::overload<size_t, rawrbox::Mesh<typename T::vertexBufferType>>(&ModelC::addMesh))
+
 			    .addFunction("totalMeshes", &ModelC::totalMeshes)
 			    .addFunction("empty", &ModelC::empty)
 			    .addFunction("removeMeshByName", &ModelC::removeMeshByName)

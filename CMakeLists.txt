@@ -6,7 +6,6 @@ include("cmake/rawrbox_utils.cmake")
 
 # SETUP CPM -----
 include("cmake/cpm.cmake")
-CPMUsePackageLock(package-lock.cmake)
 # ---------------
 
 # Versioning
@@ -37,7 +36,7 @@ option(RAWRBOX_BUILD_RAWRBOX_RESOURCES "Build rawrbox resources utils" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS "Build 3D physics support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS "Build 2D physics support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_BASS "Build bass & add sound loading support" OFF)
-option(RAWRBOX_BUILD_RAWRBOX_ASSIMP "Build assimp & add model loading support" OFF)
+option(RAWRBOX_BUILD_RAWRBOX_GLTF "Build gltf model loading support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_WEBM "Build libwebm & add video loading support" OFF)
 option(RAWRBOX_BUILD_RAWRBOX_NETWORK "Build network support" OFF)
 
@@ -87,13 +86,12 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_TESTING ON)
     set(RAWRBOX_BUILD_SAMPLES ON)
 
-    set(RAWRBOX_BUILD_RAWRBOX_RENDER ON)
     set(RAWRBOX_BUILD_RAWRBOX_UI ON)
     set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
+    set(RAWRBOX_BUILD_RAWRBOX_GLTF ON)
     set(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS ON)
     set(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS ON)
     set(RAWRBOX_BUILD_RAWRBOX_BASS ON)
-    set(RAWRBOX_BUILD_RAWRBOX_ASSIMP ON)
     set(RAWRBOX_BUILD_RAWRBOX_WEBM ON)
     set(RAWRBOX_BUILD_RAWRBOX_NETWORK ON)
 
@@ -104,6 +102,8 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS ON)
     set(RAWRBOX_BUILD_RAWRBOX_IMGUI ON)
     set(RAWRBOX_BUILD_QHULL ON)
+
+    set(RAWRBOX_TRACE_EXCEPTIONS OFF)
 
     if(NOT DEFINED STEAMWORKS_APPID)
         message(STATUS "Set STEAMWORKS_APPID to 480 (SpaceWars example game)")
@@ -168,11 +168,13 @@ if(WIN32 AND NOT VS_DXC_COMPILER_PATH AND NOT VS_DXIL_SIGNER_PATH AND NOT VS_D3D
 endif()
 # ---------------------
 
+set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME OFF)
+
 ## CHECKS ---
 if(NOT RAWRBOX_BUILD_RAWRBOX_RENDER)
-    message(WARNING "----------------------------------------\nRAWRBOX_BUILD_RAWRBOX_RENDER is disabled!\nDisabling UI / ASSIMP / IMGUI / WEBM and samples..\n----------------------------------------")
+    message(WARNING "----------------------------------------\nRAWRBOX_BUILD_RAWRBOX_RENDER is disabled!\nDisabling UI / GLTF / IMGUI / WEBM and samples..\n----------------------------------------")
     set(RAWRBOX_BUILD_RAWRBOX_UI OFF)
-    set(RAWRBOX_BUILD_RAWRBOX_ASSIMP OFF)
+    set(RAWRBOX_BUILD_RAWRBOX_GLTF OFF)
     set(RAWRBOX_BUILD_RAWRBOX_IMGUI OFF)
     set(RAWRBOX_BUILD_RAWRBOX_WEBM OFF)
 
@@ -210,15 +212,15 @@ endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_RENDER)
     if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
-        CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@13.0.3")
+        CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@14.0.0")
     endif()
 endif()
 
-CPMAddPackage("gh:stephenberry/glaze@3.3.1")
+CPMAddPackage("gh:stephenberry/glaze@3.5.0")
 
 # ---
-if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)
-    message(WARNING "RAWRBOX.NETWORK / RAWRBOX.ASSIMP is enabled, adding zlib-ng package")
+if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
+    message(WARNING "RAWRBOX.NETWORK is enabled, adding zlib-ng package")
 
     CPMFindPackage(
         NAME
@@ -228,11 +230,8 @@ if(RAWRBOX_BUILD_RAWRBOX_NETWORK OR RAWRBOX_BUILD_RAWRBOX_ASSIMP)
         USE_CACHE
             OFF
         GIT_TAG
-            2.2.1
+            2.2.2
         OPTIONS
-            #"ASM686 FALSE"
-            #"AMD64 FALSE"
-
             "ZLIB_COMPAT ON"
             "ZLIB_BUILD_EXAMPLES OFF"
             "ZLIB_ENABLE_TESTS OFF"
@@ -277,9 +276,9 @@ if(RAWRBOX_BUILD_RAWRBOX_WEBM)
     add_subdirectory("rawrbox.webm")
 endif()
 
-if(RAWRBOX_BUILD_RAWRBOX_ASSIMP)
-    message(STATUS "Enabled RAWRBOX.ASSIMP support")
-    add_subdirectory("rawrbox.assimp")
+if(RAWRBOX_BUILD_RAWRBOX_GLTF)
+    message(STATUS "Enabled RAWRBOX.GLTF support")
+    add_subdirectory("rawrbox.gltf")
 endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_UI)

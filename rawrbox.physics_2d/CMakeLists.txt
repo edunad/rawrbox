@@ -9,7 +9,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY
         Sopiro/Muli
     GIT_TAG
-        "c7697eaee46d128b967368d7454aa2459fed15d4" # master branch is currently broken: https://github.com/Sopiro/Muli/issues/3
+        master
     OPTIONS
         "MULI_BUILD_DEMO OFF")
 

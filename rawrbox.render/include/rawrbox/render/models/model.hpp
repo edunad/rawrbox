@@ -2,11 +2,11 @@
 
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/lights/manager.hpp>
-#include <rawrbox/render/models/animation.hpp>
+#include <rawrbox/render/models/animations/skeleton.hpp>
+#include <rawrbox/render/models/animations/vertex.hpp>
 #include <rawrbox/render/models/base.hpp>
-#include <rawrbox/render/models/skeleton.hpp>
+#include <rawrbox/render/models/utils/optimization.hpp>
 #include <rawrbox/render/static.hpp>
-#include <rawrbox/render/utils/anim.hpp>
 
 namespace rawrbox {
 
@@ -16,139 +16,121 @@ namespace rawrbox {
 
 	protected:
 		// ANIMATION ---
-		std::unordered_map<std::string, rawrbox::Animation> _animations = {};
-		std::unordered_map<std::string, rawrbox::PlayingAnimationData> _playingAnimations = {};
+		std::vector<ozz::animation::Animation*> _animations = {};
+
+		std::unordered_map<size_t, std::vector<rawrbox::Mesh<typename M::vertexBufferType>*>> _vertexAnimations = {}; // For quick lookup
+		std::unordered_map<std::string, std::unique_ptr<rawrbox::AnimationSampler>> _playingAnimations = {};
 		// ------------
 
 		std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes = {};
 		rawrbox::BBOX _bbox = {};
 
-		// SKINNING ----
-		std::unordered_map<std::string, rawrbox::Mesh<typename M::vertexBufferType>*> _animatedMeshes = {}; // Map for quick lookup
-		// --------
-
 		// LIGHTS ---
 		std::vector<rawrbox::LightBase> _lights = {};
 		// -----
 
-		bool _canOptimize = true;
+		bool _canMerge = true;
 
 		// ANIMATIONS ----
-		void animate(rawrbox::Mesh<typename M::vertexBufferType>& mesh) const {
-			// VERTEX ANIMATION ----
-			for (auto& anim : this->_animatedMeshes) {
-				if (anim.second == nullptr) continue;
-				this->readAnims(anim.second->matrix, anim.first);
-			}
-			// ------------
+		virtual rawrbox::AnimationSampler* playAnimation(size_t index, ozz::animation::Animation* animation, std::function<void(const std::string&)> onComplete = nullptr) {
+			if (animation == nullptr) return nullptr;
 
-			// BONE ANIMATION ----
-			if constexpr (supportsBones<typename M::vertexBufferType>) {
-				std::array<rawrbox::Matrix4x4, RB_RENDER_MAX_BONES_PER_MODEL> boneTransforms = {};
-
-				if (mesh.skeleton != nullptr) {
-					auto calcs = std::unordered_map<uint8_t, rawrbox::Matrix4x4>();
-					this->animateBones(calcs, *mesh.skeleton, *mesh.skeleton->rootBone, {});
-
-					for (size_t i = 0; i < calcs.size(); i++) {
-						boneTransforms[i] = calcs[static_cast<uint8_t>(i)];
+			auto name = animation->name();
+			switch (animation->type) {
+				case ozz::animation::VERTEX:
+					this->_playingAnimations[name] = std::make_unique<rawrbox::AnimationVertexSampler>(index, animation, onComplete);
+					return this->_playingAnimations[name].get();
+				case ozz::animation::SKELETON:
+					if constexpr (supportsBones<typename M::vertexBufferType>) {
+						this->_playingAnimations[name] = std::make_unique<rawrbox::AnimationSkeletonSampler>(index, animation, onComplete);
+						return this->_playingAnimations[name].get();
+					} else {
+						this->_logger->warn("Failed to play animation {}, model does not support bones", name);
 					}
-				}
-
-				mesh.boneTransforms = boneTransforms;
+					break;
+				case ozz::animation::UNKNOWN:
+				default:
+					this->_logger->warn("Unknown animation type, skipping");
+					break;
 			}
-			// -----
+
+			return nullptr;
 		}
 
-		void animateBones(std::unordered_map<uint8_t, rawrbox::Matrix4x4>& calcs, const rawrbox::Skeleton& skeleton, const rawrbox::Bone& parentBone, const rawrbox::Matrix4x4& parentTransform) const {
-			auto nodeTransform = parentBone.transformationMtx * parentBone.overrideMtx;
-			this->readAnims(nodeTransform, parentBone.name);
+		void sampleAnimations(rawrbox::AnimationSampler* sample) const {
+			switch (sample->getType()) {
+				case ozz::animation::VERTEX:
+					this->processVertexAnimation(dynamic_cast<rawrbox::AnimationVertexSampler*>(sample));
+					break;
 
-			rawrbox::Matrix4x4 globalTransformation = parentTransform * nodeTransform;
-			auto fnd = skeleton.boneMap.find(parentBone.name);
-			if (fnd != skeleton.boneMap.end()) {
-				calcs[fnd->second->boneId] = skeleton.invTransformationMtx * globalTransformation * fnd->second->offsetMtx;
-			}
+				case ozz::animation::SKELETON:
+					if constexpr (supportsBones<typename M::vertexBufferType>) {
+						this->processSkeletonAnimations(dynamic_cast<rawrbox::AnimationSkeletonSampler*>(sample));
+					} else {
+						throw this->_logger->error("Failed to play animation {}, model does not support bones", sample->getAnimation()->name());
+					}
+					break;
 
-			for (const auto& child : parentBone.children) {
-				this->animateBones(calcs, skeleton, *child, globalTransformation);
+				default:
+				case ozz::animation::UNKNOWN:
+					throw this->_logger->error("Unknown animation type");
 			}
 		}
 
-		void readAnims(rawrbox::Matrix4x4& nodeTransform, const std::string& nodeName) const {
-			for (auto& playingAnim : this->_playingAnimations) {
-				auto& anim = playingAnim.second;
-				auto animChannel = std::find_if(anim.data->frames.begin(), anim.data->frames.end(), [&](AnimationFrame& x) {
-					return x.nodeName == nodeName;
-				});
+		void processVertexAnimation(rawrbox::AnimationVertexSampler* sample) const {
+			if (sample == nullptr) return;
 
-				if (animChannel != anim.data->frames.end()) {
-					float timeInTicks = std::fmod(anim.time, anim.data->duration);
+			const auto& outputs = sample->getOutput();
+			for (size_t i = 0; i < outputs.size(); i++) {
+				const auto& output = outputs[i];
 
-					// helper, select the next "frame" we should play depending on the time
-					auto findFrameIndex = [&](auto& keys) {
-						for (size_t i = 0; i + 1 < keys.size(); i++) {
-							if (timeInTicks < keys[i + 1].first) {
-								return i;
-							}
-						}
+				auto fnd = this->_vertexAnimations.find(sample->getIndex());
+				if (fnd == this->_vertexAnimations.end()) return;
 
-						return static_cast<size_t>(0);
-					};
+				for (auto& mesh : fnd->second) {
+					rawrbox::Vector3f position = {ozz::math::GetX(output.translation.x), ozz::math::GetX(output.translation.y), ozz::math::GetX(output.translation.z)};
+					rawrbox::Vector4f rotation = {ozz::math::GetX(output.rotation.x), ozz::math::GetX(output.rotation.y), ozz::math::GetX(output.rotation.z), ozz::math::GetX(output.rotation.w)};
+					rawrbox::Vector3f scale = {ozz::math::GetX(output.scale.x), ozz::math::GetX(output.scale.y), ozz::math::GetX(output.scale.z)};
 
-					// find all frames
-					auto positionFrameIndex = findFrameIndex(animChannel->position);
-					auto rotationFrameIndex = findFrameIndex(animChannel->rotation);
-					auto scaleFrameIndex = findFrameIndex(animChannel->scale);
-
-					auto currPos = animChannel->position[positionFrameIndex];
-					auto nextPos = positionFrameIndex + 1 >= animChannel->position.size() ? animChannel->position.front() : animChannel->position[positionFrameIndex + 1];
-
-					auto currRot = animChannel->rotation[rotationFrameIndex];
-					auto nextRot = rotationFrameIndex + 1 >= animChannel->rotation.size() ? animChannel->rotation.front() : animChannel->rotation[rotationFrameIndex + 1];
-
-					auto currScl = animChannel->scale[scaleFrameIndex];
-					auto nextScl = scaleFrameIndex + 1 >= animChannel->scale.size() ? animChannel->scale.front() : animChannel->scale[scaleFrameIndex + 1];
-
-					// Easing ----
-					rawrbox::Vector3f position = nextPos.second;
-					rawrbox::Vector4f rotation = nextRot.second;
-					rawrbox::Vector3f scale = nextScl.second;
-
-					float t = rawrbox::EasingUtils::ease(animChannel->stateEnd, timeInTicks);
-
-					position = rawrbox::AnimUtils::lerpVector3(t, currPos, nextPos);
-					rotation = rawrbox::AnimUtils::lerpRotation(t, currRot, nextRot);
-					scale = rawrbox::AnimUtils::lerpVector3(t, currScl, nextScl);
-					//   ----
-
-					nodeTransform = rawrbox::Matrix4x4::mtxSRT(scale, rotation, position);
+					mesh->matrix = rawrbox::Matrix4x4::mtxSRT(scale, rotation, position);
 				}
 			}
 		}
 
-		void updateAnimations() {
+		void processSkeletonAnimations(rawrbox::AnimationSkeletonSampler* sample) const {
+			if (sample == nullptr) return;
+
+			for (auto& mesh : this->_meshes) {
+				const ozz::animation::Skeleton* skeleton = mesh->skeleton;
+				if (skeleton == nullptr) continue;
+
+				rawrbox::Matrix4x4 globalMtx = rawrbox::Matrix4x4(skeleton->inverseBindMatrices[0]);
+				globalMtx.inverse();
+
+				const ozz::vector<ozz::math::Float4x4>& modelOutput = sample->getOutput(skeleton);
+				for (size_t i = 0; i < modelOutput.size(); i++) {
+					const ozz::math::Float4x4& output = modelOutput[i];
+
+					rawrbox::Matrix4x4 invMtx = rawrbox::Matrix4x4(skeleton->inverseBindMatrices[i]);
+					rawrbox::Matrix4x4 mtx = rawrbox::Matrix4x4({ozz::math::GetX(output.cols[0]), ozz::math::GetY(output.cols[0]), ozz::math::GetZ(output.cols[0]), ozz::math::GetW(output.cols[0]), ozz::math::GetX(output.cols[1]), ozz::math::GetY(output.cols[1]), ozz::math::GetZ(output.cols[1]), ozz::math::GetW(output.cols[1]), ozz::math::GetX(output.cols[2]), ozz::math::GetY(output.cols[2]), ozz::math::GetZ(output.cols[2]), ozz::math::GetW(output.cols[2]), ozz::math::GetX(output.cols[3]), ozz::math::GetY(output.cols[3]), ozz::math::GetZ(output.cols[3]), ozz::math::GetW(output.cols[3])});
+
+					mesh->boneTransforms[i] = globalMtx * mtx * invMtx;
+				}
+			}
+		}
+
+		void tickAnimations() {
 			for (auto it = this->_playingAnimations.begin(); it != this->_playingAnimations.end();) {
-				float timeToAdd = rawrbox::DELTA_TIME * it->second.speed * it->second.data->ticksPerSecond;
-				float newTime = it->second.time + timeToAdd;
-				float totalDur = it->second.data->duration;
+				const auto& anim = it->second;
+				if (anim == nullptr) continue;
 
-				bool animationEnded = it->second.speed >= 0 ? newTime >= totalDur : newTime <= 0;
-				if (animationEnded) {
-					auto onCompleteCallback = it->second.onComplete;
-
-					if (!it->second.loop) {
-						it = this->_playingAnimations.erase(it);
-						if (onCompleteCallback != nullptr) onCompleteCallback();
-
-						continue;
-					}
-
-					newTime = it->second.speed >= 0 ? 0 : totalDur;
-					if (onCompleteCallback != nullptr) onCompleteCallback();
+				if (anim->tick(rawrbox::DELTA_TIME)) {
+					it = this->_playingAnimations.erase(it);
+					continue;
+				} else {
+					this->sampleAnimations(anim.get());
 				}
 
-				it->second.time = newTime;
 				++it;
 			}
 		}
@@ -178,32 +160,35 @@ namespace rawrbox {
 		// --------------
 
 	public:
-		Model(size_t vertices = 0, size_t indices = 0) : rawrbox::ModelBase<M>(vertices, indices){};
+		Model(size_t vertices = 0, size_t indices = 0) : rawrbox::ModelBase<M>(vertices, indices) {};
 		Model(const Model&) = delete;
 		Model(Model&&) = delete;
 		Model& operator=(const Model&) = delete;
 		Model& operator=(Model&&) = delete;
 		~Model() override {
 			this->_meshes.clear();
-			this->_animatedMeshes.clear();
+			this->_vertexAnimations.clear();
 			this->_animations.clear();
+			this->_playingAnimations.clear();
 			this->_lights.clear();
 		}
 
-		virtual void flattenMeshes(bool optimize = true, bool sort = true) {
+		virtual void flattenMeshes(bool merge = true, bool sort = true) {
 			this->_mesh->clear();
 
 			// Merge same meshes to reduce calls
-			if (this->_canOptimize && optimize) {
-				this->optimize();
+			if (this->_canMerge && merge) {
+				this->merge();
 			}
 			// ----------------------
 
 			// Flatten meshes for buffers
 			for (auto& mesh : this->_meshes) {
+				if (mesh == nullptr || mesh->empty()) continue;
+
 				// Fix start index ----
-				mesh->baseIndex = static_cast<uint16_t>(this->_mesh->indices.size());
-				mesh->baseVertex = static_cast<uint16_t>(this->_mesh->vertices.size());
+				mesh->baseIndex = static_cast<uint32_t>(this->_mesh->indices.size());
+				mesh->baseVertex = static_cast<uint32_t>(this->_mesh->vertices.size());
 				// --------------------
 
 				// Append vertices
@@ -222,12 +207,28 @@ namespace rawrbox {
 			// --------
 		}
 
-		virtual void setOptimizable(bool status) { this->_canOptimize = status; }
-		virtual void optimize() {
+		virtual void setMergeable(bool status) { this->_canMerge = status; }
+
+		// Note: this can be quite slow, use sparingly
+		virtual void optimize(float complexity_threshold = 0.9F) {
+			for (auto& mesh : this->_meshes) {
+				if (mesh == nullptr || mesh->empty()) continue;
+#ifdef _DEBUG
+				size_t oldVerts = mesh->vertices.size();
+				size_t oldInds = mesh->indices.size();
+#endif
+				rawrbox::MeshOptimization::optimize(mesh->vertices, mesh->indices);
+				rawrbox::MeshOptimization::simplify(mesh->vertices, mesh->indices, complexity_threshold);
+#ifdef _DEBUG
+				if (oldVerts != mesh->vertices.size() || oldInds != mesh->indices.size()) this->_logger->info("Optimized mesh for rendering (Before {} | After {})", oldVerts, mesh->vertices.size());
+#endif
+			}
+		}
+
+		virtual void merge() {
 #ifdef _DEBUG
 			size_t old = this->_meshes.size();
 #endif
-
 			for (size_t i1 = 0; i1 < this->_meshes.size(); i1++) {
 				auto& mesh1 = this->_meshes[i1];
 
@@ -237,20 +238,21 @@ namespace rawrbox {
 
 				for (size_t i2 = this->_meshes.size() - 1; i2 > i1; i2--) {
 					auto& mesh2 = this->_meshes[i2];
-					if (!mesh1->canOptimize(*mesh2)) continue;
+					if (!mesh1->canMerge(*mesh2)) continue;
 
 					reserveVertices += mesh2->vertices.size();
 					reserveIndices += mesh2->indices.size();
 				}
 
 				if (reserveVertices == mesh1->vertices.size()) continue;
+
 				mesh1->vertices.reserve(reserveVertices);
 				mesh1->indices.reserve(reserveIndices);
 
 				// merge what it can
 				for (size_t i2 = this->_meshes.size() - 1; i2 > i1; i2--) {
 					auto& mesh2 = this->_meshes[i2];
-					if (!mesh1->canOptimize(*mesh2)) continue;
+					if (!mesh1->canMerge(*mesh2)) continue;
 
 					mesh1->merge(*mesh2);
 					this->_meshes.erase(this->_meshes.begin() + i2);
@@ -258,7 +260,7 @@ namespace rawrbox {
 			}
 
 #ifdef _DEBUG
-			if (old != this->_meshes.size() && !this->isUploaded()) this->_logger->info("Optimized mesh for rendering (Before {} | After {}), this will only display once to prevent spam.", old, this->_meshes.size()); // Only do it once
+			if (old != this->_meshes.size() && !this->isUploaded()) this->_logger->info("Merged mesh for rendering (Before {} | After {}), this will only display once to prevent spam.", old, this->_meshes.size()); // Only do it once
 #endif
 		}
 
@@ -275,29 +277,39 @@ namespace rawrbox {
 			throw this->_logger->error("TODO");
 		}
 
-		virtual bool playAnimation(const std::string& name, bool loop = true, float speed = 1.F, bool forceSingle = false, std::function<void()> onComplete = nullptr) {
-			auto iter = this->_animations.find(name);
-			if (iter == this->_animations.end()) {
-				throw this->_logger->error("Animation '{}' not found", fmt::styled(name, fmt::fg(fmt::color::coral)));
+		virtual std::vector<rawrbox::AnimationSampler*> playAnimation(std::function<void(const std::string&)> onComplete = nullptr) {
+			std::vector<rawrbox::AnimationSampler*> anims = {};
+
+			this->stopAllAnimations();
+			for (size_t i = 0; i < this->_animations.size(); i++) {
+				anims.push_back(this->playAnimation(i, this->_animations[i], onComplete));
 			}
 
-			auto fnd = this->_playingAnimations.find(name);
-			if (fnd != this->_playingAnimations.end()) return false;
+			return anims;
+		}
 
-			// Add it
-			if (forceSingle) this->stopAllAnimations();
-			this->_playingAnimations[name] = {
-			    name,
-			    loop,
-			    speed,
-			    iter->second,
-			    onComplete};
+		virtual rawrbox::AnimationSampler* playAnimation(const std::string& name, bool forceSingle = false, std::function<void(const std::string&)> onComplete = nullptr) {
+			for (size_t i = 0; i < this->_animations.size(); i++) {
+				ozz::animation::Animation* anim = this->_animations[i];
+				if (anim == nullptr || anim->name() != name) continue;
 
-			return true;
+				auto fnd = this->_playingAnimations.find(name);
+				if (fnd != this->_playingAnimations.end()) return nullptr; // Already playing
+
+				if (forceSingle) this->stopAllAnimations();
+				return this->playAnimation(i, anim, onComplete);
+			}
+
+			this->_logger->warn("Failed to find animation {}", name);
+			return nullptr;
 		}
 
 		virtual void stopAllAnimations() {
 			this->_playingAnimations.clear();
+		}
+
+		virtual bool hasAnimation(const std::string& name) {
+			return this->_playingAnimations.contains(name);
 		}
 
 		virtual bool stopAnimation(const std::string& name) {
@@ -308,8 +320,8 @@ namespace rawrbox {
 			return true;
 		}
 
-		virtual bool hasAnimation(const std::string& name) {
-			return this->_animations.find(name) != this->_animations.end();
+		virtual const std::vector<ozz::animation::Animation*>& getAnimations() {
+			return this->_animations;
 		}
 
 		virtual bool isAnimationPlaying(const std::string& name) {
@@ -320,15 +332,11 @@ namespace rawrbox {
 		// LIGHTS ------
 		template <typename T = rawrbox::LightBase, typename... CallbackArgs>
 			requires(std::derived_from<T, rawrbox::LightBase>)
-		T* addLight(const std::string& parentMesh = "", CallbackArgs&&... args) {
+		T* addLight(std::optional<size_t> parentIndex, CallbackArgs&&... args) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				auto parent = this->_meshes.back().get();
-				if (!parentMesh.empty()) {
-					auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [parentMesh](auto& msh) {
-						return msh->getName() == parentMesh;
-					});
-
-					if (fnd != this->_meshes.end()) parent = fnd->get();
+				auto* parent = this->_meshes.back().get();
+				if (parentIndex.has_value() && parentIndex.value() < this->_meshes.size()) {
+					parent = this->_meshes[parentIndex.value()].get();
 				}
 
 				auto light = rawrbox::LIGHTS::add<T>(std::forward<CallbackArgs>(args)...);
@@ -391,6 +399,16 @@ namespace rawrbox {
 
 			auto& a = this->_meshes.emplace_back(std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh));
 			return a.get();
+		}
+
+		virtual rawrbox::Mesh<typename M::vertexBufferType>* addMesh(size_t index, rawrbox::Mesh<typename M::vertexBufferType> mesh) {
+			if (index >= this->_meshes.size()) throw this->_logger->error("Index out of bounds");
+
+			this->_bbox.combine(mesh.getBBOX());
+			mesh.owner = this;
+
+			this->_meshes[index] = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh);
+			return this->_meshes[index].get();
 		}
 
 		virtual rawrbox::Mesh<typename M::vertexBufferType>* getMeshByName(const std::string& id) {
@@ -463,12 +481,10 @@ namespace rawrbox {
 
 		void draw() override {
 			ModelBase<M>::draw();
-			this->updateAnimations();
+			this->tickAnimations();
 
 			for (auto& mesh : this->_meshes) {
-				// Process animations ---
-				this->animate(*mesh);
-				// ---
+				if (mesh == nullptr || mesh->empty()) continue; // Bone, skip it.
 
 				// Bind pipelines ----
 				this->_material->bindPipeline(*mesh);
@@ -489,7 +505,7 @@ namespace rawrbox {
 
 				// DRAW -------
 				Diligent::DrawIndexedAttribs DrawAttrs;
-				DrawAttrs.IndexType = Diligent::VT_UINT16;
+				DrawAttrs.IndexType = Diligent::VT_UINT32;
 				DrawAttrs.FirstIndexLocation = mesh->baseIndex;
 				DrawAttrs.BaseVertex = mesh->baseVertex;
 				DrawAttrs.NumIndices = mesh->totalIndex;

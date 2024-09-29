@@ -7,6 +7,6 @@ namespace rawrbox {
 
 		POINT,
 		SPOT,
-		DIR,
+		DIRECTIONAL,
 	};
 }

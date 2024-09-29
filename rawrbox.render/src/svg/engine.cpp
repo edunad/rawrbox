@@ -57,7 +57,7 @@ namespace rawrbox {
 		if (doc == nullptr) throw _logger->error("Failed to load '{}'", filename.generic_string());
 
 		auto img = doc->renderToBitmap(size.x, size.y);
-		auto texture = std::make_unique<rawrbox::TextureImage>(size, img.data(), 4);
+		auto texture = std::make_unique<rawrbox::TextureImage>(size, img.data());
 		texture->setName("SVG");
 		texture->upload();
 

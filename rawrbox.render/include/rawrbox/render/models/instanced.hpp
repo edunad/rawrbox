@@ -146,7 +146,7 @@ namespace rawrbox {
 			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;
-			DrawAttrs.IndexType = Diligent::VT_UINT16;
+			DrawAttrs.IndexType = Diligent::VT_UINT32;
 			DrawAttrs.FirstIndexLocation = this->_mesh->baseIndex;
 			DrawAttrs.BaseVertex = this->_mesh->baseVertex;
 			DrawAttrs.NumIndices = this->_mesh->totalIndex;

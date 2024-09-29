@@ -7,6 +7,10 @@ namespace rawrbox {
 		static bool _built;
 
 	public:
+#ifdef _DEBUG
+		static bool DEBUG_MODE;
+#endif
+
 		using vertexBufferType = rawrbox::VertexBoneData;
 
 		MaterialSkinned() = default;
