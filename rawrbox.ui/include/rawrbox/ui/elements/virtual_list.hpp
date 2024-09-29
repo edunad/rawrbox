@@ -34,7 +34,7 @@ namespace rawrbox {
 		rawrbox::Color _backgroundColor = rawrbox::Colors::Transparent();
 
 	public:
-		UIVirtualList(rawrbox::UIRoot* root) : rawrbox::UIContainer(root){};
+		UIVirtualList(rawrbox::UIRoot* root) : rawrbox::UIContainer(root) {};
 		UIVirtualList(const UIVirtualList&) = delete;
 		UIVirtualList(UIVirtualList&&) = delete;
 		UIVirtualList& operator=(const UIVirtualList&) = delete;
@@ -92,7 +92,7 @@ namespace rawrbox {
 			return this->_items.empty();
 		};
 
-		void resetScroll() const {
+		void resetScroll() {
 			this->_mouseScrollY = 0;
 		};
 
