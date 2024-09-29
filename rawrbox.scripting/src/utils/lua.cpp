@@ -2,13 +2,14 @@
 #include <rawrbox/utils/file.hpp>
 #include <rawrbox/utils/string.hpp>
 
-#include <Luau/Compiler.h>
-
-LUAU_FASTFLAG(LuauSolverV2);
-LUAU_DYNAMIC_FASTINTVARIABLE(LuauTypeSolverRelease, 900)
-
 #include <fmt/format.h>
 
+/*
+namespace DFInt {
+	int LuauTypeSolverRelease = 999;
+	int LuauSolverV2 = 1;
+} // namespace DFInt
+*/
 namespace rawrbox {
 
 	void LuaUtils::compileAndLoadFile(lua_State* L, const std::string& chunkID, const std::filesystem::path& path) {

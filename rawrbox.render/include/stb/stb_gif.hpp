@@ -13,6 +13,10 @@
 #define STBI_ONLY_GIF
 #define STBI_ONLY_TGA
 
+#define STBI_FREE(ptr)           std::free(ptr)
+#define STBI_MALLOC(size)        std::malloc(size)
+#define STBI_REALLOC(ptr, nsize) std::realloc(ptr, nsize)
+
 #include <stb/stb_image.hpp>
 #include <stb/stb_image_write.hpp>
 #pragma warning(pop)

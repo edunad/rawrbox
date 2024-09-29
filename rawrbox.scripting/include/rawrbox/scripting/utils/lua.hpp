@@ -11,8 +11,17 @@
 
 #include <glaze/glaze.hpp>
 
+#include <Luau/Compiler.h>
+
 #include <filesystem>
 #include <string>
+
+/*
+namespace DFInt {
+	extern int LuauTypeSolverRelease;
+	extern int LuauSolverV2;
+} // namespace DFInt
+*/
 
 namespace rawrbox {
 	class LuaUtils {
