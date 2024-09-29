@@ -11,8 +11,13 @@
 
 #include <glaze/glaze.hpp>
 
+#include <Luau/Compiler.h>
+
 #include <filesystem>
 #include <string>
+
+LUAU_FASTFLAG(LuauSolverV2);
+LUAU_DYNAMIC_FASTINTVARIABLE(LuauTypeSolverRelease, 900)
 
 namespace rawrbox {
 	class LuaUtils {

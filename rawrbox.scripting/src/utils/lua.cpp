@@ -2,12 +2,8 @@
 #include <rawrbox/utils/file.hpp>
 #include <rawrbox/utils/string.hpp>
 
-#include <Luau/Compiler.h>
-
-LUAU_FASTFLAG(LuauSolverV2);
-LUAU_DYNAMIC_FASTINTVARIABLE(LuauTypeSolverRelease, 900)
-
 #include <fmt/format.h>
+
 
 namespace rawrbox {
 
