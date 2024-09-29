@@ -17,6 +17,7 @@ namespace rawrbox {
 			    .addFunction("flattenMeshes", &ModelC::flattenMeshes)
 			    .addFunction("setMergeable", &ModelC::setMergeable)
 			    .addFunction("optimize", &ModelC::optimize)
+			    .addFunction("merge", &ModelC::merge)
 			    // ----
 
 			    // ANIMATION ----
