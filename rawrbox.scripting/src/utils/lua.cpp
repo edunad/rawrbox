@@ -4,6 +4,10 @@
 
 #include <fmt/format.h>
 
+namespace DFInt {
+	int LuauTypeSolverRelease = 999;
+	int LuauSolverV2 = 1;
+} // namespace DFInt
 
 namespace rawrbox {
 

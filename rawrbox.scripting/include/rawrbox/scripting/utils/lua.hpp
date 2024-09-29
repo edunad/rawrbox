@@ -17,8 +17,8 @@
 #include <string>
 
 namespace DFInt {
-	int LuauTypeSolverRelease = 999;
-	bool LuauSolverV2 = true;
+	extern int LuauTypeSolverRelease;
+	extern int LuauSolverV2;
 } // namespace DFInt
 
 namespace rawrbox {
