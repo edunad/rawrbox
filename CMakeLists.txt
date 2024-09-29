@@ -212,7 +212,7 @@ endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_RENDER)
     if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
-        CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@13.0.3")
+        CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@14.0.0")
     endif()
 endif()
 
@@ -230,7 +230,7 @@ if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
         USE_CACHE
             OFF
         GIT_TAG
-            2.2.1
+            2.2.2
         OPTIONS
             "ZLIB_COMPAT ON"
             "ZLIB_BUILD_EXAMPLES OFF"
