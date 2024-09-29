@@ -16,11 +16,12 @@
 #include <filesystem>
 #include <string>
 
+/*
 namespace DFInt {
 	extern int LuauTypeSolverRelease;
 	extern int LuauSolverV2;
 } // namespace DFInt
-
+*/
 namespace rawrbox {
 	class LuaUtils {
 	public:
