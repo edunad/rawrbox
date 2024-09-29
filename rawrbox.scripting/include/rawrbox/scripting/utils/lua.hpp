@@ -16,8 +16,13 @@
 #include <filesystem>
 #include <string>
 
-LUAU_FASTFLAG(LuauSolverV2);
-LUAU_DYNAMIC_FASTINTVARIABLE(LuauTypeSolverRelease, 900)
+namespace DFInt {
+	int LuauTypeSolverRelease = 999;
+	bool LuauSolverV2 = true;
+} // namespace DFInt
+
+// LUAU_FASTFLAG(LuauSolverV2);
+// LUAU_DYNAMIC_FASTINTVARIABLE(LuauTypeSolverRelease, 900)
 
 namespace rawrbox {
 	class LuaUtils {
