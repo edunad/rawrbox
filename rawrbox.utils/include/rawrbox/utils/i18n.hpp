@@ -6,6 +6,8 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
+
 
 namespace rawrbox {
 	using Translation = std::unordered_map<std::string, std::string>;
