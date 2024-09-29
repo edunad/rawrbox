@@ -21,9 +21,6 @@ namespace DFInt {
 	bool LuauSolverV2 = true;
 } // namespace DFInt
 
-// LUAU_FASTFLAG(LuauSolverV2);
-// LUAU_DYNAMIC_FASTINTVARIABLE(LuauTypeSolverRelease, 900)
-
 namespace rawrbox {
 	class LuaUtils {
 	public:
