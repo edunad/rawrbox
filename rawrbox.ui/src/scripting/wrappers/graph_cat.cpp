@@ -6,9 +6,6 @@ namespace rawrbox {
 		luabridge::getGlobalNamespace(L)
 		    .beginClass<rawrbox::UIGraphCategory>("UIGraphCategory")
 
-		    .addProperty("entries", &rawrbox::UIGraphCategory::entries, false)
-		    .addProperty("smoothed", &rawrbox::UIGraphCategory::smoothed, false)
-
 		    .addFunction("getName", &rawrbox::UIGraphCategory::getName)
 		    .addFunction("setName", &rawrbox::UIGraphCategory::setName)
 

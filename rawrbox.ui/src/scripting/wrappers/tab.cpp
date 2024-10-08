@@ -7,9 +7,9 @@ namespace rawrbox {
 		    .beginClass<rawrbox::UITab>("UITab")
 		    .addConstructor<void(rawrbox::UITab), void(const std::string&, const std::string&, rawrbox::UIGroup*)>()
 
-		    .addProperty("id", &rawrbox::UITab::id, false)
-		    .addProperty("name", &rawrbox::UITab::name, false)
-		    .addProperty("group", &rawrbox::UITab::group, false)
+		    .addProperty("id", &rawrbox::UITab::id, nullptr)
+		    .addProperty("name", &rawrbox::UITab::name, nullptr)
+		    .addProperty("group", &rawrbox::UITab::group, nullptr)
 
 		    .endClass();
 	}
