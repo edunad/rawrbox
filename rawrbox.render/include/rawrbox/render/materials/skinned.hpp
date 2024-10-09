@@ -32,7 +32,7 @@ namespace rawrbox {
 			// SETUP UNIFORMS ----------------------------
 			{
 				Diligent::MapHelper<rawrbox::BindlessVertexSkinnedBuffer> VertexSkinnedConstants(rawrbox::RENDERER->context(), rawrbox::BindlessManager::signatureBufferVertexSkinned, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				if (VertexSkinnedConstants == nullptr) throw _logger->error("Failed to map the vertex skinned constants buffer!");
+				if (VertexSkinnedConstants == nullptr) CRITICAL_RAWRBOX("Failed to map the vertex skinned constants buffer!");
 
 				std::memcpy(VertexSkinnedConstants, &this->_lastSkinnedVertexBuffer.value(), sizeof(rawrbox::BindlessVertexSkinnedBuffer));
 			}

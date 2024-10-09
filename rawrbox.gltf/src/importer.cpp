@@ -360,7 +360,7 @@ namespace rawrbox {
 			printBone = [this, &printBone](const ozz::animation::offline::RawSkeleton::Joint& bn, int depth, bool isLast) -> void {
 				std::string indent(depth * 4, ' ');
 				std::string branch = isLast ? "└── " : "├── ";
-				this->_logger->info("{}{}{}", indent, branch, bn.name);
+				this->_logger->debug("{}{}{}", indent, branch, bn.name);
 
 				for (size_t i = 0; i < bn.children.size(); i++) {
 					bool lastChild = (i == bn.children.size() - 1);
@@ -420,7 +420,7 @@ namespace rawrbox {
 
 			// DEBUG ----
 			if (printBone != nullptr) {
-				this->_logger->info("Found skeleton '{}' ->", fmt::styled(skin.name, fmt::fg(fmt::color::green_yellow)));
+				this->_logger->debug("Found skeleton '{}' ->", fmt::styled(skin.name, fmt::fg(fmt::color::green_yellow)));
 				for (const ozz::animation::offline::RawSkeleton::Joint& root : rawSkeleton.roots) {
 					printBone(root, 0, true);
 				}
@@ -444,7 +444,7 @@ namespace rawrbox {
 				const std::string jointName = std::string(node.name);
 
 				auto fnd = this->joints.find(jointName);
-				if (fnd == this->joints.end()) throw this->_logger->error("Invalid joint '{}', could not find in skeleton", jointName);
+				if (fnd == this->joints.end()) CRITICAL_RAWRBOX("Invalid joint '{}', could not find in skeleton", jointName);
 
 				fnd->second->skeleton = this->skeletons[i].get();
 			}
@@ -482,7 +482,7 @@ namespace rawrbox {
 			gltfAnim.duration = 0.001F;
 
 			if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS) > 0) {
-				this->_logger->info("Found animation '{}'", fmt::styled(gltfAnim.name, fmt::fg(fmt::color::green_yellow)));
+				this->_logger->debug("Found animation '{}'", fmt::styled(gltfAnim.name, fmt::fg(fmt::color::green_yellow)));
 			}
 
 			for (size_t c = 0; c < anim.channels.size(); c++) {
@@ -581,7 +581,7 @@ namespace rawrbox {
 		if (this->_parsedAnimations.empty()) return;
 		ozz::animation::offline::AnimationBuilder builder;
 
-		this->_logger->info("Building {} animations...", this->_parsedAnimations.size());
+		this->_logger->debug("Building {} animations...", this->_parsedAnimations.size());
 
 		this->animations.resize(this->_parsedAnimations.size());
 		for (size_t i = 0; i < this->_parsedAnimations.size(); i++) {
@@ -682,7 +682,7 @@ namespace rawrbox {
 
 				for (size_t o = 0; o < primitive.targets.size(); o++) {
 					const auto& blendNames = this->targetNames[meshIndex];
-					if (blendNames.empty()) throw this->_logger->error("Invalid blend shape names for mesh '{}'", gltfMesh->name);
+					if (blendNames.empty()) CRITICAL_RAWRBOX("Invalid blend shape names for mesh '{}'", gltfMesh->name);
 
 					rawrbox::GLTFBlendShape& shape = rawrPrimitive.blendShapes[o];
 					shape.name = fmt::format("{}-{}", gltfMesh->name, blendNames[o]);
@@ -732,7 +732,7 @@ namespace rawrbox {
 
 					if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_OPTIMIZATION_STATS) > 0) {
 						if (startVert != rawrPrimitive.vertices.size() || startInd != rawrPrimitive.indices.size()) {
-							this->_logger->info("Optimized mesh '{}'\n\tVertices -> {} to {}\n\tIndices -> {} to {}", fmt::styled(gltfMesh->name, fmt::fg(fmt::color::cyan)), startVert, rawrPrimitive.vertices.size(), startInd, rawrPrimitive.indices.size());
+							this->_logger->debug("Optimized mesh '{}'\n\tVertices -> {} to {}\n\tIndices -> {} to {}", fmt::styled(gltfMesh->name, fmt::fg(fmt::color::cyan)), startVert, rawrPrimitive.vertices.size(), startInd, rawrPrimitive.indices.size());
 						}
 					}
 				} else {
@@ -751,7 +751,7 @@ namespace rawrbox {
 
 		// POSITION ----
 		const auto* positionAttribute = primitive.findAttribute("POSITION");
-		if (positionAttribute == nullptr) throw this->_logger->error("Invalid gltf model, missing 'POSITION' attribute!"); // All models have POSITION
+		if (positionAttribute == nullptr) CRITICAL_RAWRBOX("Invalid gltf model, missing 'POSITION' attribute!"); // All models have POSITION
 
 		const auto& positionAccessor = scene.accessors[positionAttribute->accessorIndex];
 		verts.resize(positionAccessor.count);
@@ -843,13 +843,13 @@ namespace rawrbox {
 	fastgltf::sources::ByteView GLTFImporter::getSourceData(const fastgltf::Asset& scene, const fastgltf::DataSource& source) {
 		return std::visit(fastgltf::visitor{
 				      [&](auto& /*arg*/) -> fastgltf::sources::ByteView {
-					      throw this->_logger->error("Invalid data");
+					      CRITICAL_RAWRBOX("Invalid data");
 				      },
 				      [&](std::monostate) -> fastgltf::sources::ByteView {
-					      throw this->_logger->error("Invalid data");
+					      CRITICAL_RAWRBOX("Invalid data");
 				      },
 				      [&](fastgltf::sources::Fallback) -> fastgltf::sources::ByteView {
-					      throw this->_logger->error("Invalid data");
+					      CRITICAL_RAWRBOX("Invalid data");
 				      },
 				      [&](const fastgltf::sources::BufferView& buffer_view) -> fastgltf::sources::ByteView {
 					      const fastgltf::BufferView& view = scene.bufferViews.at(buffer_view.bufferViewIndex);
@@ -859,7 +859,7 @@ namespace rawrbox {
 					      return {subspan(data.bytes, view.byteOffset, view.byteLength), buffer_view.mimeType};
 				      },
 				      [&](const fastgltf::sources::URI& /*filePath*/) -> fastgltf::sources::ByteView {
-					      throw this->_logger->error("Use fastgltf::Options::LoadExternalImages instead!");
+					      CRITICAL_RAWRBOX("Use fastgltf::Options::LoadExternalImages instead!");
 				      },
 				      [&](const fastgltf::sources::Vector& vector) -> fastgltf::sources::ByteView {
 					      fastgltf::span<const std::byte> data{std::bit_cast<const std::byte*>(vector.bytes.data()), vector.bytes.size()};
@@ -870,7 +870,7 @@ namespace rawrbox {
 					      return {data, array.mimeType};
 				      },
 				      [&](const fastgltf::sources::CustomBuffer& /*custom_buffer*/) -> fastgltf::sources::ByteView {
-					      throw this->_logger->error("Invalid data");
+					      CRITICAL_RAWRBOX("Invalid data");
 				      },
 				      [&](fastgltf::sources::ByteView& byte_view) -> fastgltf::sources::ByteView {
 					      return {byte_view.bytes, byte_view.mimeType};
@@ -923,7 +923,7 @@ namespace rawrbox {
 	}
 
 	void GLTFImporter::load(const std::filesystem::path& path) {
-		if (!std::filesystem::exists(path)) throw this->_logger->error("File '{}' does not exist!", path.generic_string());
+		if (!std::filesystem::exists(path)) CRITICAL_RAWRBOX("File '{}' does not exist!", path.generic_string());
 
 		this->filePath = path;
 

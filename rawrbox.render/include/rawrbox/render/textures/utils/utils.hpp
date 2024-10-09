@@ -2,6 +2,7 @@
 
 #include <rawrbox/math/color.hpp>
 #include <rawrbox/math/vector4.hpp>
+#include <rawrbox/utils/logger.hpp>
 
 #include <vector>
 
@@ -19,6 +20,9 @@ namespace rawrbox {
 
 	struct ImageData;
 	class TextureUtils {
+	protected:
+		static std::unique_ptr<rawrbox::Logger> _logger;
+
 	public:
 		static rawrbox::Vector4f atlasToUV(const rawrbox::Vector2i& atlasSize, uint32_t spriteSize, uint32_t id);
 		static std::vector<uint8_t> generateCheckboard(const rawrbox::Vector2u& size, const rawrbox::Color& color1, const rawrbox::Color& color2, uint32_t amount);

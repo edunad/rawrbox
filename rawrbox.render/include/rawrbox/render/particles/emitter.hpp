@@ -143,10 +143,10 @@ namespace rawrbox {
 		// --------
 
 		virtual void upload() {
-			if (this->_buffer != nullptr) throw this->_logger->error("Emitter already uploaded");
+			if (this->_buffer != nullptr) CRITICAL_RAWRBOX("Emitter already uploaded");
 
 			auto* engine = rawrbox::RENDERER->getPlugin<rawrbox::ParticleEnginePlugin>("ParticleEngine");
-			if (engine == nullptr) throw this->_logger->error("Emitter requires the `ParticleEngine` renderer plugin");
+			if (engine == nullptr) CRITICAL_RAWRBOX("Emitter requires the `ParticleEngine` renderer plugin");
 
 			// Create data --
 			Diligent::BufferDesc BuffDesc;
@@ -181,7 +181,7 @@ namespace rawrbox {
 			auto* context = rawrbox::RENDERER->context();
 
 			auto* engine = rawrbox::RENDERER->getPlugin<rawrbox::ParticleEnginePlugin>("ParticleEngine");
-			if (engine == nullptr) throw this->_logger->error("Emitter requires the `ParticleEngine` renderer plugin");
+			if (engine == nullptr) CRITICAL_RAWRBOX("Emitter requires the `ParticleEngine` renderer plugin");
 			auto* bind = engine->getBind();
 
 			this->_uniforms.time += rawrbox::DELTA_TIME;

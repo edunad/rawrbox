@@ -4,10 +4,11 @@
 namespace rawrbox {
 	// BARRIER ----
 	std::unordered_map<Diligent::IDeviceObject*, Diligent::StateTransitionDesc> BarrierUtils::_barrierCache = {};
+	std::unique_ptr<rawrbox::Logger> BarrierUtils::_logger = std::make_unique<rawrbox::Logger>("RawrBox-BarrierUtils");
 	//  -------------
 
 	void BarrierUtils::barrier(const std::vector<Diligent::StateTransitionDesc>& resources) {
-		if (std::this_thread::get_id() != rawrbox::RENDER_THREAD_ID) throw rawrbox::Logger::err("BarrierUtils", "Barriers can only be processed on the main render thread");
+		if (std::this_thread::get_id() != rawrbox::RENDER_THREAD_ID) CRITICAL_RAWRBOX("Barriers can only be processed on the main render thread");
 
 		std::vector<Diligent::StateTransitionDesc> states = {};
 		for (auto barrier : resources) {

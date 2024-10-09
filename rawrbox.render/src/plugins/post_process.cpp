@@ -48,12 +48,12 @@ namespace rawrbox {
 
 	// Post utils ----
 	void PostProcessPlugin::remove(size_t indx) {
-		if (this->_postProcesses.empty() || indx >= this->_postProcesses.size()) throw this->_logger->error("Failed to remove {}!", indx);
+		if (this->_postProcesses.empty() || indx >= this->_postProcesses.size()) CRITICAL_RAWRBOX("Failed to remove {}!", indx);
 		this->_postProcesses.erase(this->_postProcesses.begin() + indx);
 	}
 
 	rawrbox::PostProcessBase* PostProcessPlugin::get(size_t indx) const {
-		if (indx >= this->_postProcesses.size()) throw this->_logger->error("Failed to get {}!", indx);
+		if (indx >= this->_postProcesses.size()) CRITICAL_RAWRBOX("Failed to get {}!", indx);
 		return this->_postProcesses[indx].get();
 	}
 

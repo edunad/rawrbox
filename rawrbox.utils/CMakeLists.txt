@@ -76,16 +76,20 @@ if(thread-pool_ADDED)
     target_include_directories(thread-pool INTERFACE ${thread-pool_SOURCE_DIR}/include)
 endif()
 
-# DEPS ----
-if(RAWRBOX_TRACE_EXCEPTIONS)
-    CPMAddPackage("gh:jeremy-rifkin/cpptrace@0.7.2")
-    if(cpptrace_ADDED)
-        set_lib_runtime_mt(cpptrace-lib)
-    endif()
+CPMAddPackage(
+        NAME
+            spdlog
+        GITHUB_REPOSITORY
+            gabime/spdlog
+        VERSION
+            1.14.1
+        OPTIONS
+            "SPDLOG_FMT_EXTERNAL ON"
+    )
 
-    list(APPEND EXTRA_UTIL_LIBS cpptrace::cpptrace)
+if(spdlog_ADDED)
+    set_lib_runtime_mt(spdlog)
 endif()
-# --------------
 # ----
 
 # LIB ----
@@ -95,14 +99,11 @@ target_include_directories(${output_target} PUBLIC "include" ${EXTRA_UTIL_INCLUD
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
 target_compile_definitions(${output_target} PUBLIC RAWRBOX_UTILS)
-if(RAWRBOX_TRACE_EXCEPTIONS)
-    target_compile_definitions(${output_target} PUBLIC RAWRBOX_TRACE_EXCEPTIONS)
-endif()
-
 target_link_libraries(${output_target} PUBLIC
     ${EXTRA_UTIL_LIBS}
 
     thread-pool
+    spdlog
     fmt::fmt
     glaze::glaze
     magic_enum::magic_enum
@@ -114,12 +115,3 @@ set_lib_runtime_mt(${output_target})
 # TEST ----
 include(../cmake/catch2.cmake)
 # --------------
-
-if(WIN32 AND RAWRBOX_TRACE_EXCEPTIONS)
-  add_custom_command(
-    TARGET ${output_target} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    $<TARGET_FILE:cpptrace::cpptrace>
-    $<TARGET_FILE_DIR:${output_target}>
-  )
-endif()

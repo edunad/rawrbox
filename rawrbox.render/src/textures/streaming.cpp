@@ -24,10 +24,10 @@ namespace rawrbox {
 	}
 
 	void TextureStreaming::setImage(const rawrbox::ImageData& data) {
-		if (data.frames.empty()) throw _logger->error("Cannot set empty data");
+		if (data.frames.empty()) CRITICAL_RAWRBOX("Cannot set empty data");
 
 		auto frame = data.pixels();
-		if (frame.empty()) throw _logger->error("Cannot set empty pixels");
+		if (frame.empty()) CRITICAL_RAWRBOX("Cannot set empty pixels");
 
 		if (data.channels != this->_data.channels) frame = rawrbox::ColorUtils::setChannels(data.channels, this->_data.channels, data.size.x, data.size.y, frame);
 		frame = rawrbox::TextureUtils::resize(data.size, frame, this->_data.size, this->_data.channels);
@@ -48,7 +48,7 @@ namespace rawrbox {
 
 	void TextureStreaming::update() {
 		if (!this->_pendingUpdate || this->_tex == nullptr) return;
-		if (this->_data.empty()) throw this->_logger->error("Cannot update empty data");
+		if (this->_data.empty()) CRITICAL_RAWRBOX("Cannot update empty data");
 
 		auto* context = rawrbox::RENDERER->context();
 

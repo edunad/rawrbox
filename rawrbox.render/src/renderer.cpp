@@ -192,33 +192,33 @@ namespace rawrbox {
 				break;
 #endif // GL_SUPPORTED
 
-			default: throw this->_logger->error("Invalid diligent api");
+			default: CRITICAL_RAWRBOX("Invalid diligent api");
 		}
 
 		// Check device limitations ---
 		if (!(this->_device->GetAdapterInfo().DrawCommand.CapFlags & Diligent::DRAW_COMMAND_CAP_FLAG_BASE_VERTEX)) {
-			throw this->_logger->error("Base vertex not supported");
+			CRITICAL_RAWRBOX("Base vertex not supported");
 		}
 		// ----------------------------
 
 		// Setup shader pipeline if not exists
 		if (rawrbox::SHADER_FACTORY == nullptr) {
 			auto rootDir = this->getShadersDirectory();
-			if (!std::filesystem::exists(rootDir)) throw this->_logger->error("Shaders directory '{}' not found!", rootDir.generic_string());
+			if (!std::filesystem::exists(rootDir)) CRITICAL_RAWRBOX("Shaders directory '{}' not found!", rootDir.generic_string());
 
 			auto dirs = rawrbox::PathUtils::glob(rootDir, true);
 			auto paths = fmt::format("{}", fmt::join(dirs, ";"));
 
-			this->_logger->info("Initializing shader factory (using {}):", fmt::styled(rootDir.generic_string(), fmt::fg(fmt::color::coral)));
+			this->_logger->debug("Initializing shader factory (using {}):", fmt::styled(rootDir.generic_string(), fmt::fg(fmt::color::coral)));
 			for (const auto& dir : dirs) {
-				this->_logger->info("\t{}", dir);
+				this->_logger->debug("\t{}", dir);
 			}
 
 			this->_engineFactory->CreateDefaultShaderSourceStreamFactory(paths.c_str(), &rawrbox::SHADER_FACTORY);
 		}
 		// -----------
 
-		if (this->_engineFactory == nullptr) throw this->_logger->error("Failed to initialize");
+		if (this->_engineFactory == nullptr) CRITICAL_RAWRBOX("Failed to initialize");
 
 		// Single draw call to setup window background
 		this->clear();
@@ -242,7 +242,7 @@ namespace rawrbox {
 		// ----------------------
 
 		// Setup camera -----
-		if (this->_camera == nullptr) throw this->_logger->error("No camera found!");
+		if (this->_camera == nullptr) CRITICAL_RAWRBOX("No camera found!");
 		this->_camera->initialize();
 		// ------------------
 
@@ -401,8 +401,8 @@ namespace rawrbox {
 	}
 
 	void RendererBase::render() {
-		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) throw this->_logger->error("Failed to bind swapChain / context / device! Did you call 'init' ?");
-		if (this->_drawCall == nullptr) throw this->_logger->error("Missing draw call! Did you call 'setDrawCall' ?");
+		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) CRITICAL_RAWRBOX("Failed to bind swapChain / context / device! Did you call 'init' ?");
+		if (this->_drawCall == nullptr) CRITICAL_RAWRBOX("Missing draw call! Did you call 'setDrawCall' ?");
 
 		// Clear backbuffer ----
 		this->clear();
@@ -420,7 +420,7 @@ namespace rawrbox {
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 #ifdef _DEBUG
-				// this->_context->BeginDebugGroup(plugin.first.c_str());
+			// this->_context->BeginDebugGroup(plugin.first.c_str());
 #endif
 			plugin.second->preRender();
 #ifdef _DEBUG
@@ -451,7 +451,7 @@ namespace rawrbox {
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 #ifdef _DEBUG
-				// this->_context->BeginDebugGroup(plugin.first.c_str());
+			// this->_context->BeginDebugGroup(plugin.first.c_str());
 #endif
 			plugin.second->postRender(*this->_render);
 #ifdef _DEBUG
@@ -472,8 +472,8 @@ namespace rawrbox {
 		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
 		if (this->_stencil != nullptr) this->_stencil->render();
 #ifdef _DEBUG
-			// this->endQuery("OVERLAY");
-			// this->_context->EndDebugGroup();
+		// this->endQuery("OVERLAY");
+		// this->_context->EndDebugGroup();
 #endif
 		//  ------------------
 
@@ -572,12 +572,12 @@ namespace rawrbox {
 	}
 
 	void RendererBase::skipIntros(bool skip) {
-		if (skip) this->_logger->info("Skipping intros :(");
+		if (skip) this->_logger->debug("Skipping intros :(");
 		this->_skipIntros = skip;
 	}
 
 	void RendererBase::addIntro(const std::filesystem::path& webpPath, float speed, bool cover, const rawrbox::Colorf& color) {
-		if (webpPath.extension() != ".webp") throw this->_logger->error("Invalid intro '{}', only '.webp' format is supported!", webpPath.generic_string());
+		if (webpPath.extension() != ".webp") CRITICAL_RAWRBOX("Invalid intro '{}', only '.webp' format is supported!", webpPath.generic_string());
 		this->_introList[webpPath.generic_string()] = {speed, cover, color};
 	}
 	//-------------------------
@@ -633,7 +633,7 @@ namespace rawrbox {
 		// --------------
 
 		if (pipelineHelper == nullptr || durationHelper == nullptr) {
-			throw this->_logger->error("Failed to create & begin query '{}'", query);
+			CRITICAL_RAWRBOX("Failed to create & begin query '{}'", query);
 		}
 
 		// Start queries ---
@@ -653,7 +653,7 @@ namespace rawrbox {
 		auto fndDuration = this->_query.find(durationName);
 
 		if (fndPipeline->second == nullptr || fndDuration->second == nullptr) {
-			throw this->_logger->error("Failed to end query '{}', not found!", query);
+			CRITICAL_RAWRBOX("Failed to end query '{}', not found!", query);
 		}
 
 		// End queries ---
@@ -711,11 +711,11 @@ namespace rawrbox {
 	void RendererBase::setVSync(bool vsync) { this->_vsync = vsync; }
 
 	void RendererBase::gpuPick(const rawrbox::Vector2i& pos, const std::function<void(uint32_t)>& callback) {
-		if (this->_render == nullptr) throw _logger->error("Render target texture not initialized");
-		if (callback == nullptr) throw _logger->error("Render target texture not initialized");
+		if (this->_render == nullptr) CRITICAL_RAWRBOX("Render target texture not initialized");
+		if (callback == nullptr) CRITICAL_RAWRBOX("Render target texture not initialized");
 
 		auto size = this->_size.cast<int>();
-		if (pos.x < 0 || pos.y < 0 || pos.x >= size.x || pos.y >= size.y) throw _logger->error("Outside of window range");
+		if (pos.x < 0 || pos.y < 0 || pos.x >= size.x || pos.y >= size.y) CRITICAL_RAWRBOX("Outside of window range");
 
 		Diligent::Box MapRegion;
 		MapRegion.MinX = pos.x;

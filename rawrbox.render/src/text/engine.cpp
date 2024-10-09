@@ -60,7 +60,7 @@ namespace rawrbox {
 
 	rawrbox::TexturePack* TextEngine::getPack(uint16_t id) {
 		auto fnd = _packs.find(id);
-		if (fnd == _packs.end()) throw _logger->error("Failed to find pack id '{}'", id);
+		if (fnd == _packs.end()) CRITICAL_RAWRBOX("Failed to find pack id '{}'", id);
 		return fnd->second.get();
 	}
 
@@ -85,7 +85,7 @@ namespace rawrbox {
 		}
 
 		auto bytes = rawrbox::FileUtils::getRawData(pth);
-		if (bytes.empty()) throw _logger->error("Failed to load font '{}'", filename.generic_string());
+		if (bytes.empty()) CRITICAL_RAWRBOX("Failed to load font '{}'", filename.generic_string());
 
 		_fonts[key] = std::make_unique<rawrbox::Font>(filename);
 		_fonts[key]->load(bytes, size, index);

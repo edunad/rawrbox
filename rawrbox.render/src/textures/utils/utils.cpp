@@ -9,6 +9,10 @@
 #include <bitset>
 
 namespace rawrbox {
+	// PRIVATE ---
+	std::unique_ptr<rawrbox::Logger> TextureUtils::_logger = std::make_unique<rawrbox::Logger>("RawrBox-TextureUtils");
+	// ----------
+
 	rawrbox::Vector4f TextureUtils::atlasToUV(const rawrbox::Vector2i& atlasSize, uint32_t spriteSize, uint32_t id) {
 		// UV -------
 		rawrbox::Vector2i totalSprites = atlasSize / spriteSize;
@@ -27,8 +31,8 @@ namespace rawrbox {
 	};
 
 	std::vector<uint8_t> TextureUtils::generateCheckboard(const rawrbox::Vector2u& size, const rawrbox::Color& color1, const rawrbox::Color& color2, uint32_t amount) {
-		if (amount % 2 != 0) throw rawrbox::Logger::err("TextureUtils", "Amount must be a power of 2.");
-		if (std::bitset<32>(amount).count() != 1) throw rawrbox::Logger::err("TextureUtils", "Size must be power of 2.");
+		if (amount % 2 != 0) CRITICAL_RAWRBOX("Amount must be a power of 2.");
+		if (std::bitset<32>(amount).count() != 1) CRITICAL_RAWRBOX("Size must be power of 2.");
 
 		std::vector<uint8_t> pixels = {};
 
@@ -67,7 +71,7 @@ namespace rawrbox {
 	}
 
 	std::vector<uint8_t> TextureUtils::resize(const rawrbox::Vector2u& originalSize, const std::vector<uint8_t>& data, const rawrbox::Vector2u& newSize, uint8_t channels) {
-		if (data.empty()) throw rawrbox::Logger::err("TextureUtils", "Data cannot be empty");
+		if (data.empty()) CRITICAL_RAWRBOX("Data cannot be empty");
 
 		std::vector<uint8_t> resizedData(newSize.x * newSize.y * channels); // Assuming RGBA format
 
@@ -152,7 +156,7 @@ namespace rawrbox {
 				return rawrbox::WEBP::decode(data);
 			default:
 			case IMAGE_INVALID:
-				throw rawrbox::Logger::err("TextureUtils", "Invalid image type!");
+				CRITICAL_RAWRBOX("Invalid image type!");
 		}
 	}
 } // namespace rawrbox

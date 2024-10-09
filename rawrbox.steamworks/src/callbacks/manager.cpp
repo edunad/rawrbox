@@ -32,40 +32,40 @@ namespace rawrbox {
 	void SteamCALLBACKS::OnWorkshopItemSubscribed(RemoteStoragePublishedFileSubscribed_t* pParam) {
 		if (pParam->m_nAppID != STEAMWORKS_APPID) return;
 
-		this->_logger->info("Steam workshop subscribed: {}", pParam->m_nPublishedFileId);
+		this->_logger->debug("Steam workshop subscribed: {}", pParam->m_nPublishedFileId);
 		this->onModSubscribed(pParam->m_nPublishedFileId);
 	}
 
 	void SteamCALLBACKS::OnWorkshopItemInstalled(ItemInstalled_t* pParam) {
 		if (pParam->m_unAppID != STEAMWORKS_APPID) return;
 
-		this->_logger->info("Steam workshop installed: {}", pParam->m_nPublishedFileId);
+		this->_logger->debug("Steam workshop installed: {}", pParam->m_nPublishedFileId);
 		this->onModInstalled(pParam->m_nPublishedFileId);
 	}
 
 	void SteamCALLBACKS::OnWorkshopItemUnSubscribed(RemoteStoragePublishedFileUnsubscribed_t* pParam) {
 		if (pParam->m_nAppID != STEAMWORKS_APPID) return;
 
-		this->_logger->info("Steam workshop unsubscribed: {}", pParam->m_nPublishedFileId); // Seems to only be triggered after game shutsdown.. wow
+		this->_logger->debug("Steam workshop unsubscribed: {}", pParam->m_nPublishedFileId); // Seems to only be triggered after game shutsdown.. wow
 		this->onModUnSubscribed(pParam->m_nPublishedFileId);
 	}
 
 	void SteamCALLBACKS::OnWorkshopItemDownloaded(DownloadItemResult_t* pParam) {
 		if (pParam->m_unAppID != STEAMWORKS_APPID) return;
 
-		this->_logger->info("Steam workshop updated: {}", pParam->m_nPublishedFileId);
+		this->_logger->debug("Steam workshop updated: {}", pParam->m_nPublishedFileId);
 		this->onModUpdated(pParam->m_nPublishedFileId);
 	}
 	// --------
 
 	// WORKSHOP ---
 	void SteamCALLBACKS::OnWorkshopCreateItem(CreateItemResult_t* result, bool bIOFailure) {
-		if (bIOFailure) throw _logger->error("Failed to create workshop item");
+		if (bIOFailure) CRITICAL_RAWRBOX("Failed to create workshop item");
 		if (this->_CreateItemResultCallback != nullptr) this->_CreateItemResultCallback(result);
 	}
 
 	void SteamCALLBACKS::OnWorkshopUpdateItem(SubmitItemUpdateResult_t* result, bool bIOFailure) {
-		if (bIOFailure) throw _logger->error("Failed to update workshop item");
+		if (bIOFailure) CRITICAL_RAWRBOX("Failed to update workshop item");
 		if (this->_UpdateItemResultCallback != nullptr) this->_UpdateItemResultCallback(result);
 	}
 	// -------------
@@ -79,7 +79,7 @@ namespace rawrbox {
 					   _CallbackWorkshopItemDownloaded(this, &SteamCALLBACKS::OnWorkshopItemDownloaded) {}
 
 	void SteamCALLBACKS::init() {
-		if (this->_initialized) throw this->_logger->error("Already initialized");
+		if (this->_initialized) CRITICAL_RAWRBOX("Already initialized");
 		this->_initialized = true;
 	}
 
@@ -96,7 +96,7 @@ namespace rawrbox {
 	// QUERY ---
 	void SteamCALLBACKS::addUGCQueryCallback(SteamAPICall_t apicall, const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback) {
 		auto fnd = this->_ugcQueries.find(apicall);
-		if (fnd != this->_ugcQueries.end()) throw _logger->error("AddUGCQueryCallback with api call {} already called! Wait for previous call to complete", apicall);
+		if (fnd != this->_ugcQueries.end()) CRITICAL_RAWRBOX("AddUGCQueryCallback with api call {} already called! Wait for previous call to complete", apicall);
 
 		std::unique_ptr<rawrbox::SteamUGCQuery> query = std::make_unique<rawrbox::SteamUGCQuery>(apicall, [this, apicall, callback](std::vector<rawrbox::WorkshopMod> details) {
 			callback(std::move(details));
@@ -109,14 +109,14 @@ namespace rawrbox {
 
 	// WORKSHOP ---
 	void SteamCALLBACKS::addCreateItemCallback(SteamAPICall_t apicall, const std::function<void(CreateItemResult_t*)>& callback) {
-		if (this->_CreateItemResultCallback != nullptr) throw _logger->error("AddUGCQueryCallback already called! Wait for previous call to complete");
+		if (this->_CreateItemResultCallback != nullptr) CRITICAL_RAWRBOX("AddUGCQueryCallback already called! Wait for previous call to complete");
 
 		this->_CreateItemResultCallback = callback;
 		this->_CreateItemResult.Set(apicall, this, &SteamCALLBACKS::OnWorkshopCreateItem);
 	}
 
 	void SteamCALLBACKS::addUpdateItemCallback(SteamAPICall_t apicall, const std::function<void(SubmitItemUpdateResult_t*)>& callback) {
-		if (this->_UpdateItemResultCallback != nullptr) throw _logger->error("AddUGCQueryCallback already called! Wait for previous call to complete");
+		if (this->_UpdateItemResultCallback != nullptr) CRITICAL_RAWRBOX("AddUGCQueryCallback already called! Wait for previous call to complete");
 
 		this->_UpdateItemResultCallback = callback;
 		this->_UpdateItemResult.Set(apicall, this, &SteamCALLBACKS::OnWorkshopUpdateItem);
@@ -136,7 +136,7 @@ namespace rawrbox {
 
 	void SteamCALLBACKS::addUGCRequest(UGCHandle_t handle, SteamAPICall_t apicall, const std::function<void(std::vector<uint8_t>)>& callback) {
 		auto fnd = this->_ugcStorageQueries.find(apicall);
-		if (fnd != this->_ugcStorageQueries.end()) throw _logger->error("addUGCRequest with api call {} already called! Wait for previous call to complete", apicall);
+		if (fnd != this->_ugcStorageQueries.end()) CRITICAL_RAWRBOX("addUGCRequest with api call {} already called! Wait for previous call to complete", apicall);
 
 		std::unique_ptr<rawrbox::SteamStorageRequest> query = std::make_unique<rawrbox::SteamStorageRequest>(handle, apicall, [this, apicall, callback](std::vector<uint8_t> data) {
 			callback(std::move(data));

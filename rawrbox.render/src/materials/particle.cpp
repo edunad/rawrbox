@@ -23,7 +23,7 @@ namespace rawrbox {
 
 	void MaterialParticle::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& /*layout*/, const Diligent::ShaderMacroHelper& /*helper*/) {
 		auto* engine = rawrbox::RENDERER->getPlugin<rawrbox::ParticleEnginePlugin>("ParticleEngine");
-		if (engine == nullptr) throw this->_logger->error("This material requires the `ParticleEngine` renderer plugin");
+		if (engine == nullptr) CRITICAL_RAWRBOX("This material requires the `ParticleEngine` renderer plugin");
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
 		settings.pVS = "particle.vsh";

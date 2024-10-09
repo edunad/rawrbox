@@ -22,7 +22,7 @@ namespace rawrbox {
 
 	void MaterialLit::createPipelines(const std::string& id, const std::vector<Diligent::LayoutElement>& layout, const Diligent::ShaderMacroHelper& helper) {
 		auto* cluster = rawrbox::RENDERER->getPlugin<rawrbox::ClusteredPlugin>("Clustered");
-		if (cluster == nullptr) throw this->_logger->error("This material requires the `Clustered` renderer plugin");
+		if (cluster == nullptr) CRITICAL_RAWRBOX("This material requires the `Clustered` renderer plugin");
 
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;

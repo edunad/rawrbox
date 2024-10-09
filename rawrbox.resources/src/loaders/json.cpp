@@ -5,10 +5,14 @@
 
 namespace rawrbox {
 	// Resource ----
+	// PRIVATE ---
+	std::unique_ptr<rawrbox::Logger> ResourceJSON::_logger = std::make_unique<rawrbox::Logger>("RawrBox-ResourceJSON");
+	// ------
+
 	bool ResourceJSON::load(const std::vector<uint8_t>& buffer) {
 		auto err = glz::read_json(this->_json, buffer);
 		if (err != glz::error_code::none) {
-			throw rawrbox::Logger::err("ResourceJSON", "Failed to load '{}' ──> {}\n", this->filePath.generic_string(), magic_enum::enum_name(err.ec));
+			CRITICAL_RAWRBOX("Failed to load '{}' ──> {}\n", this->filePath.generic_string(), magic_enum::enum_name(err.ec));
 		}
 
 		return true;

@@ -50,7 +50,7 @@ namespace rawrbox {
 
 			try {
 				rawrbox::Translation tr = {};
-				if (glz::read_json(tr, langRawStr) != glz::error_code::none) throw _logger->error("Invalid JSON file");
+				if (glz::read_json(tr, langRawStr) != glz::error_code::none) CRITICAL_RAWRBOX("Invalid JSON file");
 
 				addToLanguagePack(id, fileCleanName, tr);
 				fmt::print("- '{}' language\n", fileCleanName);

@@ -34,15 +34,15 @@ namespace rawrbox {
 			auto status = getWorkshopModState(detail.m_nPublishedFileId);
 			switch (status) {
 				case WorkshopStatus::INSTALLED:
-					_logger->info("Found workshop item '{}'", detail.m_nPublishedFileId);
+					_logger->debug("Found workshop item '{}'", detail.m_nPublishedFileId);
 					loadedMods.emplace_back(detail);
 					break;
 
 				case WorkshopStatus::NEEDS_UPDATE:
 					{
-						_logger->info("Updating workshop item '{}'", detail.m_nPublishedFileId);
+						_logger->debug("Updating workshop item '{}'", detail.m_nPublishedFileId);
 						if (!downloadMod(detail.m_nPublishedFileId, true)) {
-							throw _logger->error("Failed to update workshop item '{}'", detail.m_nPublishedFileId);
+							CRITICAL_RAWRBOX("Failed to update workshop item '{}'", detail.m_nPublishedFileId);
 						}
 					}
 					break;
@@ -59,12 +59,12 @@ namespace rawrbox {
 	// UTILS ---
 	void SteamWORKSHOP::patchConfig(const std::filesystem::path& rootPath, const rawrbox::WorkshopModConfig& config) {
 		auto configPath = fmt::format("{}/mod.json", rootPath.generic_string());
-		if (!std::filesystem::exists(configPath)) throw _logger->error("Missing 'mod.json' file");
+		if (!std::filesystem::exists(configPath)) CRITICAL_RAWRBOX("Missing 'mod.json' file");
 
 		auto ec = glz::write_file_json<glz::opts{.comments = 1U, .prettify = 1U, .allow_conversions = 1U}>(config, configPath, std::string{});
-		if (ec != glz::error_code::none) throw _logger->error("Failed to patch settings '{}'", configPath);
+		if (ec != glz::error_code::none) CRITICAL_RAWRBOX("Failed to patch settings '{}'", configPath);
 
-		_logger->success("Patched mod config");
+		_logger->debug("Patched mod config");
 	}
 	// -------
 
@@ -91,49 +91,49 @@ namespace rawrbox {
 	}
 
 	void SteamWORKSHOP::updateItem(PublishedFileId_t id, const rawrbox::WorkshopModConfig& config, const std::filesystem::path& uploadPath, const std::function<void(SubmitItemUpdateResult_t*)>& callback, bool isNewMod) {
-		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
-		if (!config.id.has_value()) throw _logger->error("Invalid mod id");
+		if (SteamUGC() == nullptr) CRITICAL_RAWRBOX("SteamUGC not initialized");
+		if (!config.id.has_value()) CRITICAL_RAWRBOX("Invalid mod id");
 
 		UGCUpdateHandle_t updateHandle = SteamUGC()->StartItemUpdate(STEAMWORKS_APPID, id);
-		if (updateHandle == k_UGCUpdateHandleInvalid) throw _logger->error("Failed to start item update");
+		if (updateHandle == k_UGCUpdateHandleInvalid) CRITICAL_RAWRBOX("Failed to start item update");
 
 		// SETUP TITLE AND DESCRIPTION ----
 		if (isNewMod) {
 			auto description = config.description.value_or("Mod's description");
 
-			if (!SteamUGC()->SetItemTitle(updateHandle, config.title.c_str())) throw _logger->error("Failed to set workshop item title");
-			if (!SteamUGC()->SetItemDescription(updateHandle, description.c_str())) throw _logger->error("Failed to set workshop item description");
+			if (!SteamUGC()->SetItemTitle(updateHandle, config.title.c_str())) CRITICAL_RAWRBOX("Failed to set workshop item title");
+			if (!SteamUGC()->SetItemDescription(updateHandle, description.c_str())) CRITICAL_RAWRBOX("Failed to set workshop item description");
 		}
 		// ------
 
 		// SETUP KEY VALUES ----
 		std::string type = config.type.value_or("MOD");
 		if (!type.empty()) {
-			if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "MOD_TYPE", type.c_str())) throw _logger->error("Failed to set workshop type");
+			if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "MOD_TYPE", type.c_str())) CRITICAL_RAWRBOX("Failed to set workshop type");
 		}
 
-		if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "MOD_ID", config.id.value().c_str())) throw _logger->error("Failed to set workshop mod id");
+		if (!SteamUGC()->AddItemKeyValueTag(updateHandle, "MOD_ID", config.id.value().c_str())) CRITICAL_RAWRBOX("Failed to set workshop mod id");
 		// ----------------------
 
 		// SETUP DEPENDENCIES ----
 		if (config.dependencies.has_value()) {
 			for (const auto& dep : config.dependencies.value()) {
 				PublishedFileId_t depId = std::strtoull(dep.c_str(), nullptr, 10);
-				if (depId == id) throw _logger->error("Cannot add self as a dependency");
+				if (depId == id) CRITICAL_RAWRBOX("Cannot add self as a dependency");
 
-				if (SteamUGC()->AddDependency(id, depId) == 0) throw _logger->error("Failed to set workshop dependency {}", dep);
+				if (SteamUGC()->AddDependency(id, depId) == 0) CRITICAL_RAWRBOX("Failed to set workshop dependency {}", dep);
 			}
 		}
 		// ----------------
 
 		// SETUP CONTENT ----
-		if (!SteamUGC()->SetItemContent(updateHandle, uploadPath.generic_string().c_str())) throw _logger->error("Failed to set workshop item content");
+		if (!SteamUGC()->SetItemContent(updateHandle, uploadPath.generic_string().c_str())) CRITICAL_RAWRBOX("Failed to set workshop item content");
 		// ------
 
 		// SETUP PREVIEW ----
 		if (config.preview.has_value()) {
 			std::string previewPath = std::filesystem::absolute(fmt::format("{}/{}", uploadPath.generic_string(), config.preview.value())).generic_string();
-			if (!SteamUGC()->SetItemPreview(updateHandle, previewPath.c_str())) throw _logger->error("Failed to set workshop item preview image");
+			if (!SteamUGC()->SetItemPreview(updateHandle, previewPath.c_str())) CRITICAL_RAWRBOX("Failed to set workshop item preview image");
 		}
 		// -------------
 
@@ -144,7 +144,7 @@ namespace rawrbox {
 		std::string changelog = fmt::format("Auto-update by engine v{}", rawrbox::SteamSDK::getBuildVersion());
 
 		SteamAPICall_t apicall = SteamUGC()->SubmitItemUpdate(updateHandle, changelog.c_str());
-		if (apicall == 0) throw _logger->error("Failed to update workshop item");
+		if (apicall == 0) CRITICAL_RAWRBOX("Failed to update workshop item");
 
 		SteamCALLBACKS::getInstance().addUpdateItemCallback(apicall, callback);
 	}
@@ -163,7 +163,7 @@ namespace rawrbox {
 	rawrbox::Event<const rawrbox::WorkshopModConfig&> SteamWORKSHOP::onModValidate = {};
 
 	void SteamWORKSHOP::init() {
-		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
+		if (SteamUGC() == nullptr) CRITICAL_RAWRBOX("SteamUGC not initialized");
 
 		// Register callback events ---
 		SteamCALLBACKS::getInstance().onModInstalled += [](PublishedFileId_t id) {
@@ -201,13 +201,13 @@ namespace rawrbox {
 	}
 
 	bool SteamWORKSHOP::downloadMod(PublishedFileId_t id, bool highPriority) {
-		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
+		if (SteamUGC() == nullptr) CRITICAL_RAWRBOX("SteamUGC not initialized");
 		return SteamUGC()->DownloadItem(id, highPriority);
 	}
 
 	// UTILS -----
 	std::vector<PublishedFileId_t> SteamWORKSHOP::getSubbedWorkshopMods() {
-		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
+		if (SteamUGC() == nullptr) CRITICAL_RAWRBOX("SteamUGC not initialized");
 		uint32_t totalItems = SteamUGC()->GetNumSubscribedItems();
 
 		std::vector<PublishedFileId_t> mods(totalItems);
@@ -217,7 +217,7 @@ namespace rawrbox {
 	}
 
 	std::filesystem::path SteamWORKSHOP::getWorkshopModFolder(PublishedFileId_t id) {
-		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
+		if (SteamUGC() == nullptr) CRITICAL_RAWRBOX("SteamUGC not initialized");
 
 		uint64 size = 0;
 		uint32 updateTimestamp = 0;
@@ -230,7 +230,7 @@ namespace rawrbox {
 	rawrbox::WorkshopStatus SteamWORKSHOP::getWorkshopModState(PublishedFileId_t id) {
 		if (id == 0) return rawrbox::WorkshopStatus::INSTALLED; // Assume local mod & unpublished
 
-		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
+		if (SteamUGC() == nullptr) CRITICAL_RAWRBOX("SteamUGC not initialized");
 		uint32 state = SteamUGC()->GetItemState(id);
 
 		if ((state & EItemState::k_EItemStateSubscribed) == 0U) {
@@ -260,11 +260,11 @@ namespace rawrbox {
 
 	// QUERIES ----
 	void SteamWORKSHOP::queryUserMods(const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback, EUserUGCList type, const std::vector<std::string>& tags, uint32_t page) {
-		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
+		if (SteamUGC() == nullptr) CRITICAL_RAWRBOX("SteamUGC not initialized");
 
 		auto id = SteamUser()->GetSteamID().GetAccountID();
 		UGCQueryHandle_t handle = SteamUGC()->CreateQueryUserUGCRequest(id, type, k_EUGCMatchingUGCType_Items, k_EUserUGCListSortOrder_CreationOrderDesc, STEAMWORKS_APPID, STEAMWORKS_APPID, page);
-		if (handle == k_UGCQueryHandleInvalid) throw _logger->error("Failed to request workshop items");
+		if (handle == k_UGCQueryHandleInvalid) CRITICAL_RAWRBOX("Failed to request workshop items");
 
 		// TAGS -----
 		for (const auto& tag : tags) {
@@ -275,7 +275,7 @@ namespace rawrbox {
 		}
 		// -----------
 
-		if (!SteamUGC()->SetReturnKeyValueTags(handle, true)) throw _logger->error("Failed to request key values");
+		if (!SteamUGC()->SetReturnKeyValueTags(handle, true)) CRITICAL_RAWRBOX("Failed to request key values");
 
 		SteamAPICall_t hSteamAPICall = SteamUGC()->SendQueryUGCRequest(handle);
 		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [callback](const std::vector<rawrbox::WorkshopMod>& details) {
@@ -284,10 +284,10 @@ namespace rawrbox {
 	}
 
 	void SteamWORKSHOP::queryMods(const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback, EUGCQuery type, const std::vector<std::string>& tags, uint32_t page) {
-		if (SteamUGC() == nullptr) throw _logger->error("SteamUGC not initialized");
+		if (SteamUGC() == nullptr) CRITICAL_RAWRBOX("SteamUGC not initialized");
 
 		UGCQueryHandle_t handle = SteamUGC()->CreateQueryAllUGCRequest(type, k_EUGCMatchingUGCType_Items, STEAMWORKS_APPID, STEAMWORKS_APPID, page);
-		if (handle == k_UGCQueryHandleInvalid) throw _logger->error("Failed to request workshop items");
+		if (handle == k_UGCQueryHandleInvalid) CRITICAL_RAWRBOX("Failed to request workshop items");
 
 		// TAGS -----
 		for (const auto& tag : tags) {
@@ -298,7 +298,7 @@ namespace rawrbox {
 		}
 		// -----------
 
-		if (!SteamUGC()->SetReturnKeyValueTags(handle, true)) throw _logger->error("Failed to request key values");
+		if (!SteamUGC()->SetReturnKeyValueTags(handle, true)) CRITICAL_RAWRBOX("Failed to request key values");
 
 		SteamAPICall_t hSteamAPICall = SteamUGC()->SendQueryUGCRequest(handle);
 		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [callback](const std::vector<rawrbox::WorkshopMod>& details) {
@@ -308,8 +308,8 @@ namespace rawrbox {
 
 	void SteamWORKSHOP::queryMods(std::vector<PublishedFileId_t> ids, const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback) {
 		UGCQueryHandle_t handle = SteamUGC()->CreateQueryUGCDetailsRequest(ids.data(), static_cast<uint32_t>(ids.size()));
-		if (handle == k_UGCQueryHandleInvalid) throw _logger->error("Failed to request workshop items");
-		if (!SteamUGC()->SetReturnKeyValueTags(handle, true)) throw _logger->error("Failed to request workshop items");
+		if (handle == k_UGCQueryHandleInvalid) CRITICAL_RAWRBOX("Failed to request workshop items");
+		if (!SteamUGC()->SetReturnKeyValueTags(handle, true)) CRITICAL_RAWRBOX("Failed to request workshop items");
 
 		SteamAPICall_t hSteamAPICall = SteamUGC()->SendQueryUGCRequest(handle);
 		SteamCALLBACKS::getInstance().addUGCQueryCallback(hSteamAPICall, [callback](const std::vector<rawrbox::WorkshopMod>& details) {
@@ -324,13 +324,13 @@ namespace rawrbox {
 
 		auto result = glz::read_file_json<glz::opts{.comments = 1U}>(config, fmt::format("{}/mod.json", rootPath.generic_string()), std::string{});
 		if (result.ec != glz::error_code::none) {
-			throw _logger->error("Failed to read 'mod.json' file {{}}", magic_enum::enum_name(result.ec));
+			CRITICAL_RAWRBOX("Failed to read 'mod.json' file {{}}", magic_enum::enum_name(result.ec));
 		}
 
 		// Always override and fill id
 		if (!config.id.has_value()) {
 			config.id = rootPath.filename().generic_string();
-			_logger->info("Missing mod id, using {}", config.id.value());
+			_logger->warn("Missing mod id, using {}", config.id.value());
 		}
 		// ---------------
 
@@ -339,7 +339,7 @@ namespace rawrbox {
 			auto previewPath = std::filesystem::absolute(rootPath / config.preview.value());
 
 			if (!std::filesystem::exists(previewPath)) {
-				throw _logger->error("Failed to find 'preview' image '{}'", previewPath.generic_string());
+				CRITICAL_RAWRBOX("Failed to find 'preview' image '{}'", previewPath.generic_string());
 			}
 		}
 		// ----------------
@@ -378,7 +378,7 @@ namespace rawrbox {
 		};
 
 		validateAndCollectFiles(std::filesystem::recursive_directory_iterator(rootPath));
-		if (uploadFiles.empty()) throw _logger->error("\nCannot upload empty mod!");
+		if (uploadFiles.empty()) CRITICAL_RAWRBOX("\nCannot upload empty mod!");
 
 		return uploadFiles;
 	}
@@ -402,10 +402,10 @@ namespace rawrbox {
 	}
 
 	void SteamWORKSHOP::updateWorkshop(PublishedFileId_t id, const rawrbox::WorkshopModConfig& config, const std::filesystem::path& rootPath, const std::vector<std::filesystem::path>& files, const std::function<void(SubmitItemUpdateResult_t*)>& onComplete) {
-		if (files.empty()) throw _logger->error("Cannot upload empty mod!");
+		if (files.empty()) CRITICAL_RAWRBOX("Cannot upload empty mod!");
 
 		auto tempFolder = moveToTempModFolder(rootPath.generic_string(), files);
-		_logger->info("Created temp folder '{}'", tempFolder.generic_string());
+		_logger->debug("Created temp folder '{}'", tempFolder.generic_string());
 
 		updateItem(
 		    id,
@@ -416,19 +416,19 @@ namespace rawrbox {
 	}
 
 	void SteamWORKSHOP::createWorkshop(rawrbox::WorkshopModConfig& config, const std::filesystem::path& rootPath, const std::vector<std::filesystem::path>& files, const std::function<void(SubmitItemUpdateResult_t*)>& onComplete) {
-		if (files.empty()) throw _logger->error("Cannot upload empty mod!");
-		if (config.__workshop_id__.has_value()) throw _logger->error("Mod already has a workshop id");
+		if (files.empty()) CRITICAL_RAWRBOX("Cannot upload empty mod!");
+		if (config.__workshop_id__.has_value()) CRITICAL_RAWRBOX("Mod already has a workshop id");
 
 		SteamAPICall_t apicall = SteamUGC()->CreateItem(STEAMWORKS_APPID, k_EWorkshopFileTypeCommunity);
-		if (apicall == 0) throw _logger->error("Failed to create workshop item");
+		if (apicall == 0) CRITICAL_RAWRBOX("Failed to create workshop item");
 
 		SteamCALLBACKS::getInstance().addCreateItemCallback(apicall, [&config, &rootPath, &files, onComplete](CreateItemResult_t* result) {
 			if (result->m_bUserNeedsToAcceptWorkshopLegalAgreement) {
-				throw _logger->error("User needs to accept steam's workshop agreement (https://steamcommunity.com/sharedfiles/workshoplegalagreement)");
+				CRITICAL_RAWRBOX("User needs to accept steam's workshop agreement (https://steamcommunity.com/sharedfiles/workshoplegalagreement)");
 			}
 
 			auto err = checkErrors(result->m_eResult);
-			if (!err.empty()) throw _logger->error("{}", err);
+			if (!err.empty()) CRITICAL_RAWRBOX("{}", err);
 
 			// PATCH CONFIG ----
 			config.__workshop_id__ = std::to_string(result->m_nPublishedFileId);
@@ -436,7 +436,7 @@ namespace rawrbox {
 			// ------
 
 			auto tempFolder = moveToTempModFolder(rootPath.generic_string(), files);
-			_logger->info("Created temp folder '{}'", tempFolder.generic_string());
+			_logger->debug("Created temp folder '{}'", tempFolder.generic_string());
 
 			updateItem(
 			    result->m_nPublishedFileId, config, tempFolder, [onComplete](SubmitItemUpdateResult_t* result) {

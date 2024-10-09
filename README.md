@@ -155,7 +155,6 @@ This engine started as a C++ training project, with hopes of being applied in my
 | --                                         | --                                                                                                 | --      |
 | `RAWRBOX_DEV_MODE`                         | Enables all the modules, used for rawrbox development                                              | OFF     |
 | --                                         | --                                                                                                 | --      |
-| `RAWRBOX_TRACE_EXCEPTIONS`                 | Enables exception tracing                                                                          | ON      |
 | `RAWRBOX_INTERPROCEDURAL_OPTIMIZATION`     | Enables IPO compilation on release                                                                 | ON      |
 
 <br/><br/>
@@ -199,6 +198,6 @@ This engine started as a C++ training project, with hopes of being applied in my
 | curl              | Used for HTTP / HTTPS requests                      | [MIT](https://github.com/libcpr/cpr/blob/master/LICENSE)                                       |
 | libcpr            | Used for HTTP / HTTPS requests                      | [MIT](https://github.com/libcpr/cpr/blob/master/LICENSE)                                       |
 | lunasvg           | Used for SVG loading                                | [MIT](https://github.com/sammycage/lunasvg/blob/master/LICENSE)                                |
-| cpptrace          | Used for easy error tracing                         | [MIT](https://github.com/jeremy-rifkin/cpptrace/blob/main/LICENSE)                             |
 | meshoptimizer     | Used to optimize meshes                             | [MIT](https://github.com/zeux/meshoptimizer/blob/master/LICENSE.md)                            |
 | ozz-animation     | Used to animate skinned meshes                      | [MIT](https://github.com/guillaumeblanc/ozz-animation/blob/master/LICENSE.md)                  |
+| spdlog            | Used for logging                                    | [MIT](https://github.com/gabime/spdlog/blob/v1.x/LICENSE)                                      |

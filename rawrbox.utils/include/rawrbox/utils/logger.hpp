@@ -1,80 +1,71 @@
 #pragma once
 
-#ifdef RAWRBOX_TRACE_EXCEPTIONS
-	#include <cpptrace/cpptrace.hpp>
-#endif
-
 #include <fmt/color.h>
 #include <fmt/format.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
 #include <string>
+
+#define CRITICAL_RAWRBOX(...) \
+	{ \
+		spdlog::critical("] {}\n  └── {}:{}\n\t└── {}", fmt::format(__VA_ARGS__), __FILE__, __LINE__, fmt::styled(__FUNCTION__, fmt::fg(fmt::color::red))); \
+		throw std::runtime_error(fmt::format(__VA_ARGS__)); \
+	}
 
 namespace rawrbox {
 	class Logger {
 	protected:
-		std::string _title = "UNKNOWN";
-		bool _autoNewLine = true;
+		std::string _title;
 
 	public:
+		static std::shared_ptr<spdlog::logger> LOGGER;
+		static spdlog::level::level_enum LEVEL;
+		static bool ENABLE_FILE_LOGGING;
+
 		Logger(const std::string& title);
-		void setAutoNewLine(bool set);
+
+		// LOGGING ----
+		template <typename... T>
+		void info(fmt::format_string<T...> fmt, T&&... args) {
+			if (LOGGER == nullptr) return;
+
+			auto str = fmt::format(fmt, std::forward<T>(args)...);
+			LOGGER->info(" ▓ {}] {}", this->_title, str);
+		}
 
 		template <typename... T>
 		void warn(fmt::format_string<T...> fmt, T&&... args) {
-			auto str = fmt::format(fmt, std::forward<T>(args)...);
+			if (LOGGER == nullptr) return;
 
-			fmt::print("[{} ▓ {}]: {}", fmt::styled("WARN", fmt::fg(fmt::color::yellow)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), fmt::styled(str, fmt::fg(fmt::color::yellow)));
-			if (this->_autoNewLine) fmt::print("\n");
-		}
-
-#ifdef RAWRBOX_TRACE_EXCEPTIONS
-		template <typename... T>
-		cpptrace::runtime_error error(fmt::format_string<T...> fmt, T&&... args) {
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			return cpptrace::runtime_error(fmt::format("[{} ▓ {}]: {}", fmt::styled("ERROR", fmt::fg(fmt::color::red)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), str));
+			LOGGER->warn(" ▓ {}] {}", this->_title, fmt::styled(str, fmt::fg(fmt::color::gold)));
 		}
 
 		template <typename... T>
-		static cpptrace::runtime_error err(const std::string& title, fmt::format_string<T...> fmt, T&&... args) {
+		void trace(fmt::format_string<T...> fmt, T&&... args) {
+			if (LOGGER == nullptr) return;
+
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			return cpptrace::runtime_error(fmt::format("[{} ▓ {}]: {}", fmt::styled("ERROR", fmt::fg(fmt::color::red)), fmt::styled(title, fmt::fg(fmt::color::gold)), str));
-		}
-#else
-		template <typename... T>
-		std::exception error(fmt::format_string<T...> fmt, T&&... args) {
-			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			return std::runtime_error(fmt::format("[{} ▓ {}]: {}", fmt::styled("ERROR", fmt::fg(fmt::color::red)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), str));
+			LOGGER->trace(" ▓ {}] {}", this->_title, str);
 		}
 
 		template <typename... T>
-		static std::exception err(const std::string& title, fmt::format_string<T...> fmt, T&&... args) {
-			auto str = fmt::format(fmt, std::forward<T>(args)...);
-			return std::runtime_error(fmt::format("[{} ▓ {}]: {}", fmt::styled("ERROR", fmt::fg(fmt::color::red)), fmt::styled(title, fmt::fg(fmt::color::gold)), str));
-		}
-#endif
+		void debug(fmt::format_string<T...> fmt, T&&... args) {
+			if (LOGGER == nullptr) return;
 
-		template <typename... T>
-		void printError(fmt::format_string<T...> fmt, T&&... args) {
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-
-			fmt::print("[{} ▓ {}]: {}", fmt::styled("ERROR", fmt::fg(fmt::color::red)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), str);
-			if (this->_autoNewLine) fmt::print("\n");
+			LOGGER->debug(" ▓ {}] {}", this->_title, str);
 		}
 
 		template <typename... T>
-		void info(fmt::format_string<T...> fmt, T&&... args) {
+		void error(fmt::format_string<T...> fmt, T&&... args) {
+			if (LOGGER == nullptr) return;
+
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
-
-			fmt::print("[{} ▓ {}]: {}", fmt::styled("INFO", fmt::fg(fmt::color::alice_blue)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), str);
-			if (this->_autoNewLine) fmt::print("\n");
+			LOGGER->error(" ▓ {}] {}", this->_title, str);
 		}
-
-		template <typename... T>
-		void success(fmt::format_string<T...> fmt, T&&... args) {
-			auto str = fmt::format(fmt, std::forward<T>(args)...);
-
-			fmt::print("[{} ▓ {}]: {}", fmt::styled("SUCCESS", fmt::fg(fmt::color::lime_green)), fmt::styled(this->_title, fmt::fg(fmt::color::gold)), str);
-			if (this->_autoNewLine) fmt::print("\n");
-		}
+		// ----------
 	};
 } // namespace rawrbox

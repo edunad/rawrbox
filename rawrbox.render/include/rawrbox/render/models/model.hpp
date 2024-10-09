@@ -67,13 +67,13 @@ namespace rawrbox {
 					if constexpr (supportsBones<typename M::vertexBufferType>) {
 						this->processSkeletonAnimations(dynamic_cast<rawrbox::AnimationSkeletonSampler*>(sample));
 					} else {
-						throw this->_logger->error("Failed to play animation {}, model does not support bones", sample->getAnimation()->name());
+						CRITICAL_RAWRBOX("Failed to play animation {}, model does not support bones", sample->getAnimation()->name());
 					}
 					break;
 
 				default:
 				case ozz::animation::UNKNOWN:
-					throw this->_logger->error("Unknown animation type");
+					CRITICAL_RAWRBOX("Unknown animation type");
 			}
 		}
 
@@ -213,22 +213,22 @@ namespace rawrbox {
 		virtual void optimize(float complexity_threshold = 0.9F) {
 			for (auto& mesh : this->_meshes) {
 				if (mesh == nullptr || mesh->empty()) continue;
-#ifdef _DEBUG
+
 				size_t oldVerts = mesh->vertices.size();
 				size_t oldInds = mesh->indices.size();
-#endif
+
 				rawrbox::MeshOptimization::optimize(mesh->vertices, mesh->indices);
 				rawrbox::MeshOptimization::simplify(mesh->vertices, mesh->indices, complexity_threshold);
-#ifdef _DEBUG
-				if (oldVerts != mesh->vertices.size() || oldInds != mesh->indices.size()) this->_logger->info("Optimized mesh for rendering (Before {} | After {})", oldVerts, mesh->vertices.size());
-#endif
+
+				if (oldVerts != mesh->vertices.size() || oldInds != mesh->indices.size()) {
+					this->_logger->debug("Optimized mesh for rendering ({} -> {}), ideally you should optimize the model on a external tool.", fmt::styled(oldVerts, fmt::fg(fmt::color::cyan)), fmt::styled(mesh->vertices.size(), fmt::fg(fmt::color::cyan)));
+				}
 			}
 		}
 
 		virtual void merge() {
-#ifdef _DEBUG
 			size_t old = this->_meshes.size();
-#endif
+
 			for (size_t i1 = 0; i1 < this->_meshes.size(); i1++) {
 				auto& mesh1 = this->_meshes[i1];
 
@@ -259,14 +259,12 @@ namespace rawrbox {
 				}
 			}
 
-#ifdef _DEBUG
-			if (old != this->_meshes.size() && !this->isUploaded()) this->_logger->info("Merged mesh for rendering (Before {} | After {}), this will only display once to prevent spam.", old, this->_meshes.size()); // Only do it once
-#endif
+			if (old != this->_meshes.size() && !this->isUploaded()) this->_logger->debug("Merged mesh for rendering ({} -> {})", fmt::styled(old, fmt::fg(fmt::color::cyan)), fmt::styled(this->_meshes.size(), fmt::fg(fmt::color::cyan))); // Only do it once
 		}
 
 		void updateBuffers() override {
-			if (!this->isUploaded()) throw this->_logger->error("Model is not uploaded!");
-			if (!this->isDynamic()) throw this->_logger->error("Model is not dynamic!");
+			if (!this->isUploaded()) CRITICAL_RAWRBOX("Model is not uploaded!");
+			if (!this->isDynamic()) CRITICAL_RAWRBOX("Model is not dynamic!");
 
 			this->flattenMeshes();
 			rawrbox::ModelBase<M>::updateBuffers();
@@ -274,7 +272,7 @@ namespace rawrbox {
 
 		// ANIMATIONS ----
 		virtual bool blendAnimation(const std::string& /*otherAnim*/, float /*blend*/) {
-			throw this->_logger->error("TODO");
+			CRITICAL_RAWRBOX("TODO");
 		}
 
 		virtual std::vector<rawrbox::AnimationSampler*> playAnimation(std::function<void(const std::string&)> onComplete = nullptr) {
@@ -402,7 +400,7 @@ namespace rawrbox {
 		}
 
 		virtual rawrbox::Mesh<typename M::vertexBufferType>* addMesh(size_t index, rawrbox::Mesh<typename M::vertexBufferType> mesh) {
-			if (index >= this->_meshes.size()) throw this->_logger->error("Index out of bounds");
+			if (index >= this->_meshes.size()) CRITICAL_RAWRBOX("Index out of bounds");
 
 			this->_bbox.combine(mesh.getBBOX());
 			mesh.owner = this;

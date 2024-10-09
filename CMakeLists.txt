@@ -58,7 +58,6 @@ option(RAWRBOX_DISABLE_SUPPORT_VULKAN "Disable vulkan support" OFF)
 
 # Other -----
 option(RAWRBOX_DEV_MODE "Builds all modules, used for developing rawrbox" OFF)
-option(RAWRBOX_TRACE_EXCEPTIONS "Enables exception tracing" ON)
 option(RAWRBOX_INTERPROCEDURAL_OPTIMIZATION "Enables IPO" ON)
 # ---------------
 # -----
@@ -102,8 +101,6 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS ON)
     set(RAWRBOX_BUILD_RAWRBOX_IMGUI ON)
     set(RAWRBOX_BUILD_QHULL ON)
-
-    set(RAWRBOX_TRACE_EXCEPTIONS OFF)
 
     if(NOT DEFINED STEAMWORKS_APPID)
         message(STATUS "Set STEAMWORKS_APPID to 480 (SpaceWars example game)")

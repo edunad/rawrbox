@@ -10,12 +10,12 @@ namespace rawrbox {
 	}
 
 	void Mod::shutdown() {
-		if (this->_L == nullptr) throw _logger->error("Invalid lua handle");
+		if (this->_L == nullptr) CRITICAL_RAWRBOX("Invalid lua handle");
 		this->call("onShutdown");
 	}
 
 	void Mod::init() {
-		if (this->_L == nullptr) throw _logger->error("Invalid lua handle");
+		if (this->_L == nullptr) CRITICAL_RAWRBOX("Invalid lua handle");
 
 #ifdef RAWRBOX_SCRIPTING_EXCEPTION
 		luabridge::enableExceptions(_L);
@@ -46,17 +46,17 @@ namespace rawrbox {
 	}
 
 	void Mod::gc() {
-		if (this->_L == nullptr) throw _logger->error("Invalid lua handle");
+		if (this->_L == nullptr) CRITICAL_RAWRBOX("Invalid lua handle");
 		rawrbox::LuaUtils::collect_garbage(this->_L);
 	}
 
 	void Mod::load() {
-		if (this->_L == nullptr) throw _logger->error("Invalid lua sandbox environment");
+		if (this->_L == nullptr) CRITICAL_RAWRBOX("Invalid lua sandbox environment");
 		rawrbox::LuaUtils::compileAndLoadFile(this->_L, this->getID(), this->getEntryFilePath());
 	}
 
 	void Mod::script(const std::string& script) {
-		if (this->_L == nullptr) throw _logger->error("Invalid lua sandbox environment");
+		if (this->_L == nullptr) CRITICAL_RAWRBOX("Invalid lua sandbox environment");
 		rawrbox::LuaUtils::compileAndLoadScript(this->_L, "unknown", script);
 	}
 

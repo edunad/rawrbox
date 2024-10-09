@@ -92,7 +92,7 @@ namespace rawrbox {
 	}
 
 	void LIGHTS::updateBuffer() {
-		if (_buffer == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
+		if (_buffer == nullptr) CRITICAL_RAWRBOX("Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__LIGHT_DIRTY__ || _lights.empty()) return;
 
 		// Update lights ---
@@ -150,7 +150,7 @@ namespace rawrbox {
 	}
 
 	void LIGHTS::update() {
-		if (uniforms == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
+		if (uniforms == nullptr) CRITICAL_RAWRBOX("Buffer not initialized! Did you call 'init' ?");
 
 		updateBuffer();    // Update all lights if dirty
 		updateConstants(); // Update buffer if dirty

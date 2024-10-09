@@ -21,7 +21,7 @@ namespace rawrbox {
 	// ------------
 
 	void SteamINPUT::init() {
-		if (SteamInput() == nullptr) throw _logger->error("SteamInput is null");
+		if (SteamInput() == nullptr) CRITICAL_RAWRBOX("SteamInput is null");
 		SteamInput()->Init(false);
 	}
 
@@ -93,7 +93,7 @@ namespace rawrbox {
 		_inputID = inputHandle;
 		_actionID = actionHandle;
 
-		_logger->info("Set controller action to {}", actionSTR);
+		_logger->debug("Set controller action to {}", actionSTR);
 	}
 
 	ControllerJoystickData SteamINPUT::getAnalogData(ControllerActionAnalogHandle handle) {

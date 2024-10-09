@@ -39,7 +39,6 @@ namespace rawrbox {
 		virtual void draw();
 
 		virtual void onThreadShutdown(rawrbox::ENGINE_THREADS thread);
-		static void prettyPrintErr(const std::string& err);
 
 	public:
 		virtual ~Engine() = default;

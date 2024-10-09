@@ -6,6 +6,10 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
+	// PRIVATE ---
+	std::unique_ptr<rawrbox::Logger> BASSUtils::_logger = std::make_unique<rawrbox::Logger>("RawrBox-BASS");
+	// ----------
+
 	void BASSUtils::checkBASSError() {
 		int err = BASS_ErrorGetCode();
 		std::string readErr;
@@ -41,7 +45,7 @@ namespace rawrbox {
 				break;
 		}
 
-		throw rawrbox::Logger::err("RawrBox-BASS", "Bass audio error:\n\t{}", readErr);
+		CRITICAL_RAWRBOX("Bass audio error:\n\t{}", readErr);
 	}
 
 } // namespace rawrbox

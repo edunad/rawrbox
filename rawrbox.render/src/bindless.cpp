@@ -28,7 +28,7 @@ namespace rawrbox {
 	// --------------
 
 	void BindlessManager::init() {
-		if (signature != nullptr) throw _logger->error("Signature already bound!");
+		if (signature != nullptr) CRITICAL_RAWRBOX("Signature already bound!");
 		_logger->info("Initializing bindless manager");
 
 		auto* renderer = rawrbox::RENDERER;
@@ -238,13 +238,13 @@ namespace rawrbox {
 
 	// REGISTER TEXTURES -------
 	void BindlessManager::registerTexture(rawrbox::TextureRender& texture) {
-		if (signature == nullptr) throw _logger->error("Signature not bound! Did you call init?");
+		if (signature == nullptr) CRITICAL_RAWRBOX("Signature not bound! Did you call init?");
 		if (texture.isRegistered()) return; // Check if it's already registered --
 
 		auto* pDepthSRV = texture.getDepth(); // Get depth
 		if (pDepthSRV != nullptr) {
 			auto id = internalRegister(pDepthSRV, rawrbox::TEXTURE_TYPE::PIXEL);
-			_logger->info("Registering {} bindless texture '{}' on slot '{}'", fmt::styled("DEPTH", fmt::fg(fmt::color::red)), fmt::styled(texture.getName(), fmt::fg(fmt::color::violet)), fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
+			_logger->debug("Registering {} bindless texture '{}' on slot '{}'", fmt::styled("DEPTH", fmt::fg(fmt::color::red)), fmt::styled(texture.getName(), fmt::fg(fmt::color::violet)), fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
 
 			// Register depth
 			texture.setDepthTextureID(id);
@@ -256,15 +256,15 @@ namespace rawrbox {
 	}
 
 	void BindlessManager::registerTexture(rawrbox::TextureBase& texture) {
-		if (signature == nullptr) throw _logger->error("Signature not bound! Did you call init?");
+		if (signature == nullptr) CRITICAL_RAWRBOX("Signature not bound! Did you call init?");
 		if (texture.isRegistered()) return; // Check if it's already registered --
 
 		auto* pTextureSRV = texture.getHandle(); // Get shader resource view from the texture
-		if (pTextureSRV == nullptr) throw _logger->error("Failed to register texture '{}'! Texture view is null, not uploaded?", texture.getName());
+		if (pTextureSRV == nullptr) CRITICAL_RAWRBOX("Failed to register texture '{}'! Texture view is null, not uploaded?", texture.getName());
 
 		const bool isVertex = texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX;
 		const auto id = internalRegister(pTextureSRV, texture.getType());
-		_logger->info("Registering bindless {} texture '{}' on slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(texture.getName(), fmt::fg(fmt::color::violet)), fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
+		_logger->debug("Registering bindless {} texture '{}' on slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(texture.getName(), fmt::fg(fmt::color::violet)), fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
 
 		// Register for updates
 		registerUpdateTexture(texture);
@@ -281,8 +281,8 @@ namespace rawrbox {
 		const auto id = texture.getTextureID();
 		const auto depthId = texture.getDepthTextureID();
 
-		if (id >= handler.size()) throw _logger->error("Index '{}' not found!", id);
-		if (depthId >= handler.size()) throw _logger->error("Depth index '{}' not found!", id);
+		if (id >= handler.size()) CRITICAL_RAWRBOX("Index '{}' not found!", id);
+		if (depthId >= handler.size()) CRITICAL_RAWRBOX("Depth index '{}' not found!", id);
 
 		// Cleanup  ----
 		unregisterUpdateTexture(texture);
@@ -292,7 +292,7 @@ namespace rawrbox {
 		// --------------------
 
 		// No need to update signature, it will be overriden by another texture
-		_logger->info("Un-registering bindless {} texture slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
+		_logger->debug("Un-registering bindless {} texture slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
 	}
 
 	void BindlessManager::registerUpdateTexture(rawrbox::TextureBase& texture) {
@@ -314,7 +314,7 @@ namespace rawrbox {
 
 		int size = static_cast<int>(handler.size());
 		if (size == static_cast<int>(max / 1.2F)) _logger->warn("Aproaching max texture limit of {}", fmt::styled(std::to_string(max), fmt::fg(fmt::color::red)));
-		if (size >= static_cast<int>(max)) throw _logger->error("Max texture limit reached! Cannot allocate texture, remove some unecessary textures or increase max textures on renderer");
+		if (size >= static_cast<int>(max)) CRITICAL_RAWRBOX("Max texture limit reached! Cannot allocate texture, remove some unecessary textures or increase max textures on renderer");
 
 		int id = -1;
 
