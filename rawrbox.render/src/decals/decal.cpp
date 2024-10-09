@@ -12,7 +12,7 @@ namespace rawrbox {
 
 	void Decal::setTexture(const rawrbox::TextureBase& texture, uint32_t id) {
 		if (!texture.isValid()) {
-			ERROR_RAWRBOX("Invalid texture, not uploaded?");
+			this->_logger->error("Invalid texture, not uploaded?");
 			return;
 		}
 

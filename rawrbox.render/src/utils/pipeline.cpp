@@ -84,7 +84,7 @@ namespace rawrbox {
 				if (CacheDataFile->Write(pCacheData->GetConstDataPtr(), pCacheData->GetSize())) {
 					_logger->debug("Saved pipeline cache to '{}'", pString);
 				} else {
-					ERROR_RAWRBOX("Failed to save pipeline cache to '{}'", pString);
+					_logger->error("Failed to save pipeline cache to '{}'", pString);
 				}
 			}
 		}

@@ -315,7 +315,7 @@ namespace rawrbox {
 			try {
 				rawrbox::LuaUtils::compileAndLoadFile(env, md->first, filePath);
 			} catch (const std::exception& err) {
-				ERROR_RAWRBOX("{}", err.what());
+				_logger->error("{}", err.what());
 			}
 			// ---------------
 
@@ -398,7 +398,7 @@ namespace rawrbox {
 			_logger->info("Mod '{}' loaded", fmt::styled(id, fmt::fg(fmt::color::coral)));
 			registerLoadedFile(mod->getID(), mod->getEntryFilePath()); // Register file for hot-reloading
 		} catch (const std::runtime_error& err) {
-			ERROR_RAWRBOX("{}", err.what());
+			_logger->error("{}", err.what());
 			return nullptr;
 		}
 

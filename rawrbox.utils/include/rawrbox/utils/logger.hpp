@@ -14,9 +14,6 @@
 		throw std::runtime_error(fmt::format(__VA_ARGS__)); \
 	}
 
-#define ERROR_RAWRBOX(...) \
-	spdlog::error("] {}\n  └── {}:{}\n\t└── {}", fmt::format(__VA_ARGS__), __FILE__, __LINE__, fmt::styled(__FUNCTION__, fmt::fg(fmt::color::red)));
-
 namespace rawrbox {
 	class Logger {
 	protected:
@@ -60,6 +57,14 @@ namespace rawrbox {
 
 			auto str = fmt::format(fmt, std::forward<T>(args)...);
 			LOGGER->debug(" ▓ {}] {}", this->_title, str);
+		}
+
+		template <typename... T>
+		void error(fmt::format_string<T...> fmt, T&&... args) {
+			if (LOGGER == nullptr) return;
+
+			auto str = fmt::format(fmt, std::forward<T>(args)...);
+			LOGGER->error(" ▓ {}] {}", this->_title, str);
 		}
 		// ----------
 	};
