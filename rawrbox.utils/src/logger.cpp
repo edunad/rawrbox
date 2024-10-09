@@ -7,7 +7,7 @@ namespace rawrbox {
 	spdlog::level::level_enum Logger::LEVEL = spdlog::level::warn; // Default
 #endif
 
-	bool Logger::ENABLE_FILE_LOGGING = false;
+	bool Logger::ENABLE_FILE_LOGGING = true;
 	std::shared_ptr<spdlog::logger> Logger::LOGGER = nullptr;
 
 	Logger::Logger(const std::string& title) : _title(title) {
