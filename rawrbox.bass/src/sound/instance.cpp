@@ -164,7 +164,7 @@ namespace rawrbox {
 				flag = BASS_DATA_FFT4096;
 				break;
 			default:
-				throw this->_logger->error("Unknown FFT length {}, should be power of 2! Check: http://bass.radio42.com/help/html/a13cfef0-1056-bb94-81c4-a4fdf21bd463.htm", bass_length);
+				CRITICAL_RAWRBOX("Unknown FFT length {}, should be power of 2! Check: http://bass.radio42.com/help/html/a13cfef0-1056-bb94-81c4-a4fdf21bd463.htm", bass_length);
 		}
 
 		buffer.resize(bass_length);
@@ -180,7 +180,7 @@ namespace rawrbox {
 	// --------------
 
 	void SoundInstance::setBeatSettings(float bandwidth, float center_freq, float release_time) {
-		if ((this->_flags & SoundFlags::BEAT_DETECTION) == 0) throw this->_logger->error("Load flag BEAT_DETECTION not set!");
+		if ((this->_flags & SoundFlags::BEAT_DETECTION) == 0) CRITICAL_RAWRBOX("Load flag BEAT_DETECTION not set!");
 		if (!this->isCreated()) return;
 
 		BASS_FX_BPM_BeatSetParameters(this->_channel, bandwidth, center_freq, release_time);

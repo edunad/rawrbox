@@ -69,14 +69,14 @@ namespace rawrbox {
 				if (loader->supportsBuffer(ext)) {
 					buffer = rawrbox::FileUtils::getRawData(filePath);
 					if (buffer.empty()) {
-						throw _logger->error("Failed to load file '{}'", path);
+						CRITICAL_RAWRBOX("Failed to load file '{}'", path);
 					}
 					ret->crc32 = CRC::Calculate(buffer.data(), buffer.size(), CRC::CRC_32());
 				}
 
 				ret->status = rawrbox::LoadStatus::LOADING;
 
-				if (!ret->load(buffer)) throw _logger->error("Failed to load file '{}'", path);
+				if (!ret->load(buffer)) CRITICAL_RAWRBOX("Failed to load file '{}'", path);
 				ret->upload();
 
 				ret->status = rawrbox::LoadStatus::LOADED;
@@ -91,7 +91,7 @@ namespace rawrbox {
 				return ret;
 			}
 
-			throw _logger->error("Attempted to load unknown file extension '{}'. Missing loader!", filePath.generic_string());
+			CRITICAL_RAWRBOX("Attempted to load unknown file extension '{}'. Missing loader!", filePath.generic_string());
 		}
 		// ---------
 
@@ -132,7 +132,7 @@ namespace rawrbox {
 		template <class T = rawrbox::Resource>
 			requires(std::derived_from<T, rawrbox::Resource>)
 		static T* loadFile(const std::filesystem::path& filePath, uint32_t loadFlags = 0) {
-			if (filePath.empty()) throw _logger->error("Attempted to load empty path");
+			if (filePath.empty()) CRITICAL_RAWRBOX("Attempted to load empty path");
 			return loadFileImpl<T>(filePath, loadFlags);
 		}
 
@@ -144,7 +144,7 @@ namespace rawrbox {
 			for (const auto& file : files) {
 				rawrbox::ASYNC::run([file, onComplete]() {
 					loadFileImpl<T>(file.first, file.second);
-					_logger->info("Loaded '{}'", fmt::styled(file.first, fmt::fg(fmt::color::coral)));
+					_logger->debug("Loaded '{}'", fmt::styled(file.first, fmt::fg(fmt::color::coral)));
 
 					_loadingFiles = std::max<size_t>(_loadingFiles - 1, 0);
 					if (_loadingFiles <= 0 && onComplete != nullptr) onComplete();
@@ -155,11 +155,11 @@ namespace rawrbox {
 		template <class T = rawrbox::Resource>
 			requires(std::derived_from<T, rawrbox::Resource>)
 		static void loadFileAsync(const std::filesystem::path& filePath, uint32_t loadFlags = 0, const std::function<void()>& onComplete = nullptr) {
-			if (filePath.empty()) throw _logger->error("Attempted to load empty path");
+			if (filePath.empty()) CRITICAL_RAWRBOX("Attempted to load empty path");
 
 			rawrbox::ASYNC::run([filePath, loadFlags, onComplete]() {
 				loadFileImpl<T>(filePath, loadFlags);
-				_logger->info("Loaded '{}'", fmt::format(fmt::fg(fmt::color::coral), filePath.generic_string()));
+				_logger->debug("Loaded '{}'", fmt::format(fmt::fg(fmt::color::coral), filePath.generic_string()));
 
 				if (onComplete != nullptr) onComplete();
 			});
@@ -170,7 +170,7 @@ namespace rawrbox {
 		[[nodiscard]] static T* getFile(const std::filesystem::path& filePath) {
 			auto fl = getFileImpl<T>(filePath);
 			if (fl == nullptr) {
-				throw _logger->error("File '{}' not loaded / found!", filePath.generic_string());
+				CRITICAL_RAWRBOX("File '{}' not loaded / found!", filePath.generic_string());
 			}
 
 			return fl;
@@ -201,7 +201,7 @@ namespace rawrbox {
 						loadFile(file.first, file.second);
 						if (endLoad != nullptr) endLoad(file.first.generic_string(), file.second);
 
-						_logger->info("Loaded '{}'", fmt::styled(file.first.generic_string(), fmt::fg(fmt::color::coral)));
+						_logger->debug("Loaded '{}'", fmt::styled(file.first.generic_string(), fmt::fg(fmt::color::coral)));
 
 						_loadingPreloadFiles = std::max<size_t>(_loadingPreloadFiles - 1, 0);
 						if (_loadingPreloadFiles <= 0 && onComplete != nullptr) onComplete();

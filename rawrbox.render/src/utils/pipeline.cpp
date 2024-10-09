@@ -41,7 +41,7 @@ namespace rawrbox {
 		// Initialize pipeline cache -----
 		Diligent::RenderStateCacheCreateInfo CacheCI;
 		CacheCI.pDevice = &device;
-		// CacheCI.LogLevel = Diligent::RENDER_STATE_CACHE_LOG_LEVEL_VERBOSE;
+		CacheCI.LogLevel = Diligent::RENDER_STATE_CACHE_LOG_LEVEL_DISABLED;
 
 		Diligent::CreateRenderStateCache(CacheCI, &_stateCache);
 		// -------------------------
@@ -64,7 +64,7 @@ namespace rawrbox {
 			auto pCacheData = Diligent::DataBlobImpl::Create();
 
 			if (CacheDataFile->Read(pCacheData)) {
-				_logger->info("Loaded pipeline cache from '{}'", pString);
+				_logger->debug("Loaded pipeline cache from '{}'", pString);
 				_stateCache->Load(pCacheData);
 			}
 		}
@@ -82,9 +82,9 @@ namespace rawrbox {
 				const auto pString = _stateCachePath.generic_string();
 				Diligent::FileWrapper CacheDataFile{pString.c_str(), Diligent::EFileAccessMode::Overwrite};
 				if (CacheDataFile->Write(pCacheData->GetConstDataPtr(), pCacheData->GetSize())) {
-					_logger->info("Saved pipeline cache to '{}'", pString);
+					_logger->debug("Saved pipeline cache to '{}'", pString);
 				} else {
-					_logger->error("Failed to save pipeline cache to '{}'", pString);
+					ERROR_RAWRBOX("Failed to save pipeline cache to '{}'", pString);
 				}
 			}
 		}
@@ -146,17 +146,13 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IShader> shader;
 		_stateCache->CreateShader(ShaderCI, &shader);
 
-		_logger->setAutoNewLine(false);
-		_logger->info("Shader '{}'", fmt::styled(name, fmt::fg(fmt::color::coral)));
-		_logger->setAutoNewLine(true);
-
 		if (shader != nullptr) {
-			fmt::print("{}\n", fmt::styled(" [✓ OK]", fmt::fg(fmt::color::green_yellow)));
+			_logger->info("Shader '{}' {}", fmt::styled(name, fmt::fg(fmt::color::coral)), fmt::styled(" [✓ OK]", fmt::fg(fmt::color::green_yellow)));
 		} else {
-			fmt::print("{}\n", fmt::styled(" [✖ FAILED]", fmt::fg(fmt::color::red)));
+			CRITICAL_RAWRBOX("Shader '{}' {}", fmt::styled(name, fmt::fg(fmt::color::coral)), fmt::styled(" [✖ FAILED]", fmt::fg(fmt::color::red)));
 		}
 
-		if (shader == nullptr) throw _logger->error("Failed to compile shader '{}'", name);
+		if (shader == nullptr) CRITICAL_RAWRBOX("Failed to compile shader '{}'", name);
 		_shaders[id] = std::move(shader);
 		return _shaders[id];
 	}
@@ -177,7 +173,7 @@ namespace rawrbox {
 	}
 
 	Diligent::IPipelineState* PipelineUtils::createComputePipeline(const std::string& name, rawrbox::PipeComputeSettings settings) {
-		if (settings.pCS.empty()) throw _logger->error("Failed to create shader {}, pCS shader cannot be empty!", name);
+		if (settings.pCS.empty()) CRITICAL_RAWRBOX("Failed to create shader {}, pCS shader cannot be empty!", name);
 
 		auto fnd = _pipelines.find(name);
 		if (fnd != _pipelines.end()) return fnd->second;
@@ -205,14 +201,14 @@ namespace rawrbox {
 		PSOCreateInfo.pCS = rawrbox::PipelineUtils::compileShader(settings.pCS, Diligent::SHADER_TYPE_COMPUTE, settings.macros);
 
 		_stateCache->CreateComputePipelineState(PSOCreateInfo, &pipe);
-		if (pipe == nullptr) throw _logger->error("Failed to create pipeline '{}'", name);
+		if (pipe == nullptr) CRITICAL_RAWRBOX("Failed to create pipeline '{}'", name);
 
 		if (settings.signatures.empty()) {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;
 				auto* var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
 
-				if (var == nullptr) throw _logger->error("Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type));
+				if (var == nullptr) CRITICAL_RAWRBOX("Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type));
 				var->Set(uni.uniform);
 			}
 		}
@@ -308,14 +304,14 @@ namespace rawrbox {
 
 		// ---------------------
 		_stateCache->CreateGraphicsPipelineState(info, &pipe);
-		if (pipe == nullptr) throw _logger->error("Failed to create pipeline '{}'", name);
+		if (pipe == nullptr) CRITICAL_RAWRBOX("Failed to create pipeline '{}'", name);
 
 		if (settings.signatures.empty()) {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;
 
 				auto* var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
-				if (var == nullptr) throw _logger->error("Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type));
+				if (var == nullptr) CRITICAL_RAWRBOX("Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type));
 
 				var->Set(uni.uniform);
 			}

@@ -21,7 +21,7 @@ namespace rawrbox {
 	}
 
 	void SteamSTORAGE::download(UGCHandle_t handle, const std::function<void(std::vector<uint8_t>)>& callback, uint32_t priority) {
-		if (SteamRemoteStorage() == nullptr) throw _logger->error("SteamRemoteStorage not initialized");
+		if (SteamRemoteStorage() == nullptr) CRITICAL_RAWRBOX("SteamRemoteStorage not initialized");
 
 		// DOWNLOAD ---
 		SteamAPICall_t hAPICall = SteamRemoteStorage()->UGCDownload(handle, priority);

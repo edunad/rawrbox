@@ -4,9 +4,13 @@
 #include <steam/isteamutils.h>
 
 namespace rawrbox {
+	// PRIVATE -------------
+	std::unique_ptr<rawrbox::Logger> SteamUTILS::_logger = std::make_unique<rawrbox::Logger>("RawrBox-SteamUTILS");
+	// -------------
+
 	rawrbox::SteamImage SteamUTILS::getImage(int handle) {
-		if (SteamUtils() == nullptr) throw rawrbox::Logger::err("SteamUTILS", "SteamUtils not initialized");
-		if (handle == 0) throw rawrbox::Logger::err("SteamUTILS", "Invalid handle");
+		if (SteamUtils() == nullptr) CRITICAL_RAWRBOX("SteamUtils not initialized");
+		if (handle == 0) CRITICAL_RAWRBOX("Invalid handle");
 
 		rawrbox::SteamImage image = {};
 

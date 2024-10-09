@@ -19,11 +19,11 @@ namespace rawrbox {
 	std::unique_ptr<rawrbox::Logger> STBI::_logger = std::make_unique<rawrbox::Logger>("RawrBox-STBI");
 
 	rawrbox::ImageData STBI::internalLoad(int width, int height, int channels, uint8_t* pixels) {
-		if (width == 0 || height == 0) throw _logger->error("Invalid image size: {}x{}", width, height);
-		if (channels == 0) throw _logger->error("Invalid image channels: {}", channels);
+		if (width == 0 || height == 0) CRITICAL_RAWRBOX("Invalid image size: {}x{}", width, height);
+		if (channels == 0) CRITICAL_RAWRBOX("Invalid image channels: {}", channels);
 		if (pixels == nullptr) {
 			const auto* failure = stbi_failure_reason();
-			throw _logger->error("Error loading image: {}", failure);
+			CRITICAL_RAWRBOX("Error loading image: {}", failure);
 		}
 
 		rawrbox::ImageData imgData = {};
@@ -41,7 +41,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::ImageData STBI::decode(const std::filesystem::path& path) {
-		if (!std::filesystem::exists(path)) throw _logger->error("Could not find file {}", path.generic_string());
+		if (!std::filesystem::exists(path)) CRITICAL_RAWRBOX("Could not find file {}", path.generic_string());
 
 		int width = 0;
 		int height = 0;
@@ -54,7 +54,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::ImageData STBI::decode(const std::vector<uint8_t>& data) {
-		if (data.empty()) throw _logger->error("Invalid data, cannot be empty!");
+		if (data.empty()) CRITICAL_RAWRBOX("Invalid data, cannot be empty!");
 
 		int width = 0;
 		int height = 0;

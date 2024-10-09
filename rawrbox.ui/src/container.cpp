@@ -4,7 +4,7 @@
 
 namespace rawrbox {
 	UIContainer::UIContainer(rawrbox::UIRoot* root) : _root(root) {
-		if (_root == nullptr) throw rawrbox::Logger::err("UIContainer", "UI root cannot be null!");
+		if (_root == nullptr) CRITICAL_RAWRBOX("UI root cannot be null!");
 	}
 
 	UIContainer::UIContainer(rawrbox::UIContainer&& other) noexcept : _parent(other._parent), _children(std::move(other._children)), _alwaysOnTop(other._alwaysOnTop), _aabb(other._aabb) {}

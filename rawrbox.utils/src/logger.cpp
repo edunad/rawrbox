@@ -1,9 +1,31 @@
 #include <rawrbox/utils/logger.hpp>
 
 namespace rawrbox {
-	// NOLINTBEGIN(*)
-	Logger::Logger(const std::string& title) : _title(title) {}
-	// NOLINTEND(*)
+#ifdef _DEBUG
+	spdlog::level::level_enum Logger::LEVEL = spdlog::level::trace; // Default
+#else
+	spdlog::level::level_enum Logger::LEVEL = spdlog::level::warn; // Default
+#endif
 
-	void Logger::setAutoNewLine(bool set) { this->_autoNewLine = set; }
+	bool Logger::ENABLE_FILE_LOGGING = false;
+	std::shared_ptr<spdlog::logger> Logger::LOGGER = nullptr;
+
+	Logger::Logger(const std::string& title) : _title(title) {
+		if (LOGGER != nullptr) return;
+
+		auto _spdConsole = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+
+		if (ENABLE_FILE_LOGGING) {
+			auto _spdLogFile = std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs.log", true);
+			LOGGER = std::make_shared<spdlog::logger>("CONSOLE", spdlog::sinks_init_list{_spdConsole, _spdLogFile});
+		} else {
+			LOGGER = std::make_shared<spdlog::logger>("CONSOLE", spdlog::sinks_init_list{_spdConsole});
+		}
+
+		LOGGER->set_pattern("[%^%l%$%v");
+		LOGGER->set_level(Logger::LEVEL);
+
+		spdlog::set_default_logger(LOGGER);
+		spdlog::set_error_handler([](const std::string& msg) { fmt::print("*** LOG ERROR: {} ***\n", msg); });
+	}
 } // namespace rawrbox

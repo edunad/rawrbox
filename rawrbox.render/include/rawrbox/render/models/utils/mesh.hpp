@@ -376,7 +376,7 @@ namespace rawrbox {
 		template <typename M = rawrbox::MaterialUnlit>
 			requires(std::derived_from<M, rawrbox::MaterialBase>)
 		static rawrbox::Mesh<typename M::vertexBufferType> generateCone(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const uint16_t ratio = 11, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
-			if (ratio < 3) throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateCone' ratio '{}' needs to be at least 3", ratio);
+			if (ratio < 3) throw std::runtime_error(fmt::format("[RawrBox-MeshUtils] 'generateCone' ratio '{}' needs to be at least 3", ratio));
 
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 
@@ -452,7 +452,7 @@ namespace rawrbox {
 		template <typename M = rawrbox::MaterialUnlit>
 			requires(std::derived_from<M, rawrbox::MaterialBase>)
 		static rawrbox::Mesh<typename M::vertexBufferType> generateCylinder(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, const uint16_t ratio = 11, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
-			if (ratio < 3) throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateCylinder' ratio '{}' needs to be at least 3", ratio);
+			if (ratio < 3) throw std::runtime_error(fmt::format("[RawrBox-MeshUtils] 'generateCylinder' ratio '{}' needs to be at least 3", ratio));
 
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 
@@ -544,7 +544,7 @@ namespace rawrbox {
 		template <typename M = rawrbox::MaterialUnlit>
 			requires(std::derived_from<M, rawrbox::MaterialUnlit>)
 		static rawrbox::Mesh<typename M::vertexBufferType> generateSphere(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& size, float ratio = 1, const rawrbox::Colorf& cl = rawrbox::Colors::White()) {
-			if (ratio <= 0.F) throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateSphere' ratio '{}' cannot be less than 0", ratio);
+			if (ratio <= 0.F) throw std::runtime_error(fmt::format("[RawrBox-MeshUtils] 'generateSphere' ratio '{}' cannot be less than 0", ratio));
 
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};
 			auto sphereSize = size / 2;
@@ -683,7 +683,7 @@ namespace rawrbox {
 			requires(std::derived_from<M, rawrbox::MaterialUnlit>)
 		static rawrbox::Mesh<typename M::vertexBufferType> generateGrid(uint16_t size, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::Gray().strength(0.4F), const rawrbox::Colorf& borderCl = rawrbox::Colors::Transparent()) {
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
-				throw rawrbox::Logger::err("RawrBox-MeshUtils", "'generateGrid' does not support normals");
+				throw std::runtime_error("[RawrBox-MeshUtils] 'generateGrid' does not support normals");
 			}
 
 			rawrbox::Mesh<typename M::vertexBufferType> mesh = {};

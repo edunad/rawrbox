@@ -6,6 +6,9 @@
 
 namespace rawrbox {
 	struct Decal {
+	private:
+		static std::unique_ptr<rawrbox::Logger> _logger;
+
 	public:
 		rawrbox::Matrix4x4 worldToLocal = {};
 		rawrbox::Vector4u data = {};

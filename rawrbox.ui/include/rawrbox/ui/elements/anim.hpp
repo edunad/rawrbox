@@ -65,8 +65,8 @@ namespace rawrbox {
 		virtual void setPos(const rawrbox::Vector2f& pos) { this->_posOffset = pos; };
 		virtual void setElement(T* element) { this->_element = element; };
 		virtual void setAnimation(const glz::json_t& json) {
-			if (!json.contains("anim")) throw rawrbox::Logger::err("RawrBox-UI", "Missing anim data");
-			if (!json["anim"].holds<glz::json_t::array_t>()) throw rawrbox::Logger::err("RawrBox-UI", "Invalid anim data");
+			if (!json.contains("anim")) throw std::runtime_error("[RawrBox-UI] Missing 'anim' data");
+			if (!json["anim"].holds<glz::json_t::array_t>()) throw std::runtime_error("[RawrBox-UI] Invalid 'anim' data");
 
 			auto jsonData = json["anim"].get<glz::json_t::array_t>();
 			for (auto& data : jsonData) {

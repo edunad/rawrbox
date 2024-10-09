@@ -51,7 +51,7 @@ namespace rawrbox {
 
 	// ------ RENDER
 	void TextureRender::startRecord(bool clear, size_t renderTargets) {
-		if (this->_recording) throw this->_logger->error("Already recording");
+		if (this->_recording) CRITICAL_RAWRBOX("Already recording");
 		auto* context = rawrbox::RENDERER->context();
 
 		// BARRIER ----
@@ -76,7 +76,7 @@ namespace rawrbox {
 	}
 
 	void TextureRender::stopRecord() {
-		if (!this->_recording) throw this->_logger->error("Not recording");
+		if (!this->_recording) CRITICAL_RAWRBOX("Not recording");
 		auto* pRTV = rawrbox::RENDERER->swapChain()->GetCurrentBackBufferRTV();
 		auto* depth = rawrbox::RENDERER->swapChain()->GetDepthBufferDSV();
 
@@ -91,7 +91,7 @@ namespace rawrbox {
 
 	size_t TextureRender::addTexture(Diligent::TEXTURE_FORMAT format, Diligent::BIND_FLAGS flags) {
 		bool isDepth = (flags & Diligent::BIND_DEPTH_STENCIL) != 0;
-		if (isDepth && this->_depthHandle != nullptr) throw _logger->error("Only one depth texture is allowed");
+		if (isDepth && this->_depthHandle != nullptr) CRITICAL_RAWRBOX("Only one depth texture is allowed");
 
 		std::string name = isDepth ? fmt::format("{}::DEPTH", this->_name) : this->_name;
 
@@ -143,7 +143,7 @@ namespace rawrbox {
 
 	void TextureRender::addView(size_t index, Diligent::TEXTURE_VIEW_TYPE format) {
 		auto* tex = this->getTexture(index);
-		if (tex == nullptr) throw _logger->error("Invalid texture index '{}'! Did you call 'addTexture`?", index);
+		if (tex == nullptr) CRITICAL_RAWRBOX("Invalid texture index '{}'! Did you call 'addTexture`?", index);
 
 		if (format == Diligent::TEXTURE_VIEW_RENDER_TARGET) {
 			this->_viewsRT.push_back(tex->GetDefaultView(format));
@@ -153,7 +153,7 @@ namespace rawrbox {
 	}
 
 	void TextureRender::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
-		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) throw this->_logger->error("Invalid format");
+		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) CRITICAL_RAWRBOX("Invalid format");
 
 		auto view = this->addTexture(format);
 		this->addView(view, Diligent::TEXTURE_VIEW_RENDER_TARGET);

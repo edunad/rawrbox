@@ -15,7 +15,7 @@ namespace rawrbox {
 	// ----------
 
 	void POPUP::init(rawrbox::UIRoot* root) {
-		if (root == nullptr) throw _logger->error("Invalid UIRoot!");
+		if (root == nullptr) CRITICAL_RAWRBOX("Invalid UIRoot!");
 		_root = root;
 	}
 
@@ -25,7 +25,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::UIFrame* POPUP::spawn(const std::string& id, const std::string& title, const std::string& message, rawrbox::PopupType type, const std::function<void(bool)>& callback) {
-		if (_root == nullptr) throw _logger->error("UIRoot is not initialized!");
+		if (_root == nullptr) CRITICAL_RAWRBOX("UIRoot is not initialized!");
 
 		auto titleColor = rawrbox::Color::RGBHex(0xFFFFFF);
 		auto btnColor = rawrbox::Color::RGBHex(0x282a2e);

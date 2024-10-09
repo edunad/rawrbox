@@ -86,7 +86,7 @@ namespace rawrbox {
 
 	const rawrbox::ImageData& TextureBase::getData() const { return this->_data; }
 	const std::vector<uint8_t>& TextureBase::getPixels(size_t index) const {
-		if (index > this->_data.frames.size()) throw this->_logger->error("Pixel data from frame index {} not found", index);
+		if (index > this->_data.frames.size()) CRITICAL_RAWRBOX("Pixel data from frame index {} not found", index);
 		return this->_data.frames[index].pixels;
 	}
 
@@ -136,8 +136,8 @@ namespace rawrbox {
 
 	void TextureBase::upload(Diligent::TEXTURE_FORMAT format, bool dynamic) {
 		if (this->_failedToLoad || this->_handle != nullptr) return; // Failed texture is already bound, so skip it
-		if (!this->_data.valid()) throw this->_logger->error("Cannot upload invalid image data");
-		if (this->_data.total() > 2048U) throw this->_logger->error("Cannot upload more than 2048 image frames");
+		if (!this->_data.valid()) CRITICAL_RAWRBOX("Cannot upload invalid image data");
+		if (this->_data.total() > 2048U) CRITICAL_RAWRBOX("Cannot upload more than 2048 image frames");
 
 		// Try to determine texture format
 		this->tryGetFormatChannels(format, this->_data.channels);
@@ -178,7 +178,7 @@ namespace rawrbox {
 		data.NumSubresources = static_cast<uint32_t>(subresData.size());
 
 		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &this->_tex);
-		if (this->_tex == nullptr) throw this->_logger->error("Failed to create texture '{}'", this->_name);
+		if (this->_tex == nullptr) CRITICAL_RAWRBOX("Failed to create texture '{}'", this->_name);
 
 		// Get handles --
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <rawrbox/utils/logger.hpp>
+
 #include <cstdint>
 #include <vector>
 
@@ -14,6 +16,8 @@ namespace rawrbox {
 
 	class SteamUTILS {
 	protected:
+		static std::unique_ptr<rawrbox::Logger> _logger;
+
 	public:
 		static rawrbox::SteamImage getImage(int handle);
 	};

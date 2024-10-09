@@ -2,6 +2,7 @@
 
 #include <rawrbox/math/aabb.hpp>
 #include <rawrbox/math/vector2.hpp>
+#include <rawrbox/utils/logger.hpp>
 
 #include <memory>
 #include <vector>
@@ -20,6 +21,7 @@ namespace rawrbox {
 		rawrbox::UIRoot* _root = nullptr;
 
 		std::vector<std::shared_ptr<rawrbox::UIContainer>> _children = {};
+		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-UIContainer");
 
 		bool _alwaysOnTop = false;
 		rawrbox::AABBf _aabb = {};
@@ -31,9 +33,9 @@ namespace rawrbox {
 		virtual ~UIContainer() = default;
 
 		UIContainer(rawrbox::UIRoot* root);
-		UIContainer(const UIContainer&) = default;
+		UIContainer(const UIContainer&) = delete;
 		UIContainer(UIContainer&&) noexcept;
-		UIContainer& operator=(const UIContainer&) = default;
+		UIContainer& operator=(const UIContainer&) = delete;
 		UIContainer& operator=(UIContainer&&) = delete;
 
 		// UTILS ---

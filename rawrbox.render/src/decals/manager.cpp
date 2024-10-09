@@ -84,7 +84,7 @@ namespace rawrbox {
 	}
 
 	void DECALS::updateBuffer() {
-		if (_buffer == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
+		if (_buffer == nullptr) CRITICAL_RAWRBOX("Buffer not initialized! Did you call 'init' ?");
 		if (!rawrbox::__DECALS_DIRTY__ || _decals.empty()) return;
 
 		auto* device = rawrbox::RENDERER->device();
@@ -110,7 +110,7 @@ namespace rawrbox {
 	}
 
 	void DECALS::update() {
-		if (uniforms == nullptr) throw _logger->error("Buffer not initialized! Did you call 'init' ?");
+		if (uniforms == nullptr) CRITICAL_RAWRBOX("Buffer not initialized! Did you call 'init' ?");
 
 		updateBuffer();    // Update all decals if dirty
 		updateConstants(); // Update buffer if dirty
@@ -119,7 +119,7 @@ namespace rawrbox {
 	// UTILS ----
 	Diligent::IBufferView* DECALS::getBuffer() { return _bufferRead; }
 	const rawrbox::Decal& DECALS::get(size_t indx) {
-		if (indx >= _decals.size()) throw _logger->error("Invalid decal index {}", indx);
+		if (indx >= _decals.size()) CRITICAL_RAWRBOX("Invalid decal index {}", indx);
 		return _decals[indx];
 	}
 

@@ -8,11 +8,7 @@ namespace rawrbox {
 	TextureAtlas::TextureAtlas(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, uint32_t spriteSize, bool useFallback) : _spriteSize(spriteSize) {
 		try {
 			this->processAtlas(rawrbox::STBI::decode(buffer));
-#ifdef RAWRBOX_TRACE_EXCEPTIONS
-		} catch (const cpptrace::exception_with_message& e) {
-#else
 		} catch (const std::exception& e) {
-#endif
 			if (useFallback) {
 				this->loadFallback();
 				this->_logger->warn("Failed to load '{}' ──> \n\t{}\n\t\t  └── Loading fallback texture!", filePath.generic_string(), e.what());
@@ -26,11 +22,7 @@ namespace rawrbox {
 	TextureAtlas::TextureAtlas(const std::filesystem::path& filePath, uint32_t spriteSize, bool useFallback) : _spriteSize(spriteSize) {
 		try {
 			this->processAtlas(rawrbox::STBI::decode(filePath));
-#ifdef RAWRBOX_TRACE_EXCEPTIONS
-		} catch (const cpptrace::exception_with_message& e) {
-#else
 		} catch (const std::exception& e) {
-#endif
 			if (useFallback) {
 				this->loadFallback();
 				this->_logger->warn("Failed to load '{}' ──> \n\t{}\n\t\t  └── Loading fallback texture!", filePath.generic_string(), e.what());
@@ -53,13 +45,13 @@ namespace rawrbox {
 	}
 
 	std::vector<uint8_t> TextureAtlas::getSprite(size_t id) const {
-		if (id >= this->_data.frames.size()) throw this->_logger->error("Invalid ID {}", id);
+		if (id >= this->_data.frames.size()) CRITICAL_RAWRBOX("Invalid ID {}", id);
 		return this->_data.frames[id].pixels;
 	}
 	// --------------------
 
 	void TextureAtlas::processAtlas(const rawrbox::ImageData& data) {
-		if (!data.valid() || data.total() == 0) throw this->_logger->error("Invalid image data!");
+		if (!data.valid() || data.total() == 0) CRITICAL_RAWRBOX("Invalid image data!");
 
 		const auto& pixels = data.frames[0].pixels;
 

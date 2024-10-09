@@ -16,7 +16,7 @@ namespace rawrbox {
 		this->_name = "RawrBox::Texture::WEBM";
 
 		try {
-			if (!std::filesystem::exists(this->_filePath)) throw this->_logger->error("Video not found!");
+			if (!std::filesystem::exists(this->_filePath)) CRITICAL_RAWRBOX("Video not found!");
 
 			this->_webm = std::make_unique<rawrbox::WEBM>();
 			this->_webm->load(this->_filePath, this->_flags);
@@ -27,12 +27,7 @@ namespace rawrbox {
 			this->_data.channels = 4; // Force 4 channels
 			this->_data.size = this->_webm->getSize();
 			this->_data.createFrame();
-
-#ifdef RAWRBOX_TRACE_EXCEPTIONS
-		} catch (const cpptrace::exception_with_message& e) {
-#else
 		} catch (const std::exception& e) {
-#endif
 			if (useFallback) {
 				_logger->warn("Failed to load '{}' ──> \n\t{}\n\t\t  └── Loading fallback texture!", this->_filePath.generic_string(), e.what());
 				this->loadFallback();
@@ -66,7 +61,7 @@ namespace rawrbox {
 	void TextureWEBM::update() {
 		if (this->_failedToLoad || this->_handle == nullptr) return; // Not bound
 		if (this->_pause || this->_cooldown >= rawrbox::TimeUtils::curtime()) return;
-		if (this->_webm == nullptr) throw this->_logger->error("WEBM loader not initialized!");
+		if (this->_webm == nullptr) CRITICAL_RAWRBOX("WEBM loader not initialized!");
 
 		rawrbox::WEBMImage img;
 		if (!this->_webm->getNextFrame(img)) return; // Reached end
@@ -111,11 +106,11 @@ namespace rawrbox {
 	}
 
 	float TextureWEBM::getSpeed() const {
-		throw this->_logger->error("Not supported");
+		CRITICAL_RAWRBOX("Not supported");
 	}
 
 	void TextureWEBM::setSpeed(float /*speed*/) {
-		throw this->_logger->error("Not supported");
+		CRITICAL_RAWRBOX("Not supported");
 	}
 	// ----
 

@@ -38,7 +38,7 @@ namespace rawrbox {
 		virtual void load(const std::string& rawData) {
 			if (!rawData.empty()) {
 				auto err = glz::read<glz::opts{.comments = 1U, .error_on_unknown_keys = 0U, .skip_null_members = 1U, .error_on_missing_keys = 0U, .allow_conversions = 1U}>(this->_settings, rawData);
-				if (err != glz::error_code::none) throw this->_logger->error("Failed to load settings ──> {}", magic_enum::enum_name(err.ec));
+				if (err != glz::error_code::none) CRITICAL_RAWRBOX("Failed to load settings ──> {}", magic_enum::enum_name(err.ec));
 			} else {
 				this->_settings = {};
 			}
@@ -51,7 +51,7 @@ namespace rawrbox {
 
 			if (std::filesystem::exists(this->getFileName())) {
 				auto err = glz::read_file_json<glz::opts{.comments = 1U, .error_on_unknown_keys = 0U, .skip_null_members = 1U, .error_on_missing_keys = 0U, .allow_conversions = 1U}>(this->_settings, filePath.generic_string(), std::string{});
-				if (err != glz::error_code::none) throw _logger->error("Failed to load '{}' ──> {}", filePath.generic_string(), magic_enum::enum_name(err.ec));
+				if (err != glz::error_code::none) CRITICAL_RAWRBOX("Failed to load '{}' ──> {}", filePath.generic_string(), magic_enum::enum_name(err.ec));
 			} else {
 				this->_settings = {};
 			}
@@ -62,11 +62,11 @@ namespace rawrbox {
 		virtual void save() {
 			auto fileName = this->getFileName().generic_string();
 			auto ec = glz::write_file_json<glz::opts{.comments = 1U, .prettify = 1U, .allow_conversions = 1U}>(this->_settings, fileName, std::string{});
-			if (ec != glz::error_code::none) throw this->_logger->error("Failed to save settings '{}'", fileName);
+			if (ec != glz::error_code::none) CRITICAL_RAWRBOX("Failed to save settings '{}'", fileName);
 		}
 
 		[[nodiscard]] virtual std::filesystem::path getFileName() const {
-			throw this->_logger->error("Implement getFileName");
+			throw std::runtime_error("Implement getFileName");
 		}
 
 		[[nodiscard]] virtual T& getSettings() {

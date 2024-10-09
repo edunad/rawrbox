@@ -35,7 +35,7 @@ namespace rawrbox {
 				codecIface = vpx_codec_vp9_dx();
 				break;
 			default:
-				throw _logger->error("Invalid vpx codec");
+				CRITICAL_RAWRBOX("Invalid vpx codec");
 		}
 
 		_codec = codec;
@@ -43,7 +43,7 @@ namespace rawrbox {
 
 		if (vpx_codec_dec_init(_ctx.get(), codecIface, &codecCfg, VPX_CODEC_USE_FRAME_THREADING)) {
 			_ctx.reset();
-			throw _logger->error("Failed to initialize vpx codec");
+			CRITICAL_RAWRBOX("Failed to initialize vpx codec");
 		}
 	}
 
@@ -54,20 +54,20 @@ namespace rawrbox {
 
 	bool WEBMDecoder::decode(const rawrbox::WEBMFrame& frame, rawrbox::WEBMImage& image) {
 		if (_ctx == nullptr)
-			throw _logger->error("Codec not initialized, did you call 'init' ?");
+			CRITICAL_RAWRBOX("Codec not initialized, did you call 'init' ?");
 
 		if (frame.codec != _codec) {
 			const auto* badname = magic_enum::enum_name(static_cast<rawrbox::VIDEO_CODEC>(frame.codec)).data();
 			const auto* name = magic_enum::enum_name(static_cast<rawrbox::VIDEO_CODEC>(_codec)).data();
 
-			throw _logger->error("Codec '{}' not set as config! '{}' was loaded instead", badname, name);
+			CRITICAL_RAWRBOX("Codec '{}' not set as config! '{}' was loaded instead", badname, name);
 		}
 
 		_iter = nullptr;
 		if (vpx_codec_decode(_ctx.get(), frame.buffer.data(), static_cast<uint32_t>(frame.buffer.size()), nullptr, 0) != 0) return false;
 
 		if (vpx_image_t* img = vpx_codec_get_frame(_ctx.get(), &_iter)) {
-			if ((img->fmt & VPX_IMG_FMT_PLANAR) == 0) throw _logger->error("Failed to get image! Image not in FMT_PLANAR!");
+			if ((img->fmt & VPX_IMG_FMT_PLANAR) == 0) CRITICAL_RAWRBOX("Failed to get image! Image not in FMT_PLANAR!");
 
 			rawrbox::YUVLuminanceScale scale = rawrbox::YUVLuminanceScale::UNKNOWN;
 			int channels = 4;
@@ -83,7 +83,7 @@ namespace rawrbox {
 					scale = rawrbox::YUVLuminanceScale::FULL;
 					break;
 				default:
-					throw _logger->error("Unknown luminance format");
+					CRITICAL_RAWRBOX("Unknown luminance format");
 			}
 
 			switch (img->fmt) {
@@ -95,7 +95,7 @@ namespace rawrbox {
 					}
 					break;
 				default:
-					throw _logger->error("Format not supported, video not in I420 format");
+					CRITICAL_RAWRBOX("Format not supported, video not in I420 format");
 			}
 		}
 

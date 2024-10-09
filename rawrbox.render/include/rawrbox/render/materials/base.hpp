@@ -80,7 +80,7 @@ namespace rawrbox {
 			// SETUP UNIFORMS ----------------------------
 			{
 				Diligent::MapHelper<rawrbox::BindlessPixelBuffer> PixelConstants(rawrbox::RENDERER->context(), rawrbox::BindlessManager::signatureBufferPixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				if (PixelConstants == nullptr) throw _logger->error("Failed to map the pixel constants buffer!");
+				if (PixelConstants == nullptr) CRITICAL_RAWRBOX("Failed to map the pixel constants buffer!");
 
 				std::memcpy(PixelConstants, &this->_lastPixelBuffer.value(), sizeof(rawrbox::BindlessPixelBuffer));
 			}
@@ -99,7 +99,7 @@ namespace rawrbox {
 			// SETUP UNIFORMS ----------------------------
 			{
 				Diligent::MapHelper<rawrbox::BindlessVertexBuffer> VertexConstants(rawrbox::RENDERER->context(), rawrbox::BindlessManager::signatureBufferVertex, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-				if (VertexConstants == nullptr) throw _logger->error("Failed to map the vertex constants buffer!");
+				if (VertexConstants == nullptr) CRITICAL_RAWRBOX("Failed to map the vertex constants buffer!");
 
 				std::memcpy(VertexConstants, &this->_lastVertexBuffer.value(), sizeof(rawrbox::BindlessVertexBuffer));
 			}
@@ -115,26 +115,26 @@ namespace rawrbox {
 		template <typename T = rawrbox::VertexData>
 			requires(std::derived_from<T, rawrbox::VertexData>)
 		void bindPipeline(const rawrbox::Mesh<T>& mesh) {
-			if (this->base == nullptr) throw this->_logger->error("Material not initialized!");
+			if (this->base == nullptr) CRITICAL_RAWRBOX("Material not initialized!");
 			auto* context = rawrbox::RENDERER->context();
 
 			if (mesh.getWireframe()) {
-				if (this->wireframe == nullptr) throw this->_logger->error("Wireframe not supported on material");
+				if (this->wireframe == nullptr) CRITICAL_RAWRBOX("Wireframe not supported on material");
 				context->SetPipelineState(this->wireframe);
 			} else if (mesh.getLineMode()) {
-				if (this->line == nullptr) throw this->_logger->error("Line not supported on material");
+				if (this->line == nullptr) CRITICAL_RAWRBOX("Line not supported on material");
 				context->SetPipelineState(this->line);
 			} else {
 				if (mesh.culling == Diligent::CULL_MODE_NONE) {
-					if (this->cullnone == nullptr) throw this->_logger->error("Disabled cull not supported on material");
-					if (mesh.isTransparent() && this->cullnone_alpha == nullptr) throw this->_logger->error("Disabled alpha cull not supported on material");
+					if (this->cullnone == nullptr) CRITICAL_RAWRBOX("Disabled cull not supported on material");
+					if (mesh.isTransparent() && this->cullnone_alpha == nullptr) CRITICAL_RAWRBOX("Disabled alpha cull not supported on material");
 					context->SetPipelineState(mesh.isTransparent() ? this->cullnone_alpha : this->cullnone);
 				} else if (mesh.culling == Diligent::CULL_MODE_BACK) {
-					if (this->cullback == nullptr) throw this->_logger->error("Cull back not supported on material");
-					if (mesh.isTransparent() && this->cullback_alpha == nullptr) throw this->_logger->error("Cull back alpha not supported on material");
+					if (this->cullback == nullptr) CRITICAL_RAWRBOX("Cull back not supported on material");
+					if (mesh.isTransparent() && this->cullback_alpha == nullptr) CRITICAL_RAWRBOX("Cull back alpha not supported on material");
 					context->SetPipelineState(mesh.isTransparent() ? this->cullback_alpha : this->cullback);
 				} else {
-					if (mesh.isTransparent() && this->base_alpha == nullptr) throw this->_logger->error("Alpha not supported on material");
+					if (mesh.isTransparent() && this->base_alpha == nullptr) CRITICAL_RAWRBOX("Alpha not supported on material");
 					context->SetPipelineState(mesh.isTransparent() ? this->base_alpha : this->base);
 				}
 			}

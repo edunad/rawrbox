@@ -6,6 +6,11 @@
 
 namespace rawrbox {
 	class ResourceJSON : public rawrbox::Resource {
+	protected:
+		// PRIVATE ---
+		static std::unique_ptr<rawrbox::Logger> _logger;
+		// ------
+
 		glz::json_t _json = {};
 
 	public:

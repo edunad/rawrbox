@@ -11,7 +11,7 @@ namespace rawrbox {
 	}
 
 	void CameraBase::initialize() {
-		if (this->_staticUniforms != nullptr) throw this->_logger->error("Camera already initialized!");
+		if (this->_staticUniforms != nullptr) CRITICAL_RAWRBOX("Camera already initialized!");
 		{
 			auto staticData = this->getStaticData();
 
@@ -46,7 +46,7 @@ namespace rawrbox {
 		this->_logger->info("Initializing camera");
 	}
 
-	void CameraBase::updateMtx() { throw this->_logger->error("Not implemented"); };
+	void CameraBase::updateMtx() { CRITICAL_RAWRBOX("Not implemented"); };
 	rawrbox::CameraStaticUniforms CameraBase::getStaticData() {
 		auto screenSize = rawrbox::RENDERER->getSize().cast<float>();
 
@@ -135,7 +135,7 @@ namespace rawrbox {
 	}
 
 	void CameraBase::updateBuffer() {
-		if (this->_uniforms == nullptr) throw this->_logger->error("Buffer not initialized! Did you call initialize?");
+		if (this->_uniforms == nullptr) CRITICAL_RAWRBOX("Buffer not initialized! Did you call initialize?");
 
 		auto view = rawrbox::Matrix4x4::mtxTranspose(this->getViewMtx());
 		auto viewInv = rawrbox::Matrix4x4::mtxInverse(this->getViewMtx());
@@ -158,11 +158,11 @@ namespace rawrbox {
 	void CameraBase::update() {}
 
 	rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f& /*pos*/) const {
-		throw this->_logger->error("Not implemented");
+		CRITICAL_RAWRBOX("Not implemented");
 	}
 
 	rawrbox::Vector3f CameraBase::screenToWorld(const rawrbox::Vector2f& /*screen_pos*/, const rawrbox::Vector3f& /*origin*/) const {
-		throw this->_logger->error("Not implemented");
+		CRITICAL_RAWRBOX("Not implemented");
 	}
 
 	Diligent::IBuffer* CameraBase::uniforms() const { return this->_uniforms; }

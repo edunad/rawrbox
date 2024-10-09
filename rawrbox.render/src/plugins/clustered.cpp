@@ -29,8 +29,8 @@ namespace rawrbox {
 
 		CLUSTERS_GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * RB_RENDER_CLUSTERS_Z;
 
-		if constexpr (RB_RENDER_CLUSTERS_Z % RB_RENDER_CLUSTERS_Z_THREADS != 0) throw this->_logger->error("Number of cluster depth slices must be divisible by thread count z-dimension");
-		if constexpr (RB_RENDER_MAX_DATA_PER_CLUSTER % 32 != 0) throw this->_logger->error("MAX_DATA_PER_CLUSTER must be divisible by 32");
+		if constexpr (RB_RENDER_CLUSTERS_Z % RB_RENDER_CLUSTERS_Z_THREADS != 0) CRITICAL_RAWRBOX("Number of cluster depth slices must be divisible by thread count z-dimension");
+		if constexpr (RB_RENDER_MAX_DATA_PER_CLUSTER % 32 != 0) CRITICAL_RAWRBOX("MAX_DATA_PER_CLUSTER must be divisible by 32");
 
 		// Setup dispatch ---
 		this->_dispatch.ThreadGroupCountX = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_X, RB_RENDER_CLUSTERS_X_THREADS);
@@ -96,10 +96,10 @@ namespace rawrbox {
 		auto* camera = renderer->camera();
 		auto* context = renderer->context();
 
-		if (renderer == nullptr) throw this->_logger->error("Renderer not initialized!");
-		if (camera == nullptr) throw this->_logger->error("Camera not initialized!");
+		if (renderer == nullptr) CRITICAL_RAWRBOX("Renderer not initialized!");
+		if (camera == nullptr) CRITICAL_RAWRBOX("Camera not initialized!");
 
-		if (this->_clusterBuildingComputeProgram == nullptr || this->_cullingComputeProgram == nullptr || this->_cullingResetProgram == nullptr) throw this->_logger->error("Compute pipelines not initialized, did you call 'initialize'");
+		if (this->_clusterBuildingComputeProgram == nullptr || this->_cullingComputeProgram == nullptr || this->_cullingResetProgram == nullptr) CRITICAL_RAWRBOX("Compute pipelines not initialized, did you call 'initialize'");
 
 		// Update light & decals
 		rawrbox::LIGHTS::update();
@@ -193,8 +193,8 @@ namespace rawrbox {
 	}
 
 	void ClusteredPlugin::buildSignatures() {
-		if (this->_signature != nullptr || this->_signatureBind != nullptr) throw this->_logger->error("Signatures already bound!");
-		if (rawrbox::MAIN_CAMERA == nullptr) throw this->_logger->error("Clustered plugin requires at least one camera!");
+		if (this->_signature != nullptr || this->_signatureBind != nullptr) CRITICAL_RAWRBOX("Signatures already bound!");
+		if (rawrbox::MAIN_CAMERA == nullptr) CRITICAL_RAWRBOX("Clustered plugin requires at least one camera!");
 
 		std::vector<Diligent::PipelineResourceDesc> resources = {
 		    // CAMERA ------
@@ -250,7 +250,7 @@ namespace rawrbox {
 	}
 
 	void ClusteredPlugin::buildPipelines() {
-		if (rawrbox::MAIN_CAMERA == nullptr) throw this->_logger->error("Clustered plugin requires at least one camera!");
+		if (rawrbox::MAIN_CAMERA == nullptr) CRITICAL_RAWRBOX("Clustered plugin requires at least one camera!");
 
 		rawrbox::PipeComputeSettings settings;
 		settings.macros = this->getClusterMacros();

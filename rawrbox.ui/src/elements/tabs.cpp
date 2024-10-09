@@ -7,7 +7,7 @@
 namespace rawrbox {
 	// PRIVATE ----
 	void UITabs::generate() {
-		if (this->_buttonGroup == nullptr) throw rawrbox::Logger::err("UITabs", "Button group is null");
+		if (this->_buttonGroup == nullptr) CRITICAL_RAWRBOX("Button group is null");
 		const auto& size = this->getSize();
 
 		// Create the main group ---
@@ -62,11 +62,11 @@ namespace rawrbox {
 
 	// TABS ---
 	void UITabs::setActive(size_t index) {
-		if (index > this->_tabs.size()) throw rawrbox::Logger::err("UITabs", "Invalid index {}", index);
+		if (index > this->_tabs.size()) CRITICAL_RAWRBOX("Invalid index {}", index);
 
 		auto& tab = this->_tabs[index];
-		if (tab.button == nullptr) throw rawrbox::Logger::err("UITabs", "Invalid tab button from index {}", index);
-		if (tab.group == nullptr) throw rawrbox::Logger::err("UITabs", "Invalid tab group from index {}", index);
+		if (tab.button == nullptr) CRITICAL_RAWRBOX("Invalid tab button from index {}", index);
+		if (tab.group == nullptr) CRITICAL_RAWRBOX("Invalid tab group from index {}", index);
 
 		if (this->_activeTab == &tab) return;
 
@@ -85,11 +85,11 @@ namespace rawrbox {
 	}
 
 	void UITabs::setEnabled(size_t index, bool enabled) {
-		if (index > this->_tabs.size()) throw rawrbox::Logger::err("UITabs", "Invalid index {}", index);
+		if (index > this->_tabs.size()) CRITICAL_RAWRBOX("Invalid index {}", index);
 
 		auto& tab = this->_tabs[index];
-		if (tab.button == nullptr) throw rawrbox::Logger::err("UITabs", "Invalid tab button from index {}", index);
-		if (tab.group == nullptr) throw rawrbox::Logger::err("UITabs", "Invalid tab group from index {}", index);
+		if (tab.button == nullptr) CRITICAL_RAWRBOX("Invalid tab button from index {}", index);
+		if (tab.group == nullptr) CRITICAL_RAWRBOX("Invalid tab group from index {}", index);
 
 		tab.button->setEnabled(enabled);
 	}
