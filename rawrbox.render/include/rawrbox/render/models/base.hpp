@@ -152,7 +152,6 @@ namespace rawrbox {
 				this->createIndexBuffer();
 
 				this->_logger->debug("Resizing index buffer ({} -> {})", fmt::styled(indcSize, fmt::fg(fmt::color::cyan)), fmt::styled(this->_mesh->indices.capacity(), fmt::fg(fmt::color::cyan)));
-				CRITICAL_RAWRBOX("Resizing vertex buffer ({} -> {})", vertSize, this->_mesh->vertices.capacity());
 			}
 
 			if (resizeVertex && resizeIndex) {
