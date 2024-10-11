@@ -91,13 +91,12 @@ namespace rawrbox {
 		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "DecalsConstants")->Set(rawrbox::DECALS::uniforms);
 	}
 
-	void ClusteredPlugin::preRender() {
+	void ClusteredPlugin::preRender(const rawrbox::CameraBase& camera) {
 		auto* renderer = rawrbox::RENDERER;
-		auto* camera = renderer->camera();
-		auto* context = renderer->context();
-
 		if (renderer == nullptr) CRITICAL_RAWRBOX("Renderer not initialized!");
-		if (camera == nullptr) CRITICAL_RAWRBOX("Camera not initialized!");
+
+		auto* context = renderer->context();
+		if (context == nullptr) CRITICAL_RAWRBOX("Context not initialized!");
 
 		if (this->_clusterBuildingComputeProgram == nullptr || this->_cullingComputeProgram == nullptr || this->_cullingResetProgram == nullptr) CRITICAL_RAWRBOX("Compute pipelines not initialized, did you call 'initialize'");
 
@@ -118,7 +117,7 @@ namespace rawrbox {
 		// -----------------------
 
 		// Rebuild clusters ---
-		auto proj = camera->getProjMtx();
+		auto proj = camera.getProjMtx();
 		if (this->_oldProj != proj) {
 			this->_oldProj = proj;
 
@@ -233,8 +232,8 @@ namespace rawrbox {
 		// ----------------------
 
 		// Compute bind ---
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(rawrbox::MAIN_CAMERA->uniforms());
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "SCamera")->Set(rawrbox::MAIN_CAMERA->staticUniforms());
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(rawrbox::CameraBase::uniforms);
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
 
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Clusters")->Set(this->getClustersBuffer(false));
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ClusterDataGrid")->Set(this->getDataGridBuffer(false));

@@ -38,7 +38,7 @@ namespace stencil {
 		// Setup renderer
 		auto* render = window->createRenderer(rawrbox::Color::RGBAHex(0x443355FF));
 		render->onIntroCompleted = [this]() { this->loadContent(); };
-		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+		render->setDrawCall([this](const rawrbox::CameraBase& /*camera*/, const rawrbox::DrawPass& pass) {
 			if (pass == rawrbox::DrawPass::PASS_OVERLAY) {
 				this->drawOverlay();
 			} else if (pass == rawrbox::DrawPass::PASS_WORLD) {
@@ -48,7 +48,7 @@ namespace stencil {
 		// ---------------
 
 		// Setup camera --
-		auto* cam = render->setupCamera<rawrbox::CameraPerspective>(render->getSize());
+		auto* cam = render->createCamera<rawrbox::CameraPerspective>(render->getSize());
 		cam->setPos({-2.F, 5.F, -3.5F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// ---------------

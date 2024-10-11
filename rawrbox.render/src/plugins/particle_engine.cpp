@@ -46,8 +46,8 @@ namespace rawrbox {
 		// ----------------------
 
 		// Compute bind ---
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(rawrbox::MAIN_CAMERA->uniforms());
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "SCamera")->Set(rawrbox::MAIN_CAMERA->staticUniforms());
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(rawrbox::CameraBase::uniforms);
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
 
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "EmitterConstants")->Set(this->_uniforms);
 
@@ -109,7 +109,7 @@ namespace rawrbox {
 		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "EmitterConstants")->Set(this->_uniforms);
 	}
 
-	void ParticleEnginePlugin::preRender() {
+	void ParticleEnginePlugin::preRender(const rawrbox::CameraBase& /*camera*/) {
 		for (auto* emitter : this->_registeredEmitters) {
 			if (emitter == nullptr || !emitter->isEnabled()) continue;
 

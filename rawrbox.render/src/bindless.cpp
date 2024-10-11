@@ -85,11 +85,7 @@ namespace rawrbox {
 
 		// Create signatures ------
 		createSignatures();
-		// -------------
-
-		// Bind signatures ------
-		bindSignatures();
-		// -------------
+		// ------------
 	}
 
 	void BindlessManager::shutdown() {
@@ -111,8 +107,6 @@ namespace rawrbox {
 	// SIGNATURES ---------
 	void BindlessManager::createSignatures() {
 		auto* renderer = rawrbox::RENDERER;
-
-		auto* camera = renderer->camera();
 		auto* device = renderer->device();
 
 		Diligent::PipelineResourceSignatureDesc PRSDesc;
@@ -127,12 +121,9 @@ namespace rawrbox {
 
 		    {Diligent::SHADER_TYPE_PIXEL, "Constants", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC},
 		    {Diligent::SHADER_TYPE_PIXEL, "g_Textures", RB_RENDER_MAX_TEXTURES, Diligent::SHADER_RESOURCE_TYPE_TEXTURE_SRV, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_MUTABLE, Diligent::PIPELINE_RESOURCE_FLAG_RUNTIME_ARRAY},
-		};
 
-		if (camera != nullptr) {
-			resources.emplace_back(Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_PIXEL | Diligent::SHADER_TYPE_GEOMETRY, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC, Diligent::PIPELINE_RESOURCE_FLAG_NO_DYNAMIC_BUFFERS);
-			resources.emplace_back(Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_PIXEL | Diligent::SHADER_TYPE_GEOMETRY, "SCamera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC, Diligent::PIPELINE_RESOURCE_FLAG_NO_DYNAMIC_BUFFERS);
-		}
+		    {Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_PIXEL | Diligent::SHADER_TYPE_GEOMETRY, "Camera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC, Diligent::PIPELINE_RESOURCE_FLAG_NO_DYNAMIC_BUFFERS},
+		    {Diligent::SHADER_TYPE_VERTEX | Diligent::SHADER_TYPE_PIXEL | Diligent::SHADER_TYPE_GEOMETRY, "SCamera", 1, Diligent::SHADER_RESOURCE_TYPE_CONSTANT_BUFFER, Diligent::SHADER_RESOURCE_VARIABLE_TYPE_STATIC, Diligent::PIPELINE_RESOURCE_FLAG_NO_DYNAMIC_BUFFERS}};
 
 		// Add extra signatures ----
 		for (const auto& plugin : renderer->getPlugins()) {
@@ -162,22 +153,17 @@ namespace rawrbox {
 	}
 
 	void BindlessManager::bindSignatures() {
-		auto* renderer = rawrbox::RENDERER;
-		auto* camera = renderer->camera();
-
 		// Setup graphic binds ---
 		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Constants")->Set(signatureBufferVertex);
 		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "SkinnedConstants")->Set(signatureBufferVertexSkinned);
 
-		if (camera != nullptr) {
-			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Camera")->Set(camera->uniforms());
-			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Camera")->Set(camera->uniforms());
-			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "Camera")->Set(camera->uniforms());
+		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "Camera")->Set(rawrbox::CameraBase::uniforms);
+		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Camera")->Set(rawrbox::CameraBase::uniforms);
+		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "Camera")->Set(rawrbox::CameraBase::uniforms);
 
-			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "SCamera")->Set(camera->staticUniforms());
-			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "SCamera")->Set(camera->staticUniforms());
-			signature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "SCamera")->Set(camera->staticUniforms());
-		}
+		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_VERTEX, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
+		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
+		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
 
 		signature->GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "Constants")->Set(signatureBufferPixel);
 		// ------------

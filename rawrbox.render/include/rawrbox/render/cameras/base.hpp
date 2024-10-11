@@ -3,6 +3,8 @@
 #include <rawrbox/math/vector2.hpp>
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/math/vector4.hpp>
+#include <rawrbox/render/render_config.hpp>
+#include <rawrbox/render/textures/render.hpp>
 #include <rawrbox/utils/logger.hpp>
 
 #include <RefCntAutoPtr.hpp>
@@ -10,6 +12,9 @@
 #include <Buffer.h>
 
 #include <memory>
+
+#define CREATE_FLAGS(name, value) \
+	const uint32_t name = 1 << value;
 
 namespace rawrbox {
 	struct CameraStaticUniforms { // Uniforms that won't be updated that frequently
@@ -25,6 +30,12 @@ namespace rawrbox {
 
 		bool operator!=(const CameraStaticUniforms& other) const { return !operator==(other); }
 	};
+
+	namespace CameraLayers {
+		// USER DEFINED
+		RB_RENDER_CAMERA_LAYERS(CREATE_FLAGS)
+		// ------------
+	}; // namespace CameraLayers
 
 	struct CameraUniforms {
 		rawrbox::Matrix4x4 gView = {};
@@ -47,6 +58,8 @@ namespace rawrbox {
 
 	class CameraBase {
 	protected:
+		bool _enabled = true;
+
 		rawrbox::Vector3f _pos = {};
 		rawrbox::Vector4f _angle = {};
 
@@ -55,11 +68,14 @@ namespace rawrbox {
 
 		rawrbox::Matrix4x4 _world = {};
 
+		uint32_t _layers = 0; // None by default, it's up to the user to use this or not
+
+		// Renderer ----
+		std::unique_ptr<rawrbox::TextureRender> _renderTarget = nullptr;
+		// --------------------------
+
 		float _z_near = 0.01F;
 		float _z_far = 100.F;
-
-		Diligent::RefCntAutoPtr<Diligent::IBuffer> _staticUniforms;
-		Diligent::RefCntAutoPtr<Diligent::IBuffer> _uniforms;
 
 		// LOGGER ------
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Camera");
@@ -68,14 +84,18 @@ namespace rawrbox {
 		virtual void updateMtx();
 		virtual rawrbox::CameraStaticUniforms getStaticData();
 
-	public:
-		virtual ~CameraBase();
+		virtual void initializeBuffers();
 
-		CameraBase() = default;
+	public:
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> staticUniforms;
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
+
+		CameraBase(const rawrbox::Vector2u& renderSize, bool depth = true);
 		CameraBase(CameraBase&&) = default;
 		CameraBase& operator=(CameraBase&&) = default;
 		CameraBase(const CameraBase&) = delete;
 		CameraBase& operator=(const CameraBase&) = delete;
+		virtual ~CameraBase();
 
 		// UTILS -----
 		virtual void setPos(const rawrbox::Vector3f& pos);
@@ -100,10 +120,23 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const;
 		[[nodiscard]] virtual rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screen_pos, const rawrbox::Vector3f& origin = {0, 0, 0}) const;
+
+		virtual bool isEnabled() const;
+		virtual void setEnabled(bool enabled);
+
+		virtual uint32_t getLayers() const;
+		virtual void setLayers(uint32_t layers);
+		virtual bool shouldRenderLayer(uint32_t layer) const;
 		// ----------------
 
-		[[nodiscard]] virtual Diligent::IBuffer* uniforms() const;
-		[[nodiscard]] virtual Diligent::IBuffer* staticUniforms() const;
+		// RENDER TARGET ----
+		virtual void begin();
+		virtual void end();
+
+		[[nodiscard]] virtual Diligent::ITextureView* getDepth() const;
+		[[nodiscard]] virtual Diligent::ITextureView* getColor(bool rt = false) const;
+		[[nodiscard]] virtual rawrbox::TextureRender* getRenderTarget() const;
+		// ------------
 
 		virtual void initialize();
 

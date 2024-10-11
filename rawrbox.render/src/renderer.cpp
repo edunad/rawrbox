@@ -41,7 +41,6 @@
 namespace rawrbox {
 	RendererBase::RendererBase(Diligent::RENDER_DEVICE_TYPE type, Diligent::NativeWindow window, const rawrbox::Vector2u& size, const rawrbox::Vector2u& monitorSize, const rawrbox::Colorf& clearColor) : _clearColor(clearColor), _size(size), _monitorSize(monitorSize), _window(window), _type(type) {}
 	RendererBase::~RendererBase() {
-		this->_render.reset();
 		this->_stencil.reset();
 		this->_logger.reset();
 		this->_GPUBlit.reset();
@@ -241,11 +240,6 @@ namespace rawrbox {
 		// --------------
 		// ----------------------
 
-		// Setup camera -----
-		if (this->_camera == nullptr) CRITICAL_RAWRBOX("No camera found!");
-		this->_camera->initialize();
-		// ------------------
-
 		// Init plugins ---
 		for (auto& plugin : this->_renderPlugins) {
 			if (plugin.second == nullptr) continue;
@@ -257,6 +251,17 @@ namespace rawrbox {
 		// Init bindless ---
 		rawrbox::BindlessManager::init();
 		// -----------------
+
+		// Init cameras ---
+		this->setActiveCamera(this->_cameras.back().get());
+		for (auto& camera : this->_cameras) {
+			camera->initialize();
+		}
+		// -----------------
+
+		// Bind signatures ---
+		rawrbox::BindlessManager::bindSignatures();
+		// -------
 
 		// Init default textures ---
 		this->_logger->info("Initializing default textures");
@@ -335,15 +340,6 @@ namespace rawrbox {
 		this->_stencil->upload();
 		// ------------------
 
-		// Setup renderer --
-		this->_render = std::make_unique<rawrbox::TextureRender>(this->_size); // TODO: RESCALE
-		this->_render->upload(Diligent::TEX_FORMAT_RGBA8_UNORM);
-
-		// GPU PICKING TEXTURE
-		auto idIndex = this->_render->addTexture(Diligent::TEX_FORMAT_RGBA8_UNORM);
-		this->_render->addView(idIndex, Diligent::TEXTURE_VIEW_RENDER_TARGET);
-		// --------
-
 		this->playIntro();
 		this->_initialized = true;
 	}
@@ -370,7 +366,7 @@ namespace rawrbox {
 	const std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>>& RendererBase::getPlugins() const { return this->_renderPlugins; }
 	// -----------------------------------
 
-	void RendererBase::setDrawCall(std::function<void(const rawrbox::DrawPass& pass)> call) { this->_drawCall = std::move(call); }
+	void RendererBase::setDrawCall(std::function<void(const rawrbox::CameraBase&, const rawrbox::DrawPass&)> call) { this->_drawCall = std::move(call); }
 
 	void RendererBase::update() {
 		if (this->_currentIntro != nullptr) {
@@ -389,7 +385,12 @@ namespace rawrbox {
 				return;
 			}
 		} else {
-			if (this->_camera != nullptr) this->_camera->update();
+			// Update cameras ---
+			for (auto& camera : this->_cameras) {
+				if (!camera->isEnabled()) continue;
+				camera->update();
+			}
+			// -----------------------
 
 			// Update plugins --
 			for (auto& plugin : this->_renderPlugins) {
@@ -403,6 +404,7 @@ namespace rawrbox {
 	void RendererBase::render() {
 		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) CRITICAL_RAWRBOX("Failed to bind swapChain / context / device! Did you call 'init' ?");
 		if (this->_drawCall == nullptr) CRITICAL_RAWRBOX("Missing draw call! Did you call 'setDrawCall' ?");
+		if (rawrbox::MAIN_CAMERA == nullptr || this->_cameras.empty()) CRITICAL_RAWRBOX("Missing cameras! Did you call 'createCamera' ?");
 
 		// Clear backbuffer ----
 		this->clear();
@@ -412,70 +414,46 @@ namespace rawrbox {
 		rawrbox::BindlessManager::update();
 		// --------------------
 
-		// Update camera buffer --
-		this->_camera->updateBuffer();
-		// -----------
-
-		// Perform pre-render --
-		for (auto& plugin : this->_renderPlugins) {
-			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
-#ifdef _DEBUG
-			// this->_context->BeginDebugGroup(plugin.first.c_str());
-#endif
-			plugin.second->preRender();
-#ifdef _DEBUG
-			// this->_context->EndDebugGroup();
-#endif
-		}
-		// -----------------------
-
 		// Commit graphics signature --
 		this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 		// -----------------------
 
-		// Perform world --
-#ifdef _DEBUG
-		// this->_context->BeginDebugGroup("OPAQUE");
-		// this->beginQuery("OPAQUE");
-#endif
-		this->_render->startRecord();
-		this->_drawCall(rawrbox::DrawPass::PASS_WORLD);
-		this->_render->stopRecord();
-#ifdef _DEBUG
-		// this->endQuery("OPAQUE");
-		// this->_context->EndDebugGroup();
-#endif
-		//  -----------------
+		for (auto& camera : this->_cameras) {
+			if (!camera->isEnabled()) continue;
 
-		// Perform post-render --
-		for (auto& plugin : this->_renderPlugins) {
-			if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
-#ifdef _DEBUG
-			// this->_context->BeginDebugGroup(plugin.first.c_str());
-#endif
-			plugin.second->postRender(*this->_render);
-#ifdef _DEBUG
-			// this->_context->EndDebugGroup();
-#endif
+			// Update camera buffer --
+			camera->updateBuffer();
+			// -----------
+
+			// Perform pre-render --
+			for (auto& plugin : this->_renderPlugins) {
+				if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+				plugin.second->preRender(*camera);
+			}
+			// -----------------------
+
+			// Perform world --
+			camera->begin();
+			this->_drawCall(*camera, rawrbox::DrawPass::PASS_WORLD);
+			camera->end();
+			//  -----------------
+
+			// Perform post-render --
+			for (auto& plugin : this->_renderPlugins) {
+				if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
+				plugin.second->postRender(*camera);
+			}
+			// -----------------------
 		}
-		// -----------------------
 
-		// Render world ----
-		rawrbox::RenderUtils::renderQUAD(*this->_render);
+		// Render main camera ----
+		rawrbox::RenderUtils::renderQUAD(*rawrbox::MAIN_CAMERA->getRenderTarget());
 		// ------------------
 
-		// Perform overlay --
-#ifdef _DEBUG
-		// this->_context->BeginDebugGroup("OVERLAY");
-		// this->beginQuery("OVERLAY");
-#endif
-		this->_drawCall(rawrbox::DrawPass::PASS_OVERLAY);
+		// Perform overlay, only MAIN camera does it --
+		this->_drawCall(*rawrbox::MAIN_CAMERA, rawrbox::DrawPass::PASS_OVERLAY);
 		if (this->_stencil != nullptr) this->_stencil->render();
-#ifdef _DEBUG
-		// this->endQuery("OVERLAY");
-		// this->_context->EndDebugGroup();
-#endif
-		//  ------------------
+		// ---------------------------------------------
 
 		// Submit ---
 		this->frame();
@@ -522,7 +500,7 @@ namespace rawrbox {
 		this->_tempRender = this->_drawCall;
 		// -------------
 
-		this->_drawCall = [this](const rawrbox::DrawPass& pass) {
+		this->_drawCall = [this](const rawrbox::CameraBase& /*camera*/, const rawrbox::DrawPass& pass) {
 			if (pass != rawrbox::DrawPass::PASS_OVERLAY) return;
 			auto screenSize = this->_size.cast<float>();
 
@@ -668,21 +646,14 @@ namespace rawrbox {
 	// ----------------
 
 	// Utils ----
-	void RendererBase::setMainCamera(rawrbox::CameraBase* camera) const { rawrbox::MAIN_CAMERA = camera; }
-	rawrbox::CameraBase* RendererBase::camera() const { return this->_camera.get(); }
+	void RendererBase::setActiveCamera(rawrbox::CameraBase* camera) const { rawrbox::MAIN_CAMERA = camera; }
+	rawrbox::CameraBase* RendererBase::getActiveCamera() const { return rawrbox::MAIN_CAMERA; }
+
 	rawrbox::Stencil* RendererBase::stencil() const { return this->_stencil.get(); }
 
 	Diligent::IDeviceContext* RendererBase::context() const { return this->_context; }
 	Diligent::ISwapChain* RendererBase::swapChain() const { return this->_swapChain; }
 	Diligent::IRenderDevice* RendererBase::device() const { return this->_device; }
-
-	Diligent::ITextureView* RendererBase::getDepth() const {
-		return this->_render->getDepth();
-	}
-
-	Diligent::ITextureView* RendererBase::getColor(bool rt) const {
-		return rt ? this->_render->getRT() : this->_render->getHandle();
-	}
 
 	std::filesystem::path RendererBase::getShadersDirectory() const {
 		return "./assets/shaders";
@@ -711,8 +682,8 @@ namespace rawrbox {
 	void RendererBase::setVSync(bool vsync) { this->_vsync = vsync; }
 
 	void RendererBase::gpuPick(const rawrbox::Vector2i& pos, const std::function<void(uint32_t)>& callback) {
-		if (this->_render == nullptr) CRITICAL_RAWRBOX("Render target texture not initialized");
-		if (callback == nullptr) CRITICAL_RAWRBOX("Render target texture not initialized");
+		if (rawrbox::MAIN_CAMERA == nullptr) CRITICAL_RAWRBOX("Main camera not initialized");
+		if (callback == nullptr) CRITICAL_RAWRBOX("Invalid callback");
 
 		auto size = this->_size.cast<int>();
 		if (pos.x < 0 || pos.y < 0 || pos.x >= size.x || pos.y >= size.y) CRITICAL_RAWRBOX("Outside of window range");
@@ -723,7 +694,7 @@ namespace rawrbox {
 		MapRegion.MaxX = MapRegion.MinX + RB_RENDER_GPU_PICK_SAMPLE_SIZE;
 		MapRegion.MaxY = MapRegion.MinY + RB_RENDER_GPU_PICK_SAMPLE_SIZE;
 
-		auto* tex = this->_render->getTexture(1); // GPU pick texture
+		auto* tex = rawrbox::MAIN_CAMERA->getRenderTarget()->getTexture(1); // GPU pick texture
 		this->_GPUBlit->copy(tex, &MapRegion, [this, callback]() {
 			this->_GPUBlit->blit(nullptr, [callback](const uint8_t* pixels, const uint64_t stride) {
 				uint32_t max = 0;

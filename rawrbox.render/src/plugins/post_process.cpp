@@ -36,14 +36,14 @@ namespace rawrbox {
 		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_PIXEL, "PostProcessConstants")->Set(this->_buffer);
 	}
 
-	void PostProcessPlugin::postRender(rawrbox::TextureRender& renderTexture) {
-		for (auto& process : this->_postProcesses) {
+	void PostProcessPlugin::postRender(const rawrbox::CameraBase& camera) {
+		/*for (auto& process : this->_postProcesses) {
 			if (!process->isEnabled()) continue;
 
 			renderTexture.startRecord(false, 1);
 			process->applyEffect(renderTexture);
 			renderTexture.stopRecord();
-		}
+		}*/
 	}
 
 	// Post utils ----

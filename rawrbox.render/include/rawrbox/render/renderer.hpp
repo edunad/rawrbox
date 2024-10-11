@@ -43,10 +43,6 @@ namespace rawrbox {
 		std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>> _renderPlugins = {};
 		// --------------
 
-		// Post process renderer ----
-		std::unique_ptr<rawrbox::TextureRender> _render = nullptr;
-		// --------------------------
-
 #ifdef _DEBUG
 		// QUERIES ---
 		std::unordered_map<std::string, std::unique_ptr<Diligent::ScopedQueryHelper>> _query = {};
@@ -64,8 +60,8 @@ namespace rawrbox {
 		std::map<std::string, rawrbox::RawrboxIntro> _introList = {{"./assets/textures/rawrbox.webp", {1.4F, false}}}; // rawrbox intro, always the first
 		//----
 
-		std::function<void(const rawrbox::DrawPass& pass)> _drawCall = nullptr;
-		std::function<void(const rawrbox::DrawPass& pass)> _tempRender = nullptr;
+		std::function<void(const rawrbox::CameraBase&, const rawrbox::DrawPass&)> _drawCall = nullptr;
+		std::function<void(const rawrbox::CameraBase&, const rawrbox::DrawPass&)> _tempRender = nullptr;
 
 		rawrbox::Colorf _clearColor = rawrbox::Colors::Black();
 
@@ -88,10 +84,13 @@ namespace rawrbox {
 
 		// OTHER HANDLES
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-Renderer");
-		std::unique_ptr<rawrbox::CameraBase> _camera = nullptr;
 		std::unique_ptr<rawrbox::Stencil> _stencil = nullptr;
 		std::unique_ptr<rawrbox::TextureBLIT> _GPUBlit = nullptr;
 		// -------------
+
+		// CAMERAS ---
+		std::vector<std::unique_ptr<rawrbox::CameraBase>> _cameras = {};
+		// ----------
 
 		// INTRO ------
 		virtual void playIntro();
@@ -151,7 +150,7 @@ namespace rawrbox {
 		[[nodiscard]] virtual const std::map<std::string, std::unique_ptr<rawrbox::RenderPlugin>>& getPlugins() const;
 		// -----------------------------------
 
-		virtual void setDrawCall(std::function<void(const rawrbox::DrawPass& pass)> call);
+		virtual void setDrawCall(std::function<void(const rawrbox::CameraBase&, const rawrbox::DrawPass&)> call);
 
 		virtual void update();
 		virtual void render();
@@ -163,15 +162,17 @@ namespace rawrbox {
 
 		// CAMERA ------
 		template <class T = rawrbox::CameraBase, typename... CallbackArgs>
-		T* setupCamera(CallbackArgs&&... args) {
-			this->_camera = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
-			this->setMainCamera(this->_camera.get());
+		T* createCamera(CallbackArgs&&... args) {
+			if (this->_initialized) CRITICAL_RAWRBOX("'createCamera' must be called before initializing the renderer!");
+			auto camera = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
 
-			return dynamic_cast<T*>(this->_camera.get());
+			auto cameraPtr = camera.get();
+			this->_cameras.push_back(std::move(camera));
+			return dynamic_cast<T*>(cameraPtr);
 		}
 
-		virtual void setMainCamera(rawrbox::CameraBase* camera) const;
-		[[nodiscard]] virtual rawrbox::CameraBase* camera() const;
+		virtual void setActiveCamera(rawrbox::CameraBase* camera) const;
+		[[nodiscard]] virtual rawrbox::CameraBase* getActiveCamera() const;
 		// ----------------
 
 		// Utils ----
@@ -183,9 +184,6 @@ namespace rawrbox {
 		[[nodiscard]] virtual Diligent::ISwapChain* swapChain() const;
 		// WARNING: NOT THREAD SAFE!!
 		[[nodiscard]] virtual Diligent::IRenderDevice* device() const;
-
-		[[nodiscard]] virtual Diligent::ITextureView* getDepth() const;
-		[[nodiscard]] virtual Diligent::ITextureView* getColor(bool rt = false) const;
 
 		[[nodiscard]] virtual std::filesystem::path getShadersDirectory() const;
 		[[nodiscard]] virtual const Diligent::RENDER_DEVICE_TYPE& getRenderType() const;
