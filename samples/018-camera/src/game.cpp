@@ -16,7 +16,7 @@ namespace camera {
 #else
 		auto* window = rawrbox::Window::createWindow();
 #endif
-		window->setMonitor(1);
+		window->setMonitor(-1);
 		window->setTitle("CAMERA TEST");
 #ifdef _DEBUG
 		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED);
