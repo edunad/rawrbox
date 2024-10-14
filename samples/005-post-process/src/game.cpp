@@ -20,7 +20,7 @@ namespace post_process {
 #else
 		auto* window = rawrbox::Window::createWindow();
 #endif
-		window->setMonitor(-1);
+		window->setMonitor(1);
 		window->setTitle("POST-PROCESS TEST");
 #ifdef _DEBUG
 		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED);
@@ -35,6 +35,7 @@ namespace post_process {
 
 		// Setup renderer
 		auto* render = window->createRenderer();
+		render->skipIntros(true);
 
 		// Setup post process ----
 		auto* postProcess = render->addPlugin<rawrbox::PostProcessPlugin>();

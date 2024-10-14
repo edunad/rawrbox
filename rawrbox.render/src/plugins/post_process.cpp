@@ -1,5 +1,6 @@
 #include <rawrbox/render/plugins/post_process.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/render.hpp>
 
 namespace rawrbox {
 	PostProcessPlugin::~PostProcessPlugin() {
@@ -8,6 +9,8 @@ namespace rawrbox {
 	}
 
 	void PostProcessPlugin::initialize(const rawrbox::Vector2u& /*size*/) {
+		if (this->_buffer != nullptr) CRITICAL_RAWRBOX("Plugin already initialized!");
+
 		Diligent::BufferDesc BuffPixelDesc;
 		BuffPixelDesc.Name = "rawrbox::PostProcess";
 		BuffPixelDesc.Usage = Diligent::USAGE_DYNAMIC;
@@ -23,8 +26,8 @@ namespace rawrbox {
 	}
 
 	void PostProcessPlugin::upload() {
-		for (const auto& _postProcess : this->_postProcesses) {
-			_postProcess->init();
+		for (const auto& postProcess : this->_postProcesses) {
+			postProcess->init();
 		}
 	}
 
@@ -37,13 +40,19 @@ namespace rawrbox {
 	}
 
 	void PostProcessPlugin::postRender(const rawrbox::CameraBase& camera) {
-		/*for (auto& process : this->_postProcesses) {
+		if (&camera != rawrbox::MAIN_CAMERA) return; // Only apply on the main camera
+
+		auto* renderTarget = camera.getRenderTarget();
+
+		// Apply post-processing ---
+		for (auto& process : this->_postProcesses) {
 			if (!process->isEnabled()) continue;
 
-			renderTexture.startRecord(false, 1);
-			process->applyEffect(renderTexture);
-			renderTexture.stopRecord();
-		}*/
+			renderTarget->startRecord(false, 1);
+			process->applyEffect(*renderTarget);
+			renderTarget->stopRecord();
+		}
+		// ----------
 	}
 
 	// Post utils ----
