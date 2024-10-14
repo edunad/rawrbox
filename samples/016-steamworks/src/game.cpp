@@ -33,7 +33,7 @@ namespace steamworks {
 		// Setup renderer
 		auto* render = window->createRenderer();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
-		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+		render->setDrawCall([this](const rawrbox::CameraBase& /*camera*/, const rawrbox::DrawPass& pass) {
 			if (pass == rawrbox::DrawPass::PASS_OVERLAY) {
 				this->drawOverlay();
 			} else {
@@ -43,7 +43,7 @@ namespace steamworks {
 		// ---------------
 
 		// Setup camera
-		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
+		auto* cam = render->createCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
 		// --------------

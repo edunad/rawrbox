@@ -5,45 +5,65 @@
 #include <rawrbox/render/static.hpp>
 
 namespace rawrbox {
-	CameraBase::~CameraBase() {
-		RAWRBOX_DESTROY(this->_uniforms);
-		RAWRBOX_DESTROY(this->_staticUniforms);
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> CameraBase::staticUniforms;
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> CameraBase::uniforms;
+
+	CameraBase::CameraBase(const rawrbox::Vector2u& renderSize, bool depth) {
+		this->_renderTarget = std::make_unique<rawrbox::TextureRender>(renderSize, depth);
 	}
 
+	CameraBase::~CameraBase() { this->_renderTarget.reset(); }
+
 	void CameraBase::initialize() {
-		if (this->_staticUniforms != nullptr) CRITICAL_RAWRBOX("Camera already initialized!");
-		{
-			auto staticData = this->getStaticData();
+		if (this->_renderTarget == nullptr) CRITICAL_RAWRBOX("Render target not initialized!");
+		this->_renderTarget->upload(Diligent::TEX_FORMAT_RGBA8_UNORM);
 
-			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::Camera::Static::Uniforms";
-			CBDesc.Usage = Diligent::USAGE_IMMUTABLE;
-			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			CBDesc.Size = sizeof(rawrbox::CameraStaticUniforms);
+		// ADD GPU PICKING TEXTURE
+		auto idIndex = this->_renderTarget->addTexture(Diligent::TEX_FORMAT_RGBA8_UNORM);
+		this->_renderTarget->addView(idIndex, Diligent::TEXTURE_VIEW_RENDER_TARGET);
+		// --------
+	}
 
-			Diligent::BufferData bData;
-			bData.DataSize = CBDesc.Size;
-			bData.pData = &staticData;
+	void CameraBase::upload() {
+		if (rawrbox::RENDERER == nullptr) CRITICAL_RAWRBOX("Renderer not initialized!");
 
-			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, &bData, &this->_staticUniforms);
-		}
+		auto* device = rawrbox::RENDERER->device();
+		if (device == nullptr) CRITICAL_RAWRBOX("Device not initialized!");
 
-		{
-			Diligent::BufferDesc CBDesc;
-			CBDesc.Name = "rawrbox::Camera::Uniforms";
-			CBDesc.Usage = Diligent::USAGE_DEFAULT;
-			CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
-			CBDesc.Size = sizeof(rawrbox::CameraUniforms);
+		// These are shared across all the cameras. For performance reasons, we won't support different cameras (for now)
+		if (staticUniforms != nullptr || uniforms != nullptr) CRITICAL_RAWRBOX("Camera buffers already initialized!");
+		auto staticData = this->getStaticData();
 
-			rawrbox::RENDERER->device()->CreateBuffer(CBDesc, nullptr, &this->_uniforms);
-		}
+		// STATIC BUFFER ---
+		Diligent::BufferDesc StaticDesc;
+		StaticDesc.Name = "rawrbox::Camera::Static::Uniforms";
+		StaticDesc.Usage = Diligent::USAGE_IMMUTABLE;
+		StaticDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+		StaticDesc.Size = sizeof(rawrbox::CameraStaticUniforms);
+
+		Diligent::BufferData sData;
+		sData.DataSize = StaticDesc.Size;
+		sData.pData = &staticData;
+
+		device->CreateBuffer(StaticDesc, &sData, &staticUniforms);
+		// ------------
+
+		// DYNAMIC BUFFER ---
+		Diligent::BufferDesc CBDesc;
+		CBDesc.Name = "rawrbox::Camera::Uniforms";
+		CBDesc.Usage = Diligent::USAGE_DEFAULT;
+		CBDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
+		CBDesc.Size = sizeof(rawrbox::CameraUniforms);
+
+		device->CreateBuffer(CBDesc, nullptr, &uniforms);
+		// ------------
 
 		// BARRIER -----
-		rawrbox::BarrierUtils::barrier({{this->_staticUniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
-		    {this->_uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{staticUniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE},
+		    {uniforms, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		// -----------
 
-		this->_logger->info("Initializing camera");
+		this->_logger->info("Initializing camera buffers");
 	}
 
 	void CameraBase::updateMtx() { CRITICAL_RAWRBOX("Not implemented"); };
@@ -134,8 +154,41 @@ namespace rawrbox {
 		this->updateBuffer();
 	}
 
+	rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f& /*pos*/) const {
+		CRITICAL_RAWRBOX("Not implemented");
+	}
+
+	rawrbox::Vector3f CameraBase::screenToWorld(const rawrbox::Vector2f& /*screen_pos*/, const rawrbox::Vector3f& /*origin*/) const {
+		CRITICAL_RAWRBOX("Not implemented");
+	}
+
+	bool CameraBase::isEnabled() const { return this->_enabled; }
+	void CameraBase::setEnabled(bool enabled) { this->_enabled = enabled; }
+
+	uint32_t CameraBase::getLayers() const { return this->_layers; }
+	void CameraBase::setLayers(uint32_t layers) { this->_layers = layers; }
+	bool CameraBase::shouldRenderLayer(uint32_t layer) const { return (this->_layers & layer) > 1; }
+	// -----------
+
+	// RENDER TARGET ----
+	void CameraBase::begin() {
+		if (this->_renderTarget == nullptr) CRITICAL_RAWRBOX("Render target not initialized!");
+		this->_renderTarget->startRecord();
+	}
+
+	void CameraBase::end() {
+		if (this->_renderTarget == nullptr) CRITICAL_RAWRBOX("Render target not initialized!");
+		this->_renderTarget->stopRecord();
+	}
+
+	Diligent::ITextureView* CameraBase::getDepth() const { return this->_renderTarget->getDepth(); }
+	Diligent::ITextureView* CameraBase::getColor(bool rt) const { return rt ? this->_renderTarget->getRT() : this->_renderTarget->getHandle(); }
+
+	rawrbox::TextureRender* CameraBase::getRenderTarget() const { return this->_renderTarget.get(); }
+	// ----------------
+
 	void CameraBase::updateBuffer() {
-		if (this->_uniforms == nullptr) CRITICAL_RAWRBOX("Buffer not initialized! Did you call initialize?");
+		if (uniforms == nullptr) CRITICAL_RAWRBOX("Buffer not initialized! Did you call initialize?");
 
 		auto view = rawrbox::Matrix4x4::mtxTranspose(this->getViewMtx());
 		auto viewInv = rawrbox::Matrix4x4::mtxInverse(this->getViewMtx());
@@ -150,22 +203,12 @@ namespace rawrbox {
 		data.gPos = this->getPos();
 		data.gDeltaTime = rawrbox::DELTA_TIME;
 
-		rawrbox::BarrierUtils::barrier({{this->_uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-		rawrbox::RENDERER->context()->UpdateBuffer(this->_uniforms, 0, sizeof(rawrbox::CameraUniforms), &data, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		rawrbox::BarrierUtils::barrier({{this->_uniforms, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::RENDERER->context()->UpdateBuffer(uniforms, 0, sizeof(rawrbox::CameraUniforms), &data, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 	}
 
 	void CameraBase::update() {}
-
-	rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f& /*pos*/) const {
-		CRITICAL_RAWRBOX("Not implemented");
-	}
-
-	rawrbox::Vector3f CameraBase::screenToWorld(const rawrbox::Vector2f& /*screen_pos*/, const rawrbox::Vector3f& /*origin*/) const {
-		CRITICAL_RAWRBOX("Not implemented");
-	}
-
-	Diligent::IBuffer* CameraBase::uniforms() const { return this->_uniforms; }
-	Diligent::IBuffer* CameraBase::staticUniforms() const { return this->_staticUniforms; }
 	// ----------------
+
 } // namespace rawrbox

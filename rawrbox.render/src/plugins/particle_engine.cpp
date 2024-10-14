@@ -45,15 +45,6 @@ namespace rawrbox {
 		rawrbox::RENDERER->device()->CreatePipelineResourceSignature(PRSDesc, &this->_signature);
 		// ----------------------
 
-		// Compute bind ---
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(rawrbox::MAIN_CAMERA->uniforms());
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "SCamera")->Set(rawrbox::MAIN_CAMERA->staticUniforms());
-
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "EmitterConstants")->Set(this->_uniforms);
-
-		this->_signature->CreateShaderResourceBinding(&this->_signatureBind, true);
-		// ----------------
-
 		// Dynamic signature ---
 		PRSDesc.Name = "RawrBox::SIGNATURE::Particles::Dynamic";
 		PRSDesc.BindingIndex = 1;
@@ -66,7 +57,6 @@ namespace rawrbox {
 		PRSDesc.NumResources = static_cast<uint8_t>(resources.size());
 
 		rawrbox::RENDERER->device()->CreatePipelineResourceSignature(PRSDesc, &this->_dynamicSignature);
-		this->_dynamicSignature->CreateShaderResourceBinding(&this->_dynamicSignatureBind, true);
 		// ----------------
 	}
 
@@ -98,6 +88,18 @@ namespace rawrbox {
 	}
 
 	void ParticleEnginePlugin::upload() {
+		if (this->_signature == nullptr || this->_signatureBind == nullptr || this->_uniforms == nullptr) CRITICAL_RAWRBOX("Plugin not initialized!");
+
+		// Compute bind ---
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(rawrbox::CameraBase::uniforms);
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
+
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "EmitterConstants")->Set(this->_uniforms);
+
+		this->_signature->CreateShaderResourceBinding(&this->_signatureBind, true);
+		this->_dynamicSignature->CreateShaderResourceBinding(&this->_dynamicSignatureBind, true);
+		// ----------------
+
 		this->createPipelines();
 	}
 
@@ -109,7 +111,7 @@ namespace rawrbox {
 		sig.GetStaticVariableByName(Diligent::SHADER_TYPE_GEOMETRY, "EmitterConstants")->Set(this->_uniforms);
 	}
 
-	void ParticleEnginePlugin::preRender() {
+	void ParticleEnginePlugin::preRender(const rawrbox::CameraBase& /*camera*/) {
 		for (auto* emitter : this->_registeredEmitters) {
 			if (emitter == nullptr || !emitter->isEnabled()) continue;
 

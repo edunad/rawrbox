@@ -50,3 +50,5 @@ endif()
 if(RAWRBOX_BUILD_RAWRBOX_IMGUI)
     add_subdirectory("017-imgui")
 endif()
+
+add_subdirectory("018-camera")

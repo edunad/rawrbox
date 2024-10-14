@@ -50,7 +50,7 @@ namespace rawrbox {
 		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig) override;
 		void bindStatic(Diligent::IPipelineResourceSignature& sig) override;
 
-		void preRender() override;
+		void preRender(const rawrbox::CameraBase& camera) override;
 
 		[[nodiscard]] Diligent::IPipelineResourceSignature* getSignature(bool dynamic = true) const;
 		[[nodiscard]] Diligent::IShaderResourceBinding* getBind(bool dynamic = true) const;

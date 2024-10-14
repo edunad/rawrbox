@@ -4,11 +4,11 @@
 
 namespace rawrbox {
 	// NOLINTBEGIN(clang-analyzer-optin.cplusplus.VirtualCall)
-	CameraPerspective::CameraPerspective(const rawrbox::Vector2u& winSize, float FOV, float near, float far) : _winSize(winSize), _FOV(FOV) {
+	CameraPerspective::CameraPerspective(const rawrbox::Vector2u& renderSize, float FOV, float near, float far, bool depth) : rawrbox::CameraBase(renderSize, depth), _FOV(FOV) {
 		this->_z_near = near;
 		this->_z_far = far;
 
-		this->_projection = rawrbox::Matrix4x4::mtxProj(FOV, static_cast<float>(winSize.x) / static_cast<float>(winSize.y), this->_z_near, this->_z_far);
+		this->_projection = rawrbox::Matrix4x4::mtxProj(FOV, static_cast<float>(renderSize.x) / static_cast<float>(renderSize.y), this->_z_near, this->_z_far);
 		this->updateMtx();
 	}
 	// NOLINTEND(clang-analyzer-optin.cplusplus.VirtualCall)
@@ -23,18 +23,19 @@ namespace rawrbox {
 	}
 
 	rawrbox::Vector3f CameraPerspective::worldToScreen(const rawrbox::Vector3f& pos) const {
-		return rawrbox::Matrix4x4::mtxProject(pos, this->_view, this->_projection, {0, 0, this->_winSize.x, this->_winSize.y});
+		const auto& size = this->_renderTarget->getSize();
+		return rawrbox::Matrix4x4::mtxProject(pos, this->_view, this->_projection, {0, 0, size.x, size.y});
 	}
 
 	rawrbox::Vector3f CameraPerspective::screenToWorld(const rawrbox::Vector2f& screenPos, const rawrbox::Vector3f& origin) const {
-		rawrbox::Vector3f plane_normal = {0, 1, 0};
+		static constexpr rawrbox::Vector3f plane_normal = {0, 1, 0};
 
 		// get our pos and force aim downwards, the getForward() seems to behave odd when aiming full down
-		auto campos = this->getPos();
+		const auto& campos = this->getPos();
+		const auto& size = this->_renderTarget->getSize();
 		rawrbox::Matrix4x4 viewproj_inv = this->getViewProjMtx().inverse();
 
-		auto winPos = this->_winSize.cast<float>();
-
+		auto winPos = size.cast<float>();
 		float screenx_clip = 2.F * (screenPos.x / winPos.x) - 1.F;
 		float screeny_clip = 1.F - 2.F * (screenPos.y) / winPos.y;
 

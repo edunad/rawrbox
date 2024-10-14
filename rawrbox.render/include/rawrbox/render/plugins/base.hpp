@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/math/vector2.hpp>
+#include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/enums/draw.hpp>
 #include <rawrbox/render/textures/render.hpp>
 
@@ -40,8 +41,8 @@ namespace rawrbox {
 		virtual void resize(const rawrbox::Vector2u& renderSize);
 		virtual void upload();
 
-		virtual void preRender();
-		virtual void postRender(rawrbox::TextureRender& renderTarget);
+		virtual void preRender(const rawrbox::CameraBase& camera);
+		virtual void postRender(const rawrbox::CameraBase& camera);
 
 		virtual void update();
 

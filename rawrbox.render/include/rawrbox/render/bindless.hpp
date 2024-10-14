@@ -62,7 +62,6 @@ namespace rawrbox {
 
 		// SIGNATURES ------
 		static void createSignatures();
-		static void bindSignatures();
 		// -----------------
 
 		static uint32_t internalRegister(Diligent::ITextureView* view, rawrbox::TEXTURE_TYPE type);
@@ -79,6 +78,10 @@ namespace rawrbox {
 		static void shutdown();
 
 		static void update();
+
+		// SIGNATURES
+		static void bindSignatures();
+		// ----------------
 
 		// TEXTURES -------
 		static void registerTexture(rawrbox::TextureBase& texture);

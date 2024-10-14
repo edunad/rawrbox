@@ -25,7 +25,7 @@ namespace rawrbox {
 
 		void signatures(std::vector<Diligent::PipelineResourceDesc>& sig) override;
 		void bindStatic(Diligent::IPipelineResourceSignature& sig) override;
-		void postRender(rawrbox::TextureRender& render) override;
+		void postRender(const rawrbox::CameraBase& camera) override;
 
 		// PLUGIN UTILS ----
 		template <class T = rawrbox::PostProcessBase, typename... CallbackArgs>

@@ -35,7 +35,7 @@ namespace model {
 		// Setup renderer
 		auto* render = window->createRenderer();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
-		render->setDrawCall([this](const rawrbox::DrawPass& pass) {
+		render->setDrawCall([this](const rawrbox::CameraBase& /*camera*/, const rawrbox::DrawPass& pass) {
 			if (pass == rawrbox::DrawPass::PASS_WORLD) {
 				this->drawWorld();
 			} else {
@@ -45,7 +45,7 @@ namespace model {
 		// ---------------
 
 		// Setup camera
-		auto* cam = render->setupCamera<rawrbox::CameraOrbital>(*window);
+		auto* cam = render->createCamera<rawrbox::CameraOrbital>(*window);
 		cam->setPos({0.F, 6.F, -6.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-55), 0.F, 0.F});
 		cam->onMovementStart = []() { fmt::print("Camera start\n"); };
