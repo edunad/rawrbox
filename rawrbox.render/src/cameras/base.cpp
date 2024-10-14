@@ -22,11 +22,9 @@ namespace rawrbox {
 		auto idIndex = this->_renderTarget->addTexture(Diligent::TEX_FORMAT_RGBA8_UNORM);
 		this->_renderTarget->addView(idIndex, Diligent::TEXTURE_VIEW_RENDER_TARGET);
 		// --------
-
-		this->initializeBuffers();
 	}
 
-	void CameraBase::initializeBuffers() { // Initialize with a template?
+	void CameraBase::upload() {
 		if (rawrbox::RENDERER == nullptr) CRITICAL_RAWRBOX("Renderer not initialized!");
 
 		auto* device = rawrbox::RENDERER->device();

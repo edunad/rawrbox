@@ -82,6 +82,10 @@ namespace imgui {
 	}
 
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
+		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
+			rawrbox::RESOURCES::shutdown();
+		}
+
 		rawrbox::IMGUIManager::shutdown(thread);
 		rawrbox::Window::shutdown(thread);
 	}

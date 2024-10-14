@@ -1,25 +1,22 @@
 #pragma once
 
 #include <rawrbox/engine/engine.hpp>
+#include <rawrbox/render/cameras/perspective.hpp>
 #include <rawrbox/render/models/model.hpp>
-#include <rawrbox/render/models/spline.hpp>
 #include <rawrbox/render/models/text3D.hpp>
+#include <rawrbox/render/textures/image.hpp>
 
-#include <memory>
-
-namespace model {
+namespace camera {
 	class Game : public rawrbox::Engine {
-		std::unique_ptr<rawrbox::Model<>> _displacement = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Model<>> _model = std::make_unique<rawrbox::Model<>>();
-		std::unique_ptr<rawrbox::Model<>> _modelDynamic = std::make_unique<rawrbox::Model<>>();
+		std::unique_ptr<rawrbox::Model<>> _model2 = std::make_unique<rawrbox::Model<>>();
 		std::unique_ptr<rawrbox::Model<>> _bboxes = std::make_unique<rawrbox::Model<>>();
-		std::unique_ptr<rawrbox::Model<>> _sprite = std::make_unique<rawrbox::Model<>>();
-		std::unique_ptr<rawrbox::Model<>> _sprite_2 = std::make_unique<rawrbox::Model<>>();
-		std::unique_ptr<rawrbox::Spline<>> _spline = std::make_unique<rawrbox::Spline<>>();
 		std::unique_ptr<rawrbox::Text3D<>> _text = std::make_unique<rawrbox::Text3D<>>();
 
+		rawrbox::CameraPerspective* _camera = nullptr;
+
 		bool _ready = false;
-		bool _bbox = true;
+		bool _layers = true;
 
 		// Engine setup ---
 		void setupGLFW() override;
@@ -30,16 +27,6 @@ namespace model {
 		void draw() override;
 		// ----------------
 
-		void createModels();
-		void createSpline();
-		void createDisplacement();
-		void createSprite();
-		void createText();
-		void createDynamic();
-
-		void loadContent();
-		void contentLoaded();
-
 	public:
 		Game() = default;
 		Game(const Game&) = delete;
@@ -48,7 +35,10 @@ namespace model {
 		Game& operator=(Game&&) = delete;
 		~Game() override = default;
 
-		void drawWorld();
-		void drawOverlay() const;
+		void drawWorld(uint32_t layer);
+		void drawOverlay();
+
+		void loadContent();
+		void contentLoaded();
 	};
-} // namespace model
+} // namespace camera

@@ -253,10 +253,12 @@ namespace rawrbox {
 		// -----------------
 
 		// Init cameras ---
-		this->setActiveCamera(this->_cameras.back().get());
+		this->setActiveCamera(this->_cameras.front().get());
 		for (auto& camera : this->_cameras) {
 			camera->initialize();
 		}
+
+		rawrbox::MAIN_CAMERA->upload();
 		// -----------------
 
 		// Bind signatures ---
@@ -414,10 +416,6 @@ namespace rawrbox {
 		rawrbox::BindlessManager::update();
 		// --------------------
 
-		// Commit graphics signature --
-		this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-		// -----------------------
-
 		for (auto& camera : this->_cameras) {
 			if (!camera->isEnabled()) continue;
 
@@ -430,6 +428,10 @@ namespace rawrbox {
 				if (plugin.second == nullptr || !plugin.second->isEnabled()) continue;
 				plugin.second->preRender(*camera);
 			}
+			// -----------------------
+
+			// Commit graphics signature --
+			this->_context->CommitShaderResources(rawrbox::BindlessManager::signatureBind, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			// -----------------------
 
 			// Perform world --

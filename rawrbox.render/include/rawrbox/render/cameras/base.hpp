@@ -84,8 +84,6 @@ namespace rawrbox {
 		virtual void updateMtx();
 		virtual rawrbox::CameraStaticUniforms getStaticData();
 
-		virtual void initializeBuffers();
-
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> staticUniforms;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
@@ -139,6 +137,7 @@ namespace rawrbox {
 		// ------------
 
 		virtual void initialize();
+		virtual void upload();
 
 		virtual void updateBuffer();
 		virtual void update();

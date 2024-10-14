@@ -61,11 +61,31 @@ namespace rawrbox {
 		this->_dispatch.ThreadGroupCountY = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_Y, RB_RENDER_CLUSTERS_Y_THREADS);
 		// ----------
 
+		// Re-build clusters ---
+		this->_oldProj = {};
 		// --------------------------
-		this->_oldProj = {}; // Re-build clusters
 	}
 
 	void ClusteredPlugin::upload() {
+		if (this->_signature == nullptr) CRITICAL_RAWRBOX("Signature not initialized, did you call 'initialize'?");
+		if (rawrbox::MAIN_CAMERA == nullptr) CRITICAL_RAWRBOX("Main camera not initialized");
+
+		// Compute bind ---
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(rawrbox::CameraBase::uniforms);
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
+
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Clusters")->Set(this->getClustersBuffer(false));
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ClusterDataGrid")->Set(this->getDataGridBuffer(false));
+
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Lights")->Set(rawrbox::LIGHTS::getBuffer());
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "LightConstants")->Set(rawrbox::LIGHTS::uniforms);
+
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Decals")->Set(rawrbox::DECALS::getBuffer());
+		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "DecalsConstants")->Set(rawrbox::DECALS::uniforms);
+
+		this->_signature->CreateShaderResourceBinding(&this->_signatureBind, true);
+		// ----------------
+
 		this->buildPipelines();
 	}
 
@@ -193,7 +213,6 @@ namespace rawrbox {
 
 	void ClusteredPlugin::buildSignatures() {
 		if (this->_signature != nullptr || this->_signatureBind != nullptr) CRITICAL_RAWRBOX("Signatures already bound!");
-		if (rawrbox::MAIN_CAMERA == nullptr) CRITICAL_RAWRBOX("Clustered plugin requires at least one camera!");
 
 		std::vector<Diligent::PipelineResourceDesc> resources = {
 		    // CAMERA ------
@@ -230,26 +249,10 @@ namespace rawrbox {
 
 		rawrbox::RENDERER->device()->CreatePipelineResourceSignature(PRSDesc, &this->_signature);
 		// ----------------------
-
-		// Compute bind ---
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(rawrbox::CameraBase::uniforms);
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "SCamera")->Set(rawrbox::CameraBase::staticUniforms);
-
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Clusters")->Set(this->getClustersBuffer(false));
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "ClusterDataGrid")->Set(this->getDataGridBuffer(false));
-
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Lights")->Set(rawrbox::LIGHTS::getBuffer());
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "LightConstants")->Set(rawrbox::LIGHTS::uniforms);
-
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Decals")->Set(rawrbox::DECALS::getBuffer());
-		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "DecalsConstants")->Set(rawrbox::DECALS::uniforms);
-
-		this->_signature->CreateShaderResourceBinding(&this->_signatureBind, true);
-		// ----------------
 	}
 
 	void ClusteredPlugin::buildPipelines() {
-		if (rawrbox::MAIN_CAMERA == nullptr) CRITICAL_RAWRBOX("Clustered plugin requires at least one camera!");
+		if (this->_signature == nullptr) CRITICAL_RAWRBOX("Signature not initialized, did you call 'initialize'");
 
 		rawrbox::PipeComputeSettings settings;
 		settings.macros = this->getClusterMacros();

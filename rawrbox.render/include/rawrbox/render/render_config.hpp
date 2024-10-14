@@ -44,6 +44,6 @@
 // CAMERA -----
 // Add more layers if needed, you can then check if the camera should draw your model by checking if the layer is enabled
 #define RB_RENDER_CAMERA_LAYERS(flag) \
-	flag(MY_LAYER_1, 1) \
-	    flag(MY_LAYER_2, 2)
+	flag(LAYER_1, 1) \
+	    flag(LAYER_2, 2)
 // ----------------
