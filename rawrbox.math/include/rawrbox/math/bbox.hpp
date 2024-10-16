@@ -46,6 +46,22 @@ namespace rawrbox {
 
 		bool operator==(const BBOX_t<NumberType>& other) const { return this->size == other.size; }
 		bool operator!=(const BBOX_t<NumberType>& other) const { return !operator==(other); }
+
+		BBOX_t<NumberType>& operator*(const rawrbox::Vector3_t<NumberType>& vec) {
+			this->min *= vec;
+			this->max *= vec;
+			this->size *= vec;
+
+			return *this;
+		}
+
+		BBOX_t<NumberType>& operator*(NumberType scalar) {
+			this->min *= scalar;
+			this->max *= scalar;
+			this->size *= scalar;
+
+			return *this;
+		}
 	};
 
 	using BBOXd = BBOX_t<double>;

@@ -367,7 +367,10 @@ namespace rawrbox {
 			this->updateLights();
 		}
 
-		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const { return this->_bbox; }
+		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() {
+			return this->_bbox * this->getScale();
+		}
+
 		[[nodiscard]] virtual size_t totalMeshes() const {
 			return this->_meshes.size();
 		}

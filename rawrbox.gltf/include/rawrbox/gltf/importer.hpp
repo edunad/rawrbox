@@ -26,6 +26,8 @@ namespace rawrbox {
 		const uint32_t IMPORT_ANIMATIONS = 1 << 3;
 		const uint32_t IMPORT_BLEND_SHAPES = 1 << 4;
 
+		const uint32_t CALCULATE_BBOX = 1 << 5;
+
 		namespace Debug {
 			const uint32_t PRINT_BONE_STRUCTURE = 1 << 10;
 			const uint32_t PRINT_MATERIALS = 1 << 11;
@@ -151,7 +153,6 @@ namespace rawrbox {
 	struct GLTFMesh : public rawrbox::GLTFNode {
 	public:
 		rawrbox::BBOX bbox = {};
-
 		std::vector<rawrbox::GLTFPrimitive> primitives = {};
 
 		ozz::animation::Skeleton* skeleton = nullptr;

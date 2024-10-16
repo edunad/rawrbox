@@ -740,6 +740,20 @@ namespace rawrbox {
 				}
 			}
 			// ----------------
+
+			// BBOX CALCULATION --
+			if ((this->loadFlags & rawrbox::ModelLoadFlags::CALCULATE_BBOX) > 0) {
+				gltfMesh->bbox.min = rawrbox::Vector3f(std::numeric_limits<float>::max());
+				gltfMesh->bbox.max = rawrbox::Vector3f(std::numeric_limits<float>::min());
+
+				for (const auto& vertex : rawrPrimitive.vertices) {
+					gltfMesh->bbox.min = gltfMesh->bbox.min.min(vertex.position);
+					gltfMesh->bbox.max = gltfMesh->bbox.max.max(vertex.position);
+				}
+
+				gltfMesh->bbox.size = gltfMesh->bbox.max - gltfMesh->bbox.min;
+			}
+			// -------------
 		}
 		// -------------------
 
