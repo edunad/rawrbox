@@ -167,7 +167,9 @@ namespace rawrbox {
 		[[nodiscard]] virtual const std::vector<T>& getVertices() const { return this->vertices; }
 		[[nodiscard]] virtual const std::vector<uint32_t>& getIndices() const { return this->indices; }
 
-		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() const { return this->bbox; }
+		[[nodiscard]] virtual const rawrbox::BBOX getBBOX() const {
+			return this->bbox * this->getScale();
+		}
 
 		[[nodiscard]] virtual bool empty() const {
 			return this->indices.empty() || this->vertices.empty();

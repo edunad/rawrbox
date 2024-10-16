@@ -367,7 +367,7 @@ namespace rawrbox {
 			this->updateLights();
 		}
 
-		[[nodiscard]] virtual const rawrbox::BBOX& getBBOX() {
+		[[nodiscard]] virtual const rawrbox::BBOX getBBOX() {
 			return this->_bbox * this->getScale();
 		}
 
