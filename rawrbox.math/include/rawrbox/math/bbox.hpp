@@ -37,31 +37,18 @@ namespace rawrbox {
 			return pos.x >= this->min.x && pos.x <= this->max.x && pos.y >= this->min.y && pos.y <= this->max.y && pos.z >= this->min.z && pos.z <= this->max.z;
 		}
 
-		void combine(const BBOX_t<NumberType>& b) {
+		void combine(const BBOXType& b) {
 			this->min = {std::min(this->min.x, b.min.x), std::min(this->min.y, b.min.y), std::min(this->min.z, b.min.z)};
 			this->max = {std::max(this->max.x, b.max.x), std::max(this->max.y, b.max.y), std::max(this->max.z, b.max.z)};
 
 			this->size = this->min.abs() + this->max.abs();
 		}
 
-		bool operator==(const BBOX_t<NumberType>& other) const { return this->size == other.size; }
-		bool operator!=(const BBOX_t<NumberType>& other) const { return !operator==(other); }
+		bool operator==(const BBOXType& other) const { return this->size == other.size; }
+		bool operator!=(const BBOXType& other) const { return !operator==(other); }
 
-		BBOX_t<NumberType>& operator*(const rawrbox::Vector3_t<NumberType>& vec) {
-			this->min *= vec;
-			this->max *= vec;
-			this->size *= vec;
-
-			return *this;
-		}
-
-		BBOX_t<NumberType>& operator*(NumberType scalar) {
-			this->min *= scalar;
-			this->max *= scalar;
-			this->size *= scalar;
-
-			return *this;
-		}
+		BBOXType operator*(NumberType other) const { return BBOXType(this->min * other, this->max * other, this->size * other); }
+		BBOXType operator*(const rawrbox::Vector3_t<NumberType>& other) const { return BBOXType(this->min * other, this->max * other, this->size * other); }
 	};
 
 	using BBOXd = BBOX_t<double>;
