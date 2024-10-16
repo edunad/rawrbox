@@ -21,6 +21,8 @@ namespace gltf {
 		std::unique_ptr<rawrbox::GLTFModel<rawrbox::MaterialSkinnedLit>> _wolfLit;
 
 		std::unique_ptr<rawrbox::Model<>> _modelGrid;
+		std::unique_ptr<rawrbox::Model<>> _bbox;
+
 		std::unique_ptr<rawrbox::Text3D<>> _text;
 
 		bool _ready = false;

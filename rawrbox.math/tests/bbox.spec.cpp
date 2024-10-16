@@ -52,12 +52,21 @@ TEST_CASE("BBOX should behave as expected", "[rawrbox::BBOX]") {
 		REQUIRE(bbox1.max == rawrbox::Vector3f(2, 2, 2));
 	}
 
-	SECTION("rawrbox::BBOX::operators") {
+	SECTION("rawrbox::BBOX::operator==") {
 		rawrbox::BBOX bbox1(rawrbox::Vector3f(0, 0, 0), rawrbox::Vector3f(1, 1, 1), rawrbox::Vector3f(1, 1, 1));
 		rawrbox::BBOX bbox2(rawrbox::Vector3f(0, 0, 0), rawrbox::Vector3f(1, 1, 1), rawrbox::Vector3f(1, 1, 1));
 		rawrbox::BBOX bbox3(rawrbox::Vector3f(0, 0, 0), rawrbox::Vector3f(2, 2, 2), rawrbox::Vector3f(2, 2, 2));
 
 		REQUIRE(bbox1 == bbox2);
 		REQUIRE(bbox1 != bbox3);
+	}
+
+	SECTION("rawrbox::BBOX::operator*") {
+		rawrbox::BBOX bbox(rawrbox::Vector3f(0, 0, 0), rawrbox::Vector3f(1, 1, 1), rawrbox::Vector3f(1, 1, 1));
+		rawrbox::BBOX scaledBbox = bbox * 2.0F;
+
+		REQUIRE(scaledBbox.min == rawrbox::Vector3f(0, 0, 0));
+		REQUIRE(scaledBbox.max == rawrbox::Vector3f(2, 2, 2));
+		REQUIRE(scaledBbox.size == rawrbox::Vector3f(2, 2, 2));
 	}
 }

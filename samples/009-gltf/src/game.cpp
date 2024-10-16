@@ -62,7 +62,7 @@ namespace gltf {
 	void Game::loadContent() {
 		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
 		    {"./assets/models/ps1_phasmophobia/scene.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT | rawrbox::ModelLoadFlags::Optimizer::MESH},
-		    {"./assets/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES},
+		    {"./assets/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::CALCULATE_BBOX | rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES},
 		    {"./assets/models/wolf/wolf.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Optimizer::SKELETON_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS},
 		    {"./assets/models/anim_test.glb", rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS},
 		    {"./assets/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS}};
@@ -76,6 +76,8 @@ namespace gltf {
 
 	void Game::contentLoaded() {
 		if (this->_ready) return;
+
+		this->_bbox = std::make_unique<rawrbox::Model<>>();
 
 		// PHASMO
 		{
@@ -118,6 +120,8 @@ namespace gltf {
 
 			this->_blendTest->setPos({-5, 0, 0});
 			this->_blendTest->upload(rawrbox::UploadType::FIXED_DYNAMIC);
+
+			this->_bbox->addMesh(rawrbox::MeshUtils::generateBBOX({-5, 0, 0}, this->_blendTest->getBBOX()));
 		}
 		// ----------
 
@@ -184,6 +188,8 @@ namespace gltf {
 		}
 		// ----
 
+		this->_bbox->upload();
+
 		// LIGHT ----
 		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{-1, 1.6F, -1.4F}, rawrbox::Colors::White() * 100, 1.6F);
 		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{-1, 0.6F, -1.4F}, rawrbox::Colors::White() * 100, 1.6F);
@@ -224,6 +230,7 @@ namespace gltf {
 			this->_text.reset();
 			this->_animTest.reset();
 			this->_phasmo.reset();
+			this->_bbox.reset();
 
 			rawrbox::RESOURCES::shutdown();
 		}
@@ -275,6 +282,8 @@ namespace gltf {
 		// TEXT ----
 		if (this->_text != nullptr) this->_text->draw();
 		// ----
+
+		if (this->_bbox != nullptr) this->_bbox->draw();
 	}
 
 	void Game::draw() {

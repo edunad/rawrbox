@@ -9,6 +9,7 @@ namespace rawrbox {
 			requires(std::is_integral_v<T> || std::is_floating_point_v<T>)
 		static void registerTemplate(lua_State* L, const std::string& name) {
 			using BBOXT = rawrbox::BBOX_t<T>;
+			using VECT = rawrbox::Vector3_t<T>;
 
 			luabridge::getGlobalNamespace(L)
 			    .beginClass<BBOXT>(name.c_str())
@@ -20,6 +21,10 @@ namespace rawrbox {
 
 			    .addFunction("isEmpty", &BBOXT::isEmpty)
 			    .addFunction("combine", &BBOXT::combine)
+
+			    .addFunction("__mul",
+				luabridge::overload<T>(&BBOXT::operator*),
+				luabridge::overload<const VECT&>(&BBOXT::operator*))
 
 			    .addFunction("__eq", &BBOXT::operator==)
 			    .addFunction("__ne", &BBOXT::operator!=)
