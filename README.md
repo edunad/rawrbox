@@ -27,7 +27,7 @@
 
 ## Why PSXish?
 
-This engine started as a C++ training project, with hopes of being applied in my own games. Don't expect it to rival big players like Unity, Unreal or Godot; it's not geared towards advanced rendering techniques such as anti-aliasing or ray-tracing. Rather, it's tailored for creating PlayStation 1-style games.
+This engine started as a C++ training project, with hopes of being applied in my own games. Don't expect it to rival Unity, Unreal or Godot; it's not geared towards advanced rendering techniques such as anti-aliasing or ray-tracing. Rather, it's tailored for creating PlayStation 1-style games with modding in mind :).
 
 > [!IMPORTANT]
 > World Coordinates: [left handed](<https://learn.microsoft.com/en-us/previous-versions/windows/desktop/images/bb324490.leftrght(en-us,vs.85).gif>).<br/>
@@ -123,7 +123,7 @@ This engine started as a C++ training project, with hopes of being applied in my
 | `RAWRBOX_BUILD_TESTING`                    | Builds & enables project tests                                                                     | OFF     |
 | `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          | OFF     |
 | --                                         | --                                                                                                 | --      |
-| `RAWRBOX_CONTENT_FOLDER`                   | The content folder to output assets. Default is `assets`                                           | OFF     |
+| `RAWRBOX_CONTENT_FOLDER`                   | The content folder to output assets                                           			  | Assets  |
 | --                                         | --                                                                                                 | --      |
 | `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 | OFF     |
 | --                                         | --                                                                                                 | --      |
@@ -132,7 +132,7 @@ This engine started as a C++ training project, with hopes of being applied in my
 | `RAWRBOX_BUILD_RAWRBOX_RESOURCES`          | Builds the resouces manager (aka handling and storing loaded resources)                            | OFF     |
 | `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`         | Builds the 3D physics engine                                                                       | OFF     |
 | `RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS`         | Builds the 2D physics engine                                                                       | OFF     |
-| `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ | OFF     |
+| `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️| OFF     |
 | `RAWRBOX_BUILD_RAWRBOX_GLTF`               | Enables gltf2.0 model loading support                                                              | OFF     |
 | `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM loading                                                                               | OFF     |
 | `RAWRBOX_BUILD_RAWRBOX_NETWORK`            | Builds network support                                                                             | OFF     |
