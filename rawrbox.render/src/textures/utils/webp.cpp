@@ -11,21 +11,21 @@ namespace rawrbox {
 	std::unique_ptr<rawrbox::Logger> WEBP::_logger = std::make_unique<rawrbox::Logger>("RawrBox-WEBP");
 
 	rawrbox::ImageData WEBP::decode(const uint8_t* buffer, size_t bufferSize) {
-		if (buffer == nullptr || bufferSize <= 0) CRITICAL_RAWRBOX("Invalid data, cannot be empty!");
+		if (buffer == nullptr || bufferSize <= 0) RAWRBOX_CRITICAL("Invalid data, cannot be empty!");
 
 		WebPAnimDecoderOptions options;
 		options.use_threads = 1;
-		if (WebPAnimDecoderOptionsInit(&options) == 0) CRITICAL_RAWRBOX("Error initializing image!");
+		if (WebPAnimDecoderOptionsInit(&options) == 0) RAWRBOX_CRITICAL("Error initializing image!");
 
 		WebPData webp_data = {buffer, bufferSize};
 
 		auto* decoder = WebPAnimDecoderNew(&webp_data, &options);
-		if (decoder == nullptr) CRITICAL_RAWRBOX("Error initializing decoder!");
+		if (decoder == nullptr) RAWRBOX_CRITICAL("Error initializing decoder!");
 
 		WebPAnimInfo info;
 		if (WebPAnimDecoderGetInfo(decoder, &info) == 0) {
 			WebPAnimDecoderDelete(decoder);
-			CRITICAL_RAWRBOX("Error decoding image info!");
+			RAWRBOX_CRITICAL("Error decoding image info!");
 		}
 
 		rawrbox::ImageData webpData = {};
@@ -40,7 +40,7 @@ namespace rawrbox {
 
 			if (WebPAnimDecoderGetNext(decoder, &buf, &delay) == 0) {
 				WebPAnimDecoderDelete(decoder);
-				CRITICAL_RAWRBOX("Error decoding image!");
+				RAWRBOX_CRITICAL("Error decoding image!");
 			}
 
 			rawrbox::ImageFrame frame = {};
@@ -61,27 +61,27 @@ namespace rawrbox {
 	}
 
 	std::vector<uint8_t> WEBP::encode(const rawrbox::ImageData& /*data*/) {
-		CRITICAL_RAWRBOX("Encoding WebP is not supported yet!");
-		/*if (data.frames.empty() || data.size.length() <= 0.F) CRITICAL_RAWRBOX("Invalid webpData, frames cannot be empty!");
+		RAWRBOX_CRITICAL("Encoding WebP is not supported yet!");
+		/*if (data.frames.empty() || data.size.length() <= 0.F) RAWRBOX_CRITICAL("Invalid webpData, frames cannot be empty!");
 
 		int loop_count = 0; // infinite
 		int timems_per_frame = 33;
 
 		WebPConfig config;
-		if (WebPConfigInit(&config) == 0) CRITICAL_RAWRBOX("Error initializing WebP config!");
+		if (WebPConfigInit(&config) == 0) RAWRBOX_CRITICAL("Error initializing WebP config!");
 
 		config.quality = 100; // Set quality to 100
 		config.lossless = 1;  // Set lossless encoding
 
 		WebPPicture picture;
-		if (WebPPictureInit(&picture) == 0) CRITICAL_RAWRBOX("Error initializing WebP picture!");
+		if (WebPPictureInit(&picture) == 0) RAWRBOX_CRITICAL("Error initializing WebP picture!");
 
 		picture.width = data.size.x;
 		picture.height = data.size.y;
 
 		if (WebPPictureAlloc(&picture) == 0) {
 			WebPPictureFree(&picture);
-			CRITICAL_RAWRBOX("Error allocating WebP picture!");
+			RAWRBOX_CRITICAL("Error allocating WebP picture!");
 		}
 
 		WebPAnimEncoder* encoder = nullptr;
@@ -89,7 +89,7 @@ namespace rawrbox {
 
 		if (WebPAnimEncoderOptionsInit(&enc_options) == 0) {
 			WebPPictureFree(&picture);
-			CRITICAL_RAWRBOX("Error initializing WebP animation encoder options!");
+			RAWRBOX_CRITICAL("Error initializing WebP animation encoder options!");
 		}
 
 		for (size_t i = 0; i < data.frames.size(); i++) {
@@ -97,7 +97,7 @@ namespace rawrbox {
 
 			if (WebPPictureImportRGBA(&picture, frame.pixels.data(), static_cast<int>(frame.pixels.size() / 4)) == 0) {
 				WebPPictureFree(&picture);
-				CRITICAL_RAWRBOX("Error importing RGBA data to WebP picture!");
+				RAWRBOX_CRITICAL("Error importing RGBA data to WebP picture!");
 			}
 
 			// if (colorspace == 0) WebPPictureARGBToYUVA(&pic, WebPEncCSP::WEBP_YUV420);
@@ -107,7 +107,7 @@ namespace rawrbox {
 
 			if (WebPAnimEncoderAdd(encoder, &picture, timems_per_frame * static_cast<int>(i), &config) == 0) {
 				WebPPictureFree(&picture);
-				CRITICAL_RAWRBOX("Error adding frame to WebP animation encoder!");
+				RAWRBOX_CRITICAL("Error adding frame to WebP animation encoder!");
 			}
 		}
 
@@ -116,7 +116,7 @@ namespace rawrbox {
 
 		if (WebPAnimEncoderAssemble(encoder, &webpData) == 0) {
 			WebPPictureFree(&picture);
-			CRITICAL_RAWRBOX("Error assembling WebP animation!");
+			RAWRBOX_CRITICAL("Error assembling WebP animation!");
 		}
 
 		// Mux assemble

@@ -226,11 +226,11 @@ namespace rawrbox {
 		template <typename T, std::size_t Extent>
 		fastgltf::span<T, fastgltf::dynamic_extent> subspan(fastgltf::span<T, Extent> span, size_t offset, size_t count = fastgltf::dynamic_extent) {
 			if (offset >= span.size()) {
-				CRITICAL_RAWRBOX("Offset is out of range");
+				RAWRBOX_CRITICAL("Offset is out of range");
 			}
 
 			if (count != fastgltf::dynamic_extent && count > span.size() - offset) {
-				CRITICAL_RAWRBOX("Count is out of range");
+				RAWRBOX_CRITICAL("Count is out of range");
 			}
 
 			if (count == fastgltf::dynamic_extent) {

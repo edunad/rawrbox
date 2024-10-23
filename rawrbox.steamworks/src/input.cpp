@@ -21,7 +21,7 @@ namespace rawrbox {
 	// ------------
 
 	void SteamINPUT::init() {
-		if (SteamInput() == nullptr) CRITICAL_RAWRBOX("SteamInput is null");
+		if (SteamInput() == nullptr) RAWRBOX_CRITICAL("SteamInput is null");
 		SteamInput()->Init(false);
 	}
 

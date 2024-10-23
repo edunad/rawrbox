@@ -67,13 +67,13 @@ namespace rawrbox {
 					if constexpr (supportsBones<typename M::vertexBufferType>) {
 						this->processSkeletonAnimations(dynamic_cast<rawrbox::AnimationSkeletonSampler*>(sample));
 					} else {
-						CRITICAL_RAWRBOX("Failed to play animation {}, model does not support bones", sample->getAnimation()->name());
+						RAWRBOX_CRITICAL("Failed to play animation {}, model does not support bones", sample->getAnimation()->name());
 					}
 					break;
 
 				default:
 				case ozz::animation::UNKNOWN:
-					CRITICAL_RAWRBOX("Unknown animation type");
+					RAWRBOX_CRITICAL("Unknown animation type");
 			}
 		}
 
@@ -263,8 +263,8 @@ namespace rawrbox {
 		}
 
 		void updateBuffers() override {
-			if (!this->isUploaded()) CRITICAL_RAWRBOX("Model is not uploaded!");
-			if (!this->isDynamic()) CRITICAL_RAWRBOX("Model is not dynamic!");
+			if (!this->isUploaded()) RAWRBOX_CRITICAL("Model is not uploaded!");
+			if (!this->isDynamic()) RAWRBOX_CRITICAL("Model is not dynamic!");
 
 			this->flattenMeshes();
 			rawrbox::ModelBase<M>::updateBuffers();
@@ -272,7 +272,7 @@ namespace rawrbox {
 
 		// ANIMATIONS ----
 		virtual bool blendAnimation(const std::string& /*otherAnim*/, float /*blend*/) {
-			CRITICAL_RAWRBOX("TODO");
+			RAWRBOX_CRITICAL("TODO");
 		}
 
 		virtual std::vector<rawrbox::AnimationSampler*> playAnimation(std::function<void(const std::string&)> onComplete = nullptr) {
@@ -400,7 +400,7 @@ namespace rawrbox {
 		}
 
 		virtual rawrbox::Mesh<typename M::vertexBufferType>* addMesh(size_t index, rawrbox::Mesh<typename M::vertexBufferType> mesh) {
-			if (index >= this->_meshes.size()) CRITICAL_RAWRBOX("Index out of bounds");
+			if (index >= this->_meshes.size()) RAWRBOX_CRITICAL("Index out of bounds");
 
 			this->_bbox.combine(mesh.getBBOX());
 			mesh.owner = this;

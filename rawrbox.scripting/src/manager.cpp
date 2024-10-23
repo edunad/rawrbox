@@ -87,7 +87,7 @@ namespace rawrbox {
 	// LOAD -----
 	void SCRIPTING::loadLibraries(rawrbox::Mod& mod) {
 		auto* L = mod.getEnvironment();
-		if (L == nullptr) CRITICAL_RAWRBOX("LUA is not set! Reference got destroyed?");
+		if (L == nullptr) RAWRBOX_CRITICAL("LUA is not set! Reference got destroyed?");
 
 		// COMMON -----
 		luaL_openlibs(L); // Should be safe, since LUAU takes care of non-secure libs (https://luau-lang.org/sandbox#library)
@@ -121,7 +121,7 @@ namespace rawrbox {
 
 	void SCRIPTING::loadTypes(rawrbox::Mod& mod) {
 		auto* L = mod.getEnvironment();
-		if (L == nullptr) CRITICAL_RAWRBOX("LUA is not set! Reference got destroyed?");
+		if (L == nullptr) RAWRBOX_CRITICAL("LUA is not set! Reference got destroyed?");
 		// Register types, these will be read-only & sandboxed!
 
 		// Rawrbox ---
@@ -164,7 +164,7 @@ namespace rawrbox {
 
 	void SCRIPTING::loadGlobals(rawrbox::Mod& mod) {
 		auto* L = mod.getEnvironment();
-		if (L == nullptr) CRITICAL_RAWRBOX("LUA is not set! Reference got destroyed?");
+		if (L == nullptr) RAWRBOX_CRITICAL("LUA is not set! Reference got destroyed?");
 		// Register globals, these will be read-only & sandboxed!
 
 		// OVERRIDES ----
@@ -347,7 +347,7 @@ namespace rawrbox {
 
 	// LOADING ----
 	std::unordered_map<std::filesystem::path, rawrbox::Mod*> SCRIPTING::loadMods(const std::filesystem::path& rootFolder) { // Load mods
-		if (!std::filesystem::exists(rootFolder)) CRITICAL_RAWRBOX("Failed to locate root folder '{}'", rootFolder.generic_string());
+		if (!std::filesystem::exists(rootFolder)) RAWRBOX_CRITICAL("Failed to locate root folder '{}'", rootFolder.generic_string());
 
 		std::unordered_map<std::filesystem::path, rawrbox::Mod*> success = {};
 		for (const auto& p : std::filesystem::directory_iterator(rootFolder)) {
@@ -361,8 +361,8 @@ namespace rawrbox {
 	}
 
 	rawrbox::Mod* SCRIPTING::loadMod(const std::string& id, const std::filesystem::path& modFolder) {
-		if (id.empty()) CRITICAL_RAWRBOX("Mod ID cannot be empty");
-		if (!std::filesystem::exists(modFolder)) CRITICAL_RAWRBOX("Failed to locate mod folder '{}'", modFolder.generic_string());
+		if (id.empty()) RAWRBOX_CRITICAL("Mod ID cannot be empty");
+		if (!std::filesystem::exists(modFolder)) RAWRBOX_CRITICAL("Failed to locate mod folder '{}'", modFolder.generic_string());
 
 		if (_mods.find(id) != _mods.end()) {
 			_logger->warn("Mod {} already loaded! Mod name conflict?", id);
@@ -375,7 +375,7 @@ namespace rawrbox {
 
 		if (std::filesystem::exists(configPath)) {
 			auto ec = glz::read_file_json(metadataJSON, configPath.generic_string(), std::string{});
-			if (ec) CRITICAL_RAWRBOX("Failed to load mod.json");
+			if (ec) RAWRBOX_CRITICAL("Failed to load mod.json");
 		}
 		// -----------------
 

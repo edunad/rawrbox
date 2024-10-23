@@ -12,7 +12,7 @@ namespace rawrbox {
 	// -------------
 
 	void ASYNC::init(uint32_t threads) {
-		if (_pool != nullptr) CRITICAL_RAWRBOX("ASYNC init already called!");
+		if (_pool != nullptr) RAWRBOX_CRITICAL("ASYNC init already called!");
 		_pool = std::make_unique<BS::thread_pool>(threads);
 	}
 
@@ -24,12 +24,12 @@ namespace rawrbox {
 	}
 
 	void ASYNC::run(const std::function<void()>& job) {
-		if (_pool == nullptr) CRITICAL_RAWRBOX("ASYNC not initialized!");
+		if (_pool == nullptr) RAWRBOX_CRITICAL("ASYNC not initialized!");
 
 		try {
 			_pool->detach_task(job);
 		} catch (const std::exception& e) {
-			CRITICAL_RAWRBOX("Fatal error\n  └── {}", e.what());
+			RAWRBOX_CRITICAL("Fatal error\n  └── {}", e.what());
 		}
 	}
 } // namespace rawrbox

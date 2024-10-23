@@ -62,7 +62,7 @@ namespace rawrbox {
 			auto indcSize = static_cast<uint32_t>(this->_mesh->indices.size());
 
 			auto empty = vertSize == 0 || indcSize == 0;
-			if (empty) CRITICAL_RAWRBOX("Invalid mesh! Missing vertices / indices!");
+			if (empty) RAWRBOX_CRITICAL("Invalid mesh! Missing vertices / indices!");
 
 			// Store original positions for blendstates
 			this->_original_data.clear();
@@ -79,8 +79,8 @@ namespace rawrbox {
 		}
 
 		virtual void applyBlendShapes() {
-			if (!this->isUploaded()) CRITICAL_RAWRBOX("Blendshapes require the model to be uploaded!");
-			if (!this->isDynamic()) CRITICAL_RAWRBOX("Blendshapes require the model to be dynamic!");
+			if (!this->isUploaded()) RAWRBOX_CRITICAL("Blendshapes require the model to be uploaded!");
+			if (!this->isDynamic()) RAWRBOX_CRITICAL("Blendshapes require the model to be dynamic!");
 
 			if (this->_original_data.empty()) this->calculateOriginalShape(); // Initial setup
 
@@ -92,11 +92,11 @@ namespace rawrbox {
 				auto& blendNormals = shape.second->normals;
 
 				if (!blendPos.empty() && blendPos.size() != verts.size()) {
-					CRITICAL_RAWRBOX("Blendshape verts do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendPos.size());
+					RAWRBOX_CRITICAL("Blendshape verts do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendPos.size());
 				}
 
 				if (!blendNormals.empty() && blendNormals.size() != verts.size()) {
-					CRITICAL_RAWRBOX("Blendshape normals do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendNormals.size());
+					RAWRBOX_CRITICAL("Blendshape normals do not match with the mesh '{}' verts! Total verts: {}, blend shape verts: {}", shape.first, verts.size(), blendNormals.size());
 				}
 
 				float step = std::clamp(shape.second->weight, 0.F, 1.F);
@@ -183,7 +183,7 @@ namespace rawrbox {
 			auto* device = rawrbox::RENDERER->device();
 
 			auto indcSize = static_cast<uint64_t>(std::max<size_t>(this->_mesh->indices.capacity(), this->isDynamic() ? 1U : 0U)); // RESIZABLE requires at least one vertice
-			if (indcSize == 0) CRITICAL_RAWRBOX("Indices data cannot be empty!");
+			if (indcSize == 0) RAWRBOX_CRITICAL("Indices data cannot be empty!");
 
 			Diligent::BufferDesc IndcBuffDesc;
 			IndcBuffDesc.Name = "RawrBox::Buffer::Indices";
@@ -197,7 +197,7 @@ namespace rawrbox {
 			IBData.DataSize = IndcBuffDesc.Size;
 
 			device->CreateBuffer(IndcBuffDesc, &IBData, &this->_ibh);
-			if (this->_ibh == nullptr) CRITICAL_RAWRBOX("Failed to create index buffer");
+			if (this->_ibh == nullptr) RAWRBOX_CRITICAL("Failed to create index buffer");
 
 			rawrbox::BarrierUtils::barrier({{this->_ibh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_INDEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		}
@@ -206,7 +206,7 @@ namespace rawrbox {
 			auto* device = rawrbox::RENDERER->device();
 
 			auto vertSize = static_cast<uint64_t>(std::max<size_t>(this->_mesh->vertices.capacity(), this->isDynamic() ? 1U : 0U)); // RESIZABLE requires at least one vertice
-			if (vertSize == 0) CRITICAL_RAWRBOX("Vertices data cannot be empty!");
+			if (vertSize == 0) RAWRBOX_CRITICAL("Vertices data cannot be empty!");
 
 			Diligent::BufferDesc VertBuffDesc;
 			VertBuffDesc.Name = "RawrBox::Buffer::Vertex";
@@ -219,7 +219,7 @@ namespace rawrbox {
 			VBData.DataSize = VertBuffDesc.Size;
 
 			device->CreateBuffer(VertBuffDesc, &VBData, &this->_vbh);
-			if (this->_vbh == nullptr) CRITICAL_RAWRBOX("Failed to create vertex buffer");
+			if (this->_vbh == nullptr) RAWRBOX_CRITICAL("Failed to create vertex buffer");
 
 			rawrbox::BarrierUtils::barrier({{this->_vbh, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		}
@@ -243,7 +243,7 @@ namespace rawrbox {
 
 		// BLEND SHAPES ---
 		bool createBlendShape(const std::string& id, const std::vector<rawrbox::Vector3f>& newVertexPos, const std::vector<rawrbox::Vector4f>& newNormPos, float weight = 0.F) {
-			if (this->_mesh == nullptr) CRITICAL_RAWRBOX("Mesh not initialized!");
+			if (this->_mesh == nullptr) RAWRBOX_CRITICAL("Mesh not initialized!");
 
 			auto blend = std::make_unique<rawrbox::BlendShapes<M>>();
 			blend->pos = newVertexPos;
@@ -340,7 +340,7 @@ namespace rawrbox {
 
 		// ----
 		virtual void upload(rawrbox::UploadType type = rawrbox::UploadType::STATIC) {
-			if (this->isUploaded()) CRITICAL_RAWRBOX("Already uploaded!");
+			if (this->isUploaded()) RAWRBOX_CRITICAL("Already uploaded!");
 			this->_uploadType = type;
 
 			// BUFFERS ----
@@ -354,8 +354,8 @@ namespace rawrbox {
 		}
 
 		virtual void draw() {
-			if (!this->isUploaded()) CRITICAL_RAWRBOX("Failed to render model, vertex / index buffer is not uploaded");
-			if (this->_material == nullptr) CRITICAL_RAWRBOX("Material not set");
+			if (!this->isUploaded()) RAWRBOX_CRITICAL("Failed to render model, vertex / index buffer is not uploaded");
+			if (this->_material == nullptr) RAWRBOX_CRITICAL("Material not set");
 
 			auto* context = rawrbox::RENDERER->context();
 

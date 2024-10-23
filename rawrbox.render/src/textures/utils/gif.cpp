@@ -7,10 +7,10 @@ namespace rawrbox {
 	std::unique_ptr<rawrbox::Logger> GIF::_logger = std::make_unique<rawrbox::Logger>("RawrBox-GIF");
 
 	rawrbox::ImageData GIF::internalLoad(int width, int height, int frames_n, uint8_t* gifPixels, int* delays) {
-		if (width == 0 || height == 0) CRITICAL_RAWRBOX("Invalid image size: {}x{}", width, height);
+		if (width == 0 || height == 0) RAWRBOX_CRITICAL("Invalid image size: {}x{}", width, height);
 		if (gifPixels == nullptr || delays == nullptr) {
 			const auto* failure = stbi_failure_reason();
-			CRITICAL_RAWRBOX("Error loading image: {}", failure);
+			RAWRBOX_CRITICAL("Error loading image: {}", failure);
 		}
 
 		rawrbox::ImageData imgData = {};
@@ -38,7 +38,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::ImageData GIF::decode(const std::filesystem::path& path) {
-		if (!std::filesystem::exists(path)) CRITICAL_RAWRBOX("Could not find file {}", path.generic_string());
+		if (!std::filesystem::exists(path)) RAWRBOX_CRITICAL("Could not find file {}", path.generic_string());
 
 		int frames_n = 0;
 		int* delays = nullptr;
@@ -52,7 +52,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::ImageData GIF::decode(const std::vector<uint8_t>& data) {
-		if (data.empty()) CRITICAL_RAWRBOX("Invalid data, cannot be empty!");
+		if (data.empty()) RAWRBOX_CRITICAL("Invalid data, cannot be empty!");
 
 		int frames_n = 0;
 		int* delays = nullptr;

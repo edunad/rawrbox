@@ -14,10 +14,10 @@ namespace rawrbox {
 
 		while (this->advance()) {
 			auto frame = this->getFrame();
-			if (!frame.valid()) CRITICAL_RAWRBOX("Failed to find frame");
+			if (!frame.valid()) RAWRBOX_CRITICAL("Failed to find frame");
 
 			rawrbox::WEBMImage img;
-			if (!rawrbox::WEBMDecoder::decode(frame, img) || !img.valid()) CRITICAL_RAWRBOX("Failed to decode frame");
+			if (!rawrbox::WEBMDecoder::decode(frame, img) || !img.valid()) RAWRBOX_CRITICAL("Failed to decode frame");
 
 			this->_preloadedFrames[frame.pos] = img;
 		}
@@ -27,24 +27,24 @@ namespace rawrbox {
 	}
 
 	void WEBM::internalLoad() {
-		if (this->_reader == nullptr) CRITICAL_RAWRBOX("Reader not initialized!");
+		if (this->_reader == nullptr) RAWRBOX_CRITICAL("Reader not initialized!");
 
 		// Get the file info
 		long long pos = 0;
 		if (mkvparser::EBMLHeader().Parse(this->_reader.get(), pos) != 0) {
-			CRITICAL_RAWRBOX("File parsing failed");
+			RAWRBOX_CRITICAL("File parsing failed");
 		}
 
 		// Create a segment instance
 		mkvparser::Segment* pSegment = nullptr;
 		if (mkvparser::Segment::CreateInstance(this->_reader.get(), pos, pSegment) != 0) {
-			CRITICAL_RAWRBOX("Failed to create file segment");
+			RAWRBOX_CRITICAL("Failed to create file segment");
 		}
 
 		this->_segment = std::unique_ptr<mkvparser::Segment>(pSegment);
 
 		if (this->_segment == nullptr || this->_segment->Load() < 0) {
-			CRITICAL_RAWRBOX("Failed to load segment");
+			RAWRBOX_CRITICAL("Failed to load segment");
 		}
 
 		const mkvparser::Tracks* tracks = this->_segment->GetTracks();
@@ -52,10 +52,10 @@ namespace rawrbox {
 
 		const mkvparser::SegmentInfo* const segmentInfo = this->_segment->GetInfo();
 		if (segmentInfo == nullptr) {
-			CRITICAL_RAWRBOX("Failed to load segment info");
+			RAWRBOX_CRITICAL("Failed to load segment info");
 		}
 
-		if (this->_segment->GetCount() <= 0) CRITICAL_RAWRBOX("Track {} does not contain any cluster data!", this->_trackId);
+		if (this->_segment->GetCount() <= 0) RAWRBOX_CRITICAL("Track {} does not contain any cluster data!", this->_trackId);
 
 		this->_info.duration = segmentInfo->GetDuration();
 		this->_info.timeScale = segmentInfo->GetTimeCodeScale();
@@ -79,7 +79,7 @@ namespace rawrbox {
 					if (this->_info.vCodec != rawrbox::VIDEO_CODEC::UNKNOWN) {
 						this->_video = dynamic_cast<const mkvparser::VideoTrack*>(track);
 					} else {
-						CRITICAL_RAWRBOX("Unknown video codec '{}'", codecId);
+						RAWRBOX_CRITICAL("Unknown video codec '{}'", codecId);
 					}
 
 					break;
@@ -88,7 +88,7 @@ namespace rawrbox {
 		}
 		// ----
 
-		if (this->_video == nullptr) CRITICAL_RAWRBOX("Failed to find track {}", this->_trackId);
+		if (this->_video == nullptr) RAWRBOX_CRITICAL("Failed to find track {}", this->_trackId);
 		this->_videoTrack = this->_video->GetNumber();
 
 		// Append extra info ----
@@ -123,13 +123,13 @@ namespace rawrbox {
 		this->_reader = std::make_unique<mkvparser::MkvReader>();
 
 		if (this->_reader->Open(filePath.string().c_str()) != 0)
-			CRITICAL_RAWRBOX("Filename is invalid or error while opening");
+			RAWRBOX_CRITICAL("Filename is invalid or error while opening");
 
 		this->internalLoad();
 	}
 
 	bool WEBM::advance() {
-		if (this->_video == nullptr) CRITICAL_RAWRBOX("Video not loaded! Did you call load()?");
+		if (this->_video == nullptr) RAWRBOX_CRITICAL("Video not loaded! Did you call load()?");
 		if (this->_paused) return false;
 
 		if (this->eos()) {
@@ -211,7 +211,7 @@ namespace rawrbox {
 	}
 
 	void WEBM::reset() {
-		if (this->_video == nullptr || this->_segment == nullptr) CRITICAL_RAWRBOX("Video not loaded! Did you call 'load' ?");
+		if (this->_video == nullptr || this->_segment == nullptr) RAWRBOX_CRITICAL("Video not loaded! Did you call 'load' ?");
 
 		this->_cluster = this->_segment->GetFirst();
 
@@ -224,7 +224,7 @@ namespace rawrbox {
 	}
 
 	void WEBM::seek(uint64_t timeMS) {
-		if (this->_video == nullptr || this->_segment == nullptr) CRITICAL_RAWRBOX("Video not loaded! Did you call 'load' ?");
+		if (this->_video == nullptr || this->_segment == nullptr) RAWRBOX_CRITICAL("Video not loaded! Did you call 'load' ?");
 
 		this->_cluster = this->_segment->FindCluster(timeMS * 1000000);
 

@@ -35,7 +35,7 @@ namespace rawrbox {
 		}
 
 		virtual void setTemplate(rawrbox::Mesh<typename M::vertexBufferType> mesh) {
-			if (mesh.empty()) CRITICAL_RAWRBOX("Invalid mesh! Missing vertices / indices!");
+			if (mesh.empty()) RAWRBOX_CRITICAL("Invalid mesh! Missing vertices / indices!");
 			this->_mesh = std::make_unique<rawrbox::Mesh<typename M::vertexBufferType>>(mesh);
 
 			if (this->isUploaded() && this->isDynamic()) {
@@ -44,7 +44,7 @@ namespace rawrbox {
 		}
 
 		[[nodiscard]] virtual rawrbox::Mesh<typename M::vertexBufferType>& getTemplate() const {
-			if (this->_mesh == nullptr) CRITICAL_RAWRBOX("Invalid mesh! Missing vertices / indices!");
+			if (this->_mesh == nullptr) RAWRBOX_CRITICAL("Invalid mesh! Missing vertices / indices!");
 			return *this->_mesh;
 		}
 
@@ -53,12 +53,12 @@ namespace rawrbox {
 		}
 
 		virtual void removeInstance(size_t i = 0) {
-			if (i >= this->_instances.size()) CRITICAL_RAWRBOX("Failed to find instance");
+			if (i >= this->_instances.size()) RAWRBOX_CRITICAL("Failed to find instance");
 			this->_instances.erase(this->_instances.begin() + i);
 		}
 
 		[[nodiscard]] rawrbox::Instance& getInstance(size_t i = 0) {
-			if (i >= this->_instances.size()) CRITICAL_RAWRBOX("Failed to find instance");
+			if (i >= this->_instances.size()) RAWRBOX_CRITICAL("Failed to find instance");
 			return this->_instances[i];
 		}
 
@@ -92,7 +92,7 @@ namespace rawrbox {
 		}
 
 		virtual void updateInstances() {
-			if (this->_dataBuffer == nullptr) CRITICAL_RAWRBOX("Data buffer not valid! Did you call upload()?");
+			if (this->_dataBuffer == nullptr) RAWRBOX_CRITICAL("Data buffer not valid! Did you call upload()?");
 
 			auto* context = rawrbox::RENDERER->context();
 			auto* device = rawrbox::RENDERER->device();
@@ -114,7 +114,7 @@ namespace rawrbox {
 		}
 
 		void draw() override {
-			if (!this->isUploaded()) CRITICAL_RAWRBOX("Failed to render model, vertex / index buffer is not uploaded");
+			if (!this->isUploaded()) RAWRBOX_CRITICAL("Failed to render model, vertex / index buffer is not uploaded");
 			if (this->_instances.empty()) return;
 
 			auto* context = rawrbox::RENDERER->context();

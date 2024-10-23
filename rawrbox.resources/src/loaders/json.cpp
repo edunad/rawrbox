@@ -12,7 +12,7 @@ namespace rawrbox {
 	bool ResourceJSON::load(const std::vector<uint8_t>& buffer) {
 		auto err = glz::read_json(this->_json, buffer);
 		if (err != glz::error_code::none) {
-			CRITICAL_RAWRBOX("Failed to load '{}' ──> {}\n", this->filePath.generic_string(), magic_enum::enum_name(err.ec));
+			RAWRBOX_CRITICAL("Failed to load '{}' ──> {}\n", this->filePath.generic_string(), magic_enum::enum_name(err.ec));
 		}
 
 		return true;

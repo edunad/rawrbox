@@ -8,7 +8,7 @@ namespace rawrbox {
 	//  -------------
 
 	void BarrierUtils::barrier(const std::vector<Diligent::StateTransitionDesc>& resources) {
-		if (std::this_thread::get_id() != rawrbox::RENDER_THREAD_ID) CRITICAL_RAWRBOX("Barriers can only be processed on the main render thread");
+		if (std::this_thread::get_id() != rawrbox::RENDER_THREAD_ID) RAWRBOX_CRITICAL("Barriers can only be processed on the main render thread");
 
 		std::vector<Diligent::StateTransitionDesc> states = {};
 		for (auto barrier : resources) {

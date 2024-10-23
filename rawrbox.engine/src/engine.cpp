@@ -26,7 +26,7 @@ namespace rawrbox {
 	}
 
 	// Create the GLFW window
-	void Engine::setupGLFW() { CRITICAL_RAWRBOX("Method 'setupGLFW' not implemented"); }
+	void Engine::setupGLFW() { RAWRBOX_CRITICAL("Method 'setupGLFW' not implemented"); }
 	void Engine::init() {}
 	void Engine::pollEvents() {}
 	void Engine::fixedUpdate() {}

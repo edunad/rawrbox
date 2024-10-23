@@ -444,7 +444,7 @@ namespace rawrbox {
 				const std::string jointName = std::string(node.name);
 
 				auto fnd = this->joints.find(jointName);
-				if (fnd == this->joints.end()) CRITICAL_RAWRBOX("Invalid joint '{}', could not find in skeleton", jointName);
+				if (fnd == this->joints.end()) RAWRBOX_CRITICAL("Invalid joint '{}', could not find in skeleton", jointName);
 
 				fnd->second->skeleton = this->skeletons[i].get();
 			}
@@ -682,7 +682,7 @@ namespace rawrbox {
 
 				for (size_t o = 0; o < primitive.targets.size(); o++) {
 					const auto& blendNames = this->targetNames[meshIndex];
-					if (blendNames.empty()) CRITICAL_RAWRBOX("Invalid blend shape names for mesh '{}'", gltfMesh->name);
+					if (blendNames.empty()) RAWRBOX_CRITICAL("Invalid blend shape names for mesh '{}'", gltfMesh->name);
 
 					rawrbox::GLTFBlendShape& shape = rawrPrimitive.blendShapes[o];
 					shape.name = fmt::format("{}-{}", gltfMesh->name, blendNames[o]);
@@ -765,7 +765,7 @@ namespace rawrbox {
 
 		// POSITION ----
 		const auto* positionAttribute = primitive.findAttribute("POSITION");
-		if (positionAttribute == nullptr) CRITICAL_RAWRBOX("Invalid gltf model, missing 'POSITION' attribute!"); // All models have POSITION
+		if (positionAttribute == nullptr) RAWRBOX_CRITICAL("Invalid gltf model, missing 'POSITION' attribute!"); // All models have POSITION
 
 		const auto& positionAccessor = scene.accessors[positionAttribute->accessorIndex];
 		verts.resize(positionAccessor.count);
@@ -857,13 +857,13 @@ namespace rawrbox {
 	fastgltf::sources::ByteView GLTFImporter::getSourceData(const fastgltf::Asset& scene, const fastgltf::DataSource& source) {
 		return std::visit(fastgltf::visitor{
 				      [&](auto& /*arg*/) -> fastgltf::sources::ByteView {
-					      CRITICAL_RAWRBOX("Invalid data");
+					      RAWRBOX_CRITICAL("Invalid data");
 				      },
 				      [&](std::monostate) -> fastgltf::sources::ByteView {
-					      CRITICAL_RAWRBOX("Invalid data");
+					      RAWRBOX_CRITICAL("Invalid data");
 				      },
 				      [&](fastgltf::sources::Fallback) -> fastgltf::sources::ByteView {
-					      CRITICAL_RAWRBOX("Invalid data");
+					      RAWRBOX_CRITICAL("Invalid data");
 				      },
 				      [&](const fastgltf::sources::BufferView& buffer_view) -> fastgltf::sources::ByteView {
 					      const fastgltf::BufferView& view = scene.bufferViews.at(buffer_view.bufferViewIndex);
@@ -873,7 +873,7 @@ namespace rawrbox {
 					      return {subspan(data.bytes, view.byteOffset, view.byteLength), buffer_view.mimeType};
 				      },
 				      [&](const fastgltf::sources::URI& /*filePath*/) -> fastgltf::sources::ByteView {
-					      CRITICAL_RAWRBOX("Use fastgltf::Options::LoadExternalImages instead!");
+					      RAWRBOX_CRITICAL("Use fastgltf::Options::LoadExternalImages instead!");
 				      },
 				      [&](const fastgltf::sources::Vector& vector) -> fastgltf::sources::ByteView {
 					      fastgltf::span<const std::byte> data{std::bit_cast<const std::byte*>(vector.bytes.data()), vector.bytes.size()};
@@ -884,7 +884,7 @@ namespace rawrbox {
 					      return {data, array.mimeType};
 				      },
 				      [&](const fastgltf::sources::CustomBuffer& /*custom_buffer*/) -> fastgltf::sources::ByteView {
-					      CRITICAL_RAWRBOX("Invalid data");
+					      RAWRBOX_CRITICAL("Invalid data");
 				      },
 				      [&](fastgltf::sources::ByteView& byte_view) -> fastgltf::sources::ByteView {
 					      return {byte_view.bytes, byte_view.mimeType};
@@ -937,7 +937,7 @@ namespace rawrbox {
 	}
 
 	void GLTFImporter::load(const std::filesystem::path& path) {
-		if (!std::filesystem::exists(path)) CRITICAL_RAWRBOX("File '{}' does not exist!", path.generic_string());
+		if (!std::filesystem::exists(path)) RAWRBOX_CRITICAL("File '{}' does not exist!", path.generic_string());
 
 		this->filePath = path;
 

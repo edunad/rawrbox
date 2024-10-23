@@ -45,13 +45,13 @@ namespace rawrbox {
 	}
 
 	std::vector<uint8_t> TextureAtlas::getSprite(size_t id) const {
-		if (id >= this->_data.frames.size()) CRITICAL_RAWRBOX("Invalid ID {}", id);
+		if (id >= this->_data.frames.size()) RAWRBOX_CRITICAL("Invalid ID {}", id);
 		return this->_data.frames[id].pixels;
 	}
 	// --------------------
 
 	void TextureAtlas::processAtlas(const rawrbox::ImageData& data) {
-		if (!data.valid() || data.total() == 0) CRITICAL_RAWRBOX("Invalid image data!");
+		if (!data.valid() || data.total() == 0) RAWRBOX_CRITICAL("Invalid image data!");
 
 		const auto& pixels = data.frames[0].pixels;
 

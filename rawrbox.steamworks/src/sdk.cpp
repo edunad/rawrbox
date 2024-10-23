@@ -33,7 +33,7 @@ namespace rawrbox {
 	rawrbox::Event<> SteamSDK::onInitialized = {};
 
 	bool SteamSDK::init() {
-		if (_initialized) CRITICAL_RAWRBOX("SteamSDK already initialized");
+		if (_initialized) RAWRBOX_CRITICAL("SteamSDK already initialized");
 
 #ifdef NDEBUG
 		if (SteamAPI_RestartAppIfNecessary(STEAMWORKS_APPID)) return false;
@@ -82,7 +82,7 @@ namespace rawrbox {
 	}
 
 	std::string SteamSDK::getBuildVersion() {
-		if (SteamApps() == nullptr) CRITICAL_RAWRBOX("SteamApps not initialized");
+		if (SteamApps() == nullptr) RAWRBOX_CRITICAL("SteamApps not initialized");
 
 		int id = SteamApps()->GetAppBuildId();
 		std::string str = fmt::format("BUILD {}", id);
@@ -100,12 +100,12 @@ namespace rawrbox {
 
 	// USER ---
 	CSteamID SteamSDK::getSteamID() {
-		if (SteamUser() == nullptr) CRITICAL_RAWRBOX("SteamUser not initialized");
+		if (SteamUser() == nullptr) RAWRBOX_CRITICAL("SteamUser not initialized");
 		return SteamUser()->GetSteamID();
 	}
 
 	std::string SteamSDK::getPersonaName(const CSteamID& id) {
-		if (SteamFriends() == nullptr) CRITICAL_RAWRBOX("SteamFriends not initialized");
+		if (SteamFriends() == nullptr) RAWRBOX_CRITICAL("SteamFriends not initialized");
 
 		if (!SteamFriends()->RequestUserInformation(id, true)) {
 			const auto* name = SteamFriends()->GetFriendPersonaName(id);
@@ -116,7 +116,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::SteamImage SteamSDK::getAvatar(const CSteamID& id, const rawrbox::AvatarSize& size) {
-		if (SteamUser() == nullptr) CRITICAL_RAWRBOX("SteamUser not initialized");
+		if (SteamUser() == nullptr) RAWRBOX_CRITICAL("SteamUser not initialized");
 		rawrbox::SteamImage avatar = {};
 
 		int ptrId = 0;
@@ -131,7 +131,7 @@ namespace rawrbox {
 	}
 
 	std::vector<CSteamID> SteamSDK::getFriends() {
-		if (SteamFriends() == nullptr) CRITICAL_RAWRBOX("SteamUser not initialized");
+		if (SteamFriends() == nullptr) RAWRBOX_CRITICAL("SteamUser not initialized");
 		int friendCount = SteamFriends()->GetFriendCount(k_EFriendFlagImmediate);
 
 		std::vector<CSteamID> friends = {};

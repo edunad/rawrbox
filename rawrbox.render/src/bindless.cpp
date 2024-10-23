@@ -28,7 +28,7 @@ namespace rawrbox {
 	// --------------
 
 	void BindlessManager::init() {
-		if (signature != nullptr) CRITICAL_RAWRBOX("Signature already bound!");
+		if (signature != nullptr) RAWRBOX_CRITICAL("Signature already bound!");
 		_logger->info("Initializing bindless manager");
 
 		auto* renderer = rawrbox::RENDERER;
@@ -224,7 +224,7 @@ namespace rawrbox {
 
 	// REGISTER TEXTURES -------
 	void BindlessManager::registerTexture(rawrbox::TextureRender& texture) {
-		if (signature == nullptr) CRITICAL_RAWRBOX("Signature not bound! Did you call init?");
+		if (signature == nullptr) RAWRBOX_CRITICAL("Signature not bound! Did you call init?");
 		if (texture.isRegistered()) return; // Check if it's already registered --
 
 		auto* pDepthSRV = texture.getDepth(); // Get depth
@@ -242,11 +242,11 @@ namespace rawrbox {
 	}
 
 	void BindlessManager::registerTexture(rawrbox::TextureBase& texture) {
-		if (signature == nullptr) CRITICAL_RAWRBOX("Signature not bound! Did you call init?");
+		if (signature == nullptr) RAWRBOX_CRITICAL("Signature not bound! Did you call init?");
 		if (texture.isRegistered()) return; // Check if it's already registered --
 
 		auto* pTextureSRV = texture.getHandle(); // Get shader resource view from the texture
-		if (pTextureSRV == nullptr) CRITICAL_RAWRBOX("Failed to register texture '{}'! Texture view is null, not uploaded?", texture.getName());
+		if (pTextureSRV == nullptr) RAWRBOX_CRITICAL("Failed to register texture '{}'! Texture view is null, not uploaded?", texture.getName());
 
 		const bool isVertex = texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX;
 		const auto id = internalRegister(pTextureSRV, texture.getType());
@@ -267,8 +267,8 @@ namespace rawrbox {
 		const auto id = texture.getTextureID();
 		const auto depthId = texture.getDepthTextureID();
 
-		if (id >= handler.size()) CRITICAL_RAWRBOX("Index '{}' not found!", id);
-		if (depthId >= handler.size()) CRITICAL_RAWRBOX("Depth index '{}' not found!", id);
+		if (id >= handler.size()) RAWRBOX_CRITICAL("Index '{}' not found!", id);
+		if (depthId >= handler.size()) RAWRBOX_CRITICAL("Depth index '{}' not found!", id);
 
 		// Cleanup  ----
 		unregisterUpdateTexture(texture);
@@ -300,7 +300,7 @@ namespace rawrbox {
 
 		int size = static_cast<int>(handler.size());
 		if (size == static_cast<int>(max / 1.2F)) _logger->warn("Aproaching max texture limit of {}", fmt::styled(std::to_string(max), fmt::fg(fmt::color::red)));
-		if (size >= static_cast<int>(max)) CRITICAL_RAWRBOX("Max texture limit reached! Cannot allocate texture, remove some unecessary textures or increase max textures on renderer");
+		if (size >= static_cast<int>(max)) RAWRBOX_CRITICAL("Max texture limit reached! Cannot allocate texture, remove some unecessary textures or increase max textures on renderer");
 
 		int id = -1;
 

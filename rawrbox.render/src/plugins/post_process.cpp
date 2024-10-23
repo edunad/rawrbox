@@ -9,7 +9,7 @@ namespace rawrbox {
 	}
 
 	void PostProcessPlugin::initialize(const rawrbox::Vector2u& /*size*/) {
-		if (this->_buffer != nullptr) CRITICAL_RAWRBOX("Plugin already initialized!");
+		if (this->_buffer != nullptr) RAWRBOX_CRITICAL("Plugin already initialized!");
 
 		Diligent::BufferDesc BuffPixelDesc;
 		BuffPixelDesc.Name = "rawrbox::PostProcess";
@@ -57,12 +57,12 @@ namespace rawrbox {
 
 	// Post utils ----
 	void PostProcessPlugin::remove(size_t indx) {
-		if (this->_postProcesses.empty() || indx >= this->_postProcesses.size()) CRITICAL_RAWRBOX("Failed to remove {}!", indx);
+		if (this->_postProcesses.empty() || indx >= this->_postProcesses.size()) RAWRBOX_CRITICAL("Failed to remove {}!", indx);
 		this->_postProcesses.erase(this->_postProcesses.begin() + indx);
 	}
 
 	rawrbox::PostProcessBase* PostProcessPlugin::get(size_t indx) const {
-		if (indx >= this->_postProcesses.size()) CRITICAL_RAWRBOX("Failed to get {}!", indx);
+		if (indx >= this->_postProcesses.size()) RAWRBOX_CRITICAL("Failed to get {}!", indx);
 		return this->_postProcesses[indx].get();
 	}
 

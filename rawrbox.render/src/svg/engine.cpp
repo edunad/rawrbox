@@ -21,7 +21,7 @@ namespace rawrbox {
 		}
 
 		auto svg = lunasvg::Document::loadFromFile(name);
-		if (svg == nullptr) CRITICAL_RAWRBOX("Failed to load '{}'", name);
+		if (svg == nullptr) RAWRBOX_CRITICAL("Failed to load '{}'", name);
 
 		auto* ptr = svg.get();
 		_svgs[name] = std::move(svg);
@@ -54,7 +54,7 @@ namespace rawrbox {
 		if (fnd != _renderedSVGS.end()) return fnd->second.get();
 
 		auto* doc = SVGEngine::internalLoad(filename);
-		if (doc == nullptr) CRITICAL_RAWRBOX("Failed to load '{}'", filename.generic_string());
+		if (doc == nullptr) RAWRBOX_CRITICAL("Failed to load '{}'", filename.generic_string());
 
 		auto img = doc->renderToBitmap(size.x, size.y);
 		auto texture = std::make_unique<rawrbox::TextureImage>(size, img.data());

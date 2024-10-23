@@ -69,14 +69,14 @@ namespace rawrbox {
 				if (loader->supportsBuffer(ext)) {
 					buffer = rawrbox::FileUtils::getRawData(filePath);
 					if (buffer.empty()) {
-						CRITICAL_RAWRBOX("Failed to load file '{}'", path);
+						RAWRBOX_CRITICAL("Failed to load file '{}'", path);
 					}
 					ret->crc32 = CRC::Calculate(buffer.data(), buffer.size(), CRC::CRC_32());
 				}
 
 				ret->status = rawrbox::LoadStatus::LOADING;
 
-				if (!ret->load(buffer)) CRITICAL_RAWRBOX("Failed to load file '{}'", path);
+				if (!ret->load(buffer)) RAWRBOX_CRITICAL("Failed to load file '{}'", path);
 				ret->upload();
 
 				ret->status = rawrbox::LoadStatus::LOADED;
@@ -91,7 +91,7 @@ namespace rawrbox {
 				return ret;
 			}
 
-			CRITICAL_RAWRBOX("Attempted to load unknown file extension '{}'. Missing loader!", filePath.generic_string());
+			RAWRBOX_CRITICAL("Attempted to load unknown file extension '{}'. Missing loader!", filePath.generic_string());
 		}
 		// ---------
 
@@ -132,7 +132,7 @@ namespace rawrbox {
 		template <class T = rawrbox::Resource>
 			requires(std::derived_from<T, rawrbox::Resource>)
 		static T* loadFile(const std::filesystem::path& filePath, uint32_t loadFlags = 0) {
-			if (filePath.empty()) CRITICAL_RAWRBOX("Attempted to load empty path");
+			if (filePath.empty()) RAWRBOX_CRITICAL("Attempted to load empty path");
 			return loadFileImpl<T>(filePath, loadFlags);
 		}
 
@@ -155,7 +155,7 @@ namespace rawrbox {
 		template <class T = rawrbox::Resource>
 			requires(std::derived_from<T, rawrbox::Resource>)
 		static void loadFileAsync(const std::filesystem::path& filePath, uint32_t loadFlags = 0, const std::function<void()>& onComplete = nullptr) {
-			if (filePath.empty()) CRITICAL_RAWRBOX("Attempted to load empty path");
+			if (filePath.empty()) RAWRBOX_CRITICAL("Attempted to load empty path");
 
 			rawrbox::ASYNC::run([filePath, loadFlags, onComplete]() {
 				loadFileImpl<T>(filePath, loadFlags);
@@ -170,7 +170,7 @@ namespace rawrbox {
 		[[nodiscard]] static T* getFile(const std::filesystem::path& filePath) {
 			auto fl = getFileImpl<T>(filePath);
 			if (fl == nullptr) {
-				CRITICAL_RAWRBOX("File '{}' not loaded / found!", filePath.generic_string());
+				RAWRBOX_CRITICAL("File '{}' not loaded / found!", filePath.generic_string());
 			}
 
 			return fl;

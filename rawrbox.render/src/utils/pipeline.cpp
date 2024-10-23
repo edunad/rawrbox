@@ -149,10 +149,10 @@ namespace rawrbox {
 		if (shader != nullptr) {
 			_logger->info("Shader '{}' {}", fmt::styled(name, fmt::fg(fmt::color::coral)), fmt::styled(" [✓ OK]", fmt::fg(fmt::color::green_yellow)));
 		} else {
-			CRITICAL_RAWRBOX("Shader '{}' {}", fmt::styled(name, fmt::fg(fmt::color::coral)), fmt::styled(" [✖ FAILED]", fmt::fg(fmt::color::red)));
+			RAWRBOX_CRITICAL("Shader '{}' {}", fmt::styled(name, fmt::fg(fmt::color::coral)), fmt::styled(" [✖ FAILED]", fmt::fg(fmt::color::red)));
 		}
 
-		if (shader == nullptr) CRITICAL_RAWRBOX("Failed to compile shader '{}'", name);
+		if (shader == nullptr) RAWRBOX_CRITICAL("Failed to compile shader '{}'", name);
 		_shaders[id] = std::move(shader);
 		return _shaders[id];
 	}
@@ -173,7 +173,7 @@ namespace rawrbox {
 	}
 
 	Diligent::IPipelineState* PipelineUtils::createComputePipeline(const std::string& name, rawrbox::PipeComputeSettings settings) {
-		if (settings.pCS.empty()) CRITICAL_RAWRBOX("Failed to create shader {}, pCS shader cannot be empty!", name);
+		if (settings.pCS.empty()) RAWRBOX_CRITICAL("Failed to create shader {}, pCS shader cannot be empty!", name);
 
 		auto fnd = _pipelines.find(name);
 		if (fnd != _pipelines.end()) return fnd->second;
@@ -201,14 +201,14 @@ namespace rawrbox {
 		PSOCreateInfo.pCS = rawrbox::PipelineUtils::compileShader(settings.pCS, Diligent::SHADER_TYPE_COMPUTE, settings.macros);
 
 		_stateCache->CreateComputePipelineState(PSOCreateInfo, &pipe);
-		if (pipe == nullptr) CRITICAL_RAWRBOX("Failed to create pipeline '{}'", name);
+		if (pipe == nullptr) RAWRBOX_CRITICAL("Failed to create pipeline '{}'", name);
 
 		if (settings.signatures.empty()) {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;
 				auto* var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
 
-				if (var == nullptr) CRITICAL_RAWRBOX("Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type));
+				if (var == nullptr) RAWRBOX_CRITICAL("Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type));
 				var->Set(uni.uniform);
 			}
 		}
@@ -304,14 +304,14 @@ namespace rawrbox {
 
 		// ---------------------
 		_stateCache->CreateGraphicsPipelineState(info, &pipe);
-		if (pipe == nullptr) CRITICAL_RAWRBOX("Failed to create pipeline '{}'", name);
+		if (pipe == nullptr) RAWRBOX_CRITICAL("Failed to create pipeline '{}'", name);
 
 		if (settings.signatures.empty()) {
 			for (auto& uni : settings.uniforms) {
 				if (uni.uniform == nullptr) continue;
 
 				auto* var = pipe->GetStaticVariableByName(uni.type, uni.name.c_str());
-				if (var == nullptr) CRITICAL_RAWRBOX("Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type));
+				if (var == nullptr) RAWRBOX_CRITICAL("Failed to create pipeline '{}', could not find variable '{}' on '{}'", name, uni.name, magic_enum::enum_name(uni.type));
 
 				var->Set(uni.uniform);
 			}

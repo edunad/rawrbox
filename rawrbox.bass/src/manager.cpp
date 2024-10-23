@@ -72,7 +72,7 @@ namespace rawrbox {
 
 	void BASS::initialize() {
 		auto fxVersion = HIWORD(BASS_FX_GetVersion());
-		if (fxVersion != BASSVERSION) CRITICAL_RAWRBOX("BASS Version missmatch! FX [{}] | BASS [{}]", fxVersion, BASSVERSION);
+		if (fxVersion != BASSVERSION) RAWRBOX_CRITICAL("BASS Version missmatch! FX [{}] | BASS [{}]", fxVersion, BASSVERSION);
 
 		_initialized = (BASS_Init(-1, 44100, BASS_DEVICE_3D, nullptr, nullptr) != 0);
 		if (_initialized) {
@@ -82,7 +82,7 @@ namespace rawrbox {
 			BASS_Set3DFactors(1.0F, 10.0F, 1.0F);
 			BASS_Apply3D();
 		} else {
-			CRITICAL_RAWRBOX("BASS initialize error: {}", BASS_ErrorGetCode());
+			RAWRBOX_CRITICAL("BASS initialize error: {}", BASS_ErrorGetCode());
 		}
 	}
 
@@ -104,7 +104,7 @@ namespace rawrbox {
 		std::string pth = path.generic_string();
 
 		if (sounds.find(pth) != sounds.end()) return sounds[pth].get();
-		if (!std::filesystem::exists(path)) CRITICAL_RAWRBOX("File '{}' not found!", pth);
+		if (!std::filesystem::exists(path)) RAWRBOX_CRITICAL("File '{}' not found!", pth);
 
 		auto size = std::filesystem::file_size(path);
 		if (path.generic_string().rfind(".3D") != std::string::npos) flags |= SoundFlags::SOUND_3D;
@@ -141,7 +141,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::SoundBase* BASS::loadHTTPSound(const std::string& url, uint32_t flags) {
-		if (!url.starts_with("http://") && !url.starts_with("https://")) CRITICAL_RAWRBOX("Invalid sound url '{}'", url);
+		if (!url.starts_with("http://") && !url.starts_with("https://")) RAWRBOX_CRITICAL("Invalid sound url '{}'", url);
 		if (sounds.find(url) != sounds.end()) return sounds[url].get();
 
 		if (url.rfind(".3D") != std::string::npos) flags |= SoundFlags::SOUND_3D;

@@ -10,7 +10,7 @@ namespace rawrbox {
 	TextureAnimatedBase::TextureAnimatedBase(const std::filesystem::path& filePath, const std::vector<uint8_t>& /*buffer*/, bool /*useFallback*/) : _filePath(filePath) {}
 	// NOLINTEND(modernize-pass-by-value)
 
-	void TextureAnimatedBase::internalLoad(const std::vector<uint8_t>& /*_buffer*/, bool /*_useFallback*/) { CRITICAL_RAWRBOX("Not implemented"); }
+	void TextureAnimatedBase::internalLoad(const std::vector<uint8_t>& /*_buffer*/, bool /*_useFallback*/) { RAWRBOX_CRITICAL("Not implemented"); }
 
 	// ANIMATION ------
 	void TextureAnimatedBase::update() {

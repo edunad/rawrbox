@@ -16,7 +16,7 @@ namespace rawrbox {
 	}
 
 	void TextureBLIT::upload(Diligent::TEXTURE_FORMAT /*format*/, bool /*dynamic*/) {
-		if (this->_tex != nullptr) CRITICAL_RAWRBOX("Already uploaded");
+		if (this->_tex != nullptr) RAWRBOX_CRITICAL("Already uploaded");
 
 		Diligent::TextureDesc desc;
 		desc.Type = Diligent::RESOURCE_DIM_TEX_2D;
@@ -33,8 +33,8 @@ namespace rawrbox {
 	}
 
 	void TextureBLIT::copy(Diligent::ITexture* base, Diligent::Box* box, const std::function<void()>& callback) {
-		if (base == nullptr) CRITICAL_RAWRBOX("Invalid texture");
-		if (callback == nullptr) CRITICAL_RAWRBOX("Invalid callback");
+		if (base == nullptr) RAWRBOX_CRITICAL("Invalid texture");
+		if (callback == nullptr) RAWRBOX_CRITICAL("Invalid callback");
 
 		auto* device = rawrbox::RENDERER->device();
 		auto* context = rawrbox::RENDERER->context();
@@ -68,7 +68,7 @@ namespace rawrbox {
 	}
 
 	void TextureBLIT::blit(Diligent::Box* box, const std::function<void(const uint8_t*, const uint64_t)>& callback) {
-		if (callback == nullptr) CRITICAL_RAWRBOX("Invalid callback");
+		if (callback == nullptr) RAWRBOX_CRITICAL("Invalid callback");
 		auto* context = rawrbox::RENDERER->context();
 
 		Diligent::MappedTextureSubresource MappedSubres;

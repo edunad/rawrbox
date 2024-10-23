@@ -33,7 +33,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::upload() {
-		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr) CRITICAL_RAWRBOX("Upload already called");
+		if (this->_2dPipeline != nullptr || this->_linePipeline != nullptr) RAWRBOX_CRITICAL("Upload already called");
 
 		// PIPELINE ----
 		rawrbox::PipeSettings settings;
@@ -533,12 +533,12 @@ namespace rawrbox {
 	}
 
 	void Stencil::render() {
-		if (!this->_offsets.empty()) CRITICAL_RAWRBOX("Missing 'popOffset', cannot draw");
-		if (!this->_rotations.empty()) CRITICAL_RAWRBOX("Missing 'popRotation', cannot draw");
-		if (!this->_outlines.empty()) CRITICAL_RAWRBOX("Missing 'popOutline', cannot draw");
-		if (!this->_clips.empty()) CRITICAL_RAWRBOX("Missing 'popClipping', cannot draw");
-		if (!this->_scales.empty()) CRITICAL_RAWRBOX("Missing 'popScale', cannot draw");
-		if (!this->_optimizations.empty()) CRITICAL_RAWRBOX("Missing 'popOptimize', cannot draw");
+		if (!this->_offsets.empty()) RAWRBOX_CRITICAL("Missing 'popOffset', cannot draw");
+		if (!this->_rotations.empty()) RAWRBOX_CRITICAL("Missing 'popRotation', cannot draw");
+		if (!this->_outlines.empty()) RAWRBOX_CRITICAL("Missing 'popOutline', cannot draw");
+		if (!this->_clips.empty()) RAWRBOX_CRITICAL("Missing 'popClipping', cannot draw");
+		if (!this->_scales.empty()) RAWRBOX_CRITICAL("Missing 'popScale', cannot draw");
+		if (!this->_optimizations.empty()) RAWRBOX_CRITICAL("Missing 'popOptimize', cannot draw");
 
 		this->internalDraw();
 	}
@@ -552,7 +552,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::popOffset() {
-		if (this->_offsets.empty()) CRITICAL_RAWRBOX("Offset is empty, failed to pop");
+		if (this->_offsets.empty()) RAWRBOX_CRITICAL("Offset is empty, failed to pop");
 
 		this->_offset -= this->_offsets.back();
 		this->_offsets.pop_back();
@@ -575,7 +575,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::popRotation() {
-		if (this->_rotations.empty()) CRITICAL_RAWRBOX("Rotations is empty, failed to pop");
+		if (this->_rotations.empty()) RAWRBOX_CRITICAL("Rotations is empty, failed to pop");
 
 		this->_rotation -= this->_rotations.back();
 		this->_rotations.pop_back();
@@ -589,7 +589,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::popOutline() {
-		if (this->_outlines.empty()) CRITICAL_RAWRBOX("Outline is empty, failed to pop");
+		if (this->_outlines.empty()) RAWRBOX_CRITICAL("Outline is empty, failed to pop");
 
 		this->_outline -= this->_outlines.back();
 		this->_outlines.pop_back();
@@ -605,7 +605,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::popClipping() {
-		if (this->_clips.empty()) CRITICAL_RAWRBOX("Clips is empty, failed to pop");
+		if (this->_clips.empty()) RAWRBOX_CRITICAL("Clips is empty, failed to pop");
 		this->_clips.pop_back();
 	}
 	// --------------------
@@ -617,7 +617,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::popScale() {
-		if (this->_scales.empty()) CRITICAL_RAWRBOX("Scale is empty, failed to pop");
+		if (this->_scales.empty()) RAWRBOX_CRITICAL("Scale is empty, failed to pop");
 
 		this->_scale -= this->_scales.back();
 		this->_scales.pop_back();
@@ -630,7 +630,7 @@ namespace rawrbox {
 	}
 
 	void Stencil::popOptimize() {
-		if (this->_optimizations.empty()) CRITICAL_RAWRBOX("Optimize is empty, failed to pop");
+		if (this->_optimizations.empty()) RAWRBOX_CRITICAL("Optimize is empty, failed to pop");
 		this->_optimizations.pop_back();
 	}
 	// -------------------

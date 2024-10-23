@@ -16,8 +16,8 @@ namespace rawrbox {
 	}
 
 	void ParticleEnginePlugin::createSignatures() {
-		if (this->_signature != nullptr || this->_signatureBind != nullptr) CRITICAL_RAWRBOX("Signatures already bound!");
-		if (rawrbox::MAIN_CAMERA == nullptr) CRITICAL_RAWRBOX("Clustered plugin requires at least one camera!");
+		if (this->_signature != nullptr || this->_signatureBind != nullptr) RAWRBOX_CRITICAL("Signatures already bound!");
+		if (rawrbox::MAIN_CAMERA == nullptr) RAWRBOX_CRITICAL("Clustered plugin requires at least one camera!");
 
 		std::vector<Diligent::PipelineResourceDesc> resources = {
 		    // CAMERA ------
@@ -76,7 +76,7 @@ namespace rawrbox {
 	}
 
 	void ParticleEnginePlugin::createPipelines() {
-		if (rawrbox::MAIN_CAMERA == nullptr) CRITICAL_RAWRBOX("Particle engine plugin requires at least one camera!");
+		if (rawrbox::MAIN_CAMERA == nullptr) RAWRBOX_CRITICAL("Particle engine plugin requires at least one camera!");
 
 		rawrbox::PipeComputeSettings settings;
 		settings.signatures = {this->_signature};
@@ -88,7 +88,7 @@ namespace rawrbox {
 	}
 
 	void ParticleEnginePlugin::upload() {
-		if (this->_signature == nullptr || this->_signatureBind == nullptr || this->_uniforms == nullptr) CRITICAL_RAWRBOX("Plugin not initialized!");
+		if (this->_signature == nullptr || this->_signatureBind == nullptr || this->_uniforms == nullptr) RAWRBOX_CRITICAL("Plugin not initialized!");
 
 		// Compute bind ---
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(rawrbox::CameraBase::uniforms);
@@ -142,13 +142,13 @@ namespace rawrbox {
 
 	// RENDERING ---
 	void ParticleEnginePlugin::setupEmitter(rawrbox::Emitter<>* emitter) {
-		if (emitter == nullptr) CRITICAL_RAWRBOX("Invalid emitter");
-		if (this->_signature == nullptr || this->_signatureBind == nullptr || this->_uniforms == nullptr) CRITICAL_RAWRBOX("Plugin not uploaded!");
+		if (emitter == nullptr) RAWRBOX_CRITICAL("Invalid emitter");
+		if (this->_signature == nullptr || this->_signatureBind == nullptr || this->_uniforms == nullptr) RAWRBOX_CRITICAL("Plugin not uploaded!");
 
 		// Update uniforms ----
 		{
 			Diligent::MapHelper<rawrbox::EmitterUniforms> Constants(rawrbox::RENDERER->context(), this->_uniforms, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
-			if (Constants == nullptr) CRITICAL_RAWRBOX("Failed to map emitter constants buffer!");
+			if (Constants == nullptr) RAWRBOX_CRITICAL("Failed to map emitter constants buffer!");
 
 			std::memcpy(Constants, &emitter->getUniform(), sizeof(rawrbox::EmitterUniforms));
 		}
@@ -160,8 +160,8 @@ namespace rawrbox {
 	}
 
 	void ParticleEnginePlugin::computeEmitter(rawrbox::Emitter<>* emitter) {
-		if (emitter == nullptr) CRITICAL_RAWRBOX("Invalid emitter");
-		if (this->_signature == nullptr || this->_signatureBind == nullptr || this->_uniforms == nullptr) CRITICAL_RAWRBOX("Plugin not uploaded!");
+		if (emitter == nullptr) RAWRBOX_CRITICAL("Invalid emitter");
+		if (this->_signature == nullptr || this->_signatureBind == nullptr || this->_uniforms == nullptr) RAWRBOX_CRITICAL("Plugin not uploaded!");
 
 		auto* renderer = rawrbox::RENDERER;
 		auto* context = renderer->context();

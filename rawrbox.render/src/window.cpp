@@ -75,7 +75,7 @@ namespace rawrbox {
 	#endif
 #endif
 			if (Window::__RENDER_TYPE == Diligent::RENDER_DEVICE_TYPE_COUNT) {
-				CRITICAL_RAWRBOX("Failed to automatically determine best renderer type");
+				RAWRBOX_CRITICAL("Failed to automatically determine best renderer type");
 			}
 		} else {
 			Window::__RENDER_TYPE = render;
@@ -90,7 +90,7 @@ namespace rawrbox {
 	}
 
 	rawrbox::Window* Window::getWindow(size_t indx) {
-		if (indx > Window::__WINDOWS.size()) CRITICAL_RAWRBOX("Invalid window index '{}'", indx);
+		if (indx > Window::__WINDOWS.size()) RAWRBOX_CRITICAL("Invalid window index '{}'", indx);
 		return Window::__WINDOWS[indx].get();
 	}
 
@@ -197,7 +197,7 @@ namespace rawrbox {
 	}
 
 	void Window::init(uint32_t width, uint32_t height, uint32_t flags) {
-		if (rawrbox::RENDER_THREAD_ID == std::this_thread::get_id()) CRITICAL_RAWRBOX("'init' should be called inside engine's 'setupGLFW'!");
+		if (rawrbox::RENDER_THREAD_ID == std::this_thread::get_id()) RAWRBOX_CRITICAL("'init' should be called inside engine's 'setupGLFW'!");
 
 		int APIHint = GLFW_NO_API;
 #ifndef _WIN32
@@ -209,7 +209,7 @@ namespace rawrbox {
 #endif
 
 		glfwSetErrorCallback(glfw_errorCallback);
-		if (glfwInit() == 0) CRITICAL_RAWRBOX("Failed to initialize glfw");
+		if (glfwInit() == 0) RAWRBOX_CRITICAL("Failed to initialize glfw");
 
 		glfwWindowHint(GLFW_CLIENT_API, APIHint); // Disable opengl
 		if (APIHint == GLFW_OPENGL_API) {
@@ -232,7 +232,7 @@ namespace rawrbox {
 			}
 		}
 
-		if (mon == nullptr) CRITICAL_RAWRBOX("Failed to get primary window");
+		if (mon == nullptr) RAWRBOX_CRITICAL("Failed to get primary window");
 		// ----------------------------
 
 		// Fullscreen / borderless
@@ -245,8 +245,8 @@ namespace rawrbox {
 		bool borderless = (flags & WindowFlags::Window::BORDERLESS) > 0;
 		bool fullscreen = (flags & WindowFlags::Window::FULLSCREEN) > 0;
 
-		if (!fullscreen && !windowed && !borderless) CRITICAL_RAWRBOX("Window flag attribute missing");
-		if ((windowed && (borderless || fullscreen)) || (borderless && (windowed || fullscreen)) || (fullscreen && (windowed || borderless))) CRITICAL_RAWRBOX("Only one window flag attribute can be selected");
+		if (!fullscreen && !windowed && !borderless) RAWRBOX_CRITICAL("Window flag attribute missing");
+		if ((windowed && (borderless || fullscreen)) || (borderless && (windowed || fullscreen)) || (fullscreen && (windowed || borderless))) RAWRBOX_CRITICAL("Only one window flag attribute can be selected");
 		if (borderless || fullscreen || (width >= vidW || height >= vidH)) {
 			width = vidW;
 			height = vidH;
@@ -274,7 +274,7 @@ namespace rawrbox {
 #endif
 
 		auto* glfwHandle = glfwCreateWindow(width, height, this->_settings.title.c_str(), windowed || borderless ? nullptr : mon, nullptr);
-		if (glfwHandle == nullptr) CRITICAL_RAWRBOX("Failed to initialize window [{} - {}x{}]", this->_settings.title, width, height);
+		if (glfwHandle == nullptr) RAWRBOX_CRITICAL("Failed to initialize window [{} - {}x{}]", this->_settings.title, width, height);
 
 		this->_handle = glfwHandle;
 		glfwSetWindowUserPointer(glfwHandle, this);
@@ -359,13 +359,13 @@ namespace rawrbox {
 	}
 
 	void Window::setOpacity(float opacity) {
-		if (this->_handle == nullptr) CRITICAL_RAWRBOX("Invalid window handle");
+		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
 		glfwSetWindowOpacity(this->_handle, opacity);
 	}
 
 #ifdef _WIN32
 	void Window::alert() { // Blink application
-		if (this->_handle == nullptr) CRITICAL_RAWRBOX("Invalid window handle");
+		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
 		HWND hwnd = glfwGetWin32Window(this->_handle);
 
 		// Set up the FLASHWINFO structure
@@ -383,12 +383,12 @@ namespace rawrbox {
 
 	// CURSOR ------
 	void Window::hideCursor(bool hidden) {
-		if (this->_handle == nullptr) CRITICAL_RAWRBOX("Invalid window handle");
+		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
 		glfwSetInputMode(this->_handle, GLFW_CURSOR, hidden ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
 	}
 
 	void Window::setCursor(uint32_t cursor) {
-		if (this->_handle == nullptr) CRITICAL_RAWRBOX("Invalid window handle");
+		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
 		if (this->_cursor != nullptr) glfwDestroyCursor(this->_cursor); // Delete old one
 		auto* icon = glfwCreateStandardCursor(cursor);
 		this->_cursor = icon;
@@ -397,8 +397,8 @@ namespace rawrbox {
 	}
 
 	void Window::setCursor(const std::array<uint8_t, 1024>& cursor) {
-		if (this->_handle == nullptr) CRITICAL_RAWRBOX("Invalid window handle");
-		if (cursor.empty()) CRITICAL_RAWRBOX("Cursor pixels cannot be empty");
+		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
+		if (cursor.empty()) RAWRBOX_CRITICAL("Cursor pixels cannot be empty");
 
 		std::memcpy(this->_cursorPixels.data(), cursor.data(), cursor.size() * sizeof(uint8_t));
 		if (this->_cursor != nullptr) glfwDestroyCursor(this->_cursor); // Delete old one
@@ -433,7 +433,7 @@ namespace rawrbox {
 	}
 
 	void Window::setPos(const rawrbox::Vector2i& pos) {
-		if (this->_handle == nullptr) CRITICAL_RAWRBOX("Invalid window handle");
+		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
 
 		glfwSetWindowPos(this->_handle, pos.x, pos.y);
 		this->_settings.pos = pos;
@@ -444,17 +444,17 @@ namespace rawrbox {
 	}
 
 	rawrbox::Vector2u Window::getMonitorSize() const {
-		if (this->_handle == nullptr) CRITICAL_RAWRBOX("Invalid window handle");
+		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
 
 		GLFWmonitor* w = getWindowMonitor();
-		if (w == nullptr) CRITICAL_RAWRBOX("Failed to find screen dimensions");
+		if (w == nullptr) RAWRBOX_CRITICAL("Failed to find screen dimensions");
 
 		const auto* vidmode = glfwGetVideoMode(w);
 		return {static_cast<uint32_t>(vidmode->width), static_cast<uint32_t>(vidmode->height)};
 	}
 
 	float Window::getAspectRatio() const {
-		if (this->_handle == nullptr) CRITICAL_RAWRBOX("Invalid window handle");
+		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
 		rawrbox::Vector2f ret = this->getSize().cast<float>();
 
 		return ret.x / ret.y;
@@ -471,8 +471,8 @@ namespace rawrbox {
 	GLFWwindow* Window::getGLFWHandle() const { return this->_handle; }
 
 	Diligent::NativeWindow Window::getHandle() const {
-		if (this->_handle == nullptr) CRITICAL_RAWRBOX("Invalid window handle");
-		// Get native window ----
+		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
+			// Get native window ----
 #if PLATFORM_WIN32
 		Diligent::Win32NativeWindow window{glfwGetWin32Window(this->_handle)};
 #endif
@@ -499,12 +499,12 @@ namespace rawrbox {
 	rawrbox::RendererBase& Window::getRenderer() const { return *this->_renderer; }
 
 	bool Window::isKeyDown(int key) const {
-		if (this->_handle == nullptr) CRITICAL_RAWRBOX("Invalid window handle");
+		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
 		return glfwGetKey(this->_handle, key) == GLFW_PRESS;
 	}
 
 	bool Window::isMouseDown(int key) const {
-		if (this->_handle == nullptr) CRITICAL_RAWRBOX("Invalid window handle");
+		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
 		return glfwGetMouseButton(this->_handle, key) == GLFW_PRESS;
 	}
 
@@ -607,7 +607,7 @@ namespace rawrbox {
 
 	// Adapted from : https://github.com/glfw/glfw/pull/2220/files
 	GLFWmonitor* Window::getWindowMonitor() const {
-		if (this->_handle == nullptr) CRITICAL_RAWRBOX("Invalid window handle");
+		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
 
 		int monitorCount = 0;
 		GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);

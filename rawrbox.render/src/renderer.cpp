@@ -191,19 +191,19 @@ namespace rawrbox {
 				break;
 #endif // GL_SUPPORTED
 
-			default: CRITICAL_RAWRBOX("Invalid diligent api");
+			default: RAWRBOX_CRITICAL("Invalid diligent api");
 		}
 
 		// Check device limitations ---
 		if (!(this->_device->GetAdapterInfo().DrawCommand.CapFlags & Diligent::DRAW_COMMAND_CAP_FLAG_BASE_VERTEX)) {
-			CRITICAL_RAWRBOX("Base vertex not supported");
+			RAWRBOX_CRITICAL("Base vertex not supported");
 		}
 		// ----------------------------
 
 		// Setup shader pipeline if not exists
 		if (rawrbox::SHADER_FACTORY == nullptr) {
 			auto rootDir = this->getShadersDirectory();
-			if (!std::filesystem::exists(rootDir)) CRITICAL_RAWRBOX("Shaders directory '{}' not found!", rootDir.generic_string());
+			if (!std::filesystem::exists(rootDir)) RAWRBOX_CRITICAL("Shaders directory '{}' not found!", rootDir.generic_string());
 
 			auto dirs = rawrbox::PathUtils::glob(rootDir, true);
 			auto paths = fmt::format("{}", fmt::join(dirs, ";"));
@@ -217,7 +217,7 @@ namespace rawrbox {
 		}
 		// -----------
 
-		if (this->_engineFactory == nullptr) CRITICAL_RAWRBOX("Failed to initialize");
+		if (this->_engineFactory == nullptr) RAWRBOX_CRITICAL("Failed to initialize");
 
 		// Single draw call to setup window background
 		this->clear();
@@ -404,9 +404,9 @@ namespace rawrbox {
 	}
 
 	void RendererBase::render() {
-		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) CRITICAL_RAWRBOX("Failed to bind swapChain / context / device! Did you call 'init' ?");
-		if (this->_drawCall == nullptr) CRITICAL_RAWRBOX("Missing draw call! Did you call 'setDrawCall' ?");
-		if (rawrbox::MAIN_CAMERA == nullptr || this->_cameras.empty()) CRITICAL_RAWRBOX("Missing cameras! Did you call 'createCamera' ?");
+		if (this->_swapChain == nullptr || this->_context == nullptr || this->_device == nullptr) RAWRBOX_CRITICAL("Failed to bind swapChain / context / device! Did you call 'init' ?");
+		if (this->_drawCall == nullptr) RAWRBOX_CRITICAL("Missing draw call! Did you call 'setDrawCall' ?");
+		if (rawrbox::MAIN_CAMERA == nullptr || this->_cameras.empty()) RAWRBOX_CRITICAL("Missing cameras! Did you call 'createCamera' ?");
 
 		// Clear backbuffer ----
 		this->clear();
@@ -557,7 +557,7 @@ namespace rawrbox {
 	}
 
 	void RendererBase::addIntro(const std::filesystem::path& webpPath, float speed, bool cover, const rawrbox::Colorf& color) {
-		if (webpPath.extension() != ".webp") CRITICAL_RAWRBOX("Invalid intro '{}', only '.webp' format is supported!", webpPath.generic_string());
+		if (webpPath.extension() != ".webp") RAWRBOX_CRITICAL("Invalid intro '{}', only '.webp' format is supported!", webpPath.generic_string());
 		this->_introList[webpPath.generic_string()] = {speed, cover, color};
 	}
 	//-------------------------
@@ -613,7 +613,7 @@ namespace rawrbox {
 		// --------------
 
 		if (pipelineHelper == nullptr || durationHelper == nullptr) {
-			CRITICAL_RAWRBOX("Failed to create & begin query '{}'", query);
+			RAWRBOX_CRITICAL("Failed to create & begin query '{}'", query);
 		}
 
 		// Start queries ---
@@ -633,7 +633,7 @@ namespace rawrbox {
 		auto fndDuration = this->_query.find(durationName);
 
 		if (fndPipeline->second == nullptr || fndDuration->second == nullptr) {
-			CRITICAL_RAWRBOX("Failed to end query '{}', not found!", query);
+			RAWRBOX_CRITICAL("Failed to end query '{}', not found!", query);
 		}
 
 		// End queries ---
@@ -684,11 +684,11 @@ namespace rawrbox {
 	void RendererBase::setVSync(bool vsync) { this->_vsync = vsync; }
 
 	void RendererBase::gpuPick(const rawrbox::Vector2i& pos, const std::function<void(uint32_t)>& callback) {
-		if (rawrbox::MAIN_CAMERA == nullptr) CRITICAL_RAWRBOX("Main camera not initialized");
-		if (callback == nullptr) CRITICAL_RAWRBOX("Invalid callback");
+		if (rawrbox::MAIN_CAMERA == nullptr) RAWRBOX_CRITICAL("Main camera not initialized");
+		if (callback == nullptr) RAWRBOX_CRITICAL("Invalid callback");
 
 		auto size = this->_size.cast<int>();
-		if (pos.x < 0 || pos.y < 0 || pos.x >= size.x || pos.y >= size.y) CRITICAL_RAWRBOX("Outside of window range");
+		if (pos.x < 0 || pos.y < 0 || pos.x >= size.x || pos.y >= size.y) RAWRBOX_CRITICAL("Outside of window range");
 
 		Diligent::Box MapRegion;
 		MapRegion.MinX = pos.x;

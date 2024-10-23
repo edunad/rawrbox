@@ -31,7 +31,7 @@ namespace rawrbox {
 
 	// INTERNAL ---
 	void Font::loadFontInfo() {
-		if (this->_font == nullptr) CRITICAL_RAWRBOX("Font not loaded");
+		if (this->_font == nullptr) RAWRBOX_CRITICAL("Font not loaded");
 
 		int ascent = 0;
 		int descent = 0;
@@ -56,7 +56,7 @@ namespace rawrbox {
 	}
 
 	std::unique_ptr<rawrbox::Glyph> Font::bakeGlyphAlpha(uint32_t codePoint) {
-		if (this->_font == nullptr) CRITICAL_RAWRBOX("Font not loaded");
+		if (this->_font == nullptr) RAWRBOX_CRITICAL("Font not loaded");
 
 		int32_t ascent = 0;
 		int32_t descent = 0;
@@ -92,7 +92,7 @@ namespace rawrbox {
 		stbtt_MakeCodepointBitmap(this->_font.get(), buffer.data(), ww, hh, dstPitch, scale, scale, codePoint);
 
 		auto pack = rawrbox::TextEngine::requestPack(ww, hh, Diligent::TEXTURE_FORMAT::TEX_FORMAT_RGBA8_UNORM); // FONT_TYPE_ALPHA
-		if (pack.second == nullptr) CRITICAL_RAWRBOX("Failed to generate / get atlas texture");
+		if (pack.second == nullptr) RAWRBOX_CRITICAL("Failed to generate / get atlas texture");
 
 		auto& packNode = pack.second->addSprite(ww, hh, rawrbox::ColorUtils::setChannels(1, 4, ww, hh, buffer));
 		auto size = pack.second->getSize();
@@ -122,7 +122,7 @@ namespace rawrbox {
 
 		// Load
 		this->_font = std::make_shared<stbtt_fontinfo>();
-		if (stbtt_InitFont(this->_font.get(), buffer.data(), offset) == 0) CRITICAL_RAWRBOX("Failed to load font");
+		if (stbtt_InitFont(this->_font.get(), buffer.data(), offset) == 0) RAWRBOX_CRITICAL("Failed to load font");
 		this->_scale = stbtt_ScaleForMappingEmToPixels(this->_font.get(), static_cast<float>(pixelHeight));
 		this->_pixelSize = static_cast<float>(pixelHeight);
 
@@ -214,7 +214,7 @@ namespace rawrbox {
 	}
 
 	void Font::render(const std::string& text, const rawrbox::Vector2f& pos, bool yIsUp, const std::function<void(rawrbox::Glyph*, float, float, float, float)>& renderGlyph) const {
-		if (renderGlyph == nullptr) CRITICAL_RAWRBOX("Failed to render glyph! Missing 'renderGlyph' param");
+		if (renderGlyph == nullptr) RAWRBOX_CRITICAL("Failed to render glyph! Missing 'renderGlyph' param");
 
 		auto info = this->getFontInfo();
 		const float lineHeight = this->getLineHeight();

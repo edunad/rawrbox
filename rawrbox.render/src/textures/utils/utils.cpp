@@ -31,8 +31,8 @@ namespace rawrbox {
 	};
 
 	std::vector<uint8_t> TextureUtils::generateCheckboard(const rawrbox::Vector2u& size, const rawrbox::Color& color1, const rawrbox::Color& color2, uint32_t amount) {
-		if (amount % 2 != 0) CRITICAL_RAWRBOX("Amount must be a power of 2.");
-		if (std::bitset<32>(amount).count() != 1) CRITICAL_RAWRBOX("Size must be power of 2.");
+		if (amount % 2 != 0) RAWRBOX_CRITICAL("Amount must be a power of 2.");
+		if (std::bitset<32>(amount).count() != 1) RAWRBOX_CRITICAL("Size must be power of 2.");
 
 		std::vector<uint8_t> pixels = {};
 
@@ -71,7 +71,7 @@ namespace rawrbox {
 	}
 
 	std::vector<uint8_t> TextureUtils::resize(const rawrbox::Vector2u& originalSize, const std::vector<uint8_t>& data, const rawrbox::Vector2u& newSize, uint8_t channels) {
-		if (data.empty()) CRITICAL_RAWRBOX("Data cannot be empty");
+		if (data.empty()) RAWRBOX_CRITICAL("Data cannot be empty");
 
 		std::vector<uint8_t> resizedData(newSize.x * newSize.y * channels); // Assuming RGBA format
 
@@ -156,7 +156,7 @@ namespace rawrbox {
 				return rawrbox::WEBP::decode(data);
 			default:
 			case IMAGE_INVALID:
-				CRITICAL_RAWRBOX("Invalid image type!");
+				RAWRBOX_CRITICAL("Invalid image type!");
 		}
 	}
 } // namespace rawrbox

@@ -9,8 +9,8 @@ namespace rawrbox {
 	// -------------
 
 	rawrbox::SteamImage SteamUTILS::getImage(int handle) {
-		if (SteamUtils() == nullptr) CRITICAL_RAWRBOX("SteamUtils not initialized");
-		if (handle == 0) CRITICAL_RAWRBOX("Invalid handle");
+		if (SteamUtils() == nullptr) RAWRBOX_CRITICAL("SteamUtils not initialized");
+		if (handle == 0) RAWRBOX_CRITICAL("Invalid handle");
 
 		rawrbox::SteamImage image = {};
 

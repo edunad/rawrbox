@@ -8,7 +8,7 @@
 
 #include <string>
 
-#define CRITICAL_RAWRBOX(...) \
+#define RAWRBOX_CRITICAL(...) \
 	{ \
 		spdlog::critical("] {}\n  └── {}:{}\n\t└── {}", fmt::format(__VA_ARGS__), __FILE__, __LINE__, fmt::styled(__FUNCTION__, fmt::fg(fmt::color::red))); \
 		throw std::runtime_error(fmt::format(__VA_ARGS__)); \

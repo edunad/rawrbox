@@ -15,7 +15,7 @@ namespace rawrbox {
 	CameraBase::~CameraBase() { this->_renderTarget.reset(); }
 
 	void CameraBase::initialize() {
-		if (this->_renderTarget == nullptr) CRITICAL_RAWRBOX("Render target not initialized!");
+		if (this->_renderTarget == nullptr) RAWRBOX_CRITICAL("Render target not initialized!");
 		this->_renderTarget->upload(Diligent::TEX_FORMAT_RGBA8_UNORM);
 
 		// ADD GPU PICKING TEXTURE
@@ -25,13 +25,13 @@ namespace rawrbox {
 	}
 
 	void CameraBase::upload() {
-		if (rawrbox::RENDERER == nullptr) CRITICAL_RAWRBOX("Renderer not initialized!");
+		if (rawrbox::RENDERER == nullptr) RAWRBOX_CRITICAL("Renderer not initialized!");
 
 		auto* device = rawrbox::RENDERER->device();
-		if (device == nullptr) CRITICAL_RAWRBOX("Device not initialized!");
+		if (device == nullptr) RAWRBOX_CRITICAL("Device not initialized!");
 
 		// These are shared across all the cameras. For performance reasons, we won't support different cameras (for now)
-		if (staticUniforms != nullptr || uniforms != nullptr) CRITICAL_RAWRBOX("Camera buffers already initialized!");
+		if (staticUniforms != nullptr || uniforms != nullptr) RAWRBOX_CRITICAL("Camera buffers already initialized!");
 		auto staticData = this->getStaticData();
 
 		// STATIC BUFFER ---
@@ -66,7 +66,7 @@ namespace rawrbox {
 		this->_logger->info("Initializing camera buffers");
 	}
 
-	void CameraBase::updateMtx() { CRITICAL_RAWRBOX("Not implemented"); };
+	void CameraBase::updateMtx() { RAWRBOX_CRITICAL("Not implemented"); };
 	rawrbox::CameraStaticUniforms CameraBase::getStaticData() {
 		auto screenSize = rawrbox::RENDERER->getSize().cast<float>();
 
@@ -155,11 +155,11 @@ namespace rawrbox {
 	}
 
 	rawrbox::Vector3f CameraBase::worldToScreen(const rawrbox::Vector3f& /*pos*/) const {
-		CRITICAL_RAWRBOX("Not implemented");
+		RAWRBOX_CRITICAL("Not implemented");
 	}
 
 	rawrbox::Vector3f CameraBase::screenToWorld(const rawrbox::Vector2f& /*screen_pos*/, const rawrbox::Vector3f& /*origin*/) const {
-		CRITICAL_RAWRBOX("Not implemented");
+		RAWRBOX_CRITICAL("Not implemented");
 	}
 
 	bool CameraBase::isEnabled() const { return this->_enabled; }
@@ -172,12 +172,12 @@ namespace rawrbox {
 
 	// RENDER TARGET ----
 	void CameraBase::begin() {
-		if (this->_renderTarget == nullptr) CRITICAL_RAWRBOX("Render target not initialized!");
+		if (this->_renderTarget == nullptr) RAWRBOX_CRITICAL("Render target not initialized!");
 		this->_renderTarget->startRecord();
 	}
 
 	void CameraBase::end() {
-		if (this->_renderTarget == nullptr) CRITICAL_RAWRBOX("Render target not initialized!");
+		if (this->_renderTarget == nullptr) RAWRBOX_CRITICAL("Render target not initialized!");
 		this->_renderTarget->stopRecord();
 	}
 
@@ -188,7 +188,7 @@ namespace rawrbox {
 	// ----------------
 
 	void CameraBase::updateBuffer() {
-		if (uniforms == nullptr) CRITICAL_RAWRBOX("Buffer not initialized! Did you call initialize?");
+		if (uniforms == nullptr) RAWRBOX_CRITICAL("Buffer not initialized! Did you call initialize?");
 
 		auto view = rawrbox::Matrix4x4::mtxTranspose(this->getViewMtx());
 		auto viewInv = rawrbox::Matrix4x4::mtxInverse(this->getViewMtx());

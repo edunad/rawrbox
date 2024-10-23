@@ -8,7 +8,7 @@ namespace rawrbox {
 	TextureImage::TextureImage(const std::filesystem::path& filePath, const std::vector<uint8_t>& buffer, bool useFallback) : _filePath(filePath) {
 		try {
 			this->_data = rawrbox::STBI::decode(buffer);
-			if (!this->_data.valid() || this->_data.total() == 0) CRITICAL_RAWRBOX("Invalid image data!");
+			if (!this->_data.valid() || this->_data.total() == 0) RAWRBOX_CRITICAL("Invalid image data!");
 		} catch (const std::exception& e) {
 			if (useFallback) {
 				this->loadFallback();
@@ -23,7 +23,7 @@ namespace rawrbox {
 	TextureImage::TextureImage(const std::filesystem::path& filePath, bool useFallback) : _filePath(filePath) {
 		try {
 			this->_data = rawrbox::STBI::decode(filePath);
-			if (!this->_data.valid() || this->_data.total() == 0) CRITICAL_RAWRBOX("Invalid image data!");
+			if (!this->_data.valid() || this->_data.total() == 0) RAWRBOX_CRITICAL("Invalid image data!");
 		} catch (const std::exception& e) {
 			if (useFallback) {
 				this->loadFallback();
@@ -38,7 +38,7 @@ namespace rawrbox {
 	TextureImage::TextureImage(const uint8_t* buffer, int bufferSize, bool useFallback) {
 		try {
 			this->_data = rawrbox::STBI::decode(buffer, bufferSize);
-			if (!this->_data.valid() || this->_data.total() == 0) CRITICAL_RAWRBOX("Invalid image data!");
+			if (!this->_data.valid() || this->_data.total() == 0) RAWRBOX_CRITICAL("Invalid image data!");
 		} catch (const std::exception& e) {
 			if (useFallback) {
 				this->loadFallback();

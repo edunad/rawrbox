@@ -23,7 +23,7 @@ namespace rawrbox {
 	}
 
 	std::shared_ptr<rawrbox::SoundInstance> SoundBase::createInstance() {
-		if (!this->isValid()) CRITICAL_RAWRBOX("Sound sample not valid!");
+		if (!this->isValid()) RAWRBOX_CRITICAL("Sound sample not valid!");
 		auto ptr = std::make_shared<rawrbox::SoundInstance>(this->_sample, this->_isStream, this->_flags);
 
 		this->_instances.push_back(std::move(ptr));
@@ -31,7 +31,7 @@ namespace rawrbox {
 	}
 
 	std::shared_ptr<rawrbox::SoundInstance> SoundBase::getInstance(size_t i) {
-		if (i >= this->_instances.size()) CRITICAL_RAWRBOX("Sound instance '{}' not found!", i);
+		if (i >= this->_instances.size()) RAWRBOX_CRITICAL("Sound instance '{}' not found!", i);
 		return this->_instances[i];
 	}
 

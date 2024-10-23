@@ -78,7 +78,7 @@ namespace rawrbox {
 		}
 
 		virtual void generateMesh() {
-			if (this->_shape == nullptr) CRITICAL_RAWRBOX("Missing mesh shape!");
+			if (this->_shape == nullptr) RAWRBOX_CRITICAL("Missing mesh shape!");
 
 			this->_mesh->clear();
 			std::vector<int> shapeSegments = this->_shape->getLineSegments();

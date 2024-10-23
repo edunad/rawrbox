@@ -10,7 +10,7 @@
 
 namespace rawrbox {
 	UIConsole::UIConsole(rawrbox::UIRoot* root, rawrbox::Console& console) : rawrbox::UIContainer(root), _console(&console) {
-		if (this->_console == nullptr) CRITICAL_RAWRBOX("Invalid console reference");
+		if (this->_console == nullptr) RAWRBOX_CRITICAL("Invalid console reference");
 
 		this->_overlay = rawrbox::RESOURCES::getFile<rawrbox::ResourceTexture>("./assets/textures/ui/overlay/overlay.png")->get();
 

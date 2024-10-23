@@ -124,11 +124,11 @@ namespace rawrbox {
 		template <typename T = rawrbox::RenderPlugin, typename... CallbackArgs>
 			requires(std::derived_from<T, rawrbox::RenderPlugin>)
 		T* addPlugin(CallbackArgs&&... args) {
-			if (this->_initialized) CRITICAL_RAWRBOX("'addPlugin' must be called before 'init'!");
+			if (this->_initialized) RAWRBOX_CRITICAL("'addPlugin' must be called before 'init'!");
 			auto renderPass = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
 
 			auto id = renderPass->getID();
-			if (this->_renderPlugins.contains(id)) CRITICAL_RAWRBOX("Plugin '{}' already registered!", id);
+			if (this->_renderPlugins.contains(id)) RAWRBOX_CRITICAL("Plugin '{}' already registered!", id);
 
 			auto* pass = renderPass.get();
 			this->_renderPlugins[id] = std::move(renderPass);
@@ -163,7 +163,7 @@ namespace rawrbox {
 		// CAMERA ------
 		template <class T = rawrbox::CameraBase, typename... CallbackArgs>
 		T* createCamera(CallbackArgs&&... args) {
-			if (this->_initialized) CRITICAL_RAWRBOX("'createCamera' must be called before initializing the renderer!");
+			if (this->_initialized) RAWRBOX_CRITICAL("'createCamera' must be called before initializing the renderer!");
 			auto camera = std::make_unique<T>(std::forward<CallbackArgs>(args)...);
 
 			auto cameraPtr = camera.get();

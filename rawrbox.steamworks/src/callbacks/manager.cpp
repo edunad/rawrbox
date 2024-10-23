@@ -60,12 +60,12 @@ namespace rawrbox {
 
 	// WORKSHOP ---
 	void SteamCALLBACKS::OnWorkshopCreateItem(CreateItemResult_t* result, bool bIOFailure) {
-		if (bIOFailure) CRITICAL_RAWRBOX("Failed to create workshop item");
+		if (bIOFailure) RAWRBOX_CRITICAL("Failed to create workshop item");
 		if (this->_CreateItemResultCallback != nullptr) this->_CreateItemResultCallback(result);
 	}
 
 	void SteamCALLBACKS::OnWorkshopUpdateItem(SubmitItemUpdateResult_t* result, bool bIOFailure) {
-		if (bIOFailure) CRITICAL_RAWRBOX("Failed to update workshop item");
+		if (bIOFailure) RAWRBOX_CRITICAL("Failed to update workshop item");
 		if (this->_UpdateItemResultCallback != nullptr) this->_UpdateItemResultCallback(result);
 	}
 	// -------------
@@ -79,7 +79,7 @@ namespace rawrbox {
 					   _CallbackWorkshopItemDownloaded(this, &SteamCALLBACKS::OnWorkshopItemDownloaded) {}
 
 	void SteamCALLBACKS::init() {
-		if (this->_initialized) CRITICAL_RAWRBOX("Already initialized");
+		if (this->_initialized) RAWRBOX_CRITICAL("Already initialized");
 		this->_initialized = true;
 	}
 
@@ -96,7 +96,7 @@ namespace rawrbox {
 	// QUERY ---
 	void SteamCALLBACKS::addUGCQueryCallback(SteamAPICall_t apicall, const std::function<void(std::vector<rawrbox::WorkshopMod>)>& callback) {
 		auto fnd = this->_ugcQueries.find(apicall);
-		if (fnd != this->_ugcQueries.end()) CRITICAL_RAWRBOX("AddUGCQueryCallback with api call {} already called! Wait for previous call to complete", apicall);
+		if (fnd != this->_ugcQueries.end()) RAWRBOX_CRITICAL("AddUGCQueryCallback with api call {} already called! Wait for previous call to complete", apicall);
 
 		std::unique_ptr<rawrbox::SteamUGCQuery> query = std::make_unique<rawrbox::SteamUGCQuery>(apicall, [this, apicall, callback](std::vector<rawrbox::WorkshopMod> details) {
 			callback(std::move(details));
@@ -109,14 +109,14 @@ namespace rawrbox {
 
 	// WORKSHOP ---
 	void SteamCALLBACKS::addCreateItemCallback(SteamAPICall_t apicall, const std::function<void(CreateItemResult_t*)>& callback) {
-		if (this->_CreateItemResultCallback != nullptr) CRITICAL_RAWRBOX("AddUGCQueryCallback already called! Wait for previous call to complete");
+		if (this->_CreateItemResultCallback != nullptr) RAWRBOX_CRITICAL("AddUGCQueryCallback already called! Wait for previous call to complete");
 
 		this->_CreateItemResultCallback = callback;
 		this->_CreateItemResult.Set(apicall, this, &SteamCALLBACKS::OnWorkshopCreateItem);
 	}
 
 	void SteamCALLBACKS::addUpdateItemCallback(SteamAPICall_t apicall, const std::function<void(SubmitItemUpdateResult_t*)>& callback) {
-		if (this->_UpdateItemResultCallback != nullptr) CRITICAL_RAWRBOX("AddUGCQueryCallback already called! Wait for previous call to complete");
+		if (this->_UpdateItemResultCallback != nullptr) RAWRBOX_CRITICAL("AddUGCQueryCallback already called! Wait for previous call to complete");
 
 		this->_UpdateItemResultCallback = callback;
 		this->_UpdateItemResult.Set(apicall, this, &SteamCALLBACKS::OnWorkshopUpdateItem);
@@ -136,7 +136,7 @@ namespace rawrbox {
 
 	void SteamCALLBACKS::addUGCRequest(UGCHandle_t handle, SteamAPICall_t apicall, const std::function<void(std::vector<uint8_t>)>& callback) {
 		auto fnd = this->_ugcStorageQueries.find(apicall);
-		if (fnd != this->_ugcStorageQueries.end()) CRITICAL_RAWRBOX("addUGCRequest with api call {} already called! Wait for previous call to complete", apicall);
+		if (fnd != this->_ugcStorageQueries.end()) RAWRBOX_CRITICAL("addUGCRequest with api call {} already called! Wait for previous call to complete", apicall);
 
 		std::unique_ptr<rawrbox::SteamStorageRequest> query = std::make_unique<rawrbox::SteamStorageRequest>(handle, apicall, [this, apicall, callback](std::vector<uint8_t> data) {
 			callback(std::move(data));

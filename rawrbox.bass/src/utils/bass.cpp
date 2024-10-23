@@ -45,7 +45,7 @@ namespace rawrbox {
 				break;
 		}
 
-		CRITICAL_RAWRBOX("Bass audio error:\n\t{}", readErr);
+		RAWRBOX_CRITICAL("Bass audio error:\n\t{}", readErr);
 	}
 
 } // namespace rawrbox
