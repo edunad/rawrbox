@@ -103,11 +103,7 @@ namespace gltf {
 			this->_grandmaTV->setPos({-1, 0, -3.5F});
 			this->_grandmaTV->upload();
 
-			{
-				auto anims = this->_grandmaTV->playAnimation();
-				for (auto& anim : anims)
-					anim->setLoop(true);
-			}
+			this->_grandmaTV->playAnimation(true);
 		}
 		// ----------
 
@@ -154,17 +150,8 @@ namespace gltf {
 			this->_wolfLit->setPos({-1, 0, 0});
 			this->_wolfLit->upload();
 
-			{
-				auto anims = this->_wolf->playAnimation();
-				for (auto& anim : anims)
-					anim->setLoop(true);
-			}
-
-			{
-				auto anims = this->_wolfLit->playAnimation();
-				for (auto& anim : anims)
-					anim->setLoop(true);
-			}
+			this->_wolf->playAnimation(true);
+			this->_wolfLit->playAnimation(true);
 		}
 		// ----------
 
@@ -205,13 +192,13 @@ namespace gltf {
 	void Game::playTestAnim() {
 		if (this->_animTest == nullptr) return;
 
-		this->_animTest->playAnimation("TEST.UP", true, [this](const std::string&) {
+		this->_animTest->playSingleAnimation("TEST.UP", false, [this](const std::string&) {
 			if (this->_animTest == nullptr) return;
 
-			auto* a = this->_animTest->playAnimation("TEST.LEFT", true, [this](const std::string&) {
+			auto* a = this->_animTest->playSingleAnimation("TEST.LEFT", false, [this](const std::string&) {
 				if (this->_animTest == nullptr) return;
 
-				this->_animTest->playAnimation("TEST.BACK", true, [this](const std::string&) {
+				this->_animTest->playSingleAnimation("TEST.BACK", false, [this](const std::string&) {
 					this->playTestAnim();
 				});
 			});

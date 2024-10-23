@@ -22,9 +22,10 @@ namespace rawrbox {
 
 			    // ANIMATION ----
 			    .addFunction("playAnimation",
-				luabridge::overload<std::function<void(const std::string&)>>(&ModelC::playAnimation),
+				luabridge::overload<bool, std::function<void(const std::string&)>>(&ModelC::playAnimation),
 				luabridge::overload<const std::string&, bool, std::function<void(const std::string&)>>(&ModelC::playAnimation))
 
+			    .addFunction("playSingleAnimation", &ModelC::playSingleAnimation)
 			    .addFunction("hasAnimation", &ModelC::hasAnimation)
 			    .addFunction("stopAnimation", &ModelC::stopAnimation)
 			    .addFunction("stopAllAnimations", &ModelC::stopAllAnimations)

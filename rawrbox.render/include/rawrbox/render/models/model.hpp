@@ -275,18 +275,22 @@ namespace rawrbox {
 			RAWRBOX_CRITICAL("TODO");
 		}
 
-		virtual std::vector<rawrbox::AnimationSampler*> playAnimation(std::function<void(const std::string&)> onComplete = nullptr) {
+		virtual std::vector<rawrbox::AnimationSampler*> playAnimation(bool loop = false, std::function<void(const std::string&)> onComplete = nullptr) {
 			std::vector<rawrbox::AnimationSampler*> anims = {};
 
 			this->stopAllAnimations();
 			for (size_t i = 0; i < this->_animations.size(); i++) {
-				anims.push_back(this->playAnimation(i, this->_animations[i], onComplete));
+				auto* anim = this->playAnimation(i, this->_animations[i], onComplete);
+				if (anim == nullptr) continue;
+
+				anim->setLoop(loop);
+				anims.emplace_back(anim);
 			}
 
 			return anims;
 		}
 
-		virtual rawrbox::AnimationSampler* playAnimation(const std::string& name, bool forceSingle = false, std::function<void(const std::string&)> onComplete = nullptr) {
+		virtual rawrbox::AnimationSampler* playAnimation(const std::string& name, bool loop = false, std::function<void(const std::string&)> onComplete = nullptr) {
 			for (size_t i = 0; i < this->_animations.size(); i++) {
 				ozz::animation::Animation* anim = this->_animations[i];
 				if (anim == nullptr || anim->name() != name) continue;
@@ -294,12 +298,20 @@ namespace rawrbox {
 				auto fnd = this->_playingAnimations.find(name);
 				if (fnd != this->_playingAnimations.end()) return nullptr; // Already playing
 
-				if (forceSingle) this->stopAllAnimations();
-				return this->playAnimation(i, anim, onComplete);
+				auto* playingAnim = this->playAnimation(i, anim, onComplete);
+				if (anim == nullptr) return nullptr;
+
+				playingAnim->setLoop(loop);
+				return playingAnim;
 			}
 
 			this->_logger->warn("Failed to find animation {}", name);
 			return nullptr;
+		}
+
+		virtual rawrbox::AnimationSampler* playSingleAnimation(const std::string& name, bool loop = false, std::function<void(const std::string&)> onComplete = nullptr) {
+			this->stopAllAnimations();
+			return this->playAnimation(name, loop, onComplete);
 		}
 
 		virtual void stopAllAnimations() {
