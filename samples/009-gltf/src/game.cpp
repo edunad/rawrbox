@@ -61,11 +61,11 @@ namespace gltf {
 
 	void Game::loadContent() {
 		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
-		    {"./assets/models/ps1_phasmophobia/scene.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_LIGHT | rawrbox::ModelLoadFlags::Optimizer::MESH},
-		    {"./assets/models/shape_keys/shape_keys.glb", rawrbox::ModelLoadFlags::CALCULATE_BBOX | rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::ModelLoadFlags::Debug::PRINT_BLENDSHAPES},
-		    {"./assets/models/wolf/wolf.glb", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Optimizer::SKELETON_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS},
-		    {"./assets/models/anim_test.glb", rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS},
-		    {"./assets/models/grandma_tv/scene.gltf", rawrbox::ModelLoadFlags::IMPORT_TEXTURES | rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS | rawrbox::ModelLoadFlags::Debug::PRINT_MATERIALS}};
+		    {"./assets/models/ps1_phasmophobia/scene.glb", rawrbox::GLTFLoadFlags::IMPORT_TEXTURES | rawrbox::GLTFLoadFlags::IMPORT_LIGHT | rawrbox::GLTFLoadFlags::Optimizer::MESH},
+		    {"./assets/models/shape_keys/shape_keys.glb", rawrbox::GLTFLoadFlags::CALCULATE_BBOX | rawrbox::GLTFLoadFlags::IMPORT_TEXTURES | rawrbox::GLTFLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::GLTFLoadFlags::Debug::PRINT_BLENDSHAPES},
+		    {"./assets/models/wolf/wolf.glb", rawrbox::GLTFLoadFlags::IMPORT_TEXTURES | rawrbox::GLTFLoadFlags::IMPORT_ANIMATIONS | rawrbox::GLTFLoadFlags::Optimizer::SKELETON_ANIMATIONS | rawrbox::GLTFLoadFlags::Debug::PRINT_ANIMATIONS},
+		    {"./assets/models/anim_test.glb", rawrbox::GLTFLoadFlags::IMPORT_ANIMATIONS},
+		    {"./assets/models/grandma_tv/scene.gltf", rawrbox::GLTFLoadFlags::IMPORT_TEXTURES | rawrbox::GLTFLoadFlags::IMPORT_ANIMATIONS | rawrbox::GLTFLoadFlags::Debug::PRINT_MATERIALS}};
 
 		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
 			rawrbox::runOnRenderThread([this]() {

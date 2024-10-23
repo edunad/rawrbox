@@ -19,7 +19,7 @@
 
 namespace rawrbox {
 	// NOLINTBEGIN(unused-const-variable)
-	namespace ModelLoadFlags {
+	namespace GLTFLoadFlags {
 		const uint32_t NONE = 0;
 		const uint32_t IMPORT_LIGHT = 1 << 1;
 		const uint32_t IMPORT_TEXTURES = 1 << 2;
@@ -41,7 +41,7 @@ namespace rawrbox {
 			const uint32_t SKELETON_ANIMATIONS = 1 << 21;
 		} // namespace Optimizer
 
-	}; // namespace ModelLoadFlags
+	}; // namespace GLTFLoadFlags
 	   // NOLINTEND(unused-const-variable)
 
 	enum class GLTFImageType : uint32_t {
@@ -269,7 +269,7 @@ namespace rawrbox {
 		std::vector<std::unique_ptr<rawrbox::GLTFMesh>> meshes = {};
 		// ---------------
 
-		explicit GLTFImporter(uint32_t loadFlags = ModelLoadFlags::NONE);
+		explicit GLTFImporter(uint32_t loadFlags = GLTFLoadFlags::NONE);
 		GLTFImporter(const GLTFImporter&) = delete;
 		GLTFImporter(GLTFImporter&&) = delete;
 		GLTFImporter& operator=(const GLTFImporter&) = delete;

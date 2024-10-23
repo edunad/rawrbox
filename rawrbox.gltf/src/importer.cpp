@@ -37,7 +37,7 @@ namespace rawrbox {
 		    fastgltf::Options::DecomposeNodeMatrices |
 		    fastgltf::Options::LoadExternalBuffers;
 
-		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
+		if ((this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_TEXTURES) > 0) {
 			extensions |= fastgltf::Extensions::KHR_materials_unlit |
 				      fastgltf::Extensions::KHR_materials_specular | fastgltf::Extensions::KHR_texture_basisu |
 				      fastgltf::Extensions::EXT_texture_webp | fastgltf::Extensions::KHR_materials_emissive_strength;
@@ -45,7 +45,7 @@ namespace rawrbox {
 			gltfOptions |= fastgltf::Options::LoadExternalImages; // Handle loading for us
 		}
 
-		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_LIGHT) > 0) {
+		if ((this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_LIGHT) > 0) {
 			extensions |= fastgltf::Extensions::KHR_lights_punctual;
 		}
 
@@ -60,7 +60,7 @@ namespace rawrbox {
 			if (importer == nullptr) return;
 
 			if (objectType == fastgltf::Category::Meshes) {
-				if ((importer->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) > 0) {
+				if ((importer->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_BLEND_SHAPES) > 0) {
 					auto arr = extras->at_key("targetNames").get_array();
 					if (arr.error() != simdjson::error_code::SUCCESS) return;
 
@@ -88,7 +88,7 @@ namespace rawrbox {
 		// ---------------
 
 		// LOAD MATERIALS ---
-		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0) {
+		if ((this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_TEXTURES) > 0) {
 			this->loadTextures(scene);
 			this->loadMaterials(scene);
 		}
@@ -99,7 +99,7 @@ namespace rawrbox {
 		//  ---------------
 
 		// LOAD SKELETONS & ANIMATIONS ---
-		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {
+		if ((this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_ANIMATIONS) > 0) {
 			this->loadSkeletons(scene);
 			this->loadAnimations(scene);
 		}
@@ -108,9 +108,9 @@ namespace rawrbox {
 
 	// POST-LOAD ---
 	void GLTFImporter::postLoadFixSceneNames(fastgltf::Asset& scene) {
-		const bool importAnims = (this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0;
-		const bool importTextures = (this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_TEXTURES) > 0;
-		const bool importLights = (this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_LIGHT) > 0;
+		const bool importAnims = (this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_ANIMATIONS) > 0;
+		const bool importTextures = (this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_TEXTURES) > 0;
+		const bool importLights = (this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_LIGHT) > 0;
 
 		// Fix scenes ---
 		for (size_t i = 0; i < scene.scenes.size(); i++) {
@@ -356,7 +356,7 @@ namespace rawrbox {
 
 		// DEBUG ----
 		std::function<void(const ozz::animation::offline::RawSkeleton::Joint&, int, bool)> printBone;
-		if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_BONE_STRUCTURE) > 0) {
+		if ((this->loadFlags & rawrbox::GLTFLoadFlags::Debug::PRINT_BONE_STRUCTURE) > 0) {
 			printBone = [this, &printBone](const ozz::animation::offline::RawSkeleton::Joint& bn, int depth, bool isLast) -> void {
 				std::string indent(depth * 4, ' ');
 				std::string branch = isLast ? "└── " : "├── ";
@@ -481,7 +481,7 @@ namespace rawrbox {
 			gltfAnim.name = std::string(anim.name.begin(), anim.name.end());
 			gltfAnim.duration = 0.001F;
 
-			if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_ANIMATIONS) > 0) {
+			if ((this->loadFlags & rawrbox::GLTFLoadFlags::Debug::PRINT_ANIMATIONS) > 0) {
 				this->_logger->debug("Found animation '{}'", fmt::styled(gltfAnim.name, fmt::fg(fmt::color::green_yellow)));
 			}
 
@@ -607,7 +607,7 @@ namespace rawrbox {
 			}
 
 			// Optimize skeleton
-			if ((this->loadFlags & rawrbox::ModelLoadFlags::Optimizer::SKELETON_ANIMATIONS) > 0 && anim.skeleton != nullptr) {
+			if ((this->loadFlags & rawrbox::GLTFLoadFlags::Optimizer::SKELETON_ANIMATIONS) > 0 && anim.skeleton != nullptr) {
 				ozz::animation::offline::AnimationOptimizer optimizer;
 				ozz::animation::offline::RawAnimation input = rawrAnim;
 
@@ -661,7 +661,7 @@ namespace rawrbox {
 		size_t meshIndex = node.meshIndex.value();
 		const auto& mesh = scene.meshes[meshIndex];
 
-		const bool importBlendShapes = (this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_BLEND_SHAPES) > 0;
+		const bool importBlendShapes = (this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_BLEND_SHAPES) > 0;
 
 		// SUB-MESHES ----
 		gltfMesh->primitives.resize(mesh.primitives.size());
@@ -722,7 +722,7 @@ namespace rawrbox {
 			// -----------
 
 			// OPTIMIZATION ---
-			if ((this->loadFlags & rawrbox::ModelLoadFlags::Optimizer::MESH) > 0) {
+			if ((this->loadFlags & rawrbox::GLTFLoadFlags::Optimizer::MESH) > 0) {
 				if (rawrPrimitive.blendShapes.empty()) {
 					auto startVert = rawrPrimitive.vertices.size();
 					auto startInd = rawrPrimitive.indices.size();
@@ -730,7 +730,7 @@ namespace rawrbox {
 					rawrbox::MeshOptimization::optimize(rawrPrimitive.vertices, rawrPrimitive.indices);
 					rawrbox::MeshOptimization::simplify(rawrPrimitive.vertices, rawrPrimitive.indices);
 
-					if ((this->loadFlags & rawrbox::ModelLoadFlags::Debug::PRINT_OPTIMIZATION_STATS) > 0) {
+					if ((this->loadFlags & rawrbox::GLTFLoadFlags::Debug::PRINT_OPTIMIZATION_STATS) > 0) {
 						if (startVert != rawrPrimitive.vertices.size() || startInd != rawrPrimitive.indices.size()) {
 							this->_logger->debug("Optimized mesh '{}'\n\tVertices -> {} to {}\n\tIndices -> {} to {}", fmt::styled(gltfMesh->name, fmt::fg(fmt::color::cyan)), startVert, rawrPrimitive.vertices.size(), startInd, rawrPrimitive.indices.size());
 						}
@@ -742,7 +742,7 @@ namespace rawrbox {
 			// ----------------
 
 			// BBOX CALCULATION --
-			if ((this->loadFlags & rawrbox::ModelLoadFlags::CALCULATE_BBOX) > 0) {
+			if ((this->loadFlags & rawrbox::GLTFLoadFlags::CALCULATE_BBOX) > 0) {
 				gltfMesh->bbox.min = rawrbox::Vector3f(std::numeric_limits<float>::max());
 				gltfMesh->bbox.max = rawrbox::Vector3f(std::numeric_limits<float>::min());
 
@@ -811,7 +811,7 @@ namespace rawrbox {
 		// -------------
 
 		// BONES -----
-		if ((this->loadFlags & rawrbox::ModelLoadFlags::IMPORT_ANIMATIONS) > 0) {
+		if ((this->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_ANIMATIONS) > 0) {
 			const auto* jointIt = primitive.findAttribute("JOINTS_0");
 			const auto* weightIt = primitive.findAttribute("WEIGHTS_0");
 
