@@ -58,6 +58,7 @@ namespace steamworks {
 
 		if (!plyAvatar.pixels.empty()) {
 			this->_avatar = std::make_unique<rawrbox::TextureImage>(rawrbox::Vector2u{plyAvatar.width, plyAvatar.height}, plyAvatar.pixels);
+			this->_avatar->setName(std::to_string(id.GetAccountID()));
 			this->_avatar->upload();
 		}
 
@@ -70,6 +71,7 @@ namespace steamworks {
 		for (size_t i = 0; i < maxFriends; i++) {
 			auto avatar = rawrbox::SteamSDK::getAvatar(friends[i], rawrbox::AvatarSize::MEDIUM);
 			auto avatarPixels = std::make_unique<rawrbox::TextureImage>(rawrbox::Vector2u{avatar.width, avatar.height}, avatar.pixels);
+			avatarPixels->setName(std::to_string(friends[i].GetAccountID()));
 			avatarPixels->upload();
 
 			_friendAvatars[i] = std::move(avatarPixels);
