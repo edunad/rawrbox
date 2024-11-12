@@ -22,7 +22,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY
         jrouwe/JoltPhysics
     VERSION
-        5.1.0
+        5.2.0
     OPTIONS
         "INTERPROCEDURAL_OPTIMIZATION ${RAWRBOX_INTERPROCEDURAL_OPTIMIZATION}"
 

@@ -77,15 +77,15 @@ if(thread-pool_ADDED)
 endif()
 
 CPMAddPackage(
-        NAME
-            spdlog
-        GITHUB_REPOSITORY
-            gabime/spdlog
-        VERSION
-            1.14.1
-        OPTIONS
-            "SPDLOG_FMT_EXTERNAL ON"
-    )
+    NAME
+        spdlog
+    GITHUB_REPOSITORY
+        gabime/spdlog
+    VERSION
+        1.15.0
+    OPTIONS
+        "SPDLOG_FMT_EXTERNAL ON"
+)
 
 if(spdlog_ADDED)
     set_lib_runtime_mt(spdlog)

@@ -3,14 +3,14 @@ set(output_target RAWRBOX.RENDER)
 # --------------
 
 # Packages ----
-set(DXC_VERSION "v1.8.2405")
-set(DXC_RELEASE_DATE "2024_05_24")
+set(DXC_VERSION "v1.8.2407")
+set(DXC_RELEASE_DATE "2024_07_31")
 
 find_package(DXC REQUIRED)
 # --------------
 
 # Packages ----
-CPMAddPackage("gh:zeux/meshoptimizer@0.21")
+CPMAddPackage("gh:zeux/meshoptimizer@0.22")
 
 CPMAddPackage(
     NAME
@@ -112,7 +112,7 @@ if(ozz_ADDED)
 endif()
 
 
-CPMAddPackage("gh:nemtrif/utfcpp@4.0.5")
+CPMAddPackage("gh:nemtrif/utfcpp@4.0.6")
 if(utfcpp_ADDED)
     set_lib_runtime_mt(utf8cpp)
 endif()
