@@ -17,7 +17,6 @@ namespace rawrbox {
 
 	void ParticleEnginePlugin::createSignatures() {
 		if (this->_signature != nullptr || this->_signatureBind != nullptr) RAWRBOX_CRITICAL("Signatures already bound!");
-		if (rawrbox::MAIN_CAMERA == nullptr) RAWRBOX_CRITICAL("Clustered plugin requires at least one camera!");
 
 		std::vector<Diligent::PipelineResourceDesc> resources = {
 		    // CAMERA ------
@@ -76,8 +75,6 @@ namespace rawrbox {
 	}
 
 	void ParticleEnginePlugin::createPipelines() {
-		if (rawrbox::MAIN_CAMERA == nullptr) RAWRBOX_CRITICAL("Particle engine plugin requires at least one camera!");
-
 		rawrbox::PipeComputeSettings settings;
 		settings.signatures = {this->_signature};
 
@@ -88,7 +85,7 @@ namespace rawrbox {
 	}
 
 	void ParticleEnginePlugin::upload() {
-		if (this->_signature == nullptr || this->_signatureBind == nullptr || this->_uniforms == nullptr) RAWRBOX_CRITICAL("Plugin not initialized!");
+		if (this->_signature == nullptr || this->_dynamicSignature == nullptr || this->_uniforms == nullptr) RAWRBOX_CRITICAL("Plugin not initialized!");
 
 		// Compute bind ---
 		this->_signature->GetStaticVariableByName(Diligent::SHADER_TYPE_COMPUTE, "Camera")->Set(rawrbox::CameraBase::uniforms);
