@@ -116,7 +116,7 @@ set(RAWRBOX_CONTENT_FOLDER "assets" CACHE STRING "The assets folder (aka where m
 set(RAWRBOX_LIBRARY_TYPE "STATIC" CACHE STRING "Linking type for library")
 # ----------------
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSPDLOG_FMT_EXTERNAL -DNOMINMAX")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNOMINMAX")
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -197,23 +197,23 @@ endif()
 # -------------------------
 
 # GLOBAL PACKAGES ------
-CPMAddPackage("gh:fmtlib/fmt#11.0.2")
+CPMAddPackage("gh:fmtlib/fmt#11.1.4")
 if(fmt_ADDED)
     set_lib_runtime_mt(fmt)
 endif()
 
-CPMAddPackage("gh:Neargye/magic_enum@0.9.6")
+CPMAddPackage("gh:Neargye/magic_enum@0.9.7")
 if(magic_enum_ADDED)
     set_lib_runtime_mt(magic_enum)
 endif()
 
 if(RAWRBOX_BUILD_RAWRBOX_RENDER)
     if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
-        CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@14.0.0")
+        CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@14.0.1")
     endif()
 endif()
 
-CPMAddPackage("gh:stephenberry/glaze@4.0.0")
+CPMAddPackage("gh:stephenberry/glaze@5.0.0")
 
 # ---
 if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
@@ -227,7 +227,7 @@ if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
         USE_CACHE
             OFF
         GIT_TAG
-            2.2.2
+            2.2.4
         OPTIONS
             "ZLIB_COMPAT ON"
             "ZLIB_BUILD_EXAMPLES OFF"

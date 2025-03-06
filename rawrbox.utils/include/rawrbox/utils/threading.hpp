@@ -7,7 +7,7 @@
 namespace rawrbox {
 	class ASYNC {
 	protected:
-		static std::unique_ptr<BS::thread_pool> _pool;
+		static std::unique_ptr<BS::thread_pool<>> _pool;
 
 		// LOGGER ------
 		static std::unique_ptr<rawrbox::Logger> _logger;

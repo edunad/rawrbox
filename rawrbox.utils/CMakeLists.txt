@@ -70,7 +70,7 @@ else()
     endif()
 endif()
 
-CPMAddPackage("gh:bshoshany/thread-pool@4.1.0")
+CPMAddPackage("gh:bshoshany/thread-pool@5.0.0")
 if(thread-pool_ADDED)
     add_library(thread-pool INTERFACE IMPORTED)
     target_include_directories(thread-pool INTERFACE ${thread-pool_SOURCE_DIR}/include)
@@ -81,8 +81,8 @@ CPMAddPackage(
         spdlog
     GITHUB_REPOSITORY
         gabime/spdlog
-    VERSION
-        1.15.0
+    GIT_TAG
+        v2.x
     OPTIONS
         "SPDLOG_FMT_EXTERNAL ON"
 )

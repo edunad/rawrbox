@@ -73,6 +73,7 @@ This engine started as a C++ training project, with hopes of being applied in my
 - Download and setup [ninja](https://github.com/ninja-build/ninja/releases) (make sure it's in the enviroment path)<br/>
   - `pip install ninja` if you have python3 installed
 - C++23 is required to build.
+- Symlink permissions are required (or run as administrator)
 
 ### IDE SETUP (Visual Code)
 
@@ -123,7 +124,7 @@ This engine started as a C++ training project, with hopes of being applied in my
 | `RAWRBOX_BUILD_TESTING`                    | Builds & enables project tests                                                                     | OFF     |
 | `RAWRBOX_BUILD_SAMPLES`                    | Builds the project sample                                                                          | OFF     |
 | --                                         | --                                                                                                 | --      |
-| `RAWRBOX_CONTENT_FOLDER`                   | The content folder to output assets                                           			  | Assets  |
+| `RAWRBOX_CONTENT_FOLDER`                   | The content folder to output assets                                                                | Assets  |
 | --                                         | --                                                                                                 | --      |
 | `RAWRBOX_USE_WAYLAND`                      | Enables WAYLAND compiling on LINUX                                                                 | OFF     |
 | --                                         | --                                                                                                 | --      |
@@ -132,7 +133,7 @@ This engine started as a C++ training project, with hopes of being applied in my
 | `RAWRBOX_BUILD_RAWRBOX_RESOURCES`          | Builds the resouces manager (aka handling and storing loaded resources)                            | OFF     |
 | `RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS`         | Builds the 3D physics engine                                                                       | OFF     |
 | `RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS`         | Builds the 2D physics engine                                                                       | OFF     |
-| `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️| OFF     |
+| `RAWRBOX_BUILD_RAWRBOX_BASS`               | Enables BASS support. ⚠️ [BASS IS ONLY FREE FOR OPEN SOURCE PROJECTS](https://www.un4seen.com/) ⚠️ | OFF     |
 | `RAWRBOX_BUILD_RAWRBOX_GLTF`               | Enables gltf2.0 model loading support                                                              | OFF     |
 | `RAWRBOX_BUILD_RAWRBOX_WEBM`               | Enables WEBM loading                                                                               | OFF     |
 | `RAWRBOX_BUILD_RAWRBOX_NETWORK`            | Builds network support                                                                             | OFF     |

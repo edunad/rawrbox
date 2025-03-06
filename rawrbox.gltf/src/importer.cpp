@@ -5,7 +5,7 @@
 
 #include <fastgltf/tools.hpp>
 #include <fastgltf/types.hpp>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <ozz/animation/offline/animation_builder.h>
 #include <ozz/animation/offline/animation_optimizer.h>

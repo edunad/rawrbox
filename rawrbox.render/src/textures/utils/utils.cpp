@@ -4,7 +4,7 @@
 #include <rawrbox/render/textures/utils/utils.hpp>
 #include <rawrbox/render/textures/utils/webp.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <bitset>
 

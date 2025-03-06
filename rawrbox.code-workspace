@@ -20,7 +20,7 @@
     "githubPullRequests.queries": [
       {
         "label": "Pull-Requests",
-        "query": "is:open"
+        "query": "repo:${owner}/${repository} is:open"
       }
     ],
     "clangd.restartAfterCrash": true,
