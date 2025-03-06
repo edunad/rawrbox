@@ -4,14 +4,14 @@
 #include <rawrbox/utils/settings.hpp>
 
 #include <glaze/glaze.hpp>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 namespace rawrbox {
 	template <typename T>
 	concept hasJSONVersion = requires(T t) { t.VERSION; };
 
 	template <typename T>
-		requires(hasJSONVersion<T> && glz::write_json_supported<T> && glz::read_json_supported<T>)
+		requires(hasJSONVersion<T> && glz::write_supported<glz::JSON, T> && glz::read_supported<glz::JSON, T>)
 	class Settings {
 	protected:
 		T _settings = {};
@@ -37,7 +37,7 @@ namespace rawrbox {
 
 		virtual void load(const std::string& rawData) {
 			if (!rawData.empty()) {
-				auto err = glz::read<glz::opts{.comments = 1U, .error_on_unknown_keys = 0U, .skip_null_members = 1U, .error_on_missing_keys = 0U, .allow_conversions = 1U}>(this->_settings, rawData);
+				auto err = glz::read<glz::opts{.comments = 1U, .error_on_unknown_keys = 0U, .skip_null_members = 1U, .error_on_missing_keys = 0U}>(this->_settings, rawData);
 				if (err != glz::error_code::none) RAWRBOX_CRITICAL("Failed to load settings ──> {}", magic_enum::enum_name(err.ec));
 			} else {
 				this->_settings = {};
@@ -50,7 +50,7 @@ namespace rawrbox {
 			auto filePath = this->getFileName();
 
 			if (std::filesystem::exists(this->getFileName())) {
-				auto err = glz::read_file_json<glz::opts{.comments = 1U, .error_on_unknown_keys = 0U, .skip_null_members = 1U, .error_on_missing_keys = 0U, .allow_conversions = 1U}>(this->_settings, filePath.generic_string(), std::string{});
+				auto err = glz::read_file_json<glz::opts{.comments = 1U, .error_on_unknown_keys = 0U, .skip_null_members = 1U, .error_on_missing_keys = 0U}>(this->_settings, filePath.generic_string(), std::string{});
 				if (err != glz::error_code::none) RAWRBOX_CRITICAL("Failed to load '{}' ──> {}", filePath.generic_string(), magic_enum::enum_name(err.ec));
 			} else {
 				this->_settings = {};
@@ -61,7 +61,7 @@ namespace rawrbox {
 
 		virtual void save() {
 			auto fileName = this->getFileName().generic_string();
-			auto ec = glz::write_file_json<glz::opts{.comments = 1U, .prettify = 1U, .allow_conversions = 1U}>(this->_settings, fileName, std::string{});
+			auto ec = glz::write_file_json<glz::opts{.comments = 1U, .prettify = 1U}>(this->_settings, fileName, std::string{});
 			if (ec != glz::error_code::none) RAWRBOX_CRITICAL("Failed to save settings '{}'", fileName);
 		}
 

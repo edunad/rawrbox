@@ -3,7 +3,7 @@
 #include <rawrbox/render/utils/pipeline.hpp>
 #include <rawrbox/utils/string.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <fmt/color.h>
 

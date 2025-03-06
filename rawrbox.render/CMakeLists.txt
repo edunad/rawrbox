@@ -7,6 +7,7 @@ set(DXC_VERSION "v1.8.2407")
 set(DXC_RELEASE_DATE "2024_07_31")
 
 find_package(DXC REQUIRED)
+find_package(Vulkan REQUIRED FATAL_ERROR)
 # --------------
 
 # Packages ----
@@ -90,7 +91,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY
         guillaumeblanc/ozz-animation
     GIT_TAG
-        0.15.0
+        0.16.0
     PATCHES
         ${CMAKE_CURRENT_SOURCE_DIR}/patch/ozz.patch
     OPTIONS
@@ -117,9 +118,10 @@ if(utfcpp_ADDED)
     set_lib_runtime_mt(utf8cpp)
 endif()
 
-CPMAddPackage("gh:sammycage/lunasvg@2.4.0") # 2.4.1 causes a weird error on build
+CPMAddPackage("gh:sammycage/lunasvg@2.4.0")
 if(lunasvg_ADDED)
     set_lib_runtime_mt(lunasvg)
+    #set_lib_runtime_mt(plutovg)
 endif()
 
 CPMAddPackage(
@@ -128,7 +130,7 @@ CPMAddPackage(
     GITHUB_REPOSITORY
         webmproject/libwebp
     VERSION
-        1.4.0
+        1.5.0
     OPTIONS
         "BUILD_SHARED_LIBS OFF"
         "WEBP_BUILD_ANIM_UTILS OFF"

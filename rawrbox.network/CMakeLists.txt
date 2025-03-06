@@ -8,16 +8,14 @@ CPMAddPackage(
     NAME
         libcpr
     GIT_TAG
-        1.10.5
+        1.11.2
     GITHUB_REPOSITORY
         libcpr/cpr
-    PATCHES
-        libcpr.patch
     OPTIONS
         "BUILD_SHARED_LIBS OFF"
         "CPR_ENABLE_CURL_HTTP_ONLY ON"
         "CPR_ENABLE_SSL ON"
-        "CURL_ZLIB ON"
+        "CURL_ZLIB OFF"
     )
 
 if(libcpr_ADDED)

@@ -35,7 +35,7 @@
 #include <rawrbox/render/window.hpp>
 #include <rawrbox/utils/string.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <GLFW/glfw3native.h>
 

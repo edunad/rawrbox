@@ -2,7 +2,7 @@
 #include <rawrbox/math/utils/yuv.hpp>
 #include <rawrbox/webm/decoder.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <fmt/format.h>
 #include <vpx/vp8dx.h>

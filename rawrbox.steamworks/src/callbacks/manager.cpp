@@ -1,6 +1,6 @@
 #include <rawrbox/steamworks/callbacks/manager.hpp>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <fmt/printf.h>
 

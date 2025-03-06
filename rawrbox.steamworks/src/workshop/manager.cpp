@@ -4,7 +4,7 @@
 #include <rawrbox/utils/string.hpp>
 
 #include <glaze/glaze.hpp>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include <array>
 #include <filesystem>
@@ -61,7 +61,7 @@ namespace rawrbox {
 		auto configPath = fmt::format("{}/mod.json", rootPath.generic_string());
 		if (!std::filesystem::exists(configPath)) RAWRBOX_CRITICAL("Missing 'mod.json' file");
 
-		auto ec = glz::write_file_json<glz::opts{.comments = 1U, .prettify = 1U, .allow_conversions = 1U}>(config, configPath, std::string{});
+		auto ec = glz::write_file_json<glz::opts{.comments = 1U, .prettify = 1U}>(config, configPath, std::string{});
 		if (ec != glz::error_code::none) RAWRBOX_CRITICAL("Failed to patch settings '{}'", configPath);
 
 		_logger->debug("Patched mod config");

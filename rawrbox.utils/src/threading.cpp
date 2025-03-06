@@ -4,7 +4,7 @@
 
 namespace rawrbox {
 	// PRIVATE -------------
-	std::unique_ptr<BS::thread_pool> ASYNC::_pool = nullptr;
+	std::unique_ptr<BS::thread_pool<>> ASYNC::_pool = nullptr;
 
 	// LOGGER ------
 	std::unique_ptr<rawrbox::Logger> ASYNC::_logger = std::make_unique<rawrbox::Logger>("RawrBox-ASYNC");
@@ -13,7 +13,7 @@ namespace rawrbox {
 
 	void ASYNC::init(uint32_t threads) {
 		if (_pool != nullptr) RAWRBOX_CRITICAL("ASYNC init already called!");
-		_pool = std::make_unique<BS::thread_pool>(threads);
+		_pool = std::make_unique<BS::thread_pool<>>(threads);
 	}
 
 	void ASYNC::shutdown() {
