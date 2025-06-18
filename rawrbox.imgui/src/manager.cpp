@@ -43,7 +43,7 @@ namespace rawrbox {
 				if (pCmd.ElemCount == 0) continue;
 
 				// Texturing ----
-				auto* texture = pCmd.TextureId;
+				auto* texture = pCmd.GetTexID();
 				if (texture == nullptr) texture = rawrbox::MISSING_TEXTURE.get();
 
 				for (uint32_t i = pCmd.IdxOffset; i < pCmd.IdxOffset + pCmd.ElemCount; i++) {

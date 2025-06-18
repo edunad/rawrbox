@@ -5,43 +5,43 @@ set(output_target RAWRBOX.UI)
 
 # LIBS ---
 CPMAddPackage(
-    NAME
+        NAME
         clip
-    VERSION
+        VERSION
         1.9
-    GITHUB_REPOSITORY
+        GITHUB_REPOSITORY
         dacap/clip
-    OPTIONS
+        OPTIONS
         "CLIP_EXAMPLES OFF"
         "CLIP_ENABLE_IMAGE OFF"
         "CLIP_TESTS OFF")
 
-if(clip_ADDED)
+if (clip_ADDED)
     target_include_directories(clip PUBLIC ${clip_SOURCE_DIR})
     set_lib_runtime_mt(clip)
-endif()
+endif ()
 
 # ----
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_UI_IMPORTS "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
-if(NOT RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+if (NOT RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
     remove_folder("${RAWRBOX_UI_IMPORTS}" "/scripting/")
     set(RAWRBOX_UI_IMPORTS "${CLEAN_SOURCES}")
-endif()
+endif ()
 
-if(NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+if (NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     message(FATAL "RAWRBOX.UI elements require RAWRBOX.RESOURCES to be enabled!")
-endif()
+endif ()
 # -----------------
 
 # LIB ----
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_UI_IMPORTS})
 
 copy_resources(TARGET ${output_target})
-if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+if (RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
     copy_lua_libs(TARGET ${output_target})
-endif()
+endif ()
 
 
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)

@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.16.3 FATAL_ERROR)
+if (POLICY CMP0177)
+    cmake_policy(SET CMP0177 NEW)
+endif ()
 
 # SETUP UTILS
 include("cmake/rawrbox_utils.cmake")
@@ -52,7 +55,7 @@ option(RAWRBOX_BUILD_QHULL "Include QHull on utils" OFF)
 # ---------------
 
 # Supports -----
-option(RAWRBOX_DISABLE_SUPPORT_DX12   "Disable dx12 support" OFF)
+option(RAWRBOX_DISABLE_SUPPORT_DX12 "Disable dx12 support" OFF)
 option(RAWRBOX_DISABLE_SUPPORT_VULKAN "Disable vulkan support" OFF)
 # ---------------
 
@@ -62,7 +65,7 @@ option(RAWRBOX_INTERPROCEDURAL_OPTIMIZATION "Enables IPO" ON)
 # ---------------
 # -----
 
-if(RAWRBOX_INTERPROCEDURAL_OPTIMIZATION AND NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "ARM64") AND NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "ARM"))
+if (RAWRBOX_INTERPROCEDURAL_OPTIMIZATION AND NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "ARM64") AND NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "ARM"))
     message(STATUS "Enabled INTERPROCEDURAL_OPTIMIZATION for release and distribution")
 
     cmake_policy(SET CMP0069 NEW)
@@ -71,15 +74,15 @@ if(RAWRBOX_INTERPROCEDURAL_OPTIMIZATION AND NOT ("${CMAKE_VS_PLATFORM_NAME}" STR
     include(CheckIPOSupported)
     check_ipo_supported(RESULT ipoSupported OUTPUT error)
 
-    if(ipoSupported)
+    if (ipoSupported)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DISTRIBUTION TRUE)
-    else()
+    else ()
         message(FATAL_ERROR "IPO / LTO is not supported, please disable RAWRBOX_INTERPROCEDURAL_OPTIMIZATION")
-    endif()
-endif()
+    endif ()
+endif ()
 
-if(RAWRBOX_DEV_MODE)
+if (RAWRBOX_DEV_MODE)
     message(WARNING "RAWRBOX Dev mode enabled!")
 
     set(RAWRBOX_BUILD_TESTING ON)
@@ -102,14 +105,14 @@ if(RAWRBOX_DEV_MODE)
     set(RAWRBOX_BUILD_RAWRBOX_IMGUI ON)
     set(RAWRBOX_BUILD_QHULL ON)
 
-    if(NOT DEFINED STEAMWORKS_APPID)
+    if (NOT DEFINED STEAMWORKS_APPID)
         message(STATUS "Set STEAMWORKS_APPID to 480 (SpaceWars example game)")
         set(STEAMWORKS_APPID 480) # SpaceWars example game
-    endif()
+    endif ()
 
     set(CPM_SOURCE_CACHE "${PROJECT_SOURCE_DIR}/.cache/cpm")
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}")
-endif()
+endif ()
 
 # OTHER SETTINGS ----
 set(RAWRBOX_CONTENT_FOLDER "assets" CACHE STRING "The assets folder (aka where models, textures, etc are)")
@@ -124,22 +127,22 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(BUILD_SHARED_LIBS OFF)
 
 # Apple needs this flag to compile mixed objective/c++
-if(APPLE AND NOT XCODE)
+if (APPLE AND NOT XCODE)
     set(CMAKE_CXX_FLAGS "-ObjC++")
-endif()
+endif ()
 
 # Linux and Wayland support
-if(NOT WIN32)
+if (NOT WIN32)
     set(RAWRBOX_EXTRA_LIBS pthread GL X11)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-psabi")
 
-    if(RAWRBOX_USE_WAYLAND)
+    if (RAWRBOX_USE_WAYLAND)
         list(APPEND RAWRBOX_EXTRA_LIBS wayland-egl)
         set(GLFW_BUILD_WAYLAND ON CACHE INTERNAL "")
-    endif()
+    endif ()
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti -fexceptions") # Enable exceptions and RTTI
-else()
+else ()
     # Ignore warnings about missing pdb
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ignore:4099")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /ignore:4099")
@@ -147,14 +150,14 @@ else()
 
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /permissive- /EHsc /GR") # Enable strict mode, exceptions and RTTI
-endif()
+endif ()
 
 set(CMAKE_SKIP_RPATH TRUE)
 set(CMAKE_SKIP_BUILD_RPATH TRUE)
 # ---------------------------------
 
 # Patch vs studio paths
-if(WIN32 AND NOT VS_DXC_COMPILER_PATH AND NOT VS_DXIL_SIGNER_PATH AND NOT VS_D3D_COMPILER_PATH)
+if (WIN32 AND NOT VS_DXC_COMPILER_PATH AND NOT VS_DXIL_SIGNER_PATH AND NOT VS_D3D_COMPILER_PATH)
     get_filename_component(CMAKE_DEVKIT_LOCATION ${CMAKE_RC_COMPILER} DIRECTORY)
 
     set(VS_DXC_COMPILER_PATH "${CMAKE_DEVKIT_LOCATION}/dxcompiler.dll" CACHE INTERNAL "")
@@ -162,13 +165,13 @@ if(WIN32 AND NOT VS_DXC_COMPILER_PATH AND NOT VS_DXIL_SIGNER_PATH AND NOT VS_D3D
     set(VS_D3D_COMPILER_PATH "${CMAKE_DEVKIT_LOCATION}/d3dcompiler_47.dll" CACHE INTERNAL "")
 
     message(STATUS "Patching DirectX Visual Studio paths:\n\tVS_DXC_COMPILER_PATH: ${VS_DXC_COMPILER_PATH}\n\tVS_DXIL_SIGNER_PATH: ${VS_DXIL_SIGNER_PATH}\n\tVS_D3D_COMPILER_PATH: ${VS_D3D_COMPILER_PATH}")
-endif()
+endif ()
 # ---------------------
 
 set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME OFF)
 
 ## CHECKS ---
-if(NOT RAWRBOX_BUILD_RAWRBOX_RENDER)
+if (NOT RAWRBOX_BUILD_RAWRBOX_RENDER)
     message(WARNING "----------------------------------------\nRAWRBOX_BUILD_RAWRBOX_RENDER is disabled!\nDisabling UI / GLTF / IMGUI / WEBM and samples..\n----------------------------------------")
     set(RAWRBOX_BUILD_RAWRBOX_UI OFF)
     set(RAWRBOX_BUILD_RAWRBOX_GLTF OFF)
@@ -176,59 +179,59 @@ if(NOT RAWRBOX_BUILD_RAWRBOX_RENDER)
     set(RAWRBOX_BUILD_RAWRBOX_WEBM OFF)
 
     set(RAWRBOX_BUILD_SAMPLES OFF)
-else()
+else ()
     # Samples & UI ---
-    if(RAWRBOX_BUILD_SAMPLES AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+    if (RAWRBOX_BUILD_SAMPLES AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
         message(WARNING "Samples require RAWRBOX.RESOURCES to be enabled, enabling...")
         set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
-    endif()
+    endif ()
 
-    if(RAWRBOX_BUILD_RAWRBOX_UI AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+    if (RAWRBOX_BUILD_RAWRBOX_UI AND NOT RAWRBOX_BUILD_RAWRBOX_RESOURCES)
         message(WARNING "RAWRBOX.UI requires RAWRBOX.RESOURCES to be enabled, enabling...")
         set(RAWRBOX_BUILD_RAWRBOX_RESOURCES ON)
-    endif()
+    endif ()
     # -----------
-endif()
+endif ()
 
-if(NOT RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME AND RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
+if (NOT RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME AND RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
     set(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME ON) # Jolt requires msvc multithreaded runtime
     message(WARNING "JoltPhysics is enabled, forcing RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME")
-endif()
+endif ()
 # -------------------------
 
 # GLOBAL PACKAGES ------
-CPMAddPackage("gh:fmtlib/fmt#11.1.4")
-if(fmt_ADDED)
+CPMAddPackage("gh:fmtlib/fmt#11.2.0")
+if (fmt_ADDED)
     set_lib_runtime_mt(fmt)
-endif()
+endif ()
 
 CPMAddPackage("gh:Neargye/magic_enum@0.9.7")
-if(magic_enum_ADDED)
+if (magic_enum_ADDED)
     set_lib_runtime_mt(magic_enum)
-endif()
+endif ()
 
-if(RAWRBOX_BUILD_RAWRBOX_RENDER)
-    if(NOT WIN32 AND RAWRBOX_USE_WAYLAND)
-        CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@14.0.1")
-    endif()
-endif()
+if (RAWRBOX_BUILD_RAWRBOX_RENDER)
+    if (NOT WIN32 AND RAWRBOX_USE_WAYLAND)
+        CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@12.0.5")
+    endif ()
+endif ()
 
-CPMAddPackage("gh:stephenberry/glaze@5.0.0")
+CPMAddPackage("gh:stephenberry/glaze@5.4.1")
 
 # ---
-if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
+if (RAWRBOX_BUILD_RAWRBOX_NETWORK)
     message(WARNING "RAWRBOX.NETWORK is enabled, adding zlib-ng package")
 
     CPMFindPackage(
-        NAME
+            NAME
             zlib
-        GITHUB_REPOSITORY
+            GITHUB_REPOSITORY
             zlib-ng/zlib-ng
-        USE_CACHE
+            USE_CACHE
             OFF
-        GIT_TAG
+            GIT_TAG
             2.2.4
-        OPTIONS
+            OPTIONS
             "ZLIB_COMPAT ON"
             "ZLIB_BUILD_EXAMPLES OFF"
             "ZLIB_ENABLE_TESTS OFF"
@@ -237,88 +240,88 @@ if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
             "WITH_GTEST OFF"
     )
 
-    if(zlib_ADDED)
+    if (zlib_ADDED)
         include_directories(${zlib_SOURCE_DIR} ${zlib_BINARY_DIR})
         set_lib_runtime_mt(zlib)
-    endif()
-endif()
+    endif ()
+endif ()
 # --------------------
 
 add_subdirectory("rawrbox.math")
 add_subdirectory("rawrbox.utils")
 add_subdirectory("rawrbox.engine")
 
-if(RAWRBOX_BUILD_RAWRBOX_RENDER)
+if (RAWRBOX_BUILD_RAWRBOX_RENDER)
     message(STATUS "Enabled RAWRBOX.RENDER support")
     add_subdirectory("rawrbox.render")
-endif()
+endif ()
 
-if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+if (RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
     message(STATUS "Enabled RAWRBOX.SCRIPTING support")
     add_subdirectory("rawrbox.scripting")
-endif()
+endif ()
 
-if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+if (RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     message(STATUS "Enabled RAWRBOX.RESOURCES support")
     add_subdirectory("rawrbox.resources")
-endif()
+endif ()
 
-if(RAWRBOX_BUILD_RAWRBOX_NETWORK)
-   message(STATUS "Enabled RAWRBOX.NETWORK support")
-   add_subdirectory("rawrbox.network")
-endif()
+if (RAWRBOX_BUILD_RAWRBOX_NETWORK)
+    message(STATUS "Enabled RAWRBOX.NETWORK support")
+    add_subdirectory("rawrbox.network")
+endif ()
 
-if(RAWRBOX_BUILD_RAWRBOX_WEBM)
+if (RAWRBOX_BUILD_RAWRBOX_WEBM)
     message(STATUS "Enabled RAWRBOX.WEBM support")
     add_subdirectory("rawrbox.webm")
-endif()
+endif ()
 
-if(RAWRBOX_BUILD_RAWRBOX_GLTF)
+if (RAWRBOX_BUILD_RAWRBOX_GLTF)
     message(STATUS "Enabled RAWRBOX.GLTF support")
     add_subdirectory("rawrbox.gltf")
-endif()
+endif ()
 
-if(RAWRBOX_BUILD_RAWRBOX_UI)
+if (RAWRBOX_BUILD_RAWRBOX_UI)
     message(STATUS "Enabled RAWRBOX.UI support")
     add_subdirectory("rawrbox.ui")
-endif()
+endif ()
 
-if(RAWRBOX_BUILD_RAWRBOX_BASS)
+if (RAWRBOX_BUILD_RAWRBOX_BASS)
     message(STATUS "Enabled RAWRBOX.BASS support")
     add_subdirectory("rawrbox.bass")
-endif()
+endif ()
 
-if(RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
+if (RAWRBOX_BUILD_RAWRBOX_2D_PHYSICS)
     message(STATUS "Enabled RAWRBOX.2D_PHYSICS support")
     add_subdirectory("rawrbox.physics_2d")
-endif()
+endif ()
 
-if(RAWRBOX_BUILD_RAWRBOX_STEAMWORKS)
+if (RAWRBOX_BUILD_RAWRBOX_STEAMWORKS)
     message(STATUS "Enabled RAWRBOX.STEAMWORKS support")
     add_subdirectory("rawrbox.steamworks")
-endif()
+endif ()
 
-if(RAWRBOX_BUILD_RAWRBOX_IMGUI)
+if (RAWRBOX_BUILD_RAWRBOX_IMGUI)
     message(STATUS "Enabled RAWRBOX.IMGUI support")
     add_subdirectory("rawrbox.imgui")
-endif()
+endif ()
 
 # Jolt enables some weird flags, make sure it's the last one
-if(RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
+if (RAWRBOX_BUILD_RAWRBOX_3D_PHYSICS)
     message(STATUS "Enabled RAWRBOX.3D_PHYSICS support")
     add_subdirectory("rawrbox.physics_3d")
-endif()
+endif ()
 # --------------------
 
 # Shhhhh windows... shhhh....
 mute_dependencies_warnings(".*RAWRBOX.*")
 # --------------------
 
-if(RAWRBOX_BUILD_SAMPLES)
+if (RAWRBOX_BUILD_SAMPLES)
     message(STATUS "Enabled SAMPLES building")
     add_subdirectory("samples")
-endif()
+endif ()
 
-if(WIN32)
+if (WIN32)
     string(REPLACE "/WX" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-endif()
+endif ()
