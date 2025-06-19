@@ -9,7 +9,7 @@ if(RAWRBOX_BUILD_TESTING)
         GITHUB_REPOSITORY
             catchorg/Catch2
         VERSION
-            3.8.0
+            3.8.1
         OPTIONS
             "CATCH_INSTALL_DOCS OFF"
             "CATCH_CONFIG_FAST_COMPILE ON"

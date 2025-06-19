@@ -7,11 +7,11 @@ set(DXC_VERSION "v1.8.2407")
 set(DXC_RELEASE_DATE "2024_07_31")
 
 find_package(DXC REQUIRED)
-find_package(Vulkan REQUIRED FATAL_ERROR)
+find_package(Vulkan REQUIRED)
 # --------------
 
 # Packages ----
-CPMAddPackage("gh:zeux/meshoptimizer@0.22")
+CPMAddPackage("gh:zeux/meshoptimizer@0.24")
 
 CPMAddPackage(
     NAME
@@ -36,10 +36,10 @@ CPMAddPackage(
         DiligentGraphics/DiligentCore
     GIT_TAG
         master
-    PATCH_COMMAND
-        git restore Graphics/HLSL2GLSLConverterLib/src/HLSL2GLSLConverterImpl.cpp
-    COMMAND
-        git restore Graphics/GraphicsEngineVulkan/src/VulkanUtilities/VulkanInstance.cpp
+    #PATCH_COMMAND
+        #    git restore Graphics/HLSL2GLSLConverterLib/src/HLSL2GLSLConverterImpl.cpp
+        #COMMAND
+        #    git restore Graphics/GraphicsEngineVulkan/src/VulkanUtilities/VulkanInstance.cpp
     OPTIONS
         "DILIGENT_NO_RENDER_STATE_PACKAGER ON"
         "DILIGENT_NO_FORMAT_VALIDATION ON"
@@ -85,7 +85,11 @@ if(DiligentCore_ADDED)
     endif()
 endif()
 
-CPMAddPackage(
+
+# https://github.com/cpm-cmake/CPM.cmake/pull/664
+if (NOT OZZ_PATCHED)
+    set(OZZ_PATCHED TRUE CACHE INTERNAL "If ozz was already patched")
+    CPMAddPackage(
     NAME
         ozz
     GITHUB_REPOSITORY
@@ -103,6 +107,24 @@ CPMAddPackage(
         "ozz_build_tests OFF"
         "ozz_build_msvc_rt_dll ON"
 )
+else()
+    CPMAddPackage(
+            NAME
+            ozz
+            GITHUB_REPOSITORY
+            guillaumeblanc/ozz-animation
+            GIT_TAG
+            0.16.0
+            OPTIONS
+            "ozz_build_tools OFF"
+            "ozz_build_fbx OFF"
+            "ozz_build_gltf OFF"
+            "ozz_build_samples OFF"
+            "ozz_build_howtos OFF"
+            "ozz_build_tests OFF"
+            "ozz_build_msvc_rt_dll ON"
+    )
+endif()
 
 if(ozz_ADDED)
     set_lib_runtime_mt(ozz_base)
