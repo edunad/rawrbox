@@ -11,16 +11,16 @@ find_package(Vulkan REQUIRED)
 # --------------
 
 # Packages ----
-CPMAddPackage("gh:zeux/meshoptimizer@0.24")
+CPMAddPackage("gh:zeux/meshoptimizer@0.25")
 
 CPMAddPackage(
-    NAME
+        NAME
         glfw
-    GITHUB_REPOSITORY
+        GITHUB_REPOSITORY
         glfw/glfw
-    GIT_TAG
+        GIT_TAG
         3.4
-    OPTIONS
+        OPTIONS
         "GLFW_BUILD_DOCS OFF"
         "GLFW_BUILD_EXAMPLES OFF"
         "GLFW_BUILD_TESTS OFF"
@@ -30,17 +30,17 @@ CPMAddPackage(
         "USE_MSVC_RUNTIME_LIBRARY_DLL OFF")
 
 CPMAddPackage(
-    NAME
+        NAME
         DiligentCore
-    GITHUB_REPOSITORY
+        GITHUB_REPOSITORY
         DiligentGraphics/DiligentCore
-    GIT_TAG
+        GIT_TAG
         master
-    #PATCH_COMMAND
+        #PATCH_COMMAND
         #    git restore Graphics/HLSL2GLSLConverterLib/src/HLSL2GLSLConverterImpl.cpp
         #COMMAND
         #    git restore Graphics/GraphicsEngineVulkan/src/VulkanUtilities/VulkanInstance.cpp
-    OPTIONS
+        OPTIONS
         "DILIGENT_NO_RENDER_STATE_PACKAGER ON"
         "DILIGENT_NO_FORMAT_VALIDATION ON"
         "DILIGENT_NO_OPENGL ON"
@@ -50,7 +50,7 @@ CPMAddPackage(
         "DILIGENT_BUILD_TESTS OFF"
 )
 
-if(DiligentCore_ADDED)
+if (DiligentCore_ADDED)
     set_lib_runtime_mt(SPIRV)
     set_lib_runtime_mt(SPIRV-Tools-static)
     set_lib_runtime_mt(SPIRV-Tools-opt)
@@ -68,37 +68,33 @@ if(DiligentCore_ADDED)
     set_lib_runtime_mt(Diligent-Primitives)
 
     set_lib_runtime_mt(Diligent-Archiver-static)
-    set_lib_runtime_mt(Diligent-Archiver-shared)
 
     set_lib_runtime_mt(MachineIndependent)
     set_lib_runtime_mt(GenericCodeGen)
     set_lib_runtime_mt(spirv-cross-core)
     set_lib_runtime_mt(glslang)
 
-    if(WIN32)
+    if (WIN32)
         set_lib_runtime_mt(Diligent-Win32Platform)
-    else()
+    else ()
         set_lib_runtime_mt(Diligent-LinuxPlatform)
 
         set(DXC_SPIRV_PATH "" CACHE STRING "" FORCE)
         set(DILIGENT_DXCOMPILER_FOR_SPIRV_PATH "" CACHE STRING "" FORCE)
-    endif()
-endif()
+    endif ()
+endif ()
 
 
-# https://github.com/cpm-cmake/CPM.cmake/pull/664
-if (NOT OZZ_PATCHED)
-    set(OZZ_PATCHED TRUE CACHE INTERNAL "If ozz was already patched")
-    CPMAddPackage(
-    NAME
+CPMAddPackage(
+        NAME
         ozz
-    GITHUB_REPOSITORY
+        GITHUB_REPOSITORY
         guillaumeblanc/ozz-animation
-    GIT_TAG
+        GIT_TAG
         0.16.0
-    PATCHES
+        PATCHES
         ${CMAKE_CURRENT_SOURCE_DIR}/patch/ozz.patch
-    OPTIONS
+        OPTIONS
         "ozz_build_tools OFF"
         "ozz_build_fbx OFF"
         "ozz_build_gltf OFF"
@@ -107,53 +103,35 @@ if (NOT OZZ_PATCHED)
         "ozz_build_tests OFF"
         "ozz_build_msvc_rt_dll ON"
 )
-else()
-    CPMAddPackage(
-            NAME
-            ozz
-            GITHUB_REPOSITORY
-            guillaumeblanc/ozz-animation
-            GIT_TAG
-            0.16.0
-            OPTIONS
-            "ozz_build_tools OFF"
-            "ozz_build_fbx OFF"
-            "ozz_build_gltf OFF"
-            "ozz_build_samples OFF"
-            "ozz_build_howtos OFF"
-            "ozz_build_tests OFF"
-            "ozz_build_msvc_rt_dll ON"
-    )
-endif()
 
-if(ozz_ADDED)
+if (ozz_ADDED)
     set_lib_runtime_mt(ozz_base)
     set_lib_runtime_mt(ozz_options)
     set_lib_runtime_mt(ozz_animation)
     set_lib_runtime_mt(ozz_animation_offline)
     set_lib_runtime_mt(ozz_geometry)
-endif()
+endif ()
 
 
-CPMAddPackage("gh:nemtrif/utfcpp@4.0.6")
-if(utfcpp_ADDED)
+CPMAddPackage("gh:nemtrif/utfcpp@4.0.8")
+if (utfcpp_ADDED)
     set_lib_runtime_mt(utf8cpp)
-endif()
+endif ()
 
 CPMAddPackage("gh:sammycage/lunasvg@2.4.0")
-if(lunasvg_ADDED)
+if (lunasvg_ADDED)
     set_lib_runtime_mt(lunasvg)
     #set_lib_runtime_mt(plutovg)
-endif()
+endif ()
 
 CPMAddPackage(
-    NAME
+        NAME
         libwebp
-    GITHUB_REPOSITORY
+        GITHUB_REPOSITORY
         webmproject/libwebp
-    VERSION
-        1.5.0
-    OPTIONS
+        VERSION
+        1.6.0
+        OPTIONS
         "BUILD_SHARED_LIBS OFF"
         "WEBP_BUILD_ANIM_UTILS OFF"
         "WEBP_BUILD_CWEBP OFF"
@@ -170,33 +148,33 @@ CPMAddPackage(
         "WEBP_LINK_STATIC ON"
         "WEBP_BUILD_EXTRAS OFF")
 
-if(libwebp_ADDED)
+if (libwebp_ADDED)
     set_lib_runtime_mt(webp)
     set_lib_runtime_mt(webpdemux)
     set_lib_runtime_mt(libwebpmux)
-    #set_lib_runtime_mt(sharpyuv)
-    #set_lib_runtime_mt(xxhash)
-endif()
+    set_lib_runtime_mt(sharpyuv)
+    set_lib_runtime_mt(xxhash)
+endif ()
 # ------------
 
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_RENDER_SOURCES "src/*.cpp" "src/*.c" "include/*.h" "include/*.hpp")
 
-if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+if (RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.RESOURCES)
-else()
+else ()
     remove_folder("${RAWRBOX_RENDER_SOURCES}" "/resources/")
     set(RAWRBOX_RENDER_SOURCES "${CLEAN_SOURCES}")
-endif()
+endif ()
 
-if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+if (RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
     list(APPEND RAWRBOX_EXTRA_LIBS RAWRBOX.SCRIPTING)
     message(STATUS "Enabling RAWRBOX.RENDER scripting plugin")
-else()
+else ()
     remove_folder("${RAWRBOX_RENDER_SOURCES}" "/scripting/")
     set(RAWRBOX_RENDER_SOURCES "${CLEAN_SOURCES}")
-endif()
+endif ()
 # -----------------
 
 
@@ -204,9 +182,9 @@ endif()
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_RENDER_SOURCES})
 
 copy_resources(TARGET ${output_target})
-if(RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
+if (RAWRBOX_BUILD_RAWRBOX_SCRIPTING)
     copy_lua_libs(TARGET ${output_target})
-endif()
+endif ()
 
 target_compile_options(${output_target} PRIVATE -DENGINE_DLL)
 target_compile_definitions(${output_target} PRIVATE _CRT_SECURE_NO_WARNINGS NOMINMAX)
@@ -215,62 +193,63 @@ target_include_directories(${output_target} PUBLIC "include" "${libwebp_SOURCE_D
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 
 target_link_libraries(
-    ${output_target}
-    PUBLIC
-            # Diligent -------------------
-            Diligent-Common
-            Diligent-GraphicsAccessories
-            Diligent-GraphicsTools
-            Diligent-TargetPlatform
-            Diligent-PublicBuildSettings
-            # ----------------------------
+        ${output_target}
+        PUBLIC
+        # Diligent -------------------
+        Diligent-Common
+        Diligent-GraphicsAccessories
+        Diligent-GraphicsTools
+        Diligent-Archiver-static
+        Diligent-TargetPlatform
+        Diligent-PublicBuildSettings
+        # ----------------------------
 
-            # RAWRBOX --------------------
-            RAWRBOX.MATH
-            RAWRBOX.ENGINE
-            ${RAWRBOX_EXTRA_LIBS}
-            # ----------------------------
+        # RAWRBOX --------------------
+        RAWRBOX.MATH
+        RAWRBOX.ENGINE
+        ${RAWRBOX_EXTRA_LIBS}
+        # ----------------------------
 
-            ozz_animation
-            ozz_animation_offline
+        ozz_animation
+        ozz_animation_offline
 
-            utf8cpp
-            lunasvg
-            webpdemux
-            glfw
-            meshoptimizer
+        utf8cpp
+        lunasvg
+        webpdemux
+        glfw
+        meshoptimizer
 )
 
 set_lib_runtime_mt(${output_target})
 
-if(WIN32)
+if (WIN32)
     set(DILIGENT_LINK_MODE shared)
     message(STATUS "Setting deligent mode to: shared")
 
-    if(D3D12_SUPPORTED)
+    if (D3D12_SUPPORTED)
         message(STATUS "Enabling DX12 support")
         target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineD3D12-${DILIGENT_LINK_MODE})
         target_compile_definitions(${output_target} PUBLIC RAWRBOX_SUPPORT_DX12)
 
         set_lib_runtime_mt(Diligent-GraphicsEngineD3D12-shared)
         set_lib_runtime_mt(Diligent-GraphicsEngineD3D12-static)
-    endif()
+    endif ()
 
-    if(D3D11_SUPPORTED)
+    if (D3D11_SUPPORTED)
         message(STATUS "Enabling DX11 support")
         target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineD3D11-${DILIGENT_LINK_MODE})
         target_compile_definitions(${output_target} PUBLIC RAWRBOX_SUPPORT_DX11)
 
         set_lib_runtime_mt(Diligent-GraphicsEngineD3D11-shared)
         set_lib_runtime_mt(Diligent-GraphicsEngineD3D11-static)
-    endif()
+    endif ()
 
-else()
+else ()
     set(DILIGENT_LINK_MODE static)
     message(STATUS "Setting deligent mode to: static")
-endif()
+endif ()
 
-if(VULKAN_SUPPORTED)
+if (VULKAN_SUPPORTED)
     message(STATUS "Enabling VULKAN support")
 
     target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineVk-${DILIGENT_LINK_MODE})
@@ -278,9 +257,9 @@ if(VULKAN_SUPPORTED)
 
     set_lib_runtime_mt(Diligent-GraphicsEngineVk-shared)
     set_lib_runtime_mt(Diligent-GraphicsEngineVk-static)
-endif()
+endif ()
 
-if(GL_SUPPORTED)
+if (GL_SUPPORTED)
     message(STATUS "Enabling OPENGL support")
 
     target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineOpenGL-${DILIGENT_LINK_MODE})
@@ -288,17 +267,17 @@ if(GL_SUPPORTED)
 
     set_lib_runtime_mt(Diligent-GraphicsEngineOpenGL-shared)
     set_lib_runtime_mt(Diligent-GraphicsEngineOpenGL-static)
-endif()
+endif ()
 
 # COPY DXC ---------------------------------
 add_custom_target(
-    copy_dxc ALL COMMAND ${CMAKE_COMMAND} -E copy ${DXC_BINARY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    COMMENT "Copying dxcompiler lib into binary directory")
+        copy_dxc ALL COMMAND ${CMAKE_COMMAND} -E copy ${DXC_BINARY} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        COMMENT "Copying dxcompiler lib into binary directory")
 
 add_custom_target(
-    copy_dxil ALL COMMAND ${CMAKE_COMMAND} -E copy ${DXC_BINARY_IL}
-                            ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-    COMMENT "Copying dxil lib into binary directory")
+        copy_dxil ALL COMMAND ${CMAKE_COMMAND} -E copy ${DXC_BINARY_IL}
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        COMMENT "Copying dxil lib into binary directory")
 
 add_dependencies(${output_target} copy_dxc copy_dxil)
 # ---------------------------------

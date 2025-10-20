@@ -11,7 +11,7 @@ CPMAddPackage(
     GIT_TAG
         docking
     VERSION
-        1.91.9b
+        1.92.4
     DOWNLOAD_ONLY
         YES
 )

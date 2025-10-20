@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.16.3 FATAL_ERROR)
+
 if (POLICY CMP0177)
     cmake_policy(SET CMP0177 NEW)
 endif ()
@@ -200,7 +201,7 @@ endif ()
 # -------------------------
 
 # GLOBAL PACKAGES ------
-CPMAddPackage("gh:fmtlib/fmt#11.2.0")
+CPMAddPackage("gh:fmtlib/fmt#12.0.0")
 if (fmt_ADDED)
     set_lib_runtime_mt(fmt)
 endif ()
@@ -216,7 +217,7 @@ if (RAWRBOX_BUILD_RAWRBOX_RENDER)
     endif ()
 endif ()
 
-CPMAddPackage("gh:stephenberry/glaze@5.5.0")
+CPMAddPackage("gh:stephenberry/glaze@6.0.0")
 
 # ---
 if (RAWRBOX_BUILD_RAWRBOX_NETWORK)

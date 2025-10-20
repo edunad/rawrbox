@@ -21,7 +21,7 @@ namespace rawrbox {
 
 	public:
 		static std::shared_ptr<spdlog::logger> LOGGER;
-		static spdlog::level LOG_LEVEL;
+		static spdlog::level::level_enum LOG_LEVEL;
 		static bool ENABLE_FILE_LOGGING;
 
 		Logger(const std::string& title);

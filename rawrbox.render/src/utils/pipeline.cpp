@@ -1,10 +1,10 @@
 #include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
-#include <rawrbox/utils/string.hpp>
 
 #include <magic_enum/magic_enum.hpp>
 
+#include <ArchiverFactoryLoader.h>
 #include <fmt/color.h>
 
 namespace rawrbox {
@@ -41,9 +41,11 @@ namespace rawrbox {
 		// Initialize pipeline cache -----
 		Diligent::RenderStateCacheCreateInfo CacheCI;
 		CacheCI.pDevice = &device;
+		CacheCI.pArchiverFactory = Diligent::LoadAndGetArchiverFactory();
 		CacheCI.LogLevel = Diligent::RENDER_STATE_CACHE_LOG_LEVEL_DISABLED;
 
 		Diligent::CreateRenderStateCache(CacheCI, &_stateCache);
+		if (_stateCache == nullptr) RAWRBOX_CRITICAL("Failed to initialize PSO shader cache");
 		// -------------------------
 
 		// Load cache -----

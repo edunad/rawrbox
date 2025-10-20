@@ -126,7 +126,7 @@ namespace rawrbox {
 					auto* GetEngineFactoryVk = Diligent::LoadGraphicsEngineVk();
 					auto* pFactoryVk = GetEngineFactoryVk();
 	#else
-					auto* pFactoryVk = Diligent::GetEngineFactoryVk();
+					auto* pFactoryVk = Diligent::LoadAndGetEngineFactoryVk();
 	#endif
 					this->_engineFactory = pFactoryVk;
 

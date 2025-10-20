@@ -8,7 +8,7 @@ CPMAddPackage(
     NAME
         libwebm
     GIT_TAG
-        libwebm-1.0.0.31
+        libwebm-1.0.0.32
     GITHUB_REPOSITORY
         webmproject/libwebm
     OPTIONS

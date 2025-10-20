@@ -19,8 +19,16 @@
     ],
     "githubPullRequests.queries": [
       {
+        "label": "Local Pull Request Branches",
+        "query": "default"
+      },
+      {
         "label": "Pull-Requests",
         "query": "repo:${owner}/${repository} is:open"
+      },
+      {
+        "label": "All Open",
+        "query": "default"
       }
     ],
     "clangd.restartAfterCrash": true,

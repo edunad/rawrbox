@@ -5,41 +5,41 @@ set(output_target RAWRBOX.SCRIPTING)
 
 # LIBS ---
 CPMAddPackage(
-    NAME
+        NAME
         LuaBridge3
-    GITHUB_REPOSITORY
+        GITHUB_REPOSITORY
         kunitoki/LuaBridge3
-    GIT_TAG
+        GIT_TAG
         master
-    OPTIONS
+        OPTIONS
         "LUABRIDGE_TESTING OFF"
         "LUABRIDGE_COVERAGE OFF"
-    )
+)
 
-if(LuaBridge3_ADDED)
+if (LuaBridge3_ADDED)
     set_lib_runtime_mt(LuaBridge)
-endif()
+endif ()
 
 CPMAddPackage(
-    NAME
+        NAME
         luau
-    GITHUB_REPOSITORY
+        GITHUB_REPOSITORY
         luau-lang/luau
-    GIT_TAG
-        0.678
-    OPTIONS
+        GIT_TAG
+        696
+        OPTIONS
         "LUAU_BUILD_CLI OFF"
         "LUAU_BUILD_TESTS OFF"
         "LUAU_BUILD_BENCHMARKS OFF"
         "LUAU_BUILD_WEB OFF"
-    )
+)
 
-if(luau_ADDED)
+if (luau_ADDED)
     set_lib_runtime_mt(Luau.VM)
     set_lib_runtime_mt(Luau.Common)
     set_lib_runtime_mt(Luau.Compiler)
     set_lib_runtime_mt(Luau.Ast)
-endif()
+endif ()
 # --------------
 
 file(GLOB_RECURSE RAWRBOX_SCRIPTING_IMPORTS "src/*.cpp" "include/*.hpp")
@@ -54,7 +54,7 @@ target_compile_definitions(${output_target} PUBLIC RAWRBOX_SCRIPTING RAWRBOX_SCR
 target_include_directories(${output_target} PUBLIC "include")
 target_compile_features(${output_target} PUBLIC cxx_std_${CMAKE_CXX_STANDARD})
 target_link_libraries(${output_target}
-    PUBLIC
+        PUBLIC
         RAWRBOX.ENGINE
         RAWRBOX.MATH
 

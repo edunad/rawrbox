@@ -2,9 +2,9 @@
 
 namespace rawrbox {
 #ifdef _DEBUG
-	spdlog::level Logger::LOG_LEVEL = spdlog::level::trace; // Default
+	spdlog::level::level_enum Logger::LOG_LEVEL = spdlog::level::trace; // Default
 #else
-	spdlog::level Logger::LOG_LEVEL = spdlog::level::warn; // Default
+	spdlog::level::level_enum Logger::LOG_LEVEL = spdlog::level::warn; // Default
 #endif
 
 	bool Logger::ENABLE_FILE_LOGGING = true;
@@ -25,7 +25,7 @@ namespace rawrbox {
 		LOGGER->set_pattern("[%^%l%$%v");
 		LOGGER->set_level(rawrbox::Logger::LOG_LEVEL);
 
-		spdlog::set_global_logger(LOGGER);
+		spdlog::set_default_logger(LOGGER);
 		spdlog::set_error_handler([](const std::string& msg) { fmt::print("*** LOG ERROR: {} ***\n", msg); });
 	}
 } // namespace rawrbox
