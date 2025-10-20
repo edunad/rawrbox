@@ -38,8 +38,8 @@ namespace rawrbox {
 		static std::vector<std::string> argsToString(lua_State* L, bool filterNonStr = false);
 		static void getVariadicArgs(const luabridge::LuaRef& in, luabridge::LuaRef& out);
 
-		static luabridge::LuaRef jsonToLua(lua_State* L, const glz::json_t& json);
-		static glz::json_t luaToJsonObject(const luabridge::LuaRef& ref);
+		static luabridge::LuaRef jsonToLua(lua_State* L, const glz::generic& json);
+		static glz::generic luaToJsonObject(const luabridge::LuaRef& ref);
 
 		template <typename T>
 			requires(std::is_arithmetic_v<T> || std::is_same_v<T, std::string>)

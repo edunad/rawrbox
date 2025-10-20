@@ -3,7 +3,7 @@
 #include <rawrbox/utils/path.hpp>
 
 namespace rawrbox {
-	Mod::Mod(std::string id, std::filesystem::path folderPath, glz::json_t metadata) : _L(luaL_newstate()), _modTable(_L), _folder(std::move(folderPath)), _id(std::move(id)), _metadata(std::move(metadata)) {}
+	Mod::Mod(std::string id, std::filesystem::path folderPath, glz::generic metadata) : _L(luaL_newstate()), _modTable(_L), _folder(std::move(folderPath)), _id(std::move(id)), _metadata(std::move(metadata)) {}
 	Mod::~Mod() {
 		this->gc();
 		this->_L = nullptr;
@@ -66,7 +66,7 @@ namespace rawrbox {
 	std::string Mod::getEntryFilePath() const { return fmt::format("{}/init.luau", this->_folder.generic_string()); }
 	const std::filesystem::path& Mod::getFolder() const { return this->_folder; }
 
-	const glz::json_t& Mod::getMetadata() const { return this->_metadata; }
+	const glz::generic& Mod::getMetadata() const { return this->_metadata; }
 
 	lua_State* Mod::getEnvironment() { return this->_L; }
 

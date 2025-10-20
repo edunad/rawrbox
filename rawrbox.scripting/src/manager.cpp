@@ -371,7 +371,7 @@ namespace rawrbox {
 
 		// LOAD METADATA ---
 		std::filesystem::path configPath = modFolder / "mod.json";
-		glz::json_t metadataJSON = {};
+		glz::generic metadataJSON = {};
 
 		if (std::filesystem::exists(configPath)) {
 			auto ec = glz::read_file_json(metadataJSON, configPath.generic_string(), std::string{});

@@ -51,7 +51,7 @@ namespace rawrbox {
 	std::string PacketWrapper::readString() { return data.read<std::string>(); }
 
 	luabridge::LuaRef PacketWrapper::readTable(lua_State* L) {
-		glz::json_t json = {};
+		glz::generic json = {};
 
 		auto err = glz::read_json(json, data.read<std::string>());
 		if (err != glz::error_code::none) throw std::runtime_error("Invalid table format");

@@ -11,11 +11,11 @@ namespace rawrbox {
 		static std::unique_ptr<rawrbox::Logger> _logger;
 		// ------
 
-		glz::json_t _json = {};
+		glz::generic _json = {};
 
 	public:
 		bool load(const std::vector<uint8_t>& buffer) override;
-		[[nodiscard]] const glz::json_t& get() const;
+		[[nodiscard]] const glz::generic& get() const;
 	};
 
 	class JSONLoader : public rawrbox::Loader {

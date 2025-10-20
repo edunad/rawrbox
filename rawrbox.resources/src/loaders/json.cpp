@@ -18,7 +18,7 @@ namespace rawrbox {
 		return true;
 	}
 
-	const glz::json_t& ResourceJSON::get() const {
+	const glz::generic& ResourceJSON::get() const {
 		return this->_json;
 	}
 	// -------

@@ -4,12 +4,12 @@
 #include <fmt/format.h>
 
 namespace rawrbox {
-	std::vector<rawrbox::JSONDiff> JSONUtils::diff(const glz::json_t& a, const glz::json_t& b, const std::string& path) {
+	std::vector<rawrbox::JSONDiff> JSONUtils::diff(const glz::generic& a, const glz::generic& b, const std::string& path) {
 		std::vector<rawrbox::JSONDiff> diffs = {};
 
-		if (a.holds<glz::json_t::array_t>() && b.holds<glz::json_t::array_t>()) {
-			const auto& arrA = a.get<glz::json_t::array_t>();
-			const auto& arrB = b.get<glz::json_t::array_t>();
+		if (a.holds<glz::generic::array_t>() && b.holds<glz::generic::array_t>()) {
+			const auto& arrA = a.get<glz::generic::array_t>();
+			const auto& arrB = b.get<glz::generic::array_t>();
 
 			// Diffs
 			size_t minSize = std::min(arrA.size(), arrB.size());
@@ -21,7 +21,7 @@ namespace rawrbox {
 			// REMOVE
 			if (arrA.size() > arrB.size()) {
 				for (size_t i = arrB.size(); i < arrA.size(); ++i) {
-					diffs.emplace_back(rawrbox::JSONDiffOp::REMOVE, fmt::format("{}/{}", path, std::to_string(i)), glz::json_t::null_t());
+					diffs.emplace_back(rawrbox::JSONDiffOp::REMOVE, fmt::format("{}/{}", path, std::to_string(i)), glz::generic::null_t());
 				}
 			}
 
@@ -31,9 +31,9 @@ namespace rawrbox {
 					diffs.emplace_back(rawrbox::JSONDiffOp::ADD, fmt::format("{}/{}", path, std::to_string(i)), arrB[i]);
 				}
 			}
-		} else if (a.holds<glz::json_t::object_t>() && b.holds<glz::json_t::object_t>()) {
-			const auto& objA = a.get<glz::json_t::object_t>();
-			const auto& objB = b.get<glz::json_t::object_t>();
+		} else if (a.holds<glz::generic::object_t>() && b.holds<glz::generic::object_t>()) {
+			const auto& objA = a.get<glz::generic::object_t>();
+			const auto& objB = b.get<glz::generic::object_t>();
 
 			for (const auto& [key, valueA] : objA) {
 				auto jsonPath = fmt::format("{}/{}", path, key);
@@ -43,7 +43,7 @@ namespace rawrbox {
 					auto subDiffs = diff(valueA, valueB, jsonPath);
 					diffs.insert(diffs.end(), subDiffs.begin(), subDiffs.end());
 				} else {
-					diffs.emplace_back(rawrbox::JSONDiffOp::REMOVE, jsonPath, glz::json_t::null_t());
+					diffs.emplace_back(rawrbox::JSONDiffOp::REMOVE, jsonPath, glz::generic::null_t());
 				}
 			}
 
@@ -61,9 +61,9 @@ namespace rawrbox {
 		return diffs;
 	}
 
-	void JSONUtils::patch(glz::json_t& json, const std::vector<rawrbox::JSONDiff>& diffs) {
+	void JSONUtils::patch(glz::generic& json, const std::vector<rawrbox::JSONDiff>& diffs) {
 		for (const auto& diff : diffs) {
-			glz::json_t* current = &json;
+			glz::generic* current = &json;
 
 			std::vector<std::string> segments = rawrbox::StrUtils::split(diff.path, '/', true);
 			for (auto& segment : segments) {
@@ -72,9 +72,9 @@ namespace rawrbox {
 				// Check if the segment is an array index
 				if (rawrbox::StrUtils::isNumeric(segment)) {
 					size_t index = std::stoi(segment);
-					if (!current->holds<glz::json_t::array_t>()) *current = glz::json_t::array_t{};
+					if (!current->holds<glz::generic::array_t>()) *current = glz::generic::array_t{};
 
-					auto& array = current->get<glz::json_t::array_t>();
+					auto& array = current->get<glz::generic::array_t>();
 					if (index >= array.size()) array.resize(index + 1);
 					current = &array[index];
 
@@ -86,18 +86,18 @@ namespace rawrbox {
 			if (diff.op == rawrbox::JSONDiffOp::REPLACE || diff.op == rawrbox::JSONDiffOp::ADD) {
 				*current = diff.value;
 			} else if (diff.op == rawrbox::JSONDiffOp::REMOVE) {
-				if (current->holds<glz::json_t::object_t>()) { // object
-					auto& object = current->get<glz::json_t::object_t>();
+				if (current->holds<glz::generic::object_t>()) { // object
+					auto& object = current->get<glz::generic::object_t>();
 					object.erase(segments.back());
-				} else if (current->holds<glz::json_t::array_t>()) { // array
-					auto& array = current->get<glz::json_t::array_t>();
+				} else if (current->holds<glz::generic::array_t>()) { // array
+					auto& array = current->get<glz::generic::array_t>();
 					array.erase(array.begin() + std::stoi(segments.back()));
 				} else { // double, string, etc on root
-					if (json.holds<glz::json_t::object_t>()) {
-						auto& object = json.get<glz::json_t::object_t>();
+					if (json.holds<glz::generic::object_t>()) {
+						auto& object = json.get<glz::generic::object_t>();
 						object.erase(segments.back());
-					} else if (json.holds<glz::json_t::array_t>()) {
-						auto& array = json.get<glz::json_t::array_t>();
+					} else if (json.holds<glz::generic::array_t>()) {
+						auto& array = json.get<glz::generic::array_t>();
 						array.erase(array.begin() + std::stoi(segments.back()));
 					}
 				}
