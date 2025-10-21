@@ -4,10 +4,10 @@
 
 TEST_CASE("JSONUtils should behave as expected", "[rawrbox::JSONUtils]") {
 
-	glz::json_t tr1 = {};
+	glz::generic tr1 = {};
 	REQUIRE(glz::read_json(tr1, R"({"test":"hello", "oke": 34, "data": {"knife": true, "keep": true}, "data2": [{"g": 4}]})") == glz::error_code::none);
 
-	glz::json_t tr2 = {};
+	glz::generic tr2 = {};
 	REQUIRE(glz::read_json(tr2, R"({"test":"ola", "data": {"knife": false, "keep": true}, "data2": [{"g": 5}, {"d": 2}]})") == glz::error_code::none);
 
 	SECTION("rawrbox::JSONUtils::diff") {
@@ -37,7 +37,7 @@ TEST_CASE("JSONUtils should behave as expected", "[rawrbox::JSONUtils]") {
 		auto diff = rawrbox::JSONUtils::diff(tr1, tr2);
 		REQUIRE(diff.size() == 5);
 
-		glz::json_t tr3 = tr1;
+		glz::generic tr3 = tr1;
 		REQUIRE_NOTHROW(rawrbox::JSONUtils::patch(tr3, diff));
 
 		REQUIRE(tr3.contains("data"));
