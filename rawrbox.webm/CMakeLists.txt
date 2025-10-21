@@ -5,46 +5,46 @@ set(output_target RAWRBOX.WEBM)
 
 # LIBS ---
 CPMAddPackage(
-    NAME
+        NAME
         libwebm
-    GIT_TAG
+        GIT_TAG
         libwebm-1.0.0.32
-    GITHUB_REPOSITORY
+        GITHUB_REPOSITORY
         webmproject/libwebm
-    OPTIONS
+        OPTIONS
         "BUILD_SHARED_LIBS OFF"
         "ENABLE_WEBMTS OFF"
         "ENABLE_WEBMINFO OFF"
         "ENABLE_WEBM_PARSER OFF"
         "ENABLE_TESTS OFF"
         "ENABLE_SAMPLE_PROGRAMS OFF"
-    )
+)
 
-if(libwebm_ADDED)
+if (libwebm_ADDED)
     target_include_directories(webm PUBLIC ${libwebm_SOURCE_DIR})
     set_lib_runtime_mt(webm)
     set_lib_runtime_mt(mkvparser)
 
     # Add codec
-    set(VPX_VERSION v1.14.1)
+    set(VPX_VERSION v1.15.1)
     set(VPX_MSC_VERSION 17)
-    if(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME)
+    if (RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME)
         set(VPX_STATIC_MULTITHREADED ON)
-    endif()
+    endif ()
 
     find_package(VPX REQUIRED)
     # ----
-endif()
+endif ()
 
 # Grab source files
 file(GLOB_RECURSE RAWRBOX_WEBM_IMPORTS "src/*.cpp" "include/*.hpp")
 
-if(RAWRBOX_BUILD_RAWRBOX_RESOURCES)
+if (RAWRBOX_BUILD_RAWRBOX_RESOURCES)
     set(RAWRBOX_EXTRA_LIBS RAWRBOX.RESOURCES)
-else()
+else ()
     remove_folder("${RAWRBOX_WEBM_IMPORTS}" "/resources/")
     set(RAWRBOX_WEBM_IMPORTS "${CLEAN_SOURCES}")
-endif()
+endif ()
 # ----
 
 add_library(${output_target} ${RAWRBOX_LIBRARY_TYPE} ${RAWRBOX_WEBM_IMPORTS})
