@@ -62,12 +62,11 @@ option(RAWRBOX_DISABLE_SUPPORT_VULKAN "Disable vulkan support" OFF)
 
 # Other -----
 option(RAWRBOX_DEV_MODE "Builds all modules, used for developing rawrbox" OFF)
-option(RAWRBOX_INTERPROCEDURAL_OPTIMIZATION "Enables IPO" ON)
+option(RAWRBOX_INTERPROCEDURAL_OPTIMIZATION "Enables IPO on release & distribution" ON)
 # ---------------
 # -----
-
 if (RAWRBOX_INTERPROCEDURAL_OPTIMIZATION AND NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "ARM64") AND NOT ("${CMAKE_VS_PLATFORM_NAME}" STREQUAL "ARM"))
-    message(STATUS "Enabled INTERPROCEDURAL_OPTIMIZATION for release and distribution")
+    message(STATUS "Enabled INTERPROCEDURAL_OPTIMIZATION for release & distribution")
 
     cmake_policy(SET CMP0069 NEW)
     set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
