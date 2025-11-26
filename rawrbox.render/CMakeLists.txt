@@ -13,6 +13,16 @@ find_package(Vulkan REQUIRED)
 # Packages ----
 CPMAddPackage("gh:zeux/meshoptimizer@0.25")
 
+if (NOT WIN32)
+    if (RAWRBOX_USE_WAYLAND)
+        set(GLFW_PLATFORM_OPTIONS "GLFW_BUILD_X11 OFF" "GLFW_BUILD_WAYLAND ON")
+    else ()
+        set(GLFW_PLATFORM_OPTIONS "GLFW_BUILD_X11 ON" "GLFW_BUILD_WAYLAND OFF")
+    endif ()
+else ()
+    set(GLFW_PLATFORM_OPTIONS "")
+endif ()
+
 CPMAddPackage(
         NAME
         glfw
@@ -21,6 +31,7 @@ CPMAddPackage(
         GIT_TAG
         3.4
         OPTIONS
+        ${GLFW_PLATFORM_OPTIONS}
         "GLFW_BUILD_DOCS OFF"
         "GLFW_BUILD_EXAMPLES OFF"
         "GLFW_BUILD_TESTS OFF"
