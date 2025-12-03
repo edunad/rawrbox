@@ -31,7 +31,7 @@ jobs:
           sudo apt install -y cmake libegl1-mesa-dev libwayland-dev libxkbcommon-dev wayland-protocols vulkan-sdk libssl-dev libvpx-dev gcc-14 g++-14 libgl1-mesa-dev libglew-dev ninja-build python3-pip libx11-dev libx11-xcb-dev libfontenc-dev libice-dev libsm-dev libxau-dev libxaw7-dev libxcomposite-dev libxcursor-dev libxdamage-dev libxdmcp-dev libxext-dev libxfixes-dev libxft-dev libxi-dev libxinerama-dev libxkbfile-dev libxmu-dev libxmuu-dev libxpm-dev libxrandr-dev libxrender-dev libxres-dev libxss-dev libxt-dev libxtst-dev libxv-dev libxvmc-dev libxxf86vm-dev xtrans-dev libxcb-render0-dev libxcb-render-util0-dev libxcb-xkb-dev libxcb-icccm4-dev libxcb-image0-dev libxcb-keysyms1-dev libxcb-randr0-dev libxcb-shape0-dev libxcb-sync-dev libxcb-xfixes0-dev libxcb-xinerama0-dev xkb-data libxcb-dri3-dev uuid-dev libxcb-util-dev
 
       - name: Cache c++
-        uses: hendrikmuhs/ccache-action@bfa03e1de4d7f7c3e80ad9109feedd05c4f5a716
+        uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639
         with:
           append-timestamp: false
           restore-keys: host-${{ runner.os }}-${{ hashFiles('./CMakeLists.txt', './rawrbox.gltf/CMakeLists.txt', './rawrbox.bass/CMakeLists.txt', './rawrbox.engine/CMakeLists.txt', './rawrbox.math/CMakeLists.txt', './rawrbox.network/CMakeLists.txt', './rawrbox.physics_2d/CMakeLists.txt', './rawrbox.physics_3d/CMakeLists.txt', './rawrbox.render/CMakeLists.txt', './rawrbox.resources/CMakeLists.txt', './rawrbox.scripting/CMakeLists.txt', './rawrbox.ui/CMakeLists.txt', './rawrbox.utils/CMakeLists.txt', './rawrbox.webm/CMakeLists.txt', './rawrbox.steamworks/CMakeLists.txt', './rawrbox.imgui/CMakeLists.txt') }}-
