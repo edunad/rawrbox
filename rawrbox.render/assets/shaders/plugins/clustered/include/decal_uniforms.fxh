@@ -12,6 +12,7 @@ struct Decal {
 	float4x4 worldToLocal;
 	uint4 data;
 	float4 color;
+	float4 bounds; // Sphere
 };
 
 #endif

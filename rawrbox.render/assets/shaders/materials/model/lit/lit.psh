@@ -67,6 +67,22 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	// -------------
 
 	if (TOTAL_DECALS != 0 || TOTAL_LIGHTS != 0) {
+		uint gridOffset = GetClusterGridOffset(PSIn.Pos);
+
+		// DECALS -----
+		if (TOTAL_DECALS != 0) {
+			float3 ddxPos = ddx(PSIn.WorldPos);
+			float3 ddyPos = ddy(PSIn.WorldPos);
+
+			float4 roughtness = 0; // TODO
+			uint decalBuckets = GetClusterBucketCount(TOTAL_DECALS);
+
+			for (uint bucketIndex = 0; bucketIndex < decalBuckets; ++bucketIndex) {
+				ApplyDecals(ClusterDataGrid[gridOffset + bucketIndex].decals, bucketIndex, float4(PSIn.WorldPos, 1.0), ddxPos, ddyPos, baseColor, roughtness);
+			}
+		}
+		// -------------
+
 		// NORMAL -----
 		float3 normalTS = g_Textures[NormalID].Sample(g_Sampler, float3(PSIn.UV, texIndex)).rgb;
 		float3x3 TBN = CreateTangentToWorld(PSIn.Normal, PSIn.Tangent);
@@ -88,32 +104,23 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 		float4 emissionTS = g_Textures[EmissionID].Sample(g_Sampler, float3(PSIn.UV, texIndex)) * vertColor;
 
 		// LIGHT ------
-		float3 V = normalize(Camera.pos - PSIn.WorldPos);
-		float dither = InterleavedGradientNoise(PSIn.Pos.xy);
-
-		// Apply compute data ----
-		uint3 clusterIndex3D = uint3(floor(PSIn.Pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(PSIn.Pos.w));
-		uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
-		uint gridOffset = tileIndex * CLUSTERED_NUM_BUCKETS;
-
-		float3 ddxPos = ddx(PSIn.WorldPos);
-		float3 ddyPos = ddy(PSIn.WorldPos);
+		float3 diffuse = ComputeDiffuseColor(baseColor.rgb, metal);
+		float3 specular = ComputeF0(SpecularFactor, baseColor.rgb, metal);
 
 		LightResult result = (LightResult)0;
-		for (uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
-			ClusterData buckets = ClusterDataGrid[gridOffset + bucketIndex];
 
-			// Apply decals ---
-			float4 roughtness = 0; // TODO
-			ApplyDecals(buckets.decals, bucketIndex, float4(PSIn.WorldPos, 1.0), ddxPos, ddyPos, baseColor, roughtness);
-			// ----------------
+		if (FULL_BRIGHT == 0) {
+			result.Diffuse = diffuse; // FULL BRIGHT
+		} else {
+			float3 V = normalize(Camera.pos - PSIn.WorldPos);
+			float dither = InterleavedGradientNoise(PSIn.Pos.xy);
 
-			// Apply light ---
-			float3 diffuse = ComputeDiffuseColor(baseColor.rgb, metal);
-			float3 specular = ComputeF0(SpecularFactor, baseColor.rgb, metal);
+			uint lightBuckets = GetClusterBucketCount(TOTAL_LIGHTS);
+			for (uint bucketIndex = 0; bucketIndex < lightBuckets; ++bucketIndex) {
+				ApplyLight(ClusterDataGrid[gridOffset + bucketIndex].lights, bucketIndex, result, specular, rough, diffuse, normal, V, PSIn.WorldPos, dither);
+			}
 
-			ApplyLight(buckets.lights, bucketIndex, result, specular, rough, diffuse, normal, V, PSIn.WorldPos, dither);
-			// ----------------
+			result.Diffuse += diffuse * LightConstants.ambientColor.rgb; // AMBIENT
 		}
 		// ----------------
 

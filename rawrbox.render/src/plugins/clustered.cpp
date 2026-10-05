@@ -6,9 +6,6 @@
 #include <rawrbox/render/plugins/clustered.hpp>
 
 namespace rawrbox {
-	uint32_t ClusteredPlugin::CLUSTERS_X = 0;
-	uint32_t ClusteredPlugin::CLUSTERS_Y = 0;
-	uint32_t ClusteredPlugin::CLUSTERS_GROUP_SIZE = 0;
 
 	ClusteredPlugin::~ClusteredPlugin() {
 		rawrbox::LIGHTS::shutdown(); // Shutdown light system
@@ -23,18 +20,10 @@ namespace rawrbox {
 		RAWRBOX_DESTROY(this->_dataGridBufferRead);
 	}
 
-	void ClusteredPlugin::initialize(const rawrbox::Vector2u& renderSize) {
-		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, RB_RENDER_CLUSTER_TEXTEL_SIZE);
-		CLUSTERS_Y = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.y, RB_RENDER_CLUSTER_TEXTEL_SIZE);
-
-		CLUSTERS_GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * RB_RENDER_CLUSTERS_Z;
-
-		if constexpr (RB_RENDER_CLUSTERS_Z % RB_RENDER_CLUSTERS_Z_THREADS != 0) RAWRBOX_CRITICAL("Number of cluster depth slices must be divisible by thread count z-dimension");
-		if constexpr (RB_RENDER_MAX_DATA_PER_CLUSTER % 32 != 0) RAWRBOX_CRITICAL("MAX_DATA_PER_CLUSTER must be divisible by 32");
-
+	void ClusteredPlugin::initialize(const rawrbox::Vector2u& /*renderSize*/) {
 		// Setup dispatch ---
-		this->_dispatch.ThreadGroupCountX = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_X, RB_RENDER_CLUSTERS_X_THREADS);
-		this->_dispatch.ThreadGroupCountY = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_Y, RB_RENDER_CLUSTERS_Y_THREADS);
+		this->_dispatch.ThreadGroupCountX = rawrbox::MathUtils::divideRound<uint32_t>(RB_RENDER_CLUSTERS_X, RB_RENDER_CLUSTERS_X_THREADS);
+		this->_dispatch.ThreadGroupCountY = rawrbox::MathUtils::divideRound<uint32_t>(RB_RENDER_CLUSTERS_Y, RB_RENDER_CLUSTERS_Y_THREADS);
 		this->_dispatch.ThreadGroupCountZ = rawrbox::MathUtils::divideRound<uint32_t>(RB_RENDER_CLUSTERS_Z, RB_RENDER_CLUSTERS_Z_THREADS);
 		// ----------
 
@@ -49,21 +38,7 @@ namespace rawrbox {
 
 	void ClusteredPlugin::resize(const rawrbox::Vector2u& renderSize) {
 		if (renderSize.x <= 0 || renderSize.y <= 0) return; // Minimized
-
-		// Re-calculate clusters ----
-		CLUSTERS_X = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.x, RB_RENDER_CLUSTER_TEXTEL_SIZE);
-		CLUSTERS_Y = rawrbox::MathUtils::divideRound<uint32_t>(renderSize.y, RB_RENDER_CLUSTER_TEXTEL_SIZE);
-		CLUSTERS_GROUP_SIZE = CLUSTERS_X * CLUSTERS_Y * RB_RENDER_CLUSTERS_Z;
-		// -------------------------
-
-		// Re-setup dispatch ---
-		this->_dispatch.ThreadGroupCountX = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_X, RB_RENDER_CLUSTERS_X_THREADS);
-		this->_dispatch.ThreadGroupCountY = rawrbox::MathUtils::divideRound<uint32_t>(CLUSTERS_Y, RB_RENDER_CLUSTERS_Y_THREADS);
-		// ----------
-
-		// Re-build clusters ---
 		this->_oldProj = {};
-		// --------------------------
 	}
 
 	void ClusteredPlugin::upload() {
@@ -118,7 +93,7 @@ namespace rawrbox {
 		auto* context = renderer->context();
 		if (context == nullptr) RAWRBOX_CRITICAL("Context not initialized!");
 
-		if (this->_clusterBuildingComputeProgram == nullptr || this->_cullingComputeProgram == nullptr || this->_cullingResetProgram == nullptr) RAWRBOX_CRITICAL("Compute pipelines not initialized, did you call 'initialize'");
+		if (this->_clusterBuildingComputeProgram == nullptr || this->_cullingComputeProgram == nullptr) RAWRBOX_CRITICAL("Compute pipelines not initialized, did you call 'initialize'");
 
 		// Update light & decals
 		rawrbox::LIGHTS::update();
@@ -145,14 +120,6 @@ namespace rawrbox {
 			context->DispatchCompute(this->_dispatch);
 		}
 		// ------
-
-		// Reset clusters
-		// TODO: REPLACE WITH
-		// uint32_t ClearValue = 0;
-		// context->ClearUAVUint(this->_dataGridBuffer, &ClearValue);
-		context->SetPipelineState(this->_cullingResetProgram);
-		context->DispatchCompute(this->_dispatch);
-		//   --------------
 
 		// Perform light / decal culling
 		context->SetPipelineState(this->_cullingComputeProgram);
@@ -190,10 +157,10 @@ namespace rawrbox {
 		// Data grid ---
 		{
 			Diligent::BufferDesc BuffDesc;
-			BuffDesc.ElementByteStride = sizeof(std::array<uint32_t, 4>);
+			BuffDesc.ElementByteStride = sizeof(rawrbox::ClusterData);
 			BuffDesc.Mode = Diligent::BUFFER_MODE_STRUCTURED;
 			BuffDesc.Name = "rawrbox::Cluster::ClusterDataGrid";
-			BuffDesc.Size = BuffDesc.ElementByteStride * (RB_RENDER_MAX_DATA_PER_CLUSTER / RB_RENDER_CLUSTERS_Z * CLUSTERS_GROUP_SIZE);
+			BuffDesc.Size = BuffDesc.ElementByteStride * (RB_RENDER_CLUSTERED_NUM_BUCKETS * CLUSTERS_GROUP_SIZE);
 			BuffDesc.BindFlags = Diligent::BIND_UNORDERED_ACCESS | Diligent::BIND_SHADER_RESOURCE;
 
 			device->CreateBuffer(BuffDesc, nullptr, &this->_dataGridBuffer);
@@ -263,11 +230,6 @@ namespace rawrbox {
 		this->_clusterBuildingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Build", settings);
 		// ---------
 
-		// RESET -----
-		settings.pCS = "cluster_reset.csh";
-		this->_cullingResetProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Reset", settings);
-		//  ----
-
 		// CULLING -----
 		settings.pCS = "cluster_cull.csh";
 		this->_cullingComputeProgram = rawrbox::PipelineUtils::createComputePipeline("Cluster::Cull", settings);
@@ -279,14 +241,18 @@ namespace rawrbox {
 		Diligent::ShaderMacroHelper macro;
 
 		macro.AddShaderMacro("THREAD_GROUP_SIZE", RB_RENDER_THREAD_GROUP_SIZE);
+
 		macro.AddShaderMacro("CLUSTERS_X_THREADS", RB_RENDER_CLUSTERS_X_THREADS);
 		macro.AddShaderMacro("CLUSTERS_Y_THREADS", RB_RENDER_CLUSTERS_Y_THREADS);
 		macro.AddShaderMacro("CLUSTERS_Z_THREADS", RB_RENDER_CLUSTERS_Z_THREADS);
-		macro.AddShaderMacro("CLUSTERS_X", CLUSTERS_X);
-		macro.AddShaderMacro("CLUSTERS_Y", CLUSTERS_Y);
+
+		macro.AddShaderMacro("CLUSTERS_X", RB_RENDER_CLUSTERS_X);
+		macro.AddShaderMacro("CLUSTERS_Y", RB_RENDER_CLUSTERS_Y);
 		macro.AddShaderMacro("CLUSTERS_Z", RB_RENDER_CLUSTERS_Z);
+
 		macro.AddShaderMacro("MAX_DATA_PER_CLUSTER", RB_RENDER_MAX_DATA_PER_CLUSTER);
-		macro.AddShaderMacro("CLUSTER_TEXTEL_SIZE", RB_RENDER_CLUSTER_TEXTEL_SIZE);
+
+		macro.AddShaderMacro("CLUSTER_BUCKET_SIZE", RB_RENDER_CLUSTER_BUCKET_SIZE);
 		macro.AddShaderMacro("CLUSTERED_NUM_BUCKETS", RB_RENDER_CLUSTERED_NUM_BUCKETS);
 
 		macro.AddShaderMacro("CLUSTER_PLUGIN", true);

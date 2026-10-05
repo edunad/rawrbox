@@ -33,7 +33,7 @@ ConstantBuffer<StaticCameraStruct> SCamera;
 #define CAMERA_RIGHT float3(1.0, 0.0, 0.0)
 
 // UTILS -----------------
-uint GetSliceFromDepth(float depth) {
+float GetSliceFromDepth(float depth) {
 	return floor(log(depth) * SCamera.gridParams.x - SCamera.gridParams.y);
 }
 

@@ -51,10 +51,12 @@ void main(uint3 dispatchThreadId: SV_DispatchThreadID) {
 	uint lightIndex = 0;
 	uint decalIndex = 0;
 
-	[loop] for (uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS && (lightIndex < TOTAL_LIGHTS || decalIndex < TOTAL_DECALS); ++bucketIndex) {
+	[loop]
+	for (uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
 		ClusterData data = (ClusterData)0;
 
-		[loop] for (uint i = 0; i < CLUSTERS_Z && lightIndex < TOTAL_LIGHTS; ++i) {
+		[loop]
+		for (uint i = 0; i < CLUSTER_BUCKET_SIZE && lightIndex < TOTAL_LIGHTS; ++i) {
 			Light light = Lights[lightIndex];
 			++lightIndex;
 
@@ -85,11 +87,18 @@ void main(uint3 dispatchThreadId: SV_DispatchThreadID) {
 			}
 		}
 
-		[loop] for (uint o = 0; o < CLUSTERS_Z && decalIndex < TOTAL_DECALS; ++o) {
+		[loop]
+		for (uint o = 0; o < CLUSTER_BUCKET_SIZE && decalIndex < TOTAL_DECALS; ++o) {
 			Decal decal = Decals[decalIndex];
 			++decalIndex;
 
-			data.decals |= 1u << o; // TODO: CULLING
+			Sphere sphere;
+			sphere.Radius = decal.bounds.w;
+			sphere.Position = mul(float4(decal.bounds.xyz, 1.0), Camera.view).xyz;
+
+			if (SphereInAABB(sphere, cluster)) {
+				data.decals |= 1u << o;
+			}
 		}
 
 		ClusterDataGrid[clusterIndex * CLUSTERED_NUM_BUCKETS + bucketIndex] = data;

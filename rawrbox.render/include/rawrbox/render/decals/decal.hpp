@@ -8,11 +8,13 @@ namespace rawrbox {
 	struct Decal {
 	private:
 		static std::unique_ptr<rawrbox::Logger> _logger;
+		void updateBounds(const rawrbox::Matrix4x4& localToWorld);
 
 	public:
 		rawrbox::Matrix4x4 worldToLocal = {};
 		rawrbox::Vector4u data = {};
 		rawrbox::Colorf color = {};
+		rawrbox::Vector4f bounds = {};
 
 		Decal() = default;
 		Decal(const rawrbox::Matrix4x4& _mtx, const rawrbox::TextureBase& _texture, const rawrbox::Colorf& _color, uint32_t _atlas = 0);

@@ -18,8 +18,8 @@ void ApplyDecals(uint decalBucket, uint bucketIndex, float4 worldPosition, float
 		bucket ^= 1u << bitIndex;
 
 		// Apply decal ------------
-		uint index = bitIndex + bucketIndex * CLUSTERS_Z;
-		if (index > TOTAL_DECALS) break;
+		uint index = bitIndex + bucketIndex * CLUSTER_BUCKET_SIZE;
+		if (index >= TOTAL_DECALS) break;
 
 		Decal decal = GetDecal(index);
 

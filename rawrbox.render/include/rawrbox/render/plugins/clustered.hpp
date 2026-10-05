@@ -2,6 +2,7 @@
 
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/render/plugins/base.hpp>
+#include <rawrbox/render/render_config.hpp>
 
 #include <RefCntAutoPtr.hpp>
 #include <ShaderMacroHelper.hpp>
@@ -15,11 +16,15 @@ namespace rawrbox {
 		rawrbox::Vector4f maxBounds = {};
 	};
 
+	struct ClusterData {
+		uint32_t lights = 0;
+		uint32_t decals = 0;
+	};
+
 	class ClusteredPlugin : public rawrbox::RenderPlugin {
 	protected:
 		Diligent::IPipelineState* _clusterBuildingComputeProgram = nullptr;
 		Diligent::IPipelineState* _cullingComputeProgram = nullptr;
-		Diligent::IPipelineState* _cullingResetProgram = nullptr;
 
 		Diligent::DispatchComputeAttribs _dispatch = {};
 
@@ -45,10 +50,7 @@ namespace rawrbox {
 		virtual void buildPipelines();
 
 	public:
-		static uint32_t CLUSTERS_X;
-		static uint32_t CLUSTERS_Y;
-
-		static uint32_t CLUSTERS_GROUP_SIZE;
+		static constexpr uint32_t CLUSTERS_GROUP_SIZE = RB_RENDER_CLUSTERS_X * RB_RENDER_CLUSTERS_Y * RB_RENDER_CLUSTERS_Z;
 
 		ClusteredPlugin() = default;
 		ClusteredPlugin(const ClusteredPlugin&) = delete;

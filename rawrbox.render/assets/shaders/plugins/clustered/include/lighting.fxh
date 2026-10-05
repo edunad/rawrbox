@@ -30,11 +30,6 @@ float DirectionalSpotAttenuation(float3 L, float3 direction, float cosUmbra, flo
 	return falloff * falloff;
 }
 
-float DirectionalAttenuation(float3 L, float3 direction) {
-	float cosAngle = dot(-normalize(L), direction);
-	return cosAngle;
-}
-
 // Distance between rays is proportional to distance squared
 // Extra windowing function to make light radius finite
 // https://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf
@@ -46,15 +41,20 @@ float RadialAttenuation(float3 L, float range) {
 }
 
 float GetAttenuation(Light light, float3 worldPosition, out float3 L) {
-	float attenuation = 1.0f;
+	// Directional (sun)
+	if (light.type == LIGHT_DIRECTIONAL) {
+		float lenSq = dot(light.direction, light.direction);
+		L = lenSq > 0.0f ? -light.direction * rsqrt(lenSq) : float3(0, 0, 0); // Zero direction = no light
+
+		return 1.0f;
+	}
+	//--------------------
 
 	L = light.position - worldPosition;
-	attenuation *= RadialAttenuation(L, light.radius);
+	float attenuation = RadialAttenuation(L, light.radius);
 
 	if (light.type == LIGHT_SPOT) {
 		attenuation *= DirectionalSpotAttenuation(L, light.direction, light.cosUmbra, light.cosPenumbra);
-	} else if (light.type == LIGHT_DIRECTIONAL) {
-		attenuation = DirectionalAttenuation(L, light.direction);
 	}
 
 	float distSq = dot(L, L);
@@ -183,18 +183,13 @@ LightResult DefaultLitBxDF(float3 specularColor, float specularRoughness, float3
 void ApplyLight(uint lightBucket, uint bucketIndex, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 V, float3 worldPos, float dither) {
 	uint bucket = lightBucket;
 
-	if (FULL_BRIGHT == 0.0) {
-		lighting.Diffuse = diffuse; // FULL BRIGHT
-		return;
-	}
-
 	while (bucket) {
 		uint bitIndex = firstbitlow(bucket);
 		bucket ^= 1u << bitIndex;
 
 		// Apply light ------------
-		uint index = bitIndex + bucketIndex * CLUSTERS_Z;
-		if (index > TOTAL_LIGHTS) break;
+		uint index = bitIndex + bucketIndex * CLUSTER_BUCKET_SIZE;
+		if (index >= TOTAL_LIGHTS) break;
 
 		Light light = GetLight(index);
 
@@ -204,16 +199,12 @@ void ApplyLight(uint lightBucket, uint bucketIndex, inout LightResult lighting, 
 		if (attenuation > 0.0F) {
 			LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
 			float3 radiance = GetLightRadiance(light);
-			
+
 			lighting.Diffuse += result.Diffuse * radiance;
 			lighting.Specular += result.Specular * radiance;
 		}
 		// ------------------------
 	}
-
-	// AMBIENT LIGHT ---
-	lighting.Diffuse *= LightConstants.ambientColor.rgb;
-	// -----------------
 }
 
 			#endif

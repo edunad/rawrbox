@@ -23,9 +23,9 @@ namespace light {
 		window->setMonitor(-1);
 		window->setTitle("LIGHT TEST");
 #ifdef _DEBUG
-		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::TRANSPARENT_BUFFER);
+		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED);
 #else
-		window->init(0, 0, rawrbox::WindowFlags::Window::BORDERLESS | rawrbox::WindowFlags::Features::TRANSPARENT_BUFFER);
+		window->init(0, 0, rawrbox::WindowFlags::Window::BORDERLESS);
 #endif
 
 		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
@@ -204,7 +204,8 @@ namespace light {
 
 			light = rawrbox::LIGHTS::getLight(3); // SUN
 			if (light != nullptr) {
-				light->setDirection({0, std::sin(rawrbox::FRAME * 0.01F) * 1.F, 0});
+				const float angle = rawrbox::FRAME * 0.01F;
+				light->setDirection({std::cos(angle), -std::sin(angle), 0});
 			}
 		}
 	}

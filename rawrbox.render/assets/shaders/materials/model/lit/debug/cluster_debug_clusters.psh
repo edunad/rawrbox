@@ -1,3 +1,4 @@
+#include "camera.fxh"
 
 #define READ_CLUSTER_DATA_GRID
 #include "cluster.fxh"
@@ -20,10 +21,7 @@ struct PSOutput {
 };
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-	uint3 clusterIndex3D = uint3(floor(PSIn.Pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(PSIn.Pos.w));
-	uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
-
-	uint lightGridOffset = tileIndex * CLUSTERED_NUM_BUCKETS;
+	uint lightGridOffset = GetClusterGridOffset(PSIn.Pos);
 
 	uint lightCount = 0;
 	for (uint i = 0; i < CLUSTERED_NUM_BUCKETS; ++i)

@@ -3,6 +3,8 @@
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/utils/barrier.hpp>
 
+#include <algorithm>
+
 namespace rawrbox {
 	// PRIVATE ----
 	std::vector<rawrbox::Decal> DECALS::_decals = {};
@@ -74,7 +76,8 @@ namespace rawrbox {
 		if (!_CONSTANTS_DIRTY) return;
 		_CONSTANTS_DIRTY = false;
 
-		rawrbox::Vector4u settings = {static_cast<uint32_t>(count()), 0, 0, 0};
+		if (count() > RB_RENDER_MAX_DATA_PER_CLUSTER) _logger->warn("Too many decals ({}), only the first {} will be rendered", count(), RB_RENDER_MAX_DATA_PER_CLUSTER);
+		rawrbox::Vector4u settings = {static_cast<uint32_t>(std::min<size_t>(count(), RB_RENDER_MAX_DATA_PER_CLUSTER)), 0, 0, 0};
 
 		// BARRIER ----
 		rawrbox::BarrierUtils::barrier({{uniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
