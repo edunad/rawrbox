@@ -49,6 +49,7 @@ namespace rawrbox {
 		static rawrbox::Event<rawrbox::Mod&> onLoadLibraries;
 		static rawrbox::Event<rawrbox::Mod&> onLoadModifiers;
 		static rawrbox::Event<rawrbox::Mod&> onModHotReload;
+		static rawrbox::Event<rawrbox::Mod&> onModUnload;
 		// -------
 
 		// PLUGINS ---

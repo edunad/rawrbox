@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/cameras/orbit.hpp>
 #include <rawrbox/render/models/mesh.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
@@ -45,11 +45,11 @@ namespace model {
 		// ---------------
 
 		// Setup camera
-		auto* cam = render->createCamera<rawrbox::CameraOrbital>(*window);
+		auto* cam = render->createCamera<rawrbox::CameraOrbit>(*window);
 		cam->setPos({0.F, 6.F, -6.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-55), 0.F, 0.F});
-		cam->onMovementStart = []() { fmt::print("Camera start\n"); };
-		cam->onMovementStop = []() { fmt::print("Camera stop\n"); };
+		cam->canUseKeyboard([]() { return true; });
+		cam->canUseMouse([]() { return true; });
 		// --------------
 
 		// BINDS ----

@@ -27,10 +27,7 @@ namespace rawrbox {
 		return rawrbox::Matrix4x4::mtxProject(pos, this->_view, this->_projection, {0, 0, size.x, size.y});
 	}
 
-	rawrbox::Vector3f CameraPerspective::screenToWorld(const rawrbox::Vector2f& screenPos, const rawrbox::Vector3f& origin) const {
-		static constexpr rawrbox::Vector3f plane_normal = {0, 1, 0};
-
-		// get our pos and force aim downwards, the getForward() seems to behave odd when aiming full down
+	rawrbox::Vector3f CameraPerspective::screenRayDir(const rawrbox::Vector2f& screenPos) const {
 		const auto& campos = this->getPos();
 		const auto& size = this->_renderTarget->getSize();
 		rawrbox::Matrix4x4 viewproj_inv = this->getViewProjMtx().inverse();
@@ -41,19 +38,23 @@ namespace rawrbox {
 
 		rawrbox::Vector4f screen_clip = {screenx_clip, screeny_clip, -1, 1};
 		rawrbox::Vector4f world_pos = viewproj_inv.mulVec(screen_clip);
-
-		// divide by the weigth of the universe to resolve black mater offsets
 		world_pos /= world_pos.w;
 
-		// convert the object back to the real universe
-		rawrbox::Vector3f mouse_point_world = {world_pos.x, world_pos.y, world_pos.z};
-		rawrbox::Vector3f camera_forward_world = mouse_point_world - campos;
+		const rawrbox::Vector3f point = {world_pos.x, world_pos.y, world_pos.z};
+		return (point - campos).normalized();
+	}
+
+	rawrbox::Vector3f CameraPerspective::screenToWorld(const rawrbox::Vector2f& screenPos, const rawrbox::Vector3f& origin) const {
+		static constexpr rawrbox::Vector3f plane_normal = {0, 1, 0};
+
+		const auto& campos = this->getPos();
+		const auto dir = this->screenRayDir(screenPos);
 
 		float numerator = (origin - campos).dot(plane_normal);
-		float denumerator = camera_forward_world.dot(plane_normal);
+		float denumerator = dir.dot(plane_normal);
 
 		float delta = numerator / denumerator;
-		return camera_forward_world * delta + campos;
+		return dir * delta + campos;
 	}
 
 } // namespace rawrbox

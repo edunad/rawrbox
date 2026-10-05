@@ -98,6 +98,8 @@ namespace rawrbox {
 		_samplers.clear();
 		_globalMacros.clear();
 
+		RAWRBOX_DESTROY(_stateCache);
+
 		_logger.reset();
 
 		defaultSampler = nullptr;
@@ -274,6 +276,8 @@ namespace rawrbox {
 			BlendState.RenderTargets[0].BlendEnable = true;
 			BlendState.RenderTargets[0].SrcBlend = settings.blending.src;
 			BlendState.RenderTargets[0].DestBlend = settings.blending.dest;
+			BlendState.RenderTargets[0].SrcBlendAlpha = Diligent::BLEND_FACTOR_ONE; // Transparency support
+			BlendState.RenderTargets[0].DestBlendAlpha = Diligent::BLEND_FACTOR_ONE;
 
 			info.GraphicsPipeline.BlendDesc = BlendState;
 		}

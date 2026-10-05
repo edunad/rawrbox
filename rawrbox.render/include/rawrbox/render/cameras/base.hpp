@@ -88,6 +88,8 @@ namespace rawrbox {
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> staticUniforms;
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
 
+		static void shutdown();
+
 		CameraBase(const rawrbox::Vector2u& renderSize, bool depth = true);
 		CameraBase(CameraBase&&) = default;
 		CameraBase& operator=(CameraBase&&) = default;
@@ -118,6 +120,7 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const;
 		[[nodiscard]] virtual rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screen_pos, const rawrbox::Vector3f& origin = {0, 0, 0}) const;
+		[[nodiscard]] virtual rawrbox::Vector3f screenRayDir(const rawrbox::Vector2f& screen_pos) const;
 
 		virtual bool isEnabled() const;
 		virtual void setEnabled(bool enabled);
@@ -139,6 +142,7 @@ namespace rawrbox {
 		virtual void initialize();
 		virtual void upload();
 
+		virtual void updateStatic();
 		virtual void updateBuffer();
 		virtual void update();
 	};

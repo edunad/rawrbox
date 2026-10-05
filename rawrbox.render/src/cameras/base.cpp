@@ -14,6 +14,11 @@ namespace rawrbox {
 
 	CameraBase::~CameraBase() { this->_renderTarget.reset(); }
 
+	void CameraBase::shutdown() {
+		RAWRBOX_DESTROY(uniforms);
+		RAWRBOX_DESTROY(staticUniforms);
+	}
+
 	void CameraBase::initialize() {
 		if (this->_renderTarget == nullptr) RAWRBOX_CRITICAL("Render target not initialized!");
 		this->_renderTarget->upload(Diligent::TEX_FORMAT_RGBA8_UNORM);
@@ -37,7 +42,7 @@ namespace rawrbox {
 		// STATIC BUFFER ---
 		Diligent::BufferDesc StaticDesc;
 		StaticDesc.Name = "rawrbox::Camera::Static::Uniforms";
-		StaticDesc.Usage = Diligent::USAGE_IMMUTABLE;
+		StaticDesc.Usage = Diligent::USAGE_DEFAULT;
 		StaticDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 		StaticDesc.Size = sizeof(rawrbox::CameraStaticUniforms);
 
@@ -67,6 +72,16 @@ namespace rawrbox {
 	}
 
 	void CameraBase::updateMtx() { RAWRBOX_CRITICAL("Not implemented"); };
+
+	void CameraBase::updateStatic() {
+		if (staticUniforms == nullptr) return;
+		rawrbox::CameraStaticUniforms data = this->getStaticData();
+
+		rawrbox::BarrierUtils::barrier({{staticUniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::RENDERER->context()->UpdateBuffer(staticUniforms, 0, sizeof(rawrbox::CameraStaticUniforms), &data, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BarrierUtils::barrier({{staticUniforms, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+	}
+
 	rawrbox::CameraStaticUniforms CameraBase::getStaticData() {
 		auto screenSize = rawrbox::RENDERER->getSize().cast<float>();
 
@@ -159,6 +174,10 @@ namespace rawrbox {
 	}
 
 	rawrbox::Vector3f CameraBase::screenToWorld(const rawrbox::Vector2f& /*screen_pos*/, const rawrbox::Vector3f& /*origin*/) const {
+		RAWRBOX_CRITICAL("Not implemented");
+	}
+
+	rawrbox::Vector3f CameraBase::screenRayDir(const rawrbox::Vector2f& /*screen_pos*/) const {
 		RAWRBOX_CRITICAL("Not implemented");
 	}
 

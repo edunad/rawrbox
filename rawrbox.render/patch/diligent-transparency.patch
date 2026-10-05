@@ -1,0 +1,69 @@
+﻿diff --git a/Graphics/GraphicsEngineD3DBase/include/SwapChainD3DBase.hpp b/Graphics/GraphicsEngineD3DBase/include/SwapChainD3DBase.hpp
+index e28d4698..4dec62cc 100644
+--- a/Graphics/GraphicsEngineD3DBase/include/SwapChainD3DBase.hpp
++++ b/Graphics/GraphicsEngineD3DBase/include/SwapChainD3DBase.hpp
+@@ -28,6 +28,8 @@
+ #pragma once
+
+ #include <VersionHelpers.h>
++#include <dcomp.h>
++#include <cstdlib>
+ #include "SwapChainBase.hpp"
+ #include "DXGITypeConversions.hpp"
+ #include "GraphicsAccessories.hpp"
+@@ -131,6 +133,8 @@ protected:
+
+         DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+
++        const bool RawrboxTransparent = (std::getenv("RAWRBOX_DCOMP_TRANSPARENT") != nullptr); // Thanks i hate it
++
+         swapChainDesc.Width  = m_SwapChainDesc.Width;
+         swapChainDesc.Height = m_SwapChainDesc.Height;
+         //  Flip model swapchains (DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL and DXGI_SWAP_EFFECT_FLIP_DISCARD) only support the following Formats:
+@@ -235,17 +239,39 @@ protected:
+         FullScreenDesc.Scaling                 = static_cast<DXGI_MODE_SCALING>(m_FSDesc.Scaling);
+         FullScreenDesc.ScanlineOrdering        = static_cast<DXGI_MODE_SCANLINE_ORDER>(m_FSDesc.ScanlineOrder);
+
+-        hr = pDXGIFactory->CreateSwapChainForHwnd(pD3D11DeviceOrD3D12CmdQueue, hWnd, &swapChainDesc, &FullScreenDesc, nullptr, &pSwapChain1);
+-        CHECK_D3D_RESULT_THROW(hr, "Failed to create Swap Chain");
+-
++        if (RawrboxTransparent)
++        {
++            swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
++            swapChainDesc.Scaling   = DXGI_SCALING_STRETCH;
++            swapChainDesc.Flags &= ~static_cast<UINT>(DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING);
++            m_TearingSupported = false;
++
++            hr = pDXGIFactory->CreateSwapChainForComposition(pD3D11DeviceOrD3D12CmdQueue, &swapChainDesc, nullptr, &pSwapChain1);
++            CHECK_D3D_RESULT_THROW(hr, "Failed to create composition swap chain");
++
++            static CComPtr<IDCompositionDevice> s_DCompDevice;
++            static CComPtr<IDCompositionTarget> s_DCompTarget;
++            static CComPtr<IDCompositionVisual> s_DCompVisual;
++            hr = DCompositionCreateDevice(nullptr, __uuidof(IDCompositionDevice), reinterpret_cast<void**>(&s_DCompDevice));
++            CHECK_D3D_RESULT_THROW(hr, "DCompositionCreateDevice failed");
++            hr = s_DCompDevice->CreateTargetForHwnd(hWnd, TRUE, &s_DCompTarget);
++            CHECK_D3D_RESULT_THROW(hr, "DComp CreateTargetForHwnd failed");
++            hr = s_DCompDevice->CreateVisual(&s_DCompVisual);
++            CHECK_D3D_RESULT_THROW(hr, "DComp CreateVisual failed");
++            s_DCompVisual->SetContent(pSwapChain1);
++            s_DCompTarget->SetRoot(s_DCompVisual);
++            s_DCompDevice->Commit();
++        }
++        else
+         {
+-            // This is silly, but IDXGIFactory used for MakeWindowAssociation must be retrieved via
+-            // calling IDXGISwapchain::GetParent first, otherwise it won't work
+-            // https://www.gamedev.net/forums/topic/634235-dxgidisabling-altenter/?do=findComment&comment=4999990
++            hr = pDXGIFactory->CreateSwapChainForHwnd(pD3D11DeviceOrD3D12CmdQueue, hWnd, &swapChainDesc, &FullScreenDesc, nullptr, &pSwapChain1);
++            CHECK_D3D_RESULT_THROW(hr, "Failed to create Swap Chain");
++
++            // IDXGIFactory used for MakeWindowAssociation must be retrieved via
++            // IDXGISwapchain::GetParent first, otherwise it won't work
+             CComPtr<IDXGIFactory1> pFactoryFromSC;
+             if (SUCCEEDED(pSwapChain1->GetParent(__uuidof(pFactoryFromSC), (void**)&pFactoryFromSC)))
+             {
+-                // Do not allow the swap chain to handle Alt+Enter
+                 pFactoryFromSC->MakeWindowAssociation(hWnd, DXGI_MWA_NO_WINDOW_CHANGES | DXGI_MWA_NO_ALT_ENTER);
+             }
+         }

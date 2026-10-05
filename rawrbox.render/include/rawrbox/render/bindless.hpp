@@ -35,7 +35,7 @@ namespace rawrbox {
 		rawrbox::Vector4f textureData = {}; // Texture data (related to emission, etc)
 		rawrbox::Vector4f pixelData = {};   // Pixel data (cutoff, decal mask, etc)
 
-		bool operator==(const BindlessPixelBuffer& other) const { return this->textureIDs == other.textureIDs && this->textureData == other.pixelData && this->textureData == other.pixelData; }
+		bool operator==(const BindlessPixelBuffer& other) const { return this->textureIDs == other.textureIDs && this->textureData == other.textureData && this->pixelData == other.pixelData; }
 		bool operator!=(const BindlessPixelBuffer& other) const { return !operator==(other); }
 	};
 
@@ -91,6 +91,8 @@ namespace rawrbox {
 		static void unregisterUpdateTexture(rawrbox::TextureBase& texture);
 
 		static void unregisterTexture(rawrbox::TextureBase& texture);
+		
+		static void updateTextureHandle(rawrbox::TextureBase& texture);
 		// ----------------
 	};
 } // namespace rawrbox

@@ -31,7 +31,9 @@
 #include <rawrbox/engine/engine.hpp>
 #include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/render/bindless.hpp>
+#include <rawrbox/render/cameras/base.hpp>
 #include <rawrbox/render/text/engine.hpp>
+#include <rawrbox/render/utils/debug_draw.hpp>
 #include <rawrbox/render/window.hpp>
 #include <rawrbox/utils/string.hpp>
 
@@ -110,6 +112,8 @@ namespace rawrbox {
 
 	void Window::shutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
+			rawrbox::DebugDraw::shutdown();
+
 			// SHUTDOWN FONTS ----
 			rawrbox::TextEngine::shutdown();
 
@@ -130,6 +134,7 @@ namespace rawrbox {
 
 			// SHUTDOWN PLUGINS ----
 			rawrbox::BindlessManager::shutdown();
+			rawrbox::CameraBase::shutdown();
 			rawrbox::PipelineUtils::shutdown();
 			// ---------------
 
@@ -256,6 +261,7 @@ namespace rawrbox {
 		// Set transparent
 		bool transparent = (flags & WindowFlags::Features::TRANSPARENT_BUFFER) > 0;
 		if (transparent) {
+			_putenv_s("RAWRBOX_DCOMP_TRANSPARENT", "1"); // Meh
 			glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 		}
 		// ----
@@ -325,9 +331,12 @@ namespace rawrbox {
 		    .hRgnBlur = CreateRectRgn(0, 0, -1, -1),
 		};
 		DwmEnableBlurBehindWindow(hwnd, &bb);
-		BOOL value = TRUE;
+
+		const bool dcompTransparent = GetEnvironmentVariableA("RAWRBOX_DCOMP_TRANSPARENT", nullptr, 0) > 0;
+		BOOL value = dcompTransparent ? FALSE : TRUE;
+
 		DwmSetWindowAttribute(hwnd, DWMWA_USE_HOSTBACKDROPBRUSH, &value, sizeof(value));
-		DWM_SYSTEMBACKDROP_TYPE backdrop_type = DWMSBT_MAINWINDOW;
+		DWM_SYSTEMBACKDROP_TYPE backdrop_type = dcompTransparent ? DWMSBT_NONE : DWMSBT_MAINWINDOW;
 		DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, &backdrop_type, sizeof(backdrop_type));
 		// ---------------
 #endif
@@ -472,7 +481,7 @@ namespace rawrbox {
 
 	Diligent::NativeWindow Window::getHandle() const {
 		if (this->_handle == nullptr) RAWRBOX_CRITICAL("Invalid window handle");
-			// Get native window ----
+		// Get native window ----
 #if PLATFORM_WIN32
 		Diligent::Win32NativeWindow window{glfwGetWin32Window(this->_handle)};
 #endif

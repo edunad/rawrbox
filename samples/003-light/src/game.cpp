@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/cameras/orbit.hpp>
 #include <rawrbox/render/lights/directional.hpp>
 #include <rawrbox/render/lights/point.hpp>
 #include <rawrbox/render/lights/spot.hpp>
@@ -23,9 +23,9 @@ namespace light {
 		window->setMonitor(-1);
 		window->setTitle("LIGHT TEST");
 #ifdef _DEBUG
-		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED);
+		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED | rawrbox::WindowFlags::Features::TRANSPARENT_BUFFER);
 #else
-		window->init(0, 0, rawrbox::WindowFlags::Window::BORDERLESS);
+		window->init(0, 0, rawrbox::WindowFlags::Window::BORDERLESS | rawrbox::WindowFlags::Features::TRANSPARENT_BUFFER);
 #endif
 
 		window->onWindowClose += [this](auto& /*w*/) { this->shutdown(); };
@@ -35,7 +35,7 @@ namespace light {
 		auto* window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto* render = window->createRenderer();
+		auto* render = window->createRenderer(rawrbox::Colorf{0.0F, 0.0F, 0.0F, 0.0F});
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::CameraBase& /*camera*/, const rawrbox::DrawPass& pass) {
@@ -48,9 +48,11 @@ namespace light {
 		// ---------------
 
 		// Setup camera
-		auto* cam = render->createCamera<rawrbox::CameraOrbital>(*window);
+		auto* cam = render->createCamera<rawrbox::CameraOrbit>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
+		cam->canUseKeyboard([]() { return true; });
+		cam->canUseMouse([]() { return true; });
 		// --------------
 
 		// BINDS ----

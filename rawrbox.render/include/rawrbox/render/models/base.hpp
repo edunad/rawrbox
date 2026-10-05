@@ -1,6 +1,7 @@
 #pragma once
 
 #include <rawrbox/render/materials/unlit.hpp>
+#include <rawrbox/utils/dirty_ranges.hpp>
 #include <rawrbox/utils/string.hpp>
 
 #include <Buffer.h>
@@ -49,6 +50,10 @@ namespace rawrbox {
 
 		// DYNAMIC SUPPORT ---
 		rawrbox::UploadType _uploadType = rawrbox::UploadType::STATIC;
+
+		rawrbox::DirtyRanges _dirtyVB = {};
+		rawrbox::DirtyRanges _dirtyIB = {};
+
 		bool _requiresUpdate = false;
 		// ----
 
@@ -141,6 +146,7 @@ namespace rawrbox {
 
 				this->_mesh->vertices.reserve(vertSize + RB_RENDER_BUFFER_INCREASE_OFFSET);
 				this->createVertexBuffer();
+				this->_dirtyVB.clear();
 
 				this->_logger->debug("Resizing vertex buffer ({} -> {})", fmt::styled(vertSize, fmt::fg(fmt::color::cyan)), fmt::styled(this->_mesh->vertices.capacity(), fmt::fg(fmt::color::cyan)));
 			}
@@ -150,6 +156,7 @@ namespace rawrbox {
 
 				this->_mesh->indices.reserve(indcSize + RB_RENDER_BUFFER_INCREASE_OFFSET);
 				this->createIndexBuffer();
+				this->_dirtyIB.clear();
 
 				this->_logger->debug("Resizing index buffer ({} -> {})", fmt::styled(indcSize, fmt::fg(fmt::color::cyan)), fmt::styled(this->_mesh->indices.capacity(), fmt::fg(fmt::color::cyan)));
 			}
@@ -166,8 +173,26 @@ namespace rawrbox {
 
 			rawrbox::BarrierUtils::barrier(barriers);
 
-			if (!resizeVertex) context->UpdateBuffer(this->_vbh, 0, vertSize * sizeof(typename M::vertexBufferType), empty ? nullptr : this->_mesh->vertices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-			if (!resizeIndex) context->UpdateBuffer(this->_ibh, 0, indcSize * sizeof(uint32_t), empty ? nullptr : this->_mesh->indices.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			const auto upload = [&](Diligent::IBuffer* buffer, rawrbox::DirtyRanges& dirty, const uint8_t* data, uint64_t fullSize) {
+				if (dirty.full() || dirty.empty()) {
+					context->UpdateBuffer(buffer, 0, fullSize, fullSize == 0 ? nullptr : data, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+					return;
+				}
+
+				for (const auto& range : dirty.merge(fullSize)) {
+					context->UpdateBuffer(buffer, range.offset, range.size, data + range.offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+				}
+
+				if (dirty.full()) {
+					context->UpdateBuffer(buffer, 0, fullSize, fullSize == 0 ? nullptr : data, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+				}
+			};
+
+			if (!resizeVertex) upload(this->_vbh, this->_dirtyVB, empty ? nullptr : reinterpret_cast<const uint8_t*>(this->_mesh->vertices.data()), vertSize * sizeof(typename M::vertexBufferType));
+			if (!resizeIndex) upload(this->_ibh, this->_dirtyIB, empty ? nullptr : reinterpret_cast<const uint8_t*>(this->_mesh->indices.data()), indcSize * sizeof(uint32_t));
+
+			this->_dirtyVB.clear();
+			this->_dirtyIB.clear();
 
 			barriers.clear();
 			if (!resizeVertex) barriers.emplace_back(this->_vbh, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE);
@@ -291,8 +316,27 @@ namespace rawrbox {
 		// --------------
 
 		// UTIL ---
+		// Partial update ---
+		virtual void updateVertexRange(size_t firstVertex, size_t count) {
+			if (!this->isDynamic() || !this->isUploaded()) RAWRBOX_CRITICAL("Model is not dynamic or not uploaded");
+			const auto stride = sizeof(typename M::vertexBufferType);
+
+			this->_dirtyVB.push(firstVertex * stride, count * stride);
+			this->_requiresUpdate = true;
+		}
+
+		virtual void updateIndexRange(size_t firstIndex, size_t count) {
+			if (!this->isDynamic() || !this->isUploaded()) RAWRBOX_CRITICAL("Model is not dynamic or not uploaded");
+
+			this->_dirtyIB.push(firstIndex * sizeof(uint32_t), count * sizeof(uint32_t));
+			this->_requiresUpdate = true;
+		}
+
 		virtual void updateBuffers() {
 			this->_requiresUpdate = this->isDynamic() && this->isUploaded();
+
+			this->_dirtyVB.markFull();
+			this->_dirtyIB.markFull();
 		}
 
 		[[nodiscard]] virtual uint32_t getID(int /*index*/ = -1) const { return this->_mesh->getID(); }
