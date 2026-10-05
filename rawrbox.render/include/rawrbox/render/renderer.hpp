@@ -71,6 +71,7 @@ namespace rawrbox {
 		Diligent::NativeWindow _window = {};
 
 		bool _vsync = false;
+		bool _transparent = false;
 		bool _initialized = false;
 
 		Diligent::RENDER_DEVICE_TYPE _type = Diligent::RENDER_DEVICE_TYPE_UNDEFINED;
@@ -197,6 +198,9 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual bool getVSync() const;
 		virtual void setVSync(bool vsync);
+
+		[[nodiscard]] virtual bool isTransparent() const;
+		virtual void setTransparent(bool transparent);
 
 		virtual void gpuPick(const rawrbox::Vector2i& pos, const std::function<void(uint32_t)>& callback);
 		//  ------

@@ -3,12 +3,15 @@
 #include <rawrbox/render/models/mesh.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render/utils/debug_draw.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 #include <rawrbox/utils/timer.hpp>
 
 #include <model/game.hpp>
 
+#include <cmath>
+#include <cstdio>
 #include <vector>
 
 namespace model {
@@ -54,8 +57,9 @@ namespace model {
 
 		// BINDS ----
 		window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
-			if (!this->_ready || action != rawrbox::KEY_ACTION_UP || key != rawrbox::KEY_F1) return;
-			this->_bbox = !this->_bbox;
+			if (!this->_ready || action != rawrbox::KEY_ACTION_UP) return;
+			if (key == rawrbox::KEY_F1) this->_debugDraw = !this->_debugDraw;
+			if (key == rawrbox::KEY_F2) this->_stress = !this->_stress;
 		};
 		// -----
 
@@ -97,13 +101,13 @@ namespace model {
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({3.5F, 0, 2.5F}, {1.0F, 1.0F, 1.0F}, rawrbox::Colors::White());
 			this->_model->addMesh(mesh);
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({3.5F, 0, 2.5F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{3.5F, 0, 2.5F}, mesh.getBBOX()});
 		}
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({1.5F, 0, 2.5F}, {.5F, .5F, .5F}, rawrbox::Colors::White());
 			this->_model->addMesh(mesh);
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({1.5F, 0, 2.5F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{1.5F, 0, 2.5F}, mesh.getBBOX()});
 		}
 
 		{
@@ -111,7 +115,7 @@ namespace model {
 			mesh.setTexture(texture2);
 
 			this->_model->addMesh(mesh);
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-2, 0, 0}, mesh.getBBOX()));
+			this->_bboxes.push_back({{-2, 0, 0}, mesh.getBBOX()});
 		}
 		// --------
 
@@ -120,7 +124,7 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generatePlane({2, 0, 0}, {0.5F, 0.5F});
 			mesh.setTexture(texture);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({2, 0, 0}, mesh.getBBOX()));
+			this->_bboxes.push_back({{2, 0, 0}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 		// ----------
@@ -131,7 +135,7 @@ namespace model {
 			rawrbox::Vector3f size = {0.5F, 0.5F, 0.F};
 
 			auto mesh = rawrbox::MeshUtils::generateTriangle(pos, rawrbox::Vector3f{0, 0, 0}, {0, 0}, rawrbox::Vector3f{size.x, size.y, 0}, {1, 0}, rawrbox::Vector3f{0, size.y, 0}, {0, 1});
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX(pos, mesh.getBBOX()));
+			this->_bboxes.push_back({pos, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 		// ----------
@@ -142,7 +146,7 @@ namespace model {
 			mesh.setTexture(texture);
 			mesh.setVertexSnap(24.F);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-3, 0, 0}, mesh.getBBOX()));
+			this->_bboxes.push_back({{-3, 0, 0}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 		// ----------
@@ -151,7 +155,7 @@ namespace model {
 		{
 			auto mesh = rawrbox::MeshUtils::generateArrow(0.5F, {-4.F, 0.F, 0.F}, rawrbox::Colors::White());
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-4.F, 0.F, 0.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{-4.F, 0.F, 0.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 		// ----
@@ -161,7 +165,7 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generateSphere({2.F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 0.25F);
 			mesh.setTexture(texture3);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({2.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{2.F, 0.F, -2.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 
@@ -169,7 +173,7 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generateSphere({3.5F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 0.5F);
 			mesh.setTexture(texture3);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({3.5F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{3.5F, 0.F, -2.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 
@@ -177,7 +181,7 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generateSphere({5.F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 1.F);
 			mesh.setTexture(texture3);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({5.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{5.F, 0.F, -2.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 		// -----
@@ -187,7 +191,7 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generateCylinder({-2.F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 12);
 			mesh.setTexture(texture3);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-2.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{-2.F, 0.F, -2.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 
@@ -196,7 +200,7 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generateCone({-3.5F, 0.F, -2.F}, {0.5F, 1.F, 0.5F}, 12);
 			mesh.setTexture(texture3);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-3.5F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{-3.5F, 0.F, -2.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 
@@ -204,12 +208,11 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generateCone({-5.F, 0.F, -2.F}, {0.5F, 1.F, 0.5F}, 3);
 			mesh.setTexture(texture3);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-5.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{-5.F, 0.F, -2.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 
 		this->_model->upload();
-		this->_bboxes->upload();
 	}
 
 	void Game::createSpline() {
@@ -358,7 +361,6 @@ namespace model {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
 			this->_model.reset();
-			this->_bboxes.reset();
 			this->_displacement.reset();
 			this->_sprite.reset();
 			this->_sprite_2.reset();
@@ -388,15 +390,105 @@ namespace model {
 		if (this->_sprite->isUploaded()) this->_sprite->draw();
 		if (this->_sprite_2->isUploaded()) this->_sprite_2->draw();
 		if (this->_spline->isUploaded()) this->_spline->draw();
-		if (this->_bboxes->isUploaded() && this->_bbox) this->_bboxes->draw();
 		if (this->_text->isUploaded()) this->_text->draw();
+
+		// DEBUG DRAW ----
+		const auto debugStart = std::chrono::steady_clock::now();
+
+		if (this->_debugDraw) {
+			// BBOX -----------------------
+			for (const auto& [pos, bbox] : this->_bboxes) {
+				rawrbox::DebugDraw::bbox(pos, bbox, rawrbox::Colors::Red());
+			}
+			// -------------------
+
+			// AXIS GIZMO ----
+			rawrbox::DebugDraw::line({0, 0, 0}, {1, 0, 0}, rawrbox::Colors::Red(), false);
+			rawrbox::DebugDraw::line({0, 0, 0}, {0, 1, 0}, rawrbox::Colors::Green(), false);
+			rawrbox::DebugDraw::line({0, 0, 0}, {0, 0, 1}, rawrbox::Colors::Blue(), false);
+			// ---------------
+
+			// BOUNDS --------
+			rawrbox::DebugDraw::aabb({1.5F, -0.5F, -3.F}, {6.F, 1.F, -1.F}, rawrbox::Colors::Yellow());
+			// ---------------
+
+			// RANDOM SHAPES -
+			rawrbox::DebugDraw::quad({-1.5F, 0.F, -5.5F}, {1.5F, 0.F, -5.5F}, {1.5F, 0.F, -4.5F}, {-1.5F, 0.F, -4.5F}, rawrbox::Colors::Purple());
+			rawrbox::DebugDraw::triangle({5.F, 0.F, 0.F}, {6.F, 0.F, 0.F}, {5.5F, 1.F, 0.F}, rawrbox::Colors::Orange());
+			// -----------------------
+		}
+
+		if (this->_stress) this->drawDebugStress();
+		rawrbox::DebugDraw::draw(); // Flush everything queued this frame
+
+		// Measure CPU cost of queueing + submitting ---
+		this->_debugTimeAccum += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - debugStart).count();
+		if (++this->_debugFrames >= 120) {
+			this->_debugAvgMs = this->_debugTimeAccum / this->_debugFrames;
+			if (this->_stress) {
+				fmt::print("[DebugDraw stress] avg {:.3f} ms / frame\n", this->_debugAvgMs);
+				std::fflush(stdout);
+			}
+
+			this->_debugTimeAccum = 0.0;
+			this->_debugFrames = 0;
+		}
+		// ---------------------------------------------
+	}
+
+	void Game::drawDebugStress() {
+		const float time = std::chrono::duration<float>(std::chrono::steady_clock::now() - this->_startTime).count();
+
+		// STATIC: 10k lines in 256 colors (100 rings x 100 segments) ----
+		for (int ring = 0; ring < 100; ring++) {
+			const float y = 1.5F + static_cast<float>(ring) * 0.02F;
+			const float r = 5.F + std::sin(static_cast<float>(ring) * 0.2F) * 0.5F;
+
+			for (int seg = 0; seg < 100; seg++) {
+				const float a0 = static_cast<float>(seg) / 100.F * 6.2831853F;
+				const float a1 = static_cast<float>(seg + 1) / 100.F * 6.2831853F;
+
+				const int c = (ring * 100 + seg) % 256;
+				const rawrbox::Colorf color = {static_cast<float>(c % 16) / 15.F, static_cast<float>(c / 16) / 15.F, 1.F - (static_cast<float>(c % 16) / 15.F), 1.F};
+
+				rawrbox::DebugDraw::line({std::cos(a0) * r, y, std::sin(a0) * r}, {std::cos(a1) * r, y, std::sin(a1) * r}, color);
+			}
+		}
+
+		// STATIC: 1k triangles in 64 colors ----
+		for (int i = 0; i < 1000; i++) {
+			const float x = static_cast<float>(i % 40) * 0.3F - 6.F;
+			const float z = static_cast<float>(i / 40) * 0.3F - 9.F;
+
+			const int c = i % 64;
+			const rawrbox::Colorf color = {static_cast<float>(c % 8) / 7.F, static_cast<float>(c / 8) / 7.F, 0.5F, 1.F};
+
+			rawrbox::DebugDraw::triangle({x, 0.01F, z}, {x + 0.25F, 0.01F, z}, {x + 0.125F, 0.01F, z + 0.25F}, color);
+		}
+
+		// DYNAMIC: 2k spinning lines in 8 colors ----
+		for (int i = 0; i < 2000; i++) {
+			const float a = (static_cast<float>(i) / 2000.F * 6.2831853F) + time;
+			const float len = 1.F + (static_cast<float>(i % 10) * 0.1F);
+
+			const int c = i % 8;
+			const rawrbox::Colorf color = {(c & 1) != 0 ? 1.F : 0.2F, (c & 2) != 0 ? 1.F : 0.2F, (c & 4) != 0 ? 1.F : 0.2F, 1.F};
+
+			rawrbox::DebugDraw::line({0, 3.5F, 0}, {std::cos(a) * len, 3.5F + (std::sin(a * 3.F) * 0.25F), std::sin(a) * len}, color);
+		}
 	}
 
 	void Game::drawOverlay() const {
 		if (!this->_ready) return;
 		auto* stencil = rawrbox::RENDERER->stencil();
+		stencil->drawText(fmt::format("[F1]   DEBUG DRAW -> {}", this->_debugDraw ? "enabled" : "disabled"), {15, 15}, rawrbox::Colors::White(), rawrbox::Colors::Black());
 
-		stencil->drawText(fmt::format("[F1]   BBOX -> {}", this->_bbox ? "enabled" : "disabled"), {15, 15}, rawrbox::Colors::White(), rawrbox::Colors::Black());
+		if (this->_debugDraw) {
+			const auto& stats = rawrbox::DebugDraw::stats();
+			stencil->drawText(fmt::format("      buckets: {} | points: {} | uploads: {} | draw calls: {} | cpu: {:.3f} ms", stats.buckets, stats.points, stats.uploads, stats.drawCalls, this->_debugAvgMs), {15, 28}, rawrbox::Colors::White(), rawrbox::Colors::Black());
+		}
+
+		stencil->drawText(fmt::format("[F2]   DEBUG DRAW STRESS -> {}", this->_stress ? "enabled" : "disabled"), {15, 41}, rawrbox::Colors::White(), rawrbox::Colors::Black());
 	}
 
 	void Game::draw() {

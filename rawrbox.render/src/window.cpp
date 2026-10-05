@@ -260,10 +260,7 @@ namespace rawrbox {
 
 		// Set transparent
 		bool transparent = (flags & WindowFlags::Features::TRANSPARENT_BUFFER) > 0;
-		if (transparent) {
-			_putenv_s("RAWRBOX_DCOMP_TRANSPARENT", "1"); // Meh
-			glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
-		}
+		if (transparent) glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 		// ----
 
 		// Window properties
@@ -332,11 +329,10 @@ namespace rawrbox {
 		};
 		DwmEnableBlurBehindWindow(hwnd, &bb);
 
-		const bool dcompTransparent = GetEnvironmentVariableA("RAWRBOX_DCOMP_TRANSPARENT", nullptr, 0) > 0;
-		BOOL value = dcompTransparent ? FALSE : TRUE;
+		BOOL value = transparent ? FALSE : TRUE;
 
 		DwmSetWindowAttribute(hwnd, DWMWA_USE_HOSTBACKDROPBRUSH, &value, sizeof(value));
-		DWM_SYSTEMBACKDROP_TYPE backdrop_type = dcompTransparent ? DWMSBT_NONE : DWMSBT_MAINWINDOW;
+		DWM_SYSTEMBACKDROP_TYPE backdrop_type = transparent ? DWMSBT_NONE : DWMSBT_MAINWINDOW;
 		DwmSetWindowAttribute(hwnd, DWMWA_SYSTEMBACKDROP_TYPE, &backdrop_type, sizeof(backdrop_type));
 		// ---------------
 #endif

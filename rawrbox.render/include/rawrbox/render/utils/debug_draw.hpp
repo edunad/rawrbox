@@ -1,12 +1,21 @@
 #pragma once
 
+#include <rawrbox/math/bbox.hpp>
 #include <rawrbox/render/materials/unlit.hpp>
 #include <rawrbox/render/models/base.hpp>
 
+#include <array>
 #include <map>
+#include <memory>
 #include <vector>
 
 namespace rawrbox {
+	class DebugBatch : public rawrbox::ModelBase<rawrbox::MaterialUnlit> {
+	public:
+		void rebuild(const std::vector<rawrbox::Vector3f>& points, const rawrbox::Colorf& color);
+		void drawBatch(Diligent::IPipelineState* pipe);
+	};
+
 	class DebugDraw {
 	public:
 		struct Stats {
@@ -21,7 +30,7 @@ namespace rawrbox {
 		static constexpr uint64_t IDLE_REMOVE_FRAMES = 600;
 
 		struct BucketKey {
-			bool onTop = false;
+			bool depthTest = false;
 			bool line = false;
 
 			uint32_t rgba = 0;
@@ -46,16 +55,32 @@ namespace rawrbox {
 		static uint64_t _frame;
 		static Stats _stats;
 
-		static Bucket& bucket(const rawrbox::Colorf& color, bool line, bool onTop);
+		// BATCHES ----
+		static std::vector<std::unique_ptr<rawrbox::DebugBatch>> _pool;
+		static std::vector<size_t> _free;
+		static std::array<Diligent::IPipelineState*, 4> _pipeCache;
+		// ------------
+
+		static Bucket& bucket(const rawrbox::Colorf& color, bool line, bool depthTest);
 		static void drawBuckets();
+
+		static Diligent::IPipelineState* overlayPipeline(bool line, bool depthTest);
+		static size_t acquire();
+
+		// HASHING ----
+		static void hashBits(uint64_t& hash, uint64_t value);
+		static void hashFloat(uint64_t& hash, float value);
+		static uint64_t hashPoints(const std::vector<rawrbox::Vector3f>& points);
+		// ------------
 
 	public:
 		static void shutdown();
 
-		static void line(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Colorf& color, bool onTop = false);
-		static void triangle(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Vector3f& c, const rawrbox::Colorf& color, bool onTop = false);
-		static void quad(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Vector3f& c, const rawrbox::Vector3f& d, const rawrbox::Colorf& color, bool onTop = false);
-		static void aabb(const rawrbox::Vector3f& min, const rawrbox::Vector3f& max, const rawrbox::Colorf& color, bool onTop = false);
+		static void line(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Colorf& color, bool depthTest = true);
+		static void triangle(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Vector3f& c, const rawrbox::Colorf& color, bool depthTest = true);
+		static void quad(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Vector3f& c, const rawrbox::Vector3f& d, const rawrbox::Colorf& color, bool depthTest = true);
+		static void aabb(const rawrbox::Vector3f& min, const rawrbox::Vector3f& max, const rawrbox::Colorf& color, bool depthTest = true);
+		static void bbox(const rawrbox::Vector3f& pos, const rawrbox::BBOXf& box, const rawrbox::Colorf& color, bool depthTest = true); // Local mesh bbox (mesh.getBBOX()) at pos
 
 		// Call inside PASS_WORLD
 		static void draw();

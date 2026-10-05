@@ -30,8 +30,6 @@ CPMAddPackage(
         glfw/glfw
         GIT_TAG
         3.4
-        PATCHES
-        ${CMAKE_CURRENT_SOURCE_DIR}/patch/glfw-transparency.patch
         OPTIONS
         ${GLFW_PLATFORM_OPTIONS}
         "GLFW_BUILD_DOCS OFF"
@@ -53,8 +51,6 @@ CPMAddPackage(
         #    git restore Graphics/HLSL2GLSLConverterLib/src/HLSL2GLSLConverterImpl.cpp
         #COMMAND
         #    git restore Graphics/GraphicsEngineVulkan/src/VulkanUtilities/VulkanInstance.cpp
-        PATCHES
-        ${CMAKE_CURRENT_SOURCE_DIR}/patch/diligent-transparency.patch
         OPTIONS
         "DILIGENT_NO_RENDER_STATE_PACKAGER ON"
         "DILIGENT_NO_FORMAT_VALIDATION ON"

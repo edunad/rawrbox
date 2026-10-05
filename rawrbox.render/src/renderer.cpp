@@ -31,6 +31,7 @@
 #include <rawrbox/render/textures/webp.hpp>
 #include <rawrbox/render/utils/barrier.hpp>
 #include <rawrbox/render/utils/render.hpp>
+#include <rawrbox/render/utils/swapchain.hpp>
 #include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/threading.hpp>
 
@@ -83,6 +84,9 @@ namespace rawrbox {
 		// -----------------------
 
 		// Initialize engine -----
+		if (this->_transparent && this->_type != Diligent::RENDER_DEVICE_TYPE_D3D12)
+			this->_logger->warn("Transparent window buffer is only supported on D3D12");
+
 		switch (this->_type) {
 #if RAWRBOX_SUPPORT_DX12
 			case Diligent::RENDER_DEVICE_TYPE_D3D12:
@@ -113,7 +117,12 @@ namespace rawrbox {
 					}
 
 					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
-					pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc(false), this->_window, &this->_swapChain);
+
+					if (this->_transparent) {
+						rawrbox::SwapChainUtils::create(this->_device, this->_context, SCDesc, this->_window, &this->_swapChain);
+					} else {
+						pFactoryD3D12->CreateSwapChainD3D12(this->_device, this->_context, SCDesc, Diligent::FullScreenModeDesc(false), this->_window, &this->_swapChain);
+					}
 				}
 				break;
 #endif // D3D12_SUPPORTED
@@ -682,6 +691,12 @@ namespace rawrbox {
 
 	bool RendererBase::getVSync() const { return this->_vsync; }
 	void RendererBase::setVSync(bool vsync) { this->_vsync = vsync; }
+
+	bool RendererBase::isTransparent() const { return this->_transparent; }
+	void RendererBase::setTransparent(bool transparent) {
+		if (this->_initialized) RAWRBOX_CRITICAL("'setTransparent' must be called before 'init'!");
+		this->_transparent = transparent;
+	}
 
 	void RendererBase::gpuPick(const rawrbox::Vector2i& pos, const std::function<void(uint32_t)>& callback) {
 		if (rawrbox::MAIN_CAMERA == nullptr) RAWRBOX_CRITICAL("Main camera not initialized");
