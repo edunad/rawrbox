@@ -83,15 +83,13 @@ namespace rawrbox {
 			return cache[idx];
 		}
 
-		// Slots returned by evicted buckets. The DebugBatch object (and its GPU buffers) stays
-		// alive for reuse — only the slot is recycled.
-		std::vector<size_t>& freeSlots() {
+		std::vector<size_t>& free() {
 			static std::vector<size_t> slots = {};
 			return slots;
 		}
 
-		size_t acquireSlot() {
-			auto& free = freeSlots();
+		size_t acquire() {
+			auto& free = free();
 			if (!free.empty()) {
 				const size_t slot = free.back();
 				free.pop_back();
@@ -140,7 +138,7 @@ namespace rawrbox {
 
 	void DebugDraw::shutdown() {
 		batchPool().clear();
-		freeSlots().clear();
+		free().clear();
 
 		pipeCache().fill(nullptr);
 		_buckets.clear();
@@ -212,7 +210,7 @@ namespace rawrbox {
 			// CLEANUP -----
 			if (bucket.points.empty()) {
 				if (bucket.batch != NO_BATCH && _frame - bucket.lastFrame > IDLE_REMOVE_FRAMES) {
-					freeSlots().push_back(bucket.batch);
+					free().push_back(bucket.batch);
 					it = _buckets.erase(it);
 					continue;
 				}
@@ -223,7 +221,7 @@ namespace rawrbox {
 			// --------------
 
 			bucket.lastFrame = _frame;
-			if (bucket.batch == NO_BATCH) bucket.batch = acquireSlot();
+			if (bucket.batch == NO_BATCH) bucket.batch = acquire();
 
 			auto& batch = *pool[bucket.batch];
 			const uint64_t hash = hashPoints(bucket.points);
