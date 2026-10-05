@@ -48,13 +48,13 @@ float RadialAttenuation(float3 L, float range) {
 float GetAttenuation(Light light, float3 worldPosition, out float3 L) {
 	float attenuation = 1.0f;
 
-	L = light.position.xyz - worldPosition;
+	L = light.position - worldPosition;
 	attenuation *= RadialAttenuation(L, light.radius);
 
 	if (light.type == LIGHT_SPOT) {
-		attenuation *= DirectionalSpotAttenuation(L, light.direction.xyz, cos(light.umbra), cos(light.penumbra));
+		attenuation *= DirectionalSpotAttenuation(L, light.direction, light.cosUmbra, light.cosPenumbra);
 	} else if (light.type == LIGHT_DIRECTIONAL) {
-		attenuation = DirectionalAttenuation(L, light.direction.xyz);
+		attenuation = DirectionalAttenuation(L, light.direction);
 	}
 
 	float distSq = dot(L, L);
@@ -203,9 +203,10 @@ void ApplyLight(uint lightBucket, uint bucketIndex, inout LightResult lighting, 
 
 		if (attenuation > 0.0F) {
 			LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
-
-			lighting.Diffuse += result.Diffuse * light.color * light.intensity;
-			lighting.Specular += result.Specular * light.color * light.intensity;
+			float3 radiance = GetLightRadiance(light);
+			
+			lighting.Diffuse += result.Diffuse * radiance;
+			lighting.Specular += result.Specular * radiance;
 		}
 		// ------------------------
 	}

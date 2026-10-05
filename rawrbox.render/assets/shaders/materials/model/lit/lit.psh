@@ -4,6 +4,7 @@
 #include "light_uniforms.fxh"
 #include "math.fxh"
 #include "pixel_bindless_uniforms.fxh"
+#include "unpack.fxh"
 
 #define READ_LIGHTS
 #define READ_DECALS
@@ -19,16 +20,14 @@ SamplerState g_Sampler;
 
 struct PSInput {
 	float4 Pos : SV_POSITION;
-	float4 WorldPos : POSITION1;
+	float3 WorldPos : POSITION1;
 
-	float4 Normal : NORMAL;
+	float3 Normal : NORMAL;
 	float4 Tangent : TANGENT;
 
 	float2 UV : TEX_COORD;
-	float4 Color : COLOR0;
 
-	nointerpolation float4 GPUId : COLOR1;
-	nointerpolation uint TexIndex : TEX_ARRAY_INDEX;
+	nointerpolation uint3 Data : DATA; // Color (RGBA8) + GPU id (ABGR8) + texture
 };
 
 struct PSOutput {
@@ -58,7 +57,10 @@ float3 TangentSpaceNormalMapping(float3 sampledNormal, float3x3 TBN) {
 }
 
 void main(in PSInput PSIn, out PSOutput PSOut) {
-	float4 baseColor = g_Textures[BaseID].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+	float4 vertColor = Unpack_RGBA8_UNORM(PSIn.Data.x);
+	uint texIndex = PSIn.Data.z;
+
+	float4 baseColor = g_Textures[BaseID].Sample(g_Sampler, float3(PSIn.UV, texIndex)) * vertColor;
 
 	// Remove alpha ----
 	clip(baseColor.a - AlphaCutoff);
@@ -66,13 +68,14 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
 	if (TOTAL_DECALS != 0 || TOTAL_LIGHTS != 0) {
 		// NORMAL -----
-		float3 normalTS = g_Textures[NormalID].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)).rgb;
-		float3x3 TBN = CreateTangentToWorld(PSIn.Normal.xyz, float4(PSIn.Tangent.xyz, PSIn.Tangent.w));
+		float3 normalTS = g_Textures[NormalID].Sample(g_Sampler, float3(PSIn.UV, texIndex)).rgb;
+		float3x3 TBN = CreateTangentToWorld(PSIn.Normal, PSIn.Tangent);
 		float3 normal = TangentSpaceNormalMapping(normalTS, TBN);
 		// -------------
 
 		// ROUGHT / METAL -----
-		float2 roughtMetalTS = g_Textures[RoughtMetalID].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)).bg;
+		float2 roughtMetalTS = g_Textures[RoughtMetalID].Sample(g_Sampler, float3(PSIn.UV, texIndex)).bg;
+
 		float metal = MetalnessFactor;
 		float rough = RoughnessFactor;
 
@@ -82,10 +85,10 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 		}
 		// -------------
 
-		float4 emissionTS = g_Textures[EmissionID].Sample(g_Sampler, float3(PSIn.UV, PSIn.TexIndex)) * PSIn.Color;
+		float4 emissionTS = g_Textures[EmissionID].Sample(g_Sampler, float3(PSIn.UV, texIndex)) * vertColor;
 
 		// LIGHT ------
-		float3 V = normalize(Camera.pos - PSIn.WorldPos.xyz);
+		float3 V = normalize(Camera.pos - PSIn.WorldPos);
 		float dither = InterleavedGradientNoise(PSIn.Pos.xy);
 
 		// Apply compute data ----
@@ -93,8 +96,8 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 		uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
 		uint gridOffset = tileIndex * CLUSTERED_NUM_BUCKETS;
 
-		float3 ddxPos = ddx(PSIn.WorldPos.xyz);
-		float3 ddyPos = ddy(PSIn.WorldPos.xyz);
+		float3 ddxPos = ddx(PSIn.WorldPos);
+		float3 ddyPos = ddy(PSIn.WorldPos);
 
 		LightResult result = (LightResult)0;
 		for (uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
@@ -102,14 +105,14 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
 			// Apply decals ---
 			float4 roughtness = 0; // TODO
-			ApplyDecals(buckets.decals, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, baseColor, roughtness);
+			ApplyDecals(buckets.decals, bucketIndex, float4(PSIn.WorldPos, 1.0), ddxPos, ddyPos, baseColor, roughtness);
 			// ----------------
 
 			// Apply light ---
 			float3 diffuse = ComputeDiffuseColor(baseColor.rgb, metal);
 			float3 specular = ComputeF0(SpecularFactor, baseColor.rgb, metal);
 
-			ApplyLight(buckets.lights, bucketIndex, result, specular, rough, diffuse, normal, V, PSIn.WorldPos.xyz, dither);
+			ApplyLight(buckets.lights, bucketIndex, result, specular, rough, diffuse, normal, V, PSIn.WorldPos, dither);
 			// ----------------
 		}
 		// ----------------
@@ -126,6 +129,7 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	}
 
 	// GPU PICKING -----
-	PSOut.GPUPick = float4(PSIn.GPUId.rgb, all(PSIn.GPUId.rgb) ? 0. : 1.);
+	float4 gpuId = Unpack_ABGR8_UNORM(PSIn.Data.y);
+	PSOut.GPUPick = float4(gpuId.rgb, all(gpuId.rgb) ? 0. : 1.);
 	// -----------------
 }

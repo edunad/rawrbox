@@ -1,6 +1,8 @@
 #ifndef INCLUDED_LIGHT_UNIFORMS
 #define INCLUDED_LIGHT_UNIFORMS
 
+#include "unpack.fxh"
+
 struct LightConstantsStruct {
 	// Light ---------
 	uint4 lightSettings;
@@ -14,20 +16,23 @@ struct LightConstantsStruct {
 ConstantBuffer<LightConstantsStruct> LightConstants;
 
 struct Light {
-	float4 position;
-	float4 direction;
-
-	float3 color;
-	float intensity;
-
-	// -------
+	float3 position;
 	float radius;
-	float penumbra;
-	float umbra;
 
+	float3 direction;
 	uint type;
-	// -------
+
+    // SPOT LIGHT ----
+	float cosUmbra;
+	float cosPenumbra;
+	// ----------------
+
+	uint2 radiance; // RGB16F, color * intensity
 };
+
+float3 GetLightRadiance(Light light) {
+	return float3(Unpack_RG16_FLOAT(light.radiance.x), f16tof32(light.radiance.y & 0xFFFFu));
+}
 
 // Aka sun
 struct DirectionalLight {

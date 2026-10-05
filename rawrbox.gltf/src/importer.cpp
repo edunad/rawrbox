@@ -780,7 +780,7 @@ namespace rawrbox {
 		if (normalAttribute != nullptr && normalAttribute != primitive.attributes.end()) {
 			const auto& normalAccessor = scene.accessors[normalAttribute->accessorIndex];
 			fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, normalAccessor, [&](fastgltf::math::fvec3 normal, std::size_t idx) {
-				verts[idx].normal = rawrbox::PackUtils::packNormal(normal.x(), normal.y(), normal.z());
+				verts[idx].normal = rawrbox::PackUtils::packOCTNormal(normal.x(), normal.y(), normal.z());
 			});
 		}
 		// ------------
@@ -794,7 +794,7 @@ namespace rawrbox {
 			fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec4>(
 			    scene, tangentAccessor,
 			    [&](const fastgltf::math::fvec4& tangent, std::size_t idx) {
-				    verts[idx].tangent = rawrbox::PackUtils::packNormal(tangent.x(), tangent.y(), tangent.z(), tangent.w() > 0.0F ? 1.0F : -1.0F);
+				    verts[idx].tangent = rawrbox::PackUtils::packOCTTangent(tangent.x(), tangent.y(), tangent.z(), tangent.w() >= 0.0F ? 1.0F : -1.0F);
 			    });
 		}
 		// calculate tangent using

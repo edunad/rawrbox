@@ -57,4 +57,44 @@ TEST_CASE("Pack utils should behave as expected", "[rawrbox::Pack]") {
 		REQUIRE(weights[2] == 0);
 		REQUIRE(weights[3] == 65535); // Clamped
 	}
+
+	SECTION("rawrbox::packOctNormal") {
+		const std::array<std::array<float, 3>, 6> normals = {{
+		    {0.F, 1.F, 0.F},
+		    {0.F, 0.F, -1.F},
+		    {0.57735F, -0.57735F, 0.57735F},
+		    {-0.26726F, 0.53452F, -0.80178F},
+		    {1.F, 0.F, 0.F},
+		    {-0.70711F, 0.F, -0.70711F},
+		}};
+
+		for (const auto& n : normals) {
+			auto unpacked = rawrbox::PackUtils::fromOCTNormal(rawrbox::PackUtils::packOCTNormal(n[0], n[1], n[2]));
+
+			REQUIRE_THAT(unpacked[0], Catch::Matchers::WithinAbs(n[0], 0.0005F));
+			REQUIRE_THAT(unpacked[1], Catch::Matchers::WithinAbs(n[1], 0.0005F));
+			REQUIRE_THAT(unpacked[2], Catch::Matchers::WithinAbs(n[2], 0.0005F));
+		}
+
+		auto zero = rawrbox::PackUtils::fromOCTNormal(rawrbox::PackUtils::packOCTNormal(0.F, 0.F, 0.F));
+		REQUIRE_THAT(zero[2], Catch::Matchers::WithinAbs(1.F, 0.0005F));
+	}
+
+	SECTION("rawrbox::packOctTangent") {
+		auto positive = rawrbox::PackUtils::fromOCTTangent(rawrbox::PackUtils::packOCTTangent(0.57735F, -0.57735F, -0.57735F, 1.F));
+
+		REQUIRE_THAT(positive[0], Catch::Matchers::WithinAbs(0.57735F, 0.001F));
+		REQUIRE_THAT(positive[1], Catch::Matchers::WithinAbs(-0.57735F, 0.001F));
+		REQUIRE_THAT(positive[2], Catch::Matchers::WithinAbs(-0.57735F, 0.001F));
+
+		REQUIRE(positive[3] == 1.F);
+
+		auto negative = rawrbox::PackUtils::fromOCTTangent(rawrbox::PackUtils::packOCTTangent(1.F, 0.F, 0.F, -1.F));
+
+		REQUIRE_THAT(negative[0], Catch::Matchers::WithinAbs(1.F, 0.001F));
+		REQUIRE_THAT(negative[1], Catch::Matchers::WithinAbs(0.F, 0.001F));
+		REQUIRE_THAT(negative[2], Catch::Matchers::WithinAbs(0.F, 0.001F));
+
+		REQUIRE(negative[3] == -1.F);
+	}
 }

@@ -115,8 +115,10 @@ namespace rawrbox {
 				// Apply normal ----
 				if constexpr (supportsNormals<typename M::vertexBufferType>) {
 					for (size_t i = 0; i < blendNormals.size(); i++) {
-						rawrbox::Vector4f unpacked = rawrbox::Vector4f(rawrbox::PackUtils::fromNormal(this->_original_data[i].normal)).lerp(blendNormals[i], step); // meh
-						verts[i].normal = rawrbox::PackUtils::packNormal(unpacked.x, unpacked.y, unpacked.z);
+						const auto original = rawrbox::PackUtils::fromOCTNormal(this->_original_data[i].normal);
+						const auto blended = rawrbox::Vector3f(original[0], original[1], original[2]).lerp(blendNormals[i].xyz(), step);
+
+						verts[i].normal = rawrbox::PackUtils::packOCTNormal(blended.x, blended.y, blended.z);
 					}
 				}
 				// -------------------

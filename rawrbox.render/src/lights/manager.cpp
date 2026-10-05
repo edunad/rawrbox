@@ -1,8 +1,11 @@
 
 #include <rawrbox/math/utils/math.hpp>
+#include <rawrbox/math/utils/pack.hpp>
 #include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/lights/manager.hpp>
 #include <rawrbox/render/plugins/clustered.hpp>
+
+#include <cmath>
 
 namespace rawrbox {
 	// PRIVATE ----
@@ -105,22 +108,21 @@ namespace rawrbox {
 			rawrbox::LightDataVertex light = {};
 
 			light.position = l->getWorldPos();
-			light.position.w = 1.F;
-
-			light.color = l->getColor().rgb();
-			light.intensity = l->getIntensity();
+			light.radius = l->getRadius();
 
 			light.direction = l->getDirection();
-			light.direction.w = 1.F;
-
-			light.radius = l->getRadius();
 			light.type = l->getType();
+
+			const auto radiance = l->getColor().rgb() * l->getIntensity();
+			light.radiance = {
+			    static_cast<uint32_t>(rawrbox::PackUtils::toFP16(radiance.x)) | (static_cast<uint32_t>(rawrbox::PackUtils::toFP16(radiance.y)) << 16U),
+			    static_cast<uint32_t>(rawrbox::PackUtils::toFP16(radiance.z))};
 
 			if (light.type == rawrbox::LightType::SPOT) {
 				auto data = l->getData();
 
-				light.penumbra = rawrbox::MathUtils::toRad(data.x) / 2.F;
-				light.umbra = rawrbox::MathUtils::toRad(data.y) / 2.F;
+				light.cosPenumbra = std::cos(rawrbox::MathUtils::toRad(data.x) / 2.F);
+				light.cosUmbra = std::cos(rawrbox::MathUtils::toRad(data.y) / 2.F);
 			}
 
 			lights.push_back(light);

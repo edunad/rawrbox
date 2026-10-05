@@ -6,19 +6,23 @@
 
 #include <DynamicBuffer.hpp>
 
+#include <array>
+
 namespace rawrbox {
 
 	struct LightDataVertex {
-		rawrbox::Vector4f position = {};
-		rawrbox::Vector4f direction = {};
-		rawrbox::Vector3f color = {};
-		float intensity = 1.F;
-
+		rawrbox::Vector3f position = {};
 		float radius = 0.F;
-		float penumbra = 0.F;
-		float umbra = 0.F;
 
+		rawrbox::Vector3f direction = {};
 		rawrbox::LightType type = rawrbox::LightType::UNKNOWN;
+
+		// SPOT LIGHT ONLY
+		float cosUmbra = 0.F;
+		float cosPenumbra = 0.F;
+		// ---------------
+		
+		std::array<uint32_t, 2> radiance = {};
 	};
 
 	struct LightConstants {
