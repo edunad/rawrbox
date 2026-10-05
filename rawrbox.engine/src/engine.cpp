@@ -27,11 +27,11 @@ namespace rawrbox {
 			if (timer == nullptr) return false;
 
 			LARGE_INTEGER due = {};
-
 			due.QuadPart = -static_cast<LONGLONG>(seconds * 1e7);
-			if (due.QuadPart >= 0) return true;
 
+			if (due.QuadPart >= 0) return true;
 			if (SetWaitableTimer(timer, &due, 0, nullptr, nullptr, FALSE) == FALSE) return false;
+
 			WaitForSingleObject(timer, INFINITE);
 
 			return true;
