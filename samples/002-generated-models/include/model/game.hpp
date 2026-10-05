@@ -6,7 +6,6 @@
 #include <rawrbox/render/models/spline.hpp>
 #include <rawrbox/render/models/text3D.hpp>
 
-#include <chrono>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -26,15 +25,6 @@ namespace model {
 		bool _ready = false;
 		bool _debugDraw = true;
 
-		// DEBUG DRAW STRESS ----
-		bool _stress = true; // TEMP: baseline measurement
-		std::chrono::steady_clock::time_point _startTime = std::chrono::steady_clock::now();
-
-		double _debugTimeAccum = 0.0;
-		uint32_t _debugFrames = 0;
-		double _debugAvgMs = 0.0;
-		// ----------------------
-
 		// Engine setup ---
 		void setupGLFW() override;
 		void init() override;
@@ -50,8 +40,6 @@ namespace model {
 		void createSprite();
 		void createText();
 		void createDynamic();
-
-		void drawDebugStress();
 
 		void loadContent();
 		void contentLoaded();

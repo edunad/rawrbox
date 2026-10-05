@@ -1,90 +1,53 @@
 #pragma once
 
 #include <rawrbox/math/bbox.hpp>
-#include <rawrbox/render/materials/unlit.hpp>
-#include <rawrbox/render/models/base.hpp>
+#include <rawrbox/math/color.hpp>
+#include <rawrbox/math/vector3.hpp>
+
+#include <RefCntAutoPtr.hpp>
+
+#include <Buffer.h>
+#include <PipelineState.h>
 
 #include <array>
-#include <map>
-#include <memory>
+#include <cstdint>
 #include <vector>
 
 namespace rawrbox {
-	class DebugBatch : public rawrbox::ModelBase<rawrbox::MaterialUnlit> {
-	public:
-		void rebuild(const std::vector<rawrbox::Vector3f>& points, const rawrbox::Colorf& color);
-		void drawBatch(Diligent::IPipelineState* pipe);
+	struct DebugVertex {
+		rawrbox::Vector3f pos = {};
+		uint32_t color = 0; // Packed RGBA8
 	};
 
 	class DebugDraw {
-	public:
-		struct Stats {
-			size_t buckets = 0;
-			size_t points = 0;
-			size_t uploads = 0;
-			size_t drawCalls = 0;
-		};
 
 	protected:
-		static constexpr size_t NO_BATCH = static_cast<size_t>(-1);
-		static constexpr uint64_t IDLE_REMOVE_FRAMES = 600;
+		static constexpr size_t MIN_BUFFER_VERTICES = 4096;
 
-		struct BucketKey {
-			bool depthTest = false;
-			bool line = false;
+		static std::array<std::vector<rawrbox::DebugVertex>, 4> _queues;
+		static std::array<Diligent::IPipelineState*, 4> _pipelines;
 
-			uint32_t rgba = 0;
-			auto operator<=>(const BucketKey&) const = default;
-		};
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _buffer;
+		static size_t _bufferVertices;
 
-		struct Bucket {
-			rawrbox::Colorf color = {};
-			std::vector<rawrbox::Vector3f> points = {};
+		static size_t queueIndex(bool line, bool depthTest);
+		static void push(size_t queue, const rawrbox::Vector3f& pos, uint32_t color);
 
-			uint64_t hash = 0; // Check if rebuilding needs done
-
-			size_t batch = NO_BATCH;
-			uint64_t lastFrame = 0;
-		};
-
-		static std::map<BucketKey, Bucket> _buckets;
-
-		static BucketKey _lastKey;
-		static Bucket* _lastBucket;
-
-		static uint64_t _frame;
-		static Stats _stats;
-
-		// BATCHES ----
-		static std::vector<std::unique_ptr<rawrbox::DebugBatch>> _pool;
-		static std::vector<size_t> _free;
-		static std::array<Diligent::IPipelineState*, 4> _pipeCache;
-		// ------------
-
-		static Bucket& bucket(const rawrbox::Colorf& color, bool line, bool depthTest);
-		static void drawBuckets();
-
-		static Diligent::IPipelineState* overlayPipeline(bool line, bool depthTest);
-		static size_t acquire();
-
-		// HASHING ----
-		static void hashBits(uint64_t& hash, uint64_t value);
-		static void hashFloat(uint64_t& hash, float value);
-		static uint64_t hashPoints(const std::vector<rawrbox::Vector3f>& points);
-		// ------------
+		static void createPipelines();
+		static void ensureBuffer(size_t vertices);
 
 	public:
 		static void shutdown();
 
+		// UTILS ----
 		static void line(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Colorf& color, bool depthTest = true);
 		static void triangle(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Vector3f& c, const rawrbox::Colorf& color, bool depthTest = true);
 		static void quad(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Vector3f& c, const rawrbox::Vector3f& d, const rawrbox::Colorf& color, bool depthTest = true);
 		static void aabb(const rawrbox::Vector3f& min, const rawrbox::Vector3f& max, const rawrbox::Colorf& color, bool depthTest = true);
-		static void bbox(const rawrbox::Vector3f& pos, const rawrbox::BBOXf& box, const rawrbox::Colorf& color, bool depthTest = true); // Local mesh bbox (mesh.getBBOX()) at pos
+		static void bbox(const rawrbox::Vector3f& pos, const rawrbox::BBOXf& box, const rawrbox::Colorf& color, bool depthTest = true);
+		// ----------
 
 		// Call inside PASS_WORLD
 		static void draw();
-
-		[[nodiscard]] static const Stats& stats();
 	};
 } // namespace rawrbox

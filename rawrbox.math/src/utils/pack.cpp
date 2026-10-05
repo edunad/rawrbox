@@ -46,6 +46,24 @@ namespace rawrbox {
 		return {round(x, 2), round(y, 2), round(z, 2), round(w, 2)};
 	}
 
+	std::array<uint8_t, 4> PackUtils::packBoneIndices(const std::array<uint32_t, 4>& indices) {
+		std::array<uint8_t, 4> ret = {};
+		for (size_t i = 0; i < ret.size(); i++) {
+			ret[i] = static_cast<uint8_t>(indices[i]);
+		}
+
+		return ret;
+	}
+
+	std::array<uint16_t, 4> PackUtils::packBoneWeights(const std::array<float, 4>& weights) {
+		std::array<uint16_t, 4> ret = {};
+		for (size_t i = 0; i < ret.size(); i++) {
+			ret[i] = static_cast<uint16_t>(PackUtils::toUnorm(weights[i], 65535.F));
+		}
+
+		return ret;
+	}
+
 	uint32_t PackUtils::toUnorm(float _value, float _scale) {
 		return uint32_t(std::round(std::clamp(_value, 0.0F, 1.0F) * _scale));
 	}
@@ -161,14 +179,14 @@ namespace rawrbox {
 	}
 
 	std::array<float, 4> PackUtils::fromABGR(uint32_t val) {
-		return {((val)&0xFF) / 255.0F, ((val >> 8) & 0xFF) / 255.0F, ((val >> 16) & 0xFF) / 255.0F, ((val >> 24) & 0xFF) / 255.0F};
+		return {((val) & 0xFF) / 255.0F, ((val >> 8) & 0xFF) / 255.0F, ((val >> 16) & 0xFF) / 255.0F, ((val >> 24) & 0xFF) / 255.0F};
 	}
 
 	std::array<float, 4> PackUtils::fromRGBA(uint32_t val) {
 		uint8_t r = (val >> 24) & 0xFF;
 		uint8_t g = (val >> 16) & 0xFF;
 		uint8_t b = (val >> 8) & 0xFF;
-		uint8_t a = (val)&0xFF;
+		uint8_t a = (val) & 0xFF;
 
 		return {
 		    r / 255.0F, // Red

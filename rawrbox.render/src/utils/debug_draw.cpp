@@ -1,170 +1,113 @@
 
+#include <rawrbox/render/bindless.hpp>
+#include <rawrbox/render/cameras/base.hpp>
+#include <rawrbox/render/render_config.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/barrier.hpp>
 #include <rawrbox/render/utils/debug_draw.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
-#include <bit>
+#include <MapHelper.hpp>
 
 namespace rawrbox {
-	// DEBUG BATCH ----
-	void DebugBatch::rebuild(const std::vector<rawrbox::Vector3f>& points, const rawrbox::Colorf& color) {
-		auto& verts = this->_mesh->vertices;
-		auto& inds = this->_mesh->indices;
-
-		verts.clear();
-		verts.reserve(points.size());
-
-		inds.clear();
-		inds.reserve(points.size());
-
-		for (size_t i = 0; i < points.size(); i++) {
-			verts.emplace_back(points[i], rawrbox::Vector2f(0.5F, 0.5F));
-			inds.push_back(static_cast<uint32_t>(i));
-		}
-
-		this->_mesh->setColor(color);
-		this->_mesh->setTexture(rawrbox::WHITE_TEXTURE.get());
-
-		if (!this->isUploaded()) {
-			this->upload(rawrbox::UploadType::RESIZABLE_DYNAMIC);
-		} else {
-			this->updateBuffers();
-		}
-	}
-
-	void DebugBatch::drawBatch(Diligent::IPipelineState* pipe) {
-		if (this->_mesh->indices.empty() || pipe == nullptr) return;
-
-		rawrbox::ModelBase<rawrbox::MaterialUnlit>::draw();
-
-		auto* context = rawrbox::RENDERER->context();
-		auto& mesh = *this->_mesh;
-
-		context->SetPipelineState(pipe);
-
-		this->_material->bindVertexUniforms(mesh);
-		this->_material->bindVertexSkinnedUniforms(mesh);
-		this->_material->bindPixelUniforms(mesh);
-
-		rawrbox::MAIN_CAMERA->setModelTransform(mesh.getMatrix());
-
-		Diligent::DrawIndexedAttribs attrs;
-		attrs.IndexType = Diligent::VT_UINT32;
-		attrs.FirstIndexLocation = 0;
-		attrs.BaseVertex = 0;
-		attrs.NumIndices = static_cast<uint32_t>(mesh.indices.size());
-		attrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL;
-
-		context->DrawIndexed(attrs);
-	}
-	// ----------------
+	static_assert(sizeof(rawrbox::DebugVertex) == 16, "DebugVertex must stay tightly packed (pos + RGBA8)");
 
 	// STATIC DATA ----
-	std::map<DebugDraw::BucketKey, DebugDraw::Bucket> DebugDraw::_buckets = {};
+	std::array<std::vector<rawrbox::DebugVertex>, 4> DebugDraw::_queues = {};
+	std::array<Diligent::IPipelineState*, 4> DebugDraw::_pipelines = {};
 
-	DebugDraw::BucketKey DebugDraw::_lastKey = {};
-	DebugDraw::Bucket* DebugDraw::_lastBucket = nullptr;
-
-	uint64_t DebugDraw::_frame = 0;
-	DebugDraw::Stats DebugDraw::_stats = {};
-
-	std::vector<std::unique_ptr<rawrbox::DebugBatch>> DebugDraw::_pool = {};
-	std::vector<size_t> DebugDraw::_free = {};
-	std::array<Diligent::IPipelineState*, 4> DebugDraw::_pipeCache = {};
+	Diligent::RefCntAutoPtr<Diligent::IBuffer> DebugDraw::_buffer;
+	size_t DebugDraw::_bufferVertices = 0;
 	// ----------------
 
 	// PRIVATE ----
-	Diligent::IPipelineState* DebugDraw::overlayPipeline(bool line, bool depthTest) {
-		const size_t idx = (depthTest ? 0U : 2U) | (line ? 1U : 0U);
+	size_t DebugDraw::queueIndex(bool line, bool depthTest) {
+		return (depthTest ? 0U : 2U) | (line ? 1U : 0U);
+	}
 
-		if (_pipeCache[idx] == nullptr) {
-			const std::string name = std::string("Model::Unlit::") + (depthTest ? "Overlay" : "NoDepth") + (line ? "::Line" : "");
-			_pipeCache[idx] = rawrbox::PipelineUtils::getPipeline(name);
+	void DebugDraw::push(size_t queue, const rawrbox::Vector3f& pos, uint32_t color) {
+		_queues[queue].push_back({pos, color});
+	}
+
+	void DebugDraw::createPipelines() {
+		rawrbox::PipeSettings settings;
+
+		settings.pVS = "debug_draw.vsh";
+		settings.pPS = "debug_draw.psh";
+
+		settings.cull = Diligent::CULL_MODE_NONE;
+		settings.renderTargets = RB_RENDER_RENDER_TARGET_TARGETS;    // COLOR + GPUPick
+		settings.signatures = {rawrbox::BindlessManager::signature}; // Camera
+		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+		settings.depthWrite = false;
+
+		settings.layout = {
+		    Diligent::LayoutElement{0, 0, 3, Diligent::VT_FLOAT32, false},
+		    Diligent::LayoutElement{1, 0, 1, Diligent::VT_UINT32, false}};
+
+		for (size_t i = 0; i < _pipelines.size(); i++) {
+			const bool line = (i & 1U) != 0;
+			const bool depthTest = (i & 2U) == 0;
+
+			settings.topology = line ? Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST : Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+			settings.depth = depthTest ? Diligent::COMPARISON_FUNC_LESS : Diligent::COMPARISON_FUNC_ALWAYS;
+
+			const std::string name = std::string("DebugDraw::") + (depthTest ? "Depth" : "NoDepth") + (line ? "::Line" : "");
+			_pipelines[i] = rawrbox::PipelineUtils::createPipeline(name, settings);
+		}
+	}
+
+	void DebugDraw::ensureBuffer(size_t vertices) {
+		if (_buffer != nullptr && vertices <= _bufferVertices) return;
+
+		size_t size = std::max(MIN_BUFFER_VERTICES, _bufferVertices);
+		while (size < vertices) {
+			size *= 2;
 		}
 
-		return _pipeCache[idx];
+		RAWRBOX_DESTROY(_buffer);
+
+		Diligent::BufferDesc desc;
+		desc.Name = "RawrBox::Buffer::DebugDraw";
+		desc.Usage = Diligent::USAGE_DYNAMIC;
+		desc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+		desc.BindFlags = Diligent::BIND_VERTEX_BUFFER;
+		desc.Size = static_cast<uint64_t>(size * sizeof(rawrbox::DebugVertex));
+
+		rawrbox::RENDERER->device()->CreateBuffer(desc, nullptr, &_buffer);
+		if (_buffer == nullptr) RAWRBOX_CRITICAL("Failed to create debug draw buffer");
+
+		rawrbox::BarrierUtils::barrier({{_buffer, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		_bufferVertices = size;
 	}
-
-	size_t DebugDraw::acquire() {
-		if (!_free.empty()) {
-			const size_t slot = _free.back();
-			_free.pop_back();
-			return slot;
-		}
-
-		_pool.push_back(std::make_unique<rawrbox::DebugBatch>());
-		return _pool.size() - 1;
-	}
-
-	void DebugDraw::hashBits(uint64_t& hash, uint64_t value) {
-		static constexpr uint64_t FNV_PRIME = 1099511628211ULL;
-		hash ^= value;
-		hash *= FNV_PRIME;
-	}
-
-	void DebugDraw::hashFloat(uint64_t& hash, float value) {
-		hashBits(hash, std::bit_cast<uint32_t>(value));
-	}
-
-	uint64_t DebugDraw::hashPoints(const std::vector<rawrbox::Vector3f>& points) {
-		static constexpr uint64_t FNV_OFFSET = 14695981039346656037ULL;
-		uint64_t hash = FNV_OFFSET;
-
-		for (const auto& point : points) {
-			hashFloat(hash, point.x);
-			hashFloat(hash, point.y);
-			hashFloat(hash, point.z);
-		}
-
-		return hash == 0 ? 1 : hash;
-	}
-	//------------
-
-	const DebugDraw::Stats& DebugDraw::stats() { return _stats; }
+	// ------------
 
 	void DebugDraw::shutdown() {
-		_pool.clear();
-		_free.clear();
+		for (auto& queue : _queues) {
+			queue = {};
+		}
 
-		_pipeCache.fill(nullptr);
-		_buckets.clear();
+		RAWRBOX_DESTROY(_buffer);
 
-		_lastBucket = nullptr;
-		_lastKey = {};
-
-		_frame = 0;
-	}
-
-	DebugDraw::Bucket& DebugDraw::bucket(const rawrbox::Colorf& color, bool line, bool depthTest) {
-		BucketKey key = {};
-
-		key.rgba = color.pack();
-		key.line = line;
-		key.depthTest = depthTest;
-
-		if (_lastBucket != nullptr && _lastKey == key) return *_lastBucket;
-
-		auto& bucket = _buckets[key];
-		bucket.color = color;
-
-		_lastKey = key;
-		_lastBucket = &bucket;
-
-		return bucket;
+		_pipelines = {};
+		_bufferVertices = 0;
 	}
 
 	void DebugDraw::line(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Colorf& color, bool depthTest) {
-		auto& b0 = bucket(color, true, depthTest);
-		b0.points.push_back(a);
-		b0.points.push_back(b);
+		const size_t queue = queueIndex(true, depthTest);
+		const uint32_t packed = color.pack();
+
+		push(queue, a, packed);
+		push(queue, b, packed);
 	}
 
 	void DebugDraw::triangle(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Vector3f& c, const rawrbox::Colorf& color, bool depthTest) {
-		auto& b0 = bucket(color, false, depthTest);
+		const size_t queue = queueIndex(false, depthTest);
+		const uint32_t packed = color.pack();
 
-		b0.points.push_back(a);
-		b0.points.push_back(b);
-		b0.points.push_back(c);
+		push(queue, a, packed);
+		push(queue, b, packed);
+		push(queue, c, packed);
 	}
 
 	void DebugDraw::quad(const rawrbox::Vector3f& a, const rawrbox::Vector3f& b, const rawrbox::Vector3f& c, const rawrbox::Vector3f& d, const rawrbox::Colorf& color, bool depthTest) {
@@ -178,8 +121,13 @@ namespace rawrbox {
 		    {min.x, max.y, min.z}, {max.x, max.y, min.z}, {max.x, max.y, max.z}, {min.x, max.y, max.z}};
 
 		constexpr std::array<std::pair<int, int>, 12> EDGES = {{{0, 1}, {1, 2}, {2, 3}, {3, 0}, {4, 5}, {5, 6}, {6, 7}, {7, 4}, {0, 4}, {1, 5}, {2, 6}, {3, 7}}};
+
+		const size_t queue = queueIndex(true, depthTest);
+		const uint32_t packed = color.pack();
+
 		for (const auto& [i, j] : EDGES) {
-			line(corners[i], corners[j], color, depthTest);
+			push(queue, corners[i], packed);
+			push(queue, corners[j], packed);
 		}
 	}
 
@@ -187,53 +135,55 @@ namespace rawrbox {
 		aabb(pos + box.min, pos + box.max, color, depthTest);
 	}
 
-	void DebugDraw::drawBuckets() {
-		_frame++;
-
-		_stats = {};
-		_lastBucket = nullptr;
-
-		for (auto it = _buckets.begin(); it != _buckets.end();) {
-			auto& key = it->first;
-			auto& bucket = it->second;
-
-			// CLEANUP -----
-			if (bucket.points.empty()) {
-				if (bucket.batch != NO_BATCH && _frame - bucket.lastFrame > IDLE_REMOVE_FRAMES) {
-					_free.push_back(bucket.batch);
-					it = _buckets.erase(it);
-					continue;
-				}
-
-				++it;
-				continue;
-			}
-			// --------------
-
-			bucket.lastFrame = _frame;
-			if (bucket.batch == NO_BATCH) bucket.batch = acquire();
-
-			auto& batch = *_pool[bucket.batch];
-			const uint64_t hash = hashPoints(bucket.points);
-			if (hash != bucket.hash) {
-				batch.rebuild(bucket.points, bucket.color);
-				bucket.hash = hash;
-
-				_stats.uploads++;
-			}
-
-			batch.drawBatch(overlayPipeline(key.line, key.depthTest));
-
-			_stats.buckets++;
-			_stats.points += bucket.points.size();
-			_stats.drawCalls++;
-
-			bucket.points.clear();
-			++it;
-		}
-	}
-
 	void DebugDraw::draw() {
-		DebugDraw::drawBuckets();
+		size_t total = 0;
+		for (const auto& queue : _queues) {
+			total += queue.size();
+		}
+
+		if (total == 0) return;
+		if (rawrbox::MAIN_CAMERA == nullptr) RAWRBOX_CRITICAL("Main camera not initialized");
+
+		auto* context = rawrbox::RENDERER->context();
+		if (_pipelines[0] == nullptr) createPipelines();
+		ensureBuffer(total);
+
+		// Upload ----
+		std::array<uint32_t, 4> offsets = {};
+		{
+			Diligent::MapHelper<rawrbox::DebugVertex> data(context, _buffer, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
+			if (data == nullptr) RAWRBOX_CRITICAL("Failed to map debug draw buffer");
+			rawrbox::DebugVertex* dst = data;
+
+			size_t offset = 0;
+			for (size_t i = 0; i < _queues.size(); i++) {
+				offsets[i] = static_cast<uint32_t>(offset);
+				if (_queues[i].empty()) continue;
+
+				std::memcpy(dst + offset, _queues[i].data(), _queues[i].size() * sizeof(rawrbox::DebugVertex));
+				offset += _queues[i].size();
+			}
+		}
+		// ---------------------------------
+
+		rawrbox::MAIN_CAMERA->setModelTransform({});
+
+		std::array<Diligent::IBuffer*, 1> buffers = {_buffer};
+		context->SetVertexBuffers(0, 1, buffers.data(), nullptr, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+
+		for (size_t i = 0; i < _queues.size(); i++) {
+			if (_queues[i].empty()) continue;
+
+			context->SetPipelineState(_pipelines[i]);
+
+			Diligent::DrawAttribs attrs;
+			attrs.NumVertices = static_cast<uint32_t>(_queues[i].size());
+			attrs.StartVertexLocation = offsets[i];
+
+			context->Draw(attrs);
+		}
+
+		for (auto& queue : _queues)
+			queue.clear();
 	}
 } // namespace rawrbox

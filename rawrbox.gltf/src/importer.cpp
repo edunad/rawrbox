@@ -820,11 +820,18 @@ namespace rawrbox {
 				const auto& weightAccessor = scene.accessors[weightIt->accessorIndex];
 
 				fastgltf::iterateAccessorWithIndex<fastgltf::math::uvec4>(scene, jointAccessor, [&](fastgltf::math::uvec4 joints, std::size_t idx) {
-					verts[idx].bone_indices = {joints.x(), joints.y(), joints.z(), joints.w()};
+					const std::array<uint32_t, RB_MAX_BONES_PER_VERTEX> indices = {joints.x(), joints.y(), joints.z(), joints.w()};
+
+					for (auto joint : indices) {
+						if (joint >= RB_RENDER_MAX_BONES_PER_MODEL)
+							RAWRBOX_CRITICAL("Joint index {} exceeds the max bones per model ({})", joint, RB_RENDER_MAX_BONES_PER_MODEL);
+					}
+
+					verts[idx].bone_indices = rawrbox::PackUtils::packBoneIndices(indices);
 				});
 
 				fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec4>(scene, weightAccessor, [&](fastgltf::math::fvec4 weights, std::size_t idx) {
-					verts[idx].bone_weights = {weights.x(), weights.y(), weights.z(), weights.w()};
+					verts[idx].bone_weights = rawrbox::PackUtils::packBoneWeights({weights.x(), weights.y(), weights.z(), weights.w()});
 				});
 			}
 		}

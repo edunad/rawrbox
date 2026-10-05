@@ -1,0 +1,14 @@
+struct PSInput {
+	float4 Pos : SV_POSITION;
+	float4 Color : COLOR0;
+};
+
+struct PSOutput {
+	float4 Color : SV_TARGET0;
+	float4 GPUPick : SV_TARGET1;
+};
+
+void main(in PSInput PSIn, out PSOutput PSOut) {
+	PSOut.Color = PSIn.Color;
+	PSOut.GPUPick = float4(0., 0., 0., 0.);
+}

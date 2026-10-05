@@ -46,4 +46,15 @@ TEST_CASE("Pack utils should behave as expected", "[rawrbox::Pack]") {
 		auto unpacked_2 = rawrbox::PackUtils::toRGBA(static_cast<uint8_t>(0), static_cast<uint8_t>(0), static_cast<uint8_t>(1), static_cast<uint8_t>(255));
 		REQUIRE(unpacked_2 == id);
 	}
+
+	SECTION("rawrbox::packBones") {
+		auto indices = rawrbox::PackUtils::packBoneIndices({0, 3, 149, 255});
+		REQUIRE(indices == std::array<uint8_t, 4>{0, 3, 149, 255});
+
+		auto weights = rawrbox::PackUtils::packBoneWeights({1.F, 0.5F, 0.F, 2.F}); // 0 -> 1 max
+		REQUIRE(weights[0] == 65535);
+		REQUIRE(weights[1] == 32768);
+		REQUIRE(weights[2] == 0);
+		REQUIRE(weights[3] == 65535); // Clamped
+	}
 }

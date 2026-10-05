@@ -30,5 +30,10 @@ namespace rawrbox {
 		static std::array<float, 4> fromABGR(uint32_t val);
 		static std::array<float, 4> fromRGBA(uint32_t val);
 		static std::array<float, 4> fromRGB(uint32_t val);
+
+		// BONES ---
+		static std::array<uint8_t, 4> packBoneIndices(const std::array<uint32_t, 4>& indices);
+		static std::array<uint16_t, 4> packBoneWeights(const std::array<float, 4>& weights);
+		// ---------
 	};
 } // namespace rawrbox
