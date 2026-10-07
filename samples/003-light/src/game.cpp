@@ -57,8 +57,10 @@ namespace light {
 
 		// BINDS ----
 		window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
-			if (!this->_ready || action != rawrbox::KEY_ACTION_UP || key != rawrbox::KEY_F1) return;
-			rawrbox::LIGHTS::setEnabled(!rawrbox::LIGHTS::isEnabled());
+			if (!this->_ready || action != rawrbox::KEY_ACTION_UP) return;
+
+			if (key == rawrbox::KEY_F1) rawrbox::LIGHTS::setEnabled(!rawrbox::LIGHTS::isEnabled());
+			if (key == rawrbox::KEY_F2) rawrbox::LIGHTS::setDebug(!rawrbox::LIGHTS::isDebug());
 		};
 		// -----
 
@@ -150,9 +152,9 @@ namespace light {
 		// ------
 
 		// Light test ----------
-		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue() * 50, 1.2F);
-		rawrbox::LIGHTS::add<rawrbox::SpotLight>(rawrbox::Vector3f{3.5F, 1.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Purple() * 50, 20.F, 40.F, 4.F);
-		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0.2F, 0.2F, 0}, rawrbox::Colors::Orange() * 50, 1.F);
+		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue() * 200.F, 1.2F);
+		rawrbox::LIGHTS::add<rawrbox::SpotLight>(rawrbox::Vector3f{3.5F, 1.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Purple() * 200.F, 20.F, 40.F, 4.F);
+		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0.2F, 0.2F, 0}, rawrbox::Colors::Orange() * 200.F, 1.F);
 
 		rawrbox::LIGHTS::add<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White()); // SUN
 		// -------------------
@@ -225,6 +227,7 @@ namespace light {
 		auto* stencil = rawrbox::RENDERER->stencil();
 
 		stencil->drawText(fmt::format("[F1]   FULLBRIGHT: {}", !rawrbox::LIGHTS::isEnabled()), {15, 15});
+		stencil->drawText(fmt::format("[F2]   DEBUG BINS: {}", rawrbox::LIGHTS::isDebug()), {15, 30});
 	}
 
 	void Game::draw() {

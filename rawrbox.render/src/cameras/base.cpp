@@ -1,8 +1,8 @@
 
 #include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/cameras/base.hpp>
-#include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/barrier.hpp>
 
 namespace rawrbox {
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> CameraBase::staticUniforms;
@@ -90,13 +90,6 @@ namespace rawrbox {
 		data.gProjectionInv = rawrbox::Matrix4x4::mtxInverse(data.gProjection);
 		data.gViewport = {this->getZNear(), this->getZFar(), screenSize.x, screenSize.y}; // TODO: Support screen re-scaling, make this dynamic buffer then
 
-		float nearZ = this->getZNear();
-		float farZ = this->getZFar();
-		auto gLightClustersNumZz = static_cast<float>(RB_RENDER_CLUSTERS_Z);
-
-		data.gGridParams = {
-		    gLightClustersNumZz / std::log(farZ / nearZ),
-		    (gLightClustersNumZz * std::log(nearZ)) / std::log(farZ / nearZ)};
 		return data;
 	}
 

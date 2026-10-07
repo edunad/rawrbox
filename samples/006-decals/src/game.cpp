@@ -144,8 +144,8 @@ namespace decal_test {
 
 		this->generateDecals();
 
-		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, -1.F}, rawrbox::Colors::White() * 4.5F, 5.F);
-		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, 1.F}, rawrbox::Colors::White() * 4.5F, 5.F);
+		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, -1.F}, rawrbox::Colors::White() * 5.F, 5.F);
+		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, 1.F}, rawrbox::Colors::White() * 5.F, 5.F);
 
 		this->_ready = true;
 	}

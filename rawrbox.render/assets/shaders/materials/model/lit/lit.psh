@@ -1,4 +1,6 @@
 #include "camera.fxh"
+#include "colormap.fxh"
+#include "correction.fxh"
 #include "decal_uniforms.fxh"
 #include "defines.fxh"
 #include "light_uniforms.fxh"
@@ -8,8 +10,8 @@
 
 #define READ_LIGHTS
 #define READ_DECALS
-#define READ_CLUSTER_DATA_GRID
-#include "cluster.fxh"
+#define READ_TILES
+#include "binning.fxh"
 
 Texture2DArray g_Textures[];
 SamplerState g_Sampler;
@@ -43,6 +45,22 @@ float3x3 CreateTangentToWorld(float3 normal, float4 tangent) {
 	return TBN;
 }
 
+// DEBUG -----
+#define DEBUG_MAX_LIGHTS 32.0
+
+// Heatmap
+float3 GetLightDebugColor(float2 pixel, uint tileIndex, uint zbin) {
+	uint2 range = UnpackZBin(LightZBins[zbin]);
+	uint count = 0;
+
+	for (uint bin = range.x / BIN_BITS; bin <= range.y / BIN_BITS; ++bin) {
+		count += countbits(LightTiles[tileIndex * LIGHT_BINS + bin] & GetBinMask(bin, range));
+	}
+
+	return count == 0 ? float3(0.02, 0.02, 0.02) : turboColormap(saturate(float(count) / DEBUG_MAX_LIGHTS));
+}
+// -----------
+
 // Unpacks a 2 channel BC5 normal to xyz
 float3 UnpackBC5Normal(float2 packedNormal) {
 	return float3(packedNormal, sqrt(1 - saturate(dot(packedNormal.xy, packedNormal.xy))));
@@ -66,8 +84,11 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	clip(baseColor.a - AlphaCutoff);
 	// -------------
 
-	if (TOTAL_DECALS != 0 || TOTAL_LIGHTS != 0) {
-		uint gridOffset = GetClusterGridOffset(PSIn.Pos);
+	if (LIGHT_DEBUG != 0) {
+		PSOut.Color = float4(GetLightDebugColor(PSIn.Pos.xy, GetTileIndex(PSIn.Pos.xy), GetZBin(PSIn.Pos.w)), 1.0);
+	} else if (TOTAL_DECALS != 0 || TOTAL_LIGHTS != 0) {
+		uint tileIndex = GetTileIndex(PSIn.Pos.xy);
+		uint zbin = GetZBin(PSIn.Pos.w);
 
 		// DECALS -----
 		if (TOTAL_DECALS != 0) {
@@ -75,10 +96,11 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 			float3 ddyPos = ddy(PSIn.WorldPos);
 
 			float4 roughtness = 0; // TODO
-			uint decalBuckets = GetClusterBucketCount(TOTAL_DECALS);
+			uint2 range = UnpackZBin(DecalZBins[zbin]);
 
-			for (uint bucketIndex = 0; bucketIndex < decalBuckets; ++bucketIndex) {
-				ApplyDecals(ClusterDataGrid[gridOffset + bucketIndex].decals, bucketIndex, float4(PSIn.WorldPos, 1.0), ddxPos, ddyPos, baseColor, roughtness);
+			for (uint bin = range.x / BIN_BITS; bin <= range.y / BIN_BITS; ++bin) {
+				uint mask = DecalTiles[tileIndex * DECAL_BINS + bin] & GetBinMask(bin, range);
+				ApplyDecals(mask, bin, float4(PSIn.WorldPos, 1.0), ddxPos, ddyPos, baseColor, roughtness);
 			}
 		}
 		// -------------
@@ -103,9 +125,15 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
 		float4 emissionTS = g_Textures[EmissionID].Sample(g_Sampler, float3(PSIn.UV, texIndex)) * vertColor;
 
+		// LINEAR ------
+		// Textures + colors -> sRGB
+		float3 albedo = toLinear(baseColor.rgb);
+		float3 emission = toLinear(emissionTS.rgb);
+		// -------------
+
 		// LIGHT ------
-		float3 diffuse = ComputeDiffuseColor(baseColor.rgb, metal);
-		float3 specular = ComputeF0(SpecularFactor, baseColor.rgb, metal);
+		float3 diffuse = ComputeDiffuseColor(albedo, metal);
+		float3 specular = ComputeF0(SpecularFactor, albedo, metal);
 
 		LightResult result = (LightResult)0;
 
@@ -115,9 +143,16 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 			float3 V = normalize(Camera.pos - PSIn.WorldPos);
 			float dither = InterleavedGradientNoise(PSIn.Pos.xy);
 
-			uint lightBuckets = GetClusterBucketCount(TOTAL_LIGHTS);
-			for (uint bucketIndex = 0; bucketIndex < lightBuckets; ++bucketIndex) {
-				ApplyLight(ClusterDataGrid[gridOffset + bucketIndex].lights, bucketIndex, result, specular, rough, diffuse, normal, V, PSIn.WorldPos, dither);
+			// Directional ----
+			for (uint index = 0; index < TOTAL_DIRECTIONAL_LIGHTS; ++index) {
+				ApplyLight(index, result, specular, rough, diffuse, normal, V, PSIn.WorldPos, dither);
+			}
+			// -------------------------
+
+			uint2 range = UnpackZBin(LightZBins[zbin]);
+			for (uint bin = range.x / BIN_BITS; bin <= range.y / BIN_BITS; ++bin) {
+				uint mask = LightTiles[tileIndex * LIGHT_BINS + bin] & GetBinMask(bin, range);
+				ApplyLights(mask, bin, result, specular, rough, diffuse, normal, V, PSIn.WorldPos, dither);
 			}
 
 			result.Diffuse += diffuse * LightConstants.ambientColor.rgb; // AMBIENT
@@ -126,10 +161,10 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 
 		float3 outRadiance = 0;
 		outRadiance += result.Diffuse + result.Specular;
-		outRadiance += emissionTS.rgb * EmissionFactor;
+		outRadiance += emission * EmissionFactor;
 		// ------------
 
-		PSOut.Color.rgb = outRadiance;
+		PSOut.Color.rgb = toSRGB(saturate(outRadiance));
 		PSOut.Color.a = baseColor.a;
 	} else {
 		PSOut.Color = baseColor;

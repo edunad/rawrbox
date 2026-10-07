@@ -660,6 +660,13 @@ namespace rawrbox {
 	void RendererBase::setActiveCamera(rawrbox::CameraBase* camera) const { rawrbox::MAIN_CAMERA = camera; }
 	rawrbox::CameraBase* RendererBase::getActiveCamera() const { return rawrbox::MAIN_CAMERA; }
 
+	rawrbox::CameraBase* RendererBase::getCamera(size_t indx) const {
+		if (indx >= this->_cameras.size()) return nullptr;
+		return this->_cameras[indx].get();
+	}
+
+	size_t RendererBase::totalCameras() const { return this->_cameras.size(); }
+
 	rawrbox::Stencil* RendererBase::stencil() const { return this->_stencil.get(); }
 
 	Diligent::IDeviceContext* RendererBase::context() const { return this->_context; }

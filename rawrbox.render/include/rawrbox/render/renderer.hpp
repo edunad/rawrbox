@@ -174,6 +174,9 @@ namespace rawrbox {
 
 		virtual void setActiveCamera(rawrbox::CameraBase* camera) const;
 		[[nodiscard]] virtual rawrbox::CameraBase* getActiveCamera() const;
+
+		[[nodiscard]] virtual rawrbox::CameraBase* getCamera(size_t indx) const;
+		[[nodiscard]] virtual size_t totalCameras() const;
 		// ----------------
 
 		// Utils ----

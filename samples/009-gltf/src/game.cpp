@@ -63,7 +63,7 @@ namespace gltf {
 
 	void Game::loadContent() {
 		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
-		    {"./assets/models/ps1_phasmophobia/scene.glb", rawrbox::GLTFLoadFlags::IMPORT_TEXTURES | rawrbox::GLTFLoadFlags::IMPORT_LIGHT | rawrbox::GLTFLoadFlags::Optimizer::MESH},
+		    {"./assets/models/ps1_phasmophobia/scene.glb", rawrbox::GLTFLoadFlags::IMPORT_TEXTURES | rawrbox::GLTFLoadFlags::IMPORT_LIGHT | rawrbox::GLTFLoadFlags::Optimizer::MESH_OPTIMIZE},
 		    {"./assets/models/shape_keys/shape_keys.glb", rawrbox::GLTFLoadFlags::CALCULATE_BBOX | rawrbox::GLTFLoadFlags::IMPORT_TEXTURES | rawrbox::GLTFLoadFlags::IMPORT_BLEND_SHAPES | rawrbox::GLTFLoadFlags::Debug::PRINT_BLENDSHAPES},
 		    {"./assets/models/wolf/wolf.glb", rawrbox::GLTFLoadFlags::IMPORT_TEXTURES | rawrbox::GLTFLoadFlags::IMPORT_ANIMATIONS | rawrbox::GLTFLoadFlags::Optimizer::SKELETON_ANIMATIONS | rawrbox::GLTFLoadFlags::Debug::PRINT_ANIMATIONS},
 		    {"./assets/models/anim_test.glb", rawrbox::GLTFLoadFlags::IMPORT_ANIMATIONS},
@@ -180,8 +180,8 @@ namespace gltf {
 		this->_bbox->upload();
 
 		// LIGHT ----
-		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{-1, 1.6F, -1.4F}, rawrbox::Colors::White() * 100, 1.6F);
-		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{-1, 0.6F, -1.4F}, rawrbox::Colors::White() * 100, 1.6F);
+		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{-1, 1.6F, -1.4F}, rawrbox::Colors::White() * 25.F, 1.6F);
+		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{-1, 0.6F, -1.4F}, rawrbox::Colors::White() * 25.F, 1.6F);
 		// -----------
 
 		// ANIM TEST ---

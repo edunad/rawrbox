@@ -255,8 +255,19 @@ namespace rawrbox {
 			// -----------
 
 			// TRANSPARENCY ----
-			mat->alphaCutoff = material.alphaCutoff;
-			mat->transparent = material.alphaMode != fastgltf::AlphaMode::Opaque;
+			switch (material.alphaMode) {
+				case fastgltf::AlphaMode::Mask:
+					mat->alphaCutoff = material.alphaCutoff;
+					break;
+				case fastgltf::AlphaMode::Blend:
+					mat->alphaCutoff = 0.0039F;
+					break;
+				default: // OPAQUE
+					mat->alphaCutoff = 0.F;
+					break;
+			}
+
+			mat->transparent = material.alphaMode == fastgltf::AlphaMode::Blend;
 			// ---------
 
 			// Texture Loading ---
@@ -270,7 +281,7 @@ namespace rawrbox {
 				mat->diffuse = rawrbox::WHITE_TEXTURE.get();
 			}
 
-			mat->baseColor = rawrbox::Colorf(material.pbrData.baseColorFactor.x(), material.pbrData.baseColorFactor.y(), material.pbrData.baseColorFactor.z(), alpha);
+			mat->baseColor = rawrbox::Colorf(material.pbrData.baseColorFactor.x(), material.pbrData.baseColorFactor.y(), material.pbrData.baseColorFactor.z(), alpha).toSRGB();
 			// ----
 
 			// METALIC ---
@@ -722,13 +733,22 @@ namespace rawrbox {
 			// -----------
 
 			// OPTIMIZATION ---
-			if ((this->loadFlags & rawrbox::GLTFLoadFlags::Optimizer::MESH) > 0) {
+			const bool meshOptimize = (this->loadFlags & rawrbox::GLTFLoadFlags::Optimizer::MESH_OPTIMIZE) > 0;
+			const bool meshSimplify = (this->loadFlags & rawrbox::GLTFLoadFlags::Optimizer::MESH_SIMPLIFY) > 0;
+
+			if (meshOptimize || meshSimplify) {
 				if (rawrPrimitive.blendShapes.empty()) {
 					auto startVert = rawrPrimitive.vertices.size();
 					auto startInd = rawrPrimitive.indices.size();
 
-					rawrbox::MeshOptimization::optimize(rawrPrimitive.vertices, rawrPrimitive.indices);
-					rawrbox::MeshOptimization::simplify(rawrPrimitive.vertices, rawrPrimitive.indices);
+					if (meshOptimize) {
+						const bool transparent = rawrPrimitive.material != nullptr && rawrPrimitive.material->transparent;
+						rawrbox::MeshOptimization::optimize(rawrPrimitive.vertices, rawrPrimitive.indices, !transparent);
+					}
+
+					if (meshSimplify) {
+						rawrbox::MeshOptimization::simplify(rawrPrimitive.vertices, rawrPrimitive.indices);
+					}
 
 					if ((this->loadFlags & rawrbox::GLTFLoadFlags::Debug::PRINT_OPTIMIZATION_STATS) > 0) {
 						if (startVert != rawrPrimitive.vertices.size() || startInd != rawrPrimitive.indices.size()) {

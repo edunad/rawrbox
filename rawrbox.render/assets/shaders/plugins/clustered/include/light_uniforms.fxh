@@ -27,23 +27,30 @@ struct Light {
 	float cosPenumbra;
 	// ----------------
 
-	uint2 radiance; // RGB16F, color * intensity
+	uint2 radiance; // RGB16F, linear -> color * intensity
 };
 
 float3 GetLightRadiance(Light light) {
 	return float3(Unpack_RG16_FLOAT(light.radiance.x), f16tof32(light.radiance.y & 0xFFFFu));
 }
 
-// Aka sun
-struct DirectionalLight {
-	float4 direction;
-	float4 radiance;
-};
-
 #define LIGHT_POINT       1
 #define LIGHT_SPOT        2
 #define LIGHT_DIRECTIONAL 3
 
-#define FULL_BRIGHT  LightConstants.lightSettings.x
-#define TOTAL_LIGHTS LightConstants.lightSettings.y
+#define LIGHT_TYPE_MASK    0x3u
+#define LIGHT_SHADOW_SHIFT 2u
+
+uint GetLightType(Light light) {
+	return light.type & LIGHT_TYPE_MASK;
+}
+
+uint GetLightShadow(Light light) {
+	return light.type >> LIGHT_SHADOW_SHIFT;
+}
+
+#define FULL_BRIGHT              LightConstants.lightSettings.x
+#define TOTAL_LIGHTS             LightConstants.lightSettings.y
+#define TOTAL_DIRECTIONAL_LIGHTS LightConstants.lightSettings.z
+#define LIGHT_DEBUG              LightConstants.lightSettings.w
 #endif

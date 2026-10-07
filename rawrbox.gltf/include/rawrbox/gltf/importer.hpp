@@ -1,6 +1,8 @@
 #pragma once
 
 #include <rawrbox/math/bbox.hpp>
+#include <rawrbox/math/pi.hpp>
+#include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/lights/types.hpp>
 #include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/utils/logger.hpp>
@@ -21,6 +23,7 @@ namespace rawrbox {
 	// NOLINTBEGIN(unused-const-variable)
 	namespace GLTFLoadFlags {
 		const uint32_t NONE = 0;
+		
 		const uint32_t IMPORT_LIGHT = 1 << 1;
 		const uint32_t IMPORT_TEXTURES = 1 << 2;
 		const uint32_t IMPORT_ANIMATIONS = 1 << 3;
@@ -37,8 +40,10 @@ namespace rawrbox {
 		} // namespace Debug
 
 		namespace Optimizer {
-			const uint32_t MESH = 1 << 20;
-			const uint32_t SKELETON_ANIMATIONS = 1 << 21;
+			const uint32_t MESH_OPTIMIZE = 1 << 20;
+			const uint32_t MESH_SIMPLIFY = 1 << 21;
+
+			const uint32_t SKELETON_ANIMATIONS = 1 << 22;
 		} // namespace Optimizer
 
 	}; // namespace GLTFLoadFlags
@@ -116,15 +121,15 @@ namespace rawrbox {
 		float radius = 0.F;
 
 		GLTFLight(size_t idx, const fastgltf::Node& node, const fastgltf::Light& light) : rawrbox::GLTFNode(idx, node) {
-			this->color = rawrbox::Colorf(light.color.x(), light.color.y(), light.color.z(), 1.0F);
+			this->color = rawrbox::Colorf(light.color.x(), light.color.y(), light.color.z(), 1.0F).toSRGB(); // KHR_lights_punctual colors are linear, light colors are sRGB
 			this->radius = light.range.value_or(10.F);
 
-			this->intensity = light.intensity / 12.F; // ???
-			this->angleInnerCone = light.innerConeAngle.value_or(0.F);
-			this->angleOuterCone = light.outerConeAngle.value_or(0.F);
+			this->intensity = light.intensity / 683.F;
+			this->angleInnerCone = rawrbox::MathUtils::toDeg(light.innerConeAngle.value_or(0.F)) * 2.F;
+			this->angleOuterCone = rawrbox::MathUtils::toDeg(light.outerConeAngle.value_or(rawrbox::pi<float> / 4.F)) * 2.F;
 
 			this->pos = this->matrix.getPos();
-			this->direction = this->matrix.getForward();
+			this->direction = -this->matrix.getForward(); // KHR_lights_punctual inverted z
 
 			if (node.meshIndex) this->parent = node.meshIndex.value();
 

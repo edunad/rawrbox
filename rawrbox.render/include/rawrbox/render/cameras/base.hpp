@@ -22,10 +22,9 @@ namespace rawrbox {
 		rawrbox::Matrix4x4 gProjectionInv = {};
 
 		rawrbox::Vector4f gViewport = {};
-		rawrbox::Vector2f gGridParams = {};
 
 		bool operator==(const CameraStaticUniforms& other) const {
-			return this->gProjection == other.gProjection && this->gProjectionInv == other.gProjectionInv && this->gViewport == other.gViewport && this->gGridParams == other.gGridParams;
+			return this->gProjection == other.gProjection && this->gProjectionInv == other.gProjectionInv && this->gViewport == other.gViewport;
 		}
 
 		bool operator!=(const CameraStaticUniforms& other) const { return !operator==(other); }

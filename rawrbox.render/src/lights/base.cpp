@@ -1,7 +1,7 @@
 #include <rawrbox/render/lights/manager.hpp>
 
 namespace rawrbox {
-	LightBase::LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius) : _pos(pos), _color(color), _radius(radius){};
+	LightBase::LightBase(const rawrbox::Vector3f& pos, const rawrbox::Colorf& color, float radius) : _pos(pos), _color(color), _radius(radius) {};
 
 	rawrbox::Colorf LightBase::getColor() const { return this->_color; }
 	void LightBase::setColor(const rawrbox::Colorf& col) {
@@ -61,9 +61,12 @@ namespace rawrbox {
 
 	const rawrbox::Vector3f& LightBase::getDirection() const { return this->_direction; };
 	void LightBase::setDirection(const rawrbox::Vector3f& dir) {
-		if (this->_direction == dir) return;
+		const float length = dir.length();
+		
+		const auto direction = length > 0.F ? dir / length : dir;
+		if (this->_direction == direction) return;
 
-		this->_direction = dir;
+		this->_direction = direction;
 		rawrbox::__LIGHT_DIRTY__ = true;
 	}
 

@@ -1,6 +1,6 @@
 #ifdef INCLUDED_DECAL_UNIFORMS
 	#ifdef READ_DECALS
-		#ifdef READ_CLUSTER_DATA_GRID
+		#ifdef READ_TILES
 
 			#ifndef INCLUDED_DECALS
 				#define INCLUDED_DECALS
@@ -9,16 +9,15 @@ Decal GetDecal(uint index) {
 	return Decals[NonUniformResourceIndex(index)];
 }
 
-void ApplyDecals(uint decalBucket, uint bucketIndex, float4 worldPosition, float3 ddxPos, float3 ddyPos, inout float4 baseColor, inout float4 roughtness) {
-	uint bucket = decalBucket;
+void ApplyDecals(uint mask, uint bin, float4 worldPosition, float3 ddxPos, float3 ddyPos, inout float4 baseColor, inout float4 roughtness) {
 	if (TOTAL_DECALS == 0) return;
 
-	while (bucket) {
-		uint bitIndex = firstbitlow(bucket);
-		bucket ^= 1u << bitIndex;
+	while (mask) {
+		uint bitIndex = firstbitlow(mask);
+		mask ^= 1u << bitIndex;
 
 		// Apply decal ------------
-		uint index = bitIndex + bucketIndex * CLUSTER_BUCKET_SIZE;
+		uint index = bitIndex + bin * BIN_BITS;
 		if (index >= TOTAL_DECALS) break;
 
 		Decal decal = GetDecal(index);

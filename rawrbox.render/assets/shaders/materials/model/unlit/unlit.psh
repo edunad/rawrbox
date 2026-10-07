@@ -7,8 +7,8 @@
 	#include "decal_uniforms.fxh"
 
 	#define READ_DECALS
-	#define READ_CLUSTER_DATA_GRID
-	#include "cluster.fxh"
+	#define READ_TILES
+	#include "binning.fxh"
 #endif
 
 Texture2DArray g_Textures[];
@@ -49,16 +49,16 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	// Apply decals ----
 	#ifdef CLUSTER_PLUGIN
 		if (TOTAL_DECALS != 0) {
-			uint gridOffset = GetClusterGridOffset(PSIn.Pos);
+			uint tileIndex = GetTileIndex(PSIn.Pos.xy);
+			uint2 range = UnpackZBin(DecalZBins[GetZBin(PSIn.Pos.w)]);
 
 			float3 ddxPos = ddx(PSIn.WorldPos.xyz);
 			float3 ddyPos = ddy(PSIn.WorldPos.xyz);
 
 			float4 roughtness = 0;
-			uint decalBuckets = GetClusterBucketCount(TOTAL_DECALS);
-
-			for (uint bucketIndex = 0; bucketIndex < decalBuckets; ++bucketIndex) {
-				ApplyDecals(ClusterDataGrid[gridOffset + bucketIndex].decals, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, color, roughtness);
+			for (uint bin = range.x / BIN_BITS; bin <= range.y / BIN_BITS; ++bin) {
+				uint mask = DecalTiles[tileIndex * DECAL_BINS + bin] & GetBinMask(bin, range);
+				ApplyDecals(mask, bin, PSIn.WorldPos, ddxPos, ddyPos, color, roughtness);
 			}
 		}
 	#endif
