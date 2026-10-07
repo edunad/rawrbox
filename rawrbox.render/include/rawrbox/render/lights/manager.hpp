@@ -3,31 +3,41 @@
 #include <rawrbox/math/vector3.hpp>
 #include <rawrbox/render/lights/base.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/clustered.hpp>
 
-#include <DynamicBuffer.hpp>
+#include <RefCntAutoPtr.hpp>
+
+#include <Buffer.h>
+
+#include <array>
 
 namespace rawrbox {
-
+	class CameraBase;
 	struct LightDataVertex {
-		rawrbox::Vector4f position = {};
-		rawrbox::Vector4f direction = {};
-		rawrbox::Vector3f color = {};
-		float intensity = 1.F;
-
+		rawrbox::Vector3f position = {};
 		float radius = 0.F;
-		float penumbra = 0.F;
-		float umbra = 0.F;
 
-		rawrbox::LightType type = rawrbox::LightType::UNKNOWN;
+		rawrbox::Vector3f direction = {};
+		uint32_t type = 0;
+
+		// SPOT LIGHT ONLY
+		float cosUmbra = 0.F;
+		float cosPenumbra = 0.F;
+		// ---------------
+
+		std::array<uint32_t, 2> radiance = {};
+
+		static constexpr uint32_t TYPE_MASK = 0x3U;
+		static constexpr uint32_t SHADOW_SHIFT = 2U; // TODO: shadow
 	};
 
 	struct LightConstants {
-		// Light ---------
+		// Light (x = enabled, y = total, z = directional, w = debug) ---------
 		rawrbox::Vector4u lightSettings = {1U, 0U, 0U, 0U};
 		// ------
 
 		// Ambient ---
-		rawrbox::Colorf ambientColor = {0.01F, 0.01F, 0.01F, 1.F};
+		rawrbox::Colorf ambientColor = {0.1F, 0.1F, 0.1F, 1.F};
 		// -----
 	};
 
@@ -36,19 +46,44 @@ namespace rawrbox {
 		static std::vector<std::shared_ptr<rawrbox::LightBase>> _lights;
 		static rawrbox::LightConstants _settings;
 
-		static std::unique_ptr<Diligent::DynamicBuffer> _buffer;
+		// BINNING ---
+		static std::vector<rawrbox::LightDataVertex> _data;
+		static std::vector<rawrbox::LightDataVertex> _sorted; // Directional -> then sorted by view depth
+
+		static std::vector<rawrbox::Vector4f> _viewBounds;
+		static std::vector<rawrbox::Vector4f> _bounds;
+
+		static std::vector<rawrbox::ZBinEntry> _entries;
+		static std::vector<uint32_t> _zbins;
+
+		static rawrbox::Matrix4x4 _zbinView;
+		static rawrbox::Vector2f _zbinNearFar;
+		// -----------
+
+		// BUFFERS ---
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _buffer;
 		static Diligent::IBufferView* _bufferRead;
 
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _zbinBuffer;
+		static Diligent::IBufferView* _zbinBufferRead;
+
+		static Diligent::RefCntAutoPtr<Diligent::IBuffer> _boundsBuffer;
+		static Diligent::IBufferView* _boundsBufferRead;
+		// -----------
+
+		static bool _BINS_DIRTY;
 		static bool _CONSTANTS_DIRTY;
+		static bool _BINNED;
 
 		// LOGGER ------
 		static std::unique_ptr<rawrbox::Logger> _logger;
 		// -------------
 
-		static void createDataBuffer();
+		static void updateData();
+		static bool updateBins(const rawrbox::CameraBase& camera);
 
 		static void updateConstants();
-		static void updateBuffer();
+		static rawrbox::LightConstants getGPUConstants();
 
 	public:
 		static Diligent::RefCntAutoPtr<Diligent::IBuffer> uniforms;
@@ -56,16 +91,26 @@ namespace rawrbox {
 		static void init();
 		static void shutdown();
 
-		static void update();
+		static bool update(const rawrbox::CameraBase& camera, bool binned = true);
 
 		// UTILS ----
 		static void setEnabled(bool enabled);
 		static bool isEnabled();
 
+		static void setDebug(bool enabled);
+		static bool isDebug();
+
 		static rawrbox::LightBase* getLight(size_t indx);
+
 		static size_t count();
+		static size_t active();
 
 		static Diligent::IBufferView* getBuffer();
+		static Diligent::IBufferView* getZBinBuffer();
+		static Diligent::IBufferView* getBoundsBuffer();
+
+		static rawrbox::Vector4f getBounds(const rawrbox::LightDataVertex& light);
+		// ----------
 
 		// AMBIENT
 		static void setAmbient(const rawrbox::Colorf& col);

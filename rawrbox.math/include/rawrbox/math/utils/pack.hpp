@@ -12,6 +12,11 @@ namespace rawrbox {
 		static int32_t toSnorm(float _value, float _scale);
 		static float fromSnorm(int32_t _value, float _scale);
 
+		// Octahedron
+		static std::array<float, 2> encodeOctahedron(float x, float y, float z);
+		static std::array<float, 3> decodeOctahedron(float u, float v);
+		// ------------------
+
 	public:
 		static uint32_t packRgba8(float x, float y, float z, float w);
 		static uint32_t packNormal(float _x, float _y = 0.0F, float _z = 0.0F, float _w = 0.0F);
@@ -30,5 +35,19 @@ namespace rawrbox {
 		static std::array<float, 4> fromABGR(uint32_t val);
 		static std::array<float, 4> fromRGBA(uint32_t val);
 		static std::array<float, 4> fromRGB(uint32_t val);
+
+		// NORMALS ---
+		// Octahedron encoded
+		static uint32_t packOCTNormal(float x, float y, float z);
+		static std::array<float, 3> fromOCTNormal(uint32_t val);
+
+		static uint32_t packOCTTangent(float x, float y, float z, float sign);
+		static std::array<float, 4> fromOCTTangent(uint32_t val);
+		// ---------
+
+		// BONES (todo: move into render?) ---
+		static std::array<uint8_t, 4> packBoneIndices(const std::array<uint32_t, 4>& indices);
+		static std::array<uint16_t, 4> packBoneWeights(const std::array<float, 4>& weights);
+		// ---------
 	};
 } // namespace rawrbox

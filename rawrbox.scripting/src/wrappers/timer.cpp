@@ -9,11 +9,11 @@ namespace rawrbox {
 
 		auto* timer = rawrbox::TIMER::create(
 		    id, reps, delay, [callback]() {
-				auto result = luabridge::call(callback);
+				auto result = rawrbox::LuaUtils::call(callback);
 				if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage()); },
 		    [onComplete]() {
 			    if (!onComplete.has_value()) return;
-			    auto result = luabridge::call(onComplete.value());
+			    auto result = rawrbox::LuaUtils::call(onComplete.value());
 			    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
 		    });
 
@@ -26,11 +26,11 @@ namespace rawrbox {
 
 		auto* timer = rawrbox::TIMER::simple(
 		    id, delay, [callback]() {
-				auto result = luabridge::call(callback);
+				auto result = rawrbox::LuaUtils::call(callback);
 			    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage()); },
 		    [onComplete]() {
 			    if (!onComplete.has_value()) return;
-			    auto result = luabridge::call(onComplete.value());
+			    auto result = rawrbox::LuaUtils::call(onComplete.value());
 			    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
 		    });
 

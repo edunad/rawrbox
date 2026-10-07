@@ -7,7 +7,7 @@ namespace rawrbox {
 
 	void Hooks::call(const std::string& id, const luabridge::LuaRef& args) {
 		for (auto& hook : _hooks[id]) {
-			auto result = luabridge::call(hook.func, args);
+			auto result = rawrbox::LuaUtils::call(hook.func, args);
 			if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
 		}
 	}

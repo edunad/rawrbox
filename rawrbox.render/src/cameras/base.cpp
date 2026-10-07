@@ -1,8 +1,8 @@
 
 #include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/cameras/base.hpp>
-#include <rawrbox/render/plugins/clustered.hpp>
 #include <rawrbox/render/static.hpp>
+#include <rawrbox/render/utils/barrier.hpp>
 
 namespace rawrbox {
 	Diligent::RefCntAutoPtr<Diligent::IBuffer> CameraBase::staticUniforms;
@@ -13,6 +13,11 @@ namespace rawrbox {
 	}
 
 	CameraBase::~CameraBase() { this->_renderTarget.reset(); }
+
+	void CameraBase::shutdown() {
+		RAWRBOX_DESTROY(uniforms);
+		RAWRBOX_DESTROY(staticUniforms);
+	}
 
 	void CameraBase::initialize() {
 		if (this->_renderTarget == nullptr) RAWRBOX_CRITICAL("Render target not initialized!");
@@ -37,7 +42,7 @@ namespace rawrbox {
 		// STATIC BUFFER ---
 		Diligent::BufferDesc StaticDesc;
 		StaticDesc.Name = "rawrbox::Camera::Static::Uniforms";
-		StaticDesc.Usage = Diligent::USAGE_IMMUTABLE;
+		StaticDesc.Usage = Diligent::USAGE_DEFAULT;
 		StaticDesc.BindFlags = Diligent::BIND_UNIFORM_BUFFER;
 		StaticDesc.Size = sizeof(rawrbox::CameraStaticUniforms);
 
@@ -67,6 +72,16 @@ namespace rawrbox {
 	}
 
 	void CameraBase::updateMtx() { RAWRBOX_CRITICAL("Not implemented"); };
+
+	void CameraBase::updateStatic() {
+		if (staticUniforms == nullptr) return;
+		rawrbox::CameraStaticUniforms data = this->getStaticData();
+
+		rawrbox::BarrierUtils::barrier({{staticUniforms, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+		rawrbox::RENDERER->context()->UpdateBuffer(staticUniforms, 0, sizeof(rawrbox::CameraStaticUniforms), &data, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+		rawrbox::BarrierUtils::barrier({{staticUniforms, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_CONSTANT_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+	}
+
 	rawrbox::CameraStaticUniforms CameraBase::getStaticData() {
 		auto screenSize = rawrbox::RENDERER->getSize().cast<float>();
 
@@ -75,13 +90,6 @@ namespace rawrbox {
 		data.gProjectionInv = rawrbox::Matrix4x4::mtxInverse(data.gProjection);
 		data.gViewport = {this->getZNear(), this->getZFar(), screenSize.x, screenSize.y}; // TODO: Support screen re-scaling, make this dynamic buffer then
 
-		float nearZ = this->getZNear();
-		float farZ = this->getZFar();
-		auto gLightClustersNumZz = static_cast<float>(RB_RENDER_CLUSTERS_Z);
-
-		data.gGridParams = {
-		    gLightClustersNumZz / std::log(farZ / nearZ),
-		    (gLightClustersNumZz * std::log(nearZ)) / std::log(farZ / nearZ)};
 		return data;
 	}
 
@@ -159,6 +167,10 @@ namespace rawrbox {
 	}
 
 	rawrbox::Vector3f CameraBase::screenToWorld(const rawrbox::Vector2f& /*screen_pos*/, const rawrbox::Vector3f& /*origin*/) const {
+		RAWRBOX_CRITICAL("Not implemented");
+	}
+
+	rawrbox::Vector3f CameraBase::screenRayDir(const rawrbox::Vector2f& /*screen_pos*/) const {
 		RAWRBOX_CRITICAL("Not implemented");
 	}
 

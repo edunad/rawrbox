@@ -258,6 +258,29 @@ namespace rawrbox {
 		// ------------
 	}
 
+	void BindlessManager::updateTextureHandle(rawrbox::TextureBase& texture) {
+		if (signature == nullptr) RAWRBOX_CRITICAL("Signature not bound! Did you call init?");
+		if (!texture.isRegistered()) RAWRBOX_CRITICAL("Texture '{}' is not registered!", texture.getName());
+
+		auto* view = texture.getHandle();
+		if (view == nullptr) RAWRBOX_CRITICAL("Failed to update texture '{}'! Texture view is null, not uploaded?", texture.getName());
+
+		const bool isVertex = texture.getType() == rawrbox::TEXTURE_TYPE::VERTEX;
+		auto& handler = isVertex ? BindlessManager::_vertexTextureHandles : BindlessManager::_textureHandles;
+
+		const auto id = texture.getTextureID();
+		if (id >= handler.size()) RAWRBOX_CRITICAL("Index '{}' not found!", id);
+
+		handler[id] = view;
+		if (isVertex) {
+			BindlessManager::_updateVertexSignature = true;
+		} else {
+			BindlessManager::_updatePixelSignature = true;
+		}
+
+		BindlessManager::_logger->debug("Updated bindless '{}' texture handle on slot '{}'", isVertex ? "vertex" : "pixel", fmt::styled(std::to_string(id), fmt::fg(fmt::color::violet)));
+	}
+
 	void BindlessManager::unregisterTexture(rawrbox::TextureBase& texture) {
 		if (signature == nullptr) return;
 

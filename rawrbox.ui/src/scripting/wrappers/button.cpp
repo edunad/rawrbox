@@ -49,7 +49,7 @@ namespace rawrbox {
 			    if (!callback.isCallable()) throw std::runtime_error("Callback not a function");
 
 			    self.onClick += [callback]() -> void {
-				    auto result = luabridge::call(callback);
+				    auto result = rawrbox::LuaUtils::call(callback);
 				    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
 			    };
 		    })

@@ -41,6 +41,11 @@ namespace rawrbox {
 		uint32_t atlasMax = 0;
 		uint32_t textureID = 0;
 		// -------
+
+		// -----
+		rawrbox::Vector3f spawnBox = {}; // area they can spawn in, todo: merge with position?
+		float activeFraction = 1.F;      // Fraction of maxParticles allowed alive
+					    // -------
 	};
 
 	template <typename M>
@@ -131,6 +136,12 @@ namespace rawrbox {
 		virtual void setSpawnRate(float rate) { this->_uniforms.spawnRate = rate; }
 		[[nodiscard]] virtual float getSpawnRate() const { return this->_uniforms.spawnRate; }
 
+		virtual void setSpawnArea(const rawrbox::Vector3f& halfExtents) { this->_uniforms.spawnBox = halfExtents; }
+		[[nodiscard]] virtual const rawrbox::Vector3f& getSpawnArea() const { return this->_uniforms.spawnBox; }
+
+		virtual void setActiveFraction(float frac) { this->_uniforms.activeFraction = frac; }
+		[[nodiscard]] virtual float getActiveFraction() const { return this->_uniforms.activeFraction; }
+		
 		virtual void setEnabled(bool enabled) { this->_enabled = enabled; }
 		[[nodiscard]] virtual bool isEnabled() const { return this->_enabled; }
 

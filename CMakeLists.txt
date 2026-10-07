@@ -203,23 +203,23 @@ endif ()
 # -------------------------
 
 # GLOBAL PACKAGES ------
-CPMAddPackage("gh:fmtlib/fmt#12.0.0")
+CPMAddPackage("gh:fmtlib/fmt#12.2.0")
 if (fmt_ADDED)
     set_lib_runtime_mt(fmt)
 endif ()
 
-CPMAddPackage("gh:Neargye/magic_enum@0.9.7")
+CPMAddPackage("gh:Neargye/magic_enum@0.9.8")
 if (magic_enum_ADDED)
     set_lib_runtime_mt(magic_enum)
 endif ()
 
 if (RAWRBOX_BUILD_RAWRBOX_RENDER)
     if (NOT WIN32 AND RAWRBOX_USE_WAYLAND)
-        CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@12.0.5")
+        CPMAddPackage("https://gitlab.freedesktop.org/wayland/weston@16.0.0")
     endif ()
 endif ()
 
-CPMAddPackage("gh:stephenberry/glaze@6.0.0")
+CPMAddPackage("gh:stephenberry/glaze@6.4.1")
 
 # ---
 if (RAWRBOX_BUILD_RAWRBOX_NETWORK)
@@ -233,7 +233,7 @@ if (RAWRBOX_BUILD_RAWRBOX_NETWORK)
             USE_CACHE
             OFF
             GIT_TAG
-            2.2.4
+            2.3.3
             OPTIONS
             "ZLIB_COMPAT ON"
             "ZLIB_BUILD_EXAMPLES OFF"

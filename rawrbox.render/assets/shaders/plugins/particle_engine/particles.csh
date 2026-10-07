@@ -86,16 +86,29 @@ void main(uint3 dispatchThreadID: SV_DispatchThreadID, uint groupIndex: SV_Group
 	float spawnInterval = 1.0F / EmitterConstants.spawnRate;
 	float particleSpawnTime = particleIndex * spawnInterval;
 
-	if (particle.lifeTime <= 0.0F && EmitterConstants.time >= particleSpawnTime) {
-		// Spawn / reset a particle
-		particle.position = EmitterConstants.position;
-		particle.color = Unpack_RGBA8_UNORM(EmitterConstants.color.x);
+    bool withinLimit = (float)particleIndex < (float)maxParticles * EmitterConstants.activeFraction;
 
-		particle.velocity = CalculateVelocity(hash);
-		particle.size = CalculateSize(hash);
-		particle.lifeTime = CalculateLife(hash);
-		particle.atlasIndex = CalculateAtlas(hash);
-		particle.rotation = CalculateRotation(hash);
+	if (particle.lifeTime <= 0.0F) {
+		if (EmitterConstants.time >= particleSpawnTime && withinLimit) {
+			uint phash = pcg(EmitterConstants.time + particleIndex * 7919);
+			float3 spawnOffset;
+			
+			spawnOffset.x = lerp(-EmitterConstants.spawnBox.x, EmitterConstants.spawnBox.x, (float)(phash & 0xFF) * (1.0f / 255.0f));
+			spawnOffset.y = lerp(-EmitterConstants.spawnBox.y, EmitterConstants.spawnBox.y, (float)((phash >> 8) & 0xFF) * (1.0f / 255.0f));
+			spawnOffset.z = lerp(-EmitterConstants.spawnBox.z, EmitterConstants.spawnBox.z, (float)((phash >> 16) & 0xFF) * (1.0f / 255.0f));
+
+			particle.position = EmitterConstants.position + spawnOffset;
+			particle.color = Unpack_RGBA8_UNORM(EmitterConstants.color.x);
+
+			particle.velocity = CalculateVelocity(hash);
+			particle.size = CalculateSize(hash);
+			particle.lifeTime = CalculateLife(hash);
+			particle.atlasIndex = CalculateAtlas(hash);
+			particle.rotation = CalculateRotation(hash);
+		} else {
+			particle.size = float2(0.0F, 0.0F);
+			particle.color = float4(0.0F, 0.0F, 0.0F, 0.0F);
+		}
 	} else {
 		// Apply gravity to the particle velocity
 		float3 gravity = float3(0, GRAVITY, 0) * EmitterConstants.gravity;

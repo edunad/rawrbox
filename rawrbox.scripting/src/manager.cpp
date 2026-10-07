@@ -80,6 +80,7 @@ namespace rawrbox {
 	rawrbox::Event<rawrbox::Mod&> SCRIPTING::onLoadLibraries;
 	rawrbox::Event<rawrbox::Mod&> SCRIPTING::onLoadModifiers;
 	rawrbox::Event<rawrbox::Mod&> SCRIPTING::onModHotReload;
+	rawrbox::Event<rawrbox::Mod&> SCRIPTING::onModUnload;
 
 	bool SCRIPTING::initialized = false;
 	// ------
@@ -243,9 +244,9 @@ namespace rawrbox {
 		// ENGINE ------FRAME_ALPHA
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("engine", {})
-		    .addProperty<float*, float*>("deltaTime", &rawrbox::DELTA_TIME, nullptr)
-		    .addProperty<float*, float*>("fixedDeltaTime", &rawrbox::FIXED_DELTA_TIME, nullptr)
-		    .addProperty<float*, float*>("frameAlpha", &rawrbox::FRAME_ALPHA, nullptr)
+		    .addProperty("deltaTime", &rawrbox::DELTA_TIME)
+		    .addProperty("fixedDeltaTime", &rawrbox::FIXED_DELTA_TIME)
+		    .addProperty("frameAlpha", &rawrbox::FRAME_ALPHA)
 		    .endNamespace();
 		// -------------
 
@@ -334,7 +335,7 @@ namespace rawrbox {
 			_watcher = std::make_unique<rawrbox::FileWatcher>(
 			    [](const std::string& pth, rawrbox::FileStatus status) {
 				    if (status != rawrbox::FileStatus::modified) return;
-				    hotReload(pth);
+				    rawrbox::runOnRenderThread([pth]() { hotReload(pth); });
 			    },
 			    std::chrono::milliseconds(hotReloadMs));
 			_watcher->start();
@@ -426,6 +427,8 @@ namespace rawrbox {
 
 			_loadedLuaFiles.erase(fndLua);
 		}
+
+		onModUnload(*fnd->second);
 
 		fnd->second->shutdown();
 		_mods.erase(fnd);

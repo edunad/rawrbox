@@ -8,6 +8,10 @@ namespace rawrbox {
 	public:
 		// UTILS ----
 		static void setEnabled(bool fb);
+		static bool isEnabled();
+
+		static void setDebug(bool debug);
+		static bool isDebug();
 
 		// AMBIENT
 		static void setAmbient(const rawrbox::Colori& col);
@@ -16,7 +20,7 @@ namespace rawrbox {
 
 		// Light ----
 		static void addPoint(const rawrbox::Vector3f& pos, const rawrbox::Colori& color, float radius);
-		static void addSpot(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color, float innerCone, float outerCone, float power);
+		static void addSpot(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color, float penumbra, float umbra, float radius);
 		static void addDirectional(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color);
 
 		static void remove(const rawrbox::LightBase& light);

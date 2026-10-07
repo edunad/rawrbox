@@ -98,6 +98,8 @@ namespace rawrbox {
 		_samplers.clear();
 		_globalMacros.clear();
 
+		RAWRBOX_DESTROY(_stateCache);
+
 		_logger.reset();
 
 		defaultSampler = nullptr;
@@ -133,9 +135,7 @@ namespace rawrbox {
 		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
 		ShaderCI.CompileFlags = Diligent::SHADER_COMPILE_FLAG_ENABLE_UNBOUNDED_ARRAYS;
 		ShaderCI.GLSLExtensions = "#extension GL_EXT_nonuniform_qualifier : require\n";
-		if (rawrbox::RENDERER->getRenderType() != Diligent::RENDER_DEVICE_TYPE_D3D12) { // There is a weird bug where DXC runs out of memory when compiling DX12
-			ShaderCI.ShaderCompiler = Diligent::SHADER_COMPILER_DXC;
-		}
+		ShaderCI.ShaderCompiler = Diligent::SHADER_COMPILER_DXC;
 
 		std::string shaderName = fmt::format("RawrBox::SHADER::{}", name);
 		ShaderCI.Desc.ShaderType = type;
@@ -274,6 +274,8 @@ namespace rawrbox {
 			BlendState.RenderTargets[0].BlendEnable = true;
 			BlendState.RenderTargets[0].SrcBlend = settings.blending.src;
 			BlendState.RenderTargets[0].DestBlend = settings.blending.dest;
+			BlendState.RenderTargets[0].SrcBlendAlpha = Diligent::BLEND_FACTOR_ONE; // Transparency support
+			BlendState.RenderTargets[0].DestBlendAlpha = Diligent::BLEND_FACTOR_ONE;
 
 			info.GraphicsPipeline.BlendDesc = BlendState;
 		}

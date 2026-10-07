@@ -75,6 +75,24 @@ namespace rawrbox {
 	}
 	// ----------------
 
+	// CAMERAS ----
+	rawrbox::CameraBase* CameraGlobal::getMain() {
+		return rawrbox::MAIN_CAMERA;
+	}
+
+	rawrbox::CameraBase* CameraGlobal::get(int indx) {
+		if (rawrbox::RENDERER == nullptr) throw std::runtime_error("Renderer not initialized");
+		if (indx < 1) return nullptr;
+
+		return rawrbox::RENDERER->getCamera(static_cast<size_t>(indx - 1)); // Lua starts at 1
+	}
+
+	size_t CameraGlobal::count() {
+		if (rawrbox::RENDERER == nullptr) throw std::runtime_error("Renderer not initialized");
+		return rawrbox::RENDERER->totalCameras();
+	}
+	// ----------------
+
 	void CameraGlobal::registerLua(lua_State* L) {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("camera", {})
@@ -98,6 +116,11 @@ namespace rawrbox {
 
 		    .addFunction("worldToScreen", &CameraGlobal::worldToScreen)
 		    .addFunction("screenToWorld", &CameraGlobal::screenToWorld)
+
+		    // CAMERAS ----
+		    .addProperty("MAIN", &CameraGlobal::getMain)
+		    .addFunction("get", &CameraGlobal::get)
+		    .addFunction("count", &CameraGlobal::count)
 
 		    .endNamespace();
 	}

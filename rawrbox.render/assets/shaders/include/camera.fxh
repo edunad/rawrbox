@@ -13,13 +13,12 @@ struct CameraStruct {
 	float deltaTime;
 };
 
-// Data that never / very rarelly changes
+// Data that never / very rarely changes
 struct StaticCameraStruct {
 	float4x4 proj;
 	float4x4 projInv;
 
 	float4 viewport;
-	float2 gridParams;
 };
 
 ConstantBuffer<CameraStruct> Camera;
@@ -33,8 +32,8 @@ ConstantBuffer<StaticCameraStruct> SCamera;
 #define CAMERA_RIGHT float3(1.0, 0.0, 0.0)
 
 // UTILS -----------------
-uint GetSliceFromDepth(float depth) {
-	return floor(log(depth) * SCamera.gridParams.x - SCamera.gridParams.y);
+float GetViewDepth(float3 worldPos) {
+	return mul(float4(worldPos, 1.0), Camera.view).z;
 }
 
 float LinearizeDepth(float z, float near, float far) {

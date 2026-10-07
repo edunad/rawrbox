@@ -32,9 +32,12 @@ namespace rawrbox {
 		context->SetPipelineState(_pipe);
 
 		// SETUP VERTEX UNIFORMS ----------------------------
+		// NOTE: DISCARD maps return uninitialized memory, always write the full struct
 		{
 			Diligent::MapHelper<rawrbox::BindlessVertexBuffer> CBConstants(context, rawrbox::BindlessManager::signatureBufferVertex, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 			if (CBConstants == nullptr) RAWRBOX_CRITICAL("Failed to map the vertex constants buffer!");
+
+			*CBConstants = {};
 		}
 		// -----------
 
@@ -43,7 +46,10 @@ namespace rawrbox {
 			Diligent::MapHelper<rawrbox::BindlessPixelBuffer> CBConstants(context, rawrbox::BindlessManager::signatureBufferPixel, Diligent::MAP_WRITE, Diligent::MAP_FLAG_DISCARD);
 			if (CBConstants == nullptr) RAWRBOX_CRITICAL("Failed to map the pixel constants buffer!");
 
-			CBConstants->textureIDs = {texture.getTextureID(), 0, 0, 0};
+			rawrbox::BindlessPixelBuffer buffer = {}; // AlphaCutoff = 0, otherwise quad.psh clips with garbage
+			buffer.textureIDs = {texture.getTextureID(), 0, 0, 0};
+
+			*CBConstants = buffer;
 		}
 		// -----------
 
