@@ -35,6 +35,8 @@
 #include <rawrbox/utils/path.hpp>
 #include <rawrbox/utils/threading.hpp>
 
+#include <DXCompiler.hpp>
+
 #include <fmt/ranges.h>
 
 #include <utility>
@@ -118,6 +120,17 @@ namespace rawrbox {
 
 					pFactoryD3D12->CreateDeviceAndContextsD3D12(EngineCI, &this->_device, &this->_context);
 
+					// Shader compiler ---
+					Diligent::RefCntAutoPtr<Diligent::IRenderDeviceD3D12> deviceD3D12(this->_device, Diligent::IID_RenderDeviceD3D12);
+					auto* dxc = deviceD3D12->GetDXCompiler();
+
+					if (dxc == nullptr || !dxc->IsLoaded()) {
+						this->_logger->warn("DXC failed to load, shaders will fail to compile!");
+					} else {
+						this->_logger->info("Using {} for shader compilation", fmt::styled(fmt::format("DXC v{}.{}", dxc->GetVersion().Major, dxc->GetVersion().Minor), fmt::fg(fmt::color::coral)));
+					}
+					// ----
+
 					if (this->_transparent) {
 						rawrbox::SwapChainUtils::create(this->_device, this->_context, SCDesc, this->_window, &this->_swapChain);
 					} else {
@@ -160,9 +173,20 @@ namespace rawrbox {
 
 					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_device, &this->_context);
 
+					// Shader compiler ---
+					Diligent::RefCntAutoPtr<Diligent::IRenderDeviceVk> deviceVk(this->_device, Diligent::IID_RenderDeviceVk);
+					auto* dxc = deviceVk->GetDXCompiler();
+
+					if (dxc == nullptr || !dxc->IsLoaded()) {
+						this->_logger->warn("DXC failed to load! Using glslang");
+					} else {
+						this->_logger->info("Using {} for shader compilation", fmt::styled(fmt::format("DXC v{}.{}", dxc->GetVersion().Major, dxc->GetVersion().Minor), fmt::fg(fmt::color::coral)));
+					}
+					// ----
+
 	#ifdef _WIN32
 					if (this->_transparent && !rawrbox::SwapChainUtils::createVk(this->_device, this->_context, SCDesc, this->_window, this->_vsync, &this->_swapChain)) {
-						this->_logger->warn("Vulkan driver does not support transparent windows (pre-multiplied alpha). Using opaque.");
+						this->_logger->warn("Vulkan driver does not support transparent windows!");
 					}
 	#endif
 
