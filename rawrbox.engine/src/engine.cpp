@@ -10,18 +10,61 @@
 #include <string>
 #include <thread>
 
+#ifdef _WIN32
+	#include <windows.h>
+#endif
+
 namespace rawrbox {
+	namespace {
+#ifdef _WIN32
+		HANDLE hiResTimer() {
+			static HANDLE handle = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+			return handle;
+		}
+
+		bool preciseSleep(double seconds) {
+			HANDLE timer = hiResTimer();
+			if (timer == nullptr) return false;
+
+			LARGE_INTEGER due = {};
+			due.QuadPart = -static_cast<LONGLONG>(seconds * 1e7);
+
+			if (due.QuadPart >= 0) return true;
+			if (SetWaitableTimer(timer, &due, 0, nullptr, nullptr, FALSE) == FALSE) return false;
+
+			WaitForSingleObject(timer, INFINITE);
+
+			return true;
+		}
+#endif
+	} // namespace
+
 	// INTERNAL ---
 	void Engine::sleep(float milliseconds) {
-		const std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
-		const double seconds = double(milliseconds) / 1000.0;
-		const int sleep_millisec_accuracy = 1;
-		const double sleep_sec_accuracy = double(sleep_millisec_accuracy) / 1000.0;
+		using clock = std::chrono::steady_clock;
+		constexpr double SLOP_SEC = 0.001;
 
-		while (std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - t1).count() < seconds) {
-			if (seconds - (std::chrono::high_resolution_clock::now() - t1).count() > sleep_sec_accuracy) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(sleep_millisec_accuracy));
+		const auto start = clock::now();
+		const double target = static_cast<double>(milliseconds) / 1000.0;
+		if (target <= 0.0) return;
+
+		for (;;) {
+			const double elapsed = std::chrono::duration<double>(clock::now() - start).count();
+
+			const double remaining = target - elapsed;
+			if (remaining <= 0.0) break;
+
+			if (remaining > SLOP_SEC) {
+#ifdef _WIN32
+				if (preciseSleep(remaining - SLOP_SEC)) continue;
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+#else
+				std::this_thread::sleep_for(std::chrono::duration<double>(remaining - SLOP_SEC));
+#endif
+				continue;
 			}
+
+			std::this_thread::yield();
 		}
 	}
 

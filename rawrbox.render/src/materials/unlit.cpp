@@ -63,6 +63,24 @@ namespace rawrbox {
 		settings.blending = {};
 		settings.fill = Diligent::FILL_MODE_WIREFRAME;
 		rawrbox::PipelineUtils::createPipeline(id + "::Wireframe", settings);
+
+		settings.fill = Diligent::FILL_MODE_SOLID;
+		settings.cull = Diligent::CULL_MODE_NONE;
+		settings.blending = {Diligent::BLEND_FACTOR_SRC_ALPHA, Diligent::BLEND_FACTOR_INV_SRC_ALPHA};
+		settings.depthWrite = false;
+
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		rawrbox::PipelineUtils::createPipeline(id + "::Overlay", settings);
+
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
+		rawrbox::PipelineUtils::createPipeline(id + "::Overlay::Line", settings);
+
+		settings.depth = Diligent::COMPARISON_FUNC_ALWAYS;
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+		rawrbox::PipelineUtils::createPipeline(id + "::NoDepth", settings);
+
+		settings.topology = Diligent::PRIMITIVE_TOPOLOGY_LINE_LIST;
+		rawrbox::PipelineUtils::createPipeline(id + "::NoDepth::Line", settings);
 		// -----
 	}
 } // namespace rawrbox

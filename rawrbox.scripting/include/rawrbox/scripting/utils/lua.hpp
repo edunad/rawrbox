@@ -15,17 +15,63 @@
 
 #include <filesystem>
 #include <string>
-
-/*
-namespace DFInt {
-	extern int LuauTypeSolverRelease;
-	extern int LuauSolverV2;
-} // namespace DFInt
-*/
+#include <vector>
 
 namespace rawrbox {
+	// New luau & luabridge removed lua errors from calls
+	class LuaResult {
+	protected:
+		std::vector<luabridge::LuaRef> _values = {};
+		std::string _error;
+
+	public:
+		LuaResult(std::vector<luabridge::LuaRef> values, std::string error);
+
+		[[nodiscard]] bool wasOk() const;
+		[[nodiscard]] bool hasFailed() const;
+		[[nodiscard]] const std::string& errorMessage() const;
+
+		[[nodiscard]] size_t size() const;
+		[[nodiscard]] const luabridge::LuaRef& operator[](size_t index) const;
+	};
+
 	class LuaUtils {
 	public:
+		template <typename... CallbackArgs>
+		static rawrbox::LuaResult call(const luabridge::LuaRef& func, CallbackArgs&&... args) {
+			lua_State* L = func.state();
+			if (L == nullptr) return {{}, "Invalid lua state"};
+
+			const int top = lua_gettop(L);
+			func.push(L);
+
+			// ARGS ---
+			const bool pushed = (true && ... && luabridge::push(L, std::forward<CallbackArgs>(args)));
+
+			if (!pushed) {
+				lua_settop(L, top);
+				return {{}, "Failed to push lua function arguments"};
+			}
+			// ----
+
+			if (lua_pcall(L, static_cast<int>(sizeof...(CallbackArgs)), LUA_MULTRET, 0) != LUA_OK) {
+				std::string error = getError(L);
+				lua_settop(L, top);
+
+				return {{}, error};
+			}
+
+			// Results ---
+			std::vector<luabridge::LuaRef> values = {};
+			for (int i = top + 1; i <= lua_gettop(L); i++) {
+				values.push_back(luabridge::LuaRef::fromStack(L, i));
+			}
+
+			lua_settop(L, top);
+			return {std::move(values), ""};
+			// ----
+		}
+
 		static void compileAndLoadFile(lua_State* L, const std::string& chunkID, const std::filesystem::path& path);
 		static void compileAndLoadScript(lua_State* L, const std::string& chunkID, const std::string& script);
 

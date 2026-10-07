@@ -46,6 +46,83 @@ namespace rawrbox {
 		return {round(x, 2), round(y, 2), round(z, 2), round(w, 2)};
 	}
 
+	std::array<float, 2> PackUtils::encodeOctahedron(float x, float y, float z) {
+		const float l1 = std::abs(x) + std::abs(y) + std::abs(z);
+		if (l1 <= 0.F) return {0.5F, 0.5F};
+
+		float px = x / l1;
+		float py = y / l1;
+
+		if (z < 0.F) {
+			const float wx = (1.F - std::abs(py)) * (px >= 0.F ? 1.F : -1.F);
+			const float wy = (1.F - std::abs(px)) * (py >= 0.F ? 1.F : -1.F);
+
+			px = wx;
+			py = wy;
+		}
+
+		return {(px * 0.5F) + 0.5F, (py * 0.5F) + 0.5F};
+	}
+
+	std::array<float, 3> PackUtils::decodeOctahedron(float u, float v) {
+		float x = (u * 2.F) - 1.F;
+		float y = (v * 2.F) - 1.F;
+
+		const float z = 1.F - std::abs(x) - std::abs(y);
+
+		if (z < 0.F) {
+			const float wx = (1.F - std::abs(y)) * (x >= 0.F ? 1.F : -1.F);
+			const float wy = (1.F - std::abs(x)) * (y >= 0.F ? 1.F : -1.F);
+
+			x = wx;
+			y = wy;
+		}
+
+		const float len = std::sqrt((x * x) + (y * y) + (z * z));
+		return {x / len, y / len, z / len};
+	}
+
+	uint32_t PackUtils::packOCTNormal(float x, float y, float z) {
+		const auto oct = PackUtils::encodeOctahedron(x, y, z);
+		return PackUtils::toUnorm(oct[0], 65535.F) | (PackUtils::toUnorm(oct[1], 65535.F) << 16U);
+	}
+
+	std::array<float, 3> PackUtils::fromOCTNormal(uint32_t val) {
+		return PackUtils::decodeOctahedron(PackUtils::fromUnorm(val & 0xFFFFU, 65535.F), PackUtils::fromUnorm(val >> 16U, 65535.F));
+	}
+
+	uint32_t PackUtils::packOCTTangent(float x, float y, float z, float sign) {
+		const auto oct = PackUtils::encodeOctahedron(x, y, z);
+		const uint32_t packedY = (PackUtils::toUnorm(oct[1], 32767.F) << 1U) | (sign < 0.F ? 1U : 0U);
+
+		return PackUtils::toUnorm(oct[0], 65535.F) | (packedY << 16U);
+	}
+
+	std::array<float, 4> PackUtils::fromOCTTangent(uint32_t val) {
+		const uint32_t packedY = val >> 16U;
+		const auto dir = PackUtils::decodeOctahedron(PackUtils::fromUnorm(val & 0xFFFFU, 65535.F), PackUtils::fromUnorm(packedY >> 1U, 32767.F));
+
+		return {dir[0], dir[1], dir[2], (packedY & 1U) != 0 ? -1.F : 1.F};
+	}
+
+	std::array<uint8_t, 4> PackUtils::packBoneIndices(const std::array<uint32_t, 4>& indices) {
+		std::array<uint8_t, 4> ret = {};
+		for (size_t i = 0; i < ret.size(); i++) {
+			ret[i] = static_cast<uint8_t>(indices[i]);
+		}
+
+		return ret;
+	}
+
+	std::array<uint16_t, 4> PackUtils::packBoneWeights(const std::array<float, 4>& weights) {
+		std::array<uint16_t, 4> ret = {};
+		for (size_t i = 0; i < ret.size(); i++) {
+			ret[i] = static_cast<uint16_t>(PackUtils::toUnorm(weights[i], 65535.F));
+		}
+
+		return ret;
+	}
+
 	uint32_t PackUtils::toUnorm(float _value, float _scale) {
 		return uint32_t(std::round(std::clamp(_value, 0.0F, 1.0F) * _scale));
 	}
@@ -161,14 +238,14 @@ namespace rawrbox {
 	}
 
 	std::array<float, 4> PackUtils::fromABGR(uint32_t val) {
-		return {((val)&0xFF) / 255.0F, ((val >> 8) & 0xFF) / 255.0F, ((val >> 16) & 0xFF) / 255.0F, ((val >> 24) & 0xFF) / 255.0F};
+		return {((val) & 0xFF) / 255.0F, ((val >> 8) & 0xFF) / 255.0F, ((val >> 16) & 0xFF) / 255.0F, ((val >> 24) & 0xFF) / 255.0F};
 	}
 
 	std::array<float, 4> PackUtils::fromRGBA(uint32_t val) {
 		uint8_t r = (val >> 24) & 0xFF;
 		uint8_t g = (val >> 16) & 0xFF;
 		uint8_t b = (val >> 8) & 0xFF;
-		uint8_t a = (val)&0xFF;
+		uint8_t a = (val) & 0xFF;
 
 		return {
 		    r / 255.0F, // Red

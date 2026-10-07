@@ -123,6 +123,7 @@ namespace rawrbox {
 			requires(std::derived_from<T, rawrbox::RendererBase>)
 		rawrbox::RendererBase* createRenderer(CallbackArgs&&... args) {
 			_renderer = std::make_unique<T>(rawrbox::Window::__RENDER_TYPE, this->getHandle(), this->getSize(), this->getMonitorSize(), std::forward<CallbackArgs>(args)...);
+			_renderer->setTransparent((this->getWindowFlags() & rawrbox::WindowFlags::Features::TRANSPARENT_BUFFER) > 0);
 
 			// Setup resize ----
 			this->onResize += [this](auto&, auto& size, auto& monitorSize) {

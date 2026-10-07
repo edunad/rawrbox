@@ -22,5 +22,6 @@ namespace rawrbox {
 
 		[[nodiscard]] rawrbox::Vector3f worldToScreen(const rawrbox::Vector3f& pos) const override;
 		[[nodiscard]] rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screenPos, const rawrbox::Vector3f& origin = {0, 0, 0}) const override;
+		[[nodiscard]] rawrbox::Vector3f screenRayDir(const rawrbox::Vector2f& screenPos) const override;
 	};
 } // namespace rawrbox

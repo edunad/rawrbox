@@ -10,7 +10,7 @@ CPMAddPackage(
         GITHUB_REPOSITORY
         kunitoki/LuaBridge3
         GIT_TAG
-        master
+        1c0d0efe415cb0dff28fe2a91b8f5530bda62c97
         OPTIONS
         "LUABRIDGE_TESTING OFF"
         "LUABRIDGE_COVERAGE OFF"
@@ -26,7 +26,7 @@ CPMAddPackage(
         GITHUB_REPOSITORY
         luau-lang/luau
         GIT_TAG
-        696
+        0.738 # Latest compatible with LuaBridge3
         OPTIONS
         "LUAU_BUILD_CLI OFF"
         "LUAU_BUILD_TESTS OFF"
@@ -39,6 +39,11 @@ if (luau_ADDED)
     set_lib_runtime_mt(Luau.Common)
     set_lib_runtime_mt(Luau.Compiler)
     set_lib_runtime_mt(Luau.Ast)
+    set_lib_runtime_mt(Luau.Bytecode)
+    set_lib_runtime_mt(Luau.Inliner)
+    set_lib_runtime_mt(Luau.Config)
+    set_lib_runtime_mt(Luau.Analysis)
+    set_lib_runtime_mt(Luau.Require)
 endif ()
 # --------------
 

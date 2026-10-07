@@ -16,6 +16,7 @@ namespace rawrbox {
 		// -------------
 
 		static lunasvg::Document* internalLoad(const std::filesystem::path& filename);
+		static std::unique_ptr<lunasvg::Document> parse(const std::vector<uint8_t>& buffer);
 
 	public:
 		static void shutdown();

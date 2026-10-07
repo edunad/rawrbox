@@ -25,38 +25,40 @@ namespace rawrbox {
 		[[nodiscard]] float getScaleMul() const { return this->_scaleMul; }
 
 		size_t addText(const rawrbox::Font& font, const std::string& text, const rawrbox::Vector3f& pos, const rawrbox::Colorf& cl = rawrbox::Colors::White(), rawrbox::Alignment alignX = rawrbox::Alignment::Center, rawrbox::Alignment alignY = rawrbox::Alignment::Center) {
-			float screenSize = font.getScale() * this->_scaleMul;
+			const float screenSize = font.getScale() * this->_scaleMul;
 
-			rawrbox::Vector3f startpos = {};
-			rawrbox::Vector2f tsize = font.getStringSize(text) * screenSize;
-			if (alignX != Alignment::Left || alignY != Alignment::Left) {
-				switch (alignX) {
-					case Alignment::Left:
-						break;
-					case Alignment::Center:
-						startpos.x -= tsize.x / 2;
-						break;
-					case Alignment::Right:
-						startpos.x -= tsize.x;
-						break;
-				}
+			const rawrbox::Vector2f tsize = font.getStringSize(text);
+			rawrbox::Vector2f offset = {};
 
-				switch (alignY) {
-					case Alignment::Left:
-						break;
-					case Alignment::Center:
-						startpos.z -= tsize.y / 2;
-						break;
-					case Alignment::Right:
-						startpos.z -= tsize.y;
-						break;
-				}
+			switch (alignX) {
+				case Alignment::Left:
+					break;
+				case Alignment::Center:
+					offset.x -= tsize.x / 2;
+					break;
+				case Alignment::Right:
+					offset.x -= tsize.x;
+					break;
+			}
+
+			switch (alignY) {
+				case Alignment::Left: // Top
+					break;
+				case Alignment::Center:
+					offset.y += tsize.y / 2;
+					break;
+				case Alignment::Right: // Bottom
+					offset.y += tsize.y;
+					break;
 			}
 
 			size_t id = rawrbox::TEXT_ID++;
-			font.render(text, startpos.xy(), true, [this, &font, pos, startpos, cl, screenSize, id](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
-				float baselineAdjustment = font.getFontInfo().ascender - glyph->offset.y;
-				baselineAdjustment *= screenSize; // Apply screen size scaling to the adjustment
+
+			font.render(text, {}, false, [this, &font, pos, offset, cl, screenSize, id](rawrbox::Glyph* glyph, float x0, float y0, float x1, float y1) {
+				const float left = (offset.x + x0) * screenSize;
+				const float right = (offset.x + x1) * screenSize;
+				const float top = (offset.y - y0) * screenSize;
+				const float bottom = (offset.y - y1) * screenSize;
 
 				rawrbox::Mesh<typename M::vertexBufferType> mesh;
 
@@ -65,10 +67,10 @@ namespace rawrbox {
 				mesh.setColor(cl);
 
 				std::array<rawrbox::VertexUVData, 4> buff = {
-				    rawrbox::VertexUVData(pos + startpos + Vector3f(x0 * screenSize, (y0 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureBottomRight.y)),
-				    rawrbox::VertexUVData(pos + startpos + Vector3f(x1 * screenSize, (y1 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureTopLeft.y)),
-				    rawrbox::VertexUVData(pos + startpos + Vector3f(x0 * screenSize, (y1 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureTopLeft.y)),
-				    rawrbox::VertexUVData(pos + startpos + Vector3f(x1 * screenSize, (y0 + baselineAdjustment) * screenSize, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureBottomRight.y)),
+				    rawrbox::VertexUVData(pos + Vector3f(left, bottom, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureBottomRight.y)),
+				    rawrbox::VertexUVData(pos + Vector3f(right, top, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureTopLeft.y)),
+				    rawrbox::VertexUVData(pos + Vector3f(left, top, 0), rawrbox::Vector2f(glyph->textureTopLeft.x, glyph->textureTopLeft.y)),
+				    rawrbox::VertexUVData(pos + Vector3f(right, bottom, 0), rawrbox::Vector2f(glyph->textureBottomRight.x, glyph->textureBottomRight.y)),
 				};
 
 				std::array<uint32_t, 6> inds{

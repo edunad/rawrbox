@@ -16,7 +16,7 @@ namespace rawrbox {
 		auto argTable = luabridge::newTable(modEnv);
 		rawrbox::LuaUtils::getVariadicArgs(ref, argTable);
 
-		auto result = luabridge::call(func, argTable);
+		auto result = rawrbox::LuaUtils::call(func, argTable);
 		if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
 		// TODO: SUPPORT RETURN ARGUMENTS
 	}

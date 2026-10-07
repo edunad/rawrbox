@@ -22,7 +22,7 @@ CPMAddPackage(
         GITHUB_REPOSITORY
         jrouwe/JoltPhysics
         VERSION
-        5.4.0
+        5.6.0
         OPTIONS
 
         "COMPILE_AS_SHARED_LIBRARY OFF"

@@ -18,7 +18,7 @@ namespace rawrbox {
 			    if (!callback.isCallable()) throw std::runtime_error("Callback not a function");
 
 			    self.onTabChange += [callback](const std::string& tabId) -> void {
-				    auto result = luabridge::call(callback, tabId);
+				    auto result = rawrbox::LuaUtils::call(callback, tabId);
 				    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
 			    };
 		    })

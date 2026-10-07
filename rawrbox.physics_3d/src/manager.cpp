@@ -71,7 +71,10 @@ namespace rawrbox {
 	}
 
 	void PHYSICS::shutdown() {
+		if (physicsSystem == nullptr) return;
+
 		rayBoxShape->Release();
+		rayBoxShape = nullptr;
 
 		JPH::UnregisterTypes();
 

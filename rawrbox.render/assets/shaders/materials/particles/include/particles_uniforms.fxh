@@ -24,6 +24,9 @@ struct EmitterConstantsStruct {
 	uint atlasMin;  // 4 bytes
 	uint atlasMax;  // 4 bytes
 	uint textureID; // 4 bytes
+
+	float3 spawnBox;      // 12 bytes
+    float activeFraction; // 4 bytes
 };
 
 ConstantBuffer<EmitterConstantsStruct> EmitterConstants;

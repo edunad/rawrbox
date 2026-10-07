@@ -1,16 +1,16 @@
 # Packages ----
-if(RAWRBOX_BUILD_TESTING)
+if (RAWRBOX_BUILD_TESTING)
     message(STATUS "Enabled testing for ${output_target}")
     enable_testing()
 
     CPMAddPackage(
-        NAME
+            NAME
             Catch2
-        GITHUB_REPOSITORY
+            GITHUB_REPOSITORY
             catchorg/Catch2
-        VERSION
-            3.8.1
-        OPTIONS
+            VERSION
+            3.16.0
+            OPTIONS
             "CATCH_INSTALL_DOCS OFF"
             "CATCH_CONFIG_FAST_COMPILE ON"
             "CATCH_INSTALL_EXTRAS ON")
@@ -23,11 +23,12 @@ if(RAWRBOX_BUILD_TESTING)
 
     include(CTest)
     include(Catch)
-endif()
+endif ()
 # --------------
 
+
 # TESTING ----
-if(RAWRBOX_BUILD_TESTING)
+if (RAWRBOX_BUILD_TESTING)
     file(GLOB_RECURSE RAWRBOX_TESTS_IMPORTS "tests/*.spec.cpp")
 
     add_executable(${output_target}-TESTS ${RAWRBOX_TESTS_IMPORTS})
@@ -38,5 +39,5 @@ if(RAWRBOX_BUILD_TESTING)
 
     set_lib_runtime_mt(${output_target}-TESTS)
     catch_discover_tests(${output_target}-TESTS DISCOVERY_MODE PRE_TEST)
-endif()
+endif ()
 # --------------

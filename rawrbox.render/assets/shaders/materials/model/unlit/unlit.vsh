@@ -15,8 +15,8 @@ SamplerState g_Sampler;
 #include "model_transforms.fxh"
 
 struct VSInput {
-	float4 Pos : ATTRIB0;
-	float4 UV : ATTRIB1;
+	float4 Pos : ATTRIB0; // xyz = position, w = texture
+	float2 UV : ATTRIB1;
 
 #ifdef SKINNED
 	uint4 BoneIndex : ATTRIB2;
@@ -57,25 +57,25 @@ struct PSInput {
 
 void main(in VSInput VSIn, out PSInput PSIn) {
 #ifdef SKINNED
-	float4 pos = boneTransform(VSIn.BoneIndex, VSIn.BoneWeight, VSIn.Pos);
+	float4 pos = boneTransform(VSIn.BoneIndex, VSIn.BoneWeight, float4(VSIn.Pos.xyz, 1.0));
 #else
-	float4 pos = VSIn.Pos;
+	float4 pos = float4(VSIn.Pos.xyz, 1.0);
 #endif
 
 #ifdef INSTANCED
 	float4x4 InstanceMatr = MatrixFromRows(VSIn.MtrxRow0, VSIn.MtrxRow1, VSIn.MtrxRow2, VSIn.MtrxRow3);
-	TransformedData transform = applyPosTransforms(mul(pos, InstanceMatr), VSIn.UV.xy);
+	TransformedData transform = applyPosTransforms(mul(pos, InstanceMatr), VSIn.UV);
 #else
-	TransformedData transform = applyPosTransforms(pos, VSIn.UV.xy);
+	TransformedData transform = applyPosTransforms(pos, VSIn.UV);
 #endif
 
 	PSIn.Pos = transform.final;
 	PSIn.WorldPos = mul(transform.pos, Camera.world);
-	PSIn.UV = VSIn.UV.xy;
+	PSIn.UV = VSIn.UV;
 
 #ifdef INSTANCED
 	PSIn.Color = Unpack_RGBA8_UNORM(VSIn.InstData.x) * Unpack_RGBA8_UNORM(ColorOverride);
-	PSIn.TexIndex = VSIn.UV.z + VSIn.InstData.y + SliceOverride;
+	PSIn.TexIndex = VSIn.Pos.w + VSIn.InstData.y + SliceOverride;
 	PSIn.GPUId = Unpack_ABGR8_UNORM(VSIn.InstData.z);
 #else
 
@@ -90,6 +90,6 @@ void main(in VSInput VSIn, out PSInput PSIn) {
 // --------------
 
 	PSIn.GPUId = Unpack_ABGR8_UNORM(GPUID);
-	PSIn.TexIndex = VSIn.UV.z + SliceOverride;
+	PSIn.TexIndex = VSIn.Pos.w + SliceOverride;
 #endif
 }

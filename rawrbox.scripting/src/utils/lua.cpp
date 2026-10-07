@@ -80,9 +80,25 @@ namespace rawrbox {
 		lua_gc(L, LUA_GCCOLLECT, 0);
 	}
 
+	// RESULT ---
+	LuaResult::LuaResult(std::vector<luabridge::LuaRef> values, std::string error) : _values(std::move(values)), _error(std::move(error)) {}
+
+	bool LuaResult::wasOk() const { return this->_error.empty(); }
+	bool LuaResult::hasFailed() const { return !this->_error.empty(); }
+	const std::string& LuaResult::errorMessage() const { return this->_error; }
+
+	size_t LuaResult::size() const { return this->_values.size(); }
+	const luabridge::LuaRef& LuaResult::operator[](size_t index) const {
+		if (index >= this->_values.size()) throw std::out_of_range(fmt::format("Invalid lua result index {}", index));
+		return this->_values[index];
+	}
+	// ---------
+
 	std::string LuaUtils::getError(lua_State* L) {
 		if (L == nullptr) throw std::runtime_error("Invalid lua state");
-		return lua_tostring(L, -1);
+
+		const char* error = lua_tostring(L, -1);
+		return error == nullptr ? "Unknown lua error" : error;
 	}
 
 	std::vector<std::string> LuaUtils::argsToString(lua_State* L, bool filterNonStr) {

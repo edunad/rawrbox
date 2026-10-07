@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/cameras/orbit.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
 #include <rawrbox/render/static.hpp>
@@ -42,9 +42,11 @@ namespace webm_test {
 		// ---------------
 
 		// Setup camera
-		auto* cam = render->createCamera<rawrbox::CameraOrbital>(*window);
+		auto* cam = render->createCamera<rawrbox::CameraOrbit>(*window);
 		cam->setPos({0.F, 5.F, -10.F});
 		cam->setAngle({0.F, 0.F, 0.F, 0.F});
+		cam->canUseKeyboard([]() { return true; });
+		cam->canUseMouse([]() { return true; });
 		// --------------
 
 		// Setup loaders
