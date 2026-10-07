@@ -59,7 +59,7 @@ namespace rawrbox {
 			    if (!callback.isCallable()) throw std::runtime_error("Callback not a function");
 
 			    self.onKey += [callback](uint32_t key) -> void {
-				    auto result = luabridge::call(callback, key);
+				    auto result = rawrbox::LuaUtils::call(callback, key);
 				    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
 			    };
 		    })
@@ -67,7 +67,7 @@ namespace rawrbox {
 			    if (!callback.isCallable()) throw std::runtime_error("Callback not a function");
 
 			    self.onTextUpdate += [callback]() -> void {
-				    auto result = luabridge::call(callback);
+				    auto result = rawrbox::LuaUtils::call(callback);
 				    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
 			    };
 		    })
@@ -75,7 +75,7 @@ namespace rawrbox {
 			    if (!callback.isCallable()) throw std::runtime_error("Callback not a function");
 
 			    self.onEnter += [callback]() -> void {
-				    auto result = luabridge::call(callback);
+				    auto result = rawrbox::LuaUtils::call(callback);
 				    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
 			    };
 		    })

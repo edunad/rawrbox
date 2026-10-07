@@ -244,9 +244,9 @@ namespace rawrbox {
 		// ENGINE ------FRAME_ALPHA
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("engine", {})
-		    .addProperty<float*, float*>("deltaTime", &rawrbox::DELTA_TIME, nullptr)
-		    .addProperty<float*, float*>("fixedDeltaTime", &rawrbox::FIXED_DELTA_TIME, nullptr)
-		    .addProperty<float*, float*>("frameAlpha", &rawrbox::FRAME_ALPHA, nullptr)
+		    .addProperty("deltaTime", &rawrbox::DELTA_TIME)
+		    .addProperty("fixedDeltaTime", &rawrbox::FIXED_DELTA_TIME)
+		    .addProperty("frameAlpha", &rawrbox::FRAME_ALPHA)
 		    .endNamespace();
 		// -------------
 
