@@ -11,7 +11,7 @@ find_package(Vulkan REQUIRED)
 # --------------
 
 # Packages ----
-CPMAddPackage("gh:zeux/meshoptimizer@0.25")
+CPMAddPackage("gh:zeux/meshoptimizer@1.3")
 
 if (NOT WIN32)
     if (RAWRBOX_USE_WAYLAND)
@@ -29,7 +29,7 @@ CPMAddPackage(
         GITHUB_REPOSITORY
         glfw/glfw
         GIT_TAG
-        3.4
+        3.5.1
         OPTIONS
         ${GLFW_PLATFORM_OPTIONS}
         "GLFW_BUILD_DOCS OFF"
@@ -53,6 +53,7 @@ CPMAddPackage(
         #    git restore Graphics/GraphicsEngineVulkan/src/VulkanUtilities/VulkanInstance.cpp
         OPTIONS
         "DILIGENT_NO_RENDER_STATE_PACKAGER ON"
+        "DILIGENT_NO_SUPER_RESOLUTION ON"
         "DILIGENT_NO_FORMAT_VALIDATION ON"
         "DILIGENT_NO_OPENGL ON"
         "DILIGENT_NO_VULKAN ${RAWRBOX_DISABLE_SUPPORT_VULKAN}"
@@ -102,7 +103,7 @@ CPMAddPackage(
         GITHUB_REPOSITORY
         guillaumeblanc/ozz-animation
         GIT_TAG
-        0.16.0
+        0.17.0
         PATCHES
         ${CMAKE_CURRENT_SOURCE_DIR}/patch/ozz.patch
         OPTIONS
@@ -124,15 +125,17 @@ if (ozz_ADDED)
 endif ()
 
 
-CPMAddPackage("gh:nemtrif/utfcpp@4.0.8")
+CPMAddPackage("gh:nemtrif/utfcpp@4.2.1")
 if (utfcpp_ADDED)
     set_lib_runtime_mt(utf8cpp)
 endif ()
 
-CPMAddPackage("gh:sammycage/lunasvg@2.4.0")
+CPMAddPackage("gh:sammycage/lunasvg@3.5.0")
 if (lunasvg_ADDED)
     set_lib_runtime_mt(lunasvg)
-    #set_lib_runtime_mt(plutovg)
+    if (TARGET plutovg) # lunasvg >= 3
+        set_lib_runtime_mt(plutovg)
+    endif ()
 endif ()
 
 CPMAddPackage(

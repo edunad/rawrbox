@@ -1,22 +1,27 @@
 function(set_lib_runtime_mt target)
-    if(RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME)
+    get_target_property(aliased ${target} ALIASED_TARGET)
+    if (aliased)
+        set(target ${aliased})
+    endif ()
+
+    if (RAWRBOX_BUILD_MSVC_MULTITHREADED_RUNTIME)
         message(STATUS "Setting ${target}'s MSVC_RUNTIME_LIBRARY as MultiThreaded")
 
-        if(("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
+        if (("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows" OR "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore") AND NOT MINGW)
             set_target_properties(${target} PROPERTIES MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-        endif()
-    endif()
+        endif ()
+    endif ()
 endfunction()
 
 # From : https://stackoverflow.com/questions/24491129/excluding-directory-somewhere-in-file-structure-from-cmake-sourcefile-list
 function(remove_folder glob_sources folderName)
     message(STATUS "Removing ${folderName} from sources")
 
-    foreach(ITR ${glob_sources})
-        if("${ITR}" MATCHES "(.*)${folderName}(.*)")
+    foreach (ITR ${glob_sources})
+        if ("${ITR}" MATCHES "(.*)${folderName}(.*)")
             list(REMOVE_ITEM glob_sources ${ITR})
-        endif("${ITR}" MATCHES "(.*)${folderName}(.*)")
-    endforeach(ITR)
+        endif ("${ITR}" MATCHES "(.*)${folderName}(.*)")
+    endforeach (ITR)
 
     set(CLEAN_SOURCES "${glob_sources}" PARENT_SCOPE)
 endfunction()
@@ -28,23 +33,23 @@ function(copy_resources)
 
     cmake_parse_arguments(COPY_RESOURCES "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    if(NOT DEFINED COPY_RESOURCES_SRC_DIR)
+    if (NOT DEFINED COPY_RESOURCES_SRC_DIR)
         set(COPY_RESOURCES_SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
-    endif()
+    endif ()
 
-    if(${CMAKE_VERSION} VERSION_LESS "3.26.0")
+    if (${CMAKE_VERSION} VERSION_LESS "3.26.0")
         add_custom_target(
-            copy_resources_${COPY_RESOURCES_TARGET} ALL
-            COMMAND ${CMAKE_COMMAND} -E copy_directory ${COPY_RESOURCES_SRC_DIR}/assets
-                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER}
-            COMMENT "Copying ${COPY_RESOURCES_TARGET}'s assets into ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER} directory")
-    else()
+                copy_resources_${COPY_RESOURCES_TARGET} ALL
+                COMMAND ${CMAKE_COMMAND} -E copy_directory ${COPY_RESOURCES_SRC_DIR}/assets
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER}
+                COMMENT "Copying ${COPY_RESOURCES_TARGET}'s assets into ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER} directory")
+    else ()
         add_custom_target(
-            copy_resources_${COPY_RESOURCES_TARGET} ALL
-            COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${COPY_RESOURCES_SRC_DIR}/assets
-                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER}
-            COMMENT "Copying ${COPY_RESOURCES_TARGET}'s assets into ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER} directory")
-    endif()
+                copy_resources_${COPY_RESOURCES_TARGET} ALL
+                COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${COPY_RESOURCES_SRC_DIR}/assets
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER}
+                COMMENT "Copying ${COPY_RESOURCES_TARGET}'s assets into ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${RAWRBOX_CONTENT_FOLDER} directory")
+    endif ()
 
     add_dependencies(${COPY_RESOURCES_TARGET} copy_resources_${COPY_RESOURCES_TARGET})
 endfunction()
@@ -56,79 +61,79 @@ function(copy_lua_libs)
 
     cmake_parse_arguments(COPY_LUA_LIBS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    if(NOT DEFINED COPY_LUA_LIBS_SRC_DIR)
+    if (NOT DEFINED COPY_LUA_LIBS_SRC_DIR)
         set(COPY_LUA_SRC_DIR ${CMAKE_CURRENT_LIST_DIR})
-    endif()
+    endif ()
 
-    if(${CMAKE_VERSION} VERSION_LESS "3.26.0")
+    if (${CMAKE_VERSION} VERSION_LESS "3.26.0")
         add_custom_target(
-            copy_lua_libs_${COPY_LUA_LIBS_TARGET} ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${COPY_LUA_SRC_DIR}/lua
-                                                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua
-            COMMENT "Copying ${COPY_LUA_LIBS_TARGET}'s LUA libs into ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua directory")
-    else()
+                copy_lua_libs_${COPY_LUA_LIBS_TARGET} ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${COPY_LUA_SRC_DIR}/lua
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua
+                COMMENT "Copying ${COPY_LUA_LIBS_TARGET}'s LUA libs into ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua directory")
+    else ()
         add_custom_target(
-            copy_lua_libs_${COPY_LUA_LIBS_TARGET} ALL COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${COPY_LUA_SRC_DIR}/lua
-                                                                    ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua
-            COMMENT "Copying ${COPY_LUA_LIBS_TARGET}'s LUA libs into ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua directory")
-    endif()
+                copy_lua_libs_${COPY_LUA_LIBS_TARGET} ALL COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different ${COPY_LUA_SRC_DIR}/lua
+                ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua
+                COMMENT "Copying ${COPY_LUA_LIBS_TARGET}'s LUA libs into ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/lua directory")
+    endif ()
 
     add_dependencies(${COPY_LUA_LIBS_TARGET} copy_lua_libs_${COPY_LUA_LIBS_TARGET})
 endfunction()
 
 function(mute_dependencies_warnings FILTER)
-    if(WIN32)
-        function (_get_all_cmake_targets out_var current_dir)
+    if (WIN32)
+        function(_get_all_cmake_targets out_var current_dir)
             get_property(targets DIRECTORY ${current_dir} PROPERTY BUILDSYSTEM_TARGETS)
             get_property(subdirs DIRECTORY ${current_dir} PROPERTY SUBDIRECTORIES)
 
-            foreach(subdir ${subdirs})
+            foreach (subdir ${subdirs})
                 _get_all_cmake_targets(subdir_targets ${subdir})
                 list(APPEND targets ${subdir_targets})
-            endforeach()
+            endforeach ()
 
             set(${out_var} ${targets} PARENT_SCOPE)
         endfunction()
 
         _get_all_cmake_targets(all_targets ${CMAKE_CURRENT_LIST_DIR})
-        foreach(target ${all_targets})
+        foreach (target ${all_targets})
             get_target_property(target_type ${target} TYPE)
 
-            if(target MATCHES ${FILTER})
+            if (target MATCHES ${FILTER})
                 message(STATUS "Ignoring target ${target}")
-            else()
+            else ()
                 if (
-                    #target_type STREQUAL "EXECUTABLE" OR
-                    target_type STREQUAL "SHARED_LIBRARY" OR
-                    target_type STREQUAL "STATIC_LIBRARY")
+                        #target_type STREQUAL "EXECUTABLE" OR
+                        target_type STREQUAL "SHARED_LIBRARY" OR
+                        target_type STREQUAL "STATIC_LIBRARY")
 
                     message(STATUS "Disabling warnings for ${target}: ${target_type}")
                     target_compile_options(${target} PRIVATE
-                        /wd4100
-                        /wd4456
-                        /wd4458
-                        /wd4459
-                        /wd4189
-                        /wd4505
-                        /wd4324
-                        /wd4244
-                        /wd4701
-                        /wd4703
-                        /wd4127
-                        /wd4291
-                        /wd4201
-                        /wd4702
-                        /wd4706
-                        /wd4245
-                        /wd5054
-                        /wd4457
-                        /wd4389
-                        /wd4018
-                        /wd4267
+                            /wd4100
+                            /wd4456
+                            /wd4458
+                            /wd4459
+                            /wd4189
+                            /wd4505
+                            /wd4324
+                            /wd4244
+                            /wd4701
+                            /wd4703
+                            /wd4127
+                            /wd4291
+                            /wd4201
+                            /wd4702
+                            /wd4706
+                            /wd4245
+                            /wd5054
+                            /wd4457
+                            /wd4389
+                            /wd4018
+                            /wd4267
                     )
-                endif()
-            endif()
+                endif ()
+            endif ()
 
-        endforeach()
-    endif()
+        endforeach ()
+    endif ()
 endfunction()
 

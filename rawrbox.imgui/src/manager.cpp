@@ -16,7 +16,7 @@ namespace rawrbox {
 
 	void IMGUIManager::renderDrawData(ImDrawData* data) {
 		if (rawrbox::RENDERER == nullptr) return;
-		if (data == nullptr || data->DisplaySize.x <= 0.0F || data->DisplaySize.y <= 0.0F || data->CmdListsCount == 0)
+		if (data == nullptr || data->DisplaySize.x <= 0.0F || data->DisplaySize.y <= 0.0F || data->CmdLists.empty())
 			return;
 
 		auto* stencil = rawrbox::RENDERER->stencil();
@@ -116,8 +116,8 @@ namespace rawrbox {
 		_imguiFontTexture->setName("IMGUI");
 		_imguiFontTexture->upload();
 		// ----------
-
-		IO.Fonts->TexID = _imguiFontTexture.get();
+		
+		IO.Fonts->SetTexID(_imguiFontTexture.get());
 	}
 
 	void IMGUIManager::clear() {

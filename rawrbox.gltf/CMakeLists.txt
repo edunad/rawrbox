@@ -7,7 +7,7 @@ CPMAddPackage(
     NAME
         fastgltf
     GIT_TAG
-        v0.9.0
+        v0.9.1
     GITHUB_REPOSITORY
         spnda/fastgltf
     OPTIONS
