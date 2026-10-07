@@ -11,7 +11,7 @@
 namespace phys_2d_test {
 	struct BoxOfDoom {
 	public:
-		muli::RigidBody* body = nullptr;
+		muli::Body* body = nullptr;
 		std::unique_ptr<rawrbox::Model<>> mdl = nullptr;
 	};
 

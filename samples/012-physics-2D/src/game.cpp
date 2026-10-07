@@ -114,7 +114,7 @@ namespace phys_2d_test {
 		if (this->_texture == nullptr) return;
 
 		auto box = std::make_unique<BoxOfDoom>();
-		box->body = rawrbox::PHYSICS_2D::physWorld->CreateBox(size.x, size.y, muli::identity, muli::RigidBody::Type::dynamic_body);
+		box->body = rawrbox::PHYSICS_2D::physWorld->CreateBox(size.x, size.y, muli::identity, muli::Body::Type::dynamic_body);
 		box->body->SetFriction(0.2F);
 		box->body->SetPosition(rawrbox::Phys2DUtils::vecToPos(pos.xy()));
 
