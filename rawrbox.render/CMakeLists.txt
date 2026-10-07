@@ -3,8 +3,9 @@ set(output_target RAWRBOX.RENDER)
 # --------------
 
 # Packages ----
-set(DXC_VERSION "v1.8.2505.1")
-set(DXC_RELEASE_DATE "2025_07_14")
+set(DXC_VERSION "v1.9.2609")
+set(DXC_RELEASE_DATE "2026_09_29")
+set(DXC_LINUX_ARCHIVE "linux_dxc_2026_09_28.x86_x64.tar.gz")
 
 find_package(DXC REQUIRED)
 find_package(Vulkan REQUIRED)

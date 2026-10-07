@@ -135,9 +135,7 @@ namespace rawrbox {
 		ShaderCI.pShaderSourceStreamFactory = rawrbox::SHADER_FACTORY;
 		ShaderCI.CompileFlags = Diligent::SHADER_COMPILE_FLAG_ENABLE_UNBOUNDED_ARRAYS;
 		ShaderCI.GLSLExtensions = "#extension GL_EXT_nonuniform_qualifier : require\n";
-		if (rawrbox::RENDERER->getRenderType() != Diligent::RENDER_DEVICE_TYPE_D3D12) { // There is a weird bug where DXC runs out of memory when compiling DX12
-			ShaderCI.ShaderCompiler = Diligent::SHADER_COMPILER_DXC;
-		}
+		ShaderCI.ShaderCompiler = Diligent::SHADER_COMPILER_DXC;
 
 		std::string shaderName = fmt::format("RawrBox::SHADER::{}", name);
 		ShaderCI.Desc.ShaderType = type;

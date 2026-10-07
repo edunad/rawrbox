@@ -142,9 +142,10 @@ namespace rawrbox {
 					Diligent::EngineVkCreateInfo EngineCI;
 					EngineCI.Features = features;
 					EngineCI.MainDescriptorPoolSize.NumSampledImageDescriptors += RB_RENDER_MAX_TEXTURES + RB_RENDER_MAX_VERTEX_TEXTURES;
-
-	#ifndef _WIN32
-					EngineCI.pDxCompilerPath = "dxcompiler";
+	#ifdef _WIN32
+					EngineCI.pDxCompilerPath = "dxcompiler.dll";
+	#else
+					EngineCI.pDxCompilerPath = "./libdxcompiler.so";
 	#endif
 
 					if (this->overrideHEAP != nullptr) {
