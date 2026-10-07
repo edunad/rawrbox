@@ -263,7 +263,7 @@ endif ()
 if (VULKAN_SUPPORTED)
     message(STATUS "Enabling VULKAN support")
 
-    target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineVk-${DILIGENT_LINK_MODE})
+    target_link_libraries(${output_target} PRIVATE Diligent-GraphicsEngineVk-${DILIGENT_LINK_MODE} Vulkan::Headers)
     target_compile_definitions(${output_target} PUBLIC RAWRBOX_SUPPORT_VULKAN)
 
     set_lib_runtime_mt(Diligent-GraphicsEngineVk-shared)

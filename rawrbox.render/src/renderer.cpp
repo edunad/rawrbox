@@ -84,8 +84,8 @@ namespace rawrbox {
 		// -----------------------
 
 		// Initialize engine -----
-		if (this->_transparent && this->_type != Diligent::RENDER_DEVICE_TYPE_D3D12)
-			this->_logger->warn("Transparent window buffer is only supported on D3D12");
+		if (this->_transparent && this->_type != Diligent::RENDER_DEVICE_TYPE_D3D12 && this->_type != Diligent::RENDER_DEVICE_TYPE_VULKAN)
+			this->_logger->warn("Transparent window buffer is only supported on D3D12 & Vulkan");
 
 		switch (this->_type) {
 #if RAWRBOX_SUPPORT_DX12
@@ -141,6 +141,7 @@ namespace rawrbox {
 
 					Diligent::EngineVkCreateInfo EngineCI;
 					EngineCI.Features = features;
+					EngineCI.MainDescriptorPoolSize.NumSampledImageDescriptors += RB_RENDER_MAX_TEXTURES + RB_RENDER_MAX_VERTEX_TEXTURES;
 
 	#ifndef _WIN32
 					EngineCI.pDxCompilerPath = "dxcompiler";
@@ -157,7 +158,14 @@ namespace rawrbox {
 					}
 
 					pFactoryVk->CreateDeviceAndContextsVk(EngineCI, &this->_device, &this->_context);
-					pFactoryVk->CreateSwapChainVk(this->_device, this->_context, SCDesc, this->_window, &this->_swapChain);
+
+	#ifdef _WIN32
+					if (this->_transparent && !rawrbox::SwapChainUtils::createVk(this->_device, this->_context, SCDesc, this->_window, this->_vsync, &this->_swapChain)) {
+						this->_logger->warn("Vulkan driver does not support transparent windows (pre-multiplied alpha). Using opaque.");
+					}
+	#endif
+
+					if (this->_swapChain == nullptr) pFactoryVk->CreateSwapChainVk(this->_device, this->_context, SCDesc, this->_window, &this->_swapChain);
 				}
 				break;
 #endif // VULKAN_SUPPORTED
