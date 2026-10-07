@@ -6,6 +6,7 @@
 #include <rawrbox/render/scripting/global/resources/font_loader.hpp>
 #include <rawrbox/render/scripting/global/resources/texture_loader.hpp>
 #include <rawrbox/render/scripting/global/stencil.hpp>
+#include <rawrbox/render/scripting/wrappers/camera.hpp>
 #include <rawrbox/render/scripting/wrappers/decals/decal.hpp>
 #include <rawrbox/render/scripting/wrappers/light/base.hpp>
 #include <rawrbox/render/scripting/wrappers/models/base.hpp>
@@ -13,6 +14,7 @@
 #include <rawrbox/render/scripting/wrappers/models/instanced.hpp>
 #include <rawrbox/render/scripting/wrappers/models/mesh.hpp>
 #include <rawrbox/render/scripting/wrappers/models/model.hpp>
+#include <rawrbox/render/scripting/wrappers/plugins/clustered.hpp>
 #include <rawrbox/render/scripting/wrappers/text/font.hpp>
 #include <rawrbox/render/scripting/wrappers/textures/base.hpp>
 #include <rawrbox/render/scripting/wrappers/window.hpp>
@@ -36,6 +38,7 @@ namespace rawrbox {
 
 			// GAME --
 			rawrbox::WindowWrapper::registerLua(L);
+			rawrbox::CameraWrapper::registerLua(L);
 			//  -------
 
 			// DECALS ---
@@ -48,6 +51,10 @@ namespace rawrbox {
 
 			// LIGHT ----
 			rawrbox::LightBaseWrapper::registerLua(L);
+			// ------
+
+			// PLUGINS ----
+			rawrbox::ClusteredPluginWrapper::registerLua(L);
 			// ------
 
 			// MODEL --
@@ -75,6 +82,7 @@ namespace rawrbox {
 			rawrbox::LightsGlobal::registerLua(L);
 			// ------
 
+
 			// RESOURCES ---
 #ifdef RAWRBOX_RESOURCES
 			rawrbox::TextureLoaderGlobal::registerLua(L);
@@ -88,6 +96,7 @@ namespace rawrbox {
 			    .addVariable("MAX_BONES_PER_MODEL", RB_RENDER_MAX_BONES_PER_MODEL)
 			    .addVariable("MAX_POST_DATA", RB_RENDER_MAX_POST_DATA)
 			    .addFunction("frame", []() { return rawrbox::FRAME; })
+			    .addFunction("getClustered", &rawrbox::ClusteredPluginWrapper::get) // nil if not loaded
 			    .endNamespace();
 
 			luabridge::getGlobalNamespace(L)

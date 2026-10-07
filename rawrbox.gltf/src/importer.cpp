@@ -255,8 +255,19 @@ namespace rawrbox {
 			// -----------
 
 			// TRANSPARENCY ----
-			mat->alphaCutoff = material.alphaCutoff;
-			mat->transparent = material.alphaMode != fastgltf::AlphaMode::Opaque;
+			switch (material.alphaMode) {
+				case fastgltf::AlphaMode::Mask:
+					mat->alphaCutoff = material.alphaCutoff;
+					break;
+				case fastgltf::AlphaMode::Blend:
+					mat->alphaCutoff = 0.0039F;
+					break;
+				default: // OPAQUE
+					mat->alphaCutoff = 0.F;
+					break;
+			}
+
+			mat->transparent = material.alphaMode == fastgltf::AlphaMode::Blend;
 			// ---------
 
 			// Texture Loading ---
@@ -270,7 +281,7 @@ namespace rawrbox {
 				mat->diffuse = rawrbox::WHITE_TEXTURE.get();
 			}
 
-			mat->baseColor = rawrbox::Colorf(material.pbrData.baseColorFactor.x(), material.pbrData.baseColorFactor.y(), material.pbrData.baseColorFactor.z(), alpha);
+			mat->baseColor = rawrbox::Colorf(material.pbrData.baseColorFactor.x(), material.pbrData.baseColorFactor.y(), material.pbrData.baseColorFactor.z(), alpha).toSRGB();
 			// ----
 
 			// METALIC ---
@@ -722,13 +733,22 @@ namespace rawrbox {
 			// -----------
 
 			// OPTIMIZATION ---
-			if ((this->loadFlags & rawrbox::GLTFLoadFlags::Optimizer::MESH) > 0) {
+			const bool meshOptimize = (this->loadFlags & rawrbox::GLTFLoadFlags::Optimizer::MESH_OPTIMIZE) > 0;
+			const bool meshSimplify = (this->loadFlags & rawrbox::GLTFLoadFlags::Optimizer::MESH_SIMPLIFY) > 0;
+
+			if (meshOptimize || meshSimplify) {
 				if (rawrPrimitive.blendShapes.empty()) {
 					auto startVert = rawrPrimitive.vertices.size();
 					auto startInd = rawrPrimitive.indices.size();
 
-					rawrbox::MeshOptimization::optimize(rawrPrimitive.vertices, rawrPrimitive.indices);
-					rawrbox::MeshOptimization::simplify(rawrPrimitive.vertices, rawrPrimitive.indices);
+					if (meshOptimize) {
+						const bool transparent = rawrPrimitive.material != nullptr && rawrPrimitive.material->transparent;
+						rawrbox::MeshOptimization::optimize(rawrPrimitive.vertices, rawrPrimitive.indices, !transparent);
+					}
+
+					if (meshSimplify) {
+						rawrbox::MeshOptimization::simplify(rawrPrimitive.vertices, rawrPrimitive.indices);
+					}
 
 					if ((this->loadFlags & rawrbox::GLTFLoadFlags::Debug::PRINT_OPTIMIZATION_STATS) > 0) {
 						if (startVert != rawrPrimitive.vertices.size() || startInd != rawrPrimitive.indices.size()) {
@@ -780,7 +800,7 @@ namespace rawrbox {
 		if (normalAttribute != nullptr && normalAttribute != primitive.attributes.end()) {
 			const auto& normalAccessor = scene.accessors[normalAttribute->accessorIndex];
 			fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec3>(scene, normalAccessor, [&](fastgltf::math::fvec3 normal, std::size_t idx) {
-				verts[idx].normal = rawrbox::PackUtils::packNormal(normal.x(), normal.y(), normal.z());
+				verts[idx].normal = rawrbox::PackUtils::packOCTNormal(normal.x(), normal.y(), normal.z());
 			});
 		}
 		// ------------
@@ -794,7 +814,7 @@ namespace rawrbox {
 			fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec4>(
 			    scene, tangentAccessor,
 			    [&](const fastgltf::math::fvec4& tangent, std::size_t idx) {
-				    verts[idx].tangent = rawrbox::PackUtils::packNormal(tangent.x(), tangent.y(), tangent.z(), tangent.w() > 0.0F ? 1.0F : -1.0F);
+				    verts[idx].tangent = rawrbox::PackUtils::packOCTTangent(tangent.x(), tangent.y(), tangent.z(), tangent.w() >= 0.0F ? 1.0F : -1.0F);
 			    });
 		}
 		// calculate tangent using
@@ -820,11 +840,18 @@ namespace rawrbox {
 				const auto& weightAccessor = scene.accessors[weightIt->accessorIndex];
 
 				fastgltf::iterateAccessorWithIndex<fastgltf::math::uvec4>(scene, jointAccessor, [&](fastgltf::math::uvec4 joints, std::size_t idx) {
-					verts[idx].bone_indices = {joints.x(), joints.y(), joints.z(), joints.w()};
+					const std::array<uint32_t, RB_MAX_BONES_PER_VERTEX> indices = {joints.x(), joints.y(), joints.z(), joints.w()};
+
+					for (auto joint : indices) {
+						if (joint >= RB_RENDER_MAX_BONES_PER_MODEL)
+							RAWRBOX_CRITICAL("Joint index {} exceeds the max bones per model ({})", joint, RB_RENDER_MAX_BONES_PER_MODEL);
+					}
+
+					verts[idx].bone_indices = rawrbox::PackUtils::packBoneIndices(indices);
 				});
 
 				fastgltf::iterateAccessorWithIndex<fastgltf::math::fvec4>(scene, weightAccessor, [&](fastgltf::math::fvec4 weights, std::size_t idx) {
-					verts[idx].bone_weights = {weights.x(), weights.y(), weights.z(), weights.w()};
+					verts[idx].bone_weights = rawrbox::PackUtils::packBoneWeights({weights.x(), weights.y(), weights.z(), weights.w()});
 				});
 			}
 		}

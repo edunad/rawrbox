@@ -73,12 +73,12 @@ namespace rawrbox {
 		// -----
 
 		template <typename... CallbackArgs>
-		std::optional<luabridge::LuaResult> call(const std::string& name, CallbackArgs&&... args) {
+		std::optional<rawrbox::LuaResult> call(const std::string& name, CallbackArgs&&... args) {
 			auto fnc = this->_modTable[name];
 			if (!fnc.isCallable()) return std::nullopt;
 
 			try {
-				luabridge::LuaResult result = luabridge::call(fnc, this->_modTable, std::forward<CallbackArgs>(args)...);
+				rawrbox::LuaResult result = rawrbox::LuaUtils::call(fnc, this->_modTable, std::forward<CallbackArgs>(args)...);
 				if (result.hasFailed()) _logger->warn("Lua error on {}\n  └── {}", this->_id, result.errorMessage());
 
 				return result;

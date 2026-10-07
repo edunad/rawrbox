@@ -19,7 +19,7 @@ namespace rawrbox {
 			    if (!callback.isCallable()) throw std::runtime_error("Callback not a function");
 
 			    self.onSelectionChange += [callback](size_t index, const std::string& value) -> void {
-				    auto result = luabridge::call(callback, index, value);
+				    auto result = rawrbox::LuaUtils::call(callback, index, value);
 				    if (result.hasFailed()) fmt::print("Lua error\n  └── {}\n", result.errorMessage());
 			    };
 		    })

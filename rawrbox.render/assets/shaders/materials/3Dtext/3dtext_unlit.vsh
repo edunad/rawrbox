@@ -7,7 +7,7 @@
 
 struct VSInput {
 	float3 Pos : ATTRIB0;
-	float4 UV : ATTRIB1;
+	float2 UV : ATTRIB1;
 };
 
 struct PSInput {
@@ -17,9 +17,9 @@ struct PSInput {
 };
 
 void main(in VSInput VSIn, out PSInput PSIn) {
-	TransformedData transform = applyPosTransforms(VSIn.Pos, VSIn.UV.xy);
+	TransformedData transform = applyPosTransforms(VSIn.Pos, VSIn.UV);
 	PSIn.Pos = transform.final;
 
-	PSIn.UV = VSIn.UV.xy;
+	PSIn.UV = VSIn.UV;
 	PSIn.Color = Unpack_RGBA8_UNORM(ColorOverride);
 }

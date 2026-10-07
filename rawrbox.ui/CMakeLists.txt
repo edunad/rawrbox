@@ -8,7 +8,7 @@ CPMAddPackage(
         NAME
         clip
         VERSION
-        1.9
+        1.15
         GITHUB_REPOSITORY
         dacap/clip
         OPTIONS
@@ -17,7 +17,6 @@ CPMAddPackage(
         "CLIP_TESTS OFF")
 
 if (clip_ADDED)
-    target_include_directories(clip PUBLIC ${clip_SOURCE_DIR})
     set_lib_runtime_mt(clip)
 endif ()
 

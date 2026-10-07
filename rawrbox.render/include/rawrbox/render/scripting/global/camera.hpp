@@ -28,6 +28,12 @@ namespace rawrbox {
 		[[nodiscard]] static rawrbox::Vector3f screenToWorld(const rawrbox::Vector2f& screen_pos);
 		// ----------------
 
+		// CAMERAS ----
+		[[nodiscard]] static rawrbox::CameraBase* getMain();
+		[[nodiscard]] static rawrbox::CameraBase* get(int indx);
+		[[nodiscard]] static size_t count();
+		// ----------------
+
 		static void registerLua(lua_State* L);
 	};
 } // namespace rawrbox

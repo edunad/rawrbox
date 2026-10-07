@@ -200,7 +200,7 @@ namespace rawrbox {
 
 			// Sort alpha
 			if (sort) {
-				std::sort(this->_meshes.begin(), this->_meshes.end(), [](auto& a, auto& b) {
+				std::stable_sort(this->_meshes.begin(), this->_meshes.end(), [](auto& a, auto& b) {
 					return !a->isTransparent() && b->isTransparent();
 				});
 			}

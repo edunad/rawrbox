@@ -9,6 +9,18 @@ namespace rawrbox {
 		rawrbox::LIGHTS::setEnabled(fb);
 	}
 
+	bool LightsGlobal::isEnabled() {
+		return rawrbox::LIGHTS::isEnabled();
+	}
+
+	void LightsGlobal::setDebug(bool debug) {
+		rawrbox::LIGHTS::setDebug(debug);
+	}
+
+	bool LightsGlobal::isDebug() {
+		return rawrbox::LIGHTS::isDebug();
+	}
+
 	// AMBIENT
 	void LightsGlobal::setAmbient(const rawrbox::Colori& col) {
 		rawrbox::LIGHTS::setAmbient(col.cast<float>());
@@ -24,8 +36,8 @@ namespace rawrbox {
 		rawrbox::LIGHTS::add<rawrbox::PointLight>(pos, color.cast<float>(), radius);
 	}
 
-	void LightsGlobal::addSpot(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color, float innerCone, float outerCone, float power) {
-		rawrbox::LIGHTS::add<rawrbox::SpotLight>(pos, direction, color.cast<float>(), innerCone, outerCone, power);
+	void LightsGlobal::addSpot(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color, float penumbra, float umbra, float radius) {
+		rawrbox::LIGHTS::add<rawrbox::SpotLight>(pos, direction, color.cast<float>(), penumbra, umbra, radius);
 	}
 
 	void LightsGlobal::addDirectional(const rawrbox::Vector3f& pos, const rawrbox::Vector3f& direction, const rawrbox::Colori& color) {
@@ -60,6 +72,10 @@ namespace rawrbox {
 		luabridge::getGlobalNamespace(L)
 		    .beginNamespace("lights", {})
 		    .addFunction("setEnabled", &LightsGlobal::setEnabled)
+		    .addFunction("isEnabled", &LightsGlobal::isEnabled)
+
+		    .addFunction("setDebug", &LightsGlobal::setDebug)
+		    .addFunction("isDebug", &LightsGlobal::isDebug)
 
 		    // AMBIENT ---
 		    .addFunction("setAmbient", &LightsGlobal::setAmbient)

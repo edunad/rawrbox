@@ -26,9 +26,8 @@ namespace rawrbox {
 			meshopt_remapVertexBuffer(&resultVertices[0], &verts[0], indiceSize, sizeof(T), &remap[0]);
 			// -------------
 
-			// Vertex cache
+			//  Vertex cache
 			meshopt_optimizeVertexCache(&resultIndices[0], &resultIndices[0], indiceSize, newVerticeCount);
-
 			// Overdraw
 			meshopt_optimizeOverdraw(&resultIndices[0], &resultIndices[0], indiceSize, &resultVertices[0].position.x, newVerticeCount, sizeof(T), threshold);
 
@@ -45,9 +44,9 @@ namespace rawrbox {
 			const size_t index_count = indices.size();
 			const size_t vertex_count = verts.size();
 
-			const size_t target_index_count = index_count * static_cast<uint32_t>(complexity_threshold);
+			const auto target_index_count = static_cast<size_t>(static_cast<float>(index_count) * complexity_threshold);
 			constexpr float target_error = 1e-2f;
-			constexpr unsigned int options = 0;
+			constexpr unsigned int options = meshopt_SimplifyLockBorder;
 
 			std::vector<uint32_t> lod_indices(index_count);
 			float lod_error = 0.0f;

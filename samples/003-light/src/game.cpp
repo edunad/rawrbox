@@ -1,5 +1,5 @@
 
-#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/cameras/orbit.hpp>
 #include <rawrbox/render/lights/directional.hpp>
 #include <rawrbox/render/lights/point.hpp>
 #include <rawrbox/render/lights/spot.hpp>
@@ -35,7 +35,7 @@ namespace light {
 		auto* window = rawrbox::Window::getWindow();
 
 		// Setup renderer
-		auto* render = window->createRenderer();
+		auto* render = window->createRenderer(rawrbox::Colorf{0.0F, 0.0F, 0.0F, 0.0F});
 		render->addPlugin<rawrbox::ClusteredPlugin>();
 		render->onIntroCompleted = [this]() { this->loadContent(); };
 		render->setDrawCall([this](const rawrbox::CameraBase& /*camera*/, const rawrbox::DrawPass& pass) {
@@ -48,15 +48,19 @@ namespace light {
 		// ---------------
 
 		// Setup camera
-		auto* cam = render->createCamera<rawrbox::CameraOrbital>(*window);
+		auto* cam = render->createCamera<rawrbox::CameraOrbit>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
+		cam->canUseKeyboard([]() { return true; });
+		cam->canUseMouse([]() { return true; });
 		// --------------
 
 		// BINDS ----
 		window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
-			if (!this->_ready || action != rawrbox::KEY_ACTION_UP || key != rawrbox::KEY_F1) return;
-			rawrbox::LIGHTS::setEnabled(!rawrbox::LIGHTS::isEnabled());
+			if (!this->_ready || action != rawrbox::KEY_ACTION_UP) return;
+
+			if (key == rawrbox::KEY_F1) rawrbox::LIGHTS::setEnabled(!rawrbox::LIGHTS::isEnabled());
+			if (key == rawrbox::KEY_F2) rawrbox::LIGHTS::setDebug(!rawrbox::LIGHTS::isDebug());
 		};
 		// -----
 
@@ -148,9 +152,9 @@ namespace light {
 		// ------
 
 		// Light test ----------
-		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue() * 50, 1.2F);
-		rawrbox::LIGHTS::add<rawrbox::SpotLight>(rawrbox::Vector3f{3.5F, 1.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Purple() * 50, 20.F, 40.F, 4.F);
-		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0.2F, 0.2F, 0}, rawrbox::Colors::Orange() * 50, 1.F);
+		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{-3.5F, 0.2F, 0}, rawrbox::Colors::Blue() * 200.F, 1.2F);
+		rawrbox::LIGHTS::add<rawrbox::SpotLight>(rawrbox::Vector3f{3.5F, 1.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::Purple() * 200.F, 20.F, 40.F, 4.F);
+		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0.2F, 0.2F, 0}, rawrbox::Colors::Orange() * 200.F, 1.F);
 
 		rawrbox::LIGHTS::add<rawrbox::DirectionalLight>(rawrbox::Vector3f{0.F, 10.F, 0}, rawrbox::Vector3f{0.F, -1.F, 0.F}, rawrbox::Colors::White()); // SUN
 		// -------------------
@@ -202,7 +206,8 @@ namespace light {
 
 			light = rawrbox::LIGHTS::getLight(3); // SUN
 			if (light != nullptr) {
-				light->setDirection({0, std::sin(rawrbox::FRAME * 0.01F) * 1.F, 0});
+				const float angle = rawrbox::FRAME * 0.01F;
+				light->setDirection({std::cos(angle), -std::sin(angle), 0});
 			}
 		}
 	}
@@ -222,6 +227,7 @@ namespace light {
 		auto* stencil = rawrbox::RENDERER->stencil();
 
 		stencil->drawText(fmt::format("[F1]   FULLBRIGHT: {}", !rawrbox::LIGHTS::isEnabled()), {15, 15});
+		stencil->drawText(fmt::format("[F2]   DEBUG BINS: {}", rawrbox::LIGHTS::isDebug()), {15, 30});
 	}
 
 	void Game::draw() {

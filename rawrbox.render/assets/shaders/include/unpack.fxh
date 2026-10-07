@@ -21,6 +21,15 @@ float3 DecodeNormalOctahedron(float2 p) {
 	return normalize(n);
 }
 
+float3 UnpackOctNormal(float2 value) {
+	return DecodeNormalOctahedron(value * 2.0 - 1.0);
+}
+
+float4 UnpackOctTangent(uint2 value) {
+	float2 oct = float2(value.x / 65535.0, (value.y >> 1u) / 32767.0) * 2.0 - 1.0;
+	return float4(DecodeNormalOctahedron(oct), (value.y & 1u) != 0u ? -1.0 : 1.0);
+}
+
 uint Pack_RG16_FLOAT(float2 value) {
 	uint2 packed = f32tof16(value);
 	return packed.x | (packed.y << 16u);

@@ -1,6 +1,6 @@
 
 #include <rawrbox/engine/static.hpp>
-#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/cameras/orbit.hpp>
 #include <rawrbox/render/decals/manager.hpp>
 #include <rawrbox/render/lights/point.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
@@ -51,9 +51,11 @@ namespace decal_test {
 		// ---------------
 
 		// Setup camera
-		auto* cam = render->createCamera<rawrbox::CameraOrbital>(*window);
+		auto* cam = render->createCamera<rawrbox::CameraOrbit>(*window);
 		cam->setPos({0.F, 5.F, -5.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-45), 0.F, 0.F});
+		cam->canUseKeyboard([]() { return true; });
+		cam->canUseMouse([]() { return true; });
 		// --------------
 
 		// Add loaders
@@ -142,8 +144,8 @@ namespace decal_test {
 
 		this->generateDecals();
 
-		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, -1.F}, rawrbox::Colors::White() * 4.5F, 5.F);
-		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, 1.F}, rawrbox::Colors::White() * 4.5F, 5.F);
+		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, -1.F}, rawrbox::Colors::White() * 5.F, 5.F);
+		rawrbox::LIGHTS::add<rawrbox::PointLight>(rawrbox::Vector3f{0, 1.F, 1.F}, rawrbox::Colors::White() * 5.F, 5.F);
 
 		this->_ready = true;
 	}

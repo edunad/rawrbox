@@ -2,7 +2,7 @@
 
 #ifdef INCLUDED_LIGHT_UNIFORMS
 	#ifdef READ_LIGHTS
-		#ifdef READ_CLUSTER_DATA_GRID
+		#ifdef READ_TILES
 
 			#ifndef INCLUDED_LIGHTING
 				#define INCLUDED_LIGHTING
@@ -26,13 +26,8 @@ float3 Diffuse_Lambert(float3 diffuseColor) {
 // Gradient between Umbra and Penumbra
 float DirectionalSpotAttenuation(float3 L, float3 direction, float cosUmbra, float cosPenumbra) {
 	float cosAngle = dot(-normalize(L), direction);
-	float falloff = saturate((cosAngle - cosUmbra) / (cosPenumbra - cosUmbra));
+	float falloff = saturate((cosAngle - cosUmbra) / max(cosPenumbra - cosUmbra, 1e-4)); // Equal cones = hard edge
 	return falloff * falloff;
-}
-
-float DirectionalAttenuation(float3 L, float3 direction) {
-	float cosAngle = dot(-normalize(L), direction);
-	return cosAngle;
 }
 
 // Distance between rays is proportional to distance squared
@@ -46,15 +41,20 @@ float RadialAttenuation(float3 L, float range) {
 }
 
 float GetAttenuation(Light light, float3 worldPosition, out float3 L) {
-	float attenuation = 1.0f;
+	// Directional (sun)
+	if (GetLightType(light) == LIGHT_DIRECTIONAL) {
+		float lenSq = dot(light.direction, light.direction);
+		L = lenSq > 0.0f ? -light.direction * rsqrt(lenSq) : float3(0, 0, 0); // Zero direction = no light
 
-	L = light.position.xyz - worldPosition;
-	attenuation *= RadialAttenuation(L, light.radius);
+		return 1.0f;
+	}
+	//--------------------
 
-	if (light.type == LIGHT_SPOT) {
-		attenuation *= DirectionalSpotAttenuation(L, light.direction.xyz, cos(light.umbra), cos(light.penumbra));
-	} else if (light.type == LIGHT_DIRECTIONAL) {
-		attenuation = DirectionalAttenuation(L, light.direction.xyz);
+	L = light.position - worldPosition;
+	float attenuation = RadialAttenuation(L, light.radius);
+
+	if (GetLightType(light) == LIGHT_SPOT) {
+		attenuation *= DirectionalSpotAttenuation(L, light.direction, light.cosUmbra, light.cosPenumbra);
 	}
 
 	float distSq = dot(L, L);
@@ -180,39 +180,33 @@ LightResult DefaultLitBxDF(float3 specularColor, float specularRoughness, float3
 	}
 }
 
-void ApplyLight(uint lightBucket, uint bucketIndex, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 V, float3 worldPos, float dither) {
-	uint bucket = lightBucket;
+void ApplyLight(uint index, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 V, float3 worldPos, float dither) {
+	Light light = GetLight(index);
 
-	if (FULL_BRIGHT == 0.0) {
-		lighting.Diffuse = diffuse; // FULL BRIGHT
-		return;
+	float3 L;
+	float attenuation = GetAttenuation(light, worldPos, L);
+
+	if (attenuation > 0.0F) {
+		LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
+		float3 radiance = GetLightRadiance(light);
+
+		lighting.Diffuse += result.Diffuse * radiance;
+		lighting.Specular += result.Specular * radiance;
 	}
+}
 
-	while (bucket) {
-		uint bitIndex = firstbitlow(bucket);
-		bucket ^= 1u << bitIndex;
+void ApplyLights(uint mask, uint bin, inout LightResult lighting, float3 specular, float R, float3 diffuse, float3 N, float3 V, float3 worldPos, float dither) {
+	if (TOTAL_LIGHTS == 0) return;
 
-		// Apply light ------------
-		uint index = bitIndex + bucketIndex * CLUSTERS_Z;
-		if (index > TOTAL_LIGHTS) break;
+	while (mask) {
+		uint bitIndex = firstbitlow(mask);
+		mask ^= 1u << bitIndex;
 
-		Light light = GetLight(index);
+		uint index = bitIndex + bin * BIN_BITS;
+		if (index >= TOTAL_LIGHTS) break;
 
-		float3 L;
-		float attenuation = GetAttenuation(light, worldPos, L);
-
-		if (attenuation > 0.0F) {
-			LightResult result = DefaultLitBxDF(specular, R, diffuse, N, V, L, attenuation);
-
-			lighting.Diffuse += result.Diffuse * light.color * light.intensity;
-			lighting.Specular += result.Specular * light.color * light.intensity;
-		}
-		// ------------------------
+		ApplyLight(index, lighting, specular, R, diffuse, N, V, worldPos, dither);
 	}
-
-	// AMBIENT LIGHT ---
-	lighting.Diffuse *= LightConstants.ambientColor.rgb;
-	// -----------------
 }
 
 			#endif

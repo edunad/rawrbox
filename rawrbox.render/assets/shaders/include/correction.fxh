@@ -24,7 +24,17 @@ float4 toLinear(float4 rgb) {
 	rgb.y = toLinear(rgb.y);
 	rgb.z = toLinear(rgb.z);
 	rgb.w = rgb.w;
+	return rgb;
+}
 
+float toSRGB(float x) {
+	return x <= 0.0031308F ? x * 12.92F : 1.055F * pow(abs(x), 1.0F / 2.4F) - 0.055F;
+}
+
+float3 toSRGB(float3 rgb) {
+	rgb.x = toSRGB(rgb.x);
+	rgb.y = toSRGB(rgb.y);
+	rgb.z = toSRGB(rgb.z);
 	return rgb;
 }
 #endif

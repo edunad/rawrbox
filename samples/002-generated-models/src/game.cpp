@@ -1,8 +1,9 @@
 
-#include <rawrbox/render/cameras/orbital.hpp>
+#include <rawrbox/render/cameras/orbit.hpp>
 #include <rawrbox/render/models/mesh.hpp>
 #include <rawrbox/render/models/utils/mesh.hpp>
 #include <rawrbox/render/resources/texture.hpp>
+#include <rawrbox/render/utils/debug_draw.hpp>
 #include <rawrbox/resources/manager.hpp>
 #include <rawrbox/utils/keys.hpp>
 #include <rawrbox/utils/timer.hpp>
@@ -45,17 +46,17 @@ namespace model {
 		// ---------------
 
 		// Setup camera
-		auto* cam = render->createCamera<rawrbox::CameraOrbital>(*window);
+		auto* cam = render->createCamera<rawrbox::CameraOrbit>(*window);
 		cam->setPos({0.F, 6.F, -6.F});
 		cam->setAngle({0.F, rawrbox::MathUtils::toRad(-55), 0.F, 0.F});
-		cam->onMovementStart = []() { fmt::print("Camera start\n"); };
-		cam->onMovementStop = []() { fmt::print("Camera stop\n"); };
+		cam->canUseKeyboard([]() { return true; });
+		cam->canUseMouse([]() { return true; });
 		// --------------
 
 		// BINDS ----
 		window->onKey += [this](rawrbox::Window& /*w*/, uint32_t key, uint32_t /*scancode*/, uint32_t action, uint32_t /*mods*/) {
-			if (!this->_ready || action != rawrbox::KEY_ACTION_UP || key != rawrbox::KEY_F1) return;
-			this->_bbox = !this->_bbox;
+			if (!this->_ready || action != rawrbox::KEY_ACTION_UP) return;
+			if (key == rawrbox::KEY_F1) this->_debugDraw = !this->_debugDraw;
 		};
 		// -----
 
@@ -97,13 +98,13 @@ namespace model {
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({3.5F, 0, 2.5F}, {1.0F, 1.0F, 1.0F}, rawrbox::Colors::White());
 			this->_model->addMesh(mesh);
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({3.5F, 0, 2.5F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{3.5F, 0, 2.5F}, mesh.getBBOX()});
 		}
 
 		{
 			auto mesh = rawrbox::MeshUtils::generateCube({1.5F, 0, 2.5F}, {.5F, .5F, .5F}, rawrbox::Colors::White());
 			this->_model->addMesh(mesh);
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({1.5F, 0, 2.5F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{1.5F, 0, 2.5F}, mesh.getBBOX()});
 		}
 
 		{
@@ -111,7 +112,7 @@ namespace model {
 			mesh.setTexture(texture2);
 
 			this->_model->addMesh(mesh);
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-2, 0, 0}, mesh.getBBOX()));
+			this->_bboxes.push_back({{-2, 0, 0}, mesh.getBBOX()});
 		}
 		// --------
 
@@ -120,7 +121,7 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generatePlane({2, 0, 0}, {0.5F, 0.5F});
 			mesh.setTexture(texture);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({2, 0, 0}, mesh.getBBOX()));
+			this->_bboxes.push_back({{2, 0, 0}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 		// ----------
@@ -131,7 +132,7 @@ namespace model {
 			rawrbox::Vector3f size = {0.5F, 0.5F, 0.F};
 
 			auto mesh = rawrbox::MeshUtils::generateTriangle(pos, rawrbox::Vector3f{0, 0, 0}, {0, 0}, rawrbox::Vector3f{size.x, size.y, 0}, {1, 0}, rawrbox::Vector3f{0, size.y, 0}, {0, 1});
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX(pos, mesh.getBBOX()));
+			this->_bboxes.push_back({pos, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 		// ----------
@@ -142,7 +143,7 @@ namespace model {
 			mesh.setTexture(texture);
 			mesh.setVertexSnap(24.F);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-3, 0, 0}, mesh.getBBOX()));
+			this->_bboxes.push_back({{-3, 0, 0}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 		// ----------
@@ -151,7 +152,7 @@ namespace model {
 		{
 			auto mesh = rawrbox::MeshUtils::generateArrow(0.5F, {-4.F, 0.F, 0.F}, rawrbox::Colors::White());
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-4.F, 0.F, 0.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{-4.F, 0.F, 0.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 		// ----
@@ -161,7 +162,7 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generateSphere({2.F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 0.25F);
 			mesh.setTexture(texture3);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({2.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{2.F, 0.F, -2.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 
@@ -169,7 +170,7 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generateSphere({3.5F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 0.5F);
 			mesh.setTexture(texture3);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({3.5F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{3.5F, 0.F, -2.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 
@@ -177,7 +178,7 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generateSphere({5.F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 1.F);
 			mesh.setTexture(texture3);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({5.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{5.F, 0.F, -2.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 		// -----
@@ -187,7 +188,7 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generateCylinder({-2.F, 0.F, -2.F}, {0.5F, 0.5F, 0.5F}, 12);
 			mesh.setTexture(texture3);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-2.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{-2.F, 0.F, -2.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 
@@ -196,7 +197,7 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generateCone({-3.5F, 0.F, -2.F}, {0.5F, 1.F, 0.5F}, 12);
 			mesh.setTexture(texture3);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-3.5F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{-3.5F, 0.F, -2.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 
@@ -204,12 +205,11 @@ namespace model {
 			auto mesh = rawrbox::MeshUtils::generateCone({-5.F, 0.F, -2.F}, {0.5F, 1.F, 0.5F}, 3);
 			mesh.setTexture(texture3);
 
-			this->_bboxes->addMesh(rawrbox::MeshUtils::generateBBOX({-5.F, 0.F, -2.F}, mesh.getBBOX()));
+			this->_bboxes.push_back({{-5.F, 0.F, -2.F}, mesh.getBBOX()});
 			this->_model->addMesh(mesh);
 		}
 
 		this->_model->upload();
-		this->_bboxes->upload();
 	}
 
 	void Game::createSpline() {
@@ -358,7 +358,6 @@ namespace model {
 	void Game::onThreadShutdown(rawrbox::ENGINE_THREADS thread) {
 		if (thread == rawrbox::ENGINE_THREADS::THREAD_RENDER) {
 			this->_model.reset();
-			this->_bboxes.reset();
 			this->_displacement.reset();
 			this->_sprite.reset();
 			this->_sprite_2.reset();
@@ -388,15 +387,40 @@ namespace model {
 		if (this->_sprite->isUploaded()) this->_sprite->draw();
 		if (this->_sprite_2->isUploaded()) this->_sprite_2->draw();
 		if (this->_spline->isUploaded()) this->_spline->draw();
-		if (this->_bboxes->isUploaded() && this->_bbox) this->_bboxes->draw();
 		if (this->_text->isUploaded()) this->_text->draw();
+
+		// DEBUG DRAW ----
+		if (this->_debugDraw) {
+			// BBOX -----------------------
+			for (const auto& [pos, bbox] : this->_bboxes) {
+				rawrbox::DebugDraw::bbox(pos, bbox, rawrbox::Colors::Red());
+			}
+			// -------------------
+
+			// AXIS GIZMO ----
+			rawrbox::DebugDraw::line({0, 0, 0}, {1, 0, 0}, rawrbox::Colors::Red(), false);
+			rawrbox::DebugDraw::line({0, 0, 0}, {0, 1, 0}, rawrbox::Colors::Green(), false);
+			rawrbox::DebugDraw::line({0, 0, 0}, {0, 0, 1}, rawrbox::Colors::Blue(), false);
+			// ---------------
+
+			// BOUNDS --------
+			rawrbox::DebugDraw::aabb({1.5F, -0.5F, -3.F}, {6.F, 1.F, -1.F}, rawrbox::Colors::Yellow());
+			// ---------------
+
+			// RANDOM SHAPES -
+			rawrbox::DebugDraw::quad({-1.5F, 0.F, -5.5F}, {1.5F, 0.F, -5.5F}, {1.5F, 0.F, -4.5F}, {-1.5F, 0.F, -4.5F}, rawrbox::Colors::Purple());
+			rawrbox::DebugDraw::triangle({5.F, 0.F, 0.F}, {6.F, 0.F, 0.F}, {5.5F, 1.F, 0.F}, rawrbox::Colors::Orange());
+			// -----------------------
+
+			rawrbox::DebugDraw::draw(); // Flush everything queued this frame
+						    // ----
+		}
 	}
 
 	void Game::drawOverlay() const {
 		if (!this->_ready) return;
 		auto* stencil = rawrbox::RENDERER->stencil();
-
-		stencil->drawText(fmt::format("[F1]   BBOX -> {}", this->_bbox ? "enabled" : "disabled"), {15, 15}, rawrbox::Colors::White(), rawrbox::Colors::Black());
+		stencil->drawText(fmt::format("[F1]   DEBUG DRAW -> {}", this->_debugDraw ? "enabled" : "disabled"), {15, 15}, rawrbox::Colors::White(), rawrbox::Colors::Black());
 	}
 
 	void Game::draw() {

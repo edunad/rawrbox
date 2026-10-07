@@ -35,7 +35,7 @@ float4 billboardTransform(float4 vertex, uint billboard) {
 
 #ifdef SKINNED
 	#ifdef TRANSFORM_BONES
-		float4 boneTransform(uint4 indices, float4 weights, float4 position) {
+		float4x4 boneMatrix(uint4 indices, float4 weights) {
 			float4x4 BoneTransform = float4x4(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 			bool skinned = false;
 
@@ -46,7 +46,11 @@ float4 billboardTransform(float4 vertex, uint billboard) {
 				}
 			}
 
-			return skinned ? mul(BoneTransform, position) : position;
+			return skinned ? BoneTransform : float4x4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+		}
+
+		float4 boneTransform(uint4 indices, float4 weights, float4 position) {
+			return mul(boneMatrix(indices, weights), position);
 		}
 
 		// For debugging purposes

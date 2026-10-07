@@ -7,8 +7,8 @@
 	#include "decal_uniforms.fxh"
 
 	#define READ_DECALS
-	#define READ_CLUSTER_DATA_GRID
-	#include "cluster.fxh"
+	#define READ_TILES
+	#include "binning.fxh"
 #endif
 
 Texture2DArray g_Textures[];
@@ -49,21 +49,16 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	// Apply decals ----
 	#ifdef CLUSTER_PLUGIN
 		if (TOTAL_DECALS != 0) {
-			// Apply compute data ----
-			uint3 clusterIndex3D = uint3(floor(PSIn.Pos.xy / float2(CLUSTER_TEXTEL_SIZE, CLUSTER_TEXTEL_SIZE)), GetSliceFromDepth(PSIn.Pos.w));
-			uint tileIndex = Flatten3D(clusterIndex3D, float2(CLUSTERS_X, CLUSTERS_Y));
-			uint gridOffset = tileIndex * CLUSTERED_NUM_BUCKETS;
+			uint tileIndex = GetTileIndex(PSIn.Pos.xy);
+			uint2 range = UnpackZBin(DecalZBins[GetZBin(PSIn.Pos.w)]);
 
 			float3 ddxPos = ddx(PSIn.WorldPos.xyz);
 			float3 ddyPos = ddy(PSIn.WorldPos.xyz);
 
-			for (uint bucketIndex = 0; bucketIndex < CLUSTERED_NUM_BUCKETS; ++bucketIndex) {
-				uint buckets = ClusterDataGrid[gridOffset + bucketIndex].decals;
-
-				// Apply decals ---
-				float4 roughtness = 0; // not used in unlit
-				ApplyDecals(buckets, bucketIndex, PSIn.WorldPos, ddxPos, ddyPos, color, roughtness);
-				// ----------------
+			float4 roughtness = 0;
+			for (uint bin = range.x / BIN_BITS; bin <= range.y / BIN_BITS; ++bin) {
+				uint mask = DecalTiles[tileIndex * DECAL_BINS + bin] & GetBinMask(bin, range);
+				ApplyDecals(mask, bin, PSIn.WorldPos, ddxPos, ddyPos, color, roughtness);
 			}
 		}
 	#endif

@@ -45,19 +45,19 @@ namespace rawrbox {
 			    if (self == nullptr) throw std::runtime_error("Failed to get instance");
 			    if (!callback.isCallable()) throw std::runtime_error("Invalid callback");
 
-			    self->onBEAT += [callback](double beat) { luabridge::call(callback, beat); };
+			    self->onBEAT += [callback](double beat) { rawrbox::LuaUtils::call(callback, beat); };
 		    })
 		    .addFunction("onBPM", [](rawrbox::SoundInstance* self, const luabridge::LuaRef& callback) {
 			    if (self == nullptr) throw std::runtime_error("Failed to get instance");
 			    if (!callback.isCallable()) throw std::runtime_error("Invalid callback");
 
-			    self->onBPM += [callback](float beat) { luabridge::call(callback, beat); };
+			    self->onBPM += [callback](float beat) { rawrbox::LuaUtils::call(callback, beat); };
 		    })
 		    .addFunction("onEnd", [](rawrbox::SoundInstance* self, const luabridge::LuaRef& callback) {
 			    if (self == nullptr) throw std::runtime_error("Failed to get instance");
 			    if (!callback.isCallable()) throw std::runtime_error("Invalid callback");
 
-			    self->onEnd += [callback]() { luabridge::call(callback); };
+			    self->onEnd += [callback]() { rawrbox::LuaUtils::call(callback); };
 		    })
 		    // ------
 		    .endClass();

@@ -39,7 +39,7 @@ namespace rawrbox {
 		return _console->registerCommand(
 		    command, [callback](const std::vector<std::string>& args) -> std::pair<bool, std::string> {
 			    auto tbl = rawrbox::LuaUtils::vectorToTable(callback.state(), args);
-			    auto ret = luabridge::call(callback, tbl);
+			    auto ret = rawrbox::LuaUtils::call(callback, tbl);
 			    if (ret.hasFailed()) fmt::print("Lua error\n  └── {}\n", ret.errorMessage());
 
 			    switch (ret.size()) {
