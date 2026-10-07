@@ -32,6 +32,10 @@ ConstantBuffer<StaticCameraStruct> SCamera;
 #define CAMERA_RIGHT float3(1.0, 0.0, 0.0)
 
 // UTILS -----------------
+float GetViewDepth(float3 worldPos) {
+	return mul(float4(worldPos, 1.0), Camera.view).z;
+}
+
 float LinearizeDepth(float z, float near, float far) {
 	return near / (near + z * (far - near));
 }

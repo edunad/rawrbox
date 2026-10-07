@@ -85,10 +85,10 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	// -------------
 
 	if (LIGHT_DEBUG != 0) {
-		PSOut.Color = float4(GetLightDebugColor(PSIn.Pos.xy, GetTileIndex(PSIn.Pos.xy), GetZBin(PSIn.Pos.w)), 1.0);
+		PSOut.Color = float4(GetLightDebugColor(PSIn.Pos.xy, GetTileIndex(PSIn.Pos.xy), GetZBin(GetViewDepth(PSIn.WorldPos))), 1.0);
 	} else if (TOTAL_DECALS != 0 || TOTAL_LIGHTS != 0) {
 		uint tileIndex = GetTileIndex(PSIn.Pos.xy);
-		uint zbin = GetZBin(PSIn.Pos.w);
+		uint zbin = GetZBin(GetViewDepth(PSIn.WorldPos));
 
 		// DECALS -----
 		if (TOTAL_DECALS != 0) {
