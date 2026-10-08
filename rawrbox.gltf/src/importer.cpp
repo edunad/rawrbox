@@ -374,7 +374,7 @@ namespace rawrbox {
 			}
 
 			// INVERSE BIND MATRICES ----
-			if (!this->validAccessor(scene, skin.inverseBindMatrices.value(), fastgltf::AccessorType::Mat4)) {
+			if (!this->isValid(scene, skin.inverseBindMatrices.value(), fastgltf::AccessorType::Mat4)) {
 				this->_logger->warn("Skin '{}' has an matrices, skipping...", skinName);
 				continue;
 			}
@@ -602,14 +602,14 @@ namespace rawrbox {
 				if (channel.samplerIndex >= anim.samplers.size()) return false;
 
 				const auto& sampler = anim.samplers[channel.samplerIndex];
-				if (!this->validAccessor(scene, sampler.inputAccessor, fastgltf::AccessorType::Scalar)) return false;
+				if (!this->isValid(scene, sampler.inputAccessor, fastgltf::AccessorType::Scalar)) return false;
 
 				switch (channel.path) {
 					case fastgltf::AnimationPath::Translation:
 					case fastgltf::AnimationPath::Scale:
-						return this->validAccessor(scene, sampler.outputAccessor, fastgltf::AccessorType::Vec3);
+						return this->isValid(scene, sampler.outputAccessor, fastgltf::AccessorType::Vec3);
 					case fastgltf::AnimationPath::Rotation:
-						return this->validAccessor(scene, sampler.outputAccessor, fastgltf::AccessorType::Vec4);
+						return this->isValid(scene, sampler.outputAccessor, fastgltf::AccessorType::Vec4);
 					default:
 						return sampler.outputAccessor < scene.accessors.size();
 				}
@@ -1108,7 +1108,7 @@ namespace rawrbox {
 	// ----------
 
 	// UTILS ---
-	bool GLTFImporter::validAccessor(const fastgltf::Asset& scene, size_t index, fastgltf::AccessorType type) const {
+	bool GLTFImporter::isValid(const fastgltf::Asset& scene, size_t index, fastgltf::AccessorType type) const {
 		if ((this->loadFlags & rawrbox::GLTFLoadFlags::VALIDATE) == 0) return true;
 		if (index >= scene.accessors.size()) return false;
 

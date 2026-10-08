@@ -26,7 +26,7 @@
 #include <utility>
 #include <vector>
 
-// fastgltf accessor conversions ---
+// fastgltf to ozz ---
 template <>
 struct fastgltf::ElementTraits<ozz::math::Quaternion> : fastgltf::ElementTraitsBase<ozz::math::Quaternion, AccessorType::Vec4, float> {};
 
@@ -144,7 +144,7 @@ namespace rawrbox {
 		float radius = 0.F;
 
 		GLTFLight(size_t idx, size_t nodeIndex, const fastgltf::Node& node, const fastgltf::Light& light) : rawrbox::GLTFNode(idx, nodeIndex, node) {
-			this->color = rawrbox::Colorf(light.color.x(), light.color.y(), light.color.z(), 1.0F).toSRGB(); // KHR_lights_punctual colors are linear, light colors are sRGB
+			this->color = rawrbox::Colorf(light.color.x(), light.color.y(), light.color.z(), 1.0F).toSRGB();
 			this->radius = light.range.value_or(10.F);
 
 			this->intensity = light.intensity / 683.F;
@@ -253,15 +253,14 @@ namespace rawrbox {
 		static ozz::math::Float3 hermite(const ozz::math::Float3& p0, const ozz::math::Float3& m0, const ozz::math::Float3& p1, const ozz::math::Float3& m1, float t, float interval);
 		static ozz::math::Quaternion hermite(const ozz::math::Quaternion& p0, const ozz::math::Quaternion& m0, const ozz::math::Quaternion& p1, const ozz::math::Quaternion& m1, float t, float interval);
 
-		// Converts a channel into ozz keys. ozz only interpolates linearly, so STEP becomes hold keys and CubicSpline is baked at animationSampleRate
 		template <typename T, typename Key>
 		void extractKeys(const fastgltf::Asset& scene, const fastgltf::Accessor& timeAccessor, const fastgltf::Accessor& dataAccessor, fastgltf::AnimationInterpolation interpolation, float holdOffset, ozz::vector<Key>& keys, const std::string& animName) {
 			const bool cubic = interpolation == fastgltf::AnimationInterpolation::CubicSpline;
 			const bool step = interpolation == fastgltf::AnimationInterpolation::Step;
-			const size_t stride = cubic ? 3 : 1; // CubicSpline: [in-tangent, value, out-tangent] per key
+			const size_t stride = cubic ? 3 : 1;
 
 			if (dataAccessor.count != timeAccessor.count * stride) {
-				this->_logger->warn("Invalid data for animation '{}', dataAccessor and timeAccessor do not match!", animName);
+				this->_logger->warn("Invalid data for animation '{}'! dataAccessor & timeAccessor do not match!", animName);
 				return;
 			}
 
@@ -270,9 +269,9 @@ namespace rawrbox {
 
 			for (size_t k = 0; k < timeAccessor.count; k++) {
 				const float t = fastgltf::getAccessorElement<float>(scene, timeAccessor, k);
-				if (t < 0.F || t <= previousTime) { // ozz requires strictly ascending keys in [0, duration]
+				if (t < 0.F || t <= previousTime) {
 					if (!warnedOrder) {
-						this->_logger->warn("Animation '{}' has negative or non-ascending key times, dropping keys", animName);
+						this->_logger->warn("Animation '{}' has invalid times, skipping", animName);
 						warnedOrder = true;
 					}
 
@@ -291,7 +290,7 @@ namespace rawrbox {
 				if (interval <= 0.F) continue;
 
 				if (step) {
-					if (interval > holdOffset * 2.F) { // Hold the value until right before the next key
+					if (interval > holdOffset * 2.F) {
 						keys.push_back({next - holdOffset, value});
 						previousTime = next - holdOffset;
 					}
@@ -304,7 +303,7 @@ namespace rawrbox {
 					for (size_t sample = 1; sample < samples; sample++) {
 						const float ratio = static_cast<float>(sample) / static_cast<float>(samples);
 						const float time = t + ratio * interval;
-						if (time <= previousTime || time >= next) continue; // Float rounding, keep the keys strictly ascending
+						if (time <= previousTime || time >= next) continue;
 
 						keys.push_back({time, rawrbox::GLTFImporter::hermite(value, outTangent, nextValue, inTangent, ratio, interval)});
 						previousTime = time;
@@ -326,7 +325,7 @@ namespace rawrbox {
 
 		// UTILS ---
 		virtual fastgltf::sources::ByteView getSourceData(const fastgltf::Asset& scene, const fastgltf::DataSource& source);
-		[[nodiscard]] virtual bool validAccessor(const fastgltf::Asset& scene, size_t index, fastgltf::AccessorType type) const;
+		[[nodiscard]] virtual bool isValid(const fastgltf::Asset& scene, size_t index, fastgltf::AccessorType type) const;
 
 		template <typename T, std::size_t Extent>
 		fastgltf::span<T, fastgltf::dynamic_extent> subspan(fastgltf::span<T, Extent> span, size_t offset, size_t count = fastgltf::dynamic_extent) {
