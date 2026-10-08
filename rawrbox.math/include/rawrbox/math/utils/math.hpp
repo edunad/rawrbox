@@ -36,6 +36,8 @@ namespace rawrbox {
 
 		static float lerp(float a, float b, float lerpFactor);
 
+		static void hermite(const float* p0, const float* m0, const float* p1, const float* m1, float t, float interval, float* out, size_t count);
+
 		static float sample(const std::vector<float>& samples, float t);
 
 		// https://gist.github.com/itsmrpeck/be41d72e9d4c72d2236de687f6f53974
