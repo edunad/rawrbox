@@ -1,35 +1,59 @@
 #pragma once
 
+#include <rawrbox/gltf/gltf_config.hpp>
 #include <rawrbox/math/bbox.hpp>
 #include <rawrbox/math/pi.hpp>
 #include <rawrbox/math/utils/math.hpp>
 #include <rawrbox/render/lights/types.hpp>
+#include <rawrbox/render/models/animation.hpp>
+#include <rawrbox/render/models/skeleton.hpp>
 #include <rawrbox/render/models/vertex.hpp>
 #include <rawrbox/utils/logger.hpp>
 
 #include <fastgltf/core.hpp>
+#include <fastgltf/tools.hpp>
 
 #include <ozz/animation/offline/raw_animation.h>
 #include <ozz/animation/offline/raw_skeleton.h>
-#include <ozz/animation/runtime/animation.h>
-#include <ozz/animation/runtime/skeleton.h>
-#include <ozz/base/memory/unique_ptr.h>
+#include <ozz/base/maths/transform.h>
 
+#include <algorithm>
+#include <cmath>
 #include <filesystem>
 #include <memory>
+#include <optional>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
+#include <vector>
+
+// fastgltf to ozz ---
+template <>
+struct fastgltf::ElementTraits<ozz::math::Quaternion> : fastgltf::ElementTraitsBase<ozz::math::Quaternion, AccessorType::Vec4, float> {};
+
+template <>
+struct fastgltf::ElementTraits<ozz::math::Float3> : fastgltf::ElementTraitsBase<ozz::math::Float3, AccessorType::Vec3, float> {};
+
+template <>
+struct fastgltf::ElementTraits<rawrbox::Vector3f> : fastgltf::ElementTraitsBase<rawrbox::Vector3f, AccessorType::Vec3, float> {};
+
+template <>
+struct fastgltf::ElementTraits<rawrbox::Vector4f> : fastgltf::ElementTraitsBase<rawrbox::Vector4f, AccessorType::Vec4, float> {};
+// ---------------------------------
 
 namespace rawrbox {
+	class GLTFImporter;
 	// NOLINTBEGIN(unused-const-variable)
 	namespace GLTFLoadFlags {
 		const uint32_t NONE = 0;
-		
+
 		const uint32_t IMPORT_LIGHT = 1 << 1;
 		const uint32_t IMPORT_TEXTURES = 1 << 2;
 		const uint32_t IMPORT_ANIMATIONS = 1 << 3;
 		const uint32_t IMPORT_BLEND_SHAPES = 1 << 4;
 
 		const uint32_t CALCULATE_BBOX = 1 << 5;
+		const uint32_t VALIDATE = 1 << 6;
 
 		namespace Debug {
 			const uint32_t PRINT_BONE_STRUCTURE = 1 << 10;
@@ -53,6 +77,11 @@ namespace rawrbox {
 		WEBP = 0,
 		DDS = 1,
 		OTHER = 2
+	};
+
+	struct GLTFExtras {
+		GLTFImporter* importer = nullptr;
+		std::unordered_set<size_t> additiveAnimations = {};
 	};
 
 	struct GLTFMaterial {
@@ -93,14 +122,15 @@ namespace rawrbox {
 
 	struct GLTFNode {
 		size_t index = 0;
+		size_t node = 0;
 
 		std::string name;
 		rawrbox::Matrix4x4 matrix = {};
 
-		GLTFNode(size_t idx, const fastgltf::Node& node) : index(idx), name(std::move(node.name)) {
-			auto mtx = std::get<fastgltf::TRS>(node.transform);
+		GLTFNode(size_t idx, size_t nodeIndex, const fastgltf::Node& node) : index(idx), node(nodeIndex), name(std::move(node.name)) {
+			auto [translation, rotation, scale] = std::get<fastgltf::TRS>(node.transform);
 
-			this->matrix = rawrbox::Matrix4x4::mtxSRT({mtx.scale.x(), mtx.scale.y(), mtx.scale.z()}, {mtx.rotation.x(), mtx.rotation.y(), mtx.rotation.z(), mtx.rotation.w()}, {mtx.translation.x(), mtx.translation.y(), mtx.translation.z()});
+			this->matrix = rawrbox::Matrix4x4::mtxSRT({scale.x(), scale.y(), scale.z()}, {rotation.x(), rotation.y(), rotation.z(), rotation.w()}, {translation.x(), translation.y(), translation.z()});
 			this->matrix.toLeftHand();
 		};
 	};
@@ -120,8 +150,8 @@ namespace rawrbox {
 		float intensity = 1.F;
 		float radius = 0.F;
 
-		GLTFLight(size_t idx, const fastgltf::Node& node, const fastgltf::Light& light) : rawrbox::GLTFNode(idx, node) {
-			this->color = rawrbox::Colorf(light.color.x(), light.color.y(), light.color.z(), 1.0F).toSRGB(); // KHR_lights_punctual colors are linear, light colors are sRGB
+		GLTFLight(size_t idx, size_t nodeIndex, const fastgltf::Node& node, const fastgltf::Light& light) : rawrbox::GLTFNode(idx, nodeIndex, node) {
+			this->color = rawrbox::Colorf(light.color.x(), light.color.y(), light.color.z(), 1.0F).toSRGB();
 			this->radius = light.range.value_or(10.F);
 
 			this->intensity = light.intensity / 683.F;
@@ -160,23 +190,17 @@ namespace rawrbox {
 		rawrbox::BBOX bbox = {};
 		std::vector<rawrbox::GLTFPrimitive> primitives = {};
 
-		ozz::animation::Skeleton* skeleton = nullptr;
+		rawrbox::Skeleton* skeleton = nullptr;
 
-		GLTFMesh(size_t idx, const fastgltf::Node& node) : rawrbox::GLTFNode(idx, node) {};
-	};
-
-	struct GLTFJoint : public rawrbox::GLTFNode {
-		ozz::animation::Skeleton* skeleton = nullptr;
-
-		GLTFJoint(size_t idx, const fastgltf::Node& node) : rawrbox::GLTFNode(idx, node) {};
+		GLTFMesh(size_t idx, size_t nodeIndex, const fastgltf::Node& node) : rawrbox::GLTFNode(idx, nodeIndex, node) {};
 	};
 
 	struct GLTFAnimation {
 		std::string name;
 		float duration = 0.F;
+		bool additive = false;
 
-		ozz::animation::Skeleton* skeleton = nullptr;
-		std::unordered_map<std::string, ozz::animation::offline::RawAnimation::JointTrack> tracks = {};
+		std::unordered_map<size_t, ozz::animation::offline::RawAnimation::JointTrack> tracks = {};
 	};
 
 	class GLTFImporter {
@@ -189,6 +213,17 @@ namespace rawrbox {
 		std::vector<rawrbox::TextureBase*> _texturesMap = {};
 		// ----------
 
+		// HIERARCHY ---
+		std::vector<std::optional<size_t>> _nodeParents = {};
+		std::unordered_map<size_t, rawrbox::GLTFMesh*> _nodeMeshes = {};
+		// -------------
+
+		// SKELETONS ---
+		std::vector<rawrbox::Skeleton*> _skinSkeletons = {};
+		std::unordered_map<rawrbox::Skeleton*, std::vector<size_t>> _skeletonJoints = {};
+		std::unordered_map<size_t, std::vector<rawrbox::Skeleton*>> _nodeSkeletons = {};
+		// -------------
+
 		// ANIMATIONS --
 		std::vector<rawrbox::GLTFAnimation> _parsedAnimations = {};
 		// ------------
@@ -197,6 +232,7 @@ namespace rawrbox {
 
 		// POST-LOAD ---
 		virtual void postLoadFixSceneNames(fastgltf::Asset& scene);
+		virtual bool buildHierarchy(const fastgltf::Asset& scene);
 		//-----------
 
 		// MATERIALS ---
@@ -208,25 +244,95 @@ namespace rawrbox {
 
 		// SKELETONS --
 		virtual void loadSkeletons(const fastgltf::Asset& scene);
+		virtual ozz::animation::offline::RawSkeleton::Joint buildJoint(const fastgltf::Asset& scene, size_t nodeIndex, const std::unordered_set<size_t>& nodes, std::vector<size_t>& jointNodes);
+		virtual void printJoint(const ozz::animation::offline::RawSkeleton::Joint& joint, int depth, bool isLast);
+
+		[[nodiscard]] virtual ozz::math::Transform getRestPose(const fastgltf::Node& node) const;
 		// ------------
 
 		// ANIMATIONS ---
 		virtual void loadAnimations(const fastgltf::Asset& scene);
-		virtual void parseAnimations();
+		virtual void buildAnimations(const fastgltf::Asset& scene);
+
+		static void fillRestPose(ozz::animation::offline::RawAnimation::JointTrack& track, const ozz::math::Transform& rest);
+		static void toLeftHand(ozz::animation::offline::RawAnimation::JointTrack& track);
+
+		static ozz::math::Float3 hermite(const ozz::math::Float3& p0, const ozz::math::Float3& m0, const ozz::math::Float3& p1, const ozz::math::Float3& m1, float t, float interval);
+		static ozz::math::Quaternion hermite(const ozz::math::Quaternion& p0, const ozz::math::Quaternion& m0, const ozz::math::Quaternion& p1, const ozz::math::Quaternion& m1, float t, float interval);
+
+		template <typename T, typename Key>
+		void extractKeys(const fastgltf::Asset& scene, const fastgltf::Accessor& timeAccessor, const fastgltf::Accessor& dataAccessor, fastgltf::AnimationInterpolation interpolation, float holdOffset, ozz::vector<Key>& keys, const std::string& animName) {
+			const bool cubic = interpolation == fastgltf::AnimationInterpolation::CubicSpline;
+			const bool step = interpolation == fastgltf::AnimationInterpolation::Step;
+			const size_t stride = cubic ? 3 : 1;
+
+			if (dataAccessor.count != timeAccessor.count * stride) {
+				this->_logger->warn("Invalid data for animation '{}'! dataAccessor & timeAccessor do not match!", animName);
+				return;
+			}
+
+			bool warnedOrder = false;
+			float previousTime = -1.F;
+
+			for (size_t k = 0; k < timeAccessor.count; k++) {
+				const float t = fastgltf::getAccessorElement<float>(scene, timeAccessor, k);
+				if (!std::isfinite(t) || t < 0.F || t <= previousTime) {
+					if (!warnedOrder) {
+						this->_logger->warn("Animation '{}' has invalid times, skipping", animName);
+						warnedOrder = true;
+					}
+
+					continue;
+				}
+
+				previousTime = t;
+
+				const T value = fastgltf::getAccessorElement<T>(scene, dataAccessor, k * stride + (cubic ? 1 : 0));
+				keys.push_back({t, value});
+
+				if (k + 1 >= timeAccessor.count) continue;
+
+				const float next = fastgltf::getAccessorElement<float>(scene, timeAccessor, k + 1);
+				const float interval = next - t;
+				if (interval <= 0.F) continue;
+
+				if (step) {
+					if (interval > holdOffset * 2.F) {
+						keys.push_back({next - holdOffset, value});
+						previousTime = next - holdOffset;
+					}
+				} else if (cubic) {
+					const T outTangent = fastgltf::getAccessorElement<T>(scene, dataAccessor, k * 3 + 2);
+					const T nextValue = fastgltf::getAccessorElement<T>(scene, dataAccessor, (k + 1) * 3 + 1);
+					const T inTangent = fastgltf::getAccessorElement<T>(scene, dataAccessor, (k + 1) * 3);
+
+					const auto samples = static_cast<size_t>(std::clamp(std::ceil(interval * RB_GLTF_ANIM_SAMPLE_RATE), 0.F, 4096.F));
+					for (size_t sample = 1; sample < samples; sample++) {
+						const float ratio = static_cast<float>(sample) / static_cast<float>(samples);
+						const float time = t + ratio * interval;
+						if (time <= previousTime || time >= next) continue;
+
+						keys.push_back({time, rawrbox::GLTFImporter::hermite(value, outTangent, nextValue, inTangent, ratio, interval)});
+						previousTime = time;
+					}
+				}
+			}
+		}
 		// -------------
 
 		// MODEL ---
 		virtual void loadScene(const fastgltf::Asset& scene);
-		virtual void loadNodes(const fastgltf::Asset& scene, const fastgltf::Node& node);
+		virtual void loadNodes(const fastgltf::Asset& scene, size_t nodeIndex);
 
-		virtual std::unique_ptr<rawrbox::GLTFMesh> extractMesh(const fastgltf::Asset& scene, const fastgltf::Node& node);
+		virtual std::unique_ptr<rawrbox::GLTFMesh> extractMesh(const fastgltf::Asset& scene, size_t nodeIndex, const fastgltf::Node& node);
 
-		virtual std::vector<rawrbox::VertexNormBoneData> extractVertex(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive);
+		virtual std::vector<rawrbox::VertexNormBoneData> extractVertex(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive, std::optional<size_t> skinJoints);
 		virtual std::vector<uint32_t> extractIndices(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive);
 		// ----------
 
 		// UTILS ---
 		virtual fastgltf::sources::ByteView getSourceData(const fastgltf::Asset& scene, const fastgltf::DataSource& source);
+		[[nodiscard]] virtual bool isValid(const fastgltf::Asset& scene, size_t index, fastgltf::AccessorType type) const;
 
 		template <typename T, std::size_t Extent>
 		fastgltf::span<T, fastgltf::dynamic_extent> subspan(fastgltf::span<T, Extent> span, size_t offset, size_t count = fastgltf::dynamic_extent) {
@@ -249,6 +355,9 @@ namespace rawrbox {
 		std::filesystem::path filePath;
 		uint32_t loadFlags = 0;
 
+		std::unordered_set<std::string> additiveAnimations = {};
+		float animationSampleRate = 30.F;
+
 		// EXTENSIONS --
 		std::unordered_map<size_t, std::vector<std::string>> targetNames = {};
 		// -------------
@@ -259,11 +368,8 @@ namespace rawrbox {
 		// ------------
 
 		// SKINNING ---
-		std::vector<ozz::unique_ptr<ozz::animation::Skeleton>> skeletons = {};
-		std::vector<ozz::unique_ptr<ozz::animation::Animation>> animations = {};
-		std::unordered_map<std::string, std::unique_ptr<rawrbox::GLTFJoint>> joints = {};
-
-		std::unordered_map<size_t, std::unordered_set<rawrbox::GLTFMesh*>> vertexAnimation = {}; // Animation index -> mesh
+		std::vector<std::unique_ptr<rawrbox::Skeleton>> skeletons = {};
+		std::vector<std::unique_ptr<rawrbox::Animation>> animations = {};
 		// ---------
 
 		// LIGHTS ----

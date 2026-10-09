@@ -21,6 +21,20 @@ namespace rawrbox {
 		return ((1.F - lerpFactor) * a) + (lerpFactor * b);
 	}
 
+	void MathUtils::hermite(const float* p0, const float* m0, const float* p1, const float* m1, float t, float interval, float* out, size_t count) {
+		const float t2 = t * t;
+		const float t3 = t2 * t;
+
+		const float h00 = 2.F * t3 - 3.F * t2 + 1.F;
+		const float h10 = t3 - 2.F * t2 + t;
+		const float h01 = -2.F * t3 + 3.F * t2;
+		const float h11 = t3 - t2;
+
+		for (size_t i = 0; i < count; i++) {
+			out[i] = h00 * p0[i] + h10 * interval * m0[i] + h01 * p1[i] + h11 * interval * m1[i];
+		}
+	}
+
 	float MathUtils::sample(const std::vector<float>& samples, float t) {
 		int count = static_cast<int>(samples.size());
 		if (count == 0) return 0;

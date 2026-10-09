@@ -7,25 +7,15 @@
 #include <fastgltf/types.hpp>
 #include <magic_enum/magic_enum.hpp>
 
+#include <ozz/animation/offline/additive_animation_builder.h>
 #include <ozz/animation/offline/animation_builder.h>
 #include <ozz/animation/offline/animation_optimizer.h>
-#include <ozz/animation/offline/raw_track.h>
 #include <ozz/animation/offline/skeleton_builder.h>
 #include <simdjson.h>
 
+#include <algorithm>
+#include <cmath>
 #include <variant>
-
-template <>
-struct fastgltf::ElementTraits<ozz::math::Quaternion> : fastgltf::ElementTraitsBase<ozz::math::Quaternion, AccessorType::Vec4, float> {};
-
-template <>
-struct fastgltf::ElementTraits<ozz::math::Float3> : fastgltf::ElementTraitsBase<ozz::math::Float3, AccessorType::Vec3, float> {};
-
-template <>
-struct fastgltf::ElementTraits<rawrbox::Vector3f> : fastgltf::ElementTraitsBase<rawrbox::Vector3f, AccessorType::Vec3, float> {};
-
-template <>
-struct fastgltf::ElementTraits<rawrbox::Vector4f> : fastgltf::ElementTraitsBase<rawrbox::Vector4f, AccessorType::Vec4, float> {};
 
 namespace rawrbox {
 	// PRIVATE -----
@@ -49,15 +39,23 @@ namespace rawrbox {
 			extensions |= fastgltf::Extensions::KHR_lights_punctual;
 		}
 
+		GLTFExtras extras = {};
+		extras.importer = this;
+
 		fastgltf::Parser parser(extensions);
-		parser.setUserPointer(this);
+		parser.setUserPointer(&extras);
 
 		// Custom extras ----
 		parser.setExtrasParseCallback([](simdjson::dom::object* extras, std::size_t objectIndex, fastgltf::Category objectType, void* userPointer) {
-			if (extras == nullptr) return;
+			if (extras == nullptr || userPointer == nullptr) return;
 
-			auto* importer = static_cast<GLTFImporter*>(userPointer);
-			if (importer == nullptr) return;
+			auto* context = static_cast<GLTFExtras*>(userPointer);
+			auto* importer = context->importer;
+
+			if (objectType == fastgltf::Category::Animations) {
+				auto additive = extras->at_key("additive").get_bool();
+				if (additive.error() == simdjson::error_code::SUCCESS && additive.value()) context->additiveAnimations.insert(objectIndex);
+			}
 
 			if (objectType == fastgltf::Category::Meshes) {
 				if ((importer->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_BLEND_SHAPES) > 0) {
@@ -85,6 +83,15 @@ namespace rawrbox {
 
 		// POST-LOAD ---
 		this->postLoadFixSceneNames(scene);
+		for (const auto& index : extras.additiveAnimations) {
+			if (index < scene.animations.size())
+				this->additiveAnimations.insert(std::string(scene.animations[index].name));
+		}
+
+		if (!this->buildHierarchy(scene)) {
+			this->_logger->warn("Invalid model node hierarchy!");
+			return;
+		}
 		// ---------------
 
 		// LOAD MATERIALS ---
@@ -120,18 +127,17 @@ namespace rawrbox {
 		// --------------
 
 		// Fix nodes ---
-		std::unordered_set<std::string> nodeNames;
+		std::unordered_set<std::string> nodeNames = {};
 		for (size_t i = 0; i < scene.nodes.size(); i++) {
-			auto& nodes = scene.nodes[i];
-			auto name = std::string(nodes.name);
+			auto& node = scene.nodes[i];
 
-			if (nodes.name.empty()) nodes.name = fmt::format("node_{}", i);
+			std::string name = node.name.empty() ? fmt::format("node_{}", i) : std::string(node.name);
 			if (nodeNames.contains(name)) {
 				name = fmt::format("{}_{}", name, i);
-				this->_logger->warn("Duplicate node name '{}', this is not supported!, renaming to '{}'", nodes.name, name);
+				this->_logger->warn("Duplicate node name '{}', this is not supported!, renaming to '{}'", node.name, name);
 			}
 
-			nodes.name = name;
+			node.name = name;
 			nodeNames.insert(name);
 		}
 		// --------------
@@ -147,9 +153,23 @@ namespace rawrbox {
 
 		if (importAnims) {
 			// Fix animations ---
+			std::unordered_set<std::string> animNames = {};
 			for (size_t i = 0; i < scene.animations.size(); i++) {
 				auto& anim = scene.animations[i];
-				if (anim.name.empty()) anim.name = fmt::format("animation_{}", i);
+
+				std::string name = anim.name.empty() ? fmt::format("animation_{}", i) : std::string(anim.name);
+				if (animNames.contains(name)) {
+					std::string renamed = fmt::format("{}_{}", name, i);
+					while (animNames.contains(renamed)) {
+						renamed += "_";
+					}
+
+					this->_logger->warn("Duplicate animation name '{}', renaming to '{}'", name, renamed);
+					name = renamed;
+				}
+
+				anim.name = name;
+				animNames.insert(name);
 			}
 			// -------------------
 
@@ -169,6 +189,40 @@ namespace rawrbox {
 			}
 			// --------------
 		}
+	}
+
+	bool GLTFImporter::buildHierarchy(const fastgltf::Asset& scene) {
+		this->_nodeParents.assign(scene.nodes.size(), std::nullopt);
+
+		for (size_t i = 0; i < scene.nodes.size(); i++) {
+			for (const auto& child : scene.nodes[i].children) {
+				if (child >= scene.nodes.size()) {
+					this->_logger->warn("Node '{}' has an invalid child '{}'", i, child);
+					return false;
+				}
+
+				if (this->_nodeParents[child].has_value()) {
+					this->_logger->warn("Node '{}' has multiple parents. This is not supported!", child);
+					return false;
+				}
+
+				this->_nodeParents[child] = i;
+			}
+		}
+
+		for (size_t i = 0; i < scene.nodes.size(); i++) {
+			std::optional<size_t> current = i;
+			for (size_t depth = 0; current.has_value(); depth++) {
+				if (depth > scene.nodes.size()) {
+					this->_logger->warn("Node '{}' has looping cyclic dependency!", i);
+					return false;
+				}
+
+				current = this->_nodeParents[current.value()];
+			}
+		}
+
+		return true;
 	}
 	//-----------
 
@@ -194,6 +248,8 @@ namespace rawrbox {
 			}
 
 			std::string name(gltfTexture.name);
+			if (name.empty())
+				name = imgIndex.has_value() && imgIndex->first < scene.images.size() ? std::string(scene.images[imgIndex->first].name) : fmt::format("texture_{}", i);
 			if (!imgIndex.has_value()) {
 				this->_logger->warn("Unsupported texture '{} -> {}'", i, name);
 				continue;
@@ -256,14 +312,12 @@ namespace rawrbox {
 
 			// TRANSPARENCY ----
 			switch (material.alphaMode) {
-				case fastgltf::AlphaMode::Mask:
-					mat->alphaCutoff = material.alphaCutoff;
-					break;
 				case fastgltf::AlphaMode::Blend:
 					mat->alphaCutoff = 0.0039F;
 					break;
+				case fastgltf::AlphaMode::Mask:
 				default: // OPAQUE
-					mat->alphaCutoff = 0.F;
+					mat->alphaCutoff = material.alphaCutoff;
 					break;
 			}
 
@@ -341,141 +395,226 @@ namespace rawrbox {
 	// SKELETONS --
 	void GLTFImporter::loadSkeletons(const fastgltf::Asset& scene) {
 		if (scene.skins.empty()) return;
+
+		const bool printBones = (this->loadFlags & rawrbox::GLTFLoadFlags::Debug::PRINT_BONE_STRUCTURE) > 0;
+
 		ozz::animation::offline::SkeletonBuilder builder;
+		this->_skinSkeletons.assign(scene.skins.size(), nullptr);
 
-		// UTILS -------
-
-		// GENERATE CHILDREN BONES ---
-		std::function<void(const fastgltf::Node& node, ozz::animation::offline::RawSkeleton::Joint& parent)> generateBones;
-		generateBones = [this, &scene, &generateBones](const fastgltf::Node& node, ozz::animation::offline::RawSkeleton::Joint& parent) {
-			for (const auto& childIndex : node.children) {
-				const auto& childNode = scene.nodes[childIndex];
-				const std::string jointName = std::string(childNode.name);
-
-				ozz::animation::offline::RawSkeleton::Joint childJoint = {};
-				childJoint.name = jointName;
-
-				// REGISTER JOINT ---
-				this->joints[jointName] = std::make_unique<rawrbox::GLTFJoint>(this->joints.size(), childNode);
-				// ------------------
-
-				generateBones(childNode, childJoint);
-				parent.children.push_back(childJoint);
-			}
-		};
-		// -----------------------
-
-		// DEBUG ----
-		std::function<void(const ozz::animation::offline::RawSkeleton::Joint&, int, bool)> printBone;
-		if ((this->loadFlags & rawrbox::GLTFLoadFlags::Debug::PRINT_BONE_STRUCTURE) > 0) {
-			printBone = [this, &printBone](const ozz::animation::offline::RawSkeleton::Joint& bn, int depth, bool isLast) -> void {
-				std::string indent(depth * 4, ' ');
-				std::string branch = isLast ? "└── " : "├── ";
-				this->_logger->debug("{}{}{}", indent, branch, bn.name);
-
-				for (size_t i = 0; i < bn.children.size(); i++) {
-					bool lastChild = (i == bn.children.size() - 1);
-					printBone(bn.children[i], depth + 1, lastChild);
-				}
-			};
-		}
-		// -------------
-		// -----------------------
-
-		this->skeletons.resize(scene.skins.size());
 		for (size_t i = 0; i < scene.skins.size(); i++) {
 			const auto& skin = scene.skins[i];
-			auto skinName = std::string(skin.name);
+			const std::string skinName = std::string(skin.name);
 
 			if (skin.joints.empty()) {
-				this->_logger->warn("Skin '{}' has no joints, skipping...", skin.name);
+				this->_logger->warn("Skin '{}' has no joints, skipping...", skinName);
 				continue;
 			}
 
 			if (!skin.inverseBindMatrices.has_value()) {
-				this->_logger->warn("Skin '{}' has no inverse bind matrices, skipping...", skin.name);
+				this->_logger->warn("Skin '{}' has no inverse bind matrices, skipping...", skinName);
 				continue;
 			}
 
-			// EXTRACT INVERTED BIND MATRICES ----
-			std::vector<std::array<float, 16>> inverseBindMatrices(skin.joints.size());
+			// INVERSE BIND MATRICES ----
+			if (!this->isValid(scene, skin.inverseBindMatrices.value(), fastgltf::AccessorType::Mat4)) {
+				this->_logger->warn("Skin '{}' has no inverse bind matrices, skipping...", skinName);
+				continue;
+			}
 
-			fastgltf::iterateAccessorWithIndex<fastgltf::math::fmat4x4>(
-			    scene, scene.accessors[skin.inverseBindMatrices.value()],
-			    [&](const fastgltf::math::fmat4x4& mtx, size_t index) {
-				    std::memcpy(inverseBindMatrices[index].data(), mtx.data(), sizeof(float) * mtx.size());
-			    });
+			const auto& inverseAccessor = scene.accessors[skin.inverseBindMatrices.value()];
+			if (inverseAccessor.count < skin.joints.size()) {
+				this->_logger->warn("Skin '{}' joints {} do not match {} inverse bind matrices, skipping...", skinName, skin.joints.size(), inverseAccessor.count);
+				continue;
+			}
+
+			std::vector<rawrbox::Matrix4x4> inverseBindMatrices(skin.joints.size());
+			fastgltf::iterateAccessorWithIndex<fastgltf::math::fmat4x4>(scene, inverseAccessor, [&inverseBindMatrices](const fastgltf::math::fmat4x4& mtx, size_t index) {
+				if (index >= inverseBindMatrices.size()) return;
+				inverseBindMatrices[index] = rawrbox::Matrix4x4(mtx.data());
+			});
 			// ---------------------------
 
-			// BUILD SKELETON STRUCTURE ----
-			ozz::animation::offline::RawSkeleton rawSkeleton;
+			// SHARED SKINS (optimize same skins)  ----
+			rawrbox::Skeleton* shared = nullptr;
+			for (size_t o = 0; o < i && shared == nullptr; o++) {
+				rawrbox::Skeleton* other = this->_skinSkeletons[o];
+				if (other == nullptr) continue;
 
-			for (const auto& rootJoint : skin.joints) {
-				auto& root = scene.nodes[rootJoint];
-				const std::string rootName = std::string(root.name);
+				const auto& otherSkin = scene.skins[o];
+				if (otherSkin.joints.size() != skin.joints.size() || !std::equal(otherSkin.joints.begin(), otherSkin.joints.end(), skin.joints.begin())) continue;
 
-				if (this->joints.contains(rootName)) continue; // This is the only way to determine root joints
+				bool sameBind = true;
+				for (size_t k = 0; k < inverseBindMatrices.size() && sameBind; k++) {
+					sameBind = other->getInverseBindMatrix(k) == inverseBindMatrices[k];
+				}
 
-				ozz::animation::offline::RawSkeleton::Joint rootBone;
-				rootBone.name = rootName;
-
-				// REGISTER JOINT ---
-				this->joints[rootName] = std::make_unique<rawrbox::GLTFJoint>(this->joints.size(), root);
-				// ------------------
-
-				if (!root.children.empty()) generateBones(root, rootBone);
-
-				rawSkeleton.roots.push_back(rootBone);
+				if (sameBind) shared = other;
 			}
-			// ----------------------
 
-			// DEBUG ----
-			if (printBone != nullptr) {
-				this->_logger->debug("Found skeleton '{}' ->", fmt::styled(skin.name, fmt::fg(fmt::color::green_yellow)));
-				for (const ozz::animation::offline::RawSkeleton::Joint& root : rawSkeleton.roots) {
-					printBone(root, 0, true);
+			if (shared != nullptr) {
+				this->_skinSkeletons[i] = shared;
+				continue;
+			}
+			// -----------------------------------
+
+			// Ozz convertion ----
+			if (skin.joints.size() > RB_RENDER_MAX_BONES_PER_MODEL) {
+				this->_logger->warn("Skin '{}' has {} joints, max is {}, skipping...", skinName, skin.joints.size(), RB_RENDER_MAX_BONES_PER_MODEL);
+				continue;
+			}
+
+			bool validJoints = true;
+			std::unordered_set<size_t> nodes = {};
+
+			for (const auto& joint : skin.joints) {
+				if (joint >= scene.nodes.size()) {
+					this->_logger->warn("Skin '{}' has invalid joint node {}, skipping...", skinName, joint);
+					validJoints = false;
+					break;
+				}
+
+				std::optional<size_t> current = joint;
+				while (current.has_value() && nodes.insert(current.value()).second) {
+					current = this->_nodeParents[current.value()];
 				}
 			}
-			// ------------
 
-			// BUILD ---
-			auto buildSkeleton = builder(rawSkeleton);
-			if (buildSkeleton == nullptr) {
-				this->_logger->warn("Failed to build skeleton '{}'", skin.name);
+			if (!validJoints) continue;
+
+			std::vector<size_t> roots = {};
+			for (size_t n = 0; n < scene.nodes.size(); n++) {
+				if (!nodes.contains(n) || this->_nodeParents[n].has_value()) continue;
+				roots.push_back(n);
+			}
+			// ----------------------------
+
+			// BUILD ----
+			ozz::animation::offline::RawSkeleton rawSkeleton = {};
+			std::vector<size_t> jointNodes = {};
+
+			for (const auto& root : roots) {
+				rawSkeleton.roots.push_back(this->buildJoint(scene, root, nodes, jointNodes));
+			}
+
+			if (printBones) {
+				this->_logger->debug("Found skeleton '{}' ->", fmt::styled(skinName, fmt::fg(fmt::color::green_yellow)));
+				for (size_t r = 0; r < rawSkeleton.roots.size(); r++) {
+					this->printJoint(rawSkeleton.roots[r], 0, r == rawSkeleton.roots.size() - 1);
+				}
+			}
+
+			auto ozzSkeleton = builder(rawSkeleton);
+			if (ozzSkeleton == nullptr) {
+				this->_logger->warn("Failed to build skeleton '{}'", skinName);
 				continue;
 			}
 
-			this->skeletons[i] = std::move(buildSkeleton);
-			this->skeletons[i]->inverseBindMatrices = inverseBindMatrices;
-			// ----------------------
-
-			// Apply skins on bones --
-			for (auto& joint : skin.joints) {
-				const auto& node = scene.nodes[joint];
-				const std::string jointName = std::string(node.name);
-
-				auto fnd = this->joints.find(jointName);
-				if (fnd == this->joints.end()) RAWRBOX_CRITICAL("Invalid joint '{}', could not find in skeleton", jointName);
-
-				fnd->second->skeleton = this->skeletons[i].get();
+			// Validation ---
+			if (static_cast<size_t>(ozzSkeleton->num_joints()) != jointNodes.size()) {
+				this->_logger->warn("Skeleton '{}' joint count mismatch ({} != {})", skinName, ozzSkeleton->num_joints(), jointNodes.size());
+				continue;
 			}
-			// --------------
+
+			bool validOrder = true;
+			const auto jointNames = ozzSkeleton->joint_names();
+			for (size_t j = 0; j < jointNodes.size(); j++) {
+				if (scene.nodes[jointNodes[j]].name == std::string_view(jointNames[j])) continue;
+
+				this->_logger->warn("Skeleton '{}' joint order mismatch at {} ('{}' != '{}'), skipping...", skinName, j, scene.nodes[jointNodes[j]].name, jointNames[j]);
+				validOrder = false;
+				break;
+			}
+
+			if (!validOrder) continue;
+			// -----------
+
+			// REMAP ----
+			bool validRemap = true;
+			std::vector<int> jointRemap(skin.joints.size());
+
+			for (size_t k = 0; k < skin.joints.size(); k++) {
+				auto fnd = std::ranges::find(jointNodes, skin.joints[k]);
+				if (fnd == jointNodes.end()) {
+					this->_logger->warn("Skin '{}' joint node '{}' not found in the skeleton, skipping...", skinName, skin.joints[k]);
+					validRemap = false;
+					break;
+				}
+
+				jointRemap[k] = static_cast<int>(std::distance(jointNodes.begin(), fnd));
+			}
+
+			if (!validRemap) continue;
+			// -----------------------------------------------------------------------
+
+			auto skeleton = std::make_unique<rawrbox::Skeleton>(skinName, std::move(ozzSkeleton), std::move(inverseBindMatrices), std::move(jointRemap));
+			rawrbox::Skeleton* ptr = skeleton.get();
+
+			for (const auto& node : jointNodes) {
+				this->_nodeSkeletons[node].push_back(ptr);
+			}
+
+			this->_skeletonJoints[ptr] = std::move(jointNodes);
+			this->_skinSkeletons[i] = ptr;
+
+			this->skeletons.push_back(std::move(skeleton));
 		}
 
-		// Apply skins on meshes --
+		// APPLY SKINS ON MESHES ----
 		for (size_t i = 0; i < scene.nodes.size(); i++) {
 			const auto& node = scene.nodes[i];
-			if (!node.skinIndex) continue;
+			if (!node.skinIndex.has_value()) continue;
 
-			size_t skinIndex = node.skinIndex.value();
-			if (skinIndex >= this->skeletons.size()) {
-				this->_logger->warn("Invalid skeleton index '{}' on mesh {}", skinIndex, i);
+			auto fnd = this->_nodeMeshes.find(i);
+			if (fnd == this->_nodeMeshes.end()) continue; // Invalid mesh / skipped
+
+			const size_t skinIndex = node.skinIndex.value();
+			if (skinIndex >= this->_skinSkeletons.size() || this->_skinSkeletons[skinIndex] == nullptr) {
+				this->_logger->warn("Invalid skin index '{}' on mesh '{}'", skinIndex, fnd->second->name);
 				continue;
 			}
 
-			this->meshes[node.meshIndex.value()]->skeleton = this->skeletons[skinIndex].get();
+			fnd->second->skeleton = this->_skinSkeletons[skinIndex];
+			fnd->second->matrix = rawrbox::Matrix4x4::mtxLeftHand(rawrbox::Matrix4x4());
 		}
 		// --------------
+	}
+
+	ozz::animation::offline::RawSkeleton::Joint GLTFImporter::buildJoint(const fastgltf::Asset& scene, size_t nodeIndex, const std::unordered_set<size_t>& nodes, std::vector<size_t>& jointNodes) {
+		const auto& node = scene.nodes[nodeIndex];
+
+		ozz::animation::offline::RawSkeleton::Joint joint = {};
+		joint.name = node.name.c_str();
+		joint.transform = this->getRestPose(node);
+
+		jointNodes.push_back(nodeIndex);
+
+		for (const auto& child : node.children) {
+			if (!nodes.contains(child)) continue;
+			joint.children.push_back(this->buildJoint(scene, child, nodes, jointNodes));
+		}
+
+		return joint;
+	}
+
+	void GLTFImporter::printJoint(const ozz::animation::offline::RawSkeleton::Joint& joint, int depth, bool isLast) {
+		const std::string indent(static_cast<size_t>(depth) * 4, ' ');
+		const std::string branch = isLast ? "└── " : "├── ";
+		this->_logger->debug("{}{}{}", indent, branch, joint.name.c_str());
+
+		for (size_t i = 0; i < joint.children.size(); i++) {
+			this->printJoint(joint.children[i], depth + 1, i == joint.children.size() - 1);
+		}
+	}
+
+	ozz::math::Transform GLTFImporter::getRestPose(const fastgltf::Node& node) const {
+		const auto& trs = std::get<fastgltf::TRS>(node.transform);
+
+		ozz::math::Transform transform = ozz::math::Transform::identity();
+		transform.translation = ozz::math::Float3(trs.translation.x(), trs.translation.y(), trs.translation.z());
+		transform.rotation = ozz::math::Quaternion(trs.rotation.x(), trs.rotation.y(), trs.rotation.z(), trs.rotation.w());
+		transform.scale = ozz::math::Float3(trs.scale.x(), trs.scale.y(), trs.scale.z());
+
+		return transform;
 	}
 	// ------------
 
@@ -483,191 +622,335 @@ namespace rawrbox {
 	void GLTFImporter::loadAnimations(const fastgltf::Asset& scene) {
 		if (scene.animations.empty()) return;
 
-		this->_parsedAnimations.resize(scene.animations.size());
+		const bool printAnims = (this->loadFlags & rawrbox::GLTFLoadFlags::Debug::PRINT_ANIMATIONS) > 0;
+
+		this->_parsedAnimations.reserve(scene.animations.size());
 		for (size_t i = 0; i < scene.animations.size(); i++) {
 			const auto& anim = scene.animations[i];
-			if (anim.channels.empty()) continue;
+			if (anim.channels.empty()) {
+				this->_logger->warn("Animation '{}' has no channels, skipping...", anim.name);
+				continue;
+			}
 
-			rawrbox::GLTFAnimation& gltfAnim = this->_parsedAnimations[i];
-			gltfAnim.name = std::string(anim.name.begin(), anim.name.end());
-			gltfAnim.duration = 0.001F;
+			rawrbox::GLTFAnimation gltfAnim = {};
+			gltfAnim.name = std::string(anim.name);
+			gltfAnim.additive = this->additiveAnimations.contains(gltfAnim.name);
 
-			if ((this->loadFlags & rawrbox::GLTFLoadFlags::Debug::PRINT_ANIMATIONS) > 0) {
+			if (printAnims) {
 				this->_logger->debug("Found animation '{}'", fmt::styled(gltfAnim.name, fmt::fg(fmt::color::green_yellow)));
 			}
 
-			for (size_t c = 0; c < anim.channels.size(); c++) {
-				const auto& channel = anim.channels[c];
+			// VALIDATE ---
+			const auto validChannel = [this, &scene, &anim](const fastgltf::AnimationChannel& channel) {
+				if (channel.samplerIndex >= anim.samplers.size()) return false;
 
-				if (!channel.nodeIndex) continue;
+				const auto& sampler = anim.samplers[channel.samplerIndex];
+				if (!this->isValid(scene, sampler.inputAccessor, fastgltf::AccessorType::Scalar)) return false;
+
+				switch (channel.path) {
+					case fastgltf::AnimationPath::Translation:
+					case fastgltf::AnimationPath::Scale:
+						return this->isValid(scene, sampler.outputAccessor, fastgltf::AccessorType::Vec3);
+					case fastgltf::AnimationPath::Rotation:
+						return this->isValid(scene, sampler.outputAccessor, fastgltf::AccessorType::Vec4);
+					default:
+						return sampler.outputAccessor < scene.accessors.size();
+				}
+			};
+			// ------------
+
+			// DURATION ---
+			for (const auto& channel : anim.channels) {
+				if (!validChannel(channel)) continue;
+
+				const auto& timeAccessor = scene.accessors[anim.samplers[channel.samplerIndex].inputAccessor];
+				fastgltf::iterateAccessor<float>(scene, timeAccessor, [&gltfAnim](float time) { gltfAnim.duration = std::max(gltfAnim.duration, time); });
+			}
+
+			gltfAnim.duration = std::max(gltfAnim.duration, 0.001F);
+			// ----------------------------------------
+
+			for (const auto& channel : anim.channels) {
+				if (!channel.nodeIndex.has_value()) continue;
+
 				const size_t nodeIndex = channel.nodeIndex.value();
+				if (nodeIndex >= scene.nodes.size()) {
+					this->_logger->warn("Animation '{}' targets invalid node {}", gltfAnim.name, nodeIndex);
+					continue;
+				}
+
+				if (channel.path == fastgltf::AnimationPath::Weights) {
+					this->_logger->warn("Unsupported channel path 'Weights' for animation '{}'", gltfAnim.name); // TODO: SUPPORT BLEND SHAPES
+					continue;
+				}
+
+				if (!validChannel(channel)) {
+					this->_logger->warn("Animation '{}' has a channel with an invalid sampler or accessor, skipping channel...", gltfAnim.name);
+					continue;
+				}
 
 				const auto& sampler = anim.samplers[channel.samplerIndex];
 				const auto& timeAccessor = scene.accessors[sampler.inputAccessor];
 				const auto& dataAccessor = scene.accessors[sampler.outputAccessor];
 
-				if (timeAccessor.count != dataAccessor.count) {
-					this->_logger->warn("Invalid data for animation '{}', dataAccessor and timeAccessor do not match!", gltfAnim.name);
-					continue;
+				auto& track = gltfAnim.tracks[nodeIndex];
+				switch (channel.path) {
+					case fastgltf::AnimationPath::Translation:
+						this->extractKeys<ozz::math::Float3>(scene, timeAccessor, dataAccessor, sampler.interpolation, RB_GLTF_ANIM_HOLD_OFFSET, track.translations, gltfAnim.name);
+						break;
+					case fastgltf::AnimationPath::Rotation:
+						this->extractKeys<ozz::math::Quaternion>(scene, timeAccessor, dataAccessor, sampler.interpolation, RB_GLTF_ANIM_HOLD_OFFSET, track.rotations, gltfAnim.name);
+						break;
+					case fastgltf::AnimationPath::Scale:
+						this->extractKeys<ozz::math::Float3>(scene, timeAccessor, dataAccessor, sampler.interpolation, RB_GLTF_ANIM_HOLD_OFFSET, track.scales, gltfAnim.name);
+						break;
+					default:
+						break;
 				}
-
-				if (sampler.interpolation == fastgltf::AnimationInterpolation::CubicSpline) {
-					this->_logger->warn("Unsupported channel interpolation 'CubicSpline' for animation '{}'", gltfAnim.name);
-					continue;
-				}
-
-				const auto& node = scene.nodes[nodeIndex]; // Node being affected
-
-				if (node.meshIndex) {                                            // Vertex animation
-					const auto& mesh = this->meshes[node.meshIndex.value()]; // Mesh being affected
-					this->vertexAnimation[i].insert(mesh.get());
-				} else {
-					auto fnd = this->joints.find(std::string(node.name));
-
-					if (fnd != this->joints.end()) {
-						if (gltfAnim.skeleton != nullptr && gltfAnim.skeleton != fnd->second->skeleton) {
-							this->_logger->warn("Animation '{}' contains 2 or more skeletons, this is not supported! Please split the animation per skeleton", gltfAnim.name);
-							continue;
-						} else {
-							gltfAnim.skeleton = fnd->second->skeleton;
-						}
-					}
-				}
-				// ----------------
-
-				// TIME ----
-				auto nodeName = std::string(node.name);
-				auto& track = gltfAnim.tracks[nodeName];
-
-				for (size_t iTime = 0; iTime < timeAccessor.count; iTime++) {
-					float t = fastgltf::getAccessorElement<float>(scene, timeAccessor, iTime);
-					if (t > gltfAnim.duration) gltfAnim.duration = t; // Calculate the total animation time
-
-					switch (channel.path) {
-						case fastgltf::AnimationPath::Translation:
-							{
-								ozz::math::Float3 key = fastgltf::getAccessorElement<ozz::math::Float3>(scene, dataAccessor, iTime);
-								if (gltfAnim.skeleton == nullptr) key.z = -key.z; // Convert to left-hand coordinate system
-
-								track.translations.emplace_back(t, key);
-								break;
-							}
-						case fastgltf::AnimationPath::Rotation:
-							{
-								ozz::math::Quaternion key = fastgltf::getAccessorElement<ozz::math::Quaternion>(scene, dataAccessor, iTime);
-								if (gltfAnim.skeleton == nullptr) { // Convert to left-hand coordinate system
-									key.x = -key.x;
-									key.y = -key.y;
-								}
-
-								track.rotations.emplace_back(t, key);
-								break;
-							}
-						case fastgltf::AnimationPath::Scale:
-							{
-								ozz::math::Float3 key = fastgltf::getAccessorElement<ozz::math::Float3>(scene, dataAccessor, iTime);
-								if (gltfAnim.skeleton == nullptr) key.z = -key.z; // Convert to left-hand coordinate system
-
-								track.scales.emplace_back(t, key);
-								break;
-							}
-						case fastgltf::AnimationPath::Weights:
-							this->_logger->warn("Unsupported channel path 'Weights' for animation '{}'", gltfAnim.name);
-							break; // TODO: SUPPORT BLEND SHAPES
-						default:
-							// Handle other cases
-							break;
-					}
-				}
-				// -------------
 			}
+
+			this->_parsedAnimations.push_back(std::move(gltfAnim));
 		}
 
-		// Ok, we done calculating the animations, time to parse ---
-		this->parseAnimations();
-		//- -----------------------------------------------------------
+		this->buildAnimations(scene);
 	}
 
-	void GLTFImporter::parseAnimations() { // I don't like this extra step, but OZZ requires tracks to have all bones and be in order..
+	void GLTFImporter::buildAnimations(const fastgltf::Asset& scene) {
 		if (this->_parsedAnimations.empty()) return;
 		ozz::animation::offline::AnimationBuilder builder;
 
+		const bool optimize = (this->loadFlags & rawrbox::GLTFLoadFlags::Optimizer::SKELETON_ANIMATIONS) > 0;
+		const bool printAnims = (this->loadFlags & rawrbox::GLTFLoadFlags::Debug::PRINT_ANIMATIONS) > 0;
+
 		this->_logger->debug("Building {} animations...", this->_parsedAnimations.size());
+		for (const auto& anim : this->_parsedAnimations) {
+			auto animation = std::make_unique<rawrbox::Animation>(anim.name);
 
-		this->animations.resize(this->_parsedAnimations.size());
-		for (size_t i = 0; i < this->_parsedAnimations.size(); i++) {
-			auto& anim = this->_parsedAnimations[i];
-
-			ozz::animation::offline::RawAnimation rawrAnim;
-			rawrAnim.duration = anim.duration;
-			rawrAnim.name = anim.name;
-
-			if (anim.skeleton != nullptr) {
-				for (std::string bone : anim.skeleton->joint_names()) {
-					rawrAnim.tracks.emplace_back(anim.tracks[bone]); // Ensure all joints have a track and it's ordered based on skeleton
-				}
-			} else {
-				for (const auto& track : anim.tracks) {
-					rawrAnim.tracks.emplace_back(track.second);
-				}
+			// TARGETS ----
+			std::vector<size_t> targetNodes = {};
+			targetNodes.reserve(anim.tracks.size());
+			for (const auto& track : anim.tracks) {
+				targetNodes.push_back(track.first);
 			}
 
-			if (rawrAnim.tracks.empty()) {
-				this->_logger->warn("Animation '{}' has no tracks, skipping...", rawrAnim.name);
+			std::ranges::sort(targetNodes);
+
+			std::vector<rawrbox::Skeleton*> targetSkeletons = {};
+			std::vector<size_t> meshNodes = {};
+
+			for (const auto& node : targetNodes) {
+				bool targeted = false;
+
+				if (auto fndSkeletons = this->_nodeSkeletons.find(node); fndSkeletons != this->_nodeSkeletons.end()) {
+					targeted = true;
+
+					for (auto* skeleton : fndSkeletons->second) {
+						if (std::ranges::find(targetSkeletons, skeleton) != targetSkeletons.end()) continue;
+						targetSkeletons.push_back(skeleton);
+					}
+				}
+
+				if (auto fndMesh = this->_nodeMeshes.find(node); fndMesh != this->_nodeMeshes.end()) {
+					targeted = true;
+					if (fndMesh->second->skeleton == nullptr) meshNodes.push_back(node);
+				}
+
+				if (!targeted) this->_logger->debug("Animation '{}' targets node '{}' a invalid mesh / joint! Skipping", anim.name, scene.nodes[node].name);
+			}
+			// -----------------------------------------------------------------------
+
+			// SKELETON PARTS ----
+			for (auto* skeleton : targetSkeletons) {
+				auto fndJoints = this->_skeletonJoints.find(skeleton);
+				if (fndJoints == this->_skeletonJoints.end()) continue;
+
+				const auto& jointNodes = fndJoints->second;
+
+				ozz::animation::offline::RawAnimation rawAnim = {};
+				rawAnim.name = anim.name.c_str();
+				rawAnim.duration = anim.duration;
+				rawAnim.tracks.reserve(jointNodes.size());
+
+				for (const auto& node : jointNodes) {
+					auto fnd = anim.tracks.find(node);
+
+					ozz::animation::offline::RawAnimation::JointTrack track = fnd != anim.tracks.end() ? fnd->second : ozz::animation::offline::RawAnimation::JointTrack{};
+					this->fillRestPose(track, this->getRestPose(scene.nodes[node]));
+
+					rawAnim.tracks.push_back(std::move(track));
+				}
+
+				if (anim.additive) {
+					std::vector<ozz::math::Transform> reference = {};
+					reference.reserve(jointNodes.size());
+
+					for (const auto& node : jointNodes) {
+						reference.push_back(this->getRestPose(scene.nodes[node]));
+					}
+
+					ozz::animation::offline::AdditiveAnimationBuilder additiveBuilder;
+					ozz::animation::offline::RawAnimation input = rawAnim;
+
+					if (!additiveBuilder(input, ozz::make_span(reference), &rawAnim)) {
+						this->_logger->warn("Failed to build additive animation '{}' for skeleton '{}'", anim.name, skeleton->name);
+						continue;
+					}
+				}
+
+				if (optimize) {
+					ozz::animation::offline::AnimationOptimizer optimizer;
+					ozz::animation::offline::RawAnimation input = rawAnim;
+
+					if (!optimizer(input, skeleton->getSkeleton(), &rawAnim)) {
+						this->_logger->warn("Failed to optimize animation '{}' for skeleton '{}'", anim.name, skeleton->name);
+					}
+				}
+
+				auto built = builder(rawAnim);
+				if (built == nullptr) {
+					this->_logger->warn("Failed to build animation '{}' for skeleton '{}'", anim.name, skeleton->name);
+					continue;
+				}
+
+				rawrbox::AnimationPart part = {};
+				part.type = rawrbox::AnimationType::SKELETON;
+				part.additive = anim.additive;
+				part.animation = std::move(built);
+				part.skeleton = skeleton;
+
+				animation->addPart(std::move(part));
+			}
+			// -------------------
+
+			// VERTEX ANIMATION ----
+			if (!meshNodes.empty()) {
+				ozz::animation::offline::RawAnimation rawAnim = {};
+
+				rawAnim.name = anim.name.c_str();
+				rawAnim.duration = anim.duration;
+				rawAnim.tracks.reserve(meshNodes.size());
+
+				std::vector<uint32_t> meshIDs = {};
+				meshIDs.reserve(meshNodes.size());
+
+				for (const auto& node : meshNodes) {
+					ozz::animation::offline::RawAnimation::JointTrack track = anim.tracks.at(node);
+
+					this->fillRestPose(track, this->getRestPose(scene.nodes[node]));
+					this->toLeftHand(track);
+
+					rawAnim.tracks.push_back(std::move(track));
+					meshIDs.push_back(static_cast<uint32_t>(this->_nodeMeshes.at(node)->index));
+				}
+
+				auto built = builder(rawAnim);
+				if (built == nullptr) {
+					this->_logger->warn("Failed to build vertex animation '{}'", anim.name);
+				} else {
+					rawrbox::AnimationPart part = {};
+					part.type = rawrbox::AnimationType::VERTEX;
+					part.animation = std::move(built);
+					part.meshes = std::move(meshIDs);
+
+					animation->addPart(std::move(part));
+				}
+			}
+			// ----------------
+
+			if (animation->empty()) {
+				this->_logger->warn("Animation '{}' has no valid targets, skipping...", anim.name);
 				continue;
 			}
 
-			// Optimize skeleton
-			if ((this->loadFlags & rawrbox::GLTFLoadFlags::Optimizer::SKELETON_ANIMATIONS) > 0 && anim.skeleton != nullptr) {
-				ozz::animation::offline::AnimationOptimizer optimizer;
-				ozz::animation::offline::RawAnimation input = rawrAnim;
-
-				if (!optimizer(input, *anim.skeleton, &rawrAnim)) {
-					this->_logger->warn("Failed to optimize animation '{}'", rawrAnim.name);
-				}
-			}
-			// ------------
-
-			// Build the animations ---
-			auto buildAnim = builder(rawrAnim);
-			if (buildAnim == nullptr) {
-				this->_logger->warn("Failed to build animation '{}'", rawrAnim.name);
-				continue;
+			if (printAnims) {
+				this->_logger->debug("Built animation '{}' -> {} skeleton(s){}, {} vertex track(s), {:.2f}s", fmt::styled(anim.name, fmt::fg(fmt::color::green_yellow)), targetSkeletons.size(), anim.additive ? " (additive)" : "", meshNodes.size(), animation->duration);
 			}
 
-			this->animations[i] = std::move(buildAnim);
-			this->animations[i]->type = anim.skeleton != nullptr ? ozz::animation::AnimationType::SKELETON : ozz::animation::AnimationType::VERTEX;
-			// ----------------------
+			this->animations.push_back(std::move(animation));
 		}
 	}
+
+	void GLTFImporter::fillRestPose(ozz::animation::offline::RawAnimation::JointTrack& track, const ozz::math::Transform& rest) {
+		if (track.translations.empty()) track.translations.push_back({0.F, rest.translation});
+		if (track.rotations.empty()) track.rotations.push_back({0.F, rest.rotation});
+		if (track.scales.empty()) track.scales.push_back({0.F, rest.scale});
+	}
+
+	void GLTFImporter::toLeftHand(ozz::animation::offline::RawAnimation::JointTrack& track) {
+		for (auto& [time, value] : track.translations) {
+			value.z = -value.z;
+		}
+
+		for (auto& [time, value] : track.rotations) {
+			value.x = -value.x;
+			value.y = -value.y;
+		}
+
+		for (auto& [time, value] : track.scales) {
+			value.z = -value.z;
+		}
+	}
+
+	ozz::math::Float3 GLTFImporter::hermite(const ozz::math::Float3& p0, const ozz::math::Float3& m0, const ozz::math::Float3& p1, const ozz::math::Float3& m1, float t, float interval) {
+		ozz::math::Float3 out = ozz::math::Float3::zero();
+		rawrbox::MathUtils::hermite(&p0.x, &m0.x, &p1.x, &m1.x, t, interval, &out.x, 3);
+
+		return out;
+	}
+
+	ozz::math::Quaternion GLTFImporter::hermite(const ozz::math::Quaternion& p0, const ozz::math::Quaternion& m0, const ozz::math::Quaternion& p1, const ozz::math::Quaternion& m1, float t, float interval) {
+		ozz::math::Quaternion out = ozz::math::Quaternion::identity();
+		rawrbox::MathUtils::hermite(&p0.x, &m0.x, &p1.x, &m1.x, t, interval, &out.x, 4);
+		return ozz::math::NormalizeSafe(out, ozz::math::Quaternion::identity());
+	}
+
 	// -------------
 
 	// MODEL ---
 	void GLTFImporter::loadScene(const fastgltf::Asset& scene) {
 		for (const auto& rootScenes : scene.scenes) {
 			for (const auto& nodeIndex : rootScenes.nodeIndices) {
-				this->loadNodes(scene, scene.nodes[nodeIndex]);
+				this->loadNodes(scene, nodeIndex);
 			}
 		}
 	}
 
-	void GLTFImporter::loadNodes(const fastgltf::Asset& scene, const fastgltf::Node& node) {
+	void GLTFImporter::loadNodes(const fastgltf::Asset& scene, size_t nodeIndex) {
+		if (nodeIndex >= scene.nodes.size()) {
+			this->_logger->warn("Invalid node index {}, skipping...", nodeIndex);
+			return;
+		}
+
+		const auto& node = scene.nodes[nodeIndex];
+
 		if (node.lightIndex) {
-			this->lights.push_back(std::make_unique<rawrbox::GLTFLight>(this->lights.size(), node, scene.lights[node.lightIndex.value()]));
-		} else if (node.meshIndex) {
-			auto mesh = this->extractMesh(scene, node);
-			if (mesh != nullptr) this->meshes.push_back(std::move(mesh));
+			this->lights.push_back(std::make_unique<rawrbox::GLTFLight>(this->lights.size(), nodeIndex, node, scene.lights[node.lightIndex.value()]));
+		}
+
+		if (node.meshIndex) {
+			if (this->_nodeMeshes.contains(nodeIndex)) {
+				this->_logger->warn("Node '{}' is referenced more than once, skipping duplicate...", node.name);
+			} else {
+				auto mesh = this->extractMesh(scene, nodeIndex, node);
+				if (mesh != nullptr) {
+					this->_nodeMeshes[nodeIndex] = mesh.get();
+					this->meshes.push_back(std::move(mesh));
+				}
+			}
 		}
 
 		// Children ---
 		for (const auto& children : node.children) {
-			this->loadNodes(scene, scene.nodes[children]);
+			this->loadNodes(scene, children);
 		}
 		// ---
 	}
 
-	std::unique_ptr<rawrbox::GLTFMesh> GLTFImporter::extractMesh(const fastgltf::Asset& scene, const fastgltf::Node& node) {
-		auto gltfMesh = std::make_unique<rawrbox::GLTFMesh>(this->meshes.size(), node);
+	std::unique_ptr<rawrbox::GLTFMesh> GLTFImporter::extractMesh(const fastgltf::Asset& scene, size_t nodeIndex, const fastgltf::Node& node) {
+		auto gltfMesh = std::make_unique<rawrbox::GLTFMesh>(this->meshes.size(), nodeIndex, node);
+
+		std::optional<size_t> skinJoints = std::nullopt;
+		if (node.skinIndex.has_value() && node.skinIndex.value() < scene.skins.size()) skinJoints = scene.skins[node.skinIndex.value()].joints.size();
 
 		size_t meshIndex = node.meshIndex.value();
 		const auto& mesh = scene.meshes[meshIndex];
@@ -693,7 +976,11 @@ namespace rawrbox {
 
 				for (size_t o = 0; o < primitive.targets.size(); o++) {
 					const auto& blendNames = this->targetNames[meshIndex];
-					if (blendNames.empty()) RAWRBOX_CRITICAL("Invalid blend shape names for mesh '{}'", gltfMesh->name);
+					if (o >= blendNames.size()) {
+						this->_logger->warn("Missing blend shape names for mesh '{}', skipping blend shapes...", gltfMesh->name);
+						rawrPrimitive.blendShapes.clear();
+						break;
+					}
 
 					rawrbox::GLTFBlendShape& shape = rawrPrimitive.blendShapes[o];
 					shape.name = fmt::format("{}-{}", gltfMesh->name, blendNames[o]);
@@ -728,7 +1015,7 @@ namespace rawrbox {
 			// ---------------
 
 			// VERTICES ---
-			rawrPrimitive.vertices = this->extractVertex(scene, primitive);
+			rawrPrimitive.vertices = this->extractVertex(scene, primitive, skinJoints);
 			rawrPrimitive.indices = this->extractIndices(scene, primitive);
 			// -----------
 
@@ -780,7 +1067,7 @@ namespace rawrbox {
 		return gltfMesh;
 	}
 
-	std::vector<rawrbox::VertexNormBoneData> GLTFImporter::extractVertex(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive) {
+	std::vector<rawrbox::VertexNormBoneData> GLTFImporter::extractVertex(const fastgltf::Asset& scene, const fastgltf::Primitive& primitive, std::optional<size_t> skinJoints) {
 		std::vector<rawrbox::VertexNormBoneData> verts = {};
 
 		// POSITION ----
@@ -839,12 +1126,16 @@ namespace rawrbox {
 				const auto& jointAccessor = scene.accessors[jointIt->accessorIndex];
 				const auto& weightAccessor = scene.accessors[weightIt->accessorIndex];
 
-				fastgltf::iterateAccessorWithIndex<fastgltf::math::uvec4>(scene, jointAccessor, [&](fastgltf::math::uvec4 joints, std::size_t idx) {
-					const std::array<uint32_t, RB_MAX_BONES_PER_VERTEX> indices = {joints.x(), joints.y(), joints.z(), joints.w()};
+				const uint32_t maxJoints = static_cast<uint32_t>(std::min<size_t>(skinJoints.value_or(RB_RENDER_MAX_BONES_PER_MODEL), RB_RENDER_MAX_BONES_PER_MODEL));
 
-					for (auto joint : indices) {
-						if (joint >= RB_RENDER_MAX_BONES_PER_MODEL)
-							RAWRBOX_CRITICAL("Joint index {} exceeds the max bones per model ({})", joint, RB_RENDER_MAX_BONES_PER_MODEL);
+				fastgltf::iterateAccessorWithIndex<fastgltf::math::uvec4>(scene, jointAccessor, [&](fastgltf::math::uvec4 joints, std::size_t idx) {
+					std::array<uint32_t, RB_MAX_BONES_PER_VERTEX> indices = {joints.x(), joints.y(), joints.z(), joints.w()};
+
+					for (auto& joint : indices) {
+						if (joint < maxJoints) continue;
+
+						this->_logger->warn("Joint index {} exceeds the joint limit ({})!", joint, maxJoints);
+						joint = 0;
 					}
 
 					verts[idx].bone_indices = rawrbox::PackUtils::packBoneIndices(indices);
@@ -881,6 +1172,13 @@ namespace rawrbox {
 	// ----------
 
 	// UTILS ---
+	bool GLTFImporter::isValid(const fastgltf::Asset& scene, size_t index, fastgltf::AccessorType type) const {
+		if (index >= scene.accessors.size()) return false;
+		if ((this->loadFlags & rawrbox::GLTFLoadFlags::VALIDATE) == 0) return true;
+
+		return scene.accessors[index].type == type;
+	}
+
 	fastgltf::sources::ByteView GLTFImporter::getSourceData(const fastgltf::Asset& scene, const fastgltf::DataSource& source) {
 		return std::visit(fastgltf::visitor{
 				      [&](auto& /*arg*/) -> fastgltf::sources::ByteView {
@@ -927,14 +1225,20 @@ namespace rawrbox {
 		this->_logger.reset();
 
 		this->meshes.clear(); // Clear old meshes
-		this->joints.clear(); // Clear old joints
 		this->lights.clear(); // Clear old lights
 
 		this->textures.clear();     // Clear old textures
 		this->_texturesMap.clear(); // Clear old textures
 
-		this->vertexAnimation.clear();
+		this->_nodeParents.clear();
+		this->_nodeMeshes.clear();
+
+		this->_parsedAnimations.clear();
 		this->animations.clear();
+
+		this->_skinSkeletons.clear();
+		this->_skeletonJoints.clear();
+		this->_nodeSkeletons.clear();
 		this->skeletons.clear();
 
 		this->materials.clear(); // Clear old materials

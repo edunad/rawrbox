@@ -8,7 +8,12 @@
 #endif
 
 #if RAWRBOX_SUPPORT_DX12
+// clang-format off
+	#include <d3d12.h>
+
 	#include <EngineFactoryD3D12.h>
+	#include <RenderDeviceD3D12.h>
+// clang-format on
 #endif
 
 #if RAWRBOX_SUPPORT_GL
@@ -16,7 +21,12 @@
 #endif
 
 #if RAWRBOX_SUPPORT_VULKAN
+// clang-format off
+	#include <vulkan/vulkan.h>
+
 	#include <EngineFactoryVk.h>
+	#include <RenderDeviceVk.h>
+// clang-format on
 #endif
 
 #if RAWRBOX_SUPPORT_METAL

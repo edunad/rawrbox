@@ -82,7 +82,7 @@ CPMAddPackage(
         GITHUB_REPOSITORY
         gabime/spdlog
         GIT_TAG
-        v1.17.0
+        d6c93f38a08b4ea0f8ffcfd7f7857307d5d5c3fa # latest breaks fmt
         OPTIONS
         "SPDLOG_FMT_EXTERNAL ON"
 )

@@ -81,6 +81,10 @@ namespace gltf {
 
 		this->_bbox = std::make_unique<rawrbox::Model<>>();
 
+		this->_lookTarget = std::make_unique<rawrbox::Model<>>();
+		this->_lookTarget->addMesh(rawrbox::MeshUtils::generateSphere({0.F, 0.F, 0.F}, {0.12F, 0.12F, 0.12F}, 1.F, rawrbox::Colors::Red()));
+		this->_lookTarget->upload();
+
 		// PHASMO
 		{
 			auto* mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceGLTF>("./assets/models/ps1_phasmophobia/scene.glb")->get();
@@ -152,8 +156,10 @@ namespace gltf {
 			this->_wolfLit->setPos({-1, 0, 0});
 			this->_wolfLit->upload();
 
-			this->_wolf->playAnimation(true);
-			this->_wolfLit->playAnimation(true);
+			const std::string anim = "Armature.001|Armature.001|Armature.001|Scene";
+
+			this->_wolf->playAnimation(anim, true);
+			this->_wolfLit->playAnimation(anim, true);
 		}
 		// ----------
 
@@ -169,7 +175,8 @@ namespace gltf {
 		{
 			this->_text = std::make_unique<rawrbox::Text3D<>>();
 			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "TEXTURES + LIGHT", {6.F, 3.0F, 0});
-			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SINGLE ARMATURE +\nVERTEX ANIMATION", {0.F, 2.F, 0});
+			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "SINGLE ARMATURE +\nVERTEX ANIMATION", {1.F, 2.F, 0});
+			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "ARMATURE +\nHEAD AnimationIKAim", {-1.F, 2.F, 0});
 			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "VERTEX ANIMATIONS", {-1.F, 1.8F, -3.5F});
 			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "BLEND SHAPES", {-5.F, 1.8F, 0.F});
 			this->_text->addText(*rawrbox::DEBUG_FONT_REGULAR, "ANIMATION EVENT", {1.5F, 1.F, 2.5F});
@@ -220,6 +227,7 @@ namespace gltf {
 			this->_animTest.reset();
 			this->_phasmo.reset();
 			this->_bbox.reset();
+			this->_lookTarget.reset();
 
 			rawrbox::RESOURCES::shutdown();
 		}
@@ -254,9 +262,17 @@ namespace gltf {
 		//  -----
 
 		// WOLF ---
-		if (this->_wolf != nullptr && this->_wolfLit != nullptr) {
+		if (this->_wolf != nullptr && this->_wolfLit != nullptr && this->_lookTarget != nullptr) {
+			const rawrbox::Vector3f target = {-1.F + std::sin(rawrbox::FRAME * 0.02F) * 0.9F, 1.15F + std::cos(rawrbox::FRAME * 0.013F) * 0.3F, -1.2F};
+			this->_lookTarget->setPos(target);
+
+			rawrbox::AnimationIKAim head = {};
+			head.target = target;
+			this->_wolfLit->addIK("Head", head);
+
 			this->_wolf->draw();
 			this->_wolfLit->draw();
+			this->_lookTarget->draw();
 		}
 		// --------
 

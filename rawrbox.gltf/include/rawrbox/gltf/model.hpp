@@ -25,11 +25,15 @@ namespace rawrbox {
 			}
 		}
 
-		rawrbox::Mesh<typename M::vertexBufferType>* getMeshByID(size_t index) {
-			auto fnd = std::find_if(this->_meshes.begin(), this->_meshes.end(), [&index](auto& mesh) { return mesh->getID() == index; });
-			if (fnd == this->_meshes.end()) return nullptr;
+		std::vector<rawrbox::Mesh<typename M::vertexBufferType>*> getMeshesByID(uint32_t id) {
+			std::vector<rawrbox::Mesh<typename M::vertexBufferType>*> meshes = {};
 
-			return (*fnd).get();
+			for (auto& mesh : this->_meshes) {
+				if (mesh == nullptr || mesh->getID() != id) continue;
+				meshes.push_back(mesh.get());
+			}
+
+			return meshes;
 		}
 
 		void loadAnimations(const rawrbox::GLTFImporter& model) {
@@ -41,38 +45,67 @@ namespace rawrbox {
 			// -------------------
 
 			// Map vertex animations
-			this->_vertexAnimations.clear();
-			for (const auto& anim : model.vertexAnimation) {
-				for (const auto& mesh : anim.second) {
-					auto* rawrMesh = this->getMeshByID(mesh->index);
-					if (rawrMesh == nullptr) continue;
+			this->_animatedMeshes.clear();
 
-					rawrMesh->setMergeable(false);
-					rawrMesh->meshID = 0x00000000; // Reset id, we don't need it anymore
+			for (const auto& anim : model.animations) {
+				for (const auto& part : anim->getParts()) {
+					if (part.type != rawrbox::AnimationType::VERTEX) continue;
 
-					this->_vertexAnimations[anim.first].push_back(rawrMesh); // Horrible, i know.
+					for (const auto& id : part.meshes) {
+						if (this->_animatedMeshes.contains(id)) continue;
+
+						auto meshes = this->getMeshesByID(id);
+						if (meshes.empty()) {
+							this->_logger->warn("Missing animation '{}' target mesh id {}", anim->name, id);
+							continue;
+						}
+
+						for (auto* mesh : meshes) {
+							mesh->setMergeable(false);
+						}
+
+						this->_animatedMeshes[id] = std::move(meshes);
+					}
 				}
 			}
-			// -----------------------
+
+			// Reset lookup ids (GPU does not need them)
+			for (auto& animated : this->_animatedMeshes) {
+				for (auto* mesh : animated.second) {
+					mesh->meshID = 0x00000000;
+				}
+			}
+			// ---------------------------------
 		}
 
 		void loadBlendShapes(const rawrbox::GLTFImporter& model) {
 			this->_blend_shapes.clear();
 
-			for (size_t i = 0; i < model.meshes.size(); i++) {
-				const auto& mesh = model.meshes[i];
+			for (const auto& gltfMesh : model.meshes) {
+				auto meshes = this->getMeshesByID(static_cast<uint32_t>(gltfMesh->index));
 
-				for (const auto& primitive : mesh->primitives) {
+				for (size_t p = 0; p < gltfMesh->primitives.size(); p++) {
+					const auto& primitive = gltfMesh->primitives[p];
+					if (primitive.blendShapes.empty()) continue;
+
+					if (p >= meshes.size()) {
+						this->_logger->warn("Mesh '{}' -> '{}' has blend shapes but is missing meshes!", gltfMesh->name, p);
+						break;
+					}
+
 					for (const auto& blend : primitive.blendShapes) {
 						auto s = std::make_unique<rawrbox::BlendShapes<M>>();
 						s->normals = blend.norms;
 						s->pos = blend.pos;
 						s->weight = blend.weight;
 
-						s->mesh = this->_meshes[i].get();
+						s->mesh = meshes[p];
 						s->mesh->setMergeable(false);
 
-						this->_blend_shapes[blend.name] = std::move(s);
+						const std::string name = gltfMesh->primitives.size() > 1 ? fmt::format("{}-{}", blend.name, p) : blend.name;
+						if (this->_blend_shapes.contains(name)) this->_logger->warn("Duplicate blend shape '{}'", name);
+
+						this->_blend_shapes[name] = std::move(s);
 					}
 				}
 			}
