@@ -14,7 +14,7 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::WEBM> _webm = nullptr;
 
 		void internalLoad(const std::vector<uint8_t>& data, bool useFallback = true) override;
-		void internalUpdate();
+		void internalUpdate(const rawrbox::WEBMImage& image);
 
 	public:
 		explicit TextureWEBM(const std::filesystem::path& filePath, uint32_t flags = 0, bool useFallback = true);

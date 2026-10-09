@@ -1,3 +1,4 @@
+#include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/utils/color.hpp>
 #include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
@@ -6,6 +7,8 @@
 #include <rawrbox/render/utils/pipeline.hpp>
 
 #include <fmt/format.h>
+
+#include <thread>
 
 namespace rawrbox {
 	// IMAGE DATA ---
@@ -79,9 +82,6 @@ namespace rawrbox {
 		if (texture == nullptr) RAWRBOX_CRITICAL("Failed to rebuild texture '{}'", this->_name);
 
 		rawrbox::BarrierUtils::barrier({{texture, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-
-		rawrbox::RENDERER->context()->Flush();
-		rawrbox::RENDERER->device()->IdleGPU();
 
 		this->_tex = texture;
 		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
@@ -246,8 +246,7 @@ namespace rawrbox {
 	}
 
 	void TextureBase::resize(const rawrbox::Vector2u& size) {
-		if (this->_failedToLoad) return;
-
+		if (this->_failedToLoad || this->_tex == nullptr) return;
 		if (size.x == 0U || size.y == 0U) RAWRBOX_CRITICAL("Invalid texture size {}x{} for '{}'", size.x, size.y, this->_name);
 		if (size == this->_data.size) return;
 
@@ -264,8 +263,6 @@ namespace rawrbox {
 		}
 
 		this->_data.size = size;
-
-		if (this->_tex == nullptr) return;
 		rawrbox::runOnRenderThread([this]() { this->rebuild(); });
 	}
 

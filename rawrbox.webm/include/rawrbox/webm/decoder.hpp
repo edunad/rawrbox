@@ -42,7 +42,7 @@ namespace rawrbox {
 	private:
 		rawrbox::VIDEO_CODEC _codec = rawrbox::VIDEO_CODEC::UNKNOWN;
 		rawrbox::WEBMColorHint _hint = {};
-		
+
 		uint32_t _threads = 1;
 
 		std::unique_ptr<vpx_codec_ctx> _ctx;
@@ -55,7 +55,7 @@ namespace rawrbox {
 		std::unique_ptr<rawrbox::Logger> _logger = std::make_unique<rawrbox::Logger>("RawrBox-WEBMDecoder");
 		// -------------
 
-		void createContext(std::unique_ptr<vpx_codec_ctx>& ctx) const;
+		void createContext(std::unique_ptr<vpx_codec_ctx>& ctx, uint32_t threads) const;
 		void destroyContext(std::unique_ptr<vpx_codec_ctx>& ctx) const;
 		[[nodiscard]] vpx_image* decodeStream(vpx_codec_ctx* ctx, const std::vector<uint8_t>& buffer) const;
 
@@ -63,7 +63,7 @@ namespace rawrbox {
 		[[nodiscard]] rawrbox::YUVLuminanceScale getLuminanceScale() const;
 
 	public:
-		explicit WEBMDecoder(rawrbox::VIDEO_CODEC codec, const rawrbox::WEBMColorHint& hint = {}, uint32_t threads = 6);
+		explicit WEBMDecoder(rawrbox::VIDEO_CODEC codec, const rawrbox::WEBMColorHint& hint = {}, uint32_t threads = 1);
 		WEBMDecoder(const WEBMDecoder&) = delete;
 		WEBMDecoder(WEBMDecoder&&) = delete;
 		WEBMDecoder& operator=(const WEBMDecoder&) = delete;

@@ -47,8 +47,11 @@ namespace rawrbox {
 
 		this->loadTrack();
 
-		this->_decoder = std::make_unique<rawrbox::WEBMDecoder>(this->_info.vCodec, this->getColorHint());
+		const uint32_t threads = std::clamp(this->_info.size.x / 256U, 1U, 4U);
+		this->_decoder = std::make_unique<rawrbox::WEBMDecoder>(this->_info.vCodec, this->getColorHint(), threads);
+
 		this->buildIndex();
+		if (this->_entries.empty()) RAWRBOX_CRITICAL("Video track {} does not contain any frames", this->_video->GetNumber());
 
 		if (this->isPreLoaded()) this->preloadVideo();
 		this->present(0);
@@ -122,9 +125,10 @@ namespace rawrbox {
 						if (i == 0 && addition != additions.end()) {
 							frame.alphaPos = addition->second.pos;
 							frame.alphaLen = addition->second.len;
+							frame.alphaKey = addition->second.key;
 						}
 
-						if (frame.key) this->_keyFrames.push_back(this->_entries.size());
+						if (frame.key && (frame.alphaLen == 0 || frame.alphaKey)) this->_keyFrames.push_back(this->_entries.size());
 
 						times.push_back(blockTime + static_cast<long long>(frameDuration) * i);
 						this->_entries.push_back(frame);
@@ -217,19 +221,22 @@ namespace rawrbox {
 					break;
 
 				case libwebm::kMkvBlockAdditions:
-					long long morePos = pos;
-					const long long moreStop = pos + size;
+					{
+						long long morePos = pos;
+						const long long moreStop = pos + size;
 
-					long long moreId = 0;
-					long long moreSize = 0;
+						long long moreId = 0;
+						long long moreSize = 0;
 
-					while (morePos < moreStop) {
-						if (mkvparser::ParseElementHeader(reader, morePos, moreStop, moreId, moreSize) != 0 || moreSize > moreStop - morePos) break;
-						if (moreId == libwebm::kMkvBlockMore) this->readBlockExtra(morePos, morePos + moreSize, additional);
+						while (morePos < moreStop) {
+							if (mkvparser::ParseElementHeader(reader, morePos, moreStop, moreId, moreSize) != 0 || moreSize > moreStop - morePos) break;
+							if (moreId == libwebm::kMkvBlockMore) this->readBlockExtra(morePos, morePos + moreSize, additional);
 
-						morePos += moreSize;
+							morePos += moreSize;
+						}
+
+						break;
 					}
-					break;
 			}
 
 			pos += size;
@@ -263,7 +270,24 @@ namespace rawrbox {
 			pos += size;
 		}
 
-		if (addId == 1 && data.len > 0) additional = data;
+		if (addId != 1 || data.len <= 0) return;
+
+		data.key = this->isKeyFrame(data.pos, data.len);
+		additional = data;
+	}
+
+	bool WEBM::isKeyFrame(long long pos, long len) const {
+		uint8_t header = 0;
+		if (len < 1 || this->_reader->Read(pos, 1, &header) != 0) return false;
+
+		if (this->_info.vCodec == rawrbox::VIDEO_CODEC::VIDEO_VP8) return (header & 0x01U) == 0U;
+		if ((header >> 6U) != 0x02U) return false;
+
+		const uint32_t profile = ((header >> 5U) & 0x01U) | (((header >> 4U) & 0x01U) << 1U);
+		const uint32_t showExistingBit = profile == 3U ? 2U : 3U;
+
+		if (((header >> showExistingBit) & 0x01U) != 0U) return false;
+		return ((header >> (showExistingBit - 1U)) & 0x01U) == 0U;
 	}
 
 	rawrbox::WEBMColorHint WEBM::getColorHint() const {
@@ -377,13 +401,22 @@ namespace rawrbox {
 		this->_filePath = filePath;
 
 		this->_time = 0;
+		this->_endTime = 0;
 		this->_cursor = 0;
 		this->_shown = 0;
+
 		this->_ended = false;
 		this->_dirty = false;
 
+		this->_info = {};
+		this->_frame = {};
 		this->_image = {};
+
+		this->_entries.clear();
+		this->_keyFrames.clear();
+
 		this->_video = nullptr;
+
 		this->_decoder.reset();
 		this->_segment.reset();
 		this->_preloadedFrames.clear();
@@ -430,6 +463,7 @@ namespace rawrbox {
 		this->_ended = false;
 
 		const size_t target = this->findFrame(this->_time);
+		if (target == this->_shown && target + 1 == this->_cursor) return;
 		if (target < this->_cursor) this->_cursor = 0;
 
 		this->present(target);

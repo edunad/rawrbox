@@ -47,18 +47,18 @@ namespace rawrbox {
 		}
 	}
 
-	void TextureWEBM::internalUpdate() {
+	void TextureWEBM::internalUpdate(const rawrbox::WEBMImage& image) {
 		auto* context = rawrbox::RENDERER->context();
 
 		Diligent::Box UpdateBox;
 		UpdateBox.MinX = 0;
 		UpdateBox.MinY = 0;
-		UpdateBox.MaxX = this->_data.size.x;
-		UpdateBox.MaxY = this->_data.size.y;
+		UpdateBox.MaxX = image.size.x;
+		UpdateBox.MaxY = image.size.y;
 
 		Diligent::TextureSubResData SubresData;
-		SubresData.Stride = this->_data.size.x * this->_data.channels;
-		SubresData.pData = this->_data.pixels().data();
+		SubresData.Stride = image.size.x * this->_data.channels;
+		SubresData.pData = image.pixels.data();
 
 		rawrbox::BarrierUtils::barrier({{this->_tex, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 		context->UpdateTexture(this->_tex, 0, 0, UpdateBox, SubresData, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
@@ -82,10 +82,15 @@ namespace rawrbox {
 		const auto& image = this->_webm->getImage();
 		if (!image.valid()) return;
 
-		if (image.size != this->_data.size) this->resize(image.size);
-		this->_data.pixels() = image.pixels;
+		if (image.size != this->_data.size) {
+			this->_data.size = image.size;
+			this->_data.pixels() = image.pixels;
 
-		this->internalUpdate();
+			this->rebuild();
+			return;
+		}
+
+		this->internalUpdate(image);
 	}
 
 	// UTILS ------

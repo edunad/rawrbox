@@ -14,7 +14,7 @@
 namespace webm_test {
 	void Game::setupGLFW() {
 #if defined(_DEBUG) && defined(RAWRBOX_SUPPORT_DX12)
-		auto* window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_D3D12); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
+		auto* window = rawrbox::Window::createWindow(Diligent::RENDER_DEVICE_TYPE_VULKAN); // DX12 is faster on DEBUG than Vulkan, due to vulkan having extra check steps to prevent you from doing bad things
 #else
 		auto* window = rawrbox::Window::createWindow();
 #endif
@@ -80,21 +80,16 @@ namespace webm_test {
 		};
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane({-2.F, -4.0F, 0.F}, {4.F, 3.F});
+			auto mesh = rawrbox::MeshUtils::generatePlane({-3.F, -4.0F, 0.F}, {4.F, 3.F});
 			mesh.setTexture(tex);
 
 			this->_model->addMesh(mesh);
 		}
 
 		{
-			auto mesh = rawrbox::MeshUtils::generatePlane({2.F, -4.0F, 0.F}, {4.F, 7.F});
+			auto mesh = rawrbox::MeshUtils::generatePlane({3.F, -4.0F, 0.F}, {4.F, 7.F});
 			mesh.setTexture(tex2);
 
-			this->_model->addMesh(mesh);
-		}
-
-		{
-			auto mesh = rawrbox::MeshUtils::generateGrid(12, {0.F, 0.F, 0.F});
 			this->_model->addMesh(mesh);
 		}
 		// ----

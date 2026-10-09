@@ -44,11 +44,13 @@ namespace rawrbox {
 
 		size_t image = 0;
 		bool key = false;
+		bool alphaKey = false;
 	};
 
 	struct WEBMBlockAdditional {
 		long long pos = 0;
 		long len = 0;
+		bool key = false;
 	};
 
 	class WEBM {
@@ -100,6 +102,8 @@ namespace rawrbox {
 		void readBlockGroup(long long pos, long long stop, std::unordered_map<long long, rawrbox::WEBMBlockAdditional>& additions) const;
 		void readBlockExtra(long long pos, long long stop, rawrbox::WEBMBlockAdditional& additional) const;
 
+		[[nodiscard]] bool isKeyFrame(long long pos, long len) const;
+		
 		[[nodiscard]] rawrbox::WEBMColorHint getColorHint() const;
 		[[nodiscard]] uint64_t getFrameDuration() const;
 

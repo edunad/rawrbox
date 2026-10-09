@@ -23,7 +23,7 @@ namespace rawrbox {
 		const uint32_t cores = std::thread::hardware_concurrency();
 		this->_threads = std::max(1U, cores == 0U ? threads : std::min(threads, cores));
 
-		this->createContext(this->_ctx);
+		this->createContext(this->_ctx, this->_threads);
 	}
 
 	WEBMDecoder::~WEBMDecoder() {
@@ -35,7 +35,7 @@ namespace rawrbox {
 	}
 
 	// PRIVATE ------
-	void WEBMDecoder::createContext(std::unique_ptr<vpx_codec_ctx>& ctx) const {
+	void WEBMDecoder::createContext(std::unique_ptr<vpx_codec_ctx>& ctx, uint32_t threads) const {
 		vpx_codec_iface_t* codecIface = nullptr;
 
 		switch (this->_codec) {
@@ -50,7 +50,7 @@ namespace rawrbox {
 		}
 
 		vpx_codec_dec_cfg_t codecCfg = {};
-		codecCfg.threads = this->_threads;
+		codecCfg.threads = threads;
 
 		ctx = std::make_unique<vpx_codec_ctx>();
 		if (vpx_codec_dec_init(ctx.get(), codecIface, &codecCfg, 0) != VPX_CODEC_OK) {
@@ -60,7 +60,7 @@ namespace rawrbox {
 			RAWRBOX_CRITICAL("Failed to initialize vpx codec: {}", error);
 		}
 
-		if (this->_codec == rawrbox::VIDEO_CODEC::VIDEO_VP9 && this->_threads > 1U && vpx_codec_control(ctx.get(), VP9D_SET_ROW_MT, 1) != VPX_CODEC_OK) {
+		if (this->_codec == rawrbox::VIDEO_CODEC::VIDEO_VP9 && threads > 1U && vpx_codec_control(ctx.get(), VP9D_SET_ROW_MT, 1) != VPX_CODEC_OK) {
 			this->_logger->warn("Failed to enable VP9 row multi-threading: {}", vpx_codec_error(ctx.get()));
 		}
 	}
@@ -130,7 +130,7 @@ namespace rawrbox {
 		this->_image = this->decodeStream(this->_ctx.get(), frame.buffer);
 
 		if (frame.hasAlpha()) {
-			if (this->_alphaCtx == nullptr) this->createContext(this->_alphaCtx);
+			if (this->_alphaCtx == nullptr) this->createContext(this->_alphaCtx, 1U);
 			this->_alphaImage = this->decodeStream(this->_alphaCtx.get(), frame.alpha);
 		}
 
@@ -140,29 +140,28 @@ namespace rawrbox {
 	void WEBMDecoder::convert(rawrbox::WEBMImage& image) const {
 		if (this->_image == nullptr) return;
 
-		const vpx_image* img = this->_image;
-		const auto format = static_cast<vpx_img_fmt_t>(img->fmt & ~VPX_IMG_FMT_HIGHBITDEPTH);
+		const auto format = static_cast<vpx_img_fmt_t>(this->_image->fmt & ~VPX_IMG_FMT_HIGHBITDEPTH);
 		if (format != VPX_IMG_FMT_I420 && format != VPX_IMG_FMT_I422 && format != VPX_IMG_FMT_I444 && format != VPX_IMG_FMT_I440) {
-			RAWRBOX_CRITICAL("Unsupported vpx image format '{}'", static_cast<int>(img->fmt));
+			RAWRBOX_CRITICAL("Unsupported vpx image format '{}'", static_cast<int>(this->_image->fmt));
 		}
 
 		rawrbox::YUVImage yuv = {};
-		yuv.planes = {img->planes[0], img->planes[1], img->planes[2], nullptr};
-		yuv.strides = {img->stride[0], img->stride[1], img->stride[2], 0};
-		yuv.size = {img->d_w, img->d_h};
+		yuv.planes = {this->_image->planes[0], this->_image->planes[1], this->_image->planes[2], nullptr};
+		yuv.strides = {this->_image->stride[0], this->_image->stride[1], this->_image->stride[2], 0};
+		yuv.size = {this->_image->d_w, this->_image->d_h};
 
-		yuv.chromaShift = {img->x_chroma_shift, img->y_chroma_shift};
-		yuv.wide = (img->fmt & VPX_IMG_FMT_HIGHBITDEPTH) != 0;
-		yuv.bitDepth = yuv.wide ? img->bit_depth : 8U;
+		yuv.chromaShift = {this->_image->x_chroma_shift, this->_image->y_chroma_shift};
+		yuv.wide = (this->_image->fmt & VPX_IMG_FMT_HIGHBITDEPTH) != 0;
+		yuv.bitDepth = yuv.wide ? this->_image->bit_depth : 8U;
 
 		yuv.scale = this->getLuminanceScale();
 		yuv.space = this->getColorSpace();
 
 		const vpx_image* alpha = this->_alphaImage;
-		if (alpha != nullptr && alpha->d_w == img->d_w && alpha->d_h == img->d_h) {
+		if (alpha != nullptr && alpha->d_w == this->_image->d_w && alpha->d_h == this->_image->d_h) {
 			yuv.planes[3] = alpha->planes[0];
 			yuv.strides[3] = alpha->stride[0];
-			
+
 			yuv.wideAlpha = (alpha->fmt & VPX_IMG_FMT_HIGHBITDEPTH) != 0;
 			yuv.alphaBitDepth = yuv.wideAlpha ? alpha->bit_depth : 8U;
 		}
