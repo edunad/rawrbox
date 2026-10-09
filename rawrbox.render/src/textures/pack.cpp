@@ -142,6 +142,10 @@ namespace rawrbox {
 		return left->InsertNode(insertedWidth, insertedHeight);
 	}
 
+	void TexturePack::resize(const rawrbox::Vector2u& /*size*/) {
+		RAWRBOX_CRITICAL("Texture packs cannot be resized");
+	}
+
 	void TexturePack::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
 		if (this->_failedToLoad || this->_handle != nullptr) return; // Failed texture is already bound, so skip it
 		rawrbox::TextureBase::upload(format, true);

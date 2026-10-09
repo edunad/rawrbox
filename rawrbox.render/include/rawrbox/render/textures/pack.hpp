@@ -44,6 +44,7 @@ namespace rawrbox {
 		rawrbox::PackNode& addSprite(uint32_t width, uint32_t height, const std::vector<uint8_t>& data);
 
 		void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false) override;
+		void resize(const rawrbox::Vector2u& size) override;
 
 		void update() override;
 		[[nodiscard]] bool requiresUpdate() const override;

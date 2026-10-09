@@ -26,5 +26,9 @@ namespace rawrbox {
 		[[nodiscard]] uint32_t getSpriteSize() const;
 		[[nodiscard]] std::vector<uint8_t> getSprite(size_t id) const;
 		// --------------------
+
+		// RENDER ----------
+		void resize(const rawrbox::Vector2u& size) override;
+		// --------------------
 	};
 } // namespace rawrbox

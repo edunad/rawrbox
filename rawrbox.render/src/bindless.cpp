@@ -209,6 +209,10 @@ namespace rawrbox {
 		}
 		// ---------------------
 
+		// Flush old ones
+		if (_updateVertexSignature || _updatePixelSignature) rawrbox::RENDERER->context()->WaitForIdle();
+		// ---------------------
+
 		// UPDATE SHADER BIND ---
 		if (_updateVertexSignature) {
 			_updateVertexSignature = false;

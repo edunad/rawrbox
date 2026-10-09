@@ -17,14 +17,6 @@ namespace rawrbox {
 	// -------
 
 	// Loader ----
-	WEBMLoader::WEBMLoader() {
-		rawrbox::WEBMDecoder::init(rawrbox::VIDEO_CODEC::VIDEO_VP9);
-	}
-
-	WEBMLoader::~WEBMLoader() {
-		rawrbox::WEBMDecoder::shutdown();
-	}
-
 	std::unique_ptr<rawrbox::Resource> WEBMLoader::createEntry() {
 		return std::make_unique<rawrbox::ResourceWEBM>();
 	}

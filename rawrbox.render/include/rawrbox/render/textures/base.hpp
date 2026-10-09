@@ -47,18 +47,7 @@ namespace rawrbox {
 		[[nodiscard]] bool empty() const { return this->frames.empty(); }
 
 		[[nodiscard]] size_t total() const { return this->frames.size(); }
-		[[nodiscard]] bool transparent() const {
-			if (channels != 4U || this->frames.empty()) return false;
-
-			for (const auto& frame : this->frames) {
-				for (size_t o = 0; o < frame.pixels.size(); o += channels) {
-					if (frame.pixels[o + 3] == 1.F) continue;
-					return true;
-				}
-			}
-
-			return false;
-		}
+		[[nodiscard]] bool transparent() const;
 	};
 
 	class TextureBase {
@@ -88,7 +77,8 @@ namespace rawrbox {
 		std::string _name;
 		virtual void loadFallback();
 		virtual void updateSampler();
-
+		
+		virtual void rebuild();
 		virtual void tryGetFormatChannels(Diligent::TEXTURE_FORMAT& format, uint8_t& channels);
 
 	public:
@@ -138,6 +128,7 @@ namespace rawrbox {
 		// -----
 
 		virtual void upload(Diligent::TEXTURE_FORMAT format = Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN, bool dynamic = false);
+		virtual void resize(const rawrbox::Vector2u& size);
 
 		virtual void update();
 		[[nodiscard]] virtual bool requiresUpdate() const;

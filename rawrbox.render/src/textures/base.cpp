@@ -1,12 +1,30 @@
+#include <rawrbox/engine/static.hpp>
 #include <rawrbox/math/utils/color.hpp>
 #include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/textures/base.hpp>
+#include <rawrbox/render/textures/utils/utils.hpp>
 #include <rawrbox/render/utils/pipeline.hpp>
 
 #include <fmt/format.h>
 
+#include <thread>
+
 namespace rawrbox {
+	// IMAGE DATA ---
+	bool ImageData::transparent() const {
+		if (this->channels != 4U || this->frames.empty()) return false;
+
+		for (const auto& frame : this->frames) {
+			for (size_t o = 0; o + 3 < frame.pixels.size(); o += this->channels) {
+				if (frame.pixels[o + 3] != 255U) return true;
+			}
+		}
+
+		return false;
+	}
+	// ----
+
 	TextureBase::~TextureBase() {
 		if (this->_failedToLoad) return; // Don't delete the fallback
 
@@ -33,6 +51,43 @@ namespace rawrbox {
 	void TextureBase::updateSampler() {
 		if (this->_handle == nullptr) return;
 		this->_handle->SetSampler(this->getSampler());
+	}
+
+	void TextureBase::rebuild() {
+		if (this->_tex == nullptr) return;
+
+		Diligent::TextureDesc desc = this->_tex->GetDesc();
+		if (desc.MipLevels != 1U) RAWRBOX_CRITICAL("Cannot rebuild texture '{}' with {} mip levels", this->_name, desc.MipLevels);
+
+		// NOLINTBEGIN(cppcoreguidelines-pro-type-union-access)
+		if (desc.ArraySize != this->_data.total()) RAWRBOX_CRITICAL("Cannot rebuild texture '{}', slice count {} does not match image data {}", this->_name, desc.ArraySize, this->_data.total());
+		// NOLINTEND(cppcoreguidelines-pro-type-union-access)
+
+		desc.Width = this->_data.size.x;
+		desc.Height = this->_data.size.y;
+		desc.Name = this->_name.c_str();
+
+		std::vector<Diligent::TextureSubResData> subresData(this->_data.total());
+		for (size_t slice = 0; slice < subresData.size(); slice++) {
+			subresData[slice].pData = this->_data.frames[slice].pixels.data();
+			subresData[slice].Stride = desc.Width * this->_data.channels;
+		}
+
+		Diligent::TextureData data;
+		data.pSubResources = subresData.data();
+		data.NumSubresources = static_cast<uint32_t>(subresData.size());
+
+		Diligent::RefCntAutoPtr<Diligent::ITexture> texture;
+		rawrbox::RENDERER->device()->CreateTexture(desc, &data, &texture);
+		if (texture == nullptr) RAWRBOX_CRITICAL("Failed to rebuild texture '{}'", this->_name);
+
+		rawrbox::BarrierUtils::barrier({{texture, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+
+		this->_tex = texture;
+		this->_handle = this->_tex->GetDefaultView(Diligent::TEXTURE_VIEW_SHADER_RESOURCE);
+
+		this->updateSampler();
+		if (this->_registered) rawrbox::BindlessManager::updateTextureHandle(*this);
 	}
 
 	void TextureBase::tryGetFormatChannels(Diligent::TEXTURE_FORMAT& format, uint8_t& channels) {
@@ -188,6 +243,27 @@ namespace rawrbox {
 			rawrbox::BarrierUtils::barrier({{this->_tex, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_SHADER_RESOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			rawrbox::BindlessManager::registerTexture(*this);
 		});
+	}
+
+	void TextureBase::resize(const rawrbox::Vector2u& size) {
+		if (this->_failedToLoad || this->_tex == nullptr) return;
+		if (size.x == 0U || size.y == 0U) RAWRBOX_CRITICAL("Invalid texture size {}x{} for '{}'", size.x, size.y, this->_name);
+		if (size == this->_data.size) return;
+
+		const size_t pixelCount = static_cast<size_t>(size.x) * size.y * this->_data.channels;
+		const bool hasSize = this->_data.size.x != 0U && this->_data.size.y != 0U;
+
+		// Neighbour pixel resize
+		for (auto& frame : this->_data.frames) {
+			if (!hasSize || frame.pixels.empty()) {
+				frame.pixels.assign(pixelCount, 0U);
+			} else {
+				frame.pixels = rawrbox::TextureUtils::resize(this->_data.size, frame.pixels, size, this->_data.channels);
+			}
+		}
+
+		this->_data.size = size;
+		rawrbox::runOnRenderThread([this]() { this->rebuild(); });
 	}
 
 	void TextureBase::update() {}
