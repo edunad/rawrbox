@@ -1,183 +1,131 @@
-
 #include <rawrbox/math/utils/yuv.hpp>
 
-// NOLINTBEGIN(cppcoreguidelines-macro-usage)
-#define PUT_PIXEL(s, a, d) \
-	L = &rgbToPix[(s)]; \
-	*((d)) = L[cb_b]; \
-	*((d) + 1) = L[crb_g]; \
-	*((d) + 2) = L[cr_r]; \
-	*((d) + 3) = (a)
-// NOLINTEND(cppcoreguidelines-macro-usage)
+#include <algorithm>
+#include <cmath>
+#include <stdexcept>
 
 namespace rawrbox {
-
 	// PRIVATE ---
-	std::vector<int16_t> YUVUtils::_colorTable = {};
-	std::array<std::vector<uint8_t>, 2> YUVUtils::_lookupTable = {};
+	rawrbox::YUVUtils::Coefficients YUVUtils::getCoefficients(const rawrbox::YUVImage& image) {
+		constexpr double fixedScale = 65536.0;
+
+		double kr = 0.0;
+		double kb = 0.0;
+
+		switch (image.space) {
+			case rawrbox::YUVColorSpace::RGB:
+				break;
+			case rawrbox::YUVColorSpace::BT601:
+				kr = 0.299;
+				kb = 0.114;
+				break;
+			case rawrbox::YUVColorSpace::BT709:
+				kr = 0.2126;
+				kb = 0.0722;
+				break;
+			case rawrbox::YUVColorSpace::BT2020:
+				kr = 0.2627;
+				kb = 0.0593;
+				break;
+			case rawrbox::YUVColorSpace::SMPTE240:
+				kr = 0.212;
+				kb = 0.087;
+				break;
+			default:
+				throw std::runtime_error("Unknown YUV color space");
+		}
+
+		const bool full = image.scale == rawrbox::YUVLuminanceScale::FULL;
+		const double yScale = full ? 1.0 : 255.0 / 219.0;
+		const double cScale = full ? 1.0 : 255.0 / 224.0;
+		const double kg = 1.0 - kr - kb;
+
+		const uint32_t depthShift = image.bitDepth - 8U;
+
+		rawrbox::YUVUtils::Coefficients coeff = {};
+		coeff.y = static_cast<int32_t>(std::lround(yScale * fixedScale));
+		coeff.yOffset = (full ? 0 : 16) << depthShift;
+		coeff.cOffset = 128 << depthShift;
+		coeff.shift = 16U + depthShift;
+		coeff.alphaShift = image.alphaBitDepth - 8U;
+
+		if (image.space != rawrbox::YUVColorSpace::RGB) {
+			coeff.crR = static_cast<int32_t>(std::lround(2.0 * (1.0 - kr) * cScale * fixedScale));
+			coeff.cbB = static_cast<int32_t>(std::lround(2.0 * (1.0 - kb) * cScale * fixedScale));
+			coeff.cbG = static_cast<int32_t>(std::lround(2.0 * kb * (1.0 - kb) / kg * cScale * fixedScale));
+			coeff.crG = static_cast<int32_t>(std::lround(2.0 * kr * (1.0 - kr) / kg * cScale * fixedScale));
+		}
+
+		return coeff;
+	}
+
+	template <typename T>
+	void YUVUtils::convertRows(const rawrbox::YUVImage& image, const rawrbox::YUVUtils::Coefficients& coeff, uint8_t* dst, uint32_t dstPitch, bool flipY) {
+		const bool rgb = image.space == rawrbox::YUVColorSpace::RGB;
+		const bool hasAlpha = image.planes[3] != nullptr;
+		const int32_t round = 1 << (coeff.shift - 1U);
+
+		for (uint32_t y = 0; y < image.size.y; y++) {
+			const auto* yRow = reinterpret_cast<const T*>(image.planes[0] + static_cast<ptrdiff_t>(y) * image.strides[0]);
+			const auto* uRow = reinterpret_cast<const T*>(image.planes[1] + static_cast<ptrdiff_t>(y >> image.chromaShift.y) * image.strides[1]);
+			const auto* vRow = reinterpret_cast<const T*>(image.planes[2] + static_cast<ptrdiff_t>(y >> image.chromaShift.y) * image.strides[2]);
+
+			const uint8_t* aRow = hasAlpha ? image.planes[3] + static_cast<ptrdiff_t>(y) * image.strides[3] : nullptr;
+			uint8_t* out = dst + static_cast<size_t>(flipY ? image.size.y - 1U - y : y) * dstPitch;
+
+			for (uint32_t x = 0; x < image.size.x; x++) {
+				const int32_t lum = static_cast<int32_t>(yRow[x]) - coeff.yOffset;
+				const int32_t cb = static_cast<int32_t>(uRow[x >> image.chromaShift.x]);
+				const int32_t cr = static_cast<int32_t>(vRow[x >> image.chromaShift.x]);
+
+				int32_t r = 0;
+				int32_t g = 0;
+				int32_t b = 0;
+
+				if (rgb) {
+					r = coeff.y * (cr - coeff.yOffset);
+					g = coeff.y * lum;
+					b = coeff.y * (cb - coeff.yOffset);
+				} else {
+					const int32_t base = coeff.y * lum;
+					const int32_t u = cb - coeff.cOffset;
+					const int32_t v = cr - coeff.cOffset;
+
+					r = base + coeff.crR * v;
+					g = base - coeff.cbG * u - coeff.crG * v;
+					b = base + coeff.cbB * u;
+				}
+
+				out[0] = static_cast<uint8_t>(std::clamp((b + round) >> coeff.shift, 0, 255));
+				out[1] = static_cast<uint8_t>(std::clamp((g + round) >> coeff.shift, 0, 255));
+				out[2] = static_cast<uint8_t>(std::clamp((r + round) >> coeff.shift, 0, 255));
+
+				if (hasAlpha) {
+					const int32_t alpha = image.wideAlpha ? reinterpret_cast<const uint16_t*>(aRow)[x] : aRow[x];
+					out[3] = static_cast<uint8_t>(std::clamp(alpha >> coeff.alphaShift, 0, 255));
+				} else {
+					out[3] = 0xFF;
+				}
+
+				out += 4;
+			}
+		}
+	}
 	// ------
 
-	std::vector<int16_t> YUVUtils::getColorTAB() {
-		if (!_colorTable.empty()) return _colorTable;
-		_colorTable.resize(4 * 256); // R G B A
+	void YUVUtils::convert(const rawrbox::YUVImage& image, uint8_t* dst, uint32_t dstPitch, bool flipY) {
+		if (dst == nullptr) throw std::runtime_error("Invalid YUV destination");
 
-		int16_t* Cr_r_tab = &_colorTable[0 * 256];
-		int16_t* Cr_g_tab = &_colorTable[1 * 256];
-		int16_t* Cb_g_tab = &_colorTable[2 * 256];
-		int16_t* Cb_b_tab = &_colorTable[3 * 256];
+		if (image.planes[0] == nullptr || image.planes[1] == nullptr || image.planes[2] == nullptr) throw std::runtime_error("Invalid YUV planes");
+		if (image.scale == rawrbox::YUVLuminanceScale::UNKNOWN) throw std::runtime_error("Unknown YUV luminance scale");
+		if (image.bitDepth < 8U || image.bitDepth > (image.wide ? 12U : 8U)) throw std::runtime_error("Unsupported YUV bit depth");
+		if (image.alphaBitDepth < 8U || image.alphaBitDepth > (image.wideAlpha ? 12U : 8U)) throw std::runtime_error("Unsupported YUV alpha bit depth");
 
-		// Generate the tables for the display surface
-		for (int16_t i = 0; i < 256; i++) {
-			// Gamma correction (luminescence table) and chroma correction
-			// would be done here. See the Berkeley mpeg_play sources.
-
-			int16_t CR = (i - 128);
-			int16_t CB = CR;
-			Cr_r_tab[i] = (int16_t)((0.419 / 0.299) * CR) + 0 * 768 + 256;
-			Cr_g_tab[i] = (int16_t)(-(0.299 / 0.419) * CR) + 1 * 768 + 256;
-			Cb_g_tab[i] = (int16_t)(-(0.114 / 0.331) * CB);
-			Cb_b_tab[i] = (int16_t)((0.587 / 0.331) * CB) + 2 * 768 + 256;
-		}
-
-		return _colorTable;
-	}
-
-	std::vector<uint8_t> YUVUtils::lookup(rawrbox::YUVLuminanceScale scale) {
-		int a = static_cast<int>(scale);
-		if (!_lookupTable[a].empty()) return _lookupTable[a]; // Use the cache
-
-		std::vector<uint8_t> bytes;
-		bytes.resize(3 * 768);
-		// -----
-
-		uint8_t* r_2_pix_alloc = &bytes[0 * 768];
-		uint8_t* g_2_pix_alloc = &bytes[1 * 768];
-		uint8_t* b_2_pix_alloc = &bytes[2 * 768];
-
-		if (scale == rawrbox::YUVLuminanceScale::FULL) {
-			// Set up entries 0-255 in rgb-to-pixel value tables.
-			for (int i = 0; i < 256; i++) {
-				r_2_pix_alloc[i + 256] = static_cast<uint8_t>(i);
-				g_2_pix_alloc[i + 256] = static_cast<uint8_t>(i);
-				b_2_pix_alloc[i + 256] = static_cast<uint8_t>(i);
-			}
-
-			// Spread out the values we have to the rest of the array so that we do
-			// not need to check for overflow.
-			for (int i = 0; i < 256; i++) {
-				r_2_pix_alloc[i] = r_2_pix_alloc[256];
-				r_2_pix_alloc[i + 512] = r_2_pix_alloc[511];
-				g_2_pix_alloc[i] = g_2_pix_alloc[256];
-				g_2_pix_alloc[i + 512] = g_2_pix_alloc[511];
-				b_2_pix_alloc[i] = b_2_pix_alloc[256];
-				b_2_pix_alloc[i + 512] = b_2_pix_alloc[511];
-			}
+		const auto coeff = rawrbox::YUVUtils::getCoefficients(image);
+		if (image.wide) {
+			rawrbox::YUVUtils::convertRows<uint16_t>(image, coeff, dst, dstPitch, flipY);
 		} else {
-			// Set up entries 0-255 in rgb-to-pixel value tables.
-			for (int i = 16; i < 236; i++) {
-				auto scaledValue = static_cast<uint8_t>((i - 16) * 255 / 219);
-
-				r_2_pix_alloc[i + 256] = scaledValue;
-				g_2_pix_alloc[i + 256] = scaledValue;
-				b_2_pix_alloc[i + 256] = scaledValue;
-			}
-
-			// Spread out the values we have to the rest of the array so that we do
-			// not need to check for overflow. We have to do it here in two steps.
-			for (int i = 0; i < 256 + 16; i++) {
-				r_2_pix_alloc[i] = r_2_pix_alloc[256 + 16];
-				g_2_pix_alloc[i] = g_2_pix_alloc[256 + 16];
-				b_2_pix_alloc[i] = b_2_pix_alloc[256 + 16];
-			}
-
-			for (int i = 256 + 236; i < 768; i++) {
-				r_2_pix_alloc[i] = r_2_pix_alloc[256 + 236 - 1];
-				g_2_pix_alloc[i] = g_2_pix_alloc[256 + 236 - 1];
-				b_2_pix_alloc[i] = b_2_pix_alloc[256 + 236 - 1];
-			}
-		}
-
-		_lookupTable[a] = bytes; // Cache it
-		return bytes;
-	}
-
-	void YUVUtils::convert420(rawrbox::YUVLuminanceScale scale, uint8_t* dst, int dstPitch, const uint8_t* ySrc, const uint8_t* uSrc, const uint8_t* vSrc, const uint8_t* aSrc, int yWidth, int yHeight, int yPitch, int uvPitch) {
-		const auto rgbToPix = lookup(scale);
-		const auto colorTab = getColorTAB();
-
-		int halfHeight = yHeight >> 1;
-		int halfWidth = yWidth >> 1;
-
-		dst += dstPitch * (yHeight - 2);
-
-		for (int h = 0; h < halfHeight; h++) {
-			for (int w = 0; w < halfWidth; w++) {
-				const uint8_t* L = nullptr;
-
-				int16_t cr_r = colorTab[*vSrc + 0 * 256];
-				int16_t crb_g = colorTab[*vSrc + 1 * 256] + colorTab[*uSrc + 2 * 256];
-				int16_t cb_b = colorTab[*uSrc + 3 * 256];
-
-				uSrc++;
-				vSrc++;
-				PUT_PIXEL(*ySrc, *aSrc, dst + dstPitch);
-				PUT_PIXEL(*(ySrc + yPitch), *(aSrc + yPitch), dst);
-
-				ySrc++;
-				aSrc++;
-				dst += 4;
-				PUT_PIXEL(*ySrc, *aSrc, dst + dstPitch);
-				PUT_PIXEL(*(ySrc + yPitch), *(aSrc + yPitch), dst);
-
-				ySrc++;
-				aSrc++;
-				dst += 4;
-			}
-
-			dst -= yWidth * 4 + dstPitch * 2;
-
-			ySrc += (yPitch << 1) - yWidth;
-			aSrc += (yPitch << 1) - yWidth;
-			uSrc += uvPitch - halfWidth;
-			vSrc += uvPitch - halfWidth;
-		}
-	}
-
-	void YUVUtils::convert420(rawrbox::YUVLuminanceScale scale, uint8_t* dst, int dstPitch, const uint8_t* ySrc, const uint8_t* uSrc, const uint8_t* vSrc, int yWidth, int yHeight, int yPitch, int uvPitch) {
-		const auto rgbToPix = lookup(scale);
-		const auto colorTab = getColorTAB();
-
-		int halfHeight = yHeight >> 1;
-		int halfWidth = yWidth >> 1;
-
-		dst += dstPitch * (yHeight - 2);
-
-		for (int h = 0; h < halfHeight; h++) {
-			for (int w = 0; w < halfWidth; w++) {
-				const uint8_t* L = nullptr;
-
-				int16_t cr_r = colorTab[*vSrc + 0 * 256];
-				int16_t crb_g = colorTab[*vSrc + 1 * 256] + colorTab[*uSrc + 2 * 256];
-				int16_t cb_b = colorTab[*uSrc + 3 * 256];
-				uSrc++;
-				vSrc++;
-
-				PUT_PIXEL(*ySrc, 0xFF, dst + dstPitch);
-				PUT_PIXEL(*(ySrc + yPitch), 0xFF, dst);
-				ySrc++;
-				dst += 4;
-
-				PUT_PIXEL(*ySrc, 0xFF, dst + dstPitch);
-				PUT_PIXEL(*(ySrc + yPitch), 0xFF, dst);
-				ySrc++;
-				dst += 4;
-			}
-
-			dst -= yWidth * 4 + dstPitch * 2;
-
-			ySrc += (yPitch << 1) - yWidth;
-			uSrc += uvPitch - halfWidth;
-			vSrc += uvPitch - halfWidth;
+			rawrbox::YUVUtils::convertRows<uint8_t>(image, coeff, dst, dstPitch, flipY);
 		}
 	}
 } // namespace rawrbox

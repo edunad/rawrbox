@@ -1,7 +1,6 @@
 #pragma once
 
 #include <rawrbox/render/textures/animated.hpp>
-#include <rawrbox/utils/event.hpp>
 #include <rawrbox/webm/loader.hpp>
 
 #include <filesystem>
@@ -10,14 +9,14 @@ namespace rawrbox {
 	class TextureWEBM : public rawrbox::TextureAnimatedBase {
 	private:
 		uint32_t _flags = 0;
+		bool _started = false;
+
 		std::unique_ptr<rawrbox::WEBM> _webm = nullptr;
 
 		void internalLoad(const std::vector<uint8_t>& data, bool useFallback = true) override;
 		void internalUpdate();
 
 	public:
-		rawrbox::Event<> onEnd;
-
 		explicit TextureWEBM(const std::filesystem::path& filePath, uint32_t flags = 0, bool useFallback = true);
 		TextureWEBM(const TextureWEBM&) = delete;
 		TextureWEBM(TextureWEBM&&) = delete;
@@ -39,6 +38,10 @@ namespace rawrbox {
 
 		[[nodiscard]] float getSpeed() const override;
 		void setSpeed(float speed) override;
+
+		[[nodiscard]] uint32_t total() const override;
+		[[nodiscard]] const rawrbox::WEBMInfo& getInfo() const;
+		[[nodiscard]] uint64_t getTime() const;
 		// ----
 
 		// ------RENDER

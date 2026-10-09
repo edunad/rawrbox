@@ -43,7 +43,7 @@ namespace rawrbox {
 			    .addFunction("setLineMode", &MeshC::setLineMode)
 			    .addFunction("getLineMode", &MeshC::getLineMode)
 
-			    .addFunction("setLineMode", &MeshC::setTransparent)
+			    .addFunction("setTransparent", &MeshC::setTransparent)
 			    .addFunction("isTransparent", &MeshC::isTransparent)
 
 			    .addFunction("getSlice", &MeshC::getSlice)

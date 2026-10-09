@@ -59,17 +59,8 @@ namespace rawrbox {
 		frame.pixels.resize(static_cast<uint32_t>(size.x * size.y * channels));
 		std::memcpy(frame.pixels.data(), buffer, static_cast<uint32_t>(frame.pixels.size()) * sizeof(uint8_t));
 
-		// Check for transparency ----
-		if (channels == 4U) {
-			for (size_t i = 0; i < frame.pixels.size(); i += channels) {
-				if (frame.pixels[i + 3] == 1.F) continue;
-				this->_transparent = true;
-				break;
-			}
-		}
-		// ---------------------------
-
 		this->_data.frames.emplace_back(frame);
+		this->_transparent = this->_data.transparent();
 	}
 
 	TextureImage::TextureImage(const rawrbox::Vector2u& size, const std::vector<uint8_t>& buffer, uint8_t channels) : rawrbox::TextureImage(size, buffer.data(), channels) {}

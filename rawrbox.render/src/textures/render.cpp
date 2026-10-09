@@ -152,6 +152,10 @@ namespace rawrbox {
 		}
 	}
 
+	void TextureRender::resize(const rawrbox::Vector2u& /*size*/) {
+		RAWRBOX_CRITICAL("Render textures cannot be resized");
+	}
+
 	void TextureRender::upload(Diligent::TEXTURE_FORMAT format, bool /*dynamic*/) {
 		if (format == Diligent::TEXTURE_FORMAT::TEX_FORMAT_UNKNOWN) RAWRBOX_CRITICAL("Invalid format");
 

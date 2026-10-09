@@ -1,8 +1,9 @@
 #pragma once
 
+#include <rawrbox/math/vector2.hpp>
+
 #include <array>
 #include <cstdint>
-#include <vector>
 
 namespace rawrbox {
 
@@ -12,15 +13,54 @@ namespace rawrbox {
 		ITU = 1   /** Luminance values range from [16, 235], the range from ITU-R BT.601 */
 	};
 
+	enum class YUVColorSpace : int {
+		UNKNOWN = -1,
+		RGB = 0,
+		BT601,
+		BT709,
+		BT2020,
+		SMPTE240
+	};
+
+	struct YUVImage {
+		std::array<const uint8_t*, 4> planes = {};
+		std::array<int, 4> strides = {};
+
+		rawrbox::Vector2u size = {};
+		rawrbox::Vector2u chromaShift = {};
+
+		uint32_t bitDepth = 8U;
+		uint32_t alphaBitDepth = 8U;
+
+		bool wide = false;
+		bool wideAlpha = false;
+
+		rawrbox::YUVLuminanceScale scale = rawrbox::YUVLuminanceScale::UNKNOWN;
+		rawrbox::YUVColorSpace space = rawrbox::YUVColorSpace::UNKNOWN;
+	};
+
 	class YUVUtils {
-		static std::vector<int16_t> _colorTable;
-		static std::array<std::vector<uint8_t>, 2> _lookupTable;
+		struct Coefficients {
+			int32_t y = 0;
+			
+			int32_t crR = 0;
+			int32_t cbG = 0;
+			int32_t crG = 0;
+			int32_t cbB = 0;
+
+			int32_t yOffset = 0;
+			int32_t cOffset = 0;
+
+			uint32_t shift = 0;
+			uint32_t alphaShift = 0;
+		};
+
+		static rawrbox::YUVUtils::Coefficients getCoefficients(const rawrbox::YUVImage& image);
+
+		template <typename T>
+		static void convertRows(const rawrbox::YUVImage& image, const rawrbox::YUVUtils::Coefficients& coeff, uint8_t* dst, uint32_t dstPitch, bool flipY);
 
 	public:
-		static std::vector<int16_t> getColorTAB();
-		static std::vector<uint8_t> lookup(rawrbox::YUVLuminanceScale scale);
-
-		static void convert420(rawrbox::YUVLuminanceScale scale, uint8_t* dst, int dstPitch, const uint8_t* ySrc, const uint8_t* uSrc, const uint8_t* vSrc, const uint8_t* aSrc, int yWidth, int yHeight, int yPitch, int uvPitch);
-		static void convert420(rawrbox::YUVLuminanceScale scale, uint8_t* dst, int dstPitch, const uint8_t* ySrc, const uint8_t* uSrc, const uint8_t* vSrc, int yWidth, int yHeight, int yPitch, int uvPitch);
+		static void convert(const rawrbox::YUVImage& image, uint8_t* dst, uint32_t dstPitch, bool flipY = false);
 	};
 } // namespace rawrbox

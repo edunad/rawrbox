@@ -27,12 +27,12 @@ namespace rawrbox {
 
 	class WEBMLoader : public rawrbox::Loader {
 	public:
-		WEBMLoader();
+		WEBMLoader() = default;
 		WEBMLoader(const WEBMLoader&) = delete;
 		WEBMLoader(WEBMLoader&&) = delete;
 		WEBMLoader& operator=(const WEBMLoader&) = delete;
 		WEBMLoader& operator=(WEBMLoader&&) = delete;
-		~WEBMLoader() override;
+		~WEBMLoader() override = default;
 
 		std::unique_ptr<rawrbox::Resource> createEntry() override;
 		bool canLoad(const std::string& fileExtention) override;

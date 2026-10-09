@@ -50,6 +50,15 @@ namespace rawrbox {
 	}
 	// --------------------
 
+	// ------RENDER
+	void TextureAtlas::resize(const rawrbox::Vector2u& size) {
+		if (size.x != size.y) RAWRBOX_CRITICAL("Atlas must be square, got {}x{}", size.x, size.y);
+
+		rawrbox::TextureBase::resize(size);
+		if (!this->_failedToLoad) this->_spriteSize = size.x;
+	}
+	// --------------------
+
 	void TextureAtlas::processAtlas(const rawrbox::ImageData& data) {
 		if (!data.valid() || data.total() == 0) RAWRBOX_CRITICAL("Invalid image data!");
 
