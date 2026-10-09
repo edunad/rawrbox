@@ -3,12 +3,15 @@
 #include <rawrbox/engine/static.hpp>
 #include <rawrbox/render/lights/manager.hpp>
 #include <rawrbox/render/models/animation.hpp>
+#include <rawrbox/render/models/animations/blender.hpp>
 #include <rawrbox/render/models/animations/sampler.hpp>
 #include <rawrbox/render/models/base.hpp>
 #include <rawrbox/render/models/skeleton.hpp>
 #include <rawrbox/render/models/utils/animation.hpp>
 #include <rawrbox/render/models/utils/optimization.hpp>
 #include <rawrbox/render/static.hpp>
+
+#include <unordered_set>
 
 namespace rawrbox {
 
@@ -22,6 +25,9 @@ namespace rawrbox {
 
 		std::unordered_map<uint32_t, std::vector<rawrbox::Mesh<typename M::vertexBufferType>*>> _animatedMeshes = {}; // For quick lookup
 		std::unordered_map<std::string, std::unique_ptr<rawrbox::AnimationSampler>> _playingAnimations = {};
+
+		std::unordered_map<rawrbox::Skeleton*, std::unique_ptr<rawrbox::AnimationBlender>> _blenders = {};
+		std::unordered_map<uint32_t, rawrbox::TransformBlend> _vertexBlends = {};
 		// ------------
 
 		std::vector<std::unique_ptr<rawrbox::Mesh<typename M::vertexBufferType>>> _meshes = {};
@@ -52,59 +58,97 @@ namespace rawrbox {
 			return ptr;
 		}
 
-		void applyAnimation(rawrbox::AnimationSampler& sampler) {
+		rawrbox::AnimationBlender* getBlender(rawrbox::Skeleton* skeleton) {
+			auto fnd = this->_blenders.find(skeleton);
+			if (fnd != this->_blenders.end()) return fnd->second.get();
+
+			auto blender = std::make_unique<rawrbox::AnimationBlender>(skeleton);
+			auto* ptr = blender.get();
+
+			this->_blenders[skeleton] = std::move(blender);
+			return ptr;
+		}
+
+		void collectAnimation(const rawrbox::AnimationSampler& sampler) {
+			const float weight = sampler.getWeight();
+			if (weight <= 0.F) return;
+
 			const auto& parts = sampler.getAnimation()->getParts();
-
 			for (size_t i = 0; i < parts.size(); i++) {
+				const auto& part = parts[i];
+				const auto& locals = sampler.getLocalOutput(i);
 
-				switch (const auto& part = parts[i]; part.type) {
+				switch (part.type) {
 					case rawrbox::AnimationType::VERTEX:
-						this->applyVertexAnimation(part, sampler.getLocalOutput(i));
+						for (size_t track = 0; track < part.meshes.size(); track++) {
+							if (!this->_animatedMeshes.contains(part.meshes[track])) continue;
+
+							rawrbox::Vector3f pos = {};
+							rawrbox::Vector4f rotation = {};
+							rawrbox::Vector3f scale = {};
+
+							rawrbox::AnimationUtils::getTransform(locals[track / 4], track % 4, pos, rotation, scale);
+							this->_vertexBlends[part.meshes[track]].add(pos, rotation, scale, weight);
+						}
 						break;
 					case rawrbox::AnimationType::SKELETON:
 						if constexpr (supportsBones<typename M::vertexBufferType>) {
-							this->applySkeletonAnimation(part, sampler.getModelOutput(i));
+							this->getBlender(part.skeleton)->addLayer(locals, weight, sampler.getJointWeights(i), part.additive);
 						}
 						break;
 				}
 			}
 		}
 
-		void applyVertexAnimation(const rawrbox::AnimationPart& part, const ozz::vector<ozz::math::SoaTransform>& output) {
-			for (size_t track = 0; track < part.meshes.size(); track++) {
-				auto fnd = this->_animatedMeshes.find(part.meshes[track]);
+		void applyAnimations() {
+			// Vertex ----
+			for (auto& vertex : this->_vertexBlends) {
+				auto fnd = this->_animatedMeshes.find(vertex.first);
 				if (fnd == this->_animatedMeshes.end()) continue;
 
-				const rawrbox::Matrix4x4 mtx = rawrbox::AnimationUtils::toMatrix(output[track / 4], track % 4);
+				const rawrbox::Matrix4x4 mtx = vertex.second.toMatrix();
 				for (auto* mesh : fnd->second) {
 					mesh->matrix = mtx;
 				}
 			}
+			// -------------
+
+			// Skeleton ----
+			if constexpr (supportsBones<typename M::vertexBufferType>) {
+				for (auto& blender : this->_blenders) {
+					if (blender.second->empty() && !blender.second->hasIK()) continue;
+					this->applySkeleton(*blender.first, blender.second->blend());
+				}
+			}
+			// -------------
 		}
 
-		void applySkeletonAnimation(const rawrbox::AnimationPart& part, const ozz::vector<ozz::math::Float4x4>& output) {
-			const rawrbox::Skeleton* skeleton = part.skeleton;
-			if (skeleton == nullptr) return;
-
-			const size_t skinJoints = skeleton->getNumSkinJoints();
+		void applySkeleton(const rawrbox::Skeleton& skeleton, const ozz::vector<ozz::math::Float4x4>& output) {
+			const size_t skinJoints = skeleton.getNumSkinJoints();
 			if (skinJoints > RB_RENDER_MAX_BONES_PER_MODEL) return;
 
 			std::array<rawrbox::Matrix4x4, RB_RENDER_MAX_BONES_PER_MODEL> palette = {};
 			for (size_t i = 0; i < skinJoints; i++) {
-				const auto joint = static_cast<size_t>(skeleton->getJointIndex(i));
-				palette[i] = rawrbox::AnimationUtils::toMatrix(output[joint]) * skeleton->getInverseBindMatrix(i);
+				const auto joint = static_cast<size_t>(skeleton.getJointIndex(i));
+				palette[i] = rawrbox::AnimationUtils::toMatrix(output[joint]) * skeleton.getInverseBindMatrix(i);
 			}
-			// -----------------------------------------------------
 
 			for (auto& mesh : this->_meshes) {
-				if (mesh == nullptr || mesh->skeleton != skeleton) continue;
+				if (mesh == nullptr || mesh->skeleton != &skeleton) continue;
 				std::copy(palette.begin(), palette.begin() + static_cast<std::ptrdiff_t>(skinJoints), mesh->boneTransforms.begin());
 			}
 		}
 
 		void tickAnimations() {
-			std::vector<std::unique_ptr<rawrbox::AnimationSampler>> finished = {};
+			// Animation blending ----
+			for (auto& blender : this->_blenders) {
+				blender.second->reset();
+			}
 
+			this->_vertexBlends.clear();
+			// -------------------
+
+			std::vector<std::unique_ptr<rawrbox::AnimationSampler>> finished = {};
 			for (auto it = this->_playingAnimations.begin(); it != this->_playingAnimations.end();) {
 				auto& sampler = it->second;
 				if (sampler == nullptr) {
@@ -115,7 +159,7 @@ namespace rawrbox {
 				const bool ended = sampler->tick(rawrbox::DELTA_TIME);
 
 				sampler->sample();
-				this->applyAnimation(*sampler);
+				this->collectAnimation(*sampler);
 
 				if (ended) {
 					finished.push_back(std::move(sampler));
@@ -126,11 +170,11 @@ namespace rawrbox {
 				++it;
 			}
 
-			// Safe call complete()
+			this->applyAnimations();
+
 			for (auto& sampler : finished) {
 				sampler->complete();
 			}
-			// -------------------
 
 			finished.clear();
 		}
@@ -167,6 +211,8 @@ namespace rawrbox {
 		Model& operator=(Model&&) = delete;
 		~Model() override {
 			this->_playingAnimations.clear();
+			this->_blenders.clear();
+			this->_vertexBlends.clear();
 			this->_animatedMeshes.clear();
 			this->_animations.clear();
 			this->_meshes.clear();
@@ -271,8 +317,12 @@ namespace rawrbox {
 		}
 
 		// ANIMATIONS ----
-		virtual bool blendAnimation(const std::string& /*otherAnim*/, float /*blend*/) {
-			RAWRBOX_CRITICAL("TODO");
+		virtual bool blendAnimation(const std::string& name, float weight) {
+			auto fnd = this->_playingAnimations.find(name);
+			if (fnd == this->_playingAnimations.end() || fnd->second == nullptr) return false;
+
+			fnd->second->setWeight(weight);
+			return true;
 		}
 
 		virtual std::vector<rawrbox::AnimationSampler*> playAnimation(bool loop = false, std::function<void(const std::string&)> onComplete = nullptr) {
@@ -290,7 +340,7 @@ namespace rawrbox {
 			return anims;
 		}
 
-		virtual rawrbox::AnimationSampler* playAnimation(const std::string& name, bool loop = false, std::function<void(const std::string&)> onComplete = nullptr) {
+		virtual rawrbox::AnimationSampler* playAnimation(const std::string& name, bool loop = false, std::function<void(const std::string&)> onComplete = nullptr, float weight = 1.F) {
 			for (size_t i = 0; i < this->_animations.size(); i++) {
 				rawrbox::Animation* anim = this->_animations[i];
 				if (anim == nullptr || anim->name != name) continue;
@@ -301,6 +351,7 @@ namespace rawrbox {
 				if (playingAnim == nullptr) return nullptr;
 
 				playingAnim->setLoop(loop);
+				playingAnim->setWeight(weight);
 				return playingAnim;
 			}
 
@@ -311,6 +362,52 @@ namespace rawrbox {
 		virtual rawrbox::AnimationSampler* playSingleAnimation(const std::string& name, bool loop = false, std::function<void(const std::string&)> onComplete = nullptr) {
 			this->stopAllAnimations();
 			return this->playAnimation(name, loop, onComplete);
+		}
+
+		template <typename T> requires(std::derived_from<T, rawrbox::AnimationIKBase>)
+		bool addIK(const std::string& joint, const T& ik) {
+			if constexpr (!supportsBones<typename M::vertexBufferType>) {
+				return false;
+			} else {
+				bool found = false;
+				std::unordered_set<rawrbox::Skeleton*> done = {};
+
+				for (auto& mesh : this->_meshes) {
+					if (mesh == nullptr || mesh->skeleton == nullptr || !done.insert(mesh->skeleton).second) continue;
+
+					rawrbox::Matrix4x4 toModel = this->getMatrix() * mesh->matrix;
+					toModel.inverse();
+
+					T local = ik;
+					local.transform(toModel);
+
+					if (this->getBlender(mesh->skeleton)->addIK(joint, local)) found = true;
+				}
+
+				if (!found) this->_logger->warn("Failed to setup IK on '{}'", joint);
+				return found;
+			}
+		}
+
+		virtual void removeIK(const std::string& joint) {
+			for (auto& blender : this->_blenders) {
+				blender.second->removeIK(joint);
+			}
+		}
+
+		virtual void clearIK() {
+			for (auto& blender : this->_blenders) {
+				blender.second->clearIK();
+			}
+		}
+
+		[[nodiscard]] virtual const rawrbox::AnimationIKBase* getIK(const std::string& joint) const {
+			for (const auto& blender : this->_blenders) {
+				const auto* ik = blender.second->getIK(joint);
+				if (ik != nullptr) return ik;
+			}
+
+			return nullptr;
 		}
 
 		virtual void stopAllAnimations() {

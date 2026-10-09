@@ -2,7 +2,7 @@
 #include <rawrbox/render/models/skeleton.hpp>
 #include <rawrbox/utils/logger.hpp>
 
-#include <ozz/animation/runtime/local_to_model_job.h>
+#include <ozz/animation/runtime/skeleton_utils.h>
 
 #include <algorithm>
 #include <cmath>
@@ -73,7 +73,6 @@ namespace rawrbox {
 			job.output = ozz::make_span(state->locals);
 
 			if (!job.Run()) RAWRBOX_CRITICAL("Failed to sample animation '{}' (part {})", this->_animation->name, i);
-			state->dirty = true;
 		}
 	}
 
@@ -83,25 +82,9 @@ namespace rawrbox {
 		return this->_parts[part]->locals;
 	}
 
-	const ozz::vector<ozz::math::Float4x4>& AnimationSampler::getModelOutput(size_t part) {
+	const ozz::vector<ozz::math::SimdFloat4>& AnimationSampler::getJointWeights(size_t part) const {
 		if (part >= this->_parts.size()) RAWRBOX_CRITICAL("Invalid animation part {}", part);
-
-		const auto& animPart = this->_animation->getParts()[part];
-		if (animPart.type != rawrbox::AnimationType::SKELETON) RAWRBOX_CRITICAL("Animation part {} is not a skeleton part", part);
-
-		const auto& state = this->_parts[part];
-		if (!state->dirty) return state->models;
-		if (state->models.empty()) state->models.resize(animPart.skeleton->getNumJoints());
-
-		ozz::animation::LocalToModelJob job;
-		job.skeleton = &animPart.skeleton->getSkeleton();
-		job.input = ozz::make_span(state->locals);
-		job.output = ozz::make_span(state->models);
-
-		if (!job.Run()) RAWRBOX_CRITICAL("Failed to convert animation '{}' on part '{}'", this->_animation->name, part);
-		state->dirty = false;
-
-		return state->models;
+		return this->_parts[part]->jointWeights;
 	}
 	// ----------
 
@@ -116,7 +99,51 @@ namespace rawrbox {
 	void AnimationSampler::setLoop(bool loop) { this->_loop = loop; }
 
 	float AnimationSampler::getSpeed() const { return this->_playbackSpeed; }
-	void AnimationSampler::setSpeed(float speed) { this->_playbackSpeed = speed; }
+	void AnimationSampler::setSpeed(float speed) {
+		if (speed < 0.F && this->_playbackSpeed >= 0.F && this->_currentTime <= 0.F) this->_currentTime = 1.F;
+		if (speed >= 0.F && this->_playbackSpeed < 0.F && this->_currentTime >= 1.F) this->_currentTime = 0.F;
+
+		this->_playbackSpeed = speed;
+	}
+
+	float AnimationSampler::getWeight() const { return this->_weight; }
+	void AnimationSampler::setWeight(float weight) { this->_weight = std::max(weight, 0.F); }
+
+	bool AnimationSampler::setJointWeight(const std::string& id, float weight, bool children) {
+		bool found = false;
+
+		const auto& parts = this->_animation->getParts();
+		for (size_t i = 0; i < parts.size(); i++) {
+			const auto& part = parts[i];
+			if (part.type != rawrbox::AnimationType::SKELETON) continue;
+
+			const auto& skeleton = part.skeleton->getSkeleton();
+			const int index = ozz::animation::FindJoint(skeleton, id.c_str());
+			if (index < 0) continue;
+
+			auto& mask = this->_parts[i]->jointWeights;
+			if (mask.empty()) mask.resize(skeleton.num_soa_joints(), ozz::math::simd_float4::one());
+
+			const auto value = ozz::math::simd_float4::Load1(std::clamp(weight, 0.F, 1.F));
+			const auto apply = [&mask, &value](int j, int /*parent*/) { mask[j / 4] = ozz::math::SetI(mask[j / 4], value, j % 4); };
+
+			if (children) {
+				ozz::animation::IterateJointsDF(skeleton, apply, index);
+			} else {
+				apply(index, 0);
+			}
+
+			found = true;
+		}
+
+		return found;
+	}
+
+	void AnimationSampler::clearJointWeights() {
+		for (const auto& part : this->_parts) {
+			part->jointWeights.clear();
+		}
+	}
 
 	rawrbox::Animation* AnimationSampler::getAnimation() const { return this->_animation; }
 	// -------------

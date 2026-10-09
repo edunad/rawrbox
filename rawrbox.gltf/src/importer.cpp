@@ -7,6 +7,7 @@
 #include <fastgltf/types.hpp>
 #include <magic_enum/magic_enum.hpp>
 
+#include <ozz/animation/offline/additive_animation_builder.h>
 #include <ozz/animation/offline/animation_builder.h>
 #include <ozz/animation/offline/animation_optimizer.h>
 #include <ozz/animation/offline/skeleton_builder.h>
@@ -38,15 +39,23 @@ namespace rawrbox {
 			extensions |= fastgltf::Extensions::KHR_lights_punctual;
 		}
 
+		GLTFExtras extras = {};
+		extras.importer = this;
+
 		fastgltf::Parser parser(extensions);
-		parser.setUserPointer(this);
+		parser.setUserPointer(&extras);
 
 		// Custom extras ----
 		parser.setExtrasParseCallback([](simdjson::dom::object* extras, std::size_t objectIndex, fastgltf::Category objectType, void* userPointer) {
-			if (extras == nullptr) return;
+			if (extras == nullptr || userPointer == nullptr) return;
 
-			auto* importer = static_cast<GLTFImporter*>(userPointer);
-			if (importer == nullptr) return;
+			auto* context = static_cast<GLTFExtras*>(userPointer);
+			auto* importer = context->importer;
+
+			if (objectType == fastgltf::Category::Animations) {
+				auto additive = extras->at_key("additive").get_bool();
+				if (additive.error() == simdjson::error_code::SUCCESS && additive.value()) context->additiveAnimations.insert(objectIndex);
+			}
 
 			if (objectType == fastgltf::Category::Meshes) {
 				if ((importer->loadFlags & rawrbox::GLTFLoadFlags::IMPORT_BLEND_SHAPES) > 0) {
@@ -74,6 +83,11 @@ namespace rawrbox {
 
 		// POST-LOAD ---
 		this->postLoadFixSceneNames(scene);
+		for (const auto& index : extras.additiveAnimations) {
+			if (index < scene.animations.size())
+				this->additiveAnimations.insert(std::string(scene.animations[index].name));
+		}
+
 		if (!this->buildHierarchy(scene)) {
 			this->_logger->warn("Invalid model node hierarchy!");
 			return;
@@ -139,9 +153,23 @@ namespace rawrbox {
 
 		if (importAnims) {
 			// Fix animations ---
+			std::unordered_set<std::string> animNames = {};
 			for (size_t i = 0; i < scene.animations.size(); i++) {
 				auto& anim = scene.animations[i];
-				if (anim.name.empty()) anim.name = fmt::format("animation_{}", i);
+
+				std::string name = anim.name.empty() ? fmt::format("animation_{}", i) : std::string(anim.name);
+				if (animNames.contains(name)) {
+					std::string renamed = fmt::format("{}_{}", name, i);
+					while (animNames.contains(renamed)) {
+						renamed += "_";
+					}
+
+					this->_logger->warn("Duplicate animation name '{}', renaming to '{}'", name, renamed);
+					name = renamed;
+				}
+
+				anim.name = name;
+				animNames.insert(name);
 			}
 			// -------------------
 
@@ -174,11 +202,23 @@ namespace rawrbox {
 				}
 
 				if (this->_nodeParents[child].has_value()) {
-					this->_logger->warn("Node '{}' has multiple parents. This is not supported!", child, this->_nodeParents[child].value(), i);
+					this->_logger->warn("Node '{}' has multiple parents. This is not supported!", child);
 					return false;
 				}
 
 				this->_nodeParents[child] = i;
+			}
+		}
+
+		for (size_t i = 0; i < scene.nodes.size(); i++) {
+			std::optional<size_t> current = i;
+			for (size_t depth = 0; current.has_value(); depth++) {
+				if (depth > scene.nodes.size()) {
+					this->_logger->warn("Node '{}' has looping cyclic dependency!", i);
+					return false;
+				}
+
+				current = this->_nodeParents[current.value()];
 			}
 		}
 
@@ -208,6 +248,8 @@ namespace rawrbox {
 			}
 
 			std::string name(gltfTexture.name);
+			if (name.empty())
+				name = imgIndex.has_value() && imgIndex->first < scene.images.size() ? std::string(scene.images[imgIndex->first].name) : fmt::format("texture_{}", i);
 			if (!imgIndex.has_value()) {
 				this->_logger->warn("Unsupported texture '{} -> {}'", i, name);
 				continue;
@@ -375,7 +417,7 @@ namespace rawrbox {
 
 			// INVERSE BIND MATRICES ----
 			if (!this->isValid(scene, skin.inverseBindMatrices.value(), fastgltf::AccessorType::Mat4)) {
-				this->_logger->warn("Skin '{}' has an matrices, skipping...", skinName);
+				this->_logger->warn("Skin '{}' has no inverse bind matrices, skipping...", skinName);
 				continue;
 			}
 
@@ -541,13 +583,13 @@ namespace rawrbox {
 		const auto& node = scene.nodes[nodeIndex];
 
 		ozz::animation::offline::RawSkeleton::Joint joint = {};
-		joint.name = std::string(node.name).c_str();
+		joint.name = node.name.c_str();
 		joint.transform = this->getRestPose(node);
 
-		jointNodes.push_back(nodeIndex); // Ozz joint order
+		jointNodes.push_back(nodeIndex);
 
 		for (const auto& child : node.children) {
-			if (!nodes.contains(child)) continue; // Invalid joint
+			if (!nodes.contains(child)) continue;
 			joint.children.push_back(this->buildJoint(scene, child, nodes, jointNodes));
 		}
 
@@ -565,7 +607,7 @@ namespace rawrbox {
 	}
 
 	ozz::math::Transform GLTFImporter::getRestPose(const fastgltf::Node& node) const {
-		const auto& trs = std::get<fastgltf::TRS>(node.transform); // fastgltf::Options::DecomposeNodeMatrices
+		const auto& trs = std::get<fastgltf::TRS>(node.transform);
 
 		ozz::math::Transform transform = ozz::math::Transform::identity();
 		transform.translation = ozz::math::Float3(trs.translation.x(), trs.translation.y(), trs.translation.z());
@@ -592,6 +634,7 @@ namespace rawrbox {
 
 			rawrbox::GLTFAnimation gltfAnim = {};
 			gltfAnim.name = std::string(anim.name);
+			gltfAnim.additive = this->additiveAnimations.contains(gltfAnim.name);
 
 			if (printAnims) {
 				this->_logger->debug("Found animation '{}'", fmt::styled(gltfAnim.name, fmt::fg(fmt::color::green_yellow)));
@@ -624,8 +667,7 @@ namespace rawrbox {
 				fastgltf::iterateAccessor<float>(scene, timeAccessor, [&gltfAnim](float time) { gltfAnim.duration = std::max(gltfAnim.duration, time); });
 			}
 
-			gltfAnim.duration = std::max(gltfAnim.duration, 0.001F); // ozz duration cannot be 0
-			const float holdOffset = gltfAnim.duration * 0.0001F;
+			gltfAnim.duration = std::max(gltfAnim.duration, 0.001F);
 			// ----------------------------------------
 
 			for (const auto& channel : anim.channels) {
@@ -654,13 +696,13 @@ namespace rawrbox {
 				auto& track = gltfAnim.tracks[nodeIndex];
 				switch (channel.path) {
 					case fastgltf::AnimationPath::Translation:
-						this->extractKeys<ozz::math::Float3>(scene, timeAccessor, dataAccessor, sampler.interpolation, holdOffset, track.translations, gltfAnim.name);
+						this->extractKeys<ozz::math::Float3>(scene, timeAccessor, dataAccessor, sampler.interpolation, RB_GLTF_ANIM_HOLD_OFFSET, track.translations, gltfAnim.name);
 						break;
 					case fastgltf::AnimationPath::Rotation:
-						this->extractKeys<ozz::math::Quaternion>(scene, timeAccessor, dataAccessor, sampler.interpolation, holdOffset, track.rotations, gltfAnim.name);
+						this->extractKeys<ozz::math::Quaternion>(scene, timeAccessor, dataAccessor, sampler.interpolation, RB_GLTF_ANIM_HOLD_OFFSET, track.rotations, gltfAnim.name);
 						break;
 					case fastgltf::AnimationPath::Scale:
-						this->extractKeys<ozz::math::Float3>(scene, timeAccessor, dataAccessor, sampler.interpolation, holdOffset, track.scales, gltfAnim.name);
+						this->extractKeys<ozz::math::Float3>(scene, timeAccessor, dataAccessor, sampler.interpolation, RB_GLTF_ANIM_HOLD_OFFSET, track.scales, gltfAnim.name);
 						break;
 					default:
 						break;
@@ -738,6 +780,23 @@ namespace rawrbox {
 					rawAnim.tracks.push_back(std::move(track));
 				}
 
+				if (anim.additive) {
+					std::vector<ozz::math::Transform> reference = {};
+					reference.reserve(jointNodes.size());
+
+					for (const auto& node : jointNodes) {
+						reference.push_back(this->getRestPose(scene.nodes[node]));
+					}
+
+					ozz::animation::offline::AdditiveAnimationBuilder additiveBuilder;
+					ozz::animation::offline::RawAnimation input = rawAnim;
+
+					if (!additiveBuilder(input, ozz::make_span(reference), &rawAnim)) {
+						this->_logger->warn("Failed to build additive animation '{}' for skeleton '{}'", anim.name, skeleton->name);
+						continue;
+					}
+				}
+
 				if (optimize) {
 					ozz::animation::offline::AnimationOptimizer optimizer;
 					ozz::animation::offline::RawAnimation input = rawAnim;
@@ -755,6 +814,7 @@ namespace rawrbox {
 
 				rawrbox::AnimationPart part = {};
 				part.type = rawrbox::AnimationType::SKELETON;
+				part.additive = anim.additive;
 				part.animation = std::move(built);
 				part.skeleton = skeleton;
 
@@ -803,7 +863,7 @@ namespace rawrbox {
 			}
 
 			if (printAnims) {
-				this->_logger->debug("Built animation '{}' -> {} skeleton(s), {} vertex track(s), {:.2f}s", fmt::styled(anim.name, fmt::fg(fmt::color::green_yellow)), targetSkeletons.size(), meshNodes.size(), animation->duration);
+				this->_logger->debug("Built animation '{}' -> {} skeleton(s){}, {} vertex track(s), {:.2f}s", fmt::styled(anim.name, fmt::fg(fmt::color::green_yellow)), targetSkeletons.size(), anim.additive ? " (additive)" : "", meshNodes.size(), animation->duration);
 			}
 
 			this->animations.push_back(std::move(animation));
@@ -916,7 +976,11 @@ namespace rawrbox {
 
 				for (size_t o = 0; o < primitive.targets.size(); o++) {
 					const auto& blendNames = this->targetNames[meshIndex];
-					if (blendNames.empty()) RAWRBOX_CRITICAL("Invalid blend shape names for mesh '{}'", gltfMesh->name);
+					if (o >= blendNames.size()) {
+						this->_logger->warn("Missing blend shape names for mesh '{}', skipping blend shapes...", gltfMesh->name);
+						rawrPrimitive.blendShapes.clear();
+						break;
+					}
 
 					rawrbox::GLTFBlendShape& shape = rawrPrimitive.blendShapes[o];
 					shape.name = fmt::format("{}-{}", gltfMesh->name, blendNames[o]);
@@ -1069,8 +1133,8 @@ namespace rawrbox {
 
 					for (auto& joint : indices) {
 						if (joint < maxJoints) continue;
-						this->_logger->warn("Joint index {} exceeds the joint limit ({})", joint, maxJoints);
 
+						this->_logger->warn("Joint index {} exceeds the joint limit ({})!", joint, maxJoints);
 						joint = 0;
 					}
 
@@ -1109,8 +1173,8 @@ namespace rawrbox {
 
 	// UTILS ---
 	bool GLTFImporter::isValid(const fastgltf::Asset& scene, size_t index, fastgltf::AccessorType type) const {
-		if ((this->loadFlags & rawrbox::GLTFLoadFlags::VALIDATE) == 0) return true;
 		if (index >= scene.accessors.size()) return false;
+		if ((this->loadFlags & rawrbox::GLTFLoadFlags::VALIDATE) == 0) return true;
 
 		return scene.accessors[index].type == type;
 	}

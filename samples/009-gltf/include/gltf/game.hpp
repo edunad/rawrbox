@@ -22,6 +22,7 @@ namespace gltf {
 
 		std::unique_ptr<rawrbox::Model<>> _modelGrid;
 		std::unique_ptr<rawrbox::Model<>> _bbox;
+		std::unique_ptr<rawrbox::Model<>> _lookTarget;
 
 		std::unique_ptr<rawrbox::Text3D<>> _text;
 

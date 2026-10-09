@@ -4,6 +4,25 @@
 #include <array>
 
 namespace rawrbox {
+	void TransformBlend::add(const rawrbox::Vector3f& _pos, const rawrbox::Vector4f& _rotation, const rawrbox::Vector3f& _scale, float _weight) {
+		if (_weight <= 0.F) return;
+
+		rawrbox::Vector4f rot = _rotation;
+		if (this->weight > 0.F && (this->rotation.x * rot.x + this->rotation.y * rot.y + this->rotation.z * rot.z + this->rotation.w * rot.w) < 0.F) rot = rot * -1.F;
+
+		this->pos += _pos * _weight;
+		this->rotation += rot * _weight;
+		this->scale += _scale * _weight;
+		this->weight += _weight;
+	}
+
+	rawrbox::Matrix4x4 TransformBlend::toMatrix() const {
+		if (this->weight <= 0.F) return {};
+
+		const float inv = 1.F / this->weight;
+		return rawrbox::Matrix4x4::mtxSRT(this->scale * inv, this->rotation.normalized(), this->pos * inv);
+	}
+
 	rawrbox::Matrix4x4 AnimationUtils::toMatrix(const ozz::math::Float4x4& mtx) {
 		std::array<float, 16> data = {};
 		for (size_t col = 0; col < 4; col++) {
@@ -45,14 +64,5 @@ namespace rawrbox {
 
 		scale = {tx[indx], ty[indx], tz[indx]};
 		// ---------
-	}
-
-	rawrbox::Matrix4x4 AnimationUtils::toMatrix(const ozz::math::SoaTransform& soa, size_t lane) {
-		rawrbox::Vector3f pos = {};
-		rawrbox::Vector4f rotation = {};
-		rawrbox::Vector3f scale = {};
-
-		rawrbox::AnimationUtils::getTransform(soa, lane, pos, rotation, scale);
-		return rawrbox::Matrix4x4::mtxSRT(scale, rotation, pos);
 	}
 } // namespace rawrbox

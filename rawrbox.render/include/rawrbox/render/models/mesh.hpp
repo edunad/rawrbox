@@ -10,7 +10,6 @@
 #include <rawrbox/render/textures/base.hpp>
 
 #include <RasterizerState.h>
-#include <fmt/printf.h>
 
 #include <cstdint>
 #include <string>

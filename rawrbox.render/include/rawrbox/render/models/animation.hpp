@@ -3,6 +3,7 @@
 #include <ozz/animation/runtime/animation.h>
 #include <ozz/base/memory/unique_ptr.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -16,6 +17,8 @@ namespace rawrbox {
 
 	struct AnimationPart {
 		rawrbox::AnimationType type = rawrbox::AnimationType::VERTEX;
+		bool additive = false;
+
 		ozz::unique_ptr<ozz::animation::Animation> animation = nullptr;
 
 		rawrbox::Skeleton* skeleton = nullptr;

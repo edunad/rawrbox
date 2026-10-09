@@ -9,6 +9,7 @@
 #include <rawrbox/render/scripting/wrappers/camera.hpp>
 #include <rawrbox/render/scripting/wrappers/decals/decal.hpp>
 #include <rawrbox/render/scripting/wrappers/light/base.hpp>
+#include <rawrbox/render/scripting/wrappers/models/animation.hpp>
 #include <rawrbox/render/scripting/wrappers/models/base.hpp>
 #include <rawrbox/render/scripting/wrappers/models/instance.hpp>
 #include <rawrbox/render/scripting/wrappers/models/instanced.hpp>
@@ -27,7 +28,7 @@ namespace rawrbox {
 		rawrbox::Window* _window = nullptr;
 
 	public:
-		RendererScripting(rawrbox::Window* window) : _window(window){};
+		RendererScripting(rawrbox::Window* window) : _window(window) {};
 
 		void registerTypes(lua_State* L) override {
 			if (L == nullptr) throw std::runtime_error("Tried to register plugin on invalid mod!");
@@ -58,6 +59,7 @@ namespace rawrbox {
 			// ------
 
 			// MODEL --
+			rawrbox::AnimationWrapper::registerLua(L);
 			rawrbox::MeshWrapper::registerLua(L);
 			rawrbox::ModelBaseWrapper::registerLua(L);
 			rawrbox::ModelWrapper::registerLua(L);
@@ -81,7 +83,6 @@ namespace rawrbox {
 			// LIGHT ----
 			rawrbox::LightsGlobal::registerLua(L);
 			// ------
-
 
 			// RESOURCES ---
 #ifdef RAWRBOX_RESOURCES

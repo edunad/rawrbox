@@ -18,13 +18,11 @@ namespace rawrbox {
 		struct PartState {
 			ozz::animation::SamplingJob::Context context = {};
 			ozz::vector<ozz::math::SoaTransform> locals = {};
-			ozz::vector<ozz::math::Float4x4> models = {};
-
-			bool dirty = true;
+			ozz::vector<ozz::math::SimdFloat4> jointWeights = {};
 		};
 
 		size_t _index = 0;
-		
+
 		rawrbox::Animation* _animation = nullptr;
 		std::function<void(const std::string&)> _onComplete = nullptr;
 
@@ -32,6 +30,8 @@ namespace rawrbox {
 
 		float _currentTime = 0.F; // 0 -> 1
 		float _playbackSpeed = 1.F;
+		float _weight = 1.F; // 0 -> 1
+
 		bool _loop = false;
 
 	public:
@@ -49,7 +49,7 @@ namespace rawrbox {
 
 		// SAMPLE --
 		[[nodiscard]] virtual const ozz::vector<ozz::math::SoaTransform>& getLocalOutput(size_t part) const;
-		[[nodiscard]] virtual const ozz::vector<ozz::math::Float4x4>& getModelOutput(size_t part);
+		[[nodiscard]] virtual const ozz::vector<ozz::math::SimdFloat4>& getJointWeights(size_t part) const;
 		// ----------
 
 		// UTILS ----
@@ -64,6 +64,12 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual float getSpeed() const;
 		virtual void setSpeed(float speed);
+
+		[[nodiscard]] virtual float getWeight() const;
+		virtual void setWeight(float weight);
+
+		virtual bool setJointWeight(const std::string& id, float weight, bool children = true);
+		virtual void clearJointWeights();
 
 		[[nodiscard]] virtual rawrbox::Animation* getAnimation() const;
 		// -------------

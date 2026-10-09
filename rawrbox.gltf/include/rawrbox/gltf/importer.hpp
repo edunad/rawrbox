@@ -1,5 +1,6 @@
 #pragma once
 
+#include <rawrbox/gltf/gltf_config.hpp>
 #include <rawrbox/math/bbox.hpp>
 #include <rawrbox/math/pi.hpp>
 #include <rawrbox/math/utils/math.hpp>
@@ -41,6 +42,7 @@ struct fastgltf::ElementTraits<rawrbox::Vector4f> : fastgltf::ElementTraitsBase<
 // ---------------------------------
 
 namespace rawrbox {
+	class GLTFImporter;
 	// NOLINTBEGIN(unused-const-variable)
 	namespace GLTFLoadFlags {
 		const uint32_t NONE = 0;
@@ -75,6 +77,11 @@ namespace rawrbox {
 		WEBP = 0,
 		DDS = 1,
 		OTHER = 2
+	};
+
+	struct GLTFExtras {
+		GLTFImporter* importer = nullptr;
+		std::unordered_set<size_t> additiveAnimations = {};
 	};
 
 	struct GLTFMaterial {
@@ -191,6 +198,7 @@ namespace rawrbox {
 	struct GLTFAnimation {
 		std::string name;
 		float duration = 0.F;
+		bool additive = false;
 
 		std::unordered_map<size_t, ozz::animation::offline::RawAnimation::JointTrack> tracks = {};
 	};
@@ -249,7 +257,6 @@ namespace rawrbox {
 		static void fillRestPose(ozz::animation::offline::RawAnimation::JointTrack& track, const ozz::math::Transform& rest);
 		static void toLeftHand(ozz::animation::offline::RawAnimation::JointTrack& track);
 
-		// GLTF cubic spline
 		static ozz::math::Float3 hermite(const ozz::math::Float3& p0, const ozz::math::Float3& m0, const ozz::math::Float3& p1, const ozz::math::Float3& m1, float t, float interval);
 		static ozz::math::Quaternion hermite(const ozz::math::Quaternion& p0, const ozz::math::Quaternion& m0, const ozz::math::Quaternion& p1, const ozz::math::Quaternion& m1, float t, float interval);
 
@@ -269,7 +276,7 @@ namespace rawrbox {
 
 			for (size_t k = 0; k < timeAccessor.count; k++) {
 				const float t = fastgltf::getAccessorElement<float>(scene, timeAccessor, k);
-				if (t < 0.F || t <= previousTime) {
+				if (!std::isfinite(t) || t < 0.F || t <= previousTime) {
 					if (!warnedOrder) {
 						this->_logger->warn("Animation '{}' has invalid times, skipping", animName);
 						warnedOrder = true;
@@ -299,7 +306,7 @@ namespace rawrbox {
 					const T nextValue = fastgltf::getAccessorElement<T>(scene, dataAccessor, (k + 1) * 3 + 1);
 					const T inTangent = fastgltf::getAccessorElement<T>(scene, dataAccessor, (k + 1) * 3);
 
-					const auto samples = static_cast<size_t>(std::ceil(interval * std::max(this->animationSampleRate, 0.F)));
+					const auto samples = static_cast<size_t>(std::clamp(std::ceil(interval * RB_GLTF_ANIM_SAMPLE_RATE), 0.F, 4096.F));
 					for (size_t sample = 1; sample < samples; sample++) {
 						const float ratio = static_cast<float>(sample) / static_cast<float>(samples);
 						const float time = t + ratio * interval;
@@ -348,6 +355,7 @@ namespace rawrbox {
 		std::filesystem::path filePath;
 		uint32_t loadFlags = 0;
 
+		std::unordered_set<std::string> additiveAnimations = {};
 		float animationSampleRate = 30.F;
 
 		// EXTENSIONS --

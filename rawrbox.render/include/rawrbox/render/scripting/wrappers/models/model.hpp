@@ -23,7 +23,17 @@ namespace rawrbox {
 			    // ANIMATION ----
 			    .addFunction("playAnimation",
 				luabridge::overload<bool, std::function<void(const std::string&)>>(&ModelC::playAnimation),
-				luabridge::overload<const std::string&, bool, std::function<void(const std::string&)>>(&ModelC::playAnimation))
+				luabridge::overload<const std::string&, bool, std::function<void(const std::string&)>, float>(&ModelC::playAnimation))
+
+			    .addFunction("blendAnimation", &ModelC::blendAnimation)
+			    .addFunction("getAnimations", &ModelC::getAnimations)
+
+			    .addFunction("addIK",
+				luabridge::overload<const std::string&, const rawrbox::AnimationIKAim&>(&ModelC::template addIK<rawrbox::AnimationIKAim>),
+				luabridge::overload<const std::string&, const rawrbox::AnimationIK&>(&ModelC::template addIK<rawrbox::AnimationIK>))
+			    .addFunction("removeIK", &ModelC::removeIK)
+			    .addFunction("clearIK", &ModelC::clearIK)
+			    .addFunction("getIK", &ModelC::getIK)
 
 			    .addFunction("playSingleAnimation", &ModelC::playSingleAnimation)
 			    .addFunction("hasAnimation", &ModelC::hasAnimation)
