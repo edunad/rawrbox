@@ -23,7 +23,8 @@ namespace rawrbox {
 	std::vector<rawrbox::ZBinEntry> LIGHTS::_entries = {};
 	std::vector<uint32_t> LIGHTS::_zbins = {};
 
-	rawrbox::Matrix4x4 LIGHTS::_zbinView = {};
+	const rawrbox::CameraBase* LIGHTS::_zbinCamera = nullptr;
+	uint64_t LIGHTS::_zbinFrame = 0;
 	rawrbox::Vector2f LIGHTS::_zbinNearFar = {};
 	bool LIGHTS::_BINS_DIRTY = true;
 	// -----------
@@ -201,7 +202,11 @@ namespace rawrbox {
 			light.radius = l->getRadius();
 
 			light.direction = l->getDirection();
-			light.type = static_cast<uint32_t>(l->getType()); // Shadow index = 0
+
+			// Encode shadow slot into the type
+			const auto shadowSlot = l->getShadowSlot();
+			light.type = static_cast<uint32_t>(l->getType()) | ((shadowSlot.has_value() ? shadowSlot.value() + 1U : 0U) << rawrbox::LightDataVertex::SHADOW_SHIFT);
+			// ------
 
 			const auto color = l->getColor();
 			const float scale = std::max({color.r, color.g, color.b, 1.F});
@@ -233,10 +238,11 @@ namespace rawrbox {
 		const auto& view = camera.getViewMtx();
 		const rawrbox::Vector2f nearFar = {rawrbox::MAIN_CAMERA->getZNear(), rawrbox::MAIN_CAMERA->getZFar()}; // Must match SCamera NearFar (shared, main camera)
 
-		if (!_BINS_DIRTY && _zbinView == view && _zbinNearFar == nearFar) return false;
+		if (!_BINS_DIRTY && _zbinCamera == &camera && _zbinFrame == camera.getMoveRevision() && _zbinNearFar == nearFar) return false;
 		_BINS_DIRTY = false;
 
-		_zbinView = view;
+		_zbinCamera = &camera;
+		_zbinFrame = camera.getMoveRevision();
 		_zbinNearFar = nearFar;
 
 		// Split by type ---
@@ -322,6 +328,7 @@ namespace rawrbox {
 
 	bool LIGHTS::isEnabled() { return _settings.lightSettings.x == 1U; }
 
+#ifdef _DEBUG
 	void LIGHTS::setDebug(bool enabled) {
 		auto debug = static_cast<uint32_t>(enabled);
 		if (_settings.lightSettings.w == debug) return;
@@ -331,11 +338,14 @@ namespace rawrbox {
 	}
 
 	bool LIGHTS::isDebug() { return _settings.lightSettings.w == 1U; }
+#endif
 
 	rawrbox::LightBase* LIGHTS::getLight(size_t indx) {
 		if (indx >= _lights.size()) return nullptr;
 		return _lights[indx].get();
 	}
+
+	const std::vector<std::shared_ptr<rawrbox::LightBase>>& LIGHTS::getLights() { return _lights; }
 
 	size_t LIGHTS::count() { return _lights.size(); }
 	size_t LIGHTS::active() { return _data.size(); }

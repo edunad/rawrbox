@@ -1,6 +1,10 @@
 #pragma once
 
+#include <rawrbox/math/matrix4x4.hpp>
 #include <rawrbox/math/vector3.hpp>
+
+#include <algorithm>
+#include <limits>
 
 namespace rawrbox {
 	template <class NumberType>
@@ -17,8 +21,19 @@ namespace rawrbox {
 		BBOX_t() = default;
 		constexpr BBOX_t(const Vector3_t<NumberType>& _min, const Vector3_t<NumberType>& _max, const Vector3_t<NumberType>& _size) : min(_min), max(_max), size(_size) {}
 
+		[[nodiscard]] static BBOXType infinite() {
+			constexpr NumberType low = std::numeric_limits<NumberType>::lowest();
+			constexpr NumberType high = std::numeric_limits<NumberType>::max();
+
+			return {{low, low, low}, {high, high, high}, {high, high, high}};
+		}
+
 		[[nodiscard]] bool isEmpty() const {
 			return this->size == 0;
+		}
+
+		[[nodiscard]] bool isInfinite() const {
+			return this->min.x == std::numeric_limits<NumberType>::lowest();
 		}
 
 		void expand(const rawrbox::Vector3_t<NumberType>& pos) {
@@ -41,10 +56,30 @@ namespace rawrbox {
 			this->min = {std::min(this->min.x, b.min.x), std::min(this->min.y, b.min.y), std::min(this->min.z, b.min.z)};
 			this->max = {std::max(this->max.x, b.max.x), std::max(this->max.y, b.max.y), std::max(this->max.z, b.max.z)};
 
-			this->size = this->min.abs() + this->max.abs();
+			this->size = this->max - this->min;
 		}
 
-		bool operator==(const BBOXType& other) const { return this->size == other.size; }
+		// Axis aligned bounds ---
+		[[nodiscard]] BBOXType transform(const rawrbox::Matrix4x4& matrix) const
+			requires std::is_same_v<NumberType, float>
+		{
+			if (this->isInfinite()) return *this;
+
+			const auto first = matrix.mulVec(this->min);
+			BBOXType result = {first, first, {}};
+
+			for (uint32_t corner = 1; corner < 8; corner++) {
+				result.expand(matrix.mulVec(rawrbox::Vector3f{
+				    (corner & 1U) != 0 ? this->max.x : this->min.x,
+				    (corner & 2U) != 0 ? this->max.y : this->min.y,
+				    (corner & 4U) != 0 ? this->max.z : this->min.z}));
+			}
+
+			return result;
+		}
+		// -----------
+
+		bool operator==(const BBOXType& other) const { return this->min == other.min && this->max == other.max; }
 		bool operator!=(const BBOXType& other) const { return !operator==(other); }
 
 		BBOXType operator*(NumberType other) const { return BBOXType(this->min * other, this->max * other, this->size * other); }

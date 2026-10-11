@@ -19,7 +19,8 @@ namespace rawrbox {
 	std::vector<rawrbox::ZBinEntry> DECALS::_entries = {};
 	std::vector<uint32_t> DECALS::_zbins = {};
 
-	rawrbox::Matrix4x4 DECALS::_zbinView = {};
+	const rawrbox::CameraBase* DECALS::_zbinCamera = nullptr;
+	uint64_t DECALS::_zbinFrame = 0;
 	rawrbox::Vector2f DECALS::_zbinNearFar = {};
 	// -----------
 
@@ -161,10 +162,11 @@ namespace rawrbox {
 		const auto& view = camera.getViewMtx();
 		const rawrbox::Vector2f nearFar = {rawrbox::MAIN_CAMERA->getZNear(), rawrbox::MAIN_CAMERA->getZFar()}; // Must match SCamera NearFar (shared, main camera)
 
-		if (!rawrbox::__DECALS_DIRTY__ && _zbinView == view && _zbinNearFar == nearFar) return false;
+		if (!rawrbox::__DECALS_DIRTY__ && _zbinCamera == &camera && _zbinFrame == camera.getMoveRevision() && _zbinNearFar == nearFar) return false;
 		rawrbox::__DECALS_DIRTY__ = false;
 
-		_zbinView = view;
+		_zbinCamera = &camera;
+		_zbinFrame = camera.getMoveRevision();
 		_zbinNearFar = nearFar;
 
 		// Sort by depth + bin ---

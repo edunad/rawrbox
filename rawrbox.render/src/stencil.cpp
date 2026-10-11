@@ -3,6 +3,7 @@
 #include <rawrbox/render/bindless.hpp>
 #include <rawrbox/render/static.hpp>
 #include <rawrbox/render/stencil.hpp>
+#include <rawrbox/render/utils/barrier.hpp>
 #include <rawrbox/utils/time.hpp>
 
 #pragma warning(push)
@@ -12,13 +13,26 @@
 
 namespace rawrbox {
 	Stencil::Stencil(const rawrbox::Vector2u& size) : _size(size) {
-		this->_streamingVB = std::make_unique<rawrbox::StreamingBuffer>("RawrBox::Stencil::VertexBuffer", Diligent::BIND_VERTEX_BUFFER, MaxVertsInStreamingBuffer * static_cast<uint32_t>(sizeof(rawrbox::PosUVColorVertexData)), 1);
-		this->_streamingIB = std::make_unique<rawrbox::StreamingBuffer>("RawrBox::Stencil::IndexBuffer", Diligent::BIND_INDEX_BUFFER, MaxVertsInStreamingBuffer * 3 * static_cast<uint32_t>(sizeof(uint32_t)), 1);
+		const auto createStreaming = [](const char* name, Diligent::BIND_FLAGS flags, Diligent::RESOURCE_STATE state, const uint64_t size) {
+			Diligent::StreamingBufferCreateInfo info;
+			info.pDevice = rawrbox::RENDERER->device();
 
-		// Only supported on DX12 / Vulkan --
-		this->_streamingVB->setPersistent(true);
-		this->_streamingIB->setPersistent(true);
-		// --------------------------
+			info.BuffDesc.Name = name;
+			info.BuffDesc.Usage = Diligent::USAGE_DYNAMIC;
+			info.BuffDesc.BindFlags = flags;
+			info.BuffDesc.CPUAccessFlags = Diligent::CPU_ACCESS_WRITE;
+			info.BuffDesc.Size = size;
+			info.AllowPersistentMapping = true; // DX12 / Vulkan ONLY
+
+			info.OnBufferResizeCallback = [state](Diligent::IBuffer* buffer) {
+				rawrbox::BarrierUtils::barrier({{buffer, Diligent::RESOURCE_STATE_UNKNOWN, state, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
+			};
+
+			return std::make_unique<Diligent::StreamingBuffer>(info);
+		};
+
+		this->_streamingVB = createStreaming("RawrBox::Stencil::VertexBuffer", Diligent::BIND_VERTEX_BUFFER, Diligent::RESOURCE_STATE_VERTEX_BUFFER, MAX_VERTS_STREAMING_BUFFER * sizeof(rawrbox::PosUVColorVertexData));
+		this->_streamingIB = createStreaming("RawrBox::Stencil::IndexBuffer", Diligent::BIND_INDEX_BUFFER, Diligent::RESOURCE_STATE_INDEX_BUFFER, MAX_VERTS_STREAMING_BUFFER * 3 * sizeof(uint32_t));
 	}
 
 	Stencil::~Stencil() {
@@ -447,7 +461,7 @@ namespace rawrbox {
 			bool canMerge = oldCall.clip == this->_currentDraw.clip &&
 					oldCall.cull == this->_currentDraw.cull &&
 					oldCall.stencilProgram == this->_currentDraw.stencilProgram &&
-					oldCall.vertices.size() + this->_currentDraw.vertices.size() < MaxVertsInStreamingBuffer;
+					oldCall.vertices.size() + this->_currentDraw.vertices.size() < MAX_VERTS_STREAMING_BUFFER;
 
 			if (canMerge) {
 				for (auto& ind : this->_currentDraw.indices) {
@@ -466,34 +480,35 @@ namespace rawrbox {
 		if (this->_drawCalls.empty()) return;
 
 		auto* context = rawrbox::RENDERER->context();
+		auto* device = rawrbox::RENDERER->device();
 		size_t contextID = 0;
 
 		for (auto& group : this->_drawCalls) {
 			if (group.stencilProgram == nullptr) continue;
 			if (group.vertices.empty() || group.indices.empty()) continue;
 
-			auto vertSize = static_cast<uint32_t>(group.vertices.size());
-			auto indSize = static_cast<uint32_t>(group.indices.size());
+			const auto vertSize = static_cast<uint32_t>(group.vertices.size());
+			const auto indSize = static_cast<uint32_t>(group.indices.size());
 
 			// Allocate data -----
-			auto VBOffset = static_cast<uint64_t>(this->_streamingVB->allocate(vertSize * sizeof(rawrbox::PosUVColorVertexData), contextID));
-			auto IBOffset = static_cast<uint64_t>(this->_streamingIB->allocate(indSize * sizeof(uint32_t), contextID));
+			auto VBOffset = static_cast<uint64_t>(this->_streamingVB->Map(context, device, vertSize * sizeof(rawrbox::PosUVColorVertexData), contextID));
+			const auto IBOffset = static_cast<uint64_t>(this->_streamingIB->Map(context, device, indSize * sizeof(uint32_t), contextID));
 
-			auto* VertexData = std::bit_cast<rawrbox::PosUVColorVertexData*>(std::bit_cast<uint8_t*>(this->_streamingVB->getCPUAddress(contextID)) + VBOffset);
-			auto* IndexData = std::bit_cast<uint32_t*>(std::bit_cast<uint8_t*>(this->_streamingIB->getCPUAddress(contextID)) + IBOffset);
+			auto* VertexData = std::bit_cast<rawrbox::PosUVColorVertexData*>(std::bit_cast<uint8_t*>(this->_streamingVB->GetMappedCPUAddress(contextID)) + VBOffset);
+			auto* IndexData = std::bit_cast<uint32_t*>(std::bit_cast<uint8_t*>(this->_streamingIB->GetMappedCPUAddress(contextID)) + IBOffset);
 
 			std::memcpy(VertexData, group.vertices.data(), vertSize * sizeof(rawrbox::PosUVColorVertexData));
 			std::memcpy(IndexData, group.indices.data(), indSize * sizeof(uint32_t));
 
-			this->_streamingVB->release(contextID);
-			this->_streamingIB->release(contextID);
+			this->_streamingVB->Unmap(contextID);
+			this->_streamingIB->Unmap(contextID);
 			//  -------------------
 
 			// Render ------------
-			auto* vertBuffer = this->_streamingVB->buffer();
+			auto* vertBuffer = this->_streamingVB->GetBuffer();
 
 			context->SetVertexBuffers(0, 1, &vertBuffer, &VBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-			context->SetIndexBuffer(this->_streamingIB->buffer(), IBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			context->SetIndexBuffer(this->_streamingIB->GetBuffer(), IBOffset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			context->SetPipelineState(group.stencilProgram);
 			// --------------
 
@@ -526,8 +541,8 @@ namespace rawrbox {
 			// -------------------
 		}
 
-		this->_streamingIB->flush(contextID);
-		this->_streamingVB->flush(contextID);
+		this->_streamingIB->Flush(contextID);
+		this->_streamingVB->Flush(contextID);
 
 		this->_drawCalls.clear();
 	}

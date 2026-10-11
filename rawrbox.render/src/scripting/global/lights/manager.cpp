@@ -13,14 +13,6 @@ namespace rawrbox {
 		return rawrbox::LIGHTS::isEnabled();
 	}
 
-	void LightsGlobal::setDebug(bool debug) {
-		rawrbox::LIGHTS::setDebug(debug);
-	}
-
-	bool LightsGlobal::isDebug() {
-		return rawrbox::LIGHTS::isDebug();
-	}
-
 	// AMBIENT
 	void LightsGlobal::setAmbient(const rawrbox::Colori& col) {
 		rawrbox::LIGHTS::setAmbient(col.cast<float>());
@@ -74,8 +66,6 @@ namespace rawrbox {
 		    .addFunction("setEnabled", &LightsGlobal::setEnabled)
 		    .addFunction("isEnabled", &LightsGlobal::isEnabled)
 
-		    .addFunction("setDebug", &LightsGlobal::setDebug)
-		    .addFunction("isDebug", &LightsGlobal::isDebug)
 
 		    // AMBIENT ---
 		    .addFunction("setAmbient", &LightsGlobal::setAmbient)

@@ -68,14 +68,6 @@ namespace rawrbox {
 					}
 				}
 			}
-
-			// Reset lookup ids (GPU does not need them)
-			for (auto& animated : this->_animatedMeshes) {
-				for (auto* mesh : animated.second) {
-					mesh->meshID = 0x00000000;
-				}
-			}
-			// ---------------------------------
 		}
 
 		void loadBlendShapes(const rawrbox::GLTFImporter& model) {
@@ -112,18 +104,23 @@ namespace rawrbox {
 		}
 
 		void loadLights(const rawrbox::GLTFImporter& model) {
+			if (this->_meshes.empty()) return;
+
 			for (const auto& gltfLight : model.lights) {
+				const size_t parentIndex = gltfLight->parent.value_or(this->_meshes.size() - 1);
+				const auto pos = gltfLight->pos - this->_meshes[parentIndex < this->_meshes.size() ? parentIndex : this->_meshes.size() - 1]->getPos();
+
 				rawrbox::LightBase* light = nullptr;
 
 				switch (gltfLight->type) {
 					case rawrbox::LightType::POINT:
-						light = this->template addLight<rawrbox::PointLight>(gltfLight->parent, gltfLight->pos, gltfLight->color, gltfLight->radius);
+						light = this->template addLight<rawrbox::PointLight>(gltfLight->parent, pos, gltfLight->color, gltfLight->radius);
 						break;
 					case rawrbox::LightType::SPOT:
-						light = this->template addLight<rawrbox::SpotLight>(gltfLight->parent, gltfLight->pos, gltfLight->direction, gltfLight->color, gltfLight->angleInnerCone, gltfLight->angleOuterCone, gltfLight->radius);
+						light = this->template addLight<rawrbox::SpotLight>(gltfLight->parent, pos, gltfLight->direction, gltfLight->color, gltfLight->angleInnerCone, gltfLight->angleOuterCone, gltfLight->radius);
 						break;
 					case rawrbox::LightType::DIRECTIONAL:
-						light = this->template addLight<rawrbox::DirectionalLight>(gltfLight->parent, gltfLight->pos, gltfLight->direction, gltfLight->color);
+						light = this->template addLight<rawrbox::DirectionalLight>(gltfLight->parent, pos, gltfLight->direction, gltfLight->color);
 						break;
 
 					default:
@@ -149,6 +146,12 @@ namespace rawrbox {
 			this->loadMeshes(model);
 			this->loadBlendShapes(model);
 			this->loadAnimations(model);
+
+			// Reset lookup ids (GPU does not need them)
+			for (auto& mesh : this->_meshes) {
+				mesh->meshID = 0x00000000;
+			}
+			// ---------------------------------
 
 			if constexpr (supportsNormals<typename M::vertexBufferType>) {
 				this->loadLights(model);

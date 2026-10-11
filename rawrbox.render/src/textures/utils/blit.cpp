@@ -11,7 +11,7 @@ namespace rawrbox {
 	}
 
 	TextureBLIT::~TextureBLIT() {
-		RAWRBOX_DESTROY(this->_copyFence);
+		this->_copies.reset();
 		this->_callbacks.clear();
 	}
 
@@ -30,24 +30,16 @@ namespace rawrbox {
 		desc.Name = this->_name.c_str();
 
 		rawrbox::RENDERER->device()->CreateTexture(desc, nullptr, &this->_tex);
+		this->_copies = std::make_unique<Diligent::GPUCompletionAwaitQueue<Diligent::RefCntAutoPtr<Diligent::ITexture>>>(rawrbox::RENDERER->device());
 	}
 
 	void TextureBLIT::copy(Diligent::ITexture* base, Diligent::Box* box, const std::function<void()>& callback) {
 		if (base == nullptr) RAWRBOX_CRITICAL("Invalid texture");
 		if (callback == nullptr) RAWRBOX_CRITICAL("Invalid callback");
 
-		auto* device = rawrbox::RENDERER->device();
 		auto* context = rawrbox::RENDERER->context();
 
-		if (this->_copyFence == nullptr) { // Create a fence only if the frame wasn't already requested already
-			// Create fence ----
-			Diligent::FenceDesc desc;
-			desc.Type = Diligent::FENCE_TYPE_GENERAL;
-			desc.Name = "Rawrbox::Fence::Copy";
-
-			device->CreateFence(desc, &this->_copyFence);
-			// -----------------
-
+		if (!this->_pending) {
 			// Copy texture over to staging ---
 			Diligent::CopyTextureAttribs copy;
 			copy.pSrcTexture = base;
@@ -57,10 +49,12 @@ namespace rawrbox {
 			copy.SrcTextureTransitionMode = Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY;
 
 			rawrbox::BarrierUtils::barrier({{copy.pSrcTexture, Diligent::RESOURCE_STATE_UNKNOWN, Diligent::RESOURCE_STATE_COPY_SOURCE, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-			context->CopyTexture(copy); // This is an async operation, enqueue the fence
+			context->CopyTexture(copy); // This is an async operation, wait for it on the queue
 			//   --------------
 
-			context->EnqueueSignal(this->_copyFence, 1);
+			this->_copies->Enqueue(context, Diligent::RefCntAutoPtr<Diligent::ITexture>{this->_tex});
+			this->_pending = true;
+
 			rawrbox::BindlessManager::registerUpdateTexture(*this);
 		}
 
@@ -81,16 +75,16 @@ namespace rawrbox {
 	}
 
 	void TextureBLIT::update() {
-		if (this->_copyFence == nullptr || this->_copyFence->GetCompletedValue() <= 0) return;
+		if (!this->_pending || this->_copies->GetFirstCompleted() == nullptr) return;
 		for (auto& callback : this->_callbacks) {
 			callback();
 		}
 
 		this->_callbacks.clear();
-		RAWRBOX_DESTROY(this->_copyFence);
+		this->_pending = false;
 	}
 
 	bool TextureBLIT::requiresUpdate() const {
-		return this->_copyFence != nullptr;
+		return this->_pending;
 	}
 } // namespace rawrbox

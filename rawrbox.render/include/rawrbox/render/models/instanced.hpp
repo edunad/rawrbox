@@ -98,51 +98,81 @@ namespace rawrbox {
 			auto* device = rawrbox::RENDERER->device();
 
 			// Update buffer ----
-			uint64_t size = sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.capacity());
+			const uint64_t size = sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.size());
 			if (size > this->_dataBuffer->GetDesc().Size) {
 				this->_instances.reserve(this->_instances.capacity() + 16);
-				this->_dataBuffer->Resize(device, context, sizeof(rawrbox::Decal) * static_cast<uint64_t>(_instances.capacity()), true);
+				this->_dataBuffer->Resize(device, context, sizeof(rawrbox::Instance) * static_cast<uint64_t>(this->_instances.capacity()), true);
 			}
 
+			if (size == 0) return;
 			auto* buffer = this->_dataBuffer->GetBuffer();
 
 			// BARRIER ----
 			rawrbox::BarrierUtils::barrier({{buffer, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
-			context->UpdateBuffer(buffer, 0, size, this->_instances.empty() ? nullptr : this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			context->UpdateBuffer(buffer, 0, size, this->_instances.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
 			rawrbox::BarrierUtils::barrier({{buffer, Diligent::RESOURCE_STATE_COPY_DEST, Diligent::RESOURCE_STATE_VERTEX_BUFFER, Diligent::STATE_TRANSITION_FLAG_UPDATE_STATE}});
 			//  ---------
 		}
+
+		void bindBuffers() override {
+			auto* context = rawrbox::RENDERER->context();
+
+			// Bind vertex and index buffers
+			constexpr std::array<uint64_t, 2> offset = {0, 0};
+			const std::array<Diligent::IBuffer*, 2> pBuffs = {this->_vbh, this->_dataBuffer->GetBuffer()};
+
+			context->SetVertexBuffers(0, 2, pBuffs.data(), offset.data(), Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
+			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
+			// ----
+		}
+
+		// SHADOWS ---
+		[[nodiscard]] rawrbox::BBOX getShadowBounds() override {
+			const auto& local = this->getCachedVertexBounds();
+			if (this->_instances.empty() || local.isInfinite()) return rawrbox::BBOX::infinite();
+
+			auto bounds = local.transform(this->getMatrix() * this->_instances.front().getMatrix());
+			for (const auto& instance : this->_instances) {
+				bounds.combine(local.transform(this->getMatrix() * instance.getMatrix()));
+			}
+
+			return bounds;
+		}
+
+		void drawShadow(const rawrbox::ShadowDraw& draw) override {
+			if (this->_instances.empty() || !this->canCastShadows(*this->_mesh)) return;
+
+			if (draw.bind) {
+				this->bindBuffers();
+				this->_material->resetUniformBinds();
+				this->bindShadowMesh(*this->_mesh, this->getMatrix());
+			}
+
+			const auto bounds = this->getShadowBounds();
+			for (uint32_t view = 0; view < draw.views; view++) {
+				draw.setView(view);
+				draw.submit({bounds, this->_mesh->totalIndex, this->_mesh->baseIndex, this->_mesh->baseVertex, static_cast<uint32_t>(this->_instances.size()), view});
+			}
+		}
+		// -----------
 
 		void draw() override {
 			if (!this->isUploaded()) RAWRBOX_CRITICAL("Failed to render model, vertex / index buffer is not uploaded");
 			if (this->_instances.empty()) return;
 
 			auto* context = rawrbox::RENDERER->context();
-
-			// Bind vertex and index buffers
-			// NOLINTBEGIN(*)
-			const uint64_t offset[] = {0, 0};
-			Diligent::IBuffer* pBuffs[] = {this->_vbh, this->_dataBuffer->GetBuffer()};
-			// NOLINTEND(*)
-
-			context->SetVertexBuffers(0, 2, pBuffs, offset, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY, Diligent::SET_VERTEX_BUFFERS_FLAG_RESET);
-			context->SetIndexBuffer(this->_ibh, 0, Diligent::RESOURCE_STATE_TRANSITION_MODE_VERIFY);
-			// ----
+			this->bindBuffers();
 
 			// Bind materials uniforms & textures ----
 			rawrbox::MAIN_CAMERA->setModelTransform(this->getMatrix());
 
 			this->_material->bindPipeline(*this->_mesh);
 
-			// bool updated = false;
-			// updated = this->_material->bindVertexUniforms(*this->_mesh);
-			// updated = this->_material->bindVertexSkinnedUniforms(*this->_mesh);
-			// updated = this->_material->bindPixelUniforms(*this->_mesh);
-
 			this->_material->resetUniformBinds();
-			this->_material->bindVertexUniforms(*this->_mesh);
-			this->_material->bindVertexSkinnedUniforms(*this->_mesh);
-			this->_material->bindPixelUniforms(*this->_mesh);
+
+			bool updated = this->_material->bindVertexUniforms(*this->_mesh);
+			updated |= this->_material->bindVertexSkinnedUniforms(*this->_mesh);
+			updated |= this->_material->bindPixelUniforms(*this->_mesh);
 			// -----------
 
 			Diligent::DrawIndexedAttribs DrawAttrs;
@@ -152,7 +182,7 @@ namespace rawrbox {
 			DrawAttrs.NumIndices = this->_mesh->totalIndex;
 			DrawAttrs.NumInstances = static_cast<uint32_t>(this->_instances.size());
 			DrawAttrs.Flags = Diligent::DRAW_FLAG_VERIFY_ALL; // Instanced buffers are only updated once
-			// if (!updated) DrawAttrs.Flags |= Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
+			if (!updated) DrawAttrs.Flags |= Diligent::DRAW_FLAG_DYNAMIC_RESOURCE_BUFFERS_INTACT;
 
 			context->DrawIndexed(DrawAttrs);
 		}

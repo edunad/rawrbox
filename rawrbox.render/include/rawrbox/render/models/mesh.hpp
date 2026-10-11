@@ -280,13 +280,51 @@ namespace rawrbox {
 		}
 
 		virtual void merge(const rawrbox::Mesh<T>& other) {
+			const size_t firstVertex = this->vertices.size();
+			const size_t firstIndex = this->indices.size();
+
 			std::transform(other.indices.begin(), other.indices.end(), std::back_inserter(this->indices), [this](const uint32_t& val) { return this->totalVertex + val; });
 			this->vertices.insert(this->vertices.end(), other.vertices.begin(), other.vertices.end());
 
 			this->totalVertex = static_cast<uint32_t>(this->vertices.size());
 			this->totalIndex = static_cast<uint32_t>(this->indices.size());
 
-			this->bbox.combine(other.bbox);
+			if (this->matrix == other.matrix) {
+				this->bbox.combine(other.bbox);
+			} else {
+				const auto transform = rawrbox::Matrix4x4::mtxInverse(this->matrix) * other.matrix;
+				const auto normalTransform = rawrbox::Matrix4x4::mtxNormal(transform);
+				const bool mirrored = transform.mulDir({1.F, 0.F, 0.F}).cross(transform.mulDir({0.F, 1.F, 0.F})).dot(transform.mulDir({0.F, 0.F, 1.F})) < 0.F;
+
+				for (size_t i = firstVertex; i < this->vertices.size(); ++i) {
+					auto& vertex = this->vertices[i];
+
+					vertex.position = transform.mulVec(vertex.position);
+					this->bbox.expand(vertex.position);
+
+					if constexpr (supportsNormals<T>) {
+						if (vertex.normal != 0U) {
+							const auto normal = rawrbox::PackUtils::fromOCTNormal(vertex.normal);
+							vertex.setNormal(normalTransform.mulDir({normal[0], normal[1], normal[2]}).normalized());
+						}
+
+						if (vertex.tangent != 0U) {
+							const auto tangent = rawrbox::PackUtils::fromOCTTangent(vertex.tangent);
+							vertex.setTangent(transform.mulDir({tangent[0], tangent[1], tangent[2]}).normalized(), mirrored ? -tangent[3] : tangent[3]);
+						}
+					}
+				}
+
+				// Flip triangles ---
+				if (mirrored && !this->_lineMode) {
+					for (size_t i = firstIndex; i + 2 < this->indices.size(); i += 3) {
+						std::swap(this->indices[i + 1], this->indices[i + 2]);
+					}
+				}
+				// -----------
+			}
+
+			this->lights.insert(this->lights.end(), other.lights.begin(), other.lights.end());
 		}
 
 		virtual void setMergeable(bool status) { this->_canMerge = status; }
@@ -294,6 +332,7 @@ namespace rawrbox {
 
 		[[nodiscard]] virtual bool canMerge(const rawrbox::Mesh<T>& other) const {
 			if (!this->_canMerge || !other._canMerge) return false;
+			if (this->matrix != other.matrix && (this->skeleton != nullptr || other.skeleton != nullptr || this->data.billboard != 0 || !other.lights.empty())) return false;
 
 			if (this->vertices.size() + other.vertices.size() >= RB_RENDER_MAX_VERTICES) return false; // Max vertice limit
 			if (this->indices.size() + other.indices.size() >= RB_RENDER_MAX_INDICES) return false;    // Max indice limit
@@ -304,8 +343,7 @@ namespace rawrbox {
 			       this->data == other.data &&
 			       this->_wireframe == other._wireframe &&
 			       this->_lineMode == other._lineMode &&
-			       this->_transparent == other._transparent &&
-			       this->matrix == other.matrix;
+			       this->_transparent == other._transparent;
 		}
 	};
 } // namespace rawrbox

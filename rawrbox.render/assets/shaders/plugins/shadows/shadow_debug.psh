@@ -1,0 +1,187 @@
+// BASED ON https://ktstephano.github.io/rendering/stratusgfx/svsm DEBUG
+#include "camera.fxh"
+#include "colormap.fxh"
+#include "light_uniforms.fxh"
+#include "math.fxh"
+
+#define READ_LIGHTS
+#define READ_TILES
+#include "binning.fxh"
+
+#define READ_SHADOWS
+#include "shadows.fxh"
+
+Texture2DArray g_Textures[];
+SamplerState g_Sampler;
+
+#include "lighting.fxh"
+
+#define DEBUG_MIPS   1u
+#define DEBUG_PAGES  2u
+#define DEBUG_LIGHTS 3u
+
+#define DEBUG_ALPHA 0.45
+
+struct DebugInfo {
+	uint requested;
+	uint mip;
+	uint entry;
+	uint2 local;
+};
+
+struct PSInput {
+	float4 Pos : SV_POSITION;
+	float2 UV : TEX_COORD;
+};
+
+struct PSOutput {
+	float4 Color : SV_TARGET0;
+};
+
+float3 GetViewPosition(int2 pixel) {
+	int2 clamped = clamp(pixel, int2(0, 0), int2(ScreenSize) - 1);
+	float depth = g_Textures[SHADOW_DEBUG_DEPTH].Load(int4(clamped, 0, 0)).r;
+	float2 ndc = float2((clamped.x + 0.5) / ScreenSize.x * 2.0 - 1.0, 1.0 - (clamped.y + 0.5) / ScreenSize.y * 2.0);
+	float viewDepth = (2.0 * NearFar.x * NearFar.y) / (NearFar.y + NearFar.x - depth * (NearFar.y - NearFar.x));
+
+	return float3(ndc.x * viewDepth / SCamera.proj[0][0], ndc.y * viewDepth / SCamera.proj[1][1], viewDepth);
+}
+
+float3 GetViewNormal(int2 pixel, float3 center) {
+	float3 left = GetViewPosition(pixel - int2(1, 0)) - center;
+	float3 right = GetViewPosition(pixel + int2(1, 0)) - center;
+	float3 up = GetViewPosition(pixel - int2(0, 1)) - center;
+	float3 down = GetViewPosition(pixel + int2(0, 1)) - center;
+
+	float3 dx = abs(right.z) < abs(left.z) ? right : -left;
+	float3 dy = abs(down.z) < abs(up.z) ? down : -up;
+	float3 normal = normalize(cross(dx, dy));
+
+	return dot(normal, center) > 0.0 ? -normal : normal;
+}
+
+DebugInfo GetCubeInfo(Light light, uint slot, float3 worldPos, float3 normal, float viewDepth) {
+	float3 dir = worldPos - light.position;
+	uint face = GetShadowFace(dir);
+
+	DebugInfo info;
+	info.requested = (uint)GetShadowLod(slot, viewDepth, GetShadowAxisDistance(dir), dot(normal, -normalize(dir)));
+	info.entry = ShadowPageTable[GetShadowEntry(slot, face, info.requested, GetShadowTexel(dir, face, info.requested) / SHADOW_PAGE_SIZE)];
+
+	for (info.mip = info.requested; info.mip < SHADOW_MIPS - 1u; info.mip++) {
+		uint entry = ShadowPageTable[GetShadowEntry(slot, face, info.mip, GetShadowTexel(dir, face, info.mip) / SHADOW_PAGE_SIZE)];
+		if ((entry & (SHADOW_ALLOCATED | SHADOW_RENDERED)) == (SHADOW_ALLOCATED | SHADOW_RENDERED)) break;
+	}
+
+	info.local = GetShadowTexel(dir, face, info.mip) % SHADOW_PAGE_SIZE;
+	return info;
+}
+
+DebugInfo GetClipmapInfo(uint slot, float3 worldPos, float3 normal, float viewDepth) {
+	DebugInfo info;
+	info.requested = min((uint)GetShadowLod(slot, viewDepth, GetClipmapExtent(slot), dot(normal, -ShadowSlots[slot].forward.xyz)), SHADOW_CLIPMAP_LEVELS - 1u);
+	info.entry = 0u;
+
+	bool found = false;
+	for (uint level = info.requested; level < SHADOW_CLIPMAP_LEVELS; level++) {
+		int2 texel = GetClipmapTexel(slot, level, worldPos);
+		if (!IsClipmapInside(texel - GetClipmapOrigin(slot, level))) continue;
+
+		uint entry = ShadowPageTable[GetShadowEntry(slot, level, 0u, GetClipmapTablePage(texel))];
+		if (!found) {
+			info.requested = level;
+			info.entry = entry;
+			found = true;
+		}
+
+		info.mip = level;
+		info.local = uint2(texel & int(SHADOW_PAGE_SIZE - 1u));
+		if ((entry & (SHADOW_ALLOCATED | SHADOW_RENDERED)) == (SHADOW_ALLOCATED | SHADOW_RENDERED)) break;
+	}
+
+	if (!found) {
+		info.mip = info.requested;
+		info.local = uint2(1u, 1u);
+	}
+
+	return info;
+}
+
+void main(in PSInput PSIn, out PSOutput PSOut) {
+	int2 pixel = int2(PSIn.Pos.xy);
+	if (g_Textures[SHADOW_DEBUG_DEPTH].Load(int4(pixel, 0, 0)).r >= 1.0) discard;
+
+	float3 viewPos = GetViewPosition(pixel);
+	float3 worldPos = mul(float4(viewPos, 1.0), ShadowConstants.invView).xyz;
+	float3 normal = normalize(mul(float4(GetViewNormal(pixel, viewPos), 0.0), ShadowConstants.invView).xyz);
+
+	// Light weight ----
+	Light dominant = (Light)0;
+	float strong = 0.0;
+
+	for (uint index = 0; index < TOTAL_DIRECTIONAL_LIGHTS; index++) {
+		Light light = GetLight(index);
+		if (GetLightShadow(light) == 0u) continue;
+
+		float score = dot(GetLightRadiance(light), float3(0.2126, 0.7152, 0.0722)) * (0.05 + GetShadow(light, worldPos, normal, 0.5));
+		if (score <= strong) continue;
+
+		strong = score;
+		dominant = light;
+	}
+
+	uint tileIndex = GetTileIndex(PSIn.Pos.xy);
+	uint2 range = UnpackZBin(LightZBins[GetZBin(viewPos.z)]);
+
+	for (uint bin = range.x / BIN_BITS; bin <= range.y / BIN_BITS; ++bin) {
+		uint mask = LightTiles[tileIndex * LIGHT_BINS + bin] & GetBinMask(bin, range);
+
+		while (mask) {
+			uint bitIndex = firstbitlow(mask);
+			mask ^= 1u << bitIndex;
+
+			uint index = bitIndex + bin * BIN_BITS;
+			if (index >= TOTAL_LIGHTS) break;
+
+			Light light = GetLight(index);
+			if (GetLightShadow(light) == 0u) continue;
+
+			float3 L;
+			float attenuation = GetAttenuation(light, worldPos, L);
+			if (attenuation <= 0.0) continue;
+
+			float score = dot(GetLightRadiance(light), float3(0.2126, 0.7152, 0.0722)) * attenuation * (0.05 + GetShadow(light, worldPos, normal, 0.5));
+			if (score <= strong) continue;
+
+			strong = score;
+			dominant = light;
+		}
+	}
+
+	if (strong <= 0.0) discard;
+	// ---------------
+
+	uint slot = GetLightShadow(dominant) - 1u;
+
+	DebugInfo info;
+	if (IsShadowClipmap(slot)) {
+		info = GetClipmapInfo(slot, worldPos, normal, viewPos.z);
+	} else {
+		info = GetCubeInfo(dominant, slot, worldPos, normal, viewPos.z);
+	}
+
+	float3 color;
+	if (SHADOW_DEBUG_MODE == DEBUG_MIPS) {
+		color = turboColormap(float(info.mip) / max(float(SHADOW_MIPS - 1u), 1.0));
+		if (info.mip != info.requested && ((pixel.x + pixel.y) & 7) < 3) color *= 0.25;
+	} else if (SHADOW_DEBUG_MODE == DEBUG_PAGES) {
+		bool allocated = (info.entry & SHADOW_ALLOCATED) != 0u;
+		bool rendered = (info.entry & SHADOW_RENDERED) != 0u;
+		color = !allocated ? float3(1.0, 0.1, 0.1) : (rendered ? float3(0.1, 1.0, 0.2) : float3(1.0, 0.9, 0.1));
+	} else {
+		color = turboColormap(frac(float(slot) * 0.618034 + 0.1));
+	}
+
+	if (any(info.local == 0u) || any(info.local == SHADOW_PAGE_SIZE - 1u)) color *= 0.35;
+	PSOut.Color = float4(color, DEBUG_ALPHA);
+}

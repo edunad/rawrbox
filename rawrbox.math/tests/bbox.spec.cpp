@@ -50,15 +50,58 @@ TEST_CASE("BBOX should behave as expected", "[rawrbox::BBOX]") {
 
 		REQUIRE(bbox1.min == rawrbox::Vector3f(0, 0, 0));
 		REQUIRE(bbox1.max == rawrbox::Vector3f(2, 2, 2));
+		REQUIRE(bbox1.size == rawrbox::Vector3f(2, 2, 2));
+
+		rawrbox::BBOX bbox3(rawrbox::Vector3f(2, 2, 2), rawrbox::Vector3f(3, 3, 3), rawrbox::Vector3f(1, 1, 1));
+		rawrbox::BBOX bbox4(rawrbox::Vector3f(5, 5, 5), rawrbox::Vector3f(6, 6, 6), rawrbox::Vector3f(1, 1, 1));
+		bbox3.combine(bbox4);
+
+		REQUIRE(bbox3.min == rawrbox::Vector3f(2, 2, 2));
+		REQUIRE(bbox3.max == rawrbox::Vector3f(6, 6, 6));
+		REQUIRE(bbox3.size == rawrbox::Vector3f(4, 4, 4));
+	}
+
+	SECTION("rawrbox::BBOX::infinite") {
+		auto bbox = rawrbox::BBOX::infinite();
+		rawrbox::BBOX finite(rawrbox::Vector3f(0, 0, 0), rawrbox::Vector3f(1, 1, 1), rawrbox::Vector3f(1, 1, 1));
+
+		REQUIRE(bbox.isInfinite());
+		REQUIRE_FALSE(finite.isInfinite());
+		REQUIRE(bbox.contains(rawrbox::Vector3f(1000000.F, -1000000.F, 0.F)));
+		rawrbox::Matrix4x4 translate;
+		translate.translate({5.F, 0.F, 0.F});
+		REQUIRE(bbox.transform(translate).isInfinite());
+	}
+
+	SECTION("rawrbox::BBOX::transform") {
+		rawrbox::BBOX bbox(rawrbox::Vector3f(-1, -1, -1), rawrbox::Vector3f(1, 2, 3), rawrbox::Vector3f(2, 3, 4));
+
+		rawrbox::Matrix4x4 translate;
+		translate.translate({10.F, 0.F, -5.F});
+
+		auto moved = bbox.transform(translate);
+		REQUIRE(moved.min == rawrbox::Vector3f(9, -1, -6));
+		REQUIRE(moved.max == rawrbox::Vector3f(11, 2, -2));
+		REQUIRE(moved.size == rawrbox::Vector3f(2, 3, 4));
+
+		rawrbox::Matrix4x4 scale;
+		scale.scale({2.F, 2.F, 2.F});
+
+		auto scaled = bbox.transform(scale);
+		REQUIRE(scaled.min == rawrbox::Vector3f(-2, -2, -2));
+		REQUIRE(scaled.max == rawrbox::Vector3f(2, 4, 6));
+		REQUIRE(scaled.size == rawrbox::Vector3f(4, 6, 8));
 	}
 
 	SECTION("rawrbox::BBOX::operator==") {
 		rawrbox::BBOX bbox1(rawrbox::Vector3f(0, 0, 0), rawrbox::Vector3f(1, 1, 1), rawrbox::Vector3f(1, 1, 1));
 		rawrbox::BBOX bbox2(rawrbox::Vector3f(0, 0, 0), rawrbox::Vector3f(1, 1, 1), rawrbox::Vector3f(1, 1, 1));
 		rawrbox::BBOX bbox3(rawrbox::Vector3f(0, 0, 0), rawrbox::Vector3f(2, 2, 2), rawrbox::Vector3f(2, 2, 2));
+		rawrbox::BBOX bbox4(rawrbox::Vector3f(5, 5, 5), rawrbox::Vector3f(6, 6, 6), rawrbox::Vector3f(1, 1, 1));
 
 		REQUIRE(bbox1 == bbox2);
 		REQUIRE(bbox1 != bbox3);
+		REQUIRE(bbox1 != bbox4);
 	}
 
 	SECTION("rawrbox::BBOX::operator*") {

@@ -3,6 +3,7 @@
 #include "correction.fxh"
 #include "decal_uniforms.fxh"
 #include "defines.fxh"
+#include "dither.fxh"
 #include "light_uniforms.fxh"
 #include "math.fxh"
 #include "pixel_bindless_uniforms.fxh"
@@ -13,12 +14,16 @@
 #define READ_TILES
 #include "binning.fxh"
 
+#ifdef SHADOW_PLUGIN
+	#define READ_SHADOWS
+	#include "shadows.fxh"
+#endif
+
 Texture2DArray g_Textures[];
 SamplerState g_Sampler;
 
 #include "decaling.fxh"
 #include "lighting.fxh"
-#include "noise.fxh"
 
 struct PSInput {
 	float4 Pos : SV_POSITION;
@@ -46,6 +51,7 @@ float3x3 CreateTangentToWorld(float3 normal, float4 tangent) {
 }
 
 // DEBUG -----
+#ifdef _DEBUG
 #define DEBUG_MAX_LIGHTS 32.0
 
 // Heatmap
@@ -59,6 +65,7 @@ float3 GetLightDebugColor(float2 pixel, uint tileIndex, uint zbin) {
 
 	return count == 0 ? float3(0.02, 0.02, 0.02) : turboColormap(saturate(float(count) / DEBUG_MAX_LIGHTS));
 }
+#endif
 // -----------
 
 // Unpacks a 2 channel BC5 normal to xyz
@@ -84,9 +91,12 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 	clip(baseColor.a - AlphaCutoff);
 	// -------------
 
+#ifdef _DEBUG
 	if (LIGHT_DEBUG != 0) {
 		PSOut.Color = float4(GetLightDebugColor(PSIn.Pos.xy, GetTileIndex(PSIn.Pos.xy), GetZBin(GetViewDepth(PSIn.WorldPos))), 1.0);
-	} else if (TOTAL_DECALS != 0 || TOTAL_LIGHTS != 0) {
+	} else
+#endif
+	if (TOTAL_DECALS != 0 || TOTAL_LIGHTS != 0) {
 		uint tileIndex = GetTileIndex(PSIn.Pos.xy);
 		uint zbin = GetZBin(GetViewDepth(PSIn.WorldPos));
 
@@ -141,18 +151,19 @@ void main(in PSInput PSIn, out PSOutput PSOut) {
 			result.Diffuse = diffuse; // FULL BRIGHT
 		} else {
 			float3 V = normalize(Camera.pos - PSIn.WorldPos);
-			float dither = InterleavedGradientNoise(PSIn.Pos.xy);
+			float3 geoNormal = normalize(PSIn.Normal);
+			float dither = getBayer4x4(PSIn.Pos.xy);
 
 			// Directional ----
 			for (uint index = 0; index < TOTAL_DIRECTIONAL_LIGHTS; ++index) {
-				ApplyLight(index, result, specular, rough, diffuse, normal, V, PSIn.WorldPos, dither);
+				ApplyLight(index, result, specular, rough, diffuse, normal, geoNormal, V, PSIn.WorldPos, dither);
 			}
 			// -------------------------
 
 			uint2 range = UnpackZBin(LightZBins[zbin]);
 			for (uint bin = range.x / BIN_BITS; bin <= range.y / BIN_BITS; ++bin) {
 				uint mask = LightTiles[tileIndex * LIGHT_BINS + bin] & GetBinMask(bin, range);
-				ApplyLights(mask, bin, result, specular, rough, diffuse, normal, V, PSIn.WorldPos, dither);
+				ApplyLights(mask, bin, result, specular, rough, diffuse, normal, geoNormal, V, PSIn.WorldPos, dither);
 			}
 
 			result.Diffuse += diffuse * LightConstants.ambientColor.rgb; // AMBIENT

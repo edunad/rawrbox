@@ -1,6 +1,7 @@
 # 003-light Sample
 
 > [!NOTE]
-> This sample demonstrates the usage of the clustered lighting system. Please note that simple shadows have not been implemented yet.
+> This sample demonstrates the clustered lighting system + `ShadowPlugin`, using Virtual Shadow Maps (VSM).
+> The house uses `STATIC` caster. The fans, security cameras and the basement monster use `DYNAMIC` casters.
 
 ![](https://i.rawr.dev/sample3-min-4.gif)

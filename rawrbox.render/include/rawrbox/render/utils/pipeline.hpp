@@ -11,9 +11,9 @@
 #include <Shader.h>
 #include <ShaderResourceVariable.h>
 
+#include <filesystem>
 #include <unordered_map>
 #include <vector>
-#include <filesystem>
 
 namespace rawrbox {
 	struct PipeUniforms {
@@ -50,6 +50,11 @@ namespace rawrbox {
 		std::vector<rawrbox::PipeSampler> immutableSamplers = {};
 
 		uint8_t renderTargets = 1;
+		uint8_t viewports = 1;
+		
+		Diligent::TEXTURE_FORMAT renderTargetFormat = Diligent::TEX_FORMAT_UNKNOWN;
+		Diligent::COLOR_MASK colorMask = Diligent::COLOR_MASK_ALL;
+
 		rawrbox::PipePass renderPass = {};
 		rawrbox::PipeBlending blending = {};
 
@@ -71,6 +76,7 @@ namespace rawrbox {
 
 	struct PipeComputeSettings {
 		std::string pCS;
+		std::string entry = "main";
 		std::string bind;
 
 		std::vector<rawrbox::PipeUniforms> uniforms = {};
@@ -104,7 +110,7 @@ namespace rawrbox {
 		static void shutdown();
 
 		static Diligent::ISampler* registerSampler(uint32_t id, Diligent::SamplerDesc desc);
-		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, const Diligent::ShaderMacroHelper& macros = {});
+		static Diligent::IShader* compileShader(const std::string& name, Diligent::SHADER_TYPE type, const Diligent::ShaderMacroHelper& macros = {}, const std::string& entry = "main");
 		static std::vector<Diligent::ImmutableSamplerDesc> compileSamplers(const std::vector<rawrbox::PipeSampler>& samplers);
 
 		static Diligent::IPipelineState* createComputePipeline(const std::string& name, rawrbox::PipeComputeSettings settings);

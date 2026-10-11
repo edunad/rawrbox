@@ -1,0 +1,126 @@
+#include "camera.fxh"
+#include "unpack.fxh"
+#include "vertex_bindless_uniforms.fxh"
+
+#define TRANSFORM_DISPLACEMENT
+#ifdef SKINNED
+	#define TRANSFORM_BONES
+#endif
+
+StructuredBuffer<uint> ShadowViews;
+
+#include "shadow_uniforms.fxh"
+
+Texture2DArray g_Textures[];
+SamplerState g_Sampler;
+
+#include "model_transforms.fxh"
+
+struct ShadowDrawStruct {
+	uint4 data;
+};
+
+ConstantBuffer<ShadowDrawStruct> ShadowDraw;
+
+struct VSInput {
+	float4 Pos : ATTRIB0; // xyz = position, w = texture
+	float2 UV : ATTRIB1;
+
+#ifdef SHADOW_NORMALS
+	#ifdef SKINNED
+	    uint4 BoneIndex : ATTRIB4;
+	    float4 BoneWeight : ATTRIB5;
+
+        #ifdef INSTANCED
+            float4 MtrxRow0 : ATTRIB6;
+            float4 MtrxRow1 : ATTRIB7;
+            float4 MtrxRow2 : ATTRIB8;
+            float4 MtrxRow3 : ATTRIB9;
+
+            uint4 InstData : ATTRIB10;
+        #endif
+	#elif defined(INSTANCED)
+	    float4 MtrxRow0 : ATTRIB4;
+	    float4 MtrxRow1 : ATTRIB5;
+	    float4 MtrxRow2 : ATTRIB6;
+	    float4 MtrxRow3 : ATTRIB7;
+
+	    uint4 InstData : ATTRIB8;
+	#endif
+#else
+	#ifdef SKINNED
+	    uint4 BoneIndex : ATTRIB2;
+	    float4 BoneWeight : ATTRIB3;
+
+		#ifdef INSTANCED
+	        float4 MtrxRow0 : ATTRIB4;
+	        float4 MtrxRow1 : ATTRIB5;
+	        float4 MtrxRow2 : ATTRIB6;
+	        float4 MtrxRow3 : ATTRIB7;
+
+	        uint4 InstData : ATTRIB8;
+		#endif
+	#elif defined(INSTANCED)
+	    float4 MtrxRow0 : ATTRIB2;
+	    float4 MtrxRow1 : ATTRIB3;
+	    float4 MtrxRow2 : ATTRIB4;
+	    float4 MtrxRow3 : ATTRIB5;
+
+	    uint4 InstData : ATTRIB6;
+	#endif
+#endif
+};
+
+struct GSInput {
+	float4 Pos : SV_POSITION;
+	float3 Dir : POSITION1;
+	float2 UV : TEX_COORD;
+
+	nointerpolation uint View : VIEW;
+};
+
+void main(in VSInput VSIn, in uint instance : SV_InstanceID, out GSInput GSIn) {
+#ifdef INSTANCED
+	uint local = ShadowDraw.data.y;
+#else
+	uint local = ShadowDraw.data.y + instance;
+#endif
+
+	uint view = ShadowViews[ShadowDraw.data.x + local];
+	uint face = GetShadowViewFace(view);
+	float4 light = ShadowSlots[GetShadowViewSlot(view)].light;
+
+	float4 pos = float4(VSIn.Pos.xyz, 1.0);
+#ifdef SKINNED
+	pos = mul(boneMatrix(VSIn.BoneIndex, VSIn.BoneWeight), pos);
+#endif
+
+#ifdef INSTANCED
+	pos = mul(pos, MatrixFromRows(VSIn.MtrxRow0, VSIn.MtrxRow1, VSIn.MtrxRow2, VSIn.MtrxRow3));
+#endif
+
+	TransformedData transform = applyPosTransforms(pos, VSIn.UV);
+	float3 world = mul(transform.pos, Camera.world).xyz;
+	uint slot = GetShadowViewSlot(view);
+
+	if (IsShadowClipmap(slot)) {
+		float2 local = GetClipmapPos(slot, world) / GetClipmapTexelSize(slot, face) - float2(GetClipmapOrigin(slot, face));
+
+		GSIn.Pos = float4(local.x / SHADOW_VIRTUAL_SIZE * 2.0 - 1.0, 1.0 - local.y / SHADOW_VIRTUAL_SIZE * 2.0, 0.5, 1.0);
+		GSIn.Dir = float3(GetClipmapDepth(slot, world), 0.0, 0.0);
+	} else {
+		float3 dir = world - light.xyz;
+		float3 clip = GetShadowFaceClip(dir, face);
+
+		GSIn.Pos = float4(clip.x, clip.y, clip.z - SHADOW_NEAR, clip.z);
+		GSIn.Dir = dir / light.w;
+	}
+
+	GSIn.UV = VSIn.UV;
+
+#ifdef INSTANCED
+	GSIn.View = view | (((uint)VSIn.Pos.w + VSIn.InstData.y + SliceOverride) << SHADOW_SLICE_SHIFT);
+#else
+	GSIn.View = view | (((uint)VSIn.Pos.w + SliceOverride) << SHADOW_SLICE_SHIFT);
+#endif
+}

@@ -10,8 +10,6 @@ namespace rawrbox {
 		static void setEnabled(bool fb);
 		static bool isEnabled();
 
-		static void setDebug(bool debug);
-		static bool isDebug();
 
 		// AMBIENT
 		static void setAmbient(const rawrbox::Colori& col);

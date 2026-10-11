@@ -184,6 +184,53 @@ TEST_CASE("Matrix4x4 should behave as expected", "[rawrbox::Matrix4x4]") {
 		REQUIRE_THAT(q[15], Catch::Matchers::WithinAbs(0.23214F, 0.0001F));
 	}
 
+	SECTION("rawrbox::Matrix4x4::toLeftHand") {
+		const rawrbox::Matrix4x4 base(std::array<float, 16>{1.F, 2.F, 3.F, 4.F, 5.F, 6.F, 7.F, 8.F, 9.F, 10.F, 11.F, 12.F, 13.F, 14.F, 15.F, 16.F});
+		auto q = rawrbox::Matrix4x4::mtxLeftHand(base, true);
+
+		for (size_t i = 0; i < q.size(); i++) {
+			const bool flipped = i == 2 || i == 6 || i == 8 || i == 9 || i == 11 || i == 14;
+			REQUIRE(q[i] == (flipped ? -base[i] : base[i]));
+		}
+
+		q.toLeftHand(true);
+		for (size_t i = 0; i < q.size(); i++) {
+			REQUIRE(q[i] == base[i]);
+		}
+
+		const auto side = rawrbox::Matrix4x4::mtxLeftHand(base);
+		for (size_t i = 0; i < side.size(); i++) {
+			const bool flipped = i == 2 || i == 6 || i == 10 || i == 14;
+			REQUIRE(side[i] == (flipped ? -base[i] : base[i]));
+		}
+	}
+
+	SECTION("rawrbox::Matrix4x4::toNormal") {
+		rawrbox::Matrix4x4 q = {};
+		q.scale({2, 4, 8});
+		q.translate({5, 6, 7});
+
+		const auto normal = rawrbox::Matrix4x4::mtxNormal(q);
+
+		REQUIRE_THAT(normal[0], Catch::Matchers::WithinAbs(0.5F, 0.0001F));
+		REQUIRE_THAT(normal[5], Catch::Matchers::WithinAbs(0.25F, 0.0001F));
+		REQUIRE_THAT(normal[10], Catch::Matchers::WithinAbs(0.125F, 0.0001F));
+
+		const auto dir = normal.mulDir({1, 1, 1});
+		REQUIRE_THAT(dir.x, Catch::Matchers::WithinAbs(0.5F, 0.0001F));
+		REQUIRE_THAT(dir.y, Catch::Matchers::WithinAbs(0.25F, 0.0001F));
+		REQUIRE_THAT(dir.z, Catch::Matchers::WithinAbs(0.125F, 0.0001F));
+	}
+
+	SECTION("rawrbox::Matrix4x4::mulDir") {
+		rawrbox::Matrix4x4 q = {};
+		q.scale({2, 3, 4});
+		q.translate({5, 6, 7});
+
+		REQUIRE(q.mulDir({1, 1, 1}) == rawrbox::Vector3f(2, 3, 4));
+		REQUIRE(q.mulVec(rawrbox::Vector3f{1, 1, 1}) == rawrbox::Vector3f(7, 9, 11));
+	}
+
 	SECTION("rawrbox::Matrix4x4::rotateX") {
 		rawrbox::Matrix4x4 q = {};
 		q.rotateX(rawrbox::MathUtils::toRad(45));

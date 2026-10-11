@@ -119,12 +119,17 @@ namespace rawrbox {
 		return _samplers[id];
 	}
 
-	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type, const Diligent::ShaderMacroHelper& macros) {
+	Diligent::IShader* PipelineUtils::compileShader(const std::string& name, Diligent::SHADER_TYPE type, const Diligent::ShaderMacroHelper& macros, const std::string& entry) {
 		if (name.empty()) return nullptr;
 
 		Diligent::ShaderMacroHelper helper = _globalMacros[type] + macros;
-		Diligent::ShaderMacroArray a = helper; // TODO: FIX ME
-		std::string id = fmt::format("{}-{}", name, a.Count);
+		Diligent::ShaderMacroArray macroArray = helper;
+
+		std::string id = fmt::format("{}:{}-{}", name, entry, magic_enum::enum_name(type));
+		for (uint32_t i = 0; i < macroArray.Count; i++) {
+			id += fmt::format("|{}={}", macroArray.Elements[i].Name, macroArray.Elements[i].Definition);
+		}
+
 		auto fnd = _shaders.find(id);
 		if (fnd != _shaders.end()) {
 			return fnd->second;
@@ -137,10 +142,10 @@ namespace rawrbox {
 		ShaderCI.GLSLExtensions = "#extension GL_EXT_nonuniform_qualifier : require\n";
 		ShaderCI.ShaderCompiler = Diligent::SHADER_COMPILER_DXC;
 
-		std::string shaderName = fmt::format("RawrBox::SHADER::{}", name);
+		std::string shaderName = fmt::format("RawrBox::SHADER::{}::{}", name, entry);
 		ShaderCI.Desc.ShaderType = type;
 		ShaderCI.Desc.UseCombinedTextureSamplers = false;
-		ShaderCI.EntryPoint = "main";
+		ShaderCI.EntryPoint = entry.c_str();
 		ShaderCI.FilePath = name.c_str();
 		ShaderCI.Desc.Name = shaderName.c_str();
 		ShaderCI.Macros = helper;
@@ -148,13 +153,14 @@ namespace rawrbox {
 		Diligent::RefCntAutoPtr<Diligent::IShader> shader;
 		_stateCache->CreateShader(ShaderCI, &shader);
 
+		const std::string label = entry == "main" ? name : fmt::format("{}::{}", name, entry);
 		if (shader != nullptr) {
-			_logger->info("Shader '{}' {}", fmt::styled(name, fmt::fg(fmt::color::coral)), fmt::styled(" [✓ OK]", fmt::fg(fmt::color::green_yellow)));
+			_logger->info("Shader '{}' {}", fmt::styled(label, fmt::fg(fmt::color::coral)), fmt::styled(" [✓ OK]", fmt::fg(fmt::color::green_yellow)));
 		} else {
-			RAWRBOX_CRITICAL("Shader '{}' {}", fmt::styled(name, fmt::fg(fmt::color::coral)), fmt::styled(" [✖ FAILED]", fmt::fg(fmt::color::red)));
+			RAWRBOX_CRITICAL("Shader '{}' {}", fmt::styled(label, fmt::fg(fmt::color::coral)), fmt::styled(" [✖ FAILED]", fmt::fg(fmt::color::red)));
 		}
 
-		if (shader == nullptr) RAWRBOX_CRITICAL("Failed to compile shader '{}'", name);
+		if (shader == nullptr) RAWRBOX_CRITICAL("Failed to compile shader '{}'", label);
 		_shaders[id] = std::move(shader);
 		return _shaders[id];
 	}
@@ -200,7 +206,7 @@ namespace rawrbox {
 			PSODesc.ResourceLayout.NumVariables = static_cast<uint32_t>(settings.resources.size());
 		}
 
-		PSOCreateInfo.pCS = rawrbox::PipelineUtils::compileShader(settings.pCS, Diligent::SHADER_TYPE_COMPUTE, settings.macros);
+		PSOCreateInfo.pCS = rawrbox::PipelineUtils::compileShader(settings.pCS, Diligent::SHADER_TYPE_COMPUTE, settings.macros, settings.entry);
 
 		_stateCache->CreateComputePipelineState(PSOCreateInfo, &pipe);
 		if (pipe == nullptr) RAWRBOX_CRITICAL("Failed to create pipeline '{}'", name);
@@ -240,6 +246,7 @@ namespace rawrbox {
 		info.PSODesc.PipelineType = Diligent::PIPELINE_TYPE_GRAPHICS;
 		info.PSODesc.ResourceLayout.DefaultVariableType = settings.resourceType;
 		info.GraphicsPipeline.NumRenderTargets = settings.renderTargets;
+		info.GraphicsPipeline.NumViewports = settings.viewports;
 
 		info.GraphicsPipeline.PrimitiveTopology = settings.topology;
 		info.GraphicsPipeline.RasterizerDesc.CullMode = settings.cull;
@@ -265,7 +272,7 @@ namespace rawrbox {
 			info.GraphicsPipeline.NumRenderTargets = 0;
 		} else {
 			for (size_t i = 0; i < settings.renderTargets; i++) {
-				info.GraphicsPipeline.RTVFormats[i] = desc.ColorBufferFormat;
+				info.GraphicsPipeline.RTVFormats[i] = settings.renderTargetFormat == Diligent::TEX_FORMAT_UNKNOWN ? desc.ColorBufferFormat : settings.renderTargetFormat;
 			}
 		}
 
@@ -278,6 +285,10 @@ namespace rawrbox {
 			BlendState.RenderTargets[0].DestBlendAlpha = Diligent::BLEND_FACTOR_ONE;
 
 			info.GraphicsPipeline.BlendDesc = BlendState;
+		}
+
+		for (size_t i = 0; i < settings.renderTargets; i++) {
+			info.GraphicsPipeline.BlendDesc.RenderTargets[i].RenderTargetWriteMask = settings.colorMask;
 		}
 		// -----
 

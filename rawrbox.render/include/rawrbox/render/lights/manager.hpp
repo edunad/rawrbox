@@ -28,7 +28,7 @@ namespace rawrbox {
 		std::array<uint32_t, 2> radiance = {};
 
 		static constexpr uint32_t TYPE_MASK = 0x3U;
-		static constexpr uint32_t SHADOW_SHIFT = 2U; // TODO: shadow
+		static constexpr uint32_t SHADOW_SHIFT = 2U;
 	};
 
 	struct LightConstants {
@@ -56,7 +56,8 @@ namespace rawrbox {
 		static std::vector<rawrbox::ZBinEntry> _entries;
 		static std::vector<uint32_t> _zbins;
 
-		static rawrbox::Matrix4x4 _zbinView;
+		static const rawrbox::CameraBase* _zbinCamera;
+		static uint64_t _zbinFrame;
 		static rawrbox::Vector2f _zbinNearFar;
 		// -----------
 
@@ -97,10 +98,13 @@ namespace rawrbox {
 		static void setEnabled(bool enabled);
 		static bool isEnabled();
 
+#ifdef _DEBUG
 		static void setDebug(bool enabled);
 		static bool isDebug();
+#endif
 
 		static rawrbox::LightBase* getLight(size_t indx);
+		static const std::vector<std::shared_ptr<rawrbox::LightBase>>& getLights();
 
 		static size_t count();
 		static size_t active();

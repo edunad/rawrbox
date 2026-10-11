@@ -62,7 +62,7 @@ namespace rawrbox {
 	const rawrbox::Vector3f& LightBase::getDirection() const { return this->_direction; };
 	void LightBase::setDirection(const rawrbox::Vector3f& dir) {
 		const float length = dir.length();
-		
+
 		const auto direction = length > 0.F ? dir / length : dir;
 		if (this->_direction == direction) return;
 
@@ -70,4 +70,24 @@ namespace rawrbox {
 		rawrbox::__LIGHT_DIRTY__ = true;
 	}
 
+	// SHADOWS ---
+	bool LightBase::castShadows() const { return this->_castShadows; }
+	void LightBase::setCastShadows(const bool cast) {
+		if (this->_castShadows == cast) return;
+		this->_castShadows = cast;
+
+		rawrbox::__LIGHT_DIRTY__ = true;
+	}
+
+	std::optional<uint32_t> LightBase::getShadowSlot() const { return this->_shadowSlot; }
+	void LightBase::setShadowSlot(const std::optional<uint32_t> slot) {
+		if (this->_shadowSlot == slot) return;
+		this->_shadowSlot = slot;
+
+		rawrbox::__LIGHT_DIRTY__ = true;
+	}
+
+	float LightBase::getShadowLodBias() const { return this->_shadowLodBias; }
+	void LightBase::setShadowLodBias(const float bias) { this->_shadowLodBias = bias; }
+	// -----------
 } // namespace rawrbox

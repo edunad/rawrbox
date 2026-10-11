@@ -25,7 +25,8 @@ namespace rawrbox {
 
 		static std::vector<uint32_t> _zbins;
 
-		static rawrbox::Matrix4x4 _zbinView;
+		static const rawrbox::CameraBase* _zbinCamera;
+		static uint64_t _zbinFrame;
 		static rawrbox::Vector2f _zbinNearFar;
 		// -----------
 
