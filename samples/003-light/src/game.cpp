@@ -18,7 +18,7 @@
 
 namespace light {
 	constexpr float SCALE = 0.003F;
-	static rawrbox::Vector3f scale(float x, float y, float z) {
+	static rawrbox::Vector3f scale(const float x, const float y, const float z) {
 		return rawrbox::Vector3f{x, y, -z} * SCALE;
 	}
 
@@ -42,7 +42,7 @@ namespace light {
 		auto* window = rawrbox::Window::createWindow();
 #endif
 		window->setMonitor(-1);
-		window->setTitle("LIGHT TEST");
+		window->setTitle("LIGHT + SHADOW TEST");
 #ifdef _DEBUG
 		window->init(1600, 900, rawrbox::WindowFlags::Window::WINDOWED);
 #else
@@ -111,7 +111,7 @@ namespace light {
 	}
 
 	void Game::loadContent() {
-		std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
+		const std::vector<std::pair<std::string, uint32_t>> initialContentFiles = {
 		    {"./assets/models/kelley_road/scene.gltf", rawrbox::GLTFLoadFlags::IMPORT_TEXTURES | rawrbox::GLTFLoadFlags::IMPORT_ANIMATIONS}};
 
 		rawrbox::RESOURCES::loadListAsync(initialContentFiles, [this]() {
@@ -124,13 +124,13 @@ namespace light {
 	void Game::contentLoaded() {
 		if (this->_ready) return;
 
-		auto* mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceGLTF>("./assets/models/kelley_road/scene.gltf")->get();
+		const auto* mdl = rawrbox::RESOURCES::getFile<rawrbox::ResourceGLTF>("./assets/models/kelley_road/scene.gltf")->get();
 
 		// House ----
 		this->_house->load(*mdl);
 		this->_house->removeMeshIf([](const auto& mesh) { return mesh.skeleton != nullptr || !mesh.isMergeable(); });
 
-		// Lamp shades glow with their lamp, kept out of the merge ---
+		// Lamp glow ---
 		auto* hallwayShade = this->_house->getMeshByName("Icosphere.001_accessories_0");
 		auto* kitchenShade = this->_house->getMeshByName("Icosphere_accessories_0");
 
@@ -251,13 +251,12 @@ namespace light {
 	void Game::update() {
 		rawrbox::Window::update();
 		if (!this->_ready) return;
-
 		this->_time += rawrbox::FIXED_DELTA_TIME;
 
 		for (const auto& light : this->_lights) {
 			const float flicker = this->getFlicker(light);
-
 			light.light->setIntensity(light.intensity * flicker);
+
 			if (light.glow != nullptr) light.glow->setIntensity(light.glowIntensity * flicker);
 			if (light.shade != nullptr) light.shade->textures.emissionFactor = light.shadeEmission * flicker;
 		}
